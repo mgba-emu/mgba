@@ -27,6 +27,7 @@
 #include "util/vfs.h"
 
 mLOG_DEFINE_CATEGORY(GBA, "GBA");
+mLOG_DEFINE_CATEGORY(GBA_DEBUG, "GBA Debug");
 
 const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
 
@@ -199,6 +200,9 @@ void GBAReset(struct ARMCore* cpu) {
 	gba->haltPending = false;
 	gba->idleDetectionStep = 0;
 	gba->idleDetectionFailures = 0;
+
+	gba->debug = false;
+	memset(gba->debugString, 0, sizeof(gba->debugString));
 }
 
 void GBASkipBIOS(struct GBA* gba) {
@@ -679,6 +683,19 @@ void GBAStop(struct GBA* gba) {
 	}
 	gba->cpu->nextEvent = gba->cpu->cycles;
 	gba->stopCallback->stop(gba->stopCallback);
+}
+
+void GBADebug(struct GBA* gba, uint16_t flags) {
+	gba->debugFlags = flags;
+	if (GBADebugFlagsIsSend(gba->debugFlags)) {
+		int level = 1 << GBADebugFlagsGetLevel(gba->debugFlags);
+		level &= 0x1F;
+		char oolBuf[0x101];
+		strncpy(oolBuf, gba->debugString, sizeof(gba->debugString));
+		oolBuf[0x100] = '\0';
+		mLog(_mLOG_CAT_GBA_DEBUG(), level, "%s", oolBuf);
+	}
+	gba->debugFlags = GBADebugFlagsClearSend(gba->debugFlags);
 }
 
 bool GBAIsROM(struct VFile* vf) {

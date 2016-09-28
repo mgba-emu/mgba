@@ -540,7 +540,20 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		case REG_MAX:
 			// Some bad interrupt libraries will write to this
 			break;
+		case REG_DEBUG_ENABLE:
+			gba->debug = value == 0xC0DE;
+			return;
+		case REG_DEBUG_FLAGS:
+			if (gba->debug) {
+				GBADebug(gba, value);
+				return;
+			}
+			// Fall through
 		default:
+			if (address >= REG_DEBUG_STRING && address - REG_DEBUG_STRING < sizeof(gba->debugString)) {
+				STORE_16LE(value, address - REG_DEBUG_STRING, gba->debugString);
+				return;
+			}
 			mLOG(GBA_IO, STUB, "Stub I/O register write: %03X", address);
 			if (address >= REG_MAX) {
 				mLOG(GBA_IO, GAME_ERROR, "Write to unused I/O register: %03X", address);
@@ -560,6 +573,10 @@ void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
 		} else {
 			GBAStop(gba);
 		}
+		return;
+	}
+	if (address >= REG_DEBUG_STRING && address - REG_DEBUG_STRING < sizeof(gba->debugString)) {
+		gba->debugString[address - REG_DEBUG_STRING] = value;
 		return;
 	}
 	if (address > SIZE_IO) {
@@ -613,6 +630,10 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 		value = GBAMemoryWriteDMADAD(gba, 3, value);
 		break;
 	default:
+		if (address >= REG_DEBUG_STRING && address - REG_DEBUG_STRING < sizeof(gba->debugString)) {
+			STORE_32LE(value, address - REG_DEBUG_STRING, gba->debugString);
+			return;
+		}
 		GBAIOWrite(gba, address, value & 0xFFFF);
 		GBAIOWrite(gba, address | 2, value >> 16);
 		return;
@@ -848,6 +869,11 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case 0x8A:
 		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return 0;
+	case REG_DEBUG_ENABLE:
+		if (gba->debug) {
+			return 0x1DEA;
+		}
+		// Fall through
 	default:
 		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return GBALoadBad(gba->cpu);

@@ -53,12 +53,17 @@ struct Patch;
 struct VFile;
 
 mLOG_DECLARE_CATEGORY(GBA);
+mLOG_DECLARE_CATEGORY(GBA_DEBUG);
 
 DECL_BITFIELD(GBATimerFlags, uint32_t);
 DECL_BITS(GBATimerFlags, PrescaleBits, 0, 4);
 DECL_BIT(GBATimerFlags, CountUp, 4);
 DECL_BIT(GBATimerFlags, DoIrq, 5);
 DECL_BIT(GBATimerFlags, Enable, 6);
+
+DECL_BITFIELD(GBADebugFlags, uint16_t);
+DECL_BITS(GBADebugFlags, Level, 0, 3);
+DECL_BIT(GBADebugFlags, Send, 8);
 
 struct GBATimer {
 	uint16_t reload;
@@ -120,6 +125,10 @@ struct GBA {
 	bool realisticTiming;
 	bool hardCrash;
 	bool allowOpposingDirections;
+
+	bool debug;
+	char debugString[0x100];
+	GBADebugFlags debugFlags;
 };
 
 struct GBACartridge {
@@ -153,6 +162,7 @@ void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq);
 void GBATestIRQ(struct ARMCore* cpu);
 void GBAHalt(struct GBA* gba);
 void GBAStop(struct GBA* gba);
+void GBADebug(struct GBA* gba, uint16_t value);
 
 void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger);
 void GBADetachDebugger(struct GBA* gba);
