@@ -367,7 +367,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	wait += waitstatesRegion[REGION_WORKING_RAM];
 
 #define LOAD_WORKING_IRAM LOAD_32(value, address & (SIZE_WORKING_IRAM - 4), memory->iwram);
-#define LOAD_IO value = GBAIORead(gba, (address & (SIZE_IO - 1)) & ~2) | (GBAIORead(gba, (address & (SIZE_IO - 1)) | 2) << 16);
+#define LOAD_IO value = GBAIORead(gba, address & OFFSET_MASK & ~2) | (GBAIORead(gba, (address & OFFSET_MASK) | 2) << 16);
 
 #define LOAD_PALETTE_RAM \
 	LOAD_32(value, address & (SIZE_PALETTE_RAM - 4), gba->video.palette); \
@@ -498,7 +498,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		LOAD_16(value, address & (SIZE_WORKING_IRAM - 2), memory->iwram);
 		break;
 	case REGION_IO:
-		value = GBAIORead(gba, address & (SIZE_IO - 2));
+		value = GBAIORead(gba, address & (OFFSET_MASK - 1));
 		break;
 	case REGION_PALETTE_RAM:
 		LOAD_16(value, address & (SIZE_PALETTE_RAM - 2), gba->video.palette);
@@ -679,7 +679,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	STORE_32(value, address & (SIZE_WORKING_IRAM - 4), memory->iwram);
 
 #define STORE_IO \
-	GBAIOWrite32(gba, address & (SIZE_IO - 4), value);
+	GBAIOWrite32(gba, address & (OFFSET_MASK - 3), value);
 
 #define STORE_PALETTE_RAM \
 	STORE_32(value, address & (SIZE_PALETTE_RAM - 4), gba->video.palette); \
@@ -786,7 +786,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		STORE_16(value, address & (SIZE_WORKING_IRAM - 2), memory->iwram);
 		break;
 	case REGION_IO:
-		GBAIOWrite(gba, address & (SIZE_IO - 2), value);
+		GBAIOWrite(gba, address & (OFFSET_MASK - 1), value);
 		break;
 	case REGION_PALETTE_RAM:
 		STORE_16(value, address & (SIZE_PALETTE_RAM - 2), gba->video.palette);
@@ -853,7 +853,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		((int8_t*) memory->iwram)[address & (SIZE_WORKING_IRAM - 1)] = value;
 		break;
 	case REGION_IO:
-		GBAIOWrite8(gba, address & (SIZE_IO - 1), value);
+		GBAIOWrite8(gba, address & OFFSET_MASK, value);
 		break;
 	case REGION_PALETTE_RAM:
 		GBAStore16(cpu, address & ~1, ((uint8_t) value) | ((uint8_t) value << 8), cycleCounter);
