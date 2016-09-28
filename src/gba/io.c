@@ -567,6 +567,9 @@ void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
 		}
 		return;
 	}
+	if (address > SIZE_IO) {
+		return;
+	}
 	uint16_t value16 = value << (8 * (address & 1));
 	value16 |= (gba->memory.io[(address & (SIZE_IO - 1)) >> 1]) & ~(0xFF << (8 * (address & 1)));
 	GBAIOWrite(gba, address & 0xFFFFFFFE, value16);
