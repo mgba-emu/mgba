@@ -742,25 +742,29 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_DMA0SAD_HI:
 	case REG_DMA0DAD_LO:
 	case REG_DMA0DAD_HI:
-	case REG_DMA0CNT_LO:
 	case REG_DMA1SAD_LO:
 	case REG_DMA1SAD_HI:
 	case REG_DMA1DAD_LO:
 	case REG_DMA1DAD_HI:
-	case REG_DMA1CNT_LO:
 	case REG_DMA2SAD_LO:
 	case REG_DMA2SAD_HI:
 	case REG_DMA2DAD_LO:
 	case REG_DMA2DAD_HI:
-	case REG_DMA2CNT_LO:
 	case REG_DMA3SAD_LO:
 	case REG_DMA3SAD_HI:
 	case REG_DMA3DAD_LO:
 	case REG_DMA3DAD_HI:
-	case REG_DMA3CNT_LO:
 		// Write-only register
 		mLOG(GBA_IO, GAME_ERROR, "Read from write-only I/O register: %03X", address);
 		return GBALoadBad(gba->cpu);
+
+	case REG_DMA0CNT_LO:
+	case REG_DMA1CNT_LO:
+	case REG_DMA2CNT_LO:
+	case REG_DMA3CNT_LO:
+		// Write-only register
+		mLOG(GBA_IO, GAME_ERROR, "Read from write-only I/O register: %03X", address);
+		return 0;
 
 	case REG_SOUNDBIAS:
 	case REG_KEYCNT:
@@ -832,6 +836,15 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_MAX:
 		// Some bad interrupt libraries will read from this
 		break;
+	case 0x66:
+	case 0x6E:
+	case 0x76:
+	case 0x7A:
+	case 0x7E:
+	case 0x86:
+	case 0x8A:
+		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
+		return 0;
 	default:
 		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return GBALoadBad(gba->cpu);
