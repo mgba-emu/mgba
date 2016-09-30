@@ -573,6 +573,8 @@ void GameController::closeGame() {
 	if (mCoreThreadIsPaused(&m_threadContext)) {
 		mCoreThreadUnpause(&m_threadContext);
 	}
+	m_patch = QString();
+
 	QMetaObject::invokeMethod(m_audioProcessor, "pause", Qt::BlockingQueuedConnection);
 	mCoreThreadEnd(&m_threadContext);
 }
@@ -585,8 +587,6 @@ void GameController::cleanGame() {
 
 	delete[] m_drawContext;
 	delete[] m_frontBuffer;
-
-	m_patch = QString();
 
 	m_threadContext.core->deinit(m_threadContext.core);
 	m_gameOpen = false;
