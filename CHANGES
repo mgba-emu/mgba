@@ -27,6 +27,7 @@ Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GBA Cheats: Fix uninitialized memory getting freed when saving
  - GBA Memory: Fix several unused I/O register read values
+ - Qt: Fix patch loading
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
