@@ -33,6 +33,7 @@ Misc:
  - GB Video: Improved video timings
  - All: Split out install locations for Libretro and OpenEmu
  - Qt: Manage window sizes slightly better
+ - Qt: Remember scale option independent of core dimensions
 
 0.5.0: (2016-09-19)
 Features:

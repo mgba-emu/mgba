@@ -153,6 +153,7 @@ private:
 
 	GameController* m_controller;
 	Display* m_display;
+	int m_savedScale;
 	// TODO: Move these to a new class
 	QList<QAction*> m_gameActions;
 	QList<QAction*> m_nonMpActions;
