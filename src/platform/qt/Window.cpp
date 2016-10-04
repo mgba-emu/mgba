@@ -89,7 +89,9 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 
 	m_screenWidget->setMinimumSize(m_display->minimumSize());
 	m_screenWidget->setSizePolicy(m_display->sizePolicy());
-	m_screenWidget->setSizeHint(m_display->minimumSize() * 2);
+#ifdef M_CORE_GBA
+	m_screenWidget->setSizeHint(QSize(VIDEO_HORIZONTAL_PIXELS * 2, VIDEO_VERTICAL_PIXELS * 2));
+#endif
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
 	setCentralWidget(m_screenWidget);
@@ -705,6 +707,7 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 	unsigned width, height;
 	context->core->desiredVideoDimensions(context->core, &width, &height);
 	m_display->setMinimumSize(width, height);
+	m_screenWidget->setMinimumSize(m_display->minimumSize());
 	attachWidget(m_display);
 
 #ifndef Q_OS_MAC
@@ -733,6 +736,12 @@ void Window::gameStopped() {
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->unsetCursor();
+#ifdef M_CORE_GB
+	m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
+#elif defined(M_CORE_GBA)
+	m_display->setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+#endif
+	m_screenWidget->setMinimumSize(m_display->minimumSize());
 
 	m_fpsTimer.stop();
 	m_focusCheck.stop();
