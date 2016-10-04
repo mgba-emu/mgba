@@ -28,6 +28,7 @@ Bugfixes:
  - GBA Cheats: Fix uninitialized memory getting freed when saving
  - GBA Memory: Fix several unused I/O register read values
  - Qt: Fix patch loading
+ - Qt: Fix crash when saving an override if a game isn't loaded
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup

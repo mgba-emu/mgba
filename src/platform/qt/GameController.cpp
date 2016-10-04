@@ -574,6 +574,7 @@ void GameController::closeGame() {
 		mCoreThreadUnpause(&m_threadContext);
 	}
 	m_patch = QString();
+	clearOverride();
 
 	QMetaObject::invokeMethod(m_audioProcessor, "pause", Qt::BlockingQueuedConnection);
 	mCoreThreadEnd(&m_threadContext);
