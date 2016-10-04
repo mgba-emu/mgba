@@ -36,6 +36,7 @@ Misc:
  - GB Video: Improved video timings
  - All: Split out install locations for Libretro and OpenEmu
  - GBA Video: Clean up unused timers
+ - Qt: Manage window sizes slightly better
 
 0.5.0: (2016-09-19)
 Features:
