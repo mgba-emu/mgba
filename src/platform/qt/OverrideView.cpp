@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "OverrideView.h"
 
+#include <QPushButton>
+
 #include "ConfigController.h"
 #include "GameController.h"
 
@@ -89,6 +91,7 @@ OverrideView::OverrideView(GameController* controller, ConfigController* config,
 
 	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(saveOverride()));
 	connect(m_ui.buttonBox, SIGNAL(rejected()), this, SLOT(close()));
+	m_ui.buttonBox->button(QDialogButtonBox::Save)->setEnabled(false);
 
 	if (controller->isLoaded()) {
 		gameStarted(controller->thread());
@@ -171,6 +174,7 @@ void OverrideView::gameStarted(mCoreThread* thread) {
 	}
 
 	m_ui.tabWidget->setEnabled(false);
+	m_ui.buttonBox->button(QDialogButtonBox::Save)->setEnabled(true);
 
 	switch (thread->core->platform(thread->core)) {
 #ifdef M_CORE_GBA
@@ -221,6 +225,7 @@ void OverrideView::gameStopped() {
 	m_ui.tabWidget->setEnabled(true);
 	m_ui.savetype->setCurrentIndex(0);
 	m_ui.idleLoop->clear();
+	m_ui.buttonBox->button(QDialogButtonBox::Save)->setEnabled(false);
 
 	m_ui.mbc->setCurrentIndex(0);
 	m_ui.gbModel->setCurrentIndex(0);
