@@ -1,42 +1,42 @@
-0.5.1: (Future)
+0.5.1: (2016-10-05)
 Bugfixes:
+ - Core: Fix importing save games as read-only
+ - FFmpeg: Fix encoding AAC
+ - GB: Fix invalid STOP behavior on Game Boy Color
+ - GB: Initialize audio properly
+ - GB: Properly clear KEY1 bit 0 when switching speeds
+ - GB: Properly unload save files when unloading a ROM
+ - GB, GBA: Fix emulator hardlocking when halting with IRQs off
  - GB MBC: Fix MBC7 when size is incorrectly specified
+ - GB MBC: Fix RTC access when no save file is loaded
+ - GB SIO: Don't auto-clock external shift clock
  - GB Video: Setting LYC=LY during mode 2 should trigger an IRQ
+ - GB Video: Fix video frames getting missed when LCDC is off
+ - GB Video: Clear screen when LCDC is off
  - GBA Cheats: Fix holding onto pointers that may get invalidated
+ - GBA Cheats: Fix key-activated CodeBreaker cheats
+ - GBA Cheats: Fix uninitialized memory getting freed when saving
+ - GBA Hardware: Improve Game Boy Player rumble behavior
+ - GBA Memory: Fix several unused I/O register read values
+ - GBA Savedata: Fix loading savestates with 512Mb Flash saves
+ - LR35902: Fix events running with the wrong cycle active
  - Qt: Fix "close" button on Overrides view
  - Qt: Fix saving overrides
- - FFmpeg: Fix encoding AAC
- - GB Video: Fix video frames getting missed when LCDC is off
- - LR35902: Fix events running with the wrong cycle active
- - GB Video: Clear screen when LCDC is off
- - GBA Cheats: Fix key-activated CodeBreaker cheats
- - GB SIO: Don't auto-clock external shift clock
  - Qt: Fix directory set unloading when replacing the ROM
- - GBA Savedata: Fix loading savestates with 512Mb Flash saves
- - Core: Fix importing save games as read-only
- - Util: Fix PNG identification on files too small to be a PNG
- - GB: Fix invalid STOP behavior on Game Boy Color
- - GB, GBA: Fix emulator hardlocking when halting with IRQs off
- - SDL: Attach rumble in SDL frontend
- - GBA Hardware: Improve Game Boy Player rumble behavior
- - GB: Initialize audio properly
- - GB MBC: Fix RTC access when no save file is loaded
- - GB: Properly clear KEY1 bit 0 when switching speeds
- - GBA Cheats: Fix uninitialized memory getting freed when saving
- - GBA Memory: Fix several unused I/O register read values
  - Qt: Fix patch loading
  - Qt: Fix crash when saving an override if a game isn't loaded
- - GB: Properly unload save files when unloading a ROM
  - Qt: Fix showing default display driver as OpenGL (force 1.x)
+ - SDL: Attach rumble in SDL frontend
+ - Util: Fix PNG identification on files too small to be a PNG
 Misc:
  - All: Only update version info if needed
+ - All: Split out install locations for Libretro and OpenEmu
  - FFmpeg: Encoding cleanup
+ - GB: Reset active region when reloading ROM
  - GB Memory: Initialize RAM pattern for GBC
  - GB Video: Improved video timings
- - All: Split out install locations for Libretro and OpenEmu
  - Qt: Manage window sizes slightly better
  - Qt: Remember scale option independent of core dimensions
- - GB: Reset active region when reloading ROM
 
 0.5.0: (2016-09-19)
 Features:
