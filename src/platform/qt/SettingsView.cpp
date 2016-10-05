@@ -124,7 +124,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 #ifdef BUILD_GL
 	m_ui.displayDriver->addItem(tr("OpenGL (force version 1.x)"), static_cast<int>(Display::Driver::OPENGL1));
-	if (displayDriver.isNull() || displayDriver.toInt() == static_cast<int>(Display::Driver::OPENGL1)) {
+	if (!displayDriver.isNull() && displayDriver.toInt() == static_cast<int>(Display::Driver::OPENGL1)) {
 		m_ui.displayDriver->setCurrentIndex(m_ui.displayDriver->count() - 1);
 	}
 #endif
