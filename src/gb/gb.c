@@ -253,11 +253,13 @@ void GBUnloadROM(struct GB* gb) {
 	}
 	gb->pristineRom = 0;
 
-	struct VFile* vf = gb->sramVf;
+	GBSavedataUnmask(gb);
 	GBSramDeinit(gb);
-	if (vf) {
-		vf->close(vf);
+	if (gb->sramRealVf) {
+		gb->sramRealVf->close(gb->sramRealVf);
 	}
+	gb->sramRealVf = NULL;
+	gb->sramVf = NULL;
 }
 
 void GBLoadBIOS(struct GB* gb, struct VFile* vf) {
