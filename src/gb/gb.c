@@ -102,6 +102,11 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	gb->memory.romSize = gb->pristineRomSize;
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
 
+	if (gb->cpu) {
+		struct LR35902Core* cpu = gb->cpu;
+		cpu->memory.setActiveRegion(cpu, cpu->pc);
+	}
+
 	// TODO: error check
 	return true;
 }

@@ -40,6 +40,7 @@ Misc:
  - GBA Video: Clean up unused timers
  - Qt: Manage window sizes slightly better
  - Qt: Remember scale option independent of core dimensions
+ - GB: Reset active region when reloading ROM
 
 0.5.0: (2016-09-19)
 Features:
