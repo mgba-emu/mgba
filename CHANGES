@@ -27,6 +27,7 @@ Bugfixes:
  - Qt: Fix patch loading
  - Qt: Fix crash when saving an override if a game isn't loaded
  - GB: Properly unload save files when unloading a ROM
+ - Qt: Fix showing default display driver as OpenGL (force 1.x)
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
