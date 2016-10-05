@@ -29,6 +29,7 @@ Bugfixes:
  - GBA Memory: Fix several unused I/O register read values
  - Qt: Fix patch loading
  - Qt: Fix crash when saving an override if a game isn't loaded
+ - GB: Properly unload save files when unloading a ROM
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
