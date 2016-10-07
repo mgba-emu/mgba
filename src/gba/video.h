@@ -9,6 +9,7 @@
 #include "util/common.h"
 
 #include "core/core.h"
+#include "core/timing.h"
 #include "gba/memory.h"
 
 mLOG_DECLARE_CATEGORY(GBA_VIDEO);
@@ -171,13 +172,10 @@ struct GBAVideoRenderer {
 struct GBAVideo {
 	struct GBA* p;
 	struct GBAVideoRenderer* renderer;
+	struct mTimingEvent event;
 
 	// VCOUNT
 	int vcount;
-
-	int32_t nextHblank;
-	int32_t nextEvent;
-	int32_t eventDiff;
 
 	uint16_t palette[SIZE_PALETTE_RAM >> 1];
 	uint16_t* vram;
@@ -192,7 +190,6 @@ void GBAVideoInit(struct GBAVideo* video);
 void GBAVideoReset(struct GBAVideo* video);
 void GBAVideoDeinit(struct GBAVideo* video);
 void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* renderer);
-int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles);
 
 void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value);
 

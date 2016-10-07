@@ -254,16 +254,6 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 			nextEvent = cpu->nextEvent;
 		} while (gba->cpuBlocked);
 
-		testEvent = GBAVideoProcessEvents(&gba->video, cycles);
-		if (testEvent < nextEvent) {
-#ifndef NDEBUG
-			if (testEvent == 0) {
-				mLOG(GBA, ERROR, "Video requiring 0 cycles");
-			}
-#endif
-			nextEvent = testEvent;
-		}
-
 		testEvent = GBAAudioProcessEvents(&gba->audio, cycles);
 		if (testEvent < nextEvent) {
 #ifndef NDEBUG
