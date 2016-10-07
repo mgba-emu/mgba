@@ -528,11 +528,11 @@ void GBUpdateIRQs(struct GB* gb) {
 void GBProcessEvents(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	do {
-		int32_t cycles = cpu->nextEvent;
+		int32_t cycles = cpu->cycles;
 		int32_t nextEvent;
 		int32_t testEvent;
 
-		cpu->cycles -= cycles;
+		cpu->cycles = 0;
 		cpu->nextEvent = INT_MAX;
 
 		if (gb->eiPending != INT_MAX) {

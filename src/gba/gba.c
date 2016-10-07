@@ -235,11 +235,11 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 	}
 
 	do {
-		int32_t cycles = cpu->nextEvent;
+		int32_t cycles = cpu->cycles;
 		int32_t nextEvent;
 		int32_t testEvent;
 
-		cpu->cycles -= cycles;
+		cpu->cycles = 0;
 		cpu->nextEvent = INT_MAX;
 
 #ifndef NDEBUG
