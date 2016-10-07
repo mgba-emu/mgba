@@ -19,6 +19,7 @@
 mLOG_DEFINE_CATEGORY(GBA_MEM, "GBA Memory");
 
 static void _pristineCow(struct GBA* gba);
+static void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate);
 static uint32_t _deadbeef[1] = { 0xE710B710 }; // Illegal instruction on both ARM and Thumb
 
 static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t region);
@@ -83,6 +84,10 @@ void GBAMemoryInit(struct GBA* gba) {
 	gba->memory.biosPrefetch = 0;
 	gba->memory.mirroring = false;
 
+	gba->memory.dmaEvent.name = "GBA DMA";
+	gba->memory.dmaEvent.callback = _dmaEvent;
+	gba->memory.dmaEvent.context = gba;
+
 	GBAVFameInit(&gba->memory.vfame);
 }
 
@@ -123,8 +128,6 @@ void GBAMemoryReset(struct GBA* gba) {
 	}
 	gba->memory.dma[3].count = 0x10000;
 	gba->memory.activeDMA = -1;
-	gba->memory.nextDMA = INT_MAX;
-	gba->memory.eventDiff = 0;
 
 	gba->memory.prefetch = false;
 	gba->memory.lastPrefetchedPc = 0;
@@ -1549,10 +1552,10 @@ uint16_t GBAMemoryWriteDMACNT_HI(struct GBA* gba, int dma, uint16_t control) {
 };
 
 void GBAMemoryScheduleDMA(struct GBA* gba, int number, struct GBADMA* info) {
-	struct ARMCore* cpu = gba->cpu;
+	info->hasStarted = 0;
 	switch (GBADMARegisterGetTiming(info->reg)) {
 	case DMA_TIMING_NOW:
-		info->nextEvent = cpu->cycles + 2;
+		info->nextEvent = 2;
 		GBAMemoryUpdateDMAs(gba, -1);
 		break;
 	case DMA_TIMING_HBLANK:
@@ -1587,7 +1590,7 @@ void GBAMemoryRunHblankDMAs(struct GBA* gba, int32_t cycles) {
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
 		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_HBLANK) {
-			dma->nextEvent = cycles;
+			dma->nextEvent = 2 + cycles;
 		}
 	}
 	GBAMemoryUpdateDMAs(gba, 0);
@@ -1600,46 +1603,40 @@ void GBAMemoryRunVblankDMAs(struct GBA* gba, int32_t cycles) {
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
 		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_VBLANK) {
-			dma->nextEvent = cycles;
+			dma->nextEvent = 2 + cycles;
 		}
 	}
 	GBAMemoryUpdateDMAs(gba, 0);
 }
 
-int32_t GBAMemoryRunDMAs(struct GBA* gba, int32_t cycles) {
+void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+	UNUSED(timing);
+	struct GBA* gba = context;
 	struct GBAMemory* memory = &gba->memory;
-	if (memory->nextDMA == INT_MAX) {
-		return INT_MAX;
-	}
-	memory->nextDMA -= cycles;
-	memory->eventDiff += cycles;
-	while (memory->nextDMA <= 0) {
-		struct GBADMA* dma = &memory->dma[memory->activeDMA];
-		GBAMemoryServiceDMA(gba, memory->activeDMA, dma);
-		GBAMemoryUpdateDMAs(gba, memory->eventDiff);
-		memory->eventDiff = 0;
-	}
-	return memory->nextDMA;
+	struct GBADMA* dma = &memory->dma[memory->activeDMA];
+	dma->nextEvent = -cyclesLate;
+	GBAMemoryServiceDMA(gba, memory->activeDMA, dma);
 }
 
 void GBAMemoryUpdateDMAs(struct GBA* gba, int32_t cycles) {
 	int i;
 	struct GBAMemory* memory = &gba->memory;
-	struct ARMCore* cpu = gba->cpu;
 	memory->activeDMA = -1;
-	memory->nextDMA = INT_MAX;
 	for (i = 3; i >= 0; --i) {
 		struct GBADMA* dma = &memory->dma[i];
 		if (dma->nextEvent != INT_MAX) {
 			dma->nextEvent -= cycles;
 			if (GBADMARegisterIsEnable(dma->reg)) {
 				memory->activeDMA = i;
-				memory->nextDMA = dma->nextEvent;
 			}
 		}
 	}
-	if (memory->nextDMA < cpu->nextEvent) {
-		cpu->nextEvent = memory->nextDMA;
+
+	if (memory->activeDMA >= 0) {
+		mTimingDeschedule(&gba->timing, &memory->dmaEvent);
+		mTimingSchedule(&gba->timing, &memory->dmaEvent, memory->dma[memory->activeDMA].nextEvent);
+	} else {
+		gba->cpuBlocked = false;
 	}
 }
 
@@ -1656,7 +1653,8 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	uint32_t destRegion = dest >> BASE_OFFSET;
 	int32_t cycles = 2;
 
-	if (source == info->source && dest == info->dest && wordsRemaining == info->count) {
+	gba->cpuBlocked = true;
+	if (info->hasStarted < 2) {
 		if (sourceRegion < REGION_CART0 || destRegion < REGION_CART0) {
 			cycles += 2;
 		}
@@ -1667,6 +1665,13 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 		} else {
 			cycles += memory->waitstatesNonseq16[sourceRegion] + memory->waitstatesNonseq16[destRegion];
 		}
+		if (info->hasStarted < 1) {
+			info->hasStarted = wordsRemaining;
+			info->nextEvent = 0;
+			GBAMemoryUpdateDMAs(gba, -cycles);
+			return;
+		}
+		info->hasStarted = 2;
 	} else {
 		if (width == 4) {
 			cycles += memory->waitstatesSeq32[sourceRegion] + memory->waitstatesSeq32[destRegion];
@@ -1740,7 +1745,7 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	if (info->nextEvent != INT_MAX) {
 		info->nextEvent += cycles;
 	}
-	cpu->cycles += cycles;
+	GBAMemoryUpdateDMAs(gba, 0);
 }
 
 int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {

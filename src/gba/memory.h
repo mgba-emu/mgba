@@ -9,6 +9,7 @@
 #include "util/common.h"
 
 #include "arm/arm.h"
+#include "core/timing.h"
 
 #include "gba/hardware.h"
 #include "gba/savedata.h"
@@ -108,6 +109,7 @@ struct GBADMA {
 	uint32_t nextDest;
 	int32_t nextCount;
 	int32_t nextEvent;
+	int32_t hasStarted;
 };
 
 struct GBAMemory {
@@ -139,9 +141,8 @@ struct GBAMemory {
 	uint32_t biosPrefetch;
 
 	struct GBADMA dma[4];
+	struct mTimingEvent dmaEvent;
 	int activeDMA;
-	int32_t nextDMA;
-	int32_t eventDiff;
 
 	bool mirroring;
 };
@@ -185,7 +186,6 @@ void GBAMemoryScheduleDMA(struct GBA* gba, int number, struct GBADMA* info);
 void GBAMemoryRunHblankDMAs(struct GBA* gba, int32_t cycles);
 void GBAMemoryRunVblankDMAs(struct GBA* gba, int32_t cycles);
 void GBAMemoryUpdateDMAs(struct GBA* gba, int32_t cycles);
-int32_t GBAMemoryRunDMAs(struct GBA* gba, int32_t cycles);
 
 struct GBASerializedState;
 void GBAMemorySerialize(const struct GBAMemory* memory, struct GBASerializedState* state);

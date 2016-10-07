@@ -183,6 +183,7 @@ void GBAReset(struct ARMCore* cpu) {
 		GBASavedataUnmask(&gba->memory.savedata);
 	}
 
+	gba->cpuBlocked = false;
 	if (gba->yankedRomSize) {
 		gba->memory.romSize = gba->yankedRomSize;
 		gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
@@ -234,9 +235,9 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		gba->springIRQ = 0;
 	}
 
+	int32_t nextEvent;
 	do {
 		int32_t cycles = cpu->cycles;
-		int32_t nextEvent;
 		int32_t testEvent;
 
 		cpu->cycles = 0;
@@ -247,9 +248,11 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 			mLOG(GBA, FATAL, "Negative cycles passed: %i", cycles);
 		}
 #endif
-
-		mTimingTick(&gba->timing, cycles);
-		nextEvent = cpu->nextEvent;
+		nextEvent = cycles;
+		do {
+			mTimingTick(&gba->timing, nextEvent);
+			nextEvent = cpu->nextEvent;
+		} while (gba->cpuBlocked);
 
 		testEvent = GBAVideoProcessEvents(&gba->video, cycles);
 		if (testEvent < nextEvent) {
@@ -271,16 +274,6 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 			nextEvent = testEvent;
 		}
 
-		testEvent = GBAMemoryRunDMAs(gba, cycles);
-		if (testEvent < nextEvent) {
-#ifndef NDEBUG
-			if (testEvent == 0) {
-				mLOG(GBA, ERROR, "DMAs requiring 0 cycles");
-			}
-#endif
-			nextEvent = testEvent;
-		}
-
 		testEvent = GBASIOProcessEvents(&gba->sio, cycles);
 		if (testEvent < nextEvent) {
 			nextEvent = testEvent;
@@ -288,21 +281,21 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 
 		cpu->nextEvent = nextEvent;
 
+		if (nextEvent == 0) {
+			break;
+		}
 		if (cpu->halted) {
-			cpu->cycles = cpu->nextEvent;
+			cpu->cycles = nextEvent;
 			if (!gba->memory.io[REG_IME >> 1] || !gba->memory.io[REG_IE >> 1]) {
 				break;
 			}
-		}
-		if (nextEvent == 0) {
-			break;
 		}
 #ifndef NDEBUG
 		else if (nextEvent < 0) {
 			mLOG(GBA, FATAL, "Negative cycles will pass: %i", nextEvent);
 		}
 #endif
-	} while (cpu->cycles >= cpu->nextEvent);
+	} while (cpu->cycles >= nextEvent);
 }
 
 void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger) {
