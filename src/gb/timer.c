@@ -30,9 +30,6 @@ int32_t GBTimerProcessEvents(struct GBTimer* timer, int32_t cycles) {
 			timer->nextEvent += timer->nextDiv;
 		}
 		while (timer->nextDiv <= 0) {
-			if ((timer->internalDiv & 15) == 15) {
-				++timer->p->memory.io[REG_DIV];
-			}
 			timer->nextDiv += GB_DMG_DIV_PERIOD;
 
 			// Make sure to trigger when the correct bit is a falling edge
@@ -44,6 +41,7 @@ int32_t GBTimerProcessEvents(struct GBTimer* timer, int32_t cycles) {
 				}
 			}
 			++timer->internalDiv;
+			timer->p->memory.io[REG_DIV] = timer->internalDiv >> 4;
 		}
 		if (timer->nextEvent <= 0) {
 			// Batch div increments
@@ -64,6 +62,15 @@ int32_t GBTimerProcessEvents(struct GBTimer* timer, int32_t cycles) {
 
 void GBTimerDivReset(struct GBTimer* timer) {
 	timer->p->memory.io[REG_DIV] = 0;
+	timer->internalDiv = 0;
+	timer->nextDiv = timer->p->cpu->cycles + GB_DMG_DIV_PERIOD;
+	if (timer->nextDiv < timer->nextEvent) {
+		timer->nextEvent = timer->nextDiv;
+	}
+	if (timer->nextDiv < timer->p->cpu->nextEvent) {
+		timer->p->cpu->nextEvent = timer->nextDiv;
+	}
+	timer->nextDiv += timer->eventDiff;
 }
 
 uint8_t GBTimerUpdateTAC(struct GBTimer* timer, GBRegisterTAC tac) {
