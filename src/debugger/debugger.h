@@ -58,9 +58,6 @@ struct mDebugWatchpoint {
 	enum mWatchpointType type;
 };
 
-DECLARE_VECTOR(mDebugBreakpointList, struct mDebugBreakpoint);
-DECLARE_VECTOR(mDebugWatchpointList, struct mDebugWatchpoint);
-
 extern const char* ERROR_MISSING_ARGS;
 extern const char* ERROR_OVERFLOW;
 
