@@ -29,6 +29,7 @@ void TableClear(struct Table*);
 void TableEnumerate(const struct Table*, void (handler(uint32_t key, void* value, void* user)), void* user);
 size_t TableSize(const struct Table*);
 
+#ifndef __NO_INLINE__
 static inline void HashTableInit(struct Table* table, size_t initialSize, void (deinitializer(void*))) {
 	TableInit(table, initialSize, deinitializer);
 }
@@ -36,6 +37,10 @@ static inline void HashTableInit(struct Table* table, size_t initialSize, void (
 static inline void HashTableDeinit(struct Table* table) {
 	TableDeinit(table);
 }
+#else
+void HashTableInit(struct Table* table, size_t initialSize, void (deinitializer(void*)));
+void HashTableDeinit(struct Table* table);
+#endif
 
 void* HashTableLookup(const struct Table*, const char* key);
 void HashTableInsert(struct Table*, const char* key, void* value);
