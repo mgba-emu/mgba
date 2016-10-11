@@ -8,7 +8,7 @@
 
 #include "util/common.h"
 
-#include "arm/arm.h"
+#include "core/cpu.h"
 #include "core/log.h"
 #include "util/vector.h"
 
