@@ -9,12 +9,22 @@ src = os.path.join(os.path.dirname(__file__), "..", "..")
 ffi.set_source("mgba._pylib", """
 #include "util/common.h"
 #include "core/core.h"
+#include "arm/arm.h"
+#include "gba/gba.h"
+#include "lr35902/lr35902.h"
+#include "gb/gb.h"
 """, include_dirs=[src],
      extra_compile_args=sys.argv[1:],
      libraries=["mgba"],
      library_dirs=[os.path.join(os.getcwd(), "..")])
 
 with open(os.path.join(os.getcwd(), "_builder.h")) as core:
-    ffi.cdef(core.read())
+    lines = []
+    for line in core:
+        line = line.strip()
+        if line.startswith('#'):
+            continue
+        lines.append(line)
+    ffi.cdef('\n'.join(lines))
 
 ffi.compile()

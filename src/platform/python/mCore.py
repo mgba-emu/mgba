@@ -11,7 +11,15 @@ class mCore:
         self._core = ffi.gc(native, self._deinit)
 
     def init(self):
-        return bool(self._core.init(self._core))
+        success = bool(self._core.init(self._core))
+        if success:
+            if hasattr(self, 'PLATFORM_GBA') and self.platform() == self.PLATFORM_GBA:
+                self.cpu = ARMCore(self._core.cpu)
+                self.board = GBA(self._core.board)
+            if hasattr(self, 'PLATFORM_GB') and self.platform() == self.PLATFORM_GB:
+                self.cpu = LR35902Core(self._core.cpu)
+                self.board = GB(self._core.board)
+        return success
 
     def _deinit(self):
         self._core.deinit(self._core)
@@ -45,3 +53,13 @@ class mCore:
 
     def step(self):
         self._core.step(self._core)
+
+if hasattr(lib, 'PLATFORM_GBA'):
+    from .gba import GBA
+    from .arm import ARMCore
+    mCore.PLATFORM_GBA = lib.PLATFORM_GBA
+
+if hasattr(lib, 'PLATFORM_GB'):
+    from .gb import GB
+    from .lr35902 import LR35902Core
+    mCore.PLATFORM_GB = lib.PLATFORM_GB
