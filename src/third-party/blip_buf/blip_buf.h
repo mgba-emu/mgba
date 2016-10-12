@@ -24,7 +24,7 @@ void blip_set_rates( blip_t*, double clock_rate, double sample_rate );
 
 enum { /** Maximum clock_rate/sample_rate ratio. For a given sample_rate,
 clock_rate must not be greater than sample_rate*blip_max_ratio. */
-blip_max_ratio = 1 << 20 };
+blip_max_ratio = 0x100000 };
 
 /** Clears entire buffer. Afterwards, blip_samples_avail() == 0. */
 void blip_clear( blip_t* );
