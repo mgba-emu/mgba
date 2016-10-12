@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "debugger/debugger.h"
 
+#include "arm/arm.h"
+
 struct ARMDebugBreakpoint {
 	uint32_t address;
 	bool isSw;
