@@ -1,6 +1,7 @@
 0.5.2: (Future)
 Bugfixes:
  - GBA Memory: Fix misaligned BIOS reads
+ - GBA BIOS: Fix MidiKey2Freq BIOS reads
 
 0.5.1: (2016-10-05)
 Bugfixes:

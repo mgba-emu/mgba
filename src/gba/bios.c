@@ -244,7 +244,12 @@ static void _ObjAffineSet(struct GBA* gba) {
 
 static void _MidiKey2Freq(struct GBA* gba) {
 	struct ARMCore* cpu = gba->cpu;
+
+	int oldRegion = gba->memory.activeRegion;
+	gba->memory.activeRegion = REGION_BIOS;
 	uint32_t key = cpu->memory.load32(cpu, cpu->gprs[0] + 4, 0);
+	gba->memory.activeRegion = oldRegion;
+
 	cpu->gprs[0] = key / powf(2, (180.f - cpu->gprs[1] - cpu->gprs[2] / 256.f) / 12.f);
 }
 
