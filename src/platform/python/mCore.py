@@ -6,20 +6,25 @@ def find(path):
         return None
     return mCore(core)
 
+def loadPath(path):
+    core = find(path)
+    if not core or not core.loadFile(path):
+        return None
+    return core
+
 class mCore:
     def __init__(self, native):
         self._core = ffi.gc(native, self._deinit)
-
-    def init(self):
         success = bool(self._core.init(self._core))
-        if success:
-            if hasattr(self, 'PLATFORM_GBA') and self.platform() == self.PLATFORM_GBA:
-                self.cpu = ARMCore(self._core.cpu)
-                self.board = GBA(self._core.board)
-            if hasattr(self, 'PLATFORM_GB') and self.platform() == self.PLATFORM_GB:
-                self.cpu = LR35902Core(self._core.cpu)
-                self.board = GB(self._core.board)
-        return success
+        if not success:
+            raise RuntimeError("Failed to initialize core")
+
+        if hasattr(self, 'PLATFORM_GBA') and self.platform() == self.PLATFORM_GBA:
+            self.cpu = ARMCore(self._core.cpu)
+            self.board = GBA(self._core.board)
+        if hasattr(self, 'PLATFORM_GB') and self.platform() == self.PLATFORM_GB:
+            self.cpu = LR35902Core(self._core.cpu)
+            self.board = GB(self._core.board)
 
     def _deinit(self):
         self._core.deinit(self._core)
@@ -53,6 +58,25 @@ class mCore:
 
     def step(self):
         self._core.step(self._core)
+
+    def frameCounter(self):
+        return self._core.frameCounter(self._core)
+
+    def frameCycles(self):
+        return self._core.frameCycles(self._core)
+
+    def frequency(self):
+        return self._core.frequency(self._core)
+
+    def getGameTitle(self):
+        title = ffi.new("char[16]")
+        self._core.getGameTitle(self._core, title)
+        return ffi.string(title, 16).decode("ascii")
+
+    def getGameCode(self):
+        code = ffi.new("char[12]")
+        self._core.getGameCode(self._core, code)
+        return ffi.string(code, 12).decode("ascii")
 
 if hasattr(lib, 'PLATFORM_GBA'):
     from .gba import GBA
