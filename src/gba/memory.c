@@ -352,7 +352,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 #define LOAD_BIOS \
 	if (address < SIZE_BIOS) { \
 		if (memory->activeRegion == REGION_BIOS) { \
-			LOAD_32(value, address, memory->bios); \
+			LOAD_32(value, address & -4, memory->bios); \
 		} else { \
 			mLOG(GBA_MEM, GAME_ERROR, "Bad BIOS Load32: 0x%08X", address); \
 			value = memory->biosPrefetch; \
@@ -479,7 +479,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case REGION_BIOS:
 		if (address < SIZE_BIOS) {
 			if (memory->activeRegion == REGION_BIOS) {
-				LOAD_16(value, address, memory->bios);
+				LOAD_16(value, address & -2, memory->bios);
 			} else {
 				mLOG(GBA_MEM, GAME_ERROR, "Bad BIOS Load16: 0x%08X", address);
 				value = (memory->biosPrefetch >> ((address & 2) * 8)) & 0xFFFF;
