@@ -6,6 +6,7 @@ Bugfixes:
  - GB Timer: Improve DIV reset behavior
  - GBA Memory: Fix misaligned BIOS reads
  - GBA BIOS: Fix MidiKey2Freq BIOS reads
+ - GBA BIOS: Fix invalid CpuSet not setting BIOS prefetch
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers

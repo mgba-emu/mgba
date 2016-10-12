@@ -364,7 +364,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0xC:
 		if (cpu->gprs[0] >> BASE_OFFSET < REGION_WORKING_RAM) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Cannot CpuSet from BIOS");
-			return;
+			break;
 		}
 		if (cpu->gprs[0] & (cpu->gprs[2] & (1 << 26) ? 3 : 1)) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Misaligned CpuSet source");
