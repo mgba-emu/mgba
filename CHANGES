@@ -8,6 +8,7 @@ Bugfixes:
  - GBA Memory: Fix misaligned BIOS reads
  - GBA BIOS: Fix MidiKey2Freq BIOS reads
  - GBA BIOS: Fix invalid CpuSet not setting BIOS prefetch
+ - GB MBC: Fix SRAM dangling pointer with RTC games
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers

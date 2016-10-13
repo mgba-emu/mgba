@@ -671,6 +671,15 @@ void GBMBCRTCWrite(struct GB* gb) {
 	STORE_32LE(gb->memory.rtcRegs[4], 0, &rtcBuffer.latchedDaysHi);
 	STORE_64LE(rtcLastLatch, 0, &rtcBuffer.unixTime);
 
+	if (vf->size(vf) == gb->sramSize) {
+		// Writing past the end of the file can invalidate the file mapping
+		vf->unmap(vf, gb->memory.sram, gb->sramSize);
+		gb->memory.sram = NULL;
+	}
 	vf->seek(vf, gb->sramSize, SEEK_SET);
 	vf->write(vf, &rtcBuffer, sizeof(rtcBuffer));
+	if (!gb->memory.sram) {
+		gb->memory.sram = vf->map(vf, gb->sramSize, MAP_WRITE);
+		GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
+	}
 }

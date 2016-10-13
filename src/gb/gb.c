@@ -120,7 +120,7 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 static void GBSramDeinit(struct GB* gb) {
 	if (gb->sramVf) {
 		gb->sramVf->unmap(gb->sramVf, gb->memory.sram, gb->sramSize);
-		if (gb->memory.mbcType == GB_MBC3_RTC) {
+		if (gb->memory.mbcType == GB_MBC3_RTC && gb->sramVf == gb->sramRealVf) {
 			GBMBCRTCWrite(gb);
 		}
 		gb->sramVf = NULL;
@@ -192,7 +192,7 @@ void GBResizeSram(struct GB* gb, size_t size) {
 
 void GBSramClean(struct GB* gb, uint32_t frameCount) {
 	// TODO: Share with GBASavedataClean
-	if (!gb->sramVf) {
+	if (!gb->sramVf || gb->sramVf != gb->sramRealVf) {
 		return;
 	}
 	if (gb->sramDirty & GB_SRAM_DIRT_NEW) {
