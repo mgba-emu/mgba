@@ -5,6 +5,7 @@ Bugfixes:
  - GBA BIOS: Fix invalid CpuSet not setting BIOS prefetch
  - GB MBC: Fix SRAM dangling pointer with RTC games
  - Windows: Fix Unicode directory handling
+ - Qt: Fix changing resolution of software renderer
 
 0.5.1: (2016-10-05)
 Bugfixes:
