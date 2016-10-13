@@ -4,6 +4,7 @@ Bugfixes:
  - GBA BIOS: Fix MidiKey2Freq BIOS reads
  - GBA BIOS: Fix invalid CpuSet not setting BIOS prefetch
  - GB MBC: Fix SRAM dangling pointer with RTC games
+ - Windows: Fix Unicode directory handling
 
 0.5.1: (2016-10-05)
 Bugfixes:
