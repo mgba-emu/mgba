@@ -1,6 +1,7 @@
 0.6.0: (Future)
 Features:
  - GBA: Support printing debug strings from inside a game
+ - GBA: Better cheat type autodetection
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior

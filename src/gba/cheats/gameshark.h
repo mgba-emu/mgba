@@ -14,5 +14,6 @@ void GBACheatDecryptGameShark(uint32_t* op1, uint32_t* op2, const uint32_t* seed
 void GBACheatReseedGameShark(uint32_t* seeds, uint16_t params, const uint8_t* t1, const uint8_t* t2);
 void GBACheatSetGameSharkVersion(struct GBACheatSet* cheats, int version);
 bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2);
+int GBACheatGameSharkProbability(uint32_t op1, uint32_t op2);
 
 #endif

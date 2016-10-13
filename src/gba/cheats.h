@@ -172,4 +172,6 @@ bool GBACheatAddProActionReplayLine(struct GBACheatSet*, const char* line);
 
 bool GBACheatAddVBALine(struct GBACheatSet*, const char* line);
 
+int GBACheatAddressIsReal(uint32_t address);
+
 #endif

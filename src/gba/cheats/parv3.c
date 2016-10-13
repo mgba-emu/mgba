@@ -326,3 +326,72 @@ bool GBACheatAddProActionReplayLine(struct GBACheatSet* cheats, const char* line
 	}
 	return GBACheatAddProActionReplay(cheats, op1, op2);
 }
+
+int GBACheatProActionReplayProbability(uint32_t op1, uint32_t op2) {
+	int probability = 0;
+	if (op2 == 0x001DC0DE) {
+		return 0x100;
+	}
+	if (op1 == 0xDEADFACE && !(op2 & 0xFFFF0000)) {
+		return 0x100;
+	}
+	if (!op1) {
+		probability += 0x20;
+		uint32_t address = _parAddr(op2);
+		switch (op2 & 0xFE000000) {
+		case PAR3_OTHER_FILL_1:
+		case PAR3_OTHER_FILL_2:
+		case PAR3_OTHER_FILL_4:
+			probability += GBACheatAddressIsReal(address);
+			break;
+		case PAR3_OTHER_PATCH_1:
+		case PAR3_OTHER_PATCH_2:
+		case PAR3_OTHER_PATCH_3:
+		case PAR3_OTHER_PATCH_4:
+			// TODO: Detect ROM address
+			break;
+		case PAR3_OTHER_END:
+		case PAR3_OTHER_SLOWDOWN:
+		case PAR3_OTHER_BUTTON_1:
+		case PAR3_OTHER_BUTTON_2:
+		case PAR3_OTHER_BUTTON_4:
+		case PAR3_OTHER_ENDIF:
+		case PAR3_OTHER_ELSE:
+			if (op2 & 0x01FFFFFF) {
+				probability -= 0x20;
+			}
+			break;
+		default:
+			probability -= 0x40;
+			break;
+		}
+		return probability;
+	}
+	int width = ((op1 & PAR3_WIDTH) >> (PAR3_WIDTH_BASE - 3));
+	if (op1 & PAR3_COND) {
+		probability += 0x20;
+		if (width == 32) {
+			return 0;
+		}
+		if (op2 & ~((1 << width) - 1)) {
+			probability -= 0x10;
+		}
+	} else {
+		uint32_t address = _parAddr(op1);
+		probability += 0x20;
+		switch (op1 & PAR3_BASE) {
+		case PAR3_BASE_ADD:
+			if (op2 & ~((1 << width) - 1)) {
+				probability -= 0x10;
+			}
+		case PAR3_BASE_ASSIGN:
+		case PAR3_BASE_INDIRECT:
+			probability += GBACheatAddressIsReal(address);
+			// Fall through
+			break;
+		case PAR3_BASE_OTHER:
+			break;
+		}
+	}
+	return probability;
+}

@@ -226,3 +226,63 @@ bool GBACheatAddGameSharkLine(struct GBACheatSet* cheats, const char* line) {
 	}
 	return GBACheatAddGameShark(cheats, op1, op2);
 }
+
+int GBACheatGameSharkProbability(uint32_t op1, uint32_t op2) {
+	int probability = 0;
+	if (op2 == 0x001DC0DE) {
+		return 0x100;
+	}
+	uint32_t address = op1 & 0x0FFFFFFF;
+	switch (op1 >> 28) {
+	case GSA_ASSIGN_1:
+		probability += 0x20;
+		if (op2 & 0xFFFFFF00) {
+			probability -= 0x10;
+		}
+		probability += GBACheatAddressIsReal(address);
+		break;
+	case GSA_ASSIGN_2:
+		probability += 0x20;
+		if (op2 & 0xFFFF0000) {
+			probability -= 0x10;
+		}
+		probability += GBACheatAddressIsReal(address);
+		break;
+	case GSA_ASSIGN_4:
+		probability += 0x20;
+		probability += GBACheatAddressIsReal(address);
+		break;
+	case GSA_PATCH:
+		probability += 0x20;
+		if (op2 & 0xCFFF0000) {
+			probability -= 0x10;
+		}
+		break;
+	case GSA_BUTTON:
+		probability += 0x10;
+		break;
+	case GSA_IF_EQ:
+		probability += 0x20;
+		if (op2 & 0xFFFF0000) {
+			probability -= 0x10;
+		}
+		probability += GBACheatAddressIsReal(address);
+		break;
+	case GSA_IF_EQ_RANGE:
+		probability += 0x20;
+		probability += GBACheatAddressIsReal(op2);
+		if (op1 & 0x0F000000) {
+			probability -= 0x10;
+		}
+		break;
+	case GSA_HOOK:
+		probability += 0x20;
+		if (op2 & 0xFFFF0000) {
+			probability -= 0x10;
+		}
+		break;
+	default:
+		probability -= 0x40;
+	}
+	return probability;
+}

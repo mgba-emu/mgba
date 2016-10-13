@@ -138,19 +138,26 @@ static bool GBACheatAddAutodetect(struct GBACheatSet* set, uint32_t op1, uint32_
 	char line[18] = "XXXXXXXX XXXXXXXX";
 	snprintf(line, sizeof(line), "%08X %08X", op1, op2);
 
+	int gsaP, parP;
 	switch (set->gsaVersion) {
 	case 0:
 		// Try to detect GameShark version
 		GBACheatDecryptGameShark(&o1, &o2, GBACheatGameSharkSeeds);
-		if ((o1 & 0xF0000000) == 0xF0000000 && !(o2 & 0xFFFFFCFE)) {
-			GBACheatSetGameSharkVersion(set, 1);
-			return GBACheatAddGameSharkRaw(set, o1, o2);
-		}
+		gsaP = GBACheatGameSharkProbability(o1, o2);
 		o1 = op1;
 		o2 = op2;
 		GBACheatDecryptGameShark(&o1, &o2, GBACheatProActionReplaySeeds);
-		if ((o1 & 0xFE000000) == 0xC4000000 && !(o2 & 0xFFFF0000)) {
+		parP = GBACheatProActionReplayProbability(o1, o2);
+		o1 = op1;
+		o2 = op2;
+		if (gsaP > parP) {
+			GBACheatSetGameSharkVersion(set, 1);
+			GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
+			return GBACheatAddGameSharkRaw(set, o1, o2);
+		} else {
+			// If probabilities are equal, assume PARv3
 			GBACheatSetGameSharkVersion(set, 3);
+			GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
 			return GBACheatAddProActionReplayRaw(set, o1, o2);
 		}
 		break;
@@ -312,5 +319,58 @@ static void GBACheatDumpDirectives(struct mCheatSet* set, struct StringList* dir
 		directive = StringListAppend(directives);
 		*directive = strdup("PARv3");
 		break;
+	}
+}
+
+int GBACheatAddressIsReal(uint32_t address) {
+	switch (address >> BASE_OFFSET) {
+	case REGION_BIOS:
+		return -0x80;
+		break;
+	case REGION_WORKING_RAM:
+		if ((address & OFFSET_MASK) > SIZE_WORKING_RAM) {
+			return -0x40;
+		}
+		return 0x20;
+	case REGION_WORKING_IRAM:
+		if ((address & OFFSET_MASK) > SIZE_WORKING_IRAM) {
+			return -0x40;
+		}
+		return 0x20;
+	case REGION_IO:
+		if ((address & OFFSET_MASK) > SIZE_IO) {
+			return -0x80;
+		}
+		return 0x10;
+	case REGION_OAM:
+		if ((address & OFFSET_MASK) > SIZE_OAM) {
+			return -0x80;
+		}
+		return -0x8;
+	case REGION_VRAM:
+		if ((address & OFFSET_MASK) > SIZE_VRAM) {
+			return -0x80;
+		}
+		return -0x8;
+	case REGION_PALETTE_RAM:
+		if ((address & OFFSET_MASK) > SIZE_PALETTE_RAM) {
+			return -0x80;
+		}
+		return -0x8;
+	case REGION_CART0:
+	case REGION_CART0_EX:
+	case REGION_CART1:
+	case REGION_CART1_EX:
+	case REGION_CART2:
+	case REGION_CART2_EX:
+		return -0x8;
+	case REGION_CART_SRAM:
+	case REGION_CART_SRAM_MIRROR:
+		if ((address & OFFSET_MASK) > SIZE_CART_SRAM) {
+			return -0x80;
+		}
+		return -0x8;
+	default:
+		return -0xC0;
 	}
 }
