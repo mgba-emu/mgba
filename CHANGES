@@ -10,6 +10,7 @@ Bugfixes:
  - GBA BIOS: Fix invalid CpuSet not setting BIOS prefetch
  - GB MBC: Fix SRAM dangling pointer with RTC games
  - Windows: Fix Unicode directory handling
+ - Qt: Fix changing resolution of software renderer
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
