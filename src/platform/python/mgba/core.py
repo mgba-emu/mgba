@@ -4,7 +4,7 @@ def find(path):
     core = lib.mCoreFind(path.encode('UTF-8'))
     if core == ffi.NULL:
         return None
-    return mCore(core)
+    return Core(core)
 
 def loadPath(path):
     core = find(path)
@@ -12,7 +12,7 @@ def loadPath(path):
         return None
     return core
 
-class mCore:
+class Core:
     def __init__(self, native):
         self._core = ffi.gc(native, self._deinit)
         success = bool(self._core.init(self._core))
@@ -81,9 +81,9 @@ class mCore:
 if hasattr(lib, 'PLATFORM_GBA'):
     from .gba import GBA
     from .arm import ARMCore
-    mCore.PLATFORM_GBA = lib.PLATFORM_GBA
+    Core.PLATFORM_GBA = lib.PLATFORM_GBA
 
 if hasattr(lib, 'PLATFORM_GB'):
     from .gb import GB
     from .lr35902 import LR35902Core
-    mCore.PLATFORM_GB = lib.PLATFORM_GB
+    Core.PLATFORM_GB = lib.PLATFORM_GB
