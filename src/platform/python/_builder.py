@@ -13,10 +13,19 @@ ffi.set_source("mgba._pylib", """
 #include "gba/gba.h"
 #include "lr35902/lr35902.h"
 #include "gb/gb.h"
+#include "util/vfs.h"
+
+struct VFile* VFileFromPython(void* fileobj);
+
+struct VFilePy {
+    struct VFile d;
+    void* fileobj;
+};
 """, include_dirs=[src],
      extra_compile_args=sys.argv[1:],
      libraries=["mgba"],
-     library_dirs=[os.path.join(os.getcwd(), "..")])
+     library_dirs=[os.path.join(os.getcwd(), "..")],
+     sources=[os.path.join(os.path.dirname(__file__), path) for path in ["vfs-py.c"]])
 
 with open(os.path.join(os.getcwd(), "_builder.h")) as core:
     lines = []

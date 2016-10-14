@@ -1,14 +1,15 @@
 #define COMMON_H
-#define extern
 #define _TIME_H_
 #define _SYS_TIME_H_
 #define ATTRIBUTE_FORMAT(X, Y, Z)
 #define DECL_BITFIELD(newtype, oldtype) typedef oldtype newtype
 #define DECL_BIT(type, name, bit)
 #define DECL_BITS(type, name, bit, nbits)
-typedef long time_t;
+typedef int... time_t;
+typedef int... off_t;
 typedef ... va_list;
 #include <limits.h>
+#include "platform/python/vfs-py.h"
 #include "core/core.h"
 #ifdef M_CORE_GBA
 #include "arm/arm.h"
