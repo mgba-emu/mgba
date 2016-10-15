@@ -15,10 +15,13 @@ typedef ...* png_structp;
 typedef ...* png_infop;
 typedef ...* png_unknown_chunkp;
 
+void free(void*);
+
 #include <limits.h>
 
 #include "core/core.h"
 #include "platform/python/vfs-py.h"
+#include "platform/python/log.h"
 
 #ifdef USE_PNG
 #include "util/png-io.h"
