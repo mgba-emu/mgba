@@ -1,3 +1,8 @@
+# Copyright (c) 2013-2016 Jeffrey Pfau
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from _pylib import ffi, lib
 import mmap
 import os
@@ -18,13 +23,15 @@ def _vfpSeek(vf, offset, whence):
 def _vfpRead(vf, buffer, size):
 	vfp = ffi.cast("struct VFilePy*", vf)
 	pybuf = ffi.buffer(buffer, size)
-	return ffi.from_handle(vfp.fileobj).readinto(pybuf)
+	ffi.from_handle(vfp.fileobj).readinto(pybuf)
+	return size
 
 @ffi.def_extern()
 def _vfpWrite(vf, buffer, size):
 	vfp = ffi.cast("struct VFilePy*", vf)
 	pybuf = ffi.buffer(buffer, size)
-	return ffi.from_handle(vfp.fileobj).write(pybuf)
+	ffi.from_handle(vfp.fileobj).write(pybuf)
+	return size
 
 @ffi.def_extern()
 def _vfpMap(vf, size, flags):
@@ -90,37 +97,34 @@ def openPath(path, mode="r"):
 
 class VFile:
 	def __init__(self, vf):
-		self._vf = vf
-
-	def handle(self):
-		return self._vf
+		self.handle = vf
 
 	def close(self):
-		return self._vf.close(self._vf)
+		return self.handle.close(self.handle)
 
 	def seek(self, offset, whence):
-		return self._vf.seek(self._vf, offset, whence)
+		return self.handle.seek(self.handle, offset, whence)
 
 	def read(self, buffer, size):
-		return self._vf.read(self._vf, buffer, size)
+		return self.handle.read(self.handle, buffer, size)
 
 	def readline(self, buffer, size):
-		return self._vf.readline(self._vf, buffer, size)
+		return self.handle.readline(self.handle, buffer, size)
 
 	def write(self, buffer, size):
-		return self._vf.write(self._vf, buffer, size)
+		return self.handle.write(self.handle, buffer, size)
 
 	def map(self, size, flags):
-		return self._vf.map(self._vf, size, flags)
+		return self.handle.map(self.handle, size, flags)
 
 	def unmap(self, memory, size):
-		self._vf.unmap(self._vf, memory, size)
+		self.handle.unmap(self.handle, memory, size)
 
 	def truncate(self, size):
-		self._vf.truncate(self._vf, size)
+		self.handle.truncate(self.handle, size)
 
 	def size(self):
-		return self._vf.size(self._vf)
+		return self.handle.size(self.handle)
 
 	def sync(self, buffer, size):
-		return self._vf.sync(self._vf, buffer, size)
+		return self.handle.sync(self.handle, buffer, size)

@@ -12,7 +12,7 @@ def find(path):
     return Core(core)
 
 def findVF(vf):
-    core = lib.mCoreFindVF(vf.handle())
+    core = lib.mCoreFindVF(vf.handle)
     if core == ffi.NULL:
         return None
     return Core(core)
@@ -50,10 +50,10 @@ class Core:
         return bool(lib.mCoreLoadFile(self._core, path.encode('UTF-8')))
 
     def isROM(self, vf):
-        return bool(self._core.isROM(vf.handle()))
+        return bool(self._core.isROM(vf.handle))
 
     def loadROM(self, vf):
-        return bool(self._core.loadROM(self._core, vf.handle()))
+        return bool(self._core.loadROM(self._core, vf.handle))
 
     def autoloadSave(self):
         return bool(lib.mCoreAutoloadSave(self._core))
