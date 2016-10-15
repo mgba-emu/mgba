@@ -3,7 +3,7 @@ import re
 
 classifiers = [
     "Programming Language :: Python :: 2",
-#    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)"
 ]
 
@@ -13,6 +13,8 @@ setup(name="${BINARY_NAME}",
       author_email="jeffrey@endrift.com",
       url="http://github.com/mgba-emu/mgba/",
       packages=["mgba"],
+      setup_requires=['cffi>=1.6'],
+      install_requires=['cffi>=1.6'],
       license="MPL 2.0",
       classifiers=classifiers
       )

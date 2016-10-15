@@ -3,7 +3,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-from _pylib import ffi, lib
+from ._pylib import ffi, lib
 
 def find(path):
     core = lib.mCoreFind(path.encode('UTF-8'))
@@ -31,7 +31,7 @@ def loadVF(vf):
 
 class Core:
     def __init__(self, native):
-        self._core = ffi.gc(native, self._deinit)
+        self._core = ffi.gc(native, native.deinit)
         success = bool(self._core.init(self._core))
         if not success:
             raise RuntimeError("Failed to initialize core")
