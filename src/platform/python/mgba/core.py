@@ -70,6 +70,9 @@ class Core:
         self._core.desiredVideoDimensions(self._core, width, height)
         return width[0], height[0]
 
+    def setVideoBuffer(self, image):
+        self._core.setVideoBuffer(self._core, image.buffer, image.stride)
+
     def reset(self):
         self._core.reset(self._core)
 
