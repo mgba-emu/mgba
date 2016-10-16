@@ -11,6 +11,7 @@ Bugfixes:
  - GB MBC: Fix SRAM dangling pointer with RTC games
  - Windows: Fix Unicode directory handling
  - Qt: Fix changing resolution of software renderer
+ - Qt: Fix setting overrides
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers

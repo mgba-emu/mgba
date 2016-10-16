@@ -129,6 +129,11 @@ GameController::GameController(QObject* parent)
 		}
 		controller->m_fpsTarget = context->sync.fpsTarget;
 
+		if (controller->m_override) {
+			controller->m_override->identify(context->core);
+			controller->m_override->apply(context->core);
+		}
+
 		if (mCoreLoadState(context->core, 0, controller->m_loadStateFlags)) {
 			mCoreDeleteState(context->core, 0);
 		}
@@ -444,11 +449,6 @@ void GameController::openGame(bool biosOnly) {
 		}
 	}
 	m_vf = nullptr;
-
-	if (m_override) {
-		m_override->identify(m_threadContext.core);
-		m_override->apply(m_threadContext.core);
-	}
 
 	if (!mCoreThreadStart(&m_threadContext)) {
 		emit gameFailed();
