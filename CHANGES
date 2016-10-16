@@ -6,6 +6,7 @@ Bugfixes:
  - GB MBC: Fix SRAM dangling pointer with RTC games
  - Windows: Fix Unicode directory handling
  - Qt: Fix changing resolution of software renderer
+ - Qt: Fix setting overrides
 
 0.5.1: (2016-10-05)
 Bugfixes:
