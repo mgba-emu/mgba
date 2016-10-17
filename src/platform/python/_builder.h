@@ -1,6 +1,8 @@
 #define COMMON_H
 #define PNG_H
+#define _SYS_TIME_H
 #define _SYS_TIME_H_
+#define _TIME_H
 #define _TIME_H_
 
 #define ATTRIBUTE_FORMAT(X, Y, Z)
