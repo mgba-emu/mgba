@@ -3,15 +3,15 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef GBA_TILE_CACHE_H
-#define GBA_TILE_CACHE_H
+#ifndef GB_TILE_CACHE_H
+#define GB_TILE_CACHE_H
 
 #include "util/common.h"
 
-struct GBAVideo;
+struct GBVideo;
 struct mTileCache;
 
-void GBAVideoTileCacheInit(struct mTileCache* cache);
-void GBAVideoTileCacheAssociate(struct mTileCache* cache, struct GBAVideo* video);
+void GBVideoTileCacheInit(struct mTileCache* cache);
+void GBVideoTileCacheAssociate(struct mTileCache* cache, struct GBVideo* video);
 
 #endif

@@ -1374,13 +1374,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_gameActions.append(paletteView);
 	addControlledAction(toolsMenu, paletteView, "paletteWindow");
 
-#ifdef M_CORE_GBA
 	QAction* tileView = new QAction(tr("View &tiles..."), toolsMenu);
 	connect(tileView, SIGNAL(triggered()), this, SLOT(openTileWindow()));
 	m_gameActions.append(tileView);
-	m_gbaActions.append(tileView);
 	addControlledAction(toolsMenu, tileView, "tileWindow");
-#endif
 
 	QAction* memoryView = new QAction(tr("View memory..."), toolsMenu);
 	connect(memoryView, SIGNAL(triggered()), this, SLOT(openMemoryWindow()));

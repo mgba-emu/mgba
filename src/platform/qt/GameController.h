@@ -27,11 +27,11 @@ extern "C" {
 #endif
 }
 
-struct GBAAudio;
-struct GBAVideoTileCache;
-struct mCoreConfig;
 struct Configuration;
+struct GBAAudio;
+struct mCoreConfig;
 struct mDebugger;
+struct mTileCache;
 
 class QThread;
 
@@ -86,9 +86,7 @@ public:
 	void setDebugger(mDebugger*);
 #endif
 
-#ifdef M_CORE_GBA
-	GBAVideoTileCache* tileCache();
-#endif
+	std::shared_ptr<mTileCache> tileCache();
 
 signals:
 	void frameAvailable(const uint32_t*);
@@ -215,9 +213,7 @@ private:
 	float m_turboSpeed;
 	bool m_wasPaused;
 
-#ifdef M_CORE_GBA
-	std::unique_ptr<GBAVideoTileCache> m_tileCache;
-#endif
+	std::shared_ptr<mTileCache> m_tileCache;
 
 	bool m_audioChannels[6];
 	bool m_videoLayers[5];

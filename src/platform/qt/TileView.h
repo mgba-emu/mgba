@@ -13,7 +13,7 @@
 #include "ui_TileView.h"
 
 extern "C" {
-#include "gba/renderers/tile-cache.h"
+#include "core/tile-cache.h"
 }
 
 namespace QGBA {
@@ -36,11 +36,18 @@ protected:
 	void showEvent(QShowEvent*) override;
 
 private:
+#ifdef M_CORE_GBA
+	void updateTilesGBA(bool force);
+#endif
+#ifdef M_CORE_GB
+	void updateTilesGB(bool force);
+#endif
+
 	Ui::TileView m_ui;
 
 	GameController* m_controller;
-	GBAVideoTileCache* m_tileCache;
-	GBAVideoTileCacheStatus m_tileStatus;
+	std::shared_ptr<mTileCache> m_tileCache;
+	mTileCacheEntry m_tileStatus[3072 * 32]; // TODO: Correct size
 	int m_paletteId;
 	QTimer m_updateTimer;
 };

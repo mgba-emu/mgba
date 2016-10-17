@@ -2,6 +2,7 @@
 Features:
  - GBA: Support printing debug strings from inside a game
  - GBA: Better cheat type autodetection
+ - GB: Tile viewer
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior

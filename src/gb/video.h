@@ -53,11 +53,13 @@ union GBOAM {
 };
 
 enum GBModel;
+struct mTileCache;
 struct GBVideoRenderer {
 	void (*init)(struct GBVideoRenderer* renderer, enum GBModel model);
 	void (*deinit)(struct GBVideoRenderer* renderer);
 
 	uint8_t (*writeVideoRegister)(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
+	void (*writeVRAM)(struct GBVideoRenderer* renderer, uint16_t address);
 	void (*writePalette)(struct GBVideoRenderer* renderer, int index, uint16_t value);
 	void (*drawRange)(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* objOnLine, size_t nObj);
 	void (*finishScanline)(struct GBVideoRenderer* renderer, int y);
@@ -68,6 +70,7 @@ struct GBVideoRenderer {
 
 	uint8_t* vram;
 	union GBOAM* oam;
+	struct mTileCache* cache;
 };
 
 DECL_BITFIELD(GBRegisterLCDC, uint8_t);

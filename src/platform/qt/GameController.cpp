@@ -21,6 +21,7 @@ extern "C" {
 #include "core/config.h"
 #include "core/directories.h"
 #include "core/serialize.h"
+#include "core/tile-cache.h"
 #ifdef M_CORE_GBA
 #include "gba/bios.h"
 #include "gba/core.h"
@@ -30,6 +31,7 @@ extern "C" {
 #endif
 #ifdef M_CORE_GB
 #include "gb/gb.h"
+#include "gb/renderers/tile-cache.h"
 #endif
 #include "util/vfs.h"
 }
@@ -177,6 +179,31 @@ GameController::GameController(QObject* parent)
 		controller->m_threadContext.core->desiredVideoDimensions(controller->m_threadContext.core, &width, &height);
 		memcpy(controller->m_frontBuffer, controller->m_drawContext, width * height * BYTES_PER_PIXEL);
 		QMetaObject::invokeMethod(controller, "frameAvailable", Q_ARG(const uint32_t*, controller->m_frontBuffer));
+
+		// If no one is using the tile cache, disable it
+		if (controller->m_tileCache && controller->m_tileCache.unique()) {
+			switch (controller->platform()) {
+#ifdef M_CORE_GBA
+			case PLATFORM_GBA: {
+				GBA* gba = static_cast<GBA*>(context->core->board);
+				gba->video.renderer->cache = nullptr;
+				break;
+			}
+#endif
+#ifdef M_CORE_GB
+			case PLATFORM_GB: {
+				GB* gb = static_cast<GB*>(context->core->board);
+				gb->video.renderer->cache = nullptr;
+				break;
+			}
+#endif
+			default:
+				break;
+			}
+			controller->m_tileCache.reset();
+		}
+
+
 		if (controller->m_pauseAfterFrame.testAndSetAcquire(true, false)) {
 			mCoreThreadPauseFromThread(context);
 			QMetaObject::invokeMethod(controller, "gamePaused", Q_ARG(mCoreThread*, context));
@@ -587,12 +614,10 @@ void GameController::cleanGame() {
 	}
 	mCoreThreadJoin(&m_threadContext);
 
-#ifdef M_CORE_GBA
 	if (m_tileCache) {
-		GBAVideoTileCacheDeinit(m_tileCache.get());
+		mTileCacheDeinit(m_tileCache.get());
 		m_tileCache.reset();
 	}
-#endif
 
 	delete[] m_drawContext;
 	delete[] m_frontBuffer;
@@ -1201,20 +1226,37 @@ void GameController::updateAutofire() {
 	}
 }
 
+std::shared_ptr<mTileCache> GameController::tileCache() {
+	if (m_tileCache) {
+		return m_tileCache;
+	}
+	switch (platform()) {
 #ifdef M_CORE_GBA
-struct GBAVideoTileCache* GameController::tileCache() {
-	if (platform() != PLATFORM_GBA) {
+	case PLATFORM_GBA: {
+		threadInterrupt();
+		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
+		m_tileCache = std::make_shared<mTileCache>();
+		GBAVideoTileCacheInit(m_tileCache.get());
+		GBAVideoTileCacheAssociate(m_tileCache.get(), &gba->video);
+		mTileCacheSetPalette(m_tileCache.get(), 0);
+		threadContinue();
+		break;
+	}
+#endif
+#ifdef M_CORE_GB
+	case PLATFORM_GB: {
+		threadInterrupt();
+		GB* gb = static_cast<GB*>(m_threadContext.core->board);
+		m_tileCache = std::make_shared<mTileCache>();
+		GBVideoTileCacheInit(m_tileCache.get());
+		GBVideoTileCacheAssociate(m_tileCache.get(), &gb->video);
+		mTileCacheSetPalette(m_tileCache.get(), 0);
+		threadContinue();
+		break;
+	}
+#endif
+	default:
 		return nullptr;
 	}
-	if (m_tileCache) {
-		return m_tileCache.get();
-	}
-	threadInterrupt();
-	GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
-	m_tileCache = std::unique_ptr<GBAVideoTileCache>(new GBAVideoTileCache);
-	GBAVideoTileCacheInit(m_tileCache.get());
-	GBAVideoTileCacheAssociate(m_tileCache.get(), &gba->video);
-	threadContinue();
-	return m_tileCache.get();
+	return m_tileCache;
 }
-#endif

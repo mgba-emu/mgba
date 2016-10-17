@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "software.h"
 
+#include "core/tile-cache.h"
 #include "gb/io.h"
 #include "util/memory.h"
 
@@ -12,6 +13,7 @@ static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum G
 static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value);
+static void GBVideoSoftwareRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address);
 static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
 static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer);
@@ -50,7 +52,8 @@ void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBVideoSoftwareRendererInit;
 	renderer->d.deinit = GBVideoSoftwareRendererDeinit;
 	renderer->d.writeVideoRegister = GBVideoSoftwareRendererWriteVideoRegister;
-	renderer->d.writePalette = GBVideoSoftwareRendererWritePalette,
+	renderer->d.writePalette = GBVideoSoftwareRendererWritePalette;
+	renderer->d.writeVRAM = GBVideoSoftwareRendererWriteVRAM;
 	renderer->d.drawRange = GBVideoSoftwareRendererDrawRange;
 	renderer->d.finishScanline = GBVideoSoftwareRendererFinishScanline;
 	renderer->d.finishFrame = GBVideoSoftwareRendererFinishFrame;
@@ -120,6 +123,15 @@ static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer
 	color |= (value << 9) & 0xF80000;
 #endif
 	softwareRenderer->palette[index] = color;
+	if (renderer->cache) {
+		mTileCacheWritePalette(renderer->cache, index << 1);
+	}
+}
+
+static void GBVideoSoftwareRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address) {
+	if (renderer->cache) {
+		mTileCacheWriteVRAM(renderer->cache, address);
+	}
 }
 
 static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax) {

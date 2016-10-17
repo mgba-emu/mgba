@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "software-private.h"
 
+#include "core/tile-cache.h"
 #include "gba/gba.h"
 #include "gba/io.h"
 #include "gba/renderers/tile-cache.h"
@@ -343,7 +344,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 
 static void GBAVideoSoftwareRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
 	if (renderer->cache) {
-		GBAVideoTileCacheWriteVRAM(renderer->cache, address);
+		mTileCacheWriteVRAM(renderer->cache, address);
 	}
 }
 
@@ -377,7 +378,7 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 		softwareRenderer->variantPalette[address >> 1] = _darken(color, softwareRenderer->bldy);
 	}
 	if (renderer->cache) {
-		GBAVideoTileCacheWritePalette(renderer->cache, address);
+		mTileCacheWritePalette(renderer->cache, address);
 	}
 }
 

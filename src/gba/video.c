@@ -6,6 +6,7 @@
 #include "video.h"
 
 #include "core/sync.h"
+#include "core/tile-cache.h"
 #include "gba/gba.h"
 #include "gba/io.h"
 #include "gba/renderers/tile-cache.h"
@@ -59,11 +60,11 @@ static struct GBAVideoRenderer dummyRenderer = {
 	.finishFrame = GBAVideoDummyRendererFinishFrame,
 	.getPixels = GBAVideoDummyRendererGetPixels,
 	.putPixels = GBAVideoDummyRendererPutPixels,
-	.cache = NULL
 };
 
 void GBAVideoInit(struct GBAVideo* video) {
 	video->renderer = &dummyRenderer;
+	video->renderer->cache = NULL;
 	video->vram = 0;
 	video->frameskip = 0;
 }
@@ -250,14 +251,14 @@ static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer*
 
 static void GBAVideoDummyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
 	if (renderer->cache) {
-		GBAVideoTileCacheWriteVRAM(renderer->cache, address);
+		mTileCacheWriteVRAM(renderer->cache, address);
 	}
 }
 
 static void GBAVideoDummyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	UNUSED(value);
 	if (renderer->cache) {
-		GBAVideoTileCacheWritePalette(renderer->cache, address);
+		mTileCacheWritePalette(renderer->cache, address);
 	}
 }
 

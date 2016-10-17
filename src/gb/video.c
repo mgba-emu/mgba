@@ -7,6 +7,7 @@
 
 #include "core/sync.h"
 #include "core/thread.h"
+#include "core/tile-cache.h"
 #include "gb/gb.h"
 #include "gb/io.h"
 #include "gb/serialize.h"
@@ -17,6 +18,7 @@ static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer, enum GBMo
 static void GBVideoDummyRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoDummyRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 static void GBVideoDummyRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value);
+static void GBVideoDummyRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address);
 static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
 static void GBVideoDummyRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoDummyRendererFinishFrame(struct GBVideoRenderer* renderer);
@@ -29,6 +31,7 @@ static struct GBVideoRenderer dummyRenderer = {
 	.init = GBVideoDummyRendererInit,
 	.deinit = GBVideoDummyRendererDeinit,
 	.writeVideoRegister = GBVideoDummyRendererWriteVideoRegister,
+	.writeVRAM = GBVideoDummyRendererWriteVRAM,
 	.writePalette = GBVideoDummyRendererWritePalette,
 	.drawRange = GBVideoDummyRendererDrawRange,
 	.finishScanline = GBVideoDummyRendererFinishScanline,
@@ -39,6 +42,7 @@ static struct GBVideoRenderer dummyRenderer = {
 
 void GBVideoInit(struct GBVideo* video) {
 	video->renderer = &dummyRenderer;
+	video->renderer->cache = NULL;
 	video->vram = 0;
 	video->frameskip = 0;
 }
@@ -80,6 +84,7 @@ void GBVideoDeinit(struct GBVideo* video) {
 
 void GBVideoAssociateRenderer(struct GBVideo* video, struct GBVideoRenderer* renderer) {
 	video->renderer->deinit(video->renderer);
+	renderer->cache = video->renderer->cache;
 	video->renderer = renderer;
 	renderer->vram = video->vram;
 	video->renderer->init(video->renderer, video->p->model);
@@ -426,10 +431,17 @@ static uint8_t GBVideoDummyRendererWriteVideoRegister(struct GBVideoRenderer* re
 	return value;
 }
 
+static void GBVideoDummyRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address) {
+	if (renderer->cache) {
+		mTileCacheWriteVRAM(renderer->cache, address);
+	}
+}
+
 static void GBVideoDummyRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value) {
-	UNUSED(renderer);
-	UNUSED(index);
 	UNUSED(value);
+	if (renderer->cache) {
+		mTileCacheWritePalette(renderer->cache, index << 1);
+	}
 }
 
 static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax) {
