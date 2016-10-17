@@ -23,7 +23,6 @@ Q_OBJECT
 
 public:
 	TileView(GameController* controller, QWidget* parent = nullptr);
-	virtual ~TileView();
 
 public slots:
 	void updateTiles(bool force = false);
@@ -40,7 +39,8 @@ private:
 	Ui::TileView m_ui;
 
 	GameController* m_controller;
-	GBAVideoTileCache m_tileCache;
+	GBAVideoTileCache* m_tileCache;
+	GBAVideoTileCacheStatus m_tileStatus;
 	int m_paletteId;
 	QTimer m_updateTimer;
 };

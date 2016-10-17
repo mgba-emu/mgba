@@ -16,6 +16,7 @@ Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
  - Test: Add a basic test suite
+ - GBA Video: Allow multiple handles into the same tile cache
 
 0.5.1: (2016-10-05)
 Bugfixes:

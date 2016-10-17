@@ -19,10 +19,11 @@ using namespace QGBA;
 TileView::TileView(GameController* controller, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
+	, m_tileStatus{}
+	, m_tileCache(controller->tileCache())
 	, m_paletteId(0)
 {
 	m_ui.setupUi(this);
-	GBAVideoTileCacheInit(&m_tileCache);
 
 	m_ui.preview->setDimensions(QSize(8, 8));
 	m_updateTimer.setSingleShot(true);
@@ -46,31 +47,22 @@ TileView::TileView(GameController* controller, QWidget* parent)
 	});
 }
 
-TileView::~TileView() {
-	if (m_controller->isLoaded() && m_controller->thread() && m_controller->thread()->core) {
-		GBA* gba = static_cast<GBA*>(m_controller->thread()->core->board);
-		gba->video.renderer->cache = nullptr;
-	}
-
-	GBAVideoTileCacheDeinit(&m_tileCache);
-}
-
 void TileView::selectIndex(int index) {
 	const uint16_t* data;
 	m_ui.tileId->setText(QString::number(index));
 	if (m_ui.palette256->isChecked()) {
 		m_ui.address->setText(tr("0x%0").arg(index * 64 | BASE_VRAM, 8, 16, QChar('0')));
 		if (index < 1024) {
-			data = GBAVideoTileCacheGetTile256(&m_tileCache, index, 0);
+			data = GBAVideoTileCacheGetTile256(m_tileCache, index, 0);
 		} else {
-			data = GBAVideoTileCacheGetTile256(&m_tileCache, index, 1);
+			data = GBAVideoTileCacheGetTile256(m_tileCache, index, 1);
 		}
 	} else {
 		m_ui.address->setText(tr("0x%0").arg(index * 32 | BASE_VRAM, 8, 16, QChar('0')));
 		if (index < 2048) {
-			data = GBAVideoTileCacheGetTile16(&m_tileCache, index, m_paletteId);
+			data = GBAVideoTileCacheGetTile16(m_tileCache, index, m_paletteId);
 		} else {
-			data = GBAVideoTileCacheGetTile16(&m_tileCache, index, m_paletteId + 16);
+			data = GBAVideoTileCacheGetTile16(m_tileCache, index, m_paletteId + 16);
 		}
 	}
 	for (int i = 0; i < 64; ++i) {
@@ -84,43 +76,40 @@ void TileView::updateTiles(bool force) {
 		return;
 	}
 
-	GBA* gba = static_cast<GBA*>(m_controller->thread()->core->board);
-	GBAVideoTileCacheAssociate(&m_tileCache, &gba->video);
-
 	if (m_ui.palette256->isChecked()) {
 		m_ui.tiles->setTileCount(1536);
 		for (int i = 0; i < 1024; ++i) {
-			const uint16_t* data = GBAVideoTileCacheGetTile256IfDirty(&m_tileCache, i, 0);
+			const uint16_t* data = GBAVideoTileCacheGetTile256IfDirty(m_tileCache, m_tileStatus, i, 0);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
 			} else if (force) {
-				m_ui.tiles->setTile(i, GBAVideoTileCacheGetTile256(&m_tileCache, i, 0));
+				m_ui.tiles->setTile(i, GBAVideoTileCacheGetTile256(m_tileCache, i, 0));
 			}
 		}
 		for (int i = 1024; i < 1536; ++i) {
-			const uint16_t* data = GBAVideoTileCacheGetTile256IfDirty(&m_tileCache, i, 1);
+			const uint16_t* data = GBAVideoTileCacheGetTile256IfDirty(m_tileCache, m_tileStatus, i, 1);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
 			} else if (force) {
-				m_ui.tiles->setTile(i, GBAVideoTileCacheGetTile256(&m_tileCache, i, 1));
+				m_ui.tiles->setTile(i, GBAVideoTileCacheGetTile256(m_tileCache, i, 1));
 			}
 		}
 	} else {
 		m_ui.tiles->setTileCount(3072);
 		for (int i = 0; i < 2048; ++i) {
-			const uint16_t* data = GBAVideoTileCacheGetTile16IfDirty(&m_tileCache, i, m_paletteId);
+			const uint16_t* data = GBAVideoTileCacheGetTile16IfDirty(m_tileCache, m_tileStatus, i, m_paletteId);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
 			} else if (force) {
-				m_ui.tiles->setTile(i, GBAVideoTileCacheGetTile16(&m_tileCache, i, m_paletteId));
+				m_ui.tiles->setTile(i, GBAVideoTileCacheGetTile16(m_tileCache, i, m_paletteId));
 			}
 		}
 		for (int i = 2048; i < 3072; ++i) {
-			const uint16_t* data = GBAVideoTileCacheGetTile16IfDirty(&m_tileCache, i, m_paletteId + 16);
+			const uint16_t* data = GBAVideoTileCacheGetTile16IfDirty(m_tileCache, m_tileStatus, i, m_paletteId + 16);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
 			} else if (force) {
-				m_ui.tiles->setTile(i, GBAVideoTileCacheGetTile16(&m_tileCache, i, m_paletteId + 16));
+				m_ui.tiles->setTile(i, GBAVideoTileCacheGetTile16(m_tileCache, i, m_paletteId + 16));
 			}
 		}
 	}

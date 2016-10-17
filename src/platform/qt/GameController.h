@@ -28,6 +28,7 @@ extern "C" {
 }
 
 struct GBAAudio;
+struct GBAVideoTileCache;
 struct mCoreConfig;
 struct Configuration;
 struct mDebugger;
@@ -83,6 +84,10 @@ public:
 #ifdef USE_GDB_STUB
 	mDebugger* debugger();
 	void setDebugger(mDebugger*);
+#endif
+
+#ifdef M_CORE_GBA
+	GBAVideoTileCache* tileCache();
 #endif
 
 signals:
@@ -209,6 +214,10 @@ private:
 	bool m_turboForced;
 	float m_turboSpeed;
 	bool m_wasPaused;
+
+#ifdef M_CORE_GBA
+	std::unique_ptr<GBAVideoTileCache> m_tileCache;
+#endif
 
 	bool m_audioChannels[6];
 	bool m_videoLayers[5];

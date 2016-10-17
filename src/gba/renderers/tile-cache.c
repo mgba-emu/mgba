@@ -46,6 +46,7 @@ void GBAVideoTileCacheAssociate(struct GBAVideoTileCache* cache, struct GBAVideo
 void GBAVideoTileCacheWriteVRAM(struct GBAVideoTileCache* cache, uint32_t address) {
 	size_t i;
 	for (i = 0; i < 16; ++i) {
+		++cache->status[address >> 5][i].vramVersion;
 		cache->status[address >> 5][i].vramClean = 0;
 	}
 }
@@ -136,19 +137,22 @@ const uint16_t* GBAVideoTileCacheGetTile16(struct GBAVideoTileCache* cache, unsi
 	return tile;
 }
 
-const uint16_t* GBAVideoTileCacheGetTile16IfDirty(struct GBAVideoTileCache* cache, unsigned tileId, unsigned paletteId) {
+const uint16_t* GBAVideoTileCacheGetTile16IfDirty(struct GBAVideoTileCache* cache, GBAVideoTileCacheStatus handle, unsigned tileId, unsigned paletteId) {
 	struct GBAVideoTileCacheEntry* status = &cache->status[tileId][paletteId & 0xF];
+	uint16_t* tile = NULL;
 	if (!status->vramClean || status->palette256 || status->paletteVersion != cache->globalPaletteVersion[paletteId]) {
-		uint16_t* tile = _tileLookup(cache, tileId, paletteId);
+		tile = _tileLookup(cache, tileId, paletteId);
 		_regenerateTile16(cache, tile, tileId, paletteId);
 		status->paletteVersion = cache->globalPaletteVersion[paletteId];
 		status->palette256 = 0;
 		status->vramClean = 1;
-		return tile;
 	}
-	return NULL;
+	if (memcmp(status, &handle[tileId][paletteId & 0xF], sizeof(*status))) {
+		tile = _tileLookup(cache, tileId, paletteId);
+		handle[tileId][paletteId & 0xF] = *status;
+	}
+	return tile;
 }
-
 
 const uint16_t* GBAVideoTileCacheGetTile256(struct GBAVideoTileCache* cache, unsigned tileId, unsigned paletteId) {
 	struct GBAVideoTileCacheEntry* status = &cache->status[tileId][paletteId];
@@ -162,15 +166,19 @@ const uint16_t* GBAVideoTileCacheGetTile256(struct GBAVideoTileCache* cache, uns
 	return tile;
 }
 
-const uint16_t* GBAVideoTileCacheGetTile256IfDirty(struct GBAVideoTileCache* cache, unsigned tileId, unsigned paletteId) {
+const uint16_t* GBAVideoTileCacheGetTile256IfDirty(struct GBAVideoTileCache* cache, GBAVideoTileCacheStatus handle, unsigned tileId, unsigned paletteId) {
 	struct GBAVideoTileCacheEntry* status = &cache->status[tileId][paletteId];
+	uint16_t* tile = NULL;
 	if (!status->vramClean || !status->palette256 || status->paletteVersion != cache->globalPalette256Version[paletteId]) {
-		uint16_t* tile = _tileLookup(cache, tileId, paletteId);
+		tile = _tileLookup(cache, tileId, paletteId);
 		_regenerateTile256(cache, tile, tileId, paletteId);
 		status->paletteVersion = cache->globalPalette256Version[paletteId];
 		status->palette256 = 1;
 		status->vramClean = 1;
-		return tile;
 	}
-	return NULL;
+	if (memcmp(status, &handle[tileId][paletteId], sizeof(*status))) {
+		tile = _tileLookup(cache, tileId, paletteId);
+		handle[tileId][paletteId] = *status;
+	}
+	return tile;
 }
