@@ -23,8 +23,8 @@ class Tile:
 class TileView:
     def __init__(self, core):
         self.core = core
-        self.cache = ffi.gc(ffi.new("struct mTileCache*"), core.board._deinitTileCache)
-        core.board._initTileCache(self.cache)
+        self.cache = ffi.gc(ffi.new("struct mTileCache*"), core._deinitTileCache)
+        core._initTileCache(self.cache)
         lib.mTileCacheSetPalette(self.cache, 0)
 
     def getTile(self, tile, palette):

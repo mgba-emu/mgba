@@ -11,13 +11,13 @@ def find(path):
     core = lib.mCoreFind(path.encode('UTF-8'))
     if core == ffi.NULL:
         return None
-    return Core(core)
+    return Core._init(core)
 
 def findVF(vf):
     core = lib.mCoreFindVF(vf.handle)
     if core == ffi.NULL:
         return None
-    return Core(core)
+    return Core._init(core)
 
 def loadPath(path):
     core = find(path)
@@ -31,23 +31,25 @@ def loadVF(vf):
         return None
     return core
 
-class Core:
+class Core(object):
     def __init__(self, native):
-        self._core = ffi.gc(native, native.deinit)
-        success = bool(self._core.init(self._core))
-        if not success:
-            raise RuntimeError("Failed to initialize core")
-
-        if hasattr(self, 'PLATFORM_GBA') and self.platform() == self.PLATFORM_GBA:
-            self.cpu = ARMCore(self._core.cpu)
-            self.board = GBA(self._core.board)
-        if hasattr(self, 'PLATFORM_GB') and self.platform() == self.PLATFORM_GB:
-            self.cpu = LR35902Core(self._core.cpu)
-            self.board = GB(self._core.board)
+        self._core = native
 
     @cached_property
     def tiles(self):
         return tile.TileView(self)
+
+    @classmethod
+    def _init(cls, native):
+        core = ffi.gc(native, native.deinit)
+        success = bool(core.init(core))
+        if not success:
+            raise RuntimeError("Failed to initialize core")
+        if hasattr(cls, 'PLATFORM_GBA') and core.platform(core) == cls.PLATFORM_GBA:
+            return GBA(core)
+        if hasattr(cls, 'PLATFORM_GB') and core.platform(core) == cls.PLATFORM_GB:
+            return GB(core)
+        return Core(core)
 
     def _deinit(self):
         self._core.deinit(self._core)
@@ -112,7 +114,6 @@ class Core:
 
 if hasattr(lib, 'PLATFORM_GBA'):
     from .gba import GBA
-    from .arm import ARMCore
     Core.PLATFORM_GBA = lib.PLATFORM_GBA
 
 if hasattr(lib, 'PLATFORM_GB'):
