@@ -24,3 +24,46 @@ class Image:
 		success = success and p.writePixels(self)
 		p.writeClose()
 		return success
+
+def u16ToU32(c):
+	r = c & 0x1F
+	g = (c >> 5) & 0x1F
+	b = (c >> 10) & 0x1F
+	a = (c >> 15) & 1
+	abgr = r << 3
+	abgr |= g << 11
+	abgr |= b << 19
+	abgr |= (a * 0xFF) << 24
+	return abgr
+
+def u32ToU16(c):
+	r = (c >> 3) & 0x1F
+	g = (c >> 11) & 0x1F
+	b = (c >> 19) & 0x1F
+	a = c >> 31
+	abgr = r
+	abgr |= g << 5
+	abgr |= b << 10
+	abgr |= a << 15
+	return abgr
+
+if ffi.sizeof("color_t") == 2:
+	def colorToU16(c):
+		return c
+
+	colorToU32 = u16ToU32
+
+	def u16ToColor(c):
+		return c
+
+	u32ToColor = u32ToU16
+else:
+	def colorToU32(c):
+		return c
+
+	colorToU16 = u32ToU16
+
+	def u32ToColor(c):
+		return c
+
+	u16ToColor = u16ToU32

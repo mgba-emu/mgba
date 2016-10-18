@@ -22,6 +22,7 @@ void free(void*);
 #include <limits.h>
 
 #include "core/core.h"
+#include "core/tile-cache.h"
 #include "platform/python/vfs-py.h"
 #include "platform/python/log.h"
 
@@ -31,8 +32,10 @@ void free(void*);
 #ifdef M_CORE_GBA
 #include "arm/arm.h"
 #include "gba/gba.h"
+#include "gba/renderers/tile-cache.h"
 #endif
 #ifdef M_CORE_GB
 #include "lr35902/lr35902.h"
 #include "gb/gb.h"
+#include "gb/renderers/tile-cache.h"
 #endif
