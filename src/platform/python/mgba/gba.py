@@ -8,3 +8,11 @@ from ._pylib import ffi, lib
 class GBA:
     def __init__(self, native):
         self._native = ffi.cast("struct GBA*", native)
+
+    def _initTileCache(self, cache):
+        lib.GBAVideoTileCacheInit(cache)
+        lib.GBAVideoTileCacheAssociate(cache, ffi.addressof(self._native.video))
+
+    def _deinitTileCache(self, cache):
+        self._native.video.renderer.cache = ffi.NULL
+        lib.mTileCacheDeinit(cache)

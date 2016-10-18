@@ -4,6 +4,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from ._pylib import ffi, lib
+from . import tile
+from cached_property import cached_property
 
 def find(path):
     core = lib.mCoreFind(path.encode('UTF-8'))
@@ -42,6 +44,10 @@ class Core:
         if hasattr(self, 'PLATFORM_GB') and self.platform() == self.PLATFORM_GB:
             self.cpu = LR35902Core(self._core.cpu)
             self.board = GB(self._core.board)
+
+    @cached_property
+    def tiles(self):
+        return tile.TileView(self)
 
     def _deinit(self):
         self._core.deinit(self._core)
