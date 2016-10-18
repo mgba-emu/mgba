@@ -29,3 +29,19 @@ class TileView:
 
     def getTile(self, tile, palette):
         return Tile(lib.mTileCacheGetTile(self.cache, tile, palette))
+
+class Sprite(object):
+    TILE_BASE = 0
+    PALETTE_BASE = 0
+
+    def constitute(self, tileView, tilePitch):
+        i = image.Image(self.width, self.height)
+        tileId = self.tile + self.TILE_BASE
+        for y in range(self.height // 8):
+            for x in range(self.width // 8):
+                tile = tileView.getTile(tileId, self.paletteId + self.PALETTE_BASE)
+                tile.composite(i, x * 8, y * 8)
+                tileId += 1
+            if tilePitch:
+                tileId += tilePitch - self.width // 8
+        self.image = i
