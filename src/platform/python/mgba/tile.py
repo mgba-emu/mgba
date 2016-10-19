@@ -26,22 +26,32 @@ class TileView:
         self.cache = ffi.gc(ffi.new("struct mTileCache*"), core._deinitTileCache)
         core._initTileCache(self.cache)
         lib.mTileCacheSetPalette(self.cache, 0)
+        self.paletteSet = 0
 
     def getTile(self, tile, palette):
         return Tile(lib.mTileCacheGetTile(self.cache, tile, palette))
 
-class Sprite(object):
-    TILE_BASE = 0
-    PALETTE_BASE = 0
+    def setPalette(self, paletteSet):
+        if paletteSet > 1 or paletteSet < 0:
+            raise IndexError("Palette Set ID out of bounds")
+        lib.mTileCacheSetPalette(self.cache, paletteSet)
+        self.paletteSet = paletteSet
 
-    def constitute(self, tileView, tilePitch):
+class Sprite(object):
+    TILE_BASE = 0, 0
+    PALETTE_BASE = 0, 0
+
+    def constitute(self, tileView, tilePitch, paletteSet):
+        oldPaletteSet = tileView.paletteSet
+        tileView.setPalette(paletteSet)
         i = image.Image(self.width, self.height)
-        tileId = self.tile + self.TILE_BASE
+        tileId = self.tile + self.TILE_BASE[paletteSet]
         for y in range(self.height // 8):
             for x in range(self.width // 8):
-                tile = tileView.getTile(tileId, self.paletteId + self.PALETTE_BASE)
+                tile = tileView.getTile(tileId, self.paletteId + self.PALETTE_BASE[paletteSet])
                 tile.composite(i, x * 8, y * 8)
                 tileId += 1
             if tilePitch:
                 tileId += tilePitch - self.width // 8
         self.image = i
+        tileView.setPalette(oldPaletteSet)

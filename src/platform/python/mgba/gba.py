@@ -24,8 +24,8 @@ class GBA(Core):
         lib.mTileCacheDeinit(cache)
 
 class GBASprite(Sprite):
-    TILE_BASE = 0x800
-    PALETTE_BASE = 0x10
+    TILE_BASE = 0x800, 0x400
+    PALETTE_BASE = 0x10, 1
 
     def __init__(self, obj):
         self._a = obj.a
@@ -35,11 +35,12 @@ class GBASprite(Sprite):
         self.y = self._a & 0xFF
         self._shape = self._a >> 14
         self._size = self._b >> 14
-        self._256Color = bool(self._b & 0x2000)
+        self._256Color = bool(self._a & 0x2000)
         self.width, self.height = lib.GBAVideoObjSizes[self._shape * 4 + self._size]
         self.tile = self._c & 0x3FF
         if self._256Color:
             self.paletteId = 0
+            self.tile >>= 1
         else:
             self.paletteId = self._c >> 12
 
@@ -56,6 +57,5 @@ class GBAObjs:
             raise IndexError()
         sprite = GBASprite(self._obj[index])
         map1D = bool(self._core._native.memory.io[0] & 0x40)
-        # TODO: 256 colors
-        sprite.constitute(self._core.tiles, 0 if map1D else 0x20)
+        sprite.constitute(self._core.tiles, 0 if map1D else 0x20, int(sprite._256Color))
         return sprite
