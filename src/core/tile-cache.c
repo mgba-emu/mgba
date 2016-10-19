@@ -176,7 +176,7 @@ static void _regenerateTile16(struct mTileCache* cache, uint16_t* tile, unsigned
 static void _regenerateTile256(struct mTileCache* cache, uint16_t* tile, unsigned tileId, unsigned paletteId) {
 	uint32_t* start = (uint32_t*) &cache->vram[tileId << 5];
 	paletteId <<= 8;
-	uint16_t* palette = &cache->palette[paletteId * 16];
+	uint16_t* palette = &cache->palette[paletteId];
 	int i;
 	for (i = 0; i < 8; ++i) {
 		uint32_t line = *start;
