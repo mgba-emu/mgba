@@ -9,47 +9,115 @@ class LR35902Core:
     def __init__(self, native):
         self._native = ffi.cast("struct LR35902Core*", native)
 
-    def __getattr__(self, key):
-        if key == 'a':
-            return self._native.a
-        if key == 'b':
-            return self._native.b
-        if key == 'c':
-            return self._native.c
-        if key == 'd':
-            return self._native.d
-        if key == 'e':
-            return self._native.e
-        if key == 'f':
-            return self._native.f
-        if key == 'h':
-            return self._native.h
-        if key == 'l':
-            return self._native.l
-        if key == 'sp':
-            return self._native.sp
-        if key == 'pc':
-            return self._native.pc
-        raise AttributeError()
+    @property
+    def a(self):
+        return self._native.a
 
-    def __setattr__(self, key, value):
-        if key == 'a':
-            self._native.a = value & 0xF0
-        if key == 'b':
-            self._native.b = value
-        if key == 'c':
-            self._native.c = value
-        if key == 'd':
-            self._native.d = value
-        if key == 'e':
-            self._native.e = value
-        if key == 'f':
-            self._native.f = value
-        if key == 'h':
-            self._native.h = value
-        if key == 'l':
-            self._native.l = value
-        if key == 'sp':
-            self._native.sp = value
-        else:
-            self.__dict__[key] = value
+    @property
+    def b(self):
+        return self._native.b
+
+    @property
+    def c(self):
+        return self._native.c
+
+    @property
+    def d(self):
+        return self._native.d
+
+    @property
+    def e(self):
+        return self._native.e
+
+    @property
+    def f(self):
+        return self._native.f
+
+    @property
+    def h(self):
+        return self._native.h
+
+    @property
+    def l(self):
+        return self._native.l
+
+    @property
+    def sp(self):
+        return self._native.sp
+
+    @property
+    def pc(self):
+        return self._native.pc
+
+    @property
+    def af(self):
+        return (self.a << 8) | self.f
+
+    @property
+    def bc(self):
+        return (self.b << 8) | self.c
+
+    @property
+    def de(self):
+        return (self.d << 8) | self.e
+
+    @property
+    def hl(self):
+        return (self.h << 8) | self.l
+
+    @a.setter
+    def a(self, value):
+        self._native.a = value
+
+    @b.setter
+    def b(self, value):
+        self._native.b = value
+
+    @c.setter
+    def c(self, value):
+        self._native.c = value
+
+    @d.setter
+    def d(self, value):
+        self._native.d = value
+
+    @e.setter
+    def e(self, value):
+        self._native.e = value
+
+    @f.setter
+    def f(self, value):
+        self._native.f.packed = value
+        self._native.f.unused = 0
+
+    @h.setter
+    def h(self, value):
+        self._native.h = value
+
+    @l.setter
+    def l(self, value):
+        self._native.l = value
+
+    @sp.setter
+    def sp(self, value):
+        self._native.sp = value
+
+    @af.setter
+    def af(self, value):
+        self.a = value >> 8
+        self.f = value & 0xFF
+
+    @bc.setter
+    def bc(self, value):
+        self.b = value >> 8
+        self.c = value & 0xFF
+
+    @de.setter
+    def de(self, value):
+        self.d = value >> 8
+        self.e = value & 0xFF
+
+    @hl.setter
+    def hl(self, value):
+        self.h = value >> 8
+        self.l = value & 0xFF
