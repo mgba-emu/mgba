@@ -63,6 +63,15 @@ class Core(object):
     def loadROM(self, vf):
         return bool(self._core.loadROM(self._core, vf.handle))
 
+    def loadSave(self, vf):
+        return bool(self._core.loadSave(self._core, vf.handle))
+
+    def loadTemporarySave(self, vf):
+        return bool(self._core.loadTemporarySave(self._core, vf.handle))
+
+    def loadPatch(self, vf):
+        return bool(self._core.loadPatch(self._core, vf.handle))
+
     def autoloadSave(self):
         return bool(lib.mCoreAutoloadSave(self._core))
 
