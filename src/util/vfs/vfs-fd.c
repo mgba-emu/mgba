@@ -167,6 +167,9 @@ static bool _vfdSync(struct VFile* vf, const void* buffer, size_t size) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
 #ifndef _WIN32
 	futimes(vfd->fd, NULL);
+	if (buffer && size) {
+		return msync(buffer, size, MS_SYNC) == 0;
+	}
 	return fsync(vfd->fd) == 0;
 #else
 	HANDLE h = (HANDLE) _get_osfhandle(vfd->fd);
