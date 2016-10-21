@@ -53,17 +53,20 @@ void AssetTile::setController(GameController* controller) {
 	case PLATFORM_GBA:
 		m_addressWidth = 8;
 		m_addressBase = BASE_VRAM;
+		m_boundaryBase = BASE_VRAM | 0x10000;
 		break;
 #endif
 #ifdef M_CORE_GB
 	case PLATFORM_GB:
 		m_addressWidth = 4;
 		m_addressBase = GB_BASE_VRAM;
+		m_boundaryBase = GB_BASE_VRAM;
 		break;
 #endif
 	default:
 		m_addressWidth = 0;
 		m_addressBase = 0;
+		m_boundaryBase = 0;
 		break;
 	}
 }
@@ -86,16 +89,28 @@ void AssetTile::setPaletteSet(int palette, int boundary, int max) {
 void AssetTile::selectIndex(int index) {
 	m_index = index;
 	const uint16_t* data;
-	m_ui.tileId->setText(QString::number(index * (1 + m_paletteSet)));
 
 	mTileCacheSetPalette(m_tileCache.get(), m_paletteSet);
 	unsigned bpp = 8 << m_tileCache->bpp;
-	m_ui.address->setText(tr("0x%0").arg(index * bpp | m_addressBase, m_addressWidth, 16, QChar('0')));
-	if (index < m_boundary) {
-		data = mTileCacheGetTile(m_tileCache.get(), index, m_paletteId);
-	} else {
-		data = mTileCacheGetTile(m_tileCache.get(), index, m_paletteId + m_tileCache->count / 2);
+	int dispIndex = index;
+	int paletteId = m_paletteId;
+	int base = m_addressBase;
+	if (index >= m_boundary) {
+		base = m_boundaryBase;
+		// XXX: Do this better
+#ifdef M_CORE_GBA
+		if (m_boundaryBase == (BASE_VRAM | 0x10000)) {
+			paletteId += m_tileCache->count / 2;
+		}
+#endif
+		dispIndex -= m_boundary;
 	}
+	data = mTileCacheGetTile(m_tileCache.get(), index, paletteId);
+	m_ui.tileId->setText(QString::number(dispIndex * (1 + m_paletteSet)));
+	m_ui.address->setText(tr("%0%1%2")
+		.arg(m_addressWidth == 4 ? index >= m_boundary : 0)
+		.arg(m_addressWidth == 4 ? ":" : "x")
+		.arg(dispIndex * bpp | base, m_addressWidth, 16, QChar('0')));
 	for (int i = 0; i < 64; ++i) {
 		m_ui.preview->setColor(i, data[i]);
 	}
@@ -106,11 +121,14 @@ void AssetTile::selectColor(int index) {
 	const uint16_t* data;
 	mTileCacheSetPalette(m_tileCache.get(), m_paletteSet);
 	unsigned bpp = 8 << m_tileCache->bpp;
-	if (m_index < m_boundary) {
-		data = mTileCacheGetTile(m_tileCache.get(), m_index, m_paletteId);
-	} else {
-		data = mTileCacheGetTile(m_tileCache.get(), m_index, m_paletteId + m_tileCache->count / 2);
+	int paletteId = m_paletteId;
+	// XXX: Do this better
+#ifdef M_CORE_GBA
+	if (m_index >= m_boundary && m_boundaryBase == (BASE_VRAM | 0x10000)) {
+		paletteId += m_tileCache->count / 2;
 	}
+#endif
+	data = mTileCacheGetTile(m_tileCache.get(), m_index, m_paletteId);
 	uint16_t color = data[index];
 	m_ui.color->setColor(0, color);
 	m_ui.color->update();

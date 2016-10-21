@@ -40,6 +40,7 @@ private:
 	int m_addressWidth;
 	int m_addressBase;
 	int m_boundary;
+	int m_boundaryBase;
 };
 
 }

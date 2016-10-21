@@ -12,6 +12,9 @@
 
 extern "C" {
 #include "gba/gba.h"
+#ifdef M_CORE_GB
+#include "gb/gb.h"
+#endif
 }
 
 using namespace QGBA;
@@ -145,5 +148,53 @@ void ObjView::updateTilesGBA(bool force) {
 
 #ifdef M_CORE_GB
 void ObjView::updateTilesGB(bool force) {
+	const GB* gb = static_cast<const GB*>(m_controller->thread()->core->board);
+	const GBObj* obj = &gb->video.oam.obj[m_objId];
+
+	unsigned width = 8;
+	unsigned height = 8; // TODO
+	m_ui.tiles->setTileCount(width * height / 64);
+	m_ui.tiles->setMinimumSize(QSize(width, height) * m_ui.magnification->value());
+	int palette = 0;
+	unsigned tile = obj->tile;
+	if (gb->model >= GB_MODEL_CGB) {
+		if (GBObjAttributesIsBank(obj->attr)) {
+			tile += 512;
+		}
+		palette = GBObjAttributesGetCGBPalette(obj->attr);
+	} else {
+		palette = GBObjAttributesGetPalette(obj->attr);
+	}
+	int i = 0;
+	// TODO: Check to see if parameters are changed (so as to enable force if needed)
+	m_ui.palette->setText(QString::number(palette));
+	mTileCacheSetPalette(m_tileCache.get(), 0);
+	m_ui.tile->setPalette(palette + 8);
+	m_ui.tile->setPaletteSet(0, 512, 1024);
+	for (int y = 0; y < height / 8; ++y, ++i) {
+		unsigned t = tile + i;
+		const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[16 * t], t, palette + 8);
+		if (data) {
+			m_ui.tiles->setTile(i, data);
+		} else if (force) {
+			m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), t, palette + 8));
+		}
+	}
+	m_tileOffset = tile;
+
+	m_ui.x->setText(QString::number(obj->x));
+	m_ui.y->setText(QString::number(obj->y));
+	m_ui.w->setText(QString::number(width));
+	m_ui.h->setText(QString::number(height));
+
+	m_ui.address->setText(tr("0x%0").arg(GB_BASE_OAM + m_objId * sizeof(*obj), 4, 16, QChar('0')));
+	m_ui.priority->setText(QString::number(GBObjAttributesGetPriority(obj->attr)));
+	m_ui.flippedH->setChecked(GBObjAttributesIsXFlip(obj->attr));
+	m_ui.flippedV->setChecked(GBObjAttributesIsYFlip(obj->attr));
+	m_ui.enabled->setChecked(obj->y == 0 || obj->y >= 160);
+	m_ui.doubleSize->setChecked(false);
+	m_ui.mosaic->setChecked(false);
+	m_ui.transform->setText(tr("N/A"));
+	m_ui.mode->setText(tr("N/A"));
 }
 #endif

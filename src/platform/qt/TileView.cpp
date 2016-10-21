@@ -10,6 +10,12 @@
 #include <QFontDatabase>
 #include <QTimer>
 
+extern "C" {
+#ifdef M_CORE_GB
+#include "gb/gb.h"
+#endif
+}
+
 using namespace QGBA;
 
 TileView::TileView(GameController* controller, QWidget* parent)
@@ -36,7 +42,7 @@ TileView::TileView(GameController* controller, QWidget* parent)
 #ifdef M_CORE_GB
 	case PLATFORM_GB:
 		max = 1024;
-		boundary = 1024;
+		boundary = 512;
 		m_ui.palette256->setEnabled(false);
 		break;
 #endif
@@ -119,9 +125,11 @@ void TileView::updateTilesGBA(bool force) {
 
 #ifdef M_CORE_GB
 void TileView::updateTilesGB(bool force) {
-	m_ui.tiles->setTileCount(1024);
+	const GB* gb = static_cast<const GB*>(m_controller->thread()->core->board);
+	int count = gb->model >= GB_MODEL_CGB ? 1024 : 512;
+	m_ui.tiles->setTileCount(count);
 	mTileCacheSetPalette(m_tileCache.get(), 0);
-	for (int i = 0; i < 1024; ++i) {
+	for (int i = 0; i < count; ++i) {
 		const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[16 * i], i, m_paletteId);
 		if (data) {
 			m_ui.tiles->setTile(i, data);
