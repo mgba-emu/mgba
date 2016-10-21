@@ -11,14 +11,6 @@
 #include "core/core.h"
 #include "gba/memory.h"
 
-#define GBA_R5(X) ((X) & 0x1F)
-#define GBA_G5(X) (((X) >> 5) & 0x1F)
-#define GBA_B5(X) (((X) >> 10) & 0x1F)
-
-#define GBA_R8(X) (((((X) << 3) & 0xF8) * 0x21) >> 5)
-#define GBA_G8(X) (((((X) >> 2) & 0xF8) * 0x21) >> 5)
-#define GBA_B8(X) (((((X) >> 7) & 0xF8) * 0x21) >> 5)
-
 mLOG_DECLARE_CATEGORY(GBA_VIDEO);
 
 enum {

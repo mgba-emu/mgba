@@ -114,9 +114,9 @@ void PaletteView::selectIndex(int index) {
 	}
 	uint16_t color = palette[index];
 	m_ui.selected->setColor(0, color);
-	uint32_t r = GBA_R5(color);
-	uint32_t g = GBA_G5(color);
-	uint32_t b = GBA_B5(color);
+	uint32_t r = M_R5(color);
+	uint32_t g = M_G5(color);
+	uint32_t b = M_B5(color);
 	uint32_t hexcode = (r << 19) | (g << 11) | (b << 3);
 	hexcode |= (hexcode >> 5) & 0x070707;
 	m_ui.hexcode->setText(tr("#%0").arg(hexcode, 6, 16, QChar('0')));

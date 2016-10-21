@@ -10,8 +10,7 @@
 #include <QFontDatabase>
 
 extern "C" {
-// TODO: Move color macros elsewhere
-#include "gba/video.h"
+#include "core/interface.h"
 #ifdef M_CORE_GBA
 #include "gba/memory.h"
 #endif
@@ -133,9 +132,9 @@ void AssetTile::selectColor(int index) {
 	m_ui.color->setColor(0, color);
 	m_ui.color->update();
 
-	uint32_t r = GBA_R5(color);
-	uint32_t g = GBA_G5(color);
-	uint32_t b = GBA_B5(color);
+	uint32_t r = M_R5(color);
+	uint32_t g = M_G5(color);
+	uint32_t b = M_B5(color);
 	m_ui.r->setText(tr("0x%0 (%1)").arg(r, 2, 16, QChar('0')).arg(r, 2, 10, QChar('0')));
 	m_ui.g->setText(tr("0x%0 (%1)").arg(g, 2, 16, QChar('0')).arg(g, 2, 10, QChar('0')));
 	m_ui.b->setText(tr("0x%0 (%1)").arg(b, 2, 16, QChar('0')).arg(b, 2, 10, QChar('0')));

@@ -43,9 +43,9 @@ bool exportPaletteRIFF(struct VFile* vf, size_t entries, const uint16_t* colors)
 	size_t i;
 	for (i = 0; i < entries; ++i) {
 		uint8_t block[4] = {
-			GBA_R8(colors[i]),
-			GBA_G8(colors[i]),
-			GBA_B8(colors[i]),
+			M_R8(colors[i]),
+			M_G8(colors[i]),
+			M_B8(colors[i]),
 			0
 		};
 		if (vf->write(vf, block, 4) < 4) {
@@ -63,9 +63,9 @@ bool exportPaletteACT(struct VFile* vf, size_t entries, const uint16_t* colors) 
 	size_t i;
 	for (i = 0; i < entries; ++i) {
 		uint8_t block[3] = {
-			GBA_R8(colors[i]),
-			GBA_G8(colors[i]),
-			GBA_B8(colors[i]),
+			M_R8(colors[i]),
+			M_G8(colors[i]),
+			M_B8(colors[i]),
 		};
 		if (vf->write(vf, block, 3) < 3) {
 			return false;

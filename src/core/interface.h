@@ -18,6 +18,14 @@ typedef uint32_t color_t;
 #define BYTES_PER_PIXEL 4
 #endif
 
+#define M_R5(X) ((X) & 0x1F)
+#define M_G5(X) (((X) >> 5) & 0x1F)
+#define M_B5(X) (((X) >> 10) & 0x1F)
+
+#define M_R8(X) (((((X) << 3) & 0xF8) * 0x21) >> 5)
+#define M_G8(X) (((((X) >> 2) & 0xF8) * 0x21) >> 5)
+#define M_B8(X) (((((X) >> 7) & 0xF8) * 0x21) >> 5)
+
 struct blip_t;
 
 struct mCoreCallbacks {
