@@ -10,6 +10,8 @@
 #include <QFontDatabase>
 
 extern "C" {
+// TODO: Move color macros elsewhere
+#include "gba/video.h"
 #ifdef M_CORE_GBA
 #include "gba/memory.h"
 #endif
@@ -30,11 +32,18 @@ AssetTile::AssetTile(QWidget* parent)
 	m_ui.setupUi(this);
 
 	m_ui.preview->setDimensions(QSize(8, 8));
+	m_ui.color->setDimensions(QSize(1, 1));
+	m_ui.color->setSize(50);
+
+	connect(m_ui.preview, SIGNAL(indexPressed(int)), this, SLOT(selectColor(int)));
 
 	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 
 	m_ui.tileId->setFont(font);
 	m_ui.address->setFont(font);
+	m_ui.r->setFont(font);
+	m_ui.g->setFont(font);
+	m_ui.b->setFont(font);
 }
 
 void AssetTile::setController(GameController* controller) {
@@ -91,5 +100,26 @@ void AssetTile::selectIndex(int index) {
 		m_ui.preview->setColor(i, data[i]);
 	}
 	m_ui.preview->update();
+}
+
+void AssetTile::selectColor(int index) {
+	const uint16_t* data;
+	mTileCacheSetPalette(m_tileCache.get(), m_paletteSet);
+	unsigned bpp = 8 << m_tileCache->bpp;
+	if (m_index < m_boundary) {
+		data = mTileCacheGetTile(m_tileCache.get(), m_index, m_paletteId);
+	} else {
+		data = mTileCacheGetTile(m_tileCache.get(), m_index, m_paletteId + m_tileCache->count / 2);
+	}
+	uint16_t color = data[index];
+	m_ui.color->setColor(0, color);
+	m_ui.color->update();
+
+	uint32_t r = GBA_R5(color);
+	uint32_t g = GBA_G5(color);
+	uint32_t b = GBA_B5(color);
+	m_ui.r->setText(tr("0x%0 (%1)").arg(r, 2, 16, QChar('0')).arg(r, 2, 10, QChar('0')));
+	m_ui.g->setText(tr("0x%0 (%1)").arg(g, 2, 16, QChar('0')).arg(g, 2, 10, QChar('0')));
+	m_ui.b->setText(tr("0x%0 (%1)").arg(b, 2, 16, QChar('0')).arg(b, 2, 10, QChar('0')));
 }
 

@@ -27,6 +27,7 @@ public slots:
 	void setPalette(int);
 	void setPaletteSet(int, int boundary, int max);
 	void selectIndex(int);
+	void selectColor(int);
 
 private:
 	Ui::AssetTile m_ui;
