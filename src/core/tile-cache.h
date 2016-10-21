@@ -20,9 +20,9 @@ DECL_BITS(mTileCacheSystemInfo, MaxTiles, 16, 13);
 
 struct mTileCacheEntry {
 	uint32_t paletteVersion;
-	uint32_t vramVersion;
 	uint8_t vramClean;
 	uint8_t paletteId;
+	uint8_t activePalette;
 };
 
 struct mTileCache {
@@ -33,6 +33,7 @@ struct mTileCache {
 	int activePalette;
 	unsigned entries;
 	unsigned count;
+	unsigned entriesPerTile;
 	unsigned bpp;
 
 	uint16_t* vram;

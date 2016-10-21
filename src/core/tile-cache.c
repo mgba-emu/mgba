@@ -56,6 +56,7 @@ static void _redoCacheSize(struct mTileCache* cache) {
 	if (!size) {
 		return;
 	}
+	cache->entriesPerTile = size;
 	unsigned tiles = mTileCacheSystemInfoGetMaxTiles(cache->sysConfig);
 	cache->cache = anonymousMemoryMap(8 * 8 * 2 * tiles * size);
 	cache->status = anonymousMemoryMap(tiles * size * sizeof(*cache->status));
@@ -85,10 +86,9 @@ void mTileCacheDeinit(struct mTileCache* cache) {
 
 void mTileCacheWriteVRAM(struct mTileCache* cache, uint32_t address) {
 	unsigned bpp = cache->bpp + 3;
-	unsigned count = cache->count;
+	unsigned count = cache->entriesPerTile;
 	size_t i;
 	for (i = 0; i < count; ++i) {
-		++cache->status[(address >> bpp) * count + i].vramVersion;
 		cache->status[(address >> bpp) * count + i].vramClean = 0;
 	}
 }
@@ -216,11 +216,17 @@ static inline uint16_t* _tileLookup(struct mTileCache* cache, unsigned tileId, u
 
 const uint16_t* mTileCacheGetTile(struct mTileCache* cache, unsigned tileId, unsigned paletteId) {
 	unsigned cPaletteId = cache->activePalette;
-	unsigned count = cache->count;
+	unsigned count = cache->entriesPerTile;
 	unsigned bpp = cache->bpp;
 	struct mTileCacheEntry* status = &cache->status[tileId * count + paletteId];
+	struct mTileCacheEntry desiredStatus = {
+		.paletteVersion = cache->globalPaletteVersion[cPaletteId][paletteId],
+		.vramClean = 1,
+		.paletteId = paletteId,
+		.activePalette = cPaletteId
+	};
 	uint16_t* tile = _tileLookup(cache, tileId, paletteId);
-	if (!mTileCacheConfigurationIsShouldStore(cache->config) || !status->vramClean || status->paletteId != cPaletteId || status->paletteVersion != cache->globalPaletteVersion[cPaletteId][paletteId]) {
+	if (!mTileCacheConfigurationIsShouldStore(cache->config) || memcmp(status, &desiredStatus, sizeof(*status))) {
 		switch (bpp) {
 		case 0:
 			return NULL;
@@ -234,20 +240,24 @@ const uint16_t* mTileCacheGetTile(struct mTileCache* cache, unsigned tileId, uns
 			_regenerateTile256(cache, tile, tileId, paletteId);
 			break;
 		}
-		status->paletteVersion = cache->globalPaletteVersion[cPaletteId][paletteId];
-		status->paletteId = cPaletteId;
-		status->vramClean = 1;
+		*status = desiredStatus;
 	}
 	return tile;
 }
 
 const uint16_t* mTileCacheGetTileIfDirty(struct mTileCache* cache, struct mTileCacheEntry* entry, unsigned tileId, unsigned paletteId) {
 	unsigned cPaletteId = cache->activePalette;
-	unsigned count = cache->count;
+	unsigned count = cache->entriesPerTile;
 	unsigned bpp = cache->bpp;
 	struct mTileCacheEntry* status = &cache->status[tileId * count + paletteId];
+	struct mTileCacheEntry desiredStatus = {
+		.paletteVersion = cache->globalPaletteVersion[cPaletteId][paletteId],
+		.vramClean = 1,
+		.paletteId = paletteId,
+		.activePalette = cPaletteId
+	};
 	uint16_t* tile = NULL;
-	if (!status->vramClean || status->paletteId != cPaletteId || status->paletteVersion != cache->globalPaletteVersion[cPaletteId][paletteId]) {
+	if (memcmp(status, &desiredStatus, sizeof(*status))) {
 		tile = _tileLookup(cache, tileId, paletteId);
 		switch (bpp) {
 		case 0:
@@ -262,9 +272,7 @@ const uint16_t* mTileCacheGetTileIfDirty(struct mTileCache* cache, struct mTileC
 			_regenerateTile256(cache, tile, tileId, paletteId);
 			break;
 		}
-		status->paletteVersion = cache->globalPaletteVersion[cPaletteId][paletteId];
-		status->paletteId = cPaletteId;
-		status->vramClean = 1;
+		*status = desiredStatus;
 	}
 	if (memcmp(status, &entry[paletteId], sizeof(*status))) {
 		tile = _tileLookup(cache, tileId, paletteId);
