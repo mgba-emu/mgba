@@ -3,13 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_TILE_VIEW
-#define QGBA_TILE_VIEW
+#ifndef QGBA_OBJ_VIEW
+#define QGBA_OBJ_VIEW
 
 #include "AssetView.h"
 #include "GameController.h"
 
-#include "ui_TileView.h"
+#include "ui_ObjView.h"
 
 extern "C" {
 #include "core/tile-cache.h"
@@ -17,14 +17,15 @@ extern "C" {
 
 namespace QGBA {
 
-class TileView : public AssetView {
+class ObjView : public AssetView {
 Q_OBJECT
 
 public:
-	TileView(GameController* controller, QWidget* parent = nullptr);
+	ObjView(GameController* controller, QWidget* parent = nullptr);
 
-public slots:
-	void updatePalette(int);
+private slots:
+	void selectObj(int);
+	void translateIndex(int);
 
 private:
 #ifdef M_CORE_GBA
@@ -34,11 +35,13 @@ private:
 	void updateTilesGB(bool force) override;
 #endif
 
-	Ui::TileView m_ui;
+	Ui::ObjView m_ui;
 
 	GameController* m_controller;
-	mTileCacheEntry m_tileStatus[3072 * 32]; // TODO: Correct size
-	int m_paletteId;
+	mTileCacheEntry m_tileStatus[1024 * 32]; // TODO: Correct size
+	int m_objId;
+
+	int m_tileOffset;
 };
 
 }

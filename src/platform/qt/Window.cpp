@@ -30,13 +30,14 @@
 #include "MultiplayerController.h"
 #include "MemoryView.h"
 #include "OverrideView.h"
+#include "ObjView.h"
 #include "PaletteView.h"
-#include "TileView.h"
 #include "ROMInfo.h"
 #include "SensorView.h"
 #include "SettingsView.h"
 #include "ShaderSelector.h"
 #include "ShortcutController.h"
+#include "TileView.h"
 #include "VideoView.h"
 
 extern "C" {
@@ -1339,6 +1340,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(paletteView, &QAction::triggered, openTView<PaletteView>());
 	m_gameActions.append(paletteView);
 	addControlledAction(toolsMenu, paletteView, "paletteWindow");
+
+	QAction* objView = new QAction(tr("View &sprites..."), toolsMenu);
+	connect(objView, &QAction::triggered, openTView<ObjView>());
+	m_gameActions.append(objView);
+	addControlledAction(toolsMenu, objView, "spriteWindow");
 
 	QAction* tileView = new QAction(tr("View &tiles..."), toolsMenu);
 	connect(tileView, &QAction::triggered, openTView<TileView>());

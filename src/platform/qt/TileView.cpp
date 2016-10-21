@@ -10,28 +10,17 @@
 #include <QFontDatabase>
 #include <QTimer>
 
-extern "C" {
-#include "gba/gba.h"
-}
-
 using namespace QGBA;
 
 TileView::TileView(GameController* controller, QWidget* parent)
-	: QWidget(parent)
+	: AssetView(controller, parent)
 	, m_controller(controller)
 	, m_tileStatus{}
-	, m_tileCache(controller->tileCache())
 	, m_paletteId(0)
 {
 	m_ui.setupUi(this);
 	m_ui.tile->setController(controller);
 
-	m_updateTimer.setSingleShot(true);
-	m_updateTimer.setInterval(1);
-	connect(&m_updateTimer, SIGNAL(timeout()), this, SLOT(updateTiles()));
-
-	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), &m_updateTimer, SLOT(start()));
-	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(close()));
 	connect(m_ui.tiles, SIGNAL(indexPressed(int)), m_ui.tile, SLOT(selectIndex(int)));
 	connect(m_ui.paletteId, SIGNAL(valueChanged(int)), this, SLOT(updatePalette(int)));
 
@@ -82,27 +71,6 @@ TileView::TileView(GameController* controller, QWidget* parent)
 	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this]() {
 		updateTiles(true);
 	});
-}
-
-void TileView::updateTiles(bool force) {
-	if (!m_controller->thread() || !m_controller->thread()->core) {
-		return;
-	}
-
-	switch (m_controller->platform()) {
-#ifdef M_CORE_GBA
-	case PLATFORM_GBA:
-		updateTilesGBA(force);
-		break;
-#endif
-#ifdef M_CORE_GB
-	case PLATFORM_GB:
-		updateTilesGB(force);
-		break;
-#endif
-	default:
-		return;
-	}
 }
 
 #ifdef M_CORE_GBA
@@ -167,13 +135,5 @@ void TileView::updateTilesGB(bool force) {
 void TileView::updatePalette(int palette) {
 	m_paletteId = palette;
 	m_ui.tile->setPalette(palette);
-	updateTiles(true);
-}
-
-void TileView::resizeEvent(QResizeEvent*) {
-	updateTiles(true);
-}
-
-void TileView::showEvent(QShowEvent*) {
 	updateTiles(true);
 }

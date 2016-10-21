@@ -70,6 +70,7 @@ set(SOURCE_FILES
 	AboutScreen.cpp
 	ArchiveInspector.cpp
 	AssetTile.cpp
+	AssetView.cpp
 	AudioProcessor.cpp
 	CheatsModel.cpp
 	CheatsView.cpp
@@ -95,6 +96,7 @@ set(SOURCE_FILES
 	MemoryView.cpp
 	MessagePainter.cpp
 	MultiplayerController.cpp
+	ObjView.cpp
 	OverrideView.cpp
 	PaletteView.cpp
 	ROMInfo.cpp
@@ -121,6 +123,7 @@ set(UI_FILES
 	LoadSaveState.ui
 	LogView.ui
 	MemoryView.ui
+	ObjView.ui
 	OverrideView.ui
 	PaletteView.ui
 	ROMInfo.ui

@@ -28,6 +28,11 @@ void TilePainter::paintEvent(QPaintEvent* event) {
 
 void TilePainter::resizeEvent(QResizeEvent* event) {
 	int w = width() / m_size;
+	if (w < 1) {
+		// FIXME: Uhh...how did we get here?
+		// Resizing the window when magnification > 1 seems to trigger this
+		return;
+	}
 	int calculatedHeight = (m_tileCount + w - 1) * m_size / w;
 	calculatedHeight -= calculatedHeight % m_size;
 	if (width() / m_size != m_backing.width() / m_size || m_backing.height() != calculatedHeight) {
@@ -55,10 +60,13 @@ void TilePainter::setTile(int index, const uint16_t* data) {
 
 void TilePainter::setTileCount(int tiles) {
 	m_tileCount = tiles;
-	int w = width() / m_size;
-	int h = (tiles + w - 1) * m_size / w;
-	setMinimumSize(16, h - (h % m_size));
-	resizeEvent(nullptr);
+	if (sizePolicy().verticalPolicy() != QSizePolicy::Fixed) {
+		// Only manage the size ourselves if we don't appear to have something else managing it
+		int w = width() / m_size;
+		int h = (tiles + w - 1) * m_size / w;
+		setMinimumSize(m_size, h - (h % m_size));
+		resizeEvent(nullptr);
+	}
 }
 
 void TilePainter::setTileMagnification(int mag) {
