@@ -59,11 +59,12 @@ void ObjView::updateTilesGBA(bool force) {
 	unsigned width = GBAVideoObjSizes[shape * 4 + size][0];
 	unsigned height = GBAVideoObjSizes[shape * 4 + size][1];
 	m_ui.tiles->setTileCount(width * height / 64);
-	m_ui.tiles->resize(QSize(width, height) * m_ui.magnification->value());
+	m_ui.tiles->setMinimumSize(QSize(width, height) * m_ui.magnification->value());
 	unsigned palette = GBAObjAttributesCGetPalette(obj->c);
 	unsigned tile = GBAObjAttributesCGetTile(obj->c);
 	int i = 0;
 	// TODO: Tile stride
+	// TODO: Check to see if parameters are changed (so as to enable force if needed)
 	if (GBAObjAttributesAIs256Color(obj->a)) {
 		mTileCacheSetPalette(m_tileCache.get(), 1);
 		m_ui.tile->setPalette(0);

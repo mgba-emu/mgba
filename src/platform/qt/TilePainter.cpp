@@ -28,11 +28,6 @@ void TilePainter::paintEvent(QPaintEvent* event) {
 
 void TilePainter::resizeEvent(QResizeEvent* event) {
 	int w = width() / m_size;
-	if (w < 1) {
-		// FIXME: Uhh...how did we get here?
-		// Resizing the window when magnification > 1 seems to trigger this
-		return;
-	}
 	int calculatedHeight = (m_tileCount + w - 1) * m_size / w;
 	calculatedHeight -= calculatedHeight % m_size;
 	if (width() / m_size != m_backing.width() / m_size || m_backing.height() != calculatedHeight) {
