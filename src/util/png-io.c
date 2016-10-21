@@ -72,9 +72,9 @@ bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned s
 			row[x * 3 + 1] = (c >> 3) & 0xFC;
 			row[x * 3 + 2] = (c << 3) & 0xF8;
 #else
-			row[x * ] = (c >> 7) & 0xF8;
-			row[x *  + 1] = (c >> 2) & 0xF8;
-			row[x *  + 2] = (c << 3) & 0xF8;
+			row[x * 3] = (c >> 7) & 0xF8;
+			row[x * 3 + 1] = (c >> 2) & 0xF8;
+			row[x * 3 + 2] = (c << 3) & 0xF8;
 #endif
 #else
 #ifdef __BIG_ENDIAN__
