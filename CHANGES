@@ -13,6 +13,7 @@ Bugfixes:
  - Windows: Fix Unicode directory handling
  - Qt: Fix changing resolution of software renderer
  - Qt: Fix setting overrides
+ - GBA Cheats: Fix GameShark ROM patches
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
