@@ -145,7 +145,7 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case GSA_PATCH:
-		cheats->romPatches[0].address = (op1 & 0xFFFFFF) << 1;
+		cheats->romPatches[0].address = BASE_CART0 | ((op1 & 0xFFFFFF) << 1);
 		cheats->romPatches[0].newValue = op2;
 		cheats->romPatches[0].applied = false;
 		cheats->romPatches[0].exists = true;
