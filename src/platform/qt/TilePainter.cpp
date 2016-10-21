@@ -55,7 +55,7 @@ void TilePainter::setTile(int index, const uint16_t* data) {
 
 void TilePainter::setTileCount(int tiles) {
 	m_tileCount = tiles;
-	if (sizePolicy().verticalPolicy() != QSizePolicy::Fixed) {
+	if (sizePolicy().horizontalPolicy() != QSizePolicy::Fixed) {
 		// Only manage the size ourselves if we don't appear to have something else managing it
 		int w = width() / m_size;
 		int h = (tiles + w - 1) * m_size / w;
