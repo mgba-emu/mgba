@@ -65,6 +65,7 @@ void AssetTile::setPalette(int palette) {
 }
 
 void AssetTile::setPaletteSet(int palette, int boundary, int max) {
+	m_index = m_index * (1 + m_paletteSet) / (1 + palette);
 	if (m_index >= max) {
 		m_index = max - 1;
 	}
@@ -76,7 +77,7 @@ void AssetTile::setPaletteSet(int palette, int boundary, int max) {
 void AssetTile::selectIndex(int index) {
 	m_index = index;
 	const uint16_t* data;
-	m_ui.tileId->setText(QString::number(index));
+	m_ui.tileId->setText(QString::number(index * (1 + m_paletteSet)));
 
 	mTileCacheSetPalette(m_tileCache.get(), m_paletteSet);
 	unsigned bpp = 8 << m_tileCache->bpp;
