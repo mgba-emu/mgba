@@ -78,17 +78,7 @@ public slots:
 	void exportSharkport();
 
 	void openSettingsWindow();
-	void openOverrideWindow();
-	void openSensorWindow();
-	void openCheatsWindow();
-
-	void openPaletteWindow();
-	void openTileWindow();
-	void openMemoryWindow();
-	void openIOViewer();
-
 	void openAboutScreen();
-	void openROMInfo();
 
 #ifdef USE_FFMPEG
 	void openVideoWindow();
@@ -142,6 +132,8 @@ private:
 	void updateMRU();
 
 	void openView(QWidget* widget);
+
+	template <typename T, typename... Args> std::function<void()> openTView(const Args&...);
 
 	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
 	QAction* addHiddenAction(QMenu* menu, QAction* action, const QString& name);

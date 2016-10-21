@@ -447,49 +447,17 @@ void Window::openSettingsWindow() {
 	openView(settingsWindow);
 }
 
-void Window::openOverrideWindow() {
-	OverrideView* overrideWindow = new OverrideView(m_controller, m_config);
-	openView(overrideWindow);
-}
-
-void Window::openSensorWindow() {
-	SensorView* sensorWindow = new SensorView(m_controller, &m_inputController);
-	openView(sensorWindow);
-}
-
-void Window::openCheatsWindow() {
-	CheatsView* cheatsWindow = new CheatsView(m_controller);
-	openView(cheatsWindow);
-}
-
-void Window::openPaletteWindow() {
-	PaletteView* paletteWindow = new PaletteView(m_controller);
-	openView(paletteWindow);
-}
-
-void Window::openTileWindow() {
-	TileView* tileWindow = new TileView(m_controller);
-	openView(tileWindow);
-}
-
-void Window::openMemoryWindow() {
-	MemoryView* memoryWindow = new MemoryView(m_controller);
-	openView(memoryWindow);
-}
-
-void Window::openIOViewer() {
-	IOViewer* ioViewer = new IOViewer(m_controller);
-	openView(ioViewer);
-}
-
 void Window::openAboutScreen() {
 	AboutScreen* about = new AboutScreen();
 	openView(about);
 }
 
-void Window::openROMInfo() {
-	ROMInfo* romInfo = new ROMInfo(m_controller);
-	openView(romInfo);
+template <typename T, typename... Args>
+std::function<void()> Window::openTView(const Args&... args) {
+	return [this, args...]() {
+		T* view = new T(m_controller, args...);
+		openView(view);
+	};
 }
 
 #ifdef USE_FFMPEG
@@ -932,7 +900,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Replace ROM..."), this, SLOT(replaceROM())), "replaceROM");
 
 	QAction* romInfo = new QAction(tr("ROM &info..."), fileMenu);
-	connect(romInfo, SIGNAL(triggered()), this, SLOT(openROMInfo()));
+	connect(romInfo, &QAction::triggered, openTView<ROMInfo>());
 	m_gameActions.append(romInfo);
 	addControlledAction(fileMenu, romInfo, "romInfo");
 
@@ -1342,15 +1310,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(toolsMenu, viewLogs, "viewLogs");
 
 	QAction* overrides = new QAction(tr("Game &overrides..."), toolsMenu);
-	connect(overrides, SIGNAL(triggered()), this, SLOT(openOverrideWindow()));
+	connect(overrides, &QAction::triggered, openTView<OverrideView, ConfigController*>(m_config));
 	addControlledAction(toolsMenu, overrides, "overrideWindow");
 
 	QAction* sensors = new QAction(tr("Game &Pak sensors..."), toolsMenu);
-	connect(sensors, SIGNAL(triggered()), this, SLOT(openSensorWindow()));
+	connect(sensors, &QAction::triggered, openTView<SensorView, InputController*>(&m_inputController));
 	addControlledAction(toolsMenu, sensors, "sensorWindow");
 
 	QAction* cheats = new QAction(tr("&Cheats..."), toolsMenu);
-	connect(cheats, SIGNAL(triggered()), this, SLOT(openCheatsWindow()));
+	connect(cheats, &QAction::triggered, openTView<CheatsView>());
 	m_gameActions.append(cheats);
 	addControlledAction(toolsMenu, cheats, "cheatsWindow");
 
@@ -1368,23 +1336,23 @@ void Window::setupMenu(QMenuBar* menubar) {
 	toolsMenu->addSeparator();
 
 	QAction* paletteView = new QAction(tr("View &palette..."), toolsMenu);
-	connect(paletteView, SIGNAL(triggered()), this, SLOT(openPaletteWindow()));
+	connect(paletteView, &QAction::triggered, openTView<PaletteView>());
 	m_gameActions.append(paletteView);
 	addControlledAction(toolsMenu, paletteView, "paletteWindow");
 
 	QAction* tileView = new QAction(tr("View &tiles..."), toolsMenu);
-	connect(tileView, SIGNAL(triggered()), this, SLOT(openTileWindow()));
+	connect(tileView, &QAction::triggered, openTView<TileView>());
 	m_gameActions.append(tileView);
 	addControlledAction(toolsMenu, tileView, "tileWindow");
 
 	QAction* memoryView = new QAction(tr("View memory..."), toolsMenu);
-	connect(memoryView, SIGNAL(triggered()), this, SLOT(openMemoryWindow()));
+	connect(memoryView, &QAction::triggered, openTView<MemoryView>());
 	m_gameActions.append(memoryView);
 	addControlledAction(toolsMenu, memoryView, "memoryView");
 
 #ifdef M_CORE_GBA
 	QAction* ioViewer = new QAction(tr("View &I/O registers..."), toolsMenu);
-	connect(ioViewer, SIGNAL(triggered()), this, SLOT(openIOViewer()));
+	connect(ioViewer, &QAction::triggered, openTView<IOViewer>());
 	m_gameActions.append(ioViewer);
 	m_gbaActions.append(ioViewer);
 	addControlledAction(toolsMenu, ioViewer, "ioViewer");
