@@ -453,10 +453,18 @@ void Window::openAboutScreen() {
 	openView(about);
 }
 
-template <typename T, typename... Args>
-std::function<void()> Window::openTView(const Args&... args) {
-	return [this, args...]() {
-		T* view = new T(m_controller, args...);
+template <typename T, typename A>
+std::function<void()> Window::openTView(A arg) {
+	return [=]() {
+		T* view = new T(m_controller, arg);
+		openView(view);
+	};
+}
+
+template <typename T>
+std::function<void()> Window::openTView() {
+	return [=]() {
+		T* view = new T(m_controller);
 		openView(view);
 	};
 }

@@ -133,7 +133,8 @@ private:
 
 	void openView(QWidget* widget);
 
-	template <typename T, typename... Args> std::function<void()> openTView(const Args&...);
+	template <typename T, typename A> std::function<void()> openTView(A arg);
+	template <typename T> std::function<void()> openTView();
 
 	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
 	QAction* addHiddenAction(QMenu* menu, QAction* action, const QString& name);
