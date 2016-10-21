@@ -32,6 +32,10 @@ ObjView::ObjView(GameController* controller, QWidget* parent)
 	m_ui.w->setFont(font);
 	m_ui.h->setFont(font);
 	m_ui.address->setFont(font);
+	m_ui.priority->setFont(font);
+	m_ui.palette->setFont(font);
+	m_ui.transform->setFont(font);
+	m_ui.mode->setFont(font);
 
 	connect(m_ui.tiles, SIGNAL(indexPressed(int)), this, SLOT(translateIndex(int)));
 	connect(m_ui.objId, SIGNAL(valueChanged(int)), this, SLOT(selectObj(int)));
@@ -66,6 +70,7 @@ void ObjView::updateTilesGBA(bool force) {
 	// TODO: Tile stride
 	// TODO: Check to see if parameters are changed (so as to enable force if needed)
 	if (GBAObjAttributesAIs256Color(obj->a)) {
+		m_ui.palette->setText("256-color");
 		mTileCacheSetPalette(m_tileCache.get(), 1);
 		m_ui.tile->setPalette(0);
 		m_ui.tile->setPaletteSet(1, 1024, 1536);
@@ -83,6 +88,7 @@ void ObjView::updateTilesGBA(bool force) {
 		}
 		tile += 1024;
 	} else {
+		m_ui.palette->setText(QString::number(palette));
 		mTileCacheSetPalette(m_tileCache.get(), 0);
 		m_ui.tile->setPalette(palette);
 		m_ui.tile->setPaletteSet(0, 2048, 3072);
@@ -106,7 +112,34 @@ void ObjView::updateTilesGBA(bool force) {
 	m_ui.w->setText(QString::number(width));
 	m_ui.h->setText(QString::number(height));
 
-	// TODO: Flags
+	m_ui.address->setText(tr("0x%0").arg(BASE_OAM + m_objId * sizeof(*obj), 8, 16, QChar('0')));
+	m_ui.priority->setText(QString::number(GBAObjAttributesCGetPriority(obj->c)));
+	m_ui.flippedH->setChecked(GBAObjAttributesBIsHFlip(obj->b));
+	m_ui.flippedV->setChecked(GBAObjAttributesBIsVFlip(obj->b));
+	m_ui.enabled->setChecked(!GBAObjAttributesAIsDisable(obj->a) || GBAObjAttributesAIsTransformed(obj->a));
+	m_ui.doubleSize->setChecked(GBAObjAttributesAIsDoubleSize(obj->a) && GBAObjAttributesAIsTransformed(obj->a));
+	m_ui.mosaic->setChecked(GBAObjAttributesAIsMosaic(obj->a));
+
+	if (GBAObjAttributesAIsTransformed(obj->a)) {
+		m_ui.transform->setText(QString::number(GBAObjAttributesBGetMatIndex(obj->b)));
+	} else {
+		m_ui.transform->setText(tr("Off"));
+	}
+
+	switch (GBAObjAttributesAGetMode(obj->a)) {
+	case OBJ_MODE_NORMAL:
+		m_ui.mode->setText(tr("Normal"));
+		break;
+	case OBJ_MODE_SEMITRANSPARENT:
+		m_ui.mode->setText(tr("Trans"));
+		break;
+	case OBJ_MODE_OBJWIN:
+		m_ui.mode->setText(tr("OBJWIN"));
+		break;
+	default:
+		m_ui.mode->setText(tr("Invalid"));
+		break;
+	}
 }
 #endif
 
