@@ -133,8 +133,10 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					}
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_VBLANK);
 
-					struct mCoreThread* thread = mCoreThreadGet();
-					mCoreThreadFrameEnded(thread);
+					struct mCoreCallbacks* callbacks = video->p->coreCallbacks;
+					if (callbacks && callbacks->videoFrameEnded) {
+						callbacks->videoFrameEnded(callbacks->context);
+					}
 				}
 				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
@@ -220,8 +222,10 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					video->renderer->getPixels(video->renderer, &stride, (const void**) &pixels);
 					video->p->stream->postVideoFrame(video->p->stream, pixels, stride);
 				}
-				struct mCoreThread* thread = mCoreThreadGet();
-				mCoreThreadFrameStarted(thread);
+				struct mCoreCallbacks* callbacks = video->p->coreCallbacks;
+				if (callbacks && callbacks->videoFrameStarted) {
+					callbacks->videoFrameStarted(callbacks->context);
+				}
 			} else {
 				video->nextFrame = 4 - ((video->p->cpu->executionState + 1) & 3);
 				if (video->nextFrame < video->nextEvent) {

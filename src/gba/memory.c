@@ -310,6 +310,9 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		cpu->memory.activeMask = 0;
 		if (gba->yankedRomSize || !gba->hardCrash) {
 			mLOG(GBA_MEM, GAME_ERROR, "Jumped to invalid address: %08X", address);
+		} else if (gba->coreCallbacks && gba->coreCallbacks->coreCrashed) {
+			mLOG(GBA_MEM, GAME_ERROR, "Jumped to invalid address: %08X", address);
+			gba->coreCallbacks->coreCrashed(gba->coreCallbacks->context);
 		} else {
 			mLOG(GBA_MEM, FATAL, "Jumped to invalid address: %08X", address);
 		}

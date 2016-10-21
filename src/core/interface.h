@@ -20,6 +20,13 @@ typedef uint32_t color_t;
 
 struct blip_t;
 
+struct mCoreCallbacks {
+	void* context;
+	void (*videoFrameStarted)(void* context);
+	void (*videoFrameEnded)(void* context);
+	void (*coreCrashed)(void* context);
+};
+
 struct mAVStream {
 	void (*videoDimensionsChanged)(struct mAVStream*, unsigned width, unsigned height);
 	void (*postVideoFrame)(struct mAVStream*, const color_t* buffer, size_t stride);

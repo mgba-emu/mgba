@@ -112,6 +112,7 @@ struct GBA {
 	struct mAVStream* stream;
 	struct mKeyCallback* keyCallback;
 	struct mStopCallback* stopCallback;
+	struct mCoreCallbacks* coreCallbacks;
 
 	enum GBAIdleLoopOptimization idleOptimization;
 	uint32_t idleLoop;

@@ -95,10 +95,6 @@ void mCoreThreadStopWaiting(struct mCoreThread* threadContext);
 void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool);
 
 struct mCoreThread* mCoreThreadGet(void);
-
-void mCoreThreadFrameStarted(struct mCoreThread*);
-void mCoreThreadFrameEnded(struct mCoreThread*);
-
 struct mLogger* mCoreThreadLogger(void);
 
 #endif

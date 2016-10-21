@@ -64,6 +64,7 @@ struct mCore {
 	void (*setAudioBufferSize)(struct mCore*, size_t samples);
 	size_t (*getAudioBufferSize)(struct mCore*);
 
+	void (*setCoreCallbacks)(struct mCore*, struct mCoreCallbacks*);
 	void (*setAVStream)(struct mCore*, struct mAVStream*);
 
 	bool (*isROM)(struct VFile* vf);

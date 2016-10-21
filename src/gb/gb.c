@@ -76,6 +76,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->pristineRomSize = 0;
 	gb->yankedRomSize = 0;
 
+	gb->coreCallbacks = NULL;
 	gb->stream = NULL;
 }
 

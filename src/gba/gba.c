@@ -94,9 +94,11 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->romVf = 0;
 	gba->biosVf = 0;
 
-	gba->stream = 0;
-	gba->keyCallback = 0;
-	gba->stopCallback = 0;
+	gba->stream = NULL;
+	gba->keyCallback = NULL;
+	gba->stopCallback = NULL;
+	gba->stopCallback = NULL;
+	gba->coreCallbacks = NULL;
 
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
 
@@ -854,8 +856,10 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 void GBAFrameStarted(struct GBA* gba) {
 	UNUSED(gba);
 
-	struct mCoreThread* thread = mCoreThreadGet();
-	mCoreThreadFrameStarted(thread);
+	struct mCoreCallbacks* callbacks = gba->coreCallbacks;
+	if (callbacks && callbacks->videoFrameStarted) {
+		callbacks->videoFrameStarted(callbacks->context);
+	}
 }
 
 void GBAFrameEnded(struct GBA* gba) {
@@ -885,10 +889,10 @@ void GBAFrameEnded(struct GBA* gba) {
 		GBAHardwarePlayerUpdate(gba);
 	}
 
-	struct mCoreThread* thread = mCoreThreadGet();
-	mCoreThreadFrameEnded(thread);
-
-	// TODO: Put back RR
+	struct mCoreCallbacks* callbacks = gba->coreCallbacks;
+	if (callbacks && callbacks->videoFrameEnded) {
+		callbacks->videoFrameEnded(callbacks->context);
+	}
 }
 
 void GBASetBreakpoint(struct GBA* gba, struct mCPUComponent* component, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
