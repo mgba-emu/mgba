@@ -27,7 +27,9 @@ void TilePainter::paintEvent(QPaintEvent* event) {
 }
 
 void TilePainter::resizeEvent(QResizeEvent* event) {
-	int calculatedHeight = (m_tileCount * m_size) / (width() / m_size) + m_size / 2;
+	int w = width() / m_size;
+	int calculatedHeight = (m_tileCount + w - 1) * m_size / w;
+	calculatedHeight -= calculatedHeight % m_size;
 	if (width() / m_size != m_backing.width() / m_size || m_backing.height() != calculatedHeight) {
 		m_backing = QPixmap(width(), calculatedHeight);
 		m_backing.fill(Qt::transparent);
@@ -53,7 +55,9 @@ void TilePainter::setTile(int index, const uint16_t* data) {
 
 void TilePainter::setTileCount(int tiles) {
 	m_tileCount = tiles;
-	setMinimumSize(16, (tiles * m_size) / (width() / m_size));
+	int w = width() / m_size;
+	int h = (tiles + w - 1) * m_size / w;
+	setMinimumSize(16, h - (h % m_size));
 	resizeEvent(nullptr);
 }
 

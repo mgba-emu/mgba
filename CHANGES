@@ -14,6 +14,7 @@ Bugfixes:
  - Qt: Fix changing resolution of software renderer
  - Qt: Fix setting overrides
  - GBA Cheats: Fix GameShark ROM patches
+ - Qt: Fix cut off tiles and alignment issues in tile viewer
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
