@@ -14,6 +14,7 @@ extern "C" {
 #include "gba/gba.h"
 #ifdef M_CORE_GB
 #include "gb/gb.h"
+#include "gb/io.h"
 #endif
 }
 
@@ -69,6 +70,7 @@ void ObjView::updateTilesGBA(bool force) {
 	m_ui.tiles->setMinimumSize(QSize(width, height) * m_ui.magnification->value());
 	unsigned palette = GBAObjAttributesCGetPalette(obj->c);
 	unsigned tile = GBAObjAttributesCGetTile(obj->c);
+	GBARegisterDISPCNT dispcnt = gba->memory.io[0]; // FIXME: Register name can't be imported due to namespacing issues
 	int i = 0;
 	// TODO: Tile stride
 	// TODO: Check to see if parameters are changed (so as to enable force if needed)
@@ -95,15 +97,18 @@ void ObjView::updateTilesGBA(bool force) {
 		mTileCacheSetPalette(m_tileCache.get(), 0);
 		m_ui.tile->setPalette(palette);
 		m_ui.tile->setPaletteSet(0, 2048, 3072);
+		unsigned t = tile + i;
 		for (int y = 0; y < height / 8; ++y) {
-			for (int x = 0; x < width / 8; ++x, ++i) {
-				unsigned t = tile + i;
+			for (int x = 0; x < width / 8; ++x, ++i, ++t) {
 				const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[32 * t], t + 2048, palette + 16);
 				if (data) {
 					m_ui.tiles->setTile(i, data);
 				} else if (force) {
 					m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), t + 2048, palette + 16));
 				}
+			}
+			if (!GBARegisterDISPCNTIsObjCharacterMapping(dispcnt)) {
+				t += 0x20 - width / 8;
 			}
 		}
 		tile += 2048;
@@ -153,6 +158,10 @@ void ObjView::updateTilesGB(bool force) {
 
 	unsigned width = 8;
 	unsigned height = 8; // TODO
+	GBRegisterLCDC lcdc = gb->memory.io[REG_LCDC];
+	if (GBRegisterLCDCIsObjSize(lcdc)) {
+		height = 16;
+	}
 	m_ui.tiles->setTileCount(width * height / 64);
 	m_ui.tiles->setMinimumSize(QSize(width, height) * m_ui.magnification->value());
 	int palette = 0;
@@ -191,7 +200,7 @@ void ObjView::updateTilesGB(bool force) {
 	m_ui.priority->setText(QString::number(GBObjAttributesGetPriority(obj->attr)));
 	m_ui.flippedH->setChecked(GBObjAttributesIsXFlip(obj->attr));
 	m_ui.flippedV->setChecked(GBObjAttributesIsYFlip(obj->attr));
-	m_ui.enabled->setChecked(obj->y == 0 || obj->y >= 160);
+	m_ui.enabled->setChecked(obj->y != 0 && obj->y < 160);
 	m_ui.doubleSize->setChecked(false);
 	m_ui.mosaic->setChecked(false);
 	m_ui.transform->setText(tr("N/A"));
