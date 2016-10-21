@@ -1341,11 +1341,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(viewLogs, SIGNAL(triggered()), m_logView, SLOT(show()));
 	addControlledAction(toolsMenu, viewLogs, "viewLogs");
 
-#ifdef M_CORE_GBA
 	QAction* overrides = new QAction(tr("Game &overrides..."), toolsMenu);
 	connect(overrides, SIGNAL(triggered()), this, SLOT(openOverrideWindow()));
 	addControlledAction(toolsMenu, overrides, "overrideWindow");
-#endif
 
 	QAction* sensors = new QAction(tr("Game &Pak sensors..."), toolsMenu);
 	connect(sensors, SIGNAL(triggered()), this, SLOT(openSensorWindow()));
