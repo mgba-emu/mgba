@@ -69,6 +69,7 @@ endif()
 set(SOURCE_FILES
 	AboutScreen.cpp
 	ArchiveInspector.cpp
+	AssetTile.cpp
 	AudioProcessor.cpp
 	CheatsModel.cpp
 	CheatsView.cpp
@@ -113,6 +114,7 @@ set(SOURCE_FILES
 set(UI_FILES
 	AboutScreen.ui
 	ArchiveInspector.ui
+	AssetTile.ui
 	CheatsView.ui
 	GIFView.ui
 	IOViewer.ui

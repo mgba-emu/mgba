@@ -24,51 +24,64 @@ TileView::TileView(GameController* controller, QWidget* parent)
 	, m_paletteId(0)
 {
 	m_ui.setupUi(this);
+	m_ui.tile->setController(controller);
 
-	m_ui.preview->setDimensions(QSize(8, 8));
 	m_updateTimer.setSingleShot(true);
 	m_updateTimer.setInterval(1);
 	connect(&m_updateTimer, SIGNAL(timeout()), this, SLOT(updateTiles()));
 
-	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-
-	m_ui.tileId->setFont(font);
-	m_ui.address->setFont(font);
-
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), &m_updateTimer, SLOT(start()));
 	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(close()));
-	connect(m_ui.tiles, SIGNAL(indexPressed(int)), this, SLOT(selectIndex(int)));
+	connect(m_ui.tiles, SIGNAL(indexPressed(int)), m_ui.tile, SLOT(selectIndex(int)));
 	connect(m_ui.paletteId, SIGNAL(valueChanged(int)), this, SLOT(updatePalette(int)));
-	connect(m_ui.palette256, &QAbstractButton::toggled, [this]() {
+
+	int max = 1024;
+	int boundary = 1024;
+	switch (m_controller->platform()) {
+#ifdef M_CORE_GBA
+	case PLATFORM_GBA:
+		max = 3072;
+		boundary = 2048;
+		break;
+#endif
+#ifdef M_CORE_GB
+	case PLATFORM_GB:
+		max = 1024;
+		boundary = 1024;
+		m_ui.palette256->setEnabled(false);
+		break;
+#endif
+	default:
+		return;
+	}
+	m_ui.tile->setPaletteSet(0, boundary, max);
+
+	connect(m_ui.palette256, &QAbstractButton::toggled, [this](bool selected) {
+		if (selected) {
+			m_ui.paletteId->setValue(0);
+		}
+		int max = 1024;
+		int boundary = 1024;
+		switch (m_controller->platform()) {
+#ifdef M_CORE_GBA
+		case PLATFORM_GBA:
+			max = 3072 >> selected;
+			boundary = 2048 >> selected;
+			break;
+#endif
+#ifdef M_CORE_GB
+		case PLATFORM_GB:
+			return;
+#endif
+		default:
+			break;
+		}
+		m_ui.tile->setPaletteSet(selected, boundary, max);
 		updateTiles(true);
 	});
 	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this]() {
 		updateTiles(true);
 	});
-}
-
-void TileView::selectIndex(int index) {
-	const uint16_t* data;
-	m_ui.tileId->setText(QString::number(index));
-	if (m_ui.palette256->isChecked()) {
-		m_ui.address->setText(tr("0x%0").arg(index * 64 | BASE_VRAM, 8, 16, QChar('0')));
-		if (index < 1024) {
-			data = mTileCacheGetTile(m_tileCache.get(), index, 0);
-		} else {
-			data = mTileCacheGetTile(m_tileCache.get(), index, 1);
-		}
-	} else {
-		m_ui.address->setText(tr("0x%0").arg(index * 32 | BASE_VRAM, 8, 16, QChar('0')));
-		if (index < 2048) {
-			data = mTileCacheGetTile(m_tileCache.get(), index, m_paletteId);
-		} else {
-			data = mTileCacheGetTile(m_tileCache.get(), index, m_paletteId + 16);
-		}
-	}
-	for (int i = 0; i < 64; ++i) {
-		m_ui.preview->setColor(i, data[i]);
-	}
-	m_ui.preview->update();
 }
 
 void TileView::updateTiles(bool force) {
@@ -153,6 +166,7 @@ void TileView::updateTilesGB(bool force) {
 
 void TileView::updatePalette(int palette) {
 	m_paletteId = palette;
+	m_ui.tile->setPalette(palette);
 	updateTiles(true);
 }
 

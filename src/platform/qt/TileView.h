@@ -28,9 +28,6 @@ public slots:
 	void updateTiles(bool force = false);
 	void updatePalette(int);
 
-private slots:
-	void selectIndex(int);
-
 protected:
 	void resizeEvent(QResizeEvent*) override;
 	void showEvent(QShowEvent*) override;
