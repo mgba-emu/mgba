@@ -32,7 +32,7 @@ static void _clearScreen(struct GBVideoSoftwareRenderer* renderer) {
 	color_t palette0 = 0x7FFF;
 #endif
 #else
-	color_t palette0 = 0xF8F8F8;
+	color_t palette0 = 0xFFFFFF;
 #endif
 
 	int y;
@@ -121,6 +121,7 @@ static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer
 	color |= (value << 3) & 0xF8;
 	color |= (value << 6) & 0xF800;
 	color |= (value << 9) & 0xF80000;
+	color |= (color >> 5) & 0x070707;
 #endif
 	softwareRenderer->palette[index] = color;
 	if (renderer->cache) {

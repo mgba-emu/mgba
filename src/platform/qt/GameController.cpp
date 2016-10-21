@@ -159,7 +159,7 @@ GameController::GameController(QObject* parent)
 
 		unsigned width, height;
 		controller->m_threadContext.core->desiredVideoDimensions(controller->m_threadContext.core, &width, &height);
-		memset(controller->m_frontBuffer, 0xF8, width * height * BYTES_PER_PIXEL);
+		memset(controller->m_frontBuffer, 0xFF, width * height * BYTES_PER_PIXEL);
 		QMetaObject::invokeMethod(controller, "frameAvailable", Q_ARG(const uint32_t*, controller->m_frontBuffer));
 		if (controller->m_pauseAfterFrame.testAndSetAcquire(true, false)) {
 			mCoreThreadPauseFromThread(context);

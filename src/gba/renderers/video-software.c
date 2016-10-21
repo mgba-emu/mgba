@@ -370,6 +370,7 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 	color |= (value << 3) & 0xF8;
 	color |= (value << 6) & 0xF800;
 	color |= (value << 9) & 0xF80000;
+	color |= (color >> 5) & 0x070707;
 #endif
 	softwareRenderer->normalPalette[address >> 1] = color;
 	if (softwareRenderer->blendEffect == BLEND_BRIGHTEN) {

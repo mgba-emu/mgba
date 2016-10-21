@@ -107,6 +107,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode3(struct GBAVideoSoftwareRenderer
 			color32 |= (color << 3) & 0xF8;
 			color32 |= (color << 6) & 0xF800;
 			color32 |= (color << 9) & 0xF80000;
+			color32 |= (color32 >> 5) & 0x070707;
 			color = color32;
 #elif COLOR_5_6_5
 			uint16_t color16 = 0;
@@ -196,6 +197,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode5(struct GBAVideoSoftwareRenderer
 			color32 |= (color << 9) & 0xF80000;
 			color32 |= (color << 3) & 0xF8;
 			color32 |= (color << 6) & 0xF800;
+			color32 |= (color32 >> 5) & 0x070707;
 			color = color32;
 #elif COLOR_5_6_5
 			uint16_t color16 = 0;
