@@ -47,71 +47,74 @@ void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 
 void GBMBCInit(struct GB* gb) {
 	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-	switch (cart->ramSize) {
-	case 0:
-		gb->sramSize = 0;
-		break;
-	case 1:
-		gb->sramSize = 0x800;
-		break;
-	default:
-	case 2:
-		gb->sramSize = 0x2000;
-		break;
-	case 3:
-		gb->sramSize = 0x8000;
-		break;
-	}
-
-	if (gb->memory.mbcType == GB_MBC_AUTODETECT) {
-		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-		switch (cart->type) {
+	if (gb->memory.rom) {
+		switch (cart->ramSize) {
 		case 0:
-		case 8:
-		case 9:
-			gb->memory.mbcType = GB_MBC_NONE;
+			gb->sramSize = 0;
 			break;
 		case 1:
-		case 2:
-		case 3:
-			gb->memory.mbcType = GB_MBC1;
-			break;
-		case 5:
-		case 6:
-			gb->memory.mbcType = GB_MBC2;
-			break;
-		case 0x0F:
-		case 0x10:
-			gb->memory.mbcType = GB_MBC3_RTC;
-			break;
-		case 0x11:
-		case 0x12:
-		case 0x13:
-			gb->memory.mbcType = GB_MBC3;
+			gb->sramSize = 0x800;
 			break;
 		default:
-			mLOG(GB_MBC, WARN, "Unknown MBC type: %02X", cart->type);
-			// Fall through
-		case 0x19:
-		case 0x1A:
-		case 0x1B:
-			gb->memory.mbcType = GB_MBC5;
+		case 2:
+			gb->sramSize = 0x2000;
 			break;
-		case 0x1C:
-		case 0x1D:
-		case 0x1E:
-			gb->memory.mbcType = GB_MBC5_RUMBLE;
-			break;
-		case 0x20:
-			gb->memory.mbcType = GB_MBC6;
-			break;
-		case 0x22:
-			gb->memory.mbcType = GB_MBC7;
-			break;
-		case 0xFE:
-			gb->memory.mbcType = GB_HuC3;
+		case 3:
+			gb->sramSize = 0x8000;
 			break;
 		}
+
+		if (gb->memory.mbcType == GB_MBC_AUTODETECT) {
+			switch (cart->type) {
+			case 0:
+			case 8:
+			case 9:
+				gb->memory.mbcType = GB_MBC_NONE;
+				break;
+			case 1:
+			case 2:
+			case 3:
+				gb->memory.mbcType = GB_MBC1;
+				break;
+			case 5:
+			case 6:
+				gb->memory.mbcType = GB_MBC2;
+				break;
+			case 0x0F:
+			case 0x10:
+				gb->memory.mbcType = GB_MBC3_RTC;
+				break;
+			case 0x11:
+			case 0x12:
+			case 0x13:
+				gb->memory.mbcType = GB_MBC3;
+				break;
+			default:
+				mLOG(GB_MBC, WARN, "Unknown MBC type: %02X", cart->type);
+				// Fall through
+			case 0x19:
+			case 0x1A:
+			case 0x1B:
+				gb->memory.mbcType = GB_MBC5;
+				break;
+			case 0x1C:
+			case 0x1D:
+			case 0x1E:
+				gb->memory.mbcType = GB_MBC5_RUMBLE;
+				break;
+			case 0x20:
+				gb->memory.mbcType = GB_MBC6;
+				break;
+			case 0x22:
+				gb->memory.mbcType = GB_MBC7;
+				break;
+			case 0xFE:
+				gb->memory.mbcType = GB_HuC3;
+				break;
+			}
+		}
+	} else {
+		gb->memory.mbcType = GB_MBC_NONE;
 	}
 	switch (gb->memory.mbcType) {
 	case GB_MBC_NONE:

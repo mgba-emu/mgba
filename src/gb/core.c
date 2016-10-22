@@ -217,9 +217,9 @@ static void _GBCoreReset(struct mCore* core) {
 		GBVideoAssociateRenderer(&gb->video, &gbcore->renderer.d);
 	}
 
-	struct GBCartridgeOverride override;
-	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-	if (cart) {
+	if (gb->memory.rom) {
+		struct GBCartridgeOverride override;
+		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 		override.headerCrc32 = doCrc32(cart, sizeof(*cart));
 		if (GBOverrideFind(gbcore->overrides, &override)) {
 			GBOverrideApply(gb, &override);
