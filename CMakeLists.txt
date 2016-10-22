@@ -35,13 +35,20 @@ set(BUILD_GLES2 OFF CACHE STRING "Build with OpenGL|ES 2")
 set(USE_EPOXY ON CACHE STRING "Build with libepoxy")
 set(DISABLE_DEPS OFF CACHE BOOL "Build without dependencies")
 file(GLOB ARM_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/arm/*.c)
+file(GLOB ARM_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/arm/test/*.c)
 file(GLOB LR35902_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/*.c)
+file(GLOB LR35902_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/test/*.c)
 file(GLOB GBA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/*.c)
+file(GLOB GBA_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/test/*.c)
 file(GLOB GB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/*.c)
+file(GLOB GB_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/test/*.c)
 file(GLOB GBA_CHEATS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/cheats/*.c)
 file(GLOB GBA_RR_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/rr/*.c)
 file(GLOB GBA_EXTRA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/extra/*.c)
-file(GLOB UTIL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/*.[cSs] ${CMAKE_CURRENT_SOURCE_DIR}/src/core/*.c)
+file(GLOB CORE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/core/*.c)
+file(GLOB CORE_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/core/test/*.c)
+file(GLOB UTIL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/*.[cSs])
+file(GLOB UTIL_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/test/*.c)
 file(GLOB GUI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/gui/*.c ${CMAKE_CURRENT_SOURCE_DIR}/src/feature/gui/*.c)
 file(GLOB GBA_RENDERER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/renderers/*.c)
 file(GLOB SIO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/sio/lockstep.c)
@@ -533,7 +540,7 @@ foreach(FEATURE IN LISTS FEATURES)
 	list(APPEND FEATURE_DEFINES "USE_${FEATURE}")
 endforeach()
 
-set(CORE_SRC)
+set(TEST_SRC ${CORE_TEST_SRC})
 if(M_CORE_GB)
 	add_definitions(-DM_CORE_GB)
 	list(APPEND CORE_SRC
@@ -541,6 +548,9 @@ if(M_CORE_GB)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/debugger.c
 		${GB_SRC}
 		${GB_RENDERER_SRC})
+	list(APPEND TEST_SRC
+		${LR35902_TEST_SRC}
+		${GB_TEST_SRC})
 endif()
 
 if(M_CORE_GBA)
@@ -552,6 +562,9 @@ if(M_CORE_GBA)
 		${GBA_SRC}
 		${GBA_CHEATS_SRC}
 		${GBA_RENDERER_SRC})
+	list(APPEND TEST_SRC
+		${ARM_TEST_SRC}
+		${GBA_TEST_SRC})
 	if(NOT M_CORE_GB)
 		list(APPEND CORE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/audio.c)
 	endif()
@@ -581,6 +594,7 @@ list(APPEND CORE_SRC
 	${DEBUGGER_SRC}
 	${OS_SRC}
 	${THIRD_PARTY_SRC})
+list(APPEND TEST_SRC ${UTIL_TEST_SRC})
 
 set(SRC ${CORE_SRC} ${VFS_SRC})
 if(NOT MINIMAL_CORE)
@@ -708,11 +722,15 @@ endif()
 if(NOT USE_CMOCKA)
 	set(BUILD_SUITE OFF)
 endif()
-if(USE_CMOCKA)
+if(BUILD_SUITE)
 	enable_testing()
 	include_directories(AFTER ${CMOCKA_INCLUDE_DIRS})
 	link_directories(${CMOCKA_LIBRARY_DIRS})
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/platform/test/suite ${CMAKE_CURRENT_BINARY_DIR}/suite)
+
+	add_executable(${BINARY_NAME}-suite ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/test/suite-main.c ${TEST_SRC})
+	target_link_libraries(${BINARY_NAME}-suite ${BINARY_NAME} ${PLATFORM_LIBRARY} cmocka)
+	set_target_properties(${BINARY_NAME}-suite PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
+	add_test(${BINARY_NAME}-suite ${BINARY_NAME}-suite)
 endif()
 
 if(BUILD_EXAMPLE)

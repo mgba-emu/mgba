@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "platform/test/suite/suite.h"
+#include "util/test/suite.h"
 
 #include "core/core.h"
 #include "util/vfs.h"
@@ -34,3 +34,9 @@ M_TEST_SUITE_DEFINE(mCore,
 #endif
 	cmocka_unit_test(findNullVF),
 	cmocka_unit_test(findEmpty))
+
+int TestRunCore(void) {
+	int failures = 0;
+	failures += M_TEST_SUITE_RUN(mCore);
+	return failures;
+}
