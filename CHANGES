@@ -11,6 +11,7 @@ Bugfixes:
  - GBA Cheats: Fix GameShark ROM patches
 Misc:
  - PSP2: Improved controller rumble
+ - GB, GBA: Prevent loading null ROMs
 
 0.5.1: (2016-10-05)
 Bugfixes:

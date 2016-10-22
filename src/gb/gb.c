@@ -80,6 +80,9 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 }
 
 bool GBLoadROM(struct GB* gb, struct VFile* vf) {
+	if (!vf) {
+		return false;
+	}
 	GBUnloadROM(gb);
 	gb->romVf = vf;
 	gb->pristineRomSize = vf->size(vf);
