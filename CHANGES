@@ -9,6 +9,8 @@ Bugfixes:
  - Qt: Fix setting overrides
  - Qt: Fix cut off tiles and alignment issues in tile viewer
  - GBA Cheats: Fix GameShark ROM patches
+Misc:
+ - PSP2: Improved controller rumble
 
 0.5.1: (2016-10-05)
 Bugfixes:

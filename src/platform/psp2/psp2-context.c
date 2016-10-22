@@ -134,9 +134,11 @@ static void _setRumble(struct mRumble* source, int enable) {
 		rumble->current -= oldLevel;
 	}
 	CircleBufferWrite8(&rumble->history, enable);
+	int small = (rumble->current << 21) / 65793;
+	int big = ((rumble->current * rumble->current) << 18) / 65793;
 	struct SceCtrlActuator state = {
-		rumble->current * 31,
-		0
+		small,
+		big
 	};
 	sceCtrlSetActuator(1, &state);
 }
