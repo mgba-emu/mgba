@@ -249,7 +249,11 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 
 	gba->lastJump = address;
 	memory->lastPrefetchedPc = 0;
+	cpu->dynarec.currentTrace = NULL;
 	if (newRegion == memory->activeRegion) {
+		if (cpu->executor == ARM_DYNAREC && newRegion >= REGION_CART0 && newRegion <= REGION_CART2_EX) {
+			ARMDynarecCountTrace(cpu, address, cpu->executionMode);
+		}
 		if (newRegion < REGION_CART0 || (address & (SIZE_CART0 - 1)) < memory->romSize) {
 			return;
 		}
@@ -261,6 +265,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	if (memory->activeRegion == REGION_BIOS) {
 		memory->biosPrefetch = cpu->prefetch[1];
 	}
+	bool readonly = false;
 	memory->activeRegion = newRegion;
 	switch (newRegion) {
 	case REGION_BIOS:
@@ -298,6 +303,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	case REGION_CART1_EX:
 	case REGION_CART2:
 	case REGION_CART2_EX:
+		readonly = true;
 		cpu->memory.activeRegion = memory->rom;
 		cpu->memory.activeMask = memory->romMask;
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
@@ -322,6 +328,10 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	cpu->memory.activeSeqCycles16 = memory->waitstatesSeq16[memory->activeRegion];
 	cpu->memory.activeNonseqCycles32 = memory->waitstatesNonseq32[memory->activeRegion];
 	cpu->memory.activeNonseqCycles16 = memory->waitstatesNonseq16[memory->activeRegion];
+
+	if (readonly && cpu->executor == ARM_DYNAREC) {
+		ARMDynarecCountTrace(cpu, address,cpu->executionMode);
+	}
 }
 
 #define LOAD_BAD \

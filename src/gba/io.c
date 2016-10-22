@@ -9,6 +9,7 @@
 #include "gba/serialize.h"
 #include "gba/sio.h"
 #include "gba/video.h"
+#include "arm/dynarec.h"
 
 mLOG_DEFINE_CATEGORY(GBA_IO, "GBA I/O");
 
@@ -527,6 +528,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		// Interrupts and misc
 		case REG_WAITCNT:
 			GBAAdjustWaitstates(gba, value);
+			ARMDynarecInvalidateCache(gba->cpu);
 			break;
 		case REG_IE:
 			GBAWriteIE(gba, value);

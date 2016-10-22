@@ -187,7 +187,7 @@ elseif(UNIX)
 	endif()
 
 	list(APPEND CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
-	file(GLOB OS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/posix/*.c)
+	file(GLOB OS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/posix/*.[cs])
 	source_group("POSIX-specific code" FILES ${OS_SRC})
 endif()
 
@@ -527,11 +527,14 @@ if(USE_EPOXY)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libepoxy0")
 endif()
 
-
 set(FEATURE_DEFINES)
 foreach(FEATURE IN LISTS FEATURES)
 	list(APPEND FEATURE_DEFINES "USE_${FEATURE}")
 endforeach()
+
+if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "^armv[67]")
+	file(GLOB ARM_DYNAREC_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/arm/dynarec-arm/*.c)
+endif()
 
 set(CORE_SRC)
 if(M_CORE_GB)
@@ -547,6 +550,7 @@ if(M_CORE_GBA)
 	add_definitions(-DM_CORE_GBA)
 	list(APPEND CORE_SRC 
 		${ARM_SRC}
+		${ARM_DYNAREC_SRC}
 		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/memory-debugger.c
 		${GBA_SRC}
