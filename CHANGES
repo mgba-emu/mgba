@@ -26,6 +26,7 @@ Misc:
  - GBA Video, GB Video: Colors are now fully scaled
  - PSP2: Improved controller rumble
  - GB, GBA: Prevent loading null ROMs
+ - VFS: Allow truncating memory chunk VFiles
 
 0.5.1: (2016-10-05)
 Bugfixes:
