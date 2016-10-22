@@ -71,6 +71,42 @@ M_TEST_DEFINE(openNullMemChunkNonzero) {
 	vf->close(vf);
 }
 
+M_TEST_DEFINE(resizeMem) {
+	uint8_t bytes[32];
+	struct VFile* vf = VFileFromMemory(bytes, 32);
+	assert_non_null(vf);
+	assert_int_equal(vf->size(vf), 32);
+	vf->truncate(vf, 64);
+	assert_int_equal(vf->size(vf), 32);
+	vf->truncate(vf, 16);
+	assert_int_equal(vf->size(vf), 32);
+	vf->close(vf);
+}
+
+M_TEST_DEFINE(resizeConstMem) {
+	uint8_t bytes[32];
+	struct VFile* vf = VFileFromConstMemory(bytes, 32);
+	assert_non_null(vf);
+	assert_int_equal(vf->size(vf), 32);
+	vf->truncate(vf, 64);
+	assert_int_equal(vf->size(vf), 32);
+	vf->truncate(vf, 16);
+	assert_int_equal(vf->size(vf), 32);
+	vf->close(vf);
+}
+
+M_TEST_DEFINE(resizeMemChunk) {
+	uint8_t bytes[32];
+	struct VFile* vf = VFileMemChunk(bytes, 32);
+	assert_non_null(vf);
+	assert_int_equal(vf->size(vf), 32);
+	vf->truncate(vf, 64);
+	assert_int_equal(vf->size(vf), 64);
+	vf->truncate(vf, 16);
+	assert_int_equal(vf->size(vf), 16);
+	vf->close(vf);
+}
+
 M_TEST_SUITE_DEFINE(VFS,
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	cmocka_unit_test(openNullPathR),
@@ -84,4 +120,7 @@ M_TEST_SUITE_DEFINE(VFS,
 	cmocka_unit_test(openNullConstMemNonzero),
 	cmocka_unit_test(openNullMemChunk0),
 	cmocka_unit_test(openNonNullMemChunk0),
-	cmocka_unit_test(openNullMemChunkNonzero))
+	cmocka_unit_test(openNullMemChunkNonzero),
+	cmocka_unit_test(resizeMem),
+	cmocka_unit_test(resizeConstMem),
+	cmocka_unit_test(resizeMemChunk))
