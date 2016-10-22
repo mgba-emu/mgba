@@ -7,6 +7,8 @@
 
 #include "core/core.h"
 #include "gb/core.h"
+#include "gb/gb.h"
+#include "util/vfs.h"
 
 M_TEST_DEFINE(create) {
 	struct mCore* core = GBCoreCreate();
@@ -18,7 +20,7 @@ M_TEST_DEFINE(create) {
 M_TEST_DEFINE(platform) {
 	struct mCore* core = GBCoreCreate();
 	assert_non_null(core);
-	assert_true(core->platform(core) == PLATFORM_GB);
+	assert_int_equal(core->platform(core), PLATFORM_GB);
 	assert_true(core->init(core));
 	core->deinit(core);
 }
@@ -40,8 +42,20 @@ M_TEST_DEFINE(loadNullROM) {
 	core->deinit(core);
 }
 
+M_TEST_DEFINE(isROM) {
+	struct VFile* vf = VFileMemChunk(NULL, 2048);
+	GBSynthesizeROM(vf);
+	assert_true(GBIsROM(vf));
+	struct mCore* core = mCoreFindVF(vf);
+	assert_non_null(core);
+	assert_int_equal(core->platform(core), PLATFORM_GB);
+	assert_true(core->init(core));
+	core->deinit(core);
+}
+
 M_TEST_SUITE_DEFINE(GBCore,
 	cmocka_unit_test(create),
 	cmocka_unit_test(platform),
 	cmocka_unit_test(reset),
-	cmocka_unit_test(loadNullROM))
+	cmocka_unit_test(loadNullROM),
+	cmocka_unit_test(isROM))

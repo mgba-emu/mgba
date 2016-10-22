@@ -23,6 +23,8 @@ const uint32_t SGB_LR35902_FREQUENCY = 0x418B1E;
 
 const uint32_t GB_COMPONENT_MAGIC = 0x400000;
 
+static const uint8_t _knownHeader[4] = { 0xCE, 0xED, 0x66, 0x66};
+
 #define DMG_BIOS_CHECKSUM 0xC2F5CC97
 #define DMG_2_BIOS_CHECKSUM 0x59C8598E
 #define CGB_BIOS_CHECKSUM 0x41884E46
@@ -269,6 +271,18 @@ void GBUnloadROM(struct GB* gb) {
 	}
 	gb->sramRealVf = NULL;
 	gb->sramVf = NULL;
+}
+
+void GBSynthesizeROM(struct VFile* vf) {
+	if (!vf) {
+		return;
+	}
+	const struct GBCartridge cart = {
+		.logo = { _knownHeader[0], _knownHeader[1], _knownHeader[2], _knownHeader[3]}
+	};
+
+	vf->seek(vf, 0x100, SEEK_SET);
+	vf->write(vf, &cart, sizeof(cart));
 }
 
 void GBLoadBIOS(struct GB* gb, struct VFile* vf) {
@@ -618,12 +632,11 @@ void GBIllegal(struct LR35902Core* cpu) {
 bool GBIsROM(struct VFile* vf) {
 	vf->seek(vf, 0x104, SEEK_SET);
 	uint8_t header[4];
-	static const uint8_t knownHeader[4] = { 0xCE, 0xED, 0x66, 0x66};
 
 	if (vf->read(vf, &header, sizeof(header)) < (ssize_t) sizeof(header)) {
 		return false;
 	}
-	if (memcmp(header, knownHeader, sizeof(header))) {
+	if (memcmp(header, _knownHeader, sizeof(header))) {
 		return false;
 	}
 	return true;
