@@ -490,6 +490,9 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
 }
 
 bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
+	if (!vf) {
+		return false;
+	}
 	GBAUnloadROM(gba);
 	gba->romVf = vf;
 	gba->pristineRomSize = vf->size(vf);

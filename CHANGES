@@ -24,6 +24,7 @@ Misc:
  - VFS: Call msync when syncing mapped data
  - GBA Video, GB Video: Colors are now fully scaled
  - PSP2: Improved controller rumble
+ - GB, GBA: Prevent loading null ROMs
 
 0.5.1: (2016-10-05)
 Bugfixes:
