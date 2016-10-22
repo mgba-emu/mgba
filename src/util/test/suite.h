@@ -13,7 +13,7 @@
 #define M_TEST_DEFINE(NAME) static void NAME (void **state ATTRIBUTE_UNUSED)
 
 #define M_TEST_SUITE(NAME) _testSuite_ ## NAME
-#define M_TEST_SUITE_RUN(NAME) M_TEST_SUITE(NAME)()
+#define M_TEST_SUITE_RUN(NAME) printf("\nRunning suite %s\n", # NAME), M_TEST_SUITE(NAME)()
 #define M_TEST_SUITE_DEFINE(NAME, ...) \
 	int M_TEST_SUITE(NAME) (void) { \
 		const static struct CMUnitTest tests[] = { \

@@ -7,9 +7,21 @@
 
 #include "util/test/util.h"
 #include "core/test/core.h"
+#ifdef M_CORE_GBA
+#include "gba/test/gba.h"
+#endif
+#ifdef M_CORE_GB
+#include "gb/test/gb.h"
+#endif
 
 int main() {
 	int failures = TestRunUtil();
 	failures += TestRunCore();
+#ifdef M_CORE_GBA
+	failures += TestRunGBA();
+#endif
+#ifdef M_CORE_GB
+	failures += TestRunGB();
+#endif
 	return failures != 0;
 }
