@@ -10,6 +10,7 @@ Bugfixes:
  - Qt: Fix cut off tiles and alignment issues in tile viewer
  - GBA Cheats: Fix GameShark ROM patches
  - GB MBC: Fix initializing MBC when no ROM is loaded
+ - VFS: Fix resizing memory chunks when not needed
 Misc:
  - PSP2: Improved controller rumble
  - GB, GBA: Prevent loading null ROMs
