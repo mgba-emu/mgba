@@ -17,6 +17,7 @@ Bugfixes:
  - GBA Cheats: Fix GameShark ROM patches
  - Qt: Fix cut off tiles and alignment issues in tile viewer
  - GB MBC: Fix initializing MBC when no ROM is loaded
+ - VFS: Fix resizing memory chunks when not needed
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
