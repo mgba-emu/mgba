@@ -90,6 +90,7 @@ void mTileCacheWriteVRAM(struct mTileCache* cache, uint32_t address) {
 	size_t i;
 	for (i = 0; i < count; ++i) {
 		cache->status[(address >> bpp) * count + i].vramClean = 0;
+		++cache->status[(address >> bpp) * count + i].vramVersion;
 	}
 }
 
@@ -221,6 +222,7 @@ const uint16_t* mTileCacheGetTile(struct mTileCache* cache, unsigned tileId, uns
 	struct mTileCacheEntry* status = &cache->status[tileId * count + paletteId];
 	struct mTileCacheEntry desiredStatus = {
 		.paletteVersion = cache->globalPaletteVersion[cPaletteId][paletteId],
+		.vramVersion = status->vramVersion,
 		.vramClean = 1,
 		.paletteId = paletteId,
 		.activePalette = cPaletteId
@@ -252,6 +254,7 @@ const uint16_t* mTileCacheGetTileIfDirty(struct mTileCache* cache, struct mTileC
 	struct mTileCacheEntry* status = &cache->status[tileId * count + paletteId];
 	struct mTileCacheEntry desiredStatus = {
 		.paletteVersion = cache->globalPaletteVersion[cPaletteId][paletteId],
+		.vramVersion = status->vramVersion,
 		.vramClean = 1,
 		.paletteId = paletteId,
 		.activePalette = cPaletteId
