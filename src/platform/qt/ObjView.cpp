@@ -25,6 +25,7 @@ ObjView::ObjView(GameController* controller, QWidget* parent)
 	, m_controller(controller)
 	, m_tileStatus{}
 	, m_objId(0)
+	, m_objInfo{}
 {
 	m_ui.setupUi(this);
 	m_ui.tile->setController(controller);
@@ -54,7 +55,9 @@ void ObjView::selectObj(int obj) {
 }
 
 void ObjView::translateIndex(int index) {
-	m_ui.tile->selectIndex(index + m_tileOffset);
+	unsigned x = index % m_objInfo.width;
+	unsigned y = index / m_objInfo.width;
+	m_ui.tile->selectIndex(x + y * m_objInfo.stride + m_tileOffset);
 }
 
 #ifdef M_CORE_GBA
@@ -66,23 +69,34 @@ void ObjView::updateTilesGBA(bool force) {
 	unsigned size = GBAObjAttributesBGetSize(obj->b);
 	unsigned width = GBAVideoObjSizes[shape * 4 + size][0];
 	unsigned height = GBAVideoObjSizes[shape * 4 + size][1];
+	unsigned tile = GBAObjAttributesCGetTile(obj->c);
+	ObjInfo newInfo{
+		tile,
+		width / 8,
+		height / 8,
+		width / 8
+	};
 	m_ui.tiles->setTileCount(width * height / 64);
 	m_ui.tiles->setMinimumSize(QSize(width, height) * m_ui.magnification->value());
 	unsigned palette = GBAObjAttributesCGetPalette(obj->c);
-	unsigned tile = GBAObjAttributesCGetTile(obj->c);
 	GBARegisterDISPCNT dispcnt = gba->memory.io[0]; // FIXME: Register name can't be imported due to namespacing issues
+	if (!GBARegisterDISPCNTIsObjCharacterMapping(dispcnt)) {
+		newInfo.stride = 0x20 >> (GBAObjAttributesAGet256Color(obj->a));
+	};
+	if (newInfo != m_objInfo) {
+		force = true;
+	}
+	m_objInfo = newInfo;
 	int i = 0;
-	// TODO: Tile stride
-	// TODO: Check to see if parameters are changed (so as to enable force if needed)
 	if (GBAObjAttributesAIs256Color(obj->a)) {
 		m_ui.palette->setText("256-color");
 		mTileCacheSetPalette(m_tileCache.get(), 1);
 		m_ui.tile->setPalette(0);
 		m_ui.tile->setPaletteSet(1, 1024, 1536);
 		tile /= 2;
+		unsigned t = tile + i;
 		for (int y = 0; y < height / 8; ++y) {
-			for (int x = 0; x < width / 8; ++x, ++i) {
-				unsigned t = tile + i;
+			for (int x = 0; x < width / 8; ++x, ++i, ++t) {
 				const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[32 * t], t + 1024, 1);
 				if (data) {
 					m_ui.tiles->setTile(i, data);
@@ -90,6 +104,7 @@ void ObjView::updateTilesGBA(bool force) {
 					m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), t + 1024, 1));
 				}
 			}
+			t += newInfo.stride - width / 8;
 		}
 		tile += 1024;
 	} else {
@@ -107,9 +122,7 @@ void ObjView::updateTilesGBA(bool force) {
 					m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), t + 2048, palette + 16));
 				}
 			}
-			if (!GBARegisterDISPCNTIsObjCharacterMapping(dispcnt)) {
-				t += 0x20 - width / 8;
-			}
+			t += newInfo.stride - width / 8;
 		}
 		tile += 2048;
 	}
@@ -157,15 +170,25 @@ void ObjView::updateTilesGB(bool force) {
 	const GBObj* obj = &gb->video.oam.obj[m_objId];
 
 	unsigned width = 8;
-	unsigned height = 8; // TODO
+	unsigned height = 8;
 	GBRegisterLCDC lcdc = gb->memory.io[REG_LCDC];
 	if (GBRegisterLCDCIsObjSize(lcdc)) {
 		height = 16;
 	}
+	unsigned tile = obj->tile;
+	ObjInfo newInfo{
+		tile,
+		1,
+		height / 8,
+		1
+	};
+	if (newInfo != m_objInfo) {
+		force = true;
+	}
+	m_objInfo = newInfo;
 	m_ui.tiles->setTileCount(width * height / 64);
 	m_ui.tiles->setMinimumSize(QSize(width, height) * m_ui.magnification->value());
 	int palette = 0;
-	unsigned tile = obj->tile;
 	if (gb->model >= GB_MODEL_CGB) {
 		if (GBObjAttributesIsBank(obj->attr)) {
 			tile += 512;
@@ -175,7 +198,6 @@ void ObjView::updateTilesGB(bool force) {
 		palette = GBObjAttributesGetPalette(obj->attr);
 	}
 	int i = 0;
-	// TODO: Check to see if parameters are changed (so as to enable force if needed)
 	m_ui.palette->setText(QString::number(palette));
 	mTileCacheSetPalette(m_tileCache.get(), 0);
 	m_ui.tile->setPalette(palette + 8);
@@ -207,3 +229,11 @@ void ObjView::updateTilesGB(bool force) {
 	m_ui.mode->setText(tr("N/A"));
 }
 #endif
+
+
+bool ObjView::ObjInfo::operator!=(const ObjInfo& other) {
+	return other.tile != tile ||
+		other.width != width ||
+		other.height != height ||
+		other.stride != stride;
+}

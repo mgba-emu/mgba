@@ -40,6 +40,14 @@ private:
 	GameController* m_controller;
 	mTileCacheEntry m_tileStatus[1024 * 32]; // TODO: Correct size
 	int m_objId;
+	struct ObjInfo {
+		unsigned tile;
+		unsigned width;
+		unsigned height;
+		unsigned stride;
+
+		bool operator!=(const ObjInfo&);
+	} m_objInfo;
 
 	int m_tileOffset;
 };
