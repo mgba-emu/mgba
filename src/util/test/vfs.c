@@ -107,6 +107,44 @@ M_TEST_DEFINE(resizeMemChunk) {
 	vf->close(vf);
 }
 
+M_TEST_DEFINE(mapMem) {
+	uint8_t bytes[32] = "Test Pattern";
+	struct VFile* vf = VFileFromMemory(bytes, 32);
+	assert_non_null(vf);
+	void* mapped = vf->map(vf, 32, MAP_READ);
+	assert_non_null(mapped);
+	assert_ptr_equal(mapped, &bytes);
+	vf->unmap(vf, mapped, 32);
+	vf->close(vf);
+}
+
+M_TEST_DEFINE(mapConstMem) {
+	uint8_t bytes[32] = "Test Pattern";
+	struct VFile* vf = VFileFromConstMemory(bytes, 32);
+	assert_non_null(vf);
+	void* mapped = vf->map(vf, 32, MAP_READ);
+	assert_non_null(mapped);
+	assert_ptr_equal(mapped, &bytes);
+	vf->unmap(vf, mapped, 32);
+	vf->close(vf);
+}
+
+M_TEST_DEFINE(mapMemChunk) {
+	uint8_t bytes[32] = "Test Pattern";
+	struct VFile* vf = VFileMemChunk(bytes, 32);
+	assert_non_null(vf);
+	void* mapped = vf->map(vf, 32, MAP_READ);
+	assert_non_null(mapped);
+	assert_ptr_not_equal(mapped, &bytes);
+	assert_memory_equal(mapped, &bytes, 32);
+	vf->write(vf, bytes, sizeof(bytes));
+	void* mapped2 = vf->map(vf, 32, MAP_READ);
+	assert_ptr_equal(mapped, mapped2);
+	vf->unmap(vf, mapped, 32);
+	vf->unmap(vf, mapped2, 32);
+	vf->close(vf);
+}
+
 M_TEST_SUITE_DEFINE(VFS,
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	cmocka_unit_test(openNullPathR),
@@ -123,4 +161,7 @@ M_TEST_SUITE_DEFINE(VFS,
 	cmocka_unit_test(openNullMemChunkNonzero),
 	cmocka_unit_test(resizeMem),
 	cmocka_unit_test(resizeConstMem),
-	cmocka_unit_test(resizeMemChunk))
+	cmocka_unit_test(resizeMemChunk),
+	cmocka_unit_test(mapMem),
+	cmocka_unit_test(mapConstMem),
+	cmocka_unit_test(mapMemChunk))
