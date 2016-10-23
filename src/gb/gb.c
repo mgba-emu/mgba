@@ -84,6 +84,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->stream = NULL;
 
 	mTimingInit(&gb->timing, &gb->cpu->cycles, &gb->cpu->nextEvent);
+	gb->audio.timing = &gb->timing;
 }
 
 static void GBDeinit(struct mCPUComponent* component) {
@@ -530,7 +531,6 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 	do {
 		int32_t cycles = cpu->cycles;
 		int32_t nextEvent;
-		int32_t testEvent;
 
 		cpu->cycles = 0;
 		cpu->nextEvent = INT_MAX;
@@ -548,14 +548,6 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 
 		mTimingTick(&gb->timing, cycles);
 		nextEvent = cpu->nextEvent;
-
-		testEvent = GBAudioProcessEvents(&gb->audio, cycles >> gb->doubleSpeed);
-		if (testEvent != INT_MAX) {
-			testEvent <<= gb->doubleSpeed;
-			if (testEvent < nextEvent) {
-				nextEvent = testEvent;
-			}
-		}
 
 		cpu->nextEvent = nextEvent;
 
@@ -596,6 +588,7 @@ void GBStop(struct LR35902Core* cpu) {
 	}
 	if (gb->memory.io[REG_KEY1] & 1) {
 		gb->doubleSpeed ^= 1;
+		gb->audio.timingFactor = gb->doubleSpeed + 1;
 		gb->memory.io[REG_KEY1] = 0;
 		gb->memory.io[REG_KEY1] |= gb->doubleSpeed << 7;
 	} else if (cpu->bus) {

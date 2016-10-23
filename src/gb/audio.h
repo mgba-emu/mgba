@@ -8,6 +8,7 @@
 
 #include "util/common.h"
 
+#include "core/timing.h"
 #include "third-party/blip_buf/blip_buf.h"
 
 DECL_BITFIELD(GBAudioRegisterDuty, uint8_t);
@@ -147,6 +148,8 @@ enum GBAudioStyle {
 
 struct GBAudio {
 	struct GB* p;
+	struct mTiming* timing;
+	unsigned timingFactor;
 	struct GBAudioSquareChannel ch1;
 	struct GBAudioSquareChannel ch2;
 	struct GBAudioWaveChannel ch3;
@@ -176,20 +179,18 @@ struct GBAudio {
 	bool playingCh4;
 	uint8_t* nr52;
 
-	int32_t nextEvent;
-	int32_t eventDiff;
-	int32_t nextFrame;
 	int frame;
-	int32_t nextSample;
 
 	int32_t sampleInterval;
 	enum GBAudioStyle style;
 
-	int32_t nextCh1;
-	int32_t nextCh2;
-	int32_t nextCh3;
-	int32_t fadeCh3;
-	int32_t nextCh4;
+	struct mTimingEvent frameEvent;
+	struct mTimingEvent ch1Event;
+	struct mTimingEvent ch2Event;
+	struct mTimingEvent ch3Event;
+	struct mTimingEvent ch3Fade;
+	struct mTimingEvent ch4Event;
+	struct mTimingEvent sampleEvent;
 	bool enable;
 
 	size_t samples;
@@ -229,7 +230,6 @@ void GBAudioWriteNR50(struct GBAudio* audio, uint8_t);
 void GBAudioWriteNR51(struct GBAudio* audio, uint8_t);
 void GBAudioWriteNR52(struct GBAudio* audio, uint8_t);
 
-int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles);
 void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right);
 
 struct GBSerializedPSGState;

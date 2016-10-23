@@ -33,8 +33,9 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 	++nr52;
 #endif
 	GBAudioInit(&audio->psg, 0, nr52, GB_AUDIO_GBA);
-	audio->samples = samples;
+	audio->psg.timing = &audio->p->timing;
 	audio->psg.clockRate = GBA_ARM7TDMI_FREQUENCY;
+	audio->samples = samples;
 	// Guess too large; we hang producing extra samples if we guess too low
 	blip_set_rates(audio->psg.left, GBA_ARM7TDMI_FREQUENCY, 96000);
 	blip_set_rates(audio->psg.right, GBA_ARM7TDMI_FREQUENCY, 96000);
@@ -96,13 +97,6 @@ int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 	audio->eventDiff += cycles;
 	while (audio->nextEvent <= 0) {
 		audio->nextEvent = INT_MAX;
-		if (audio->enable) {
-			audio->nextEvent = GBAudioProcessEvents(&audio->psg, audio->eventDiff / 4);
-			if (audio->nextEvent != INT_MAX) {
-				audio->nextEvent *= 4;
-			}
-		}
-
 		audio->nextSample -= audio->eventDiff;
 		if (audio->nextSample <= 0) {
 			_sample(audio);
