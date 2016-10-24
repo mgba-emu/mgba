@@ -243,15 +243,15 @@ void GBSavedataUnmask(struct GB* gb) {
 
 void GBUnloadROM(struct GB* gb) {
 	// TODO: Share with GBAUnloadROM
+	if (gb->memory.rom && gb->memory.romBase != gb->memory.rom && gb->memory.romBase != gb->pristineRom) {
+		free(gb->memory.romBase);
+	}
 	if (gb->memory.rom && gb->pristineRom != gb->memory.rom) {
 		if (gb->yankedRomSize) {
 			gb->yankedRomSize = 0;
 		}
 		mappedMemoryFree(gb->memory.rom, GB_SIZE_CART_MAX);
 		gb->memory.rom = gb->pristineRom;
-	}
-	if (gb->memory.rom && gb->memory.romBase != gb->memory.rom) {
-		free(gb->memory.romBase);
 	}
 	gb->memory.rom = 0;
 
