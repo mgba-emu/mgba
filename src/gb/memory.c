@@ -508,8 +508,8 @@ void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* o
 	case GB_REGION_CART_BANK0 + 2:
 	case GB_REGION_CART_BANK0 + 3:
 		_pristineCow(gb);
-		oldValue = memory->rom[address & (GB_SIZE_CART_BANK0 - 1)];
-		memory->rom[address & (GB_SIZE_CART_BANK0 - 1)] =  value;
+		oldValue = memory->romBase[address & (GB_SIZE_CART_BANK0 - 1)];
+		memory->romBase[address & (GB_SIZE_CART_BANK0 - 1)] =  value;
 		break;
 	case GB_REGION_CART_BANK1:
 	case GB_REGION_CART_BANK1 + 1:
@@ -652,5 +652,8 @@ void _pristineCow(struct GB* gb) {
 	gb->memory.rom = anonymousMemoryMap(GB_SIZE_CART_MAX);
 	memcpy(gb->memory.rom, gb->pristineRom, gb->memory.romSize);
 	memset(((uint8_t*) gb->memory.rom) + gb->memory.romSize, 0xFF, GB_SIZE_CART_MAX - gb->memory.romSize);
+	if (gb->pristineRom == gb->memory.romBase) {
+		gb->memory.romBase = gb->memory.rom;
+	}
 	GBMBCSwitchBank(&gb->memory, gb->memory.currentBank);
 }
