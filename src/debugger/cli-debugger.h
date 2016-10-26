@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,9 +9,6 @@
 #include "util/common.h"
 
 #include "debugger.h"
-
-#ifdef USE_CLI_DEBUGGER
-#include <histedit.h>
 
 struct CLIDebugger;
 
@@ -59,13 +56,25 @@ struct CLIDebuggerSystem {
 	const char* platformName;
 };
 
+struct CLIDebuggerBackend {
+	struct CLIDebugger* p;
+
+	void (*init)(struct CLIDebuggerBackend*);
+	void (*deinit)(struct CLIDebuggerBackend*);
+
+	ATTRIBUTE_FORMAT(printf, 2, 3)
+	void (*printf)(struct CLIDebuggerBackend*, const char* fmt, ...);
+	const char* (*readline)(struct CLIDebuggerBackend*, size_t* len);
+	void (*lineAppend)(struct CLIDebuggerBackend*, const char* line);
+	const char* (*historyLast)(struct CLIDebuggerBackend*, size_t* len);
+	void (*historyAppend)(struct CLIDebuggerBackend*, const char* line);
+};
+
 struct CLIDebugger {
 	struct mDebugger d;
 
 	struct CLIDebuggerSystem* system;
-
-	EditLine* elstate;
-	History* histate;
+	struct CLIDebuggerBackend* backend;
 };
 
 struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* string, size_t length);
@@ -73,6 +82,8 @@ struct CLIDebugVector* CLIDVStringParse(struct CLIDebugger* debugger, const char
 
 void CLIDebuggerCreate(struct CLIDebugger*);
 void CLIDebuggerAttachSystem(struct CLIDebugger*, struct CLIDebuggerSystem*);
-#endif
+void CLIDebuggerAttachBackend(struct CLIDebugger*, struct CLIDebuggerBackend*);
+
+bool CLIDebuggerTabComplete(struct CLIDebugger*, const char* token, bool initial, size_t len);
 
 #endif

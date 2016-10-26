@@ -6,7 +6,7 @@ if(NOT MSVC)
 else()
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_CRT_SECURE_NO_WARNINGS /wd4003 /wd4244 /wd4146")
 endif()
-set(USE_CLI_DEBUGGER ON CACHE BOOL "Whether or not to enable the CLI-mode ARM debugger")
+set(USE_EDITLINE ON CACHE BOOL "Whether or not to enable the CLI-mode debugger")
 set(USE_GDB_STUB ON CACHE BOOL "Whether or not to enable the GDB stub ARM debugger")
 set(USE_FFMPEG ON CACHE BOOL "Whether or not to enable FFmpeg support")
 set(USE_ZLIB ON CACHE BOOL "Whether or not to enable zlib support")
@@ -314,7 +314,7 @@ if(CMAKE_SYSTEM_NAME MATCHES .*BSD)
 		list(APPEND LIBEDIT_LIBRARIES -ltermcap)
 	endif()
 else()
-	find_feature(USE_CLI_DEBUGGER "libedit")
+	find_feature(USE_EDITLINE "libedit")
 endif()
 if(BUILD_GL)
 	find_package(OpenGL QUIET)
@@ -350,7 +350,11 @@ find_feature(USE_EPOXY "epoxy")
 find_feature(USE_CMOCKA "cmocka")
 
 # Features
-set(DEBUGGER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/debugger.c)
+set(DEBUGGER_SRC
+	${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/debugger.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/parser.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/cli-debugger.c)
+
 set(FEATURE_SRC)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6")
 
@@ -358,21 +362,13 @@ if(DISABLE_DEPS)
 	set(USE_GDB_STUB OFF)
 endif()
 
-if(USE_CLI_DEBUGGER)
-	list(APPEND FEATURES CLI_DEBUGGER)
-	list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/cli-debugger.c)
-	list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/parser.c)
-	if(M_CORE_GBA)
-		list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/cli-debugger.c)
-		list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/extra/cli.c)
-	endif()
-	if(M_CORE_GB)
-		list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/cli-debugger.c)
-	endif()
+if(USE_EDITLINE)
+	list(APPEND FEATURES EDITLINE)
 	include_directories(AFTER ${LIBEDIT_INCLUDE_DIRS})
 	link_directories(${LIBEDIT_LIBRARY_DIRS})
 	set(DEBUGGER_LIB ${LIBEDIT_LIBRARIES})
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libedit2")
+	list(APPEND FEATURE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/feature/editline/cli-el-backend.c")
 else()
 	set(DEBUGGER_LIB "")
 endif()
@@ -548,6 +544,8 @@ if(M_CORE_GB)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/debugger.c
 		${GB_SRC}
 		${GB_RENDERER_SRC})
+	list(APPEND CLI_SRC
+		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/cli-debugger.c)
 	list(APPEND TEST_SRC
 		${LR35902_TEST_SRC}
 		${GB_TEST_SRC})
@@ -562,6 +560,9 @@ if(M_CORE_GBA)
 		${GBA_SRC}
 		${GBA_CHEATS_SRC}
 		${GBA_RENDERER_SRC})
+	list(APPEND CLI_SRC
+		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/cli-debugger.c
+		${CMAKE_CURRENT_SOURCE_DIR}/src/gba/extra/cli.c)
 	list(APPEND TEST_SRC
 		${ARM_TEST_SRC}
 		${GBA_TEST_SRC})
@@ -801,7 +802,7 @@ if(NOT QUIET)
 	message(STATUS "	Game Boy Advance: ${M_CORE_GBA}")
 	message(STATUS "	Game Boy: ${M_CORE_GB}")
 	message(STATUS "Features:")
-	message(STATUS "	CLI debugger: ${USE_CLI_DEBUGGER}")
+	message(STATUS "	CLI debugger: ${USE_EDITLINE}")
 	message(STATUS "	GDB stub: ${USE_GDB_STUB}")
 	message(STATUS "	Video recording: ${USE_FFMPEG}")
 	message(STATUS "	GIF recording: ${USE_MAGICK}")

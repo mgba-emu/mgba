@@ -7,9 +7,7 @@
 
 #include "core/core.h"
 
-#ifdef USE_CLI_DEBUGGER
 #include "debugger/cli-debugger.h"
-#endif
 
 #ifdef USE_GDB_STUB
 #include "debugger/gdb-stub.h"
@@ -29,9 +27,7 @@ struct mDebugger* mDebuggerCreate(enum mDebuggerType type, struct mCore* core) {
 
 	union DebugUnion {
 		struct mDebugger d;
-#ifdef USE_CLI_DEBUGGER
 		struct CLIDebugger cli;
-#endif
 #ifdef USE_GDB_STUB
 		struct GDBStub gdb;
 #endif
@@ -40,13 +36,11 @@ struct mDebugger* mDebuggerCreate(enum mDebuggerType type, struct mCore* core) {
 	union DebugUnion* debugger = malloc(sizeof(union DebugUnion));
 
 	switch (type) {
-#ifdef USE_CLI_DEBUGGER
 	case DEBUGGER_CLI:
 		CLIDebuggerCreate(&debugger->cli);
 		struct CLIDebuggerSystem* sys = core->cliDebuggerSystem(core);
 		CLIDebuggerAttachSystem(&debugger->cli, sys);
 		break;
-#endif
 #ifdef USE_GDB_STUB
 	case DEBUGGER_GDB:
 		GDBStubCreate(&debugger->gdb);

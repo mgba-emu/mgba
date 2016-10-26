@@ -10,8 +10,6 @@
 #include "gba/io.h"
 #include "gba/serialize.h"
 
-#ifdef USE_CLI_DEBUGGER
-
 static void _GBACLIDebuggerInit(struct CLIDebuggerSystem*);
 static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem*);
 static uint32_t _GBACLIDebuggerLookupIdentifier(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
@@ -87,14 +85,15 @@ static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 }
 
 static void _load(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	struct CLIDebuggerBackend* be = debugger->backend;
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		be->printf(be, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 
 	int state = dv->intValue;
 	if (state < 1 || state > 9) {
-		printf("State %u out of range", state);
+		be->printf(be, "State %u out of range", state);
 	}
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
@@ -105,18 +104,18 @@ static void _load(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 // TODO: Put back rewind
 
 static void _save(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	struct CLIDebuggerBackend* be = debugger->backend;
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		be->printf(be, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 
 	int state = dv->intValue;
 	if (state < 1 || state > 9) {
-		printf("State %u out of range", state);
+		be->printf(be, "State %u out of range", state);
 	}
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 
 	mCoreSaveState(gbaDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT);
 }
-#endif

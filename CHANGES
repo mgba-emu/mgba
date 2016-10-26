@@ -29,6 +29,7 @@ Misc:
  - PSP2: Improved controller rumble
  - GB, GBA: Prevent loading null ROMs
  - VFS: Allow truncating memory chunk VFiles
+ - Debugger: Modularize CLI debugger
 
 0.5.1: (2016-10-05)
 Bugfixes:

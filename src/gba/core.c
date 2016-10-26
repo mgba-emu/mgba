@@ -442,10 +442,8 @@ static void _GBACoreRawWrite32(struct mCore* core, uint32_t address, int segment
 static bool _GBACoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
 	UNUSED(core);
 	switch (type) {
-#ifdef USE_CLI_DEBUGGER
 	case DEBUGGER_CLI:
 		return true;
-#endif
 #ifdef USE_GDB_STUB
 	case DEBUGGER_GDB:
 		return true;
@@ -464,12 +462,7 @@ static struct mDebuggerPlatform* _GBACoreDebuggerPlatform(struct mCore* core) {
 }
 
 static struct CLIDebuggerSystem* _GBACoreCliDebuggerSystem(struct mCore* core) {
-#ifdef USE_CLI_DEBUGGER
 	return &GBACLIDebuggerCreate(core)->d;
-#else
-	UNUSED(core);
-	return NULL;
-#endif
 }
 
 static void _GBACoreAttachDebugger(struct mCore* core, struct mDebugger* debugger) {

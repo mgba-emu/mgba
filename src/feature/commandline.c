@@ -31,7 +31,7 @@ static const struct option _options[] = {
 	{ "bios",      required_argument, 0, 'b' },
 	{ "cheats",    required_argument, 0, 'c' },
 	{ "frameskip", required_argument, 0, 's' },
-#ifdef USE_CLI_DEBUGGER
+#ifdef USE_EDITLINE
 	{ "debug",     no_argument, 0, 'd' },
 #endif
 #ifdef USE_GDB_STUB
@@ -51,7 +51,7 @@ bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct
 	int ch;
 	char options[64] =
 		"b:c:hl:p:s:v:"
-#ifdef USE_CLI_DEBUGGER
+#ifdef USE_EDITLINE
 		"d"
 #endif
 #ifdef USE_GDB_STUB
@@ -82,7 +82,7 @@ bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct
 		case 'c':
 			args->cheatsFile = strdup(optarg);
 			break;
-#ifdef USE_CLI_DEBUGGER
+#ifdef USE_EDITLINE
 		case 'd':
 			if (args->debuggerType != DEBUGGER_NONE) {
 				return false;
@@ -209,7 +209,7 @@ void usage(const char* arg0, const char* extraOptions) {
 	puts("\nGeneric options:");
 	puts("  -b, --bios FILE     GBA BIOS file to use");
 	puts("  -c, --cheats FILE   Apply cheat codes from a file");
-#ifdef USE_CLI_DEBUGGER
+#ifdef USE_EDITLINE
 	puts("  -d, --debug         Use command-line debugger");
 #endif
 #ifdef USE_GDB_STUB

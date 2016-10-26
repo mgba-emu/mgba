@@ -5,12 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "main.h"
 
-#ifdef USE_CLI_DEBUGGER
 #include "debugger/cli-debugger.h"
-#endif
 
 #ifdef USE_GDB_STUB
 #include "debugger/gdb-stub.h"
+#endif
+#ifdef USE_EDITLINE
+#include "feature/editline/cli-el-backend.h"
 #endif
 
 #include "core/core.h"
@@ -169,6 +170,12 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 	mCoreAutoloadSave(renderer->core);
 	struct mDebugger* debugger = mDebuggerCreate(args->debuggerType, renderer->core);
 	if (debugger) {
+#ifdef USE_EDITLINE
+		if (args->debuggerType == DEBUGGER_CLI) {
+			struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
+			CLIDebuggerAttachBackend(cliDebugger, CLIDebuggerEditLineBackendCreate());
+		}
+#endif
 		mDebuggerAttach(debugger, renderer->core);
 		mDebuggerEnter(debugger, DEBUGGER_ENTER_MANUAL, NULL);
 	}

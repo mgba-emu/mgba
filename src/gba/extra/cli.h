@@ -6,7 +6,6 @@
 #ifndef GBA_CLI_H
 #define GBA_CLI_H
 
-#ifdef USE_CLI_DEBUGGER
 #include "debugger/cli-debugger.h"
 
 struct mCore;
@@ -21,6 +20,5 @@ struct GBACLIDebugger {
 };
 
 struct GBACLIDebugger* GBACLIDebuggerCreate(struct mCore*);
-#endif
 
 #endif

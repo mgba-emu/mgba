@@ -6,7 +6,6 @@
 #ifndef GB_CLI_H
 #define GB_CLI_H
 
-#ifdef USE_CLI_DEBUGGER
 #include "debugger/cli-debugger.h"
 
 struct GBCLIDebugger {
@@ -19,6 +18,5 @@ struct GBCLIDebugger {
 };
 
 struct CLIDebuggerSystem* GBCLIDebuggerCreate(struct mCore*);
-#endif
 
 #endif
