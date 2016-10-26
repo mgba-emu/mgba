@@ -75,6 +75,7 @@ set(SOURCE_FILES
 	CheatsModel.cpp
 	CheatsView.cpp
 	ConfigController.cpp
+	DebuggerController.cpp
 	Display.cpp
 	DisplayGL.cpp
 	DisplayQt.cpp
