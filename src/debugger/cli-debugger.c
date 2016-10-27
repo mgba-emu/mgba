@@ -678,11 +678,8 @@ static void _cliDebuggerDeinit(struct mDebugger* debugger) {
 		free(cliDebugger->system);
 		cliDebugger->system = NULL;
 	}
-	if (cliDebugger->backend) {
-		if (cliDebugger->backend->deinit) {
-			cliDebugger->backend->deinit(cliDebugger->backend);
-		}
-		free(cliDebugger->backend);
+	if (cliDebugger->backend && cliDebugger->backend->deinit) {
+		cliDebugger->backend->deinit(cliDebugger->backend);
 		cliDebugger->backend = NULL;
 	}
 }
@@ -722,11 +719,8 @@ void CLIDebuggerAttachSystem(struct CLIDebugger* debugger, struct CLIDebuggerSys
 }
 
 void CLIDebuggerAttachBackend(struct CLIDebugger* debugger, struct CLIDebuggerBackend* backend) {
-	if (debugger->backend) {
-		if (debugger->backend->deinit) {
-			debugger->backend->deinit(debugger->backend);
-		}
-		free(debugger->backend);
+	if (debugger->backend && debugger->backend->deinit) {
+		debugger->backend->deinit(debugger->backend);
 	}
 
 	debugger->backend = backend;

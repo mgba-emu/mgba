@@ -68,6 +68,7 @@ void _CLIDebuggerEditLineDeinit(struct CLIDebuggerBackend* be) {
 	struct CLIDebuggerEditLineBackend* elbe = (struct CLIDebuggerEditLineBackend*) be;
 	history_end(elbe->histate);
 	el_end(elbe->elstate);
+	free(elbe);
 }
 
 const char* _CLIDebuggerEditLineReadLine(struct CLIDebuggerBackend* be, size_t* len) {
