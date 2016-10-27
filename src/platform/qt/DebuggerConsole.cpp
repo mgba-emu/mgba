@@ -19,9 +19,8 @@ DebuggerConsole::DebuggerConsole(DebuggerConsoleController* controller, QWidget*
 
 	connect(m_ui.prompt, SIGNAL(returnPressed()), this, SLOT(postLine()));
 	connect(controller, SIGNAL(log(const QString&)), this, SLOT(log(const QString&)));
+	connect(m_ui.breakpoint, SIGNAL(clicked()), controller, SLOT(attach()));
 	connect(m_ui.breakpoint, SIGNAL(clicked()), controller, SLOT(breakInto()));
-
-	controller->attach();
 }
 
 void DebuggerConsole::log(const QString& line) {
@@ -31,6 +30,7 @@ void DebuggerConsole::log(const QString& line) {
 }
 
 void DebuggerConsole::postLine() {
+	m_consoleController->attach();
 	QString line = m_ui.prompt->text();
 	m_ui.prompt->clear();
 	if (line.isEmpty()) {
