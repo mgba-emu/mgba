@@ -155,7 +155,7 @@ static void _printHex(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 static void _printHelp(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
 	if (!dv) {
-		debugger->backend->printf(debugger->backend, "Generic commands:");
+		debugger->backend->printf(debugger->backend, "Generic commands:\n");
 		int i;
 		for (i = 0; _debuggerCommands[i].name; ++i) {
 			debugger->backend->printf(debugger->backend, "%-10s %s\n", _debuggerCommands[i].name, _debuggerCommands[i].summary);
