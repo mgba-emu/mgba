@@ -32,10 +32,12 @@ void free(void*);
 #ifdef M_CORE_GBA
 #include "arm/arm.h"
 #include "gba/gba.h"
+#include "gba/input.h"
 #include "gba/renderers/tile-cache.h"
 #endif
 #ifdef M_CORE_GB
 #include "lr35902/lr35902.h"
 #include "gb/gb.h"
+#include "gba/input.h"
 #include "gb/renderers/tile-cache.h"
 #endif

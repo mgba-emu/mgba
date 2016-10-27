@@ -102,6 +102,24 @@ class Core(object):
     def step(self):
         self._core.step(self._core)
 
+    @staticmethod
+    def _keysToInt(*args, **kwargs):
+        keys = 0
+        if 'raw' in kwargs:
+            keys = kwargs['raw']
+        for key in args:
+            keys |= 1 << key
+        return keys
+
+    def setKeys(self, *args, **kwargs):
+        self._core.setKeys(self._core, self._keysToInt(*args, **kwargs))
+
+    def addKeys(self, *args, **kwargs):
+        self._core.addKeys(self._core, self._keysToInt(*args, **kwargs))
+
+    def clearKeys(self, *args, **kwargs):
+        self._core.clearKeys(self._core, self._keysToInt(*args, **kwargs))
+
     def frameCounter(self):
         return self._core.frameCounter(self._core)
 

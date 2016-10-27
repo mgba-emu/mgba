@@ -9,6 +9,17 @@ from .core import Core
 from .tile import Sprite
 
 class GBA(Core):
+    KEY_A = lib.GBA_KEY_A
+    KEY_B = lib.GBA_KEY_B
+    KEY_SELECT = lib.GBA_KEY_SELECT
+    KEY_START = lib.GBA_KEY_START
+    KEY_DOWN = lib.GBA_KEY_DOWN
+    KEY_UP = lib.GBA_KEY_UP
+    KEY_LEFT = lib.GBA_KEY_LEFT
+    KEY_RIGHT = lib.GBA_KEY_RIGHT
+    KEY_L = lib.GBA_KEY_L
+    KEY_R = lib.GBA_KEY_R
+
     def __init__(self, native):
         super(GBA, self).__init__(native)
         self._native = ffi.cast("struct GBA*", native.board)
