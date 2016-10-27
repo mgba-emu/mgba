@@ -3,29 +3,29 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_DEBUGGER_REPL
-#define QGBA_DEBUGGER_REPL
+#ifndef QGBA_DEBUGGER_CONSOLE
+#define QGBA_DEBUGGER_CONSOLE
 
-#include "ui_DebuggerREPL.h"
+#include "ui_DebuggerConsole.h"
 
 namespace QGBA {
 
-class DebuggerREPLController;
+class DebuggerConsoleController;
 
-class DebuggerREPL : public QWidget {
+class DebuggerConsole : public QWidget {
 Q_OBJECT
 
 public:
-	DebuggerREPL(DebuggerREPLController* controller, QWidget* parent = nullptr);
+	DebuggerConsole(DebuggerConsoleController* controller, QWidget* parent = nullptr);
 
 private slots:
 	void log(const QString&);
 	void postLine();
 
 private:
-	Ui::DebuggerREPL m_ui;
+	Ui::DebuggerConsole m_ui;
 
-	DebuggerREPLController* m_replController;
+	DebuggerConsoleController* m_consoleController;
 };
 
 }

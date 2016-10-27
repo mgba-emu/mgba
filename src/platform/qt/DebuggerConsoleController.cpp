@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "DebuggerREPLController.h"
+#include "DebuggerConsoleController.h"
 
 #include "GameController.h"
 
@@ -15,7 +15,7 @@ extern "C" {
 
 using namespace QGBA;
 
-DebuggerREPLController::DebuggerREPLController(GameController* controller, QObject* parent)
+DebuggerConsoleController::DebuggerConsoleController(GameController* controller, QObject* parent)
 	: DebuggerController(controller, &m_cliDebugger.d, parent)
 {
 	m_backend.d.printf = printf;
@@ -31,7 +31,7 @@ DebuggerREPLController::DebuggerREPLController(GameController* controller, QObje
 	CLIDebuggerAttachBackend(&m_cliDebugger, &m_backend.d);
 }
 
-void DebuggerREPLController::enterLine(const QString& line) {
+void DebuggerConsoleController::enterLine(const QString& line) {
 	QMutexLocker lock(&m_mutex);
 	m_lines.append(line);
 	if (m_cliDebugger.d.state == DEBUGGER_RUNNING) {
@@ -40,33 +40,33 @@ void DebuggerREPLController::enterLine(const QString& line) {
 	m_cond.wakeOne();
 }
 
-void DebuggerREPLController::attachInternal() {
+void DebuggerConsoleController::attachInternal() {
 	mCore* core = m_gameController->thread()->core;
 	CLIDebuggerAttachSystem(&m_cliDebugger, core->cliDebuggerSystem(core));
 }
 
-void DebuggerREPLController::printf(struct CLIDebuggerBackend* be, const char* fmt, ...) {
-	Backend* replBe = reinterpret_cast<Backend*>(be);
-	DebuggerREPLController* self = replBe->self;
+void DebuggerConsoleController::printf(struct CLIDebuggerBackend* be, const char* fmt, ...) {
+	Backend* consoleBe = reinterpret_cast<Backend*>(be);
+	DebuggerConsoleController* self = consoleBe->self;
 	va_list args;
 	va_start(args, fmt);
 	self->log(QString().vsprintf(fmt, args));
 	va_end(args);
 }
 
-void DebuggerREPLController::init(struct CLIDebuggerBackend* be) {
-	Backend* replBe = reinterpret_cast<Backend*>(be);
-	DebuggerREPLController* self = replBe->self;
+void DebuggerConsoleController::init(struct CLIDebuggerBackend* be) {
+	Backend* consoleBe = reinterpret_cast<Backend*>(be);
+	DebuggerConsoleController* self = consoleBe->self;
 }
 
-void DebuggerREPLController::deinit(struct CLIDebuggerBackend* be) {
-	Backend* replBe = reinterpret_cast<Backend*>(be);
-	DebuggerREPLController* self = replBe->self;
+void DebuggerConsoleController::deinit(struct CLIDebuggerBackend* be) {
+	Backend* consoleBe = reinterpret_cast<Backend*>(be);
+	DebuggerConsoleController* self = consoleBe->self;
 }
 
-const char* DebuggerREPLController::readLine(struct CLIDebuggerBackend* be, size_t* len) {
-	Backend* replBe = reinterpret_cast<Backend*>(be);
-	DebuggerREPLController* self = replBe->self;
+const char* DebuggerConsoleController::readLine(struct CLIDebuggerBackend* be, size_t* len) {
+	Backend* consoleBe = reinterpret_cast<Backend*>(be);
+	DebuggerConsoleController* self = consoleBe->self;
 	GameController::Interrupter interrupter(self->m_gameController, true);
 	QMutexLocker lock(&self->m_mutex);
 	while (self->m_lines.isEmpty()) {
@@ -78,24 +78,24 @@ const char* DebuggerREPLController::readLine(struct CLIDebuggerBackend* be, size
 
 }
 
-void DebuggerREPLController::lineAppend(struct CLIDebuggerBackend* be, const char* line) {
-	Backend* replBe = reinterpret_cast<Backend*>(be);
-	DebuggerREPLController* self = replBe->self;
+void DebuggerConsoleController::lineAppend(struct CLIDebuggerBackend* be, const char* line) {
+	Backend* consoleBe = reinterpret_cast<Backend*>(be);
+	DebuggerConsoleController* self = consoleBe->self;
 	self->lineAppend(QString::fromUtf8(line));
 }
 
-const char* DebuggerREPLController::historyLast(struct CLIDebuggerBackend* be, size_t* len) {
-	Backend* replBe = reinterpret_cast<Backend*>(be);
-	DebuggerREPLController* self = replBe->self;
+const char* DebuggerConsoleController::historyLast(struct CLIDebuggerBackend* be, size_t* len) {
+	Backend* consoleBe = reinterpret_cast<Backend*>(be);
+	DebuggerConsoleController* self = consoleBe->self;
 	GameController::Interrupter interrupter(self->m_gameController, true);
 	QMutexLocker lock(&self->m_mutex);
 	self->m_last = self->m_history.last().toUtf8();
 	return self->m_last.constData();
 }
 
-void DebuggerREPLController::historyAppend(struct CLIDebuggerBackend* be, const char* line) {
-	Backend* replBe = reinterpret_cast<Backend*>(be);
-	DebuggerREPLController* self = replBe->self;
+void DebuggerConsoleController::historyAppend(struct CLIDebuggerBackend* be, const char* line) {
+	Backend* consoleBe = reinterpret_cast<Backend*>(be);
+	DebuggerConsoleController* self = consoleBe->self;
 	GameController::Interrupter interrupter(self->m_gameController, true);
 	QMutexLocker lock(&self->m_mutex);
 	self->m_history.append(QString::fromUtf8(line));

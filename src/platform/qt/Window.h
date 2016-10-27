@@ -26,7 +26,7 @@ struct mArguments;
 namespace QGBA {
 
 class ConfigController;
-class DebuggerREPLController;
+class DebuggerConsoleController;
 class Display;
 class GameController;
 class GDBController;
@@ -82,7 +82,7 @@ public slots:
 	void openAboutScreen();
 
 #ifdef USE_DEBUGGERS
-	void replOpen();
+	void consoleOpen();
 #endif
 
 #ifdef USE_FFMPEG
@@ -162,7 +162,7 @@ private:
 	LogController m_log;
 	LogView* m_logView;
 #ifdef USE_DEBUGGERS
-	DebuggerREPLController* m_repl;
+	DebuggerConsoleController* m_console;
 #endif
 	LoadSaveState* m_stateWindow;
 	WindowBackground* m_screenWidget;

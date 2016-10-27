@@ -4,7 +4,7 @@ Features:
  - GBA: Better cheat type autodetection
  - GB: Tile viewer
  - Sprite viewer
- - Debugging REPL
+ - Debugging console
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior

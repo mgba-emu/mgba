@@ -18,8 +18,8 @@
 #include "ArchiveInspector.h"
 #include "CheatsView.h"
 #include "ConfigController.h"
-#include "DebuggerREPL.h"
-#include "DebuggerREPLController.h"
+#include "DebuggerConsole.h"
+#include "DebuggerConsoleController.h"
 #include "Display.h"
 #include "GameController.h"
 #include "GBAApp.h"
@@ -73,7 +73,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_gdbController(nullptr)
 #endif
 #ifdef USE_DEBUGGERS
-	, m_repl(nullptr)
+	, m_console(nullptr)
 #endif
 	, m_mruMenu(nullptr)
 	, m_shortcutController(new ShortcutController(this))
@@ -519,11 +519,11 @@ void Window::gdbOpen() {
 #endif
 
 #ifdef USE_DEBUGGERS
-void Window::replOpen() {
-	if (!m_repl) {
-		m_repl = new DebuggerREPLController(m_controller, this);
+void Window::consoleOpen() {
+	if (!m_console) {
+		m_console = new DebuggerConsoleController(m_controller, this);
 	}
-	DebuggerREPL* window = new DebuggerREPL(m_repl);
+	DebuggerConsole* window = new DebuggerConsole(m_console);
 	openView(window);
 }
 #endif
@@ -1353,9 +1353,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	toolsMenu->addSeparator();
 
 #ifdef USE_DEBUGGERS
-	QAction* replWindow = new QAction(tr("Open debugger REPL..."), toolsMenu);
-	connect(replWindow, SIGNAL(triggered()), this, SLOT(replOpen()));
-	addControlledAction(toolsMenu, replWindow, "debuggerWindow");
+	QAction* consoleWindow = new QAction(tr("Open debugger console..."), toolsMenu);
+	connect(consoleWindow, SIGNAL(triggered()), this, SLOT(consoleOpen()));
+	addControlledAction(toolsMenu, consoleWindow, "debuggerWindow");
 #endif
 
 #ifdef USE_GDB_STUB

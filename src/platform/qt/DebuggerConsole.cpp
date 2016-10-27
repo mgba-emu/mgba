@@ -3,17 +3,17 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "DebuggerREPL.h"
+#include "DebuggerConsole.h"
 
-#include "DebuggerREPLController.h"
+#include "DebuggerConsoleController.h"
 
 #include <QScrollBar>
 
 using namespace QGBA;
 
-DebuggerREPL::DebuggerREPL(DebuggerREPLController* controller, QWidget* parent)
+DebuggerConsole::DebuggerConsole(DebuggerConsoleController* controller, QWidget* parent)
 	: QWidget(parent)
-	, m_replController(controller)
+	, m_consoleController(controller)
 {
 	m_ui.setupUi(this);
 
@@ -24,19 +24,19 @@ DebuggerREPL::DebuggerREPL(DebuggerREPLController* controller, QWidget* parent)
 	controller->attach();
 }
 
-void DebuggerREPL::log(const QString& line) {
+void DebuggerConsole::log(const QString& line) {
 	m_ui.log->moveCursor(QTextCursor::End);
 	m_ui.log->insertPlainText(line);
 	m_ui.log->verticalScrollBar()->setValue(m_ui.log->verticalScrollBar()->maximum());
 }
 
-void DebuggerREPL::postLine() {
+void DebuggerConsole::postLine() {
 	QString line = m_ui.prompt->text();
 	m_ui.prompt->clear();
 	if (line.isEmpty()) {
-		m_replController->enterLine(QString("\n"));
+		m_consoleController->enterLine(QString("\n"));
 	} else {
 		log(QString("> %1\n").arg(line));
-		m_replController->enterLine(line);
+		m_consoleController->enterLine(line);
 	}
 }

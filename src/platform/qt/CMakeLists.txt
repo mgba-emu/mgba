@@ -118,7 +118,7 @@ set(UI_FILES
 	ArchiveInspector.ui
 	AssetTile.ui
 	CheatsView.ui
-	DebuggerREPL.ui
+	DebuggerConsole.ui
 	GIFView.ui
 	IOViewer.ui
 	LoadSaveState.ui
@@ -181,8 +181,8 @@ endif()
 if(USE_DEBUGGERS)
 	list(APPEND SOURCE_FILES
 		DebuggerController.cpp
-		DebuggerREPL.cpp
-		DebuggerREPLController.cpp)
+		DebuggerConsole.cpp
+		DebuggerConsoleController.cpp)
 endif()
 
 if(USE_GDB_STUB)

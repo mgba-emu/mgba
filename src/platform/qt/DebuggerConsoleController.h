@@ -3,8 +3,8 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_DEBUGGER_REPL_CONTROLLER
-#define QGBA_DEBUGGER_REPL_CONTROLLER
+#ifndef QGBA_DEBUGGER_CONSOLE_CONTROLLER
+#define QGBA_DEBUGGER_CONSOLE_CONTROLLER
 
 #include "DebuggerController.h"
 
@@ -20,11 +20,11 @@ namespace QGBA {
 
 class GameController;
 
-class DebuggerREPLController : public DebuggerController {
+class DebuggerConsoleController : public DebuggerController {
 Q_OBJECT
 
 public:
-	DebuggerREPLController(GameController* controller, QObject* parent = nullptr);
+	DebuggerConsoleController(GameController* controller, QObject* parent = nullptr);
 
 signals:
 	void log(const QString&);
@@ -55,7 +55,7 @@ private:
 
 	struct Backend {
 		CLIDebuggerBackend d;
-		DebuggerREPLController* self;
+		DebuggerConsoleController* self;
 	} m_backend;
 };
 
