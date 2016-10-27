@@ -7,6 +7,8 @@
 
 #include "GameController.h"
 
+#include <QMutexLocker>
+
 extern "C" {
 #include "debugger/cli-debugger.h"
 }

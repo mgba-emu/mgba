@@ -8,6 +8,8 @@
 
 #include "DebuggerController.h"
 
+#include <QMutex>
+#include <QStringList>
 #include <QWaitCondition>
 
 extern "C" {
