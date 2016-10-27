@@ -478,6 +478,14 @@ void mCoreThreadPauseFromThread(struct mCoreThread* threadContext) {
 
 void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool rewinding) {
 	MutexLock(&threadContext->stateMutex);
+	if (rewinding && (threadContext->state == THREAD_REWINDING || (threadContext->state == THREAD_INTERRUPTING && threadContext->savedState == THREAD_REWINDING))) {
+		MutexUnlock(&threadContext->stateMutex);
+		return;
+	}
+	if (!rewinding && (threadContext->state == THREAD_RUNNING || (threadContext->state == THREAD_INTERRUPTING && threadContext->savedState == THREAD_RUNNING))) {
+		MutexUnlock(&threadContext->stateMutex);
+		return;
+	}
 	_waitOnInterrupt(threadContext);
 	if (rewinding && threadContext->state == THREAD_RUNNING) {
 		threadContext->state = THREAD_REWINDING;

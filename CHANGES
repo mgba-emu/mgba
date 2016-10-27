@@ -30,6 +30,7 @@ Misc:
  - GB, GBA: Prevent loading null ROMs
  - VFS: Allow truncating memory chunk VFiles
  - Debugger: Modularize CLI debugger
+ - Core: Clean up some thread state checks
 
 0.5.1: (2016-10-05)
 Bugfixes:
