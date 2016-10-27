@@ -81,7 +81,9 @@ public slots:
 	void openSettingsWindow();
 	void openAboutScreen();
 
+#ifdef USE_DEBUGGERS
 	void replOpen();
+#endif
 
 #ifdef USE_FFMPEG
 	void openVideoWindow();
@@ -159,7 +161,9 @@ private:
 	QMap<int, QAction*> m_frameSizes;
 	LogController m_log;
 	LogView* m_logView;
+#ifdef USE_DEBUGGERS
 	DebuggerREPLController* m_repl;
+#endif
 	LoadSaveState* m_stateWindow;
 	WindowBackground* m_screenWidget;
 	QPixmap m_logo;

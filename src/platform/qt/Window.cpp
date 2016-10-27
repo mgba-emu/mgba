@@ -72,7 +72,9 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 #ifdef USE_GDB_STUB
 	, m_gdbController(nullptr)
 #endif
+#ifdef USE_DEBUGGERS
 	, m_repl(nullptr)
+#endif
 	, m_mruMenu(nullptr)
 	, m_shortcutController(new ShortcutController(this))
 	, m_fullscreenOnStart(false)
@@ -516,6 +518,7 @@ void Window::gdbOpen() {
 }
 #endif
 
+#ifdef USE_DEBUGGERS
 void Window::replOpen() {
 	if (!m_repl) {
 		m_repl = new DebuggerREPLController(m_controller, this);
@@ -523,6 +526,7 @@ void Window::replOpen() {
 	DebuggerREPL* window = new DebuggerREPL(m_repl);
 	openView(window);
 }
+#endif
 
 void Window::keyPressEvent(QKeyEvent* event) {
 	if (event->isAutoRepeat()) {
@@ -1348,9 +1352,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	toolsMenu->addSeparator();
 
+#ifdef USE_DEBUGGERS
 	QAction* replWindow = new QAction(tr("Open debugger REPL..."), toolsMenu);
 	connect(replWindow, SIGNAL(triggered()), this, SLOT(replOpen()));
 	addControlledAction(toolsMenu, replWindow, "debuggerWindow");
+#endif
 
 #ifdef USE_GDB_STUB
 	QAction* gdbWindow = new QAction(tr("Start &GDB server..."), toolsMenu);

@@ -791,6 +791,7 @@ void GBAGetGameTitle(const struct GBA* gba, char* out) {
 
 void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
+#ifdef USE_DEBUGGERS
 	if (gba->debugger) {
 		struct mDebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
@@ -798,6 +799,7 @@ void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 		};
 		mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_ILLEGAL_OP, &info);
 	}
+#endif
 	// TODO: More sensible category?
 	mLOG(GBA, ERROR, "Stub opcode: %08x", opcode);
 }
@@ -808,13 +810,16 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 		// TODO: More sensible category?
 		mLOG(GBA, WARN, "Illegal opcode: %08x", opcode);
 	}
+#ifdef USE_DEBUGGERS
 	if (gba->debugger) {
 		struct mDebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
 			.opcode = opcode
 		};
 		mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_ILLEGAL_OP, &info);
-	} else {
+	} else
+#endif
+	{
 		ARMRaiseUndefined(cpu);
 	}
 }
@@ -825,6 +830,7 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 		return;
 	}
 	switch (immediate) {
+#ifdef USE_DEBUGGERS
 	case CPU_COMPONENT_DEBUGGER:
 		if (gba->debugger) {
 			struct mDebuggerEntryInfo info = {
@@ -834,6 +840,7 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 			mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_BREAKPOINT, &info);
 		}
 		break;
+#endif
 	case CPU_COMPONENT_CHEAT_DEVICE:
 		if (gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
 			struct mCheatDevice* device = (struct mCheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];

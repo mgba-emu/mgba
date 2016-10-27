@@ -6,6 +6,7 @@ if(NOT MSVC)
 else()
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_CRT_SECURE_NO_WARNINGS /wd4003 /wd4244 /wd4146")
 endif()
+set(USE_DEBUGGERS ON CACHE BOOL "Whether or not to enable the debugging infrastructure")
 set(USE_EDITLINE ON CACHE BOOL "Whether or not to enable the CLI-mode debugger")
 set(USE_GDB_STUB ON CACHE BOOL "Whether or not to enable the GDB stub ARM debugger")
 set(USE_FFMPEG ON CACHE BOOL "Whether or not to enable FFmpeg support")
@@ -44,7 +45,6 @@ file(GLOB GB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/*.c)
 file(GLOB GB_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/test/*.c)
 file(GLOB GBA_CHEATS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/cheats/*.c)
 file(GLOB GBA_RR_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/rr/*.c)
-file(GLOB GBA_EXTRA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/extra/*.c)
 file(GLOB CORE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/core/*.c)
 file(GLOB CORE_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/core/test/*.c)
 file(GLOB UTIL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/*.[cSs])
@@ -60,7 +60,7 @@ set(VFS_SRC)
 source_group("ARM core" FILES ${ARM_SRC})
 source_group("LR35902 core" FILES ${LR35902_SRC})
 source_group("GBA board" FILES ${GBA_SRC} ${GBA_RENDERER_SRC} ${SIO_SRC})
-source_group("GBA extra" FILES ${GBA_CHEATS_SRC} ${GBA_EXTRA_SRC} ${GBA_RR_SRC})
+source_group("GBA extra" FILES ${GBA_CHEATS_SRC} ${GBA_RR_SRC})
 source_group("GB board" FILES ${GB_SRC})
 source_group("Utilities" FILES ${UTIL_SRC})
 include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -235,7 +235,16 @@ if(PSP2 OR WII)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format")
 endif()
 
-if(DEFINED 3DS OR DEFINED PSP2 OR DEFINED WII OR NOT M_CORE_GBA)
+if(DEFINED 3DS OR DEFINED PSP2 OR DEFINED WII)
+	set(USE_DEBUGGERS OFF)
+endif()
+
+if(NOT M_CORE_GBA)
+	set(USE_GDB_STUB OFF)
+endif()
+
+if(NOT USE_DEBUGGERS)
+	set(USE_EDITLINE OFF)
 	set(USE_GDB_STUB OFF)
 endif()
 
@@ -530,22 +539,17 @@ if(USE_EPOXY)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libepoxy0")
 endif()
 
-
-set(FEATURE_DEFINES)
-foreach(FEATURE IN LISTS FEATURES)
-	list(APPEND FEATURE_DEFINES "USE_${FEATURE}")
-endforeach()
-
 set(TEST_SRC ${CORE_TEST_SRC})
 if(M_CORE_GB)
 	add_definitions(-DM_CORE_GB)
 	list(APPEND CORE_SRC
 		${LR35902_SRC}
-		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/debugger.c
 		${GB_SRC}
 		${GB_RENDERER_SRC})
-	list(APPEND CLI_SRC
-		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/cli-debugger.c)
+	list(APPEND DEBUGGER_SRC
+		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/cli-debugger.c
+		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/debugger.c
+		${CMAKE_CURRENT_SOURCE_DIR}/src/gb/extra/cli.c)
 	list(APPEND TEST_SRC
 		${LR35902_TEST_SRC}
 		${GB_TEST_SRC})
@@ -555,13 +559,13 @@ if(M_CORE_GBA)
 	add_definitions(-DM_CORE_GBA)
 	list(APPEND CORE_SRC 
 		${ARM_SRC}
-		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/debugger.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/memory-debugger.c
 		${GBA_SRC}
 		${GBA_CHEATS_SRC}
 		${GBA_RENDERER_SRC})
-	list(APPEND CLI_SRC
+	list(APPEND DEBUGGER_SRC
 		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/cli-debugger.c
+		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/debugger.c
+		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/memory-debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/gba/extra/cli.c)
 	list(APPEND TEST_SRC
 		${ARM_TEST_SRC}
@@ -570,6 +574,16 @@ if(M_CORE_GBA)
 		list(APPEND CORE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/audio.c)
 	endif()
 endif()
+
+if(USE_DEBUGGERS)
+	list(APPEND FEATURE_SRC ${DEBUGGER_SRC})
+	list(APPEND FEATURES DEBUGGERS)
+endif()
+
+set(FEATURE_DEFINES)
+foreach(FEATURE IN LISTS FEATURES)
+	list(APPEND FEATURE_DEFINES "USE_${FEATURE}")
+endforeach()
 
 source_group("Virtual files" FILES ${CORE_VFS_SRC} ${VFS_SRC})
 source_group("Extra features" FILES ${FEATURE_SRC})
@@ -592,7 +606,6 @@ endif()
 list(APPEND CORE_SRC
 	${UTIL_SRC}
 	${CORE_VFS_SRC}
-	${DEBUGGER_SRC}
 	${OS_SRC}
 	${THIRD_PARTY_SRC})
 list(APPEND TEST_SRC ${UTIL_TEST_SRC})
@@ -802,6 +815,7 @@ if(NOT QUIET)
 	message(STATUS "	Game Boy Advance: ${M_CORE_GBA}")
 	message(STATUS "	Game Boy: ${M_CORE_GB}")
 	message(STATUS "Features:")
+	message(STATUS "	Debuggers: ${USE_DEBUGGERS}")
 	message(STATUS "	CLI debugger: ${USE_EDITLINE}")
 	message(STATUS "	GDB stub: ${USE_GDB_STUB}")
 	message(STATUS "	Video recording: ${USE_FFMPEG}")

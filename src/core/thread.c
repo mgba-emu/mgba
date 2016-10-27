@@ -162,13 +162,16 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 
 	while (threadContext->state < THREAD_EXITING) {
+#ifdef USE_DEBUGGERS
 		struct mDebugger* debugger = core->debugger;
 		if (debugger) {
 			mDebuggerRun(debugger);
 			if (debugger->state == DEBUGGER_SHUTDOWN) {
 				_changeState(threadContext, THREAD_EXITING, false);
 			}
-		} else {
+		} else
+#endif
+		{
 			while (threadContext->state <= THREAD_MAX_RUNNING) {
 				core->runLoop(core);
 			}

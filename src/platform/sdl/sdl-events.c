@@ -398,11 +398,13 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 	}
 	if (event->type == SDL_KEYDOWN) {
 		switch (event->keysym.sym) {
+#ifdef USE_DEBUGGERS
 		case SDLK_F11:
 			if (context->core->debugger) {
 				mDebuggerEnter(context->core->debugger, DEBUGGER_ENTER_MANUAL, NULL);
 			}
 			return;
+#endif
 #ifdef USE_PNG
 		case SDLK_F12:
 			mCoreTakeScreenshot(context->core);

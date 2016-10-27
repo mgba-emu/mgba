@@ -75,9 +75,6 @@ set(SOURCE_FILES
 	CheatsModel.cpp
 	CheatsView.cpp
 	ConfigController.cpp
-	DebuggerController.cpp
-	DebuggerREPL.cpp
-	DebuggerREPLController.cpp
 	Display.cpp
 	DisplayGL.cpp
 	DisplayQt.cpp
@@ -181,8 +178,15 @@ if(NOT AUDIO_SRC)
 	return()
 endif()
 
+if(USE_DEBUGGERS)
+	list(APPEND SOURCE_FILES
+		DebuggerController.cpp
+		DebuggerREPL.cpp
+		DebuggerREPLController.cpp)
+endif()
+
 if(USE_GDB_STUB)
-	list(APPEND PLATFORM_SRC GDBController.cpp GDBWindow.cpp)
+	list(APPEND SOURCE_FILES GDBController.cpp GDBWindow.cpp)
 endif()
 
 qt5_add_resources(RESOURCES resources.qrc)

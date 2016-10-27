@@ -118,11 +118,13 @@ struct mCore {
 	void (*rawWrite16)(struct mCore*, uint32_t address, int segment, uint16_t);
 	void (*rawWrite32)(struct mCore*, uint32_t address, int segment, uint32_t);
 
+#ifdef USE_DEBUGGERS
 	bool (*supportsDebuggerType)(struct mCore*, enum mDebuggerType);
 	struct mDebuggerPlatform* (*debuggerPlatform)(struct mCore*);
 	struct CLIDebuggerSystem* (*cliDebuggerSystem)(struct mCore*);
 	void (*attachDebugger)(struct mCore*, struct mDebugger*);
 	void (*detachDebugger)(struct mCore*);
+#endif
 
 	struct mCheatDevice* (*cheatDevice)(struct mCore*);
 

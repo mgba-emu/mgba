@@ -26,8 +26,8 @@ extern "C" {
 #include "gba/bios.h"
 #include "gba/core.h"
 #include "gba/gba.h"
-#include "gba/extra/sharkport.h"
 #include "gba/renderers/tile-cache.h"
+#include "gba/sharkport.h"
 #endif
 #ifdef M_CORE_GB
 #include "gb/gb.h"

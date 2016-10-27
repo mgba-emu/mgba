@@ -168,6 +168,7 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		return 1;
 	}
 	mCoreAutoloadSave(renderer->core);
+#ifdef USE_DEBUGGERS
 	struct mDebugger* debugger = mDebuggerCreate(args->debuggerType, renderer->core);
 	if (debugger) {
 #ifdef USE_EDITLINE
@@ -179,6 +180,7 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		mDebuggerAttach(debugger, renderer->core);
 		mDebuggerEnter(debugger, DEBUGGER_ENTER_MANUAL, NULL);
 	}
+#endif
 
 	if (args->patch) {
 		struct VFile* patch = VFileOpen(args->patch, O_RDONLY);
