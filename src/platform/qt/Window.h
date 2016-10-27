@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,7 +18,6 @@ extern "C" {
 #include "gba/gba.h"
 }
 
-#include "GDBController.h"
 #include "InputController.h"
 #include "LoadSaveState.h"
 #include "LogController.h"
@@ -27,8 +26,10 @@ struct mArguments;
 namespace QGBA {
 
 class ConfigController;
+class DebuggerREPLController;
 class Display;
 class GameController;
+class GDBController;
 class GIFView;
 class LogView;
 class ShaderSelector;
@@ -79,6 +80,8 @@ public slots:
 
 	void openSettingsWindow();
 	void openAboutScreen();
+
+	void replOpen();
 
 #ifdef USE_FFMPEG
 	void openVideoWindow();
@@ -156,6 +159,7 @@ private:
 	QMap<int, QAction*> m_frameSizes;
 	LogController m_log;
 	LogView* m_logView;
+	DebuggerREPLController* m_repl;
 	LoadSaveState* m_stateWindow;
 	WindowBackground* m_screenWidget;
 	QPixmap m_logo;

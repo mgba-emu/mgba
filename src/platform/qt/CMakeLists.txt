@@ -76,6 +76,8 @@ set(SOURCE_FILES
 	CheatsView.cpp
 	ConfigController.cpp
 	DebuggerController.cpp
+	DebuggerREPL.cpp
+	DebuggerREPLController.cpp
 	Display.cpp
 	DisplayGL.cpp
 	DisplayQt.cpp
@@ -119,6 +121,7 @@ set(UI_FILES
 	ArchiveInspector.ui
 	AssetTile.ui
 	CheatsView.ui
+	DebuggerREPL.ui
 	GIFView.ui
 	IOViewer.ui
 	LoadSaveState.ui

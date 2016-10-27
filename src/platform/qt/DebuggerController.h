@@ -30,6 +30,7 @@ public slots:
 	virtual void shutdown();
 
 protected:
+	virtual void attachInternal();
 	virtual void shutdownInternal();
 
 	mDebugger* const m_debugger;

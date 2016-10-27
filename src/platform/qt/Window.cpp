@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,6 +18,8 @@
 #include "ArchiveInspector.h"
 #include "CheatsView.h"
 #include "ConfigController.h"
+#include "DebuggerREPL.h"
+#include "DebuggerREPLController.h"
 #include "Display.h"
 #include "GameController.h"
 #include "GBAApp.h"
@@ -70,6 +72,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 #ifdef USE_GDB_STUB
 	, m_gdbController(nullptr)
 #endif
+	, m_repl(nullptr)
 	, m_mruMenu(nullptr)
 	, m_shortcutController(new ShortcutController(this))
 	, m_fullscreenOnStart(false)
@@ -512,6 +515,14 @@ void Window::gdbOpen() {
 	openView(window);
 }
 #endif
+
+void Window::replOpen() {
+	if (!m_repl) {
+		m_repl = new DebuggerREPLController(m_controller, this);
+	}
+	DebuggerREPL* window = new DebuggerREPL(m_repl);
+	openView(window);
+}
 
 void Window::keyPressEvent(QKeyEvent* event) {
 	if (event->isAutoRepeat()) {
@@ -1331,17 +1342,22 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_gameActions.append(cheats);
 	addControlledAction(toolsMenu, cheats, "cheatsWindow");
 
+	toolsMenu->addSeparator();
+	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())),
+	                    "settings");
+
+	toolsMenu->addSeparator();
+
+	QAction* replWindow = new QAction(tr("Open debugger REPL..."), toolsMenu);
+	connect(replWindow, SIGNAL(triggered()), this, SLOT(replOpen()));
+	addControlledAction(toolsMenu, replWindow, "debuggerWindow");
+
 #ifdef USE_GDB_STUB
 	QAction* gdbWindow = new QAction(tr("Start &GDB server..."), toolsMenu);
 	connect(gdbWindow, SIGNAL(triggered()), this, SLOT(gdbOpen()));
 	m_gbaActions.append(gdbWindow);
 	addControlledAction(toolsMenu, gdbWindow, "gdbWindow");
 #endif
-
-	toolsMenu->addSeparator();
-	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())),
-	                    "settings");
-
 	toolsMenu->addSeparator();
 
 	QAction* paletteView = new QAction(tr("View &palette..."), toolsMenu);

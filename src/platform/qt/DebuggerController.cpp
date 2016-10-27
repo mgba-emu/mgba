@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,6 +25,7 @@ void DebuggerController::attach() {
 		return;
 	}
 	if (m_gameController->isLoaded()) {
+		attachInternal();
 		m_gameController->setDebugger(m_debugger);
 		mDebuggerEnter(m_debugger, DEBUGGER_ENTER_ATTACHED, 0);
 	} else {
@@ -58,6 +59,10 @@ void DebuggerController::shutdown() {
 	}
 	GameController::Interrupter interrupter(m_gameController);
 	shutdownInternal();
+}
+
+void DebuggerController::attachInternal() {
+	// No default implementation
 }
 
 void DebuggerController::shutdownInternal() {
