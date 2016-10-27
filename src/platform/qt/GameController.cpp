@@ -169,6 +169,15 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.cleanCallback = [](mCoreThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
+
+		if (controller->m_multiplayer) {
+			controller->m_multiplayer->detachGame(controller);
+		}
+		controller->m_patch = QString();
+		controller->clearOverride();
+
+		QMetaObject::invokeMethod(controller->m_audioProcessor, "pause", Qt::BlockingQueuedConnection);
+
 		QMetaObject::invokeMethod(controller, "gameStopped", Q_ARG(mCoreThread*, context));
 		QMetaObject::invokeMethod(controller, "cleanGame");
 	};
@@ -589,17 +598,10 @@ void GameController::closeGame() {
 	if (!m_gameOpen) {
 		return;
 	}
-	if (m_multiplayer) {
-		m_multiplayer->detachGame(this);
-	}
 
 	if (mCoreThreadIsPaused(&m_threadContext)) {
 		mCoreThreadUnpause(&m_threadContext);
 	}
-	m_patch = QString();
-	clearOverride();
-
-	QMetaObject::invokeMethod(m_audioProcessor, "pause", Qt::BlockingQueuedConnection);
 	mCoreThreadEnd(&m_threadContext);
 }
 
