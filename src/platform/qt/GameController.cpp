@@ -320,9 +320,8 @@ void GameController::clearMultiplayerController() {
 void GameController::setOverride(Override* override) {
 	m_override = override;
 	if (isLoaded()) {
-		threadInterrupt();
+		Interrupter interrupter(this);
 		m_override->identify(m_threadContext.core);
-		threadContinue();
 	}
 }
 
@@ -334,10 +333,9 @@ void GameController::clearOverride() {
 void GameController::setConfig(const mCoreConfig* config) {
 	m_config = config;
 	if (isLoaded()) {
-		threadInterrupt();
+		Interrupter interrupter(this);
 		mCoreLoadForeignConfig(m_threadContext.core, config);
 		m_audioProcessor->setInput(&m_threadContext);
-		threadContinue();
 	}
 }
 
@@ -350,13 +348,12 @@ mDebugger* GameController::debugger() {
 }
 
 void GameController::setDebugger(mDebugger* debugger) {
-	threadInterrupt();
+	Interrupter interrupter(this);
 	if (debugger) {
 		mDebuggerAttach(debugger, m_threadContext.core);
 	} else {
 		m_threadContext.core->detachDebugger(m_threadContext.core);
 	}
-	threadContinue();
 }
 #endif
 
@@ -518,9 +515,8 @@ void GameController::yankPak() {
 	if (!m_gameOpen) {
 		return;
 	}
-	threadInterrupt();
+	Interrupter interrupter(this);
 	GBAYankROM(static_cast<GBA*>(m_threadContext.core->board));
-	threadContinue();
 }
 
 void GameController::replaceGame(const QString& path) {
@@ -534,10 +530,9 @@ void GameController::replaceGame(const QString& path) {
 		return;
 	}
 	m_fname = info.canonicalFilePath();
-	threadInterrupt();
+	Interrupter interrupter(this);
 	mDirectorySetDetachBase(&m_threadContext.core->dirs);
 	mCoreLoadFile(m_threadContext.core, m_fname.toLocal8Bit().constData());
-	threadContinue();
 }
 
 void GameController::loadPatch(const QString& path) {
@@ -675,12 +670,11 @@ void GameController::reset() {
 	}
 	bool wasPaused = isPaused();
 	setPaused(false);
-	threadInterrupt();
+	Interrupter interrupter(this);
 	mCoreThreadReset(&m_threadContext);
 	if (wasPaused) {
 		setPaused(true);
 	}
-	threadContinue();
 }
 
 void GameController::threadInterrupt() {
@@ -703,7 +697,7 @@ void GameController::frameAdvance() {
 
 void GameController::setRewind(bool enable, int capacity) {
 	if (m_gameOpen) {
-		threadInterrupt();
+		Interrupter interrupter(this);
 		if (m_threadContext.core->opts.rewindEnable && m_threadContext.core->opts.rewindBufferCapacity > 0) {
 			mCoreRewindContextDeinit(&m_threadContext.rewind);
 		}
@@ -712,7 +706,6 @@ void GameController::setRewind(bool enable, int capacity) {
 		if (enable && capacity > 0) {
 			mCoreRewindContextInit(&m_threadContext.rewind, capacity);
 		}
-		threadContinue();
 	}
 }
 
@@ -915,7 +908,7 @@ void GameController::setVideoLayerEnabled(int layer, bool enable) {
 }
 
 void GameController::setFPSTarget(float fps) {
-	threadInterrupt();
+	Interrupter interrupter(this);
 	m_fpsTarget = fps;
 	m_threadContext.sync.fpsTarget = fps;
 	if (m_turbo && m_turboSpeed > 0) {
@@ -924,7 +917,6 @@ void GameController::setFPSTarget(float fps) {
 	if (m_audioProcessor) {
 		redoSamples(m_audioProcessor->getBufferSamples());
 	}
-	threadContinue();
 }
 
 void GameController::setUseBIOS(bool use) {
@@ -1037,7 +1029,7 @@ void GameController::setTurboSpeed(float ratio) {
 }
 
 void GameController::enableTurbo() {
-	threadInterrupt();
+	Interrupter interrupter(this);
 	bool shouldRedoSamples = false;
 	if (!m_turbo) {
 		shouldRedoSamples = m_threadContext.sync.fpsTarget != m_fpsTarget;
@@ -1058,7 +1050,6 @@ void GameController::enableTurbo() {
 	if (m_audioProcessor && shouldRedoSamples) {
 		redoSamples(m_audioProcessor->getBufferSamples());
 	}
-	threadContinue();
 }
 
 void GameController::setSync(bool enable) {
@@ -1074,21 +1065,19 @@ void GameController::setSync(bool enable) {
 	m_sync = enable;
 }
 void GameController::setAVStream(mAVStream* stream) {
-	threadInterrupt();
+	Interrupter interrupter(this);
 	m_stream = stream;
 	if (isLoaded()) {
 		m_threadContext.core->setAVStream(m_threadContext.core, stream);
 	}
-	threadContinue();
 }
 
 void GameController::clearAVStream() {
-	threadInterrupt();
+	Interrupter interrupter(this);
 	m_stream = nullptr;
 	if (isLoaded()) {
 		m_threadContext.core->setAVStream(m_threadContext.core, nullptr);
 	}
-	threadContinue();
 }
 
 #ifdef USE_PNG
@@ -1185,21 +1174,18 @@ void GameController::redoSamples(int samples) {
 }
 
 void GameController::setLogLevel(int levels) {
-	threadInterrupt();
+	Interrupter interrupter(this);
 	m_logLevels = levels;
-	threadContinue();
 }
 
 void GameController::enableLogLevel(int levels) {
-	threadInterrupt();
+	Interrupter interrupter(this);
 	m_logLevels |= levels;
-	threadContinue();
 }
 
 void GameController::disableLogLevel(int levels) {
-	threadInterrupt();
+	Interrupter interrupter(this);
 	m_logLevels &= ~levels;
-	threadContinue();
 }
 
 void GameController::pollEvents() {
@@ -1233,25 +1219,23 @@ std::shared_ptr<mTileCache> GameController::tileCache() {
 	switch (platform()) {
 #ifdef M_CORE_GBA
 	case PLATFORM_GBA: {
-		threadInterrupt();
+		Interrupter interrupter(this);
 		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
 		m_tileCache = std::make_shared<mTileCache>();
 		GBAVideoTileCacheInit(m_tileCache.get());
 		GBAVideoTileCacheAssociate(m_tileCache.get(), &gba->video);
 		mTileCacheSetPalette(m_tileCache.get(), 0);
-		threadContinue();
 		break;
 	}
 #endif
 #ifdef M_CORE_GB
 	case PLATFORM_GB: {
-		threadInterrupt();
+		Interrupter interrupter(this);
 		GB* gb = static_cast<GB*>(m_threadContext.core->board);
 		m_tileCache = std::make_shared<mTileCache>();
 		GBVideoTileCacheInit(m_tileCache.get());
 		GBVideoTileCacheAssociate(m_tileCache.get(), &gb->video);
 		mTileCacheSetPalette(m_tileCache.get(), 0);
-		threadContinue();
 		break;
 	}
 #endif
@@ -1259,4 +1243,23 @@ std::shared_ptr<mTileCache> GameController::tileCache() {
 		return nullptr;
 	}
 	return m_tileCache;
+}
+
+GameController::Interrupter::Interrupter(GameController* parent, bool fromThread)
+	: m_parent(parent)
+	, m_fromThread(fromThread)
+{
+	if (!m_fromThread) {
+		m_parent->threadInterrupt();
+	} else {
+		mCoreThreadInterruptFromThread(m_parent->thread());
+	}
+}
+
+GameController::Interrupter::~Interrupter() {
+	if (!m_fromThread) {
+		m_parent->threadContinue();
+	} else {
+		mCoreThreadContinue(m_parent->thread());
+	}
 }

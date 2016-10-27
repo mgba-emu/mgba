@@ -33,7 +33,7 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 	const NoIntroDB* db = GBAApp::app()->gameDB();
 	uint32_t crc32 = 0;
 
-	controller->threadInterrupt();
+	GameController::Interrupter interrupter(controller);
 	mCore* core = controller->thread()->core;
 	char title[17] = {};
 	core->getGameTitle(core, title);
@@ -83,5 +83,4 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 		m_ui.crc->setText(tr("(unknown)"));
 		m_ui.name->setText(tr("(unknown)"));
 	}
-	controller->threadContinue();
 }

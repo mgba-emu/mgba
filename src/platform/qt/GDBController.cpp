@@ -35,7 +35,7 @@ void GDBController::setBindAddress(uint32_t bindAddress) {
 }
 
 void GDBController::listen() {
-	m_gameController->threadInterrupt();
+	GameController::Interrupter interrupter(m_gameController);
 	if (!isAttached()) {
 		attach();
 	}
@@ -45,7 +45,6 @@ void GDBController::listen() {
 		detach();
 		emit listenFailed();
 	}
-	m_gameController->threadContinue();
 }
 
 void GDBController::shutdownInternal() {

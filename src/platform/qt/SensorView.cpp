@@ -108,7 +108,7 @@ bool SensorView::eventFilter(QObject*, QEvent* event) {
 }
 
 void SensorView::updateSensors() {
-	m_controller->threadInterrupt();
+	GameController::Interrupter interrupter(m_controller);
 	if (m_rotation->sample &&
 	    (!m_controller->isLoaded() || !(static_cast<GBA*>(m_controller->thread()->core->board)->memory.hw.devices & (HW_GYRO | HW_TILT)))) {
 		m_rotation->sample(m_rotation);
@@ -129,7 +129,6 @@ void SensorView::updateSensors() {
 	if (m_rotation->readGyroZ) {
 		m_ui.gyroView->setValue(m_rotation->readGyroZ(m_rotation));
 	}
-	m_controller->threadContinue();
 }
 
 void SensorView::setLuminanceValue(int value) {

@@ -49,6 +49,16 @@ public:
 	static const bool VIDEO_SYNC = false;
 	static const bool AUDIO_SYNC = true;
 
+	class Interrupter {
+	public:
+		Interrupter(GameController*, bool fromThread = false);
+		~Interrupter();
+
+	private:
+		GameController* m_parent;
+		bool m_fromThread;
+	};
+
 	GameController(QObject* parent = nullptr);
 	~GameController();
 

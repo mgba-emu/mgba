@@ -38,19 +38,17 @@ void DebuggerController::detach() {
 	if (!isAttached()) {
 		return;
 	}
-	m_gameController->threadInterrupt();
+	GameController::Interrupter interrupter(m_gameController);
 	shutdownInternal();
 	m_gameController->setDebugger(nullptr);
-	m_gameController->threadContinue();
 }
 
 void DebuggerController::breakInto() {
 	if (!isAttached()) {
 		return;
 	}
-	m_gameController->threadInterrupt();
+	GameController::Interrupter interrupter(m_gameController);
 	mDebuggerEnter(m_debugger, DEBUGGER_ENTER_MANUAL, 0);
-	m_gameController->threadContinue();
 }
 
 void DebuggerController::shutdown() {
@@ -58,9 +56,8 @@ void DebuggerController::shutdown() {
 	if (!isAttached()) {
 		return;
 	}
-	m_gameController->threadInterrupt();
+	GameController::Interrupter interrupter(m_gameController);
 	shutdownInternal();
-	m_gameController->threadContinue();
 }
 
 void DebuggerController::shutdownInternal() {

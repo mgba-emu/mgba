@@ -134,18 +134,17 @@ void PaletteView::exportPalette(int start, int length) {
 	if (start + length > 512) {
 		length = 512 - start;
 	}
-	m_controller->threadInterrupt();
+
+	GameController::Interrupter interrupter(m_controller);
 	QFileDialog* dialog = GBAApp::app()->getSaveFileDialog(this, tr("Export palette"),
 	                                                       tr("Windows PAL (*.pal);;Adobe Color Table (*.act)"));
 	if (!dialog->exec()) {
-		m_controller->threadContinue();
 		return;
 	}
 	QString filename = dialog->selectedFiles()[0];
 	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
 		LOG(QT, ERROR) << tr("Failed to open output palette file: %1").arg(filename);
-		m_controller->threadContinue();
 		return;
 	}
 	QString filter = dialog->selectedNameFilter();
@@ -155,5 +154,4 @@ void PaletteView::exportPalette(int start, int length) {
 		exportPaletteACT(vf, length, &static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[start]);
 	}
 	vf->close(vf);
-	m_controller->threadContinue();
 }
