@@ -1,12 +1,22 @@
 import cffi
-import os.path
+import os, os.path
+import shlex
 import subprocess
 import sys
 
 ffi = cffi.FFI()
-src = os.path.join(os.path.dirname(__file__), "..", "..")
+pydir = os.path.dirname(os.path.abspath(__file__))
+srcdir = os.path.join(pydir, "..", "..")
+bindir = os.environ.get("BINDIR", os.path.join(os.getcwd(), ".."))
+
+cpp = shlex.split(os.environ.get("CPP", "cc -E"))
+cppflags = shlex.split(os.environ.get("CPPFLAGS", ""))
+if __name__ == "__main__":
+    cppflags.extend(sys.argv[1:])
+cppflags.extend(["-I" + srcdir, "-I" + bindir])
 
 ffi.set_source("mgba._pylib", """
+#include "flags.h"
 #include "util/common.h"
 #include "core/core.h"
 #include "core/log.h"
@@ -34,19 +44,21 @@ struct mLoggerPy {
     struct mLogger d;
     void* pyobj;
 };
-""", include_dirs=[src],
-     extra_compile_args=sys.argv[1:],
+""", include_dirs=[srcdir],
+     extra_compile_args=cppflags,
      libraries=["mgba"],
-     library_dirs=[os.path.join(os.getcwd(), "..")],
-     sources=[os.path.join(os.path.dirname(__file__), path) for path in ["vfs-py.c", "log.c"]])
+     library_dirs=[bindir],
+     sources=[os.path.join(pydir, path) for path in ["vfs-py.c", "log.c"]])
 
-with open(os.path.join(os.getcwd(), "_builder.h")) as core:
-    lines = []
-    for line in core:
-        line = line.strip()
-        if line.startswith('#'):
-            continue
-        lines.append(line)
-    ffi.cdef('\n'.join(lines))
+preprocessed = subprocess.check_output(cpp + ["-fno-inline", "-P"] + cppflags + [os.path.join(pydir, "_builder.h")], universal_newlines=True)
 
-ffi.compile()
+lines = []
+for line in preprocessed.splitlines():
+    line = line.strip()
+    if line.startswith('#'):
+        continue
+    lines.append(line)
+ffi.cdef('\n'.join(lines))
+
+if __name__ == "__main__":
+    ffi.compile()

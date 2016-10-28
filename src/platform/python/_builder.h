@@ -20,6 +20,9 @@ typedef ...* png_unknown_chunkp;
 void free(void*);
 
 #include <limits.h>
+#undef const
+
+#include "flags.h"
 
 #include "core/core.h"
 #include "core/tile-cache.h"
