@@ -80,15 +80,18 @@ int main(int argc, char** argv) {
 		core->setVideoBuffer(core, outputBuffer, 256);
 	}
 
-#ifdef __AFL_HAVE_MANUAL_CONTROL
-	__AFL_INIT();
-#endif
-
 #ifdef M_CORE_GBA
 	if (core->platform(core) == PLATFORM_GBA) {
 		((struct GBA*) core->board)->hardCrash = false;
 	}
 #endif
+
+#ifdef __AFL_HAVE_MANUAL_CONTROL
+	__AFL_INIT();
+#endif
+	if (args.patch) {
+		core->loadPatch(core, VFileOpen(args.patch, O_RDONLY));
+	}
 	mCoreLoadFile(core, args.fname);
 
 	struct VFile* savestate = 0;
