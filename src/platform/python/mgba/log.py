@@ -32,3 +32,7 @@ class Logger(object):
 
 	def log(self, category, level, message):
 		print("{}: {}".format(self.categoryName(category), message))
+
+class NullLogger(Logger):
+	def log(self, category, level, message):
+		pass
