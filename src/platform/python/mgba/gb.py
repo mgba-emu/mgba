@@ -6,6 +6,7 @@
 from ._pylib import ffi, lib
 from .lr35902 import LR35902Core
 from .core import Core
+from .memory import Memory
 from .tile import Sprite
 
 class GB(Core):
@@ -31,6 +32,18 @@ class GB(Core):
     def _deinitTileCache(self, cache):
         self._native.video.renderer.cache = ffi.NULL
         lib.mTileCacheDeinit(cache)
+
+class GBMemory(Memory):
+    def __init__(self, core):
+        super(GBMemory, self).__init__(core, 0x10000)
+
+        self.cart = Memory(core, lib.GB_SIZE_CART_BANK0 * 2, lib.GB_BASE_CART_BANK0)
+        self.vram = Memory(core, lib.GB_SIZE_VRAM, lib.GB_BASE_VRAM)
+        self.sram = Memory(core, lib.GB_SIZE_EXTERNAL_RAM, lib.GB_REGION_EXTERNAL_RAM)
+        self.iwram = Memory(core, lib.GB_SIZE_WORKING_RAM_BANK0, lib.GB_BASE_WORKING_RAM_BANK0)
+        self.oam = Memory(core, lib.GB_SIZE_OAM, lib.GB_BASE_OAM)
+        self.io = Memory(core, lib.GB_SIZE_IO, lib.GB_BASE_IO)
+        self.hram = Memory(core, lib.GB_SIZE_HRAM, lib.GB_BASE_HRAM)
 
 class GBSprite(Sprite):
     PALETTE_BASE = 8,
