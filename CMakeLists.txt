@@ -151,6 +151,9 @@ add_custom_target(version-info ALL
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/version.cmake)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/core/version.c.in ${CMAKE_CURRENT_BINARY_DIR}/version.c)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/core/flags.h.in ${CMAKE_CURRENT_BINARY_DIR}/flags.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/flags.h DESTINATION include/mgba COMPONENT lib${BINARY_NAME})
+
 list(APPEND UTIL_SRC ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 source_group("Generated sources" FILES ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 
