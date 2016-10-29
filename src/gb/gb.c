@@ -316,6 +316,7 @@ void GBDestroy(struct GB* gb) {
 	}
 
 	GBMemoryDeinit(gb);
+	GBAudioDeinit(&gb->audio);
 	GBVideoDeinit(&gb->video);
 	GBSIODeinit(&gb->sio);
 }
