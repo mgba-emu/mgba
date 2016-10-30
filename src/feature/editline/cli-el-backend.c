@@ -76,9 +76,13 @@ const char* _CLIDebuggerEditLineReadLine(struct CLIDebuggerBackend* be, size_t* 
 	int count;
 	*len = 0;
 	const char* line = el_gets(elbe->elstate, &count);
-	if (line && count >= 1) {
-		// Crop off newline
-		*len = (size_t) count - 1;
+	if (line) {
+		if (count > 1) {
+			// Crop off newline
+			*len = (size_t) count - 1;
+		} else if (count == 1) {
+			*len = 1;
+		}
 	}
 	return line;
 }
