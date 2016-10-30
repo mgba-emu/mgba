@@ -21,6 +21,7 @@ Bugfixes:
  - VFS: Fix resizing memory chunks when not needed
  - GB Memory: Fix patching ROM bank 0
  - GB: Fix audio not being deinitialized
+ - GBA Memory: Fix VCOUNT being writable
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
