@@ -333,6 +333,11 @@ void GBAIOInit(struct GBA* gba) {
 	gba->memory.io[REG_BG2PD >> 1] = 0x100;
 	gba->memory.io[REG_BG3PA >> 1] = 0x100;
 	gba->memory.io[REG_BG3PD >> 1] = 0x100;
+
+	if (!gba->biosVf) {
+		gba->memory.io[REG_VCOUNT >> 1] = 0x7E;
+		gba->memory.io[REG_POSTFLG >> 1] = 1;
+	}
 }
 
 void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
@@ -577,6 +582,10 @@ void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
 		} else {
 			GBAStop(gba);
 		}
+		return;
+	}
+	if (address == REG_POSTFLG) {
+		gba->memory.io[(address & (SIZE_IO - 1)) >> 1] = value;
 		return;
 	}
 	if (address >= REG_DEBUG_STRING && address - REG_DEBUG_STRING < sizeof(gba->debugString)) {

@@ -22,6 +22,7 @@ Bugfixes:
  - GB Memory: Fix patching ROM bank 0
  - GB: Fix audio not being deinitialized
  - GBA Memory: Fix VCOUNT being writable
+ - GBA Memory: Improve initial skipped BIOS state
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
@@ -36,6 +37,7 @@ Misc:
  - Core: Clean up some thread state checks
  - Debugger: Make building with debugging aspects optional
  - GBA Memory: Support for Mo Jie Qi Bing by Vast Fame (taizou)
+ - GBA Memory: Support reading/writing POSTFLG
 
 0.5.1: (2016-10-05)
 Bugfixes:
