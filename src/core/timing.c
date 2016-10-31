@@ -55,9 +55,10 @@ void mTimingDeschedule(struct mTiming* timing, struct mTimingEvent* event) {
 
 void mTimingTick(struct mTiming* timing, int32_t cycles) {
 	timing->masterCycles += cycles;
+	uint32_t masterCycles = timing->masterCycles;
 	while (mTimingEventListSize(&timing->events)) {
 		struct mTimingEvent* next = *mTimingEventListGetPointer(&timing->events, 0);
-		int32_t nextWhen = next->when - timing->masterCycles;
+		int32_t nextWhen = next->when - masterCycles;
 		if (nextWhen > 0) {
 			*timing->nextEvent = nextWhen;
 			return;
