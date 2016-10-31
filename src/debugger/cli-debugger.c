@@ -10,7 +10,9 @@
 #include "debugger/parser.h"
 #include "util/string.h"
 
+#if !defined(NDEBUG) && !defined(_WIN32)
 #include <signal.h>
+#endif
 
 #ifdef USE_PTHREADS
 #include <pthread.h>
@@ -19,7 +21,7 @@
 const char* ERROR_MISSING_ARGS = "Arguments missing"; // TODO: share
 const char* ERROR_OVERFLOW = "Arguments overflow";
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(_WIN32)
 static void _breakInto(struct CLIDebugger*, struct CLIDebugVector*);
 #endif
 static void _continue(struct CLIDebugger*, struct CLIDebugVector*);
@@ -82,13 +84,13 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "x/1", _dumpByte, CLIDVParse, "Examine bytes at a specified offset" },
 	{ "x/2", _dumpHalfword, CLIDVParse, "Examine halfwords at a specified offset" },
 	{ "x/4", _dumpWord, CLIDVParse, "Examine words at a specified offset" },
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(_WIN32)
 	{ "!", _breakInto, 0, "Break into attached debugger (for developers)" },
 #endif
 	{ 0, 0, 0, 0 }
 };
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(_WIN32)
 static void _handleDeath(int sig) {
 	UNUSED(sig);
 	printf("No debugger attached!\n");
