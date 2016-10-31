@@ -24,9 +24,12 @@ const int GBA_AUDIO_VOLUME_MAX = 0x100;
 static const int CLOCKS_PER_FRAME = 0x400;
 
 static int _applyBias(struct GBAAudio* audio, int sample);
-static void _sample(struct GBAAudio* audio);
+static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate);
 
 void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
+	audio->sampleEvent.context = audio;
+	audio->sampleEvent.name = "GBA Audio Sample";
+	audio->sampleEvent.callback = _sample;
 	audio->psg.p = NULL;
 	uint8_t* nr52 = (uint8_t*) &audio->p->memory.io[REG_SOUNDCNT_X >> 1];
 #ifdef __BIG_ENDIAN__
@@ -49,13 +52,12 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 
 void GBAAudioReset(struct GBAAudio* audio) {
 	GBAudioReset(&audio->psg);
-	audio->nextEvent = 0;
+	mTimingDeschedule(&audio->p->timing, &audio->sampleEvent);
+	mTimingSchedule(&audio->p->timing, &audio->sampleEvent, 0);
 	audio->chA.dmaSource = 1;
 	audio->chB.dmaSource = 2;
 	audio->chA.sample = 0;
 	audio->chB.sample = 0;
-	audio->eventDiff = 0;
-	audio->nextSample = 0;
 	audio->sampleRate = 0x8000;
 	audio->soundbias = 0x200;
 	audio->volume = 0;
@@ -90,25 +92,6 @@ void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
 	blip_clear(audio->psg.right);
 	audio->clock = 0;
 	mCoreSyncConsumeAudio(audio->p->sync);
-}
-
-int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
-	audio->nextEvent -= cycles;
-	audio->eventDiff += cycles;
-	while (audio->nextEvent <= 0) {
-		audio->nextEvent = INT_MAX;
-		audio->nextSample -= audio->eventDiff;
-		if (audio->nextSample <= 0) {
-			_sample(audio);
-			audio->nextSample += audio->sampleInterval;
-		}
-
-		if (audio->nextSample < audio->nextEvent) {
-			audio->nextEvent = audio->nextSample;
-		}
-		audio->eventDiff = 0;
-	}
-	return audio->nextEvent;
 }
 
 void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* info) {
@@ -269,7 +252,8 @@ static int _applyBias(struct GBAAudio* audio, int sample) {
 	return ((sample - GBARegisterSOUNDBIASGetBias(audio->soundbias)) * audio->masterVolume) >> 3;
 }
 
-static void _sample(struct GBAAudio* audio) {
+static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
+	struct GBAAudio* audio = user;
 	int16_t sampleLeft = 0;
 	int16_t sampleRight = 0;
 	int psgShift = 5 - audio->volume;
@@ -324,6 +308,8 @@ static void _sample(struct GBAAudio* audio) {
 	if (wait && audio->p->stream && audio->p->stream->postAudioBuffer) {
 		audio->p->stream->postAudioBuffer(audio->p->stream, audio->psg.left, audio->psg.right);
 	}
+
+	mTimingSchedule(timing, &audio->sampleEvent, audio->sampleInterval - cyclesLate);
 }
 
 void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* state) {
@@ -333,10 +319,6 @@ void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* 
 	CircleBufferDump(&audio->chB.fifo, state->audio.fifoB, sizeof(state->audio.fifoB));
 	uint32_t fifoSize = CircleBufferSize(&audio->chA.fifo);
 	STORE_32(fifoSize, 0, &state->audio.fifoSize);
-
-	STORE_32(audio->nextEvent, 0, &state->audio.nextEvent);
-	STORE_32(audio->eventDiff, 0, &state->audio.eventDiff);
-	STORE_32(audio->nextSample, 0, &state->audio.nextSample);
 }
 
 void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState* state) {
@@ -354,10 +336,6 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 		CircleBufferWrite8(&audio->chA.fifo, state->audio.fifoA[i]);
 		CircleBufferWrite8(&audio->chB.fifo, state->audio.fifoB[i]);
 	}
-
-	LOAD_32(audio->nextEvent, 0, &state->audio.nextEvent);
-	LOAD_32(audio->eventDiff, 0, &state->audio.eventDiff);
-	LOAD_32(audio->nextSample, 0, &state->audio.nextSample);
 }
 
 float GBAAudioCalculateRatio(float inputSampleRate, float desiredFPS, float desiredSampleRate) {

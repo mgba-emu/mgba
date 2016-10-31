@@ -69,15 +69,13 @@ struct GBAAudio {
 
 	GBARegisterSOUNDBIAS soundbias;
 
-	int32_t nextEvent;
-	int32_t eventDiff;
-	int32_t nextSample;
-
 	int32_t sampleInterval;
 
 	bool forceDisableChA;
 	bool forceDisableChB;
 	int masterVolume;
+
+	struct mTimingEvent sampleEvent;
 };
 
 struct GBAStereoSample {
