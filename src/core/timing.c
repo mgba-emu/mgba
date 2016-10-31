@@ -33,7 +33,7 @@ void mTimingSchedule(struct mTiming* timing, struct mTimingEvent* event, int32_t
 	for (e = 0; e < mTimingEventListSize(&timing->events); ++e) {
 		struct mTimingEvent* next = *mTimingEventListGetPointer(&timing->events, e);
 		int32_t nextWhen = next->when - timing->masterCycles;
-		if (nextWhen > when) {
+		if (nextWhen < when) {
 			mTimingEventListUnshift(&timing->events, e, 1);
 			*mTimingEventListGetPointer(&timing->events, e) = event;
 			return;
@@ -56,22 +56,24 @@ void mTimingDeschedule(struct mTiming* timing, struct mTimingEvent* event) {
 int32_t mTimingTick(struct mTiming* timing, int32_t cycles) {
 	timing->masterCycles += cycles;
 	uint32_t masterCycles = timing->masterCycles;
-	while (mTimingEventListSize(&timing->events)) {
-		struct mTimingEvent* next = *mTimingEventListGetPointer(&timing->events, 0);
+	size_t listSize;
+	while ((listSize = mTimingEventListSize(&timing->events))) {
+		struct mTimingEvent* next = *mTimingEventListGetPointer(&timing->events, listSize - 1);
 		int32_t nextWhen = next->when - masterCycles;
 		if (nextWhen > 0) {
 			return nextWhen;
 		}
-		mTimingEventListShift(&timing->events, 0, 1);
+		mTimingEventListResize(&timing->events, -1);
 		next->callback(timing, next->context, -nextWhen);
 	}
 	return *timing->nextEvent;
 }
 
 int32_t mTimingNextEvent(struct mTiming* timing) {
-	if (!mTimingEventListSize(&timing->events)) {
+	size_t listSize;
+	if (!(listSize = mTimingEventListSize(&timing->events))) {
 		return INT_MAX;
 	}
-	struct mTimingEvent* next = *mTimingEventListGetPointer(&timing->events, 0);
+	struct mTimingEvent* next = *mTimingEventListGetPointer(&timing->events, listSize - 1);
 	return next->when - timing->masterCycles;
 }
