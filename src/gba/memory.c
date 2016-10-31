@@ -1643,9 +1643,7 @@ void GBAMemoryUpdateDMAs(struct GBA* gba, int32_t cycles) {
 void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	struct GBAMemory* memory = &gba->memory;
 	struct ARMCore* cpu = gba->cpu;
-	uint32_t width = GBADMARegisterGetWidth(info->reg) ? 4 : 2;
-	int sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
-	int destOffset = DMA_OFFSET[GBADMARegisterGetDestControl(info->reg)] * width;
+	uint32_t width = 2 << GBADMARegisterGetWidth(info->reg);
 	int32_t wordsRemaining = info->nextCount;
 	uint32_t source = info->nextSource;
 	uint32_t dest = info->nextDest;
@@ -1660,8 +1658,6 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 		}
 		if (width == 4) {
 			cycles += memory->waitstatesNonseq32[sourceRegion] + memory->waitstatesNonseq32[destRegion];
-			source &= 0xFFFFFFFC;
-			dest &= 0xFFFFFFFC;
 		} else {
 			cycles += memory->waitstatesNonseq16[sourceRegion] + memory->waitstatesNonseq16[destRegion];
 		}
@@ -1672,6 +1668,8 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 			return;
 		}
 		info->hasStarted = 2;
+		source &= -width;
+		dest &= -width;
 	} else {
 		if (width == 4) {
 			cycles += memory->waitstatesSeq32[sourceRegion] + memory->waitstatesSeq32[destRegion];
@@ -1679,44 +1677,36 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 			cycles += memory->waitstatesSeq16[sourceRegion] + memory->waitstatesSeq16[destRegion];
 		}
 	}
+	info->nextEvent += cycles;
 
 	gba->performingDMA = 1 | (number << 1);
-	int32_t word;
+	uint32_t word;
 	if (width == 4) {
 		word = cpu->memory.load32(cpu, source, 0);
 		gba->bus = word;
 		cpu->memory.store32(cpu, dest, word, 0);
-		source += sourceOffset;
-		dest += destOffset;
-		--wordsRemaining;
 	} else {
 		if (sourceRegion == REGION_CART2_EX && memory->savedata.type == SAVEDATA_EEPROM) {
 			word = GBASavedataReadEEPROM(&memory->savedata);
-			gba->bus = word | (word << 16);
 			cpu->memory.store16(cpu, dest, word, 0);
-			source += sourceOffset;
-			dest += destOffset;
-			--wordsRemaining;
 		} else if (destRegion == REGION_CART2_EX) {
 			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 				mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
 				GBASavedataInitEEPROM(&memory->savedata, gba->realisticTiming);
 			}
 			word = cpu->memory.load16(cpu, source, 0);
-			gba->bus = word | (word << 16);
 			GBASavedataWriteEEPROM(&memory->savedata, word, wordsRemaining);
-			source += sourceOffset;
-			dest += destOffset;
-			--wordsRemaining;
 		} else {
 			word = cpu->memory.load16(cpu, source, 0);
-			gba->bus = word | (word << 16);
 			cpu->memory.store16(cpu, dest, word, 0);
-			source += sourceOffset;
-			dest += destOffset;
-			--wordsRemaining;
 		}
+		gba->bus = word | (word << 16);
 	}
+	int sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
+	int destOffset = DMA_OFFSET[GBADMARegisterGetDestControl(info->reg)] * width;
+	source += sourceOffset;
+	dest += destOffset;
+	--wordsRemaining;
 	gba->performingDMA = 0;
 
 	if (!wordsRemaining) {
@@ -1741,10 +1731,6 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 		info->nextCount = wordsRemaining;
 	}
 	info->nextSource = source;
-
-	if (info->nextEvent != INT_MAX) {
-		info->nextEvent += cycles;
-	}
 	GBAMemoryUpdateDMAs(gba, 0);
 }
 
