@@ -177,6 +177,7 @@ private:
 	bool m_fullscreenOnStart;
 	QTimer m_focusCheck;
 	bool m_autoresume;
+	bool m_wasOpened;
 
 	bool m_hitUnimplementedBiosCall;
 

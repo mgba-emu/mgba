@@ -14,12 +14,13 @@ Bugfixes:
  - GB Memory: Fix patching ROM bank 0
  - GB: Fix audio not being deinitialized
  - GBA Memory: Fix VCOUNT being writable
+ - Qt: Only reset window dimensions when first shown
 Misc:
  - PSP2: Improved controller rumble
  - GB, GBA: Prevent loading null ROMs
 
 0.5.1: (2016-10-05)
-Bugfixes:
+ugfixes:
  - Core: Fix importing save games as read-only
  - FFmpeg: Fix encoding AAC
  - GB: Fix invalid STOP behavior on Game Boy Color
