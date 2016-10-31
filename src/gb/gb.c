@@ -546,10 +546,7 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 			}
 		}
 
-		mTimingTick(&gb->timing, cycles);
-		nextEvent = cpu->nextEvent;
-
-		cpu->nextEvent = nextEvent;
+		cpu->nextEvent = mTimingTick(&gb->timing, cycles);
 
 		if (cpu->halted) {
 			cpu->cycles = cpu->nextEvent;

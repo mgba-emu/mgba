@@ -235,8 +235,8 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		gba->springIRQ = 0;
 	}
 
-	int32_t nextEvent;
-	do {
+	int32_t nextEvent = cpu->nextEvent;
+	while (cpu->cycles >= nextEvent) {
 		int32_t cycles = cpu->cycles;
 		int32_t testEvent;
 
@@ -250,8 +250,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 #endif
 		nextEvent = cycles;
 		do {
-			mTimingTick(&gba->timing, nextEvent);
-			nextEvent = cpu->nextEvent;
+			nextEvent = mTimingTick(&gba->timing, nextEvent);
 		} while (gba->cpuBlocked);
 
 		testEvent = GBASIOProcessEvents(&gba->sio, cycles);
@@ -275,7 +274,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 			mLOG(GBA, FATAL, "Negative cycles will pass: %i", nextEvent);
 		}
 #endif
-	} while (cpu->cycles >= nextEvent);
+	}
 }
 
 void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger) {
