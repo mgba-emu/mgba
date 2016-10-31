@@ -79,6 +79,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_shortcutController(new ShortcutController(this))
 	, m_fullscreenOnStart(false)
 	, m_autoresume(false)
+	, m_wasOpened(false)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);
@@ -583,6 +584,10 @@ void Window::resizeEvent(QResizeEvent* event) {
 }
 
 void Window::showEvent(QShowEvent* event) {
+	if (m_wasOpened) {
+		return;
+	}
+	m_wasOpened = true;
 	resizeFrame(m_screenWidget->sizeHint());
 	QVariant windowPos = m_config->getQtOption("windowPos");
 	if (!windowPos.isNull()) {

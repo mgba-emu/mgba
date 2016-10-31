@@ -23,6 +23,7 @@ Bugfixes:
  - GB: Fix audio not being deinitialized
  - GBA Memory: Fix VCOUNT being writable
  - GBA Memory: Improve initial skipped BIOS state
+ - Qt: Only reset window dimensions when first shown
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
