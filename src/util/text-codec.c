@@ -79,13 +79,13 @@ bool TextCodecLoadTBL(struct TextCodec* codec, struct VFile* vf, bool createReve
 			if (!hex8(lineBuffer, &value)) {
 				switch (lineBuffer[0]) {
 				case '*':
-					wordBuffer[0] = '\n';
+					lineBuffer[0] = '\n';
 					break;
 				case '\\':
-					wordBuffer[0] = '\x30';
+					lineBuffer[0] = '\x1E';
 					break;
 				case '/':
-					wordBuffer[0] = '\x31';
+					lineBuffer[0] = '\x1F';
 					break;
 				default:
 					return false;

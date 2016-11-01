@@ -766,6 +766,64 @@ M_TEST_DEFINE(raggedEntry) {
 	vf->close(vf);
 }
 
+M_TEST_DEFINE(controlCodes) {
+	static const char file[] =
+		"*=01\n"
+		"/=02\n"
+		"\\=03";
+	struct VFile* vf = VFileFromConstMemory(file, sizeof(file) - 1);
+	struct TextCodec codec;
+	assert_true(TextCodecLoadTBL(&codec, vf, true));
+	struct TextCodecIterator iter;
+	uint8_t output[16] = {};
+	size_t len;
+
+	len = 0;
+	TextCodecStartDecode(&codec, &iter);
+	len += TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len);
+	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
+	assert_int_equal(len, 1);
+	assert_memory_equal(output, "\n", 1);
+
+	len = 0;
+	TextCodecStartDecode(&codec, &iter);
+	len += TextCodecAdvance(&iter, 2, output + len, sizeof(output) - len);
+	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
+	assert_int_equal(len, 1);
+	assert_memory_equal(output, "\x1F", 1);
+
+	len = 0;
+	TextCodecStartDecode(&codec, &iter);
+	len += TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len);
+	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
+	assert_int_equal(len, 1);
+	assert_memory_equal(output, "\x1E", 1);
+
+	len = 0;
+	TextCodecStartEncode(&codec, &iter);
+	len += TextCodecAdvance(&iter, '\n', output + len, sizeof(output) - len);
+	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
+	assert_int_equal(len, 1);
+	assert_memory_equal(output, "\1", 1);
+
+	len = 0;
+	TextCodecStartEncode(&codec, &iter);
+	len += TextCodecAdvance(&iter, '\x1F', output + len, sizeof(output) - len);
+	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
+	assert_int_equal(len, 1);
+	assert_memory_equal(output, "\2", 1);
+
+	len = 0;
+	TextCodecStartEncode(&codec, &iter);
+	len += TextCodecAdvance(&iter, '\x1E', output + len, sizeof(output) - len);
+	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
+	assert_int_equal(len, 1);
+	assert_memory_equal(output, "\3", 1);
+
+	TextCodecDeinit(&codec);
+	vf->close(vf);
+}
+
 M_TEST_SUITE_DEFINE(TextCodec,
 	cmocka_unit_test(emptyCodec),
 	cmocka_unit_test(singleEntry),
@@ -775,4 +833,5 @@ M_TEST_SUITE_DEFINE(TextCodec,
 	cmocka_unit_test(longEntryReverse),
 	cmocka_unit_test(overlappingEntry),
 	cmocka_unit_test(overlappingEntryReverse),
-	cmocka_unit_test(raggedEntry))
+	cmocka_unit_test(raggedEntry),
+	cmocka_unit_test(controlCodes))
