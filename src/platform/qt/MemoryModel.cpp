@@ -8,6 +8,7 @@
 #include "GBAApp.h"
 #include "GameController.h"
 #include "LogController.h"
+#include "VFileDevice.h"
 
 #include <QAction>
 #include <QApplication>
@@ -31,6 +32,7 @@ MemoryModel::MemoryModel(QWidget* parent)
 	, m_align(1)
 	, m_selection(0, 0)
 	, m_selectionAnchor(0)
+	, m_codec(nullptr)
 {
 	m_font.setFamily("Source Code Pro");
 	m_font.setStyleHint(QFont::Monospace);
@@ -125,6 +127,24 @@ void MemoryModel::setAlignment(int width) {
 	m_buffer = 0;
 	m_bufferedNybbles = 0;
 	viewport()->update();
+}
+
+void MemoryModel::loadTBL(const QString& path) {
+	VFile* vf = VFileDevice::open(path, O_RDONLY);
+	if (!vf) {
+		return;
+	}
+	m_codec = std::unique_ptr<TextCodec, TextCodecFree>(new TextCodec);
+	TextCodecLoadTBL(m_codec.get(), vf, true);
+	vf->close(vf);
+}
+
+void MemoryModel::loadTBL() {
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Load TBL"));
+	if (filename.isNull()) {
+		return;
+	}
+	loadTBL(filename);
 }
 
 void MemoryModel::jumpToAddress(const QString& hex) {
@@ -266,6 +286,39 @@ void MemoryModel::deserialize(const QByteArray& bytes) {
 	}
 }
 
+QString MemoryModel::decodeText(const QByteArray& bytes) {
+	QString text;
+	if (m_codec) {
+		TextCodecIterator iter;
+		TextCodecStartDecode(m_codec.get(), &iter);
+		uint8_t lineBuffer[128];
+		for (quint8 byte : bytes) {
+			size_t size = TextCodecAdvance(&iter, byte, lineBuffer, sizeof(lineBuffer));
+			if (size > sizeof(lineBuffer)) {
+				size = sizeof(lineBuffer);
+			}
+			for (size_t i = 0; i < size; ++i) {
+				text.append(lineBuffer[i]);
+			}
+		}
+		size_t size = TextCodecFinish(&iter, lineBuffer, sizeof(lineBuffer));
+		if (size > sizeof(lineBuffer)) {
+			size = sizeof(lineBuffer);
+		}
+		for (size_t i = 0; i < size; ++i) {
+			text.append(lineBuffer[i]);
+		}
+	} else {
+		for (QChar c : bytes) {
+			if (!c.isPrint() || c >= 127) {
+				continue;
+			}
+			text.append(c);
+		}
+	}
+	return text;
+}
+
 void MemoryModel::resizeEvent(QResizeEvent*) {
 	m_cellSize = QSizeF((viewport()->size().width() - (m_margins.left() + m_margins.right())) / 16.0, m_cellHeight);
 	verticalScrollBar()->setRange(0, (m_size >> 4) + 1 - viewport()->size().height() / m_cellHeight);
@@ -284,7 +337,7 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	painter.drawStaticText(QPointF((m_margins.left() - m_regionName.size().width() - 1) / 2.0, 0), m_regionName);
 	painter.drawText(
 	    QRect(QPoint(viewport()->size().width() - m_margins.right(), 0), QSize(m_margins.right(), m_margins.top())),
-	    Qt::AlignHCenter, tr("ASCII"));
+	    Qt::AlignHCenter, m_codec ? tr("TBL") : tr("ASCII"));
 	for (int x = 0; x < 16; ++x) {
 		painter.drawText(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), 0), m_cellSize), Qt::AlignHCenter,
 		                 QString::number(x, 16).toUpper());
@@ -392,10 +445,20 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 		}
 		painter.setPen(palette.color(QPalette::WindowText));
 		for (int x = 0; x < 16; ++x) {
-			uint8_t b =m_core->rawRead8(m_core, (y + m_top) * 16 + x + m_base, m_currentBank);
+			uint8_t b = m_core->rawRead8(m_core, (y + m_top) * 16 + x + m_base, m_currentBank);
+			QString text = decodeText(QByteArray(1, b));
+			if (text.isEmpty()) {
+				b = '.';
+			} else {
+				QChar c = text.at(0);
+				if (!c.isPrint() || c >= 127) {
+					b = '.';
+				} else {
+					b = c.toLatin1();
+				}
+			}
 			painter.drawStaticText(
-			    QPointF(viewport()->size().width() - (16 - x) * m_margins.right() / 17.0 - m_letterWidth * 0.5, yp),
-			    b < 0x80 ? m_staticAscii[b] : m_staticAscii[0]);
+			    QPointF(viewport()->size().width() - (16 - x) * m_margins.right() / 17.0 - m_letterWidth * 0.5, yp), m_staticAscii[b]);
 		}
 	}
 	painter.drawLine(m_margins.left(), 0, m_margins.left(), viewport()->size().height());
@@ -634,4 +697,9 @@ void MemoryModel::adjustCursor(int adjust, bool shift) {
 	}
 	emit selectionChanged(m_selection.first, m_selection.second);
 	viewport()->update();
+}
+
+void MemoryModel::TextCodecFree::operator()(TextCodec* codec) {
+	TextCodecDeinit(codec);
+	delete(codec);
 }

@@ -225,6 +225,13 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="loadTBL">
+         <property name="text">
+          <string>Load TBL</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
     </layout>

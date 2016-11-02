@@ -109,6 +109,8 @@ MemoryView::MemoryView(GameController* controller, QWidget* parent)
 	connect(m_ui.save, SIGNAL(clicked()), m_ui.hexfield, SLOT(save()));
 	connect(m_ui.paste, SIGNAL(clicked()), m_ui.hexfield, SLOT(paste()));
 	connect(m_ui.load, SIGNAL(clicked()), m_ui.hexfield, SLOT(load()));
+
+	connect(m_ui.loadTBL, SIGNAL(clicked()), m_ui.hexfield, SLOT(loadTBL()));
 }
 
 void MemoryView::setIndex(int index) {
@@ -172,13 +174,7 @@ void MemoryView::updateStatus() {
 	}
 	mCore* core = m_controller->thread()->core;
 	QByteArray selection(m_ui.hexfield->serialize());
-	QString text;
-	for (QChar c : selection) {
-		if (!c.isPrint() || c >= 127) {
-			continue;
-		}
-		text.append(c);
-	}
+	QString text(m_ui.hexfield->decodeText(selection));
 	m_ui.stringVal->setText(text);
 
 	if (m_selection.first & (align - 1) || m_selection.second - m_selection.first != align) {
