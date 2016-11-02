@@ -37,7 +37,9 @@ public slots:
 	void jumpToAddress(uint32_t);
 
 	void copy();
+	void paste();
 	void save();
+	void load();
 
 signals:
 	void selectionChanged(uint32_t start, uint32_t end);
@@ -59,7 +61,8 @@ private:
 
 	void adjustCursor(int adjust, bool shift);
 
-	void serialize(QDataStream* stream);
+	QByteArray serialize();
+	void deserialize(const QByteArray&);
 
 	mCore* m_core;
 	QFont m_font;

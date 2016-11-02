@@ -56,6 +56,16 @@ MemoryModel::MemoryModel(QWidget* parent)
 	connect(save, SIGNAL(triggered()), this, SLOT(save()));
 	addAction(save);
 
+	QAction* paste = new QAction(tr("Paste"), this);
+	paste->setShortcut(QKeySequence::Paste);
+	connect(paste, SIGNAL(triggered()), this, SLOT(paste()));
+	addAction(paste);
+
+	QAction* load = new QAction(tr("Load"), this);
+	load->setShortcut(QKeySequence::Open);
+	connect(load, SIGNAL(triggered()), this, SLOT(load()));
+	addAction(load);
+
 	static QString arg("%0");
 	for (int i = 0; i < 256; ++i) {
 		QStaticText str(arg.arg(i, 2, 16, QChar('0')).toUpper());
@@ -144,9 +154,7 @@ void MemoryModel::copy() {
 	if (!clipboard) {
 		return;
 	}
-	QByteArray bytestring;
-	QDataStream stream(&bytestring, QIODevice::WriteOnly);
-	serialize(&stream);
+	QByteArray bytestring(serialize());
 	QString string;
 	string.reserve(bytestring.size() * 2);
 	static QString arg("%0");
@@ -155,6 +163,20 @@ void MemoryModel::copy() {
 		string.append(arg.arg(c, 2, 16, c0).toUpper());
 	}
 	clipboard->setText(string);
+}
+
+void MemoryModel::paste() {
+	QClipboard* clipboard = QApplication::clipboard();
+	if (!clipboard) {
+		return;
+	}
+	QString string = clipboard->text();
+	if (string.isEmpty()) {
+		return;
+	}
+	QByteArray bytestring(QByteArray::fromHex(string.toLocal8Bit()));
+	deserialize(bytestring);
+	viewport()->update();
 }
 
 void MemoryModel::save() {
@@ -167,25 +189,78 @@ void MemoryModel::save() {
 		LOG(QT, WARN) << tr("Failed to open output file: %1").arg(filename);
 		return;
 	}
-	QDataStream stream(&outfile);
-	serialize(&stream);
+	QByteArray out(serialize());
+	outfile.write(out);
 }
 
-void MemoryModel::serialize(QDataStream* stream) {
+void MemoryModel::load() {
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Load memory"));
+	if (filename.isNull()) {
+		return;
+	}
+	QFile infile(filename);
+	if (!infile.open(QIODevice::ReadOnly)) {
+		LOG(QT, WARN) << tr("Failed to open input file: %1").arg(filename);
+		return;
+	}
+	QByteArray bytestring(infile.readAll());
+	deserialize(bytestring);
+	viewport()->update();
+}
+
+QByteArray MemoryModel::serialize() {
+	QByteArray bytes;
+	bytes.reserve(m_selection.second - m_selection.first);
 	switch (m_align) {
 	case 1:
 		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
-			*stream << m_core->rawRead8(m_core, i, m_currentBank);
+			char datum = m_core->rawRead8(m_core, i, m_currentBank);
+			bytes.append(datum);
 		}
 		break;
 	case 2:
 		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
-			*stream << m_core->rawRead16(m_core, i, m_currentBank);
+			quint16 datum = m_core->rawRead16(m_core, i, m_currentBank);
+			char leDatum[2];
+			STORE_16LE(datum, 0, (uint16_t*) leDatum);
+			bytes.append(leDatum, 2);
 		}
 		break;
 	case 4:
 		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
-			*stream << m_core->rawRead32(m_core, i, m_currentBank);
+			quint32 datum = m_core->rawRead32(m_core, i, m_currentBank);
+			char leDatum[4];
+			STORE_32LE(datum, 0, (uint16_t*) leDatum);
+			bytes.append(leDatum, 4);
+		}
+		break;
+	}
+	return bytes;
+}
+
+void MemoryModel::deserialize(const QByteArray& bytes) {
+	uint32_t addr = m_selection.first;
+	switch (m_align) {
+	case 1:
+		for (int i = 0; i < bytes.size(); i += m_align, addr += m_align) {
+			uint8_t datum = bytes[i];
+			m_core->rawWrite8(m_core, addr, m_currentBank, datum);
+		}
+		break;
+	case 2:
+		for (int i = 0; i < bytes.size(); i += m_align, addr += m_align) {
+			char leDatum[2]{ bytes[i], bytes[i + 1] };
+			uint16_t datum;
+			LOAD_16LE(datum, 0, leDatum);
+			m_core->rawWrite16(m_core, addr, m_currentBank, datum);
+		}
+		break;
+	case 4:
+		for (int i = 0; i < bytes.size(); i += m_align, addr += m_align) {
+			char leDatum[4]{ bytes[i], bytes[i + 1], bytes[i + 2], bytes[i + 3] };
+			uint32_t datum;
+			LOAD_32LE(datum, 0, leDatum);
+			m_core->rawWrite32(m_core, addr, m_currentBank, datum);
 		}
 		break;
 	}

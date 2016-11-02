@@ -5,6 +5,7 @@ Features:
  - GB: Tile viewer
  - Sprite viewer
  - Debugging console
+ - Improved memory viewer
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
