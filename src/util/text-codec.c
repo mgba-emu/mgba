@@ -32,10 +32,11 @@ static struct TextCodecNode* _createNode(void) {
 	return node;
 }
 
-static void _insertLeafNullTerminated(struct TextCodecNode* node, uint8_t* word, uint8_t* output) {
-	if (!word[0]) {
-		node->leafLength = strlen((char*) output);
-		node->leaf = (uint8_t*) strdup((char*) output);
+static void _insertLeaf(struct TextCodecNode* node, uint8_t* word, size_t wordLength, uint8_t* output, size_t outputLength) {
+	if (!wordLength) {
+		node->leafLength = outputLength;
+		node->leaf = malloc(outputLength);
+		memcpy(node->leaf, output, outputLength);
 		return;
 	}
 	struct TextCodecNode* subnode = TableLookup(&node->children, word[0]);
@@ -43,7 +44,7 @@ static void _insertLeafNullTerminated(struct TextCodecNode* node, uint8_t* word,
 		subnode = _createNode();
 		TableInsert(&node->children, word[0], subnode);
 	}
-	_insertLeafNullTerminated(subnode, &word[1], output);
+	_insertLeaf(subnode, &word[1], wordLength - 1, output, outputLength);
 }
 
 bool TextCodecLoadTBL(struct TextCodec* codec, struct VFile* vf, bool createReverse) {
@@ -59,17 +60,20 @@ bool TextCodecLoadTBL(struct TextCodec* codec, struct VFile* vf, bool createReve
 	ssize_t length;
 	while ((length = vf->readline(vf, lineBuffer, sizeof(lineBuffer))) > 0) {
 		memset(wordBuffer, 0, sizeof(wordBuffer));
-		if (lineBuffer[length - 1] == '\n') {
-			lineBuffer[length - 1] = '\0';
+		if (lineBuffer[length - 1] == '\n' || lineBuffer[length - 1] == '\r') {
+			--length;
+		}
+		if (!length) {
+			continue;
 		}
 		if (lineBuffer[length - 1] == '\r') {
-			lineBuffer[length - 1] = '\0';
+			--length;
 		}
-		if (length > 1 && lineBuffer[length - 2] == '\r') {
-			lineBuffer[length - 2] = '\0';
+		if (!length) {
+			continue;
 		}
 		size_t i;
-		for (i = 0; i < sizeof(wordBuffer) - 1; ++i) {
+		for (i = 0; i < sizeof(wordBuffer) - 1 && i < (size_t) length; ++i) {
 			if (!hex8(&lineBuffer[i * 2], &wordBuffer[i])) {
 				break;
 			}
@@ -102,19 +106,19 @@ bool TextCodecLoadTBL(struct TextCodec* codec, struct VFile* vf, bool createReve
 				if (i == 0) {
 					return false;
 				}
-				lineBuffer[1] = '\0';
-				_insertLeafNullTerminated(codec->forwardRoot, wordBuffer, (uint8_t*) lineBuffer);
+				_insertLeaf(codec->forwardRoot, wordBuffer, i, (uint8_t*) lineBuffer, 1);
 				if (codec->reverseRoot) {
-					_insertLeafNullTerminated(codec->reverseRoot, (uint8_t*) lineBuffer, wordBuffer);
+					_insertLeaf(codec->reverseRoot, (uint8_t*) lineBuffer, 1, wordBuffer, i);
 				}
 			}
 		} else {
 			if (lineBuffer[i * 2] != '=') {
 				return false;
 			}
-			_insertLeafNullTerminated(codec->forwardRoot, wordBuffer, (uint8_t*) &lineBuffer[i * 2 + 1]);
+			size_t offset = i * 2 + 1;
+			_insertLeaf(codec->forwardRoot, wordBuffer, i, (uint8_t*) &lineBuffer[offset], length - offset);
 			if (codec->reverseRoot) {
-				_insertLeafNullTerminated(codec->reverseRoot, (uint8_t*) &lineBuffer[i * 2 + 1], wordBuffer);
+				_insertLeaf(codec->reverseRoot, (uint8_t*) &lineBuffer[offset], length - offset, wordBuffer, i);
 			}
 		}
 	}

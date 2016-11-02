@@ -824,6 +824,80 @@ M_TEST_DEFINE(controlCodes) {
 	vf->close(vf);
 }
 
+M_TEST_DEFINE(nullBytes) {
+	static const char file[] =
+		"00=A\n"
+		"0000=a\n"
+		"0001=b\n"
+		"01=B\n"
+		"0100=c";
+	struct VFile* vf = VFileFromConstMemory(file, sizeof(file) - 1);
+	struct TextCodec codec;
+	assert_true(TextCodecLoadTBL(&codec, vf, false));
+	struct TextCodecIterator iter;
+	uint8_t output[16] = {};
+	size_t len;
+
+	len = 0;
+	TextCodecStartDecode(&codec, &iter);
+	len += TextCodecAdvance(&iter, 0, output + len, sizeof(output) - len);
+	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
+	assert_int_equal(len, 1);
+	assert_memory_equal(output, "A", 1);
+
+	len = 0;
+	TextCodecStartDecode(&codec, &iter);
+	len += TextCodecAdvance(&iter, 0, output + len, sizeof(output) - len);
+	len += TextCodecAdvance(&iter, 0, output + len, sizeof(output) - len);
+	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
+	assert_int_equal(len, 1);
+	assert_memory_equal(output, "a", 1);
+
+	len = 0;
+	TextCodecStartDecode(&codec, &iter);
+	len += TextCodecAdvance(&iter, 0, output + len, sizeof(output) - len);
+	len += TextCodecAdvance(&iter, 0, output + len, sizeof(output) - len);
+	len += TextCodecAdvance(&iter, 0, output + len, sizeof(output) - len);
+	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
+	assert_int_equal(len, 2);
+	assert_memory_equal(output, "aA", 2);
+
+	len = 0;
+	TextCodecStartDecode(&codec, &iter);
+	len += TextCodecAdvance(&iter, 0, output + len, sizeof(output) - len);
+	len += TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len);
+	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
+	assert_int_equal(len, 1);
+	assert_memory_equal(output, "b", 1);
+
+	len = 0;
+	TextCodecStartDecode(&codec, &iter);
+	len += TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len);
+	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
+	assert_int_equal(len, 1);
+	assert_memory_equal(output, "B", 1);
+
+	len = 0;
+	TextCodecStartDecode(&codec, &iter);
+	len += TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len);
+	len += TextCodecAdvance(&iter, 0, output + len, sizeof(output) - len);
+	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
+	assert_int_equal(len, 1);
+	assert_memory_equal(output, "c", 1);
+
+	len = 0;
+	TextCodecStartDecode(&codec, &iter);
+	len += TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len);
+	len += TextCodecAdvance(&iter, 0, output + len, sizeof(output) - len);
+	len += TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len);
+	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
+	assert_int_equal(len, 2);
+	assert_memory_equal(output, "cB", 2);
+
+	TextCodecDeinit(&codec);
+	vf->close(vf);
+}
+
 M_TEST_SUITE_DEFINE(TextCodec,
 	cmocka_unit_test(emptyCodec),
 	cmocka_unit_test(singleEntry),
@@ -834,4 +908,5 @@ M_TEST_SUITE_DEFINE(TextCodec,
 	cmocka_unit_test(overlappingEntry),
 	cmocka_unit_test(overlappingEntryReverse),
 	cmocka_unit_test(raggedEntry),
-	cmocka_unit_test(controlCodes))
+	cmocka_unit_test(controlCodes),
+	cmocka_unit_test(nullBytes))
