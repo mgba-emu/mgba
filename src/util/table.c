@@ -70,6 +70,7 @@ void TableInit(struct Table* table, size_t initialSize, void (deinitializer(void
 	}
 	table->tableSize = initialSize;
 	table->table = calloc(table->tableSize, sizeof(struct TableList));
+	table->size = 0;
 	table->deinitializer = deinitializer;
 
 	size_t i;
