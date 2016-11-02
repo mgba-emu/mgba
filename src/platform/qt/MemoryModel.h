@@ -32,6 +32,9 @@ public:
 	void setAlignment(int);
 	int alignment() const { return m_align; }
 
+	QByteArray serialize();
+	void deserialize(const QByteArray&);
+
 public slots:
 	void jumpToAddress(const QString& hex);
 	void jumpToAddress(uint32_t);
@@ -60,9 +63,6 @@ private:
 	void drawEditingText(QPainter& painter, const QPointF& origin);
 
 	void adjustCursor(int adjust, bool shift);
-
-	QByteArray serialize();
-	void deserialize(const QByteArray&);
 
 	mCore* m_core;
 	QFont m_font;

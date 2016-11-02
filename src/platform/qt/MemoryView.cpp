@@ -167,15 +167,25 @@ void MemoryView::updateSelection(uint32_t start, uint32_t end) {
 
 void MemoryView::updateStatus() {
 	int align = m_ui.hexfield->alignment();
+	if (!m_controller->isLoaded()) {
+		return;
+	}
+	mCore* core = m_controller->thread()->core;
+	QByteArray selection(m_ui.hexfield->serialize());
+	QString text;
+	for (QChar c : selection) {
+		if (!c.isPrint() || c >= 127) {
+			continue;
+		}
+		text.append(c);
+	}
+	m_ui.stringVal->setText(text);
+
 	if (m_selection.first & (align - 1) || m_selection.second - m_selection.first != align) {
 		m_ui.sintVal->clear();
 		m_ui.uintVal->clear();
 		return;
 	}
-	if (!m_controller->isLoaded()) {
-		return;
-	}
-	mCore* core = m_controller->thread()->core;
 	union {
 		uint32_t u32;
 		int32_t i32;

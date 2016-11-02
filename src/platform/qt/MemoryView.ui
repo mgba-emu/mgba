@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>550</width>
-    <height>640</height>
+    <width>565</width>
+    <height>658</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -168,20 +168,39 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <zorder></zorder>
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
-     <item>
-      <layout class="QFormLayout" name="formLayout">
-       <item row="0" column="0">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Unsigned Integer:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="uintVal">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
         <widget class="QLabel" name="label_3">
          <property name="text">
           <string>Signed Integer:</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item>
         <widget class="QLineEdit" name="sintVal">
          <property name="readOnly">
           <bool>true</bool>
@@ -190,17 +209,17 @@
        </item>
       </layout>
      </item>
-     <item>
-      <layout class="QFormLayout" name="formLayout_4">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_4">
+     <item row="1" column="0" colspan="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Unsigned Integer:</string>
+          <string>String:</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="uintVal">
+       <item>
+        <widget class="QLineEdit" name="stringVal">
          <property name="readOnly">
           <bool>true</bool>
          </property>
