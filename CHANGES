@@ -1,5 +1,6 @@
 0.5.2: (Future)
 Bugfixes:
+ - Libretro: Fix unterminated SET_INPUT_DESCRIPTORS
  - GBA Memory: Fix misaligned BIOS reads
  - GBA BIOS: Fix MidiKey2Freq BIOS reads
  - GBA BIOS: Fix invalid CpuSet not setting BIOS prefetch
