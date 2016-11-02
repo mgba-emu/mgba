@@ -104,6 +104,11 @@ MemoryView::MemoryView(GameController* controller, QWidget* parent)
 	connect(controller, SIGNAL(gamePaused(mCoreThread*)), this, SLOT(update()));
 	connect(controller, SIGNAL(stateLoaded(mCoreThread*)), this, SLOT(update()));
 	connect(controller, SIGNAL(rewound(mCoreThread*)), this, SLOT(update()));
+
+	connect(m_ui.copy, SIGNAL(clicked()), m_ui.hexfield, SLOT(copy()));
+	connect(m_ui.save, SIGNAL(clicked()), m_ui.hexfield, SLOT(save()));
+	connect(m_ui.paste, SIGNAL(clicked()), m_ui.hexfield, SLOT(paste()));
+	connect(m_ui.load, SIGNAL(clicked()), m_ui.hexfield, SLOT(load()));
 }
 
 void MemoryView::setIndex(int index) {
