@@ -89,7 +89,7 @@ private:
 	int m_align;
 	QMargins m_margins;
 	QVector<QStaticText> m_staticNumbers;
-	QVector<QStaticText> m_staticAscii;
+	QVector<QStaticText> m_staticLatin1;
 	QStaticText m_regionName;
 	QSizeF m_cellSize;
 	QPair<uint32_t, uint32_t> m_selection;

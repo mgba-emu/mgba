@@ -75,14 +75,14 @@ MemoryModel::MemoryModel(QWidget* parent)
 		m_staticNumbers.append(str);
 	}
 
-	for (int i = 0; i < 128; ++i) {
+	for (int i = 0; i < 256; ++i) {
 		QChar c(i);
 		if (!c.isPrint()) {
 			c = '.';
 		}
 		QStaticText str = QStaticText(QString(c));
 		str.prepare(QTransform(), m_font);
-		m_staticAscii.append(str);
+		m_staticLatin1.append(str);
 	}
 
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -289,31 +289,30 @@ void MemoryModel::deserialize(const QByteArray& bytes) {
 QString MemoryModel::decodeText(const QByteArray& bytes) {
 	QString text;
 	if (m_codec) {
+		QByteArray array;
 		TextCodecIterator iter;
 		TextCodecStartDecode(m_codec.get(), &iter);
 		uint8_t lineBuffer[128];
 		for (quint8 byte : bytes) {
-			size_t size = TextCodecAdvance(&iter, byte, lineBuffer, sizeof(lineBuffer));
-			if (size > sizeof(lineBuffer)) {
+			ssize_t size = TextCodecAdvance(&iter, byte, lineBuffer, sizeof(lineBuffer));
+			if (size > (ssize_t) sizeof(lineBuffer)) {
 				size = sizeof(lineBuffer);
 			}
-			for (size_t i = 0; i < size; ++i) {
-				text.append(lineBuffer[i]);
+			for (ssize_t i = 0; i < size; ++i) {
+				array.append(lineBuffer[i]);
 			}
 		}
-		size_t size = TextCodecFinish(&iter, lineBuffer, sizeof(lineBuffer));
-		if (size > sizeof(lineBuffer)) {
+		ssize_t size = TextCodecFinish(&iter, lineBuffer, sizeof(lineBuffer));
+		if (size > (ssize_t) sizeof(lineBuffer)) {
 			size = sizeof(lineBuffer);
 		}
-		for (size_t i = 0; i < size; ++i) {
-			text.append(lineBuffer[i]);
+		for (ssize_t i = 0; i < size; ++i) {
+			array.append(lineBuffer[i]);
 		}
+		text = QString::fromUtf8(array);
 	} else {
-		for (QChar c : bytes) {
-			if (!c.isPrint() || c >= 127) {
-				continue;
-			}
-			text.append(c);
+		for (uint8_t c : bytes) {
+			text.append((uchar) c);
 		}
 	}
 	return text;
@@ -337,7 +336,7 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	painter.drawStaticText(QPointF((m_margins.left() - m_regionName.size().width() - 1) / 2.0, 0), m_regionName);
 	painter.drawText(
 	    QRect(QPoint(viewport()->size().width() - m_margins.right(), 0), QSize(m_margins.right(), m_margins.top())),
-	    Qt::AlignHCenter, m_codec ? tr("TBL") : tr("ASCII"));
+	    Qt::AlignHCenter, m_codec ? tr("TBL") : tr("ISO-8859-1"));
 	for (int x = 0; x < 16; ++x) {
 		painter.drawText(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), 0), m_cellSize), Qt::AlignHCenter,
 		                 QString::number(x, 16).toUpper());
@@ -444,21 +443,49 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 			break;
 		}
 		painter.setPen(palette.color(QPalette::WindowText));
-		for (int x = 0; x < 16; ++x) {
-			uint8_t b = m_core->rawRead8(m_core, (y + m_top) * 16 + x + m_base, m_currentBank);
-			QString text = decodeText(QByteArray(1, b));
-			if (text.isEmpty()) {
-				b = '.';
+		for (int x = 0; x < 16; x += m_align) {
+			QByteArray array;
+			uint32_t b;
+			switch (m_align) {
+			case 1:
+				b = m_core->rawRead8(m_core, (y + m_top) * 16 + x + m_base, m_currentBank);
+				array.append((char) b);
+				break;
+			case 2:
+				b = m_core->rawRead16(m_core, (y + m_top) * 16 + x + m_base, m_currentBank);
+				array.append((char) b);
+				array.append((char) (b >> 8));
+				break;
+			case 4:
+				b = m_core->rawRead32(m_core, (y + m_top) * 16 + x + m_base, m_currentBank);
+				array.append((char) b);
+				array.append((char) (b >> 8));
+				array.append((char) (b >> 16));
+				array.append((char) (b >> 24));
+				break;
+			}
+			QString unfilteredText = decodeText(array);
+			QString text;
+			if (unfilteredText.isEmpty()) {
+				text.fill('.', m_align);
 			} else {
-				QChar c = text.at(0);
-				if (!c.isPrint() || c >= 127) {
-					b = '.';
-				} else {
-					b = c.toLatin1();
+				for (QChar c : unfilteredText) {
+					if (!c.isPrint()) {
+						text.append(QChar('.'));
+					} else {
+						text.append(c);
+					}
 				}
 			}
-			painter.drawStaticText(
-			    QPointF(viewport()->size().width() - (16 - x) * m_margins.right() / 17.0 - m_letterWidth * 0.5, yp), m_staticAscii[b]);
+			for (int i = 0; i < text.size() && i < m_align; ++i) {
+				const QChar c = text.at(i);
+				const QPointF location(viewport()->size().width() - (16 - x - i) * m_margins.right() / 17.0 - m_letterWidth * 0.5, yp);
+				if (c < 256) {
+					painter.drawStaticText(location, m_staticLatin1[c.cell()]);
+				} else {
+					painter.drawText(location, c);
+				}
+			}
 		}
 	}
 	painter.drawLine(m_margins.left(), 0, m_margins.left(), viewport()->size().height());
@@ -626,9 +653,9 @@ void MemoryModel::drawEditingText(QPainter& painter, const QPointF& origin) {
 		} else {
 			int b = m_buffer & 0xF;
 			if (b < 10) {
-				painter.drawStaticText(o, m_staticAscii[b + '0']);
+				painter.drawStaticText(o, m_staticLatin1[b + '0']);
 			} else {
-				painter.drawStaticText(o, m_staticAscii[b - 10 + 'A']);
+				painter.drawStaticText(o, m_staticLatin1[b - 10 + 'A']);
 			}
 		}
 		o += QPointF(m_letterWidth * 2, 0);
