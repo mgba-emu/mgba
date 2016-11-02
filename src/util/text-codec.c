@@ -146,18 +146,18 @@ void TextCodecStartEncode(struct TextCodec* codec, struct TextCodecIterator* ite
 	iter->current = iter->root;
 }
 
-static size_t _TextCodecFinishInternal(struct TextCodecNode* node, uint8_t* output, size_t outputLength) {
+static ssize_t _TextCodecFinishInternal(struct TextCodecNode* node, uint8_t* output, size_t outputLength) {
 	if (outputLength > node->leafLength) {
 		outputLength = node->leafLength;
 	}
 	if (node->leafLength == 0) {
-		return 0;
+		return -1;
 	}
 	memcpy(output, node->leaf, outputLength);
 	return node->leafLength;
 }
 
-size_t TextCodecAdvance(struct TextCodecIterator* iter, uint8_t byte, uint8_t* output, size_t outputLength) {
+ssize_t TextCodecAdvance(struct TextCodecIterator* iter, uint8_t byte, uint8_t* output, size_t outputLength) {
 	struct TextCodecNode* node = TableLookup(&iter->current->children, byte);
 	if (!node) {
 		ssize_t size = _TextCodecFinishInternal(iter->current, output, outputLength);
@@ -170,17 +170,28 @@ size_t TextCodecAdvance(struct TextCodecIterator* iter, uint8_t byte, uint8_t* o
 			return size;
 		}
 		if (iter->current == iter->root) {
-			return 0;
+			return -1;
 		}
 		iter->current = iter->root;
-		return TextCodecAdvance(iter, byte, output, outputLength) + size;
+		ssize_t newSize = TextCodecAdvance(iter, byte, output, outputLength);
+		if (newSize < 0 && size > 0) {
+			return size;
+		}
+		return newSize + size;
+	}
+	if (TableSize(&node->children) == 0) {
+		iter->current = iter->root;
+		return _TextCodecFinishInternal(node, output, outputLength);
 	}
 	iter->current = node;
 	return 0;
 }
 
-size_t TextCodecFinish(struct TextCodecIterator* iter, uint8_t* output, size_t outputLength) {
+ssize_t TextCodecFinish(struct TextCodecIterator* iter, uint8_t* output, size_t outputLength) {
 	struct TextCodecNode* node = iter->current;
 	iter->current = iter->root;
+	if (node->leafLength == 0) {
+		return 0;
+	}
 	return _TextCodecFinishInternal(node, output, outputLength);
 }

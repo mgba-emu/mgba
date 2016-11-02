@@ -42,7 +42,7 @@ M_TEST_DEFINE(singleEntry) {
 
 	len = 0;
 	TextCodecStartDecode(&codec, &iter);
-	len += TextCodecAdvance(&iter, 0x42, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 0x42, output + len, sizeof(output) - len), -1);
 	len += TextCodecAdvance(&iter, 0x41, output + len, sizeof(output) - len);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 1);
@@ -51,7 +51,7 @@ M_TEST_DEFINE(singleEntry) {
 	len = 0;
 	TextCodecStartDecode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 0x41, output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 0x42, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 0x42, output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 1);
 	assert_memory_equal(output, "B", 1);
@@ -59,7 +59,7 @@ M_TEST_DEFINE(singleEntry) {
 	len = 0;
 	TextCodecStartDecode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 0x41, output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 0x42, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 0x42, output + len, sizeof(output) - len), -1);
 	len += TextCodecAdvance(&iter, 0x41, output + len, sizeof(output) - len);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 2);
@@ -95,7 +95,7 @@ M_TEST_DEFINE(singleEntryReverse) {
 
 	len = 0;
 	TextCodecStartEncode(&codec, &iter);
-	len += TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len), -1);
 	len += TextCodecAdvance(&iter, 'B', output + len, sizeof(output) - len);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 1);
@@ -104,7 +104,7 @@ M_TEST_DEFINE(singleEntryReverse) {
 	len = 0;
 	TextCodecStartEncode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 'B', output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 1);
 	assert_memory_equal(output, "A", 1);
@@ -112,7 +112,7 @@ M_TEST_DEFINE(singleEntryReverse) {
 	len = 0;
 	TextCodecStartEncode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 'B', output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len), -1);
 	len += TextCodecAdvance(&iter, 'B', output + len, sizeof(output) - len);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 2);
@@ -181,7 +181,7 @@ M_TEST_DEFINE(twoEntry) {
 
 	len = 0;
 	TextCodecStartDecode(&codec, &iter);
-	len += TextCodecAdvance(&iter, 0x42, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 0x42, output + len, sizeof(output) - len), -1);
 	len += TextCodecAdvance(&iter, 0x41, output + len, sizeof(output) - len);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 1);
@@ -189,7 +189,7 @@ M_TEST_DEFINE(twoEntry) {
 
 	len = 0;
 	TextCodecStartDecode(&codec, &iter);
-	len += TextCodecAdvance(&iter, 0x42, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 0x42, output + len, sizeof(output) - len), -1);
 	len += TextCodecAdvance(&iter, 0x43, output + len, sizeof(output) - len);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 1);
@@ -198,7 +198,7 @@ M_TEST_DEFINE(twoEntry) {
 	len = 0;
 	TextCodecStartDecode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 0x41, output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 0x42, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 0x42, output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 1);
 	assert_memory_equal(output, "B", 1);
@@ -206,7 +206,7 @@ M_TEST_DEFINE(twoEntry) {
 	len = 0;
 	TextCodecStartDecode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 0x43, output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 0x42, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 0x42, output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 1);
 	assert_memory_equal(output, "D", 1);
@@ -274,7 +274,7 @@ M_TEST_DEFINE(longEntry) {
 
 	len = 0;
 	TextCodecStartDecode(&codec, &iter);
-	len += TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len), -1);
 	len += TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 2);
@@ -282,7 +282,7 @@ M_TEST_DEFINE(longEntry) {
 
 	len = 0;
 	TextCodecStartDecode(&codec, &iter);
-	len += TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len), -1);
 	len += TextCodecAdvance(&iter, 2, output + len, sizeof(output) - len);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 2);
@@ -291,7 +291,7 @@ M_TEST_DEFINE(longEntry) {
 	len = 0;
 	TextCodecStartDecode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 2);
 	assert_memory_equal(output, "Ab", 2);
@@ -299,7 +299,7 @@ M_TEST_DEFINE(longEntry) {
 	len = 0;
 	TextCodecStartDecode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 2, output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 2);
 	assert_memory_equal(output, "cd", 2);
@@ -377,7 +377,7 @@ M_TEST_DEFINE(longEntryReverse) {
 
 	len = 0;
 	TextCodecStartEncode(&codec, &iter);
-	len += TextCodecAdvance(&iter, 'e', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'e', output + len, sizeof(output) - len), -1);
 	len += TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 'b', output + len, sizeof(output) - len);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
@@ -386,7 +386,7 @@ M_TEST_DEFINE(longEntryReverse) {
 
 	len = 0;
 	TextCodecStartEncode(&codec, &iter);
-	len += TextCodecAdvance(&iter, 'e', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'e', output + len, sizeof(output) - len), -1);
 	len += TextCodecAdvance(&iter, 'c', output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 'd', output + len, sizeof(output) - len);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
@@ -396,8 +396,8 @@ M_TEST_DEFINE(longEntryReverse) {
 	len = 0;
 	TextCodecStartEncode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 'e', output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 'b', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'e', output + len, sizeof(output) - len), -1);
+	assert_int_equal(TextCodecAdvance(&iter, 'b', output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 0);
 
@@ -405,7 +405,7 @@ M_TEST_DEFINE(longEntryReverse) {
 	TextCodecStartEncode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 'b', output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 'e', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'e', output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 1);
 	assert_memory_equal(output, "\1", 1);
@@ -413,8 +413,8 @@ M_TEST_DEFINE(longEntryReverse) {
 	len = 0;
 	TextCodecStartEncode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 'c', output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 'e', output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 'd', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'e', output + len, sizeof(output) - len), -1);
+	assert_int_equal(TextCodecAdvance(&iter, 'd', output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 0);
 
@@ -422,7 +422,7 @@ M_TEST_DEFINE(longEntryReverse) {
 	TextCodecStartEncode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 'c', output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 'd', output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 'e', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'e', output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 1);
 	assert_memory_equal(output, "\2", 1);
@@ -454,7 +454,7 @@ M_TEST_DEFINE(overlappingEntry) {
 	TextCodecStartDecode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 0xFF, output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 2);
 	assert_memory_equal(output, "Ab", 2);
@@ -471,7 +471,7 @@ M_TEST_DEFINE(overlappingEntry) {
 	TextCodecStartDecode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 0xFF, output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 2, output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 2, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 2, output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 2);
 	assert_memory_equal(output, "Ac", 2);
@@ -518,7 +518,7 @@ M_TEST_DEFINE(overlappingEntry) {
 
 	len = 0;
 	TextCodecStartDecode(&codec, &iter);
-	len += TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len), -1);
 	len += TextCodecAdvance(&iter, 0xFF, output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
@@ -528,15 +528,15 @@ M_TEST_DEFINE(overlappingEntry) {
 	len = 0;
 	TextCodecStartDecode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 0xFF, output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len), -1);
+	assert_int_equal(TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 0);
 
 	len = 0;
 	TextCodecStartDecode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 0xFF, output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len), -1);
 	len += TextCodecAdvance(&iter, 0xFF, output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
@@ -548,7 +548,7 @@ M_TEST_DEFINE(overlappingEntry) {
 	len += TextCodecAdvance(&iter, 0xFF, output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 1, output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 0xFF, output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 3, output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 2);
 	assert_memory_equal(output, "Ab", 2);
@@ -580,7 +580,7 @@ M_TEST_DEFINE(overlappingEntryReverse) {
 	TextCodecStartEncode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 'b', output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 'b', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'b', output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 2);
 	assert_memory_equal(output, "\xFF\1", 2);
@@ -597,7 +597,7 @@ M_TEST_DEFINE(overlappingEntryReverse) {
 	TextCodecStartEncode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 'c', output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 'c', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'c', output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 2);
 	assert_memory_equal(output, "\xFF\2", 2);
@@ -644,7 +644,7 @@ M_TEST_DEFINE(overlappingEntryReverse) {
 
 	len = 0;
 	TextCodecStartEncode(&codec, &iter);
-	len += TextCodecAdvance(&iter, 'd', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'd', output + len, sizeof(output) - len), -1);
 	len += TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 'b', output + len, sizeof(output) - len);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
@@ -654,15 +654,15 @@ M_TEST_DEFINE(overlappingEntryReverse) {
 	len = 0;
 	TextCodecStartEncode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 'd', output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 'b', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'd', output + len, sizeof(output) - len), -1);
+	assert_int_equal(TextCodecAdvance(&iter, 'b', output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 0);
 
 	len = 0;
 	TextCodecStartEncode(&codec, &iter);
 	len += TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 'd', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'd', output + len, sizeof(output) - len), -1);
 	len += TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 'b', output + len, sizeof(output) - len);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
@@ -674,7 +674,7 @@ M_TEST_DEFINE(overlappingEntryReverse) {
 	len += TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 'b', output + len, sizeof(output) - len);
 	len += TextCodecAdvance(&iter, 'A', output + len, sizeof(output) - len);
-	len += TextCodecAdvance(&iter, 'd', output + len, sizeof(output) - len);
+	assert_int_equal(TextCodecAdvance(&iter, 'd', output + len, sizeof(output) - len), -1);
 	len += TextCodecFinish(&iter, output + len, sizeof(output) - len);
 	assert_int_equal(len, 2);
 	assert_memory_equal(output, "\xFF\1", 2);

@@ -26,7 +26,7 @@ void TextCodecDeinit(struct TextCodec*);
 void TextCodecStartDecode(struct TextCodec*, struct TextCodecIterator*);
 void TextCodecStartEncode(struct TextCodec*, struct TextCodecIterator*);
 
-size_t TextCodecAdvance(struct TextCodecIterator*, uint8_t byte, uint8_t* output, size_t outputLength);
-size_t TextCodecFinish(struct TextCodecIterator*, uint8_t* output, size_t outputLength);
+ssize_t TextCodecAdvance(struct TextCodecIterator*, uint8_t byte, uint8_t* output, size_t outputLength);
+ssize_t TextCodecFinish(struct TextCodecIterator*, uint8_t* output, size_t outputLength);
 
 #endif
