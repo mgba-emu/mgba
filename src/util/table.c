@@ -11,21 +11,21 @@
 #define LIST_INITIAL_SIZE 8
 #define TABLE_INITIAL_SIZE 8
 
-#define TABLE_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == key
-#define HASH_TABLE_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == hash && strncmp(LIST->list[(INDEX)].stringKey, key, LIST->list[(INDEX)].keylen) == 0
+#define TABLE_COMPARATOR(TUPLE) TUPLE->key == key
+#define HASH_TABLE_COMPARATOR(TUPLE) TUPLE->key == hash && strncmp(TUPLE->stringKey, key, TUPLE->keylen) == 0
 
-#define TABLE_LOOKUP_START(COMPARATOR, LIST, KEY) \
+#define TABLE_LOOKUP_START(COMPARATOR, KEY) \
 	uint32_t entry = (KEY) & (table->tableSize - 1); \
-	LIST = &table->table[entry]; \
+	struct TableList* list = &table->table[entry]; \
+	struct TableTuple* lookupResult = list->list; \
 	size_t i; \
-	for (i = 0; i < LIST->nEntries; ++i) { \
-		if (COMPARATOR(LIST, i)) { \
-			struct TableTuple* lookupResult = &LIST->list[i]; \
-			UNUSED(lookupResult);
+	for (i = list->nEntries; i--;) { \
+		if (COMPARATOR(lookupResult)) { \
 
 #define TABLE_LOOKUP_END \
 			break; \
 		} \
+		++lookupResult; \
 	}
 
 struct TableTuple {
@@ -98,16 +98,14 @@ void TableDeinit(struct Table* table) {
 }
 
 void* TableLookup(const struct Table* table, uint32_t key) {
-	const struct TableList* list;
-	TABLE_LOOKUP_START(TABLE_COMPARATOR, list, key) {
+	TABLE_LOOKUP_START(TABLE_COMPARATOR, key) {
 		return lookupResult->value;
 	} TABLE_LOOKUP_END;
 	return 0;
 }
 
 void TableInsert(struct Table* table, uint32_t key, void* value) {
-	struct TableList* list;
-	TABLE_LOOKUP_START(TABLE_COMPARATOR, list, key) {
+	TABLE_LOOKUP_START(TABLE_COMPARATOR, key) {
 		if (value != lookupResult->value) {
 			table->deinitializer(lookupResult->value);
 			lookupResult->value = value;
@@ -131,8 +129,7 @@ size_t TableSize(const struct Table* table) {
 }
 
 void TableRemove(struct Table* table, uint32_t key) {
-	struct TableList* list;
-	TABLE_LOOKUP_START(TABLE_COMPARATOR, list, key) {
+	TABLE_LOOKUP_START(TABLE_COMPARATOR, key) {
 		_removeItemFromList(table, list, i); // TODO: Move i out of the macro
 	} TABLE_LOOKUP_END;
 }
@@ -167,8 +164,7 @@ void TableEnumerate(const struct Table* table, void (handler(uint32_t key, void*
 
 void* HashTableLookup(const struct Table* table, const char* key) {
 	uint32_t hash = hash32(key, strlen(key), 0);
-	const struct TableList* list;
-	TABLE_LOOKUP_START(HASH_TABLE_COMPARATOR, list, hash) {
+	TABLE_LOOKUP_START(HASH_TABLE_COMPARATOR, hash) {
 		return lookupResult->value;
 	} TABLE_LOOKUP_END;
 	return 0;
@@ -176,8 +172,7 @@ void* HashTableLookup(const struct Table* table, const char* key) {
 
 void HashTableInsert(struct Table* table, const char* key, void* value) {
 	uint32_t hash = hash32(key, strlen(key), 0);
-	struct TableList* list;
-	TABLE_LOOKUP_START(HASH_TABLE_COMPARATOR, list, hash) {
+	TABLE_LOOKUP_START(HASH_TABLE_COMPARATOR, hash) {
 		if (value != lookupResult->value) {
 			table->deinitializer(lookupResult->value);
 			lookupResult->value = value;
@@ -193,8 +188,7 @@ void HashTableInsert(struct Table* table, const char* key, void* value) {
 
 void HashTableRemove(struct Table* table, const char* key) {
 	uint32_t hash = hash32(key, strlen(key), 0);
-	struct TableList* list;
-	TABLE_LOOKUP_START(HASH_TABLE_COMPARATOR, list, hash) {
+	TABLE_LOOKUP_START(HASH_TABLE_COMPARATOR, hash) {
 		_removeItemFromList(table, list, i); // TODO: Move i out of the macro
 	} TABLE_LOOKUP_END;
 }
