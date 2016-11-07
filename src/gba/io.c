@@ -541,6 +541,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			GBAWriteIE(gba, value);
 			break;
 		case REG_IF:
+			gba->springIRQ &= ~value;
 			value = gba->memory.io[REG_IF >> 1] & ~value;
 			break;
 		case REG_IME:

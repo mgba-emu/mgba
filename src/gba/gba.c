@@ -674,7 +674,7 @@ void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq) {
 void GBATestIRQ(struct ARMCore* cpu) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	if (gba->memory.io[REG_IME >> 1] && gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1]) {
-		gba->springIRQ = 1;
+		gba->springIRQ = gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1];
 		gba->cpu->nextEvent = gba->cpu->cycles;
 	}
 }

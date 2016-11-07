@@ -28,6 +28,7 @@ Bugfixes:
  - Qt: Only reset window dimensions when first shown
  - GB Memory: Fix starting HDMAs during mode 0
  - Qt: Fix Qt Multimedia audio driver on big endian
+ - GBA: Fix IRQs firing after already being cleared
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
