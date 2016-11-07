@@ -27,6 +27,7 @@ Bugfixes:
  - GBA Memory: Improve initial skipped BIOS state
  - Qt: Only reset window dimensions when first shown
  - GB Memory: Fix starting HDMAs during mode 0
+ - Qt: Fix Qt Multimedia audio driver on big endian
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
