@@ -17,6 +17,7 @@ Bugfixes:
  - GBA Memory: Fix VCOUNT being writable
  - Qt: Only reset window dimensions when first shown
  - GB Memory: Fix starting HDMAs during mode 0
+ - Qt: Fix Qt Multimedia audio driver on big endian
 Misc:
  - PSP2: Improved controller rumble
  - GB, GBA: Prevent loading null ROMs
