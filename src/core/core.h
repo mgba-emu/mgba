@@ -16,7 +16,9 @@
 #include "core/input.h"
 #endif
 #include "core/interface.h"
+#ifdef USE_DEBUGGERS
 #include "debugger/debugger.h"
+#endif
 
 enum mPlatform {
 	PLATFORM_NONE = -1,
