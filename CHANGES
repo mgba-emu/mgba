@@ -18,6 +18,7 @@ Bugfixes:
  - Qt: Only reset window dimensions when first shown
  - GB Memory: Fix starting HDMAs during mode 0
  - Qt: Fix Qt Multimedia audio driver on big endian
+ - GBA: Fix IRQs firing after already being cleared
 Misc:
  - PSP2: Improved controller rumble
  - GB, GBA: Prevent loading null ROMs
