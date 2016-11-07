@@ -31,9 +31,17 @@ def loadVF(vf):
         return None
     return core
 
+def needsReset(f):
+    def wrapper(self, *args, **kwargs):
+        if not self._wasReset:
+            raise RuntimeError("Core must be reset first")
+        return f(self, *args, **kwargs)
+    return wrapper
+
 class Core(object):
     def __init__(self, native):
         self._core = native
+        self._wasReset = False
 
     @cached_property
     def tiles(self):
@@ -92,13 +100,17 @@ class Core(object):
 
     def reset(self):
         self._core.reset(self._core)
+        self._wasReset = True
 
+    @needsReset
     def runFrame(self):
         self._core.runFrame(self._core)
 
+    @needsReset
     def runLoop(self):
         self._core.runLoop(self._core)
 
+    @needsReset
     def step(self):
         self._core.step(self._core)
 
@@ -120,6 +132,7 @@ class Core(object):
     def clearKeys(self, *args, **kwargs):
         self._core.clearKeys(self._core, self._keysToInt(*args, **kwargs))
 
+    @needsReset
     def frameCounter(self):
         return self._core.frameCounter(self._core)
 

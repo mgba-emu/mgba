@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from ._pylib import ffi, lib
 from .arm import ARMCore
-from .core import Core
+from .core import Core, needsReset
 from .tile import Sprite
 from .memory import Memory
 
@@ -28,6 +28,7 @@ class GBA(Core):
         self.cpu = ARMCore(self._core.cpu)
         self.memory = GBAMemory(self._core)
 
+    @needsReset
     def _initTileCache(self, cache):
         lib.GBAVideoTileCacheInit(cache)
         lib.GBAVideoTileCacheAssociate(cache, ffi.addressof(self._native.video))

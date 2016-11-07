@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from ._pylib import ffi, lib
 from .lr35902 import LR35902Core
-from .core import Core
+from .core import Core, needsReset
 from .memory import Memory
 from .tile import Sprite
 
@@ -25,6 +25,7 @@ class GB(Core):
         self.sprites = GBObjs(self)
         self.cpu = LR35902Core(self._core.cpu)
 
+    @needsReset
     def _initTileCache(self, cache):
         lib.GBVideoTileCacheInit(cache)
         lib.GBVideoTileCacheAssociate(cache, ffi.addressof(self._native.video))
