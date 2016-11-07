@@ -201,7 +201,9 @@ bool _parseGraphicsArg(struct mSubParser* parser, int option, const char* arg) {
 
 void _applyGraphicsArgs(struct mSubParser* parser, struct mCoreConfig* config) {
 	struct mGraphicsOpts* graphicsOpts = parser->opts;
-	mCoreConfigSetOverrideIntValue(config, "fullscreen", graphicsOpts->fullscreen);
+	if (graphicsOpts->fullscreen) {
+		mCoreConfigSetOverrideIntValue(config, "fullscreen", graphicsOpts->fullscreen);
+	}
 }
 
 void usage(const char* arg0, const char* extraOptions) {
