@@ -5,21 +5,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "timing.h"
 
-DEFINE_VECTOR(mTimingEventList, struct mTimingEvent*);
-
 void mTimingInit(struct mTiming* timing, int32_t* relativeCycles, int32_t* nextEvent) {
-	mTimingEventListInit(&timing->events, 0);
+	timing->root = NULL;
 	timing->masterCycles = 0;
 	timing->relativeCycles = relativeCycles;
 	timing->nextEvent = nextEvent;
 }
 
 void mTimingDeinit(struct mTiming* timing) {
-	mTimingEventListDeinit(&timing->events);
 }
 
 void mTimingClear(struct mTiming* timing) {
-	mTimingEventListClear(&timing->events);
+	timing->root = NULL;
 	timing->masterCycles = 0;
 }
 
@@ -29,51 +26,52 @@ void mTimingSchedule(struct mTiming* timing, struct mTimingEvent* event, int32_t
 	if (nextEvent < *timing->nextEvent) {
 		*timing->nextEvent = nextEvent;
 	}
-	size_t e;
-	for (e = 0; e < mTimingEventListSize(&timing->events); ++e) {
-		struct mTimingEvent* next = *mTimingEventListGetPointer(&timing->events, e);
+	struct mTimingEvent** previous = &timing->root;
+	struct mTimingEvent* next = timing->root;
+	while (next) {
 		int32_t nextWhen = next->when - timing->masterCycles;
-		if (nextWhen < when) {
-			mTimingEventListUnshift(&timing->events, e, 1);
-			*mTimingEventListGetPointer(&timing->events, e) = event;
-			return;
+		if (nextWhen > when) {
+			break;
 		}
+		previous = &next->next;
+		next = next->next;
 	}
-	*mTimingEventListAppend(&timing->events) = event;
+	event->next = next;
+	*previous = event;
 }
 
 void mTimingDeschedule(struct mTiming* timing, struct mTimingEvent* event) {
-	size_t e;
-	for (e = 0; e < mTimingEventListSize(&timing->events); ++e) {
-		struct mTimingEvent* next = *mTimingEventListGetPointer(&timing->events, e);
+	struct mTimingEvent** previous = &timing->root;
+	struct mTimingEvent* next = timing->root;
+	while (next) {
 		if (next == event) {
-			mTimingEventListShift(&timing->events, e, 1);
+			*previous = next->next;
 			return;
 		}
+		previous = &next->next;
+		next = next->next;
 	}
 }
 
 int32_t mTimingTick(struct mTiming* timing, int32_t cycles) {
 	timing->masterCycles += cycles;
 	uint32_t masterCycles = timing->masterCycles;
-	size_t listSize;
-	while ((listSize = mTimingEventListSize(&timing->events))) {
-		struct mTimingEvent* next = *mTimingEventListGetPointer(&timing->events, listSize - 1);
+	while (timing->root) {
+		struct mTimingEvent* next = timing->root;
 		int32_t nextWhen = next->when - masterCycles;
 		if (nextWhen > 0) {
 			return nextWhen;
 		}
-		mTimingEventListResize(&timing->events, -1);
+		timing->root = next->next;
 		next->callback(timing, next->context, -nextWhen);
 	}
 	return *timing->nextEvent;
 }
 
 int32_t mTimingNextEvent(struct mTiming* timing) {
-	size_t listSize;
-	if (!(listSize = mTimingEventListSize(&timing->events))) {
+	struct mTimingEvent* next = timing->root;
+	if (!next) {
 		return INT_MAX;
 	}
-	struct mTimingEvent* next = *mTimingEventListGetPointer(&timing->events, listSize - 1);
 	return next->when - timing->masterCycles;
 }

@@ -7,7 +7,6 @@
 #define M_CORE_TIMING
 
 #include "util/common.h"
-#include "util/vector.h"
 
 struct mTiming;
 struct mTimingEvent {
@@ -15,12 +14,12 @@ struct mTimingEvent {
 	void (*callback)(struct mTiming*, void* context, uint32_t);
 	const char* name;
 	uint32_t when;
+
+	struct mTimingEvent* next;
 };
 
-DECLARE_VECTOR(mTimingEventList, struct mTimingEvent*);
-
 struct mTiming {
-	struct mTimingEventList events;
+	struct mTimingEvent* root;
 
 	uint32_t masterCycles;
 	int32_t* relativeCycles;
