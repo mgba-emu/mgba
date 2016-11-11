@@ -17,8 +17,7 @@ static bool GBASIOLockstepNodeLoad(struct GBASIODriver* driver);
 static bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver);
 static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
-static int32_t GBASIOLockstepNodeProcessEvents(struct GBASIODriver* driver, int32_t cycles);
-static int32_t GBASIOLockstepNodeProcessEvents(struct GBASIODriver* driver, int32_t cycles);
+static void _GBASIOLockstepNodeProcessEvents(struct mTiming* timing, void* driver, uint32_t cyclesLate);
 
 void GBASIOLockstepInit(struct GBASIOLockstep* lockstep) {
 	lockstep->players[0] = 0;
@@ -47,7 +46,6 @@ void GBASIOLockstepNodeCreate(struct GBASIOLockstepNode* node) {
 	node->d.load = GBASIOLockstepNodeLoad;
 	node->d.unload = GBASIOLockstepNodeUnload;
 	node->d.writeRegister = 0;
-	node->d.processEvents = GBASIOLockstepNodeProcessEvents;
 }
 
 bool GBASIOLockstepAttachNode(struct GBASIOLockstep* lockstep, struct GBASIOLockstepNode* node) {
@@ -83,6 +81,9 @@ bool GBASIOLockstepNodeInit(struct GBASIODriver* driver) {
 	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
 	node->d.p->multiplayerControl.slave = node->id > 0;
 	mLOG(GBA_SIO, DEBUG, "Lockstep %i: Node init", node->id);
+	node->event.context = node;
+	node->event.name = "GBA SIO Lockstep";
+	node->event.callback = _GBASIOLockstepNodeProcessEvents;
 	return true;
 }
 
@@ -94,6 +95,7 @@ bool GBASIOLockstepNodeLoad(struct GBASIODriver* driver) {
 	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
 	node->nextEvent = 0;
 	node->eventDiff = 0;
+	mTimingSchedule(&driver->p->p->timing, &node->event, 0);
 	node->mode = driver->p->mode;
 	switch (node->mode) {
 	case SIO_MULTI:
@@ -130,6 +132,7 @@ bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver) {
 		break;
 	}
 	node->p->unload(node->p, node->id);
+	mTimingDeschedule(&driver->p->p->timing, &node->event);
 	return true;
 }
 
@@ -142,7 +145,8 @@ static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver
 				mLOG(GBA_SIO, DEBUG, "Lockstep %i: Transfer initiated", node->id);
 				node->p->transferActive = TRANSFER_STARTING;
 				node->p->transferCycles = GBASIOCyclesPerTransfer[node->d.p->multiplayerControl.baud][node->p->attached - 1];
-				node->nextEvent = 0;
+				mTimingDeschedule(&driver->p->p->timing, &node->event);
+				mTimingSchedule(&driver->p->p->timing, &node->event, 0);
 			} else {
 				value &= ~0x0080;
 			}
@@ -332,28 +336,33 @@ static uint32_t _slaveUpdate(struct GBASIOLockstepNode* node) {
 	return 0;
 }
 
-static int32_t GBASIOLockstepNodeProcessEvents(struct GBASIODriver* driver, int32_t cycles) {
-	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
+static void _GBASIOLockstepNodeProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLate) {
+	struct GBASIOLockstepNode* node = user;
 	if (node->p->attached < 2) {
-		return INT_MAX;
+		return;
 	}
-	node->eventDiff += cycles;
-	node->nextEvent -= cycles;
+	int32_t cycles = 0;
+	node->nextEvent -= cyclesLate;
 	if (node->nextEvent <= 0) {
 		if (!node->id) {
 			cycles = _masterUpdate(node);
 		} else {
 			cycles = _slaveUpdate(node);
-			node->nextEvent += node->p->useCycles(node->p, node->id, node->eventDiff);
+			cycles += node->p->useCycles(node->p, node->id, node->eventDiff);
 		}
 		node->eventDiff = 0;
 	} else {
 		cycles = node->nextEvent;
 	}
-	if (cycles < 0) {
-		return 0;
+	if (cycles > 0) {
+		node->nextEvent = 0;
+		node->eventDiff += cycles;
+		mTimingDeschedule(timing, &node->event);
+		mTimingSchedule(timing, &node->event, cycles);
+	} else {
+		node->d.p->p->earlyExit = true;
+		mTimingSchedule(timing, &node->event, cyclesLate + 1);
 	}
-	return cycles;
 }
 
 static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {

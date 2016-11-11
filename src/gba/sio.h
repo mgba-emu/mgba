@@ -78,6 +78,4 @@ void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value);
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value);
 uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value);
 
-int32_t GBASIOProcessEvents(struct GBASIO* sio, int32_t cycles);
-
 #endif

@@ -184,6 +184,7 @@ void GBAReset(struct ARMCore* cpu) {
 	}
 
 	gba->cpuBlocked = false;
+	gba->earlyExit = false;
 	if (gba->yankedRomSize) {
 		gba->memory.romSize = gba->yankedRomSize;
 		gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
@@ -238,7 +239,6 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 	int32_t nextEvent = cpu->nextEvent;
 	while (cpu->cycles >= nextEvent) {
 		int32_t cycles = cpu->cycles;
-		int32_t testEvent;
 
 		cpu->cycles = 0;
 		cpu->nextEvent = INT_MAX;
@@ -253,14 +253,10 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 			nextEvent = mTimingTick(&gba->timing, nextEvent);
 		} while (gba->cpuBlocked);
 
-		testEvent = GBASIOProcessEvents(&gba->sio, cycles);
-		if (testEvent < nextEvent) {
-			nextEvent = testEvent;
-		}
-
 		cpu->nextEvent = nextEvent;
 
-		if (nextEvent == 0) {
+		if (gba->earlyExit) {
+			gba->earlyExit = false;
 			break;
 		}
 		if (cpu->halted) {

@@ -174,10 +174,3 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 	}
 	return value;
 }
-
-int32_t GBASIOProcessEvents(struct GBASIO* sio, int32_t cycles) {
-	if (sio->activeDriver && sio->activeDriver->processEvents) {
-		return sio->activeDriver->processEvents(sio->activeDriver, cycles);
-	}
-	return INT_MAX;
-}

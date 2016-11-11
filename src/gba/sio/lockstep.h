@@ -6,6 +6,7 @@
 #ifndef SIO_LOCKSTEP_H
 #define SIO_LOCKSTEP_H
 
+#include "core/timing.h"
 #include "gba/sio.h"
 
 enum GBASIOLockstepPhase {
@@ -41,6 +42,7 @@ struct GBASIOLockstep {
 struct GBASIOLockstepNode {
 	struct GBASIODriver d;
 	struct GBASIOLockstep* p;
+	struct mTimingEvent event;
 
 	volatile int32_t nextEvent;
 	int32_t eventDiff;
