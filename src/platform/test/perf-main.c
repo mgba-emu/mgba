@@ -69,7 +69,6 @@ int main(int argc, char** argv) {
 	if (!allocateRomBuffer()) {
 		return 1;
 	}
-	FSUSER_OpenArchive(&sdmcArchive, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
 #else
 	signal(SIGINT, _mPerfShutdown);
 #endif

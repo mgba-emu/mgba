@@ -56,8 +56,6 @@ static enum DarkenMode {
 #define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 16)
 #define DSP_BUFFERS 4
 
-FS_Archive sdmcArchive;
-
 static struct GBA3DSRotationSource {
 	struct mRotationSource d;
 	accelVector accel;
@@ -724,8 +722,6 @@ int main() {
 			outputTexture.data, 0x0000, outputTextureEnd, GX_FILL_16BIT_DEPTH | GX_FILL_TRIGGER,
 			NULL, 0, NULL, 0);
 	gspWaitForPSC0();
-
-	FSUSER_OpenArchive(&sdmcArchive, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
 
 	struct GUIFont* font = GUIFontCreate();
 
