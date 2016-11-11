@@ -425,6 +425,7 @@ void GBReset(struct LR35902Core* cpu) {
 		cpu->pc = 0x100;
 	}
 
+	gb->cpuBlocked = false;
 	gb->eiPending = INT_MAX;
 	gb->doubleSpeed = 0;
 
@@ -546,7 +547,11 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 			}
 		}
 
-		cpu->nextEvent = mTimingTick(&gb->timing, cycles);
+		nextEvent = cycles;
+		do {
+			nextEvent = mTimingTick(&gb->timing, nextEvent);
+		} while (gb->cpuBlocked);
+		cpu->nextEvent = nextEvent;
 
 		if (cpu->halted) {
 			cpu->cycles = cpu->nextEvent;

@@ -206,6 +206,7 @@ void _endMode3(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	}
 	if (video->ly < GB_VIDEO_VERTICAL_PIXELS && video->p->memory.isHdma && video->p->memory.io[REG_HDMA5] != 0xFF) {
 		video->p->memory.hdmaRemaining = 0x10;
+		mTimingDeschedule(timing, &video->p->memory.hdmaEvent);
 		mTimingSchedule(timing, &video->p->memory.hdmaEvent, 0);
 	}
 	video->mode = 0;

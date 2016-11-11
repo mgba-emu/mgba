@@ -381,6 +381,7 @@ void GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
 	gb->memory.isHdma = value & 0x80;
 	if ((!wasHdma && !gb->memory.isHdma) || gb->video.mode == 0) {
 		gb->memory.hdmaRemaining = ((value & 0x7F) + 1) * 0x10;
+		gb->cpuBlocked = true;
 		mTimingSchedule(&gb->timing, &gb->memory.hdmaEvent, 0);
 		gb->cpu->nextEvent = gb->cpu->cycles;
 	}
@@ -404,14 +405,17 @@ void _GBMemoryDMAService(struct mTiming* timing, void* context, uint32_t cyclesL
 
 void _GBMemoryHDMAService(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GB* gb = context;
+	gb->cpuBlocked = true;
 	uint8_t b = gb->cpu->memory.load8(gb->cpu, gb->memory.hdmaSource);
 	gb->cpu->memory.store8(gb->cpu, gb->memory.hdmaDest, b);
 	++gb->memory.hdmaSource;
 	++gb->memory.hdmaDest;
 	--gb->memory.hdmaRemaining;
 	if (gb->memory.hdmaRemaining) {
+		mTimingDeschedule(timing, &gb->memory.hdmaEvent);
 		mTimingSchedule(timing, &gb->memory.hdmaEvent, 2 - cyclesLate);
 	} else {
+		gb->cpuBlocked = false;
 		gb->memory.io[REG_HDMA1] = gb->memory.hdmaSource >> 8;
 		gb->memory.io[REG_HDMA2] = gb->memory.hdmaSource;
 		gb->memory.io[REG_HDMA3] = gb->memory.hdmaDest >> 8;
@@ -425,7 +429,6 @@ void _GBMemoryHDMAService(struct mTiming* timing, void* context, uint32_t cycles
 			gb->memory.io[REG_HDMA5] = 0xFF;
 		}
 	}
-	gb->cpu->cycles += 2;
 }
 
 struct OAMBlock {

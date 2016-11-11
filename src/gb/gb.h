@@ -78,6 +78,7 @@ struct GB {
 	struct mCoreCallbacks* coreCallbacks;
 	struct mAVStream* stream;
 
+	bool cpuBlocked;
 	int32_t eiPending;
 	unsigned doubleSpeed;
 };
