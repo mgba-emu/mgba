@@ -39,6 +39,8 @@ static void GBSetInterrupts(struct LR35902Core* cpu, bool enable);
 static void GBIllegal(struct LR35902Core* cpu);
 static void GBStop(struct LR35902Core* cpu);
 
+static void _enableInterrupts(struct mTiming* timing, void* user, uint32_t cyclesLate);
+
 #ifdef _3DS
 extern uint32_t* romBuffer;
 extern size_t romBufferSize;
@@ -85,6 +87,10 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 
 	mTimingInit(&gb->timing, &gb->cpu->cycles, &gb->cpu->nextEvent);
 	gb->audio.timing = &gb->timing;
+
+	gb->eiPending.name = "GB EI";
+	gb->eiPending.callback = _enableInterrupts;
+	gb->eiPending.context = gb;
 }
 
 static void GBDeinit(struct mCPUComponent* component) {
@@ -426,7 +432,6 @@ void GBReset(struct LR35902Core* cpu) {
 	}
 
 	gb->cpuBlocked = false;
-	gb->eiPending = INT_MAX;
 	gb->doubleSpeed = 0;
 
 	cpu->memory.setActiveRegion(cpu, cpu->pc);
@@ -536,17 +541,6 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 		cpu->cycles = 0;
 		cpu->nextEvent = INT_MAX;
 
-		if (gb->eiPending != INT_MAX) {
-			gb->eiPending -= cycles;
-			if (gb->eiPending <= 0) {
-				gb->memory.ime = true;
-				GBUpdateIRQs(gb);
-				gb->eiPending = INT_MAX;
-			} else {
-				nextEvent = gb->eiPending;
-			}
-		}
-
 		nextEvent = cycles;
 		do {
 			nextEvent = mTimingTick(&gb->timing, nextEvent);
@@ -566,14 +560,20 @@ void GBSetInterrupts(struct LR35902Core* cpu, bool enable) {
 	struct GB* gb = (struct GB*) cpu->master;
 	if (!enable) {
 		gb->memory.ime = enable;
-		gb->eiPending = INT_MAX;
+		mTimingDeschedule(&gb->timing, &gb->eiPending);
 		GBUpdateIRQs(gb);
 	} else {
-		if (cpu->nextEvent > cpu->cycles + 4) {
-			cpu->nextEvent = cpu->cycles + 4;
-		}
-		gb->eiPending = cpu->cycles + 4;
+		mTimingDeschedule(&gb->timing, &gb->eiPending);
+		mTimingSchedule(&gb->timing, &gb->eiPending, 4);
 	}
+}
+
+static void _enableInterrupts(struct mTiming* timing, void* user, uint32_t cyclesLate) {
+	UNUSED(timing);
+	UNUSED(cyclesLate);
+	struct GB* gb = user;
+	gb->memory.ime = true;
+	GBUpdateIRQs(gb);
 }
 
 void GBHalt(struct LR35902Core* cpu) {

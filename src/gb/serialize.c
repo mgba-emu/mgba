@@ -50,8 +50,6 @@ void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	state->cpu.executionState = gb->cpu->executionState;
 	STORE_16LE(gb->cpu->irqVector, 0, &state->cpu.irqVector);
 
-	STORE_32LE(gb->eiPending, 0, &state->cpu.eiPending);
-
 	GBSerializedCpuFlags flags = 0;
 	flags = GBSerializedCpuFlagsSetCondition(flags, gb->cpu->condition);
 	flags = GBSerializedCpuFlagsSetIrqPending(flags, gb->cpu->irqPending);
@@ -169,8 +167,6 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->cpu->bus = state->cpu.bus;
 	gb->cpu->executionState = state->cpu.executionState;
 	LOAD_16LE(gb->cpu->irqVector, 0, &state->cpu.irqVector);
-
-	LOAD_32LE(gb->eiPending, 0, &state->cpu.eiPending);
 
 	GBSerializedCpuFlags flags;
 	LOAD_32LE(flags, 0, &state->cpu.flags);
