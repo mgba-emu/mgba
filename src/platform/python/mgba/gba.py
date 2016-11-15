@@ -26,7 +26,6 @@ class GBA(Core):
         self._native = ffi.cast("struct GBA*", native.board)
         self.sprites = GBAObjs(self)
         self.cpu = ARMCore(self._core.cpu)
-        self.memory = GBAMemory(self._core)
 
     @needsReset
     def _initTileCache(self, cache):
@@ -37,8 +36,12 @@ class GBA(Core):
         self._native.video.renderer.cache = ffi.NULL
         lib.mTileCacheDeinit(cache)
 
+    def reset(self):
+        super(GBA, self).reset()
+        self.memory = GBAMemory(self._core, self._native.memory.romSize)
+
 class GBAMemory(Memory):
-    def __init__(self, core):
+    def __init__(self, core, romSize=lib.SIZE_CART0):
         super(GBAMemory, self).__init__(core, 0x100000000)
 
         self.bios = Memory(core, lib.SIZE_BIOS, lib.BASE_BIOS)
@@ -48,10 +51,11 @@ class GBAMemory(Memory):
         self.palette = Memory(core, lib.SIZE_PALETTE_RAM, lib.BASE_PALETTE_RAM)
         self.vram = Memory(core, lib.SIZE_VRAM, lib.BASE_VRAM)
         self.oam = Memory(core, lib.SIZE_OAM, lib.BASE_OAM)
-        self.cart0 = Memory(core, lib.SIZE_CART0, lib.BASE_CART0)
-        self.cart1 = Memory(core, lib.SIZE_CART1, lib.BASE_CART1)
-        self.cart2 = Memory(core, lib.SIZE_CART2, lib.BASE_CART2)
+        self.cart0 = Memory(core, romSize, lib.BASE_CART0)
+        self.cart1 = Memory(core, romSize, lib.BASE_CART1)
+        self.cart2 = Memory(core, romSize, lib.BASE_CART2)
         self.cart = self.cart0
+        self.rom = self.cart0
         self.sram = Memory(core, lib.SIZE_CART_SRAM, lib.BASE_CART_SRAM)
 
 class GBASprite(Sprite):
