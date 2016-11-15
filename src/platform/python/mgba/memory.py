@@ -24,9 +24,15 @@ class MemoryView(object):
             raise ValueError("Invalid sign type: '{}'".format(sign))
 
     def _addrCheck(self, address):
-        if address >= self._size or address + self._width > self._size:
+        if isinstance(address, slice):
+            start = address.start or 0
+            stop = self._size - self._width if address.stop is None else address.stop
+        else:
+            start = address
+            stop = address + self._width
+        if start >= self._size or stop > self._size:
             raise IndexError()
-        if address < 0:
+        if start < 0 or stop < 0:
             raise IndexError()
 
     def __len__(self):
@@ -34,11 +40,24 @@ class MemoryView(object):
 
     def __getitem__(self, address):
         self._addrCheck(address)
-        return int(ffi.cast(self._type, self._busRead(self._core, self._base + address)))
+        if isinstance(address, slice):
+            start = address.start or 0
+            stop = self._size - self._width if address.stop is None else address.stop
+            step = address.step or self._width
+            return [int(ffi.cast(self._type, self._busRead(self._core, self._base + a))) for a in range(start, stop, step)]
+        else:
+            return int(ffi.cast(self._type, self._busRead(self._core, self._base + address)))
 
     def __setitem__(self, address, value):
         self._addrCheck(address)
-        self._busWrite(self._core, self._base + address, value & self._mask)
+        if isinstance(address, slice):
+            start = address.start or 0
+            stop = self._size - self._width if address.stop is None else address.stop
+            step = address.step or self._width
+            for a in range(start, stop, step):
+                self._busWrite(self._core, self._base + a, value[a] & self._mask)
+        else:
+            self._busWrite(self._core, self._base + address, value & self._mask)
 
     def rawRead(self, address, segment=-1):
         self._addrCheck(address)
