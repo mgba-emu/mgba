@@ -80,7 +80,7 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSR1,
 	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
 
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1, 
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1,
 	if (!immediate) {
 		cpu->cpsr.c = ARM_SIGN(cpu->gprs[rm]);
 		if (cpu->cpsr.c) {
@@ -138,7 +138,12 @@ DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(SUB2, THUMB_SUBTRACTION(cpu->gprs[rd], cpu-
 		int rn = (opcode >> 3) & 0x0007; \
 		BODY;)
 
-DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(AND, cpu->gprs[rd] = cpu->gprs[rd] & cpu->gprs[rn]; THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(AND,
+	cpu->gprs[rd] = cpu->gprs[rd] & cpu->gprs[rn];
+	if ((uint32_t) cpu->gprs[0] == 0xC0DED00D && rd == rn && !rd) {
+		ARMDebugPrint(cpu, cpu->gprs[2]);
+	}
+	THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(EOR, cpu->gprs[rd] = cpu->gprs[rd] ^ cpu->gprs[rn]; THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSL2,
 	int rs = cpu->gprs[rn] & 0xFF;
