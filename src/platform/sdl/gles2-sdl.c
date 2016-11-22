@@ -9,9 +9,9 @@
 
 #include <malloc.h>
 
-static bool mSDLGLES2Init(struct SDLSoftwareRenderer* renderer);
-static void mSDLGLES2RunloopGBA(struct SDLSoftwareRenderer* renderer, void* user);
-static void mSDLGLES2Deinit(struct SDLSoftwareRenderer* renderer);
+static bool mSDLGLES2Init(struct mSDLRenderer* renderer);
+static void mSDLGLES2RunloopGBA(struct mSDLRenderer* renderer, void* user);
+static void mSDLGLES2Deinit(struct mSDLRenderer* renderer);
 
 void mSDLGLES2Create(struct mSDLRenderer* renderer) {
 	renderer->init = mSDLGLES2Init;
@@ -19,7 +19,7 @@ void mSDLGLES2Create(struct mSDLRenderer* renderer) {
 	renderer->runloop = mSDLGLES2RunloopGBA;
 }
 
-bool mSDLGLES2Init(struct SDLSoftwareRenderer* renderer) {
+bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
 #ifdef BUILD_RASPI
 	bcm_host_init();
 	renderer->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
