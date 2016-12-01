@@ -76,11 +76,11 @@ union PSR {
 		unsigned : 20;
 		unsigned i : 1;
 		unsigned f : 1;
-		enum ExecutionMode t : 1;
-		enum PrivilegeMode priv : 5;
+		unsigned t : 1;
+		unsigned priv : 5;
 #else
-		enum PrivilegeMode priv : 5;
-		enum ExecutionMode t : 1;
+		unsigned priv : 5;
+		unsigned t : 1;
 		unsigned f : 1;
 		unsigned i : 1;
 		unsigned : 20;
