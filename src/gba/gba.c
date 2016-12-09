@@ -664,7 +664,6 @@ void GBAWriteIME(struct GBA* gba, uint16_t value) {
 
 void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq) {
 	gba->memory.io[REG_IF >> 1] |= 1 << irq;
-	gba->cpu->halted = 0;
 
 	if (gba->memory.io[REG_IME >> 1] && (gba->memory.io[REG_IE >> 1] & 1 << irq)) {
 		ARMRaiseIRQ(gba->cpu);

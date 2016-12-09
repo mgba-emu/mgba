@@ -147,6 +147,7 @@ void ARMReset(struct ARMCore* cpu) {
 }
 
 void ARMRaiseIRQ(struct ARMCore* cpu) {
+	cpu->halted = 0;
 	if (cpu->cpsr.i) {
 		return;
 	}

@@ -33,6 +33,7 @@ Bugfixes:
  - GBA BIOS: Implement BitUnPack
  - GBA: Add savegame override for Crash Bandicoot 2
  - ARM7: PSR mode bits should not get sign extended
+ - GBA: Only unhalt CPU if an IRQ actually fires
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
