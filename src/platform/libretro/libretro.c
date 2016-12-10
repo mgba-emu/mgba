@@ -181,6 +181,8 @@ void retro_init(void) {
 	struct retro_input_descriptor inputDescriptors[] = {
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "B" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "Turbo A" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "Turbo B" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
@@ -234,6 +236,26 @@ void retro_deinit(void) {
 #endif
 }
 
+int turboclock = 0;
+bool indownstate = true;
+bool turboA = false;
+bool turboB = false;
+
+void cycleturbo(bool x/*turbo A*/,bool y/*turbo B*/){
+   turboclock++;
+   if(turboclock >= 2){
+      turboclock = 0;
+      indownstate = !indownstate;
+   }
+   
+   if(x)turboA = indownstate;
+   else turboA = false;
+   
+   if(y)turboB = indownstate;
+   else turboB = false;
+}
+
+
 void retro_run(void) {
 	uint16_t keys;
 	inputPollCallback();
@@ -261,6 +283,14 @@ void retro_run(void) {
 	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)) << 7;
 	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)) << 8;
 	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)) << 9;
+   
+   //turbo keys
+   bool rarchXkey = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X);
+   bool rarchYkey = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y);
+   cycleturbo(rarchXkey,rarchYkey);
+   keys |= (!!turboA) << 0;
+   keys |= (!!turboB) << 1;
+   
 	core->setKeys(core, keys);
 
 	static bool wasAdjustingLux = false;
