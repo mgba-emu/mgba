@@ -181,8 +181,8 @@ void retro_init(void) {
 	struct retro_input_descriptor inputDescriptors[] = {
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "B" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "Turbo A" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "Turbo B" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Turbo A" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Turbo B" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
@@ -236,23 +236,35 @@ void retro_deinit(void) {
 #endif
 }
 
-int turboclock = 0;
-bool indownstate = true;
-bool turboA = false;
-bool turboB = false;
+#define RDKEYP1(key) inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_##key)
+static int turboclock = 0;
+static bool indownstate = true;
 
-void cycleturbo(bool x/*turbo A*/,bool y/*turbo B*/){
+int16_t cycleturbo(bool x/*turbo A*/, bool y/*turbo B*/, bool l2/*turbo L*/, bool r2/*turbo R*/) {
+   int16_t buttons = 0;
    turboclock++;
-   if(turboclock >= 2){
+   if (turboclock >= 2) {
       turboclock = 0;
       indownstate = !indownstate;
    }
    
-   if(x)turboA = indownstate;
-   else turboA = false;
+   if (x) {
+      buttons |= indownstate << 0;
+   }
    
-   if(y)turboB = indownstate;
-   else turboB = false;
+   if (y) {
+      buttons |= indownstate << 1;
+   }
+   
+   if (l2) {
+      buttons |= indownstate << 9;
+   }
+   
+   if (r2) {
+      buttons |= indownstate << 8;
+   }
+   
+   return buttons;
 }
 
 
@@ -285,11 +297,7 @@ void retro_run(void) {
 	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)) << 9;
    
    //turbo keys
-   bool rarchXkey = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X);
-   bool rarchYkey = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y);
-   cycleturbo(rarchXkey,rarchYkey);
-   keys |= (!!turboA) << 0;
-   keys |= (!!turboB) << 1;
+   keys |= cycleturbo(RDKEYP1(X),RDKEYP1(Y),RDKEYP1(L2),RDKEYP1(R2));
    
 	core->setKeys(core, keys);
 
