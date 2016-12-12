@@ -34,6 +34,7 @@ Bugfixes:
  - GBA: Add savegame override for Crash Bandicoot 2
  - ARM7: PSR mode bits should not get sign extended
  - GBA: Only unhalt CPU if an IRQ actually fires
+ - GBA Video: Fix out of bounds sprite transforms
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers

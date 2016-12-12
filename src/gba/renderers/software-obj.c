@@ -52,8 +52,8 @@
 		renderer->spriteCyclesRemaining -= 2; \
 		xAccum += mat.a; \
 		yAccum += mat.c; \
-		int localX = (xAccum >> 8) + (width >> 1); \
-		int localY = (yAccum >> 8) + (height >> 1); \
+		int localX = xAccum >> 8; \
+		int localY = yAccum >> 8; \
 		\
 		if (localX & widthMask || localY & heightMask) { \
 			break; \
@@ -200,24 +200,25 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 		int outX = x >= start ? x : start;
 		int condition = x + totalWidth;
 		int inX = outX - x;
-		int xAccum = mat.a * (inX - 1 - (totalWidth >> 1)) + mat.b * (inY - (totalHeight >> 1));
-		int yAccum = mat.c * (inX - 1 - (totalWidth >> 1)) + mat.d * (inY - (totalHeight >> 1));
-
 		if (end < condition) {
 			condition = end;
 		}
 
+		int xAccum = mat.a * (inX - 1 - (totalWidth >> 1)) + mat.b * (inY - (totalHeight >> 1)) + (width << 7);
+		int yAccum = mat.c * (inX - 1 - (totalWidth >> 1)) + mat.d * (inY - (totalHeight >> 1)) + (height << 7);
+
 		// Clip off early pixels
+		// TODO: Transform end coordinates too
 		if (mat.a) {
-			if ((xAccum >> 8) < -(width >> 1)) {
-				int32_t diffX = -(width << 7) - xAccum - 1;
+			if ((xAccum >> 8) < 0) {
+				int32_t diffX = -xAccum - 1;
 				int32_t x = mat.a ? diffX / mat.a : 0;
 				xAccum += mat.a * x;
 				yAccum += mat.c * x;
 				outX += x;
 				inX += x;
-			} else if ((xAccum >> 8) >= (width >> 1)) {
-				int32_t diffX = (width << 7) - xAccum;
+			} else if ((xAccum >> 8) >= width) {
+				int32_t diffX = (width << 8) - xAccum;
 				int32_t x = mat.a ? diffX / mat.a : 0;
 				xAccum += mat.a * x;
 				yAccum += mat.c * x;
@@ -226,21 +227,25 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			}
 		}
 		if (mat.c) {
-			if ((yAccum >> 8) < -(height >> 1)) {
-				int32_t diffY = -(height << 7) - yAccum - 1;
+			if ((yAccum >> 8) < 0) {
+				int32_t diffY = - yAccum - 1;
 				int32_t y = mat.c ? diffY / mat.c : 0;
 				xAccum += mat.a * y;
 				yAccum += mat.c * y;
 				outX += y;
 				inX += y;
-			} else if ((yAccum >> 8) >= (height >> 1)) {
-				int32_t diffY = (height << 7) - yAccum;
+			} else if ((yAccum >> 8) >= height) {
+				int32_t diffY = (height << 8) - yAccum;
 				int32_t y = mat.c ? diffY / mat.c : 0;
 				xAccum += mat.a * y;
 				yAccum += mat.c * y;
 				outX += y;
 				inX += y;
 			}
+		}
+
+		if (outX < start || outX >= condition) {
+			return 0;
 		}
 
 		if (!GBAObjAttributesAIs256Color(sprite->a)) {
