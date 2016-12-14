@@ -68,6 +68,10 @@ int32_t mTimingTick(struct mTiming* timing, int32_t cycles) {
 	return *timing->nextEvent;
 }
 
+int32_t mTimingCurrentTime(struct mTiming* timing) {
+	return timing->masterCycles + *timing->relativeCycles;
+}
+
 int32_t mTimingNextEvent(struct mTiming* timing) {
 	struct mTimingEvent* next = timing->root;
 	if (!next) {

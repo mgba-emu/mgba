@@ -109,6 +109,7 @@ struct GBADMA {
 	uint32_t nextDest;
 	int32_t nextCount;
 	int32_t nextEvent;
+	uint32_t scheduledAt;
 	int32_t hasStarted;
 };
 

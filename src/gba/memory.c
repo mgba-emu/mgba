@@ -1555,8 +1555,9 @@ void GBAMemoryScheduleDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	info->hasStarted = 0;
 	switch (GBADMARegisterGetTiming(info->reg)) {
 	case DMA_TIMING_NOW:
-		info->nextEvent = 2;
-		GBAMemoryUpdateDMAs(gba, -1);
+		info->nextEvent = 2 + 1; // XXX: Account for I cycle when writing
+		info->scheduledAt = mTimingCurrentTime(&gba->timing);
+		GBAMemoryUpdateDMAs(gba, 0);
 		break;
 	case DMA_TIMING_HBLANK:
 		// Handled implicitly
@@ -1586,27 +1587,43 @@ void GBAMemoryScheduleDMA(struct GBA* gba, int number, struct GBADMA* info) {
 void GBAMemoryRunHblankDMAs(struct GBA* gba, int32_t cycles) {
 	struct GBAMemory* memory = &gba->memory;
 	struct GBADMA* dma;
+	bool dmaSeen = false;
+	if (memory->activeDMA >= 0) {
+		GBAMemoryUpdateDMAs(gba, mTimingCurrentTime(&gba->timing) - memory->dma[memory->activeDMA].scheduledAt);
+	}
 	int i;
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
 		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_HBLANK) {
 			dma->nextEvent = 2 + cycles;
+			dma->scheduledAt = mTimingCurrentTime(&gba->timing);
+			dmaSeen = true;
 		}
 	}
-	GBAMemoryUpdateDMAs(gba, 0);
+	if (dmaSeen) {
+		GBAMemoryUpdateDMAs(gba, 0);
+	}
 }
 
 void GBAMemoryRunVblankDMAs(struct GBA* gba, int32_t cycles) {
 	struct GBAMemory* memory = &gba->memory;
 	struct GBADMA* dma;
+	bool dmaSeen = false;
+	if (memory->activeDMA >= 0) {
+		GBAMemoryUpdateDMAs(gba, mTimingCurrentTime(&gba->timing) - memory->dma[memory->activeDMA].scheduledAt);
+	}
 	int i;
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
 		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_VBLANK) {
 			dma->nextEvent = 2 + cycles;
+			dma->scheduledAt = mTimingCurrentTime(&gba->timing);
+			dmaSeen = true;
 		}
 	}
-	GBAMemoryUpdateDMAs(gba, 0);
+	if (dmaSeen) {
+		GBAMemoryUpdateDMAs(gba, 0);
+	}
 }
 
 void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
@@ -1664,6 +1681,7 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 		if (info->hasStarted < 1) {
 			info->hasStarted = wordsRemaining;
 			info->nextEvent = 0;
+			info->scheduledAt = mTimingCurrentTime(&gba->timing);
 			GBAMemoryUpdateDMAs(gba, -cycles);
 			return;
 		}
@@ -1729,6 +1747,7 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	} else {
 		info->nextDest = dest;
 		info->nextCount = wordsRemaining;
+		info->scheduledAt = mTimingCurrentTime(&gba->timing);
 	}
 	info->nextSource = source;
 	GBAMemoryUpdateDMAs(gba, 0);
