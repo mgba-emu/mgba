@@ -109,6 +109,7 @@ void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* 
 		return;
 	}
 	info->reg = GBADMARegisterSetDestControl(info->reg, DMA_FIXED);
+	info->reg = GBADMARegisterSetWidth(info->reg, 1);
 }
 
 void GBAAudioWriteSOUND1CNT_LO(struct GBAAudio* audio, uint16_t value) {
@@ -232,11 +233,9 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 	if (CircleBufferSize(&channel->fifo) <= 4 * sizeof(int32_t) && channel->dmaSource > 0) {
 		struct GBADMA* dma = &audio->p->memory.dma[channel->dmaSource];
 		if (GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_CUSTOM) {
+			dma->when = mTimingCurrentTime(&audio->p->timing) - cycles;
 			dma->nextCount = 4;
-			dma->nextEvent = 0;
-			dma->reg = GBADMARegisterSetWidth(dma->reg, 1);
-			dma->reg = GBADMARegisterSetDestControl(dma->reg, 2);
-			GBADMAUpdate(audio->p, -cycles);
+			GBADMASchedule(audio->p, channel->dmaSource, dma);
 		} else {
 			channel->dmaSource = 0;
 		}

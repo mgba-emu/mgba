@@ -21,6 +21,6 @@ struct GBADMA;
 void GBADMASchedule(struct GBA* gba, int number, struct GBADMA* info);
 void GBADMARunHblank(struct GBA* gba, int32_t cycles);
 void GBADMARunVblank(struct GBA* gba, int32_t cycles);
-void GBADMAUpdate(struct GBA* gba, int32_t cycles);
+void GBADMAUpdate(struct GBA* gba);
 
 #endif

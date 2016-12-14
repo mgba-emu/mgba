@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -108,8 +108,7 @@ struct GBADMA {
 	uint32_t nextSource;
 	uint32_t nextDest;
 	int32_t nextCount;
-	int32_t nextEvent;
-	uint32_t scheduledAt;
+	uint32_t when;
 	int32_t hasStarted;
 };
 
