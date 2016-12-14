@@ -67,6 +67,7 @@ Misc:
  - GB Audio: Initialize wave RAM to GBC values
  - Debugger: Add functions for read- or write-only watchpoints
  - GB Memory: Reset ROM bank when loading a ROM
+ - GBA DMA: Refactor DMA out of memory.c
 
 0.5.1: (2016-10-05)
 Bugfixes:

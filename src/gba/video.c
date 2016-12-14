@@ -7,6 +7,7 @@
 
 #include "core/sync.h"
 #include "core/tile-cache.h"
+#include "gba/dma.h"
 #include "gba/gba.h"
 #include "gba/io.h"
 #include "gba/renderers/tile-cache.h"
@@ -151,7 +152,7 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		if (video->frameskipCounter <= 0) {
 			video->renderer->finishFrame(video->renderer);
 		}
-		GBAMemoryRunVblankDMAs(video->p, -cyclesLate);
+		GBADMARunVblank(video->p, -cyclesLate);
 		if (GBARegisterDISPSTATIsVblankIRQ(dispstat)) {
 			GBARaiseIRQ(video->p, IRQ_VBLANK);
 		}
@@ -183,7 +184,7 @@ void _startHblank(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	}
 
 	if (video->vcount < VIDEO_VERTICAL_PIXELS) {
-		GBAMemoryRunHblankDMAs(video->p, -cyclesLate);
+		GBADMARunHblank(video->p, -cyclesLate);
 	}
 	if (GBARegisterDISPSTATIsHblankIRQ(dispstat)) {
 		GBARaiseIRQ(video->p, IRQ_HBLANK);

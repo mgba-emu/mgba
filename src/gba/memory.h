@@ -178,16 +178,6 @@ uint32_t GBAStoreMultiple(struct ARMCore*, uint32_t baseAddress, int mask, enum 
 
 void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters);
 
-uint32_t GBAMemoryWriteDMASAD(struct GBA* gba, int dma, uint32_t address);
-uint32_t GBAMemoryWriteDMADAD(struct GBA* gba, int dma, uint32_t address);
-void GBAMemoryWriteDMACNT_LO(struct GBA* gba, int dma, uint16_t count);
-uint16_t GBAMemoryWriteDMACNT_HI(struct GBA* gba, int dma, uint16_t control);
-
-void GBAMemoryScheduleDMA(struct GBA* gba, int number, struct GBADMA* info);
-void GBAMemoryRunHblankDMAs(struct GBA* gba, int32_t cycles);
-void GBAMemoryRunVblankDMAs(struct GBA* gba, int32_t cycles);
-void GBAMemoryUpdateDMAs(struct GBA* gba, int32_t cycles);
-
 struct GBASerializedState;
 void GBAMemorySerialize(const struct GBAMemory* memory, struct GBASerializedState* state);
 void GBAMemoryDeserialize(struct GBAMemory* memory, const struct GBASerializedState* state);

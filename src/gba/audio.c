@@ -6,6 +6,7 @@
 #include "audio.h"
 
 #include "core/sync.h"
+#include "gba/dma.h"
 #include "gba/gba.h"
 #include "gba/io.h"
 #include "gba/serialize.h"
@@ -234,7 +235,7 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 			dma->nextEvent = 0;
 			dma->reg = GBADMARegisterSetWidth(dma->reg, 1);
 			dma->reg = GBADMARegisterSetDestControl(dma->reg, 2);
-			GBAMemoryUpdateDMAs(audio->p, -cycles);
+			GBADMAUpdate(audio->p, -cycles);
 		} else {
 			channel->dmaSource = 0;
 		}

@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "io.h"
 
+#include "gba/dma.h"
 #include "gba/rr/rr.h"
 #include "gba/serialize.h"
 #include "gba/sio.h"
@@ -460,28 +461,28 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			break;
 
 		case REG_DMA0CNT_LO:
-			GBAMemoryWriteDMACNT_LO(gba, 0, value);
+			GBADMAWriteCNT_LO(gba, 0, value);
 			break;
 		case REG_DMA0CNT_HI:
-			value = GBAMemoryWriteDMACNT_HI(gba, 0, value);
+			value = GBADMAWriteCNT_HI(gba, 0, value);
 			break;
 		case REG_DMA1CNT_LO:
-			GBAMemoryWriteDMACNT_LO(gba, 1, value);
+			GBADMAWriteCNT_LO(gba, 1, value);
 			break;
 		case REG_DMA1CNT_HI:
-			value = GBAMemoryWriteDMACNT_HI(gba, 1, value);
+			value = GBADMAWriteCNT_HI(gba, 1, value);
 			break;
 		case REG_DMA2CNT_LO:
-			GBAMemoryWriteDMACNT_LO(gba, 2, value);
+			GBADMAWriteCNT_LO(gba, 2, value);
 			break;
 		case REG_DMA2CNT_HI:
-			value = GBAMemoryWriteDMACNT_HI(gba, 2, value);
+			value = GBADMAWriteCNT_HI(gba, 2, value);
 			break;
 		case REG_DMA3CNT_LO:
-			GBAMemoryWriteDMACNT_LO(gba, 3, value);
+			GBADMAWriteCNT_LO(gba, 3, value);
 			break;
 		case REG_DMA3CNT_HI:
-			value = GBAMemoryWriteDMACNT_HI(gba, 3, value);
+			value = GBADMAWriteCNT_HI(gba, 3, value);
 			break;
 
 		// Timers
@@ -621,28 +622,28 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 		GBAAudioWriteFIFO(&gba->audio, address, value);
 		break;
 	case REG_DMA0SAD_LO:
-		value = GBAMemoryWriteDMASAD(gba, 0, value);
+		value = GBADMAWriteSAD(gba, 0, value);
 		break;
 	case REG_DMA0DAD_LO:
-		value = GBAMemoryWriteDMADAD(gba, 0, value);
+		value = GBADMAWriteDAD(gba, 0, value);
 		break;
 	case REG_DMA1SAD_LO:
-		value = GBAMemoryWriteDMASAD(gba, 1, value);
+		value = GBADMAWriteSAD(gba, 1, value);
 		break;
 	case REG_DMA1DAD_LO:
-		value = GBAMemoryWriteDMADAD(gba, 1, value);
+		value = GBADMAWriteDAD(gba, 1, value);
 		break;
 	case REG_DMA2SAD_LO:
-		value = GBAMemoryWriteDMASAD(gba, 2, value);
+		value = GBADMAWriteSAD(gba, 2, value);
 		break;
 	case REG_DMA2DAD_LO:
-		value = GBAMemoryWriteDMADAD(gba, 2, value);
+		value = GBADMAWriteDAD(gba, 2, value);
 		break;
 	case REG_DMA3SAD_LO:
-		value = GBAMemoryWriteDMASAD(gba, 3, value);
+		value = GBADMAWriteSAD(gba, 3, value);
 		break;
 	case REG_DMA3DAD_LO:
-		value = GBAMemoryWriteDMADAD(gba, 3, value);
+		value = GBADMAWriteDAD(gba, 3, value);
 		break;
 	default:
 		if (address >= REG_DEBUG_STRING && address - REG_DEBUG_STRING < sizeof(gba->debugString)) {
@@ -952,10 +953,10 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		LOAD_32(gba->memory.dma[i].nextCount, 0, &state->dma[i].nextCount);
 		LOAD_32(gba->memory.dma[i].nextEvent, 0, &state->dma[i].nextEvent);
 		if (GBADMARegisterGetTiming(gba->memory.dma[i].reg) != DMA_TIMING_NOW) {
-			GBAMemoryScheduleDMA(gba, i, &gba->memory.dma[i]);
+			GBADMASchedule(gba, i, &gba->memory.dma[i]);
 		}
 	}
 	GBAAudioWriteSOUNDCNT_X(&gba->audio, gba->memory.io[REG_SOUNDCNT_X >> 1]);
-	GBAMemoryUpdateDMAs(gba, 0);
+	GBADMAUpdate(gba, 0);
 	GBAHardwareDeserialize(&gba->memory.hw, state);
 }
