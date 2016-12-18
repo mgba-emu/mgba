@@ -31,6 +31,7 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 	audio->sampleEvent.context = audio;
 	audio->sampleEvent.name = "GBA Audio Sample";
 	audio->sampleEvent.callback = _sample;
+	audio->sampleEvent.priority = 0x18;
 	audio->psg.p = NULL;
 	uint8_t* nr52 = (uint8_t*) &audio->p->memory.io[REG_SOUNDCNT_X >> 1];
 #ifdef __BIG_ENDIAN__

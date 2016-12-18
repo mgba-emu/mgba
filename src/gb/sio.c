@@ -16,6 +16,7 @@ void GBSIOInit(struct GBSIO* sio) {
 	sio->event.context = sio;
 	sio->event.name = "GB SIO";
 	sio->event.callback = _GBSIOProcessEvents;
+	sio->event.priority = 0x30;
 }
 
 void GBSIOReset(struct GBSIO* sio) {

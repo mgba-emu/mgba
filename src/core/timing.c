@@ -28,9 +28,10 @@ void mTimingSchedule(struct mTiming* timing, struct mTimingEvent* event, int32_t
 	}
 	struct mTimingEvent** previous = &timing->root;
 	struct mTimingEvent* next = timing->root;
+	unsigned priority = event->priority;
 	while (next) {
 		int32_t nextWhen = next->when - timing->masterCycles;
-		if (nextWhen > when) {
+		if (nextWhen > when || (nextWhen == when && next->priority > priority)) {
 			break;
 		}
 		previous = &next->next;

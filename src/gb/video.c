@@ -55,9 +55,11 @@ void GBVideoInit(struct GBVideo* video) {
 	video->modeEvent.context = video;
 	video->modeEvent.name = "GB Video Mode";
 	video->modeEvent.callback = NULL;
+	video->modeEvent.priority = 8;
 	video->frameEvent.context = video;
 	video->frameEvent.name = "GB Video Frame";
 	video->frameEvent.callback = _updateFrameCount;
+	video->frameEvent.priority = 9;
 }
 
 void GBVideoReset(struct GBVideo* video) {

@@ -65,15 +65,19 @@ void GBATimerInit(struct GBA* gba) {
 	gba->timers[0].event.name = "GBA Timer 0";
 	gba->timers[0].event.callback = GBATimerUpdate0;
 	gba->timers[0].event.context = gba;
+	gba->timers[0].event.priority = 0x20;
 	gba->timers[1].event.name = "GBA Timer 1";
 	gba->timers[1].event.callback = GBATimerUpdate1;
 	gba->timers[1].event.context = gba;
+	gba->timers[1].event.priority = 0x21;
 	gba->timers[2].event.name = "GBA Timer 2";
 	gba->timers[2].event.callback = GBATimerUpdate2;
 	gba->timers[2].event.context = gba;
+	gba->timers[2].event.priority = 0x22;
 	gba->timers[3].event.name = "GBA Timer 3";
 	gba->timers[3].event.callback = GBATimerUpdate3;
 	gba->timers[3].event.context = gba;
+	gba->timers[3].event.priority = 0x23;
 }
 
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {

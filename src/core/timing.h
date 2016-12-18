@@ -14,6 +14,7 @@ struct mTimingEvent {
 	void (*callback)(struct mTiming*, void* context, uint32_t);
 	const char* name;
 	uint32_t when;
+	unsigned priority;
 
 	struct mTimingEvent* next;
 };

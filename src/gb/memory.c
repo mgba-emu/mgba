@@ -123,9 +123,11 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.dmaEvent.context = gb;
 	gb->memory.dmaEvent.name = "GB DMA";
 	gb->memory.dmaEvent.callback = _GBMemoryDMAService;
+	gb->memory.dmaEvent.priority = 0x40;
 	gb->memory.hdmaEvent.context = gb;
 	gb->memory.hdmaEvent.name = "GB HDMA";
 	gb->memory.hdmaEvent.callback = _GBMemoryHDMAService;
+	gb->memory.hdmaEvent.priority = 0x41;
 
 	gb->memory.sramAccess = false;
 	gb->memory.rtcAccess = false;

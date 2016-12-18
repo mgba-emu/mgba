@@ -74,6 +74,7 @@ void GBAVideoInit(struct GBAVideo* video) {
 	video->event.name = "GBA Video";
 	video->event.callback = NULL;
 	video->event.context = video;
+	video->event.priority = 8;
 }
 
 void GBAVideoReset(struct GBAVideo* video) {

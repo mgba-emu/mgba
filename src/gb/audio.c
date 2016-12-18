@@ -68,24 +68,31 @@ void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52, enum GBAu
 	audio->frameEvent.context = audio;
 	audio->frameEvent.name = "GB Audio Frame Sequencer";
 	audio->frameEvent.callback = _updateFrame;
+	audio->frameEvent.priority = 0x10;
 	audio->ch1Event.context = audio;
 	audio->ch1Event.name = "GB Audio Channel 1";
 	audio->ch1Event.callback = _updateChannel1;
+	audio->ch1Event.priority = 0x11;
 	audio->ch2Event.context = audio;
 	audio->ch2Event.name = "GB Audio Channel 2";
 	audio->ch2Event.callback = _updateChannel2;
+	audio->ch2Event.priority = 0x12;
 	audio->ch3Event.context = audio;
 	audio->ch3Event.name = "GB Audio Channel 3";
 	audio->ch3Event.callback = _updateChannel3;
+	audio->ch3Event.priority = 0x13;
 	audio->ch3Fade.context = audio;
 	audio->ch3Fade.name = "GB Audio Channel 3 Memory";
 	audio->ch3Fade.callback = _fadeChannel3;
+	audio->ch3Fade.priority = 0x14;
 	audio->ch4Event.context = audio;
 	audio->ch4Event.name = "GB Audio Channel 4";
 	audio->ch4Event.callback = _updateChannel4;
+	audio->ch4Event.priority = 0x15;
 	audio->sampleEvent.context = audio;
 	audio->sampleEvent.name = "GB Audio Sample";
 	audio->sampleEvent.callback = _sample;
+	audio->ch1Event.priority = 0x18;
 }
 
 void GBAudioDeinit(struct GBAudio* audio) {

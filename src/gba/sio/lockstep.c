@@ -84,6 +84,7 @@ bool GBASIOLockstepNodeInit(struct GBASIODriver* driver) {
 	node->event.context = node;
 	node->event.name = "GBA SIO Lockstep";
 	node->event.callback = _GBASIOLockstepNodeProcessEvents;
+	node->event.priority = 0x80;
 	return true;
 }
 

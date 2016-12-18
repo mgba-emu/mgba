@@ -18,6 +18,7 @@ void GBADMAInit(struct GBA* gba) {
 	gba->memory.dmaEvent.name = "GBA DMA";
 	gba->memory.dmaEvent.callback = _dmaEvent;
 	gba->memory.dmaEvent.context = gba;
+	gba->memory.dmaEvent.priority = 0x40;
 }
 
 void GBADMAReset(struct GBA* gba) {

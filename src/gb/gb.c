@@ -91,6 +91,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->eiPending.name = "GB EI";
 	gb->eiPending.callback = _enableInterrupts;
 	gb->eiPending.context = gb;
+	gb->eiPending.priority = 0;
 }
 
 static void GBDeinit(struct mCPUComponent* component) {
