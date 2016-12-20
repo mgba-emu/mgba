@@ -25,6 +25,7 @@ Bugfixes:
  - GBA Video: Fix out of bounds sprite transforms
  - GBA: Only unhalt CPU if appropriate bit is set in IE
  - GB: Fix crash when masking savedata
+ - GB Audio: Fix serialization of channel 3 and NR52 properties
 Misc:
  - PSP2: Improved controller rumble
  - GB, GBA: Prevent loading null ROMs

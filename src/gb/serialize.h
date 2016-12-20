@@ -54,7 +54,8 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  *   | bits 10 - 20: Shadow frequency register
  *   | bits 21 - 31: Reserved
  * | 0x0004C - 0x0004F: Next frame
- * | 0x00050 - 0x00057: Reserved
+ * | 0x00050 - 0x00053: Next channel 3 fade
+ * | 0x00054 - 0x00057: Reserved
  * | 0x00058 - 0x0005B: Next event
  * 0x0005C - 0x0006B: Audio channel 2 state
  * | 0x0005C - 0x0005F: Envelepe timing
@@ -96,7 +97,8 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  *   | bits 0 - 3: Current frame
  *   | bit 4: Is channel 1 sweep enabled?
  *   | bit 5: Has channel 1 sweep occurred?
- *   | bits 6 - 7: Reserved
+ *   | bit 6: Is channel 3's memory readable?
+ *   | bit 7: Reserved
  * | 0x000A8 - 0x000AB: Next event
  * | 0x000AC - 0x000AF: Event diff
  * | 0x000B0 - 0x000B3: Next sample
@@ -172,6 +174,7 @@ DECL_BITS(GBSerializedAudioFlags, Ch4Dead, 20, 2);
 DECL_BITS(GBSerializedAudioFlags, Frame, 22, 3);
 DECL_BIT(GBSerializedAudioFlags, Ch1SweepEnabled, 25);
 DECL_BIT(GBSerializedAudioFlags, Ch1SweepOccurred, 26);
+DECL_BIT(GBSerializedAudioFlags, Ch3Readable, 27);
 
 DECL_BITFIELD(GBSerializedAudioEnvelope, uint32_t);
 DECL_BITS(GBSerializedAudioEnvelope, Length, 0, 7);
@@ -182,7 +185,8 @@ struct GBSerializedPSGState {
 	struct {
 		GBSerializedAudioEnvelope envelope;
 		int32_t nextFrame;
-		int32_t reserved[2];
+		int32_t nextCh3Fade;
+		int32_t reserved;
 		int32_t nextEvent;
 	} ch1;
 	struct {
