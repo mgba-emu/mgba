@@ -91,7 +91,7 @@ uint16_t GBADMAWriteCNT_HI(struct GBA* gba, int dma, uint16_t control) {
 void GBADMASchedule(struct GBA* gba, int number, struct GBADMA* info) {
 	switch (GBADMARegisterGetTiming(info->reg)) {
 	case DMA_TIMING_NOW:
-		info->when = mTimingCurrentTime(&gba->timing) + 2 + 1; // XXX: Account for I cycle when writing
+		info->when = mTimingCurrentTime(&gba->timing) + 3; // DMAs take 3 cycles to start
 		info->nextCount = info->count;
 		break;
 	case DMA_TIMING_HBLANK:
@@ -121,8 +121,8 @@ void GBADMARunHblank(struct GBA* gba, int32_t cycles) {
 	int i;
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
-		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_HBLANK && !dma->hasStarted) {
-			dma->when = mTimingCurrentTime(&gba->timing) + 2 + cycles;
+		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_HBLANK && !dma->nextCount) {
+			dma->when = mTimingCurrentTime(&gba->timing) + 3 + cycles;
 			dma->nextCount = dma->count;
 		}
 	}
@@ -135,8 +135,8 @@ void GBADMARunVblank(struct GBA* gba, int32_t cycles) {
 	int i;
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
-		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_VBLANK && !dma->hasStarted) {
-			dma->when = mTimingCurrentTime(&gba->timing) + 2 + cycles;
+		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_VBLANK && !dma->nextCount) {
+			dma->when = mTimingCurrentTime(&gba->timing) + 3 + cycles;
 			dma->nextCount = dma->count;
 		}
 	}
@@ -149,7 +149,27 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBA* gba = context;
 	struct GBAMemory* memory = &gba->memory;
 	struct GBADMA* dma = &memory->dma[memory->activeDMA];
-	GBADMAService(gba, memory->activeDMA, dma);
+	if (dma->nextCount == dma->count) {
+		dma->when = mTimingCurrentTime(&gba->timing);
+	}
+	if (dma->nextCount & 0xFFFFF) {
+		GBADMAService(gba, memory->activeDMA, dma);
+	} else {
+		dma->nextCount = 0;
+		if (!GBADMARegisterIsRepeat(dma->reg) || GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_NOW) {
+			dma->reg = GBADMARegisterClearEnable(dma->reg);
+
+			// Clear the enable bit in memory
+			memory->io[(REG_DMA0CNT_HI + memory->activeDMA * (REG_DMA1CNT_HI - REG_DMA0CNT_HI)) >> 1] &= 0x7FE0;
+		}
+		if (GBADMARegisterGetDestControl(dma->reg) == DMA_INCREMENT_RELOAD) {
+			dma->nextDest = dma->dest;
+		}
+		if (GBADMARegisterIsDoIRQ(dma->reg)) {
+			GBARaiseIRQ(gba, IRQ_DMA0 + memory->activeDMA);
+		}
+		GBADMAUpdate(gba);
+	}
 }
 
 void GBADMAUpdate(struct GBA* gba) {
@@ -157,13 +177,11 @@ void GBADMAUpdate(struct GBA* gba) {
 	struct GBAMemory* memory = &gba->memory;
 	memory->activeDMA = -1;
 	uint32_t currentTime = mTimingCurrentTime(&gba->timing);
-	for (i = 3; i >= 0; --i) {
+	for (i = 0; i < 4; ++i) {
 		struct GBADMA* dma = &memory->dma[i];
 		if (GBADMARegisterIsEnable(dma->reg) && dma->nextCount) {
-			if (dma->when < currentTime) {
-				dma->when = currentTime;
-			}
 			memory->activeDMA = i;
+			break;
 		}
 	}
 
@@ -187,7 +205,7 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	int32_t cycles = 2;
 
 	gba->cpuBlocked = true;
-	if (info->hasStarted < 2) {
+	if (info->count == info->nextCount) {
 		if (sourceRegion < REGION_CART0 || destRegion < REGION_CART0) {
 			cycles += 2;
 		}
@@ -196,13 +214,6 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 		} else {
 			cycles += memory->waitstatesNonseq16[sourceRegion] + memory->waitstatesNonseq16[destRegion];
 		}
-		if (info->hasStarted < 1) {
-			info->hasStarted = info->count << 1;
-			info->when = mTimingCurrentTime(&gba->timing) + cycles;
-			GBADMAUpdate(gba);
-			return;
-		}
-		info->hasStarted = 2;
 		source &= -width;
 		dest &= -width;
 	} else {
@@ -244,24 +255,11 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	--wordsRemaining;
 	gba->performingDMA = 0;
 
-	if (!wordsRemaining) {
-		info->hasStarted = 0;
-		if (!GBADMARegisterIsRepeat(info->reg) || GBADMARegisterGetTiming(info->reg) == DMA_TIMING_NOW) {
-			info->reg = GBADMARegisterClearEnable(info->reg);
-
-			// Clear the enable bit in memory
-			memory->io[(REG_DMA0CNT_HI + number * (REG_DMA1CNT_HI - REG_DMA0CNT_HI)) >> 1] &= 0x7FE0;
-		}
-		if (GBADMARegisterGetDestControl(info->reg) == DMA_INCREMENT_RELOAD) {
-			info->nextDest = info->dest;
-		}
-		if (GBADMARegisterIsDoIRQ(info->reg)) {
-			GBARaiseIRQ(gba, IRQ_DMA0 + number);
-		}
-	} else {
-		info->nextDest = dest;
-	}
 	info->nextCount = wordsRemaining;
 	info->nextSource = source;
+	info->nextDest = dest;
+	if (!wordsRemaining) {
+		info->nextCount |= 0x80000000;
+	}
 	GBADMAUpdate(gba);
 }

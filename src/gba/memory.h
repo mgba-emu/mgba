@@ -109,7 +109,6 @@ struct GBADMA {
 	uint32_t nextDest;
 	int32_t nextCount;
 	uint32_t when;
-	int32_t hasStarted;
 };
 
 struct GBAMemory {
