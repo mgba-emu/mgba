@@ -20,7 +20,8 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * 0x00000 - 0x00003: Version Magic (0x01000001)
  * 0x00004 - 0x00007: ROM CRC32
  * 0x00008: Game Boy model
- * 0x00009 - 0x0000F: Reserved (leave zero)
+ * 0x00009 - 0x0000B: Reserved (leave zero)
+ * 0x0000C - 0x0000F: Master cycles
  * 0x00010 - 0x0001F: Game title/code (e.g. PM_CRYSTALBYTE)
  * 0x00020 - 0x00047: CPU state:
  * | 0x00020: A register
@@ -46,7 +47,8 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  *   | bit 0: Is condition met?
  *   | bit 1: Is condition IRQ pending?
  *   | bit 2: Double speed
- *   | bits 3 - 31: Reserved
+ *   | bit 3: Is EI pending?
+ *   | bits 4 - 31: Reserved
  * 0x00048 - 0x0005B: Audio channel 1/framer state
  * | 0x00048 - 0x0004B: Envelepe timing
  *   | bits 0 - 6: Remaining length
@@ -99,14 +101,13 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  *   | bit 5: Has channel 1 sweep occurred?
  *   | bit 6: Is channel 3's memory readable?
  *   | bit 7: Reserved
- * | 0x000A8 - 0x000AB: Next event
- * | 0x000AC - 0x000AF: Event diff
+ * | 0x000A8 - 0x000AF: Rserved
  * | 0x000B0 - 0x000B3: Next sample
  * 0x000B4 - 0x000153: Video state
  * | 0x000B4 - 0x000B5: Current x
  * | 0x000B6 - 0x000B7: Current y (ly)
- * | 0x000B8 - 0x000BB: Next event
- * | 0x000BC - 0x000BF: Event diff
+ * | 0x000B8 - 0x000BB: Next frame
+ * | 0x000BC - 0x000BF: Reserved
  * | 0x000C0 - 0x000C3: Next mode
  * | 0x000C4 - 0x000C7: Dot cycle counter
  * | 0x000C8 - 0x000CB: Frame counter
@@ -122,7 +123,7 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * | 0x000D4 - 0x00153: Palette entries
  * 0x00154 - 0x000167: Timer state
  * | 0x00154 - 0x00157: Next event
- * | 0x00158 - 0x0015B: Event diff
+ * | 0x00158 - 0x0015B: Next IRQ
  * | 0x0015C - 0x0015F: Next DIV
  * | 0x00160 - 0x00163: Inernal DIV
  * | 0x00164: TIMA period
@@ -187,7 +188,7 @@ struct GBSerializedPSGState {
 		int32_t nextFrame;
 		int32_t nextCh3Fade;
 		int32_t reserved;
-		int32_t nextEvent;
+		uint32_t nextEvent;
 	} ch1;
 	struct {
 		GBSerializedAudioEnvelope envelope;
@@ -198,13 +199,13 @@ struct GBSerializedPSGState {
 		uint32_t wavebanks[8];
 		int16_t length;
 		int16_t reserved;
-		int32_t nextEvent;
+		uint32_t nextEvent;
 	} ch3;
 	struct {
 		int32_t lfsr;
 		GBSerializedAudioEnvelope envelope;
 		int32_t reserved;
-		int32_t nextEvent;
+		uint32_t nextEvent;
 	} ch4;
 };
 
@@ -212,6 +213,7 @@ DECL_BITFIELD(GBSerializedCpuFlags, uint32_t);
 DECL_BIT(GBSerializedCpuFlags, Condition, 0);
 DECL_BIT(GBSerializedCpuFlags, IrqPending, 1);
 DECL_BIT(GBSerializedCpuFlags, DoubleSpeed, 2);
+DECL_BIT(GBSerializedCpuFlags, EiPending, 1);
 
 DECL_BITFIELD(GBSerializedTimerFlags, uint8_t);
 DECL_BIT(GBSerializedTimerFlags, IrqPending, 0);
@@ -220,6 +222,8 @@ DECL_BITFIELD(GBSerializedVideoFlags, uint8_t);
 DECL_BIT(GBSerializedVideoFlags, BcpIncrement, 0);
 DECL_BIT(GBSerializedVideoFlags, OcpIncrement, 1);
 DECL_BITS(GBSerializedVideoFlags, Mode, 2, 2);
+DECL_BIT(GBSerializedVideoFlags, NotModeEventScheduled, 4);
+DECL_BIT(GBSerializedVideoFlags, NotFrameEventScheduled, 5);
 
 DECL_BITFIELD(GBSerializedMBC7Flags, uint8_t);
 DECL_BITS(GBSerializedMBC7Flags, Command, 0, 2);
@@ -238,7 +242,8 @@ struct GBSerializedState {
 	uint32_t versionMagic;
 	uint32_t romCrc32;
 	uint8_t model;
-	uint8_t reservedHeader[7];
+	uint8_t reservedHeader[3];
+	uint32_t masterCycles;
 
 	char title[16];
 
@@ -264,7 +269,7 @@ struct GBSerializedState {
 
 		uint16_t irqVector;
 
-		int32_t eiPending;
+		uint32_t eiPending;
 		int32_t reservedDiPending;
 		GBSerializedCpuFlags flags;
 	} cpu;
@@ -273,21 +278,21 @@ struct GBSerializedState {
 		struct GBSerializedPSGState psg;
 		GBSerializedAudioFlags flags;
 		int32_t reserved[2];
-		int32_t nextSample;
+		uint32_t nextSample;
 	} audio;
 
 	struct {
 		int16_t x;
 		int16_t ly;
-		int32_t nextEvent;
-		int32_t eventDiff;
-		int32_t nextMode;
+		uint32_t nextFrame;
+		uint32_t reserved;
+		uint32_t nextMode;
 		int32_t dotCounter;
 		int32_t frameCounter;
 
 		uint8_t vramCurrentBank;
 		GBSerializedVideoFlags flags;
-		uint16_t reserved;
+		uint16_t reserved2;
 
 		uint16_t bcpIndex;
 		uint16_t ocpIndex;
@@ -296,10 +301,10 @@ struct GBSerializedState {
 	} video;
 
 	struct {
-		int32_t nextEvent;
-		int32_t eventDiff;
+		uint32_t nextEvent;
+		uint32_t nextIRQ;
 
-		int32_t nextDiv;
+		uint32_t nextDiv;
 		uint32_t internalDiv;
 		uint8_t timaPeriod;
 		GBSerializedTimerFlags flags;
@@ -311,11 +316,11 @@ struct GBSerializedState {
 		uint8_t wramCurrentBank;
 		uint8_t sramCurrentBank;
 
-		int32_t dmaNext;
+		uint32_t dmaNext;
 		uint16_t dmaSource;
 		uint16_t dmaDest;
 
-		int32_t hdmaNext;
+		uint32_t hdmaNext;
 		uint16_t hdmaSource;
 		uint16_t hdmaDest;
 

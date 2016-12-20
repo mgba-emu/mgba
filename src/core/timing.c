@@ -54,6 +54,19 @@ void mTimingDeschedule(struct mTiming* timing, struct mTimingEvent* event) {
 	}
 }
 
+bool mTimingIsScheduled(const struct mTiming* timing, const struct mTimingEvent* event) {
+	struct mTimingEvent* const* previous = &timing->root;
+	const struct mTimingEvent* next = timing->root;
+	while (next) {
+		if (next == event) {
+			return true;
+		}
+		previous = &next->next;
+		next = next->next;
+	}
+	return false;
+}
+
 int32_t mTimingTick(struct mTiming* timing, int32_t cycles) {
 	timing->masterCycles += cycles;
 	uint32_t masterCycles = timing->masterCycles;
@@ -69,7 +82,7 @@ int32_t mTimingTick(struct mTiming* timing, int32_t cycles) {
 	return *timing->nextEvent;
 }
 
-int32_t mTimingCurrentTime(struct mTiming* timing) {
+int32_t mTimingCurrentTime(const struct mTiming* timing) {
 	return timing->masterCycles + *timing->relativeCycles;
 }
 

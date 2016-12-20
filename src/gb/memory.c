@@ -592,6 +592,9 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 	state->memory.dmaRemaining = memory->dmaRemaining;
 	memcpy(state->memory.rtcRegs, memory->rtcRegs, sizeof(state->memory.rtcRegs));
 
+	STORE_32LE(memory->dmaEvent.when - mTimingCurrentTime(&gb->timing), 0, &state->memory.dmaNext);
+	STORE_32LE(memory->hdmaEvent.when - mTimingCurrentTime(&gb->timing), 0, &state->memory.hdmaNext);
+
 	GBSerializedMemoryFlags flags = 0;
 	flags = GBSerializedMemoryFlagsSetSramAccess(flags, memory->sramAccess);
 	flags = GBSerializedMemoryFlagsSetRtcAccess(flags, memory->rtcAccess);
@@ -623,6 +626,18 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	LOAD_16LE(memory->hdmaRemaining, 0, &state->memory.hdmaRemaining);
 	memory->dmaRemaining = state->memory.dmaRemaining;
 	memcpy(memory->rtcRegs, state->memory.rtcRegs, sizeof(state->memory.rtcRegs));
+
+	uint32_t when;
+	LOAD_32LE(when, 0, &state->memory.dmaNext);
+	mTimingDeschedule(&gb->timing, &memory->dmaEvent);
+	if (memory->dmaRemaining) {
+		mTimingSchedule(&gb->timing, &memory->dmaEvent, when);
+	}
+	LOAD_32LE(when, 0, &state->memory.hdmaNext);
+	mTimingDeschedule(&gb->timing, &memory->hdmaEvent);
+	if (memory->hdmaRemaining) {
+		mTimingSchedule(&gb->timing, &memory->hdmaEvent, when);
+	}
 
 	GBSerializedMemoryFlags flags;
 	LOAD_16LE(flags, 0, &state->memory.flags);

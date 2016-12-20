@@ -96,10 +96,28 @@ void GBTimerSerialize(const struct GBTimer* timer, struct GBSerializedState* sta
 	STORE_32LE(timer->nextDiv, 0, &state->timer.nextDiv);
 	STORE_32LE(timer->internalDiv, 0, &state->timer.internalDiv);
 	STORE_32LE(timer->timaPeriod, 0, &state->timer.timaPeriod);
+	STORE_32LE(timer->event.when - mTimingCurrentTime(&timer->p->timing), 0, &state->timer.nextEvent);
+	STORE_32LE(timer->irq.when - mTimingCurrentTime(&timer->p->timing), 0, &state->timer.nextIRQ);
+	GBSerializedTimerFlags flags = GBSerializedTimerFlagsSetIrqPending(0, mTimingIsScheduled(&timer->p->timing, &timer->irq));
+	STORE_32LE(flags, 0, &state->timer.flags);
 }
 
 void GBTimerDeserialize(struct GBTimer* timer, const struct GBSerializedState* state) {
 	LOAD_32LE(timer->nextDiv, 0, &state->timer.nextDiv);
 	LOAD_32LE(timer->internalDiv, 0, &state->timer.internalDiv);
 	LOAD_32LE(timer->timaPeriod, 0, &state->timer.timaPeriod);
+
+	uint32_t when;
+	LOAD_32LE(when, 0, &state->timer.nextEvent);
+	mTimingDeschedule(&timer->p->timing, &timer->event);
+	mTimingSchedule(&timer->p->timing, &timer->event, when);
+
+	GBSerializedTimerFlags flags;
+	LOAD_32LE(flags, 0, &state->timer.flags);
+
+	mTimingDeschedule(&timer->p->timing, &timer->irq);
+	if (GBSerializedTimerFlagsIsIrqPending(flags)) {
+		LOAD_32LE(when, 0, &state->timer.nextIRQ);
+		mTimingSchedule(&timer->p->timing, &timer->irq, when);
+	}
 }

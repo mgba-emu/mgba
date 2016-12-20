@@ -315,6 +315,7 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		mTimingDeschedule(&video->p->timing, &video->frameEvent);
 	}
 	if (GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC]) && !GBRegisterLCDCIsEnable(value)) {
+		// TODO: Fix serialization; this gets internal and visible modes out of sync
 		video->stat = GBRegisterSTATSetMode(video->stat, 0);
 		video->p->memory.io[REG_STAT] = video->stat;
 		video->ly = 0;
@@ -498,6 +499,8 @@ void GBVideoSerialize(const struct GBVideo* video, struct GBSerializedState* sta
 	flags = GBSerializedVideoFlagsSetBcpIncrement(flags, video->bcpIncrement);
 	flags = GBSerializedVideoFlagsSetOcpIncrement(flags, video->ocpIncrement);
 	flags = GBSerializedVideoFlagsSetMode(flags, video->mode);
+	flags = GBSerializedVideoFlagsSetNotModeEventScheduled(flags, !mTimingIsScheduled(&video->p->timing, &video->modeEvent));
+	flags = GBSerializedVideoFlagsSetNotFrameEventScheduled(flags, !mTimingIsScheduled(&video->p->timing, &video->frameEvent));
 	state->video.flags = flags;
 	STORE_16LE(video->bcpIndex, 0, &state->video.bcpIndex);
 	STORE_16LE(video->ocpIndex, 0, &state->video.ocpIndex);
@@ -506,6 +509,9 @@ void GBVideoSerialize(const struct GBVideo* video, struct GBSerializedState* sta
 	for (i = 0; i < 64; ++i) {
 		STORE_16LE(video->palette[i], i * 2, state->video.palette);
 	}
+
+	STORE_32LE(video->modeEvent.when - mTimingCurrentTime(&video->p->timing), 0, &state->video.nextMode);
+	STORE_32LE(video->frameEvent.when - mTimingCurrentTime(&video->p->timing), 0, &state->video.nextFrame);
 
 	memcpy(state->vram, video->vram, GB_SIZE_VRAM);
 	memcpy(state->oam, &video->oam.raw, GB_SIZE_OAM);
@@ -525,6 +531,33 @@ void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* s
 	video->bcpIndex &= 0x3F;
 	LOAD_16LE(video->ocpIndex, 0, &state->video.ocpIndex);
 	video->ocpIndex &= 0x3F;
+
+	switch (video->mode) {
+	case 0:
+		video->modeEvent.callback = _endMode0;
+		break;
+	case 1:
+		video->modeEvent.callback = _endMode1;
+		break;
+	case 2:
+		video->modeEvent.callback = _endMode2;
+		break;
+	case 3:
+		video->modeEvent.callback = _endMode3;
+		break;
+	}
+
+	uint32_t when;
+	mTimingDeschedule(&video->p->timing, &video->modeEvent);
+	if (!GBSerializedVideoFlagsIsNotModeEventScheduled(flags)) {
+		LOAD_32LE(when, 0, &state->video.nextMode);
+		mTimingSchedule(&video->p->timing, &video->modeEvent, when);
+	}
+	mTimingDeschedule(&video->p->timing, &video->frameEvent);
+	if (!GBSerializedVideoFlagsIsNotFrameEventScheduled(flags)) {
+		LOAD_32LE(when, 0, &state->video.nextFrame);
+		mTimingSchedule(&video->p->timing, &video->frameEvent, when);
+	}
 
 	size_t i;
 	for (i = 0; i < 64; ++i) {
