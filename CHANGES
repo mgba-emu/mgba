@@ -53,6 +53,7 @@ Misc:
  - GBA Memory: Support for Mo Jie Qi Bing by Vast Fame (taizou)
  - GBA Memory: Support reading/writing POSTFLG
  - Util: Add size counting to Table
+ - Qt: Move last directory setting from qt.ini to config.ini
 
 0.5.1: (2016-10-05)
 Bugfixes:
