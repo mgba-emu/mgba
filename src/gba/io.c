@@ -912,13 +912,14 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 		STORE_16(gba->memory.io[(REG_DMA0CNT_LO + i * 12) >> 1], (REG_DMA0CNT_LO + i * 12), state->io);
 		STORE_16(gba->timers[i].reload, 0, &state->timers[i].reload);
 		STORE_16(gba->timers[i].oldReload, 0, &state->timers[i].oldReload);
-		STORE_32(gba->timers[i].lastEvent, 0, &state->timers[i].lastEvent);
+		STORE_32(gba->timers[i].lastEvent - mTimingCurrentTime(&gba->timing), 0, &state->timers[i].lastEvent);
+		STORE_32(gba->timers[i].event.when - mTimingCurrentTime(&gba->timing), 0, &state->timers[i].nextEvent);
 		STORE_32(gba->timers[i].overflowInterval, 0, &state->timers[i].overflowInterval);
 		STORE_32(gba->timers[i].flags, 0, &state->timers[i].flags);
 		STORE_32(gba->memory.dma[i].nextSource, 0, &state->dma[i].nextSource);
 		STORE_32(gba->memory.dma[i].nextDest, 0, &state->dma[i].nextDest);
 		STORE_32(gba->memory.dma[i].nextCount, 0, &state->dma[i].nextCount);
-		STORE_32(gba->memory.dma[i].when, 0, &state->dma[i].nextEvent);
+		STORE_32(gba->memory.dma[i].when, 0, &state->dma[i].when);
 	}
 
 	GBAHardwareSerialize(&gba->memory.hw, state);
@@ -936,6 +937,7 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		}
 	}
 
+	uint32_t when;
 	for (i = 0; i < 4; ++i) {
 		LOAD_16(gba->timers[i].reload, 0, &state->timers[i].reload);
 		LOAD_16(gba->timers[i].oldReload, 0, &state->timers[i].oldReload);
@@ -945,13 +947,20 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 			// Overwrite invalid values in savestate
 			gba->timers[i].lastEvent = 0;
 		} else {
-			LOAD_32(gba->timers[i].lastEvent, 0, &state->timers[i].lastEvent);
+			LOAD_32(when, 0, &state->timers[i].lastEvent);
+			gba->timers[i].lastEvent = when + mTimingCurrentTime(&gba->timing);
 		}
+		LOAD_32(when, 0, &state->timers[i].nextEvent);
+		mTimingDeschedule(&gba->timing, &gba->timers[i].event);
+		if (GBATimerFlagsIsEnable(gba->timers[i].flags)) {
+			mTimingSchedule(&gba->timing, &gba->timers[i].event, when);
+		}
+
 		LOAD_16(gba->memory.dma[i].reg, (REG_DMA0CNT_HI + i * 12), state->io);
 		LOAD_32(gba->memory.dma[i].nextSource, 0, &state->dma[i].nextSource);
 		LOAD_32(gba->memory.dma[i].nextDest, 0, &state->dma[i].nextDest);
 		LOAD_32(gba->memory.dma[i].nextCount, 0, &state->dma[i].nextCount);
-		LOAD_32(gba->memory.dma[i].when, 0, &state->dma[i].nextEvent);
+		LOAD_32(gba->memory.dma[i].when, 0, &state->dma[i].when);
 		if (GBADMARegisterGetTiming(gba->memory.dma[i].reg) != DMA_TIMING_NOW) {
 			GBADMASchedule(gba, i, &gba->memory.dma[i]);
 		}

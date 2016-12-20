@@ -299,6 +299,7 @@ void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* 
 	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);
 	memcpy(state->oam, video->oam.raw, SIZE_OAM);
 	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
+	STORE_32(video->event.when - mTimingCurrentTime(&video->p->timing), 0, &state->video.nextEvent);
 	STORE_32(video->frameCounter, 0, &state->video.frameCounter);
 }
 
@@ -315,6 +316,18 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 		GBAStore16(video->p->cpu, BASE_PALETTE_RAM | i, value, 0);
 	}
 	LOAD_32(video->frameCounter, 0, &state->video.frameCounter);
+
+	uint32_t when;
+	LOAD_32(when, 0, &state->video.nextEvent);
+	GBARegisterDISPSTAT dispstat = video->p->memory.io[REG_DISPSTAT >> 1];
+	if (GBARegisterDISPSTATIsInHblank(dispstat)) {
+		video->event.callback = _startHdraw;
+	} else {
+		video->event.callback = _startHblank;
+	}
+	mTimingDeschedule(&video->p->timing, &video->event);
+	mTimingSchedule(&video->p->timing, &video->event, when);
+
 	LOAD_16(video->vcount, REG_VCOUNT, state->io);
 	video->renderer->reset(video->renderer);
 }

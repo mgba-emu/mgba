@@ -64,8 +64,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x0018C - 0x001AB: Audio FIFO 1
  * 0x001AC - 0x001CB: Audio FIFO 2
  * 0x001CC - 0x001DF: Audio miscellaneous state
- * | 0x001CC - 0x001CF: Next event
- * | 0x001D0 - 0x001D3: Event diff
+ * | 0x001CC - 0x001D3: Reserved
  * | 0x001D4 - 0x001D7: Next sample
  * | 0x001D8 - 0x001DB: FIFO size
  * | TODO: Fix this, they're in big-endian order, but field is little-endian
@@ -90,12 +89,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 6 - 7: Reserved
  * 0x001E0 - 0x001FF: Video miscellaneous state
  * | 0x001E0 - 0x001E3: Next event
- * | 0x001E4 - 0x001E7: Event diff
- * | 0x001E8 - 0x001EB: Last hblank
- * | 0x001EC - 0x001EF: Next hblank
- * | 0x001F0 - 0x001F3: Next hblank IRQ
- * | 0x001F4 - 0x001F7: Next vblank IRQ
- * | 0x001F8 - 0x001FB: Next vcounter IRQ
+ * | 0x001E4 - 0x001FB: Reserved
  * | 0x001FC - 0x001FF: Frame counter
  * 0x00200 - 0x00213: Timer 0
  * | 0x00200 - 0x00201: Reload value
@@ -232,7 +226,7 @@ struct GBASerializedState {
 	uint32_t versionMagic;
 	uint32_t biosChecksum;
 	uint32_t romCrc32;
-	uint32_t reservedHeader;
+	uint32_t masterCycles;
 
 	char title[12];
 	uint32_t id;
@@ -253,8 +247,7 @@ struct GBASerializedState {
 		struct GBSerializedPSGState psg;
 		uint8_t fifoA[32];
 		uint8_t fifoB[32];
-		int32_t nextEvent;
-		int32_t eventDiff;
+		int32_t reserved[2];
 		int32_t nextSample;
 		uint32_t fifoSize;
 		GBSerializedAudioFlags flags;
@@ -262,22 +255,24 @@ struct GBASerializedState {
 
 	struct {
 		int32_t nextEvent;
-		int32_t eventDiff;
-		int32_t lastHblank;
-		int32_t nextHblank;
-		int32_t nextHblankIRQ;
-		int32_t nextVblankIRQ;
-		int32_t nextVcounterIRQ;
+		int32_t reserved[6];
 		int32_t frameCounter;
 	} video;
 
-	struct GBATimer timers[4];
+	struct {
+		uint16_t reload;
+		uint16_t oldReload;
+		uint32_t lastEvent;
+		uint32_t nextEvent;
+		int32_t overflowInterval;
+		GBATimerFlags flags;
+	} timers[4];
 
 	struct {
 		uint32_t nextSource;
 		uint32_t nextDest;
 		int32_t nextCount;
-		int32_t nextEvent;
+		int32_t when;
 	} dma[4];
 
 	struct {

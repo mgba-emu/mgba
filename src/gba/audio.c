@@ -320,6 +320,7 @@ void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* 
 	CircleBufferDump(&audio->chB.fifo, state->audio.fifoB, sizeof(state->audio.fifoB));
 	uint32_t fifoSize = CircleBufferSize(&audio->chA.fifo);
 	STORE_32(fifoSize, 0, &state->audio.fifoSize);
+	STORE_32(audio->sampleEvent.when - mTimingCurrentTime(&audio->p->timing), 0, &state->audio.nextSample);
 }
 
 void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState* state) {
@@ -337,6 +338,11 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 		CircleBufferWrite8(&audio->chA.fifo, state->audio.fifoA[i]);
 		CircleBufferWrite8(&audio->chB.fifo, state->audio.fifoB[i]);
 	}
+
+	uint32_t when;
+	LOAD_32(when, 0, &state->audio.nextSample);
+	mTimingDeschedule(&audio->p->timing, &audio->sampleEvent);
+	mTimingSchedule(&audio->p->timing, &audio->sampleEvent, when);
 }
 
 float GBAAudioCalculateRatio(float inputSampleRate, float desiredFPS, float desiredSampleRate) {

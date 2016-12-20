@@ -272,8 +272,7 @@ struct GBSerializedState {
 	struct {
 		struct GBSerializedPSGState psg;
 		GBSerializedAudioFlags flags;
-		int32_t nextEvent;
-		int32_t eventDiff;
+		int32_t reserved[2];
 		int32_t nextSample;
 	} audio;
 

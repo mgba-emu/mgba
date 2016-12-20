@@ -891,6 +891,7 @@ void GBAudioPSGSerialize(const struct GBAudio* audio, struct GBSerializedPSGStat
 	uint32_t ch4Flags = 0;
 
 	flags = GBSerializedAudioFlagsSetFrame(flags, audio->frame);
+	STORE_32LE(audio->frameEvent.when - mTimingCurrentTime(audio->timing), 0, &state->ch1.nextFrame);
 
 	flags = GBSerializedAudioFlagsSetCh1Volume(flags, audio->ch1.envelope.currentVolume);
 	flags = GBSerializedAudioFlagsSetCh1Dead(flags, audio->ch1.envelope.dead);
@@ -901,6 +902,7 @@ void GBAudioPSGSerialize(const struct GBAudio* audio, struct GBSerializedPSGStat
 	ch1Flags = GBSerializedAudioEnvelopeSetNextStep(ch1Flags, audio->ch1.envelope.nextStep);
 	ch1Flags = GBSerializedAudioEnvelopeSetFrequency(ch1Flags, audio->ch1.sweep.realFrequency);
 	STORE_32LE(ch1Flags, 0, &state->ch1.envelope);
+	STORE_32LE(audio->ch1Event.when - mTimingCurrentTime(audio->timing), 0, &state->ch1.nextEvent);
 
 	flags = GBSerializedAudioFlagsSetCh2Volume(flags, audio->ch2.envelope.currentVolume);
 	flags = GBSerializedAudioFlagsSetCh2Dead(flags, audio->ch2.envelope.dead);
@@ -908,9 +910,13 @@ void GBAudioPSGSerialize(const struct GBAudio* audio, struct GBSerializedPSGStat
 	ch2Flags = GBSerializedAudioEnvelopeSetLength(ch2Flags, audio->ch2.control.length);
 	ch2Flags = GBSerializedAudioEnvelopeSetNextStep(ch2Flags, audio->ch2.envelope.nextStep);
 	STORE_32LE(ch2Flags, 0, &state->ch2.envelope);
+	STORE_32LE(audio->ch2Event.when - mTimingCurrentTime(audio->timing), 0, &state->ch2.nextEvent);
 
+	flags = GBSerializedAudioFlagsSetCh3Readable(flags, audio->ch3.readable);
 	memcpy(state->ch3.wavebanks, audio->ch3.wavedata32, sizeof(state->ch3.wavebanks));
 	STORE_16LE(audio->ch3.length, 0, &state->ch3.length);
+	STORE_32LE(audio->ch3Event.when - mTimingCurrentTime(audio->timing), 0, &state->ch3.nextEvent);
+	STORE_32LE(audio->ch3Fade.when - mTimingCurrentTime(audio->timing), 0, &state->ch1.nextCh3Fade);
 
 	flags = GBSerializedAudioFlagsSetCh4Volume(flags, audio->ch4.envelope.currentVolume);
 	flags = GBSerializedAudioFlagsSetCh4Dead(flags, audio->ch4.envelope.dead);
@@ -918,6 +924,7 @@ void GBAudioPSGSerialize(const struct GBAudio* audio, struct GBSerializedPSGStat
 	ch4Flags = GBSerializedAudioEnvelopeSetLength(ch4Flags, audio->ch4.length);
 	ch4Flags = GBSerializedAudioEnvelopeSetNextStep(ch4Flags, audio->ch4.envelope.nextStep);
 	STORE_32LE(ch4Flags, 0, &state->ch4.envelope);
+	STORE_32LE(audio->ch4Event.when - mTimingCurrentTime(audio->timing), 0, &state->ch4.nextEvent);
 
 	STORE_32LE(flags, 0, flagsOut);
 }
@@ -927,6 +934,7 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	uint32_t ch1Flags = 0;
 	uint32_t ch2Flags = 0;
 	uint32_t ch4Flags = 0;
+	uint32_t when;
 
 	audio->playingCh1 = !!(*audio->nr52 & 0x0001);
 	audio->playingCh2 = !!(*audio->nr52 & 0x0002);
@@ -944,6 +952,11 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	audio->ch1.control.length = GBSerializedAudioEnvelopeGetLength(ch1Flags);
 	audio->ch1.envelope.nextStep = GBSerializedAudioEnvelopeGetNextStep(ch1Flags);
 	audio->ch1.sweep.realFrequency = GBSerializedAudioEnvelopeGetFrequency(ch1Flags);
+	LOAD_32LE(when, 0, &state->ch1.nextEvent);
+	mTimingDeschedule(audio->timing, &audio->ch1Event);
+	if (audio->ch1.envelope.dead < 2 && audio->playingCh1) {
+		mTimingSchedule(audio->timing, &audio->ch1Event, when);
+	}
 
 	LOAD_32LE(ch2Flags, 0, &state->ch2.envelope);
 	audio->ch2.envelope.currentVolume = GBSerializedAudioFlagsGetCh2Volume(flags);
@@ -951,11 +964,25 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	audio->ch2.control.hi = GBSerializedAudioFlagsGetCh2Hi(flags);
 	audio->ch2.control.length = GBSerializedAudioEnvelopeGetLength(ch2Flags);
 	audio->ch2.envelope.nextStep = GBSerializedAudioEnvelopeGetNextStep(ch2Flags);
+	LOAD_32LE(when, 0, &state->ch2.nextEvent);
+	mTimingDeschedule(audio->timing, &audio->ch2Event);
+	if (audio->ch2.envelope.dead < 2 && audio->playingCh2) {
+		mTimingSchedule(audio->timing, &audio->ch2Event, when);
+	}
 
 	audio->ch3.readable = GBSerializedAudioFlagsGetCh3Readable(flags);
 	// TODO: Big endian?
 	memcpy(audio->ch3.wavedata32, state->ch3.wavebanks, sizeof(audio->ch3.wavedata32));
 	LOAD_16LE(audio->ch3.length, 0, &state->ch3.length);
+	LOAD_32LE(when, 0, &state->ch3.nextEvent);
+	mTimingDeschedule(audio->timing, &audio->ch3Event);
+	if (audio->playingCh3) {
+		mTimingSchedule(audio->timing, &audio->ch3Event, when);
+	}
+	LOAD_32LE(when, 0, &state->ch1.nextCh3Fade);
+	if (audio->ch3.readable && audio->style == GB_AUDIO_DMG) {
+		mTimingSchedule(audio->timing, &audio->ch3Fade, when);
+	}
 
 	LOAD_32LE(ch4Flags, 0, &state->ch4.envelope);
 	audio->ch4.envelope.currentVolume = GBSerializedAudioFlagsGetCh4Volume(flags);
@@ -963,12 +990,22 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	audio->ch4.length = GBSerializedAudioEnvelopeGetLength(ch4Flags);
 	audio->ch4.envelope.nextStep = GBSerializedAudioEnvelopeGetNextStep(ch4Flags);
 	LOAD_32LE(audio->ch4.lfsr, 0, &state->ch4.lfsr);
+	LOAD_32LE(when, 0, &state->ch4.nextEvent);
+	mTimingDeschedule(audio->timing, &audio->ch4Event);
+	if (audio->ch4.envelope.dead < 2 && audio->playingCh4) {
+		mTimingSchedule(audio->timing, &audio->ch4Event, when);
+	}
 }
 
 void GBAudioSerialize(const struct GBAudio* audio, struct GBSerializedState* state) {
 	GBAudioPSGSerialize(audio, &state->audio.psg, &state->audio.flags);
+	STORE_32LE(audio->sampleEvent.when - mTimingCurrentTime(audio->timing), 0, &state->audio.nextSample);
 }
 
 void GBAudioDeserialize(struct GBAudio* audio, const struct GBSerializedState* state) {
 	GBAudioPSGDeserialize(audio, &state->audio.psg, &state->audio.flags);
+	uint32_t when;
+	LOAD_32LE(when, 0, &state->audio.nextSample);
+	mTimingDeschedule(audio->timing, &audio->sampleEvent);
+	mTimingSchedule(audio->timing, &audio->sampleEvent, when);
 }
