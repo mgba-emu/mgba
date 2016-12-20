@@ -36,6 +36,7 @@ Bugfixes:
  - GBA: Only unhalt CPU if appropriate bit is set in IE
  - GBA Video: Fix out of bounds sprite transforms
  - GB: Fix crash when masking savedata
+ - GB Audio: Fix serialization of channel 3 and NR52 properties
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
