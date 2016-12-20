@@ -222,6 +222,7 @@ void GBSavedataMask(struct GB* gb, struct VFile* vf, bool writeback) {
 	gb->sramVf = vf;
 	gb->sramMaskWriteback = writeback;
 	gb->memory.sram = vf->map(vf, gb->sramSize, MAP_READ);
+	GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
 }
 
 void GBSavedataUnmask(struct GB* gb) {

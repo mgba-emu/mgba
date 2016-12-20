@@ -24,6 +24,7 @@ Bugfixes:
  - ARM7: PSR mode bits should not get sign extended
  - GBA Video: Fix out of bounds sprite transforms
  - GBA: Only unhalt CPU if appropriate bit is set in IE
+ - GB: Fix crash when masking savedata
 Misc:
  - PSP2: Improved controller rumble
  - GB, GBA: Prevent loading null ROMs
