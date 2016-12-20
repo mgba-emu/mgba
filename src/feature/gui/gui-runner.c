@@ -171,6 +171,12 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 	strncat(path, PATH_SEP "log", PATH_MAX - strlen(path));
 	logger.vf = VFileOpen(path, O_CREAT | O_WRONLY | O_APPEND);
 	mLogSetDefaultLogger(&logger.d);
+
+	const char* lastPath = mCoreConfigGetValue(&runner->config, "lastDirectory");
+	if (lastPath) {
+		strncpy(runner->params.currentPath, lastPath, PATH_MAX - 1);
+		runner->params.currentPath[PATH_MAX - 1] = '\0';
+	}
 }
 
 void mGUIDeinit(struct mGUIRunner* runner) {
@@ -499,6 +505,8 @@ void mGUIRunloop(struct mGUIRunner* runner) {
 		if (!GUISelectFile(&runner->params, path, sizeof(path), 0)) {
 			break;
 		}
+		mCoreConfigSetValue(&runner->config, "lastDirectory", runner->params.currentPath);
+		mCoreConfigSave(&runner->config);
 		mGUIRun(runner, path);
 	}
 }
