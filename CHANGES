@@ -26,6 +26,7 @@ Bugfixes:
  - GBA: Only unhalt CPU if appropriate bit is set in IE
  - GB: Fix crash when masking savedata
  - GB Audio: Fix serialization of channel 3 and NR52 properties
+ - GB: Properly initialize sramRealVf variable
 Misc:
  - PSP2: Improved controller rumble
  - GB, GBA: Prevent loading null ROMs

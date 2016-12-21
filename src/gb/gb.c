@@ -68,9 +68,10 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 
 	gb->model = GB_MODEL_AUTODETECT;
 
-	gb->biosVf = 0;
-	gb->romVf = 0;
-	gb->sramVf = 0;
+	gb->biosVf = NULL;
+	gb->romVf = NULL;
+	gb->sramVf = NULL;
+	gb->sramRealVf = NULL;
 
 	gb->pristineRom = 0;
 	gb->pristineRomSize = 0;
