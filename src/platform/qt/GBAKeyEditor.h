@@ -32,6 +32,7 @@ public:
 
 public slots:
 	void setAll();
+	void save();
 
 protected:
 	virtual void resizeEvent(QResizeEvent*) override;
@@ -42,7 +43,6 @@ protected:
 
 private slots:
 	void setNext();
-	void save();
 	void refresh();
 #ifdef BUILD_SDL
 	void setAxisValue(int axis, int32_t value);
