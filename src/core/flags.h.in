@@ -37,6 +37,12 @@
 
 // USE flags
 
+#ifndef MINIMAL_CORE
+
+#ifndef USE_DEBUGGERS
+#cmakedefine USE_DEBUGGERS
+#endif
+
 #ifndef USE_EDITLINE
 #cmakedefine USE_EDITLINE
 #endif
@@ -83,6 +89,8 @@
 
 #ifndef USE_ZLIB
 #cmakedefine USE_ZLIB
+#endif
+
 #endif
 
 #endif
