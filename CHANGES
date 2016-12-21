@@ -37,6 +37,7 @@ Bugfixes:
  - GBA Video: Fix out of bounds sprite transforms
  - GB: Fix crash when masking savedata
  - GB Audio: Fix serialization of channel 3 and NR52 properties
+ - GB: Properly initialize sramRealVf variable
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
