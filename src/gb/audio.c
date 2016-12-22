@@ -26,6 +26,7 @@ static void _writeDuty(struct GBAudioEnvelope* envelope, uint8_t value);
 static bool _writeSweep(struct GBAudioEnvelope* envelope, uint8_t value);
 static int32_t _updateSquareChannel(struct GBAudioSquareControl* envelope, int duty);
 static void _updateEnvelope(struct GBAudioEnvelope* envelope);
+static void _updateEnvelopeDead(struct GBAudioEnvelope* envelope);
 static bool _updateSweep(struct GBAudioChannel1* ch, bool initial);
 static int32_t _updateChannel1(struct GBAudioChannel1* ch);
 static int32_t _updateChannel2(struct GBAudioChannel2* ch);
@@ -146,11 +147,8 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh1 = audio->ch1.envelope.initialVolume || audio->ch1.envelope.direction;
 		audio->ch1.envelope.currentVolume = audio->ch1.envelope.initialVolume;
-		if (audio->ch1.envelope.currentVolume > 0) {
-			audio->ch1.envelope.dead = audio->ch1.envelope.stepTime ? 0 : 1;
-		} else {
-			audio->ch1.envelope.dead = audio->ch1.envelope.stepTime ? 0 : 2;
-		}
+		_updateEnvelopeDead(&audio->ch1.envelope);
+
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
 		}
@@ -209,11 +207,8 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh2 = audio->ch2.envelope.initialVolume || audio->ch2.envelope.direction;
 		audio->ch2.envelope.currentVolume = audio->ch2.envelope.initialVolume;
-		if (audio->ch2.envelope.currentVolume > 0) {
-			audio->ch2.envelope.dead = audio->ch2.envelope.stepTime ? 0 : 1;
-		} else {
-			audio->ch2.envelope.dead = audio->ch2.envelope.stepTime ? 0 : 2;
-		}
+		_updateEnvelopeDead(&audio->ch2.envelope);
+
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
 		}
@@ -330,11 +325,8 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 	if (GBAudioRegisterNoiseControlIsRestart(value)) {
 		audio->playingCh4 = audio->ch4.envelope.initialVolume || audio->ch4.envelope.direction;
 		audio->ch4.envelope.currentVolume = audio->ch4.envelope.initialVolume;
-		if (audio->ch4.envelope.currentVolume > 0) {
-			audio->ch4.envelope.dead = audio->ch4.envelope.stepTime ? 0 : 1;
-		} else {
-			audio->ch4.envelope.dead = audio->ch4.envelope.stepTime ? 0 : 2;
-		}
+		_updateEnvelopeDead(&audio->ch4.envelope);
+
 		if (audio->ch4.power) {
 			audio->ch4.lfsr = 0x40;
 		} else {
@@ -689,15 +681,7 @@ bool _writeSweep(struct GBAudioEnvelope* envelope, uint8_t value) {
 	envelope->stepTime = GBAudioRegisterSweepGetStepTime(value);
 	envelope->direction = GBAudioRegisterSweepGetDirection(value);
 	envelope->initialVolume = GBAudioRegisterSweepGetInitialVolume(value);
-	if (envelope->stepTime == 0) {
-		envelope->dead = envelope->currentVolume ? 1 : 2;
-	} else if (!envelope->direction && !envelope->currentVolume) {
-		envelope->dead = 2;
-	} else if (envelope->direction && envelope->currentVolume == 0xF) {
-		envelope->dead = 1;
-	} else {
-		envelope->dead = 0;
-	}
+	_updateEnvelopeDead(envelope);
 	envelope->nextStep = envelope->stepTime;
 	return envelope->initialVolume || envelope->direction;
 }
@@ -734,6 +718,18 @@ static void _updateEnvelope(struct GBAudioEnvelope* envelope) {
 		envelope->dead = 2;
 	} else {
 		envelope->nextStep = envelope->stepTime;
+	}
+}
+
+static void _updateEnvelopeDead(struct GBAudioEnvelope* envelope) {
+	if (envelope->stepTime == 0) {
+		envelope->dead = envelope->currentVolume ? 1 : 2;
+	} else if (!envelope->direction && !envelope->currentVolume) {
+		envelope->dead = 2;
+	} else if (envelope->direction && envelope->currentVolume == 0xF) {
+		envelope->dead = 1;
+	} else {
+		envelope->dead = 0;
 	}
 }
 
