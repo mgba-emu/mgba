@@ -31,6 +31,7 @@ Bugfixes:
 Misc:
  - PSP2: Improved controller rumble
  - GB, GBA: Prevent loading null ROMs
+ - GB Audio: Initialize wave RAM to GBC values
 
 0.5.1: (2016-10-05)
 Bugfixes:
