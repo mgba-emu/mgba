@@ -88,27 +88,24 @@ struct GBAudioSquareControl {
 	int hi;
 };
 
-struct GBAudioChannel1 {
+struct GBAudioSweep {
 	int shift;
 	int time;
-	int sweepStep;
+	int step;
 	bool direction;
-	bool sweepEnable;
-	bool sweepOccurred;
+	bool enable;
+	bool occurred;
 	int realFrequency;
+};
 
+struct GBAudioSquareChannel {
+	struct GBAudioSweep sweep;
 	struct GBAudioEnvelope envelope;
 	struct GBAudioSquareControl control;
 	int8_t sample;
 };
 
-struct GBAudioChannel2 {
-	struct GBAudioEnvelope envelope;
-	struct GBAudioSquareControl control;
-	int8_t sample;
-};
-
-struct GBAudioChannel3 {
+struct GBAudioWaveChannel {
 	bool size;
 	bool bank;
 	bool enable;
@@ -128,7 +125,7 @@ struct GBAudioChannel3 {
 	int8_t sample;
 };
 
-struct GBAudioChannel4 {
+struct GBAudioNoiseChannel {
 	struct GBAudioEnvelope envelope;
 
 	int ratio;
@@ -150,10 +147,10 @@ enum GBAudioStyle {
 
 struct GBAudio {
 	struct GB* p;
-	struct GBAudioChannel1 ch1;
-	struct GBAudioChannel2 ch2;
-	struct GBAudioChannel3 ch3;
-	struct GBAudioChannel4 ch4;
+	struct GBAudioSquareChannel ch1;
+	struct GBAudioSquareChannel ch2;
+	struct GBAudioWaveChannel ch3;
+	struct GBAudioNoiseChannel ch4;
 
 	blip_t* left;
 	blip_t* right;
