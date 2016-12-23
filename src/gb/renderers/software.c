@@ -65,6 +65,7 @@ void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
 
 static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum GBModel model) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
+	softwareRenderer->lcdc = 0;
 	softwareRenderer->scy = 0;
 	softwareRenderer->scx = 0;
 	softwareRenderer->wy = 0;
