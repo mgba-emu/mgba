@@ -28,6 +28,7 @@ Bugfixes:
  - GB Audio: Fix serialization of channel 3 and NR52 properties
  - GB: Properly initialize sramRealVf variable
  - Qt: Fix Apply button for key and controller configurations
+ - GB Video: Initialize LCDC in renderer
 Misc:
  - PSP2: Improved controller rumble
  - GB, GBA: Prevent loading null ROMs
