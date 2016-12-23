@@ -530,6 +530,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 
 		// Interrupts and misc
 		case REG_WAITCNT:
+			value &= 0x5FFF;
 			GBAAdjustWaitstates(gba, value);
 			break;
 		case REG_IE:

@@ -29,6 +29,7 @@ Bugfixes:
  - GB: Properly initialize sramRealVf variable
  - Qt: Fix Apply button for key and controller configurations
  - GB Video: Initialize LCDC in renderer
+ - GBA I/O: Mask off WAITCNT bits that cannot be written
 Misc:
  - PSP2: Improved controller rumble
  - GB, GBA: Prevent loading null ROMs
