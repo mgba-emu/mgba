@@ -40,6 +40,8 @@ static void _readWord(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _clearBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setReadWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setWriteWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeByte(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeHalfword(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeWord(struct CLIDebugger*, struct CLIDebugVector*);
@@ -81,6 +83,8 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "w/2", _writeHalfword, CLIDVParse, "Write a halfword at a specified offset" },
 	{ "w/4", _writeWord, CLIDVParse, "Write a word at a specified offset" },
 	{ "watch", _setWatchpoint, CLIDVParse, "Set a watchpoint" },
+	{ "watch/r", _setReadWatchpoint, CLIDVParse, "Set a read watchpoint" },
+	{ "watch/w", _setWriteWatchpoint, CLIDVParse, "Set a write watchpoint" },
 	{ "x/1", _dumpByte, CLIDVParse, "Examine bytes at a specified offset" },
 	{ "x/2", _dumpHalfword, CLIDVParse, "Examine halfwords at a specified offset" },
 	{ "x/4", _dumpWord, CLIDVParse, "Examine words at a specified offset" },
@@ -376,7 +380,33 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_RW); // TODO: ro/wo
+	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_RW);
+}
+
+static void _setReadWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (!debugger->d.platform->setWatchpoint) {
+		debugger->backend->printf(debugger->backend, "Watchpoints are not supported by this platform.\n");
+		return;
+	}
+	uint32_t address = dv->intValue;
+	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_READ);
+}
+
+static void _setWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (!debugger->d.platform->setWatchpoint) {
+		debugger->backend->printf(debugger->backend, "Watchpoints are not supported by this platform.\n");
+		return;
+	}
+	uint32_t address = dv->intValue;
+	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_WRITE);
 }
 
 static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {

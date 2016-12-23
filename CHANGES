@@ -61,6 +61,7 @@ Misc:
  - GB Audio: Simplify envelope code
  - GB Audio: Improve initial envelope samples
  - GB Audio: Initialize wave RAM to GBC values
+ - Debugger: Add functions for read- or write-only watchpoints
 
 0.5.1: (2016-10-05)
 Bugfixes:
