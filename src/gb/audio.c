@@ -168,6 +168,7 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 		} else {
 			audio->ch1.envelope.dead = audio->ch1.envelope.stepTime ? 0 : 2;
 		}
+		audio->ch1.envelope.nextStep = audio->ch1.envelope.stepTime;
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
 		}
@@ -231,6 +232,7 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 		} else {
 			audio->ch2.envelope.dead = audio->ch2.envelope.stepTime ? 0 : 2;
 		}
+		audio->ch2.envelope.nextStep = audio->ch2.envelope.stepTime;
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
 		}
@@ -352,6 +354,7 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 		} else {
 			audio->ch4.envelope.dead = audio->ch4.envelope.stepTime ? 0 : 2;
 		}
+		audio->ch4.envelope.nextStep = audio->ch4.envelope.stepTime;
 		if (audio->ch4.power) {
 			audio->ch4.lfsr = 0x40;
 		} else {
