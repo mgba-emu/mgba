@@ -437,7 +437,7 @@ void _GBMemoryHDMAService(struct GB* gb) {
 				gb->memory.isHdma = false;
 			}
 		} else {
-			gb->memory.io[REG_HDMA5] |= 0x80;
+			gb->memory.io[REG_HDMA5] = 0xFF;
 		}
 	}
 }

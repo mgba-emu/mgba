@@ -30,6 +30,7 @@ Bugfixes:
  - Qt: Fix Apply button for key and controller configurations
  - GB Video: Initialize LCDC in renderer
  - GBA I/O: Mask off WAITCNT bits that cannot be written
+ - GB Memory: Fix HDMA5 value after DMA completes
 Misc:
  - PSP2: Improved controller rumble
  - GB, GBA: Prevent loading null ROMs
