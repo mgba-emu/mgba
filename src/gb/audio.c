@@ -161,7 +161,6 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 	}
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh1 = _resetEnvelope(&audio->ch1.envelope);
-		_updateEnvelopeDead(&audio->ch1.envelope);
 
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
@@ -219,7 +218,6 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 	}
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh2 = _resetEnvelope(&audio->ch2.envelope);
-		_updateEnvelopeDead(&audio->ch2.envelope);
 
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
@@ -337,9 +335,7 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 		}
 	}
 	if (GBAudioRegisterNoiseControlIsRestart(value)) {
-		audio->playingCh4 = audio->ch4.envelope.initialVolume || audio->ch4.envelope.direction;
-		audio->ch4.envelope.currentVolume = audio->ch4.envelope.initialVolume;
-		_updateEnvelopeDead(&audio->ch4.envelope);
+		audio->playingCh4 = _resetEnvelope(&audio->ch4.envelope);
 
 		if (audio->ch4.power) {
 			audio->ch4.lfsr = 0x40;
@@ -687,6 +683,9 @@ void _sample(struct GBAudio* audio, int32_t cycles) {
 bool _resetEnvelope(struct GBAudioEnvelope* envelope) {
 	envelope->currentVolume = envelope->initialVolume;
 	_updateEnvelopeDead(envelope);
+	if (!envelope->dead) {
+		envelope->nextStep = envelope->stepTime;
+	}
 	return envelope->initialVolume || envelope->direction;
 }
 
