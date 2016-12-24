@@ -131,7 +131,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					struct mCoreThread* thread = mCoreThreadGet();
 					mCoreThreadFrameEnded(thread);
 				}
-				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
+				if (!GBRegisterSTATIsHblankIRQ(video->stat) && GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 				}
 				GBUpdateIRQs(video->p);
