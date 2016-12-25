@@ -766,7 +766,9 @@ static void _updateEnvelope(struct GBAudioEnvelope* envelope) {
 }
 
 static void _updateEnvelopeDead(struct GBAudioEnvelope* envelope) {
-	if (!envelope->direction && !envelope->currentVolume) {
+	if (!envelope->stepTime) {
+		envelope->dead = envelope->currentVolume ? 1 : 2;
+	} else if (!envelope->direction && !envelope->currentVolume) {
 		envelope->dead = 2;
 	} else if (envelope->direction && envelope->currentVolume == 0xF) {
 		envelope->dead = 1;
