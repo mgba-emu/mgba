@@ -105,6 +105,7 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	gb->memory.romBase = gb->memory.rom;
 	gb->memory.romSize = gb->pristineRomSize;
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
+	GBMBCSwitchBank(&gb->memory, gb->memory.currentBank);
 
 	if (gb->cpu) {
 		struct LR35902Core* cpu = gb->cpu;
