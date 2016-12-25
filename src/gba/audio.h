@@ -89,7 +89,6 @@ void GBAAudioDeinit(struct GBAAudio* audio);
 
 void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples);
 
-int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles);
 void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* info);
 
 void GBAAudioWriteSOUND1CNT_LO(struct GBAAudio* audio, uint16_t value);

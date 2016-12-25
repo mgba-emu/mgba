@@ -163,7 +163,6 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);
 
 uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment);
 
-int32_t GBMemoryProcessEvents(struct GB* gb, int32_t cycles);
 void GBMemoryDMA(struct GB* gb, uint16_t base);
 void GBMemoryWriteHDMA5(struct GB* gb, uint8_t value);
 
