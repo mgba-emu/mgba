@@ -10,6 +10,7 @@
 
 #include "arm/macros.h"
 #include "core/log.h"
+#include "core/timing.h"
 #include "gba/interface.h"
 
 #include <time.h>
@@ -115,7 +116,7 @@ struct GBACartridgeHardware {
 
 	unsigned gbpInputsPosted;
 	int gbpTxPosition;
-	int32_t gbpNextEvent;
+	struct mTimingEvent gbpNextEvent;
 	struct GBAGBPKeyCallback gbpCallback;
 	struct GBAGBPSIODriver gbpDriver;
 };

@@ -40,7 +40,6 @@ struct GBASIODriver {
 	bool (*load)(struct GBASIODriver* driver);
 	bool (*unload)(struct GBASIODriver* driver);
 	uint16_t (*writeRegister)(struct GBASIODriver* driver, uint32_t address, uint16_t value);
-	int32_t (*processEvents)(struct GBASIODriver* driver, int32_t cycles);
 };
 
 #endif
