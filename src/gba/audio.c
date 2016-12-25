@@ -73,6 +73,7 @@ void GBAAudioReset(struct GBAAudio* audio) {
 	audio->chBTimer = false;
 	audio->enable = false;
 	audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / audio->sampleRate;
+	audio->psg.sampleInterval = audio->sampleInterval;
 
 	blip_clear(audio->psg.left);
 	blip_clear(audio->psg.right);

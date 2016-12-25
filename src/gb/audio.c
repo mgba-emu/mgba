@@ -873,15 +873,21 @@ static void _fadeChannel3(struct mTiming* timing, void* user, uint32_t cyclesLat
 static void _updateChannel4(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	struct GBAudio* audio = user;
 	struct GBAudioNoiseChannel* ch = &audio->ch4;
-	int lsb = ch->lfsr & 1;
-	ch->sample = lsb * 0x10 - 0x8;
-	ch->sample *= ch->envelope.currentVolume;
-	ch->lfsr >>= 1;
-	ch->lfsr ^= (lsb * 0x60) << (ch->power ? 0 : 8);
-	int cycles = ch->ratio ? 2 * ch->ratio : 1;
-	cycles <<= ch->frequency;
-	cycles *= 8;
-	mTimingSchedule(timing, &audio->ch4Event, audio->timingFactor * cycles - cyclesLate);
+
+	int32_t baseCycles = ch->ratio ? 2 * ch->ratio : 1;
+	baseCycles <<= ch->frequency;
+	baseCycles *= 8 * audio->timingFactor;
+	int32_t cycles = 0;
+
+	do {
+		int lsb = ch->lfsr & 1;
+		ch->sample = lsb * 0x10 - 0x8;
+		ch->sample *= ch->envelope.currentVolume;
+		ch->lfsr >>= 1;
+		ch->lfsr ^= (lsb * 0x60) << (ch->power ? 0 : 8);
+		cycles += baseCycles;
+	} while (cycles < audio->sampleInterval);
+	mTimingSchedule(timing, &audio->ch4Event, cycles - cyclesLate);
 }
 
 void GBAudioPSGSerialize(const struct GBAudio* audio, struct GBSerializedPSGState* state, uint32_t* flagsOut) {
