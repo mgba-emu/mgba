@@ -9,6 +9,13 @@
 #include "gb/io.h"
 #include "gb/serialize.h"
 
+mLOG_DEFINE_CATEGORY(GB_SIO, "GB Serial I/O");
+
+const int GBSIOCyclesPerTransfer[2] = {
+	512,
+	16
+};
+
 void _GBSIOProcessEvents(struct mTiming* timing, void* context, uint32_t cyclesLate);
 
 void GBSIOInit(struct GBSIO* sio) {
@@ -17,6 +24,8 @@ void GBSIOInit(struct GBSIO* sio) {
 	sio->event.name = "GB SIO";
 	sio->event.callback = _GBSIOProcessEvents;
 	sio->event.priority = 0x30;
+
+	sio->driver = NULL;
 }
 
 void GBSIOReset(struct GBSIO* sio) {
@@ -29,6 +38,26 @@ void GBSIODeinit(struct GBSIO* sio) {
 	// Nothing to do yet
 }
 
+void GBSIOSetDriver(struct GBSIO* sio, struct GBSIODriver* driver) {
+	if (sio->driver) {
+		if (sio->driver->deinit) {
+			sio->driver->deinit(sio->driver);
+		}
+	}
+	if (driver) {
+		driver->p = sio;
+
+		if (driver->init) {
+			if (!driver->init(driver)) {
+				driver->deinit(driver);
+				mLOG(GB_SIO, ERROR, "Could not initialize SIO driver");
+				return;
+			}
+		}
+	}
+	sio->driver = driver;
+}
+
 void _GBSIOProcessEvents(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	UNUSED(cyclesLate);
 	struct GBSIO* sio = context;
@@ -38,19 +67,29 @@ void _GBSIOProcessEvents(struct mTiming* timing, void* context, uint32_t cyclesL
 	if (!sio->remainingBits) {
 		sio->p->memory.io[REG_IF] |= (1 << GB_IRQ_SIO);
 		sio->p->memory.io[REG_SC] = GBRegisterSCClearEnable(sio->p->memory.io[REG_SC]);
+		sio->pendingSB = 0xFF;
 		GBUpdateIRQs(sio->p);
 	} else {
 		mTimingSchedule(timing, &sio->event, sio->period);
 	}
 }
 
+void GBSIOWriteSB(struct GBSIO* sio, uint8_t sb) {
+	if (!sio->driver) {
+		return;
+	}
+	sio->driver->writeSB(sio->driver, sb);
+}
+
 void GBSIOWriteSC(struct GBSIO* sio, uint8_t sc) {
-	sio->period = 0x1000; // TODO Shift Clock
+	sio->period = GBSIOCyclesPerTransfer[GBRegisterSCGetClockSpeed(sc)]; // TODO Shift Clock
 	if (GBRegisterSCIsEnable(sc)) {
-		if (GBRegisterSCIsShiftClock(sc)) {
-			mTimingSchedule(&sio->p->timing, &sio->event, sio->period);
-		}
+		mTimingDeschedule(&sio->p->timing, &sio->event);
+		mTimingSchedule(&sio->p->timing, &sio->event, sio->period);
 		sio->remainingBits = 8;
+	}
+	if (sio->driver) {
+		sio->driver->writeSC(sio->driver, sc);
 	}
 }
 

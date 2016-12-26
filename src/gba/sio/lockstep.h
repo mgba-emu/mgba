@@ -3,40 +3,23 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef SIO_LOCKSTEP_H
-#define SIO_LOCKSTEP_H
+#ifndef GBA_SIO_LOCKSTEP_H
+#define GBA_SIO_LOCKSTEP_H
 
+#include "util/common.h"
+
+#include "core/lockstep.h"
 #include "core/timing.h"
 #include "gba/sio.h"
 
-enum GBASIOLockstepPhase {
-	TRANSFER_IDLE = 0,
-	TRANSFER_STARTING,
-	TRANSFER_STARTED,
-	TRANSFER_FINISHING,
-	TRANSFER_FINISHED
-};
-
 struct GBASIOLockstep {
+	struct mLockstep d;
 	struct GBASIOLockstepNode* players[MAX_GBAS];
-	int attached;
 	int attachedMulti;
 	int attachedNormal;
 
 	uint16_t multiRecv[MAX_GBAS];
 	uint32_t normalRecv[MAX_GBAS];
-	enum GBASIOLockstepPhase transferActive;
-	int32_t transferCycles;
-
-	bool (*signal)(struct GBASIOLockstep*, unsigned mask);
-	bool (*wait)(struct GBASIOLockstep*, unsigned mask);
-	void (*addCycles)(struct GBASIOLockstep*, int id, int32_t cycles);
-	int32_t (*useCycles)(struct GBASIOLockstep*, int id, int32_t cycles);
-	void (*unload)(struct GBASIOLockstep*, int id);
-	void* context;
-#ifndef NDEBUG
-	int transferId;
-#endif
 };
 
 struct GBASIOLockstepNode {
@@ -52,12 +35,11 @@ struct GBASIOLockstepNode {
 	bool transferFinished;
 #ifndef NDEBUG
 	int transferId;
-	enum GBASIOLockstepPhase phase;
+	enum mLockstepPhase phase;
 #endif
 };
 
 void GBASIOLockstepInit(struct GBASIOLockstep*);
-void GBASIOLockstepDeinit(struct GBASIOLockstep*);
 
 void GBASIOLockstepNodeCreate(struct GBASIOLockstepNode*);
 

@@ -158,6 +158,9 @@ void GBIOReset(struct GB* gb) {
 
 void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	switch (address) {
+	case REG_SB:
+		GBSIOWriteSB(&gb->sio, value);
+		break;
 	case REG_SC:
 		GBSIOWriteSC(&gb->sio, value);
 		break;
@@ -338,7 +341,6 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		}
 		break;
 	case REG_JOYP:
-	case REG_SB:
 	case REG_TIMA:
 	case REG_TMA:
 		// Handled transparently by the registers

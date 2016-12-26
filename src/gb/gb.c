@@ -433,6 +433,7 @@ void GBReset(struct LR35902Core* cpu) {
 	}
 
 	gb->cpuBlocked = false;
+	gb->earlyExit = false;
 	gb->doubleSpeed = 0;
 
 	cpu->memory.setActiveRegion(cpu, cpu->pc);
@@ -548,6 +549,10 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 		} while (gb->cpuBlocked);
 		cpu->nextEvent = nextEvent;
 
+		if (gb->earlyExit) {
+			gb->earlyExit = false;
+			break;
+		}
 		if (cpu->halted) {
 			cpu->cycles = cpu->nextEvent;
 			if (!gb->memory.ie || !gb->memory.ime) {

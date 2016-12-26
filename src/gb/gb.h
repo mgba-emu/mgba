@@ -79,6 +79,7 @@ struct GB {
 	struct mAVStream* stream;
 
 	bool cpuBlocked;
+	bool earlyExit;
 	struct mTimingEvent eiPending;
 	unsigned doubleSpeed;
 };
