@@ -6,7 +6,6 @@
 #ifndef DS_CLI_H
 #define DS_CLI_H
 
-#ifdef USE_CLI_DEBUGGER
 #include "debugger/cli-debugger.h"
 
 struct mCore;
@@ -21,6 +20,5 @@ struct DSCLIDebugger {
 };
 
 struct DSCLIDebugger* DSCLIDebuggerCreate(struct mCore*);
-#endif
 
 #endif

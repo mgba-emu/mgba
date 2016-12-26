@@ -10,8 +10,6 @@
 #include "ds/core.h"
 #include "ds/ds.h"
 
-#ifdef USE_CLI_DEBUGGER
-
 static void _DSCLIDebuggerInit(struct CLIDebuggerSystem*);
 static bool _DSCLIDebuggerCustom(struct CLIDebuggerSystem*);
 static uint32_t _DSCLIDebuggerLookupIdentifier(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
@@ -79,5 +77,3 @@ static void _switchCpu(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 	debugger->d.platform->init(core->cpu, debugger->d.platform);
 	debugger->system->printStatus(debugger->system);
 }
-
-#endif

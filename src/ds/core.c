@@ -133,6 +133,9 @@ static size_t _DSCoreGetAudioBufferSize(struct mCore* core) {
 	return 2048;
 }
 
+static void _DSCoreSetCoreCallbacks(struct mCore* core, struct mCoreCallbacks* coreCallbacks) {
+}
+
 static void _DSCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 }
 
@@ -333,10 +336,8 @@ static void _DSCoreRawWrite32(struct mCore* core, uint32_t address, int segment,
 static bool _DSCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
 	UNUSED(core);
 	switch (type) {
-#ifdef USE_CLI_DEBUGGER
 	case DEBUGGER_CLI:
 		return true;
-#endif
 #ifdef USE_GDB_STUB
 	case DEBUGGER_GDB:
 		return true;
@@ -355,12 +356,7 @@ static struct mDebuggerPlatform* _DSCoreDebuggerPlatform(struct mCore* core) {
 }
 
 static struct CLIDebuggerSystem* _DSCoreCliDebuggerSystem(struct mCore* core) {
-#ifdef USE_CLI_DEBUGGER
 	return &DSCLIDebuggerCreate(core)->d;
-#else
-	UNUSED(core);
-	return NULL;
-#endif
 }
 
 static void _DSCoreAttachDebugger(struct mCore* core, struct mDebugger* debugger) {
@@ -407,6 +403,7 @@ struct mCore* DSCoreCreate(void) {
 	core->getAudioChannel = _DSCoreGetAudioChannel;
 	core->setAudioBufferSize = _DSCoreSetAudioBufferSize;
 	core->getAudioBufferSize = _DSCoreGetAudioBufferSize;
+	core->setCoreCallbacks = _DSCoreSetCoreCallbacks;
 	core->setAVStream = _DSCoreSetAVStream;
 	core->isROM = DSIsROM;
 	core->loadROM = _DSCoreLoadROM;
