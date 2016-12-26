@@ -8,7 +8,7 @@
 #include "gb/gb.h"
 #include "gb/io.h"
 
-#define LOCKSTEP_INCREMENT 500
+#define LOCKSTEP_INCREMENT 512
 
 static bool GBSIOLockstepNodeInit(struct GBSIODriver* driver);
 static void GBSIOLockstepNodeDeinit(struct GBSIODriver* driver);
@@ -90,6 +90,11 @@ static void _finishTransfer(struct GBSIOLockstepNode* node) {
 	}
 	struct GBSIO* sio = node->d.p;
 	sio->pendingSB = node->p->pendingSB[!node->id];
+	if (GBRegisterSCIsEnable(sio->p->memory.io[REG_SC])) {
+		sio->remainingBits = 8;
+		mTimingDeschedule(&sio->p->timing, &sio->event);
+		mTimingSchedule(&sio->p->timing, &sio->event, 0);
+	}
 	node->transferFinished = true;
 #ifndef NDEBUG
 	++node->transferId;
