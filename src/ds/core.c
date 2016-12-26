@@ -86,7 +86,7 @@ static void _DSCoreDeinit(struct mCore* core) {
 	free(core);
 }
 
-static enum mPlatform _DSCorePlatform(struct mCore* core) {
+static enum mPlatform _DSCorePlatform(const struct mCore* core) {
 	UNUSED(core);
 	return PLATFORM_DS;
 }
@@ -116,7 +116,10 @@ static void _DSCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, u
 static void _DSCoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t stride) {
 }
 
-static void _DSCoreGetVideoBuffer(struct mCore* core, color_t** buffer, size_t* stride) {
+static void _DSCoreGetPixels(struct mCore* core, const void** buffer, size_t* stride) {
+}
+
+static void _DSCorePutPixels(struct mCore* core, const void* buffer, size_t stride) {
 }
 
 static struct blip_t* _DSCoreGetAudioChannel(struct mCore* core, int ch) {
@@ -244,21 +247,21 @@ static int32_t _DSCoreFrameCounter(struct mCore* core) {
 	return ds->video.frameCounter;
 }
 
-static int32_t _DSCoreFrameCycles(struct mCore* core) {
+static int32_t _DSCoreFrameCycles(const struct mCore* core) {
 	UNUSED(core);
 	return DS_VIDEO_TOTAL_LENGTH;
 }
 
-static int32_t _DSCoreFrequency(struct mCore* core) {
+static int32_t _DSCoreFrequency(const struct mCore* core) {
 	UNUSED(core);
 	return DS_ARM946ES_FREQUENCY;
 }
 
-static void _DSCoreGetGameTitle(struct mCore* core, char* title) {
+static void _DSCoreGetGameTitle(const struct mCore* core, char* title) {
 	DSGetGameTitle(core->board, title);
 }
 
-static void _DSCoreGetGameCode(struct mCore* core, char* title) {
+static void _DSCoreGetGameCode(const struct mCore* core, char* title) {
 	DSGetGameCode(core->board, title);
 }
 
@@ -306,25 +309,25 @@ static void _DSCoreBusWrite32(struct mCore* core, uint32_t address, uint32_t val
 	cpu->memory.store32(cpu, address, value, 0);
 }
 
-static uint32_t _DSCoreRawRead8(struct mCore* core, uint32_t address) {
+static uint32_t _DSCoreRawRead8(struct mCore* core, uint32_t address, int segment) {
 	return 0;
 }
 
-static uint32_t _DSCoreRawRead16(struct mCore* core, uint32_t address) {
+static uint32_t _DSCoreRawRead16(struct mCore* core, uint32_t address, int segment) {
 	return 0;
 }
 
-static uint32_t _DSCoreRawRead32(struct mCore* core, uint32_t address) {
+static uint32_t _DSCoreRawRead32(struct mCore* core, uint32_t address, int segment) {
 	return 0;
 }
 
-static void _DSCoreRawWrite8(struct mCore* core, uint32_t address, uint8_t value) {
+static void _DSCoreRawWrite8(struct mCore* core, uint32_t address, int segment, uint8_t value) {
 }
 
-static void _DSCoreRawWrite16(struct mCore* core, uint32_t address, uint16_t value) {
+static void _DSCoreRawWrite16(struct mCore* core, uint32_t address, int segment, uint16_t value) {
 }
 
-static void _DSCoreRawWrite32(struct mCore* core, uint32_t address, uint32_t value) {
+static void _DSCoreRawWrite32(struct mCore* core, uint32_t address, int segment, uint32_t value) {
 }
 
 static bool _DSCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
@@ -381,7 +384,7 @@ static size_t _DSCoreSavedataClone(struct mCore* core, void** sram) {
 	return 0;
 }
 
-static bool _DSCoreSavedataLoad(struct mCore* core, const void* sram, size_t size) {
+static bool _DSCoreSavedataRestore(struct mCore* core, const void* sram, size_t size, bool writeback) {
 	return false;
 }
 
@@ -399,7 +402,8 @@ struct mCore* DSCoreCreate(void) {
 	core->loadConfig = _DSCoreLoadConfig;
 	core->desiredVideoDimensions = _DSCoreDesiredVideoDimensions;
 	core->setVideoBuffer = _DSCoreSetVideoBuffer;
-	core->getVideoBuffer = _DSCoreGetVideoBuffer;
+	core->getPixels = _DSCoreGetPixels;
+	core->putPixels = _DSCorePutPixels;
 	core->getAudioChannel = _DSCoreGetAudioChannel;
 	core->setAudioBufferSize = _DSCoreSetAudioBufferSize;
 	core->getAudioBufferSize = _DSCoreGetAudioBufferSize;
@@ -440,13 +444,15 @@ struct mCore* DSCoreCreate(void) {
 	core->rawWrite8 = _DSCoreRawWrite8;
 	core->rawWrite16 = _DSCoreRawWrite16;
 	core->rawWrite32 = _DSCoreRawWrite32;
+#ifdef USE_DEBUGGERS
 	core->supportsDebuggerType = _DSCoreSupportsDebuggerType;
 	core->debuggerPlatform = _DSCoreDebuggerPlatform;
 	core->cliDebuggerSystem = _DSCoreCliDebuggerSystem;
 	core->attachDebugger = _DSCoreAttachDebugger;
 	core->detachDebugger = _DSCoreDetachDebugger;
+#endif
 	core->cheatDevice = _DSCoreCheatDevice;
 	core->savedataClone = _DSCoreSavedataClone;
-	core->savedataLoad = _DSCoreSavedataLoad;
+	core->savedataRestore = _DSCoreSavedataRestore;
 	return core;
 }
