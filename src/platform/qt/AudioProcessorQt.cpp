@@ -10,6 +10,7 @@
 
 #include <QAudioOutput>
 
+#include "core/core.h"
 #include "core/thread.h"
 
 using namespace QGBA;

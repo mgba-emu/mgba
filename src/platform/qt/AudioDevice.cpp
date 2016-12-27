@@ -7,6 +7,7 @@
 
 #include "LogController.h"
 
+#include "core/core.h"
 #include "core/thread.h"
 #include "gba/audio.h"
 

@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "sdl-audio.h"
 
+#include "core/core.h"
 #include "core/thread.h"
 #include "gba/gba.h"
 

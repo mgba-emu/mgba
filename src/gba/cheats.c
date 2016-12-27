@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "cheats.h"
 
+#include "core/core.h"
 #include "gba/cheats/gameshark.h"
 #include "gba/cheats/parv3.h"
 #include "gba/gba.h"

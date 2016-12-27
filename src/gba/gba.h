@@ -152,8 +152,11 @@ void GBAHalt(struct GBA* gba);
 void GBAStop(struct GBA* gba);
 void GBADebug(struct GBA* gba, uint16_t value);
 
+#ifdef USE_DEBUGGERS
+struct mDebugger;
 void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger);
 void GBADetachDebugger(struct GBA* gba);
+#endif
 
 void GBASetBreakpoint(struct GBA* gba, struct mCPUComponent* component, uint32_t address, enum ExecutionMode mode,
                       uint32_t* opcode);

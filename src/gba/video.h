@@ -10,7 +10,6 @@
 
 CXX_GUARD_START
 
-#include "core/core.h"
 #include "core/timing.h"
 #include "gba/memory.h"
 
