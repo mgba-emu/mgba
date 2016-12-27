@@ -524,13 +524,15 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			value &= 0xC1FF;
 			GBASIOWriteRCNT(&gba->sio, value);
 			break;
+		case REG_JOY_TRANS_LO:
+		case REG_JOY_TRANS_HI:
+			gba->memory.io[REG_JOYSTAT >> 1] |= JOYSTAT_TRANS_BIT;
+			// Fall through
 		case REG_SIOMLT_SEND:
 		case REG_JOYCNT:
 		case REG_JOYSTAT:
 		case REG_JOY_RECV_LO:
 		case REG_JOY_RECV_HI:
-		case REG_JOY_TRANS_LO:
-		case REG_JOY_TRANS_HI:
 			value = GBASIOWriteRegister(&gba->sio, address, value);
 			break;
 
