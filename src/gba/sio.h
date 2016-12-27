@@ -23,6 +23,16 @@ enum {
 	RCNT_INITIAL = 0x8000
 };
 
+enum {
+	JOY_CMD_RESET = 0xFF,
+	JOY_CMD_POLL = 0x00,
+	JOY_CMD_TRANS = 0x14,
+	JOY_CMD_RECV = 0x15,
+
+	JOYSTAT_TRANS_BIT = 8,
+	JOYSTAT_RECV_BIT = 2,
+};
+
 struct GBASIODriverSet {
 	struct GBASIODriver* normal;
 	struct GBASIODriver* multiplayer;
