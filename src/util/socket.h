@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #if defined(__cplusplus) && !defined(restrict)
 #define restrict __restrict__
 #endif
@@ -315,5 +317,7 @@ static inline int SocketPoll(size_t nSockets, Socket* reads, Socket* writes, Soc
 	}
 	return result;
 }
+
+CXX_GUARD_END
 
 #endif

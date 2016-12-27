@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/core.h"
 #include "gb/gb.h"
 #include "gb/video.h"
@@ -35,5 +37,7 @@ struct GBVideoSoftwareRenderer {
 };
 
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer*);
+
+CXX_GUARD_END
 
 #endif

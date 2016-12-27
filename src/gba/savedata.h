@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/log.h"
 
 mLOG_DECLARE_CATEGORY(GBA_SAVE);
@@ -118,5 +120,7 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount);
 struct GBASerializedState;
 void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state);
 void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerializedState* state);
+
+CXX_GUARD_END
 
 #endif

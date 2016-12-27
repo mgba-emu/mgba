@@ -6,6 +6,10 @@
 #ifndef SDL_MAIN_H
 #define SDL_MAIN_H
 
+#include "util/common.h"
+
+CXX_GUARD_START
+
 #ifdef M_CORE_GBA
 #include "gba/renderers/video-software.h"
 #endif
@@ -106,4 +110,7 @@ void mSDLGLCreate(struct mSDLRenderer* renderer);
 #if defined(BUILD_GLES2) || defined(USE_EPOXY)
 void mSDLGLES2Create(struct mSDLRenderer* renderer);
 #endif
+
+CXX_GUARD_END
+
 #endif

@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/log.h"
 #include "gba/interface.h"
 
@@ -77,5 +79,7 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value);
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value);
 uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value);
+
+CXX_GUARD_END
 
 #endif

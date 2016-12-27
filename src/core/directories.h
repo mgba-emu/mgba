@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 struct VDir;
 
@@ -33,5 +35,7 @@ struct VFile* mDirectorySetOpenSuffix(struct mDirectorySet* dirs, struct VDir* d
 struct mCoreOptions;
 void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct mCoreOptions* opts);
 #endif
+
+CXX_GUARD_END
 
 #endif

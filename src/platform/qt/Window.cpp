@@ -42,7 +42,6 @@
 #include "TileView.h"
 #include "VideoView.h"
 
-extern "C" {
 #include "core/version.h"
 #ifdef M_CORE_GB
 #include "gb/gb.h"
@@ -50,7 +49,6 @@ extern "C" {
 #include "feature/commandline.h"
 #include "util/nointro.h"
 #include "util/vfs.h"
-}
 
 using namespace QGBA;
 

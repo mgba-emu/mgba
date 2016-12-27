@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct CircleBuffer {
 	void* data;
 	size_t capacity;
@@ -29,5 +31,7 @@ int CircleBufferRead16(struct CircleBuffer* buffer, int16_t* value);
 int CircleBufferRead32(struct CircleBuffer* buffer, int32_t* value);
 size_t CircleBufferRead(struct CircleBuffer* buffer, void* output, size_t length);
 size_t CircleBufferDump(const struct CircleBuffer* buffer, void* output, size_t length);
+
+CXX_GUARD_END
 
 #endif

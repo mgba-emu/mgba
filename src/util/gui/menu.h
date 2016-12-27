@@ -6,6 +6,10 @@
 #ifndef GUI_MENU_H
 #define GUI_MENU_H
 
+#include "util/common.h"
+
+CXX_GUARD_START
+
 #include "util/vector.h"
 
 struct GUIMenu;
@@ -48,5 +52,7 @@ enum GUIMenuExitReason GUIShowMessageBox(struct GUIParams* params, int buttons, 
 
 void GUIDrawBattery(struct GUIParams* params);
 void GUIDrawClock(struct GUIParams* params);
+
+CXX_GUARD_END
 
 #endif

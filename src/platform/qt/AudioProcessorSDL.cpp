@@ -7,9 +7,7 @@
 
 #include "LogController.h"
 
-extern "C" {
 #include "core/thread.h"
-}
 
 using namespace QGBA;
 

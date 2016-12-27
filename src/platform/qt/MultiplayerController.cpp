@@ -7,14 +7,12 @@
 
 #include "GameController.h"
 
-extern "C" {
 #ifdef M_CORE_GBA
 #include "gba/gba.h"
 #endif
 #ifdef M_CORE_GB
 #include "gb/gb.h"
 #endif
-}
 
 using namespace QGBA;
 

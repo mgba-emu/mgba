@@ -10,7 +10,6 @@
 #include <QList>
 #include <QObject>
 
-extern "C" {
 #include "core/lockstep.h"
 #ifdef M_CORE_GBA
 #include "gba/sio/lockstep.h"
@@ -18,7 +17,6 @@ extern "C" {
 #ifdef M_CORE_GB
 #include "gb/sio/lockstep.h"
 #endif
-}
 
 namespace QGBA {
 

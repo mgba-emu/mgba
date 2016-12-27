@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct VFile;
 
 struct Patch {
@@ -18,5 +20,7 @@ struct Patch {
 };
 
 bool loadPatch(struct VFile* vf, struct Patch* patch);
+
+CXX_GUARD_END
 
 #endif

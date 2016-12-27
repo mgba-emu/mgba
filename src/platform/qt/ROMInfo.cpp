@@ -8,7 +8,6 @@
 #include "GBAApp.h"
 #include "GameController.h"
 
-extern "C" {
 #include "core/core.h"
 #ifdef M_CORE_GB
 #include "gb/gb.h"
@@ -17,7 +16,6 @@ extern "C" {
 #include "gba/gba.h"
 #endif
 #include "util/nointro.h"
-}
 
 using namespace QGBA;
 

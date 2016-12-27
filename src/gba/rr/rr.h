@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/log.h"
 #include "gba/serialize.h"
 
@@ -57,5 +59,7 @@ void GBARRDestroy(struct GBARRContext*);
 
 void GBARRInitRecord(struct GBA*);
 void GBARRInitPlay(struct GBA*);
+
+CXX_GUARD_END
 
 #endif

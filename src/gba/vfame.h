@@ -11,6 +11,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 enum GBAVFameCartType {
 	VFAME_NO = 0,
 	VFAME_STANDARD = 1,
@@ -30,5 +32,7 @@ void GBAVFameDetect(struct GBAVFameCart* cart, uint32_t* rom, size_t romSize);
 void GBAVFameSramWrite(struct GBAVFameCart* cart, uint32_t address, uint8_t value, uint8_t* sramData);
 uint32_t GBAVFameModifyRomAddress(struct GBAVFameCart* cart, uint32_t address, size_t romSize);
 uint32_t GBAVFameGetPatternValue(uint32_t address, int bits);
+
+CXX_GUARD_END
 
 #endif

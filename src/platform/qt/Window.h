@@ -13,10 +13,8 @@
 
 #include <functional>
 
-extern "C" {
 #include "core/thread.h"
 #include "gba/gba.h"
-}
 
 #include "InputController.h"
 #include "LoadSaveState.h"

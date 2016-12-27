@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "locale.h"
 
 #if defined(__APPLE__) || defined(__FreeBSD__)
@@ -28,5 +30,7 @@ float strtof_u(const char* restrict str, char** restrict end);
 #ifndef HAVE_LOCALTIME_R
 struct tm* localtime_r(const time_t* timep, struct tm* result);
 #endif
+
+CXX_GUARD_END
 
 #endif

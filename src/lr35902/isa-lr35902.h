@@ -8,9 +8,13 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct LR35902Core;
 
 typedef void (*LR35902Instruction)(struct LR35902Core*);
 extern const LR35902Instruction _lr35902InstructionTable[0x100];
+
+CXX_GUARD_END
 
 #endif

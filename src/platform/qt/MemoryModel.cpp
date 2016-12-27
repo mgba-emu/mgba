@@ -19,9 +19,7 @@
 #include <QSlider>
 #include <QWheelEvent>
 
-extern "C" {
 #include "core/core.h"
-}
 
 using namespace QGBA;
 

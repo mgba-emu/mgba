@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "arm/arm.h"
 #include "core/log.h"
 
@@ -19,5 +21,7 @@ void GBASwi32(struct ARMCore* cpu, int immediate);
 uint32_t GBAChecksum(uint32_t* memory, size_t size);
 extern const uint32_t GBA_BIOS_CHECKSUM;
 extern const uint32_t GBA_DS_BIOS_CHECKSUM;
+
+CXX_GUARD_END
 
 #endif

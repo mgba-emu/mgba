@@ -6,6 +6,16 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#ifdef __cplusplus
+#define CXX_GUARD_START extern "C" {
+#define CXX_GUARD_END }
+#else
+#define CXX_GUARD_START
+#define CXX_GUARD_END
+#endif
+
+CXX_GUARD_START
+
 #include <ctype.h>
 #include <fcntl.h>
 #include <inttypes.h>
@@ -176,5 +186,7 @@ typedef intptr_t ssize_t;
 #endif
 
 #define ROR(I, ROTATE) ((((uint32_t) (I)) >> ROTATE) | ((uint32_t) (I) << ((-ROTATE) & 31)))
+
+CXX_GUARD_END
 
 #endif

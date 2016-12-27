@@ -7,6 +7,9 @@
 #define PARSER_H
 
 #include "util/common.h"
+
+CXX_GUARD_START
+
 #include "debugger.h"
 
 enum LexState {
@@ -61,5 +64,7 @@ void parseLexedExpression(struct ParseTree* tree, struct LexVector* lv);
 
 void lexFree(struct LexVector* lv);
 void parseFree(struct ParseTree* tree);
+
+CXX_GUARD_END
 
 #endif

@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "gba/rr/rr.h"
 
 struct GBA;
@@ -79,5 +81,7 @@ void GBAMGMContextCreate(struct GBAMGMContext*);
 
 bool GBAMGMSetStream(struct GBAMGMContext* mgm, struct VDir* stream);
 bool GBAMGMCreateStream(struct GBAMGMContext* mgm, enum GBARRInitFrom initFrom);
+
+CXX_GUARD_END
 
 #endif

@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct TextCodecNode;
 struct TextCodec {
 	struct TextCodecNode* forwardRoot;
@@ -28,5 +30,7 @@ void TextCodecStartEncode(struct TextCodec*, struct TextCodecIterator*);
 
 ssize_t TextCodecAdvance(struct TextCodecIterator*, uint8_t byte, uint8_t* output, size_t outputLength);
 ssize_t TextCodecFinish(struct TextCodecIterator*, uint8_t* output, size_t outputLength);
+
+CXX_GUARD_END
 
 #endif

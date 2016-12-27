@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "util/configuration.h"
 
 struct mCoreConfig {
@@ -90,5 +92,7 @@ struct Configuration* mCoreConfigGetOverrides(struct mCoreConfig*);
 const struct Configuration* mCoreConfigGetOverridesConst(const struct mCoreConfig*);
 
 void mCoreConfigFreeOpts(struct mCoreOptions* opts);
+
+CXX_GUARD_END
 
 #endif

@@ -6,6 +6,10 @@
 #ifndef GBA_INPUT_H
 #define GBA_INPUT_H
 
+#include "util/common.h"
+
+CXX_GUARD_START
+
 #include "core/input.h"
 
 extern const struct mInputPlatformInfo GBAInputInfo;
@@ -24,5 +28,7 @@ enum GBAKey {
 	GBA_KEY_MAX,
 	GBA_KEY_NONE = -1
 };
+
+CXX_GUARD_END
 
 #endif

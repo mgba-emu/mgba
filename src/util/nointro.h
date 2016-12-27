@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct NoIntroGame {
 	const char* name;
 	const char* romName;
@@ -25,5 +27,7 @@ struct VFile;
 struct NoIntroDB* NoIntroDBLoad(struct VFile* vf);
 void NoIntroDBDestroy(struct NoIntroDB* db);
 bool NoIntroDBLookupGameByCRC(const struct NoIntroDB* db, uint32_t crc32, struct NoIntroGame* game);
+
+CXX_GUARD_END
 
 #endif

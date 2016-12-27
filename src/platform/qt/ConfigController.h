@@ -15,11 +15,9 @@
 
 #include <functional>
 
-extern "C" {
 #include "core/config.h"
 #include "util/configuration.h"
 #include "feature/commandline.h"
-}
 
 class QAction;
 class QMenu;

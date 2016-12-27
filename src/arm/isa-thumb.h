@@ -8,9 +8,13 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct ARMCore;
 
 typedef void (*ThumbInstruction)(struct ARMCore*, uint16_t opcode);
 extern const ThumbInstruction _thumbTable[0x400];
+
+CXX_GUARD_END
 
 #endif

@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "arm/arm.h"
 #include "core/log.h"
 #include "util/vector.h"
@@ -111,5 +113,6 @@ void mDebuggerAttach(struct mDebugger*, struct mCore*);
 void mDebuggerRun(struct mDebugger*);
 void mDebuggerEnter(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 
+CXX_GUARD_END
 
 #endif

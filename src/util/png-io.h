@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #ifdef USE_PNG
 
 #include <png.h>
@@ -36,5 +38,7 @@ bool PNGReadFooter(png_structp png, png_infop end);
 void PNGReadClose(png_structp png, png_infop info, png_infop end);
 
 #endif
+
+CXX_GUARD_END
 
 #endif

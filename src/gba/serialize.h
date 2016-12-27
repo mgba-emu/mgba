@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/core.h"
 #include "gba/gba.h"
 #include "gb/serialize.h"
@@ -332,5 +334,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
 struct GBASerializedState* GBAAllocateState(void);
 void GBADeallocateState(struct GBASerializedState* state);
+
+CXX_GUARD_END
 
 #endif

@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/log.h"
 #include "core/timing.h"
 #include "gb/interface.h"
@@ -174,5 +176,7 @@ void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* o
 struct GBSerializedState;
 void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state);
 void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state);
+
+CXX_GUARD_END
 
 #endif

@@ -15,7 +15,6 @@
 
 #include <memory>
 
-extern "C" {
 #include "core/core.h"
 #include "core/thread.h"
 #include "gba/cheats.h"
@@ -25,7 +24,6 @@ extern "C" {
 #ifdef BUILD_SDL
 #include "platform/sdl/sdl-events.h"
 #endif
-}
 
 struct Configuration;
 struct GBAAudio;

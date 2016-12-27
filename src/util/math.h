@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 static inline uint32_t popcount32(unsigned bits) {
 	bits = bits - ((bits >> 1) & 0x55555555);
 	bits = (bits & 0x33333333) + ((bits >> 2) & 0x33333333);
@@ -55,5 +57,7 @@ static inline uint32_t toPow2(uint32_t bits) {
 	unsigned lz = clz32(bits - 1);
 	return 1 << (32 - lz);
 }
+
+CXX_GUARD_END
 
 #endif

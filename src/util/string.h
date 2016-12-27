@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #ifndef HAVE_STRNDUP
 // This is sometimes a macro
 char* strndup(const char* start, size_t len);
@@ -35,5 +37,7 @@ const char* hex8(const char* line, uint8_t* out);
 const char* hex4(const char* line, uint8_t* out);
 
 void rtrim(char* string);
+
+CXX_GUARD_END
 
 #endif

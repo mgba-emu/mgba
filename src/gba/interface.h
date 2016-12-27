@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/interface.h"
 
 enum GBASIOMode {
@@ -41,5 +43,7 @@ struct GBASIODriver {
 	bool (*unload)(struct GBASIODriver* driver);
 	uint16_t (*writeRegister)(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 };
+
+CXX_GUARD_END
 
 #endif

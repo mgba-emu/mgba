@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/cpu.h"
 #include "lr35902/isa-lr35902.h"
 
@@ -166,5 +168,7 @@ void LR35902RaiseIRQ(struct LR35902Core* cpu, uint8_t vector);
 
 void LR35902Tick(struct LR35902Core* cpu);
 void LR35902Run(struct LR35902Core* cpu);
+
+CXX_GUARD_END
 
 #endif

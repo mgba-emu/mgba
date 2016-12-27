@@ -8,9 +8,13 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct VFile;
 
 bool exportPaletteRIFF(struct VFile* vf, size_t entries, const uint16_t* colors);
 bool exportPaletteACT(struct VFile* vf, size_t entries, const uint16_t* colors);
+
+CXX_GUARD_END
 
 #endif

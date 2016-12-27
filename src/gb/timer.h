@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/timing.h"
 
 DECL_BITFIELD(GBRegisterTAC, uint8_t);
@@ -37,5 +39,7 @@ uint8_t GBTimerUpdateTAC(struct GBTimer*, GBRegisterTAC tac);
 struct GBSerializedState;
 void GBTimerSerialize(const struct GBTimer* timer, struct GBSerializedState* state);
 void GBTimerDeserialize(struct GBTimer* timer, const struct GBSerializedState* state);
+
+CXX_GUARD_END
 
 #endif

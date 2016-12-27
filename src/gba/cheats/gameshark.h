@@ -6,6 +6,10 @@
 #ifndef GBA_CHEATS_GAMESHARK_H
 #define GBA_CHEATS_GAMESHARK_H
 
+#include "util/common.h"
+
+CXX_GUARD_START
+
 #include "gba/cheats.h"
 
 extern const uint32_t GBACheatGameSharkSeeds[4];
@@ -15,5 +19,7 @@ void GBACheatReseedGameShark(uint32_t* seeds, uint16_t params, const uint8_t* t1
 void GBACheatSetGameSharkVersion(struct GBACheatSet* cheats, int version);
 bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2);
 int GBACheatGameSharkProbability(uint32_t op1, uint32_t op2);
+
+CXX_GUARD_END
 
 #endif

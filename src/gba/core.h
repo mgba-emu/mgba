@@ -6,7 +6,13 @@
 #ifndef GBA_CORE_H
 #define GBA_CORE_H
 
+#include "util/common.h"
+
+CXX_GUARD_START
+
 struct mCore;
 struct mCore* GBACoreCreate(void);
+
+CXX_GUARD_END
 
 #endif

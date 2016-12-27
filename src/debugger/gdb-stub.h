@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "debugger/debugger.h"
 
 #include "util/socket.h"
@@ -46,5 +48,7 @@ void GDBStubHangup(struct GDBStub*);
 void GDBStubShutdown(struct GDBStub*);
 
 void GDBStubUpdate(struct GDBStub*);
+
+CXX_GUARD_END
 
 #endif

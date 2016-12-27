@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "debugger/debugger.h"
 
 struct mArguments {
@@ -48,5 +50,7 @@ void usage(const char* arg0, const char* extraOptions);
 void version(const char* arg0);
 
 void initParserForGraphics(struct mSubParser* parser, struct mGraphicsOpts* opts);
+
+CXX_GUARD_END
 
 #endif

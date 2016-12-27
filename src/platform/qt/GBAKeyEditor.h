@@ -11,9 +11,7 @@
 #include <QSet>
 #include <QWidget>
 
-extern "C" {
 #include "gba/input.h"
-}
 
 class QComboBox;
 class QTimer;

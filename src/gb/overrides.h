@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "gb/interface.h"
 
 struct GBCartridgeOverride {
@@ -23,5 +25,7 @@ void GBOverrideSave(struct Configuration*, const struct GBCartridgeOverride* ove
 struct GB;
 void GBOverrideApply(struct GB*, const struct GBCartridgeOverride*);
 void GBOverrideApplyDefaults(struct GB*);
+
+CXX_GUARD_END
 
 #endif

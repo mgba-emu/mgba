@@ -5,9 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "LibraryModel.h"
 
-extern "C" {
 #include "util/vfs.h"
-}
 
 using namespace QGBA;
 

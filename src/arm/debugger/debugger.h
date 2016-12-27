@@ -3,6 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#ifndef ARM_DEBUGGER_H
+#define ARM_DEBUGGER_H
+
+#include "util/common.h"
+
+CXX_GUARD_START
+
 #include "debugger/debugger.h"
 
 struct ARMDebugBreakpoint {
@@ -40,3 +47,7 @@ struct ARMDebugger {
 struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void);
 bool ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* debugger, uint32_t address, enum ExecutionMode mode);
 void ARMDebuggerClearSoftwareBreakpoint(struct mDebuggerPlatform* debugger, uint32_t address);
+
+CXX_GUARD_END
+
+#endif

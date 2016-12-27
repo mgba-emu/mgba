@@ -12,7 +12,6 @@
 #include <QFileDialog>
 #include <QFontDatabase>
 
-extern "C" {
 #include "core/core.h"
 #include "util/export.h"
 #ifdef M_CORE_GA
@@ -22,7 +21,6 @@ extern "C" {
 #include "gb/gb.h"
 #endif
 #include "util/vfs.h"
-}
 
 using namespace QGBA;
 

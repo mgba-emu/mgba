@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "util/threading.h"
 
 struct mCoreSync {
@@ -35,5 +37,7 @@ void mCoreSyncProduceAudio(struct mCoreSync* sync, bool wait);
 void mCoreSyncLockAudio(struct mCoreSync* sync);
 void mCoreSyncUnlockAudio(struct mCoreSync* sync);
 void mCoreSyncConsumeAudio(struct mCoreSync* sync);
+
+CXX_GUARD_END
 
 #endif

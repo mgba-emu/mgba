@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/input.h"
 #include "util/vector.h"
 
@@ -80,5 +82,7 @@ void GUIInit(struct GUIParams* params);
 void GUIPollInput(struct GUIParams* params, uint32_t* newInput, uint32_t* heldInput);
 enum GUICursorState GUIPollCursor(struct GUIParams* params, unsigned* x, unsigned* y);
 void GUIInvalidateKeys(struct GUIParams* params);
+
+CXX_GUARD_END
 
 #endif

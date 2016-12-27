@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #ifndef DISABLE_THREADING
 #ifdef USE_PTHREADS
 #include "platform/posix/threading.h"
@@ -84,5 +86,7 @@ static inline int ConditionWake(Condition* cond) {
 	return 0;
 }
 #endif
+
+CXX_GUARD_END
 
 #endif

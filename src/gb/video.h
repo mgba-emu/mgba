@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/interface.h"
 #include "core/timing.h"
 #include "gb/interface.h"
@@ -142,5 +144,7 @@ void GBVideoSwitchBank(struct GBVideo* video, uint8_t value);
 struct GBSerializedState;
 void GBVideoSerialize(const struct GBVideo* video, struct GBSerializedState* state);
 void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* state);
+
+CXX_GUARD_END
 
 #endif

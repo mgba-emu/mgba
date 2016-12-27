@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct mTiming;
 struct mTimingEvent {
 	void* context;
@@ -36,5 +38,7 @@ bool mTimingIsScheduled(const struct mTiming* timing, const struct mTimingEvent*
 int32_t mTimingTick(struct mTiming* timing, int32_t cycles);
 int32_t mTimingCurrentTime(const struct mTiming* timing);
 int32_t mTimingNextEvent(struct mTiming* timing);
+
+CXX_GUARD_END
 
 #endif

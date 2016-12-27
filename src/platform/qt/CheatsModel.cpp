@@ -10,9 +10,7 @@
 
 #include <QSet>
 
-extern "C" {
 #include "core/cheats.h"
-}
 
 using namespace QGBA;
 

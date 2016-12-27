@@ -7,11 +7,9 @@
 
 #include <QTimer>
 
-extern "C" {
 #ifdef M_CORE_GBA
 #include "gba/gba.h"
 #endif
-}
 
 using namespace QGBA;
 

@@ -8,8 +8,12 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct Patch;
 
 bool loadPatchIPS(struct Patch* patch);
+
+CXX_GUARD_END
 
 #endif

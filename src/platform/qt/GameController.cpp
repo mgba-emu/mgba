@@ -17,7 +17,6 @@
 
 #include <ctime>
 
-extern "C" {
 #include "core/config.h"
 #include "core/directories.h"
 #include "core/serialize.h"
@@ -34,7 +33,6 @@ extern "C" {
 #include "gb/renderers/tile-cache.h"
 #endif
 #include "util/vfs.h"
-}
 
 using namespace QGBA;
 using namespace std;

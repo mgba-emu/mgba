@@ -7,6 +7,9 @@
 #define GBA_TIMER_H
 
 #include "util/common.h"
+
+CXX_GUARD_START
+
 #include "core/timing.h"
 
 DECL_BITFIELD(GBATimerFlags, uint32_t);
@@ -29,5 +32,7 @@ void GBATimerInit(struct GBA* gba);
 void GBATimerUpdateRegister(struct GBA* gba, int timer);
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t value);
 void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t value);
+
+CXX_GUARD_END
 
 #endif

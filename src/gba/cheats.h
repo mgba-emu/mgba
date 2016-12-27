@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "arm/arm.h"
 #include "core/cheats.h"
 
@@ -173,5 +175,7 @@ bool GBACheatAddProActionReplayLine(struct GBACheatSet*, const char* line);
 bool GBACheatAddVBALine(struct GBACheatSet*, const char* line);
 
 int GBACheatAddressIsReal(uint32_t address);
+
+CXX_GUARD_END
 
 #endif

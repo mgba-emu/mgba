@@ -6,6 +6,10 @@
 #ifndef GB_CLI_H
 #define GB_CLI_H
 
+#include "util/common.h"
+
+CXX_GUARD_START
+
 #include "debugger/cli-debugger.h"
 
 struct GBCLIDebugger {
@@ -18,5 +22,7 @@ struct GBCLIDebugger {
 };
 
 struct CLIDebuggerSystem* GBCLIDebuggerCreate(struct mCore*);
+
+CXX_GUARD_END
 
 #endif

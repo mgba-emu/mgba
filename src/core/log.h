@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 enum mLogLevel {
 	mLOG_FATAL = 0x01,
 	mLOG_ERROR = 0x02,
@@ -57,5 +59,7 @@ static inline void mLog(int category, enum mLogLevel level, const char* format, 
 	}
 
 mLOG_DECLARE_CATEGORY(STATUS)
+
+CXX_GUARD_END
 
 #endif

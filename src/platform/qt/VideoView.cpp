@@ -13,9 +13,7 @@
 #include <QMap>
 
 #ifdef M_CORE_GB
-extern "C" {
 #include "gb/video.h"
-}
 #endif
 
 using namespace QGBA;

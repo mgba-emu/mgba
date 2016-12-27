@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "util/vector.h"
 
 DECLARE_VECTOR(mCoreRewindPatches, struct PatchFast);
@@ -27,5 +29,7 @@ void mCoreRewindContextDeinit(struct mCoreRewindContext*);
 struct mCore;
 void mCoreRewindAppend(struct mCoreRewindContext*, struct mCore*);
 bool mCoreRewindRestore(struct mCoreRewindContext*, struct mCore*);
+
+CXX_GUARD_END
 
 #endif

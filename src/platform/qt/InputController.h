@@ -14,13 +14,11 @@
 
 class QTimer;
 
-extern "C" {
 #include "gba/input.h"
 
 #ifdef BUILD_SDL
 #include "platform/sdl/sdl-events.h"
 #endif
-}
 
 struct mRotationSource;
 struct mRumble;

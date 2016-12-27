@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct GUIInputKeys {
 	const char* name;
 	uint32_t id;
@@ -19,5 +21,7 @@ struct GUIParams;
 struct mInputMap;
 
 void mGUIRemapKeys(struct GUIParams*, struct mInputMap*, const struct GUIInputKeys*);
+
+CXX_GUARD_END
 
 #endif

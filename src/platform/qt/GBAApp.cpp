@@ -16,12 +16,10 @@
 #include <QIcon>
 #include <QTranslator>
 
-extern "C" {
 #include "core/version.h"
 #include "feature/commandline.h"
 #include "util/nointro.h"
 #include "util/socket.h"
-}
 
 using namespace QGBA;
 

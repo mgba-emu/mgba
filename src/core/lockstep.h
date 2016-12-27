@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 enum mLockstepPhase {
 	TRANSFER_IDLE = 0,
 	TRANSFER_STARTING,
@@ -33,5 +35,7 @@ struct mLockstep {
 };
 
 void mLockstepInit(struct mLockstep*);
+
+CXX_GUARD_END
 
 #endif

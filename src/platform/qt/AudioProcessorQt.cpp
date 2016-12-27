@@ -10,9 +10,7 @@
 
 #include <QAudioOutput>
 
-extern "C" {
 #include "core/thread.h"
-}
 
 using namespace QGBA;
 

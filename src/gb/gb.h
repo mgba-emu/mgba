@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/log.h"
 #include "core/timing.h"
 
@@ -140,5 +142,7 @@ void GBGetGameTitle(const struct GB* gba, char* out);
 void GBGetGameCode(const struct GB* gba, char* out);
 
 void GBFrameEnded(struct GB* gb);
+
+CXX_GUARD_END
 
 #endif

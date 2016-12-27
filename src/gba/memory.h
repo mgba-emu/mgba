@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "arm/arm.h"
 #include "core/timing.h"
 
@@ -179,5 +181,7 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters);
 struct GBASerializedState;
 void GBAMemorySerialize(const struct GBAMemory* memory, struct GBASerializedState* state);
 void GBAMemoryDeserialize(struct GBAMemory* memory, const struct GBASerializedState* state);
+
+CXX_GUARD_END
 
 #endif

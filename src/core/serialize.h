@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 enum mStateExtdataTag {
 	EXTDATA_NONE = 0,
 	EXTDATA_SCREENSHOT = 1,
@@ -43,5 +45,7 @@ struct mCore;
 bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags);
 bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags);
 void* mCoreExtractState(struct mCore* core, struct VFile* vf, struct mStateExtdata* extdata);
+
+CXX_GUARD_END
 
 #endif

@@ -13,9 +13,7 @@
 #include <QVector>
 #include <memory>
 
-extern "C" {
 #include "util/text-codec.h"
-}
 
 struct mCore;
 

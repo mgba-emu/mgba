@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "debugger.h"
 
 struct CLIDebugger;
@@ -85,5 +87,7 @@ void CLIDebuggerAttachSystem(struct CLIDebugger*, struct CLIDebuggerSystem*);
 void CLIDebuggerAttachBackend(struct CLIDebugger*, struct CLIDebuggerBackend*);
 
 bool CLIDebuggerTabComplete(struct CLIDebugger*, const char* token, bool initial, size_t len);
+
+CXX_GUARD_END
 
 #endif

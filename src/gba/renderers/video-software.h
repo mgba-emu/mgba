@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/core.h"
 #include "gba/video.h"
 
@@ -161,5 +163,7 @@ struct GBAVideoSoftwareRenderer {
 };
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer);
+
+CXX_GUARD_START
 
 #endif

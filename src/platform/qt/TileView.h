@@ -11,9 +11,7 @@
 
 #include "ui_TileView.h"
 
-extern "C" {
 #include "core/tile-cache.h"
-}
 
 namespace QGBA {
 

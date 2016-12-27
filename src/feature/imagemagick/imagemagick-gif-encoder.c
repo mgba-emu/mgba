@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "imagemagick-gif-encoder.h"
 
+#include "gba/gba.h"
 #include "gba/video.h"
 #include "util/string.h"
 

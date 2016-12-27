@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/log.h"
 #include "core/rewind.h"
 #include "core/sync.h"
@@ -96,5 +98,7 @@ void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool);
 
 struct mCoreThread* mCoreThreadGet(void);
 struct mLogger* mCoreThreadLogger(void);
+
+CXX_GUARD_END
 
 #endif

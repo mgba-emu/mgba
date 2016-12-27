@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/cheats.h"
 #include "util/vector.h"
 
@@ -35,5 +37,7 @@ struct GBCheatSet {
 };
 
 struct mCheatDevice* GBCheatDeviceCreate(void);
+
+CXX_GUARD_END
 
 #endif

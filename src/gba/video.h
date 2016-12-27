@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/core.h"
 #include "core/timing.h"
 #include "gba/memory.h"
@@ -198,5 +200,7 @@ void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* 
 void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state);
 
 extern const int GBAVideoObjSizes[16][2];
+
+CXX_GUARD_END
 
 #endif

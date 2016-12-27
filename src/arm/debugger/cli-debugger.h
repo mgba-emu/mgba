@@ -8,7 +8,11 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct CLIDebuggerSystem;
 void ARMCLIDebuggerCreate(struct CLIDebuggerSystem* debugger);
+
+CXX_GUARD_END
 
 #endif

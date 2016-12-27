@@ -8,10 +8,14 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct GBAVideo;
 struct mTileCache;
 
 void GBAVideoTileCacheInit(struct mTileCache* cache);
 void GBAVideoTileCacheAssociate(struct mTileCache* cache, struct GBAVideo* video);
+
+CXX_GUARD_END
 
 #endif

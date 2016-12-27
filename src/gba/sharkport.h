@@ -8,10 +8,14 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct GBA;
 struct VFile;
 
 bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChecksum);
 bool GBASavedataExportSharkPort(const struct GBA* gba, struct VFile* vf);
+
+CXX_GUARD_END
 
 #endif

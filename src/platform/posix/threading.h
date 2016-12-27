@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include <pthread.h>
 #include <sys/time.h>
 #if defined(__FreeBSD__) || defined(__OpenBSD__)
@@ -93,5 +95,7 @@ static inline int ThreadSetName(const char* name) {
 	return 0;
 #endif
 }
+
+CXX_GUARD_END
 
 #endif

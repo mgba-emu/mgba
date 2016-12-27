@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/lockstep.h"
 #include "core/timing.h"
 #include "gba/sio.h"
@@ -45,5 +47,7 @@ void GBASIOLockstepNodeCreate(struct GBASIOLockstepNode*);
 
 bool GBASIOLockstepAttachNode(struct GBASIOLockstep*, struct GBASIOLockstepNode*);
 void GBASIOLockstepDetachNode(struct GBASIOLockstep*, struct GBASIOLockstepNode*);
+
+CXX_GUARD_END
 
 #endif

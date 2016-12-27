@@ -6,7 +6,11 @@
 #ifndef IMAGEMAGICK_GIF_ENCODER
 #define IMAGEMAGICK_GIF_ENCODER
 
-#include "gba/gba.h"
+#include "util/common.h"
+
+CXX_GUARD_START
+
+#include "core/interface.h"
 
 #define MAGICKCORE_HDRI_ENABLE 0
 #define MAGICKCORE_QUANTUM_DEPTH 8
@@ -32,5 +36,7 @@ void ImageMagickGIFEncoderSetParams(struct ImageMagickGIFEncoder* encoder, int f
 bool ImageMagickGIFEncoderOpen(struct ImageMagickGIFEncoder*, const char* outfile);
 bool ImageMagickGIFEncoderClose(struct ImageMagickGIFEncoder*);
 bool ImageMagickGIFEncoderIsOpen(struct ImageMagickGIFEncoder*);
+
+CXX_GUARD_END
 
 #endif

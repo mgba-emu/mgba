@@ -6,6 +6,10 @@
 #ifndef ARM_DECODER_H
 #define ARM_DECODER_H
 
+#include "util/common.h"
+
+CXX_GUARD_START
+
 #include "arm.h"
 
 // Bit 0: a register is involved with this operand
@@ -213,5 +217,7 @@ void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info);
 bool ARMDecodeThumbCombine(struct ARMInstructionInfo* info1, struct ARMInstructionInfo* info2,
                            struct ARMInstructionInfo* out);
 int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, int blen);
+
+CXX_GUARD_END
 
 #endif

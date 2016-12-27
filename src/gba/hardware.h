@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "arm/macros.h"
 #include "core/log.h"
 #include "core/timing.h"
@@ -143,5 +145,7 @@ void GBARTCGenericSourceInit(struct GBARTCGenericSource* rtc, struct GBA* gba);
 struct GBASerializedState;
 void GBAHardwareSerialize(const struct GBACartridgeHardware* gpio, struct GBASerializedState* state);
 void GBAHardwareDeserialize(struct GBACartridgeHardware* gpio, const struct GBASerializedState* state);
+
+CXX_GUARD_END
 
 #endif

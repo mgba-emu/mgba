@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct RingFIFO {
 	void* data;
 	size_t capacity;
@@ -21,5 +23,7 @@ size_t RingFIFOCapacity(const struct RingFIFO* buffer);
 void RingFIFOClear(struct RingFIFO* buffer);
 size_t RingFIFOWrite(struct RingFIFO* buffer, const void* value, size_t length);
 size_t RingFIFORead(struct RingFIFO* buffer, void* output, size_t length);
+
+CXX_GUARD_END
 
 #endif

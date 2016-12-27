@@ -14,13 +14,11 @@
 #include <QKeyEvent>
 #include <QPainter>
 
-extern "C" {
 #include "core/serialize.h"
 #ifdef M_CORE_GBA
 #include "gba/serialize.h"
 #endif
 #include "util/memory.h"
-}
 
 using namespace QGBA;
 

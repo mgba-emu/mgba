@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/cpu.h"
 #include "core/log.h"
 #include "util/vector.h"
@@ -99,5 +101,7 @@ bool mCheatParseFile(struct mCheatDevice*, struct VFile*);
 bool mCheatSaveFile(struct mCheatDevice*, struct VFile*);
 
 void mCheatRefresh(struct mCheatDevice*, struct mCheatSet*);
+
+CXX_GUARD_END
 
 #endif

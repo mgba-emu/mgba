@@ -8,13 +8,11 @@
 #include "DisplayGL.h"
 #include "DisplayQt.h"
 
-extern "C" {
 #ifdef M_CORE_GB
 #include "gb/video.h"
 #elif defined(M_CORE_GBA)
 #include "gba/video.h"
 #endif
-}
 
 using namespace QGBA;
 

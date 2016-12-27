@@ -8,11 +8,15 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #define ARM_PREFETCH_CYCLES (1 + cpu->memory.activeSeqCycles32)
 
 struct ARMCore;
 
 typedef void (*ARMInstruction)(struct ARMCore*, uint32_t opcode);
 extern const ARMInstruction _armTable[0x1000];
+
+CXX_GUARD_END
 
 #endif

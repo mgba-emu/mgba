@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/log.h"
 
 #include <SDL.h>
@@ -35,5 +37,7 @@ bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread*);
 void mSDLDeinitAudio(struct mSDLAudio* context);
 void mSDLPauseAudio(struct mSDLAudio* context);
 void mSDLResumeAudio(struct mSDLAudio* context);
+
+CXX_GUARD_END
 
 #endif

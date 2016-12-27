@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/config.h"
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 #include "core/directories.h"
@@ -158,5 +160,7 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags);
 void mCoreInitConfig(struct mCore* core, const char* port);
 void mCoreLoadConfig(struct mCore* core);
 void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config);
+
+CXX_GUARD_END
 
 #endif

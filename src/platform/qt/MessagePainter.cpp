@@ -9,9 +9,7 @@
 
 #include <QDebug>
 
-extern "C" {
 #include "gba/video.h"
-}
 
 using namespace QGBA;
 

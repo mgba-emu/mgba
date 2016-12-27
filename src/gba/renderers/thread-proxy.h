@@ -6,6 +6,10 @@
 #ifndef VIDEO_THREAD_PROXY_H
 #define VIDEO_THREAD_PROXY_H
 
+#include "util/common.h"
+
+CXX_GUARD_START
+
 #include "gba/video.h"
 #include "util/threading.h"
 #include "util/ring-fifo.h"
@@ -37,5 +41,7 @@ struct GBAVideoThreadProxyRenderer {
 };
 
 void GBAVideoThreadProxyRendererCreate(struct GBAVideoThreadProxyRenderer* renderer, struct GBAVideoRenderer* backend);
+
+CXX_GUARD_END
 
 #endif

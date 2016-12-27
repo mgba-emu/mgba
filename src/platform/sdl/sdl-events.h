@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/interface.h"
 #include "core/log.h"
 #include "util/circle-buffer.h"
@@ -109,5 +111,7 @@ void mSDLSuspendScreensaver(struct mSDLEvents*);
 void mSDLResumeScreensaver(struct mSDLEvents*);
 void mSDLSetScreensaverSuspendable(struct mSDLEvents*, bool suspendable);
 #endif
+
+CXX_GUARD_END
 
 #endif

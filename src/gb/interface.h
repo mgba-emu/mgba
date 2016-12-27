@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 enum GBModel {
 	GB_MODEL_AUTODETECT = 0xFF,
 	GB_MODEL_DMG = 0x00,
@@ -31,5 +33,7 @@ enum GBMemoryBankControllerType {
 	GB_MBC3_RTC = 0x103,
 	GB_MBC5_RUMBLE = 0x105
 };
+
+CXX_GUARD_END
 
 #endif

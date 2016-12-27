@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct TableList;
 
 struct Table {
@@ -45,5 +47,7 @@ void HashTableClear(struct Table*);
 
 void HashTableEnumerate(const struct Table*, void (handler(const char* key, void* value, void* user)), void* user);
 size_t HashTableSize(const struct Table*);
+
+CXX_GUARD_END
 
 #endif

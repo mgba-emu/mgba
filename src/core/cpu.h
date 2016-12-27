@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 enum mCPUComponentType {
 	CPU_COMPONENT_DEBUGGER,
 	CPU_COMPONENT_CHEAT_DEVICE,
@@ -19,5 +21,7 @@ struct mCPUComponent {
 	void (*init)(void* cpu, struct mCPUComponent* component);
 	void (*deinit)(struct mCPUComponent* component);
 };
+
+CXX_GUARD_END
 
 #endif

@@ -7,10 +7,8 @@
 
 #include "LogController.h"
 
-extern "C" {
 #include "core/thread.h"
 #include "gba/audio.h"
-}
 
 using namespace QGBA;
 

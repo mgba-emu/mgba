@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "gba/savedata.h"
 
 #define IDLE_LOOP_NONE 0xFFFFFFFF
@@ -27,5 +29,7 @@ void GBAOverrideSave(struct Configuration*, const struct GBACartridgeOverride* o
 struct GBA;
 void GBAOverrideApply(struct GBA*, const struct GBACartridgeOverride*);
 void GBAOverrideApplyDefaults(struct GBA*);
+
+CXX_GUARD_END
 
 #endif

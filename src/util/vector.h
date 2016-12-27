@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #define DECLARE_VECTOR(NAME, TYPE) \
 	struct NAME { \
 		TYPE* vector; \
@@ -83,5 +85,7 @@
 	size_t NAME ## Index(const struct NAME* vector, const TYPE* member) { \
 		return member - (const TYPE*) vector->vector; \
 	} \
+
+CXX_GUARD_END
 
 #endif

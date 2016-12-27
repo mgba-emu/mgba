@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/timing.h"
 #include "third-party/blip_buf/blip_buf.h"
 
@@ -239,5 +241,7 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 struct GBSerializedState;
 void GBAudioSerialize(const struct GBAudio* audio, struct GBSerializedState* state);
 void GBAudioDeserialize(struct GBAudio* audio, const struct GBSerializedState* state);
+
+CXX_GUARD_END
 
 #endif

@@ -8,6 +8,10 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 uint32_t hash32(const void* key, int len, uint32_t seed);
+
+CXX_GUARD_END
 
 #endif

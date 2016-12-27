@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/config.h"
 #include "feature/gui/remap.h"
 #include "gba/hardware.h"
@@ -74,5 +76,7 @@ void mGUIInit(struct mGUIRunner*, const char* port);
 void mGUIDeinit(struct mGUIRunner*);
 void mGUIRun(struct mGUIRunner*, const char* path);
 void mGUIRunloop(struct mGUIRunner*);
+
+CXX_GUARD_END
 
 #endif

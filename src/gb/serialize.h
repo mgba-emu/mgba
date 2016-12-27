@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/core.h"
 #include "gb/gb.h"
 
@@ -369,5 +371,7 @@ struct GBSerializedState {
 
 bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state);
 void GBSerialize(struct GB* gb, struct GBSerializedState* state);
+
+CXX_GUARD_END
 
 #endif

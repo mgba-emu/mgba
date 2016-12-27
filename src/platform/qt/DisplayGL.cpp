@@ -8,7 +8,6 @@
 #include <QApplication>
 #include <QResizeEvent>
 
-extern "C" {
 #include "core/core.h"
 #include "core/thread.h"
 #ifdef BUILD_GL
@@ -20,7 +19,6 @@ extern "C" {
 #include <epoxy/wgl.h>
 #endif
 #endif
-}
 
 using namespace QGBA;
 

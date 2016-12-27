@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #ifdef _WIN32
 #include <windows.h>
 typedef HWND WHandle;
@@ -43,5 +45,7 @@ struct VideoShader {
 	void* passes;
 	size_t nPasses;
 };
+
+CXX_GUARD_END
 
 #endif

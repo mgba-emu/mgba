@@ -13,10 +13,8 @@
 #include "InputController.h"
 #include "ShortcutView.h"
 
-extern "C" {
 #include "core/serialize.h"
 #include "gba/gba.h"
-}
 
 using namespace QGBA;
 

@@ -6,10 +6,16 @@
 #ifndef GUI_FILE_CHOOSER_H
 #define GUI_FILE_CHOOSER_H
 
+#include "util/common.h"
+
+CXX_GUARD_START
+
 #include "util/gui.h"
 
 struct VFile;
 
 bool GUISelectFile(struct GUIParams*, char* outPath, size_t outLen, bool (*filter)(struct VFile*));
+
+CXX_GUARD_END
 
 #endif

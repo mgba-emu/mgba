@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/log.h"
 #include "gb/audio.h"
 #include "util/circle-buffer.h"
@@ -115,5 +117,7 @@ void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* 
 void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState* state);
 
 float GBAAudioCalculateRatio(float inputSampleRate, float desiredFPS, float desiredSampleRatio);
+
+CXX_GUARD_END
 
 #endif

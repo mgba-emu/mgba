@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/log.h"
 #include "core/timing.h"
 
@@ -52,5 +54,7 @@ void GBSIODeinit(struct GBSIO* sio);
 void GBSIOSetDriver(struct GBSIO* sio, struct GBSIODriver* driver);
 void GBSIOWriteSC(struct GBSIO* sio, uint8_t sc);
 void GBSIOWriteSB(struct GBSIO* sio, uint8_t sb);
+
+CXX_GUARD_END
 
 #endif

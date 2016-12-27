@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct GUIFont;
 struct GUIFont* GUIFontCreate(void);
 void GUIFontDestroy(struct GUIFont*);
@@ -83,5 +85,7 @@ void GUIFontPrint(const struct GUIFont*, int x, int y, enum GUIAlignment, uint32
 void GUIFontDrawGlyph(const struct GUIFont*, int x, int y, uint32_t color, uint32_t glyph);
 void GUIFontDrawIcon(const struct GUIFont*, int x, int y, enum GUIAlignment, enum GUIOrientation, uint32_t color, enum GUIIcon);
 void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h, uint32_t color, enum GUIIcon icon);
+
+CXX_GUARD_END
 
 #endif

@@ -6,9 +6,7 @@
 #ifndef QGBA_DISPLAY
 #define QGBA_DISPLAY
 
-extern "C" {
 #include "util/common.h"
-}
 
 #include <QWidget>
 

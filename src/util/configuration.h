@@ -6,6 +6,10 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#include "util/common.h"
+
+CXX_GUARD_START
+
 #include "util/table.h"
 
 struct VFile;
@@ -34,5 +38,7 @@ bool ConfigurationWrite(const struct Configuration*, const char* path);
 bool ConfigurationWriteSection(const struct Configuration*, const char* path, const char* section);
 
 void ConfigurationEnumerateSections(const struct Configuration* configuration, void (*handler)(const char* sectionName, void* user), void* user);
+
+CXX_GUARD_END
 
 #endif

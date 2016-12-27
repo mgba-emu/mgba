@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct mCore;
 
 #ifdef COLOR_16_BIT
@@ -83,5 +85,7 @@ void mRTCGenericSourceInit(struct mRTCGenericSource* rtc, struct mCore* core);
 struct mRumble {
 	void (*setRumble)(struct mRumble*, int enable);
 };
+
+CXX_GUARD_END
 
 #endif

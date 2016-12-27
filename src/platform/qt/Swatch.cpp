@@ -8,9 +8,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 
-extern "C" {
 #include "core/interface.h"
-}
 
 using namespace QGBA;
 

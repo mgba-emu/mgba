@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/core.h"
 #include "util/vector.h"
 
@@ -33,5 +35,7 @@ struct VDir;
 struct VFile;
 void mLibraryLoadDirectory(struct mLibrary* library, struct VDir* dir);
 void mLibraryAddEntry(struct mLibrary* library, const char* filename, struct VFile* vf);
+
+CXX_GUARD_END
 
 #endif

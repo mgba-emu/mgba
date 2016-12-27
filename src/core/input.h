@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct Configuration;
 
 struct mInputPlatformInfo {
@@ -59,5 +61,7 @@ const char* mInputGetCustomValue(const struct Configuration* config, const char*
                                  const char* profile);
 void mInputSetCustomValue(struct Configuration* config, const char* platformName, uint32_t type, const char* key, const char* value,
                           const char* profile);
+
+CXX_GUARD_END
 
 #endif

@@ -8,7 +8,6 @@
 
 #include "GameController.h"
 
-extern "C" {
 #include "core/core.h"
 #ifdef M_CORE_GBA
 #include "gba/memory.h"
@@ -16,7 +15,6 @@ extern "C" {
 #ifdef M_CORE_GB
 #include "gb/memory.h"
 #endif
-}
 
 using namespace QGBA;
 

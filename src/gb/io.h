@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "core/log.h"
 
 mLOG_DECLARE_CATEGORY(GB_IO);
@@ -117,5 +119,7 @@ uint8_t GBIORead(struct GB* gb, unsigned address);
 struct GBSerializedState;
 void GBIOSerialize(const struct GB* gb, struct GBSerializedState* state);
 void GBIODeserialize(struct GB* gb, const struct GBSerializedState* state);
+
+CXX_GUARD_END
 
 #endif

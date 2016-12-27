@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 #include "gba/gba.h"
 
 enum GBAIORegisters {
@@ -172,5 +174,7 @@ bool GBAIOIsReadConstant(uint32_t address);
 struct GBASerializedState;
 void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state);
 void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state);
+
+CXX_GUARD_END
 
 #endif

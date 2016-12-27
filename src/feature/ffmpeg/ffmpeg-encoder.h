@@ -6,6 +6,10 @@
 #ifndef FFMPEG_ENCODER
 #define FFMPEG_ENCODER
 
+#include "util/common.h"
+
+CXX_GUARD_START
+
 #include "gba/gba.h"
 
 #include <libavformat/avformat.h>
@@ -82,5 +86,7 @@ bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder*);
 bool FFmpegEncoderOpen(struct FFmpegEncoder*, const char* outfile);
 void FFmpegEncoderClose(struct FFmpegEncoder*);
 bool FFmpegEncoderIsOpen(struct FFmpegEncoder*);
+
+CXX_GUARD_END
 
 #endif

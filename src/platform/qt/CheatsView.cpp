@@ -11,7 +11,6 @@
 #include <QClipboard>
 #include <QPushButton>
 
-extern "C" {
 #include "core/cheats.h"
 #ifdef M_CORE_GBA
 #include "gba/cheats.h"
@@ -19,7 +18,6 @@ extern "C" {
 #ifdef M_CORE_GB
 #include "gb/cheats.h"
 #endif
-}
 
 using namespace QGBA;
 

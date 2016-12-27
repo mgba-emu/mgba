@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+CXX_GUARD_START
+
 struct GBA;
 void GBADMAInit(struct GBA* gba);
 void GBADMAReset(struct GBA* gba);
@@ -22,5 +24,7 @@ void GBADMASchedule(struct GBA* gba, int number, struct GBADMA* info);
 void GBADMARunHblank(struct GBA* gba, int32_t cycles);
 void GBADMARunVblank(struct GBA* gba, int32_t cycles);
 void GBADMAUpdate(struct GBA* gba);
+
+CXX_GUARD_END
 
 #endif

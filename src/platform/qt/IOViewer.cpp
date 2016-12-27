@@ -12,9 +12,7 @@
 #include <QGridLayout>
 #include <QSpinBox>
 
-extern "C" {
 #include "gba/io.h"
-}
 
 using namespace QGBA;
 
