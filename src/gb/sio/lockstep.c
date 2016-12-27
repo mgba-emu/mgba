@@ -116,17 +116,17 @@ static int32_t _masterUpdate(struct GBSIOLockstepNode* node) {
 		node->transferFinished = false;
 		needsToWait = true;
 		ATOMIC_STORE(node->p->d.transferActive, TRANSFER_STARTED);
-		node->nextEvent += 128;
+		node->nextEvent += 4;
 		break;
 	case TRANSFER_STARTED:
 		// All the other GBs have caught up and are sleeping, we can all continue now
-		node->nextEvent += 128;
+		node->nextEvent += 4;
 		ATOMIC_STORE(node->p->d.transferActive, TRANSFER_FINISHING);
 		break;
 	case TRANSFER_FINISHING:
 		// Finish the transfer
 		// We need to make sure the other GBs catch up so they don't get behind
-		node->nextEvent += LOCKSTEP_INCREMENT - 256; // Split the cycles to avoid waiting too long
+		node->nextEvent += node->d.p->period - 8; // Split the cycles to avoid waiting too long
 #ifndef NDEBUG
 		ATOMIC_ADD(node->p->d.transferId, 1);
 #endif
