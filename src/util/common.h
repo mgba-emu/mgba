@@ -56,7 +56,9 @@ typedef intptr_t ssize_t;
 #define SSIZE_MAX ((ssize_t) (SIZE_MAX >> 1))
 #endif
 
+#ifndef UNUSED
 #define UNUSED(V) (void)(V)
+#endif
 
 #ifndef M_PI
 #define M_PI 3.141592654f
