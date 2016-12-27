@@ -6,6 +6,7 @@
 #include "gui-config.h"
 
 #include "core/config.h"
+#include "core/core.h"
 #include "feature/gui/gui-runner.h"
 #include "feature/gui/remap.h"
 #include "gba/gba.h"
