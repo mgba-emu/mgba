@@ -17,6 +17,7 @@ struct GBSIOLockstep {
 	struct GBSIOLockstepNode* players[MAX_GBS];
 
 	uint8_t pendingSB[MAX_GBS];
+	bool masterClaimed;
 };
 
 struct GBSIOLockstepNode {

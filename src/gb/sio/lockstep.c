@@ -22,6 +22,7 @@ void GBSIOLockstepInit(struct GBSIOLockstep* lockstep) {
 	lockstep->players[1] = NULL;
 	lockstep->pendingSB[0] = 0xFF;
 	lockstep->pendingSB[1] = 0xFF;
+	lockstep->masterClaimed = false;
 }
 
 void GBSIOLockstepNodeCreate(struct GBSIOLockstepNode* node) {
@@ -135,6 +136,7 @@ static int32_t _masterUpdate(struct GBSIOLockstepNode* node) {
 	case TRANSFER_FINISHED:
 		// Everything's settled. We're done.
 		_finishTransfer(node);
+		ATOMIC_STORE(node->p->masterClaimed, false);
 		node->nextEvent += LOCKSTEP_INCREMENT;
 		ATOMIC_STORE(node->p->d.transferActive, TRANSFER_IDLE);
 		break;
@@ -226,11 +228,15 @@ static void GBSIOLockstepNodeWriteSB(struct GBSIODriver* driver, uint8_t value) 
 
 static uint8_t GBSIOLockstepNodeWriteSC(struct GBSIODriver* driver, uint8_t value) {
 	struct GBSIOLockstepNode* node = (struct GBSIOLockstepNode*) driver;
-	if (!node->id && (value & 0x81) == 0x81) {
-		node->p->d.transferActive = TRANSFER_STARTING;
-		node->p->d.transferCycles = GBSIOCyclesPerTransfer[(value >> 1) & 1];
-		mTimingDeschedule(&driver->p->p->timing, &node->event);
-		mTimingSchedule(&driver->p->p->timing, &node->event, 0);
+	if ((value & 0x81) == 0x81 && node->p->d.attached > 1) {
+		bool claimed = false;
+		if (ATOMIC_CMPXCHG(node->p->masterClaimed, claimed, true)) {
+			node->p->d.transferActive = TRANSFER_STARTING;
+			node->p->d.transferCycles = GBSIOCyclesPerTransfer[(value >> 1) & 1];
+			mTimingDeschedule(&driver->p->p->timing, &driver->p->event);
+			mTimingDeschedule(&driver->p->p->timing, &node->event);
+			mTimingSchedule(&driver->p->p->timing, &node->event, 0);
+		}
 	}
 	return value;
 }
