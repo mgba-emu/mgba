@@ -806,6 +806,11 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		mLOG(GBA_IO, GAME_ERROR, "Read from write-only I/O register: %03X", address);
 		return 0;
 
+	case REG_JOY_RECV_LO:
+	case REG_JOY_RECV_HI:
+		gba->memory.io[REG_JOYSTAT >> 1] &= ~JOYSTAT_RECV_BIT;
+		break;
+
 	case REG_SOUNDBIAS:
 	case REG_KEYCNT:
 	case REG_POSTFLG:
@@ -862,8 +867,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_SIOMULTI3:
 	case REG_SIOMLT_SEND:
 	case REG_JOYCNT:
-	case REG_JOY_RECV_LO:
-	case REG_JOY_RECV_HI:
 	case REG_JOY_TRANS_LO:
 	case REG_JOY_TRANS_HI:
 	case REG_JOYSTAT:

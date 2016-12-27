@@ -70,6 +70,7 @@ Misc:
  - GBA DMA: Refactor DMA out of memory.c
  - GBA DMA: Move DMAs to using absolute timing
  - All: Add C++ header guards
+ - GBA I/O: Clear JOYSTAT RECV flag when reading JOY_RECV registers
 
 0.5.1: (2016-10-05)
 Bugfixes:
