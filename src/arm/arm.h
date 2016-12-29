@@ -75,7 +75,7 @@ union PSR {
 		unsigned z : 1;
 		unsigned c : 1;
 		unsigned v : 1;
-		unsigned : 20;
+		unsigned unused : 20;
 		unsigned i : 1;
 		unsigned f : 1;
 		unsigned t : 1;
@@ -85,7 +85,7 @@ union PSR {
 		unsigned t : 1;
 		unsigned f : 1;
 		unsigned i : 1;
-		unsigned : 20;
+		unsigned unused : 20;
 		unsigned v : 1;
 		unsigned c : 1;
 		unsigned z : 1;

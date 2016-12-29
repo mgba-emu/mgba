@@ -32,19 +32,7 @@ int mLogGenerateCategory(const char*);
 const char* mLogCategoryName(int);
 
 ATTRIBUTE_FORMAT(printf, 3, 4)
-static inline void mLog(int category, enum mLogLevel level, const char* format, ...) {
-	struct mLogger* context = mLogGetContext();
-	va_list args;
-	va_start(args, format);
-	if (context) {
-		context->log(context, category, level, format, args);
-	} else {
-		printf("%s: ", mLogCategoryName(category));
-		vprintf(format, args);
-		printf("\n");
-	}
-	va_end(args);
-}
+void mLog(int category, enum mLogLevel level, const char* format, ...);
 
 #define mLOG(CATEGORY, LEVEL, ...) mLog(_mLOG_CAT_ ## CATEGORY (), mLOG_ ## LEVEL, __VA_ARGS__)
 

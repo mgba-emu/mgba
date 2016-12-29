@@ -118,7 +118,7 @@ struct GBAMemory {
 	uint32_t* wram;
 	uint32_t* iwram;
 	uint32_t* rom;
-	uint16_t io[SIZE_IO >> 1];
+	uint16_t io[512];
 
 	struct GBACartridgeHardware hw;
 	struct GBASavedata savedata;

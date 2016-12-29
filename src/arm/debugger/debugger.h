@@ -12,6 +12,8 @@ CXX_GUARD_START
 
 #include "debugger/debugger.h"
 
+#include "arm/arm.h"
+
 struct ARMDebugBreakpoint {
 	uint32_t address;
 	bool isSw;

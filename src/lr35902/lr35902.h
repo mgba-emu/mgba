@@ -23,9 +23,9 @@ union FlagRegister {
 		unsigned n : 1;
 		unsigned h : 1;
 		unsigned c : 1;
-		unsigned : 4;
+		unsigned unused : 4;
 #else
-		unsigned : 4;
+		unsigned unused : 4;
 		unsigned c : 1;
 		unsigned h : 1;
 		unsigned n : 1;
@@ -126,36 +126,6 @@ struct LR35902Core {
 	size_t numComponents;
 	struct mCPUComponent** components;
 };
-
-static inline uint16_t LR35902ReadHL(struct LR35902Core* cpu) {
-	uint16_t hl;
-	LOAD_16LE(hl, 0, &cpu->hl);
-	return hl;
-}
-
-static inline void LR35902WriteHL(struct LR35902Core* cpu, uint16_t hl) {
-	STORE_16LE(hl, 0, &cpu->hl);
-}
-
-static inline uint16_t LR35902ReadBC(struct LR35902Core* cpu) {
-	uint16_t bc;
-	LOAD_16LE(bc, 0, &cpu->bc);
-	return bc;
-}
-
-static inline void LR35902WriteBC(struct LR35902Core* cpu, uint16_t bc) {
-	STORE_16LE(bc, 0, &cpu->bc);
-}
-
-static inline uint16_t LR35902ReadDE(struct LR35902Core* cpu) {
-	uint16_t de;
-	LOAD_16LE(de, 0, &cpu->de);
-	return de;
-}
-
-static inline void LR35902WriteDE(struct LR35902Core* cpu, uint16_t de) {
-	STORE_16LE(de, 0, &cpu->de);
-}
 
 void LR35902Init(struct LR35902Core* cpu);
 void LR35902Deinit(struct LR35902Core* cpu);

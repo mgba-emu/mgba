@@ -122,7 +122,6 @@ void GBHalt(struct LR35902Core* cpu);
 struct VFile;
 bool GBLoadROM(struct GB* gb, struct VFile* vf);
 bool GBLoadSave(struct GB* gb, struct VFile* vf);
-void GBYankROM(struct GB* gb);
 void GBUnloadROM(struct GB* gb);
 void GBSynthesizeROM(struct VFile* vf);
 

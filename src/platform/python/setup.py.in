@@ -1,0 +1,24 @@
+from setuptools import setup
+import re
+
+classifiers = [
+    "Programming Language :: C",
+    "Programming Language :: Python :: 2",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+    "Topic :: Games/Entertainment",
+    "Topic :: System :: Emulators"
+]
+
+setup(name="${BINARY_NAME}",
+      version=re.sub("/", "-", "${VERSION_STRING}"),
+      author="Jeffrey Pfau",
+      author_email="jeffrey@endrift.com",
+      url="http://github.com/mgba-emu/mgba/",
+      packages=["mgba"],
+      setup_requires=['cffi>=1.6'],
+      install_requires=['cffi>=1.6', 'cached-property'],
+      cffi_modules=["_builder.py:ffi"],
+      license="MPL 2.0",
+      classifiers=classifiers
+      )

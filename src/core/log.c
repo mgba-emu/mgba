@@ -44,4 +44,18 @@ const char* mLogCategoryName(int category) {
 	return 0;
 }
 
+void mLog(int category, enum mLogLevel level, const char* format, ...) {
+	struct mLogger* context = mLogGetContext();
+	va_list args;
+	va_start(args, format);
+	if (context) {
+		context->log(context, category, level, format, args);
+	} else {
+		printf("%s: ", mLogCategoryName(category));
+		vprintf(format, args);
+		printf("\n");
+	}
+	va_end(args);
+}
+
 mLOG_DEFINE_CATEGORY(STATUS, "Status")

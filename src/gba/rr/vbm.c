@@ -245,7 +245,7 @@ bool GBAVBMSetStream(struct GBAVBMContext* vbm, struct VFile* vf) {
 	uint8_t flags;
 	vf->read(vf, &flags, sizeof(flags));
 	if (flags & 2) {
-#if USE_ZLIB
+#ifdef USE_ZLIB
 		vbm->d.initFrom = INIT_FROM_SAVEGAME;
 #else
 		// zlib is needed to parse the savegame

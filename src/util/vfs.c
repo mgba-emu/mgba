@@ -104,7 +104,7 @@ struct VDir* VDirOpenArchive(const char* path) {
 		dir = VDirOpenZip(path, 0);
 	}
 #endif
-#if USE_LZMA
+#ifdef USE_LZMA
 	if (!dir) {
 		dir = VDirOpen7z(path, 0);
 	}

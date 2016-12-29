@@ -10,7 +10,7 @@
 
 CXX_GUARD_START
 
-#include "arm/arm.h"
+#include "core/cpu.h"
 #include "core/log.h"
 #include "util/vector.h"
 
@@ -37,7 +37,7 @@ enum mDebuggerState {
 enum mWatchpointType {
 	WATCHPOINT_WRITE = 1,
 	WATCHPOINT_READ = 2,
-	WATCHPOINT_RW = WATCHPOINT_WRITE | WATCHPOINT_READ
+	WATCHPOINT_RW = 3
 };
 
 enum mBreakpointType {
