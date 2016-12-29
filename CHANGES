@@ -44,6 +44,7 @@ Bugfixes:
  - GB Memory: Fix HDMA5 value after DMA completes
  - GB Video: Hblank IRQs should mask LYC=LY IRQs
  - GB Audio: Reset envelope timer when reseting sound channel
+ - Libretro: Fix disabling BIOS
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers

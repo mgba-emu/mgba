@@ -413,7 +413,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 		gba->luminanceSource = &lux;
 
 		const char* sysDir = 0;
-		if (environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
+		if (core->opts.useBios && environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
 			char biosPath[PATH_MAX];
 			snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, "gba_bios.bin");
 			struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
