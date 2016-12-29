@@ -459,7 +459,6 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
 	int i;
 	int oamMax = 0;
-	int objwinMax = 0;
 	for (i = 0; i < 128; ++i) {
 		struct GBAObj obj;
 		LOAD_16(obj.a, 0, &renderer->d.oam->obj[i].a);
@@ -471,22 +470,14 @@ static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
 				height <<= GBAObjAttributesAGetDoubleSize(obj.a);
 			}
 			if (GBAObjAttributesAGetY(obj.a) < VIDEO_VERTICAL_PIXELS || GBAObjAttributesAGetY(obj.a) + height >= VIDEO_VERTICAL_TOTAL_PIXELS) {
-				if (GBAObjAttributesAGetMode(obj.a) == OBJ_MODE_OBJWIN) {
-					renderer->objwinSprites[objwinMax].y = GBAObjAttributesAGetY(obj.a);
-					renderer->objwinSprites[objwinMax].endY = GBAObjAttributesAGetY(obj.a) + height;
-					renderer->objwinSprites[objwinMax].obj = obj;
-					++objwinMax;
-				} else {
-					renderer->sprites[oamMax].y = GBAObjAttributesAGetY(obj.a);
-					renderer->sprites[oamMax].endY = GBAObjAttributesAGetY(obj.a) + height;
-					renderer->sprites[oamMax].obj = obj;
-					++oamMax;
-				}
+				renderer->sprites[oamMax].y = GBAObjAttributesAGetY(obj.a);
+				renderer->sprites[oamMax].endY = GBAObjAttributesAGetY(obj.a) + height;
+				renderer->sprites[oamMax].obj = obj;
+				++oamMax;
 			}
 		}
 	}
 	renderer->oamMax = oamMax;
-	renderer->objwinMax = objwinMax;
 	renderer->oamDirty = 0;
 }
 
@@ -742,20 +733,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			}
 			int i;
 			int drawn;
-			for (i = 0; i < renderer->objwinMax; ++i) {
-				int localY = y;
-				if (renderer->spriteCyclesRemaining <= 0) {
-					break;
-				}
-				struct GBAVideoSoftwareSprite* sprite = &renderer->objwinSprites[i];
-				if (GBAObjAttributesAIsMosaic(sprite->obj.a)) {
-					localY = mosaicY;
-				}
-				if ((localY < sprite->y && (sprite->endY - 256 < 0 || localY >= sprite->endY - 256)) || localY >= sprite->endY) {
-					continue;
-				}
-				GBAVideoSoftwareRendererPreprocessSprite(renderer, &sprite->obj, localY);
-			}
+
 			for (i = 0; i < renderer->oamMax; ++i) {
 				int localY = y;
 				if (renderer->spriteCyclesRemaining <= 0) {

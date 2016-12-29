@@ -154,9 +154,7 @@ struct GBAVideoSoftwareRenderer {
 
 	int oamDirty;
 	int oamMax;
-	int objwinMax;
 	struct GBAVideoSoftwareSprite sprites[128];
-	struct GBAVideoSoftwareSprite objwinSprites[128];
 
 	int start;
 	int end;
