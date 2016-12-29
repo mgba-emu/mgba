@@ -315,3 +315,17 @@ void ARMRunFake(struct ARMCore* cpu, uint32_t opcode) {
 	cpu->prefetch[1] = cpu->prefetch[0];
 	cpu->prefetch[0] = opcode;
 }
+
+void ARMDebugPrint(struct ARMCore* cpu, uint32_t address)
+{
+	while (true) {
+		char c = cpu->memory.load8(cpu, address, NULL);
+
+		if (!c) {
+			break;
+		}
+
+		putchar(c);
+		address++;
+	}
+}
