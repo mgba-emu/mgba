@@ -18,11 +18,12 @@ endif
 
 #################
 # Toolchain setup
+NDK_TOOLCHAIN_VERSION ?= 4.8
 
-CC  = $(NDK_ROOT_DIR)/toolchains/arm-linux-androideabi-4.8/prebuilt/$(HOST_PLATFORM)-x86_64/bin/arm-linux-androideabi-gcc
-CXX = $(NDK_ROOT_DIR)/toolchains/arm-linux-androideabi-4.8/prebuilt/$(HOST_PLATFORM)-x86_64/bin/arm-linux-androideabi-g++
-AS  = $(NDK_ROOT_DIR)/toolchains/arm-linux-androideabi-4.8/prebuilt/$(HOST_PLATFORM)-x86_64/bin/arm-linux-androideabi-as
-AR  = $(NDK_ROOT_DIR)/toolchains/arm-linux-androideabi-4.8/prebuilt/$(HOST_PLATFORM)-x86_64/bin/arm-linux-androideabi-ar
+CC  = $(NDK_ROOT_DIR)/toolchains/arm-linux-androideabi-$(NDK_TOOLCHAIN_VERSION)/prebuilt/$(HOST_PLATFORM)-x86_64/bin/arm-linux-androideabi-gcc
+CXX = $(NDK_ROOT_DIR)/toolchains/arm-linux-androideabi-$(NDK_TOOLCHAIN_VERSION)/prebuilt/$(HOST_PLATFORM)-x86_64/bin/arm-linux-androideabi-g++
+AS  = $(NDK_ROOT_DIR)/toolchains/arm-linux-androideabi-$(NDK_TOOLCHAIN_VERSION)/prebuilt/$(HOST_PLATFORM)-x86_64/bin/arm-linux-androideabi-as
+AR  = $(NDK_ROOT_DIR)/toolchains/arm-linux-androideabi-$(NDK_TOOLCHAIN_VERSION)/prebuilt/$(HOST_PLATFORM)-x86_64/bin/arm-linux-androideabi-ar
 
 ############
 # Extensions
@@ -80,7 +81,7 @@ endif
 
 CORE_DIR  ?= ..
 BUILD_DIR ?= .
-INCLUDES   = -I$(NDK_ROOT_DIR)/platforms/android-9/arch-arm/usr/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.8/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.8/include/backward
+INCLUDES   = -I$(NDK_ROOT_DIR)/platforms/android-9/arch-arm/usr/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/$(NDK_TOOLCHAIN_VERSION)/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/$(NDK_TOOLCHAIN_VERSION)/libs/armeabi/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/$(NDK_TOOLCHAIN_VERSION)/include/backward
 
 include $(BUILD_DIR)/Makefile.common
 
