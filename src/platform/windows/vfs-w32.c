@@ -63,6 +63,7 @@ struct VDir* VDirOpen(const char* path) {
 	vd->vde.d.name = _vdweName;
 	vd->vde.d.type = _vdweType;
 	vd->vde.ffData = ffData;
+	vd->vde.utf8Name = NULL;
 
 	return &vd->d;
 }
