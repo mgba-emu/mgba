@@ -8,7 +8,7 @@
 
 #include <QAbstractItemModel>
 
-#include "core/library.h"
+#include <mgba/core/library.h>
 
 struct VDir;
 

@@ -8,7 +8,7 @@
 
 #include <QEvent>
 
-#include "gba/input.h"
+#include <mgba/internal/gba/input.h>
 
 namespace QGBA {
 

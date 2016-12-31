@@ -8,8 +8,8 @@
 #include <QApplication>
 #include <QResizeEvent>
 
-#include "core/core.h"
-#include "core/thread.h"
+#include <mgba/core/core.h>
+#include <mgba/core/thread.h>
 #ifdef BUILD_GL
 #include "platform/opengl/gl.h"
 #endif

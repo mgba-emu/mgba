@@ -3,10 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "isa-lr35902.h"
+#include <mgba/internal/lr35902/isa-lr35902.h>
 
-#include "lr35902/emitter-lr35902.h"
-#include "lr35902/lr35902.h"
+#include <mgba/internal/lr35902/emitter-lr35902.h>
+#include <mgba/internal/lr35902/lr35902.h>
 
 static inline uint16_t LR35902ReadHL(struct LR35902Core* cpu) {
 	uint16_t hl;

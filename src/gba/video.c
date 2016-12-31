@@ -3,18 +3,17 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "video.h"
+#include <mgba/internal/gba/video.h>
 
-#include "core/sync.h"
-#include "core/tile-cache.h"
-#include "gba/dma.h"
-#include "gba/gba.h"
-#include "gba/io.h"
-#include "gba/renderers/tile-cache.h"
-#include "gba/rr/rr.h"
-#include "gba/serialize.h"
+#include <mgba/core/sync.h>
+#include <mgba/core/tile-cache.h>
+#include <mgba/internal/arm/macros.h>
+#include <mgba/internal/gba/dma.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/serialize.h>
 
-#include "util/memory.h"
+#include <mgba-util/memory.h>
 
 mLOG_DEFINE_CATEGORY(GBA_VIDEO, "GBA Video");
 

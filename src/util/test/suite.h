@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #ifndef SUITE_H
 #define SUITE_H
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 #include <setjmp.h>
 #include <cmocka.h>

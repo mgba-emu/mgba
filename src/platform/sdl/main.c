@@ -5,33 +5,23 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "main.h"
 
-#include "debugger/cli-debugger.h"
+#include <mgba/internal/debugger/cli-debugger.h>
 
 #ifdef USE_GDB_STUB
-#include "debugger/gdb-stub.h"
+#include <mgba/internal/debugger/gdb-stub.h>
 #endif
 #ifdef USE_EDITLINE
 #include "feature/editline/cli-el-backend.h"
 #endif
 
-#include "core/core.h"
-#include "core/config.h"
-#include "core/input.h"
-#include "core/thread.h"
-#include "gba/input.h"
-#ifdef M_CORE_GBA
-#include "gba/core.h"
-#include "gba/gba.h"
-#include "gba/video.h"
-#endif
-#ifdef M_CORE_GB
-#include "gb/core.h"
-#include "gb/gb.h"
-#include "gb/video.h"
-#endif
+#include <mgba/core/core.h>
+#include <mgba/core/config.h>
+#include <mgba/core/input.h>
+#include <mgba/core/thread.h>
+#include <mgba/internal/gba/input.h>
+
 #include "feature/commandline.h"
-#include "util/configuration.h"
-#include "util/vfs.h"
+#include <mgba-util/vfs.h>
 
 #include <SDL.h>
 

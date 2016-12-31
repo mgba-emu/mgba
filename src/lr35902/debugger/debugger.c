@@ -3,10 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "debugger.h"
+#include <mgba/internal/lr35902/debugger/debugger.h>
 
-#include "lr35902/lr35902.h"
-#include "core/core.h"
+#include <mgba/core/core.h>
+#include <mgba/internal/lr35902/lr35902.h>
 
 DEFINE_VECTOR(LR35902DebugBreakpointList, struct LR35902DebugBreakpoint);
 DEFINE_VECTOR(LR35902DebugWatchpointList, struct LR35902DebugWatchpoint);

@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "arm.h"
+#include <mgba/internal/arm/arm.h>
 
-#include "isa-arm.h"
-#include "isa-inlines.h"
-#include "isa-thumb.h"
+#include <mgba/internal/arm/isa-arm.h>
+#include <mgba/internal/arm/isa-inlines.h>
+#include <mgba/internal/arm/isa-thumb.h>
 
 static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode);
 

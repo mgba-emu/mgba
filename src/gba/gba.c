@@ -3,29 +3,23 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "gba.h"
+#include <mgba/internal/gba/gba.h>
 
-#include "core/thread.h"
+#include <mgba/internal/arm/isa-inlines.h>
+#include <mgba/internal/arm/debugger/debugger.h>
+#include <mgba/internal/arm/decoder.h>
 
-#include "arm/decoder.h"
-#include "arm/debugger/debugger.h"
-#include "arm/isa-inlines.h"
+#include <mgba/internal/gba/bios.h>
+#include <mgba/internal/gba/cheats.h>
+#include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/overrides.h>
+#include <mgba/internal/gba/rr/rr.h>
 
-#include "gba/bios.h"
-#include "gba/cheats.h"
-#include "gba/io.h"
-#include "gba/overrides.h"
-#include "gba/rr/rr.h"
-#include "gba/serialize.h"
-#include "gba/sio.h"
-#include "gba/timer.h"
-#include "gba/vfame.h"
-
-#include "util/crc32.h"
-#include "util/memory.h"
-#include "util/math.h"
-#include "util/patch.h"
-#include "util/vfs.h"
+#include <mgba-util/patch.h>
+#include <mgba-util/crc32.h>
+#include <mgba-util/math.h>
+#include <mgba-util/memory.h>
+#include <mgba-util/vfs.h>
 
 mLOG_DEFINE_CATEGORY(GBA, "GBA");
 mLOG_DEFINE_CATEGORY(GBA_DEBUG, "GBA Debug");

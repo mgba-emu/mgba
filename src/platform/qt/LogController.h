@@ -11,8 +11,6 @@
 #include <QObject>
 #include <QStringList>
 
-#include "gba/gba.h"
-
 namespace QGBA {
 
 class LogController : public QObject {

@@ -3,15 +3,14 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "software-private.h"
+#include "gba/renderers/software-private.h"
 
-#include "core/tile-cache.h"
-#include "gba/gba.h"
-#include "gba/io.h"
-#include "gba/renderers/tile-cache.h"
+#include <mgba/core/tile-cache.h>
+#include <mgba/internal/arm/macros.h>
+#include <mgba/internal/gba/io.h>
 
-#include "util/arm-algo.h"
-#include "util/memory.h"
+#include <mgba-util/arm-algo.h>
+#include <mgba-util/memory.h>
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer);

@@ -12,10 +12,6 @@
 
 #include <QMap>
 
-#ifdef M_CORE_GB
-#include "gb/video.h"
-#endif
-
 using namespace QGBA;
 
 QMap<QString, QString> VideoView::s_acodecMap;

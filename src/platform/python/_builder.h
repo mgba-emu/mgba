@@ -27,23 +27,23 @@ void free(void*);
 
 #include "flags.h"
 
-#include "core/core.h"
-#include "core/tile-cache.h"
+#include <mgba/core/core.h>
+#include <mgba/core/tile-cache.h>
 #include "platform/python/vfs-py.h"
 #include "platform/python/log.h"
 
 #ifdef USE_PNG
-#include "util/png-io.h"
+#include <mgba-util/png-io.h>
 #endif
 #ifdef M_CORE_GBA
-#include "arm/arm.h"
-#include "gba/gba.h"
-#include "gba/input.h"
-#include "gba/renderers/tile-cache.h"
+#include <mgba/internal/arm/arm.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/input.h>
+#include <mgba/internal/gba/renderers/tile-cache.h>
 #endif
 #ifdef M_CORE_GB
-#include "lr35902/lr35902.h"
-#include "gb/gb.h"
-#include "gba/input.h"
-#include "gb/renderers/tile-cache.h"
+#include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gba/input.h>
+#include <mgba/internal/gb/renderers/tile-cache.h>
 #endif

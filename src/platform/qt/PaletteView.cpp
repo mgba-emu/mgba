@@ -12,15 +12,15 @@
 #include <QFileDialog>
 #include <QFontDatabase>
 
-#include "core/core.h"
-#include "util/export.h"
-#ifdef M_CORE_GA
-#include "gba/gba.h"
+#include <mgba/core/core.h>
+#ifdef M_CORE_GBA
+#include <mgba/internal/gba/gba.h>
 #endif
 #ifdef M_CORE_GB
-#include "gb/gb.h"
+#include <mgba/internal/gb/gb.h>
 #endif
-#include "util/vfs.h"
+#include <mgba-util/export.h>
+#include <mgba-util/vfs.h>
 
 using namespace QGBA;
 

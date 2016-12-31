@@ -3,18 +3,19 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "gb.h"
+#include <mgba/internal/gb/gb.h>
 
-#include "gb/io.h"
-#include "gb/mbc.h"
+#include <mgba/internal/gb/io.h>
+#include <mgba/internal/gb/mbc.h>
+#include <mgba/internal/lr35902/lr35902.h>
 
-#include "core/core.h"
-#include "core/cheats.h"
-#include "util/crc32.h"
-#include "util/memory.h"
-#include "util/math.h"
-#include "util/patch.h"
-#include "util/vfs.h"
+#include <mgba/core/core.h>
+#include <mgba/core/cheats.h>
+#include <mgba-util/crc32.h>
+#include <mgba-util/memory.h>
+#include <mgba-util/math.h>
+#include <mgba-util/patch.h>
+#include <mgba-util/vfs.h>
 
 #define CLEANUP_THRESHOLD 15
 

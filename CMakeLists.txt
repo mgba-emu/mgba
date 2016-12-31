@@ -65,7 +65,7 @@ source_group("GBA board" FILES ${GBA_SRC} ${GBA_RENDERER_SRC} ${GBA_SIO_SRC})
 source_group("GBA extra" FILES ${GBA_CHEATS_SRC} ${GBA_RR_SRC})
 source_group("GB board" FILES ${GB_SRC} ${GB_SIO_SRC})
 source_group("Utilities" FILES ${UTIL_SRC})
-include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type (e.g. Release or Debug)" FORCE)
@@ -774,7 +774,7 @@ if(BUILD_EXAMPLE)
 		target_link_libraries(${BINARY_NAME}-example-client ${BINARY_NAME} ${SDL_LIBRARY} ${SDLMAIN_LIBRARY} ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 		set_target_properties(${BINARY_NAME}-example-client PROPERTIES
 		                      COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}"
-		                      INCLUDE_DIRECTORIES "${SDL_INCLUDE_DIR};${CMAKE_CURRENT_SOURCE_DIR}/src")
+		                      INCLUDE_DIRECTORIES "${SDL_INCLUDE_DIR};${CMAKE_CURRENT_SOURCE_DIR}/src;${CMAKE_CURRENT_SOURCE_DIR}/include")
 	endif()
 endif()
 

@@ -3,24 +3,24 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "core.h"
+#include <mgba/gba/core.h>
 
-#include "core/core.h"
-#include "core/log.h"
-#include "arm/debugger/debugger.h"
-#include "gba/cheats.h"
-#include "gba/gba.h"
-#include "gba/extra/cli.h"
-#include "gba/overrides.h"
+#include <mgba/core/core.h>
+#include <mgba/core/log.h>
+#include <mgba/internal/arm/debugger/debugger.h>
+#include <mgba/internal/gba/cheats.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/extra/cli.h>
+#include <mgba/internal/gba/overrides.h>
 #ifndef DISABLE_THREADING
-#include "gba/renderers/thread-proxy.h"
+#include <mgba/internal/gba/renderers/thread-proxy.h>
 #endif
-#include "gba/renderers/video-software.h"
-#include "gba/savedata.h"
-#include "gba/serialize.h"
-#include "util/memory.h"
-#include "util/patch.h"
-#include "util/vfs.h"
+#include <mgba/internal/gba/renderers/video-software.h>
+#include <mgba/internal/gba/savedata.h>
+#include <mgba/internal/gba/serialize.h>
+#include <mgba-util/memory.h>
+#include <mgba-util/patch.h>
+#include <mgba-util/vfs.h>
 
 struct GBACore {
 	struct mCore d;

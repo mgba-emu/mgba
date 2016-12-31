@@ -12,12 +12,12 @@
 
 #ifdef M_CORE_GBA
 #include "GBAOverride.h"
-#include "gba/gba.h"
+#include <mgba/internal/gba/gba.h>
 #endif
 
 #ifdef M_CORE_GB
 #include "GBOverride.h"
-#include "gb/gb.h"
+#include <mgba/internal/gb/gb.h>
 #endif
 
 using namespace QGBA;

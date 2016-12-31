@@ -8,7 +8,7 @@
 
 #include "Override.h"
 
-#include "gb/overrides.h"
+#include <mgba/internal/gb/overrides.h>
 
 namespace QGBA {
 

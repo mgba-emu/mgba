@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/test/suite.h"
 
-#include "util/vfs.h"
+#include <mgba-util/vfs.h>
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 M_TEST_DEFINE(openNullPathR) {

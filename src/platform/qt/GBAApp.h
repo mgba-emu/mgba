@@ -14,8 +14,7 @@
 
 struct NoIntroDB;
 
-#include "core/log.h"
-#include "gba/sio.h"
+#include <mgba/core/log.h>
 
 mLOG_DECLARE_CATEGORY(QT);
 

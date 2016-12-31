@@ -7,9 +7,10 @@
 
 #include "LogController.h"
 
-#include "core/core.h"
-#include "core/thread.h"
-#include "gba/audio.h"
+#include <mgba/core/blip_buf.h>
+#include <mgba/core/core.h>
+#include <mgba/core/thread.h>
+#include <mgba/internal/gba/audio.h>
 
 using namespace QGBA;
 

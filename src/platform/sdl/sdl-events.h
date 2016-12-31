@@ -6,14 +6,14 @@
 #ifndef SDL_EVENTS_H
 #define SDL_EVENTS_H
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 CXX_GUARD_START
 
-#include "core/interface.h"
-#include "core/log.h"
-#include "util/circle-buffer.h"
-#include "util/vector.h"
+#include <mgba/core/interface.h>
+#include <mgba/core/log.h>
+#include <mgba-util/circle-buffer.h>
+#include <mgba-util/vector.h>
 
 #include <SDL.h>
 

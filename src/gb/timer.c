@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "timer.h"
+#include <mgba/internal/gb/timer.h>
 
-#include "gb/gb.h"
-#include "gb/io.h"
-#include "gb/serialize.h"
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/io.h>
+#include <mgba/internal/gb/serialize.h>
 
 void _GBTimerIRQ(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	UNUSED(timing);

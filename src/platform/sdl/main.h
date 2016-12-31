@@ -6,17 +6,9 @@
 #ifndef SDL_MAIN_H
 #define SDL_MAIN_H
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 CXX_GUARD_START
-
-#ifdef M_CORE_GBA
-#include "gba/renderers/video-software.h"
-#endif
-
-#ifdef M_CORE_GB
-#include "gb/renderers/software.h"
-#endif
 
 #include "sdl-audio.h"
 #include "sdl-events.h"

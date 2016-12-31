@@ -6,7 +6,7 @@
 #ifndef HLE_BIOS_H
 #define HLE_BIOS_H
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 CXX_GUARD_START
 

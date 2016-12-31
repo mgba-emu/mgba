@@ -9,9 +9,9 @@
 #include "DisplayQt.h"
 
 #ifdef M_CORE_GB
-#include "gb/video.h"
+#include <mgba/internal/gb/video.h>
 #elif defined(M_CORE_GBA)
-#include "gba/video.h"
+#include <mgba/internal/gba/video.h>
 #endif
 
 using namespace QGBA;

@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ArchiveInspector.h"
 
-#include "util/vfs.h"
+#include <mgba-util/vfs.h>
 
 using namespace QGBA;
 

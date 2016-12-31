@@ -5,13 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "commandline.h"
 
-#include "core/config.h"
-#include "core/version.h"
-#include "util/string.h"
+#include <mgba/core/config.h>
+#include <mgba/core/version.h>
+#include <mgba-util/string.h>
 
 #include <fcntl.h>
 #ifdef _MSC_VER
-#include "platform/windows/getopt.h"
+#include <mgba-util/platform/windows/getopt.h>
 #else
 #include <getopt.h>
 #endif

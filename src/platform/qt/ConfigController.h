@@ -15,8 +15,8 @@
 
 #include <functional>
 
-#include "core/config.h"
-#include "util/configuration.h"
+#include <mgba/core/config.h>
+#include <mgba-util/configuration.h>
 #include "feature/commandline.h"
 
 class QAction;

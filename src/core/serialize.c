@@ -3,15 +3,15 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "serialize.h"
+#include <mgba/core/serialize.h>
 
-#include "core/core.h"
-#include "core/cheats.h"
-#include "util/memory.h"
-#include "util/vfs.h"
+#include <mgba/core/core.h>
+#include <mgba/core/cheats.h>
+#include <mgba-util/memory.h>
+#include <mgba-util/vfs.h>
 
 #ifdef USE_PNG
-#include "util/png-io.h"
+#include <mgba-util/png-io.h>
 #include <png.h>
 #include <zlib.h>
 #endif

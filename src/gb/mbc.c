@@ -3,11 +3,12 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "mbc.h"
+#include <mgba/internal/gb/mbc.h>
 
-#include "gb/gb.h"
-#include "gb/memory.h"
-#include "util/vfs.h"
+#include <mgba/core/interface.h>
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/memory.h>
+#include <mgba-util/vfs.h>
 
 mLOG_DEFINE_CATEGORY(GB_MBC, "GB MBC");
 

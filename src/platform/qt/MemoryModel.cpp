@@ -19,7 +19,8 @@
 #include <QSlider>
 #include <QWheelEvent>
 
-#include "core/core.h"
+#include <mgba/core/core.h>
+#include <mgba-util/vfs.h>
 
 using namespace QGBA;
 

@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "software.h"
+#include <mgba/internal/gb/renderers/software.h>
 
-#include "core/tile-cache.h"
-#include "gb/io.h"
-#include "util/memory.h"
+#include <mgba/core/tile-cache.h>
+#include <mgba/internal/gb/io.h>
+#include <mgba-util/memory.h>
 
 static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum GBModel model);
 static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer);

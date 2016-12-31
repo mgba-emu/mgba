@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #ifndef TEST_UTIL_H
 #define TEST_UTIL_H
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 int TestRunUtil(void);
 

@@ -6,11 +6,11 @@
 #ifndef CLI_EL_BACKEND_H
 #define CLI_EL_BACKEND_H
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 CXX_GUARD_START
 
-#include "debugger/cli-debugger.h"
+#include <mgba/internal/debugger/cli-debugger.h>
 
 #include <histedit.h>
 

@@ -6,7 +6,7 @@
 #ifndef GLES2_H
 #define GLES2_H
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 CXX_GUARD_START
 

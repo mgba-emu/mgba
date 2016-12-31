@@ -3,12 +3,14 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "cli.h"
+#include <mgba/internal/gba/extra/cli.h>
 
-#include "arm/debugger/cli-debugger.h"
-#include "core/serialize.h"
-#include "gba/io.h"
-#include "gba/serialize.h"
+#include <mgba/core/core.h>
+#include <mgba/core/serialize.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/video.h>
+#include <mgba/internal/arm/debugger/cli-debugger.h>
 
 static void _GBACLIDebuggerInit(struct CLIDebuggerSystem*);
 static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem*);

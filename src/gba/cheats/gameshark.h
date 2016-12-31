@@ -6,14 +6,13 @@
 #ifndef GBA_CHEATS_GAMESHARK_H
 #define GBA_CHEATS_GAMESHARK_H
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 CXX_GUARD_START
 
-#include "gba/cheats.h"
-
 extern const uint32_t GBACheatGameSharkSeeds[4];
 
+struct GBACheatSet;
 void GBACheatDecryptGameShark(uint32_t* op1, uint32_t* op2, const uint32_t* seeds);
 void GBACheatReseedGameShark(uint32_t* seeds, uint16_t params, const uint8_t* t1, const uint8_t* t2);
 void GBACheatSetGameSharkVersion(struct GBACheatSet* cheats, int version);

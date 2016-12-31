@@ -6,11 +6,11 @@
 #ifndef COMMAND_LINE_H
 #define COMMAND_LINE_H
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 CXX_GUARD_START
 
-#include "debugger/debugger.h"
+#include <mgba/internal/debugger/debugger.h>
 
 struct mArguments {
 	char* fname;

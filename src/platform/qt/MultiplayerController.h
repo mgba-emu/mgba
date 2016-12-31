@@ -10,12 +10,12 @@
 #include <QList>
 #include <QObject>
 
-#include "core/lockstep.h"
+#include <mgba/core/lockstep.h>
 #ifdef M_CORE_GBA
-#include "gba/sio/lockstep.h"
+#include <mgba/internal/gba/sio/lockstep.h>
 #endif
 #ifdef M_CORE_GB
-#include "gb/sio/lockstep.h"
+#include <mgba/internal/gb/sio/lockstep.h>
 #endif
 
 namespace QGBA {

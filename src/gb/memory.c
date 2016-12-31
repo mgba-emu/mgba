@@ -3,15 +3,16 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "memory.h"
+#include <mgba/internal/gb/memory.h>
 
-#include "core/interface.h"
-#include "gb/gb.h"
-#include "gb/io.h"
-#include "gb/mbc.h"
-#include "gb/serialize.h"
+#include <mgba/core/interface.h>
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/io.h>
+#include <mgba/internal/gb/mbc.h>
+#include <mgba/internal/gb/serialize.h>
+#include <mgba/internal/lr35902/lr35902.h>
 
-#include "util/memory.h"
+#include <mgba-util/memory.h>
 
 mLOG_DEFINE_CATEGORY(GB_MEM, "GB Memory");
 

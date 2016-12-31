@@ -3,9 +3,9 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "tile-cache.h"
+#include <mgba/core/tile-cache.h>
 
-#include "util/memory.h"
+#include <mgba-util/memory.h>
 
 void mTileCacheInit(struct mTileCache* cache) {
 	// TODO: Reconfigurable cache for space savings

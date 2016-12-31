@@ -6,11 +6,11 @@
 #ifndef SDL_AUDIO_H
 #define SDL_AUDIO_H
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 CXX_GUARD_START
 
-#include "core/log.h"
+#include <mgba/core/log.h>
 
 #include <SDL.h>
 

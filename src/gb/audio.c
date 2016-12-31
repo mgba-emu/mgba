@@ -3,13 +3,14 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "audio.h"
+#include <mgba/internal/gb/audio.h>
 
-#include "core/interface.h"
-#include "core/sync.h"
-#include "gb/gb.h"
-#include "gb/serialize.h"
-#include "gb/io.h"
+#include <mgba/core/blip_buf.h>
+#include <mgba/core/interface.h>
+#include <mgba/core/sync.h>
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/serialize.h>
+#include <mgba/internal/gb/io.h>
 
 #ifdef _3DS
 #define blip_add_delta blip_add_delta_fast

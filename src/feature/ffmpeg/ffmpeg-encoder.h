@@ -6,11 +6,11 @@
 #ifndef FFMPEG_ENCODER
 #define FFMPEG_ENCODER
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 CXX_GUARD_START
 
-#include "gba/gba.h"
+#include <mgba/internal/gba/gba.h>
 
 #include <libavformat/avformat.h>
 #include <libavcodec/version.h>

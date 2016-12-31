@@ -10,10 +10,10 @@
 #include <QFontDatabase>
 #include <QTimer>
 
-#include "gba/gba.h"
+#include <mgba/internal/gba/gba.h>
 #ifdef M_CORE_GB
-#include "gb/gb.h"
-#include "gb/io.h"
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/io.h>
 #endif
 
 using namespace QGBA;

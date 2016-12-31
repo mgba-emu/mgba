@@ -3,12 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "nointro.h"
+#include <mgba-util/nointro.h>
 
-#include "util/crc32.h"
-#include "util/table.h"
-#include "util/vector.h"
-#include "util/vfs.h"
+#include <mgba-util/table.h>
+#include <mgba-util/vector.h>
+#include <mgba-util/vfs.h>
 
 #define KEY_STACK_SIZE 8
 

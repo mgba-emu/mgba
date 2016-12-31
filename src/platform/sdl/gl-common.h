@@ -6,7 +6,7 @@
 #ifndef SDL_GL_COMMON_H
 #define SDL_GL_COMMON_H
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 CXX_GUARD_START
 

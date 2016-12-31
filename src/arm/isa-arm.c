@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "isa-arm.h"
+#include <mgba/internal/arm/isa-arm.h>
 
-#include "arm.h"
-#include "emitter-arm.h"
-#include "isa-inlines.h"
+#include <mgba/internal/arm/arm.h>
+#include <mgba/internal/arm/emitter-arm.h>
+#include <mgba/internal/arm/isa-inlines.h>
 
 #define PSR_USER_MASK   0xF0000000
 #define PSR_PRIV_MASK   0x000000CF

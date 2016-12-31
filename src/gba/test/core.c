@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/test/suite.h"
 
-#include "core/core.h"
-#include "gba/core.h"
+#include <mgba/core/core.h>
+#include <mgba/gba/core.h>
 
 M_TEST_DEFINE(create) {
 	struct mCore* core = GBACoreCreate();

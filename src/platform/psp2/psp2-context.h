@@ -7,8 +7,8 @@
 #define PSP2_CONTEXT_H
 
 #include "psp2-common.h"
-#include "core/interface.h"
-#include "util/gui.h"
+#include <mgba/core/interface.h>
+#include <mgba-util/gui.h>
 
 struct mGUIRunner;
 void mPSP2Setup(struct mGUIRunner* runner);

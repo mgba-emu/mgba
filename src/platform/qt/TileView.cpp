@@ -11,7 +11,7 @@
 #include <QTimer>
 
 #ifdef M_CORE_GB
-#include "gb/gb.h"
+#include <mgba/internal/gb/gb.h>
 #endif
 
 using namespace QGBA;

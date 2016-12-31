@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "GBAOverride.h"
 
-#include "core/core.h"
+#include <mgba/core/core.h>
 
 using namespace QGBA;
 

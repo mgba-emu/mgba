@@ -7,29 +7,30 @@ import sys
 ffi = cffi.FFI()
 pydir = os.path.dirname(os.path.abspath(__file__))
 srcdir = os.path.join(pydir, "..", "..")
+incdir = os.path.join(pydir, "..", "..", "..", "include")
 bindir = os.environ.get("BINDIR", os.path.join(os.getcwd(), ".."))
 
 cpp = shlex.split(os.environ.get("CPP", "cc -E"))
 cppflags = shlex.split(os.environ.get("CPPFLAGS", ""))
 if __name__ == "__main__":
     cppflags.extend(sys.argv[1:])
-cppflags.extend(["-I" + srcdir, "-I" + bindir])
+cppflags.extend(["-I" + incdir, "-I" + srcdir, "-I" + bindir])
 
 ffi.set_source("mgba._pylib", """
 #include "flags.h"
-#include "util/common.h"
-#include "core/core.h"
-#include "core/log.h"
-#include "core/tile-cache.h"
-#include "arm/arm.h"
-#include "gba/gba.h"
-#include "gba/input.h"
-#include "gba/renderers/tile-cache.h"
-#include "lr35902/lr35902.h"
-#include "gb/gb.h"
-#include "gb/renderers/tile-cache.h"
-#include "util/png-io.h"
-#include "util/vfs.h"
+#include <mgba-util/common.h>
+#include <mgba/core/core.h>
+#include <mgba/core/log.h>
+#include <mgba/core/tile-cache.h>
+#include <mgba/internal/arm/arm.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/input.h>
+#include <mgba/internal/gba/renderers/tile-cache.h>
+#include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/renderers/tile-cache.h>
+#include <mgba-util/png-io.h>
+#include <mgba-util/vfs.h>
 
 struct VFile* VFileFromPython(void* fileobj);
 
@@ -44,7 +45,7 @@ struct mLoggerPy {
     struct mLogger d;
     void* pyobj;
 };
-""", include_dirs=[srcdir],
+""", include_dirs=[incdir, srcdir],
      extra_compile_args=cppflags,
      libraries=["mgba"],
      library_dirs=[bindir],

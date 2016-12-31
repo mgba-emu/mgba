@@ -12,10 +12,12 @@
 #include <QGridLayout>
 #include <QSpinBox>
 
-#include "gba/io.h"
+#include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/memory.h>
+
+struct ARMCore;
 
 using namespace QGBA;
-
 
 QList<IOViewer::RegisterDescription> IOViewer::s_registers;
 

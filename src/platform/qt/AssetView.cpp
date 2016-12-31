@@ -7,10 +7,6 @@
 
 #include <QTimer>
 
-#ifdef M_CORE_GBA
-#include "gba/gba.h"
-#endif
-
 using namespace QGBA;
 
 AssetView::AssetView(GameController* controller, QWidget* parent)

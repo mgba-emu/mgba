@@ -9,7 +9,7 @@
 #include <QDialog>
 
 #ifdef M_CORE_GB
-#include "gb/overrides.h"
+#include <mgba/gb/interface.h>
 #endif
 
 #include "ui_OverrideView.h"

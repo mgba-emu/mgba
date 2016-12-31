@@ -9,7 +9,7 @@
 
 #include <QMutexLocker>
 
-#include "debugger/cli-debugger.h"
+#include <mgba/internal/debugger/cli-debugger.h>
 
 using namespace QGBA;
 

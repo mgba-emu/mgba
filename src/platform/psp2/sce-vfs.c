@@ -3,12 +3,12 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "sce-vfs.h"
+#include <mgba-util/platform/psp2/sce-vfs.h>
 
 #include <psp2/io/dirent.h>
 
-#include "util/vfs.h"
-#include "util/memory.h"
+#include <mgba-util/vfs.h>
+#include <mgba-util/memory.h>
 
 struct VFileSce {
 	struct VFile d;

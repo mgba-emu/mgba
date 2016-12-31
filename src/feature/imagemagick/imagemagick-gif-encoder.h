@@ -6,11 +6,11 @@
 #ifndef IMAGEMAGICK_GIF_ENCODER
 #define IMAGEMAGICK_GIF_ENCODER
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 CXX_GUARD_START
 
-#include "core/interface.h"
+#include <mgba/core/interface.h>
 
 #define MAGICKCORE_HDRI_ENABLE 0
 #define MAGICKCORE_QUANTUM_DEPTH 8

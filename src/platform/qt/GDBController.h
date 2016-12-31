@@ -10,7 +10,7 @@
 
 #ifdef USE_GDB_STUB
 
-#include "debugger/gdb-stub.h"
+#include <mgba/internal/debugger/gdb-stub.h>
 
 namespace QGBA {
 

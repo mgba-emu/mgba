@@ -7,8 +7,8 @@
 
 #include <QPainter>
 
-#include "core/core.h"
-#include "core/thread.h"
+#include <mgba/core/core.h>
+#include <mgba/core/thread.h>
 
 using namespace QGBA;
 

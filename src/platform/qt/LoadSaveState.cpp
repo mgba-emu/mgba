@@ -14,11 +14,9 @@
 #include <QKeyEvent>
 #include <QPainter>
 
-#include "core/serialize.h"
-#ifdef M_CORE_GBA
-#include "gba/serialize.h"
-#endif
-#include "util/memory.h"
+#include <mgba/core/serialize.h>
+#include <mgba-util/memory.h>
+#include <mgba-util/vfs.h>
 
 using namespace QGBA;
 

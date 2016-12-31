@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "cli-el-backend.h"
 
-#include "core/version.h"
+#include <mgba/core/version.h>
 
 #include <signal.h>
 
