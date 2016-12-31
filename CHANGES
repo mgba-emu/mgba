@@ -34,6 +34,7 @@ Bugfixes:
  - GB Video: Hblank IRQs should mask LYC=LY IRQs
  - GB Audio: Reset envelope timer when reseting sound channel
  - Libretro: Fix disabling BIOS
+ - Libretro: Fix Game Boy savestates and audio
 Misc:
  - PSP2: Improved controller rumble
  - GB, GBA: Prevent loading null ROMs

@@ -146,7 +146,7 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
 	info->geometry.max_width = width;
 	info->geometry.max_height = height;
 	info->geometry.aspect_ratio = width / (double) height;
-	info->timing.fps = GBA_ARM7TDMI_FREQUENCY / (float) VIDEO_TOTAL_LENGTH;
+	info->timing.fps = core->frequency(core) / (float) core->frameCycles(core);
 	info->timing.sample_rate = 32768;
 }
 
@@ -443,14 +443,14 @@ void retro_unload_game(void) {
 }
 
 size_t retro_serialize_size(void) {
-	return sizeof(struct GBASerializedState);
+	return core->stateSize(core);
 }
 
 bool retro_serialize(void* data, size_t size) {
 	if (size != retro_serialize_size()) {
 		return false;
 	}
-	GBASerialize(core->board, data);
+	core->saveState(core, data);
 	return true;
 }
 
@@ -458,7 +458,7 @@ bool retro_unserialize(const void* data, size_t size) {
 	if (size != retro_serialize_size()) {
 		return false;
 	}
-	GBADeserialize(core->board, data);
+	core->loadState(core, data);
 	return true;
 }
 
