@@ -11,6 +11,7 @@ Bugfixes:
  - GB Timer: Improve DIV reset behavior
  - GBA Memory: Improve initial skipped BIOS state
  - GBA BIOS: Implement BitUnPack
+ - ARM7: Fix MLA/*MULL/*MLAL timing
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
