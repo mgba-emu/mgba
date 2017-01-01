@@ -316,11 +316,10 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 
 #define DEFINE_MULTIPLY_INSTRUCTION_EX_ARM(NAME, BODY, S_BODY) \
 	DEFINE_INSTRUCTION_ARM(NAME, \
-		int rd = (opcode >> 12) & 0xF; \
-		int rdHi = (opcode >> 16) & 0xF; \
+		int rd = (opcode >> 16) & 0xF; \
 		int rs = (opcode >> 8) & 0xF; \
 		int rm = opcode & 0xF; \
-		if (rdHi == ARM_PC || rd == ARM_PC) { \
+		if (rd == ARM_PC) { \
 			return; \
 		} \
 		ARM_WAIT_MUL(cpu->gprs[rs]); \
@@ -328,9 +327,27 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		S_BODY; \
 		currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32)
 
+#define DEFINE_MULTIPLY_INSTRUCTION_2_EX_ARM(NAME, BODY, S_BODY, WAIT) \
+	DEFINE_INSTRUCTION_ARM(NAME, \
+		int rd = (opcode >> 12) & 0xF; \
+		int rdHi = (opcode >> 16) & 0xF; \
+		int rs = (opcode >> 8) & 0xF; \
+		int rm = opcode & 0xF; \
+		if (rdHi == ARM_PC || rd == ARM_PC) { \
+			return; \
+		} \
+		currentCycles += cpu->memory.stall(cpu, WAIT); \
+		BODY; \
+		S_BODY; \
+		currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32)
+
 #define DEFINE_MULTIPLY_INSTRUCTION_ARM(NAME, BODY, S_BODY) \
 	DEFINE_MULTIPLY_INSTRUCTION_EX_ARM(NAME, BODY, ) \
 	DEFINE_MULTIPLY_INSTRUCTION_EX_ARM(NAME ## S, BODY, S_BODY)
+
+#define DEFINE_MULTIPLY_INSTRUCTION_2_ARM(NAME, BODY, S_BODY, WAIT) \
+	DEFINE_MULTIPLY_INSTRUCTION_2_EX_ARM(NAME, BODY, , WAIT) \
+	DEFINE_MULTIPLY_INSTRUCTION_2_EX_ARM(NAME ## S, BODY, S_BODY, WAIT)
 
 #define DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME, ADDRESS, WRITEBACK, BODY) \
 	DEFINE_INSTRUCTION_ARM(NAME, \
@@ -485,36 +502,36 @@ DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(TST, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifter
 
 // Begin multiply definitions
 
-DEFINE_MULTIPLY_INSTRUCTION_ARM(MLA, cpu->gprs[rdHi] = cpu->gprs[rm] * cpu->gprs[rs] + cpu->gprs[rd], ARM_NEUTRAL_S(, , cpu->gprs[rdHi]))
-DEFINE_MULTIPLY_INSTRUCTION_ARM(MUL, cpu->gprs[rdHi] = cpu->gprs[rm] * cpu->gprs[rs], ARM_NEUTRAL_S(cpu->gprs[rm], cpu->gprs[rs], cpu->gprs[rdHi]))
+DEFINE_MULTIPLY_INSTRUCTION_2_ARM(MLA, cpu->gprs[rdHi] = cpu->gprs[rm] * cpu->gprs[rs] + cpu->gprs[rd], ARM_NEUTRAL_S(, , cpu->gprs[rdHi]), 2)
+DEFINE_MULTIPLY_INSTRUCTION_ARM(MUL, cpu->gprs[rd] = cpu->gprs[rm] * cpu->gprs[rs], ARM_NEUTRAL_S(cpu->gprs[rm], cpu->gprs[rs], cpu->gprs[rd]))
 
-DEFINE_MULTIPLY_INSTRUCTION_ARM(SMLAL,
+DEFINE_MULTIPLY_INSTRUCTION_2_ARM(SMLAL,
 	int64_t d = ((int64_t) cpu->gprs[rm]) * ((int64_t) cpu->gprs[rs]);
 	int32_t dm = cpu->gprs[rd];
 	int32_t dn = d;
 	cpu->gprs[rd] = dm + dn;
 	cpu->gprs[rdHi] = cpu->gprs[rdHi] + (d >> 32) + ARM_CARRY_FROM(dm, dn, cpu->gprs[rd]);,
-	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
+	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]), 3)
 
-DEFINE_MULTIPLY_INSTRUCTION_ARM(SMULL,
+DEFINE_MULTIPLY_INSTRUCTION_2_ARM(SMULL,
 	int64_t d = ((int64_t) cpu->gprs[rm]) * ((int64_t) cpu->gprs[rs]);
 	cpu->gprs[rd] = d;
 	cpu->gprs[rdHi] = d >> 32;,
-	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
+	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]), 2)
 
-DEFINE_MULTIPLY_INSTRUCTION_ARM(UMLAL,
+DEFINE_MULTIPLY_INSTRUCTION_2_ARM(UMLAL,
 	uint64_t d = ARM_UXT_64(cpu->gprs[rm]) * ARM_UXT_64(cpu->gprs[rs]);
 	int32_t dm = cpu->gprs[rd];
 	int32_t dn = d;
 	cpu->gprs[rd] = dm + dn;
 	cpu->gprs[rdHi] = cpu->gprs[rdHi] + (d >> 32) + ARM_CARRY_FROM(dm, dn, cpu->gprs[rd]);,
-	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
+	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]), 3)
 
-DEFINE_MULTIPLY_INSTRUCTION_ARM(UMULL,
+DEFINE_MULTIPLY_INSTRUCTION_2_ARM(UMULL,
 	uint64_t d = ARM_UXT_64(cpu->gprs[rm]) * ARM_UXT_64(cpu->gprs[rs]);
 	cpu->gprs[rd] = d;
 	cpu->gprs[rdHi] = d >> 32;,
-	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
+	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]), 2)
 
 // End multiply definitions
 
