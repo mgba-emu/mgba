@@ -1,6 +1,7 @@
 0.5.3: (Future)
 Bugfixes:
  - ARM7: Fix MLA/*MULL/*MLAL timing
+ - GBA: Fix multiboot ROM loading
 
 0.5.2: (2016-12-31)
 Bugfixes:
