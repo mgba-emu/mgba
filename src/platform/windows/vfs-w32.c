@@ -3,9 +3,9 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "util/vfs.h"
+#include <mgba-util/vfs.h>
 
-#include "util/string.h"
+#include <mgba-util/string.h>
 #include <strsafe.h>
 
 static bool _vdwClose(struct VDir* vd);
@@ -63,6 +63,7 @@ struct VDir* VDirOpen(const char* path) {
 	vd->vde.d.name = _vdweName;
 	vd->vde.d.type = _vdweType;
 	vd->vde.ffData = ffData;
+	vd->vde.utf8Name = NULL;
 
 	return &vd->d;
 }

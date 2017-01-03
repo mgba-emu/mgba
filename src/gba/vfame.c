@@ -3,10 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include <mgba/internal/gba/vfame.h>
 
-#include "vfame.h"
-#include "gba/gba.h"
-#include "gba/memory.h"
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/memory.h>
 
 static const uint8_t ADDRESS_REORDERING[4][16] = {
 	{ 15, 14, 9, 1, 8, 10, 7, 3, 5, 11, 4, 0, 13, 12, 2, 6 },

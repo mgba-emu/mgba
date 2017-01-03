@@ -9,10 +9,8 @@
 #include "GamepadAxisEvent.h"
 #include "InputController.h"
 
-extern "C" {
-#include "core/core.h"
-#include "gba/gba.h"
-}
+#include <mgba/core/core.h>
+#include <mgba/internal/gba/gba.h>
 
 using namespace QGBA;
 

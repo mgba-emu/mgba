@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "cli-debugger.h"
+#include <mgba/internal/lr35902/debugger/cli-debugger.h>
 
-#include "core/core.h"
-#include "debugger/cli-debugger.h"
-#include "lr35902/lr35902.h"
+#include <mgba/core/core.h>
+#include <mgba/internal/debugger/cli-debugger.h>
+#include <mgba/internal/lr35902/lr35902.h>
 
 static void _printStatus(struct CLIDebuggerSystem*);
 

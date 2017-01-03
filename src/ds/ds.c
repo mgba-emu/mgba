@@ -3,17 +3,17 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "ds.h"
+#include <mgba/internal/ds/ds.h>
 
-#include "arm/decoder.h"
-#include "arm/debugger/debugger.h"
-#include "arm/isa-inlines.h"
-#include "ds/bios.h"
+#include <mgba/internal/arm/decoder.h>
+#include <mgba/internal/arm/debugger/debugger.h>
+#include <mgba/internal/arm/isa-inlines.h>
+#include <mgba/internal/ds/bios.h>
 
-#include "util/crc32.h"
-#include "util/memory.h"
-#include "util/math.h"
-#include "util/vfs.h"
+#include <mgba-util/crc32.h>
+#include <mgba-util/memory.h>
+#include <mgba-util/math.h>
+#include <mgba-util/vfs.h>
 
 mLOG_DEFINE_CATEGORY(DS, "DS");
 

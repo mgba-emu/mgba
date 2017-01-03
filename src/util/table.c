@@ -3,10 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "table.h"
+#include <mgba-util/table.h>
 
-#include "util/hash.h"
-#include "util/string.h"
+#include <mgba-util/hash.h>
+#include <mgba-util/string.h>
 
 #define LIST_INITIAL_SIZE 8
 #define TABLE_INITIAL_SIZE 8
@@ -161,6 +161,14 @@ void TableEnumerate(const struct Table* table, void (handler(uint32_t key, void*
 
 size_t TableSize(const struct Table* table) {
 	return table->size;
+}
+
+void HashTableInit(struct Table* table, size_t initialSize, void (deinitializer(void*))) {
+	TableInit(table, initialSize, deinitializer);
+}
+
+void HashTableDeinit(struct Table* table) {
+	TableDeinit(table);
 }
 
 void* HashTableLookup(const struct Table* table, const char* key) {

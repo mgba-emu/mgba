@@ -15,17 +15,13 @@
 
 #include <memory>
 
-extern "C" {
-#include "core/core.h"
-#include "core/thread.h"
-#include "gba/cheats.h"
-#include "gba/hardware.h"
-#include "gba/input.h"
-#include "gba/overrides.h"
+#include <mgba/core/core.h>
+#include <mgba/core/thread.h>
+#include <mgba/gba/interface.h>
+#include <mgba/internal/gba/input.h>
 #ifdef BUILD_SDL
 #include "platform/sdl/sdl-events.h"
 #endif
-}
 
 struct Configuration;
 struct GBAAudio;

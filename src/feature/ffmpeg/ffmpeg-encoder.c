@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ffmpeg-encoder.h"
 
-#include "core/core.h"
-#include "gba/video.h"
+#include <mgba/core/core.h>
+#include <mgba/internal/gba/video.h>
 
 #include <libavcodec/version.h>
 #include <libavcodec/avcodec.h>

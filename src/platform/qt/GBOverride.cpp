@@ -5,11 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "GBOverride.h"
 
-extern "C" {
-#include "core/core.h"
-#include "gb/gb.h"
-#include "util/crc32.h"
-}
+#include <mgba/core/core.h>
+#include <mgba/internal/gb/gb.h>
+#include <mgba-util/crc32.h>
 
 using namespace QGBA;
 

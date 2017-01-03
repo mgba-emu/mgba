@@ -40,9 +40,9 @@
  * CRC32 code derived from work by Gary S. Brown.
  */
 
-#include "util/crc32.h"
+#include <mgba-util/crc32.h>
 
-#include "util/vfs.h"
+#include <mgba-util/vfs.h>
 
 enum {
 	BUFFER_SIZE = 1024

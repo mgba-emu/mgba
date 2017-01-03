@@ -1,14 +1,14 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2017 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "cli.h"
+#include <mgba/internal/ds/extra/cli.h>
 
-#include "arm/debugger/cli-debugger.h"
-#include "core/core.h"
-#include "ds/core.h"
-#include "ds/ds.h"
+#include <mgba/internal/arm/debugger/cli-debugger.h>
+#include <mgba/core/core.h>
+#include <mgba/ds/core.h>
+#include <mgba/internal/ds/ds.h>
 
 static void _DSCLIDebuggerInit(struct CLIDebuggerSystem*);
 static bool _DSCLIDebuggerCustom(struct CLIDebuggerSystem*);

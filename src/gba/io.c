@@ -3,13 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "io.h"
+#include <mgba/internal/gba/io.h>
 
-#include "gba/dma.h"
-#include "gba/rr/rr.h"
-#include "gba/serialize.h"
-#include "gba/sio.h"
-#include "gba/video.h"
+#include <mgba/internal/arm/macros.h>
+#include <mgba/internal/gba/dma.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/rr/rr.h>
+#include <mgba/internal/gba/serialize.h>
 
 mLOG_DEFINE_CATEGORY(GBA_IO, "GBA I/O");
 
@@ -524,13 +524,15 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			value &= 0xC1FF;
 			GBASIOWriteRCNT(&gba->sio, value);
 			break;
+		case REG_JOY_TRANS_LO:
+		case REG_JOY_TRANS_HI:
+			gba->memory.io[REG_JOYSTAT >> 1] |= JOYSTAT_TRANS_BIT;
+			// Fall through
 		case REG_SIOMLT_SEND:
 		case REG_JOYCNT:
 		case REG_JOYSTAT:
 		case REG_JOY_RECV_LO:
 		case REG_JOY_RECV_HI:
-		case REG_JOY_TRANS_LO:
-		case REG_JOY_TRANS_HI:
 			value = GBASIOWriteRegister(&gba->sio, address, value);
 			break;
 
@@ -806,6 +808,11 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		mLOG(GBA_IO, GAME_ERROR, "Read from write-only I/O register: %03X", address);
 		return 0;
 
+	case REG_JOY_RECV_LO:
+	case REG_JOY_RECV_HI:
+		gba->memory.io[REG_JOYSTAT >> 1] &= ~JOYSTAT_RECV_BIT;
+		break;
+
 	case REG_SOUNDBIAS:
 	case REG_KEYCNT:
 	case REG_POSTFLG:
@@ -862,8 +869,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_SIOMULTI3:
 	case REG_SIOMLT_SEND:
 	case REG_JOYCNT:
-	case REG_JOY_RECV_LO:
-	case REG_JOY_RECV_HI:
 	case REG_JOY_TRANS_LO:
 	case REG_JOY_TRANS_HI:
 	case REG_JOYSTAT:

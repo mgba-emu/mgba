@@ -17,24 +17,23 @@
 
 #include <ctime>
 
-extern "C" {
-#include "core/config.h"
-#include "core/directories.h"
-#include "core/serialize.h"
-#include "core/tile-cache.h"
+#include <mgba/core/config.h>
+#include <mgba/core/directories.h>
+#include <mgba/core/serialize.h>
+#include <mgba/core/tile-cache.h>
 #ifdef M_CORE_GBA
-#include "gba/bios.h"
-#include "gba/core.h"
-#include "gba/gba.h"
-#include "gba/renderers/tile-cache.h"
-#include "gba/sharkport.h"
+#include <mgba/gba/interface.h>
+#include <mgba/internal/gba/bios.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/gba/core.h>
+#include <mgba/internal/gba/renderers/tile-cache.h>
+#include <mgba/internal/gba/sharkport.h>
 #endif
 #ifdef M_CORE_GB
-#include "gb/gb.h"
-#include "gb/renderers/tile-cache.h"
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/renderers/tile-cache.h>
 #endif
-#include "util/vfs.h"
-}
+#include <mgba-util/vfs.h>
 
 using namespace QGBA;
 using namespace std;

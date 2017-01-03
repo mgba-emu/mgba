@@ -6,9 +6,11 @@
 #ifndef SDL_AUDIO_H
 #define SDL_AUDIO_H
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
-#include "core/log.h"
+CXX_GUARD_START
+
+#include <mgba/core/log.h>
 
 #include <SDL.h>
 
@@ -35,5 +37,7 @@ bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread*);
 void mSDLDeinitAudio(struct mSDLAudio* context);
 void mSDLPauseAudio(struct mSDLAudio* context);
 void mSDLResumeAudio(struct mSDLAudio* context);
+
+CXX_GUARD_END
 
 #endif

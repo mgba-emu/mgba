@@ -42,15 +42,14 @@
 #include "TileView.h"
 #include "VideoView.h"
 
-extern "C" {
-#include "core/version.h"
+#include <mgba/core/version.h>
 #ifdef M_CORE_GB
-#include "gb/gb.h"
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/video.h>
 #endif
 #include "feature/commandline.h"
-#include "util/nointro.h"
-#include "util/vfs.h"
-}
+#include <mgba-util/nointro.h>
+#include <mgba-util/vfs.h>
 
 using namespace QGBA;
 

@@ -3,10 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "directories.h"
+#include <mgba/core/directories.h>
 
-#include "core/config.h"
-#include "util/vfs.h"
+#include <mgba/core/config.h>
+#include <mgba-util/vfs.h>
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 void mDirectorySetInit(struct mDirectorySet* dirs) {

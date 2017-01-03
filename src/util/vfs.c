@@ -3,15 +3,15 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "vfs.h"
+#include <mgba-util/vfs.h>
 
-#include "util/string.h"
+#include <mgba-util/string.h>
 
 #ifdef PSP2
-#include "platform/psp2/sce-vfs.h"
+#include <mgba-util/platform/psp2/sce-vfs.h>
 #endif
 #ifdef _3DS
-#include "platform/3ds/3ds-vfs.h"
+#include <mgba-util/platform/3ds/3ds-vfs.h>
 #endif
 
 struct VFile* VFileOpen(const char* path, int flags) {
@@ -104,7 +104,7 @@ struct VDir* VDirOpenArchive(const char* path) {
 		dir = VDirOpenZip(path, 0);
 	}
 #endif
-#if USE_LZMA
+#ifdef USE_LZMA
 	if (!dir) {
 		dir = VDirOpen7z(path, 0);
 	}

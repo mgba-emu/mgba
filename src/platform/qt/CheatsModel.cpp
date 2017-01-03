@@ -10,9 +10,8 @@
 
 #include <QSet>
 
-extern "C" {
-#include "core/cheats.h"
-}
+#include <mgba/core/cheats.h>
+#include <mgba-util/vfs.h>
 
 using namespace QGBA;
 

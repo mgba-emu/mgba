@@ -3,17 +3,17 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "core.h"
+#include <mgba/ds/core.h>
 
-#include "core/cheats.h"
-#include "core/core.h"
-#include "core/log.h"
-#include "arm/debugger/debugger.h"
-#include "ds/ds.h"
-#include "ds/extra/cli.h"
-#include "util/memory.h"
-#include "util/patch.h"
-#include "util/vfs.h"
+#include <mgba/core/cheats.h>
+#include <mgba/core/core.h>
+#include <mgba/core/log.h>
+#include <mgba/internal/arm/debugger/debugger.h>
+#include <mgba/internal/ds/ds.h>
+#include <mgba/internal/ds/extra/cli.h>
+#include <mgba-util/memory.h>
+#include <mgba-util/patch.h>
+#include <mgba-util/vfs.h>
 
 #define SLICE_CYCLES 2048
 

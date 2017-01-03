@@ -3,12 +3,12 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "config.h"
+#include <mgba/core/config.h>
 
-#include "core/version.h"
-#include "util/formatting.h"
-#include "util/string.h"
-#include "util/vfs.h"
+#include <mgba/core/version.h>
+#include <mgba-util/formatting.h>
+#include <mgba-util/string.h>
+#include <mgba-util/vfs.h>
 
 #include <sys/stat.h>
 
@@ -24,7 +24,7 @@
 #endif
 
 #ifdef _3DS
-#include "platform/3ds/3ds-vfs.h"
+#include <mgba-util/platform/3ds/3ds-vfs.h>
 #endif
 
 #define SECTION_NAME_MAX 128

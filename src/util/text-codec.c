@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "text-codec.h"
+#include <mgba-util/text-codec.h>
 
-#include "util/string.h"
-#include "util/table.h"
-#include "util/vfs.h"
+#include <mgba-util/string.h>
+#include <mgba-util/table.h>
+#include <mgba-util/vfs.h>
 
 struct TextCodecNode {
 	uint8_t* leaf;

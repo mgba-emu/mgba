@@ -3,14 +3,14 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "debugger.h"
+#include <mgba/internal/debugger/debugger.h>
 
-#include "core/core.h"
+#include <mgba/core/core.h>
 
-#include "debugger/cli-debugger.h"
+#include <mgba/internal/debugger/cli-debugger.h>
 
 #ifdef USE_GDB_STUB
-#include "debugger/gdb-stub.h"
+#include <mgba/internal/debugger/gdb-stub.h>
 #endif
 
 const uint32_t DEBUGGER_ID = 0xDEADBEEF;

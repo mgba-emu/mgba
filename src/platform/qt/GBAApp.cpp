@@ -16,13 +16,14 @@
 #include <QIcon>
 #include <QTranslator>
 
-extern "C" {
-#include "core/version.h"
+#include <mgba/core/version.h>
+#include <mgba/internal/gba/video.h>
+#include <mgba-util/socket.h>
+#include <mgba-util/nointro.h>
+#include <mgba-util/vfs.h>
+/*
 #include "feature/commandline.h"
-#include "util/nointro.h"
-#include "util/socket.h"
-}
-
+*/
 using namespace QGBA;
 
 static GBAApp* g_app = nullptr;

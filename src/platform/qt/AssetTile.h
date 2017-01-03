@@ -10,9 +10,7 @@
 
 #include "ui_AssetTile.h"
 
-extern "C" {
-#include "core/tile-cache.h"
-}
+#include <mgba/core/tile-cache.h>
 
 namespace QGBA {
 

@@ -3,21 +3,22 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "core.h"
+#include <mgba/gb/core.h>
 
-#include "core/core.h"
-#include "gb/cheats.h"
-#include "gb/extra/cli.h"
-#include "gb/gb.h"
-#include "gb/mbc.h"
-#include "gb/overrides.h"
-#include "gb/renderers/software.h"
-#include "gb/serialize.h"
-#include "lr35902/debugger/debugger.h"
-#include "util/crc32.h"
-#include "util/memory.h"
-#include "util/patch.h"
-#include "util/vfs.h"
+#include <mgba/core/core.h>
+#include <mgba/internal/gb/cheats.h>
+#include <mgba/internal/gb/extra/cli.h>
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/mbc.h>
+#include <mgba/internal/gb/overrides.h>
+#include <mgba/internal/gb/renderers/software.h>
+#include <mgba/internal/gb/serialize.h>
+#include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/lr35902/debugger/debugger.h>
+#include <mgba-util/crc32.h>
+#include <mgba-util/memory.h>
+#include <mgba-util/patch.h>
+#include <mgba-util/vfs.h>
 
 struct GBCore {
 	struct mCore d;

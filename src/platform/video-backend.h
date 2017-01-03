@@ -6,7 +6,9 @@
 #ifndef VIDEO_BACKEND_H
 #define VIDEO_BACKEND_H
 
-#include "util/common.h"
+#include <mgba-util/common.h>
+
+CXX_GUARD_START
 
 #ifdef _WIN32
 #include <windows.h>
@@ -43,5 +45,7 @@ struct VideoShader {
 	void* passes;
 	size_t nPasses;
 };
+
+CXX_GUARD_END
 
 #endif

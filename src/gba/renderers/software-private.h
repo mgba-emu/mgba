@@ -6,7 +6,8 @@
 #ifndef SOFTWARE_PRIVATE_H
 #define SOFTWARE_PRIVATE_H
 
-#include "video-software.h"
+#include <mgba/internal/arm/macros.h>
+#include <mgba/internal/gba/renderers/video-software.h>
 
 #ifdef NDEBUG
 #define VIDEO_CHECKS false

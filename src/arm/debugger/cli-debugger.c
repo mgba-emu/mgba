@@ -3,13 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "cli-debugger.h"
+#include <mgba/internal/arm/debugger/cli-debugger.h>
 
-#include "arm/debugger/debugger.h"
-#include "arm/debugger/memory-debugger.h"
-#include "arm/decoder.h"
-#include "core/core.h"
-#include "debugger/cli-debugger.h"
+#include <mgba/core/core.h>
+#include <mgba/internal/arm/debugger/debugger.h>
+#include <mgba/internal/arm/debugger/memory-debugger.h>
+#include <mgba/internal/arm/decoder.h>
+#include <mgba/internal/debugger/cli-debugger.h>
 
 static void _printStatus(struct CLIDebuggerSystem*);
 

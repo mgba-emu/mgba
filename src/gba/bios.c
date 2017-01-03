@@ -3,13 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "bios.h"
+#include <mgba/internal/gba/bios.h>
 
-#include "arm/isa-inlines.h"
-#include "arm/macros.h"
-#include "gba/gba.h"
-#include "gba/io.h"
-#include "gba/memory.h"
+#include <mgba/internal/arm/isa-inlines.h>
+#include <mgba/internal/arm/macros.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/memory.h>
 
 const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
 const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;

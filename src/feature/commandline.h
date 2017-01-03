@@ -6,9 +6,11 @@
 #ifndef COMMAND_LINE_H
 #define COMMAND_LINE_H
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
-#include "debugger/debugger.h"
+CXX_GUARD_START
+
+#include <mgba/internal/debugger/debugger.h>
 
 struct mArguments {
 	char* fname;
@@ -48,5 +50,7 @@ void usage(const char* arg0, const char* extraOptions);
 void version(const char* arg0);
 
 void initParserForGraphics(struct mSubParser* parser, struct mGraphicsOpts* opts);
+
+CXX_GUARD_END
 
 #endif

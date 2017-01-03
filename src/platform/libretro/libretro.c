@@ -5,24 +5,24 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "libretro.h"
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
-#include "core/core.h"
-#include "core/version.h"
+#include <mgba/core/blip_buf.h>
+#include <mgba/core/cheats.h>
+#include <mgba/core/core.h>
+#include <mgba/core/version.h>
 #ifdef M_CORE_GB
-#include "gb/core.h"
-#include "gb/gb.h"
+#include <mgba/gb/core.h>
 #endif
 #ifdef M_CORE_GBA
-#include "gba/bios.h"
-#include "gba/core.h"
-#include "gba/cheats.h"
-#include "gba/core.h"
-#include "gba/serialize.h"
+#include <mgba/gba/core.h>
+#include <mgba/gba/interface.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/video.h>
 #endif
-#include "util/circle-buffer.h"
-#include "util/memory.h"
-#include "util/vfs.h"
+#include <mgba-util/circle-buffer.h>
+#include <mgba-util/memory.h>
+#include <mgba-util/vfs.h>
 
 #define SAMPLES 1024
 #define RUMBLE_PWM 35
@@ -146,7 +146,7 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
 	info->geometry.max_width = width;
 	info->geometry.max_height = height;
 	info->geometry.aspect_ratio = width / (double) height;
-	info->timing.fps = GBA_ARM7TDMI_FREQUENCY / (float) VIDEO_TOTAL_LENGTH;
+	info->timing.fps = core->frequency(core) / (float) core->frameCycles(core);
 	info->timing.sample_rate = 32768;
 }
 
@@ -413,7 +413,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 		gba->luminanceSource = &lux;
 
 		const char* sysDir = 0;
-		if (environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
+		if (core->opts.useBios && environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
 			char biosPath[PATH_MAX];
 			snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, "gba_bios.bin");
 			struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
@@ -443,14 +443,14 @@ void retro_unload_game(void) {
 }
 
 size_t retro_serialize_size(void) {
-	return sizeof(struct GBASerializedState);
+	return core->stateSize(core);
 }
 
 bool retro_serialize(void* data, size_t size) {
 	if (size != retro_serialize_size()) {
 		return false;
 	}
-	GBASerialize(core->board, data);
+	core->saveState(core, data);
 	return true;
 }
 
@@ -458,7 +458,7 @@ bool retro_unserialize(const void* data, size_t size) {
 	if (size != retro_serialize_size()) {
 		return false;
 	}
-	GBADeserialize(core->board, data);
+	core->loadState(core, data);
 	return true;
 }
 

@@ -3,12 +3,12 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "overrides.h"
+#include <mgba/internal/gb/overrides.h>
 
-#include "gb/gb.h"
+#include <mgba/internal/gb/gb.h>
 
-#include "util/configuration.h"
-#include "util/crc32.h"
+#include <mgba-util/configuration.h>
+#include <mgba-util/crc32.h>
 
 static const struct GBCartridgeOverride _overrides[] = {
 	// None yet

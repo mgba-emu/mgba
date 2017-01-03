@@ -1,6 +1,6 @@
 /* blip_buf 1.1.0. http://www.slack.net/~ant/ */
 
-#include "blip_buf.h"
+#include <mgba/core/blip_buf.h>
 
 #include <assert.h>
 #include <limits.h>

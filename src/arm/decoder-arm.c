@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "decoder.h"
+#include <mgba/internal/arm/decoder.h>
 
-#include "decoder-inlines.h"
-#include "emitter-arm.h"
-#include "isa-inlines.h"
+#include <mgba/internal/arm/decoder-inlines.h>
+#include <mgba/internal/arm/emitter-arm.h>
+#include <mgba/internal/arm/isa-inlines.h>
 
 #define ADDR_MODE_1_SHIFT(OP) \
 	info->op3.reg = opcode & 0x0000000F; \

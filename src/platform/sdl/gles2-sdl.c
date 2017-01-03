@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,16 +7,20 @@
 
 #include "gl-common.h"
 
+#include "core/thread.h"
+
+#ifndef __APPLE__
 #include <malloc.h>
+#endif
 
 static bool mSDLGLES2Init(struct mSDLRenderer* renderer);
-static void mSDLGLES2RunloopGBA(struct mSDLRenderer* renderer, void* user);
+static void mSDLGLES2Runloop(struct mSDLRenderer* renderer, void* user);
 static void mSDLGLES2Deinit(struct mSDLRenderer* renderer);
 
 void mSDLGLES2Create(struct mSDLRenderer* renderer) {
 	renderer->init = mSDLGLES2Init;
 	renderer->deinit = mSDLGLES2Deinit;
-	renderer->runloop = mSDLGLES2RunloopGBA;
+	renderer->runloop = mSDLGLES2Runloop;
 }
 
 bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
@@ -93,8 +97,13 @@ bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
 	mSDLGLCommonInit(renderer);
 #endif
 
-	renderer->d.outputBuffer = memalign(16, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
-	renderer->d.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
+#ifndef __APPLE__
+	renderer->outputBuffer = memalign(16, renderer->width * renderer->height * BYTES_PER_PIXEL);
+#else
+	posix_memalign((void**) &renderer->outputBuffer, 16, renderer->width * renderer->height * BYTES_PER_PIXEL);
+#endif
+	memset(renderer->outputBuffer, 0, renderer->width * renderer->height * BYTES_PER_PIXEL);
+	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
 
 	mGLES2ContextCreate(&renderer->gl2);
 	renderer->gl2.d.user = renderer;
@@ -107,17 +116,17 @@ bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
 }
 
 void mSDLGLES2Runloop(struct mSDLRenderer* renderer, void* user) {
-	struct GBAThread* context = user;
+	struct mCoreThread* context = user;
 	SDL_Event event;
 	struct VideoBackend* v = &renderer->gl2.d;
 
 	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
-			mSDLHandleEventGBA(context, &renderer->player, &event);
+			mSDLHandleEvent(context, &renderer->player, &event);
 		}
 
 		if (mCoreSyncWaitFrameStart(&context->sync)) {
-			v->postFrame(v, renderer->d.outputBuffer);
+			v->postFrame(v, renderer->outputBuffer);
 		}
 		mCoreSyncWaitFrameEnd(&context->sync);
 		v->drawFrame(v);
@@ -142,5 +151,5 @@ void mSDLGLES2Deinit(struct mSDLRenderer* renderer) {
 #elif SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_GL_DeleteContext(renderer->glCtx);
 #endif
-	free(renderer->d.outputBuffer);
+	free(renderer->outputBuffer);
 }

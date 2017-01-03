@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "io.h"
+#include <mgba/internal/gb/io.h>
 
-#include "gb/gb.h"
-#include "gb/sio.h"
-#include "gb/serialize.h"
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/sio.h>
+#include <mgba/internal/gb/serialize.h>
 
 mLOG_DEFINE_CATEGORY(GB_IO, "GB I/O");
 
@@ -158,6 +158,9 @@ void GBIOReset(struct GB* gb) {
 
 void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	switch (address) {
+	case REG_SB:
+		GBSIOWriteSB(&gb->sio, value);
+		break;
 	case REG_SC:
 		GBSIOWriteSC(&gb->sio, value);
 		break;
@@ -338,7 +341,6 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		}
 		break;
 	case REG_JOYP:
-	case REG_SB:
 	case REG_TIMA:
 	case REG_TMA:
 		// Handled transparently by the registers

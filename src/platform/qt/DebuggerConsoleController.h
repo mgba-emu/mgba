@@ -12,9 +12,7 @@
 #include <QStringList>
 #include <QWaitCondition>
 
-extern "C" {
-#include "debugger/cli-debugger.h"
-}
+#include <mgba/internal/debugger/cli-debugger.h>
 
 namespace QGBA {
 

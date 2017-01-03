@@ -9,15 +9,13 @@
 
 #include <QFontDatabase>
 
-extern "C" {
-#include "core/interface.h"
+#include <mgba/core/interface.h>
 #ifdef M_CORE_GBA
-#include "gba/memory.h"
+#include <mgba/internal/gba/memory.h>
 #endif
 #ifdef M_CORE_GB
-#include "gb/memory.h"
+#include <mgba/internal/gb/memory.h>
 #endif
-}
 
 using namespace QGBA;
 

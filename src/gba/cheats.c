@@ -3,12 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "cheats.h"
+#include <mgba/internal/gba/cheats.h>
 
+#include <mgba/core/core.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba-util/string.h>
 #include "gba/cheats/gameshark.h"
 #include "gba/cheats/parv3.h"
-#include "gba/gba.h"
-#include "util/string.h"
 
 #define MAX_LINE_LENGTH 128
 

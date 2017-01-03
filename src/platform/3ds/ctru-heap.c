@@ -28,7 +28,7 @@
 #include <3ds/services/hid.h>
 #include <3ds/svc.h>
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 extern char* fake_heap_start;
 extern char* fake_heap_end;

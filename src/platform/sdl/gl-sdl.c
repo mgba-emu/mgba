@@ -7,8 +7,8 @@
 
 #include "gl-common.h"
 
-#include "core/core.h"
-#include "core/thread.h"
+#include <mgba/core/core.h>
+#include <mgba/core/thread.h>
 #include "platform/opengl/gl.h"
 
 static void _doViewport(int w, int h, struct VideoBackend* v) {

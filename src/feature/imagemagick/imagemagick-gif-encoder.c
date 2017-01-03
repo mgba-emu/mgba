@@ -5,8 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "imagemagick-gif-encoder.h"
 
-#include "gba/video.h"
-#include "util/string.h"
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/video.h>
+#include <mgba-util/string.h>
 
 static void _magickPostVideoFrame(struct mAVStream*, const color_t* pixels, size_t stride);
 static void _magickVideoDimensionsChanged(struct mAVStream*, unsigned width, unsigned height);

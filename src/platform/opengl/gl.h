@@ -6,6 +6,10 @@
 #ifndef GL_H
 #define GL_H
 
+#include <mgba-util/common.h>
+
+CXX_GUARD_START
+
 #ifdef USE_EPOXY
 #include <epoxy/gl.h>
 #elif defined(__APPLE__)
@@ -26,5 +30,7 @@ struct mGLContext {
 };
 
 void mGLContextCreate(struct mGLContext*);
+
+CXX_GUARD_END
 
 #endif

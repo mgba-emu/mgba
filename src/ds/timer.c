@@ -3,10 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "timer.h"
+#include <mgba/internal/ds/timer.h>
 
-#include "arm/arm.h"
-#include "ds/ds.h"
+#include <mgba/internal/arm/arm.h>
+#include <mgba/internal/ds/ds.h>
 
 void DSTimerUpdateRegister(struct DSTimer* timer, struct ARMCore* cpu, uint16_t* io) {
 	if (DSTimerFlagsIsEnable(timer->flags) && !DSTimerFlagsIsCountUp(timer->flags)) {

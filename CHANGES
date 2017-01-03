@@ -7,43 +7,12 @@ Features:
  - Debugging console
  - Improved memory viewer
 Bugfixes:
- - Libretro: Fix unterminated SET_INPUT_DESCRIPTORS
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
- - GBA Memory: Fix misaligned BIOS reads
- - GBA BIOS: Fix MidiKey2Freq BIOS reads
- - GBA BIOS: Fix invalid CpuSet not setting BIOS prefetch
- - GB MBC: Fix SRAM dangling pointer with RTC games
- - Windows: Fix Unicode directory handling
- - Qt: Fix changing resolution of software renderer
- - Qt: Fix setting overrides
- - GBA Cheats: Fix GameShark ROM patches
- - Qt: Fix cut off tiles and alignment issues in tile viewer
- - GB MBC: Fix initializing MBC when no ROM is loaded
- - VFS: Fix resizing memory chunks when not needed
- - GB Memory: Fix patching ROM bank 0
- - GB: Fix audio not being deinitialized
- - GBA Memory: Fix VCOUNT being writable
  - GBA Memory: Improve initial skipped BIOS state
- - Qt: Only reset window dimensions when first shown
- - GB Memory: Fix starting HDMAs during mode 0
- - Qt: Fix Qt Multimedia audio driver on big endian
- - GBA: Fix IRQs firing after already being cleared
- - All: Fix fullscreen config option being ignored
  - GBA BIOS: Implement BitUnPack
- - GBA: Add savegame override for Crash Bandicoot 2
- - ARM7: PSR mode bits should not get sign extended
- - GBA: Only unhalt CPU if appropriate bit is set in IE
- - GBA Video: Fix out of bounds sprite transforms
- - GB: Fix crash when masking savedata
- - GB Audio: Fix serialization of channel 3 and NR52 properties
- - GB: Properly initialize sramRealVf variable
- - Qt: Fix Apply button for key and controller configurations
- - GB Video: Initialize LCDC in renderer
- - GBA I/O: Mask off WAITCNT bits that cannot be written
- - GB Memory: Fix HDMA5 value after DMA completes
- - GB Video: Hblank IRQs should mask LYC=LY IRQs
- - GB Audio: Reset envelope timer when reseting sound channel
+ - ARM7: Fix MLA/*MULL/*MLAL timing
+ - GBA: Fix multiboot ROM loading
  - SDL: Prevent crash on cores with no audio
  - ARM7: Decode MCR/MRC
  - ARM7: Clean up instruction decoding for future expandability
@@ -54,8 +23,6 @@ Misc:
  - GBA Video: Allow multiple handles into the same tile cache
  - VFS: Call msync when syncing mapped data
  - GBA Video, GB Video: Colors are now fully scaled
- - PSP2: Improved controller rumble
- - GB, GBA: Prevent loading null ROMs
  - VFS: Allow truncating memory chunk VFiles
  - Debugger: Modularize CLI debugger
  - Core: Clean up some thread state checks
@@ -67,11 +34,55 @@ Misc:
  - 3DS, PSP2, Wii: Last directory loaded is saved
  - GB Audio: Simplify envelope code
  - GB Audio: Improve initial envelope samples
- - GB Audio: Initialize wave RAM to GBC values
  - Debugger: Add functions for read- or write-only watchpoints
- - GB Memory: Reset ROM bank when loading a ROM
  - GBA DMA: Refactor DMA out of memory.c
  - GBA DMA: Move DMAs to using absolute timing
+ - All: Add C++ header guards
+ - GBA I/O: Clear JOYSTAT RECV flag when reading JOY_RECV registers
+ - GBA I/O: Set JOYSTAT TRANS flag when writing JOY_TRANS registers
+
+0.5.2: (2016-12-31)
+Bugfixes:
+ - All: Fix fullscreen config option being ignored
+ - ARM7: PSR mode bits should not get sign extended
+ - GB: Fix audio not being deinitialized
+ - GB: Fix crash when masking savedata
+ - GB: Properly initialize sramRealVf variable
+ - GB Audio: Fix serialization of channel 3 and NR52 properties
+ - GB Audio: Reset envelope timer when reseting sound channel
+ - GB MBC: Fix SRAM dangling pointer with RTC games
+ - GB MBC: Fix initializing MBC when no ROM is loaded
+ - GB Memory: Fix patching ROM bank 0
+ - GB Memory: Fix starting HDMAs during mode 0
+ - GB Memory: Fix HDMA5 value after DMA completes
+ - GB Video: Initialize LCDC in renderer
+ - GB Video: Hblank IRQs should mask LYC=LY IRQs
+ - GBA: Fix IRQs firing after already being cleared
+ - GBA: Only unhalt CPU if appropriate bit is set in IE
+ - GBA: Add savegame override for Crash Bandicoot 2
+ - GBA BIOS: Fix MidiKey2Freq BIOS reads
+ - GBA BIOS: Fix invalid CpuSet not setting BIOS prefetch
+ - GBA Cheats: Fix GameShark ROM patches
+ - GBA I/O: Mask off WAITCNT bits that cannot be written
+ - GBA Memory: Fix misaligned BIOS reads
+ - GBA Memory: Fix VCOUNT being writable
+ - GBA Video: Fix out of bounds sprite transforms
+ - Libretro: Fix unterminated SET_INPUT_DESCRIPTORS
+ - Libretro: Fix disabling BIOS
+ - Libretro: Fix Game Boy savestates and audio
+ - Qt: Fix changing resolution of software renderer
+ - Qt: Fix setting overrides
+ - Qt: Fix cut off tiles and alignment issues in tile viewer
+ - Qt: Only reset window dimensions when first shown
+ - Qt: Fix Qt Multimedia audio driver on big endian
+ - Qt: Fix Apply button for key and controller configurations
+ - VFS: Fix resizing memory chunks when not needed
+ - Windows: Fix Unicode directory handling
+Misc:
+ - GB, GBA: Prevent loading null ROMs
+ - GB Audio: Initialize wave RAM to GBC values
+ - GB Memory: Reset ROM bank when loading a ROM
+ - PSP2: Improved controller rumble
 
 0.5.1: (2016-10-05)
 Bugfixes:

@@ -3,17 +3,19 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "memory.h"
+#include <mgba/internal/gba/memory.h>
 
-#include "arm/decoder.h"
-#include "gba/dma.h"
-#include "gba/hardware.h"
-#include "gba/io.h"
-#include "gba/serialize.h"
+#include <mgba/internal/arm/decoder.h>
+#include <mgba/internal/arm/macros.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/dma.h>
+#include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/serialize.h>
 #include "gba/hle-bios.h"
-#include "util/math.h"
-#include "util/memory.h"
-#include "util/vfs.h"
+
+#include <mgba-util/math.h>
+#include <mgba-util/memory.h>
+#include <mgba-util/vfs.h>
 
 #define IDLE_LOOP_THRESHOLD 10000
 

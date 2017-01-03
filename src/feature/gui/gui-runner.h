@@ -6,13 +6,15 @@
 #ifndef GUI_RUNNER_H
 #define GUI_RUNNER_H
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
-#include "core/config.h"
+CXX_GUARD_START
+
+#include <mgba/core/config.h>
 #include "feature/gui/remap.h"
-#include "gba/hardware.h"
-#include "util/circle-buffer.h"
-#include "util/gui.h"
+#include <mgba/internal/gba/hardware.h>
+#include <mgba-util/circle-buffer.h>
+#include <mgba-util/gui.h>
 
 enum mGUIInput {
 	mGUI_INPUT_INCREASE_BRIGHTNESS = GUI_INPUT_USER_START,
@@ -74,5 +76,7 @@ void mGUIInit(struct mGUIRunner*, const char* port);
 void mGUIDeinit(struct mGUIRunner*);
 void mGUIRun(struct mGUIRunner*, const char* path);
 void mGUIRunloop(struct mGUIRunner*);
+
+CXX_GUARD_END
 
 #endif

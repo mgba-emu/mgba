@@ -5,11 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/test/suite.h"
 
-#include "core/core.h"
-#include "gb/core.h"
-#include "gb/gb.h"
-#include "gb/mbc.h"
-#include "util/vfs.h"
+#include <mgba/core/core.h>
+#include <mgba/gb/core.h>
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/mbc.h>
+#include <mgba-util/vfs.h>
 
 struct GBRTCTest {
 	struct mRTCSource d;

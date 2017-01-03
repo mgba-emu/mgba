@@ -11,9 +11,7 @@
 #include <QDir>
 #include <QMenu>
 
-extern "C" {
 #include "feature/commandline.h"
-}
 
 using namespace QGBA;
 

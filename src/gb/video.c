@@ -3,16 +3,17 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "video.h"
+#include <mgba/internal/gb/video.h>
 
-#include "core/sync.h"
-#include "core/thread.h"
-#include "core/tile-cache.h"
-#include "gb/gb.h"
-#include "gb/io.h"
-#include "gb/serialize.h"
+#include <mgba/core/sync.h>
+#include <mgba/core/thread.h>
+#include <mgba/core/tile-cache.h>
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/io.h>
+#include <mgba/internal/gb/serialize.h>
+#include <mgba/internal/lr35902/lr35902.h>
 
-#include "util/memory.h"
+#include <mgba-util/memory.h>
 
 static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model);
 static void GBVideoDummyRendererDeinit(struct GBVideoRenderer* renderer);

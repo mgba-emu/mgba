@@ -3,10 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "timer.h"
+#include <mgba/internal/gba/timer.h>
 
-#include "gba/gba.h"
-#include "gba/io.h"
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/io.h>
 
 static void GBATimerUpdate(struct mTiming* timing, struct GBA* gba, int timerId, uint32_t cyclesLate) {
 	struct GBATimer* timer = &gba->timers[timerId];

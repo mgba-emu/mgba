@@ -3,16 +3,18 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "core/config.h"
-#include "core/serialize.h"
-#include "gba/core.h"
-#include "gba/gba.h"
-#include "gba/renderers/video-software.h"
+#include <mgba/core/blip_buf.h>
+#include <mgba/core/cheats.h>
+#include <mgba/core/config.h>
+#include <mgba/core/core.h>
+#include <mgba/core/serialize.h>
+#include <mgba/gb/core.h>
+#include <mgba/gba/core.h>
 
 #include "feature/commandline.h"
-#include "util/socket.h"
-#include "util/string.h"
-#include "util/vfs.h"
+#include <mgba-util/socket.h>
+#include <mgba-util/string.h>
+#include <mgba-util/vfs.h>
 
 #ifdef _3DS
 #include <3ds.h>

@@ -3,14 +3,14 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "memory.h"
+#include <mgba/internal/ds/memory.h>
 
-#include "arm/macros.h"
+#include <mgba/internal/arm/macros.h>
 
-#include "ds/ds.h"
-#include "ds/io.h"
-#include "util/math.h"
-#include "util/memory.h"
+#include <mgba/internal/ds/ds.h>
+#include <mgba/internal/ds/io.h>
+#include <mgba-util/math.h>
+#include <mgba-util/memory.h>
 
 mLOG_DEFINE_CATEGORY(DS_MEM, "DS Memory");
 

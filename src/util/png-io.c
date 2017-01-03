@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "util/png-io.h"
+#include <mgba-util/png-io.h>
 
 #ifdef USE_PNG
 
-#include "vfs.h"
+#include <mgba-util/vfs.h>
 
 static void _pngWrite(png_structp png, png_bytep buffer, png_size_t size) {
 	struct VFile* vf = png_get_io_ptr(png);
