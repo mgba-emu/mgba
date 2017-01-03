@@ -15,8 +15,6 @@
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
 
-#define SLICE_CYCLES 2048
-
 struct DSCore {
 	struct mCore d;
 	struct ARMCore* arm7;
@@ -25,7 +23,6 @@ struct DSCore {
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	struct mDebuggerPlatform* debuggerPlatform;
 	struct mCheatDevice* cheatDevice;
-	int32_t cycleDrift;
 };
 
 static bool _DSCoreInit(struct mCore* core) {
@@ -47,7 +44,6 @@ static bool _DSCoreInit(struct mCore* core) {
 	dscore->arm9 = arm9;
 	dscore->debuggerPlatform = NULL;
 	dscore->cheatDevice = NULL;
-	dscore->cycleDrift = 0;
 
 	DSCreate(ds);
 	memset(dscore->components, 0, sizeof(dscore->components));
@@ -165,7 +161,6 @@ static void _DSCoreReset(struct mCore* core) {
 	struct DS* ds = (struct DS*) core->board;
 	ARMReset(ds->arm7);
 	ARMReset(ds->arm9);
-	dscore->cycleDrift = 0;
 }
 
 static void _DSCoreRunFrame(struct mCore* core) {
@@ -173,47 +168,20 @@ static void _DSCoreRunFrame(struct mCore* core) {
 	struct DS* ds = core->board;
 	int32_t frameCounter = ds->video.frameCounter;
 	while (ds->video.frameCounter == frameCounter) {
-		if (dscore->cycleDrift < SLICE_CYCLES) {
-			dscore->cycleDrift += ARMv5RunCycles(dscore->arm9, SLICE_CYCLES);
-		}
-		if (dscore->cycleDrift >= SLICE_CYCLES) {
-			dscore->cycleDrift -= ARMv4RunCycles(dscore->arm7, dscore->cycleDrift >> 1) << 1;
-		}
+		DSRunLoop(core->board);
 	}
 }
 
 static void _DSCoreRunLoop(struct mCore* core) {
-	struct DSCore* dscore = (struct DSCore*) core;
-	if (dscore->cycleDrift < SLICE_CYCLES) {
-		dscore->cycleDrift += ARMv5RunCycles(dscore->arm9, SLICE_CYCLES);
-	}
-	if (dscore->cycleDrift >= SLICE_CYCLES) {
-		dscore->cycleDrift -= ARMv4RunCycles(dscore->arm7, dscore->cycleDrift >> 1) << 1;
-	}
+	DSRunLoop(core->board);
 }
 
 static void _DSCoreStep(struct mCore* core) {
 	struct DSCore* dscore = (struct DSCore*) core;
 	if (core->cpu == dscore->arm9) {
-		do {
-			if (dscore->cycleDrift >= SLICE_CYCLES) {
-				dscore->cycleDrift -= ARMv4RunCycles(dscore->arm7, dscore->cycleDrift >> 1) << 1;
-			}
-			if (dscore->cycleDrift < SLICE_CYCLES) {
-				dscore->cycleDrift += ARMv5RunCycles(dscore->arm9, 1);
-				break;
-			}
-		} while (dscore->cycleDrift >= SLICE_CYCLES);
+		DS9Step(core->board);
 	} else {
-		do {
-			if (dscore->cycleDrift < SLICE_CYCLES) {
-				dscore->cycleDrift += ARMv5RunCycles(dscore->arm9, SLICE_CYCLES - dscore->cycleDrift);
-			}
-			if (dscore->cycleDrift >= SLICE_CYCLES) {
-				dscore->cycleDrift -= ARMv4RunCycles(dscore->arm7, 1) << 1;
-				break;
-			}
-		} while (dscore->cycleDrift < SLICE_CYCLES);
+		DS7Step(core->board);
 	}
 }
 

@@ -69,6 +69,10 @@ struct DS {
 	struct mCoreSync* sync;
 	struct mTiming timing7;
 	struct mTiming timing9;
+	struct mTimingEvent slice;
+	struct ARMCore* activeCpu;
+	uint32_t sliceStart;
+	int32_t cycleDrift;
 
 	struct ARMDebugger* debugger;
 
@@ -129,6 +133,10 @@ struct DSCartridge {
 
 void DSCreate(struct DS* ds);
 void DSDestroy(struct DS* ds);
+
+void DSRunLoop(struct DS* ds);
+void DS7Step(struct DS* ds);
+void DS9Step(struct DS* ds);
 
 void DSAttachDebugger(struct DS* ds, struct mDebugger* debugger);
 void DSDetachDebugger(struct DS* ds);

@@ -15,6 +15,8 @@
 #include <mgba-util/math.h>
 #include <mgba-util/vfs.h>
 
+#define SLICE_CYCLES 2048
+
 mLOG_DEFINE_CATEGORY(DS, "DS");
 
 const uint32_t DS_ARM946ES_FREQUENCY = 0x1FF61FE;
@@ -39,16 +41,37 @@ static void DSInit(void* cpu, struct mCPUComponent* component);
 static void DS7Reset(struct ARMCore* cpu);
 static void DS7TestIRQ(struct ARMCore* cpu);
 static void DS7InterruptHandlerInit(struct ARMInterruptHandler* irqh);
+static void DS7ProcessEvents(struct ARMCore* cpu);
 
 static void DS9Reset(struct ARMCore* cpu);
 static void DS9TestIRQ(struct ARMCore* cpu);
 static void DS9WriteCP15(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2, uint32_t value);
 static void DS9InterruptHandlerInit(struct ARMInterruptHandler* irqh);
+static void DS9ProcessEvents(struct ARMCore* cpu);
 
-static void DSProcessEvents(struct ARMCore* cpu);
+static void DSProcessEvents(struct DS* ds, struct mTiming* timing);
 static void DSHitStub(struct ARMCore* cpu, uint32_t opcode);
 static void DSIllegal(struct ARMCore* cpu, uint32_t opcode);
 static void DSBreakpoint(struct ARMCore* cpu, int immediate);
+
+static void _slice(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+	UNUSED(cyclesLate);
+	struct DS* ds = context;
+	uint32_t cycles = mTimingCurrentTime(timing) - ds->sliceStart;
+	if (ds->activeCpu == ds->arm9) {
+		ds->activeCpu = ds->arm7;
+		ds->cycleDrift += cycles;
+		cycles = ds->cycleDrift >> 1;
+		timing = &ds->timing7;
+	} else {
+		ds->activeCpu = ds->arm9;
+		ds->cycleDrift -= cycles << 1;
+		cycles = ds->cycleDrift + SLICE_CYCLES;
+		timing = &ds->timing9;
+	}
+	mTimingSchedule(timing, &ds->slice, cycles);
+	ds->sliceStart = mTimingCurrentTime(timing);
+}
 
 void DSCreate(struct DS* ds) {
 	ds->d.id = DS_COMPONENT_MAGIC;
@@ -69,8 +92,14 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 		return;
 	}
 	ds->arm9 = cpu;
+	ds->activeCpu = NULL;
 
 	ds->arm9->cp15.r1.c0 = ARMControlRegFillVE(0);
+
+	ds->slice.name = "DS CPU Time Slicing";
+	ds->slice.callback = _slice;
+	ds->slice.context = ds;
+	ds->slice.priority = UINT_MAX;
 
 	DS7InterruptHandlerInit(&ds->arm7->irqh);
 	DS9InterruptHandlerInit(&ds->arm9->irqh);
@@ -109,7 +138,7 @@ void DSDestroy(struct DS* ds) {
 
 void DS7InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 	irqh->reset = DS7Reset;
-	irqh->processEvents = DSProcessEvents;
+	irqh->processEvents = DS7ProcessEvents;
 	irqh->swi16 = DS7Swi16;
 	irqh->swi32 = DS7Swi32;
 	irqh->hitIllegal = DSIllegal;
@@ -122,7 +151,7 @@ void DS7InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 
 void DS9InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 	irqh->reset = DS9Reset;
-	irqh->processEvents = DSProcessEvents;
+	irqh->processEvents = DS9ProcessEvents;
 	irqh->swi16 = NULL;
 	irqh->swi32 = NULL;
 	irqh->hitIllegal = DSIllegal;
@@ -177,6 +206,11 @@ void DS9Reset(struct ARMCore* cpu) {
 	mTimingClear(&ds->timing9);
 	DS9IOInit(ds);
 
+	ds->activeCpu = cpu;
+	mTimingSchedule(&ds->timing9, &ds->slice, SLICE_CYCLES);
+	ds->cycleDrift = 0;
+	ds->sliceStart = mTimingCurrentTime(&ds->timing9);
+
 	struct DSCartridge* header = ds->romVf->map(ds->romVf, sizeof(*header), MAP_READ);
 	if (header) {
 		// TODO: Error check
@@ -196,14 +230,28 @@ void DS9Reset(struct ARMCore* cpu) {
 	}
 }
 
-static void DSProcessEvents(struct ARMCore* cpu) {
+static void DS7ProcessEvents(struct ARMCore* cpu) {
 	struct DS* ds = (struct DS*) cpu->master;
 
 	if (ds->springIRQ7 && !cpu->cpsr.i) {
 		ARMRaiseIRQ(cpu);
 		ds->springIRQ7 = 0;
 	}
+	DSProcessEvents(ds, &ds->timing7);
+}
 
+static void DS9ProcessEvents(struct ARMCore* cpu) {
+	struct DS* ds = (struct DS*) cpu->master;
+
+	if (ds->springIRQ9 && !cpu->cpsr.i) {
+		ARMRaiseIRQ(cpu);
+		ds->springIRQ9 = 0;
+	}
+	DSProcessEvents(ds, &ds->timing9);
+}
+
+static void DSProcessEvents(struct DS* ds, struct mTiming* timing) {
+	struct ARMCore* cpu = ds->activeCpu;
 	int32_t nextEvent = cpu->nextEvent;
 	while (cpu->cycles >= nextEvent) {
 		int32_t cycles = cpu->cycles;
@@ -218,7 +266,7 @@ static void DSProcessEvents(struct ARMCore* cpu) {
 #endif
 		nextEvent = cycles;
 		do {
-			nextEvent = mTimingTick(&ds->timing7, nextEvent);
+			nextEvent = mTimingTick(timing, nextEvent);
 		} while (ds->cpuBlocked);
 
 		cpu->nextEvent = nextEvent;
@@ -236,6 +284,28 @@ static void DSProcessEvents(struct ARMCore* cpu) {
 		}
 #endif
 	}
+}
+
+void DSRunLoop(struct DS* ds) {
+	if (ds->activeCpu == ds->arm9) {
+		ARMv5RunLoop(ds->arm9);
+	} else {
+		ARMv4RunLoop(ds->arm7);
+	}
+}
+
+void DS7Step(struct DS* ds) {
+	while (ds->activeCpu == ds->arm9) {
+		ARMv5RunLoop(ds->arm9);
+	}
+	ARMv4Run(ds->arm7);
+}
+
+void DS9Step(struct DS* ds) {
+	while (ds->activeCpu == ds->arm7) {
+		ARMv4RunLoop(ds->arm7);
+	}
+	ARMv5Run(ds->arm9);
 }
 
 void DSAttachDebugger(struct DS* ds, struct mDebugger* debugger) {
