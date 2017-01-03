@@ -69,10 +69,10 @@ static void _switchCpu(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 	struct mCore* core = dsDebugger->core;
 	struct DS* ds = core->board;
 	debugger->d.platform->deinit(debugger->d.platform);
-	if (core->cpu == ds->arm9) {
-		core->cpu = ds->arm7;
+	if (core->cpu == ds->ds9.cpu) {
+		core->cpu = ds->ds7.cpu;
 	} else {
-		core->cpu = ds->arm9;
+		core->cpu = ds->ds9.cpu;
 	}
 	debugger->d.platform->init(core->cpu, debugger->d.platform);
 	debugger->system->printStatus(debugger->system);

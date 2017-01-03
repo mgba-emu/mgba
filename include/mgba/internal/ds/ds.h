@@ -54,21 +54,27 @@ struct mDebugger;
 
 mLOG_DECLARE_CATEGORY(DS);
 
+struct DSCommon {
+	struct DS* p;
+
+	struct ARMCore* cpu;
+	struct GBATimer timers[4];
+	struct mTiming timing;
+	int springIRQ;
+
+	struct DSCoreMemory memory;
+	struct DSCommon* ipc;
+};
+
 struct DS {
 	struct mCPUComponent d;
 
-	struct ARMCore* arm7;
-	struct ARMCore* arm9;
+	struct DSCommon ds7;
+	struct DSCommon ds9;
 	struct DSMemory memory;
 	struct DSVideo video;
-	int timersEnabled7;
-	int timersEnabled9;
-	struct GBATimer timers7[4];
-	struct GBATimer timers9[4];
 
 	struct mCoreSync* sync;
-	struct mTiming timing7;
-	struct mTiming timing9;
 	struct mTimingEvent slice;
 	struct ARMCore* activeCpu;
 	uint32_t sliceStart;
@@ -76,8 +82,6 @@ struct DS {
 
 	struct ARMDebugger* debugger;
 
-	int springIRQ7;
-	int springIRQ9;
 	bool cpuBlocked;
 	bool earlyExit;
 

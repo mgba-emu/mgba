@@ -133,15 +133,14 @@ struct DSMemory {
 	char waitstatesPrefetchSeq16[16];
 	char waitstatesPrefetchNonseq32[16];
 	char waitstatesPrefetchNonseq16[16];
-	int activeRegion7;
-	int activeRegion9;
+};
 
-	struct DSDMA dma7[4];
-	struct DSDMA dma9[4];
-	int activeDMA7;
-	int activeDMA9;
-	int32_t nextDMA;
-	int32_t eventDiff;
+struct DSCoreMemory {
+	uint16_t* io;
+	int activeRegion;
+
+	struct DSDMA dma[4];
+	int activeDMA;
 };
 
 struct DS;

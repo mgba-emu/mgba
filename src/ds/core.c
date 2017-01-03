@@ -159,8 +159,8 @@ static void _DSCoreUnloadROM(struct mCore* core) {
 static void _DSCoreReset(struct mCore* core) {
 	struct DSCore* dscore = (struct DSCore*) core;
 	struct DS* ds = (struct DS*) core->board;
-	ARMReset(ds->arm7);
-	ARMReset(ds->arm9);
+	ARMReset(ds->ds7.cpu);
+	ARMReset(ds->ds9.cpu);
 }
 
 static void _DSCoreRunFrame(struct mCore* core) {

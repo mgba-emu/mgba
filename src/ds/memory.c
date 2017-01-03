@@ -80,7 +80,7 @@ static int32_t DSMemoryStall(struct ARMCore* cpu, int32_t wait);
 static const int DMA_OFFSET[] = { 1, -1, 0, 1 };
 
 void DSMemoryInit(struct DS* ds) {
-	struct ARMCore* arm7 = ds->arm7;
+	struct ARMCore* arm7 = ds->ds7.cpu;
 	arm7->memory.load32 = DS7Load32;
 	arm7->memory.load16 = DS7Load16;
 	arm7->memory.load8 = DS7Load8;
@@ -91,7 +91,7 @@ void DSMemoryInit(struct DS* ds) {
 	arm7->memory.storeMultiple = DS7StoreMultiple;
 	arm7->memory.stall = DSMemoryStall;
 
-	struct ARMCore* arm9 = ds->arm9;
+	struct ARMCore* arm9 = ds->ds9.cpu;
 	arm9->memory.load32 = DS9Load32;
 	arm9->memory.load16 = DS9Load16;
 	arm9->memory.load8 = DS9Load8;
@@ -111,8 +111,10 @@ void DSMemoryInit(struct DS* ds) {
 	ds->memory.dtcm = NULL;
 	ds->memory.rom = NULL;
 
-	ds->memory.activeRegion7 = -1;
-	ds->memory.activeRegion9 = -1;
+	ds->ds7.memory.activeRegion = -1;
+	ds->ds9.memory.activeRegion = -1;
+	ds->ds7.memory.io = ds->memory.io7;
+	ds->ds9.memory.io = ds->memory.io9;
 
 	arm7->memory.activeRegion = 0;
 	arm7->memory.activeMask = 0;
@@ -165,12 +167,10 @@ void DSMemoryReset(struct DS* ds) {
 	}
 	ds->memory.dtcm = anonymousMemoryMap(DS9_SIZE_DTCM);
 
-	memset(ds->memory.dma7, 0, sizeof(ds->memory.dma7));
-	memset(ds->memory.dma9, 0, sizeof(ds->memory.dma9));
-	ds->memory.activeDMA7 = -1;
-	ds->memory.activeDMA9 = -1;
-	ds->memory.nextDMA = INT_MAX;
-	ds->memory.eventDiff = 0;
+	memset(ds->ds7.memory.dma, 0, sizeof(ds->ds7.memory.dma));
+	memset(ds->ds9.memory.dma, 0, sizeof(ds->ds9.memory.dma));
+	ds->ds7.memory.activeDMA = -1;
+	ds->ds9.memory.activeDMA = -1;
 
 	// TODO: Correct size
 	ds->memory.wramSize7 = 0x8000;
@@ -188,7 +188,7 @@ static void DS7SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 
 	int newRegion = address >> DS_BASE_OFFSET;
 
-	memory->activeRegion7 = newRegion;
+	ds->ds7.memory.activeRegion = newRegion;
 	switch (newRegion) {
 	case DS_REGION_WORKING_RAM:
 		if (address >= DS7_BASE_WORKING_RAM || !memory->wramSize7) {
@@ -550,7 +550,7 @@ static void DS9SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 
 	int newRegion = address >> DS_BASE_OFFSET;
 
-	memory->activeRegion9 = newRegion;
+	ds->ds9.memory.activeRegion = newRegion;
 	switch (newRegion) {
 	case DS9_REGION_ITCM:
 	case DS9_REGION_ITCM_MIRROR:
