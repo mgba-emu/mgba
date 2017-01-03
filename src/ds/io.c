@@ -6,17 +6,9 @@
 #include <mgba/internal/ds/io.h>
 
 #include <mgba/internal/ds/ds.h>
+#include <mgba/internal/ds/ipc.h>
 
 mLOG_DEFINE_CATEGORY(DS_IO, "DS I/O");
-
-static void _writeIPCSync(struct ARMCore* remoteCpu, uint16_t* remoteIo, int16_t value) {
-	remoteIo[DS_REG_IPCSYNC >> 1] &= 0xFFF0;
-	remoteIo[DS_REG_IPCSYNC >> 1] |= (value >> 8) & 0x0F;
-	if (value & 0x2000 && remoteIo[DS_REG_IPCSYNC >> 1] & 0x4000) {
-		mLOG(DS_IO, STUB, "Unimplemented IPC IRQ");
-		UNUSED(remoteCpu);
-	}
-}
 
 static bool DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t value) {
 	switch (address) {
@@ -54,7 +46,10 @@ static bool DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t value)
 	case DS_REG_IPCSYNC:
 		value &= 0x6F00;
 		value |= dscore->memory.io[address >> 1] & 0x000F;
-		_writeIPCSync(dscore->ipc->cpu, dscore->ipc->memory.io, value);
+		DSIPCWriteSYNC(dscore->ipc->cpu, dscore->ipc->memory.io, value);
+		break;
+	case DS_REG_IPCFIFOCNT:
+		value = DSIPCWriteFIFOCNT(dscore, value);
 		break;
 	case DS_REG_IME:
 		DSWriteIME(dscore->cpu, dscore->memory.io, value);
@@ -118,6 +113,9 @@ void DS7IOWrite8(struct DS* ds, uint32_t address, uint8_t value) {
 
 void DS7IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
 	switch (address) {
+	case DS_REG_IPCFIFOSEND_LO:
+		DSIPCWriteFIFO(&ds->ds9, value);
+		break;
 	case DS_REG_IE_LO:
 		DSWriteIE(ds->ds7.cpu, ds->ds7.memory.io, value);
 		break;
@@ -191,6 +189,12 @@ void DS9IOWrite8(struct DS* ds, uint32_t address, uint8_t value) {
 
 void DS9IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
 	switch (address) {
+	case DS_REG_IPCFIFOSEND_LO:
+		DSIPCWriteFIFO(&ds->ds9, value);
+		break;
+	case DS_REG_IE_LO:
+		DSWriteIE(ds->ds9.cpu, ds->ds9.memory.io, value);
+		break;
 	default:
 		DS9IOWrite(ds, address, value & 0xFFFF);
 		DS9IOWrite(ds, address | 2, value >> 16);

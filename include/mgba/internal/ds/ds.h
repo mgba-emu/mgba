@@ -12,6 +12,7 @@ CXX_GUARD_START
 
 #include <mgba/core/log.h>
 #include <mgba/core/timing.h>
+#include <mgba-util/circle-buffer.h>
 
 #include <mgba/internal/ds/memory.h>
 #include <mgba/internal/ds/timer.h>
@@ -64,6 +65,8 @@ struct DSCommon {
 
 	struct DSCoreMemory memory;
 	struct DSCommon* ipc;
+
+	struct CircleBuffer fifo;
 };
 
 struct DS {

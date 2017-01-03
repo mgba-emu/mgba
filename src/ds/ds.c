@@ -105,6 +105,9 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 	ds->slice.context = ds;
 	ds->slice.priority = UINT_MAX;
 
+	CircleBufferInit(&ds->ds7.fifo, 64);
+	CircleBufferInit(&ds->ds9.fifo, 64);
+
 	DS7InterruptHandlerInit(&ds->ds7.cpu->irqh);
 	DS9InterruptHandlerInit(&ds->ds9.cpu->irqh);
 	DSMemoryInit(ds);
@@ -134,6 +137,8 @@ void DSUnloadROM(struct DS* ds) {
 }
 
 void DSDestroy(struct DS* ds) {
+	CircleBufferDeinit(&ds->ds7.fifo);
+	CircleBufferDeinit(&ds->ds9.fifo);
 	DSUnloadROM(ds);
 	DSMemoryDeinit(ds);
 	mTimingDeinit(&ds->ds7.timing);
@@ -176,6 +181,7 @@ void DS7Reset(struct ARMCore* cpu) {
 
 	struct DS* ds = (struct DS*) cpu->master;
 	mTimingClear(&ds->ds7.timing);
+	CircleBufferInit(&ds->ds7.fifo, 64);
 	DSMemoryReset(ds);
 	DS7IOInit(ds);
 
@@ -208,6 +214,7 @@ void DS9Reset(struct ARMCore* cpu) {
 
 	struct DS* ds = (struct DS*) cpu->master;
 	mTimingClear(&ds->ds9.timing);
+	CircleBufferInit(&ds->ds9.fifo, 64);
 	DS9IOInit(ds);
 
 	ds->activeCpu = cpu;
