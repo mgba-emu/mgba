@@ -195,7 +195,7 @@ void DS9Reset(struct ARMCore* cpu) {
 static void DSProcessEvents(struct ARMCore* cpu) {
 	struct DS* ds = (struct DS*) cpu->master;
 
-	if (ds->springIRQ7) {
+	if (ds->springIRQ7 && !cpu->cpsr.i) {
 		ARMRaiseIRQ(cpu);
 		ds->springIRQ7 = 0;
 	}
