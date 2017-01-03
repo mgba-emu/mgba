@@ -889,7 +889,7 @@ uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 		break;
 	case DS_REGION_RAM:
 		STM_LOOP(if ((address & ~(DS9_SIZE_DTCM - 1)) == DS9_BASE_DTCM) {
-			LOAD_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
+			STORE_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
 		} else if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
 			STORE_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
 		} else {
