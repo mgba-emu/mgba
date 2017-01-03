@@ -10,29 +10,12 @@
 
 CXX_GUARD_START
 
-DECL_BITFIELD(DSTimerFlags, uint32_t);
-DECL_BITS(DSTimerFlags, PrescaleBits, 0, 4);
-DECL_BIT(DSTimerFlags, CountUp, 4);
-DECL_BIT(DSTimerFlags, DoIrq, 5);
-DECL_BIT(DSTimerFlags, Enable, 6);
+#include <mgba/internal/gba/timer.h>
 
-struct DSTimer {
-	uint16_t reload;
-	uint16_t oldReload;
-	int32_t lastEvent;
-	int32_t nextEvent;
-	int32_t overflowInterval;
-	DSTimerFlags flags;
-};
-
-// TODO: Merge back into GBATimer
 struct ARMCore;
-void DSTimerUpdateRegister(struct DSTimer* timer, struct ARMCore* cpu, uint16_t* io);
-void DSTimerWriteTMCNT_LO(struct DSTimer* timer, uint16_t reload);
-void DSTimerWriteTMCNT_HI(struct DSTimer* timer, struct ARMCore* cpu, uint16_t* io, uint16_t control);
-
 struct DS;
-int32_t DSTimersProcessEvents(struct DS* ds, int32_t cycles);
+void DSTimerInit(struct DS* ds);
+void DSTimerWriteTMCNT_HI(struct GBATimer* timer, struct mTiming* timing, struct ARMCore* cpu, uint16_t* io, uint16_t control);
 
 CXX_GUARD_END
 

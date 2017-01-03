@@ -487,33 +487,37 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 
 		// Timers
 		case REG_TM0CNT_LO:
-			GBATimerWriteTMCNT_LO(gba, 0, value);
+			GBATimerWriteTMCNT_LO(&gba->timers[0], value);
 			return;
 		case REG_TM1CNT_LO:
-			GBATimerWriteTMCNT_LO(gba, 1, value);
+			GBATimerWriteTMCNT_LO(&gba->timers[1], value);
 			return;
 		case REG_TM2CNT_LO:
-			GBATimerWriteTMCNT_LO(gba, 2, value);
+			GBATimerWriteTMCNT_LO(&gba->timers[2], value);
 			return;
 		case REG_TM3CNT_LO:
-			GBATimerWriteTMCNT_LO(gba, 3, value);
+			GBATimerWriteTMCNT_LO(&gba->timers[3], value);
 			return;
 
 		case REG_TM0CNT_HI:
 			value &= 0x00C7;
-			GBATimerWriteTMCNT_HI(gba, 0, value);
+			GBATimerUpdateRegister(gba, 0);
+			GBATimerWriteTMCNT_HI(&gba->timers[0], &gba->timing, gba->cpu, &gba->memory.io[REG_TM0CNT_LO >> 1], value);
 			break;
 		case REG_TM1CNT_HI:
 			value &= 0x00C7;
-			GBATimerWriteTMCNT_HI(gba, 1, value);
+			GBATimerUpdateRegister(gba, 1);
+			GBATimerWriteTMCNT_HI(&gba->timers[1], &gba->timing, gba->cpu, &gba->memory.io[REG_TM1CNT_LO >> 1], value);
 			break;
 		case REG_TM2CNT_HI:
 			value &= 0x00C7;
-			GBATimerWriteTMCNT_HI(gba, 2, value);
+			GBATimerUpdateRegister(gba, 2);
+			GBATimerWriteTMCNT_HI(&gba->timers[2], &gba->timing, gba->cpu, &gba->memory.io[REG_TM2CNT_LO >> 1], value);
 			break;
 		case REG_TM3CNT_HI:
 			value &= 0x00C7;
-			GBATimerWriteTMCNT_HI(gba, 3, value);
+			GBATimerUpdateRegister(gba, 3);
+			GBATimerWriteTMCNT_HI(&gba->timers[3], &gba->timing, gba->cpu, &gba->memory.io[REG_TM3CNT_LO >> 1], value);
 			break;
 
 		// SIO

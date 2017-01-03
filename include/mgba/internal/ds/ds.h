@@ -10,8 +10,8 @@
 
 CXX_GUARD_START
 
-#include <mgba/internal/arm/arm.h>
 #include <mgba/core/log.h>
+#include <mgba/core/timing.h>
 
 #include <mgba/internal/ds/memory.h>
 #include <mgba/internal/ds/timer.h>
@@ -46,6 +46,7 @@ enum DSIRQ {
 	DS_IRQ_WIFI = 0x18,
 };
 
+struct ARMCore;
 struct DS;
 struct Patch;
 struct VFile;
@@ -62,15 +63,19 @@ struct DS {
 	struct DSVideo video;
 	int timersEnabled7;
 	int timersEnabled9;
-	struct DSTimer timers7[4];
-	struct DSTimer timers9[4];
+	struct GBATimer timers7[4];
+	struct GBATimer timers9[4];
 
 	struct mCoreSync* sync;
+	struct mTiming timing7;
+	struct mTiming timing9;
 
 	struct ARMDebugger* debugger;
 
 	int springIRQ7;
 	int springIRQ9;
+	bool cpuBlocked;
+	bool earlyExit;
 
 	uint32_t bios7Checksum;
 	uint32_t bios9Checksum;

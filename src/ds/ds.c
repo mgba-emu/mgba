@@ -80,10 +80,7 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 
 	ds->springIRQ7 = 0;
 	ds->springIRQ9 = 0;
-	ds->timersEnabled7 = 0;
-	ds->timersEnabled9 = 0;
-	memset(ds->timers7, 0, sizeof(ds->timers7));
-	memset(ds->timers9, 0, sizeof(ds->timers9));
+	DSTimerInit(ds);
 	ds->keySource = NULL;
 	ds->rtcSource = NULL;
 	ds->rumble = NULL;
@@ -91,6 +88,9 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 	ds->romVf = NULL;
 
 	ds->keyCallback = NULL;
+
+	mTimingInit(&ds->timing7, &ds->arm7->cycles, &ds->arm7->nextEvent);
+	mTimingInit(&ds->timing9, &ds->arm9->cycles, &ds->arm9->nextEvent);
 }
 
 void DSUnloadROM(struct DS* ds) {
@@ -103,6 +103,8 @@ void DSUnloadROM(struct DS* ds) {
 void DSDestroy(struct DS* ds) {
 	DSUnloadROM(ds);
 	DSMemoryDeinit(ds);
+	mTimingDeinit(&ds->timing7);
+	mTimingDeinit(&ds->timing9);
 }
 
 void DS7InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
@@ -140,6 +142,7 @@ void DS7Reset(struct ARMCore* cpu) {
 	cpu->gprs[ARM_SP] = DS7_SP_BASE;
 
 	struct DS* ds = (struct DS*) cpu->master;
+	mTimingClear(&ds->timing7);
 	DSMemoryReset(ds);
 	DS7IOInit(ds);
 
@@ -171,6 +174,7 @@ void DS9Reset(struct ARMCore* cpu) {
 	cpu->gprs[ARM_SP] = DS9_SP_BASE;
 
 	struct DS* ds = (struct DS*) cpu->master;
+	mTimingClear(&ds->timing9);
 	DS9IOInit(ds);
 
 	struct DSCartridge* header = ds->romVf->map(ds->romVf, sizeof(*header), MAP_READ);
@@ -200,25 +204,37 @@ static void DSProcessEvents(struct ARMCore* cpu) {
 		ds->springIRQ7 = 0;
 	}
 
-	int32_t cycles = cpu->nextEvent;
-	int32_t nextEvent = INT_MAX;
-	int32_t testEvent;
+	int32_t nextEvent = cpu->nextEvent;
+	while (cpu->cycles >= nextEvent) {
+		int32_t cycles = cpu->cycles;
+
+		cpu->cycles = 0;
+		cpu->nextEvent = INT_MAX;
+
 #ifndef NDEBUG
-	if (cycles < 0) {
-		mLOG(DS, FATAL, "Negative cycles passed: %i", cycles);
-	}
+		if (cycles < 0) {
+			mLOG(DS, FATAL, "Negative cycles passed: %i", cycles);
+		}
 #endif
+		nextEvent = cycles;
+		do {
+			nextEvent = mTimingTick(&ds->timing7, nextEvent);
+		} while (ds->cpuBlocked);
 
-	testEvent = DSTimersProcessEvents(ds, cycles);
-	if (testEvent < nextEvent) {
-		nextEvent = testEvent;
-	}
+		cpu->nextEvent = nextEvent;
 
-	cpu->cycles -= cycles;
-	cpu->nextEvent = nextEvent;
-
-	if (cpu->halted) {
-		cpu->cycles = cpu->nextEvent;
+		if (ds->earlyExit) {
+			ds->earlyExit = false;
+			break;
+		}
+		if (cpu->halted) {
+			cpu->cycles = nextEvent;
+		}
+#ifndef NDEBUG
+		else if (nextEvent < 0) {
+			mLOG(DS, FATAL, "Negative cycles will pass: %i", nextEvent);
+		}
+#endif
 	}
 }
 

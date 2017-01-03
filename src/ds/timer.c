@@ -8,103 +8,84 @@
 #include <mgba/internal/arm/arm.h>
 #include <mgba/internal/ds/ds.h>
 
-void DSTimerUpdateRegister(struct DSTimer* timer, struct ARMCore* cpu, uint16_t* io) {
-	if (DSTimerFlagsIsEnable(timer->flags) && !DSTimerFlagsIsCountUp(timer->flags)) {
-		// Reading this takes two cycles (1N+1I), so let's remove them preemptively
-		*io = timer->oldReload + ((cpu->cycles - timer->lastEvent - 2) >> DSTimerFlagsGetPrescaleBits(timer->flags));
+static void DS7TimerUpdate0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+	struct DS* ds = context;
+	struct GBATimer* timer = &ds->timers7[0];
+	if (GBATimerFlagsIsDoIrq(timer->flags)) {
+		DSRaiseIRQ(ds->arm7, ds->memory.io7, DS_IRQ_TIMER0);
 	}
+	GBATimerUpdate(timing, &ds->timers7[0], &ds->memory.io7[DS7_REG_TM0CNT_LO >> 1], cyclesLate);
+	GBATimerUpdateCountUp(timing, &ds->timers7[1], &ds->memory.io7[DS7_REG_TM1CNT_LO >> 1], cyclesLate);
 }
 
-void DSTimerWriteTMCNT_LO(struct DSTimer* timer, uint16_t reload) {
-	timer->reload = reload;
-	timer->overflowInterval = (0x10000 - timer->reload) << DSTimerFlagsGetPrescaleBits(timer->flags);
+static void DS7TimerUpdate1(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+	struct DS* ds = context;
+	struct GBATimer* timer = &ds->timers7[1];
+	if (GBATimerFlagsIsDoIrq(timer->flags)) {
+		DSRaiseIRQ(ds->arm7, ds->memory.io7, DS_IRQ_TIMER1);
+	}
+	GBATimerUpdate(timing, &ds->timers7[1], &ds->memory.io7[DS7_REG_TM1CNT_LO >> 1], cyclesLate);
+	GBATimerUpdateCountUp(timing, &ds->timers7[2], &ds->memory.io7[DS7_REG_TM2CNT_LO >> 1], cyclesLate);
 }
 
-void DSTimerWriteTMCNT_HI(struct DSTimer* timer, struct ARMCore* cpu, uint16_t* io, uint16_t control) {
-	DSTimerUpdateRegister(timer, cpu, io);
-
-	unsigned oldPrescale = DSTimerFlagsGetPrescaleBits(timer->flags);
-	switch (control & 0x0003) {
-	case 0x0000:
-		timer->flags = DSTimerFlagsSetPrescaleBits(timer->flags, 0);
-		break;
-	case 0x0001:
-		timer->flags = DSTimerFlagsSetPrescaleBits(timer->flags, 6);
-		break;
-	case 0x0002:
-		timer->flags = DSTimerFlagsSetPrescaleBits(timer->flags, 8);
-		break;
-	case 0x0003:
-		timer->flags = DSTimerFlagsSetPrescaleBits(timer->flags, 10);
-		break;
+static void DS7TimerUpdate2(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+	struct DS* ds = context;
+	struct GBATimer* timer = &ds->timers7[2];
+	if (GBATimerFlagsIsDoIrq(timer->flags)) {
+		DSRaiseIRQ(ds->arm7, ds->memory.io7, DS_IRQ_TIMER2);
 	}
-	timer->flags = DSTimerFlagsTestFillCountUp(timer->flags, control & 0x0004);
-	timer->flags = DSTimerFlagsTestFillDoIrq(timer->flags, control & 0x0040);
-	timer->overflowInterval = (0x10000 - timer->reload) << DSTimerFlagsGetPrescaleBits(timer->flags);
-	bool wasEnabled = DSTimerFlagsIsEnable(timer->flags);
-	timer->flags = DSTimerFlagsTestFillEnable(timer->flags, control & 0x0080);
-	if (!wasEnabled && DSTimerFlagsIsEnable(timer->flags)) {
-		if (!DSTimerFlagsIsCountUp(timer->flags)) {
-			timer->nextEvent = cpu->cycles + timer->overflowInterval;
-		} else {
-			timer->nextEvent = INT_MAX;
-		}
-		*io = timer->reload;
-		timer->oldReload = timer->reload;
-		timer->lastEvent = cpu->cycles;
-	} else if (wasEnabled && !DSTimerFlagsIsEnable(timer->flags)) {
-		if (!DSTimerFlagsIsCountUp(timer->flags)) {
-			*io = timer->oldReload + ((cpu->cycles - timer->lastEvent) >> oldPrescale);
-		}
-	} else if (DSTimerFlagsGetPrescaleBits(timer->flags) != oldPrescale && !DSTimerFlagsIsCountUp(timer->flags)) {
-		// FIXME: this might be before present
-		timer->nextEvent = timer->lastEvent + timer->overflowInterval;
-	}
-
-	if (timer->nextEvent < cpu->nextEvent) {
-		cpu->nextEvent = timer->nextEvent;
-	}
+	GBATimerUpdate(timing, &ds->timers7[2], &ds->memory.io7[DS7_REG_TM2CNT_LO >> 1], cyclesLate);
+	GBATimerUpdateCountUp(timing, &ds->timers7[3], &ds->memory.io7[DS7_REG_TM3CNT_LO >> 1], cyclesLate);
 }
 
-int32_t DSTimersProcessEvents(struct DS* ds, int32_t cycles) {
-	int32_t nextEvent = INT_MAX;
-	if (!ds->timersEnabled7) {
-		return nextEvent;
+static void DS7TimerUpdate3(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+	struct DS* ds = context;
+	struct GBATimer* timer = &ds->timers7[3];
+	if (GBATimerFlagsIsDoIrq(timer->flags)) {
+		DSRaiseIRQ(ds->arm7, ds->memory.io7, DS_IRQ_TIMER3);
 	}
+	GBATimerUpdate(timing, &ds->timers7[3], &ds->memory.io7[DS7_REG_TM3CNT_LO >> 1], cyclesLate);
+}
 
-	struct DSTimer* timer;
-	struct DSTimer* nextTimer;
+void DSTimerInit(struct DS* ds) {
+	memset(ds->timers7, 0, sizeof(ds->timers7));
+	ds->timers7[0].event.name = "DS7 Timer 0";
+	ds->timers7[0].event.callback = DS7TimerUpdate0;
+	ds->timers7[0].event.context = ds;
+	ds->timers7[0].event.priority = 0x20;
+	ds->timers7[1].event.name = "DS7 Timer 1";
+	ds->timers7[1].event.callback = DS7TimerUpdate1;
+	ds->timers7[1].event.context = ds;
+	ds->timers7[1].event.priority = 0x21;
+	ds->timers7[2].event.name = "DS7 Timer 2";
+	ds->timers7[2].event.callback = DS7TimerUpdate2;
+	ds->timers7[2].event.context = ds;
+	ds->timers7[2].event.priority = 0x22;
+	ds->timers7[3].event.name = "DS7 Timer 3";
+	ds->timers7[3].event.callback = DS7TimerUpdate3;
+	ds->timers7[3].event.context = ds;
+	ds->timers7[3].event.priority = 0x23;
 
-	int t;
-	for (t = 0; t < 4; ++t) {
-		timer = &ds->timers7[t];
-		if (DSTimerFlagsIsEnable(timer->flags)) {
-			timer->nextEvent -= cycles;
-			timer->lastEvent -= cycles;
-			while (timer->nextEvent <= 0) {
-				timer->lastEvent = timer->nextEvent;
-				timer->nextEvent += timer->overflowInterval;
-				ds->memory.io7[(DS7_REG_TM0CNT_LO + (t << 2)) >> 1] = timer->reload;
-				timer->oldReload = timer->reload;
+	memset(ds->timers9, 0, sizeof(ds->timers9));
+	ds->timers9[0].event.name = "DS9 Timer 0";
+	ds->timers9[0].event.callback = NULL;
+	ds->timers9[0].event.context = ds;
+	ds->timers9[0].event.priority = 0x20;
+	ds->timers9[1].event.name = "DS9 Timer 1";
+	ds->timers9[1].event.callback = NULL;
+	ds->timers9[1].event.context = ds;
+	ds->timers9[1].event.priority = 0x21;
+	ds->timers9[2].event.name = "DS9 Timer 2";
+	ds->timers9[2].event.callback = NULL;
+	ds->timers9[2].event.context = ds;
+	ds->timers9[2].event.priority = 0x22;
+	ds->timers9[3].event.name = "DS9 Timer 3";
+	ds->timers9[3].event.callback = NULL;
+	ds->timers9[3].event.context = ds;
+	ds->timers9[3].event.priority = 0x23;
+}
 
-				if (DSTimerFlagsIsDoIrq(timer->flags)) {
-					DSRaiseIRQ(ds->arm7, ds->memory.io7, DS_IRQ_TIMER0);
-				}
-
-				if (t == 3) {
-					break;
-				}
-
-				nextTimer = &ds->timers7[t + 1];
-				if (DSTimerFlagsIsCountUp(nextTimer->flags)) {
-					++ds->memory.io7[(DS7_REG_TM1CNT_LO + (t << 2)) >> 1];
-					if (!ds->memory.io7[(DS7_REG_TM1CNT_LO + (t << 2)) >> 1]) {
-						nextTimer->nextEvent = 0;
-					}
-				}
-			}
-			nextEvent = timer->nextEvent;
-		}
-	}
-	return nextEvent;
+void DSTimerWriteTMCNT_HI(struct GBATimer* timer, struct mTiming* timing, struct ARMCore* cpu, uint16_t* io, uint16_t value) {
+	GBATimerUpdateRegisterInternal(timer, timing, cpu, io, 0);
+	GBATimerWriteTMCNT_HI(timer, timing, cpu, io, value);
 }

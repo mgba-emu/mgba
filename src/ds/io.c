@@ -26,41 +26,33 @@ void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	switch (address) {
 	// Timers
 	case DS7_REG_TM0CNT_LO:
-		DSTimerWriteTMCNT_LO(&ds->timers7[0], value);
+		GBATimerWriteTMCNT_LO(&ds->timers7[0], value);
 		return;
 	case DS7_REG_TM1CNT_LO:
-		DSTimerWriteTMCNT_LO(&ds->timers7[1], value);
+		GBATimerWriteTMCNT_LO(&ds->timers7[1], value);
 		return;
 	case DS7_REG_TM2CNT_LO:
-		DSTimerWriteTMCNT_LO(&ds->timers7[2], value);
+		GBATimerWriteTMCNT_LO(&ds->timers7[2], value);
 		return;
 	case DS7_REG_TM3CNT_LO:
-		DSTimerWriteTMCNT_LO(&ds->timers7[3], value);
+		GBATimerWriteTMCNT_LO(&ds->timers7[3], value);
 		return;
 
 	case DS7_REG_TM0CNT_HI:
 		value &= 0x00C7;
-		DSTimerWriteTMCNT_HI(&ds->timers7[0], ds->arm7, &ds->memory.io7[(address - 2) >> 1], value);
-		ds->timersEnabled7 &= ~1;
-		ds->timersEnabled7 |= DSTimerFlagsGetEnable(ds->timers7[0].flags);
+		DSTimerWriteTMCNT_HI(&ds->timers7[0], &ds->timing7, ds->arm7, &ds->memory.io7[DS7_REG_TM0CNT_LO >> 1], value);
 		break;
 	case DS7_REG_TM1CNT_HI:
 		value &= 0x00C7;
-		DSTimerWriteTMCNT_HI(&ds->timers7[1], ds->arm7, &ds->memory.io7[(address - 2) >> 1], value);
-		ds->timersEnabled7 &= ~2;
-		ds->timersEnabled7 |= DSTimerFlagsGetEnable(ds->timers7[1].flags) << 1;
+		DSTimerWriteTMCNT_HI(&ds->timers7[1], &ds->timing7, ds->arm7, &ds->memory.io7[DS7_REG_TM1CNT_LO >> 1], value);
 		break;
 	case DS7_REG_TM2CNT_HI:
 		value &= 0x00C7;
-		DSTimerWriteTMCNT_HI(&ds->timers7[2], ds->arm7, &ds->memory.io7[(address - 2) >> 1], value);
-		ds->timersEnabled7 &= ~4;
-		ds->timersEnabled7 |= DSTimerFlagsGetEnable(ds->timers7[2].flags) << 2;
+		DSTimerWriteTMCNT_HI(&ds->timers7[2], &ds->timing7, ds->arm7, &ds->memory.io7[DS7_REG_TM2CNT_LO >> 1], value);
 		break;
 	case DS7_REG_TM3CNT_HI:
 		value &= 0x00C7;
-		DSTimerWriteTMCNT_HI(&ds->timers7[3], ds->arm7, &ds->memory.io7[(address - 2) >> 1], value);
-		ds->timersEnabled7 &= ~8;
-		ds->timersEnabled7 |= DSTimerFlagsGetEnable(ds->timers7[3].flags) << 3;
+		DSTimerWriteTMCNT_HI(&ds->timers7[3], &ds->timing7, ds->arm7, &ds->memory.io7[DS7_REG_TM3CNT_LO >> 1], value);
 		break;
 
 	case DS7_REG_IPCSYNC:
@@ -113,16 +105,16 @@ void DS7IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
 uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 	switch (address) {
 	case DS7_REG_TM0CNT_LO:
-		DSTimerUpdateRegister(&ds->timers7[0], ds->arm7, &ds->memory.io7[address >> 1]);
+		GBATimerUpdateRegisterInternal(&ds->timers7[0], &ds->timing7, ds->arm7, &ds->memory.io7[address >> 1], 0);
 		break;
 	case DS7_REG_TM1CNT_LO:
-		DSTimerUpdateRegister(&ds->timers7[1], ds->arm7, &ds->memory.io7[address >> 1]);
+		GBATimerUpdateRegisterInternal(&ds->timers7[1], &ds->timing7, ds->arm7, &ds->memory.io7[address >> 1], 0);
 		break;
 	case DS7_REG_TM2CNT_LO:
-		DSTimerUpdateRegister(&ds->timers7[2], ds->arm7, &ds->memory.io7[address >> 1]);
+		GBATimerUpdateRegisterInternal(&ds->timers7[2], &ds->timing7, ds->arm7, &ds->memory.io7[address >> 1], 0);
 		break;
 	case DS7_REG_TM3CNT_LO:
-		DSTimerUpdateRegister(&ds->timers7[3], ds->arm7, &ds->memory.io7[address >> 1]);
+		GBATimerUpdateRegisterInternal(&ds->timers7[3], &ds->timing7, ds->arm7, &ds->memory.io7[address >> 1], 0);
 		break;
 
 	case DS7_REG_TM0CNT_HI:
