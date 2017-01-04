@@ -29,4 +29,6 @@
 	LEFT, \
 	RIGHT
 
+#define MIN_V(PASS, FAIL, COND) (COND ? PASS : FAIL)
+
 #endif

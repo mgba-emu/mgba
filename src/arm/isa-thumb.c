@@ -382,6 +382,14 @@ DEFINE_INSTRUCTION_THUMB(BL2,
 	cpu->gprs[ARM_LR] = pc - 1;
 	THUMB_WRITE_PC;)
 
+DEFINE_INSTRUCTION_THUMB(BLX1,
+	uint16_t immediate = (opcode & 0x07FF) << 1;
+	uint32_t pc = cpu->gprs[ARM_PC];
+	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_LR] + immediate) & 0xFFFFFFFC;
+	cpu->gprs[ARM_LR] = pc - 1;
+	_ARMSetMode(cpu, MODE_ARM);
+	ARM_WRITE_PC;)
+
 DEFINE_INSTRUCTION_THUMB(BX,
 	int rm = (opcode >> 3) & 0xF;
 	_ARMSetMode(cpu, cpu->gprs[rm] & 0x00000001);
@@ -398,6 +406,10 @@ DEFINE_INSTRUCTION_THUMB(BX,
 
 DEFINE_INSTRUCTION_THUMB(SWI, cpu->irqh.swi16(cpu, opcode & 0xFF))
 
-const ThumbInstruction _thumbTable[0x400] = {
-	DECLARE_THUMB_EMITTER_BLOCK(_ThumbInstruction)
+const ThumbInstruction _thumbv4Table[0x400] = {
+	DECLARE_THUMB_EMITTER_BLOCK(_ThumbInstruction, 4)
+};
+
+const ThumbInstruction _thumbv5Table[0x400] = {
+	DECLARE_THUMB_EMITTER_BLOCK(_ThumbInstruction, 5)
 };

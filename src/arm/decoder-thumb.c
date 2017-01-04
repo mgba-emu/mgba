@@ -282,6 +282,14 @@ DEFINE_THUMB_DECODER(BL2, BL,
 		ARM_OPERAND_REGISTER_2 | ARM_OPERAND_IMMEDIATE_3;
 	info->branchType = ARM_BRANCH_LINKED;)
 
+DEFINE_THUMB_DECODER(BLX1, BLX,
+	info->op1.reg = ARM_PC;
+	info->op2.reg = ARM_LR;
+	info->op3.immediate = (opcode & 0x07FF) << 1;
+	info->operandFormat = ARM_OPERAND_REGISTER_1 | ARM_OPERAND_AFFECTED_1 |
+		ARM_OPERAND_REGISTER_2 | ARM_OPERAND_IMMEDIATE_3;
+	info->branchType = ARM_BRANCH_LINKED;)
+
 DEFINE_THUMB_DECODER(BX, BX,
 	info->op1.reg = (opcode >> 3) & 0xF;
 	info->operandFormat = ARM_OPERAND_REGISTER_1;
@@ -295,7 +303,7 @@ DEFINE_THUMB_DECODER(SWI, SWI,
 typedef void (*ThumbDecoder)(uint16_t opcode, struct ARMInstructionInfo* info);
 
 static const ThumbDecoder _thumbDecoderTable[0x400] = {
-	DECLARE_THUMB_EMITTER_BLOCK(_ThumbDecode)
+	DECLARE_THUMB_EMITTER_BLOCK(_ThumbDecode, 5)
 };
 
 void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info) {

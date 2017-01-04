@@ -223,15 +223,6 @@ void ARMRaiseUndefined(struct ARMCore* cpu) {
 	cpu->cycles += currentCycles;
 }
 
-static inline void ThumbStep(struct ARMCore* cpu) {
-	uint32_t opcode = cpu->prefetch[0];
-	cpu->prefetch[0] = cpu->prefetch[1];
-	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
-	LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
-	ThumbInstruction instruction = _thumbTable[opcode >> 6];
-	instruction(cpu, opcode);
-}
-
 #define ARM_IMPLEMENT(VERSION) \
 	static inline void ARM ## VERSION ## Step(struct ARMCore* cpu) { \
 		uint32_t opcode = cpu->prefetch[0]; \
@@ -297,9 +288,18 @@ static inline void ThumbStep(struct ARMCore* cpu) {
 		instruction(cpu, opcode); \
 	} \
 	\
-	void ARM  ## VERSION ## Run(struct ARMCore* cpu) { \
+	static inline void Thumb ## VERSION ## Step(struct ARMCore* cpu) { \
+		uint32_t opcode = cpu->prefetch[0]; \
+		cpu->prefetch[0] = cpu->prefetch[1]; \
+		cpu->gprs[ARM_PC] += WORD_SIZE_THUMB; \
+		LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
+		ThumbInstruction instruction = _thumb ## VERSION ## Table[opcode >> 6]; \
+		instruction(cpu, opcode); \
+	} \
+	\
+	void ARM ## VERSION ## Run(struct ARMCore* cpu) { \
 		if (cpu->executionMode == MODE_THUMB) { \
-			ThumbStep(cpu); \
+			Thumb ## VERSION ## Step(cpu); \
 		} else { \
 			ARM ## VERSION ## Step(cpu); \
 		} \
@@ -311,7 +311,7 @@ static inline void ThumbStep(struct ARMCore* cpu) {
 	void ARM ## VERSION ## RunLoop(struct ARMCore* cpu) { \
 		if (cpu->executionMode == MODE_THUMB) { \
 			while (cpu->cycles < cpu->nextEvent) { \
-				ThumbStep(cpu); \
+				Thumb ## VERSION ## Step(cpu); \
 			} \
 		} else { \
 			while (cpu->cycles < cpu->nextEvent) { \
@@ -319,28 +319,6 @@ static inline void ThumbStep(struct ARMCore* cpu) {
 			} \
 		} \
 		cpu->irqh.processEvents(cpu); \
-	} \
-	\
-	int32_t ARM ## VERSION ## RunCycles(struct ARMCore* cpu, int32_t cycles) { \
-		int32_t startCycles = cpu->cycles; \
-		int32_t endCycles = startCycles + cycles; \
-		\
-		if (cpu->executionMode == MODE_THUMB) { \
-			while (cpu->cycles < cpu->nextEvent && cpu->cycles < endCycles) { \
-				ThumbStep(cpu); \
-			} \
-		} else { \
-			while (cpu->cycles < cpu->nextEvent && cpu->cycles < endCycles) { \
-				ARM ## VERSION ## Step(cpu); \
-			} \
-		} \
-		\
-		endCycles = cpu->cycles - startCycles; \
-		if (cpu->cycles >= cpu->nextEvent) { \
-			/* TODO: Handle HALT */ \
-			cpu->irqh.processEvents(cpu); \
-		} \
-		return endCycles; \
 	}
 
 ARM_IMPLEMENT(v4)
