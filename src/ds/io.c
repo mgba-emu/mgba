@@ -10,6 +10,23 @@
 
 mLOG_DEFINE_CATEGORY(DS_IO, "DS I/O");
 
+static void _DSHaltCNT(struct DSCommon* dscore, uint8_t value) {
+	switch (value >> 6) {
+	case 0:
+	default:
+		break;
+	case 1:
+		mLOG(DS_IO, STUB, "Enter GBA mode not supported");
+		break;
+	case 2:
+		ARMHalt(dscore->cpu);
+		break;
+	case 3:
+		mLOG(DS_IO, STUB, "Enter sleep mode not supported");
+		break;
+	}
+}
+
 static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t value) {
 	switch (address) {
 	// Timers
@@ -108,6 +125,10 @@ void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 }
 
 void DS7IOWrite8(struct DS* ds, uint32_t address, uint8_t value) {
+	if (address == DS7_REG_HALTCNT) {
+		_DSHaltCNT(&ds->ds7, value);
+		return;
+	}
 	if (address < DS7_REG_MAX) {
 		uint16_t value16 = value << (8 * (address & 1));
 		value16 |= (ds->ds7.memory.io[(address & 0xFFF) >> 1]) & ~(0xFF << (8 * (address & 1)));

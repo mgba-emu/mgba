@@ -254,6 +254,7 @@ void ARMSetPrivilegeMode(struct ARMCore*, enum PrivilegeMode);
 void ARMRaiseIRQ(struct ARMCore*);
 void ARMRaiseSWI(struct ARMCore*);
 void ARMRaiseUndefined(struct ARMCore*);
+void ARMHalt(struct ARMCore*);
 
 void ARMv4Run(struct ARMCore* cpu);
 void ARMv4RunLoop(struct ARMCore* cpu);

@@ -434,8 +434,7 @@ void GBATestIRQ(struct ARMCore* cpu) {
 }
 
 void GBAHalt(struct GBA* gba) {
-	gba->cpu->nextEvent = gba->cpu->cycles;
-	gba->cpu->halted = 1;
+	ARMHalt(gba->cpu);
 }
 
 void GBAStop(struct GBA* gba) {

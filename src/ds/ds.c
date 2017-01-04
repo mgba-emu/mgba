@@ -508,6 +508,14 @@ static void _writeRegionConfiguration(struct ARMCore* cpu, int crm, int opcode2,
 }
 
 static void _writeCache(struct ARMCore* cpu, int crm, int opcode2, uint32_t value) {
+	switch (crm) {
+	case 0:
+		if (opcode2 == 4) {
+			ARMHalt(cpu);
+			return;
+		}
+		break;
+	}
 	mLOG(DS, STUB, "CP15 cache write: CRm: %i, Op2: %i, Value: 0x%08X", crm, opcode2, value);
 }
 

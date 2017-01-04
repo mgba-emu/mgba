@@ -223,6 +223,11 @@ void ARMRaiseUndefined(struct ARMCore* cpu) {
 	cpu->cycles += currentCycles;
 }
 
+void ARMHalt(struct ARMCore* cpu) {
+	cpu->nextEvent = cpu->cycles;
+	cpu->halted = 1;
+}
+
 #define ARM_IMPLEMENT(VERSION) \
 	static inline void ARM ## VERSION ## Step(struct ARMCore* cpu) { \
 		uint32_t opcode = cpu->prefetch[0]; \
