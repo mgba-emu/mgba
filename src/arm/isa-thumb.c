@@ -404,6 +404,21 @@ DEFINE_INSTRUCTION_THUMB(BX,
 		ARM_WRITE_PC;
 	})
 
+DEFINE_INSTRUCTION_THUMB(BLX2,
+	int rm = (opcode >> 3) & 0xF;
+	_ARMSetMode(cpu, cpu->gprs[rm] & 0x00000001);
+	int misalign = 0;
+	if (rm == ARM_PC) {
+		misalign = cpu->gprs[rm] & 0x00000002;
+	}
+	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - 1;
+	cpu->gprs[ARM_PC] = (cpu->gprs[rm] & 0xFFFFFFFE) - misalign;
+	if (cpu->executionMode == MODE_THUMB) {
+		THUMB_WRITE_PC;
+	} else {
+		ARM_WRITE_PC;
+	})
+
 DEFINE_INSTRUCTION_THUMB(SWI, cpu->irqh.swi16(cpu, opcode & 0xFF))
 
 const ThumbInstruction _thumbv4Table[0x400] = {

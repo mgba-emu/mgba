@@ -393,6 +393,13 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_1) {
 			written = _decodePCRelative(info->op1.immediate, pc, buffer, blen);
 			ADVANCE(written);
+		} else if (info->operandFormat & ARM_OPERAND_REGISTER_1) {
+			written = _decodeRegister(info->op1.reg, buffer, blen);
+			ADVANCE(written);
+			if (info->op1.reg > ARM_PC) {
+				written = _decodePSR(info->op1.psrBits, buffer, blen);
+				ADVANCE(written);
+			}
 		}
 		break;
 	default:

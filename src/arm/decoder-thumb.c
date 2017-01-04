@@ -290,6 +290,12 @@ DEFINE_THUMB_DECODER(BLX1, BLX,
 		ARM_OPERAND_REGISTER_2 | ARM_OPERAND_IMMEDIATE_3;
 	info->branchType = ARM_BRANCH_LINKED;)
 
+DEFINE_THUMB_DECODER(BLX2, BLX,
+	info->op1.reg = (opcode >> 3) & 0xF;
+	info->op2.reg = ARM_LR;
+	info->operandFormat = ARM_OPERAND_REGISTER_1 | ARM_OPERAND_REGISTER_2 | ARM_OPERAND_AFFECTED_2;
+	info->branchType = ARM_BRANCH_INDIRECT;)
+
 DEFINE_THUMB_DECODER(BX, BX,
 	info->op1.reg = (opcode >> 3) & 0xF;
 	info->operandFormat = ARM_OPERAND_REGISTER_1;
