@@ -8,16 +8,14 @@
 #include "GBAApp.h"
 #include "GameController.h"
 
-extern "C" {
-#include "core/core.h"
+#include <mgba/core/core.h>
 #ifdef M_CORE_GB
-#include "gb/gb.h"
+#include <mgba/internal/gb/gb.h>
 #endif
 #ifdef M_CORE_GBA
-#include "gba/gba.h"
+#include <mgba/internal/gba/gba.h>
 #endif
-#include "util/nointro.h"
-}
+#include <mgba-util/nointro.h>
 
 using namespace QGBA;
 
@@ -33,7 +31,7 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 	const NoIntroDB* db = GBAApp::app()->gameDB();
 	uint32_t crc32 = 0;
 
-	controller->threadInterrupt();
+	GameController::Interrupter interrupter(controller);
 	mCore* core = controller->thread()->core;
 	char title[17] = {};
 	core->getGameTitle(core, title);
@@ -83,5 +81,4 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 		m_ui.crc->setText(tr("(unknown)"));
 		m_ui.name->setText(tr("(unknown)"));
 	}
-	controller->threadContinue();
 }

@@ -8,9 +8,8 @@
 
 #include <QFileDevice>
 
-extern "C" {
-#include "util/vfs.h"
-}
+struct VDir;
+struct VFile;
 
 namespace QGBA {
 

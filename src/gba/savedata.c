@@ -3,13 +3,14 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "savedata.h"
+#include <mgba/internal/gba/savedata.h>
 
-#include "gba/gba.h"
-#include "gba/serialize.h"
+#include <mgba/internal/arm/macros.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/serialize.h>
 
-#include "util/memory.h"
-#include "util/vfs.h"
+#include <mgba-util/memory.h>
+#include <mgba-util/vfs.h>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -230,10 +231,9 @@ void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming) {
 	} else {
 		end = savedata->vf->size(savedata->vf);
 		if (end < flashSize) {
-			savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
-			flashSize = SIZE_CART_FLASH1M;
+			savedata->vf->truncate(savedata->vf, flashSize);
 		}
-		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_FLASH1M, savedata->mapMode);
+		savedata->data = savedata->vf->map(savedata->vf, flashSize, savedata->mapMode);
 	}
 
 	savedata->currentBank = savedata->data;

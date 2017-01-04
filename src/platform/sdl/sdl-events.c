@@ -5,18 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "sdl-events.h"
 
-#include "core/input.h"
-#include "core/serialize.h"
-#include "core/thread.h"
-#include "debugger/debugger.h"
-#include "gba/input.h"
-#include "gba/io.h"
-#include "gba/rr/rr.h"
-#include "gba/video.h"
-#include "gba/renderers/video-software.h"
-#include "util/configuration.h"
-#include "util/formatting.h"
-#include "util/vfs.h"
+#include <mgba/core/core.h>
+#include <mgba/core/input.h>
+#include <mgba/core/serialize.h>
+#include <mgba/core/thread.h>
+#include <mgba/internal/debugger/debugger.h>
+#include <mgba/internal/gba/input.h>
+#include <mgba-util/configuration.h>
+#include <mgba-util/formatting.h>
+#include <mgba-util/vfs.h>
 
 #if SDL_VERSION_ATLEAST(2, 0, 0) && defined(__APPLE__)
 #define GUI_MOD KMOD_GUI
@@ -127,17 +124,6 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_DOWN, GBA_KEY_DOWN);
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_LEFT, GBA_KEY_LEFT);
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
-#elif SDL_VERSION_ATLEAST(2, 0, 0)
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_X, GBA_KEY_A);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_Z, GBA_KEY_B);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_A, GBA_KEY_L);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_S, GBA_KEY_R);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_RETURN, GBA_KEY_START);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_BACKSPACE, GBA_KEY_SELECT);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_UP, GBA_KEY_UP);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_DOWN, GBA_KEY_DOWN);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_LEFT, GBA_KEY_LEFT);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_RIGHT, GBA_KEY_RIGHT);
 #else
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_x, GBA_KEY_A);
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_z, GBA_KEY_B);
@@ -390,11 +376,7 @@ static void _pauseAfterFrame(struct mCoreThread* context) {
 static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_KeyboardEvent* event) {
 	int key = -1;
 	if (!event->keysym.mod) {
-#if !defined(BUILD_PANDORA) && SDL_VERSION_ATLEAST(2, 0, 0)
-		key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.scancode);
-#else
 		key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.sym);
-#endif
 	}
 	if (key != -1) {
 		if (event->type == SDL_KEYDOWN) {
@@ -413,11 +395,13 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 	}
 	if (event->type == SDL_KEYDOWN) {
 		switch (event->keysym.sym) {
+#ifdef USE_DEBUGGERS
 		case SDLK_F11:
 			if (context->core->debugger) {
 				mDebuggerEnter(context->core->debugger, DEBUGGER_ENTER_MANUAL, NULL);
 			}
 			return;
+#endif
 #ifdef USE_PNG
 		case SDLK_F12:
 			mCoreTakeScreenshot(context->core);

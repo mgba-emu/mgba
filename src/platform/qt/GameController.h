@@ -15,22 +15,19 @@
 
 #include <memory>
 
-extern "C" {
-#include "core/core.h"
-#include "core/thread.h"
-#include "gba/cheats.h"
-#include "gba/hardware.h"
-#include "gba/input.h"
-#include "gba/overrides.h"
+#include <mgba/core/core.h>
+#include <mgba/core/thread.h>
+#include <mgba/gba/interface.h>
+#include <mgba/internal/gba/input.h>
 #ifdef BUILD_SDL
 #include "platform/sdl/sdl-events.h"
 #endif
-}
 
+struct Configuration;
 struct GBAAudio;
 struct mCoreConfig;
-struct Configuration;
 struct mDebugger;
+struct mTileCache;
 
 class QThread;
 
@@ -47,6 +44,16 @@ Q_OBJECT
 public:
 	static const bool VIDEO_SYNC = false;
 	static const bool AUDIO_SYNC = true;
+
+	class Interrupter {
+	public:
+		Interrupter(GameController*, bool fromThread = false);
+		~Interrupter();
+
+	private:
+		GameController* m_parent;
+		bool m_fromThread;
+	};
 
 	GameController(QObject* parent = nullptr);
 	~GameController();
@@ -72,7 +79,7 @@ public:
 	MultiplayerController* multiplayerController() { return m_multiplayer; }
 	void clearMultiplayerController();
 
-	void setOverride(Override* override) { m_override = override; }
+	void setOverride(Override* override);
 	Override* override() { return m_override; }
 	void clearOverride();
 
@@ -84,6 +91,8 @@ public:
 	mDebugger* debugger();
 	void setDebugger(mDebugger*);
 #endif
+
+	std::shared_ptr<mTileCache> tileCache();
 
 signals:
 	void frameAvailable(const uint32_t*);
@@ -209,6 +218,8 @@ private:
 	bool m_turboForced;
 	float m_turboSpeed;
 	bool m_wasPaused;
+
+	std::shared_ptr<mTileCache> m_tileCache;
 
 	bool m_audioChannels[6];
 	bool m_videoLayers[5];

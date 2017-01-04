@@ -3,14 +3,14 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "cli.h"
+#include <mgba/internal/gba/extra/cli.h>
 
-#include "arm/debugger/cli-debugger.h"
-#include "core/serialize.h"
-#include "gba/io.h"
-#include "gba/serialize.h"
-
-#ifdef USE_CLI_DEBUGGER
+#include <mgba/core/core.h>
+#include <mgba/core/serialize.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/video.h>
+#include <mgba/internal/arm/debugger/cli-debugger.h>
 
 static void _GBACLIDebuggerInit(struct CLIDebuggerSystem*);
 static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem*);
@@ -87,14 +87,15 @@ static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 }
 
 static void _load(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	struct CLIDebuggerBackend* be = debugger->backend;
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		be->printf(be, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 
 	int state = dv->intValue;
 	if (state < 1 || state > 9) {
-		printf("State %u out of range", state);
+		be->printf(be, "State %u out of range", state);
 	}
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
@@ -105,18 +106,18 @@ static void _load(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 // TODO: Put back rewind
 
 static void _save(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	struct CLIDebuggerBackend* be = debugger->backend;
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		be->printf(be, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 
 	int state = dv->intValue;
 	if (state < 1 || state > 9) {
-		printf("State %u out of range", state);
+		be->printf(be, "State %u out of range", state);
 	}
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 
 	mCoreSaveState(gbaDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT);
 }
-#endif

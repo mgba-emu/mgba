@@ -3,9 +3,9 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "log.h"
+#include <mgba/core/log.h>
 
-#include "core/thread.h"
+#include <mgba/core/thread.h>
 
 #define MAX_CATEGORY 64
 
@@ -42,6 +42,20 @@ const char* mLogCategoryName(int category) {
 		return _categoryNames[category];
 	}
 	return 0;
+}
+
+void mLog(int category, enum mLogLevel level, const char* format, ...) {
+	struct mLogger* context = mLogGetContext();
+	va_list args;
+	va_start(args, format);
+	if (context) {
+		context->log(context, category, level, format, args);
+	} else {
+		printf("%s: ", mLogCategoryName(category));
+		vprintf(format, args);
+		printf("\n");
+	}
+	va_end(args);
 }
 
 mLOG_DEFINE_CATEGORY(STATUS, "Status")

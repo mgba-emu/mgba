@@ -3,10 +3,40 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "isa-lr35902.h"
+#include <mgba/internal/lr35902/isa-lr35902.h>
 
-#include "lr35902/emitter-lr35902.h"
-#include "lr35902/lr35902.h"
+#include <mgba/internal/lr35902/emitter-lr35902.h>
+#include <mgba/internal/lr35902/lr35902.h>
+
+static inline uint16_t LR35902ReadHL(struct LR35902Core* cpu) {
+	uint16_t hl;
+	LOAD_16LE(hl, 0, &cpu->hl);
+	return hl;
+}
+
+static inline void LR35902WriteHL(struct LR35902Core* cpu, uint16_t hl) {
+	STORE_16LE(hl, 0, &cpu->hl);
+}
+
+static inline uint16_t LR35902ReadBC(struct LR35902Core* cpu) {
+	uint16_t bc;
+	LOAD_16LE(bc, 0, &cpu->bc);
+	return bc;
+}
+
+static inline void LR35902WriteBC(struct LR35902Core* cpu, uint16_t bc) {
+	STORE_16LE(bc, 0, &cpu->bc);
+}
+
+static inline uint16_t LR35902ReadDE(struct LR35902Core* cpu) {
+	uint16_t de;
+	LOAD_16LE(de, 0, &cpu->de);
+	return de;
+}
+
+static inline void LR35902WriteDE(struct LR35902Core* cpu, uint16_t de) {
+	STORE_16LE(de, 0, &cpu->de);
+}
 
 #define DEFINE_INSTRUCTION_LR35902(NAME, BODY) \
 	static void _LR35902Instruction ## NAME (struct LR35902Core* cpu) { \

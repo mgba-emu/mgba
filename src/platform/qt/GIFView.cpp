@@ -12,6 +12,9 @@
 
 #include <QMap>
 
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/video.h>
+
 using namespace QGBA;
 
 GIFView::GIFView(QWidget* parent)

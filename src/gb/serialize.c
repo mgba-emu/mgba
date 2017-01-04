@@ -3,10 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "serialize.h"
+#include <mgba/internal/gb/serialize.h>
 
-#include "gb/io.h"
-#include "gb/timer.h"
+#include <mgba/internal/gb/io.h>
+#include <mgba/internal/gb/timer.h>
+#include <mgba/internal/lr35902/lr35902.h>
 
 mLOG_DEFINE_CATEGORY(GB_STATE, "GB Savestate");
 
@@ -17,11 +18,12 @@ mLOG_DEFINE_CATEGORY(GB_STATE, "GB Savestate");
 #endif
 
 const uint32_t GB_SAVESTATE_MAGIC = 0x00400000;
-const uint32_t GB_SAVESTATE_VERSION = 0x00000000;
+const uint32_t GB_SAVESTATE_VERSION = 0x00000001;
 
 void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	STORE_32LE(GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, 0, &state->versionMagic);
 	STORE_32LE(gb->romCrc32, 0, &state->romCrc32);
+	STORE_32LE(gb->timing.masterCycles, 0, &state->masterCycles);
 
 	if (gb->memory.rom) {
 		memcpy(state->title, ((struct GBCartridge*) gb->memory.rom)->titleLong, sizeof(state->title));
@@ -50,13 +52,13 @@ void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	state->cpu.executionState = gb->cpu->executionState;
 	STORE_16LE(gb->cpu->irqVector, 0, &state->cpu.irqVector);
 
-	STORE_32LE(gb->eiPending, 0, &state->cpu.eiPending);
-
 	GBSerializedCpuFlags flags = 0;
 	flags = GBSerializedCpuFlagsSetCondition(flags, gb->cpu->condition);
 	flags = GBSerializedCpuFlagsSetIrqPending(flags, gb->cpu->irqPending);
 	flags = GBSerializedCpuFlagsSetDoubleSpeed(flags, gb->doubleSpeed);
+	flags = GBSerializedCpuFlagsSetEiPending(flags, mTimingIsScheduled(&gb->timing, &gb->eiPending));
 	STORE_32LE(flags, 0, &state->cpu.flags);
+	STORE_32LE(gb->eiPending.when - mTimingCurrentTime(&gb->timing), 0, &state->cpu.eiPending);
 
 	GBMemorySerialize(gb, state);
 	GBIOSerialize(gb, state);
@@ -122,11 +124,6 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: CPU cycles are too high");
 		error = true;
 	}
-	LOAD_32LE(check, 0, &state->video.eventDiff);
-	if (check < 0) {
-		mLOG(GB_STATE, WARN, "Savestate is corrupted: video eventDiff is negative");
-		error = true;
-	}
 	LOAD_16LE(check16, 0, &state->video.x);
 	if (check16 < 0 || check16 > GB_VIDEO_HORIZONTAL_PIXELS) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: video x is out of range");
@@ -170,16 +167,23 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->cpu->executionState = state->cpu.executionState;
 	LOAD_16LE(gb->cpu->irqVector, 0, &state->cpu.irqVector);
 
-	LOAD_32LE(gb->eiPending, 0, &state->cpu.eiPending);
-
 	GBSerializedCpuFlags flags;
 	LOAD_32LE(flags, 0, &state->cpu.flags);
 	gb->cpu->condition = GBSerializedCpuFlagsGetCondition(flags);
 	gb->cpu->irqPending = GBSerializedCpuFlagsGetIrqPending(flags);
 	gb->doubleSpeed = GBSerializedCpuFlagsGetDoubleSpeed(flags);
+	gb->audio.timingFactor = gb->doubleSpeed + 1;
+
+	uint32_t when;
+	LOAD_32LE(when, 0, &state->cpu.eiPending);
+	mTimingDeschedule(&gb->timing, &gb->eiPending);
+	if (GBSerializedCpuFlagsIsEiPending(flags)) {
+		mTimingSchedule(&gb->timing, &gb->eiPending, when);
+	}
 
 	LOAD_32LE(gb->cpu->cycles, 0, &state->cpu.cycles);
 	LOAD_32LE(gb->cpu->nextEvent, 0, &state->cpu.nextEvent);
+	LOAD_32LE(gb->timing.masterCycles, 0, &state->masterCycles);
 
 	gb->model = state->model;
 

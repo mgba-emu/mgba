@@ -3,10 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "table.h"
+#include <mgba-util/table.h>
 
-#include "util/hash.h"
-#include "util/string.h"
+#include <mgba-util/hash.h>
+#include <mgba-util/string.h>
 
 #define LIST_INITIAL_SIZE 8
 #define TABLE_INITIAL_SIZE 8
@@ -54,6 +54,7 @@ static struct TableList* _resizeAsNeeded(struct Table* table, struct TableList* 
 
 static void _removeItemFromList(struct Table* table, struct TableList* list, size_t item) {
 	--list->nEntries;
+	--table->size;
 	free(list->list[item].stringKey);
 	if (table->deinitializer) {
 		table->deinitializer(list->list[item].value);
@@ -69,6 +70,7 @@ void TableInit(struct Table* table, size_t initialSize, void (deinitializer(void
 	}
 	table->tableSize = initialSize;
 	table->table = calloc(table->tableSize, sizeof(struct TableList));
+	table->size = 0;
 	table->deinitializer = deinitializer;
 
 	size_t i;
@@ -119,6 +121,7 @@ void TableInsert(struct Table* table, uint32_t key, void* value) {
 	list->list[list->nEntries].stringKey = 0;
 	list->list[list->nEntries].value = value;
 	++list->nEntries;
+	++table->size;
 }
 
 void TableRemove(struct Table* table, uint32_t key) {
@@ -156,6 +159,18 @@ void TableEnumerate(const struct Table* table, void (handler(uint32_t key, void*
 	}
 }
 
+size_t TableSize(const struct Table* table) {
+	return table->size;
+}
+
+void HashTableInit(struct Table* table, size_t initialSize, void (deinitializer(void*))) {
+	TableInit(table, initialSize, deinitializer);
+}
+
+void HashTableDeinit(struct Table* table) {
+	TableDeinit(table);
+}
+
 void* HashTableLookup(const struct Table* table, const char* key) {
 	uint32_t hash = hash32(key, strlen(key), 0);
 	const struct TableList* list;
@@ -181,6 +196,7 @@ void HashTableInsert(struct Table* table, const char* key, void* value) {
 	list->list[list->nEntries].keylen = strlen(key);
 	list->list[list->nEntries].value = value;
 	++list->nEntries;
+	++table->size;
 }
 
 void HashTableRemove(struct Table* table, const char* key) {
@@ -218,4 +234,8 @@ void HashTableEnumerate(const struct Table* table, void (handler(const char* key
 			handler(list->list[j].stringKey, list->list[j].value, user);
 		}
 	}
+}
+
+size_t HashTableSize(const struct Table* table) {
+	return table->size;
 }

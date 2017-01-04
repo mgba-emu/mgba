@@ -3,13 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "thread.h"
+#include <mgba/core/thread.h>
 
-#include "core/core.h"
-#include "util/patch.h"
-#include "util/vfs.h"
-
-#include "feature/commandline.h"
+#include <mgba/core/core.h>
+#include <mgba-util/patch.h>
+#include <mgba-util/vfs.h>
 
 #include <signal.h>
 
@@ -85,6 +83,40 @@ static void _pauseThread(struct mCoreThread* threadContext) {
 	_waitUntilNotState(threadContext, THREAD_PAUSING);
 }
 
+void _frameStarted(void* context) {
+	struct mCoreThread* thread = context;
+	if (!thread) {
+		return;
+	}
+	if (thread->core->opts.rewindEnable && thread->core->opts.rewindBufferCapacity > 0) {
+		if (thread->state != THREAD_REWINDING) {
+			mCoreRewindAppend(&thread->rewind, thread->core);
+		} else if (thread->state == THREAD_REWINDING) {
+			if (!mCoreRewindRestore(&thread->rewind, thread->core)) {
+				mCoreRewindAppend(&thread->rewind, thread->core);
+			}
+		}
+	}
+}
+
+void _frameEnded(void* context) {
+	struct mCoreThread* thread = context;
+	if (!thread) {
+		return;
+	}
+	if (thread->frameCallback) {
+		thread->frameCallback(thread);
+	}
+}
+
+void _crashed(void* context) {
+	struct mCoreThread* thread = context;
+	if (!thread) {
+		return;
+	}
+	_changeState(thread, THREAD_CRASHED, true);
+}
+
 static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	struct mCoreThread* threadContext = context;
 #ifdef USE_PTHREADS
@@ -104,6 +136,13 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 #endif
 
 	struct mCore* core = threadContext->core;
+	struct mCoreCallbacks callbacks = {
+		.videoFrameStarted = _frameStarted,
+		.videoFrameEnded = _frameEnded,
+		.coreCrashed = _crashed,
+		.context = threadContext
+	};
+	core->setCoreCallbacks(core, &callbacks);
 	core->setSync(core, &threadContext->sync);
 	core->reset(core);
 
@@ -121,13 +160,16 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 
 	while (threadContext->state < THREAD_EXITING) {
+#ifdef USE_DEBUGGERS
 		struct mDebugger* debugger = core->debugger;
 		if (debugger) {
 			mDebuggerRun(debugger);
 			if (debugger->state == DEBUGGER_SHUTDOWN) {
 				_changeState(threadContext, THREAD_EXITING, false);
 			}
-		} else {
+		} else
+#endif
+		{
 			while (threadContext->state <= THREAD_MAX_RUNNING) {
 				core->runLoop(core);
 			}
@@ -179,6 +221,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	if (threadContext->cleanCallback) {
 		threadContext->cleanCallback(threadContext);
 	}
+	core->setCoreCallbacks(core, NULL);
 
 	return 0;
 }
@@ -436,6 +479,14 @@ void mCoreThreadPauseFromThread(struct mCoreThread* threadContext) {
 
 void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool rewinding) {
 	MutexLock(&threadContext->stateMutex);
+	if (rewinding && (threadContext->state == THREAD_REWINDING || (threadContext->state == THREAD_INTERRUPTING && threadContext->savedState == THREAD_REWINDING))) {
+		MutexUnlock(&threadContext->stateMutex);
+		return;
+	}
+	if (!rewinding && (threadContext->state == THREAD_RUNNING || (threadContext->state == THREAD_INTERRUPTING && threadContext->savedState == THREAD_RUNNING))) {
+		MutexUnlock(&threadContext->stateMutex);
+		return;
+	}
 	_waitOnInterrupt(threadContext);
 	if (rewinding && threadContext->state == THREAD_RUNNING) {
 		threadContext->state = THREAD_REWINDING;
@@ -483,43 +534,10 @@ struct mCoreThread* mCoreThreadGet(void) {
 }
 #endif
 
-void mCoreThreadFrameStarted(struct mCoreThread* thread) {
-	if (!thread) {
-		return;
-	}
-	if (thread->core->opts.rewindEnable && thread->core->opts.rewindBufferCapacity > 0) {
-		if (thread->state != THREAD_REWINDING) {
-			mCoreRewindAppend(&thread->rewind, thread->core);
-		} else if (thread->state == THREAD_REWINDING) {
-			if (!mCoreRewindRestore(&thread->rewind, thread->core)) {
-				mCoreRewindAppend(&thread->rewind, thread->core);
-			}
-		}
-	}
-}
-
-void mCoreThreadFrameEnded(struct mCoreThread* thread) {
-	if (!thread) {
-		return;
-	}
-	if (thread->frameCallback) {
-		thread->frameCallback(thread);
-	}
-}
-
 #else
 struct mCoreThread* mCoreThreadGet(void) {
 	return NULL;
 }
-
-void mCoreThreadFrameStarted(struct mCoreThread* thread) {
-	UNUSED(thread);
-}
-
-void mCoreThreadFrameEnded(struct mCoreThread* thread) {
-	UNUSED(thread);
-}
-
 #endif
 
 static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {

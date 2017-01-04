@@ -14,10 +14,8 @@
 #include <QTimer>
 #include <QWidget>
 
-extern "C" {
-#include "core/interface.h"
-#include "util/configuration.h"
-}
+#include <mgba/core/interface.h>
+#include <mgba-util/configuration.h>
 
 using namespace QGBA;
 

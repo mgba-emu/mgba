@@ -5,25 +5,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "psp2-context.h"
 
-#include "core/core.h"
+#include <mgba/core/blip_buf.h>
+#include <mgba/core/core.h>
 
 #ifdef M_CORE_GBA
-#include "gba/gba.h"
+#include <mgba/internal/gba/gba.h>
 #endif
 #ifdef M_CORE_GB
-#include "gb/gb.h"
+#include <mgba/internal/gb/gb.h>
 #endif
 
 #include "feature/gui/gui-runner.h"
-#include "gba/input.h"
+#include <mgba/internal/gba/input.h>
 
-#include "util/memory.h"
-#include "util/circle-buffer.h"
-#include "util/ring-fifo.h"
-#include "util/threading.h"
-#include "util/vfs.h"
-#include "platform/psp2/sce-vfs.h"
-#include "third-party/blip_buf/blip_buf.h"
+#include <mgba-util/memory.h>
+#include <mgba-util/circle-buffer.h>
+#include <mgba-util/ring-fifo.h>
+#include <mgba-util/threading.h>
+#include <mgba-util/vfs.h>
+#include <mgba-util/platform/psp2/sce-vfs.h>
 
 #include <psp2/audioout.h>
 #include <psp2/ctrl.h>
@@ -134,9 +134,11 @@ static void _setRumble(struct mRumble* source, int enable) {
 		rumble->current -= oldLevel;
 	}
 	CircleBufferWrite8(&rumble->history, enable);
+	int small = (rumble->current << 21) / 65793;
+	int big = ((rumble->current * rumble->current) << 18) / 65793;
 	struct SceCtrlActuator state = {
-		rumble->current * 31,
-		0
+		small,
+		big
 	};
 	sceCtrlSetActuator(1, &state);
 }

@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "util/png-io.h"
+#include <mgba-util/png-io.h>
 
 #ifdef USE_PNG
 
-#include "vfs.h"
+#include <mgba-util/vfs.h>
 
 static void _pngWrite(png_structp png, png_bytep buffer, png_size_t size) {
 	struct VFile* vf = png_get_io_ptr(png);
@@ -72,9 +72,9 @@ bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned s
 			row[x * 3 + 1] = (c >> 3) & 0xFC;
 			row[x * 3 + 2] = (c << 3) & 0xF8;
 #else
-			row[x * ] = (c >> 7) & 0xF8;
-			row[x *  + 1] = (c >> 2) & 0xF8;
-			row[x *  + 2] = (c << 3) & 0xF8;
+			row[x * 3] = (c >> 7) & 0xF8;
+			row[x * 3 + 1] = (c >> 2) & 0xF8;
+			row[x * 3 + 2] = (c << 3) & 0xF8;
 #endif
 #else
 #ifdef __BIG_ENDIAN__
@@ -116,7 +116,9 @@ void PNGWriteClose(png_structp png, png_infop info) {
 
 bool isPNG(struct VFile* source) {
 	png_byte header[PNG_HEADER_BYTES];
-	source->read(source, header, PNG_HEADER_BYTES);
+	if (source->read(source, header, PNG_HEADER_BYTES) < PNG_HEADER_BYTES) {
+		return false;
+	}
 	return !png_sig_cmp(header, 0, PNG_HEADER_BYTES);
 }
 

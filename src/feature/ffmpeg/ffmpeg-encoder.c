@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ffmpeg-encoder.h"
 
-#include "core/core.h"
-#include "gba/video.h"
+#include <mgba/core/core.h>
+#include <mgba/internal/gba/video.h>
 
 #include <libavcodec/version.h>
 #include <libavcodec/avcodec.h>
@@ -381,6 +381,11 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 		return;
 	}
 
+	if (encoder->absf && !left) {
+		// XXX: AVBSF doesn't like silence. Figure out why.
+		left = 1;
+	}
+
 	encoder->audioBuffer[encoder->currentAudioSample * 2] = left;
 	encoder->audioBuffer[encoder->currentAudioSample * 2 + 1] = right;
 
@@ -390,7 +395,6 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 	if ((encoder->currentAudioSample * 4) < encoder->audioBufferSize) {
 		return;
 	}
-	encoder->currentAudioSample = 0;
 
 	int channelSize = 2 * av_get_bytes_per_sample(encoder->audio->sample_fmt);
 	avresample_convert(encoder->resampleContext,
@@ -404,51 +408,62 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 #endif
 	avresample_read(encoder->resampleContext, encoder->audioFrame->data, encoder->postaudioBufferSize / channelSize);
 
-	AVRational timeBase = { 1, PREFERRED_SAMPLE_RATE };
-	encoder->audioFrame->pts = encoder->nextAudioPts;
-	encoder->nextAudioPts = av_rescale_q(encoder->currentAudioFrame, timeBase, encoder->audioStream->time_base);
+	encoder->audioFrame->pts = av_rescale_q(encoder->currentAudioFrame - encoder->currentAudioSample, encoder->audio->time_base, encoder->audioStream->time_base);
+	encoder->currentAudioSample = 0;
 
 	AVPacket packet;
 	av_init_packet(&packet);
 	packet.data = 0;
 	packet.size = 0;
+	packet.pts = encoder->audioFrame->pts;
+
 	int gotData;
 #ifdef FFMPEG_USE_PACKETS
 	avcodec_send_frame(encoder->audio, encoder->audioFrame);
-	gotData = avcodec_receive_packet(encoder->audio, &packet) == 0;
+	gotData = avcodec_receive_packet(encoder->audio, &packet);
+	gotData = (gotData == 0) && packet.size;
 #else
 	avcodec_encode_audio2(encoder->audio, &packet, encoder->audioFrame, &gotData);
 #endif
 	if (gotData) {
 		if (encoder->absf) {
-			AVPacket tempPacket = packet;
+			AVPacket tempPacket;
 
 #ifdef FFMPEG_USE_NEW_BSF
-			int success = av_bsf_send_packet(encoder->absf, &packet) && av_bsf_receive_packet(encoder->absf, &packet);
+			int success = av_bsf_send_packet(encoder->absf, &packet);
+			if (success >= 0) {
+				success = av_bsf_receive_packet(encoder->absf, &tempPacket);
+			}
 #else
 			int success = av_bitstream_filter_filter(encoder->absf, encoder->audio, 0,
 			    &tempPacket.data, &tempPacket.size,
 			    packet.data, packet.size, 0);
 #endif
-			if (success > 0) {
+
+			if (success >= 0) {
 #if LIBAVUTIL_VERSION_MAJOR >= 53
 				tempPacket.buf = av_buffer_create(tempPacket.data, tempPacket.size, av_buffer_default_free, 0, 0);
 #endif
+
 #ifdef FFMPEG_USE_PACKET_UNREF
-				av_packet_unref(&packet);
+				av_packet_move_ref(&packet, &tempPacket);
 #else
 				av_free_packet(&packet);
+				packet = tempPacket;
 #endif
+
+				packet.stream_index = encoder->audioStream->index;
+				av_interleaved_write_frame(encoder->context, &packet);
 			}
-			packet = tempPacket;
+		} else {
+			packet.stream_index = encoder->audioStream->index;
+			av_interleaved_write_frame(encoder->context, &packet);
 		}
-		packet.stream_index = encoder->audioStream->index;
-		av_interleaved_write_frame(encoder->context, &packet);
 	}
 #ifdef FFMPEG_USE_PACKET_UNREF
-		av_packet_unref(&packet);
+	av_packet_unref(&packet);
 #else
-		av_free_packet(&packet);
+	av_free_packet(&packet);
 #endif
 }
 
@@ -468,6 +483,7 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 	av_frame_make_writable(encoder->videoFrame);
 #endif
 	encoder->videoFrame->pts = av_rescale_q(encoder->currentVideoFrame, encoder->video->time_base, encoder->videoStream->time_base);
+	packet.pts = encoder->videoFrame->pts;
 	++encoder->currentVideoFrame;
 
 	sws_scale(encoder->scaleContext, (const uint8_t* const*) &pixels, (const int*) &stride, 0, encoder->iheight, encoder->videoFrame->data, encoder->videoFrame->linesize);

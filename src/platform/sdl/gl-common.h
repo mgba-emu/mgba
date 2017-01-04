@@ -5,9 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #ifndef SDL_GL_COMMON_H
 #define SDL_GL_COMMON_H
+
+#include <mgba-util/common.h>
+
+CXX_GUARD_START
+
 #include "main.h"
 
 void mSDLGLCommonSwap(struct VideoBackend* context);
 void mSDLGLCommonInit(struct mSDLRenderer* renderer);
+
+CXX_GUARD_END
 
 #endif

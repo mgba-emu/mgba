@@ -3,15 +3,16 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "cli-debugger.h"
+#include <mgba/internal/debugger/cli-debugger.h>
 
-#ifdef USE_CLI_DEBUGGER
+#include <mgba/core/core.h>
+#include <mgba/core/version.h>
+#include <mgba/internal/debugger/parser.h>
+#include <mgba-util/string.h>
 
-#include "core/core.h"
-#include "core/version.h"
-#include "parser.h"
-
+#if !defined(NDEBUG) && !defined(_WIN32)
 #include <signal.h>
+#endif
 
 #ifdef USE_PTHREADS
 #include <pthread.h>
@@ -20,9 +21,7 @@
 const char* ERROR_MISSING_ARGS = "Arguments missing"; // TODO: share
 const char* ERROR_OVERFLOW = "Arguments overflow";
 
-static struct CLIDebugger* _activeDebugger;
-
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(_WIN32)
 static void _breakInto(struct CLIDebugger*, struct CLIDebugVector*);
 #endif
 static void _continue(struct CLIDebugger*, struct CLIDebugVector*);
@@ -41,14 +40,14 @@ static void _readWord(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _clearBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setReadWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setWriteWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeByte(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeHalfword(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeWord(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpByte(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpHalfword(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpWord(struct CLIDebugger*, struct CLIDebugVector*);
-
-static void _breakIntoDefault(int signal);
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "b", _setBreakpoint, CLIDVParse, "Set a breakpoint" },
@@ -84,16 +83,18 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "w/2", _writeHalfword, CLIDVParse, "Write a halfword at a specified offset" },
 	{ "w/4", _writeWord, CLIDVParse, "Write a word at a specified offset" },
 	{ "watch", _setWatchpoint, CLIDVParse, "Set a watchpoint" },
+	{ "watch/r", _setReadWatchpoint, CLIDVParse, "Set a read watchpoint" },
+	{ "watch/w", _setWriteWatchpoint, CLIDVParse, "Set a write watchpoint" },
 	{ "x/1", _dumpByte, CLIDVParse, "Examine bytes at a specified offset" },
 	{ "x/2", _dumpHalfword, CLIDVParse, "Examine halfwords at a specified offset" },
 	{ "x/4", _dumpWord, CLIDVParse, "Examine words at a specified offset" },
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(_WIN32)
 	{ "!", _breakInto, 0, "Break into attached debugger (for developers)" },
 #endif
 	{ 0, 0, 0, 0 }
 };
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(_WIN32)
 static void _handleDeath(int sig) {
 	UNUSED(sig);
 	printf("No debugger attached!\n");
@@ -133,68 +134,64 @@ static void _disassemble(struct CLIDebugger* debugger, struct CLIDebugVector* dv
 }
 
 static void _print(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	UNUSED(debugger);
 	for (; dv; dv = dv->next) {
-		printf(" %u", dv->intValue);
+		debugger->backend->printf(debugger->backend, " %u", dv->intValue);
 	}
-	printf("\n");
+	debugger->backend->printf(debugger->backend, "\n");
 }
 
 static void _printBin(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	UNUSED(debugger);
 	for (; dv; dv = dv->next) {
-		printf(" 0b");
+		debugger->backend->printf(debugger->backend, " 0b");
 		int i = 32;
 		while (i--) {
-			printf("%u", (dv->intValue >> i) & 1);
+			debugger->backend->printf(debugger->backend, "%u", (dv->intValue >> i) & 1);
 		}
 	}
-	printf("\n");
+	debugger->backend->printf(debugger->backend, "\n");
 }
 
 static void _printHex(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	UNUSED(debugger);
 	for (; dv; dv = dv->next) {
-		printf(" 0x%08X", dv->intValue);
+		debugger->backend->printf(debugger->backend, " 0x%08X", dv->intValue);
 	}
-	printf("\n");
+	debugger->backend->printf(debugger->backend, "\n");
 }
 
 static void _printHelp(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	UNUSED(debugger);
 	UNUSED(dv);
 	if (!dv) {
-		puts("Generic commands:");
+		debugger->backend->printf(debugger->backend, "Generic commands:\n");
 		int i;
 		for (i = 0; _debuggerCommands[i].name; ++i) {
-			printf("%-10s %s\n", _debuggerCommands[i].name, _debuggerCommands[i].summary);
+			debugger->backend->printf(debugger->backend, "%-10s %s\n", _debuggerCommands[i].name, _debuggerCommands[i].summary);
 		}
 		if (debugger->system) {
-			printf("%s commands:\n", debugger->system->platformName);
+			debugger->backend->printf(debugger->backend, "%s commands:\n", debugger->system->platformName);
 			for (i = 0; debugger->system->platformCommands[i].name; ++i) {
-				printf("%-10s %s\n", debugger->system->platformCommands[i].name, debugger->system->platformCommands[i].summary);
+				debugger->backend->printf(debugger->backend, "%-10s %s\n", debugger->system->platformCommands[i].name, debugger->system->platformCommands[i].summary);
 			}
-			printf("%s commands:\n", debugger->system->name);
+			debugger->backend->printf(debugger->backend, "%s commands:\n", debugger->system->name);
 			for (i = 0; debugger->system->commands[i].name; ++i) {
-				printf("%-10s %s\n", debugger->system->commands[i].name, debugger->system->commands[i].summary);
+				debugger->backend->printf(debugger->backend, "%-10s %s\n", debugger->system->commands[i].name, debugger->system->commands[i].summary);
 			}
 		}
 	} else {
 		int i;
 		for (i = 0; _debuggerCommands[i].name; ++i) {
 			if (strcmp(_debuggerCommands[i].name, dv->charValue) == 0) {
-				printf(" %s\n", _debuggerCommands[i].summary);
+				debugger->backend->printf(debugger->backend, " %s\n", _debuggerCommands[i].summary);
 			}
 		}
 		if (debugger->system) {
 			for (i = 0; debugger->system->platformCommands[i].name; ++i) {
 				if (strcmp(debugger->system->platformCommands[i].name, dv->charValue) == 0) {
-					printf(" %s\n", debugger->system->platformCommands[i].summary);
+					debugger->backend->printf(debugger->backend, " %s\n", debugger->system->platformCommands[i].summary);
 				}
 			}
 			for (i = 0; debugger->system->commands[i].name; ++i) {
 				if (strcmp(debugger->system->commands[i].name, dv->charValue) == 0) {
-					printf(" %s\n", debugger->system->commands[i].summary);
+					debugger->backend->printf(debugger->backend, " %s\n", debugger->system->commands[i].summary);
 				}
 			}
 		}
@@ -208,12 +205,12 @@ static void _quit(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 static void _readByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
 	uint8_t value = debugger->d.core->busRead8(debugger->d.core, address);
-	printf(" 0x%02X\n", value);
+	debugger->backend->printf(debugger->backend, " 0x%02X\n", value);
 }
 
 static void _reset(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -224,37 +221,37 @@ static void _reset(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 static void _readHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
 	uint16_t value = debugger->d.core->busRead16(debugger->d.core, address & ~1);
-	printf(" 0x%04X\n", value);
+	debugger->backend->printf(debugger->backend, " 0x%04X\n", value);
 }
 
 static void _readWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
 	uint32_t value = debugger->d.core->busRead32(debugger->d.core, address & ~3);
-	printf(" 0x%08X\n", value);
+	debugger->backend->printf(debugger->backend, " 0x%08X\n", value);
 }
 
 static void _writeByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
 	uint32_t value = dv->next->intValue;
 	if (value > 0xFF) {
-		printf("%s\n", ERROR_OVERFLOW);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_OVERFLOW);
 		return;
 	}
 	debugger->d.core->busWrite8(debugger->d.core, address, value);
@@ -262,17 +259,17 @@ static void _writeByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 
 static void _writeHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
 	uint32_t value = dv->next->intValue;
 	if (value > 0xFFFF) {
-		printf("%s\n", ERROR_OVERFLOW);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_OVERFLOW);
 		return;
 	}
 	debugger->d.core->busWrite16(debugger->d.core, address, value);
@@ -280,11 +277,11 @@ static void _writeHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* 
 
 static void _writeWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
@@ -294,7 +291,7 @@ static void _writeWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 
 static void _dumpByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
@@ -307,18 +304,18 @@ static void _dumpByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		if (line > words) {
 			line = words;
 		}
-		printf("0x%08X:", address);
+		debugger->backend->printf(debugger->backend, "0x%08X:", address);
 		for (; line > 0; --line, ++address, --words) {
 			uint32_t value = debugger->d.core->busRead8(debugger->d.core, address);
-			printf(" %02X", value);
+			debugger->backend->printf(debugger->backend, " %02X", value);
 		}
-		printf("\n");
+		debugger->backend->printf(debugger->backend, "\n");
 	}
 }
 
 static void _dumpHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
@@ -331,18 +328,18 @@ static void _dumpHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* d
 		if (line > words) {
 			line = words;
 		}
-		printf("0x%08X:", address);
+		debugger->backend->printf(debugger->backend, "0x%08X:", address);
 		for (; line > 0; --line, address += 2, --words) {
 			uint32_t value = debugger->d.core->busRead16(debugger->d.core, address);
-			printf(" %04X", value);
+			debugger->backend->printf(debugger->backend, " %04X", value);
 		}
-		printf("\n");
+		debugger->backend->printf(debugger->backend, "\n");
 	}
 }
 
 static void _dumpWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
@@ -355,18 +352,18 @@ static void _dumpWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		if (line > words) {
 			line = words;
 		}
-		printf("0x%08X:", address);
+		debugger->backend->printf(debugger->backend, "0x%08X:", address);
 		for (; line > 0; --line, address += 4, --words) {
 			uint32_t value = debugger->d.core->busRead32(debugger->d.core, address);
-			printf(" %08X", value);
+			debugger->backend->printf(debugger->backend, " %08X", value);
 		}
-		printf("\n");
+		debugger->backend->printf(debugger->backend, "\n");
 	}
 }
 
 static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
@@ -375,20 +372,46 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 
 static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	if (!debugger->d.platform->setWatchpoint) {
-		printf("Watchpoints are not supported by this platform.\n");
+		debugger->backend->printf(debugger->backend, "Watchpoints are not supported by this platform.\n");
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_RW); // TODO: ro/wo
+	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_RW);
+}
+
+static void _setReadWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (!debugger->d.platform->setWatchpoint) {
+		debugger->backend->printf(debugger->backend, "Watchpoints are not supported by this platform.\n");
+		return;
+	}
+	uint32_t address = dv->intValue;
+	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_READ);
+}
+
+static void _setWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (!debugger->d.platform->setWatchpoint) {
+		debugger->backend->printf(debugger->backend, "Watchpoints are not supported by this platform.\n");
+		return;
+	}
+	uint32_t address = dv->intValue;
+	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_WRITE);
 }
 
 static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		printf("%s\n", ERROR_MISSING_ARGS);
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
@@ -396,11 +419,6 @@ static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector
 	if (debugger->d.platform->clearWatchpoint) {
 		debugger->d.platform->clearWatchpoint(debugger->d.platform, address);
 	}
-}
-
-static void _breakIntoDefault(int signal) {
-	UNUSED(signal);
-	mDebuggerEnter(&_activeDebugger->d, DEBUGGER_ENTER_MANUAL, 0);
 }
 
 static void _printStatus(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -537,8 +555,7 @@ struct CLIDebugVector* CLIDVStringParse(struct CLIDebugger* debugger, const char
 	} else {
 		adjusted = length;
 	}
-	dvTemp.charValue = malloc(adjusted);
-	strncpy(dvTemp.charValue, string, adjusted);
+	dvTemp.charValue = strndup(string, adjusted);
 
 	length -= adjusted;
 	string += adjusted;
@@ -579,13 +596,13 @@ static int _tryCommands(struct CLIDebugger* debugger, struct CLIDebuggerCommandS
 				if (args) {
 					dv = commands[i].parser(debugger, args, argsLen);
 					if (dv && dv->type == CLIDV_ERROR_TYPE) {
-						printf("Parse error\n");
+						debugger->backend->printf(debugger->backend, "Parse error\n");
 						_DVFree(dv);
 						return false;
 					}
 				}
 			} else if (args) {
-				printf("Wrong number of arguments\n");
+				debugger->backend->printf(debugger->backend, "Wrong number of arguments\n");
 				return false;
 			}
 			commands[i].command(debugger, dv);
@@ -617,155 +634,96 @@ static bool _parse(struct CLIDebugger* debugger, const char* line, size_t count)
 		}
 	}
 	if (result < 0) {
-		printf("Command not found\n");
+		debugger->backend->printf(debugger->backend, "Command not found\n");
 	}
 	return false;
-}
-
-static char* _prompt(EditLine* el) {
-	UNUSED(el);
-	return "> ";
 }
 
 static void _commandLine(struct mDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	const char* line;
+		size_t len;
 	_printStatus(cliDebugger, 0);
-	int count = 0;
-	HistEvent ev;
 	while (debugger->state == DEBUGGER_PAUSED) {
-		line = el_gets(cliDebugger->elstate, &count);
-		if (!line) {
+		line = cliDebugger->backend->readline(cliDebugger->backend, &len);
+		if (!line || len == 0) {
 			debugger->state = DEBUGGER_SHUTDOWN;
 			return;
 		}
 		if (line[0] == '\n') {
-			if (history(cliDebugger->histate, &ev, H_FIRST) >= 0) {
-				_parse(cliDebugger, ev.str, strlen(ev.str) - 1);
+			line = cliDebugger->backend->historyLast(cliDebugger->backend, &len);
+			if (line && len) {
+				_parse(cliDebugger, line, len);
 			}
 		} else {
-			_parse(cliDebugger, line, count - 1);
-			history(cliDebugger->histate, &ev, H_ENTER, line);
+			_parse(cliDebugger, line, len);
+			cliDebugger->backend->historyAppend(cliDebugger->backend, line);
 		}
 	}
 }
 
 static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
-	UNUSED(debugger);
+	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
 	case DEBUGGER_ENTER_ATTACHED:
 		break;
 	case DEBUGGER_ENTER_BREAKPOINT:
 		if (info) {
-			printf("Hit breakpoint at 0x%08X\n", info->address);
+			cliDebugger->backend->printf(cliDebugger->backend, "Hit breakpoint at 0x%08X\n", info->address);
 		} else {
-			printf("Hit breakpoint\n");
+			cliDebugger->backend->printf(cliDebugger->backend, "Hit breakpoint\n");
 		}
 		break;
 	case DEBUGGER_ENTER_WATCHPOINT:
 		if (info) {
+<<<<<<< HEAD
 			if (info->a.b.accessType & WATCHPOINT_WRITE) {
 				printf("Hit watchpoint at 0x%08X: (new value = 0x%08x, old value = 0x%08X)\n", info->address, info->a.b.newValue, info->a.b.oldValue);
 			} else {
 				printf("Hit watchpoint at 0x%08X: (value = 0x%08x)\n", info->address, info->a.b.oldValue);
+=======
+			if (info->accessType & WATCHPOINT_WRITE) {
+				cliDebugger->backend->printf(cliDebugger->backend, "Hit watchpoint at 0x%08X: (new value = 0x%08x, old value = 0x%08X)\n", info->address, info->newValue, info->oldValue);
+			} else {
+				cliDebugger->backend->printf(cliDebugger->backend, "Hit watchpoint at 0x%08X: (value = 0x%08x)\n", info->address, info->oldValue);
+>>>>>>> upstream/master
 			}
 		} else {
-			printf("Hit watchpoint\n");
+			cliDebugger->backend->printf(cliDebugger->backend, "Hit watchpoint\n");
 		}
 		break;
 	case DEBUGGER_ENTER_ILLEGAL_OP:
 		if (info) {
+<<<<<<< HEAD
 			printf("Hit illegal opcode at 0x%08X: 0x%08X\n", info->address, info->a.c.opcode);
+=======
+			cliDebugger->backend->printf(cliDebugger->backend, "Hit illegal opcode at 0x%08X: 0x%08X\n", info->address, info->opcode);
+>>>>>>> upstream/master
 		} else {
-			printf("Hit illegal opcode\n");
+			cliDebugger->backend->printf(cliDebugger->backend, "Hit illegal opcode\n");
 		}
 		break;
 	}
 }
 
-static unsigned char _tabComplete(EditLine* elstate, int ch) {
-	UNUSED(ch);
-	const LineInfo* li = el_line(elstate);
-	if (!li->buffer[0]) {
-		return CC_ERROR;
-	}
-
-	const char* commandPtr;
-	size_t cmd = 0, len = 0;
-	const char* name = 0;
-	for (commandPtr = li->buffer; commandPtr <= li->cursor; ++commandPtr, ++len) {
-		for (; (name = _debuggerCommands[cmd].name); ++cmd) {
-			int cmp = strncasecmp(name, li->buffer, len);
-			if (cmp > 0) {
-				return CC_ERROR;
-			}
-			if (cmp == 0) {
-				break;
-			}
-		}
-	}
-	if (!name) {
-		return CC_ERROR;
-	}
-	if (_debuggerCommands[cmd + 1].name && strlen(_debuggerCommands[cmd + 1].name) >= len - 1 && name[len - 2] == _debuggerCommands[cmd + 1].name[len - 2]) {
-		--len;
-		const char* next = 0;
-		int i;
-		for (i = cmd + 1; _debuggerCommands[i].name; ++i) {
-			if (strncasecmp(name, _debuggerCommands[i].name, len)) {
-				break;
-			}
-			next = _debuggerCommands[i].name;
-		}
-		if (!next) {
-			return CC_ERROR;
-		}
-
-		for (; name[len]; ++len) {
-			if (name[len] != next[len]) {
-				break;
-			}
-			char out[2] = { name[len], '\0' };
-			el_insertstr(elstate, out);
-		}
-		return CC_REDISPLAY;
-	}
-	name += len - 1;
-	el_insertstr(elstate, name);
-	el_insertstr(elstate, " ");
-	return CC_REDISPLAY;
-}
-
 static void _cliDebuggerInit(struct mDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
-	// TODO: get argv[0]
-	cliDebugger->elstate = el_init(binaryName, stdin, stdout, stderr);
-	el_set(cliDebugger->elstate, EL_PROMPT, _prompt);
-	el_set(cliDebugger->elstate, EL_EDITOR, "emacs");
-
-	el_set(cliDebugger->elstate, EL_CLIENTDATA, cliDebugger);
-	el_set(cliDebugger->elstate, EL_ADDFN, "tab-complete", "Tab completion", _tabComplete);
-	el_set(cliDebugger->elstate, EL_BIND, "\t", "tab-complete", 0);
-	cliDebugger->histate = history_init();
-	HistEvent ev;
-	history(cliDebugger->histate, &ev, H_SETSIZE, 200);
-	el_set(cliDebugger->elstate, EL_HIST, history, cliDebugger->histate);
-	_activeDebugger = cliDebugger;
-	signal(SIGINT, _breakIntoDefault);
+	cliDebugger->backend->init(cliDebugger->backend);
 }
 
 static void _cliDebuggerDeinit(struct mDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
-	history_end(cliDebugger->histate);
-	el_end(cliDebugger->elstate);
-
 	if (cliDebugger->system) {
 		if (cliDebugger->system->deinit) {
 			cliDebugger->system->deinit(cliDebugger->system);
 		}
 		free(cliDebugger->system);
-		cliDebugger->system = 0;
+		cliDebugger->system = NULL;
+	}
+	if (cliDebugger->backend && cliDebugger->backend->deinit) {
+		cliDebugger->backend->deinit(cliDebugger->backend);
+		cliDebugger->backend = NULL;
 	}
 }
 
@@ -787,7 +745,8 @@ void CLIDebuggerCreate(struct CLIDebugger* debugger) {
 	debugger->d.paused = _commandLine;
 	debugger->d.entered = _reportEntry;
 
-	debugger->system = 0;
+	debugger->system = NULL;
+	debugger->backend = NULL;
 }
 
 void CLIDebuggerAttachSystem(struct CLIDebugger* debugger, struct CLIDebuggerSystem* system) {
@@ -802,4 +761,58 @@ void CLIDebuggerAttachSystem(struct CLIDebugger* debugger, struct CLIDebuggerSys
 	system->p = debugger;
 }
 
-#endif
+void CLIDebuggerAttachBackend(struct CLIDebugger* debugger, struct CLIDebuggerBackend* backend) {
+	if (debugger->backend && debugger->backend->deinit) {
+		debugger->backend->deinit(debugger->backend);
+	}
+
+	debugger->backend = backend;
+	backend->p = debugger;
+}
+
+bool CLIDebuggerTabComplete(struct CLIDebugger* debugger, const char* token, bool initial, size_t tokenLen) {
+	size_t cmd = 0;
+	size_t len;
+	const char* name = 0;
+	for (len = 1; len <= tokenLen; ++len) {
+		for (; (name = _debuggerCommands[cmd].name); ++cmd) {
+			int cmp = strncasecmp(name, token, len);
+			if (cmp > 0) {
+				return false;
+			}
+			if (cmp == 0) {
+				break;
+			}
+		}
+	}
+	if (!name) {
+		return false;
+	}
+	if (_debuggerCommands[cmd + 1].name && strlen(_debuggerCommands[cmd + 1].name) >= len && name[len - 1] == _debuggerCommands[cmd + 1].name[len - 1]) {
+		--len;
+		const char* next = 0;
+		int i;
+		for (i = cmd + 1; _debuggerCommands[i].name; ++i) {
+			if (strncasecmp(name, _debuggerCommands[i].name, len)) {
+				break;
+			}
+			next = _debuggerCommands[i].name;
+		}
+		if (!next) {
+			return false;
+		}
+
+		for (; name[len]; ++len) {
+			if (name[len] != next[len]) {
+				break;
+			}
+			char out[2] = { name[len], '\0' };
+			debugger->backend->lineAppend(debugger->backend, out);
+		}
+		return true;
+	}
+	name += len - 1;
+	debugger->backend->lineAppend(debugger->backend, name);
+	debugger->backend->lineAppend(debugger->backend, " ");
+	return true;
+}

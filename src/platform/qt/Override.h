@@ -16,6 +16,7 @@ public:
 	virtual ~Override() {}
 
 	virtual void apply(struct mCore*) = 0;
+	virtual void identify(const struct mCore*) = 0;
 	virtual void save(struct Configuration*) const = 0;
 };
 

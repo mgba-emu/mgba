@@ -16,9 +16,7 @@
 #include "KeyEditor.h"
 
 #ifdef BUILD_SDL
-extern "C" {
 #include "platform/sdl/sdl-events.h"
-}
 #endif
 
 using namespace QGBA;

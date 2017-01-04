@@ -3,14 +3,14 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "software-private.h"
+#include "gba/renderers/software-private.h"
 
-#include "gba/gba.h"
-#include "gba/io.h"
-#include "gba/renderers/tile-cache.h"
+#include <mgba/core/tile-cache.h>
+#include <mgba/internal/arm/macros.h>
+#include <mgba/internal/gba/io.h>
 
-#include "util/arm-algo.h"
-#include "util/memory.h"
+#include <mgba-util/arm-algo.h>
+#include <mgba-util/memory.h>
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer);
@@ -343,7 +343,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 
 static void GBAVideoSoftwareRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
 	if (renderer->cache) {
-		GBAVideoTileCacheWriteVRAM(renderer->cache, address);
+		mTileCacheWriteVRAM(renderer->cache, address);
 	}
 }
 
@@ -369,6 +369,7 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 	color |= (value << 3) & 0xF8;
 	color |= (value << 6) & 0xF800;
 	color |= (value << 9) & 0xF80000;
+	color |= (color >> 5) & 0x070707;
 #endif
 	softwareRenderer->normalPalette[address >> 1] = color;
 	if (softwareRenderer->blendEffect == BLEND_BRIGHTEN) {
@@ -377,7 +378,7 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 		softwareRenderer->variantPalette[address >> 1] = _darken(color, softwareRenderer->bldy);
 	}
 	if (renderer->cache) {
-		GBAVideoTileCacheWritePalette(renderer->cache, address);
+		mTileCacheWritePalette(renderer->cache, address);
 	}
 }
 
@@ -457,7 +458,6 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
 	int i;
 	int oamMax = 0;
-	int objwinMax = 0;
 	for (i = 0; i < 128; ++i) {
 		struct GBAObj obj;
 		LOAD_16(obj.a, 0, &renderer->d.oam->obj[i].a);
@@ -469,22 +469,14 @@ static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
 				height <<= GBAObjAttributesAGetDoubleSize(obj.a);
 			}
 			if (GBAObjAttributesAGetY(obj.a) < VIDEO_VERTICAL_PIXELS || GBAObjAttributesAGetY(obj.a) + height >= VIDEO_VERTICAL_TOTAL_PIXELS) {
-				if (GBAObjAttributesAGetMode(obj.a) == OBJ_MODE_OBJWIN) {
-					renderer->objwinSprites[objwinMax].y = GBAObjAttributesAGetY(obj.a);
-					renderer->objwinSprites[objwinMax].endY = GBAObjAttributesAGetY(obj.a) + height;
-					renderer->objwinSprites[objwinMax].obj = obj;
-					++objwinMax;
-				} else {
-					renderer->sprites[oamMax].y = GBAObjAttributesAGetY(obj.a);
-					renderer->sprites[oamMax].endY = GBAObjAttributesAGetY(obj.a) + height;
-					renderer->sprites[oamMax].obj = obj;
-					++oamMax;
-				}
+				renderer->sprites[oamMax].y = GBAObjAttributesAGetY(obj.a);
+				renderer->sprites[oamMax].endY = GBAObjAttributesAGetY(obj.a) + height;
+				renderer->sprites[oamMax].obj = obj;
+				++oamMax;
 			}
 		}
 	}
 	renderer->oamMax = oamMax;
-	renderer->objwinMax = objwinMax;
 	renderer->oamDirty = 0;
 }
 
@@ -740,20 +732,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			}
 			int i;
 			int drawn;
-			for (i = 0; i < renderer->objwinMax; ++i) {
-				int localY = y;
-				if (renderer->spriteCyclesRemaining <= 0) {
-					break;
-				}
-				struct GBAVideoSoftwareSprite* sprite = &renderer->objwinSprites[i];
-				if (GBAObjAttributesAIsMosaic(sprite->obj.a)) {
-					localY = mosaicY;
-				}
-				if ((localY < sprite->y && (sprite->endY - 256 < 0 || localY >= sprite->endY - 256)) || localY >= sprite->endY) {
-					continue;
-				}
-				GBAVideoSoftwareRendererPreprocessSprite(renderer, &sprite->obj, localY);
-			}
+
 			for (i = 0; i < renderer->oamMax; ++i) {
 				int localY = y;
 				if (renderer->spriteCyclesRemaining <= 0) {

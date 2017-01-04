@@ -8,15 +8,13 @@
 
 #include "GameController.h"
 
-extern "C" {
-#include "core/core.h"
+#include <mgba/core/core.h>
 #ifdef M_CORE_GBA
-#include "gba/memory.h"
+#include <mgba/internal/gba/memory.h>
 #endif
 #ifdef M_CORE_GB
-#include "gb/memory.h"
+#include <mgba/internal/gb/memory.h>
 #endif
-}
 
 using namespace QGBA;
 
@@ -104,6 +102,13 @@ MemoryView::MemoryView(GameController* controller, QWidget* parent)
 	connect(controller, SIGNAL(gamePaused(mCoreThread*)), this, SLOT(update()));
 	connect(controller, SIGNAL(stateLoaded(mCoreThread*)), this, SLOT(update()));
 	connect(controller, SIGNAL(rewound(mCoreThread*)), this, SLOT(update()));
+
+	connect(m_ui.copy, SIGNAL(clicked()), m_ui.hexfield, SLOT(copy()));
+	connect(m_ui.save, SIGNAL(clicked()), m_ui.hexfield, SLOT(save()));
+	connect(m_ui.paste, SIGNAL(clicked()), m_ui.hexfield, SLOT(paste()));
+	connect(m_ui.load, SIGNAL(clicked()), m_ui.hexfield, SLOT(load()));
+
+	connect(m_ui.loadTBL, SIGNAL(clicked()), m_ui.hexfield, SLOT(loadTBL()));
 }
 
 void MemoryView::setIndex(int index) {
@@ -162,15 +167,19 @@ void MemoryView::updateSelection(uint32_t start, uint32_t end) {
 
 void MemoryView::updateStatus() {
 	int align = m_ui.hexfield->alignment();
+	if (!m_controller->isLoaded()) {
+		return;
+	}
+	mCore* core = m_controller->thread()->core;
+	QByteArray selection(m_ui.hexfield->serialize());
+	QString text(m_ui.hexfield->decodeText(selection));
+	m_ui.stringVal->setText(text);
+
 	if (m_selection.first & (align - 1) || m_selection.second - m_selection.first != align) {
 		m_ui.sintVal->clear();
 		m_ui.uintVal->clear();
 		return;
 	}
-	if (!m_controller->isLoaded()) {
-		return;
-	}
-	mCore* core = m_controller->thread()->core;
 	union {
 		uint32_t u32;
 		int32_t i32;

@@ -5,18 +5,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gui-runner.h"
 
-#include "core/core.h"
-#include "core/serialize.h"
+#include <mgba/core/core.h>
+#include <mgba/core/serialize.h>
 #include "feature/gui/gui-config.h"
-#include "gba/gba.h"
-#include "gba/input.h"
-#include "gba/interface.h"
-#include "util/gui/file-select.h"
-#include "util/gui/font.h"
-#include "util/gui/menu.h"
-#include "util/memory.h"
-#include "util/png-io.h"
-#include "util/vfs.h"
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/input.h>
+#include <mgba/gba/interface.h>
+#include <mgba-util/gui/file-select.h>
+#include <mgba-util/gui/font.h>
+#include <mgba-util/gui/menu.h>
+#include <mgba-util/memory.h>
+#include <mgba-util/png-io.h>
+#include <mgba-util/vfs.h>
 
 #ifdef _3DS
 #include <3ds.h>
@@ -171,6 +171,12 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 	strncat(path, PATH_SEP "log", PATH_MAX - strlen(path));
 	logger.vf = VFileOpen(path, O_CREAT | O_WRONLY | O_APPEND);
 	mLogSetDefaultLogger(&logger.d);
+
+	const char* lastPath = mCoreConfigGetValue(&runner->config, "lastDirectory");
+	if (lastPath) {
+		strncpy(runner->params.currentPath, lastPath, PATH_MAX - 1);
+		runner->params.currentPath[PATH_MAX - 1] = '\0';
+	}
 }
 
 void mGUIDeinit(struct mGUIRunner* runner) {
@@ -499,6 +505,8 @@ void mGUIRunloop(struct mGUIRunner* runner) {
 		if (!GUISelectFile(&runner->params, path, sizeof(path), 0)) {
 			break;
 		}
+		mCoreConfigSetValue(&runner->config, "lastDirectory", runner->params.currentPath);
+		mCoreConfigSave(&runner->config);
 		mGUIRun(runner, path);
 	}
 }

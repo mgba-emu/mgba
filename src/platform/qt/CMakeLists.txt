@@ -69,6 +69,8 @@ endif()
 set(SOURCE_FILES
 	AboutScreen.cpp
 	ArchiveInspector.cpp
+	AssetTile.cpp
+	AssetView.cpp
 	AudioProcessor.cpp
 	CheatsModel.cpp
 	CheatsView.cpp
@@ -94,6 +96,7 @@ set(SOURCE_FILES
 	MemoryView.cpp
 	MessagePainter.cpp
 	MultiplayerController.cpp
+	ObjView.cpp
 	OverrideView.cpp
 	PaletteView.cpp
 	ROMInfo.cpp
@@ -113,12 +116,15 @@ set(SOURCE_FILES
 set(UI_FILES
 	AboutScreen.ui
 	ArchiveInspector.ui
+	AssetTile.ui
 	CheatsView.ui
+	DebuggerConsole.ui
 	GIFView.ui
 	IOViewer.ui
 	LoadSaveState.ui
 	LogView.ui
 	MemoryView.ui
+	ObjView.ui
 	OverrideView.ui
 	PaletteView.ui
 	ROMInfo.ui
@@ -172,19 +178,29 @@ if(NOT AUDIO_SRC)
 	return()
 endif()
 
-if(USE_GDB_STUB)
-	list(APPEND PLATFORM_SRC GDBController.cpp GDBWindow.cpp)
+if(USE_DEBUGGERS)
+	list(APPEND SOURCE_FILES
+		DebuggerController.cpp
+		DebuggerConsole.cpp
+		DebuggerConsoleController.cpp)
 endif()
-set(MACOSX_BUNDLE_ICON_FILE mgba.icns)
-set(MACOSX_BUNDLE_BUNDLE_VERSION ${LIB_VERSION_STRING})
-set(MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME})
-set(MACOSX_BUNDLE_GUI_IDENTIFIER com.endrift.${BINARY_NAME}-qt)
-set_source_files_properties(${CMAKE_SOURCE_DIR}/res/mgba.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
+if(USE_GDB_STUB)
+	list(APPEND SOURCE_FILES GDBController.cpp GDBWindow.cpp)
+endif()
 
 qt5_add_resources(RESOURCES resources.qrc)
+if(APPLE)
+	set(MACOSX_BUNDLE_ICON_FILE mgba.icns)
+	set(MACOSX_BUNDLE_BUNDLE_VERSION ${LIB_VERSION_STRING})
+	set(MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME})
+	set(MACOSX_BUNDLE_GUI_IDENTIFIER com.endrift.${BINARY_NAME}-qt)
+	set_source_files_properties(${CMAKE_SOURCE_DIR}/res/mgba.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+endif()
 if(WIN32)
 	configure_file(${CMAKE_SOURCE_DIR}/res/mgba.rc.in ${CMAKE_BINARY_DIR}/res/mgba.rc)
 	list(APPEND RESOURCES ${CMAKE_BINARY_DIR}/res/mgba.rc)
+	set_source_files_properties(${CMAKE_BINARY_DIR}/res/mgba.rc PROPERTIES OBJECT_DEPENDS ${CMAKE_SOURCE_DIR}/res/mgba.ico)
 	if(QT_STATIC)
 		list(APPEND QT_LIBRARIES qwindows Qt5PlatformSupport imm32)
 	endif()

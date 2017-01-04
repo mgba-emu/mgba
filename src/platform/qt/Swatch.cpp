@@ -8,9 +8,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 
-extern "C" {
-#include "gba/video.h"
-}
+#include <mgba/core/interface.h>
 
 using namespace QGBA;
 
@@ -39,9 +37,9 @@ void Swatch::setDimensions(const QSize& size) {
 
 void Swatch::setColor(int index, uint16_t color) {
 	m_colors[index].setRgb(
-		GBA_R8(color),
-		GBA_G8(color),
-		GBA_B8(color));
+		M_R8(color),
+		M_G8(color),
+		M_B8(color));
 	updateFill(index);
 }
 

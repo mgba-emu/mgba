@@ -22,9 +22,7 @@
 #include <QThread>
 #include <QTimer>
 
-extern "C" {
 #include "platform/video-backend.h"
-}
 
 namespace QGBA {
 

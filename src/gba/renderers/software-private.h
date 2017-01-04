@@ -6,7 +6,8 @@
 #ifndef SOFTWARE_PRIVATE_H
 #define SOFTWARE_PRIVATE_H
 
-#include "video-software.h"
+#include <mgba/internal/arm/macros.h>
+#include <mgba/internal/gba/renderers/video-software.h>
 
 #ifdef NDEBUG
 #define VIDEO_CHECKS false
@@ -237,14 +238,14 @@ static inline unsigned _brighten(unsigned color, int y) {
 	c |= (a + ((0x7C00 - a) * y) / 16) & 0x7C00;
 #endif
 #else
-	a = color & 0xF8;
-	c |= (a + ((0xF8 - a) * y) / 16) & 0xF8;
+	a = color & 0xFF;
+	c |= (a + ((0xFF - a) * y) / 16) & 0xFF;
 
-	a = color & 0xF800;
-	c |= (a + ((0xF800 - a) * y) / 16) & 0xF800;
+	a = color & 0xFF00;
+	c |= (a + ((0xFF00 - a) * y) / 16) & 0xFF00;
 
-	a = color & 0xF80000;
-	c |= (a + ((0xF80000 - a) * y) / 16) & 0xF80000;
+	a = color & 0xFF0000;
+	c |= (a + ((0xFF0000 - a) * y) / 16) & 0xFF0000;
 #endif
 	return c;
 }
@@ -270,14 +271,14 @@ static inline unsigned _darken(unsigned color, int y) {
 	c |= (a - (a * y) / 16) & 0x7C00;
 #endif
 #else
-	a = color & 0xF8;
-	c |= (a - (a * y) / 16) & 0xF8;
+	a = color & 0xFF;
+	c |= (a - (a * y) / 16) & 0xFF;
 
-	a = color & 0xF800;
-	c |= (a - (a * y) / 16) & 0xF800;
+	a = color & 0xFF00;
+	c |= (a - (a * y) / 16) & 0xFF00;
 
-	a = color & 0xF80000;
-	c |= (a - (a * y) / 16) & 0xF80000;
+	a = color & 0xFF0000;
+	c |= (a - (a * y) / 16) & 0xFF0000;
 #endif
 	return c;
 }
@@ -320,25 +321,25 @@ static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB)
 	c = (c & 0x7C1F) | ((c >> 16) & 0x03E0);
 #endif
 #else
-	a = colorA & 0xF8;
-	b = colorB & 0xF8;
-	c |= ((a * weightA + b * weightB) / 16) & 0x1F8;
+	a = colorA & 0xFF;
+	b = colorB & 0xFF;
+	c |= ((a * weightA + b * weightB) / 16) & 0x1FF;
 	if (c & 0x00000100) {
-		c = 0x000000F8;
+		c = 0x000000FF;
 	}
 
-	a = colorA & 0xF800;
-	b = colorB & 0xF800;
-	c |= ((a * weightA + b * weightB) / 16) & 0x1F800;
+	a = colorA & 0xFF00;
+	b = colorB & 0xFF00;
+	c |= ((a * weightA + b * weightB) / 16) & 0x1FF00;
 	if (c & 0x00010000) {
-		c = (c & 0x000000F8) | 0x0000F800;
+		c = (c & 0x000000FF) | 0x0000FF00;
 	}
 
-	a = colorA & 0xF80000;
-	b = colorB & 0xF80000;
-	c |= ((a * weightA + b * weightB) / 16) & 0x1F80000;
+	a = colorA & 0xFF0000;
+	b = colorB & 0xFF0000;
+	c |= ((a * weightA + b * weightB) / 16) & 0x1FF0000;
 	if (c & 0x01000000) {
-		c = (c & 0x0000F8F8) | 0x00F80000;
+		c = (c & 0x0000FFFF) | 0x00FF0000;
 	}
 #endif
 	return c;

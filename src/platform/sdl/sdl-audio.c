@@ -5,10 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "sdl-audio.h"
 
-#include "core/thread.h"
-#include "gba/gba.h"
+#include <mgba/core/core.h>
+#include <mgba/core/thread.h>
+#include <mgba/internal/gba/audio.h>
+#include <mgba/internal/gba/gba.h>
 
-#include "third-party/blip_buf/blip_buf.h"
+#include <mgba/core/blip_buf.h>
 
 #define BUFFER_SIZE (GBA_AUDIO_SAMPLES >> 2)
 

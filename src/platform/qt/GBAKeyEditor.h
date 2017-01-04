@@ -11,9 +11,7 @@
 #include <QSet>
 #include <QWidget>
 
-extern "C" {
-#include "gba/input.h"
-}
+#include <mgba/internal/gba/input.h>
 
 class QComboBox;
 class QTimer;
@@ -32,6 +30,7 @@ public:
 
 public slots:
 	void setAll();
+	void save();
 
 protected:
 	virtual void resizeEvent(QResizeEvent*) override;
@@ -42,7 +41,6 @@ protected:
 
 private slots:
 	void setNext();
-	void save();
 	void refresh();
 #ifdef BUILD_SDL
 	void setAxisValue(int axis, int32_t value);

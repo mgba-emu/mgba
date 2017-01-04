@@ -11,15 +11,13 @@
 #include <QClipboard>
 #include <QPushButton>
 
-extern "C" {
-#include "core/cheats.h"
+#include <mgba/core/cheats.h>
 #ifdef M_CORE_GBA
-#include "gba/cheats.h"
+#include <mgba/internal/gba/cheats.h>
 #endif
 #ifdef M_CORE_GB
-#include "gb/cheats.h"
+#include <mgba/internal/gb/cheats.h>
 #endif
-}
 
 using namespace QGBA;
 
@@ -125,10 +123,9 @@ void CheatsView::save() {
 }
 
 void CheatsView::addSet() {
-	m_controller->threadInterrupt();
+	GameController::Interrupter interrupter(m_controller);
 	mCheatSet* set = m_controller->cheatDevice()->createSet(m_controller->cheatDevice(), nullptr);
 	m_model.addSet(set);
-	m_controller->threadContinue();
 }
 
 void CheatsView::removeSet() {
@@ -137,11 +134,10 @@ void CheatsView::removeSet() {
 	if (selection.count() < 1) {
 		return;
 	}
-	m_controller->threadInterrupt();
+	GameController::Interrupter interrupter(m_controller);
 	for (const QModelIndex& index : selection) {
 		m_model.removeAt(selection[0]);
 	}
-	m_controller->threadContinue();
 }
 
 void CheatsView::enterCheat(int codeType) {

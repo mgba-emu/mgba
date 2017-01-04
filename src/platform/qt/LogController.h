@@ -11,10 +11,6 @@
 #include <QObject>
 #include <QStringList>
 
-extern "C" {
-#include "gba/gba.h"
-}
-
 namespace QGBA {
 
 class LogController : public QObject {

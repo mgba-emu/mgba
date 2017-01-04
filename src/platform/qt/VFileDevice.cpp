@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "VFileDevice.h"
 
+#include <mgba-util/vfs.h>
+
 using namespace QGBA;
 
 VFileDevice::VFileDevice(VFile* vf, QObject* parent)

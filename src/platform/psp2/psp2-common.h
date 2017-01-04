@@ -6,7 +6,7 @@
 #ifndef PSP2_COMMON_H
 #define PSP2_COMMON_H
  
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 #define PSP2_HORIZONTAL_PIXELS 960
 #define PSP2_VERTICAL_PIXELS 544

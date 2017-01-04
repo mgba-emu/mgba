@@ -6,43 +6,37 @@
 #ifndef QGBA_TILE_VIEW
 #define QGBA_TILE_VIEW
 
-#include <QWidget>
-
+#include "AssetView.h"
 #include "GameController.h"
 
 #include "ui_TileView.h"
 
-extern "C" {
-#include "gba/renderers/tile-cache.h"
-}
+#include <mgba/core/tile-cache.h>
 
 namespace QGBA {
 
-class TileView : public QWidget {
+class TileView : public AssetView {
 Q_OBJECT
 
 public:
 	TileView(GameController* controller, QWidget* parent = nullptr);
-	virtual ~TileView();
 
 public slots:
-	void updateTiles(bool force = false);
 	void updatePalette(int);
 
-private slots:
-	void selectIndex(int);
-
-protected:
-	void resizeEvent(QResizeEvent*) override;
-	void showEvent(QShowEvent*) override;
-
 private:
+#ifdef M_CORE_GBA
+	void updateTilesGBA(bool force) override;
+#endif
+#ifdef M_CORE_GB
+	void updateTilesGB(bool force) override;
+#endif
+
 	Ui::TileView m_ui;
 
 	GameController* m_controller;
-	GBAVideoTileCache m_tileCache;
+	mTileCacheEntry m_tileStatus[3072 * 32]; // TODO: Correct size
 	int m_paletteId;
-	QTimer m_updateTimer;
 };
 
 }

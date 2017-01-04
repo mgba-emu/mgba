@@ -12,9 +12,7 @@
 
 #include "ui_VideoView.h"
 
-extern "C" {
 #include "feature/ffmpeg/ffmpeg-encoder.h"
-}
 
 namespace QGBA {
 

@@ -8,6 +8,7 @@
 #include "GBAApp.h"
 #include "GameController.h"
 #include "LogController.h"
+#include "VFileDevice.h"
 
 #include <QAction>
 #include <QApplication>
@@ -18,9 +19,8 @@
 #include <QSlider>
 #include <QWheelEvent>
 
-extern "C" {
-#include "core/core.h"
-}
+#include <mgba/core/core.h>
+#include <mgba-util/vfs.h>
 
 using namespace QGBA;
 
@@ -31,6 +31,7 @@ MemoryModel::MemoryModel(QWidget* parent)
 	, m_align(1)
 	, m_selection(0, 0)
 	, m_selectionAnchor(0)
+	, m_codec(nullptr)
 {
 	m_font.setFamily("Source Code Pro");
 	m_font.setStyleHint(QFont::Monospace);
@@ -56,6 +57,16 @@ MemoryModel::MemoryModel(QWidget* parent)
 	connect(save, SIGNAL(triggered()), this, SLOT(save()));
 	addAction(save);
 
+	QAction* paste = new QAction(tr("Paste"), this);
+	paste->setShortcut(QKeySequence::Paste);
+	connect(paste, SIGNAL(triggered()), this, SLOT(paste()));
+	addAction(paste);
+
+	QAction* load = new QAction(tr("Load"), this);
+	load->setShortcut(QKeySequence::Open);
+	connect(load, SIGNAL(triggered()), this, SLOT(load()));
+	addAction(load);
+
 	static QString arg("%0");
 	for (int i = 0; i < 256; ++i) {
 		QStaticText str(arg.arg(i, 2, 16, QChar('0')).toUpper());
@@ -63,14 +74,14 @@ MemoryModel::MemoryModel(QWidget* parent)
 		m_staticNumbers.append(str);
 	}
 
-	for (int i = 0; i < 128; ++i) {
+	for (int i = 0; i < 256; ++i) {
 		QChar c(i);
 		if (!c.isPrint()) {
 			c = '.';
 		}
 		QStaticText str = QStaticText(QString(c));
 		str.prepare(QTransform(), m_font);
-		m_staticAscii.append(str);
+		m_staticLatin1.append(str);
 	}
 
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -117,6 +128,24 @@ void MemoryModel::setAlignment(int width) {
 	viewport()->update();
 }
 
+void MemoryModel::loadTBL(const QString& path) {
+	VFile* vf = VFileDevice::open(path, O_RDONLY);
+	if (!vf) {
+		return;
+	}
+	m_codec = std::unique_ptr<TextCodec, TextCodecFree>(new TextCodec);
+	TextCodecLoadTBL(m_codec.get(), vf, true);
+	vf->close(vf);
+}
+
+void MemoryModel::loadTBL() {
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Load TBL"));
+	if (filename.isNull()) {
+		return;
+	}
+	loadTBL(filename);
+}
+
 void MemoryModel::jumpToAddress(const QString& hex) {
 	bool ok = false;
 	uint32_t i = hex.toInt(&ok, 16);
@@ -144,9 +173,7 @@ void MemoryModel::copy() {
 	if (!clipboard) {
 		return;
 	}
-	QByteArray bytestring;
-	QDataStream stream(&bytestring, QIODevice::WriteOnly);
-	serialize(&stream);
+	QByteArray bytestring(serialize());
 	QString string;
 	string.reserve(bytestring.size() * 2);
 	static QString arg("%0");
@@ -155,6 +182,20 @@ void MemoryModel::copy() {
 		string.append(arg.arg(c, 2, 16, c0).toUpper());
 	}
 	clipboard->setText(string);
+}
+
+void MemoryModel::paste() {
+	QClipboard* clipboard = QApplication::clipboard();
+	if (!clipboard) {
+		return;
+	}
+	QString string = clipboard->text();
+	if (string.isEmpty()) {
+		return;
+	}
+	QByteArray bytestring(QByteArray::fromHex(string.toLocal8Bit()));
+	deserialize(bytestring);
+	viewport()->update();
 }
 
 void MemoryModel::save() {
@@ -167,28 +208,113 @@ void MemoryModel::save() {
 		LOG(QT, WARN) << tr("Failed to open output file: %1").arg(filename);
 		return;
 	}
-	QDataStream stream(&outfile);
-	serialize(&stream);
+	QByteArray out(serialize());
+	outfile.write(out);
 }
 
-void MemoryModel::serialize(QDataStream* stream) {
+void MemoryModel::load() {
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Load memory"));
+	if (filename.isNull()) {
+		return;
+	}
+	QFile infile(filename);
+	if (!infile.open(QIODevice::ReadOnly)) {
+		LOG(QT, WARN) << tr("Failed to open input file: %1").arg(filename);
+		return;
+	}
+	QByteArray bytestring(infile.readAll());
+	deserialize(bytestring);
+	viewport()->update();
+}
+
+QByteArray MemoryModel::serialize() {
+	QByteArray bytes;
+	bytes.reserve(m_selection.second - m_selection.first);
 	switch (m_align) {
 	case 1:
 		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
-			*stream << m_core->rawRead8(m_core, i, m_currentBank);
+			char datum = m_core->rawRead8(m_core, i, m_currentBank);
+			bytes.append(datum);
 		}
 		break;
 	case 2:
 		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
-			*stream << m_core->rawRead16(m_core, i, m_currentBank);
+			quint16 datum = m_core->rawRead16(m_core, i, m_currentBank);
+			char leDatum[2];
+			STORE_16LE(datum, 0, (uint16_t*) leDatum);
+			bytes.append(leDatum, 2);
 		}
 		break;
 	case 4:
 		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
-			*stream << m_core->rawRead32(m_core, i, m_currentBank);
+			quint32 datum = m_core->rawRead32(m_core, i, m_currentBank);
+			char leDatum[4];
+			STORE_32LE(datum, 0, (uint16_t*) leDatum);
+			bytes.append(leDatum, 4);
 		}
 		break;
 	}
+	return bytes;
+}
+
+void MemoryModel::deserialize(const QByteArray& bytes) {
+	uint32_t addr = m_selection.first;
+	switch (m_align) {
+	case 1:
+		for (int i = 0; i < bytes.size(); i += m_align, addr += m_align) {
+			uint8_t datum = bytes[i];
+			m_core->rawWrite8(m_core, addr, m_currentBank, datum);
+		}
+		break;
+	case 2:
+		for (int i = 0; i < bytes.size(); i += m_align, addr += m_align) {
+			char leDatum[2]{ bytes[i], bytes[i + 1] };
+			uint16_t datum;
+			LOAD_16LE(datum, 0, leDatum);
+			m_core->rawWrite16(m_core, addr, m_currentBank, datum);
+		}
+		break;
+	case 4:
+		for (int i = 0; i < bytes.size(); i += m_align, addr += m_align) {
+			char leDatum[4]{ bytes[i], bytes[i + 1], bytes[i + 2], bytes[i + 3] };
+			uint32_t datum;
+			LOAD_32LE(datum, 0, leDatum);
+			m_core->rawWrite32(m_core, addr, m_currentBank, datum);
+		}
+		break;
+	}
+}
+
+QString MemoryModel::decodeText(const QByteArray& bytes) {
+	QString text;
+	if (m_codec) {
+		QByteArray array;
+		TextCodecIterator iter;
+		TextCodecStartDecode(m_codec.get(), &iter);
+		uint8_t lineBuffer[128];
+		for (quint8 byte : bytes) {
+			ssize_t size = TextCodecAdvance(&iter, byte, lineBuffer, sizeof(lineBuffer));
+			if (size > (ssize_t) sizeof(lineBuffer)) {
+				size = sizeof(lineBuffer);
+			}
+			for (ssize_t i = 0; i < size; ++i) {
+				array.append(lineBuffer[i]);
+			}
+		}
+		ssize_t size = TextCodecFinish(&iter, lineBuffer, sizeof(lineBuffer));
+		if (size > (ssize_t) sizeof(lineBuffer)) {
+			size = sizeof(lineBuffer);
+		}
+		for (ssize_t i = 0; i < size; ++i) {
+			array.append(lineBuffer[i]);
+		}
+		text = QString::fromUtf8(array);
+	} else {
+		for (uint8_t c : bytes) {
+			text.append((uchar) c);
+		}
+	}
+	return text;
 }
 
 void MemoryModel::resizeEvent(QResizeEvent*) {
@@ -209,7 +335,7 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	painter.drawStaticText(QPointF((m_margins.left() - m_regionName.size().width() - 1) / 2.0, 0), m_regionName);
 	painter.drawText(
 	    QRect(QPoint(viewport()->size().width() - m_margins.right(), 0), QSize(m_margins.right(), m_margins.top())),
-	    Qt::AlignHCenter, tr("ASCII"));
+	    Qt::AlignHCenter, m_codec ? tr("TBL") : tr("ISO-8859-1"));
 	for (int x = 0; x < 16; ++x) {
 		painter.drawText(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), 0), m_cellSize), Qt::AlignHCenter,
 		                 QString::number(x, 16).toUpper());
@@ -316,11 +442,49 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 			break;
 		}
 		painter.setPen(palette.color(QPalette::WindowText));
-		for (int x = 0; x < 16; ++x) {
-			uint8_t b =m_core->rawRead8(m_core, (y + m_top) * 16 + x + m_base, m_currentBank);
-			painter.drawStaticText(
-			    QPointF(viewport()->size().width() - (16 - x) * m_margins.right() / 17.0 - m_letterWidth * 0.5, yp),
-			    b < 0x80 ? m_staticAscii[b] : m_staticAscii[0]);
+		for (int x = 0; x < 16; x += m_align) {
+			QByteArray array;
+			uint32_t b;
+			switch (m_align) {
+			case 1:
+				b = m_core->rawRead8(m_core, (y + m_top) * 16 + x + m_base, m_currentBank);
+				array.append((char) b);
+				break;
+			case 2:
+				b = m_core->rawRead16(m_core, (y + m_top) * 16 + x + m_base, m_currentBank);
+				array.append((char) b);
+				array.append((char) (b >> 8));
+				break;
+			case 4:
+				b = m_core->rawRead32(m_core, (y + m_top) * 16 + x + m_base, m_currentBank);
+				array.append((char) b);
+				array.append((char) (b >> 8));
+				array.append((char) (b >> 16));
+				array.append((char) (b >> 24));
+				break;
+			}
+			QString unfilteredText = decodeText(array);
+			QString text;
+			if (unfilteredText.isEmpty()) {
+				text.fill('.', m_align);
+			} else {
+				for (QChar c : unfilteredText) {
+					if (!c.isPrint()) {
+						text.append(QChar('.'));
+					} else {
+						text.append(c);
+					}
+				}
+			}
+			for (int i = 0; i < text.size() && i < m_align; ++i) {
+				const QChar c = text.at(i);
+				const QPointF location(viewport()->size().width() - (16 - x - i) * m_margins.right() / 17.0 - m_letterWidth * 0.5, yp);
+				if (c < 256) {
+					painter.drawStaticText(location, m_staticLatin1[c.cell()]);
+				} else {
+					painter.drawText(location, c);
+				}
+			}
 		}
 	}
 	painter.drawLine(m_margins.left(), 0, m_margins.left(), viewport()->size().height());
@@ -488,9 +652,9 @@ void MemoryModel::drawEditingText(QPainter& painter, const QPointF& origin) {
 		} else {
 			int b = m_buffer & 0xF;
 			if (b < 10) {
-				painter.drawStaticText(o, m_staticAscii[b + '0']);
+				painter.drawStaticText(o, m_staticLatin1[b + '0']);
 			} else {
-				painter.drawStaticText(o, m_staticAscii[b - 10 + 'A']);
+				painter.drawStaticText(o, m_staticLatin1[b - 10 + 'A']);
 			}
 		}
 		o += QPointF(m_letterWidth * 2, 0);
@@ -559,4 +723,9 @@ void MemoryModel::adjustCursor(int adjust, bool shift) {
 	}
 	emit selectionChanged(m_selection.first, m_selection.second);
 	viewport()->update();
+}
+
+void MemoryModel::TextCodecFree::operator()(TextCodec* codec) {
+	TextCodecDeinit(codec);
+	delete(codec);
 }

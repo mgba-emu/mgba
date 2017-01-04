@@ -3,11 +3,12 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "mbc.h"
+#include <mgba/internal/gb/mbc.h>
 
-#include "gb/gb.h"
-#include "gb/memory.h"
-#include "util/vfs.h"
+#include <mgba/core/interface.h>
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/memory.h>
+#include <mgba-util/vfs.h>
 
 mLOG_DEFINE_CATEGORY(GB_MBC, "GB MBC");
 
@@ -47,71 +48,74 @@ void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 
 void GBMBCInit(struct GB* gb) {
 	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-	switch (cart->ramSize) {
-	case 0:
-		gb->sramSize = 0;
-		break;
-	case 1:
-		gb->sramSize = 0x800;
-		break;
-	default:
-	case 2:
-		gb->sramSize = 0x2000;
-		break;
-	case 3:
-		gb->sramSize = 0x8000;
-		break;
-	}
-
-	if (gb->memory.mbcType == GB_MBC_AUTODETECT) {
-		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-		switch (cart->type) {
+	if (gb->memory.rom) {
+		switch (cart->ramSize) {
 		case 0:
-		case 8:
-		case 9:
-			gb->memory.mbcType = GB_MBC_NONE;
+			gb->sramSize = 0;
 			break;
 		case 1:
-		case 2:
-		case 3:
-			gb->memory.mbcType = GB_MBC1;
-			break;
-		case 5:
-		case 6:
-			gb->memory.mbcType = GB_MBC2;
-			break;
-		case 0x0F:
-		case 0x10:
-			gb->memory.mbcType = GB_MBC3_RTC;
-			break;
-		case 0x11:
-		case 0x12:
-		case 0x13:
-			gb->memory.mbcType = GB_MBC3;
+			gb->sramSize = 0x800;
 			break;
 		default:
-			mLOG(GB_MBC, WARN, "Unknown MBC type: %02X", cart->type);
-			// Fall through
-		case 0x19:
-		case 0x1A:
-		case 0x1B:
-			gb->memory.mbcType = GB_MBC5;
+		case 2:
+			gb->sramSize = 0x2000;
 			break;
-		case 0x1C:
-		case 0x1D:
-		case 0x1E:
-			gb->memory.mbcType = GB_MBC5_RUMBLE;
-			break;
-		case 0x20:
-			gb->memory.mbcType = GB_MBC6;
-			break;
-		case 0x22:
-			gb->memory.mbcType = GB_MBC7;
-			break;
-		case 0xFE:
-			gb->memory.mbcType = GB_HuC3;
+		case 3:
+			gb->sramSize = 0x8000;
 			break;
 		}
+
+		if (gb->memory.mbcType == GB_MBC_AUTODETECT) {
+			switch (cart->type) {
+			case 0:
+			case 8:
+			case 9:
+				gb->memory.mbcType = GB_MBC_NONE;
+				break;
+			case 1:
+			case 2:
+			case 3:
+				gb->memory.mbcType = GB_MBC1;
+				break;
+			case 5:
+			case 6:
+				gb->memory.mbcType = GB_MBC2;
+				break;
+			case 0x0F:
+			case 0x10:
+				gb->memory.mbcType = GB_MBC3_RTC;
+				break;
+			case 0x11:
+			case 0x12:
+			case 0x13:
+				gb->memory.mbcType = GB_MBC3;
+				break;
+			default:
+				mLOG(GB_MBC, WARN, "Unknown MBC type: %02X", cart->type);
+				// Fall through
+			case 0x19:
+			case 0x1A:
+			case 0x1B:
+				gb->memory.mbcType = GB_MBC5;
+				break;
+			case 0x1C:
+			case 0x1D:
+			case 0x1E:
+				gb->memory.mbcType = GB_MBC5_RUMBLE;
+				break;
+			case 0x20:
+				gb->memory.mbcType = GB_MBC6;
+				break;
+			case 0x22:
+				gb->memory.mbcType = GB_MBC7;
+				break;
+			case 0xFE:
+				gb->memory.mbcType = GB_HuC3;
+				break;
+			}
+		}
+	} else {
+		gb->memory.mbcType = GB_MBC_NONE;
 	}
 	switch (gb->memory.mbcType) {
 	case GB_MBC_NONE:
@@ -139,6 +143,7 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_MBC7:
 		gb->memory.mbc = _GBMBC7;
+		gb->sramSize = GB_SIZE_EXTERNAL_RAM;
 		break;
 	case GB_MMM01:
 		mLOG(GB_MBC, WARN, "unimplemented MBC: MMM01");
@@ -623,6 +628,9 @@ void _GBHuC3(struct GB* gb, uint16_t address, uint8_t value) {
 void GBMBCRTCRead(struct GB* gb) {
 	struct GBMBCRTCSaveBuffer rtcBuffer;
 	struct VFile* vf = gb->sramVf;
+	if (!vf) {
+		return;
+	}
 	ssize_t end = vf->seek(vf, -sizeof(rtcBuffer), SEEK_END);
 	switch (end & 0x1FFF) {
 	case 0:
@@ -644,6 +652,11 @@ void GBMBCRTCRead(struct GB* gb) {
 }
 
 void GBMBCRTCWrite(struct GB* gb) {
+	struct VFile* vf = gb->sramVf;
+	if (!vf) {
+		return;
+	}
+
 	uint8_t rtcRegs[5];
 	memcpy(rtcRegs, gb->memory.rtcRegs, sizeof(rtcRegs));
 	time_t rtcLastLatch = gb->memory.rtcLastLatch;
@@ -662,7 +675,15 @@ void GBMBCRTCWrite(struct GB* gb) {
 	STORE_32LE(gb->memory.rtcRegs[4], 0, &rtcBuffer.latchedDaysHi);
 	STORE_64LE(rtcLastLatch, 0, &rtcBuffer.unixTime);
 
-	struct VFile* vf = gb->sramVf;
+	if (vf->size(vf) == gb->sramSize) {
+		// Writing past the end of the file can invalidate the file mapping
+		vf->unmap(vf, gb->memory.sram, gb->sramSize);
+		gb->memory.sram = NULL;
+	}
 	vf->seek(vf, gb->sramSize, SEEK_SET);
 	vf->write(vf, &rtcBuffer, sizeof(rtcBuffer));
+	if (!gb->memory.sram) {
+		gb->memory.sram = vf->map(vf, gb->sramSize, MAP_WRITE);
+		GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
+	}
 }

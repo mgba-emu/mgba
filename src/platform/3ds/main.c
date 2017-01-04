@@ -4,22 +4,24 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <mgba/core/blip_buf.h>
+#include <mgba/core/core.h>
 #ifdef M_CORE_GBA
-#include "gba/gba.h"
-#include "gba/input.h"
-#include "gba/video.h"
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/input.h>
+#include <mgba/internal/gba/video.h>
 #endif
 #ifdef M_CORE_GB
-#include "gb/gb.h"
+#include <mgba/internal/gb/gb.h>
 #endif
 #include "feature/gui/gui-runner.h"
-#include "util/gui.h"
-#include "util/gui/file-select.h"
-#include "util/gui/font.h"
-#include "util/gui/menu.h"
-#include "util/memory.h"
+#include <mgba-util/gui.h>
+#include <mgba-util/gui/file-select.h>
+#include <mgba-util/gui/font.h>
+#include <mgba-util/gui/menu.h>
+#include <mgba-util/memory.h>
 
-#include "3ds-vfs.h"
+#include <mgba-util/platform/3ds/3ds-vfs.h>
 #include "ctr-gpu.h"
 
 #include <3ds.h>
@@ -55,8 +57,6 @@ static enum DarkenMode {
 #define AUDIO_SAMPLES 384
 #define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 16)
 #define DSP_BUFFERS 4
-
-FS_Archive sdmcArchive;
 
 static struct GBA3DSRotationSource {
 	struct mRotationSource d;
@@ -724,8 +724,6 @@ int main() {
 			outputTexture.data, 0x0000, outputTextureEnd, GX_FILL_16BIT_DEPTH | GX_FILL_TRIGGER,
 			NULL, 0, NULL, 0);
 	gspWaitForPSC0();
-
-	FSUSER_OpenArchive(&sdmcArchive, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
 
 	struct GUIFont* font = GUIFontCreate();
 

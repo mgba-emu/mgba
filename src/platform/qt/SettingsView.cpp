@@ -13,10 +13,8 @@
 #include "InputController.h"
 #include "ShortcutView.h"
 
-extern "C" {
-#include "core/serialize.h"
-#include "gba/gba.h"
-}
+#include <mgba/core/serialize.h>
+#include <mgba/internal/gba/gba.h>
 
 using namespace QGBA;
 
@@ -124,32 +122,38 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 #ifdef BUILD_GL
 	m_ui.displayDriver->addItem(tr("OpenGL (force version 1.x)"), static_cast<int>(Display::Driver::OPENGL1));
-	if (displayDriver.isNull() || displayDriver.toInt() == static_cast<int>(Display::Driver::OPENGL1)) {
+	if (!displayDriver.isNull() && displayDriver.toInt() == static_cast<int>(Display::Driver::OPENGL1)) {
 		m_ui.displayDriver->setCurrentIndex(m_ui.displayDriver->count() - 1);
 	}
 #endif
 
 	connect(m_ui.biosBrowse, SIGNAL(clicked()), this, SLOT(selectBios()));
-	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(updateConfig()));
-	connect(m_ui.buttonBox, &QDialogButtonBox::clicked, [this](QAbstractButton* button) {
-		if (m_ui.buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole) {
-			updateConfig();
-		}
-	});
 
 	GBAKeyEditor* editor = new GBAKeyEditor(inputController, InputController::KEYBOARD, QString(), this);
 	m_ui.stackedWidget->addWidget(editor);
 	m_ui.tabs->addItem("Keyboard");
 	connect(m_ui.buttonBox, SIGNAL(accepted()), editor, SLOT(save()));
 
+	GBAKeyEditor* buttonEditor = nullptr;
 #ifdef BUILD_SDL
 	inputController->recalibrateAxes();
 	const char* profile = inputController->profileForType(SDL_BINDING_BUTTON);
-	editor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
-	m_ui.stackedWidget->addWidget(editor);
+	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
+	m_ui.stackedWidget->addWidget(buttonEditor);
 	m_ui.tabs->addItem("Controllers");
-	connect(m_ui.buttonBox, SIGNAL(accepted()), editor, SLOT(save()));
+	connect(m_ui.buttonBox, SIGNAL(accepted()), buttonEditor, SLOT(save()));
 #endif
+
+	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(updateConfig()));
+	connect(m_ui.buttonBox, &QDialogButtonBox::clicked, [this, editor, buttonEditor](QAbstractButton* button) {
+		if (m_ui.buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole) {
+			updateConfig();
+			editor->save();
+			if (buttonEditor) {
+				buttonEditor->save();
+			}
+		}
+	});
 
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setController(shortcutController);

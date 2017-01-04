@@ -3,24 +3,24 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "core.h"
+#include <mgba/gba/core.h>
 
-#include "core/core.h"
-#include "core/log.h"
-#include "arm/debugger/debugger.h"
-#include "gba/cheats.h"
-#include "gba/gba.h"
-#include "gba/extra/cli.h"
-#include "gba/overrides.h"
+#include <mgba/core/core.h>
+#include <mgba/core/log.h>
+#include <mgba/internal/arm/debugger/debugger.h>
+#include <mgba/internal/gba/cheats.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/extra/cli.h>
+#include <mgba/internal/gba/overrides.h>
 #ifndef DISABLE_THREADING
-#include "gba/renderers/thread-proxy.h"
+#include <mgba/internal/gba/renderers/thread-proxy.h>
 #endif
-#include "gba/renderers/video-software.h"
-#include "gba/savedata.h"
-#include "gba/serialize.h"
-#include "util/memory.h"
-#include "util/patch.h"
-#include "util/vfs.h"
+#include <mgba/internal/gba/renderers/video-software.h>
+#include <mgba/internal/gba/savedata.h>
+#include <mgba/internal/gba/serialize.h>
+#include <mgba-util/memory.h>
+#include <mgba-util/patch.h>
+#include <mgba-util/vfs.h>
 
 struct GBACore {
 	struct mCore d;
@@ -96,7 +96,7 @@ static void _GBACoreDeinit(struct mCore* core) {
 	free(core);
 }
 
-static enum mPlatform _GBACorePlatform(struct mCore* core) {
+static enum mPlatform _GBACorePlatform(const struct mCore* core) {
 	UNUSED(core);
 	return PLATFORM_GBA;
 }
@@ -182,6 +182,11 @@ static void _GBACoreSetAudioBufferSize(struct mCore* core, size_t samples) {
 static size_t _GBACoreGetAudioBufferSize(struct mCore* core) {
 	struct GBA* gba = core->board;
 	return gba->audio.samples;
+}
+
+static void _GBACoreSetCoreCallbacks(struct mCore* core, struct mCoreCallbacks* coreCallbacks) {
+	struct GBA* gba = core->board;
+	gba->coreCallbacks = coreCallbacks;
 }
 
 static void _GBACoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
@@ -329,26 +334,26 @@ static void _GBACoreClearKeys(struct mCore* core, uint32_t keys) {
 	gbacore->keys &= ~keys;
 }
 
-static int32_t _GBACoreFrameCounter(struct mCore* core) {
-	struct GBA* gba = core->board;
+static int32_t _GBACoreFrameCounter(const struct mCore* core) {
+	const struct GBA* gba = core->board;
 	return gba->video.frameCounter;
 }
 
-static int32_t _GBACoreFrameCycles(struct mCore* core) {
+static int32_t _GBACoreFrameCycles(const struct mCore* core) {
 	UNUSED(core);
 	return VIDEO_TOTAL_LENGTH;
 }
 
-static int32_t _GBACoreFrequency(struct mCore* core) {
+static int32_t _GBACoreFrequency(const struct mCore* core) {
 	UNUSED(core);
 	return GBA_ARM7TDMI_FREQUENCY;
 }
 
-static void _GBACoreGetGameTitle(struct mCore* core, char* title) {
+static void _GBACoreGetGameTitle(const struct mCore* core, char* title) {
 	GBAGetGameTitle(core->board, title);
 }
 
-static void _GBACoreGetGameCode(struct mCore* core, char* title) {
+static void _GBACoreGetGameCode(const struct mCore* core, char* title) {
 	GBAGetGameCode(core->board, title);
 }
 
@@ -434,13 +439,12 @@ static void _GBACoreRawWrite32(struct mCore* core, uint32_t address, int segment
 	GBAPatch32(cpu, address, value, NULL);
 }
 
+#ifdef USE_DEBUGGERS
 static bool _GBACoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
 	UNUSED(core);
 	switch (type) {
-#ifdef USE_CLI_DEBUGGER
 	case DEBUGGER_CLI:
 		return true;
-#endif
 #ifdef USE_GDB_STUB
 	case DEBUGGER_GDB:
 		return true;
@@ -459,12 +463,7 @@ static struct mDebuggerPlatform* _GBACoreDebuggerPlatform(struct mCore* core) {
 }
 
 static struct CLIDebuggerSystem* _GBACoreCliDebuggerSystem(struct mCore* core) {
-#ifdef USE_CLI_DEBUGGER
 	return &GBACLIDebuggerCreate(core)->d;
-#else
-	UNUSED(core);
-	return NULL;
-#endif
 }
 
 static void _GBACoreAttachDebugger(struct mCore* core, struct mDebugger* debugger) {
@@ -479,6 +478,7 @@ static void _GBACoreDetachDebugger(struct mCore* core) {
 	GBADetachDebugger(core->board);
 	core->debugger = NULL;
 }
+#endif
 
 static struct mCheatDevice* _GBACoreCheatDevice(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
@@ -516,7 +516,7 @@ static size_t _GBACoreSavedataClone(struct mCore* core, void** sram) {
 }
 
 static bool _GBACoreSavedataRestore(struct mCore* core, const void* sram, size_t size, bool writeback) {
-	struct VFile* vf = VFileFromConstMemory(sram, size);
+	struct VFile* vf = VFileMemChunk(sram, size);
 	if (!vf) {
 		return false;
 	}
@@ -550,6 +550,7 @@ struct mCore* GBACoreCreate(void) {
 	core->getAudioChannel = _GBACoreGetAudioChannel;
 	core->setAudioBufferSize = _GBACoreSetAudioBufferSize;
 	core->getAudioBufferSize = _GBACoreGetAudioBufferSize;
+	core->setCoreCallbacks = _GBACoreSetCoreCallbacks;
 	core->setAVStream = _GBACoreSetAVStream;
 	core->isROM = GBAIsROM;
 	core->loadROM = _GBACoreLoadROM;
@@ -588,11 +589,13 @@ struct mCore* GBACoreCreate(void) {
 	core->rawWrite8 = _GBACoreRawWrite8;
 	core->rawWrite16 = _GBACoreRawWrite16;
 	core->rawWrite32 = _GBACoreRawWrite32;
+#ifdef USE_DEBUGGERS
 	core->supportsDebuggerType = _GBACoreSupportsDebuggerType;
 	core->debuggerPlatform = _GBACoreDebuggerPlatform;
 	core->cliDebuggerSystem = _GBACoreCliDebuggerSystem;
 	core->attachDebugger = _GBACoreAttachDebugger;
 	core->detachDebugger = _GBACoreDetachDebugger;
+#endif
 	core->cheatDevice = _GBACoreCheatDevice;
 	core->savedataClone = _GBACoreSavedataClone;
 	core->savedataRestore = _GBACoreSavedataRestore;

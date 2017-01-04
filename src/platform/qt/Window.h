@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,12 +13,8 @@
 
 #include <functional>
 
-extern "C" {
-#include "core/thread.h"
-#include "gba/gba.h"
-}
+#include <mgba/core/thread.h>
 
-#include "GDBController.h"
 #include "InputController.h"
 #include "LoadSaveState.h"
 #include "LogController.h"
@@ -27,8 +23,10 @@ struct mArguments;
 namespace QGBA {
 
 class ConfigController;
+class DebuggerConsoleController;
 class Display;
 class GameController;
+class GDBController;
 class GIFView;
 class LogView;
 class ShaderSelector;
@@ -78,17 +76,11 @@ public slots:
 	void exportSharkport();
 
 	void openSettingsWindow();
-	void openOverrideWindow();
-	void openSensorWindow();
-	void openCheatsWindow();
-
-	void openPaletteWindow();
-	void openTileWindow();
-	void openMemoryWindow();
-	void openIOViewer();
-
 	void openAboutScreen();
-	void openROMInfo();
+
+#ifdef USE_DEBUGGERS
+	void consoleOpen();
+#endif
 
 #ifdef USE_FFMPEG
 	void openVideoWindow();
@@ -143,6 +135,9 @@ private:
 
 	void openView(QWidget* widget);
 
+	template <typename T, typename A> std::function<void()> openTView(A arg);
+	template <typename T> std::function<void()> openTView();
+
 	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
 	QAction* addHiddenAction(QMenu* menu, QAction* action, const QString& name);
 
@@ -153,6 +148,7 @@ private:
 
 	GameController* m_controller;
 	Display* m_display;
+	int m_savedScale;
 	// TODO: Move these to a new class
 	QList<QAction*> m_gameActions;
 	QList<QAction*> m_nonMpActions;
@@ -162,6 +158,9 @@ private:
 	QMap<int, QAction*> m_frameSizes;
 	LogController m_log;
 	LogView* m_logView;
+#ifdef USE_DEBUGGERS
+	DebuggerConsoleController* m_console;
+#endif
 	LoadSaveState* m_stateWindow;
 	WindowBackground* m_screenWidget;
 	QPixmap m_logo;
@@ -176,6 +175,7 @@ private:
 	bool m_fullscreenOnStart;
 	QTimer m_focusCheck;
 	bool m_autoresume;
+	bool m_wasOpened;
 
 	bool m_hitUnimplementedBiosCall;
 

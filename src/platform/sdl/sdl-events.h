@@ -6,12 +6,14 @@
 #ifndef SDL_EVENTS_H
 #define SDL_EVENTS_H
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
-#include "core/interface.h"
-#include "core/log.h"
-#include "util/circle-buffer.h"
-#include "util/vector.h"
+CXX_GUARD_START
+
+#include <mgba/core/interface.h>
+#include <mgba/core/log.h>
+#include <mgba-util/circle-buffer.h>
+#include <mgba-util/vector.h>
 
 #include <SDL.h>
 
@@ -109,5 +111,7 @@ void mSDLSuspendScreensaver(struct mSDLEvents*);
 void mSDLResumeScreensaver(struct mSDLEvents*);
 void mSDLSetScreensaverSuspendable(struct mSDLEvents*, bool suspendable);
 #endif
+
+CXX_GUARD_END
 
 #endif

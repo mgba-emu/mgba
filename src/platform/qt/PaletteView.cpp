@@ -12,17 +12,15 @@
 #include <QFileDialog>
 #include <QFontDatabase>
 
-extern "C" {
-#include "core/core.h"
-#include "util/export.h"
-#ifdef M_CORE_GA
-#include "gba/gba.h"
+#include <mgba/core/core.h>
+#ifdef M_CORE_GBA
+#include <mgba/internal/gba/gba.h>
 #endif
 #ifdef M_CORE_GB
-#include "gb/gb.h"
+#include <mgba/internal/gb/gb.h>
 #endif
-#include "util/vfs.h"
-}
+#include <mgba-util/export.h>
+#include <mgba-util/vfs.h>
 
 using namespace QGBA;
 
@@ -114,10 +112,11 @@ void PaletteView::selectIndex(int index) {
 	}
 	uint16_t color = palette[index];
 	m_ui.selected->setColor(0, color);
-	uint32_t r = GBA_R5(color);
-	uint32_t g = GBA_G5(color);
-	uint32_t b = GBA_B5(color);
+	uint32_t r = M_R5(color);
+	uint32_t g = M_G5(color);
+	uint32_t b = M_B5(color);
 	uint32_t hexcode = (r << 19) | (g << 11) | (b << 3);
+	hexcode |= (hexcode >> 5) & 0x070707;
 	m_ui.hexcode->setText(tr("#%0").arg(hexcode, 6, 16, QChar('0')));
 	m_ui.value->setText(tr("0x%0").arg(color, 4, 16, QChar('0')));
 	m_ui.index->setText(tr("%0").arg(index, 3, 10, QChar('0')));
@@ -133,18 +132,17 @@ void PaletteView::exportPalette(int start, int length) {
 	if (start + length > 512) {
 		length = 512 - start;
 	}
-	m_controller->threadInterrupt();
+
+	GameController::Interrupter interrupter(m_controller);
 	QFileDialog* dialog = GBAApp::app()->getSaveFileDialog(this, tr("Export palette"),
 	                                                       tr("Windows PAL (*.pal);;Adobe Color Table (*.act)"));
 	if (!dialog->exec()) {
-		m_controller->threadContinue();
 		return;
 	}
 	QString filename = dialog->selectedFiles()[0];
 	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
 		LOG(QT, ERROR) << tr("Failed to open output palette file: %1").arg(filename);
-		m_controller->threadContinue();
 		return;
 	}
 	QString filter = dialog->selectedNameFilter();
@@ -154,5 +152,4 @@ void PaletteView::exportPalette(int start, int length) {
 		exportPaletteACT(vf, length, &static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[start]);
 	}
 	vf->close(vf);
-	m_controller->threadContinue();
 }

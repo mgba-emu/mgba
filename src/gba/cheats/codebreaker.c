@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "gba/cheats.h"
+#include <mgba/internal/gba/cheats.h>
 
-#include "gba/gba.h"
-#include "gba/io.h"
-#include "util/string.h"
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/io.h>
+#include <mgba-util/string.h>
 
 static void _cbLoadByteswap(uint8_t* buffer, uint32_t op1, uint16_t op2) {
 	buffer[0] = op1 >> 24;
@@ -197,11 +197,12 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 	enum GBACodeBreakerType type = op1 >> 28;
 	struct mCheat* cheat = NULL;
 
-	if (cheats->incompleteCheat) {
-		cheats->incompleteCheat->repeat = op1 & 0xFFFF;
-		cheats->incompleteCheat->addressOffset = op2;
-		cheats->incompleteCheat->operandOffset = 0;
-		cheats->incompleteCheat = 0;
+	if (cheats->incompleteCheat != COMPLETE) {
+		struct mCheat* incompleteCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat);
+		incompleteCheat->repeat = op1 & 0xFFFF;
+		incompleteCheat->addressOffset = op2;
+		incompleteCheat->operandOffset = 0;
+		cheats->incompleteCheat = COMPLETE;
 		return true;
 	}
 
@@ -233,7 +234,7 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->type = CHEAT_ASSIGN;
 		cheat->width = 2;
-		cheats->incompleteCheat = cheat;
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case CB_FILL_8:
 		mLOG(CHEATS, STUB, "CodeBreaker code %08X %04X not supported", op1, op2);
@@ -275,9 +276,9 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 		switch (op1 & 0x0FFFFFFF) {
 		case 0x20:
 			cheat = mCheatListAppend(&cheats->d.list);
-			cheat->type = CHEAT_IF_AND;
+			cheat->type = CHEAT_IF_NAND;
 			cheat->width = 2;
-			cheat->address = BASE_IO | REG_JOYSTAT;
+			cheat->address = BASE_IO | REG_KEYINPUT;
 			cheat->operand = op2;
 			cheat->repeat = 1;
 			return true;

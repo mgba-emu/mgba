@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "vbm.h"
+#include <mgba/internal/gba/rr/vbm.h>
 
-#include "gba/gba.h"
-#include "gba/serialize.h"
-#include "util/vfs.h"
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/serialize.h>
+#include <mgba-util/vfs.h>
 
 #ifdef USE_ZLIB
 #include <zlib.h>
@@ -245,7 +245,7 @@ bool GBAVBMSetStream(struct GBAVBMContext* vbm, struct VFile* vf) {
 	uint8_t flags;
 	vf->read(vf, &flags, sizeof(flags));
 	if (flags & 2) {
-#if USE_ZLIB
+#ifdef USE_ZLIB
 		vbm->d.initFrom = INIT_FROM_SAVEGAME;
 #else
 		// zlib is needed to parse the savegame

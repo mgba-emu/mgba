@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "remap.h"
 
-#include "util/gui.h"
-#include "util/gui/menu.h"
+#include <mgba-util/gui.h>
+#include <mgba-util/gui/menu.h>
 
 void mGUIRemapKeys(struct GUIParams* params, struct mInputMap* map, const struct GUIInputKeys* keys) {
 	struct GUIMenu menu = {

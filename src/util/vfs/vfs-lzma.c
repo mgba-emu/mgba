@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "util/vfs.h"
+#include <mgba-util/vfs.h>
 
 #ifdef USE_LZMA
 
-#include "util/string.h"
+#include <mgba-util/string.h>
 
 #include "third-party/lzma/7z.h"
 #include "third-party/lzma/7zAlloc.h"

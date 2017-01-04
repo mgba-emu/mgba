@@ -5,11 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gles2.h"
 
-#include "core/log.h"
-#include "util/configuration.h"
-#include "util/formatting.h"
-#include "util/vector.h"
-#include "util/vfs.h"
+#include <mgba/core/log.h>
+#include <mgba-util/configuration.h>
+#include <mgba-util/formatting.h>
+#include <mgba-util/vector.h>
+#include <mgba-util/vfs.h>
 
 mLOG_DECLARE_CATEGORY(OPENGL);
 mLOG_DEFINE_CATEGORY(OPENGL, "OpenGL");

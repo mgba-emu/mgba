@@ -3,12 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "cheats.h"
+#include <mgba/internal/gba/cheats.h>
 
+#include <mgba/core/core.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba-util/string.h>
 #include "gba/cheats/gameshark.h"
 #include "gba/cheats/parv3.h"
-#include "gba/gba.h"
-#include "util/string.h"
 
 #define MAX_LINE_LENGTH 128
 
@@ -75,9 +76,9 @@ static struct mCheatSet* GBACheatSetCreate(struct mCheatDevice* device, const ch
 	UNUSED(device);
 	struct GBACheatSet* set = malloc(sizeof(*set));
 	mCheatSetInit(&set->d, name);
-	set->incompleteCheat = 0;
+	set->incompleteCheat = -1;
 	set->incompletePatch = 0;
-	set->currentBlock = 0;
+	set->currentBlock = -1;
 	set->gsaVersion = 0;
 	set->cbRngState = 0;
 	set->cbMaster = 0;
@@ -138,19 +139,26 @@ static bool GBACheatAddAutodetect(struct GBACheatSet* set, uint32_t op1, uint32_
 	char line[18] = "XXXXXXXX XXXXXXXX";
 	snprintf(line, sizeof(line), "%08X %08X", op1, op2);
 
+	int gsaP, parP;
 	switch (set->gsaVersion) {
 	case 0:
 		// Try to detect GameShark version
 		GBACheatDecryptGameShark(&o1, &o2, GBACheatGameSharkSeeds);
-		if ((o1 & 0xF0000000) == 0xF0000000 && !(o2 & 0xFFFFFCFE)) {
-			GBACheatSetGameSharkVersion(set, 1);
-			return GBACheatAddGameSharkRaw(set, o1, o2);
-		}
+		gsaP = GBACheatGameSharkProbability(o1, o2);
 		o1 = op1;
 		o2 = op2;
 		GBACheatDecryptGameShark(&o1, &o2, GBACheatProActionReplaySeeds);
-		if ((o1 & 0xFE000000) == 0xC4000000 && !(o2 & 0xFFFF0000)) {
+		parP = GBACheatProActionReplayProbability(o1, o2);
+		o1 = op1;
+		o2 = op2;
+		if (gsaP > parP) {
+			GBACheatSetGameSharkVersion(set, 1);
+			GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
+			return GBACheatAddGameSharkRaw(set, o1, o2);
+		} else {
+			// If probabilities are equal, assume PARv3
 			GBACheatSetGameSharkVersion(set, 3);
+			GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
 			return GBACheatAddProActionReplayRaw(set, o1, o2);
 		}
 		break;
@@ -300,15 +308,70 @@ static void GBACheatDumpDirectives(struct mCheatSet* set, struct StringList* dir
 	}
 	StringListClear(directives);
 
-	char** directive = StringListAppend(directives);
+	char** directive;
 	switch (cheats->gsaVersion) {
 	case 1:
 	case 2:
+		directive = StringListAppend(directives);
 		*directive = strdup("GSAv1");
 		break;
 	case 3:
 	case 4:
+		directive = StringListAppend(directives);
 		*directive = strdup("PARv3");
 		break;
+	}
+}
+
+int GBACheatAddressIsReal(uint32_t address) {
+	switch (address >> BASE_OFFSET) {
+	case REGION_BIOS:
+		return -0x80;
+		break;
+	case REGION_WORKING_RAM:
+		if ((address & OFFSET_MASK) > SIZE_WORKING_RAM) {
+			return -0x40;
+		}
+		return 0x20;
+	case REGION_WORKING_IRAM:
+		if ((address & OFFSET_MASK) > SIZE_WORKING_IRAM) {
+			return -0x40;
+		}
+		return 0x20;
+	case REGION_IO:
+		if ((address & OFFSET_MASK) > SIZE_IO) {
+			return -0x80;
+		}
+		return 0x10;
+	case REGION_OAM:
+		if ((address & OFFSET_MASK) > SIZE_OAM) {
+			return -0x80;
+		}
+		return -0x8;
+	case REGION_VRAM:
+		if ((address & OFFSET_MASK) > SIZE_VRAM) {
+			return -0x80;
+		}
+		return -0x8;
+	case REGION_PALETTE_RAM:
+		if ((address & OFFSET_MASK) > SIZE_PALETTE_RAM) {
+			return -0x80;
+		}
+		return -0x8;
+	case REGION_CART0:
+	case REGION_CART0_EX:
+	case REGION_CART1:
+	case REGION_CART1_EX:
+	case REGION_CART2:
+	case REGION_CART2_EX:
+		return -0x8;
+	case REGION_CART_SRAM:
+	case REGION_CART_SRAM_MIRROR:
+		if ((address & OFFSET_MASK) > SIZE_CART_SRAM) {
+			return -0x80;
+		}
+		return -0x8;
+	default:
+		return -0xC0;
 	}
 }

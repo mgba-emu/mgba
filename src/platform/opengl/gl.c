@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gl.h"
 
-#include "util/math.h"
+#include <mgba-util/math.h>
 
 static const GLint _glVertices[] = {
 	0, 0,

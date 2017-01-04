@@ -8,9 +8,11 @@
 #include "DisplayGL.h"
 #include "DisplayQt.h"
 
-extern "C" {
-#include "gb/video.h"
-}
+#ifdef M_CORE_GB
+#include <mgba/internal/gb/video.h>
+#elif defined(M_CORE_GBA)
+#include <mgba/internal/gba/video.h>
+#endif
 
 using namespace QGBA;
 
@@ -55,7 +57,11 @@ Display::Display(QWidget* parent)
 	, m_filter(false)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+#ifdef M_CORE_GB
 	setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
+#elif defined(M_CORE_GBA)
+	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+#endif
 	connect(&m_mouseTimer, SIGNAL(timeout()), this, SIGNAL(hideCursor()));
 	m_mouseTimer.setSingleShot(true);
 	m_mouseTimer.setInterval(MOUSE_DISAPPEAR_TIMER);

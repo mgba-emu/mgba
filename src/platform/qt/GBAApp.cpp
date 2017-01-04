@@ -16,13 +16,14 @@
 #include <QIcon>
 #include <QTranslator>
 
-extern "C" {
-#include "core/version.h"
+#include <mgba/core/version.h>
+#include <mgba/internal/gba/video.h>
+#include <mgba-util/socket.h>
+#include <mgba-util/nointro.h>
+#include <mgba-util/vfs.h>
+/*
 #include "feature/commandline.h"
-#include "util/nointro.h"
-#include "util/socket.h"
-}
-
+*/
 using namespace QGBA;
 
 static GBAApp* g_app = nullptr;
@@ -152,10 +153,10 @@ void GBAApp::continueAll(const QList<int>* paused) {
 QString GBAApp::getOpenFileName(QWidget* owner, const QString& title, const QString& filter) {
 	QList<int> paused;
 	pauseAll(&paused);
-	QString filename = QFileDialog::getOpenFileName(owner, title, m_configController.getQtOption("lastDirectory").toString(), filter);
+	QString filename = QFileDialog::getOpenFileName(owner, title, m_configController.getOption("lastDirectory"), filter);
 	continueAll(&paused);
 	if (!filename.isEmpty()) {
-		m_configController.setQtOption("lastDirectory", QFileInfo(filename).dir().path());
+		m_configController.setOption("lastDirectory", QFileInfo(filename).dir().path());
 	}
 	return filename;
 }
@@ -163,10 +164,10 @@ QString GBAApp::getOpenFileName(QWidget* owner, const QString& title, const QStr
 QString GBAApp::getSaveFileName(QWidget* owner, const QString& title, const QString& filter) {
 	QList<int> paused;
 	pauseAll(&paused);
-	QString filename = QFileDialog::getSaveFileName(owner, title, m_configController.getQtOption("lastDirectory").toString(), filter);
+	QString filename = QFileDialog::getSaveFileName(owner, title, m_configController.getOption("lastDirectory"), filter);
 	continueAll(&paused);
 	if (!filename.isEmpty()) {
-		m_configController.setQtOption("lastDirectory", QFileInfo(filename).dir().path());
+		m_configController.setOption("lastDirectory", QFileInfo(filename).dir().path());
 	}
 	return filename;
 }
@@ -174,10 +175,10 @@ QString GBAApp::getSaveFileName(QWidget* owner, const QString& title, const QStr
 QString GBAApp::getOpenDirectoryName(QWidget* owner, const QString& title) {
 	QList<int> paused;
 	pauseAll(&paused);
-	QString filename = QFileDialog::getExistingDirectory(owner, title, m_configController.getQtOption("lastDirectory").toString());
+	QString filename = QFileDialog::getExistingDirectory(owner, title, m_configController.getOption("lastDirectory"));
 	continueAll(&paused);
 	if (!filename.isEmpty()) {
-		m_configController.setQtOption("lastDirectory", QFileInfo(filename).dir().path());
+		m_configController.setOption("lastDirectory", QFileInfo(filename).dir().path());
 	}
 	return filename;
 }
@@ -224,7 +225,7 @@ bool GBAApp::reloadGameDB() {
 }
 
 GBAApp::FileDialog::FileDialog(GBAApp* app, QWidget* parent, const QString& caption, const QString& filter)
-	: QFileDialog(parent, caption, app->m_configController.getQtOption("lastDirectory").toString(), filter)
+	: QFileDialog(parent, caption, app->m_configController.getOption("lastDirectory"), filter)
 	, m_app(app)
 {
 }
@@ -235,7 +236,7 @@ int GBAApp::FileDialog::exec() {
 	bool didAccept = QFileDialog::exec() == QDialog::Accepted;
 	QStringList filenames = selectedFiles();
 	if (!filenames.isEmpty()) {
-		m_app->m_configController.setQtOption("lastDirectory", QFileInfo(filenames[0]).dir().path());
+		m_app->m_configController.setOption("lastDirectory", QFileInfo(filenames[0]).dir().path());
 	}
 	m_app->continueAll(&paused);
 	return didAccept;

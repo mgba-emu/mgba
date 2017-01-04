@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "parv3.h"
+#include <mgba/internal/gba/cheats.h>
 
 #include "gba/cheats/gameshark.h"
-#include "gba/gba.h"
-#include "util/string.h"
+#include <mgba/internal/gba/gba.h>
+#include <mgba-util/string.h>
 
 const uint32_t GBACheatProActionReplaySeeds[4] = { 0x7AA9648F, 0x7FAE6994, 0xC0EFAAD5, 0x42712C57 };
 
@@ -53,18 +53,20 @@ static uint32_t _parAddr(uint32_t x) {
 }
 
 static void _parEndBlock(struct GBACheatSet* cheats) {
-	size_t size = mCheatListSize(&cheats->d.list) - mCheatListIndex(&cheats->d.list, cheats->currentBlock);
-	if (cheats->currentBlock->repeat) {
-		cheats->currentBlock->negativeRepeat = size - cheats->currentBlock->repeat;
+	size_t size = mCheatListSize(&cheats->d.list) - cheats->currentBlock;
+	struct mCheat* currentBlock = mCheatListGetPointer(&cheats->d.list, cheats->currentBlock);
+	if (currentBlock->repeat) {
+		currentBlock->negativeRepeat = size - currentBlock->repeat;
 	} else {
-		cheats->currentBlock->repeat = size;
+		currentBlock->repeat = size;
 	}
-	cheats->currentBlock = 0;
+	cheats->currentBlock = COMPLETE;
 }
 
 static void _parElseBlock(struct GBACheatSet* cheats) {
-	size_t size = mCheatListSize(&cheats->d.list) - mCheatListIndex(&cheats->d.list, cheats->currentBlock);
-	cheats->currentBlock->repeat = size;
+	size_t size = mCheatListSize(&cheats->d.list) - cheats->currentBlock;
+	struct mCheat* currentBlock = mCheatListGetPointer(&cheats->d.list, cheats->currentBlock);
+	currentBlock->repeat = size;
 }
 
 static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
@@ -98,10 +100,10 @@ static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2)
 	case PAR3_ACTION_BLOCK:
 		cheat->repeat = 0;
 		cheat->negativeRepeat = 0;
-		if (cheats->currentBlock) {
+		if (cheats->currentBlock != COMPLETE) {
 			_parEndBlock(cheats);
 		}
-		cheats->currentBlock = cheat;
+		cheats->currentBlock = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	}
 
@@ -175,13 +177,13 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		cheats->incompletePatch = &cheats->romPatches[3];
 		break;
 	case PAR3_OTHER_ENDIF:
-		if (cheats->currentBlock) {
+		if (cheats->currentBlock != COMPLETE) {
 			_parEndBlock(cheats);
 			return true;
 		}
 		return false;
 	case PAR3_OTHER_ELSE:
-		if (cheats->currentBlock) {
+		if (cheats->currentBlock != COMPLETE) {
 			_parElseBlock(cheats);
 			return true;
 		}
@@ -190,19 +192,19 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->address = _parAddr(op2);
 		cheat->width = 1;
-		cheats->incompleteCheat = cheat;
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case PAR3_OTHER_FILL_2:
 		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->address = _parAddr(op2);
 		cheat->width = 2;
-		cheats->incompleteCheat = cheat;
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case PAR3_OTHER_FILL_4:
 		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->address = _parAddr(op2);
 		cheat->width = 3;
-		cheats->incompleteCheat = cheat;
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	}
 	return true;
@@ -214,12 +216,13 @@ bool GBACheatAddProActionReplayRaw(struct GBACheatSet* cheats, uint32_t op1, uin
 		cheats->incompletePatch = 0;
 		return true;
 	}
-	if (cheats->incompleteCheat) {
-		cheats->incompleteCheat->operand = op1 & (0xFFFFFFFFU >> ((4 - cheats->incompleteCheat->width) * 8));
-		cheats->incompleteCheat->addressOffset = op2 >> 24;
-		cheats->incompleteCheat->repeat = (op2 >> 16) & 0xFF;
-		cheats->incompleteCheat->addressOffset = (op2 & 0xFFFF) * cheats->incompleteCheat->width;
-		cheats->incompleteCheat = 0;
+	if (cheats->incompleteCheat != COMPLETE) {
+		struct mCheat* incompleteCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat);
+		incompleteCheat->operand = op1 & (0xFFFFFFFFU >> ((4 - incompleteCheat->width) * 8));
+		incompleteCheat->addressOffset = op2 >> 24;
+		incompleteCheat->repeat = (op2 >> 16) & 0xFF;
+		incompleteCheat->addressOffset = (op2 & 0xFFFF) * incompleteCheat->width;
+		cheats->incompleteCheat = COMPLETE;
 		return true;
 	}
 
@@ -322,4 +325,73 @@ bool GBACheatAddProActionReplayLine(struct GBACheatSet* cheats, const char* line
 		return false;
 	}
 	return GBACheatAddProActionReplay(cheats, op1, op2);
+}
+
+int GBACheatProActionReplayProbability(uint32_t op1, uint32_t op2) {
+	int probability = 0;
+	if (op2 == 0x001DC0DE) {
+		return 0x100;
+	}
+	if (op1 == 0xDEADFACE && !(op2 & 0xFFFF0000)) {
+		return 0x100;
+	}
+	if (!op1) {
+		probability += 0x20;
+		uint32_t address = _parAddr(op2);
+		switch (op2 & 0xFE000000) {
+		case PAR3_OTHER_FILL_1:
+		case PAR3_OTHER_FILL_2:
+		case PAR3_OTHER_FILL_4:
+			probability += GBACheatAddressIsReal(address);
+			break;
+		case PAR3_OTHER_PATCH_1:
+		case PAR3_OTHER_PATCH_2:
+		case PAR3_OTHER_PATCH_3:
+		case PAR3_OTHER_PATCH_4:
+			// TODO: Detect ROM address
+			break;
+		case PAR3_OTHER_END:
+		case PAR3_OTHER_SLOWDOWN:
+		case PAR3_OTHER_BUTTON_1:
+		case PAR3_OTHER_BUTTON_2:
+		case PAR3_OTHER_BUTTON_4:
+		case PAR3_OTHER_ENDIF:
+		case PAR3_OTHER_ELSE:
+			if (op2 & 0x01FFFFFF) {
+				probability -= 0x20;
+			}
+			break;
+		default:
+			probability -= 0x40;
+			break;
+		}
+		return probability;
+	}
+	int width = ((op1 & PAR3_WIDTH) >> (PAR3_WIDTH_BASE - 3));
+	if (op1 & PAR3_COND) {
+		probability += 0x20;
+		if (width == 32) {
+			return 0;
+		}
+		if (op2 & ~((1 << width) - 1)) {
+			probability -= 0x10;
+		}
+	} else {
+		uint32_t address = _parAddr(op1);
+		probability += 0x20;
+		switch (op1 & PAR3_BASE) {
+		case PAR3_BASE_ADD:
+			if (op2 & ~((1 << width) - 1)) {
+				probability -= 0x10;
+			}
+		case PAR3_BASE_ASSIGN:
+		case PAR3_BASE_INDIRECT:
+			probability += GBACheatAddressIsReal(address);
+			// Fall through
+			break;
+		case PAR3_BASE_OTHER:
+			break;
+		}
+	}
+	return probability;
 }

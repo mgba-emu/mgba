@@ -6,7 +6,11 @@
 #ifndef FFMPEG_ENCODER
 #define FFMPEG_ENCODER
 
-#include "gba/gba.h"
+#include <mgba-util/common.h>
+
+CXX_GUARD_START
+
+#include <mgba/internal/gba/gba.h>
 
 #include <libavformat/avformat.h>
 #include <libavcodec/version.h>
@@ -52,7 +56,7 @@ struct FFmpegEncoder {
 	AVFrame* audioFrame;
 	size_t currentAudioSample;
 	int64_t currentAudioFrame;
-	int64_t nextAudioPts;
+	int64_t nextAudioPts; // TODO (0.6): Remove
 	struct AVAudioResampleContext* resampleContext;
 #ifdef FFMPEG_USE_NEW_BSF
 	struct AVBSFContext* absf; // Needed for AAC in MP4
@@ -82,5 +86,7 @@ bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder*);
 bool FFmpegEncoderOpen(struct FFmpegEncoder*, const char* outfile);
 void FFmpegEncoderClose(struct FFmpegEncoder*);
 bool FFmpegEncoderIsOpen(struct FFmpegEncoder*);
+
+CXX_GUARD_END
 
 #endif

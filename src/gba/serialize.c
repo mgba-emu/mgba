@@ -3,17 +3,14 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "serialize.h"
+#include <mgba/internal/gba/serialize.h>
 
-#include "core/serialize.h"
-#include "gba/audio.h"
-#include "gba/cheats.h"
-#include "gba/io.h"
-#include "gba/rr/rr.h"
-#include "gba/video.h"
+#include <mgba/internal/arm/macros.h>
+#include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/rr/rr.h>
 
-#include "util/memory.h"
-#include "util/vfs.h"
+#include <mgba-util/memory.h>
+#include <mgba-util/vfs.h>
 
 #include <fcntl.h>
 #ifdef _MSC_VER
@@ -23,7 +20,7 @@
 #endif
 
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
-const uint32_t GBA_SAVESTATE_VERSION = 0x00000001;
+const uint32_t GBA_SAVESTATE_VERSION = 0x00000002;
 
 mLOG_DEFINE_CATEGORY(GBA_STATE, "GBA Savestate");
 
@@ -36,6 +33,7 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	STORE_32(GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, 0, &state->versionMagic);
 	STORE_32(gba->biosChecksum, 0, &state->biosChecksum);
 	STORE_32(gba->romCrc32, 0, &state->romCrc32);
+	STORE_32(gba->timing.masterCycles, 0, &state->masterCycles);
 
 	if (gba->memory.rom) {
 		state->id = ((struct GBACartridge*) gba->memory.rom)->id;
@@ -144,11 +142,6 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		mLOG(GBA_STATE, WARN, "Savestate is corrupted: CPU cycles are too high");
 		error = true;
 	}
-	LOAD_32(check, 0, &state->video.eventDiff);
-	if (check < 0) {
-		mLOG(GBA_STATE, WARN, "Savestate is corrupted: video eventDiff is negative");
-		error = true;
-	}
 	LOAD_32(check, ARM_PC * sizeof(state->cpu.gprs[0]), state->cpu.gprs);
 	int region = (check >> BASE_OFFSET);
 	if ((region == REGION_CART0 || region == REGION_CART1 || region == REGION_CART2) && ((check - WORD_SIZE_ARM) & SIZE_CART0) >= gba->memory.romSize - WORD_SIZE_ARM) {
@@ -158,6 +151,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	if (error) {
 		return false;
 	}
+	LOAD_32(gba->timing.masterCycles, 0, &state->masterCycles);
 	size_t i;
 	for (i = 0; i < 16; ++i) {
 		LOAD_32(gba->cpu->gprs[i], i * sizeof(gba->cpu->gprs[0]), state->cpu.gprs);
