@@ -18,6 +18,9 @@
 #include <mgba/internal/gb/sio/lockstep.h>
 #endif
 
+struct GBSIOLockstepNode;
+struct GBASIOLockstepNode;
+
 namespace QGBA {
 
 class GameController;
