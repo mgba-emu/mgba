@@ -26,8 +26,10 @@ extern "C" {
 
 using namespace QGBA;
 
+#ifdef M_CORE_GB
 QList<enum GBModel> OverrideView::s_gbModelList;
 QList<enum GBMemoryBankControllerType> OverrideView::s_mbcList;
+#endif
 
 OverrideView::OverrideView(GameController* controller, ConfigController* config, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)

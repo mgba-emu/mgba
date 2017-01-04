@@ -14,6 +14,9 @@ extern "C" {
 #include "gba/sio/lockstep.h"
 }
 
+struct GBSIOLockstepNode;
+struct GBASIOLockstepNode;
+
 namespace QGBA {
 
 class GameController;
