@@ -762,9 +762,9 @@ DEFINE_INSTRUCTION_ARM(MSRRI,
 DEFINE_INSTRUCTION_ARM(SWI, cpu->irqh.swi32(cpu, opcode & 0xFFFFFF))
 
 const ARMInstruction _armv4Table[0x1000] = {
-	DECLARE_ARMV4_EMITTER_BLOCK(_ARMInstruction)
+	DECLARE_ARM_EMITTER_BLOCK(_ARMInstruction, 4)
 };
 
 const ARMInstruction _armv5Table[0x1000] = {
-	DECLARE_ARMV5_EMITTER_BLOCK(_ARMInstruction)
+	DECLARE_ARM_EMITTER_BLOCK(_ARMInstruction, 5)
 };

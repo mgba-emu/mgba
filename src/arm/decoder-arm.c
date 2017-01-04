@@ -458,7 +458,7 @@ DEFINE_DECODER_ARM(SWI, SWI,
 typedef void (*ARMDecoder)(uint32_t opcode, struct ARMInstructionInfo* info);
 
 static const ARMDecoder _armDecoderTable[0x1000] = {
-	DECLARE_ARMV5_EMITTER_BLOCK(_ARMDecode)
+	DECLARE_ARM_EMITTER_BLOCK(_ARMDecode, 5)
 };
 
 void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info) {
