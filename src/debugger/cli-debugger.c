@@ -677,17 +677,10 @@ static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason r
 		break;
 	case DEBUGGER_ENTER_WATCHPOINT:
 		if (info) {
-<<<<<<< HEAD
 			if (info->a.b.accessType & WATCHPOINT_WRITE) {
-				printf("Hit watchpoint at 0x%08X: (new value = 0x%08x, old value = 0x%08X)\n", info->address, info->a.b.newValue, info->a.b.oldValue);
+				cliDebugger->backend->printf(cliDebugger->backend, "Hit watchpoint at 0x%08X: (new value = 0x%08x, old value = 0x%08X)\n", info->address, info->a.b.newValue, info->a.b.oldValue);
 			} else {
-				printf("Hit watchpoint at 0x%08X: (value = 0x%08x)\n", info->address, info->a.b.oldValue);
-=======
-			if (info->accessType & WATCHPOINT_WRITE) {
-				cliDebugger->backend->printf(cliDebugger->backend, "Hit watchpoint at 0x%08X: (new value = 0x%08x, old value = 0x%08X)\n", info->address, info->newValue, info->oldValue);
-			} else {
-				cliDebugger->backend->printf(cliDebugger->backend, "Hit watchpoint at 0x%08X: (value = 0x%08x)\n", info->address, info->oldValue);
->>>>>>> upstream/master
+				cliDebugger->backend->printf(cliDebugger->backend, "Hit watchpoint at 0x%08X: (value = 0x%08x)\n", info->address, info->a.b.oldValue);
 			}
 		} else {
 			cliDebugger->backend->printf(cliDebugger->backend, "Hit watchpoint\n");
@@ -695,11 +688,7 @@ static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason r
 		break;
 	case DEBUGGER_ENTER_ILLEGAL_OP:
 		if (info) {
-<<<<<<< HEAD
-			printf("Hit illegal opcode at 0x%08X: 0x%08X\n", info->address, info->a.c.opcode);
-=======
-			cliDebugger->backend->printf(cliDebugger->backend, "Hit illegal opcode at 0x%08X: 0x%08X\n", info->address, info->opcode);
->>>>>>> upstream/master
+			cliDebugger->backend->printf(cliDebugger->backend, "Hit illegal opcode at 0x%08X: 0x%08X\n", info->address, info->a.c.opcode);
 		} else {
 			cliDebugger->backend->printf(cliDebugger->backend, "Hit illegal opcode\n");
 		}

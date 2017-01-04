@@ -37,27 +37,15 @@ static struct CLIDebuggerCommandSummary _armCommands[] = {
 	{ 0, 0, 0, 0 }
 };
 
-<<<<<<< HEAD
-static inline void _printPSR(union PSR psr) {
-	printf("%08X [%c%c%c%c%c%c%c]\n", psr.packed,
-	       psr.a.n ? 'N' : '-',
-	       psr.a.z ? 'Z' : '-',
-	       psr.a.c ? 'C' : '-',
-	       psr.a.v ? 'V' : '-',
-	       psr.a.i ? 'I' : '-',
-	       psr.a.f ? 'F' : '-',
-	       psr.a.t ? 'T' : '-');
-=======
 static inline void _printPSR(struct CLIDebuggerBackend* be, union PSR psr) {
 	be->printf(be, "%08X [%c%c%c%c%c%c%c]\n", psr.packed,
-	           psr.n ? 'N' : '-',
-	           psr.z ? 'Z' : '-',
-	           psr.c ? 'C' : '-',
-	           psr.v ? 'V' : '-',
-	           psr.i ? 'I' : '-',
-	           psr.f ? 'F' : '-',
-	           psr.t ? 'T' : '-');
->>>>>>> upstream/master
+	           psr.a.n ? 'N' : '-',
+	           psr.a.z ? 'Z' : '-',
+	           psr.a.c ? 'C' : '-',
+	           psr.a.v ? 'V' : '-',
+	           psr.a.i ? 'I' : '-',
+	           psr.a.f ? 'F' : '-',
+	           psr.a.t ? 'T' : '-');
 }
 
 static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVector* dv) {

@@ -561,29 +561,6 @@ uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uin
 	return value;
 }
 
-<<<<<<< HEAD
-int32_t _gbpSioProcessEvents(struct GBASIODriver* driver, int32_t cycles) {
-	struct GBAGBPSIODriver* gbp = (struct GBAGBPSIODriver*) driver;
-	gbp->p->gbpNextEvent -= cycles;
-	if (gbp->p->gbpNextEvent <= 0) {
-		uint32_t tx = 0;
-		if (gbp->p->gbpTxPosition <= 12) {
-			tx = _gbpTxData[gbp->p->gbpTxPosition];
-			if (gbp->p->gbpTxPosition < 12) {
-				++gbp->p->gbpTxPosition;
-			}
-		}
-		gbp->p->p->memory.io[REG_SIODATA32_LO >> 1] = tx;
-		gbp->p->p->memory.io[REG_SIODATA32_HI >> 1] = tx >> 16;
-		if (gbp->d.p->a.normalControl.irq) {
-			GBARaiseIRQ(gbp->p->p, IRQ_SIO);
-		}
-		gbp->d.p->a.normalControl.start = 0;
-		gbp->p->p->memory.io[REG_SIOCNT >> 1] = gbp->d.p->a.siocnt;
-		gbp->p->gbpNextEvent = INT_MAX;
-	}
-	return gbp->p->gbpNextEvent;
-=======
 void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	UNUSED(timing);
 	UNUSED(cyclesLate);
@@ -600,12 +577,11 @@ void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLat
 	++gbp->p->gbpTxPosition;
 	gbp->p->p->memory.io[REG_SIODATA32_LO >> 1] = tx;
 	gbp->p->p->memory.io[REG_SIODATA32_HI >> 1] = tx >> 16;
-	if (gbp->d.p->normalControl.irq) {
+	if (gbp->d.p->a.normalControl.irq) {
 		GBARaiseIRQ(gbp->p->p, IRQ_SIO);
 	}
-	gbp->d.p->normalControl.start = 0;
-	gbp->p->p->memory.io[REG_SIOCNT >> 1] = gbp->d.p->siocnt & ~0x0080;
->>>>>>> upstream/master
+	gbp->d.p->a.normalControl.start = 0;
+	gbp->p->p->memory.io[REG_SIOCNT >> 1] = gbp->d.p->a.siocnt & ~0x0080;
 }
 
 // == Serialization

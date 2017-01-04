@@ -94,11 +94,7 @@ bool GBASIOLockstepNodeLoad(struct GBASIODriver* driver) {
 		node->d.writeRegister = GBASIOLockstepNodeMultiWriteRegister;
 		node->d.p->rcnt |= 3;
 		++node->p->attachedMulti;
-<<<<<<< HEAD
-		node->d.p->a.multiplayerControl.ready = node->p->attachedMulti == node->p->attached;
-=======
-		node->d.p->multiplayerControl.ready = node->p->attachedMulti == node->p->d.attached;
->>>>>>> upstream/master
+		node->d.p->a.multiplayerControl.ready = node->p->attachedMulti == node->p->d.attached;
 		if (node->id) {
 			node->d.p->rcnt |= 4;
 			node->d.p->a.multiplayerControl.slave = 1;
@@ -136,22 +132,13 @@ static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver
 	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
 	if (address == REG_SIOCNT) {
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIOCNT <- %04x", node->id, value);
-<<<<<<< HEAD
-		if (value & 0x0080 && node->p->transferActive == TRANSFER_IDLE) {
+		if (value & 0x0080 && node->p->d.transferActive == TRANSFER_IDLE) {
 			if (!node->id && node->d.p->a.multiplayerControl.ready) {
 				mLOG(GBA_SIO, DEBUG, "Lockstep %i: Transfer initiated", node->id);
-				node->p->transferActive = TRANSFER_STARTING;
-				node->p->transferCycles = GBASIOCyclesPerTransfer[node->d.p->a.multiplayerControl.baud][node->p->attached - 1];
-				node->nextEvent = 0;
-=======
-		if (value & 0x0080 && node->p->d.transferActive == TRANSFER_IDLE) {
-			if (!node->id && node->d.p->multiplayerControl.ready) {
-				mLOG(GBA_SIO, DEBUG, "Lockstep %i: Transfer initiated", node->id);
 				node->p->d.transferActive = TRANSFER_STARTING;
-				node->p->d.transferCycles = GBASIOCyclesPerTransfer[node->d.p->multiplayerControl.baud][node->p->d.attached - 1];
+				node->p->d.transferCycles = GBASIOCyclesPerTransfer[node->d.p->a.multiplayerControl.baud][node->p->d.attached - 1];
 				mTimingDeschedule(&driver->p->p->timing, &node->event);
 				mTimingSchedule(&driver->p->p->timing, &node->event, 0);
->>>>>>> upstream/master
 			} else {
 				value &= ~0x0080;
 			}
@@ -226,11 +213,7 @@ static int32_t _masterUpdate(struct GBASIOLockstepNode* node) {
 	case TRANSFER_IDLE:
 		// If the master hasn't initiated a transfer, it can keep going.
 		node->nextEvent += LOCKSTEP_INCREMENT;
-<<<<<<< HEAD
-		node->d.p->a.multiplayerControl.ready = node->p->attachedMulti == node->p->attached;
-=======
-		node->d.p->multiplayerControl.ready = node->p->attachedMulti == node->p->d.attached;
->>>>>>> upstream/master
+		node->d.p->a.multiplayerControl.ready = node->p->attachedMulti == node->p->d.attached;
 		break;
 	case TRANSFER_STARTING:
 		// Start the transfer, but wait for the other GBAs to catch up
@@ -293,21 +276,12 @@ static int32_t _masterUpdate(struct GBASIOLockstepNode* node) {
 }
 
 static uint32_t _slaveUpdate(struct GBASIOLockstepNode* node) {
-<<<<<<< HEAD
-	node->d.p->a.multiplayerControl.ready = node->p->attachedMulti == node->p->attached;
-=======
-	node->d.p->multiplayerControl.ready = node->p->attachedMulti == node->p->d.attached;
->>>>>>> upstream/master
+	node->d.p->a.multiplayerControl.ready = node->p->attachedMulti == node->p->d.attached;
 	bool signal = false;
 	switch (node->p->d.transferActive) {
 	case TRANSFER_IDLE:
-<<<<<<< HEAD
 		if (!node->d.p->a.multiplayerControl.ready) {
-			node->p->addCycles(node->p, node->id, LOCKSTEP_INCREMENT);
-=======
-		if (!node->d.p->multiplayerControl.ready) {
 			node->p->d.addCycles(&node->p->d, node->id, LOCKSTEP_INCREMENT);
->>>>>>> upstream/master
 		}
 		break;
 	case TRANSFER_STARTING:

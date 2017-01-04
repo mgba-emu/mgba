@@ -544,7 +544,7 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info* i
 
 void* retro_get_memory_data(unsigned id) {
 	struct GBA* gba = core->board;
-	struct GB* gb = core->board;
+//	struct GB* gb = core->board; // TODO: fix error: dereferencing pointer to incomplete type
 
 	if (id == RETRO_MEMORY_SAVE_RAM) {
 		return savedata;
@@ -552,14 +552,14 @@ void* retro_get_memory_data(unsigned id) {
 	if (id == RETRO_MEMORY_SYSTEM_RAM) {
 		if (core->platform(core) == PLATFORM_GBA)
 			return gba->memory.wram;
-		if (core->platform(core) == PLATFORM_GB)
-			return gb->memory.wram;
+//		if (core->platform(core) == PLATFORM_GB)
+//			return gb->memory.wram;
 	}
 	if (id == RETRO_MEMORY_VIDEO_RAM) {
 		if (core->platform(core) == PLATFORM_GBA)
 			return gba->video.renderer->vram;
-		if (core->platform(core) == PLATFORM_GB)
-			return gb->video.renderer->vram;
+//		if (core->platform(core) == PLATFORM_GB)
+//			return gb->video.renderer->vram;
 	}
 
 	return 0;
