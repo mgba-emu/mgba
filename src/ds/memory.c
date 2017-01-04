@@ -675,6 +675,11 @@ uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case DS_REGION_IO:
 		value = DS9IORead(ds, address & 0x00FFFFFC) | (DS9IORead(ds, (address & 0x00FFFFFC) | 2) << 16);
 		break;
+	case DS9_REGION_BIOS:
+		// TODO: Fix undersized BIOS
+		// TODO: Fix masking
+		LOAD_32(value, address & (DS9_SIZE_BIOS - 1), memory->bios9);
+		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load32: %08X", address);
 		break;
@@ -709,6 +714,11 @@ uint32_t DS9Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case DS_REGION_IO:
 		value = DS9IORead(ds, address & 0x00FFFFFF);
 		break;
+	case DS9_REGION_BIOS:
+		// TODO: Fix undersized BIOS
+		// TODO: Fix masking
+		LOAD_16(value, address & (DS9_SIZE_BIOS - 1), memory->bios9);
+		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load16: %08X", address);
 		break;
@@ -740,6 +750,11 @@ uint32_t DS9Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load8: %08X", address);
+	case DS9_REGION_BIOS:
+		// TODO: Fix undersized BIOS
+		// TODO: Fix masking
+		value = ((uint8_t*) memory->bios9)[address & (DS9_SIZE_BIOS - 1)];
+		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load8: %08X", address);
 		break;
