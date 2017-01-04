@@ -159,6 +159,31 @@ static void _DSCoreUnloadROM(struct mCore* core) {
 static void _DSCoreReset(struct mCore* core) {
 	struct DSCore* dscore = (struct DSCore*) core;
 	struct DS* ds = (struct DS*) core->board;
+
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	struct VFile* bios7 = 0;
+	struct VFile* bios9 = 0;
+	if (core->opts.useBios) {
+		if (!core->opts.bios) {
+			char path[PATH_MAX];
+			mCoreConfigDirectory(path, PATH_MAX);
+			strncat(path, PATH_SEP "ds7_bios.bin", PATH_MAX - strlen(path));
+			bios7 = VFileOpen(path, O_RDONLY);
+			mCoreConfigDirectory(path, PATH_MAX);
+			strncat(path, PATH_SEP "ds9_bios.bin", PATH_MAX - strlen(path));
+			bios9 = VFileOpen(path, O_RDONLY);
+		} else {
+			bios7 = VFileOpen(core->opts.bios, O_RDONLY);
+		}
+	}
+	if (bios7) {
+		DSLoadBIOS(ds, bios7);
+	}
+	if (bios9) {
+		DSLoadBIOS(ds, bios9);
+	}
+#endif
+
 	ARMReset(ds->ds7.cpu);
 	ARMReset(ds->ds9.cpu);
 }
