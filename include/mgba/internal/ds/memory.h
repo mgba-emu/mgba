@@ -10,8 +10,10 @@
 
 CXX_GUARD_START
 
-#include <mgba/internal/arm/arm.h>
 #include <mgba/core/log.h>
+#include <mgba/core/timing.h>
+#include <mgba/internal/arm/arm.h>
+#include <mgba/internal/ds/dma.h>
 #include <mgba/internal/ds/io.h>
 
 enum DSMemoryRegion {
@@ -65,49 +67,7 @@ enum {
 	DS_BASE_OFFSET = 24
 };
 
-enum DSDMAControl {
-	DS_DMA_INCREMENT = 0,
-	DS_DMA_DECREMENT = 1,
-	DS_DMA_FIXED = 2,
-	DS_DMA_INCREMENT_RELOAD = 3
-};
-
-enum DSDMATiming {
-	DS_DMA_TIMING_NOW = 0,
-	DS_DMA_TIMING_VBLANK = 1,
-	DS_DMA_TIMING_HBLANK = 2,
-	DS7_DMA_TIMING_SLOT1 = 2,
-	DS_DMA_TIMING_DISPLAY_START = 3,
-	DS7_DMA_TIMING_CUSTOM = 3,
-	DS_DMA_TIMING_MEMORY_DISPLAY = 4,
-	DS9_DMA_TIMING_SLOT1 = 5,
-	DS_DMA_TIMING_SLOT2 = 6,
-	DS_DMA_TIMING_GEOM_FIFO = 7,
-};
-
 mLOG_DECLARE_CATEGORY(DS_MEM);
-
-DECL_BITFIELD(DSDMARegister, uint16_t);
-DECL_BITS(DSDMARegister, DestControl, 5, 2);
-DECL_BITS(DSDMARegister, SrcControl, 7, 2);
-DECL_BIT(DSDMARegister, Repeat, 9);
-DECL_BIT(DSDMARegister, Width, 10);
-DECL_BITS(DSDMARegister, Timing7, 12, 2);
-DECL_BITS(DSDMARegister, Timing9, 11, 3);
-DECL_BIT(DSDMARegister, DoIRQ, 14);
-DECL_BIT(DSDMARegister, Enable, 15);
-
-struct DSDMA {
-	DSDMARegister reg;
-
-	uint32_t source;
-	uint32_t dest;
-	int32_t count;
-	uint32_t nextSource;
-	uint32_t nextDest;
-	int32_t nextCount;
-	int32_t nextEvent;
-};
 
 struct DSMemory {
 	uint32_t* bios7;
@@ -139,7 +99,8 @@ struct DSCoreMemory {
 	uint16_t* io;
 	int activeRegion;
 
-	struct DSDMA dma[4];
+	struct GBADMA dma[4];
+	struct mTimingEvent dmaEvent;
 	int activeDMA;
 };
 

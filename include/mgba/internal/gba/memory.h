@@ -13,9 +13,12 @@ CXX_GUARD_START
 #include <mgba/core/timing.h>
 
 #include <mgba/internal/arm/arm.h>
+#include <mgba/internal/gba/dma.h>
 #include <mgba/internal/gba/hardware.h>
 #include <mgba/internal/gba/savedata.h>
 #include <mgba/internal/gba/vfame.h>
+
+mLOG_DECLARE_CATEGORY(GBA_MEM);
 
 enum GBAMemoryRegion {
 	REGION_BIOS = 0x0,
@@ -73,44 +76,6 @@ enum {
 enum {
 	OFFSET_MASK = 0x00FFFFFF,
 	BASE_OFFSET = 24
-};
-
-enum DMAControl {
-	DMA_INCREMENT = 0,
-	DMA_DECREMENT = 1,
-	DMA_FIXED = 2,
-	DMA_INCREMENT_RELOAD = 3
-};
-
-enum DMATiming {
-	DMA_TIMING_NOW = 0,
-	DMA_TIMING_VBLANK = 1,
-	DMA_TIMING_HBLANK = 2,
-	DMA_TIMING_CUSTOM = 3
-};
-
-mLOG_DECLARE_CATEGORY(GBA_MEM);
-
-DECL_BITFIELD(GBADMARegister, uint16_t);
-DECL_BITS(GBADMARegister, DestControl, 5, 2);
-DECL_BITS(GBADMARegister, SrcControl, 7, 2);
-DECL_BIT(GBADMARegister, Repeat, 9);
-DECL_BIT(GBADMARegister, Width, 10);
-DECL_BIT(GBADMARegister, DRQ, 11);
-DECL_BITS(GBADMARegister, Timing, 12, 2);
-DECL_BIT(GBADMARegister, DoIRQ, 14);
-DECL_BIT(GBADMARegister, Enable, 15);
-
-struct GBADMA {
-	GBADMARegister reg;
-
-	uint32_t source;
-	uint32_t dest;
-	int32_t count;
-	uint32_t nextSource;
-	uint32_t nextDest;
-	int32_t nextCount;
-	uint32_t when;
 };
 
 struct GBAMemory {

@@ -111,6 +111,7 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 	DS7InterruptHandlerInit(&ds->ds7.cpu->irqh);
 	DS9InterruptHandlerInit(&ds->ds9.cpu->irqh);
 	DSMemoryInit(ds);
+	DSDMAInit(ds);
 
 	ds->video.p = ds;
 
@@ -183,6 +184,7 @@ void DS7Reset(struct ARMCore* cpu) {
 	mTimingClear(&ds->ds7.timing);
 	CircleBufferInit(&ds->ds7.fifo, 64);
 	DSMemoryReset(ds);
+	DSDMAReset(&ds->ds7);
 	DS7IOInit(ds);
 
 	struct DSCartridge* header = ds->romVf->map(ds->romVf, sizeof(*header), MAP_READ);
@@ -215,6 +217,7 @@ void DS9Reset(struct ARMCore* cpu) {
 	struct DS* ds = (struct DS*) cpu->master;
 	mTimingClear(&ds->ds9.timing);
 	CircleBufferInit(&ds->ds9.fifo, 64);
+	DSDMAReset(&ds->ds9);
 	DS9IOInit(ds);
 
 	ds->activeCpu = cpu;

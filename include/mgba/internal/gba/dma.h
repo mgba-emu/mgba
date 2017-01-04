@@ -10,6 +10,42 @@
 
 CXX_GUARD_START
 
+enum DMAControl {
+	DMA_INCREMENT = 0,
+	DMA_DECREMENT = 1,
+	DMA_FIXED = 2,
+	DMA_INCREMENT_RELOAD = 3
+};
+
+enum DMATiming {
+	DMA_TIMING_NOW = 0,
+	DMA_TIMING_VBLANK = 1,
+	DMA_TIMING_HBLANK = 2,
+	DMA_TIMING_CUSTOM = 3
+};
+
+DECL_BITFIELD(GBADMARegister, uint16_t);
+DECL_BITS(GBADMARegister, DestControl, 5, 2);
+DECL_BITS(GBADMARegister, SrcControl, 7, 2);
+DECL_BIT(GBADMARegister, Repeat, 9);
+DECL_BIT(GBADMARegister, Width, 10);
+DECL_BIT(GBADMARegister, DRQ, 11);
+DECL_BITS(GBADMARegister, Timing, 12, 2);
+DECL_BIT(GBADMARegister, DoIRQ, 14);
+DECL_BIT(GBADMARegister, Enable, 15);
+
+struct GBADMA {
+	GBADMARegister reg;
+
+	uint32_t source;
+	uint32_t dest;
+	int32_t count;
+	uint32_t nextSource;
+	uint32_t nextDest;
+	int32_t nextCount;
+	uint32_t when;
+};
+
 struct GBA;
 void GBADMAInit(struct GBA* gba);
 void GBADMAReset(struct GBA* gba);

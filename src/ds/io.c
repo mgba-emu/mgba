@@ -113,8 +113,47 @@ void DS7IOWrite8(struct DS* ds, uint32_t address, uint8_t value) {
 
 void DS7IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
 	switch (address) {
+	case DS_REG_DMA0SAD_LO:
+		value = DSDMAWriteSAD(&ds->ds7, 0, value);
+		break;
+	case DS_REG_DMA1SAD_LO:
+		value = DSDMAWriteSAD(&ds->ds7, 1, value);
+		break;
+	case DS_REG_DMA2SAD_LO:
+		value = DSDMAWriteSAD(&ds->ds7, 2, value);
+		break;
+	case DS_REG_DMA3SAD_LO:
+		value = DSDMAWriteSAD(&ds->ds7, 3, value);
+		break;
+
+	case DS_REG_DMA0DAD_LO:
+		value = DSDMAWriteDAD(&ds->ds7, 0, value);
+		break;
+	case DS_REG_DMA1DAD_LO:
+		value = DSDMAWriteDAD(&ds->ds7, 1, value);
+		break;
+	case DS_REG_DMA2DAD_LO:
+		value = DSDMAWriteDAD(&ds->ds7, 2, value);
+		break;
+	case DS_REG_DMA3DAD_LO:
+		value = DSDMAWriteDAD(&ds->ds7, 3, value);
+		break;
+
+	case DS_REG_DMA0CNT_LO:
+		DS7DMAWriteCNT(&ds->ds7, 0, value);
+		break;
+	case DS_REG_DMA1CNT_LO:
+		DS7DMAWriteCNT(&ds->ds7, 1, value);
+		break;
+	case DS_REG_DMA2CNT_LO:
+		DS7DMAWriteCNT(&ds->ds7, 2, value);
+		break;
+	case DS_REG_DMA3CNT_LO:
+		DS7DMAWriteCNT(&ds->ds7, 3, value);
+		break;
+
 	case DS_REG_IPCFIFOSEND_LO:
-		DSIPCWriteFIFO(&ds->ds9, value);
+		DSIPCWriteFIFO(&ds->ds7, value);
 		break;
 	case DS_REG_IE_LO:
 		DSWriteIE(ds->ds7.cpu, ds->ds7.memory.io, value);
@@ -189,6 +228,45 @@ void DS9IOWrite8(struct DS* ds, uint32_t address, uint8_t value) {
 
 void DS9IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
 	switch (address) {
+	case DS_REG_DMA0SAD_LO:
+		value = DSDMAWriteSAD(&ds->ds9, 0, value);
+		break;
+	case DS_REG_DMA1SAD_LO:
+		value = DSDMAWriteSAD(&ds->ds9, 1, value);
+		break;
+	case DS_REG_DMA2SAD_LO:
+		value = DSDMAWriteSAD(&ds->ds9, 2, value);
+		break;
+	case DS_REG_DMA3SAD_LO:
+		value = DSDMAWriteSAD(&ds->ds9, 3, value);
+		break;
+
+	case DS_REG_DMA0DAD_LO:
+		value = DSDMAWriteDAD(&ds->ds9, 0, value);
+		break;
+	case DS_REG_DMA1DAD_LO:
+		value = DSDMAWriteDAD(&ds->ds9, 1, value);
+		break;
+	case DS_REG_DMA2DAD_LO:
+		value = DSDMAWriteDAD(&ds->ds9, 2, value);
+		break;
+	case DS_REG_DMA3DAD_LO:
+		value = DSDMAWriteDAD(&ds->ds9, 3, value);
+		break;
+
+	case DS_REG_DMA0CNT_LO:
+		DS9DMAWriteCNT(&ds->ds9, 0, value);
+		break;
+	case DS_REG_DMA1CNT_LO:
+		DS9DMAWriteCNT(&ds->ds9, 1, value);
+		break;
+	case DS_REG_DMA2CNT_LO:
+		DS9DMAWriteCNT(&ds->ds9, 2, value);
+		break;
+	case DS_REG_DMA3CNT_LO:
+		DS9DMAWriteCNT(&ds->ds9, 3, value);
+		break;
+
 	case DS_REG_IPCFIFOSEND_LO:
 		DSIPCWriteFIFO(&ds->ds9, value);
 		break;

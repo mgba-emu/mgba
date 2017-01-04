@@ -77,8 +77,6 @@ static void DS7SetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static void DS9SetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static int32_t DSMemoryStall(struct ARMCore* cpu, int32_t wait);
 
-static const int DMA_OFFSET[] = { 1, -1, 0, 1 };
-
 void DSMemoryInit(struct DS* ds) {
 	struct ARMCore* arm7 = ds->ds7.cpu;
 	arm7->memory.load32 = DS7Load32;
