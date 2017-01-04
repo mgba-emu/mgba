@@ -160,17 +160,17 @@ void DSDMAService(struct DSCommon* dscore, int number, struct GBADMA* info) {
 
 	if (info->count == info->nextCount) {
 		if (width == 4) {
-			cycles += dscore->p->memory.waitstatesNonseq32[sourceRegion] + dscore->p->memory.waitstatesNonseq32[destRegion];
+			cycles += dscore->memory.waitstatesNonseq32[sourceRegion] + dscore->memory.waitstatesNonseq32[destRegion];
 		} else {
-			cycles += dscore->p->memory.waitstatesNonseq16[sourceRegion] + dscore->p->memory.waitstatesNonseq16[destRegion];
+			cycles += dscore->memory.waitstatesNonseq16[sourceRegion] + dscore->memory.waitstatesNonseq16[destRegion];
 		}
 		source &= -width;
 		dest &= -width;
 	} else {
 		if (width == 4) {
-			cycles += dscore->p->memory.waitstatesSeq32[sourceRegion] + dscore->p->memory.waitstatesSeq32[destRegion];
+			cycles += dscore->memory.waitstatesSeq32[sourceRegion] + dscore->memory.waitstatesSeq32[destRegion];
 		} else {
-			cycles += dscore->p->memory.waitstatesSeq16[sourceRegion] + dscore->p->memory.waitstatesSeq16[destRegion];
+			cycles += dscore->memory.waitstatesSeq16[sourceRegion] + dscore->memory.waitstatesSeq16[destRegion];
 		}
 	}
 	info->when += cycles;

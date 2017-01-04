@@ -84,6 +84,11 @@ struct DSMemory {
 	size_t romSize;
 	size_t wramSize7;
 	size_t wramSize9;
+};
+
+struct DSCoreMemory {
+	uint16_t* io;
+	int activeRegion;
 
 	char waitstatesSeq32[256];
 	char waitstatesSeq16[256];
@@ -93,11 +98,6 @@ struct DSMemory {
 	char waitstatesPrefetchSeq16[16];
 	char waitstatesPrefetchNonseq32[16];
 	char waitstatesPrefetchNonseq16[16];
-};
-
-struct DSCoreMemory {
-	uint16_t* io;
-	int activeRegion;
 
 	struct GBADMA dma[4];
 	struct mTimingEvent dmaEvent;

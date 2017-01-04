@@ -22,7 +22,7 @@ int16_t DSIPCWriteFIFOCNT(struct DSCommon* dscore, int16_t value) {
 	int16_t oldValue = dscore->memory.io[DS_REG_IPCFIFOCNT >> 1] & 0x4303;
 	int16_t newValue = value | oldValue;
 	if (DSIPCFIFOCNTIsError(value)) {
-		newValue = DSIPCFIFOCNTClearError(0x8FFF);
+		newValue = DSIPCFIFOCNTClearError(newValue);
 	}
 	if (DSIPCFIFOCNTIsSendClear(newValue)) {
 		CircleBufferClear(&dscore->ipc->fifo);

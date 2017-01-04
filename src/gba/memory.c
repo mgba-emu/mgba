@@ -59,12 +59,8 @@ void GBAMemoryInit(struct GBA* gba) {
 	for (i = 0; i < 16; ++i) {
 		gba->memory.waitstatesNonseq16[i] = GBA_BASE_WAITSTATES[i];
 		gba->memory.waitstatesSeq16[i] = GBA_BASE_WAITSTATES_SEQ[i];
-		gba->memory.waitstatesPrefetchNonseq16[i] = GBA_BASE_WAITSTATES[i];
-		gba->memory.waitstatesPrefetchSeq16[i] = GBA_BASE_WAITSTATES_SEQ[i];
 		gba->memory.waitstatesNonseq32[i] = GBA_BASE_WAITSTATES_32[i];
 		gba->memory.waitstatesSeq32[i] = GBA_BASE_WAITSTATES_SEQ_32[i];
-		gba->memory.waitstatesPrefetchNonseq32[i] = GBA_BASE_WAITSTATES_32[i];
-		gba->memory.waitstatesPrefetchSeq32[i] = GBA_BASE_WAITSTATES_SEQ_32[i];
 	}
 	for (; i < 256; ++i) {
 		gba->memory.waitstatesNonseq16[i] = 0;

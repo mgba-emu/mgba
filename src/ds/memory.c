@@ -14,68 +14,21 @@
 
 mLOG_DEFINE_CATEGORY(DS_MEM, "DS Memory");
 
-#define LDM_LOOP(LDM) \
-	for (i = 0; i < 16; i += 4) { \
-		if (UNLIKELY(mask & (1 << i))) { \
-			LDM; \
-			cpu->gprs[i] = value; \
-			++wait; \
-			address += 4; \
-		} \
-		if (UNLIKELY(mask & (2 << i))) { \
-			LDM; \
-			cpu->gprs[i + 1] = value; \
-			++wait; \
-			address += 4; \
-		} \
-		if (UNLIKELY(mask & (4 << i))) { \
-			LDM; \
-			cpu->gprs[i + 2] = value; \
-			++wait; \
-			address += 4; \
-		} \
-		if (UNLIKELY(mask & (8 << i))) { \
-			LDM; \
-			cpu->gprs[i + 3] = value; \
-			++wait; \
-			address += 4; \
-		} \
-	}
-
-#define STM_LOOP(STM) \
-	for (i = 0; i < 16; i += 4) { \
-		if (UNLIKELY(mask & (1 << i))) { \
-			value = cpu->gprs[i]; \
-			STM; \
-			++wait; \
-			address += 4; \
-		} \
-		if (UNLIKELY(mask & (2 << i))) { \
-			value = cpu->gprs[i + 1]; \
-			STM; \
-			++wait; \
-			address += 4; \
-		} \
-		if (UNLIKELY(mask & (4 << i))) { \
-			value = cpu->gprs[i + 2]; \
-			STM; \
-			++wait; \
-			address += 4; \
-		} \
-		if (UNLIKELY(mask & (8 << i))) { \
-			value = cpu->gprs[i + 3]; \
-			STM; \
-			++wait; \
-			address += 4; \
-		} \
-	}
-
-
 static uint32_t _deadbeef[1] = { 0xE710B710 }; // Illegal instruction on both ARM and Thumb
 
 static void DS7SetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static void DS9SetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static int32_t DSMemoryStall(struct ARMCore* cpu, int32_t wait);
+
+static const char DS7_BASE_WAITSTATES[16] =        { 0, 0, 8, 0, 0, 0, 0, 0 };
+static const char DS7_BASE_WAITSTATES_32[16] =     { 0, 0, 9, 0, 0, 1, 1, 0 };
+static const char DS7_BASE_WAITSTATES_SEQ[16] =    { 0, 0, 1, 0, 0, 0, 0, 0 };
+static const char DS7_BASE_WAITSTATES_SEQ_32[16] = { 0, 0, 2, 0, 0, 1, 1, 0 };
+
+static const char DS9_BASE_WAITSTATES[16] =        { 6, 6, 17, 6, 6, 7, 7, 6 };
+static const char DS9_BASE_WAITSTATES_32[16] =     { 6, 6, 19, 6, 6, 9, 9, 6 };
+static const char DS9_BASE_WAITSTATES_SEQ[16] =    { 1, 1,  1, 1, 1, 2, 2, 1 };
+static const char DS9_BASE_WAITSTATES_SEQ_32[16] = { 1, 1,  3, 1, 1, 4, 4, 1 };
 
 void DSMemoryInit(struct DS* ds) {
 	struct ARMCore* arm7 = ds->ds7.cpu;
@@ -99,6 +52,39 @@ void DSMemoryInit(struct DS* ds) {
 	arm9->memory.store8 = DS9Store8;
 	arm9->memory.storeMultiple = DS9StoreMultiple;
 	arm9->memory.stall = DSMemoryStall;
+
+	int i;
+	for (i = 0; i < 8; ++i) {
+		// TODO: Formalize
+		ds->ds7.memory.waitstatesNonseq16[i] = DS7_BASE_WAITSTATES[i];
+		ds->ds7.memory.waitstatesSeq16[i] = DS7_BASE_WAITSTATES_SEQ[i];
+		ds->ds7.memory.waitstatesPrefetchNonseq16[i] = DS7_BASE_WAITSTATES[i];
+		ds->ds7.memory.waitstatesPrefetchSeq16[i] = DS7_BASE_WAITSTATES_SEQ[i];
+		ds->ds7.memory.waitstatesNonseq32[i] = DS7_BASE_WAITSTATES_32[i];
+		ds->ds7.memory.waitstatesSeq32[i] = DS7_BASE_WAITSTATES_SEQ_32[i];
+		ds->ds7.memory.waitstatesPrefetchNonseq32[i] = DS7_BASE_WAITSTATES_32[i];
+		ds->ds7.memory.waitstatesPrefetchSeq32[i] = DS7_BASE_WAITSTATES_SEQ_32[i];
+
+		ds->ds9.memory.waitstatesNonseq16[i] = DS9_BASE_WAITSTATES[i];
+		ds->ds9.memory.waitstatesSeq16[i] = DS9_BASE_WAITSTATES_SEQ[i];
+		ds->ds9.memory.waitstatesPrefetchNonseq16[i] = DS9_BASE_WAITSTATES[i];
+		ds->ds9.memory.waitstatesPrefetchSeq16[i] = DS9_BASE_WAITSTATES[i];
+		ds->ds9.memory.waitstatesNonseq32[i] = DS9_BASE_WAITSTATES_32[i];
+		ds->ds9.memory.waitstatesSeq32[i] = DS9_BASE_WAITSTATES_SEQ_32[i];
+		ds->ds9.memory.waitstatesPrefetchNonseq32[i] = DS9_BASE_WAITSTATES_32[i];
+		ds->ds9.memory.waitstatesPrefetchSeq32[i] = DS9_BASE_WAITSTATES_32[i];
+	}
+	for (; i < 256; ++i) {
+		ds->ds7.memory.waitstatesNonseq16[i] = 0;
+		ds->ds7.memory.waitstatesSeq16[i] = 0;
+		ds->ds7.memory.waitstatesNonseq32[i] = 0;
+		ds->ds7.memory.waitstatesSeq32[i] = 0;
+
+		ds->ds9.memory.waitstatesNonseq16[i] = 0;
+		ds->ds9.memory.waitstatesSeq16[i] = 0;
+		ds->ds9.memory.waitstatesNonseq32[i] = 0;
+		ds->ds9.memory.waitstatesSeq32[i] = 0;
+	}
 
 	ds->memory.bios7 = NULL;
 	ds->memory.bios9 = NULL;
@@ -182,51 +168,55 @@ void DSMemoryReset(struct DS* ds) {
 
 static void DS7SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	struct DS* ds = (struct DS*) cpu->master;
-	struct DSMemory* memory = &ds->memory;
+	struct DSCoreMemory* memory = &ds->ds7.memory;
 
 	int newRegion = address >> DS_BASE_OFFSET;
 
-	ds->ds7.memory.activeRegion = newRegion;
+	memory->activeRegion = newRegion;
 	switch (newRegion) {
 	case DS_REGION_WORKING_RAM:
-		if (address >= DS7_BASE_WORKING_RAM || !memory->wramSize7) {
-			cpu->memory.activeRegion = memory->wram7;
+		if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
+			cpu->memory.activeRegion = ds->memory.wram7;
 			cpu->memory.activeMask = DS7_SIZE_WORKING_RAM - 1;
 		} else {
-			cpu->memory.activeRegion = memory->wram;
+			cpu->memory.activeRegion = ds->memory.wram;
 			cpu->memory.activeMask = ds->memory.wramSize7 - 1;
-		}
-		return;
-	case DS_REGION_RAM:
-		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
-			cpu->memory.activeRegion = memory->ram;
-			cpu->memory.activeMask = DS_SIZE_RAM - 1;
-			return;
 		}
 		break;
 	case DS7_REGION_BIOS:
-		if (memory->bios7) {
-			cpu->memory.activeRegion = memory->bios7;
+		if (ds->memory.bios7) {
+			cpu->memory.activeRegion = ds->memory.bios7;
 			cpu->memory.activeMask = DS9_SIZE_BIOS - 1;
 		} else {
 			cpu->memory.activeRegion = _deadbeef;
 			cpu->memory.activeMask = 0;
 		}
-		return;
+		break;
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			cpu->memory.activeRegion = ds->memory.ram;
+			cpu->memory.activeMask = DS_SIZE_RAM - 1;
+			break;
+		}
+	// Fall through
 	default:
+		memory->activeRegion = -1;
+		cpu->memory.activeRegion = _deadbeef;
+		cpu->memory.activeMask = 0;
+		mLOG(DS_MEM, FATAL, "Jumped to invalid address: %08X", address);
 		break;
 	}
-	cpu->memory.activeRegion = _deadbeef;
-	cpu->memory.activeMask = 0;
-	mLOG(DS_MEM, FATAL, "Jumped to invalid address: %08X", address);
-	return;
+	cpu->memory.activeSeqCycles32 = memory->waitstatesPrefetchSeq32[memory->activeRegion];
+	cpu->memory.activeSeqCycles16 = memory->waitstatesPrefetchSeq16[memory->activeRegion];
+	cpu->memory.activeNonseqCycles32 = memory->waitstatesPrefetchNonseq32[memory->activeRegion];
+	cpu->memory.activeNonseqCycles16 = memory->waitstatesPrefetchNonseq16[memory->activeRegion];
 }
 
 uint32_t DS7Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
 	uint32_t value = 0;
-	int wait = 0;
+	int wait = ds->ds7.memory.waitstatesNonseq32[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
 	case DS7_REGION_BIOS:
@@ -267,7 +257,7 @@ uint32_t DS7Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
 	uint32_t value = 0;
-	int wait = 0;
+	int wait = ds->ds7.memory.waitstatesNonseq16[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
 	case DS7_REGION_BIOS:
@@ -307,7 +297,7 @@ uint32_t DS7Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
 	uint32_t value = 0;
-	int wait = 0;
+	int wait = ds->ds7.memory.waitstatesNonseq16[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
 	case DS_REGION_RAM:
@@ -331,7 +321,7 @@ uint32_t DS7Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 void DS7Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
-	int wait = 0;
+	int wait = ds->ds7.memory.waitstatesNonseq32[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
 	case DS_REGION_WORKING_RAM:
@@ -365,7 +355,7 @@ void DS7Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 void DS7Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
-	int wait = 0;
+	int wait = ds->ds7.memory.waitstatesNonseq16[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
 	case DS_REGION_WORKING_RAM:
@@ -399,7 +389,7 @@ void DS7Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 void DS7Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
-	int wait = 0;
+	int wait = ds->ds7.memory.waitstatesNonseq16[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
 	case DS_REGION_RAM:
@@ -422,9 +412,76 @@ void DS7Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	}
 }
 
+#define LDM_LOOP(LDM) \
+	for (i = 0; i < 16; i += 4) { \
+		if (UNLIKELY(mask & (1 << i))) { \
+			LDM; \
+			cpu->gprs[i] = value; \
+			++wait; \
+			wait += ws32[address >> DS_BASE_OFFSET]; \
+			address += 4; \
+		} \
+		if (UNLIKELY(mask & (2 << i))) { \
+			LDM; \
+			cpu->gprs[i + 1] = value; \
+			++wait; \
+			wait += ws32[address >> DS_BASE_OFFSET]; \
+			address += 4; \
+		} \
+		if (UNLIKELY(mask & (4 << i))) { \
+			LDM; \
+			cpu->gprs[i + 2] = value; \
+			++wait; \
+			wait += ws32[address >> DS_BASE_OFFSET]; \
+			address += 4; \
+		} \
+		if (UNLIKELY(mask & (8 << i))) { \
+			LDM; \
+			cpu->gprs[i + 3] = value; \
+			++wait; \
+			wait += ws32[address >> DS_BASE_OFFSET]; \
+			address += 4; \
+		} \
+	}
+
+#define STM_LOOP(STM) \
+	for (i = 0; i < 16; i += 4) { \
+		if (UNLIKELY(mask & (1 << i))) { \
+			value = cpu->gprs[i]; \
+			STM; \
+			++wait; \
+			wait += ws32[address >> DS_BASE_OFFSET]; \
+			address += 4; \
+		} \
+		if (UNLIKELY(mask & (2 << i))) { \
+			value = cpu->gprs[i + 1]; \
+			STM; \
+			++wait; \
+			wait += ws32[address >> DS_BASE_OFFSET]; \
+			address += 4; \
+		} \
+		if (UNLIKELY(mask & (4 << i))) { \
+			value = cpu->gprs[i + 2]; \
+			STM; \
+			++wait; \
+			wait += ws32[address >> DS_BASE_OFFSET]; \
+			address += 4; \
+		} \
+		if (UNLIKELY(mask & (8 << i))) { \
+			value = cpu->gprs[i + 3]; \
+			STM; \
+			++wait; \
+			wait += ws32[address >> DS_BASE_OFFSET]; \
+			address += 4; \
+		} \
+	}
+
+
+
 uint32_t DS7LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
+	char* ws32 = ds->ds7.memory.waitstatesNonseq32;
 	uint32_t value;
 	int wait = 0;
 
@@ -487,6 +544,7 @@ uint32_t DS7LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 uint32_t DS7StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
+	char* ws32 = ds->ds7.memory.waitstatesNonseq32;
 	uint32_t value;
 	int wait = 0;
 
@@ -544,52 +602,56 @@ uint32_t DS7StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 
 static void DS9SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	struct DS* ds = (struct DS*) cpu->master;
-	struct DSMemory* memory = &ds->memory;
+	struct DSCoreMemory* memory = &ds->ds9.memory;
 
 	int newRegion = address >> DS_BASE_OFFSET;
 
-	ds->ds9.memory.activeRegion = newRegion;
+	memory->activeRegion = newRegion;
 	switch (newRegion) {
 	case DS9_REGION_ITCM:
 	case DS9_REGION_ITCM_MIRROR:
 		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
-			cpu->memory.activeRegion = memory->itcm;
+			cpu->memory.activeRegion = ds->memory.itcm;
 			cpu->memory.activeMask = DS9_SIZE_ITCM - 1;
-			return;
+			break;
 		}
 		goto jump_error;
 	case DS_REGION_RAM:
 		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
-			cpu->memory.activeRegion = memory->ram;
+			cpu->memory.activeRegion = ds->memory.ram;
 			cpu->memory.activeMask = DS_SIZE_RAM - 1;
-			return;
+			break;
 		}
 		goto jump_error;
 	case DS9_REGION_BIOS:
 		// TODO: Mask properly
-		if (memory->bios9) {
-			cpu->memory.activeRegion = memory->bios9;
+		if (ds->memory.bios9) {
+			cpu->memory.activeRegion = ds->memory.bios9;
 			cpu->memory.activeMask = DS9_SIZE_BIOS - 1;
 		} else {
 			cpu->memory.activeRegion = _deadbeef;
 			cpu->memory.activeMask = 0;
 		}
-		return;
-	default:
 		break;
+	default:
+	jump_error:
+		memory->activeRegion = -1;
+		cpu->memory.activeRegion = _deadbeef;
+		cpu->memory.activeMask = 0;
+		mLOG(DS_MEM, FATAL, "Jumped to invalid address: %08X", address);
+		return;
 	}
-
-jump_error:
-	cpu->memory.activeRegion = _deadbeef;
-	cpu->memory.activeMask = 0;
-	mLOG(DS_MEM, FATAL, "Jumped to invalid address: %08X", address);
+	cpu->memory.activeSeqCycles32 = memory->waitstatesPrefetchSeq32[memory->activeRegion];
+	cpu->memory.activeSeqCycles16 = memory->waitstatesPrefetchSeq16[memory->activeRegion];
+	cpu->memory.activeNonseqCycles32 = memory->waitstatesPrefetchNonseq32[memory->activeRegion];
+	cpu->memory.activeNonseqCycles16 = memory->waitstatesPrefetchNonseq16[memory->activeRegion];
 }
 
 uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
 	uint32_t value = 0;
-	int wait = 0;
+	int wait = ds->ds9.memory.waitstatesNonseq32[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
 	case DS_REGION_RAM:
@@ -624,7 +686,7 @@ uint32_t DS9Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
 	uint32_t value = 0;
-	int wait = 0;
+	int wait = ds->ds9.memory.waitstatesNonseq16[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
 	case DS_REGION_RAM:
@@ -658,7 +720,7 @@ uint32_t DS9Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
 	uint32_t value = 0;
-	int wait = 0;
+	int wait = ds->ds9.memory.waitstatesNonseq16[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
 	case DS_REGION_RAM:
@@ -686,7 +748,7 @@ uint32_t DS9Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 void DS9Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
-	int wait = 0;
+	int wait = ds->ds9.memory.waitstatesNonseq32[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
 	case DS9_REGION_ITCM:
@@ -725,7 +787,7 @@ void DS9Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 void DS9Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
-	int wait = 0;
+	int wait = ds->ds9.memory.waitstatesNonseq16[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
 	case DS9_REGION_ITCM:
@@ -764,7 +826,7 @@ void DS9Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 void DS9Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
-	int wait = 0;
+	int wait = ds->ds9.memory.waitstatesNonseq16[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
 	case DS9_REGION_ITCM:
@@ -802,6 +864,7 @@ void DS9Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
+	char* ws32 = ds->ds9.memory.waitstatesNonseq32;
 	uint32_t value;
 	int wait = 0;
 
@@ -857,6 +920,7 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
+	char* ws32 = ds->ds9.memory.waitstatesNonseq32;
 	uint32_t value;
 	int wait = 0;
 
