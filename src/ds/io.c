@@ -10,21 +10,21 @@
 
 mLOG_DEFINE_CATEGORY(DS_IO, "DS I/O");
 
-static bool DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t value) {
+static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t value) {
 	switch (address) {
 	// Timers
 	case DS_REG_TM0CNT_LO:
 		GBATimerWriteTMCNT_LO(&dscore->timers[0], value);
-		return true;
+		return 0x20000;
 	case DS_REG_TM1CNT_LO:
 		GBATimerWriteTMCNT_LO(&dscore->timers[1], value);
-		return true;
+		return 0x20000;
 	case DS_REG_TM2CNT_LO:
 		GBATimerWriteTMCNT_LO(&dscore->timers[2], value);
-		return true;
+		return 0x20000;
 	case DS_REG_TM3CNT_LO:
 		GBATimerWriteTMCNT_LO(&dscore->timers[3], value);
-		return true;
+		return 0x20000;
 
 	case DS_REG_TM0CNT_HI:
 		value &= 0x00C7;
@@ -59,9 +59,9 @@ static bool DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t value)
 		value = dscore->memory.io[address >> 1] & ~value;
 		break;
 	default:
-		return false;
+		return 0;
 	}
-	return true;
+	return value | 0x10000;
 }
 
 static void DSIOUpdateTimer(struct DSCommon* dscore, uint32_t address) {
@@ -88,8 +88,14 @@ void DS7IOInit(struct DS* ds) {
 void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	switch (address) {
 	default:
-		if (DSIOWrite(&ds->ds7, address, value)) {
-			break;
+		{
+			uint32_t v2 = DSIOWrite(&ds->ds7, address, value);
+			if (v2 & 0x10000) {
+				value = v2;
+				break;
+			} else if (v2 & 0x20000) {
+				return;
+			}
 		}
 		mLOG(DS_IO, STUB, "Stub DS7 I/O register write: %06X:%04X", address, value);
 		if (address >= DS7_REG_MAX) {
@@ -203,8 +209,14 @@ void DS9IOInit(struct DS* ds) {
 void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	switch (address) {
 	default:
-		if (DSIOWrite(&ds->ds9, address, value)) {
-			break;
+		{
+			uint32_t v2 = DSIOWrite(&ds->ds9, address, value);
+			if (v2 & 0x10000) {
+				value = v2;
+				break;
+			} else if (v2 & 0x20000) {
+				return;
+			}
 		}
 		mLOG(DS_IO, STUB, "Stub DS9 I/O register write: %06X:%04X", address, value);
 		if (address >= DS7_REG_MAX) {
