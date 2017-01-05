@@ -57,6 +57,10 @@ static inline uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address
 	struct LR35902InstructionInfo info = {};
 	char disassembly[48];
 	char* disPtr = disassembly;
+	if (segment >= 0) {
+		be->printf(be, "%02X:  ", segment);
+	}
+	be->printf(be, "%04X:  ", address);
 	uint8_t instruction;
 	size_t bytesRemaining = 1;
 	for (bytesRemaining = 1; bytesRemaining; --bytesRemaining) {
