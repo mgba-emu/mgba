@@ -205,6 +205,9 @@ void Window::argumentsPassed(mArguments* args) {
 
 void Window::resizeFrame(const QSize& size) {
 	QSize newSize(size);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+	newSize /= m_screenWidget->devicePixelRatioF();
+#endif
 	m_screenWidget->setSizeHint(newSize);
 	newSize -= m_screenWidget->size();
 	newSize += this->size();

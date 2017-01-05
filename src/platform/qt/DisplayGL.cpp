@@ -75,7 +75,11 @@ void DisplayGL::startDrawing(mCoreThread* thread) {
 
 	lockAspectRatio(isAspectRatioLocked());
 	filter(isFiltered());
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatioF());
+#else
 	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatio());
+#endif
 	resizePainter();
 }
 
@@ -362,7 +366,11 @@ void PainterGL::unpause() {
 
 void PainterGL::performDraw() {
 	m_painter.beginNativePainting();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+	float r = m_gl->devicePixelRatioF();
+#else
 	float r = m_gl->devicePixelRatio();
+#endif
 	m_backend->resized(m_backend, m_size.width() * r, m_size.height() * r);
 	m_backend->drawFrame(m_backend);
 	m_painter.endNativePainting();
