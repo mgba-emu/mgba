@@ -13,12 +13,12 @@
 #include <mgba/core/version.h>
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
+#include <mgba/internal/gb/gb.h>
 #endif
 #ifdef M_CORE_GBA
 #include <mgba/gba/core.h>
 #include <mgba/gba/interface.h>
 #include <mgba/internal/gba/gba.h>
-#include <mgba/internal/gba/video.h>
 #endif
 #include <mgba-util/circle-buffer.h>
 #include <mgba-util/memory.h>
@@ -584,7 +584,7 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info* i
 
 void* retro_get_memory_data(unsigned id) {
 	struct GBA* gba = core->board;
-//	struct GB* gb = core->board; // TODO: fix error: dereferencing pointer to incomplete type
+	struct GB* gb = core->board;
 
 	if (id == RETRO_MEMORY_SAVE_RAM) {
 		return savedata;
@@ -592,14 +592,14 @@ void* retro_get_memory_data(unsigned id) {
 	if (id == RETRO_MEMORY_SYSTEM_RAM) {
 		if (core->platform(core) == PLATFORM_GBA)
 			return gba->memory.wram;
-//		if (core->platform(core) == PLATFORM_GB)
-//			return gb->memory.wram;
+		if (core->platform(core) == PLATFORM_GB)
+			return gb->memory.wram;
 	}
 	if (id == RETRO_MEMORY_VIDEO_RAM) {
 		if (core->platform(core) == PLATFORM_GBA)
 			return gba->video.renderer->vram;
-//		if (core->platform(core) == PLATFORM_GB)
-//			return gb->video.renderer->vram;
+		if (core->platform(core) == PLATFORM_GB)
+			return gb->video.renderer->vram;
 	}
 
 	return 0;
@@ -607,19 +607,28 @@ void* retro_get_memory_data(unsigned id) {
 
 size_t retro_get_memory_size(unsigned id) {
 	if (id == RETRO_MEMORY_SAVE_RAM) {
-		switch (((struct GBA*) core->board)->memory.savedata.type) {
-		case SAVEDATA_AUTODETECT:
-		case SAVEDATA_FLASH1M:
-			return SIZE_CART_FLASH1M;
-		case SAVEDATA_FLASH512:
-			return SIZE_CART_FLASH512;
-		case SAVEDATA_EEPROM:
-			return SIZE_CART_EEPROM;
-		case SAVEDATA_SRAM:
-			return SIZE_CART_SRAM;
-		case SAVEDATA_FORCE_NONE:
-			return 0;
+#ifdef M_CORE_GBA
+		if (core->platform(core) == PLATFORM_GBA) {
+			switch (((struct GBA*) core->board)->memory.savedata.type) {
+			case SAVEDATA_AUTODETECT:
+			case SAVEDATA_FLASH1M:
+				return SIZE_CART_FLASH1M;
+			case SAVEDATA_FLASH512:
+				return SIZE_CART_FLASH512;
+			case SAVEDATA_EEPROM:
+				return SIZE_CART_EEPROM;
+			case SAVEDATA_SRAM:
+				return SIZE_CART_SRAM;
+			case SAVEDATA_FORCE_NONE:
+				return 0;
+			}
 		}
+#endif
+#ifdef M_CORE_GB
+		if (core->platform(core) == PLATFORM_GB) {
+			return ((struct GB*) core->board)->sramSize;
+		}
+#endif
 	}
 	if (id == RETRO_MEMORY_SYSTEM_RAM) {
 		return SIZE_WORKING_RAM;

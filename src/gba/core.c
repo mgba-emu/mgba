@@ -198,6 +198,9 @@ static void _GBACoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 }
 
 static bool _GBACoreLoadROM(struct mCore* core, struct VFile* vf) {
+	if (GBAIsMB(vf)) {
+		return GBALoadMB(core->board, vf);
+	}
 	return GBALoadROM(core->board, vf);
 }
 
