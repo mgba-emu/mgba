@@ -524,19 +524,28 @@ size_t retro_get_memory_size(unsigned id) {
 	if (id != RETRO_MEMORY_SAVE_RAM) {
 		return 0;
 	}
-	switch (((struct GBA*) core->board)->memory.savedata.type) {
-	case SAVEDATA_AUTODETECT:
-	case SAVEDATA_FLASH1M:
-		return SIZE_CART_FLASH1M;
-	case SAVEDATA_FLASH512:
-		return SIZE_CART_FLASH512;
-	case SAVEDATA_EEPROM:
-		return SIZE_CART_EEPROM;
-	case SAVEDATA_SRAM:
-		return SIZE_CART_SRAM;
-	case SAVEDATA_FORCE_NONE:
-		return 0;
+#ifdef M_CORE_GBA
+	if (core->platform(core) == PLATFORM_GBA) {
+		switch (((struct GBA*) core->board)->memory.savedata.type) {
+		case SAVEDATA_AUTODETECT:
+		case SAVEDATA_FLASH1M:
+			return SIZE_CART_FLASH1M;
+		case SAVEDATA_FLASH512:
+			return SIZE_CART_FLASH512;
+		case SAVEDATA_EEPROM:
+			return SIZE_CART_EEPROM;
+		case SAVEDATA_SRAM:
+			return SIZE_CART_SRAM;
+		case SAVEDATA_FORCE_NONE:
+			return 0;
+		}
 	}
+#endif
+#ifdef M_CORE_GB
+	if (core->platform(core) == PLATFORM_GB) {
+		return ((struct GB*) core->board)->sramSize;
+	}
+#endif
 	return 0;
 }
 
