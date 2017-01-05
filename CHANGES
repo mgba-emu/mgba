@@ -6,6 +6,7 @@ Features:
  - Sprite viewer
  - Debugging console
  - Improved memory viewer
+ - GB: LR35902/GB-Z80 disassembler
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
