@@ -13,7 +13,7 @@
 static void _printStatus(struct CLIDebuggerSystem*);
 
 static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVector* dv);
-static uint32_t _printLine(struct CLIDebugger* debugger, uint16_t address, int segment);
+static uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address, int segment);
 
 static struct CLIDebuggerCommandSummary _lr35902Commands[] = {
 	{ 0, 0, 0, 0 }
@@ -48,11 +48,11 @@ static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVect
 
 	size_t i;
 	for (i = 0; i < size; ++i) {
-		address += _printLine(debugger->p, address, -1);
+		address = _printLine(debugger->p, address, -1);
 	}
 }
 
-static inline uint32_t _printLine(struct CLIDebugger* debugger, uint16_t address, int segment) {
+static inline uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address, int segment) {
 	struct CLIDebuggerBackend* be = debugger->backend;
 	struct LR35902InstructionInfo info = {};
 	char disassembly[48];
