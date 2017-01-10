@@ -84,6 +84,8 @@ public:
 
 	const mCoreConfig* config() { return &m_config; }
 
+	const QString& configDir() { return m_configDir; }
+
 public slots:
 	void setOption(const char* key, bool value);
 	void setOption(const char* key, int value);
@@ -103,6 +105,7 @@ private:
 
 	QMap<QString, ConfigOption*> m_optionSet;
 	QSettings* m_settings;
+	QString m_configDir;
 };
 
 }
