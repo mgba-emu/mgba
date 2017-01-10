@@ -19,11 +19,12 @@
 #include <mgba/core/version.h>
 #include <mgba/internal/gba/video.h>
 #include <mgba-util/socket.h>
-#include <mgba-util/nointro.h>
 #include <mgba-util/vfs.h>
-/*
-#include "feature/commandline.h"
-*/
+
+#ifdef USE_SQLITE3
+#include "feature/sqlite3/no-intro.h"
+#endif
+
 using namespace QGBA;
 
 static GBAApp* g_app = nullptr;
@@ -208,19 +209,22 @@ QString GBAApp::dataDir() {
 }
 
 bool GBAApp::reloadGameDB() {
+#ifdef USE_SQLITE3
 	NoIntroDB* db = nullptr;
-	VFile* vf = VFileDevice::open(dataDir() + "/nointro.dat", O_RDONLY);
-	if (vf) {
-		db = NoIntroDBLoad(vf);
-		vf->close(vf);
-	}
+	db = NoIntroDBLoad((m_configController.configDir() + "/nointro.sqlite3").toLocal8Bit().constData());
 	if (db && m_db) {
 		NoIntroDBDestroy(m_db);
 	}
 	if (db) {
+		VFile* vf = VFileDevice::open(dataDir() + "/nointro.dat", O_RDONLY);
+		if (vf) {
+			NoIntroDBLoadClrMamePro(db, vf);
+			vf->close(vf);
+		}
 		m_db = db;
 		return true;
 	}
+#endif
 	return false;
 }
 

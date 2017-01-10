@@ -41,6 +41,7 @@ Misc:
  - GBA I/O: Set JOYSTAT TRANS flag when writing JOY_TRANS registers
  - Qt: Improved HiDPI support
  - Qt: Expose configuration directory
+ - Feature: Move game database from flatfile to SQLite3
 
 0.5.2: (2016-12-31)
 Bugfixes:

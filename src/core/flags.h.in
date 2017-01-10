@@ -87,6 +87,10 @@
 #cmakedefine USE_PTHREADS
 #endif
 
+#ifndef USE_SQLITE3
+#cmakedefine USE_SQLITE3
+#endif
+
 #ifndef USE_ZLIB
 #cmakedefine USE_ZLIB
 #endif

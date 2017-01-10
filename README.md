@@ -125,6 +125,7 @@ mGBA has no hard dependencies, however, the following optional dependencies are 
 - ffmpeg or libav: for video recording.
 - libzip or zlib: for loading ROMs stored in zip files.
 - ImageMagick: for GIF recording.
+- SQLite3: for game databases.
 
 Both libpng and zlib are included with the emulator, so they do not need to be externally compiled first.
 
