@@ -106,8 +106,10 @@ GBAApp::GBAApp(int& argc, char* argv[])
 }
 
 GBAApp::~GBAApp() {
+#ifdef USE_SQLITE3
 	m_parseThread.quit();
 	m_parseThread.wait();
+#endif
 }
 
 bool GBAApp::event(QEvent* event) {
