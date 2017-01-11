@@ -48,7 +48,7 @@
 #include <mgba/internal/gb/video.h>
 #endif
 #include "feature/commandline.h"
-#include <mgba-util/nointro.h>
+#include "feature/sqlite3/no-intro.h"
 #include <mgba-util/vfs.h>
 
 using namespace QGBA;
@@ -210,6 +210,9 @@ void Window::argumentsPassed(mArguments* args) {
 
 void Window::resizeFrame(const QSize& size) {
 	QSize newSize(size);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+	newSize /= m_screenWidget->devicePixelRatioF();
+#endif
 	m_screenWidget->setSizeHint(newSize);
 	newSize -= m_screenWidget->size();
 	newSize += this->size();
@@ -848,15 +851,16 @@ void Window::updateTitle(float fps) {
 			break;
 		}
 
-		if (db && crc32) {
-			NoIntroDBLookupGameByCRC(db, crc32, &game);
+		char gameTitle[17] = { '\0' };
+		mCore* core = m_controller->thread()->core;
+		core->getGameTitle(core, gameTitle);
+		title = gameTitle;
+
+#ifdef USE_SQLITE3
+		if (db && crc32 && NoIntroDBLookupGameByCRC(db, crc32, &game)) {
 			title = QLatin1String(game.name);
-		} else {
-			char gameTitle[17] = { '\0' };
-			mCore* core = m_controller->thread()->core;
-			core->getGameTitle(core, gameTitle);
-			title = gameTitle;
 		}
+#endif
 	}
 	MultiplayerController* multiplayer = m_controller->multiplayerController();
 	if (multiplayer && multiplayer->attached() > 1) {

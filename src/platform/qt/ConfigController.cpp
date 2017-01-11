@@ -94,7 +94,8 @@ ConfigController::ConfigController(QObject* parent)
 {
 	char path[PATH_MAX];
 	mCoreConfigDirectory(path, sizeof(path));
-	QString fileName(path);
+	m_configDir = QString::fromUtf8(path);
+	QString fileName = (m_configDir);
 	fileName.append(QDir::separator());
 	fileName.append("qt.ini");
 	m_settings = new QSettings(fileName, QSettings::IniFormat, this);
@@ -269,9 +270,7 @@ void ConfigController::write() {
 void ConfigController::makePortable() {
 	mCoreConfigMakePortable(&m_config);
 
-	char path[PATH_MAX];
-	mCoreConfigDirectory(path, sizeof(path));
-	QString fileName(path);
+	QString fileName(m_configDir);
 	fileName.append(QDir::separator());
 	fileName.append("qt.ini");
 	QSettings* settings2 = new QSettings(fileName, QSettings::IniFormat, this);

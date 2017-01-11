@@ -8,6 +8,7 @@
 
 #include <QApplication>
 #include <QFileDialog>
+#include <QThread>
 
 #include "ConfigController.h"
 #include "MultiplayerController.h"
@@ -23,11 +24,28 @@ namespace QGBA {
 class GameController;
 class Window;
 
+#ifdef USE_SQLITE3
+class GameDBParser : public QObject {
+Q_OBJECT
+
+public:
+	GameDBParser(NoIntroDB* db, QObject* parent = nullptr);
+
+public slots:
+	void parseNoIntroDB();
+
+private:
+	NoIntroDB* m_db;
+};
+#endif
+
+
 class GBAApp : public QApplication {
 Q_OBJECT
 
 public:
 	GBAApp(int& argc, char* argv[]);
+	~GBAApp();
 	static GBAApp* app();
 
 	static QString dataDir();
@@ -66,7 +84,11 @@ private:
 	ConfigController m_configController;
 	Window* m_windows[MAX_GBAS];
 	MultiplayerController m_multiplayer;
+
 	NoIntroDB* m_db;
+#ifdef USE_SQLITE3
+	QThread m_parseThread;
+#endif
 };
 
 }

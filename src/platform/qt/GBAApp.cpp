@@ -19,11 +19,12 @@
 #include <mgba/core/version.h>
 #include <mgba/internal/gba/video.h>
 #include <mgba-util/socket.h>
-#include <mgba-util/nointro.h>
 #include <mgba-util/vfs.h>
-/*
-#include "feature/commandline.h"
-*/
+
+#ifdef USE_SQLITE3
+#include "feature/sqlite3/no-intro.h"
+#endif
+
 using namespace QGBA;
 
 static GBAApp* g_app = nullptr;
@@ -102,6 +103,13 @@ GBAApp::GBAApp(int& argc, char* argv[])
 
 	w->controller()->setMultiplayerController(&m_multiplayer);
 	w->multiplayerChanged();
+}
+
+GBAApp::~GBAApp() {
+#ifdef USE_SQLITE3
+	m_parseThread.quit();
+	m_parseThread.wait();
+#endif
 }
 
 bool GBAApp::event(QEvent* event) {
@@ -207,22 +215,32 @@ QString GBAApp::dataDir() {
 	return path;
 }
 
+#ifdef USE_SQLITE3
 bool GBAApp::reloadGameDB() {
 	NoIntroDB* db = nullptr;
-	VFile* vf = VFileDevice::open(dataDir() + "/nointro.dat", O_RDONLY);
-	if (vf) {
-		db = NoIntroDBLoad(vf);
-		vf->close(vf);
-	}
+	db = NoIntroDBLoad((m_configController.configDir() + "/nointro.sqlite3").toLocal8Bit().constData());
 	if (db && m_db) {
 		NoIntroDBDestroy(m_db);
 	}
 	if (db) {
+		if (m_parseThread.isRunning()) {
+			m_parseThread.quit();
+			m_parseThread.wait();
+		}
+		GameDBParser* parser = new GameDBParser(db);
+		m_parseThread.start();
+		parser->moveToThread(&m_parseThread);
+		QMetaObject::invokeMethod(parser, "parseNoIntroDB");
 		m_db = db;
 		return true;
 	}
 	return false;
 }
+#else
+bool GBAApp::reloadGameDB() {
+	return false;
+}
+#endif
 
 GBAApp::FileDialog::FileDialog(GBAApp* app, QWidget* parent, const QString& caption, const QString& filter)
 	: QFileDialog(parent, caption, app->m_configController.getOption("lastDirectory"), filter)
@@ -241,3 +259,21 @@ int GBAApp::FileDialog::exec() {
 	m_app->continueAll(&paused);
 	return didAccept;
 }
+
+#ifdef USE_SQLITE3
+GameDBParser::GameDBParser(NoIntroDB* db, QObject* parent)
+	: QObject(parent)
+	, m_db(db)
+{
+	// Nothing to do
+}
+
+void GameDBParser::parseNoIntroDB() {
+	VFile* vf = VFileDevice::open(GBAApp::dataDir() + "/nointro.dat", O_RDONLY);
+	if (vf) {
+		NoIntroDBLoadClrMamePro(m_db, vf);
+		vf->close(vf);
+	}
+}
+
+#endif

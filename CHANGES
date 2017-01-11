@@ -6,6 +6,7 @@ Features:
  - Sprite viewer
  - Debugging console
  - Improved memory viewer
+ - GB: LR35902/GB-Z80 disassembler
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
@@ -14,6 +15,8 @@ Bugfixes:
  - ARM7: Fix MLA/*MULL/*MLAL timing
  - GBA: Fix multiboot ROM loading
  - Libretro: Fix saving in GB games (fixes mgba.io/i/486)
+ - LR35902: Fix pc overflowing current region off-by-one
+ - GB MBC: Fix ROM bank overflows getting set to bank 0
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
@@ -38,6 +41,10 @@ Misc:
  - All: Add C++ header guards
  - GBA I/O: Clear JOYSTAT RECV flag when reading JOY_RECV registers
  - GBA I/O: Set JOYSTAT TRANS flag when writing JOY_TRANS registers
+ - Qt: Improved HiDPI support
+ - Qt: Expose configuration directory
+ - Feature: Move game database from flatfile to SQLite3
+ - GB Audio: Start implementing "zombie" audio (fixes mgba.io/i/389)
 
 0.5.2: (2016-12-31)
 Bugfixes:
