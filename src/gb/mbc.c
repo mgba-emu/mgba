@@ -33,6 +33,9 @@ void GBMBCSwitchBank(struct GBMemory* memory, int bank) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
 		bankStart &= (memory->romSize - 1);
 		bank = bankStart / GB_SIZE_CART_BANK0;
+		if (!bank) {
+			++bank;
+		}
 	}
 	memory->romBank = &memory->rom[bankStart];
 	memory->currentBank = bank;

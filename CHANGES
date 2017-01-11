@@ -4,6 +4,7 @@ Bugfixes:
  - GBA: Fix multiboot ROM loading
  - Libretro: Fix saving in GB games (fixes mgba.io/i/486)
  - LR35902: Fix pc overflowing current region off-by-one
+ - GB MBC: Fix ROM bank overflows getting set to bank 0
 Misc:
  - Qt: Improved HiDPI support
 
