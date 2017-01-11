@@ -85,8 +85,8 @@ private:
 	Window* m_windows[MAX_GBAS];
 	MultiplayerController m_multiplayer;
 
-#ifdef USE_SQLITE3
 	NoIntroDB* m_db;
+#ifdef USE_SQLITE3
 	QThread m_parseThread;
 #endif
 };
