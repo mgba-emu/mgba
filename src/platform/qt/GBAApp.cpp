@@ -235,7 +235,7 @@ bool GBAApp::reloadGameDB() {
 	return false;
 }
 #else
-bool GBAApp::loadGameDB() {
+bool GBAApp::reloadGameDB() {
 	return false;
 }
 #endif
