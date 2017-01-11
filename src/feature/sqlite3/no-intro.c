@@ -19,7 +19,7 @@ struct NoIntroDB {
 struct NoIntroDB* NoIntroDBLoad(const char* path) {
 	struct NoIntroDB* db = malloc(sizeof(*db));
 
-	if (sqlite3_open(path, &db->db)) {
+	if (sqlite3_open_v2(path, &db->db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL)) {
 		goto error;
 	}
 

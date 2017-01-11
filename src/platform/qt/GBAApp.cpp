@@ -105,6 +105,11 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	w->multiplayerChanged();
 }
 
+GBAApp::~GBAApp() {
+	m_parseThread.quit();
+	m_parseThread.wait();
+}
+
 bool GBAApp::event(QEvent* event) {
 	if (event->type() == QEvent::FileOpen) {
 		m_windows[0]->controller()->loadGame(static_cast<QFileOpenEvent*>(event)->file());
@@ -208,25 +213,32 @@ QString GBAApp::dataDir() {
 	return path;
 }
 
-bool GBAApp::reloadGameDB() {
 #ifdef USE_SQLITE3
+bool GBAApp::reloadGameDB() {
 	NoIntroDB* db = nullptr;
 	db = NoIntroDBLoad((m_configController.configDir() + "/nointro.sqlite3").toLocal8Bit().constData());
 	if (db && m_db) {
 		NoIntroDBDestroy(m_db);
 	}
 	if (db) {
-		VFile* vf = VFileDevice::open(dataDir() + "/nointro.dat", O_RDONLY);
-		if (vf) {
-			NoIntroDBLoadClrMamePro(db, vf);
-			vf->close(vf);
+		if (m_parseThread.isRunning()) {
+			m_parseThread.quit();
+			m_parseThread.wait();
 		}
+		GameDBParser* parser = new GameDBParser(db);
+		m_parseThread.start();
+		parser->moveToThread(&m_parseThread);
+		QMetaObject::invokeMethod(parser, "parseNoIntroDB");
 		m_db = db;
 		return true;
 	}
-#endif
 	return false;
 }
+#else
+bool GBAApp::loadGameDB() {
+	return false;
+}
+#endif
 
 GBAApp::FileDialog::FileDialog(GBAApp* app, QWidget* parent, const QString& caption, const QString& filter)
 	: QFileDialog(parent, caption, app->m_configController.getOption("lastDirectory"), filter)
@@ -245,3 +257,21 @@ int GBAApp::FileDialog::exec() {
 	m_app->continueAll(&paused);
 	return didAccept;
 }
+
+#ifdef USE_SQLITE3
+GameDBParser::GameDBParser(NoIntroDB* db, QObject* parent)
+	: QObject(parent)
+	, m_db(db)
+{
+	// Nothing to do
+}
+
+void GameDBParser::parseNoIntroDB() {
+	VFile* vf = VFileDevice::open(GBAApp::dataDir() + "/nointro.dat", O_RDONLY);
+	if (vf) {
+		NoIntroDBLoadClrMamePro(m_db, vf);
+		vf->close(vf);
+	}
+}
+
+#endif
