@@ -3,6 +3,7 @@ Bugfixes:
  - ARM7: Fix MLA/*MULL/*MLAL timing
  - GBA: Fix multiboot ROM loading
  - Libretro: Fix saving in GB games (fixes mgba.io/i/486)
+ - LR35902: Fix pc overflowing current region off-by-one
 Misc:
  - Qt: Improved HiDPI support
 
