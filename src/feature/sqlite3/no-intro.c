@@ -25,6 +25,8 @@ struct NoIntroDB* NoIntroDBLoad(const char* path) {
 
 	static const char createTables[] =
 		"PRAGMA foreign_keys = ON;\n"
+		"PRAGMA journal_mode = MEMORY;\n"
+		"PRAGMA synchronous = NORMAL;\n"
 		"CREATE TABLE IF NOT EXISTS gamedb ("
 			"dbid INTEGER NOT NULL PRIMARY KEY ASC,"
 			"name TEXT,"
@@ -100,6 +102,8 @@ bool NoIntroDBLoadClrMamePro(struct NoIntroDB* db, struct VFile* vf) {
 		return false;
 	}
 
+	size_t remainingInTransaction = 0;
+
 	while (true) {
 		ssize_t bytesRead = vf->readline(vf, line, sizeof(line));
 		if (!bytesRead) {
@@ -126,6 +130,13 @@ bool NoIntroDBLoadClrMamePro(struct NoIntroDB* db, struct VFile* vf) {
 				if (!fieldName) {
 					break;
 				}
+				if (!remainingInTransaction) {
+					remainingInTransaction = 16;
+					sqlite3_exec(db->db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+				} else {
+					--remainingInTransaction;
+				}
+
 				if (strcmp(fieldName, "clrmamepro") == 0) {
 					free((void*) dbType);
 					free((void*) dbVersion);
@@ -182,6 +193,9 @@ bool NoIntroDBLoadClrMamePro(struct NoIntroDB* db, struct VFile* vf) {
 					sqlite3_step(romTable);
 					free((void*) buffer.romName);
 					buffer.romName = NULL;
+				}
+				if (!remainingInTransaction) {
+					sqlite3_exec(db->db, "COMMIT;", NULL, NULL, NULL);
 				}
 				break;
 			case '"':
