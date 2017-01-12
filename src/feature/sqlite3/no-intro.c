@@ -266,6 +266,9 @@ bool NoIntroDBLoadClrMamePro(struct NoIntroDB* db, struct VFile* vf) {
 	sqlite3_finalize(gameTable);
 	sqlite3_finalize(romTable);
 
+	if (remainingInTransaction) {
+		sqlite3_exec(db->db, "COMMIT;", NULL, NULL, NULL);
+	}
 	sqlite3_exec(db->db, "VACUUM", NULL, NULL, NULL);
 
 	return true;
