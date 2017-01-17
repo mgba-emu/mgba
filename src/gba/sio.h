@@ -42,9 +42,9 @@ struct GBASIO {
 			unsigned internalSc : 1;
 			unsigned si : 1;
 			unsigned idleSo : 1;
-			unsigned : 4;
-			unsigned start : 1;
 			unsigned : 3;
+			unsigned start : 1;
+			unsigned : 4;
 			unsigned length : 1;
 			unsigned : 1;
 			unsigned irq : 1;
