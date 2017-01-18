@@ -7,6 +7,7 @@ Bugfixes:
  - GB MBC: Fix ROM bank overflows getting set to bank 0
 Misc:
  - Qt: Improved HiDPI support
+ - Feature: Support ImageMagick 7
 
 0.5.2: (2016-12-31)
 Bugfixes:
