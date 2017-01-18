@@ -47,6 +47,7 @@ Misc:
  - GB Audio: Start implementing "zombie" audio (fixes mgba.io/i/389)
  - VFS: Fix some minor VFile issues with FILEs
  - Core: Add generic checksum function
+ - Feature: Support ImageMagick 7
 
 0.5.2: (2016-12-31)
 Bugfixes:
