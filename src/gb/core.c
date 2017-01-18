@@ -211,6 +211,16 @@ static void _GBCoreUnloadROM(struct mCore* core) {
 	return GBUnloadROM(core->board);
 }
 
+static void _GBCoreChecksum(const struct mCore* core, void* data, enum mCoreChecksumType type) {
+	struct GB* gb = (struct GB*) core->board;
+	switch (type) {
+	case CHECKSUM_CRC32:
+		memcpy(data, &gb->romCrc32, sizeof(gb->romCrc32));
+		break;
+	}
+	return;
+}
+
 static void _GBCoreReset(struct mCore* core) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	struct GB* gb = (struct GB*) core->board;
@@ -543,6 +553,7 @@ struct mCore* GBCoreCreate(void) {
 	core->loadTemporarySave = _GBCoreLoadTemporarySave;
 	core->loadPatch = _GBCoreLoadPatch;
 	core->unloadROM = _GBCoreUnloadROM;
+	core->checksum = _GBCoreChecksum;
 	core->reset = _GBCoreReset;
 	core->runFrame = _GBCoreRunFrame;
 	core->runLoop = _GBCoreRunLoop;

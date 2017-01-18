@@ -831,25 +831,7 @@ void Window::updateTitle(float fps) {
 		const NoIntroDB* db = GBAApp::app()->gameDB();
 		NoIntroGame game{};
 		uint32_t crc32 = 0;
-
-		switch (m_controller->thread()->core->platform(m_controller->thread()->core)) {
-	#ifdef M_CORE_GBA
-		case PLATFORM_GBA: {
-			GBA* gba = static_cast<GBA*>(m_controller->thread()->core->board);
-			crc32 = gba->romCrc32;
-			break;
-		}
-	#endif
-	#ifdef M_CORE_GB
-		case PLATFORM_GB: {
-			GB* gb = static_cast<GB*>(m_controller->thread()->core->board);
-			crc32 = gb->romCrc32;
-			break;
-		}
-	#endif
-		default:
-			break;
-		}
+		m_controller->thread()->core->checksum(m_controller->thread()->core, &crc32, CHECKSUM_CRC32);
 
 		char gameTitle[17] = { '\0' };
 		mCore* core = m_controller->thread()->core;

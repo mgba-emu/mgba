@@ -33,6 +33,10 @@ enum mPlatform {
 #endif
 };
 
+enum mCoreChecksumType {
+	CHECKSUM_CRC32,
+};
+
 struct mRTCSource;
 struct mCoreConfig;
 struct mCoreSync;
@@ -77,6 +81,7 @@ struct mCore {
 	bool (*loadSave)(struct mCore*, struct VFile* vf);
 	bool (*loadTemporarySave)(struct mCore*, struct VFile* vf);
 	void (*unloadROM)(struct mCore*);
+	void (*checksum)(const struct mCore*, void* data, enum mCoreChecksumType type);
 
 	bool (*loadBIOS)(struct mCore*, struct VFile* vf, int biosID);
 	bool (*selectBIOS)(struct mCore*, int biosID);

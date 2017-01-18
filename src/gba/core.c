@@ -247,6 +247,16 @@ static void _GBACoreUnloadROM(struct mCore* core) {
 	return GBAUnloadROM(core->board);
 }
 
+static void _GBACoreChecksum(const struct mCore* core, void* data, enum mCoreChecksumType type) {
+	struct GBA* gba = (struct GBA*) core->board;
+	switch (type) {
+	case CHECKSUM_CRC32:
+		memcpy(data, &gba->romCrc32, sizeof(gba->romCrc32));
+		break;
+	}
+	return;
+}
+
 static void _GBACoreReset(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = (struct GBA*) core->board;
@@ -562,6 +572,7 @@ struct mCore* GBACoreCreate(void) {
 	core->loadTemporarySave = _GBACoreLoadTemporarySave;
 	core->loadPatch = _GBACoreLoadPatch;
 	core->unloadROM = _GBACoreUnloadROM;
+	core->checksum = _GBACoreChecksum;
 	core->reset = _GBACoreReset;
 	core->runFrame = _GBACoreRunFrame;
 	core->runLoop = _GBACoreRunLoop;

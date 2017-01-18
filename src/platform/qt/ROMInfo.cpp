@@ -48,12 +48,13 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 		m_ui.id->setText(tr("(unknown)"));
 	}
 
+	core->checksum(core, &crc32, CHECKSUM_CRC32);
+
 	switch (controller->thread()->core->platform(controller->thread()->core)) {
 #ifdef M_CORE_GBA
 	case PLATFORM_GBA: {
 		GBA* gba = static_cast<GBA*>(core->board);
 		m_ui.size->setText(QString::number(gba->pristineRomSize) + tr(" bytes"));
-		crc32 = gba->romCrc32;
 		break;
 	}
 #endif
@@ -61,7 +62,6 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 	case PLATFORM_GB: {
 		GB* gb = static_cast<GB*>(core->board);
 		m_ui.size->setText(QString::number(gb->pristineRomSize) + tr(" bytes"));
-		crc32 = gb->romCrc32;
 		break;
 	}
 #endif
