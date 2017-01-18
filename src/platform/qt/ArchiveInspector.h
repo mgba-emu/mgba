@@ -10,7 +10,6 @@
 
 #include "ui_ArchiveInspector.h"
 
-struct VDir;
 struct VFile;
 
 namespace QGBA {
@@ -20,7 +19,6 @@ Q_OBJECT
 
 public:
 	ArchiveInspector(const QString& filename, QWidget* parent = nullptr);
-	virtual ~ArchiveInspector();
 
 	VFile* selectedVFile() const;
 
@@ -28,7 +26,6 @@ private:
 	Ui::ArchiveInspector m_ui;
 
 	LibraryModel m_model;
-	VDir* m_dir;
 };
 
 }

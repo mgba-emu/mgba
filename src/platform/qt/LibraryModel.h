@@ -11,6 +11,7 @@
 #include <mgba/core/library.h>
 
 struct VDir;
+struct VFile;
 
 namespace QGBA {
 
@@ -18,12 +19,13 @@ class LibraryModel : public QAbstractItemModel {
 Q_OBJECT
 
 public:
-	LibraryModel(QObject* parent = nullptr);
+	LibraryModel(const QString& path, QObject* parent = nullptr);
 	virtual ~LibraryModel();
 
-	void loadDirectory(VDir* dir);
+	void loadDirectory(const QString& path);
 
-	const mLibraryEntry* entryAt(int row) const;
+	bool entryAt(int row, mLibraryEntry* out) const;
+	VFile* openVFile(const QModelIndex& index) const;
 
 	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 	virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -34,9 +36,13 @@ public:
 	virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-private:
-	mLibrary m_library;
+public slots:
+	void constrainBase(const QString& path);
+	void clearConstraints();
 
+private:
+	mLibrary* m_library;
+	mLibraryEntry m_constraints;
 };
 
 }

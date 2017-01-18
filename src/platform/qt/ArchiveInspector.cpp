@@ -7,23 +7,18 @@
 
 #include <mgba-util/vfs.h>
 
+#include "ConfigController.h"
+
 using namespace QGBA;
 
 ArchiveInspector::ArchiveInspector(const QString& filename, QWidget* parent)
 	: QDialog(parent)
+	, m_model(ConfigController::configDir() + "/library.sqlite3")
 {
 	m_ui.setupUi(this);
-	m_dir = VDirOpenArchive(filename.toUtf8().constData());
-	if (m_dir) {
-		m_model.loadDirectory(m_dir);
-	}
+	m_model.loadDirectory(filename);
+	m_model.constrainBase(filename);
 	m_ui.archiveListing->setModel(&m_model);
-}
-
-ArchiveInspector::~ArchiveInspector() {
-	if (m_dir) {
-		m_dir->close(m_dir);
-	}
 }
 
 VFile* ArchiveInspector::selectedVFile() const {
@@ -31,5 +26,5 @@ VFile* ArchiveInspector::selectedVFile() const {
 	if (!index.isValid()) {
 		return nullptr;
 	}
-	return m_dir->openFile(m_dir, m_model.entryAt(index.row())->filename, O_RDONLY);
+	return m_model.openVFile(index);
 }
