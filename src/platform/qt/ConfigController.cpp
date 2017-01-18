@@ -88,14 +88,13 @@ void ConfigOption::setValue(const QVariant& value) {
 	}
 }
 
+QString ConfigController::s_configDir;
+
 ConfigController::ConfigController(QObject* parent)
 	: QObject(parent)
 	, m_opts()
 {
-	char path[PATH_MAX];
-	mCoreConfigDirectory(path, sizeof(path));
-	m_configDir = QString::fromUtf8(path);
-	QString fileName = (m_configDir);
+	QString fileName = configDir();
 	fileName.append(QDir::separator());
 	fileName.append("qt.ini");
 	m_settings = new QSettings(fileName, QSettings::IniFormat, this);
@@ -270,7 +269,7 @@ void ConfigController::write() {
 void ConfigController::makePortable() {
 	mCoreConfigMakePortable(&m_config);
 
-	QString fileName(m_configDir);
+	QString fileName(configDir());
 	fileName.append(QDir::separator());
 	fileName.append("qt.ini");
 	QSettings* settings2 = new QSettings(fileName, QSettings::IniFormat, this);
@@ -279,4 +278,13 @@ void ConfigController::makePortable() {
 	}
 	delete m_settings;
 	m_settings = settings2;
+}
+
+const QString& ConfigController::configDir() {
+	if (s_configDir.isNull()) {
+		char path[PATH_MAX];
+		mCoreConfigDirectory(path, sizeof(path));
+		s_configDir = QString::fromUtf8(path);
+	}
+	return s_configDir;
 }

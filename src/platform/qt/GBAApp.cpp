@@ -218,7 +218,7 @@ QString GBAApp::dataDir() {
 #ifdef USE_SQLITE3
 bool GBAApp::reloadGameDB() {
 	NoIntroDB* db = nullptr;
-	db = NoIntroDBLoad((m_configController.configDir() + "/nointro.sqlite3").toLocal8Bit().constData());
+	db = NoIntroDBLoad((ConfigController::configDir() + "/nointro.sqlite3").toUtf8().constData());
 	if (db && m_db) {
 		NoIntroDBDestroy(m_db);
 	}
