@@ -36,6 +36,7 @@ CXX_GUARD_START
 #ifdef _MSC_VER
 #include <Windows.h>
 #include <sys/types.h>
+#include <time.h>
 typedef intptr_t ssize_t;
 #define PATH_MAX MAX_PATH
 #define restrict __restrict
@@ -50,6 +51,7 @@ typedef intptr_t ssize_t;
 #else
 #include <strings.h>
 #include <unistd.h>
+#include <sys/time.h>
 #endif
 
 #ifndef SSIZE_MAX

@@ -14,8 +14,6 @@ CXX_GUARD_START
 #include <mgba/core/timing.h>
 #include <mgba/gb/interface.h>
 
-#include <time.h>
-
 mLOG_DECLARE_CATEGORY(GB_MBC);
 mLOG_DECLARE_CATEGORY(GB_MEM);
 

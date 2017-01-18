@@ -13,11 +13,6 @@
 #include <mgba-util/vfs.h>
 
 #include <fcntl.h>
-#ifdef _MSC_VER
-#include <time.h>
-#else
-#include <sys/time.h>
-#endif
 
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
 const uint32_t GBA_SAVESTATE_VERSION = 0x00000002;

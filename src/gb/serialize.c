@@ -11,12 +11,6 @@
 
 mLOG_DEFINE_CATEGORY(GB_STATE, "GB Savestate");
 
-#ifdef _MSC_VER
-#include <time.h>
-#else
-#include <sys/time.h>
-#endif
-
 const uint32_t GB_SAVESTATE_MAGIC = 0x00400000;
 const uint32_t GB_SAVESTATE_VERSION = 0x00000001;
 
