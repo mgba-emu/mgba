@@ -21,17 +21,27 @@ LibraryModel::LibraryModel(const QString& path, QObject* parent)
 	}
 	memset(&m_constraints, 0, sizeof(m_constraints));
 	m_constraints.platform = PLATFORM_NONE;
+
+	if (!m_library) {
+		return;
+	}
+	m_loader = new LibraryLoader(m_library);
+	connect(m_loader, SIGNAL(directoryLoaded(const QString&)), this, SLOT(directoryLoaded(const QString&)));
+	m_loader->moveToThread(&m_loaderThread);
+	m_loaderThread.setObjectName("Library Loader Thread");
+	m_loaderThread.start();
 }
 
 LibraryModel::~LibraryModel() {
 	clearConstraints();
 	mLibraryDestroy(m_library);
+	m_loaderThread.quit();
+	m_loaderThread.wait();
 }
 
 void LibraryModel::loadDirectory(const QString& path) {
-	beginResetModel();
-	mLibraryLoadDirectory(m_library, path.toUtf8().constData());
-	endResetModel();
+	m_queue.append(path);
+	QMetaObject::invokeMethod(m_loader, "loadDirectory", Q_ARG(const QString&, path));
 }
 
 bool LibraryModel::entryAt(int row, mLibraryEntry* out) const {
@@ -135,4 +145,24 @@ void LibraryModel::clearConstraints() {
 		free(const_cast<char*>(m_constraints.title));
 	}
 	memset(&m_constraints, 0, sizeof(m_constraints));
+}
+
+void LibraryModel::directoryLoaded(const QString& path) {
+	m_queue.removeOne(path);
+	beginResetModel();
+	endResetModel();
+	if (m_queue.empty()) {
+		emit doneLoading();
+	}
+}
+
+LibraryLoader::LibraryLoader(mLibrary* library, QObject* parent)
+	: QObject(parent)
+	, m_library(library)
+{
+}
+
+void LibraryLoader::loadDirectory(const QString& path) {
+	mLibraryLoadDirectory(m_library, path.toUtf8().constData());
+	emit directoryLoaded(path);
 }

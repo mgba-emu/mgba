@@ -16,6 +16,9 @@ ArchiveInspector::ArchiveInspector(const QString& filename, QWidget* parent)
 	, m_model(ConfigController::configDir() + "/library.sqlite3")
 {
 	m_ui.setupUi(this);
+	connect(&m_model, &LibraryModel::doneLoading, [this]() {
+		m_ui.loading->hide();
+	});
 	m_model.loadDirectory(filename);
 	m_model.constrainBase(filename);
 	m_ui.archiveListing->setModel(&m_model);
