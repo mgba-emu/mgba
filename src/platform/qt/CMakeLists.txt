@@ -68,7 +68,6 @@ endif()
 
 set(SOURCE_FILES
 	AboutScreen.cpp
-	ArchiveInspector.cpp
 	AssetTile.cpp
 	AssetView.cpp
 	AudioProcessor.cpp
@@ -88,7 +87,6 @@ set(SOURCE_FILES
 	InputController.cpp
 	InputProfile.cpp
 	KeyEditor.cpp
-	LibraryModel.cpp
 	LoadSaveState.cpp
 	LogController.cpp
 	LogView.cpp
@@ -187,6 +185,12 @@ endif()
 
 if(USE_GDB_STUB)
 	list(APPEND SOURCE_FILES GDBController.cpp GDBWindow.cpp)
+endif()
+
+if(USE_SQLITE3)
+	list(APPEND SOURCE_FILES
+		ArchiveInspector.cpp
+		LibraryModel.cpp)
 endif()
 
 qt5_add_resources(RESOURCES resources.qrc)

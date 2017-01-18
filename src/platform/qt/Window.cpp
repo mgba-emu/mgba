@@ -15,7 +15,9 @@
 #include <QStackedLayout>
 
 #include "AboutScreen.h"
+#ifdef USE_SQLITE3
 #include "ArchiveInspector.h"
+#endif
 #include "CheatsView.h"
 #include "ConfigController.h"
 #include "DebuggerConsole.h"
@@ -362,6 +364,7 @@ void Window::selectROM() {
 	}
 }
 
+#ifdef USE_SQLITE3
 void Window::selectROMInArchive() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFiltersArchive());
 	if (filename.isEmpty()) {
@@ -378,6 +381,7 @@ void Window::selectROMInArchive() {
 	archiveInspector->setAttribute(Qt::WA_DeleteOnClose);
 	archiveInspector->show();
 }
+#endif
 
 void Window::replaceROM() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFilters());

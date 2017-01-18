@@ -57,7 +57,9 @@ signals:
 
 public slots:
 	void selectROM();
+#ifdef USE_SQLITE3
 	void selectROMInArchive();
+#endif
 	void selectSave(bool temporary);
 	void selectBIOS();
 	void selectPatch();
