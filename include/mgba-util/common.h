@@ -47,6 +47,7 @@ typedef intptr_t ssize_t;
 #define strdup _strdup
 #define lseek _lseek
 #elif defined(__wii__)
+#include <sys/time.h>
 typedef intptr_t ssize_t;
 #else
 #include <strings.h>
