@@ -28,6 +28,7 @@ CXX_GUARD_START
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #ifdef _WIN32
 // WinSock2 gets very angry if it's included too late
@@ -36,7 +37,6 @@ CXX_GUARD_START
 #ifdef _MSC_VER
 #include <Windows.h>
 #include <sys/types.h>
-#include <time.h>
 typedef intptr_t ssize_t;
 #define PATH_MAX MAX_PATH
 #define restrict __restrict
