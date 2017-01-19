@@ -21,6 +21,8 @@ struct mLibrary {
 	sqlite3_stmt* insertRoot;
 	sqlite3_stmt* selectRom;
 	sqlite3_stmt* selectRoot;
+	sqlite3_stmt* deletePath;
+	sqlite3_stmt* deleteRoot;
 	sqlite3_stmt* count;
 	sqlite3_stmt* select;
 };
@@ -36,6 +38,7 @@ struct mLibrary {
 	"CASE WHEN :useFilename THEN paths.path = :path ELSE 1 END AND " \
 	"CASE WHEN :useRoot THEN roots.path = :root ELSE 1 END"
 
+static void _mLibraryDeleteEntry(struct mLibrary* library, struct mLibraryEntry* entry);
 static void _mLibraryInsertEntry(struct mLibrary* library, struct mLibraryEntry* entry);
 static void _mLibraryAddEntry(struct mLibrary* library, const char* filename, const char* base, struct VFile* vf);
 
@@ -154,12 +157,22 @@ struct mLibrary* mLibraryLoad(const char* path) {
 		goto error;
 	}
 
+	static const char deleteRoot[] = "DELETE FROM roots WHERE path = ?;";
+	if (sqlite3_prepare_v2(library->db, deleteRoot, -1, &library->deleteRoot, NULL)) {
+		goto error;
+	}
+
+	static const char deletePath[] = "DELETE FROM paths WHERE path = ?;";
+	if (sqlite3_prepare_v2(library->db, deletePath, -1, &library->deletePath, NULL)) {
+		goto error;
+	}
+
 	static const char selectRom[] = "SELECT romid FROM roms WHERE " CONSTRAINTS_ROMONLY ";";
 	if (sqlite3_prepare_v2(library->db, selectRom, -1, &library->selectRom, NULL)) {
 		goto error;
 	}
 
-	static const char selectRoot[] = "SELECT rootid FROM roots WHERE path = ?;";
+	static const char selectRoot[] = "SELECT rootid FROM roots WHERE path = ? AND CASE WHEN :useMtime THEN mtime <= :mtime ELSE 1 END;";
 	if (sqlite3_prepare_v2(library->db, selectRoot, -1, &library->selectRoot, NULL)) {
 		goto error;
 	}
@@ -185,6 +198,8 @@ void mLibraryDestroy(struct mLibrary* library) {
 	sqlite3_finalize(library->insertPath);
 	sqlite3_finalize(library->insertRom);
 	sqlite3_finalize(library->insertRoot);
+	sqlite3_finalize(library->deletePath);
+	sqlite3_finalize(library->deleteRoot);
 	sqlite3_finalize(library->selectRom);
 	sqlite3_finalize(library->selectRoot);
 	sqlite3_finalize(library->select);
@@ -197,9 +212,35 @@ void mLibraryLoadDirectory(struct mLibrary* library, const char* base) {
 	if (!dir) {
 		dir = VDirOpen(base);
 	}
+	sqlite3_exec(library->db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
 	if (!dir) {
+		sqlite3_clear_bindings(library->deleteRoot);
+		sqlite3_reset(library->deleteRoot);
+		sqlite3_bind_text(library->deleteRoot, 1, base, -1, SQLITE_TRANSIENT);
+		sqlite3_step(library->deleteRoot);
+		sqlite3_exec(library->db, "COMMIT;", NULL, NULL, NULL);
 		return;
 	}
+
+	struct mLibraryEntry entry;
+	memset(&entry, 0, sizeof(entry));
+	entry.base = base;
+	struct mLibraryListing entries;
+	mLibraryListingInit(&entries, 0);
+	mLibraryGetEntries(library, &entries, 0, 0, &entry);
+	size_t i;
+	for (i = 0; i < mLibraryListingSize(&entries); ++i) {
+		struct mLibraryEntry* current = mLibraryListingGetPointer(&entries, i);
+		struct VFile* vf = dir->openFile(dir, current->filename, O_RDONLY);
+		_mLibraryDeleteEntry(library, current);
+		if (!vf) {
+			continue;
+		}
+		_mLibraryAddEntry(library, current->filename, base, vf);
+	}
+	mLibraryListingDeinit(&entries);
+
+	dir->rewind(dir);
 	struct VDirEntry* dirent = dir->listNext(dir);
 	while (dirent) {
 		struct VFile* vf = dir->openFile(dir, dirent->name(dirent), O_RDONLY);
@@ -211,6 +252,7 @@ void mLibraryLoadDirectory(struct mLibrary* library, const char* base) {
 		dirent = dir->listNext(dir);
 	}
 	dir->close(dir);
+	sqlite3_exec(library->db, "COMMIT;", NULL, NULL, NULL);
 }
 
 void _mLibraryAddEntry(struct mLibrary* library, const char* filename, const char* base, struct VFile* vf) {
@@ -242,8 +284,6 @@ void _mLibraryAddEntry(struct mLibrary* library, const char* filename, const cha
 }
 
 static void _mLibraryInsertEntry(struct mLibrary* library, struct mLibraryEntry* entry) {
-	sqlite3_exec(library->db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
-
 	sqlite3_clear_bindings(library->selectRom);
 	sqlite3_reset(library->selectRom);
 	struct mLibraryEntry constraints = *entry;
@@ -286,7 +326,13 @@ static void _mLibraryInsertEntry(struct mLibrary* library, struct mLibraryEntry*
 		sqlite3_bind_int64(library->insertPath, 4, rootId);
 	}
 	sqlite3_step(library->insertPath);
-	sqlite3_exec(library->db, "COMMIT;", NULL, NULL, NULL);
+}
+
+static void _mLibraryDeleteEntry(struct mLibrary* library, struct mLibraryEntry* entry) {
+	sqlite3_clear_bindings(library->deletePath);
+	sqlite3_reset(library->deletePath);
+	sqlite3_bind_text(library->deletePath, 1, entry->filename, -1, SQLITE_TRANSIENT);
+	sqlite3_step(library->insertPath);
 }
 
 size_t mLibraryCount(struct mLibrary* library, const struct mLibraryEntry* constraints) {
