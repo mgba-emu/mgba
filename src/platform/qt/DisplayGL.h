@@ -15,12 +15,12 @@
 #endif
 #endif
 
+#include <QElapsedTimer>
 #include <QGLWidget>
 #include <QList>
 #include <QMouseEvent>
 #include <QQueue>
 #include <QThread>
-#include <QTimer>
 
 #include "platform/video-backend.h"
 
@@ -120,6 +120,7 @@ private:
 	VideoBackend* m_backend;
 	QSize m_size;
 	MessagePainter* m_messagePainter;
+	QElapsedTimer m_delayTimer;
 };
 
 }
