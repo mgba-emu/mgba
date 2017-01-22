@@ -50,6 +50,7 @@ Misc:
  - Core: Add generic checksum function
  - Feature: Support ImageMagick 7
  - All: Move time.h include to common.h
+ - CMake: Add ability to just print version string
 
 0.5.2: (2016-12-31)
 Bugfixes:
