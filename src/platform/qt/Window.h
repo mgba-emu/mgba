@@ -61,7 +61,6 @@ public slots:
 	void selectROMInArchive();
 #endif
 	void selectSave(bool temporary);
-	void selectBIOS();
 	void selectPatch();
 	void enterFullScreen();
 	void exitFullScreen();

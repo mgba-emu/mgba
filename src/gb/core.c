@@ -103,6 +103,8 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 		gb->audio.masterVolume = core->opts.volume;
 	}
 	gb->video.frameskip = core->opts.frameskip;
+	mCoreConfigCopyValue(&core->config, config, "gb.bios");
+	mCoreConfigCopyValue(&core->config, config, "gbc.bios");
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBCore* gbcore = (struct GBCore*) core;
@@ -238,8 +240,8 @@ static void _GBCoreReset(struct mCore* core) {
 	}
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	struct VFile* bios = NULL;
-	if (core->opts.useBios) {
+	if (!gb->biosVf && core->opts.useBios) {
+		struct VFile* bios = NULL;
 		bool found = false;
 		if (core->opts.bios) {
 			bios = VFileOpen(core->opts.bios, O_RDONLY);
@@ -251,8 +253,31 @@ static void _GBCoreReset(struct mCore* core) {
 			}
 		}
 		if (!found) {
-			char path[PATH_MAX];
 			GBDetectModel(gb);
+			const char* configPath;
+
+			switch (gb->model) {
+			case GB_MODEL_DMG:
+			case GB_MODEL_SGB: // TODO
+				configPath = mCoreConfigGetValue(&core->config, "gb.bios");
+				break;
+			case GB_MODEL_CGB:
+			case GB_MODEL_AGB:
+				configPath = mCoreConfigGetValue(&core->config, "gbc.bios");
+				break;
+			default:
+				break;
+			};
+			bios = VFileOpen(configPath, O_RDONLY);
+			if (bios && GBIsBIOS(bios)) {
+				found = true;
+			} else if (bios) {
+				bios->close(bios);
+				bios = NULL;
+			}
+		}
+		if (!found) {
+			char path[PATH_MAX];
 			mCoreConfigDirectory(path, PATH_MAX);
 			switch (gb->model) {
 			case GB_MODEL_DMG:
@@ -267,10 +292,16 @@ static void _GBCoreReset(struct mCore* core) {
 				break;
 			};
 			bios = VFileOpen(path, O_RDONLY);
+			if (bios && GBIsBIOS(bios)) {
+				found = true;
+			} else if (bios) {
+				bios->close(bios);
+				bios = NULL;
+			}
 		}
-	}
-	if (bios) {
-		GBLoadBIOS(gb, bios);
+		if (bios) {
+			GBLoadBIOS(gb, bios);
+		}
 	}
 #endif
 

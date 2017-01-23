@@ -135,6 +135,8 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 		}
 	}
 
+	mCoreConfigCopyValue(&core->config, config, "gba.bios");
+
 #ifndef DISABLE_THREADING
 	mCoreConfigGetIntValue(config, "threadedVideo", &gbacore->threadedVideo);
 #endif
@@ -280,19 +282,43 @@ static void _GBACoreReset(struct mCore* core) {
 	}
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	struct VFile* bios = 0;
-	if (core->opts.useBios) {
-		if (!core->opts.bios) {
+	if (!gba->biosVf && core->opts.useBios) {
+		struct VFile* bios = NULL;
+		bool found = false;
+		if (core->opts.bios) {
+			bios = VFileOpen(core->opts.bios, O_RDONLY);
+			if (bios && GBAIsBIOS(bios)) {
+				found = true;
+			} else if (bios) {
+				bios->close(bios);
+				bios = NULL;
+			}
+		}
+		if (!found) {
+			const char* configPath = mCoreConfigGetValue(&core->config, "gba.bios");
+			bios = VFileOpen(configPath, O_RDONLY);
+			if (bios && GBAIsBIOS(bios)) {
+				found = true;
+			} else if (bios) {
+				bios->close(bios);
+				bios = NULL;
+			}
+		}
+		if (!found) {
 			char path[PATH_MAX];
 			mCoreConfigDirectory(path, PATH_MAX);
 			strncat(path, PATH_SEP "gba_bios.bin", PATH_MAX - strlen(path));
 			bios = VFileOpen(path, O_RDONLY);
-		} else {
-			bios = VFileOpen(core->opts.bios, O_RDONLY);
+			if (bios && GBIsBIOS(bios)) {
+				found = true;
+			} else if (bios) {
+				bios->close(bios);
+				bios = NULL;
+			}
 		}
-	}
-	if (bios) {
-		GBALoadBIOS(gba, bios);
+		if (bios) {
+			GBALoadBIOS(gba, bios);
+		}
 	}
 #endif
 

@@ -288,10 +288,6 @@ void Window::reloadConfig() {
 	m_display->lockAspectRatio(opts->lockAspectRatio);
 	m_display->filter(opts->resampleVideo);
 
-	if (opts->bios) {
-		m_controller->loadBIOS(opts->bios);
-	}
-
 	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);
 }
 
@@ -412,18 +408,6 @@ void Window::multiplayerChanged() {
 	}
 }
 
-void Window::selectBIOS() {
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select BIOS"));
-	if (!filename.isEmpty()) {
-		QFileInfo info(filename);
-		m_config->setOption("bios", info.canonicalFilePath());
-		m_config->updateOption("bios");
-		m_config->setOption("useBios", true);
-		m_config->updateOption("useBios");
-		m_controller->loadBIOS(info.canonicalFilePath());
-	}
-}
-
 void Window::selectPatch() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select patch"), tr("Patches (*.ips *.ups *.bps)"));
 	if (!filename.isEmpty()) {
@@ -453,7 +437,7 @@ void Window::exportSharkport() {
 
 void Window::openSettingsWindow() {
 	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController);
-	connect(settingsWindow, SIGNAL(biosLoaded(const QString&)), m_controller, SLOT(loadBIOS(const QString&)));
+	connect(settingsWindow, SIGNAL(biosLoaded(int, const QString&)), m_controller, SLOT(loadBIOS(int, const QString&)));
 	connect(settingsWindow, SIGNAL(audioDriverChanged()), m_controller, SLOT(reloadAudioDriver()));
 	connect(settingsWindow, SIGNAL(displayDriverChanged()), this, SLOT(mustRestart()));
 	connect(settingsWindow, SIGNAL(pathsChanged()), this, SLOT(reloadConfig()));
@@ -905,15 +889,19 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load ROM in archive..."), this, SLOT(selectROMInArchive())),
 	                    "loadROMInArchive");
 
-	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS())), "loadBIOS");
-
 	QAction* loadTemporarySave = new QAction(tr("Load temporary save..."), fileMenu);
 	connect(loadTemporarySave, &QAction::triggered, [this]() { this->selectSave(true); });
 	m_gameActions.append(loadTemporarySave);
 	addControlledAction(fileMenu, loadTemporarySave, "loadTemporarySave");
 
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch())), "loadPatch");
-	addControlledAction(fileMenu, fileMenu->addAction(tr("Boot BIOS"), m_controller, SLOT(bootBIOS())), "bootBIOS");
+
+	QAction* bootBIOS = new QAction(tr("Boot BIOS"), fileMenu);
+	connect(bootBIOS, &QAction::triggered, [this]() {
+		m_controller->loadBIOS(PLATFORM_GBA, m_config->getOption("gba.bios"));
+		m_controller->bootBIOS();
+	});
+	addControlledAction(fileMenu, bootBIOS, "bootBIOS");
 
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Replace ROM..."), this, SLOT(replaceROM())), "replaceROM");
 
