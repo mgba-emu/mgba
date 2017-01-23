@@ -83,6 +83,7 @@ set(SOURCE_FILES
 	GameController.cpp
 	GamepadAxisEvent.cpp
 	GamepadButtonEvent.cpp
+	GamepadHatEvent.cpp
 	IOViewer.cpp
 	InputController.cpp
 	InputProfile.cpp

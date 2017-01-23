@@ -17,8 +17,10 @@ using namespace QGBA;
 KeyEditor::KeyEditor(QWidget* parent)
 	: QLineEdit(parent)
 	, m_direction(GamepadAxisEvent::NEUTRAL)
+	, m_hatDirection(GamepadHatEvent::CENTER)
 	, m_key(-1)
 	, m_axis(-1)
+	, m_hat(-1)
 	, m_button(false)
 {
 	setAlignment(Qt::AlignCenter);
@@ -58,6 +60,14 @@ void KeyEditor::setValueAxis(int axis, int32_t value) {
 	emit axisChanged(axis, m_direction);
 }
 
+void KeyEditor::setValueHat(int hat, GamepadHatEvent::Direction direction) {
+	m_button = true;
+	m_hat = hat;
+	m_hatDirection = direction;
+	updateButtonText();
+	emit hatChanged(hat, m_hatDirection);
+}
+
 void KeyEditor::clearButton() {
 	m_button = true;
 	setValue(-1);
@@ -71,10 +81,18 @@ void KeyEditor::clearAxis() {
 	emit axisChanged(m_axis, m_direction);
 }
 
+void KeyEditor::clearHat() {
+	m_button = true;
+	m_hat = -1;
+	m_hatDirection = GamepadHatEvent::CENTER;
+	updateButtonText();
+	emit hatChanged(m_hat, m_hatDirection);
+}
+
 QSize KeyEditor::sizeHint() const {
 	QSize hint = QLineEdit::sizeHint();
 	QFontMetrics fm(font());
-	hint.setWidth(fm.height() * 3);
+	hint.setWidth(fm.height() * 4);
 	return hint;
 }
 
@@ -145,6 +163,12 @@ bool KeyEditor::event(QEvent* event) {
 			event->accept();
 			return true;
 		}
+		if (event->type() == GamepadHatEvent::Down()) {
+			GamepadHatEvent* ghe = static_cast<GamepadHatEvent*>(event);
+			setValueHat(ghe->hatId(), ghe->direction());
+			event->accept();
+			return true;
+		}
 		if (event->type() == GamepadAxisEvent::Type()) {
 			GamepadAxisEvent* gae = static_cast<GamepadAxisEvent*>(event);
 			if (gae->isNew()) {
@@ -159,6 +183,24 @@ bool KeyEditor::event(QEvent* event) {
 
 void KeyEditor::updateButtonText() {
 	QStringList text;
+	if (m_hat >= 0) {
+		switch (m_hatDirection) {
+		case GamepadHatEvent::UP:
+			text.append(QString("↑%0").arg(m_hat));
+			break;
+		case GamepadHatEvent::RIGHT:
+			text.append(QString("→%0").arg(m_hat));
+			break;
+		case GamepadHatEvent::DOWN:
+			text.append(QString("↓%0").arg(m_hat));
+			break;
+		case GamepadHatEvent::LEFT:
+			text.append(QString("←%0").arg(m_hat));
+			break;
+		default:
+			break;
+		}
+	}
 	if (m_key >= 0) {
 		text.append(QString::number(m_key));
 	}

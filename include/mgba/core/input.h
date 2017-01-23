@@ -66,6 +66,7 @@ void mInputEnumerateAxes(const struct mInputMap*, uint32_t type, void (handler(i
 
 int mInputMapHat(const struct mInputMap*, uint32_t type, int id, int direction);
 void mInputBindHat(struct mInputMap*, uint32_t type, int id, const struct mInputHatBindings* bindings);
+bool mInputQueryHat(const struct mInputMap*, uint32_t type, int id, struct mInputHatBindings* bindings);
 void mInputUnbindHat(struct mInputMap*, uint32_t type, int id);
 void mInputUnbindAllHats(struct mInputMap*, uint32_t type);
 

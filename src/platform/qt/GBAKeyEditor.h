@@ -63,6 +63,7 @@ private:
 
 #ifdef BUILD_SDL
 	void lookupAxes(const mInputMap*);
+	void lookupHats(const mInputMap*);
 #endif
 
 	KeyEditor* keyById(GBAKey);

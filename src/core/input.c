@@ -541,6 +541,19 @@ void mInputBindHat(struct mInputMap* map, uint32_t type, int id, const struct mI
 	*mInputHatListGetPointer(&impl->hats, id) = *bindings;
 }
 
+
+bool mInputQueryHat(const struct mInputMap* map, uint32_t type, int id, struct mInputHatBindings* bindings) {
+	const struct mInputMapImpl* impl = _lookupMapConst(map, type);
+	if (!impl) {
+		return false;
+	}
+	if (id >= (ssize_t) mInputHatListSize(&impl->hats)) {
+		return false;
+	}
+	*bindings = *mInputHatListGetConstPointer(&impl->hats, id);
+	return true;
+}
+
 void mInputUnbindHat(struct mInputMap* map, uint32_t type, int id) {
 	struct mInputMapImpl* impl = _lookupMap(map, type);
 	if (!impl) {

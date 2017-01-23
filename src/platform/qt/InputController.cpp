@@ -418,6 +418,60 @@ void InputController::unbindAllAxes(uint32_t type) {
 	mInputUnbindAllAxes(&m_inputMap, type);
 }
 
+QSet<QPair<int, GamepadHatEvent::Direction>> InputController::activeGamepadHats(int type) {
+	QSet<QPair<int, GamepadHatEvent::Direction>> activeHats;
+#ifdef BUILD_SDL
+	if (m_playerAttached && type == SDL_BINDING_BUTTON && m_sdlPlayer.joystick) {
+		SDL_Joystick* joystick = m_sdlPlayer.joystick->joystick;
+		SDL_JoystickUpdate();
+		int numHats = SDL_JoystickNumHats(joystick);
+		if (numHats < 1) {
+			return activeHats;
+		}
+
+		int i;
+		for (i = 0; i < numHats; ++i) {
+			int hat = SDL_JoystickGetHat(joystick, i);
+			if (hat & GamepadHatEvent::UP) {
+				activeHats.insert(qMakePair(i, GamepadHatEvent::UP));
+			}
+			if (hat & GamepadHatEvent::RIGHT) {
+				activeHats.insert(qMakePair(i, GamepadHatEvent::RIGHT));
+			}
+			if (hat & GamepadHatEvent::DOWN) {
+				activeHats.insert(qMakePair(i, GamepadHatEvent::DOWN));
+			}
+			if (hat & GamepadHatEvent::LEFT) {
+				activeHats.insert(qMakePair(i, GamepadHatEvent::LEFT));
+			}
+		}
+	}
+#endif
+	return activeHats;
+}
+
+void InputController::bindHat(uint32_t type, int hat, GamepadHatEvent::Direction direction, GBAKey gbaKey) {
+	mInputHatBindings bindings{ -1, -1, -1, -1 };
+	mInputQueryHat(&m_inputMap, type, hat, &bindings);
+	switch (direction) {
+	case GamepadHatEvent::UP:
+		bindings.up = gbaKey;
+		break;
+	case GamepadHatEvent::RIGHT:
+		bindings.right = gbaKey;
+		break;
+	case GamepadHatEvent::DOWN:
+		bindings.down = gbaKey;
+		break;
+	case GamepadHatEvent::LEFT:
+		bindings.left = gbaKey;
+		break;
+	default:
+		return;
+	}
+	mInputBindHat(&m_inputMap, type, hat, &bindings);
+}
+
 void InputController::testGamepad(int type) {
 	auto activeAxes = activeGamepadAxes(type);
 	auto oldAxes = m_activeAxes;
@@ -426,6 +480,10 @@ void InputController::testGamepad(int type) {
 	auto activeButtons = activeGamepadButtons(type);
 	auto oldButtons = m_activeButtons;
 	m_activeButtons = activeButtons;
+
+	auto activeHats = activeGamepadHats(type);
+	auto oldHats = m_activeHats;
+	m_activeHats = activeHats;
 
 	if (!QApplication::focusWidget()) {
 		return;
@@ -468,6 +526,23 @@ void InputController::testGamepad(int type) {
 	}
 	for (int button : oldButtons) {
 		GamepadButtonEvent* event = new GamepadButtonEvent(GamepadButtonEvent::Up(), button, type, this);
+		clearPendingEvent(event->gbaKey());
+		sendGamepadEvent(event);
+	}
+
+	activeHats.subtract(oldHats);
+	oldHats.subtract(m_activeHats);
+
+	for (auto& hat : activeHats) {
+		GamepadHatEvent* event = new GamepadHatEvent(GamepadHatEvent::Down(), hat.first, hat.second, type, this);
+		postPendingEvent(event->gbaKey());
+		sendGamepadEvent(event);
+		if (!event->isAccepted()) {
+			clearPendingEvent(event->gbaKey());
+		}
+	}
+	for (auto& hat : oldHats) {
+		GamepadHatEvent* event = new GamepadHatEvent(GamepadHatEvent::Up(), hat.first, hat.second, type, this);
 		clearPendingEvent(event->gbaKey());
 		sendGamepadEvent(event);
 	}

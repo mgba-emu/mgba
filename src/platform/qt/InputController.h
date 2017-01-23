@@ -7,6 +7,7 @@
 #define QGBA_INPUT_CONTROLLER_H
 
 #include "GamepadAxisEvent.h"
+#include "GamepadHatEvent.h"
 
 #include <QObject>
 #include <QSet>
@@ -59,10 +60,13 @@ public:
 	static const int32_t AXIS_THRESHOLD = 0x3000;
 	QSet<int> activeGamepadButtons(int type);
 	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(int type);
+	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(int type);
 	void recalibrateAxes();
 
 	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, GBAKey);
 	void unbindAllAxes(uint32_t type);
+
+	void bindHat(uint32_t type, int hat, GamepadHatEvent::Direction, GBAKey);
 
 	QStringList connectedGamepads(uint32_t type) const;
 	int gamepad(uint32_t type) const;
@@ -118,6 +122,7 @@ private:
 
 	QSet<int> m_activeButtons;
 	QSet<QPair<int, GamepadAxisEvent::Direction>> m_activeAxes;
+	QSet<QPair<int, GamepadHatEvent::Direction>> m_activeHats;
 	QTimer* m_gamepadTimer;
 
 	QSet<GBAKey> m_pendingEvents;
