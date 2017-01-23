@@ -7,6 +7,7 @@
 
 #include <mgba-util/configuration.h>
 #include <mgba-util/table.h>
+#include <mgba-util/vector.h>
 
 #include <inttypes.h>
 
@@ -15,11 +16,15 @@
 #define KEY_VALUE_MAX 16
 #define AXIS_INFO_MAX 12
 
+DECLARE_VECTOR(mInputHatList, struct mInputHatBindings);
+DEFINE_VECTOR(mInputHatList, struct mInputHatBindings);
+
 struct mInputMapImpl {
 	int* map;
 	uint32_t type;
 
 	struct Table axes;
+	struct mInputHatList hats;
 };
 
 struct mInputAxisSave {
@@ -89,6 +94,7 @@ static struct mInputMapImpl* _guaranteeMap(struct mInputMap* map, uint32_t type)
 			impl->map[i] = -1;
 		}
 		TableInit(&impl->axes, 2, free);
+		mInputHatListInit(&impl->hats, 1);
 	} else {
 		impl = _lookupMap(map, type);
 	}
@@ -123,6 +129,7 @@ static struct mInputMapImpl* _guaranteeMap(struct mInputMap* map, uint32_t type)
 			}
 		}
 		TableInit(&impl->axes, 2, free);
+		mInputHatListInit(&impl->hats, 1);
 	}
 	return impl;
 }
@@ -174,6 +181,28 @@ static void _loadAxis(struct mInputMap* map, uint32_t type, const char* sectionN
 		realDescription.lowDirection = direction;
 	}
 	mInputBindAxis(map, type, axis, &realDescription);
+}
+
+static bool _loadHat(struct mInputMap* map, uint32_t type, const char* sectionName, const struct Configuration* config, int hatId) {
+	char hatKey[KEY_NAME_MAX];
+
+	struct mInputHatBindings hatBindings = { -1, -1, -1, -1 };
+
+	bool found = false;
+	snprintf(hatKey, KEY_NAME_MAX, "hat%iUp", hatId);
+	found = _getIntValue(config, sectionName, hatKey, &hatBindings.up) || found;
+	snprintf(hatKey, KEY_NAME_MAX, "hat%iRight", hatId);
+	found = _getIntValue(config, sectionName, hatKey, &hatBindings.right) || found;
+	snprintf(hatKey, KEY_NAME_MAX, "hat%iDown", hatId);
+	found = _getIntValue(config, sectionName, hatKey, &hatBindings.down) || found;
+	snprintf(hatKey, KEY_NAME_MAX, "hat%iLeft", hatId);
+	found = _getIntValue(config, sectionName, hatKey, &hatBindings.left) || found;
+
+	if (!found) {
+		return false;
+	}
+	mInputBindHat(map, type, hatId, &hatBindings);
+	return true;
 }
 
 static void _saveKey(const struct mInputMap* map, uint32_t type, const char* sectionName, struct Configuration* config, int key, const char* keyName) {
@@ -239,6 +268,24 @@ static void _saveAxis(uint32_t axis, void* dp, void* up) {
 	}
 }
 
+static void _saveHat(const char* sectionName, struct Configuration* config, int hatId, const struct mInputHatBindings* hat) {
+	char hatKey[KEY_NAME_MAX];
+	char hatValue[KEY_VALUE_MAX];
+
+	snprintf(hatKey, KEY_NAME_MAX, "hat%iUp", hatId);
+	snprintf(hatValue, KEY_VALUE_MAX, "%i", hat->up);
+	ConfigurationSetValue(config, sectionName, hatKey, hatValue);
+	snprintf(hatKey, KEY_NAME_MAX, "hat%iRight", hatId);
+	snprintf(hatValue, KEY_VALUE_MAX, "%i", hat->right);
+	ConfigurationSetValue(config, sectionName, hatKey, hatValue);
+	snprintf(hatKey, KEY_NAME_MAX, "hat%iDown", hatId);
+	snprintf(hatValue, KEY_VALUE_MAX, "%i", hat->down);
+	ConfigurationSetValue(config, sectionName, hatKey, hatValue);
+	snprintf(hatKey, KEY_NAME_MAX, "hat%iLeft", hatId);
+	snprintf(hatValue, KEY_VALUE_MAX, "%i", hat->left);
+	ConfigurationSetValue(config, sectionName, hatKey, hatValue);
+}
+
 void _enumerateAxis(uint32_t axis, void* dp, void* ep) {
 	struct mInputAxisEnumerate* enumUser = ep;
 	const struct mInputAxis* description = dp;
@@ -266,6 +313,10 @@ static bool _loadAll(struct mInputMap* map, uint32_t type, const char* sectionNa
 		_loadKey(map, type, sectionName, config, i, map->info->keyId[i]);
 		_loadAxis(map, type, sectionName, config, i, map->info->keyId[i]);
 	}
+	i = 0;
+	while (_loadHat(map, type, sectionName, config, i)) {
+		++i;
+	}
 	return true;
 }
 
@@ -289,6 +340,11 @@ static void _saveAll(const struct mInputMap* map, uint32_t type, const char* sec
 		map->info
 	};
 	TableEnumerate(&impl->axes, _saveAxis, &save);
+
+	for (i = 0; i < mInputHatListSize(&impl->hats); ++i) {
+		const struct mInputHatBindings* hat = mInputHatListGetConstPointer(&impl->hats, i);
+		_saveHat(sectionName, config, i, hat);
+	}
 }
 
 void mInputMapInit(struct mInputMap* map, const struct mInputPlatformInfo* info) {
@@ -303,6 +359,7 @@ void mInputMapDeinit(struct mInputMap* map) {
 		if (map->maps[m].type) {
 			free(map->maps[m].map);
 			TableDeinit(&map->maps[m].axes);
+			mInputHatListDeinit(&map->maps[m].hats);
 		}
 	}
 	free(map->maps);
@@ -449,6 +506,59 @@ void mInputEnumerateAxes(const struct mInputMap* map, uint32_t type, void (handl
 		user
 	};
 	TableEnumerate(&impl->axes, _enumerateAxis, &enumUser);
+}
+
+int mInputMapHat(const struct mInputMap* map, uint32_t type, int id, int direction) {
+	const struct mInputMapImpl* impl = _lookupMapConst(map, type);
+	if (!impl) {
+		return 0;
+	}
+	if (id >= (ssize_t) mInputHatListSize(&impl->hats)) {
+		return 0;
+	}
+	const struct mInputHatBindings* description = mInputHatListGetConstPointer(&impl->hats, id);
+	int mapping = 0;
+	if (direction & M_INPUT_HAT_UP && description->up >= 0) {
+		mapping |= 1 << description->up;
+	}
+	if (direction & M_INPUT_HAT_RIGHT && description->right >= 0) {
+		mapping |= 1 << description->right;
+	}
+	if (direction & M_INPUT_HAT_DOWN && description->down >= 0) {
+		mapping |= 1 << description->down;
+	}
+	if (direction & M_INPUT_HAT_LEFT && description->left >= 0) {
+		mapping |= 1 << description->left;
+	}
+	return mapping;
+}
+
+void mInputBindHat(struct mInputMap* map, uint32_t type, int id, const struct mInputHatBindings* bindings) {
+	struct mInputMapImpl* impl = _guaranteeMap(map, type);
+	while (id >= (ssize_t) mInputHatListSize(&impl->hats)) {
+		*mInputHatListAppend(&impl->hats) = (struct mInputHatBindings) { -1, -1, -1, -1 };
+	}
+	*mInputHatListGetPointer(&impl->hats, id) = *bindings;
+}
+
+void mInputUnbindHat(struct mInputMap* map, uint32_t type, int id) {
+	struct mInputMapImpl* impl = _lookupMap(map, type);
+	if (!impl) {
+		return;
+	}
+	if (mInputHatListSize(&impl->hats) && id + 1 == (ssize_t) mInputHatListSize(&impl->hats)) {
+		mInputHatListResize(&impl->hats, -1);
+	} else {
+		struct mInputHatBindings* description = mInputHatListGetPointer(&impl->hats, id);
+		memset(description, -1, sizeof(&description));
+	}
+}
+
+void mInputUnbindAllHats(struct mInputMap* map, uint32_t type) {
+	struct mInputMapImpl* impl = _lookupMap(map, type);
+	if (impl) {
+		mInputHatListClear(&impl->hats);
+	}
 }
 
 void mInputMapLoad(struct mInputMap* map, uint32_t type, const struct Configuration* config) {

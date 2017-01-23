@@ -141,6 +141,8 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 	mInputBindAxis(inputMap, SDL_BINDING_BUTTON, 0, &description);
 	description = (struct mInputAxis) { GBA_KEY_DOWN, GBA_KEY_UP, 0x4000, -0x4000 };
 	mInputBindAxis(inputMap, SDL_BINDING_BUTTON, 1, &description);
+
+	mInputBindHat(inputMap, SDL_BINDING_BUTTON, 0, &GBAInputInfo.hat);
 }
 
 bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
@@ -498,6 +500,18 @@ static void _mSDLHandleJoyButton(struct mCore* core, struct mSDLPlayer* sdlConte
 	}
 }
 
+static void _mSDLHandleJoyHat(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_JoyHatEvent* event) {
+	int allKeys = mInputMapHat(sdlContext->bindings, SDL_BINDING_BUTTON, event->hat, -1);
+	if (allKeys == 0) {
+		return;
+	}
+
+	int keys = mInputMapHat(sdlContext->bindings, SDL_BINDING_BUTTON, event->hat, event->value);
+
+	core->clearKeys(core, allKeys ^ keys);
+	core->addKeys(core, keys);
+}
+
 static void _mSDLHandleJoyAxis(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_JoyAxisEvent* event) {
 	int clearKeys = ~mInputClearAxis(sdlContext->bindings, SDL_BINDING_BUTTON, event->axis, -1);
 	int newKeys = 0;
@@ -540,7 +554,7 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 		_mSDLHandleJoyButton(context->core, sdlContext, &event->jbutton);
 		break;
 	case SDL_JOYHATMOTION:
-		// TODO
+		_mSDLHandleJoyHat(context->core, sdlContext, &event->jhat);
 		break;
 	case SDL_JOYAXISMOTION:
 		_mSDLHandleJoyAxis(context->core, sdlContext, &event->jaxis);

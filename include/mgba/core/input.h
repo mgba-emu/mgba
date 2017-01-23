@@ -12,10 +12,26 @@ CXX_GUARD_START
 
 struct Configuration;
 
+enum mInputHat {
+	M_INPUT_HAT_NEUTRAL = 0,
+	M_INPUT_HAT_UP = 1,
+	M_INPUT_HAT_RIGHT = 2,
+	M_INPUT_HAT_DOWN = 4,
+	M_INPUT_HAT_LEFT = 8
+};
+
+struct mInputHatBindings {
+	int up;
+	int right;
+	int down;
+	int left;
+};
+
 struct mInputPlatformInfo {
 	const char* platformName;
 	const char** keyId;
 	size_t nKeys;
+	struct mInputHatBindings hat;
 };
 
 struct mInputMap {
@@ -47,6 +63,11 @@ void mInputUnbindAxis(struct mInputMap*, uint32_t type, int axis);
 void mInputUnbindAllAxes(struct mInputMap*, uint32_t type);
 const struct mInputAxis* mInputQueryAxis(const struct mInputMap*, uint32_t type, int axis);
 void mInputEnumerateAxes(const struct mInputMap*, uint32_t type, void (handler(int axis, const struct mInputAxis* description, void* user)), void* user);
+
+int mInputMapHat(const struct mInputMap*, uint32_t type, int id, int direction);
+void mInputBindHat(struct mInputMap*, uint32_t type, int id, const struct mInputHatBindings* bindings);
+void mInputUnbindHat(struct mInputMap*, uint32_t type, int id);
+void mInputUnbindAllHats(struct mInputMap*, uint32_t type);
 
 void mInputMapLoad(struct mInputMap*, uint32_t type, const struct Configuration*);
 void mInputMapSave(const struct mInputMap*, uint32_t type, struct Configuration*);

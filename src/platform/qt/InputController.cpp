@@ -311,18 +311,7 @@ int InputController::pollEvents() {
 		int numHats = SDL_JoystickNumHats(joystick);
 		for (i = 0; i < numHats; ++i) {
 			int hat = SDL_JoystickGetHat(joystick, i);
-			if (hat & SDL_HAT_UP) {
-				activeButtons |= 1 << GBA_KEY_UP;
-			}
-			if (hat & SDL_HAT_LEFT) {
-				activeButtons |= 1 << GBA_KEY_LEFT;
-			}
-			if (hat & SDL_HAT_DOWN) {
-				activeButtons |= 1 << GBA_KEY_DOWN;
-			}
-			if (hat & SDL_HAT_RIGHT) {
-				activeButtons |= 1 << GBA_KEY_RIGHT;
-			}
+			activeButtons |= mInputMapHat(&m_inputMap, SDL_BINDING_BUTTON, i, hat);
 		}
 
 		int numAxes = SDL_JoystickNumAxes(joystick);
