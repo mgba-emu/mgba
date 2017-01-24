@@ -11,9 +11,8 @@
 
 #include <QObject>
 #include <QSet>
+#include <QTimer>
 #include <QVector>
-
-class QTimer;
 
 #include <mgba/internal/gba/input.h>
 
@@ -54,7 +53,6 @@ public:
 
 	const mInputMap* map() const { return &m_inputMap; }
 
-	void updateJoysticks();
 	int pollEvents();
 
 	static const int32_t AXIS_THRESHOLD = 0x3000;
@@ -66,7 +64,7 @@ public:
 	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, GBAKey);
 	void unbindAllAxes(uint32_t type);
 
-	void bindHat(uint32_t type, int hat, GamepadHatEvent::Direction, GBAKey);
+	void bindHat(uint32_t type, int hat, GamepadHatEvent::Direction, GBAKey); 
 
 	QStringList connectedGamepads(uint32_t type) const;
 	int gamepad(uint32_t type) const;
@@ -92,6 +90,7 @@ signals:
 
 public slots:
 	void testGamepad(int type);
+	void updateJoysticks();
 
 	// TODO: Move these to somewhere that makes sense
 	void suspendScreensaver();
@@ -123,7 +122,7 @@ private:
 	QSet<int> m_activeButtons;
 	QSet<QPair<int, GamepadAxisEvent::Direction>> m_activeAxes;
 	QSet<QPair<int, GamepadHatEvent::Direction>> m_activeHats;
-	QTimer* m_gamepadTimer;
+	QTimer m_gamepadTimer;
 
 	QSet<GBAKey> m_pendingEvents;
 };

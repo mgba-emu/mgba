@@ -53,6 +53,7 @@ Misc:
  - All: Move time.h include to common.h
  - CMake: Add ability to just print version string
  - Qt: Merge "Save" and "OK" buttons in shader options
+ - SDL: Automatically map controllers when plugged in
 
 0.5.2: (2016-12-31)
 Bugfixes:

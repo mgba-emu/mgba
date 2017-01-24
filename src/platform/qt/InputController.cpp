@@ -48,14 +48,16 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 	updateJoysticks();
 #endif
 
-	m_gamepadTimer = new QTimer(this);
 #ifdef BUILD_SDL
-	connect(m_gamepadTimer, &QTimer::timeout, [this]() {
+	connect(&m_gamepadTimer, &QTimer::timeout, [this]() {
 		testGamepad(SDL_BINDING_BUTTON);
+		if (m_playerId == 0) {
+			updateJoysticks();
+		}
 	});
 #endif
-	m_gamepadTimer->setInterval(50);
-	m_gamepadTimer->start();
+	m_gamepadTimer.setInterval(50);
+	m_gamepadTimer.start();
 
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_X, GBA_KEY_A);
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Z, GBA_KEY_B);

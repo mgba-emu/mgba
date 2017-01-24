@@ -339,8 +339,32 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			joystick->haptic = SDL_HapticOpenFromJoystick(joystick->joystick);
 #endif
+			size_t i;
+			for (i = 0; (int) i < events->playersAttached; ++i) {
+				if (events->players[i]->joystick) {
+					continue;
+				}
+
+				const char* joystickName;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+				joystickName = SDL_JoystickName(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick);
+#else
+				joystickName = SDL_JoystickName(SDL_JoystickIndex(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick));
+#endif
+				if (events->preferredJoysticks[i] && strcmp(events->preferredJoysticks[i], joystickName) == 0) {
+					events->players[i]->joystick = joystick;
+					return;
+				}
+			}
+			for (i = 0; (int) i < events->playersAttached; ++i) {
+				if (events->players[i]->joystick) {
+					continue;
+				}
+				events->players[i]->joystick = joystick;
+				break;
+			}
 		} else if (event.type == SDL_JOYDEVICEREMOVED) {
-			SDL_JoystickID ids[MAX_PLAYERS];
+			SDL_JoystickID ids[MAX_PLAYERS] = { 0 };
 			size_t i;
 			for (i = 0; (int) i < events->playersAttached; ++i) {
 				if (events->players[i]->joystick) {
