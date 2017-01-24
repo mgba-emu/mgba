@@ -76,6 +76,7 @@ void ObjView::updateTilesGBA(bool force) {
 	};
 	m_ui.tiles->setTileCount(width * height / 64);
 	m_ui.tiles->setMinimumSize(QSize(width, height) * m_ui.magnification->value());
+	m_ui.tiles->resize(QSize(width, height) * m_ui.magnification->value());
 	unsigned palette = GBAObjAttributesCGetPalette(obj->c);
 	GBARegisterDISPCNT dispcnt = gba->memory.io[0]; // FIXME: Register name can't be imported due to namespacing issues
 	if (!GBARegisterDISPCNTIsObjCharacterMapping(dispcnt)) {
@@ -186,6 +187,7 @@ void ObjView::updateTilesGB(bool force) {
 	m_objInfo = newInfo;
 	m_ui.tiles->setTileCount(width * height / 64);
 	m_ui.tiles->setMinimumSize(QSize(width, height) * m_ui.magnification->value());
+	m_ui.tiles->resize(QSize(width, height) * m_ui.magnification->value());
 	int palette = 0;
 	if (gb->model >= GB_MODEL_CGB) {
 		if (GBObjAttributesIsBank(obj->attr)) {
