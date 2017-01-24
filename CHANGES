@@ -55,6 +55,7 @@ Misc:
  - Qt: Merge "Save" and "OK" buttons in shader options
  - SDL: Automatically map controllers when plugged in
  - Qt: Automatically load controller profile when plugged in
+ - OpenGL: Add xBR-lv2 shader
 
 0.5.2: (2016-12-31)
 Bugfixes:
