@@ -286,7 +286,12 @@ void InputController::bindKey(uint32_t type, int key, GBAKey gbaKey) {
 
 void InputController::updateJoysticks() {
 #ifdef BUILD_SDL
-	mSDLUpdateJoysticks(&s_sdlEvents);
+	QString profile = profileForType(SDL_BINDING_BUTTON);
+	mSDLUpdateJoysticks(&s_sdlEvents, m_config->input());
+	QString newProfile = profileForType(SDL_BINDING_BUTTON);
+	if (profile != newProfile) {
+		loadProfile(SDL_BINDING_BUTTON, newProfile);
+	}
 #endif
 }
 

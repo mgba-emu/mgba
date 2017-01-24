@@ -59,7 +59,7 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 	int nJoysticks = SDL_NumJoysticks();
 	SDL_JoystickListInit(&context->joysticks, nJoysticks);
 	if (nJoysticks > 0) {
-		mSDLUpdateJoysticks(context);
+		mSDLUpdateJoysticks(context, NULL);
 		// Some OSes don't do hotplug detection
 		if (!SDL_JoystickListSize(&context->joysticks)) {
 			int i;
@@ -325,7 +325,7 @@ void mSDLPlayerChangeJoystick(struct mSDLEvents* events, struct mSDLPlayer* play
 	player->joystick = SDL_JoystickListGetPointer(&events->joysticks, index);
 }
 
-void mSDLUpdateJoysticks(struct mSDLEvents* events) {
+void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* config) {
 	// Pump SDL joystick events without eating the rest of the events
 	SDL_JoystickUpdate();
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -339,20 +339,23 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			joystick->haptic = SDL_HapticOpenFromJoystick(joystick->joystick);
 #endif
+
+			const char* joystickName;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+			joystickName = SDL_JoystickName(joystick->joystick);
+#else
+			joystickName = SDL_JoystickName(SDL_JoystickIndex(joystick->joystick));
+#endif
 			size_t i;
 			for (i = 0; (int) i < events->playersAttached; ++i) {
 				if (events->players[i]->joystick) {
 					continue;
 				}
-
-				const char* joystickName;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-				joystickName = SDL_JoystickName(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick);
-#else
-				joystickName = SDL_JoystickName(SDL_JoystickIndex(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick));
-#endif
 				if (events->preferredJoysticks[i] && strcmp(events->preferredJoysticks[i], joystickName) == 0) {
 					events->players[i]->joystick = joystick;
+					if (config) {
+						mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_BUTTON, config, joystickName);
+					}
 					return;
 				}
 			}
@@ -361,6 +364,9 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events) {
 					continue;
 				}
 				events->players[i]->joystick = joystick;
+				if (config) {
+					mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_BUTTON, config, joystickName);
+				}
 				break;
 			}
 		} else if (event.type == SDL_JOYDEVICEREMOVED) {

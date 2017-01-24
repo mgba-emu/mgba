@@ -64,7 +64,7 @@ public:
 	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, GBAKey);
 	void unbindAllAxes(uint32_t type);
 
-	void bindHat(uint32_t type, int hat, GamepadHatEvent::Direction, GBAKey); 
+	void bindHat(uint32_t type, int hat, GamepadHatEvent::Direction, GBAKey);
 
 	QStringList connectedGamepads(uint32_t type) const;
 	int gamepad(uint32_t type) const;
