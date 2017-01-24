@@ -430,8 +430,13 @@ void retro_reset(void) {
 	}
 }
 
-bool retro_load_game(const struct retro_game_info* game) {
+bool retro_load_game(const struct retro_game_info* game)
+{
 	struct VFile* rom;
+
+   if (!game)
+      return false;
+
 	if (game->data) {
 		data = anonymousMemoryMap(game->size);
 		dataSize = game->size;
