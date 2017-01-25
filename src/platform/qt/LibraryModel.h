@@ -12,6 +12,8 @@
 
 #include <mgba/core/library.h>
 
+#include <functional>
+
 struct VDir;
 struct VFile;
 
