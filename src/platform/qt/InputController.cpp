@@ -30,6 +30,7 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 	, m_config(nullptr)
 	, m_gamepadTimer(nullptr)
 #ifdef BUILD_SDL
+	, m_sdlPlayer{}
 	, m_playerAttached(false)
 #endif
 	, m_allowOpposing(false)
