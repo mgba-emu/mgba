@@ -6,33 +6,41 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>600</width>
+    <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Open in archive...</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="2" column="1">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Open</set>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
+   <item row="1" column="0">
     <widget class="QLabel" name="loading">
      <property name="text">
       <string>Loading...</string>
      </property>
     </widget>
    </item>
+   <item row="1" column="1">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Open</set>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0" colspan="2">
-    <widget class="QListView" name="archiveListing"/>
+    <widget class="QGBA::LibraryView" name="archiveView" native="true"/>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QGBA::LibraryView</class>
+   <extends>QWidget</extends>
+   <header>LibraryView.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
@@ -60,22 +68,6 @@
     <hint type="sourcelabel">
      <x>199</x>
      <y>279</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>199</x>
-     <y>149</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>archiveListing</sender>
-   <signal>doubleClicked(QModelIndex)</signal>
-   <receiver>ArchiveInspector</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>199</x>
-     <y>129</y>
     </hint>
     <hint type="destinationlabel">
      <x>199</x>

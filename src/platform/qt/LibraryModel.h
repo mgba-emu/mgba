@@ -50,11 +50,19 @@ private slots:
 	void directoryLoaded(const QString& path);
 
 private:
+	struct LibraryColumn {
+		QString name;
+		std::function<QString(const mLibraryEntry&)> value;
+	};
+
 	mLibrary* m_library;
 	mLibraryEntry m_constraints;
 	LibraryLoader* m_loader;
 	QThread m_loaderThread;
 	QStringList m_queue;
+
+	QList<LibraryColumn> m_columns;
+	static QMap<QString, LibraryColumn> s_columns;
 };
 
 class LibraryLoader : public QObject {

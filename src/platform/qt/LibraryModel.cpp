@@ -5,15 +5,61 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "LibraryModel.h"
 
+#include <QFontMetrics>
+
 #include <mgba-util/vfs.h>
 
 using namespace QGBA;
 
 Q_DECLARE_METATYPE(mLibraryEntry);
 
+QMap<QString, LibraryModel::LibraryColumn> LibraryModel::s_columns;
+
 LibraryModel::LibraryModel(const QString& path, QObject* parent)
 	: QAbstractItemModel(parent)
 {
+	if (s_columns.empty()) {
+		s_columns["filename"] = {
+			tr("Filename"),
+			[](const mLibraryEntry& e) -> QString {
+				return e.filename;
+			}
+		};
+		s_columns["size"] = {
+			tr("Size"),
+			[](const mLibraryEntry& e) -> QString {
+				double size = e.filesize;
+				QString unit = "B";
+				if (size > 1024.0) {
+					size /= 1024.0;
+					unit = "kiB";
+				}
+				if (size > 1024.0) {
+					size /= 1024.0;
+					unit = "MiB";
+				}
+				return QString("%0 %1").arg(size, 0, 'f', 1).arg(unit);
+			}
+		};
+		s_columns["platform"] = {
+			tr("Platform"),
+			[](const mLibraryEntry& e) -> QString {
+				int platform = e.platform;
+				switch (platform) {
+#ifdef M_CORE_GBA
+				case PLATFORM_GBA:
+					return tr("GBA");
+#endif
+#ifdef M_CORE_GB
+				case PLATFORM_GB:
+					return tr("GB");
+#endif
+				default:
+					return tr("?");
+				}
+			}
+		};
+	}
 	if (!path.isNull()) {
 		m_library = mLibraryLoad(path.toUtf8().constData());
 	} else {
@@ -21,6 +67,9 @@ LibraryModel::LibraryModel(const QString& path, QObject* parent)
 	}
 	memset(&m_constraints, 0, sizeof(m_constraints));
 	m_constraints.platform = PLATFORM_NONE;
+	m_columns.append(s_columns["filename"]);
+	m_columns.append(s_columns["platform"]);
+	m_columns.append(s_columns["size"]);
 
 	if (!m_library) {
 		return;
@@ -75,16 +124,19 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const {
 	if (role == Qt::UserRole) {
 		return QVariant::fromValue(entry);
 	}
-	if (role != Qt::DisplayRole) {
+	if (index.column() >= m_columns.count()) {
 		return QVariant();
 	}
-	switch (index.column()) {
-	case 0:
-		return entry.filename;
-	case 1:
-		return (unsigned long long) entry.filesize;
+	switch (role) {
+	case Qt::DisplayRole:
+		return m_columns[index.column()].value(entry);
+	case Qt::SizeHintRole: {
+		QFontMetrics fm((QFont()));
+		return fm.size(Qt::TextSingleLine, m_columns[index.column()].value(entry));
 	}
-	return QVariant();
+	default:
+		return QVariant();
+	}
 }
 
 QVariant LibraryModel::headerData(int section, Qt::Orientation orientation, int role) const {
@@ -92,12 +144,10 @@ QVariant LibraryModel::headerData(int section, Qt::Orientation orientation, int 
 		return QAbstractItemModel::headerData(section, orientation, role);
 	}
 	if (orientation == Qt::Horizontal) {
-		switch (section) {
-		case 0:
-			return tr("Filename");
-		case 1:
-			return tr("Size");
+		if (section >= m_columns.count()) {
+			return QVariant();
 		}
+		return m_columns[section].name;
 	}
 	return section;
 }
@@ -117,7 +167,7 @@ int LibraryModel::columnCount(const QModelIndex& parent) const {
 	if (parent.isValid()) {
 		return 0;
 	}
-	return 2;
+	return m_columns.count();
 }
 
 int LibraryModel::rowCount(const QModelIndex& parent) const {
