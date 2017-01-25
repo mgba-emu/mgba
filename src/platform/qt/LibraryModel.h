@@ -55,10 +55,27 @@ private:
 		std::function<QString(const mLibraryEntry&)> value;
 	};
 
-	mLibrary* m_library;
+	class LibraryHandle {
+	public:
+		LibraryHandle(mLibrary*, const QString& path = QString());
+		~LibraryHandle();
+
+		mLibrary* const library;
+		LibraryLoader* const loader;
+		const QString path;
+
+		void ref();
+		bool deref();
+
+	private:
+		QThread m_loaderThread;
+		size_t m_ref;
+	};
+
+	LibraryHandle* m_library;
+	static QMap<QString, LibraryHandle*> s_handles;
+
 	mLibraryEntry m_constraints;
-	LibraryLoader* m_loader;
-	QThread m_loaderThread;
 	QStringList m_queue;
 
 	QList<LibraryColumn> m_columns;
