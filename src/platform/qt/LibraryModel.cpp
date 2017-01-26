@@ -23,7 +23,7 @@ LibraryModel::LibraryModel(const QString& path, QObject* parent)
 		s_columns["filename"] = {
 			tr("Filename"),
 			[](const mLibraryEntry& e) -> QString {
-				return e.filename;
+				return QString::fromUtf8(e.filename);
 			}
 		};
 		s_columns["size"] = {
@@ -60,6 +60,12 @@ LibraryModel::LibraryModel(const QString& path, QObject* parent)
 				}
 			}
 		};
+		s_columns["location"] = {
+			tr("Location"),
+			[](const mLibraryEntry& e) -> QString {
+				return QString::fromUtf8(e.base);
+			}
+		};
 	}
 	if (!path.isNull()) {
 		if (s_handles.contains(path)) {
@@ -75,6 +81,7 @@ LibraryModel::LibraryModel(const QString& path, QObject* parent)
 	memset(&m_constraints, 0, sizeof(m_constraints));
 	m_constraints.platform = PLATFORM_NONE;
 	m_columns.append(s_columns["filename"]);
+	m_columns.append(s_columns["location"]);
 	m_columns.append(s_columns["platform"]);
 	m_columns.append(s_columns["size"]);
 
@@ -112,6 +119,22 @@ VFile* LibraryModel::openVFile(const QModelIndex& index) const {
 		return nullptr;
 	}
 	return mLibraryOpenVFile(m_library->library, &entry);
+}
+
+QString LibraryModel::filename(const QModelIndex& index) const {
+	mLibraryEntry entry;
+	if (!entryAt(index.row(), &entry)) {
+		return QString();
+	}
+	return QString::fromUtf8(entry.filename);
+}
+
+QString LibraryModel::location(const QModelIndex& index) const {
+	mLibraryEntry entry;
+	if (!entryAt(index.row(), &entry)) {
+		return QString();
+	}
+	return QString::fromUtf8(entry.base);
 }
 
 QVariant LibraryModel::data(const QModelIndex& index, int role) const {

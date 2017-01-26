@@ -19,6 +19,7 @@ public:
 	ArchiveInspector(const QString& filename, QWidget* parent = nullptr);
 
 	VFile* selectedVFile() const;
+	QPair<QString, QString> selectedPath() const;
 
 private:
 	Ui::ArchiveInspector m_ui;

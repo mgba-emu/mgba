@@ -29,12 +29,24 @@ void LibraryView::setDirectory(const QString& filename) {
 	m_model.constrainBase(filename);
 }
 
+void LibraryView::addDirectory(const QString& filename) {
+	m_model.loadDirectory(filename);
+}
+
 VFile* LibraryView::selectedVFile() const {
 	QModelIndex index = m_ui.listing->selectionModel()->currentIndex();
 	if (!index.isValid()) {
 		return nullptr;
 	}
 	return m_model.openVFile(index);
+}
+
+QPair<QString, QString> LibraryView::selectedPath() const {
+	QModelIndex index = m_ui.listing->selectionModel()->currentIndex();
+	if (!index.isValid()) {
+		return qMakePair(QString(), QString());
+	}
+	return qMakePair(m_model.filename(index), m_model.location(index));
 }
 
 void  LibraryView::resizeColumns() {

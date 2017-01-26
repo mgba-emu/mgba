@@ -103,7 +103,30 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 		m_savedScale = multiplier.toInt();
 		i = m_savedScale;
 	}
-#ifdef M_CORE_GBA
+#ifdef USE_SQLITE3
+	m_libraryView = new LibraryView(this);
+	ConfigOption* showLibrary = m_config->addOption("showLibrary");
+	showLibrary->connect([this](const QVariant& value) {
+		if (value.toBool()) {
+			if (m_controller->isLoaded()) {
+				m_screenWidget->layout()->addWidget(m_libraryView);
+			} else {
+				attachWidget(m_libraryView);
+			}
+		} else {
+			detachWidget(m_libraryView);
+		}
+	}, this);
+	m_config->updateOption("showLibrary");
+
+	connect(m_libraryView, &LibraryView::accepted, [this]() {
+		VFile* output = m_libraryView->selectedVFile();
+		QPair<QString, QString> path = m_libraryView->selectedPath();
+		if (output) {
+			m_controller->loadGame(output, path.first, path.second);
+		}
+	});
+#elif defined(M_CORE_GBA)
 	m_screenWidget->setSizeHint(QSize(VIDEO_HORIZONTAL_PIXELS * i, VIDEO_VERTICAL_PIXELS * i));
 #endif
 	m_screenWidget->setPixmap(m_logo);
@@ -367,15 +390,24 @@ void Window::selectROMInArchive() {
 		return;
 	}
 	ArchiveInspector* archiveInspector = new ArchiveInspector(filename);
-	connect(archiveInspector, &QDialog::accepted, [this,  archiveInspector, filename]() {
+	connect(archiveInspector, &QDialog::accepted, [this,  archiveInspector]() {
 		VFile* output = archiveInspector->selectedVFile();
+		QPair<QString, QString> path = archiveInspector->selectedPath();
 		if (output) {
-			m_controller->loadGame(output, filename);
+			m_controller->loadGame(output, path.second, path.first);
 		}
 		archiveInspector->close();
 	});
 	archiveInspector->setAttribute(Qt::WA_DeleteOnClose);
 	archiveInspector->show();
+}
+
+void Window::addDirToLibrary() {
+	QString filename = GBAApp::app()->getOpenDirectoryName(this, tr("Select folder"));
+	if (filename.isEmpty()) {
+		return;
+	}
+	m_libraryView->addDirectory(filename);
 }
 #endif
 
@@ -886,8 +918,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	installEventFilter(m_shortcutController);
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open),
 	                    "loadROM");
+#ifdef USE_SQLITE3
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load ROM in archive..."), this, SLOT(selectROMInArchive())),
 	                    "loadROMInArchive");
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Add folder to library..."), this, SLOT(addDirToLibrary())),
+	                    "addDirToLibrary");
+#endif
 
 	QAction* loadTemporarySave = new QAction(tr("Load temporary save..."), fileMenu);
 	connect(loadTemporarySave, &QAction::triggered, [this]() { this->selectSave(true); });

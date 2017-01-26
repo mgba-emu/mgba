@@ -23,3 +23,7 @@ ArchiveInspector::ArchiveInspector(const QString& filename, QWidget* parent)
 VFile* ArchiveInspector::selectedVFile() const {
 	return m_ui.archiveView->selectedVFile();
 }
+
+QPair<QString, QString> ArchiveInspector::selectedPath() const {
+	return m_ui.archiveView->selectedPath();
+}

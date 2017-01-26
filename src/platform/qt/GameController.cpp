@@ -145,7 +145,11 @@ GameController::GameController(QObject* parent)
 			controller->m_multiplayer->attachGame(controller);
 		}
 
-		QMetaObject::invokeMethod(controller, "gameStarted", Q_ARG(mCoreThread*, context), Q_ARG(const QString&, controller->m_fname));
+		QString path = controller->m_fname;
+		if (!controller->m_fsub.isEmpty()) {
+			path += QDir::separator() + controller->m_fsub;
+		}
+		QMetaObject::invokeMethod(controller, "gameStarted", Q_ARG(mCoreThread*, context), Q_ARG(const QString&, path));
 		QMetaObject::invokeMethod(controller, "startAudio");
 	};
 
@@ -369,17 +373,48 @@ void GameController::loadGame(const QString& path) {
 	closeGame();
 	QFileInfo info(path);
 	if (!info.isReadable()) {
-		LOG(QT, ERROR) << tr("Failed to open game file: %1").arg(path);
+		QString fname = info.fileName();
+		QString base = info.path();
+		if (base.endsWith("/") || base.endsWith(QDir::separator())) {
+			base.chop(1);
+		}
+		VDir* dir = VDirOpenArchive(base.toUtf8().constData());
+		if (dir) {
+			VFile* vf = dir->openFile(dir, fname.toUtf8().constData(), O_RDONLY);
+			if (vf) {
+				struct VFile* vfclone = VFileMemChunk(NULL, vf->size(vf));
+				uint8_t buffer[2048];
+				ssize_t read;
+				while ((read = vf->read(vf, buffer, sizeof(buffer))) > 0) {
+					vfclone->write(vfclone, buffer, read);
+				}
+				vf->close(vf);
+				vf = vfclone;
+			}
+			dir->close(dir);
+			loadGame(vf, fname, base);
+		} else {
+			LOG(QT, ERROR) << tr("Failed to open game file: %1").arg(path);
+		}
 		return;
+	} else {
+		m_fname = info.canonicalFilePath();
+		m_fsub = QString();
 	}
-	m_fname = info.canonicalFilePath();
 	m_vf = nullptr;
 	openGame();
 }
 
-void GameController::loadGame(VFile* vf, const QString& base) {
+void GameController::loadGame(VFile* vf, const QString& path, const QString& base) {
 	closeGame();
-	m_fname = base;
+	QFileInfo info(base);
+	if (info.isDir()) {
+		m_fname = base + QDir::separator() + path;
+		m_fsub = QString();
+	} else {
+		m_fname = base;
+		m_fsub = path;
+	}
 	m_vf = vf;
 	openGame();
 }

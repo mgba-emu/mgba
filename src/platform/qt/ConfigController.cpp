@@ -164,6 +164,10 @@ QString ConfigController::getOption(const char* key) const {
 	return QString(mCoreConfigGetValue(&m_config, key));
 }
 
+QString ConfigController::getOption(const QString& key) const {
+	return getOption(key.toUtf8().constData());
+}
+
 QVariant ConfigController::getQtOption(const QString& key, const QString& group) const {
 	if (!group.isNull()) {
 		m_settings->beginGroup(group);

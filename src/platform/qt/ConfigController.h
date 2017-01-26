@@ -71,6 +71,7 @@ public:
 	void updateOption(const char* key);
 
 	QString getOption(const char* key) const;
+	QString getOption(const QString& key) const;
 
 	QVariant getQtOption(const QString& key, const QString& group = QString()) const;
 

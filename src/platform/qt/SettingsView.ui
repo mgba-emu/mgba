@@ -47,6 +47,11 @@
      </item>
      <item>
       <property name="text">
+       <string>Interface</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>Emulation</string>
       </property>
      </item>
@@ -72,7 +77,7 @@
    <item row="1" column="1">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="av">
       <layout class="QFormLayout" name="formLayout">
@@ -384,6 +389,65 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="interface_2">
+      <layout class="QFormLayout" name="formLayout_4">
+       <item row="3" column="1">
+        <widget class="QCheckBox" name="allowOpposingDirections">
+         <property name="text">
+          <string>Allow opposing input directions</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QCheckBox" name="suspendScreensaver">
+         <property name="text">
+          <string>Suspend screensaver</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QCheckBox" name="pauseOnFocusLost">
+         <property name="text">
+          <string>Pause when inactive</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Library:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="showLibrary">
+         <property name="text">
+          <string>Show when no game open</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="Line" name="line_8">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="clearCache">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Clear cache</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="emulation">
       <layout class="QFormLayout" name="formLayout_2">
        <property name="fieldGrowthPolicy">
@@ -478,38 +542,14 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
-        <widget class="QCheckBox" name="allowOpposingDirections">
-         <property name="text">
-          <string>Allow opposing input directions</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QCheckBox" name="suspendScreensaver">
-         <property name="text">
-          <string>Suspend screensaver</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="1">
-        <widget class="QCheckBox" name="pauseOnFocusLost">
-         <property name="text">
-          <string>Pause when inactive</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="label_15">
          <property name="text">
           <string>Idle loops:</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
+       <item row="5" column="1">
         <widget class="QComboBox" name="idleOptimization">
          <item>
           <property name="text">
@@ -528,21 +568,21 @@
          </item>
         </widget>
        </item>
-       <item row="9" column="0" colspan="2">
+       <item row="6" column="0" colspan="2">
         <widget class="Line" name="line_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="10" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="label_24">
          <property name="text">
           <string>Savestate extra data:</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
+       <item row="7" column="1">
         <widget class="QCheckBox" name="saveStateScreenshot">
          <property name="text">
           <string>Screenshot</string>
@@ -552,7 +592,7 @@
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
+       <item row="8" column="1">
         <widget class="QCheckBox" name="saveStateSave">
          <property name="text">
           <string>Save data</string>
@@ -562,7 +602,7 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="1">
+       <item row="9" column="1">
         <widget class="QCheckBox" name="saveStateCheats">
          <property name="text">
           <string>Cheat codes</string>
@@ -572,14 +612,14 @@
          </property>
         </widget>
        </item>
-       <item row="13" column="0">
+       <item row="11" column="0">
         <widget class="QLabel" name="label_25">
          <property name="text">
           <string>Load extra data:</string>
          </property>
         </widget>
        </item>
-       <item row="13" column="1">
+       <item row="11" column="1">
         <widget class="QCheckBox" name="loadStateScreenshot">
          <property name="text">
           <string>Screenshot</string>
@@ -589,17 +629,24 @@
          </property>
         </widget>
        </item>
-       <item row="14" column="1">
+       <item row="12" column="1">
         <widget class="QCheckBox" name="loadStateSave">
          <property name="text">
           <string>Save data</string>
          </property>
         </widget>
        </item>
-       <item row="15" column="1">
+       <item row="13" column="1">
         <widget class="QCheckBox" name="loadStateCheats">
          <property name="text">
           <string>Cheat codes</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="0" colspan="2">
+        <widget class="Line" name="line_9">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>

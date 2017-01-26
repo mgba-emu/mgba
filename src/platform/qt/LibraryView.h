@@ -21,6 +21,7 @@ public:
 	LibraryView(QWidget* parent = nullptr);
 
 	VFile* selectedVFile() const;
+	QPair<QString, QString> selectedPath() const;
 
 signals:
 	void doneLoading();
@@ -28,6 +29,7 @@ signals:
 
 public slots:
 	void setDirectory(const QString&);
+	void addDirectory(const QString&);
 
 private slots:
 	void resizeColumns();
