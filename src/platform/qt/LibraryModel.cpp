@@ -75,6 +75,12 @@ LibraryModel::LibraryModel(const QString& path, QObject* parent)
 				return QString::fromUtf8(e.base);
 			}
 		};
+		s_columns["crc32"] = {
+			tr("CRC32"),
+			[](const mLibraryEntry& e) -> QString {
+				return QString("%0").arg(e.crc32, 8, 16, QChar('0'));
+			}
+		};
 	}
 	if (!path.isNull()) {
 		if (s_handles.contains(path)) {
@@ -93,6 +99,7 @@ LibraryModel::LibraryModel(const QString& path, QObject* parent)
 	m_columns.append(s_columns["location"]);
 	m_columns.append(s_columns["platform"]);
 	m_columns.append(s_columns["size"]);
+	m_columns.append(s_columns["crc32"]);
 
 	connect(m_library->loader, SIGNAL(directoryLoaded(const QString&)), this, SLOT(directoryLoaded(const QString&)));
 }
