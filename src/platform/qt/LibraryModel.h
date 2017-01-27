@@ -16,6 +16,7 @@
 
 struct VDir;
 struct VFile;
+struct NoIntroDB;
 
 namespace QGBA {
 
@@ -40,6 +41,8 @@ public:
 
 	virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+
+	void attachGameDB(const NoIntroDB* gameDB);
 
 signals:
 	void doneLoading();

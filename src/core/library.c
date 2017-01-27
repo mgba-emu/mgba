@@ -11,6 +11,7 @@
 #ifdef USE_SQLITE3
 
 #include <sqlite3.h>
+#include "feature/sqlite3/no-intro.h"
 
 DEFINE_VECTOR(mLibraryListing, struct mLibraryEntry);
 
@@ -25,6 +26,7 @@ struct mLibrary {
 	sqlite3_stmt* deleteRoot;
 	sqlite3_stmt* count;
 	sqlite3_stmt* select;
+	const struct NoIntroDB* gameDB;
 };
 
 #define CONSTRAINTS_ROMONLY \
@@ -105,6 +107,8 @@ struct mLibrary* mLibraryLoad(const char* path) {
 
 	static const char createTables[] =
 		"   PRAGMA foreign_keys = ON;"
+		"\n PRAGMA journal_mode = MEMORY;"
+		"\n PRAGMA synchronous = NORMAL;"
 		"\n CREATE TABLE IF NOT EXISTS version ("
 		"\n 	tname TEXT NOT NULL PRIMARY KEY,"
 		"\n 	version INTEGER NOT NULL DEFAULT 1"
@@ -366,6 +370,10 @@ size_t mLibraryGetEntries(struct mLibrary* library, struct mLibraryListing* out,
 			const char* colName = sqlite3_column_name(library->select, i);
 			if (strcmp(colName, "crc32") == 0) {
 				entry->crc32 = sqlite3_column_int(library->select, i);
+				struct NoIntroGame game;
+				if (NoIntroDBLookupGameByCRC(library->gameDB, entry->crc32, &game)) {
+					entry->title = strdup(game.name);
+				}
 			} else if (strcmp(colName, "platform") == 0) {
 				entry->platform = sqlite3_column_int(library->select, i);
 			} else if (strcmp(colName, "size") == 0) {
@@ -421,6 +429,10 @@ struct VFile* mLibraryOpenVFile(struct mLibrary* library, const struct mLibraryE
 		}
 	}
 	return vf;
+}
+
+void mLibraryAttachGameDB(struct mLibrary* library, const struct NoIntroDB* db) {
+	library->gameDB = db;
 }
 
 #endif

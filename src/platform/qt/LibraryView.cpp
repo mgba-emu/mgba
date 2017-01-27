@@ -8,6 +8,7 @@
 #include <mgba-util/vfs.h>
 
 #include "ConfigController.h"
+#include "GBAApp.h"
 
 using namespace QGBA;
 
@@ -16,6 +17,7 @@ LibraryView::LibraryView(QWidget* parent)
 	, m_model(ConfigController::configDir() + "/library.sqlite3")
 {
 	m_ui.setupUi(this);
+	m_model.attachGameDB(GBAApp::app()->gameDB());
 	connect(&m_model, SIGNAL(doneLoading()), this, SIGNAL(doneLoading()));
 	connect(&m_model, SIGNAL(doneLoading()), this, SLOT(resizeColumns()));
 	connect(m_ui.listing, SIGNAL(activated(const QModelIndex&)), this, SIGNAL(accepted()));

@@ -41,6 +41,9 @@ size_t mLibraryCount(struct mLibrary* library, const struct mLibraryEntry* const
 size_t mLibraryGetEntries(struct mLibrary* library, struct mLibraryListing* out, size_t numEntries, size_t offset, const struct mLibraryEntry* constraints);
 struct VFile* mLibraryOpenVFile(struct mLibrary* library, const struct mLibraryEntry* entry);
 
+struct NoIntroDB;
+void mLibraryAttachGameDB(struct mLibrary* library, const struct NoIntroDB* db);
+
 #endif
 
 CXX_GUARD_END

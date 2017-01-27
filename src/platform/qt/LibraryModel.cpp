@@ -20,6 +20,15 @@ LibraryModel::LibraryModel(const QString& path, QObject* parent)
 	: QAbstractItemModel(parent)
 {
 	if (s_columns.empty()) {
+		s_columns["name"] = {
+			tr("Name"),
+			[](const mLibraryEntry& e) -> QString {
+				if (e.title) {
+					return QString::fromUtf8(e.title);
+				}
+				return QString::fromUtf8(e.filename);
+			}
+		};
 		s_columns["filename"] = {
 			tr("Filename"),
 			[](const mLibraryEntry& e) -> QString {
@@ -80,7 +89,7 @@ LibraryModel::LibraryModel(const QString& path, QObject* parent)
 	}
 	memset(&m_constraints, 0, sizeof(m_constraints));
 	m_constraints.platform = PLATFORM_NONE;
-	m_columns.append(s_columns["filename"]);
+	m_columns.append(s_columns["name"]);
 	m_columns.append(s_columns["location"]);
 	m_columns.append(s_columns["platform"]);
 	m_columns.append(s_columns["size"]);
@@ -199,6 +208,10 @@ int LibraryModel::rowCount(const QModelIndex& parent) const {
 		return 0;
 	}
 	return mLibraryCount(m_library->library, &m_constraints);
+}
+
+void LibraryModel::attachGameDB(const NoIntroDB* gameDB) {
+	mLibraryAttachGameDB(m_library->library, gameDB);
 }
 
 void LibraryModel::constrainBase(const QString& path) {
