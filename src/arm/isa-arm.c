@@ -197,6 +197,19 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		cpu->cpsr = (cpu->cpsr & (0x0FFFFFFF)) | cpsr; \
 	}
 
+#define ARM_ADDITION_CARRY_S(M, N, D, C) \
+	if (rd == ARM_PC && _ARMModeHasSPSR(ARMPSRGetPriv(cpu->cpsr))) { \
+		cpu->cpsr = cpu->spsr; \
+		_ARMReadCPSR(cpu); \
+	} else { \
+		ARMPSR cpsr = 0; \
+		cpsr = ARMPSROrUnsafeN(cpsr, ARM_SIGN(D)); \
+		cpsr = ARMPSROrUnsafeZ(cpsr, !(D)); \
+		cpsr = ARMPSROrUnsafeC(cpsr, ARM_CARRY_FROM_CARRY(M, N, D, C)); \
+		cpsr = ARMPSROrUnsafeV(cpsr, ARM_V_ADDITION(M, N, D)); \
+		cpu->cpsr = (cpu->cpsr & (0x0FFFFFFF)) | cpsr; \
+	}
+
 #define ARM_SUBTRACTION_S(M, N, D) \
 	if (rd == ARM_PC && _ARMModeHasSPSR(ARMPSRGetPriv(cpu->cpsr))) { \
 		cpu->cpsr = cpu->spsr; \
@@ -240,7 +253,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		ARMPSR cpsr = 0; \
 		cpsr = ARMPSROrUnsafeN(cpsr, ARM_SIGN(DHI)); \
 		cpsr = ARMPSROrUnsafeZ(cpsr, !((DHI) | (DLO))); \
-		cpu->cpsr = (cpu->cpsr & (0x3FFFFFFF)) | cpsr; \
+		cpu->cpsr = (cpu->cpsr & (0x3FFFFFFF))	 | cpsr; \
 	}
 
 #define ADDR_MODE_2_I_TEST (opcode & 0x00000F80)
@@ -460,7 +473,7 @@ DEFINE_ALU_INSTRUCTION_ARM(ADD, ARM_ADDITION_S(n, cpu->shifterOperand, cpu->gprs
 	int32_t n = cpu->gprs[rn];
 	cpu->gprs[rd] = n + cpu->shifterOperand;)
 
-DEFINE_ALU_INSTRUCTION_ARM(ADC, ARM_ADDITION_S(n, cpu->shifterOperand, cpu->gprs[rd]),
+DEFINE_ALU_INSTRUCTION_ARM(ADC, ARM_ADDITION_CARRY_S(n, cpu->shifterOperand, cpu->gprs[rd], ARMPSRGetC(cpu->cpsr)),
 	int32_t n = cpu->gprs[rn];
 	cpu->gprs[rd] = n + cpu->shifterOperand + ARMPSRGetC(cpu->cpsr);)
 

@@ -31,7 +31,8 @@
 #define ARM_SXT_16(I) (((int16_t) (I) << 16) >> 16)
 #define ARM_UXT_64(I) (uint64_t)(uint32_t) (I)
 
-#define ARM_CARRY_FROM(M, N, D) (((uint32_t) (M) >> 31) + ((uint32_t) (N) >> 31) > ((uint32_t) (D) >> 31))
+#define ARM_CARRY_FROM(M, N, D) (UINT_MAX - (uint32_t) (M) < (uint32_t) (N))
+#define ARM_CARRY_FROM_CARRY(M, N, D, C) (((uint32_t) (M) >> 31) + ((uint32_t) (N) >> 31) > ((uint32_t) (D) >> 31))
 #define ARM_BORROW_FROM(M, N, D) (((uint32_t) (M)) >= ((uint32_t) (N)))
 #define ARM_BORROW_FROM_CARRY(M, N, D, C) (ARM_UXT_64(M) >= (ARM_UXT_64(N)) + (uint64_t) (C))
 #define ARM_V_ADDITION(M, N, D) (!(ARM_SIGN((M) ^ (N))) && (ARM_SIGN((M) ^ (D))) && (ARM_SIGN((N) ^ (D))))

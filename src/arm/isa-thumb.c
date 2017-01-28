@@ -21,6 +21,16 @@
 		cpu->cpsr = (cpu->cpsr & (0x0FFFFFFF)) | cpsr; \
 	}
 
+#define THUMB_ADDITION_CARRY_S(M, N, D, C) \
+	{ \
+		ARMPSR cpsr = 0; \
+		cpsr = ARMPSROrUnsafeN(cpsr, ARM_SIGN(D)); \
+		cpsr = ARMPSROrUnsafeZ(cpsr, !(D)); \
+		cpsr = ARMPSROrUnsafeC(cpsr, ARM_CARRY_FROM_CARRY(M, N, D, C)); \
+		cpsr = ARMPSROrUnsafeV(cpsr, ARM_V_ADDITION(M, N, D)); \
+		cpu->cpsr = (cpu->cpsr & (0x0FFFFFFF)) | cpsr; \
+	}
+
 #define THUMB_SUBTRACTION_S(M, N, D) \
 	{ \
 		ARMPSR cpsr = 0; \
@@ -207,7 +217,7 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ADC,
 	int n = cpu->gprs[rn];
 	int d = cpu->gprs[rd];
 	cpu->gprs[rd] = d + n + ARMPSRGetC(cpu->cpsr);
-	THUMB_ADDITION_S(d, n, cpu->gprs[rd]);)
+	THUMB_ADDITION_CARRY_S(d, n, cpu->gprs[rd], ARMPSRGetC(cpu->cpsr));)
 
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(SBC,
 	int n = cpu->gprs[rn] + !ARMPSRIsC(cpu->cpsr);
