@@ -61,7 +61,9 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 
 	GBAInterruptHandlerInit(&gba->cpu->irqh);
 	GBAMemoryInit(gba);
-	GBASavedataInit(&gba->memory.savedata, 0);
+
+	gba->memory.savedata.timing = &gba->timing;
+	GBASavedataInit(&gba->memory.savedata, NULL);
 
 	gba->video.p = gba;
 	GBAVideoInit(&gba->video);

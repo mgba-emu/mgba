@@ -177,13 +177,14 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 0 - 1: Flash state machine
  *   | bits 2 - 3: Reserved
  *   | bit 4: Flash bank
- *   | bits 5 - 7: Reserved
- * | 0x002E3 - 0x002E3: Reserved
- * | 0x002E4 - 0x002E7: EEPROM read bits remaining
+ *   | bit 5: Is settling occurring?
+ *   | bits 6 - 7: Reserved
+ * | 0x002E3 - 0x002E3: EEPROM read bits remaining
+ * | 0x002E4 - 0x002E7: Settling cycles remaining
  * | 0x002E8 - 0x002EB: EEPROM read address
  * | 0x002EC - 0x002EF: EEPROM write address
  * | 0x002F0 - 0x002F1: Flash settling sector
- * | 0x002F2 - 0x002F3: Flash settling remaining
+ * | 0x002F2 - 0x002F3: Reserved
  * 0x002F4 - 0x002FF: Prefetch
  * | 0x002F4 - 0x002F7: GBA BIOS bus prefetch
  * | 0x002F8 - 0x002FB: CPU prefecth (decode slot)
@@ -220,6 +221,7 @@ DECL_BITFIELD(GBASerializedHWFlags3, uint16_t);
 DECL_BITFIELD(GBASerializedSavedataFlags, uint8_t);
 DECL_BITS(GBASerializedSavedataFlags, FlashState, 0, 2);
 DECL_BIT(GBASerializedSavedataFlags, FlashBank, 4);
+DECL_BIT(GBASerializedSavedataFlags, DustSettling, 5);
 
 DECL_BITFIELD(GBASerializedMiscFlags, uint32_t);
 DECL_BIT(GBASerializedMiscFlags, Halted, 0);
@@ -298,12 +300,12 @@ struct GBASerializedState {
 		uint8_t type;
 		uint8_t command;
 		GBASerializedSavedataFlags flags;
-		uint8_t reserved;
-		int32_t readBitsRemaining;
+		int8_t readBitsRemaining;
+		uint32_t settlingDust;
 		uint32_t readAddress;
 		uint32_t writeAddress;
 		uint16_t settlingSector;
-		uint16_t settlingDust;
+		uint16_t reserved;
 	} savedata;
 
 	uint32_t biosPrefetch;
