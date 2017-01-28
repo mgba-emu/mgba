@@ -58,8 +58,11 @@ private slots:
 
 private:
 	struct LibraryColumn {
+		LibraryColumn();
+		LibraryColumn(const QString&, std::function<QString(const mLibraryEntry&)>, int = Qt::AlignLeft);
 		QString name;
 		std::function<QString(const mLibraryEntry&)> value;
+		int alignment;
 	};
 
 	class LibraryHandle {

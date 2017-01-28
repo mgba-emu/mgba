@@ -40,16 +40,17 @@ LibraryModel::LibraryModel(const QString& path, QObject* parent)
 			[](const mLibraryEntry& e) -> QString {
 				double size = e.filesize;
 				QString unit = "B";
-				if (size > 1024.0) {
+				if (size >= 1024.0) {
 					size /= 1024.0;
 					unit = "kiB";
 				}
-				if (size > 1024.0) {
+				if (size >= 1024.0) {
 					size /= 1024.0;
 					unit = "MiB";
 				}
 				return QString("%0 %1").arg(size, 0, 'f', 1).arg(unit);
-			}
+			},
+			Qt::AlignRight
 		};
 		s_columns["platform"] = {
 			tr("Platform"),
@@ -174,6 +175,8 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const {
 		QFontMetrics fm((QFont()));
 		return fm.size(Qt::TextSingleLine, m_columns[index.column()].value(entry));
 	}
+	case Qt::TextAlignmentRole:
+		return m_columns[index.column()].alignment;
 	default:
 		return QVariant();
 	}
@@ -250,6 +253,15 @@ void LibraryModel::directoryLoaded(const QString& path) {
 	}
 }
 
+LibraryModel::LibraryColumn::LibraryColumn() {
+}
+
+LibraryModel::LibraryColumn::LibraryColumn(const QString& name, std::function<QString(const mLibraryEntry&)> value, int alignment)
+	: name(name)
+	, value(value)
+	, alignment(alignment)
+{
+}
 
 LibraryModel::LibraryHandle::LibraryHandle(mLibrary* lib, const QString& p)
 	: library(lib)
