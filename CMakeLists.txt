@@ -243,6 +243,7 @@ endif()
 
 if(DEFINED 3DS OR DEFINED PSP2 OR DEFINED WII)
 	set(USE_DEBUGGERS OFF)
+	set(USE_SQLITE3 OFF)
 endif()
 
 if(NOT M_CORE_GBA)
@@ -354,6 +355,7 @@ endif()
 set(WANT_ZLIB ${USE_ZLIB})
 set(WANT_PNG ${USE_PNG})
 set(WANT_LIBZIP ${USE_LIBZIP})
+set(WANT_SQLITE3 ${USE_SQLITE3})
 set(USE_CMOCKA ${BUILD_SUITE})
 
 find_feature(USE_FFMPEG "libavcodec;libavformat;libavresample;libavutil;libswscale")
@@ -483,6 +485,12 @@ if(USE_PNG)
 	include_directories(AFTER ${PNG_INCLUDE_DIRS})
 	list(APPEND DEPENDENCY_LIB ${PNG_LIBRARIES} ${ZLIB_LIBRARIES})
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libpng12-0")
+endif()
+
+if(WANT_SQLITE3 AND NOT USE_SQLITE3)
+	list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/sqlite3/sqlite3.c)
+	include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/sqlite3/)
+	set(USE_SQLITE3 ON)
 endif()
 
 if(USE_LIBZIP)
