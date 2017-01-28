@@ -194,7 +194,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		cpsr = ARMPSROrUnsafeZ(cpsr, !(D)); \
 		cpsr = ARMPSROrUnsafeC(cpsr, ARM_CARRY_FROM(M, N, D)); \
 		cpsr = ARMPSROrUnsafeV(cpsr, ARM_V_ADDITION(M, N, D)); \
-		cpu->cpsr = cpu->cpsr & (0x0FFFFFFF) | cpsr; \
+		cpu->cpsr = (cpu->cpsr & (0x0FFFFFFF)) | cpsr; \
 	}
 
 #define ARM_SUBTRACTION_S(M, N, D) \
@@ -207,7 +207,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		cpsr = ARMPSROrUnsafeZ(cpsr, !(D)); \
 		cpsr = ARMPSROrUnsafeC(cpsr, ARM_BORROW_FROM(M, N, D)); \
 		cpsr = ARMPSROrUnsafeV(cpsr, ARM_V_SUBTRACTION(M, N, D)); \
-		cpu->cpsr = cpu->cpsr & (0x0FFFFFFF) | cpsr; \
+		cpu->cpsr = (cpu->cpsr & (0x0FFFFFFF)) | cpsr; \
 	}
 
 #define ARM_SUBTRACTION_CARRY_S(M, N, D, C) \
@@ -220,7 +220,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		cpsr = ARMPSROrUnsafeZ(cpsr, !(D)); \
 		cpsr = ARMPSROrUnsafeC(cpsr, ARM_BORROW_FROM_CARRY(M, N, D, C)); \
 		cpsr = ARMPSROrUnsafeV(cpsr, ARM_V_SUBTRACTION(M, N, D)); \
-		cpu->cpsr = cpu->cpsr & (0x0FFFFFFF) | cpsr; \
+		cpu->cpsr = (cpu->cpsr & (0x0FFFFFFF)) | cpsr; \
 	}
 
 #define ARM_NEUTRAL_S(M, N, D) \
@@ -232,15 +232,15 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		cpsr = ARMPSROrUnsafeN(cpsr, ARM_SIGN(D)); \
 		cpsr = ARMPSROrUnsafeZ(cpsr, !(D)); \
 		cpsr = ARMPSROrUnsafeC(cpsr, cpu->shifterCarryOut); \
-		cpu->cpsr = cpu->cpsr & (0x1FFFFFFF) | cpsr; \
+		cpu->cpsr = (cpu->cpsr & (0x1FFFFFFF)) | cpsr; \
 	}
 
 #define ARM_NEUTRAL_HI_S(DLO, DHI) \
 	{ \
 		ARMPSR cpsr = 0; \
 		cpsr = ARMPSROrUnsafeN(cpsr, ARM_SIGN(DHI)); \
-		cpsr = ARMPSROrUnsafeZ(cpsr, !(DHI) | (DLO)); \
-		cpu->cpsr = cpu->cpsr & (0x3FFFFFFF) | cpsr; \
+		cpsr = ARMPSROrUnsafeZ(cpsr, !((DHI) | (DLO))); \
+		cpu->cpsr = (cpu->cpsr & (0x3FFFFFFF)) | cpsr; \
 	}
 
 #define ADDR_MODE_2_I_TEST (opcode & 0x00000F80)

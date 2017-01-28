@@ -18,7 +18,7 @@
 		cpsr = ARMPSROrUnsafeZ(cpsr, !(D)); \
 		cpsr = ARMPSROrUnsafeC(cpsr, ARM_CARRY_FROM(M, N, D)); \
 		cpsr = ARMPSROrUnsafeV(cpsr, ARM_V_ADDITION(M, N, D)); \
-		cpu->cpsr = cpu->cpsr & (0x0FFFFFFF) | cpsr; \
+		cpu->cpsr = (cpu->cpsr & (0x0FFFFFFF)) | cpsr; \
 	}
 
 #define THUMB_SUBTRACTION_S(M, N, D) \
@@ -28,7 +28,7 @@
 		cpsr = ARMPSROrUnsafeZ(cpsr, !(D)); \
 		cpsr = ARMPSROrUnsafeC(cpsr, ARM_BORROW_FROM(M, N, D)); \
 		cpsr = ARMPSROrUnsafeV(cpsr, ARM_V_SUBTRACTION(M, N, D)); \
-		cpu->cpsr = cpu->cpsr & (0x0FFFFFFF) | cpsr; \
+		cpu->cpsr = (cpu->cpsr & (0x0FFFFFFF)) | cpsr; \
 	}
 
 #define THUMB_NEUTRAL_S(M, N, D) \
@@ -36,7 +36,7 @@
 		ARMPSR cpsr = 0; \
 		cpsr = ARMPSROrUnsafeN(cpsr, ARM_SIGN(D)); \
 		cpsr = ARMPSROrUnsafeZ(cpsr, !(D)); \
-		cpu->cpsr = cpu->cpsr & (0x3FFFFFFF) | cpsr; \
+		cpu->cpsr = (cpu->cpsr & (0x3FFFFFFF)) | cpsr; \
 	}
 
 #define THUMB_ADDITION(D, M, N) \
