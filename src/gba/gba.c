@@ -227,7 +227,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		gba->bus |= cpu->prefetch[1] << 16;
 	}
 
-	if (gba->springIRQ && !cpu->cpsr.i) {
+	if (gba->springIRQ && !ARMPSRIsI(cpu->cpsr)) {
 		ARMRaiseIRQ(cpu);
 		gba->springIRQ = 0;
 	}

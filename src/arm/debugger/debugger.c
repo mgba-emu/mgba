@@ -26,7 +26,7 @@ static struct ARMDebugBreakpoint* _lookupBreakpoint(struct ARMDebugBreakpointLis
 static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	int instructionLength;
-	enum ExecutionMode mode = debugger->cpu->cpsr.t;
+	enum ExecutionMode mode = ARMPSRIsT(debugger->cpu->cpsr);
 	if (mode == MODE_ARM) {
 		instructionLength = WORD_SIZE_ARM;
 	} else {
