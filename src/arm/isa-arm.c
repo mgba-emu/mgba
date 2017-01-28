@@ -236,8 +236,12 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 	}
 
 #define ARM_NEUTRAL_HI_S(DLO, DHI) \
-	cpu->cpsr.n = ARM_SIGN(DHI); \
-	cpu->cpsr.z = !((DHI) | (DLO));
+	{ \
+		ARMPSR cpsr = 0; \
+		cpsr = ARMPSROrUnsafeN(cpsr, ARM_SIGN(DHI)); \
+		cpsr = ARMPSROrUnsafeZ(cpsr, !(DHI) | (DLO)); \
+		cpu->cpsr = cpu->cpsr & (0x3FFFFFFF) | cpsr; \
+	}
 
 #define ADDR_MODE_2_I_TEST (opcode & 0x00000F80)
 #define ADDR_MODE_2_I ((opcode & 0x00000F80) >> 7)
