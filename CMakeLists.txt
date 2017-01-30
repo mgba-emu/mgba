@@ -160,7 +160,14 @@ list(APPEND UTIL_SRC ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 source_group("Generated sources" FILES ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 
 # Advanced settings
-set(BUILD_LTO ON CACHE BOOL "Build with link-time optimization")
+if(NOT 3DS)
+	# LTO appears to make 3DS binary slower
+	set(DEFAULT_LTO ON)
+else()
+	set(DEFAULT_LTO OFF)
+endif()
+
+set(BUILD_LTO ${DEFAULT_LTO} CACHE BOOL "Build with link-time optimization")
 set(BUILD_PGO OFF CACHE BOOL "Build with profiling-guided optimization")
 set(PGO_STAGE_2 CACHE BOOL "Rebuild for profiling-guided optimization after profiles have been generated")
 set(PGO_DIR "/tmp/gba-pgo/" CACHE PATH "Profiling-guided optimization profiles path")
