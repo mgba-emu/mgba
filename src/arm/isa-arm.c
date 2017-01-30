@@ -289,12 +289,11 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 #define ADDR_MODE_4_WRITEBACK_STM cpu->gprs[rn] = address;
 
 #define ARM_LOAD_POST_BODY \
-	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32; \
 	if (rd == ARM_PC) { \
 		ARM_WRITE_PC; \
 	}
 
-#define ARM_STORE_POST_BODY \
+#define ARM_LOAD_STORE_PRE_BODY \
 	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32;
 
 #define DEFINE_INSTRUCTION_ARM(NAME, BODY) \
@@ -437,11 +436,12 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 
 #define ARM_MS_POST ARMSetPrivilegeMode(cpu, privilegeMode);
 
-#define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME, LS, WRITEBACK, S_PRE, S_POST, DIRECTION, POST_BODY) \
+#define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME, LS, WRITEBACK, S_PRE, S_POST, DIRECTION, PRE_BODY, POST_BODY) \
 	DEFINE_INSTRUCTION_ARM(NAME, \
 		int rn = (opcode >> 16) & 0xF; \
 		int rs = opcode & 0x0000FFFF; \
 		uint32_t address = cpu->gprs[rn]; \
+		POST_BODY; \
 		S_PRE; \
 		address = cpu->memory. LS ## Multiple(cpu, address, rs, LSM_ ## DIRECTION, &currentCycles); \
 		S_POST; \
@@ -449,23 +449,23 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		WRITEBACK;)
 
 
-#define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(NAME, LS, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DA,   LS,                               ,           ,            , DA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DAW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , DA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DB,   LS,                               ,           ,            , DB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DBW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , DB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IA,   LS,                               ,           ,            , IA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IAW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , IA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IB,   LS,                               ,           ,            , IB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IBW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , IB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDA,  LS,                               , ARM_MS_PRE, ARM_MS_POST, DA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDAW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, DA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDB,  LS,                               , ARM_MS_PRE, ARM_MS_POST, DB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDBW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, DB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIA,  LS,                               , ARM_MS_PRE, ARM_MS_POST, IA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIAW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, IA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIB,  LS,                               , ARM_MS_PRE, ARM_MS_POST, IB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIBW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, IB, POST_BODY)
+#define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(NAME, LS, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DA,   LS,                               ,           ,            , DA, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DAW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , DA, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DB,   LS,                               ,           ,            , DB, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DBW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , DB, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IA,   LS,                               ,           ,            , IA, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IAW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , IA, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IB,   LS,                               ,           ,            , IB, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IBW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , IB, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDA,  LS,                               , ARM_MS_PRE, ARM_MS_POST, DA, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDAW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, DA, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDB,  LS,                               , ARM_MS_PRE, ARM_MS_POST, DB, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDBW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, DB, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIA,  LS,                               , ARM_MS_PRE, ARM_MS_POST, IA, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIAW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, IA, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIB,  LS,                               , ARM_MS_PRE, ARM_MS_POST, IB, PRE_BODY, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIBW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, IB, PRE_BODY, POST_BODY)
 
 // Begin ALU definitions
 
@@ -562,14 +562,14 @@ DEFINE_MULTIPLY_INSTRUCTION_2_ARM(UMULL,
 
 // Begin load/store definitions
 
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDR, cpu->gprs[rd] = cpu->memory.load32(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRB, cpu->gprs[rd] = cpu->memory.load8(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRH, cpu->gprs[rd] = cpu->memory.load16(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSB, cpu->gprs[rd] = ARM_SXT_8(cpu->memory.load8(cpu, address, &currentCycles)); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSH, cpu->gprs[rd] = address & 1 ? ARM_SXT_8(cpu->memory.load16(cpu, address, &currentCycles)) : ARM_SXT_16(cpu->memory.load16(cpu, address, &currentCycles)); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(STR, cpu->memory.store32(cpu, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(STRB, cpu->memory.store8(cpu, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(STRH, cpu->memory.store16(cpu, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDR, ARM_LOAD_STORE_PRE_BODY; cpu->gprs[rd] = cpu->memory.load32(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRB, ARM_LOAD_STORE_PRE_BODY; cpu->gprs[rd] = cpu->memory.load8(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRH, ARM_LOAD_STORE_PRE_BODY; cpu->gprs[rd] = cpu->memory.load16(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSB, ARM_LOAD_STORE_PRE_BODY; cpu->gprs[rd] = ARM_SXT_8(cpu->memory.load8(cpu, address, &currentCycles)); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSH, ARM_LOAD_STORE_PRE_BODY; cpu->gprs[rd] = address & 1 ? ARM_SXT_8(cpu->memory.load16(cpu, address, &currentCycles)) : ARM_SXT_16(cpu->memory.load16(cpu, address, &currentCycles)); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(STR, ARM_LOAD_STORE_PRE_BODY; cpu->memory.store32(cpu, address, cpu->gprs[rd], &currentCycles);)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(STRB, ARM_LOAD_STORE_PRE_BODY; cpu->memory.store8(cpu, address, cpu->gprs[rd], &currentCycles);)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(STRH, ARM_LOAD_STORE_PRE_BODY; cpu->memory.store16(cpu, address, cpu->gprs[rd], &currentCycles);)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRBT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
@@ -580,6 +580,7 @@ DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRBT,
 	ARM_LOAD_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRT,
+	ARM_LOAD_STORE_PRE_BODY;
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
 	int32_t r = cpu->memory.load32(cpu, address, &currentCycles);
@@ -588,31 +589,31 @@ DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRT,
 	ARM_LOAD_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRBT,
+	ARM_LOAD_STORE_PRE_BODY;
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	int32_t r = cpu->gprs[rd];
 	ARMSetPrivilegeMode(cpu, MODE_USER);
 	cpu->memory.store8(cpu, address, r, &currentCycles);
-	ARMSetPrivilegeMode(cpu, priv);
-	ARM_STORE_POST_BODY;)
+	ARMSetPrivilegeMode(cpu, priv);)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRT,
+	ARM_LOAD_STORE_PRE_BODY;
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	int32_t r = cpu->gprs[rd];
 	ARMSetPrivilegeMode(cpu, MODE_USER);
 	cpu->memory.store32(cpu, address, r, &currentCycles);
-	ARMSetPrivilegeMode(cpu, priv);
-	ARM_STORE_POST_BODY;)
+	ARMSetPrivilegeMode(cpu, priv);)
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,
 	load,
-	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32;
+	ARM_LOAD_STORE_PRE_BODY,
 	if (rs & 0x8000) {
 		ARM_WRITE_PC;
 	})
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM,
 	store,
-	ARM_STORE_POST_BODY;)
+	ARM_LOAD_STORE_PRE_BODY,)
 
 DEFINE_INSTRUCTION_ARM(SWP,
 	int rm = opcode & 0xF;
