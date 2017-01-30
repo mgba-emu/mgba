@@ -112,6 +112,7 @@ struct ARMInterruptHandler {
 	void (*bkpt32)(struct ARMCore* cpu, int immediate);
 	void (*readCPSR)(struct ARMCore* cpu);
 	void (*writeCP15)(struct ARMCore*, int crn, int crm, int opcode1, int opcode2, uint32_t value);
+	uint32_t (*readCP15)(struct ARMCore*, int crn, int crm, int opcode1, int opcode2);
 
 	void (*hitStub)(struct ARMCore* cpu, uint32_t opcode);
 };

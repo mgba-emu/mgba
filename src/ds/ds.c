@@ -46,6 +46,7 @@ static void DS7ProcessEvents(struct ARMCore* cpu);
 static void DS9Reset(struct ARMCore* cpu);
 static void DS9TestIRQ(struct ARMCore* cpu);
 static void DS9WriteCP15(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2, uint32_t value);
+static uint32_t DS9ReadCP15(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2);
 static void DS9InterruptHandlerInit(struct ARMInterruptHandler* irqh);
 static void DS9ProcessEvents(struct ARMCore* cpu);
 
@@ -154,6 +155,7 @@ void DS7InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 	irqh->hitIllegal = DSIllegal;
 	irqh->readCPSR = DS7TestIRQ;
 	irqh->writeCP15 = NULL;
+	irqh->readCP15 = NULL;
 	irqh->hitStub = DSHitStub;
 	irqh->bkpt16 = DSBreakpoint;
 	irqh->bkpt32 = DSBreakpoint;
@@ -167,6 +169,7 @@ void DS9InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 	irqh->hitIllegal = DSIllegal;
 	irqh->readCPSR = DS9TestIRQ;
 	irqh->writeCP15 = DS9WriteCP15;
+	irqh->readCP15 = DS9ReadCP15;
 	irqh->hitStub = DSHitStub;
 	irqh->bkpt16 = DSBreakpoint;
 	irqh->bkpt32 = DSBreakpoint;
@@ -522,7 +525,7 @@ static void _writeCache(struct ARMCore* cpu, int crm, int opcode2, uint32_t valu
 static void _writeTCMControl(struct ARMCore* cpu, int crm, int opcode2, uint32_t value) {
 	uint32_t base = ARMTCMControlGetBase(value) << 12;
 	uint32_t size = 512 << ARMTCMControlGetVirtualSize(value);
-	mLOG(DS, STUB, "CP15 TCM control write: CRm: %i, Op2: %i, Base: %08X, Size: %08X", crm, opcode2, base, size);
+	mLOG(DS, DEBUG, "CP15 TCM control write: CRm: %i, Op2: %i, Base: %08X, Size: %08X", crm, opcode2, base, size);
 	switch (opcode2) {
 	case 0:
 		cpu->cp15.r9.d = value;
@@ -566,6 +569,28 @@ void DS9WriteCP15(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode
 	case 9:
 		_writeTCMControl(cpu, crm, opcode2, value);
 		break;
+	}
+}
+
+static uint32_t _readTCMControl(struct ARMCore* cpu, int crm, int opcode2) {
+	switch (opcode2) {
+	case 0:
+		return cpu->cp15.r9.d;
+	case 1:
+		return cpu->cp15.r9.i;
+	default:
+		mLOG(DS, GAME_ERROR, "CP15 TCM control bad op2: %i", opcode2);
+		return 0;
+	}
+}
+
+uint32_t DS9ReadCP15(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2) {
+	switch (crn) {
+	default:
+		mLOG(DS, STUB, "CP15 unknown read: CRn: %i, CRm: %i, Op1: %i, Op2: %i", crn, crm, opcode1, opcode2);
+		return 0;
+	case 9:
+		return _readTCMControl(cpu, crm, opcode2);
 	}
 }
 

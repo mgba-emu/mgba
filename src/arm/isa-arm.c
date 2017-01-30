@@ -687,7 +687,12 @@ DEFINE_INSTRUCTION_ARM(BLX2,
 		UNUSED(crm); \
 		BODY;)
 
-DEFINE_COPROCESSOR_INSTRUCTION(MRC, ARM_STUB)
+DEFINE_COPROCESSOR_INSTRUCTION(MRC,
+	if (cp == 15 && cpu->irqh.readCP15) {
+		cpu->gprs[rd] = cpu->irqh.readCP15(cpu, crn, crm, op1, op2);
+	} else {
+		ARM_STUB;
+	})
 
 DEFINE_COPROCESSOR_INSTRUCTION(MCR,
 	if (cp == 15 && cpu->irqh.writeCP15) {
