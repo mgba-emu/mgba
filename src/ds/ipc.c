@@ -48,3 +48,23 @@ void DSIPCWriteFIFO(struct DSCommon* dscore, int32_t value) {
 		dscore->ipc->memory.io[DS_REG_IPCFIFOCNT >> 1] = DSIPCFIFOCNTFillRecvFull(dscore->ipc->memory.io[DS_REG_IPCFIFOCNT >> 1]);
 	}
 }
+
+int32_t DSIPCReadFIFO(struct DSCommon* dscore) {
+	if (!DSIPCFIFOCNTIsEnable(dscore->memory.io[DS_REG_IPCFIFOCNT >> 1])) {
+		return 0;
+	}
+	int32_t value = ((int32_t*) dscore->ipc->memory.io)[DS_REG_IPCFIFOSEND_LO >> 2]; // TODO: actual last value
+	CircleBufferRead32(&dscore->fifo, &value);
+	size_t fullness = CircleBufferSize(&dscore->fifo);
+	dscore->memory.io[DS_REG_IPCFIFOCNT >> 1] = DSIPCFIFOCNTClearRecvFull(dscore->memory.io[DS_REG_IPCFIFOCNT >> 1]);
+	dscore->ipc->memory.io[DS_REG_IPCFIFOCNT >> 1] = DSIPCFIFOCNTClearSendFull(dscore->ipc->memory.io[DS_REG_IPCFIFOCNT >> 1]);
+	if (fullness == 0) {
+		dscore->memory.io[DS_REG_IPCFIFOCNT >> 1] = DSIPCFIFOCNTFillRecvEmpty(dscore->memory.io[DS_REG_IPCFIFOCNT >> 1]);
+		dscore->ipc->memory.io[DS_REG_IPCFIFOCNT >> 1] = DSIPCFIFOCNTFillSendEmpty(dscore->ipc->memory.io[DS_REG_IPCFIFOCNT >> 1]);
+		if (DSIPCFIFOCNTIsSendIRQ(dscore->ipc->memory.io[DS_REG_IPCFIFOCNT >> 1])) {
+			// TODO: Adaptive time slicing?
+			DSRaiseIRQ(dscore->ipc->cpu, dscore->ipc->memory.io, DS_IRQ_IPC_NOT_EMPTY);
+		}
+	}
+	return value;
+}

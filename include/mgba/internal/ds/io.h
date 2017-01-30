@@ -282,12 +282,14 @@ void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value);
 void DS7IOWrite8(struct DS* ds, uint32_t address, uint8_t value);
 void DS7IOWrite32(struct DS* ds, uint32_t address, uint32_t value);
 uint16_t DS7IORead(struct DS* ds, uint32_t address);
+uint32_t DS7IORead32(struct DS* ds, uint32_t address);
 
 void DS9IOInit(struct DS* ds);
 void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value);
 void DS9IOWrite8(struct DS* ds, uint32_t address, uint8_t value);
 void DS9IOWrite32(struct DS* ds, uint32_t address, uint32_t value);
 uint16_t DS9IORead(struct DS* ds, uint32_t address);
+uint32_t DS9IORead32(struct DS* ds, uint32_t address);
 
 CXX_GUARD_END
 

@@ -207,6 +207,7 @@ uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_TM2CNT_HI:
 	case DS_REG_TM3CNT_HI:
 	case DS_REG_IPCSYNC:
+	case DS_REG_IPCFIFOCNT:
 	case DS_REG_IME:
 	case DS_REG_IE_LO:
 	case DS_REG_IE_HI:
@@ -221,6 +222,15 @@ uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 		return ds->memory.io7[address >> 1];
 	}
 	return 0;
+}
+
+uint32_t DS7IORead32(struct DS* ds, uint32_t address) {
+	switch (address) {
+	case DS_REG_IPCFIFORECV_LO:
+		return DSIPCReadFIFO(&ds->ds7);
+	default:
+		return DS7IORead(ds, address & 0x00FFFFFC) | (DS7IORead(ds, (address & 0x00FFFFFC) | 2) << 16);
+	}
 }
 
 void DS9IOInit(struct DS* ds) {
@@ -328,6 +338,7 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_TM2CNT_HI:
 	case DS_REG_TM3CNT_HI:
 	case DS_REG_IPCSYNC:
+	case DS_REG_IPCFIFOCNT:
 	case DS_REG_IME:
 	case DS_REG_IE_LO:
 	case DS_REG_IE_HI:
@@ -342,4 +353,13 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 		return ds->ds9.memory.io[address >> 1];
 	}
 	return 0;
+}
+
+uint32_t DS9IORead32(struct DS* ds, uint32_t address) {
+	switch (address) {
+	case DS_REG_IPCFIFORECV_LO:
+		return DSIPCReadFIFO(&ds->ds9);
+	default:
+		return DS9IORead(ds, address & 0x00FFFFFC) | (DS9IORead(ds, (address & 0x00FFFFFC) | 2) << 16);
+	}
 }
