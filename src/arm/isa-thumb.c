@@ -63,11 +63,8 @@
 
 #define THUMB_PREFETCH_CYCLES (1 + cpu->memory.activeSeqCycles16)
 
-#define THUMB_LOAD_POST_BODY \
-	currentCycles += cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16;
-
-#define THUMB_STORE_POST_BODY \
-	currentCycles += cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16;
+#define THUMB_LOAD_STORE_PRE_BODY \
+	currentCycles = (1 + cpu->memory.activeNonseqCycles16);
 
 #define DEFINE_INSTRUCTION_THUMB(NAME, BODY) \
 	static void _ThumbInstruction ## NAME (struct ARMCore* cpu, uint16_t opcode) {  \
@@ -116,12 +113,12 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1,
 	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
 
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDR1, cpu->gprs[rd] = cpu->memory.load32(cpu, cpu->gprs[rm] + immediate * 4, &currentCycles); THUMB_LOAD_POST_BODY;)
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDRB1, cpu->gprs[rd] = cpu->memory.load8(cpu, cpu->gprs[rm] + immediate, &currentCycles); THUMB_LOAD_POST_BODY;)
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDRH1, cpu->gprs[rd] = cpu->memory.load16(cpu, cpu->gprs[rm] + immediate * 2, &currentCycles); THUMB_LOAD_POST_BODY;)
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STR1, cpu->memory.store32(cpu, cpu->gprs[rm] + immediate * 4, cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRB1, cpu->memory.store8(cpu, cpu->gprs[rm] + immediate, cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRH1, cpu->memory.store16(cpu, cpu->gprs[rm] + immediate * 2, cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDR1, THUMB_LOAD_STORE_PRE_BODY; cpu->gprs[rd] = cpu->memory.load32(cpu, cpu->gprs[rm] + immediate * 4, &currentCycles);)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDRB1, THUMB_LOAD_STORE_PRE_BODY; cpu->gprs[rd] = cpu->memory.load8(cpu, cpu->gprs[rm] + immediate, &currentCycles);)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDRH1, THUMB_LOAD_STORE_PRE_BODY; cpu->gprs[rd] = cpu->memory.load16(cpu, cpu->gprs[rm] + immediate * 2, &currentCycles);)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STR1, THUMB_LOAD_STORE_PRE_BODY; cpu->memory.store32(cpu, cpu->gprs[rm] + immediate * 4, cpu->gprs[rd], &currentCycles);)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRB1, THUMB_LOAD_STORE_PRE_BODY; cpu->memory.store8(cpu, cpu->gprs[rm] + immediate, cpu->gprs[rd], &currentCycles);)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRH1, THUMB_LOAD_STORE_PRE_BODY; cpu->memory.store16(cpu, cpu->gprs[rm] + immediate * 2, cpu->gprs[rd], &currentCycles);)
 
 #define DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(NAME, BODY) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
@@ -276,9 +273,9 @@ DEFINE_INSTRUCTION_WITH_HIGH_THUMB(MOV3,
 		int immediate = (opcode & 0x00FF) << 2; \
 		BODY;)
 
-DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR3, cpu->gprs[rd] = cpu->memory.load32(cpu, (cpu->gprs[ARM_PC] & 0xFFFFFFFC) + immediate, &currentCycles); THUMB_LOAD_POST_BODY;)
-DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR4, cpu->gprs[rd] = cpu->memory.load32(cpu, cpu->gprs[ARM_SP] + immediate, &currentCycles); THUMB_LOAD_POST_BODY;)
-DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(STR3, cpu->memory.store32(cpu, cpu->gprs[ARM_SP] + immediate, cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
+DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR3, THUMB_LOAD_STORE_PRE_BODY; cpu->gprs[rd] = cpu->memory.load32(cpu, (cpu->gprs[ARM_PC] & 0xFFFFFFFC) + immediate, &currentCycles);)
+DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR4, THUMB_LOAD_STORE_PRE_BODY; cpu->gprs[rd] = cpu->memory.load32(cpu, cpu->gprs[ARM_SP] + immediate, &currentCycles);)
+DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(STR3, THUMB_LOAD_STORE_PRE_BODY; cpu->memory.store32(cpu, cpu->gprs[ARM_SP] + immediate, cpu->gprs[rd], &currentCycles);)
 
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD5, cpu->gprs[rd] = (cpu->gprs[ARM_PC] & 0xFFFFFFFC) + immediate)
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD6, cpu->gprs[rd] = cpu->gprs[ARM_SP] + immediate)
@@ -290,14 +287,14 @@ DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD6, cpu->gprs[rd] = cpu->gprs[ARM_SP] + i
 		int rn = (opcode >> 3) & 0x0007; \
 		BODY;)
 
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDR2, cpu->gprs[rd] = cpu->memory.load32(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles); THUMB_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRB2, cpu->gprs[rd] = cpu->memory.load8(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles); THUMB_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRH2, cpu->gprs[rd] = cpu->memory.load16(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles); THUMB_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSB, cpu->gprs[rd] = ARM_SXT_8(cpu->memory.load8(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles)); THUMB_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSH, rm = cpu->gprs[rn] + cpu->gprs[rm]; cpu->gprs[rd] = rm & 1 ? ARM_SXT_8(cpu->memory.load16(cpu, rm, &currentCycles)) : ARM_SXT_16(cpu->memory.load16(cpu, rm, &currentCycles)); THUMB_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STR2, cpu->memory.store32(cpu, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRB2, cpu->memory.store8(cpu, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, cpu->memory.store16(cpu, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDR2, THUMB_LOAD_STORE_PRE_BODY; cpu->gprs[rd] = cpu->memory.load32(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles);)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRB2, THUMB_LOAD_STORE_PRE_BODY; cpu->gprs[rd] = cpu->memory.load8(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles);)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRH2, THUMB_LOAD_STORE_PRE_BODY; cpu->gprs[rd] = cpu->memory.load16(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles);)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSB, THUMB_LOAD_STORE_PRE_BODY; cpu->gprs[rd] = ARM_SXT_8(cpu->memory.load8(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles));)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSH, THUMB_LOAD_STORE_PRE_BODY; rm = cpu->gprs[rn] + cpu->gprs[rm]; cpu->gprs[rd] = rm & 1 ? ARM_SXT_8(cpu->memory.load16(cpu, rm, &currentCycles)) : ARM_SXT_16(cpu->memory.load16(cpu, rm, &currentCycles));)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STR2, THUMB_LOAD_STORE_PRE_BODY; cpu->memory.store32(cpu, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles);)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRB2, THUMB_LOAD_STORE_PRE_BODY; cpu->memory.store8(cpu, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles);)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, THUMB_LOAD_STORE_PRE_BODY; cpu->memory.store16(cpu, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles);)
 
 #define DEFINE_LOAD_STORE_MULTIPLE_THUMB(NAME, RN, LS, DIRECTION, PRE_BODY, WRITEBACK) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
@@ -313,8 +310,7 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(LDMIA,
 	(opcode >> 8) & 0x0007,
 	load,
 	IA,
-	,
-	THUMB_LOAD_POST_BODY;
+	THUMB_LOAD_STORE_PRE_BODY,
 	if (!((1 << rn) & rs)) {
 		cpu->gprs[rn] = address;
 	})
@@ -323,8 +319,7 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA,
 	(opcode >> 8) & 0x0007,
 	store,
 	IA,
-	,
-	THUMB_STORE_POST_BODY;
+	THUMB_LOAD_STORE_PRE_BODY,
 	cpu->gprs[rn] = address;)
 
 #define DEFINE_CONDITIONAL_BRANCH_THUMB(COND) \
@@ -357,16 +352,15 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(POP,
 	ARM_SP,
 	load,
 	IA,
-	,
-	THUMB_LOAD_POST_BODY;
+	THUMB_LOAD_STORE_PRE_BODY,
 	cpu->gprs[ARM_SP] = address)
 
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(POPR,
 	ARM_SP,
 	load,
 	IA,
+	THUMB_LOAD_STORE_PRE_BODY;
 	rs |= 1 << ARM_PC,
-	THUMB_LOAD_POST_BODY;
 	cpu->gprs[ARM_SP] = address;
 	THUMB_WRITE_PC;)
 
@@ -374,16 +368,15 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(PUSH,
 	ARM_SP,
 	store,
 	DB,
-	,
-	THUMB_STORE_POST_BODY;
+	THUMB_LOAD_STORE_PRE_BODY,
 	cpu->gprs[ARM_SP] = address)
 
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(PUSHR,
 	ARM_SP,
 	store,
 	DB,
+	THUMB_LOAD_STORE_PRE_BODY;
 	rs |= 1 << ARM_LR,
-	THUMB_STORE_POST_BODY;
 	cpu->gprs[ARM_SP] = address)
 
 DEFINE_INSTRUCTION_THUMB(ILL, ARM_ILL)
