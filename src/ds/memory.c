@@ -661,6 +661,14 @@ uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	int wait = ds->ds9.memory.waitstatesNonseq32[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS9_REGION_ITCM:
+	case DS9_REGION_ITCM_MIRROR:
+		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+			LOAD_32(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Bad DS9 Load32: %08X:%08X", address, value);
+		break;
 	case DS_REGION_RAM:
 		if ((address & ~(DS9_SIZE_DTCM - 1)) == DS9_BASE_DTCM) {
 			LOAD_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
@@ -701,6 +709,14 @@ uint32_t DS9Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	int wait = ds->ds9.memory.waitstatesNonseq16[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS9_REGION_ITCM:
+	case DS9_REGION_ITCM_MIRROR:
+		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+			LOAD_16(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Bad DS9 Load16: %08X:%08X", address, value);
+		break;
 	case DS_REGION_RAM:
 		if ((address & ~(DS9_SIZE_DTCM - 1)) == DS9_BASE_DTCM) {
 			LOAD_16(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
@@ -740,6 +756,14 @@ uint32_t DS9Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	int wait = ds->ds9.memory.waitstatesNonseq16[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS9_REGION_ITCM:
+	case DS9_REGION_ITCM_MIRROR:
+		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+			value = ((uint8_t*) memory->itcm)[address & (DS9_SIZE_ITCM - 1)];
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Bad DS9 Load8: %08X:%08X", address, value);
+		break;
 	case DS_REGION_RAM:
 		if ((address & ~(DS9_SIZE_DTCM - 1)) == DS9_BASE_DTCM) {
 			value = ((uint8_t*) memory->dtcm)[address & (DS9_SIZE_DTCM - 1)];
@@ -775,7 +799,7 @@ void DS9Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 	switch (address >> DS_BASE_OFFSET) {
 	case DS9_REGION_ITCM:
 	case DS9_REGION_ITCM_MIRROR:
-		if (address < (512 << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
 			STORE_32(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
 			break;
 		}
@@ -814,7 +838,7 @@ void DS9Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	switch (address >> DS_BASE_OFFSET) {
 	case DS9_REGION_ITCM:
 	case DS9_REGION_ITCM_MIRROR:
-		if (address < (512 << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
 			STORE_16(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
 			break;
 		}
