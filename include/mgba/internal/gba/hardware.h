@@ -14,8 +14,6 @@ CXX_GUARD_START
 #include <mgba/core/timing.h>
 #include <mgba/gba/interface.h>
 
-#include <time.h>
-
 mLOG_DECLARE_CATEGORY(GBA_HW);
 
 #define IS_GPIO_REGISTER(reg) ((reg) == GPIO_REG_DATA || (reg) == GPIO_REG_DIRECTION || (reg) == GPIO_REG_CONTROL)

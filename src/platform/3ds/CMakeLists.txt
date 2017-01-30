@@ -1,4 +1,4 @@
-set(USE_VFS_3DS ON CACNE BOOL "Use 3DS-specific file support")
+set(USE_VFS_3DS ON CACHE BOOL "Use 3DS-specific file support")
 mark_as_advanced(USE_VFS_3DS)
 
 find_program(3DSLINK 3dslink)

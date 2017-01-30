@@ -306,6 +306,14 @@ void mCoreConfigSetOverrideFloatValue(struct mCoreConfig* config, const char* ke
 	ConfigurationSetFloatValue(&config->overridesTable, config->port, key, value);
 }
 
+void mCoreConfigCopyValue(struct mCoreConfig* config, const struct mCoreConfig* src, const char* key) {
+	const char* value = mCoreConfigGetValue(src, key);
+	if (!value) {
+		return;
+	}
+	mCoreConfigSetValue(config, key, value);
+}
+
 void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts) {
 	_lookupCharValue(config, "bios", &opts->bios);
 	_lookupCharValue(config, "shader", &opts->shader);

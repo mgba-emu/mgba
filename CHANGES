@@ -6,6 +6,8 @@ Features:
  - Sprite viewer
  - Debugging console
  - Improved memory viewer
+ - GB: LR35902/GB-Z80 disassembler
+ - Configuration of gamepad hats
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
@@ -16,6 +18,10 @@ Bugfixes:
  - SDL: Prevent crash on cores with no audio
  - ARM7: Decode MCR/MRC
  - ARM7: Clean up instruction decoding for future expandability
+ - Libretro: Fix saving in GB games (fixes mgba.io/i/486)
+ - LR35902: Fix pc overflowing current region off-by-one
+ - GB MBC: Fix ROM bank overflows getting set to bank 0
+ - Qt: Fix timing issues on high refresh rate monitors
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
@@ -40,6 +46,20 @@ Misc:
  - All: Add C++ header guards
  - GBA I/O: Clear JOYSTAT RECV flag when reading JOY_RECV registers
  - GBA I/O: Set JOYSTAT TRANS flag when writing JOY_TRANS registers
+ - Qt: Improved HiDPI support
+ - Qt: Expose configuration directory
+ - Feature: Move game database from flatfile to SQLite3
+ - GB Audio: Start implementing "zombie" audio (fixes mgba.io/i/389)
+ - VFS: Fix some minor VFile issues with FILEs
+ - Core: Add generic checksum function
+ - Feature: Support ImageMagick 7
+ - All: Move time.h include to common.h
+ - CMake: Add ability to just print version string
+ - Qt: Merge "Save" and "OK" buttons in shader options
+ - SDL: Automatically map controllers when plugged in
+ - Qt: Automatically load controller profile when plugged in
+ - OpenGL: Add xBR-lv2 shader
+ - ARM: Overhaul PSR bit access
 
 0.5.2: (2016-12-31)
 Bugfixes:

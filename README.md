@@ -125,6 +125,7 @@ mGBA has no hard dependencies, however, the following optional dependencies are 
 - ffmpeg or libav: for video recording.
 - libzip or zlib: for loading ROMs stored in zip files.
 - ImageMagick: for GIF recording.
+- SQLite3: for game databases.
 
 Both libpng and zlib are included with the emulator, so they do not need to be externally compiled first.
 
@@ -155,5 +156,6 @@ mGBA contains the following third-party libraries:
 - [LZMA SDK](http://www.7-zip.org/sdk.html), which is public domain.
 - [MurmurHash3](https://github.com/aappleby/smhasher) implementation by Austin Appleby, which is public domain.
 - [getopt for MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio/), which is public domain.
+- [SQLite3](https://www.sqlite.org), which is public domain.
 
 If you are a game publisher and wish to license mGBA for commercial usage, please email [licensing@mgba.io](mailto:licensing@mgba.io) for more information.

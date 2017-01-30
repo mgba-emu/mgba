@@ -127,7 +127,15 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	}
 #endif
 
-	connect(m_ui.biosBrowse, SIGNAL(clicked()), this, SLOT(selectBios()));
+	connect(m_ui.gbaBiosBrowse, &QPushButton::clicked, [this]() {
+		selectBios(m_ui.gbaBios);
+	});
+	connect(m_ui.gbBiosBrowse, &QPushButton::clicked, [this]() {
+		selectBios(m_ui.gbBios);
+	});
+	connect(m_ui.gbcBiosBrowse, &QPushButton::clicked, [this]() {
+		selectBios(m_ui.gbcBios);
+	});
 
 	GBAKeyEditor* editor = new GBAKeyEditor(inputController, InputController::KEYBOARD, QString(), this);
 	m_ui.stackedWidget->addWidget(editor);
@@ -162,15 +170,17 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	m_ui.tabs->addItem("Shortcuts");
 }
 
-void SettingsView::selectBios() {
+void SettingsView::selectBios(QLineEdit* bios) {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select BIOS"));
 	if (!filename.isEmpty()) {
-		m_ui.bios->setText(filename);
+		bios->setText(filename);
 	}
 }
 
 void SettingsView::updateConfig() {
-	saveSetting("bios", m_ui.bios);
+	saveSetting("gba.bios", m_ui.gbaBios);
+	saveSetting("gb.bios", m_ui.gbBios);
+	saveSetting("gbc.bios", m_ui.gbcBios);
 	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
 	saveSetting("audioBuffers", m_ui.audioBufferSize);
@@ -192,6 +202,7 @@ void SettingsView::updateConfig() {
 	saveSetting("savestatePath", m_ui.savestatePath);
 	saveSetting("screenshotPath", m_ui.screenshotPath);
 	saveSetting("patchPath", m_ui.patchPath);
+	saveSetting("showLibrary", m_ui.showLibrary);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
@@ -240,11 +251,14 @@ void SettingsView::updateConfig() {
 	m_controller->write();
 
 	emit pathsChanged();
-	emit biosLoaded(m_ui.bios->text());
+	emit biosLoaded(PLATFORM_GBA, m_ui.gbaBios->text());
 }
 
 void SettingsView::reloadConfig() {	
-	loadSetting("bios", m_ui.bios);
+	loadSetting("bios", m_ui.gbaBios);
+	loadSetting("gba.bios", m_ui.gbaBios);
+	loadSetting("gb.bios", m_ui.gbBios);
+	loadSetting("gbc.bios", m_ui.gbcBios);
 	loadSetting("useBios", m_ui.useBios);
 	loadSetting("skipBios", m_ui.skipBios);
 	loadSetting("audioBuffers", m_ui.audioBufferSize);
@@ -266,6 +280,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("savestatePath", m_ui.savestatePath);
 	loadSetting("screenshotPath", m_ui.screenshotPath);
 	loadSetting("patchPath", m_ui.patchPath);
+	loadSetting("showLibrary", m_ui.showLibrary);
 
 	double fastForwardRatio = loadSetting("fastForwardRatio").toDouble();
 	if (fastForwardRatio <= 0) {

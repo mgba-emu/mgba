@@ -264,9 +264,10 @@ void ShaderSelector::buttonPressed(QAbstractButton* button) {
 	case QDialogButtonBox::Reset:
 		emit reset();
 		break;
-	case QDialogButtonBox::Save:
+	case QDialogButtonBox::Ok:
 		m_config->setOption("shader", m_shaderPath);
 		emit saved();
+		close();
 		break;
  	case QDialogButtonBox::RestoreDefaults:
 		emit resetToDefault();

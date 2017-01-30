@@ -10,20 +10,20 @@
 
 #include "arm.h"
 
-#define ARM_COND_EQ (cpu->cpsr.z)
-#define ARM_COND_NE (!cpu->cpsr.z)
-#define ARM_COND_CS (cpu->cpsr.c)
-#define ARM_COND_CC (!cpu->cpsr.c)
-#define ARM_COND_MI (cpu->cpsr.n)
-#define ARM_COND_PL (!cpu->cpsr.n)
-#define ARM_COND_VS (cpu->cpsr.v)
-#define ARM_COND_VC (!cpu->cpsr.v)
-#define ARM_COND_HI (cpu->cpsr.c && !cpu->cpsr.z)
-#define ARM_COND_LS (!cpu->cpsr.c || cpu->cpsr.z)
-#define ARM_COND_GE (!cpu->cpsr.n == !cpu->cpsr.v)
-#define ARM_COND_LT (!cpu->cpsr.n != !cpu->cpsr.v)
-#define ARM_COND_GT (!cpu->cpsr.z && !cpu->cpsr.n == !cpu->cpsr.v)
-#define ARM_COND_LE (cpu->cpsr.z || !cpu->cpsr.n != !cpu->cpsr.v)
+#define ARM_COND_EQ (ARMPSRIsZ(cpu->cpsr))
+#define ARM_COND_NE (!ARMPSRIsZ(cpu->cpsr))
+#define ARM_COND_CS (ARMPSRIsC(cpu->cpsr))
+#define ARM_COND_CC (!ARMPSRIsC(cpu->cpsr))
+#define ARM_COND_MI (ARMPSRIsN(cpu->cpsr))
+#define ARM_COND_PL (!ARMPSRIsN(cpu->cpsr))
+#define ARM_COND_VS (ARMPSRIsV(cpu->cpsr))
+#define ARM_COND_VC (!ARMPSRIsV(cpu->cpsr))
+#define ARM_COND_HI (ARMPSRIsC(cpu->cpsr) && !ARMPSRIsZ(cpu->cpsr))
+#define ARM_COND_LS (!ARMPSRIsC(cpu->cpsr) || ARMPSRIsZ(cpu->cpsr))
+#define ARM_COND_GE (!ARMPSRIsN(cpu->cpsr) == !ARMPSRIsV(cpu->cpsr))
+#define ARM_COND_LT (!ARMPSRIsN(cpu->cpsr) != !ARMPSRIsV(cpu->cpsr))
+#define ARM_COND_GT (!ARMPSRIsZ(cpu->cpsr) && !ARMPSRIsN(cpu->cpsr) == !ARMPSRIsV(cpu->cpsr))
+#define ARM_COND_LE (ARMPSRIsZ(cpu->cpsr) || !ARMPSRIsN(cpu->cpsr) != !ARMPSRIsV(cpu->cpsr))
 #define ARM_COND_AL 1
 
 #define ARM_SIGN(I) ((I) >> 31)
@@ -31,7 +31,8 @@
 #define ARM_SXT_16(I) (((int16_t) (I) << 16) >> 16)
 #define ARM_UXT_64(I) (uint64_t)(uint32_t) (I)
 
-#define ARM_CARRY_FROM(M, N, D) (((uint32_t) (M) >> 31) + ((uint32_t) (N) >> 31) > ((uint32_t) (D) >> 31))
+#define ARM_CARRY_FROM(M, N, D) (UINT_MAX - (uint32_t) (M) < (uint32_t) (N))
+#define ARM_CARRY_FROM_CARRY(M, N, D, C) (((uint32_t) (M) >> 31) + ((uint32_t) (N) >> 31) > ((uint32_t) (D) >> 31))
 #define ARM_BORROW_FROM(M, N, D) (((uint32_t) (M)) >= ((uint32_t) (N)))
 #define ARM_BORROW_FROM_CARRY(M, N, D, C) (ARM_UXT_64(M) >= (ARM_UXT_64(N)) + (uint64_t) (C))
 #define ARM_V_ADDITION(M, N, D) (!(ARM_SIGN((M) ^ (N))) && (ARM_SIGN((M) ^ (D))) && (ARM_SIGN((N) ^ (D))))
@@ -83,24 +84,23 @@ static inline void _ARMSetMode(struct ARMCore* cpu, enum ExecutionMode execution
 	cpu->executionMode = executionMode;
 	switch (executionMode) {
 	case MODE_ARM:
-		cpu->cpsr.t = 0;
+		cpu->cpsr = ARMPSRClearT(cpu->cpsr);
 		break;
 	case MODE_THUMB:
-		cpu->cpsr.t = 1;
+		cpu->cpsr = ARMPSRFillT(cpu->cpsr);
 	}
 	cpu->nextEvent = cpu->cycles;
 }
 
 static inline void _ARMReadCPSR(struct ARMCore* cpu) {
-	_ARMSetMode(cpu, cpu->cpsr.t);
-	ARMSetPrivilegeMode(cpu, cpu->cpsr.priv);
+	_ARMSetMode(cpu, ARMPSRGetT(cpu->cpsr));
+	ARMSetPrivilegeMode(cpu, ARMPSRGetPriv(cpu->cpsr));
 	cpu->irqh.readCPSR(cpu);
 }
 
 static inline uint32_t _ARMPCAddress(struct ARMCore* cpu) {
 	int instructionLength;
-	enum ExecutionMode mode = cpu->cpsr.t;
-	if (mode == MODE_ARM) {
+	if (ARMPSRIsT(cpu->cpsr)) {
 		instructionLength = WORD_SIZE_ARM;
 	} else {
 		instructionLength = WORD_SIZE_THUMB;

@@ -28,6 +28,7 @@ CXX_GUARD_START
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #ifdef _WIN32
 // WinSock2 gets very angry if it's included too late
@@ -46,10 +47,12 @@ typedef intptr_t ssize_t;
 #define strdup _strdup
 #define lseek _lseek
 #elif defined(__wii__)
+#include <sys/time.h>
 typedef intptr_t ssize_t;
 #else
 #include <strings.h>
 #include <unistd.h>
+#include <sys/time.h>
 #endif
 
 #ifndef SSIZE_MAX
@@ -169,6 +172,12 @@ typedef intptr_t ssize_t;
 	} \
 	ATTRIBUTE_UNUSED static inline TYPE TYPE ## Fill ## FIELD (TYPE src) { \
 		return FILL_BITS(src, (START), (START) + (SIZE)); \
+	} \
+	ATTRIBUTE_UNUSED static inline TYPE TYPE ## OrUnsafe ## FIELD (TYPE src, TYPE bits) { \
+		return (src | ((bits) << (START))); \
+	} \
+	ATTRIBUTE_UNUSED static inline TYPE TYPE ## Or ## FIELD (TYPE src, TYPE bits) { \
+		return (src | (((bits) << (START)) & MAKE_MASK(START, (START) + (SIZE)))); \
 	} \
 	ATTRIBUTE_UNUSED static inline TYPE TYPE ## Set ## FIELD (TYPE src, TYPE bits) { \
 		return INS_BITS(src, (START), (START) + (SIZE), bits); \

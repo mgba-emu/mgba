@@ -15,7 +15,9 @@
 #include <QStackedLayout>
 
 #include "AboutScreen.h"
+#ifdef USE_SQLITE3
 #include "ArchiveInspector.h"
+#endif
 #include "CheatsView.h"
 #include "ConfigController.h"
 #include "DebuggerConsole.h"
@@ -48,7 +50,7 @@
 #include <mgba/internal/gb/video.h>
 #endif
 #include "feature/commandline.h"
-#include <mgba-util/nointro.h>
+#include "feature/sqlite3/no-intro.h"
 #include <mgba-util/vfs.h>
 
 using namespace QGBA;
@@ -101,7 +103,30 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 		m_savedScale = multiplier.toInt();
 		i = m_savedScale;
 	}
-#ifdef M_CORE_GBA
+#ifdef USE_SQLITE3
+	m_libraryView = new LibraryView(this);
+	ConfigOption* showLibrary = m_config->addOption("showLibrary");
+	showLibrary->connect([this](const QVariant& value) {
+		if (value.toBool()) {
+			if (m_controller->isLoaded()) {
+				m_screenWidget->layout()->addWidget(m_libraryView);
+			} else {
+				attachWidget(m_libraryView);
+			}
+		} else {
+			detachWidget(m_libraryView);
+		}
+	}, this);
+	m_config->updateOption("showLibrary");
+
+	connect(m_libraryView, &LibraryView::accepted, [this]() {
+		VFile* output = m_libraryView->selectedVFile();
+		QPair<QString, QString> path = m_libraryView->selectedPath();
+		if (output) {
+			m_controller->loadGame(output, path.first, path.second);
+		}
+	});
+#elif defined(M_CORE_GBA)
 	m_screenWidget->setSizeHint(QSize(VIDEO_HORIZONTAL_PIXELS * i, VIDEO_VERTICAL_PIXELS * i));
 #endif
 	m_screenWidget->setPixmap(m_logo);
@@ -210,6 +235,9 @@ void Window::argumentsPassed(mArguments* args) {
 
 void Window::resizeFrame(const QSize& size) {
 	QSize newSize(size);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+	newSize /= m_screenWidget->devicePixelRatioF();
+#endif
 	m_screenWidget->setSizeHint(newSize);
 	newSize -= m_screenWidget->size();
 	newSize += this->size();
@@ -283,10 +311,6 @@ void Window::reloadConfig() {
 	m_display->lockAspectRatio(opts->lockAspectRatio);
 	m_display->filter(opts->resampleVideo);
 
-	if (opts->bios) {
-		m_controller->loadBIOS(opts->bios);
-	}
-
 	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);
 }
 
@@ -359,22 +383,33 @@ void Window::selectROM() {
 	}
 }
 
+#ifdef USE_SQLITE3
 void Window::selectROMInArchive() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFiltersArchive());
 	if (filename.isEmpty()) {
 		return;
 	}
 	ArchiveInspector* archiveInspector = new ArchiveInspector(filename);
-	connect(archiveInspector, &QDialog::accepted, [this,  archiveInspector, filename]() {
+	connect(archiveInspector, &QDialog::accepted, [this,  archiveInspector]() {
 		VFile* output = archiveInspector->selectedVFile();
+		QPair<QString, QString> path = archiveInspector->selectedPath();
 		if (output) {
-			m_controller->loadGame(output, filename);
+			m_controller->loadGame(output, path.second, path.first);
 		}
 		archiveInspector->close();
 	});
 	archiveInspector->setAttribute(Qt::WA_DeleteOnClose);
 	archiveInspector->show();
 }
+
+void Window::addDirToLibrary() {
+	QString filename = GBAApp::app()->getOpenDirectoryName(this, tr("Select folder"));
+	if (filename.isEmpty()) {
+		return;
+	}
+	m_libraryView->addDirectory(filename);
+}
+#endif
 
 void Window::replaceROM() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFilters());
@@ -402,18 +437,6 @@ void Window::multiplayerChanged() {
 		for (QAction* action : m_nonMpActions) {
 			action->setDisabled(attached > 1);
 		}
-	}
-}
-
-void Window::selectBIOS() {
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select BIOS"));
-	if (!filename.isEmpty()) {
-		QFileInfo info(filename);
-		m_config->setOption("bios", info.canonicalFilePath());
-		m_config->updateOption("bios");
-		m_config->setOption("useBios", true);
-		m_config->updateOption("useBios");
-		m_controller->loadBIOS(info.canonicalFilePath());
 	}
 }
 
@@ -446,7 +469,7 @@ void Window::exportSharkport() {
 
 void Window::openSettingsWindow() {
 	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController);
-	connect(settingsWindow, SIGNAL(biosLoaded(const QString&)), m_controller, SLOT(loadBIOS(const QString&)));
+	connect(settingsWindow, SIGNAL(biosLoaded(int, const QString&)), m_controller, SLOT(loadBIOS(int, const QString&)));
 	connect(settingsWindow, SIGNAL(audioDriverChanged()), m_controller, SLOT(reloadAudioDriver()));
 	connect(settingsWindow, SIGNAL(displayDriverChanged()), this, SLOT(mustRestart()));
 	connect(settingsWindow, SIGNAL(pathsChanged()), this, SLOT(reloadConfig()));
@@ -828,35 +851,18 @@ void Window::updateTitle(float fps) {
 		const NoIntroDB* db = GBAApp::app()->gameDB();
 		NoIntroGame game{};
 		uint32_t crc32 = 0;
+		m_controller->thread()->core->checksum(m_controller->thread()->core, &crc32, CHECKSUM_CRC32);
 
-		switch (m_controller->thread()->core->platform(m_controller->thread()->core)) {
-	#ifdef M_CORE_GBA
-		case PLATFORM_GBA: {
-			GBA* gba = static_cast<GBA*>(m_controller->thread()->core->board);
-			crc32 = gba->romCrc32;
-			break;
-		}
-	#endif
-	#ifdef M_CORE_GB
-		case PLATFORM_GB: {
-			GB* gb = static_cast<GB*>(m_controller->thread()->core->board);
-			crc32 = gb->romCrc32;
-			break;
-		}
-	#endif
-		default:
-			break;
-		}
+		char gameTitle[17] = { '\0' };
+		mCore* core = m_controller->thread()->core;
+		core->getGameTitle(core, gameTitle);
+		title = gameTitle;
 
-		if (db && crc32) {
-			NoIntroDBLookupGameByCRC(db, crc32, &game);
+#ifdef USE_SQLITE3
+		if (db && crc32 && NoIntroDBLookupGameByCRC(db, crc32, &game)) {
 			title = QLatin1String(game.name);
-		} else {
-			char gameTitle[17] = { '\0' };
-			mCore* core = m_controller->thread()->core;
-			core->getGameTitle(core, gameTitle);
-			title = gameTitle;
 		}
+#endif
 	}
 	MultiplayerController* multiplayer = m_controller->multiplayerController();
 	if (multiplayer && multiplayer->attached() > 1) {
@@ -912,10 +918,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	installEventFilter(m_shortcutController);
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open),
 	                    "loadROM");
+#ifdef USE_SQLITE3
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load ROM in archive..."), this, SLOT(selectROMInArchive())),
 	                    "loadROMInArchive");
-
-	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS())), "loadBIOS");
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Add folder to library..."), this, SLOT(addDirToLibrary())),
+	                    "addDirToLibrary");
+#endif
 
 	QAction* loadTemporarySave = new QAction(tr("Load temporary save..."), fileMenu);
 	connect(loadTemporarySave, &QAction::triggered, [this]() { this->selectSave(true); });
@@ -923,7 +931,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(fileMenu, loadTemporarySave, "loadTemporarySave");
 
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch())), "loadPatch");
-	addControlledAction(fileMenu, fileMenu->addAction(tr("Boot BIOS"), m_controller, SLOT(bootBIOS())), "bootBIOS");
+
+	QAction* bootBIOS = new QAction(tr("Boot BIOS"), fileMenu);
+	connect(bootBIOS, &QAction::triggered, [this]() {
+		m_controller->loadBIOS(PLATFORM_GBA, m_config->getOption("gba.bios"));
+		m_controller->bootBIOS();
+	});
+	addControlledAction(fileMenu, bootBIOS, "bootBIOS");
 
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Replace ROM..."), this, SLOT(replaceROM())), "replaceROM");
 

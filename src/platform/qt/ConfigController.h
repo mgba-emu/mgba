@@ -71,6 +71,7 @@ public:
 	void updateOption(const char* key);
 
 	QString getOption(const char* key) const;
+	QString getOption(const QString& key) const;
 
 	QVariant getQtOption(const QString& key, const QString& group = QString()) const;
 
@@ -83,6 +84,8 @@ public:
 	Configuration* input() { return mCoreConfigGetInput(&m_config); }
 
 	const mCoreConfig* config() { return &m_config; }
+
+	static const QString& configDir();
 
 public slots:
 	void setOption(const char* key, bool value);
@@ -103,6 +106,7 @@ private:
 
 	QMap<QString, ConfigOption*> m_optionSet;
 	QSettings* m_settings;
+	static QString s_configDir;
 };
 
 }

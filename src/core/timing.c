@@ -55,13 +55,11 @@ void mTimingDeschedule(struct mTiming* timing, struct mTimingEvent* event) {
 }
 
 bool mTimingIsScheduled(const struct mTiming* timing, const struct mTimingEvent* event) {
-	struct mTimingEvent* const* previous = &timing->root;
 	const struct mTimingEvent* next = timing->root;
 	while (next) {
 		if (next == event) {
 			return true;
 		}
-		previous = &next->next;
 		next = next->next;
 	}
 	return false;

@@ -7,9 +7,13 @@
 
 #include <mgba/core/core.h>
 #include <mgba/internal/debugger/cli-debugger.h>
+#include <mgba/internal/lr35902/decoder.h>
 #include <mgba/internal/lr35902/lr35902.h>
 
 static void _printStatus(struct CLIDebuggerSystem*);
+
+static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVector* dv);
+static uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address, int segment);
 
 static struct CLIDebuggerCommandSummary _lr35902Commands[] = {
 	{ 0, 0, 0, 0 }
@@ -23,6 +27,55 @@ static inline void _printFlags(struct CLIDebuggerBackend* be, union FlagRegister
 	           f.c ? 'C' : '-');
 }
 
+static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVector* dv) {
+	struct LR35902Core* cpu = debugger->p->d.core->cpu;
+
+	uint16_t address;
+	size_t size;
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		address = cpu->pc;
+	} else {
+		address = dv->intValue;
+		dv = dv->next;
+	}
+
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		size = 1;
+	} else {
+		size = dv->intValue;
+		dv = dv->next; // TODO: Check for excess args
+	}
+
+	size_t i;
+	for (i = 0; i < size; ++i) {
+		address = _printLine(debugger->p, address, -1);
+	}
+}
+
+static inline uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address, int segment) {
+	struct CLIDebuggerBackend* be = debugger->backend;
+	struct LR35902InstructionInfo info = {};
+	char disassembly[48];
+	char* disPtr = disassembly;
+	if (segment >= 0) {
+		be->printf(be, "%02X:  ", segment);
+	}
+	be->printf(be, "%04X:  ", address);
+	uint8_t instruction;
+	size_t bytesRemaining = 1;
+	for (bytesRemaining = 1; bytesRemaining; --bytesRemaining) {
+		instruction = debugger->d.core->rawRead8(debugger->d.core, address, segment);
+		disPtr += snprintf(disPtr, sizeof(disassembly) - (disPtr - disassembly), "%02X", instruction);
+		++address;
+		bytesRemaining += LR35902Decode(instruction, &info);
+	};
+	disPtr[0] = '\t';
+	++disPtr;
+	LR35902Disassemble(&info, disPtr, sizeof(disassembly) - (disPtr - disassembly));
+	be->printf(be, "%s\n", disassembly);
+	return address;
+}
+
 static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	struct CLIDebuggerBackend* be = debugger->p->backend;
 	struct LR35902Core* cpu = debugger->p->d.core->cpu;
@@ -32,6 +85,7 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	be->printf(be, "H: %02X L: %02X (HL: %04X)\n", cpu->h, cpu->l, cpu->hl);
 	be->printf(be, "PC: %04X SP: %04X\n", cpu->pc, cpu->sp);
 	_printFlags(be, cpu->f);
+	_printLine(debugger->p, cpu->pc, -1);
 }
 
 static uint32_t _lookupPlatformIdentifier(struct CLIDebuggerSystem* debugger, const char* name, struct CLIDebugVector* dv) {
@@ -84,7 +138,7 @@ static uint32_t _lookupPlatformIdentifier(struct CLIDebuggerSystem* debugger, co
 
 void LR35902CLIDebuggerCreate(struct CLIDebuggerSystem* debugger) {
 	debugger->printStatus = _printStatus;
-	debugger->disassemble = NULL;
+	debugger->disassemble = _disassemble;
 	debugger->lookupPlatformIdentifier = _lookupPlatformIdentifier;
 	debugger->platformName = "GB-Z80";
 	debugger->platformCommands = _lr35902Commands;

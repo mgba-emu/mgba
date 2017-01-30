@@ -14,27 +14,37 @@ CXX_GUARD_START
 #include <mgba-util/vector.h>
 
 struct mLibraryEntry {
-	char* filename;
-	char* title;
+	const char* base;
+	const char* filename;
+	const char* title;
 	char internalTitle[17];
 	char internalCode[9];
-	size_t filesize;
 	enum mPlatform platform;
+	size_t filesize;
+	uint32_t crc32;
 };
+
+#ifdef USE_SQLITE3
 
 DECLARE_VECTOR(mLibraryListing, struct mLibraryEntry);
 
-struct mLibrary {
-	struct mLibraryListing listing;
-};
-
-void mLibraryInit(struct mLibrary*);
-void mLibraryDeinit(struct mLibrary*);
+struct mLibrary;
+struct mLibrary* mLibraryCreateEmpty(void);
+struct mLibrary* mLibraryLoad(const char* filename);
+void mLibraryDestroy(struct mLibrary*);
 
 struct VDir;
 struct VFile;
-void mLibraryLoadDirectory(struct mLibrary* library, struct VDir* dir);
-void mLibraryAddEntry(struct mLibrary* library, const char* filename, struct VFile* vf);
+void mLibraryLoadDirectory(struct mLibrary* library, const char* base);
+
+size_t mLibraryCount(struct mLibrary* library, const struct mLibraryEntry* constraints);
+size_t mLibraryGetEntries(struct mLibrary* library, struct mLibraryListing* out, size_t numEntries, size_t offset, const struct mLibraryEntry* constraints);
+struct VFile* mLibraryOpenVFile(struct mLibrary* library, const struct mLibraryEntry* entry);
+
+struct NoIntroDB;
+void mLibraryAttachGameDB(struct mLibrary* library, const struct NoIntroDB* db);
+
+#endif
 
 CXX_GUARD_END
 

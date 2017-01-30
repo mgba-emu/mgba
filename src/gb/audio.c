@@ -698,6 +698,10 @@ bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value) {
 	envelope->stepTime = GBAudioRegisterSweepGetStepTime(value);
 	envelope->direction = GBAudioRegisterSweepGetDirection(value);
 	envelope->initialVolume = GBAudioRegisterSweepGetInitialVolume(value);
+	if (!envelope->stepTime) {
+		// TODO: Improve "zombie" mode
+		++envelope->currentVolume;
+	}
 	_updateEnvelopeDead(envelope);
 	envelope->nextStep = envelope->stepTime;
 	return (envelope->initialVolume || envelope->direction) && envelope->dead != 2;

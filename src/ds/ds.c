@@ -257,7 +257,7 @@ static void DS9ProcessEvents(struct ARMCore* cpu) {
 static void DSProcessEvents(struct DSCommon* dscore) {
 	struct ARMCore* cpu = dscore->cpu;
 	struct DS* ds = dscore->p;
-	if (dscore->springIRQ && !cpu->cpsr.i) {
+	if (dscore->springIRQ && !ARMPSRGetI(cpu->cpsr)) {
 		ARMRaiseIRQ(cpu);
 		dscore->springIRQ = 0;
 	}

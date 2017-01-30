@@ -8,6 +8,8 @@
 
 #include <QDialog>
 
+#include <mgba/core/core.h>
+
 #include "ui_SettingsView.h"
 
 namespace QGBA {
@@ -23,13 +25,13 @@ public:
 	SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, QWidget* parent = nullptr);
 
 signals:
-	void biosLoaded(const QString&);
+	void biosLoaded(int platform, const QString&);
 	void audioDriverChanged();
 	void displayDriverChanged();
 	void pathsChanged();
 
 private slots:
-	void selectBios();
+	void selectBios(QLineEdit*);
 	void updateConfig();
 	void reloadConfig();
 
