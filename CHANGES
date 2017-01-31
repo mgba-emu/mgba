@@ -19,6 +19,7 @@ Bugfixes:
  - LR35902: Fix pc overflowing current region off-by-one
  - GB MBC: Fix ROM bank overflows getting set to bank 0
  - Qt: Fix timing issues on high refresh rate monitors
+ - GBA Savedata: Fix savedata unmasking (fixes mgba.io/i/441)
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
