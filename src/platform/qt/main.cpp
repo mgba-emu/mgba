@@ -6,6 +6,11 @@
 #include "GBAApp.h"
 #include "Window.h"
 
+#include <QLibraryInfo>
+#include <QTranslator>
+
+#include <mgba/core/version.h>
+
 #ifdef QT_STATIC
 #include <QtPlugin>
 #ifdef _WIN32
@@ -18,5 +23,16 @@ Q_IMPORT_PLUGIN(QWindowsAudioPlugin);
 
 int main(int argc, char* argv[]) {
 	QGBA::GBAApp application(argc, argv);
+
+	QLocale locale = QLocale::system();
+
+	QTranslator qtTranslator;
+	qtTranslator.load(locale, "qt", "_", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+	application.installTranslator(&qtTranslator);
+
+	QTranslator langTranslator;
+	langTranslator.load(locale, binaryName, "-", ":/translations/");
+	application.installTranslator(&langTranslator);
+
 	return application.exec();
 }
