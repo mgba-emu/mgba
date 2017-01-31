@@ -84,6 +84,10 @@ struct DSMemory {
 	size_t romSize;
 	size_t wramSize7;
 	size_t wramSize9;
+
+	uint32_t dtcmBase;
+	uint32_t dtcmSize;
+	uint32_t itcmSize;
 };
 
 struct DSCoreMemory {

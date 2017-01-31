@@ -526,13 +526,17 @@ static void _writeCache(struct ARMCore* cpu, int crm, int opcode2, uint32_t valu
 static void _writeTCMControl(struct ARMCore* cpu, int crm, int opcode2, uint32_t value) {
 	uint32_t base = ARMTCMControlGetBase(value) << 12;
 	uint32_t size = 512 << ARMTCMControlGetVirtualSize(value);
+	struct DS* ds = (struct DS*) cpu->master;
 	mLOG(DS, DEBUG, "CP15 TCM control write: CRm: %i, Op2: %i, Base: %08X, Size: %08X", crm, opcode2, base, size);
 	switch (opcode2) {
 	case 0:
 		cpu->cp15.r9.d = value;
+		ds->memory.dtcmBase = base;
+		ds->memory.dtcmSize = size;
 		break;
 	case 1:
 		cpu->cp15.r9.i = value;
+		ds->memory.itcmSize = size;
 		break;
 	default:
 		mLOG(DS, GAME_ERROR, "CP15 TCM control bad op2: %i", opcode2);

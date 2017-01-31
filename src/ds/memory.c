@@ -624,7 +624,7 @@ static void DS9SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	switch (newRegion) {
 	case DS9_REGION_ITCM:
 	case DS9_REGION_ITCM_MIRROR:
-		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+		if (address < ds->memory.itcmSize) {
 			cpu->memory.activeRegion = ds->memory.itcm;
 			cpu->memory.activeMask = DS9_SIZE_ITCM - 1;
 			break;
@@ -670,14 +670,14 @@ uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	switch (address >> DS_BASE_OFFSET) {
 	case DS9_REGION_ITCM:
 	case DS9_REGION_ITCM_MIRROR:
-		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+		if (address < memory->itcmSize) {
 			LOAD_32(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Bad DS9 Load32: %08X:%08X", address, value);
 		break;
 	case DS_REGION_RAM:
-		if ((address & ~(DS9_SIZE_DTCM - 1)) == DS9_BASE_DTCM) {
+		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			LOAD_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
 			break;
 		}
@@ -696,6 +696,10 @@ uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		LOAD_32(value, address & (DS9_SIZE_BIOS - 1), memory->bios9);
 		break;
 	default:
+		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
+			LOAD_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
+			break;
+		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load32: %08X", address);
 		break;
 	}
@@ -718,14 +722,14 @@ uint32_t DS9Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	switch (address >> DS_BASE_OFFSET) {
 	case DS9_REGION_ITCM:
 	case DS9_REGION_ITCM_MIRROR:
-		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+		if (address < memory->itcmSize) {
 			LOAD_16(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Bad DS9 Load16: %08X:%08X", address, value);
 		break;
 	case DS_REGION_RAM:
-		if ((address & ~(DS9_SIZE_DTCM - 1)) == DS9_BASE_DTCM) {
+		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			LOAD_16(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
 			break;
 		}
@@ -743,6 +747,10 @@ uint32_t DS9Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		LOAD_16(value, address & (DS9_SIZE_BIOS - 1), memory->bios9);
 		break;
 	default:
+		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
+			LOAD_16(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
+			break;
+		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load16: %08X", address);
 		break;
 	}
@@ -765,15 +773,15 @@ uint32_t DS9Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	switch (address >> DS_BASE_OFFSET) {
 	case DS9_REGION_ITCM:
 	case DS9_REGION_ITCM_MIRROR:
-		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+		if (address < memory->itcmSize) {
 			value = ((uint8_t*) memory->itcm)[address & (DS9_SIZE_ITCM - 1)];
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Bad DS9 Load8: %08X:%08X", address, value);
 		break;
 	case DS_REGION_RAM:
-		if ((address & ~(DS9_SIZE_DTCM - 1)) == DS9_BASE_DTCM) {
-			value = ((uint8_t*) memory->dtcm)[address & (DS9_SIZE_DTCM - 1)];
+		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
+			value = ((uint8_t*) memory->dtcm)[address & (DS9_SIZE_DTCM- 1)];
 			break;
 		}
 		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
@@ -787,6 +795,10 @@ uint32_t DS9Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		value = ((uint8_t*) memory->bios9)[address & (DS9_SIZE_BIOS - 1)];
 		break;
 	default:
+		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
+			value = ((uint8_t*) memory->dtcm)[address & (DS9_SIZE_DTCM - 1)];
+			break;
+		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load8: %08X", address);
 		break;
 	}
@@ -806,14 +818,14 @@ void DS9Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 	switch (address >> DS_BASE_OFFSET) {
 	case DS9_REGION_ITCM:
 	case DS9_REGION_ITCM_MIRROR:
-		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+		if (address < memory->itcmSize) {
 			STORE_32(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Bad DS9 Store32: %08X:%08X", address, value);
 		break;
 	case DS_REGION_RAM:
-		if ((address & ~(DS9_SIZE_DTCM - 1)) == DS9_BASE_DTCM) {
+		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			STORE_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
 			break;
 		}
@@ -827,6 +839,10 @@ void DS9Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 		DS9IOWrite32(ds, address & 0x00FFFFFF, value);
 		break;
 	default:
+		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
+			STORE_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
+			break;
+		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store32: %08X:%08X", address, value);
 		break;
 	}
@@ -845,14 +861,14 @@ void DS9Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	switch (address >> DS_BASE_OFFSET) {
 	case DS9_REGION_ITCM:
 	case DS9_REGION_ITCM_MIRROR:
-		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+		if (address < memory->itcmSize) {
 			STORE_16(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Bad DS9 Store16: %08X:%04X", address, value);
 		break;
 	case DS_REGION_RAM:
-		if ((address & ~(DS9_SIZE_DTCM - 1)) == DS9_BASE_DTCM) {
+		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			STORE_16(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
 			break;
 		}
@@ -866,6 +882,10 @@ void DS9Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		DS9IOWrite(ds, address & 0x00FFFFFF, value);
 		break;
 	default:
+		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
+			STORE_16(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
+			break;
+		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store16: %08X:%04X", address, value);
 		break;
 	}
@@ -884,14 +904,14 @@ void DS9Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	switch (address >> DS_BASE_OFFSET) {
 	case DS9_REGION_ITCM:
 	case DS9_REGION_ITCM_MIRROR:
-		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+		if (address < memory->itcmSize) {
 			((uint8_t*) memory->itcm)[address & (DS9_SIZE_ITCM - 1)] = value;
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Bad DS9 Store8: %08X:%02X", address, value);
 		break;
 	case DS_REGION_RAM:
-		if ((address & ~(DS9_SIZE_DTCM - 1)) == DS9_BASE_DTCM) {
+		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			((uint8_t*) memory->dtcm)[address & (DS9_SIZE_DTCM - 1)] = value;
 			break;
 		}
@@ -904,6 +924,10 @@ void DS9Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		DS9IOWrite8(ds, address & 0x00FFFFFF, value);
 		break;
 	default:
+		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
+			((uint8_t*) memory->dtcm)[address & (DS9_SIZE_DTCM - 1)] = value;
+			break;
+		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store8: %08X:%02X", address, value);
 		break;
 	}
@@ -939,7 +963,7 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 
 	switch (address >> DS_BASE_OFFSET) {
 	case DS_REGION_RAM:
-		LDM_LOOP(if ((address & ~(DS9_SIZE_DTCM - 1)) == DS9_BASE_DTCM) {
+		LDM_LOOP(if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			LOAD_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
 		} else if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
 			LOAD_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
@@ -948,8 +972,11 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 		});
 		break;
 	default:
-		mLOG(DS_MEM, STUB, "Unimplemented DS9 LDM: %08X", address);
-		LDM_LOOP(value = 0);
+		LDM_LOOP(if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
+			LOAD_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
+		} else {
+			mLOG(DS_MEM, STUB, "Unimplemented DS9 LDM: %08X", address);
+		});
 		break;
 	}
 
@@ -996,14 +1023,14 @@ uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 	switch (address >> DS_BASE_OFFSET) {
 	case DS9_REGION_ITCM:
 	case DS9_REGION_ITCM_MIRROR:
-		STM_LOOP(if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+		STM_LOOP(if (address < memory->itcmSize) {
 			STORE_32(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
 		} else {
 			mLOG(DS_MEM, STUB, "Bad DS9 Store32: %08X:%08X", address, value);
 		});
 		break;
 	case DS_REGION_RAM:
-		STM_LOOP(if ((address & ~(DS9_SIZE_DTCM - 1)) == DS9_BASE_DTCM) {
+		STM_LOOP(if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			STORE_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
 		} else if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
 			STORE_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
@@ -1012,8 +1039,11 @@ uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 		});
 		break;
 	default:
-		mLOG(DS_MEM, STUB, "Unimplemented DS9 STM: %08X", address);
-		STM_LOOP();
+		STM_LOOP(if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
+			STORE_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
+		} else {
+			mLOG(DS_MEM, STUB, "Unimplemented DS9 STM: %08X", address);
+		});
 		break;
 	}
 
