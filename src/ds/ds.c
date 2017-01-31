@@ -25,6 +25,7 @@ const uint32_t DS_COMPONENT_MAGIC = 0x1FF61FE;
 
 static const size_t DS_ROM_MAGIC_OFFSET = 0x15C;
 static const uint8_t DS_ROM_MAGIC[] = { 0x56, 0xCF };
+static const uint8_t DS_ROM_MAGIC_2[] = { 0x1A, 0x9E };
 
 enum {
 	DS7_SP_BASE = 0x380FD80,
@@ -352,7 +353,7 @@ bool DSIsROM(struct VFile* vf) {
 	if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
 		return false;
 	}
-	return memcmp(signature, DS_ROM_MAGIC, sizeof(signature)) == 0;
+	return memcmp(signature, DS_ROM_MAGIC, sizeof(signature)) == 0 || memcmp(signature, DS_ROM_MAGIC_2, sizeof(signature)) == 0;
 }
 
 bool DSLoadBIOS(struct DS* ds, struct VFile* vf) {

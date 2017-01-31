@@ -28,14 +28,14 @@ static struct mCoreFilter {
 	struct mCore* (*open)(void);
 	enum mPlatform platform;
 } _filters[] = {
+#ifdef M_CORE_DS
+	{ DSIsROM, DSCoreCreate, PLATFORM_DS },
+#endif
 #ifdef M_CORE_GBA
 	{ GBAIsROM, GBACoreCreate, PLATFORM_GBA },
 #endif
 #ifdef M_CORE_GB
 	{ GBIsROM, GBCoreCreate, PLATFORM_GB },
-#endif
-#ifdef M_CORE_DS
-	{ DSIsROM, DSCoreCreate, PLATFORM_DS },
 #endif
 	{ 0, 0, PLATFORM_NONE }
 };
