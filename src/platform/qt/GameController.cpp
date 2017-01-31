@@ -525,11 +525,11 @@ void GameController::loadBIOS(int platform, const QString& path) {
 	if (m_bios == path) {
 		return;
 	}
-	if (m_gameOpen && this->platform() == platform) {
+	if (!m_bios.isNull() && m_gameOpen && this->platform() == platform) {
 		closeGame();
 		m_bios = path;
 		openGame();
-	} else if (!m_gameOpen) {
+	} else if (!m_gameOpen || m_bios.isNull()) {
 		m_bios = path;
 	}
 }
