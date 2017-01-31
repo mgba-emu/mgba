@@ -29,6 +29,17 @@ static void _DSHaltCNT(struct DSCommon* dscore, uint8_t value) {
 
 static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t value) {
 	switch (address) {
+	// DMA Fill
+	case DS_REG_DMA0FILL_LO:
+	case DS_REG_DMA0FILL_HI:
+	case DS_REG_DMA1FILL_LO:
+	case DS_REG_DMA1FILL_HI:
+	case DS_REG_DMA2FILL_LO:
+	case DS_REG_DMA2FILL_HI:
+	case DS_REG_DMA3FILL_LO:
+	case DS_REG_DMA3FILL_HI:
+		break;
+
 	// Timers
 	case DS_REG_TM0CNT_LO:
 		GBATimerWriteTMCNT_LO(&dscore->timers[0], value);
@@ -202,6 +213,14 @@ uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_TM3CNT_LO:
 		DSIOUpdateTimer(&ds->ds7, address);
 		break;
+	case DS_REG_DMA0FILL_LO:
+	case DS_REG_DMA0FILL_HI:
+	case DS_REG_DMA1FILL_LO:
+	case DS_REG_DMA1FILL_HI:
+	case DS_REG_DMA2FILL_LO:
+	case DS_REG_DMA2FILL_HI:
+	case DS_REG_DMA3FILL_LO:
+	case DS_REG_DMA3FILL_HI:
 	case DS_REG_TM0CNT_HI:
 	case DS_REG_TM1CNT_HI:
 	case DS_REG_TM2CNT_HI:
@@ -333,6 +352,14 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_TM3CNT_LO:
 		DSIOUpdateTimer(&ds->ds9, address);
 		break;
+	case DS_REG_DMA0FILL_LO:
+	case DS_REG_DMA0FILL_HI:
+	case DS_REG_DMA1FILL_LO:
+	case DS_REG_DMA1FILL_HI:
+	case DS_REG_DMA2FILL_LO:
+	case DS_REG_DMA2FILL_HI:
+	case DS_REG_DMA3FILL_LO:
+	case DS_REG_DMA3FILL_HI:
 	case DS_REG_TM0CNT_HI:
 	case DS_REG_TM1CNT_HI:
 	case DS_REG_TM2CNT_HI:
