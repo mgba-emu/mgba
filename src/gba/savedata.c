@@ -148,39 +148,35 @@ size_t GBASavedataSize(struct GBASavedata* savedata) {
 }
 
 bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in) {
-	if (savedata->vf) {
+	if (savedata->data) {
+		if (!in && savedata->type != SAVEDATA_FORCE_NONE) {
+			return false;
+		}
+		ssize_t size = GBASavedataSize(savedata);
+		in->seek(in, 0, SEEK_SET);
+		return in->read(in, savedata->data, size) == size;
+	} else if (savedata->vf) {
 		off_t read = 0;
 		uint8_t buffer[2048];
-		memset(buffer, 0xFF, sizeof(buffer));
-		savedata->vf->seek(savedata->vf, 0, SEEK_SET);
-		while (savedata->vf->seek(savedata->vf, 0, SEEK_CUR) < savedata->vf->size(savedata->vf)) {
-			savedata->vf->write(savedata->vf, buffer, sizeof(buffer));
-		}
 		savedata->vf->seek(savedata->vf, 0, SEEK_SET);
 		if (in) {
+			in->seek(in, 0, SEEK_SET);
 			do {
 				read = in->read(in, buffer, sizeof(buffer));
 				read = savedata->vf->write(savedata->vf, buffer, read);
 			} while (read == sizeof(buffer));
 		}
+		memset(buffer, 0xFF, sizeof(buffer));
+		ssize_t fsize = savedata->vf->size(savedata->vf);
+		ssize_t pos = savedata->vf->seek(savedata->vf, 0, SEEK_CUR);
+		while (fsize - pos >= (ssize_t) sizeof(buffer)) {
+			savedata->vf->write(savedata->vf, buffer, sizeof(buffer));
+			pos = savedata->vf->seek(savedata->vf, 0, SEEK_CUR);
+		}
+		if (fsize - pos > 0) {
+			savedata->vf->write(savedata->vf, buffer, fsize - pos);
+		}
 		return read >= 0;
-	} else if (savedata->data) {
-		if (!in && savedata->type != SAVEDATA_FORCE_NONE) {
-			return false;
-		}
-		switch (savedata->type) {
-		case SAVEDATA_SRAM:
-			return in->read(in, savedata->data, SIZE_CART_SRAM) == SIZE_CART_SRAM;
-		case SAVEDATA_FLASH512:
-			return in->read(in, savedata->data, SIZE_CART_FLASH512) == SIZE_CART_FLASH512;
-		case SAVEDATA_FLASH1M:
-			return in->read(in, savedata->data, SIZE_CART_FLASH1M) == SIZE_CART_FLASH1M;
-		case SAVEDATA_EEPROM:
-			return in->read(in, savedata->data, SIZE_CART_EEPROM) == SIZE_CART_EEPROM;
-		case SAVEDATA_AUTODETECT:
-		case SAVEDATA_FORCE_NONE:
-			return true;
-		}
 	}
 	return true;
 }
@@ -543,8 +539,9 @@ void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
 	mLOG(GBA_SAVE, DEBUG, "Performing flash bank switch to bank %i", bank);
 	savedata->currentBank = &savedata->data[bank << 16];
 	if (bank > 0 && savedata->type == SAVEDATA_FLASH512) {
+		mLOG(GBA_SAVE, INFO, "Updating flash chip from 512kb to 1Mb");
 		savedata->type = SAVEDATA_FLASH1M;
-		if (savedata->vf) {
+		if (savedata->vf && savedata->vf->size(savedata->vf) == SIZE_CART_FLASH512) {
 			savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
 			memset(&savedata->data[SIZE_CART_FLASH512], 0xFF, SIZE_CART_FLASH512);
 		}
