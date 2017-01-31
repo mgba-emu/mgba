@@ -106,7 +106,7 @@ static void _DSCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 static void _DSCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
 	UNUSED(core);
 	*width = DS_VIDEO_HORIZONTAL_PIXELS;
-	*height = DS_VIDEO_VERTICAL_PIXELS;
+	*height = DS_VIDEO_VERTICAL_PIXELS * 2;
 }
 
 static void _DSCoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t stride) {
