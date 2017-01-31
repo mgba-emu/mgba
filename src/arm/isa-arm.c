@@ -287,6 +287,8 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 			cpu->gprs[rn] = address; \
 		}
 
+#define ADDR_MODE_4_WRITEBACK_LDMv5 ADDR_MODE_4_WRITEBACK_LDM
+
 #define ADDR_MODE_4_WRITEBACK_STM cpu->gprs[rn] = address;
 
 #define ARM_LOAD_POST_BODY \
@@ -450,7 +452,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		WRITEBACK;)
 
 
-#define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(NAME, LS, POST_BODY) \
+#define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM_NO_S(NAME, LS, POST_BODY) \
 	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DA,   LS,                               ,           ,            , DA, POST_BODY) \
 	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DAW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , DA, POST_BODY) \
 	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DB,   LS,                               ,           ,            , DB, POST_BODY) \
@@ -459,6 +461,9 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IAW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , IA, POST_BODY) \
 	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IB,   LS,                               ,           ,            , IB, POST_BODY) \
 	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IBW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , IB, POST_BODY) \
+
+#define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(NAME, LS, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM_NO_S(NAME, LS, POST_BODY) \
 	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDA,  LS,                               , ARM_MS_PRE, ARM_MS_POST, DA, POST_BODY) \
 	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDAW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, DA, POST_BODY) \
 	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDB,  LS,                               , ARM_MS_PRE, ARM_MS_POST, DB, POST_BODY) \
@@ -609,6 +614,20 @@ DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,
 	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32;
 	if (rs & 0x8000) {
 		ARM_WRITE_PC;
+	})
+
+DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM_NO_S(LDMv5,
+	load,
+	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32;
+	if (rs & 0x8000) {
+		_ARMSetMode(cpu, cpu->gprs[ARM_PC] & 0x00000001);
+		cpu->gprs[ARM_PC] &= 0xFFFFFFFE;
+		if (cpu->executionMode == MODE_THUMB) {
+			THUMB_WRITE_PC;
+		} else {
+			ARM_WRITE_PC;
+
+		}
 	})
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM,
