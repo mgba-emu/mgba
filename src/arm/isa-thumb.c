@@ -12,42 +12,20 @@
 // Beware pre-processor insanity
 
 #define THUMB_ADDITION_S(M, N, D) \
-	{ \
-		ARMPSR cpsr = 0; \
-		cpsr = ARMPSROrUnsafeN(cpsr, ARM_SIGN(D)); \
-		cpsr = ARMPSROrUnsafeZ(cpsr, !(D)); \
-		cpsr = ARMPSROrUnsafeC(cpsr, ARM_CARRY_FROM(M, N, D)); \
-		cpsr = ARMPSROrUnsafeV(cpsr, ARM_V_ADDITION(M, N, D)); \
-		cpu->cpsr = (cpu->cpsr & (0x0FFFFFFF)) | cpsr; \
-	}
-
-#define THUMB_ADDITION_CARRY_S(M, N, D, C) \
-	{ \
-		ARMPSR cpsr = 0; \
-		cpsr = ARMPSROrUnsafeN(cpsr, ARM_SIGN(D)); \
-		cpsr = ARMPSROrUnsafeZ(cpsr, !(D)); \
-		cpsr = ARMPSROrUnsafeC(cpsr, ARM_CARRY_FROM_CARRY(M, N, D, C)); \
-		cpsr = ARMPSROrUnsafeV(cpsr, ARM_V_ADDITION(M, N, D)); \
-		cpu->cpsr = (cpu->cpsr & (0x0FFFFFFF)) | cpsr; \
-	}
+	cpu->cpsr.n = ARM_SIGN(D); \
+	cpu->cpsr.z = !(D); \
+	cpu->cpsr.c = ARM_CARRY_FROM(M, N, D); \
+	cpu->cpsr.v = ARM_V_ADDITION(M, N, D);
 
 #define THUMB_SUBTRACTION_S(M, N, D) \
-	{ \
-		ARMPSR cpsr = 0; \
-		cpsr = ARMPSROrUnsafeN(cpsr, ARM_SIGN(D)); \
-		cpsr = ARMPSROrUnsafeZ(cpsr, !(D)); \
-		cpsr = ARMPSROrUnsafeC(cpsr, ARM_BORROW_FROM(M, N, D)); \
-		cpsr = ARMPSROrUnsafeV(cpsr, ARM_V_SUBTRACTION(M, N, D)); \
-		cpu->cpsr = (cpu->cpsr & (0x0FFFFFFF)) | cpsr; \
-	}
+	cpu->cpsr.n = ARM_SIGN(D); \
+	cpu->cpsr.z = !(D); \
+	cpu->cpsr.c = ARM_BORROW_FROM(M, N, D); \
+	cpu->cpsr.v = ARM_V_SUBTRACTION(M, N, D);
 
 #define THUMB_NEUTRAL_S(M, N, D) \
-{ \
-		ARMPSR cpsr = 0; \
-		cpsr = ARMPSROrUnsafeN(cpsr, ARM_SIGN(D)); \
-		cpsr = ARMPSROrUnsafeZ(cpsr, !(D)); \
-		cpu->cpsr = (cpu->cpsr & (0x3FFFFFFF)) | cpsr; \
-	}
+	cpu->cpsr.n = ARM_SIGN(D); \
+	cpu->cpsr.z = !(D);
 
 #define THUMB_ADDITION(D, M, N) \
 	int n = N; \
@@ -87,31 +65,31 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSL1,
 	if (!immediate) {
 		cpu->gprs[rd] = cpu->gprs[rm];
 	} else {
-		cpu->cpsr = ARMPSRSetC(cpu->cpsr, (cpu->gprs[rm] >> (32 - immediate)) & 1);
+		cpu->cpsr.c = (cpu->gprs[rm] >> (32 - immediate)) & 1;
 		cpu->gprs[rd] = cpu->gprs[rm] << immediate;
 	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
 
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSR1,
 	if (!immediate) {
-		cpu->cpsr = ARMPSRSetC(cpu->cpsr, ARM_SIGN(cpu->gprs[rm]));
+		cpu->cpsr.c = ARM_SIGN(cpu->gprs[rm]);
 		cpu->gprs[rd] = 0;
 	} else {
-		cpu->cpsr = ARMPSRSetC(cpu->cpsr, (cpu->gprs[rm] >> (immediate - 1)) & 1);
+		cpu->cpsr.c = (cpu->gprs[rm] >> (immediate - 1)) & 1;
 		cpu->gprs[rd] = ((uint32_t) cpu->gprs[rm]) >> immediate;
 	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
 
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1, 
 	if (!immediate) {
-		cpu->cpsr = ARMPSRSetC(cpu->cpsr, ARM_SIGN(cpu->gprs[rm]));
-		if (ARMPSRIsC(cpu->cpsr)) {
+		cpu->cpsr.c = ARM_SIGN(cpu->gprs[rm]);
+		if (cpu->cpsr.c) {
 			cpu->gprs[rd] = 0xFFFFFFFF;
 		} else {
 			cpu->gprs[rd] = 0;
 		}
 	} else {
-		cpu->cpsr = ARMPSRSetC(cpu->cpsr, (cpu->gprs[rm] >> (immediate - 1)) & 1);
+		cpu->cpsr.c = (cpu->gprs[rm] >> (immediate - 1)) & 1;
 		cpu->gprs[rd] = cpu->gprs[rm] >> immediate;
 	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
@@ -166,13 +144,13 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSL2,
 	int rs = cpu->gprs[rn] & 0xFF;
 	if (rs) {
 		if (rs < 32) {
-			cpu->cpsr = ARMPSRSetC(cpu->cpsr, (cpu->gprs[rd] >> (32 - rs)) & 1);
+			cpu->cpsr.c = (cpu->gprs[rd] >> (32 - rs)) & 1;
 			cpu->gprs[rd] <<= rs;
 		} else {
 			if (rs > 32) {
-				cpu->cpsr = ARMPSRClearC(cpu->cpsr);
+				cpu->cpsr.c = 0;
 			} else {
-				cpu->cpsr = ARMPSRSetC(cpu->cpsr, cpu->gprs[rd] & 0x00000001);
+				cpu->cpsr.c = cpu->gprs[rd] & 0x00000001;
 			}
 			cpu->gprs[rd] = 0;
 		}
@@ -183,13 +161,13 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSR2,
 	int rs = cpu->gprs[rn] & 0xFF;
 	if (rs) {
 		if (rs < 32) {
-			cpu->cpsr = ARMPSRSetC(cpu->cpsr, (cpu->gprs[rd] >> (rs - 1)) & 1);
+			cpu->cpsr.c = (cpu->gprs[rd] >> (rs - 1)) & 1;
 			cpu->gprs[rd] = (uint32_t) cpu->gprs[rd] >> rs;
 		} else {
 			if (rs > 32) {
-				cpu->cpsr = ARMPSRClearC(cpu->cpsr);
+				cpu->cpsr.c = 0;
 			} else {
-				cpu->cpsr = ARMPSRSetC(cpu->cpsr, ARM_SIGN(cpu->gprs[rd]));
+				cpu->cpsr.c = ARM_SIGN(cpu->gprs[rd]);
 			}
 			cpu->gprs[rd] = 0;
 		}
@@ -200,11 +178,11 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ASR2,
 	int rs = cpu->gprs[rn] & 0xFF;
 	if (rs) {
 		if (rs < 32) {
-			cpu->cpsr = ARMPSRSetC(cpu->cpsr, (cpu->gprs[rd] >> (rs - 1)) & 1);
+			cpu->cpsr.c = (cpu->gprs[rd] >> (rs - 1)) & 1;
 			cpu->gprs[rd] >>= rs;
 		} else {
-			cpu->cpsr = ARMPSRSetC(cpu->cpsr, ARM_SIGN(cpu->gprs[rd]));
-			if (ARMPSRIsC(cpu->cpsr)) {
+			cpu->cpsr.c = ARM_SIGN(cpu->gprs[rd]);
+			if (cpu->cpsr.c) {
 				cpu->gprs[rd] = 0xFFFFFFFF;
 			} else {
 				cpu->gprs[rd] = 0;
@@ -216,11 +194,11 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ASR2,
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ADC,
 	int n = cpu->gprs[rn];
 	int d = cpu->gprs[rd];
-	cpu->gprs[rd] = d + n + ARMPSRGetC(cpu->cpsr);
-	THUMB_ADDITION_CARRY_S(d, n, cpu->gprs[rd], ARMPSRGetC(cpu->cpsr));)
+	cpu->gprs[rd] = d + n + cpu->cpsr.c;
+	THUMB_ADDITION_S(d, n, cpu->gprs[rd]);)
 
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(SBC,
-	int n = cpu->gprs[rn] + !ARMPSRIsC(cpu->cpsr);
+	int n = cpu->gprs[rn] + !cpu->cpsr.c;
 	int d = cpu->gprs[rd];
 	cpu->gprs[rd] = d - n;
 	THUMB_SUBTRACTION_S(d, n, cpu->gprs[rd]);)
@@ -229,10 +207,10 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ROR,
 	if (rs) {
 		int r4 = rs & 0x1F;
 		if (r4 > 0) {
-			cpu->cpsr = ARMPSRSetC(cpu->cpsr, (cpu->gprs[rd] >> (r4 - 1)) & 1);
+			cpu->cpsr.c = (cpu->gprs[rd] >> (r4 - 1)) & 1;
 			cpu->gprs[rd] = ROR(cpu->gprs[rd], r4);
 		} else {
-			cpu->cpsr = ARMPSRSetC(cpu->cpsr, ARM_SIGN(cpu->gprs[rd]));
+			cpu->cpsr.c = ARM_SIGN(cpu->gprs[rd]);
 		}
 	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
