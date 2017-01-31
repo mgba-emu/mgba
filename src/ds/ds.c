@@ -165,8 +165,8 @@ void DS7InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 void DS9InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 	irqh->reset = DS9Reset;
 	irqh->processEvents = DS9ProcessEvents;
-	irqh->swi16 = NULL;
-	irqh->swi32 = NULL;
+	irqh->swi16 = DS9Swi16;
+	irqh->swi32 = DS9Swi32;
 	irqh->hitIllegal = DSIllegal;
 	irqh->readCPSR = DS9TestIRQ;
 	irqh->writeCP15 = DS9WriteCP15;

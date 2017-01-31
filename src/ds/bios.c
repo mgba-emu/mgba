@@ -22,3 +22,14 @@ void DS7Swi16(struct ARMCore* cpu, int immediate) {
 void DS7Swi32(struct ARMCore* cpu, int immediate) {
 	DS7Swi16(cpu, immediate >> 16);
 }
+
+void DS9Swi16(struct ARMCore* cpu, int immediate) {
+	mLOG(DS_BIOS, DEBUG, "SWI9: %02X r0: %08X r1: %08X r2: %08X r3: %08X",
+	    immediate, cpu->gprs[0], cpu->gprs[1], cpu->gprs[2], cpu->gprs[3]);
+
+	ARMRaiseSWI(cpu);
+}
+
+void DS9Swi32(struct ARMCore* cpu, int immediate) {
+	DS9Swi16(cpu, immediate >> 16);
+}
