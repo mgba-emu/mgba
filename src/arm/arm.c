@@ -40,8 +40,8 @@ void ARMSetPrivilegeMode(struct ARMCore* cpu, enum PrivilegeMode mode) {
 		cpu->gprs[ARM_SP] = cpu->bankedRegisters[newBank][0];
 		cpu->gprs[ARM_LR] = cpu->bankedRegisters[newBank][1];
 
-		cpu->bankedSPSRs[oldBank] = cpu->spsr;
-		cpu->spsr = cpu->bankedSPSRs[newBank];
+		cpu->bankedSPSRs[oldBank] = cpu->spsr.packed;
+		cpu->spsr.packed = cpu->bankedSPSRs[newBank];
 	}
 	cpu->privilegeMode = mode;
 }
@@ -127,8 +127,8 @@ void ARMReset(struct ARMCore* cpu) {
 	}
 
 	cpu->privilegeMode = MODE_SYSTEM;
-	cpu->cpsr = MODE_SYSTEM;
-	cpu->spsr = 0;
+	cpu->cpsr.packed = MODE_SYSTEM;
+	cpu->spsr.packed = 0;
 
 	cpu->shifterOperand = 0;
 	cpu->shifterCarryOut = 0;
@@ -147,10 +147,10 @@ void ARMReset(struct ARMCore* cpu) {
 }
 
 void ARMRaiseIRQ(struct ARMCore* cpu) {
-	if (ARMPSRIsI(cpu->cpsr)) {
+	if (cpu->cpsr.i) {
 		return;
 	}
-	ARMPSR cpsr = cpu->cpsr;
+	union PSR cpsr = cpu->cpsr;
 	int instructionWidth;
 	if (cpu->executionMode == MODE_THUMB) {
 		instructionWidth = WORD_SIZE_THUMB;
@@ -158,19 +158,19 @@ void ARMRaiseIRQ(struct ARMCore* cpu) {
 		instructionWidth = WORD_SIZE_ARM;
 	}
 	ARMSetPrivilegeMode(cpu, MODE_IRQ);
-	cpu->cpsr = ARMPSRSetPriv(cpu->cpsr, MODE_IRQ);
+	cpu->cpsr.priv = MODE_IRQ;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth + WORD_SIZE_ARM;
 	cpu->gprs[ARM_PC] = BASE_IRQ;
 	int currentCycles = 0;
 	ARM_WRITE_PC;
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->spsr = cpsr;
-	cpu->cpsr = ARMPSRFillI(cpu->cpsr);
+	cpu->cpsr.i = 1;
 	cpu->cycles += currentCycles;
 }
 
 void ARMRaiseSWI(struct ARMCore* cpu) {
-	ARMPSR cpsr = cpu->cpsr;
+	union PSR cpsr = cpu->cpsr;
 	int instructionWidth;
 	if (cpu->executionMode == MODE_THUMB) {
 		instructionWidth = WORD_SIZE_THUMB;
@@ -178,19 +178,19 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 		instructionWidth = WORD_SIZE_ARM;
 	}
 	ARMSetPrivilegeMode(cpu, MODE_SUPERVISOR);
-	cpu->cpsr = ARMPSRSetPriv(cpu->cpsr, MODE_SUPERVISOR);
+	cpu->cpsr.priv = MODE_SUPERVISOR;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth;
 	cpu->gprs[ARM_PC] = BASE_SWI;
 	int currentCycles = 0;
 	ARM_WRITE_PC;
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->spsr = cpsr;
-	cpu->cpsr = ARMPSRFillI(cpu->cpsr);
+	cpu->cpsr.i = 1;
 	cpu->cycles += currentCycles;
 }
 
 void ARMRaiseUndefined(struct ARMCore* cpu) {
-	ARMPSR cpsr = cpu->cpsr;
+	union PSR cpsr = cpu->cpsr;
 	int instructionWidth;
 	if (cpu->executionMode == MODE_THUMB) {
 		instructionWidth = WORD_SIZE_THUMB;
@@ -198,14 +198,14 @@ void ARMRaiseUndefined(struct ARMCore* cpu) {
 		instructionWidth = WORD_SIZE_ARM;
 	}
 	ARMSetPrivilegeMode(cpu, MODE_UNDEFINED);
-	cpu->cpsr = ARMPSRSetPriv(cpu->cpsr, MODE_UNDEFINED);
+	cpu->cpsr.priv = MODE_UNDEFINED;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth;
 	cpu->gprs[ARM_PC] = BASE_UNDEF;
 	int currentCycles = 0;
 	ARM_WRITE_PC;
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->spsr = cpsr;
-	cpu->cpsr = ARMPSRFillI(cpu->cpsr);
+	cpu->cpsr.i = 1;
 	cpu->cycles += currentCycles;
 }
 

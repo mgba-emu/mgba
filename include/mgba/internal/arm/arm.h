@@ -68,15 +68,33 @@ enum LSMDirection {
 
 struct ARMCore;
 
-DECL_BITFIELD(ARMPSR, uint32_t);
-DECL_BITS(ARMPSR, Priv, 0, 5);
-DECL_BIT(ARMPSR, T, 5);
-DECL_BIT(ARMPSR, F, 6);
-DECL_BIT(ARMPSR, I, 7);
-DECL_BIT(ARMPSR, V, 28);
-DECL_BIT(ARMPSR, C, 29);
-DECL_BIT(ARMPSR, Z, 30);
-DECL_BIT(ARMPSR, N, 31);
+union PSR {
+	struct {
+#if defined(__POWERPC__) || defined(__PPC__)
+		unsigned n : 1;
+		unsigned z : 1;
+		unsigned c : 1;
+		unsigned v : 1;
+		unsigned unused : 20;
+		unsigned i : 1;
+		unsigned f : 1;
+		unsigned t : 1;
+		unsigned priv : 5;
+#else
+		unsigned priv : 5;
+		unsigned t : 1;
+		unsigned f : 1;
+		unsigned i : 1;
+		unsigned unused : 20;
+		unsigned v : 1;
+		unsigned c : 1;
+		unsigned z : 1;
+		unsigned n : 1;
+#endif
+	};
+
+	int32_t packed;
+};
 
 struct ARMMemory {
 	uint32_t (*load32)(struct ARMCore*, uint32_t address, int* cycleCounter);
@@ -117,8 +135,8 @@ struct ARMInterruptHandler {
 
 struct ARMCore {
 	int32_t gprs[16];
-	ARMPSR cpsr;
-	ARMPSR spsr;
+	union PSR cpsr;
+	union PSR spsr;
 
 	int32_t cycles;
 	int32_t nextEvent;

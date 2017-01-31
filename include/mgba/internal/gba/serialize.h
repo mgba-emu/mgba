@@ -11,7 +11,6 @@
 CXX_GUARD_START
 
 #include <mgba/core/core.h>
-#include <mgba/internal/arm/arm.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gb/serialize.h>
 
@@ -238,8 +237,8 @@ struct GBASerializedState {
 
 	struct {
 		int32_t gprs[16];
-		ARMPSR cpsr;
-		ARMPSR spsr;
+		union PSR cpsr;
+		union PSR spsr;
 
 		int32_t cycles;
 		int32_t nextEvent;

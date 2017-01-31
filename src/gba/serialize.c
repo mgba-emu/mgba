@@ -42,8 +42,8 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	for (i = 0; i < 16; ++i) {
 		STORE_32(gba->cpu->gprs[i], i * sizeof(state->cpu.gprs[0]), state->cpu.gprs);
 	}
-	STORE_32(gba->cpu->cpsr, 0, &state->cpu.cpsr);
-	STORE_32(gba->cpu->spsr, 0, &state->cpu.spsr);
+	STORE_32(gba->cpu->cpsr.packed, 0, &state->cpu.cpsr.packed);
+	STORE_32(gba->cpu->spsr.packed, 0, &state->cpu.spsr.packed);
 	STORE_32(gba->cpu->cycles, 0, &state->cpu.cycles);
 	STORE_32(gba->cpu->nextEvent, 0, &state->cpu.nextEvent);
 	for (i = 0; i < 6; ++i) {
@@ -151,8 +151,8 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	for (i = 0; i < 16; ++i) {
 		LOAD_32(gba->cpu->gprs[i], i * sizeof(gba->cpu->gprs[0]), state->cpu.gprs);
 	}
-	LOAD_32(gba->cpu->cpsr, 0, &state->cpu.cpsr);
-	LOAD_32(gba->cpu->spsr, 0, &state->cpu.spsr);
+	LOAD_32(gba->cpu->cpsr.packed, 0, &state->cpu.cpsr.packed);
+	LOAD_32(gba->cpu->spsr.packed, 0, &state->cpu.spsr.packed);
 	LOAD_32(gba->cpu->cycles, 0, &state->cpu.cycles);
 	LOAD_32(gba->cpu->nextEvent, 0, &state->cpu.nextEvent);
 	for (i = 0; i < 6; ++i) {
@@ -162,13 +162,13 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		}
 		LOAD_32(gba->cpu->bankedSPSRs[i], i * sizeof(gba->cpu->bankedSPSRs[0]), state->cpu.bankedSPSRs);
 	}
-	gba->cpu->privilegeMode = ARMPSRGetPriv(gba->cpu->cpsr);
+	gba->cpu->privilegeMode = gba->cpu->cpsr.priv;
 	gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	if (state->biosPrefetch) {
 		LOAD_32(gba->memory.biosPrefetch, 0, &state->biosPrefetch);
 	}
 	LOAD_32(gba->memory.lastPrefetchedPc, 0, &state->lastPrefetchedPc);
-	if (ARMPSRIsT(gba->cpu->cpsr)) {
+	if (gba->cpu->cpsr.t) {
 		gba->cpu->executionMode = MODE_THUMB;
 		if (state->cpuPrefetch[0] && state->cpuPrefetch[1]) {
 			LOAD_32(gba->cpu->prefetch[0], 0, state->cpuPrefetch);

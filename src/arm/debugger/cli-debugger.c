@@ -37,15 +37,15 @@ static struct CLIDebuggerCommandSummary _armCommands[] = {
 	{ 0, 0, 0, 0 }
 };
 
-static inline void _printPSR(struct CLIDebuggerBackend* be, ARMPSR psr) {
-	be->printf(be, "%08X [%c%c%c%c%c%c%c]\n", psr,
-	           ARMPSRIsN(psr) ? 'N' : '-',
-	           ARMPSRIsZ(psr) ? 'Z' : '-',
-	           ARMPSRIsC(psr) ? 'C' : '-',
-	           ARMPSRIsV(psr) ? 'V' : '-',
-	           ARMPSRIsI(psr) ? 'I' : '-',
-	           ARMPSRIsF(psr) ? 'F' : '-',
-	           ARMPSRIsT(psr) ? 'T' : '-');
+static inline void _printPSR(struct CLIDebuggerBackend* be, union PSR psr) {
+	be->printf(be, "%08X [%c%c%c%c%c%c%c]\n", psr.packed,
+	           psr.n ? 'N' : '-',
+	           psr.z ? 'Z' : '-',
+	           psr.c ? 'C' : '-',
+	           psr.v ? 'V' : '-',
+	           psr.i ? 'I' : '-',
+	           psr.f ? 'F' : '-',
+	           psr.t ? 'T' : '-');
 }
 
 static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVector* dv) {
@@ -136,7 +136,7 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	}
 	_printPSR(be, cpu->cpsr);
 	int instructionLength;
-	enum ExecutionMode mode = ARMPSRIsT(cpu->cpsr);
+	enum ExecutionMode mode = cpu->cpsr.t;
 	if (mode == MODE_ARM) {
 		instructionLength = WORD_SIZE_ARM;
 	} else {
@@ -196,11 +196,11 @@ static uint32_t _lookupPlatformIdentifier(struct CLIDebuggerSystem* debugger, co
 		return cpu->gprs[ARM_PC];
 	}
 	if (strcmp(name, "cpsr") == 0) {
-		return cpu->cpsr;
+		return cpu->cpsr.packed;
 	}
 	// TODO: test if mode has SPSR
 	if (strcmp(name, "spsr") == 0) {
-		return cpu->spsr;
+		return cpu->spsr.packed;
 	}
 	if (name[0] == 'r' && name[1] >= '0' && name[1] <= '9') {
 		int reg = atoi(&name[1]);

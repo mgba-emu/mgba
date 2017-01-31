@@ -173,12 +173,6 @@ typedef intptr_t ssize_t;
 	ATTRIBUTE_UNUSED static inline TYPE TYPE ## Fill ## FIELD (TYPE src) { \
 		return FILL_BITS(src, (START), (START) + (SIZE)); \
 	} \
-	ATTRIBUTE_UNUSED static inline TYPE TYPE ## OrUnsafe ## FIELD (TYPE src, TYPE bits) { \
-		return (src | ((bits) << (START))); \
-	} \
-	ATTRIBUTE_UNUSED static inline TYPE TYPE ## Or ## FIELD (TYPE src, TYPE bits) { \
-		return (src | (((bits) << (START)) & MAKE_MASK(START, (START) + (SIZE)))); \
-	} \
 	ATTRIBUTE_UNUSED static inline TYPE TYPE ## Set ## FIELD (TYPE src, TYPE bits) { \
 		return INS_BITS(src, (START), (START) + (SIZE), bits); \
 	} \

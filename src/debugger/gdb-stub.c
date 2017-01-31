@@ -325,7 +325,7 @@ static void _readGPRs(struct GDBStub* stub, const char* message) {
 		_int2hex32(cpu->gprs[r], &stub->outgoing[i]);
 		i += 8;
 	}
-	_int2hex32(cpu->gprs[ARM_PC] - (ARMPSRIsT(cpu->cpsr) ? WORD_SIZE_THUMB : WORD_SIZE_ARM), &stub->outgoing[i]);
+	_int2hex32(cpu->gprs[ARM_PC] - (cpu->cpsr.t ? WORD_SIZE_THUMB : WORD_SIZE_ARM), &stub->outgoing[i]);
 	i += 8;
 
 	stub->outgoing[i] = 0;
@@ -359,7 +359,7 @@ static void _writeRegister(struct GDBStub* stub, const char* message) {
 			}
 		}
 	} else if (reg == 0x19) {
-		cpu->cpsr = value;
+		cpu->cpsr.packed = value;
 	} else {
 		stub->outgoing[0] = '\0';
 		_sendMessage(stub);
@@ -379,7 +379,7 @@ static void _readRegister(struct GDBStub* stub, const char* message) {
 	if (reg < 0x10) {
 		value = cpu->gprs[reg];
 	} else if (reg == 0x19) {
-		value = cpu->cpsr;
+		value = cpu->cpsr.packed;
 	} else {
 		stub->outgoing[0] = '\0';
 		_sendMessage(stub);

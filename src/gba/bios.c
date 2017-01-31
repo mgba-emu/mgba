@@ -25,11 +25,11 @@ static void _unBitPack(struct GBA* gba);
 static void _SoftReset(struct GBA* gba) {
 	struct ARMCore* cpu = gba->cpu;
 	ARMSetPrivilegeMode(cpu, MODE_IRQ);
-	cpu->spsr = 0;
+	cpu->spsr.packed = 0;
 	cpu->gprs[ARM_LR] = 0;
 	cpu->gprs[ARM_SP] = SP_BASE_IRQ;
 	ARMSetPrivilegeMode(cpu, MODE_SUPERVISOR);
-	cpu->spsr = 0;
+	cpu->spsr.packed = 0;
 	cpu->gprs[ARM_LR] = 0;
 	cpu->gprs[ARM_SP] = SP_BASE_SUPERVISOR;
 	ARMSetPrivilegeMode(cpu, MODE_SYSTEM);
