@@ -399,6 +399,13 @@ void DS7Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	int wait = ds->ds7.memory.waitstatesNonseq16[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_WORKING_RAM:
+		if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
+			((uint8_t*) memory->wram7)[address & (DS7_SIZE_WORKING_RAM - 1)] = value;
+		} else {
+			((uint8_t*) memory->wram)[address & (ds->memory.wramSize7 - 1)] = value;
+		}
+		break;
 	case DS_REGION_RAM:
 		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
 			((uint8_t*) memory->ram)[address & (DS_SIZE_RAM - 1)] = value;
