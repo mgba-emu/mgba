@@ -283,6 +283,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	if (runner->core) {
 		mLOG(GUI_RUNNER, INFO, "Found core");
 		runner->core->init(runner->core);
+		mCoreConfigInit(&runner->core->config, runner->port);
 		mInputMapInit(&runner->core->inputMap, &GBAInputInfo);
 		found = mCoreLoadFile(runner->core, path);
 		if (!found) {

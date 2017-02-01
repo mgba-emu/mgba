@@ -68,7 +68,6 @@ endif()
 
 set(SOURCE_FILES
 	AboutScreen.cpp
-	ArchiveInspector.cpp
 	AssetTile.cpp
 	AssetView.cpp
 	AudioProcessor.cpp
@@ -84,11 +83,11 @@ set(SOURCE_FILES
 	GameController.cpp
 	GamepadAxisEvent.cpp
 	GamepadButtonEvent.cpp
+	GamepadHatEvent.cpp
 	IOViewer.cpp
 	InputController.cpp
 	InputProfile.cpp
 	KeyEditor.cpp
-	LibraryModel.cpp
 	LoadSaveState.cpp
 	LogController.cpp
 	LogView.cpp
@@ -121,6 +120,7 @@ set(UI_FILES
 	DebuggerConsole.ui
 	GIFView.ui
 	IOViewer.ui
+	LibraryView.ui
 	LoadSaveState.ui
 	LogView.ui
 	MemoryView.ui
@@ -189,6 +189,13 @@ if(USE_GDB_STUB)
 	list(APPEND SOURCE_FILES GDBController.cpp GDBWindow.cpp)
 endif()
 
+if(USE_SQLITE3)
+	list(APPEND SOURCE_FILES
+		ArchiveInspector.cpp
+		LibraryModel.cpp
+		LibraryView.cpp)
+endif()
+
 qt5_add_resources(RESOURCES resources.qrc)
 if(APPLE)
 	set(MACOSX_BUNDLE_ICON_FILE mgba.icns)
@@ -229,7 +236,7 @@ if(Qt5LinguistTools_FOUND)
 		qt5_add_translation(TRANSLATION_FILES ${TS_FILES})
 	endif()
 	add_custom_command(OUTPUT ${TRANSLATION_QRC}
-		               COMMAND ${CMAKE_COMMAND} -DTRANSLATION_QRC:FILEPATH="${TRANSLATION_QRC}" -DTRANSLATION_FILES="${TRANSLATION_FILES}" -P "${CMAKE_CURRENT_SOURCE_DIR}/ts.cmake"
+		               COMMAND ${CMAKE_COMMAND} -DTRANSLATION_QRC:FILEPATH="${TRANSLATION_QRC}" -DQM_BASE="${CMAKE_CURRENT_BINARY_DIR}" -P "${CMAKE_CURRENT_SOURCE_DIR}/ts.cmake"
 		               DEPENDS ${TRANSLATION_FILES})
 	qt5_add_resources(TRANSLATION_RESOURCES ${TRANSLATION_QRC})
 	list(APPEND RESOURCES ${TRANSLATION_RESOURCES})

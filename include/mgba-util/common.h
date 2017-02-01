@@ -28,6 +28,7 @@ CXX_GUARD_START
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #ifdef _WIN32
 // WinSock2 gets very angry if it's included too late
@@ -46,9 +47,11 @@ typedef intptr_t ssize_t;
 #define strdup _strdup
 #define lseek _lseek
 #elif defined(__wii__)
+#include <sys/time.h>
 typedef intptr_t ssize_t;
 #else
 #include <unistd.h>
+#include <sys/time.h>
 #endif
 
 #ifndef SSIZE_MAX

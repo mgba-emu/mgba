@@ -103,6 +103,8 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 		gb->audio.masterVolume = core->opts.volume;
 	}
 	gb->video.frameskip = core->opts.frameskip;
+	mCoreConfigCopyValue(&core->config, config, "gb.bios");
+	mCoreConfigCopyValue(&core->config, config, "gbc.bios");
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBCore* gbcore = (struct GBCore*) core;
@@ -211,6 +213,16 @@ static void _GBCoreUnloadROM(struct mCore* core) {
 	return GBUnloadROM(core->board);
 }
 
+static void _GBCoreChecksum(const struct mCore* core, void* data, enum mCoreChecksumType type) {
+	struct GB* gb = (struct GB*) core->board;
+	switch (type) {
+	case CHECKSUM_CRC32:
+		memcpy(data, &gb->romCrc32, sizeof(gb->romCrc32));
+		break;
+	}
+	return;
+}
+
 static void _GBCoreReset(struct mCore* core) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	struct GB* gb = (struct GB*) core->board;
@@ -228,8 +240,8 @@ static void _GBCoreReset(struct mCore* core) {
 	}
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	struct VFile* bios = NULL;
-	if (core->opts.useBios) {
+	if (!gb->biosVf && core->opts.useBios) {
+		struct VFile* bios = NULL;
 		bool found = false;
 		if (core->opts.bios) {
 			bios = VFileOpen(core->opts.bios, O_RDONLY);
@@ -241,8 +253,31 @@ static void _GBCoreReset(struct mCore* core) {
 			}
 		}
 		if (!found) {
-			char path[PATH_MAX];
 			GBDetectModel(gb);
+			const char* configPath;
+
+			switch (gb->model) {
+			case GB_MODEL_DMG:
+			case GB_MODEL_SGB: // TODO
+				configPath = mCoreConfigGetValue(&core->config, "gb.bios");
+				break;
+			case GB_MODEL_CGB:
+			case GB_MODEL_AGB:
+				configPath = mCoreConfigGetValue(&core->config, "gbc.bios");
+				break;
+			default:
+				break;
+			};
+			bios = VFileOpen(configPath, O_RDONLY);
+			if (bios && GBIsBIOS(bios)) {
+				found = true;
+			} else if (bios) {
+				bios->close(bios);
+				bios = NULL;
+			}
+		}
+		if (!found) {
+			char path[PATH_MAX];
 			mCoreConfigDirectory(path, PATH_MAX);
 			switch (gb->model) {
 			case GB_MODEL_DMG:
@@ -257,10 +292,16 @@ static void _GBCoreReset(struct mCore* core) {
 				break;
 			};
 			bios = VFileOpen(path, O_RDONLY);
+			if (bios && GBIsBIOS(bios)) {
+				found = true;
+			} else if (bios) {
+				bios->close(bios);
+				bios = NULL;
+			}
 		}
-	}
-	if (bios) {
-		GBLoadBIOS(gb, bios);
+		if (bios) {
+			GBLoadBIOS(gb, bios);
+		}
 	}
 #endif
 
@@ -543,6 +584,7 @@ struct mCore* GBCoreCreate(void) {
 	core->loadTemporarySave = _GBCoreLoadTemporarySave;
 	core->loadPatch = _GBCoreLoadPatch;
 	core->unloadROM = _GBCoreUnloadROM;
+	core->checksum = _GBCoreChecksum;
 	core->reset = _GBCoreReset;
 	core->runFrame = _GBCoreRunFrame;
 	core->runLoop = _GBCoreRunLoop;

@@ -7,6 +7,7 @@
 
 #include <QApplication>
 #include <QResizeEvent>
+#include <QTimer>
 
 #include <mgba/core/core.h>
 #include <mgba/core/thread.h>
@@ -317,6 +318,16 @@ void PainterGL::draw() {
 	if (m_queue.isEmpty() || !mCoreThreadIsActive(m_context)) {
 		return;
 	}
+	if (!m_delayTimer.isValid()) {
+		m_delayTimer.start();
+	} else if (m_delayTimer.elapsed() < 16) {
+		QMetaObject::invokeMethod(this, "draw", Qt::QueuedConnection);
+		QThread::usleep(500);
+		return;
+	} else {
+		m_delayTimer.restart();
+	}
+
 	if (mCoreSyncWaitFrameStart(&m_context->sync) || !m_queue.isEmpty()) {
 		dequeue();
 		mCoreSyncWaitFrameEnd(&m_context->sync);

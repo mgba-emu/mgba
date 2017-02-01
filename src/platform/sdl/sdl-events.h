@@ -96,7 +96,7 @@ bool mSDLAttachPlayer(struct mSDLEvents*, struct mSDLPlayer*);
 void mSDLDetachPlayer(struct mSDLEvents*, struct mSDLPlayer*);
 void mSDLEventsLoadConfig(struct mSDLEvents*, const struct Configuration*);
 void mSDLPlayerChangeJoystick(struct mSDLEvents*, struct mSDLPlayer*, size_t index);
-void mSDLUpdateJoysticks(struct mSDLEvents* events);
+void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration*);
 
 void mSDLPlayerLoadConfig(struct mSDLPlayer*, const struct Configuration*);
 void mSDLPlayerSaveConfig(const struct mSDLPlayer*, struct Configuration*);

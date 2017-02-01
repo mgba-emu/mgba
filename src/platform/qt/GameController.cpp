@@ -145,7 +145,11 @@ GameController::GameController(QObject* parent)
 			controller->m_multiplayer->attachGame(controller);
 		}
 
-		QMetaObject::invokeMethod(controller, "gameStarted", Q_ARG(mCoreThread*, context), Q_ARG(const QString&, controller->m_fname));
+		QString path = controller->m_fname;
+		if (!controller->m_fsub.isEmpty()) {
+			path += QDir::separator() + controller->m_fsub;
+		}
+		QMetaObject::invokeMethod(controller, "gameStarted", Q_ARG(mCoreThread*, context), Q_ARG(const QString&, path));
 		QMetaObject::invokeMethod(controller, "startAudio");
 	};
 
@@ -369,17 +373,48 @@ void GameController::loadGame(const QString& path) {
 	closeGame();
 	QFileInfo info(path);
 	if (!info.isReadable()) {
-		LOG(QT, ERROR) << tr("Failed to open game file: %1").arg(path);
+		QString fname = info.fileName();
+		QString base = info.path();
+		if (base.endsWith("/") || base.endsWith(QDir::separator())) {
+			base.chop(1);
+		}
+		VDir* dir = VDirOpenArchive(base.toUtf8().constData());
+		if (dir) {
+			VFile* vf = dir->openFile(dir, fname.toUtf8().constData(), O_RDONLY);
+			if (vf) {
+				struct VFile* vfclone = VFileMemChunk(NULL, vf->size(vf));
+				uint8_t buffer[2048];
+				ssize_t read;
+				while ((read = vf->read(vf, buffer, sizeof(buffer))) > 0) {
+					vfclone->write(vfclone, buffer, read);
+				}
+				vf->close(vf);
+				vf = vfclone;
+			}
+			dir->close(dir);
+			loadGame(vf, fname, base);
+		} else {
+			LOG(QT, ERROR) << tr("Failed to open game file: %1").arg(path);
+		}
 		return;
+	} else {
+		m_fname = info.canonicalFilePath();
+		m_fsub = QString();
 	}
-	m_fname = info.canonicalFilePath();
 	m_vf = nullptr;
 	openGame();
 }
 
-void GameController::loadGame(VFile* vf, const QString& base) {
+void GameController::loadGame(VFile* vf, const QString& path, const QString& base) {
 	closeGame();
-	m_fname = base;
+	QFileInfo info(base);
+	if (info.isDir()) {
+		m_fname = base + QDir::separator() + path;
+		m_fsub = QString();
+	} else {
+		m_fname = base;
+		m_fsub = path;
+	}
 	m_vf = vf;
 	openGame();
 }
@@ -394,9 +429,6 @@ void GameController::openGame(bool biosOnly) {
 	if (m_fname.isEmpty()) {
 		biosOnly = true;
 	}
-	if (biosOnly && (!m_useBios || m_bios.isNull())) {
-		return;
-	}
 	if (isLoaded()) {
 		// We need to delay if the game is still cleaning up
 		QTimer::singleShot(10, this, SLOT(openGame()));
@@ -405,14 +437,17 @@ void GameController::openGame(bool biosOnly) {
 		cleanGame();
 	}
 
+	m_threadContext.core = nullptr;
 	if (!biosOnly) {
 		if (m_vf) {
 			m_threadContext.core = mCoreFindVF(m_vf);
 		} else {
 			m_threadContext.core = mCoreFind(m_fname.toUtf8().constData());
 		}
+#ifdef M_CORE_GBA
 	} else {
 		m_threadContext.core = GBACoreCreate();
+#endif
 	}
 
 	if (!m_threadContext.core) {
@@ -429,11 +464,16 @@ void GameController::openGame(bool biosOnly) {
 		m_threadContext.sync.audioWait = m_audioSync;
 	}
 	m_threadContext.core->init(m_threadContext.core);
+	mCoreInitConfig(m_threadContext.core, nullptr);
 
 	unsigned width, height;
 	m_threadContext.core->desiredVideoDimensions(m_threadContext.core, &width, &height);
 	m_drawContext = new uint32_t[width * height];
 	m_frontBuffer = new uint32_t[width * height];
+
+	if (m_config) {
+		mCoreLoadForeignConfig(m_threadContext.core, m_config);
+	}
 
 	QByteArray bytes;
 	if (!biosOnly) {
@@ -447,27 +487,20 @@ void GameController::openGame(bool biosOnly) {
 	} else {
 		bytes = m_bios.toUtf8();
 	}
+	if (bytes.isNull()) {
+		return;
+	}
+
 	char dirname[PATH_MAX];
 	separatePath(bytes.constData(), dirname, m_threadContext.core->dirs.baseName, 0);
 	mDirectorySetAttachBase(&m_threadContext.core->dirs, VDirOpen(dirname));
 
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, m_drawContext, width);
 
-	if (!m_bios.isNull() && m_useBios) {
-		VFile* bios = VFileDevice::open(m_bios, O_RDONLY);
-		if (bios && !m_threadContext.core->loadBIOS(m_threadContext.core, bios, 0)) {
-			bios->close(bios);
-		}
-	}
-
 	m_inputController->recalibrateAxes();
 	memset(m_drawContext, 0xF8, width * height * 4);
 
 	m_threadContext.core->setAVStream(m_threadContext.core, m_stream);
-
-	if (m_config) {
-		mCoreLoadForeignConfig(m_threadContext.core, m_config);
-	}
 
 	if (!biosOnly) {
 		mCoreAutoloadSave(m_threadContext.core);
@@ -488,14 +521,16 @@ void GameController::openGame(bool biosOnly) {
 	}
 }
 
-void GameController::loadBIOS(const QString& path) {
+void GameController::loadBIOS(int platform, const QString& path) {
 	if (m_bios == path) {
 		return;
 	}
-	m_bios = path;
-	if (m_gameOpen) {
+	if (!m_bios.isNull() && m_gameOpen && this->platform() == platform) {
 		closeGame();
+		m_bios = path;
 		openGame();
+	} else if (!m_gameOpen || m_bios.isNull()) {
+		m_bios = path;
 	}
 }
 

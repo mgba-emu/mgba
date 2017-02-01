@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/core/log.h>
+#include <mgba/core/timing.h>
 
 mLOG_DECLARE_CATEGORY(GBA_SAVE);
 
@@ -79,15 +80,16 @@ struct GBASavedata {
 	bool maskWriteback;
 	struct VFile* realVf;
 
-	int32_t readBitsRemaining;
+	int8_t readBitsRemaining;
 	uint32_t readAddress;
 	uint32_t writeAddress;
 
 	uint8_t* currentBank;
 
+	struct mTiming* timing;
 	bool realisticTiming;
 	unsigned settling;
-	int dust;
+	struct mTimingEvent dust;
 
 	enum SavedataDirty dirty;
 	uint32_t dirtAge;

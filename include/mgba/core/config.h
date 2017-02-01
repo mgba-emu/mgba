@@ -84,6 +84,8 @@ void mCoreConfigSetOverrideIntValue(struct mCoreConfig*, const char* key, int va
 void mCoreConfigSetOverrideUIntValue(struct mCoreConfig*, const char* key, unsigned value);
 void mCoreConfigSetOverrideFloatValue(struct mCoreConfig*, const char* key, float value);
 
+void mCoreConfigCopyValue(struct mCoreConfig* config, const struct mCoreConfig* src, const char* key);
+
 void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts);
 void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptions* opts);
 

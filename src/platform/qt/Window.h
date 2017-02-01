@@ -28,6 +28,7 @@ class Display;
 class GameController;
 class GDBController;
 class GIFView;
+class LibraryView;
 class LogView;
 class ShaderSelector;
 class ShortcutController;
@@ -57,9 +58,11 @@ signals:
 
 public slots:
 	void selectROM();
+#ifdef USE_SQLITE3
 	void selectROMInArchive();
+	void addDirToLibrary();
+#endif
 	void selectSave(bool temporary);
-	void selectBIOS();
 	void selectPatch();
 	void enterFullScreen();
 	void exitFullScreen();
@@ -189,6 +192,10 @@ private:
 
 #ifdef USE_GDB_STUB
 	GDBController* m_gdbController;
+#endif
+
+#ifdef USE_SQLITE3
+	LibraryView* m_libraryView;
 #endif
 };
 

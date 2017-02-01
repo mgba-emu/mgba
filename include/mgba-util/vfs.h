@@ -85,9 +85,12 @@ struct VDir* VDirOpen7z(const char* path, int flags);
 #endif
 
 #if defined(__wii__) || defined(_3DS)
+struct VDir* VDeviceList(void);
+#endif
+
+#ifdef USE_VFS_FILE
 struct VFile* VFileFOpen(const char* path, const char* mode);
 struct VFile* VFileFromFILE(FILE* file);
-struct VDir* VDeviceList(void);
 #endif
 
 void separatePath(const char* path, char* dirname, char* basename, char* extension);

@@ -6,7 +6,6 @@
 #include <mgba/core/interface.h>
 
 #include <mgba/core/core.h>
-#include <time.h>
 
 static time_t _rtcGenericCallback(struct mRTCSource* source) {
 	struct mRTCGenericSource* rtc = (struct mRTCGenericSource*) source;
