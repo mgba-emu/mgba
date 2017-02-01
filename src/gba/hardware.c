@@ -554,6 +554,7 @@ uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uin
 					gbp->p->p->rumble->setRumble(gbp->p->p->rumble, (rx & mask) == 0x22);
 				}
 			}
+			mTimingDeschedule(&gbp->p->p->timing, &gbp->p->gbpNextEvent);
 			mTimingSchedule(&gbp->p->p->timing, &gbp->p->gbpNextEvent, 2048);
 		}
 		value &= 0x78FB;
