@@ -139,7 +139,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 	GBAKeyEditor* editor = new GBAKeyEditor(inputController, InputController::KEYBOARD, QString(), this);
 	m_ui.stackedWidget->addWidget(editor);
-	m_ui.tabs->addItem("Keyboard");
+	m_ui.tabs->addItem(tr("Keyboard"));
 	connect(m_ui.buttonBox, SIGNAL(accepted()), editor, SLOT(save()));
 
 	GBAKeyEditor* buttonEditor = nullptr;
@@ -148,7 +148,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	const char* profile = inputController->profileForType(SDL_BINDING_BUTTON);
 	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
 	m_ui.stackedWidget->addWidget(buttonEditor);
-	m_ui.tabs->addItem("Controllers");
+	m_ui.tabs->addItem(tr("Controllers"));
 	connect(m_ui.buttonBox, SIGNAL(accepted()), buttonEditor, SLOT(save()));
 #endif
 
@@ -167,7 +167,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	shortcutView->setController(shortcutController);
 	shortcutView->setInputController(inputController);
 	m_ui.stackedWidget->addWidget(shortcutView);
-	m_ui.tabs->addItem("Shortcuts");
+	m_ui.tabs->addItem(tr("Shortcuts"));
 }
 
 void SettingsView::selectBios(QLineEdit* bios) {
