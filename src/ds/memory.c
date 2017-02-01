@@ -531,7 +531,7 @@ uint32_t DS7LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 		});
 		break;
 	case DS_REGION_IO:
-		LDM_LOOP(value = DS7IORead(ds, address & 0x00FFFFFC) | (DS7IORead(ds, (address & 0x00FFFFFC) | 2) << 16));
+		LDM_LOOP(value = DS7IORead32(ds, address));
 		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 LDM: %08X", address);
@@ -970,6 +970,9 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 		} else {
 			mLOG(DS_MEM, STUB, "Unimplemented DS9 LDM: %08X", address);
 		});
+		break;
+	case DS_REGION_IO:
+		LDM_LOOP(value = DS9IORead32(ds, address));
 		break;
 	default:
 		LDM_LOOP(if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
