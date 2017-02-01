@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/ds/ds.h>
 
+#include <mgba/core/interface.h>
 #include <mgba/internal/arm/decoder.h>
 #include <mgba/internal/arm/debugger/debugger.h>
 #include <mgba/internal/arm/isa-inlines.h>
@@ -115,6 +116,7 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 	DSMemoryInit(ds);
 	DSDMAInit(ds);
 
+	DSVideoInit(&ds->video);
 	ds->video.p = ds;
 
 	ds->ds7.springIRQ = 0;
@@ -223,6 +225,7 @@ void DS9Reset(struct ARMCore* cpu) {
 	CircleBufferInit(&ds->ds9.fifo, 64);
 	DSDMAReset(&ds->ds9);
 	DS9IOInit(ds);
+	DSVideoReset(&ds->video);
 
 	ds->activeCpu = cpu;
 	mTimingSchedule(&ds->ds9.timing, &ds->slice, SLICE_CYCLES);
@@ -622,5 +625,19 @@ void DSRaiseIRQ(struct ARMCore* cpu, uint16_t* io, enum DSIRQ irq) {
 		if (io[DS_REG_IME >> 1]) {
 			ARMRaiseIRQ(cpu);
 		}
+	}
+}
+
+void DSFrameStarted(struct DS* ds) {
+	struct mCoreCallbacks* callbacks = ds->coreCallbacks;
+	if (callbacks && callbacks->videoFrameStarted) {
+		callbacks->videoFrameStarted(callbacks->context);
+	}
+}
+
+void DSFrameEnded(struct DS* ds) {
+	struct mCoreCallbacks* callbacks = ds->coreCallbacks;
+	if (callbacks && callbacks->videoFrameEnded) {
+		callbacks->videoFrameEnded(callbacks->context);
 	}
 }

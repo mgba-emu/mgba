@@ -13,6 +13,10 @@ CXX_GUARD_START
 #include <mgba/core/log.h>
 
 enum DSIORegisters {
+	// Video
+	DS_REG_DISPSTAT = 0x004,
+	DS_REG_VCOUNT = 0x006,
+
 	// DMA
 	DS_REG_DMA0SAD_LO = 0x0B0,
 	DS_REG_DMA0SAD_HI = 0x0B2,
@@ -74,10 +78,6 @@ enum DSIORegisters {
 };
 
 enum DS7IORegisters {
-	// Video
-	DS7_REG_DISPSTAT = 0x004,
-	DS7_REG_VCOUNT = 0x006,
-
 	// Keypad
 	DS7_REG_KEYINPUT = 0x130,
 	DS7_REG_KEYCNT = 0x132,
@@ -121,8 +121,6 @@ enum DS9IORegisters {
 	// Video
 	DS9_REG_A_DISPCNT_LO = 0x000,
 	DS9_REG_A_DISPCNT_HI = 0x002,
-	DS9_REG_DISPSTAT = 0x004,
-	DS9_REG_VCOUNT = 0x006,
 	DS9_REG_A_BG0CNT = 0x008,
 	DS9_REG_A_BG1CNT = 0x00A,
 	DS9_REG_A_BG2CNT = 0x00C,

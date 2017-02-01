@@ -69,6 +69,7 @@ struct DSCommon {
 	struct CircleBuffer fifo;
 };
 
+struct mCoreCallbacks;
 struct DS {
 	struct mCPUComponent d;
 
@@ -99,6 +100,7 @@ struct DS {
 	struct VFile* bios9Vf;
 
 	struct mKeyCallback* keyCallback;
+	struct mCoreCallbacks* coreCallbacks;
 };
 
 struct DSCartridge {
@@ -161,6 +163,9 @@ void DSGetGameTitle(struct DS* ds, char* out);
 void DSWriteIME(struct ARMCore* cpu, uint16_t* io, uint16_t value);
 void DSWriteIE(struct ARMCore* cpu, uint16_t* io, uint32_t value);
 void DSRaiseIRQ(struct ARMCore* cpu, uint16_t* io, enum DSIRQ irq);
+
+void DSFrameStarted(struct DS* ds);
+void DSFrameEnded(struct DS* ds);
 
 CXX_GUARD_END
 

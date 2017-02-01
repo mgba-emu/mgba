@@ -29,6 +29,11 @@ static void _DSHaltCNT(struct DSCommon* dscore, uint8_t value) {
 
 static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t value) {
 	switch (address) {
+	// Video
+	case DS_REG_DISPSTAT:
+		DSVideoWriteDISPSTAT(dscore, value);
+		break;
+
 	// DMA Fill
 	case DS_REG_DMA0FILL_LO:
 	case DS_REG_DMA0FILL_HI:
