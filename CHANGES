@@ -59,6 +59,7 @@ Misc:
  - SDL: Automatically map controllers when plugged in
  - Qt: Automatically load controller profile when plugged in
  - OpenGL: Add xBR-lv2 shader
+ - GBA, GB: ROM is now unloaded if a patch is applied
 
 0.5.2: (2016-12-31)
 Bugfixes:
