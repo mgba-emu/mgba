@@ -323,7 +323,7 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 
 	ARMReset(core->cpu);
-	if (core->opts.skipBios && gba->pristineRom) {
+	if (core->opts.skipBios && gba->isPristine) {
 		GBASkipBIOS(core->board);
 	}
 }

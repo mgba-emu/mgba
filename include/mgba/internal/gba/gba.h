@@ -90,7 +90,7 @@ struct GBA {
 	struct mRumble* rumble;
 
 	struct GBARRContext* rr;
-	void* pristineRom;
+	bool isPristine;
 	size_t pristineRomSize;
 	size_t yankedRomSize;
 	uint32_t romCrc32;

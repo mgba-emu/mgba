@@ -79,7 +79,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->sramVf = NULL;
 	gb->sramRealVf = NULL;
 
-	gb->pristineRom = 0;
+	gb->isPristine = false;
 	gb->pristineRomSize = 0;
 	gb->yankedRomSize = 0;
 
@@ -108,24 +108,23 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	gb->romVf = vf;
 	gb->pristineRomSize = vf->size(vf);
 	vf->seek(vf, 0, SEEK_SET);
+	gb->isPristine = true;
 #ifdef _3DS
-	gb->pristineRom = 0;
 	if (gb->pristineRomSize <= romBufferSize) {
-		gb->pristineRom = romBuffer;
+		gb->memory.rom = romBuffer;
 		vf->read(vf, romBuffer, gb->pristineRomSize);
 	}
 #else
-	gb->pristineRom = vf->map(vf, gb->pristineRomSize, MAP_READ);
+	gb->memory.rom = vf->map(vf, gb->pristineRomSize, MAP_READ);
 #endif
-	if (!gb->pristineRom) {
+	if (!gb->memory.rom) {
 		return false;
 	}
 	gb->yankedRomSize = 0;
-	gb->memory.rom = gb->pristineRom;
 	gb->memory.romBase = gb->memory.rom;
 	gb->memory.romSize = gb->pristineRomSize;
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
-	GBMBCSwitchBank(&gb->memory, gb->memory.currentBank);
+	GBMBCSwitchBank(gb, gb->memory.currentBank);
 
 	if (gb->cpu) {
 		struct LR35902Core* cpu = gb->cpu;
@@ -263,26 +262,25 @@ void GBSavedataUnmask(struct GB* gb) {
 
 void GBUnloadROM(struct GB* gb) {
 	// TODO: Share with GBAUnloadROM
-	if (gb->memory.rom && gb->memory.romBase != gb->memory.rom && gb->memory.romBase != gb->pristineRom) {
+	if (gb->memory.rom && gb->memory.romBase != gb->memory.rom && !gb->isPristine) {
 		free(gb->memory.romBase);
 	}
-	if (gb->memory.rom && gb->pristineRom != gb->memory.rom) {
+	if (gb->memory.rom && !gb->isPristine) {
 		if (gb->yankedRomSize) {
 			gb->yankedRomSize = 0;
 		}
 		mappedMemoryFree(gb->memory.rom, GB_SIZE_CART_MAX);
-		gb->memory.rom = gb->pristineRom;
 	}
-	gb->memory.rom = 0;
 
 	if (gb->romVf) {
 #ifndef _3DS
-		gb->romVf->unmap(gb->romVf, gb->pristineRom, gb->pristineRomSize);
+		gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->pristineRomSize);
 #endif
 		gb->romVf->close(gb->romVf);
-		gb->romVf = 0;
+		gb->romVf = NULL;
 	}
-	gb->pristineRom = 0;
+	gb->memory.rom = NULL;
+	gb->isPristine = false;
 
 	GBSavedataUnmask(gb);
 	GBSramDeinit(gb);
@@ -317,14 +315,26 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 	if (patchedSize > GB_SIZE_CART_MAX) {
 		patchedSize = GB_SIZE_CART_MAX;
 	}
-	gb->memory.rom = anonymousMemoryMap(GB_SIZE_CART_MAX);
-	if (!patch->applyPatch(patch, gb->pristineRom, gb->pristineRomSize, gb->memory.rom, patchedSize)) {
-		mappedMemoryFree(gb->memory.rom, patchedSize);
-		gb->memory.rom = gb->pristineRom;
+	void* newRom = anonymousMemoryMap(GB_SIZE_CART_MAX);
+	if (!patch->applyPatch(patch, gb->memory.rom, gb->pristineRomSize, newRom, patchedSize)) {
+		mappedMemoryFree(newRom, GB_SIZE_CART_MAX);
 		return;
 	}
+	if (gb->romVf) {
+#ifndef _3DS
+		gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->pristineRomSize);
+#endif
+		gb->romVf->close(gb->romVf);
+		gb->romVf = NULL;
+	}
+	gb->isPristine = false;
+	if (gb->memory.romBase == gb->memory.rom) {
+		gb->memory.romBase = newRom;
+	}
+	gb->memory.rom = newRom;
 	gb->memory.romSize = patchedSize;
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
+	gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
 }
 
 void GBDestroy(struct GB* gb) {
@@ -652,9 +662,6 @@ void GBGetGameTitle(const struct GB* gb, char* out) {
 	if (gb->memory.rom) {
 		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	}
-	if (gb->pristineRom) {
-		cart = (const struct GBCartridge*) &((uint8_t*) gb->pristineRom)[0x100];
-	}
 	if (!cart) {
 		return;
 	}
@@ -670,9 +677,6 @@ void GBGetGameCode(const struct GB* gb, char* out) {
 	const struct GBCartridge* cart = NULL;
 	if (gb->memory.rom) {
 		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-	}
-	if (gb->pristineRom) {
-		cart = (const struct GBCartridge*) &((uint8_t*) gb->pristineRom)[0x100];
 	}
 	if (!cart) {
 		return;

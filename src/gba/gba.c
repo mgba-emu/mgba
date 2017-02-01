@@ -104,7 +104,7 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 
 	gba->performingDMA = false;
 
-	gba->pristineRom = 0;
+	gba->isPristine = false;
 	gba->pristineRomSize = 0;
 	gba->yankedRomSize = 0;
 
@@ -112,22 +112,22 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 }
 
 void GBAUnloadROM(struct GBA* gba) {
-	if (gba->memory.rom && gba->pristineRom != gba->memory.rom) {
+	if (gba->memory.rom && !gba->isPristine) {
 		if (gba->yankedRomSize) {
 			gba->yankedRomSize = 0;
 		}
 		mappedMemoryFree(gba->memory.rom, SIZE_CART0);
 	}
-	gba->memory.rom = 0;
 
 	if (gba->romVf) {
 #ifndef _3DS
-		gba->romVf->unmap(gba->romVf, gba->pristineRom, gba->pristineRomSize);
+		gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->pristineRomSize);
 #endif
 		gba->romVf->close(gba->romVf);
-		gba->romVf = 0;
+		gba->romVf = NULL;
 	}
-	gba->pristineRom = 0;
+	gba->memory.rom = NULL;
+	gba->isPristine = false;
 
 	GBASavedataDeinit(&gba->memory.savedata);
 	if (gba->memory.savedata.realVf) {
@@ -291,23 +291,23 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
 	if (gba->pristineRomSize > SIZE_WORKING_RAM) {
 		gba->pristineRomSize = SIZE_WORKING_RAM;
 	}
+	gba->isPristine = true;
 #ifdef _3DS
-	gba->pristineRom = 0;
 	if (gba->pristineRomSize <= romBufferSize) {
-		gba->pristineRom = romBuffer;
+		gba->memory.wram = romBuffer;
 		vf->read(vf, romBuffer, gba->pristineRomSize);
 	}
 #else
-	gba->pristineRom = vf->map(vf, gba->pristineRomSize, MAP_READ);
+	gba->memory.wram = vf->map(vf, gba->pristineRomSize, MAP_READ);
 #endif
-	if (!gba->pristineRom) {
+	if (!gba->memory.wram) {
 		mLOG(GBA, WARN, "Couldn't map ROM");
 		return false;
 	}
 	gba->yankedRomSize = 0;
 	gba->memory.romSize = 0;
 	gba->memory.romMask = 0;
-	gba->romCrc32 = doCrc32(gba->pristineRom, gba->pristineRomSize);
+	gba->romCrc32 = doCrc32(gba->memory.wram, gba->pristineRomSize);
 	return true;
 }
 
@@ -322,21 +322,20 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 	if (gba->pristineRomSize > SIZE_CART0) {
 		gba->pristineRomSize = SIZE_CART0;
 	}
+	gba->isPristine = true;
 #ifdef _3DS
-	gba->pristineRom = 0;
 	if (gba->pristineRomSize <= romBufferSize) {
-		gba->pristineRom = romBuffer;
+		gba->memory.rom = romBuffer;
 		vf->read(vf, romBuffer, gba->pristineRomSize);
 	}
 #else
-	gba->pristineRom = vf->map(vf, gba->pristineRomSize, MAP_READ);
+	gba->memory.rom = vf->map(vf, gba->pristineRomSize, MAP_READ);
 #endif
-	if (!gba->pristineRom) {
+	if (!gba->memory.rom) {
 		mLOG(GBA, WARN, "Couldn't map ROM");
 		return false;
 	}
 	gba->yankedRomSize = 0;
-	gba->memory.rom = gba->pristineRom;
 	gba->memory.romSize = gba->pristineRomSize;
 	gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
 	gba->memory.mirroring = false;
@@ -389,12 +388,21 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 	if (!patchedSize || patchedSize > SIZE_CART0) {
 		return;
 	}
-	gba->memory.rom = anonymousMemoryMap(SIZE_CART0);
-	if (!patch->applyPatch(patch, gba->pristineRom, gba->pristineRomSize, gba->memory.rom, patchedSize)) {
-		mappedMemoryFree(gba->memory.rom, patchedSize);
-		gba->memory.rom = gba->pristineRom;
+	void* newRom = anonymousMemoryMap(SIZE_CART0);
+	if (!patch->applyPatch(patch, gba->memory.rom, gba->pristineRomSize, newRom, patchedSize)) {
+		mappedMemoryFree(newRom, SIZE_CART0);
 		return;
 	}
+	if (gba->romVf) {
+#ifndef _3DS
+		gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->pristineRomSize);
+#endif
+		gba->romVf->close(gba->romVf);
+		gba->romVf = NULL;
+	}
+	gba->isPristine = false;
+	gba->memory.rom = newRom;
+	gba->memory.hw.gpioBase = &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1];
 	gba->memory.romSize = patchedSize;
 	gba->memory.romMask = SIZE_CART0 - 1;
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
@@ -540,8 +548,8 @@ void GBAGetGameTitle(const struct GBA* gba, char* out) {
 		memcpy(out, &((struct GBACartridge*) gba->memory.rom)->title, 12);
 		return;
 	}
-	if (gba->pristineRom) {
-		memcpy(out, &((struct GBACartridge*) gba->pristineRom)->title, 12);
+	if (gba->isPristine && gba->memory.wram) {
+		memcpy(out, &((struct GBACartridge*) gba->memory.wram)->title, 12);
 		return;
 	}
 	strncpy(out, "(BIOS)", 12);
