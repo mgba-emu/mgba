@@ -87,6 +87,9 @@ bool _UPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* ou
 			if (patch->vf->read(patch->vf, &byte, 1) != 1) {
 				return false;
 			}
+			if (offset >= outSize) {
+				return false;
+			}
 			buf[offset] ^= byte;
 			++offset;
 			if (!byte) {
