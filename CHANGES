@@ -10,6 +10,7 @@ Features:
  - Configuration of gamepad hats
  - Qt: Spanish translation (by Kevin López)
  - Add option for whether rewinding restores save games
+ - Qt: German translation (by Lothar Serra Mari)
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
