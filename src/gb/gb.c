@@ -285,11 +285,15 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 	if (patchedSize > GB_SIZE_CART_MAX) {
 		patchedSize = GB_SIZE_CART_MAX;
 	}
+	void* oldRom = gb->memory.rom;
 	gb->memory.rom = anonymousMemoryMap(GB_SIZE_CART_MAX);
 	if (!patch->applyPatch(patch, gb->pristineRom, gb->pristineRomSize, gb->memory.rom, patchedSize)) {
 		mappedMemoryFree(gb->memory.rom, patchedSize);
 		gb->memory.rom = gb->pristineRom;
 		return;
+	}
+	if (gb->memory.romBase == oldRom) {
+		gb->memory.romBase = gb->memory.rom;
 	}
 	gb->memory.romSize = patchedSize;
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
