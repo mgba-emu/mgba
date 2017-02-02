@@ -68,64 +68,55 @@ void ObjView::updateTilesGBA(bool force) {
 	unsigned width = GBAVideoObjSizes[shape * 4 + size][0];
 	unsigned height = GBAVideoObjSizes[shape * 4 + size][1];
 	unsigned tile = GBAObjAttributesCGetTile(obj->c);
+	m_ui.tiles->setTileCount(width * height / 64);
+	m_ui.tiles->setMinimumSize(QSize(width, height) * m_ui.magnification->value());
+	m_ui.tiles->resize(QSize(width, height) * m_ui.magnification->value());
+	unsigned palette = GBAObjAttributesCGetPalette(obj->c);
+	unsigned tileBase = tile;
+	if (GBAObjAttributesAIs256Color(obj->a)) {
+		m_ui.palette->setText("256-color");
+		mTileCacheSetPalette(m_tileCache.get(), 1);
+		m_ui.tile->setPalette(0);
+		m_ui.tile->setPaletteSet(1, 1024, 1536);
+		palette = 1;
+		tile = tile / 2 + 1024;
+	} else {
+		m_ui.palette->setText(QString::number(palette));
+		mTileCacheSetPalette(m_tileCache.get(), 0);
+		m_ui.tile->setPalette(palette);
+		m_ui.tile->setPaletteSet(0, 2048, 3072);
+		palette += 16;
+		tile += 2048;
+	}
 	ObjInfo newInfo{
 		tile,
 		width / 8,
 		height / 8,
 		width / 8
 	};
-	m_ui.tiles->setTileCount(width * height / 64);
-	m_ui.tiles->setMinimumSize(QSize(width, height) * m_ui.magnification->value());
-	m_ui.tiles->resize(QSize(width, height) * m_ui.magnification->value());
-	unsigned palette = GBAObjAttributesCGetPalette(obj->c);
-	GBARegisterDISPCNT dispcnt = gba->memory.io[0]; // FIXME: Register name can't be imported due to namespacing issues
-	if (!GBARegisterDISPCNTIsObjCharacterMapping(dispcnt)) {
-		newInfo.stride = 0x20 >> (GBAObjAttributesAGet256Color(obj->a));
-	};
 	if (newInfo != m_objInfo) {
 		force = true;
 	}
 	m_objInfo = newInfo;
-	int i = 0;
-	if (GBAObjAttributesAIs256Color(obj->a)) {
-		m_ui.palette->setText("256-color");
-		mTileCacheSetPalette(m_tileCache.get(), 1);
-		m_ui.tile->setPalette(0);
-		m_ui.tile->setPaletteSet(1, 1024, 1536);
-		tile /= 2;
-		unsigned t = tile + i;
-		for (int y = 0; y < height / 8; ++y) {
-			for (int x = 0; x < width / 8; ++x, ++i, ++t) {
-				const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[32 * t], t + 1024, 1);
-				if (data) {
-					m_ui.tiles->setTile(i, data);
-				} else if (force) {
-					m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), t + 1024, 1));
-				}
-			}
-			t += newInfo.stride - width / 8;
-		}
-		tile += 1024;
-	} else {
-		m_ui.palette->setText(QString::number(palette));
-		mTileCacheSetPalette(m_tileCache.get(), 0);
-		m_ui.tile->setPalette(palette);
-		m_ui.tile->setPaletteSet(0, 2048, 3072);
-		unsigned t = tile + i;
-		for (int y = 0; y < height / 8; ++y) {
-			for (int x = 0; x < width / 8; ++x, ++i, ++t) {
-				const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[32 * t], t + 2048, palette + 16);
-				if (data) {
-					m_ui.tiles->setTile(i, data);
-				} else if (force) {
-					m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), t + 2048, palette + 16));
-				}
-			}
-			t += newInfo.stride - width / 8;
-		}
-		tile += 2048;
-	}
 	m_tileOffset = tile;
+	GBARegisterDISPCNT dispcnt = gba->memory.io[0]; // FIXME: Register name can't be imported due to namespacing issues
+	if (!GBARegisterDISPCNTIsObjCharacterMapping(dispcnt)) {
+		newInfo.stride = 0x20 >> (GBAObjAttributesAGet256Color(obj->a));
+	};
+
+	int i = 0;
+	for (int y = 0; y < height / 8; ++y) {
+		for (int x = 0; x < width / 8; ++x, ++i, ++tile, ++tileBase) {
+			const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[32 * tileBase], tile, palette);
+			if (data) {
+				m_ui.tiles->setTile(i, data);
+			} else if (force) {
+				m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), tile, palette));
+			}
+		}
+		tile += newInfo.stride - width / 8;
+		tileBase += newInfo.stride - width / 8;
+	}
 
 	m_ui.x->setText(QString::number(GBAObjAttributesBGetX(obj->b)));
 	m_ui.y->setText(QString::number(GBAObjAttributesAGetY(obj->a)));
@@ -175,16 +166,6 @@ void ObjView::updateTilesGB(bool force) {
 		height = 16;
 	}
 	unsigned tile = obj->tile;
-	ObjInfo newInfo{
-		tile,
-		1,
-		height / 8,
-		1
-	};
-	if (newInfo != m_objInfo) {
-		force = true;
-	}
-	m_objInfo = newInfo;
 	m_ui.tiles->setTileCount(width * height / 64);
 	m_ui.tiles->setMinimumSize(QSize(width, height) * m_ui.magnification->value());
 	m_ui.tiles->resize(QSize(width, height) * m_ui.magnification->value());
@@ -197,21 +178,33 @@ void ObjView::updateTilesGB(bool force) {
 	} else {
 		palette = GBObjAttributesGetPalette(obj->attr);
 	}
+	ObjInfo newInfo{
+		tile,
+		1,
+		height / 8,
+		1
+	};
+	if (newInfo != m_objInfo) {
+		force = true;
+	}
+	m_objInfo = newInfo;
+	m_tileOffset = tile;
+
 	int i = 0;
 	m_ui.palette->setText(QString::number(palette));
+	palette += 8;
 	mTileCacheSetPalette(m_tileCache.get(), 0);
-	m_ui.tile->setPalette(palette + 8);
+	m_ui.tile->setPalette(palette);
 	m_ui.tile->setPaletteSet(0, 512, 1024);
 	for (int y = 0; y < height / 8; ++y, ++i) {
 		unsigned t = tile + i;
-		const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[16 * t], t, palette + 8);
+		const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[16 * t], t, palette);
 		if (data) {
 			m_ui.tiles->setTile(i, data);
 		} else if (force) {
-			m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), t, palette + 8));
+			m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), t, palette));
 		}
 	}
-	m_tileOffset = tile;
 
 	m_ui.x->setText(QString::number(obj->x));
 	m_ui.y->setText(QString::number(obj->y));
