@@ -24,7 +24,7 @@ AssetView::AssetView(GameController* controller, QWidget* parent)
 }
 
 void AssetView::updateTiles(bool force) {
-	if (!m_controller->thread() || !m_controller->thread()->core) {
+	if (!m_controller->isLoaded()) {
 		return;
 	}
 
