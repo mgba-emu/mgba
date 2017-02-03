@@ -1232,7 +1232,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_config->updateOption("lockAspectRatio");
 
 	ConfigOption* resampleVideo = m_config->addOption("resampleVideo");
-	resampleVideo->addBoolean(tr("Resample video"), avMenu);
+	resampleVideo->addBoolean(tr("Bilinear filtering"), avMenu);
 	resampleVideo->connect([this](const QVariant& value) {
 		m_display->filter(value.toBool());
 	}, this);
