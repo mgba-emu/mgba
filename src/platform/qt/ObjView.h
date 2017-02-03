@@ -21,6 +21,9 @@ Q_OBJECT
 public:
 	ObjView(GameController* controller, QWidget* parent = nullptr);
 
+public slots:
+	void exportObj();
+
 private slots:
 	void selectObj(int);
 	void translateIndex(int);
@@ -43,6 +46,9 @@ private:
 		unsigned width;
 		unsigned height;
 		unsigned stride;
+		unsigned paletteId;
+		unsigned paletteSet;
+		unsigned bits;
 
 		bool operator!=(const ObjInfo&);
 	} m_objInfo;

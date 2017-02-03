@@ -10,11 +10,17 @@
 #include <QFontDatabase>
 #include <QTimer>
 
+#include "LogController.h"
+#include "VFileDevice.h"
+
+#ifdef M_CORE_GBA
 #include <mgba/internal/gba/gba.h>
+#endif
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/io.h>
 #endif
+#include <mgba-util/png-io.h>
 
 using namespace QGBA;
 
@@ -45,6 +51,7 @@ ObjView::ObjView(GameController* controller, QWidget* parent)
 	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this]() {
 		updateTiles(true);
 	});
+	connect(m_ui.exportButton, SIGNAL(clicked()), this, SLOT(exportObj()));
 }
 
 void ObjView::selectObj(int obj) {
@@ -73,36 +80,44 @@ void ObjView::updateTilesGBA(bool force) {
 	m_ui.tiles->resize(QSize(width, height) * m_ui.magnification->value());
 	unsigned palette = GBAObjAttributesCGetPalette(obj->c);
 	unsigned tileBase = tile;
+	unsigned paletteSet;
+	unsigned bits;
 	if (GBAObjAttributesAIs256Color(obj->a)) {
 		m_ui.palette->setText("256-color");
-		mTileCacheSetPalette(m_tileCache.get(), 1);
+		paletteSet = 1;
 		m_ui.tile->setPalette(0);
 		m_ui.tile->setPaletteSet(1, 1024, 1536);
 		palette = 1;
 		tile = tile / 2 + 1024;
+		bits = 8;
 	} else {
 		m_ui.palette->setText(QString::number(palette));
-		mTileCacheSetPalette(m_tileCache.get(), 0);
+		paletteSet = 0;
 		m_ui.tile->setPalette(palette);
 		m_ui.tile->setPaletteSet(0, 2048, 3072);
 		palette += 16;
 		tile += 2048;
+		bits = 4;
 	}
 	ObjInfo newInfo{
 		tile,
 		width / 8,
 		height / 8,
-		width / 8
+		width / 8,
+		palette,
+		paletteSet,
+		bits
 	};
 	if (newInfo != m_objInfo) {
 		force = true;
 	}
-	m_objInfo = newInfo;
-	m_tileOffset = tile;
 	GBARegisterDISPCNT dispcnt = gba->memory.io[0]; // FIXME: Register name can't be imported due to namespacing issues
 	if (!GBARegisterDISPCNTIsObjCharacterMapping(dispcnt)) {
 		newInfo.stride = 0x20 >> (GBAObjAttributesAGet256Color(obj->a));
 	};
+	m_objInfo = newInfo;
+	m_tileOffset = tile;
+	mTileCacheSetPalette(m_tileCache.get(), paletteSet);
 
 	int i = 0;
 	for (int y = 0; y < height / 8; ++y) {
@@ -169,7 +184,7 @@ void ObjView::updateTilesGB(bool force) {
 	m_ui.tiles->setTileCount(width * height / 64);
 	m_ui.tiles->setMinimumSize(QSize(width, height) * m_ui.magnification->value());
 	m_ui.tiles->resize(QSize(width, height) * m_ui.magnification->value());
-	int palette = 0;
+	unsigned palette = 0;
 	if (gb->model >= GB_MODEL_CGB) {
 		if (GBObjAttributesIsBank(obj->attr)) {
 			tile += 512;
@@ -178,11 +193,17 @@ void ObjView::updateTilesGB(bool force) {
 	} else {
 		palette = GBObjAttributesGetPalette(obj->attr);
 	}
+	m_ui.palette->setText(QString::number(palette));
+	palette += 8;
+
 	ObjInfo newInfo{
 		tile,
 		1,
 		height / 8,
-		1
+		1,
+		palette,
+		0,
+		2
 	};
 	if (newInfo != m_objInfo) {
 		force = true;
@@ -191,8 +212,6 @@ void ObjView::updateTilesGB(bool force) {
 	m_tileOffset = tile;
 
 	int i = 0;
-	m_ui.palette->setText(QString::number(palette));
-	palette += 8;
 	mTileCacheSetPalette(m_tileCache.get(), 0);
 	m_ui.tile->setPalette(palette);
 	m_ui.tile->setPaletteSet(0, 512, 1024);
@@ -223,10 +242,56 @@ void ObjView::updateTilesGB(bool force) {
 }
 #endif
 
+void ObjView::exportObj() {
+	GameController::Interrupter interrupter(m_controller);
+	QFileDialog* dialog = GBAApp::app()->getSaveFileDialog(this, tr("Export sprite"),
+	                                                       tr("Portable Network Graphics (*.png)"));
+	if (!dialog->exec()) {
+		return;
+	}
+	QString filename = dialog->selectedFiles()[0];
+	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
+	if (!vf) {
+		LOG(QT, ERROR) << tr("Failed to open output PNG file: %1").arg(filename);
+		return;
+	}
+
+	mTileCacheSetPalette(m_tileCache.get(), m_objInfo.paletteSet);
+	png_structp png = PNGWriteOpen(vf);
+	png_infop info = PNGWriteHeader8(png, m_objInfo.width * 8, m_objInfo.height * 8);
+
+	const uint16_t* rawPalette = mTileCacheGetPalette(m_tileCache.get(), m_objInfo.paletteId);
+	unsigned colors = 1 << m_objInfo.bits;
+	uint32_t palette[256];
+	for (unsigned c = 0; c < colors && c < 256; ++c) {
+		uint16_t color = rawPalette[c];
+		palette[c] = M_R8(rawPalette[c]);
+		palette[c] |= M_G8(rawPalette[c]) << 8;
+		palette[c] |= M_B8(rawPalette[c]) << 16;
+		if (c) {
+			palette[c] |= 0xFF000000;
+		}
+	}
+	PNGWritePalette(png, info, palette, colors);
+
+	uint8_t* buffer = new uint8_t[m_objInfo.width * m_objInfo.height * 8 * 8];
+	unsigned t = m_objInfo.tile;
+	for (int y = 0; y < m_objInfo.height; ++y) {
+		for (int x = 0; x < m_objInfo.width; ++x, ++t) {
+			compositeTile(t, static_cast<void*>(buffer), m_objInfo.width * 8, x * 8, y * 8, m_objInfo.bits);
+		}
+		t += m_objInfo.stride - m_objInfo.width;
+	}
+	PNGWritePixels8(png, m_objInfo.width * 8, m_objInfo.height * 8, m_objInfo.width * 8, static_cast<void*>(buffer));
+	PNGWriteClose(png, info);
+	delete[] buffer;
+}
 
 bool ObjView::ObjInfo::operator!=(const ObjInfo& other) {
 	return other.tile != tile ||
 		other.width != width ||
 		other.height != height ||
-		other.stride != stride;
+		other.stride != stride ||
+		other.paletteId != paletteId ||
+		other.paletteSet != paletteSet;
 }
