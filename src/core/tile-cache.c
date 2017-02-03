@@ -283,3 +283,27 @@ const uint16_t* mTileCacheGetTileIfDirty(struct mTileCache* cache, struct mTileC
 	}
 	return tile;
 }
+
+const uint8_t* mTileCacheGetRawTile(struct mTileCache* cache, unsigned tileId) {
+	unsigned bpp = cache->bpp;
+	switch (bpp) {
+	case 0:
+		return NULL;
+	default:
+		return (uint8_t*) &cache->vram[tileId << (2 + bpp)];
+	}
+}
+
+const uint16_t* mTileCacheGetPalette(struct mTileCache* cache, unsigned paletteId) {
+	unsigned bpp = cache->bpp;
+	switch (bpp) {
+	default:
+		return NULL;
+	case 1:
+		return &cache->palette[paletteId << 2];
+	case 2:
+		return &cache->palette[paletteId << 4];
+	case 3:
+		return &cache->palette[paletteId << 8];
+	}
+}
