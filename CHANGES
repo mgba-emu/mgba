@@ -22,6 +22,7 @@ Bugfixes:
  - Qt: Fix timing issues on high refresh rate monitors
  - GBA Savedata: Fix savedata unmasking (fixes mgba.io/i/441)
  - Util: Fix overflow when loading invalid UPS patches
+ - Tools: Fix recurring multiple times over the same library
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
