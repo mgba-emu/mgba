@@ -51,6 +51,40 @@ png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height) {
 	return info;
 }
 
+png_infop PNGWriteHeader8(png_structp png, unsigned width, unsigned height) {
+	png_infop info = png_create_info_struct(png);
+	if (!info) {
+		return 0;
+	}
+	if (setjmp(png_jmpbuf(png))) {
+		return 0;
+	}
+	png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_PALETTE, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+	return info;
+}
+
+bool PNGWritePalette(png_structp png, png_infop info, const uint32_t* palette, unsigned entries) {
+	if (!palette || !entries) {
+		return false;
+	}
+	if (setjmp(png_jmpbuf(png))) {
+		return false;
+	}
+	png_color colors[256];
+	png_byte trans[256];
+	unsigned i;
+	for (i = 0; i < entries && i < 256; ++i) {
+		colors[i].red = palette[i];
+		colors[i].green = palette[i] >> 8;
+		colors[i].blue = palette[i] >> 16;
+		trans[i] = palette[i] >> 24;
+	}
+	png_set_PLTE(png, info, colors, entries);
+	png_set_tRNS(png, info, trans, entries, NULL);
+	png_write_info(png, info);
+	return true;
+}
+
 bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels) {
 	png_bytep row = malloc(sizeof(png_byte) * width * 3);
 	if (!row) {
@@ -91,6 +125,19 @@ bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned s
 		png_write_row(png, row);
 	}
 	free(row);
+	return true;
+}
+
+bool PNGWritePixels8(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels) {
+	UNUSED(width);
+	const png_byte* pixelData = pixels;
+	if (setjmp(png_jmpbuf(png))) {
+		return false;
+	}
+	unsigned i;
+	for (i = 0; i < height; ++i) {
+		png_write_row(png, &pixelData[stride * i]);
+	}
 	return true;
 }
 

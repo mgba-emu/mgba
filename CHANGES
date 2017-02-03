@@ -60,6 +60,7 @@ Misc:
  - Qt: Automatically load controller profile when plugged in
  - OpenGL: Add xBR-lv2 shader
  - GBA, GB: ROM is now unloaded if a patch is applied
+ - Util: Add 8-bit PNG write support
 
 0.5.2: (2016-12-31)
 Bugfixes:
