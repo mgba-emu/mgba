@@ -956,7 +956,6 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 			gba->timers[i].lastEvent = when + mTimingCurrentTime(&gba->timing);
 		}
 		LOAD_32(when, 0, &state->timers[i].nextEvent);
-		mTimingDeschedule(&gba->timing, &gba->timers[i].event);
 		if (GBATimerFlagsIsEnable(gba->timers[i].flags)) {
 			mTimingSchedule(&gba->timing, &gba->timers[i].event, when);
 		}

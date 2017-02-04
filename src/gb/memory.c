@@ -630,12 +630,10 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 
 	uint32_t when;
 	LOAD_32LE(when, 0, &state->memory.dmaNext);
-	mTimingDeschedule(&gb->timing, &memory->dmaEvent);
 	if (memory->dmaRemaining) {
 		mTimingSchedule(&gb->timing, &memory->dmaEvent, when);
 	}
 	LOAD_32LE(when, 0, &state->memory.hdmaNext);
-	mTimingDeschedule(&gb->timing, &memory->hdmaEvent);
 	if (memory->hdmaRemaining) {
 		mTimingSchedule(&gb->timing, &memory->hdmaEvent, when);
 	}

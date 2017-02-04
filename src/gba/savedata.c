@@ -548,7 +548,6 @@ void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerial
 	if (GBASerializedSavedataFlagsIsDustSettling(flags)) {
 		uint32_t when;
 		LOAD_32(when, 0, &state->savedata.settlingDust);
-		mTimingDeschedule(savedata->timing, &savedata->dust);
 		mTimingSchedule(savedata->timing, &savedata->dust, when);
 	}
 }

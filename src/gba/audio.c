@@ -344,7 +344,6 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 
 	uint32_t when;
 	LOAD_32(when, 0, &state->audio.nextSample);
-	mTimingDeschedule(&audio->p->timing, &audio->sampleEvent);
 	mTimingSchedule(&audio->p->timing, &audio->sampleEvent, when);
 }
 

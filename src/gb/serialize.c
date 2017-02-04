@@ -170,14 +170,13 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 
 	uint32_t when;
 	LOAD_32LE(when, 0, &state->cpu.eiPending);
-	mTimingDeschedule(&gb->timing, &gb->eiPending);
 	if (GBSerializedCpuFlagsIsEiPending(flags)) {
 		mTimingSchedule(&gb->timing, &gb->eiPending, when);
 	}
 
 	LOAD_32LE(gb->cpu->cycles, 0, &state->cpu.cycles);
 	LOAD_32LE(gb->cpu->nextEvent, 0, &state->cpu.nextEvent);
-	LOAD_32LE(gb->timing.masterCycles, 0, &state->masterCycles);
+	gb->timing.root = NULL;
 
 	gb->model = state->model;
 

@@ -324,7 +324,6 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 	} else {
 		video->event.callback = _startHblank;
 	}
-	mTimingDeschedule(&video->p->timing, &video->event);
 	mTimingSchedule(&video->p->timing, &video->event, when);
 
 	LOAD_16(video->vcount, REG_VCOUNT, state->io);
