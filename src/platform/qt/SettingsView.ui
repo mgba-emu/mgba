@@ -383,7 +383,7 @@
        <item row="11" column="1">
         <widget class="QCheckBox" name="resampleVideo">
          <property name="text">
-          <string>Resample video</string>
+          <string>Bilinear filtering</string>
          </property>
         </widget>
        </item>
