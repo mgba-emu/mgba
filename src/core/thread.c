@@ -6,6 +6,7 @@
 #include <mgba/core/thread.h>
 
 #include <mgba/core/core.h>
+#include <mgba/core/serialize.h>
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
 
@@ -148,6 +149,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 
 	if (core->opts.rewindEnable && core->opts.rewindBufferCapacity > 0) {
 		 mCoreRewindContextInit(&threadContext->rewind, core->opts.rewindBufferCapacity);
+		 threadContext->rewind.stateFlags = core->opts.rewindSave ? SAVESTATE_SAVEDATA : 0;
 	}
 
 	_changeState(threadContext, THREAD_RUNNING, true);

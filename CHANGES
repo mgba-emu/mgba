@@ -9,6 +9,7 @@ Features:
  - GB: LR35902/GB-Z80 disassembler
  - Configuration of gamepad hats
  - Qt: Spanish translation (by Kevin López)
+ - Add option for whether rewinding restores save games
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
