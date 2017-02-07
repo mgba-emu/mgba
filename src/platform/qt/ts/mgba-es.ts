@@ -533,7 +533,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../ObjView.ui" line="76"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>Exportar</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="85"/>
@@ -2668,17 +2668,17 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../ObjView.cpp" line="247"/>
         <source>Export sprite</source>
-        <translation type="unfinished"></translation>
+        <translation>Exportar sprite</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="248"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Formato de gráficos portátil (*.png)</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="255"/>
         <source>Failed to open output PNG file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Error al abrir el archivo de salida PNG: %1</translation>
     </message>
 </context>
 <context>
@@ -3485,7 +3485,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../Window.cpp" line="1235"/>
         <source>Bilinear filtering</source>
-        <translation type="unfinished"></translation>
+        <translation>Filtrado bilineal</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1387"/>
@@ -3988,7 +3988,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../SettingsView.ui" line="386"/>
         <source>Bilinear filtering</source>
-        <translation type="unfinished"></translation>
+        <translation>Filtrado bilineal</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="516"/>
@@ -4013,7 +4013,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../SettingsView.ui" line="656"/>
         <source>Rewind affects save data</source>
-        <translation type="unfinished"></translation>
+        <translation>El retroceder afectará los datos de guardado</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="670"/>
