@@ -25,6 +25,7 @@ Bugfixes:
  - Util: Fix overflow when loading invalid UPS patches
  - Tools: Fix recurring multiple times over the same library
  - GBA I/O: Handle audio registers specially when deserializing
+ - Util: Fix highest-fd socket not being returned by SocketAccept
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
