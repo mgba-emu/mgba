@@ -11,6 +11,7 @@ Bugfixes:
  - GB: Fix crash when patching ROMs
  - Tools: Fix recurring multiple times over the same library
  - GBA I/O: Handle audio registers specially when deserializing
+ - Util: Fix highest-fd socket not being returned by SocketAccept
 Misc:
  - Qt: Improved HiDPI support
  - Feature: Support ImageMagick 7
