@@ -27,7 +27,8 @@ CXX_GUARD_START
 	void NAME ## Unshift(struct NAME* vector, size_t location, size_t difference); \
 	void NAME ## EnsureCapacity(struct NAME* vector, size_t capacity); \
 	size_t NAME ## Size(const struct NAME* vector); \
-	size_t NAME ## Index(const struct NAME* vector, const TYPE* member);
+	size_t NAME ## Index(const struct NAME* vector, const TYPE* member); \
+	void NAME ## Copy(struct NAME* dest, const struct NAME* src);
 
 #define DEFINE_VECTOR(NAME, TYPE) \
 	void NAME ## Init(struct NAME* vector, size_t capacity) { \
@@ -84,6 +85,11 @@ CXX_GUARD_START
 	} \
 	size_t NAME ## Index(const struct NAME* vector, const TYPE* member) { \
 		return member - (const TYPE*) vector->vector; \
+	} \
+	void NAME ## Copy(struct NAME* dest, const struct NAME* src) { \
+		NAME ## EnsureCapacity(dest, src->size); \
+		memcpy(dest->vector, src->vector, src->size * sizeof(TYPE)); \
+		dest->size = src->size; \
 	} \
 
 CXX_GUARD_END
