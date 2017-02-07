@@ -62,11 +62,11 @@ private:
 
 	Window* newWindowInternal();
 
-	void pauseAll(QList<int>* paused);
-	void continueAll(const QList<int>* paused);
+	void pauseAll(QList<Window*>* paused);
+	void continueAll(const QList<Window*>& paused);
 
 	ConfigController m_configController;
-	Window* m_windows[MAX_GBAS];
+	QList<Window*> m_windows;
 	MultiplayerController m_multiplayer;
 	NoIntroDB* m_db;
 };
