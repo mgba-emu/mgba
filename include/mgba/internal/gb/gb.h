@@ -63,7 +63,7 @@ struct GB {
 
 	uint8_t* keySource;
 
-	void* pristineRom;
+	bool isPristine;
 	size_t pristineRomSize;
 	size_t yankedRomSize;
 	uint32_t romCrc32;

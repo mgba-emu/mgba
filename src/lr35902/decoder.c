@@ -52,7 +52,7 @@ DEFINE_DECODER_LR35902(NOP, info->mnemonic = LR35902_MN_NOP;)
 
 #define DEFINE_LD_DECODER_LR35902_MEM(NAME, REG) \
 	DEFINE_DECODER_LR35902(LD ## NAME ## _ ## REG, info->mnemonic = LR35902_MN_LD; \
-		info->op1.reg = LR35902_REG_ ## A; \
+		info->op1.reg = LR35902_REG_ ## NAME; \
 		info->op2.reg = LR35902_REG_ ## REG; \
 		info->op2.flags = LR35902_OP_FLAG_MEMORY;)
 

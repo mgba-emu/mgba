@@ -614,7 +614,7 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	memory->wramCurrentBank = state->memory.wramCurrentBank;
 	memory->sramCurrentBank = state->memory.sramCurrentBank;
 
-	GBMBCSwitchBank(memory, memory->currentBank);
+	GBMBCSwitchBank(gb, memory->currentBank);
 	GBMemorySwitchWramBank(memory, memory->wramCurrentBank);
 	GBMBCSwitchSramBank(gb, memory->sramCurrentBank);
 
@@ -630,12 +630,10 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 
 	uint32_t when;
 	LOAD_32LE(when, 0, &state->memory.dmaNext);
-	mTimingDeschedule(&gb->timing, &memory->dmaEvent);
 	if (memory->dmaRemaining) {
 		mTimingSchedule(&gb->timing, &memory->dmaEvent, when);
 	}
 	LOAD_32LE(when, 0, &state->memory.hdmaNext);
-	mTimingDeschedule(&gb->timing, &memory->hdmaEvent);
 	if (memory->hdmaRemaining) {
 		mTimingSchedule(&gb->timing, &memory->hdmaEvent, when);
 	}
@@ -651,14 +649,15 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 }
 
 void _pristineCow(struct GB* gb) {
-	if (gb->memory.rom != gb->pristineRom) {
+	if (!gb->isPristine) {
 		return;
 	}
-	gb->memory.rom = anonymousMemoryMap(GB_SIZE_CART_MAX);
-	memcpy(gb->memory.rom, gb->pristineRom, gb->memory.romSize);
-	memset(((uint8_t*) gb->memory.rom) + gb->memory.romSize, 0xFF, GB_SIZE_CART_MAX - gb->memory.romSize);
-	if (gb->pristineRom == gb->memory.romBase) {
-		gb->memory.romBase = gb->memory.rom;
+	void* newRom = anonymousMemoryMap(GB_SIZE_CART_MAX);
+	memcpy(newRom, gb->memory.rom, gb->memory.romSize);
+	memset(((uint8_t*) newRom) + gb->memory.romSize, 0xFF, GB_SIZE_CART_MAX - gb->memory.romSize);
+	if (gb->memory.rom == gb->memory.romBase) {
+		gb->memory.romBase = newRom;
 	}
-	GBMBCSwitchBank(&gb->memory, gb->memory.currentBank);
+	gb->memory.rom = newRom;
+	GBMBCSwitchBank(gb, gb->memory.currentBank);
 }

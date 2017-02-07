@@ -6,6 +6,7 @@
 #include <mgba/core/rewind.h>
 
 #include <mgba/core/core.h>
+#include <mgba/core/serialize.h>
 #include <mgba-util/patch/fast.h>
 #include <mgba-util/vfs.h>
 
@@ -20,6 +21,7 @@ void mCoreRewindContextInit(struct mCoreRewindContext* context, size_t entries) 
 	context->previousState = VFileMemChunk(0, 0);
 	context->currentState = VFileMemChunk(0, 0);
 	context->size = 0;
+	context->stateFlags = SAVESTATE_SAVEDATA;
 }
 
 void mCoreRewindContextDeinit(struct mCoreRewindContext* context) {
@@ -41,7 +43,7 @@ void mCoreRewindAppend(struct mCoreRewindContext* context, struct mCore* core) {
 	if (context->current >= mCoreRewindPatchesSize(&context->patchMemory)) {
 		context->current = 0;
 	}
-	mCoreSaveStateNamed(core, nextState, 0);
+	mCoreSaveStateNamed(core, nextState, context->stateFlags);
 	struct PatchFast* patch = mCoreRewindPatchesGetPointer(&context->patchMemory, context->current);
 	size_t size2 = nextState->size(nextState);
 	size_t size = context->currentState->size(context->currentState);
@@ -75,7 +77,7 @@ bool mCoreRewindRestore(struct mCoreRewindContext* context, struct mCore* core) 
 	patch->d.applyPatch(&patch->d, current, size, previous, size);
 	context->currentState->unmap(context->currentState, current, size);
 	context->previousState->unmap(context->previousState, previous, size);
-	mCoreLoadStateNamed(core, context->previousState, 0);
+	mCoreLoadStateNamed(core, context->previousState, context->stateFlags);
 	struct VFile* nextState = context->previousState;
 	context->previousState = context->currentState;
 	context->currentState = nextState;

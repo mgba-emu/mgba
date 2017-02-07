@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>454</width>
-    <height>375</height>
+    <height>385</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -67,6 +67,13 @@
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Magnification</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="exportButton">
+       <property name="text">
+        <string>Export</string>
        </property>
       </widget>
      </item>

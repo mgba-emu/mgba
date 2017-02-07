@@ -731,7 +731,7 @@ void GameController::frameAdvance() {
 	}
 }
 
-void GameController::setRewind(bool enable, int capacity) {
+void GameController::setRewind(bool enable, int capacity, bool rewindSave) {
 	if (m_gameOpen) {
 		Interrupter interrupter(this);
 		if (m_threadContext.core->opts.rewindEnable && m_threadContext.core->opts.rewindBufferCapacity > 0) {
@@ -739,8 +739,10 @@ void GameController::setRewind(bool enable, int capacity) {
 		}
 		m_threadContext.core->opts.rewindEnable = enable;
 		m_threadContext.core->opts.rewindBufferCapacity = capacity;
+		m_threadContext.core->opts.rewindSave = rewindSave;
 		if (enable && capacity > 0) {
 			mCoreRewindContextInit(&m_threadContext.rewind, capacity);
+			 m_threadContext.rewind.stateFlags = rewindSave ? SAVESTATE_SAVEDATA : 0;
 		}
 	}
 }

@@ -17,7 +17,7 @@ mLOG_DECLARE_CATEGORY(GB_MBC);
 struct GB;
 struct GBMemory;
 void GBMBCInit(struct GB* gb);
-void GBMBCSwitchBank(struct GBMemory* memory, int bank);
+void GBMBCSwitchBank(struct GB* gb, int bank);
 void GBMBCSwitchSramBank(struct GB* gb, int bank);
 
 struct GBMBCRTCSaveBuffer {

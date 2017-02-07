@@ -97,6 +97,7 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 		LOAD_16(entry, i, softwareRenderer->d.palette);
 		GBAVideoSoftwareRendererWritePalette(renderer, i, entry);
 	}
+	softwareRenderer->blendDirty = false;
 	_updatePalettes(softwareRenderer);
 
 	softwareRenderer->blda = 0;
@@ -261,11 +262,14 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		value &= 0x1F1F;
 		break;
 	case REG_BLDY:
-		softwareRenderer->bldy = value & 0x1F;
-		if (softwareRenderer->bldy > 0x10) {
-			softwareRenderer->bldy = 0x10;
+		value &= 0x1F;
+		if (value > 0x10) {
+			value = 0x10;
 		}
-		_updatePalettes(softwareRenderer);
+		if (softwareRenderer->bldy != value) {
+			softwareRenderer->bldy = value;
+			softwareRenderer->blendDirty = true;
+		}
 		break;
 	case REG_WIN0H:
 		softwareRenderer->winN[0].h.end = value;
@@ -515,6 +519,10 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 
 	GBAVideoSoftwareRendererUpdateDISPCNT(softwareRenderer);
+	if (softwareRenderer->blendDirty) {
+		_updatePalettes(softwareRenderer);
+		softwareRenderer->blendDirty = false;
+	}
 
 	int w;
 	x = 0;
@@ -702,7 +710,7 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 	renderer->target2Bd = GBARegisterBLDCNTGetTarget2Bd(value);
 
 	if (oldEffect != renderer->blendEffect) {
-		_updatePalettes(renderer);
+		renderer->blendDirty = true;
 	}
 }
 

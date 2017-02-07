@@ -9,6 +9,7 @@ Features:
  - GB: LR35902/GB-Z80 disassembler
  - Configuration of gamepad hats
  - Qt: Spanish translation (by Kevin López)
+ - Add option for whether rewinding restores save games
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
@@ -21,6 +22,9 @@ Bugfixes:
  - GB MBC: Fix ROM bank overflows getting set to bank 0
  - Qt: Fix timing issues on high refresh rate monitors
  - GBA Savedata: Fix savedata unmasking (fixes mgba.io/i/441)
+ - Util: Fix overflow when loading invalid UPS patches
+ - Tools: Fix recurring multiple times over the same library
+ - GBA I/O: Handle audio registers specially when deserializing
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
@@ -58,6 +62,10 @@ Misc:
  - SDL: Automatically map controllers when plugged in
  - Qt: Automatically load controller profile when plugged in
  - OpenGL: Add xBR-lv2 shader
+ - GBA, GB: ROM is now unloaded if a patch is applied
+ - Util: Add 8-bit PNG write support
+ - Qt: Rename "Resample video" option to "Bilinear filtering"
+ - GBA Video: Optimize when BLD* registers are written frequently
 
 0.5.2: (2016-12-31)
 Bugfixes:

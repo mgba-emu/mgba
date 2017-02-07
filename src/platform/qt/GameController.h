@@ -127,7 +127,7 @@ public slots:
 	void setPaused(bool paused);
 	void reset();
 	void frameAdvance();
-	void setRewind(bool enable, int capacity);
+	void setRewind(bool enable, int capacity, bool rewindSave);
 	void rewind(int states = 0);
 	void startRewinding();
 	void stopRewinding();

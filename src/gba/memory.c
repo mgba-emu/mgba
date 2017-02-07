@@ -102,13 +102,12 @@ void GBAMemoryDeinit(struct GBA* gba) {
 }
 
 void GBAMemoryReset(struct GBA* gba) {
-	if (gba->memory.wram) {
-		mappedMemoryFree(gba->memory.wram, SIZE_WORKING_RAM);
-	}
-	gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
-	if (gba->pristineRom && !gba->memory.rom) {
-		// Multiboot
-		memcpy(gba->memory.wram, gba->pristineRom, gba->pristineRomSize);
+	if (gba->memory.rom || gba->memory.fullBios) {
+		// Not multiboot
+		if (gba->memory.wram) {
+			mappedMemoryFree(gba->memory.wram, SIZE_WORKING_RAM);
+		}
+		gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
 	}
 
 	if (gba->memory.iwram) {
@@ -1541,10 +1540,19 @@ void GBAMemoryDeserialize(struct GBAMemory* memory, const struct GBASerializedSt
 }
 
 void _pristineCow(struct GBA* gba) {
-	if (gba->memory.rom != gba->pristineRom) {
+	if (!gba->isPristine) {
 		return;
 	}
-	gba->memory.rom = anonymousMemoryMap(SIZE_CART0);
-	memcpy(gba->memory.rom, gba->pristineRom, gba->memory.romSize);
-	memset(((uint8_t*) gba->memory.rom) + gba->memory.romSize, 0xFF, SIZE_CART0 - gba->memory.romSize);
+	void* newRom = anonymousMemoryMap(SIZE_CART0);
+	memcpy(newRom, gba->memory.rom, gba->memory.romSize);
+	memset(((uint8_t*) newRom) + gba->memory.romSize, 0xFF, SIZE_CART0 - gba->memory.romSize);
+	if (gba->romVf) {
+#ifndef _3DS
+		gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->memory.romSize);
+#endif
+		gba->romVf->close(gba->romVf);
+		gba->romVf = NULL;
+	}
+	gba->memory.rom = newRom;
+	gba->memory.hw.gpioBase = &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1];
 }
