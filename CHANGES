@@ -68,6 +68,7 @@ Misc:
  - Util: Add 8-bit PNG write support
  - Qt: Rename "Resample video" option to "Bilinear filtering"
  - GBA Video: Optimize when BLD* registers are written frequently
+ - Core: Cores can now have multiple sets of callbacks
 
 0.5.2: (2016-12-31)
 Bugfixes:

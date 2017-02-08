@@ -10,6 +10,8 @@
 
 CXX_GUARD_START
 
+#include <mgba-util/vector.h>
+
 struct mCore;
 
 #ifdef COLOR_16_BIT
@@ -36,6 +38,8 @@ struct mCoreCallbacks {
 	void (*videoFrameEnded)(void* context);
 	void (*coreCrashed)(void* context);
 };
+
+DECLARE_VECTOR(mCoreCallbacksList, struct mCoreCallbacks);
 
 struct mAVStream {
 	void (*videoDimensionsChanged)(struct mAVStream*, unsigned width, unsigned height);

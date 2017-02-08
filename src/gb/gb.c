@@ -83,7 +83,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->pristineRomSize = 0;
 	gb->yankedRomSize = 0;
 
-	gb->coreCallbacks = NULL;
+	mCoreCallbacksListInit(&gb->coreCallbacks, 0);
 	gb->stream = NULL;
 
 	mTimingInit(&gb->timing, &gb->cpu->cycles, &gb->cpu->nextEvent);
@@ -349,6 +349,7 @@ void GBDestroy(struct GB* gb) {
 	GBAudioDeinit(&gb->audio);
 	GBVideoDeinit(&gb->video);
 	GBSIODeinit(&gb->sio);
+	mCoreCallbacksListDeinit(&gb->coreCallbacks);
 }
 
 void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh) {

@@ -303,9 +303,15 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		cpu->memory.activeMask = 0;
 		if (gba->yankedRomSize || !gba->hardCrash) {
 			mLOG(GBA_MEM, GAME_ERROR, "Jumped to invalid address: %08X", address);
-		} else if (gba->coreCallbacks && gba->coreCallbacks->coreCrashed) {
+		} else if (mCoreCallbacksListSize(&gba->coreCallbacks)) {
 			mLOG(GBA_MEM, GAME_ERROR, "Jumped to invalid address: %08X", address);
-			gba->coreCallbacks->coreCrashed(gba->coreCallbacks->context);
+			size_t c;
+			for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
+				struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
+				if (callbacks->coreCrashed) {
+					callbacks->coreCrashed(callbacks->context);
+				}
+			}
 		} else {
 			mLOG(GBA_MEM, FATAL, "Jumped to invalid address: %08X", address);
 		}

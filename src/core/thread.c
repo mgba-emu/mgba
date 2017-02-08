@@ -143,7 +143,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		.coreCrashed = _crashed,
 		.context = threadContext
 	};
-	core->setCoreCallbacks(core, &callbacks);
+	core->addCoreCallbacks(core, &callbacks);
 	core->setSync(core, &threadContext->sync);
 	core->reset(core);
 
@@ -223,7 +223,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	if (threadContext->cleanCallback) {
 		threadContext->cleanCallback(threadContext);
 	}
-	core->setCoreCallbacks(core, NULL);
+	core->clearCoreCallbacks(core);
 
 	return 0;
 }
