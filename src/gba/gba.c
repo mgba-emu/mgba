@@ -636,7 +636,7 @@ void GBAFrameStarted(struct GBA* gba) {
 	size_t c;
 	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
 		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
-		if (callbacks->videoFrameEnded) {
+		if (callbacks->videoFrameStarted) {
 			callbacks->videoFrameStarted(callbacks->context);
 		}
 	}

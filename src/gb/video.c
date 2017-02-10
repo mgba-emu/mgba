@@ -250,7 +250,7 @@ void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLat
 	size_t c;
 	for (c = 0; c < mCoreCallbacksListSize(&video->p->coreCallbacks); ++c) {
 		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&video->p->coreCallbacks, c);
-		if (callbacks->videoFrameEnded) {
+		if (callbacks->videoFrameStarted) {
 			callbacks->videoFrameStarted(callbacks->context);
 		}
 	}
