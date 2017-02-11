@@ -89,7 +89,12 @@ LibraryModel::LibraryModel(const QString& path, QObject* parent)
 			m_library->ref();
 		} else {
 			m_library = new LibraryHandle(mLibraryLoad(path.toUtf8().constData()), path);
-			s_handles[path] = m_library;
+			if (m_library->library) {
+				s_handles[path] = m_library;
+			} else {
+				delete m_library;
+				m_library = new LibraryHandle(mLibraryCreateEmpty());
+			}
 		}
 	} else {
 		m_library = new LibraryHandle(mLibraryCreateEmpty());
@@ -280,7 +285,9 @@ LibraryModel::LibraryHandle::LibraryHandle(mLibrary* lib, const QString& p)
 LibraryModel::LibraryHandle::~LibraryHandle() {
 	m_loaderThread.quit();
 	m_loaderThread.wait();
-	mLibraryDestroy(library);
+	if (library) {
+		mLibraryDestroy(library);
+	}
 }
 
 void LibraryModel::LibraryHandle::ref() {
