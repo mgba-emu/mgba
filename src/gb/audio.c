@@ -953,6 +953,9 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	audio->playingCh4 = !!(*audio->nr52 & 0x0008);
 	audio->enable = GBAudioEnableGetEnable(*audio->nr52);
 
+	LOAD_32LE(when, 0, &state->ch1.nextFrame);
+	mTimingSchedule(audio->timing, &audio->frameEvent, when);
+
 	LOAD_32LE(flags, 0, flagsIn);
 	LOAD_32LE(ch1Flags, 0, &state->ch1.envelope);
 	audio->ch1.envelope.currentVolume = GBSerializedAudioFlagsGetCh1Volume(flags);
