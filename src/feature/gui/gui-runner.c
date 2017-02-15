@@ -434,7 +434,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				mCoreSaveState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA);
 				break;
 			case RUNNER_LOAD_STATE:
-				mCoreLoadState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT);
+				mCoreLoadState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
 				break;
 			case RUNNER_SCREENSHOT:
 				mCoreTakeScreenshot(runner->core);

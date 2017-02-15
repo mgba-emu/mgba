@@ -245,8 +245,6 @@ private:
 	} m_lux;
 	uint8_t m_luxValue;
 	int m_luxLevel;
-
-	mRTCGenericSource m_rtc;
 };
 
 }

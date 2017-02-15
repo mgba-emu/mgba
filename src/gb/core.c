@@ -50,6 +50,8 @@ static bool _GBCoreInit(struct mCore* core) {
 	memset(gbcore->components, 0, sizeof(gbcore->components));
 	LR35902SetComponents(cpu, &gb->d, CPU_COMPONENT_MAX, gbcore->components);
 	LR35902Init(cpu);
+	mRTCGenericSourceInit(&core->rtc, core);
+	gb->memory.rtc = &core->rtc.d;
 
 	GBVideoSoftwareRendererCreate(&gbcore->renderer);
 	gbcore->renderer.outputBuffer = NULL;
@@ -389,11 +391,6 @@ static void _GBCoreGetGameCode(const struct mCore* core, char* title) {
 	GBGetGameCode(core->board, title);
 }
 
-static void _GBCoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
-	struct GB* gb = core->board;
-	gb->memory.rtc = rtc;
-}
-
 static void _GBCoreSetRotation(struct mCore* core, struct mRotationSource* rotation) {
 	struct GB* gb = core->board;
 	gb->memory.rotation = rotation;
@@ -606,7 +603,6 @@ struct mCore* GBCoreCreate(void) {
 	core->frequency = _GBCoreFrequency;
 	core->getGameTitle = _GBCoreGetGameTitle;
 	core->getGameCode = _GBCoreGetGameCode;
-	core->setRTC = _GBCoreSetRTC;
 	core->setRotation = _GBCoreSetRotation;
 	core->setRumble = _GBCoreSetRumble;
 	core->busRead8 = _GBCoreBusRead8;

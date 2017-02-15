@@ -70,8 +70,8 @@ GameController::GameController(QObject* parent)
 	, m_stateSlot(1)
 	, m_backupLoadState(nullptr)
 	, m_backupSaveState(nullptr)
-	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS)
-	, m_loadStateFlags(SAVESTATE_SCREENSHOT)
+	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC)
+	, m_loadStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_RTC)
 	, m_override(nullptr)
 {
 #ifdef M_CORE_GBA
@@ -90,8 +90,6 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.startCallback = [](mCoreThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		mRTCGenericSourceInit(&controller->m_rtc, context->core);
-		context->core->setRTC(context->core, &controller->m_rtc.d);
 		context->core->setRotation(context->core, controller->m_inputController->rotationSource());
 		context->core->setRumble(context->core, controller->m_inputController->rumble());
 
@@ -1182,17 +1180,26 @@ void GameController::setLuminanceLevel(int level) {
 }
 
 void GameController::setRealTime() {
-	m_rtc.override = RTC_NO_OVERRIDE;
+	if (!isLoaded()) {
+		return;
+	}
+	m_threadContext.core->rtc.override = RTC_NO_OVERRIDE;
 }
 
 void GameController::setFixedTime(const QDateTime& time) {
-	m_rtc.override = RTC_FIXED;
-	m_rtc.value = time.toMSecsSinceEpoch() / 1000;
+	if (!isLoaded()) {
+		return;
+	}
+	m_threadContext.core->rtc.override = RTC_FIXED;
+	m_threadContext.core->rtc.value = time.toMSecsSinceEpoch();
 }
 
 void GameController::setFakeEpoch(const QDateTime& time) {
-	m_rtc.override = RTC_FAKE_EPOCH;
-	m_rtc.value = time.toMSecsSinceEpoch() / 1000;
+	if (!isLoaded()) {
+		return;
+	}
+	m_threadContext.core->rtc.override = RTC_FAKE_EPOCH;
+	m_threadContext.core->rtc.value = time.toMSecsSinceEpoch();
 }
 
 void GameController::updateKeys() {

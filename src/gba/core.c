@@ -58,6 +58,8 @@ static bool _GBACoreInit(struct mCore* core) {
 	memset(gbacore->components, 0, sizeof(gbacore->components));
 	ARMSetComponents(cpu, &gba->d, CPU_COMPONENT_MAX, gbacore->components);
 	ARMInit(cpu);
+	mRTCGenericSourceInit(&core->rtc, core);
+	gba->rtcSource = &core->rtc.d;
 
 	GBAVideoSoftwareRendererCreate(&gbacore->renderer);
 	gbacore->renderer.outputBuffer = NULL;
@@ -401,11 +403,6 @@ static void _GBACoreGetGameCode(const struct mCore* core, char* title) {
 	GBAGetGameCode(core->board, title);
 }
 
-static void _GBACoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
-	struct GBA* gba = core->board;
-	gba->rtcSource = rtc;
-}
-
 static void _GBACoreSetRotation(struct mCore* core, struct mRotationSource* rotation) {
 	struct GBA* gba = core->board;
 	gba->rotationSource = rotation;
@@ -620,7 +617,6 @@ struct mCore* GBACoreCreate(void) {
 	core->frequency = _GBACoreFrequency;
 	core->getGameTitle = _GBACoreGetGameTitle;
 	core->getGameCode = _GBACoreGetGameCode;
-	core->setRTC = _GBACoreSetRTC;
 	core->setRotation = _GBACoreSetRotation;
 	core->setRumble = _GBACoreSetRumble;
 	core->busRead8 = _GBACoreBusRead8;

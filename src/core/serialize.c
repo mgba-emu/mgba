@@ -7,6 +7,7 @@
 
 #include <mgba/core/core.h>
 #include <mgba/core/cheats.h>
+#include <mgba/core/interface.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
 
@@ -328,6 +329,14 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 			mStateExtdataPut(&extdata, EXTDATA_CHEATS, &item);
 		}
 	}
+	if (flags & SAVESTATE_RTC) {
+		mLOG(SAVESTATE, INFO, "Loading RTC");
+		struct mStateExtdataItem item;
+		if (core->rtc.d.serialize) {
+			core->rtc.d.serialize(&core->rtc.d, &item);
+			mStateExtdataPut(&extdata, EXTDATA_RTC, &item);
+		}
+	}
 #ifdef USE_PNG
 	if (!(flags & SAVESTATE_SCREENSHOT)) {
 #else
@@ -423,6 +432,12 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 				mCheatParseFile(device, svf);
 				svf->close(svf);
 			}
+		}
+	}
+	if (flags & SAVESTATE_RTC && mStateExtdataGet(&extdata, EXTDATA_RTC, &item)) {
+		mLOG(SAVESTATE, INFO, "Loading RTC");
+		if (core->rtc.d.deserialize) {
+			core->rtc.d.deserialize(&core->rtc.d, &item);
 		}
 	}
 	mStateExtdataDeinit(&extdata);

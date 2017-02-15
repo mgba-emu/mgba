@@ -223,13 +223,13 @@ void SettingsView::updateConfig() {
 		break;
 	}
 
-	int loadState = 0;
+	int loadState = SAVESTATE_RTC;
 	loadState |= m_ui.loadStateScreenshot->isChecked() ? SAVESTATE_SCREENSHOT : 0;
 	loadState |= m_ui.loadStateSave->isChecked() ? SAVESTATE_SAVEDATA : 0;
 	loadState |= m_ui.loadStateCheats->isChecked() ? SAVESTATE_CHEATS : 0;
 	saveSetting("loadStateExtdata", loadState);
 
-	int saveState = 0;
+	int saveState = SAVESTATE_RTC;
 	saveState |= m_ui.saveStateScreenshot->isChecked() ? SAVESTATE_SCREENSHOT : 0;
 	saveState |= m_ui.saveStateSave->isChecked() ? SAVESTATE_SAVEDATA : 0;
 	saveState |= m_ui.saveStateCheats->isChecked() ? SAVESTATE_CHEATS : 0;
@@ -306,7 +306,7 @@ void SettingsView::reloadConfig() {
 	bool ok;
 	int loadState = loadSetting("loadStateExtdata").toInt(&ok);
 	if (!ok) {
-		loadState = SAVESTATE_SCREENSHOT;
+		loadState = SAVESTATE_SCREENSHOT | SAVESTATE_RTC;
 	}
 	m_ui.loadStateScreenshot->setChecked(loadState & SAVESTATE_SCREENSHOT);
 	m_ui.loadStateSave->setChecked(loadState & SAVESTATE_SAVEDATA);
@@ -314,7 +314,7 @@ void SettingsView::reloadConfig() {
 
 	int saveState = loadSetting("saveStateExtdata").toInt(&ok);
 	if (!ok) {
-		saveState = SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS;
+		saveState = SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC;
 	}
 	m_ui.saveStateScreenshot->setChecked(saveState & SAVESTATE_SCREENSHOT);
 	m_ui.saveStateSave->setChecked(saveState & SAVESTATE_SAVEDATA);
