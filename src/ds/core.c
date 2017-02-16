@@ -130,6 +130,8 @@ static size_t _DSCoreGetAudioBufferSize(struct mCore* core) {
 }
 
 static void _DSCoreSetCoreCallbacks(struct mCore* core, struct mCoreCallbacks* coreCallbacks) {
+	struct DS* ds = core->board;
+	ds->coreCallbacks = coreCallbacks;
 }
 
 static void _DSCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
