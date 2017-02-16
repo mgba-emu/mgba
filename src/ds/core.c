@@ -11,6 +11,7 @@
 #include <mgba/internal/arm/debugger/debugger.h>
 #include <mgba/internal/ds/ds.h>
 #include <mgba/internal/ds/extra/cli.h>
+#include <mgba/internal/ds/renderers/software.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
@@ -19,6 +20,7 @@ struct DSCore {
 	struct mCore d;
 	struct ARMCore* arm7;
 	struct ARMCore* arm9;
+	struct DSVideoSoftwareRenderer renderer;
 	int keys;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	struct mDebuggerPlatform* debuggerPlatform;
@@ -51,6 +53,9 @@ static bool _DSCoreInit(struct mCore* core) {
 	ARMSetComponents(arm9, &ds->d, CPU_COMPONENT_MAX, dscore->components);
 	ARMInit(arm7);
 	ARMInit(arm9);
+
+	DSVideoSoftwareRendererCreate(&dscore->renderer);
+	dscore->renderer.outputBuffer = NULL;
 
 	dscore->keys = 0;
 	ds->keySource = &dscore->keys;
@@ -110,12 +115,19 @@ static void _DSCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, u
 }
 
 static void _DSCoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t stride) {
+	struct DSCore* dscore = (struct DSCore*) core;
+	dscore->renderer.outputBuffer = buffer;
+	dscore->renderer.outputBufferStride = stride;
 }
 
 static void _DSCoreGetPixels(struct mCore* core, const void** buffer, size_t* stride) {
+	struct DSCore* dscore = (struct DSCore*) core;
+	dscore->renderer.d.getPixels(&dscore->renderer.d, stride, buffer);
 }
 
 static void _DSCorePutPixels(struct mCore* core, const void* buffer, size_t stride) {
+	struct DSCore* dscore = (struct DSCore*) core;
+	dscore->renderer.d.putPixels(&dscore->renderer.d, stride, buffer);
 }
 
 static struct blip_t* _DSCoreGetAudioChannel(struct mCore* core, int ch) {
@@ -161,6 +173,11 @@ static void _DSCoreUnloadROM(struct mCore* core) {
 static void _DSCoreReset(struct mCore* core) {
 	struct DSCore* dscore = (struct DSCore*) core;
 	struct DS* ds = (struct DS*) core->board;
+
+	if (dscore->renderer.outputBuffer) {
+		struct DSVideoRenderer* renderer = &dscore->renderer.d;
+		DSVideoAssociateRenderer(&ds->video, renderer);
+	}
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct VFile* bios7 = 0;
@@ -240,7 +257,7 @@ static void _DSCoreClearKeys(struct mCore* core, uint32_t keys) {
 	dscore->keys &= ~keys;
 }
 
-static int32_t _DSCoreFrameCounter(struct mCore* core) {
+static int32_t _DSCoreFrameCounter(const struct mCore* core) {
 	struct DS* ds = core->board;
 	return ds->video.frameCounter;
 }

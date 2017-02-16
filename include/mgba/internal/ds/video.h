@@ -29,9 +29,25 @@ enum {
 	DS_VIDEO_TOTAL_LENGTH = DS_VIDEO_HORIZONTAL_LENGTH * DS_VIDEO_VERTICAL_TOTAL_PIXELS,
 };
 
+struct DSVideoRenderer {
+	void (*init)(struct DSVideoRenderer* renderer);
+	void (*reset)(struct DSVideoRenderer* renderer);
+	void (*deinit)(struct DSVideoRenderer* renderer);
+
+	uint16_t (*writeVideoRegister)(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
+	void (*drawScanline)(struct DSVideoRenderer* renderer, int y);
+	void (*finishFrame)(struct DSVideoRenderer* renderer);
+
+	void (*getPixels)(struct DSVideoRenderer* renderer, size_t* stride, const void** pixels);
+	void (*putPixels)(struct DSVideoRenderer* renderer, size_t stride, const void* pixels);
+
+	uint16_t* vram;
+};
+
 struct DS;
 struct DSVideo {
 	struct DS* p;
+	struct DSVideoRenderer* renderer;
 	struct mTimingEvent event7;
 	struct mTimingEvent event9;
 
@@ -48,6 +64,7 @@ struct DSVideo {
 void DSVideoInit(struct DSVideo* video);
 void DSVideoReset(struct DSVideo* video);
 void DSVideoDeinit(struct DSVideo* video);
+void DSVideoAssociateRenderer(struct DSVideo* video, struct DSVideoRenderer* renderer);
 
 struct DSCommon;
 void DSVideoWriteDISPSTAT(struct DSCommon* dscore, uint16_t value);

@@ -58,6 +58,7 @@ file(GLOB GBA_RENDERER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/renderers/*.c)
 file(GLOB GBA_SIO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/sio/lockstep.c)
 file(GLOB GB_SIO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/sio/lockstep.c)
 file(GLOB GB_RENDERER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/renderers/*.c)
+file(GLOB DS_RENDERER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/ds/renderers/*.c)
 file(GLOB THIRD_PARTY_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/inih/*.c)
 set(CLI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/feature/commandline.c)
 set(CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-mem.c)
@@ -640,7 +641,8 @@ if(M_CORE_DS)
 	add_definitions(-DM_CORE_DS)
 	list(APPEND CORE_SRC 
 		${ARM_SRC}
-		${DS_SRC})
+		${DS_SRC}
+		${DS_RENDERER_SRC})
 	list(APPEND DEBUGGER_SRC
 		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/cli-debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/debugger.c

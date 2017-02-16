@@ -14,6 +14,15 @@
 
 mLOG_DEFINE_CATEGORY(DS_VIDEO, "DS Video");
 
+static void DSVideoDummyRendererInit(struct DSVideoRenderer* renderer);
+static void DSVideoDummyRendererReset(struct DSVideoRenderer* renderer);
+static void DSVideoDummyRendererDeinit(struct DSVideoRenderer* renderer);
+static uint16_t DSVideoDummyRendererWriteVideoRegister(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
+static void DSVideoDummyRendererDrawScanline(struct DSVideoRenderer* renderer, int y);
+static void DSVideoDummyRendererFinishFrame(struct DSVideoRenderer* renderer);
+static void DSVideoDummyRendererGetPixels(struct DSVideoRenderer* renderer, size_t* stride, const void** pixels);
+static void DSVideoDummyRendererPutPixels(struct DSVideoRenderer* renderer, size_t stride, const void* pixels);
+
 static void _startHblank7(struct mTiming*, void* context, uint32_t cyclesLate);
 static void _startHdraw7(struct mTiming*, void* context, uint32_t cyclesLate);
 static void _startHblank9(struct mTiming*, void* context, uint32_t cyclesLate);
@@ -88,7 +97,19 @@ const struct DSVRAMBankInfo {
 	},
 };
 
+static struct DSVideoRenderer dummyRenderer = {
+	.init = DSVideoDummyRendererInit,
+	.reset = DSVideoDummyRendererReset,
+	.deinit = DSVideoDummyRendererDeinit,
+	.writeVideoRegister = DSVideoDummyRendererWriteVideoRegister,
+	.drawScanline = DSVideoDummyRendererDrawScanline,
+	.finishFrame = DSVideoDummyRendererFinishFrame,
+	.getPixels = DSVideoDummyRendererGetPixels,
+	.putPixels = DSVideoDummyRendererPutPixels,
+};
+
 void DSVideoInit(struct DSVideo* video) {
+	video->renderer = &dummyRenderer;
 	video->vram = NULL;
 	video->frameskip = 0;
 	video->event7.name = "DS7 Video";
@@ -118,6 +139,7 @@ void DSVideoReset(struct DSVideo* video) {
 		mappedMemoryFree(video->vram, DS_SIZE_VRAM);
 	}
 	video->vram = anonymousMemoryMap(DS_SIZE_VRAM);
+	video->renderer->vram = video->vram;
 
 	video->p->memory.vramBank[0] = &video->vram[0x00000];
 	video->p->memory.vramBank[1] = &video->vram[0x10000];
@@ -128,9 +150,20 @@ void DSVideoReset(struct DSVideo* video) {
 	video->p->memory.vramBank[6] = &video->vram[0x4A000];
 	video->p->memory.vramBank[7] = &video->vram[0x4C000];
 	video->p->memory.vramBank[8] = &video->vram[0x50000];
+
+	video->renderer->deinit(video->renderer);
+	video->renderer->init(video->renderer);
+}
+
+void DSVideoAssociateRenderer(struct DSVideo* video, struct DSVideoRenderer* renderer) {
+	video->renderer->deinit(video->renderer);
+	video->renderer = renderer;
+	renderer->vram = video->vram;
+	video->renderer->init(video->renderer);
 }
 
 void DSVideoDeinit(struct DSVideo* video) {
+	DSVideoAssociateRenderer(video, &dummyRenderer);
 	mappedMemoryFree(video->vram, DS_SIZE_VRAM);
 }
 
@@ -160,6 +193,9 @@ void _startHdraw7(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	switch (video->vcount) {
 	case DS_VIDEO_VERTICAL_PIXELS:
 		video->p->ds7.memory.io[DS_REG_DISPSTAT >> 1] = GBARegisterDISPSTATFillInVblank(dispstat);
+		if (video->frameskipCounter <= 0) {
+			video->renderer->finishFrame(video->renderer);
+		}
 		if (GBARegisterDISPSTATIsVblankIRQ(dispstat)) {
 			DSRaiseIRQ(video->p->ds7.cpu, video->p->ds7.memory.io, DS_IRQ_VBLANK);
 		}
@@ -179,6 +215,9 @@ void _startHblank7(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 
 	// Begin Hblank
 	dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
+	if (video->vcount < DS_VIDEO_VERTICAL_PIXELS && video->frameskipCounter <= 0) {
+		video->renderer->drawScanline(video->renderer, video->vcount);
+	}
 
 	if (GBARegisterDISPSTATIsHblankIRQ(dispstat)) {
 		DSRaiseIRQ(video->p->ds7.cpu, video->p->ds7.memory.io, DS_IRQ_HBLANK);
@@ -271,4 +310,49 @@ void DSVideoConfigureVRAM(struct DSMemory* memory, int index, uint8_t value) {
 			memory->vramMirror[index][i + j] = 1 << index;
 		}
 	}
+}
+
+static void DSVideoDummyRendererInit(struct DSVideoRenderer* renderer) {
+	UNUSED(renderer);
+	// Nothing to do
+}
+
+static void DSVideoDummyRendererReset(struct DSVideoRenderer* renderer) {
+	UNUSED(renderer);
+	// Nothing to do
+}
+
+static void DSVideoDummyRendererDeinit(struct DSVideoRenderer* renderer) {
+	UNUSED(renderer);
+	// Nothing to do
+}
+
+static uint16_t DSVideoDummyRendererWriteVideoRegister(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value) {
+	UNUSED(renderer);
+	return value;
+}
+
+static void DSVideoDummyRendererDrawScanline(struct DSVideoRenderer* renderer, int y) {
+	UNUSED(renderer);
+	UNUSED(y);
+	// Nothing to do
+}
+
+static void DSVideoDummyRendererFinishFrame(struct DSVideoRenderer* renderer) {
+	UNUSED(renderer);
+	// Nothing to do
+}
+
+static void DSVideoDummyRendererGetPixels(struct DSVideoRenderer* renderer, size_t* stride, const void** pixels) {
+	UNUSED(renderer);
+	UNUSED(stride);
+	UNUSED(pixels);
+	// Nothing to do
+}
+
+static void DSVideoDummyRendererPutPixels(struct DSVideoRenderer* renderer, size_t stride, const void* pixels) {
+	UNUSED(renderer);
+	UNUSED(stride);
+	UNUSED(pixels);
+	// Nothing to do
 }
