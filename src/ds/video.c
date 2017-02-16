@@ -259,7 +259,7 @@ void DSVideoConfigureVRAM(struct DSMemory* memory, int index, uint8_t value) {
 	struct DSVRAMBankInfo info = _vramInfo[index][value & 0x7];
 	memset(&memory->vramMirror[index], 0, sizeof(memory->vramMirror[index]));
 	memset(&memory->vramMode[index], 0, sizeof(memory->vramMode[index]));
-	if (!(value & 0x80)) {
+	if (!(value & 0x80) || !info.mirrorSize) {
 		return;
 	}
 	uint32_t size = _vramSize[index] >> DS_VRAM_OFFSET;
