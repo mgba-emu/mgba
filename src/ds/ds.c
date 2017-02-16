@@ -74,6 +74,7 @@ static void _slice(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	}
 	mTimingSchedule(timing, &ds->slice, cycles);
 	ds->sliceStart = mTimingCurrentTime(timing);
+	ds->earlyExit = true;
 }
 
 void DSCreate(struct DS* ds) {
