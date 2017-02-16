@@ -7,6 +7,7 @@
 
 #include <mgba/core/sync.h>
 #include <mgba/internal/ds/ds.h>
+#include <mgba/internal/ds/memory.h>
 #include <mgba/internal/gba/video.h>
 
 #include <mgba-util/memory.h>
@@ -17,6 +18,75 @@ static void _startHblank7(struct mTiming*, void* context, uint32_t cyclesLate);
 static void _startHdraw7(struct mTiming*, void* context, uint32_t cyclesLate);
 static void _startHblank9(struct mTiming*, void* context, uint32_t cyclesLate);
 static void _startHdraw9(struct mTiming*, void* context, uint32_t cyclesLate);
+
+static const uint32_t _vramSize[9] = {
+	0x20000,
+	0x20000,
+	0x20000,
+	0x20000,
+	0x10000,
+	0x04000,
+	0x04000,
+	0x08000,
+	0x04000
+};
+
+const struct DSVRAMBankInfo {
+	int base;
+	uint32_t mirrorSize;
+	int mode;
+	int offset[4];
+} _vramInfo[9][8] = {
+	{ // A
+		{ 0x000, 0x40, 4 }, // LCDC
+		{ 0x000, 0x20, 0, { 0x00, 0x08, 0x10, 0x18 } }, // A-BG
+		{ 0x000, 0x10, 2, { 0x00, 0x08, 0x80, 0x80 } }, // A-OBJ
+	},
+	{ // B
+		{ 0x008, 0x40, 4 }, // LCDC
+		{ 0x000, 0x20, 0, { 0x00, 0x08, 0x10, 0x18 } }, // A-BG
+		{ 0x000, 0x10, 2, { 0x00, 0x08, 0x80, 0x80 } }, // A-OBJ
+	},
+	{ // C
+		{ 0x010, 0x40, 4 }, // LCDC
+		{ 0x000, 0x20, 0, { 0x00, 0x08, 0x10, 0x18 } }, // A-BG
+		{},
+		{},
+		{ 0x000, 0x08, 1 }, // B-BG
+	},
+	{ // D
+		{ 0x018, 0x40, 4 }, // LCDC
+		{ 0x000, 0x20, 0, { 0x00, 0x08, 0x10, 0x18 } }, // A-BG
+		{},
+		{},
+		{ 0x000, 0x08, 3 }, // B-OBJ
+	},
+	{ // E
+		{ 0x020, 0x40, 4 }, // LCDC
+		{ 0x000, 0x20, 0 }, // A-BG
+		{ 0x000, 0x10, 2 }, // A-OBJ
+	},
+	{ // F
+		{ 0x024, 0x40, 4 }, // LCDC
+		{ 0x000, 0x20, 0, { 0x00, 0x01, 0x04, 0x05 } }, // A-BG
+		{ 0x000, 0x10, 2, { 0x00, 0x01, 0x04, 0x05 } }, // A-OBJ
+	},
+	{ // G
+		{ 0x025, 0x40, 4 }, // LCDC
+		{ 0x000, 0x20, 0 }, // A-BG
+		{ 0x000, 0x10, 2 }, // A-OBJ
+	},
+	{ // H
+		{ 0x026, 0x40, 4 }, // LCDC
+		{ 0x000, 0x04, 1 }, // B-BG
+		{ 0x000, 0x10, 2 }, // A-OBJ
+	},
+	{ // I
+		{ 0x028, 0x40, 4 }, // LCDC
+		{ 0x002, 0x04, 1 }, // B-BG
+		{ 0x000, 0x01, 3 }, // B-OBJ
+	},
+};
 
 void DSVideoInit(struct DSVideo* video) {
 	video->vram = NULL;
@@ -48,6 +118,16 @@ void DSVideoReset(struct DSVideo* video) {
 		mappedMemoryFree(video->vram, DS_SIZE_VRAM);
 	}
 	video->vram = anonymousMemoryMap(DS_SIZE_VRAM);
+
+	video->p->memory.vramBank[0] = &video->vram[0x00000];
+	video->p->memory.vramBank[1] = &video->vram[0x10000];
+	video->p->memory.vramBank[2] = &video->vram[0x20000];
+	video->p->memory.vramBank[3] = &video->vram[0x30000];
+	video->p->memory.vramBank[4] = &video->vram[0x40000];
+	video->p->memory.vramBank[5] = &video->vram[0x48000];
+	video->p->memory.vramBank[6] = &video->vram[0x4A000];
+	video->p->memory.vramBank[7] = &video->vram[0x4C000];
+	video->p->memory.vramBank[8] = &video->vram[0x50000];
 }
 
 void DSVideoDeinit(struct DSVideo* video) {
@@ -173,4 +253,22 @@ void DSVideoWriteDISPSTAT(struct DSCommon* dscore, uint16_t value) {
 	dscore->memory.io[DS_REG_DISPSTAT >> 1] &= 0x7;
 	dscore->memory.io[DS_REG_DISPSTAT >> 1] |= value;
 	// TODO: Does a VCounter IRQ trigger on write?
+}
+
+void DSVideoConfigureVRAM(struct DSMemory* memory, int index, uint8_t value) {
+	struct DSVRAMBankInfo info = _vramInfo[index][value & 0x7];
+	memset(&memory->vramMirror[index], 0, sizeof(memory->vramMirror[index]));
+	memset(&memory->vramMode[index], 0, sizeof(memory->vramMode[index]));
+	if (!(value & 0x80)) {
+		return;
+	}
+	uint32_t size = _vramSize[index] >> DS_VRAM_OFFSET;
+	memory->vramMode[index][info.mode] = 0xFFFF;
+	uint32_t offset = info.base + info.offset[(value >> 3) & 3];
+	uint32_t i, j;
+	for (j = offset; j < 0x40; j += info.mirrorSize) {
+		for (i = 0; i < size; ++i) {
+			memory->vramMirror[index][i + j] = 1 << index;
+		}
+	}
 }

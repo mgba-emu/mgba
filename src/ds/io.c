@@ -263,6 +263,15 @@ void DS9IOInit(struct DS* ds) {
 
 void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	switch (address) {
+	case DS9_REG_VRAMCNT_A:
+	case DS9_REG_VRAMCNT_C:
+	case DS9_REG_VRAMCNT_E:
+	case DS9_REG_VRAMCNT_G:
+		DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A + 1, value & 0xFF);
+		// Fall through
+	case DS9_REG_VRAMCNT_I:
+		DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A, value >> 8);
+		break;
 	default:
 		{
 			uint32_t v2 = DSIOWrite(&ds->ds9, address, value);

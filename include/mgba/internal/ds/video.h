@@ -52,6 +52,9 @@ void DSVideoDeinit(struct DSVideo* video);
 struct DSCommon;
 void DSVideoWriteDISPSTAT(struct DSCommon* dscore, uint16_t value);
 
+struct DSMemory;
+void DSVideoConfigureVRAM(struct DSMemory* memory, int index, uint8_t value);
+
 CXX_GUARD_START
 
 #endif

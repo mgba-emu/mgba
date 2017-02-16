@@ -65,7 +65,8 @@ enum {
 
 enum {
 	DS_OFFSET_MASK = 0x00FFFFFF,
-	DS_BASE_OFFSET = 24
+	DS_BASE_OFFSET = 24,
+	DS_VRAM_OFFSET = 14
 };
 
 mLOG_DECLARE_CATEGORY(DS_MEM);
@@ -81,6 +82,10 @@ struct DSMemory {
 	uint32_t* rom;
 	uint16_t io7[DS7_REG_MAX >> 1];
 	uint16_t io9[DS9_REG_MAX >> 1];
+
+	uint16_t vramMirror[9][0x40];
+	uint16_t vramMode[9][8];
+	uint16_t* vramBank[9];
 
 	size_t romSize;
 	size_t wramSize7;

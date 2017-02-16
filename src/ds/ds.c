@@ -224,9 +224,9 @@ void DS9Reset(struct ARMCore* cpu) {
 	struct DS* ds = (struct DS*) cpu->master;
 	mTimingClear(&ds->ds9.timing);
 	CircleBufferInit(&ds->ds9.fifo, 64);
+	DSVideoReset(&ds->video);
 	DSDMAReset(&ds->ds9);
 	DS9IOInit(ds);
-	DSVideoReset(&ds->video);
 
 	ds->activeCpu = cpu;
 	mTimingSchedule(&ds->ds9.timing, &ds->slice, SLICE_CYCLES);

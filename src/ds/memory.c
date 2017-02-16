@@ -16,9 +16,23 @@ mLOG_DEFINE_CATEGORY(DS_MEM, "DS Memory");
 
 static uint32_t _deadbeef[1] = { 0xE710B710 }; // Illegal instruction on both ARM and Thumb
 
+static const uint32_t _vramMask[9] = {
+	0x1FFFF,
+	0x1FFFF,
+	0x1FFFF,
+	0x1FFFF,
+	0x0FFFF,
+	0x03FFF,
+	0x03FFF,
+	0x07FFF,
+	0x03FFF
+};
+
 static void DS7SetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static void DS9SetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static int32_t DSMemoryStall(struct ARMCore* cpu, int32_t wait);
+
+static unsigned _selectVRAM(struct DSMemory* memory, uint32_t offset);
 
 static const char DS7_BASE_WAITSTATES[16] =        { 0, 0, 8, 0, 0, 0, 0, 0 };
 static const char DS7_BASE_WAITSTATES_32[16] =     { 0, 0, 9, 0, 0, 1, 1, 0 };
@@ -160,6 +174,16 @@ void DSMemoryReset(struct DS* ds) {
 	ds->memory.wramSize7 = 0x8000;
 	ds->memory.wramSize9 = 0;
 
+	DSVideoConfigureVRAM(&ds->memory, 0, 0);
+	DSVideoConfigureVRAM(&ds->memory, 1, 0);
+	DSVideoConfigureVRAM(&ds->memory, 2, 0);
+	DSVideoConfigureVRAM(&ds->memory, 3, 0);
+	DSVideoConfigureVRAM(&ds->memory, 4, 0);
+	DSVideoConfigureVRAM(&ds->memory, 5, 0);
+	DSVideoConfigureVRAM(&ds->memory, 6, 0);
+	DSVideoConfigureVRAM(&ds->memory, 7, 0);
+	DSVideoConfigureVRAM(&ds->memory, 8, 0);
+
 	if (!ds->memory.wram || !ds->memory.wram7 || !ds->memory.ram || !ds->memory.itcm || !ds->memory.dtcm) {
 		DSMemoryDeinit(ds);
 		mLOG(DS_MEM, FATAL, "Could not map memory");
@@ -277,7 +301,7 @@ uint32_t DS7Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load16: %08X", address);
 	case DS_REGION_IO:
-		value = DS7IORead(ds, address & 0x00FFFFFF);
+		value = DS7IORead(ds, address & DS_OFFSET_MASK);
 		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load16: %08X", address);
@@ -346,7 +370,7 @@ void DS7Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store32: %08X:%08X", address, value);
 		break;
 	case DS_REGION_IO:
-		DS7IOWrite32(ds, address & 0x00FFFFFF, value);
+		DS7IOWrite32(ds, address & DS_OFFSET_MASK, value);
 		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store32: %08X:%08X", address, value);
@@ -380,7 +404,7 @@ void DS7Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store16: %08X:%04X", address, value);
 		break;
 	case DS_REGION_IO:
-		DS7IOWrite(ds, address & 0x00FFFFFF, value);
+		DS7IOWrite(ds, address & DS_OFFSET_MASK, value);
 		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store16: %08X:%04X", address, value);
@@ -413,7 +437,7 @@ void DS7Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store8: %08X:%02X", address, value);
 	case DS_REGION_IO:
-		DS7IOWrite8(ds, address & 0x00FFFFFF, value);
+		DS7IOWrite8(ds, address & DS_OFFSET_MASK, value);
 		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store8: %08X:%02X", address, value);
@@ -690,6 +714,18 @@ uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case DS_REGION_IO:
 		value = DS9IORead32(ds, address & 0x00FFFFFC);
 		break;
+	case DS_REGION_VRAM: {
+		unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
+		int i = 0;
+		for (i = 0; i < 9; ++i) {
+			if (mask & (1 << i)) {
+				uint32_t newValue;
+				LOAD_32(newValue, address & _vramMask[i], memory->vramBank[i]);
+				value |= newValue;
+			}
+		}
+		break;
+	}
 	case DS9_REGION_BIOS:
 		// TODO: Fix undersized BIOS
 		// TODO: Fix masking
@@ -739,8 +775,20 @@ uint32_t DS9Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load16: %08X", address);
 	case DS_REGION_IO:
-		value = DS9IORead(ds, address & 0x00FFFFFF);
+		value = DS9IORead(ds, address & DS_OFFSET_MASK);
 		break;
+	case DS_REGION_VRAM: {
+		unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
+		int i = 0;
+		for (i = 0; i < 9; ++i) {
+			if (mask & (1 << i)) {
+				uint32_t newValue;
+				LOAD_16(newValue, address & _vramMask[i], memory->vramBank[i]);
+				value |= newValue;
+			}
+		}
+		break;
+	}
 	case DS9_REGION_BIOS:
 		// TODO: Fix undersized BIOS
 		// TODO: Fix masking
@@ -836,8 +884,18 @@ void DS9Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store32: %08X:%08X", address, value);
 		break;
 	case DS_REGION_IO:
-		DS9IOWrite32(ds, address & 0x00FFFFFF, value);
+		DS9IOWrite32(ds, address & DS_OFFSET_MASK, value);
 		break;
+	case DS_REGION_VRAM: {
+		unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
+		int i = 0;
+		for (i = 0; i < 9; ++i) {
+			if (mask & (1 << i)) {
+				STORE_32(value, address & _vramMask[i], memory->vramBank[i]);
+			}
+		}
+		break;
+	}
 	default:
 		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			STORE_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
@@ -879,8 +937,18 @@ void DS9Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store16: %08X:%04X", address, value);
 		break;
 	case DS_REGION_IO:
-		DS9IOWrite(ds, address & 0x00FFFFFF, value);
+		DS9IOWrite(ds, address & DS_OFFSET_MASK, value);
 		break;
+	case DS_REGION_VRAM: {
+		unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
+		int i = 0;
+		for (i = 0; i < 9; ++i) {
+			if (mask & (1 << i)) {
+				STORE_16(value, address & _vramMask[i], memory->vramBank[i]);
+			}
+		}
+		break;
+	}
 	default:
 		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			STORE_16(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
@@ -921,7 +989,7 @@ void DS9Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store8: %08X:%02X", address, value);
 	case DS_REGION_IO:
-		DS9IOWrite8(ds, address & 0x00FFFFFF, value);
+		DS9IOWrite8(ds, address & DS_OFFSET_MASK, value);
 		break;
 	default:
 		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
@@ -1069,3 +1137,17 @@ int32_t DSMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	return wait;
 }
 
+static unsigned _selectVRAM(struct DSMemory* memory, uint32_t offset) {
+	unsigned mask = 0;
+	offset &= 0x3FF;
+	mask |= memory->vramMirror[0][offset & 0x3F] & memory->vramMode[0][offset >> 7];
+	mask |= memory->vramMirror[1][offset & 0x3F] & memory->vramMode[1][offset >> 7];
+	mask |= memory->vramMirror[2][offset & 0x3F] & memory->vramMode[2][offset >> 7];
+	mask |= memory->vramMirror[3][offset & 0x3F] & memory->vramMode[3][offset >> 7];
+	mask |= memory->vramMirror[4][offset & 0x3F] & memory->vramMode[4][offset >> 7];
+	mask |= memory->vramMirror[5][offset & 0x3F] & memory->vramMode[5][offset >> 7];
+	mask |= memory->vramMirror[6][offset & 0x3F] & memory->vramMode[6][offset >> 7];
+	mask |= memory->vramMirror[7][offset & 0x3F] & memory->vramMode[7][offset >> 7];
+	mask |= memory->vramMirror[8][offset & 0x3F] & memory->vramMode[8][offset >> 7];
+	return mask;
+}
