@@ -88,6 +88,9 @@ static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t va
 	case DS_REG_IME:
 		DSWriteIME(dscore->cpu, dscore->memory.io, value);
 		break;
+	case 0x20A:
+		// Some bad interrupt libraries will write to this
+		break;
 	case DS_REG_IF_LO:
 	case DS_REG_IF_HI:
 		value = dscore->memory.io[address >> 1] & ~value;
