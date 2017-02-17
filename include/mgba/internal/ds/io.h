@@ -61,6 +61,10 @@ enum DSIORegisters {
 	DS_REG_TM3CNT_LO = 0x10C,
 	DS_REG_TM3CNT_HI = 0x10E,
 
+	// Keypad
+	DS_REG_KEYINPUT = 0x130,
+	DS_REG_KEYCNT = 0x132,
+
 	// IPC
 	DS_REG_IPCSYNC = 0x180,
 	DS_REG_IPCFIFOCNT = 0x184,
@@ -79,8 +83,6 @@ enum DSIORegisters {
 
 enum DS7IORegisters {
 	// Keypad
-	DS7_REG_KEYINPUT = 0x130,
-	DS7_REG_KEYCNT = 0x132,
 	DS7_REG_EXTKEYIN = 0x136,
 	DS7_REG_RTC = 0x138,
 
@@ -207,10 +209,6 @@ enum DS9IORegisters {
 	DS9_REG_B_BLDALPHA = 0x1052,
 	DS9_REG_B_BLDY = 0x1054,
 	DS9_REG_B_MASTER_BRIGHT = 0x106C,
-
-	// Keypad
-	DS9_REG_KEYINPUT = 0x130,
-	DS9_REG_KEYCNT = 0x132,
 
 	// Game card
 	DS9_REG_AUXSPICNT = 0x1A0,

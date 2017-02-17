@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/ds/io.h>
 
+#include <mgba/core/interface.h>
 #include <mgba/internal/ds/ds.h>
 #include <mgba/internal/ds/ipc.h>
 
@@ -95,6 +96,28 @@ static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t va
 		return 0;
 	}
 	return value | 0x10000;
+}
+
+static uint16_t DSIOReadKeyInput(struct DS* ds) {
+	uint16_t input = 0x3FF;
+	if (ds->keyCallback) {
+		input = ds->keyCallback->readKeys(ds->keyCallback);
+	} else if (ds->keySource) {
+		input = *ds->keySource;
+	}
+	// TODO: Put back
+	/*if (!dscore->p->allowOpposingDirections) {
+		unsigned rl = input & 0x030;
+		unsigned ud = input & 0x0C0;
+		input &= 0x30F;
+		if (rl != 0x030) {
+			input |= rl;
+		}
+		if (ud != 0x0C0) {
+			input |= ud;
+		}
+	}*/
+	return 0x3FF ^ input;
 }
 
 static void DSIOUpdateTimer(struct DSCommon* dscore, uint32_t address) {
@@ -218,6 +241,8 @@ uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_TM3CNT_LO:
 		DSIOUpdateTimer(&ds->ds7, address);
 		break;
+	case DS_REG_KEYINPUT:
+		return DSIOReadKeyInput(ds);
 	case DS_REG_DMA0FILL_LO:
 	case DS_REG_DMA0FILL_HI:
 	case DS_REG_DMA1FILL_LO:
@@ -366,6 +391,8 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_TM3CNT_LO:
 		DSIOUpdateTimer(&ds->ds9, address);
 		break;
+	case DS_REG_KEYINPUT:
+		return DSIOReadKeyInput(ds);
 	case DS_REG_DMA0FILL_LO:
 	case DS_REG_DMA0FILL_HI:
 	case DS_REG_DMA1FILL_LO:
