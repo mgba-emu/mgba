@@ -416,6 +416,9 @@ bool DSLoadBIOS(struct DS* ds, struct VFile* vf) {
 	if (size == DS7_SIZE_BIOS) {
 		data = vf->map(vf, size, MAP_READ);
 	} else if (size == 0x1000) {
+		data = calloc(DS9_SIZE_BIOS, 1);
+		vf->read(vf, data, size);
+	} else if (size == DS9_SIZE_BIOS) {
 		data = vf->map(vf, size, MAP_READ);
 	}
 	if (!data) {
