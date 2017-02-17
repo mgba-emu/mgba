@@ -1042,6 +1042,18 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	case DS_REGION_IO:
 		LDM_LOOP(value = DS9IORead32(ds, address));
 		break;
+	case DS_REGION_VRAM:
+		LDM_LOOP(unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
+		value = 0;
+		int i = 0;
+		for (i = 0; i < 9; ++i) {
+			if (mask & (1 << i)) {
+				uint32_t newValue;
+				LOAD_32(newValue, address & _vramMask[i], memory->vramBank[i]);
+				value |= newValue;
+			}
+		});
+		break;
 	default:
 		LDM_LOOP(if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			LOAD_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
@@ -1107,6 +1119,15 @@ uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 			STORE_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
 		} else {
 			mLOG(DS_MEM, STUB, "Unimplemented DS9 STM: %08X", address);
+		});
+		break;
+	case DS_REGION_VRAM:
+		STM_LOOP(unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
+		int i = 0;
+		for (i = 0; i < 9; ++i) {
+			if (mask & (1 << i)) {
+				STORE_32(value, address & _vramMask[i], memory->vramBank[i]);
+			}
 		});
 		break;
 	default:
