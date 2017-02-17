@@ -130,7 +130,7 @@ void DSVideoReset(struct DSVideo* video) {
 	video->event7.callback = _startHblank7;
 	video->event9.callback = _startHblank9;
 	mTimingSchedule(&video->p->ds7.timing, &video->event7, DS_VIDEO_HORIZONTAL_LENGTH - DS7_VIDEO_HBLANK_LENGTH);
-	mTimingSchedule(&video->p->ds9.timing, &video->event9, DS_VIDEO_HORIZONTAL_LENGTH - DS9_VIDEO_HBLANK_LENGTH);
+	mTimingSchedule(&video->p->ds9.timing, &video->event9, (DS_VIDEO_HORIZONTAL_LENGTH - DS9_VIDEO_HBLANK_LENGTH) * 2);
 
 	video->frameCounter = 0;
 	video->frameskipCounter = 0;
@@ -174,10 +174,6 @@ void _startHdraw7(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	video->event7.callback = _startHblank7;
 	mTimingSchedule(timing, &video->event7, DS_VIDEO_HORIZONTAL_LENGTH - DS7_VIDEO_HBLANK_LENGTH - cyclesLate);
 
-	++video->vcount;
-	if (video->vcount == DS_VIDEO_VERTICAL_TOTAL_PIXELS) {
-		video->vcount = 0;
-	}
 	video->p->ds7.memory.io[DS_REG_VCOUNT >> 1] = video->vcount;
 
 	if (video->vcount == GBARegisterDISPSTATGetVcountSetting(dispstat)) {
@@ -193,9 +189,6 @@ void _startHdraw7(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	switch (video->vcount) {
 	case DS_VIDEO_VERTICAL_PIXELS:
 		video->p->ds7.memory.io[DS_REG_DISPSTAT >> 1] = GBARegisterDISPSTATFillInVblank(dispstat);
-		if (video->frameskipCounter <= 0) {
-			video->renderer->finishFrame(video->renderer);
-		}
 		if (GBARegisterDISPSTATIsVblankIRQ(dispstat)) {
 			DSRaiseIRQ(video->p->ds7.cpu, video->p->ds7.memory.io, DS_IRQ_VBLANK);
 		}
@@ -215,9 +208,6 @@ void _startHblank7(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 
 	// Begin Hblank
 	dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
-	if (video->vcount < DS_VIDEO_VERTICAL_PIXELS && video->frameskipCounter <= 0) {
-		video->renderer->drawScanline(video->renderer, video->vcount);
-	}
 
 	if (GBARegisterDISPSTATIsHblankIRQ(dispstat)) {
 		DSRaiseIRQ(video->p->ds7.cpu, video->p->ds7.memory.io, DS_IRQ_HBLANK);
@@ -230,7 +220,7 @@ void _startHdraw9(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	GBARegisterDISPSTAT dispstat = video->p->ds9.memory.io[DS_REG_DISPSTAT >> 1];
 	dispstat = GBARegisterDISPSTATClearInHblank(dispstat);
 	video->event9.callback = _startHblank9;
-	mTimingSchedule(timing, &video->event9, DS_VIDEO_HORIZONTAL_LENGTH - DS9_VIDEO_HBLANK_LENGTH - cyclesLate);
+	mTimingSchedule(timing, &video->event9, (DS_VIDEO_HORIZONTAL_LENGTH - DS9_VIDEO_HBLANK_LENGTH) * 2 - cyclesLate);
 
 	++video->vcount;
 	if (video->vcount == DS_VIDEO_VERTICAL_TOTAL_PIXELS) {
@@ -255,6 +245,9 @@ void _startHdraw9(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		break;
 	case DS_VIDEO_VERTICAL_PIXELS:
 		video->p->ds9.memory.io[DS_REG_DISPSTAT >> 1] = GBARegisterDISPSTATFillInVblank(dispstat);
+		if (video->frameskipCounter <= 0) {
+			video->renderer->finishFrame(video->renderer);
+		}
 		if (GBARegisterDISPSTATIsVblankIRQ(dispstat)) {
 			DSRaiseIRQ(video->p->ds9.cpu, video->p->ds9.memory.io, DS_IRQ_VBLANK);
 		}
@@ -277,10 +270,13 @@ void _startHblank9(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	GBARegisterDISPSTAT dispstat = video->p->ds9.memory.io[DS_REG_DISPSTAT >> 1];
 	dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
 	video->event9.callback = _startHdraw9;
-	mTimingSchedule(timing, &video->event9, DS9_VIDEO_HBLANK_LENGTH - cyclesLate);
+	mTimingSchedule(timing, &video->event9, (DS9_VIDEO_HBLANK_LENGTH * 2) - cyclesLate);
 
 	// Begin Hblank
 	dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
+	if (video->vcount < DS_VIDEO_VERTICAL_PIXELS && video->frameskipCounter <= 0) {
+		video->renderer->drawScanline(video->renderer, video->vcount);
+	}
 
 	if (GBARegisterDISPSTATIsHblankIRQ(dispstat)) {
 		DSRaiseIRQ(video->p->ds9.cpu, video->p->ds9.memory.io, DS_IRQ_HBLANK);
