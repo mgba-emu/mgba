@@ -77,6 +77,50 @@ static void _slice(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	ds->earlyExit = true;
 }
 
+static void _divide(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+	UNUSED(timing);
+	UNUSED(cyclesLate);
+	struct DS* ds = context;
+	ds->memory.io9[DS9_REG_DIVCNT >> 1] &= ~0x8000;
+	int64_t numerator;
+	int64_t denominator;
+	LOAD_64LE(numerator, DS9_REG_DIV_NUMER_0, ds->memory.io9);
+	LOAD_64LE(denominator, DS9_REG_DIV_DENOM_0, ds->memory.io9);
+	bool max = false;
+	switch (ds->memory.io9[DS9_REG_DIVCNT >> 1] & 0x3) {
+	case 0:
+		denominator &= 0xFFFFFFFFLL;
+	case 1:
+	case 3:
+		numerator &= 0xFFFFFFFFLL;
+		if (numerator == INT32_MIN) {
+			max = true;
+		}
+		break;
+	}
+	if (numerator == INT64_MIN) {
+		max = true;
+	}
+	if (!denominator) {
+		ds->memory.io9[DS9_REG_DIVCNT >> 1] |= 0x4000;
+		STORE_64LE(numerator, DS9_REG_DIVREM_RESULT_0, ds->memory.io9);
+		numerator >>= 63LL;
+		numerator = -numerator;
+		STORE_64LE(numerator, DS9_REG_DIV_RESULT_0, ds->memory.io9);
+		return;
+	}
+	if (denominator == -1LL && max) {
+		ds->memory.io9[DS9_REG_DIVCNT >> 1] |= 0x4000;
+		STORE_64LE(numerator, DS9_REG_DIV_RESULT_0, ds->memory.io9);
+		return;
+	}
+	ds->memory.io9[DS9_REG_DIVCNT >> 1] &= ~0x4000;
+	int64_t result = numerator / denominator;
+	int64_t remainder = numerator % denominator; // TODO: defined behavior for negative denominator?
+	STORE_64LE(result, DS9_REG_DIV_RESULT_0, ds->memory.io9);
+	STORE_64LE(remainder, DS9_REG_DIVREM_RESULT_0, ds->memory.io9);
+}
+
 void DSCreate(struct DS* ds) {
 	ds->d.id = DS_COMPONENT_MAGIC;
 	ds->d.init = DSInit;
@@ -130,6 +174,11 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 	ds->romVf = NULL;
 
 	ds->keyCallback = NULL;
+
+	ds->divEvent.name = "DS Hardware Divide";
+	ds->divEvent.callback = _divide;
+	ds->divEvent.context = ds;
+	ds->divEvent.priority = 0x50;
 
 	mTimingInit(&ds->ds7.timing, &ds->ds7.cpu->cycles, &ds->ds7.cpu->nextEvent);
 	mTimingInit(&ds->ds9.timing, &ds->ds9.cpu->cycles, &ds->ds9.cpu->nextEvent);

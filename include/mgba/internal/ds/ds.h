@@ -101,6 +101,8 @@ struct DS {
 
 	struct mKeyCallback* keyCallback;
 	struct mCoreCallbacks* coreCallbacks;
+
+	struct mTimingEvent divEvent;
 };
 
 struct DSCartridge {

@@ -28,6 +28,12 @@ static void _DSHaltCNT(struct DSCommon* dscore, uint8_t value) {
 	}
 }
 
+static uint16_t _scheduleDiv(struct DS* ds, uint16_t control) {
+	mTimingDeschedule(&ds->ds9.timing, &ds->divEvent);
+	mTimingSchedule(&ds->ds9.timing, &ds->divEvent, (control & 3) ? 36 : 68);
+	return control | 0x8000;
+}
+
 static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t value) {
 	switch (address) {
 	// Video
@@ -291,6 +297,7 @@ void DS9IOInit(struct DS* ds) {
 
 void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	switch (address) {
+	// VRAM control
 	case DS9_REG_VRAMCNT_A:
 	case DS9_REG_VRAMCNT_C:
 	case DS9_REG_VRAMCNT_E:
@@ -300,6 +307,22 @@ void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	case DS9_REG_VRAMCNT_I:
 		DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A, value >> 8);
 		break;
+
+	// Math
+	case DS9_REG_DIVCNT:
+		value = _scheduleDiv(ds, value);
+		break;
+	case DS9_REG_DIV_NUMER_0:
+	case DS9_REG_DIV_NUMER_1:
+	case DS9_REG_DIV_NUMER_2:
+	case DS9_REG_DIV_NUMER_3:
+	case DS9_REG_DIV_DENOM_0:
+	case DS9_REG_DIV_DENOM_1:
+	case DS9_REG_DIV_DENOM_2:
+	case DS9_REG_DIV_DENOM_3:
+		ds->memory.io9[DS9_REG_DIVCNT >> 1] = _scheduleDiv(ds, ds->memory.io9[DS9_REG_DIVCNT >> 1]);
+		break;
+
 	default:
 		{
 			uint32_t v2 = DSIOWrite(&ds->ds9, address, value);
