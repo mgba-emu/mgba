@@ -7,13 +7,6 @@
 
 #include <mgba-util/math.h>
 
-static const GLint _glVertices[] = {
-	0, 0,
-	256, 0,
-	256, 256,
-	0, 256
-};
-
 static const GLint _glTexCoords[] = {
 	0, 0,
 	1, 0,
@@ -48,6 +41,15 @@ static void mGLContextSetDimensions(struct VideoBackend* v, unsigned width, unsi
 #else
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(width), toPow2(height), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 #endif
+
+	context->vertices[0] = 0;
+	context->vertices[1] = 0;
+	context->vertices[2] = toPow2(width);
+	context->vertices[3] = 0;
+	context->vertices[4] = toPow2(width);
+	context->vertices[5] = toPow2(height);
+	context->vertices[6] = 0;
+	context->vertices[7] = toPow2(height);
 }
 
 static void mGLContextDeinit(struct VideoBackend* v) {
@@ -83,7 +85,7 @@ void mGLContextDrawFrame(struct VideoBackend* v) {
 	glEnable(GL_TEXTURE_2D);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(2, GL_INT, 0, _glVertices);
+	glVertexPointer(2, GL_INT, 0, context->vertices);
 	glTexCoordPointer(2, GL_INT, 0, _glTexCoords);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();

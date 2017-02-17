@@ -229,7 +229,7 @@ PainterGL::PainterGL(int majorVersion, QGLWidget* parent)
 	m_backend->lockAspectRatio = false;
 
 	for (int i = 0; i < 2; ++i) {
-		m_free.append(new uint32_t[256 * 256]);
+		m_free.append(new uint32_t[256 * 384]);
 	}
 }
 

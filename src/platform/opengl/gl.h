@@ -27,6 +27,7 @@ struct mGLContext {
 	struct VideoBackend d;
 
 	GLuint tex;
+	GLint vertices[8];
 };
 
 void mGLContextCreate(struct mGLContext*);
