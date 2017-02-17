@@ -83,6 +83,7 @@ static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t va
 		DSTimerWriteTMCNT_HI(&dscore->timers[3], &dscore->timing, dscore->cpu, &dscore->memory.io[DS_REG_TM3CNT_LO >> 1], value);
 		break;
 
+	// IPC
 	case DS_REG_IPCSYNC:
 		value &= 0x6F00;
 		value |= dscore->memory.io[address >> 1] & 0x000F;
@@ -91,10 +92,19 @@ static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t va
 	case DS_REG_IPCFIFOCNT:
 		value = DSIPCWriteFIFOCNT(dscore, value);
 		break;
+
+	// Cart bus
+	case DS_REG_SLOT1CNT_LO:
+		mLOG(DS_IO, STUB, "ROM control not implemented");
+		value &= 0x7FFF;
+		break;
+
+	// Interrupts
 	case DS_REG_IME:
 		DSWriteIME(dscore->cpu, dscore->memory.io, value);
 		break;
 	case 0x20A:
+		value = 0;
 		// Some bad interrupt libraries will write to this
 		break;
 	case DS_REG_IF_LO:
@@ -267,6 +277,7 @@ uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_IPCSYNC:
 	case DS_REG_IPCFIFOCNT:
 	case DS_REG_IME:
+	case 0x20A:
 	case DS_REG_IE_LO:
 	case DS_REG_IE_HI:
 	case DS_REG_IF_LO:
@@ -434,6 +445,7 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_IPCSYNC:
 	case DS_REG_IPCFIFOCNT:
 	case DS_REG_IME:
+	case 0x20A:
 	case DS_REG_IE_LO:
 	case DS_REG_IE_HI:
 	case DS_REG_IF_LO:
