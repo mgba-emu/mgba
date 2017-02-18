@@ -1030,6 +1030,14 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	address &= 0xFFFFFFFC;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS9_REGION_ITCM:
+	case DS9_REGION_ITCM_MIRROR:
+		LDM_LOOP(if (address < memory->itcmSize) {
+			LOAD_32(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
+		} else {
+			mLOG(DS_MEM, STUB, "Bad DS9 LDM: %08X:%08X", address, value);
+		});
+		break;
 	case DS_REGION_RAM:
 		LDM_LOOP(if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			LOAD_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
