@@ -121,6 +121,37 @@ static void _divide(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 	STORE_64LE(remainder, DS9_REG_DIVREM_RESULT_0, ds->memory.io9);
 }
 
+	static void _sqrt(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+	UNUSED(timing);
+	UNUSED(cyclesLate);
+	struct DS* ds = context;
+	ds->memory.io9[DS9_REG_SQRTCNT >> 1] &= ~0x8000;
+	uint64_t param;
+	LOAD_64LE(param, DS9_REG_SQRT_PARAM_0, ds->memory.io9);
+	if (!(ds->memory.io9[DS9_REG_SQRTCNT >> 1] & 1)) {
+		param &= 0xFFFFFFFFULL;
+	}
+
+	uint64_t result = 0;
+	uint64_t bit = 0x4000000000000000ULL; // The second-to-top bit is set: 1 << 30 for 32 bits
+
+	// "bit" starts at the highest power of four <= the argument.
+	while (bit > param) {
+		bit >>= 2;
+	}
+
+	while (bit != 0) {
+		if (param >= param + bit) {
+			param -= param + bit;
+			param = (result >> 1) + bit;
+		} else {
+			param >>= 1;
+		}
+		bit >>= 2;
+	}
+	STORE_32LE(result, DS9_REG_SQRT_RESULT_LO, ds->memory.io9);
+}
+
 void DSCreate(struct DS* ds) {
 	ds->d.id = DS_COMPONENT_MAGIC;
 	ds->d.init = DSInit;
@@ -179,6 +210,11 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 	ds->divEvent.callback = _divide;
 	ds->divEvent.context = ds;
 	ds->divEvent.priority = 0x50;
+
+	ds->sqrtEvent.name = "DS Hardware Sqrt";
+	ds->sqrtEvent.callback = _sqrt;
+	ds->sqrtEvent.context = ds;
+	ds->sqrtEvent.priority = 0x51;
 
 	mTimingInit(&ds->ds7.timing, &ds->ds7.cpu->cycles, &ds->ds7.cpu->nextEvent);
 	mTimingInit(&ds->ds9.timing, &ds->ds9.cpu->cycles, &ds->ds9.cpu->nextEvent);

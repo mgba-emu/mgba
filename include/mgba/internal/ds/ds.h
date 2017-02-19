@@ -103,6 +103,7 @@ struct DS {
 	struct mCoreCallbacks* coreCallbacks;
 
 	struct mTimingEvent divEvent;
+	struct mTimingEvent sqrtEvent;
 };
 
 struct DSCartridge {

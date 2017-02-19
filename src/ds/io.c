@@ -34,6 +34,12 @@ static uint16_t _scheduleDiv(struct DS* ds, uint16_t control) {
 	return control | 0x8000;
 }
 
+static uint16_t _scheduleSqrt(struct DS* ds, uint16_t control) {
+	mTimingDeschedule(&ds->ds9.timing, &ds->sqrtEvent);
+	mTimingSchedule(&ds->ds9.timing, &ds->sqrtEvent, 26);
+	return control | 0x8000;
+}
+
 static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t value) {
 	switch (address) {
 	// Video
@@ -333,6 +339,15 @@ void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	case DS9_REG_DIV_DENOM_3:
 		ds->memory.io9[DS9_REG_DIVCNT >> 1] = _scheduleDiv(ds, ds->memory.io9[DS9_REG_DIVCNT >> 1]);
 		break;
+	case DS9_REG_SQRTCNT:
+		value = _scheduleSqrt(ds, value);
+		break;
+	case DS9_REG_SQRT_PARAM_0:
+	case DS9_REG_SQRT_PARAM_1:
+	case DS9_REG_SQRT_PARAM_2:
+	case DS9_REG_SQRT_PARAM_3:
+		ds->memory.io9[DS9_REG_SQRTCNT >> 1] = _scheduleSqrt(ds, ds->memory.io9[DS9_REG_SQRTCNT >> 1]);
+		break;
 
 	default:
 		{
@@ -450,6 +465,30 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_IE_HI:
 	case DS_REG_IF_LO:
 	case DS_REG_IF_HI:
+	case DS9_REG_DIVCNT:
+	case DS9_REG_DIV_NUMER_0:
+	case DS9_REG_DIV_NUMER_1:
+	case DS9_REG_DIV_NUMER_2:
+	case DS9_REG_DIV_NUMER_3:
+	case DS9_REG_DIV_DENOM_0:
+	case DS9_REG_DIV_DENOM_1:
+	case DS9_REG_DIV_DENOM_2:
+	case DS9_REG_DIV_DENOM_3:
+	case DS9_REG_DIV_RESULT_0:
+	case DS9_REG_DIV_RESULT_1:
+	case DS9_REG_DIV_RESULT_2:
+	case DS9_REG_DIV_RESULT_3:
+	case DS9_REG_DIVREM_RESULT_0:
+	case DS9_REG_DIVREM_RESULT_1:
+	case DS9_REG_DIVREM_RESULT_2:
+	case DS9_REG_DIVREM_RESULT_3:
+	case DS9_REG_SQRTCNT:
+	case DS9_REG_SQRT_PARAM_0:
+	case DS9_REG_SQRT_PARAM_1:
+	case DS9_REG_SQRT_PARAM_2:
+	case DS9_REG_SQRT_PARAM_3:
+	case DS9_REG_SQRT_RESULT_LO:
+	case DS9_REG_SQRT_RESULT_HI:
 		// Handled transparently by the registers
 		break;
 	default:
