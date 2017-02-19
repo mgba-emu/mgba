@@ -262,7 +262,10 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 			cpu->gprs[rn] = address; \
 		}
 
-#define ADDR_MODE_4_WRITEBACK_LDMv5 ADDR_MODE_4_WRITEBACK_LDM
+#define ADDR_MODE_4_WRITEBACK_LDMv5 \
+		if (!((1 << rn) & rs) || !(((1 << rn) - 1) & rs)) { \
+			cpu->gprs[rn] = address; \
+		}
 
 #define ADDR_MODE_4_WRITEBACK_STM cpu->gprs[rn] = address;
 
