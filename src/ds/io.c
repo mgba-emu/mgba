@@ -8,6 +8,7 @@
 #include <mgba/core/interface.h>
 #include <mgba/internal/ds/ds.h>
 #include <mgba/internal/ds/ipc.h>
+#include <mgba/internal/ds/spi.h>
 
 mLOG_DEFINE_CATEGORY(DS_IO, "DS I/O");
 
@@ -168,6 +169,13 @@ void DS7IOInit(struct DS* ds) {
 
 void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	switch (address) {
+	case DS7_REG_SPICNT:
+		value &= 0xCF83;
+		value = DSSPIWriteControl(ds, value);
+		break;
+	case DS7_REG_SPIDATA:
+		DSSPIWrite(ds, value);
+		return;
 	default:
 		{
 			uint32_t v2 = DSIOWrite(&ds->ds7, address, value);
@@ -280,6 +288,8 @@ uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_TM1CNT_HI:
 	case DS_REG_TM2CNT_HI:
 	case DS_REG_TM3CNT_HI:
+	case DS7_REG_SPICNT:
+	case DS7_REG_SPIDATA:
 	case DS_REG_IPCSYNC:
 	case DS_REG_IPCFIFOCNT:
 	case DS_REG_IME:
