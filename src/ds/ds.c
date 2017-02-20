@@ -445,6 +445,38 @@ bool DSIsROM(struct VFile* vf) {
 	return memcmp(signature, DS_ROM_MAGIC, sizeof(signature)) == 0 || memcmp(signature, DS_ROM_MAGIC_2, sizeof(signature)) == 0;
 }
 
+bool DSIsBIOS7(struct VFile* vf) {
+	size_t size = vf->size(vf);
+	void* data = NULL;
+	uint32_t crc;
+	if (size == DS7_SIZE_BIOS) {
+		data = vf->map(vf, size, MAP_READ);
+	}
+	if (!data) {
+		return false;
+	}
+	crc = doCrc32(data, size);
+	vf->unmap(vf, data, size);
+	return crc == DS7_BIOS_CHECKSUM;
+}
+
+bool DSIsBIOS9(struct VFile* vf) {
+	size_t size = vf->size(vf);
+	void* data = NULL;
+	uint32_t crc;
+	if (size == DS9_SIZE_BIOS) {
+		data = vf->map(vf, 0x1000, MAP_READ);
+	} else if (size == 0x1000) {
+		data = vf->map(vf, 0x1000, MAP_READ);
+	}
+	if (!data) {
+		return false;
+	}
+	crc = doCrc32(data, 0x1000);
+	vf->unmap(vf, data, 0x1000);
+	return crc == DS9_BIOS_CHECKSUM;
+}
+
 bool DSLoadBIOS(struct DS* ds, struct VFile* vf) {
 	size_t size = vf->size(vf);
 	void* data = NULL;

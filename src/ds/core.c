@@ -100,6 +100,10 @@ static void _DSCoreSetSync(struct mCore* core, struct mCoreSync* sync) {
 static void _DSCoreLoadConfig(struct mCore* core, const struct mCoreConfig* config) {
 	struct DS* ds = core->board;
 	struct VFile* bios = NULL;
+
+	mCoreConfigCopyValue(&core->config, config, "ds.bios7");
+	mCoreConfigCopyValue(&core->config, config, "ds.bios9");
+
 	if (core->opts.useBios && core->opts.bios) {
 		bios = VFileOpen(core->opts.bios, O_RDONLY);
 	}
@@ -170,6 +174,9 @@ static void _DSCoreUnloadROM(struct mCore* core) {
 	return DSUnloadROM(core->board);
 }
 
+static void _DSCoreChecksum(const struct mCore* core, void* data, enum mCoreChecksumType type) {
+}
+
 static void _DSCoreReset(struct mCore* core) {
 	struct DSCore* dscore = (struct DSCore*) core;
 	struct DS* ds = (struct DS*) core->board;
@@ -180,19 +187,46 @@ static void _DSCoreReset(struct mCore* core) {
 	}
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	struct VFile* bios7 = 0;
-	struct VFile* bios9 = 0;
+	struct VFile* bios7 = NULL;
+	struct VFile* bios9 = NULL;
 	if (core->opts.useBios) {
-		if (!core->opts.bios) {
+		bool found7 = false;
+		bool found9 = false;
+
+		if (!found7) {
+			const char* configPath = mCoreConfigGetValue(&core->config, "ds.bios7");
+			bios7 = VFileOpen(configPath, O_RDONLY);
+			if (bios7 && DSIsBIOS7(bios7)) {
+				found7 = true;
+			} else if (bios7) {
+				bios7->close(bios7);
+				bios7 = NULL;
+			}
+		}
+
+		if (!found9) {
+			const char* configPath = mCoreConfigGetValue(&core->config, "ds.bios9");
+			bios9 = VFileOpen(configPath, O_RDONLY);
+			if (bios9 && DSIsBIOS9(bios9)) {
+				found9 = true;
+			} else if (bios9) {
+				bios9->close(bios9);
+				bios9 = NULL;
+			}
+		}
+
+		if (!found7) {
 			char path[PATH_MAX];
 			mCoreConfigDirectory(path, PATH_MAX);
 			strncat(path, PATH_SEP "ds7_bios.bin", PATH_MAX - strlen(path));
 			bios7 = VFileOpen(path, O_RDONLY);
+		}
+
+		if (!found9) {
+			char path[PATH_MAX];
 			mCoreConfigDirectory(path, PATH_MAX);
 			strncat(path, PATH_SEP "ds9_bios.bin", PATH_MAX - strlen(path));
 			bios9 = VFileOpen(path, O_RDONLY);
-		} else {
-			bios7 = VFileOpen(core->opts.bios, O_RDONLY);
 		}
 	}
 	if (bios7) {
@@ -325,15 +359,21 @@ static void _DSCoreBusWrite32(struct mCore* core, uint32_t address, uint32_t val
 }
 
 static uint32_t _DSCoreRawRead8(struct mCore* core, uint32_t address, int segment) {
-	return 0;
+	// TODO: Raw
+	struct ARMCore* cpu = core->cpu;
+	return cpu->memory.load8(cpu, address, 0);
 }
 
 static uint32_t _DSCoreRawRead16(struct mCore* core, uint32_t address, int segment) {
-	return 0;
+	// TODO: Raw
+	struct ARMCore* cpu = core->cpu;
+	return cpu->memory.load16(cpu, address, 0);
 }
 
 static uint32_t _DSCoreRawRead32(struct mCore* core, uint32_t address, int segment) {
-	return 0;
+	// TODO: Raw
+	struct ARMCore* cpu = core->cpu;
+	return cpu->memory.load32(cpu, address, 0);
 }
 
 static void _DSCoreRawWrite8(struct mCore* core, uint32_t address, int segment, uint8_t value) {
@@ -423,6 +463,7 @@ struct mCore* DSCoreCreate(void) {
 	core->loadSave = _DSCoreLoadSave;
 	core->loadPatch = _DSCoreLoadPatch;
 	core->unloadROM = _DSCoreUnloadROM;
+	core->checksum = _DSCoreChecksum;
 	core->reset = _DSCoreReset;
 	core->runFrame = _DSCoreRunFrame;
 	core->runLoop = _DSCoreRunLoop;

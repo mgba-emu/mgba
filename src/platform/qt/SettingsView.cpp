@@ -130,6 +130,12 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	connect(m_ui.gbaBiosBrowse, &QPushButton::clicked, [this]() {
 		selectBios(m_ui.gbaBios);
 	});
+	connect(m_ui.dsBios7Browse, &QPushButton::clicked, [this]() {
+		selectBios(m_ui.dsBios7);
+	});
+	connect(m_ui.dsBios9Browse, &QPushButton::clicked, [this]() {
+		selectBios(m_ui.dsBios9);
+	});
 	connect(m_ui.gbBiosBrowse, &QPushButton::clicked, [this]() {
 		selectBios(m_ui.gbBios);
 	});
@@ -181,6 +187,8 @@ void SettingsView::updateConfig() {
 	saveSetting("gba.bios", m_ui.gbaBios);
 	saveSetting("gb.bios", m_ui.gbBios);
 	saveSetting("gbc.bios", m_ui.gbcBios);
+	saveSetting("ds.bios7", m_ui.dsBios7);
+	saveSetting("ds.bios9", m_ui.dsBios9);
 	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
 	saveSetting("audioBuffers", m_ui.audioBufferSize);
@@ -259,6 +267,8 @@ void SettingsView::reloadConfig() {
 	loadSetting("gba.bios", m_ui.gbaBios);
 	loadSetting("gb.bios", m_ui.gbBios);
 	loadSetting("gbc.bios", m_ui.gbcBios);
+	loadSetting("ds.bios7", m_ui.dsBios7);
+	loadSetting("ds.bios9", m_ui.dsBios9);
 	loadSetting("useBios", m_ui.useBios);
 	loadSetting("skipBios", m_ui.skipBios);
 	loadSetting("audioBuffers", m_ui.audioBufferSize);

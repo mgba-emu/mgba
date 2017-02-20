@@ -157,6 +157,8 @@ bool DSLoadROM(struct DS* ds, struct VFile* vf);
 void DSUnloadROM(struct DS* ds);
 void DSApplyPatch(struct DS* ds, struct Patch* patch);
 
+bool DSIsBIOS7(struct VFile* vf);
+bool DSIsBIOS9(struct VFile* vf);
 bool DSLoadBIOS(struct DS* ds, struct VFile* vf);
 
 bool DSIsROM(struct VFile* vf);
