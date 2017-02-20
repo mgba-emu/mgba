@@ -21,11 +21,15 @@ int16_t DSIPCWriteFIFOCNT(struct DSCommon* dscore, int16_t value) {
 	value &= 0xC40C;
 	int16_t oldValue = dscore->memory.io[DS_REG_IPCFIFOCNT >> 1] & 0x4303;
 	int16_t newValue = value | oldValue;
+	// TODO: Does Enable set enabled on both ends?
 	if (DSIPCFIFOCNTIsError(value)) {
 		newValue = DSIPCFIFOCNTClearError(newValue);
 	}
 	if (DSIPCFIFOCNTIsSendClear(newValue)) {
 		CircleBufferClear(&dscore->ipc->fifo);
+		dscore->ipc->memory.io[DS_REG_IPCFIFOCNT >> 1] = DSIPCFIFOCNTFillRecvEmpty(dscore->ipc->memory.io[DS_REG_IPCFIFOCNT >> 1]);
+		newValue = DSIPCFIFOCNTFillSendEmpty(newValue);
+		newValue = DSIPCFIFOCNTClearSendClear(newValue);
 	}
 	return newValue;
 }
