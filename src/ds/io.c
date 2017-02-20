@@ -328,11 +328,16 @@ void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	case DS9_REG_VRAMCNT_A:
 	case DS9_REG_VRAMCNT_C:
 	case DS9_REG_VRAMCNT_E:
-	case DS9_REG_VRAMCNT_G:
 		DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A + 1, value & 0xFF);
-		// Fall through
-	case DS9_REG_VRAMCNT_I:
 		DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A, value >> 8);
+		break;
+	case DS9_REG_VRAMCNT_G:
+		DSVideoConfigureVRAM(&ds->memory, 6, value >> 8);
+		mLOG(DS_IO, STUB, "Stub DS9 I/O register write: %06X:%04X", address + 1, value);
+		break;
+	case DS9_REG_VRAMCNT_H:
+		DSVideoConfigureVRAM(&ds->memory, 7, value >> 8);
+		DSVideoConfigureVRAM(&ds->memory, 8, value & 0xFF);
 		break;
 
 	// Math
