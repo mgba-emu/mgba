@@ -484,6 +484,7 @@ void DSGetGameCode(struct DS* ds, char* out) {
 	}
 
 	struct DSCartridge* cart = ds->romVf->map(ds->romVf, sizeof(*cart), MAP_READ);
+	// TODO: TWL-?
 	memcpy(out, "NTR-", 4);
 	memcpy(&out[4], &cart->id, 4);
 	ds->romVf->unmap(ds->romVf, cart, sizeof(*cart));
@@ -496,7 +497,7 @@ void DSGetGameTitle(struct DS* ds, char* out) {
 	}
 
 	struct DSCartridge* cart = ds->romVf->map(ds->romVf, sizeof(*cart), MAP_READ);
-	memcpy(out, &cart->title, 4);
+	memcpy(out, &cart->title, 12);
 	ds->romVf->unmap(ds->romVf, cart, sizeof(*cart));
 }
 
