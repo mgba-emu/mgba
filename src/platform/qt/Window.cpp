@@ -340,6 +340,21 @@ QString Window::getFilters() const {
 	filters.append(tr("Game Boy Advance ROMs (%1)").arg(gbaFormats.join(QChar(' '))));
 #endif
 
+#ifdef M_CORE_DS
+	QStringList dsFormats{
+		"*.nds",
+#if defined(USE_LIBZIP) || defined(USE_ZLIB)
+		"*.zip",
+#endif
+#ifdef USE_LZMA
+		"*.7z",
+#endif
+		"*.rom",
+		"*.bin"};
+	formats.append(dsFormats);
+	filters.append(tr("DS ROMs (%1)").arg(gbaFormats.join(QChar(' '))));
+#endif
+
 #ifdef M_CORE_GB
 	QStringList gbFormats{
 		"*.gb",
