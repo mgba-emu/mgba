@@ -89,13 +89,10 @@ static void _divide(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 	bool max = false;
 	switch (ds->memory.io9[DS9_REG_DIVCNT >> 1] & 0x3) {
 	case 0:
-		denominator &= 0xFFFFFFFFLL;
+		numerator = (int64_t)(int32_t) numerator;
 	case 1:
 	case 3:
-		numerator &= 0xFFFFFFFFLL;
-		if (numerator == INT32_MIN) {
-			max = true;
-		}
+		denominator = (int64_t)(int32_t) denominator;
 		break;
 	}
 	if (numerator == INT64_MIN) {
