@@ -359,7 +359,7 @@ static void DSProcessEvents(struct DSCommon* dscore) {
 		int32_t cycles = cpu->cycles;
 
 		cpu->cycles = 0;
-		cpu->nextEvent = INT_MAX;
+		cpu->nextEvent = 0;
 
 #ifndef NDEBUG
 		if (cycles < 0) {
@@ -371,12 +371,12 @@ static void DSProcessEvents(struct DSCommon* dscore) {
 			nextEvent = mTimingTick(&dscore->timing, nextEvent);
 		} while (ds->cpuBlocked);
 
-		cpu->nextEvent = nextEvent;
-
 		if (ds->earlyExit) {
 			ds->earlyExit = false;
 			break;
 		}
+
+		cpu->nextEvent = nextEvent;
 		if (cpu->halted) {
 			cpu->cycles = nextEvent;
 		}
@@ -397,17 +397,23 @@ void DSRunLoop(struct DS* ds) {
 }
 
 void DS7Step(struct DS* ds) {
-	while (ds->activeCpu == ds->ds9.cpu) {
-		ARMv5RunLoop(ds->ds9.cpu);
-	}
-	ARMv4Run(ds->ds7.cpu);
+	int32_t pc = ds->ds7.cpu->gprs[ARM_PC];
+	do {
+		while (ds->activeCpu == ds->ds9.cpu) {
+			ARMv5RunLoop(ds->ds9.cpu);
+		}
+		ARMv4Run(ds->ds7.cpu);
+	} while (ds->ds7.cpu->halted || ds->ds7.cpu->gprs[ARM_PC] == pc);
 }
 
 void DS9Step(struct DS* ds) {
-	while (ds->activeCpu == ds->ds7.cpu) {
-		ARMv4RunLoop(ds->ds7.cpu);
-	}
-	ARMv5Run(ds->ds9.cpu);
+	int32_t pc = ds->ds9.cpu->gprs[ARM_PC];
+	do {
+		while (ds->activeCpu == ds->ds7.cpu) {
+			ARMv4RunLoop(ds->ds7.cpu);
+		}
+		ARMv5Run(ds->ds9.cpu);
+	} while (ds->ds9.cpu->halted || ds->ds9.cpu->gprs[ARM_PC] == pc);
 }
 
 void DSAttachDebugger(struct DS* ds, struct mDebugger* debugger) {

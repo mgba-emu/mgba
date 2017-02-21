@@ -303,10 +303,12 @@ void ARMHalt(struct ARMCore* cpu) {
 	} \
 	\
 	void ARM ## VERSION ## Run(struct ARMCore* cpu) { \
-		if (cpu->executionMode == MODE_THUMB) { \
-			Thumb ## VERSION ## Step(cpu); \
-		} else { \
-			ARM ## VERSION ## Step(cpu); \
+		if (cpu->cycles < cpu->nextEvent) { \
+			if (cpu->executionMode == MODE_THUMB) { \
+				Thumb ## VERSION ## Step(cpu); \
+			} else { \
+				ARM ## VERSION ## Step(cpu); \
+			} \
 		} \
 		if (cpu->cycles >= cpu->nextEvent) { \
 			cpu->irqh.processEvents(cpu); \
