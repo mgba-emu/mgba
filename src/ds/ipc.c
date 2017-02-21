@@ -8,11 +8,13 @@
 #include <mgba/internal/ds/ds.h>
 #include <mgba/internal/ds/io.h>
 
+mLOG_DEFINE_CATEGORY(DS_IPC, "DS IPC");
+
 void DSIPCWriteSYNC(struct ARMCore* remoteCpu, uint16_t* remoteIo, int16_t value) {
 	remoteIo[DS_REG_IPCSYNC >> 1] &= 0xFFF0;
 	remoteIo[DS_REG_IPCSYNC >> 1] |= (value >> 8) & 0x0F;
 	if (value & 0x2000 && remoteIo[DS_REG_IPCSYNC >> 1] & 0x4000) {
-		mLOG(DS_IO, STUB, "Unimplemented IPC IRQ");
+		mLOG(DS_IPC, STUB, "Unimplemented IRQ");
 		UNUSED(remoteCpu);
 	}
 }
@@ -38,6 +40,7 @@ void DSIPCWriteFIFO(struct DSCommon* dscore, int32_t value) {
 	if (!DSIPCFIFOCNTIsEnable(dscore->memory.io[DS_REG_IPCFIFOCNT >> 1])) {
 		return;
 	}
+	mLOG(DS_IPC, DEBUG, "Written from ARM%c: %08X", (dscore == &dscore->p->ds7) ? '7' : '9', value);
 	CircleBufferWrite32(&dscore->ipc->fifo, value);
 	size_t fullness = CircleBufferSize(&dscore->ipc->fifo);
 	if (fullness == 4) {
@@ -59,6 +62,7 @@ int32_t DSIPCReadFIFO(struct DSCommon* dscore) {
 	}
 	int32_t value = ((int32_t*) dscore->ipc->memory.io)[DS_REG_IPCFIFOSEND_LO >> 2]; // TODO: actual last value
 	CircleBufferRead32(&dscore->fifo, &value);
+	mLOG(DS_IPC, DEBUG, "Read from ARM%c: %08X", (dscore == &dscore->p->ds7) ? '7' : '9', value);
 	size_t fullness = CircleBufferSize(&dscore->fifo);
 	dscore->memory.io[DS_REG_IPCFIFOCNT >> 1] = DSIPCFIFOCNTClearRecvFull(dscore->memory.io[DS_REG_IPCFIFOCNT >> 1]);
 	dscore->ipc->memory.io[DS_REG_IPCFIFOCNT >> 1] = DSIPCFIFOCNTClearSendFull(dscore->ipc->memory.io[DS_REG_IPCFIFOCNT >> 1]);
