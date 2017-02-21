@@ -577,16 +577,26 @@ void DSBreakpoint(struct ARMCore* cpu, int immediate) {
 
 void DS7TestIRQ(struct ARMCore* cpu) {
 	struct DS* ds = (struct DS*) cpu->master;
-	if (0) {
-		ds->ds7.springIRQ = 1;
+	if (!ds->memory.io7[DS_REG_IME >> 1]) {
+		return;
+	}
+	uint32_t test = (ds->memory.io7[DS_REG_IE_LO >> 1] & ds->memory.io7[DS_REG_IF_LO >> 1]);
+	test |= (ds->memory.io7[DS_REG_IE_HI >> 1] & ds->memory.io7[DS_REG_IF_HI >> 1]) << 16;
+	if (test) {
+		ds->ds7.springIRQ = test;
 		cpu->nextEvent = cpu->cycles;
 	}
 }
 
 void DS9TestIRQ(struct ARMCore* cpu) {
 	struct DS* ds = (struct DS*) cpu->master;
-	if (0) {
-		ds->ds9.springIRQ = 1;
+	if (!ds->memory.io9[DS_REG_IME >> 1]) {
+		return;
+	}
+	uint32_t test = (ds->memory.io9[DS_REG_IE_LO >> 1] & ds->memory.io9[DS_REG_IF_LO >> 1]);
+	test |= (ds->memory.io9[DS_REG_IE_HI >> 1] & ds->memory.io9[DS_REG_IF_HI >> 1]) << 16;
+	if (test) {
+		ds->ds9.springIRQ = test;
 		cpu->nextEvent = cpu->cycles;
 	}
 }
