@@ -124,6 +124,45 @@ static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t va
 	return value | 0x10000;
 }
 
+uint32_t DSIOWrite32(struct DSCommon* dscore, uint32_t address, uint32_t value) {
+	switch (address) {
+	case DS_REG_DMA0SAD_LO:
+		value = DSDMAWriteSAD(dscore, 0, value);
+		break;
+	case DS_REG_DMA1SAD_LO:
+		value = DSDMAWriteSAD(dscore, 1, value);
+		break;
+	case DS_REG_DMA2SAD_LO:
+		value = DSDMAWriteSAD(dscore, 2, value);
+		break;
+	case DS_REG_DMA3SAD_LO:
+		value = DSDMAWriteSAD(dscore, 3, value);
+		break;
+
+	case DS_REG_DMA0DAD_LO:
+		value = DSDMAWriteDAD(dscore, 0, value);
+		break;
+	case DS_REG_DMA1DAD_LO:
+		value = DSDMAWriteDAD(dscore, 1, value);
+		break;
+	case DS_REG_DMA2DAD_LO:
+		value = DSDMAWriteDAD(dscore, 2, value);
+		break;
+	case DS_REG_DMA3DAD_LO:
+		value = DSDMAWriteDAD(dscore, 3, value);
+		break;
+
+	case DS_REG_IPCFIFOSEND_LO:
+		DSIPCWriteFIFO(dscore, value);
+		break;
+	case DS_REG_IE_LO:
+		DSWriteIE(dscore->cpu, dscore->memory.io, value);
+		break;
+	}
+
+	return value;
+}
+
 static uint16_t DSIOReadKeyInput(struct DS* ds) {
 	uint16_t input = 0x3FF;
 	if (ds->keyCallback) {
@@ -215,29 +254,16 @@ void DS7IOWrite8(struct DS* ds, uint32_t address, uint8_t value) {
 void DS7IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
 	switch (address) {
 	case DS_REG_DMA0SAD_LO:
-		value = DSDMAWriteSAD(&ds->ds7, 0, value);
-		break;
 	case DS_REG_DMA1SAD_LO:
-		value = DSDMAWriteSAD(&ds->ds7, 1, value);
-		break;
 	case DS_REG_DMA2SAD_LO:
-		value = DSDMAWriteSAD(&ds->ds7, 2, value);
-		break;
 	case DS_REG_DMA3SAD_LO:
-		value = DSDMAWriteSAD(&ds->ds7, 3, value);
-		break;
-
 	case DS_REG_DMA0DAD_LO:
-		value = DSDMAWriteDAD(&ds->ds7, 0, value);
-		break;
 	case DS_REG_DMA1DAD_LO:
-		value = DSDMAWriteDAD(&ds->ds7, 1, value);
-		break;
 	case DS_REG_DMA2DAD_LO:
-		value = DSDMAWriteDAD(&ds->ds7, 2, value);
-		break;
 	case DS_REG_DMA3DAD_LO:
-		value = DSDMAWriteDAD(&ds->ds7, 3, value);
+	case DS_REG_IPCFIFOSEND_LO:
+	case DS_REG_IE_LO:
+		value = DSIOWrite32(&ds->ds7, address, value);
 		break;
 
 	case DS_REG_DMA0CNT_LO:
@@ -251,13 +277,6 @@ void DS7IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
 		break;
 	case DS_REG_DMA3CNT_LO:
 		DS7DMAWriteCNT(&ds->ds7, 3, value);
-		break;
-
-	case DS_REG_IPCFIFOSEND_LO:
-		DSIPCWriteFIFO(&ds->ds7, value);
-		break;
-	case DS_REG_IE_LO:
-		DSWriteIE(ds->ds7.cpu, ds->ds7.memory.io, value);
 		break;
 	default:
 		DS7IOWrite(ds, address, value & 0xFFFF);
@@ -405,29 +424,16 @@ void DS9IOWrite8(struct DS* ds, uint32_t address, uint8_t value) {
 void DS9IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
 	switch (address) {
 	case DS_REG_DMA0SAD_LO:
-		value = DSDMAWriteSAD(&ds->ds9, 0, value);
-		break;
 	case DS_REG_DMA1SAD_LO:
-		value = DSDMAWriteSAD(&ds->ds9, 1, value);
-		break;
 	case DS_REG_DMA2SAD_LO:
-		value = DSDMAWriteSAD(&ds->ds9, 2, value);
-		break;
 	case DS_REG_DMA3SAD_LO:
-		value = DSDMAWriteSAD(&ds->ds9, 3, value);
-		break;
-
 	case DS_REG_DMA0DAD_LO:
-		value = DSDMAWriteDAD(&ds->ds9, 0, value);
-		break;
 	case DS_REG_DMA1DAD_LO:
-		value = DSDMAWriteDAD(&ds->ds9, 1, value);
-		break;
 	case DS_REG_DMA2DAD_LO:
-		value = DSDMAWriteDAD(&ds->ds9, 2, value);
-		break;
 	case DS_REG_DMA3DAD_LO:
-		value = DSDMAWriteDAD(&ds->ds9, 3, value);
+	case DS_REG_IPCFIFOSEND_LO:
+	case DS_REG_IE_LO:
+		value = DSIOWrite32(&ds->ds9, address, value);
 		break;
 
 	case DS_REG_DMA0CNT_LO:
@@ -443,12 +449,6 @@ void DS9IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
 		DS9DMAWriteCNT(&ds->ds9, 3, value);
 		break;
 
-	case DS_REG_IPCFIFOSEND_LO:
-		DSIPCWriteFIFO(&ds->ds9, value);
-		break;
-	case DS_REG_IE_LO:
-		DSWriteIE(ds->ds9.cpu, ds->ds9.memory.io, value);
-		break;
 	default:
 		DS9IOWrite(ds, address, value & 0xFFFF);
 		DS9IOWrite(ds, address | 2, value >> 16);
