@@ -324,6 +324,7 @@ void DS9IOInit(struct DS* ds) {
 	memset(ds->memory.io9, 0, sizeof(ds->memory.io9));
 	ds->memory.io9[DS_REG_IPCFIFOCNT >> 1] = 0x0101;
 	ds->memory.io9[DS_REG_POSTFLG >> 1] = 0x0001;
+	ds->memory.io9[DS9_REG_VRAMCNT_G >> 1] = 0x0300;
 }
 
 void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
@@ -332,16 +333,19 @@ void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	case DS9_REG_VRAMCNT_A:
 	case DS9_REG_VRAMCNT_C:
 	case DS9_REG_VRAMCNT_E:
-		DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A + 1, value & 0xFF);
-		DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A, value >> 8);
+		value &= 0x9F9F;
+		DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A, value & 0xFF);
+		DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A + 1, value >> 8);
 		break;
 	case DS9_REG_VRAMCNT_G:
-		DSVideoConfigureVRAM(&ds->memory, 6, value >> 8);
-		mLOG(DS_IO, STUB, "Stub DS9 I/O register write: %06X:%04X", address + 1, value);
+		value &= 0x9F03;
+		DSVideoConfigureVRAM(&ds->memory, 6, value & 0xFF);
+		DSConfigureWRAM(&ds->memory, value >> 8);
 		break;
 	case DS9_REG_VRAMCNT_H:
-		DSVideoConfigureVRAM(&ds->memory, 7, value >> 8);
-		DSVideoConfigureVRAM(&ds->memory, 8, value & 0xFF);
+		value &= 0x9F9F;
+		DSVideoConfigureVRAM(&ds->memory, 7, value & 0xFF);
+		DSVideoConfigureVRAM(&ds->memory, 8, value >> 8);
 		break;
 
 	// Math

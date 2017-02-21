@@ -78,6 +78,8 @@ struct DSMemory {
 	uint32_t* dtcm;
 	uint32_t* ram;
 	uint32_t* wram;
+	uint32_t* wramBase7;
+	uint32_t* wramBase9;
 	uint32_t* wram7;
 	uint32_t* rom;
 	uint16_t io7[DS7_REG_MAX >> 1];
@@ -145,5 +147,7 @@ uint32_t DS9LoadMultiple(struct ARMCore*, uint32_t baseAddress, int mask, enum L
                          int* cycleCounter);
 uint32_t DS9StoreMultiple(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction,
                           int* cycleCounter);
+
+void DSConfigureWRAM(struct DSMemory*, uint8_t config);
 
 #endif

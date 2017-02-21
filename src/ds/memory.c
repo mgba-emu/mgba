@@ -172,7 +172,9 @@ void DSMemoryReset(struct DS* ds) {
 
 	// TODO: Correct size
 	ds->memory.wramSize7 = 0x8000;
+	ds->memory.wramBase7 = ds->memory.wram;
 	ds->memory.wramSize9 = 0;
+	ds->memory.wramBase9 = NULL;
 
 	DSVideoConfigureVRAM(&ds->memory, 0, 0);
 	DSVideoConfigureVRAM(&ds->memory, 1, 0);
@@ -183,6 +185,7 @@ void DSMemoryReset(struct DS* ds) {
 	DSVideoConfigureVRAM(&ds->memory, 6, 0);
 	DSVideoConfigureVRAM(&ds->memory, 7, 0);
 	DSVideoConfigureVRAM(&ds->memory, 8, 0);
+	DSConfigureWRAM(&ds->memory, 3);
 
 	if (!ds->memory.wram || !ds->memory.wram7 || !ds->memory.ram || !ds->memory.itcm || !ds->memory.dtcm) {
 		DSMemoryDeinit(ds);
@@ -250,7 +253,7 @@ uint32_t DS7Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
 			LOAD_32(value, address & (DS7_SIZE_WORKING_RAM - 4), memory->wram7);
 		} else {
-			LOAD_32(value, address & (ds->memory.wramSize7 - 4), memory->wram);
+			LOAD_32(value, address & (ds->memory.wramSize7 - 4), memory->wramBase7);
 		}
 		break;
 	case DS_REGION_RAM:
@@ -291,7 +294,7 @@ uint32_t DS7Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
 			LOAD_16(value, address & (DS7_SIZE_WORKING_RAM - 2), memory->wram7);
 		} else {
-			LOAD_16(value, address & (ds->memory.wramSize7 - 2), memory->wram);
+			LOAD_16(value, address & (ds->memory.wramSize7 - 2), memory->wramBase7);
 		}
 		break;
 	case DS_REGION_RAM:
@@ -328,7 +331,7 @@ uint32_t DS7Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
 			value = ((uint8_t*) memory->wram7)[address & (DS7_SIZE_WORKING_RAM - 1)];
 		} else {
-			value = ((uint8_t*) memory->wram)[address & (ds->memory.wramSize7 - 1)];
+			value = ((uint8_t*) memory->wramBase7)[address & (ds->memory.wramSize7 - 1)];
 		}
 		break;
 	case DS_REGION_RAM:
@@ -359,7 +362,7 @@ void DS7Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 		if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
 			STORE_32(value, address & (DS7_SIZE_WORKING_RAM - 4), memory->wram7);
 		} else {
-			STORE_32(value, address & (ds->memory.wramSize7 - 4), memory->wram);
+			STORE_32(value, address & (ds->memory.wramSize7 - 4), memory->wramBase7);
 		}
 		break;
 	case DS_REGION_RAM:
@@ -393,7 +396,7 @@ void DS7Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
 			STORE_16(value, address & (DS7_SIZE_WORKING_RAM - 2), memory->wram7);
 		} else {
-			STORE_16(value, address & (ds->memory.wramSize7 - 2), memory->wram);
+			STORE_16(value, address & (ds->memory.wramSize7 - 2), memory->wramBase7);
 		}
 		break;
 	case DS_REGION_RAM:
@@ -427,7 +430,7 @@ void DS7Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
 			((uint8_t*) memory->wram7)[address & (DS7_SIZE_WORKING_RAM - 1)] = value;
 		} else {
-			((uint8_t*) memory->wram)[address & (ds->memory.wramSize7 - 1)] = value;
+			((uint8_t*) memory->wramBase7)[address & (ds->memory.wramSize7 - 1)] = value;
 		}
 		break;
 	case DS_REGION_RAM:
@@ -544,7 +547,7 @@ uint32_t DS7LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 		LDM_LOOP(if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
 			LOAD_32(value, address & (DS7_SIZE_WORKING_RAM - 1), memory->wram7);
 		} else {
-			LOAD_32(value, address & (ds->memory.wramSize7 - 1), memory->wram);
+			LOAD_32(value, address & (ds->memory.wramSize7 - 1), memory->wramBase7);
 		});
 		break;
 	case DS_REGION_RAM:
@@ -607,7 +610,7 @@ uint32_t DS7StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 		STM_LOOP(if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
 			STORE_32(value, address & (DS7_SIZE_WORKING_RAM - 1), memory->wram7);
 		} else {
-			STORE_32(value, address & (ds->memory.wramSize7 - 1), memory->wram);
+			STORE_32(value, address & (ds->memory.wramSize7 - 1), memory->wramBase7);
 		});
 		break;
 	case DS_REGION_RAM:
@@ -698,7 +701,14 @@ uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			LOAD_32(value, address & (DS9_SIZE_ITCM - 4), memory->itcm);
 			break;
 		}
-		mLOG(DS_MEM, STUB, "Bad DS9 Load32: %08X:%08X", address, value);
+		mLOG(DS_MEM, STUB, "Bad DS9 Load32: %08X", address);
+		break;
+	case DS_REGION_WORKING_RAM:
+		if (ds->memory.wramSize9) {
+			LOAD_32(value, address & (ds->memory.wramSize9 - 4), memory->wramBase9);
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Bad DS9 Load32: %08X", address);
 		break;
 	case DS_REGION_RAM:
 		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
@@ -762,7 +772,14 @@ uint32_t DS9Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			LOAD_16(value, address & (DS9_SIZE_ITCM - 2), memory->itcm);
 			break;
 		}
-		mLOG(DS_MEM, STUB, "Bad DS9 Load16: %08X:%08X", address, value);
+		mLOG(DS_MEM, STUB, "Bad DS9 Load16: %08X", address);
+		break;
+	case DS_REGION_WORKING_RAM:
+		if (ds->memory.wramSize9) {
+			LOAD_16(value, address & (ds->memory.wramSize9 - 2), memory->wramBase9);
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Bad DS9 Load16: %08X", address);
 		break;
 	case DS_REGION_RAM:
 		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
@@ -825,11 +842,18 @@ uint32_t DS9Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = ((uint8_t*) memory->itcm)[address & (DS9_SIZE_ITCM - 1)];
 			break;
 		}
-		mLOG(DS_MEM, STUB, "Bad DS9 Load8: %08X:%08X", address, value);
+		mLOG(DS_MEM, STUB, "Bad DS9 Load8: %08X", address);
+		break;
+	case DS_REGION_WORKING_RAM:
+		if (ds->memory.wramSize9) {
+			value = ((uint8_t*) memory->wramBase9)[address & (memory->wramSize9 - 1)];
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Bad DS9 Load8: %08X", address);
 		break;
 	case DS_REGION_RAM:
 		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
-			value = ((uint8_t*) memory->dtcm)[address & (DS9_SIZE_DTCM- 1)];
+			value = ((uint8_t*) memory->dtcm)[address & (DS9_SIZE_DTCM - 1)];
 			break;
 		}
 		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
@@ -868,6 +892,13 @@ void DS9Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 	case DS9_REGION_ITCM_MIRROR:
 		if (address < memory->itcmSize) {
 			STORE_32(value, address & (DS9_SIZE_ITCM - 4), memory->itcm);
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Bad DS9 Store32: %08X:%08X", address, value);
+		break;
+	case DS_REGION_WORKING_RAM:
+		if (ds->memory.wramSize9) {
+			STORE_32(value, address & (ds->memory.wramSize9 - 4), memory->wramBase9);
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Bad DS9 Store32: %08X:%08X", address, value);
@@ -925,6 +956,13 @@ void DS9Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		}
 		mLOG(DS_MEM, STUB, "Bad DS9 Store16: %08X:%04X", address, value);
 		break;
+	case DS_REGION_WORKING_RAM:
+		if (ds->memory.wramSize9) {
+			STORE_16(value, address & (ds->memory.wramSize9 - 2), memory->wramBase9);
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Bad DS9 Store16: %08X:%04X", address, value);
+		break;
 	case DS_REGION_RAM:
 		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			STORE_16(value, address & (DS9_SIZE_DTCM - 2), memory->dtcm);
@@ -974,6 +1012,13 @@ void DS9Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	case DS9_REGION_ITCM_MIRROR:
 		if (address < memory->itcmSize) {
 			((uint8_t*) memory->itcm)[address & (DS9_SIZE_ITCM - 1)] = value;
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Bad DS9 Store8: %08X:%02X", address, value);
+		break;
+	case DS_REGION_WORKING_RAM:
+		if (ds->memory.wramSize9) {
+			((uint8_t*) memory->wramBase9)[address & (ds->memory.wramSize9 - 1)] = value;
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Bad DS9 Store8: %08X:%02X", address, value);
@@ -1036,6 +1081,13 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 			LOAD_32(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
 		} else {
 			mLOG(DS_MEM, STUB, "Bad DS9 LDM: %08X:%08X", address, value);
+		});
+		break;
+	case DS_REGION_WORKING_RAM:
+		LDM_LOOP(if (ds->memory.wramSize9) {
+			LOAD_32(value, address & (ds->memory.wramSize9 - 4), memory->wramBase9);
+		} else {
+			mLOG(DS_MEM, STUB, "Bad DS9 STM: %08X", address);
 		});
 		break;
 	case DS_REGION_RAM:
@@ -1117,7 +1169,14 @@ uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 		STM_LOOP(if (address < memory->itcmSize) {
 			STORE_32(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
 		} else {
-			mLOG(DS_MEM, STUB, "Bad DS9 Store32: %08X:%08X", address, value);
+			mLOG(DS_MEM, STUB, "Bad DS9 STM: %08X:%08X", address, value);
+		});
+		break;
+	case DS_REGION_WORKING_RAM:
+		STM_LOOP(if (ds->memory.wramSize9) {
+			STORE_32(value, address & (ds->memory.wramSize9 - 4), memory->wramBase9);
+		} else {
+			mLOG(DS_MEM, STUB, "Bad DS9 STM: %08X", address);
 		});
 		break;
 	case DS_REGION_RAM:
@@ -1164,6 +1223,35 @@ uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 
 int32_t DSMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	return wait;
+}
+
+void DSConfigureWRAM(struct DSMemory* memory, uint8_t config) {
+	switch (config & 3) {
+	case 0:
+		memory->wramSize7 = 0;
+		memory->wramBase7 = NULL;
+		memory->wramSize9 = DS_SIZE_WORKING_RAM;
+		memory->wramBase9 = memory->wram;
+		break;
+	case 1:
+		memory->wramSize7 = DS_SIZE_WORKING_RAM >> 1;
+		memory->wramBase7 = memory->wram;
+		memory->wramSize9 = DS_SIZE_WORKING_RAM >> 1;
+		memory->wramBase9 = &memory->wram[DS_SIZE_WORKING_RAM >> 3];
+		break;
+	case 2:
+		memory->wramSize7 = DS_SIZE_WORKING_RAM >> 1;
+		memory->wramBase7 = &memory->wram[DS_SIZE_WORKING_RAM >> 3];
+		memory->wramSize9 = DS_SIZE_WORKING_RAM >> 1;
+		memory->wramBase9 = memory->wram;
+		break;
+	case 3:
+		memory->wramSize7 = DS_SIZE_WORKING_RAM;
+		memory->wramBase7 = memory->wram;
+		memory->wramSize9 = 0;
+		memory->wramBase9 = NULL;
+		break;
+	}
 }
 
 static unsigned _selectVRAM(struct DSMemory* memory, uint32_t offset) {
