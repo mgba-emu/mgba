@@ -166,6 +166,7 @@ static void DSIOUpdateTimer(struct DSCommon* dscore, uint32_t address) {
 void DS7IOInit(struct DS* ds) {
 	memset(ds->memory.io7, 0, sizeof(ds->memory.io7));
 	ds->memory.io7[DS_REG_IPCFIFOCNT >> 1] = 0x0101;
+	ds->memory.io7[DS_REG_POSTFLG >> 1] = 0x0001;
 }
 
 void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
@@ -322,6 +323,7 @@ uint32_t DS7IORead32(struct DS* ds, uint32_t address) {
 void DS9IOInit(struct DS* ds) {
 	memset(ds->memory.io9, 0, sizeof(ds->memory.io9));
 	ds->memory.io9[DS_REG_IPCFIFOCNT >> 1] = 0x0101;
+	ds->memory.io9[DS_REG_POSTFLG >> 1] = 0x0001;
 }
 
 void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {

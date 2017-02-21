@@ -97,6 +97,8 @@ enum DSIORegisters {
 	DS_REG_IE_HI = 0x212,
 	DS_REG_IF_LO = 0x214,
 	DS_REG_IF_HI = 0x216,
+
+	DS_REG_POSTFLG = 0x300,
 };
 
 enum DS7IORegisters {
@@ -114,7 +116,6 @@ enum DS7IORegisters {
 	// Memory control
 	DS7_REG_VRAMSTAT = 0x240,
 	DS7_REG_WRAMSTAT = 0x241,
-	DS7_REG_POSTFLG = 0x300,
 	DS7_REG_HALTCNT = 0x301,
 	DS7_REG_POWCNT2 = 0x304,
 	DS7_REG_BIOSPROT_LO = 0x308,
@@ -257,7 +258,6 @@ enum DS9IORegisters {
 
 	DS9_REG_MAX = 0x106E,
 
-	DS9_REG_POSTFLG = 0x300,
 	DS9_REG_POWCNT1 = 0x304,
 };
 
