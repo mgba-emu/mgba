@@ -8,6 +8,7 @@
 #include <mgba/core/interface.h>
 #include <mgba/internal/ds/ds.h>
 #include <mgba/internal/ds/ipc.h>
+#include <mgba/internal/ds/slot1.h>
 #include <mgba/internal/ds/spi.h>
 
 mLOG_DEFINE_CATEGORY(DS_IO, "DS I/O");
@@ -101,9 +102,38 @@ static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t va
 		break;
 
 	// Cart bus
-	case DS_REG_SLOT1CNT_LO:
-		mLOG(DS_IO, STUB, "ROM control not implemented");
-		value &= 0x7FFF;
+	case DS_REG_AUXSPICNT:
+		if (dscore->memory.slot1Access) {
+			value = DSSlot1Configure(dscore->p, value);
+			dscore->ipc->memory.io[address >> 1] = value;
+		} else {
+			mLOG(DS_IO, GAME_ERROR, "Invalid cart access");
+			return 0;
+		}
+		break;
+	case DS_REG_ROMCNT_HI:
+		if (dscore->memory.slot1Access) {
+			DSSlot1ROMCNT cnt = value << 16;
+			cnt |= dscore->memory.io[(address - 2) >> 1];
+			cnt = DSSlot1Control(dscore->p, cnt);
+			value = cnt >> 16;
+			dscore->ipc->memory.io[address >> 1] = value;
+		} else {
+			mLOG(DS_IO, GAME_ERROR, "Invalid cart access");
+			return 0;
+		}
+		break;
+	case DS_REG_ROMCNT_LO:
+	case DS_REG_ROMCMD_0:
+	case DS_REG_ROMCMD_2:
+	case DS_REG_ROMCMD_4:
+	case DS_REG_ROMCMD_6:
+		if (dscore->memory.slot1Access) {
+			dscore->ipc->memory.io[address >> 1] = value;
+		} else {
+			mLOG(DS_IO, GAME_ERROR, "Invalid cart access");
+			return 0;
+		}
 		break;
 
 	// Interrupts
@@ -313,6 +343,8 @@ uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 	case DS7_REG_SPIDATA:
 	case DS_REG_IPCSYNC:
 	case DS_REG_IPCFIFOCNT:
+	case DS_REG_ROMCNT_LO:
+	case DS_REG_ROMCNT_HI:
 	case DS_REG_IME:
 	case 0x20A:
 	case DS_REG_IE_LO:
@@ -334,6 +366,13 @@ uint32_t DS7IORead32(struct DS* ds, uint32_t address) {
 	switch (address) {
 	case DS_REG_IPCFIFORECV_LO:
 		return DSIPCReadFIFO(&ds->ds7);
+	case DS_REG_ROMDATA_0:
+		if (ds->ds7.memory.slot1Access) {
+			return DSSlot1Read(ds);
+		} else {
+			mLOG(DS_IO, GAME_ERROR, "Invalid cart access");
+			return 0;
+		}
 	default:
 		return DS7IORead(ds, address & 0x00FFFFFC) | (DS7IORead(ds, (address & 0x00FFFFFC) | 2) << 16);
 	}
@@ -343,7 +382,7 @@ void DS9IOInit(struct DS* ds) {
 	memset(ds->memory.io9, 0, sizeof(ds->memory.io9));
 	ds->memory.io9[DS_REG_IPCFIFOCNT >> 1] = 0x0101;
 	ds->memory.io9[DS_REG_POSTFLG >> 1] = 0x0001;
-	ds->memory.io9[DS9_REG_VRAMCNT_G >> 1] = 0x0300;
+	DS9IOWrite(ds, DS9_REG_VRAMCNT_G, 0x0300);
 }
 
 void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
@@ -365,6 +404,11 @@ void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 		value &= 0x9F9F;
 		DSVideoConfigureVRAM(&ds->memory, 7, value & 0xFF);
 		DSVideoConfigureVRAM(&ds->memory, 8, value >> 8);
+		break;
+
+	case DS9_REG_EXMEMCNT:
+		value &= 0xE8FF;
+		DSConfigureExternalMemory(ds, value);
 		break;
 
 	// Math
@@ -482,6 +526,8 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_TM3CNT_HI:
 	case DS_REG_IPCSYNC:
 	case DS_REG_IPCFIFOCNT:
+	case DS_REG_ROMCNT_LO:
+	case DS_REG_ROMCNT_HI:
 	case DS_REG_IME:
 	case 0x20A:
 	case DS_REG_IE_LO:
@@ -527,6 +573,13 @@ uint32_t DS9IORead32(struct DS* ds, uint32_t address) {
 	switch (address) {
 	case DS_REG_IPCFIFORECV_LO:
 		return DSIPCReadFIFO(&ds->ds9);
+	case DS_REG_ROMDATA_0:
+		if (ds->ds9.memory.slot1Access) {
+			return DSSlot1Read(ds);
+		} else {
+			mLOG(DS_IO, GAME_ERROR, "Invalid cart access");
+			return 0;
+		}
 	default:
 		return DS9IORead(ds, address & 0x00FFFFFC) | (DS9IORead(ds, (address & 0x00FFFFFC) | 2) << 16);
 	}

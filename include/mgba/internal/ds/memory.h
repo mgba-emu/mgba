@@ -15,6 +15,7 @@ CXX_GUARD_START
 #include <mgba/internal/arm/arm.h>
 #include <mgba/internal/ds/dma.h>
 #include <mgba/internal/ds/io.h>
+#include <mgba/internal/ds/slot1.h>
 
 enum DSMemoryRegion {
 	DS7_REGION_BIOS = 0x0,
@@ -84,6 +85,7 @@ struct DSMemory {
 	uint32_t* rom;
 	uint16_t io7[DS7_REG_MAX >> 1];
 	uint16_t io9[DS9_REG_MAX >> 1];
+	struct DSSlot1 slot1;
 
 	uint16_t vramMirror[9][0x40];
 	uint16_t vramMode[9][8];
@@ -96,6 +98,9 @@ struct DSMemory {
 	uint32_t dtcmBase;
 	uint32_t dtcmSize;
 	uint32_t itcmSize;
+
+	bool slot1Owner;
+	bool slot2Owner;
 };
 
 struct DSCoreMemory {
@@ -114,6 +119,8 @@ struct DSCoreMemory {
 	struct GBADMA dma[4];
 	struct mTimingEvent dmaEvent;
 	int activeDMA;
+	bool slot1Access;
+	bool slot2Access;
 };
 
 struct DS;
@@ -149,5 +156,6 @@ uint32_t DS9StoreMultiple(struct ARMCore*, uint32_t baseAddress, int mask, enum 
                           int* cycleCounter);
 
 void DSConfigureWRAM(struct DSMemory*, uint8_t config);
+void DSConfigureExternalMemory(struct DS*, uint16_t config);
 
 #endif

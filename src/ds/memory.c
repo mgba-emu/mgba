@@ -176,6 +176,11 @@ void DSMemoryReset(struct DS* ds) {
 	ds->memory.wramSize9 = 0;
 	ds->memory.wramBase9 = NULL;
 
+	ds->memory.slot1Owner = true;
+	ds->memory.slot2Owner = true;
+	ds->ds7.memory.slot1Access = true;
+	ds->ds9.memory.slot1Access = false;
+
 	DSVideoConfigureVRAM(&ds->memory, 0, 0);
 	DSVideoConfigureVRAM(&ds->memory, 1, 0);
 	DSVideoConfigureVRAM(&ds->memory, 2, 0);
@@ -1259,6 +1264,16 @@ void DSConfigureWRAM(struct DSMemory* memory, uint8_t config) {
 		memory->wramBase9 = NULL;
 		break;
 	}
+}
+
+void DSConfigureExternalMemory(struct DS* ds, uint16_t config) {
+	// TODO: GBA params
+	ds->memory.slot1Owner = config & 0x0800;
+	ds->memory.slot2Owner = config & 0x0080;
+	ds->memory.io7[DS7_REG_EXMEMSTAT >> 1] = config;
+
+	ds->ds7.memory.slot1Access = ds->memory.slot1Owner;
+	ds->ds9.memory.slot1Access = !ds->memory.slot1Owner;
 }
 
 static unsigned _selectVRAM(struct DSMemory* memory, uint32_t offset) {
