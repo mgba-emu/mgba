@@ -21,8 +21,10 @@
 #define MODE_2_MOSAIC(COORD) \
 		if (!mosaicWait) { \
 			COORD \
-			mapData = screenBase[(localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)]; \
-			pixelData = charBase[(mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)]; \
+			uint32_t screenBase = background->screenBase + (localX >> 11) + (((localY >> 7) & 0x7F0) << background->size); \
+			mapData = ((uint8_t*) renderer->d.vramBG[screenBase >> VRAM_BLOCK_OFFSET])[screenBase & VRAM_BLOCK_MASK]; \
+			uint32_t charBase = background->charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8); \
+			pixelData = ((uint8_t*) renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET])[charBase & VRAM_BLOCK_MASK]; \
 			\
 			mosaicWait = mosaicH; \
 		} else { \
@@ -31,8 +33,10 @@
 
 #define MODE_2_NO_MOSAIC(COORD) \
 	COORD \
-	mapData = screenBase[(localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)]; \
-	pixelData = charBase[(mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)];
+	uint32_t screenBase = background->screenBase + (localX >> 11) + (((localY >> 7) & 0x7F0) << background->size); \
+	mapData = ((uint8_t*) renderer->d.vramBG[screenBase >> VRAM_BLOCK_OFFSET])[screenBase & VRAM_BLOCK_MASK]; \
+	uint32_t charBase = background->charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8); \
+	pixelData = ((uint8_t*) renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET])[charBase & VRAM_BLOCK_MASK]; \
 
 #define MODE_2_LOOP(MOSAIC, COORD, BLEND, OBJWIN) \
 	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) { \
@@ -66,8 +70,6 @@ void GBAVideoSoftwareRendererDrawBackgroundMode2(struct GBAVideoSoftwareRenderer
 
 	BACKGROUND_BITMAP_INIT;
 
-	uint8_t* screenBase = &((uint8_t*) renderer->d.vram)[background->screenBase];
-	uint8_t* charBase = &((uint8_t*) renderer->d.vram)[background->charBase];
 	uint8_t mapData;
 	uint8_t pixelData = 0;
 
@@ -100,7 +102,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode3(struct GBAVideoSoftwareRenderer
 		BACKGROUND_BITMAP_ITERATE(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 
 		if (!mosaicWait) {
-			LOAD_16(color, ((localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS) << 1, renderer->d.vram);
+			LOAD_16(color, ((localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS) << 1, renderer->d.vramBG[0]);
 #ifndef COLOR_16_BIT
 			unsigned color32;
 			color32 = 0;
@@ -153,7 +155,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode4(struct GBAVideoSoftwareRenderer
 		BACKGROUND_BITMAP_ITERATE(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 
 		if (!mosaicWait) {
-			color = ((uint8_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
+			color = ((uint8_t*)renderer->d.vramBG[0])[offset + (localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
 
 			mosaicWait = mosaicH;
 		} else {
@@ -191,7 +193,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode5(struct GBAVideoSoftwareRenderer
 		BACKGROUND_BITMAP_ITERATE(160, 128);
 
 		if (!mosaicWait) {
-			LOAD_16(color, offset + (localX >> 8) * 2 + (localY >> 8) * 320, renderer->d.vram);
+			LOAD_16(color, offset + (localX >> 8) * 2 + (localY >> 8) * 320, renderer->d.vramBG[0]);
 #ifndef COLOR_16_BIT
 			unsigned color32 = 0;
 			color32 |= (color << 9) & 0xF80000;

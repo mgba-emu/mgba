@@ -95,7 +95,14 @@ void GBAVideoReset(struct GBAVideo* video) {
 		mappedMemoryFree(video->vram, SIZE_VRAM);
 	}
 	video->vram = anonymousMemoryMap(SIZE_VRAM);
-	video->renderer->vram = video->vram;
+	memset(video->renderer->vramBG, 0, sizeof(video->renderer->vramBG));
+	video->renderer->vramBG[0] = &video->vram[0x0000];
+	video->renderer->vramBG[1] = &video->vram[0x2000];
+	video->renderer->vramBG[2] = &video->vram[0x4000];
+	video->renderer->vramBG[3] = &video->vram[0x6000];
+	memset(video->renderer->vramOBJ, 0, sizeof(video->renderer->vramOBJ));
+	video->renderer->vramOBJ[0] = &video->vram[0x8000];
+	video->renderer->vramOBJ[1] = &video->vram[0xA000];
 
 	memset(video->palette, 0, sizeof(video->palette));
 	memset(video->oam.raw, 0, sizeof(video->oam.raw));
@@ -114,7 +121,14 @@ void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* 
 	renderer->cache = video->renderer->cache;
 	video->renderer = renderer;
 	renderer->palette = video->palette;
-	renderer->vram = video->vram;
+	memset(renderer->vramBG, 0, sizeof(renderer->vramBG));
+	renderer->vramBG[0] = &video->vram[0x0000];
+	renderer->vramBG[1] = &video->vram[0x2000];
+	renderer->vramBG[2] = &video->vram[0x4000];
+	renderer->vramBG[3] = &video->vram[0x6000];
+	memset(renderer->vramOBJ, 0, sizeof(renderer->vramOBJ));
+	renderer->vramOBJ[0] = &video->vram[0x8000];
+	renderer->vramOBJ[1] = &video->vram[0xA000];
 	renderer->oam = &video->oam;
 	video->renderer->init(video->renderer);
 }
@@ -295,7 +309,7 @@ static void GBAVideoDummyRendererPutPixels(struct GBAVideoRenderer* renderer, si
 }
 
 void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* state) {
-	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);
+	memcpy(state->vram, video->vram, SIZE_VRAM);
 	memcpy(state->oam, video->oam.raw, SIZE_OAM);
 	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
 	STORE_32(video->event.when - mTimingCurrentTime(&video->p->timing), 0, &state->video.nextEvent);
@@ -303,7 +317,7 @@ void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* 
 }
 
 void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state) {
-	memcpy(video->renderer->vram, state->vram, SIZE_VRAM);
+	memcpy(video->vram, state->vram, SIZE_VRAM);
 	uint16_t value;
 	int i;
 	for (i = 0; i < SIZE_OAM; i += 2) {

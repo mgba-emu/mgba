@@ -61,7 +61,7 @@ static void _RegisterRamReset(struct GBA* gba) {
 		memset(gba->video.palette, 0, SIZE_PALETTE_RAM);
 	}
 	if (registers & 0x08) {
-		memset(gba->video.renderer->vram, 0, SIZE_VRAM);
+		memset(gba->video.vram, 0, SIZE_VRAM);
 	}
 	if (registers & 0x10) {
 		memset(gba->video.oam.raw, 0, SIZE_OAM);

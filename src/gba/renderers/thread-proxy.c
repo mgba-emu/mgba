@@ -75,7 +75,14 @@ void GBAVideoThreadProxyRendererInit(struct GBAVideoRenderer* renderer) {
 
 	proxyRenderer->vramProxy = anonymousMemoryMap(SIZE_VRAM);
 	proxyRenderer->backend->palette = proxyRenderer->paletteProxy;
-	proxyRenderer->backend->vram = proxyRenderer->vramProxy;
+	memset(renderer->vramBG, 0, sizeof(renderer->vramBG));
+	proxyRenderer->backend->vramBG[0] = &proxyRenderer->vramProxy[0x0000];
+	proxyRenderer->backend->vramBG[1] = &proxyRenderer->vramProxy[0x2000];
+	proxyRenderer->backend->vramBG[2] = &proxyRenderer->vramProxy[0x4000];
+	proxyRenderer->backend->vramBG[3] = &proxyRenderer->vramProxy[0x6000];
+	memset(renderer->vramOBJ, 0, sizeof(renderer->vramOBJ));
+	proxyRenderer->backend->vramOBJ[0] = &proxyRenderer->vramProxy[0x8000];
+	proxyRenderer->backend->vramOBJ[1] = &proxyRenderer->vramProxy[0xA000];
 	proxyRenderer->backend->oam = &proxyRenderer->oamProxy;
 	proxyRenderer->backend->cache = NULL;
 
@@ -95,7 +102,7 @@ void GBAVideoThreadProxyRendererReset(struct GBAVideoRenderer* renderer) {
 	}
 	memcpy(&proxyRenderer->oamProxy.raw, &renderer->oam->raw, SIZE_OAM);
 	memcpy(proxyRenderer->paletteProxy, renderer->palette, SIZE_PALETTE_RAM);
-	memcpy(proxyRenderer->vramProxy, renderer->vram, SIZE_VRAM);
+	memcpy(&proxyRenderer->vramProxy, renderer->vramBG[0], SIZE_VRAM);
 	proxyRenderer->backend->reset(proxyRenderer->backend);
 	MutexUnlock(&proxyRenderer->mutex);
 }
@@ -242,7 +249,7 @@ void GBAVideoThreadProxyRendererDrawScanline(struct GBAVideoRenderer* renderer, 
 				0xDEADBEEF,
 			};
 			_writeData(proxyRenderer, &dirty, sizeof(dirty));
-			_writeData(proxyRenderer, &proxyRenderer->d.vram[j * 0x800], 0x1000);
+			_writeData(proxyRenderer, &proxyRenderer->d.vramBG[0][j * 0x800], 0x1000);
 		}
 	}
 	struct GBAVideoDirtyInfo dirty = {

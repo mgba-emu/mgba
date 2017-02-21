@@ -502,7 +502,7 @@ bool GBAHardwarePlayerCheckScreen(const struct GBAVideo* video) {
 	if (memcmp(video->palette, _logoPalette, sizeof(_logoPalette)) != 0) {
 		return false;
 	}
-	uint32_t hash = hash32(&video->renderer->vram[0x4000], 0x4000, 0);
+	uint32_t hash = hash32(&video->vram[0x4000], 0x4000, 0);
 	return hash == _logoHash;
 }
 

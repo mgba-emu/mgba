@@ -13,8 +13,9 @@
 	if (background->size & 1) { \
 		xBase += (localX & 0x100) << 5; \
 	} \
-	screenBase = yBase + (xBase >> 3); \
-	LOAD_16(mapData, screenBase << 1, vram); \
+	screenBase = background->screenBase + yBase + (xBase >> 2); \
+	uint16_t* screenBlock = renderer->d.vramBG[screenBase >> VRAM_BLOCK_OFFSET]; \
+	LOAD_16(mapData, screenBase & VRAM_BLOCK_MASK, screenBlock); \
 	localY = inY & 0x7; \
 	if (GBA_TEXT_MAP_VFLIP(mapData)) { \
 		localY = 7 - localY; \
@@ -24,22 +25,29 @@
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 	palette = &mainPalette[paletteData]; \
 	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
-	LOAD_32(tileData, charBase, vram); \
-	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-		tileData >>= 4 * mod8; \
-		for (; outX < end; ++outX, ++pixel) { \
-			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
-		} \
-	} else { \
-		for (outX = end - 1; outX >= renderer->start; --outX) { \
-			uint32_t* pixel = &renderer->row[outX]; \
-			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
+	vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
+	if (LIKELY(vram)) { \
+		LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
+		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+			tileData >>= 4 * mod8; \
+			for (; outX < end; ++outX, ++pixel) { \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
+			} \
+		} else { \
+			for (outX = end - 1; outX >= renderer->start; --outX) { \
+				uint32_t* pixel = &renderer->row[outX]; \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
+			} \
 		} \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_PREFIX_16(BLEND, OBJWIN) \
 	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
-	LOAD_32(tileData, charBase, vram); \
+	vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
+	if (UNLIKELY(!vram)) { \
+		return; \
+	} \
+	LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 	palette = &mainPalette[paletteData]; \
 	pixel = &renderer->row[outX]; \
@@ -84,12 +92,13 @@
 			BACKGROUND_TEXT_SELECT_CHARACTER; \
 		} \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
-		if (UNLIKELY(charBase >= 0x10000)) { \
+		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
+		if (UNLIKELY(!vram)) { \
 			carryData = 0; \
 		} else { \
 			paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 			palette = &mainPalette[paletteData]; \
-			LOAD_32(tileData, charBase, vram); \
+			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 			if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 				tileData >>= 4 * baseX; \
 			} else { \
@@ -105,15 +114,16 @@
 	for (; length; ++tileX) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
+		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 		tileData = carryData; \
 		for (; x < 8 && length; ++x, --length) { \
 			if (!mosaicWait) { \
-				if (UNLIKELY(charBase >= 0x10000)) { \
+				if (UNLIKELY(!vram)) { \
 					carryData = 0; \
 				} else { \
 					paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 					palette = &mainPalette[paletteData]; \
-					LOAD_32(tileData, charBase, vram); \
+					LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 					if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 						tileData >>= x * 4; \
 					} else { \
@@ -140,11 +150,12 @@
 		paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 		palette = &mainPalette[paletteData]; \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
-		if (UNLIKELY(charBase >= 0x10000)) { \
+		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
+		if (UNLIKELY(!vram)) { \
 			pixel += 8; \
 			continue; \
 		} \
-		LOAD_32(tileData, charBase, vram); \
+		LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 		if (tileData) { \
 			if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
@@ -171,12 +182,13 @@
 
 #define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_256(BLEND, OBJWIN) \
 	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
+	vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 	int end2 = end - 4; \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 		int shift = inX & 0x3; \
-		if (LIKELY(charBase < 0x10000)) { \
+		if (LIKELY(vram)) { \
 			if (end2 > outX) { \
-				LOAD_32(tileData, charBase, vram); \
+				LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 				tileData >>= 8 * shift; \
 				shift = 0; \
 				for (; outX < end2; ++outX, ++pixel) { \
@@ -185,8 +197,8 @@
 			} \
 		} \
 		\
-		if (LIKELY(charBase < 0x10000)) { \
-			LOAD_32(tileData, charBase + 4, vram); \
+		if (LIKELY(vram)) { \
+			LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 			tileData >>= 8 * shift; \
 			for (; outX < end; ++outX, ++pixel) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
@@ -196,9 +208,9 @@
 		int start = outX; \
 		outX = end - 1; \
 		pixel = &renderer->row[outX]; \
-		if (LIKELY(charBase < 0x10000)) { \
+		if (LIKELY(vram)) { \
 			if (end2 > start) { \
-				LOAD_32(tileData, charBase, vram); \
+				LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 				for (; outX >= end2; --outX, --pixel) { \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 				} \
@@ -206,7 +218,7 @@
 			} \
 		} \
 		\
-		if (LIKELY(charBase < 0x10000)) { \
+		if (LIKELY(vram)) { \
 			LOAD_32(tileData, charBase, vram); \
 			for (; outX >= renderer->start; --outX, --pixel) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
@@ -218,21 +230,22 @@
 
 #define DRAW_BACKGROUND_MODE_0_TILE_PREFIX_256(BLEND, OBJWIN) \
 	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
-	if (UNLIKELY(charBase >= 0x10000)) { \
+	vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
+	if (UNLIKELY(!vram)) { \
 		return; \
 	} \
 	int end = mod8 - 4; \
 	pixel = &renderer->row[outX]; \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 		if (end > 0) { \
-			LOAD_32(tileData, charBase, vram); \
+			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 			for (; outX < renderer->end - end; ++outX, ++pixel) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 			charBase += 4; \
 		} \
 		\
-		LOAD_32(tileData, charBase, vram); \
+		LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 		for (; outX < renderer->end; ++outX, ++pixel) { \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 		} \
@@ -242,7 +255,7 @@
 		outX = renderer->end - 1; \
 		pixel = &renderer->row[outX]; \
 		if (end > 0) { \
-			LOAD_32(tileData, charBase, vram); \
+			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 			tileData >>= 8 * shift; \
 			for (; outX >= start + 4; --outX, --pixel) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
@@ -250,7 +263,7 @@
 			shift = 0; \
 		} \
 		\
-		LOAD_32(tileData, charBase + 4, vram); \
+		LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 		tileData >>= 8 * shift; \
 		for (; outX >= start; --outX, --pixel) { \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
@@ -266,12 +279,13 @@
 	for (; tileX < tileEnd; ++tileX) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
-		if (UNLIKELY(charBase >= 0x10000)) { \
+		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
+		if (UNLIKELY(!vram)) { \
 			pixel += 8; \
 			continue; \
 		} \
 		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-			LOAD_32(tileData, charBase, vram); \
+			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 			if (tileData) { \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 1); \
@@ -279,7 +293,7 @@
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
 			} \
 			pixel += 4; \
-			LOAD_32(tileData, charBase + 4, vram); \
+			LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 			if (tileData) { \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 1); \
@@ -288,7 +302,7 @@
 			} \
 			pixel += 4; \
 		} else { \
-			LOAD_32(tileData, charBase + 4, vram); \
+			LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 			if (tileData) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 2); \
@@ -296,7 +310,7 @@
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 			pixel += 4; \
-			LOAD_32(tileData, charBase, vram); \
+			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 			if (tileData) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 2); \
@@ -311,26 +325,27 @@
 	for (; tileX < tileEnd; ++tileX) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
+		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 		tileData = carryData; \
 		for (x = 0; x < 8; ++x) { \
 			if (!mosaicWait) { \
-				if (UNLIKELY(charBase >= 0x10000)) { \
+				if (UNLIKELY(!vram)) { \
 					carryData = 0; \
 				} else { \
 					if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 						if (x >= 4) { \
-							LOAD_32(tileData, charBase + 4, vram); \
+							LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 							tileData >>= (x - 4) * 8; \
 						} else { \
-							LOAD_32(tileData, charBase, vram); \
+							LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 							tileData >>= x * 8; \
 						} \
 					} else { \
 						if (x >= 4) { \
-							LOAD_32(tileData, charBase, vram); \
+							LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 							tileData >>= (7 - x) * 8; \
 						} else { \
-							LOAD_32(tileData, charBase + 4, vram); \
+							LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 							tileData >>= (3 - x) * 8; \
 						} \
 					} \
@@ -425,7 +440,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 	} else if (background->size == 3) {
 		yBase += (inY & 0x100) << 1;
 	}
-	yBase = (background->screenBase >> 1) + (yBase << 2);
+	yBase <<= 3;
 
 	int localX;
 	int localY;
@@ -460,7 +475,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 	int paletteData;
 	int tileX = 0;
 	int tileEnd = ((length + inX) >> 3) - (inX >> 3);
-	uint16_t* vram = renderer->d.vram;
+	uint16_t* vram = NULL;
 
 	if (!objwinSlowPath) {
 		if (!(flags & FLAG_TARGET_2)) {

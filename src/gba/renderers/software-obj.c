@@ -68,7 +68,9 @@
 #define SPRITE_YBASE_16(localY) unsigned yBase = (localY & ~0x7) * stride + (localY & 0x7) * 4;
 
 #define SPRITE_DRAW_PIXEL_16_NORMAL(localX) \
-	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase); \
+	uint32_t spriteBase = ((yBase + charBase + xBase) & 0x7FFE); \
+	uint16_t* vramBase = renderer->d.vramOBJ[spriteBase >> VRAM_BLOCK_OFFSET]; \
+	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	current = renderer->spriteLayer[outX]; \
 	if ((current & FLAG_ORDER_MASK) > flags) { \
@@ -80,7 +82,9 @@
 	}
 
 #define SPRITE_DRAW_PIXEL_16_NORMAL_OBJWIN(localX) \
-	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase); \
+	uint32_t spriteBase = ((yBase + charBase + xBase) & 0x7FFE); \
+	uint16_t* vramBase = renderer->d.vramOBJ[spriteBase >> VRAM_BLOCK_OFFSET]; \
+	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	current = renderer->spriteLayer[outX]; \
 	if ((current & FLAG_ORDER_MASK) > flags) { \
@@ -93,7 +97,9 @@
 	}
 
 #define SPRITE_DRAW_PIXEL_16_OBJWIN(localX) \
-	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase); \
+	uint32_t spriteBase = ((yBase + charBase + xBase) & 0x7FFE); \
+	uint16_t* vramBase = renderer->d.vramOBJ[spriteBase >> VRAM_BLOCK_OFFSET]; \
+	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
@@ -103,7 +109,9 @@
 #define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * stride + (localY & 0x7) * 8;
 
 #define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
-	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase); \
+	uint32_t spriteBase = ((yBase + charBase + xBase) & 0x7FFE); \
+	uint16_t* vramBase = renderer->d.vramOBJ[spriteBase >> VRAM_BLOCK_OFFSET]; \
+	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	current = renderer->spriteLayer[outX]; \
 	if ((current & FLAG_ORDER_MASK) > flags) { \
@@ -115,7 +123,9 @@
 	}
 
 #define SPRITE_DRAW_PIXEL_256_NORMAL_OBJWIN(localX) \
-	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase);  \
+	uint32_t spriteBase = ((yBase + charBase + xBase) & 0x7FFE); \
+	uint16_t* vramBase = renderer->d.vramOBJ[spriteBase >> VRAM_BLOCK_OFFSET]; \
+	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	current = renderer->spriteLayer[outX]; \
 	if ((current & FLAG_ORDER_MASK) > flags) { \
@@ -128,7 +138,9 @@
 	}
 
 #define SPRITE_DRAW_PIXEL_256_OBJWIN(localX) \
-	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase); \
+	uint32_t spriteBase = ((yBase + charBase + xBase) & 0x7FFE); \
+	uint16_t* vramBase = renderer->d.vramOBJ[spriteBase >> VRAM_BLOCK_OFFSET]; \
+	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
@@ -147,8 +159,8 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	}
 	int32_t x = (uint32_t) GBAObjAttributesBGetX(sprite->b) << 23;
 	x >>= 23;
-	uint16_t* vramBase = &renderer->d.vram[BASE_TILE >> 1];
 	unsigned charBase = GBAObjAttributesCGetTile(sprite->c) * 0x20;
+	uint16_t* vramBase = NULL;
 	if (GBARegisterDISPCNTGetMode(renderer->dispcnt) >= 3 && GBAObjAttributesCGetTile(sprite->c) < 512) {
 		return 0;
 	}

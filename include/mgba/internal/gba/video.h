@@ -31,7 +31,10 @@ enum {
 	OBJ_HBLANK_FREE_LENGTH = 954,
 	OBJ_LENGTH = 1210,
 
-	BASE_TILE = 0x00010000
+	BASE_TILE = 0x00010000,
+
+	VRAM_BLOCK_OFFSET = 14,
+	VRAM_BLOCK_MASK = 0x3FFF
 };
 
 enum ObjMode {
@@ -162,7 +165,8 @@ struct GBAVideoRenderer {
 	void (*putPixels)(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels);
 
 	uint16_t* palette;
-	uint16_t* vram;
+	uint16_t* vramBG[32];
+	uint16_t* vramOBJ[32];
 	union GBAOAM* oam;
 	struct mTileCache* cache;
 
