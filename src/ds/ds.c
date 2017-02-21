@@ -278,6 +278,7 @@ void DS7Reset(struct ARMCore* cpu) {
 
 	struct DSCartridge* header = ds->romVf->map(ds->romVf, sizeof(*header), MAP_READ);
 	if (header) {
+		memcpy(&ds->memory.ram[0x3FFE00 >> 2], header, 0x170);
 		// TODO: Error check
 		ds->romVf->seek(ds->romVf, header->arm7Offset, SEEK_SET);
 		uint32_t base = header->arm7Base - DS_BASE_RAM;
