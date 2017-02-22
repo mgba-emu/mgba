@@ -351,6 +351,7 @@ uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_IE_HI:
 	case DS_REG_IF_LO:
 	case DS_REG_IF_HI:
+	case DS_REG_POSTFLG:
 		// Handled transparently by the registers
 		break;
 	default:
@@ -569,6 +570,7 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 	case DS9_REG_SQRT_PARAM_3:
 	case DS9_REG_SQRT_RESULT_LO:
 	case DS9_REG_SQRT_RESULT_HI:
+	case DS_REG_POSTFLG:
 		// Handled transparently by the registers
 		break;
 	default:
