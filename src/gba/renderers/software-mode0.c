@@ -366,7 +366,7 @@
 	if (background->mosaic && GBAMosaicControlGetBgH(renderer->mosaic)) { \
 		int mosaicH = GBAMosaicControlGetBgH(renderer->mosaic) + 1; \
 		int x; \
-		int mosaicWait = (mosaicH - outX + VIDEO_HORIZONTAL_PIXELS * mosaicH) % mosaicH; \
+		int mosaicWait = (mosaicH - outX + renderer->masterEnd * mosaicH) % mosaicH; \
 		int carryData = 0; \
 		paletteData = 0; /* Quiets compiler warning */ \
 		DRAW_BACKGROUND_MODE_0_MOSAIC_ ## BPP (BLEND, OBJWIN) \
@@ -401,7 +401,7 @@
 	/*! TODO: Make sure these lines can be removed */ \
 	/*!*/ pixel = &renderer->row[outX]; \
 	outX += (tileEnd - tileX) * 8; \
-	/*!*/ if (VIDEO_CHECKS &&  UNLIKELY(outX > VIDEO_HORIZONTAL_PIXELS)) { \
+	/*!*/ if (VIDEO_CHECKS &&  UNLIKELY(outX > renderer->masterEnd)) { \
 	/*!*/	mLOG(GBA_VIDEO, FATAL, "Out of bounds background draw would occur!"); \
 	/*!*/	return; \
 	/*!*/ } \
@@ -419,7 +419,7 @@
 	if (VIDEO_CHECKS && UNLIKELY(&renderer->row[outX] != pixel)) { \
 		mLOG(GBA_VIDEO, FATAL, "Background draw ended in the wrong place! Diff: %" PRIXPTR, &renderer->row[outX] - pixel); \
 	} \
-	if (VIDEO_CHECKS && UNLIKELY(outX > VIDEO_HORIZONTAL_PIXELS)) { \
+	if (VIDEO_CHECKS && UNLIKELY(outX > renderer->masterEnd)) { \
 		mLOG(GBA_VIDEO, FATAL, "Out of bounds background draw occurred!"); \
 		return; \
 	}

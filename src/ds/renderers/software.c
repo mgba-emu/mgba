@@ -41,10 +41,10 @@ static void DSVideoSoftwareRendererInit(struct DSVideoRenderer* renderer) {
 	struct DSVideoSoftwareRenderer* softwareRenderer = (struct DSVideoSoftwareRenderer*) renderer;
 	softwareRenderer->engA.d.palette = &renderer->palette[0];
 	softwareRenderer->engA.d.oam = &renderer->oam->oam[0];
-	// TODO: VRAM
+	softwareRenderer->engA.masterEnd = DS_VIDEO_HORIZONTAL_PIXELS;
 	softwareRenderer->engB.d.palette = &renderer->palette[512];
 	softwareRenderer->engB.d.oam = &renderer->oam->oam[1];
-	// TODO: VRAM
+	softwareRenderer->engB.masterEnd = DS_VIDEO_HORIZONTAL_PIXELS;
 
 	DSVideoSoftwareRendererReset(renderer);
 }
@@ -96,7 +96,6 @@ static uint16_t DSVideoSoftwareRendererWriteVideoRegister(struct DSVideoRenderer
 	case DS9_REG_A_DISPCNT_LO:
 		softwareRenderer->dispcntA &= 0xFFFF0000;
 		softwareRenderer->dispcntA |= value;
-		softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, address, value & 0xFF87);
 		GBAVideoSoftwareRendererUpdateDISPCNTA(softwareRenderer);
 		break;
 	case DS9_REG_A_DISPCNT_HI:

@@ -279,8 +279,8 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 				SPRITE_TRANSFORMED_LOOP(256, NORMAL);
 			}
 		}
-		if (x + totalWidth > VIDEO_HORIZONTAL_PIXELS) {
-			renderer->spriteCyclesRemaining -= (x + totalWidth - VIDEO_HORIZONTAL_PIXELS) * 2;
+		if (x + totalWidth > renderer->masterEnd) {
+			renderer->spriteCyclesRemaining -= (x + totalWidth - renderer->masterEnd) * 2;
 		}
 	} else {
 		int outX = x >= start ? x : start;
@@ -340,8 +340,8 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 				SPRITE_NORMAL_LOOP(256, NORMAL);
 			}
 		}
-		if (x + width > VIDEO_HORIZONTAL_PIXELS) {
-			renderer->spriteCyclesRemaining -= x + width - VIDEO_HORIZONTAL_PIXELS;
+		if (x + width > renderer->masterEnd) {
+			renderer->spriteCyclesRemaining -= x + width - renderer->masterEnd;
 		}
 	}
 	return 1;
