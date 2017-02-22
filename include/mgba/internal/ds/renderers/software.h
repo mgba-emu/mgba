@@ -19,6 +19,9 @@ struct DSVideoSoftwareRenderer {
 	struct GBAVideoSoftwareRenderer engA;
 	struct GBAVideoSoftwareRenderer engB;
 
+	DSRegisterDISPCNT dispcntA;
+	DSRegisterDISPCNT dispcntB;
+
 	color_t* outputBuffer;
 	int outputBufferStride;
 

@@ -35,12 +35,32 @@ union DSOAM {
 	uint16_t raw[1024];
 };
 
+DECL_BITFIELD(DSRegisterDISPCNT, uint32_t);
+DECL_BITS(DSRegisterDISPCNT, Mode, 0, 3);
+DECL_BIT(DSRegisterDISPCNT, 3D, 3);
+DECL_BIT(DSRegisterDISPCNT, TileObjMapping, 4);
+DECL_BIT(DSRegisterDISPCNT, BitmapObj2D, 5);
+DECL_BIT(DSRegisterDISPCNT, BitmapObjMapping, 6);
+DECL_BIT(DSRegisterDISPCNT, ForcedBlank, 7);
+DECL_BIT(DSRegisterDISPCNT, Bg0Enable, 8);
+DECL_BIT(DSRegisterDISPCNT, Bg1Enable, 9);
+DECL_BIT(DSRegisterDISPCNT, Bg2Enable, 10);
+DECL_BIT(DSRegisterDISPCNT, Bg3Enable, 11);
+DECL_BIT(DSRegisterDISPCNT, ObjEnable, 12);
+DECL_BIT(DSRegisterDISPCNT, Win0Enable, 13);
+DECL_BIT(DSRegisterDISPCNT, Win1Enable, 14);
+DECL_BIT(DSRegisterDISPCNT, ObjwinEnable, 15);
+DECL_BITS(DSRegisterDISPCNT, DispMode, 16, 2);
+DECL_BITS(DSRegisterDISPCNT, VRAMBlock, 18, 2);
+// TODO
+
 struct DSVideoRenderer {
 	void (*init)(struct DSVideoRenderer* renderer);
 	void (*reset)(struct DSVideoRenderer* renderer);
 	void (*deinit)(struct DSVideoRenderer* renderer);
 
 	uint16_t (*writeVideoRegister)(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
+	void (*writePalette)(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
 	void (*drawScanline)(struct DSVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct DSVideoRenderer* renderer);
 
@@ -49,6 +69,10 @@ struct DSVideoRenderer {
 
 	uint16_t* palette;
 	uint16_t* vram;
+	uint16_t* vramABG[32];
+	uint16_t* vramAOBJ[32];
+	uint16_t* vramBBG[32];
+	uint16_t* vramBOBJ[32];
 	union DSOAM* oam;
 };
 
@@ -64,6 +88,10 @@ struct DSVideo {
 
 	uint16_t palette[1024];
 	uint16_t* vram;
+	uint16_t* vramABG[32];
+	uint16_t* vramAOBJ[32];
+	uint16_t* vramBBG[32];
+	uint16_t* vramBOBJ[32];
 	union DSOAM oam;
 
 	int32_t frameCounter;
@@ -80,7 +108,7 @@ struct DSCommon;
 void DSVideoWriteDISPSTAT(struct DSCommon* dscore, uint16_t value);
 
 struct DSMemory;
-void DSVideoConfigureVRAM(struct DSMemory* memory, int index, uint8_t value);
+void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value);
 
 CXX_GUARD_START
 

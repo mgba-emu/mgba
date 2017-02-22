@@ -386,9 +386,9 @@ void DS9IOInit(struct DS* ds) {
 }
 
 void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
-	if (address <= DS9_REG_A_BLDY && (address > DS_REG_VCOUNT || address == DS9_REG_A_DISPCNT_LO || address == DS9_REG_B_DISPCNT_LO)) {
+	if (address <= DS9_REG_A_BLDY && (address > DS_REG_VCOUNT || address == DS9_REG_A_DISPCNT_LO || address == DS9_REG_A_DISPCNT_HI)) {
 		value = ds->video.renderer->writeVideoRegister(ds->video.renderer, address, value);
-	} else if (address >= DS9_REG_B_DISPCNT_LO && address <= DS9_REG_B_BLDY && (address == DS9_REG_B_DISPCNT_LO || address == DS9_REG_B_DISPCNT_LO)) {
+	} else if (address >= DS9_REG_B_DISPCNT_LO && address <= DS9_REG_B_BLDY) {
 		value = ds->video.renderer->writeVideoRegister(ds->video.renderer, address, value);
 	} else {
 		switch (address) {
@@ -397,18 +397,18 @@ void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 		case DS9_REG_VRAMCNT_C:
 		case DS9_REG_VRAMCNT_E:
 			value &= 0x9F9F;
-			DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A, value & 0xFF);
-			DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A + 1, value >> 8);
+			DSVideoConfigureVRAM(ds, address - DS9_REG_VRAMCNT_A, value & 0xFF);
+			DSVideoConfigureVRAM(ds, address - DS9_REG_VRAMCNT_A + 1, value >> 8);
 			break;
 		case DS9_REG_VRAMCNT_G:
 			value &= 0x9F03;
-			DSVideoConfigureVRAM(&ds->memory, 6, value & 0xFF);
+			DSVideoConfigureVRAM(ds, 6, value & 0xFF);
 			DSConfigureWRAM(&ds->memory, value >> 8);
 			break;
 		case DS9_REG_VRAMCNT_H:
 			value &= 0x9F9F;
-			DSVideoConfigureVRAM(&ds->memory, 7, value & 0xFF);
-			DSVideoConfigureVRAM(&ds->memory, 8, value >> 8);
+			DSVideoConfigureVRAM(ds, 7, value & 0xFF);
+			DSVideoConfigureVRAM(ds, 8, value >> 8);
 			break;
 
 		case DS9_REG_EXMEMCNT:

@@ -181,15 +181,15 @@ void DSMemoryReset(struct DS* ds) {
 	ds->ds7.memory.slot1Access = true;
 	ds->ds9.memory.slot1Access = false;
 
-	DSVideoConfigureVRAM(&ds->memory, 0, 0);
-	DSVideoConfigureVRAM(&ds->memory, 1, 0);
-	DSVideoConfigureVRAM(&ds->memory, 2, 0);
-	DSVideoConfigureVRAM(&ds->memory, 3, 0);
-	DSVideoConfigureVRAM(&ds->memory, 4, 0);
-	DSVideoConfigureVRAM(&ds->memory, 5, 0);
-	DSVideoConfigureVRAM(&ds->memory, 6, 0);
-	DSVideoConfigureVRAM(&ds->memory, 7, 0);
-	DSVideoConfigureVRAM(&ds->memory, 8, 0);
+	DSVideoConfigureVRAM(ds, 0, 0);
+	DSVideoConfigureVRAM(ds, 1, 0);
+	DSVideoConfigureVRAM(ds, 2, 0);
+	DSVideoConfigureVRAM(ds, 3, 0);
+	DSVideoConfigureVRAM(ds, 4, 0);
+	DSVideoConfigureVRAM(ds, 5, 0);
+	DSVideoConfigureVRAM(ds, 6, 0);
+	DSVideoConfigureVRAM(ds, 7, 0);
+	DSVideoConfigureVRAM(ds, 8, 0);
 	DSConfigureWRAM(&ds->memory, 3);
 
 	if (!ds->memory.wram || !ds->memory.wram7 || !ds->memory.ram || !ds->memory.itcm || !ds->memory.dtcm) {
@@ -940,6 +940,8 @@ void DS9Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 		break;
 	case DS9_REGION_PALETTE_RAM:
 		STORE_32(value, address & (DS9_SIZE_PALETTE_RAM - 4), ds->video.palette);
+		ds->video.renderer->writePalette(ds->video.renderer, (address & (DS9_SIZE_PALETTE_RAM - 4)) + 2, value >> 16);
+		ds->video.renderer->writePalette(ds->video.renderer, address & (DS9_SIZE_PALETTE_RAM - 4), value);
 		break;
 	case DS_REGION_VRAM: {
 		unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
@@ -1006,6 +1008,7 @@ void DS9Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		break;
 	case DS9_REGION_PALETTE_RAM:
 		STORE_16(value, address & (DS9_SIZE_PALETTE_RAM - 2), ds->video.palette);
+		ds->video.renderer->writePalette(ds->video.renderer, address & (DS9_SIZE_PALETTE_RAM - 2), value);
 		break;
 	case DS_REGION_VRAM: {
 		unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
@@ -1228,7 +1231,9 @@ uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 		});
 		break;
 	case DS9_REGION_PALETTE_RAM:
-		STM_LOOP(STORE_32(value, address & (DS9_SIZE_PALETTE_RAM - 1), ds->video.palette));
+		STM_LOOP(STORE_32(value, address & (DS9_SIZE_PALETTE_RAM - 1), ds->video.palette);
+		ds->video.renderer->writePalette(ds->video.renderer, (address & (DS9_SIZE_PALETTE_RAM - 4)) + 2, value >> 16);
+		ds->video.renderer->writePalette(ds->video.renderer, address & (DS9_SIZE_PALETTE_RAM - 4), value));
 		break;
 	case DS_REGION_VRAM:
 		STM_LOOP(unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);

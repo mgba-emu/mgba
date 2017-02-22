@@ -18,6 +18,7 @@ static void DSVideoDummyRendererInit(struct DSVideoRenderer* renderer);
 static void DSVideoDummyRendererReset(struct DSVideoRenderer* renderer);
 static void DSVideoDummyRendererDeinit(struct DSVideoRenderer* renderer);
 static uint16_t DSVideoDummyRendererWriteVideoRegister(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
+static void DSVideoDummyRendererWritePalette(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void DSVideoDummyRendererDrawScanline(struct DSVideoRenderer* renderer, int y);
 static void DSVideoDummyRendererFinishFrame(struct DSVideoRenderer* renderer);
 static void DSVideoDummyRendererGetPixels(struct DSVideoRenderer* renderer, size_t* stride, const void** pixels);
@@ -102,6 +103,7 @@ static struct DSVideoRenderer dummyRenderer = {
 	.reset = DSVideoDummyRendererReset,
 	.deinit = DSVideoDummyRendererDeinit,
 	.writeVideoRegister = DSVideoDummyRendererWriteVideoRegister,
+	.writePalette = DSVideoDummyRendererWritePalette,
 	.drawScanline = DSVideoDummyRendererDrawScanline,
 	.finishFrame = DSVideoDummyRendererFinishFrame,
 	.getPixels = DSVideoDummyRendererGetPixels,
@@ -160,6 +162,10 @@ void DSVideoAssociateRenderer(struct DSVideo* video, struct DSVideoRenderer* ren
 	video->renderer = renderer;
 	renderer->palette = video->palette;
 	renderer->vram = video->vram;
+	memcpy(renderer->vramABG, video->vramABG, sizeof(renderer->vramABG));
+	memcpy(renderer->vramAOBJ, video->vramAOBJ, sizeof(renderer->vramAOBJ));
+	memcpy(renderer->vramBBG, video->vramBBG, sizeof(renderer->vramBBG));
+	memcpy(renderer->vramBOBJ, video->vramBOBJ, sizeof(renderer->vramBOBJ));
 	renderer->oam = &video->oam;
 	video->renderer->init(video->renderer);
 }
@@ -292,7 +298,8 @@ void DSVideoWriteDISPSTAT(struct DSCommon* dscore, uint16_t value) {
 	// TODO: Does a VCounter IRQ trigger on write?
 }
 
-void DSVideoConfigureVRAM(struct DSMemory* memory, int index, uint8_t value) {
+void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value) {
+	struct DSMemory* memory = &ds->memory;
 	struct DSVRAMBankInfo info = _vramInfo[index][value & 0x7];
 	memset(&memory->vramMirror[index], 0, sizeof(memory->vramMirror[index]));
 	memset(&memory->vramMode[index], 0, sizeof(memory->vramMode[index]));
@@ -307,6 +314,32 @@ void DSVideoConfigureVRAM(struct DSMemory* memory, int index, uint8_t value) {
 		for (i = 0; i < size; ++i) {
 			memory->vramMirror[index][i + j] = 1 << index;
 		}
+	}
+	switch (info.mode) {
+	case 0:
+		for (i = 0; i < size; ++i) {
+			ds->video.vramABG[offset + i] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
+			ds->video.renderer->vramABG[offset + i] = ds->video.vramABG[offset + i];
+		}
+		break;
+	case 1:
+		for (i = 0; i < size; ++i) {
+			ds->video.vramBBG[offset + i] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
+			ds->video.renderer->vramBBG[offset + i] = ds->video.vramBBG[offset + i];
+		}
+		break;
+	case 2:
+		for (i = 0; i < size; ++i) {
+			ds->video.vramAOBJ[offset + i] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
+			ds->video.renderer->vramAOBJ[offset + i] = ds->video.vramAOBJ[offset + i];
+		}
+		break;
+	case 3:
+		for (i = 0; i < size; ++i) {
+			ds->video.vramBOBJ[offset + i] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
+			ds->video.renderer->vramBOBJ[offset + i] = ds->video.vramBOBJ[offset + i];
+		}
+		break;
 	}
 }
 
@@ -328,6 +361,12 @@ static void DSVideoDummyRendererDeinit(struct DSVideoRenderer* renderer) {
 static uint16_t DSVideoDummyRendererWriteVideoRegister(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	UNUSED(renderer);
 	return value;
+}
+
+static void DSVideoDummyRendererWritePalette(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value) {
+	UNUSED(value);
+	UNUSED(address);
+	UNUSED(value);
 }
 
 static void DSVideoDummyRendererDrawScanline(struct DSVideoRenderer* renderer, int y) {

@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
 		free(perfOpts.savestate);
 	}
 
-	_outputBuffer = malloc(256 * 256 * 4);
+	_outputBuffer = malloc(256 * 384 * 4);
 	if (perfOpts.csv) {
 		puts("game_code,frames,duration,renderer");
 	}
