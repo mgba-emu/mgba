@@ -13,6 +13,7 @@ static void DSVideoSoftwareRendererDeinit(struct DSVideoRenderer* renderer);
 static void DSVideoSoftwareRendererReset(struct DSVideoRenderer* renderer);
 static uint16_t DSVideoSoftwareRendererWriteVideoRegister(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void DSVideoSoftwareRendererWritePalette(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
+static void DSVideoSoftwareRendererWriteOAM(struct DSVideoRenderer* renderer, uint32_t oam);
 static void DSVideoSoftwareRendererDrawScanline(struct DSVideoRenderer* renderer, int y);
 static void DSVideoSoftwareRendererFinishFrame(struct DSVideoRenderer* renderer);
 static void DSVideoSoftwareRendererGetPixels(struct DSVideoRenderer* renderer, size_t* stride, const void** pixels);
@@ -24,6 +25,7 @@ void DSVideoSoftwareRendererCreate(struct DSVideoSoftwareRenderer* renderer) {
 	renderer->d.deinit = DSVideoSoftwareRendererDeinit;
 	renderer->d.writeVideoRegister = DSVideoSoftwareRendererWriteVideoRegister;
 	renderer->d.writePalette = DSVideoSoftwareRendererWritePalette;
+	renderer->d.writeOAM = DSVideoSoftwareRendererWriteOAM;
 	renderer->d.drawScanline = DSVideoSoftwareRendererDrawScanline;
 	renderer->d.finishFrame = DSVideoSoftwareRendererFinishFrame;
 	renderer->d.getPixels = DSVideoSoftwareRendererGetPixels;
@@ -95,6 +97,15 @@ static void DSVideoSoftwareRendererWritePalette(struct DSVideoRenderer* renderer
 		softwareRenderer->engA.d.writePalette(&softwareRenderer->engA.d, address & 0x1FF, value);
 	} else {
 		softwareRenderer->engB.d.writePalette(&softwareRenderer->engB.d, address & 0x1FF, value);		
+	}
+}
+
+static void DSVideoSoftwareRendererWriteOAM(struct DSVideoRenderer* renderer, uint32_t oam) {
+	struct DSVideoSoftwareRenderer* softwareRenderer = (struct DSVideoSoftwareRenderer*) renderer;
+	if (oam < 0x100) {
+		softwareRenderer->engA.d.writeOAM(&softwareRenderer->engA.d, oam & 0xFF);
+	} else {
+		softwareRenderer->engB.d.writeOAM(&softwareRenderer->engB.d, oam & 0xFF);
 	}
 }
 

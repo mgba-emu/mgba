@@ -19,6 +19,7 @@ static void DSVideoDummyRendererReset(struct DSVideoRenderer* renderer);
 static void DSVideoDummyRendererDeinit(struct DSVideoRenderer* renderer);
 static uint16_t DSVideoDummyRendererWriteVideoRegister(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void DSVideoDummyRendererWritePalette(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
+static void DSVideoDummyRendererWriteOAM(struct DSVideoRenderer* renderer, uint32_t oam);
 static void DSVideoDummyRendererDrawScanline(struct DSVideoRenderer* renderer, int y);
 static void DSVideoDummyRendererFinishFrame(struct DSVideoRenderer* renderer);
 static void DSVideoDummyRendererGetPixels(struct DSVideoRenderer* renderer, size_t* stride, const void** pixels);
@@ -104,6 +105,7 @@ static struct DSVideoRenderer dummyRenderer = {
 	.deinit = DSVideoDummyRendererDeinit,
 	.writeVideoRegister = DSVideoDummyRendererWriteVideoRegister,
 	.writePalette = DSVideoDummyRendererWritePalette,
+	.writeOAM = DSVideoDummyRendererWriteOAM,
 	.drawScanline = DSVideoDummyRendererDrawScanline,
 	.finishFrame = DSVideoDummyRendererFinishFrame,
 	.getPixels = DSVideoDummyRendererGetPixels,
@@ -364,9 +366,16 @@ static uint16_t DSVideoDummyRendererWriteVideoRegister(struct DSVideoRenderer* r
 }
 
 static void DSVideoDummyRendererWritePalette(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value) {
-	UNUSED(value);
+	UNUSED(renderer);
 	UNUSED(address);
 	UNUSED(value);
+	// Nothing to do
+}
+
+static void DSVideoDummyRendererWriteOAM(struct DSVideoRenderer* renderer, uint32_t oam) {
+	UNUSED(renderer);
+	UNUSED(oam);
+	// Nothing to do
 }
 
 static void DSVideoDummyRendererDrawScanline(struct DSVideoRenderer* renderer, int y) {

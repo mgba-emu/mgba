@@ -955,6 +955,8 @@ void DS9Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 	}
 	case DS9_REGION_OAM:
 		STORE_32(value, address & (DS9_SIZE_OAM - 4), ds->video.oam.raw);
+		ds->video.renderer->writeOAM(ds->video.renderer, (address & (DS9_SIZE_OAM - 4)) >> 1);
+		ds->video.renderer->writeOAM(ds->video.renderer, ((address & (DS9_SIZE_OAM - 4)) >> 1) + 1);
 		break;
 	default:
 		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
@@ -1022,6 +1024,7 @@ void DS9Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	}
 	case DS9_REGION_OAM:
 		STORE_16(value, address & (DS9_SIZE_OAM - 2), ds->video.oam.raw);
+		ds->video.renderer->writeOAM(ds->video.renderer, (address & (DS9_SIZE_OAM - 2)) >> 1);
 		break;
 	default:
 		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
@@ -1245,7 +1248,9 @@ uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 		});
 		break;
 	case DS9_REGION_OAM:
-		STM_LOOP(STORE_32(value, address & (DS9_SIZE_OAM - 1), ds->video.oam.raw));
+		STM_LOOP(STORE_32(value, address & (DS9_SIZE_OAM - 1), ds->video.oam.raw);
+		ds->video.renderer->writeOAM(ds->video.renderer, (address & (DS9_SIZE_OAM - 4)) >> 1);
+		ds->video.renderer->writeOAM(ds->video.renderer, ((address & (DS9_SIZE_OAM - 4)) >> 1) + 1));
 		break;
 	default:
 		STM_LOOP(if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {

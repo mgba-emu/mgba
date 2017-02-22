@@ -61,6 +61,7 @@ struct DSVideoRenderer {
 
 	uint16_t (*writeVideoRegister)(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
 	void (*writePalette)(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
+	void (*writeOAM)(struct DSVideoRenderer* renderer, uint32_t oam);
 	void (*drawScanline)(struct DSVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct DSVideoRenderer* renderer);
 
