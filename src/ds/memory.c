@@ -526,8 +526,6 @@ void DS7Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		} \
 	}
 
-
-
 uint32_t DS7LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
@@ -589,7 +587,6 @@ uint32_t DS7LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 
 	return address | addressMisalign;
 }
-
 
 uint32_t DS7StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) {
 	struct DS* ds = (struct DS*) cpu->master;
@@ -733,6 +730,9 @@ uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case DS_REGION_IO:
 		value = DS9IORead32(ds, address & 0x00FFFFFC);
 		break;
+	case DS9_REGION_PALETTE_RAM:
+		LOAD_32(value, address & (DS9_SIZE_PALETTE_RAM - 4), ds->video.palette);
+		break;
 	case DS_REGION_VRAM: {
 		unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
 		int i = 0;
@@ -745,6 +745,9 @@ uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		}
 		break;
 	}
+	case DS9_REGION_OAM:
+		LOAD_32(value, address & (DS9_SIZE_OAM - 4), ds->video.oam.raw);
+		break;
 	case DS9_REGION_BIOS:
 		// TODO: Fix undersized BIOS
 		// TODO: Fix masking
@@ -803,6 +806,9 @@ uint32_t DS9Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case DS_REGION_IO:
 		value = DS9IORead(ds, address & DS_OFFSET_MASK);
 		break;
+	case DS9_REGION_PALETTE_RAM:
+		LOAD_16(value, address & (DS9_SIZE_PALETTE_RAM - 2), ds->video.palette);
+		break;
 	case DS_REGION_VRAM: {
 		unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
 		int i = 0;
@@ -815,6 +821,9 @@ uint32_t DS9Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		}
 		break;
 	}
+	case DS9_REGION_OAM:
+		LOAD_16(value, address & (DS9_SIZE_OAM - 2), ds->video.oam.raw);
+		break;
 	case DS9_REGION_BIOS:
 		// TODO: Fix undersized BIOS
 		// TODO: Fix masking
@@ -929,6 +938,9 @@ void DS9Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 	case DS_REGION_IO:
 		DS9IOWrite32(ds, address & DS_OFFSET_MASK, value);
 		break;
+	case DS9_REGION_PALETTE_RAM:
+		STORE_32(value, address & (DS9_SIZE_PALETTE_RAM - 4), ds->video.palette);
+		break;
 	case DS_REGION_VRAM: {
 		unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
 		int i = 0;
@@ -939,6 +951,9 @@ void DS9Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 		}
 		break;
 	}
+	case DS9_REGION_OAM:
+		STORE_32(value, address & (DS9_SIZE_OAM - 4), ds->video.oam.raw);
+		break;
 	default:
 		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			STORE_32(value, address & (DS9_SIZE_DTCM - 4), memory->dtcm);
@@ -989,6 +1004,9 @@ void DS9Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	case DS_REGION_IO:
 		DS9IOWrite(ds, address & DS_OFFSET_MASK, value);
 		break;
+	case DS9_REGION_PALETTE_RAM:
+		STORE_16(value, address & (DS9_SIZE_PALETTE_RAM - 2), ds->video.palette);
+		break;
 	case DS_REGION_VRAM: {
 		unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
 		int i = 0;
@@ -999,6 +1017,9 @@ void DS9Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		}
 		break;
 	}
+	case DS9_REGION_OAM:
+		STORE_16(value, address & (DS9_SIZE_OAM - 2), ds->video.oam.raw);
+		break;
 	default:
 		if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			STORE_16(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
@@ -1114,6 +1135,9 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	case DS_REGION_IO:
 		LDM_LOOP(value = DS9IORead32(ds, address));
 		break;
+	case DS9_REGION_PALETTE_RAM:
+		LDM_LOOP(LOAD_32(value, address & (DS9_SIZE_PALETTE_RAM - 1), ds->video.palette));
+		break;
 	case DS_REGION_VRAM:
 		LDM_LOOP(unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
 		value = 0;
@@ -1125,6 +1149,9 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 				value |= newValue;
 			}
 		});
+		break;
+	case DS9_REGION_OAM:
+		LDM_LOOP(LOAD_32(value, address & (DS9_SIZE_OAM - 1), ds->video.oam.raw));
 		break;
 	default:
 		LDM_LOOP(if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
@@ -1200,6 +1227,9 @@ uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 			mLOG(DS_MEM, STUB, "Unimplemented DS9 STM: %08X", address);
 		});
 		break;
+	case DS9_REGION_PALETTE_RAM:
+		STM_LOOP(STORE_32(value, address & (DS9_SIZE_PALETTE_RAM - 1), ds->video.palette));
+		break;
 	case DS_REGION_VRAM:
 		STM_LOOP(unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
 		int i = 0;
@@ -1208,6 +1238,9 @@ uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 				STORE_32(value, address & _vramMask[i], memory->vramBank[i]);
 			}
 		});
+		break;
+	case DS9_REGION_OAM:
+		STM_LOOP(STORE_32(value, address & (DS9_SIZE_OAM - 1), ds->video.oam.raw));
 		break;
 	default:
 		STM_LOOP(if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {

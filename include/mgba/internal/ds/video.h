@@ -12,6 +12,7 @@ CXX_GUARD_START
 
 #include <mgba/core/log.h>
 #include <mgba/core/timing.h>
+#include <mgba/internal/gba/video.h>
 
 mLOG_DECLARE_CATEGORY(DS_VIDEO);
 
@@ -29,6 +30,11 @@ enum {
 	DS_VIDEO_TOTAL_LENGTH = DS_VIDEO_HORIZONTAL_LENGTH * DS_VIDEO_VERTICAL_TOTAL_PIXELS,
 };
 
+union DSOAM {
+	union GBAOAM oam[2];
+	uint16_t raw[1024];
+};
+
 struct DSVideoRenderer {
 	void (*init)(struct DSVideoRenderer* renderer);
 	void (*reset)(struct DSVideoRenderer* renderer);
@@ -41,7 +47,9 @@ struct DSVideoRenderer {
 	void (*getPixels)(struct DSVideoRenderer* renderer, size_t* stride, const void** pixels);
 	void (*putPixels)(struct DSVideoRenderer* renderer, size_t stride, const void* pixels);
 
+	uint16_t* palette;
 	uint16_t* vram;
+	union DSOAM* oam;
 };
 
 struct DS;
@@ -54,7 +62,9 @@ struct DSVideo {
 	// VCOUNT
 	int vcount;
 
+	uint16_t palette[1024];
 	uint16_t* vram;
+	union DSOAM oam;
 
 	int32_t frameCounter;
 	int frameskip;

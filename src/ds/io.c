@@ -386,71 +386,77 @@ void DS9IOInit(struct DS* ds) {
 }
 
 void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
-	switch (address) {
-	// VRAM control
-	case DS9_REG_VRAMCNT_A:
-	case DS9_REG_VRAMCNT_C:
-	case DS9_REG_VRAMCNT_E:
-		value &= 0x9F9F;
-		DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A, value & 0xFF);
-		DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A + 1, value >> 8);
-		break;
-	case DS9_REG_VRAMCNT_G:
-		value &= 0x9F03;
-		DSVideoConfigureVRAM(&ds->memory, 6, value & 0xFF);
-		DSConfigureWRAM(&ds->memory, value >> 8);
-		break;
-	case DS9_REG_VRAMCNT_H:
-		value &= 0x9F9F;
-		DSVideoConfigureVRAM(&ds->memory, 7, value & 0xFF);
-		DSVideoConfigureVRAM(&ds->memory, 8, value >> 8);
-		break;
+	if (address <= DS9_REG_A_BLDY && (address > DS_REG_VCOUNT || address == DS9_REG_A_DISPCNT_LO || address == DS9_REG_B_DISPCNT_LO)) {
+		value = ds->video.renderer->writeVideoRegister(ds->video.renderer, address, value);
+	} else if (address >= DS9_REG_B_DISPCNT_LO && address <= DS9_REG_B_BLDY && (address == DS9_REG_B_DISPCNT_LO || address == DS9_REG_B_DISPCNT_LO)) {
+		value = ds->video.renderer->writeVideoRegister(ds->video.renderer, address, value);
+	} else {
+		switch (address) {
+		// VRAM control
+		case DS9_REG_VRAMCNT_A:
+		case DS9_REG_VRAMCNT_C:
+		case DS9_REG_VRAMCNT_E:
+			value &= 0x9F9F;
+			DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A, value & 0xFF);
+			DSVideoConfigureVRAM(&ds->memory, address - DS9_REG_VRAMCNT_A + 1, value >> 8);
+			break;
+		case DS9_REG_VRAMCNT_G:
+			value &= 0x9F03;
+			DSVideoConfigureVRAM(&ds->memory, 6, value & 0xFF);
+			DSConfigureWRAM(&ds->memory, value >> 8);
+			break;
+		case DS9_REG_VRAMCNT_H:
+			value &= 0x9F9F;
+			DSVideoConfigureVRAM(&ds->memory, 7, value & 0xFF);
+			DSVideoConfigureVRAM(&ds->memory, 8, value >> 8);
+			break;
 
-	case DS9_REG_EXMEMCNT:
-		value &= 0xE8FF;
-		DSConfigureExternalMemory(ds, value);
-		break;
+		case DS9_REG_EXMEMCNT:
+			value &= 0xE8FF;
+			DSConfigureExternalMemory(ds, value);
+			break;
 
-	// Math
-	case DS9_REG_DIVCNT:
-		value = _scheduleDiv(ds, value);
-		break;
-	case DS9_REG_DIV_NUMER_0:
-	case DS9_REG_DIV_NUMER_1:
-	case DS9_REG_DIV_NUMER_2:
-	case DS9_REG_DIV_NUMER_3:
-	case DS9_REG_DIV_DENOM_0:
-	case DS9_REG_DIV_DENOM_1:
-	case DS9_REG_DIV_DENOM_2:
-	case DS9_REG_DIV_DENOM_3:
-		ds->memory.io9[DS9_REG_DIVCNT >> 1] = _scheduleDiv(ds, ds->memory.io9[DS9_REG_DIVCNT >> 1]);
-		break;
-	case DS9_REG_SQRTCNT:
-		value = _scheduleSqrt(ds, value);
-		break;
-	case DS9_REG_SQRT_PARAM_0:
-	case DS9_REG_SQRT_PARAM_1:
-	case DS9_REG_SQRT_PARAM_2:
-	case DS9_REG_SQRT_PARAM_3:
-		ds->memory.io9[DS9_REG_SQRTCNT >> 1] = _scheduleSqrt(ds, ds->memory.io9[DS9_REG_SQRTCNT >> 1]);
-		break;
+		// Math
+		case DS9_REG_DIVCNT:
+			value = _scheduleDiv(ds, value);
+			break;
+		case DS9_REG_DIV_NUMER_0:
+		case DS9_REG_DIV_NUMER_1:
+		case DS9_REG_DIV_NUMER_2:
+		case DS9_REG_DIV_NUMER_3:
+		case DS9_REG_DIV_DENOM_0:
+		case DS9_REG_DIV_DENOM_1:
+		case DS9_REG_DIV_DENOM_2:
+		case DS9_REG_DIV_DENOM_3:
+			ds->memory.io9[DS9_REG_DIVCNT >> 1] = _scheduleDiv(ds, ds->memory.io9[DS9_REG_DIVCNT >> 1]);
+			break;
+		case DS9_REG_SQRTCNT:
+			value = _scheduleSqrt(ds, value);
+			break;
+		case DS9_REG_SQRT_PARAM_0:
+		case DS9_REG_SQRT_PARAM_1:
+		case DS9_REG_SQRT_PARAM_2:
+		case DS9_REG_SQRT_PARAM_3:
+			ds->memory.io9[DS9_REG_SQRTCNT >> 1] = _scheduleSqrt(ds, ds->memory.io9[DS9_REG_SQRTCNT >> 1]);
+			break;
 
-	default:
-		{
-			uint32_t v2 = DSIOWrite(&ds->ds9, address, value);
-			if (v2 & 0x10000) {
-				value = v2;
-				break;
-			} else if (v2 & 0x20000) {
+		default:
+			{
+				uint32_t v2 = DSIOWrite(&ds->ds9, address, value);
+				if (v2 & 0x10000) {
+					value = v2;
+					break;
+				} else if (v2 & 0x20000) {
+					return;
+				}
+			}
+			mLOG(DS_IO, STUB, "Stub DS9 I/O register write: %06X:%04X", address, value);
+			if (address >= DS7_REG_MAX) {
+				mLOG(DS_IO, GAME_ERROR, "Write to unused DS9 I/O register: %06X:%04X", address, value);
 				return;
 			}
+			break;
 		}
-		mLOG(DS_IO, STUB, "Stub DS9 I/O register write: %06X:%04X", address, value);
-		if (address >= DS7_REG_MAX) {
-			mLOG(DS_IO, GAME_ERROR, "Write to unused DS9 I/O register: %06X:%04X", address, value);
-			return;
-		}
-		break;
 	}
 	ds->memory.io9[address >> 1] = value;
 }

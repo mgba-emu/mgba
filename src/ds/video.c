@@ -158,7 +158,9 @@ void DSVideoReset(struct DSVideo* video) {
 void DSVideoAssociateRenderer(struct DSVideo* video, struct DSVideoRenderer* renderer) {
 	video->renderer->deinit(video->renderer);
 	video->renderer = renderer;
+	renderer->palette = video->palette;
 	renderer->vram = video->vram;
+	renderer->oam = &video->oam;
 	video->renderer->init(video->renderer);
 }
 
