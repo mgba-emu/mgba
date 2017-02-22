@@ -52,6 +52,10 @@ DECL_BIT(DSRegisterDISPCNT, Win1Enable, 14);
 DECL_BIT(DSRegisterDISPCNT, ObjwinEnable, 15);
 DECL_BITS(DSRegisterDISPCNT, DispMode, 16, 2);
 DECL_BITS(DSRegisterDISPCNT, VRAMBlock, 18, 2);
+DECL_BITS(DSRegisterDISPCNT, TileBoundary, 20, 2);
+// TODO
+DECL_BITS(DSRegisterDISPCNT, CharBase, 24, 3);
+DECL_BITS(DSRegisterDISPCNT, ScreenBase, 27, 3);
 // TODO
 
 struct DSVideoRenderer {

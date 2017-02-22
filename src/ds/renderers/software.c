@@ -61,11 +61,33 @@ static void DSVideoSoftwareRendererDeinit(struct DSVideoRenderer* renderer) {
 	softwareRenderer->engB.d.deinit(&softwareRenderer->engB.d);
 }
 
+static void GBAVideoSoftwareRendererUpdateDISPCNTA(struct DSVideoSoftwareRenderer* softwareRenderer) {
+	uint16_t fakeDispcnt = softwareRenderer->dispcntA & 0xFF87;
+	if (!DSRegisterDISPCNTIsTileObjMapping(softwareRenderer->dispcntA)) {
+		softwareRenderer->engA.tileStride = 0x20;
+	} else {
+		softwareRenderer->engA.tileStride = 0x20 << DSRegisterDISPCNTGetTileBoundary(softwareRenderer->dispcntA);
+		fakeDispcnt = GBARegisterDISPCNTFillObjCharacterMapping(fakeDispcnt);
+	}
+	softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_DISPCNT_LO, fakeDispcnt);
+}
+
+static void GBAVideoSoftwareRendererUpdateDISPCNTB(struct DSVideoSoftwareRenderer* softwareRenderer) {
+	uint16_t fakeDispcnt = softwareRenderer->dispcntB & 0xFF87;
+	if (!DSRegisterDISPCNTIsTileObjMapping(softwareRenderer->dispcntB)) {
+		softwareRenderer->engB.tileStride = 0x20;
+	} else {
+		softwareRenderer->engB.tileStride = 0x20 << DSRegisterDISPCNTGetTileBoundary(softwareRenderer->dispcntB);
+		fakeDispcnt = GBARegisterDISPCNTFillObjCharacterMapping(fakeDispcnt);
+	}
+	softwareRenderer->engB.d.writeVideoRegister(&softwareRenderer->engB.d, DS9_REG_A_DISPCNT_LO, fakeDispcnt);
+}
+
 static uint16_t DSVideoSoftwareRendererWriteVideoRegister(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct DSVideoSoftwareRenderer* softwareRenderer = (struct DSVideoSoftwareRenderer*) renderer;
-	if (address <= DS9_REG_A_BLDY) {
+	if (address >= DS9_REG_A_BG0CNT && address <= DS9_REG_A_BLDY) {
 		value = softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, address, value);
-	} else if (address >= DS9_REG_B_DISPCNT_LO && address <= DS9_REG_B_BLDY) {
+	} else if (address >= DS9_REG_B_BG0CNT && address <= DS9_REG_B_BLDY) {
 		value = softwareRenderer->engB.d.writeVideoRegister(&softwareRenderer->engB.d, address & 0xFF, value);
 	} else {
 		mLOG(DS_VIDEO, STUB, "Stub video register write: %04X:%04X", address, value);
@@ -74,18 +96,23 @@ static uint16_t DSVideoSoftwareRendererWriteVideoRegister(struct DSVideoRenderer
 	case DS9_REG_A_DISPCNT_LO:
 		softwareRenderer->dispcntA &= 0xFFFF0000;
 		softwareRenderer->dispcntA |= value;
+		softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, address, value & 0xFF87);
+		GBAVideoSoftwareRendererUpdateDISPCNTA(softwareRenderer);
 		break;
 	case DS9_REG_A_DISPCNT_HI:
 		softwareRenderer->dispcntA &= 0x0000FFFF;
 		softwareRenderer->dispcntA |= value << 16;
+		GBAVideoSoftwareRendererUpdateDISPCNTA(softwareRenderer);
 		break;
 	case DS9_REG_B_DISPCNT_LO:
 		softwareRenderer->dispcntB &= 0xFFFF0000;
 		softwareRenderer->dispcntB |= value;
+		GBAVideoSoftwareRendererUpdateDISPCNTB(softwareRenderer);
 		break;
 	case DS9_REG_B_DISPCNT_HI:
 		softwareRenderer->dispcntB &= 0x0000FFFF;
 		softwareRenderer->dispcntB |= value << 16;
+		GBAVideoSoftwareRendererUpdateDISPCNTB(softwareRenderer);
 		break;
 	}
 	return value;

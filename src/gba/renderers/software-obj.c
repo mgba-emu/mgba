@@ -159,7 +159,7 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	}
 	int32_t x = (uint32_t) GBAObjAttributesBGetX(sprite->b) << 23;
 	x >>= 23;
-	unsigned charBase = GBAObjAttributesCGetTile(sprite->c) * 0x20;
+	unsigned charBase = GBAObjAttributesCGetTile(sprite->c) * renderer->tileStride;
 	uint16_t* vramBase = NULL;
 	if (GBARegisterDISPCNTGetMode(renderer->dispcnt) >= 3 && GBAObjAttributesCGetTile(sprite->c) < 512) {
 		return 0;

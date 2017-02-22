@@ -62,6 +62,7 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.disableBG[2] = false;
 	renderer->d.disableBG[3] = false;
 	renderer->d.disableOBJ = false;
+	renderer->tileStride = 0x20;
 
 	renderer->temporaryBuffer = 0;
 }
@@ -635,10 +636,12 @@ static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRendere
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value) {
 	UNUSED(renderer);
 	bg->priority = GBARegisterBGCNTGetPriority(value);
-	bg->charBase = GBARegisterBGCNTGetCharBase(value) << 14;
+	bg->charBase &= ~0xC000;
+	bg->charBase |= GBARegisterBGCNTGetCharBase(value) << 14;
 	bg->mosaic = GBARegisterBGCNTGetMosaic(value);
 	bg->multipalette = GBARegisterBGCNTGet256Color(value);
-	bg->screenBase = GBARegisterBGCNTGetScreenBase(value) << 11;
+	bg->screenBase &= ~0xF800;
+	bg->screenBase |= GBARegisterBGCNTGetScreenBase(value) << 11;
 	bg->overflow = GBARegisterBGCNTGetOverflow(value);
 	bg->size = GBARegisterBGCNTGetSize(value);
 }
