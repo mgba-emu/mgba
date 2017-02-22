@@ -440,6 +440,11 @@ void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 			ds->memory.io9[DS9_REG_SQRTCNT >> 1] = _scheduleSqrt(ds, ds->memory.io9[DS9_REG_SQRTCNT >> 1]);
 			break;
 
+		// High Video
+		case DS9_REG_POWCNT1:
+			value = ds->video.renderer->writeVideoRegister(ds->video.renderer, address, value);
+			break;
+
 		default:
 			{
 				uint32_t v2 = DSIOWrite(&ds->ds9, address, value);

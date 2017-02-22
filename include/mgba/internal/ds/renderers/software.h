@@ -21,6 +21,7 @@ struct DSVideoSoftwareRenderer {
 
 	DSRegisterDISPCNT dispcntA;
 	DSRegisterDISPCNT dispcntB;
+	DSRegisterPOWCNT1 powcnt;
 
 	color_t* outputBuffer;
 	int outputBufferStride;

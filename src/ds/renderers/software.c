@@ -42,9 +42,11 @@ static void DSVideoSoftwareRendererInit(struct DSVideoRenderer* renderer) {
 	softwareRenderer->engA.d.palette = &renderer->palette[0];
 	softwareRenderer->engA.d.oam = &renderer->oam->oam[0];
 	softwareRenderer->engA.masterEnd = DS_VIDEO_HORIZONTAL_PIXELS;
+	softwareRenderer->engA.outputBufferStride = softwareRenderer->outputBufferStride;
 	softwareRenderer->engB.d.palette = &renderer->palette[512];
 	softwareRenderer->engB.d.oam = &renderer->oam->oam[1];
 	softwareRenderer->engB.masterEnd = DS_VIDEO_HORIZONTAL_PIXELS;
+	softwareRenderer->engB.outputBufferStride = softwareRenderer->outputBufferStride;
 
 	DSVideoSoftwareRendererReset(renderer);
 }
@@ -113,6 +115,9 @@ static uint16_t DSVideoSoftwareRendererWriteVideoRegister(struct DSVideoRenderer
 		softwareRenderer->dispcntB |= value << 16;
 		GBAVideoSoftwareRendererUpdateDISPCNTB(softwareRenderer);
 		break;
+	case DS9_REG_POWCNT1:
+		value &= 0x810F;
+		softwareRenderer->powcnt = value;
 	}
 	return value;
 }
@@ -222,11 +227,13 @@ static void _drawScanlineB(struct DSVideoSoftwareRenderer* softwareRenderer, int
 
 static void DSVideoSoftwareRendererDrawScanline(struct DSVideoRenderer* renderer, int y) {
 	struct DSVideoSoftwareRenderer* softwareRenderer = (struct DSVideoSoftwareRenderer*) renderer;
-	softwareRenderer->engA.outputBuffer = softwareRenderer->outputBuffer;
-	softwareRenderer->engB.outputBuffer = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * DS_VIDEO_VERTICAL_PIXELS];
-	softwareRenderer->engA.outputBufferStride = softwareRenderer->outputBufferStride;
-	softwareRenderer->engB.outputBufferStride = softwareRenderer->outputBufferStride;
-
+	if (!DSRegisterPOWCNT1IsSwap(softwareRenderer->powcnt)) {
+		softwareRenderer->engA.outputBuffer = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * DS_VIDEO_VERTICAL_PIXELS];
+		softwareRenderer->engB.outputBuffer = softwareRenderer->outputBuffer;
+	} else {
+		softwareRenderer->engA.outputBuffer = softwareRenderer->outputBuffer;
+		softwareRenderer->engB.outputBuffer = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * DS_VIDEO_VERTICAL_PIXELS];
+	}
 
 	_drawScanlineA(softwareRenderer, y);
 	_drawScanlineB(softwareRenderer, y);

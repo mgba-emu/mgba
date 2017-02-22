@@ -58,6 +58,10 @@ DECL_BITS(DSRegisterDISPCNT, CharBase, 24, 3);
 DECL_BITS(DSRegisterDISPCNT, ScreenBase, 27, 3);
 // TODO
 
+DECL_BITFIELD(DSRegisterPOWCNT1, uint16_t);
+// TODO
+DECL_BIT(DSRegisterPOWCNT1, Swap, 15);
+
 struct DSVideoRenderer {
 	void (*init)(struct DSVideoRenderer* renderer);
 	void (*reset)(struct DSVideoRenderer* renderer);
