@@ -120,19 +120,19 @@ static uint16_t DSVideoSoftwareRendererWriteVideoRegister(struct DSVideoRenderer
 
 static void DSVideoSoftwareRendererWritePalette(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct DSVideoSoftwareRenderer* softwareRenderer = (struct DSVideoSoftwareRenderer*) renderer;
-	if (address < 0x200) {
-		softwareRenderer->engA.d.writePalette(&softwareRenderer->engA.d, address & 0x1FF, value);
+	if (address < 0x400) {
+		softwareRenderer->engA.d.writePalette(&softwareRenderer->engA.d, address & 0x3FF, value);
 	} else {
-		softwareRenderer->engB.d.writePalette(&softwareRenderer->engB.d, address & 0x1FF, value);		
+		softwareRenderer->engB.d.writePalette(&softwareRenderer->engB.d, address & 0x3FF, value);
 	}
 }
 
 static void DSVideoSoftwareRendererWriteOAM(struct DSVideoRenderer* renderer, uint32_t oam) {
 	struct DSVideoSoftwareRenderer* softwareRenderer = (struct DSVideoSoftwareRenderer*) renderer;
-	if (oam < 0x100) {
-		softwareRenderer->engA.d.writeOAM(&softwareRenderer->engA.d, oam & 0xFF);
+	if (oam < 0x200) {
+		softwareRenderer->engA.d.writeOAM(&softwareRenderer->engA.d, oam & 0x1FF);
 	} else {
-		softwareRenderer->engB.d.writeOAM(&softwareRenderer->engB.d, oam & 0xFF);
+		softwareRenderer->engB.d.writeOAM(&softwareRenderer->engB.d, oam & 0x1FF);
 	}
 }
 
