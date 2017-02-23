@@ -63,7 +63,7 @@ static void DSVideoSoftwareRendererDeinit(struct DSVideoRenderer* renderer) {
 	softwareRenderer->engB.d.deinit(&softwareRenderer->engB.d);
 }
 
-static void GBAVideoSoftwareRendererUpdateDISPCNTA(struct DSVideoSoftwareRenderer* softwareRenderer) {
+static void DSVideoSoftwareRendererUpdateDISPCNTA(struct DSVideoSoftwareRenderer* softwareRenderer) {
 	uint16_t fakeDispcnt = softwareRenderer->dispcntA & 0xFF87;
 	if (!DSRegisterDISPCNTIsTileObjMapping(softwareRenderer->dispcntA)) {
 		softwareRenderer->engA.tileStride = 0x20;
@@ -72,9 +72,26 @@ static void GBAVideoSoftwareRendererUpdateDISPCNTA(struct DSVideoSoftwareRendere
 		fakeDispcnt = GBARegisterDISPCNTFillObjCharacterMapping(fakeDispcnt);
 	}
 	softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_DISPCNT_LO, fakeDispcnt);
-}
+	uint32_t charBase = DSRegisterDISPCNTGetCharBase(softwareRenderer->dispcntA) << 16;
+	uint32_t screenBase = DSRegisterDISPCNTGetScreenBase(softwareRenderer->dispcntA) << 16;
+	softwareRenderer->engA.bg[0].charBase &= ~0x70000;
+	softwareRenderer->engA.bg[0].charBase |= charBase;
+	softwareRenderer->engA.bg[0].screenBase &= ~0x70000;
+	softwareRenderer->engA.bg[0].screenBase |= screenBase;
+	softwareRenderer->engA.bg[1].charBase &= ~0x70000;
+	softwareRenderer->engA.bg[1].charBase |= charBase;
+	softwareRenderer->engA.bg[1].screenBase &= ~0x70000;
+	softwareRenderer->engA.bg[1].screenBase |= screenBase;
+	softwareRenderer->engA.bg[2].charBase &= ~0x70000;
+	softwareRenderer->engA.bg[2].charBase |= charBase;
+	softwareRenderer->engA.bg[2].screenBase &= ~0x70000;
+	softwareRenderer->engA.bg[2].screenBase |= screenBase;
+	softwareRenderer->engA.bg[3].charBase &= ~0x70000;
+	softwareRenderer->engA.bg[3].charBase |= charBase;
+	softwareRenderer->engA.bg[3].screenBase &= ~0x70000;
+	softwareRenderer->engA.bg[3].screenBase |= screenBase;}
 
-static void GBAVideoSoftwareRendererUpdateDISPCNTB(struct DSVideoSoftwareRenderer* softwareRenderer) {
+static void DSVideoSoftwareRendererUpdateDISPCNTB(struct DSVideoSoftwareRenderer* softwareRenderer) {
 	uint16_t fakeDispcnt = softwareRenderer->dispcntB & 0xFF87;
 	if (!DSRegisterDISPCNTIsTileObjMapping(softwareRenderer->dispcntB)) {
 		softwareRenderer->engB.tileStride = 0x20;
@@ -98,22 +115,22 @@ static uint16_t DSVideoSoftwareRendererWriteVideoRegister(struct DSVideoRenderer
 	case DS9_REG_A_DISPCNT_LO:
 		softwareRenderer->dispcntA &= 0xFFFF0000;
 		softwareRenderer->dispcntA |= value;
-		GBAVideoSoftwareRendererUpdateDISPCNTA(softwareRenderer);
+		DSVideoSoftwareRendererUpdateDISPCNTA(softwareRenderer);
 		break;
 	case DS9_REG_A_DISPCNT_HI:
 		softwareRenderer->dispcntA &= 0x0000FFFF;
 		softwareRenderer->dispcntA |= value << 16;
-		GBAVideoSoftwareRendererUpdateDISPCNTA(softwareRenderer);
+		DSVideoSoftwareRendererUpdateDISPCNTA(softwareRenderer);
 		break;
 	case DS9_REG_B_DISPCNT_LO:
 		softwareRenderer->dispcntB &= 0xFFFF0000;
 		softwareRenderer->dispcntB |= value;
-		GBAVideoSoftwareRendererUpdateDISPCNTB(softwareRenderer);
+		DSVideoSoftwareRendererUpdateDISPCNTB(softwareRenderer);
 		break;
 	case DS9_REG_B_DISPCNT_HI:
 		softwareRenderer->dispcntB &= 0x0000FFFF;
 		softwareRenderer->dispcntB |= value << 16;
-		GBAVideoSoftwareRendererUpdateDISPCNTB(softwareRenderer);
+		DSVideoSoftwareRendererUpdateDISPCNTB(softwareRenderer);
 		break;
 	case DS9_REG_POWCNT1:
 		value &= 0x810F;
