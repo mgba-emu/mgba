@@ -147,6 +147,11 @@ static uint8_t _slot1SPIAutodetect(struct DSCommon* dscore, uint8_t datum) {
 		dscore->p->memory.slot1.spiAddress |= datum;
 		dscore->p->memory.slot1.spiAddressingRemaining -= 8;
 		return 0xFF;
+	} else if (dscore->p->memory.slot1.spiAddress & 1) {
+		dscore->p->memory.slot1.spiAddress <<= 8;
+		dscore->p->memory.slot1.spiAddress |= datum;
+		dscore->p->memory.slot1.savedataType = DS_SAVEDATA_FLASH;
+		return 0xFF;
 	} else {
 		if (!_slot1GuaranteeSize(&dscore->p->memory.slot1)) {
 			return 0xFF;
@@ -159,6 +164,34 @@ static uint8_t _slot1SPIAutodetect(struct DSCommon* dscore, uint8_t datum) {
 	case 0x02: // WR
 		dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress] = datum;
 		++dscore->p->memory.slot1.spiAddress;
+		break;
+	}
+	return 0xFF;
+}
+
+static uint8_t _slot1SPIFlash(struct DSCommon* dscore, uint8_t datum) {
+	DSSlot1AUXSPICNT control = dscore->memory.io[DS_REG_AUXSPICNT >> 1];
+
+	if (dscore->p->memory.slot1.spiAddressingRemaining) {
+		dscore->p->memory.slot1.spiAddress <<= 8;
+		dscore->p->memory.slot1.spiAddress |= datum;
+		dscore->p->memory.slot1.spiAddressingRemaining -= 8;
+		return 0xFF;
+	} else {
+		if (!_slot1GuaranteeSize(&dscore->p->memory.slot1)) {
+			return 0xFF;
+		}
+	}
+
+	switch (dscore->p->memory.slot1.spiCommand) {
+	case 0x03: // RD
+		return dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress++];
+	case 0x02: // WR
+		dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress] = datum;
+		++dscore->p->memory.slot1.spiAddress;
+		break;
+	default:
+		mLOG(DS_SLOT1, STUB, "Unimplemented SPI Flash write: %04X:%02X:%02X", control, dscore->p->memory.slot1.spiCommand, datum);
 		break;
 	}
 	return 0xFF;
@@ -179,7 +212,14 @@ static void _slot1SPI(struct mTiming* timing, void* context, uint32_t cyclesLate
 			dscore->p->memory.slot1.savedataType = DS_SAVEDATA_EEPROM512;
 		}
 		dscore->p->memory.slot1.spiAddress = 0;
-		dscore->p->memory.slot1.spiAddressingRemaining = 16;
+		switch (dscore->p->memory.slot1.savedataType) {
+		case DS_SAVEDATA_FLASH:
+			dscore->p->memory.slot1.spiAddressingRemaining = 24;
+			break;
+		default:
+			dscore->p->memory.slot1.spiAddressingRemaining = 16;
+			break;
+		}
 	} else {
 		switch (dscore->p->memory.slot1.spiCommand) {
 		case 0x04: // WRDI
@@ -195,6 +235,9 @@ static void _slot1SPI(struct mTiming* timing, void* context, uint32_t cyclesLate
 			switch (dscore->p->memory.slot1.savedataType) {
 			case DS_SAVEDATA_AUTODETECT:
 				newValue = _slot1SPIAutodetect(dscore, oldValue);
+				break;
+			case DS_SAVEDATA_FLASH:
+				newValue = _slot1SPIFlash(dscore, oldValue);
 				break;
 			default:
 				mLOG(DS_SLOT1, STUB, "Unimplemented SPI write: %04X:%02X", control, oldValue);
