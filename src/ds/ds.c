@@ -23,6 +23,7 @@ mLOG_DEFINE_CATEGORY(DS, "DS");
 const uint32_t DS_ARM946ES_FREQUENCY = 0x1FF61FE;
 const uint32_t DS_ARM7TDMI_FREQUENCY = 0xFFB0FF;
 const uint32_t DS_COMPONENT_MAGIC = 0x1FF61FE;
+const uint8_t DS_CHIP_ID[4] = { 0xC2, 0x0F, 0x00, 0x00 };
 
 static const size_t DS_ROM_MAGIC_OFFSET = 0x15C;
 static const uint8_t DS_ROM_MAGIC[] = { 0x56, 0xCF };
@@ -278,6 +279,10 @@ void DS7Reset(struct ARMCore* cpu) {
 
 	struct DSCartridge* header = ds->romVf->map(ds->romVf, sizeof(*header), MAP_READ);
 	if (header) {
+		memcpy(&ds->memory.ram[0x3FF800 >> 2], DS_CHIP_ID, 4);
+		memcpy(&ds->memory.ram[0x3FF804 >> 2], DS_CHIP_ID, 4);
+		memcpy(&ds->memory.ram[0x3FFC00 >> 2], DS_CHIP_ID, 4);
+		memcpy(&ds->memory.ram[0x3FFC04 >> 2], DS_CHIP_ID, 4);
 		memcpy(&ds->memory.ram[0x3FFE00 >> 2], header, 0x170);
 		DS7IOWrite32(ds, DS_REG_ROMCNT_LO, header->busTiming | 0x2700000);
 		// TODO: Error check

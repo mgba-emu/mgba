@@ -50,6 +50,10 @@ static void DSSlot1StartTransfer(struct DS* ds) {
 		ds->memory.slot1.transferRemaining = ds->memory.slot1.transferSize;
 		DSSlot1StepTransfer(ds);
 		break;
+	case 0xB8:
+		memcpy(ds->memory.slot1.readBuffer, DS_CHIP_ID, 4);
+		ds->memory.slot1.transferRemaining = 0;
+		break;
 	default:
 		mLOG(DS_SLOT1, STUB, "Unimplemented card command: %02X%02X%02X%02X%02X%02X%02X%02X",
 		     ds->memory.slot1.command[0], ds->memory.slot1.command[1],

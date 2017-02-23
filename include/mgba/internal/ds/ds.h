@@ -20,6 +20,7 @@ CXX_GUARD_START
 
 extern const uint32_t DS_ARM946ES_FREQUENCY;
 extern const uint32_t DS_ARM7TDMI_FREQUENCY;
+extern const uint8_t DS_CHIP_ID[4];
 
 enum DSIRQ {
 	DS_IRQ_VBLANK = 0x0,
