@@ -235,6 +235,7 @@ void ARMHalt(struct ARMCore* cpu) {
 		cpu->gprs[ARM_PC] += WORD_SIZE_ARM; \
 		LOAD_32(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
 		\
+		ARMInstruction instruction; \
 		unsigned condition = opcode >> 28; \
 		if (condition != 0xE) { \
 			bool conditionMet = false; \
@@ -282,14 +283,16 @@ void ARMHalt(struct ARMCore* cpu) {
 				conditionMet = ARM_COND_LE; \
 				break; \
 			default: \
-				break; \
+				instruction = _arm ## VERSION ## FTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)]; \
+				instruction(cpu, opcode); \
+				return; \
 			} \
 			if (!conditionMet) { \
 				cpu->cycles += ARM_PREFETCH_CYCLES; \
 				return; \
 			} \
 		} \
-		ARMInstruction instruction = _arm ## VERSION ## Table[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)]; \
+		instruction = _arm ## VERSION ## Table[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)]; \
 		instruction(cpu, opcode); \
 	} \
 	\

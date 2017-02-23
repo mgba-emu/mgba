@@ -654,6 +654,14 @@ DEFINE_INSTRUCTION_ARM(BX,
 		ARM_WRITE_PC;
 
 	})
+
+DEFINE_INSTRUCTION_ARM(BLX,
+	int32_t immediate = (opcode & 0x00FFFFFF) << 8;
+	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - WORD_SIZE_ARM;
+	cpu->gprs[ARM_PC] += (immediate >> 6) + ((opcode >> 23) & 2);
+	_ARMSetMode(cpu, MODE_THUMB);
+	THUMB_WRITE_PC;)
+
 DEFINE_INSTRUCTION_ARM(BLX2,
 	int rm = opcode & 0x0000000F;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - WORD_SIZE_ARM;
@@ -794,4 +802,12 @@ const ARMInstruction _armv4Table[0x1000] = {
 
 const ARMInstruction _armv5Table[0x1000] = {
 	DECLARE_ARM_EMITTER_BLOCK(_ARMInstruction, 5)
+};
+
+const ARMInstruction _armv4FTable[0x1000] = {
+	DECLARE_ARM_F_EMITTER_BLOCK(_ARMInstruction, 4)
+};
+
+const ARMInstruction _armv5FTable[0x1000] = {
+	DECLARE_ARM_F_EMITTER_BLOCK(_ARMInstruction, 5)
 };
