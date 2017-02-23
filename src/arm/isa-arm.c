@@ -355,6 +355,25 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 	DEFINE_MULTIPLY_INSTRUCTION_2_EX_ARM(NAME, BODY, , WAIT) \
 	DEFINE_MULTIPLY_INSTRUCTION_2_EX_ARM(NAME ## S, BODY, S_BODY, WAIT)
 
+#define DEFINE_MULTIPLY_INSTRUCTION_3_ARM(NAME, BODY) \
+	DEFINE_INSTRUCTION_ARM(NAME, \
+		int rd = (opcode >> 16) & 0xF; \
+		int rs = (opcode >> 8) & 0xF; \
+		int rn = (opcode >> 12) & 0xF; \
+		int rm = opcode & 0xF; \
+		if (rd == ARM_PC) { \
+			return; \
+		} \
+		/* TODO: Timing */ \
+		int32_t x; \
+		int32_t y; \
+		BODY; \
+		int32_t dn = cpu->gprs[rn]; \
+		int32_t d = x * y; \
+		cpu->gprs[rd] = d + dn; \
+		cpu->cpsr.q = cpu->cpsr.q || ARM_V_ADDITION(d, dn, cpu->gprs[rd]); \
+		currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32)
+
 #define DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME, ADDRESS, WRITEBACK, BODY) \
 	DEFINE_INSTRUCTION_ARM(NAME, \
 		uint32_t address; \
@@ -521,6 +540,22 @@ DEFINE_MULTIPLY_INSTRUCTION_2_ARM(SMLAL,
 	cpu->gprs[rd] = dm + dn;
 	cpu->gprs[rdHi] = cpu->gprs[rdHi] + (d >> 32) + ARM_CARRY_FROM(dm, dn, cpu->gprs[rd]);,
 	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]), 3)
+
+DEFINE_MULTIPLY_INSTRUCTION_3_ARM(SMLABB,
+	x = ARM_SXT_16(cpu->gprs[rm]);
+	y = ARM_SXT_16(cpu->gprs[rs]);)
+
+DEFINE_MULTIPLY_INSTRUCTION_3_ARM(SMLABT,
+	x = ARM_SXT_16(cpu->gprs[rm]);
+	y = ARM_SXT_16(cpu->gprs[rs] >> 16);)
+
+DEFINE_MULTIPLY_INSTRUCTION_3_ARM(SMLATB,
+	x = ARM_SXT_16(cpu->gprs[rm] >> 16);
+	y = ARM_SXT_16(cpu->gprs[rs]);)
+
+DEFINE_MULTIPLY_INSTRUCTION_3_ARM(SMLATT,
+	x = ARM_SXT_16(cpu->gprs[rm] >> 16);
+	y = ARM_SXT_16(cpu->gprs[rs] >> 16);)
 
 DEFINE_MULTIPLY_INSTRUCTION_2_ARM(SMULL,
 	int64_t d = ((int64_t) cpu->gprs[rm]) * ((int64_t) cpu->gprs[rs]);
