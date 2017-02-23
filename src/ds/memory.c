@@ -181,6 +181,8 @@ void DSMemoryReset(struct DS* ds) {
 	ds->ds7.memory.slot1Access = true;
 	ds->ds9.memory.slot1Access = false;
 
+	DSSPIReset(ds);
+
 	DSVideoConfigureVRAM(ds, 0, 0);
 	DSVideoConfigureVRAM(ds, 1, 0);
 	DSVideoConfigureVRAM(ds, 2, 0);

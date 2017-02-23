@@ -16,6 +16,7 @@ CXX_GUARD_START
 #include <mgba/internal/ds/dma.h>
 #include <mgba/internal/ds/io.h>
 #include <mgba/internal/ds/slot1.h>
+#include <mgba/internal/ds/spi.h>
 
 enum DSMemoryRegion {
 	DS7_REGION_BIOS = 0x0,
@@ -86,6 +87,7 @@ struct DSMemory {
 	uint16_t io7[DS7_REG_MAX >> 1];
 	uint16_t io9[DS9_REG_MAX >> 1];
 	struct DSSlot1 slot1;
+	struct DSSPIBus spiBus;
 
 	uint16_t vramMirror[9][0x40];
 	uint16_t vramMode[9][8];

@@ -246,7 +246,7 @@ void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 		break;
 	case DS7_REG_SPIDATA:
 		DSSPIWrite(ds, value);
-		return;
+		break;
 	default:
 		{
 			uint32_t v2 = DSIOWrite(&ds->ds7, address, value);

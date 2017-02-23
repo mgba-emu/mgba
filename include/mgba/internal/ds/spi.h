@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/core/log.h>
+#include <mgba/core/timing.h>
 
 mLOG_DECLARE_CATEGORY(DS_SPI);
 
@@ -23,13 +24,43 @@ DECL_BIT(DSSPICNT, CSHold, 11);
 DECL_BIT(DSSPICNT, DoIRQ, 14);
 DECL_BIT(DSSPICNT, Enable, 15);
 
+DECL_BITFIELD(DSTSCControlByte, uint8_t);
+// TODO
+DECL_BITS(DSTSCControlByte, Channel, 4, 3);
+DECL_BIT(DSTSCControlByte, Control, 7);
+
 enum {
 	DS_SPI_DEV_POWERMAN = 0,
 	DS_SPI_DEV_FIRMWARE = 1,
 	DS_SPI_DEV_TSC = 2
 };
 
+enum {
+	DS_TSC_CHANNEL_TEMP_0 = 0,
+	DS_TSC_CHANNEL_TS_Y = 1,
+	DS_TSC_CHANNEL_BATTERY_V = 2,
+	DS_TSC_CHANNEL_TS_Z1 = 3,
+	DS_TSC_CHANNEL_TS_Z2 = 4,
+	DS_TSC_CHANNEL_TS_X = 5,
+	DS_TSC_CHANNEL_MIC = 6,
+	DS_TSC_CHANNEL_TEMP_1 = 7,
+};
+
+struct DSSPIBus {
+	bool holdEnabled;
+
+	uint8_t firmwareMode;
+
+	struct mTimingEvent tscEvent;
+	uint8_t tscControlByte;
+	uint16_t tscRegister;
+	int tscOffset;
+
+	uint8_t powmgrByte;
+};
+
 struct DS;
+void DSSPIReset(struct DS* ds);
 DSSPICNT DSSPIWriteControl(struct DS* ds, uint16_t control);
 void DSSPIWrite(struct DS* ds, uint8_t datum);
 
