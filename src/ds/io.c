@@ -193,8 +193,20 @@ uint32_t DSIOWrite32(struct DSCommon* dscore, uint32_t address, uint32_t value) 
 	return value;
 }
 
+static uint16_t DSIOReadExKeyInput(struct DS* ds) {
+	uint16_t input = 0;
+	if (ds->keyCallback) {
+		input = ds->keyCallback->readKeys(ds->keyCallback);
+	} else if (ds->keySource) {
+		input = *ds->keySource;
+	}
+	input = ~(input >> 10) & 0x3;
+	input |= 0x3C;
+	return input;
+}
+
 static uint16_t DSIOReadKeyInput(struct DS* ds) {
-	uint16_t input = 0x3FF;
+	uint16_t input = 0;
 	if (ds->keyCallback) {
 		input = ds->keyCallback->readKeys(ds->keyCallback);
 	} else if (ds->keySource) {
@@ -212,7 +224,7 @@ static uint16_t DSIOReadKeyInput(struct DS* ds) {
 			input |= ud;
 		}
 	}*/
-	return 0x3FF ^ input;
+	return ~input & 0x3FF;
 }
 
 static void DSIOUpdateTimer(struct DSCommon* dscore, uint32_t address) {
@@ -327,6 +339,8 @@ uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 		break;
 	case DS_REG_KEYINPUT:
 		return DSIOReadKeyInput(ds);
+	case DS7_REG_EXTKEYIN:
+		return DSIOReadExKeyInput(ds);
 	case DS_REG_DMA0FILL_LO:
 	case DS_REG_DMA0FILL_HI:
 	case DS_REG_DMA1FILL_LO:
