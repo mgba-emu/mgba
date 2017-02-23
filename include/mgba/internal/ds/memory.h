@@ -93,8 +93,10 @@ struct DSMemory {
 	struct DSSPIBus spiBus;
 
 	uint16_t vramMirror[9][0x40];
-	uint16_t vramMode[9][8];
+	uint16_t vramMode[9][6];
 	uint16_t* vramBank[9];
+	uint16_t* vram7[2];
+
 
 	size_t romSize;
 	size_t wramSize7;

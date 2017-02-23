@@ -61,14 +61,14 @@ const struct DSVRAMBankInfo {
 	{ // C
 		{ 0x010, 0x40, 4 }, // LCDC
 		{ 0x000, 0x20, 0, { 0x00, 0x08, 0x10, 0x18 } }, // A-BG
-		{},
+		{ 0x000, 0x40, 5, { 0x00, 0x08, 0x80, 0x80 } }, // 7-VRAM
 		{},
 		{ 0x000, 0x08, 1 }, // B-BG
 	},
 	{ // D
 		{ 0x018, 0x40, 4 }, // LCDC
 		{ 0x000, 0x20, 0, { 0x00, 0x08, 0x10, 0x18 } }, // A-BG
-		{},
+		{ 0x000, 0x40, 8, { 0x00, 0x08, 0x80, 0x80 } }, // 7-VRAM
 		{},
 		{ 0x000, 0x08, 3 }, // B-OBJ
 	},
@@ -309,12 +309,14 @@ void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value) {
 		return;
 	}
 	uint32_t size = _vramSize[index] >> DS_VRAM_OFFSET;
-	memory->vramMode[index][info.mode] = 0xFFFF;
-	uint32_t offset = info.base + info.offset[(value >> 3) & 3];
 	uint32_t i, j;
-	for (j = offset; j < 0x40; j += info.mirrorSize) {
-		for (i = 0; i < size; ++i) {
-			memory->vramMirror[index][i + j] = 1 << index;
+	uint32_t offset = info.base + info.offset[(value >> 3) & 3];
+	if (info.mode < 4) {
+		memory->vramMode[index][info.mode] = 0xFFFF;
+		for (j = offset; j < 0x40; j += info.mirrorSize) {
+			for (i = 0; i < size; ++i) {
+				memory->vramMirror[index][i + j] = 1 << index;
+			}
 		}
 	}
 	switch (info.mode) {
@@ -340,6 +342,11 @@ void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value) {
 		for (i = 0; i < size; ++i) {
 			ds->video.vramBOBJ[offset + i] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
 			ds->video.renderer->vramBOBJ[offset + i] = ds->video.vramBOBJ[offset + i];
+		}
+		break;
+	case 5:
+		for (i = 0; i < size; i += 16) {
+			ds->memory.vram7[(offset + i) >> 4] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 5)];
 		}
 		break;
 	}
