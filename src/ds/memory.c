@@ -195,10 +195,12 @@ void DSMemoryReset(struct DS* ds) {
 
 	ds->memory.slot1Owner = true;
 	ds->memory.slot2Owner = true;
+	ds->memory.slot1.savedataType = DS_SAVEDATA_AUTODETECT;
 	ds->ds7.memory.slot1Access = true;
 	ds->ds9.memory.slot1Access = false;
 
 	DSSPIReset(ds);
+	DSSlot1Reset(ds);
 
 	DSVideoConfigureVRAM(ds, 0, 0);
 	DSVideoConfigureVRAM(ds, 1, 0);

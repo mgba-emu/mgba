@@ -51,6 +51,7 @@ void DSSPIWrite(struct DS* ds, uint8_t datum) {
 }
 
 static void _tscEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+	UNUSED(timing);
 	UNUSED(cyclesLate);
 	struct DS* ds = context;
 	uint8_t oldValue = ds->memory.io7[DS7_REG_SPIDATA >> 1];

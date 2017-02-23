@@ -111,6 +111,15 @@ static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t va
 			return 0;
 		}
 		break;
+	case DS_REG_AUXSPIDATA:
+		if (dscore->memory.slot1Access) {
+			DSSlot1WriteSPI(dscore, value);
+			dscore->ipc->memory.io[address >> 1] = value;
+		} else {
+			mLOG(DS_IO, GAME_ERROR, "Invalid cart access");
+			return 0;
+		}
+		break;
 	case DS_REG_ROMCNT_HI:
 		if (dscore->memory.slot1Access) {
 			DSSlot1ROMCNT cnt = value << 16;
@@ -369,6 +378,14 @@ uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_POSTFLG:
 		// Handled transparently by the registers
 		break;
+	case DS_REG_AUXSPICNT:
+	case DS_REG_AUXSPIDATA:
+		if (ds->ds7.memory.slot1Access) {
+			break;
+		} else {
+			mLOG(DS_IO, GAME_ERROR, "Invalid cart access");
+			return 0;
+		}
 	default:
 		mLOG(DS_IO, STUB, "Stub DS7 I/O register read: %06X", address);
 	}
@@ -589,6 +606,14 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_POSTFLG:
 		// Handled transparently by the registers
 		break;
+	case DS_REG_AUXSPICNT:
+	case DS_REG_AUXSPIDATA:
+		if (ds->ds9.memory.slot1Access) {
+			break;
+		} else {
+			mLOG(DS_IO, GAME_ERROR, "Invalid cart access");
+			return 0;
+		}
 	default:
 		mLOG(DS_IO, STUB, "Stub DS9 I/O register read: %06X", address);
 	}

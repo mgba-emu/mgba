@@ -11,8 +11,21 @@
 
 mLOG_DEFINE_CATEGORY(DS_SLOT1, "DS Slot-1");
 
+static void _slot1SPI(struct mTiming*, void* context, uint32_t cyclesLate);
+
+void DSSlot1Reset(struct DS* ds) {
+	ds->memory.slot1.spiEvent.name = "DS Slot-1 SPI";
+	ds->memory.slot1.spiEvent.priority = 0x70;
+	ds->memory.slot1.spiEvent.context = NULL;
+	ds->memory.slot1.spiEvent.callback = _slot1SPI;
+	ds->memory.slot1.statusReg = 0;
+	ds->memory.slot1.spiCommand = 0;
+	ds->memory.slot1.spiHoldEnabled = 0;
+}
+
 static void DSSlot1StepTransfer(struct DS* ds) {
 	DSSlot1ROMCNT romcnt;
+	// TODO: Big endian
 	LOAD_32(romcnt, DS_REG_ROMCNT_LO, ds->memory.io7);
 	if (ds->memory.slot1.transferRemaining) {
 		ds->romVf->read(ds->romVf, ds->memory.slot1.readBuffer, 4);
@@ -65,7 +78,12 @@ static void DSSlot1StartTransfer(struct DS* ds) {
 }
 
 DSSlot1AUXSPICNT DSSlot1Configure(struct DS* ds, DSSlot1AUXSPICNT config) {
-	mLOG(DS_SLOT1, STUB, "Unimplemented SPI AUX config: %04X", config);
+	if (DSSlot1AUXSPICNTIsSPIMode(config)) {
+		if (!ds->memory.slot1.spiHoldEnabled) {
+			ds->memory.slot1.spiCommand = 0;
+		}
+		ds->memory.slot1.spiHoldEnabled = DSSlot1AUXSPICNTIsCSHold(config);
+	}
 	return config;
 }
 
@@ -74,9 +92,15 @@ DSSlot1ROMCNT DSSlot1Control(struct DS* ds, DSSlot1ROMCNT control) {
 	if (ds->memory.slot1.transferSize != 0 && ds->memory.slot1.transferSize != 7) {
 		ds->memory.slot1.transferSize = 0x100 << ds->memory.slot1.transferSize;
 	}
+
+	DSSlot1AUXSPICNT config = ds->memory.io7[DS_REG_AUXSPICNT >> 1];
+	if (DSSlot1AUXSPICNTIsSPIMode(config)) {
+		mLOG(DS_SLOT1, STUB, "Bad ROMCNT?");
+		return control;
+	}
 	if (DSSlot1ROMCNTIsBlockBusy(control)) {
 		DSSlot1StartTransfer(ds);
-		// TODO timing
+		// TODO: timing
 		control = DSSlot1ROMCNTFillWordReady(control);
 	}
 	return control;
@@ -87,4 +111,73 @@ uint32_t DSSlot1Read(struct DS* ds) {
 	LOAD_32(result, 0, ds->memory.slot1.readBuffer);
 	DSSlot1StepTransfer(ds);
 	return result;
+}
+
+void DSSlot1WriteSPI(struct DSCommon* dscore, uint8_t datum) {
+	UNUSED(datum);
+	DSSlot1AUXSPICNT control = dscore->memory.io[DS_REG_AUXSPICNT >> 1];
+	if (!DSSlot1AUXSPICNTIsSPIMode(control) || !DSSlot1AUXSPICNTIsEnable(control)) {
+		return;
+	}
+	uint32_t baud = 19 - DSSlot1AUXSPICNTGetBaud(control);
+	baud = DS_ARM7TDMI_FREQUENCY >> baud; // TODO: Right frequency for ARM9
+	control = DSSlot1AUXSPICNTFillBusy(control);
+	mTimingDeschedule(&dscore->timing, &dscore->p->memory.slot1.spiEvent);
+	mTimingSchedule(&dscore->timing, &dscore->p->memory.slot1.spiEvent, baud);
+	dscore->p->memory.slot1.spiEvent.context = dscore;
+	dscore->memory.io[DS_REG_AUXSPICNT >> 1] = control;
+	dscore->ipc->memory.io[DS_REG_AUXSPICNT >> 1] = control;
+}
+
+static uint8_t _slot1SPIAutodetect(struct DSCommon* dscore, uint8_t datum) {
+	DSSlot1AUXSPICNT control = dscore->memory.io[DS_REG_AUXSPICNT >> 1];
+	mLOG(DS_SLOT1, STUB, "Unimplemented SPI write: %04X:%02X:%02X", control, dscore->p->memory.slot1.spiCommand, datum);
+	return 0xFF;
+}
+
+static void _slot1SPI(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+	UNUSED(timing);
+	UNUSED(cyclesLate);
+	struct DSCommon* dscore = context;
+	DSSlot1AUXSPICNT control = dscore->memory.io[DS_REG_AUXSPICNT >> 1];
+	uint8_t oldValue = dscore->memory.io[DS_REG_AUXSPIDATA >> 1];
+	uint8_t newValue = 0;
+
+	if (!dscore->p->memory.slot1.spiCommand) {
+		dscore->p->memory.slot1.spiCommand = oldValue;
+		// Probably RDHI
+		if (oldValue == 0x0B && dscore->p->memory.slot1.savedataType == DS_SAVEDATA_AUTODETECT) {
+			dscore->p->memory.slot1.savedataType = DS_SAVEDATA_EEPROM512;
+		}
+	} else {
+		switch (dscore->p->memory.slot1.spiCommand) {
+		case 0x04: // WRDI
+			dscore->p->memory.slot1.statusReg &= ~2;
+			break;
+		case 0x05: // RDSR
+			newValue = dscore->p->memory.slot1.statusReg;
+			break;
+		case 0x06: // WREN
+			dscore->p->memory.slot1.statusReg |= 2;
+			break;
+		default:
+			switch (dscore->p->memory.slot1.savedataType) {
+			case DS_SAVEDATA_AUTODETECT:
+				newValue = _slot1SPIAutodetect(dscore, oldValue);
+				break;
+			default:
+				mLOG(DS_SLOT1, STUB, "Unimplemented SPI write: %04X:%02X", control, oldValue);
+				break;
+			}
+		}
+	}
+
+	control = DSSlot1AUXSPICNTClearBusy(control);
+	dscore->memory.io[DS_REG_AUXSPIDATA >> 1] = newValue;
+	dscore->ipc->memory.io[DS_REG_AUXSPIDATA >> 1] = newValue;
+	dscore->memory.io[DS_REG_AUXSPICNT >> 1] = control;
+	dscore->ipc->memory.io[DS_REG_AUXSPICNT >> 1] = control;
+	if (DSSlot1AUXSPICNTIsDoIRQ(control)) {
+		DSRaiseIRQ(dscore->cpu, dscore->memory.io, DS_IRQ_SLOT1);
+	}
 }
