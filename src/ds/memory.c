@@ -1154,7 +1154,7 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 		LDM_LOOP(if (ds->memory.wramSize9) {
 			LOAD_32(value, address & (ds->memory.wramSize9 - 4), memory->wramBase9);
 		} else {
-			mLOG(DS_MEM, STUB, "Bad DS9 STM: %08X", address);
+			mLOG(DS_MEM, STUB, "Bad DS9 LDM: %08X", address);
 		});
 		break;
 	case DS_REGION_RAM:
@@ -1260,6 +1260,9 @@ uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 		} else {
 			mLOG(DS_MEM, STUB, "Unimplemented DS9 STM: %08X", address);
 		});
+		break;
+	case DS_REGION_IO:
+		STM_LOOP(DS9IOWrite32(ds, address & DS_OFFSET_MASK, value));
 		break;
 	case DS9_REGION_PALETTE_RAM:
 		STM_LOOP(STORE_32(value, address & (DS9_SIZE_PALETTE_RAM - 1), ds->video.palette);
