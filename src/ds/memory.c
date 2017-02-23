@@ -15,6 +15,7 @@
 mLOG_DEFINE_CATEGORY(DS_MEM, "DS Memory");
 
 static uint32_t _deadbeef[1] = { 0xE710B710 }; // Illegal instruction on both ARM and Thumb
+const uint32_t redzoneInstruction = 0xE7F0DEF0;
 
 static const uint32_t _vramMask[9] = {
 	0x1FFFF,
@@ -102,7 +103,7 @@ void DSMemoryInit(struct DS* ds) {
 
 	ds->memory.bios7 = NULL;
 	ds->memory.bios9 = NULL;
-	ds->memory.wram = NULL;
+	ds->memory.wramBase = NULL;
 	ds->memory.wram7 = NULL;
 	ds->memory.ram = NULL;
 	ds->memory.itcm = NULL;
@@ -141,9 +142,25 @@ void DSMemoryDeinit(struct DS* ds) {
 
 void DSMemoryReset(struct DS* ds) {
 	if (ds->memory.wram) {
-		mappedMemoryFree(ds->memory.wram, DS_SIZE_WORKING_RAM);
+		mappedMemoryFree(ds->memory.wramBase, DS_SIZE_WORKING_RAM * 2 + 12);
 	}
-	ds->memory.wram = anonymousMemoryMap(DS_SIZE_WORKING_RAM);
+	// XXX: This hack lets you roll over the end of the WRAM block without
+	// looping back to the beginning. It works by placing an undefined
+	// instruction in a redzone at the very beginning and end of the buffer.
+	// Using clever masking tricks, the ARM loop will mask the offset so that
+	// either the middle of the passed-in buffer is the actual buffer, and
+	// when the loop rolls over, it hits the redzone at the beginning, or the
+	// start of the passed-in buffer matches the actual buffer, causing the
+	// redzone at the end to be hit. This requires a lot of dead space in
+	// the middle, and a fake (too large) mask, but it is very fast.
+	ds->memory.wram = anonymousMemoryMap(DS_SIZE_WORKING_RAM * 2 + 12);
+	ds->memory.wram[0] = redzoneInstruction;
+	ds->memory.wram[1] = redzoneInstruction;
+	ds->memory.wram[2] = redzoneInstruction;
+	ds->memory.wram[DS_SIZE_WORKING_RAM >> 1] = redzoneInstruction;
+	ds->memory.wram[(DS_SIZE_WORKING_RAM >> 1) + 1] = redzoneInstruction;
+	ds->memory.wram[(DS_SIZE_WORKING_RAM >> 1) + 2] = redzoneInstruction;
+	ds->memory.wramBase = &ds->memory.wram[DS_SIZE_WORKING_RAM >> 2];
 
 	if (ds->memory.wram7) {
 		mappedMemoryFree(ds->memory.wram7, DS7_SIZE_WORKING_RAM);
@@ -212,9 +229,16 @@ static void DS7SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
 			cpu->memory.activeRegion = ds->memory.wram7;
 			cpu->memory.activeMask = DS7_SIZE_WORKING_RAM - 1;
+		} else if (ds->memory.wramSize7 == DS_SIZE_WORKING_RAM) {
+			if (address & DS_SIZE_WORKING_RAM) {
+				cpu->memory.activeRegion = ds->memory.wram;
+			} else {
+				cpu->memory.activeRegion = ds->memory.wramBase;
+			}
+			cpu->memory.activeMask = (ds->memory.wramSize7 << 1) - 1;
 		} else {
-			cpu->memory.activeRegion = ds->memory.wram;
-			cpu->memory.activeMask = ds->memory.wramSize7 - 1;
+			cpu->memory.activeRegion = ds->memory.wramBase;
+			cpu->memory.activeMask = (ds->memory.wramSize7 - 1);
 		}
 		break;
 	case DS7_REGION_BIOS:
@@ -1288,23 +1312,23 @@ void DSConfigureWRAM(struct DSMemory* memory, uint8_t config) {
 		memory->wramSize7 = 0;
 		memory->wramBase7 = NULL;
 		memory->wramSize9 = DS_SIZE_WORKING_RAM;
-		memory->wramBase9 = memory->wram;
+		memory->wramBase9 = memory->wramBase;
 		break;
 	case 1:
 		memory->wramSize7 = DS_SIZE_WORKING_RAM >> 1;
 		memory->wramBase7 = memory->wram;
 		memory->wramSize9 = DS_SIZE_WORKING_RAM >> 1;
-		memory->wramBase9 = &memory->wram[DS_SIZE_WORKING_RAM >> 3];
+		memory->wramBase9 = &memory->wramBase[DS_SIZE_WORKING_RAM >> 3];
 		break;
 	case 2:
 		memory->wramSize7 = DS_SIZE_WORKING_RAM >> 1;
 		memory->wramBase7 = &memory->wram[DS_SIZE_WORKING_RAM >> 3];
 		memory->wramSize9 = DS_SIZE_WORKING_RAM >> 1;
-		memory->wramBase9 = memory->wram;
+		memory->wramBase9 = memory->wramBase;
 		break;
 	case 3:
 		memory->wramSize7 = DS_SIZE_WORKING_RAM;
-		memory->wramBase7 = memory->wram;
+		memory->wramBase7 = memory->wramBase;
 		memory->wramSize9 = 0;
 		memory->wramBase9 = NULL;
 		break;

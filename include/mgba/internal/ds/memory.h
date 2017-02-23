@@ -18,6 +18,8 @@ CXX_GUARD_START
 #include <mgba/internal/ds/slot1.h>
 #include <mgba/internal/ds/spi.h>
 
+const uint32_t redzoneInstruction;
+
 enum DSMemoryRegion {
 	DS7_REGION_BIOS = 0x0,
 	DS9_REGION_ITCM = 0x0,
@@ -80,6 +82,7 @@ struct DSMemory {
 	uint32_t* dtcm;
 	uint32_t* ram;
 	uint32_t* wram;
+	uint32_t* wramBase;
 	uint32_t* wramBase7;
 	uint32_t* wramBase9;
 	uint32_t* wram7;

@@ -553,7 +553,16 @@ void DSHitStub(struct ARMCore* cpu, uint32_t opcode) {
 
 void DSIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	struct DS* ds = (struct DS*) cpu->master;
-	if (ds->debugger) {
+	if ((opcode & 0xFFFF) == (redzoneInstruction & 0xFFFF)) {
+		int currentCycles = 0;
+		if (cpu->executionMode == MODE_THUMB) {
+			cpu->gprs[ARM_PC] -= WORD_SIZE_THUMB * 2;
+			THUMB_WRITE_PC;
+		} else {
+			cpu->gprs[ARM_PC] -= WORD_SIZE_ARM * 2;
+			ARM_WRITE_PC;
+		}
+	} else if (ds->debugger) {
 		struct mDebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
 			.opcode = opcode
