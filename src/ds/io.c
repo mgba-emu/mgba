@@ -341,6 +341,7 @@ uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 		return DSIOReadKeyInput(ds);
 	case DS7_REG_EXTKEYIN:
 		return DSIOReadExKeyInput(ds);
+	case DS_REG_VCOUNT:
 	case DS_REG_DMA0FILL_LO:
 	case DS_REG_DMA0FILL_HI:
 	case DS_REG_DMA1FILL_LO:
@@ -538,6 +539,7 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 		break;
 	case DS_REG_KEYINPUT:
 		return DSIOReadKeyInput(ds);
+	case DS_REG_VCOUNT:
 	case DS_REG_DMA0FILL_LO:
 	case DS_REG_DMA0FILL_HI:
 	case DS_REG_DMA1FILL_LO:
