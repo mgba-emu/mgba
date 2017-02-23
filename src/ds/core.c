@@ -103,13 +103,7 @@ static void _DSCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 
 	mCoreConfigCopyValue(&core->config, config, "ds.bios7");
 	mCoreConfigCopyValue(&core->config, config, "ds.bios9");
-
-	if (core->opts.useBios && core->opts.bios) {
-		bios = VFileOpen(core->opts.bios, O_RDONLY);
-	}
-	if (bios) {
-		DSLoadBIOS(ds, bios);
-	}
+	mCoreConfigCopyValue(&core->config, config, "ds.firmware");
 }
 
 static void _DSCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
@@ -189,9 +183,11 @@ static void _DSCoreReset(struct mCore* core) {
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct VFile* bios7 = NULL;
 	struct VFile* bios9 = NULL;
+	struct VFile* firm = NULL;
 	if (core->opts.useBios) {
 		bool found7 = false;
 		bool found9 = false;
+		bool foundFirm = false;
 
 		if (!found7) {
 			const char* configPath = mCoreConfigGetValue(&core->config, "ds.bios7");
@@ -215,6 +211,17 @@ static void _DSCoreReset(struct mCore* core) {
 			}
 		}
 
+		if (!foundFirm) {
+			const char* configPath = mCoreConfigGetValue(&core->config, "ds.firmware");
+			firm = VFileOpen(configPath, O_RDONLY);
+			if (firm && DSIsFirmware(firm)) {
+				foundFirm = true;
+			} else if (firm) {
+				firm->close(firm);
+				firm = NULL;
+			}
+		}
+
 		if (!found7) {
 			char path[PATH_MAX];
 			mCoreConfigDirectory(path, PATH_MAX);
@@ -228,12 +235,22 @@ static void _DSCoreReset(struct mCore* core) {
 			strncat(path, PATH_SEP "ds9_bios.bin", PATH_MAX - strlen(path));
 			bios9 = VFileOpen(path, O_RDONLY);
 		}
+
+		if (!foundFirm) {
+			char path[PATH_MAX];
+			mCoreConfigDirectory(path, PATH_MAX);
+			strncat(path, PATH_SEP "ds_firmware.bin", PATH_MAX - strlen(path));
+			firm = VFileOpen(path, O_RDWR);
+		}
 	}
 	if (bios7) {
 		DSLoadBIOS(ds, bios7);
 	}
 	if (bios9) {
 		DSLoadBIOS(ds, bios9);
+	}
+	if (firm) {
+		DSLoadFirmware(ds, firm);
 	}
 #endif
 

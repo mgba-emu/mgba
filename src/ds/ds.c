@@ -29,6 +29,9 @@ static const size_t DS_ROM_MAGIC_OFFSET = 0x15C;
 static const uint8_t DS_ROM_MAGIC[] = { 0x56, 0xCF };
 static const uint8_t DS_ROM_MAGIC_2[] = { 0x1A, 0x9E };
 
+static const size_t DS_FIRMWARE_MAGIC_OFFSET = 0x8;
+static const uint8_t DS_FIRMWARE_MAGIC[] = { 0x4D, 0x41, 0x43 };
+
 enum {
 	DS7_SP_BASE = 0x380FD80,
 	DS7_SP_BASE_IRQ = 0x380FF80,
@@ -493,6 +496,17 @@ bool DSIsBIOS9(struct VFile* vf) {
 	return crc == DS9_BIOS_CHECKSUM;
 }
 
+bool DSIsFirmware(struct VFile* vf) {
+	if (vf->seek(vf, DS_FIRMWARE_MAGIC_OFFSET, SEEK_SET) < 0) {
+		return false;
+	}
+	uint8_t signature[sizeof(DS_FIRMWARE_MAGIC)];
+	if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
+		return false;
+	}
+	return memcmp(signature, DS_FIRMWARE_MAGIC, sizeof(signature)) == 0;
+}
+
 bool DSLoadBIOS(struct DS* ds, struct VFile* vf) {
 	size_t size = vf->size(vf);
 	void* data = NULL;
@@ -504,6 +518,8 @@ bool DSLoadBIOS(struct DS* ds, struct VFile* vf) {
 		vf->read(vf, data, size);
 	} else if (size == DS9_SIZE_BIOS) {
 		data = vf->map(vf, size, MAP_READ);
+	} else if (size == DS_SIZE_FIRMWARE) {
+		return DSLoadFirmware(ds, vf);
 	}
 	if (!data) {
 		return false;
@@ -522,6 +538,23 @@ bool DSLoadBIOS(struct DS* ds, struct VFile* vf) {
 		vf->unmap(vf, data, size);
 		return false;
 	}
+	return true;
+}
+
+bool DSLoadFirmware(struct DS* ds, struct VFile* vf) {
+	size_t size = vf->size(vf);
+	void* data = NULL;
+	if (!DSIsFirmware(vf)) {
+		return false;
+	}
+	if (size == DS_SIZE_FIRMWARE) {
+		data = vf->map(vf, size, MAP_WRITE);
+	}
+	if (!data) {
+		return false;
+	}
+	mLOG(DS, INFO, "Found DS firmware");
+	ds->firmwareVf = vf;
 	return true;
 }
 

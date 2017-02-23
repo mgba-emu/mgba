@@ -99,6 +99,7 @@ struct DS {
 	struct VFile* romVf;
 	struct VFile* bios7Vf;
 	struct VFile* bios9Vf;
+	struct VFile* firmwareVf;
 
 	struct mKeyCallback* keyCallback;
 	struct mCoreCallbacks* coreCallbacks;
@@ -162,6 +163,9 @@ void DSApplyPatch(struct DS* ds, struct Patch* patch);
 bool DSIsBIOS7(struct VFile* vf);
 bool DSIsBIOS9(struct VFile* vf);
 bool DSLoadBIOS(struct DS* ds, struct VFile* vf);
+
+bool DSIsFirmware(struct VFile* vf);
+bool DSLoadFirmware(struct DS* ds, struct VFile* vf);
 
 bool DSIsROM(struct VFile* vf);
 void DSGetGameCode(struct DS* ds, char* out);

@@ -769,20 +769,10 @@
          </item>
         </layout>
        </item>
-       <item row="5" column="1">
-        <widget class="QCheckBox" name="useBios">
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_27">
          <property name="text">
-          <string>Use BIOS file if found</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QCheckBox" name="skipBios">
-         <property name="text">
-          <string>Skip BIOS intro</string>
+          <string>DS BIOS 9 file:</string>
          </property>
         </widget>
        </item>
@@ -807,10 +797,48 @@
          </item>
         </layout>
        </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_27">
+       <item row="5" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_17">
+         <item>
+          <widget class="QLineEdit" name="dsFirmware">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="dsFirmwareBrowse">
+           <property name="text">
+            <string>Browse</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="6" column="1">
+        <widget class="QCheckBox" name="useBios">
          <property name="text">
-          <string>DS BIOS 9 file:</string>
+          <string>Use BIOS file if found</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QCheckBox" name="skipBios">
+         <property name="text">
+          <string>Skip BIOS intro</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_28">
+         <property name="text">
+          <string>DS firmware file:</string>
          </property>
         </widget>
        </item>

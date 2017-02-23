@@ -136,6 +136,9 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	connect(m_ui.dsBios9Browse, &QPushButton::clicked, [this]() {
 		selectBios(m_ui.dsBios9);
 	});
+	connect(m_ui.dsFirmwareBrowse, &QPushButton::clicked, [this]() {
+		selectBios(m_ui.dsFirmware);
+	});
 	connect(m_ui.gbBiosBrowse, &QPushButton::clicked, [this]() {
 		selectBios(m_ui.gbBios);
 	});
@@ -189,6 +192,7 @@ void SettingsView::updateConfig() {
 	saveSetting("gbc.bios", m_ui.gbcBios);
 	saveSetting("ds.bios7", m_ui.dsBios7);
 	saveSetting("ds.bios9", m_ui.dsBios9);
+	saveSetting("ds.firmware", m_ui.dsFirmware);
 	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
 	saveSetting("audioBuffers", m_ui.audioBufferSize);
@@ -269,6 +273,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("gbc.bios", m_ui.gbcBios);
 	loadSetting("ds.bios7", m_ui.dsBios7);
 	loadSetting("ds.bios9", m_ui.dsBios9);
+	loadSetting("ds.firmware", m_ui.dsFirmware);
 	loadSetting("useBios", m_ui.useBios);
 	loadSetting("skipBios", m_ui.skipBios);
 	loadSetting("audioBuffers", m_ui.audioBufferSize);
