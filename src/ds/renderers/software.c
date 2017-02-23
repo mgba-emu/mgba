@@ -74,22 +74,23 @@ static void DSVideoSoftwareRendererUpdateDISPCNTA(struct DSVideoSoftwareRenderer
 	softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_DISPCNT_LO, fakeDispcnt);
 	uint32_t charBase = DSRegisterDISPCNTGetCharBase(softwareRenderer->dispcntA) << 16;
 	uint32_t screenBase = DSRegisterDISPCNTGetScreenBase(softwareRenderer->dispcntA) << 16;
-	softwareRenderer->engA.bg[0].charBase &= ~0x70000;
-	softwareRenderer->engA.bg[0].charBase |= charBase;
+	softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_BG0CNT, softwareRenderer->engA.bg[0].control);
+	softwareRenderer->engA.bg[0].charBase += charBase;
 	softwareRenderer->engA.bg[0].screenBase &= ~0x70000;
 	softwareRenderer->engA.bg[0].screenBase |= screenBase;
-	softwareRenderer->engA.bg[1].charBase &= ~0x70000;
-	softwareRenderer->engA.bg[1].charBase |= charBase;
+	softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_BG1CNT, softwareRenderer->engA.bg[1].control);
+	softwareRenderer->engA.bg[1].charBase += charBase;
 	softwareRenderer->engA.bg[1].screenBase &= ~0x70000;
 	softwareRenderer->engA.bg[1].screenBase |= screenBase;
-	softwareRenderer->engA.bg[2].charBase &= ~0x70000;
-	softwareRenderer->engA.bg[2].charBase |= charBase;
+	softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_BG2CNT, softwareRenderer->engA.bg[2].control);
+	softwareRenderer->engA.bg[2].charBase += charBase;
 	softwareRenderer->engA.bg[2].screenBase &= ~0x70000;
 	softwareRenderer->engA.bg[2].screenBase |= screenBase;
-	softwareRenderer->engA.bg[3].charBase &= ~0x70000;
-	softwareRenderer->engA.bg[3].charBase |= charBase;
+	softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_BG3CNT, softwareRenderer->engA.bg[3].control);
+	softwareRenderer->engA.bg[3].charBase += charBase;
 	softwareRenderer->engA.bg[3].screenBase &= ~0x70000;
-	softwareRenderer->engA.bg[3].screenBase |= screenBase;}
+	softwareRenderer->engA.bg[3].screenBase |= screenBase;
+}
 
 static void DSVideoSoftwareRendererUpdateDISPCNTB(struct DSVideoSoftwareRenderer* softwareRenderer) {
 	uint16_t fakeDispcnt = softwareRenderer->dispcntB & 0xFF87;

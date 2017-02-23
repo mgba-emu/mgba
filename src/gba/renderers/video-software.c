@@ -637,14 +637,17 @@ static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRendere
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value) {
 	UNUSED(renderer);
 	bg->priority = GBARegisterBGCNTGetPriority(value);
-	bg->charBase &= ~0xC000;
-	bg->charBase |= GBARegisterBGCNTGetCharBase(value) << 14;
+	bg->charBase = GBARegisterBGCNTGetCharBase(value) << 14;
+	if (!renderer->d.vramBG[4]) {
+		bg->charBase &= 0xC000;
+	}
 	bg->mosaic = GBARegisterBGCNTGetMosaic(value);
 	bg->multipalette = GBARegisterBGCNTGet256Color(value);
 	bg->screenBase &= ~0xF800;
 	bg->screenBase |= GBARegisterBGCNTGetScreenBase(value) << 11;
 	bg->overflow = GBARegisterBGCNTGetOverflow(value);
 	bg->size = GBARegisterBGCNTGetSize(value);
+	bg->control = value;
 }
 
 static void GBAVideoSoftwareRendererWriteBGPA(struct GBAVideoSoftwareBackground* bg, uint16_t value) {

@@ -24,6 +24,7 @@ struct GBAVideoSoftwareBackground {
 	int enabled;
 	unsigned priority;
 	uint32_t charBase;
+	uint16_t control;
 	int mosaic;
 	int multipalette;
 	uint32_t screenBase;
