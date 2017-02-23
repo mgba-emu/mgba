@@ -201,6 +201,7 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 	ds->rumble = NULL;
 
 	ds->romVf = NULL;
+	DSSlot1SPIInit(ds, NULL);
 
 	ds->keyCallback = NULL;
 
@@ -441,6 +442,11 @@ bool DSLoadROM(struct DS* ds, struct VFile* vf) {
 	DSUnloadROM(ds);
 	ds->romVf = vf;
 	// TODO: error check
+	return true;
+}
+
+bool DSLoadSave(struct DS* ds, struct VFile* sav) {
+	DSSlot1SPIInit(ds, sav);
 	return true;
 }
 

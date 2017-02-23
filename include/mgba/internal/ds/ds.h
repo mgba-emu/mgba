@@ -155,6 +155,7 @@ void DSAttachDebugger(struct DS* ds, struct mDebugger* debugger);
 void DSDetachDebugger(struct DS* ds);
 
 bool DSLoadROM(struct DS* ds, struct VFile* vf);
+bool DSLoadSave(struct DS* ds, struct VFile* vf);
 void DSUnloadROM(struct DS* ds);
 void DSApplyPatch(struct DS* ds, struct Patch* patch);
 

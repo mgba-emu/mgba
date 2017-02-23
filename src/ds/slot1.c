@@ -7,17 +7,26 @@
 
 #include <mgba/internal/arm/macros.h>
 #include <mgba/internal/ds/ds.h>
+#include <mgba-util/math.h>
 #include <mgba-util/vfs.h>
 
 mLOG_DEFINE_CATEGORY(DS_SLOT1, "DS Slot-1");
 
 static void _slot1SPI(struct mTiming*, void* context, uint32_t cyclesLate);
+static bool _slot1GuaranteeSize(struct DSSlot1*);
 
-void DSSlot1Reset(struct DS* ds) {
+void DSSlot1SPIInit(struct DS* ds, struct VFile* vf) {
 	ds->memory.slot1.spiEvent.name = "DS Slot-1 SPI";
 	ds->memory.slot1.spiEvent.priority = 0x70;
 	ds->memory.slot1.spiEvent.context = NULL;
 	ds->memory.slot1.spiEvent.callback = _slot1SPI;
+	ds->memory.slot1.savedataType = DS_SAVEDATA_AUTODETECT;
+	ds->memory.slot1.spiVf = vf;
+	ds->memory.slot1.spiRealVf = vf;
+	ds->memory.slot1.spiData = NULL;
+}
+
+void DSSlot1Reset(struct DS* ds) {
 	ds->memory.slot1.statusReg = 0;
 	ds->memory.slot1.spiCommand = 0;
 	ds->memory.slot1.spiHoldEnabled = 0;
@@ -132,6 +141,26 @@ void DSSlot1WriteSPI(struct DSCommon* dscore, uint8_t datum) {
 static uint8_t _slot1SPIAutodetect(struct DSCommon* dscore, uint8_t datum) {
 	DSSlot1AUXSPICNT control = dscore->memory.io[DS_REG_AUXSPICNT >> 1];
 	mLOG(DS_SLOT1, STUB, "Unimplemented SPI write: %04X:%02X:%02X", control, dscore->p->memory.slot1.spiCommand, datum);
+
+	if (dscore->p->memory.slot1.spiAddressingRemaining) {
+		dscore->p->memory.slot1.spiAddress <<= 8;
+		dscore->p->memory.slot1.spiAddress |= datum;
+		dscore->p->memory.slot1.spiAddressingRemaining -= 8;
+		return 0xFF;
+	} else {
+		if (!_slot1GuaranteeSize(&dscore->p->memory.slot1)) {
+			return 0xFF;
+		}
+	}
+
+	switch (dscore->p->memory.slot1.spiCommand) {
+	case 0x03: // RD
+		return dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress++];
+	case 0x02: // WR
+		dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress] = datum;
+		++dscore->p->memory.slot1.spiAddress;
+		break;
+	}
 	return 0xFF;
 }
 
@@ -141,7 +170,7 @@ static void _slot1SPI(struct mTiming* timing, void* context, uint32_t cyclesLate
 	struct DSCommon* dscore = context;
 	DSSlot1AUXSPICNT control = dscore->memory.io[DS_REG_AUXSPICNT >> 1];
 	uint8_t oldValue = dscore->memory.io[DS_REG_AUXSPIDATA >> 1];
-	uint8_t newValue = 0;
+	uint8_t newValue = 0xFF;
 
 	if (!dscore->p->memory.slot1.spiCommand) {
 		dscore->p->memory.slot1.spiCommand = oldValue;
@@ -149,6 +178,8 @@ static void _slot1SPI(struct mTiming* timing, void* context, uint32_t cyclesLate
 		if (oldValue == 0x0B && dscore->p->memory.slot1.savedataType == DS_SAVEDATA_AUTODETECT) {
 			dscore->p->memory.slot1.savedataType = DS_SAVEDATA_EEPROM512;
 		}
+		dscore->p->memory.slot1.spiAddress = 0;
+		dscore->p->memory.slot1.spiAddressingRemaining = 16;
 	} else {
 		switch (dscore->p->memory.slot1.spiCommand) {
 		case 0x04: // WRDI
@@ -177,7 +208,23 @@ static void _slot1SPI(struct mTiming* timing, void* context, uint32_t cyclesLate
 	dscore->ipc->memory.io[DS_REG_AUXSPIDATA >> 1] = newValue;
 	dscore->memory.io[DS_REG_AUXSPICNT >> 1] = control;
 	dscore->ipc->memory.io[DS_REG_AUXSPICNT >> 1] = control;
-	if (DSSlot1AUXSPICNTIsDoIRQ(control)) {
-		DSRaiseIRQ(dscore->cpu, dscore->memory.io, DS_IRQ_SLOT1);
+}
+
+static bool _slot1GuaranteeSize(struct DSSlot1* slot1) {
+	if (!slot1->spiVf) {
+		return false;
 	}
+	if (slot1->spiAddress >= slot1->spiVf->size(slot1->spiVf)) {
+		size_t size = toPow2(slot1->spiAddress + 1);
+		if (slot1->spiData) {
+			slot1->spiVf->unmap(slot1->spiVf, slot1->spiData, slot1->spiVf->size(slot1->spiVf));
+			slot1->spiData = NULL;
+		}
+		slot1->spiVf->truncate(slot1->spiVf, size);
+		// TODO: Write FFs
+	}
+	if (!slot1->spiData) {
+		slot1->spiData = slot1->spiVf->map(slot1->spiVf, slot1->spiVf->size(slot1->spiVf), MAP_WRITE);
+	}
+	return slot1->spiData;
 }

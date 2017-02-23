@@ -163,7 +163,7 @@ static bool _DSCoreLoadBIOS(struct mCore* core, struct VFile* vf, int type) {
 }
 
 static bool _DSCoreLoadSave(struct mCore* core, struct VFile* vf) {
-	return false;
+	return DSLoadSave(core->board, vf);
 }
 
 static bool _DSCoreLoadPatch(struct mCore* core, struct VFile* vf) {

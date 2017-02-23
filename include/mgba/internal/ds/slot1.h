@@ -36,6 +36,7 @@ enum DSSavedataType {
 	DS_SAVEDATA_FLASH = 3
 };
 
+struct VFile;
 struct DSSlot1 {
 	uint8_t command[8];
 	uint32_t address;
@@ -48,10 +49,17 @@ struct DSSlot1 {
 	bool spiHoldEnabled;
 	uint8_t spiCommand;
 	uint8_t statusReg;
+	int spiAddressingRemaining;
+	uint32_t spiAddress;
+
+	uint8_t* spiData;
+	struct VFile* spiVf;
+	struct VFile* spiRealVf;
 };
 
 struct DS;
 struct DSCommon;
+void DSSlot1SPIInit(struct DS* ds, struct VFile* vf);
 void DSSlot1Reset(struct DS* ds);
 DSSlot1AUXSPICNT DSSlot1Configure(struct DS* ds, DSSlot1AUXSPICNT config);
 DSSlot1ROMCNT DSSlot1Control(struct DS* ds, DSSlot1ROMCNT control);
