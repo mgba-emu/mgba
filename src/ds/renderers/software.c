@@ -55,6 +55,9 @@ static void DSVideoSoftwareRendererReset(struct DSVideoRenderer* renderer) {
 	struct DSVideoSoftwareRenderer* softwareRenderer = (struct DSVideoSoftwareRenderer*) renderer;
 	softwareRenderer->engA.d.reset(&softwareRenderer->engA.d);
 	softwareRenderer->engB.d.reset(&softwareRenderer->engB.d);
+	softwareRenderer->powcnt = 0;
+	softwareRenderer->dispcntA = 0;
+	softwareRenderer->dispcntB = 0;
 }
 
 static void DSVideoSoftwareRendererDeinit(struct DSVideoRenderer* renderer) {
