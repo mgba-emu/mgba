@@ -49,14 +49,18 @@ enum {
 struct DSSPIBus {
 	bool holdEnabled;
 
-	uint8_t firmwareMode;
+	uint8_t firmCommand;
+	uint8_t firmStatusReg;
+	int firmAddressingRemaining;
+	uint32_t firmAddress;
 
-	struct mTimingEvent tscEvent;
 	uint8_t tscControlByte;
 	uint16_t tscRegister;
 	int tscOffset;
 
 	uint8_t powmgrByte;
+
+	struct mTimingEvent event;
 };
 
 struct DS;
