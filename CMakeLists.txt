@@ -646,7 +646,8 @@ if(M_CORE_DS)
 	list(APPEND DEBUGGER_SRC
 		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/cli-debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/debugger.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/memory-debugger.c)
+		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/memory-debugger.c
+		${CMAKE_CURRENT_SOURCE_DIR}/src/ds/extra/cli.c)
 endif()
 
 source_group("Virtual files" FILES ${CORE_VFS_SRC} ${VFS_SRC})

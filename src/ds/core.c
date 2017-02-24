@@ -402,6 +402,7 @@ static void _DSCoreRawWrite16(struct mCore* core, uint32_t address, int segment,
 static void _DSCoreRawWrite32(struct mCore* core, uint32_t address, int segment, uint32_t value) {
 }
 
+#ifdef USE_DEBUGGERS
 static bool _DSCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
 	UNUSED(core);
 	switch (type) {
@@ -440,6 +441,7 @@ static void _DSCoreDetachDebugger(struct mCore* core) {
 	DSDetachDebugger(core->board);
 	core->debugger = NULL;
 }
+#endif
 
 static struct mCheatDevice* _DSCoreCheatDevice(struct mCore* core) {
 	return NULL;
