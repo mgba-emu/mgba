@@ -146,13 +146,20 @@ static uint8_t _slot1SPIAutodetect(struct DSCommon* dscore, uint8_t datum) {
 		dscore->p->memory.slot1.spiAddress <<= 8;
 		dscore->p->memory.slot1.spiAddress |= datum;
 		dscore->p->memory.slot1.spiAddressingRemaining -= 8;
+		if (dscore->p->memory.slot1.spiAddressingPc >= 0) {
+			dscore->p->memory.slot1.spiAddressingPc = dscore->cpu->gprs[ARM_PC];
+		}
 		return 0xFF;
-	} else if (dscore->p->memory.slot1.spiAddress & 1) {
+	} else if (dscore->cpu->gprs[ARM_PC] == dscore->p->memory.slot1.spiAddressingPc) {
 		dscore->p->memory.slot1.spiAddress <<= 8;
 		dscore->p->memory.slot1.spiAddress |= datum;
 		dscore->p->memory.slot1.savedataType = DS_SAVEDATA_FLASH;
 		return 0xFF;
 	} else {
+		if (dscore->p->memory.slot1.spiAddress) {
+			// Cease autodetection
+			dscore->p->memory.slot1.spiAddressingPc = -1;
+		}
 		if (!_slot1GuaranteeSize(&dscore->p->memory.slot1)) {
 			return 0xFF;
 		}
@@ -259,12 +266,28 @@ static bool _slot1GuaranteeSize(struct DSSlot1* slot1) {
 	}
 	if (slot1->spiAddress >= slot1->spiVf->size(slot1->spiVf)) {
 		size_t size = toPow2(slot1->spiAddress + 1);
+		size_t oldSize = slot1->spiVf->size(slot1->spiVf);
 		if (slot1->spiData) {
-			slot1->spiVf->unmap(slot1->spiVf, slot1->spiData, slot1->spiVf->size(slot1->spiVf));
+			slot1->spiVf->unmap(slot1->spiVf, slot1->spiData, oldSize);
 			slot1->spiData = NULL;
 		}
 		slot1->spiVf->truncate(slot1->spiVf, size);
-		// TODO: Write FFs
+		slot1->spiVf->seek(slot1->spiVf, oldSize, SEEK_SET);
+		while (oldSize < size) {
+			static char buffer[1024];
+			memset(buffer, 0xFF, sizeof(buffer));
+			ssize_t written;
+			if (oldSize + sizeof(buffer) <= size) {
+				written = slot1->spiVf->write(slot1->spiVf, buffer, sizeof(buffer));
+			} else {
+				written = slot1->spiVf->write(slot1->spiVf, buffer, size - oldSize);
+			}
+			if (written >= 0) {
+				oldSize += written;
+			} else {
+				break;
+			}
+		}
 	}
 	if (!slot1->spiData) {
 		slot1->spiData = slot1->spiVf->map(slot1->spiVf, slot1->spiVf->size(slot1->spiVf), MAP_WRITE);
