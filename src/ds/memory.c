@@ -707,7 +707,11 @@ static void DS9SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 			cpu->memory.activeRegion = _deadbeef;
 			cpu->memory.activeMask = 0;
 		}
-		break;
+		cpu->memory.activeSeqCycles32 = 0;
+		cpu->memory.activeSeqCycles16 = 0;
+		cpu->memory.activeNonseqCycles32 = 0;
+		cpu->memory.activeNonseqCycles16 = 0;
+		return;
 	default:
 	jump_error:
 		memory->activeRegion = -1;
