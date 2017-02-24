@@ -628,15 +628,6 @@ if(M_CORE_GBA)
 	endif()
 endif()
 
-if(USE_DEBUGGERS)
-	list(APPEND FEATURE_SRC ${DEBUGGER_SRC})
-	list(APPEND FEATURES DEBUGGERS)
-endif()
-
-foreach(FEATURE IN LISTS FEATURES)
-	list(APPEND FEATURE_DEFINES "USE_${FEATURE}")
-endforeach()
-
 if(M_CORE_DS)
 	add_definitions(-DM_CORE_DS)
 	list(APPEND CORE_SRC 
@@ -649,6 +640,15 @@ if(M_CORE_DS)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/memory-debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/ds/extra/cli.c)
 endif()
+
+if(USE_DEBUGGERS)
+	list(APPEND FEATURE_SRC ${DEBUGGER_SRC})
+	list(APPEND FEATURES DEBUGGERS)
+endif()
+
+foreach(FEATURE IN LISTS FEATURES)
+	list(APPEND FEATURE_DEFINES "USE_${FEATURE}")
+endforeach()
 
 source_group("Virtual files" FILES ${CORE_VFS_SRC} ${VFS_SRC})
 source_group("Extra features" FILES ${FEATURE_SRC})
