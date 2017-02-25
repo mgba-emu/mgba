@@ -133,6 +133,7 @@ static struct DSVideoRenderer dummyRenderer = {
 	.writeVideoRegister = DSVideoDummyRendererWriteVideoRegister,
 	.writePalette = DSVideoDummyRendererWritePalette,
 	.writeOAM = DSVideoDummyRendererWriteOAM,
+	.invalidateExtPal = DSVideoDummyRendererInvalidateExtPal,
 	.drawScanline = DSVideoDummyRendererDrawScanline,
 	.finishFrame = DSVideoDummyRendererFinishFrame,
 	.getPixels = DSVideoDummyRendererGetPixels,
