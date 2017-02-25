@@ -118,114 +118,107 @@ static void DSVideoSoftwareRendererDeinit(struct DSVideoRenderer* renderer) {
 	softwareRenderer->engB.d.deinit(&softwareRenderer->engB.d);
 }
 
-static void DSVideoSoftwareRendererUpdateDISPCNTA(struct DSVideoSoftwareRenderer* softwareRenderer) {
-	uint16_t fakeDispcnt = softwareRenderer->dispcntA & 0xFF87;
-	if (!DSRegisterDISPCNTIsTileObjMapping(softwareRenderer->dispcntA)) {
-		softwareRenderer->engA.tileStride = 0x20;
+static void DSVideoSoftwareRendererUpdateDISPCNT(struct DSVideoSoftwareRenderer* softwareRenderer, bool engB) {
+	uint32_t dispcnt;
+	struct GBAVideoSoftwareRenderer* eng;
+	if (!engB) {
+		dispcnt = softwareRenderer->dispcntA;
+		eng = &softwareRenderer->engA;
 	} else {
-		softwareRenderer->engA.tileStride = 0x20 << DSRegisterDISPCNTGetTileBoundary(softwareRenderer->dispcntA);
+		dispcnt = softwareRenderer->dispcntB;
+		eng = &softwareRenderer->engB;
+	}
+	uint16_t fakeDispcnt = dispcnt & 0xFF87;
+	if (!DSRegisterDISPCNTIsTileObjMapping(dispcnt)) {
+		eng->tileStride = 0x20;
+	} else {
+		eng->tileStride = 0x20 << DSRegisterDISPCNTGetTileBoundary(dispcnt);
 		fakeDispcnt = GBARegisterDISPCNTFillObjCharacterMapping(fakeDispcnt);
 	}
-	softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_DISPCNT_LO, fakeDispcnt);
-	softwareRenderer->engA.dispcnt |= softwareRenderer->dispcntA & 0xFFFF000;
-	if (DSRegisterDISPCNTIsBgExtPalette(softwareRenderer->dispcntA)) {
+	eng->d.writeVideoRegister(&eng->d, DS9_REG_A_DISPCNT_LO, fakeDispcnt);
+	eng->dispcnt |= dispcnt & 0xFFFF0000;
+	if (DSRegisterDISPCNTIsBgExtPalette(dispcnt)) {
+		color_t* extPalette;
+		if (!engB) {
+			extPalette = softwareRenderer->extPaletteA;
+		} else {
+			extPalette = softwareRenderer->extPaletteB;
+		}
 		int i;
 		for (i = 0; i < 4; ++i) {
-			// TODO: Regenerate on change
 			int slot = i;
-			if (i < 2 && GBARegisterBGCNTIsExtPaletteSlot(softwareRenderer->engA.bg[i].control)) {
+			if (i < 2 && GBARegisterBGCNTIsExtPaletteSlot(eng->bg[i].control)) {
 				slot += 2;
 			}
-			if (softwareRenderer->engA.bg[i].extPalette != &softwareRenderer->extPaletteA[slot * 4096] && _regenerateExtPalette(softwareRenderer, false, slot)) {
-				softwareRenderer->engA.bg[i].extPalette = &softwareRenderer->extPaletteA[slot * 4096];
+			if (eng->bg[i].extPalette != &extPalette[slot * 4096] && _regenerateExtPalette(softwareRenderer, engB, slot)) {
+				eng->bg[i].extPalette = &extPalette[slot * 4096];
 			}
 		}
 	} else {
-		softwareRenderer->engA.bg[0].extPalette = NULL;
-		softwareRenderer->engA.bg[1].extPalette = NULL;
-		softwareRenderer->engA.bg[2].extPalette = NULL;
-		softwareRenderer->engA.bg[3].extPalette = NULL;
+		eng->bg[0].extPalette = NULL;
+		eng->bg[1].extPalette = NULL;
+		eng->bg[2].extPalette = NULL;
+		eng->bg[3].extPalette = NULL;
 	}
-	uint32_t charBase = DSRegisterDISPCNTGetCharBase(softwareRenderer->dispcntA) << 16;
-	uint32_t screenBase = DSRegisterDISPCNTGetScreenBase(softwareRenderer->dispcntA) << 16;
-	softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_BG0CNT, softwareRenderer->engA.bg[0].control);
-	softwareRenderer->engA.bg[0].charBase += charBase;
-	softwareRenderer->engA.bg[0].screenBase &= ~0x70000;
-	softwareRenderer->engA.bg[0].screenBase |= screenBase;
-	softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_BG1CNT, softwareRenderer->engA.bg[1].control);
-	softwareRenderer->engA.bg[1].charBase += charBase;
-	softwareRenderer->engA.bg[1].screenBase &= ~0x70000;
-	softwareRenderer->engA.bg[1].screenBase |= screenBase;
-	softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_BG2CNT, softwareRenderer->engA.bg[2].control);
-	softwareRenderer->engA.bg[2].charBase += charBase;
-	softwareRenderer->engA.bg[2].screenBase &= ~0x70000;
-	softwareRenderer->engA.bg[2].screenBase |= screenBase;
-	softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_BG3CNT, softwareRenderer->engA.bg[3].control);
-	softwareRenderer->engA.bg[3].charBase += charBase;
-	softwareRenderer->engA.bg[3].screenBase &= ~0x70000;
-	softwareRenderer->engA.bg[3].screenBase |= screenBase;
-}
-
-static void DSVideoSoftwareRendererUpdateDISPCNTB(struct DSVideoSoftwareRenderer* softwareRenderer) {
-	// TODO: Share code with DISPCNTA
-	uint16_t fakeDispcnt = softwareRenderer->dispcntB & 0xFF87;
-	if (!DSRegisterDISPCNTIsTileObjMapping(softwareRenderer->dispcntB)) {
-		softwareRenderer->engB.tileStride = 0x20;
-	} else {
-		softwareRenderer->engB.tileStride = 0x20 << DSRegisterDISPCNTGetTileBoundary(softwareRenderer->dispcntB);
-		fakeDispcnt = GBARegisterDISPCNTFillObjCharacterMapping(fakeDispcnt);
-	}
-	softwareRenderer->engB.d.writeVideoRegister(&softwareRenderer->engB.d, DS9_REG_A_DISPCNT_LO, fakeDispcnt);
-	softwareRenderer->engB.dispcnt |= softwareRenderer->dispcntB & 0xFFFF000;
-	if (DSRegisterDISPCNTIsBgExtPalette(softwareRenderer->dispcntB)) {
-		int i;
-		for (i = 0; i < 4; ++i) {
-			// TODO: Regenerate on change
-			int slot = i;
-			if (i < 2 && GBARegisterBGCNTIsExtPaletteSlot(softwareRenderer->engB.bg[i].control)) {
-				slot += 2;
-			}
-			if (softwareRenderer->engB.bg[i].extPalette != &softwareRenderer->extPaletteB[slot * 4096] && _regenerateExtPalette(softwareRenderer, true, slot)) {
-				softwareRenderer->engB.bg[i].extPalette = &softwareRenderer->extPaletteB[slot * 4096];
-			}
-		}
-	} else {
-		softwareRenderer->engA.bg[0].extPalette = NULL;
-		softwareRenderer->engA.bg[1].extPalette = NULL;
-		softwareRenderer->engA.bg[2].extPalette = NULL;
-		softwareRenderer->engA.bg[3].extPalette = NULL;
+	if (!engB) {
+		uint32_t charBase = DSRegisterDISPCNTGetCharBase(softwareRenderer->dispcntA) << 16;
+		uint32_t screenBase = DSRegisterDISPCNTGetScreenBase(softwareRenderer->dispcntA) << 16;
+		softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_BG0CNT, softwareRenderer->engA.bg[0].control);
+		softwareRenderer->engA.bg[0].charBase += charBase;
+		softwareRenderer->engA.bg[0].screenBase &= ~0x70000;
+		softwareRenderer->engA.bg[0].screenBase |= screenBase;
+		softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_BG1CNT, softwareRenderer->engA.bg[1].control);
+		softwareRenderer->engA.bg[1].charBase += charBase;
+		softwareRenderer->engA.bg[1].screenBase &= ~0x70000;
+		softwareRenderer->engA.bg[1].screenBase |= screenBase;
+		softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_BG2CNT, softwareRenderer->engA.bg[2].control);
+		softwareRenderer->engA.bg[2].charBase += charBase;
+		softwareRenderer->engA.bg[2].screenBase &= ~0x70000;
+		softwareRenderer->engA.bg[2].screenBase |= screenBase;
+		softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_BG3CNT, softwareRenderer->engA.bg[3].control);
+		softwareRenderer->engA.bg[3].charBase += charBase;
+		softwareRenderer->engA.bg[3].screenBase &= ~0x70000;
+		softwareRenderer->engA.bg[3].screenBase |= screenBase;
 	}
 }
 
 static uint16_t DSVideoSoftwareRendererWriteVideoRegister(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct DSVideoSoftwareRenderer* softwareRenderer = (struct DSVideoSoftwareRenderer*) renderer;
 	if (address >= DS9_REG_A_BG0CNT && address <= DS9_REG_A_BLDY) {
-		value = softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, address, value);
+		softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, address, value);
 	} else if (address >= DS9_REG_B_BG0CNT && address <= DS9_REG_B_BLDY) {
-		value = softwareRenderer->engB.d.writeVideoRegister(&softwareRenderer->engB.d, address & 0xFF, value);
+		softwareRenderer->engB.d.writeVideoRegister(&softwareRenderer->engB.d, address & 0xFF, value);
 	} else {
 		mLOG(DS_VIDEO, STUB, "Stub video register write: %04X:%04X", address, value);
 	}
 	switch (address) {
+	case DS9_REG_A_BG0CNT:
+	case DS9_REG_A_BG1CNT:
+		softwareRenderer->engA.bg[(address - DS9_REG_A_BG0CNT) >> 1].control = value;
+		break;
+	case DS9_REG_B_BG0CNT:
+	case DS9_REG_B_BG1CNT:
+		softwareRenderer->engB.bg[(address - DS9_REG_A_BG0CNT) >> 1].control = value;
+		break;
 	case DS9_REG_A_DISPCNT_LO:
 		softwareRenderer->dispcntA &= 0xFFFF0000;
 		softwareRenderer->dispcntA |= value;
-		DSVideoSoftwareRendererUpdateDISPCNTA(softwareRenderer);
+		DSVideoSoftwareRendererUpdateDISPCNT(softwareRenderer, false);
 		break;
 	case DS9_REG_A_DISPCNT_HI:
 		softwareRenderer->dispcntA &= 0x0000FFFF;
 		softwareRenderer->dispcntA |= value << 16;
-		DSVideoSoftwareRendererUpdateDISPCNTA(softwareRenderer);
+		DSVideoSoftwareRendererUpdateDISPCNT(softwareRenderer, false);
 		break;
 	case DS9_REG_B_DISPCNT_LO:
 		softwareRenderer->dispcntB &= 0xFFFF0000;
 		softwareRenderer->dispcntB |= value;
-		DSVideoSoftwareRendererUpdateDISPCNTB(softwareRenderer);
+		DSVideoSoftwareRendererUpdateDISPCNT(softwareRenderer, true);
 		break;
 	case DS9_REG_B_DISPCNT_HI:
 		softwareRenderer->dispcntB &= 0x0000FFFF;
 		softwareRenderer->dispcntB |= value << 16;
-		DSVideoSoftwareRendererUpdateDISPCNTB(softwareRenderer);
+		DSVideoSoftwareRendererUpdateDISPCNT(softwareRenderer, true);
 		break;
 	case DS9_REG_POWCNT1:
 		value &= 0x810F;
