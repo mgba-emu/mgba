@@ -135,6 +135,8 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 		bg->dmy = 256;
 		bg->sx = 0;
 		bg->sy = 0;
+		bg->extPalette = NULL;
+		bg->variantPalette = NULL;
 	}
 }
 

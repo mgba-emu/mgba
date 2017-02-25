@@ -202,15 +202,15 @@ void DSMemoryReset(struct DS* ds) {
 	DSSPIReset(ds);
 	DSSlot1Reset(ds);
 
-	DSVideoConfigureVRAM(ds, 0, 0);
-	DSVideoConfigureVRAM(ds, 1, 0);
-	DSVideoConfigureVRAM(ds, 2, 0);
-	DSVideoConfigureVRAM(ds, 3, 0);
-	DSVideoConfigureVRAM(ds, 4, 0);
-	DSVideoConfigureVRAM(ds, 5, 0);
-	DSVideoConfigureVRAM(ds, 6, 0);
-	DSVideoConfigureVRAM(ds, 7, 0);
-	DSVideoConfigureVRAM(ds, 8, 0);
+	DSVideoConfigureVRAM(ds, 0, 0, 1);
+	DSVideoConfigureVRAM(ds, 1, 0, 1);
+	DSVideoConfigureVRAM(ds, 2, 0, 1);
+	DSVideoConfigureVRAM(ds, 3, 0, 1);
+	DSVideoConfigureVRAM(ds, 4, 0, 1);
+	DSVideoConfigureVRAM(ds, 5, 0, 1);
+	DSVideoConfigureVRAM(ds, 6, 0, 1);
+	DSVideoConfigureVRAM(ds, 7, 0, 1);
+	DSVideoConfigureVRAM(ds, 8, 0, 1);
 	DSConfigureWRAM(&ds->memory, 3);
 
 	if (!ds->memory.wram || !ds->memory.wram7 || !ds->memory.ram || !ds->memory.itcm || !ds->memory.dtcm) {

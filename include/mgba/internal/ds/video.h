@@ -57,10 +57,14 @@ DECL_BITS(DSRegisterDISPCNT, TileBoundary, 20, 2);
 DECL_BITS(DSRegisterDISPCNT, CharBase, 24, 3);
 DECL_BITS(DSRegisterDISPCNT, ScreenBase, 27, 3);
 // TODO
+DECL_BIT(DSRegisterDISPCNT, BgExtPalette, 30);
+DECL_BIT(DSRegisterDISPCNT, ObjExtPalette, 31);
 
 DECL_BITFIELD(DSRegisterPOWCNT1, uint16_t);
 // TODO
 DECL_BIT(DSRegisterPOWCNT1, Swap, 15);
+
+DECL_BIT(GBARegisterBGCNT, ExtPaletteSlot, 13);
 
 struct DSVideoRenderer {
 	void (*init)(struct DSVideoRenderer* renderer);
@@ -70,6 +74,7 @@ struct DSVideoRenderer {
 	uint16_t (*writeVideoRegister)(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
 	void (*writePalette)(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
 	void (*writeOAM)(struct DSVideoRenderer* renderer, uint32_t oam);
+	void (*invalidateExtPal)(struct DSVideoRenderer* renderer, bool obj, bool engB, int slot);
 	void (*drawScanline)(struct DSVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct DSVideoRenderer* renderer);
 
@@ -80,8 +85,12 @@ struct DSVideoRenderer {
 	uint16_t* vram;
 	uint16_t* vramABG[32];
 	uint16_t* vramAOBJ[32];
+	uint16_t* vramABGExtPal[4];
+	uint16_t* vramAOBJExtPal[4];
 	uint16_t* vramBBG[32];
 	uint16_t* vramBOBJ[32];
+	uint16_t* vramBBGExtPal[4];
+	uint16_t* vramBOBJExtPal[4];
 	union DSOAM* oam;
 };
 
@@ -99,8 +108,12 @@ struct DSVideo {
 	uint16_t* vram;
 	uint16_t* vramABG[32];
 	uint16_t* vramAOBJ[32];
+	uint16_t* vramABGExtPal[4];
+	uint16_t* vramAOBJExtPal[4];
 	uint16_t* vramBBG[32];
 	uint16_t* vramBOBJ[32];
+	uint16_t* vramBBGExtPal[4];
+	uint16_t* vramBOBJExtPal[4];
 	union DSOAM oam;
 
 	int32_t frameCounter;
@@ -117,7 +130,7 @@ struct DSCommon;
 void DSVideoWriteDISPSTAT(struct DSCommon* dscore, uint16_t value);
 
 struct DSMemory;
-void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value);
+void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value, uint8_t oldValue);
 
 CXX_GUARD_START
 

@@ -42,6 +42,8 @@ struct GBAVideoSoftwareBackground {
 	int16_t dmy;
 	int32_t sx;
 	int32_t sy;
+	color_t* extPalette;
+	color_t* variantPalette;
 };
 
 enum BlendEffect {
@@ -116,7 +118,7 @@ struct GBAVideoSoftwareRenderer {
 
 	uint32_t* temporaryBuffer;
 
-	GBARegisterDISPCNT dispcnt;
+	uint32_t dispcnt;
 
 	uint32_t row[256];
 	uint32_t spriteLayer[256];

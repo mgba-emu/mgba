@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/ds/renderers/software.h>
+#include "gba/renderers/software-private.h"
 
 #include <mgba/internal/arm/macros.h>
 #include <mgba/internal/ds/io.h>
@@ -14,10 +15,60 @@ static void DSVideoSoftwareRendererReset(struct DSVideoRenderer* renderer);
 static uint16_t DSVideoSoftwareRendererWriteVideoRegister(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void DSVideoSoftwareRendererWritePalette(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void DSVideoSoftwareRendererWriteOAM(struct DSVideoRenderer* renderer, uint32_t oam);
+static void DSVideoSoftwareRendererInvalidateExtPal(struct DSVideoRenderer* renderer, bool obj, bool engB, int slot);
 static void DSVideoSoftwareRendererDrawScanline(struct DSVideoRenderer* renderer, int y);
 static void DSVideoSoftwareRendererFinishFrame(struct DSVideoRenderer* renderer);
 static void DSVideoSoftwareRendererGetPixels(struct DSVideoRenderer* renderer, size_t* stride, const void** pixels);
 static void DSVideoSoftwareRendererPutPixels(struct DSVideoRenderer* renderer, size_t stride, const void* pixels);
+
+static bool _regenerateExtPalette(struct DSVideoSoftwareRenderer* renderer, bool engB, int slot) {
+	color_t* palette;
+	color_t* variantPalette;
+	struct GBAVideoSoftwareRenderer* softwareRenderer;
+	uint16_t* vram;
+	if (!engB) {
+		palette = &renderer->extPaletteA[slot * 4096];
+		variantPalette = &renderer->variantPaletteA[slot * 4096];
+		softwareRenderer = &renderer->engA;
+		vram = renderer->d.vramABGExtPal[slot];
+	} else {
+		palette = &renderer->extPaletteB[slot * 4096];
+		variantPalette = &renderer->variantPaletteB[slot * 4096];
+		softwareRenderer = &renderer->engB;
+		vram = renderer->d.vramBBGExtPal[slot];
+	}
+	if (!vram) {
+		return false;
+	}
+	int i;
+	for (i = 0; i < 4096; ++i) {
+		uint16_t value = vram[i];
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+		unsigned color = 0;
+		color |= (value & 0x001F) << 11;
+		color |= (value & 0x03E0) << 1;
+		color |= (value & 0x7C00) >> 10;
+#else
+		unsigned color = value;
+#endif
+#else
+		unsigned color = 0;
+		color |= (value << 3) & 0xF8;
+		color |= (value << 6) & 0xF800;
+		color |= (value << 9) & 0xF80000;
+		color |= (color >> 5) & 0x070707;
+#endif
+		palette[i] = color;
+		if (softwareRenderer->blendEffect == BLEND_BRIGHTEN) {
+			variantPalette[i] = _brighten(color, softwareRenderer->bldy);
+		} else if (softwareRenderer->blendEffect == BLEND_DARKEN) {
+			variantPalette[i] = _darken(color, softwareRenderer->bldy);
+		}
+	}
+	return true;
+}
+
 
 void DSVideoSoftwareRendererCreate(struct DSVideoSoftwareRenderer* renderer) {
 	renderer->d.init = DSVideoSoftwareRendererInit;
@@ -26,6 +77,7 @@ void DSVideoSoftwareRendererCreate(struct DSVideoSoftwareRenderer* renderer) {
 	renderer->d.writeVideoRegister = DSVideoSoftwareRendererWriteVideoRegister;
 	renderer->d.writePalette = DSVideoSoftwareRendererWritePalette;
 	renderer->d.writeOAM = DSVideoSoftwareRendererWriteOAM;
+	renderer->d.invalidateExtPal = DSVideoSoftwareRendererInvalidateExtPal;
 	renderer->d.drawScanline = DSVideoSoftwareRendererDrawScanline;
 	renderer->d.finishFrame = DSVideoSoftwareRendererFinishFrame;
 	renderer->d.getPixels = DSVideoSoftwareRendererGetPixels;
@@ -75,6 +127,25 @@ static void DSVideoSoftwareRendererUpdateDISPCNTA(struct DSVideoSoftwareRenderer
 		fakeDispcnt = GBARegisterDISPCNTFillObjCharacterMapping(fakeDispcnt);
 	}
 	softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_DISPCNT_LO, fakeDispcnt);
+	softwareRenderer->engA.dispcnt |= softwareRenderer->dispcntA & 0xFFFF000;
+	if (DSRegisterDISPCNTIsBgExtPalette(softwareRenderer->dispcntA)) {
+		int i;
+		for (i = 0; i < 4; ++i) {
+			// TODO: Regenerate on change
+			int slot = i;
+			if (i < 2 && GBARegisterBGCNTIsExtPaletteSlot(softwareRenderer->engA.bg[i].control)) {
+				slot += 2;
+			}
+			if (softwareRenderer->engA.bg[i].extPalette != &softwareRenderer->extPaletteA[slot * 4096] && _regenerateExtPalette(softwareRenderer, false, slot)) {
+				softwareRenderer->engA.bg[i].extPalette = &softwareRenderer->extPaletteA[slot * 4096];
+			}
+		}
+	} else {
+		softwareRenderer->engA.bg[0].extPalette = NULL;
+		softwareRenderer->engA.bg[1].extPalette = NULL;
+		softwareRenderer->engA.bg[2].extPalette = NULL;
+		softwareRenderer->engA.bg[3].extPalette = NULL;
+	}
 	uint32_t charBase = DSRegisterDISPCNTGetCharBase(softwareRenderer->dispcntA) << 16;
 	uint32_t screenBase = DSRegisterDISPCNTGetScreenBase(softwareRenderer->dispcntA) << 16;
 	softwareRenderer->engA.d.writeVideoRegister(&softwareRenderer->engA.d, DS9_REG_A_BG0CNT, softwareRenderer->engA.bg[0].control);
@@ -96,6 +167,7 @@ static void DSVideoSoftwareRendererUpdateDISPCNTA(struct DSVideoSoftwareRenderer
 }
 
 static void DSVideoSoftwareRendererUpdateDISPCNTB(struct DSVideoSoftwareRenderer* softwareRenderer) {
+	// TODO: Share code with DISPCNTA
 	uint16_t fakeDispcnt = softwareRenderer->dispcntB & 0xFF87;
 	if (!DSRegisterDISPCNTIsTileObjMapping(softwareRenderer->dispcntB)) {
 		softwareRenderer->engB.tileStride = 0x20;
@@ -104,6 +176,25 @@ static void DSVideoSoftwareRendererUpdateDISPCNTB(struct DSVideoSoftwareRenderer
 		fakeDispcnt = GBARegisterDISPCNTFillObjCharacterMapping(fakeDispcnt);
 	}
 	softwareRenderer->engB.d.writeVideoRegister(&softwareRenderer->engB.d, DS9_REG_A_DISPCNT_LO, fakeDispcnt);
+	softwareRenderer->engB.dispcnt |= softwareRenderer->dispcntB & 0xFFFF000;
+	if (DSRegisterDISPCNTIsBgExtPalette(softwareRenderer->dispcntB)) {
+		int i;
+		for (i = 0; i < 4; ++i) {
+			// TODO: Regenerate on change
+			int slot = i;
+			if (i < 2 && GBARegisterBGCNTIsExtPaletteSlot(softwareRenderer->engB.bg[i].control)) {
+				slot += 2;
+			}
+			if (softwareRenderer->engB.bg[i].extPalette != &softwareRenderer->extPaletteB[slot * 4096] && _regenerateExtPalette(softwareRenderer, true, slot)) {
+				softwareRenderer->engB.bg[i].extPalette = &softwareRenderer->extPaletteB[slot * 4096];
+			}
+		}
+	} else {
+		softwareRenderer->engA.bg[0].extPalette = NULL;
+		softwareRenderer->engA.bg[1].extPalette = NULL;
+		softwareRenderer->engA.bg[2].extPalette = NULL;
+		softwareRenderer->engA.bg[3].extPalette = NULL;
+	}
 }
 
 static uint16_t DSVideoSoftwareRendererWriteVideoRegister(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value) {
@@ -161,6 +252,89 @@ static void DSVideoSoftwareRendererWriteOAM(struct DSVideoRenderer* renderer, ui
 	}
 }
 
+static void DSVideoSoftwareRendererInvalidateExtPal(struct DSVideoRenderer* renderer, bool obj, bool engB, int slot) {
+	struct DSVideoSoftwareRenderer* softwareRenderer = (struct DSVideoSoftwareRenderer*) renderer;
+	_regenerateExtPalette(softwareRenderer, engB, slot);
+}
+
+static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* renderer, int y) {
+	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+
+	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
+	if (GBARegisterDISPCNTIsForcedBlank(softwareRenderer->dispcnt)) {
+		int x;
+		for (x = 0; x < softwareRenderer->masterEnd; ++x) {
+			row[x] = GBA_COLOR_WHITE;
+		}
+		return;
+	}
+
+	GBAVideoSoftwareRendererPreprocessBuffer(softwareRenderer, y);
+	int spriteLayers = GBAVideoSoftwareRendererPreprocessSpriteLayer(softwareRenderer, y);
+
+	int w;
+	unsigned priority;
+	for (priority = 0; priority < 4; ++priority) {
+		softwareRenderer->end = 0;
+		for (w = 0; w < softwareRenderer->nWindows; ++w) {
+			softwareRenderer->start = softwareRenderer->end;
+			softwareRenderer->end = softwareRenderer->windows[w].endX;
+			softwareRenderer->currentWindow = softwareRenderer->windows[w].control;
+			if (spriteLayers & (1 << priority)) {
+				GBAVideoSoftwareRendererPostprocessSprite(softwareRenderer, priority);
+			}
+			if (TEST_LAYER_ENABLED(0)) {
+				GBAVideoSoftwareRendererDrawBackgroundMode0(softwareRenderer, &softwareRenderer->bg[0], y);
+			}
+			if (TEST_LAYER_ENABLED(1)) {
+				GBAVideoSoftwareRendererDrawBackgroundMode0(softwareRenderer, &softwareRenderer->bg[1], y);
+			}
+			if (TEST_LAYER_ENABLED(2)) {
+				switch (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt)) {
+				case 0:
+				case 1:
+				case 3:
+					GBAVideoSoftwareRendererDrawBackgroundMode0(softwareRenderer, &softwareRenderer->bg[2], y);
+					break;
+				case 2:
+				case 4:
+					GBAVideoSoftwareRendererDrawBackgroundMode2(softwareRenderer, &softwareRenderer->bg[2], y);
+					break;
+				}
+			}
+			if (TEST_LAYER_ENABLED(3)) {
+				switch (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt)) {
+				case 0:
+					GBAVideoSoftwareRendererDrawBackgroundMode0(softwareRenderer, &softwareRenderer->bg[3], y);
+					break;
+				case 1:
+				case 2:
+					GBAVideoSoftwareRendererDrawBackgroundMode2(softwareRenderer, &softwareRenderer->bg[3], y);
+					break;
+				}
+			}
+		}
+	}
+	softwareRenderer->bg[2].sx += softwareRenderer->bg[2].dmx;
+	softwareRenderer->bg[2].sy += softwareRenderer->bg[2].dmy;
+	softwareRenderer->bg[3].sx += softwareRenderer->bg[3].dmx;
+	softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
+
+	GBAVideoSoftwareRendererPostprocessBuffer(softwareRenderer);
+
+#ifdef COLOR_16_BIT
+#if defined(__ARM_NEON) && !defined(__APPLE__)
+	_to16Bit(row, softwareRenderer->row, softwareRenderer->masterEnd);
+#else
+	for (x = 0; x < softwareRenderer->masterEnd; ++x) {
+		row[x] = softwareRenderer->row[x];
+	}
+#endif
+#else
+	memcpy(row, softwareRenderer->row, softwareRenderer->masterEnd * sizeof(*row));
+#endif
+}
+
 static void _drawScanlineA(struct DSVideoSoftwareRenderer* softwareRenderer, int y) {
 	memcpy(softwareRenderer->engA.d.vramBG, softwareRenderer->d.vramABG, sizeof(softwareRenderer->engA.d.vramBG));
 	memcpy(softwareRenderer->engA.d.vramOBJ, softwareRenderer->d.vramAOBJ, sizeof(softwareRenderer->engA.d.vramOBJ));
@@ -174,7 +348,7 @@ static void _drawScanlineA(struct DSVideoSoftwareRenderer* softwareRenderer, int
 		}
 		return;
 	case 1:
-		softwareRenderer->engA.d.drawScanline(&softwareRenderer->engA.d, y);
+		DSVideoSoftwareRendererDrawGBAScanline(&softwareRenderer->engA.d, y);
 		return;
 	case 2: {
 		uint16_t* vram = &softwareRenderer->d.vram[0x10000 * DSRegisterDISPCNTGetVRAMBlock(softwareRenderer->dispcntA)];
@@ -229,7 +403,7 @@ static void _drawScanlineB(struct DSVideoSoftwareRenderer* softwareRenderer, int
 		}
 		return;
 	case 1:
-		softwareRenderer->engB.d.drawScanline(&softwareRenderer->engB.d, y);
+		DSVideoSoftwareRendererDrawGBAScanline(&softwareRenderer->engB.d, y);
 		return;
 	}
 

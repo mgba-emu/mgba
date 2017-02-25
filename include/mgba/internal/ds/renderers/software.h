@@ -27,6 +27,11 @@ struct DSVideoSoftwareRenderer {
 	int outputBufferStride;
 
 	uint32_t row[DS_VIDEO_HORIZONTAL_PIXELS];
+
+	color_t extPaletteA[16384];
+	color_t extPaletteB[16384];
+	color_t variantPaletteA[16384];
+	color_t variantPaletteB[16384];
 };
 
 void DSVideoSoftwareRendererCreate(struct DSVideoSoftwareRenderer* renderer);

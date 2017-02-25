@@ -15,6 +15,9 @@
 	} \
 	screenBase = background->screenBase + yBase + (xBase >> 2); \
 	uint16_t* screenBlock = renderer->d.vramBG[screenBase >> VRAM_BLOCK_OFFSET]; \
+	if (UNLIKELY(!screenBlock)) { \
+		return; \
+	} \
 	LOAD_16(mapData, screenBase & VRAM_BLOCK_MASK, screenBlock); \
 	localY = inY & 0x7; \
 	if (GBA_TEXT_MAP_VFLIP(mapData)) { \
@@ -361,6 +364,195 @@
 		} \
 	}
 
+#define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_256Ext(BLEND, OBJWIN) \
+	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
+	palette = &mainPalette[paletteData]; \
+	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
+	vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
+	int end2 = end - 4; \
+	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+		int shift = inX & 0x3; \
+		if (LIKELY(vram)) { \
+			if (end2 > outX) { \
+				LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
+				tileData >>= 8 * shift; \
+				shift = 0; \
+				for (; outX < end2; ++outX, ++pixel) { \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+				} \
+			} \
+		} \
+		\
+		if (LIKELY(vram)) { \
+			LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
+			tileData >>= 8 * shift; \
+			for (; outX < end; ++outX, ++pixel) { \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+			} \
+		} \
+	} else { \
+		int start = outX; \
+		outX = end - 1; \
+		pixel = &renderer->row[outX]; \
+		if (LIKELY(vram)) { \
+			if (end2 > start) { \
+				LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
+				for (; outX >= end2; --outX, --pixel) { \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+				} \
+				charBase += 4; \
+			} \
+		} \
+		\
+		if (LIKELY(vram)) { \
+			LOAD_32(tileData, charBase, vram); \
+			for (; outX >= renderer->start; --outX, --pixel) { \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+			} \
+		} \
+		outX = end; \
+		pixel = &renderer->row[outX]; \
+	}
+
+#define DRAW_BACKGROUND_MODE_0_TILE_PREFIX_256Ext(BLEND, OBJWIN) \
+	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
+	vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
+	if (UNLIKELY(!vram)) { \
+		return; \
+	} \
+	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
+	palette = &mainPalette[paletteData]; \
+	int end = mod8 - 4; \
+	pixel = &renderer->row[outX]; \
+	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+		if (end > 0) { \
+			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
+			for (; outX < renderer->end - end; ++outX, ++pixel) { \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+			} \
+			charBase += 4; \
+		} \
+		\
+		LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
+		for (; outX < renderer->end; ++outX, ++pixel) { \
+			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+		} \
+	} else { \
+		int shift = (8 - mod8) & 0x3; \
+		int start = outX; \
+		outX = renderer->end - 1; \
+		pixel = &renderer->row[outX]; \
+		if (end > 0) { \
+			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
+			tileData >>= 8 * shift; \
+			for (; outX >= start + 4; --outX, --pixel) { \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+			} \
+			shift = 0; \
+		} \
+		\
+		LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
+		tileData >>= 8 * shift; \
+		for (; outX >= start; --outX, --pixel) { \
+			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+		} \
+		/* Needed for consistency checks */ \
+		if (VIDEO_CHECKS) { \
+			outX = renderer->end; \
+			pixel = &renderer->row[outX]; \
+		} \
+	}
+
+#define DRAW_BACKGROUND_MODE_0_TILES_256Ext(BLEND, OBJWIN) \
+	for (; tileX < tileEnd; ++tileX) { \
+		BACKGROUND_TEXT_SELECT_CHARACTER; \
+		paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
+		palette = &mainPalette[paletteData]; \
+		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
+		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
+		if (UNLIKELY(!vram)) { \
+			pixel += 8; \
+			continue; \
+		} \
+		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
+			if (tileData) { \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 1); \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 2); \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
+			} \
+			pixel += 4; \
+			LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
+			if (tileData) { \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 1); \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 2); \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
+			} \
+			pixel += 4; \
+		} else { \
+			LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
+			if (tileData) { \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 2); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 1); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+			} \
+			pixel += 4; \
+			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
+			if (tileData) { \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 2); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 1); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+			} \
+			pixel += 4; \
+		} \
+	}
+
+#define DRAW_BACKGROUND_MODE_0_MOSAIC_256Ext(BLEND, OBJWIN) \
+	for (; tileX < tileEnd; ++tileX) { \
+		BACKGROUND_TEXT_SELECT_CHARACTER; \
+		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
+		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
+		tileData = carryData; \
+		for (x = 0; x < 8; ++x) { \
+			if (!mosaicWait) { \
+				if (UNLIKELY(!vram)) { \
+					carryData = 0; \
+				} else { \
+					paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
+					palette = &mainPalette[paletteData]; \
+					if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+						if (x >= 4) { \
+							LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
+							tileData >>= (x - 4) * 8; \
+						} else { \
+							LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
+							tileData >>= x * 8; \
+						} \
+					} else { \
+						if (x >= 4) { \
+							LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
+							tileData >>= (7 - x) * 8; \
+						} else { \
+							LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
+							tileData >>= (3 - x) * 8; \
+						} \
+					} \
+					tileData &= 0xFF; \
+					carryData = tileData; \
+				} \
+				mosaicWait = mosaicH; \
+			} \
+			tileData |= tileData << 8; \
+			--mosaicWait; \
+			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+			++pixel; \
+		} \
+	}
+
 #define DRAW_BACKGROUND_MODE_0(BPP, BLEND, OBJWIN) \
 	uint32_t* pixel = &renderer->row[outX]; \
 	if (background->mosaic && GBAMosaicControlGetBgH(renderer->mosaic)) { \
@@ -460,9 +652,18 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 	uint32_t screenBase;
 	uint32_t charBase;
 	int variant = background->target1 && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
-	color_t* mainPalette = renderer->normalPalette;
-	if (variant) {
-		mainPalette = renderer->variantPalette;
+	color_t* mainPalette;
+	if (background->multipalette && background->extPalette) {
+		mainPalette = background->extPalette;
+		// TODO
+		/*if (variant) {
+			mainPalette = background->variantPalette;
+		}*/
+	} else {
+		mainPalette = renderer->normalPalette;
+		if (variant) {
+			mainPalette = renderer->variantPalette;
+		}
 	}
 	color_t* palette = mainPalette;
 	PREPARE_OBJWIN;
@@ -481,28 +682,36 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 		if (!(flags & FLAG_TARGET_2)) {
 			if (!background->multipalette) {
 				DRAW_BACKGROUND_MODE_0(16, NoBlend, NO_OBJWIN);
-			} else {
+			} else if (!background->extPalette) {
 				DRAW_BACKGROUND_MODE_0(256, NoBlend, NO_OBJWIN);
+			} else {
+				DRAW_BACKGROUND_MODE_0(256Ext, NoBlend, NO_OBJWIN);
 			}
 		} else {
 			if (!background->multipalette) {
 				DRAW_BACKGROUND_MODE_0(16, Blend, NO_OBJWIN);
-			} else {
+			} else if (!background->extPalette) {
 				DRAW_BACKGROUND_MODE_0(256, Blend, NO_OBJWIN);
+			} else {
+				DRAW_BACKGROUND_MODE_0(256Ext, Blend, NO_OBJWIN);
 			}
 		}
 	} else {
 		if (!(flags & FLAG_TARGET_2)) {
 			if (!background->multipalette) {
 				DRAW_BACKGROUND_MODE_0(16, NoBlend, OBJWIN);
-			} else {
+			} else if (!background->extPalette) {
 				DRAW_BACKGROUND_MODE_0(256, NoBlend, OBJWIN);
+			} else {
+				DRAW_BACKGROUND_MODE_0(256Ext, NoBlend, OBJWIN);
 			}
 		} else {
 			if (!background->multipalette) {
 				DRAW_BACKGROUND_MODE_0(16, Blend, OBJWIN);
-			} else {
+			} else if (!background->extPalette) {
 				DRAW_BACKGROUND_MODE_0(256, Blend, OBJWIN);
+			} else {
+				DRAW_BACKGROUND_MODE_0(256Ext, Blend, OBJWIN);
 			}
 		}
 	}

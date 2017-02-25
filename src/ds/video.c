@@ -20,6 +20,7 @@ static void DSVideoDummyRendererDeinit(struct DSVideoRenderer* renderer);
 static uint16_t DSVideoDummyRendererWriteVideoRegister(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void DSVideoDummyRendererWritePalette(struct DSVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void DSVideoDummyRendererWriteOAM(struct DSVideoRenderer* renderer, uint32_t oam);
+static void DSVideoDummyRendererInvalidateExtPal(struct DSVideoRenderer* renderer, bool obj, bool engB, int slot);
 static void DSVideoDummyRendererDrawScanline(struct DSVideoRenderer* renderer, int y);
 static void DSVideoDummyRendererFinishFrame(struct DSVideoRenderer* renderer);
 static void DSVideoDummyRendererGetPixels(struct DSVideoRenderer* renderer, size_t* stride, const void** pixels);
@@ -42,60 +43,86 @@ static const uint32_t _vramSize[9] = {
 	0x04000
 };
 
+enum DSVRAMBankMode {
+	MODE_A_BG = 0,
+	MODE_B_BG = 1,
+	MODE_A_OBJ = 2,
+	MODE_B_OBJ = 3,
+	MODE_LCDC,
+	MODE_7_VRAM,
+	MODE_A_BG_EXT_PAL,
+	MODE_B_BG_EXT_PAL,
+	MODE_A_OBJ_EXT_PAL,
+	MODE_B_OBJ_EXT_PAL,
+	MODE_3D_TEX,
+	MODE_3D_TEX_PAL,
+};
+
 const struct DSVRAMBankInfo {
 	int base;
 	uint32_t mirrorSize;
-	int mode;
+	enum DSVRAMBankMode mode;
 	int offset[4];
 } _vramInfo[9][8] = {
 	{ // A
-		{ 0x000, 0x40, 4 }, // LCDC
-		{ 0x000, 0x20, 0, { 0x00, 0x08, 0x10, 0x18 } }, // A-BG
-		{ 0x000, 0x10, 2, { 0x00, 0x08, 0x80, 0x80 } }, // A-OBJ
+		{ 0x000, 0x40, MODE_LCDC },
+		{ 0x000, 0x20, MODE_A_BG, { 0x00, 0x08, 0x10, 0x18 } },
+		{ 0x000, 0x10, MODE_A_OBJ, { 0x00, 0x08, 0x80, 0x80 } },
+		{ 0x000, 0x10, MODE_3D_TEX, { 0x00, 0x01, 0x02, 0x03 } },
 	},
 	{ // B
-		{ 0x008, 0x40, 4 }, // LCDC
-		{ 0x000, 0x20, 0, { 0x00, 0x08, 0x10, 0x18 } }, // A-BG
-		{ 0x000, 0x10, 2, { 0x00, 0x08, 0x80, 0x80 } }, // A-OBJ
+		{ 0x008, 0x40, MODE_LCDC },
+		{ 0x000, 0x20, MODE_A_BG, { 0x00, 0x08, 0x10, 0x18 } },
+		{ 0x000, 0x10, MODE_A_OBJ, { 0x00, 0x08, 0x80, 0x80 } },
+		{ 0x000, 0x10, MODE_3D_TEX, { 0x00, 0x01, 0x02, 0x03 } },
 	},
 	{ // C
-		{ 0x010, 0x40, 4 }, // LCDC
-		{ 0x000, 0x20, 0, { 0x00, 0x08, 0x10, 0x18 } }, // A-BG
-		{ 0x000, 0x40, 5, { 0x00, 0x08, 0x80, 0x80 } }, // 7-VRAM
-		{},
-		{ 0x000, 0x08, 1 }, // B-BG
+		{ 0x010, 0x40, MODE_LCDC },
+		{ 0x000, 0x20, MODE_A_BG, { 0x00, 0x08, 0x10, 0x18 } },
+		{ 0x000, 0x40, MODE_7_VRAM, { 0x00, 0x08, 0x80, 0x80 } },
+		{ 0x000, 0x10, MODE_3D_TEX, { 0x00, 0x01, 0x02, 0x03 } },
+		{ 0x000, 0x08, MODE_B_BG },
 	},
 	{ // D
-		{ 0x018, 0x40, 4 }, // LCDC
-		{ 0x000, 0x20, 0, { 0x00, 0x08, 0x10, 0x18 } }, // A-BG
-		{ 0x000, 0x40, 8, { 0x00, 0x08, 0x80, 0x80 } }, // 7-VRAM
-		{},
-		{ 0x000, 0x08, 3 }, // B-OBJ
+		{ 0x018, 0x40, MODE_LCDC },
+		{ 0x000, 0x20, MODE_A_BG, { 0x00, 0x08, 0x10, 0x18 } },
+		{ 0x000, 0x40, MODE_7_VRAM, { 0x00, 0x08, 0x80, 0x80 } },
+		{ 0x000, 0x10, MODE_3D_TEX, { 0x00, 0x01, 0x02, 0x03 } },
+		{ 0x000, 0x08, MODE_B_OBJ },
 	},
 	{ // E
-		{ 0x020, 0x40, 4 }, // LCDC
-		{ 0x000, 0x20, 0 }, // A-BG
-		{ 0x000, 0x10, 2 }, // A-OBJ
+		{ 0x020, 0x40, MODE_LCDC },
+		{ 0x000, 0x20, MODE_A_BG },
+		{ 0x000, 0x10, MODE_A_OBJ },
+		{ 0x000, 0x04, MODE_3D_TEX_PAL },
+		{ 0x000, 0x04, MODE_A_BG_EXT_PAL },
 	},
 	{ // F
-		{ 0x024, 0x40, 4 }, // LCDC
-		{ 0x000, 0x20, 0, { 0x00, 0x01, 0x04, 0x05 } }, // A-BG
-		{ 0x000, 0x10, 2, { 0x00, 0x01, 0x04, 0x05 } }, // A-OBJ
+		{ 0x024, 0x40, MODE_LCDC },
+		{ 0x000, 0x20, MODE_A_BG, { 0x00, 0x01, 0x04, 0x05 } },
+		{ 0x000, 0x10, MODE_A_OBJ, { 0x00, 0x01, 0x04, 0x05 } },
+		{ 0x000, 0x01, MODE_3D_TEX_PAL, { 0x00, 0x01, 0x04, 0x05 } },
+		{ 0x000, 0x02, MODE_A_BG_EXT_PAL, { 0x00, 0x02, 0x00, 0x02 } },
+		{ 0x000, 0x01, MODE_A_OBJ_EXT_PAL},
 	},
 	{ // G
-		{ 0x025, 0x40, 4 }, // LCDC
-		{ 0x000, 0x20, 0 }, // A-BG
-		{ 0x000, 0x10, 2 }, // A-OBJ
+		{ 0x025, 0x40, MODE_LCDC },
+		{ 0x000, 0x20, MODE_A_BG, { 0x00, 0x01, 0x04, 0x05 } },
+		{ 0x000, 0x10, MODE_A_OBJ, { 0x00, 0x01, 0x04, 0x05 } },
+		{ 0x000, 0x01, MODE_3D_TEX_PAL, { 0x00, 0x01, 0x04, 0x05 } },
+		{ 0x000, 0x02, MODE_A_BG_EXT_PAL, { 0x00, 0x02, 0x00, 0x02 } },
+		{ 0x000, 0x01, MODE_A_OBJ_EXT_PAL},
 	},
 	{ // H
-		{ 0x026, 0x40, 4 }, // LCDC
-		{ 0x000, 0x04, 1 }, // B-BG
-		{ 0x000, 0x10, 2 }, // A-OBJ
+		{ 0x026, 0x40, MODE_LCDC },
+		{ 0x000, 0x04, MODE_B_BG },
+		{ 0x000, 0x04, MODE_B_BG_EXT_PAL },
 	},
 	{ // I
-		{ 0x028, 0x40, 4 }, // LCDC
-		{ 0x002, 0x04, 1 }, // B-BG
-		{ 0x000, 0x01, 3 }, // B-OBJ
+		{ 0x028, 0x40, MODE_LCDC },
+		{ 0x002, 0x04, MODE_B_BG },
+		{ 0x000, 0x01, MODE_B_OBJ },
+		{ 0x000, 0x01, MODE_B_OBJ_EXT_PAL },
 	},
 };
 
@@ -166,8 +193,12 @@ void DSVideoAssociateRenderer(struct DSVideo* video, struct DSVideoRenderer* ren
 	renderer->vram = video->vram;
 	memcpy(renderer->vramABG, video->vramABG, sizeof(renderer->vramABG));
 	memcpy(renderer->vramAOBJ, video->vramAOBJ, sizeof(renderer->vramAOBJ));
+	memcpy(renderer->vramABGExtPal, video->vramABGExtPal, sizeof(renderer->vramABGExtPal));
+	memcpy(renderer->vramAOBJExtPal, video->vramAOBJExtPal, sizeof(renderer->vramAOBJExtPal));
 	memcpy(renderer->vramBBG, video->vramBBG, sizeof(renderer->vramBBG));
 	memcpy(renderer->vramBOBJ, video->vramBOBJ, sizeof(renderer->vramBOBJ));
+	memcpy(renderer->vramBBGExtPal, video->vramBBGExtPal, sizeof(renderer->vramBBGExtPal));
+	memcpy(renderer->vramBOBJExtPal, video->vramBOBJExtPal, sizeof(renderer->vramBOBJExtPal));
 	renderer->oam = &video->oam;
 	video->renderer->init(video->renderer);
 }
@@ -300,18 +331,83 @@ void DSVideoWriteDISPSTAT(struct DSCommon* dscore, uint16_t value) {
 	// TODO: Does a VCounter IRQ trigger on write?
 }
 
-void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value) {
+void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value, uint8_t oldValue) {
 	struct DSMemory* memory = &ds->memory;
+	if (value == oldValue) {
+		return;
+	}
+	uint32_t i, j;
+	uint32_t size = _vramSize[index] >> DS_VRAM_OFFSET;
+	struct DSVRAMBankInfo oldInfo = _vramInfo[index][oldValue & 0x7];
+	uint32_t offset = oldInfo.base + oldInfo.offset[(oldValue >> 3) & 3];
+	switch (oldInfo.mode) {
+	case MODE_A_BG:
+		for (i = 0; i < size; ++i) {
+			if (ds->video.vramABG[offset + i] == &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)]) {
+				ds->video.vramABG[offset + i] = NULL;
+				ds->video.renderer->vramABG[offset + i] = NULL;
+			}
+		}
+		break;
+	case MODE_B_BG:
+		for (i = 0; i < size; ++i) {
+			if (ds->video.vramBBG[offset + i] == &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)]) {
+				ds->video.vramBBG[offset + i] = NULL;
+				ds->video.renderer->vramBBG[offset + i] = NULL;
+			}
+		}
+		break;
+	case MODE_A_OBJ:
+		for (i = 0; i < size; ++i) {
+			if (ds->video.vramAOBJ[offset + i] == &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)]) {
+				ds->video.vramAOBJ[offset + i] = NULL;
+				ds->video.renderer->vramAOBJ[offset + i] = NULL;
+			}
+		}
+		break;
+	case MODE_B_OBJ:
+		for (i = 0; i < size; ++i) {
+			if (ds->video.vramBOBJ[offset + i] == &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)]) {
+				ds->video.vramBOBJ[offset + i] = NULL;
+				ds->video.renderer->vramBOBJ[offset + i] = NULL;
+			}
+		}
+		break;
+	case MODE_A_BG_EXT_PAL:
+		for (i = 0; i < oldInfo.mirrorSize; ++i) {
+			if (ds->video.vramABGExtPal[offset + i] == &memory->vramBank[index][i << 12]) {
+				ds->video.vramABGExtPal[offset + i] = NULL;
+				ds->video.renderer->vramABGExtPal[offset + i] = NULL;
+				ds->video.renderer->invalidateExtPal(ds->video.renderer, false, false, offset + i);
+			}
+		}
+		break;
+	case MODE_B_BG_EXT_PAL:
+		for (i = 0; i < oldInfo.mirrorSize; ++i) {
+			if (ds->video.vramBBGExtPal[offset + i] == &memory->vramBank[index][i << 12]) {
+				ds->video.vramBBGExtPal[offset + i] = NULL;
+				ds->video.renderer->vramBBGExtPal[offset + i] = NULL;
+				ds->video.renderer->invalidateExtPal(ds->video.renderer, false, true, offset + i);
+			}
+		}
+		break;
+	case MODE_7_VRAM:
+		for (i = 0; i < size; i += 16) {
+			ds->memory.vram7[(offset + i) >> 4] = NULL;
+		}
+		break;
+	case MODE_LCDC:
+		break;
+	}
+
 	struct DSVRAMBankInfo info = _vramInfo[index][value & 0x7];
 	memset(&memory->vramMirror[index], 0, sizeof(memory->vramMirror[index]));
 	memset(&memory->vramMode[index], 0, sizeof(memory->vramMode[index]));
 	if (!(value & 0x80) || !info.mirrorSize) {
 		return;
 	}
-	uint32_t size = _vramSize[index] >> DS_VRAM_OFFSET;
-	uint32_t i, j;
-	uint32_t offset = info.base + info.offset[(value >> 3) & 3];
-	if (info.mode < 4) {
+	offset = info.base + info.offset[(value >> 3) & 3];
+	if (info.mode <= MODE_LCDC) {
 		memory->vramMode[index][info.mode] = 0xFFFF;
 		for (j = offset; j < 0x40; j += info.mirrorSize) {
 			for (i = 0; i < size; ++i) {
@@ -320,34 +416,50 @@ void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value) {
 		}
 	}
 	switch (info.mode) {
-	case 0:
+	case MODE_A_BG:
 		for (i = 0; i < size; ++i) {
 			ds->video.vramABG[offset + i] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
 			ds->video.renderer->vramABG[offset + i] = ds->video.vramABG[offset + i];
 		}
 		break;
-	case 1:
+	case MODE_B_BG:
 		for (i = 0; i < size; ++i) {
 			ds->video.vramBBG[offset + i] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
 			ds->video.renderer->vramBBG[offset + i] = ds->video.vramBBG[offset + i];
 		}
 		break;
-	case 2:
+	case MODE_A_OBJ:
 		for (i = 0; i < size; ++i) {
 			ds->video.vramAOBJ[offset + i] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
 			ds->video.renderer->vramAOBJ[offset + i] = ds->video.vramAOBJ[offset + i];
 		}
 		break;
-	case 3:
+	case MODE_B_OBJ:
 		for (i = 0; i < size; ++i) {
 			ds->video.vramBOBJ[offset + i] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
 			ds->video.renderer->vramBOBJ[offset + i] = ds->video.vramBOBJ[offset + i];
 		}
 		break;
-	case 5:
+	case MODE_A_BG_EXT_PAL:
+		for (i = 0; i < info.mirrorSize; ++i) {
+			ds->video.vramABGExtPal[offset + i] = &memory->vramBank[index][i << 12];
+			ds->video.renderer->vramABGExtPal[offset + i] = ds->video.vramABGExtPal[offset + i];
+			ds->video.renderer->invalidateExtPal(ds->video.renderer, false, false, offset + i);
+		}
+		break;
+	case MODE_B_BG_EXT_PAL:
+		for (i = 0; i < info.mirrorSize; ++i) {
+			ds->video.vramBBGExtPal[offset + i] = &memory->vramBank[index][i << 12];
+			ds->video.renderer->vramBBGExtPal[offset + i] = ds->video.vramBBGExtPal[offset + i];
+			ds->video.renderer->invalidateExtPal(ds->video.renderer, false, true, offset + i);
+		}
+		break;
+	case MODE_7_VRAM:
 		for (i = 0; i < size; i += 16) {
 			ds->memory.vram7[(offset + i) >> 4] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 5)];
 		}
+		break;
+	case MODE_LCDC:
 		break;
 	}
 }
@@ -382,6 +494,13 @@ static void DSVideoDummyRendererWritePalette(struct DSVideoRenderer* renderer, u
 static void DSVideoDummyRendererWriteOAM(struct DSVideoRenderer* renderer, uint32_t oam) {
 	UNUSED(renderer);
 	UNUSED(oam);
+	// Nothing to do
+}
+
+static void DSVideoDummyRendererInvalidateExtPal(struct DSVideoRenderer* renderer, bool obj, bool engB, int slot) {
+	UNUSED(renderer);
+	UNUSED(obj);
+	UNUSED(engB);
 	// Nothing to do
 }
 
