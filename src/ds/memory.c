@@ -40,10 +40,10 @@ static const char DS7_BASE_WAITSTATES_32[16] =     { 0, 0, 9, 0, 0, 1, 1, 0 };
 static const char DS7_BASE_WAITSTATES_SEQ[16] =    { 0, 0, 1, 0, 0, 0, 0, 0 };
 static const char DS7_BASE_WAITSTATES_SEQ_32[16] = { 0, 0, 2, 0, 0, 1, 1, 0 };
 
-static const char DS9_BASE_WAITSTATES[16] =        { 6, 6, 17, 6, 6, 7, 7, 6 };
-static const char DS9_BASE_WAITSTATES_32[16] =     { 6, 6, 19, 6, 6, 9, 9, 6 };
-static const char DS9_BASE_WAITSTATES_SEQ[16] =    { 1, 1,  1, 1, 1, 2, 2, 1 };
-static const char DS9_BASE_WAITSTATES_SEQ_32[16] = { 1, 1,  3, 1, 1, 4, 4, 1 };
+static const char DS9_BASE_WAITSTATES[16] =        { 0, 0, 17, 6, 6, 7, 7, 6 };
+static const char DS9_BASE_WAITSTATES_32[16] =     { 0, 0, 19, 6, 6, 9, 9, 6 };
+static const char DS9_BASE_WAITSTATES_SEQ[16] =    { 0, 0,  1, 1, 1, 2, 2, 1 };
+static const char DS9_BASE_WAITSTATES_SEQ_32[16] = { 0, 0,  3, 1, 1, 4, 4, 1 };
 
 void DSMemoryInit(struct DS* ds) {
 	struct ARMCore* arm7 = ds->ds7.cpu;
@@ -89,6 +89,12 @@ void DSMemoryInit(struct DS* ds) {
 		ds->ds9.memory.waitstatesPrefetchNonseq32[i] = DS9_BASE_WAITSTATES_32[i];
 		ds->ds9.memory.waitstatesPrefetchSeq32[i] = DS9_BASE_WAITSTATES_32[i];
 	}
+
+	ds->ds9.memory.waitstatesPrefetchNonseq16[2] = 0;
+	ds->ds9.memory.waitstatesPrefetchSeq16[2] = 0;
+	ds->ds9.memory.waitstatesPrefetchNonseq32[2] = 0;
+	ds->ds9.memory.waitstatesPrefetchSeq32[2] = 0;
+
 	for (; i < 256; ++i) {
 		ds->ds7.memory.waitstatesNonseq16[i] = 0;
 		ds->ds7.memory.waitstatesSeq16[i] = 0;
