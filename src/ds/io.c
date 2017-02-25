@@ -437,7 +437,7 @@ void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 			break;
 		case DS9_REG_VRAMCNT_G:
 			oldValue = ds->memory.io9[address >> 1];
-			value &= 0x9F03;
+			value &= 0x039F;
 			DSVideoConfigureVRAM(ds, 6, value & 0xFF, oldValue & 0xFF);
 			DSConfigureWRAM(&ds->memory, value >> 8);
 			break;
