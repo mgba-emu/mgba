@@ -29,6 +29,10 @@ void GBAVideoSoftwareRendererDrawBackgroundMode5(struct GBAVideoSoftwareRenderer
 int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y);
 void GBAVideoSoftwareRendererPostprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsigned priority);
 
+void GBAVideoSoftwareRendererPreprocessBuffer(struct GBAVideoSoftwareRenderer* renderer, int y);
+void GBAVideoSoftwareRendererPostprocessBuffer(struct GBAVideoSoftwareRenderer* renderer);
+int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRenderer* renderer, int y);
+
 static inline unsigned _brighten(unsigned color, int y);
 static inline unsigned _darken(unsigned color, int y);
 static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB);
@@ -216,6 +220,12 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		localX = x;                                         \
 		localY = y;                                         \
 	}
+
+#define TEST_LAYER_ENABLED(X) \
+	(softwareRenderer->bg[X].enabled && \
+	(GBAWindowControlIsBg ## X ## Enable(softwareRenderer->currentWindow.packed) || \
+	(GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt) && GBAWindowControlIsBg ## X ## Enable (softwareRenderer->objwin.packed))) && \
+	softwareRenderer->bg[X].priority == priority)
 
 static inline unsigned _brighten(unsigned color, int y) {
 	unsigned c = 0;
