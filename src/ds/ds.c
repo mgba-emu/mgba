@@ -196,6 +196,9 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 	DSVideoInit(&ds->video);
 	ds->video.p = ds;
 
+	DSGXInit(&ds->gx);
+	ds->gx.p = ds;
+
 	ds->ds7.springIRQ = 0;
 	ds->ds9.springIRQ = 0;
 	DSTimerInit(ds);
@@ -234,6 +237,7 @@ void DSDestroy(struct DS* ds) {
 	CircleBufferDeinit(&ds->ds9.fifo);
 	DSUnloadROM(ds);
 	DSMemoryDeinit(ds);
+	DSGXDeinit(&ds->gx);
 	mTimingDeinit(&ds->ds7.timing);
 	mTimingDeinit(&ds->ds9.timing);
 }
@@ -318,6 +322,7 @@ void DS9Reset(struct ARMCore* cpu) {
 	mTimingClear(&ds->ds9.timing);
 	CircleBufferInit(&ds->ds9.fifo, 64);
 	DSVideoReset(&ds->video);
+	DSGXReset(&ds->gx);
 	DSDMAReset(&ds->ds9);
 	DS9IOInit(ds);
 

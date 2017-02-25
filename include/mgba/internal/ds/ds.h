@@ -14,6 +14,7 @@ CXX_GUARD_START
 #include <mgba/core/timing.h>
 #include <mgba-util/circle-buffer.h>
 
+#include <mgba/internal/ds/gx.h>
 #include <mgba/internal/ds/memory.h>
 #include <mgba/internal/ds/timer.h>
 #include <mgba/internal/ds/video.h>
@@ -78,6 +79,7 @@ struct DS {
 	struct DSCommon ds9;
 	struct DSMemory memory;
 	struct DSVideo video;
+	struct DSGX gx;
 
 	struct mCoreSync* sync;
 	struct mTimingEvent slice;

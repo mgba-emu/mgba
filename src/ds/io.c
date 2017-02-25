@@ -7,6 +7,7 @@
 
 #include <mgba/core/interface.h>
 #include <mgba/internal/ds/ds.h>
+#include <mgba/internal/ds/gx.h>
 #include <mgba/internal/ds/ipc.h>
 #include <mgba/internal/ds/slot1.h>
 #include <mgba/internal/ds/spi.h>
@@ -415,6 +416,7 @@ void DS9IOInit(struct DS* ds) {
 	memset(ds->memory.io9, 0, sizeof(ds->memory.io9));
 	ds->memory.io9[DS_REG_IPCFIFOCNT >> 1] = 0x0101;
 	ds->memory.io9[DS_REG_POSTFLG >> 1] = 0x0001;
+	ds->memory.io9[DS9_REG_GXSTAT_HI >> 1] = 0x0600;
 	DS9IOWrite(ds, DS9_REG_VRAMCNT_G, 0x0300);
 }
 
@@ -423,6 +425,8 @@ void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 		value = ds->video.renderer->writeVideoRegister(ds->video.renderer, address, value);
 	} else if (address >= DS9_REG_B_DISPCNT_LO && address <= DS9_REG_B_BLDY) {
 		value = ds->video.renderer->writeVideoRegister(ds->video.renderer, address, value);
+	} else if ((address >= DS9_REG_RDLINES_COUNT && address <= DS9_REG_VECMTX_RESULT_12) || address == DS9_REG_DISP3DCNT) {
+		value = DSGXWriteRegister(&ds->gx, address, value);
 	} else {
 		uint16_t oldValue;
 		switch (address) {
@@ -514,37 +518,41 @@ void DS9IOWrite8(struct DS* ds, uint32_t address, uint8_t value) {
 }
 
 void DS9IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
-	switch (address) {
-	case DS_REG_DMA0SAD_LO:
-	case DS_REG_DMA1SAD_LO:
-	case DS_REG_DMA2SAD_LO:
-	case DS_REG_DMA3SAD_LO:
-	case DS_REG_DMA0DAD_LO:
-	case DS_REG_DMA1DAD_LO:
-	case DS_REG_DMA2DAD_LO:
-	case DS_REG_DMA3DAD_LO:
-	case DS_REG_IPCFIFOSEND_LO:
-	case DS_REG_IE_LO:
-		value = DSIOWrite32(&ds->ds9, address, value);
-		break;
+	if ((address >= DS9_REG_RDLINES_COUNT && address <= DS9_REG_VECMTX_RESULT_12) || address == DS9_REG_DISP3DCNT) {
+		value = DSGXWriteRegister32(&ds->gx, address, value);
+	} else {
+		switch (address) {
+		case DS_REG_DMA0SAD_LO:
+		case DS_REG_DMA1SAD_LO:
+		case DS_REG_DMA2SAD_LO:
+		case DS_REG_DMA3SAD_LO:
+		case DS_REG_DMA0DAD_LO:
+		case DS_REG_DMA1DAD_LO:
+		case DS_REG_DMA2DAD_LO:
+		case DS_REG_DMA3DAD_LO:
+		case DS_REG_IPCFIFOSEND_LO:
+		case DS_REG_IE_LO:
+			value = DSIOWrite32(&ds->ds9, address, value);
+			break;
 
-	case DS_REG_DMA0CNT_LO:
-		DS9DMAWriteCNT(&ds->ds9, 0, value);
-		break;
-	case DS_REG_DMA1CNT_LO:
-		DS9DMAWriteCNT(&ds->ds9, 1, value);
-		break;
-	case DS_REG_DMA2CNT_LO:
-		DS9DMAWriteCNT(&ds->ds9, 2, value);
-		break;
-	case DS_REG_DMA3CNT_LO:
-		DS9DMAWriteCNT(&ds->ds9, 3, value);
-		break;
+		case DS_REG_DMA0CNT_LO:
+			DS9DMAWriteCNT(&ds->ds9, 0, value);
+			break;
+		case DS_REG_DMA1CNT_LO:
+			DS9DMAWriteCNT(&ds->ds9, 1, value);
+			break;
+		case DS_REG_DMA2CNT_LO:
+			DS9DMAWriteCNT(&ds->ds9, 2, value);
+			break;
+		case DS_REG_DMA3CNT_LO:
+			DS9DMAWriteCNT(&ds->ds9, 3, value);
+			break;
 
-	default:
-		DS9IOWrite(ds, address, value & 0xFFFF);
-		DS9IOWrite(ds, address | 2, value >> 16);
-		return;
+		default:
+			DS9IOWrite(ds, address, value & 0xFFFF);
+			DS9IOWrite(ds, address | 2, value >> 16);
+			return;
+		}
 	}
 	ds->ds9.memory.io[address >> 1] = value;
 	ds->ds9.memory.io[(address >> 1) + 1] = value >> 16;
@@ -608,6 +616,8 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 	case DS9_REG_SQRT_RESULT_LO:
 	case DS9_REG_SQRT_RESULT_HI:
 	case DS_REG_POSTFLG:
+	case DS9_REG_GXSTAT_LO:
+	case DS9_REG_GXSTAT_HI:
 		// Handled transparently by the registers
 		break;
 	case DS_REG_AUXSPICNT:
