@@ -7,6 +7,7 @@
 
 #include <mgba/internal/arm/macros.h>
 #include <mgba/internal/ds/ds.h>
+#include <mgba/internal/ds/dma.h>
 #include <mgba-util/math.h>
 #include <mgba-util/vfs.h>
 
@@ -35,6 +36,7 @@ void DSSlot1Reset(struct DS* ds) {
 	ds->memory.slot1.statusReg = 0;
 	ds->memory.slot1.spiCommand = 0;
 	ds->memory.slot1.spiHoldEnabled = 0;
+	ds->memory.slot1.dmaSource = -1;
 }
 
 static void _scheduleTransfer(struct DS* ds, struct mTiming* timing, uint32_t cyclesLate) {
@@ -46,7 +48,7 @@ static void _scheduleTransfer(struct DS* ds, struct mTiming* timing, uint32_t cy
 		cycles = 5;
 	}
 	if (!ds->ds7.memory.slot1Access) {
-		cycles << 1;
+		cycles <<= 1;
 	}
 	cycles -= cyclesLate;
 	mTimingDeschedule(timing, &ds->memory.slot1.transferEvent);
@@ -64,6 +66,30 @@ static void _transferEvent(struct mTiming* timing, void* context, uint32_t cycle
 		ds->memory.slot1.address += 4;
 		ds->memory.slot1.transferRemaining -= 4;
 		romcnt = DSSlot1ROMCNTFillWordReady(romcnt);
+
+		if (ds->memory.slot1.dmaSource >= 0) {
+			struct DSCommon* dscore;
+			if (ds->ds7.memory.slot1Access) {
+				dscore = &ds->ds7;
+			} else {
+				dscore = &ds->ds9;
+			}
+			struct GBADMA* dma = &dscore->memory.dma[ds->memory.slot1.dmaSource];
+			bool cond = false;
+			if (ds->ds7.memory.slot1Access && GBADMARegisterGetTiming(dma->reg) == DS7_DMA_TIMING_SLOT1) {
+				cond = true;
+			}
+			if (ds->ds9.memory.slot1Access && GBADMARegisterGetTiming9(dma->reg) == DS9_DMA_TIMING_SLOT1) {
+				cond = true;
+			}
+			if (cond) {
+				dma->when = mTimingCurrentTime(timing);
+				dma->nextCount = 1;
+				DSDMAUpdate(dscore);
+			} else {
+				ds->memory.slot1.dmaSource = -1;
+			}
+		}
 	} else {
 		DSSlot1AUXSPICNT config = ds->memory.io7[DS_REG_AUXSPICNT >> 1];
 		memset(ds->memory.slot1.readBuffer, 0, 4);
@@ -330,4 +356,8 @@ static bool _slot1GuaranteeSize(struct DSSlot1* slot1) {
 		slot1->spiData = slot1->spiVf->map(slot1->spiVf, slot1->spiVf->size(slot1->spiVf), MAP_WRITE);
 	}
 	return slot1->spiData;
+}
+
+void DSSlot1ScheduleDMA(struct DSCommon* dscore, int number, struct GBADMA* info) {
+	dscore->p->memory.slot1.dmaSource = number;
 }

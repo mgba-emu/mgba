@@ -46,6 +46,8 @@ struct DSSlot1 {
 	struct mTimingEvent transferEvent;
 	uint8_t readBuffer[4];
 
+	int dmaSource;
+
 	enum DSSavedataType savedataType;
 	struct mTimingEvent spiEvent;
 	bool spiHoldEnabled;
@@ -64,9 +66,14 @@ struct DS;
 struct DSCommon;
 void DSSlot1SPIInit(struct DS* ds, struct VFile* vf);
 void DSSlot1Reset(struct DS* ds);
+
 DSSlot1AUXSPICNT DSSlot1Configure(struct DS* ds, DSSlot1AUXSPICNT config);
 DSSlot1ROMCNT DSSlot1Control(struct DS* ds, DSSlot1ROMCNT control);
 void DSSlot1WriteSPI(struct DSCommon* dscore, uint8_t datum);
+
+struct GBADMA;
+void DSSlot1ScheduleDMA(struct DSCommon* dscore, int number, struct GBADMA* info);
+
 uint32_t DSSlot1Read(struct DS* ds);
 
 CXX_GUARD_END

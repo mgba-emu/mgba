@@ -81,15 +81,24 @@ void DS9DMAWriteCNT(struct DSCommon* dscore, int dma, uint32_t value) {
 }
 
 void DSDMASchedule(struct DSCommon* dscore, int number, struct GBADMA* info) {
-	switch (GBADMARegisterGetTiming(info->reg)) {
+	int which;
+	if (dscore == &dscore->p->ds9) {
+		which = GBADMARegisterGetTiming9(info->reg);
+	} else {
+		which = GBADMARegisterGetTiming(info->reg);
+	}
+	switch (which) {
 	case DS_DMA_TIMING_NOW:
 		info->when = mTimingCurrentTime(&dscore->timing) + 3; // DMAs take 3 cycles to start
 		info->nextCount = info->count;
 		break;
-	case DS_DMA_TIMING_HBLANK:
 	case DS_DMA_TIMING_VBLANK:
 		// Handled implicitly
 		return;
+	case DS9_DMA_TIMING_SLOT1:
+		DSSlot1ScheduleDMA(dscore, number, info);
+		return;
+	case DS_DMA_TIMING_HBLANK: // DS7_DMA_TIMING_SLOT1
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DMA");
 	}
