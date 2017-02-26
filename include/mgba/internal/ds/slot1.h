@@ -26,6 +26,7 @@ DECL_BIT(DSSlot1AUXSPICNT, Enable, 15);
 DECL_BITFIELD(DSSlot1ROMCNT, uint32_t);
 DECL_BIT(DSSlot1ROMCNT, WordReady, 23);
 DECL_BITS(DSSlot1ROMCNT, BlockSize, 24, 3);
+DECL_BIT(DSSlot1ROMCNT, TransferRate, 27);
 DECL_BIT(DSSlot1ROMCNT, BlockBusy, 31);
 
 enum DSSavedataType {
@@ -42,6 +43,7 @@ struct DSSlot1 {
 	uint32_t address;
 	uint32_t transferSize;
 	uint32_t transferRemaining;
+	struct mTimingEvent transferEvent;
 	uint8_t readBuffer[4];
 
 	enum DSSavedataType savedataType;
