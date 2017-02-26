@@ -163,6 +163,8 @@ struct GBAVideoSoftwareRenderer {
 	int start;
 	int end;
 	int masterEnd;
+	int masterHeight;
+	int masterScanlines;
 };
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer);

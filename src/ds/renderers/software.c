@@ -94,10 +94,14 @@ static void DSVideoSoftwareRendererInit(struct DSVideoRenderer* renderer) {
 	softwareRenderer->engA.d.palette = &renderer->palette[0];
 	softwareRenderer->engA.d.oam = &renderer->oam->oam[0];
 	softwareRenderer->engA.masterEnd = DS_VIDEO_HORIZONTAL_PIXELS;
+	softwareRenderer->engA.masterHeight = DS_VIDEO_VERTICAL_PIXELS;
+	softwareRenderer->engA.masterScanlines = DS_VIDEO_VERTICAL_TOTAL_PIXELS;
 	softwareRenderer->engA.outputBufferStride = softwareRenderer->outputBufferStride;
 	softwareRenderer->engB.d.palette = &renderer->palette[512];
 	softwareRenderer->engB.d.oam = &renderer->oam->oam[1];
 	softwareRenderer->engB.masterEnd = DS_VIDEO_HORIZONTAL_PIXELS;
+	softwareRenderer->engB.masterHeight = DS_VIDEO_VERTICAL_PIXELS;
+	softwareRenderer->engB.masterScanlines = DS_VIDEO_VERTICAL_TOTAL_PIXELS;
 	softwareRenderer->engB.outputBufferStride = softwareRenderer->outputBufferStride;
 
 	DSVideoSoftwareRendererReset(renderer);

@@ -63,6 +63,8 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.disableOBJ = false;
 	renderer->tileStride = 0x20;
 	renderer->masterEnd = VIDEO_HORIZONTAL_PIXELS;
+	renderer->masterHeight = VIDEO_VERTICAL_PIXELS;
+	renderer->masterScanlines = VIDEO_VERTICAL_TOTAL_PIXELS;
 
 	renderer->temporaryBuffer = 0;
 }
@@ -471,7 +473,7 @@ static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
 			if (GBAObjAttributesAIsTransformed(obj.a)) {
 				height <<= GBAObjAttributesAGetDoubleSize(obj.a);
 			}
-			if (GBAObjAttributesAGetY(obj.a) < VIDEO_VERTICAL_PIXELS || GBAObjAttributesAGetY(obj.a) + height >= VIDEO_VERTICAL_TOTAL_PIXELS) {
+			if (GBAObjAttributesAGetY(obj.a) < renderer->masterHeight || GBAObjAttributesAGetY(obj.a) + height >= renderer->masterScanlines) {
 				renderer->sprites[oamMax].y = GBAObjAttributesAGetY(obj.a);
 				renderer->sprites[oamMax].endY = GBAObjAttributesAGetY(obj.a) + height;
 				renderer->sprites[oamMax].obj = obj;
@@ -571,7 +573,7 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
 	if (softwareRenderer->temporaryBuffer) {
-		mappedMemoryFree(softwareRenderer->temporaryBuffer, softwareRenderer->masterEnd * VIDEO_VERTICAL_PIXELS * 4);
+		mappedMemoryFree(softwareRenderer->temporaryBuffer, softwareRenderer->masterEnd * softwareRenderer->masterHeight * 4);
 		softwareRenderer->temporaryBuffer = 0;
 	}
 	softwareRenderer->bg[2].sx = softwareRenderer->bg[2].refx;
@@ -591,7 +593,7 @@ static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer,
 
 	const color_t* colorPixels = pixels;
 	unsigned i;
-	for (i = 0; i < VIDEO_VERTICAL_PIXELS; ++i) {
+	for (i = 0; i < softwareRenderer->masterHeight; ++i) {
 		memmove(&softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * i], &colorPixels[stride * i], softwareRenderer->masterEnd * BYTES_PER_PIXEL);
 	}
 }
