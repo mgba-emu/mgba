@@ -815,7 +815,7 @@ void DSRaiseIRQ(struct ARMCore* cpu, uint16_t* io, enum DSIRQ irq) {
 		io[DS_REG_IF_HI >> 1] |= 1 << (irq - 16);
 	}
 
-	if ((irq < 16 && (io[DS_REG_IE_LO >> 1] & 1 << irq)) || (io[DS_REG_IE_HI >> 1] & 1 << (irq - 16))) {
+	if ((irq < 16 && (io[DS_REG_IE_LO >> 1] & 1 << irq)) || (io[DS_REG_IE_HI >> 1] & (1 << (irq - 16)))) {
 		cpu->halted = 0;
 		if (io[DS_REG_IME >> 1]) {
 			ARMRaiseIRQ(cpu);
