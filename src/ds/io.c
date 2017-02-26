@@ -157,6 +157,7 @@ static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t va
 	case DS_REG_IF_LO:
 	case DS_REG_IF_HI:
 		value = dscore->memory.io[address >> 1] & ~value;
+		DSGXUpdateGXSTAT(&dscore->p->gx);
 		break;
 	default:
 		return 0;

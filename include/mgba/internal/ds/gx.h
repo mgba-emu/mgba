@@ -16,6 +16,20 @@ CXX_GUARD_START
 
 mLOG_DECLARE_CATEGORY(DS_GX);
 
+DECL_BITFIELD(DSRegGXSTAT, uint32_t);
+DECL_BIT(DSRegGXSTAT, TestBusy, 0);
+DECL_BIT(DSRegGXSTAT, BoxTestResult, 1);
+DECL_BITS(DSRegGXSTAT, PVMatrixStackLevel, 8, 5);
+DECL_BIT(DSRegGXSTAT, ProjMatrixStackLevel, 13);
+DECL_BIT(DSRegGXSTAT, MatrixStackBusy, 14);
+DECL_BIT(DSRegGXSTAT, MatrixStackError, 15);
+DECL_BITS(DSRegGXSTAT, FIFOEntries, 16, 9);
+DECL_BIT(DSRegGXSTAT, FIFOFull, 24);
+DECL_BIT(DSRegGXSTAT, FIFOLtHalf, 25);
+DECL_BIT(DSRegGXSTAT, FIFOEmpty, 26);
+DECL_BIT(DSRegGXSTAT, Busy, 27);
+DECL_BITS(DSRegGXSTAT, DoIRQ, 30, 2);
+
 enum DSGXCommand {
 	DS_GX_CMD_NOP = 0,
 	DS_GX_CMD_MTX_MODE = 0x10,
@@ -73,6 +87,8 @@ struct DSGX {
 	struct CircleBuffer fifo;
 
 	struct mTimingEvent fifoEvent;
+
+	bool swapBuffers;
 };
 
 void DSGXInit(struct DSGX*);
@@ -81,6 +97,9 @@ void DSGXReset(struct DSGX*);
 
 uint16_t DSGXWriteRegister(struct DSGX*, uint32_t address, uint16_t value);
 uint32_t DSGXWriteRegister32(struct DSGX*, uint32_t address, uint32_t value);
+
+void DSGXSwapBuffers(struct DSGX*);
+void DSGXUpdateGXSTAT(struct DSGX*);
 
 CXX_GUARD_END
 
