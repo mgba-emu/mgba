@@ -238,6 +238,8 @@ static void DSVideoSoftwareRendererUpdateDISPCNT(struct DSVideoSoftwareRenderer*
 		}
 	}
 	if (!engB) {
+		eng->dispcnt = DSRegisterDISPCNTClear3D(eng->dispcnt);
+		eng->dispcnt |= DSRegisterDISPCNTIs3D(dispcnt);
 		_updateCharBase(softwareRenderer, engB);
 	}
 }
@@ -345,7 +347,11 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 				GBAVideoSoftwareRendererPostprocessSprite(softwareRenderer, priority);
 			}
 			if (TEST_LAYER_ENABLED(0)) {
-				GBAVideoSoftwareRendererDrawBackgroundMode0(softwareRenderer, &softwareRenderer->bg[0], y);
+				if (DSRegisterDISPCNTIs3D(softwareRenderer->dispcnt)) {
+					// TODO
+				} else {
+					GBAVideoSoftwareRendererDrawBackgroundMode0(softwareRenderer, &softwareRenderer->bg[0], y);
+				}
 			}
 			if (TEST_LAYER_ENABLED(1)) {
 				GBAVideoSoftwareRendererDrawBackgroundMode0(softwareRenderer, &softwareRenderer->bg[1], y);
