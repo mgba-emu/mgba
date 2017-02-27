@@ -100,6 +100,8 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 		LOAD_16(entry, i, softwareRenderer->d.palette);
 		GBAVideoSoftwareRendererWritePalette(renderer, i, entry);
 	}
+	softwareRenderer->objExtPalette = NULL;
+	softwareRenderer->objExtVariantPalette = NULL;
 	_updatePalettes(softwareRenderer);
 
 	softwareRenderer->blda = 0;
@@ -497,8 +499,14 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		return;
 	}
 
+	uint16_t* objVramBase = softwareRenderer->d.vramOBJ[0];
+	if (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) >= 3) {
+		softwareRenderer->d.vramOBJ[0] = NULL; // OBJ VRAM bottom is blocked in bitmap modes
+	}
+
 	GBAVideoSoftwareRendererPreprocessBuffer(softwareRenderer, y);
 	int spriteLayers = GBAVideoSoftwareRendererPreprocessSpriteLayer(softwareRenderer, y);
+	softwareRenderer->d.vramOBJ[0] = objVramBase;
 
 	int w;
 	unsigned priority;

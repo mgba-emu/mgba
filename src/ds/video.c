@@ -195,11 +195,11 @@ void DSVideoAssociateRenderer(struct DSVideo* video, struct DSVideoRenderer* ren
 	memcpy(renderer->vramABG, video->vramABG, sizeof(renderer->vramABG));
 	memcpy(renderer->vramAOBJ, video->vramAOBJ, sizeof(renderer->vramAOBJ));
 	memcpy(renderer->vramABGExtPal, video->vramABGExtPal, sizeof(renderer->vramABGExtPal));
-	memcpy(renderer->vramAOBJExtPal, video->vramAOBJExtPal, sizeof(renderer->vramAOBJExtPal));
+	renderer->vramAOBJExtPal = video->vramAOBJExtPal;
 	memcpy(renderer->vramBBG, video->vramBBG, sizeof(renderer->vramBBG));
 	memcpy(renderer->vramBOBJ, video->vramBOBJ, sizeof(renderer->vramBOBJ));
 	memcpy(renderer->vramBBGExtPal, video->vramBBGExtPal, sizeof(renderer->vramBBGExtPal));
-	memcpy(renderer->vramBOBJExtPal, video->vramBOBJExtPal, sizeof(renderer->vramBOBJExtPal));
+	renderer->vramBOBJExtPal = video->vramBOBJExtPal;
 	renderer->oam = &video->oam;
 	video->renderer->init(video->renderer);
 }
@@ -395,6 +395,20 @@ void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value, uint8_t oldVa
 			}
 		}
 		break;
+	case MODE_A_OBJ_EXT_PAL:
+		if (ds->video.vramAOBJExtPal == memory->vramBank[index]) {
+			ds->video.vramAOBJExtPal = NULL;
+			ds->video.renderer->vramAOBJExtPal = NULL;
+			ds->video.renderer->invalidateExtPal(ds->video.renderer, true, false, 0);
+		}
+		break;
+	case MODE_B_OBJ_EXT_PAL:
+		if (ds->video.vramBOBJExtPal == memory->vramBank[index]) {
+			ds->video.vramBOBJExtPal = NULL;
+			ds->video.renderer->vramBOBJExtPal = NULL;
+			ds->video.renderer->invalidateExtPal(ds->video.renderer, true, true, 0);
+		}
+		break;
 	case MODE_7_VRAM:
 		for (i = 0; i < size; i += 16) {
 			ds->memory.vram7[(offset + i) >> 4] = NULL;
@@ -457,6 +471,16 @@ void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value, uint8_t oldVa
 			ds->video.renderer->vramBBGExtPal[offset + i] = ds->video.vramBBGExtPal[offset + i];
 			ds->video.renderer->invalidateExtPal(ds->video.renderer, false, true, offset + i);
 		}
+		break;
+	case MODE_A_OBJ_EXT_PAL:
+		ds->video.vramAOBJExtPal = memory->vramBank[index];
+		ds->video.renderer->vramAOBJExtPal = ds->video.vramAOBJExtPal;
+		ds->video.renderer->invalidateExtPal(ds->video.renderer, true, false, 0);
+		break;
+	case MODE_B_OBJ_EXT_PAL:
+		ds->video.vramBOBJExtPal = memory->vramBank[index];
+		ds->video.renderer->vramBOBJExtPal = ds->video.vramBOBJExtPal;
+		ds->video.renderer->invalidateExtPal(ds->video.renderer, true, true, 0);
 		break;
 	case MODE_7_VRAM:
 		for (i = 0; i < size; i += 16) {

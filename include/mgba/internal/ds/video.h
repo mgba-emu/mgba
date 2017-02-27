@@ -86,11 +86,11 @@ struct DSVideoRenderer {
 	uint16_t* vramABG[32];
 	uint16_t* vramAOBJ[32];
 	uint16_t* vramABGExtPal[4];
-	uint16_t* vramAOBJExtPal[4];
+	uint16_t* vramAOBJExtPal;
 	uint16_t* vramBBG[32];
 	uint16_t* vramBOBJ[32];
 	uint16_t* vramBBGExtPal[4];
-	uint16_t* vramBOBJExtPal[4];
+	uint16_t* vramBOBJExtPal;
 	union DSOAM* oam;
 };
 
@@ -109,11 +109,11 @@ struct DSVideo {
 	uint16_t* vramABG[32];
 	uint16_t* vramAOBJ[32];
 	uint16_t* vramABGExtPal[4];
-	uint16_t* vramAOBJExtPal[4];
+	uint16_t* vramAOBJExtPal;
 	uint16_t* vramBBG[32];
 	uint16_t* vramBOBJ[32];
 	uint16_t* vramBBGExtPal[4];
-	uint16_t* vramBOBJExtPal[4];
+	uint16_t* vramBOBJExtPal;
 	union DSOAM oam;
 
 	int32_t frameCounter;

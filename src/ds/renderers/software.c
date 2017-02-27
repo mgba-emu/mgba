@@ -21,21 +21,35 @@ static void DSVideoSoftwareRendererFinishFrame(struct DSVideoRenderer* renderer)
 static void DSVideoSoftwareRendererGetPixels(struct DSVideoRenderer* renderer, size_t* stride, const void** pixels);
 static void DSVideoSoftwareRendererPutPixels(struct DSVideoRenderer* renderer, size_t stride, const void* pixels);
 
-static bool _regenerateExtPalette(struct DSVideoSoftwareRenderer* renderer, bool engB, int slot) {
+static bool _regenerateExtPalette(struct DSVideoSoftwareRenderer* renderer, bool obj, bool engB, int slot) {
 	color_t* palette;
 	color_t* variantPalette;
 	struct GBAVideoSoftwareRenderer* softwareRenderer;
 	uint16_t* vram;
-	if (!engB) {
-		palette = &renderer->extPaletteA[slot * 4096];
-		variantPalette = &renderer->variantPaletteA[slot * 4096];
-		softwareRenderer = &renderer->engA;
-		vram = renderer->d.vramABGExtPal[slot];
+	if (!obj) {
+		if (!engB) {
+			palette = &renderer->extPaletteA[slot * 4096];
+			variantPalette = &renderer->variantPaletteA[slot * 4096];
+			softwareRenderer = &renderer->engA;
+			vram = renderer->d.vramABGExtPal[slot];
+		} else {
+			palette = &renderer->extPaletteB[slot * 4096];
+			variantPalette = &renderer->variantPaletteB[slot * 4096];
+			softwareRenderer = &renderer->engB;
+			vram = renderer->d.vramBBGExtPal[slot];
+		}
 	} else {
-		palette = &renderer->extPaletteB[slot * 4096];
-		variantPalette = &renderer->variantPaletteB[slot * 4096];
-		softwareRenderer = &renderer->engB;
-		vram = renderer->d.vramBBGExtPal[slot];
+		if (!engB) {
+			palette = renderer->objExtPaletteA;
+			variantPalette = renderer->variantPaletteA;
+			softwareRenderer = &renderer->engA;
+			vram = renderer->d.vramAOBJExtPal;
+		} else {
+			palette = renderer->objExtPaletteB;
+			variantPalette = renderer->variantPaletteB;
+			softwareRenderer = &renderer->engB;
+			vram = renderer->d.vramBOBJExtPal;
+		}
 	}
 	if (!vram) {
 		return false;
@@ -154,7 +168,7 @@ static void DSVideoSoftwareRendererUpdateDISPCNT(struct DSVideoSoftwareRenderer*
 			if (i < 2 && GBARegisterBGCNTIsExtPaletteSlot(eng->bg[i].control)) {
 				slot += 2;
 			}
-			if (eng->bg[i].extPalette != &extPalette[slot * 4096] && _regenerateExtPalette(softwareRenderer, engB, slot)) {
+			if (eng->bg[i].extPalette != &extPalette[slot * 4096] && _regenerateExtPalette(softwareRenderer, false, engB, slot)) {
 				eng->bg[i].extPalette = &extPalette[slot * 4096];
 			}
 		}
@@ -163,6 +177,19 @@ static void DSVideoSoftwareRendererUpdateDISPCNT(struct DSVideoSoftwareRenderer*
 		eng->bg[1].extPalette = NULL;
 		eng->bg[2].extPalette = NULL;
 		eng->bg[3].extPalette = NULL;
+	}
+	if (DSRegisterDISPCNTIsObjExtPalette(dispcnt)) {
+		if (!engB) {
+			softwareRenderer->engA.objExtPalette = softwareRenderer->objExtPaletteA;
+		} else {
+			softwareRenderer->engB.objExtPalette = softwareRenderer->objExtPaletteB;
+		}
+	} else {
+		if (!engB) {
+			softwareRenderer->engA.objExtPalette = NULL;
+		} else {
+			softwareRenderer->engB.objExtPalette = NULL;
+		}
 	}
 	if (!engB) {
 		uint32_t charBase = DSRegisterDISPCNTGetCharBase(softwareRenderer->dispcntA) << 16;
@@ -251,7 +278,7 @@ static void DSVideoSoftwareRendererWriteOAM(struct DSVideoRenderer* renderer, ui
 
 static void DSVideoSoftwareRendererInvalidateExtPal(struct DSVideoRenderer* renderer, bool obj, bool engB, int slot) {
 	struct DSVideoSoftwareRenderer* softwareRenderer = (struct DSVideoSoftwareRenderer*) renderer;
-	_regenerateExtPalette(softwareRenderer, engB, slot);
+	_regenerateExtPalette(softwareRenderer, obj, engB, slot);
 }
 
 static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* renderer, int y) {

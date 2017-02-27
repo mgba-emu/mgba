@@ -32,6 +32,10 @@ struct DSVideoSoftwareRenderer {
 	color_t extPaletteB[16384];
 	color_t variantPaletteA[16384];
 	color_t variantPaletteB[16384];
+	color_t objExtPaletteA[4096];
+	color_t objExtPaletteB[4096];
+	color_t objVariantPaletteA[4096];
+	color_t objVariantPaletteB[4096];
 };
 
 void DSVideoSoftwareRendererCreate(struct DSVideoSoftwareRenderer* renderer);

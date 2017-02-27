@@ -178,7 +178,7 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	int32_t x = (uint32_t) GBAObjAttributesBGetX(sprite->b) << 23;
 	x >>= 23;
 	unsigned charBase = GBAObjAttributesCGetTile(sprite->c) * renderer->tileStride;
-	if (GBARegisterDISPCNTGetMode(renderer->dispcnt) >= 3 && GBAObjAttributesCGetTile(sprite->c) < 512) {
+	if (!renderer->d.vramOBJ[charBase >> VRAM_BLOCK_OFFSET]) {
 		return 0;
 	}
 	if (renderer->spriteCyclesRemaining <= 0) {
@@ -202,7 +202,9 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	color_t* objwinPalette = palette;
 	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt) && GBAWindowControlGetBlendEnable(renderer->objwin.packed) != GBAWindowControlIsBlendEnable(renderer->currentWindow.packed);
 
-	if (variant) {
+	if (GBAObjAttributesAIs256Color(sprite->a) && renderer->objExtPalette) {
+		palette = renderer->objExtPalette;
+	} else if (variant) {
 		palette = &renderer->variantPalette[0x100];
 		if (GBAWindowControlIsBlendEnable(renderer->objwin.packed)) {
 			objwinPalette = palette;

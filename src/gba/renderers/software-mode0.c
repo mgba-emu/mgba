@@ -364,7 +364,7 @@
 		} \
 	}
 
-#define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_256Ext(BLEND, OBJWIN) \
+#define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_256EXT(BLEND, OBJWIN) \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
 	palette = &mainPalette[paletteData]; \
 	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
@@ -414,7 +414,7 @@
 		pixel = &renderer->row[outX]; \
 	}
 
-#define DRAW_BACKGROUND_MODE_0_TILE_PREFIX_256Ext(BLEND, OBJWIN) \
+#define DRAW_BACKGROUND_MODE_0_TILE_PREFIX_256EXT(BLEND, OBJWIN) \
 	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 	vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 	if (UNLIKELY(!vram)) { \
@@ -463,7 +463,7 @@
 		} \
 	}
 
-#define DRAW_BACKGROUND_MODE_0_TILES_256Ext(BLEND, OBJWIN) \
+#define DRAW_BACKGROUND_MODE_0_TILES_256EXT(BLEND, OBJWIN) \
 	for (; tileX < tileEnd; ++tileX) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
 		paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
@@ -511,7 +511,7 @@
 		} \
 	}
 
-#define DRAW_BACKGROUND_MODE_0_MOSAIC_256Ext(BLEND, OBJWIN) \
+#define DRAW_BACKGROUND_MODE_0_MOSAIC_256EXT(BLEND, OBJWIN) \
 	for (; tileX < tileEnd; ++tileX) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
@@ -685,7 +685,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 			} else if (!background->extPalette) {
 				DRAW_BACKGROUND_MODE_0(256, NoBlend, NO_OBJWIN);
 			} else {
-				DRAW_BACKGROUND_MODE_0(256Ext, NoBlend, NO_OBJWIN);
+				DRAW_BACKGROUND_MODE_0(256EXT, NoBlend, NO_OBJWIN);
 			}
 		} else {
 			if (!background->multipalette) {
@@ -693,7 +693,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 			} else if (!background->extPalette) {
 				DRAW_BACKGROUND_MODE_0(256, Blend, NO_OBJWIN);
 			} else {
-				DRAW_BACKGROUND_MODE_0(256Ext, Blend, NO_OBJWIN);
+				DRAW_BACKGROUND_MODE_0(256EXT, Blend, NO_OBJWIN);
 			}
 		}
 	} else {
@@ -703,7 +703,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 			} else if (!background->extPalette) {
 				DRAW_BACKGROUND_MODE_0(256, NoBlend, OBJWIN);
 			} else {
-				DRAW_BACKGROUND_MODE_0(256Ext, NoBlend, OBJWIN);
+				DRAW_BACKGROUND_MODE_0(256EXT, NoBlend, OBJWIN);
 			}
 		} else {
 			if (!background->multipalette) {
@@ -711,7 +711,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 			} else if (!background->extPalette) {
 				DRAW_BACKGROUND_MODE_0(256, Blend, OBJWIN);
 			} else {
-				DRAW_BACKGROUND_MODE_0(256Ext, Blend, OBJWIN);
+				DRAW_BACKGROUND_MODE_0(256EXT, Blend, OBJWIN);
 			}
 		}
 	}
