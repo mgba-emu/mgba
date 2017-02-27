@@ -11,6 +11,7 @@
 mLOG_DEFINE_CATEGORY(DS_GX, "DS GX");
 
 #define DS_GX_FIFO_SIZE 256
+#define DS_GX_PIPE_SIZE 4
 
 static const int32_t _gxCommandCycleBase[DS_GX_CMD_MAX] = {
 	[DS_GX_CMD_NOP] = 0,
@@ -53,17 +54,99 @@ static const int32_t _gxCommandCycleBase[DS_GX_CMD_MAX] = {
 	[DS_GX_CMD_VEC_TEST] = 10,
 };
 
-static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate) {
-	struct DSGX* gx = context;
-	uint32_t cycles;
-	while (true) {
+static const int32_t _gxCommandParams[DS_GX_CMD_MAX] = {
+	[DS_GX_CMD_MTX_MODE] = 1,
+	[DS_GX_CMD_MTX_POP] = 1,
+	[DS_GX_CMD_MTX_STORE] = 1,
+	[DS_GX_CMD_MTX_RESTORE] = 1,
+	[DS_GX_CMD_MTX_LOAD_4x4] = 16,
+	[DS_GX_CMD_MTX_LOAD_4x3] = 12,
+	[DS_GX_CMD_MTX_MULT_4x4] = 16,
+	[DS_GX_CMD_MTX_MULT_4x3] = 12,
+	[DS_GX_CMD_MTX_MULT_3x3] = 9,
+	[DS_GX_CMD_MTX_SCALE] = 3,
+	[DS_GX_CMD_MTX_TRANS] = 3,
+	[DS_GX_CMD_COLOR] = 1,
+	[DS_GX_CMD_NORMAL] = 1,
+	[DS_GX_CMD_TEXCOORD] = 1,
+	[DS_GX_CMD_VTX_16] = 2,
+	[DS_GX_CMD_VTX_10] = 1,
+	[DS_GX_CMD_VTX_XY] = 1,
+	[DS_GX_CMD_VTX_XZ] = 1,
+	[DS_GX_CMD_VTX_YZ] = 1,
+	[DS_GX_CMD_VTX_DIFF] = 1,
+	[DS_GX_CMD_POLYGON_ATTR] = 1,
+	[DS_GX_CMD_TEXIMAGE_PARAM] = 1,
+	[DS_GX_CMD_PLTT_BASE] = 1,
+	[DS_GX_CMD_DIF_AMB] = 1,
+	[DS_GX_CMD_SPE_EMI] = 1,
+	[DS_GX_CMD_LIGHT_VECTOR] = 1,
+	[DS_GX_CMD_LIGHT_COLOR] = 1,
+	[DS_GX_CMD_SHININESS] = 32,
+	[DS_GX_CMD_BEGIN_VTXS] = 1,
+	[DS_GX_CMD_SWAP_BUFFERS] = 1,
+	[DS_GX_CMD_VIEWPORT] = 1,
+	[DS_GX_CMD_BOX_TEST] = 3,
+	[DS_GX_CMD_POS_TEST] = 2,
+	[DS_GX_CMD_VEC_TEST] = 1,
+};
+
+static void _pullPipe(struct DSGX* gx) {
+	if (CircleBufferSize(&gx->fifo) >= sizeof(struct DSGXEntry)) {
 		struct DSGXEntry entry = { 0 };
 		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.command);
 		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[0]);
 		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[1]);
 		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[2]);
 		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[3]);
+		CircleBufferWrite8(&gx->pipe, entry.command);
+		CircleBufferWrite8(&gx->pipe, entry.params[0]);
+		CircleBufferWrite8(&gx->pipe, entry.params[1]);
+		CircleBufferWrite8(&gx->pipe, entry.params[2]);
+		CircleBufferWrite8(&gx->pipe, entry.params[3]);
+	}
+	if (CircleBufferSize(&gx->fifo) >= sizeof(struct DSGXEntry)) {
+		struct DSGXEntry entry = { 0 };
+		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.command);
+		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[0]);
+		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[1]);
+		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[2]);
+		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[3]);
+		CircleBufferWrite8(&gx->pipe, entry.command);
+		CircleBufferWrite8(&gx->pipe, entry.params[0]);
+		CircleBufferWrite8(&gx->pipe, entry.params[1]);
+		CircleBufferWrite8(&gx->pipe, entry.params[2]);
+		CircleBufferWrite8(&gx->pipe, entry.params[3]);
+	}
+}
+
+static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+	struct DSGX* gx = context;
+	uint32_t cycles;
+	bool first = true;
+	while (true) {
+		if (gx->swapBuffers) {
+			break;
+		}
+
+		if (CircleBufferSize(&gx->pipe) <= 2 * sizeof(struct DSGXEntry)) {
+			_pullPipe(gx);
+		}
+
+		struct DSGXEntry entry = { 0 };
+		CircleBufferDump(&gx->pipe, (int8_t*) &entry.command, 1);
 		cycles = _gxCommandCycleBase[entry.command];
+
+		if (first) {
+			first = false;
+		} else if (cycles > cyclesLate) {
+			break;
+		}
+		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.command);
+		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.params[0]);
+		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.params[1]);
+		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.params[2]);
+		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.params[3]);
 
 		switch (entry.command) {
 		case DS_GX_CMD_SWAP_BUFFERS:
@@ -73,25 +156,23 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			mLOG(DS_GX, STUB, "Unimplemented GX command %02X:%02X %02X %02X %02X", entry.command, entry.params[0], entry.params[1], entry.params[2], entry.params[3]);
 			break;
 		}
-		if (CircleBufferSize(&gx->fifo)) {
-			if (cycles <= cyclesLate) {
-				cyclesLate -= cycles;
-			} else {
-				break;
-			}
-		} else {
+		if (cyclesLate >= cycles) {
+			cyclesLate -= cycles;
+		}
+		if (!CircleBufferSize(&gx->pipe)) {
 			cycles = 0;
 			break;
 		}
 	}
 	DSGXUpdateGXSTAT(gx);
-	if (cycles) {
-		mTimingSchedule(&gx->p->ds9.timing, &gx->fifoEvent, cycles);
+	if (cycles && !gx->swapBuffers) {
+		mTimingSchedule(timing, &gx->fifoEvent, cycles - cyclesLate);
 	}
 }
 
 void DSGXInit(struct DSGX* gx) {
 	CircleBufferInit(&gx->fifo, sizeof(struct DSGXEntry) * DS_GX_FIFO_SIZE);
+	CircleBufferInit(&gx->pipe, sizeof(struct DSGXEntry) * DS_GX_PIPE_SIZE);
 	gx->fifoEvent.name = "DS GX FIFO";
 	gx->fifoEvent.priority = 0xC;
 	gx->fifoEvent.context = gx;
@@ -100,11 +181,15 @@ void DSGXInit(struct DSGX* gx) {
 
 void DSGXDeinit(struct DSGX* gx) {
 	CircleBufferDeinit(&gx->fifo);
+	CircleBufferDeinit(&gx->pipe);
 }
 
 void DSGXReset(struct DSGX* gx) {
 	CircleBufferClear(&gx->fifo);
+	CircleBufferClear(&gx->pipe);
 	gx->swapBuffers = false;
+	memset(gx->outstandingParams, 0, sizeof(gx->outstandingParams));
+	memset(gx->outstandingCommand, 0, sizeof(gx->outstandingCommand));
 }
 
 void DSGXUpdateGXSTAT(struct DSGX* gx) {
@@ -130,23 +215,67 @@ void DSGXUpdateGXSTAT(struct DSGX* gx) {
 	gx->p->memory.io9[DS9_REG_GXSTAT_HI >> 1] = value >> 16;
 }
 
+static void DSGXUnpackCommand(struct DSGX* gx, uint32_t command) {
+	gx->outstandingCommand[0] = command;
+	gx->outstandingCommand[1] = command >> 8;
+	gx->outstandingCommand[2] = command >> 16;
+	gx->outstandingCommand[3] = command >> 24;
+	if (gx->outstandingCommand[0] >= DS_GX_CMD_MAX) {
+		gx->outstandingCommand[0] = 0;
+	}
+	if (gx->outstandingCommand[1] >= DS_GX_CMD_MAX) {
+		gx->outstandingCommand[1] = 0;
+	}
+	if (gx->outstandingCommand[2] >= DS_GX_CMD_MAX) {
+		gx->outstandingCommand[2] = 0;
+	}
+	if (gx->outstandingCommand[3] >= DS_GX_CMD_MAX) {
+		gx->outstandingCommand[3] = 0;
+	}
+	gx->outstandingParams[0] = _gxCommandParams[gx->outstandingCommand[0]];
+	gx->outstandingParams[1] = _gxCommandParams[gx->outstandingCommand[1]];
+	gx->outstandingParams[2] = _gxCommandParams[gx->outstandingCommand[2]];
+	gx->outstandingParams[3] = _gxCommandParams[gx->outstandingCommand[3]];
+}
+
 static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
+	if (gx->outstandingParams[0]) {
+		entry.command = gx->outstandingCommand[0];
+		--gx->outstandingParams[0];
+		if (!gx->outstandingParams[0]) {
+			// TODO: improve this
+			memmove(&gx->outstandingParams[0], &gx->outstandingParams[1], sizeof(gx->outstandingParams[0]) * 3);
+			memmove(&gx->outstandingCommand[0], &gx->outstandingCommand[1], sizeof(gx->outstandingCommand[0]) * 3);
+			gx->outstandingParams[3] = 0;
+		}
+	} else {
+		gx->outstandingCommand[0] = entry.command;
+		gx->outstandingParams[0] = _gxCommandParams[entry.command];
+		if (gx->outstandingParams[0]) {
+			--gx->outstandingParams[0];
+		}
+	}
 	uint32_t cycles = _gxCommandCycleBase[entry.command];
 	if (!cycles) {
 		return;
 	}
-	// TODO: Outstanding parameters
-	if (CircleBufferSize(&gx->fifo) < (DS_GX_FIFO_SIZE * sizeof(entry))) {
+	if (CircleBufferSize(&gx->fifo) == 0 && CircleBufferSize(&gx->pipe) < (DS_GX_PIPE_SIZE * sizeof(entry))) {
+		CircleBufferWrite8(&gx->pipe, entry.command);
+		CircleBufferWrite8(&gx->pipe, entry.params[0]);
+		CircleBufferWrite8(&gx->pipe, entry.params[1]);
+		CircleBufferWrite8(&gx->pipe, entry.params[2]);
+		CircleBufferWrite8(&gx->pipe, entry.params[3]);
+	} else if (CircleBufferSize(&gx->fifo) < (DS_GX_FIFO_SIZE * sizeof(entry))) {
 		CircleBufferWrite8(&gx->fifo, entry.command);
 		CircleBufferWrite8(&gx->fifo, entry.params[0]);
 		CircleBufferWrite8(&gx->fifo, entry.params[1]);
 		CircleBufferWrite8(&gx->fifo, entry.params[2]);
 		CircleBufferWrite8(&gx->fifo, entry.params[3]);
-		if (!mTimingIsScheduled(&gx->p->ds9.timing, &gx->fifoEvent)) {
-			mTimingSchedule(&gx->p->ds9.timing, &gx->fifoEvent, 0);
-		}
 	} else {
 		mLOG(DS_GX, STUB, "Unimplemented GX full");
+	}
+	if (!gx->swapBuffers && !mTimingIsScheduled(&gx->p->ds9.timing, &gx->fifoEvent)) {
+		mTimingSchedule(&gx->p->ds9.timing, &gx->fifoEvent, cycles);
 	}
 }
 
@@ -173,6 +302,8 @@ uint16_t DSGXWriteRegister(struct DSGX* gx, uint32_t address, uint16_t value) {
 	default:
 		if (address < DS9_REG_GXFIFO_00) {
 			mLOG(DS_GX, STUB, "Unimplemented GX write %03X:%04X", address, value);
+		} else if (address <= DS9_REG_GXFIFO_1F) {
+			mLOG(DS_GX, STUB, "Unimplemented GX write %03X:%04X", address, value);
 		} else if (address < DS9_REG_GXSTAT_LO) {
 			struct DSGXEntry entry = {
 				.command = (address & 0x1FC) >> 2,
@@ -181,7 +312,7 @@ uint16_t DSGXWriteRegister(struct DSGX* gx, uint32_t address, uint16_t value) {
 					value >> 8,
 				}
 			};
-			if (entry.command < 0x80) {
+			if (entry.command < DS_GX_CMD_MAX) {
 				DSGXWriteFIFO(gx, entry);
 			}
 		} else {
@@ -195,7 +326,7 @@ uint16_t DSGXWriteRegister(struct DSGX* gx, uint32_t address, uint16_t value) {
 uint32_t DSGXWriteRegister32(struct DSGX* gx, uint32_t address, uint32_t value) {
 	switch (address) {
 	case DS9_REG_DISP3DCNT:
-		mLOG(DS_GX, STUB, "Unimplemented GX write %03X:%04X", address, value);
+		mLOG(DS_GX, STUB, "Unimplemented GX write %03X:%08X", address, value);
 		break;
 	case DS9_REG_GXSTAT_LO:
 		value = (value & 0xFFFF0000) | DSGXWriteRegister(gx, DS9_REG_GXSTAT_LO, value);
@@ -203,10 +334,25 @@ uint32_t DSGXWriteRegister32(struct DSGX* gx, uint32_t address, uint32_t value) 
 		break;
 	default:
 		if (address < DS9_REG_GXFIFO_00) {
-			mLOG(DS_GX, STUB, "Unimplemented GX write %03X:%04X", address, value);
+			mLOG(DS_GX, STUB, "Unimplemented GX write %03X:%08X", address, value);
+		} else if (address <= DS9_REG_GXFIFO_1F) {
+			if (gx->outstandingParams[0]) {
+				struct DSGXEntry entry = {
+					.command = gx->outstandingCommand[0],
+					.params = {
+						value,
+						value >> 8,
+						value >> 16,
+						value >> 24
+					}
+				};
+				DSGXWriteFIFO(gx, entry);
+			} else {
+				DSGXUnpackCommand(gx, value);
+			}
 		} else if (address < DS9_REG_GXSTAT_LO) {
 			struct DSGXEntry entry = {
-				.command = (address & 0x1FC) >> 2l,
+				.command = (address & 0x1FC) >> 2,
 				.params = {
 					value,
 					value >> 8,
@@ -216,7 +362,7 @@ uint32_t DSGXWriteRegister32(struct DSGX* gx, uint32_t address, uint32_t value) 
 			};
 			DSGXWriteFIFO(gx, entry);
 		} else {
-			mLOG(DS_GX, STUB, "Unimplemented GX write %03X:%04X", address, value);
+			mLOG(DS_GX, STUB, "Unimplemented GX write %03X:%08X", address, value);
 		}
 		break;
 	}

@@ -83,10 +83,13 @@ struct DSGXEntry {
 struct DS;
 struct DSGX {
 	struct DS* p;
-	struct DSGXEntry pipe[4];
 	struct CircleBuffer fifo;
+	struct CircleBuffer pipe;
 
 	struct mTimingEvent fifoEvent;
+
+	int outstandingParams[4];
+	uint8_t outstandingCommand[4];
 
 	bool swapBuffers;
 };
