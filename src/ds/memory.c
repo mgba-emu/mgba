@@ -264,8 +264,17 @@ static void DS7SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 			cpu->memory.activeMask = DS_SIZE_RAM - 1;
 			break;
 		}
-	// Fall through
+		goto jump_error;
+	case DS_REGION_VRAM:
+		if (address < 0x06040000 && ds->memory.vram7[(address & 0x3FFFF) >> 17]) {
+			// TODO: redzones
+			cpu->memory.activeRegion = (uint32_t*) ds->memory.vram7[(address & 0x3FFFF) >> 17];
+			cpu->memory.activeMask = 0x1FFFF;
+			break;
+		}
+		// Fall through
 	default:
+	jump_error:
 		memory->activeRegion = -1;
 		cpu->memory.activeRegion = _deadbeef;
 		cpu->memory.activeMask = 0;
@@ -305,6 +314,12 @@ uint32_t DS7Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case DS_REGION_IO:
 		value = DS7IORead32(ds, address & 0x00FFFFFC);
 		break;
+	case DS_REGION_VRAM:
+		if (address < 0x06040000 && memory->vram7[(address & 0x3FFFF) >> 17]) {
+			LOAD_32(value, address & 0x1FFFC, memory->vram7[(address & 0x3FFFF) >> 17]);
+			break;
+		}
+		// Fall through
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load32: %08X", address);
 		break;
@@ -345,6 +360,12 @@ uint32_t DS7Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case DS_REGION_IO:
 		value = DS7IORead(ds, address & DS_OFFSET_MASK);
 		break;
+	case DS_REGION_VRAM:
+		if (address < 0x06040000 && memory->vram7[(address & 0x3FFFF) >> 17]) {
+			LOAD_16(value, address & 0x1FFFE, memory->vram7[(address & 0x3FFFF) >> 17]);
+			break;
+		}
+		// Fall through
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load16: %08X", address);
 		break;
@@ -418,6 +439,12 @@ void DS7Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 	case DS_REGION_IO:
 		DS7IOWrite32(ds, address & DS_OFFSET_MASK, value);
 		break;
+	case DS_REGION_VRAM:
+		if (address < 0x06040000 && memory->vram7[(address & 0x3FFFF) >> 17]) {
+			STORE_32(value, address & 0x1FFFC, memory->vram7[(address & 0x3FFFF) >> 17]);
+			break;
+		}
+		// Fall through
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store32: %08X:%08X", address, value);
 		break;
@@ -452,6 +479,12 @@ void DS7Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	case DS_REGION_IO:
 		DS7IOWrite(ds, address & DS_OFFSET_MASK, value);
 		break;
+	case DS_REGION_VRAM:
+		if (address < 0x06040000 && memory->vram7[(address & 0x3FFFF) >> 17]) {
+			STORE_16(value, address & 0x1FFFE, memory->vram7[(address & 0x3FFFF) >> 17]);
+			break;
+		}
+		// Fall through
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store16: %08X:%04X", address, value);
 		break;
@@ -601,6 +634,13 @@ uint32_t DS7LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	case DS_REGION_IO:
 		LDM_LOOP(value = DS7IORead32(ds, address));
 		break;
+	case DS_REGION_VRAM:
+		LDM_LOOP(if (address < 0x06040000 && memory->vram7[(address & 0x3FFFF) >> 17]) {
+			LOAD_32(value, address & 0x1FFFF, memory->vram7[(address & 0x3FFFF) >> 17]);
+		} else {
+			mLOG(DS_MEM, STUB, "Unimplemented DS7 LDM: %08X", address);
+		});
+		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 LDM: %08X", address);
 		LDM_LOOP(value = 0);
@@ -658,6 +698,13 @@ uint32_t DS7StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 			STORE_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
 		} else {
 			mLOG(DS_MEM, STUB, "Unimplemented DS9 STM: %08X", address);
+		});
+		break;
+	case DS_REGION_VRAM:
+		STM_LOOP(if (address < 0x06040000 && memory->vram7[(address & 0x3FFFF) >> 17]) {
+			STORE_32(value, address & 0x1FFFF, memory->vram7[(address & 0x3FFFF) >> 17]);
+		} else {
+			mLOG(DS_MEM, STUB, "Unimplemented DS7 STM: %08X", address);
 		});
 		break;
 	default:
