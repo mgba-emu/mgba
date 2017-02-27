@@ -516,6 +516,25 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 	}
 }
 
+static void _mSDLHandleMouseButton(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_MouseButtonEvent* event) {
+	if (event->button != SDL_BUTTON_LEFT) {
+		return;
+	}
+	int x = event->x;
+	int y = event->y;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	int windowW;
+	int windowH;
+	SDL_GetWindowSize(sdlContext->window, &windowW, &windowH);
+	unsigned coreW;
+	unsigned coreH;
+	core->desiredVideoDimensions(core, &coreW, &coreH);
+	x = x * coreW / windowW;
+	y = y * coreH / windowH;
+#endif
+	core->setCursor(core, x, y, event->state == SDL_PRESSED);
+}
+
 static void _mSDLHandleJoyButton(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_JoyButtonEvent* event) {
 	int key = 0;
 	key = mInputMapKey(sdlContext->bindings, SDL_BINDING_BUTTON, event->button);
@@ -578,6 +597,10 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
 		_mSDLHandleKeypress(context, sdlContext, &event->key);
+		break;
+	case SDL_MOUSEBUTTONDOWN:
+	case SDL_MOUSEBUTTONUP:
+		_mSDLHandleMouseButton(context->core, sdlContext, &event->button);
 		break;
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:

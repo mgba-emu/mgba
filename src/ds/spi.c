@@ -64,7 +64,6 @@ static void _tscEvent(struct mTiming* timing, void* context, uint32_t cyclesLate
 	DSSPICNT control = ds->memory.io7[DS7_REG_SPICNT >> 1];
 	uint8_t newValue = 0;
 
-	// TODO: /PENIRQ
 	if (ds->memory.spiBus.tscOffset > 0) {
 		// TODO: Make generic?
 		if (ds->memory.spiBus.tscOffset < 12) {
@@ -75,15 +74,28 @@ static void _tscEvent(struct mTiming* timing, void* context, uint32_t cyclesLate
 		}
 	} else if (ds->memory.spiBus.tscControlByte) {
 		switch (DSTSCControlByteGetChannel(ds->memory.spiBus.tscControlByte)) {
+		// TODO: Calibrate from firmware
 		case DS_TSC_CHANNEL_TS_X:
-			mLOG(DS_SPI, STUB, "Unimplemented TSC channel X");
-			ds->memory.spiBus.tscRegister = 0;
+			if (*ds->touchSource) {
+				ds->memory.spiBus.tscRegister = (*ds->cursorSourceX * 0xDD0 / DS_VIDEO_HORIZONTAL_PIXELS) + 0x100;
+			} else {
+				ds->memory.spiBus.tscRegister = 0;
+			}
 			break;
 		case DS_TSC_CHANNEL_TS_Y:
-			mLOG(DS_SPI, STUB, "Unimplemented TSC channel Y");
-			ds->memory.spiBus.tscRegister = 0xFFF;
+			if (*ds->touchSource) {
+				ds->memory.spiBus.tscRegister = (*ds->cursorSourceY * 0xE70 / DS_VIDEO_VERTICAL_PIXELS) + 0x0B0;
+			} else {
+				ds->memory.spiBus.tscRegister = 0xFFF;
+			}
 			break;
 		case DS_TSC_CHANNEL_TEMP_0:
+			if (*ds->touchSource) {
+				ds->memory.io7[DS7_REG_EXTKEYIN >> 1] &= ~0x040;
+			} else {
+				ds->memory.io7[DS7_REG_EXTKEYIN >> 1] |= 0x040;
+			}
+			break;
 		case DS_TSC_CHANNEL_BATTERY_V:
 		case DS_TSC_CHANNEL_TS_Z1:
 		case DS_TSC_CHANNEL_TS_Z2:

@@ -213,6 +213,7 @@ static uint16_t DSIOReadExKeyInput(struct DS* ds) {
 	}
 	input = ~(input >> 10) & 0x3;
 	input |= 0x3C;
+	input |= ds->memory.io7[DS7_REG_EXTKEYIN >> 1] & 0xC0;
 	return input;
 }
 
@@ -259,6 +260,7 @@ void DS7IOInit(struct DS* ds) {
 	memset(ds->memory.io7, 0, sizeof(ds->memory.io7));
 	ds->memory.io7[DS_REG_IPCFIFOCNT >> 1] = 0x0101;
 	ds->memory.io7[DS_REG_POSTFLG >> 1] = 0x0001;
+	ds->memory.io7[DS7_REG_EXTKEYIN >> 1] = 0x007F;
 }
 
 void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value) {

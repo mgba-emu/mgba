@@ -95,6 +95,9 @@ struct DS {
 	uint32_t bios7Checksum;
 	uint32_t bios9Checksum;
 	int* keySource;
+	int* cursorSourceX;
+	int* cursorSourceY;
+	bool* touchSource;
 	struct mRTCSource* rtcSource;
 	struct mRumble* rumble;
 

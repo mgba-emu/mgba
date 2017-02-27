@@ -104,6 +104,8 @@ struct mCore {
 	void (*addKeys)(struct mCore*, uint32_t keys);
 	void (*clearKeys)(struct mCore*, uint32_t keys);
 
+	void (*setCursor)(struct mCore*, int x, int y, bool down);
+
 	int32_t (*frameCounter)(const struct mCore*);
 	int32_t (*frameCycles)(const struct mCore*);
 	int32_t (*frequency)(const struct mCore*);

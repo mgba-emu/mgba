@@ -373,6 +373,13 @@ static void _GBACoreClearKeys(struct mCore* core, uint32_t keys) {
 	gbacore->keys &= ~keys;
 }
 
+static void _GBACoreSetCursor(struct mCore* core, int x, int y, bool down) {
+	UNUSED(core);
+	UNUSED(x);
+	UNUSED(y);
+	UNUSED(down);
+}
+
 static int32_t _GBACoreFrameCounter(const struct mCore* core) {
 	const struct GBA* gba = core->board;
 	return gba->video.frameCounter;
@@ -609,6 +616,7 @@ struct mCore* GBACoreCreate(void) {
 	core->setKeys = _GBACoreSetKeys;
 	core->addKeys = _GBACoreAddKeys;
 	core->clearKeys = _GBACoreClearKeys;
+	core->setCursor = _GBACoreSetCursor;
 	core->frameCounter = _GBACoreFrameCounter;
 	core->frameCycles = _GBACoreFrameCycles;
 	core->frequency = _GBACoreFrequency;

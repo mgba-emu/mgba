@@ -22,6 +22,9 @@ struct DSCore {
 	struct ARMCore* arm9;
 	struct DSVideoSoftwareRenderer renderer;
 	int keys;
+	int cursorX;
+	int cursorY;
+	bool touchDown;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	struct mDebuggerPlatform* debuggerPlatform;
 	struct mCheatDevice* cheatDevice;
@@ -59,6 +62,12 @@ static bool _DSCoreInit(struct mCore* core) {
 
 	dscore->keys = 0;
 	ds->keySource = &dscore->keys;
+	dscore->cursorX = 0;
+	ds->cursorSourceX = &dscore->cursorX;
+	dscore->cursorY = 0;
+	ds->cursorSourceY = &dscore->cursorY;
+	dscore->touchDown = false;
+	ds->touchSource = &dscore->touchDown;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetInit(&core->dirs);
@@ -308,6 +317,15 @@ static void _DSCoreClearKeys(struct mCore* core, uint32_t keys) {
 	dscore->keys &= ~keys;
 }
 
+static void _DSCoreSetCursor(struct mCore* core, int x, int y, bool down) {
+	struct DSCore* dscore = (struct DSCore*) core;
+	dscore->cursorX = x;
+	dscore->cursorY = y - DS_VIDEO_VERTICAL_PIXELS;
+	if ((down && y >= 0) || !down) {
+		dscore->touchDown = down;
+	}
+}
+
 static int32_t _DSCoreFrameCounter(const struct mCore* core) {
 	struct DS* ds = core->board;
 	return ds->video.frameCounter;
@@ -493,6 +511,7 @@ struct mCore* DSCoreCreate(void) {
 	core->setKeys = _DSCoreSetKeys;
 	core->addKeys = _DSCoreAddKeys;
 	core->clearKeys = _DSCoreClearKeys;
+	core->setCursor = _DSCoreSetCursor;
 	core->frameCounter = _DSCoreFrameCounter;
 	core->frameCycles = _DSCoreFrameCycles;
 	core->frequency = _DSCoreFrequency;
