@@ -86,14 +86,16 @@ static bool _regenerateExtPalette(struct DSVideoSoftwareRenderer* renderer, bool
 		softwareRenderer->objExtPalette = palette;
 	} else {
 		if (slot >= 2) {
-			softwareRenderer->bg[slot].extPalette = palette;
 			if (GBARegisterBGCNTIsExtPaletteSlot(softwareRenderer->bg[slot - 2].control)) {
 				softwareRenderer->bg[slot - 2].extPalette = palette;
+				softwareRenderer->bg[slot - 2].variantPalette = variantPalette;
 			}
 		} else if (slot < 2 && !GBARegisterBGCNTIsExtPaletteSlot(softwareRenderer->bg[slot].control) ) {
 			softwareRenderer->bg[slot].extPalette = palette;
+			softwareRenderer->bg[slot].variantPalette = variantPalette;
 		}
 		softwareRenderer->bg[slot].extPalette = palette;
+		softwareRenderer->bg[slot].variantPalette = variantPalette;
 	}
 	return true;
 }
@@ -283,6 +285,24 @@ static uint16_t DSVideoSoftwareRendererWriteVideoRegister(struct DSVideoRenderer
 		if (softwareRenderer->engB.masterBrightY > 0x10) {
 			softwareRenderer->engB.masterBrightY = 0x10;
 		}
+		break;
+	case DS9_REG_A_BLDCNT:
+	case DS9_REG_A_BLDY:
+		// TODO: Optimize
+		_regenerateExtPalette(softwareRenderer, false, false, 0);
+		_regenerateExtPalette(softwareRenderer, false, false, 1);
+		_regenerateExtPalette(softwareRenderer, false, false, 2);
+		_regenerateExtPalette(softwareRenderer, false, false, 3);
+		_regenerateExtPalette(softwareRenderer, true, false, 0);
+		break;
+	case DS9_REG_B_BLDCNT:
+	case DS9_REG_B_BLDY:
+		// TODO: Optimize
+		_regenerateExtPalette(softwareRenderer, false, true, 0);
+		_regenerateExtPalette(softwareRenderer, false, true, 1);
+		_regenerateExtPalette(softwareRenderer, false, true, 2);
+		_regenerateExtPalette(softwareRenderer, false, true, 3);
+		_regenerateExtPalette(softwareRenderer, true, true, 0);
 		break;
 	case DS9_REG_A_DISPCNT_LO:
 		softwareRenderer->dispcntA &= 0xFFFF0000;
@@ -626,6 +646,9 @@ void DSVideoSoftwareRendererDrawBackgroundExt0(struct GBAVideoSoftwareRenderer* 
 	BACKGROUND_BITMAP_INIT;
 
 	color_t* mainPalette = background->extPalette;
+	if (variant) {
+		palette = background->variantPalette;
+	}
 	int paletteData;
 
 	uint16_t mapData;

@@ -655,10 +655,9 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 	color_t* mainPalette;
 	if (background->multipalette && background->extPalette) {
 		mainPalette = background->extPalette;
-		// TODO
-		/*if (variant) {
+		if (variant) {
 			mainPalette = background->variantPalette;
-		}*/
+		}
 	} else {
 		mainPalette = renderer->normalPalette;
 		if (variant) {
