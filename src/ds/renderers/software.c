@@ -270,6 +270,20 @@ static uint16_t DSVideoSoftwareRendererWriteVideoRegister(struct DSVideoRenderer
 	case DS9_REG_B_BG3CNT:
 		_updateCharBase(softwareRenderer, true);
 		break;
+	case DS9_REG_A_MASTER_BRIGHT:
+		softwareRenderer->engA.masterBright = DSRegisterMASTER_BRIGHTGetMode(value);
+		softwareRenderer->engA.masterBrightY = DSRegisterMASTER_BRIGHTGetY(value);
+		if (softwareRenderer->engA.masterBrightY > 0x10) {
+			softwareRenderer->engA.masterBrightY = 0x10;
+		}
+		break;
+	case DS9_REG_B_MASTER_BRIGHT:
+		softwareRenderer->engB.masterBright = DSRegisterMASTER_BRIGHTGetMode(value);
+		softwareRenderer->engB.masterBrightY = DSRegisterMASTER_BRIGHTGetY(value);
+		if (softwareRenderer->engB.masterBrightY > 0x10) {
+			softwareRenderer->engB.masterBrightY = 0x10;
+		}
+		break;
 	case DS9_REG_A_DISPCNT_LO:
 		softwareRenderer->dispcntA &= 0xFFFF0000;
 		softwareRenderer->dispcntA |= value;
@@ -323,9 +337,9 @@ static void DSVideoSoftwareRendererInvalidateExtPal(struct DSVideoRenderer* rend
 static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
+	int x;
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	if (GBARegisterDISPCNTIsForcedBlank(softwareRenderer->dispcnt)) {
-		int x;
 		for (x = 0; x < softwareRenderer->masterEnd; ++x) {
 			row[x] = GBA_COLOR_WHITE;
 		}
@@ -406,7 +420,22 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 	}
 #endif
 #else
-	memcpy(row, softwareRenderer->row, softwareRenderer->masterEnd * sizeof(*row));
+	switch (softwareRenderer->masterBright) {
+	case 0:
+	default:
+		memcpy(row, softwareRenderer->row, softwareRenderer->masterEnd * sizeof(*row));
+		break;
+	case 1:
+		for (x = 0; x < softwareRenderer->masterEnd; ++x) {
+			row[x] = _brighten(softwareRenderer->row[x], softwareRenderer->masterBrightY);
+		}
+		break;
+	case 2:
+		for (x = 0; x < softwareRenderer->masterEnd; ++x) {
+			row[x] = _darken(softwareRenderer->row[x], softwareRenderer->masterBrightY);
+		}
+		break;
+	}
 #endif
 }
 

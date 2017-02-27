@@ -66,6 +66,10 @@ DECL_BIT(DSRegisterPOWCNT1, Swap, 15);
 
 DECL_BIT(GBARegisterBGCNT, ExtPaletteSlot, 13);
 
+DECL_BITFIELD(DSRegisterMASTER_BRIGHT, uint16_t);
+DECL_BITS(DSRegisterMASTER_BRIGHT, Y, 0, 5);
+DECL_BITS(DSRegisterMASTER_BRIGHT, Mode, 14, 2);
+
 struct DSVideoRenderer {
 	void (*init)(struct DSVideoRenderer* renderer);
 	void (*reset)(struct DSVideoRenderer* renderer);

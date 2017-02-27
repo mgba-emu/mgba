@@ -95,6 +95,8 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->target2Obj = 0;
 	softwareRenderer->target2Bd = 0;
 	softwareRenderer->blendEffect = BLEND_NONE;
+	softwareRenderer->masterBright = 0;
+	softwareRenderer->masterBrightY = 0;
 	for (i = 0; i < 1024; i += 2) {
 		uint16_t entry;
 		LOAD_16(entry, i, softwareRenderer->d.palette);

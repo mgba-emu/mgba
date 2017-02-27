@@ -422,9 +422,9 @@ void DS9IOInit(struct DS* ds) {
 }
 
 void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
-	if (address <= DS9_REG_A_BLDY && (address > DS_REG_VCOUNT || address == DS9_REG_A_DISPCNT_LO || address == DS9_REG_A_DISPCNT_HI)) {
+	if ((address <= DS9_REG_A_BLDY && address > DS_REG_VCOUNT) || address == DS9_REG_A_DISPCNT_LO || address == DS9_REG_A_DISPCNT_HI || address == DS9_REG_A_MASTER_BRIGHT) {
 		value = ds->video.renderer->writeVideoRegister(ds->video.renderer, address, value);
-	} else if (address >= DS9_REG_B_DISPCNT_LO && address <= DS9_REG_B_BLDY) {
+	} else if ((address >= DS9_REG_B_DISPCNT_LO && address <= DS9_REG_B_BLDY) || address == DS9_REG_B_MASTER_BRIGHT) {
 		value = ds->video.renderer->writeVideoRegister(ds->video.renderer, address, value);
 	} else if ((address >= DS9_REG_RDLINES_COUNT && address <= DS9_REG_VECMTX_RESULT_12) || address == DS9_REG_DISP3DCNT) {
 		value = DSGXWriteRegister(&ds->gx, address, value);
