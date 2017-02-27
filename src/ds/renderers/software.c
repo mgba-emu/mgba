@@ -80,6 +80,19 @@ static bool _regenerateExtPalette(struct DSVideoSoftwareRenderer* renderer, bool
 			variantPalette[i] = _darken(color, softwareRenderer->bldy);
 		}
 	}
+	if (obj) {
+		softwareRenderer->objExtPalette = palette;
+	} else {
+		if (slot >= 2) {
+			softwareRenderer->bg[slot].extPalette = palette;
+			if (GBARegisterBGCNTIsExtPaletteSlot(softwareRenderer->bg[slot - 2].control)) {
+				softwareRenderer->bg[slot - 2].extPalette = palette;
+			}
+		} else if (slot < 2 && !GBARegisterBGCNTIsExtPaletteSlot(softwareRenderer->bg[slot].control) ) {
+			softwareRenderer->bg[slot].extPalette = palette;
+		}
+		softwareRenderer->bg[slot].extPalette = palette;
+	}
 	return true;
 }
 
@@ -168,8 +181,8 @@ static void DSVideoSoftwareRendererUpdateDISPCNT(struct DSVideoSoftwareRenderer*
 			if (i < 2 && GBARegisterBGCNTIsExtPaletteSlot(eng->bg[i].control)) {
 				slot += 2;
 			}
-			if (eng->bg[i].extPalette != &extPalette[slot * 4096] && _regenerateExtPalette(softwareRenderer, false, engB, slot)) {
-				eng->bg[i].extPalette = &extPalette[slot * 4096];
+			if (eng->bg[i].extPalette != &extPalette[slot * 4096]) {
+				_regenerateExtPalette(softwareRenderer, false, engB, slot);
 			}
 		}
 	} else {
@@ -180,9 +193,13 @@ static void DSVideoSoftwareRendererUpdateDISPCNT(struct DSVideoSoftwareRenderer*
 	}
 	if (DSRegisterDISPCNTIsObjExtPalette(dispcnt)) {
 		if (!engB) {
-			softwareRenderer->engA.objExtPalette = softwareRenderer->objExtPaletteA;
+			if (softwareRenderer->engA.objExtPalette != softwareRenderer->objExtPaletteA) {
+				_regenerateExtPalette(softwareRenderer, true, engB, 0);
+			}
 		} else {
-			softwareRenderer->engB.objExtPalette = softwareRenderer->objExtPaletteB;
+			if (softwareRenderer->engB.objExtPalette != softwareRenderer->objExtPaletteB) {
+				_regenerateExtPalette(softwareRenderer, true, engB, 0);
+			}
 		}
 	} else {
 		if (!engB) {
