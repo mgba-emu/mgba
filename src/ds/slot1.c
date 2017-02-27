@@ -264,13 +264,21 @@ static uint8_t _slot1SPIFlash(struct DSCommon* dscore, uint8_t datum) {
 		}
 	}
 
+	uint8_t oldValue;
 	switch (dscore->p->memory.slot1.spiCommand) {
 	case 0x03: // RD
-		return dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress++];
-	case 0x02: // WR
+		oldValue = dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress];
+		++dscore->p->memory.slot1.spiAddress;
+		return oldValue;
+	case 0x02: // PP
 		dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress] = datum;
 		++dscore->p->memory.slot1.spiAddress;
 		break;
+	case 0x0A: // PW
+		oldValue = dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress];
+		dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress] = datum;
+		++dscore->p->memory.slot1.spiAddress;
+		return oldValue;
 	default:
 		mLOG(DS_SLOT1, STUB, "Unimplemented SPI Flash write: %04X:%02X:%02X", control, dscore->p->memory.slot1.spiCommand, datum);
 		break;
