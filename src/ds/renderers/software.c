@@ -21,6 +21,8 @@ static void DSVideoSoftwareRendererFinishFrame(struct DSVideoRenderer* renderer)
 static void DSVideoSoftwareRendererGetPixels(struct DSVideoRenderer* renderer, size_t* stride, const void** pixels);
 static void DSVideoSoftwareRendererPutPixels(struct DSVideoRenderer* renderer, size_t stride, const void* pixels);
 
+static void DSVideoSoftwareRendererDrawBackgroundExt0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY);
+
 static bool _regenerateExtPalette(struct DSVideoSoftwareRenderer* renderer, bool obj, bool engB, int slot) {
 	color_t* palette;
 	color_t* variantPalette;
@@ -359,6 +361,9 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 				case 4:
 					GBAVideoSoftwareRendererDrawBackgroundMode2(softwareRenderer, &softwareRenderer->bg[2], y);
 					break;
+				case 5:
+					DSVideoSoftwareRendererDrawBackgroundExt0(softwareRenderer, &softwareRenderer->bg[2], y);
+					break;
 				}
 			}
 			if (TEST_LAYER_ENABLED(3)) {
@@ -369,6 +374,11 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 				case 1:
 				case 2:
 					GBAVideoSoftwareRendererDrawBackgroundMode2(softwareRenderer, &softwareRenderer->bg[3], y);
+					break;
+				case 3:
+				case 4:
+				case 5:
+					DSVideoSoftwareRendererDrawBackgroundExt0(softwareRenderer, &softwareRenderer->bg[3], y);
 					break;
 				}
 			}
@@ -510,4 +520,96 @@ static void DSVideoSoftwareRendererGetPixels(struct DSVideoRenderer* renderer, s
 }
 
 static void DSVideoSoftwareRendererPutPixels(struct DSVideoRenderer* renderer, size_t stride, const void* pixels) {
+}
+
+#define EXT_0_COORD_OVERFLOW \
+	localX = x & (sizeAdjusted - 1); \
+	localY = y & (sizeAdjusted - 1); \
+
+#define EXT_0_COORD_NO_OVERFLOW \
+	if ((x | y) & ~(sizeAdjusted - 1)) { \
+		continue; \
+	} \
+	localX = x; \
+	localY = y;
+
+#define EXT_0_NO_MOSAIC(COORD) \
+	COORD \
+	uint32_t screenBase = background->screenBase + (localX >> 10) + (((localY >> 6) & 0xFE0) << background->size); \
+	uint16_t* screenBlock = renderer->d.vramBG[screenBase >> VRAM_BLOCK_OFFSET]; \
+	if (UNLIKELY(!screenBlock)) { \
+		continue; \
+	} \
+	LOAD_16(mapData, screenBase & (VRAM_BLOCK_MASK - 1), screenBlock); \
+	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
+	palette = &mainPalette[paletteData]; \
+	uint32_t charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8); \
+	uint16_t* vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
+	if (UNLIKELY(!vram)) { \
+		continue; \
+	} \
+	pixelData = ((uint8_t*) vram)[charBase & VRAM_BLOCK_MASK];
+
+#define EXT_0_MOSAIC(COORD) \
+		if (!mosaicWait) { \
+			EXT_0_NO_MOSAIC(COORD) \
+			mosaicWait = mosaicH; \
+		} else { \
+			--mosaicWait; \
+		}
+
+#define EXT_0_LOOP(MOSAIC, COORD, BLEND, OBJWIN) \
+	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) { \
+		x += background->dx; \
+		y += background->dy; \
+		\
+		uint32_t current = *pixel; \
+		MOSAIC(COORD) \
+		if (pixelData) { \
+			COMPOSITE_256_ ## OBJWIN (BLEND, 0); \
+		} \
+	}
+
+#define DRAW_BACKGROUND_EXT_0(BLEND, OBJWIN) \
+	if (background->overflow) { \
+		if (mosaicH > 1) { \
+			EXT_0_LOOP(EXT_0_MOSAIC, EXT_0_COORD_OVERFLOW, BLEND, OBJWIN); \
+		} else { \
+			EXT_0_LOOP(EXT_0_NO_MOSAIC, EXT_0_COORD_OVERFLOW, BLEND, OBJWIN); \
+		} \
+	} else { \
+		if (mosaicH > 1) { \
+			EXT_0_LOOP(EXT_0_MOSAIC, EXT_0_COORD_NO_OVERFLOW, BLEND, OBJWIN); \
+		} else { \
+			EXT_0_LOOP(EXT_0_NO_MOSAIC, EXT_0_COORD_NO_OVERFLOW, BLEND, OBJWIN); \
+		} \
+	}
+
+void DSVideoSoftwareRendererDrawBackgroundExt0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY) {
+	int sizeAdjusted = 0x8000 << background->size;
+
+	BACKGROUND_BITMAP_INIT;
+
+	color_t* mainPalette = background->extPalette;
+	int paletteData;
+
+	uint16_t mapData;
+	uint8_t pixelData = 0;
+
+	int outX;
+	uint32_t* pixel;
+
+	if (!objwinSlowPath) {
+		if (!(flags & FLAG_TARGET_2)) {
+			DRAW_BACKGROUND_EXT_0(NoBlend, NO_OBJWIN);
+		} else {
+			DRAW_BACKGROUND_EXT_0(Blend, NO_OBJWIN);
+		}
+	} else {
+		if (!(flags & FLAG_TARGET_2)) {
+			DRAW_BACKGROUND_EXT_0(NoBlend, OBJWIN);
+		} else {
+			DRAW_BACKGROUND_EXT_0(Blend, OBJWIN);
+		}
+	}
 }

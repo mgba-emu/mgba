@@ -18,25 +18,20 @@
 	localX = x; \
 	localY = y;
 
-#define MODE_2_MOSAIC(COORD) \
-		if (!mosaicWait) { \
-			COORD \
-			uint32_t screenBase = background->screenBase + (localX >> 11) + (((localY >> 7) & 0x7F0) << background->size); \
-			mapData = ((uint8_t*) renderer->d.vramBG[screenBase >> VRAM_BLOCK_OFFSET])[screenBase & VRAM_BLOCK_MASK]; \
-			uint32_t charBase = background->charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8); \
-			pixelData = ((uint8_t*) renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET])[charBase & VRAM_BLOCK_MASK]; \
-			\
-			mosaicWait = mosaicH; \
-		} else { \
-			--mosaicWait; \
-		}
-
 #define MODE_2_NO_MOSAIC(COORD) \
 	COORD \
 	uint32_t screenBase = background->screenBase + (localX >> 11) + (((localY >> 7) & 0x7F0) << background->size); \
 	mapData = ((uint8_t*) renderer->d.vramBG[screenBase >> VRAM_BLOCK_OFFSET])[screenBase & VRAM_BLOCK_MASK]; \
 	uint32_t charBase = background->charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8); \
 	pixelData = ((uint8_t*) renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET])[charBase & VRAM_BLOCK_MASK]; \
+
+#define MODE_2_MOSAIC(COORD) \
+		if (!mosaicWait) { \
+			MODE_2_NO_MOSAIC(COORD)	\
+			mosaicWait = mosaicH; \
+		} else { \
+			--mosaicWait; \
+		}
 
 #define MODE_2_LOOP(MOSAIC, COORD, BLEND, OBJWIN) \
 	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) { \
