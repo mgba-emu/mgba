@@ -361,6 +361,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		int rs = (opcode >> 8) & 0xF; \
 		int rn = (opcode >> 12) & 0xF; \
 		int rm = opcode & 0xF; \
+		UNUSED(rn); \
 		if (rd == ARM_PC) { \
 			return; \
 		} \
@@ -368,11 +369,25 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		int32_t x; \
 		int32_t y; \
 		BODY; \
-		int32_t dn = cpu->gprs[rn]; \
-		int32_t d = x * y; \
-		cpu->gprs[rd] = d + dn; \
-		cpu->cpsr.q = cpu->cpsr.q || ARM_V_ADDITION(d, dn, cpu->gprs[rd]); \
 		currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32)
+
+#define DEFINE_MULTIPLY_INSTRUCTION_XY_ARM(NAME, BODY) \
+	DEFINE_MULTIPLY_INSTRUCTION_3_ARM(NAME ## BB, \
+		x = ARM_SXT_16(cpu->gprs[rm]); \
+		y = ARM_SXT_16(cpu->gprs[rs]); \
+		BODY) \
+	DEFINE_MULTIPLY_INSTRUCTION_3_ARM(NAME ## BT, \
+		x = ARM_SXT_16(cpu->gprs[rm]); \
+		y = ARM_SXT_16(cpu->gprs[rs] >> 16); \
+		BODY) \
+	DEFINE_MULTIPLY_INSTRUCTION_3_ARM(NAME ## TB, \
+		x = ARM_SXT_16(cpu->gprs[rm] >> 16); \
+		y = ARM_SXT_16(cpu->gprs[rs]); \
+		BODY) \
+	DEFINE_MULTIPLY_INSTRUCTION_3_ARM(NAME ## TT, \
+		x = ARM_SXT_16(cpu->gprs[rm] >> 16); \
+		y = ARM_SXT_16(cpu->gprs[rs] >> 16); \
+		BODY)
 
 #define DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME, ADDRESS, WRITEBACK, BODY) \
 	DEFINE_INSTRUCTION_ARM(NAME, \
@@ -541,21 +556,13 @@ DEFINE_MULTIPLY_INSTRUCTION_2_ARM(SMLAL,
 	cpu->gprs[rdHi] = cpu->gprs[rdHi] + (d >> 32) + ARM_CARRY_FROM(dm, dn, cpu->gprs[rd]);,
 	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]), 3)
 
-DEFINE_MULTIPLY_INSTRUCTION_3_ARM(SMLABB,
-	x = ARM_SXT_16(cpu->gprs[rm]);
-	y = ARM_SXT_16(cpu->gprs[rs]);)
+DEFINE_MULTIPLY_INSTRUCTION_XY_ARM(SMLA,
+	int32_t dn = cpu->gprs[rn]; \
+	int32_t d = x * y; \
+	cpu->gprs[rd] = d + dn; \
+	cpu->cpsr.q = cpu->cpsr.q || ARM_V_ADDITION(d, dn, cpu->gprs[rd]);)
 
-DEFINE_MULTIPLY_INSTRUCTION_3_ARM(SMLABT,
-	x = ARM_SXT_16(cpu->gprs[rm]);
-	y = ARM_SXT_16(cpu->gprs[rs] >> 16);)
-
-DEFINE_MULTIPLY_INSTRUCTION_3_ARM(SMLATB,
-	x = ARM_SXT_16(cpu->gprs[rm] >> 16);
-	y = ARM_SXT_16(cpu->gprs[rs]);)
-
-DEFINE_MULTIPLY_INSTRUCTION_3_ARM(SMLATT,
-	x = ARM_SXT_16(cpu->gprs[rm] >> 16);
-	y = ARM_SXT_16(cpu->gprs[rs] >> 16);)
+DEFINE_MULTIPLY_INSTRUCTION_XY_ARM(SMUL, cpu->gprs[rd] = x * y;)
 
 DEFINE_MULTIPLY_INSTRUCTION_2_ARM(SMULL,
 	int64_t d = ((int64_t) cpu->gprs[rm]) * ((int64_t) cpu->gprs[rs]);
