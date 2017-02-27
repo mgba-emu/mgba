@@ -617,9 +617,7 @@ static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* 
 	UNUSED(renderer);
 	bg->priority = GBARegisterBGCNTGetPriority(value);
 	bg->charBase = GBARegisterBGCNTGetCharBase(value) << 14;
-	if (!renderer->d.vramBG[4]) {
-		bg->charBase &= 0xC000;
-	}
+	bg->charBase &= 0xC000;
 	bg->mosaic = GBARegisterBGCNTGetMosaic(value);
 	bg->multipalette = GBARegisterBGCNTGet256Color(value);
 	bg->screenBase &= ~0xF800;
