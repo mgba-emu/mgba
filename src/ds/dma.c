@@ -123,7 +123,7 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 			dma->reg = GBADMARegisterClearEnable(dma->reg);
 
 			// Clear the enable bit in memory
-			memory->io[(DS_REG_DMA0CNT_HI + memory->activeDMA * (DS_REG_DMA1CNT_HI - DS_REG_DMA0CNT_HI)) >> 1] &= 0x7FE0;
+			memory->io[(DS_REG_DMA0CNT_HI + memory->activeDMA * (DS_REG_DMA1CNT_HI - DS_REG_DMA0CNT_HI)) >> 1] &= 0x7FFF;
 		}
 		if (GBADMARegisterGetDestControl(dma->reg) == DMA_INCREMENT_RELOAD) {
 			dma->nextDest = dma->dest;
