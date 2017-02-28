@@ -13,6 +13,7 @@ CXX_GUARD_START
 #include <mgba/core/interface.h>
 #include <mgba/core/log.h>
 #include <mgba/core/timing.h>
+#include <mgba/internal/ds/matrix.h>
 #include <mgba-util/circle-buffer.h>
 
 mLOG_DECLARE_CATEGORY(DS_GX);
@@ -119,10 +120,24 @@ struct DSGX {
 	int outstandingParams[4];
 	uint8_t outstandingCommand[4];
 
+	int activeParams;
+	int activeEntries[32];
+
 	bool swapBuffers;
 	int bufferIndex;
 	struct DSGXVertex* vertexBuffer[2];
 	struct DSGXPolygon* polygonBuffer[2];
+
+	int mtxMode;
+	struct DSGXMatrix projMatrixStack;
+	struct DSGXMatrix texMatrixStack;
+	struct DSGXMatrix posMatrixStack[32];
+	struct DSGXMatrix vecMatrixStack[32];
+
+	struct DSGXMatrix projMatrix;
+	struct DSGXMatrix texMatrix;
+	struct DSGXMatrix posMatrix;
+	struct DSGXMatrix vecMatrix;
 };
 
 void DSGXInit(struct DSGX*);

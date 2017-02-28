@@ -145,6 +145,10 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			break;
 		}
 
+		DSRegGXSTAT gxstat = gx->p->memory.io9[DS9_REG_GXSTAT_LO >> 1];
+		int pvMatrixPointer = DSRegGXSTATGetPVMatrixStackLevel(gxstat);
+		int projMatrixPointer = DSRegGXSTATGetProjMatrixStackLevel(gxstat);
+
 		if (CircleBufferSize(&gx->pipe) <= 2 * sizeof(struct DSGXEntry)) {
 			_pullPipe(gx);
 		}
@@ -165,6 +169,71 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.params[3]);
 
 		switch (entry.command) {
+		case DS_GX_CMD_MTX_MODE:
+			if (entry.params[0] < 4) {
+				gx->mtxMode = entry.params[0];
+			} else {
+				mLOG(DS_GX, GAME_ERROR, "Invalid GX MTX_MODE %02X", entry.params[0]);
+			}
+			break;
+		case DS_GX_CMD_MTX_IDENTITY:
+			switch (gx->mtxMode) {
+			case 0:
+				DSGXMtxIdentity(&gx->projMatrix);
+				break;
+			case 2:
+				DSGXMtxIdentity(&gx->vecMatrix);
+				// Fall through
+			case 1:
+				DSGXMtxIdentity(&gx->posMatrix);
+				break;
+			case 3:
+				DSGXMtxIdentity(&gx->texMatrix);
+				break;
+			}
+			break;
+		case DS_GX_CMD_MTX_PUSH:
+			switch (gx->mtxMode) {
+			case 0:
+				memcpy(&gx->projMatrixStack, &gx->projMatrix, sizeof(gx->projMatrix));
+				++projMatrixPointer;
+				break;
+			case 2:
+				memcpy(&gx->vecMatrixStack[pvMatrixPointer & 0x1F], &gx->vecMatrix, sizeof(gx->vecMatrix));
+				// Fall through
+			case 1:
+				memcpy(&gx->posMatrixStack[pvMatrixPointer & 0x1F], &gx->posMatrix, sizeof(gx->posMatrix));
+				++pvMatrixPointer;
+				break;
+			case 3:
+				mLOG(DS_GX, STUB, "Unimplemented GX MTX_PUSH mode");
+				break;
+			}
+			break;
+		case DS_GX_CMD_MTX_POP: {
+			int8_t offset = entry.params[0];
+			offset <<= 2;
+			offset >>= 2;
+			switch (gx->mtxMode) {
+			case 0:
+				projMatrixPointer -= offset;
+				memcpy(&gx->projMatrix, &gx->projMatrixStack, sizeof(gx->projMatrix));
+				break;
+			case 1:
+				pvMatrixPointer -= offset;
+				memcpy(&gx->posMatrix, &gx->posMatrixStack[pvMatrixPointer & 0x1F], sizeof(gx->posMatrix));
+				break;
+			case 2:
+				pvMatrixPointer -= offset;
+				memcpy(&gx->vecMatrix, &gx->vecMatrixStack[pvMatrixPointer & 0x1F], sizeof(gx->vecMatrix));
+				memcpy(&gx->posMatrix, &gx->posMatrixStack[pvMatrixPointer & 0x1F], sizeof(gx->posMatrix));
+				break;
+			case 3:
+				mLOG(DS_GX, STUB, "Unimplemented GX MTX_POP mode");
+				break;
+			}
+			break;
+		}
 		case DS_GX_CMD_SWAP_BUFFERS:
 			gx->swapBuffers = true;
 			break;
@@ -172,6 +241,12 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			mLOG(DS_GX, STUB, "Unimplemented GX command %02X:%02X %02X %02X %02X", entry.command, entry.params[0], entry.params[1], entry.params[2], entry.params[3]);
 			break;
 		}
+
+		gxstat = DSRegGXSTATSetPVMatrixStackLevel(gxstat, pvMatrixPointer);
+		gxstat = DSRegGXSTATSetProjMatrixStackLevel(gxstat, projMatrixPointer);
+		gxstat = DSRegGXSTATTestFillMatrixStackError(gxstat, projMatrixPointer || pvMatrixPointer >= 0x1F);
+		gx->p->memory.io9[DS9_REG_GXSTAT_LO >> 1] = gxstat;
+
 		if (cyclesLate >= cycles) {
 			cyclesLate -= cycles;
 		}
@@ -205,7 +280,22 @@ void DSGXDeinit(struct DSGX* gx) {
 void DSGXReset(struct DSGX* gx) {
 	CircleBufferClear(&gx->fifo);
 	CircleBufferClear(&gx->pipe);
+	DSGXMtxIdentity(&gx->projMatrix);
+	DSGXMtxIdentity(&gx->texMatrix);
+	DSGXMtxIdentity(&gx->posMatrix);
+	DSGXMtxIdentity(&gx->vecMatrix);
+
+	DSGXMtxIdentity(&gx->projMatrixStack);
+	DSGXMtxIdentity(&gx->texMatrixStack);
+	int i;
+	for (i = 0; i < 32; ++i) {
+		DSGXMtxIdentity(&gx->posMatrixStack[i]);
+		DSGXMtxIdentity(&gx->vecMatrixStack[i]);
+	}
 	gx->swapBuffers = false;
+	gx->bufferIndex = 0;
+	gx->mtxMode = 0;
+
 	memset(gx->outstandingParams, 0, sizeof(gx->outstandingParams));
 	memset(gx->outstandingCommand, 0, sizeof(gx->outstandingCommand));
 }
