@@ -129,6 +129,7 @@ struct DSGX {
 	struct DSGXPolygon* polygonBuffer[2];
 
 	int mtxMode;
+	int pvMatrixPointer;
 	struct DSGXMatrix projMatrixStack;
 	struct DSGXMatrix texMatrixStack;
 	struct DSGXMatrix posMatrixStack[32];
