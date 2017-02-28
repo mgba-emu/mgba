@@ -12,8 +12,6 @@ mLOG_DEFINE_CATEGORY(DS_GX, "DS GX");
 
 #define DS_GX_FIFO_SIZE 256
 #define DS_GX_PIPE_SIZE 4
-#define DS_GX_POLYGON_BUFFER_SIZE 2048
-#define DS_GX_VERTEX_BUFFER_SIZE 6144
 
 static void DSGXDummyRendererInit(struct DSGXRenderer* renderer);
 static void DSGXDummyRendererReset(struct DSGXRenderer* renderer);
