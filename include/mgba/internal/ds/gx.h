@@ -83,10 +83,17 @@ struct DSGXEntry {
 #pragma pack(pop)
 
 struct DSGXVertex {
+	// World coords
+	int16_t x; // 4.12
+	int16_t y; // 4.12
+	int16_t z; // 4.12
+
 	// Viewport coords
-	int32_t x; // 16.16
-	int32_t y; // 16.16
-	int32_t z; // 16.16
+	int32_t vx; // 16.16
+	int32_t vy; // 16.16
+	int32_t vz; // 16.16
+	int32_t vw; // 16.16
+
 	uint16_t color;
 	// Texcoords
 	int16_t s; // 12.4
@@ -94,6 +101,7 @@ struct DSGXVertex {
 };
 
 struct DSGXPolygon {
+	uint32_t polyParams;
 	int verts;
 	unsigned vertIds[4];
 };
@@ -125,6 +133,8 @@ struct DSGX {
 
 	bool swapBuffers;
 	int bufferIndex;
+	int vertexIndex;
+	int polygonIndex;
 	struct DSGXVertex* vertexBuffer[2];
 	struct DSGXPolygon* polygonBuffer[2];
 
@@ -139,6 +149,12 @@ struct DSGX {
 	struct DSGXMatrix texMatrix;
 	struct DSGXMatrix posMatrix;
 	struct DSGXMatrix vecMatrix;
+
+	struct DSGXMatrix vertexMatrix;
+
+	int vertexMode;
+	struct DSGXVertex currentVertex;
+	struct DSGXPolygon currentPoly;
 };
 
 void DSGXInit(struct DSGX*);

@@ -12,6 +12,8 @@ mLOG_DEFINE_CATEGORY(DS_GX, "DS GX");
 
 #define DS_GX_FIFO_SIZE 256
 #define DS_GX_PIPE_SIZE 4
+#define DS_GX_POLYGON_BUFFER_SIZE 2048
+#define DS_GX_VERTEX_BUFFER_SIZE 6144
 
 static void DSGXDummyRendererInit(struct DSGXRenderer* renderer);
 static void DSGXDummyRendererReset(struct DSGXRenderer* renderer);
@@ -136,6 +138,87 @@ static void _pullPipe(struct DSGX* gx) {
 	}
 }
 
+static void _updateVertexMatrix(struct DSGX* gx) {
+	memcpy(&gx->vertexMatrix, &gx->projMatrix, sizeof(gx->vertexMatrix));
+	DSGXMtxMultiply(&gx->vertexMatrix, &gx->posMatrix);
+}
+
+static int32_t _dotViewport(struct DSGXVertex* vertex, int32_t* col) {
+	int64_t a;
+	int64_t b;
+	int64_t sum;
+	a = col[0];
+	b = vertex->x;
+	sum = a * b;
+	a = col[4];
+	b = vertex->y;
+	sum += a * b;
+	a = col[8];
+	b = vertex->z;
+	sum += a * b;
+	a = col[12];
+	b = MTX_ONE;
+	sum += a * b;
+	return sum >> 8LL;
+}
+
+static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
+	if (gx->vertexMode < 0 || gx->vertexIndex == DS_GX_VERTEX_BUFFER_SIZE || gx->polygonIndex == DS_GX_POLYGON_BUFFER_SIZE) {
+		return;
+	}
+	gx->currentVertex.x = x;
+	gx->currentVertex.y = y;
+	gx->currentVertex.z = z;
+	gx->currentVertex.vx = _dotViewport(&gx->currentVertex, &gx->vertexMatrix.m[0]);
+	gx->currentVertex.vy = _dotViewport(&gx->currentVertex, &gx->vertexMatrix.m[1]);
+	gx->currentVertex.vz = _dotViewport(&gx->currentVertex, &gx->vertexMatrix.m[2]);
+	gx->currentVertex.vw = _dotViewport(&gx->currentVertex, &gx->vertexMatrix.m[3]);
+
+	struct DSGXVertex* vbuf = gx->vertexBuffer[gx->bufferIndex];
+	vbuf[gx->vertexIndex] = gx->currentVertex;
+
+	gx->currentPoly.vertIds[gx->currentPoly.verts] = gx->vertexIndex;
+
+	++gx->vertexIndex;
+	++gx->currentPoly.verts;
+	int totalVertices;
+	switch (gx->vertexMode) {
+	case 0:
+	case 2:
+		totalVertices = 3;
+		break;
+	case 1:
+	case 3:
+		totalVertices = 4;
+		break;
+	}
+	if (gx->currentPoly.verts == totalVertices) {
+		struct DSGXPolygon* pbuf = gx->polygonBuffer[gx->bufferIndex];
+		pbuf[gx->polygonIndex] = gx->currentPoly;
+
+		switch (gx->vertexMode) {
+		case 0:
+		case 1:
+			gx->currentPoly.verts = 0;
+			break;
+		case 2:
+			gx->currentPoly.vertIds[0] = gx->currentPoly.vertIds[1];
+			gx->currentPoly.vertIds[1] = gx->currentPoly.vertIds[2];
+			gx->currentPoly.verts = 2;
+			break;
+		case 3:
+			gx->currentPoly.vertIds[0] = gx->currentPoly.vertIds[2];
+			gx->currentPoly.vertIds[1] = gx->currentPoly.vertIds[3];
+			// Ensure quads don't cross over
+			pbuf[gx->polygonIndex].vertIds[2] = gx->currentPoly.vertIds[3];
+			pbuf[gx->polygonIndex].vertIds[3] = gx->currentPoly.vertIds[2];
+			gx->currentPoly.verts = 2;
+			break;
+		}
+		++gx->polygonIndex;
+	}
+}
+
 static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct DSGX* gx = context;
 	uint32_t cycles;
@@ -211,6 +294,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				mLOG(DS_GX, STUB, "Unimplemented GX MTX_PUSH mode");
 				break;
 			}
+			_updateVertexMatrix(gx);
 			break;
 		case DS_GX_CMD_MTX_POP: {
 			int8_t offset = entry.params[0];
@@ -234,6 +318,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				mLOG(DS_GX, STUB, "Unimplemented GX MTX_POP mode");
 				break;
 			}
+			_updateVertexMatrix(gx);
 			break;
 		}
 		case DS_GX_CMD_MTX_IDENTITY:
@@ -251,6 +336,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				DSGXMtxIdentity(&gx->texMatrix);
 				break;
 			}
+			_updateVertexMatrix(gx);
 			break;
 		case DS_GX_CMD_MTX_LOAD_4x4: {
 			struct DSGXMatrix m;
@@ -275,6 +361,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				memcpy(&gx->texMatrix, &m, sizeof(gx->texMatrix));
 				break;
 			}
+			_updateVertexMatrix(gx);
 			break;
 		}
 		case DS_GX_CMD_MTX_LOAD_4x3: {
@@ -304,6 +391,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				memcpy(&gx->texMatrix, &m, sizeof(gx->texMatrix));
 				break;
 			}
+			_updateVertexMatrix(gx);
 			break;
 		}
 		case DS_GX_CMD_MTX_MULT_4x4: {
@@ -329,6 +417,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				DSGXMtxMultiply(&gx->texMatrix, &m);
 				break;
 			}
+			_updateVertexMatrix(gx);
 			break;
 		}
 		case DS_GX_CMD_MTX_MULT_4x3: {
@@ -358,6 +447,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				DSGXMtxMultiply(&gx->texMatrix, &m);
 				break;
 			}
+			_updateVertexMatrix(gx);
 			break;
 		}
 		case DS_GX_CMD_MTX_MULT_3x3: {
@@ -390,6 +480,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				memcpy(&gx->texMatrix, &m, sizeof(gx->projMatrix));
 				break;
 			}
+			_updateVertexMatrix(gx);
 			break;
 		}
 		case DS_GX_CMD_MTX_TRANS: {
@@ -452,6 +543,74 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			}
 			break;
 		}
+		case DS_GX_CMD_COLOR:
+			gx->currentVertex.color = entry.params[0];
+			gx->currentVertex.color |= entry.params[1] << 8;
+			break;
+		case DS_GX_CMD_TEXCOORD:
+			gx->currentVertex.s = entry.params[0];
+			gx->currentVertex.s |= entry.params[1] << 8;
+			gx->currentVertex.t = entry.params[2];
+			gx->currentVertex.t |= entry.params[3] << 8;
+			break;
+		case DS_GX_CMD_VTX_16: {
+			int16_t x = gx->activeEntries[0].params[0];
+			x |= gx->activeEntries[0].params[1] << 8;
+			int16_t y = gx->activeEntries[0].params[2];
+			y |= gx->activeEntries[0].params[3] << 8;
+			int16_t z = gx->activeEntries[1].params[0];
+			z |= gx->activeEntries[1].params[1] << 8;
+			_emitVertex(gx, x, y, z);
+			break;
+		}
+		case DS_GX_CMD_VTX_10: {
+			int32_t xyz = gx->activeEntries[0].params[0];
+			xyz |= gx->activeEntries[0].params[1] << 8;
+			xyz |= gx->activeEntries[0].params[2] << 16;
+			xyz |= gx->activeEntries[0].params[3] << 24;
+			int16_t x = (xyz << 6) & 0xFFC0;
+			int16_t y = (xyz >> 4) & 0xFFC0;
+			int16_t z = (xyz >> 14) & 0xFFC0;
+			_emitVertex(gx, x, y, z);
+			break;
+		}
+		case DS_GX_CMD_VTX_XY: {
+			int16_t x = gx->activeEntries[0].params[0];
+			x |= gx->activeEntries[0].params[1] << 8;
+			int16_t y = gx->activeEntries[0].params[2];
+			y |= gx->activeEntries[0].params[3] << 8;
+			_emitVertex(gx, x, y, gx->currentVertex.z);
+			break;
+		}
+		case DS_GX_CMD_VTX_XZ: {
+			int16_t x = gx->activeEntries[0].params[0];
+			x |= gx->activeEntries[0].params[1] << 8;
+			int16_t z = gx->activeEntries[0].params[2];
+			z |= gx->activeEntries[0].params[3] << 8;
+			_emitVertex(gx, x, gx->currentVertex.y, z);
+			break;
+		}
+		case DS_GX_CMD_VTX_YZ: {
+			int16_t y = gx->activeEntries[0].params[0];
+			y |= gx->activeEntries[0].params[1] << 8;
+			int16_t z = gx->activeEntries[0].params[2];
+			z |= gx->activeEntries[0].params[3] << 8;
+			_emitVertex(gx, gx->currentVertex.x, y, z);
+			break;
+		}
+		case DS_GX_CMD_POLYGON_ATTR:
+			gx->currentPoly.polyParams = entry.params[0];
+			gx->currentPoly.polyParams |= entry.params[1] << 8;
+			gx->currentPoly.polyParams |= entry.params[2] << 16;
+			gx->currentPoly.polyParams |= entry.params[3] << 24;
+			break;
+		case DS_GX_CMD_BEGIN_VTXS:
+			gx->vertexMode = entry.params[0] & 3;
+			gx->currentPoly.verts = 0;
+			break;
+		case DS_GX_CMD_END_VTXS:
+			gx->vertexMode = -1;
+			break;
 		case DS_GX_CMD_SWAP_BUFFERS:
 			gx->swapBuffers = true;
 			break;
@@ -481,6 +640,10 @@ void DSGXInit(struct DSGX* gx) {
 	gx->renderer = &dummyRenderer;
 	CircleBufferInit(&gx->fifo, sizeof(struct DSGXEntry) * DS_GX_FIFO_SIZE);
 	CircleBufferInit(&gx->pipe, sizeof(struct DSGXEntry) * DS_GX_PIPE_SIZE);
+	gx->vertexBuffer[0] = malloc(sizeof(struct DSGXVertex) * DS_GX_VERTEX_BUFFER_SIZE);
+	gx->vertexBuffer[1] = malloc(sizeof(struct DSGXVertex) * DS_GX_VERTEX_BUFFER_SIZE);
+	gx->polygonBuffer[0] = malloc(sizeof(struct DSGXPolygon) * DS_GX_POLYGON_BUFFER_SIZE);
+	gx->polygonBuffer[1] = malloc(sizeof(struct DSGXPolygon) * DS_GX_POLYGON_BUFFER_SIZE);
 	gx->fifoEvent.name = "DS GX FIFO";
 	gx->fifoEvent.priority = 0xC;
 	gx->fifoEvent.context = gx;
@@ -491,6 +654,10 @@ void DSGXDeinit(struct DSGX* gx) {
 	DSGXAssociateRenderer(gx, &dummyRenderer);
 	CircleBufferDeinit(&gx->fifo);
 	CircleBufferDeinit(&gx->pipe);
+	free(gx->vertexBuffer[0]);
+	free(gx->vertexBuffer[1]);
+	free(gx->polygonBuffer[0]);
+	free(gx->polygonBuffer[1]);
 }
 
 void DSGXReset(struct DSGX* gx) {
@@ -501,6 +668,7 @@ void DSGXReset(struct DSGX* gx) {
 	DSGXMtxIdentity(&gx->posMatrix);
 	DSGXMtxIdentity(&gx->vecMatrix);
 
+	DSGXMtxIdentity(&gx->vertexMatrix);
 	DSGXMtxIdentity(&gx->projMatrixStack);
 	DSGXMtxIdentity(&gx->texMatrixStack);
 	int i;
@@ -510,12 +678,16 @@ void DSGXReset(struct DSGX* gx) {
 	}
 	gx->swapBuffers = false;
 	gx->bufferIndex = 0;
+	gx->vertexIndex = 0;
+	gx->polygonIndex = 0;
 	gx->mtxMode = 0;
 	gx->pvMatrixPointer = 0;
+	gx->vertexMode = -1;
 
 	memset(gx->outstandingParams, 0, sizeof(gx->outstandingParams));
 	memset(gx->outstandingCommand, 0, sizeof(gx->outstandingCommand));
 	gx->activeParams = 0;
+	memset(&gx->currentVertex, 0, sizeof(gx->currentVertex));
 }
 
 void DSGXAssociateRenderer(struct DSGX* gx, struct DSGXRenderer* renderer) {
@@ -702,10 +874,14 @@ uint32_t DSGXWriteRegister32(struct DSGX* gx, uint32_t address, uint32_t value) 
 }
 
 void DSGXSwapBuffers(struct DSGX* gx) {
-	mLOG(DS_GX, STUB, "Unimplemented GX swap buffers");
 	gx->swapBuffers = false;
 
-	// TODO
+	gx->renderer->setRAM(gx->renderer, gx->vertexBuffer[gx->bufferIndex], gx->polygonBuffer[gx->bufferIndex], gx->polygonIndex);
+
+	gx->bufferIndex ^= 1;
+	gx->vertexIndex = 0;
+	gx->polygonIndex = 0;
+
 	DSGXUpdateGXSTAT(gx);
 	if (CircleBufferSize(&gx->fifo)) {
 		mTimingSchedule(&gx->p->ds9.timing, &gx->fifoEvent, 0);
