@@ -614,6 +614,14 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 		case DS_GX_CMD_SWAP_BUFFERS:
 			gx->swapBuffers = true;
 			break;
+		case DS_GX_CMD_VIEWPORT:
+			gx->viewportX1 = (uint8_t) entry.params[0];
+			gx->viewportY1 = (uint8_t) entry.params[1];
+			gx->viewportX2 = (uint8_t) entry.params[2];
+			gx->viewportY2 = (uint8_t) entry.params[3];
+			gx->viewportWidth = gx->viewportX2 - gx->viewportX1;
+			gx->viewportHeight = gx->viewportY2 - gx->viewportY1;
+			break;
 		default:
 			mLOG(DS_GX, STUB, "Unimplemented GX command %02X:%02X %02X %02X %02X", entry.command, entry.params[0], entry.params[1], entry.params[2], entry.params[3]);
 			break;
