@@ -10,11 +10,16 @@
 
 CXX_GUARD_START
 
+#define MTX_ONE 0x00001000
+
 struct DSGXMatrix {
 	int32_t m[16]; // 20.12
 };
 
 void DSGXMtxIdentity(struct DSGXMatrix*);
+void DSGXMtxMultiply(struct DSGXMatrix*, const struct DSGXMatrix*);
+void DSGXMtxScale(struct DSGXMatrix*, const int32_t* m);
+void DSGXMtxTranslate(struct DSGXMatrix*, const int32_t* m);
 
 CXX_GUARD_END
 

@@ -194,22 +194,6 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				mLOG(DS_GX, GAME_ERROR, "Invalid GX MTX_MODE %02X", entry.params[0]);
 			}
 			break;
-		case DS_GX_CMD_MTX_IDENTITY:
-			switch (gx->mtxMode) {
-			case 0:
-				DSGXMtxIdentity(&gx->projMatrix);
-				break;
-			case 2:
-				DSGXMtxIdentity(&gx->vecMatrix);
-				// Fall through
-			case 1:
-				DSGXMtxIdentity(&gx->posMatrix);
-				break;
-			case 3:
-				DSGXMtxIdentity(&gx->texMatrix);
-				break;
-			}
-			break;
 		case DS_GX_CMD_MTX_PUSH:
 			switch (gx->mtxMode) {
 			case 0:
@@ -248,6 +232,222 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				break;
 			case 3:
 				mLOG(DS_GX, STUB, "Unimplemented GX MTX_POP mode");
+				break;
+			}
+			break;
+		}
+		case DS_GX_CMD_MTX_IDENTITY:
+			switch (gx->mtxMode) {
+			case 0:
+				DSGXMtxIdentity(&gx->projMatrix);
+				break;
+			case 2:
+				DSGXMtxIdentity(&gx->vecMatrix);
+				// Fall through
+			case 1:
+				DSGXMtxIdentity(&gx->posMatrix);
+				break;
+			case 3:
+				DSGXMtxIdentity(&gx->texMatrix);
+				break;
+			}
+			break;
+		case DS_GX_CMD_MTX_LOAD_4x4: {
+			struct DSGXMatrix m;
+			int i;
+			for (i = 0; i < 16; ++i) {
+				m.m[i] = gx->activeEntries[i].params[0];
+				m.m[i] |= gx->activeEntries[i].params[1] << 8;
+				m.m[i] |= gx->activeEntries[i].params[2] << 16;
+				m.m[i] |= gx->activeEntries[i].params[3] << 24;
+			}
+			switch (gx->mtxMode) {
+			case 0:
+				memcpy(&gx->projMatrix, &m, sizeof(gx->projMatrix));
+				break;
+			case 2:
+				memcpy(&gx->vecMatrix, &m, sizeof(gx->vecMatrix));
+				// Fall through
+			case 1:
+				memcpy(&gx->posMatrix, &m, sizeof(gx->posMatrix));
+				break;
+			case 3:
+				memcpy(&gx->texMatrix, &m, sizeof(gx->texMatrix));
+				break;
+			}
+			break;
+		}
+		case DS_GX_CMD_MTX_LOAD_4x3: {
+			struct DSGXMatrix m;
+			int i, j;
+			for (j = 0; j < 4; ++j) {
+				for (i = 0; i < 3; ++i) {
+					m.m[i + j * 4] = gx->activeEntries[i + j * 3].params[0];
+					m.m[i + j * 4] |= gx->activeEntries[i + j * 3].params[1] << 8;
+					m.m[i + j * 4] |= gx->activeEntries[i + j * 3].params[2] << 16;
+					m.m[i + j * 4] |= gx->activeEntries[i + j * 3].params[3] << 24;
+				}
+				m.m[j * 4 + 3] = 0;
+			}
+			m.m[15] = MTX_ONE;
+			switch (gx->mtxMode) {
+			case 0:
+				memcpy(&gx->projMatrix, &m, sizeof(gx->projMatrix));
+				break;
+			case 2:
+				memcpy(&gx->vecMatrix, &m, sizeof(gx->vecMatrix));
+				// Fall through
+			case 1:
+				memcpy(&gx->posMatrix, &m, sizeof(gx->posMatrix));
+				break;
+			case 3:
+				memcpy(&gx->texMatrix, &m, sizeof(gx->texMatrix));
+				break;
+			}
+			break;
+		}
+		case DS_GX_CMD_MTX_MULT_4x4: {
+			struct DSGXMatrix m;
+			int i;
+			for (i = 0; i < 16; ++i) {
+				m.m[i] = gx->activeEntries[i].params[0];
+				m.m[i] |= gx->activeEntries[i].params[1] << 8;
+				m.m[i] |= gx->activeEntries[i].params[2] << 16;
+				m.m[i] |= gx->activeEntries[i].params[3] << 24;
+			}
+			switch (gx->mtxMode) {
+			case 0:
+				DSGXMtxMultiply(&gx->projMatrix, &m);
+				break;
+			case 2:
+				DSGXMtxMultiply(&gx->vecMatrix, &m);
+				// Fall through
+			case 1:
+				DSGXMtxMultiply(&gx->posMatrix, &m);
+				break;
+			case 3:
+				DSGXMtxMultiply(&gx->texMatrix, &m);
+				break;
+			}
+			break;
+		}
+		case DS_GX_CMD_MTX_MULT_4x3: {
+			struct DSGXMatrix m;
+			int i, j;
+			for (j = 0; j < 4; ++j) {
+				for (i = 0; i < 3; ++i) {
+					m.m[i + j * 4] = gx->activeEntries[i + j * 3].params[0];
+					m.m[i + j * 4] |= gx->activeEntries[i + j * 3].params[1] << 8;
+					m.m[i + j * 4] |= gx->activeEntries[i + j * 3].params[2] << 16;
+					m.m[i + j * 4] |= gx->activeEntries[i + j * 3].params[3] << 24;
+				}
+				m.m[j * 4 + 3] = 0;
+			}
+			m.m[15] = MTX_ONE;
+			switch (gx->mtxMode) {
+			case 0:
+				DSGXMtxMultiply(&gx->projMatrix, &m);
+				break;
+			case 2:
+				DSGXMtxMultiply(&gx->vecMatrix, &m);
+				// Fall through
+			case 1:
+				DSGXMtxMultiply(&gx->posMatrix, &m);
+				break;
+			case 3:
+				DSGXMtxMultiply(&gx->texMatrix, &m);
+				break;
+			}
+			break;
+		}
+		case DS_GX_CMD_MTX_MULT_3x3: {
+			struct DSGXMatrix m;
+			int i, j;
+			for (j = 0; j < 3; ++j) {
+				for (i = 0; i < 3; ++i) {
+					m.m[i + j * 4] = gx->activeEntries[i + j * 3].params[0];
+					m.m[i + j * 4] |= gx->activeEntries[i + j * 3].params[1] << 8;
+					m.m[i + j * 4] |= gx->activeEntries[i + j * 3].params[2] << 16;
+					m.m[i + j * 4] |= gx->activeEntries[i + j * 3].params[3] << 24;
+				}
+				m.m[j * 4 + 3] = 0;
+			}
+			m.m[12] = 0;
+			m.m[13] = 0;
+			m.m[14] = 0;
+			m.m[15] = MTX_ONE;
+			switch (gx->mtxMode) {
+			case 0:
+				memcpy(&gx->projMatrix, &m, sizeof(gx->projMatrix));
+				break;
+			case 2:
+				memcpy(&gx->vecMatrix, &m, sizeof(gx->vecMatrix));
+				// Fall through
+			case 1:
+				memcpy(&gx->posMatrix, &m, sizeof(gx->posMatrix));
+				break;
+			case 3:
+				memcpy(&gx->texMatrix, &m, sizeof(gx->projMatrix));
+				break;
+			}
+			break;
+		}
+		case DS_GX_CMD_MTX_TRANS: {
+			int32_t m[3];
+			m[0] = gx->activeEntries[0].params[0];
+			m[0] |= gx->activeEntries[0].params[1] << 8;
+			m[0] |= gx->activeEntries[0].params[2] << 16;
+			m[0] |= gx->activeEntries[0].params[3] << 24;
+			m[1] = gx->activeEntries[1].params[0];
+			m[1] |= gx->activeEntries[1].params[1] << 8;
+			m[1] |= gx->activeEntries[1].params[2] << 16;
+			m[1] |= gx->activeEntries[1].params[3] << 24;
+			m[2] = gx->activeEntries[2].params[0];
+			m[2] |= gx->activeEntries[2].params[1] << 8;
+			m[2] |= gx->activeEntries[2].params[2] << 16;
+			m[2] |= gx->activeEntries[2].params[3] << 24;
+			switch (gx->mtxMode) {
+			case 0:
+				DSGXMtxTranslate(&gx->projMatrix, m);
+				break;
+			case 2:
+				DSGXMtxTranslate(&gx->vecMatrix, m);
+				// Fall through
+			case 1:
+				DSGXMtxTranslate(&gx->posMatrix, m);
+				break;
+			case 3:
+				DSGXMtxTranslate(&gx->texMatrix, m);
+				break;
+			}
+			break;
+		}
+		case DS_GX_CMD_MTX_SCALE: {
+			int32_t m[3];
+			m[0] = gx->activeEntries[0].params[0];
+			m[0] |= gx->activeEntries[0].params[1] << 8;
+			m[0] |= gx->activeEntries[0].params[2] << 16;
+			m[0] |= gx->activeEntries[0].params[3] << 24;
+			m[1] = gx->activeEntries[1].params[0];
+			m[1] |= gx->activeEntries[1].params[1] << 8;
+			m[1] |= gx->activeEntries[1].params[2] << 16;
+			m[1] |= gx->activeEntries[1].params[3] << 24;
+			m[2] = gx->activeEntries[2].params[0];
+			m[2] |= gx->activeEntries[2].params[1] << 8;
+			m[2] |= gx->activeEntries[2].params[2] << 16;
+			m[2] |= gx->activeEntries[2].params[3] << 24;
+			switch (gx->mtxMode) {
+			case 0:
+				DSGXMtxScale(&gx->projMatrix, m);
+				break;
+			case 2:
+				DSGXMtxScale(&gx->vecMatrix, m);
+				// Fall through
+			case 1:
+				DSGXMtxScale(&gx->posMatrix, m);
+				break;
+			case 3:
+				DSGXMtxScale(&gx->texMatrix, m);
 				break;
 			}
 			break;
