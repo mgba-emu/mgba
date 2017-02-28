@@ -140,18 +140,19 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 	struct DSGX* gx = context;
 	uint32_t cycles;
 	bool first = true;
-	while (true) {
-		if (gx->swapBuffers) {
+	while (!gx->swapBuffers) {
+		if (CircleBufferSize(&gx->pipe) <= 2 * sizeof(struct DSGXEntry)) {
+			_pullPipe(gx);
+		}
+
+		if (!CircleBufferSize(&gx->pipe)) {
+			cycles = 0;
 			break;
 		}
 
 		DSRegGXSTAT gxstat = gx->p->memory.io9[DS9_REG_GXSTAT_LO >> 1];
 		int pvMatrixPointer = DSRegGXSTATGetPVMatrixStackLevel(gxstat);
 		int projMatrixPointer = DSRegGXSTATGetProjMatrixStackLevel(gxstat);
-
-		if (CircleBufferSize(&gx->pipe) <= 2 * sizeof(struct DSGXEntry)) {
-			_pullPipe(gx);
-		}
 
 		struct DSGXEntry entry = { 0 };
 		CircleBufferDump(&gx->pipe, (int8_t*) &entry.command, 1);
@@ -167,6 +168,24 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.params[1]);
 		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.params[2]);
 		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.params[3]);
+
+		if (gx->activeParams) {
+			int index = _gxCommandParams[entry.command] - gx->activeParams;
+			gx->activeEntries[index] = entry;
+			--gx->activeParams;
+		} else {
+			gx->activeParams = _gxCommandParams[entry.command];
+			if (gx->activeParams) {
+				--gx->activeParams;
+			}
+			if (gx->activeParams) {
+				gx->activeEntries[0] = entry;
+			}
+		}
+
+		if (gx->activeParams) {
+			continue;
+		}
 
 		switch (entry.command) {
 		case DS_GX_CMD_MTX_MODE:
@@ -249,9 +268,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 
 		if (cyclesLate >= cycles) {
 			cyclesLate -= cycles;
-		}
-		if (!CircleBufferSize(&gx->pipe)) {
-			cycles = 0;
+		} else {
 			break;
 		}
 	}
@@ -298,6 +315,7 @@ void DSGXReset(struct DSGX* gx) {
 
 	memset(gx->outstandingParams, 0, sizeof(gx->outstandingParams));
 	memset(gx->outstandingCommand, 0, sizeof(gx->outstandingCommand));
+	gx->activeParams = 0;
 }
 
 void DSGXAssociateRenderer(struct DSGX* gx, struct DSGXRenderer* renderer) {

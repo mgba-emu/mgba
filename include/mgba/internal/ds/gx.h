@@ -121,7 +121,7 @@ struct DSGX {
 	uint8_t outstandingCommand[4];
 
 	int activeParams;
-	int activeEntries[32];
+	struct DSGXEntry activeEntries[32];
 
 	bool swapBuffers;
 	int bufferIndex;
