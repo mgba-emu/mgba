@@ -136,9 +136,8 @@ static void _pullPipe(struct DSGX* gx) {
 	}
 }
 
-static void _updateVertexMatrix(struct DSGX* gx) {
-	memcpy(&gx->vertexMatrix, &gx->projMatrix, sizeof(gx->vertexMatrix));
-	DSGXMtxMultiply(&gx->vertexMatrix, &gx->posMatrix);
+static void _updateClipMatrix(struct DSGX* gx) {
+	DSGXMtxMultiply(&gx->clipMatrix, &gx->projMatrix, &gx->posMatrix);
 }
 
 static int32_t _dotViewport(struct DSGXVertex* vertex, int32_t* col) {
@@ -167,10 +166,13 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 	gx->currentVertex.x = x;
 	gx->currentVertex.y = y;
 	gx->currentVertex.z = z;
-	gx->currentVertex.vx = _dotViewport(&gx->currentVertex, &gx->vertexMatrix.m[0]);
-	gx->currentVertex.vy = _dotViewport(&gx->currentVertex, &gx->vertexMatrix.m[1]);
-	gx->currentVertex.vz = _dotViewport(&gx->currentVertex, &gx->vertexMatrix.m[2]);
-	gx->currentVertex.vw = _dotViewport(&gx->currentVertex, &gx->vertexMatrix.m[3]);
+	gx->currentVertex.vx = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[0]);
+	gx->currentVertex.vy = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[1]);
+	gx->currentVertex.vz = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[2]);
+	gx->currentVertex.vw = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[3]);
+
+	gx->currentVertex.vx = (gx->currentVertex.vx + gx->currentVertex.vw) * gx->viewportWidth / (gx->currentVertex.vw * 2) + gx->viewportX1;
+	gx->currentVertex.vy = (gx->currentVertex.vy + gx->currentVertex.vw) * gx->viewportHeight / (gx->currentVertex.vw * 2) + gx->viewportY1;
 
 	struct DSGXVertex* vbuf = gx->vertexBuffer[gx->bufferIndex];
 	vbuf[gx->vertexIndex] = gx->currentVertex;
@@ -240,7 +242,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 
 		if (first) {
 			first = false;
-		} else if (cycles > cyclesLate) {
+		} else if (!gx->activeParams && cycles > cyclesLate) {
 			break;
 		}
 		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.command);
@@ -292,7 +294,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				mLOG(DS_GX, STUB, "Unimplemented GX MTX_PUSH mode");
 				break;
 			}
-			_updateVertexMatrix(gx);
+			_updateClipMatrix(gx);
 			break;
 		case DS_GX_CMD_MTX_POP: {
 			int8_t offset = entry.params[0];
@@ -316,7 +318,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				mLOG(DS_GX, STUB, "Unimplemented GX MTX_POP mode");
 				break;
 			}
-			_updateVertexMatrix(gx);
+			_updateClipMatrix(gx);
 			break;
 		}
 		case DS_GX_CMD_MTX_IDENTITY:
@@ -334,7 +336,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				DSGXMtxIdentity(&gx->texMatrix);
 				break;
 			}
-			_updateVertexMatrix(gx);
+			_updateClipMatrix(gx);
 			break;
 		case DS_GX_CMD_MTX_LOAD_4x4: {
 			struct DSGXMatrix m;
@@ -359,7 +361,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				memcpy(&gx->texMatrix, &m, sizeof(gx->texMatrix));
 				break;
 			}
-			_updateVertexMatrix(gx);
+			_updateClipMatrix(gx);
 			break;
 		}
 		case DS_GX_CMD_MTX_LOAD_4x3: {
@@ -389,7 +391,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				memcpy(&gx->texMatrix, &m, sizeof(gx->texMatrix));
 				break;
 			}
-			_updateVertexMatrix(gx);
+			_updateClipMatrix(gx);
 			break;
 		}
 		case DS_GX_CMD_MTX_MULT_4x4: {
@@ -403,19 +405,19 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			}
 			switch (gx->mtxMode) {
 			case 0:
-				DSGXMtxMultiply(&gx->projMatrix, &m);
+				DSGXMtxMultiply(&gx->projMatrix, &m, &gx->projMatrix);
 				break;
 			case 2:
-				DSGXMtxMultiply(&gx->vecMatrix, &m);
+				DSGXMtxMultiply(&gx->vecMatrix, &m, &gx->vecMatrix);
 				// Fall through
 			case 1:
-				DSGXMtxMultiply(&gx->posMatrix, &m);
+				DSGXMtxMultiply(&gx->posMatrix, &m, &gx->posMatrix);
 				break;
 			case 3:
-				DSGXMtxMultiply(&gx->texMatrix, &m);
+				DSGXMtxMultiply(&gx->texMatrix, &m, &gx->texMatrix);
 				break;
 			}
-			_updateVertexMatrix(gx);
+			_updateClipMatrix(gx);
 			break;
 		}
 		case DS_GX_CMD_MTX_MULT_4x3: {
@@ -433,19 +435,19 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			m.m[15] = MTX_ONE;
 			switch (gx->mtxMode) {
 			case 0:
-				DSGXMtxMultiply(&gx->projMatrix, &m);
+				DSGXMtxMultiply(&gx->projMatrix, &m, &gx->projMatrix);
 				break;
 			case 2:
-				DSGXMtxMultiply(&gx->vecMatrix, &m);
+				DSGXMtxMultiply(&gx->vecMatrix, &m, &gx->vecMatrix);
 				// Fall through
 			case 1:
-				DSGXMtxMultiply(&gx->posMatrix, &m);
+				DSGXMtxMultiply(&gx->posMatrix, &m, &gx->posMatrix);
 				break;
 			case 3:
-				DSGXMtxMultiply(&gx->texMatrix, &m);
+				DSGXMtxMultiply(&gx->texMatrix, &m, &gx->texMatrix);
 				break;
 			}
-			_updateVertexMatrix(gx);
+			_updateClipMatrix(gx);
 			break;
 		}
 		case DS_GX_CMD_MTX_MULT_3x3: {
@@ -466,19 +468,19 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			m.m[15] = MTX_ONE;
 			switch (gx->mtxMode) {
 			case 0:
-				memcpy(&gx->projMatrix, &m, sizeof(gx->projMatrix));
+				DSGXMtxMultiply(&gx->projMatrix, &m, &gx->projMatrix);
 				break;
 			case 2:
-				memcpy(&gx->vecMatrix, &m, sizeof(gx->vecMatrix));
+				DSGXMtxMultiply(&gx->vecMatrix, &m, &gx->vecMatrix);
 				// Fall through
 			case 1:
-				memcpy(&gx->posMatrix, &m, sizeof(gx->posMatrix));
+				DSGXMtxMultiply(&gx->posMatrix, &m, &gx->posMatrix);
 				break;
 			case 3:
-				memcpy(&gx->texMatrix, &m, sizeof(gx->projMatrix));
+				DSGXMtxMultiply(&gx->texMatrix, &m, &gx->texMatrix);
 				break;
 			}
-			_updateVertexMatrix(gx);
+			_updateClipMatrix(gx);
 			break;
 		}
 		case DS_GX_CMD_MTX_TRANS: {
@@ -666,7 +668,7 @@ void DSGXReset(struct DSGX* gx) {
 	DSGXMtxIdentity(&gx->posMatrix);
 	DSGXMtxIdentity(&gx->vecMatrix);
 
-	DSGXMtxIdentity(&gx->vertexMatrix);
+	DSGXMtxIdentity(&gx->clipMatrix);
 	DSGXMtxIdentity(&gx->projMatrixStack);
 	DSGXMtxIdentity(&gx->texMatrixStack);
 	int i;
@@ -681,6 +683,13 @@ void DSGXReset(struct DSGX* gx) {
 	gx->mtxMode = 0;
 	gx->pvMatrixPointer = 0;
 	gx->vertexMode = -1;
+
+	gx->viewportX1 = 0;
+	gx->viewportY1 = 0;
+	gx->viewportX2 = DS_VIDEO_HORIZONTAL_PIXELS - 1;
+	gx->viewportY2 = DS_VIDEO_VERTICAL_PIXELS - 1;
+	gx->viewportWidth = gx->viewportX2 - gx->viewportX1;
+	gx->viewportHeight = gx->viewportY2 - gx->viewportY1;
 
 	memset(gx->outstandingParams, 0, sizeof(gx->outstandingParams));
 	memset(gx->outstandingCommand, 0, sizeof(gx->outstandingCommand));

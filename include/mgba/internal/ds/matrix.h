@@ -17,7 +17,7 @@ struct DSGXMatrix {
 };
 
 void DSGXMtxIdentity(struct DSGXMatrix*);
-void DSGXMtxMultiply(struct DSGXMatrix*, const struct DSGXMatrix*);
+void DSGXMtxMultiply(struct DSGXMatrix*, const struct DSGXMatrix*, const struct DSGXMatrix*);
 void DSGXMtxScale(struct DSGXMatrix*, const int32_t* m);
 void DSGXMtxTranslate(struct DSGXMatrix*, const int32_t* m);
 

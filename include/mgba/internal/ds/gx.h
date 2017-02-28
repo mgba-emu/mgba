@@ -153,7 +153,14 @@ struct DSGX {
 	struct DSGXMatrix posMatrix;
 	struct DSGXMatrix vecMatrix;
 
-	struct DSGXMatrix vertexMatrix;
+	struct DSGXMatrix clipMatrix;
+
+	int viewportX1;
+	int viewportY1;
+	int viewportX2;
+	int viewportY2;
+	int viewportWidth;
+	int viewportHeight;
 
 	int vertexMode;
 	struct DSGXVertex currentVertex;

@@ -32,25 +32,26 @@ void DSGXMtxIdentity(struct DSGXMatrix* mtx) {
 	mtx->m[15] = MTX_ONE;
 }
 
-void DSGXMtxMultiply(struct DSGXMatrix* mtx, const struct DSGXMatrix* m) {
-	struct DSGXMatrix out;
-	out.m[0] = _dot(&mtx->m[0], &m->m[0]);
-	out.m[1] = _dot(&mtx->m[1], &m->m[0]);
-	out.m[2] = _dot(&mtx->m[2], &m->m[0]);
-	out.m[3] = _dot(&mtx->m[3], &m->m[0]);
-	out.m[4] = _dot(&mtx->m[0], &m->m[4]);
-	out.m[5] = _dot(&mtx->m[1], &m->m[4]);
-	out.m[6] = _dot(&mtx->m[2], &m->m[4]);
-	out.m[7] = _dot(&mtx->m[3], &m->m[4]);
-	out.m[8] = _dot(&mtx->m[0], &m->m[8]);
-	out.m[9] = _dot(&mtx->m[1], &m->m[8]);
-	out.m[10] = _dot(&mtx->m[2], &m->m[8]);
-	out.m[11] = _dot(&mtx->m[3], &m->m[8]);
-	out.m[12] = _dot(&mtx->m[0], &m->m[12]);
-	out.m[13] = _dot(&mtx->m[1], &m->m[12]);
-	out.m[14] = _dot(&mtx->m[2], &m->m[12]);
-	out.m[15] = _dot(&mtx->m[3], &m->m[12]);
-	*mtx = out;
+void DSGXMtxMultiply(struct DSGXMatrix* out, const struct DSGXMatrix* a, const struct DSGXMatrix* b) {
+	struct DSGXMatrix o;
+	// XXX: This is transposed because DS matrices are transposed
+	o.m[0] = _dot(&a->m[0], &b->m[0]);
+	o.m[1] = _dot(&a->m[1], &b->m[0]);
+	o.m[2] = _dot(&a->m[2], &b->m[0]);
+	o.m[3] = _dot(&a->m[3], &b->m[0]);
+	o.m[4] = _dot(&a->m[0], &b->m[4]);
+	o.m[5] = _dot(&a->m[1], &b->m[4]);
+	o.m[6] = _dot(&a->m[2], &b->m[4]);
+	o.m[7] = _dot(&a->m[3], &b->m[4]);
+	o.m[8] = _dot(&a->m[0], &b->m[8]);
+	o.m[9] = _dot(&a->m[1], &b->m[8]);
+	o.m[10] = _dot(&a->m[2], &b->m[8]);
+	o.m[11] = _dot(&a->m[3], &b->m[8]);
+	o.m[12] = _dot(&a->m[0], &b->m[12]);
+	o.m[13] = _dot(&a->m[1], &b->m[12]);
+	o.m[14] = _dot(&a->m[2], &b->m[12]);
+	o.m[15] = _dot(&a->m[3], &b->m[12]);
+	*out = o;
 }
 
 void DSGXMtxScale(struct DSGXMatrix* mtx, const int32_t* m) {
@@ -62,7 +63,7 @@ void DSGXMtxScale(struct DSGXMatrix* mtx, const int32_t* m) {
 			0, 0, 0, MTX_ONE
 		}
 	};
-	DSGXMtxMultiply(mtx, &s);
+	DSGXMtxMultiply(mtx, &s, mtx);
 }
 
 void DSGXMtxTranslate(struct DSGXMatrix* mtx, const int32_t* m) {
@@ -74,5 +75,5 @@ void DSGXMtxTranslate(struct DSGXMatrix* mtx, const int32_t* m) {
 			m[0], m[1], m[2], MTX_ONE
 		}
 	};
-	DSGXMtxMultiply(mtx, &t);
+	DSGXMtxMultiply(mtx, &t, mtx);
 }
