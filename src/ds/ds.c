@@ -122,7 +122,7 @@ static void _divide(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 	STORE_64LE(remainder, DS9_REG_DIVREM_RESULT_0, ds->memory.io9);
 }
 
-	static void _sqrt(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+static void _sqrt(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	UNUSED(timing);
 	UNUSED(cyclesLate);
 	struct DS* ds = context;
@@ -142,11 +142,11 @@ static void _divide(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 	}
 
 	while (bit != 0) {
-		if (param >= param + bit) {
-			param -= param + bit;
-			param = (result >> 1) + bit;
+		if (param >= result + bit) {
+			param -= result + bit;
+			result = (result >> 1) + bit;
 		} else {
-			param >>= 1;
+			result >>= 1;
 		}
 		bit >>= 2;
 	}
