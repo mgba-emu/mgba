@@ -10,6 +10,7 @@
 
 CXX_GUARD_START
 
+#include <mgba/core/interface.h>
 #include <mgba/core/log.h>
 #include <mgba/core/timing.h>
 #include <mgba-util/circle-buffer.h>
@@ -80,9 +81,36 @@ struct DSGXEntry {
 };
 #pragma pack(pop)
 
+struct DSGXVertex {
+	// Viewport coords
+	int32_t x; // 16.16
+	int32_t y; // 16.16
+	int32_t z; // 16.16
+	uint16_t color;
+	// Texcoords
+	int16_t s; // 12.4
+	int16_t t; // 12.4
+};
+
+struct DSGXPolygon {
+	int verts;
+	unsigned vertIds[4];
+};
+
+struct DSGXRenderer {
+	void (*init)(struct DSGXRenderer* renderer);
+	void (*reset)(struct DSGXRenderer* renderer);
+	void (*deinit)(struct DSGXRenderer* renderer);
+
+	void (*setRAM)(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount);
+	void (*drawScanline)(struct DSGXRenderer* renderer, int y);
+	void (*getScanline)(struct DSGXRenderer* renderer, int y, color_t** output);
+};
+
 struct DS;
 struct DSGX {
 	struct DS* p;
+	struct DSGXRenderer* renderer;
 	struct CircleBuffer fifo;
 	struct CircleBuffer pipe;
 
@@ -92,11 +120,15 @@ struct DSGX {
 	uint8_t outstandingCommand[4];
 
 	bool swapBuffers;
+	int bufferIndex;
+	struct DSGXVertex* vertexBuffer[2];
+	struct DSGXPolygon* polygonBuffer[2];
 };
 
 void DSGXInit(struct DSGX*);
 void DSGXDeinit(struct DSGX*);
 void DSGXReset(struct DSGX*);
+void DSGXAssociateRenderer(struct DSGX* video, struct DSGXRenderer* renderer);
 
 uint16_t DSGXWriteRegister(struct DSGX*, uint32_t address, uint16_t value);
 uint32_t DSGXWriteRegister32(struct DSGX*, uint32_t address, uint32_t value);

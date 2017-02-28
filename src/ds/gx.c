@@ -13,6 +13,13 @@ mLOG_DEFINE_CATEGORY(DS_GX, "DS GX");
 #define DS_GX_FIFO_SIZE 256
 #define DS_GX_PIPE_SIZE 4
 
+static void DSGXDummyRendererInit(struct DSGXRenderer* renderer);
+static void DSGXDummyRendererReset(struct DSGXRenderer* renderer);
+static void DSGXDummyRendererDeinit(struct DSGXRenderer* renderer);
+static void DSGXDummyRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount);
+static void DSGXDummyRendererDrawScanline(struct DSGXRenderer* renderer, int y);
+static void DSGXDummyRendererGetScanline(struct DSGXRenderer* renderer, int y, color_t** output);
+
 static const int32_t _gxCommandCycleBase[DS_GX_CMD_MAX] = {
 	[DS_GX_CMD_NOP] = 0,
 	[DS_GX_CMD_MTX_MODE] = 2,
@@ -89,6 +96,15 @@ static const int32_t _gxCommandParams[DS_GX_CMD_MAX] = {
 	[DS_GX_CMD_BOX_TEST] = 3,
 	[DS_GX_CMD_POS_TEST] = 2,
 	[DS_GX_CMD_VEC_TEST] = 1,
+};
+
+static struct DSGXRenderer dummyRenderer = {
+	.init = DSGXDummyRendererInit,
+	.reset = DSGXDummyRendererReset,
+	.deinit = DSGXDummyRendererDeinit,
+	.setRAM = DSGXDummyRendererSetRAM,
+	.drawScanline = DSGXDummyRendererDrawScanline,
+	.getScanline = DSGXDummyRendererGetScanline,
 };
 
 static void _pullPipe(struct DSGX* gx) {
@@ -171,6 +187,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 }
 
 void DSGXInit(struct DSGX* gx) {
+	gx->renderer = &dummyRenderer;
 	CircleBufferInit(&gx->fifo, sizeof(struct DSGXEntry) * DS_GX_FIFO_SIZE);
 	CircleBufferInit(&gx->pipe, sizeof(struct DSGXEntry) * DS_GX_PIPE_SIZE);
 	gx->fifoEvent.name = "DS GX FIFO";
@@ -180,6 +197,7 @@ void DSGXInit(struct DSGX* gx) {
 }
 
 void DSGXDeinit(struct DSGX* gx) {
+	DSGXAssociateRenderer(gx, &dummyRenderer);
 	CircleBufferDeinit(&gx->fifo);
 	CircleBufferDeinit(&gx->pipe);
 }
@@ -190,6 +208,12 @@ void DSGXReset(struct DSGX* gx) {
 	gx->swapBuffers = false;
 	memset(gx->outstandingParams, 0, sizeof(gx->outstandingParams));
 	memset(gx->outstandingCommand, 0, sizeof(gx->outstandingCommand));
+}
+
+void DSGXAssociateRenderer(struct DSGX* gx, struct DSGXRenderer* renderer) {
+	gx->renderer->deinit(gx->renderer);
+	gx->renderer = renderer;
+	gx->renderer->init(gx->renderer);
 }
 
 void DSGXUpdateGXSTAT(struct DSGX* gx) {
@@ -378,4 +402,40 @@ void DSGXSwapBuffers(struct DSGX* gx) {
 	if (CircleBufferSize(&gx->fifo)) {
 		mTimingSchedule(&gx->p->ds9.timing, &gx->fifoEvent, 0);
 	}
+}
+
+static void DSGXDummyRendererInit(struct DSGXRenderer* renderer) {
+	UNUSED(renderer);
+	// Nothing to do
+}
+
+static void DSGXDummyRendererReset(struct DSGXRenderer* renderer) {
+	UNUSED(renderer);
+	// Nothing to do
+}
+
+static void DSGXDummyRendererDeinit(struct DSGXRenderer* renderer) {
+	UNUSED(renderer);
+	// Nothing to do
+}
+
+static void DSGXDummyRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount) {
+	UNUSED(renderer);
+	UNUSED(verts);
+	UNUSED(polys);
+	UNUSED(polyCount);
+	// Nothing to do
+}
+
+static void DSGXDummyRendererDrawScanline(struct DSGXRenderer* renderer, int y) {
+	UNUSED(renderer);
+	UNUSED(y);
+	// Nothing to do
+}
+
+static void DSGXDummyRendererGetScanline(struct DSGXRenderer* renderer, int y, color_t** output) {
+	UNUSED(renderer);
+	UNUSED(y);
+	*output = NULL;
+	// Nothing to do
 }

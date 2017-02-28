@@ -7,6 +7,7 @@
 #include "gba/renderers/software-private.h"
 
 #include <mgba/internal/arm/macros.h>
+#include <mgba/internal/ds/gx.h>
 #include <mgba/internal/ds/io.h>
 
 static void DSVideoSoftwareRendererInit(struct DSVideoRenderer* renderer);
@@ -354,7 +355,7 @@ static void DSVideoSoftwareRendererInvalidateExtPal(struct DSVideoRenderer* rend
 	_regenerateExtPalette(softwareRenderer, obj, engB, slot);
 }
 
-static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* renderer, int y) {
+static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* renderer, struct DSGX* gx, int y) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
 	int x;
@@ -381,7 +382,9 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 				GBAVideoSoftwareRendererPostprocessSprite(softwareRenderer, priority);
 			}
 			if (TEST_LAYER_ENABLED(0)) {
-				if (DSRegisterDISPCNTIs3D(softwareRenderer->dispcnt)) {
+				if (DSRegisterDISPCNTIs3D(softwareRenderer->dispcnt) && gx) {
+					color_t* scanline;
+					gx->renderer->getScanline(gx->renderer, y, &scanline);
 					// TODO
 				} else {
 					GBAVideoSoftwareRendererDrawBackgroundMode0(softwareRenderer, &softwareRenderer->bg[0], y);
@@ -472,7 +475,7 @@ static void _drawScanlineA(struct DSVideoSoftwareRenderer* softwareRenderer, int
 		}
 		return;
 	case 1:
-		DSVideoSoftwareRendererDrawGBAScanline(&softwareRenderer->engA.d, y);
+		DSVideoSoftwareRendererDrawGBAScanline(&softwareRenderer->engA.d, softwareRenderer->d.gx, y);
 		return;
 	case 2: {
 		uint16_t* vram = &softwareRenderer->d.vram[0x10000 * DSRegisterDISPCNTGetVRAMBlock(softwareRenderer->dispcntA)];
@@ -527,7 +530,7 @@ static void _drawScanlineB(struct DSVideoSoftwareRenderer* softwareRenderer, int
 		}
 		return;
 	case 1:
-		DSVideoSoftwareRendererDrawGBAScanline(&softwareRenderer->engB.d, y);
+		DSVideoSoftwareRendererDrawGBAScanline(&softwareRenderer->engB.d, NULL, y);
 		return;
 	}
 

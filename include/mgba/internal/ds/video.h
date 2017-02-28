@@ -70,6 +70,7 @@ DECL_BITFIELD(DSRegisterMASTER_BRIGHT, uint16_t);
 DECL_BITS(DSRegisterMASTER_BRIGHT, Y, 0, 5);
 DECL_BITS(DSRegisterMASTER_BRIGHT, Mode, 14, 2);
 
+struct DSGX;
 struct DSVideoRenderer {
 	void (*init)(struct DSVideoRenderer* renderer);
 	void (*reset)(struct DSVideoRenderer* renderer);
@@ -96,6 +97,7 @@ struct DSVideoRenderer {
 	uint16_t* vramBBGExtPal[4];
 	uint16_t* vramBOBJExtPal;
 	union DSOAM* oam;
+	struct DSGX* gx;
 };
 
 struct DS;
