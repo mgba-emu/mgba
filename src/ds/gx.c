@@ -315,7 +315,6 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				mLOG(DS_GX, STUB, "Unimplemented GX MTX_PUSH mode");
 				break;
 			}
-			_updateClipMatrix(gx);
 			break;
 		case DS_GX_CMD_MTX_POP: {
 			int8_t offset = entry.params[0];
@@ -337,6 +336,45 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				break;
 			case 3:
 				mLOG(DS_GX, STUB, "Unimplemented GX MTX_POP mode");
+				break;
+			}
+			_updateClipMatrix(gx);
+			break;
+		}
+		case DS_GX_CMD_MTX_STORE: {
+			int8_t offset = entry.params[0] & 0x1F;
+			// TODO: overflow
+			switch (gx->mtxMode) {
+			case 0:
+				memcpy(&gx->projMatrixStack, &gx->projMatrix, sizeof(gx->projMatrixStack));
+				break;
+			case 1:
+				memcpy(&gx->posMatrixStack[offset], &gx->posMatrix, sizeof(gx->posMatrix));
+				// Fall through
+			case 2:
+				memcpy(&gx->vecMatrixStack[offset], &gx->vecMatrix, sizeof(gx->vecMatrix));
+				break;
+			case 3:
+				mLOG(DS_GX, STUB, "Unimplemented GX MTX_STORE mode");
+				break;
+			}
+			break;
+		}
+		case DS_GX_CMD_MTX_RESTORE: {
+			int8_t offset = entry.params[0] & 0x1F;
+			// TODO: overflow
+			switch (gx->mtxMode) {
+			case 0:
+				memcpy(&gx->projMatrix, &gx->projMatrixStack, sizeof(gx->projMatrix));
+				break;
+			case 1:
+				memcpy(&gx->posMatrix, &gx->posMatrixStack[offset], sizeof(gx->posMatrix));
+				// Fall through
+			case 2:
+				memcpy(&gx->vecMatrix, &gx->vecMatrixStack[offset], sizeof(gx->vecMatrix));
+				break;
+			case 3:
+				mLOG(DS_GX, STUB, "Unimplemented GX MTX_RESTORE mode");
 				break;
 			}
 			_updateClipMatrix(gx);
@@ -587,10 +625,10 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			break;
 		}
 		case DS_GX_CMD_VTX_10: {
-			int32_t xyz = gx->activeEntries[0].params[0];
-			xyz |= gx->activeEntries[0].params[1] << 8;
-			xyz |= gx->activeEntries[0].params[2] << 16;
-			xyz |= gx->activeEntries[0].params[3] << 24;
+			int32_t xyz = entry.params[0];
+			xyz |= entry.params[1] << 8;
+			xyz |= entry.params[2] << 16;
+			xyz |= entry.params[3] << 24;
 			int16_t x = (xyz << 6) & 0xFFC0;
 			int16_t y = (xyz >> 4) & 0xFFC0;
 			int16_t z = (xyz >> 14) & 0xFFC0;
@@ -598,28 +636,38 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			break;
 		}
 		case DS_GX_CMD_VTX_XY: {
-			int16_t x = gx->activeEntries[0].params[0];
-			x |= gx->activeEntries[0].params[1] << 8;
-			int16_t y = gx->activeEntries[0].params[2];
-			y |= gx->activeEntries[0].params[3] << 8;
+			int16_t x = entry.params[0];
+			x |= entry.params[1] << 8;
+			int16_t y = entry.params[2];
+			y |= entry.params[3] << 8;
 			_emitVertex(gx, x, y, gx->currentVertex.z);
 			break;
 		}
 		case DS_GX_CMD_VTX_XZ: {
-			int16_t x = gx->activeEntries[0].params[0];
-			x |= gx->activeEntries[0].params[1] << 8;
-			int16_t z = gx->activeEntries[0].params[2];
-			z |= gx->activeEntries[0].params[3] << 8;
+			int16_t x = entry.params[0];
+			x |= entry.params[1] << 8;
+			int16_t z = entry.params[2];
+			z |= entry.params[3] << 8;
 			_emitVertex(gx, x, gx->currentVertex.y, z);
 			break;
 		}
 		case DS_GX_CMD_VTX_YZ: {
-			int16_t y = gx->activeEntries[0].params[0];
-			y |= gx->activeEntries[0].params[1] << 8;
-			int16_t z = gx->activeEntries[0].params[2];
-			z |= gx->activeEntries[0].params[3] << 8;
+			int16_t y = entry.params[0];
+			y |= entry.params[1] << 8;
+			int16_t z = entry.params[2];
+			z |= entry.params[3] << 8;
 			_emitVertex(gx, gx->currentVertex.x, y, z);
 			break;
+		}
+		case DS_GX_CMD_VTX_DIFF: {
+			int32_t xyz = entry.params[0];
+			xyz |= entry.params[1] << 8;
+			xyz |= entry.params[2] << 16;
+			xyz |= entry.params[3] << 24;
+			int16_t x = (xyz << 6) & 0xFFC0;
+			int16_t y = (xyz >> 4) & 0xFFC0;
+			int16_t z = (xyz >> 14) & 0xFFC0;
+			_emitVertex(gx, gx->currentVertex.x + (x >> 6), gx->currentVertex.y + (y >> 6), gx->currentVertex.z + (z >> 6));
 		}
 		case DS_GX_CMD_POLYGON_ATTR:
 			gx->currentPoly.polyParams = entry.params[0];
