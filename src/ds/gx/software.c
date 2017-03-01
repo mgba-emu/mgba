@@ -27,6 +27,17 @@ static void _expandColor(uint16_t c15, int8_t* r, int8_t* g, int8_t* b) {
 	*b = ((c15 >> 9) & 0x3E) | 1;
 }
 
+static color_t _finishColor(int8_t r, int8_t g, int8_t b) {
+#ifndef COLOR_16_BIT
+	color_t rgb = (r << 2) & 0xF8;
+	rgb |= (g << 10) & 0xF800;
+	rgb |= (b << 18) & 0xF80000;
+	return rgb;
+#else
+#error Unsupported color depth
+#endif
+}
+
 static int _edgeSort(const void* a, const void* b) {
 	const struct DSGXSoftwareEdge* ea = a;
 	const struct DSGXSoftwareEdge* eb = b;
@@ -88,20 +99,20 @@ static int _spanSort(const void* a, const void* b) {
 	if (sa->ep[0].x > sb->ep[0].x) {
 		return -1;
 	}
-	if (sa->ep[1].x < sb->ep[1].x) {
+	if (sa->ep[0].w < sb->ep[0].w) {
 		return 1;
 	}
-	if (sa->ep[1].x > sb->ep[1].x) {
+	if (sa->ep[0].w > sb->ep[0].w) {
 		return -1;
 	}
 	return 0;
 }
 
-static color_t _lerpColor(const struct DSGXSoftwareSpan* span, unsigned x) {
+static void _lerpEndpoint(const struct DSGXSoftwareSpan* span, struct DSGXSoftwareEndpoint* ep, unsigned x) {
 	int64_t width = span->ep[1].x - span->ep[0].x;
 	int64_t xw = ((uint64_t) x << 12) - span->ep[0].x;
 	if (!width) {
-		return 0; // TODO?
+		return; // TODO?
 	}
 	// Clamp to bounds
 	if (xw < 0) {
@@ -112,38 +123,19 @@ static color_t _lerpColor(const struct DSGXSoftwareSpan* span, unsigned x) {
 	int32_t w0 = span->ep[0].w;
 	int32_t w1 = span->ep[1].w;
 	int32_t w = ((int64_t) (w1 - w0) * xw) / width + w0;
+	ep->w = w;
 
 	uint64_t r = ((span->ep[1].cr * (int64_t) w1 - span->ep[0].cr * (int64_t) w0) * xw) / width + span->ep[0].cr * (int64_t) w0;
 	uint64_t g = ((span->ep[1].cg * (int64_t) w1 - span->ep[0].cg * (int64_t) w0) * xw) / width + span->ep[0].cg * (int64_t) w0;
 	uint64_t b = ((span->ep[1].cb * (int64_t) w1 - span->ep[0].cb * (int64_t) w0) * xw) / width + span->ep[0].cb * (int64_t) w0;
-	r /= w;
-	g /= w;
-	b /= w;
-#ifndef COLOR_16_BIT
-	color_t rgb = (r << 2) & 0xF8;
-	rgb |= (g << 10) & 0xF800;
-	rgb |= (b << 18) & 0xF80000;
-	return rgb;
-#else
-#error Unsupported color depth
-#endif
-}
+	ep->cr = r / w;
+	ep->cg = g / w;
+	ep->cb = b / w;
 
-static int32_t _lerpDepth(const struct DSGXSoftwareSpan* span, unsigned x) {
-	int64_t width = span->ep[1].x - span->ep[0].x;
-	int64_t xw = ((uint64_t) x << 12) - span->ep[0].x;
-	if (!width) {
-		return 0; // TODO?
-	}
-	// Clamp to bounds
-	if (xw < 0) {
-		xw = 0;
-	} else if (xw > width) {
-		xw = width;
-	}
-	int32_t w0 = span->ep[0].w;
-	int32_t w1 = span->ep[1].w;
-	return ((int64_t) (w1 - w0) * xw) / width + w0;
+	int32_t s = ((span->ep[1].s * (int64_t) w1 - span->ep[0].s * (int64_t) w0) * xw) / width + span->ep[0].s * (int64_t) w0;
+	int32_t t = ((span->ep[1].t * (int64_t) w1 - span->ep[0].t * (int64_t) w0) * xw) / width + span->ep[0].t * (int64_t) w0;
+	ep->s = s / w;
+	ep->t = t / w;
 }
 
 void DSGXSoftwareRendererCreate(struct DSGXSoftwareRenderer* renderer) {
@@ -309,6 +301,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 	}
 	for (i = 0; i < DS_VIDEO_HORIZONTAL_PIXELS; ++i) {
 		struct DSGXSoftwareSpan* span = NULL;
+		struct DSGXSoftwareEndpoint ep;
 		int32_t depth = INT32_MIN;
 		if (i >= nextSpanX) {
 			size_t nextSpanId = DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans);
@@ -330,9 +323,9 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 				struct DSGXSoftwareSpan* testSpan = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
 				while (i > (uint32_t) (testSpan->ep[0].x >> 12)) {
 					if (i <= (uint32_t) (testSpan->ep[1].x >> 12)) {
-						int32_t newDepth = _lerpDepth(testSpan, i);
-						if (newDepth > depth) {
-							depth = newDepth;
+						 _lerpEndpoint(testSpan, &ep, i);
+						if (ep.w > depth) {
+							depth = ep.w;
 							span = testSpan;
 						}
 					}
@@ -345,7 +338,8 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 			}
 		}
 		if (span) {
-			scanline[i] = _lerpColor(span, i);
+			_lerpEndpoint(span, &ep, i);
+			scanline[i] = _finishColor(ep.cr, ep.cg, ep.cb);
 		} else {
 			scanline[i] = FLAG_UNWRITTEN; // TODO
 		}
