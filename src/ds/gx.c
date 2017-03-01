@@ -20,6 +20,8 @@ static void DSGXDummyRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVe
 static void DSGXDummyRendererDrawScanline(struct DSGXRenderer* renderer, int y);
 static void DSGXDummyRendererGetScanline(struct DSGXRenderer* renderer, int y, color_t** output);
 
+static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry);
+
 static const int32_t _gxCommandCycleBase[DS_GX_CMD_MAX] = {
 	[DS_GX_CMD_NOP] = 0,
 	[DS_GX_CMD_MTX_MODE] = 2,
@@ -759,17 +761,23 @@ static void DSGXUnpackCommand(struct DSGX* gx, uint32_t command) {
 	gx->outstandingParams[1] = _gxCommandParams[gx->outstandingCommand[1]];
 	gx->outstandingParams[2] = _gxCommandParams[gx->outstandingCommand[2]];
 	gx->outstandingParams[3] = _gxCommandParams[gx->outstandingCommand[3]];
+	while (gx->outstandingCommand[0] && !gx->outstandingParams[0]) {
+		DSGXWriteFIFO(gx, (struct DSGXEntry) { 0 });
+	}
 }
 
 static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
-	if (gx->outstandingParams[0]) {
+	if (gx->outstandingCommand[0]) {
 		entry.command = gx->outstandingCommand[0];
-		--gx->outstandingParams[0];
+		if (gx->outstandingParams[0]) {
+			--gx->outstandingParams[0];
+		}
 		if (!gx->outstandingParams[0]) {
 			// TODO: improve this
 			memmove(&gx->outstandingParams[0], &gx->outstandingParams[1], sizeof(gx->outstandingParams[0]) * 3);
 			memmove(&gx->outstandingCommand[0], &gx->outstandingCommand[1], sizeof(gx->outstandingCommand[0]) * 3);
 			gx->outstandingParams[3] = 0;
+			gx->outstandingCommand[3] = 0;
 		}
 	} else {
 		gx->outstandingCommand[0] = entry.command;
@@ -799,6 +807,10 @@ static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
 	}
 	if (!gx->swapBuffers && !mTimingIsScheduled(&gx->p->ds9.timing, &gx->fifoEvent)) {
 		mTimingSchedule(&gx->p->ds9.timing, &gx->fifoEvent, cycles);
+	}
+
+	if (gx->outstandingCommand[0] && !gx->outstandingParams[0]) {
+		DSGXWriteFIFO(gx, (struct DSGXEntry) { 0 });
 	}
 }
 
