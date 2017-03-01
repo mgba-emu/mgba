@@ -201,6 +201,7 @@ void DSVideoAssociateRenderer(struct DSVideo* video, struct DSVideoRenderer* ren
 	memcpy(renderer->vramBBGExtPal, video->vramBBGExtPal, sizeof(renderer->vramBBGExtPal));
 	renderer->vramBOBJExtPal = video->vramBOBJExtPal;
 	renderer->oam = &video->oam;
+	renderer->gx = &video->p->gx;
 	video->renderer->init(video->renderer);
 }
 
@@ -321,8 +322,8 @@ void _startHblank9(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
 	if (video->frameskipCounter <= 0) {
 		if (video->vcount < DS_VIDEO_VERTICAL_PIXELS) {
-			video->p->gx.renderer->drawScanline(video->p->gx.renderer, video->vcount + 48);
 			video->renderer->drawScanline(video->renderer, video->vcount);
+			video->p->gx.renderer->drawScanline(video->p->gx.renderer, video->vcount + 48);
 		}
 		if (video->vcount >= DS_VIDEO_VERTICAL_TOTAL_PIXELS - 48) {
 			video->p->gx.renderer->drawScanline(video->p->gx.renderer, video->vcount + 48 - DS_VIDEO_VERTICAL_TOTAL_PIXELS);

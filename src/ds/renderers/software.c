@@ -385,7 +385,13 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 				if (DSRegisterDISPCNTIs3D(softwareRenderer->dispcnt) && gx) {
 					color_t* scanline;
 					gx->renderer->getScanline(gx->renderer, y, &scanline);
-					// TODO
+					uint32_t flags = (softwareRenderer->bg[0].priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND;
+					int x;
+					for (x = softwareRenderer->start; x < softwareRenderer->end; ++x) {
+						if ((scanline[x] & FLAG_UNWRITTEN) != FLAG_UNWRITTEN) {
+							_compositeNoBlendNoObjwin(softwareRenderer, &softwareRenderer->row[x], scanline[x] | flags, softwareRenderer->row[x]);
+						}
+					}
 				} else {
 					GBAVideoSoftwareRendererDrawBackgroundMode0(softwareRenderer, &softwareRenderer->bg[0], y);
 				}

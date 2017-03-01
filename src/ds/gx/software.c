@@ -6,6 +6,7 @@
 #include <mgba/internal/ds/gx/software.h>
 
 #include <mgba-util/memory.h>
+#include "gba/renderers/software-private.h"
 
 #define SCREEN_SIZE (DS_VIDEO_VERTICAL_PIXELS << 12)
 
@@ -99,6 +100,34 @@ static int _spanSort(const void* a, const void* b) {
 		return 1;
 	}
 	return 0;
+}
+
+static color_t _lerpColor(const struct DSGXSoftwareSpan* span, unsigned x) {
+	int64_t width = span->x1 - span->x0;
+	int64_t xw = ((uint64_t) x << 12) - span->x0;
+	if (width) {
+		xw <<= 19;
+		xw /= width;
+	} else {
+		return 0; // TODO?
+	}
+	// Clamp to bounds
+	if (xw < 0) {
+		xw = 0;
+	} else if (xw > width) {
+		xw = width;
+	}
+	color_t r = ((int32_t) (span->cr1 - span->cr0) * xw) / width + span->cr0;
+	color_t g = ((int32_t) (span->cg1 - span->cg0) * xw) / width + span->cg0;
+	color_t b = ((int32_t) (span->cb1 - span->cb0) * xw) / width + span->cb0;
+#ifndef COLOR_16_BIT
+	color_t rgb = (r << 2) & 0xF8;
+	rgb |= (g << 10) & 0xF800;
+	rgb |= (b << 18) & 0xF80000;
+	return rgb;
+#else
+#error Unsupported color depth
+#endif
 }
 
 void DSGXSoftwareRendererCreate(struct DSGXSoftwareRenderer* renderer) {
@@ -252,6 +281,38 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 		}
 	}
 	qsort(DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, 0), DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans), sizeof(struct DSGXSoftwareSpan), _spanSort);
+
+	y %= 48;
+	color_t* scanline = &softwareRenderer->scanlineCache[DS_VIDEO_HORIZONTAL_PIXELS * y];
+
+	size_t nextSpanX = DS_VIDEO_HORIZONTAL_PIXELS;
+	if (DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans)) {
+		nextSpanX = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans) - 1)->x0;
+		nextSpanX >>= 12;
+	}
+	for (i = 0; i < DS_VIDEO_HORIZONTAL_PIXELS; ++i) {
+		struct DSGXSoftwareSpan* span = NULL;
+		if (i >= nextSpanX) {
+			size_t nextSpanId = DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans);
+			span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
+			while (i > (uint32_t) (span->x1 >> 12)) {
+				DSGXSoftwareSpanListShift(&softwareRenderer->activeSpans, nextSpanId - 1, 1);
+				--nextSpanId;
+				if (!nextSpanId) {
+					nextSpanX = DS_VIDEO_HORIZONTAL_PIXELS;
+					span = NULL;
+					break;
+				}
+				span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
+				nextSpanX = span->x0 >> 12;
+			}
+		}
+		if (span) {
+			scanline[i] = _lerpColor(span, i);
+		} else {
+			scanline[i] = FLAG_UNWRITTEN; // TODO
+		}
+	}
 }
 
 static void DSGXSoftwareRendererGetScanline(struct DSGXRenderer* renderer, int y, color_t** output) {
