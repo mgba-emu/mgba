@@ -137,7 +137,7 @@ static void _pullPipe(struct DSGX* gx) {
 }
 
 static void _updateClipMatrix(struct DSGX* gx) {
-	DSGXMtxMultiply(&gx->clipMatrix, &gx->projMatrix, &gx->posMatrix);
+	DSGXMtxMultiply(&gx->clipMatrix, &gx->posMatrix, &gx->projMatrix);
 }
 
 static int32_t _dotViewport(struct DSGXVertex* vertex, int32_t* col) {

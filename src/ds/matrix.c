@@ -35,22 +35,22 @@ void DSGXMtxIdentity(struct DSGXMatrix* mtx) {
 void DSGXMtxMultiply(struct DSGXMatrix* out, const struct DSGXMatrix* a, const struct DSGXMatrix* b) {
 	struct DSGXMatrix o;
 	// XXX: This is transposed because DS matrices are transposed
-	o.m[0] = _dot(&a->m[0], &b->m[0]);
-	o.m[1] = _dot(&a->m[1], &b->m[0]);
-	o.m[2] = _dot(&a->m[2], &b->m[0]);
-	o.m[3] = _dot(&a->m[3], &b->m[0]);
-	o.m[4] = _dot(&a->m[0], &b->m[4]);
-	o.m[5] = _dot(&a->m[1], &b->m[4]);
-	o.m[6] = _dot(&a->m[2], &b->m[4]);
-	o.m[7] = _dot(&a->m[3], &b->m[4]);
-	o.m[8] = _dot(&a->m[0], &b->m[8]);
-	o.m[9] = _dot(&a->m[1], &b->m[8]);
-	o.m[10] = _dot(&a->m[2], &b->m[8]);
-	o.m[11] = _dot(&a->m[3], &b->m[8]);
-	o.m[12] = _dot(&a->m[0], &b->m[12]);
-	o.m[13] = _dot(&a->m[1], &b->m[12]);
-	o.m[14] = _dot(&a->m[2], &b->m[12]);
-	o.m[15] = _dot(&a->m[3], &b->m[12]);
+	o.m[0] = _dot(&b->m[0], &a->m[0]);
+	o.m[1] = _dot(&b->m[1], &a->m[0]);
+	o.m[2] = _dot(&b->m[2], &a->m[0]);
+	o.m[3] = _dot(&b->m[3], &a->m[0]);
+	o.m[4] = _dot(&b->m[0], &a->m[4]);
+	o.m[5] = _dot(&b->m[1], &a->m[4]);
+	o.m[6] = _dot(&b->m[2], &a->m[4]);
+	o.m[7] = _dot(&b->m[3], &a->m[4]);
+	o.m[8] = _dot(&b->m[0], &a->m[8]);
+	o.m[9] = _dot(&b->m[1], &a->m[8]);
+	o.m[10] = _dot(&b->m[2], &a->m[8]);
+	o.m[11] = _dot(&b->m[3], &a->m[8]);
+	o.m[12] = _dot(&b->m[0], &a->m[12]);
+	o.m[13] = _dot(&b->m[1], &a->m[12]);
+	o.m[14] = _dot(&b->m[2], &a->m[12]);
+	o.m[15] = _dot(&b->m[3], &a->m[12]);
 	*out = o;
 }
 
