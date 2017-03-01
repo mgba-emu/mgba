@@ -223,6 +223,23 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 	}
 }
 
+static void _flushOutstanding(struct DSGX* gx) {
+	if (CircleBufferSize(&gx->fifo) == (DS_GX_FIFO_SIZE * sizeof(struct DSGXEntry))) {
+		return;
+	}
+	if (gx->p->cpuBlocked & DS_CPU_BLOCK_GX) {
+		gx->p->cpuBlocked &= ~DS_CPU_BLOCK_GX;
+		DSGXWriteFIFO(gx, gx->outstandingEntry);
+		gx->outstandingEntry.command = 0;
+	}
+	while (gx->outstandingCommand[0] && !gx->outstandingParams[0]) {
+		if (CircleBufferSize(&gx->fifo) == (DS_GX_FIFO_SIZE * sizeof(struct DSGXEntry))) {
+			return;
+		}
+		DSGXWriteFIFO(gx, (struct DSGXEntry) { 0 });
+	}
+}
+
 static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct DSGX* gx = context;
 	uint32_t cycles;
@@ -647,6 +664,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 	if (cycles && !gx->swapBuffers) {
 		mTimingSchedule(timing, &gx->fifoEvent, cycles - cyclesLate);
 	}
+	_flushOutstanding(gx);
 	DSGXUpdateGXSTAT(gx);
 }
 
@@ -739,11 +757,6 @@ void DSGXUpdateGXSTAT(struct DSGX* gx) {
 	value = DSRegGXSTATSetBusy(value, mTimingIsScheduled(&gx->p->ds9.timing, &gx->fifoEvent) || gx->swapBuffers);
 
 	gx->p->memory.io9[DS9_REG_GXSTAT_HI >> 1] = value >> 16;
-
-	if (gx->p->cpuBlocked & DS_CPU_BLOCK_GX && entries < DS_GX_FIFO_SIZE) {
-		DSGXWriteFIFO(gx, gx->outstandingEntry);
-		gx->p->cpuBlocked &= ~DS_CPU_BLOCK_GX;
-	}
 }
 
 static void DSGXUnpackCommand(struct DSGX* gx, uint32_t command) {
@@ -767,12 +780,21 @@ static void DSGXUnpackCommand(struct DSGX* gx, uint32_t command) {
 	gx->outstandingParams[1] = _gxCommandParams[gx->outstandingCommand[1]];
 	gx->outstandingParams[2] = _gxCommandParams[gx->outstandingCommand[2]];
 	gx->outstandingParams[3] = _gxCommandParams[gx->outstandingCommand[3]];
-	while (gx->outstandingCommand[0] && !gx->outstandingParams[0]) {
-		DSGXWriteFIFO(gx, (struct DSGXEntry) { gx->outstandingCommand[0] });
 	}
+	_flushOutstanding(gx);
 }
 
 static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
+	if (CircleBufferSize(&gx->fifo) == (DS_GX_FIFO_SIZE * sizeof(entry))) {
+		mLOG(DS_GX, INFO, "FIFO full");
+		if (gx->p->cpuBlocked & DS_CPU_BLOCK_GX) {
+			abort();
+		}
+		gx->p->cpuBlocked |= DS_CPU_BLOCK_GX;
+		gx->outstandingEntry = entry;
+		gx->p->ds9.cpu->nextEvent = 0;
+		return;
+	}
 	if (gx->outstandingCommand[0]) {
 		entry.command = gx->outstandingCommand[0];
 		if (gx->outstandingParams[0]) {
@@ -810,19 +832,12 @@ static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
 		CircleBufferWrite8(&gx->fifo, entry.params[1]);
 		CircleBufferWrite8(&gx->fifo, entry.params[2]);
 		CircleBufferWrite8(&gx->fifo, entry.params[3]);
-	} else {
-		mLOG(DS_GX, STUB, "Unimplemented GX full");
-		gx->p->cpuBlocked |= DS_CPU_BLOCK_GX;
-		gx->outstandingEntry = entry;
-		gx->p->ds9.cpu->nextEvent = 0;
 	}
 	if (!gx->swapBuffers && !mTimingIsScheduled(&gx->p->ds9.timing, &gx->fifoEvent)) {
 		mTimingSchedule(&gx->p->ds9.timing, &gx->fifoEvent, cycles);
 	}
 
-	if (gx->outstandingCommand[0] && !gx->outstandingParams[0]) {
-		DSGXWriteFIFO(gx, (struct DSGXEntry) { gx->outstandingCommand[0] });
-	}
+	_flushOutstanding(gx);
 }
 
 uint16_t DSGXWriteRegister(struct DSGX* gx, uint32_t address, uint16_t value) {

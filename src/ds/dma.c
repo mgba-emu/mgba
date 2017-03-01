@@ -115,8 +115,14 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		dma->when = mTimingCurrentTime(&dscore->timing);
 	}
 	if (dma->nextCount & 0xFFFFF) {
-		dscore->p->cpuBlocked |= DS_CPU_BLOCK_DMA; // TODO: Fix for ITCM
-		DSDMAService(dscore, memory->activeDMA, dma);
+		if (dscore->p->cpuBlocked & ~DS_CPU_BLOCK_DMA) {
+			// Delay DMA until after the CPU unblocks
+			dma->when = mTimingCurrentTime(&dscore->timing) + mTimingNextEvent(&dscore->timing) + 1;
+			DSDMAUpdate(dscore);
+		} else {
+			dscore->p->cpuBlocked |= DS_CPU_BLOCK_DMA; // TODO: Fix for ITCM
+			DSDMAService(dscore, memory->activeDMA, dma);
+		}
 	} else {
 		dma->nextCount = 0;
 		if (!GBADMARegisterIsRepeat(dma->reg) || GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_NOW) {
