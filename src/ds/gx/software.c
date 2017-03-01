@@ -48,7 +48,6 @@ static int _edgeSort(const void* a, const void* b) {
 }
 
 static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftwareEdge* edge, int index, int32_t y) {
-	// TODO: Perspective correction
 	int32_t height = edge->y1 - edge->y0;
 	int64_t yw = (y << 12) - edge->y0;
 	if (!height) {
@@ -67,12 +66,13 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 		span->ep[0].x = temp;
 		index = 0;
 	}
-	span->ep[index].w = ((int64_t) (edge->w1 - edge->w0) * yw) / height + edge->w0;
-	span->ep[index].cr = ((int32_t) (edge->cr1 - edge->cr0) * yw) / height + edge->cr0;
-	span->ep[index].cg = ((int32_t) (edge->cg1 - edge->cg0) * yw) / height + edge->cg0;
-	span->ep[index].cb = ((int32_t) (edge->cb1 - edge->cb0) * yw) / height + edge->cb0;
-	span->ep[index].s = ((int32_t) (edge->s1 - edge->s0) * yw) / height + edge->s0;
-	span->ep[index].t = ((int32_t) (edge->t1 - edge->t0) * yw) / height + edge->t0;
+	int32_t w = ((int64_t) (edge->w1 - edge->w0) * yw) / height + edge->w0;
+	span->ep[index].w = w;
+	span->ep[index].cr = (((int32_t) (edge->cr1 * edge->w1 - edge->cr0 * edge->w0) * yw) / height + edge->cr0 * edge->w0) / w;
+	span->ep[index].cg = (((int32_t) (edge->cg1 * edge->w1 - edge->cg0 * edge->w0) * yw) / height + edge->cg0 * edge->w0) / w;
+	span->ep[index].cb = (((int32_t) (edge->cb1 * edge->w1 - edge->cb0 * edge->w0) * yw) / height + edge->cb0 * edge->w0) / w;
+	span->ep[index].s = (((int32_t) (edge->s1 * edge->w1 - edge->s0 * edge->w0) * yw) / height + edge->s0 * edge->w0) / w;
+	span->ep[index].t = (((int32_t) (edge->t1 * edge->w1 - edge->t0 * edge->w0) * yw) / height + edge->t0 * edge->w0) / w;
 
 	return true;
 }
@@ -109,11 +109,13 @@ static color_t _lerpColor(const struct DSGXSoftwareSpan* span, unsigned x) {
 	} else if (xw > width) {
 		xw = width;
 	}
-	uint32_t w = ((int64_t) (span->ep[0].w - span->ep[1].w) * xw) / width + span->ep[1].w;
+	int32_t w0 = span->ep[0].w;
+	int32_t w1 = span->ep[1].w;
+	int32_t w = ((int64_t) (w1 - w0) * xw) / width + w0;
 
-	uint64_t r = ((span->ep[1].cr * (int64_t) span->ep[0].w - span->ep[0].cr * (int64_t) span->ep[1].w) * xw) / width + span->ep[0].cr * (int64_t) span->ep[1].w;
-	uint64_t g = ((span->ep[1].cg * (int64_t) span->ep[0].w - span->ep[0].cg * (int64_t) span->ep[1].w) * xw) / width + span->ep[0].cg * (int64_t) span->ep[1].w;
-	uint64_t b = ((span->ep[1].cb * (int64_t) span->ep[0].w - span->ep[0].cb * (int64_t) span->ep[1].w) * xw) / width + span->ep[0].cb * (int64_t) span->ep[1].w;
+	uint64_t r = ((span->ep[1].cr * (int64_t) w1 - span->ep[0].cr * (int64_t) w0) * xw) / width + span->ep[0].cr * (int64_t) w0;
+	uint64_t g = ((span->ep[1].cg * (int64_t) w1 - span->ep[0].cg * (int64_t) w0) * xw) / width + span->ep[0].cg * (int64_t) w0;
+	uint64_t b = ((span->ep[1].cb * (int64_t) w1 - span->ep[0].cb * (int64_t) w0) * xw) / width + span->ep[0].cb * (int64_t) w0;
 	r /= w;
 	g /= w;
 	b /= w;
