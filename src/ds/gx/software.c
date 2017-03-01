@@ -129,6 +129,23 @@ static color_t _lerpColor(const struct DSGXSoftwareSpan* span, unsigned x) {
 #endif
 }
 
+static int32_t _lerpDepth(const struct DSGXSoftwareSpan* span, unsigned x) {
+	int64_t width = span->ep[1].x - span->ep[0].x;
+	int64_t xw = ((uint64_t) x << 12) - span->ep[0].x;
+	if (!width) {
+		return 0; // TODO?
+	}
+	// Clamp to bounds
+	if (xw < 0) {
+		xw = 0;
+	} else if (xw > width) {
+		xw = width;
+	}
+	int32_t w0 = span->ep[0].w;
+	int32_t w1 = span->ep[1].w;
+	return ((int64_t) (w1 - w0) * xw) / width + w0;
+}
+
 void DSGXSoftwareRendererCreate(struct DSGXSoftwareRenderer* renderer) {
 	renderer->d.init = DSGXSoftwareRendererInit;
 	renderer->d.reset = DSGXSoftwareRendererReset;
@@ -292,6 +309,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 	}
 	for (i = 0; i < DS_VIDEO_HORIZONTAL_PIXELS; ++i) {
 		struct DSGXSoftwareSpan* span = NULL;
+		int32_t depth = INT32_MIN;
 		if (i >= nextSpanX) {
 			size_t nextSpanId = DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans);
 			span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
@@ -308,6 +326,22 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 			}
 			if (i < nextSpanX) {
 				span = NULL;
+			} else {
+				struct DSGXSoftwareSpan* testSpan = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
+				while (i > (uint32_t) (testSpan->ep[0].x >> 12)) {
+					if (i <= (uint32_t) (testSpan->ep[1].x >> 12)) {
+						int32_t newDepth = _lerpDepth(testSpan, i);
+						if (newDepth > depth) {
+							depth = newDepth;
+							span = testSpan;
+						}
+					}
+					--nextSpanId;
+					if (!nextSpanId) {
+						break;
+					}
+					testSpan = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
+				}
 			}
 		}
 		if (span) {
