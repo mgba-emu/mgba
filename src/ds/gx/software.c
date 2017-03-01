@@ -264,11 +264,12 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 
 		unsigned poly = edge->polyId;
 		struct DSGXSoftwareSpan* span = softwareRenderer->bucket[poly];
-		if (span) {
+		if (span && !span->ep[1].w) {
 			_edgeToSpan(span, edge, 1, y);
 			softwareRenderer->bucket[poly] = NULL;
-		} else {
+		} else if (!span) {
 			span = DSGXSoftwareSpanListAppend(&softwareRenderer->activeSpans);
+			memset(span, 0, sizeof(*span));
 			if (!_edgeToSpan(span, edge, 0, y)) {
 				// Horizontal line
 				DSGXSoftwareSpanListShift(&softwareRenderer->activeSpans, DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans) - 1, 1);
@@ -302,6 +303,9 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 				}
 				span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
 				nextSpanX = span->ep[0].x >> 12;
+			}
+			if (i < nextSpanX) {
+				span = NULL;
 			}
 		}
 		if (span) {
