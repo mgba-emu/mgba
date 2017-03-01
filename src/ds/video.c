@@ -323,6 +323,8 @@ void _startHblank9(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	if (video->frameskipCounter <= 0) {
 		if (video->vcount < DS_VIDEO_VERTICAL_PIXELS) {
 			video->renderer->drawScanline(video->renderer, video->vcount);
+		}
+		if (video->vcount < DS_VIDEO_VERTICAL_PIXELS - 48) {
 			video->p->gx.renderer->drawScanline(video->p->gx.renderer, video->vcount + 48);
 		}
 		if (video->vcount >= DS_VIDEO_VERTICAL_TOTAL_PIXELS - 48) {
