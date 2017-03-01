@@ -71,7 +71,7 @@ struct DSGXSoftwareRenderer {
 	struct DSGXSoftwarePolygonList activePolys;
 	struct DSGXSoftwareEdgeList activeEdges;
 	struct DSGXSoftwareSpanList activeSpans;
-	struct Table bucket;
+	struct DSGXSoftwareSpan** bucket;
 
 	uint16_t depthBuffer[DS_VIDEO_HORIZONTAL_PIXELS];
 	color_t* scanlineCache;

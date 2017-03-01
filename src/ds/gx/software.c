@@ -144,7 +144,7 @@ static void DSGXSoftwareRendererInit(struct DSGXRenderer* renderer) {
 	DSGXSoftwarePolygonListInit(&softwareRenderer->activePolys, DS_GX_POLYGON_BUFFER_SIZE / 4);
 	DSGXSoftwareEdgeListInit(&softwareRenderer->activeEdges, DS_GX_POLYGON_BUFFER_SIZE);
 	DSGXSoftwareSpanListInit(&softwareRenderer->activeSpans, DS_GX_POLYGON_BUFFER_SIZE / 2);
-	TableInit(&softwareRenderer->bucket, DS_GX_POLYGON_BUFFER_SIZE / 8, NULL);
+	softwareRenderer->bucket = anonymousMemoryMap(sizeof(*softwareRenderer->bucket) * DS_GX_POLYGON_BUFFER_SIZE);
 	softwareRenderer->scanlineCache = anonymousMemoryMap(sizeof(color_t) * DS_VIDEO_HORIZONTAL_PIXELS * 48);
 }
 
@@ -158,7 +158,7 @@ static void DSGXSoftwareRendererDeinit(struct DSGXRenderer* renderer) {
 	DSGXSoftwarePolygonListDeinit(&softwareRenderer->activePolys);
 	DSGXSoftwareEdgeListDeinit(&softwareRenderer->activeEdges);	
 	DSGXSoftwareSpanListDeinit(&softwareRenderer->activeSpans);
-	TableDeinit(&softwareRenderer->bucket);
+	mappedMemoryFree(softwareRenderer->bucket, sizeof(*softwareRenderer->bucket) * DS_GX_POLYGON_BUFFER_SIZE);
 	mappedMemoryFree(softwareRenderer->scanlineCache, sizeof(color_t) * DS_VIDEO_HORIZONTAL_PIXELS * 48);
 }
 
@@ -253,7 +253,7 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int y) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
 	DSGXSoftwareSpanListClear(&softwareRenderer->activeSpans);
-	TableClear(&softwareRenderer->bucket);
+	memset(softwareRenderer->bucket, 0, sizeof(*softwareRenderer->bucket) * DS_GX_POLYGON_BUFFER_SIZE);
 	size_t i;
 	for (i = DSGXSoftwareEdgeListSize(&softwareRenderer->activeEdges); i; --i) {
 		size_t idx = i - 1;
@@ -266,17 +266,17 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 		}
 
 		unsigned poly = edge->polyId;
-		struct DSGXSoftwareSpan* span = TableLookup(&softwareRenderer->bucket, poly);
+		struct DSGXSoftwareSpan* span = softwareRenderer->bucket[poly];
 		if (span) {
 			_edgeToSpan(span, edge, 1, y);
-			TableRemove(&softwareRenderer->bucket, poly);
+			softwareRenderer->bucket[poly] = NULL;
 		} else {
 			span = DSGXSoftwareSpanListAppend(&softwareRenderer->activeSpans);
 			if (!_edgeToSpan(span, edge, 0, y)) {
 				// Horizontal line
 				DSGXSoftwareSpanListShift(&softwareRenderer->activeSpans, DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans) - 1, 1);
 			} else {
-				TableInsert(&softwareRenderer->bucket, poly, span);
+				softwareRenderer->bucket[poly] = span;
 			}
 		}
 	}
