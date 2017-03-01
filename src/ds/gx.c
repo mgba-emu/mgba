@@ -513,6 +513,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				DSGXMtxTranslate(&gx->texMatrix, m);
 				break;
 			}
+			_updateClipMatrix(gx);
 			break;
 		}
 		case DS_GX_CMD_MTX_SCALE: {
@@ -543,6 +544,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				DSGXMtxScale(&gx->texMatrix, m);
 				break;
 			}
+			_updateClipMatrix(gx);
 			break;
 		}
 		case DS_GX_CMD_COLOR:
