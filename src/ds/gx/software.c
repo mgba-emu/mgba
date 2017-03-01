@@ -262,7 +262,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
 	DSGXSoftwareSpanListClear(&softwareRenderer->activeSpans);
 	memset(softwareRenderer->bucket, 0, sizeof(*softwareRenderer->bucket) * DS_GX_POLYGON_BUFFER_SIZE);
-	size_t i;
+	int i;
 	for (i = DSGXSoftwareEdgeListSize(&softwareRenderer->activeEdges); i; --i) {
 		size_t idx = i - 1;
 		struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListGetPointer(&softwareRenderer->activeEdges, idx);
@@ -294,7 +294,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 	y %= 48;
 	color_t* scanline = &softwareRenderer->scanlineCache[DS_VIDEO_HORIZONTAL_PIXELS * y];
 
-	size_t nextSpanX = DS_VIDEO_HORIZONTAL_PIXELS;
+	int nextSpanX = DS_VIDEO_HORIZONTAL_PIXELS;
 	if (DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans)) {
 		nextSpanX = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans) - 1)->ep[0].x;
 		nextSpanX >>= 12;
@@ -306,7 +306,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 		if (i >= nextSpanX) {
 			size_t nextSpanId = DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans);
 			span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
-			while (i > (uint32_t) (span->ep[1].x >> 12)) {
+			while (i > (span->ep[1].x >> 12) || !span->ep[1].x) {
 				DSGXSoftwareSpanListShift(&softwareRenderer->activeSpans, nextSpanId - 1, 1);
 				--nextSpanId;
 				if (!nextSpanId) {
@@ -321,8 +321,8 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 				span = NULL;
 			} else {
 				struct DSGXSoftwareSpan* testSpan = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
-				while (i > (uint32_t) (testSpan->ep[0].x >> 12)) {
-					if (i <= (uint32_t) (testSpan->ep[1].x >> 12)) {
+				while (i > (testSpan->ep[0].x >> 12)) {
+					if (i <= (testSpan->ep[1].x >> 12)) {
 						 _lerpEndpoint(testSpan, &ep, i);
 						if (ep.w > depth) {
 							depth = ep.w;
