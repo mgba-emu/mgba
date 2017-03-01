@@ -21,13 +21,13 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int y);
 static void DSGXSoftwareRendererGetScanline(struct DSGXRenderer* renderer, int y, color_t** output);
 
-static void _expandColor(uint16_t c15, int8_t* r, int8_t* g, int8_t* b) {
+static void _expandColor(uint16_t c15, uint8_t* r, uint8_t* g, uint8_t* b) {
 	*r = ((c15 << 1) & 0x3E) | 1;
 	*g = ((c15 >> 4) & 0x3E) | 1;
 	*b = ((c15 >> 9) & 0x3E) | 1;
 }
 
-static color_t _finishColor(int8_t r, int8_t g, int8_t b) {
+static color_t _finishColor(uint8_t r, uint8_t g, uint8_t b) {
 #ifndef COLOR_16_BIT
 	color_t rgb = (r << 2) & 0xF8;
 	rgb |= (g << 10) & 0xF800;
