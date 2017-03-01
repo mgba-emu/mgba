@@ -43,22 +43,18 @@ struct DSGXSoftwareEdge {
 	int16_t t1;
 };
 
-struct DSGXSoftwareSpan {
-	int32_t x0; // 20.12
-	int32_t w0; // 20.12
-	int8_t cr0;
-	int8_t cg0;
-	int8_t cb0;
-	int16_t s0;
-	int16_t t0;
+struct DSGXSoftwareEndpoint {
+	int32_t x; // 20.12
+	int32_t w; // 20.12
+	int8_t cr;
+	int8_t cg;
+	int8_t cb;
+	int16_t s;
+	int16_t t;
+};
 
-	int32_t x1; // 20.12
-	int32_t w1; // 20.12
-	int8_t cr1;
-	int8_t cg1;
-	int8_t cb1;
-	int16_t s1;
-	int16_t t1;
+struct DSGXSoftwareSpan {
+	struct DSGXSoftwareEndpoint ep[2];
 };
 
 DECLARE_VECTOR(DSGXSoftwarePolygonList, struct DSGXSoftwarePolygon);

@@ -51,10 +51,7 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 	// TODO: Perspective correction
 	int32_t height = edge->y1 - edge->y0;
 	int64_t yw = (y << 12) - edge->y0;
-	if (height) {
-		yw <<= 19;
-		yw /= height;
-	} else {
+	if (!height) {
 		return false;
 	}
 	// Clamp to bounds
@@ -63,23 +60,20 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 	} else if (yw > height) {
 		yw = height;
 	}
-	if (!index) {
-		span->x0 = ((int64_t) (edge->x1 - edge->x0) * yw) / height + edge->x0;
-		span->w0 = ((int64_t) (edge->w1 - edge->w0) * yw) / height + edge->w0;
-		span->cr0 = ((int32_t) (edge->cr1 - edge->cr0) * yw) / height + edge->cr0;
-		span->cg0 = ((int32_t) (edge->cg1 - edge->cg0) * yw) / height + edge->cg0;
-		span->cb0 = ((int32_t) (edge->cb1 - edge->cb0) * yw) / height + edge->cb0;
-		span->s0 = ((int32_t) (edge->s1 - edge->s0) * yw) / height + edge->s0;
-		span->t0 = ((int32_t) (edge->t1 - edge->t0) * yw) / height + edge->t0;
-	} else {
-		span->x1 = ((int64_t) (edge->x1 - edge->x0) * yw) / height + edge->x0;
-		span->w1 = ((int64_t) (edge->w1 - edge->w0) * yw) / height + edge->w0;
-		span->cr1 = ((int32_t) (edge->cr1 - edge->cr0) * yw) / height + edge->cr0;
-		span->cg1 = ((int32_t) (edge->cg1 - edge->cg0) * yw) / height + edge->cg0;
-		span->cb1 = ((int32_t) (edge->cb1 - edge->cb0) * yw) / height + edge->cb0;
-		span->s1 = ((int32_t) (edge->s1 - edge->s0) * yw) / height + edge->s0;
-		span->t1 = ((int32_t) (edge->t1 - edge->t0) * yw) / height + edge->t0;
+	span->ep[index].x = ((int64_t) (edge->x1 - edge->x0) * yw) / height + edge->x0;
+	if (index && span->ep[0].x > span->ep[index].x) {
+		int32_t temp = span->ep[index].x;
+		span->ep[index] = span->ep[0];
+		span->ep[0].x = temp;
+		index = 0;
 	}
+	span->ep[index].w = ((int64_t) (edge->w1 - edge->w0) * yw) / height + edge->w0;
+	span->ep[index].cr = ((int32_t) (edge->cr1 - edge->cr0) * yw) / height + edge->cr0;
+	span->ep[index].cg = ((int32_t) (edge->cg1 - edge->cg0) * yw) / height + edge->cg0;
+	span->ep[index].cb = ((int32_t) (edge->cb1 - edge->cb0) * yw) / height + edge->cb0;
+	span->ep[index].s = ((int32_t) (edge->s1 - edge->s0) * yw) / height + edge->s0;
+	span->ep[index].t = ((int32_t) (edge->t1 - edge->t0) * yw) / height + edge->t0;
+
 	return true;
 }
 
@@ -87,28 +81,26 @@ static int _spanSort(const void* a, const void* b) {
 	const struct DSGXSoftwareSpan* sa = a;
 	const struct DSGXSoftwareSpan* sb = b;
 
-	if (sa->x0 < sb->x0) {
-		return -1;
-	}
-	if (sa->x0 > sb->x0) {
+	// Sort backwards
+	if (sa->ep[0].x < sb->ep[0].x) {
 		return 1;
 	}
-	if (sa->x1 < sb->x1) {
+	if (sa->ep[0].x > sb->ep[0].x) {
 		return -1;
 	}
-	if (sa->x1 > sb->x1) {
+	if (sa->ep[1].x < sb->ep[1].x) {
 		return 1;
+	}
+	if (sa->ep[1].x > sb->ep[1].x) {
+		return -1;
 	}
 	return 0;
 }
 
 static color_t _lerpColor(const struct DSGXSoftwareSpan* span, unsigned x) {
-	int64_t width = span->x1 - span->x0;
-	int64_t xw = ((uint64_t) x << 12) - span->x0;
-	if (width) {
-		xw <<= 19;
-		xw /= width;
-	} else {
+	int64_t width = span->ep[1].x - span->ep[0].x;
+	int64_t xw = ((uint64_t) x << 12) - span->ep[0].x;
+	if (!width) {
 		return 0; // TODO?
 	}
 	// Clamp to bounds
@@ -117,9 +109,14 @@ static color_t _lerpColor(const struct DSGXSoftwareSpan* span, unsigned x) {
 	} else if (xw > width) {
 		xw = width;
 	}
-	color_t r = ((int32_t) (span->cr1 - span->cr0) * xw) / width + span->cr0;
-	color_t g = ((int32_t) (span->cg1 - span->cg0) * xw) / width + span->cg0;
-	color_t b = ((int32_t) (span->cb1 - span->cb0) * xw) / width + span->cb0;
+	uint32_t w = ((int64_t) (span->ep[0].w - span->ep[1].w) * xw) / width + span->ep[1].w;
+
+	uint64_t r = ((span->ep[1].cr * (int64_t) span->ep[0].w - span->ep[0].cr * (int64_t) span->ep[1].w) * xw) / width + span->ep[0].cr * (int64_t) span->ep[1].w;
+	uint64_t g = ((span->ep[1].cg * (int64_t) span->ep[0].w - span->ep[0].cg * (int64_t) span->ep[1].w) * xw) / width + span->ep[0].cg * (int64_t) span->ep[1].w;
+	uint64_t b = ((span->ep[1].cb * (int64_t) span->ep[0].w - span->ep[0].cb * (int64_t) span->ep[1].w) * xw) / width + span->ep[0].cb * (int64_t) span->ep[1].w;
+	r /= w;
+	g /= w;
+	b /= w;
 #ifndef COLOR_16_BIT
 	color_t rgb = (r << 2) & 0xF8;
 	rgb |= (g << 10) & 0xF800;
@@ -287,7 +284,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 
 	size_t nextSpanX = DS_VIDEO_HORIZONTAL_PIXELS;
 	if (DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans)) {
-		nextSpanX = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans) - 1)->x0;
+		nextSpanX = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans) - 1)->ep[0].x;
 		nextSpanX >>= 12;
 	}
 	for (i = 0; i < DS_VIDEO_HORIZONTAL_PIXELS; ++i) {
@@ -295,7 +292,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 		if (i >= nextSpanX) {
 			size_t nextSpanId = DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans);
 			span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
-			while (i > (uint32_t) (span->x1 >> 12)) {
+			while (i > (uint32_t) (span->ep[1].x >> 12)) {
 				DSGXSoftwareSpanListShift(&softwareRenderer->activeSpans, nextSpanId - 1, 1);
 				--nextSpanId;
 				if (!nextSpanId) {
@@ -304,7 +301,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 					break;
 				}
 				span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
-				nextSpanX = span->x0 >> 12;
+				nextSpanX = span->ep[0].x >> 12;
 			}
 		}
 		if (span) {
