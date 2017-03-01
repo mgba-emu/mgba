@@ -130,6 +130,7 @@ struct DSGX {
 
 	int outstandingParams[4];
 	uint8_t outstandingCommand[4];
+	struct DSGXEntry outstandingEntry;
 
 	int activeParams;
 	struct DSGXEntry activeEntries[32];

@@ -49,6 +49,11 @@ enum DSIRQ {
 	DS_IRQ_WIFI = 0x18,
 };
 
+enum {
+	DS_CPU_BLOCK_DMA = 1,
+	DS_CPU_BLOCK_GX = 2
+};
+
 struct ARMCore;
 struct DS;
 struct Patch;
@@ -89,7 +94,7 @@ struct DS {
 
 	struct ARMDebugger* debugger;
 
-	bool cpuBlocked;
+	int cpuBlocked;
 	bool earlyExit;
 
 	uint32_t bios7Checksum;

@@ -115,7 +115,7 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		dma->when = mTimingCurrentTime(&dscore->timing);
 	}
 	if (dma->nextCount & 0xFFFFF) {
-		dscore->p->cpuBlocked = true; // TODO: Fix for ITCM
+		dscore->p->cpuBlocked |= DS_CPU_BLOCK_DMA; // TODO: Fix for ITCM
 		DSDMAService(dscore, memory->activeDMA, dma);
 	} else {
 		dma->nextCount = 0;
@@ -152,7 +152,7 @@ void DSDMAUpdate(struct DSCommon* dscore) {
 		mTimingDeschedule(&dscore->timing, &memory->dmaEvent);
 		mTimingSchedule(&dscore->timing, &memory->dmaEvent, memory->dma[memory->activeDMA].when - currentTime);
 	} else {
-		dscore->p->cpuBlocked = false;
+		dscore->p->cpuBlocked &= ~DS_CPU_BLOCK_DMA;
 	}
 }
 

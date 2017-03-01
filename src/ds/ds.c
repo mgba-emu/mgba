@@ -383,7 +383,7 @@ static void DSProcessEvents(struct DSCommon* dscore) {
 		nextEvent = cycles;
 		do {
 			nextEvent = mTimingTick(&dscore->timing, nextEvent);
-		} while (ds->cpuBlocked);
+		} while (ds->cpuBlocked && !ds->earlyExit);
 
 		if (ds->earlyExit) {
 			ds->earlyExit = false;

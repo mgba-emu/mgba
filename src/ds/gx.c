@@ -644,10 +644,10 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			break;
 		}
 	}
-	DSGXUpdateGXSTAT(gx);
 	if (cycles && !gx->swapBuffers) {
 		mTimingSchedule(timing, &gx->fifoEvent, cycles - cyclesLate);
 	}
+	DSGXUpdateGXSTAT(gx);
 }
 
 void DSGXInit(struct DSGX* gx) {
@@ -707,6 +707,7 @@ void DSGXReset(struct DSGX* gx) {
 
 	memset(gx->outstandingParams, 0, sizeof(gx->outstandingParams));
 	memset(gx->outstandingCommand, 0, sizeof(gx->outstandingCommand));
+	memset(&gx->outstandingEntry, 0, sizeof(gx->outstandingEntry));
 	gx->activeParams = 0;
 	memset(&gx->currentVertex, 0, sizeof(gx->currentVertex));
 }
@@ -738,6 +739,11 @@ void DSGXUpdateGXSTAT(struct DSGX* gx) {
 	value = DSRegGXSTATSetBusy(value, mTimingIsScheduled(&gx->p->ds9.timing, &gx->fifoEvent) || gx->swapBuffers);
 
 	gx->p->memory.io9[DS9_REG_GXSTAT_HI >> 1] = value >> 16;
+
+	if (gx->p->cpuBlocked & DS_CPU_BLOCK_GX && entries < DS_GX_FIFO_SIZE) {
+		DSGXWriteFIFO(gx, gx->outstandingEntry);
+		gx->p->cpuBlocked &= ~DS_CPU_BLOCK_GX;
+	}
 }
 
 static void DSGXUnpackCommand(struct DSGX* gx, uint32_t command) {
@@ -762,7 +768,7 @@ static void DSGXUnpackCommand(struct DSGX* gx, uint32_t command) {
 	gx->outstandingParams[2] = _gxCommandParams[gx->outstandingCommand[2]];
 	gx->outstandingParams[3] = _gxCommandParams[gx->outstandingCommand[3]];
 	while (gx->outstandingCommand[0] && !gx->outstandingParams[0]) {
-		DSGXWriteFIFO(gx, (struct DSGXEntry) { 0 });
+		DSGXWriteFIFO(gx, (struct DSGXEntry) { gx->outstandingCommand[0] });
 	}
 }
 
@@ -780,10 +786,12 @@ static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
 			gx->outstandingCommand[3] = 0;
 		}
 	} else {
-		gx->outstandingCommand[0] = entry.command;
 		gx->outstandingParams[0] = _gxCommandParams[entry.command];
 		if (gx->outstandingParams[0]) {
 			--gx->outstandingParams[0];
+		}
+		if (gx->outstandingParams[0]) {
+			gx->outstandingCommand[0] = entry.command;
 		}
 	}
 	uint32_t cycles = _gxCommandCycleBase[entry.command];
@@ -804,13 +812,16 @@ static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
 		CircleBufferWrite8(&gx->fifo, entry.params[3]);
 	} else {
 		mLOG(DS_GX, STUB, "Unimplemented GX full");
+		gx->p->cpuBlocked |= DS_CPU_BLOCK_GX;
+		gx->outstandingEntry = entry;
+		gx->p->ds9.cpu->nextEvent = 0;
 	}
 	if (!gx->swapBuffers && !mTimingIsScheduled(&gx->p->ds9.timing, &gx->fifoEvent)) {
 		mTimingSchedule(&gx->p->ds9.timing, &gx->fifoEvent, cycles);
 	}
 
 	if (gx->outstandingCommand[0] && !gx->outstandingParams[0]) {
-		DSGXWriteFIFO(gx, (struct DSGXEntry) { 0 });
+		DSGXWriteFIFO(gx, (struct DSGXEntry) { gx->outstandingCommand[0] });
 	}
 }
 
@@ -913,10 +924,10 @@ void DSGXSwapBuffers(struct DSGX* gx) {
 	gx->vertexIndex = 0;
 	gx->polygonIndex = 0;
 
-	DSGXUpdateGXSTAT(gx);
 	if (CircleBufferSize(&gx->fifo)) {
 		mTimingSchedule(&gx->p->ds9.timing, &gx->fifoEvent, 0);
 	}
+	DSGXUpdateGXSTAT(gx);
 }
 
 static void DSGXDummyRendererInit(struct DSGXRenderer* renderer) {
