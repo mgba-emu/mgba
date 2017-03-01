@@ -97,8 +97,8 @@ struct DSGXVertex {
 	int32_t vz; // 16.16
 	int32_t vw; // 16.16
 
-	uint16_t color;
-	// Texcoords
+	// Color/Texcoords
+	uint16_t color; // 5.5.5
 	int16_t s; // 12.4
 	int16_t t; // 12.4
 };

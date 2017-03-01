@@ -171,8 +171,10 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 	gx->currentVertex.vz = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[2]);
 	gx->currentVertex.vw = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[3]);
 
-	gx->currentVertex.vx = (gx->currentVertex.vx + gx->currentVertex.vw) * gx->viewportWidth / (gx->currentVertex.vw * 2) + gx->viewportX1;
-	gx->currentVertex.vy = (gx->currentVertex.vy + gx->currentVertex.vw) * gx->viewportHeight / (gx->currentVertex.vw * 2) + gx->viewportY1;
+	// TODO: What to do if w is 0?
+
+	gx->currentVertex.vx = (gx->currentVertex.vx + gx->currentVertex.vw) * (int64_t) (gx->viewportWidth << 12) / (gx->currentVertex.vw * 2) + (gx->viewportX1 << 12);
+	gx->currentVertex.vy = (gx->currentVertex.vy + gx->currentVertex.vw) * (int64_t) (gx->viewportHeight << 12) / (gx->currentVertex.vw * 2) + (gx->viewportY1 << 12);
 
 	struct DSGXVertex* vbuf = gx->vertexBuffer[gx->bufferIndex];
 	vbuf[gx->vertexIndex] = gx->currentVertex;

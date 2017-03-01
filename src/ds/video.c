@@ -319,8 +319,14 @@ void _startHblank9(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 
 	// Begin Hblank
 	dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
-	if (video->vcount < DS_VIDEO_VERTICAL_PIXELS && video->frameskipCounter <= 0) {
-		video->renderer->drawScanline(video->renderer, video->vcount);
+	if (video->frameskipCounter <= 0) {
+		if (video->vcount < DS_VIDEO_VERTICAL_PIXELS) {
+			video->p->gx.renderer->drawScanline(video->p->gx.renderer, video->vcount + 48);
+			video->renderer->drawScanline(video->renderer, video->vcount);
+		}
+		if (video->vcount >= DS_VIDEO_VERTICAL_TOTAL_PIXELS - 48) {
+			video->p->gx.renderer->drawScanline(video->p->gx.renderer, video->vcount + 48 - DS_VIDEO_VERTICAL_TOTAL_PIXELS);
+		}
 	}
 
 	if (GBARegisterDISPSTATIsHblankIRQ(dispstat)) {
