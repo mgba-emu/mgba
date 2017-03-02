@@ -405,11 +405,11 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			case 0:
 				memcpy(&gx->projMatrixStack, &gx->projMatrix, sizeof(gx->projMatrixStack));
 				break;
-			case 1:
-				memcpy(&gx->posMatrixStack[offset], &gx->posMatrix, sizeof(gx->posMatrix));
-				// Fall through
 			case 2:
 				memcpy(&gx->vecMatrixStack[offset], &gx->vecMatrix, sizeof(gx->vecMatrix));
+				// Fall through
+			case 1:
+				memcpy(&gx->posMatrixStack[offset], &gx->posMatrix, sizeof(gx->posMatrix));
 				break;
 			case 3:
 				mLOG(DS_GX, STUB, "Unimplemented GX MTX_STORE mode");
@@ -424,11 +424,11 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			case 0:
 				memcpy(&gx->projMatrix, &gx->projMatrixStack, sizeof(gx->projMatrix));
 				break;
-			case 1:
-				memcpy(&gx->posMatrix, &gx->posMatrixStack[offset], sizeof(gx->posMatrix));
-				// Fall through
 			case 2:
 				memcpy(&gx->vecMatrix, &gx->vecMatrixStack[offset], sizeof(gx->vecMatrix));
+				// Fall through
+			case 1:
+				memcpy(&gx->posMatrix, &gx->posMatrixStack[offset], sizeof(gx->posMatrix));
 				break;
 			case 3:
 				mLOG(DS_GX, STUB, "Unimplemented GX MTX_RESTORE mode");
