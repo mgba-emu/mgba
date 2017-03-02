@@ -82,10 +82,15 @@ static color_t _lookupColor(struct DSGXSoftwareEndpoint* ep, struct DSGXSoftware
 	case 1:
 		return _finishColor(0, 0, 0x3F);
 	case 2:
-		return _finishColor(0, 0x3F, 0);
+		texel = ((uint8_t*) poly->texBase)[texelCoord >> 2];
+		if (texelCoord & 0x3) {
+			texel >>= 2 * texel & 3;
+		}
+		texel &= 0x3;
+		break;
 	case 3:
 		texel = ((uint8_t*) poly->texBase)[texelCoord >> 1];
-		if ((ep->s >> 4) & 0x1) {
+		if (texelCoord & 0x1) {
 			texel >>= 4;
 		}
 		texel &= 0xF;
@@ -271,6 +276,10 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 		case 7:
 			poly->texBase = NULL;
 			poly->palBase = NULL;
+			break;
+		case 2:
+			poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
+			poly->palBase = &renderer->texPal[poly->poly->palBase >> 12][(poly->poly->palBase << 2) & 0x1FFF];
 			break;
 		default:
 			poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
