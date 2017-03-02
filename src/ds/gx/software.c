@@ -100,6 +100,9 @@ static color_t _lookupColor(struct DSGXSoftwareEndpoint* ep, struct DSGXSoftware
 	case 7:
 		return _finishColor(0x3F, 0x3F, 0x3F);
 	}
+	if (DSGXTexParamsIs0Transparent(poly->poly->texParams) && !texel) {
+		return FLAG_UNWRITTEN;
+	}
 	uint8_t r, g, b;
 	texel = poly->palBase[texel];
 	_expandColor(texel, &r, &g, &b);
@@ -392,6 +395,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 		struct DSGXSoftwareSpan* span = NULL;
 		struct DSGXSoftwareEndpoint ep;
 		int32_t depth = INT32_MIN;
+		scanline[i] = FLAG_UNWRITTEN;
 		if (i >= nextSpanX) {
 			size_t nextSpanId = DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans);
 			span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
@@ -412,10 +416,17 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 				struct DSGXSoftwareSpan* testSpan = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
 				while (i > (testSpan->ep[0].x >> 12)) {
 					if (i <= (testSpan->ep[1].x >> 12)) {
-						 _lerpEndpoint(testSpan, &ep, i);
-						if (ep.w > depth) {
+						_lerpEndpoint(testSpan, &ep, i);
+						color_t color = _lookupColor(&ep, testSpan->poly);
+						if (scanline[i] == FLAG_UNWRITTEN) {
+							scanline[i] = color;
+						}
+						if (ep.w >= depth) {
 							depth = ep.w;
 							span = testSpan;
+							if (color != FLAG_UNWRITTEN) {
+								scanline[i] = color;
+							}
 						}
 					}
 					--nextSpanId;
@@ -425,12 +436,6 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 					testSpan = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
 				}
 			}
-		}
-		if (span) {
-			_lerpEndpoint(span, &ep, i);
-			scanline[i] = _lookupColor(&ep, span->poly);
-		} else {
-			scanline[i] = FLAG_UNWRITTEN; // TODO
 		}
 	}
 }
