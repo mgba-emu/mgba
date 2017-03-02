@@ -900,7 +900,6 @@ static void DSGXUnpackCommand(struct DSGX* gx, uint32_t command) {
 	gx->outstandingParams[1] = _gxCommandParams[gx->outstandingCommand[1]];
 	gx->outstandingParams[2] = _gxCommandParams[gx->outstandingCommand[2]];
 	gx->outstandingParams[3] = _gxCommandParams[gx->outstandingCommand[3]];
-	}
 	_flushOutstanding(gx);
 }
 
