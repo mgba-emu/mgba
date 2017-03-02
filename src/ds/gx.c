@@ -142,6 +142,38 @@ static void _pullPipe(struct DSGX* gx) {
 
 static void _updateClipMatrix(struct DSGX* gx) {
 	DSGXMtxMultiply(&gx->clipMatrix, &gx->posMatrix, &gx->projMatrix);
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_00 >> 1] = gx->clipMatrix.m[0];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_01 >> 1] = gx->clipMatrix.m[0] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_02 >> 1] = gx->clipMatrix.m[1];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_03 >> 1] = gx->clipMatrix.m[1] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_04 >> 1] = gx->clipMatrix.m[2];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_05 >> 1] = gx->clipMatrix.m[2] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_06 >> 1] = gx->clipMatrix.m[3];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_07 >> 1] = gx->clipMatrix.m[3] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_08 >> 1] = gx->clipMatrix.m[4];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_09 >> 1] = gx->clipMatrix.m[4] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_0A >> 1] = gx->clipMatrix.m[5];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_0B >> 1] = gx->clipMatrix.m[5] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_0C >> 1] = gx->clipMatrix.m[6];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_0D >> 1] = gx->clipMatrix.m[6] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_0E >> 1] = gx->clipMatrix.m[7];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_0F >> 1] = gx->clipMatrix.m[7] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_10 >> 1] = gx->clipMatrix.m[8];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_11 >> 1] = gx->clipMatrix.m[8] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_12 >> 1] = gx->clipMatrix.m[9];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_13 >> 1] = gx->clipMatrix.m[9] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_14 >> 1] = gx->clipMatrix.m[10];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_15 >> 1] = gx->clipMatrix.m[10] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_16 >> 1] = gx->clipMatrix.m[11];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_17 >> 1] = gx->clipMatrix.m[11] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_18 >> 1] = gx->clipMatrix.m[12];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_19 >> 1] = gx->clipMatrix.m[12] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_1A >> 1] = gx->clipMatrix.m[13];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_1B >> 1] = gx->clipMatrix.m[13] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_1C >> 1] = gx->clipMatrix.m[14];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_1D >> 1] = gx->clipMatrix.m[14] >> 16;
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_1E >> 1] = gx->clipMatrix.m[15];
+	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_1F >> 1] = gx->clipMatrix.m[15] >> 16;
 }
 
 static int32_t _dotViewport(struct DSGXVertex* vertex, int32_t* col) {
