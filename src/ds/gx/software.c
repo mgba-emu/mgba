@@ -426,31 +426,23 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 				span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
 				nextSpanX = span->ep[0].x >> 12;
 			}
-			if (i < nextSpanX) {
-				span = NULL;
-			} else {
-				struct DSGXSoftwareSpan* testSpan = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
-				while (i > (testSpan->ep[0].x >> 12)) {
-					if (i <= (testSpan->ep[1].x >> 12)) {
-						_lerpEndpoint(testSpan, &ep, i);
-						color_t color = _lookupColor(&ep, testSpan->poly);
-						if (scanline[i] == FLAG_UNWRITTEN) {
-							scanline[i] = color;
-						}
-						if (ep.w >= depth) {
-							depth = ep.w;
-							span = testSpan;
-							if (color != FLAG_UNWRITTEN) {
-								scanline[i] = color;
-							}
-						}
+			while (i > (span->ep[0].x >> 12)) {
+				if (i <= (span->ep[1].x >> 12)) {
+					_lerpEndpoint(span, &ep, i);
+					color_t color = _lookupColor(&ep, span->poly);
+					if (scanline[i] == FLAG_UNWRITTEN) {
+						scanline[i] = color;
 					}
-					--nextSpanId;
-					if (!nextSpanId) {
-						break;
+					if (ep.w >= depth && color != FLAG_UNWRITTEN) {
+						depth = ep.w;
+						scanline[i] = color;
 					}
-					testSpan = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
 				}
+				--nextSpanId;
+				if (!nextSpanId) {
+					break;
+				}
+				span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
 			}
 		}
 	}
