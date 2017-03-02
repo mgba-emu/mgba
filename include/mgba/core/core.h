@@ -54,6 +54,7 @@ struct mCore {
 #endif
 #ifndef MINIMAL_CORE
 	struct mInputMap inputMap;
+	const struct mInputPlatformInfo* inputInfo;
 #endif
 	struct mCoreConfig config;
 	struct mCoreOptions opts;

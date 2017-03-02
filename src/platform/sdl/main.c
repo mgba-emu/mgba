@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	mInputMapInit(&renderer.core->inputMap, &GBAInputInfo);
+	mInputMapInit(&renderer.core->inputMap, renderer.core->inputInfo);
 	mCoreInitConfig(renderer.core, PORT);
 	applyArguments(&args, &subparser, &renderer.core->config);
 

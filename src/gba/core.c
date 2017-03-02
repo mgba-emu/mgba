@@ -22,6 +22,10 @@
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
 
+#ifndef MINIMAL_CORE
+#include <mgba/internal/gba/input.h>
+#endif
+
 struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
@@ -72,6 +76,10 @@ static bool _GBACoreInit(struct mCore* core) {
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetInit(&core->dirs);
+#endif
+
+#ifndef MINIMAL_CORE
+	core->inputInfo = &GBAInputInfo;
 #endif
 	
 	return true;

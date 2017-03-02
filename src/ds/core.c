@@ -11,8 +11,9 @@
 #include <mgba/internal/arm/debugger/debugger.h>
 #include <mgba/internal/ds/ds.h>
 #include <mgba/internal/ds/extra/cli.h>
-#include <mgba/internal/ds/renderers/software.h>
 #include <mgba/internal/ds/gx/software.h>
+#include <mgba/internal/ds/input.h>
+#include <mgba/internal/ds/renderers/software.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
@@ -75,7 +76,11 @@ static bool _DSCoreInit(struct mCore* core) {
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetInit(&core->dirs);
 #endif
-	
+
+#ifndef MINIMAL_CORE
+	core->inputInfo = &DSInputInfo; // TODO: GBInputInfo
+#endif
+
 	return true;
 }
 
