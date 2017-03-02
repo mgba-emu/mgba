@@ -200,7 +200,7 @@ void DSGXAssociateRenderer(struct DSGX* video, struct DSGXRenderer* renderer);
 uint16_t DSGXWriteRegister(struct DSGX*, uint32_t address, uint16_t value);
 uint32_t DSGXWriteRegister32(struct DSGX*, uint32_t address, uint32_t value);
 
-void DSGXSwapBuffers(struct DSGX*);
+void DSGXFlush(struct DSGX*);
 void DSGXUpdateGXSTAT(struct DSGX*);
 
 CXX_GUARD_END

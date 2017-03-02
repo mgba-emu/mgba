@@ -77,6 +77,7 @@ struct DSGXSoftwareRenderer {
 
 	uint16_t depthBuffer[DS_VIDEO_HORIZONTAL_PIXELS];
 	color_t* scanlineCache;
+	bool flushPending;
 
 	struct DSGXVertex* verts;
 };

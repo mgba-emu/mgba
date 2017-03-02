@@ -901,6 +901,7 @@ static void DSGXUnpackCommand(struct DSGX* gx, uint32_t command) {
 	gx->outstandingParams[2] = _gxCommandParams[gx->outstandingCommand[2]];
 	gx->outstandingParams[3] = _gxCommandParams[gx->outstandingCommand[3]];
 	_flushOutstanding(gx);
+	DSGXUpdateGXSTAT(gx);
 }
 
 static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
@@ -1049,14 +1050,14 @@ uint32_t DSGXWriteRegister32(struct DSGX* gx, uint32_t address, uint32_t value) 
 	return value;
 }
 
-void DSGXSwapBuffers(struct DSGX* gx) {
-	gx->swapBuffers = false;
-
-	gx->renderer->setRAM(gx->renderer, gx->vertexBuffer[gx->bufferIndex], gx->polygonBuffer[gx->bufferIndex], gx->polygonIndex);
-
-	gx->bufferIndex ^= 1;
-	gx->vertexIndex = 0;
-	gx->polygonIndex = 0;
+void DSGXFlush(struct DSGX* gx) {
+	if (gx->swapBuffers) {
+		gx->renderer->setRAM(gx->renderer, gx->vertexBuffer[gx->bufferIndex], gx->polygonBuffer[gx->bufferIndex], gx->polygonIndex);
+		gx->swapBuffers = false;
+		gx->bufferIndex ^= 1;
+		gx->vertexIndex = 0;
+		gx->polygonIndex = 0;
+	}
 
 	if (CircleBufferSize(&gx->fifo)) {
 		mTimingSchedule(&gx->p->ds9.timing, &gx->fifoEvent, 0);

@@ -290,9 +290,7 @@ void _startHdraw9(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		video->p->ds9.memory.io[DS_REG_DISPSTAT >> 1] = GBARegisterDISPSTATFillInVblank(dispstat);
 		if (video->frameskipCounter <= 0) {
 			video->renderer->finishFrame(video->renderer);
-			if (video->p->gx.swapBuffers) {
-				DSGXSwapBuffers(&video->p->gx);
-			}
+			DSGXFlush(&video->p->gx);
 		}
 		if (GBARegisterDISPSTATIsVblankIRQ(dispstat)) {
 			DSRaiseIRQ(video->p->ds9.cpu, video->p->ds9.memory.io, DS_IRQ_VBLANK);

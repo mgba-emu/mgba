@@ -225,12 +225,12 @@ static void DSGXSoftwareRendererInit(struct DSGXRenderer* renderer) {
 	DSGXSoftwareEdgeListInit(&softwareRenderer->activeEdges, DS_GX_POLYGON_BUFFER_SIZE);
 	DSGXSoftwareSpanListInit(&softwareRenderer->activeSpans, DS_GX_POLYGON_BUFFER_SIZE / 2);
 	softwareRenderer->bucket = anonymousMemoryMap(sizeof(*softwareRenderer->bucket) * DS_GX_POLYGON_BUFFER_SIZE);
-	softwareRenderer->scanlineCache = anonymousMemoryMap(sizeof(color_t) * DS_VIDEO_HORIZONTAL_PIXELS * 48);
+	softwareRenderer->scanlineCache = anonymousMemoryMap(sizeof(color_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
 }
 
 static void DSGXSoftwareRendererReset(struct DSGXRenderer* renderer) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
-	// TODO
+	softwareRenderer->flushPending = false;
 }
 
 static void DSGXSoftwareRendererDeinit(struct DSGXRenderer* renderer) {
@@ -239,7 +239,7 @@ static void DSGXSoftwareRendererDeinit(struct DSGXRenderer* renderer) {
 	DSGXSoftwareEdgeListDeinit(&softwareRenderer->activeEdges);	
 	DSGXSoftwareSpanListDeinit(&softwareRenderer->activeSpans);
 	mappedMemoryFree(softwareRenderer->bucket, sizeof(*softwareRenderer->bucket) * DS_GX_POLYGON_BUFFER_SIZE);
-	mappedMemoryFree(softwareRenderer->scanlineCache, sizeof(color_t) * DS_VIDEO_HORIZONTAL_PIXELS * 48);
+	mappedMemoryFree(softwareRenderer->scanlineCache, sizeof(color_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
 }
 
 static void DSGXSoftwareRendererInvalidateTex(struct DSGXRenderer* renderer, int slot) {
@@ -250,6 +250,7 @@ static void DSGXSoftwareRendererInvalidateTex(struct DSGXRenderer* renderer, int
 static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
 
+	softwareRenderer->flushPending = true;
 	softwareRenderer->verts = verts;
 	DSGXSoftwarePolygonListClear(&softwareRenderer->activePolys);
 	DSGXSoftwareEdgeListClear(&softwareRenderer->activeEdges);
@@ -351,6 +352,9 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 
 static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int y) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
+	if (!softwareRenderer->flushPending) {
+		return;
+	}
 	DSGXSoftwareSpanListClear(&softwareRenderer->activeSpans);
 	memset(softwareRenderer->bucket, 0, sizeof(*softwareRenderer->bucket) * DS_GX_POLYGON_BUFFER_SIZE);
 	int i;
@@ -383,7 +387,6 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 	}
 	qsort(DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, 0), DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans), sizeof(struct DSGXSoftwareSpan), _spanSort);
 
-	y %= 48;
 	color_t* scanline = &softwareRenderer->scanlineCache[DS_VIDEO_HORIZONTAL_PIXELS * y];
 
 	int nextSpanX = DS_VIDEO_HORIZONTAL_PIXELS;
@@ -438,10 +441,12 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 			}
 		}
 	}
+	if (y == DS_VIDEO_VERTICAL_PIXELS - 1) {
+		softwareRenderer->flushPending = false;
+	}
 }
 
 static void DSGXSoftwareRendererGetScanline(struct DSGXRenderer* renderer, int y, color_t** output) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
-	y %= 48;
 	*output = &softwareRenderer->scanlineCache[DS_VIDEO_HORIZONTAL_PIXELS * y];
 }
