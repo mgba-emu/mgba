@@ -1089,11 +1089,11 @@ void DSGXFlush(struct DSGX* gx) {
 		gx->bufferIndex ^= 1;
 		gx->vertexIndex = 0;
 		gx->polygonIndex = 0;
+		if (CircleBufferSize(&gx->fifo)) {
+			mTimingSchedule(&gx->p->ds9.timing, &gx->fifoEvent, 0);
+		}
 	}
 
-	if (CircleBufferSize(&gx->fifo)) {
-		mTimingSchedule(&gx->p->ds9.timing, &gx->fifoEvent, 0);
-	}
 	DSGXUpdateGXSTAT(gx);
 }
 
