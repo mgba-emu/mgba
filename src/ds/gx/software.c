@@ -146,22 +146,30 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 	} else if (yw > height) {
 		yw = height;
 	}
-	int64_t heightRecip = 0x100000000LL / height;
-	span->ep[index].x = ((((int64_t) (edge->x1 - edge->x0) * yw) * heightRecip) >> 32) + edge->x0;
+	yw *= 0x100000000LL / height;
+
+	span->ep[index].x = (((int64_t) (edge->x1 - edge->x0) * yw) >> 32) + edge->x0;
+
 	if (index && span->ep[0].x > span->ep[index].x) {
 		int32_t temp = span->ep[index].x;
 		span->ep[index] = span->ep[0];
 		span->ep[0].x = temp;
 		index = 0;
 	}
-	int32_t w = ((((int64_t) (edge->w1 - edge->w0) * yw) * heightRecip) >> 32) + edge->w0;
-	int64_t wRecip = 0x1000000000000LL / w;
+	int32_t w0 = edge->w0;
+	int32_t w1 = edge->w1;
+	int32_t w = (((int64_t) (edge->w1 - edge->w0) * yw) >> 32) + edge->w0;
+	int64_t wRecip;// = 0x1000000000000LL / w;
+	// XXX: Disable perspective correction until I figure out how to fix it
+	wRecip = 0x100000000;
+	w0 = 0x10000;
+	w1 = 0x10000;
 	span->ep[index].w = w;
-	span->ep[index].cr = ((((((int32_t) (edge->cr1 * edge->w1 - edge->cr0 * edge->w0) * yw) * heightRecip) >> 32) + edge->cr0 * edge->w0) * wRecip) >> 48;
-	span->ep[index].cg = ((((((int32_t) (edge->cg1 * edge->w1 - edge->cg0 * edge->w0) * yw) * heightRecip) >> 32) + edge->cg0 * edge->w0) * wRecip) >> 48;
-	span->ep[index].cb = ((((((int32_t) (edge->cb1 * edge->w1 - edge->cb0 * edge->w0) * yw) * heightRecip) >> 32) + edge->cb0 * edge->w0) * wRecip) >> 48;
-	span->ep[index].s = ((((((int32_t) (edge->s1 * edge->w1 - edge->s0 * edge->w0) * yw) * heightRecip) >> 32) + edge->s0 * edge->w0) * wRecip) >> 48;
-	span->ep[index].t = ((((((int32_t) (edge->t1 * edge->w1 - edge->t0 * edge->w0) * yw) * heightRecip) >> 32) + edge->t0 * edge->w0) * wRecip) >> 48;
+	span->ep[index].cr = (((((edge->cr1 * (int64_t) w1 - edge->cr0 * (int64_t) w0) * yw) >> 32) + edge->cr0 * (int64_t) w0) * wRecip) >> 48;
+	span->ep[index].cg = (((((edge->cg1 * (int64_t) w1 - edge->cg0 * (int64_t) w0) * yw) >> 32) + edge->cg0 * (int64_t) w0) * wRecip) >> 48;
+	span->ep[index].cb = (((((edge->cb1 * (int64_t) w1 - edge->cb0 * (int64_t) w0) * yw) >> 32) + edge->cb0 * (int64_t) w0) * wRecip) >> 48;
+	span->ep[index].s = (((((edge->s1 * (int64_t) w1 - edge->s0 * (int64_t) w0) * yw) >> 32) + edge->s0 * (int64_t) w0) * wRecip) >> 48;
+	span->ep[index].t = (((((edge->t1 * (int64_t) w1 - edge->t0 * (int64_t) w0) * yw) >> 32) + edge->t0 * (int64_t) w0) * wRecip) >> 48;
 
 	return true;
 }
@@ -198,22 +206,26 @@ static void _lerpEndpoint(const struct DSGXSoftwareSpan* span, struct DSGXSoftwa
 	} else if (xw > width) {
 		xw = width;
 	}
+	xw *= 0x100000000LL / width;
 	int32_t w0 = span->ep[0].w;
 	int32_t w1 = span->ep[1].w;
-	int64_t widthRecip = 0x100000000LL / width;
-	int32_t w = ((((int64_t) (w1 - w0) * xw) * widthRecip) >> 32) + w0;
+	int64_t w = (((int64_t) (w1 - w0) * xw) >> 32) + w0;
+	int64_t wRecip;// = 0x1000000000000LL / w;
 	ep->w = w;
-	int64_t wRecip = 0x1000000000000LL / w;
+	// XXX: Disable perspective correction until I figure out how to fix it
+	wRecip = 0x100000000;
+	w0 = 0x10000;
+	w1 = 0x10000;
 
-	uint64_t r = ((((span->ep[1].cr * (int64_t) w1 - span->ep[0].cr * (int64_t) w0) * xw) * widthRecip) >> 32) + span->ep[0].cr * (int64_t) w0;
-	uint64_t g = ((((span->ep[1].cg * (int64_t) w1 - span->ep[0].cg * (int64_t) w0) * xw) * widthRecip) >> 32) + span->ep[0].cg * (int64_t) w0;
-	uint64_t b = ((((span->ep[1].cb * (int64_t) w1 - span->ep[0].cb * (int64_t) w0) * xw) * widthRecip) >> 32) + span->ep[0].cb * (int64_t) w0;
+	uint64_t r = (((span->ep[1].cr * (int64_t) w1 - span->ep[0].cr * (int64_t) w0) * xw) >> 32) + span->ep[0].cr * (int64_t) w0;
+	uint64_t g = (((span->ep[1].cg * (int64_t) w1 - span->ep[0].cg * (int64_t) w0) * xw) >> 32) + span->ep[0].cg * (int64_t) w0;
+	uint64_t b = (((span->ep[1].cb * (int64_t) w1 - span->ep[0].cb * (int64_t) w0) * xw) >> 32) + span->ep[0].cb * (int64_t) w0;
 	ep->cr = (r * wRecip) >> 48;
 	ep->cg = (g * wRecip) >> 48;
 	ep->cb = (b * wRecip) >> 48;
 
-	int32_t s = ((((span->ep[1].s * (int64_t) w1 - span->ep[0].s * (int64_t) w0) * xw) * widthRecip) >> 32) + span->ep[0].s * (int64_t) w0;
-	int32_t t = ((((span->ep[1].t * (int64_t) w1 - span->ep[0].t * (int64_t) w0) * xw) * widthRecip) >> 32) + span->ep[0].t * (int64_t) w0;
+	int32_t s = (((span->ep[1].s * (int64_t) w1 - span->ep[0].s * (int64_t) w0) * xw) >> 32) + span->ep[0].s * (int64_t) w0;
+	int32_t t = (((span->ep[1].t * (int64_t) w1 - span->ep[0].t * (int64_t) w0) * xw) >> 32) + span->ep[0].t * (int64_t) w0;
 	ep->s = (s * wRecip) >> 48;
 	ep->t = (t * wRecip) >> 48;
 }
@@ -410,7 +422,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 	for (i = 0; i < DS_VIDEO_HORIZONTAL_PIXELS; ++i) {
 		struct DSGXSoftwareSpan* span = NULL;
 		struct DSGXSoftwareEndpoint ep;
-		int32_t depth = INT32_MIN;
+		int32_t depth = INT32_MAX;
 		scanline[i] = FLAG_UNWRITTEN;
 		if (i >= nextSpanX) {
 			size_t nextSpanId = DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans);
@@ -433,7 +445,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 					if (scanline[i] == FLAG_UNWRITTEN) {
 						scanline[i] = color;
 					}
-					if (ep.w >= depth && color != FLAG_UNWRITTEN) {
+					if (ep.w < depth && color != FLAG_UNWRITTEN) {
 						depth = ep.w;
 						scanline[i] = color;
 					}

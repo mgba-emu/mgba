@@ -50,7 +50,7 @@ struct DSGXSoftwareEdge {
 
 struct DSGXSoftwareEndpoint {
 	int32_t x; // 20.12
-	int32_t w; // 20.12
+	int64_t w;
 	uint8_t cr;
 	uint8_t cg;
 	uint8_t cb;

@@ -249,7 +249,7 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 
 	gx->currentVertex.vx = (gx->currentVertex.vx + gx->currentVertex.vw) * (int64_t) (gx->viewportWidth << 12) / (gx->currentVertex.vw * 2) + (gx->viewportX1 << 12);
 	gx->currentVertex.vy = (gx->currentVertex.vy + gx->currentVertex.vw) * (int64_t) (gx->viewportHeight << 12) / (gx->currentVertex.vw * 2) + (gx->viewportY1 << 12);
-	gx->currentVertex.vw = 0x40000000 / gx->currentVertex.vw;
+	//gx->currentVertex.vw = 0x40000000 / gx->currentVertex.vw;
 
 	if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) > 0) {
 		int32_t m12 = gx->texMatrix.m[12];
