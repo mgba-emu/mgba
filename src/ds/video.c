@@ -68,26 +68,26 @@ const struct DSVRAMBankInfo {
 		{ 0x000, 0x40, MODE_LCDC },
 		{ 0x000, 0x20, MODE_A_BG, { 0x00, 0x08, 0x10, 0x18 } },
 		{ 0x000, 0x10, MODE_A_OBJ, { 0x00, 0x08, 0x80, 0x80 } },
-		{ 0x000, 0x10, MODE_3D_TEX, { 0x00, 0x01, 0x02, 0x03 } },
+		{ 0x000, 0x01, MODE_3D_TEX, { 0x00, 0x01, 0x02, 0x03 } },
 	},
 	{ // B
 		{ 0x008, 0x40, MODE_LCDC },
 		{ 0x000, 0x20, MODE_A_BG, { 0x00, 0x08, 0x10, 0x18 } },
 		{ 0x000, 0x10, MODE_A_OBJ, { 0x00, 0x08, 0x80, 0x80 } },
-		{ 0x000, 0x10, MODE_3D_TEX, { 0x00, 0x01, 0x02, 0x03 } },
+		{ 0x000, 0x01, MODE_3D_TEX, { 0x00, 0x01, 0x02, 0x03 } },
 	},
 	{ // C
 		{ 0x010, 0x40, MODE_LCDC },
 		{ 0x000, 0x20, MODE_A_BG, { 0x00, 0x08, 0x10, 0x18 } },
 		{ 0x000, 0x40, MODE_7_VRAM, { 0x00, 0x08, 0x80, 0x80 } },
-		{ 0x000, 0x10, MODE_3D_TEX, { 0x00, 0x01, 0x02, 0x03 } },
+		{ 0x000, 0x01, MODE_3D_TEX, { 0x00, 0x01, 0x02, 0x03 } },
 		{ 0x000, 0x08, MODE_B_BG },
 	},
 	{ // D
 		{ 0x018, 0x40, MODE_LCDC },
 		{ 0x000, 0x20, MODE_A_BG, { 0x00, 0x08, 0x10, 0x18 } },
 		{ 0x000, 0x40, MODE_7_VRAM, { 0x00, 0x08, 0x80, 0x80 } },
-		{ 0x000, 0x10, MODE_3D_TEX, { 0x00, 0x01, 0x02, 0x03 } },
+		{ 0x000, 0x01, MODE_3D_TEX, { 0x00, 0x01, 0x02, 0x03 } },
 		{ 0x000, 0x08, MODE_B_OBJ },
 	},
 	{ // E
@@ -418,6 +418,21 @@ void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value, uint8_t oldVa
 			ds->video.renderer->invalidateExtPal(ds->video.renderer, true, true, 0);
 		}
 		break;
+	case MODE_3D_TEX:
+		if (ds->gx.tex[offset] == memory->vramBank[index]) {
+			ds->gx.tex[offset] = NULL;
+			ds->gx.renderer->tex[offset] = NULL;
+			ds->gx.renderer->invalidateTex(ds->gx.renderer, offset);
+		}
+		break;
+	case MODE_3D_TEX_PAL:
+		for (i = 0; i < oldInfo.mirrorSize; ++i) {
+			if (ds->gx.texPal[offset + i] == &memory->vramBank[index][i << 13]) {
+				ds->gx.texPal[offset + i] = NULL;
+				ds->gx.renderer->texPal[offset + i] = NULL;
+			}
+		}
+		break;
 	case MODE_7_VRAM:
 		for (i = 0; i < size; i += 16) {
 			ds->memory.vram7[(offset + i) >> 4] = NULL;
@@ -490,6 +505,17 @@ void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value, uint8_t oldVa
 		ds->video.vramBOBJExtPal = memory->vramBank[index];
 		ds->video.renderer->vramBOBJExtPal = ds->video.vramBOBJExtPal;
 		ds->video.renderer->invalidateExtPal(ds->video.renderer, true, true, 0);
+		break;
+	case MODE_3D_TEX:
+		ds->gx.tex[offset] = memory->vramBank[index];
+		ds->gx.renderer->tex[offset] = ds->gx.tex[offset];
+		ds->gx.renderer->invalidateTex(ds->gx.renderer, offset);
+		break;
+	case MODE_3D_TEX_PAL:
+		for (i = 0; i < info.mirrorSize; ++i) {
+			ds->gx.texPal[offset + i] = &memory->vramBank[index][i << 13];
+			ds->gx.renderer->texPal[offset + i] = ds->gx.texPal[offset + i];
+		}
 		break;
 	case MODE_7_VRAM:
 		for (i = 0; i < size; i += 16) {

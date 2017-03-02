@@ -35,6 +35,18 @@ DECL_BIT(DSRegGXSTAT, FIFOEmpty, 26);
 DECL_BIT(DSRegGXSTAT, Busy, 27);
 DECL_BITS(DSRegGXSTAT, DoIRQ, 30, 2);
 
+DECL_BITFIELD(DSGXTexParams, uint32_t);
+DECL_BITS(DSGXTexParams, VRAMBase, 0, 16);
+DECL_BIT(DSGXTexParams, SRepeat, 16);
+DECL_BIT(DSGXTexParams, TRepeat, 17);
+DECL_BIT(DSGXTexParams, SMirror, 18);
+DECL_BIT(DSGXTexParams, TMirror, 19);
+DECL_BITS(DSGXTexParams, SSize, 20, 3);
+DECL_BITS(DSGXTexParams, TSize, 23, 3);
+DECL_BITS(DSGXTexParams, Format, 26, 3);
+DECL_BIT(DSGXTexParams, 0Transparent, 29);
+DECL_BITS(DSGXTexParams, CoordTfMode, 30, 2);
+
 enum DSGXCommand {
 	DS_GX_CMD_NOP = 0,
 	DS_GX_CMD_MTX_MODE = 0x10,
@@ -91,20 +103,24 @@ struct DSGXVertex {
 	int16_t y; // 4.12
 	int16_t z; // 4.12
 
-	// Viewport coords
-	int32_t vx; // 16.16
-	int32_t vy; // 16.16
-	int32_t vz; // 16.16
-	int32_t vw; // 16.16
-
 	// Color/Texcoords
 	uint16_t color; // 5.5.5
 	int16_t s; // 12.4
 	int16_t t; // 12.4
+
+	// Viewport coords
+	int32_t vx;
+	int32_t vy;
+	int32_t vz;
+	int32_t vw;
+	int16_t vs; // 12.4
+	int16_t vt; // 12.4
 };
 
 struct DSGXPolygon {
 	uint32_t polyParams;
+	DSGXTexParams texParams;
+	uint32_t palBase;
 	int verts;
 	unsigned vertIds[4];
 };
@@ -114,9 +130,13 @@ struct DSGXRenderer {
 	void (*reset)(struct DSGXRenderer* renderer);
 	void (*deinit)(struct DSGXRenderer* renderer);
 
+	void (*invalidateTex)(struct DSGXRenderer* renderer, int slot);
 	void (*setRAM)(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount);
 	void (*drawScanline)(struct DSGXRenderer* renderer, int y);
 	void (*getScanline)(struct DSGXRenderer* renderer, int y, color_t** output);
+
+	uint16_t* tex[4];
+	uint16_t* texPal[6];
 };
 
 struct DS;
@@ -142,6 +162,9 @@ struct DSGX {
 	struct DSGXVertex* vertexBuffer[2];
 	struct DSGXPolygon* polygonBuffer[2];
 
+	uint16_t* tex[4];
+	uint16_t* texPal[6];
+
 	int mtxMode;
 	int pvMatrixPointer;
 	struct DSGXMatrix projMatrixStack;
@@ -165,6 +188,7 @@ struct DSGX {
 
 	int vertexMode;
 	struct DSGXVertex currentVertex;
+	struct DSGXPolygon nextPoly;
 	struct DSGXPolygon currentPoly;
 };
 

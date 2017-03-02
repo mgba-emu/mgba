@@ -16,6 +16,7 @@ mLOG_DEFINE_CATEGORY(DS_GX, "DS GX");
 static void DSGXDummyRendererInit(struct DSGXRenderer* renderer);
 static void DSGXDummyRendererReset(struct DSGXRenderer* renderer);
 static void DSGXDummyRendererDeinit(struct DSGXRenderer* renderer);
+static void DSGXDummyRendererInvalidateTex(struct DSGXRenderer* renderer, int slot);
 static void DSGXDummyRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount);
 static void DSGXDummyRendererDrawScanline(struct DSGXRenderer* renderer, int y);
 static void DSGXDummyRendererGetScanline(struct DSGXRenderer* renderer, int y, color_t** output);
@@ -104,6 +105,7 @@ static struct DSGXRenderer dummyRenderer = {
 	.init = DSGXDummyRendererInit,
 	.reset = DSGXDummyRendererReset,
 	.deinit = DSGXDummyRendererDeinit,
+	.invalidateTex = DSGXDummyRendererInvalidateTex,
 	.setRAM = DSGXDummyRendererSetRAM,
 	.drawScanline = DSGXDummyRendererDrawScanline,
 	.getScanline = DSGXDummyRendererGetScanline,
@@ -161,6 +163,44 @@ static int32_t _dotViewport(struct DSGXVertex* vertex, int32_t* col) {
 	return sum >> 8LL;
 }
 
+static int16_t _dotTexture(struct DSGXVertex* vertex, int mode, int32_t* col) {
+	int64_t a;
+	int64_t b;
+	int64_t sum;
+	switch (mode) {
+	case 1:
+		a = col[0];
+		b = vertex->s;
+		sum = a * b;
+		a = col[4];
+		b = vertex->t;
+		sum += a * b;
+		a = col[8];
+		b = MTX_ONE >> 4;
+		sum += a * b;
+		a = col[12];
+		b = MTX_ONE >> 4;
+		sum += a * b;
+		break;
+	case 2:
+		return 0;
+	case 3:
+		a = col[0];
+		b = vertex->vx;
+		sum = a * b;
+		a = col[4];
+		b = vertex->vy;
+		sum += a * b;
+		a = col[8];
+		b = vertex->vz;
+		sum += a * b;
+		a = col[12];
+		b = MTX_ONE;
+		sum += a * b;
+	}
+	return sum >> 12;
+}
+
 static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 	if (gx->vertexMode < 0 || gx->vertexIndex == DS_GX_VERTEX_BUFFER_SIZE || gx->polygonIndex == DS_GX_POLYGON_BUFFER_SIZE) {
 		return;
@@ -178,6 +218,22 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 	gx->currentVertex.vx = (gx->currentVertex.vx + gx->currentVertex.vw) * (int64_t) (gx->viewportWidth << 12) / (gx->currentVertex.vw * 2) + (gx->viewportX1 << 12);
 	gx->currentVertex.vy = (gx->currentVertex.vy + gx->currentVertex.vw) * (int64_t) (gx->viewportHeight << 12) / (gx->currentVertex.vw * 2) + (gx->viewportY1 << 12);
 	gx->currentVertex.vw = 0x40000000 / gx->currentVertex.vw;
+
+	if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) > 0) {
+		int32_t m12 = gx->texMatrix.m[12];
+		int32_t m13 = gx->texMatrix.m[13];
+		if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) > 1) {
+			gx->texMatrix.m[12] = gx->currentVertex.vs;
+			gx->texMatrix.m[13] = gx->currentVertex.vt;
+		}
+		gx->currentVertex.vs = _dotTexture(&gx->currentVertex, DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams), &gx->texMatrix.m[0]);
+		gx->currentVertex.vt = _dotTexture(&gx->currentVertex, DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams), &gx->texMatrix.m[1]);
+		gx->texMatrix.m[12] = m12;
+		gx->texMatrix.m[13] = m13;
+	} else {
+		gx->currentVertex.vs = gx->currentVertex.s;
+		gx->currentVertex.vt = gx->currentVertex.t;
+	}
 
 	struct DSGXVertex* vbuf = gx->vertexBuffer[gx->bufferIndex];
 	vbuf[gx->vertexIndex] = gx->currentVertex;
@@ -671,14 +727,26 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			_emitVertex(gx, gx->currentVertex.x + (x >> 6), gx->currentVertex.y + (y >> 6), gx->currentVertex.z + (z >> 6));
 		}
 		case DS_GX_CMD_POLYGON_ATTR:
-			gx->currentPoly.polyParams = entry.params[0];
-			gx->currentPoly.polyParams |= entry.params[1] << 8;
-			gx->currentPoly.polyParams |= entry.params[2] << 16;
-			gx->currentPoly.polyParams |= entry.params[3] << 24;
+			gx->nextPoly.polyParams = entry.params[0];
+			gx->nextPoly.polyParams |= entry.params[1] << 8;
+			gx->nextPoly.polyParams |= entry.params[2] << 16;
+			gx->nextPoly.polyParams |= entry.params[3] << 24;
+			break;
+		case DS_GX_CMD_TEXIMAGE_PARAM:
+			gx->nextPoly.texParams = entry.params[0];
+			gx->nextPoly.texParams |= entry.params[1] << 8;
+			gx->nextPoly.texParams |= entry.params[2] << 16;
+			gx->nextPoly.texParams |= entry.params[3] << 24;
+			break;
+		case DS_GX_CMD_PLTT_BASE:
+			gx->nextPoly.palBase = entry.params[0];
+			gx->nextPoly.palBase |= entry.params[1] << 8;
+			gx->nextPoly.palBase |= entry.params[2] << 16;
+			gx->nextPoly.palBase |= entry.params[3] << 24;
 			break;
 		case DS_GX_CMD_BEGIN_VTXS:
 			gx->vertexMode = entry.params[0] & 3;
-			gx->currentPoly.verts = 0;
+			gx->currentPoly = gx->nextPoly;
 			break;
 		case DS_GX_CMD_END_VTXS:
 			gx->vertexMode = -1;
@@ -777,11 +845,14 @@ void DSGXReset(struct DSGX* gx) {
 	memset(&gx->outstandingEntry, 0, sizeof(gx->outstandingEntry));
 	gx->activeParams = 0;
 	memset(&gx->currentVertex, 0, sizeof(gx->currentVertex));
+	memset(&gx->nextPoly, 0, sizeof(gx-> nextPoly));
 }
 
 void DSGXAssociateRenderer(struct DSGX* gx, struct DSGXRenderer* renderer) {
 	gx->renderer->deinit(gx->renderer);
 	gx->renderer = renderer;
+	memcpy(gx->renderer->tex, gx->tex, sizeof(gx->renderer->tex));
+	memcpy(gx->renderer->texPal, gx->texPal, sizeof(gx->renderer->texPal));
 	gx->renderer->init(gx->renderer);
 }
 
@@ -1006,6 +1077,12 @@ static void DSGXDummyRendererReset(struct DSGXRenderer* renderer) {
 
 static void DSGXDummyRendererDeinit(struct DSGXRenderer* renderer) {
 	UNUSED(renderer);
+	// Nothing to do
+}
+
+static void DSGXDummyRendererInvalidateTex(struct DSGXRenderer* renderer, int slot) {
+	UNUSED(renderer);
+	UNUSED(slot);
 	// Nothing to do
 }
 

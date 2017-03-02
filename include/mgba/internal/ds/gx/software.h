@@ -17,6 +17,11 @@ CXX_GUARD_START
 
 struct DSGXSoftwarePolygon {
 	struct DSGXPolygon* poly;
+	uint16_t* texBase;
+	uint16_t* palBase;
+	int texFormat;
+	unsigned texW;
+	unsigned texH;
 	int32_t topY;
 	int32_t bottomY;
 	int32_t topZ;
@@ -54,6 +59,7 @@ struct DSGXSoftwareEndpoint {
 };
 
 struct DSGXSoftwareSpan {
+	struct DSGXSoftwarePolygon* poly;
 	struct DSGXSoftwareEndpoint ep[2];
 };
 
