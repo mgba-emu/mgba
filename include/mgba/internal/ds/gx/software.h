@@ -20,8 +20,8 @@ struct DSGXSoftwarePolygon {
 	uint16_t* texBase;
 	uint16_t* palBase;
 	int texFormat;
-	unsigned texW;
-	unsigned texH;
+	int texW;
+	int texH;
 	int32_t topY;
 	int32_t bottomY;
 	int32_t topZ;

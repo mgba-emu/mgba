@@ -43,8 +43,8 @@ static color_t _lookupColor(struct DSGXSoftwareEndpoint* ep, struct DSGXSoftware
 	// TODO: Optimize
 	uint16_t texel;
 
-	uint16_t s = ep->s >> 4;
-	uint16_t t = ep->t >> 4;
+	int16_t s = ep->s >> 4;
+	int16_t t = ep->t >> 4;
 	if (!DSGXTexParamsIsSRepeat(poly->poly->texParams)) {
 		if (s < 0) {
 			s = 0;
@@ -62,7 +62,7 @@ static color_t _lookupColor(struct DSGXSoftwareEndpoint* ep, struct DSGXSoftware
 	if (!DSGXTexParamsIsTRepeat(poly->poly->texParams)) {
 		if (t < 0) {
 			t = 0;
-		} else if (s >= poly->texH) {
+		} else if (t >= poly->texH) {
 			t = poly->texW - 1;
 		}
 	} else if (DSGXTexParamsIsTMirror(poly->poly->texParams)) {
