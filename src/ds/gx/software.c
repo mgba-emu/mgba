@@ -18,7 +18,7 @@ static void DSGXSoftwareRendererInit(struct DSGXRenderer* renderer);
 static void DSGXSoftwareRendererReset(struct DSGXRenderer* renderer);
 static void DSGXSoftwareRendererDeinit(struct DSGXRenderer* renderer);
 static void DSGXSoftwareRendererInvalidateTex(struct DSGXRenderer* renderer, int slot);
-static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount);
+static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount, bool wSort);
 static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int y);
 static void DSGXSoftwareRendererGetScanline(struct DSGXRenderer* renderer, int y, color_t** output);
 
@@ -165,6 +165,7 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 	w0 = 0x10000;
 	w1 = 0x10000;
 	span->ep[index].w = w;
+	span->ep[index].z = (((edge->z1 - edge->z0) * yw) >> 32) + edge->z0;
 	span->ep[index].cr = (((((edge->cr1 * (int64_t) w1 - edge->cr0 * (int64_t) w0) * yw) >> 32) + edge->cr0 * (int64_t) w0) * wRecip) >> 48;
 	span->ep[index].cg = (((((edge->cg1 * (int64_t) w1 - edge->cg0 * (int64_t) w0) * yw) >> 32) + edge->cg0 * (int64_t) w0) * wRecip) >> 48;
 	span->ep[index].cb = (((((edge->cb1 * (int64_t) w1 - edge->cb0 * (int64_t) w0) * yw) >> 32) + edge->cb0 * (int64_t) w0) * wRecip) >> 48;
@@ -217,6 +218,8 @@ static void _lerpEndpoint(const struct DSGXSoftwareSpan* span, struct DSGXSoftwa
 	w0 = 0x10000;
 	w1 = 0x10000;
 
+	ep->z = (((span->ep[1].z - span->ep[0].z) * xw) >> 32) + span->ep[0].z;
+
 	uint64_t r = (((span->ep[1].cr * (int64_t) w1 - span->ep[0].cr * (int64_t) w0) * xw) >> 32) + span->ep[0].cr * (int64_t) w0;
 	uint64_t g = (((span->ep[1].cg * (int64_t) w1 - span->ep[0].cg * (int64_t) w0) * xw) >> 32) + span->ep[0].cg * (int64_t) w0;
 	uint64_t b = (((span->ep[1].cb * (int64_t) w1 - span->ep[0].cb * (int64_t) w0) * xw) >> 32) + span->ep[0].cb * (int64_t) w0;
@@ -268,10 +271,11 @@ static void DSGXSoftwareRendererInvalidateTex(struct DSGXRenderer* renderer, int
 	// TODO
 }
 
-static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount) {
+static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount, bool wSort) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
 
 	softwareRenderer->flushPending = true;
+	softwareRenderer->wSort = wSort;
 	softwareRenderer->verts = verts;
 	DSGXSoftwarePolygonListClear(&softwareRenderer->activePolys);
 	DSGXSoftwareEdgeListClear(&softwareRenderer->activeEdges);
@@ -309,6 +313,7 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 			if (v0->vy >= v1->vy) {
 				edge->y0 = SCREEN_SIZE - v0->vy;
 				edge->x0 = v0->vx;
+				edge->z0 = v0->vz;
 				edge->w0 = v0->vw;
 				_expandColor(v0->color, &edge->cr0, &edge->cg0, &edge->cb0);
 				edge->s0 = v0->vs;
@@ -316,6 +321,7 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 
 				edge->y1 = SCREEN_SIZE - v1->vy;
 				edge->x1 = v1->vx;
+				edge->z1 = v1->vz;
 				edge->w1 = v1->vw;
 				_expandColor(v1->color, &edge->cr1, &edge->cg1, &edge->cb1);
 				edge->s1 = v1->vs;
@@ -323,6 +329,7 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 			} else {
 				edge->y0 = SCREEN_SIZE - v1->vy;
 				edge->x0 = v1->vx;
+				edge->z0 = v1->vz;
 				edge->w0 = v1->vw;
 				_expandColor(v1->color, &edge->cr0, &edge->cg0, &edge->cb0);
 				edge->s0 = v1->vs;
@@ -330,6 +337,7 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 
 				edge->y1 = SCREEN_SIZE - v0->vy;
 				edge->x1 = v0->vx;
+				edge->z1 = v0->vz;
 				edge->w1 = v0->vw;
 				_expandColor(v0->color, &edge->cr1, &edge->cg1, &edge->cb1);
 				edge->s1 = v0->vs;
@@ -345,6 +353,7 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 		if (v0->vy >= v1->vy) {
 			edge->y0 = SCREEN_SIZE - v0->vy;
 			edge->x0 = v0->vx;
+			edge->z0 = v0->vz;
 			edge->w0 = v0->vw;
 			_expandColor(v0->color, &edge->cr0, &edge->cg0, &edge->cb0);
 			edge->s0 = v0->vs;
@@ -352,6 +361,7 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 
 			edge->y1 = SCREEN_SIZE - v1->vy;
 			edge->x1 = v1->vx;
+			edge->z1 = v1->vz;
 			edge->w1 = v1->vw;
 			_expandColor(v1->color, &edge->cr1, &edge->cg1, &edge->cb1);
 			edge->s1 = v1->vs;
@@ -360,12 +370,14 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 			edge->y0 = SCREEN_SIZE - v1->vy;
 			edge->x0 = v1->vx;
 			edge->w0 = v1->vw;
+			edge->z0 = v1->vz;
 			_expandColor(v1->color, &edge->cr0, &edge->cg0, &edge->cb0);
 			edge->s0 = v1->vs;
 			edge->t0 = v1->vt;
 
 			edge->y1 = SCREEN_SIZE - v0->vy;
 			edge->x1 = v0->vx;
+			edge->z1 = v0->vz;
 			edge->w1 = v0->vw;
 			_expandColor(v0->color, &edge->cr1, &edge->cg1, &edge->cb1);
 			edge->s1 = v0->vs;
@@ -438,16 +450,22 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 				span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
 				nextSpanX = span->ep[0].x >> 12;
 			}
-			while (i > (span->ep[0].x >> 12)) {
+			while (span && i > (span->ep[0].x >> 12)) {
 				if (i <= (span->ep[1].x >> 12)) {
 					_lerpEndpoint(span, &ep, i);
 					color_t color = _lookupColor(&ep, span->poly);
-					if (scanline[i] == FLAG_UNWRITTEN) {
-						scanline[i] = color;
-					}
-					if (ep.w < depth && color != FLAG_UNWRITTEN) {
-						depth = ep.w;
-						scanline[i] = color;
+					if (color != FLAG_UNWRITTEN) {
+						if (softwareRenderer->wSort) {
+							if (ep.w < depth) {
+								depth = ep.w;
+								scanline[i] = color;
+							}
+						} else {
+							if (ep.z < depth) {
+								depth = ep.z;
+								scanline[i] = color;
+							}
+						}
 					}
 				}
 				--nextSpanId;

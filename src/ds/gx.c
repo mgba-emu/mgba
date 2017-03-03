@@ -17,7 +17,7 @@ static void DSGXDummyRendererInit(struct DSGXRenderer* renderer);
 static void DSGXDummyRendererReset(struct DSGXRenderer* renderer);
 static void DSGXDummyRendererDeinit(struct DSGXRenderer* renderer);
 static void DSGXDummyRendererInvalidateTex(struct DSGXRenderer* renderer, int slot);
-static void DSGXDummyRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount);
+static void DSGXDummyRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount, bool wSort);
 static void DSGXDummyRendererDrawScanline(struct DSGXRenderer* renderer, int y);
 static void DSGXDummyRendererGetScanline(struct DSGXRenderer* renderer, int y, color_t** output);
 
@@ -877,6 +877,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			break;
 		case DS_GX_CMD_SWAP_BUFFERS:
 			gx->swapBuffers = true;
+			gx->wSort = entry.params[0] & 2;
 			break;
 		case DS_GX_CMD_VIEWPORT:
 			gx->viewportX1 = (uint8_t) entry.params[0];
@@ -1186,7 +1187,7 @@ uint32_t DSGXWriteRegister32(struct DSGX* gx, uint32_t address, uint32_t value) 
 
 void DSGXFlush(struct DSGX* gx) {
 	if (gx->swapBuffers) {
-		gx->renderer->setRAM(gx->renderer, gx->vertexBuffer[gx->bufferIndex], gx->polygonBuffer[gx->bufferIndex], gx->polygonIndex);
+		gx->renderer->setRAM(gx->renderer, gx->vertexBuffer[gx->bufferIndex], gx->polygonBuffer[gx->bufferIndex], gx->polygonIndex, gx->wSort);
 		gx->swapBuffers = false;
 		gx->bufferIndex ^= 1;
 		gx->vertexIndex = 0;
@@ -1220,7 +1221,7 @@ static void DSGXDummyRendererInvalidateTex(struct DSGXRenderer* renderer, int sl
 	// Nothing to do
 }
 
-static void DSGXDummyRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount) {
+static void DSGXDummyRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount, bool wSort) {
 	UNUSED(renderer);
 	UNUSED(verts);
 	UNUSED(polys);

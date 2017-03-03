@@ -131,7 +131,7 @@ struct DSGXRenderer {
 	void (*deinit)(struct DSGXRenderer* renderer);
 
 	void (*invalidateTex)(struct DSGXRenderer* renderer, int slot);
-	void (*setRAM)(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount);
+	void (*setRAM)(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount, bool wSort);
 	void (*drawScanline)(struct DSGXRenderer* renderer, int y);
 	void (*getScanline)(struct DSGXRenderer* renderer, int y, color_t** output);
 
@@ -156,6 +156,7 @@ struct DSGX {
 	struct DSGXEntry activeEntries[32];
 
 	bool swapBuffers;
+	bool wSort;
 	int bufferIndex;
 	int vertexIndex;
 	int polygonIndex;

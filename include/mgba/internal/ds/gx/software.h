@@ -22,15 +22,13 @@ struct DSGXSoftwarePolygon {
 	int texFormat;
 	int texW;
 	int texH;
-	int32_t topY;
-	int32_t bottomY;
-	int32_t topZ;
 };
 
 struct DSGXSoftwareEdge {
 	unsigned polyId;
 	int32_t y0; // 20.12
 	int32_t x0; // 20.12
+	int32_t z0; // 20.12
 	int32_t w0; // 20.12
 	uint8_t cr0;
 	uint8_t cg0;
@@ -40,6 +38,7 @@ struct DSGXSoftwareEdge {
 
 	int32_t y1; // 20.12
 	int32_t x1; // 20.12
+	int32_t z1; // 20.12
 	int32_t w1; // 20.12
 	uint8_t cr1;
 	uint8_t cg1;
@@ -50,6 +49,7 @@ struct DSGXSoftwareEdge {
 
 struct DSGXSoftwareEndpoint {
 	int32_t x; // 20.12
+	int64_t z;
 	int64_t w;
 	uint8_t cr;
 	uint8_t cg;
@@ -78,6 +78,7 @@ struct DSGXSoftwareRenderer {
 	uint16_t depthBuffer[DS_VIDEO_HORIZONTAL_PIXELS];
 	color_t* scanlineCache;
 	bool flushPending;
+	bool wSort;
 
 	struct DSGXVertex* verts;
 };
