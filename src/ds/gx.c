@@ -329,6 +329,98 @@ static void _flushOutstanding(struct DSGX* gx) {
 	}
 }
 
+static bool _boxTestVertex(struct DSGX* gx, struct DSGXVertex* vertex) {
+	int32_t vx = _dotViewport(vertex, &gx->clipMatrix.m[0]);
+	int32_t vy = _dotViewport(vertex, &gx->clipMatrix.m[1]);
+	int32_t vz = _dotViewport(vertex, &gx->clipMatrix.m[2]);
+	int32_t vw = _dotViewport(vertex, &gx->clipMatrix.m[3]);
+
+	vx = (vx + vw) * (int64_t) (gx->viewportWidth << 12) / (vw * 2) + (gx->viewportX1 << 12);
+	vy = (vy + vw) * (int64_t) (gx->viewportHeight << 12) / (vw * 2) + (gx->viewportY1 << 12);
+	vx >>= 12;
+	vy >>= 12;
+
+	if (vx < gx->viewportX1) {
+		return false;
+	}
+	if (vx >= gx->viewportX2) {
+		return false;
+	}
+	if (vy < gx->viewportY1) {
+		return false;
+	}
+	if (vy >= gx->viewportY2) {
+		return false;
+	}
+	// TODO: depth clipping
+	return true;
+}
+
+static bool _boxTest(struct DSGX* gx) {
+	int16_t x = gx->activeEntries[0].params[0];
+	x |= gx->activeEntries[0].params[1] << 8;
+	int16_t y = gx->activeEntries[0].params[2];
+	y |= gx->activeEntries[0].params[3] << 8;
+	int16_t z = gx->activeEntries[1].params[0];
+	z |= gx->activeEntries[1].params[1] << 8;
+	int16_t w = gx->activeEntries[1].params[2];
+	w |= gx->activeEntries[1].params[3] << 8;
+	int16_t h = gx->activeEntries[2].params[0];
+	h |= gx->activeEntries[2].params[1] << 8;
+	int16_t d = gx->activeEntries[2].params[2];
+	d |= gx->activeEntries[2].params[3] << 8;
+
+	struct DSGXVertex vertex = {
+		.x = x,
+		.y = y,
+		.z = z
+	};
+	if (_boxTestVertex(gx, &vertex)) {
+		return true;
+	}
+
+	vertex.x += w;
+	if (_boxTestVertex(gx, &vertex)) {
+		return true;
+	}
+
+	vertex.x = x;
+	vertex.y += h;
+	if (_boxTestVertex(gx, &vertex)) {
+		return true;
+	}
+
+	vertex.x += w;
+	if (_boxTestVertex(gx, &vertex)) {
+		return true;
+	}
+
+	vertex.x = x;
+	vertex.y = y;
+	vertex.z += d;
+	if (_boxTestVertex(gx, &vertex)) {
+		return true;
+	}
+
+	vertex.x += w;
+	if (_boxTestVertex(gx, &vertex)) {
+		return true;
+	}
+
+	vertex.x = x;
+	vertex.y += h;
+	if (_boxTestVertex(gx, &vertex)) {
+		return true;
+	}
+
+	vertex.x += w;
+	if (_boxTestVertex(gx, &vertex)) {
+		return true;
+	}
+
+	return false;
+}
+
 static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct DSGX* gx = context;
 	uint32_t cycles;
@@ -794,6 +886,10 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			gx->viewportWidth = gx->viewportX2 - gx->viewportX1;
 			gx->viewportHeight = gx->viewportY2 - gx->viewportY1;
 			break;
+		case DS_GX_CMD_BOX_TEST:
+			gxstat = DSRegGXSTATClearTestBusy(gxstat);
+			gxstat = DSRegGXSTATTestFillBoxTestResult(gxstat, _boxTest(gx));
+			break;
 		default:
 			mLOG(DS_GX, STUB, "Unimplemented GX command %02X:%02X %02X %02X %02X", entry.command, entry.params[0], entry.params[1], entry.params[2], entry.params[3]);
 			break;
@@ -984,6 +1080,12 @@ static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
 		CircleBufferWrite8(&gx->fifo, entry.params[1]);
 		CircleBufferWrite8(&gx->fifo, entry.params[2]);
 		CircleBufferWrite8(&gx->fifo, entry.params[3]);
+	}
+	if (entry.command == DS_GX_CMD_BOX_TEST) {
+		DSRegGXSTAT gxstat = gx->p->memory.io9[DS9_REG_GXSTAT_LO >> 1];
+		gxstat = DSRegGXSTATFillTestBusy(gxstat);
+		gxstat = DSRegGXSTATClearBoxTestResult(gxstat);
+		gx->p->memory.io9[DS9_REG_GXSTAT_LO >> 1] = gxstat;
 	}
 	if (!gx->swapBuffers && !mTimingIsScheduled(&gx->p->ds9.timing, &gx->fifoEvent)) {
 		mTimingSchedule(&gx->p->ds9.timing, &gx->fifoEvent, cycles);
