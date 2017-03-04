@@ -133,6 +133,8 @@ public slots:
 	void stopRewinding();
 	void keyPressed(int key);
 	void keyReleased(int key);
+	void cursorLocation(int x, int y);
+	void cursorDown(bool);
 	void clearKeys();
 	void setAutofire(int key, bool enable);
 	void setAudioBufferSamples(int samples);

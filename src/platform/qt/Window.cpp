@@ -684,11 +684,37 @@ void Window::dropEvent(QDropEvent* event) {
 	m_controller->loadGame(url.toLocalFile());
 }
 
-void Window::mouseDoubleClickEvent(QMouseEvent* event) {
+void Window::mouseMoveEvent(QMouseEvent* event) {
+	QSize dimensions = m_controller->screenDimensions();
+	QSize screenDimensions = m_screenWidget->size();
+	int x = dimensions.width() * event->x() / screenDimensions.width();
+	int y = dimensions.height() * event->y() / screenDimensions.height();
+	m_controller->cursorLocation(x, y);
+	event->accept();
+}
+
+void Window::mousePressEvent(QMouseEvent* event) {
 	if (event->button() != Qt::LeftButton) {
 		return;
 	}
-	toggleFullScreen();
+	QSize dimensions = m_controller->screenDimensions();
+	QSize screenDimensions = m_screenWidget->size();
+	int x = dimensions.width() * event->x() / screenDimensions.width();
+	int y = dimensions.height() * event->y() / screenDimensions.height();
+	m_controller->cursorLocation(x, y);
+	m_controller->cursorDown(true);
+}
+
+void Window::mouseReleaseEvent(QMouseEvent* event) {
+	if (event->button() != Qt::LeftButton) {
+		return;
+	}
+	QSize dimensions = m_controller->screenDimensions();
+	QSize screenDimensions = m_screenWidget->size();
+	int x = dimensions.width() * event->x() / screenDimensions.width();
+	int y = dimensions.height() * event->y() / screenDimensions.height();
+	m_controller->cursorLocation(x, y);
+	m_controller->cursorDown(false);
 }
 
 void Window::enterFullScreen() {
@@ -755,6 +781,7 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 		resizeFrame(QSize(width, height) * m_savedScale);
 	}
 	attachWidget(m_display);
+	setMouseTracking(true);
 
 #ifndef Q_OS_MAC
 	if (isFullScreen()) {
@@ -789,6 +816,7 @@ void Window::gameStopped() {
 #endif
 	m_screenWidget->setMinimumSize(m_display->minimumSize());
 
+	setMouseTracking(false);
 	m_fpsTimer.stop();
 	m_focusCheck.stop();
 }

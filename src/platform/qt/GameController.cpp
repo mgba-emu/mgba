@@ -819,6 +819,20 @@ void GameController::keyReleased(int key) {
 	updateKeys();
 }
 
+void GameController::cursorLocation(int x, int y) {
+	if (!isLoaded()) {
+		return;
+	}
+	m_threadContext.core->setCursorLocation(m_threadContext.core, x, y);
+}
+
+void GameController::cursorDown(bool down) {
+	if (!isLoaded()) {
+		return;
+	}
+	m_threadContext.core->setCursorDown(m_threadContext.core, down);
+}
+
 void GameController::clearKeys() {
 	m_activeKeys = 0;
 	m_inactiveKeys = 0;

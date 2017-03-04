@@ -107,7 +107,9 @@ protected:
 	virtual void focusOutEvent(QFocusEvent*) override;
 	virtual void dragEnterEvent(QDragEnterEvent*) override;
 	virtual void dropEvent(QDropEvent*) override;
-	virtual void mouseDoubleClickEvent(QMouseEvent*) override;
+	virtual void mouseMoveEvent(QMouseEvent*) override;
+	virtual void mousePressEvent(QMouseEvent*) override;
+	virtual void mouseReleaseEvent(QMouseEvent*) override;
 
 private slots:
 	void gameStarted(mCoreThread*, const QString&);

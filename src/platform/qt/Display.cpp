@@ -88,8 +88,9 @@ void Display::showMessage(const QString& message) {
 	}
 }
 
-void Display::mouseMoveEvent(QMouseEvent*) {
+void Display::mouseMoveEvent(QMouseEvent* event) {
 	emit showCursor();
 	m_mouseTimer.stop();
 	m_mouseTimer.start();
+	event->ignore();
 }
