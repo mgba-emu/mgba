@@ -85,6 +85,7 @@ static bool _regenerateExtPalette(struct DSVideoSoftwareRenderer* renderer, bool
 	}
 	if (obj) {
 		softwareRenderer->objExtPalette = palette;
+		softwareRenderer->objExtVariantPalette = variantPalette;
 	} else {
 		if (slot >= 2) {
 			if (GBARegisterBGCNTIsExtPaletteSlot(softwareRenderer->bg[slot - 2].control)) {

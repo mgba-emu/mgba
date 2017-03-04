@@ -203,7 +203,15 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt) && GBAWindowControlGetBlendEnable(renderer->objwin.packed) != GBAWindowControlIsBlendEnable(renderer->currentWindow.packed);
 
 	if (GBAObjAttributesAIs256Color(sprite->a) && renderer->objExtPalette) {
-		palette = renderer->objExtPalette;
+		if (!variant) {
+			palette = renderer->objExtPalette;
+			objwinPalette = palette;
+		} else {
+			palette = renderer->objExtVariantPalette;
+			if (GBAWindowControlIsBlendEnable(renderer->objwin.packed)) {
+				objwinPalette = palette;
+			}
+		}
 	} else if (variant) {
 		palette = &renderer->variantPalette[0x100];
 		if (GBAWindowControlIsBlendEnable(renderer->objwin.packed)) {
@@ -289,10 +297,20 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			} else {
 				SPRITE_TRANSFORMED_LOOP(16, NORMAL);
 			}
-		} else {
+		} else if (!renderer->objExtPalette) {
 			if (flags & FLAG_OBJWIN) {
 				SPRITE_TRANSFORMED_LOOP(256, OBJWIN);
 			} else if (objwinSlowPath) {
+				SPRITE_TRANSFORMED_LOOP(256, NORMAL_OBJWIN);
+			} else {
+				SPRITE_TRANSFORMED_LOOP(256, NORMAL);
+			}
+		} else {
+			palette = &palette[GBAObjAttributesCGetPalette(sprite->c) << 8];
+			if (flags & FLAG_OBJWIN) {
+				SPRITE_TRANSFORMED_LOOP(256, OBJWIN);
+			} else if (objwinSlowPath) {
+				objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 8];
 				SPRITE_TRANSFORMED_LOOP(256, NORMAL_OBJWIN);
 			} else {
 				SPRITE_TRANSFORMED_LOOP(256, NORMAL);
@@ -343,12 +361,11 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			} else {
 				SPRITE_NORMAL_LOOP(16, NORMAL);
 			}
-		} else {
+		} else if (!renderer->objExtPalette) {
 			if (flags & FLAG_OBJWIN) {
 				SPRITE_NORMAL_LOOP(256, OBJWIN);
 			} else if (mosaicH > 1) {
 				if (objwinSlowPath) {
-					objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 4];
 					SPRITE_MOSAIC_LOOP(256, NORMAL_OBJWIN);
 				} else {
 					SPRITE_MOSAIC_LOOP(256, NORMAL);
@@ -358,6 +375,24 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			} else {
 				SPRITE_NORMAL_LOOP(256, NORMAL);
 			}
+		} else {
+			palette = &palette[GBAObjAttributesCGetPalette(sprite->c) << 8];
+			if (flags & FLAG_OBJWIN) {
+				SPRITE_NORMAL_LOOP(256, OBJWIN);
+			} else if (mosaicH > 1) {
+				if (objwinSlowPath) {
+					objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 8];
+					SPRITE_MOSAIC_LOOP(256, NORMAL_OBJWIN);
+				} else {
+					SPRITE_MOSAIC_LOOP(256, NORMAL);
+				}
+			} else if (objwinSlowPath) {
+				objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 8];
+				SPRITE_NORMAL_LOOP(256, NORMAL_OBJWIN);
+			} else {
+				SPRITE_NORMAL_LOOP(256, NORMAL);
+			}
+
 		}
 		if (x + width > renderer->masterEnd) {
 			renderer->spriteCyclesRemaining -= x + width - renderer->masterEnd;
