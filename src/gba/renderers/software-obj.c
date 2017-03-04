@@ -317,7 +317,6 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 				SPRITE_NORMAL_LOOP(256, OBJWIN);
 			} else if (mosaicH > 1) {
 				if (objwinSlowPath) {
-					objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 4];
 					SPRITE_MOSAIC_LOOP(256, NORMAL_OBJWIN);
 				} else {
 					SPRITE_MOSAIC_LOOP(256, NORMAL);
