@@ -13,6 +13,7 @@ Bugfixes:
  - GBA I/O: Handle audio registers specially when deserializing
  - Util: Fix highest-fd socket not being returned by SocketAccept
  - Qt: Fix linking after some windows have been closed
+ - GBA Video: Fix wrong palette on 256-color sprites in OBJWIN
 Misc:
  - Qt: Improved HiDPI support
  - Feature: Support ImageMagick 7
