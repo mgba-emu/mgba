@@ -195,26 +195,6 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 	return true;
 }
 
-static int _spanSort(const void* a, const void* b) {
-	const struct DSGXSoftwareSpan* sa = a;
-	const struct DSGXSoftwareSpan* sb = b;
-
-	// Sort backwards
-	if (sa->ep[0].x < sb->ep[0].x) {
-		return 1;
-	}
-	if (sa->ep[0].x > sb->ep[0].x) {
-		return -1;
-	}
-	if (sa->ep[0].w < sb->ep[0].w) {
-		return 1;
-	}
-	if (sa->ep[0].w > sb->ep[0].w) {
-		return -1;
-	}
-	return 0;
-}
-
 static void _lerpEndpoint(const struct DSGXSoftwareSpan* span, struct DSGXSoftwareEndpoint* ep, unsigned x) {
 	int64_t width = span->ep[1].x - span->ep[0].x;
 	int64_t xw = ((uint64_t) x << 12) - span->ep[0].x;
@@ -415,7 +395,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 	}
 	DSGXSoftwareSpanListClear(&softwareRenderer->activeSpans);
 	memset(softwareRenderer->bucket, 0, sizeof(*softwareRenderer->bucket) * DS_GX_POLYGON_BUFFER_SIZE);
-	int i;
+	size_t i;
 	for (i = DSGXSoftwareEdgeListSize(&softwareRenderer->activeEdges); i; --i) {
 		size_t idx = i - 1;
 		struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListGetPointer(&softwareRenderer->activeEdges, idx);
@@ -443,61 +423,44 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 			}
 		}
 	}
-	qsort(DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, 0), DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans), sizeof(struct DSGXSoftwareSpan), _spanSort);
 
 	color_t* scanline = &softwareRenderer->scanlineCache[DS_VIDEO_HORIZONTAL_PIXELS * y];
-
-	int nextSpanX = DS_VIDEO_HORIZONTAL_PIXELS;
-	if (DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans)) {
-		nextSpanX = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans) - 1)->ep[0].x;
-		nextSpanX >>= 12;
+	memset(scanline, 0, sizeof(color_t) * DS_VIDEO_HORIZONTAL_PIXELS);
+	for (i = 0; i < DS_VIDEO_HORIZONTAL_PIXELS; i += 4) {
+		softwareRenderer->depthBuffer[i] = INT32_MAX;
+		softwareRenderer->depthBuffer[i + 1] = INT32_MAX;
+		softwareRenderer->depthBuffer[i + 2] = INT32_MAX;
+		softwareRenderer->depthBuffer[i + 3] = INT32_MAX;
 	}
-	for (i = 0; i < DS_VIDEO_HORIZONTAL_PIXELS; ++i) {
-		struct DSGXSoftwareSpan* span = NULL;
-		struct DSGXSoftwareEndpoint ep;
-		int32_t depth = INT32_MAX;
-		scanline[i] = 0;
-		if (i >= nextSpanX) {
-			size_t nextSpanId = DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans);
-			span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
-			while (i > (span->ep[1].x >> 12) || !span->ep[1].x) {
-				DSGXSoftwareSpanListShift(&softwareRenderer->activeSpans, nextSpanId - 1, 1);
-				--nextSpanId;
-				if (!nextSpanId) {
-					nextSpanX = DS_VIDEO_HORIZONTAL_PIXELS;
-					span = NULL;
-					break;
-				}
-				span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
-				nextSpanX = span->ep[0].x >> 12;
-			}
-			while (span && i > (span->ep[0].x >> 12)) {
-				if (i <= (span->ep[1].x >> 12)) {
-					_lerpEndpoint(span, &ep, i);
-					color_t color = _lookupColor(&ep, span->poly);
-					if (color & 0xF8000000) {
-						// TODO: Alpha
-						if (softwareRenderer->wSort) {
-							if (ep.w < depth) {
-								depth = ep.w;
-								scanline[i] = color;
-							}
-						} else {
-							if (ep.z < depth) {
-								depth = ep.z;
-								scanline[i] = color;
-							}
-						}
+
+	for (i = 0; i < DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans); ++i) {
+		struct DSGXSoftwareSpan* span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, i);
+
+		int32_t x = span->ep[0].x >> 12;
+		if (x < 0) {
+			x = 0;
+		}
+		for (; x < span->ep[1].x >> 12 && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
+			struct DSGXSoftwareEndpoint ep;
+			_lerpEndpoint(span, &ep, x);
+			color_t color = _lookupColor(&ep, span->poly);
+			if (color & 0xF8000000) {
+				// TODO: Alpha
+				if (softwareRenderer->wSort) {
+					if (ep.w < softwareRenderer->depthBuffer[x]) {
+						softwareRenderer->depthBuffer[x] = ep.w;
+						scanline[x] = color;
+					}
+				} else {
+					if (ep.z < softwareRenderer->depthBuffer[x]) {
+						softwareRenderer->depthBuffer[x] = ep.z;
+						scanline[x] = color;
 					}
 				}
-				--nextSpanId;
-				if (!nextSpanId) {
-					break;
-				}
-				span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
 			}
 		}
 	}
+
 	if (y == DS_VIDEO_VERTICAL_PIXELS - 1) {
 		softwareRenderer->flushPending = false;
 	}

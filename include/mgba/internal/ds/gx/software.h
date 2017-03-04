@@ -76,7 +76,7 @@ struct DSGXSoftwareRenderer {
 	struct DSGXSoftwareSpanList activeSpans;
 	struct DSGXSoftwareSpan** bucket;
 
-	uint16_t depthBuffer[DS_VIDEO_HORIZONTAL_PIXELS];
+	int32_t depthBuffer[DS_VIDEO_HORIZONTAL_PIXELS];
 	color_t* scanlineCache;
 	bool flushPending;
 	bool wSort;
