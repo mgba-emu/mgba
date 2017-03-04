@@ -1021,6 +1021,7 @@ void DSGXReset(struct DSGX* gx) {
 	memset(&gx->currentVertex, 0, sizeof(gx->currentVertex));
 	memset(&gx->nextPoly, 0, sizeof(gx-> nextPoly));
 	gx->currentVertex.color = 0x7FFF;
+	gx->dmaSource = -1;
 }
 
 void DSGXAssociateRenderer(struct DSGX* gx, struct DSGXRenderer* renderer) {
@@ -1052,6 +1053,21 @@ void DSGXUpdateGXSTAT(struct DSGX* gx) {
 	value = DSRegGXSTATSetBusy(value, mTimingIsScheduled(&gx->p->ds9.timing, &gx->fifoEvent) || gx->swapBuffers);
 
 	gx->p->memory.io9[DS9_REG_GXSTAT_HI >> 1] = value >> 16;
+
+	struct GBADMA* dma = NULL;
+	if (gx->dmaSource >= 0) {
+		dma = &gx->p->ds9.memory.dma[gx->dmaSource];
+		if (GBADMARegisterGetTiming9(dma->reg) != DS_DMA_TIMING_GEOM_FIFO) {
+			gx->dmaSource = -1;
+		} else if (GBADMARegisterIsEnable(dma->reg) && entries < (DS_GX_FIFO_SIZE / 2) && !dma->nextCount) {
+			dma->nextCount = dma->count;
+			if (dma->count > 112) {
+				dma->nextCount = 112;
+			}
+			dma->when = mTimingCurrentTime(&gx->p->ds9.timing);
+			DSDMAUpdate(&gx->p->ds9);
+		}
+	}
 }
 
 static void DSGXUnpackCommand(struct DSGX* gx, uint32_t command) {
@@ -1244,6 +1260,11 @@ void DSGXFlush(struct DSGX* gx) {
 	}
 
 	DSGXUpdateGXSTAT(gx);
+}
+
+void DSGXScheduleDMA(struct DSCommon* dscore, int number, struct GBADMA* info) {
+	UNUSED(info);
+	dscore->p->gx.dmaSource = number;
 }
 
 static void DSGXDummyRendererInit(struct DSGXRenderer* renderer) {

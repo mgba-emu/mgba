@@ -6,6 +6,7 @@
 #include <mgba/internal/ds/dma.h>
 
 #include <mgba/internal/ds/ds.h>
+#include <mgba/internal/ds/gx.h>
 #include <mgba/internal/ds/io.h>
 #include <mgba/internal/ds/memory.h>
 
@@ -97,6 +98,9 @@ void DSDMASchedule(struct DSCommon* dscore, int number, struct GBADMA* info) {
 		return;
 	case DS9_DMA_TIMING_SLOT1:
 		DSSlot1ScheduleDMA(dscore, number, info);
+		return;
+	case DS_DMA_TIMING_GEOM_FIFO:
+		DSGXScheduleDMA(dscore, number, info);
 		return;
 	case DS_DMA_TIMING_HBLANK: // DS7_DMA_TIMING_SLOT1
 	default:

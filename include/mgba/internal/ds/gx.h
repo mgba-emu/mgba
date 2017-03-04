@@ -157,6 +157,7 @@ struct DSGX {
 	struct CircleBuffer pipe;
 
 	struct mTimingEvent fifoEvent;
+	int dmaSource;
 
 	int outstandingParams[4];
 	uint8_t outstandingCommand[4];
@@ -213,6 +214,10 @@ uint32_t DSGXWriteRegister32(struct DSGX*, uint32_t address, uint32_t value);
 
 void DSGXFlush(struct DSGX*);
 void DSGXUpdateGXSTAT(struct DSGX*);
+
+struct GBADMA;
+struct DSCommon;
+void DSGXScheduleDMA(struct DSCommon* dscore, int number, struct GBADMA* info);
 
 CXX_GUARD_END
 
