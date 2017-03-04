@@ -64,6 +64,8 @@ DECL_BITFIELD(DSRegisterPOWCNT1, uint16_t);
 // TODO
 DECL_BIT(DSRegisterPOWCNT1, Swap, 15);
 
+DECL_BIT(GBARegisterBGCNT, ExtendedMode0, 2);
+DECL_BIT(GBARegisterBGCNT, ExtendedMode1, 7);
 DECL_BIT(GBARegisterBGCNT, ExtPaletteSlot, 13);
 
 DECL_BITFIELD(DSRegisterMASTER_BRIGHT, uint16_t);

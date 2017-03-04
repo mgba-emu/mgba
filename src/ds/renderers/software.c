@@ -414,7 +414,11 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 					GBAVideoSoftwareRendererDrawBackgroundMode2(softwareRenderer, &softwareRenderer->bg[2], y);
 					break;
 				case 5:
-					DSVideoSoftwareRendererDrawBackgroundExt0(softwareRenderer, &softwareRenderer->bg[2], y);
+					if (!GBARegisterBGCNTIsExtendedMode1(softwareRenderer->bg[2].control)) {
+						DSVideoSoftwareRendererDrawBackgroundExt0(softwareRenderer, &softwareRenderer->bg[2], y);
+					} else {
+						// TODO
+					}
 					break;
 				}
 			}
@@ -430,7 +434,11 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 				case 3:
 				case 4:
 				case 5:
-					DSVideoSoftwareRendererDrawBackgroundExt0(softwareRenderer, &softwareRenderer->bg[3], y);
+					if (!GBARegisterBGCNTIsExtendedMode1(softwareRenderer->bg[3].control)) {
+						DSVideoSoftwareRendererDrawBackgroundExt0(softwareRenderer, &softwareRenderer->bg[3], y);
+					} else {
+						// TODO
+					}
 					break;
 				}
 			}
@@ -659,7 +667,10 @@ void DSVideoSoftwareRendererDrawBackgroundExt0(struct GBAVideoSoftwareRenderer* 
 
 	color_t* mainPalette = background->extPalette;
 	if (variant) {
-		palette = background->variantPalette;
+		mainPalette = background->variantPalette;
+	}
+	if (!mainPalette) {
+		return;
 	}
 	int paletteData;
 
