@@ -111,6 +111,7 @@ struct DS {
 	struct VFile* bios9Vf;
 	struct VFile* firmwareVf;
 
+	struct mAVStream* stream;
 	struct mKeyCallback* keyCallback;
 	struct mCoreCallbacks* coreCallbacks;
 

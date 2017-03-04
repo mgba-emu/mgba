@@ -162,6 +162,11 @@ static void _DSCoreSetCoreCallbacks(struct mCore* core, struct mCoreCallbacks* c
 }
 
 static void _DSCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
+	struct DS* ds = core->board;
+	ds->stream = stream;
+	if (stream && stream->videoDimensionsChanged) {
+		stream->videoDimensionsChanged(stream, DS_VIDEO_HORIZONTAL_PIXELS, DS_VIDEO_VERTICAL_PIXELS * 2);
+	}
 }
 
 static bool _DSCoreLoadROM(struct mCore* core, struct VFile* vf) {

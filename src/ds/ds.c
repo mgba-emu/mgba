@@ -835,4 +835,11 @@ void DSFrameEnded(struct DS* ds) {
 	if (callbacks && callbacks->videoFrameEnded) {
 		callbacks->videoFrameEnded(callbacks->context);
 	}
+
+	if (ds->stream && ds->stream->postVideoFrame) {
+		const color_t* pixels;
+		size_t stride;
+		ds->video.renderer->getPixels(ds->video.renderer, &stride, (const void**) &pixels);
+		ds->stream->postVideoFrame(ds->stream, pixels, stride);
+	}
 }
