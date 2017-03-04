@@ -23,6 +23,8 @@ static void DSGXDummyRendererGetScanline(struct DSGXRenderer* renderer, int y, c
 
 static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry);
 
+static bool _boxTestVertex(struct DSGX* gx, struct DSGXVertex* vertex);
+
 static const int32_t _gxCommandCycleBase[DS_GX_CMD_MAX] = {
 	[DS_GX_CMD_NOP] = 0,
 	[DS_GX_CMD_MTX_MODE] = 2,
@@ -176,6 +178,46 @@ static void _updateClipMatrix(struct DSGX* gx) {
 	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_1F >> 1] = gx->clipMatrix.m[15] >> 16;
 }
 
+static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
+	struct DSGXVertex* vbuf = gx->vertexBuffer[gx->bufferIndex];
+	int nOffscreen = 0;
+	unsigned offscreenVerts[4] = {};
+	int v;
+	// Collect offscreen vertices
+	for (v = 0; v < poly->verts; ++v) {
+		if (!_boxTestVertex(gx, &vbuf[gx->currentPoly.vertIds[v]])) {
+			offscreenVerts[nOffscreen] = gx->currentPoly.vertIds[v];
+			++nOffscreen;
+		}
+	}
+	if (!nOffscreen) {
+		return true;
+	}
+
+	// All of the vertices are offscreen
+	// TODO: clip vertices instead of discarding them
+	if (nOffscreen == poly->verts) {
+		// Remove all vertices before remaking them
+		gx->vertexIndex -= poly->verts;
+		// Put back the ones that are on the strip
+		for (v = 0; v < gx->currentPoly.verts; ++v) {
+			unsigned vid = gx->currentPoly.vertIds[v];
+			int ov;
+			for (ov = 0; ov < nOffscreen; ++ov) {
+				if (vid != offscreenVerts[ov]) {
+					continue;
+				}
+				vbuf[gx->vertexIndex] = vbuf[vid];
+				gx->currentPoly.vertIds[v] = gx->vertexIndex;
+				++gx->vertexIndex;
+				break;
+			}
+		}
+		return false;
+	}
+	return true;
+}
+
 static int32_t _dotViewport(struct DSGXVertex* vertex, int32_t* col) {
 	int64_t a;
 	int64_t b;
@@ -308,7 +350,10 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 			gx->currentPoly.verts = 2;
 			break;
 		}
-		++gx->polygonIndex;
+
+		if (_clipPolygon(gx, &pbuf[gx->polygonIndex])) {
+			++gx->polygonIndex;
+		}
 	}
 }
 
