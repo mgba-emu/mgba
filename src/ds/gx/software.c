@@ -20,7 +20,7 @@ static void DSGXSoftwareRendererDeinit(struct DSGXRenderer* renderer);
 static void DSGXSoftwareRendererInvalidateTex(struct DSGXRenderer* renderer, int slot);
 static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount, bool wSort);
 static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int y);
-static void DSGXSoftwareRendererGetScanline(struct DSGXRenderer* renderer, int y, color_t** output);
+static void DSGXSoftwareRendererGetScanline(struct DSGXRenderer* renderer, int y, const color_t** output);
 
 static void _expandColor(uint16_t c15, uint8_t* r, uint8_t* g, uint8_t* b) {
 	*r = ((c15 << 1) & 0x3E) | 1;
@@ -503,7 +503,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 	}
 }
 
-static void DSGXSoftwareRendererGetScanline(struct DSGXRenderer* renderer, int y, color_t** output) {
+static void DSGXSoftwareRendererGetScanline(struct DSGXRenderer* renderer, int y, const color_t** output) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
 	*output = &softwareRenderer->scanlineCache[DS_VIDEO_HORIZONTAL_PIXELS * y];
 }

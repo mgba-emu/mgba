@@ -143,7 +143,7 @@ struct DSGXRenderer {
 	void (*invalidateTex)(struct DSGXRenderer* renderer, int slot);
 	void (*setRAM)(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount, bool wSort);
 	void (*drawScanline)(struct DSGXRenderer* renderer, int y);
-	void (*getScanline)(struct DSGXRenderer* renderer, int y, color_t** output);
+	void (*getScanline)(struct DSGXRenderer* renderer, int y, const color_t** output);
 
 	uint16_t* tex[4];
 	uint16_t* texPal[6];

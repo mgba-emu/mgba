@@ -60,6 +60,18 @@ DECL_BITS(DSRegisterDISPCNT, ScreenBase, 27, 3);
 DECL_BIT(DSRegisterDISPCNT, BgExtPalette, 30);
 DECL_BIT(DSRegisterDISPCNT, ObjExtPalette, 31);
 
+DECL_BITFIELD(DSRegisterDISPCAPCNT, uint32_t);
+DECL_BITS(DSRegisterDISPCAPCNT, EVA, 0, 4);
+DECL_BITS(DSRegisterDISPCAPCNT, EVB, 8, 4);
+DECL_BITS(DSRegisterDISPCAPCNT, WriteBlock, 16, 2);
+DECL_BITS(DSRegisterDISPCAPCNT, WriteOffset, 18, 2);
+DECL_BITS(DSRegisterDISPCAPCNT, CaptureSize, 20, 2);
+DECL_BIT(DSRegisterDISPCAPCNT, SourceA, 24);
+DECL_BIT(DSRegisterDISPCAPCNT, SourceB, 25);
+DECL_BITS(DSRegisterDISPCAPCNT, ReadOffset, 26, 2);
+DECL_BITS(DSRegisterDISPCAPCNT, CaptureSource, 29, 2);
+DECL_BIT(DSRegisterDISPCAPCNT, Enable, 31);
+
 DECL_BITFIELD(DSRegisterPOWCNT1, uint16_t);
 // TODO
 DECL_BIT(DSRegisterPOWCNT1, Swap, 15);
@@ -109,8 +121,8 @@ struct DSVideo {
 	struct mTimingEvent event7;
 	struct mTimingEvent event9;
 
-	// VCOUNT
 	int vcount;
+	bool inCapture;
 
 	uint16_t palette[1024];
 	uint16_t* vram;

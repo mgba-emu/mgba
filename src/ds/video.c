@@ -6,6 +6,7 @@
 #include <mgba/internal/ds/video.h>
 
 #include <mgba/core/sync.h>
+#include <mgba/internal/arm/macros.h>
 #include <mgba/internal/ds/ds.h>
 #include <mgba/internal/ds/memory.h>
 #include <mgba/internal/gba/video.h>
@@ -210,6 +211,65 @@ void DSVideoDeinit(struct DSVideo* video) {
 	mappedMemoryFree(video->vram, DS_SIZE_VRAM);
 }
 
+static void _performCapture(struct DSVideo* video, int y) {
+	DSRegisterDISPCAPCNT dispcap = video->p->ds9.memory.io[DS9_REG_DISPCAPCNT_LO >> 1];
+	dispcap |= video->p->ds9.memory.io[DS9_REG_DISPCAPCNT_HI >> 1] << 16;
+	// TODO: Check mode
+	int block = DSRegisterDISPCAPCNTGetWriteBlock(dispcap);
+	if (!video->p->memory.vramMode[block][4]) {
+		return;
+	}
+	uint16_t* vram = &video->vram[0x10000 * block + DSRegisterDISPCAPCNTGetWriteOffset(dispcap) * 0x4000];
+	const color_t* pixelsA;
+	int width = DS_VIDEO_HORIZONTAL_PIXELS;
+	switch (DSRegisterDISPCAPCNTGetCaptureSize(dispcap)) {
+	case 0:
+		width = DS_VIDEO_HORIZONTAL_PIXELS / 2;
+		break;
+	case 1:
+		if (y >= 64) {
+			return;
+		}
+	case 2:
+		if (y >= 128) {
+			return;
+		}
+	default:
+		break;
+	}
+
+	video->p->gx.renderer->getScanline(video->p->gx.renderer, y, &pixelsA);
+	/*if (DSRegisterDISPCAPCNTIsSourceA(dispcap)) {
+		// TODO: Process scanline regardless of output type
+		video->p->gx.renderer->getScanline(video->p->gx.renderer, y, &pixelsA);
+	} else {
+		size_t stride;
+		const void* pixels;
+		video->renderer->getPixels(video->renderer, &stride, &pixels);
+		pixelsA = &((const color_t*) pixels)[stride * y];
+	}*/
+
+	uint16_t pixel;
+	int x;
+	// TODO: Blending
+	for (x = 0; x < width; ++x) {
+		color_t colorA = pixelsA[x];
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+		pixel = colorA & 0x1F;
+		pixel |= (colorA & 0xFFC0) >> 1;
+#else
+		pixel = colorA;
+#endif
+#else
+		pixel = (colorA >> 9) & 0x7C00;
+		pixel |= (colorA >> 6) & 0x03E0;
+		pixel |= (colorA >> 3) & 0x001F;
+#endif
+		STORE_16(pixel, (x + y * DS_VIDEO_HORIZONTAL_PIXELS) * 2, vram);
+	}
+}
+
 void _startHdraw7(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct DSVideo* video = context;
 	GBARegisterDISPSTAT dispstat = video->p->ds7.memory.io[DS_REG_DISPSTAT >> 1];
@@ -285,9 +345,11 @@ void _startHdraw9(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	switch (video->vcount) {
 	case 0:
 		DSFrameStarted(video->p);
+		video->inCapture = DSRegisterDISPCAPCNTIsEnable(video->p->ds9.memory.io[DS9_REG_DISPCAPCNT_HI >> 1] << 16);
 		break;
 	case DS_VIDEO_VERTICAL_PIXELS:
 		video->p->ds9.memory.io[DS_REG_DISPSTAT >> 1] = GBARegisterDISPSTATFillInVblank(dispstat);
+		video->p->ds9.memory.io[DS9_REG_DISPCAPCNT_HI >> 1] = DSRegisterDISPCAPCNTClearEnable(video->p->ds9.memory.io[DS9_REG_DISPCAPCNT_HI >> 1] << 16) >> 16;
 		if (video->frameskipCounter <= 0) {
 			video->renderer->finishFrame(video->renderer);
 			DSGXFlush(&video->p->gx);
@@ -328,6 +390,9 @@ void _startHblank9(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		if (video->vcount >= DS_VIDEO_VERTICAL_TOTAL_PIXELS - 48) {
 			video->p->gx.renderer->drawScanline(video->p->gx.renderer, video->vcount + 48 - DS_VIDEO_VERTICAL_TOTAL_PIXELS);
 		}
+	}
+	if (video->inCapture) {
+		_performCapture(video, video->vcount);
 	}
 
 	if (GBARegisterDISPSTATIsHblankIRQ(dispstat)) {

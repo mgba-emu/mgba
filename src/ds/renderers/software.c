@@ -384,7 +384,7 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 			}
 			if (TEST_LAYER_ENABLED(0)) {
 				if (DSRegisterDISPCNTIs3D(softwareRenderer->dispcnt) && gx) {
-					color_t* scanline;
+					const color_t* scanline;
 					gx->renderer->getScanline(gx->renderer, y, &scanline);
 					uint32_t flags = (softwareRenderer->bg[0].priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND;
 					flags |= FLAG_TARGET_2 * softwareRenderer->bg[0].target2;

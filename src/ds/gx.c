@@ -19,7 +19,7 @@ static void DSGXDummyRendererDeinit(struct DSGXRenderer* renderer);
 static void DSGXDummyRendererInvalidateTex(struct DSGXRenderer* renderer, int slot);
 static void DSGXDummyRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount, bool wSort);
 static void DSGXDummyRendererDrawScanline(struct DSGXRenderer* renderer, int y);
-static void DSGXDummyRendererGetScanline(struct DSGXRenderer* renderer, int y, color_t** output);
+static void DSGXDummyRendererGetScanline(struct DSGXRenderer* renderer, int y, const color_t** output);
 
 static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry);
 
@@ -1281,7 +1281,7 @@ static void DSGXDummyRendererDrawScanline(struct DSGXRenderer* renderer, int y) 
 	// Nothing to do
 }
 
-static void DSGXDummyRendererGetScanline(struct DSGXRenderer* renderer, int y, color_t** output) {
+static void DSGXDummyRendererGetScanline(struct DSGXRenderer* renderer, int y, const color_t** output) {
 	UNUSED(renderer);
 	UNUSED(y);
 	*output = NULL;

@@ -433,6 +433,14 @@ void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	} else {
 		uint16_t oldValue;
 		switch (address) {
+		// Other video
+		case DS9_REG_DISPCAPCNT_LO:
+			value &= 0x1F1F;
+			break;
+		case DS9_REG_DISPCAPCNT_HI:
+			value &= 0xEF3F;
+			break;
+
 		// VRAM control
 		case DS9_REG_VRAMCNT_A:
 		case DS9_REG_VRAMCNT_C:
