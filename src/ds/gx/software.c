@@ -109,9 +109,20 @@ static color_t _lookupColor(struct DSGXSoftwareEndpoint* ep, struct DSGXSoftware
 		return FLAG_UNWRITTEN;
 	}
 	uint8_t r, g, b;
+	unsigned wr, wg, wb;
 	texel = poly->palBase[texel];
 	_expandColor(texel, &r, &g, &b);
-	return _finishColor(r, g, b);
+	switch (poly->blendFormat) {
+	case 1:
+	default:
+		// TODO: Alpha
+		return _finishColor(r, g, b);
+	case 0:
+		wr = ((r + 1) * (ep->cr + 1) - 1) >> 6;
+		wg = ((g + 1) * (ep->cg + 1) - 1) >> 6;
+		wb = ((b + 1) * (ep->cb + 1) - 1) >> 6;
+		return _finishColor(wr, wg, wb);
+	}
 }
 
 static int _edgeSort(const void* a, const void* b) {
@@ -285,6 +296,7 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 		struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListAppend(&softwareRenderer->activeEdges);
 		poly->poly = &polys[i];
 		poly->texFormat = DSGXTexParamsGetFormat(poly->poly->texParams);
+		poly->blendFormat = DSGXPolygonAttrsGetMode(poly->poly->polyParams);
 		poly->texW = 8 << DSGXTexParamsGetSSize(poly->poly->texParams);
 		poly->texH = 8 << DSGXTexParamsGetTSize(poly->poly->texParams);
 		switch (poly->texFormat) {

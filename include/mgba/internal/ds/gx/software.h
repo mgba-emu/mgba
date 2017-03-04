@@ -20,6 +20,7 @@ struct DSGXSoftwarePolygon {
 	uint16_t* texBase;
 	uint16_t* palBase;
 	int texFormat;
+	int blendFormat;
 	int texW;
 	int texH;
 };
