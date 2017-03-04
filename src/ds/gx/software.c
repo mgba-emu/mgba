@@ -28,12 +28,13 @@ static void _expandColor(uint16_t c15, uint8_t* r, uint8_t* g, uint8_t* b) {
 	*b = ((c15 >> 9) & 0x3E) | 1;
 }
 
-static color_t _finishColor(uint8_t r, uint8_t g, uint8_t b) {
+static color_t _finishColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 #ifndef COLOR_16_BIT
-	color_t rgb = (r << 2) & 0xF8;
-	rgb |= (g << 10) & 0xF800;
-	rgb |= (b << 18) & 0xF80000;
-	return rgb;
+	color_t rgba = (r << 2) & 0xF8;
+	rgba |= (g << 10) & 0xF800;
+	rgba |= (b << 18) & 0xF80000;
+	rgba |= (a << 27) & 0xF8000000;
+	return rgba;
 #else
 #error Unsupported color depth
 #endif
@@ -75,12 +76,17 @@ static color_t _lookupColor(struct DSGXSoftwareEndpoint* ep, struct DSGXSoftware
 	}
 
 	uint16_t texelCoord = s + t * poly->texW;
+	uint8_t a = 0x1F;
 	switch (poly->texFormat) {
 	case 0:
 	default:
-		return _finishColor(ep->cr, ep->cg, ep->cb);
+		return _finishColor(ep->cr, ep->cg, ep->cb, 0x1F);
 	case 1:
-		return _finishColor(0, 0, 0x3F);
+		texel = ((uint8_t*) poly->texBase)[texelCoord];
+		a = (texel >> 5) & 0x7;
+		a = (a << 2) + (a >> 1);
+		texel &= 0x1F;
+		break;
 	case 2:
 		texel = ((uint8_t*) poly->texBase)[texelCoord >> 2];
 		if (texelCoord & 0x3) {
@@ -99,14 +105,17 @@ static color_t _lookupColor(struct DSGXSoftwareEndpoint* ep, struct DSGXSoftware
 		texel = ((uint8_t*) poly->texBase)[texelCoord];
 		break;
 	case 5:
-		return _finishColor(0x3F, 0, 0x3F);
+		return _finishColor(0x3F, 0, 0x3F, 0x1F);
 	case 6:
-		return _finishColor(0x3F, 0x3F, 0);
+		texel = ((uint8_t*) poly->texBase)[texelCoord];
+		a = (texel >> 3) & 0x1F;
+		texel &= 0x7;
+		break;
 	case 7:
-		return _finishColor(0x3F, 0x3F, 0x3F);
+		return _finishColor(0x3F, 0x3F, 0x3F, 0x1F);
 	}
 	if (DSGXTexParamsIs0Transparent(poly->poly->texParams) && !texel) {
-		return FLAG_UNWRITTEN;
+		return 0;
 	}
 	uint8_t r, g, b;
 	unsigned wr, wg, wb;
@@ -116,12 +125,12 @@ static color_t _lookupColor(struct DSGXSoftwareEndpoint* ep, struct DSGXSoftware
 	case 1:
 	default:
 		// TODO: Alpha
-		return _finishColor(r, g, b);
+		return _finishColor(r, g, b, a);
 	case 0:
 		wr = ((r + 1) * (ep->cr + 1) - 1) >> 6;
 		wg = ((g + 1) * (ep->cg + 1) - 1) >> 6;
 		wb = ((b + 1) * (ep->cb + 1) - 1) >> 6;
-		return _finishColor(wr, wg, wb);
+		return _finishColor(wr, wg, wb, a);
 	}
 }
 
@@ -447,7 +456,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 		struct DSGXSoftwareSpan* span = NULL;
 		struct DSGXSoftwareEndpoint ep;
 		int32_t depth = INT32_MAX;
-		scanline[i] = FLAG_UNWRITTEN;
+		scanline[i] = 0;
 		if (i >= nextSpanX) {
 			size_t nextSpanId = DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans);
 			span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, nextSpanId - 1);
@@ -466,7 +475,8 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 				if (i <= (span->ep[1].x >> 12)) {
 					_lerpEndpoint(span, &ep, i);
 					color_t color = _lookupColor(&ep, span->poly);
-					if (color != FLAG_UNWRITTEN) {
+					if (color & 0xF8000000) {
+						// TODO: Alpha
 						if (softwareRenderer->wSort) {
 							if (ep.w < depth) {
 								depth = ep.w;
