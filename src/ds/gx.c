@@ -1020,6 +1020,7 @@ void DSGXReset(struct DSGX* gx) {
 	gx->activeParams = 0;
 	memset(&gx->currentVertex, 0, sizeof(gx->currentVertex));
 	memset(&gx->nextPoly, 0, sizeof(gx-> nextPoly));
+	gx->currentVertex.color = 0x7FFF;
 }
 
 void DSGXAssociateRenderer(struct DSGX* gx, struct DSGXRenderer* renderer) {
