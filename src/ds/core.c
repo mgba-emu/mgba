@@ -328,13 +328,18 @@ static void _DSCoreClearKeys(struct mCore* core, uint32_t keys) {
 	dscore->keys &= ~keys;
 }
 
-static void _DSCoreSetCursor(struct mCore* core, int x, int y, bool down) {
+static void _DSCoreSetCursorLocation(struct mCore* core, int x, int y) {
 	struct DSCore* dscore = (struct DSCore*) core;
 	dscore->cursorX = x;
 	dscore->cursorY = y - DS_VIDEO_VERTICAL_PIXELS;
-	if ((down && y >= 0) || !down) {
-		dscore->touchDown = down;
+	if (dscore->cursorY < 0) {
+		dscore->cursorY = 0;
 	}
+}
+
+static void _DSCoreSetCursorDown(struct mCore* core, bool down) {
+	struct DSCore* dscore = (struct DSCore*) core;
+	dscore->touchDown = down;
 }
 
 static int32_t _DSCoreFrameCounter(const struct mCore* core) {
@@ -522,7 +527,8 @@ struct mCore* DSCoreCreate(void) {
 	core->setKeys = _DSCoreSetKeys;
 	core->addKeys = _DSCoreAddKeys;
 	core->clearKeys = _DSCoreClearKeys;
-	core->setCursor = _DSCoreSetCursor;
+	core->setCursorLocation = _DSCoreSetCursorLocation;
+	core->setCursorDown = _DSCoreSetCursorDown;
 	core->frameCounter = _DSCoreFrameCounter;
 	core->frameCycles = _DSCoreFrameCycles;
 	core->frequency = _DSCoreFrequency;

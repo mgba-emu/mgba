@@ -532,7 +532,24 @@ static void _mSDLHandleMouseButton(struct mCore* core, struct mSDLPlayer* sdlCon
 	x = x * coreW / windowW;
 	y = y * coreH / windowH;
 #endif
-	core->setCursor(core, x, y, event->state == SDL_PRESSED);
+	core->setCursorLocation(core, x, y);
+	core->setCursorDown(core, event->state == SDL_PRESSED);
+}
+
+static void _mSDLHandleMouseMotion(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_MouseMotionEvent* event) {
+	int x = event->x;
+	int y = event->y;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	int windowW;
+	int windowH;
+	SDL_GetWindowSize(sdlContext->window, &windowW, &windowH);
+	unsigned coreW;
+	unsigned coreH;
+	core->desiredVideoDimensions(core, &coreW, &coreH);
+	x = x * coreW / windowW;
+	y = y * coreH / windowH;
+#endif
+	core->setCursorLocation(core, x, y);
 }
 
 static void _mSDLHandleJoyButton(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_JoyButtonEvent* event) {
@@ -601,6 +618,9 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 	case SDL_MOUSEBUTTONDOWN:
 	case SDL_MOUSEBUTTONUP:
 		_mSDLHandleMouseButton(context->core, sdlContext, &event->button);
+		break;
+	case SDL_MOUSEMOTION:
+		_mSDLHandleMouseMotion(context->core, sdlContext, &event->motion);
 		break;
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
