@@ -19,7 +19,7 @@
 
 #define IDLE_LOOP_THRESHOLD 10000
 
-mLOG_DEFINE_CATEGORY(GBA_MEM, "GBA Memory");
+mLOG_DEFINE_CATEGORY(GBA_MEM, "GBA Memory", "gba.memory");
 
 static void _pristineCow(struct GBA* gba);
 static uint32_t _deadbeef[1] = { 0xE710B710 }; // Illegal instruction on both ARM and Thumb

@@ -21,8 +21,8 @@
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
 
-mLOG_DEFINE_CATEGORY(GBA, "GBA");
-mLOG_DEFINE_CATEGORY(GBA_DEBUG, "GBA Debug");
+mLOG_DEFINE_CATEGORY(GBA, "GBA", "gba");
+mLOG_DEFINE_CATEGORY(GBA_DEBUG, "GBA Debug", "gba.debug");
 
 const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
 

@@ -29,7 +29,7 @@ using namespace QGBA;
 
 static GBAApp* g_app = nullptr;
 
-mLOG_DEFINE_CATEGORY(QT, "Qt");
+mLOG_DEFINE_CATEGORY(QT, "Qt", "platform.qt");
 
 GBAApp::GBAApp(int& argc, char* argv[])
 	: QApplication(argc, argv)

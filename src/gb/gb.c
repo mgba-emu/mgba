@@ -30,7 +30,7 @@ static const uint8_t _knownHeader[4] = { 0xCE, 0xED, 0x66, 0x66};
 #define DMG_2_BIOS_CHECKSUM 0x59C8598E
 #define CGB_BIOS_CHECKSUM 0x41884E46
 
-mLOG_DEFINE_CATEGORY(GB, "GB");
+mLOG_DEFINE_CATEGORY(GB, "GB", "gb");
 
 static void GBInit(void* cpu, struct mCPUComponent* component);
 static void GBDeinit(struct mCPUComponent* component);

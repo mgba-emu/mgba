@@ -15,7 +15,7 @@
 
 const uint32_t DEBUGGER_ID = 0xDEADBEEF;
 
-mLOG_DEFINE_CATEGORY(DEBUGGER, "Debugger");
+mLOG_DEFINE_CATEGORY(DEBUGGER, "Debugger", "core.debugger");
 
 static void mDebuggerInit(void* cpu, struct mCPUComponent* component);
 static void mDebuggerDeinit(struct mCPUComponent* component);

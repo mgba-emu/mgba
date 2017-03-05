@@ -28,23 +28,26 @@ struct mLogger {
 
 struct mLogger* mLogGetContext(void);
 void mLogSetDefaultLogger(struct mLogger*);
-int mLogGenerateCategory(const char*);
+int mLogGenerateCategory(const char*, const char*);
 const char* mLogCategoryName(int);
+const char* mLogCategoryId(int);
+int mLogCategoryById(const char*);
 
 ATTRIBUTE_FORMAT(printf, 3, 4)
 void mLog(int category, enum mLogLevel level, const char* format, ...);
 
 #define mLOG(CATEGORY, LEVEL, ...) mLog(_mLOG_CAT_ ## CATEGORY (), mLOG_ ## LEVEL, __VA_ARGS__)
 
-#define mLOG_DECLARE_CATEGORY(CATEGORY) int _mLOG_CAT_ ## CATEGORY (void);
-#define mLOG_DEFINE_CATEGORY(CATEGORY, NAME) \
+#define mLOG_DECLARE_CATEGORY(CATEGORY) int _mLOG_CAT_ ## CATEGORY (void); extern const char* _mLOG_CAT_ ## CATEGORY ## _ID;
+#define mLOG_DEFINE_CATEGORY(CATEGORY, NAME, ID) \
 	int _mLOG_CAT_ ## CATEGORY (void) { \
 		static int category = 0; \
 		if (!category) { \
-			category = mLogGenerateCategory(NAME); \
+			category = mLogGenerateCategory(NAME, ID); \
 		} \
 		return category; \
-	}
+	} \
+	const char* _mLOG_CAT_ ## CATEGORY ## _ID = ID;
 
 mLOG_DECLARE_CATEGORY(STATUS)
 

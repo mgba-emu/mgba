@@ -11,7 +11,7 @@
 #include <mgba/internal/gba/rr/rr.h>
 #include <mgba/internal/gba/serialize.h>
 
-mLOG_DEFINE_CATEGORY(GBA_IO, "GBA I/O");
+mLOG_DEFINE_CATEGORY(GBA_IO, "GBA I/O", "gba.io");
 
 const char* const GBAIORegisterNames[] = {
 	// Video

@@ -11,7 +11,7 @@
 #include <mgba-util/formatting.h>
 #include <mgba-util/hash.h>
 
-mLOG_DEFINE_CATEGORY(GBA_HW, "GBA Pak Hardware");
+mLOG_DEFINE_CATEGORY(GBA_HW, "GBA Pak Hardware", "gba.hardware");
 
 const int GBA_LUX_LEVELS[10] = { 5, 11, 18, 27, 42, 62, 84, 109, 139, 183 };
 

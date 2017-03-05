@@ -14,7 +14,7 @@
 
 #define BUFFER_SIZE (GBA_AUDIO_SAMPLES >> 2)
 
-mLOG_DEFINE_CATEGORY(SDL_AUDIO, "SDL Audio");
+mLOG_DEFINE_CATEGORY(SDL_AUDIO, "SDL Audio", "platform.sdl.audio");
 
 static void _mSDLAudioCallback(void* context, Uint8* data, int len);
 

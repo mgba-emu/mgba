@@ -17,7 +17,7 @@
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
 const uint32_t GBA_SAVESTATE_VERSION = 0x00000002;
 
-mLOG_DEFINE_CATEGORY(GBA_STATE, "GBA Savestate");
+mLOG_DEFINE_CATEGORY(GBA_STATE, "GBA Savestate", "gba.serialize");
 
 struct GBABundledState {
 	struct GBASerializedState* state;

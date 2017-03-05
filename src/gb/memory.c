@@ -14,7 +14,7 @@
 
 #include <mgba-util/memory.h>
 
-mLOG_DEFINE_CATEGORY(GB_MEM, "GB Memory");
+mLOG_DEFINE_CATEGORY(GB_MEM, "GB Memory", "gb.memory");
 
 static void _pristineCow(struct GB* gba);
 

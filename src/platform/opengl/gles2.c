@@ -12,7 +12,7 @@
 #include <mgba-util/vfs.h>
 
 mLOG_DECLARE_CATEGORY(OPENGL);
-mLOG_DEFINE_CATEGORY(OPENGL, "OpenGL");
+mLOG_DEFINE_CATEGORY(OPENGL, "OpenGL", "video.ogl");
 
 #define MAX_PASSES 8
 

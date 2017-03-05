@@ -25,7 +25,7 @@
 #define RUMBLE_PWM 16
 #define RUMBLE_STEPS 2
 
-mLOG_DEFINE_CATEGORY(SDL_EVENTS, "SDL Events");
+mLOG_DEFINE_CATEGORY(SDL_EVENTS, "SDL Events", "platform.sdl.events");
 
 DEFINE_VECTOR(SDL_JoystickList, struct SDL_JoystickCombo);
 

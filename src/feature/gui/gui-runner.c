@@ -25,7 +25,7 @@
 #include <sys/time.h>
 
 mLOG_DECLARE_CATEGORY(GUI_RUNNER);
-mLOG_DEFINE_CATEGORY(GUI_RUNNER, "GUI Runner");
+mLOG_DEFINE_CATEGORY(GUI_RUNNER, "GUI Runner", "gui.runner");
 
 #define FPS_GRANULARITY 120
 #define FPS_BUFFER_SIZE 3

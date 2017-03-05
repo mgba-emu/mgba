@@ -17,7 +17,7 @@
 #include <zlib.h>
 #endif
 
-mLOG_DEFINE_CATEGORY(SAVESTATE, "Savestate");
+mLOG_DEFINE_CATEGORY(SAVESTATE, "Savestate", "core.serialize");
 
 struct mBundledState {
 	size_t stateSize;

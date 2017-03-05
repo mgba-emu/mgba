@@ -23,7 +23,6 @@
 #include <mgba/core/tile-cache.h>
 #ifdef M_CORE_GBA
 #include <mgba/gba/interface.h>
-#include <mgba/internal/gba/bios.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/gba/core.h>
 #include <mgba/internal/gba/renderers/tile-cache.h>
@@ -239,13 +238,21 @@ GameController::GameController(QObject* parent)
 
 		static const char* savestateMessage = "State %i loaded";
 		static const char* savestateFailedMessage = "State %i failed to load";
+		static int biosCat = -1;
+		static int statusCat = -1;
 		if (!context) {
 			return;
 		}
 		GameController* controller = static_cast<GameController*>(context->userData);
 		QString message;
+		if (biosCat < 0) {
+			biosCat = mLogCategoryById("gba.bios");
+		}
+		if (statusCat < 0) {
+			statusCat = mLogCategoryById("core.status");
+		}
 #ifdef M_CORE_GBA
-		if (level == mLOG_STUB && category == _mLOG_CAT_GBA_BIOS()) {
+		if (level == mLOG_STUB && category == biosCat) {
 			va_list argc;
 			va_copy(argc, args);
 			int immediate = va_arg(argc, int);
@@ -253,7 +260,7 @@ GameController::GameController(QObject* parent)
 			QMetaObject::invokeMethod(controller, "unimplementedBiosCall", Q_ARG(int, immediate));
 		} else
 #endif
-		if (category == _mLOG_CAT_STATUS()) {
+		if (category == statusCat) {
 			// Slot 0 is reserved for suspend points
 			if (strncmp(savestateMessage, format, strlen(savestateMessage)) == 0) {
 				va_list argc;
