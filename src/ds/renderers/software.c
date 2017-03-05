@@ -452,33 +452,6 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 	softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
 
 	GBAVideoSoftwareRendererPostprocessBuffer(softwareRenderer);
-
-#ifdef COLOR_16_BIT
-#if defined(__ARM_NEON) && !defined(__APPLE__)
-	_to16Bit(row, softwareRenderer->row, softwareRenderer->masterEnd);
-#else
-	for (x = 0; x < softwareRenderer->masterEnd; ++x) {
-		row[x] = softwareRenderer->row[x];
-	}
-#endif
-#else
-	switch (softwareRenderer->masterBright) {
-	case 0:
-	default:
-		memcpy(row, softwareRenderer->row, softwareRenderer->masterEnd * sizeof(*row));
-		break;
-	case 1:
-		for (x = 0; x < softwareRenderer->masterEnd; ++x) {
-			row[x] = _brighten(softwareRenderer->row[x], softwareRenderer->masterBrightY);
-		}
-		break;
-	case 2:
-		for (x = 0; x < softwareRenderer->masterEnd; ++x) {
-			row[x] = _darken(softwareRenderer->row[x], softwareRenderer->masterBrightY);
-		}
-		break;
-	}
-#endif
 }
 
 static void _drawScanlineA(struct DSVideoSoftwareRenderer* softwareRenderer, int y) {
@@ -495,7 +468,7 @@ static void _drawScanlineA(struct DSVideoSoftwareRenderer* softwareRenderer, int
 		return;
 	case 1:
 		DSVideoSoftwareRendererDrawGBAScanline(&softwareRenderer->engA.d, softwareRenderer->d.gx, y);
-		return;
+		break;
 	case 2: {
 		uint16_t* vram = &softwareRenderer->d.vram[0x10000 * DSRegisterDISPCNTGetVRAMBlock(softwareRenderer->dispcntA)];
 		for (x = 0; x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
@@ -515,7 +488,7 @@ static void _drawScanlineA(struct DSVideoSoftwareRenderer* softwareRenderer, int
 			color16 |= (color & 0x7C00) >> 10;
 			color = color16;
 #endif
-			softwareRenderer->row[x] = color;
+			softwareRenderer->engA.row[x] = color;
 		}
 		break;
 	}
@@ -525,14 +498,29 @@ static void _drawScanlineA(struct DSVideoSoftwareRenderer* softwareRenderer, int
 
 #ifdef COLOR_16_BIT
 #if defined(__ARM_NEON) && !defined(__APPLE__)
-	_to16Bit(row, softwareRenderer->row, DS_VIDEO_HORIZONTAL_PIXELS);
+	_to16Bit(row, softwareRenderer->engA.row, DS_VIDEO_HORIZONTAL_PIXELS);
 #else
 	for (x = 0; x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
-		row[x] = softwareRenderer->row[x];
+		row[x] = softwareRenderer->engA.row[x];
 	}
 #endif
 #else
-	memcpy(row, softwareRenderer->row, DS_VIDEO_HORIZONTAL_PIXELS * sizeof(*row));
+	switch (softwareRenderer->engA.masterBright) {
+	case 0:
+	default:
+		memcpy(row, softwareRenderer->engA.row, softwareRenderer->engA.masterEnd * sizeof(*row));
+		break;
+	case 1:
+		for (x = 0; x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
+			row[x] = _brighten(softwareRenderer->engA.row[x], softwareRenderer->engA.masterBrightY);
+		}
+		break;
+	case 2:
+		for (x = 0; x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
+			row[x] = _darken(softwareRenderer->engA.row[x], softwareRenderer->engA.masterBrightY);
+		}
+		break;
+	}
 #endif
 }
 
@@ -550,19 +538,34 @@ static void _drawScanlineB(struct DSVideoSoftwareRenderer* softwareRenderer, int
 		return;
 	case 1:
 		DSVideoSoftwareRendererDrawGBAScanline(&softwareRenderer->engB.d, NULL, y);
-		return;
+		break;
 	}
 
 #ifdef COLOR_16_BIT
 #if defined(__ARM_NEON) && !defined(__APPLE__)
-	_to16Bit(row, softwareRenderer->row, DS_VIDEO_HORIZONTAL_PIXELS);
+	_to16Bit(row, softwareRenderer->engB.row, DS_VIDEO_HORIZONTAL_PIXELS);
 #else
 	for (x = 0; x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
-		row[x] = softwareRenderer->row[x];
+		row[x] = softwareRenderer->engB.row[x];
 	}
 #endif
 #else
-	memcpy(row, softwareRenderer->row, DS_VIDEO_HORIZONTAL_PIXELS * sizeof(*row));
+	switch (softwareRenderer->engB.masterBright) {
+	case 0:
+	default:
+		memcpy(row, softwareRenderer->engB.row, softwareRenderer->engB.masterEnd * sizeof(*row));
+		break;
+	case 1:
+		for (x = 0; x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
+			row[x] = _brighten(softwareRenderer->engB.row[x], softwareRenderer->engB.masterBrightY);
+		}
+		break;
+	case 2:
+		for (x = 0; x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
+			row[x] = _darken(softwareRenderer->engB.row[x], softwareRenderer->engB.masterBrightY);
+		}
+		break;
+	}
 #endif
 }
 
@@ -582,13 +585,8 @@ static void DSVideoSoftwareRendererDrawScanline(struct DSVideoRenderer* renderer
 
 static void DSVideoSoftwareRendererDrawScanlineDirectly(struct DSVideoRenderer* renderer, int y, color_t* scanline) {
 	struct DSVideoSoftwareRenderer* softwareRenderer = (struct DSVideoSoftwareRenderer*) renderer;
-	if (!DSRegisterPOWCNT1IsSwap(softwareRenderer->powcnt)) {
-		softwareRenderer->engA.outputBuffer = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * DS_VIDEO_VERTICAL_PIXELS];
-	} else {
-		softwareRenderer->engA.outputBuffer = softwareRenderer->outputBuffer;
-	}
-
 	DSVideoSoftwareRendererDrawGBAScanline(&softwareRenderer->engA.d, softwareRenderer->d.gx, y);
+	memcpy(scanline, softwareRenderer->engA.row, softwareRenderer->engA.masterEnd * sizeof(*scanline));
 }
 
 static void DSVideoSoftwareRendererFinishFrame(struct DSVideoRenderer* renderer) {

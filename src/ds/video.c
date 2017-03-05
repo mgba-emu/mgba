@@ -223,7 +223,7 @@ static void _performCapture(struct DSVideo* video, int y) {
 	}
 	uint16_t* vram = &video->vram[0x10000 * block + DSRegisterDISPCAPCNTGetWriteOffset(dispcap) * 0x4000];
 	const color_t* pixelsA;
-	color_t pixels[DS_VIDEO_VERTICAL_PIXELS];
+	color_t pixels[DS_VIDEO_HORIZONTAL_PIXELS];
 	int width = DS_VIDEO_HORIZONTAL_PIXELS;
 	switch (DSRegisterDISPCAPCNTGetCaptureSize(dispcap)) {
 	case 0:
