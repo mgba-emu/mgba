@@ -106,11 +106,11 @@ static color_t _lookupColor(struct DSGXSoftwareEndpoint* ep, struct DSGXSoftware
 	}
 
 	uint16_t texelCoord = s + t * poly->texW;
-	uint8_t a = 0x1F;
+	uint8_t a = DSGXPolygonAttrsGetAlpha(poly->poly->polyParams);
 	switch (poly->texFormat) {
 	case 0:
 	default:
-		return _finishColor(ep->cr, ep->cg, ep->cb, 0x1F);
+		return _finishColor(ep->cr, ep->cg, ep->cb, a);
 	case 1:
 		texel = ((uint8_t*) poly->texBase)[texelCoord];
 		a = (texel >> 5) & 0x7;
@@ -164,26 +164,6 @@ static color_t _lookupColor(struct DSGXSoftwareEndpoint* ep, struct DSGXSoftware
 	}
 }
 
-static int _edgeSort(const void* a, const void* b) {
-	const struct DSGXSoftwareEdge* ea = a;
-	const struct DSGXSoftwareEdge* eb = b;
-
-	// Sort upside down
-	if (ea->y0 < eb->y0) {
-		return 1;
-	}
-	if (ea->y0 > eb->y0) {
-		return -1;
-	}
-	if (ea->y1 < eb->y1) {
-		return 1;
-	}
-	if (ea->y1 > eb->y1) {
-		return -1;
-	}
-	return 0;
-}
-
 static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftwareEdge* edge, int index, int32_t y) {
 	int32_t height = edge->y1 - edge->y0;
 	int64_t yw = (y << 12) - edge->y0;
@@ -192,9 +172,9 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 	}
 	// Clamp to bounds
 	if (yw < 0) {
-		yw = 0;
+		return false;
 	} else if (yw > height) {
-		yw = height;
+		return false;
 	}
 	yw *= 0x100000000LL / height;
 
@@ -415,7 +395,6 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 			edge->t1 = v0->vt;
 		}
 	}
-	qsort(DSGXSoftwareEdgeListGetPointer(&softwareRenderer->activeEdges, 0), DSGXSoftwareEdgeListSize(&softwareRenderer->activeEdges), sizeof(struct DSGXSoftwareEdge), _edgeSort);
 }
 
 static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int y) {
@@ -426,11 +405,9 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 	DSGXSoftwareSpanListClear(&softwareRenderer->activeSpans);
 	memset(softwareRenderer->bucket, 0, sizeof(*softwareRenderer->bucket) * DS_GX_POLYGON_BUFFER_SIZE);
 	size_t i;
-	for (i = DSGXSoftwareEdgeListSize(&softwareRenderer->activeEdges); i; --i) {
-		size_t idx = i - 1;
-		struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListGetPointer(&softwareRenderer->activeEdges, idx);
+	for (i = 0; i < DSGXSoftwareEdgeListSize(&softwareRenderer->activeEdges); ++i) {
+		struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListGetPointer(&softwareRenderer->activeEdges, i);
 		if (edge->y1 >> 12 < y) {
-			DSGXSoftwareEdgeListShift(&softwareRenderer->activeEdges, idx, 1);
 			continue;
 		} else if (edge->y0 >> 12 > y) {
 			continue;
@@ -439,8 +416,9 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 		unsigned poly = edge->polyId;
 		struct DSGXSoftwareSpan* span = softwareRenderer->bucket[poly];
 		if (span && !span->ep[1].w) {
-			_edgeToSpan(span, edge, 1, y);
-			softwareRenderer->bucket[poly] = NULL;
+			if (_edgeToSpan(span, edge, 1, y)) {
+				softwareRenderer->bucket[poly] = NULL;
+			}
 		} else if (!span) {
 			span = DSGXSoftwareSpanListAppend(&softwareRenderer->activeSpans);
 			memset(&span->ep[1], 0, sizeof(span->ep[1]));
@@ -475,8 +453,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 			_lerpEndpoint(span, &ep, x);
 			color_t color = _lookupColor(&ep, span->poly);
 			unsigned a = color >> 27;
-			if (a == 0x1F || (a && !(scanline[x] & 0xF8000000))) {
-				// TODO: Alpha
+			if (a == 0x1F || !(scanline[x] & 0xF8000000)) {
 				if (softwareRenderer->wSort) {
 					if (ep.w < softwareRenderer->depthBuffer[x]) {
 						softwareRenderer->depthBuffer[x] = ep.w;
@@ -495,14 +472,15 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 					a = scanline[x] >> 27;
 				}
 				color |= a << 27;
-				scanline[x] = color;
 				if (softwareRenderer->wSort) {
 					if (ep.w < softwareRenderer->depthBuffer[x]) {
 						softwareRenderer->depthBuffer[x] = ep.w;
+						scanline[x] = color;
 					}
 				} else {
 					if (ep.z < softwareRenderer->depthBuffer[x]) {
 						softwareRenderer->depthBuffer[x] = ep.z;
+						scanline[x] = color;
 					}
 				}
 			}

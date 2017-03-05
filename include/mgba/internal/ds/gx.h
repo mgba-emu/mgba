@@ -56,6 +56,7 @@ DECL_BITS(DSGXPolygonAttrs, Mode, 4, 2);
 DECL_BIT(DSGXPolygonAttrs, FrontFace, 6);
 DECL_BIT(DSGXPolygonAttrs, BackFace, 7);
 // TODO
+DECL_BITS(DSGXPolygonAttrs, Alpha, 16, 5);
 
 enum DSGXCommand {
 	DS_GX_CMD_NOP = 0,
