@@ -70,7 +70,28 @@ static unsigned _mix32(int weightA, unsigned colorA, int weightB, unsigned color
 	return c;
 }
 
-static color_t _lookupColor(struct DSGXSoftwareEndpoint* ep, struct DSGXSoftwarePolygon* poly) {
+static unsigned _mixTexels(int weightA, unsigned colorA, int weightB, unsigned colorB) {
+	unsigned c = 0;
+	unsigned a, b;
+	a = colorA & 0x7C1F;
+	b = colorB & 0x7C1F;
+	a |= (colorA & 0x3E0) << 16;
+	b |= (colorB & 0x3E0) << 16;
+	c = ((a * weightA + b * weightB) / 8);
+	if (c & 0x04000000) {
+		c = (c & ~0x07E00000) | 0x03E00000;
+	}
+	if (c & 0x0020) {
+		c = (c & ~0x003F) | 0x001F;
+	}
+	if (c & 0x8000) {
+		c = (c & ~0xF800) | 0x7C00;
+	}
+	c = (c & 0x7C1F) | ((c >> 16) & 0x03E0);
+	return c;
+}
+
+static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSoftwareEndpoint* ep, struct DSGXSoftwarePolygon* poly) {
 	// TODO: Optimize
 	uint16_t texel;
 
@@ -135,7 +156,11 @@ static color_t _lookupColor(struct DSGXSoftwareEndpoint* ep, struct DSGXSoftware
 		texel = ((uint8_t*) poly->texBase)[texelCoord];
 		break;
 	case 5:
-		return _finishColor(0x3F, 0, 0x3F, 0x1F);
+		texelCoord = (s & ~3) + (t & 3) + (t >> 2) * poly->texW;
+		texel = ((uint8_t*) poly->texBase)[texelCoord];
+		texel >>= (s & 3) * 2;
+		texel &= 3;
+		break;
 	case 6:
 		texel = ((uint8_t*) poly->texBase)[texelCoord];
 		a = (texel >> 3) & 0x1F;
@@ -144,12 +169,66 @@ static color_t _lookupColor(struct DSGXSoftwareEndpoint* ep, struct DSGXSoftware
 	case 7:
 		return _finishColor(0x3F, 0x3F, 0x3F, 0x1F);
 	}
-	if (DSGXTexParamsIs0Transparent(poly->poly->texParams) && !texel) {
-		return 0;
-	}
 	uint8_t r, g, b;
 	unsigned wr, wg, wb;
-	texel = poly->palBase[texel];
+	if (poly->texFormat == 5) {
+		// TODO: Slot 2 uses upper half
+		uint16_t texel2 = renderer->d.tex[1][texelCoord >> 1];
+		int a = 0x8;
+		int b = 0;
+		switch (texel2 >> 14) {
+		case 0:
+			if (texel == 3) {
+				return 0;
+			}
+			texel = poly->palBase[texel + (texel2 & 0x3FFF) * 2];
+			break;
+		case 1:
+			if (texel == 3) {
+				return 0;
+			}
+			if (texel != 2) {
+				texel = poly->palBase[texel + (texel2 & 0x3FFF) * 2];
+			} else {
+				texel = poly->palBase[(texel2 & 0x3FFF) * 2];
+				texel2 = poly->palBase[(texel2 & 0x3FFF) * 2 + 1];
+				a = 4;
+				b = 4;
+			}
+			break;
+		case 2:
+			texel = poly->palBase[texel + (texel2 & 0x3FFF) * 2];
+			break;
+		case 3:
+			switch (texel) {
+			case 0:
+			case 1:
+				texel = poly->palBase[texel + (texel2 & 0x3FFF) * 2];
+				break;
+			case 2:
+				texel = poly->palBase[(texel2 & 0x3FFF) * 2];
+				texel2 = poly->palBase[(texel2 & 0x3FFF) * 2 + 1];
+				a = 5;
+				b = 3;
+				break;
+			case 3:
+				texel = poly->palBase[(texel2 & 0x3FFF) * 2];
+				texel2 = poly->palBase[(texel2 & 0x3FFF) * 2 + 1];
+				a = 3;
+				b = 5;
+				break;
+			}
+			break;
+		}
+		if (b) {
+			texel = _mixTexels(a, texel, b, texel2);
+		}
+	} else {
+		if (DSGXTexParamsIs0Transparent(poly->poly->texParams) && !texel) {
+			return 0;
+		}
+		texel = poly->palBase[texel];
+	}
 	_expandColor(texel, &r, &g, &b);
 	switch (poly->blendFormat) {
 	case 1:
@@ -451,7 +530,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 		for (; x < span->ep[1].x >> 12 && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
 			struct DSGXSoftwareEndpoint ep;
 			_lerpEndpoint(span, &ep, x);
-			color_t color = _lookupColor(&ep, span->poly);
+			color_t color = _lookupColor(softwareRenderer, &ep, span->poly);
 			unsigned a = color >> 27;
 			if (a == 0x1F || !(scanline[x] & 0xF8000000)) {
 				if (softwareRenderer->wSort) {
