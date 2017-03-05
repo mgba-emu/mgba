@@ -894,6 +894,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			int16_t y = (xyz >> 4) & 0xFFC0;
 			int16_t z = (xyz >> 14) & 0xFFC0;
 			_emitVertex(gx, gx->currentVertex.x + (x >> 6), gx->currentVertex.y + (y >> 6), gx->currentVertex.z + (z >> 6));
+			break;
 		}
 		case DS_GX_CMD_POLYGON_ATTR:
 			gx->nextPoly.polyParams = entry.params[0];
