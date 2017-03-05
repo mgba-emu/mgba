@@ -532,7 +532,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 			_lerpEndpoint(span, &ep, x);
 			color_t color = _lookupColor(softwareRenderer, &ep, span->poly);
 			unsigned a = color >> 27;
-			if (a == 0x1F || !(scanline[x] & 0xF8000000)) {
+			if (a == 0x1F) {
 				if (softwareRenderer->wSort) {
 					if (ep.w < softwareRenderer->depthBuffer[x]) {
 						softwareRenderer->depthBuffer[x] = ep.w;
