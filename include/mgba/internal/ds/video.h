@@ -10,6 +10,7 @@
 
 CXX_GUARD_START
 
+#include <mgba/core/interface.h>
 #include <mgba/core/log.h>
 #include <mgba/core/timing.h>
 #include <mgba/internal/gba/video.h>
@@ -95,6 +96,7 @@ struct DSVideoRenderer {
 	void (*writeOAM)(struct DSVideoRenderer* renderer, uint32_t oam);
 	void (*invalidateExtPal)(struct DSVideoRenderer* renderer, bool obj, bool engB, int slot);
 	void (*drawScanline)(struct DSVideoRenderer* renderer, int y);
+	void (*drawScanlineDirectly)(struct DSVideoRenderer* renderer, int y, color_t* scanline);
 	void (*finishFrame)(struct DSVideoRenderer* renderer);
 
 	void (*getPixels)(struct DSVideoRenderer* renderer, size_t* stride, const void** pixels);

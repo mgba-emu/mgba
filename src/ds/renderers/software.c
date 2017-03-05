@@ -18,6 +18,7 @@ static void DSVideoSoftwareRendererWritePalette(struct DSVideoRenderer* renderer
 static void DSVideoSoftwareRendererWriteOAM(struct DSVideoRenderer* renderer, uint32_t oam);
 static void DSVideoSoftwareRendererInvalidateExtPal(struct DSVideoRenderer* renderer, bool obj, bool engB, int slot);
 static void DSVideoSoftwareRendererDrawScanline(struct DSVideoRenderer* renderer, int y);
+static void DSVideoSoftwareRendererDrawScanlineDirectly(struct DSVideoRenderer* renderer, int y, color_t* scanline);
 static void DSVideoSoftwareRendererFinishFrame(struct DSVideoRenderer* renderer);
 static void DSVideoSoftwareRendererGetPixels(struct DSVideoRenderer* renderer, size_t* stride, const void** pixels);
 static void DSVideoSoftwareRendererPutPixels(struct DSVideoRenderer* renderer, size_t stride, const void* pixels);
@@ -139,6 +140,7 @@ void DSVideoSoftwareRendererCreate(struct DSVideoSoftwareRenderer* renderer) {
 	renderer->d.writeOAM = DSVideoSoftwareRendererWriteOAM;
 	renderer->d.invalidateExtPal = DSVideoSoftwareRendererInvalidateExtPal;
 	renderer->d.drawScanline = DSVideoSoftwareRendererDrawScanline;
+	renderer->d.drawScanlineDirectly = DSVideoSoftwareRendererDrawScanlineDirectly;
 	renderer->d.finishFrame = DSVideoSoftwareRendererFinishFrame;
 	renderer->d.getPixels = DSVideoSoftwareRendererGetPixels;
 	renderer->d.putPixels = DSVideoSoftwareRendererPutPixels;
@@ -576,6 +578,17 @@ static void DSVideoSoftwareRendererDrawScanline(struct DSVideoRenderer* renderer
 
 	_drawScanlineA(softwareRenderer, y);
 	_drawScanlineB(softwareRenderer, y);
+}
+
+static void DSVideoSoftwareRendererDrawScanlineDirectly(struct DSVideoRenderer* renderer, int y, color_t* scanline) {
+	struct DSVideoSoftwareRenderer* softwareRenderer = (struct DSVideoSoftwareRenderer*) renderer;
+	if (!DSRegisterPOWCNT1IsSwap(softwareRenderer->powcnt)) {
+		softwareRenderer->engA.outputBuffer = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * DS_VIDEO_VERTICAL_PIXELS];
+	} else {
+		softwareRenderer->engA.outputBuffer = softwareRenderer->outputBuffer;
+	}
+
+	DSVideoSoftwareRendererDrawGBAScanline(&softwareRenderer->engA.d, softwareRenderer->d.gx, y);
 }
 
 static void DSVideoSoftwareRendererFinishFrame(struct DSVideoRenderer* renderer) {

@@ -23,6 +23,7 @@ static void DSVideoDummyRendererWritePalette(struct DSVideoRenderer* renderer, u
 static void DSVideoDummyRendererWriteOAM(struct DSVideoRenderer* renderer, uint32_t oam);
 static void DSVideoDummyRendererInvalidateExtPal(struct DSVideoRenderer* renderer, bool obj, bool engB, int slot);
 static void DSVideoDummyRendererDrawScanline(struct DSVideoRenderer* renderer, int y);
+static void DSVideoDummyRendererDrawScanlineDirectly(struct DSVideoRenderer* renderer, int y, color_t* scanline);
 static void DSVideoDummyRendererFinishFrame(struct DSVideoRenderer* renderer);
 static void DSVideoDummyRendererGetPixels(struct DSVideoRenderer* renderer, size_t* stride, const void** pixels);
 static void DSVideoDummyRendererPutPixels(struct DSVideoRenderer* renderer, size_t stride, const void* pixels);
@@ -136,6 +137,7 @@ static struct DSVideoRenderer dummyRenderer = {
 	.writeOAM = DSVideoDummyRendererWriteOAM,
 	.invalidateExtPal = DSVideoDummyRendererInvalidateExtPal,
 	.drawScanline = DSVideoDummyRendererDrawScanline,
+	.drawScanlineDirectly = DSVideoDummyRendererDrawScanlineDirectly,
 	.finishFrame = DSVideoDummyRendererFinishFrame,
 	.getPixels = DSVideoDummyRendererGetPixels,
 	.putPixels = DSVideoDummyRendererPutPixels,
@@ -221,6 +223,7 @@ static void _performCapture(struct DSVideo* video, int y) {
 	}
 	uint16_t* vram = &video->vram[0x10000 * block + DSRegisterDISPCAPCNTGetWriteOffset(dispcap) * 0x4000];
 	const color_t* pixelsA;
+	color_t pixels[DS_VIDEO_VERTICAL_PIXELS];
 	int width = DS_VIDEO_HORIZONTAL_PIXELS;
 	switch (DSRegisterDISPCAPCNTGetCaptureSize(dispcap)) {
 	case 0:
@@ -239,15 +242,13 @@ static void _performCapture(struct DSVideo* video, int y) {
 	}
 
 	video->p->gx.renderer->getScanline(video->p->gx.renderer, y, &pixelsA);
-	/*if (DSRegisterDISPCAPCNTIsSourceA(dispcap)) {
+	if (DSRegisterDISPCAPCNTIsSourceA(dispcap)) {
 		// TODO: Process scanline regardless of output type
 		video->p->gx.renderer->getScanline(video->p->gx.renderer, y, &pixelsA);
 	} else {
-		size_t stride;
-		const void* pixels;
-		video->renderer->getPixels(video->renderer, &stride, &pixels);
-		pixelsA = &((const color_t*) pixels)[stride * y];
-	}*/
+		video->renderer->drawScanlineDirectly(video->renderer, y, pixels);
+		pixelsA = pixels;
+	}
 
 	uint16_t pixel;
 	int x;
@@ -633,6 +634,13 @@ static void DSVideoDummyRendererInvalidateExtPal(struct DSVideoRenderer* rendere
 static void DSVideoDummyRendererDrawScanline(struct DSVideoRenderer* renderer, int y) {
 	UNUSED(renderer);
 	UNUSED(y);
+	// Nothing to do
+}
+
+static void DSVideoDummyRendererDrawScanlineDirectly(struct DSVideoRenderer* renderer, int y, color_t* scanline) {
+	UNUSED(renderer);
+	UNUSED(y);
+	UNUSED(scanline);
 	// Nothing to do
 }
 
