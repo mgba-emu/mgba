@@ -40,6 +40,36 @@ static color_t _finishColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 #endif
 }
 
+static unsigned _mix32(int weightA, unsigned colorA, int weightB, unsigned colorB) {
+	unsigned c = 0;
+	unsigned a, b;
+#ifdef COLOR_16_BIT
+#error Unsupported color depth
+#else
+	a = colorA & 0xFF;
+	b = colorB & 0xFF;
+	c |= ((a * weightA + b * weightB) / 32) & 0x1FF;
+	if (c & 0x00000100) {
+		c = 0x000000FF;
+	}
+
+	a = colorA & 0xFF00;
+	b = colorB & 0xFF00;
+	c |= ((a * weightA + b * weightB) / 32) & 0x1FF00;
+	if (c & 0x00010000) {
+		c = (c & 0x000000FF) | 0x0000FF00;
+	}
+
+	a = colorA & 0xFF0000;
+	b = colorB & 0xFF0000;
+	c |= ((a * weightA + b * weightB) / 32) & 0x1FF0000;
+	if (c & 0x01000000) {
+		c = (c & 0x0000FFFF) | 0x00FF0000;
+	}
+#endif
+	return c;
+}
+
 static color_t _lookupColor(struct DSGXSoftwareEndpoint* ep, struct DSGXSoftwarePolygon* poly) {
 	// TODO: Optimize
 	uint16_t texel;
@@ -444,7 +474,8 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 			struct DSGXSoftwareEndpoint ep;
 			_lerpEndpoint(span, &ep, x);
 			color_t color = _lookupColor(&ep, span->poly);
-			if (color & 0xF8000000) {
+			unsigned a = color >> 27;
+			if (a == 0x1F || (a && !(scanline[x] & 0xF8000000))) {
 				// TODO: Alpha
 				if (softwareRenderer->wSort) {
 					if (ep.w < softwareRenderer->depthBuffer[x]) {
@@ -455,6 +486,23 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 					if (ep.z < softwareRenderer->depthBuffer[x]) {
 						softwareRenderer->depthBuffer[x] = ep.z;
 						scanline[x] = color;
+					}
+				}
+			} else if (a) {
+				// TODO: Disable alpha?
+				color = _mix32(a, color, 0x1F - a, scanline[x]);
+				if (scanline[x] >> 27 > a) {
+					a = scanline[x] >> 27;
+				}
+				color |= a << 27;
+				scanline[x] = color;
+				if (softwareRenderer->wSort) {
+					if (ep.w < softwareRenderer->depthBuffer[x]) {
+						softwareRenderer->depthBuffer[x] = ep.w;
+					}
+				} else {
+					if (ep.z < softwareRenderer->depthBuffer[x]) {
+						softwareRenderer->depthBuffer[x] = ep.z;
 					}
 				}
 			}
