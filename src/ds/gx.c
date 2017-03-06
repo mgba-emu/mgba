@@ -924,6 +924,9 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 		case DS_GX_CMD_SWAP_BUFFERS:
 			gx->swapBuffers = true;
 			gx->wSort = entry.params[0] & 2;
+			memset(&gx->currentVertex, 0, sizeof(gx->currentVertex));
+			memset(&gx->nextPoly, 0, sizeof(gx-> nextPoly));
+			gx->currentVertex.color = 0x7FFF;
 			break;
 		case DS_GX_CMD_VIEWPORT:
 			gx->viewportX1 = (uint8_t) entry.params[0];
@@ -1294,6 +1297,7 @@ static void DSGXDummyRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVe
 	UNUSED(verts);
 	UNUSED(polys);
 	UNUSED(polyCount);
+	UNUSED(wSort);
 	// Nothing to do
 }
 
