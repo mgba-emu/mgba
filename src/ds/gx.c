@@ -244,10 +244,10 @@ static int16_t _dotTexture(struct DSGXVertex* vertex, int mode, int32_t* col) {
 	switch (mode) {
 	case 1:
 		a = col[0];
-		b = vertex->s;
+		b = vertex->s << 8;
 		sum = a * b;
 		a = col[4];
-		b = vertex->t;
+		b = vertex->t << 8;
 		sum += a * b;
 		a = col[8];
 		b = MTX_ONE >> 4;
@@ -260,19 +260,19 @@ static int16_t _dotTexture(struct DSGXVertex* vertex, int mode, int32_t* col) {
 		return 0;
 	case 3:
 		a = col[0];
-		b = vertex->vx;
+		b = vertex->vx << 8;
 		sum = a * b;
 		a = col[4];
-		b = vertex->vy;
+		b = vertex->vy << 8;
 		sum += a * b;
 		a = col[8];
-		b = vertex->vz;
+		b = vertex->vz << 8;
 		sum += a * b;
 		a = col[12];
 		b = MTX_ONE;
 		sum += a * b;
 	}
-	return sum >> 12;
+	return sum >> 20;
 }
 
 static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
