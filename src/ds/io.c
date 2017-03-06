@@ -282,6 +282,10 @@ void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 				return;
 			}
 		}
+		if (address >= DS7_IO_BASE_WIFI && address < DS7_IO_END_WIFI) {
+			DSWifiWriteIO(ds, address & 0x7FFF, value);
+			return;
+		}
 		mLOG(DS_IO, STUB, "Stub DS7 I/O register write: %06X:%04X", address, value);
 		if (address >= DS7_REG_MAX) {
 			mLOG(DS_IO, GAME_ERROR, "Write to unused DS7 I/O register: %06X:%04X", address, value);
@@ -391,11 +395,15 @@ uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 			return 0;
 		}
 	default:
+		if (address >= DS7_IO_BASE_WIFI && address < DS7_IO_END_WIFI) {
+			return DSWifiReadIO(ds, address & 0x7FFF);
+		}
 		mLOG(DS_IO, STUB, "Stub DS7 I/O register read: %06X", address);
 	}
 	if (address < DS7_REG_MAX) {
 		return ds->memory.io7[address >> 1];
 	}
+
 	return 0;
 }
 

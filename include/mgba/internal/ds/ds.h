@@ -18,6 +18,7 @@ CXX_GUARD_START
 #include <mgba/internal/ds/memory.h>
 #include <mgba/internal/ds/timer.h>
 #include <mgba/internal/ds/video.h>
+#include <mgba/internal/ds/wifi.h>
 
 extern const uint32_t DS_ARM946ES_FREQUENCY;
 extern const uint32_t DS_ARM7TDMI_FREQUENCY;
@@ -85,6 +86,7 @@ struct DS {
 	struct DSMemory memory;
 	struct DSVideo video;
 	struct DSGX gx;
+	struct DSWifi wifi;
 
 	struct mCoreSync* sync;
 	struct mTimingEvent slice;

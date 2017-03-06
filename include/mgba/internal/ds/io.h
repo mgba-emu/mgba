@@ -122,6 +122,9 @@ enum DS7IORegisters {
 	DS7_REG_BIOSPROT_HI = 0x30A,
 
 	DS7_REG_MAX = 0x51E,
+
+	DS7_IO_BASE_WIFI = 0x800000,
+	DS7_IO_END_WIFI = 0x810000,
 };
 
 enum DS9IORegisters {
