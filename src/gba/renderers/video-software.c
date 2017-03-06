@@ -513,10 +513,6 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	GBAVideoSoftwareRendererPreprocessBuffer(softwareRenderer, y);
 	int spriteLayers = GBAVideoSoftwareRendererPreprocessSpriteLayer(softwareRenderer, y);
 	softwareRenderer->d.vramOBJ[0] = objVramBase;
-	if (softwareRenderer->blendDirty) {
-		_updatePalettes(softwareRenderer);
-		softwareRenderer->blendDirty = false;
-	}
 
 	int w;
 	unsigned priority;
@@ -749,6 +745,11 @@ void GBAVideoSoftwareRendererPreprocessBuffer(struct GBAVideoSoftwareRenderer* s
 		for (; x < end; ++x) {
 			softwareRenderer->row[x] = backdrop;
 		}
+	}
+
+	if (softwareRenderer->blendDirty) {
+		_updatePalettes(softwareRenderer);
+		softwareRenderer->blendDirty = false;
 	}
 }
 
