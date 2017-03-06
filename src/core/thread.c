@@ -36,6 +36,8 @@ static BOOL CALLBACK _createTLS(PINIT_ONCE once, PVOID param, PVOID* context) {
 }
 #endif
 
+static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
+
 static void _changeState(struct mCoreThread* threadContext, enum mCoreThreadState newState, bool broadcast) {
 	MutexLock(&threadContext->stateMutex);
 	threadContext->state = newState;
@@ -147,6 +149,13 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	core->setSync(core, &threadContext->sync);
 	core->reset(core);
 
+	struct mLogFilter filter;
+	if (!threadContext->logger.d.filter) {
+		threadContext->logger.d.filter = &filter;
+		mLogFilterInit(threadContext->logger.d.filter);
+		mLogFilterLoad(threadContext->logger.d.filter, &core->config);
+	}
+
 	if (core->opts.rewindEnable && core->opts.rewindBufferCapacity > 0) {
 		 mCoreRewindContextInit(&threadContext->rewind, core->opts.rewindBufferCapacity);
 		 threadContext->rewind.stateFlags = core->opts.rewindSave ? SAVESTATE_SAVEDATA : 0;
@@ -225,13 +234,18 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 	core->clearCoreCallbacks(core);
 
+	threadContext->logger.d.filter = NULL;
+
 	return 0;
 }
 
 bool mCoreThreadStart(struct mCoreThread* threadContext) {
 	threadContext->state = THREAD_INITIALIZED;
 	threadContext->logger.p = threadContext;
-	threadContext->logLevel = threadContext->core->opts.logLevel;
+	if (!threadContext->logger.d.log) {
+		threadContext->logger.d.log = _mCoreLog;
+		threadContext->logger.d.filter = NULL;
+	}
 
 	if (!threadContext->sync.fpsTarget) {
 		threadContext->sync.fpsTarget = _defaultFPSTarget;
@@ -544,10 +558,7 @@ struct mCoreThread* mCoreThreadGet(void) {
 
 static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
 	UNUSED(logger);
-	struct mCoreThread* thread = mCoreThreadGet();
-	if (thread && !(thread->logLevel & level)) {
-		return;
-	}
+	UNUSED(level);
 	printf("%s: ", mLogCategoryName(category));
 	vprintf(format, args);
 	printf("\n");
@@ -556,9 +567,6 @@ static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level
 struct mLogger* mCoreThreadLogger(void) {
 	struct mCoreThread* thread = mCoreThreadGet();
 	if (thread) {
-		if (!thread->logger.d.log) {
-			thread->logger.d.log = _mCoreLog;
-		}
 		return &thread->logger.d;
 	}
 	return NULL;
