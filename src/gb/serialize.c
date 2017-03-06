@@ -144,6 +144,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	if (error) {
 		return false;
 	}
+	gb->timing.root = NULL;
 
 	gb->cpu->a = state->cpu.a;
 	gb->cpu->f.packed = state->cpu.f;
