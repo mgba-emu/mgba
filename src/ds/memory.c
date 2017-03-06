@@ -967,6 +967,16 @@ uint32_t DS9Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case DS_REGION_IO:
 		value = (DS9IORead(ds, address & 0xFFFE) >> ((address & 0x0001) << 3)) & 0xFF;
 		break;
+	case DS_REGION_VRAM: {
+		unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
+		int i = 0;
+		for (i = 0; i < 9; ++i) {
+			if (mask & (1 << i)) {
+				value |= ((uint8_t*) memory->vramBank[i])[address & _vramMask[i]];
+			}
+		}
+		break;
+	}
 	case DS9_REGION_BIOS:
 		// TODO: Fix undersized BIOS
 		// TODO: Fix masking
