@@ -11,7 +11,7 @@
 #include <mgba-util/math.h>
 #include <mgba-util/vfs.h>
 
-mLOG_DEFINE_CATEGORY(DS_SLOT1, "DS Slot-1");
+mLOG_DEFINE_CATEGORY(DS_SLOT1, "DS Slot-1", "ds.slot1");
 
 static void _slot1SPI(struct mTiming*, void* context, uint32_t cyclesLate);
 static void _transferEvent(struct mTiming* timing, void* context, uint32_t cyclesLate);

@@ -9,7 +9,7 @@
 #include <mgba/core/serialize.h>
 #include <mgba-util/vfs.h>
 
-mLOG_DEFINE_CATEGORY(GBA_RR, "GBA RR");
+mLOG_DEFINE_CATEGORY(GBA_RR, "GBA RR", "gba.rr");
 
 void GBARRInitRecord(struct GBA* gba) {
 	if (!gba || !gba->rr) {

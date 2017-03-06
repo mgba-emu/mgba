@@ -48,6 +48,15 @@ bool endswith(const char* restrict s1, const char* restrict end) {
 	return strcmp(&s1[len - endLen], end) == 0;
 }
 
+bool startswith(const char* restrict s1, const char* restrict start) {
+	size_t len = strlen(s1);
+	size_t startLen = strlen(start);
+	if (len < startLen) {
+		return false;
+	}
+	return strncmp(s1, start, startLen) == 0;
+}
+
 uint32_t utf16Char(const uint16_t** unicode, size_t* length) {
 	if (*length < 2) {
 		*length = 0;

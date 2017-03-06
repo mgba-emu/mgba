@@ -90,7 +90,7 @@ struct GBA {
 	struct mRumble* rumble;
 
 	struct GBARRContext* rr;
-	void* pristineRom;
+	bool isPristine;
 	size_t pristineRomSize;
 	size_t yankedRomSize;
 	uint32_t romCrc32;
@@ -100,7 +100,7 @@ struct GBA {
 	struct mAVStream* stream;
 	struct mKeyCallback* keyCallback;
 	struct mStopCallback* stopCallback;
-	struct mCoreCallbacks* coreCallbacks;
+	struct mCoreCallbacksList coreCallbacks;
 
 	enum GBAIdleLoopOptimization idleOptimization;
 	uint32_t idleLoop;

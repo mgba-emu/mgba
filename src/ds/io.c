@@ -12,7 +12,7 @@
 #include <mgba/internal/ds/slot1.h>
 #include <mgba/internal/ds/spi.h>
 
-mLOG_DEFINE_CATEGORY(DS_IO, "DS I/O");
+mLOG_DEFINE_CATEGORY(DS_IO, "DS I/O", "ds.io");
 
 static void _DSHaltCNT(struct DSCommon* dscore, uint8_t value) {
 	switch (value >> 6) {

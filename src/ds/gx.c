@@ -8,7 +8,7 @@
 #include <mgba/internal/ds/ds.h>
 #include <mgba/internal/ds/io.h>
 
-mLOG_DEFINE_CATEGORY(DS_GX, "DS GX");
+mLOG_DEFINE_CATEGORY(DS_GX, "DS GX", "ds.gx");
 
 #define DS_GX_FIFO_SIZE 256
 #define DS_GX_PIPE_SIZE 4

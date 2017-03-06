@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/core/cpu.h>
+#include <mgba/core/interface.h>
 #include <mgba/core/log.h>
 #include <mgba/core/timing.h>
 
@@ -46,7 +47,6 @@ enum GBIRQVector {
 struct LR35902Core;
 struct mCoreSync;
 struct mAVStream;
-struct mCoreCallbacks;
 struct GB {
 	struct mCPUComponent d;
 
@@ -63,7 +63,7 @@ struct GB {
 
 	uint8_t* keySource;
 
-	void* pristineRom;
+	bool isPristine;
 	size_t pristineRomSize;
 	size_t yankedRomSize;
 	uint32_t romCrc32;
@@ -76,7 +76,7 @@ struct GB {
 	int32_t sramDirtAge;
 	bool sramMaskWriteback;
 
-	struct mCoreCallbacks* coreCallbacks;
+	struct mCoreCallbacksList coreCallbacks;
 	struct mAVStream* stream;
 
 	bool cpuBlocked;

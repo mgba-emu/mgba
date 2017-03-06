@@ -953,6 +953,9 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	audio->playingCh4 = !!(*audio->nr52 & 0x0008);
 	audio->enable = GBAudioEnableGetEnable(*audio->nr52);
 
+	LOAD_32LE(when, 0, &state->ch1.nextFrame);
+	mTimingSchedule(audio->timing, &audio->frameEvent, when);
+
 	LOAD_32LE(flags, 0, flagsIn);
 	LOAD_32LE(ch1Flags, 0, &state->ch1.envelope);
 	audio->ch1.envelope.currentVolume = GBSerializedAudioFlagsGetCh1Volume(flags);
@@ -964,7 +967,6 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	audio->ch1.envelope.nextStep = GBSerializedAudioEnvelopeGetNextStep(ch1Flags);
 	audio->ch1.sweep.realFrequency = GBSerializedAudioEnvelopeGetFrequency(ch1Flags);
 	LOAD_32LE(when, 0, &state->ch1.nextEvent);
-	mTimingDeschedule(audio->timing, &audio->ch1Event);
 	if (audio->ch1.envelope.dead < 2 && audio->playingCh1) {
 		mTimingSchedule(audio->timing, &audio->ch1Event, when);
 	}
@@ -976,7 +978,6 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	audio->ch2.control.length = GBSerializedAudioEnvelopeGetLength(ch2Flags);
 	audio->ch2.envelope.nextStep = GBSerializedAudioEnvelopeGetNextStep(ch2Flags);
 	LOAD_32LE(when, 0, &state->ch2.nextEvent);
-	mTimingDeschedule(audio->timing, &audio->ch2Event);
 	if (audio->ch2.envelope.dead < 2 && audio->playingCh2) {
 		mTimingSchedule(audio->timing, &audio->ch2Event, when);
 	}
@@ -986,7 +987,6 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	memcpy(audio->ch3.wavedata32, state->ch3.wavebanks, sizeof(audio->ch3.wavedata32));
 	LOAD_16LE(audio->ch3.length, 0, &state->ch3.length);
 	LOAD_32LE(when, 0, &state->ch3.nextEvent);
-	mTimingDeschedule(audio->timing, &audio->ch3Event);
 	if (audio->playingCh3) {
 		mTimingSchedule(audio->timing, &audio->ch3Event, when);
 	}
@@ -1002,7 +1002,6 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	audio->ch4.envelope.nextStep = GBSerializedAudioEnvelopeGetNextStep(ch4Flags);
 	LOAD_32LE(audio->ch4.lfsr, 0, &state->ch4.lfsr);
 	LOAD_32LE(when, 0, &state->ch4.nextEvent);
-	mTimingDeschedule(audio->timing, &audio->ch4Event);
 	if (audio->ch4.envelope.dead < 2 && audio->playingCh4) {
 		mTimingSchedule(audio->timing, &audio->ch4Event, when);
 	}
@@ -1017,6 +1016,5 @@ void GBAudioDeserialize(struct GBAudio* audio, const struct GBSerializedState* s
 	GBAudioPSGDeserialize(audio, &state->audio.psg, &state->audio.flags);
 	uint32_t when;
 	LOAD_32LE(when, 0, &state->audio.nextSample);
-	mTimingDeschedule(audio->timing, &audio->sampleEvent);
 	mTimingSchedule(audio->timing, &audio->sampleEvent, when);
 }

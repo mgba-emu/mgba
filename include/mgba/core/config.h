@@ -19,6 +19,12 @@ struct mCoreConfig {
 	char* port;
 };
 
+enum mCoreConfigLevel {
+	mCONFIG_LEVEL_DEFAULT = 0,
+	mCONFIG_LEVEL_CUSTOM,
+	mCONFIG_LEVEL_OVERRIDE,
+};
+
 struct mCoreOptions {
 	char* bios;
 	bool skipBios;
@@ -27,6 +33,7 @@ struct mCoreOptions {
 	int frameskip;
 	bool rewindEnable;
 	int rewindBufferCapacity;
+	bool rewindSave;
 	float fpsTarget;
 	size_t audioBuffers;
 	unsigned sampleRate;
@@ -88,6 +95,8 @@ void mCoreConfigCopyValue(struct mCoreConfig* config, const struct mCoreConfig* 
 
 void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts);
 void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptions* opts);
+
+void mCoreConfigEnumerate(const struct mCoreConfig* config, const char* prefix, void (*handler)(const char* key, const char* value, enum mCoreConfigLevel type, void* user), void* user);
 
 struct Configuration* mCoreConfigGetInput(struct mCoreConfig*);
 struct Configuration* mCoreConfigGetOverrides(struct mCoreConfig*);

@@ -129,6 +129,7 @@ struct GBAVideoSoftwareRenderer {
 	unsigned target1Bd;
 	unsigned target2Obj;
 	unsigned target2Bd;
+	bool blendDirty;
 	enum BlendEffect blendEffect;
 	color_t normalPalette[512];
 	color_t variantPalette[512];

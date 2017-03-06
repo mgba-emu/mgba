@@ -101,7 +101,7 @@ static void _load(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	struct GBCLIDebugger* gbDebugger = (struct GBCLIDebugger*) debugger->system;
 
-	mCoreLoadState(gbDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT);
+	mCoreLoadState(gbDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
 }
 
 static void _save(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -118,5 +118,5 @@ static void _save(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	struct GBCLIDebugger* gbDebugger = (struct GBCLIDebugger*) debugger->system;
 
-	mCoreSaveState(gbDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT);
+	mCoreSaveState(gbDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
 }

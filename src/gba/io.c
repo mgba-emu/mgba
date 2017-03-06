@@ -11,7 +11,7 @@
 #include <mgba/internal/gba/rr/rr.h>
 #include <mgba/internal/gba/serialize.h>
 
-mLOG_DEFINE_CATEGORY(GBA_IO, "GBA I/O");
+mLOG_DEFINE_CATEGORY(GBA_IO, "GBA I/O", "gba.io");
 
 const char* const GBAIORegisterNames[] = {
 	// Video
@@ -251,8 +251,8 @@ static const int _isRSpecialRegister[REG_MAX >> 1] = {
 	1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1,
 	// Audio
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 1, 0, 0, 0, 1, 0,
+	0, 0, 1, 0, 0, 0, 1, 0,
 	0, 0, 0, 0, 1, 0, 0, 0,
 	1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 0, 0, 0, 0,
@@ -292,9 +292,9 @@ static const int _isWSpecialRegister[REG_MAX >> 1] = {
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	// Audio
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 1, 0, 0, 0, 0, 0,
+	1, 1, 1, 0, 1, 0, 1, 0,
+	1, 1, 1, 0, 1, 0, 1, 0,
+	1, 0, 1, 0, 0, 0, 0, 0,
 	1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 0, 0, 0, 0,
 	// DMA
@@ -960,7 +960,6 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 			gba->timers[i].lastEvent = when + mTimingCurrentTime(&gba->timing);
 		}
 		LOAD_32(when, 0, &state->timers[i].nextEvent);
-		mTimingDeschedule(&gba->timing, &gba->timers[i].event);
 		if (GBATimerFlagsIsEnable(gba->timers[i].flags)) {
 			mTimingSchedule(&gba->timing, &gba->timers[i].event, when);
 		}

@@ -148,7 +148,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 	GBAKeyEditor* editor = new GBAKeyEditor(inputController, InputController::KEYBOARD, QString(), this);
 	m_ui.stackedWidget->addWidget(editor);
-	m_ui.tabs->addItem("Keyboard");
+	m_ui.tabs->addItem(tr("Keyboard"));
 	connect(m_ui.buttonBox, SIGNAL(accepted()), editor, SLOT(save()));
 
 	GBAKeyEditor* buttonEditor = nullptr;
@@ -157,7 +157,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	const char* profile = inputController->profileForType(SDL_BINDING_BUTTON);
 	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
 	m_ui.stackedWidget->addWidget(buttonEditor);
-	m_ui.tabs->addItem("Controllers");
+	m_ui.tabs->addItem(tr("Controllers"));
 	connect(m_ui.buttonBox, SIGNAL(accepted()), buttonEditor, SLOT(save()));
 #endif
 
@@ -176,7 +176,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	shortcutView->setController(shortcutController);
 	shortcutView->setInputController(inputController);
 	m_ui.stackedWidget->addWidget(shortcutView);
-	m_ui.tabs->addItem("Shortcuts");
+	m_ui.tabs->addItem(tr("Shortcuts"));
 }
 
 void SettingsView::selectBios(QLineEdit* bios) {
@@ -206,6 +206,7 @@ void SettingsView::updateConfig() {
 	saveSetting("mute", m_ui.mute);
 	saveSetting("rewindEnable", m_ui.rewind);
 	saveSetting("rewindBufferCapacity", m_ui.rewindCapacity);
+	saveSetting("rewindSave", m_ui.rewindSave);
 	saveSetting("resampleVideo", m_ui.resampleVideo);
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
@@ -234,13 +235,13 @@ void SettingsView::updateConfig() {
 		break;
 	}
 
-	int loadState = 0;
+	int loadState = SAVESTATE_RTC;
 	loadState |= m_ui.loadStateScreenshot->isChecked() ? SAVESTATE_SCREENSHOT : 0;
 	loadState |= m_ui.loadStateSave->isChecked() ? SAVESTATE_SAVEDATA : 0;
 	loadState |= m_ui.loadStateCheats->isChecked() ? SAVESTATE_CHEATS : 0;
 	saveSetting("loadStateExtdata", loadState);
 
-	int saveState = 0;
+	int saveState = SAVESTATE_RTC;
 	saveState |= m_ui.saveStateScreenshot->isChecked() ? SAVESTATE_SCREENSHOT : 0;
 	saveState |= m_ui.saveStateSave->isChecked() ? SAVESTATE_SAVEDATA : 0;
 	saveState |= m_ui.saveStateCheats->isChecked() ? SAVESTATE_CHEATS : 0;
@@ -287,6 +288,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("mute", m_ui.mute);
 	loadSetting("rewindEnable", m_ui.rewind);
 	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
+	loadSetting("rewindSave", m_ui.rewindSave);
 	loadSetting("resampleVideo", m_ui.resampleVideo);
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
@@ -319,7 +321,7 @@ void SettingsView::reloadConfig() {
 	bool ok;
 	int loadState = loadSetting("loadStateExtdata").toInt(&ok);
 	if (!ok) {
-		loadState = SAVESTATE_SCREENSHOT;
+		loadState = SAVESTATE_SCREENSHOT | SAVESTATE_RTC;
 	}
 	m_ui.loadStateScreenshot->setChecked(loadState & SAVESTATE_SCREENSHOT);
 	m_ui.loadStateSave->setChecked(loadState & SAVESTATE_SAVEDATA);
@@ -327,7 +329,7 @@ void SettingsView::reloadConfig() {
 
 	int saveState = loadSetting("saveStateExtdata").toInt(&ok);
 	if (!ok) {
-		saveState = SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS;
+		saveState = SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC;
 	}
 	m_ui.saveStateScreenshot->setChecked(saveState & SAVESTATE_SCREENSHOT);
 	m_ui.saveStateSave->setChecked(saveState & SAVESTATE_SAVEDATA);

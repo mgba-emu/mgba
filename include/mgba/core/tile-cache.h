@@ -58,6 +58,8 @@ void mTileCacheSetPalette(struct mTileCache* cache, int palette);
 
 const uint16_t* mTileCacheGetTile(struct mTileCache* cache, unsigned tileId, unsigned paletteId);
 const uint16_t* mTileCacheGetTileIfDirty(struct mTileCache* cache, struct mTileCacheEntry* entry, unsigned tileId, unsigned paletteId);
+const uint8_t* mTileCacheGetRawTile(struct mTileCache* cache, unsigned tileId);
+const uint16_t* mTileCacheGetPalette(struct mTileCache* cache, unsigned paletteId);
 
 CXX_GUARD_END
 

@@ -17,7 +17,7 @@
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
 const uint32_t GBA_SAVESTATE_VERSION = 0x00000002;
 
-mLOG_DEFINE_CATEGORY(GBA_STATE, "GBA Savestate");
+mLOG_DEFINE_CATEGORY(GBA_STATE, "GBA Savestate", "gba.serialize");
 
 struct GBABundledState {
 	struct GBASerializedState* state;
@@ -146,7 +146,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	if (error) {
 		return false;
 	}
-	LOAD_32(gba->timing.masterCycles, 0, &state->masterCycles);
+	gba->timing.root = NULL;
 	size_t i;
 	for (i = 0; i < 16; ++i) {
 		LOAD_32(gba->cpu->gprs[i], i * sizeof(gba->cpu->gprs[0]), state->cpu.gprs);

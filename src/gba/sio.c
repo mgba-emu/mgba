@@ -8,7 +8,7 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
 
-mLOG_DEFINE_CATEGORY(GBA_SIO, "GBA Serial I/O");
+mLOG_DEFINE_CATEGORY(GBA_SIO, "GBA Serial I/O", "gba.sio");
 
 const int GBASIOCyclesPerTransfer[4][MAX_GBAS] = {
 	{ 38326, 73003, 107680, 142356 },

@@ -8,7 +8,7 @@
 #include <mgba/internal/ds/ds.h>
 #include <mgba/internal/ds/io.h>
 
-mLOG_DEFINE_CATEGORY(DS_IPC, "DS IPC");
+mLOG_DEFINE_CATEGORY(DS_IPC, "DS IPC", "ds.ipc");
 
 void DSIPCWriteSYNC(struct ARMCore* remoteCpu, uint16_t* remoteIo, int16_t value) {
 	remoteIo[DS_REG_IPCSYNC >> 1] &= 0xFFF0;

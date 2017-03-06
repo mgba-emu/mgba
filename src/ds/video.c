@@ -13,7 +13,7 @@
 
 #include <mgba-util/memory.h>
 
-mLOG_DEFINE_CATEGORY(DS_VIDEO, "DS Video");
+mLOG_DEFINE_CATEGORY(DS_VIDEO, "DS Video", "ds.video");
 
 static void DSVideoDummyRendererInit(struct DSVideoRenderer* renderer);
 static void DSVideoDummyRendererReset(struct DSVideoRenderer* renderer);

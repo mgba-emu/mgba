@@ -19,7 +19,7 @@
 
 #define IDLE_LOOP_THRESHOLD 10000
 
-mLOG_DEFINE_CATEGORY(GBA_MEM, "GBA Memory");
+mLOG_DEFINE_CATEGORY(GBA_MEM, "GBA Memory", "gba.memory");
 
 static void _pristineCow(struct GBA* gba);
 static uint32_t _deadbeef[1] = { 0xE710B710 }; // Illegal instruction on both ARM and Thumb
@@ -98,13 +98,12 @@ void GBAMemoryDeinit(struct GBA* gba) {
 }
 
 void GBAMemoryReset(struct GBA* gba) {
-	if (gba->memory.wram) {
-		mappedMemoryFree(gba->memory.wram, SIZE_WORKING_RAM);
-	}
-	gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
-	if (gba->pristineRom && !gba->memory.rom) {
-		// Multiboot
-		memcpy(gba->memory.wram, gba->pristineRom, gba->pristineRomSize);
+	if (gba->memory.rom || gba->memory.fullBios) {
+		// Not multiboot
+		if (gba->memory.wram) {
+			mappedMemoryFree(gba->memory.wram, SIZE_WORKING_RAM);
+		}
+		gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
 	}
 
 	if (gba->memory.iwram) {
@@ -300,9 +299,15 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		cpu->memory.activeMask = 0;
 		if (gba->yankedRomSize || !gba->hardCrash) {
 			mLOG(GBA_MEM, GAME_ERROR, "Jumped to invalid address: %08X", address);
-		} else if (gba->coreCallbacks && gba->coreCallbacks->coreCrashed) {
+		} else if (mCoreCallbacksListSize(&gba->coreCallbacks)) {
 			mLOG(GBA_MEM, GAME_ERROR, "Jumped to invalid address: %08X", address);
-			gba->coreCallbacks->coreCrashed(gba->coreCallbacks->context);
+			size_t c;
+			for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
+				struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
+				if (callbacks->coreCrashed) {
+					callbacks->coreCrashed(callbacks->context);
+				}
+			}
 		} else {
 			mLOG(GBA_MEM, FATAL, "Jumped to invalid address: %08X", address);
 		}
@@ -1537,10 +1542,19 @@ void GBAMemoryDeserialize(struct GBAMemory* memory, const struct GBASerializedSt
 }
 
 void _pristineCow(struct GBA* gba) {
-	if (gba->memory.rom != gba->pristineRom) {
+	if (!gba->isPristine) {
 		return;
 	}
-	gba->memory.rom = anonymousMemoryMap(SIZE_CART0);
-	memcpy(gba->memory.rom, gba->pristineRom, gba->memory.romSize);
-	memset(((uint8_t*) gba->memory.rom) + gba->memory.romSize, 0xFF, SIZE_CART0 - gba->memory.romSize);
+	void* newRom = anonymousMemoryMap(SIZE_CART0);
+	memcpy(newRom, gba->memory.rom, gba->memory.romSize);
+	memset(((uint8_t*) newRom) + gba->memory.romSize, 0xFF, SIZE_CART0 - gba->memory.romSize);
+	if (gba->romVf) {
+#ifndef _3DS
+		gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->memory.romSize);
+#endif
+		gba->romVf->close(gba->romVf);
+		gba->romVf = NULL;
+	}
+	gba->memory.rom = newRom;
+	gba->memory.hw.gpioBase = &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1];
 }

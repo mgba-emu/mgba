@@ -109,13 +109,11 @@ void GBTimerDeserialize(struct GBTimer* timer, const struct GBSerializedState* s
 
 	uint32_t when;
 	LOAD_32LE(when, 0, &state->timer.nextEvent);
-	mTimingDeschedule(&timer->p->timing, &timer->event);
 	mTimingSchedule(&timer->p->timing, &timer->event, when);
 
 	GBSerializedTimerFlags flags;
 	LOAD_32LE(flags, 0, &state->timer.flags);
 
-	mTimingDeschedule(&timer->p->timing, &timer->irq);
 	if (GBSerializedTimerFlagsIsIrqPending(flags)) {
 		LOAD_32LE(when, 0, &state->timer.nextIRQ);
 		mTimingSchedule(&timer->p->timing, &timer->irq, when);

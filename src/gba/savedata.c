@@ -26,7 +26,7 @@
 #define EEPROM_SETTLE_CYCLES 115000
 #define CLEANUP_THRESHOLD 15
 
-mLOG_DEFINE_CATEGORY(GBA_SAVE, "GBA Savedata");
+mLOG_DEFINE_CATEGORY(GBA_SAVE, "GBA Savedata", "gba.savedata");
 
 static void _flashSwitchBank(struct GBASavedata* savedata, int bank);
 static void _flashErase(struct GBASavedata* savedata);

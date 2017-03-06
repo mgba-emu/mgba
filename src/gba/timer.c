@@ -155,9 +155,6 @@ void GBATimerWriteTMCNT_HI(struct GBATimer* timer, struct mTiming* timing, struc
 		timer->lastEvent = timing->masterCycles + cpu->cycles;
 	} else if (wasEnabled && !GBATimerFlagsIsEnable(timer->flags)) {
 		mTimingDeschedule(timing, &timer->event);
-		if (!GBATimerFlagsIsCountUp(timer->flags)) {
-			*io = timer->oldReload + ((cpu->cycles - timer->lastEvent) >> oldPrescale);
-		}
 	} else if (GBATimerFlagsIsEnable(timer->flags) && GBATimerFlagsGetPrescaleBits(timer->flags) != oldPrescale && !GBATimerFlagsIsCountUp(timer->flags)) {
 		mTimingDeschedule(timing, &timer->event);
 		mTimingSchedule(timing, &timer->event, timer->overflowInterval - timer->lastEvent);

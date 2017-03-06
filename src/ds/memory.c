@@ -12,7 +12,7 @@
 #include <mgba-util/math.h>
 #include <mgba-util/memory.h>
 
-mLOG_DEFINE_CATEGORY(DS_MEM, "DS Memory");
+mLOG_DEFINE_CATEGORY(DS_MEM, "DS Memory", "ds.memory");
 
 static uint32_t _deadbeef[1] = { 0xE710B710 }; // Illegal instruction on both ARM and Thumb
 const uint32_t redzoneInstruction = 0xE7F0DEF0;

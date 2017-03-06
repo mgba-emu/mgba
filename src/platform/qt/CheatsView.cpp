@@ -46,19 +46,19 @@ CheatsView::CheatsView(GameController* controller, QWidget* parent)
 			enterCheat(GBA_CHEAT_AUTODETECT);
 		});
 
-		add = new QPushButton("Add GameShark");
+		add = new QPushButton(tr("Add GameShark"));
 		m_ui.gridLayout->addWidget(add, m_ui.gridLayout->rowCount(), 2, 1, 2);
 		connect(add, &QPushButton::clicked, [this]() {
 			enterCheat(GBA_CHEAT_GAMESHARK);
 		});
 
-		add = new QPushButton("Add Pro Action Replay");
+		add = new QPushButton(tr("Add Pro Action Replay"));
 		m_ui.gridLayout->addWidget(add, m_ui.gridLayout->rowCount(), 2, 1, 2);
 		connect(add, &QPushButton::clicked, [this]() {
 			enterCheat(GBA_CHEAT_PRO_ACTION_REPLAY);
 		});
 
-		add = new QPushButton("Add CodeBreaker");
+		add = new QPushButton(tr("Add CodeBreaker"));
 		m_ui.gridLayout->addWidget(add, m_ui.gridLayout->rowCount(), 2, 1, 2);
 		connect(add, &QPushButton::clicked, [this]() {
 			enterCheat(GBA_CHEAT_CODEBREAKER);
@@ -71,13 +71,13 @@ CheatsView::CheatsView(GameController* controller, QWidget* parent)
 			enterCheat(GB_CHEAT_AUTODETECT);
 		});
 
-		add = new QPushButton("Add GameShark");
+		add = new QPushButton(tr("Add GameShark"));
 		m_ui.gridLayout->addWidget(add, m_ui.gridLayout->rowCount(), 2, 1, 2);
 		connect(add, &QPushButton::clicked, [this]() {
 			enterCheat(GB_CHEAT_GAMESHARK);
 		});
 
-		add = new QPushButton("Add GameGenie");
+		add = new QPushButton(tr("Add GameGenie"));
 		m_ui.gridLayout->addWidget(add, m_ui.gridLayout->rowCount(), 2, 1, 2);
 		connect(add, &QPushButton::clicked, [this]() {
 			enterCheat(GB_CHEAT_GAME_GENIE);

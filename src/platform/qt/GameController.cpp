@@ -23,7 +23,6 @@
 #include <mgba/core/tile-cache.h>
 #ifdef M_CORE_GBA
 #include <mgba/gba/interface.h>
-#include <mgba/internal/gba/bios.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/gba/core.h>
 #include <mgba/internal/gba/renderers/tile-cache.h>
@@ -70,8 +69,8 @@ GameController::GameController(QObject* parent)
 	, m_stateSlot(1)
 	, m_backupLoadState(nullptr)
 	, m_backupSaveState(nullptr)
-	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS)
-	, m_loadStateFlags(SAVESTATE_SCREENSHOT)
+	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC)
+	, m_loadStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_RTC)
 	, m_override(nullptr)
 {
 #ifdef M_CORE_GBA
@@ -90,8 +89,6 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.startCallback = [](mCoreThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		mRTCGenericSourceInit(&controller->m_rtc, context->core);
-		context->core->setRTC(context->core, &controller->m_rtc.d);
 		context->core->setRotation(context->core, controller->m_inputController->rotationSource());
 		context->core->setRumble(context->core, controller->m_inputController->rumble());
 
@@ -241,13 +238,21 @@ GameController::GameController(QObject* parent)
 
 		static const char* savestateMessage = "State %i loaded";
 		static const char* savestateFailedMessage = "State %i failed to load";
+		static int biosCat = -1;
+		static int statusCat = -1;
 		if (!context) {
 			return;
 		}
 		GameController* controller = static_cast<GameController*>(context->userData);
 		QString message;
+		if (biosCat < 0) {
+			biosCat = mLogCategoryById("gba.bios");
+		}
+		if (statusCat < 0) {
+			statusCat = mLogCategoryById("core.status");
+		}
 #ifdef M_CORE_GBA
-		if (level == mLOG_STUB && category == _mLOG_CAT_GBA_BIOS()) {
+		if (level == mLOG_STUB && category == biosCat) {
 			va_list argc;
 			va_copy(argc, args);
 			int immediate = va_arg(argc, int);
@@ -255,7 +260,7 @@ GameController::GameController(QObject* parent)
 			QMetaObject::invokeMethod(controller, "unimplementedBiosCall", Q_ARG(int, immediate));
 		} else
 #endif
-		if (category == _mLOG_CAT_STATUS()) {
+		if (category == statusCat) {
 			// Slot 0 is reserved for suspend points
 			if (strncmp(savestateMessage, format, strlen(savestateMessage)) == 0) {
 				va_list argc;
@@ -731,7 +736,7 @@ void GameController::frameAdvance() {
 	}
 }
 
-void GameController::setRewind(bool enable, int capacity) {
+void GameController::setRewind(bool enable, int capacity, bool rewindSave) {
 	if (m_gameOpen) {
 		Interrupter interrupter(this);
 		if (m_threadContext.core->opts.rewindEnable && m_threadContext.core->opts.rewindBufferCapacity > 0) {
@@ -739,8 +744,10 @@ void GameController::setRewind(bool enable, int capacity) {
 		}
 		m_threadContext.core->opts.rewindEnable = enable;
 		m_threadContext.core->opts.rewindBufferCapacity = capacity;
+		m_threadContext.core->opts.rewindSave = rewindSave;
 		if (enable && capacity > 0) {
 			mCoreRewindContextInit(&m_threadContext.rewind, capacity);
+			 m_threadContext.rewind.stateFlags = rewindSave ? SAVESTATE_SAVEDATA : 0;
 		}
 	}
 }
@@ -1194,17 +1201,26 @@ void GameController::setLuminanceLevel(int level) {
 }
 
 void GameController::setRealTime() {
-	m_rtc.override = RTC_NO_OVERRIDE;
+	if (!isLoaded()) {
+		return;
+	}
+	m_threadContext.core->rtc.override = RTC_NO_OVERRIDE;
 }
 
 void GameController::setFixedTime(const QDateTime& time) {
-	m_rtc.override = RTC_FIXED;
-	m_rtc.value = time.toMSecsSinceEpoch() / 1000;
+	if (!isLoaded()) {
+		return;
+	}
+	m_threadContext.core->rtc.override = RTC_FIXED;
+	m_threadContext.core->rtc.value = time.toMSecsSinceEpoch();
 }
 
 void GameController::setFakeEpoch(const QDateTime& time) {
-	m_rtc.override = RTC_FAKE_EPOCH;
-	m_rtc.value = time.toMSecsSinceEpoch() / 1000;
+	if (!isLoaded()) {
+		return;
+	}
+	m_threadContext.core->rtc.override = RTC_FAKE_EPOCH;
+	m_threadContext.core->rtc.value = time.toMSecsSinceEpoch();
 }
 
 void GameController::updateKeys() {

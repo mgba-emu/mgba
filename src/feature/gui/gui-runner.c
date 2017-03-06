@@ -25,7 +25,7 @@
 #include <sys/time.h>
 
 mLOG_DECLARE_CATEGORY(GUI_RUNNER);
-mLOG_DEFINE_CATEGORY(GUI_RUNNER, "GUI Runner");
+mLOG_DEFINE_CATEGORY(GUI_RUNNER, "GUI Runner", "gui.runner");
 
 #define FPS_GRANULARITY 120
 #define FPS_BUFFER_SIZE 3
@@ -434,7 +434,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				mCoreSaveState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA);
 				break;
 			case RUNNER_LOAD_STATE:
-				mCoreLoadState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT);
+				mCoreLoadState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
 				break;
 			case RUNNER_SCREENSHOT:
 				mCoreTakeScreenshot(runner->core);

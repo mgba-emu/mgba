@@ -11,7 +11,7 @@
 #include <mgba-util/formatting.h>
 #include <mgba-util/hash.h>
 
-mLOG_DEFINE_CATEGORY(GBA_HW, "GBA Pak Hardware");
+mLOG_DEFINE_CATEGORY(GBA_HW, "GBA Pak Hardware", "gba.hardware");
 
 const int GBA_LUX_LEVELS[10] = { 5, 11, 18, 27, 42, 62, 84, 109, 139, 183 };
 
@@ -554,6 +554,7 @@ uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uin
 					gbp->p->p->rumble->setRumble(gbp->p->p->rumble, (rx & mask) == 0x22);
 				}
 			}
+			mTimingDeschedule(&gbp->p->p->timing, &gbp->p->gbpNextEvent);
 			mTimingSchedule(&gbp->p->p->timing, &gbp->p->gbpNextEvent, 2048);
 		}
 		value &= 0x78FB;

@@ -15,7 +15,7 @@
 
 #include <mgba-util/memory.h>
 
-mLOG_DEFINE_CATEGORY(GBA_VIDEO, "GBA Video");
+mLOG_DEFINE_CATEGORY(GBA_VIDEO, "GBA Video", "gba.video");
 
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererReset(struct GBAVideoRenderer* renderer);
@@ -338,7 +338,6 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 	} else {
 		video->event.callback = _startHblank;
 	}
-	mTimingDeschedule(&video->p->timing, &video->event);
 	mTimingSchedule(&video->p->timing, &video->event, when);
 
 	LOAD_16(video->vcount, REG_VCOUNT, state->io);

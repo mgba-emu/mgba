@@ -104,6 +104,7 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 	}
 	softwareRenderer->objExtPalette = NULL;
 	softwareRenderer->objExtVariantPalette = NULL;
+	softwareRenderer->blendDirty = false;
 	_updatePalettes(softwareRenderer);
 
 	softwareRenderer->blda = 0;
@@ -270,11 +271,14 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		value &= 0x1F1F;
 		break;
 	case REG_BLDY:
-		softwareRenderer->bldy = value & 0x1F;
-		if (softwareRenderer->bldy > 0x10) {
-			softwareRenderer->bldy = 0x10;
+		value &= 0x1F;
+		if (value > 0x10) {
+			value = 0x10;
 		}
-		_updatePalettes(softwareRenderer);
+		if (softwareRenderer->bldy != value) {
+			softwareRenderer->bldy = value;
+			softwareRenderer->blendDirty = true;
+		}
 		break;
 	case REG_WIN0H:
 		softwareRenderer->winN[0].h.end = value;
@@ -509,6 +513,10 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	GBAVideoSoftwareRendererPreprocessBuffer(softwareRenderer, y);
 	int spriteLayers = GBAVideoSoftwareRendererPreprocessSpriteLayer(softwareRenderer, y);
 	softwareRenderer->d.vramOBJ[0] = objVramBase;
+	if (softwareRenderer->blendDirty) {
+		_updatePalettes(softwareRenderer);
+		softwareRenderer->blendDirty = false;
+	}
 
 	int w;
 	unsigned priority;
@@ -688,7 +696,7 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 	renderer->target2Bd = GBARegisterBLDCNTGetTarget2Bd(value);
 
 	if (oldEffect != renderer->blendEffect) {
-		_updatePalettes(renderer);
+		renderer->blendDirty = true;
 	}
 }
 

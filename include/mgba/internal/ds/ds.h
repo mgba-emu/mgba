@@ -113,7 +113,7 @@ struct DS {
 
 	struct mAVStream* stream;
 	struct mKeyCallback* keyCallback;
-	struct mCoreCallbacks* coreCallbacks;
+	struct mCoreCallbacksList coreCallbacks;
 
 	struct mTimingEvent divEvent;
 	struct mTimingEvent sqrtEvent;

@@ -13,7 +13,7 @@
 
 const uint32_t M_CHEAT_DEVICE_ID = 0xABADC0DE;
 
-mLOG_DEFINE_CATEGORY(CHEATS, "Cheats");
+mLOG_DEFINE_CATEGORY(CHEATS, "Cheats", "core.cheats");
 
 DEFINE_VECTOR(mCheatList, struct mCheat);
 DEFINE_VECTOR(mCheatSets, struct mCheatSet*);

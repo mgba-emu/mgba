@@ -6,11 +6,12 @@
 #include <mgba/internal/gb/mbc.h>
 
 #include <mgba/core/interface.h>
+#include <mgba/internal/lr35902/lr35902.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/memory.h>
 #include <mgba-util/vfs.h>
 
-mLOG_DEFINE_CATEGORY(GB_MBC, "GB MBC");
+mLOG_DEFINE_CATEGORY(GB_MBC, "GB MBC", "gb.mbc");
 
 static void _GBMBCNone(struct GB* gb, uint16_t address, uint8_t value) {
 	UNUSED(gb);
@@ -28,18 +29,21 @@ static void _GBMBC6(struct GB*, uint16_t address, uint8_t value);
 static void _GBMBC7(struct GB*, uint16_t address, uint8_t value);
 static void _GBHuC3(struct GB*, uint16_t address, uint8_t value);
 
-void GBMBCSwitchBank(struct GBMemory* memory, int bank) {
+void GBMBCSwitchBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_BANK0;
-	if (bankStart + GB_SIZE_CART_BANK0 > memory->romSize) {
+	if (bankStart + GB_SIZE_CART_BANK0 > gb->memory.romSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
-		bankStart &= (memory->romSize - 1);
+		bankStart &= (gb->memory.romSize - 1);
 		bank = bankStart / GB_SIZE_CART_BANK0;
 		if (!bank) {
 			++bank;
 		}
 	}
-	memory->romBank = &memory->rom[bankStart];
-	memory->currentBank = bank;
+	gb->memory.romBank = &gb->memory.rom[bankStart];
+	gb->memory.currentBank = bank;
+	if (gb->cpu->pc < GB_BASE_VRAM) {
+		gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
+	}
 }
 
 void GBMBCSwitchSramBank(struct GB* gb, int bank) {
@@ -249,12 +253,12 @@ void _GBMBC1(struct GB* gb, uint16_t address, uint8_t value) {
 		if (!bank) {
 			++bank;
 		}
-		GBMBCSwitchBank(memory, bank | (memory->currentBank & 0x60));
+		GBMBCSwitchBank(gb, bank | (memory->currentBank & 0x60));
 		break;
 	case 0x2:
 		bank &= 3;
 		if (!memory->mbcState.mbc1.mode) {
-			GBMBCSwitchBank(memory, (bank << 5) | (memory->currentBank & 0x1F));
+			GBMBCSwitchBank(gb, (bank << 5) | (memory->currentBank & 0x1F));
 		} else {
 			GBMBCSwitchSramBank(gb, bank);
 		}
@@ -262,7 +266,7 @@ void _GBMBC1(struct GB* gb, uint16_t address, uint8_t value) {
 	case 0x3:
 		memory->mbcState.mbc1.mode = value & 1;
 		if (memory->mbcState.mbc1.mode) {
-			GBMBCSwitchBank(memory, memory->currentBank & 0x1F);
+			GBMBCSwitchBank(gb, memory->currentBank & 0x1F);
 		} else {
 			GBMBCSwitchSramBank(gb, 0);
 		}
@@ -297,7 +301,7 @@ void _GBMBC2(struct GB* gb, uint16_t address, uint8_t value) {
 		if (!bank) {
 			++bank;
 		}
-		GBMBCSwitchBank(memory, bank);
+		GBMBCSwitchBank(gb, bank);
 		break;
 	default:
 		// TODO
@@ -328,7 +332,7 @@ void _GBMBC3(struct GB* gb, uint16_t address, uint8_t value) {
 		if (!bank) {
 			++bank;
 		}
-		GBMBCSwitchBank(memory, bank);
+		GBMBCSwitchBank(gb, bank);
 		break;
 	case 0x2:
 		if (value < 4) {
@@ -372,11 +376,11 @@ void _GBMBC5(struct GB* gb, uint16_t address, uint8_t value) {
 		break;
 	case 0x2:
 		bank = (memory->currentBank & 0x100) | value;
-		GBMBCSwitchBank(memory, bank);
+		GBMBCSwitchBank(gb, bank);
 		break;
 	case 0x3:
 		bank = (memory->currentBank & 0xFF) | ((value & 1) << 8);
-		GBMBCSwitchBank(memory, bank);
+		GBMBCSwitchBank(gb, bank);
 		break;
 	case 0x4:
 	case 0x5:
@@ -402,11 +406,10 @@ void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 }
 
 void _GBMBC7(struct GB* gb, uint16_t address, uint8_t value) {
-	struct GBMemory* memory = &gb->memory;
 	int bank = value & 0x7F;
 	switch (address >> 13) {
 	case 0x1:
-		GBMBCSwitchBank(memory, bank);
+		GBMBCSwitchBank(gb, bank);
 		break;
 	case 0x2:
 		if (value < 0x10) {
@@ -616,7 +619,7 @@ void _GBHuC3(struct GB* gb, uint16_t address, uint8_t value) {
 		}
 		break;
 	case 0x1:
-		GBMBCSwitchBank(memory, bank);
+		GBMBCSwitchBank(gb, bank);
 		break;
 	case 0x2:
 		GBMBCSwitchSramBank(gb, bank);

@@ -7,7 +7,7 @@
 
 #include <mgba/internal/arm/arm.h>
 
-mLOG_DEFINE_CATEGORY(DS_BIOS, "DS BIOS");
+mLOG_DEFINE_CATEGORY(DS_BIOS, "DS BIOS", "ds.bios");
 
 const uint32_t DS7_BIOS_CHECKSUM = 0x1280F0D5;
 const uint32_t DS9_BIOS_CHECKSUM = 0x2AB23573;

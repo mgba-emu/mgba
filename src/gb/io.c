@@ -9,7 +9,7 @@
 #include <mgba/internal/gb/sio.h>
 #include <mgba/internal/gb/serialize.h>
 
-mLOG_DEFINE_CATEGORY(GB_IO, "GB I/O");
+mLOG_DEFINE_CATEGORY(GB_IO, "GB I/O", "gb.io");
 
 const char* const GBIORegisterNames[] = {
 	[REG_JOYP] = "JOYP",

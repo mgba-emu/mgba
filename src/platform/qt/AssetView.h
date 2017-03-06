@@ -18,6 +18,8 @@ Q_OBJECT
 public:
 	AssetView(GameController* controller, QWidget* parent = nullptr);
 
+	void compositeTile(unsigned tileId, void* image, size_t stride, size_t x, size_t y, int depth = 8);
+
 protected slots:
 	void updateTiles(bool force = false);
 

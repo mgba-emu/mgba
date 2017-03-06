@@ -156,9 +156,14 @@ static size_t _DSCoreGetAudioBufferSize(struct mCore* core) {
 	return 2048;
 }
 
-static void _DSCoreSetCoreCallbacks(struct mCore* core, struct mCoreCallbacks* coreCallbacks) {
+static void _DSCoreAddCoreCallbacks(struct mCore* core, struct mCoreCallbacks* coreCallbacks) {
 	struct DS* ds = core->board;
-	ds->coreCallbacks = coreCallbacks;
+	*mCoreCallbacksListAppend(&ds->coreCallbacks) = *coreCallbacks;
+}
+
+static void _DSCoreClearCoreCallbacks(struct mCore* core) {
+	struct DS* ds = core->board;
+	mCoreCallbacksListClear(&ds->coreCallbacks);
 }
 
 static void _DSCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
@@ -370,11 +375,6 @@ static void _DSCoreGetGameCode(const struct mCore* core, char* title) {
 	DSGetGameCode(core->board, title);
 }
 
-static void _DSCoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
-	struct DS* ds = core->board;
-	ds->rtcSource = rtc;
-}
-
 static void _DSCoreSetRotation(struct mCore* core, struct mRotationSource* rotation) {
 }
 
@@ -513,7 +513,8 @@ struct mCore* DSCoreCreate(void) {
 	core->getAudioChannel = _DSCoreGetAudioChannel;
 	core->setAudioBufferSize = _DSCoreSetAudioBufferSize;
 	core->getAudioBufferSize = _DSCoreGetAudioBufferSize;
-	core->setCoreCallbacks = _DSCoreSetCoreCallbacks;
+	core->addCoreCallbacks = _DSCoreAddCoreCallbacks;
+	core->clearCoreCallbacks = _DSCoreClearCoreCallbacks;
 	core->setAVStream = _DSCoreSetAVStream;
 	core->isROM = DSIsROM;
 	core->loadROM = _DSCoreLoadROM;
@@ -539,7 +540,6 @@ struct mCore* DSCoreCreate(void) {
 	core->frequency = _DSCoreFrequency;
 	core->getGameTitle = _DSCoreGetGameTitle;
 	core->getGameCode = _DSCoreGetGameCode;
-	core->setRTC = _DSCoreSetRTC;
 	core->setRotation = _DSCoreSetRotation;
 	core->setRumble = _DSCoreSetRumble;
 	core->busRead8 = _DSCoreBusRead8;

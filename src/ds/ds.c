@@ -18,7 +18,7 @@
 
 #define SLICE_CYCLES 2048
 
-mLOG_DEFINE_CATEGORY(DS, "DS");
+mLOG_DEFINE_CATEGORY(DS, "DS", "ds");
 
 const uint32_t DS_ARM946ES_FREQUENCY = 0x1FF61FE;
 const uint32_t DS_ARM7TDMI_FREQUENCY = 0xFFB0FF;
@@ -209,7 +209,9 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 	ds->romVf = NULL;
 	DSSlot1SPIInit(ds, NULL);
 
+	ds->stream = NULL;
 	ds->keyCallback = NULL;
+	mCoreCallbacksListInit(&ds->coreCallbacks, 0);
 
 	ds->divEvent.name = "DS Hardware Divide";
 	ds->divEvent.callback = _divide;
@@ -240,6 +242,7 @@ void DSDestroy(struct DS* ds) {
 	DSGXDeinit(&ds->gx);
 	mTimingDeinit(&ds->ds7.timing);
 	mTimingDeinit(&ds->ds9.timing);
+	mCoreCallbacksListDeinit(&ds->coreCallbacks);
 }
 
 void DS7InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
@@ -824,16 +827,22 @@ void DSRaiseIRQ(struct ARMCore* cpu, uint16_t* io, enum DSIRQ irq) {
 }
 
 void DSFrameStarted(struct DS* ds) {
-	struct mCoreCallbacks* callbacks = ds->coreCallbacks;
-	if (callbacks && callbacks->videoFrameStarted) {
-		callbacks->videoFrameStarted(callbacks->context);
+	size_t c;
+	for (c = 0; c < mCoreCallbacksListSize(&ds->coreCallbacks); ++c) {
+		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&ds->coreCallbacks, c);
+		if (callbacks->videoFrameStarted) {
+			callbacks->videoFrameStarted(callbacks->context);
+		}
 	}
 }
 
 void DSFrameEnded(struct DS* ds) {
-	struct mCoreCallbacks* callbacks = ds->coreCallbacks;
-	if (callbacks && callbacks->videoFrameEnded) {
-		callbacks->videoFrameEnded(callbacks->context);
+	size_t c;
+	for (c = 0; c < mCoreCallbacksListSize(&ds->coreCallbacks); ++c) {
+		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&ds->coreCallbacks, c);
+		if (callbacks->videoFrameEnded) {
+			callbacks->videoFrameEnded(callbacks->context);
+		}
 	}
 
 	if (ds->stream && ds->stream->postVideoFrame) {

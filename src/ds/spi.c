@@ -8,7 +8,7 @@
 #include <mgba/internal/ds/ds.h>
 #include <mgba-util/vfs.h>
 
-mLOG_DEFINE_CATEGORY(DS_SPI, "DS SPI");
+mLOG_DEFINE_CATEGORY(DS_SPI, "DS SPI", "ds.spi");
 
 static void _tscEvent(struct mTiming*, void* context, uint32_t cyclesLate);
 static void _firmwareEvent(struct mTiming* timing, void* context, uint32_t cyclesLate);

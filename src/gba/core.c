@@ -62,6 +62,8 @@ static bool _GBACoreInit(struct mCore* core) {
 	memset(gbacore->components, 0, sizeof(gbacore->components));
 	ARMSetComponents(cpu, &gba->d, CPU_COMPONENT_MAX, gbacore->components);
 	ARMInit(cpu);
+	mRTCGenericSourceInit(&core->rtc, core);
+	gba->rtcSource = &core->rtc.d;
 
 	GBAVideoSoftwareRendererCreate(&gbacore->renderer);
 	gbacore->renderer.outputBuffer = NULL;
@@ -194,9 +196,14 @@ static size_t _GBACoreGetAudioBufferSize(struct mCore* core) {
 	return gba->audio.samples;
 }
 
-static void _GBACoreSetCoreCallbacks(struct mCore* core, struct mCoreCallbacks* coreCallbacks) {
+static void _GBACoreAddCoreCallbacks(struct mCore* core, struct mCoreCallbacks* coreCallbacks) {
 	struct GBA* gba = core->board;
-	gba->coreCallbacks = coreCallbacks;
+	*mCoreCallbacksListAppend(&gba->coreCallbacks) = *coreCallbacks;
+}
+
+static void _GBACoreClearCoreCallbacks(struct mCore* core) {
+	struct GBA* gba = core->board;
+	mCoreCallbacksListClear(&gba->coreCallbacks);
 }
 
 static void _GBACoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
@@ -331,7 +338,7 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 
 	ARMReset(core->cpu);
-	if (core->opts.skipBios && gba->pristineRom) {
+	if (core->opts.skipBios && gba->isPristine) {
 		GBASkipBIOS(core->board);
 	}
 }
@@ -413,11 +420,6 @@ static void _GBACoreGetGameTitle(const struct mCore* core, char* title) {
 
 static void _GBACoreGetGameCode(const struct mCore* core, char* title) {
 	GBAGetGameCode(core->board, title);
-}
-
-static void _GBACoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
-	struct GBA* gba = core->board;
-	gba->rtcSource = rtc;
 }
 
 static void _GBACoreSetRotation(struct mCore* core, struct mRotationSource* rotation) {
@@ -608,7 +610,8 @@ struct mCore* GBACoreCreate(void) {
 	core->getAudioChannel = _GBACoreGetAudioChannel;
 	core->setAudioBufferSize = _GBACoreSetAudioBufferSize;
 	core->getAudioBufferSize = _GBACoreGetAudioBufferSize;
-	core->setCoreCallbacks = _GBACoreSetCoreCallbacks;
+	core->addCoreCallbacks = _GBACoreAddCoreCallbacks;
+	core->clearCoreCallbacks = _GBACoreClearCoreCallbacks;
 	core->setAVStream = _GBACoreSetAVStream;
 	core->isROM = GBAIsROM;
 	core->loadROM = _GBACoreLoadROM;
@@ -635,7 +638,6 @@ struct mCore* GBACoreCreate(void) {
 	core->frequency = _GBACoreFrequency;
 	core->getGameTitle = _GBACoreGetGameTitle;
 	core->getGameCode = _GBACoreGetGameCode;
-	core->setRTC = _GBACoreSetRTC;
 	core->setRotation = _GBACoreSetRotation;
 	core->setRumble = _GBACoreSetRumble;
 	core->busRead8 = _GBACoreBusRead8;
