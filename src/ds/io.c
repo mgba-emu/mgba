@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2016 Jeffrey Pfau
+/* Copyright (c) 2013-2017 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,6 +6,7 @@
 #include <mgba/internal/ds/io.h>
 
 #include <mgba/core/interface.h>
+#include <mgba/internal/ds/audio.h>
 #include <mgba/internal/ds/ds.h>
 #include <mgba/internal/ds/gx.h>
 #include <mgba/internal/ds/ipc.h>
@@ -272,6 +273,80 @@ void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	case DS7_REG_SPIDATA:
 		DSSPIWrite(ds, value);
 		break;
+	case DS7_REG_SOUND0CNT_LO:
+	case DS7_REG_SOUND1CNT_LO:
+	case DS7_REG_SOUND2CNT_LO:
+	case DS7_REG_SOUND3CNT_LO:
+	case DS7_REG_SOUND4CNT_LO:
+	case DS7_REG_SOUND5CNT_LO:
+	case DS7_REG_SOUND6CNT_LO:
+	case DS7_REG_SOUND7CNT_LO:
+	case DS7_REG_SOUND8CNT_LO:
+	case DS7_REG_SOUND9CNT_LO:
+	case DS7_REG_SOUNDACNT_LO:
+	case DS7_REG_SOUNDBCNT_LO:
+	case DS7_REG_SOUNDCCNT_LO:
+	case DS7_REG_SOUNDDCNT_LO:
+	case DS7_REG_SOUNDECNT_LO:
+	case DS7_REG_SOUNDFCNT_LO:
+		value &= 0x837F;
+		DSAudioWriteSOUNDCNT_LO(&ds->audio, (address - DS7_REG_SOUND0CNT_LO) >> 4, value);
+		break;
+	case DS7_REG_SOUND0CNT_HI:
+	case DS7_REG_SOUND1CNT_HI:
+	case DS7_REG_SOUND2CNT_HI:
+	case DS7_REG_SOUND3CNT_HI:
+	case DS7_REG_SOUND4CNT_HI:
+	case DS7_REG_SOUND5CNT_HI:
+	case DS7_REG_SOUND6CNT_HI:
+	case DS7_REG_SOUND7CNT_HI:
+	case DS7_REG_SOUND8CNT_HI:
+	case DS7_REG_SOUND9CNT_HI:
+	case DS7_REG_SOUNDACNT_HI:
+	case DS7_REG_SOUNDBCNT_HI:
+	case DS7_REG_SOUNDCCNT_HI:
+	case DS7_REG_SOUNDDCNT_HI:
+	case DS7_REG_SOUNDECNT_HI:
+	case DS7_REG_SOUNDFCNT_HI:
+		value &= 0xFF7F;
+		DSAudioWriteSOUNDCNT_HI(&ds->audio, (address - DS7_REG_SOUND0CNT_HI) >> 4, value);
+		break;
+	case DS7_REG_SOUND0TMR:
+	case DS7_REG_SOUND1TMR:
+	case DS7_REG_SOUND2TMR:
+	case DS7_REG_SOUND3TMR:
+	case DS7_REG_SOUND4TMR:
+	case DS7_REG_SOUND5TMR:
+	case DS7_REG_SOUND6TMR:
+	case DS7_REG_SOUND7TMR:
+	case DS7_REG_SOUND8TMR:
+	case DS7_REG_SOUND9TMR:
+	case DS7_REG_SOUNDATMR:
+	case DS7_REG_SOUNDBTMR:
+	case DS7_REG_SOUNDCTMR:
+	case DS7_REG_SOUNDDTMR:
+	case DS7_REG_SOUNDETMR:
+	case DS7_REG_SOUNDFTMR:
+		DSAudioWriteSOUNDTMR(&ds->audio, (address - DS7_REG_SOUND0TMR) >> 4, value);
+		break;
+	case DS7_REG_SOUND0PNT:
+	case DS7_REG_SOUND1PNT:
+	case DS7_REG_SOUND2PNT:
+	case DS7_REG_SOUND3PNT:
+	case DS7_REG_SOUND4PNT:
+	case DS7_REG_SOUND5PNT:
+	case DS7_REG_SOUND6PNT:
+	case DS7_REG_SOUND7PNT:
+	case DS7_REG_SOUND8PNT:
+	case DS7_REG_SOUND9PNT:
+	case DS7_REG_SOUNDAPNT:
+	case DS7_REG_SOUNDBPNT:
+	case DS7_REG_SOUNDCPNT:
+	case DS7_REG_SOUNDDPNT:
+	case DS7_REG_SOUNDEPNT:
+	case DS7_REG_SOUNDFPNT:
+		DSAudioWriteSOUNDPNT(&ds->audio, (address - DS7_REG_SOUND0PNT) >> 4, value);
+		break;
 	default:
 		{
 			uint32_t v2 = DSIOWrite(&ds->ds7, address, value);
@@ -337,6 +412,46 @@ void DS7IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
 	case DS_REG_DMA3CNT_LO:
 		DS7DMAWriteCNT(&ds->ds7, 3, value);
 		break;
+
+	case DS7_REG_SOUND0SAD_LO:
+	case DS7_REG_SOUND1SAD_LO:
+	case DS7_REG_SOUND2SAD_LO:
+	case DS7_REG_SOUND3SAD_LO:
+	case DS7_REG_SOUND4SAD_LO:
+	case DS7_REG_SOUND5SAD_LO:
+	case DS7_REG_SOUND6SAD_LO:
+	case DS7_REG_SOUND7SAD_LO:
+	case DS7_REG_SOUND8SAD_LO:
+	case DS7_REG_SOUND9SAD_LO:
+	case DS7_REG_SOUNDASAD_LO:
+	case DS7_REG_SOUNDBSAD_LO:
+	case DS7_REG_SOUNDCSAD_LO:
+	case DS7_REG_SOUNDDSAD_LO:
+	case DS7_REG_SOUNDESAD_LO:
+	case DS7_REG_SOUNDFSAD_LO:
+		DSAudioWriteSOUNDSAD(&ds->audio, (address - DS7_REG_SOUND0SAD_LO) >> 4, value);
+		break;
+
+	case DS7_REG_SOUND0LEN_LO:
+	case DS7_REG_SOUND1LEN_LO:
+	case DS7_REG_SOUND2LEN_LO:
+	case DS7_REG_SOUND3LEN_LO:
+	case DS7_REG_SOUND4LEN_LO:
+	case DS7_REG_SOUND5LEN_LO:
+	case DS7_REG_SOUND6LEN_LO:
+	case DS7_REG_SOUND7LEN_LO:
+	case DS7_REG_SOUND8LEN_LO:
+	case DS7_REG_SOUND9LEN_LO:
+	case DS7_REG_SOUNDALEN_LO:
+	case DS7_REG_SOUNDBLEN_LO:
+	case DS7_REG_SOUNDCLEN_LO:
+	case DS7_REG_SOUNDDLEN_LO:
+	case DS7_REG_SOUNDELEN_LO:
+	case DS7_REG_SOUNDFLEN_LO:
+		value &= 0x3FFFFF;
+		DSAudioWriteSOUNDLEN(&ds->audio, (address - DS7_REG_SOUND0LEN_LO) >> 4, value);
+		break;
+
 	default:
 		DS7IOWrite(ds, address, value & 0xFFFF);
 		DS7IOWrite(ds, address | 2, value >> 16);

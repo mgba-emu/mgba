@@ -146,14 +146,25 @@ static void _DSCorePutPixels(struct mCore* core, const void* buffer, size_t stri
 }
 
 static struct blip_t* _DSCoreGetAudioChannel(struct mCore* core, int ch) {
-	return NULL;
+	struct DS* ds = core->board;
+	switch (ch) {
+	case 0:
+		return ds->audio.left;
+	case 1:
+		return ds->audio.right;
+	default:
+		return NULL;
+	}
 }
 
 static void _DSCoreSetAudioBufferSize(struct mCore* core, size_t samples) {
+	struct DS* ds = core->board;
+	DSAudioResizeBuffer(&ds->audio, samples);
 }
 
 static size_t _DSCoreGetAudioBufferSize(struct mCore* core) {
-	return 2048;
+	struct DS* ds = core->board;
+	return ds->audio.samples;
 }
 
 static void _DSCoreAddCoreCallbacks(struct mCore* core, struct mCoreCallbacks* coreCallbacks) {

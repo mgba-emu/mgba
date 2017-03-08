@@ -14,6 +14,7 @@ CXX_GUARD_START
 #include <mgba/core/timing.h>
 #include <mgba-util/circle-buffer.h>
 
+#include <mgba/internal/ds/audio.h>
 #include <mgba/internal/ds/gx.h>
 #include <mgba/internal/ds/memory.h>
 #include <mgba/internal/ds/timer.h>
@@ -85,6 +86,7 @@ struct DS {
 	struct DSCommon ds9;
 	struct DSMemory memory;
 	struct DSVideo video;
+	struct DSAudio audio;
 	struct DSGX gx;
 	struct DSWifi wifi;
 

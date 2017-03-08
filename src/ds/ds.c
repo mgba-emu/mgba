@@ -199,6 +199,9 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 	DSGXInit(&ds->gx);
 	ds->gx.p = ds;
 
+	DSAudioInit(&ds->audio, 2048);
+	ds->audio.p = ds;
+
 	ds->ds7.springIRQ = 0;
 	ds->ds9.springIRQ = 0;
 	DSTimerInit(ds);
@@ -240,6 +243,7 @@ void DSDestroy(struct DS* ds) {
 	DSUnloadROM(ds);
 	DSMemoryDeinit(ds);
 	DSGXDeinit(&ds->gx);
+	DSAudioDeinit(&ds->audio);
 	mTimingDeinit(&ds->ds7.timing);
 	mTimingDeinit(&ds->ds9.timing);
 	mCoreCallbacksListDeinit(&ds->coreCallbacks);
@@ -286,6 +290,7 @@ void DS7Reset(struct ARMCore* cpu) {
 	CircleBufferInit(&ds->ds7.fifo, 64);
 	DSMemoryReset(ds);
 	DSDMAReset(&ds->ds7);
+	DSAudioReset(&ds->audio);
 	DS7IOInit(ds);
 
 	DSConfigureWRAM(&ds->memory, 3);
