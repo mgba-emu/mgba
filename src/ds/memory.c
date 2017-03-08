@@ -387,6 +387,9 @@ uint32_t DS7Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	int wait = ds->ds7.memory.waitstatesNonseq16[address >> DS_BASE_OFFSET];
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS7_REGION_BIOS:
+		value = ((uint8_t*) memory->bios7)[address & (DS7_SIZE_BIOS - 1)];
+		break;
 	case DS_REGION_WORKING_RAM:
 		if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
 			value = ((uint8_t*) memory->wram7)[address & (DS7_SIZE_WORKING_RAM - 1)];
