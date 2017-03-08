@@ -700,6 +700,9 @@ uint32_t DS7StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 			mLOG(DS_MEM, STUB, "Unimplemented DS9 STM: %08X", address);
 		});
 		break;
+	case DS_REGION_IO:
+		STM_LOOP(DS7IOWrite32(ds, address & DS_OFFSET_MASK, value));
+		break;
 	case DS_REGION_VRAM:
 		STM_LOOP(if (address < 0x06040000 && memory->vram7[(address & 0x3FFFF) >> 17]) {
 			STORE_32(value, address & 0x1FFFF, memory->vram7[(address & 0x3FFFF) >> 17]);
