@@ -84,6 +84,8 @@ struct DSGXSoftwareRenderer {
 	struct DSGXVertex* verts;
 };
 
+void DSGXSoftwareRendererCreate(struct DSGXSoftwareRenderer* renderer);
+
 CXX_GUARD_END
 
 #endif

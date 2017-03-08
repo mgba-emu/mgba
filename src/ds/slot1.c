@@ -378,5 +378,6 @@ static bool _slot1GuaranteeSize(struct DSSlot1* slot1) {
 }
 
 void DSSlot1ScheduleDMA(struct DSCommon* dscore, int number, struct GBADMA* info) {
+	UNUSED(info);
 	dscore->p->memory.slot1.dmaSource = number;
 }
