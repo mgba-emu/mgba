@@ -288,6 +288,8 @@ void DS7Reset(struct ARMCore* cpu) {
 	DSDMAReset(&ds->ds7);
 	DS7IOInit(ds);
 
+	DSConfigureWRAM(&ds->memory, 3);
+
 	struct DSCartridge* header = ds->romVf->map(ds->romVf, sizeof(*header), MAP_READ);
 	if (header) {
 		memcpy(&ds->memory.ram[0x3FF800 >> 2], DS_CHIP_ID, 4);
@@ -298,10 +300,21 @@ void DS7Reset(struct ARMCore* cpu) {
 		DS7IOWrite32(ds, DS_REG_ROMCNT_LO, header->busTiming | 0x2700000);
 		// TODO: Error check
 		ds->romVf->seek(ds->romVf, header->arm7Offset, SEEK_SET);
-		uint32_t base = header->arm7Base - DS_BASE_RAM;
-		uint32_t* basePointer = &ds->memory.ram[base >> 2];
-		if (base < DS_SIZE_RAM && base + header->arm7Size <= DS_SIZE_RAM) {
-			ds->romVf->read(ds->romVf, basePointer, header->arm7Size);
+		uint32_t base = header->arm7Base;
+		if (base >> DS_BASE_OFFSET == DS_REGION_RAM) {
+			base -= DS_BASE_RAM;
+			uint32_t* basePointer = &ds->memory.ram[base >> 2];
+			if (base < DS_SIZE_RAM && base + header->arm7Size <= DS_SIZE_RAM) {
+				ds->romVf->read(ds->romVf, basePointer, header->arm7Size);
+			}
+		} else {
+			uint32_t size;
+			for (size = header->arm7Size; size; --size) {
+				uint8_t b = 0;
+				ds->romVf->read(ds->romVf, &b, 1);
+				cpu->memory.store8(cpu, base, b, NULL);
+				++base;
+			}
 		}
 		cpu->gprs[12] = header->arm7Entry;
 		cpu->gprs[ARM_LR] = header->arm7Entry;
