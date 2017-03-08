@@ -49,10 +49,10 @@ struct DSAudioChannel {
 	int adpcmOffset;
 
 	int16_t adpcmStartSample;
-	unsigned adpcmStartIndex;
+	int adpcmStartIndex;
 
 	int16_t adpcmSample;
-	unsigned adpcmIndex;
+	int adpcmIndex;
 
 	bool enable;
 };
