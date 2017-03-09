@@ -358,19 +358,16 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 }
 
 static void _flushOutstanding(struct DSGX* gx) {
-	if (CircleBufferSize(&gx->fifo) == (DS_GX_FIFO_SIZE * sizeof(struct DSGXEntry))) {
-		return;
-	}
 	if (gx->p->cpuBlocked & DS_CPU_BLOCK_GX) {
 		gx->p->cpuBlocked &= ~DS_CPU_BLOCK_GX;
 		DSGXWriteFIFO(gx, gx->outstandingEntry);
 		gx->outstandingEntry.command = 0;
 	}
 	while (gx->outstandingCommand[0] && !gx->outstandingParams[0]) {
+		DSGXWriteFIFO(gx, (struct DSGXEntry) { 0 });
 		if (CircleBufferSize(&gx->fifo) == (DS_GX_FIFO_SIZE * sizeof(struct DSGXEntry))) {
 			return;
 		}
-		DSGXWriteFIFO(gx, (struct DSGXEntry) { 0 });
 	}
 }
 
@@ -959,7 +956,9 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 	if (cycles && !gx->swapBuffers) {
 		mTimingSchedule(timing, &gx->fifoEvent, cycles - cyclesLate);
 	}
-	_flushOutstanding(gx);
+	if (CircleBufferSize(&gx->fifo) < (DS_GX_FIFO_SIZE * sizeof(struct DSGXEntry))) {
+		_flushOutstanding(gx);
+	}
 	DSGXUpdateGXSTAT(gx);
 }
 
