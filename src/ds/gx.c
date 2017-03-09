@@ -814,10 +814,8 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			case 0:
 				DSGXMtxScale(&gx->projMatrix, m);
 				break;
-			case 2:
-				DSGXMtxScale(&gx->vecMatrix, m);
-				// Fall through
 			case 1:
+			case 2:
 				DSGXMtxScale(&gx->posMatrix, m);
 				break;
 			case 3:
