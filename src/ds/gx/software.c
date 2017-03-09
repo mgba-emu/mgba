@@ -174,47 +174,50 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 	unsigned wr, wg, wb, wa;
 	if (poly->texFormat == 5) {
 		// TODO: Slot 2 uses upper half
-		uint16_t texel2 = renderer->d.tex[1][texelCoord >> 1];
+		uint16_t half = DSGXTexParamsGetVRAMBase(poly->poly->texParams) & 0x8000;
+		uint32_t slot1Base = (DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 1) + (texelCoord >> 2) + half;
+		uint16_t texel2 = renderer->d.tex[1][slot1Base];
+		uint16_t texel2Base = (texel2 & 0x3FFF) << 1;
 		int a = 0x8;
 		int b = 0;
 		switch (texel2 >> 14) {
 		case 0:
 			if (texel == 3) {
-				return 0;
+				ta = 0;
 			}
-			texel = poly->palBase[texel + (texel2 & 0x3FFF) * 2];
+			texel = poly->palBase[texel + texel2Base];
 			break;
 		case 1:
 			if (texel == 3) {
-				return 0;
+				ta = 0;
 			}
 			if (texel != 2) {
-				texel = poly->palBase[texel + (texel2 & 0x3FFF) * 2];
+				texel = poly->palBase[texel + texel2Base];
 			} else {
-				texel = poly->palBase[(texel2 & 0x3FFF) * 2];
-				texel2 = poly->palBase[(texel2 & 0x3FFF) * 2 + 1];
+				texel = poly->palBase[texel2Base];
+				texel2 = poly->palBase[texel2Base + 1];
 				a = 4;
 				b = 4;
 			}
 			break;
 		case 2:
-			texel = poly->palBase[texel + (texel2 & 0x3FFF) * 2];
+			texel = poly->palBase[texel + texel2Base];
 			break;
 		case 3:
 			switch (texel) {
 			case 0:
 			case 1:
-				texel = poly->palBase[texel + (texel2 & 0x3FFF) * 2];
+				texel = poly->palBase[texel + texel2Base];
 				break;
 			case 2:
-				texel = poly->palBase[(texel2 & 0x3FFF) * 2];
-				texel2 = poly->palBase[(texel2 & 0x3FFF) * 2 + 1];
+				texel = poly->palBase[texel2Base];
+				texel2 = poly->palBase[texel2Base + 1];
 				a = 5;
 				b = 3;
 				break;
 			case 3:
-				texel = poly->palBase[(texel2 & 0x3FFF) * 2];
-				texel2 = poly->palBase[(texel2 & 0x3FFF) * 2 + 1];
+				texel = poly->palBase[texel2Base];
+				texel2 = poly->palBase[texel2Base + 1];
 				a = 3;
 				b = 5;
 				break;
@@ -387,11 +390,11 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 			break;
 		case 2:
 			poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
-			poly->palBase = &renderer->texPal[poly->poly->palBase >> 12][(poly->poly->palBase << 2) & 0x1FFF];
+			poly->palBase = &renderer->texPal[poly->poly->palBase >> 11][(poly->poly->palBase << 2) & 0x1FFF];
 			break;
 		default:
 			poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
-			poly->palBase = &renderer->texPal[poly->poly->palBase >> 11][(poly->poly->palBase << 3) & 0x1FFF];
+			poly->palBase = &renderer->texPal[poly->poly->palBase >> 10][(poly->poly->palBase << 3) & 0x1FFF];
 			break;
 		}
 		edge->polyId = i;
