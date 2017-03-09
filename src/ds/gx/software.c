@@ -105,7 +105,7 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 		}
 	} else if (DSGXTexParamsIsSMirror(poly->poly->texParams)) {
 		if (s & poly->texW) {
-			s = poly->texW - s;
+			s = poly->texW - s - 1;
 		}
 		s &= poly->texW - 1;
 	} else {
@@ -119,7 +119,7 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 		}
 	} else if (DSGXTexParamsIsTMirror(poly->poly->texParams)) {
 		if (t & poly->texH) {
-			t = poly->texH - t;
+			t = poly->texH - t - 1;
 		}
 		t &= poly->texH - 1;
 	} else {
