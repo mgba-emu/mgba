@@ -33,14 +33,14 @@
 		LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 			tileData >>= 4 * mod8; \
-			for (; outX < end; ++outX, ++pixel) { \
+			for (; outX < end; ++outX) { \
 				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
 			} \
 		} else { \
 			for (outX = end - 1; outX >= renderer->start; --outX) { \
-				uint32_t* pixel = &renderer->row[outX]; \
 				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
 			} \
+			outX = end; \
 		} \
 	}
 
@@ -53,14 +53,12 @@
 	LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 	palette = &mainPalette[paletteData]; \
-	pixel = &renderer->row[outX]; \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 		if (outX < renderer->start) { \
 			tileData >>= 4 * (renderer->start - outX); \
 			outX = renderer->start; \
-			pixel = &renderer->row[outX]; \
 		} \
-		for (; outX < renderer->end; ++outX, ++pixel) { \
+		for (; outX < renderer->end; ++outX) { \
 			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
 		} \
 	} else { \
@@ -70,14 +68,12 @@
 			end = -1; \
 		} \
 		outX = renderer->end - 1; \
-		pixel = &renderer->row[outX]; \
-		for (; outX > end; --outX, --pixel) { \
+		for (; outX > end; --outX) { \
 			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
 		} \
 		/* Needed for consistency checks */ \
 		if (VIDEO_CHECKS) { \
 			outX = renderer->end; \
-			pixel = &renderer->row[outX]; \
 		} \
 	}
 
@@ -142,7 +138,7 @@
 			} \
 			--mosaicWait; \
 			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
-			++pixel; \
+			++outX; \
 		} \
 		x = 0; \
 	}
@@ -155,7 +151,7 @@
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
 		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 		if (UNLIKELY(!vram)) { \
-			pixel += 8; \
+			outX += 8; \
 			continue; \
 		} \
 		LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
@@ -180,7 +176,7 @@
 				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
 			} \
 		} \
-		pixel += 8; \
+		outX += 8; \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_256(BLEND, OBJWIN) \
@@ -194,7 +190,7 @@
 				LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 				tileData >>= 8 * shift; \
 				shift = 0; \
-				for (; outX < end2; ++outX, ++pixel) { \
+				for (; outX < end2; ++outX) { \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 				} \
 			} \
@@ -203,18 +199,17 @@
 		if (LIKELY(vram)) { \
 			LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 			tileData >>= 8 * shift; \
-			for (; outX < end; ++outX, ++pixel) { \
+			for (; outX < end; ++outX) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 		} \
 	} else { \
 		int start = outX; \
 		outX = end - 1; \
-		pixel = &renderer->row[outX]; \
 		if (LIKELY(vram)) { \
 			if (end2 > start) { \
 				LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
-				for (; outX >= end2; --outX, --pixel) { \
+				for (; outX >= end2; --outX) { \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 				} \
 				charBase += 4; \
@@ -223,12 +218,11 @@
 		\
 		if (LIKELY(vram)) { \
 			LOAD_32(tileData, charBase, vram); \
-			for (; outX >= renderer->start; --outX, --pixel) { \
+			for (; outX >= renderer->start; --outX) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 		} \
 		outX = end; \
-		pixel = &renderer->row[outX]; \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_PREFIX_256(BLEND, OBJWIN) \
@@ -238,29 +232,27 @@
 		return; \
 	} \
 	int end = mod8 - 4; \
-	pixel = &renderer->row[outX]; \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 		if (end > 0) { \
 			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
-			for (; outX < renderer->end - end; ++outX, ++pixel) { \
+			for (; outX < renderer->end - end; ++outX) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 			charBase += 4; \
 		} \
 		\
 		LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
-		for (; outX < renderer->end; ++outX, ++pixel) { \
+		for (; outX < renderer->end; ++outX) { \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 		} \
 	} else { \
 		int shift = (8 - mod8) & 0x3; \
 		int start = outX; \
 		outX = renderer->end - 1; \
-		pixel = &renderer->row[outX]; \
 		if (end > 0) { \
 			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 			tileData >>= 8 * shift; \
-			for (; outX >= start + 4; --outX, --pixel) { \
+			for (; outX >= start + 4; --outX) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 			shift = 0; \
@@ -268,13 +260,12 @@
 		\
 		LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 		tileData >>= 8 * shift; \
-		for (; outX >= start; --outX, --pixel) { \
+		for (; outX >= start; --outX) { \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 		} \
 		/* Needed for consistency checks */ \
 		if (VIDEO_CHECKS) { \
 			outX = renderer->end; \
-			pixel = &renderer->row[outX]; \
 		} \
 	}
 
@@ -284,7 +275,7 @@
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 		if (UNLIKELY(!vram)) { \
-			pixel += 8; \
+			outX += 8; \
 			continue; \
 		} \
 		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
@@ -295,7 +286,7 @@
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 2); \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
 			} \
-			pixel += 4; \
+			outX += 4; \
 			LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 			if (tileData) { \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
@@ -303,7 +294,7 @@
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 2); \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
 			} \
-			pixel += 4; \
+			outX += 4; \
 		} else { \
 			LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 			if (tileData) { \
@@ -312,7 +303,7 @@
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 1); \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
-			pixel += 4; \
+			outX += 4; \
 			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 			if (tileData) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
@@ -320,7 +311,7 @@
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 1); \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
-			pixel += 4; \
+			outX += 4; \
 		} \
 	}
 
@@ -360,7 +351,7 @@
 			tileData |= tileData << 8; \
 			--mosaicWait; \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
-			++pixel; \
+			++outX; \
 		} \
 	}
 
@@ -377,7 +368,7 @@
 				LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 				tileData >>= 8 * shift; \
 				shift = 0; \
-				for (; outX < end2; ++outX, ++pixel) { \
+				for (; outX < end2; ++outX) { \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 				} \
 			} \
@@ -386,18 +377,17 @@
 		if (LIKELY(vram)) { \
 			LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 			tileData >>= 8 * shift; \
-			for (; outX < end; ++outX, ++pixel) { \
+			for (; outX < end; ++outX) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 		} \
 	} else { \
 		int start = outX; \
 		outX = end - 1; \
-		pixel = &renderer->row[outX]; \
 		if (LIKELY(vram)) { \
 			if (end2 > start) { \
 				LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
-				for (; outX >= end2; --outX, --pixel) { \
+				for (; outX >= end2; --outX) { \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 				} \
 				charBase += 4; \
@@ -406,12 +396,11 @@
 		\
 		if (LIKELY(vram)) { \
 			LOAD_32(tileData, charBase, vram); \
-			for (; outX >= renderer->start; --outX, --pixel) { \
+			for (; outX >= renderer->start; --outX) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 		} \
 		outX = end; \
-		pixel = &renderer->row[outX]; \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_PREFIX_256EXT(BLEND, OBJWIN) \
@@ -423,29 +412,27 @@
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
 	palette = &mainPalette[paletteData]; \
 	int end = mod8 - 4; \
-	pixel = &renderer->row[outX]; \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 		if (end > 0) { \
 			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
-			for (; outX < renderer->end - end; ++outX, ++pixel) { \
+			for (; outX < renderer->end - end; ++outX) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 			charBase += 4; \
 		} \
 		\
 		LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
-		for (; outX < renderer->end; ++outX, ++pixel) { \
+		for (; outX < renderer->end; ++outX) { \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 		} \
 	} else { \
 		int shift = (8 - mod8) & 0x3; \
 		int start = outX; \
 		outX = renderer->end - 1; \
-		pixel = &renderer->row[outX]; \
 		if (end > 0) { \
 			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 			tileData >>= 8 * shift; \
-			for (; outX >= start + 4; --outX, --pixel) { \
+			for (; outX >= start + 4; --outX) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 			shift = 0; \
@@ -453,13 +440,12 @@
 		\
 		LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 		tileData >>= 8 * shift; \
-		for (; outX >= start; --outX, --pixel) { \
+		for (; outX >= start; --outX) { \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 		} \
 		/* Needed for consistency checks */ \
 		if (VIDEO_CHECKS) { \
 			outX = renderer->end; \
-			pixel = &renderer->row[outX]; \
 		} \
 	}
 
@@ -471,7 +457,7 @@
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 		if (UNLIKELY(!vram)) { \
-			pixel += 8; \
+			outX += 8; \
 			continue; \
 		} \
 		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
@@ -482,7 +468,7 @@
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 2); \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
 			} \
-			pixel += 4; \
+			outX += 4; \
 			LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 			if (tileData) { \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
@@ -490,7 +476,7 @@
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 2); \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
 			} \
-			pixel += 4; \
+			outX += 4; \
 		} else { \
 			LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 			if (tileData) { \
@@ -499,7 +485,7 @@
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 1); \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
-			pixel += 4; \
+			outX += 4; \
 			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 			if (tileData) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
@@ -507,7 +493,7 @@
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 1); \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
-			pixel += 4; \
+			outX += 4; \
 		} \
 	}
 
@@ -549,12 +535,11 @@
 			tileData |= tileData << 8; \
 			--mosaicWait; \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
-			++pixel; \
+			++outX; \
 		} \
 	}
 
 #define DRAW_BACKGROUND_MODE_0(BPP, BLEND, OBJWIN) \
-	uint32_t* pixel = &renderer->row[outX]; \
 	if (background->mosaic && GBAMosaicControlGetBgH(renderer->mosaic)) { \
 		int mosaicH = GBAMosaicControlGetBgH(renderer->mosaic) + 1; \
 		int x; \
@@ -590,13 +575,6 @@
 		} \
 		length -= end - renderer->start; \
 	} \
-	/*! TODO: Make sure these lines can be removed */ \
-	/*!*/ pixel = &renderer->row[outX]; \
-	outX += (tileEnd - tileX) * 8; \
-	/*!*/ if (VIDEO_CHECKS &&  UNLIKELY(outX > renderer->masterEnd)) { \
-	/*!*/	mLOG(GBA_VIDEO, FATAL, "Out of bounds background draw would occur!"); \
-	/*!*/	return; \
-	/*!*/ } \
 	DRAW_BACKGROUND_MODE_0_TILES_ ## BPP (BLEND, OBJWIN) \
 	if (length & 0x7) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
@@ -607,9 +585,6 @@
 			return; \
 		} \
 		DRAW_BACKGROUND_MODE_0_TILE_PREFIX_ ## BPP (BLEND, OBJWIN) \
-	} \
-	if (VIDEO_CHECKS && UNLIKELY(&renderer->row[outX] != pixel)) { \
-		mLOG(GBA_VIDEO, FATAL, "Background draw ended in the wrong place! Diff: %" PRIXPTR, &renderer->row[outX] - pixel); \
 	} \
 	if (VIDEO_CHECKS && UNLIKELY(outX > renderer->masterEnd)) { \
 		mLOG(GBA_VIDEO, FATAL, "Out of bounds background draw occurred!"); \

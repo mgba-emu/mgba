@@ -42,36 +42,36 @@ static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB)
 // The lower the number, the higher the priority, and sprites take precedence over backgrounds
 // We want to do special processing if the color pixel is target 1, however
 
-static inline void _compositeBlendObjwin(struct GBAVideoSoftwareRenderer* renderer, uint32_t* pixel, uint32_t color, uint32_t current) {
+static inline void _compositeBlendObjwin(struct GBAVideoSoftwareRenderer* renderer, int x, uint32_t color, uint32_t current) {
 	if (color >= current) {
 		if (current & FLAG_TARGET_1 && color & FLAG_TARGET_2) {
-			color = _mix(renderer->blda, current, renderer->bldb, color);
+			color = _mix(renderer->alphaA[x], current, renderer->alphaB[x], color);
 		} else {
 			color = (current & 0x00FFFFFF) | ((current << 1) & FLAG_REBLEND);
 		}
 	} else {
 		color = (color & ~FLAG_TARGET_2) | (current & FLAG_OBJWIN);
 	}
-	*pixel = color;
+	renderer->row[x] = color;
 }
 
-static inline void _compositeBlendNoObjwin(struct GBAVideoSoftwareRenderer* renderer, uint32_t* pixel, uint32_t color, uint32_t current) {
+static inline void _compositeBlendNoObjwin(struct GBAVideoSoftwareRenderer* renderer, int x, uint32_t color, uint32_t current) {
 	if (!IS_WRITABLE(current)) { \
 		return; \
 	} \
 	if (color >= current) {
 		if (current & FLAG_TARGET_1 && color & FLAG_TARGET_2) {
-			color = _mix(renderer->blda, current, renderer->bldb, color);
+			color = _mix(renderer->alphaA[x], current, renderer->alphaB[x], color);
 		} else {
 			color = (current & 0x00FFFFFF) | ((current << 1) & FLAG_REBLEND);
 		}
 	} else {
 		color = color & ~FLAG_TARGET_2;
 	}
-	*pixel = color;
+	renderer->row[x] = color;
 }
 
-static inline void _compositeNoBlendObjwin(struct GBAVideoSoftwareRenderer* renderer, uint32_t* pixel, uint32_t color,
+static inline void _compositeNoBlendObjwin(struct GBAVideoSoftwareRenderer* renderer, int x, uint32_t color,
                                            uint32_t current) {
 	UNUSED(renderer);
 	if (color < current) {
@@ -79,16 +79,16 @@ static inline void _compositeNoBlendObjwin(struct GBAVideoSoftwareRenderer* rend
 	} else {
 		color = (current & 0x00FFFFFF) | ((current << 1) & FLAG_REBLEND);
 	}
-	*pixel = color;
+	renderer->row[x] = color;
 }
 
-static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* renderer, uint32_t* pixel, uint32_t color,
+static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* renderer, int x, uint32_t color,
                                              uint32_t current) {
 	UNUSED(renderer);
 	if (color >= current) {
 		color = (current & 0x00FFFFFF) | ((current << 1) & FLAG_REBLEND);
 	}
-	*pixel = color;
+	renderer->row[x] = color;
 }
 
 #define COMPOSITE_16_OBJWIN(BLEND, IDX)  \
@@ -101,11 +101,11 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		if (current & FLAG_OBJWIN) { \
 			mergedFlags = objwinFlags; \
 		} \
-		_composite ## BLEND ## Objwin(renderer, &pixel[IDX], color | mergedFlags, current); \
+		_composite ## BLEND ## Objwin(renderer, outX + IDX, color | mergedFlags, current); \
 	}
 
 #define COMPOSITE_16_NO_OBJWIN(BLEND, IDX) \
-	_composite ## BLEND ## NoObjwin(renderer, &pixel[IDX], palette[pixelData] | flags, current);
+	_composite ## BLEND ## NoObjwin(renderer, outX + IDX, palette[pixelData] | flags, current);
 
 #define COMPOSITE_256_OBJWIN(BLEND, IDX) \
 	if (!IS_WRITABLE(current)) { \
@@ -117,14 +117,14 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		if (current & FLAG_OBJWIN) { \
 			mergedFlags = objwinFlags; \
 		} \
-		_composite ## BLEND ## Objwin(renderer, &pixel[IDX], color | mergedFlags, current); \
+		_composite ## BLEND ## Objwin(renderer, outX + IDX, color | mergedFlags, current); \
 	}
 
 #define COMPOSITE_256_NO_OBJWIN COMPOSITE_16_NO_OBJWIN
 
 #define BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, IDX) \
 	pixelData = tileData & 0xF; \
-	current = pixel[IDX]; \
+	current = renderer->row[outX + IDX]; \
 	if (pixelData && IS_WRITABLE(current)) { \
 		COMPOSITE_16_ ## OBJWIN (BLEND, IDX); \
 	} \
@@ -132,7 +132,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 
 #define BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, IDX) \
 	pixelData = tileData & 0xFF; \
-	current = pixel[IDX]; \
+	current = renderer->row[outX + IDX]; \
 	if (pixelData && IS_WRITABLE(current)) { \
 		COMPOSITE_256_ ## OBJWIN (BLEND, IDX); \
 	} \

@@ -372,6 +372,8 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 
 	GBAVideoSoftwareRendererPreprocessBuffer(softwareRenderer, y);
 	int spriteLayers = GBAVideoSoftwareRendererPreprocessSpriteLayer(softwareRenderer, y);
+	memset(softwareRenderer->alphaA, softwareRenderer->blda, sizeof(softwareRenderer->alphaA));
+	memset(softwareRenderer->alphaB, softwareRenderer->bldb, sizeof(softwareRenderer->alphaB));
 
 	int w;
 	unsigned priority;
@@ -394,7 +396,14 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 					int x;
 					for (x = softwareRenderer->start; x < softwareRenderer->end; ++x) {
 						if (scanline[x] & 0xF8000000) {
-							_compositeBlendNoObjwin(softwareRenderer, &softwareRenderer->row[x], (scanline[x] & 0x00FFFFFF) | flags, softwareRenderer->row[x]);
+							if (flags & FLAG_TARGET_1) {
+								// TODO: More precise values
+								softwareRenderer->alphaA[x] = (scanline[x] >> 28) + 1;
+								softwareRenderer->alphaB[x] = 0x10 - softwareRenderer->alphaA[x];
+								_compositeBlendNoObjwin(softwareRenderer, x, (scanline[x] & 0x00FFFFFF) | flags, softwareRenderer->row[x]);
+							} else {
+								_compositeNoBlendNoObjwin(softwareRenderer, x, (scanline[x] & 0x00FFFFFF) | flags, softwareRenderer->row[x]);
+							}
 						}
 					}
 				} else {

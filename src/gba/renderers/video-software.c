@@ -268,6 +268,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		if (softwareRenderer->bldb > 0x10) {
 			softwareRenderer->bldb = 0x10;
 		}
+		softwareRenderer->blendDirty = true;
 		value &= 0x1F1F;
 		break;
 	case REG_BLDY:
@@ -768,7 +769,7 @@ void GBAVideoSoftwareRendererPostprocessBuffer(struct GBAVideoSoftwareRenderer* 
 			for (; x < end; ++x) {
 				uint32_t color = softwareRenderer->row[x];
 				if (color & FLAG_TARGET_1) {
-					softwareRenderer->row[x] = _mix(softwareRenderer->bldb, backdrop, softwareRenderer->blda, color);
+					softwareRenderer->row[x] = _mix(softwareRenderer->alphaB[x], backdrop, softwareRenderer->alphaA[x], color);
 				}
 			}
 		}
@@ -842,6 +843,8 @@ int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRendere
 
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer) {
 	int i;
+	memset(renderer->alphaA, renderer->blda, sizeof(renderer->alphaA));
+	memset(renderer->alphaB, renderer->bldb, sizeof(renderer->alphaB));
 	if (renderer->blendEffect == BLEND_BRIGHTEN) {
 		for (i = 0; i < 512; ++i) {
 			renderer->variantPalette[i] = _brighten(renderer->normalPalette[i], renderer->bldy);

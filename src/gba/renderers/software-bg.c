@@ -34,11 +34,11 @@
 		}
 
 #define MODE_2_LOOP(MOSAIC, COORD, BLEND, OBJWIN) \
-	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) { \
+	for (outX = renderer->start; outX < renderer->end; ++outX) { \
 		x += background->dx; \
 		y += background->dy; \
 		\
-		uint32_t current = *pixel; \
+		uint32_t current = renderer->row[outX]; \
 		MOSAIC(COORD) \
 		if (pixelData) { \
 			COMPOSITE_256_ ## OBJWIN (BLEND, 0); \
@@ -69,7 +69,6 @@ void GBAVideoSoftwareRendererDrawBackgroundMode2(struct GBAVideoSoftwareRenderer
 	uint8_t pixelData = 0;
 
 	int outX;
-	uint32_t* pixel;
 
 	if (!objwinSlowPath) {
 		if (!(flags & FLAG_TARGET_2)) {
@@ -92,8 +91,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode3(struct GBAVideoSoftwareRenderer
 	uint32_t color = renderer->normalPalette[0];
 
 	int outX;
-	uint32_t* pixel;
-	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
+	for (outX = renderer->start; outX < renderer->end; ++outX) {
 		BACKGROUND_BITMAP_ITERATE(renderer->masterEnd, VIDEO_VERTICAL_PIXELS);
 
 		if (!mosaicWait) {
@@ -118,18 +116,18 @@ void GBAVideoSoftwareRendererDrawBackgroundMode3(struct GBAVideoSoftwareRenderer
 			--mosaicWait;
 		}
 
-		uint32_t current = *pixel;
+		uint32_t current = renderer->row[outX];
 		if (!objwinSlowPath || (!(current & FLAG_OBJWIN)) != objwinOnly) {
 			unsigned mergedFlags = flags;
 			if (current & FLAG_OBJWIN) {
 				mergedFlags = objwinFlags;
 			}
 			if (!variant) {
-				_compositeBlendObjwin(renderer, pixel, color | mergedFlags, current);
+				_compositeBlendObjwin(renderer, outX, color | mergedFlags, current);
 			} else if (renderer->blendEffect == BLEND_BRIGHTEN) {
-				_compositeBlendObjwin(renderer, pixel, _brighten(color, renderer->bldy) | mergedFlags, current);
+				_compositeBlendObjwin(renderer, outX, _brighten(color, renderer->bldy) | mergedFlags, current);
 			} else if (renderer->blendEffect == BLEND_DARKEN) {
-				_compositeBlendObjwin(renderer, pixel, _darken(color, renderer->bldy) | mergedFlags, current);
+				_compositeBlendObjwin(renderer, outX, _darken(color, renderer->bldy) | mergedFlags, current);
 			}
 		}
 	}
@@ -145,8 +143,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode4(struct GBAVideoSoftwareRenderer
 	}
 
 	int outX;
-	uint32_t* pixel;
-	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
+	for (outX = renderer->start; outX < renderer->end; ++outX) {
 		BACKGROUND_BITMAP_ITERATE(renderer->masterEnd, VIDEO_VERTICAL_PIXELS);
 
 		if (!mosaicWait) {
@@ -157,17 +154,17 @@ void GBAVideoSoftwareRendererDrawBackgroundMode4(struct GBAVideoSoftwareRenderer
 			--mosaicWait;
 		}
 
-		uint32_t current = *pixel;
+		uint32_t current = renderer->row[outX];
 		if (color && IS_WRITABLE(current)) {
 			if (!objwinSlowPath) {
-				_compositeBlendNoObjwin(renderer, pixel, palette[color] | flags, current);
+				_compositeBlendNoObjwin(renderer, outX, palette[color] | flags, current);
 			} else if (objwinForceEnable || (!(current & FLAG_OBJWIN)) == objwinOnly) {
 				color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette;
 				unsigned mergedFlags = flags;
 				if (current & FLAG_OBJWIN) {
 					mergedFlags = objwinFlags;
 				}
-				_compositeBlendObjwin(renderer, pixel, currentPalette[color] | mergedFlags, current);
+				_compositeBlendObjwin(renderer, outX, currentPalette[color] | mergedFlags, current);
 			}
 		}
 	}
@@ -183,8 +180,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode5(struct GBAVideoSoftwareRenderer
 	}
 
 	int outX;
-	uint32_t* pixel;
-	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
+	for (outX = renderer->start; outX < renderer->end; ++outX) {
 		BACKGROUND_BITMAP_ITERATE(160, 128);
 
 		if (!mosaicWait) {
@@ -208,18 +204,18 @@ void GBAVideoSoftwareRendererDrawBackgroundMode5(struct GBAVideoSoftwareRenderer
 			--mosaicWait;
 		}
 
-		uint32_t current = *pixel;
+		uint32_t current = renderer->row[outX];
 		if (!objwinSlowPath || (!(current & FLAG_OBJWIN)) != objwinOnly) {
 			unsigned mergedFlags = flags;
 			if (current & FLAG_OBJWIN) {
 				mergedFlags = objwinFlags;
 			}
 			if (!variant) {
-				_compositeBlendObjwin(renderer, pixel, color | mergedFlags, current);
+				_compositeBlendObjwin(renderer, outX, color | mergedFlags, current);
 			} else if (renderer->blendEffect == BLEND_BRIGHTEN) {
-				_compositeBlendObjwin(renderer, pixel, _brighten(color, renderer->bldy) | mergedFlags, current);
+				_compositeBlendObjwin(renderer, outX, _brighten(color, renderer->bldy) | mergedFlags, current);
 			} else if (renderer->blendEffect == BLEND_DARKEN) {
-				_compositeBlendObjwin(renderer, pixel, _darken(color, renderer->bldy) | mergedFlags, current);
+				_compositeBlendObjwin(renderer, outX, _darken(color, renderer->bldy) | mergedFlags, current);
 			}
 		}
 	}

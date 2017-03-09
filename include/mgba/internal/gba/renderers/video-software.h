@@ -122,6 +122,8 @@ struct GBAVideoSoftwareRenderer {
 
 	uint32_t row[256];
 	uint32_t spriteLayer[256];
+	uint8_t alphaA[256];
+	uint8_t alphaB[256];
 	int32_t spriteCyclesRemaining;
 
 	// BLDCNT
