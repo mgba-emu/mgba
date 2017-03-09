@@ -127,15 +127,16 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 	}
 
 	uint16_t texelCoord = s + t * poly->texW;
-	uint8_t a = DSGXPolygonAttrsGetAlpha(poly->poly->polyParams);
+	uint8_t ta = 0x1F;
+	uint8_t pa = DSGXPolygonAttrsGetAlpha(poly->poly->polyParams);
 	switch (poly->texFormat) {
 	case 0:
 	default:
-		return _finishColor(ep->cr, ep->cg, ep->cb, a);
+		return _finishColor(ep->cr, ep->cg, ep->cb, pa);
 	case 1:
 		texel = ((uint8_t*) poly->texBase)[texelCoord];
-		a = (texel >> 5) & 0x7;
-		a = (a << 2) + (a >> 1);
+		ta = (texel >> 5) & 0x7;
+		ta = (ta << 2) + (ta >> 1);
 		texel &= 0x1F;
 		break;
 	case 2:
@@ -163,14 +164,14 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 		break;
 	case 6:
 		texel = ((uint8_t*) poly->texBase)[texelCoord];
-		a = (texel >> 3) & 0x1F;
+		ta = (texel >> 3) & 0x1F;
 		texel &= 0x7;
 		break;
 	case 7:
-		return _finishColor(0x3F, 0x3F, 0x3F, 0x1F);
+		return _finishColor(0x3F, 0x3F, 0x3F, pa);
 	}
 	uint8_t r, g, b;
-	unsigned wr, wg, wb;
+	unsigned wr, wg, wb, wa;
 	if (poly->texFormat == 5) {
 		// TODO: Slot 2 uses upper half
 		uint16_t texel2 = renderer->d.tex[1][texelCoord >> 1];
@@ -234,12 +235,13 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 	case 1:
 	default:
 		// TODO: Alpha
-		return _finishColor(r, g, b, a);
+		return _finishColor(r, g, b, pa);
 	case 0:
 		wr = ((r + 1) * (ep->cr + 1) - 1) >> 6;
 		wg = ((g + 1) * (ep->cg + 1) - 1) >> 6;
 		wb = ((b + 1) * (ep->cb + 1) - 1) >> 6;
-		return _finishColor(wr, wg, wb, a);
+		wa = ((ta + 1) * (pa + 1) - 1) >> 5;
+		return _finishColor(wr, wg, wb, wa);
 	}
 }
 
