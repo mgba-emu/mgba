@@ -242,7 +242,7 @@ static void _updateChannel(struct mTiming* timing, void* user, uint32_t cyclesLa
 		_updateAdpcm(ch, (cpu->memory.load8(cpu, ch->offset + ch->source, NULL) >> ch->adpcmOffset) & 0xF);
 		ch->offset += ch->adpcmOffset >> 2;
 		ch->adpcmOffset ^= 4;
-		if (ch->offset == ch->loopPoint) {
+		if (ch->offset == ch->loopPoint && !ch->adpcmOffset) {
 			ch->adpcmStartSample = ch->adpcmSample;
 			ch->adpcmStartIndex = ch->adpcmIndex;
 		}
@@ -251,18 +251,18 @@ static void _updateChannel(struct mTiming* timing, void* user, uint32_t cyclesLa
 	_updateMixer(ch->p);
 	switch (ch->repeat) {
 	case 1:
-		if (ch->offset >= ch->length) {
+		if (ch->offset >= ch->length + ch->loopPoint) {
 			ch->offset = ch->loopPoint;
-		}
-		break;
-	case 2:
-		if (ch->offset >= ch->length) {
-			ch->enable = false;
-			ch->p->p->memory.io7[(DS7_REG_SOUND0CNT_HI + (ch->index << 4)) >> 1] &= 0x7FFF;
 			if (ch->format == 2) {
 				ch->adpcmSample = ch->adpcmStartSample;
 				ch->adpcmIndex = ch->adpcmStartIndex;
 			}
+		}
+		break;
+	case 2:
+		if (ch->offset >= ch->length + ch->loopPoint) {
+			ch->enable = false;
+			ch->p->p->memory.io7[(DS7_REG_SOUND0CNT_HI + (ch->index << 4)) >> 1] &= 0x7FFF;
 		}
 		break;
 	}
