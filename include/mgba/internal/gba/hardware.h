@@ -123,6 +123,9 @@ struct GBACartridgeHardware {
 void GBAHardwareInit(struct GBACartridgeHardware* gpio, uint16_t* gpioBase);
 void GBAHardwareClear(struct GBACartridgeHardware* gpio);
 
+void GBARTCProcessByte(struct GBARTC* rtc, struct mRTCSource* source);
+unsigned GBARTCOutput(struct GBARTC* rtc);
+
 void GBAHardwareInitRTC(struct GBACartridgeHardware* gpio);
 void GBAHardwareInitGyro(struct GBACartridgeHardware* gpio);
 void GBAHardwareInitRumble(struct GBACartridgeHardware* gpio);
@@ -136,8 +139,6 @@ uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* gpio, uint32_t address)
 struct GBAVideo;
 void GBAHardwarePlayerUpdate(struct GBA* gba);
 bool GBAHardwarePlayerCheckScreen(const struct GBAVideo* video);
-
-void GBARTCGenericSourceInit(struct GBARTCGenericSource* rtc, struct GBA* gba);
 
 struct GBASerializedState;
 void GBAHardwareSerialize(const struct GBACartridgeHardware* gpio, struct GBASerializedState* state);

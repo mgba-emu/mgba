@@ -870,3 +870,55 @@ void DSFrameEnded(struct DS* ds) {
 		ds->stream->postVideoFrame(ds->stream, pixels, stride);
 	}
 }
+
+uint16_t DSWriteRTC(struct DS* ds, DSRegisterRTC value) {
+	switch (ds->rtc.transferStep) {
+	case 0:
+		if ((value & 6) == 2) {
+			ds->rtc.transferStep = 1;
+		}
+		break;
+	case 1:
+		if ((value & 6) == 6) {
+			ds->rtc.transferStep = 2;
+		}
+		break;
+	case 2:
+		if (!DSRegisterRTCIsClock(value)) {
+			ds->rtc.bits &= ~(1 << ds->rtc.bitsRead);
+			ds->rtc.bits |= DSRegisterRTCGetData(value) << ds->rtc.bitsRead;
+		} else {
+			if (DSRegisterRTCIsSelect(value)) {
+				// GPIO direction should always != reading
+				if (DSRegisterRTCIsDataDirection(value)) {
+					if (RTCCommandDataIsReading(ds->rtc.command)) {
+						mLOG(DS, GAME_ERROR, "Attempting to write to RTC while in read mode");
+					}
+					++ds->rtc.bitsRead;
+					if (ds->rtc.bitsRead == 8) {
+						GBARTCProcessByte(&ds->rtc, ds->rtcSource);
+					}
+				} else {
+					value = DSRegisterRTCSetData(value, GBARTCOutput(&ds->rtc));
+					++ds->rtc.bitsRead;
+					if (ds->rtc.bitsRead == 8) {
+						--ds->rtc.bytesRemaining;
+						if (ds->rtc.bytesRemaining <= 0) {
+							ds->rtc.commandActive = 0;
+							ds->rtc.command = RTCCommandDataClearReading(ds->rtc.command);
+						}
+						ds->rtc.bitsRead = 0;
+					}
+				}
+			} else {
+				ds->rtc.bitsRead = 0;
+				ds->rtc.bytesRemaining = 0;
+				ds->rtc.commandActive = 0;
+				ds->rtc.command = RTCCommandDataClearReading(ds->rtc.command);
+				ds->rtc.transferStep = 0;
+			}
+		}
+		break;
+	}
+	return value;
+}

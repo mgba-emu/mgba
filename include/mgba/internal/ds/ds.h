@@ -20,6 +20,7 @@ CXX_GUARD_START
 #include <mgba/internal/ds/timer.h>
 #include <mgba/internal/ds/video.h>
 #include <mgba/internal/ds/wifi.h>
+#include <mgba/internal/gba/hardware.h>
 
 extern const uint32_t DS_ARM946ES_FREQUENCY;
 extern const uint32_t DS_ARM7TDMI_FREQUENCY;
@@ -89,6 +90,7 @@ struct DS {
 	struct DSAudio audio;
 	struct DSGX gx;
 	struct DSWifi wifi;
+	struct GBARTC rtc;
 
 	struct mCoreSync* sync;
 	struct mTimingEvent slice;
@@ -192,6 +194,8 @@ void DSRaiseIRQ(struct ARMCore* cpu, uint16_t* io, enum DSIRQ irq);
 
 void DSFrameStarted(struct DS* ds);
 void DSFrameEnded(struct DS* ds);
+
+uint16_t DSWriteRTC(struct DS* ds, DSRegisterRTC value);
 
 CXX_GUARD_END
 

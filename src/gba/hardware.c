@@ -19,12 +19,8 @@ static void _readPins(struct GBACartridgeHardware* hw);
 static void _outputPins(struct GBACartridgeHardware* hw, unsigned pins);
 
 static void _rtcReadPins(struct GBACartridgeHardware* hw);
-static unsigned _rtcOutput(struct GBACartridgeHardware* hw);
-static void _rtcProcessByte(struct GBACartridgeHardware* hw);
-static void _rtcUpdateClock(struct GBACartridgeHardware* hw);
+static void _rtcUpdateClock(struct GBARTC* rtc, struct mRTCSource*);
 static unsigned _rtcBCD(unsigned value);
-
-static time_t _rtcGenericCallback(struct mRTCSource* source);
 
 static void _gyroReadPins(struct GBACartridgeHardware* hw);
 
@@ -183,10 +179,10 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 					}
 					++hw->rtc.bitsRead;
 					if (hw->rtc.bitsRead == 8) {
-						_rtcProcessByte(hw);
+						GBARTCProcessByte(&hw->rtc, hw->p->rtcSource);
 					}
 				} else {
-					_outputPins(hw, 5 | (_rtcOutput(hw) << 1));
+					_outputPins(hw, 5 | (GBARTCOutput(&hw->rtc) << 1));
 					++hw->rtc.bitsRead;
 					if (hw->rtc.bitsRead == 8) {
 						--hw->rtc.bytesRemaining;
@@ -209,38 +205,38 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 	}
 }
 
-void _rtcProcessByte(struct GBACartridgeHardware* hw) {
-	--hw->rtc.bytesRemaining;
-	if (!hw->rtc.commandActive) {
+void GBARTCProcessByte(struct GBARTC* rtc, struct mRTCSource* source) {
+	--rtc->bytesRemaining;
+	if (!rtc->commandActive) {
 		RTCCommandData command;
-		command = hw->rtc.bits;
+		command = rtc->bits;
 		if (RTCCommandDataGetMagic(command) == 0x06) {
-			hw->rtc.command = command;
+			rtc->command = command;
 
-			hw->rtc.bytesRemaining = RTC_BYTES[RTCCommandDataGetCommand(command)];
-			hw->rtc.commandActive = hw->rtc.bytesRemaining > 0;
+			rtc->bytesRemaining = RTC_BYTES[RTCCommandDataGetCommand(command)];
+			rtc->commandActive = rtc->bytesRemaining > 0;
 			switch (RTCCommandDataGetCommand(command)) {
 			case RTC_RESET:
-				hw->rtc.control = 0;
+				rtc->control = 0;
 				break;
 			case RTC_DATETIME:
 			case RTC_TIME:
-				_rtcUpdateClock(hw);
+				_rtcUpdateClock(rtc, source);
 				break;
 			case RTC_FORCE_IRQ:
 			case RTC_CONTROL:
 				break;
 			}
 		} else {
-			mLOG(GBA_HW, WARN, "Invalid RTC command byte: %02X", hw->rtc.bits);
+			mLOG(GBA_HW, WARN, "Invalid RTC command byte: %02X", rtc->bits);
 		}
 	} else {
-		switch (RTCCommandDataGetCommand(hw->rtc.command)) {
+		switch (RTCCommandDataGetCommand(rtc->command)) {
 		case RTC_CONTROL:
-			hw->rtc.control = hw->rtc.bits;
+			rtc->control = rtc->bits;
 			break;
 		case RTC_FORCE_IRQ:
-			mLOG(GBA_HW, STUB, "Unimplemented RTC command %u", RTCCommandDataGetCommand(hw->rtc.command));
+			mLOG(GBA_HW, STUB, "Unimplemented RTC command %u", RTCCommandDataGetCommand(rtc->command));
 			break;
 		case RTC_RESET:
 		case RTC_DATETIME:
@@ -249,56 +245,55 @@ void _rtcProcessByte(struct GBACartridgeHardware* hw) {
 		}
 	}
 
-	hw->rtc.bits = 0;
-	hw->rtc.bitsRead = 0;
-	if (!hw->rtc.bytesRemaining) {
-		hw->rtc.commandActive = 0;
-		hw->rtc.command = RTCCommandDataClearReading(hw->rtc.command);
+	rtc->bits = 0;
+	rtc->bitsRead = 0;
+	if (!rtc->bytesRemaining) {
+		rtc->commandActive = 0;
+		rtc->command = RTCCommandDataClearReading(rtc->command);
 	}
 }
 
-unsigned _rtcOutput(struct GBACartridgeHardware* hw) {
+unsigned GBARTCOutput(struct GBARTC* rtc) {
 	uint8_t outputByte = 0;
-	switch (RTCCommandDataGetCommand(hw->rtc.command)) {
+	switch (RTCCommandDataGetCommand(rtc->command)) {
 	case RTC_CONTROL:
-		outputByte = hw->rtc.control;
+		outputByte = rtc->control;
 		break;
 	case RTC_DATETIME:
 	case RTC_TIME:
-		outputByte = hw->rtc.time[7 - hw->rtc.bytesRemaining];
+		outputByte = rtc->time[7 - rtc->bytesRemaining];
 		break;
 	case RTC_FORCE_IRQ:
 	case RTC_RESET:
 		break;
 	}
-	unsigned output = (outputByte >> hw->rtc.bitsRead) & 1;
+	unsigned output = (outputByte >> rtc->bitsRead) & 1;
 	return output;
 }
 
-void _rtcUpdateClock(struct GBACartridgeHardware* hw) {
+void _rtcUpdateClock(struct GBARTC* rtc, struct mRTCSource* source) {
 	time_t t;
-	struct mRTCSource* rtc = hw->p->rtcSource;
-	if (rtc) {
-		if (rtc->sample) {
-			rtc->sample(rtc);
+	if (source) {
+		if (source->sample) {
+			source->sample(source);
 		}
-		t = rtc->unixTime(rtc);
+		t = source->unixTime(source);
 	} else {
 		t = time(0);
 	}
 	struct tm date;
 	localtime_r(&t, &date);
-	hw->rtc.time[0] = _rtcBCD(date.tm_year - 100);
-	hw->rtc.time[1] = _rtcBCD(date.tm_mon + 1);
-	hw->rtc.time[2] = _rtcBCD(date.tm_mday);
-	hw->rtc.time[3] = _rtcBCD(date.tm_wday);
-	if (RTCControlIsHour24(hw->rtc.control)) {
-		hw->rtc.time[4] = _rtcBCD(date.tm_hour);
+	rtc->time[0] = _rtcBCD(date.tm_year - 100);
+	rtc->time[1] = _rtcBCD(date.tm_mon + 1);
+	rtc->time[2] = _rtcBCD(date.tm_mday);
+	rtc->time[3] = _rtcBCD(date.tm_wday);
+	if (RTCControlIsHour24(rtc->control)) {
+		rtc->time[4] = _rtcBCD(date.tm_hour);
 	} else {
-		hw->rtc.time[4] = _rtcBCD(date.tm_hour % 12);
+		rtc->time[4] = _rtcBCD(date.tm_hour % 12);
 	}
-	hw->rtc.time[5] = _rtcBCD(date.tm_min);
-	hw->rtc.time[6] = _rtcBCD(date.tm_sec);
+	rtc->time[5] = _rtcBCD(date.tm_min);
+	rtc->time[6] = _rtcBCD(date.tm_sec);
 }
 
 unsigned _rtcBCD(unsigned value) {
@@ -306,27 +301,6 @@ unsigned _rtcBCD(unsigned value) {
 	value /= 10;
 	counter += (value % 10) << 4;
 	return counter;
-}
-
-time_t _rtcGenericCallback(struct mRTCSource* source) {
-	struct GBARTCGenericSource* rtc = (struct GBARTCGenericSource*) source;
-	switch (rtc->override) {
-	case RTC_NO_OVERRIDE:
-	default:
-		return time(0);
-	case RTC_FIXED:
-		return rtc->value;
-	case RTC_FAKE_EPOCH:
-		return rtc->value + rtc->p->video.frameCounter * (int64_t) VIDEO_TOTAL_LENGTH / GBA_ARM7TDMI_FREQUENCY;
-	}
-}
-
-void GBARTCGenericSourceInit(struct GBARTCGenericSource* rtc, struct GBA* gba) {
-	rtc->p = gba;
-	rtc->override = RTC_NO_OVERRIDE;
-	rtc->value = 0;
-	rtc->d.sample = 0;
-	rtc->d.unixTime = _rtcGenericCallback;
 }
 
 // == Gyro

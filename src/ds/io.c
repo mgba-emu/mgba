@@ -273,6 +273,9 @@ void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	case DS7_REG_SPIDATA:
 		DSSPIWrite(ds, value);
 		break;
+	case DS7_REG_RTC:
+		value = DSWriteRTC(ds, value);
+		break;
 	case DS7_REG_SOUND0CNT_LO:
 	case DS7_REG_SOUND1CNT_LO:
 	case DS7_REG_SOUND2CNT_LO:

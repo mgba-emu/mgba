@@ -567,6 +567,14 @@ mLOG_DECLARE_CATEGORY(DS_IO);
 extern const char* const DS7IORegisterNames[];
 extern const char* const DS9IORegisterNames[];
 
+DECL_BITFIELD(DSRegisterRTC, uint16_t);
+DECL_BIT(DSRegisterRTC, Data, 0);
+DECL_BIT(DSRegisterRTC, Clock, 1);
+DECL_BIT(DSRegisterRTC, Select, 2);
+DECL_BIT(DSRegisterRTC, DataDirection, 4);
+DECL_BIT(DSRegisterRTC, ClockDirection, 5);
+DECL_BIT(DSRegisterRTC, SelectDirection, 6);
+
 struct DS;
 void DS7IOInit(struct DS* ds);
 void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value);
