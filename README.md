@@ -96,7 +96,7 @@ This will build and install mGBA into `/usr/bin` and `/usr/lib`. Dependencies th
 
 #### Windows developer building
 
-To build on Windows for development, using MSYS2 is recommended. Follow the installation steps found on their [website](https://msys2.github.io). Make sure you're running the 32-bit version ("MinGW-w64 Win32 Shell") (or the 64-bit version "MinGW-w64 Win64 Shell" if you want to build for x86_64) and run this additional command (including the braces) to install the needed dependencies (please note that this involves downloading over 500MiB of packages, so it will take a long time):
+To build on Windows for development, using MSYS2 is recommended. Follow the installation steps found on their [website](https://msys2.github.io). Make sure you're running the 32-bit version ("MSYS2 MinGW 32-bit") (or the 64-bit version "MSYS2 MinGW 64-bit" if you want to build for x86_64) and run this additional command (including the braces) to install the needed dependencies (please note that this involves downloading over 500MiB of packages, so it will take a long time):
 
 For x86 (32 bit) builds:
 
