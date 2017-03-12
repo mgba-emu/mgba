@@ -385,13 +385,19 @@ static bool _boxTestVertex(struct DSGX* gx, struct DSGXVertex* vertex) {
 	if (vx < gx->viewportX1) {
 		return false;
 	}
-	if (vx >= gx->viewportX2) {
+	if (vx > gx->viewportX2) {
 		return false;
 	}
 	if (vy < gx->viewportY1) {
 		return false;
 	}
-	if (vy >= gx->viewportY2) {
+	if (vy > gx->viewportY2) {
+		return false;
+	}
+	if (vz < -vw) {
+		return false;
+	}
+	if (vz > vw) {
 		return false;
 	}
 	// TODO: depth clipping
