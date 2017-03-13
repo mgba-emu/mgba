@@ -25,6 +25,15 @@ static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry);
 
 static bool _boxTestVertex(struct DSGX* gx, struct DSGXVertex* vertex);
 
+enum CSCode {
+	CS_LEFT = 1,
+	CS_RIGHT = 2,
+	CS_BOTTOM = 4,
+	CS_TOP = 8,
+	CS_NEAR = 16,
+	CS_FAR = 32
+};
+
 static const int32_t _gxCommandCycleBase[DS_GX_CMD_MAX] = {
 	[DS_GX_CMD_NOP] = 0,
 	[DS_GX_CMD_MTX_MODE] = 2,
@@ -178,44 +187,338 @@ static void _updateClipMatrix(struct DSGX* gx) {
 	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_1F >> 1] = gx->clipMatrix.m[15] >> 16;
 }
 
+static inline int32_t _lerp(int32_t x0, int32_t x1, int32_t w0, int32_t w1, int32_t q) {
+	int64_t x = (x1 * (int64_t) w1 - x0 * (int64_t) w0) >> 16;
+	x *= q;
+	x >>= 15;
+	x += x0 * (int64_t) w0;
+	return x >> 16;
+}
+
+static int _cohenSutherlandCode(const struct DSGX* gx, const struct DSGXVertex* v) {
+	int code = 0;
+	if (v->vx < gx->viewportX1 << 12) {
+		code |= CS_LEFT;
+	} else if (v->vx > gx->viewportX2 << 12) {
+		code |= CS_RIGHT;
+	}
+	if (v->vy < gx->viewportY1 << 12) {
+		code |= CS_BOTTOM;
+	} else if (v->vy > gx->viewportY2 << 12) {
+		code |= CS_TOP;
+	}
+	if (v->vz < -v->vw) {
+		code |= CS_NEAR;
+	} else if (v->vz > v->vw) {
+		code |= CS_FAR;
+	}
+	return code;
+}
+
+static void _lerpVertex(const struct DSGXVertex* v0, const struct DSGXVertex* v1, struct DSGXVertex* out, int32_t xw) {
+	int32_t w0 = v0->vw;
+	int32_t w1 = v1->vw;
+	int64_t w = (((int64_t) (w1 - w0) * xw) >> 32) + w0;
+	int64_t wRecip;// = 0x1000000000000LL / w;
+	out->vw = w;
+	// XXX: Disable perspective correction until I figure out how to fix it
+	wRecip = 0x100000000;
+	w0 = 0x10000;
+	w1 = 0x10000;
+
+	out->color = v0->color; // TODO
+
+	int32_t vx = _lerp(v0->vx, v1->vx, w0, w1, xw);
+	int32_t vy = _lerp(v0->vy, v1->vy, w0, w1, xw);
+	int32_t vz = _lerp(v0->vz, v1->vz, w0, w1, xw);
+	out->vx = (vx * wRecip) >> 32;
+	out->vy = (vy * wRecip) >> 32;
+	out->vz = (vz * wRecip) >> 32;
+
+	int32_t s = _lerp(v0->vs, v1->vs, w0, w1, xw);
+	int32_t t = _lerp(v0->vt, v1->vt, w0, w1, xw);
+	out->vs = (s * wRecip) >> 32;
+	out->vt = (t * wRecip) >> 32;
+}
+
+static bool _lerpVertexX(const struct DSGXVertex* v0, const struct DSGXVertex* v1, struct DSGXVertex* out, int32_t x) {
+	int64_t width = v1->vx - v0->vx;
+	int64_t xw = x - v0->vx;
+	if (!width) {
+		return false;
+	}
+	if (xw < 0) {
+		return false;
+	} else if (xw > width) {
+		return false;
+	}
+
+	xw *= 0x80000000LL;
+	xw /= width;
+
+	_lerpVertex(v0, v1, out, xw);
+	return true;
+}
+
+static bool _lerpVertexY(const struct DSGXVertex* v0, const struct DSGXVertex* v1, struct DSGXVertex* out, int32_t y) {
+	int64_t height = v1->vy - v0->vy;
+	int64_t yw = y - v0->vy;
+	if (!height) {
+		return false;
+	}
+	if (yw < 0) {
+		return false;
+	} else if (yw > height) {
+		return false;
+	}
+
+	yw *= 0x80000000LL;
+	yw /= height;
+
+	_lerpVertex(v0, v1, out, yw);
+	return true;
+}
+
 static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
-	struct DSGXVertex* vbuf = gx->vertexBuffer[gx->bufferIndex];
 	int nOffscreen = 0;
-	unsigned offscreenVerts[4] = {};
+	int offscreenVerts[8] = { 0, 0, 0, 0 };
+	unsigned oldVerts[4];
 	int v;
 	// Collect offscreen vertices
 	for (v = 0; v < poly->verts; ++v) {
-		if (!_boxTestVertex(gx, &vbuf[gx->currentPoly.vertIds[v]])) {
-			offscreenVerts[nOffscreen] = gx->currentPoly.vertIds[v];
+		offscreenVerts[v] = _cohenSutherlandCode(gx, &gx->pendingVertices[poly->vertIds[v]]);
+		oldVerts[v] = poly->vertIds[v];
+		if (offscreenVerts[v]) {
 			++nOffscreen;
 		}
 	}
+
+	struct DSGXVertex* vbuf = gx->vertexBuffer[gx->bufferIndex];
+
 	if (!nOffscreen) {
+		for (v = 0; v < poly->verts; ++v) {
+			if (gx->vertexIndex == DS_GX_VERTEX_BUFFER_SIZE) {
+				return false;
+			}
+			int vertexId = oldVerts[v];
+			if (gx->pendingVertexIds[vertexId] >= 0) {
+				poly->vertIds[v] = gx->pendingVertexIds[vertexId];
+			} else {
+				vbuf[gx->vertexIndex] = gx->pendingVertices[vertexId];
+				gx->pendingVertexIds[vertexId] = gx->vertexIndex;
+				poly->vertIds[v] = gx->vertexIndex;
+				++gx->vertexIndex;
+			}
+		}
 		return true;
 	}
 
-	// All of the vertices are offscreen
-	// TODO: clip vertices instead of discarding them
-	if (nOffscreen == poly->verts) {
-		// Remove all vertices before remaking them
-		gx->vertexIndex -= poly->verts;
-		// Put back the ones that are on the strip
-		for (v = 0; v < gx->currentPoly.verts; ++v) {
-			unsigned vid = gx->currentPoly.vertIds[v];
-			int ov;
-			for (ov = 0; ov < nOffscreen; ++ov) {
-				if (vid != offscreenVerts[ov]) {
-					continue;
-				}
-				vbuf[gx->vertexIndex] = vbuf[vid];
-				gx->currentPoly.vertIds[v] = gx->vertexIndex;
-				++gx->vertexIndex;
-				break;
+	struct DSGXVertex inList[8];
+	struct DSGXVertex outList[8];
+	int outOffscreenVerts[8] = { 0, 0, 0, 0 };
+	for (v = 0; v < poly->verts; ++v) {
+		inList[v] = gx->pendingVertices[oldVerts[v]];
+	}
+
+	int newV;
+
+	// Clip near
+	newV = 0;
+	for (v = 0; v < poly->verts; ++v) {
+		if (!(offscreenVerts[v] & CS_NEAR)) {
+			outList[newV] = inList[v];
+			outOffscreenVerts[newV] = offscreenVerts[v];
+			++newV;
+		} else {
+			// TODO
+		}
+	}
+	poly->verts = newV;
+	memcpy(inList, outList, newV * sizeof(*inList));
+	memcpy(offscreenVerts, outOffscreenVerts, newV * sizeof(*offscreenVerts));
+
+	// Clip far
+	newV = 0;
+	for (v = 0; v < poly->verts; ++v) {
+		if (!(offscreenVerts[v] & CS_FAR)) {
+			outList[newV] = inList[v];
+			outOffscreenVerts[newV] = offscreenVerts[v];
+			++newV;
+		} else {
+			// TODO
+		}
+	}
+	poly->verts = newV;
+	memcpy(inList, outList, newV * sizeof(*inList));
+	memcpy(offscreenVerts, outOffscreenVerts, newV * sizeof(*offscreenVerts));
+
+	// Clip left
+	newV = 0;
+	for (v = 0; v < poly->verts; ++v) {
+		if (!(offscreenVerts[v] & CS_LEFT)) {
+			outList[newV] = inList[v];
+			outOffscreenVerts[newV] = offscreenVerts[v];
+			++newV;
+		} else {
+			struct DSGXVertex* in = &inList[v];
+			struct DSGXVertex* in2;
+			struct DSGXVertex* out;
+
+			out = &outList[newV];
+			if (v > 0) {
+				in2 = &inList[v - 1];
+			} else {
+				in2 = &inList[poly->verts - 1];
+			}
+			if (_lerpVertexX(in, in2, out, gx->viewportX1 << 12)) {
+				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+				++newV;
+			}
+
+			out = &outList[newV];
+			if (v < poly->verts - 1) {
+				in2 = &inList[v + 1];
+			} else {
+				in2 = &inList[0];
+			}
+			if (_lerpVertexX(in, in2, out, gx->viewportX1 << 12)) {
+				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+				++newV;
 			}
 		}
-		return false;
 	}
-	return true;
+	poly->verts = newV;
+	memcpy(inList, outList, newV * sizeof(*inList));
+	memcpy(offscreenVerts, outOffscreenVerts, newV * sizeof(*offscreenVerts));
+
+	// Clip right
+	newV = 0;
+	for (v = 0; v < poly->verts; ++v) {
+		if (!(offscreenVerts[v] & CS_RIGHT)) {
+			outList[newV] = inList[v];
+			outOffscreenVerts[newV] = offscreenVerts[v];
+			++newV;
+		} else {
+			struct DSGXVertex* in = &inList[v];
+			struct DSGXVertex* in2;
+			struct DSGXVertex* out;
+
+			out = &outList[newV];
+			if (v > 0) {
+				in2 = &inList[v - 1];
+			} else {
+				in2 = &inList[poly->verts - 1];
+			}
+			if (_lerpVertexX(in2, in, out, gx->viewportX2 << 12)) {
+				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+				++newV;
+			}
+
+			out = &outList[newV];
+			if (v < poly->verts - 1) {
+				in2 = &inList[v + 1];
+			} else {
+				in2 = &inList[0];
+			}
+			if (_lerpVertexX(in2, in, out, gx->viewportX2 << 12)) {
+				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+				++newV;
+			}
+		}
+	}
+	poly->verts = newV;
+	memcpy(inList, outList, newV * sizeof(*inList));
+	memcpy(offscreenVerts, outOffscreenVerts, newV * sizeof(*offscreenVerts));
+
+	// Clip bottom
+	newV = 0;
+	for (v = 0; v < poly->verts; ++v) {
+		if (!(offscreenVerts[v] & CS_BOTTOM)) {
+			outList[newV] = inList[v];
+			outOffscreenVerts[newV] = offscreenVerts[v];
+			++newV;
+		} else {
+			struct DSGXVertex* in = &inList[v];
+			struct DSGXVertex* in2;
+			struct DSGXVertex* out;
+
+			out = &outList[newV];
+			if (v > 0) {
+				in2 = &inList[v - 1];
+			} else {
+				in2 = &inList[poly->verts - 1];
+			}
+			if (_lerpVertexY(in, in2, out, gx->viewportY1 << 12)) {
+				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+				++newV;
+			}
+
+			out = &outList[newV];
+			if (v < poly->verts - 1) {
+				in2 = &inList[v + 1];
+			} else {
+				in2 = &inList[0];
+			}
+			if (_lerpVertexY(in, in2, out, gx->viewportY1 << 12)) {
+				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+				++newV;
+			}
+		}
+	}
+	poly->verts = newV;
+	memcpy(inList, outList, newV * sizeof(*inList));
+	memcpy(offscreenVerts, outOffscreenVerts, newV * sizeof(*offscreenVerts));
+
+	// Clip top
+	newV = 0;
+	for (v = 0; v < poly->verts; ++v) {
+		if (!(offscreenVerts[v] & CS_TOP)) {
+			outList[newV] = inList[v];
+			outOffscreenVerts[newV] = offscreenVerts[v];
+			++newV;
+		} else {
+			struct DSGXVertex* in = &inList[v];
+			struct DSGXVertex* in2;
+			struct DSGXVertex* out;
+
+			out = &outList[newV];
+			if (v > 0) {
+				in2 = &inList[v - 1];
+			} else {
+				in2 = &inList[poly->verts - 1];
+			}
+			if (_lerpVertexY(in2, in, out, gx->viewportY2 << 12)) {
+				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+				++newV;
+			}
+
+			out = &outList[newV];
+			if (v < poly->verts - 1) {
+				in2 = &inList[v + 1];
+			} else {
+				in2 = &inList[0];
+			}
+			if (_lerpVertexY(in2, in, out, gx->viewportY2 << 12)) {
+				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+				++newV;
+			}
+		}
+	}
+	poly->verts = newV;
+	memcpy(inList, outList, newV * sizeof(*inList));
+	memcpy(offscreenVerts, outOffscreenVerts, newV * sizeof(*offscreenVerts));
+
+	for (v = 0; v < poly->verts; ++v) {
+		if (gx->vertexIndex == DS_GX_VERTEX_BUFFER_SIZE) {
+			return false;
+		}
+		// TODO: merge strips
+		vbuf[gx->vertexIndex] = inList[v];
+		poly->vertIds[v] = gx->vertexIndex;
+		++gx->vertexIndex;
+	}
+
+	return newV > 2;
 }
 
 static int32_t _dotViewport(struct DSGXVertex* vertex, int32_t* col) {
@@ -309,12 +612,10 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 		gx->currentVertex.vt = gx->currentVertex.t;
 	}
 
-	struct DSGXVertex* vbuf = gx->vertexBuffer[gx->bufferIndex];
-	vbuf[gx->vertexIndex] = gx->currentVertex;
+	gx->pendingVertices[gx->pendingVertexIndex] = gx->currentVertex;
+	gx->currentPoly.vertIds[gx->currentPoly.verts] = gx->pendingVertexIndex;
+	gx->pendingVertexIndex = (gx->pendingVertexIndex + 1) & 3;
 
-	gx->currentPoly.vertIds[gx->currentPoly.verts] = gx->vertexIndex;
-
-	++gx->vertexIndex;
 	++gx->currentPoly.verts;
 	int totalVertices;
 	switch (gx->vertexMode) {
@@ -329,8 +630,8 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 	}
 	if (gx->currentPoly.verts == totalVertices) {
 		struct DSGXPolygon* pbuf = gx->polygonBuffer[gx->bufferIndex];
-		pbuf[gx->polygonIndex] = gx->currentPoly;
 
+		pbuf[gx->polygonIndex] = gx->currentPoly;
 		switch (gx->vertexMode) {
 		case 0:
 		case 1:
@@ -353,6 +654,12 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 
 		if (_clipPolygon(gx, &pbuf[gx->polygonIndex])) {
 			++gx->polygonIndex;
+		}
+		if (gx->vertexMode < 2) {
+			memset(gx->pendingVertexIds, -1, sizeof(gx->pendingVertexIds));
+		} else {
+			gx->pendingVertexIds[gx->pendingVertexIndex] = -1;
+			gx->pendingVertexIds[(gx->pendingVertexIndex + 1) & 3] = -1;
 		}
 	}
 }
@@ -918,6 +1225,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 		case DS_GX_CMD_BEGIN_VTXS:
 			gx->vertexMode = entry.params[0] & 3;
 			gx->currentPoly = gx->nextPoly;
+			memset(gx->pendingVertexIds, -1, sizeof(gx->pendingVertexIds));
 			break;
 		case DS_GX_CMD_END_VTXS:
 			gx->vertexMode = -1;
@@ -1260,6 +1568,7 @@ void DSGXFlush(struct DSGX* gx) {
 		gx->swapBuffers = false;
 		gx->bufferIndex ^= 1;
 		gx->vertexIndex = 0;
+		gx->pendingVertexIndex = 0;
 		gx->polygonIndex = 0;
 		if (CircleBufferSize(&gx->fifo)) {
 			mTimingSchedule(&gx->p->ds9.timing, &gx->fifoEvent, 0);

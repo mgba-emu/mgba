@@ -133,7 +133,7 @@ struct DSGXPolygon {
 	DSGXTexParams texParams;
 	uint32_t palBase;
 	int verts;
-	unsigned vertIds[4];
+	unsigned vertIds[8];
 };
 
 struct DSGXRenderer {
@@ -171,9 +171,12 @@ struct DSGX {
 	bool wSort;
 	int bufferIndex;
 	int vertexIndex;
+	int pendingVertexIndex;
 	int polygonIndex;
 	struct DSGXVertex* vertexBuffer[2];
 	struct DSGXPolygon* polygonBuffer[2];
+	struct DSGXVertex pendingVertices[8];
+	int pendingVertexIds[8];
 
 	uint16_t* tex[4];
 	uint16_t* texPal[6];
