@@ -24,6 +24,8 @@ static void DSVideoSoftwareRendererGetPixels(struct DSVideoRenderer* renderer, s
 static void DSVideoSoftwareRendererPutPixels(struct DSVideoRenderer* renderer, size_t stride, const void* pixels);
 
 static void DSVideoSoftwareRendererDrawBackgroundExt0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY);
+static void DSVideoSoftwareRendererDrawBackgroundExt1(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY);
+static void DSVideoSoftwareRendererDrawBackgroundExt2(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY);
 
 static bool _regenerateExtPalette(struct DSVideoSoftwareRenderer* renderer, bool obj, bool engB, int slot) {
 	color_t* palette;
@@ -129,7 +131,6 @@ static void _updateCharBase(struct DSVideoSoftwareRenderer* softwareRenderer, bo
 		}
 	}
 }
-
 
 void DSVideoSoftwareRendererCreate(struct DSVideoSoftwareRenderer* renderer) {
 	renderer->d.init = DSVideoSoftwareRendererInit;
@@ -429,8 +430,10 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 				case 5:
 					if (!GBARegisterBGCNTIsExtendedMode1(softwareRenderer->bg[2].control)) {
 						DSVideoSoftwareRendererDrawBackgroundExt0(softwareRenderer, &softwareRenderer->bg[2], y);
+					} else if (!GBARegisterBGCNTIsExtendedMode0(softwareRenderer->bg[2].control)) {
+						DSVideoSoftwareRendererDrawBackgroundExt1(softwareRenderer, &softwareRenderer->bg[2], y);
 					} else {
-						// TODO
+						DSVideoSoftwareRendererDrawBackgroundExt2(softwareRenderer, &softwareRenderer->bg[2], y);
 					}
 					break;
 				}
@@ -449,8 +452,10 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 				case 5:
 					if (!GBARegisterBGCNTIsExtendedMode1(softwareRenderer->bg[3].control)) {
 						DSVideoSoftwareRendererDrawBackgroundExt0(softwareRenderer, &softwareRenderer->bg[3], y);
+					} else if (!GBARegisterBGCNTIsExtendedMode0(softwareRenderer->bg[3].control)) {
+						DSVideoSoftwareRendererDrawBackgroundExt1(softwareRenderer, &softwareRenderer->bg[3], y);
 					} else {
-						// TODO
+						DSVideoSoftwareRendererDrawBackgroundExt2(softwareRenderer, &softwareRenderer->bg[3], y);
 					}
 					break;
 				}
@@ -713,6 +718,126 @@ void DSVideoSoftwareRendererDrawBackgroundExt0(struct GBAVideoSoftwareRenderer* 
 			DRAW_BACKGROUND_EXT_0(NoBlend, OBJWIN);
 		} else {
 			DRAW_BACKGROUND_EXT_0(Blend, OBJWIN);
+		}
+	}
+}
+
+void DSVideoSoftwareRendererDrawBackgroundExt1(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY) {
+	BACKGROUND_BITMAP_INIT;
+
+	uint8_t color;
+	int width, height;
+	switch (background->size) {
+	case 0:
+		width = 128;
+		height = 128;
+		break;
+	case 1:
+		width = 256;
+		height = 256;
+		break;
+	case 2:
+		width = 512;
+		height = 256;
+		break;
+	case 3:
+		width = 512;
+		height = 512;
+		break;
+	}
+
+	int outX;
+	for (outX = renderer->start; outX < renderer->end; ++outX) {
+		BACKGROUND_BITMAP_ITERATE(width, height);
+
+		if (!mosaicWait) {
+			uint32_t address = (localX >> 8) + (localY >> 8) * width;
+			color = ((uint8_t*)renderer->d.vramBG[address >> 17])[address];
+			mosaicWait = mosaicH;
+		} else {
+			--mosaicWait;
+		}
+
+		uint32_t current = renderer->row[outX];
+		if (color && IS_WRITABLE(current)) {
+			if (!objwinSlowPath) {
+				_compositeBlendNoObjwin(renderer, outX, palette[color] | flags, current);
+			} else if (objwinForceEnable || (!(current & FLAG_OBJWIN)) == objwinOnly) {
+				color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette;
+				unsigned mergedFlags = flags;
+				if (current & FLAG_OBJWIN) {
+					mergedFlags = objwinFlags;
+				}
+				_compositeBlendObjwin(renderer, outX, currentPalette[color] | mergedFlags, current);
+			}
+		}
+	}
+}
+
+void DSVideoSoftwareRendererDrawBackgroundExt2(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY) {
+	BACKGROUND_BITMAP_INIT;
+
+	uint32_t color;
+	int width, height;
+	switch (background->size) {
+	case 0:
+		width = 128;
+		height = 128;
+		break;
+	case 1:
+		width = 256;
+		height = 256;
+		break;
+	case 2:
+		width = 512;
+		height = 256;
+		break;
+	case 3:
+		width = 512;
+		height = 512;
+		break;
+	}
+
+	int outX;
+	for (outX = renderer->start; outX < renderer->end; ++outX) {
+		BACKGROUND_BITMAP_ITERATE(width, height);
+
+		if (!mosaicWait) {
+			uint32_t address = ((localX >> 8) + (localY >> 8) * width) << 1;
+			LOAD_16(color, address & 0x1FFFE, renderer->d.vramBG[address >> 17]);
+#ifndef COLOR_16_BIT
+			unsigned color32;
+			color32 = 0;
+			color32 |= (color << 3) & 0xF8;
+			color32 |= (color << 6) & 0xF800;
+			color32 |= (color << 9) & 0xF80000;
+			color32 |= (color32 >> 5) & 0x070707;
+			color = color32;
+#elif COLOR_5_6_5
+			uint16_t color16 = 0;
+			color16 |= (color & 0x001F) << 11;
+			color16 |= (color & 0x03E0) << 1;
+			color16 |= (color & 0x7C00) >> 10;
+			color = color16;
+#endif
+			mosaicWait = mosaicH;
+		} else {
+			--mosaicWait;
+		}
+
+		uint32_t current = renderer->row[outX];
+		if (!objwinSlowPath || (!(current & FLAG_OBJWIN)) != objwinOnly) {
+			unsigned mergedFlags = flags;
+			if (current & FLAG_OBJWIN) {
+				mergedFlags = objwinFlags;
+			}
+			if (!variant) {
+				_compositeBlendObjwin(renderer, outX, color | mergedFlags, current);
+			} else if (renderer->blendEffect == BLEND_BRIGHTEN) {
+				_compositeBlendObjwin(renderer, outX, _brighten(color, renderer->bldy) | mergedFlags, current);
+			} else if (renderer->blendEffect == BLEND_DARKEN) {
+				_compositeBlendObjwin(renderer, outX, _darken(color, renderer->bldy) | mergedFlags, current);
+			}
 		}
 	}
 }
