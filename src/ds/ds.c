@@ -885,8 +885,12 @@ uint16_t DSWriteRTC(struct DS* ds, DSRegisterRTC value) {
 		break;
 	case 2:
 		if (!DSRegisterRTCIsClock(value)) {
-			ds->rtc.bits &= ~(1 << ds->rtc.bitsRead);
-			ds->rtc.bits |= DSRegisterRTCGetData(value) << ds->rtc.bitsRead;
+			if (DSRegisterRTCIsDataDirection(value)) {
+				ds->rtc.bits &= ~(1 << ds->rtc.bitsRead);
+				ds->rtc.bits |= DSRegisterRTCGetData(value) << ds->rtc.bitsRead;
+			} else {
+				value = DSRegisterRTCSetData(value, GBARTCOutput(&ds->rtc));
+			}
 		} else {
 			if (DSRegisterRTCIsSelect(value)) {
 				// GPIO direction should always != reading
