@@ -228,7 +228,7 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 			texel = _mixTexels(a, texel, b, texel2);
 		}
 	} else {
-		if (DSGXTexParamsIs0Transparent(poly->poly->texParams) && !texel) {
+		if (poly->texFormat < 5 && poly->texFormat > 1 && DSGXTexParamsIs0Transparent(poly->poly->texParams) && !texel) {
 			return 0;
 		}
 		texel = poly->palBase[texel];
