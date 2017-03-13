@@ -231,9 +231,9 @@ static void _lerpVertex(const struct DSGXVertex* v0, const struct DSGXVertex* v1
 	int32_t vx = _lerp(v0->vx, v1->vx, w0, w1, xw);
 	int32_t vy = _lerp(v0->vy, v1->vy, w0, w1, xw);
 	int32_t vz = _lerp(v0->vz, v1->vz, w0, w1, xw);
-	out->vx = (vx * wRecip) >> 32;
-	out->vy = (vy * wRecip) >> 32;
-	out->vz = (vz * wRecip) >> 32;
+	out->vx = ((vx * wRecip) >> 32) + 1;
+	out->vy = ((vy * wRecip) >> 32) + 1;
+	out->vz = ((vz * wRecip) >> 32) + 1;
 
 	int32_t s = _lerp(v0->vs, v1->vs, w0, w1, xw);
 	int32_t t = _lerp(v0->vt, v1->vt, w0, w1, xw);
