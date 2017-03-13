@@ -8,7 +8,7 @@
 #include <mgba-util/memory.h>
 #include "gba/renderers/software-private.h"
 
-#define SCREEN_SIZE (DS_VIDEO_VERTICAL_PIXELS << 12)
+#define SCREEN_SIZE ((DS_VIDEO_VERTICAL_PIXELS - 1) << 12)
 
 DEFINE_VECTOR(DSGXSoftwarePolygonList, struct DSGXSoftwarePolygon);
 DEFINE_VECTOR(DSGXSoftwareEdgeList, struct DSGXSoftwareEdge);
