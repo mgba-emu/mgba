@@ -27,6 +27,20 @@ static uint8_t DSWifiReadBB(struct DS* ds, uint8_t address) {
 
 static void DSWifiWriteReg(struct DS* ds, uint32_t address, uint16_t value) {
 	switch (address) {
+	case 0x040:
+		value &= 0x8001;
+		if (value & 0x8000) {
+			uint16_t state = ds->wifi.io[0x03C >> 1];
+			if (value & 0x1) {
+				state |= 0x200;
+				state &= ~0x100;
+			} else {
+				mLOG(DS_WIFI, STUB, "Stub Wi-Fi I/O register write: %06X:%04X", address, value);
+				state &= ~0x200;
+			}
+			ds->wifi.io[0x03C >> 1] = state;
+		}
+		break;
 	case 0x158:
 		if (value & 0x1000) {
 			DSWifiWriteBB(ds, value & 0xFF, ds->wifi.io[0x15A >> 1]);
@@ -46,6 +60,7 @@ static void DSWifiWriteReg(struct DS* ds, uint32_t address, uint16_t value) {
 
 static uint16_t DSWifiReadReg(struct DS* ds, uint32_t address) {
 	switch (address) {
+	case 0x040:
 	case 0x15C:
 		break;
 	default:
