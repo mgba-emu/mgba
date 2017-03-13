@@ -310,26 +310,26 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 	case REG_WIN0V:
 		softwareRenderer->winN[0].v.end = value;
 		softwareRenderer->winN[0].v.start = value >> 8;
-		if (softwareRenderer->winN[0].v.start > VIDEO_VERTICAL_PIXELS && softwareRenderer->winN[0].v.start > softwareRenderer->winN[0].v.end) {
+		if (softwareRenderer->winN[0].v.start > softwareRenderer->masterHeight && softwareRenderer->winN[0].v.start > softwareRenderer->winN[0].v.end) {
 			softwareRenderer->winN[0].v.start = 0;
 		}
-		if (softwareRenderer->winN[0].v.end > VIDEO_VERTICAL_PIXELS) {
-			softwareRenderer->winN[0].v.end = VIDEO_VERTICAL_PIXELS;
-			if (softwareRenderer->winN[0].v.start > VIDEO_VERTICAL_PIXELS) {
-				softwareRenderer->winN[0].v.start = VIDEO_VERTICAL_PIXELS;
+		if (softwareRenderer->winN[0].v.end > softwareRenderer->masterHeight) {
+			softwareRenderer->winN[0].v.end = softwareRenderer->masterHeight;
+			if (softwareRenderer->winN[0].v.start > softwareRenderer->masterHeight) {
+				softwareRenderer->winN[0].v.start = softwareRenderer->masterHeight;
 			}
 		}
 		break;
 	case REG_WIN1V:
 		softwareRenderer->winN[1].v.end = value;
 		softwareRenderer->winN[1].v.start = value >> 8;
-		if (softwareRenderer->winN[1].v.start > VIDEO_VERTICAL_PIXELS && softwareRenderer->winN[1].v.start > softwareRenderer->winN[1].v.end) {
+		if (softwareRenderer->winN[1].v.start > softwareRenderer->masterHeight && softwareRenderer->winN[1].v.start > softwareRenderer->winN[1].v.end) {
 			softwareRenderer->winN[1].v.start = 0;
 		}
-		if (softwareRenderer->winN[1].v.end > VIDEO_VERTICAL_PIXELS) {
-			softwareRenderer->winN[1].v.end = VIDEO_VERTICAL_PIXELS;
-			if (softwareRenderer->winN[1].v.start > VIDEO_VERTICAL_PIXELS) {
-				softwareRenderer->winN[1].v.start = VIDEO_VERTICAL_PIXELS;
+		if (softwareRenderer->winN[1].v.end > softwareRenderer->masterHeight) {
+			softwareRenderer->winN[1].v.end = softwareRenderer->masterHeight;
+			if (softwareRenderer->winN[1].v.start > softwareRenderer->masterHeight) {
+				softwareRenderer->winN[1].v.start = softwareRenderer->masterHeight;
 			}
 		}
 		break;

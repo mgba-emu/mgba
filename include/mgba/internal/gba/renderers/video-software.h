@@ -168,7 +168,7 @@ struct GBAVideoSoftwareRenderer {
 	int start;
 	int end;
 	int masterEnd;
-	int masterHeight;
+	unsigned masterHeight;
 	int masterScanlines;
 
 	int masterBright;
