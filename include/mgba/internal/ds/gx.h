@@ -177,6 +177,7 @@ struct DSGX {
 	struct DSGXPolygon* polygonBuffer[2];
 	struct DSGXVertex pendingVertices[8];
 	int pendingVertexIds[8];
+	bool reverseWinding;
 
 	uint16_t* tex[4];
 	uint16_t* texPal[6];

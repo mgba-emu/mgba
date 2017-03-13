@@ -284,6 +284,48 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 	int offscreenVerts[8] = { 0, 0, 0, 0 };
 	unsigned oldVerts[4];
 	int v;
+
+	if (!DSGXPolygonAttrsIsBackFace(poly->polyParams) || !DSGXPolygonAttrsIsFrontFace(poly->polyParams)) {
+		// Calculate normal direction
+		int nz = 0;
+		for (v = 0; v < poly->verts; ++v) {
+			struct DSGXVertex* v0 = &gx->pendingVertices[poly->vertIds[v]];
+			struct DSGXVertex* v1;
+			struct DSGXVertex* v2;
+			if (v < poly->verts - 2) {
+				v1 = &gx->pendingVertices[poly->vertIds[v + 1]];
+				v2 = &gx->pendingVertices[poly->vertIds[v + 2]];
+			} else if (v < poly->verts - 1) {
+				v1 = &gx->pendingVertices[poly->vertIds[v + 1]];
+				v2 = &gx->pendingVertices[poly->vertIds[v + 2 - poly->verts]];
+			} else {
+				v1 = &gx->pendingVertices[poly->vertIds[v + 1 - poly->verts]];
+				v2 = &gx->pendingVertices[poly->vertIds[v + 2 - poly->verts]];
+			}
+			int64_t vx1 = v0->vx - v1->vx;
+			int64_t vx2 = v2->vx - v1->vx;
+			int64_t vy1 = v0->vy - v1->vy;
+			int64_t vy2 = v2->vy - v1->vy;
+			int32_t vm1 = sqrt(vx1 * vx1 + vy1 * vy1);
+			int32_t vm2 = sqrt(vx2 * vx2 + vy2 * vy2);
+			if (vm1) {
+				vx1 = (vx1 << 8) / vm1;
+				vy1 = (vy1 << 8) / vm1;
+			}
+			if (vm2) {
+				vx2 = (vx2 << 8) / vm2;
+				vy2 = (vy2 << 8) / vm2;
+			}
+			nz += vx1 * vy2 - vy1 * vx2;
+		}
+		if (!DSGXPolygonAttrsIsBackFace(poly->polyParams) && nz < 0) {
+			return false;
+		}
+		if (!DSGXPolygonAttrsIsFrontFace(poly->polyParams) && nz > 0) {
+			return false;
+		}
+	}
+
 	// Collect offscreen vertices
 	for (v = 0; v < poly->verts; ++v) {
 		offscreenVerts[v] = _cohenSutherlandCode(gx, &gx->pendingVertices[poly->vertIds[v]]);
@@ -638,6 +680,12 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 			gx->currentPoly.verts = 0;
 			break;
 		case 2:
+			// Reverse winding if needed
+			if (gx->reverseWinding) {
+				pbuf[gx->polygonIndex].vertIds[1] = gx->currentPoly.vertIds[2];
+				pbuf[gx->polygonIndex].vertIds[2] = gx->currentPoly.vertIds[1];
+			}
+			gx->reverseWinding = !gx->reverseWinding;
 			gx->currentPoly.vertIds[0] = gx->currentPoly.vertIds[1];
 			gx->currentPoly.vertIds[1] = gx->currentPoly.vertIds[2];
 			gx->currentPoly.verts = 2;
@@ -1225,6 +1273,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 		case DS_GX_CMD_BEGIN_VTXS:
 			gx->vertexMode = entry.params[0] & 3;
 			gx->currentPoly = gx->nextPoly;
+			gx->reverseWinding = false;
 			memset(gx->pendingVertexIds, -1, sizeof(gx->pendingVertexIds));
 			break;
 		case DS_GX_CMD_END_VTXS:
