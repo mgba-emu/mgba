@@ -283,7 +283,7 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 	return true;
 }
 
-static void _lerpEndpoint(const struct DSGXSoftwareSpan* span, struct DSGXSoftwareEndpoint* ep, unsigned x) {
+static void _lerpEndpoint(const struct DSGXSoftwareSpan* span, struct DSGXSoftwareEndpoint* ep, int x) {
 	int64_t width = span->ep[1].x - span->ep[0].x;
 	int64_t xw = x - span->ep[0].x;
 	if (!width) {
@@ -379,14 +379,14 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 		struct DSGXVertex* v0 = &verts[poly->poly->vertIds[0]];
 		struct DSGXVertex* v1;
 
-		int32_t v0x = (v0->vx + v0->vw) * (int64_t) renderer->viewportWidth / (v0->vw * 2) + renderer->viewportX;
-		int32_t v0y = (-v0->vy + v0->vw) * (int64_t) renderer->viewportHeight / (v0->vw * 2) + renderer->viewportY;
+		int32_t v0x = (v0->vx + v0->vw) * (int64_t) (renderer->viewportWidth << 12) / (v0->vw * 2) + (renderer->viewportX << 12);
+		int32_t v0y = (-v0->vy + v0->vw) * (int64_t) (renderer->viewportHeight << 12) / (v0->vw * 2) + (renderer->viewportY << 12);
 
 		int v;
 		for (v = 1; v < poly->poly->verts; ++v) {
 			v1 = &verts[poly->poly->vertIds[v]];
-			int32_t v1x = (v1->vx + v1->vw) * (int64_t) renderer->viewportWidth / (v1->vw * 2) + renderer->viewportX;
-			int32_t v1y = (-v1->vy + v1->vw) * (int64_t) renderer->viewportHeight / (v1->vw * 2) + renderer->viewportY;
+			int32_t v1x = (v1->vx + v1->vw) * (int64_t) (renderer->viewportWidth << 12) / (v1->vw * 2) + (renderer->viewportX << 12);
+			int32_t v1y = (-v1->vy + v1->vw) * (int64_t) (renderer->viewportHeight << 12) / (v1->vw * 2) + (renderer->viewportY << 12);
 
 			if (v0y <= v1y) {
 				edge->y0 = v0y;
@@ -430,8 +430,8 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 		}
 
 		v1 = &verts[poly->poly->vertIds[0]];
-		int32_t v1x = (v1->vx + v1->vw) * (int64_t) renderer->viewportWidth / (v1->vw * 2) + renderer->viewportX;
-		int32_t v1y = (-v1->vy + v1->vw) * (int64_t) renderer->viewportHeight / (v1->vw * 2) + renderer->viewportY;
+		int32_t v1x = (v1->vx + v1->vw) * (int64_t) (renderer->viewportWidth << 12) / (v1->vw * 2) + (renderer->viewportX << 12);
+		int32_t v1y = (-v1->vy + v1->vw) * (int64_t) (renderer->viewportHeight << 12) / (v1->vw * 2) + (renderer->viewportY << 12);
 
 		if (v0y <= v1y) {
 			edge->y0 = v0y;
@@ -479,23 +479,23 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 	size_t i;
 	for (i = 0; i < DSGXSoftwareEdgeListSize(&softwareRenderer->activeEdges); ++i) {
 		struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListGetPointer(&softwareRenderer->activeEdges, i);
-		if (edge->y1 < y) {
+		if (edge->y1 < (y << 12)) {
 			continue;
-		} else if (edge->y0 > y) {
+		} else if (edge->y0 > (y << 12)) {
 			continue;
 		}
 
 		unsigned poly = edge->polyId;
 		struct DSGXSoftwareSpan* span = softwareRenderer->bucket[poly];
 		if (span && !span->ep[1].w) {
-			if (_edgeToSpan(span, edge, 1, y)) {
+			if (_edgeToSpan(span, edge, 1, y << 12)) {
 				softwareRenderer->bucket[poly] = NULL;
 			}
 		} else if (!span) {
 			span = DSGXSoftwareSpanListAppend(&softwareRenderer->activeSpans);
 			memset(&span->ep[1], 0, sizeof(span->ep[1]));
 			span->poly = DSGXSoftwarePolygonListGetPointer(&softwareRenderer->activePolys, poly);
-			if (!_edgeToSpan(span, edge, 0, y)) {
+			if (!_edgeToSpan(span, edge, 0, y << 12)) {
 				// Horizontal line
 				DSGXSoftwareSpanListShift(&softwareRenderer->activeSpans, DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans) - 1, 1);
 			} else {
@@ -516,13 +516,13 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 	for (i = 0; i < DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans); ++i) {
 		struct DSGXSoftwareSpan* span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, i);
 
-		int32_t x = span->ep[0].x;
+		int32_t x = span->ep[0].x >> 12;
 		if (x < 0) {
 			x = 0;
 		}
-		for (; x < span->ep[1].x && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
+		for (; x < (span->ep[1].x >> 12) && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
 			struct DSGXSoftwareEndpoint ep;
-			_lerpEndpoint(span, &ep, x);
+			_lerpEndpoint(span, &ep, x << 12);
 			color_t color = _lookupColor(softwareRenderer, &ep, span->poly);
 			unsigned a = color >> 27;
 			unsigned current = scanline[x];
