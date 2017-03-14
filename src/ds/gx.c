@@ -262,8 +262,11 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 	int v;
 
 	if (!DSGXPolygonAttrsIsBackFace(poly->polyParams) || !DSGXPolygonAttrsIsFrontFace(poly->polyParams)) {
-		// Calculate normal direction
-		int nz = 0;
+		// Calculate normal direction and camera dot product average
+		int64_t nx = 0;
+		int64_t ny = 0;
+		int64_t nz = 0;
+		int64_t dot = 0;
 		for (v = 0; v < poly->verts; ++v) {
 			struct DSGXVertex* v0 = &gx->pendingVertices[poly->vertIds[v]];
 			struct DSGXVertex* v1;
@@ -278,26 +281,15 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 				v1 = &gx->pendingVertices[poly->vertIds[v + 1 - poly->verts]];
 				v2 = &gx->pendingVertices[poly->vertIds[v + 2 - poly->verts]];
 			}
-			int64_t vx1 = v0->vx - v1->vx;
-			int64_t vx2 = v2->vx - v1->vx;
-			int64_t vy1 = v0->vy - v1->vy;
-			int64_t vy2 = v2->vy - v1->vy;
-			int32_t vm1 = sqrt(vx1 * vx1 + vy1 * vy1);
-			int32_t vm2 = sqrt(vx2 * vx2 + vy2 * vy2);
-			if (vm1) {
-				vx1 = (vx1 << 8) / vm1;
-				vy1 = (vy1 << 8) / vm1;
-			}
-			if (vm2) {
-				vx2 = (vx2 << 8) / vm2;
-				vy2 = (vy2 << 8) / vm2;
-			}
-			nz += vx1 * vy2 - vy1 * vx2;
+			nx = ((int64_t) v0->vy * v2->vw - (int64_t) v0->vw * v2->vy) >> 24;
+			ny = ((int64_t) v0->vw * v2->vx - (int64_t) v0->vx * v2->vw) >> 24;
+			nz = ((int64_t) v0->vx * v2->vy - (int64_t) v0->vy * v2->vx) >> 24;
+			dot += nx * v1->vx + ny * v1->vy + nz * v1->vw;
 		}
-		if (!DSGXPolygonAttrsIsBackFace(poly->polyParams) && nz < 0) {
+		if (!DSGXPolygonAttrsIsBackFace(poly->polyParams) && dot < 0) {
 			return false;
 		}
-		if (!DSGXPolygonAttrsIsFrontFace(poly->polyParams) && nz > 0) {
+		if (!DSGXPolygonAttrsIsFrontFace(poly->polyParams) && dot > 0) {
 			return false;
 		}
 	}
