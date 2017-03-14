@@ -187,12 +187,14 @@ static void _updateClipMatrix(struct DSGX* gx) {
 	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_1F >> 1] = gx->clipMatrix.m[15] >> 16;
 }
 
-static inline int32_t _lerp(int32_t x0, int32_t x1, int32_t w0, int32_t w1, int32_t q) {
-	int64_t x = (x1 * (int64_t) w1 - x0 * (int64_t) w0) >> 16;
+static inline int32_t _lerp(int32_t x0, int32_t x1, int32_t q, int64_t r, int point) {
+	int64_t x = x1 - x0;
 	x *= q;
-	x >>= 15;
-	x += x0 * (int64_t) w0;
-	return x >> 16;
+	x >>= point >> 1;
+	x *= r;
+	x >>= 27 + (point >> 1);
+	x += x0;
+	return x + 1;
 }
 
 static int _cohenSutherlandCode(const struct DSGX* gx, const struct DSGXVertex* v) {
@@ -215,68 +217,42 @@ static int _cohenSutherlandCode(const struct DSGX* gx, const struct DSGXVertex* 
 	return code;
 }
 
-static void _lerpVertex(const struct DSGXVertex* v0, const struct DSGXVertex* v1, struct DSGXVertex* out, int32_t xw) {
-	int32_t w0 = v0->vw;
-	int32_t w1 = v1->vw;
-	int64_t w = (((int64_t) (w1 - w0) * xw) >> 32) + w0;
-	int64_t wRecip;// = 0x1000000000000LL / w;
+static bool _lerpVertex(const struct DSGXVertex* v0, const struct DSGXVertex* v1, struct DSGXVertex* out, int32_t q, int64_t r) {
+	if (!r) {
+		return false;
+	}
+	if (q < 0) {
+		return false;
+	}
+	if (q > r) {
+		return false;
+	}
+
+	r = (INT64_MAX >> 24) / r;
+	int32_t w = _lerp(v0->vw, v1->vw, q, r, 12);
 	out->vw = w;
-	// XXX: Disable perspective correction until I figure out how to fix it
-	wRecip = 0x100000000;
-	w0 = 0x10000;
-	w1 = 0x10000;
 
 	out->color = v0->color; // TODO
 
-	int32_t vx = _lerp(v0->vx, v1->vx, w0, w1, xw);
-	int32_t vy = _lerp(v0->vy, v1->vy, w0, w1, xw);
-	int32_t vz = _lerp(v0->vz, v1->vz, w0, w1, xw);
-	out->vx = ((vx * wRecip) >> 32) + 1;
-	out->vy = ((vy * wRecip) >> 32) + 1;
-	out->vz = ((vz * wRecip) >> 32) + 1;
-
-	int32_t s = _lerp(v0->vs, v1->vs, w0, w1, xw);
-	int32_t t = _lerp(v0->vt, v1->vt, w0, w1, xw);
-	out->vs = (s * wRecip) >> 32;
-	out->vt = (t * wRecip) >> 32;
-}
-
-static bool _lerpVertexX(const struct DSGXVertex* v0, const struct DSGXVertex* v1, struct DSGXVertex* out, int32_t x) {
-	int64_t width = v1->vx - v0->vx;
-	int64_t xw = x - v0->vx;
-	if (!width) {
-		return false;
-	}
-	if (xw < 0) {
-		return false;
-	} else if (xw > width) {
-		return false;
-	}
-
-	xw *= 0x80000000LL;
-	xw /= width;
-
-	_lerpVertex(v0, v1, out, xw);
+	out->vx = _lerp(v0->vx, v1->vx, q, r, 12);
+	out->vy = _lerp(v0->vy, v1->vy, q, r, 12);
+	out->vz = _lerp(v0->vz, v1->vz, q, r, 12);
+	out->vw = _lerp(v0->vw, v1->vw, q, r, 12);
+	out->vs = _lerp(v0->vs, v1->vs, q, r, 12);
+	out->vt = _lerp(v0->vt, v1->vt, q, r, 12);
 	return true;
 }
 
-static bool _lerpVertexY(const struct DSGXVertex* v0, const struct DSGXVertex* v1, struct DSGXVertex* out, int32_t y) {
-	int64_t height = v1->vy - v0->vy;
-	int64_t yw = y - v0->vy;
-	if (!height) {
-		return false;
-	}
-	if (yw < 0) {
-		return false;
-	} else if (yw > height) {
-		return false;
-	}
+static bool _lerpVertexX(const struct DSGXVertex* v0, const struct DSGXVertex* v1, struct DSGXVertex* out, int32_t xw) {
+	int32_t q = xw - v0->vx;
+	int64_t r = v1->vx - v0->vx;
+	return _lerpVertex(v0, v1, out, q, r);
+}
 
-	yw *= 0x80000000LL;
-	yw /= height;
-
-	_lerpVertex(v0, v1, out, yw);
-	return true;
+static bool _lerpVertexY(const struct DSGXVertex* v0, const struct DSGXVertex* v1, struct DSGXVertex* out, int32_t yw) {
+	int32_t q = yw - v0->vy;
+	int64_t r = v1->vy - v0->vy;
+	return _lerpVertex(v0, v1, out, q, r);
 }
 
 static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
