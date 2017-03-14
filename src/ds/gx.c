@@ -190,23 +190,21 @@ static void _updateClipMatrix(struct DSGX* gx) {
 static inline int32_t _lerp(int32_t x0, int32_t x1, int32_t q, int64_t r, int point) {
 	int64_t x = x1 - x0;
 	x *= q;
-	x >>= point >> 1;
-	x *= r;
-	x >>= 27 + (point >> 1);
+	x /= r;
 	x += x0;
-	return x + 1;
+	return x;
 }
 
 static int _cohenSutherlandCode(const struct DSGX* gx, const struct DSGXVertex* v) {
 	int code = 0;
-	if (v->vx < gx->viewportX1 << 12) {
+	if (v->vx < -v->vw) {
 		code |= CS_LEFT;
-	} else if (v->vx > gx->viewportX2 << 12) {
+	} else if (v->vx > v->vw) {
 		code |= CS_RIGHT;
 	}
-	if (v->vy < gx->viewportY1 << 12) {
+	if (v->vy < -v->vw) {
 		code |= CS_BOTTOM;
-	} else if (v->vy > gx->viewportY2 << 12) {
+	} else if (v->vy > v->vw) {
 		code |= CS_TOP;
 	}
 	if (v->vz < -v->vw) {
@@ -221,37 +219,33 @@ static bool _lerpVertex(const struct DSGXVertex* v0, const struct DSGXVertex* v1
 	if (!r) {
 		return false;
 	}
-	if (q < 0) {
-		return false;
-	}
-	if (q > r) {
-		return false;
-	}
-
-	r = (INT64_MAX >> 24) / r;
-	int32_t w = _lerp(v0->vw, v1->vw, q, r, 12);
-	out->vw = w;
-
 	out->color = v0->color; // TODO
 
 	out->vx = _lerp(v0->vx, v1->vx, q, r, 12);
 	out->vy = _lerp(v0->vy, v1->vy, q, r, 12);
 	out->vz = _lerp(v0->vz, v1->vz, q, r, 12);
 	out->vw = _lerp(v0->vw, v1->vw, q, r, 12);
+
 	out->vs = _lerp(v0->vs, v1->vs, q, r, 12);
 	out->vt = _lerp(v0->vt, v1->vt, q, r, 12);
 	return true;
 }
 
-static bool _lerpVertexX(const struct DSGXVertex* v0, const struct DSGXVertex* v1, struct DSGXVertex* out, int32_t xw) {
-	int32_t q = xw - v0->vx;
-	int64_t r = v1->vx - v0->vx;
+static bool _lerpVertexX(const struct DSGXVertex* v0, const struct DSGXVertex* v1, struct DSGXVertex* out, int sign) {
+	int32_t q = v0->vw - sign * v0->vx;
+	int64_t r = q - (v1->vw - sign * v1->vx);
 	return _lerpVertex(v0, v1, out, q, r);
 }
 
-static bool _lerpVertexY(const struct DSGXVertex* v0, const struct DSGXVertex* v1, struct DSGXVertex* out, int32_t yw) {
-	int32_t q = yw - v0->vy;
-	int64_t r = v1->vy - v0->vy;
+static bool _lerpVertexY(const struct DSGXVertex* v0, const struct DSGXVertex* v1, struct DSGXVertex* out, int sign) {
+	int32_t q = v0->vw - sign * v0->vy;
+	int64_t r = q - (v1->vw - sign * v1->vy);
+	return _lerpVertex(v0, v1, out, q, r);
+}
+
+static bool _lerpVertexZ(const struct DSGXVertex* v0, const struct DSGXVertex* v1, struct DSGXVertex* out, int sign) {
+	int32_t q = v0->vw - sign * v0->vz;
+	int64_t r = q - (v1->vw - sign * v1->vz);
 	return _lerpVertex(v0, v1, out, q, r);
 }
 
@@ -340,7 +334,38 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 			outOffscreenVerts[newV] = offscreenVerts[v];
 			++newV;
 		} else {
-			// TODO
+			struct DSGXVertex* in = &inList[v];
+			struct DSGXVertex* in2;
+			struct DSGXVertex* out;
+			int iv;
+
+			if (v > 0) {
+				iv = v - 1;
+			} else {
+				iv = poly->verts - 1;
+			}
+			if (!(offscreenVerts[iv] & CS_NEAR)) {
+				in2 = &inList[iv];
+				out = &outList[newV];
+				if (_lerpVertexZ(in, in2, out, -1)) {
+					outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+					++newV;
+				}
+			}
+
+			if (v < poly->verts - 1) {
+				iv = v + 1;
+			} else {
+				iv = 0;
+			}
+			if (!(offscreenVerts[iv] & CS_NEAR)) {
+				in2 = &inList[iv];
+				out = &outList[newV];
+				if (_lerpVertexZ(in, in2, out, -1)) {
+					outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+					++newV;
+				}
+			}
 		}
 	}
 	poly->verts = newV;
@@ -355,7 +380,44 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 			outOffscreenVerts[newV] = offscreenVerts[v];
 			++newV;
 		} else {
-			// TODO
+			if (!(offscreenVerts[v] & CS_NEAR)) {
+				outList[newV] = inList[v];
+				outOffscreenVerts[newV] = offscreenVerts[v];
+				++newV;
+			} else {
+				struct DSGXVertex* in = &inList[v];
+				struct DSGXVertex* in2;
+				struct DSGXVertex* out;
+				int iv;
+
+				if (v > 0) {
+					iv = v - 1;
+				} else {
+					iv = poly->verts - 1;
+				}
+				if (!(offscreenVerts[iv] & CS_FAR)) {
+					in2 = &inList[iv];
+					out = &outList[newV];
+					if (_lerpVertexZ(in, in2, out, 1)) {
+						outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+						++newV;
+					}
+				}
+
+				if (v < poly->verts - 1) {
+					iv = v + 1;
+				} else {
+					iv = 0;
+				}
+				if (!(offscreenVerts[iv] & CS_FAR)) {
+					in2 = &inList[iv];
+					out = &outList[newV];
+					if (_lerpVertexZ(in, in2, out, 1)) {
+						outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+						++newV;
+					}
+				}
+			}
 		}
 	}
 	poly->verts = newV;
@@ -373,27 +435,34 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 			struct DSGXVertex* in = &inList[v];
 			struct DSGXVertex* in2;
 			struct DSGXVertex* out;
+			int iv;
 
-			out = &outList[newV];
 			if (v > 0) {
-				in2 = &inList[v - 1];
+				iv = v - 1;
 			} else {
-				in2 = &inList[poly->verts - 1];
+				iv = poly->verts - 1;
 			}
-			if (_lerpVertexX(in, in2, out, gx->viewportX1 << 12)) {
-				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
-				++newV;
+			if (!(offscreenVerts[iv] & CS_LEFT)) {
+				in2 = &inList[iv];
+				out = &outList[newV];
+				if (_lerpVertexX(in, in2, out, -1)) {
+					outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+					++newV;
+				}
 			}
 
-			out = &outList[newV];
 			if (v < poly->verts - 1) {
-				in2 = &inList[v + 1];
+				iv = v + 1;
 			} else {
-				in2 = &inList[0];
+				iv = 0;
 			}
-			if (_lerpVertexX(in, in2, out, gx->viewportX1 << 12)) {
-				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
-				++newV;
+			if (!(offscreenVerts[iv] & CS_LEFT)) {
+				in2 = &inList[iv];
+				out = &outList[newV];
+				if (_lerpVertexX(in, in2, out, -1)) {
+					outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+					++newV;
+				}
 			}
 		}
 	}
@@ -412,27 +481,34 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 			struct DSGXVertex* in = &inList[v];
 			struct DSGXVertex* in2;
 			struct DSGXVertex* out;
+			int iv;
 
-			out = &outList[newV];
 			if (v > 0) {
-				in2 = &inList[v - 1];
+				iv = v - 1;
 			} else {
-				in2 = &inList[poly->verts - 1];
+				iv = poly->verts - 1;
 			}
-			if (_lerpVertexX(in2, in, out, gx->viewportX2 << 12)) {
-				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
-				++newV;
+			if (!(offscreenVerts[iv] & CS_RIGHT)) {
+				in2 = &inList[iv];
+				out = &outList[newV];
+				if (_lerpVertexX(in, in2, out, 1)) {
+					outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+					++newV;
+				}
 			}
 
-			out = &outList[newV];
 			if (v < poly->verts - 1) {
-				in2 = &inList[v + 1];
+				iv = v + 1;
 			} else {
-				in2 = &inList[0];
+				iv = 0;
 			}
-			if (_lerpVertexX(in2, in, out, gx->viewportX2 << 12)) {
-				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
-				++newV;
+			if (!(offscreenVerts[iv] & CS_RIGHT)) {
+				in2 = &inList[iv];
+				out = &outList[newV];
+				if (_lerpVertexX(in, in2, out, 1)) {
+					outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+					++newV;
+				}
 			}
 		}
 	}
@@ -451,27 +527,34 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 			struct DSGXVertex* in = &inList[v];
 			struct DSGXVertex* in2;
 			struct DSGXVertex* out;
+			int iv;
 
-			out = &outList[newV];
 			if (v > 0) {
-				in2 = &inList[v - 1];
+				iv = v - 1;
 			} else {
-				in2 = &inList[poly->verts - 1];
+				iv = poly->verts - 1;
 			}
-			if (_lerpVertexY(in, in2, out, gx->viewportY1 << 12)) {
-				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
-				++newV;
+			if (!(offscreenVerts[iv] & CS_BOTTOM)) {
+				in2 = &inList[iv];
+				out = &outList[newV];
+				if (_lerpVertexY(in, in2, out, -1)) {
+					outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+					++newV;
+				}
 			}
 
-			out = &outList[newV];
 			if (v < poly->verts - 1) {
-				in2 = &inList[v + 1];
+				iv = v + 1;
 			} else {
-				in2 = &inList[0];
+				iv = 0;
 			}
-			if (_lerpVertexY(in, in2, out, gx->viewportY1 << 12)) {
-				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
-				++newV;
+			if (!(offscreenVerts[iv] & CS_BOTTOM)) {
+				in2 = &inList[iv];
+				out = &outList[newV];
+				if (_lerpVertexY(in, in2, out, -1)) {
+					outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+					++newV;
+				}
 			}
 		}
 	}
@@ -490,27 +573,34 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 			struct DSGXVertex* in = &inList[v];
 			struct DSGXVertex* in2;
 			struct DSGXVertex* out;
+			int iv;
 
-			out = &outList[newV];
 			if (v > 0) {
-				in2 = &inList[v - 1];
+				iv = v - 1;
 			} else {
-				in2 = &inList[poly->verts - 1];
+				iv = poly->verts - 1;
 			}
-			if (_lerpVertexY(in2, in, out, gx->viewportY2 << 12)) {
-				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
-				++newV;
+			if (!(offscreenVerts[iv] & CS_TOP)) {
+				in2 = &inList[iv];
+				out = &outList[newV];
+				if (_lerpVertexY(in, in2, out, 1)) {
+					outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+					++newV;
+				}
 			}
 
-			out = &outList[newV];
 			if (v < poly->verts - 1) {
-				in2 = &inList[v + 1];
+				iv = v + 1;
 			} else {
-				in2 = &inList[0];
+				iv = 0;
 			}
-			if (_lerpVertexY(in2, in, out, gx->viewportY2 << 12)) {
-				outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
-				++newV;
+			if (!(offscreenVerts[iv] & CS_TOP)) {
+				in2 = &inList[iv];
+				out = &outList[newV];
+				if (_lerpVertexY(in, in2, out, 1)) {
+					outOffscreenVerts[newV] = _cohenSutherlandCode(gx, out);
+					++newV;
+				}
 			}
 		}
 	}
@@ -599,12 +689,6 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 	gx->currentVertex.vy = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[1]);
 	gx->currentVertex.vz = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[2]);
 	gx->currentVertex.vw = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[3]);
-
-	// TODO: What to do if w is 0?
-
-	gx->currentVertex.vx = (gx->currentVertex.vx + gx->currentVertex.vw) * (int64_t) (gx->viewportWidth << 12) / (gx->currentVertex.vw * 2) + (gx->viewportX1 << 12);
-	gx->currentVertex.vy = (gx->currentVertex.vy + gx->currentVertex.vw) * (int64_t) (gx->viewportHeight << 12) / (gx->currentVertex.vw * 2) + (gx->viewportY1 << 12);
-	//gx->currentVertex.vw = 0x40000000 / gx->currentVertex.vw;
 
 	if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) > 0) {
 		int32_t m12 = gx->texMatrix.m[12];
@@ -723,7 +807,6 @@ static bool _boxTestVertex(struct DSGX* gx, struct DSGXVertex* vertex) {
 	if (vz > vw) {
 		return false;
 	}
-	// TODO: depth clipping
 	return true;
 }
 
@@ -1259,8 +1342,12 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			gx->viewportY1 = (uint8_t) entry.params[1];
 			gx->viewportX2 = (uint8_t) entry.params[2];
 			gx->viewportY2 = (uint8_t) entry.params[3];
-			gx->viewportWidth = gx->viewportX2 - gx->viewportX1;
-			gx->viewportHeight = gx->viewportY2 - gx->viewportY1;
+			gx->viewportWidth = gx->viewportX2 - gx->viewportX1 + 1;
+			gx->viewportHeight = gx->viewportY2 - gx->viewportY1 + 1;
+			gx->renderer->viewportX = gx->viewportX1;
+			gx->renderer->viewportY = gx->viewportY1;
+			gx->renderer->viewportWidth = gx->viewportWidth;
+			gx->renderer->viewportHeight = gx->viewportHeight;
 			break;
 		case DS_GX_CMD_BOX_TEST:
 			gxstat = DSRegGXSTATClearTestBusy(gxstat);
@@ -1343,8 +1430,8 @@ void DSGXReset(struct DSGX* gx) {
 	gx->viewportY1 = 0;
 	gx->viewportX2 = DS_VIDEO_HORIZONTAL_PIXELS - 1;
 	gx->viewportY2 = DS_VIDEO_VERTICAL_PIXELS - 1;
-	gx->viewportWidth = gx->viewportX2 - gx->viewportX1;
-	gx->viewportHeight = gx->viewportY2 - gx->viewportY1;
+	gx->viewportWidth = gx->viewportX2 - gx->viewportX1 + 1;
+	gx->viewportHeight = gx->viewportY2 - gx->viewportY1 + 1;
 
 	memset(gx->outstandingParams, 0, sizeof(gx->outstandingParams));
 	memset(gx->outstandingCommand, 0, sizeof(gx->outstandingCommand));

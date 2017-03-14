@@ -8,8 +8,6 @@
 #include <mgba-util/memory.h>
 #include "gba/renderers/software-private.h"
 
-#define SCREEN_SIZE ((DS_VIDEO_VERTICAL_PIXELS - 1) << 12)
-
 DEFINE_VECTOR(DSGXSoftwarePolygonList, struct DSGXSoftwarePolygon);
 DEFINE_VECTOR(DSGXSoftwareEdgeList, struct DSGXSoftwareEdge);
 DEFINE_VECTOR(DSGXSoftwareSpanList, struct DSGXSoftwareSpan);
@@ -250,7 +248,7 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 
 static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftwareEdge* edge, int index, int32_t y) {
 	int32_t height = edge->y1 - edge->y0;
-	int64_t yw = (y << 12) - edge->y0;
+	int64_t yw = y - edge->y0;
 	if (!height) {
 		return false;
 	}
@@ -260,15 +258,21 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 	} else if (yw > height) {
 		return false;
 	}
-	yw *= 0x100000000LL / height;
+	yw *= 0x100000000LL;
+	yw /= height;
 
 	span->ep[index].x = (((int64_t) (edge->x1 - edge->x0) * yw) >> 32) + edge->x0;
 
-	if (index && span->ep[0].x > span->ep[index].x) {
-		int32_t temp = span->ep[index].x;
-		span->ep[index] = span->ep[0];
-		span->ep[0].x = temp;
-		index = 0;
+	if (index) {
+		if (span->ep[0].x == span->ep[index].x) {
+			return false;
+		}
+		if (span->ep[0].x > span->ep[index].x) {
+			int32_t temp = span->ep[index].x;
+			span->ep[index] = span->ep[0];
+			span->ep[0].x = temp;
+			index = 0;
+		}
 	}
 	int32_t w0 = edge->w0;
 	int32_t w1 = edge->w1;
@@ -291,7 +295,7 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 
 static void _lerpEndpoint(const struct DSGXSoftwareSpan* span, struct DSGXSoftwareEndpoint* ep, unsigned x) {
 	int64_t width = span->ep[1].x - span->ep[0].x;
-	int64_t xw = ((uint64_t) x << 12) - span->ep[0].x;
+	int64_t xw = x - span->ep[0].x;
 	if (!width) {
 		return; // TODO?
 	}
@@ -301,7 +305,8 @@ static void _lerpEndpoint(const struct DSGXSoftwareSpan* span, struct DSGXSoftwa
 	} else if (xw > width) {
 		xw = width;
 	}
-	xw *= 0x100000000LL / width;
+	xw *= 0x100000000LL;
+	xw /= width;
 	int32_t w0 = span->ep[0].w;
 	int32_t w1 = span->ep[1].w;
 	int64_t w = (((int64_t) (w1 - w0) * xw) >> 32) + w0;
@@ -402,36 +407,42 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 		struct DSGXVertex* v0 = &verts[poly->poly->vertIds[0]];
 		struct DSGXVertex* v1;
 
+		int32_t v0x = (v0->vx + v0->vw) * (int64_t) renderer->viewportWidth / (v0->vw * 2) + renderer->viewportX;
+		int32_t v0y = (-v0->vy + v0->vw) * (int64_t) renderer->viewportHeight / (v0->vw * 2) + renderer->viewportY;
+
 		int v;
 		for (v = 1; v < poly->poly->verts; ++v) {
 			v1 = &verts[poly->poly->vertIds[v]];
-			if (v0->vy >= v1->vy) {
-				edge->y0 = SCREEN_SIZE - v0->vy;
-				edge->x0 = v0->vx;
+			int32_t v1x = (v1->vx + v1->vw) * (int64_t) renderer->viewportWidth / (v1->vw * 2) + renderer->viewportX;
+			int32_t v1y = (-v1->vy + v1->vw) * (int64_t) renderer->viewportHeight / (v1->vw * 2) + renderer->viewportY;
+
+			if (v0y <= v1y) {
+				edge->y0 = v0y;
+				edge->x0 = v0x;
 				edge->z0 = v0->vz;
 				edge->w0 = v0->vw;
 				_expandColor(v0->color, &edge->cr0, &edge->cg0, &edge->cb0);
 				edge->s0 = v0->vs;
 				edge->t0 = v0->vt;
 
-				edge->y1 = SCREEN_SIZE - v1->vy;
-				edge->x1 = v1->vx;
+				edge->y1 = v1y;
+				edge->x1 = v1x;
 				edge->z1 = v1->vz;
 				edge->w1 = v1->vw;
 				_expandColor(v1->color, &edge->cr1, &edge->cg1, &edge->cb1);
 				edge->s1 = v1->vs;
 				edge->t1 = v1->vt;
 			} else {
-				edge->y0 = SCREEN_SIZE - v1->vy;
-				edge->x0 = v1->vx;
+				edge->y0 = v1y;
+				edge->x0 = v1x;
 				edge->z0 = v1->vz;
 				edge->w0 = v1->vw;
 				_expandColor(v1->color, &edge->cr0, &edge->cg0, &edge->cb0);
 				edge->s0 = v1->vs;
 				edge->t0 = v1->vt;
 
-				edge->y1 = SCREEN_SIZE - v0->vy;
-				edge->x1 = v0->vx;
+				edge->y1 = v0y;
+				edge->x1 = v0x;
 				edge->z1 = v0->vz;
 				edge->w1 = v0->vw;
 				_expandColor(v0->color, &edge->cr1, &edge->cg1, &edge->cb1);
@@ -442,36 +453,41 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 			edge = DSGXSoftwareEdgeListAppend(&softwareRenderer->activeEdges);
 			edge->polyId = i;
 			v0 = v1;
+			v0x = v1x;
+			v0y = v1y;
 		}
 
 		v1 = &verts[poly->poly->vertIds[0]];
-		if (v0->vy >= v1->vy) {
-			edge->y0 = SCREEN_SIZE - v0->vy;
-			edge->x0 = v0->vx;
+		int32_t v1x = (v1->vx + v1->vw) * (int64_t) renderer->viewportWidth / (v1->vw * 2) + renderer->viewportX;
+		int32_t v1y = (-v1->vy + v1->vw) * (int64_t) renderer->viewportHeight / (v1->vw * 2) + renderer->viewportY;
+
+		if (v0y <= v1y) {
+			edge->y0 = v0y;
+			edge->x0 = v0x;
 			edge->z0 = v0->vz;
 			edge->w0 = v0->vw;
 			_expandColor(v0->color, &edge->cr0, &edge->cg0, &edge->cb0);
 			edge->s0 = v0->vs;
 			edge->t0 = v0->vt;
 
-			edge->y1 = SCREEN_SIZE - v1->vy;
-			edge->x1 = v1->vx;
+			edge->y1 = v1y;
+			edge->x1 = v1x;
 			edge->z1 = v1->vz;
 			edge->w1 = v1->vw;
 			_expandColor(v1->color, &edge->cr1, &edge->cg1, &edge->cb1);
 			edge->s1 = v1->vs;
 			edge->t1 = v1->vt;
 		} else {
-			edge->y0 = SCREEN_SIZE - v1->vy;
-			edge->x0 = v1->vx;
-			edge->w0 = v1->vw;
+			edge->y0 = v1y;
+			edge->x0 = v1x;
 			edge->z0 = v1->vz;
+			edge->w0 = v1->vw;
 			_expandColor(v1->color, &edge->cr0, &edge->cg0, &edge->cb0);
 			edge->s0 = v1->vs;
 			edge->t0 = v1->vt;
 
-			edge->y1 = SCREEN_SIZE - v0->vy;
-			edge->x1 = v0->vx;
+			edge->y1 = v0y;
+			edge->x1 = v0x;
 			edge->z1 = v0->vz;
 			edge->w1 = v0->vw;
 			_expandColor(v0->color, &edge->cr1, &edge->cg1, &edge->cb1);
@@ -491,9 +507,9 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 	size_t i;
 	for (i = 0; i < DSGXSoftwareEdgeListSize(&softwareRenderer->activeEdges); ++i) {
 		struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListGetPointer(&softwareRenderer->activeEdges, i);
-		if (edge->y1 >> 12 < y) {
+		if (edge->y1 < y) {
 			continue;
-		} else if (edge->y0 >> 12 > y) {
+		} else if (edge->y0 > y) {
 			continue;
 		}
 
@@ -528,11 +544,11 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 	for (i = 0; i < DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans); ++i) {
 		struct DSGXSoftwareSpan* span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, i);
 
-		int32_t x = span->ep[0].x >> 12;
+		int32_t x = span->ep[0].x;
 		if (x < 0) {
 			x = 0;
 		}
-		for (; x < span->ep[1].x >> 12 && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
+		for (; x < span->ep[1].x && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
 			struct DSGXSoftwareEndpoint ep;
 			_lerpEndpoint(span, &ep, x);
 			color_t color = _lookupColor(softwareRenderer, &ep, span->poly);

@@ -148,6 +148,11 @@ struct DSGXRenderer {
 
 	uint16_t* tex[4];
 	uint16_t* texPal[6];
+
+	int viewportX;
+	int viewportY;
+	int viewportWidth;
+	int viewportHeight;
 };
 
 struct DS;
