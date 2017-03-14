@@ -258,10 +258,8 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 	} else if (yw > height) {
 		return false;
 	}
-	yw *= 0x100000000LL;
-	yw /= height;
 
-	span->ep[index].x = (((int64_t) (edge->x1 - edge->x0) * yw) >> 32) + edge->x0;
+	span->ep[index].x = (((int64_t) (edge->x1 - edge->x0) * yw) / height) + edge->x0;
 
 	if (index) {
 		if (span->ep[0].x == span->ep[index].x) {
@@ -274,21 +272,13 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 			index = 0;
 		}
 	}
-	int32_t w0 = edge->w0;
-	int32_t w1 = edge->w1;
-	int32_t w = (((int64_t) (edge->w1 - edge->w0) * yw) >> 32) + edge->w0;
-	int64_t wRecip;// = 0x1000000000000LL / w;
-	// XXX: Disable perspective correction until I figure out how to fix it
-	wRecip = 0x100000000;
-	w0 = 0x10000;
-	w1 = 0x10000;
-	span->ep[index].w = w;
-	span->ep[index].z = (((edge->z1 - edge->z0) * yw) >> 32) + edge->z0;
-	span->ep[index].cr = (((((edge->cr1 * (int64_t) w1 - edge->cr0 * (int64_t) w0) * yw) >> 32) + edge->cr0 * (int64_t) w0) * wRecip) >> 48;
-	span->ep[index].cg = (((((edge->cg1 * (int64_t) w1 - edge->cg0 * (int64_t) w0) * yw) >> 32) + edge->cg0 * (int64_t) w0) * wRecip) >> 48;
-	span->ep[index].cb = (((((edge->cb1 * (int64_t) w1 - edge->cb0 * (int64_t) w0) * yw) >> 32) + edge->cb0 * (int64_t) w0) * wRecip) >> 48;
-	span->ep[index].s = (((((edge->s1 * (int64_t) w1 - edge->s0 * (int64_t) w0) * yw) >> 32) + edge->s0 * (int64_t) w0) * wRecip) >> 48;
-	span->ep[index].t = (((((edge->t1 * (int64_t) w1 - edge->t0 * (int64_t) w0) * yw) >> 32) + edge->t0 * (int64_t) w0) * wRecip) >> 48;
+	span->ep[index].w = (((int64_t) (edge->w1 - edge->w0) * yw) / height) + edge->w0;
+	span->ep[index].z = (((int64_t) (edge->z1 - edge->z0) * yw) / height) + edge->z0;
+	span->ep[index].cr = (((int64_t) (edge->cr1 - edge->cr0) * yw) / height) + edge->cr0;
+	span->ep[index].cg = (((int64_t) (edge->cg1 - edge->cg0) * yw) / height) + edge->cg0;
+	span->ep[index].cb = (((int64_t) (edge->cb1 - edge->cb0) * yw) / height) + edge->cb0;
+	span->ep[index].s = (((int64_t) (edge->s1 - edge->s0) * yw) / height) + edge->s0;
+	span->ep[index].t = (((int64_t) (edge->t1 - edge->t0) * yw) / height) + edge->t0;
 
 	return true;
 }
@@ -305,31 +295,13 @@ static void _lerpEndpoint(const struct DSGXSoftwareSpan* span, struct DSGXSoftwa
 	} else if (xw > width) {
 		xw = width;
 	}
-	xw *= 0x100000000LL;
-	xw /= width;
-	int32_t w0 = span->ep[0].w;
-	int32_t w1 = span->ep[1].w;
-	int64_t w = (((int64_t) (w1 - w0) * xw) >> 32) + w0;
-	int64_t wRecip;// = 0x1000000000000LL / w;
-	ep->w = w;
-	// XXX: Disable perspective correction until I figure out how to fix it
-	wRecip = 0x100000000;
-	w0 = 0x10000;
-	w1 = 0x10000;
-
-	ep->z = (((span->ep[1].z - span->ep[0].z) * xw) >> 32) + span->ep[0].z;
-
-	uint64_t r = (((span->ep[1].cr * (int64_t) w1 - span->ep[0].cr * (int64_t) w0) * xw) >> 32) + span->ep[0].cr * (int64_t) w0;
-	uint64_t g = (((span->ep[1].cg * (int64_t) w1 - span->ep[0].cg * (int64_t) w0) * xw) >> 32) + span->ep[0].cg * (int64_t) w0;
-	uint64_t b = (((span->ep[1].cb * (int64_t) w1 - span->ep[0].cb * (int64_t) w0) * xw) >> 32) + span->ep[0].cb * (int64_t) w0;
-	ep->cr = (r * wRecip) >> 48;
-	ep->cg = (g * wRecip) >> 48;
-	ep->cb = (b * wRecip) >> 48;
-
-	int32_t s = (((span->ep[1].s * (int64_t) w1 - span->ep[0].s * (int64_t) w0) * xw) >> 32) + span->ep[0].s * (int64_t) w0;
-	int32_t t = (((span->ep[1].t * (int64_t) w1 - span->ep[0].t * (int64_t) w0) * xw) >> 32) + span->ep[0].t * (int64_t) w0;
-	ep->s = (s * wRecip) >> 48;
-	ep->t = (t * wRecip) >> 48;
+	ep->w = (((int64_t) (span->ep[1].w - span->ep[0].w) * xw) / width) + span->ep[0].w;
+	ep->z = (((int64_t) (span->ep[1].z - span->ep[0].z) * xw) / width) + span->ep[0].z;
+	ep->cr = (((int64_t) (span->ep[1].cr - span->ep[0].cr) * xw) / width) + span->ep[0].cr;
+	ep->cg = (((int64_t) (span->ep[1].cg - span->ep[0].cg) * xw) / width) + span->ep[0].cg;
+	ep->cb = (((int64_t) (span->ep[1].cb - span->ep[0].cb) * xw) / width) + span->ep[0].cb;
+	ep->s = (((int64_t) (span->ep[1].s - span->ep[0].s) * xw) / width) + span->ep[0].s;
+	ep->t = (((int64_t) (span->ep[1].t - span->ep[0].t) * xw) / width) + span->ep[0].t;
 }
 
 void DSGXSoftwareRendererCreate(struct DSGXSoftwareRenderer* renderer) {

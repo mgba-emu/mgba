@@ -187,7 +187,7 @@ static void _updateClipMatrix(struct DSGX* gx) {
 	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_1F >> 1] = gx->clipMatrix.m[15] >> 16;
 }
 
-static inline int32_t _lerp(int32_t x0, int32_t x1, int32_t q, int64_t r, int point) {
+static inline int32_t _lerp(int32_t x0, int32_t x1, int32_t q, int64_t r) {
 	int64_t x = x1 - x0;
 	x *= q;
 	x /= r;
@@ -221,13 +221,13 @@ static bool _lerpVertex(const struct DSGXVertex* v0, const struct DSGXVertex* v1
 	}
 	out->color = v0->color; // TODO
 
-	out->vx = _lerp(v0->vx, v1->vx, q, r, 12);
-	out->vy = _lerp(v0->vy, v1->vy, q, r, 12);
-	out->vz = _lerp(v0->vz, v1->vz, q, r, 12);
-	out->vw = _lerp(v0->vw, v1->vw, q, r, 12);
+	out->vx = _lerp(v0->vx, v1->vx, q, r);
+	out->vy = _lerp(v0->vy, v1->vy, q, r);
+	out->vz = _lerp(v0->vz, v1->vz, q, r);
+	out->vw = _lerp(v0->vw, v1->vw, q, r);
 
-	out->vs = _lerp(v0->vs, v1->vs, q, r, 12);
-	out->vt = _lerp(v0->vt, v1->vt, q, r, 12);
+	out->vs = _lerp(v0->vs, v1->vs, q, r);
+	out->vt = _lerp(v0->vt, v1->vt, q, r);
 	return true;
 }
 
