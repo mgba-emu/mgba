@@ -752,7 +752,11 @@ void DSVideoSoftwareRendererDrawBackgroundExt1(struct GBAVideoSoftwareRenderer* 
 
 		if (!mosaicWait) {
 			uint32_t address = (localX >> 8) + (localY >> 8) * width;
-			color = ((uint8_t*)renderer->d.vramBG[address >> 17])[address];
+			uint8_t* vram = (uint8_t*) renderer->d.vramBG[address >> 17];
+			if (UNLIKELY(!vram)) {
+				continue;
+			}
+			color = vram[address];
 			mosaicWait = mosaicH;
 		} else {
 			--mosaicWait;
@@ -804,7 +808,11 @@ void DSVideoSoftwareRendererDrawBackgroundExt2(struct GBAVideoSoftwareRenderer* 
 
 		if (!mosaicWait) {
 			uint32_t address = ((localX >> 8) + (localY >> 8) * width) << 1;
-			LOAD_16(color, address & 0x1FFFE, renderer->d.vramBG[address >> 17]);
+			uint16_t* vram = renderer->d.vramBG[address >> 17];
+			if (UNLIKELY(!vram)) {
+				continue;
+			}
+			LOAD_16(color, address & 0x1FFFE, vram);
 #ifndef COLOR_16_BIT
 			unsigned color32;
 			color32 = 0;
