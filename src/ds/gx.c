@@ -219,7 +219,16 @@ static bool _lerpVertex(const struct DSGXVertex* v0, const struct DSGXVertex* v1
 	if (!r) {
 		return false;
 	}
-	out->color = v0->color; // TODO
+	int cr0 = (v0->color) & 0x1F;
+	int cg0 = (v0->color >> 5) & 0x1F;
+	int cb0 = (v0->color >> 10) & 0x1F;
+	int cr1 = (v1->color) & 0x1F;
+	int cg1 = (v1->color >> 5) & 0x1F;
+	int cb1 = (v1->color >> 10) & 0x1F;
+	cr0 = _lerp(cr0, cr1, q, r) & 0x1F;
+	cg0 = _lerp(cg0, cg1, q, r) & 0x1F;
+	cb0 = _lerp(cb0, cb1, q, r) & 0x1F;
+	out->color = cr0 | (cg0 << 5) | (cb0 << 10);
 
 	out->vx = _lerp(v0->vx, v1->vx, q, r);
 	out->vy = _lerp(v0->vy, v1->vy, q, r);
