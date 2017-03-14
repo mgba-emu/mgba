@@ -549,36 +549,33 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 						softwareRenderer->depthBuffer[x] = ep.w;
 						scanline[x] = color;
 					} else if (b < 0x1F) {
-						scanline[x] = _mix32(b, scanline[x], 0x1F - b, color) | a << 27;
+						scanline[x] = _mix32(b, current, 0x1F - b, color) | a << 27;
 					}
 				} else {
 					if (ep.z < softwareRenderer->depthBuffer[x]) {
 						softwareRenderer->depthBuffer[x] = ep.z;
 						scanline[x] = color;
 					} else if (b < 0x1F) {
-						scanline[x] = _mix32(b, scanline[x], 0x1F - b, color) | a << 27;
+						scanline[x] = _mix32(b, current, 0x1F - b, color) | a << 27;
 					}
 				}
 			} else if (a) {
 				// TODO: Disable alpha?
 				color = _mix32(a, color, 0x1F - a, current);
-				if (scanline[x] >> 27 > a) {
-					a = scanline[x] >> 27;
-				}
-				color |= a << 27;
+				color |= ab << 27;
 				if (softwareRenderer->wSort) {
 					if (ep.w < softwareRenderer->depthBuffer[x]) {
 						softwareRenderer->depthBuffer[x] = ep.w;
 						scanline[x] = color;
 					} else if (b < 0x1F) {
-						scanline[x] = _mix32(b, scanline[x], 0x1F - b, color) | ab << 27;
+						scanline[x] = _mix32(b, current, 0x1F - b, color) | ab << 27;
 					}
 				} else {
 					if (ep.z < softwareRenderer->depthBuffer[x]) {
 						softwareRenderer->depthBuffer[x] = ep.z;
 						scanline[x] = color;
 					} else if (b < 0x1F) {
-						scanline[x] = _mix32(b, scanline[x], 0x1F - b, color) | ab << 27;
+						scanline[x] = _mix32(b, current, 0x1F - b, color) | ab << 27;
 					}
 				}
 			}
