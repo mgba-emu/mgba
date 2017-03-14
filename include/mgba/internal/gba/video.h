@@ -40,7 +40,8 @@ enum {
 enum ObjMode {
 	OBJ_MODE_NORMAL = 0,
 	OBJ_MODE_SEMITRANSPARENT = 1,
-	OBJ_MODE_OBJWIN = 2
+	OBJ_MODE_OBJWIN = 2,
+	OBJ_MODE_BITMAP = 3
 };
 
 enum ObjShape {

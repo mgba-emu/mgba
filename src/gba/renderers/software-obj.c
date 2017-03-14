@@ -164,6 +164,61 @@
 		renderer->row[outX] |= FLAG_OBJWIN; \
 	}
 
+#ifndef COLOR_16_BIT
+#define TILE_TO_COLOR(tileData) \
+	unsigned color32; \
+	color32 = 0; \
+	color32 |= (tileData << 3) & 0xF8; \
+	color32 |= (tileData << 6) & 0xF800; \
+	color32 |= (tileData << 9) & 0xF80000; \
+	color32 |= (color32 >> 5) & 0x070707; \
+	color = color32;
+#elif COLOR_5_6_5
+#define TILE_TO_COLOR(tileData) \
+	uint16_t color16 = 0; \
+	color16 |= (tileData & 0x001F) << 11; \
+	color16 |= (tileData & 0x03E0) << 1; \
+	color16 |= (tileData & 0x7C00) >> 10; \
+	color = color16;
+#else
+#define TILE_TO_COLOR(tileData) \
+	color = tileData;
+#endif
+
+#define SPRITE_XBASE_BITMAP(localX) unsigned xBase = (localX & (stride - 1)) << 1;
+#define SPRITE_YBASE_BITMAP(localY) unsigned yBase = localY * (stride << 1);
+
+#define SPRITE_DRAW_PIXEL_BITMAP_NORMAL(localX) \
+	uint32_t spriteBase = ((yBase + charBase + xBase) & 0x3FFFE); \
+	uint16_t* vramBase = renderer->d.vramOBJ[spriteBase >> VRAM_BLOCK_OFFSET]; \
+	if (UNLIKELY(!vramBase)) { \
+		return 0; \
+	} \
+	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
+	current = renderer->spriteLayer[outX]; \
+	if ((current & FLAG_ORDER_MASK) > flags) { \
+		if (tileData) { \
+			uint32_t color; \
+			TILE_TO_COLOR(tileData); \
+			renderer->spriteLayer[outX] = color | flags; \
+		} else if (current != FLAG_UNWRITTEN) { \
+			renderer->spriteLayer[outX] = (current & ~FLAG_ORDER_MASK) | GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY; \
+		} \
+	}
+
+#define SPRITE_DRAW_PIXEL_BITMAP_NORMAL_OBJWIN(localX) SPRITE_DRAW_PIXEL_BITMAP_NORMAL(localX)
+
+#define SPRITE_DRAW_PIXEL_BITMAP_OBJWIN(localX) \
+	uint32_t spriteBase = ((yBase + charBase + xBase) & 0x3FFFE); \
+	uint16_t* vramBase = renderer->d.vramOBJ[spriteBase >> VRAM_BLOCK_OFFSET]; \
+	if (UNLIKELY(!vramBase)) { \
+		return 0; \
+	} \
+	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
+	if (tileData) { \
+		renderer->row[outX] |= FLAG_OBJWIN; \
+	}
+
 int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y) {
 	int width = GBAVideoObjSizes[GBAObjAttributesAGetShape(sprite->a) * 4 + GBAObjAttributesBGetSize(sprite->b)][0];
 	int height = GBAVideoObjSizes[GBAObjAttributesAGetShape(sprite->a) * 4 + GBAObjAttributesBGetSize(sprite->b)][1];
@@ -177,7 +232,12 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	}
 	int32_t x = (uint32_t) GBAObjAttributesBGetX(sprite->b) << 23;
 	x >>= 23;
-	unsigned charBase = GBAObjAttributesCGetTile(sprite->c) * renderer->tileStride;
+	unsigned charBase = GBAObjAttributesCGetTile(sprite->c);
+	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_BITMAP) {
+		charBase = (charBase & 0x1F) * 0x10 + (charBase & ~0x1F) * 0x80;
+	} else {
+		charBase *= renderer->tileStride;
+	}
 	if (!renderer->d.vramOBJ[charBase >> VRAM_BLOCK_OFFSET]) {
 		return 0;
 	}
@@ -221,6 +281,9 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 
 	int inY = y - (int) GBAObjAttributesAGetY(sprite->a);
 	int stride = GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? (width >> !GBAObjAttributesAIs256Color(sprite->a)) : 0x80;
+	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_BITMAP) {
+		stride = 0x100; // TODO: Param
+	}
 
 	uint32_t current;
 	if (GBAObjAttributesAIsTransformed(sprite->a)) {
@@ -287,7 +350,16 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			return 0;
 		}
 
-		if (!GBAObjAttributesAIs256Color(sprite->a)) {
+		if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_BITMAP) {
+			int alpha = GBAObjAttributesCGetPalette(sprite->c);
+			if (flags & FLAG_OBJWIN) {
+				SPRITE_TRANSFORMED_LOOP(BITMAP, OBJWIN);
+			} else if (objwinSlowPath) {
+				SPRITE_TRANSFORMED_LOOP(BITMAP, NORMAL_OBJWIN);
+			} else {
+				SPRITE_TRANSFORMED_LOOP(BITMAP, NORMAL);
+			}
+		} else if (!GBAObjAttributesAIs256Color(sprite->a)) {
 			palette = &palette[GBAObjAttributesCGetPalette(sprite->c) << 4];
 			if (flags & FLAG_OBJWIN) {
 				SPRITE_TRANSFORMED_LOOP(16, OBJWIN);
@@ -344,7 +416,22 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			inX = width - inX - 1;
 			xOffset = -1;
 		}
-		if (!GBAObjAttributesAIs256Color(sprite->a)) {
+		if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_BITMAP) {
+			int alpha = GBAObjAttributesCGetPalette(sprite->c);
+			if (flags & FLAG_OBJWIN) {
+				SPRITE_NORMAL_LOOP(BITMAP, OBJWIN);
+			} else if (mosaicH > 1) {
+				if (objwinSlowPath) {
+					SPRITE_MOSAIC_LOOP(BITMAP, NORMAL_OBJWIN);
+				} else {
+					SPRITE_MOSAIC_LOOP(BITMAP, NORMAL);
+				}
+			} else if (objwinSlowPath) {
+				SPRITE_NORMAL_LOOP(BITMAP, NORMAL_OBJWIN);
+			} else {
+				SPRITE_NORMAL_LOOP(BITMAP, NORMAL);
+			}
+		} else if (!GBAObjAttributesAIs256Color(sprite->a)) {
 			palette = &palette[GBAObjAttributesCGetPalette(sprite->c) << 4];
 			if (flags & FLAG_OBJWIN) {
 				SPRITE_NORMAL_LOOP(16, OBJWIN);
