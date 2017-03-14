@@ -272,14 +272,24 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 			index = 0;
 		}
 	}
-	span->ep[index].w = (((int64_t) (edge->w1 - edge->w0) * yw) / height) + edge->w0;
-	span->ep[index].z = (((int64_t) (edge->z1 - edge->z0) * yw) / height) + edge->z0;
-	span->ep[index].cr = (((int64_t) (edge->cr1 - edge->cr0) * yw) / height) + edge->cr0;
-	span->ep[index].cg = (((int64_t) (edge->cg1 - edge->cg0) * yw) / height) + edge->cg0;
-	span->ep[index].cb = (((int64_t) (edge->cb1 - edge->cb0) * yw) / height) + edge->cb0;
-	span->ep[index].s = (((int64_t) (edge->s1 - edge->s0) * yw) / height) + edge->s0;
-	span->ep[index].t = (((int64_t) (edge->t1 - edge->t0) * yw) / height) + edge->t0;
 
+	int64_t w0 = 0x4000000000000000 / edge->w0;
+	int64_t w1 = 0x4000000000000000 / edge->w1;
+	int64_t w = (w1 - w0) / height * yw + w0;
+	w = 0x4000000000000000 / w;
+	span->ep[index].w = w;
+
+	yw <<= 16;
+	yw /= height;
+	w0 >>= 23;
+	w1 >>= 23;
+
+	span->ep[index].z = (((((edge->z1 * w1 - edge->z0 * w0) >> 12) * yw) >> 16) + ((edge->z0 * w0) >> 12) * w) >> 39;
+	span->ep[index].cr = (((((edge->cr1 * w1 - edge->cr0 * w0) * yw) >> 16) + edge->cr0 * w0) * w) >> 39;
+	span->ep[index].cg = (((((edge->cg1 * w1 - edge->cg0 * w0) * yw) >> 16) + edge->cg0 * w0) * w) >> 39;
+	span->ep[index].cb = (((((edge->cb1 * w1 - edge->cb0 * w0) * yw) >> 16) + edge->cb0 * w0) * w) >> 39;
+	span->ep[index].s = (((((edge->s1 * w1 - edge->s0 * w0) * yw) >> 16) + edge->s0 * w0) * w) >> 39;
+	span->ep[index].t = (((((edge->t1 * w1 - edge->t0 * w0) * yw) >> 16) + edge->t0 * w0) * w) >> 39;
 	return true;
 }
 
@@ -295,13 +305,24 @@ static void _lerpEndpoint(const struct DSGXSoftwareSpan* span, struct DSGXSoftwa
 	} else if (xw > width) {
 		xw = width;
 	}
-	ep->w = (((int64_t) (span->ep[1].w - span->ep[0].w) * xw) / width) + span->ep[0].w;
-	ep->z = (((int64_t) (span->ep[1].z - span->ep[0].z) * xw) / width) + span->ep[0].z;
-	ep->cr = (((int64_t) (span->ep[1].cr - span->ep[0].cr) * xw) / width) + span->ep[0].cr;
-	ep->cg = (((int64_t) (span->ep[1].cg - span->ep[0].cg) * xw) / width) + span->ep[0].cg;
-	ep->cb = (((int64_t) (span->ep[1].cb - span->ep[0].cb) * xw) / width) + span->ep[0].cb;
-	ep->s = (((int64_t) (span->ep[1].s - span->ep[0].s) * xw) / width) + span->ep[0].s;
-	ep->t = (((int64_t) (span->ep[1].t - span->ep[0].t) * xw) / width) + span->ep[0].t;
+
+	int64_t w0 = 0x4000000000000000 / span->ep[0].w;
+	int64_t w1 = 0x4000000000000000 / span->ep[1].w;
+	int64_t w = (w1 - w0) / width * xw + w0;
+	w = 0x4000000000000000 / w;
+	ep->w = w;
+
+	xw <<= 16;
+	xw /= width;
+	w0 >>= 22;
+	w1 >>= 22;
+
+	ep->z = (((((span->ep[1].z * w1 - span->ep[0].z * w0) >> 12) * xw) >> 16) + ((span->ep[0].z * w0) >> 12) * w) >> 40;
+	ep->cr = (((((span->ep[1].cr * w1 - span->ep[0].cr * w0) * xw) >> 16) + span->ep[0].cr * w0) * w) >> 40;
+	ep->cg = (((((span->ep[1].cg * w1 - span->ep[0].cg * w0) * xw) >> 16) + span->ep[0].cg * w0) * w) >> 40;
+	ep->cb = (((((span->ep[1].cb * w1 - span->ep[0].cb * w0) * xw) >> 16) + span->ep[0].cb * w0) * w) >> 40;
+	ep->s = (((((span->ep[1].s * w1 - span->ep[0].s * w0) * xw) >> 16) + span->ep[0].s * w0) * w) >> 40;
+	ep->t = (((((span->ep[1].t * w1 - span->ep[0].t * w0) * xw) >> 16) + span->ep[0].t * w0) * w) >> 40;
 }
 
 void DSGXSoftwareRendererCreate(struct DSGXSoftwareRenderer* renderer) {
