@@ -246,6 +246,23 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 	}
 }
 
+static inline int32_t _interpolate(int32_t x0, int32_t x1, int64_t w0, int64_t w1, int64_t w, int32_t qr) {
+	// 32-bit -> 96-bit
+	int64_t x0b = (w0 & 0xFFFFFFFF) * x0;
+	int64_t x0t = (w0 >> 32) * x0;
+	int64_t x1b = (w1 & 0xFFFFFFFF) * x1;
+	int64_t x1t = (w1 >> 32) * x1;
+	// 96-bit -> 64-bit
+	int64_t xx0 = (x0t << 32) + x0b;
+	int64_t xx1 = (x1t << 32) + x1b;
+	xx1 -= xx0;
+	xx1 >>= 12;
+
+	int64_t qrb = xx1 * qr;
+	qrb += xx0;
+	return qrb / w;
+}
+
 static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftwareEdge* edge, int index, int32_t y) {
 	int32_t height = edge->y1 - edge->y0;
 	int64_t yw = y - edge->y0;
@@ -288,18 +305,15 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 	w += div;
 	w += w0;
 
-	w  = 0x3FFFFFFFFFFFFFFF / w;
-	span->ep[index].w = w;
+	span->ep[index].w = 0x3FFFFFFFFFFFFFFF / w;
+	int32_t qr = (yw << 12) / height;
 
-	w0 = edge->w0;
-	w1 = edge->w1;
-
-	span->ep[index].z  = ((((((int64_t) edge->z1  << 32) / w1 - ((int64_t) edge->z0  << 32) / w0) * yw / height) + ((int64_t) edge->z0  << 32) / w0) * w) >> 32;
-	span->ep[index].cr = ((((((int64_t) edge->cr1 << 32) / w1 - ((int64_t) edge->cr0 << 32) / w0) * yw / height) + ((int64_t) edge->cr0 << 32) / w0) * w) >> 32;
-	span->ep[index].cg = ((((((int64_t) edge->cg1 << 32) / w1 - ((int64_t) edge->cg0 << 32) / w0) * yw / height) + ((int64_t) edge->cg0 << 32) / w0) * w) >> 32;
-	span->ep[index].cb = ((((((int64_t) edge->cb1 << 32) / w1 - ((int64_t) edge->cb0 << 32) / w0) * yw / height) + ((int64_t) edge->cb0 << 32) / w0) * w) >> 32;
-	span->ep[index].s  = ((((((int64_t) edge->s1  << 32) / w1 - ((int64_t) edge->s0  << 32) / w0) * yw / height) + ((int64_t) edge->s0  << 32) / w0) * w) >> 32;
-	span->ep[index].t  = ((((((int64_t) edge->t1  << 32) / w1 - ((int64_t) edge->t0  << 32) / w0) * yw / height) + ((int64_t) edge->t0  << 32) / w0) * w) >> 32;
+	span->ep[index].z  = _interpolate(edge->z0, edge->z1, w0, w1, w, qr);
+	span->ep[index].cr = _interpolate(edge->cr0, edge->cr1, w0, w1, w, qr);
+	span->ep[index].cg = _interpolate(edge->cg0, edge->cg1, w0, w1, w, qr);
+	span->ep[index].cb = _interpolate(edge->cb0, edge->cb1, w0, w1, w, qr);
+	span->ep[index].s  = _interpolate(edge->s0, edge->s1, w0, w1, w, qr);
+	span->ep[index].t  = _interpolate(edge->t0, edge->t1, w0, w1, w, qr);
 	return true;
 }
 
@@ -331,18 +345,15 @@ static void _lerpEndpoint(const struct DSGXSoftwareSpan* span, struct DSGXSoftwa
 	w += div;
 	w += w0;
 
-	w  = 0x3FFFFFFFFFFFFFFF / w;
-	ep->w = w;
+	ep->w = 0x3FFFFFFFFFFFFFFF / w;
+	int32_t qr = (xw << 12) / width;
 
-	w0 = span->ep[0].w;
-	w1 = span->ep[1].w;
-
-	ep->z  = ((((((int64_t) span->ep[1].z  << 32) / w1 - ((int64_t) span->ep[0].z  << 32) / w0) * xw / width) + ((int64_t) span->ep[0].z  << 32) / w0) * w) >> 32;
-	ep->cr = ((((((int64_t) span->ep[1].cr << 32) / w1 - ((int64_t) span->ep[0].cr << 32) / w0) * xw / width) + ((int64_t) span->ep[0].cr << 32) / w0) * w) >> 32;
-	ep->cg = ((((((int64_t) span->ep[1].cg << 32) / w1 - ((int64_t) span->ep[0].cg << 32) / w0) * xw / width) + ((int64_t) span->ep[0].cg << 32) / w0) * w) >> 32;
-	ep->cb = ((((((int64_t) span->ep[1].cb << 32) / w1 - ((int64_t) span->ep[0].cb << 32) / w0) * xw / width) + ((int64_t) span->ep[0].cb << 32) / w0) * w) >> 32;
-	ep->s  = ((((((int64_t) span->ep[1].s  << 32) / w1 - ((int64_t) span->ep[0].s  << 32) / w0) * xw / width) + ((int64_t) span->ep[0].s  << 32) / w0) * w) >> 32;
-	ep->t  = ((((((int64_t) span->ep[1].t  << 32) / w1 - ((int64_t) span->ep[0].t  << 32) / w0) * xw / width) + ((int64_t) span->ep[0].t  << 32) / w0) * w) >> 32;
+	ep->z  = _interpolate(span->ep[0].z, span->ep[1].z, w0, w1, w, qr);
+	ep->cr = _interpolate(span->ep[0].cr, span->ep[1].cr, w0, w1, w, qr);
+	ep->cg = _interpolate(span->ep[0].cg, span->ep[1].cg, w0, w1, w, qr);
+	ep->cb = _interpolate(span->ep[0].cb, span->ep[1].cb, w0, w1, w, qr);
+	ep->s  = _interpolate(span->ep[0].s, span->ep[1].s, w0, w1, w, qr);
+	ep->t  = _interpolate(span->ep[0].t, span->ep[1].t, w0, w1, w, qr);
 }
 
 void DSGXSoftwareRendererCreate(struct DSGXSoftwareRenderer* renderer) {
