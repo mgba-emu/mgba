@@ -260,7 +260,15 @@ static inline int32_t _interpolate(int32_t x0, int32_t x1, int64_t w0, int64_t w
 
 	int64_t qrb = xx1 * qr;
 	qrb += xx0;
+
 	return qrb / w;
+}
+
+static inline int32_t _divideBy(int64_t x, int32_t recip) {
+	int64_t x0 = (x & 0xFFFFFFFF) * recip;
+	int64_t x1 = (x >> 32) * recip;
+	x1 += x0 >> 32;
+	return x1 >> 31;
 }
 
 static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftwareEdge* edge, int index, int32_t y) {
@@ -290,8 +298,8 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 		}
 	}
 
-	int64_t w0 = 0x3FFFFFFFFFFFFFFF / edge->w0;
-	int64_t w1 = 0x3FFFFFFFFFFFFFFF / edge->w1;
+	int64_t w0 = 0x7FFFFFFFFFFFFFFF / edge->w0;
+	int64_t w1 = 0x7FFFFFFFFFFFFFFF / edge->w1;
 	int64_t w = w1 - w0;
 
 	// Losslessly interpolate two 64-bit values
@@ -305,7 +313,8 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 	w += div;
 	w += w0;
 
-	span->ep[index].w = 0x3FFFFFFFFFFFFFFF / w;
+	span->ep[index].w = 0x7FFFFFFFFFFFFFFF / w;
+	span->ep[index].wRecip = w;
 	int32_t qr = (yw << 12) / height;
 
 	span->ep[index].z  = _interpolate(edge->z0, edge->z1, w0, w1, w, qr);
@@ -314,46 +323,62 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 	span->ep[index].cb = _interpolate(edge->cb0, edge->cb1, w0, w1, w, qr);
 	span->ep[index].s  = _interpolate(edge->s0, edge->s1, w0, w1, w, qr);
 	span->ep[index].t  = _interpolate(edge->t0, edge->t1, w0, w1, w, qr);
+
 	return true;
 }
 
-static void _lerpEndpoint(const struct DSGXSoftwareSpan* span, struct DSGXSoftwareEndpoint* ep, int x) {
-	int64_t width = span->ep[1].x - span->ep[0].x;
-	int64_t xw = x - span->ep[0].x;
-	if (!width) {
-		return; // TODO?
+static void _createStep(struct DSGXSoftwareSpan* span) {
+	int32_t width = (span->ep[1].x - span->ep[0].x) >> 12;
+
+	span->ep[0].stepW = span->ep[0].wRecip;
+	span->ep[0].stepZ = span->ep[0].z  * span->ep[0].wRecip;
+	span->ep[0].stepR = span->ep[0].cr * span->ep[0].wRecip;
+	span->ep[0].stepG = span->ep[0].cg * span->ep[0].wRecip;
+	span->ep[0].stepB = span->ep[0].cb * span->ep[0].wRecip;
+	span->ep[0].stepS = span->ep[0].s  * span->ep[0].wRecip;
+	span->ep[0].stepT = span->ep[0].t  * span->ep[0].wRecip;
+
+	span->ep[1].stepW = span->ep[1].wRecip;
+	span->ep[1].stepZ = span->ep[1].z  * span->ep[1].wRecip;
+	span->ep[1].stepR = span->ep[1].cr * span->ep[1].wRecip;
+	span->ep[1].stepG = span->ep[1].cg * span->ep[1].wRecip;
+	span->ep[1].stepB = span->ep[1].cb * span->ep[1].wRecip;
+	span->ep[1].stepS = span->ep[1].s  * span->ep[1].wRecip;
+	span->ep[1].stepT = span->ep[1].t  * span->ep[1].wRecip;
+
+	if (!width) {	
+		return;
 	}
-	// Clamp to bounds
-	if (xw < 0) {
-		xw = 0;
-	} else if (xw > width) {
-		xw = width;
-	}
+	span->step.stepW = (span->ep[1].stepW - span->ep[0].stepW) / width;
+	span->step.stepZ = (span->ep[1].stepZ - span->ep[0].stepZ) / width;
+	span->step.stepR = (span->ep[1].stepR - span->ep[0].stepR) / width;
+	span->step.stepG = (span->ep[1].stepG - span->ep[0].stepG) / width;
+	span->step.stepB = (span->ep[1].stepB - span->ep[0].stepB) / width;
+	span->step.stepS = (span->ep[1].stepS - span->ep[0].stepS) / width;
+	span->step.stepT = (span->ep[1].stepT - span->ep[0].stepT) / width;
+}
 
-	int64_t w0 = 0x3FFFFFFFFFFFFFFF / span->ep[0].w;
-	int64_t w1 = 0x3FFFFFFFFFFFFFFF / span->ep[1].w;
-	int64_t w = w1 - w0;
+static void _stepEndpoint(struct DSGXSoftwareSpan* span) {
+	span->ep[0].wRecip += span->step.stepW;
+	span->ep[0].w = (0x7FFFFFFFFFFFFFFF / span->ep[0].wRecip) + 1;
 
-	// Losslessly interpolate two 64-bit values
-	int64_t wb = (w & 0xFFFFFFFF) * xw;
-	int64_t wt = (w >> 32) * xw;
-	int64_t div = wt / width;
-	int64_t rem = wt % width;
-	w = div << 32;
-	wb += rem << 32;
-	div = wb / width;
-	w += div;
-	w += w0;
+	span->ep[0].stepZ += span->step.stepZ;
+	span->ep[0].z = _divideBy(span->ep[0].stepZ, span->ep[0].w);
 
-	ep->w = 0x3FFFFFFFFFFFFFFF / w;
-	int32_t qr = (xw << 12) / width;
+	span->ep[0].stepR += span->step.stepR;
+	span->ep[0].cr = _divideBy(span->ep[0].stepR, span->ep[0].w);
 
-	ep->z  = _interpolate(span->ep[0].z, span->ep[1].z, w0, w1, w, qr);
-	ep->cr = _interpolate(span->ep[0].cr, span->ep[1].cr, w0, w1, w, qr);
-	ep->cg = _interpolate(span->ep[0].cg, span->ep[1].cg, w0, w1, w, qr);
-	ep->cb = _interpolate(span->ep[0].cb, span->ep[1].cb, w0, w1, w, qr);
-	ep->s  = _interpolate(span->ep[0].s, span->ep[1].s, w0, w1, w, qr);
-	ep->t  = _interpolate(span->ep[0].t, span->ep[1].t, w0, w1, w, qr);
+	span->ep[0].stepG += span->step.stepG;
+	span->ep[0].cg = _divideBy(span->ep[0].stepG, span->ep[0].w);
+
+	span->ep[0].stepB += span->step.stepB;
+	span->ep[0].cb = _divideBy(span->ep[0].stepB, span->ep[0].w);
+
+	span->ep[0].stepS += span->step.stepS;
+	span->ep[0].s = _divideBy(span->ep[0].stepS, span->ep[0].w);
+
+	span->ep[0].stepT += span->step.stepT;
+	span->ep[0].t = _divideBy(span->ep[0].stepT, span->ep[0].w);
 }
 
 void DSGXSoftwareRendererCreate(struct DSGXSoftwareRenderer* renderer) {
@@ -541,6 +566,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 		struct DSGXSoftwareSpan* span = softwareRenderer->bucket[poly];
 		if (span && !span->ep[1].w) {
 			if (_edgeToSpan(span, edge, 1, y << 12)) {
+				_createStep(span);
 				softwareRenderer->bucket[poly] = NULL;
 			}
 		} else if (!span) {
@@ -573,9 +599,8 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 			x = 0;
 		}
 		for (; x < (span->ep[1].x >> 12) && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
-			struct DSGXSoftwareEndpoint ep;
-			_lerpEndpoint(span, &ep, x << 12);
-			color_t color = _lookupColor(softwareRenderer, &ep, span->poly);
+			color_t color = _lookupColor(softwareRenderer, &span->ep[0], span->poly);
+			_stepEndpoint(span);
 			unsigned a = color >> 27;
 			unsigned current = scanline[x];
 			unsigned b = current >> 27;
@@ -585,15 +610,15 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 			}
 			if (a == 0x1F) {
 				if (softwareRenderer->wSort) {
-					if (ep.w < softwareRenderer->depthBuffer[x]) {
-						softwareRenderer->depthBuffer[x] = ep.w;
+					if (span->ep[0].w < softwareRenderer->depthBuffer[x]) {
+						softwareRenderer->depthBuffer[x] = span->ep[0].w;
 						scanline[x] = color;
 					} else if (b < 0x1F) {
 						scanline[x] = _mix32(b, current, 0x1F - b, color) | a << 27;
 					}
 				} else {
-					if (ep.z < softwareRenderer->depthBuffer[x]) {
-						softwareRenderer->depthBuffer[x] = ep.z;
+					if (span->ep[0].z < softwareRenderer->depthBuffer[x]) {
+						softwareRenderer->depthBuffer[x] = span->ep[0].z;
 						scanline[x] = color;
 					} else if (b < 0x1F) {
 						scanline[x] = _mix32(b, current, 0x1F - b, color) | a << 27;
@@ -604,15 +629,15 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 				color = _mix32(a, color, 0x1F - a, current);
 				color |= ab << 27;
 				if (softwareRenderer->wSort) {
-					if (ep.w < softwareRenderer->depthBuffer[x]) {
-						softwareRenderer->depthBuffer[x] = ep.w;
+					if (span->ep[0].w < softwareRenderer->depthBuffer[x]) {
+						softwareRenderer->depthBuffer[x] = span->ep[0].w;
 						scanline[x] = color;
 					} else if (b < 0x1F) {
 						scanline[x] = _mix32(b, current, 0x1F - b, color) | ab << 27;
 					}
 				} else {
-					if (ep.z < softwareRenderer->depthBuffer[x]) {
-						softwareRenderer->depthBuffer[x] = ep.z;
+					if (span->ep[0].z < softwareRenderer->depthBuffer[x]) {
+						softwareRenderer->depthBuffer[x] = span->ep[0].z;
 						scanline[x] = color;
 					} else if (b < 0x1F) {
 						scanline[x] = _mix32(b, current, 0x1F - b, color) | ab << 27;

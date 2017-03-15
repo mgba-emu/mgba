@@ -50,18 +50,28 @@ struct DSGXSoftwareEdge {
 
 struct DSGXSoftwareEndpoint {
 	int32_t x; // 20.12
-	int64_t z;
-	int64_t w;
+	int32_t z;
+	int32_t w;
+	int64_t wRecip;
 	uint8_t cr;
 	uint8_t cg;
 	uint8_t cb;
 	int16_t s;
 	int16_t t;
+
+	int64_t stepZ;
+	int64_t stepW;
+	int64_t stepR;
+	int64_t stepG;
+	int64_t stepB;
+	int64_t stepS;
+	int64_t stepT;
 };
 
 struct DSGXSoftwareSpan {
 	struct DSGXSoftwarePolygon* poly;
 	struct DSGXSoftwareEndpoint ep[2];
+	struct DSGXSoftwareEndpoint step;
 };
 
 DECLARE_VECTOR(DSGXSoftwarePolygonList, struct DSGXSoftwarePolygon);
