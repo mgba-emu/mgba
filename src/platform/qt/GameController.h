@@ -14,6 +14,7 @@
 #include <QTimer>
 
 #include <memory>
+#include <functional>
 
 #include <mgba/core/core.h>
 #include <mgba/core/thread.h>
