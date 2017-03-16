@@ -65,6 +65,10 @@ LibraryModel::LibraryModel(const QString& path, QObject* parent)
 				case PLATFORM_GB:
 					return tr("GB");
 #endif
+#ifdef M_CORE_DS
+				case PLATFORM_DS:
+					return tr("DS");
+#endif
 				default:
 					return tr("?");
 				}
