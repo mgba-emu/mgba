@@ -99,6 +99,7 @@ LibraryModel::LibraryModel(const QString& path, QObject* parent)
 	} else {
 		m_library = new LibraryHandle(mLibraryCreateEmpty());
 	}
+	mLibraryListingInit(&m_listings, 0);
 	memset(&m_constraints, 0, sizeof(m_constraints));
 	m_constraints.platform = PLATFORM_NONE;
 	m_columns.append(s_columns["name"]);
@@ -112,6 +113,7 @@ LibraryModel::LibraryModel(const QString& path, QObject* parent)
 
 LibraryModel::~LibraryModel() {
 	clearConstraints();
+	mLibraryListingDeinit(&m_listings);
 	if (!m_library->deref()) {
 		s_handles.remove(m_library->path);
 		delete m_library;
@@ -124,14 +126,10 @@ void LibraryModel::loadDirectory(const QString& path) {
 }
 
 bool LibraryModel::entryAt(int row, mLibraryEntry* out) const {
-	mLibraryListing entries;
-	mLibraryListingInit(&entries, 0);
-	if (!mLibraryGetEntries(m_library->library, &entries, 1, row, &m_constraints)) {
-		mLibraryListingDeinit(&entries);
+	if (mLibraryListingSize(&m_listings) <= row) {
 		return false;
 	}
-	*out = *mLibraryListingGetPointer(&entries, 0);
-	mLibraryListingDeinit(&entries);
+	*out = *mLibraryListingGetConstPointer(&m_listings, row);
 	return true;
 }
 
@@ -230,10 +228,12 @@ void LibraryModel::attachGameDB(const NoIntroDB* gameDB) {
 }
 
 void LibraryModel::constrainBase(const QString& path) {
+	clearConstraints();
 	if (m_constraints.base) {
 		free(const_cast<char*>(m_constraints.base));
 	}
 	m_constraints.base = strdup(path.toUtf8().constData());
+	reload();
 }
 
 void LibraryModel::clearConstraints() {
@@ -247,6 +247,15 @@ void LibraryModel::clearConstraints() {
 		free(const_cast<char*>(m_constraints.title));
 	}
 	memset(&m_constraints, 0, sizeof(m_constraints));
+	size_t i;
+	for (i = 0; i < mLibraryListingSize(&m_listings); ++i) {
+		mLibraryEntryFree(mLibraryListingGetPointer(&m_listings, i));
+	}
+	mLibraryListingClear(&m_listings);
+}
+
+void LibraryModel::reload() {
+	mLibraryGetEntries(m_library->library, &m_listings, 0, 0, m_constraints.base ? &m_constraints : nullptr);
 }
 
 void LibraryModel::directoryLoaded(const QString& path) {

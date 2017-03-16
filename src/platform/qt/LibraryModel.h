@@ -52,6 +52,7 @@ public slots:
 
 	void constrainBase(const QString& path);
 	void clearConstraints();
+	void reload();
 
 private slots:
 	void directoryLoaded(const QString& path);
@@ -86,6 +87,7 @@ private:
 	static QMap<QString, LibraryHandle*> s_handles;
 
 	mLibraryEntry m_constraints;
+	mLibraryListing m_listings;
 	QStringList m_queue;
 
 	QList<LibraryColumn> m_columns;
