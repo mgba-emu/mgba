@@ -573,10 +573,7 @@ bool DSLoadFirmware(struct DS* ds, struct VFile* vf) {
 	if (!DSIsFirmware(vf)) {
 		return false;
 	}
-	if (size == DS_SIZE_FIRMWARE) {
-		data = vf->map(vf, size, MAP_WRITE);
-	}
-	if (!data) {
+	if (size != DS_SIZE_FIRMWARE) {
 		return false;
 	}
 	mLOG(DS, INFO, "Found DS firmware");
