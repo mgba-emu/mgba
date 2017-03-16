@@ -1248,11 +1248,11 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	case DS_REGION_VRAM:
 		LDM_LOOP(unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
 		value = 0;
-		int i = 0;
-		for (i = 0; i < 9; ++i) {
-			if (mask & (1 << i)) {
+		int j = 0;
+		for (j = 0; j < 9; ++j) {
+			if (mask & (1 << j)) {
 				uint32_t newValue;
-				LOAD_32(newValue, address & _vramMask[i], memory->vramBank[i]);
+				LOAD_32(newValue, address & _vramMask[j], memory->vramBank[j]);
 				value |= newValue;
 			}
 		});
@@ -1344,10 +1344,10 @@ uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 		break;
 	case DS_REGION_VRAM:
 		STM_LOOP(unsigned mask = _selectVRAM(memory, address >> DS_VRAM_OFFSET);
-		int i = 0;
-		for (i = 0; i < 9; ++i) {
-			if (mask & (1 << i)) {
-				STORE_32(value, address & _vramMask[i], memory->vramBank[i]);
+		int j = 0;
+		for (j = 0; j < 9; ++j) {
+			if (mask & (1 << j)) {
+				STORE_32(value, address & _vramMask[j], memory->vramBank[j]);
 			}
 		});
 		break;
