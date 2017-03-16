@@ -104,7 +104,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 		i = m_savedScale;
 	}
 #ifdef USE_SQLITE3
-	m_libraryView = new LibraryView(this);
+	m_libraryView = new LibraryView();
 	ConfigOption* showLibrary = m_config->addOption("showLibrary");
 	showLibrary->connect([this](const QVariant& value) {
 		if (value.toBool()) {
@@ -209,6 +209,10 @@ Window::~Window() {
 
 #ifdef USE_MAGICK
 	delete m_gifView;
+#endif
+
+#ifdef USE_SQLITE3
+	delete m_libraryView;
 #endif
 }
 
