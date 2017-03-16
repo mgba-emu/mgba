@@ -358,6 +358,7 @@ void _startHdraw9(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		if (GBARegisterDISPSTATIsVblankIRQ(dispstat)) {
 			DSRaiseIRQ(video->p->ds9.cpu, video->p->ds9.memory.io, DS_IRQ_VBLANK);
 		}
+		video->inCapture = false;
 		DSFrameEnded(video->p);
 		--video->frameskipCounter;
 		if (video->frameskipCounter < 0) {
