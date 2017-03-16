@@ -90,6 +90,9 @@ static unsigned _mixTexels(int weightA, unsigned colorA, int weightB, unsigned c
 }
 
 static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSoftwareEndpoint* ep, struct DSGXSoftwarePolygon* poly) {
+	if (!poly->texBase) {
+		return 0;
+	}
 	// TODO: Optimize
 	uint16_t texel;
 
@@ -436,20 +439,25 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 		poly->blendFormat = DSGXPolygonAttrsGetMode(poly->poly->polyParams);
 		poly->texW = 8 << DSGXTexParamsGetSSize(poly->poly->texParams);
 		poly->texH = 8 << DSGXTexParamsGetTSize(poly->poly->texParams);
-		switch (poly->texFormat) {
-		case 0:
-		case 7:
+		if (!renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET]) {
 			poly->texBase = NULL;
 			poly->palBase = NULL;
-			break;
-		case 2:
-			poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
-			poly->palBase = &renderer->texPal[poly->poly->palBase >> 11][(poly->poly->palBase << 2) & 0x1FFF];
-			break;
-		default:
-			poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
-			poly->palBase = &renderer->texPal[poly->poly->palBase >> 10][(poly->poly->palBase << 3) & 0x1FFF];
-			break;
+		} else {
+			switch (poly->texFormat) {
+			case 0:
+			case 7:
+				poly->texBase = NULL;
+				poly->palBase = NULL;
+				break;
+			case 2:
+				poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
+				poly->palBase = &renderer->texPal[poly->poly->palBase >> 11][(poly->poly->palBase << 2) & 0x1FFF];
+				break;
+			default:
+				poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
+				poly->palBase = &renderer->texPal[poly->poly->palBase >> 10][(poly->poly->palBase << 3) & 0x1FFF];
+				break;
+			}
 		}
 		edge->polyId = i;
 
