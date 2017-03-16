@@ -352,7 +352,7 @@ QString Window::getFilters() const {
 		"*.rom",
 		"*.bin"};
 	formats.append(dsFormats);
-	filters.append(tr("DS ROMs (%1)").arg(gbaFormats.join(QChar(' '))));
+	filters.append(tr("DS ROMs (%1)").arg(dsFormats.join(QChar(' '))));
 #endif
 
 #ifdef M_CORE_GB
