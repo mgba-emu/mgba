@@ -49,6 +49,10 @@
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/video.h>
 #endif
+#ifdef M_CORE_GBA
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/video.h>
+#endif
 #include "feature/commandline.h"
 #include "feature/sqlite3/no-intro.h"
 #include <mgba-util/vfs.h>

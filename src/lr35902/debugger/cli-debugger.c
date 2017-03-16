@@ -54,7 +54,7 @@ static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVect
 
 static inline uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address, int segment) {
 	struct CLIDebuggerBackend* be = debugger->backend;
-	struct LR35902InstructionInfo info = {};
+	struct LR35902InstructionInfo info = {0};
 	char disassembly[48];
 	char* disPtr = disassembly;
 	if (segment >= 0) {
