@@ -747,8 +747,11 @@ if(BUILD_OPENEMU)
 endif()
 
 if(BUILD_SDL)
-	add_definitions(-DBUILD_SDL)
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl ${CMAKE_CURRENT_BINARY_DIR}/sdl)
+	# The SDL platform CMakeLists could decide to disable SDL, so check again before adding the define.
+	if(BUILD_SDL)
+		add_definitions(-DBUILD_SDL)
+	endif()
 endif()
 
 if(BUILD_QT)
