@@ -1,14 +1,14 @@
-os:
-  - linux
-  - osx
-
 language: c
-compiler:
-  - gcc
-  - clang
-
 sudo: required
-dist: trusty
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      compiler: clang
+    - os: linux
+      dist: trusty
+      compiler: gcc
+    - os: osx
 
 before_install:
   - ./.travis-deps.sh
