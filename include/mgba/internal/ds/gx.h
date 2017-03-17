@@ -155,6 +155,13 @@ struct DSGXRenderer {
 	int viewportHeight;
 };
 
+struct DSGXLight {
+	int16_t color;
+	int16_t x;
+	int16_t y;
+	int16_t z;
+};
+
 struct DS;
 struct DSGX {
 	struct DS* p;
@@ -200,6 +207,12 @@ struct DSGX {
 	struct DSGXMatrix vecMatrix;
 
 	struct DSGXMatrix clipMatrix;
+
+	struct DSGXLight lights[4];
+	int16_t diffuse;
+	int16_t ambient;
+	int16_t specular;
+	int16_t emit;
 
 	int viewportX1;
 	int viewportY1;

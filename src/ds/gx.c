@@ -687,6 +687,25 @@ static int16_t _dotTexture(struct DSGXVertex* vertex, int mode, int32_t* col) {
 	return sum >> 20;
 }
 
+static int32_t _dotFrac(int16_t x, int16_t y, int16_t z, int32_t* col) {
+	int64_t a;
+	int64_t b;
+	int64_t sum;
+	a = col[0];
+	b = x;
+	sum = a * b;
+	a = col[4];
+	b = y;
+	sum += a * b;
+	a = col[8];
+	b = z;
+	sum += a * b;
+	a = col[12];
+	b = MTX_ONE;
+	sum += a * b;
+	return sum >> 12;
+}
+
 static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 	if (gx->vertexMode < 0 || gx->vertexIndex == DS_GX_VERTEX_BUFFER_SIZE || gx->polygonIndex == DS_GX_POLYGON_BUFFER_SIZE) {
 		return;
@@ -699,20 +718,18 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 	gx->currentVertex.vz = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[2]);
 	gx->currentVertex.vw = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[3]);
 
-	if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) > 0) {
-		int32_t m12 = gx->texMatrix.m[12];
-		int32_t m13 = gx->texMatrix.m[13];
-		if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) > 1) {
-			gx->texMatrix.m[12] = gx->currentVertex.vs;
-			gx->texMatrix.m[13] = gx->currentVertex.vt;
-		}
-		gx->currentVertex.vs = _dotTexture(&gx->currentVertex, DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams), &gx->texMatrix.m[0]);
-		gx->currentVertex.vt = _dotTexture(&gx->currentVertex, DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams), &gx->texMatrix.m[1]);
-		gx->texMatrix.m[12] = m12;
-		gx->texMatrix.m[13] = m13;
-	} else {
+	if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) == 0) {
 		gx->currentVertex.vs = gx->currentVertex.s;
 		gx->currentVertex.vt = gx->currentVertex.t;
+	} else if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) == 3) {
+		int32_t m12 = gx->texMatrix.m[12];
+		int32_t m13 = gx->texMatrix.m[13];
+		gx->texMatrix.m[12] = gx->currentVertex.vs;
+		gx->texMatrix.m[13] = gx->currentVertex.vt;
+		gx->currentVertex.vs = _dotTexture(&gx->currentVertex, 3, &gx->texMatrix.m[0]);
+		gx->currentVertex.vt = _dotTexture(&gx->currentVertex, 3, &gx->texMatrix.m[1]);
+		gx->texMatrix.m[12] = m12;
+		gx->texMatrix.m[13] = m13;
 	}
 
 	gx->pendingVertices[gx->pendingVertexIndex] = gx->currentVertex;
@@ -1255,6 +1272,10 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			gx->currentVertex.s |= entry.params[1] << 8;
 			gx->currentVertex.t = entry.params[2];
 			gx->currentVertex.t |= entry.params[3] << 8;
+			if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) == 1) {
+				gx->currentVertex.vs = _dotTexture(&gx->currentVertex, 1, &gx->texMatrix.m[0]);
+				gx->currentVertex.vt = _dotTexture(&gx->currentVertex, 1, &gx->texMatrix.m[1]);
+			}
 			break;
 		case DS_GX_CMD_VTX_16: {
 			int16_t x = gx->activeEntries[0].params[0];
@@ -1310,6 +1331,44 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			int16_t y = (xyz >> 4) & 0xFFC0;
 			int16_t z = (xyz >> 14) & 0xFFC0;
 			_emitVertex(gx, gx->currentVertex.x + (x >> 6), gx->currentVertex.y + (y >> 6), gx->currentVertex.z + (z >> 6));
+			break;
+		}
+		case DS_GX_CMD_DIF_AMB:
+			gx->diffuse = entry.params[0];
+			gx->diffuse |= entry.params[1] << 8;
+			if (gx->diffuse & 0x8000) {
+				gx->currentVertex.color = gx->diffuse;
+			}
+			gx->ambient = entry.params[2];
+			gx->ambient |= entry.params[3] << 8;
+			break;
+		case DS_GX_CMD_SPE_EMI:
+			gx->specular = entry.params[0];
+			gx->specular |= entry.params[1] << 8;
+			gx->emit = entry.params[2];
+			gx->emit |= entry.params[3] << 8;
+			break;
+		case DS_GX_CMD_LIGHT_VECTOR: {
+			uint32_t xyz = entry.params[0];
+			xyz |= entry.params[1] << 8;
+			xyz |= entry.params[2] << 16;
+			xyz |= entry.params[3] << 24;
+			struct DSGXLight* light = &gx->lights[xyz >> 30];
+			int16_t x = (xyz << 6) & 0xFFC0;
+			int16_t y = (xyz >> 4) & 0xFFC0;
+			int16_t z = (xyz >> 14) & 0xFFC0;
+			light->x = x >> 6;
+			light->y = y >> 6;
+			light->z = z >> 6;
+			light->x = _dotFrac(x, y, z, &gx->vecMatrix.m[0]) << 22 >> 22;
+			light->y = _dotFrac(x, y, z, &gx->vecMatrix.m[1]) << 22 >> 22;
+			light->z = _dotFrac(x, y, z, &gx->vecMatrix.m[2]) << 22 >> 22;
+			break;
+		}
+		case DS_GX_CMD_LIGHT_COLOR: {
+			struct DSGXLight* light = &gx->lights[entry.params[3] >> 6];
+			light->color = entry.params[0];
+			light->color |= entry.params[1] << 8;
 			break;
 		}
 		case DS_GX_CMD_POLYGON_ATTR:
