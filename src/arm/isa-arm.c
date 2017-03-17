@@ -706,9 +706,10 @@ DEFINE_INSTRUCTION_ARM(BLX,
 
 DEFINE_INSTRUCTION_ARM(BLX2,
 	int rm = opcode & 0x0000000F;
+	int address = cpu->gprs[rm];
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - WORD_SIZE_ARM;
-	_ARMSetMode(cpu, cpu->gprs[rm] & 0x00000001);
-	cpu->gprs[ARM_PC] = cpu->gprs[rm] & 0xFFFFFFFE;
+	_ARMSetMode(cpu, address & 0x00000001);
+	cpu->gprs[ARM_PC] = address & 0xFFFFFFFE;
 	if (cpu->executionMode == MODE_THUMB) {
 		THUMB_WRITE_PC;
 	} else {

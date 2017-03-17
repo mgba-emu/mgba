@@ -422,13 +422,14 @@ DEFINE_INSTRUCTION_THUMB(BX,
 
 DEFINE_INSTRUCTION_THUMB(BLX2,
 	int rm = (opcode >> 3) & 0xF;
-	_ARMSetMode(cpu, cpu->gprs[rm] & 0x00000001);
+	int address = cpu->gprs[rm];
+	_ARMSetMode(cpu, address & 0x00000001);
 	int misalign = 0;
 	if (rm == ARM_PC) {
-		misalign = cpu->gprs[rm] & 0x00000002;
+		misalign = address & 0x00000002;
 	}
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - 1;
-	cpu->gprs[ARM_PC] = (cpu->gprs[rm] & 0xFFFFFFFE) - misalign;
+	cpu->gprs[ARM_PC] = (address & 0xFFFFFFFE) - misalign;
 	if (cpu->executionMode == MODE_THUMB) {
 		THUMB_WRITE_PC;
 	} else {
