@@ -28,10 +28,10 @@ static void _expandColor(uint16_t c15, uint8_t* r, uint8_t* g, uint8_t* b) {
 
 static color_t _finishColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 #ifndef COLOR_16_BIT
-	color_t rgba = (r << 2) & 0xF8;
-	rgba |= (g << 10) & 0xF800;
-	rgba |= (b << 18) & 0xF80000;
-	rgba |= (a << 27) & 0xF8000000;
+	color_t rgba = (r << 2) & 0xFC;
+	rgba |= (g << 10) & 0xFC00;
+	rgba |= (b << 18) & 0xFC0000;
+	rgba |= (a << 26) & 0xF8000000;
 	return rgba;
 #else
 #error Unsupported color depth
@@ -130,6 +130,9 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 	uint16_t texelCoord = s + t * poly->texW;
 	uint8_t ta = 0x1F;
 	uint8_t pa = DSGXPolygonAttrsGetAlpha(poly->poly->polyParams);
+	if (pa) {
+		pa = (pa << 1) + 1;
+	}
 	switch (poly->texFormat) {
 	case 0:
 	default:
@@ -235,16 +238,23 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 		texel = poly->palBase[texel];
 	}
 	_expandColor(texel, &r, &g, &b);
+	if (ta) {
+		ta = (ta << 1) + 1;
+	}
 	switch (poly->blendFormat) {
-	case 1:
 	default:
 		// TODO: Alpha
 		return _finishColor(r, g, b, pa);
+	case 1:
+		wr = (r * ta + ep->cr * (63 - ta)) >> 6;
+		wg = (g * ta + ep->cg * (63 - ta)) >> 6;
+		wb = (b * ta + ep->cb * (63 - ta)) >> 6;
+		return _finishColor(wr, wg, wb, pa);
 	case 0:
 		wr = ((r + 1) * (ep->cr + 1) - 1) >> 6;
 		wg = ((g + 1) * (ep->cg + 1) - 1) >> 6;
 		wb = ((b + 1) * (ep->cb + 1) - 1) >> 6;
-		wa = ((ta + 1) * (pa + 1) - 1) >> 5;
+		wa = ((ta + 1) * (pa + 1) - 1) >> 6;
 		return _finishColor(wr, wg, wb, wa);
 	}
 }
