@@ -266,6 +266,18 @@ void DS7IOInit(struct DS* ds) {
 
 void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	switch (address) {
+	case DS_REG_DMA0CNT_HI:
+		DS7DMAWriteCNT(&ds->ds7, 0, (value << 16) | ds->ds7.memory.io[(address - 2) >> 1]);
+		break;
+	case DS_REG_DMA1CNT_HI:
+		DS7DMAWriteCNT(&ds->ds7, 1, (value << 16) | ds->ds7.memory.io[(address - 2) >> 1]);
+		break;
+	case DS_REG_DMA2CNT_HI:
+		DS7DMAWriteCNT(&ds->ds7, 2, (value << 16) | ds->ds7.memory.io[(address - 2) >> 1]);
+		break;
+	case DS_REG_DMA3CNT_HI:
+		DS7DMAWriteCNT(&ds->ds7, 3, (value << 16) | ds->ds7.memory.io[(address - 2) >> 1]);
+		break;
 	case DS7_REG_SPICNT:
 		value &= 0xCF83;
 		value = DSSPIWriteControl(ds, value);
@@ -595,6 +607,20 @@ void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	} else {
 		uint16_t oldValue;
 		switch (address) {
+		// DMA
+		case DS_REG_DMA0CNT_HI:
+			DS9DMAWriteCNT(&ds->ds9, 0, (value << 16) | ds->ds9.memory.io[(address - 2) >> 1]);
+			break;
+		case DS_REG_DMA1CNT_HI:
+			DS9DMAWriteCNT(&ds->ds9, 1, (value << 16) | ds->ds9.memory.io[(address - 2) >> 1]);
+			break;
+		case DS_REG_DMA2CNT_HI:
+			DS9DMAWriteCNT(&ds->ds9, 2, (value << 16) | ds->ds9.memory.io[(address - 2) >> 1]);
+			break;
+		case DS_REG_DMA3CNT_HI:
+			DS9DMAWriteCNT(&ds->ds9, 3, (value << 16) | ds->ds9.memory.io[(address - 2) >> 1]);
+			break;
+
 		// Other video
 		case DS9_REG_DISPCAPCNT_LO:
 			value &= 0x1F1F;
