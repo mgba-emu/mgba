@@ -12,7 +12,13 @@ mLOG_DEFINE_CATEGORY(DS_WIFI, "DS Wi-Fi", "ds.wifi");
 
 void DSWifiReset(struct DS* ds) {
 	memset(ds->wifi.io, 0, sizeof(ds->wifi.io));
+	ds->wifi.io[0x044 >> 1] = 1;
 	memset(ds->wifi.wram, 0, sizeof(ds->wifi.wram));
+}
+
+static void _rotateRandom(struct DS* ds) {
+	int16_t random = ds->wifi.io[0x044 >> 1];
+	ds->wifi.io[0x044 >> 1] = (random & 1) ^ ((random >> 10) | ((random << 1) & 0x7FE));
 }
 
 static void DSWifiWriteBB(struct DS* ds, uint8_t address, uint8_t value) {
@@ -60,9 +66,16 @@ static void DSWifiWriteReg(struct DS* ds, uint32_t address, uint16_t value) {
 
 static uint16_t DSWifiReadReg(struct DS* ds, uint32_t address) {
 	switch (address) {
+	case 0x044:
+		_rotateRandom(ds);
+		break;
 	case 0x040:
 	case 0x15C:
 		break;
+	case 0x254:
+		return 0xFFFF;
+	case 0x290:
+		return 0xFFFF;
 	default:
 		mLOG(DS_WIFI, STUB, "Stub Wi-Fi I/O register read: %06X", address);
 		break;
