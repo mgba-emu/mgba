@@ -1,7 +1,7 @@
 #!/bin/sh
 if [ $TRAVIS_OS_NAME = "osx" ]; then
 	brew update
-	brew install qt5 ffmpeg imagemagick sdl2 libzip libpng
+	brew install qt5 ffmpeg imagemagick sdl2 libzip libpng gcc@4.8
 else
 	sudo apt-get clean
 	sudo apt-get update
