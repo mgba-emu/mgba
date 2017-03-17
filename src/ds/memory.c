@@ -314,6 +314,11 @@ uint32_t DS7Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case DS_REGION_IO:
 		value = DS7IORead32(ds, address & 0x00FFFFFC);
 		break;
+	case DS_REGION_SLOT2:
+	case DS_REGION_SLOT2_EX:
+	case DS_REGION_SLOT2_SRAM:
+		value = 0xFFFFFFFF;
+		break;
 	case DS_REGION_VRAM:
 		if (address < 0x06040000 && memory->vram7[(address & 0x3FFFF) >> 17]) {
 			LOAD_32(value, address & 0x1FFFC, memory->vram7[(address & 0x3FFFF) >> 17]);
@@ -359,6 +364,11 @@ uint32_t DS7Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load16: %08X", address);
 	case DS_REGION_IO:
 		value = DS7IORead(ds, address & DS_OFFSET_MASK);
+		break;
+	case DS_REGION_SLOT2:
+	case DS_REGION_SLOT2_EX:
+	case DS_REGION_SLOT2_SRAM:
+		value = 0xFFFF;
 		break;
 	case DS_REGION_VRAM:
 		if (address < 0x06040000 && memory->vram7[(address & 0x3FFFF) >> 17]) {
@@ -406,6 +416,11 @@ uint32_t DS7Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		break;
 	case DS_REGION_IO:
 		value = (DS7IORead(ds, address & 0xFFFE) >> ((address & 0x0001) << 3)) & 0xFF;
+		break;
+	case DS_REGION_SLOT2:
+	case DS_REGION_SLOT2_EX:
+	case DS_REGION_SLOT2_SRAM:
+		value = 0xFF;
 		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load8: %08X", address);
@@ -839,6 +854,11 @@ uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case DS9_REGION_OAM:
 		LOAD_32(value, address & (DS9_SIZE_OAM - 4), ds->video.oam.raw);
 		break;
+	case DS_REGION_SLOT2:
+	case DS_REGION_SLOT2_EX:
+	case DS_REGION_SLOT2_SRAM:
+		value = 0xFFFFFFFF;
+		break;
 	case DS9_REGION_BIOS:
 		// TODO: Fix undersized BIOS
 		// TODO: Fix masking
@@ -915,6 +935,11 @@ uint32_t DS9Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case DS9_REGION_OAM:
 		LOAD_16(value, address & (DS9_SIZE_OAM - 2), ds->video.oam.raw);
 		break;
+	case DS_REGION_SLOT2:
+	case DS_REGION_SLOT2_EX:
+	case DS_REGION_SLOT2_SRAM:
+		value = 0xFFFF;
+		break;
 	case DS9_REGION_BIOS:
 		// TODO: Fix undersized BIOS
 		// TODO: Fix masking
@@ -983,6 +1008,11 @@ uint32_t DS9Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		}
 		break;
 	}
+	case DS_REGION_SLOT2:
+	case DS_REGION_SLOT2_EX:
+	case DS_REGION_SLOT2_SRAM:
+		value = 0xFF;
+		break;
 	case DS9_REGION_BIOS:
 		// TODO: Fix undersized BIOS
 		// TODO: Fix masking
