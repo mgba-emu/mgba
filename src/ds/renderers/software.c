@@ -645,6 +645,12 @@ static void DSVideoSoftwareRendererPutPixels(struct DSVideoRenderer* renderer, s
 	LOAD_16(mapData, screenBase & (VRAM_BLOCK_MASK - 1), screenBlock); \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
 	palette = &mainPalette[paletteData]; \
+	if (GBA_TEXT_MAP_VFLIP(mapData)) { \
+		localY = 0x7FF - localY; \
+	} \
+	if (GBA_TEXT_MAP_HFLIP(mapData)) { \
+		localX = 0x7FF - localX; \
+	} \
 	uint32_t charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8); \
 	uint16_t* vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 	if (UNLIKELY(!vram)) { \
