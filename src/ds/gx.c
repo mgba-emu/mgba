@@ -1470,6 +1470,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			gx->nextPoly.texParams |= entry.params[1] << 8;
 			gx->nextPoly.texParams |= entry.params[2] << 16;
 			gx->nextPoly.texParams |= entry.params[3] << 24;
+			gx->currentPoly.texParams = gx->nextPoly.texParams;
 			break;
 		case DS_GX_CMD_PLTT_BASE:
 			gx->nextPoly.palBase = entry.params[0];
