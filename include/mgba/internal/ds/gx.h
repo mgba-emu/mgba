@@ -48,10 +48,7 @@ DECL_BIT(DSGXTexParams, 0Transparent, 29);
 DECL_BITS(DSGXTexParams, CoordTfMode, 30, 2);
 
 DECL_BITFIELD(DSGXPolygonAttrs, uint32_t);
-DECL_BIT(DSGXPolygonAttrs, Light0, 0);
-DECL_BIT(DSGXPolygonAttrs, Light1, 1);
-DECL_BIT(DSGXPolygonAttrs, Light2, 2);
-DECL_BIT(DSGXPolygonAttrs, Light3, 3);
+DECL_BITS(DSGXPolygonAttrs, Lights, 0, 4);
 DECL_BITS(DSGXPolygonAttrs, Mode, 4, 2);
 DECL_BIT(DSGXPolygonAttrs, FrontFace, 6);
 DECL_BIT(DSGXPolygonAttrs, BackFace, 7);
