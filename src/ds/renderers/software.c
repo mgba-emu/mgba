@@ -396,12 +396,12 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 					flags |= FLAG_TARGET_1 * (softwareRenderer->bg[0].target1 && softwareRenderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(softwareRenderer->currentWindow.packed));
 					int x;
 					for (x = softwareRenderer->start; x < softwareRenderer->end; ++x) {
-						if (scanline[x] & 0xF8000000) {
-							if ((flags & FLAG_TARGET_1) && (scanline[x] >> 28) != 0xF) {
+						if (scanline[x] & 0xFC000000) {
+							if ((scanline[x] >> 28) != 0xF) {
 								// TODO: More precise values
 								softwareRenderer->alphaA[x] = (scanline[x] >> 28) + 1;
-								softwareRenderer->alphaB[x] = 0x10;
-								_compositeBlendNoObjwin(softwareRenderer, x, (scanline[x] & 0x00FFFFFF) | flags, softwareRenderer->row[x]);
+								softwareRenderer->alphaB[x] = 0xF - (scanline[x] >> 28);
+								_compositeBlendNoObjwin(softwareRenderer, x, (scanline[x] & 0x00FFFFFF) | flags | FLAG_TARGET_1, softwareRenderer->row[x]);
 							} else {
 								_compositeNoBlendNoObjwin(softwareRenderer, x, (scanline[x] & 0x00FFFFFF) | flags, softwareRenderer->row[x]);
 								softwareRenderer->alphaA[x] = 0x10;
