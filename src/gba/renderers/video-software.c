@@ -282,7 +282,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		}
 		break;
 	case REG_WIN0H:
-		softwareRenderer->winN[0].h.end = value;
+		softwareRenderer->winN[0].h.end = value & 0xFF;
 		softwareRenderer->winN[0].h.start = value >> 8;
 		if (softwareRenderer->winN[0].h.start > softwareRenderer->masterEnd && softwareRenderer->winN[0].h.start > softwareRenderer->winN[0].h.end) {
 			softwareRenderer->winN[0].h.start = 0;
@@ -293,9 +293,12 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 				softwareRenderer->winN[0].h.start = softwareRenderer->masterEnd;
 			}
 		}
+		if (softwareRenderer->masterEnd > 0xFF && softwareRenderer->winN[0].h.end == (softwareRenderer->masterEnd & 0xFF) && softwareRenderer->winN[0].h.start != softwareRenderer->winN[0].h.end) {
+			softwareRenderer->winN[0].h.end = softwareRenderer->masterEnd;
+		}
 		break;
 	case REG_WIN1H:
-		softwareRenderer->winN[1].h.end = value;
+		softwareRenderer->winN[1].h.end = value & 0xFF;
 		softwareRenderer->winN[1].h.start = value >> 8;
 		if (softwareRenderer->winN[1].h.start > softwareRenderer->masterEnd && softwareRenderer->winN[1].h.start > softwareRenderer->winN[1].h.end) {
 			softwareRenderer->winN[1].h.start = 0;
@@ -306,9 +309,12 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 				softwareRenderer->winN[1].h.start = softwareRenderer->masterEnd;
 			}
 		}
+		if (softwareRenderer->masterEnd > 0xFF && softwareRenderer->winN[1].h.end == (softwareRenderer->masterEnd & 0xFF) && softwareRenderer->winN[1].h.start != softwareRenderer->winN[1].h.end) {
+			softwareRenderer->winN[1].h.end = softwareRenderer->masterEnd;
+		}
 		break;
 	case REG_WIN0V:
-		softwareRenderer->winN[0].v.end = value;
+		softwareRenderer->winN[0].v.end = value & 0xFF;
 		softwareRenderer->winN[0].v.start = value >> 8;
 		if (softwareRenderer->winN[0].v.start > softwareRenderer->masterHeight && softwareRenderer->winN[0].v.start > softwareRenderer->winN[0].v.end) {
 			softwareRenderer->winN[0].v.start = 0;
@@ -321,7 +327,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		}
 		break;
 	case REG_WIN1V:
-		softwareRenderer->winN[1].v.end = value;
+		softwareRenderer->winN[1].v.end = value & 0xFF;
 		softwareRenderer->winN[1].v.start = value >> 8;
 		if (softwareRenderer->winN[1].v.start > softwareRenderer->masterHeight && softwareRenderer->winN[1].v.start > softwareRenderer->winN[1].v.end) {
 			softwareRenderer->winN[1].v.start = 0;
@@ -607,7 +613,7 @@ static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer,
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
 	const color_t* colorPixels = pixels;
-	unsigned i;
+	int i;
 	for (i = 0; i < softwareRenderer->masterHeight; ++i) {
 		memmove(&softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * i], &colorPixels[stride * i], softwareRenderer->masterEnd * BYTES_PER_PIXEL);
 	}

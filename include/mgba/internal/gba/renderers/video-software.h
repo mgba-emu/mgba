@@ -80,8 +80,8 @@ enum {
 #define IS_WRITABLE(PIXEL) ((PIXEL) & 0xFE000000)
 
 struct WindowRegion {
-	uint8_t end;
-	uint8_t start;
+	int end;
+	int start;
 };
 
 DECL_BITFIELD(GBAWindowControl, uint8_t);
@@ -168,7 +168,7 @@ struct GBAVideoSoftwareRenderer {
 	int start;
 	int end;
 	int masterEnd;
-	unsigned masterHeight;
+	int masterHeight;
 	int masterScanlines;
 
 	int masterBright;
