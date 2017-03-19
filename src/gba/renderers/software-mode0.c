@@ -40,7 +40,6 @@
 			for (outX = end - 1; outX >= renderer->start; --outX) { \
 				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
 			} \
-			outX = end; \
 		} \
 	}
 
@@ -183,9 +182,9 @@
 	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 	vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 	int end2 = end - 4; \
-	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-		int shift = inX & 0x3; \
-		if (LIKELY(vram)) { \
+	if (LIKELY(vram)) { \
+		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+			int shift = inX & 0x3; \
 			if (end2 > outX) { \
 				LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 				tileData >>= 8 * shift; \
@@ -194,19 +193,15 @@
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 				} \
 			} \
-		} \
-		\
-		if (LIKELY(vram)) { \
+			\
 			LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 			tileData >>= 8 * shift; \
 			for (; outX < end; ++outX) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
-		} \
-	} else { \
-		int start = outX; \
-		outX = end - 1; \
-		if (LIKELY(vram)) { \
+		} else { \
+			int start = outX; \
+			outX = end - 1; \
 			if (end2 > start) { \
 				LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 				for (; outX >= end2; --outX) { \
@@ -214,15 +209,12 @@
 				} \
 				charBase += 4; \
 			} \
-		} \
-		\
-		if (LIKELY(vram)) { \
-			LOAD_32(tileData, charBase, vram); \
+			\
+			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 			for (; outX >= renderer->start; --outX) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 		} \
-		outX = end; \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_PREFIX_256(BLEND, OBJWIN) \
@@ -356,14 +348,14 @@
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_256EXT(BLEND, OBJWIN) \
-	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
-	palette = &mainPalette[paletteData]; \
 	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 	vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 	int end2 = end - 4; \
-	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-		int shift = inX & 0x3; \
-		if (LIKELY(vram)) { \
+	if (LIKELY(vram)) { \
+		paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
+		palette = &mainPalette[paletteData]; \
+		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+			int shift = inX & 0x3; \
 			if (end2 > outX) { \
 				LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 				tileData >>= 8 * shift; \
@@ -372,19 +364,15 @@
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 				} \
 			} \
-		} \
-		\
-		if (LIKELY(vram)) { \
+			\
 			LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 			tileData >>= 8 * shift; \
 			for (; outX < end; ++outX) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
-		} \
-	} else { \
-		int start = outX; \
-		outX = end - 1; \
-		if (LIKELY(vram)) { \
+		} else { \
+			int start = outX; \
+			outX = end - 1; \
 			if (end2 > start) { \
 				LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 				for (; outX >= end2; --outX) { \
@@ -392,15 +380,12 @@
 				} \
 				charBase += 4; \
 			} \
-		} \
-		\
-		if (LIKELY(vram)) { \
-			LOAD_32(tileData, charBase, vram); \
+			\
+			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 			for (; outX >= renderer->start; --outX) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 		} \
-		outX = end; \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_PREFIX_256EXT(BLEND, OBJWIN) \
