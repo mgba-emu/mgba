@@ -131,7 +131,7 @@ struct DSGXPolygon {
 	DSGXTexParams texParams;
 	uint32_t palBase;
 	int verts;
-	unsigned vertIds[8];
+	unsigned vertIds[10];
 };
 
 struct DSGXRenderer {

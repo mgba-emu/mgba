@@ -260,7 +260,7 @@ static bool _lerpVertexZ(const struct DSGXVertex* v0, const struct DSGXVertex* v
 
 static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 	int nOffscreen = 0;
-	int offscreenVerts[8] = { 0, 0, 0, 0 };
+	int offscreenVerts[10] = { 0, 0, 0, 0 };
 	unsigned oldVerts[4];
 	int v;
 
@@ -326,9 +326,9 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 		return true;
 	}
 
-	struct DSGXVertex inList[8];
-	struct DSGXVertex outList[8];
-	int outOffscreenVerts[8] = { 0, 0, 0, 0 };
+	struct DSGXVertex inList[10];
+	struct DSGXVertex outList[10];
+	int outOffscreenVerts[10] = { 0, 0, 0, 0 };
 	for (v = 0; v < poly->verts; ++v) {
 		inList[v] = gx->pendingVertices[oldVerts[v]];
 	}
