@@ -110,6 +110,8 @@ void GBAHardwareInitRTC(struct GBACartridgeHardware* hw) {
 	hw->rtc.commandActive = 0;
 	hw->rtc.command = 0;
 	hw->rtc.control = 0x40;
+	hw->rtc.freeReg = 0;
+	hw->rtc.status2 = 0;
 	memset(hw->rtc.time, 0, sizeof(hw->rtc.time));
 }
 
@@ -216,15 +218,11 @@ void GBARTCProcessByte(struct GBARTC* rtc, struct mRTCSource* source) {
 			rtc->bytesRemaining = RTC_BYTES[RTCCommandDataGetCommand(command)];
 			rtc->commandActive = rtc->bytesRemaining > 0;
 			switch (RTCCommandDataGetCommand(command)) {
-			case RTC_RESET:
-				rtc->control = 0;
-				break;
 			case RTC_DATETIME:
 			case RTC_TIME:
 				_rtcUpdateClock(rtc, source);
 				break;
 			case RTC_FORCE_IRQ:
-			case RTC_CONTROL:
 				break;
 			}
 		} else {
@@ -232,13 +230,18 @@ void GBARTCProcessByte(struct GBARTC* rtc, struct mRTCSource* source) {
 		}
 	} else {
 		switch (RTCCommandDataGetCommand(rtc->command)) {
-		case RTC_CONTROL:
-			rtc->control = rtc->bits;
+		case RTC_STATUS1:
+			rtc->control = rtc->bits & 0xFE;
 			break;
 		case RTC_FORCE_IRQ:
 			mLOG(GBA_HW, STUB, "Unimplemented RTC command %u", RTCCommandDataGetCommand(rtc->command));
 			break;
-		case RTC_RESET:
+		case RTC_STATUS2:
+			rtc->status2 = rtc->bits;
+			break;
+		case RTC_FREE_REG:
+			rtc->freeReg = rtc->bits;
+			break;
 		case RTC_DATETIME:
 		case RTC_TIME:
 			break;
@@ -256,15 +259,19 @@ void GBARTCProcessByte(struct GBARTC* rtc, struct mRTCSource* source) {
 unsigned GBARTCOutput(struct GBARTC* rtc) {
 	uint8_t outputByte = 0;
 	switch (RTCCommandDataGetCommand(rtc->command)) {
-	case RTC_CONTROL:
+	case RTC_STATUS1:
 		outputByte = rtc->control;
+		break;
+	case RTC_STATUS2:
+		outputByte = rtc->status2;
 		break;
 	case RTC_DATETIME:
 	case RTC_TIME:
 		outputByte = rtc->time[7 - rtc->bytesRemaining];
 		break;
+	case RTC_FREE_REG:
+		outputByte = rtc->freeReg;
 	case RTC_FORCE_IRQ:
-	case RTC_RESET:
 		break;
 	}
 	unsigned output = (outputByte >> rtc->bitsRead) & 1;
@@ -291,6 +298,7 @@ void _rtcUpdateClock(struct GBARTC* rtc, struct mRTCSource* source) {
 		rtc->time[4] = _rtcBCD(date.tm_hour);
 	} else {
 		rtc->time[4] = _rtcBCD(date.tm_hour % 12);
+		rtc->time[4] |= (date.tm_hour >= 12) ? 0xC0 : 0;
 	}
 	rtc->time[5] = _rtcBCD(date.tm_min);
 	rtc->time[6] = _rtcBCD(date.tm_sec);
@@ -574,8 +582,8 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	STORE_32(hw->rtc.bitsRead, 0, &state->hw.rtc.bitsRead);
 	STORE_32(hw->rtc.bits, 0, &state->hw.rtc.bits);
 	STORE_32(hw->rtc.commandActive, 0, &state->hw.rtc.commandActive);
-	STORE_32(hw->rtc.command, 0, &state->hw.rtc.command);
-	STORE_32(hw->rtc.control, 0, &state->hw.rtc.control);
+	state->hw.rtc.command = hw->rtc.command;
+	state->hw.rtc.control = hw->rtc.control;
 	memcpy(state->hw.rtc.time, hw->rtc.time, sizeof(state->hw.rtc.time));
 
 	STORE_16(hw->gyroSample, 0, &state->hw.gyroSample);
@@ -606,8 +614,8 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	LOAD_32(hw->rtc.bitsRead, 0, &state->hw.rtc.bitsRead);
 	LOAD_32(hw->rtc.bits, 0, &state->hw.rtc.bits);
 	LOAD_32(hw->rtc.commandActive, 0, &state->hw.rtc.commandActive);
-	LOAD_32(hw->rtc.command, 0, &state->hw.rtc.command);
-	LOAD_32(hw->rtc.control, 0, &state->hw.rtc.control);
+	hw->rtc.command = state->hw.rtc.command;
+	hw->rtc.control = state->hw.rtc.control;
 	memcpy(hw->rtc.time, state->hw.rtc.time, sizeof(hw->rtc.time));
 
 	LOAD_16(hw->gyroSample, 0, &state->hw.gyroSample);
