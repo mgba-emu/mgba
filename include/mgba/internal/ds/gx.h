@@ -52,6 +52,7 @@ DECL_BITS(DSGXPolygonAttrs, Lights, 0, 4);
 DECL_BITS(DSGXPolygonAttrs, Mode, 4, 2);
 DECL_BIT(DSGXPolygonAttrs, FrontFace, 6);
 DECL_BIT(DSGXPolygonAttrs, BackFace, 7);
+DECL_BIT(DSGXPolygonAttrs, UpdateDepth, 11);
 // TODO
 DECL_BITS(DSGXPolygonAttrs, Alpha, 16, 5);
 

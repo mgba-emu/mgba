@@ -631,15 +631,11 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 					if (span->ep[0].w < softwareRenderer->depthBuffer[x]) {
 						softwareRenderer->depthBuffer[x] = span->ep[0].w;
 						scanline[x] = color;
-					} else if (b < 0x1F) {
-						scanline[x] = _mix32(b, current, 0x1F - b, color) | a << 27;
 					}
 				} else {
 					if (span->ep[0].z < softwareRenderer->depthBuffer[x]) {
 						softwareRenderer->depthBuffer[x] = span->ep[0].z;
 						scanline[x] = color;
-					} else if (b < 0x1F) {
-						scanline[x] = _mix32(b, current, 0x1F - b, color) | a << 27;
 					}
 				}
 			} else if (a) {
@@ -650,17 +646,17 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 				}
 				if (softwareRenderer->wSort) {
 					if (span->ep[0].w < softwareRenderer->depthBuffer[x]) {
-						softwareRenderer->depthBuffer[x] = span->ep[0].w;
+						if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
+							softwareRenderer->depthBuffer[x] = span->ep[0].w;
+						}
 						scanline[x] = color;
-					} else if (b < 0x1F) {
-						scanline[x] = _mix32(b, current, 0x1F - b, color) | ab << 27;
 					}
 				} else {
 					if (span->ep[0].z < softwareRenderer->depthBuffer[x]) {
-						softwareRenderer->depthBuffer[x] = span->ep[0].z;
+						if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
+							softwareRenderer->depthBuffer[x] = span->ep[0].z;
+						}
 						scanline[x] = color;
-					} else if (b < 0x1F) {
-						scanline[x] = _mix32(b, current, 0x1F - b, color) | ab << 27;
 					}
 				}
 			}
