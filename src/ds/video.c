@@ -292,6 +292,7 @@ void _startHdraw7(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 
 	switch (video->vcount) {
 	case DS_VIDEO_VERTICAL_PIXELS:
+		DSDMARunVblank(&video->p->ds7, -cyclesLate);
 		video->p->ds7.memory.io[DS_REG_DISPSTAT >> 1] = GBARegisterDISPSTATFillInVblank(dispstat);
 		if (GBARegisterDISPSTATIsVblankIRQ(dispstat)) {
 			DSRaiseIRQ(video->p->ds7.cpu, video->p->ds7.memory.io, DS_IRQ_VBLANK);
@@ -349,6 +350,7 @@ void _startHdraw9(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		video->inCapture = DSRegisterDISPCAPCNTIsEnable(video->p->ds9.memory.io[DS9_REG_DISPCAPCNT_HI >> 1] << 16);
 		break;
 	case DS_VIDEO_VERTICAL_PIXELS:
+		DSDMARunVblank(&video->p->ds9, -cyclesLate);
 		video->p->ds9.memory.io[DS_REG_DISPSTAT >> 1] = GBARegisterDISPSTATFillInVblank(dispstat);
 		video->p->ds9.memory.io[DS9_REG_DISPCAPCNT_HI >> 1] = DSRegisterDISPCAPCNTClearEnable(video->p->ds9.memory.io[DS9_REG_DISPCAPCNT_HI >> 1] << 16) >> 16;
 		if (video->frameskipCounter <= 0) {

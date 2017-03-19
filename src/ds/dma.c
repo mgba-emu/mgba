@@ -145,6 +145,20 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	}
 }
 
+void DSDMARunVblank(struct DSCommon* dscore, int32_t cycles) {
+	struct DSCoreMemory* memory = &dscore->memory;
+	struct GBADMA* dma;
+	int i;
+	for (i = 0; i < 4; ++i) {
+		dma = &memory->dma[i];
+		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_VBLANK && !dma->nextCount) {
+			dma->when = mTimingCurrentTime(&dscore->timing) + 3 + cycles;
+			dma->nextCount = dma->count;
+		}
+	}
+	DSDMAUpdate(dscore);
+}
+
 void DSDMAUpdate(struct DSCommon* dscore) {
 	int i;
 	struct DSCoreMemory* memory = &dscore->memory;
