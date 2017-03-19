@@ -644,8 +644,10 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 				}
 			} else if (a) {
 				// TODO: Disable alpha?
-				color = _mix32(a, color, 0x1F - a, current);
-				color |= ab << 27;
+				if (b) {
+					color = _mix32(a, color, 0x1F - a, current);
+					color |= ab << 27;
+				}
 				if (softwareRenderer->wSort) {
 					if (span->ep[0].w < softwareRenderer->depthBuffer[x]) {
 						softwareRenderer->depthBuffer[x] = span->ep[0].w;
