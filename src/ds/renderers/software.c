@@ -396,16 +396,30 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 					flags |= FLAG_TARGET_1 * (softwareRenderer->bg[0].target1 && softwareRenderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(softwareRenderer->currentWindow.packed));
 					int x;
 					for (x = softwareRenderer->start; x < softwareRenderer->end; ++x) {
-						if (scanline[x] & 0xFC000000) {
+						color_t color = scanline[x];
+						if (softwareRenderer->bg[0].target1) {
+							if (softwareRenderer->blendEffect == BLEND_DARKEN) {
+								color = _darken(color, softwareRenderer->bldy) | (color & 0xFF000000);
+							} else if (softwareRenderer->blendEffect == BLEND_BRIGHTEN) {
+								color = _brighten(color, softwareRenderer->bldy) | (color & 0xFF000000);
+							}
+						}
+						if (color & 0xFC000000) {
 							if ((scanline[x] >> 28) != 0xF) {
 								// TODO: More precise values
-								softwareRenderer->alphaA[x] = (scanline[x] >> 28) + 1;
-								softwareRenderer->alphaB[x] = 0xF - (scanline[x] >> 28);
-								_compositeBlendNoObjwin(softwareRenderer, x, (scanline[x] & 0x00FFFFFF) | flags | FLAG_TARGET_1, softwareRenderer->row[x]);
+								softwareRenderer->alphaA[x] = (color >> 28) + 1;
+								softwareRenderer->alphaB[x] = 0xF - (color >> 28);
+								_compositeBlendNoObjwin(softwareRenderer, x, (color & 0x00FFFFFF) | flags | FLAG_TARGET_1, softwareRenderer->row[x]);
 							} else {
-								_compositeNoBlendNoObjwin(softwareRenderer, x, (scanline[x] & 0x00FFFFFF) | flags, softwareRenderer->row[x]);
-								softwareRenderer->alphaA[x] = 0x10;
-								softwareRenderer->alphaB[x] = 0;
+								if (!(flags & FLAG_TARGET_2)) {
+									_compositeNoBlendNoObjwin(softwareRenderer, x, (color & 0x00FFFFFF) | flags, softwareRenderer->row[x]);
+									softwareRenderer->alphaA[x] = 0x10;
+									softwareRenderer->alphaB[x] = 0;
+								} else if (softwareRenderer->row[x] & FLAG_TARGET_1) {
+									_compositeBlendNoObjwin(softwareRenderer, x, (color & 0x00FFFFFF) | flags, softwareRenderer->row[x]);
+								} else {
+									_compositeNoBlendNoObjwin(softwareRenderer, x, (color & 0x00FFFFFF) | flags, softwareRenderer->row[x]);
+								}
 							}
 						}
 					}
