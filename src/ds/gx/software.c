@@ -90,7 +90,7 @@ static unsigned _mixTexels(int weightA, unsigned colorA, int weightB, unsigned c
 }
 
 static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSoftwareEndpoint* ep, struct DSGXSoftwarePolygon* poly) {
-	if (!poly->texBase) {
+	if (!poly->texBase && poly->texFormat) {
 		return 0;
 	}
 	// TODO: Optimize
