@@ -1,5 +1,4 @@
 DEBUG = 0
-GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 HAVE_VFS_FD := 1
 CORE_DIR := .
 BUILD_DIR := libretro-build
@@ -74,6 +73,12 @@ endif
 TARGET_NAME := mgba
 
 DEFINES :=
+
+# GIT HASH
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+   DEFINES += -DGIT_VERSION=\"$(GIT_VERSION)\"
+endif
 
 # Unix
 ifneq (,$(findstring unix,$(platform)))
@@ -271,7 +276,7 @@ else
    TARGET := $(TARGET_NAME)_libretro.dll
    CC = gcc
    SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T
-   DEFINES += -std=c99 -DDISABLE_THREADING -DGIT_VERSION=\"$(GIT_VERSION)\"
+   DEFINES += -std=c99 -DDISABLE_THREADING
 
 endif
 
