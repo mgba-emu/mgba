@@ -1245,6 +1245,11 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	address &= 0xFFFFFFFC;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS9_REGION_BIOS:
+		// TODO: Fix undersized BIOS
+		// TODO: Fix masking
+		LDM_LOOP(LOAD_32(value, address & (DS9_SIZE_BIOS - 1), memory->bios9));
+		break;
 	case DS9_REGION_ITCM:
 	case DS9_REGION_ITCM_MIRROR:
 		LDM_LOOP(if (address < memory->itcmSize) {
