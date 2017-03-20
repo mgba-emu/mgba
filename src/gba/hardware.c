@@ -33,14 +33,14 @@ static uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t addre
 static void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLate);
 
 static const int RTC_BYTES[8] = {
-	0, // Force reset
-	0, // Empty
+	1, // Status register 1
+	1, // Duty/alarm 1
 	7, // Date/Time
-	0, // Force IRQ
-	1, // Control register
-	0, // Empty
+	1, // Force IRQ
+	1, // Status register 2
+	3, // Alarm 2
 	3, // Time
-	0 // Empty
+	1 // Free register
 };
 
 void GBAHardwareInit(struct GBACartridgeHardware* hw, uint16_t* base) {
@@ -245,6 +245,10 @@ void GBARTCProcessByte(struct GBARTC* rtc, struct mRTCSource* source) {
 		case RTC_DATETIME:
 		case RTC_TIME:
 			break;
+		case RTC_ALARM1:
+		case RTC_ALARM2:
+			mLOG(GBA_HW, STUB, "Unimplemented RTC command %u:%02X", RTCCommandDataGetCommand(rtc->command), rtc->bits);
+			break;
 		}
 	}
 
@@ -272,6 +276,9 @@ unsigned GBARTCOutput(struct GBARTC* rtc) {
 	case RTC_FREE_REG:
 		outputByte = rtc->freeReg;
 	case RTC_FORCE_IRQ:
+	case RTC_ALARM1:
+	case RTC_ALARM2:
+		mLOG(GBA_HW, STUB, "Unimplemented RTC command %u", RTCCommandDataGetCommand(rtc->command));
 		break;
 	}
 	unsigned output = (outputByte >> rtc->bitsRead) & 1;
@@ -581,7 +588,7 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	STORE_32(hw->rtc.transferStep, 0, &state->hw.rtc.transferStep);
 	STORE_32(hw->rtc.bitsRead, 0, &state->hw.rtc.bitsRead);
 	STORE_32(hw->rtc.bits, 0, &state->hw.rtc.bits);
-	STORE_32(hw->rtc.commandActive, 0, &state->hw.rtc.commandActive);
+	state->hw.rtc.commandActive = hw->rtc.commandActive;
 	state->hw.rtc.command = hw->rtc.command;
 	state->hw.rtc.control = hw->rtc.control;
 	memcpy(state->hw.rtc.time, hw->rtc.time, sizeof(state->hw.rtc.time));
@@ -613,7 +620,7 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	LOAD_32(hw->rtc.transferStep, 0, &state->hw.rtc.transferStep);
 	LOAD_32(hw->rtc.bitsRead, 0, &state->hw.rtc.bitsRead);
 	LOAD_32(hw->rtc.bits, 0, &state->hw.rtc.bits);
-	LOAD_32(hw->rtc.commandActive, 0, &state->hw.rtc.commandActive);
+	hw->rtc.commandActive = state->hw.rtc.commandActive;
 	hw->rtc.command = state->hw.rtc.command;
 	hw->rtc.control = state->hw.rtc.control;
 	memcpy(hw->rtc.time, state->hw.rtc.time, sizeof(hw->rtc.time));
