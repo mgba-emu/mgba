@@ -11,7 +11,7 @@
 #include <mgba/internal/gb/memory.h>
 #include <mgba-util/vfs.h>
 
-mLOG_DEFINE_CATEGORY(GB_MBC, "GB MBC");
+mLOG_DEFINE_CATEGORY(GB_MBC, "GB MBC", "gb.mbc");
 
 static void _GBMBCNone(struct GB* gb, uint16_t address, uint8_t value) {
 	UNUSED(gb);

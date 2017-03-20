@@ -18,7 +18,7 @@
 #define blip_add_delta blip_add_delta_fast
 #endif
 
-mLOG_DEFINE_CATEGORY(GBA_AUDIO, "GBA Audio");
+mLOG_DEFINE_CATEGORY(GBA_AUDIO, "GBA Audio", "gba.audio");
 
 const unsigned GBA_AUDIO_SAMPLES = 2048;
 const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);

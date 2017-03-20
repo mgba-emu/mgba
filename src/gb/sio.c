@@ -9,7 +9,7 @@
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/serialize.h>
 
-mLOG_DEFINE_CATEGORY(GB_SIO, "GB Serial I/O");
+mLOG_DEFINE_CATEGORY(GB_SIO, "GB Serial I/O", "gb.sio");
 
 const int GBSIOCyclesPerTransfer[2] = {
 	512,

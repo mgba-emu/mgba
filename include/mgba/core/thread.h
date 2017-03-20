@@ -58,7 +58,6 @@ struct mCoreThread {
 	bool frameWasOn;
 
 	struct mThreadLogger logger;
-	enum mLogLevel logLevel;
 	ThreadCallback startCallback;
 	ThreadCallback resetCallback;
 	ThreadCallback cleanCallback;

@@ -15,7 +15,7 @@
 
 #include <mgba-util/memory.h>
 
-mLOG_DEFINE_CATEGORY(GBA_VIDEO, "GBA Video");
+mLOG_DEFINE_CATEGORY(GBA_VIDEO, "GBA Video", "gba.video");
 
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererReset(struct GBAVideoRenderer* renderer);

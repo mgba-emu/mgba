@@ -37,7 +37,6 @@ enum mCoreChecksumType {
 	CHECKSUM_CRC32,
 };
 
-struct mRTCSource;
 struct mCoreConfig;
 struct mCoreSync;
 struct mStateExtdata;
@@ -54,6 +53,8 @@ struct mCore {
 #endif
 	struct mCoreConfig config;
 	struct mCoreOptions opts;
+
+	struct mRTCGenericSource rtc;
 
 	bool (*init)(struct mCore*);
 	void (*deinit)(struct mCore*);
@@ -73,7 +74,8 @@ struct mCore {
 	void (*setAudioBufferSize)(struct mCore*, size_t samples);
 	size_t (*getAudioBufferSize)(struct mCore*);
 
-	void (*setCoreCallbacks)(struct mCore*, struct mCoreCallbacks*);
+	void (*addCoreCallbacks)(struct mCore*, struct mCoreCallbacks*);
+	void (*clearCoreCallbacks)(struct mCore*);
 	void (*setAVStream)(struct mCore*, struct mAVStream*);
 
 	bool (*isROM)(struct VFile* vf);
@@ -108,7 +110,6 @@ struct mCore {
 	void (*getGameTitle)(const struct mCore*, char* title);
 	void (*getGameCode)(const struct mCore*, char* title);
 
-	void (*setRTC)(struct mCore*, struct mRTCSource*);
 	void (*setRotation)(struct mCore*, struct mRotationSource*);
 	void (*setRumble)(struct mCore*, struct mRumble*);
 
@@ -166,6 +167,8 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags);
 void mCoreInitConfig(struct mCore* core, const char* port);
 void mCoreLoadConfig(struct mCore* core);
 void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config);
+
+void mCoreSetRTC(struct mCore* core, struct mRTCSource* rtc);
 
 CXX_GUARD_END
 

@@ -21,8 +21,8 @@
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
 
-mLOG_DEFINE_CATEGORY(GBA, "GBA");
-mLOG_DEFINE_CATEGORY(GBA_DEBUG, "GBA Debug");
+mLOG_DEFINE_CATEGORY(GBA, "GBA", "gba");
+mLOG_DEFINE_CATEGORY(GBA_DEBUG, "GBA Debug", "gba.debug");
 
 const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
 
@@ -91,7 +91,7 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->keyCallback = NULL;
 	gba->stopCallback = NULL;
 	gba->stopCallback = NULL;
-	gba->coreCallbacks = NULL;
+	mCoreCallbacksListInit(&gba->coreCallbacks, 0);
 
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
 
@@ -152,6 +152,7 @@ void GBADestroy(struct GBA* gba) {
 	GBASIODeinit(&gba->sio);
 	gba->rr = 0;
 	mTimingDeinit(&gba->timing);
+	mCoreCallbacksListDeinit(&gba->coreCallbacks);
 }
 
 void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh) {
@@ -576,6 +577,10 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 		// TODO: More sensible category?
 		mLOG(GBA, WARN, "Illegal opcode: %08x", opcode);
 	}
+	if (cpu->executionMode == MODE_THUMB && (opcode & 0xFFC0) == 0xE800) {
+		mLOG(GBA, DEBUG, "Hit Wii U VC opcode: %08x", opcode);
+		return;
+	}
 #ifdef USE_DEBUGGERS
 	if (gba->debugger) {
 		struct mDebuggerEntryInfo info = {
@@ -632,9 +637,12 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 void GBAFrameStarted(struct GBA* gba) {
 	UNUSED(gba);
 
-	struct mCoreCallbacks* callbacks = gba->coreCallbacks;
-	if (callbacks && callbacks->videoFrameStarted) {
-		callbacks->videoFrameStarted(callbacks->context);
+	size_t c;
+	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
+		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
+		if (callbacks->videoFrameStarted) {
+			callbacks->videoFrameStarted(callbacks->context);
+		}
 	}
 }
 
@@ -665,9 +673,12 @@ void GBAFrameEnded(struct GBA* gba) {
 		GBAHardwarePlayerUpdate(gba);
 	}
 
-	struct mCoreCallbacks* callbacks = gba->coreCallbacks;
-	if (callbacks && callbacks->videoFrameEnded) {
-		callbacks->videoFrameEnded(callbacks->context);
+	size_t c;
+	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
+		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
+		if (callbacks->videoFrameEnded) {
+			callbacks->videoFrameEnded(callbacks->context);
+		}
 	}
 }
 

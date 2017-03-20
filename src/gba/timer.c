@@ -132,9 +132,6 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 		currentTimer->lastEvent = gba->timing.masterCycles + gba->cpu->cycles;
 	} else if (wasEnabled && !GBATimerFlagsIsEnable(currentTimer->flags)) {
 		mTimingDeschedule(&gba->timing, &currentTimer->event);
-		if (!GBATimerFlagsIsCountUp(currentTimer->flags)) {
-			gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent) >> oldPrescale);
-		}
 	} else if (GBATimerFlagsIsEnable(currentTimer->flags) && GBATimerFlagsGetPrescaleBits(currentTimer->flags) != oldPrescale && !GBATimerFlagsIsCountUp(currentTimer->flags)) {
 		mTimingDeschedule(&gba->timing, &currentTimer->event);
 		mTimingSchedule(&gba->timing, &currentTimer->event, currentTimer->overflowInterval - currentTimer->lastEvent);

@@ -233,3 +233,8 @@ void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config
 	}
 	core->loadConfig(core, config);
 }
+
+void mCoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
+	core->rtc.custom = rtc;
+	core->rtc.override = RTC_CUSTOM_START;
+}

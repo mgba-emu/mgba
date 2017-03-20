@@ -293,10 +293,11 @@ static inline int SocketPoll(size_t nSockets, Socket* reads, Socket* writes, Soc
 			errors[i] = INVALID_SOCKET;
 		}
 	}
+	++maxFd;
 	struct timeval tv;
 	tv.tv_sec = timeoutMillis / 1000;
 	tv.tv_usec = (timeoutMillis % 1000) * 1000;
-	int result = select(maxFd + 1, &rset, &wset, &eset, timeoutMillis < 0 ? 0 : &tv);
+	int result = select(maxFd, &rset, &wset, &eset, timeoutMillis < 0 ? 0 : &tv);
 	int r = 0;
 	int w = 0;
 	int e = 0;

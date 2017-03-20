@@ -9,7 +9,7 @@
 #include <mgba/internal/gb/timer.h>
 #include <mgba/internal/lr35902/lr35902.h>
 
-mLOG_DEFINE_CATEGORY(GB_STATE, "GB Savestate");
+mLOG_DEFINE_CATEGORY(GB_STATE, "GB Savestate", "gb.serialize");
 
 const uint32_t GB_SAVESTATE_MAGIC = 0x00400000;
 const uint32_t GB_SAVESTATE_VERSION = 0x00000001;
@@ -144,6 +144,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	if (error) {
 		return false;
 	}
+	gb->timing.root = NULL;
 
 	gb->cpu->a = state->cpu.a;
 	gb->cpu->f.packed = state->cpu.f;

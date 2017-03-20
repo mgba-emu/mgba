@@ -30,7 +30,7 @@ static const uint8_t _knownHeader[4] = { 0xCE, 0xED, 0x66, 0x66};
 #define DMG_2_BIOS_CHECKSUM 0x59C8598E
 #define CGB_BIOS_CHECKSUM 0x41884E46
 
-mLOG_DEFINE_CATEGORY(GB, "GB");
+mLOG_DEFINE_CATEGORY(GB, "GB", "gb");
 
 static void GBInit(void* cpu, struct mCPUComponent* component);
 static void GBDeinit(struct mCPUComponent* component);
@@ -83,7 +83,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->pristineRomSize = 0;
 	gb->yankedRomSize = 0;
 
-	gb->coreCallbacks = NULL;
+	mCoreCallbacksListInit(&gb->coreCallbacks, 0);
 	gb->stream = NULL;
 
 	mTimingInit(&gb->timing, &gb->cpu->cycles, &gb->cpu->nextEvent);
@@ -349,6 +349,7 @@ void GBDestroy(struct GB* gb) {
 	GBAudioDeinit(&gb->audio);
 	GBVideoDeinit(&gb->video);
 	GBSIODeinit(&gb->sio);
+	mCoreCallbacksListDeinit(&gb->coreCallbacks);
 }
 
 void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh) {

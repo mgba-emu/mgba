@@ -39,6 +39,7 @@ void mLibraryLoadDirectory(struct mLibrary* library, const char* base);
 
 size_t mLibraryCount(struct mLibrary* library, const struct mLibraryEntry* constraints);
 size_t mLibraryGetEntries(struct mLibrary* library, struct mLibraryListing* out, size_t numEntries, size_t offset, const struct mLibraryEntry* constraints);
+void mLibraryEntryFree(struct mLibraryEntry* entry);
 struct VFile* mLibraryOpenVFile(struct mLibrary* library, const struct mLibraryEntry* entry);
 
 struct NoIntroDB;

@@ -10,7 +10,10 @@
 
 CXX_GUARD_START
 
+#include <mgba-util/vector.h>
+
 struct mCore;
+struct mStateExtdataItem;
 
 #ifdef COLOR_16_BIT
 typedef uint16_t color_t;
@@ -36,6 +39,8 @@ struct mCoreCallbacks {
 	void (*videoFrameEnded)(void* context);
 	void (*coreCrashed)(void* context);
 };
+
+DECLARE_VECTOR(mCoreCallbacksList, struct mCoreCallbacks);
 
 struct mAVStream {
 	void (*videoDimensionsChanged)(struct mAVStream*, unsigned width, unsigned height);
@@ -68,18 +73,29 @@ struct mRTCSource {
 	void (*sample)(struct mRTCSource*);
 
 	time_t (*unixTime)(struct mRTCSource*);
+
+	void (*serialize)(struct mRTCSource*, struct mStateExtdataItem*);
+	bool (*deserialize)(struct mRTCSource*, const struct mStateExtdataItem*);
 };
 
 enum mRTCGenericType {
 	RTC_NO_OVERRIDE,
 	RTC_FIXED,
-	RTC_FAKE_EPOCH
+	RTC_FAKE_EPOCH,
+	RTC_CUSTOM_START = 0x1000
 };
 
 struct mRTCGenericSource {
 	struct mRTCSource d;
 	struct mCore* p;
 	enum mRTCGenericType override;
+	int64_t value;
+	struct mRTCSource* custom;
+};
+
+struct mRTCGenericState {
+	int32_t type;
+	int32_t padding;
 	int64_t value;
 };
 

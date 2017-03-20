@@ -24,6 +24,8 @@ if (NOT SDL2_FOUND AND NOT SDL_FOUND)
 	return()
 endif()
 
+add_definitions(-DBUILD_SDL)
+
 find_feature(USE_PIXMAN "pixman-1")
 if(USE_PIXMAN)
 	add_definitions(-DUSE_PIXMAN)

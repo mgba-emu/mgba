@@ -100,7 +100,7 @@ static void _load(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 
-	mCoreLoadState(gbaDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT);
+	mCoreLoadState(gbaDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
 }
 
 // TODO: Put back rewind
@@ -119,5 +119,5 @@ static void _save(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 
-	mCoreSaveState(gbaDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT);
+	mCoreSaveState(gbaDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
 }

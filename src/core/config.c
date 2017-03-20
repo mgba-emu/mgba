@@ -29,6 +29,13 @@
 
 #define SECTION_NAME_MAX 128
 
+struct mCoreConfigEnumerateData {
+	void (*handler)(const char* key, const char* value, enum mCoreConfigLevel type, void* user);
+	const char* prefix;
+	void* user;
+	enum mCoreConfigLevel level;
+};
+
 static const char* _lookupValue(const struct mCoreConfig* config, const char* key) {
 	const char* value;
 	if (config->port) {
@@ -391,6 +398,22 @@ void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptio
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "lockAspectRatio", opts->lockAspectRatio);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "resampleVideo", opts->resampleVideo);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "suspendScreensaver", opts->suspendScreensaver);
+}
+
+static void _configEnum(const char* key, const char* value, void* user) {
+	struct mCoreConfigEnumerateData* data = user;
+	if (!data->prefix || startswith(key, data->prefix)) {
+		data->handler(key, value, data->level, data->user);
+	}
+}
+
+void mCoreConfigEnumerate(const struct mCoreConfig* config, const char* prefix, void (*handler)(const char* key, const char* value, enum mCoreConfigLevel type, void* user), void* user) {
+	struct mCoreConfigEnumerateData handlerData = { handler, prefix, user, mCONFIG_LEVEL_DEFAULT };
+	ConfigurationEnumerate(&config->defaultsTable, config->port, _configEnum, &handlerData);
+	handlerData.level = mCONFIG_LEVEL_CUSTOM;
+	ConfigurationEnumerate(&config->configTable, config->port, _configEnum, &handlerData);
+	handlerData.level = mCONFIG_LEVEL_OVERRIDE;
+	ConfigurationEnumerate(&config->overridesTable, config->port, _configEnum, &handlerData);
 }
 
 // These two are basically placeholders in case the internal layout changes, e.g. for loading separate files

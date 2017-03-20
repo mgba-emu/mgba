@@ -14,6 +14,7 @@
 #include <QTimer>
 
 #include <memory>
+#include <functional>
 
 #include <mgba/core/core.h>
 #include <mgba/core/thread.h>
@@ -245,8 +246,6 @@ private:
 	} m_lux;
 	uint8_t m_luxValue;
 	int m_luxLevel;
-
-	mRTCGenericSource m_rtc;
 };
 
 }

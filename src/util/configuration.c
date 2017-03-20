@@ -18,6 +18,11 @@ struct ConfigurationSectionHandlerData {
 	void* data;
 };
 
+struct ConfigurationHandlerData {
+	void (*handler)(const char* key, const char* value, void* data);
+	void* data;
+};
+
 static void _tableDeinit(void* table) {
 	TableDeinit(table);
 	free(table);
@@ -61,6 +66,11 @@ static void _sectionEnumHandler(const char* key, void* section, void* user) {
 	struct ConfigurationSectionHandlerData* data = user;
 	UNUSED(section);
 	data->handler(key, data->data);
+}
+
+static void _enumHandler(const char* key, void* value, void* user) {
+	struct ConfigurationHandlerData* data = user;
+	data->handler(key, value, data->data);
 }
 
 void ConfigurationInit(struct Configuration* configuration) {
@@ -198,4 +208,15 @@ bool ConfigurationWriteSection(const struct Configuration* configuration, const 
 void ConfigurationEnumerateSections(const struct Configuration* configuration, void (*handler)(const char* sectionName, void* user), void* user) {
 	struct ConfigurationSectionHandlerData handlerData = { handler, user };
 	HashTableEnumerate(&configuration->sections, _sectionEnumHandler, &handlerData);
+}
+
+void ConfigurationEnumerate(const struct Configuration* configuration, const char* section, void (*handler)(const char* key, const char* value, void* user), void* user) {
+	struct ConfigurationHandlerData handlerData = { handler, user };
+	const struct Table* currentSection = &configuration->root;
+	if (section) {
+		currentSection = HashTableLookup(&configuration->sections, section);
+	}
+	if (currentSection) {
+		HashTableEnumerate(currentSection, _enumHandler, &handlerData);
+	}
 }

@@ -15,12 +15,14 @@ enum mStateExtdataTag {
 	EXTDATA_SCREENSHOT = 1,
 	EXTDATA_SAVEDATA = 2,
 	EXTDATA_CHEATS = 3,
+	EXTDATA_RTC = 4,
 	EXTDATA_MAX
 };
 
 #define SAVESTATE_SCREENSHOT 1
 #define SAVESTATE_SAVEDATA   2
 #define SAVESTATE_CHEATS     4
+#define SAVESTATE_RTC        8
 
 struct mStateExtdataItem {
 	int32_t size;

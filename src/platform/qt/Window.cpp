@@ -49,6 +49,10 @@
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/video.h>
 #endif
+#ifdef M_CORE_GBA
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/video.h>
+#endif
 #include "feature/commandline.h"
 #include "feature/sqlite3/no-intro.h"
 #include <mgba-util/vfs.h>
@@ -104,7 +108,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 		i = m_savedScale;
 	}
 #ifdef USE_SQLITE3
-	m_libraryView = new LibraryView(this);
+	m_libraryView = new LibraryView();
 	ConfigOption* showLibrary = m_config->addOption("showLibrary");
 	showLibrary->connect([this](const QVariant& value) {
 		if (value.toBool()) {
@@ -209,6 +213,10 @@ Window::~Window() {
 
 #ifdef USE_MAGICK
 	delete m_gifView;
+#endif
+
+#ifdef USE_SQLITE3
+	delete m_libraryView;
 #endif
 }
 

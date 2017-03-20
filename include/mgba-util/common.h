@@ -46,6 +46,7 @@ typedef intptr_t ssize_t;
 #define snprintf _snprintf
 #define strdup _strdup
 #define lseek _lseek
+#define O_ACCMODE (O_RDONLY|O_WRONLY|O_RDWR)
 #elif defined(__wii__)
 #include <sys/time.h>
 typedef intptr_t ssize_t;

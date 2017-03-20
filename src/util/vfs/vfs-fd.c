@@ -53,7 +53,7 @@ struct VFile* VFileFromFD(int fd) {
 	}
 
 	struct stat stat;
-	if (fstat(fd, &stat) < 0 || S_ISDIR(stat.st_mode)) {
+	if (fstat(fd, &stat) < 0 || (stat.st_mode & S_IFDIR)) {
 		close(fd);
 		return 0;
 	}
