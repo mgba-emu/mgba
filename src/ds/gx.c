@@ -1672,7 +1672,9 @@ static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
 	if (CircleBufferSize(&gx->fifo) == (DS_GX_FIFO_SIZE * sizeof(entry))) {
 		mLOG(DS_GX, INFO, "FIFO full");
 		if (gx->p->cpuBlocked & DS_CPU_BLOCK_GX) {
-			abort();
+			// Can happen from STM
+			mTimingDeschedule(&gx->p->ds9.timing, &gx->fifoEvent);
+			_fifoRun(&gx->p->ds9.timing, gx, 0);
 		}
 		gx->p->cpuBlocked |= DS_CPU_BLOCK_GX;
 		gx->outstandingEntry = entry;
