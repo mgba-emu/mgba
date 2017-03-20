@@ -341,7 +341,7 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 }
 
 static void _createStep(struct DSGXSoftwareSpan* span) {
-	int32_t width = (span->ep[1].x - span->ep[0].x) >> 12;
+	int32_t width = (span->ep[1].x - span->ep[0].x) >> 7;
 
 	span->ep[0].stepW = span->ep[0].wRecip;
 	span->ep[0].stepZ = span->ep[0].z  * span->ep[0].wRecip;
@@ -359,9 +359,10 @@ static void _createStep(struct DSGXSoftwareSpan* span) {
 	span->ep[1].stepS = span->ep[1].s  * span->ep[1].wRecip;
 	span->ep[1].stepT = span->ep[1].t  * span->ep[1].wRecip;
 
-	if (!width) {	
+	if (!width) {
 		return;
 	}
+	span->step.x = span->ep[1].x - span->ep[0].x;
 	span->step.stepW = (span->ep[1].stepW - span->ep[0].stepW) / width;
 	span->step.stepZ = (span->ep[1].stepZ - span->ep[0].stepZ) / width;
 	span->step.stepR = (span->ep[1].stepR - span->ep[0].stepR) / width;
@@ -372,25 +373,32 @@ static void _createStep(struct DSGXSoftwareSpan* span) {
 }
 
 static void _stepEndpoint(struct DSGXSoftwareSpan* span) {
-	span->ep[0].wRecip += span->step.stepW;
+	int i = 28;
+	int32_t nextX = (span->ep[0].x & ~0xFFF) + 0x1000;
+	span->ep[0].x += 0x80 * i;
+	while (span->ep[0].x < nextX) {
+		span->ep[0].x += 0x80;
+		++i;
+	}
+	span->ep[0].wRecip += span->step.stepW * i;
 	span->ep[0].w = (0x7FFFFFFFFFFFFFFF / span->ep[0].wRecip) + 1;
 
-	span->ep[0].stepZ += span->step.stepZ;
+	span->ep[0].stepZ += span->step.stepZ * i;
 	span->ep[0].z = _divideBy(span->ep[0].stepZ, span->ep[0].w);
 
-	span->ep[0].stepR += span->step.stepR;
+	span->ep[0].stepR += span->step.stepR * i;
 	span->ep[0].cr = _divideBy(span->ep[0].stepR, span->ep[0].w);
 
-	span->ep[0].stepG += span->step.stepG;
+	span->ep[0].stepG += span->step.stepG * i;
 	span->ep[0].cg = _divideBy(span->ep[0].stepG, span->ep[0].w);
 
-	span->ep[0].stepB += span->step.stepB;
+	span->ep[0].stepB += span->step.stepB * i;
 	span->ep[0].cb = _divideBy(span->ep[0].stepB, span->ep[0].w);
 
-	span->ep[0].stepS += span->step.stepS;
+	span->ep[0].stepS += span->step.stepS * i;
 	span->ep[0].s = _divideBy(span->ep[0].stepS, span->ep[0].w);
 
-	span->ep[0].stepT += span->step.stepT;
+	span->ep[0].stepT += span->step.stepT * i;
 	span->ep[0].t = _divideBy(span->ep[0].stepT, span->ep[0].w);
 }
 
