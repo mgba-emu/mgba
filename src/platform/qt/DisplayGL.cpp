@@ -73,6 +73,10 @@ void DisplayGL::startDrawing(mCoreThread* thread) {
 	mCoreSyncSetVideoSync(&m_context->sync, false);
 
 	lockAspectRatio(isAspectRatioLocked());
+	unsigned width, height;
+	thread->core->desiredVideoDimensions(thread->core, &width, &height);
+	setSystemDimensions(width, height);
+
 	filter(isFiltered());
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatioF());

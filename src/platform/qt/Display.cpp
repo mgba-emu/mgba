@@ -68,6 +68,19 @@ Display::Display(QWidget* parent)
 	setMouseTracking(true);
 }
 
+QSize Display::viewportSize() {
+	QSize s = size();
+	QSize ds = s;
+	if (isAspectRatioLocked()) {
+		if (s.width() * m_coreHeight > s.height() * m_coreWidth) {
+			ds.setWidth(s.height() * m_coreWidth / m_coreHeight);
+		} else if (s.width() * m_coreHeight < s.height() * m_coreWidth) {
+			ds.setHeight(s.width() * m_coreHeight / m_coreWidth);
+		}
+	}
+	return ds;
+}
+
 void Display::resizeEvent(QResizeEvent*) {
 	m_messagePainter.resize(size(), m_lockAspectRatio, devicePixelRatio());
 }
@@ -93,4 +106,9 @@ void Display::mouseMoveEvent(QMouseEvent* event) {
 	m_mouseTimer.stop();
 	m_mouseTimer.start();
 	event->ignore();
+}
+
+void Display::setSystemDimensions(int width, int height) {
+	m_coreWidth = width;
+	m_coreHeight = height;
 }

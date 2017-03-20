@@ -21,6 +21,7 @@ DisplayQt::DisplayQt(QWidget* parent)
 
 void DisplayQt::startDrawing(mCoreThread* context) {
 	context->core->desiredVideoDimensions(context->core, &m_width, &m_height);
+	setSystemDimensions(m_width, m_height);
 	m_backing = std::move(QImage());
 	m_isDrawing = true;
 }
@@ -58,14 +59,7 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 		painter.setRenderHint(QPainter::SmoothPixmapTransform);
 	}
 	QSize s = size();
-	QSize ds = s;
-	if (isAspectRatioLocked()) {
-		if (s.width() * m_height > s.height() * m_width) {
-			ds.setWidth(s.height() * m_width / m_height);
-		} else if (s.width() * m_height < s.height() * m_width) {
-			ds.setHeight(s.width() * m_height / m_width);
-		}
-	}
+	QSize ds = viewportSize();
 	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
 	QRect full(origin, ds);
 

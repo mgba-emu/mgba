@@ -44,6 +44,8 @@ public:
 	virtual bool supportsShaders() const = 0;
 	virtual VideoShader* shaders() = 0;
 
+	QSize viewportSize();
+
 signals:
 	void showCursor();
 	void hideCursor();
@@ -68,6 +70,8 @@ protected:
 
 	MessagePainter* messagePainter() { return &m_messagePainter; }
 
+	void setSystemDimensions(int width, int height);
+
 private:
 	static Driver s_driver;
 	static const int MOUSE_DISAPPEAR_TIMER = 1000;
@@ -76,6 +80,8 @@ private:
 	bool m_lockAspectRatio;
 	bool m_filter;
 	QTimer m_mouseTimer;
+	int m_coreWidth;
+	int m_coreHeight;
 };
 
 }
