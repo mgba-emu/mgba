@@ -399,6 +399,9 @@ void _startHblank9(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		_performCapture(video, video->vcount);
 	}
 
+	if (video->vcount < DS_VIDEO_VERTICAL_PIXELS) {
+		DSDMARunHblank(&video->p->ds9, -cyclesLate);
+	}
 	if (GBARegisterDISPSTATIsHblankIRQ(dispstat)) {
 		DSRaiseIRQ(video->p->ds9.cpu, video->p->ds9.memory.io, DS_IRQ_HBLANK);
 	}

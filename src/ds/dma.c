@@ -103,6 +103,10 @@ void DSDMASchedule(struct DSCommon* dscore, int number, struct GBADMA* info) {
 		DSGXScheduleDMA(dscore, number, info);
 		return;
 	case DS_DMA_TIMING_HBLANK: // DS7_DMA_TIMING_SLOT1
+		if (dscore == &dscore->p->ds9) {
+			// Handled implicitly
+			return;
+		}
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DMA");
 	}
@@ -151,7 +155,21 @@ void DSDMARunVblank(struct DSCommon* dscore, int32_t cycles) {
 	int i;
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
-		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_VBLANK && !dma->nextCount) {
+		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DS_DMA_TIMING_VBLANK && !dma->nextCount) {
+			dma->when = mTimingCurrentTime(&dscore->timing) + 3 + cycles;
+			dma->nextCount = dma->count;
+		}
+	}
+	DSDMAUpdate(dscore);
+}
+
+void DSDMARunHblank(struct DSCommon* dscore, int32_t cycles) {
+	struct DSCoreMemory* memory = &dscore->memory;
+	struct GBADMA* dma;
+	int i;
+	for (i = 0; i < 4; ++i) {
+		dma = &memory->dma[i];
+		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming9(dma->reg) == DS_DMA_TIMING_HBLANK && !dma->nextCount) {
 			dma->when = mTimingCurrentTime(&dscore->timing) + 3 + cycles;
 			dma->nextCount = dma->count;
 		}

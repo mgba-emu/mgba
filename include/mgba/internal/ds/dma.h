@@ -40,6 +40,7 @@ void DS9DMAWriteCNT(struct DSCommon* dscore, int dma, uint32_t value);
 struct DSDMA;
 void DSDMASchedule(struct DSCommon* dscore, int number, struct GBADMA* info);
 void DSDMARunVblank(struct DSCommon* dscore, int32_t cycles);
+void DSDMARunHblank(struct DSCommon* dscore, int32_t cycles);
 void DSDMAUpdate(struct DSCommon* dscore);
 
 CXX_GUARD_END
