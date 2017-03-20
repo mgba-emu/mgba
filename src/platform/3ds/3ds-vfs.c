@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "3ds-vfs.h"
+#include <mgba-util/platform/3ds/3ds-vfs.h>
 
 #ifdef USE_VFS_3DS
-#include "util/memory.h"
-#include "util/string.h"
+#include <mgba-util/memory.h>
+#include <mgba-util/string.h>
 
 struct VFile3DS {
 	struct VFile d;

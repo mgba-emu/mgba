@@ -3,17 +3,19 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "core/cheats.h"
-#include "core/config.h"
-#include "core/core.h"
-#include "core/serialize.h"
-#include "gb/core.h"
-#include "gba/gba.h"
+#include <mgba/core/blip_buf.h>
+#include <mgba/core/cheats.h>
+#include <mgba/core/config.h>
+#include <mgba/core/core.h>
+#include <mgba/core/serialize.h>
+#include <mgba/gb/core.h>
+#include <mgba/gba/core.h>
+#include <mgba/internal/gba/gba.h>
 
 #include "feature/commandline.h"
-#include "util/memory.h"
-#include "util/string.h"
-#include "util/vfs.h"
+#include <mgba-util/memory.h>
+#include <mgba-util/string.h>
+#include <mgba-util/vfs.h>
 
 #include <errno.h>
 #include <signal.h>
@@ -80,15 +82,18 @@ int main(int argc, char** argv) {
 		core->setVideoBuffer(core, outputBuffer, 256);
 	}
 
-#ifdef __AFL_HAVE_MANUAL_CONTROL
-	__AFL_INIT();
-#endif
-
 #ifdef M_CORE_GBA
 	if (core->platform(core) == PLATFORM_GBA) {
 		((struct GBA*) core->board)->hardCrash = false;
 	}
 #endif
+
+#ifdef __AFL_HAVE_MANUAL_CONTROL
+	__AFL_INIT();
+#endif
+	if (args.patch) {
+		core->loadPatch(core, VFileOpen(args.patch, O_RDONLY));
+	}
 	mCoreLoadFile(core, args.fname);
 
 	struct VFile* savestate = 0;

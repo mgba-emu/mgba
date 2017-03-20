@@ -16,9 +16,7 @@
 #include "KeyEditor.h"
 
 #ifdef BUILD_SDL
-extern "C" {
 #include "platform/sdl/sdl-events.h"
-}
 #endif
 
 using namespace QGBA;
@@ -75,6 +73,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 			}
 			bool signalsBlocked = (*m_currentKey)->blockSignals(true);
 			(*m_currentKey)->clearButton();
+			(*m_currentKey)->clearHat();
 			(*m_currentKey)->blockSignals(signalsBlocked);
 		});
 
@@ -121,6 +120,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	for (auto& key : m_keyOrder) {
 		connect(key, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
 		connect(key, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
+		connect(key, SIGNAL(hatChanged(int, int)), this, SLOT(setNext()));
 		key->installEventFilter(this);
 	}
 
@@ -243,6 +243,11 @@ void GBAKeyEditor::refresh() {
 	lookupBinding(map, m_keyB, GBA_KEY_B);
 	lookupBinding(map, m_keyL, GBA_KEY_L);
 	lookupBinding(map, m_keyR, GBA_KEY_R);
+
+#ifdef BUILD_SDL
+	lookupAxes(map);
+	lookupHats(map);
+#endif
 }
 
 void GBAKeyEditor::lookupBinding(const mInputMap* map, KeyEditor* keyEditor, GBAKey key) {
@@ -274,12 +279,47 @@ void GBAKeyEditor::lookupAxes(const mInputMap* map) {
 		}
 	}, this);
 }
+
+void GBAKeyEditor::lookupHats(const mInputMap* map) {
+	struct mInputHatBindings bindings;
+	int i = 0;
+	while (mInputQueryHat(map, m_type, i, &bindings)) {
+		if (bindings.up >= 0) {
+			KeyEditor* key = keyById(static_cast<enum GBAKey>(bindings.up));
+			if (key) {
+				key->setValueHat(i, GamepadHatEvent::UP);
+			}
+		}
+		if (bindings.right >= 0) {
+			KeyEditor* key = keyById(static_cast<enum GBAKey>(bindings.right));
+			if (key) {
+				key->setValueHat(i, GamepadHatEvent::RIGHT);
+			}
+		}
+		if (bindings.down >= 0) {
+			KeyEditor* key = keyById(static_cast<enum GBAKey>(bindings.down));
+			if (key) {
+				key->setValueHat(i, GamepadHatEvent::DOWN);
+			}
+		}
+		if (bindings.left >= 0) {
+			KeyEditor* key = keyById(static_cast<enum GBAKey>(bindings.left));
+			if (key) {
+				key->setValueHat(i, GamepadHatEvent::LEFT);
+			}
+		}
+		++i;
+	}
+}
 #endif
 
 void GBAKeyEditor::bindKey(const KeyEditor* keyEditor, GBAKey key) {
 #ifdef BUILD_SDL
 	if (m_type == SDL_BINDING_BUTTON && keyEditor->axis() >= 0) {
 		m_controller->bindAxis(m_type, keyEditor->axis(), keyEditor->direction(), key);
+	}
+	if (m_type == SDL_BINDING_BUTTON && keyEditor->hat() >= 0) {
+		m_controller->bindHat(m_type, keyEditor->hat(), keyEditor->hatDirection(), key);
 	}
 #endif
 	m_controller->bindKey(m_type, keyEditor->value(), key);
@@ -364,5 +404,6 @@ void GBAKeyEditor::updateJoysticks() {
 		m_profileSelect->setCurrentIndex(activeGamepad);
 	}
 	lookupAxes(m_controller->map());
+	lookupHats(m_controller->map());
 }
 #endif

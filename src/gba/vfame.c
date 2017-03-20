@@ -3,10 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include <mgba/internal/gba/vfame.h>
 
-#include "vfame.h"
-#include "gba/gba.h"
-#include "gba/memory.h"
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/memory.h>
 
 static const uint8_t ADDRESS_REORDERING[4][16] = {
 	{ 15, 14, 9, 1, 8, 10, 7, 3, 5, 11, 4, 0, 13, 12, 2, 6 },
@@ -58,7 +58,9 @@ void GBAVFameDetect(struct GBAVFameCart* cart, uint32_t* rom, size_t romSize) {
 		return;
 	}
 
-	if (memcmp(INIT_SEQUENCE, &rom[0x57], sizeof(INIT_SEQUENCE)) == 0) {
+	// Most games have the same init sequence in the same place
+	// but LOTR/Mo Jie Qi Bing doesn't, probably because it's based on the Kiki KaiKai engine, so just detect based on its title
+	if (memcmp(INIT_SEQUENCE, &rom[0x57], sizeof(INIT_SEQUENCE)) == 0 || memcmp("\0LORD\0WORD\0\0AKIJ", &((struct GBACartridge*) rom)->title, 16) == 0) {
 		cart->cartType = VFAME_STANDARD;
 		mLOG(GBA_MEM, INFO, "Vast Fame game detected");
 	}
@@ -262,14 +264,18 @@ static uint32_t _modifySramAddress(enum GBAVFameCartType type, uint32_t address,
 }
 
 static int8_t _modifySramValue(enum GBAVFameCartType type, uint8_t value, int mode) {
-	mode = (mode & 0xF) >> 2;
-	if (mode == 0) {
-		return value;
-	} else if (type == VFAME_GEORGE) {
-		return _reorderBits(value, VALUE_REORDERING_GEORGE[mode - 1], 8);
-	} else {
-		return _reorderBits(value, VALUE_REORDERING[mode - 1], 8);
+	int reorderType = (mode & 0xF) >> 2;
+	if (reorderType != 0) {
+		if (type == VFAME_GEORGE) {
+			value = _reorderBits(value, VALUE_REORDERING_GEORGE[reorderType - 1], 8);
+		} else {
+			value = _reorderBits(value, VALUE_REORDERING[reorderType - 1], 8);
+		}
 	}
+	if (mode & 0x80) {
+		value ^= 0xAA;
+	}
+	return value;
 }
 
 // Reorder bits in a byte according to the reordering given

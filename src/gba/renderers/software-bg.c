@@ -3,9 +3,9 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "software-private.h"
+#include "gba/renderers/software-private.h"
 
-#include "gba/gba.h"
+#include <mgba/internal/gba/gba.h>
 
 #define MODE_2_COORD_OVERFLOW \
 	localX = x & (sizeAdjusted - 1); \
@@ -107,6 +107,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode3(struct GBAVideoSoftwareRenderer
 			color32 |= (color << 3) & 0xF8;
 			color32 |= (color << 6) & 0xF800;
 			color32 |= (color << 9) & 0xF80000;
+			color32 |= (color32 >> 5) & 0x070707;
 			color = color32;
 #elif COLOR_5_6_5
 			uint16_t color16 = 0;
@@ -196,6 +197,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode5(struct GBAVideoSoftwareRenderer
 			color32 |= (color << 9) & 0xF80000;
 			color32 |= (color << 3) & 0xF8;
 			color32 |= (color << 6) & 0xF800;
+			color32 |= (color32 >> 5) & 0x070707;
 			color = color32;
 #elif COLOR_5_6_5
 			uint16_t color16 = 0;

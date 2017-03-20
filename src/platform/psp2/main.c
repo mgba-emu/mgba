@@ -5,12 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "psp2-context.h"
 
-#include "gba/gba.h"
+#include <mgba/internal/gba/gba.h>
 #include "feature/gui/gui-runner.h"
-#include "util/gui.h"
-#include "util/gui/font.h"
-#include "util/gui/file-select.h"
-#include "util/gui/menu.h"
+#include <mgba-util/gui.h>
+#include <mgba-util/gui/font.h>
+#include <mgba-util/gui/file-select.h>
+#include <mgba-util/gui/menu.h>
 
 #include <psp2/ctrl.h>
 #include <psp2/display.h>

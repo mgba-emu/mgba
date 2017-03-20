@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "configuration.h"
+#include <mgba-util/configuration.h>
 
-#include "util/formatting.h"
-#include "util/string.h"
-#include "util/vfs.h"
+#include <mgba-util/formatting.h>
+#include <mgba-util/string.h>
+#include <mgba-util/vfs.h>
 
 #include "third-party/inih/ini.h"
 
@@ -15,6 +15,11 @@
 
 struct ConfigurationSectionHandlerData {
 	void (*handler)(const char* section, void* data);
+	void* data;
+};
+
+struct ConfigurationHandlerData {
+	void (*handler)(const char* key, const char* value, void* data);
 	void* data;
 };
 
@@ -61,6 +66,11 @@ static void _sectionEnumHandler(const char* key, void* section, void* user) {
 	struct ConfigurationSectionHandlerData* data = user;
 	UNUSED(section);
 	data->handler(key, data->data);
+}
+
+static void _enumHandler(const char* key, void* value, void* user) {
+	struct ConfigurationHandlerData* data = user;
+	data->handler(key, value, data->data);
 }
 
 void ConfigurationInit(struct Configuration* configuration) {
@@ -198,4 +208,15 @@ bool ConfigurationWriteSection(const struct Configuration* configuration, const 
 void ConfigurationEnumerateSections(const struct Configuration* configuration, void (*handler)(const char* sectionName, void* user), void* user) {
 	struct ConfigurationSectionHandlerData handlerData = { handler, user };
 	HashTableEnumerate(&configuration->sections, _sectionEnumHandler, &handlerData);
+}
+
+void ConfigurationEnumerate(const struct Configuration* configuration, const char* section, void (*handler)(const char* key, const char* value, void* user), void* user) {
+	struct ConfigurationHandlerData handlerData = { handler, user };
+	const struct Table* currentSection = &configuration->root;
+	if (section) {
+		currentSection = HashTableLookup(&configuration->sections, section);
+	}
+	if (currentSection) {
+		HashTableEnumerate(currentSection, _enumHandler, &handlerData);
+	}
 }

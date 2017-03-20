@@ -3,17 +3,17 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "cheats.h"
+#include <mgba/core/cheats.h>
 
-#include "core/core.h"
-#include "util/string.h"
-#include "util/vfs.h"
+#include <mgba/core/core.h>
+#include <mgba-util/string.h>
+#include <mgba-util/vfs.h>
 
 #define MAX_LINE_LENGTH 128
 
 const uint32_t M_CHEAT_DEVICE_ID = 0xABADC0DE;
 
-mLOG_DEFINE_CATEGORY(CHEATS, "Cheats");
+mLOG_DEFINE_CATEGORY(CHEATS, "Cheats", "core.cheats");
 
 DEFINE_VECTOR(mCheatList, struct mCheat);
 DEFINE_VECTOR(mCheatSets, struct mCheatSet*);
@@ -346,6 +346,11 @@ void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {
 				break;
 			case CHEAT_IF_LAND:
 				condition = _readMem(device->p, address, cheat->width) && operand;
+				conditionRemaining = cheat->repeat;
+				negativeConditionRemaining = cheat->negativeRepeat;
+				break;
+			case CHEAT_IF_NAND:
+				condition = !(_readMem(device->p, address, cheat->width) & operand);
 				conditionRemaining = cheat->repeat;
 				negativeConditionRemaining = cheat->negativeRepeat;
 				break;

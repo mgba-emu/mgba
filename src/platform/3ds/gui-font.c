@@ -3,10 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "util/gui/font.h"
-#include "util/gui/font-metrics.h"
-#include "util/png-io.h"
-#include "util/vfs.h"
+#include <mgba-util/gui/font.h>
+#include <mgba-util/gui/font-metrics.h>
+#include <mgba-util/png-io.h>
+#include <mgba-util/vfs.h>
 #include "icons.h"
 
 #include "ctr-gpu.h"

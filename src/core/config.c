@@ -3,12 +3,12 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "config.h"
+#include <mgba/core/config.h>
 
-#include "core/version.h"
-#include "util/formatting.h"
-#include "util/string.h"
-#include "util/vfs.h"
+#include <mgba/core/version.h>
+#include <mgba-util/formatting.h>
+#include <mgba-util/string.h>
+#include <mgba-util/vfs.h>
 
 #include <sys/stat.h>
 
@@ -24,10 +24,17 @@
 #endif
 
 #ifdef _3DS
-#include "platform/3ds/3ds-vfs.h"
+#include <mgba-util/platform/3ds/3ds-vfs.h>
 #endif
 
 #define SECTION_NAME_MAX 128
+
+struct mCoreConfigEnumerateData {
+	void (*handler)(const char* key, const char* value, enum mCoreConfigLevel type, void* user);
+	const char* prefix;
+	void* user;
+	enum mCoreConfigLevel level;
+};
 
 static const char* _lookupValue(const struct mCoreConfig* config, const char* key) {
 	const char* value;
@@ -306,6 +313,14 @@ void mCoreConfigSetOverrideFloatValue(struct mCoreConfig* config, const char* ke
 	ConfigurationSetFloatValue(&config->overridesTable, config->port, key, value);
 }
 
+void mCoreConfigCopyValue(struct mCoreConfig* config, const struct mCoreConfig* src, const char* key) {
+	const char* value = mCoreConfigGetValue(src, key);
+	if (!value) {
+		return;
+	}
+	mCoreConfigSetValue(config, key, value);
+}
+
 void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts) {
 	_lookupCharValue(config, "bios", &opts->bios);
 	_lookupCharValue(config, "shader", &opts->shader);
@@ -313,6 +328,7 @@ void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts)
 	_lookupIntValue(config, "frameskip", &opts->frameskip);
 	_lookupIntValue(config, "volume", &opts->volume);
 	_lookupIntValue(config, "rewindBufferCapacity", &opts->rewindBufferCapacity);
+	_lookupIntValue(config, "rewindSave", &opts->rewindSave);
 	_lookupFloatValue(config, "fpsTarget", &opts->fpsTarget);
 	unsigned audioBuffers;
 	if (_lookupUIntValue(config, "audioBuffers", &audioBuffers)) {
@@ -368,6 +384,7 @@ void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptio
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "frameskip", opts->frameskip);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindEnable", opts->rewindEnable);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindBufferCapacity", opts->rewindBufferCapacity);
+	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindSave", opts->rewindSave);
 	ConfigurationSetFloatValue(&config->defaultsTable, 0, "fpsTarget", opts->fpsTarget);
 	ConfigurationSetUIntValue(&config->defaultsTable, 0, "audioBuffers", opts->audioBuffers);
 	ConfigurationSetUIntValue(&config->defaultsTable, 0, "sampleRate", opts->sampleRate);
@@ -381,6 +398,22 @@ void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptio
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "lockAspectRatio", opts->lockAspectRatio);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "resampleVideo", opts->resampleVideo);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "suspendScreensaver", opts->suspendScreensaver);
+}
+
+static void _configEnum(const char* key, const char* value, void* user) {
+	struct mCoreConfigEnumerateData* data = user;
+	if (!data->prefix || startswith(key, data->prefix)) {
+		data->handler(key, value, data->level, data->user);
+	}
+}
+
+void mCoreConfigEnumerate(const struct mCoreConfig* config, const char* prefix, void (*handler)(const char* key, const char* value, enum mCoreConfigLevel type, void* user), void* user) {
+	struct mCoreConfigEnumerateData handlerData = { handler, prefix, user, mCONFIG_LEVEL_DEFAULT };
+	ConfigurationEnumerate(&config->defaultsTable, config->port, _configEnum, &handlerData);
+	handlerData.level = mCONFIG_LEVEL_CUSTOM;
+	ConfigurationEnumerate(&config->configTable, config->port, _configEnum, &handlerData);
+	handlerData.level = mCONFIG_LEVEL_OVERRIDE;
+	ConfigurationEnumerate(&config->overridesTable, config->port, _configEnum, &handlerData);
 }
 
 // These two are basically placeholders in case the internal layout changes, e.g. for loading separate files

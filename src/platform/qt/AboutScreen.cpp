@@ -5,10 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "AboutScreen.h"
 
-extern "C" {
-#include "core/version.h"
-}
+#include <mgba/core/version.h>
 
+#include <QFile>
 #include <QPixmap>
 
 using namespace QGBA;
@@ -28,16 +27,48 @@ AboutScreen::AboutScreen(QWidget* parent)
 		tree = QLatin1String(projectVersion);
 	}
 
+	QFile patronFile(":/res/patrons.txt");
+	QStringList patronList;
+	patronFile.open(QIODevice::ReadOnly | QIODevice::Text);
+	while (true) {
+		QByteArray line = patronFile.readLine();
+		if (line.isEmpty()) {
+			break;
+		}
+		patronList.append(QString::fromUtf8(line).trimmed());
+	}
+
 	m_ui.projectName->setText(QLatin1String(projectName));
 	m_ui.projectVersion->setText(QLatin1String(projectVersion));
-	QString gitInfo = m_ui.gitInfo->text();
-	gitInfo.replace("{gitBranch}", QLatin1String(gitBranch));
-	gitInfo.replace("{gitCommit}", QLatin1String(gitCommit));
-	m_ui.gitInfo->setText(gitInfo);
-	QString description = m_ui.description->text();
-	description.replace("{projectName}", QLatin1String(projectName));
-	m_ui.description->setText(description);
-	QString extraLinks = m_ui.extraLinks->text();
-	extraLinks.replace("{gitBranch}", tree);
-	m_ui.extraLinks->setText(extraLinks);
+
+	{
+		QString gitInfo = m_ui.gitInfo->text();
+		gitInfo.replace("{gitBranch}", QLatin1String(gitBranch));
+		gitInfo.replace("{gitCommit}", QLatin1String(gitCommit));
+		m_ui.gitInfo->setText(gitInfo);
+	}
+
+	{
+		QString description = m_ui.description->text();
+		description.replace("{projectName}", QLatin1String(projectName));
+		m_ui.description->setText(description);
+	}
+
+	{
+		QString extraLinks = m_ui.extraLinks->text();
+		extraLinks.replace("{gitBranch}", tree);
+		m_ui.extraLinks->setText(extraLinks);
+	}
+
+	{
+		QString patronsHeader = m_ui.patronsHeader->text();
+		patronsHeader.replace("{projectName}", QLatin1String(projectName));
+		m_ui.patronsHeader->setText(patronsHeader);
+	}
+
+	{
+		QString patrons = m_ui.patrons->text();
+		patrons.replace("{patrons}", patronList.join(" • "));
+		m_ui.patrons->setText(patrons);
+	}
 }

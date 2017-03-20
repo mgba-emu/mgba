@@ -17,14 +17,13 @@
 #include <QGridLayout>
 #include <QSpinBox>
 
-extern "C" {
-#include "core/version.h"
+#include <mgba/core/version.h>
+#include <mgba-util/vfs.h>
 #include "platform/video-backend.h"
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
 #include "platform/opengl/gles2.h"
 #endif
-}
 
 using namespace QGBA;
 
@@ -265,9 +264,10 @@ void ShaderSelector::buttonPressed(QAbstractButton* button) {
 	case QDialogButtonBox::Reset:
 		emit reset();
 		break;
-	case QDialogButtonBox::Save:
+	case QDialogButtonBox::Ok:
 		m_config->setOption("shader", m_shaderPath);
 		emit saved();
+		close();
 		break;
  	case QDialogButtonBox::RestoreDefaults:
 		emit resetToDefault();

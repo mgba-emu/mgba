@@ -3,8 +3,8 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "util/vfs.h"
-#include "util/memory.h"
+#include <mgba-util/vfs.h>
+#include <mgba-util/memory.h>
 
 struct VFileMem {
 	struct VFile d;
@@ -116,7 +116,11 @@ void _vfmExpand(struct VFileMem* vfm, size_t newSize) {
 	void* oldBuf = vfm->mem;
 	vfm->mem = anonymousMemoryMap(newSize);
 	if (oldBuf) {
-		memcpy(vfm->mem, oldBuf, vfm->size);
+		if (newSize < vfm->size) {
+			memcpy(vfm->mem, oldBuf, newSize);
+		} else {
+			memcpy(vfm->mem, oldBuf, vfm->size);
+		}
 		mappedMemoryFree(oldBuf, vfm->size);
 	}
 	vfm->size = newSize;
@@ -234,7 +238,7 @@ ssize_t _vfmWrite(struct VFile* vf, const void* buffer, size_t size) {
 ssize_t _vfmWriteExpanding(struct VFile* vf, const void* buffer, size_t size) {
 	struct VFileMem* vfm = (struct VFileMem*) vf;
 
-	if (size + vfm->offset >= vfm->size) {
+	if (size + vfm->offset > vfm->size) {
 		_vfmExpand(vfm, vfm->offset + size);
 	}
 
@@ -270,11 +274,7 @@ void _vfmUnmap(struct VFile* vf, void* memory, size_t size) {
 
 void _vfmTruncate(struct VFile* vf, size_t size) {
 	struct VFileMem* vfm = (struct VFileMem*) vf;
-	if (size > vfm->size) {
-		_vfmExpand(vfm, size);
-	} else {
-		// TODO
-	}
+	_vfmExpand(vfm, size);
 }
 
 void _vfmTruncateNoop(struct VFile* vf, size_t size) {

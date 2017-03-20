@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "util/vfs.h"
+#include <mgba-util/vfs.h>
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -53,7 +53,7 @@ struct VFile* VFileFromFD(int fd) {
 	}
 
 	struct stat stat;
-	if (fstat(fd, &stat) < 0 || S_ISDIR(stat.st_mode)) {
+	if (fstat(fd, &stat) < 0 || (stat.st_mode & S_IFDIR)) {
 		close(fd);
 		return 0;
 	}
@@ -167,6 +167,9 @@ static bool _vfdSync(struct VFile* vf, const void* buffer, size_t size) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
 #ifndef _WIN32
 	futimes(vfd->fd, NULL);
+	if (buffer && size) {
+		return msync(buffer, size, MS_SYNC) == 0;
+	}
 	return fsync(vfd->fd) == 0;
 #else
 	HANDLE h = (HANDLE) _get_osfhandle(vfd->fd);

@@ -5,12 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gui-config.h"
 
-#include "core/config.h"
+#include <mgba/core/config.h>
+#include <mgba/core/core.h>
 #include "feature/gui/gui-runner.h"
 #include "feature/gui/remap.h"
-#include "gba/gba.h"
-#include "util/gui/file-select.h"
-#include "util/gui/menu.h"
+#include <mgba/internal/gba/gba.h>
+#include <mgba-util/gui/file-select.h>
+#include <mgba-util/gui/menu.h>
 
 #ifndef GUI_MAX_INPUTS
 #define GUI_MAX_INPUTS 7

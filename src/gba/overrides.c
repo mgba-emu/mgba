@@ -3,12 +3,12 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "overrides.h"
+#include <mgba/internal/gba/overrides.h>
 
-#include "gba/gba.h"
-#include "gba/hardware.h"
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/hardware.h>
 
-#include "util/configuration.h"
+#include <mgba-util/configuration.h>
 
 static const struct GBACartridgeOverride _overrides[] = {
 	// Advance Wars
@@ -28,6 +28,11 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "U32J", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE, false },
 	{ "U32E", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE, false },
 	{ "U32P", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE, false },
+
+	// Crash Bandicoot 2 - N-Tranced
+	{ "AC8J", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "AC8E", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "AC8P", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
 
 	// Dragon Ball Z - The Legacy of Goku
 	{ "ALGP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },

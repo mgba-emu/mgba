@@ -6,12 +6,20 @@
 #ifndef IMAGEMAGICK_GIF_ENCODER
 #define IMAGEMAGICK_GIF_ENCODER
 
-#include "gba/gba.h"
+#include <mgba-util/common.h>
+
+CXX_GUARD_START
+
+#include <mgba/core/interface.h>
 
 #define MAGICKCORE_HDRI_ENABLE 0
 #define MAGICKCORE_QUANTUM_DEPTH 8
 
+#if MAGICKWAND_VERSION_MAJOR >= 7
+#include <MagickWand/MagickWand.h>
+#else
 #include <wand/MagickWand.h>
+#endif
 
 struct ImageMagickGIFEncoder {
 	struct mAVStream d;
@@ -32,5 +40,7 @@ void ImageMagickGIFEncoderSetParams(struct ImageMagickGIFEncoder* encoder, int f
 bool ImageMagickGIFEncoderOpen(struct ImageMagickGIFEncoder*, const char* outfile);
 bool ImageMagickGIFEncoderClose(struct ImageMagickGIFEncoder*);
 bool ImageMagickGIFEncoderIsOpen(struct ImageMagickGIFEncoder*);
+
+CXX_GUARD_END
 
 #endif

@@ -8,16 +8,16 @@
 #include "GBAApp.h"
 #include "GameController.h"
 
-extern "C" {
-#include "core/core.h"
+#include <mgba/core/core.h>
 #ifdef M_CORE_GB
-#include "gb/gb.h"
+#include <mgba/internal/gb/gb.h>
 #endif
 #ifdef M_CORE_GBA
-#include "gba/gba.h"
+#include <mgba/internal/gba/gba.h>
 #endif
-#include "util/nointro.h"
-}
+#ifdef USE_SQLITE3
+#include "feature/sqlite3/no-intro.h"
+#endif
 
 using namespace QGBA;
 
@@ -30,10 +30,12 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 		return;
 	}
 
+#ifdef USE_SQLITE3
 	const NoIntroDB* db = GBAApp::app()->gameDB();
+#endif
 	uint32_t crc32 = 0;
 
-	controller->threadInterrupt();
+	GameController::Interrupter interrupter(controller);
 	mCore* core = controller->thread()->core;
 	char title[17] = {};
 	core->getGameTitle(core, title);
@@ -46,12 +48,13 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 		m_ui.id->setText(tr("(unknown)"));
 	}
 
+	core->checksum(core, &crc32, CHECKSUM_CRC32);
+
 	switch (controller->thread()->core->platform(controller->thread()->core)) {
 #ifdef M_CORE_GBA
 	case PLATFORM_GBA: {
 		GBA* gba = static_cast<GBA*>(core->board);
 		m_ui.size->setText(QString::number(gba->pristineRomSize) + tr(" bytes"));
-		crc32 = gba->romCrc32;
 		break;
 	}
 #endif
@@ -59,7 +62,6 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 	case PLATFORM_GB: {
 		GB* gb = static_cast<GB*>(core->board);
 		m_ui.size->setText(QString::number(gb->pristineRomSize) + tr(" bytes"));
-		crc32 = gb->romCrc32;
 		break;
 	}
 #endif
@@ -69,6 +71,7 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 	}
 	if (crc32) {
 		m_ui.crc->setText(QString::number(crc32, 16));
+#ifdef USE_SQLITE3
 		if (db) {
 			NoIntroGame game{};
 			if (NoIntroDBLookupGameByCRC(db, crc32, &game)) {
@@ -79,9 +82,11 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 		} else {
 			m_ui.name->setText(tr("(no database present)"));
 		}
+#else
+		m_ui.name->hide();
+#endif
 	} else {
 		m_ui.crc->setText(tr("(unknown)"));
 		m_ui.name->setText(tr("(unknown)"));
 	}
-	controller->threadContinue();
 }

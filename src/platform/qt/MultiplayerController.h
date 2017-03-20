@@ -10,9 +10,16 @@
 #include <QList>
 #include <QObject>
 
-extern "C" {
-#include "gba/sio/lockstep.h"
-}
+#include <mgba/core/lockstep.h>
+#ifdef M_CORE_GBA
+#include <mgba/internal/gba/sio/lockstep.h>
+#endif
+#ifdef M_CORE_GB
+#include <mgba/internal/gb/sio/lockstep.h>
+#endif
+
+struct GBSIOLockstepNode;
+struct GBASIOLockstepNode;
 
 namespace QGBA {
 
@@ -23,7 +30,6 @@ Q_OBJECT
 
 public:
 	MultiplayerController();
-	~MultiplayerController();
 
 	bool attachGame(GameController*);
 	void detachGame(GameController*);
@@ -38,12 +44,21 @@ signals:
 private:
 	struct Player {
 		GameController* controller;
-		GBASIOLockstepNode* node;
+		GBSIOLockstepNode* gbNode;
+		GBASIOLockstepNode* gbaNode;
 		int awake;
 		int32_t cyclesPosted;
 		unsigned waitMask;
 	};
-	GBASIOLockstep m_lockstep;
+	union {
+		mLockstep m_lockstep;
+#ifdef M_CORE_GB
+		GBSIOLockstep m_gbLockstep;
+#endif
+#ifdef M_CORE_GBA
+		GBASIOLockstep m_gbaLockstep;
+#endif
+	};
 	QList<Player> m_players;
 	QMutex m_lock;
 };

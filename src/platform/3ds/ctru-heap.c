@@ -20,9 +20,15 @@
 */
 
 #include <3ds/types.h>
+#include <3ds/srv.h>
+#include <3ds/gfx.h>
+#include <3ds/sdmc.h>
+#include <3ds/services/apt.h>
+#include <3ds/services/fs.h>
+#include <3ds/services/hid.h>
 #include <3ds/svc.h>
 
-#include "util/common.h"
+#include <mgba-util/common.h>
 
 extern char* fake_heap_start;
 extern char* fake_heap_end;
@@ -33,10 +39,15 @@ extern u32 __ctru_linear_heap_size;
 static u32 __custom_heap_size = 0x02400000;
 static u32 __custom_linear_heap_size = 0x01400000;
 
-uint32_t* romBuffer;
+uint32_t* romBuffer = NULL;
 size_t romBufferSize;
 
+FS_Archive sdmcArchive;
+
 bool allocateRomBuffer(void) {
+	if (romBuffer) {
+		return true;
+	}
 	romBuffer = malloc(0x02000000);
 	if (romBuffer) {
 		romBufferSize = 0x02000000;
@@ -65,4 +76,17 @@ void __system_allocateHeaps() {
 	// Set up newlib heap
 	fake_heap_start = (char*)__ctru_heap;
 	fake_heap_end = fake_heap_start + __ctru_heap_size;
+}
+
+void __appInit(void) {
+	// Initialize services
+	srvInit();
+	aptInit();
+	hidInit();
+
+	fsInit();
+	sdmcInit();
+
+	FSUSER_OpenArchive(&sdmcArchive, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
+	allocateRomBuffer();
 }

@@ -96,9 +96,15 @@ This will build and install mGBA into `/usr/bin` and `/usr/lib`. Dependencies th
 
 #### Windows developer building
 
-To build on Windows for development, using MSYS2 is recommended. Follow the installation steps found on their [website](https://msys2.github.io). Make sure you're running the 32-bit version ("MinGW-w64 Win32 Shell") and run this additional command (including the braces) to install the needed dependencies (please note that this involves downloading over 500MiB of packages, so it will take a long time):
+To build on Windows for development, using MSYS2 is recommended. Follow the installation steps found on their [website](https://msys2.github.io). Make sure you're running the 32-bit version ("MSYS2 MinGW 32-bit") (or the 64-bit version "MSYS2 MinGW 64-bit" if you want to build for x86_64) and run this additional command (including the braces) to install the needed dependencies (please note that this involves downloading over 500MiB of packages, so it will take a long time):
+
+For x86 (32 bit) builds:
 
 	pacman -Sy mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2}
+
+For x86_64 (64 bit) builds:
+
+	pacman -Sy mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2}
 
 Check out the source code by running this command:
 
@@ -112,7 +118,7 @@ Then finally build it by running these commands:
 	cmake .. -G "MSYS Makefiles"
 	make
 
-Please note that this build of mGBA for Windows is not suitable for distribution, due to the scattering of DLLs it needs to run, but is perfect for development.
+Please note that this build of mGBA for Windows is not suitable for distribution, due to the scattering of DLLs it needs to run, but is perfect for development. However, if distributing such a build is desired (e.g. for testing on machines that don't have the MSYS2 environment installed), a tool called "[Dependency Walker](http://dependencywalker.com)" can be used to see which additional DLL files need to be shipped with the mGBA executable.
 
 ### Dependencies
 
@@ -125,6 +131,7 @@ mGBA has no hard dependencies, however, the following optional dependencies are 
 - ffmpeg or libav: for video recording.
 - libzip or zlib: for loading ROMs stored in zip files.
 - ImageMagick: for GIF recording.
+- SQLite3: for game databases.
 
 Both libpng and zlib are included with the emulator, so they do not need to be externally compiled first.
 
@@ -155,5 +162,6 @@ mGBA contains the following third-party libraries:
 - [LZMA SDK](http://www.7-zip.org/sdk.html), which is public domain.
 - [MurmurHash3](https://github.com/aappleby/smhasher) implementation by Austin Appleby, which is public domain.
 - [getopt for MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio/), which is public domain.
+- [SQLite3](https://www.sqlite.org), which is public domain.
 
 If you are a game publisher and wish to license mGBA for commercial usage, please email [licensing@mgba.io](mailto:licensing@mgba.io) for more information.

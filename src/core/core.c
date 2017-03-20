@@ -3,19 +3,20 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "core.h"
+#include <mgba/core/core.h>
 
-#include "core/log.h"
-#include "core/serialize.h"
-#include "util/vfs.h"
+#include <mgba/core/log.h>
+#include <mgba/core/serialize.h>
+#include <mgba-util/vfs.h>
 
 #ifdef M_CORE_GB
-#include "gb/core.h"
-#include "gb/gb.h"
+#include <mgba/gb/core.h>
+// TODO: Fix layering violation
+#include <mgba/internal/gb/gb.h>
 #endif
 #ifdef M_CORE_GBA
-#include "gba/core.h"
-#include "gba/gba.h"
+#include <mgba/gba/core.h>
+#include <mgba/internal/gba/gba.h>
 #endif
 
 static struct mCoreFilter {
@@ -62,7 +63,7 @@ enum mPlatform mCoreIsCompatible(struct VFile* vf) {
 }
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-#include "util/png-io.h"
+#include <mgba-util/png-io.h>
 
 #ifdef PSP2
 #include <psp2/photoexport.h>
@@ -231,4 +232,9 @@ void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config
 		core->setAudioBufferSize(core, core->opts.audioBuffers);
 	}
 	core->loadConfig(core, config);
+}
+
+void mCoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
+	core->rtc.custom = rtc;
+	core->rtc.override = RTC_CUSTOM_START;
 }

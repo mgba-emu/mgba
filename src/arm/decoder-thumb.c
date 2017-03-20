@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "decoder.h"
+#include <mgba/internal/arm/decoder.h>
 
-#include "decoder-inlines.h"
-#include "emitter-thumb.h"
-#include "isa-inlines.h"
+#include <mgba/internal/arm/decoder-inlines.h>
+#include <mgba/internal/arm/emitter-thumb.h>
+#include <mgba/internal/arm/isa-inlines.h>
 
 #define DEFINE_THUMB_DECODER(NAME, MNEMONIC, BODY) \
 	static void _ThumbDecode ## NAME (uint16_t opcode, struct ARMInstructionInfo* info) { \

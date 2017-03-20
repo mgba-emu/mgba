@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>548</width>
-    <height>431</height>
+    <width>650</width>
+    <height>450</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -23,13 +23,6 @@
    <property name="sizeConstraint">
     <enum>QLayout::SetFixedSize</enum>
    </property>
-   <item row="2" column="0" colspan="2">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="0">
     <widget class="QListWidget" name="tabs">
      <property name="sizePolicy">
@@ -45,11 +38,16 @@
       </size>
      </property>
      <property name="currentRow">
-      <number>0</number>
+      <number>-1</number>
      </property>
      <item>
       <property name="text">
        <string>Audio/Video</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Interface</string>
       </property>
      </item>
      <item>
@@ -59,7 +57,7 @@
      </item>
      <item>
       <property name="text">
-       <string>Savestates</string>
+       <string>BIOS</string>
       </property>
      </item>
      <item>
@@ -69,12 +67,19 @@
      </item>
     </widget>
    </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
    <item row="1" column="1">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="stackedWidgetPage1">
+     <widget class="QWidget" name="av">
       <layout class="QFormLayout" name="formLayout">
        <property name="fieldGrowthPolicy">
         <enum>QFormLayout::FieldsStayAtSizeHint</enum>
@@ -110,7 +115,7 @@
            <property name="editable">
             <bool>true</bool>
            </property>
-           <property name="currentText">
+           <property name="currentText" stdset="0">
             <string>1536</string>
            </property>
            <property name="currentIndex">
@@ -176,7 +181,7 @@
            <property name="editable">
             <bool>true</bool>
            </property>
-           <property name="currentText">
+           <property name="currentText" stdset="0">
             <string>44100</string>
            </property>
            <property name="currentIndex">
@@ -378,116 +383,22 @@
        <item row="11" column="1">
         <widget class="QCheckBox" name="resampleVideo">
          <property name="text">
-          <string>Resample video</string>
+          <string>Bilinear filtering</string>
          </property>
         </widget>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="stackedWidgetPage2">
-      <layout class="QFormLayout" name="formLayout_2">
-       <property name="fieldGrowthPolicy">
-        <enum>QFormLayout::FieldsStayAtSizeHint</enum>
-       </property>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label">
+     <widget class="QWidget" name="interface_2">
+      <layout class="QFormLayout" name="formLayout_4">
+       <item row="3" column="1">
+        <widget class="QCheckBox" name="allowOpposingDirections">
          <property name="text">
-          <string>BIOS file:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QLineEdit" name="bios">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="biosBrowse">
-           <property name="text">
-            <string>Browse</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="1" column="1">
-        <widget class="QCheckBox" name="useBios">
-         <property name="text">
-          <string>Use BIOS file if found</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QCheckBox" name="skipBios">
-         <property name="text">
-          <string>Skip BIOS intro</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0" colspan="2">
-        <widget class="Line" name="line">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_18">
-         <property name="text">
-          <string>Fast forward speed</string>
+          <string>Allow opposing input directions</string>
          </property>
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QDoubleSpinBox" name="fastForwardRatio">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="suffix">
-          <string>×</string>
-         </property>
-         <property name="minimum">
-          <double>0.010000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>20.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>0.500000000000000</double>
-         </property>
-         <property name="value">
-          <double>5.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <widget class="QCheckBox" name="fastForwardUnbounded">
-         <property name="text">
-          <string>Unbounded</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0" colspan="2">
-        <widget class="Line" name="line_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="1">
         <widget class="QCheckBox" name="suspendScreensaver">
          <property name="text">
           <string>Suspend screensaver</string>
@@ -497,21 +408,148 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
+       <item row="5" column="1">
         <widget class="QCheckBox" name="pauseOnFocusLost">
          <property name="text">
           <string>Pause when inactive</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="0">
-        <widget class="QLabel" name="label_15">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_6">
          <property name="text">
-          <string>Idle loops</string>
+          <string>Library:</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="showLibrary">
+         <property name="text">
+          <string>Show when no game open</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="Line" name="line_8">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="clearCache">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Clear cache</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="emulation">
+      <layout class="QFormLayout" name="formLayout_2">
+       <property name="fieldGrowthPolicy">
+        <enum>QFormLayout::FieldsStayAtSizeHint</enum>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_18">
+         <property name="text">
+          <string>Fast forward speed:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QDoubleSpinBox" name="fastForwardRatio">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="suffix">
+            <string>×</string>
+           </property>
+           <property name="minimum">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>20.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.500000000000000</double>
+           </property>
+           <property name="value">
+            <double>5.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="fastForwardUnbounded">
+           <property name="text">
+            <string>Unbounded</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QCheckBox" name="rewind">
+         <property name="text">
+          <string>Enable rewind</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Rewind history:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_13">
+         <item>
+          <widget class="QSpinBox" name="rewindCapacity">
+           <property name="maximum">
+            <number>3600</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>frames</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="0" colspan="2">
+        <widget class="Line" name="line_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_15">
+         <property name="text">
+          <string>Idle loops:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
         <widget class="QComboBox" name="idleOptimization">
          <item>
           <property name="text">
@@ -530,28 +568,21 @@
          </item>
         </widget>
        </item>
-       <item row="7" column="1">
-        <widget class="QCheckBox" name="allowOpposingDirections">
-         <property name="text">
-          <string>Allow opposing input directions</string>
+       <item row="7" column="0" colspan="2">
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="page_2">
-      <layout class="QFormLayout" name="formLayout_4">
-       <property name="fieldGrowthPolicy">
-        <enum>QFormLayout::FieldsStayAtSizeHint</enum>
-       </property>
-       <item row="0" column="0">
+       <item row="8" column="0">
         <widget class="QLabel" name="label_24">
          <property name="text">
-          <string>Save extra data</string>
+          <string>Savestate extra data:</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item row="8" column="1">
         <widget class="QCheckBox" name="saveStateScreenshot">
          <property name="text">
           <string>Screenshot</string>
@@ -561,7 +592,7 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="9" column="1">
         <widget class="QCheckBox" name="saveStateSave">
          <property name="text">
           <string>Save data</string>
@@ -571,7 +602,7 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="10" column="1">
         <widget class="QCheckBox" name="saveStateCheats">
          <property name="text">
           <string>Cheat codes</string>
@@ -581,21 +612,14 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="0" colspan="2">
-        <widget class="Line" name="line_8">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
+       <item row="12" column="0">
         <widget class="QLabel" name="label_25">
          <property name="text">
-          <string>Load extra data</string>
+          <string>Load extra data:</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="12" column="1">
         <widget class="QCheckBox" name="loadStateScreenshot">
          <property name="text">
           <string>Screenshot</string>
@@ -605,54 +629,137 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="13" column="1">
         <widget class="QCheckBox" name="loadStateSave">
          <property name="text">
           <string>Save data</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="14" column="1">
         <widget class="QCheckBox" name="loadStateCheats">
          <property name="text">
           <string>Cheat codes</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="0" colspan="2">
-        <widget class="Line" name="line_2">
+       <item row="11" column="0" colspan="2">
+        <widget class="Line" name="line_9">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
-        <widget class="QCheckBox" name="rewind">
+       <item row="4" column="1">
+        <widget class="QCheckBox" name="rewindSave">
          <property name="text">
-          <string>Enable rewind</string>
+          <string>Rewind affects save data</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
-       <item row="10" column="0">
-        <widget class="QLabel" name="label_8">
+      </layout>
+     </widget>
+     <widget class="QWidget" name="bios">
+      <layout class="QFormLayout" name="formLayout_5">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
          <property name="text">
-          <string>Rewind history:</string>
+          <string>GB BIOS file:</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_13">
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
-          <widget class="QSpinBox" name="rewindCapacity">
-           <property name="maximum">
-            <number>3600</number>
+          <widget class="QLineEdit" name="gbBios">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_7">
+          <widget class="QPushButton" name="gbBiosBrowse">
            <property name="text">
-            <string>frames</string>
+            <string>Browse</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="1">
+        <widget class="QCheckBox" name="useBios">
+         <property name="text">
+          <string>Use BIOS file if found</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QCheckBox" name="skipBios">
+         <property name="text">
+          <string>Skip BIOS intro</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <item>
+          <widget class="QLineEdit" name="gbaBios">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="gbaBiosBrowse">
+           <property name="text">
+            <string>Browse</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>GBA BIOS file:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>GBC BIOS file:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_30">
+         <item>
+          <widget class="QLineEdit" name="gbcBios">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="gbcBiosBrowse">
+           <property name="text">
+            <string>Browse</string>
            </property>
           </widget>
          </item>
@@ -660,7 +767,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="page">
+     <widget class="QWidget" name="paths">
       <layout class="QFormLayout" name="formLayout_3">
        <property name="fieldGrowthPolicy">
         <enum>QFormLayout::FieldsStayAtSizeHint</enum>
@@ -967,22 +1074,6 @@
     <hint type="destinationlabel">
      <x>340</x>
      <y>285</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>fastForwardUnbounded</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>fastForwardRatio</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>338</x>
-     <y>163</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>327</x>
-     <y>135</y>
     </hint>
    </hints>
   </connection>

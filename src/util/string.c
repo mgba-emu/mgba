@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "util/string.h"
+#include <mgba-util/string.h>
 
 #include <string.h>
 
@@ -46,6 +46,15 @@ bool endswith(const char* restrict s1, const char* restrict end) {
 		return false;
 	}
 	return strcmp(&s1[len - endLen], end) == 0;
+}
+
+bool startswith(const char* restrict s1, const char* restrict start) {
+	size_t len = strlen(s1);
+	size_t startLen = strlen(start);
+	if (len < startLen) {
+		return false;
+	}
+	return strncmp(s1, start, startLen) == 0;
 }
 
 uint32_t utf16Char(const uint16_t** unicode, size_t* length) {

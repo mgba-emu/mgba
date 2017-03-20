@@ -11,15 +11,13 @@
 #include <QClipboard>
 #include <QPushButton>
 
-extern "C" {
-#include "core/cheats.h"
+#include <mgba/core/cheats.h>
 #ifdef M_CORE_GBA
-#include "gba/cheats.h"
+#include <mgba/internal/gba/cheats.h>
 #endif
 #ifdef M_CORE_GB
-#include "gb/cheats.h"
+#include <mgba/internal/gb/cheats.h>
 #endif
-}
 
 using namespace QGBA;
 
@@ -48,19 +46,19 @@ CheatsView::CheatsView(GameController* controller, QWidget* parent)
 			enterCheat(GBA_CHEAT_AUTODETECT);
 		});
 
-		add = new QPushButton("Add GameShark");
+		add = new QPushButton(tr("Add GameShark"));
 		m_ui.gridLayout->addWidget(add, m_ui.gridLayout->rowCount(), 2, 1, 2);
 		connect(add, &QPushButton::clicked, [this]() {
 			enterCheat(GBA_CHEAT_GAMESHARK);
 		});
 
-		add = new QPushButton("Add Pro Action Replay");
+		add = new QPushButton(tr("Add Pro Action Replay"));
 		m_ui.gridLayout->addWidget(add, m_ui.gridLayout->rowCount(), 2, 1, 2);
 		connect(add, &QPushButton::clicked, [this]() {
 			enterCheat(GBA_CHEAT_PRO_ACTION_REPLAY);
 		});
 
-		add = new QPushButton("Add CodeBreaker");
+		add = new QPushButton(tr("Add CodeBreaker"));
 		m_ui.gridLayout->addWidget(add, m_ui.gridLayout->rowCount(), 2, 1, 2);
 		connect(add, &QPushButton::clicked, [this]() {
 			enterCheat(GBA_CHEAT_CODEBREAKER);
@@ -73,13 +71,13 @@ CheatsView::CheatsView(GameController* controller, QWidget* parent)
 			enterCheat(GB_CHEAT_AUTODETECT);
 		});
 
-		add = new QPushButton("Add GameShark");
+		add = new QPushButton(tr("Add GameShark"));
 		m_ui.gridLayout->addWidget(add, m_ui.gridLayout->rowCount(), 2, 1, 2);
 		connect(add, &QPushButton::clicked, [this]() {
 			enterCheat(GB_CHEAT_GAMESHARK);
 		});
 
-		add = new QPushButton("Add GameGenie");
+		add = new QPushButton(tr("Add GameGenie"));
 		m_ui.gridLayout->addWidget(add, m_ui.gridLayout->rowCount(), 2, 1, 2);
 		connect(add, &QPushButton::clicked, [this]() {
 			enterCheat(GB_CHEAT_GAME_GENIE);
@@ -125,10 +123,9 @@ void CheatsView::save() {
 }
 
 void CheatsView::addSet() {
-	m_controller->threadInterrupt();
+	GameController::Interrupter interrupter(m_controller);
 	mCheatSet* set = m_controller->cheatDevice()->createSet(m_controller->cheatDevice(), nullptr);
 	m_model.addSet(set);
-	m_controller->threadContinue();
 }
 
 void CheatsView::removeSet() {
@@ -137,11 +134,10 @@ void CheatsView::removeSet() {
 	if (selection.count() < 1) {
 		return;
 	}
-	m_controller->threadInterrupt();
+	GameController::Interrupter interrupter(m_controller);
 	for (const QModelIndex& index : selection) {
 		m_model.removeAt(selection[0]);
 	}
-	m_controller->threadContinue();
 }
 
 void CheatsView::enterCheat(int codeType) {

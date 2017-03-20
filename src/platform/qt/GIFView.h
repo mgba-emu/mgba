@@ -12,9 +12,7 @@
 
 #include "ui_GIFView.h"
 
-extern "C" {
 #include "feature/imagemagick/imagemagick-gif-encoder.h"
-}
 
 namespace QGBA {
 

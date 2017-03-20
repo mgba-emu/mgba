@@ -3,11 +3,12 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "rewind.h"
+#include <mgba/core/rewind.h>
 
-#include "core/core.h"
-#include "util/patch-fast.h"
-#include "util/vfs.h"
+#include <mgba/core/core.h>
+#include <mgba/core/serialize.h>
+#include <mgba-util/patch/fast.h>
+#include <mgba-util/vfs.h>
 
 DEFINE_VECTOR(mCoreRewindPatches, struct PatchFast);
 
@@ -20,6 +21,7 @@ void mCoreRewindContextInit(struct mCoreRewindContext* context, size_t entries) 
 	context->previousState = VFileMemChunk(0, 0);
 	context->currentState = VFileMemChunk(0, 0);
 	context->size = 0;
+	context->stateFlags = SAVESTATE_SAVEDATA;
 }
 
 void mCoreRewindContextDeinit(struct mCoreRewindContext* context) {
@@ -41,7 +43,7 @@ void mCoreRewindAppend(struct mCoreRewindContext* context, struct mCore* core) {
 	if (context->current >= mCoreRewindPatchesSize(&context->patchMemory)) {
 		context->current = 0;
 	}
-	mCoreSaveStateNamed(core, nextState, 0);
+	mCoreSaveStateNamed(core, nextState, context->stateFlags);
 	struct PatchFast* patch = mCoreRewindPatchesGetPointer(&context->patchMemory, context->current);
 	size_t size2 = nextState->size(nextState);
 	size_t size = context->currentState->size(context->currentState);
@@ -75,7 +77,7 @@ bool mCoreRewindRestore(struct mCoreRewindContext* context, struct mCore* core) 
 	patch->d.applyPatch(&patch->d, current, size, previous, size);
 	context->currentState->unmap(context->currentState, current, size);
 	context->previousState->unmap(context->previousState, previous, size);
-	mCoreLoadStateNamed(core, context->previousState, 0);
+	mCoreLoadStateNamed(core, context->previousState, context->stateFlags);
 	struct VFile* nextState = context->previousState;
 	context->previousState = context->currentState;
 	context->currentState = nextState;

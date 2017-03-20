@@ -3,10 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "menu.h"
+#include <mgba-util/gui/menu.h>
 
-#include "util/gui.h"
-#include "util/gui/font.h"
+#include <mgba-util/gui.h>
+#include <mgba-util/gui/font.h>
 
 #ifdef _3DS
 #include <3ds.h>

@@ -13,6 +13,6 @@ hle-bios.bin: hle-bios.o
 hle-bios.c: hle-bios.bin
 	echo '#include "hle-bios.h"' > $@
 	echo >> $@
-	echo '#include "gba/memory.h"' >> $@
+	echo '#include <mgba/internal/gba/memory.h>' >> $@
 	echo >> $@
 	xxd -i $< | sed -e 's/unsigned char hle_bios_bin\[\]/const uint8_t hleBios[SIZE_BIOS]/' | grep -v hle_bios_bin_len >> $@

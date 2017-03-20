@@ -44,7 +44,7 @@ PLATLDXFLAGS   = -m32 -shared -lm -Wl,-version-script=$(BUILD_DIR)/link.T -Wl,-n
 ################
 # libretro setup
 
-RETRODEFS     = -D__LIBRETRO__
+#RETRODEFS     = -D__LIBRETRO__
 RETROCFLAGS   =
 RETROCXXFLAGS =
 RETROLDFLAGS  =

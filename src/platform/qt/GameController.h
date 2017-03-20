@@ -14,23 +14,21 @@
 #include <QTimer>
 
 #include <memory>
+#include <functional>
 
-extern "C" {
-#include "core/core.h"
-#include "core/thread.h"
-#include "gba/cheats.h"
-#include "gba/hardware.h"
-#include "gba/input.h"
-#include "gba/overrides.h"
+#include <mgba/core/core.h>
+#include <mgba/core/thread.h>
+#include <mgba/gba/interface.h>
+#include <mgba/internal/gba/input.h>
 #ifdef BUILD_SDL
 #include "platform/sdl/sdl-events.h"
 #endif
-}
 
+struct Configuration;
 struct GBAAudio;
 struct mCoreConfig;
-struct Configuration;
 struct mDebugger;
+struct mTileCache;
 
 class QThread;
 
@@ -47,6 +45,16 @@ Q_OBJECT
 public:
 	static const bool VIDEO_SYNC = false;
 	static const bool AUDIO_SYNC = true;
+
+	class Interrupter {
+	public:
+		Interrupter(GameController*, bool fromThread = false);
+		~Interrupter();
+
+	private:
+		GameController* m_parent;
+		bool m_fromThread;
+	};
 
 	GameController(QObject* parent = nullptr);
 	~GameController();
@@ -72,7 +80,7 @@ public:
 	MultiplayerController* multiplayerController() { return m_multiplayer; }
 	void clearMultiplayerController();
 
-	void setOverride(Override* override) { m_override = override; }
+	void setOverride(Override* override);
 	Override* override() { return m_override; }
 	void clearOverride();
 
@@ -84,6 +92,8 @@ public:
 	mDebugger* debugger();
 	void setDebugger(mDebugger*);
 #endif
+
+	std::shared_ptr<mTileCache> tileCache();
 
 signals:
 	void frameAvailable(const uint32_t*);
@@ -104,8 +114,8 @@ signals:
 
 public slots:
 	void loadGame(const QString& path);
-	void loadGame(VFile* vf, const QString& base);
-	void loadBIOS(const QString& path);
+	void loadGame(VFile* vf, const QString& path, const QString& base);
+	void loadBIOS(int platform, const QString& path);
 	void loadSave(const QString& path, bool temporary = true);
 	void yankPak();
 	void replaceGame(const QString& path);
@@ -118,7 +128,7 @@ public slots:
 	void setPaused(bool paused);
 	void reset();
 	void frameAdvance();
-	void setRewind(bool enable, int capacity);
+	void setRewind(bool enable, int capacity, bool rewindSave);
 	void rewind(int states = 0);
 	void startRewinding();
 	void stopRewinding();
@@ -189,6 +199,7 @@ private:
 	bool m_gameOpen;
 
 	QString m_fname;
+	QString m_fsub;
 	VFile* m_vf;
 	QString m_bios;
 	bool m_useBios;
@@ -209,6 +220,8 @@ private:
 	bool m_turboForced;
 	float m_turboSpeed;
 	bool m_wasPaused;
+
+	std::shared_ptr<mTileCache> m_tileCache;
 
 	bool m_audioChannels[6];
 	bool m_videoLayers[5];
@@ -233,8 +246,6 @@ private:
 	} m_lux;
 	uint8_t m_luxValue;
 	int m_luxLevel;
-
-	mRTCGenericSource m_rtc;
 };
 
 }

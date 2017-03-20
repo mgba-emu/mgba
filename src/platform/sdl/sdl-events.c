@@ -5,18 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "sdl-events.h"
 
-#include "core/input.h"
-#include "core/serialize.h"
-#include "core/thread.h"
-#include "debugger/debugger.h"
-#include "gba/input.h"
-#include "gba/io.h"
-#include "gba/rr/rr.h"
-#include "gba/video.h"
-#include "gba/renderers/video-software.h"
-#include "util/configuration.h"
-#include "util/formatting.h"
-#include "util/vfs.h"
+#include <mgba/core/core.h>
+#include <mgba/core/input.h>
+#include <mgba/core/serialize.h>
+#include <mgba/core/thread.h>
+#include <mgba/internal/debugger/debugger.h>
+#include <mgba/internal/gba/input.h>
+#include <mgba-util/configuration.h>
+#include <mgba-util/formatting.h>
+#include <mgba-util/vfs.h>
 
 #if SDL_VERSION_ATLEAST(2, 0, 0) && defined(__APPLE__)
 #define GUI_MOD KMOD_GUI
@@ -28,7 +25,7 @@
 #define RUMBLE_PWM 16
 #define RUMBLE_STEPS 2
 
-mLOG_DEFINE_CATEGORY(SDL_EVENTS, "SDL Events");
+mLOG_DEFINE_CATEGORY(SDL_EVENTS, "SDL Events", "platform.sdl.events");
 
 DEFINE_VECTOR(SDL_JoystickList, struct SDL_JoystickCombo);
 
@@ -62,7 +59,7 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 	int nJoysticks = SDL_NumJoysticks();
 	SDL_JoystickListInit(&context->joysticks, nJoysticks);
 	if (nJoysticks > 0) {
-		mSDLUpdateJoysticks(context);
+		mSDLUpdateJoysticks(context, NULL);
 		// Some OSes don't do hotplug detection
 		if (!SDL_JoystickListSize(&context->joysticks)) {
 			int i;
@@ -127,17 +124,6 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_DOWN, GBA_KEY_DOWN);
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_LEFT, GBA_KEY_LEFT);
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
-#elif SDL_VERSION_ATLEAST(2, 0, 0)
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_X, GBA_KEY_A);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_Z, GBA_KEY_B);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_A, GBA_KEY_L);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_S, GBA_KEY_R);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_RETURN, GBA_KEY_START);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_BACKSPACE, GBA_KEY_SELECT);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_UP, GBA_KEY_UP);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_DOWN, GBA_KEY_DOWN);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_LEFT, GBA_KEY_LEFT);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_RIGHT, GBA_KEY_RIGHT);
 #else
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_x, GBA_KEY_A);
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_z, GBA_KEY_B);
@@ -155,6 +141,8 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 	mInputBindAxis(inputMap, SDL_BINDING_BUTTON, 0, &description);
 	description = (struct mInputAxis) { GBA_KEY_DOWN, GBA_KEY_UP, 0x4000, -0x4000 };
 	mInputBindAxis(inputMap, SDL_BINDING_BUTTON, 1, &description);
+
+	mInputBindHat(inputMap, SDL_BINDING_BUTTON, 0, &GBAInputInfo.hat);
 }
 
 bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
@@ -337,7 +325,7 @@ void mSDLPlayerChangeJoystick(struct mSDLEvents* events, struct mSDLPlayer* play
 	player->joystick = SDL_JoystickListGetPointer(&events->joysticks, index);
 }
 
-void mSDLUpdateJoysticks(struct mSDLEvents* events) {
+void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* config) {
 	// Pump SDL joystick events without eating the rest of the events
 	SDL_JoystickUpdate();
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -351,8 +339,38 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			joystick->haptic = SDL_HapticOpenFromJoystick(joystick->joystick);
 #endif
+
+			const char* joystickName;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+			joystickName = SDL_JoystickName(joystick->joystick);
+#else
+			joystickName = SDL_JoystickName(SDL_JoystickIndex(joystick->joystick));
+#endif
+			size_t i;
+			for (i = 0; (int) i < events->playersAttached; ++i) {
+				if (events->players[i]->joystick) {
+					continue;
+				}
+				if (events->preferredJoysticks[i] && strcmp(events->preferredJoysticks[i], joystickName) == 0) {
+					events->players[i]->joystick = joystick;
+					if (config) {
+						mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_BUTTON, config, joystickName);
+					}
+					return;
+				}
+			}
+			for (i = 0; (int) i < events->playersAttached; ++i) {
+				if (events->players[i]->joystick) {
+					continue;
+				}
+				events->players[i]->joystick = joystick;
+				if (config) {
+					mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_BUTTON, config, joystickName);
+				}
+				break;
+			}
 		} else if (event.type == SDL_JOYDEVICEREMOVED) {
-			SDL_JoystickID ids[MAX_PLAYERS];
+			SDL_JoystickID ids[MAX_PLAYERS] = { 0 };
 			size_t i;
 			for (i = 0; (int) i < events->playersAttached; ++i) {
 				if (events->players[i]->joystick) {
@@ -390,11 +408,7 @@ static void _pauseAfterFrame(struct mCoreThread* context) {
 static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_KeyboardEvent* event) {
 	int key = -1;
 	if (!event->keysym.mod) {
-#if !defined(BUILD_PANDORA) && SDL_VERSION_ATLEAST(2, 0, 0)
-		key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.scancode);
-#else
 		key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.sym);
-#endif
 	}
 	if (key != -1) {
 		if (event->type == SDL_KEYDOWN) {
@@ -413,11 +427,13 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 	}
 	if (event->type == SDL_KEYDOWN) {
 		switch (event->keysym.sym) {
+#ifdef USE_DEBUGGERS
 		case SDLK_F11:
 			if (context->core->debugger) {
 				mDebuggerEnter(context->core->debugger, DEBUGGER_ENTER_MANUAL, NULL);
 			}
 			return;
+#endif
 #ifdef USE_PNG
 		case SDLK_F12:
 			mCoreTakeScreenshot(context->core);
@@ -514,6 +530,18 @@ static void _mSDLHandleJoyButton(struct mCore* core, struct mSDLPlayer* sdlConte
 	}
 }
 
+static void _mSDLHandleJoyHat(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_JoyHatEvent* event) {
+	int allKeys = mInputMapHat(sdlContext->bindings, SDL_BINDING_BUTTON, event->hat, -1);
+	if (allKeys == 0) {
+		return;
+	}
+
+	int keys = mInputMapHat(sdlContext->bindings, SDL_BINDING_BUTTON, event->hat, event->value);
+
+	core->clearKeys(core, allKeys ^ keys);
+	core->addKeys(core, keys);
+}
+
 static void _mSDLHandleJoyAxis(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_JoyAxisEvent* event) {
 	int clearKeys = ~mInputClearAxis(sdlContext->bindings, SDL_BINDING_BUTTON, event->axis, -1);
 	int newKeys = 0;
@@ -556,7 +584,7 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 		_mSDLHandleJoyButton(context->core, sdlContext, &event->jbutton);
 		break;
 	case SDL_JOYHATMOTION:
-		// TODO
+		_mSDLHandleJoyHat(context->core, sdlContext, &event->jhat);
 		break;
 	case SDL_JOYAXISMOTION:
 		_mSDLHandleJoyAxis(context->core, sdlContext, &event->jaxis);

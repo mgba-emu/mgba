@@ -6,6 +6,10 @@
 #ifndef GLES2_H
 #define GLES2_H
 
+#include <mgba-util/common.h>
+
+CXX_GUARD_START
+
 #ifdef USE_EPOXY
 #include <epoxy/gl.h>
 #elif defined(BUILD_GL)
@@ -93,5 +97,7 @@ void mGLES2ShaderDetach(struct mGLES2Context*);
 struct VDir;
 bool mGLES2ShaderLoad(struct VideoShader*, struct VDir*);
 void mGLES2ShaderFree(struct VideoShader*);
+
+CXX_GUARD_END
 
 #endif

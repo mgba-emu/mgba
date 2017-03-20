@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>550</width>
-    <height>640</height>
+    <width>565</width>
+    <height>658</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -168,20 +168,39 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <zorder></zorder>
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
-     <item>
-      <layout class="QFormLayout" name="formLayout">
-       <item row="0" column="0">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Unsigned Integer:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="uintVal">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
         <widget class="QLabel" name="label_3">
          <property name="text">
           <string>Signed Integer:</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item>
         <widget class="QLineEdit" name="sintVal">
          <property name="readOnly">
           <bool>true</bool>
@@ -190,23 +209,75 @@
        </item>
       </layout>
      </item>
-     <item>
-      <layout class="QFormLayout" name="formLayout_4">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_4">
+     <item row="1" column="0" colspan="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Unsigned Integer:</string>
+          <string>String:</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="uintVal">
+       <item>
+        <widget class="QLineEdit" name="stringVal">
          <property name="readOnly">
           <bool>true</bool>
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="loadTBL">
+         <property name="text">
+          <string>Load TBL</string>
+         </property>
+        </widget>
+       </item>
       </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <widget class="QPushButton" name="copy">
+       <property name="text">
+        <string>Copy Selection</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="paste">
+       <property name="text">
+        <string>Paste</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_7">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="save">
+       <property name="text">
+        <string>Save Selection</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="load">
+       <property name="text">
+        <string>Load</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

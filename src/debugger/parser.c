@@ -3,9 +3,9 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "parser.h"
+#include <mgba/internal/debugger/parser.h>
 
-#include "util/string.h"
+#include <mgba-util/string.h>
 
 static struct LexVector* _lexOperator(struct LexVector* lv, char operator) {
 	struct LexVector* lvNext = malloc(sizeof(struct LexVector));

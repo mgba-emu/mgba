@@ -10,9 +10,8 @@
 
 #include <QAudioOutput>
 
-extern "C" {
-#include "core/thread.h"
-}
+#include <mgba/core/core.h>
+#include <mgba/core/thread.h>
 
 using namespace QGBA;
 
@@ -50,7 +49,7 @@ bool AudioProcessorQt::start() {
 		format.setChannelCount(2);
 		format.setSampleSize(16);
 		format.setCodec("audio/pcm");
-		format.setByteOrder(QAudioFormat::LittleEndian);
+		format.setByteOrder(QAudioFormat::Endian(QSysInfo::ByteOrder));
 		format.setSampleType(QAudioFormat::SignedInt);
 
 		m_audioOutput = new QAudioOutput(format, this);

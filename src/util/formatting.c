@@ -3,10 +3,9 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "formatting.h"
+#include <mgba-util/formatting.h>
 
 #include <float.h>
-#include <time.h>
 
 int ftostr_l(char* restrict str, size_t size, float f, locale_t locale) {
 #ifdef HAVE_SNPRINTF_L

@@ -44,7 +44,7 @@ PLATLDXFLAGS   = -shared -lm
 ################
 # libretro setup
 
-RETRODEFS     = -D__LIBRETRO__
+#RETRODEFS     = -D__LIBRETRO__
 RETROCFLAGS   =
 RETROCXXFLAGS =
 RETROLDFLAGS  =

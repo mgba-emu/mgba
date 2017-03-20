@@ -3,15 +3,17 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "software.h"
+#include <mgba/internal/gb/renderers/software.h>
 
-#include "gb/io.h"
-#include "util/memory.h"
+#include <mgba/core/tile-cache.h>
+#include <mgba/internal/gb/io.h>
+#include <mgba-util/memory.h>
 
 static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum GBModel model);
 static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value);
+static void GBVideoSoftwareRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address);
 static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
 static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer);
@@ -21,11 +23,37 @@ static void GBVideoSoftwareRendererPutPixels(struct GBVideoRenderer* renderer, s
 static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, uint8_t* maps, int startX, int endX, int sx, int sy);
 static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* renderer, struct GBObj* obj, int startX, int endX, int y);
 
+static void _clearScreen(struct GBVideoSoftwareRenderer* renderer) {
+	// TODO: Dynamic from dmgPalette
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	color_t palette0 = 0xFFDF;
+#else
+	color_t palette0 = 0x7FFF;
+#endif
+#else
+	color_t palette0 = 0xFFFFFF;
+#endif
+
+	int y;
+	for (y = 0; y < GB_VIDEO_VERTICAL_PIXELS; ++y) {
+		color_t* row = &renderer->outputBuffer[renderer->outputBufferStride * y];
+		int x;
+		for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; x += 4) {
+			row[x + 0] = palette0;
+			row[x + 1] = palette0;
+			row[x + 2] = palette0;
+			row[x + 3] = palette0;
+		}
+	}
+}
+
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBVideoSoftwareRendererInit;
 	renderer->d.deinit = GBVideoSoftwareRendererDeinit;
 	renderer->d.writeVideoRegister = GBVideoSoftwareRendererWriteVideoRegister;
-	renderer->d.writePalette = GBVideoSoftwareRendererWritePalette,
+	renderer->d.writePalette = GBVideoSoftwareRendererWritePalette;
+	renderer->d.writeVRAM = GBVideoSoftwareRendererWriteVRAM;
 	renderer->d.drawRange = GBVideoSoftwareRendererDrawRange;
 	renderer->d.finishScanline = GBVideoSoftwareRendererFinishScanline;
 	renderer->d.finishFrame = GBVideoSoftwareRendererFinishFrame;
@@ -37,6 +65,7 @@ void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
 
 static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum GBModel model) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
+	softwareRenderer->lcdc = 0;
 	softwareRenderer->scy = 0;
 	softwareRenderer->scx = 0;
 	softwareRenderer->wy = 0;
@@ -44,14 +73,7 @@ static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum G
 	softwareRenderer->wx = 0;
 	softwareRenderer->model = model;
 
-	int y;
-	for (y = 0; y < GB_VIDEO_VERTICAL_PIXELS; ++y) {
-		color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
-		int x;
-		for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; ++x) {
-			row[x] = softwareRenderer->palette[0];
-		}
-	}
+	_clearScreen(softwareRenderer);
 }
 
 static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer) {
@@ -63,6 +85,9 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	switch (address) {
 	case REG_LCDC:
+		if (GBRegisterLCDCIsEnable(softwareRenderer->lcdc) && !GBRegisterLCDCIsEnable(value)) {
+			_clearScreen(softwareRenderer);
+		}
 		softwareRenderer->lcdc = value;
 		break;
 	case REG_SCY:
@@ -97,8 +122,18 @@ static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer
 	color |= (value << 3) & 0xF8;
 	color |= (value << 6) & 0xF800;
 	color |= (value << 9) & 0xF80000;
+	color |= (color >> 5) & 0x070707;
 #endif
 	softwareRenderer->palette[index] = color;
+	if (renderer->cache) {
+		mTileCacheWritePalette(renderer->cache, index << 1);
+	}
+}
+
+static void GBVideoSoftwareRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address) {
+	if (renderer->cache) {
+		mTileCacheWriteVRAM(renderer->cache, address);
+	}
 }
 
 static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax) {

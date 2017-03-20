@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "main.h"
 
-#include "core/version.h"
+#include <mgba/core/version.h>
 
 void mSDLGLCommonSwap(struct VideoBackend* context) {
 	struct mSDLRenderer* renderer = (struct mSDLRenderer*) context->user;

@@ -3,23 +3,24 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "bios.h"
+#include <mgba/internal/gba/bios.h>
 
-#include "arm/isa-inlines.h"
-#include "arm/macros.h"
-#include "gba/gba.h"
-#include "gba/io.h"
-#include "gba/memory.h"
+#include <mgba/internal/arm/isa-inlines.h>
+#include <mgba/internal/arm/macros.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/memory.h>
 
 const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
 const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
 
-mLOG_DEFINE_CATEGORY(GBA_BIOS, "GBA BIOS");
+mLOG_DEFINE_CATEGORY(GBA_BIOS, "GBA BIOS", "gba.bios");
 
 static void _unLz77(struct GBA* gba, int width);
 static void _unHuffman(struct GBA* gba);
 static void _unRl(struct GBA* gba, int width);
 static void _unFilter(struct GBA* gba, int inwidth, int outwidth);
+static void _unBitPack(struct GBA* gba);
 
 static void _SoftReset(struct GBA* gba) {
 	struct ARMCore* cpu = gba->cpu;
@@ -244,7 +245,12 @@ static void _ObjAffineSet(struct GBA* gba) {
 
 static void _MidiKey2Freq(struct GBA* gba) {
 	struct ARMCore* cpu = gba->cpu;
+
+	int oldRegion = gba->memory.activeRegion;
+	gba->memory.activeRegion = REGION_BIOS;
 	uint32_t key = cpu->memory.load32(cpu, cpu->gprs[0] + 4, 0);
+	gba->memory.activeRegion = oldRegion;
+
 	cpu->gprs[0] = key / powf(2, (180.f - cpu->gprs[1] - cpu->gprs[2] / 256.f) / 12.f);
 }
 
@@ -359,7 +365,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0xC:
 		if (cpu->gprs[0] >> BASE_OFFSET < REGION_WORKING_RAM) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Cannot CpuSet from BIOS");
-			return;
+			break;
 		}
 		if (cpu->gprs[0] & (cpu->gprs[2] & (1 << 26) ? 3 : 1)) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Misaligned CpuSet source");
@@ -379,6 +385,22 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		break;
 	case 0xF:
 		_ObjAffineSet(gba);
+		break;
+	case 0x10:
+		if (cpu->gprs[0] < BASE_WORKING_RAM) {
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad BitUnPack source");
+			break;
+		}
+		switch (cpu->gprs[1] >> BASE_OFFSET) {
+		default:
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad BitUnPack destination");
+		// Fall through
+		case REGION_WORKING_RAM:
+		case REGION_WORKING_IRAM:
+		case REGION_VRAM:
+			_unBitPack(gba);
+			break;
+		}
 		break;
 	case 0x11:
 	case 0x12:
@@ -730,4 +752,64 @@ static void _unFilter(struct GBA* gba, int inwidth, int outwidth) {
 	}
 	cpu->gprs[0] = source;
 	cpu->gprs[1] = dest;
+}
+
+static void _unBitPack(struct GBA* gba) {
+	struct ARMCore* cpu = gba->cpu;
+	uint32_t source = cpu->gprs[0];
+	uint32_t dest = cpu->gprs[1];
+	uint32_t info = cpu->gprs[2];
+	unsigned sourceLen = cpu->memory.load16(cpu, info, 0);
+	unsigned sourceWidth = cpu->memory.load8(cpu, info + 2, 0);
+	unsigned destWidth = cpu->memory.load8(cpu, info + 3, 0);
+	switch (sourceWidth) {
+	case 1:
+	case 2:
+	case 4:
+	case 8:
+		break;
+	default:
+		mLOG(GBA_BIOS, GAME_ERROR, "Bad BitUnPack source width: %u", sourceWidth);
+		return;
+	}
+	switch (destWidth) {
+	case 1:
+	case 2:
+	case 4:
+	case 8:
+	case 16:
+	case 32:
+		break;
+	default:
+		mLOG(GBA_BIOS, GAME_ERROR, "Bad BitUnPack destination width: %u", destWidth);
+		return;
+	}
+	uint32_t bias = cpu->memory.load32(cpu, info + 4, 0);
+	uint8_t in = 0;
+	uint32_t out = 0;
+	int bitsRemaining = 0;
+	int bitsEaten = 0;
+	while (sourceLen > 0) {
+		if (!bitsRemaining) {
+			in = cpu->memory.load8(cpu, source, 0);
+			bitsRemaining = 8;
+			++source;
+			--sourceLen;
+		}
+		unsigned scaled = in & ((1 << sourceWidth) - 1);
+		in >>= sourceWidth;
+		if (scaled || bias & 0x80000000) {
+			scaled += bias & 0x7FFFFFFF;
+			scaled &= (1 << destWidth) - 1;
+		}
+		bitsRemaining -= sourceWidth;
+		out |= scaled << bitsEaten;
+		bitsEaten += destWidth;
+		if (bitsEaten == 32) {
+			cpu->memory.store32(cpu, dest, out, 0);
+			bitsEaten = 0;
+			out = 0;
+			dest += 4;
+		}
+	}
 }

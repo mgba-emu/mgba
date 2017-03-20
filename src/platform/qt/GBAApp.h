@@ -8,15 +8,14 @@
 
 #include <QApplication>
 #include <QFileDialog>
+#include <QThread>
 
 #include "ConfigController.h"
 #include "MultiplayerController.h"
 
 struct NoIntroDB;
 
-extern "C" {
-#include "core/log.h"
-}
+#include <mgba/core/log.h>
 
 mLOG_DECLARE_CATEGORY(QT);
 
@@ -25,11 +24,27 @@ namespace QGBA {
 class GameController;
 class Window;
 
+#ifdef USE_SQLITE3
+class GameDBParser : public QObject {
+Q_OBJECT
+
+public:
+	GameDBParser(NoIntroDB* db, QObject* parent = nullptr);
+
+public slots:
+	void parseNoIntroDB();
+
+private:
+	NoIntroDB* m_db;
+};
+#endif
+
 class GBAApp : public QApplication {
 Q_OBJECT
 
 public:
 	GBAApp(int& argc, char* argv[]);
+	~GBAApp();
 	static GBAApp* app();
 
 	static QString dataDir();
@@ -62,13 +77,17 @@ private:
 
 	Window* newWindowInternal();
 
-	void pauseAll(QList<int>* paused);
-	void continueAll(const QList<int>* paused);
+	void pauseAll(QList<Window*>* paused);
+	void continueAll(const QList<Window*>& paused);
 
 	ConfigController m_configController;
-	Window* m_windows[MAX_GBAS];
+	QList<Window*> m_windows;
 	MultiplayerController m_multiplayer;
+
 	NoIntroDB* m_db;
+#ifdef USE_SQLITE3
+	QThread m_parseThread;
+#endif
 };
 
 }

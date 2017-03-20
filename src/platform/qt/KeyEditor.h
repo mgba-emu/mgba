@@ -7,6 +7,7 @@
 #define QGBA_KEY_EDITOR
 
 #include "GamepadAxisEvent.h"
+#include "GamepadHatEvent.h"
 
 #include <QLineEdit>
 #include <QTimer>
@@ -24,6 +25,9 @@ public:
 	GamepadAxisEvent::Direction direction() const { return m_direction; }
 	int axis() const { return m_axis; }
 
+	GamepadHatEvent::Direction hatDirection() const { return m_hatDirection; }
+	int hat() const { return m_hat; }
+
 	virtual QSize sizeHint() const override;
 
 public slots:
@@ -31,12 +35,15 @@ public slots:
 	void setValueKey(int key);
 	void setValueButton(int button);
 	void setValueAxis(int axis, int32_t value);
+	void setValueHat(int hat, GamepadHatEvent::Direction value);
 	void clearButton();
 	void clearAxis();
+	void clearHat();
 
 signals:
 	void valueChanged(int key);
-	void axisChanged(int key, int direction);
+	void axisChanged(int axis, int direction);
+	void hatChanged(int hat, int direction);
 
 protected:
 	virtual void keyPressEvent(QKeyEvent* event) override;
@@ -49,8 +56,10 @@ private:
 
 	int m_key;
 	int m_axis;
+	int m_hat;
 	bool m_button;
 	GamepadAxisEvent::Direction m_direction;
+	GamepadHatEvent::Direction m_hatDirection;
 	QTimer m_lastKey;
 };
 

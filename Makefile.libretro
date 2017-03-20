@@ -1,5 +1,4 @@
 DEBUG = 0
-GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 HAVE_VFS_FD := 1
 CORE_DIR := .
 BUILD_DIR := libretro-build
@@ -75,12 +74,18 @@ TARGET_NAME := mgba
 
 DEFINES :=
 
+# GIT HASH
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+   DEFINES += -DGIT_VERSION=\"$(GIT_VERSION)\"
+endif
+
 # Unix
 ifneq (,$(findstring unix,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
    SHARED := -shared -Wl,-version-script=link.T
-   DEFINES += -std=c99
+   DEFINES += -std=c99 -D_GNU_SOURCE -DHAVE_LOCALE
    
    # Raspberry Pi 3
    ifneq (,$(findstring rpi3,$(platform)))
@@ -151,7 +156,7 @@ else ifeq ($(platform), qnx)
 
 # PS3
 else ifeq ($(platform), ps3)
-   TARGET := $(TARGET_NAME)_libretro_ps3.a
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
    AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
    PLATFORM_DEFINES := -D__CELLOS_LV2__
@@ -171,7 +176,7 @@ else ifeq ($(platform), sncps3)
 
 # Lightweight PS3 Homebrew SDK
 else ifeq ($(platform), psl1ght)
-   TARGET := $(TARGET_NAME)_libretro_psl1ght.a
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
    AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
    PLATFORM_DEFINES := -D__CELLOS_LV2__
@@ -181,7 +186,7 @@ else ifeq ($(platform), psl1ght)
 
 # PSP
 else ifeq ($(platform), psp1)
-   TARGET := $(TARGET_NAME)_libretro_psp1.a
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = psp-gcc$(EXE_EXT)
    AR = psp-ar$(EXE_EXT)
    PLATFORM_DEFINES := -DPSP -DCC_RESAMPLER
@@ -191,7 +196,7 @@ else ifeq ($(platform), psp1)
 
 # Vita
 else ifeq ($(platform), vita)
-   TARGET := $(TARGET_NAME)_libretro_vita.a
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = arm-vita-eabi-gcc$(EXE_EXT)
    AR = arm-vita-eabi-ar$(EXE_EXT)
    PLATFORM_DEFINES := -DVITA -DCC_RESAMPLER -DPSP2
@@ -201,7 +206,7 @@ else ifeq ($(platform), vita)
 
 # CTR(3DS)
 else ifeq ($(platform), ctr)
-   TARGET := $(TARGET_NAME)_libretro_ctr.a
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(DEVKITARM)/bin/arm-none-eabi-gcc$(EXE_EXT)
    AR = $(DEVKITARM)/bin/arm-none-eabi-ar$(EXE_EXT)
    PLATFORM_DEFINES := -DARM11 -D_3DS
@@ -229,27 +234,40 @@ else ifeq ($(platform), xenon)
 
 # Nintendo Game Cube
 else ifeq ($(platform), ngc)
-   TARGET := $(TARGET_NAME)_libretro_ngc.a
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
-   PLATFORM_DEFINES += -DGEKKO -DHW_DOL -mrvl -mcpu=750 -meabi -mhard-float
+   PLATFORM_DEFINES += -DGEKKO -DHW_DOL -mrvl -mcpu=750 -meabi -mhard-float -DHAVE_STRTOF_L -DHAVE_LOCALE
+   PLATFORM_DEFINES += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int -D_GNU_SOURCE
    STATIC_LINKING = 1
    DEFINES += -std=c99
    HAVE_VFS_FD = 0
 
 # Nintendo Wii
 else ifeq ($(platform), wii)
-   TARGET := $(TARGET_NAME)_libretro_wii.a
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
-   PLATFORM_DEFINES += -DGEKKO -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float
+   PLATFORM_DEFINES += -DGEKKO -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float -DHAVE_STRTOF_L -DHAVE_LOCALE
+   PLATFORM_DEFINES += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int -D_GNU_SOURCE
+   STATIC_LINKING = 1
+   DEFINES += -std=c99
+   HAVE_VFS_FD = 0
+
+# Nintendo WiiU
+else ifeq ($(platform), wiiu)
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
+   CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
+   AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
+   PLATFORM_DEFINES += -DGEKKO -DWIIU -DHW_RVL -mwup -mcpu=750 -meabi -mhard-float -DHAVE_STRTOF_L -DHAVE_LOCALE
+   PLATFORM_DEFINES += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int -D_GNU_SOURCE
    STATIC_LINKING = 1
    DEFINES += -std=c99
    HAVE_VFS_FD = 0
 
 # emscripten
 else ifeq ($(platform), emscripten)
-   TARGET := $(TARGET_NAME)_libretro_emscripten.bc
+   TARGET := $(TARGET_NAME)_libretro_$(platform).bc
    DEFINES += -std=gnu99
    DEFINES += -DHAVE_LOCALE
 
@@ -258,7 +276,7 @@ else
    TARGET := $(TARGET_NAME)_libretro.dll
    CC = gcc
    SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T
-   DEFINES += -std=c99 -DDISABLE_THREADING -DGIT_VERSION=\"$(GIT_VERSION)\"
+   DEFINES += -std=c99 -DDISABLE_THREADING
 
 endif
 

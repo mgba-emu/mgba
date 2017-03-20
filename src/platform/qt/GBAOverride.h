@@ -8,15 +8,14 @@
 
 #include "Override.h"
 
-extern "C" {
-#include "gba/overrides.h"
-}
+#include <mgba/internal/gba/overrides.h>
 
 namespace QGBA {
 
 class GBAOverride : public Override {
 public:
 	void apply(struct mCore*) override;
+	void identify(const struct mCore*) override;
 	void save(struct Configuration*) const override;
 
 	struct GBACartridgeOverride override;

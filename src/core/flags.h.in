@@ -1,0 +1,100 @@
+#ifndef FLAGS_H
+#define FLAGS_H
+
+#ifndef MINIMAL_CORE
+#cmakedefine MINIMAL_CORE @MINIMAL_CORE@
+#endif
+
+// BUILD flags
+
+#ifndef BUILD_GL
+#cmakedefine BUILD_GL
+#endif
+
+#ifndef BUILD_GLES2
+#cmakedefine BUILD_GLES2
+#endif
+
+// COLOR flags
+
+#ifndef COLOR_16_BIT
+#cmakedefine COLOR_16_BIT
+#endif
+
+#ifndef COLOR_5_6_5
+#cmakedefine COLOR_5_6_5
+#endif
+
+// M_CORE flags
+
+#ifndef M_CORE_GBA
+#cmakedefine M_CORE_GBA
+#endif
+
+#ifndef M_CORE_GB
+#cmakedefine M_CORE_GB
+#endif
+
+// USE flags
+
+#ifndef MINIMAL_CORE
+
+#ifndef USE_DEBUGGERS
+#cmakedefine USE_DEBUGGERS
+#endif
+
+#ifndef USE_EDITLINE
+#cmakedefine USE_EDITLINE
+#endif
+
+#ifndef USE_EPOXY
+#cmakedefine USE_EPOXY
+#endif
+
+#ifndef USE_FFMPEG
+#cmakedefine USE_FFMPEG
+#endif
+
+#ifndef USE_GDB_STUB
+#cmakedefine USE_GDB_STUB
+#endif
+
+#ifndef USE_LIBAV
+#cmakedefine USE_LIBAV
+#endif
+
+#ifndef USE_LIBZIP
+#cmakedefine USE_LIBZIP
+#endif
+
+#ifndef USE_LZMA
+#cmakedefine USE_LZMA
+#endif
+
+#ifndef USE_MAGICK
+#cmakedefine USE_MAGICK
+#endif
+
+#ifndef USE_MINIZIP
+#cmakedefine USE_MINIZIP
+#endif
+
+#ifndef USE_PNG
+#cmakedefine USE_PNG
+#endif
+
+#ifndef USE_PTHREADS
+#cmakedefine USE_PTHREADS
+#endif
+
+#ifndef USE_SQLITE3
+#cmakedefine USE_SQLITE3
+#endif
+
+#ifndef USE_ZLIB
+#cmakedefine USE_ZLIB
+#endif
+
+#endif
+
+#endif

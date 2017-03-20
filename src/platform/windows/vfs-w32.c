@@ -3,9 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "util/vfs.h"
+#include <mgba-util/vfs.h>
 
-#include "util/string.h"
+#include <mgba-util/string.h>
+#include <strsafe.h>
 
 static bool _vdwClose(struct VDir* vd);
 static void _vdwRewind(struct VDir* vd);
@@ -20,7 +21,8 @@ static enum VFSType _vdweType(struct VDirEntry* vde);
 struct VDirW32;
 struct VDirEntryW32 {
 	struct VDirEntry d;
-	WIN32_FIND_DATA ffData;
+	WIN32_FIND_DATAW ffData;
+	char* utf8Name;
 };
 
 struct VDirW32 {
@@ -34,10 +36,11 @@ struct VDir* VDirOpen(const char* path) {
 	if (!path || !path[0]) {
 		return 0;
 	}
-	char name[MAX_PATH];
-	_snprintf(name, sizeof(name), "%s\\*", path);
-	WIN32_FIND_DATA ffData;
-	HANDLE handle = FindFirstFile(name, &ffData);
+	wchar_t name[MAX_PATH + 1];
+	MultiByteToWideChar(CP_UTF8, 0, path, -1, name, MAX_PATH);
+	StringCchCatNW(name, MAX_PATH, L"\\*", 2);
+	WIN32_FIND_DATAW ffData;
+	HANDLE handle = FindFirstFileW(name, &ffData);
 	if (handle == INVALID_HANDLE_VALUE) {
 		return 0;
 	}
@@ -60,6 +63,7 @@ struct VDir* VDirOpen(const char* path) {
 	vd->vde.d.name = _vdweName;
 	vd->vde.d.type = _vdweType;
 	vd->vde.ffData = ffData;
+	vd->vde.utf8Name = NULL;
 
 	return &vd->d;
 }
@@ -67,6 +71,11 @@ struct VDir* VDirOpen(const char* path) {
 bool _vdwClose(struct VDir* vd) {
 	struct VDirW32* vdw = (struct VDirW32*) vd;
 	FindClose(vdw->handle);
+	free(vdw->path);
+	if (vdw->vde.utf8Name) {
+		free(vdw->vde.utf8Name);
+		vdw->vde.utf8Name = NULL;
+	}
 	free(vdw);
 	return true;
 }
@@ -74,14 +83,23 @@ bool _vdwClose(struct VDir* vd) {
 void _vdwRewind(struct VDir* vd) {
 	struct VDirW32* vdw = (struct VDirW32*) vd;
 	FindClose(vdw->handle);
-	char name[MAX_PATH];
-	_snprintf(name, sizeof(name), "%s\\*", vdw->path);
-	vdw->handle = FindFirstFile(name, &vdw->vde.ffData);
+	wchar_t name[MAX_PATH + 1];
+	MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, vdw->path, -1, name, MAX_PATH);
+	StringCchCatNW(name, MAX_PATH, L"\\*", 2);
+	if (vdw->vde.utf8Name) {
+		free(vdw->vde.utf8Name);
+		vdw->vde.utf8Name = NULL;
+	}
+	vdw->handle = FindFirstFileW(name, &vdw->vde.ffData);
 }
 
 struct VDirEntry* _vdwListNext(struct VDir* vd) {
 	struct VDirW32* vdw = (struct VDirW32*) vd;
-	if (FindNextFile(vdw->handle, &vdw->vde.ffData)) {
+	if (FindNextFileW(vdw->handle, &vdw->vde.ffData)) {
+		if (vdw->vde.utf8Name) {
+			free(vdw->vde.utf8Name);
+			vdw->vde.utf8Name = NULL;
+		}
 		return &vdw->vde.d;
 	}
 
@@ -94,8 +112,9 @@ struct VFile* _vdwOpenFile(struct VDir* vd, const char* path, int mode) {
 		return 0;
 	}
 	const char* dir = vdw->path;
-	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
-	sprintf(combined, "%s\\%s", dir, path);
+	size_t size = sizeof(char) * (strlen(path) + strlen(dir) + 2);
+	char* combined = malloc(size);
+	StringCbPrintf(combined, size, "%s\\%s", dir, path);
 
 	struct VFile* file = VFileOpen(combined, mode);
 	free(combined);
@@ -108,8 +127,9 @@ struct VDir* _vdwOpenDir(struct VDir* vd, const char* path) {
 		return 0;
 	}
 	const char* dir = vdw->path;
-	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
-	sprintf(combined, "%s\\%s", dir, path);
+	size_t size = sizeof(char) * (strlen(path) + strlen(dir) + 2);
+	char* combined = malloc(size);
+	StringCbPrintf(combined, size, "%s\\%s", dir, path);
 
 	struct VDir* vd2 = VDirOpen(combined);
 	if (!vd2) {
@@ -125,8 +145,9 @@ bool _vdwDeleteFile(struct VDir* vd, const char* path) {
 		return 0;
 	}
 	const char* dir = vdw->path;
-	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
-	sprintf(combined, "%s\\%s", dir, path);
+	size_t size = sizeof(char) * (strlen(path) + strlen(dir) + 2);
+	char* combined = malloc(size);
+	StringCbPrintf(combined, size, "%s\\%s", dir, path);
 
 	bool ret = DeleteFile(combined);
 	free(combined);
@@ -135,7 +156,13 @@ bool _vdwDeleteFile(struct VDir* vd, const char* path) {
 
 const char* _vdweName(struct VDirEntry* vde) {
 	struct VDirEntryW32* vdwe = (struct VDirEntryW32*) vde;
-	return vdwe->ffData.cFileName;
+	if (vdwe->utf8Name) {
+		return vdwe->utf8Name;
+	}
+	size_t len = 4 * wcslen(vdwe->ffData.cFileName);
+	vdwe->utf8Name = malloc(len);
+	WideCharToMultiByte(CP_UTF8, 0, vdwe->ffData.cFileName, -1, vdwe->utf8Name, len - 1, NULL, NULL);
+	return vdwe->utf8Name;
 }
 
 static enum VFSType _vdweType(struct VDirEntry* vde) {

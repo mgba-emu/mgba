@@ -3,20 +3,21 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "serialize.h"
+#include <mgba/core/serialize.h>
 
-#include "core/core.h"
-#include "core/cheats.h"
-#include "util/memory.h"
-#include "util/vfs.h"
+#include <mgba/core/core.h>
+#include <mgba/core/cheats.h>
+#include <mgba/core/interface.h>
+#include <mgba-util/memory.h>
+#include <mgba-util/vfs.h>
 
 #ifdef USE_PNG
-#include "util/png-io.h"
+#include <mgba-util/png-io.h>
 #include <png.h>
 #include <zlib.h>
 #endif
 
-mLOG_DEFINE_CATEGORY(SAVESTATE, "Savestate");
+mLOG_DEFINE_CATEGORY(SAVESTATE, "Savestate", "core.serialize");
 
 struct mBundledState {
 	size_t stateSize;
@@ -328,6 +329,14 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 			mStateExtdataPut(&extdata, EXTDATA_CHEATS, &item);
 		}
 	}
+	if (flags & SAVESTATE_RTC) {
+		mLOG(SAVESTATE, INFO, "Loading RTC");
+		struct mStateExtdataItem item;
+		if (core->rtc.d.serialize) {
+			core->rtc.d.serialize(&core->rtc.d, &item);
+			mStateExtdataPut(&extdata, EXTDATA_RTC, &item);
+		}
+	}
 #ifdef USE_PNG
 	if (!(flags & SAVESTATE_SCREENSHOT)) {
 #else
@@ -423,6 +432,12 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 				mCheatParseFile(device, svf);
 				svf->close(svf);
 			}
+		}
+	}
+	if (flags & SAVESTATE_RTC && mStateExtdataGet(&extdata, EXTDATA_RTC, &item)) {
+		mLOG(SAVESTATE, INFO, "Loading RTC");
+		if (core->rtc.d.deserialize) {
+			core->rtc.d.deserialize(&core->rtc.d, &item);
 		}
 	}
 	mStateExtdataDeinit(&extdata);

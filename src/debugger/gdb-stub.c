@@ -3,12 +3,12 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "gdb-stub.h"
+#include <mgba/internal/debugger/gdb-stub.h>
 
-#include "arm/debugger/debugger.h"
-#include "arm/isa-inlines.h"
-#include "core/core.h"
-#include "gba/memory.h"
+#include <mgba/core/core.h>
+#include <mgba/internal/arm/debugger/debugger.h>
+#include <mgba/internal/arm/isa-inlines.h>
+#include <mgba/internal/gba/memory.h>
 
 #include <signal.h>
 

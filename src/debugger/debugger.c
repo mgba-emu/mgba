@@ -3,21 +3,19 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "debugger.h"
+#include <mgba/internal/debugger/debugger.h>
 
-#include "core/core.h"
+#include <mgba/core/core.h>
 
-#ifdef USE_CLI_DEBUGGER
-#include "debugger/cli-debugger.h"
-#endif
+#include <mgba/internal/debugger/cli-debugger.h>
 
 #ifdef USE_GDB_STUB
-#include "debugger/gdb-stub.h"
+#include <mgba/internal/debugger/gdb-stub.h>
 #endif
 
 const uint32_t DEBUGGER_ID = 0xDEADBEEF;
 
-mLOG_DEFINE_CATEGORY(DEBUGGER, "Debugger");
+mLOG_DEFINE_CATEGORY(DEBUGGER, "Debugger", "core.debugger");
 
 static void mDebuggerInit(void* cpu, struct mCPUComponent* component);
 static void mDebuggerDeinit(struct mCPUComponent* component);
@@ -29,9 +27,7 @@ struct mDebugger* mDebuggerCreate(enum mDebuggerType type, struct mCore* core) {
 
 	union DebugUnion {
 		struct mDebugger d;
-#ifdef USE_CLI_DEBUGGER
 		struct CLIDebugger cli;
-#endif
 #ifdef USE_GDB_STUB
 		struct GDBStub gdb;
 #endif
@@ -40,13 +36,11 @@ struct mDebugger* mDebuggerCreate(enum mDebuggerType type, struct mCore* core) {
 	union DebugUnion* debugger = malloc(sizeof(union DebugUnion));
 
 	switch (type) {
-#ifdef USE_CLI_DEBUGGER
 	case DEBUGGER_CLI:
 		CLIDebuggerCreate(&debugger->cli);
 		struct CLIDebuggerSystem* sys = core->cliDebuggerSystem(core);
 		CLIDebuggerAttachSystem(&debugger->cli, sys);
 		break;
-#endif
 #ifdef USE_GDB_STUB
 	case DEBUGGER_GDB:
 		GDBStubCreate(&debugger->gdb);

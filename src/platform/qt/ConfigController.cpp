@@ -11,9 +11,7 @@
 #include <QDir>
 #include <QMenu>
 
-extern "C" {
 #include "feature/commandline.h"
-}
 
 using namespace QGBA;
 
@@ -90,13 +88,13 @@ void ConfigOption::setValue(const QVariant& value) {
 	}
 }
 
+QString ConfigController::s_configDir;
+
 ConfigController::ConfigController(QObject* parent)
 	: QObject(parent)
 	, m_opts()
 {
-	char path[PATH_MAX];
-	mCoreConfigDirectory(path, sizeof(path));
-	QString fileName(path);
+	QString fileName = configDir();
 	fileName.append(QDir::separator());
 	fileName.append("qt.ini");
 	m_settings = new QSettings(fileName, QSettings::IniFormat, this);
@@ -112,8 +110,10 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.logLevel = mLOG_WARN | mLOG_ERROR | mLOG_FATAL;
 	m_opts.rewindEnable = false;
 	m_opts.rewindBufferCapacity = 300;
+	m_opts.rewindSave = true;
 	m_opts.useBios = true;
 	m_opts.suspendScreensaver = true;
+	m_opts.lockAspectRatio = true;
 	mCoreConfigLoad(&m_config);
 	mCoreConfigLoadDefaults(&m_config, &m_opts);
 	mCoreConfigMap(&m_config, &m_opts);
@@ -163,6 +163,10 @@ void ConfigController::updateOption(const char* key) {
 
 QString ConfigController::getOption(const char* key) const {
 	return QString(mCoreConfigGetValue(&m_config, key));
+}
+
+QString ConfigController::getOption(const QString& key) const {
+	return getOption(key.toUtf8().constData());
 }
 
 QVariant ConfigController::getQtOption(const QString& key, const QString& group) const {
@@ -270,9 +274,7 @@ void ConfigController::write() {
 void ConfigController::makePortable() {
 	mCoreConfigMakePortable(&m_config);
 
-	char path[PATH_MAX];
-	mCoreConfigDirectory(path, sizeof(path));
-	QString fileName(path);
+	QString fileName(configDir());
 	fileName.append(QDir::separator());
 	fileName.append("qt.ini");
 	QSettings* settings2 = new QSettings(fileName, QSettings::IniFormat, this);
@@ -281,4 +283,13 @@ void ConfigController::makePortable() {
 	}
 	delete m_settings;
 	m_settings = settings2;
+}
+
+const QString& ConfigController::configDir() {
+	if (s_configDir.isNull()) {
+		char path[PATH_MAX];
+		mCoreConfigDirectory(path, sizeof(path));
+		s_configDir = QString::fromUtf8(path);
+	}
+	return s_configDir;
 }
