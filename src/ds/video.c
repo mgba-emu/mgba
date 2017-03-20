@@ -221,7 +221,7 @@ static void _performCapture(struct DSVideo* video, int y) {
 	if (!video->p->memory.vramMode[block][4]) {
 		return;
 	}
-	uint16_t* vram = &video->vram[0x10000 * block + DSRegisterDISPCAPCNTGetWriteOffset(dispcap) * 0x4000];
+	uint16_t* vram = &video->vram[0x10000 * block];
 	const color_t* pixelsA;
 	color_t pixels[DS_VIDEO_HORIZONTAL_PIXELS];
 	int width = DS_VIDEO_HORIZONTAL_PIXELS;
@@ -241,7 +241,6 @@ static void _performCapture(struct DSVideo* video, int y) {
 		break;
 	}
 
-	video->p->gx.renderer->getScanline(video->p->gx.renderer, y, &pixelsA);
 	if (DSRegisterDISPCAPCNTIsSourceA(dispcap)) {
 		// TODO: Process scanline regardless of output type
 		video->p->gx.renderer->getScanline(video->p->gx.renderer, y, &pixelsA);
@@ -250,6 +249,7 @@ static void _performCapture(struct DSVideo* video, int y) {
 		pixelsA = pixels;
 	}
 
+	uint32_t base = DSRegisterDISPCAPCNTGetWriteOffset(dispcap) * 0x8000;
 	uint16_t pixel;
 	int x;
 	// TODO: Blending
@@ -267,7 +267,7 @@ static void _performCapture(struct DSVideo* video, int y) {
 		pixel |= (colorA >> 6) & 0x03E0;
 		pixel |= (colorA >> 3) & 0x001F;
 #endif
-		STORE_16(pixel, (x + y * DS_VIDEO_HORIZONTAL_PIXELS) * 2, vram);
+		STORE_16(pixel, ((x + y * DS_VIDEO_HORIZONTAL_PIXELS) * 2 + base) & 0x1FFFE, vram);
 	}
 }
 
