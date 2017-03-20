@@ -1294,6 +1294,7 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 		LDM_LOOP(if ((address & ~(DS9_SIZE_DTCM - 1)) == memory->dtcmBase) {
 			LOAD_32(value, address & (DS9_SIZE_DTCM - 1), memory->dtcm);
 		} else {
+			value = 0;
 			mLOG(DS_MEM, STUB, "Unimplemented DS9 LDM: %08X", address);
 		});
 		break;
