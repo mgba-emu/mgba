@@ -177,7 +177,9 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 	uint8_t r, g, b;
 	unsigned wr, wg, wb, wa;
 	if (poly->texFormat == 5) {
-		// TODO: Slot 2 uses upper half
+		if (!renderer->d.tex[1]) {
+			return 0;
+		}
 		uint16_t half = DSGXTexParamsGetVRAMBase(poly->poly->texParams) & 0x8000;
 		uint32_t slot1Base = (DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 1) + (texelCoord >> 2) + half;
 		uint16_t texel2 = renderer->d.tex[1][slot1Base];
