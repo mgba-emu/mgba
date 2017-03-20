@@ -2,7 +2,7 @@
 RETRODEFS ?= -D__LIBRETRO__ -DMINIMAL_CORE=2 -DM_CORE_GBA -DM_CORE_GB
 
 INCLUDES  += -I$(CORE_DIR)/src -I$(CORE_DIR)/src/arm -I$(CORE_DIR)/include
-RETRODEFS += -DHAVE_STDINT_H -DHAVE_INTTYPES_H -DINLINE=inline -DCOLOR_16_BIT -DCOLOR_5_6_5 -DRESAMPLE_LIBRARY=2 -DM_PI=3.14159265358979323846 -DPATH_MAX=4096 -DSSIZE_MAX=32767 -DGIT_VERSION=\"0.6.0-WIP\"
+RETRODEFS += -DHAVE_STDINT_H -DHAVE_INTTYPES_H -DINLINE=inline -DCOLOR_16_BIT -DCOLOR_5_6_5 -DRESAMPLE_LIBRARY=2 -DM_PI=3.14159265358979323846 -DPATH_MAX=4096 -DSSIZE_MAX=32767 -DGIT_VERSION=\"0.6-WIP\"
 
 ifneq ($(DEBUG), 1)
 	RETRODEFS += -DNDEBUG
@@ -29,6 +29,7 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/core/cheats.c \
 					$(CORE_DIR)/src/core/config.c \
 					$(CORE_DIR)/src/core/core.c \
+					$(CORE_DIR)/src/core/interface.c \
 					$(CORE_DIR)/src/core/lockstep.c \
 					$(CORE_DIR)/src/core/log.c \
 					$(CORE_DIR)/src/core/sync.c \
