@@ -1637,9 +1637,6 @@ void DSGXUpdateGXSTAT(struct DSGX* gx) {
 			gx->dmaSource = -1;
 		} else if (GBADMARegisterIsEnable(dma->reg) && entries < (DS_GX_FIFO_SIZE / 2) && !dma->nextCount) {
 			dma->nextCount = dma->count;
-			if (dma->count > 112) {
-				dma->nextCount = 112;
-			}
 			dma->when = mTimingCurrentTime(&gx->p->ds9.timing);
 			DSDMAUpdate(&gx->p->ds9);
 		}
