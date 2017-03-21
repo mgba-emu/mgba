@@ -37,6 +37,11 @@ void DSDMAReset(struct DSCommon* dscore) {
 	dscore->memory.activeDMA = -1;
 }
 
+static bool _isValidDMADAD(int dma, uint32_t address) {
+	UNUSED(dma);
+	return address >= DS_BASE_RAM;
+}
+
 uint32_t DSDMAWriteSAD(struct DSCommon* dscore, int dma, uint32_t address) {
 	address &= 0x0FFFFFFE;
 	dscore->memory.dma[dma].source = address;
@@ -45,7 +50,9 @@ uint32_t DSDMAWriteSAD(struct DSCommon* dscore, int dma, uint32_t address) {
 
 uint32_t DSDMAWriteDAD(struct DSCommon* dscore, int dma, uint32_t address) {
 	address &= 0x0FFFFFFE;
-	dscore->memory.dma[dma].dest = address;
+	if (_isValidDMADAD(dma, address)) {
+		dscore->memory.dma[dma].dest = address;
+	}
 	return dscore->memory.dma[dma].dest;
 }
 
@@ -199,7 +206,7 @@ void DSDMAUpdate(struct DSCommon* dscore) {
 }
 
 void DSDMAService(struct DSCommon* dscore, int number, struct GBADMA* info) {
-	struct DSCoreMemory* memory = &dscore->memory;
+	UNUSED(number);
 	struct ARMCore* cpu = dscore->cpu;
 	uint32_t width = 2 << GBADMARegisterGetWidth(info->reg);
 	int32_t wordsRemaining = info->nextCount;
