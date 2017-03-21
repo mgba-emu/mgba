@@ -283,7 +283,9 @@ static void _GBCoreReset(struct mCore* core) {
 			default:
 				break;
 			};
-			bios = VFileOpen(configPath, O_RDONLY);
+			if (configPath) {
+				bios = VFileOpen(configPath, O_RDONLY);
+			}
 			if (bios && GBIsBIOS(bios)) {
 				found = true;
 			} else if (bios) {

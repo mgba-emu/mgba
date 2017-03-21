@@ -158,7 +158,7 @@ bool mCoreLoadState(struct mCore* core, int slot, int flags) {
 	if (success) {
 		mLOG(STATUS, INFO, "State %i loaded", slot);
 	} else {
-		mLOG(STATUS, INFO, "State %i failed to loaded", slot);
+		mLOG(STATUS, INFO, "State %i failed to load", slot);
 	}
 
 	return success;

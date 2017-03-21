@@ -199,6 +199,7 @@ if(WIN32)
 	source_group("Windows-specific code" FILES ${OS_SRC})
 	if(MSVC)
 		add_definitions(-DNOMINMAX -DWIN32_LEAN_AND_MEAN)
+		set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 	endif()
 elseif(UNIX)
 	add_definitions(-DUSE_PTHREADS)
@@ -542,10 +543,12 @@ elseif(USE_ZLIB)
 	list(APPEND VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-zip.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/unzip.c)
-	set_source_files_properties(
-		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/unzip.c
-		PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter -Wno-implicit-function-declaration")
+	if(NOT MSVC)
+		set_source_files_properties(
+			${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c
+			${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/unzip.c
+			PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter -Wno-implicit-function-declaration")
+	endif()
 endif()
 
 if (USE_LZMA)
@@ -610,7 +613,7 @@ endif()
 
 if(M_CORE_GBA)
 	add_definitions(-DM_CORE_GBA)
-	list(APPEND CORE_SRC 
+	list(APPEND CORE_SRC
 		${ARM_SRC}
 		${GBA_SRC}
 		${GBA_CHEATS_SRC}
@@ -774,8 +777,11 @@ if(BUILD_OPENEMU)
 endif()
 
 if(BUILD_SDL)
-	add_definitions(-DBUILD_SDL)
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl ${CMAKE_CURRENT_BINARY_DIR}/sdl)
+	# The SDL platform CMakeLists could decide to disable SDL, so check again before adding the define.
+	if(BUILD_SDL)
+		add_definitions(-DBUILD_SDL)
+	endif()
 endif()
 
 if(BUILD_QT)

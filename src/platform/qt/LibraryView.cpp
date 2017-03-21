@@ -24,6 +24,7 @@ LibraryView::LibraryView(QWidget* parent)
 	m_ui.listing->horizontalHeader()->setSectionsMovable(true);
 	m_ui.listing->setModel(&m_model);
 	m_ui.listing->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+	m_model.reload();
 	resizeColumns();
 }
 

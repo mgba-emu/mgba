@@ -392,6 +392,12 @@ size_t mLibraryGetEntries(struct mLibrary* library, struct mLibraryListing* out,
 	return mLibraryListingSize(out);
 }
 
+void mLibraryEntryFree(struct mLibraryEntry* entry) {
+	free((void*) entry->title);
+	free((void*) entry->filename);
+	free((void*) entry->base);
+}
+
 struct VFile* mLibraryOpenVFile(struct mLibrary* library, const struct mLibraryEntry* entry) {
 	struct mLibraryListing entries;
 	mLibraryListingInit(&entries, 0);

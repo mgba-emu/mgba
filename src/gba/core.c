@@ -311,7 +311,9 @@ static void _GBACoreReset(struct mCore* core) {
 		}
 		if (!found) {
 			const char* configPath = mCoreConfigGetValue(&core->config, "gba.bios");
-			bios = VFileOpen(configPath, O_RDONLY);
+			if (configPath) {
+				bios = VFileOpen(configPath, O_RDONLY);
+			}
 			if (bios && GBAIsBIOS(bios)) {
 				found = true;
 			} else if (bios) {
