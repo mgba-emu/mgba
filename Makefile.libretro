@@ -86,7 +86,7 @@ ifneq (,$(findstring unix,$(platform)))
    fpic := -fPIC
    SHARED := -shared -Wl,-version-script=link.T
    DEFINES += -std=c99 -D_GNU_SOURCE -DHAVE_LOCALE
-   
+
    # Raspberry Pi 3
    ifneq (,$(findstring rpi3,$(platform)))
       # Using NEON optimizations results in an instant crashing core
@@ -155,34 +155,29 @@ else ifeq ($(platform), qnx)
    DEFINES += -Wc,-std=c99
 
 # PS3
-else ifeq ($(platform), ps3)
-   TARGET := $(TARGET_NAME)_libretro_$(platform).a
-   CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
-   AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
-   PLATFORM_DEFINES := -D__CELLOS_LV2__
-   STATIC_LINKING = 1
-   DEFINES += -std=c99
-   HAVE_VFS_FD = 0
-
-# sncps3
-else ifeq ($(platform), sncps3)
+else ifneq (,$(filter $(platform), ps3 sncps3 psl1ght))
    TARGET := $(TARGET_NAME)_libretro_ps3.a
-   CC = $(CELL_SDK)/host-win32/sn/bin/ps3ppusnc.exe
-   AR = $(CELL_SDK)/host-win32/sn/bin/ps3snarl.exe
    PLATFORM_DEFINES := -D__CELLOS_LV2__
    STATIC_LINKING = 1
    DEFINES += -std=c99
    HAVE_VFS_FD = 0
 
-# Lightweight PS3 Homebrew SDK
-else ifeq ($(platform), psl1ght)
-   TARGET := $(TARGET_NAME)_libretro_$(platform).a
-   CC = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
-   AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
-   PLATFORM_DEFINES := -D__CELLOS_LV2__
-   STATIC_LINKING = 1
-   DEFINES += -std=c99
-   HAVE_VFS_FD = 0
+   # sncps3
+   ifneq (,$(findstring sncps3,$(platform)))
+      CC = $(CELL_SDK)/host-win32/sn/bin/ps3ppusnc.exe
+      AR = $(CELL_SDK)/host-win32/sn/bin/ps3snarl.exe
+
+   # PS3
+   else ifneq (,$(findstring ps3,$(platform)))
+      CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
+      AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
+
+   # Lightweight PS3 Homebrew SDK
+   else ifneq (,$(findstring psl1ght,$(platform)))
+      TARGET := $(TARGET_NAME)_libretro_$(platform).a
+      CC = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
+      AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
+   endif
 
 # PSP
 else ifeq ($(platform), psp1)
@@ -203,7 +198,6 @@ else ifeq ($(platform), vita)
    STATIC_LINKING = 1
    DEFINES += -std=c99
 
-
 # CTR(3DS)
 else ifeq ($(platform), ctr)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
@@ -221,7 +215,6 @@ else ifeq ($(platform), ctr)
    CFLAGS += -DDISABLE_THREADING
    STATIC_LINKING = 1
 
-
 # Xbox 360
 else ifeq ($(platform), xenon)
    TARGET := $(TARGET_NAME)_libretro_xenon360.a
@@ -232,38 +225,29 @@ else ifeq ($(platform), xenon)
    DEFINES += -std=c99
    HAVE_VFS_FD = 0
 
-# Nintendo Game Cube
-else ifeq ($(platform), ngc)
+# Nintendo Game Cube / Wii / WiiU
+else ifneq (,$(filter $(platform), ngc wii wiiu))
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
-   PLATFORM_DEFINES += -DGEKKO -DHW_DOL -mrvl -mcpu=750 -meabi -mhard-float -DHAVE_STRTOF_L -DHAVE_LOCALE
+   PLATFORM_DEFINES += -DGEKKO -mcpu=750 -meabi -mhard-float -DHAVE_STRTOF_L -DHAVE_LOCALE
    PLATFORM_DEFINES += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int -D_GNU_SOURCE
    STATIC_LINKING = 1
    DEFINES += -std=c99
    HAVE_VFS_FD = 0
 
-# Nintendo Wii
-else ifeq ($(platform), wii)
-   TARGET := $(TARGET_NAME)_libretro_$(platform).a
-   CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
-   AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
-   PLATFORM_DEFINES += -DGEKKO -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float -DHAVE_STRTOF_L -DHAVE_LOCALE
-   PLATFORM_DEFINES += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int -D_GNU_SOURCE
-   STATIC_LINKING = 1
-   DEFINES += -std=c99
-   HAVE_VFS_FD = 0
+   # Nintendo WiiU
+   ifneq (,$(findstring wiiu,$(platform)))
+      PLATFORM_DEFINES += -DWIIU -DHW_RVL -mwup
 
-# Nintendo WiiU
-else ifeq ($(platform), wiiu)
-   TARGET := $(TARGET_NAME)_libretro_$(platform).a
-   CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
-   AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
-   PLATFORM_DEFINES += -DGEKKO -DWIIU -DHW_RVL -mwup -mcpu=750 -meabi -mhard-float -DHAVE_STRTOF_L -DHAVE_LOCALE
-   PLATFORM_DEFINES += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int -D_GNU_SOURCE
-   STATIC_LINKING = 1
-   DEFINES += -std=c99
-   HAVE_VFS_FD = 0
+   # Nintendo Wii
+   else ifneq (,$(findstring wii,$(platform)))
+      PLATFORM_DEFINES += -DHW_RVL -mrvl
+
+   # Nintendo Game Cube
+   else ifneq (,$(findstring ngc,$(platform)))
+      PLATFORM_DEFINES += -DHW_DOL -mrvl
+   endif
 
 # emscripten
 else ifeq ($(platform), emscripten)
