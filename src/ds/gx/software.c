@@ -245,19 +245,20 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 	}
 	switch (poly->blendFormat) {
 	default:
-		// TODO: Alpha
 		return _finishColor(r, g, b, pa);
-	case 1:
-		wr = (r * ta + ep->cr * (63 - ta)) >> 6;
-		wg = (g * ta + ep->cg * (63 - ta)) >> 6;
-		wb = (b * ta + ep->cb * (63 - ta)) >> 6;
-		return _finishColor(wr, wg, wb, pa);
 	case 0:
 		wr = ((r + 1) * (ep->cr + 1) - 1) >> 6;
 		wg = ((g + 1) * (ep->cg + 1) - 1) >> 6;
 		wb = ((b + 1) * (ep->cb + 1) - 1) >> 6;
 		wa = ((ta + 1) * (pa + 1) - 1) >> 6;
 		return _finishColor(wr, wg, wb, wa);
+	case 1:
+		wr = (r * ta + ep->cr * (63 - ta)) >> 6;
+		wg = (g * ta + ep->cg * (63 - ta)) >> 6;
+		wb = (b * ta + ep->cb * (63 - ta)) >> 6;
+		return _finishColor(wr, wg, wb, pa);
+	case 3:
+		return _finishColor(r, g, b, pa);
 	}
 }
 
@@ -651,7 +652,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 
 	color_t* scanline = &softwareRenderer->scanlineCache[DS_VIDEO_HORIZONTAL_PIXELS * y];
 	memset(scanline, 0, sizeof(color_t) * DS_VIDEO_HORIZONTAL_PIXELS);
-	memset(softwareRenderer->polygonIdBuffer, 0, sizeof(softwareRenderer->polygonIdBuffer[0]) * DS_VIDEO_HORIZONTAL_PIXELS);
+	memset(softwareRenderer->stencilBuffer, 0, sizeof(softwareRenderer->stencilBuffer[0]) * DS_VIDEO_HORIZONTAL_PIXELS);
 	for (i = 0; i < DS_VIDEO_HORIZONTAL_PIXELS; i += 4) {
 		softwareRenderer->depthBuffer[i] = INT32_MAX;
 		softwareRenderer->depthBuffer[i + 1] = INT32_MAX;
@@ -673,21 +674,31 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 			unsigned current = scanline[x];
 			unsigned b = current >> 27;
 			unsigned ab = a;
+			unsigned s = span->polyId;
 			if (b > ab) {
 				ab = b;
+			}
+			if (span->poly->blendFormat == 3) {
+				s |= 0x40;
 			}
 			if (a == 0x1F) {
 				if (softwareRenderer->wSort) {
 					if (span->ep[0].w < softwareRenderer->depthBuffer[x]) {
-						softwareRenderer->depthBuffer[x] = span->ep[0].w;
-						softwareRenderer->polygonIdBuffer[x] = span->polyId;
-						scanline[x] = color;
+						if (!(s & 0x40) || !(softwareRenderer->stencilBuffer[x] & s & 0x40)) {
+							softwareRenderer->depthBuffer[x] = span->ep[0].w;
+							scanline[x] = color;
+							s &= ~0x40;
+						}
+						softwareRenderer->stencilBuffer[x] = s;
 					}
 				} else {
 					if (span->ep[0].z < softwareRenderer->depthBuffer[x]) {
-						softwareRenderer->depthBuffer[x] = span->ep[0].z;
-						softwareRenderer->polygonIdBuffer[x] = span->polyId;
-						scanline[x] = color;
+						if (!(s & 0x40) || !(softwareRenderer->stencilBuffer[x] & s & 0x40)) {
+							softwareRenderer->depthBuffer[x] = span->ep[0].z;
+							scanline[x] = color;
+							s &= ~0x40;
+						}
+						softwareRenderer->stencilBuffer[x] = s;
 					}
 				}
 			} else if (a) {
@@ -696,22 +707,28 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 					color = _mix32(a, color, 0x1F - a, current);
 					color |= ab << 27;
 				}
-				if (softwareRenderer->polygonIdBuffer[x] != span->polyId) {
+				if (softwareRenderer->stencilBuffer[x] != s) {
 					if (softwareRenderer->wSort) {
 						if (span->ep[0].w < softwareRenderer->depthBuffer[x]) {
-							if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
-								softwareRenderer->depthBuffer[x] = span->ep[0].w;
+							if (s != 0x40 && !(softwareRenderer->stencilBuffer[x] & 0x40)) {
+								if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
+									softwareRenderer->depthBuffer[x] = span->ep[0].w;
+								}
+								scanline[x] = color;
+								s &= ~0x40;
 							}
-							softwareRenderer->polygonIdBuffer[x] = span->polyId;
-							scanline[x] = color;
+							softwareRenderer->stencilBuffer[x] = s;
 						}
 					} else {
 						if (span->ep[0].z < softwareRenderer->depthBuffer[x]) {
-							if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
-								softwareRenderer->depthBuffer[x] = span->ep[0].z;
+							if (s != 0x40 && !(softwareRenderer->stencilBuffer[x] & 0x40)) {
+								if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
+									softwareRenderer->depthBuffer[x] = span->ep[0].z;
+								}
+								scanline[x] = color;
+								s &= ~0x40;
 							}
-							softwareRenderer->polygonIdBuffer[x] = span->polyId;
-							scanline[x] = color;
+							softwareRenderer->stencilBuffer[x] = s;
 						}
 					}
 				}

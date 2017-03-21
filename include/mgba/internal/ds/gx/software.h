@@ -88,7 +88,7 @@ struct DSGXSoftwareRenderer {
 	struct DSGXSoftwareSpan** bucket;
 
 	int32_t depthBuffer[DS_VIDEO_HORIZONTAL_PIXELS];
-	uint8_t polygonIdBuffer[DS_VIDEO_HORIZONTAL_PIXELS];
+	uint8_t stencilBuffer[DS_VIDEO_HORIZONTAL_PIXELS];
 	color_t* scanlineCache;
 	bool flushPending;
 	bool wSort;
