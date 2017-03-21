@@ -275,6 +275,18 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		ARM_WRITE_PC; \
 	}
 
+#define ARM_LOAD_POST_BODY_v5 \
+	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32; \
+	if (rd == ARM_PC) { \
+		_ARMSetMode(cpu, cpu->gprs[ARM_PC] & 0x00000001); \
+		cpu->gprs[ARM_PC] &= 0xFFFFFFFE; \
+		if (cpu->executionMode == MODE_THUMB) { \
+			THUMB_WRITE_PC; \
+		} else { \
+			ARM_WRITE_PC; \
+		} \
+	}
+
 #define ARM_STORE_POST_BODY \
 	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32;
 
@@ -589,6 +601,7 @@ DEFINE_MULTIPLY_INSTRUCTION_2_ARM(UMULL,
 // Begin load/store definitions
 
 DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDR, cpu->gprs[rd] = cpu->memory.load32(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRv5, cpu->gprs[rd] = cpu->memory.load32(cpu, address, &currentCycles); ARM_LOAD_POST_BODY_v5;)
 DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRB, cpu->gprs[rd] = cpu->memory.load8(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
 DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRH, cpu->gprs[rd] = cpu->memory.load16(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
 DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSB, cpu->gprs[rd] = ARM_SXT_8(cpu->memory.load8(cpu, address, &currentCycles)); ARM_LOAD_POST_BODY;)
