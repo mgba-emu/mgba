@@ -49,9 +49,7 @@ struct DSGXSoftwareEdge {
 };
 
 struct DSGXSoftwareEndpoint {
-	int32_t x; // 20.12
-	int32_t z;
-	int32_t w;
+	int32_t coord[4]; // 20.12
 	int64_t wRecip;
 	uint8_t cr;
 	uint8_t cg;
@@ -91,7 +89,7 @@ struct DSGXSoftwareRenderer {
 	uint8_t stencilBuffer[DS_VIDEO_HORIZONTAL_PIXELS];
 	color_t* scanlineCache;
 	bool flushPending;
-	bool wSort;
+	int sort;
 
 	struct DSGXVertex* verts;
 };

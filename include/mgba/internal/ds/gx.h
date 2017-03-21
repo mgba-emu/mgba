@@ -109,9 +109,7 @@ struct DSGXEntry {
 
 struct DSGXVertex {
 	// World coords
-	int16_t x; // 4.12
-	int16_t y; // 4.12
-	int16_t z; // 4.12
+	int16_t coord[3]; // 4.12
 
 	// Color/Texcoords
 	uint16_t color; // 5.5.5
@@ -119,10 +117,7 @@ struct DSGXVertex {
 	int16_t t; // 12.4
 
 	// Viewport coords
-	int32_t vx;
-	int32_t vy;
-	int32_t vz;
-	int32_t vw;
+	int32_t viewCoord[4];
 	int16_t vs; // 12.4
 	int16_t vt; // 12.4
 };

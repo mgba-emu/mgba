@@ -300,16 +300,16 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 		return false;
 	}
 
-	span->ep[index].x = (((int64_t) (edge->x1 - edge->x0) * yw) / height) + edge->x0;
+	span->ep[index].coord[0] = (((int64_t) (edge->x1 - edge->x0) * yw) / height) + edge->x0;
 
 	if (index) {
-		if (span->ep[0].x == span->ep[index].x) {
+		if (span->ep[0].coord[0] == span->ep[index].coord[0]) {
 			return false;
 		}
-		if (span->ep[0].x > span->ep[index].x) {
-			int32_t temp = span->ep[index].x;
+		if (span->ep[0].coord[0] > span->ep[index].coord[0]) {
+			int32_t temp = span->ep[index].coord[0];
 			span->ep[index] = span->ep[0];
-			span->ep[0].x = temp;
+			span->ep[0].coord[0] = temp;
 			index = 0;
 		}
 	}
@@ -329,11 +329,11 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 	w += div;
 	w += w0;
 
-	span->ep[index].w = 0x7FFFFFFFFFFFFFFF / w;
+	span->ep[index].coord[3] = 0x7FFFFFFFFFFFFFFF / w;
 	span->ep[index].wRecip = w;
 	int32_t qr = (yw << 12) / height;
 
-	span->ep[index].z  = _interpolate(edge->z0, edge->z1, w0, w1, w, qr);
+	span->ep[index].coord[2]  = _interpolate(edge->z0, edge->z1, w0, w1, w, qr);
 	span->ep[index].cr = _interpolate(edge->cr0, edge->cr1, w0, w1, w, qr);
 	span->ep[index].cg = _interpolate(edge->cg0, edge->cg1, w0, w1, w, qr);
 	span->ep[index].cb = _interpolate(edge->cb0, edge->cb1, w0, w1, w, qr);
@@ -344,10 +344,10 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 }
 
 static void _createStep(struct DSGXSoftwareSpan* span) {
-	int32_t width = (span->ep[1].x - span->ep[0].x) >> 7;
+	int32_t width = (span->ep[1].coord[0] - span->ep[0].coord[0]) >> 7;
 
 	span->ep[0].stepW = span->ep[0].wRecip;
-	span->ep[0].stepZ = span->ep[0].z  * span->ep[0].wRecip;
+	span->ep[0].stepZ = span->ep[0].coord[2] * span->ep[0].wRecip;
 	span->ep[0].stepR = span->ep[0].cr * span->ep[0].wRecip;
 	span->ep[0].stepG = span->ep[0].cg * span->ep[0].wRecip;
 	span->ep[0].stepB = span->ep[0].cb * span->ep[0].wRecip;
@@ -355,7 +355,7 @@ static void _createStep(struct DSGXSoftwareSpan* span) {
 	span->ep[0].stepT = span->ep[0].t  * span->ep[0].wRecip;
 
 	span->ep[1].stepW = span->ep[1].wRecip;
-	span->ep[1].stepZ = span->ep[1].z  * span->ep[1].wRecip;
+	span->ep[1].stepZ = span->ep[1].coord[2] * span->ep[1].wRecip;
 	span->ep[1].stepR = span->ep[1].cr * span->ep[1].wRecip;
 	span->ep[1].stepG = span->ep[1].cg * span->ep[1].wRecip;
 	span->ep[1].stepB = span->ep[1].cb * span->ep[1].wRecip;
@@ -365,7 +365,7 @@ static void _createStep(struct DSGXSoftwareSpan* span) {
 	if (!width) {
 		return;
 	}
-	span->step.x = span->ep[1].x - span->ep[0].x;
+	span->step.coord[0] = span->ep[1].coord[0] - span->ep[0].coord[0];
 	span->step.stepW = (span->ep[1].stepW - span->ep[0].stepW) / width;
 	span->step.stepZ = (span->ep[1].stepZ - span->ep[0].stepZ) / width;
 	span->step.stepR = (span->ep[1].stepR - span->ep[0].stepR) / width;
@@ -377,32 +377,32 @@ static void _createStep(struct DSGXSoftwareSpan* span) {
 
 static void _stepEndpoint(struct DSGXSoftwareSpan* span) {
 	int i = 28;
-	int32_t nextX = (span->ep[0].x & ~0xFFF) + 0x1000;
-	span->ep[0].x += 0x80 * i;
-	while (span->ep[0].x < nextX) {
-		span->ep[0].x += 0x80;
+	int32_t nextX = (span->ep[0].coord[0] & ~0xFFF) + 0x1000;
+	span->ep[0].coord[0] += 0x80 * i;
+	while (span->ep[0].coord[0] < nextX) {
+		span->ep[0].coord[0] += 0x80;
 		++i;
 	}
 	span->ep[0].wRecip += span->step.stepW * i;
-	span->ep[0].w = (0x7FFFFFFFFFFFFFFF / span->ep[0].wRecip) + 1;
+	span->ep[0].coord[3] = (0x7FFFFFFFFFFFFFFF / span->ep[0].wRecip) + 1;
 
 	span->ep[0].stepZ += span->step.stepZ * i;
-	span->ep[0].z = _divideBy(span->ep[0].stepZ, span->ep[0].w);
+	span->ep[0].coord[2] = _divideBy(span->ep[0].stepZ, span->ep[0].coord[3]);
 
 	span->ep[0].stepR += span->step.stepR * i;
-	span->ep[0].cr = _divideBy(span->ep[0].stepR, span->ep[0].w);
+	span->ep[0].cr = _divideBy(span->ep[0].stepR, span->ep[0].coord[3]);
 
 	span->ep[0].stepG += span->step.stepG * i;
-	span->ep[0].cg = _divideBy(span->ep[0].stepG, span->ep[0].w);
+	span->ep[0].cg = _divideBy(span->ep[0].stepG, span->ep[0].coord[3]);
 
 	span->ep[0].stepB += span->step.stepB * i;
-	span->ep[0].cb = _divideBy(span->ep[0].stepB, span->ep[0].w);
+	span->ep[0].cb = _divideBy(span->ep[0].stepB, span->ep[0].coord[3]);
 
 	span->ep[0].stepS += span->step.stepS * i;
-	span->ep[0].s = _divideBy(span->ep[0].stepS, span->ep[0].w);
+	span->ep[0].s = _divideBy(span->ep[0].stepS, span->ep[0].coord[3]);
 
 	span->ep[0].stepT += span->step.stepT * i;
-	span->ep[0].t = _divideBy(span->ep[0].stepT, span->ep[0].w);
+	span->ep[0].t = _divideBy(span->ep[0].stepT, span->ep[0].coord[3]);
 }
 
 void DSGXSoftwareRendererCreate(struct DSGXSoftwareRenderer* renderer) {
@@ -475,44 +475,44 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 	struct DSGXVertex* v0 = &verts[poly->poly->vertIds[0]];
 	struct DSGXVertex* v1;
 
-	int32_t v0x = (v0->vx + v0->vw) * (int64_t) (renderer->viewportWidth << 12) / (v0->vw * 2) + (renderer->viewportX << 12);
-	int32_t v0y = (-v0->vy + v0->vw) * (int64_t) (renderer->viewportHeight << 12) / (v0->vw * 2) + (renderer->viewportY << 12);
+	int32_t v0x = (v0->viewCoord[0] + v0->viewCoord[3]) * (int64_t) (renderer->viewportWidth << 12) / (v0->viewCoord[3] * 2) + (renderer->viewportX << 12);
+	int32_t v0y = (-v0->viewCoord[1] + v0->viewCoord[3]) * (int64_t) (renderer->viewportHeight << 12) / (v0->viewCoord[3] * 2) + (renderer->viewportY << 12);
 
 	int v;
 	for (v = 1; v < poly->poly->verts; ++v) {
 		v1 = &verts[poly->poly->vertIds[v]];
-		int32_t v1x = (v1->vx + v1->vw) * (int64_t) (renderer->viewportWidth << 12) / (v1->vw * 2) + (renderer->viewportX << 12);
-		int32_t v1y = (-v1->vy + v1->vw) * (int64_t) (renderer->viewportHeight << 12) / (v1->vw * 2) + (renderer->viewportY << 12);
+		int32_t v1x = (v1->viewCoord[0] + v1->viewCoord[3]) * (int64_t) (renderer->viewportWidth << 12) / (v1->viewCoord[3] * 2) + (renderer->viewportX << 12);
+		int32_t v1y = (-v1->viewCoord[1] + v1->viewCoord[3]) * (int64_t) (renderer->viewportHeight << 12) / (v1->viewCoord[3] * 2) + (renderer->viewportY << 12);
 
 		if (v0y <= v1y) {
 			edge->y0 = v0y;
 			edge->x0 = v0x;
-			edge->z0 = v0->vz;
-			edge->w0 = v0->vw;
+			edge->z0 = v0->viewCoord[2];
+			edge->w0 = v0->viewCoord[3];
 			_expandColor(v0->color, &edge->cr0, &edge->cg0, &edge->cb0);
 			edge->s0 = v0->vs;
 			edge->t0 = v0->vt;
 
 			edge->y1 = v1y;
 			edge->x1 = v1x;
-			edge->z1 = v1->vz;
-			edge->w1 = v1->vw;
+			edge->z1 = v1->viewCoord[2];
+			edge->w1 = v1->viewCoord[3];
 			_expandColor(v1->color, &edge->cr1, &edge->cg1, &edge->cb1);
 			edge->s1 = v1->vs;
 			edge->t1 = v1->vt;
 		} else {
 			edge->y0 = v1y;
 			edge->x0 = v1x;
-			edge->z0 = v1->vz;
-			edge->w0 = v1->vw;
+			edge->z0 = v1->viewCoord[2];
+			edge->w0 = v1->viewCoord[3];
 			_expandColor(v1->color, &edge->cr0, &edge->cg0, &edge->cb0);
 			edge->s0 = v1->vs;
 			edge->t0 = v1->vt;
 
 			edge->y1 = v0y;
 			edge->x1 = v0x;
-			edge->z1 = v0->vz;
-			edge->w1 = v0->vw;
+			edge->z1 = v0->viewCoord[2];
+			edge->w1 = v0->viewCoord[3];
 			_expandColor(v0->color, &edge->cr1, &edge->cg1, &edge->cb1);
 			edge->s1 = v0->vs;
 			edge->t1 = v0->vt;
@@ -526,38 +526,38 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 	}
 
 	v1 = &verts[poly->poly->vertIds[0]];
-	int32_t v1x = (v1->vx + v1->vw) * (int64_t) (renderer->viewportWidth << 12) / (v1->vw * 2) + (renderer->viewportX << 12);
-	int32_t v1y = (-v1->vy + v1->vw) * (int64_t) (renderer->viewportHeight << 12) / (v1->vw * 2) + (renderer->viewportY << 12);
+	int32_t v1x = (v1->viewCoord[0] + v1->viewCoord[3]) * (int64_t) (renderer->viewportWidth << 12) / (v1->viewCoord[3] * 2) + (renderer->viewportX << 12);
+	int32_t v1y = (-v1->viewCoord[1] + v1->viewCoord[3]) * (int64_t) (renderer->viewportHeight << 12) / (v1->viewCoord[3] * 2) + (renderer->viewportY << 12);
 
 	if (v0y <= v1y) {
 		edge->y0 = v0y;
 		edge->x0 = v0x;
-		edge->z0 = v0->vz;
-		edge->w0 = v0->vw;
+		edge->z0 = v0->viewCoord[2];
+		edge->w0 = v0->viewCoord[3];
 		_expandColor(v0->color, &edge->cr0, &edge->cg0, &edge->cb0);
 		edge->s0 = v0->vs;
 		edge->t0 = v0->vt;
 
 		edge->y1 = v1y;
 		edge->x1 = v1x;
-		edge->z1 = v1->vz;
-		edge->w1 = v1->vw;
+		edge->z1 = v1->viewCoord[2];
+		edge->w1 = v1->viewCoord[3];
 		_expandColor(v1->color, &edge->cr1, &edge->cg1, &edge->cb1);
 		edge->s1 = v1->vs;
 		edge->t1 = v1->vt;
 	} else {
 		edge->y0 = v1y;
 		edge->x0 = v1x;
-		edge->z0 = v1->vz;
-		edge->w0 = v1->vw;
+		edge->z0 = v1->viewCoord[2];
+		edge->w0 = v1->viewCoord[3];
 		_expandColor(v1->color, &edge->cr0, &edge->cg0, &edge->cb0);
 		edge->s0 = v1->vs;
 		edge->t0 = v1->vt;
 
 		edge->y1 = v0y;
 		edge->x1 = v0x;
-		edge->z1 = v0->vz;
-		edge->w1 = v0->vw;
+		edge->z1 = v0->viewCoord[2];
+		edge->w1 = v0->viewCoord[3];
 		_expandColor(v0->color, &edge->cr1, &edge->cg1, &edge->cb1);
 		edge->s1 = v0->vs;
 		edge->t1 = v0->vt;
@@ -568,7 +568,7 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
 
 	softwareRenderer->flushPending = true;
-	softwareRenderer->wSort = wSort;
+	softwareRenderer->sort = wSort ? 3 : 2;
 	softwareRenderer->verts = verts;
 	DSGXSoftwarePolygonListClear(&softwareRenderer->activePolys);
 	DSGXSoftwareEdgeListClear(&softwareRenderer->activeEdges);
@@ -631,7 +631,7 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 
 		unsigned poly = edge->polyId;
 		struct DSGXSoftwareSpan* span = softwareRenderer->bucket[poly];
-		if (span && !span->ep[1].w) {
+		if (span && !span->ep[1].coord[3]) {
 			if (_edgeToSpan(span, edge, 1, y << 12)) {
 				_createStep(span);
 				softwareRenderer->bucket[poly] = NULL;
@@ -663,11 +663,11 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 	for (i = 0; i < DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans); ++i) {
 		struct DSGXSoftwareSpan* span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, i);
 
-		int32_t x = span->ep[0].x >> 12;
+		int32_t x = span->ep[0].coord[0] >> 12;
 		if (x < 0) {
 			x = 0;
 		}
-		for (; x < (span->ep[1].x >> 12) && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
+		for (; x < (span->ep[1].coord[0] >> 12) && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
 			color_t color = _lookupColor(softwareRenderer, &span->ep[0], span->poly);
 			_stepEndpoint(span);
 			unsigned a = color >> 27;
@@ -682,24 +682,13 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 				s |= 0x40;
 			}
 			if (a == 0x1F) {
-				if (softwareRenderer->wSort) {
-					if (span->ep[0].w < softwareRenderer->depthBuffer[x]) {
-						if (!(s & 0x40) || !(softwareRenderer->stencilBuffer[x] & s & 0x40)) {
-							softwareRenderer->depthBuffer[x] = span->ep[0].w;
-							scanline[x] = color;
-							s &= ~0x40;
-						}
-						softwareRenderer->stencilBuffer[x] = s;
+				if (span->ep[0].coord[softwareRenderer->sort] < softwareRenderer->depthBuffer[x]) {
+					if (s != 0x40 && !(softwareRenderer->stencilBuffer[x] & 0x40)) {
+						softwareRenderer->depthBuffer[x] = span->ep[0].coord[softwareRenderer->sort];
+						scanline[x] = color;
+						s &= ~0x40;
 					}
-				} else {
-					if (span->ep[0].z < softwareRenderer->depthBuffer[x]) {
-						if (!(s & 0x40) || !(softwareRenderer->stencilBuffer[x] & s & 0x40)) {
-							softwareRenderer->depthBuffer[x] = span->ep[0].z;
-							scanline[x] = color;
-							s &= ~0x40;
-						}
-						softwareRenderer->stencilBuffer[x] = s;
-					}
+					softwareRenderer->stencilBuffer[x] = s;
 				}
 			} else if (a) {
 				// TODO: Disable alpha?
@@ -708,28 +697,15 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 					color |= ab << 27;
 				}
 				if (softwareRenderer->stencilBuffer[x] != s) {
-					if (softwareRenderer->wSort) {
-						if (span->ep[0].w < softwareRenderer->depthBuffer[x]) {
-							if (s != 0x40 && !(softwareRenderer->stencilBuffer[x] & 0x40)) {
-								if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
-									softwareRenderer->depthBuffer[x] = span->ep[0].w;
-								}
-								scanline[x] = color;
-								s &= ~0x40;
+					if (span->ep[0].coord[softwareRenderer->sort] < softwareRenderer->depthBuffer[x]) {
+						if (s != 0x40 && !(softwareRenderer->stencilBuffer[x] & 0x40)) {
+							if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
+								softwareRenderer->depthBuffer[x] = span->ep[0].coord[softwareRenderer->sort];
 							}
-							softwareRenderer->stencilBuffer[x] = s;
+							scanline[x] = color;
+							s &= ~0x40;
 						}
-					} else {
-						if (span->ep[0].z < softwareRenderer->depthBuffer[x]) {
-							if (s != 0x40 && !(softwareRenderer->stencilBuffer[x] & 0x40)) {
-								if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
-									softwareRenderer->depthBuffer[x] = span->ep[0].z;
-								}
-								scanline[x] = color;
-								s &= ~0x40;
-							}
-							softwareRenderer->stencilBuffer[x] = s;
-						}
+						softwareRenderer->stencilBuffer[x] = s;
 					}
 				}
 			}
