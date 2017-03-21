@@ -667,6 +667,10 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 		if (x < 0) {
 			x = 0;
 		}
+		unsigned stencilValue = span->polyId;
+		if (span->poly->blendFormat == 3) {
+			stencilValue |= 0x40;
+		}
 		for (; x < (span->ep[1].coord[0] >> 12) && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
 			color_t color = _lookupColor(softwareRenderer, &span->ep[0], span->poly);
 			_stepEndpoint(span);
@@ -674,16 +678,13 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 			unsigned current = scanline[x];
 			unsigned b = current >> 27;
 			unsigned ab = a;
-			unsigned s = span->polyId;
+			unsigned s = stencilValue;
 			if (b > ab) {
 				ab = b;
 			}
-			if (span->poly->blendFormat == 3) {
-				s |= 0x40;
-			}
 			if (a == 0x1F) {
 				if (span->ep[0].coord[softwareRenderer->sort] < softwareRenderer->depthBuffer[x]) {
-					if (s != 0x40 && !(softwareRenderer->stencilBuffer[x] & 0x40)) {
+					if (!(s == 0x40 || (softwareRenderer->stencilBuffer[x] & 0x40))) {
 						softwareRenderer->depthBuffer[x] = span->ep[0].coord[softwareRenderer->sort];
 						scanline[x] = color;
 						s &= ~0x40;
@@ -696,17 +697,15 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 					color = _mix32(a, color, 0x1F - a, current);
 					color |= ab << 27;
 				}
-				if (softwareRenderer->stencilBuffer[x] != s) {
-					if (span->ep[0].coord[softwareRenderer->sort] < softwareRenderer->depthBuffer[x]) {
-						if (s != 0x40 && !(softwareRenderer->stencilBuffer[x] & 0x40)) {
-							if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
-								softwareRenderer->depthBuffer[x] = span->ep[0].coord[softwareRenderer->sort];
-							}
-							scanline[x] = color;
-							s &= ~0x40;
+				if (softwareRenderer->stencilBuffer[x] != s && span->ep[0].coord[softwareRenderer->sort] < softwareRenderer->depthBuffer[x]) {
+					if (!(s == 0x40 || (softwareRenderer->stencilBuffer[x] & 0x40))) {
+						if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
+							softwareRenderer->depthBuffer[x] = span->ep[0].coord[softwareRenderer->sort];
 						}
-						softwareRenderer->stencilBuffer[x] = s;
+						scanline[x] = color;
+						s &= ~0x40;
 					}
+					softwareRenderer->stencilBuffer[x] = s;
 				}
 			}
 		}
