@@ -442,99 +442,44 @@ static void DSGXSoftwareRendererInvalidateTex(struct DSGXRenderer* renderer, int
 	// TODO
 }
 
-static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount, bool wSort) {
+static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXSoftwarePolygon* poly, int polyId) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
-
-	softwareRenderer->flushPending = true;
-	softwareRenderer->wSort = wSort;
-	softwareRenderer->verts = verts;
-	DSGXSoftwarePolygonListClear(&softwareRenderer->activePolys);
-	DSGXSoftwareEdgeListClear(&softwareRenderer->activeEdges);
-	unsigned i;
-	for (i = 0; i < polyCount; ++i) {
-		struct DSGXSoftwarePolygon* poly = DSGXSoftwarePolygonListAppend(&softwareRenderer->activePolys);
-		struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListAppend(&softwareRenderer->activeEdges);
-		poly->poly = &polys[i];
-		poly->texFormat = DSGXTexParamsGetFormat(poly->poly->texParams);
-		poly->blendFormat = DSGXPolygonAttrsGetMode(poly->poly->polyParams);
-		poly->texW = 8 << DSGXTexParamsGetSSize(poly->poly->texParams);
-		poly->texH = 8 << DSGXTexParamsGetTSize(poly->poly->texParams);
-		if (!renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET]) {
+	struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListAppend(&softwareRenderer->activeEdges);
+	poly->texFormat = DSGXTexParamsGetFormat(poly->poly->texParams);
+	poly->blendFormat = DSGXPolygonAttrsGetMode(poly->poly->polyParams);
+	poly->texW = 8 << DSGXTexParamsGetSSize(poly->poly->texParams);
+	poly->texH = 8 << DSGXTexParamsGetTSize(poly->poly->texParams);
+	if (!renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET]) {
+		poly->texBase = NULL;
+		poly->palBase = NULL;
+	} else {
+		switch (poly->texFormat) {
+		case 0:
+		case 7:
 			poly->texBase = NULL;
 			poly->palBase = NULL;
-		} else {
-			switch (poly->texFormat) {
-			case 0:
-			case 7:
-				poly->texBase = NULL;
-				poly->palBase = NULL;
-				break;
-			case 2:
-				poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
-				poly->palBase = &renderer->texPal[poly->poly->palBase >> 11][(poly->poly->palBase << 2) & 0x1FFF];
-				break;
-			default:
-				poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
-				poly->palBase = &renderer->texPal[poly->poly->palBase >> 10][(poly->poly->palBase << 3) & 0x1FFF];
-				break;
-			}
+			break;
+		case 2:
+			poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
+			poly->palBase = &renderer->texPal[poly->poly->palBase >> 11][(poly->poly->palBase << 2) & 0x1FFF];
+			break;
+		default:
+			poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
+			poly->palBase = &renderer->texPal[poly->poly->palBase >> 10][(poly->poly->palBase << 3) & 0x1FFF];
+			break;
 		}
-		edge->polyId = i;
+	}
+	edge->polyId = polyId;
 
-		struct DSGXVertex* v0 = &verts[poly->poly->vertIds[0]];
-		struct DSGXVertex* v1;
+	struct DSGXVertex* v0 = &verts[poly->poly->vertIds[0]];
+	struct DSGXVertex* v1;
 
-		int32_t v0x = (v0->vx + v0->vw) * (int64_t) (renderer->viewportWidth << 12) / (v0->vw * 2) + (renderer->viewportX << 12);
-		int32_t v0y = (-v0->vy + v0->vw) * (int64_t) (renderer->viewportHeight << 12) / (v0->vw * 2) + (renderer->viewportY << 12);
+	int32_t v0x = (v0->vx + v0->vw) * (int64_t) (renderer->viewportWidth << 12) / (v0->vw * 2) + (renderer->viewportX << 12);
+	int32_t v0y = (-v0->vy + v0->vw) * (int64_t) (renderer->viewportHeight << 12) / (v0->vw * 2) + (renderer->viewportY << 12);
 
-		int v;
-		for (v = 1; v < poly->poly->verts; ++v) {
-			v1 = &verts[poly->poly->vertIds[v]];
-			int32_t v1x = (v1->vx + v1->vw) * (int64_t) (renderer->viewportWidth << 12) / (v1->vw * 2) + (renderer->viewportX << 12);
-			int32_t v1y = (-v1->vy + v1->vw) * (int64_t) (renderer->viewportHeight << 12) / (v1->vw * 2) + (renderer->viewportY << 12);
-
-			if (v0y <= v1y) {
-				edge->y0 = v0y;
-				edge->x0 = v0x;
-				edge->z0 = v0->vz;
-				edge->w0 = v0->vw;
-				_expandColor(v0->color, &edge->cr0, &edge->cg0, &edge->cb0);
-				edge->s0 = v0->vs;
-				edge->t0 = v0->vt;
-
-				edge->y1 = v1y;
-				edge->x1 = v1x;
-				edge->z1 = v1->vz;
-				edge->w1 = v1->vw;
-				_expandColor(v1->color, &edge->cr1, &edge->cg1, &edge->cb1);
-				edge->s1 = v1->vs;
-				edge->t1 = v1->vt;
-			} else {
-				edge->y0 = v1y;
-				edge->x0 = v1x;
-				edge->z0 = v1->vz;
-				edge->w0 = v1->vw;
-				_expandColor(v1->color, &edge->cr0, &edge->cg0, &edge->cb0);
-				edge->s0 = v1->vs;
-				edge->t0 = v1->vt;
-
-				edge->y1 = v0y;
-				edge->x1 = v0x;
-				edge->z1 = v0->vz;
-				edge->w1 = v0->vw;
-				_expandColor(v0->color, &edge->cr1, &edge->cg1, &edge->cb1);
-				edge->s1 = v0->vs;
-				edge->t1 = v0->vt;
-			}
-
-			edge = DSGXSoftwareEdgeListAppend(&softwareRenderer->activeEdges);
-			edge->polyId = i;
-			v0 = v1;
-			v0x = v1x;
-			v0y = v1y;
-		}
-
-		v1 = &verts[poly->poly->vertIds[0]];
+	int v;
+	for (v = 1; v < poly->poly->verts; ++v) {
+		v1 = &verts[poly->poly->vertIds[v]];
 		int32_t v1x = (v1->vx + v1->vw) * (int64_t) (renderer->viewportWidth << 12) / (v1->vw * 2) + (renderer->viewportX << 12);
 		int32_t v1y = (-v1->vy + v1->vw) * (int64_t) (renderer->viewportHeight << 12) / (v1->vw * 2) + (renderer->viewportY << 12);
 
@@ -571,6 +516,99 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 			edge->s1 = v0->vs;
 			edge->t1 = v0->vt;
 		}
+
+		edge = DSGXSoftwareEdgeListAppend(&softwareRenderer->activeEdges);
+		edge->polyId = polyId;
+		v0 = v1;
+		v0x = v1x;
+		v0y = v1y;
+	}
+
+	v1 = &verts[poly->poly->vertIds[0]];
+	int32_t v1x = (v1->vx + v1->vw) * (int64_t) (renderer->viewportWidth << 12) / (v1->vw * 2) + (renderer->viewportX << 12);
+	int32_t v1y = (-v1->vy + v1->vw) * (int64_t) (renderer->viewportHeight << 12) / (v1->vw * 2) + (renderer->viewportY << 12);
+
+	if (v0y <= v1y) {
+		edge->y0 = v0y;
+		edge->x0 = v0x;
+		edge->z0 = v0->vz;
+		edge->w0 = v0->vw;
+		_expandColor(v0->color, &edge->cr0, &edge->cg0, &edge->cb0);
+		edge->s0 = v0->vs;
+		edge->t0 = v0->vt;
+
+		edge->y1 = v1y;
+		edge->x1 = v1x;
+		edge->z1 = v1->vz;
+		edge->w1 = v1->vw;
+		_expandColor(v1->color, &edge->cr1, &edge->cg1, &edge->cb1);
+		edge->s1 = v1->vs;
+		edge->t1 = v1->vt;
+	} else {
+		edge->y0 = v1y;
+		edge->x0 = v1x;
+		edge->z0 = v1->vz;
+		edge->w0 = v1->vw;
+		_expandColor(v1->color, &edge->cr0, &edge->cg0, &edge->cb0);
+		edge->s0 = v1->vs;
+		edge->t0 = v1->vt;
+
+		edge->y1 = v0y;
+		edge->x1 = v0x;
+		edge->z1 = v0->vz;
+		edge->w1 = v0->vw;
+		_expandColor(v0->color, &edge->cr1, &edge->cg1, &edge->cb1);
+		edge->s1 = v0->vs;
+		edge->t1 = v0->vt;
+	}
+}
+
+static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount, bool wSort) {
+	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
+
+	softwareRenderer->flushPending = true;
+	softwareRenderer->wSort = wSort;
+	softwareRenderer->verts = verts;
+	DSGXSoftwarePolygonListClear(&softwareRenderer->activePolys);
+	DSGXSoftwareEdgeListClear(&softwareRenderer->activeEdges);
+	unsigned i;
+	// Pass 1: Opaque
+	for (i = 0; i < polyCount; ++i) {
+		struct DSGXSoftwarePolygon* poly = NULL;
+		switch (DSGXTexParamsGetFormat(polys[i].texParams)) {
+		default:
+			if (DSGXPolygonAttrsGetAlpha(polys[i].polyParams) == 0x1F) {
+				poly = DSGXSoftwarePolygonListAppend(&softwareRenderer->activePolys);
+				break;
+			}
+		case 1:
+		case 6:
+			break;
+		}
+		if (!poly) {
+			continue;
+		}
+		poly->poly = &polys[i];
+		_preparePoly(renderer, verts, poly, DSGXSoftwarePolygonListSize(&softwareRenderer->activePolys) - 1);
+	}
+	// Pass 2: Translucent
+	for (i = 0; i < polyCount; ++i) {
+		struct DSGXSoftwarePolygon* poly = NULL;
+		switch (DSGXTexParamsGetFormat(polys[i].texParams)) {
+		default:
+			if (DSGXPolygonAttrsGetAlpha(polys[i].polyParams) == 0x1F) {
+				break;
+			}
+		case 1:
+		case 6:
+			poly = DSGXSoftwarePolygonListAppend(&softwareRenderer->activePolys);
+			break;
+		}
+		if (!poly) {
+			continue;
+		}
+		poly->poly = &polys[i];
+		_preparePoly(renderer, verts, poly, DSGXSoftwarePolygonListSize(&softwareRenderer->activePolys) - 1);
 	}
 }
 
