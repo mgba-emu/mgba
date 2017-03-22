@@ -146,8 +146,10 @@ void DSAudioWriteSOUNDCNT_HI(struct DSAudio* audio, int chan, uint16_t value) {
 		if (ch->format == 2) {
 			uint32_t header = audio->p->ds7.cpu->memory.load32(audio->p->ds7.cpu, ch->source, NULL);
 			ch->offset += 4;
-			ch->adpcmStartSample = header &= 0xFFFF;
+			ch->adpcmStartSample = header & 0xFFFF;
 			ch->adpcmStartIndex = header >> 16;
+			ch->adpcmSample = ch->adpcmStartSample;
+			ch->adpcmIndex = ch->adpcmStartIndex;
 		}
 	}
 	ch->enable = DSRegisterSOUNDxCNTIsBusy(reg);
@@ -192,6 +194,7 @@ static void _updateMixer(struct DSAudio* audio) {
 }
 
 static void _updateAdpcm(struct DSAudioChannel* ch, int sample) {
+	ch->sample = ch->adpcmSample;
 	if (ch->adpcmIndex < 0) {
 		ch->adpcmIndex = 0;
 	} else if (ch->adpcmIndex > 88) {
@@ -222,7 +225,6 @@ static void _updateAdpcm(struct DSAudioChannel* ch, int sample) {
 			ch->adpcmSample = newSample;
 		}
 	}
-	ch->sample = ch->adpcmSample;
 	ch->adpcmIndex += _adpcmIndexTable[sample & 0x7];
 }
 
