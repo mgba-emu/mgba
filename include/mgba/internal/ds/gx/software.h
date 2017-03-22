@@ -18,6 +18,8 @@ CXX_GUARD_START
 struct DSGXSoftwarePolygon {
 	struct DSGXPolygon* poly;
 	unsigned polyId;
+	DSGXPolygonAttrs polyParams;
+	DSGXTexParams texParams;
 	uint16_t* texBase;
 	uint16_t* palBase;
 	int texFormat;

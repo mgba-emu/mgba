@@ -123,7 +123,7 @@ struct DSGXVertex {
 };
 
 struct DSGXPolygon {
-	uint32_t polyParams;
+	DSGXPolygonAttrs polyParams;
 	DSGXTexParams texParams;
 	uint32_t palBase;
 	int verts;

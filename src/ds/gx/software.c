@@ -97,13 +97,13 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 
 	int16_t s = ep->s >> 4;
 	int16_t t = ep->t >> 4;
-	if (!DSGXTexParamsIsSRepeat(poly->poly->texParams)) {
+	if (!DSGXTexParamsIsSRepeat(poly->texParams)) {
 		if (s < 0) {
 			s = 0;
 		} else if (s >= poly->texW) {
 			s = poly->texW - 1;
 		}
-	} else if (DSGXTexParamsIsSMirror(poly->poly->texParams)) {
+	} else if (DSGXTexParamsIsSMirror(poly->texParams)) {
 		if (s & poly->texW) {
 			s = poly->texW - s - 1;
 		}
@@ -111,13 +111,13 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 	} else {
 		s &= poly->texW - 1;
 	}
-	if (!DSGXTexParamsIsTRepeat(poly->poly->texParams)) {
+	if (!DSGXTexParamsIsTRepeat(poly->texParams)) {
 		if (t < 0) {
 			t = 0;
 		} else if (t >= poly->texH) {
 			t = poly->texW - 1;
 		}
-	} else if (DSGXTexParamsIsTMirror(poly->poly->texParams)) {
+	} else if (DSGXTexParamsIsTMirror(poly->texParams)) {
 		if (t & poly->texH) {
 			t = poly->texH - t - 1;
 		}
@@ -128,7 +128,7 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 
 	uint16_t texelCoord = s + t * poly->texW;
 	uint8_t ta = 0x1F;
-	uint8_t pa = DSGXPolygonAttrsGetAlpha(poly->poly->polyParams);
+	uint8_t pa = DSGXPolygonAttrsGetAlpha(poly->polyParams);
 	if (pa) {
 		pa = (pa << 1) + 1;
 	}
@@ -179,8 +179,8 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 		if (!renderer->d.tex[1]) {
 			return 0;
 		}
-		uint16_t half = DSGXTexParamsGetVRAMBase(poly->poly->texParams) & 0x8000;
-		uint32_t slot1Base = (DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 1) + (texelCoord >> 2) + half;
+		uint16_t half = DSGXTexParamsGetVRAMBase(poly->texParams) & 0x8000;
+		uint32_t slot1Base = (DSGXTexParamsGetVRAMBase(poly->texParams) << 1) + (texelCoord >> 2) + half;
 		uint16_t texel2 = renderer->d.tex[1][slot1Base];
 		uint16_t texel2Base = (texel2 & 0x3FFF) << 1;
 		int a = 0x8;
@@ -233,7 +233,7 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 			texel = _mixTexels(a, texel, b, texel2);
 		}
 	} else {
-		if (poly->texFormat < 5 && poly->texFormat > 1 && DSGXTexParamsIs0Transparent(poly->poly->texParams) && !texel) {
+		if (poly->texFormat < 5 && poly->texFormat > 1 && DSGXTexParamsIs0Transparent(poly->texParams) && !texel) {
 			return 0;
 		}
 		texel = poly->palBase[texel];
@@ -439,11 +439,13 @@ static void DSGXSoftwareRendererInvalidateTex(struct DSGXRenderer* renderer, int
 static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXSoftwarePolygon* poly) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
 	struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListAppend(&softwareRenderer->activeEdges);
-	poly->texFormat = DSGXTexParamsGetFormat(poly->poly->texParams);
-	poly->blendFormat = DSGXPolygonAttrsGetMode(poly->poly->polyParams);
-	poly->texW = 8 << DSGXTexParamsGetSSize(poly->poly->texParams);
-	poly->texH = 8 << DSGXTexParamsGetTSize(poly->poly->texParams);
-	if (!renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET]) {
+	poly->texParams = poly->poly->texParams;
+	poly->polyParams = poly->poly->polyParams;
+	poly->texFormat = DSGXTexParamsGetFormat(poly->texParams);
+	poly->blendFormat = DSGXPolygonAttrsGetMode(poly->polyParams);
+	poly->texW = 8 << DSGXTexParamsGetSSize(poly->texParams);
+	poly->texH = 8 << DSGXTexParamsGetTSize(poly->texParams);
+	if (!renderer->tex[DSGXTexParamsGetVRAMBase(poly->texParams) >> VRAM_BLOCK_OFFSET]) {
 		poly->texBase = NULL;
 		poly->palBase = NULL;
 	} else {
@@ -702,7 +704,7 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 		for (y = poly->minY; y <= poly->maxY; ++y) {
 			struct DSGXSoftwareSpan span = {
 				.poly = poly,
-				.polyId = DSGXPolygonAttrsGetId(poly->poly->polyParams),
+				.polyId = DSGXPolygonAttrsGetId(poly->polyParams),
 			};
 			for (i = 0; i < DSGXSoftwareEdgeListSize(&softwareRenderer->activeEdges); ++i) {
 				struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListGetPointer(&softwareRenderer->activeEdges, i);
