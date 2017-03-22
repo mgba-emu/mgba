@@ -17,12 +17,15 @@ CXX_GUARD_START
 
 struct DSGXSoftwarePolygon {
 	struct DSGXPolygon* poly;
+	unsigned polyId;
 	uint16_t* texBase;
 	uint16_t* palBase;
 	int texFormat;
 	int blendFormat;
 	int texW;
 	int texH;
+	int minY;
+	int maxY;
 };
 
 struct DSGXSoftwareEdge {
@@ -75,20 +78,16 @@ struct DSGXSoftwareSpan {
 
 DECLARE_VECTOR(DSGXSoftwarePolygonList, struct DSGXSoftwarePolygon);
 DECLARE_VECTOR(DSGXSoftwareEdgeList, struct DSGXSoftwareEdge);
-DECLARE_VECTOR(DSGXSoftwareSpanList, struct DSGXSoftwareSpan);
 
 struct DSGXSoftwareRenderer {
 	struct DSGXRenderer d;
 
 	struct DSGXSoftwarePolygonList activePolys;
 	struct DSGXSoftwareEdgeList activeEdges;
-	struct DSGXSoftwareSpanList activeSpans;
-	struct DSGXSoftwareSpan** bucket;
 
-	int32_t depthBuffer[DS_VIDEO_HORIZONTAL_PIXELS];
-	uint8_t stencilBuffer[DS_VIDEO_HORIZONTAL_PIXELS];
+	int32_t* depthBuffer;
+	uint8_t* stencilBuffer;
 	color_t* scanlineCache;
-	bool flushPending;
 	int sort;
 
 	struct DSGXVertex* verts;

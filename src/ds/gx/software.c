@@ -10,7 +10,6 @@
 
 DEFINE_VECTOR(DSGXSoftwarePolygonList, struct DSGXSoftwarePolygon);
 DEFINE_VECTOR(DSGXSoftwareEdgeList, struct DSGXSoftwareEdge);
-DEFINE_VECTOR(DSGXSoftwareSpanList, struct DSGXSoftwareSpan);
 
 static void DSGXSoftwareRendererInit(struct DSGXRenderer* renderer);
 static void DSGXSoftwareRendererReset(struct DSGXRenderer* renderer);
@@ -415,24 +414,23 @@ void DSGXSoftwareRendererCreate(struct DSGXSoftwareRenderer* renderer) {
 static void DSGXSoftwareRendererInit(struct DSGXRenderer* renderer) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
 	DSGXSoftwarePolygonListInit(&softwareRenderer->activePolys, DS_GX_POLYGON_BUFFER_SIZE / 4);
-	DSGXSoftwareEdgeListInit(&softwareRenderer->activeEdges, DS_GX_POLYGON_BUFFER_SIZE);
-	DSGXSoftwareSpanListInit(&softwareRenderer->activeSpans, DS_GX_POLYGON_BUFFER_SIZE / 2);
-	softwareRenderer->bucket = anonymousMemoryMap(sizeof(*softwareRenderer->bucket) * DS_GX_POLYGON_BUFFER_SIZE);
+	DSGXSoftwareEdgeListInit(&softwareRenderer->activeEdges, 16);
 	softwareRenderer->scanlineCache = anonymousMemoryMap(sizeof(color_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
+	softwareRenderer->depthBuffer = anonymousMemoryMap(sizeof(int32_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
+	softwareRenderer->stencilBuffer = anonymousMemoryMap(sizeof(uint8_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
 }
 
 static void DSGXSoftwareRendererReset(struct DSGXRenderer* renderer) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
-	softwareRenderer->flushPending = false;
 }
 
 static void DSGXSoftwareRendererDeinit(struct DSGXRenderer* renderer) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
 	DSGXSoftwarePolygonListDeinit(&softwareRenderer->activePolys);
 	DSGXSoftwareEdgeListDeinit(&softwareRenderer->activeEdges);	
-	DSGXSoftwareSpanListDeinit(&softwareRenderer->activeSpans);
-	mappedMemoryFree(softwareRenderer->bucket, sizeof(*softwareRenderer->bucket) * DS_GX_POLYGON_BUFFER_SIZE);
 	mappedMemoryFree(softwareRenderer->scanlineCache, sizeof(color_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
+	mappedMemoryFree(softwareRenderer->depthBuffer, sizeof(int32_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
+	mappedMemoryFree(softwareRenderer->stencilBuffer, sizeof(uint8_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
 }
 
 static void DSGXSoftwareRendererInvalidateTex(struct DSGXRenderer* renderer, int slot) {
@@ -440,7 +438,7 @@ static void DSGXSoftwareRendererInvalidateTex(struct DSGXRenderer* renderer, int
 	// TODO
 }
 
-static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXSoftwarePolygon* poly, int polyId) {
+static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXSoftwarePolygon* poly) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
 	struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListAppend(&softwareRenderer->activeEdges);
 	poly->texFormat = DSGXTexParamsGetFormat(poly->poly->texParams);
@@ -467,19 +465,33 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 			break;
 		}
 	}
-	edge->polyId = polyId;
+	edge->polyId = poly->polyId;
+	poly->minY = DS_VIDEO_VERTICAL_PIXELS - 1;
+	poly->maxY = 0;
 
 	struct DSGXVertex* v0 = &verts[poly->poly->vertIds[0]];
 	struct DSGXVertex* v1;
 
 	int32_t v0x = (v0->viewCoord[0] + v0->viewCoord[3]) * (int64_t) (renderer->viewportWidth << 12) / (v0->viewCoord[3] * 2) + (renderer->viewportX << 12);
 	int32_t v0y = (-v0->viewCoord[1] + v0->viewCoord[3]) * (int64_t) (renderer->viewportHeight << 12) / (v0->viewCoord[3] * 2) + (renderer->viewportY << 12);
+	if (poly->minY > v0y >> 12) {
+		poly->minY = v0y >> 12;
+	}
+	if (poly->maxY < v0y >> 12) {
+		poly->maxY = v0y >> 12;
+	}
 
 	int v;
 	for (v = 1; v < poly->poly->verts; ++v) {
 		v1 = &verts[poly->poly->vertIds[v]];
 		int32_t v1x = (v1->viewCoord[0] + v1->viewCoord[3]) * (int64_t) (renderer->viewportWidth << 12) / (v1->viewCoord[3] * 2) + (renderer->viewportX << 12);
 		int32_t v1y = (-v1->viewCoord[1] + v1->viewCoord[3]) * (int64_t) (renderer->viewportHeight << 12) / (v1->viewCoord[3] * 2) + (renderer->viewportY << 12);
+		if (poly->minY > v1y >> 12) {
+			poly->minY = v1y >> 12;
+		}
+		if (poly->maxY < v1y >> 12) {
+			poly->maxY = v1y >> 12;
+		}
 
 		if (v0y <= v1y) {
 			edge->y0 = v0y;
@@ -516,7 +528,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 		}
 
 		edge = DSGXSoftwareEdgeListAppend(&softwareRenderer->activeEdges);
-		edge->polyId = polyId;
+		edge->polyId = poly->polyId;
 		v0 = v1;
 		v0x = v1x;
 		v0y = v1y;
@@ -525,6 +537,13 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 	v1 = &verts[poly->poly->vertIds[0]];
 	int32_t v1x = (v1->viewCoord[0] + v1->viewCoord[3]) * (int64_t) (renderer->viewportWidth << 12) / (v1->viewCoord[3] * 2) + (renderer->viewportX << 12);
 	int32_t v1y = (-v1->viewCoord[1] + v1->viewCoord[3]) * (int64_t) (renderer->viewportHeight << 12) / (v1->viewCoord[3] * 2) + (renderer->viewportY << 12);
+
+	if (poly->minY > v1y >> 12) {
+		poly->minY = v1y >> 12;
+	}
+	if (poly->maxY < v1y >> 12) {
+		poly->maxY = v1y >> 12;
+	}
 
 	if (v0y <= v1y) {
 		edge->y0 = v0y;
@@ -559,17 +578,75 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 		edge->s1 = v0->vs;
 		edge->t1 = v0->vt;
 	}
+
+	if (poly->maxY >= DS_VIDEO_VERTICAL_PIXELS) {
+		poly->maxY = DS_VIDEO_VERTICAL_PIXELS - 1;
+	}
+	if (poly->minY < 0) {
+		poly->minY = 0;
+	}
+}
+
+static void _drawSpan(struct DSGXSoftwareRenderer* softwareRenderer, struct DSGXSoftwareSpan* span, int y) {
+	color_t* scanline = &softwareRenderer->scanlineCache[DS_VIDEO_HORIZONTAL_PIXELS * y];
+	int32_t* depth = &softwareRenderer->depthBuffer[DS_VIDEO_HORIZONTAL_PIXELS * y];
+	uint8_t* stencil = &softwareRenderer->stencilBuffer[DS_VIDEO_HORIZONTAL_PIXELS * y];
+	int32_t x = span->ep[0].coord[0] >> 12;
+	if (x < 0) {
+		x = 0;
+	}
+	unsigned stencilValue = span->polyId;
+	if (span->poly->blendFormat == 3) {
+		stencilValue |= 0x40;
+	}
+	for (; x < (span->ep[1].coord[0] >> 12) && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
+		if (span->ep[0].coord[softwareRenderer->sort] < depth[x]) {
+			_resolveEndpoint(span);
+			color_t color = _lookupColor(softwareRenderer, &span->ep[0], span->poly);
+			unsigned a = color >> 27;
+			unsigned current = scanline[x];
+			unsigned b = current >> 27;
+			unsigned ab = a;
+			unsigned s = stencilValue;
+			if (b > ab) {
+				ab = b;
+			}
+			if (a == 0x1F) {
+				if (!(s == 0x40 || (stencil[x] & 0x40))) {
+					depth[x] = span->ep[0].coord[softwareRenderer->sort];
+					scanline[x] = color;
+					s &= ~0x40;
+				}
+				stencil[x] = s;
+			} else if (a) {
+				// TODO: Disable alpha?
+				if (b) {
+					color = _mix32(a, color, 0x1F - a, current);
+					color |= ab << 27;
+				}
+				if (stencil[x] != s) {
+					if (!(s == 0x40 || (stencil[x] & 0x40))) {
+						if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
+							depth[x] = span->ep[0].coord[softwareRenderer->sort];
+						}
+						scanline[x] = color;
+						s &= ~0x40;
+					}
+					stencil[x] = s;
+				}
+			}
+		}
+		_stepEndpoint(span);
+	}
 }
 
 static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount, bool wSort) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
 
-	softwareRenderer->flushPending = true;
 	softwareRenderer->sort = wSort ? 3 : 2;
 	softwareRenderer->verts = verts;
 	DSGXSoftwarePolygonListClear(&softwareRenderer->activePolys);
-	DSGXSoftwareEdgeListClear(&softwareRenderer->activeEdges);
-	unsigned i;
+	size_t i;
 	// Pass 1: Opaque
 	for (i = 0; i < polyCount; ++i) {
 		struct DSGXSoftwarePolygon* poly = NULL;
@@ -587,7 +664,7 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 			continue;
 		}
 		poly->poly = &polys[i];
-		_preparePoly(renderer, verts, poly, DSGXSoftwarePolygonListSize(&softwareRenderer->activePolys) - 1);
+		poly->polyId = DSGXSoftwarePolygonListSize(&softwareRenderer->activePolys) - 1;
 	}
 	// Pass 2: Translucent
 	for (i = 0; i < polyCount; ++i) {
@@ -606,112 +683,53 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 			continue;
 		}
 		poly->poly = &polys[i];
-		_preparePoly(renderer, verts, poly, DSGXSoftwarePolygonListSize(&softwareRenderer->activePolys) - 1);
-	}
-}
-
-static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int y) {
-	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
-	if (!softwareRenderer->flushPending) {
-		return;
-	}
-	DSGXSoftwareSpanListClear(&softwareRenderer->activeSpans);
-	memset(softwareRenderer->bucket, 0, sizeof(*softwareRenderer->bucket) * DS_GX_POLYGON_BUFFER_SIZE);
-	size_t i;
-	for (i = 0; i < DSGXSoftwareEdgeListSize(&softwareRenderer->activeEdges); ++i) {
-		struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListGetPointer(&softwareRenderer->activeEdges, i);
-		if (edge->y1 < (y << 12)) {
-			continue;
-		} else if (edge->y0 > (y << 12)) {
-			continue;
-		}
-
-		unsigned poly = edge->polyId;
-		struct DSGXSoftwareSpan* span = softwareRenderer->bucket[poly];
-		if (span && !span->ep[1].coord[3]) {
-			if (_edgeToSpan(span, edge, 1, y << 12)) {
-				_createStep(span);
-				softwareRenderer->bucket[poly] = NULL;
-			}
-		} else if (!span) {
-			span = DSGXSoftwareSpanListAppend(&softwareRenderer->activeSpans);
-			memset(&span->ep[1], 0, sizeof(span->ep[1]));
-			span->poly = DSGXSoftwarePolygonListGetPointer(&softwareRenderer->activePolys, poly);
-			span->polyId = DSGXPolygonAttrsGetId(span->poly->poly->polyParams);
-			if (!_edgeToSpan(span, edge, 0, y << 12)) {
-				// Horizontal line
-				DSGXSoftwareSpanListShift(&softwareRenderer->activeSpans, DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans) - 1, 1);
-			} else {
-				softwareRenderer->bucket[poly] = span;
-			}
-		}
+		poly->polyId = DSGXSoftwarePolygonListSize(&softwareRenderer->activePolys) - 1;
 	}
 
-	color_t* scanline = &softwareRenderer->scanlineCache[DS_VIDEO_HORIZONTAL_PIXELS * y];
-	memset(scanline, 0, sizeof(color_t) * DS_VIDEO_HORIZONTAL_PIXELS);
-	memset(softwareRenderer->stencilBuffer, 0, sizeof(softwareRenderer->stencilBuffer[0]) * DS_VIDEO_HORIZONTAL_PIXELS);
-	for (i = 0; i < DS_VIDEO_HORIZONTAL_PIXELS; i += 4) {
+	memset(softwareRenderer->scanlineCache, 0, sizeof(color_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
+	memset(softwareRenderer->stencilBuffer, 0, sizeof(uint8_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
+	for (i = 0; i < DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS ; i += 4) {
 		softwareRenderer->depthBuffer[i] = INT32_MAX;
 		softwareRenderer->depthBuffer[i + 1] = INT32_MAX;
 		softwareRenderer->depthBuffer[i + 2] = INT32_MAX;
 		softwareRenderer->depthBuffer[i + 3] = INT32_MAX;
 	}
 
-	for (i = 0; i < DSGXSoftwareSpanListSize(&softwareRenderer->activeSpans); ++i) {
-		struct DSGXSoftwareSpan* span = DSGXSoftwareSpanListGetPointer(&softwareRenderer->activeSpans, i);
-
-		int32_t x = span->ep[0].coord[0] >> 12;
-		if (x < 0) {
-			x = 0;
-		}
-		unsigned stencilValue = span->polyId;
-		if (span->poly->blendFormat == 3) {
-			stencilValue |= 0x40;
-		}
-		for (; x < (span->ep[1].coord[0] >> 12) && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
-			if (span->ep[0].coord[softwareRenderer->sort] < softwareRenderer->depthBuffer[x]) {
-				_resolveEndpoint(span);
-				color_t color = _lookupColor(softwareRenderer, &span->ep[0], span->poly);
-				unsigned a = color >> 27;
-				unsigned current = scanline[x];
-				unsigned b = current >> 27;
-				unsigned ab = a;
-				unsigned s = stencilValue;
-				if (b > ab) {
-					ab = b;
+	size_t p;
+	for (p = 0; p < DSGXSoftwarePolygonListSize(&softwareRenderer->activePolys); ++p) {
+		struct DSGXSoftwarePolygon* poly = DSGXSoftwarePolygonListGetPointer(&softwareRenderer->activePolys, p);
+		DSGXSoftwareEdgeListClear(&softwareRenderer->activeEdges);
+		_preparePoly(renderer, verts, poly);
+		int y;
+		for (y = poly->minY; y <= poly->maxY; ++y) {
+			struct DSGXSoftwareSpan span = {
+				.poly = poly,
+				.polyId = DSGXPolygonAttrsGetId(poly->poly->polyParams),
+			};
+			for (i = 0; i < DSGXSoftwareEdgeListSize(&softwareRenderer->activeEdges); ++i) {
+				struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListGetPointer(&softwareRenderer->activeEdges, i);
+				if (edge->y1 < (y << 12)) {
+					continue;
+				} else if (edge->y0 > (y << 12)) {
+					continue;
 				}
-				if (a == 0x1F) {
-					if (!(s == 0x40 || (softwareRenderer->stencilBuffer[x] & 0x40))) {
-						softwareRenderer->depthBuffer[x] = span->ep[0].coord[softwareRenderer->sort];
-						scanline[x] = color;
-						s &= ~0x40;
+
+				if (span.ep[0].coord[3]) {
+					if (_edgeToSpan(&span, edge, 1, y << 12)) {
+						_createStep(&span);
+						_drawSpan(softwareRenderer, &span, y);
 					}
-					softwareRenderer->stencilBuffer[x] = s;
-				} else if (a) {
-					// TODO: Disable alpha?
-					if (b) {
-						color = _mix32(a, color, 0x1F - a, current);
-						color |= ab << 27;
-					}
-					if (softwareRenderer->stencilBuffer[x] != s) {
-						if (!(s == 0x40 || (softwareRenderer->stencilBuffer[x] & 0x40))) {
-							if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
-								softwareRenderer->depthBuffer[x] = span->ep[0].coord[softwareRenderer->sort];
-							}
-							scanline[x] = color;
-							s &= ~0x40;
-						}
-						softwareRenderer->stencilBuffer[x] = s;
-					}
+				} else if (!_edgeToSpan(&span, edge, 0, y << 12)) {
+					// Horizontal line
+					continue;
 				}
 			}
-			_stepEndpoint(span);
 		}
 	}
+}
 
-	if (y == DS_VIDEO_VERTICAL_PIXELS - 1) {
-		softwareRenderer->flushPending = false;
-	}
+static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int y) {
+	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
 }
 
 static void DSGXSoftwareRendererGetScanline(struct DSGXRenderer* renderer, int y, const color_t** output) {
