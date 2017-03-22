@@ -313,8 +313,8 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 		}
 	}
 
-	int64_t w0 = 0x7FFFFFFFFFFFFFFF / edge->w0;
-	int64_t w1 = 0x7FFFFFFFFFFFFFFF / edge->w1;
+	int64_t w0 = edge->wr0;
+	int64_t w1 = edge->wr1;
 	int64_t w = w1 - w0;
 
 	// Losslessly interpolate two 64-bit values
@@ -526,6 +526,8 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 			edge->s1 = v0->vs;
 			edge->t1 = v0->vt;
 		}
+		edge->wr0 = 0x7FFFFFFFFFFFFFFF / edge->w0;
+		edge->wr1 = 0x7FFFFFFFFFFFFFFF / edge->w1;
 
 		edge = DSGXSoftwareEdgeListAppend(&softwareRenderer->activeEdges);
 		edge->polyId = poly->polyId;
@@ -578,6 +580,8 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 		edge->s1 = v0->vs;
 		edge->t1 = v0->vt;
 	}
+	edge->wr0 = 0x7FFFFFFFFFFFFFFF / edge->w0;
+	edge->wr1 = 0x7FFFFFFFFFFFFFFF / edge->w1;
 
 	if (poly->maxY >= DS_VIDEO_VERTICAL_PIXELS) {
 		poly->maxY = DS_VIDEO_VERTICAL_PIXELS - 1;

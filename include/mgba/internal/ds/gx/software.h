@@ -36,6 +36,7 @@ struct DSGXSoftwareEdge {
 	int32_t x0; // 20.12
 	int32_t z0; // 20.12
 	int32_t w0; // 20.12
+	int64_t wr0;
 	uint8_t cr0;
 	uint8_t cg0;
 	uint8_t cb0;
@@ -46,6 +47,7 @@ struct DSGXSoftwareEdge {
 	int32_t x1; // 20.12
 	int32_t z1; // 20.12
 	int32_t w1; // 20.12
+	int64_t wr1;
 	uint8_t cr1;
 	uint8_t cg1;
 	uint8_t cb1;
