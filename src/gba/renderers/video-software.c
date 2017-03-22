@@ -75,7 +75,7 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
 	int y;
-	for (y = 0; y < softwareRenderer->masterEnd; ++y) {
+	for (y = 0; y < softwareRenderer->masterHeight; ++y) {
 		color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 		int x;
 		for (x = 0; x < softwareRenderer->masterEnd; ++x) {
