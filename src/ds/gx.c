@@ -116,29 +116,13 @@ static struct DSGXRenderer dummyRenderer = {
 static void _pullPipe(struct DSGX* gx) {
 	if (CircleBufferSize(&gx->fifo) >= sizeof(struct DSGXEntry)) {
 		struct DSGXEntry entry = { 0 };
-		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.command);
-		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[0]);
-		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[1]);
-		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[2]);
-		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[3]);
-		CircleBufferWrite8(&gx->pipe, entry.command);
-		CircleBufferWrite8(&gx->pipe, entry.params[0]);
-		CircleBufferWrite8(&gx->pipe, entry.params[1]);
-		CircleBufferWrite8(&gx->pipe, entry.params[2]);
-		CircleBufferWrite8(&gx->pipe, entry.params[3]);
+		CircleBufferRead(&gx->fifo, &entry, sizeof(entry));
+		CircleBufferWrite(&gx->pipe, &entry, sizeof(entry));
 	}
 	if (CircleBufferSize(&gx->fifo) >= sizeof(struct DSGXEntry)) {
 		struct DSGXEntry entry = { 0 };
-		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.command);
-		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[0]);
-		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[1]);
-		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[2]);
-		CircleBufferRead8(&gx->fifo, (int8_t*) &entry.params[3]);
-		CircleBufferWrite8(&gx->pipe, entry.command);
-		CircleBufferWrite8(&gx->pipe, entry.params[0]);
-		CircleBufferWrite8(&gx->pipe, entry.params[1]);
-		CircleBufferWrite8(&gx->pipe, entry.params[2]);
-		CircleBufferWrite8(&gx->pipe, entry.params[3]);
+		CircleBufferRead(&gx->fifo, &entry, sizeof(entry));
+		CircleBufferWrite(&gx->pipe, &entry, sizeof(entry));
 	}
 }
 
@@ -680,11 +664,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 		} else if (!gx->activeParams && cycles > cyclesLate) {
 			break;
 		}
-		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.command);
-		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.params[0]);
-		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.params[1]);
-		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.params[2]);
-		CircleBufferRead8(&gx->pipe, (int8_t*) &entry.params[3]);
+		CircleBufferRead(&gx->pipe, &entry, sizeof(entry));
 
 		if (gx->activeParams) {
 			int index = _gxCommandParams[entry.command] - gx->activeParams;
@@ -1452,17 +1432,9 @@ static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
 		return;
 	}
 	if (CircleBufferSize(&gx->fifo) == 0 && CircleBufferSize(&gx->pipe) < (DS_GX_PIPE_SIZE * sizeof(entry))) {
-		CircleBufferWrite8(&gx->pipe, entry.command);
-		CircleBufferWrite8(&gx->pipe, entry.params[0]);
-		CircleBufferWrite8(&gx->pipe, entry.params[1]);
-		CircleBufferWrite8(&gx->pipe, entry.params[2]);
-		CircleBufferWrite8(&gx->pipe, entry.params[3]);
+		CircleBufferWrite(&gx->pipe, &entry, sizeof(entry));
 	} else if (CircleBufferSize(&gx->fifo) < (DS_GX_FIFO_SIZE * sizeof(entry))) {
-		CircleBufferWrite8(&gx->fifo, entry.command);
-		CircleBufferWrite8(&gx->fifo, entry.params[0]);
-		CircleBufferWrite8(&gx->fifo, entry.params[1]);
-		CircleBufferWrite8(&gx->fifo, entry.params[2]);
-		CircleBufferWrite8(&gx->fifo, entry.params[3]);
+		CircleBufferWrite(&gx->fifo, &entry, sizeof(entry));
 	}
 	if (entry.command == DS_GX_CMD_BOX_TEST) {
 		DSRegGXSTAT gxstat = gx->p->memory.io9[DS9_REG_GXSTAT_LO >> 1];
