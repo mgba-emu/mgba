@@ -378,11 +378,9 @@ static void _createStep(struct DSGXSoftwareSpan* span) {
 static void _stepEndpoint(struct DSGXSoftwareSpan* span) {
 	int i = 28;
 	int32_t nextX = (span->ep[0].coord[0] & ~0xFFF) + 0x1000;
-	span->ep[0].coord[0] += 0x80 * i;
-	while (span->ep[0].coord[0] < nextX) {
-		span->ep[0].coord[0] += 0x80;
-		++i;
-	}
+	i = (nextX - span->ep[0].coord[0]) >> 7;
+	span->ep[0].coord[0] = nextX;
+
 	span->ep[0].wRecip += span->step.stepW * i;
 	span->ep[0].coord[3] = (0x7FFFFFFFFFFFFFFF / span->ep[0].wRecip) + 1;
 
