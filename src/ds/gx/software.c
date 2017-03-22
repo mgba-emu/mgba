@@ -329,7 +329,7 @@ static bool _edgeToSpan(struct DSGXSoftwareSpan* span, const struct DSGXSoftware
 	w += div;
 	w += w0;
 
-	span->ep[index].coord[3] = 0x7FFFFFFFFFFFFFFF / w;
+	span->ep[index].coord[3] = (0x7FFFFFFFFFFFFFFF / w) + 1;
 	span->ep[index].wRecip = w;
 	int32_t qr = (yw << 12) / height;
 
@@ -390,18 +390,17 @@ static void _stepEndpoint(struct DSGXSoftwareSpan* span) {
 	span->ep[0].coord[2] = _divideBy(span->ep[0].stepZ, span->ep[0].coord[3]);
 
 	span->ep[0].stepR += span->step.stepR * i;
-	span->ep[0].cr = _divideBy(span->ep[0].stepR, span->ep[0].coord[3]);
-
 	span->ep[0].stepG += span->step.stepG * i;
-	span->ep[0].cg = _divideBy(span->ep[0].stepG, span->ep[0].coord[3]);
-
 	span->ep[0].stepB += span->step.stepB * i;
-	span->ep[0].cb = _divideBy(span->ep[0].stepB, span->ep[0].coord[3]);
-
 	span->ep[0].stepS += span->step.stepS * i;
-	span->ep[0].s = _divideBy(span->ep[0].stepS, span->ep[0].coord[3]);
-
 	span->ep[0].stepT += span->step.stepT * i;
+}
+
+static void _resolveEndpoint(struct DSGXSoftwareSpan* span) {
+	span->ep[0].cr = _divideBy(span->ep[0].stepR, span->ep[0].coord[3]);
+	span->ep[0].cg = _divideBy(span->ep[0].stepG, span->ep[0].coord[3]);
+	span->ep[0].cb = _divideBy(span->ep[0].stepB, span->ep[0].coord[3]);
+	span->ep[0].s = _divideBy(span->ep[0].stepS, span->ep[0].coord[3]);
 	span->ep[0].t = _divideBy(span->ep[0].stepT, span->ep[0].coord[3]);
 }
 
@@ -672,42 +671,43 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 			stencilValue |= 0x40;
 		}
 		for (; x < (span->ep[1].coord[0] >> 12) && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
-			color_t color = _lookupColor(softwareRenderer, &span->ep[0], span->poly);
-			_stepEndpoint(span);
-			unsigned a = color >> 27;
-			unsigned current = scanline[x];
-			unsigned b = current >> 27;
-			unsigned ab = a;
-			unsigned s = stencilValue;
-			if (b > ab) {
-				ab = b;
-			}
-			if (a == 0x1F) {
-				if (span->ep[0].coord[softwareRenderer->sort] < softwareRenderer->depthBuffer[x]) {
+			if (span->ep[0].coord[softwareRenderer->sort] < softwareRenderer->depthBuffer[x]) {
+				_resolveEndpoint(span);
+				color_t color = _lookupColor(softwareRenderer, &span->ep[0], span->poly);
+				unsigned a = color >> 27;
+				unsigned current = scanline[x];
+				unsigned b = current >> 27;
+				unsigned ab = a;
+				unsigned s = stencilValue;
+				if (b > ab) {
+					ab = b;
+				}
+				if (a == 0x1F) {
 					if (!(s == 0x40 || (softwareRenderer->stencilBuffer[x] & 0x40))) {
 						softwareRenderer->depthBuffer[x] = span->ep[0].coord[softwareRenderer->sort];
 						scanline[x] = color;
 						s &= ~0x40;
 					}
 					softwareRenderer->stencilBuffer[x] = s;
-				}
-			} else if (a) {
-				// TODO: Disable alpha?
-				if (b) {
-					color = _mix32(a, color, 0x1F - a, current);
-					color |= ab << 27;
-				}
-				if (softwareRenderer->stencilBuffer[x] != s && span->ep[0].coord[softwareRenderer->sort] < softwareRenderer->depthBuffer[x]) {
-					if (!(s == 0x40 || (softwareRenderer->stencilBuffer[x] & 0x40))) {
-						if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
-							softwareRenderer->depthBuffer[x] = span->ep[0].coord[softwareRenderer->sort];
-						}
-						scanline[x] = color;
-						s &= ~0x40;
+				} else if (a) {
+					// TODO: Disable alpha?
+					if (b) {
+						color = _mix32(a, color, 0x1F - a, current);
+						color |= ab << 27;
 					}
-					softwareRenderer->stencilBuffer[x] = s;
+					if (softwareRenderer->stencilBuffer[x] != s) {
+						if (!(s == 0x40 || (softwareRenderer->stencilBuffer[x] & 0x40))) {
+							if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
+								softwareRenderer->depthBuffer[x] = span->ep[0].coord[softwareRenderer->sort];
+							}
+							scanline[x] = color;
+							s &= ~0x40;
+						}
+						softwareRenderer->stencilBuffer[x] = s;
+					}
 				}
 			}
+			_stepEndpoint(span);
 		}
 	}
 
