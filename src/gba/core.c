@@ -396,7 +396,7 @@ static void _GBACoreSetCursorLocation(struct mCore* core, int x, int y) {
 	UNUSED(y);
 }
 
-static void _GBACoreSetCursorDown(struct mCore* core, int x, int y, bool down) {
+static void _GBACoreSetCursorDown(struct mCore* core, bool down) {
 	UNUSED(core);
 	UNUSED(down);
 }
