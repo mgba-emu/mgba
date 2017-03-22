@@ -616,7 +616,7 @@ static void _drawSpan(struct DSGXSoftwareRenderer* softwareRenderer, struct DSGX
 				ab = b;
 			}
 			if (a == 0x1F) {
-				if (!(s == 0x40 || (stencil[x] & 0x40))) {
+				if (!(s & 0x40) || (s & 0x3F && !(stencil[x] & 0x40))) {
 					depth[x] = span->ep[0].coord[softwareRenderer->sort];
 					scanline[x] = color;
 					s &= ~0x40;
@@ -629,7 +629,7 @@ static void _drawSpan(struct DSGXSoftwareRenderer* softwareRenderer, struct DSGX
 					color |= ab << 27;
 				}
 				if (stencil[x] != s) {
-					if (!(s == 0x40 || (stencil[x] & 0x40))) {
+					if (!(s & 0x40) || (s & 0x3F && !(stencil[x] & 0x40))) {
 						if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
 							depth[x] = span->ep[0].coord[softwareRenderer->sort];
 						}
