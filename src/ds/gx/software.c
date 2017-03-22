@@ -365,32 +365,30 @@ static void _createStep(struct DSGXSoftwareSpan* span) {
 		return;
 	}
 	span->step.coord[0] = span->ep[1].coord[0] - span->ep[0].coord[0];
-	span->step.stepW = (span->ep[1].stepW - span->ep[0].stepW) / width;
-	span->step.stepZ = (span->ep[1].stepZ - span->ep[0].stepZ) / width;
-	span->step.stepR = (span->ep[1].stepR - span->ep[0].stepR) / width;
-	span->step.stepG = (span->ep[1].stepG - span->ep[0].stepG) / width;
-	span->step.stepB = (span->ep[1].stepB - span->ep[0].stepB) / width;
-	span->step.stepS = (span->ep[1].stepS - span->ep[0].stepS) / width;
-	span->step.stepT = (span->ep[1].stepT - span->ep[0].stepT) / width;
+	span->step.stepW = ((span->ep[1].stepW - span->ep[0].stepW) / width) << 5;
+	span->step.stepZ = ((span->ep[1].stepZ - span->ep[0].stepZ) / width) << 5;
+	span->step.stepR = ((span->ep[1].stepR - span->ep[0].stepR) / width) << 5;
+	span->step.stepG = ((span->ep[1].stepG - span->ep[0].stepG) / width) << 5;
+	span->step.stepB = ((span->ep[1].stepB - span->ep[0].stepB) / width) << 5;
+	span->step.stepS = ((span->ep[1].stepS - span->ep[0].stepS) / width) << 5;
+	span->step.stepT = ((span->ep[1].stepT - span->ep[0].stepT) / width) << 5;
 }
 
 static void _stepEndpoint(struct DSGXSoftwareSpan* span) {
-	int i = 28;
 	int32_t nextX = (span->ep[0].coord[0] & ~0xFFF) + 0x1000;
-	i = (nextX - span->ep[0].coord[0]) >> 7;
 	span->ep[0].coord[0] = nextX;
 
-	span->ep[0].wRecip += span->step.stepW * i;
+	span->ep[0].wRecip += span->step.stepW;
 	span->ep[0].coord[3] = (0x7FFFFFFFFFFFFFFF / span->ep[0].wRecip) + 1;
 
-	span->ep[0].stepZ += span->step.stepZ * i;
+	span->ep[0].stepZ += span->step.stepZ;
 	span->ep[0].coord[2] = _divideBy(span->ep[0].stepZ, span->ep[0].coord[3]);
 
-	span->ep[0].stepR += span->step.stepR * i;
-	span->ep[0].stepG += span->step.stepG * i;
-	span->ep[0].stepB += span->step.stepB * i;
-	span->ep[0].stepS += span->step.stepS * i;
-	span->ep[0].stepT += span->step.stepT * i;
+	span->ep[0].stepR += span->step.stepR;
+	span->ep[0].stepG += span->step.stepG;
+	span->ep[0].stepB += span->step.stepB;
+	span->ep[0].stepS += span->step.stepS;
+	span->ep[0].stepT += span->step.stepT;
 }
 
 static void _resolveEndpoint(struct DSGXSoftwareSpan* span) {
@@ -730,6 +728,8 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 
 static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int y) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
+	UNUSED(softwareRenderer);
+	UNUSED(y);
 }
 
 static void DSGXSoftwareRendererGetScanline(struct DSGXRenderer* renderer, int y, const color_t** output) {
