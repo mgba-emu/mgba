@@ -261,7 +261,7 @@ static void _GBCoreReset(struct mCore* core) {
 		}
 		if (!found) {
 			GBDetectModel(gb);
-			const char* configPath;
+			const char* configPath = NULL;
 
 			switch (gb->model) {
 			case GB_MODEL_DMG:
