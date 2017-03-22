@@ -132,6 +132,10 @@ static void DSSlot1StartTransfer(struct DS* ds) {
 		ds->memory.slot1.address |= ds->memory.slot1.command[2] << 16;
 		ds->memory.slot1.address |= ds->memory.slot1.command[3] << 8;
 		ds->memory.slot1.address |= ds->memory.slot1.command[4];
+		if (ds->memory.slot1.address < 0x8000) {
+			mLOG(DS_SLOT1, GAME_ERROR, "Invalid read from secure area: %04X", ds->memory.slot1.address);
+			ds->memory.slot1.address = 0x8000 + (ds->memory.slot1.address & 0x1FF);
+		}
 		if (ds->romVf) {
 			ds->romVf->seek(ds->romVf, ds->memory.slot1.address, SEEK_SET);
 		}
