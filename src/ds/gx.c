@@ -416,7 +416,7 @@ static int16_t _dotTexture(struct DSGXVertex* vertex, int mode, int32_t* col) {
 	return sum >> 20;
 }
 
-static int32_t _dotFrac(int16_t x, int16_t y, int16_t z, int32_t* col, int precision) {
+static int32_t _dotFrac(int16_t x, int16_t y, int16_t z, int32_t* col) {
 	int64_t a;
 	int64_t b;
 	int64_t sum;
@@ -429,19 +429,14 @@ static int32_t _dotFrac(int16_t x, int16_t y, int16_t z, int32_t* col, int preci
 	a = col[8];
 	b = z;
 	sum += a * b;
-	sum >>= 12;
-	sum &= INT64_MIN | ((1LL << precision) - 1);
-	sum |= (sum & INT64_MIN) >> (64 - precision);
-	return sum;
+	return sum >> 12;
 }
 
-static int16_t _dot10x10(int32_t x0, int32_t y0, int32_t z0, int32_t x1, int32_t y1, int32_t z1) {
+static int16_t _dot3(int32_t x0, int32_t y0, int32_t z0, int32_t x1, int32_t y1, int32_t z1) {
 	int32_t a = x0 * x1;
 	a += y0 * y1;
 	a += z0 * z1;
-	a >>= 9;
-	a &= INT32_MIN | 0x1FF;
-	a |= (a & INT32_MIN) >> 22;
+	a >>= 12;
 	return a;
 }
 
@@ -1008,16 +1003,16 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			int16_t x = (xyz << 6) & 0xFFC0;
 			int16_t y = (xyz >> 4) & 0xFFC0;
 			int16_t z = (xyz >> 14) & 0xFFC0;
-			x >>= 6;
-			y >>= 6;
-			z >>= 6;
+			x >>= 3;
+			y >>= 3;
+			z >>= 3;
 			if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) == 2) {
-				gx->currentVertex.vs = _dotFrac(x, y, z, &gx->texMatrix.m[0], 12);
-				gx->currentVertex.vt = _dotFrac(x, y, z, &gx->texMatrix.m[1], 12);
+				gx->currentVertex.vs = _dotFrac(x, y, z, &gx->texMatrix.m[0]) + gx->currentVertex.s;
+				gx->currentVertex.vt = _dotFrac(x, y, z, &gx->texMatrix.m[1]) + gx->currentVertex.t;
 			}
-			int16_t nx = _dotFrac(x, y, z, &gx->vecMatrix.m[0], 10);
-			int16_t ny = _dotFrac(x, y, z, &gx->vecMatrix.m[1], 10);
-			int16_t nz = _dotFrac(x, y, z, &gx->vecMatrix.m[2], 10);
+			int16_t nx = _dotFrac(x, y, z, &gx->vecMatrix.m[0]);
+			int16_t ny = _dotFrac(x, y, z, &gx->vecMatrix.m[1]);
+			int16_t nz = _dotFrac(x, y, z, &gx->vecMatrix.m[2]);
 			int r = gx->emit & 0x1F;
 			int g = (gx->emit >> 5) & 0x1F;
 			int b = (gx->emit >> 10) & 0x1F;
@@ -1027,15 +1022,15 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 					continue;
 				}
 				struct DSGXLight* light = &gx->lights[i];
-				int diffuse = -_dot10x10(light->x, light->y, light->z, nx, ny, nz);
+				int diffuse = -_dot3(light->x, light->y, light->z, nx, ny, nz);
 				if (diffuse < 0) {
 					diffuse = 0;
 				}
-				int specular = -_dot10x10(-light->x >> 1, -light->y >> 1, (0x200 - light->z) >> 1, nx, ny, nz);
+				int specular = -_dot3(-light->x >> 1, -light->y >> 1, (0x1000 - light->z) >> 1, nx, ny, nz);
 				if (specular < 0) {
 					specular = 0;
 				} else {
-					specular = 2 * specular * specular - 1;
+					specular = 2 * specular * specular - (1 << 10);
 				}
 				unsigned lr = (light->color) & 0x1F;
 				unsigned lg = (light->color >> 5) & 0x1F;
@@ -1044,15 +1039,15 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				xr = gx->specular & 0x1F;
 				xg = (gx->specular >> 5) & 0x1F;
 				xb = (gx->specular >> 10) & 0x1F;
-				r += (specular * xr * lr) >> 16;
-				g += (specular * xg * lg) >> 16;
-				b += (specular * xb * lb) >> 16;
+				r += (specular * xr * lr) >> 17;
+				g += (specular * xg * lg) >> 17;
+				b += (specular * xb * lb) >> 17;
 				xr = gx->diffuse & 0x1F;
 				xg = (gx->diffuse >> 5) & 0x1F;
 				xb = (gx->diffuse >> 10) & 0x1F;
-				r += (diffuse * xr * lr) >> 14;
-				g += (diffuse * xg * lg) >> 14;
-				b += (diffuse * xb * lb) >> 14;
+				r += (diffuse * xr * lr) >> 17;
+				g += (diffuse * xg * lg) >> 17;
+				b += (diffuse * xb * lb) >> 17;
 				xr = gx->ambient & 0x1F;
 				xg = (gx->ambient >> 5) & 0x1F;
 				xb = (gx->ambient >> 10) & 0x1F;
@@ -1170,12 +1165,12 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			int16_t x = (xyz << 6) & 0xFFC0;
 			int16_t y = (xyz >> 4) & 0xFFC0;
 			int16_t z = (xyz >> 14) & 0xFFC0;
-			x >>= 6;
-			y >>= 6;
-			z >>= 6;
-			light->x = _dotFrac(x, y, z, &gx->vecMatrix.m[0], 10);
-			light->y = _dotFrac(x, y, z, &gx->vecMatrix.m[1], 10);
-			light->z = _dotFrac(x, y, z, &gx->vecMatrix.m[2], 10);
+			x >>= 3;
+			y >>= 3;
+			z >>= 3;
+			light->x = _dotFrac(x, y, z, &gx->vecMatrix.m[0]);
+			light->y = _dotFrac(x, y, z, &gx->vecMatrix.m[1]);
+			light->z = _dotFrac(x, y, z, &gx->vecMatrix.m[2]);
 			break;
 		}
 		case DS_GX_CMD_LIGHT_COLOR: {
