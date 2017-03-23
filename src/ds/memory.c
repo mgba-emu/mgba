@@ -41,9 +41,9 @@ static const char DS7_BASE_WAITSTATES_SEQ[16] =    { 0, 0, 1, 0, 0, 0, 0, 0 };
 static const char DS7_BASE_WAITSTATES_SEQ_32[16] = { 0, 0, 2, 0, 0, 1, 1, 0 };
 
 static const char DS9_BASE_WAITSTATES[16] =        { 0, 0, 2, 6, 6, 7, 7, 6 };
-static const char DS9_BASE_WAITSTATES_32[16] =     { 0, 0, 4, 6, 6, 9, 9, 6 };
+static const char DS9_BASE_WAITSTATES_32[16] =     { 0, 0, 2, 6, 6, 9, 9, 6 };
 static const char DS9_BASE_WAITSTATES_SEQ[16] =    { 0, 0, 1, 1, 1, 2, 2, 1 };
-static const char DS9_BASE_WAITSTATES_SEQ_32[16] = { 0, 0, 2, 1, 1, 4, 4, 1 };
+static const char DS9_BASE_WAITSTATES_SEQ_32[16] = { 0, 0, 1, 1, 1, 4, 4, 1 };
 
 void DSMemoryInit(struct DS* ds) {
 	struct ARMCore* arm7 = ds->ds7.cpu;
