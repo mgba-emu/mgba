@@ -37,11 +37,6 @@ void DSDMAReset(struct DSCommon* dscore) {
 	dscore->memory.activeDMA = -1;
 }
 
-static bool _isValidDMADAD(int dma, uint32_t address) {
-	UNUSED(dma);
-	return address >= DS_BASE_RAM;
-}
-
 uint32_t DSDMAWriteSAD(struct DSCommon* dscore, int dma, uint32_t address) {
 	address &= 0x0FFFFFFE;
 	dscore->memory.dma[dma].source = address;
@@ -50,9 +45,7 @@ uint32_t DSDMAWriteSAD(struct DSCommon* dscore, int dma, uint32_t address) {
 
 uint32_t DSDMAWriteDAD(struct DSCommon* dscore, int dma, uint32_t address) {
 	address &= 0x0FFFFFFE;
-	if (_isValidDMADAD(dma, address)) {
-		dscore->memory.dma[dma].dest = address;
-	}
+	dscore->memory.dma[dma].dest = address;
 	return dscore->memory.dma[dma].dest;
 }
 
@@ -217,6 +210,7 @@ void DSDMAService(struct DSCommon* dscore, int number, struct GBADMA* info) {
 	int32_t cycles = 2;
 
 	if (info->count == info->nextCount) {
+		// TODO: This probably uses bus timings instead of TCM timings for inaccessible TCM
 		if (width == 4) {
 			cycles += dscore->memory.waitstatesNonseq32[sourceRegion] + dscore->memory.waitstatesNonseq32[destRegion];
 		} else {
@@ -233,13 +227,15 @@ void DSDMAService(struct DSCommon* dscore, int number, struct GBADMA* info) {
 	}
 	info->when += cycles;
 
-	uint32_t word;
-	if (width == 4) {
-		word = cpu->memory.load32(cpu, source, 0);
-		cpu->memory.store32(cpu, dest, word, 0);
-	} else {
-		word = cpu->memory.load16(cpu, source, 0);
-		cpu->memory.store16(cpu, dest, word, 0);
+	if (source >= DS_BASE_RAM) {
+		uint32_t word;
+		if (width == 4) {
+			word = cpu->memory.load32(cpu, source, 0);
+			cpu->memory.store32(cpu, dest, word, 0);
+		} else {
+			word = cpu->memory.load16(cpu, source, 0);
+			cpu->memory.store16(cpu, dest, word, 0);
+		}
 	}
 	int sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
 	int destOffset = DMA_OFFSET[GBADMARegisterGetDestControl(info->reg)] * width;
