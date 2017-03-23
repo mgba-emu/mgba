@@ -458,8 +458,8 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 	} else if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) == 3) {
 		int32_t m12 = gx->texMatrix.m[12];
 		int32_t m13 = gx->texMatrix.m[13];
-		gx->texMatrix.m[12] = gx->currentVertex.vs;
-		gx->texMatrix.m[13] = gx->currentVertex.vt;
+		gx->texMatrix.m[12] = gx->currentVertex.s;
+		gx->texMatrix.m[13] = gx->currentVertex.t;
 		gx->currentVertex.vs = _dotTexture(&gx->currentVertex, 3, &gx->texMatrix.m[0]);
 		gx->currentVertex.vt = _dotTexture(&gx->currentVertex, 3, &gx->texMatrix.m[1]);
 		gx->texMatrix.m[12] = m12;
