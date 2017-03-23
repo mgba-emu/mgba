@@ -244,7 +244,6 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 	}
 	switch (poly->blendFormat) {
 	default:
-		return _finishColor(r, g, b, pa);
 	case 0:
 		wr = ((r + 1) * (ep->cr + 1) - 1) >> 6;
 		wg = ((g + 1) * (ep->cg + 1) - 1) >> 6;
