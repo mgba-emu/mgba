@@ -693,10 +693,9 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				memcpy(&gx->projMatrixStack, &gx->projMatrix, sizeof(gx->projMatrix));
 				++projMatrixPointer;
 				break;
+			case 1:
 			case 2:
 				memcpy(&gx->vecMatrixStack[gx->pvMatrixPointer & 0x1F], &gx->vecMatrix, sizeof(gx->vecMatrix));
-				// Fall through
-			case 1:
 				memcpy(&gx->posMatrixStack[gx->pvMatrixPointer & 0x1F], &gx->posMatrix, sizeof(gx->posMatrix));
 				++gx->pvMatrixPointer;
 				break;
@@ -715,9 +714,6 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				memcpy(&gx->projMatrix, &gx->projMatrixStack, sizeof(gx->projMatrix));
 				break;
 			case 1:
-				gx->pvMatrixPointer -= offset;
-				memcpy(&gx->posMatrix, &gx->posMatrixStack[gx->pvMatrixPointer & 0x1F], sizeof(gx->posMatrix));
-				break;
 			case 2:
 				gx->pvMatrixPointer -= offset;
 				memcpy(&gx->vecMatrix, &gx->vecMatrixStack[gx->pvMatrixPointer & 0x1F], sizeof(gx->vecMatrix));
@@ -737,10 +733,9 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			case 0:
 				memcpy(&gx->projMatrixStack, &gx->projMatrix, sizeof(gx->projMatrixStack));
 				break;
+			case 1:
 			case 2:
 				memcpy(&gx->vecMatrixStack[offset], &gx->vecMatrix, sizeof(gx->vecMatrix));
-				// Fall through
-			case 1:
 				memcpy(&gx->posMatrixStack[offset], &gx->posMatrix, sizeof(gx->posMatrix));
 				break;
 			case 3:
@@ -756,10 +751,9 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			case 0:
 				memcpy(&gx->projMatrix, &gx->projMatrixStack, sizeof(gx->projMatrix));
 				break;
+			case 1:
 			case 2:
 				memcpy(&gx->vecMatrix, &gx->vecMatrixStack[offset], sizeof(gx->vecMatrix));
-				// Fall through
-			case 1:
 				memcpy(&gx->posMatrix, &gx->posMatrixStack[offset], sizeof(gx->posMatrix));
 				break;
 			case 3:
