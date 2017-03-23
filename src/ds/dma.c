@@ -12,7 +12,7 @@
 
 static void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate);
 
-static void DSDMAService(struct DSCommon* dscore, int number, struct GBADMA* info);
+static void DSDMAService(struct DSCommon* dscore, struct GBADMA* info);
 
 static const int DMA_OFFSET[] = { 1, -1, 0, 1 };
 
@@ -129,7 +129,7 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 			DSDMAUpdate(dscore);
 		} else {
 			dscore->p->cpuBlocked |= DS_CPU_BLOCK_DMA; // TODO: Fix for ITCM
-			DSDMAService(dscore, memory->activeDMA, dma);
+			DSDMAService(dscore, dma);
 		}
 	} else {
 		dma->nextCount = 0;
@@ -198,8 +198,7 @@ void DSDMAUpdate(struct DSCommon* dscore) {
 	}
 }
 
-void DSDMAService(struct DSCommon* dscore, int number, struct GBADMA* info) {
-	UNUSED(number);
+void DSDMAService(struct DSCommon* dscore, struct GBADMA* info) {
 	struct ARMCore* cpu = dscore->cpu;
 	uint32_t width = 2 << GBADMARegisterGetWidth(info->reg);
 	int32_t wordsRemaining = info->nextCount;
