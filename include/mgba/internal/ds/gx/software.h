@@ -93,6 +93,7 @@ struct DSGXSoftwareRenderer {
 	uint8_t* stencilBuffer;
 	color_t* scanlineCache;
 	int sort;
+	bool flushPending;
 
 	struct DSGXVertex* verts;
 };

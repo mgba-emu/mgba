@@ -697,18 +697,27 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 		softwareRenderer->depthBuffer[i + 2] = INT32_MAX;
 		softwareRenderer->depthBuffer[i + 3] = INT32_MAX;
 	}
+	softwareRenderer->flushPending = true;
+}
+
+static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int y) {
+	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
+	if (!softwareRenderer->flushPending || y) {
+		return;
+	}
 
 	size_t p;
 	for (p = 0; p < DSGXSoftwarePolygonListSize(&softwareRenderer->activePolys); ++p) {
 		struct DSGXSoftwarePolygon* poly = DSGXSoftwarePolygonListGetPointer(&softwareRenderer->activePolys, p);
 		DSGXSoftwareEdgeListClear(&softwareRenderer->activeEdges);
-		_preparePoly(renderer, verts, poly);
+		_preparePoly(renderer, softwareRenderer->verts, poly);
 		int y;
 		for (y = poly->minY; y <= poly->maxY; ++y) {
 			struct DSGXSoftwareSpan span = {
 				.poly = poly,
 				.polyId = DSGXPolygonAttrsGetId(poly->polyParams),
 			};
+			size_t i;
 			for (i = 0; i < DSGXSoftwareEdgeListSize(&softwareRenderer->activeEdges); ++i) {
 				struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListGetPointer(&softwareRenderer->activeEdges, i);
 				if (edge->y1 < (y << 12)) {
@@ -729,12 +738,7 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 			}
 		}
 	}
-}
-
-static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int y) {
-	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
-	UNUSED(softwareRenderer);
-	UNUSED(y);
+	softwareRenderer->flushPending = false;
 }
 
 static void DSGXSoftwareRendererGetScanline(struct DSGXRenderer* renderer, int y, const color_t** output) {
