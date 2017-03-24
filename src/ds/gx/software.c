@@ -171,7 +171,8 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 		texel &= 0x7;
 		break;
 	case 7:
-		return _finishColor(0x3F, 0x3F, 0x3F, pa);
+		texel = poly->texBase[texelCoord];
+		break;
 	}
 	uint8_t r, g, b;
 	unsigned wr, wg, wb, wa;
@@ -232,7 +233,7 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 		if (b) {
 			texel = _mixTexels(a, texel, b, texel2);
 		}
-	} else {
+	} else if (poly->texFormat != 7) {
 		if (poly->texFormat < 5 && poly->texFormat > 1 && DSGXTexParamsIs0Transparent(poly->texParams) && !texel) {
 			return 0;
 		}
@@ -450,7 +451,6 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 	} else {
 		switch (poly->texFormat) {
 		case 0:
-		case 7:
 			poly->texBase = NULL;
 			poly->palBase = NULL;
 			break;
