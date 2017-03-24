@@ -18,7 +18,7 @@
 
 using namespace QGBA;
 
-SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, QWidget* parent)
+SettingsView::SettingsView(ConfigController* controller, InputController* inputController, InputModel* inputModel, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
 {
@@ -164,7 +164,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	});
 
 	ShortcutView* shortcutView = new ShortcutView();
-	shortcutView->setController(shortcutController);
+	shortcutView->setModel(inputModel);
 	shortcutView->setInputController(inputController);
 	m_ui.stackedWidget->addWidget(shortcutView);
 	m_ui.tabs->addItem(tr("Shortcuts"));

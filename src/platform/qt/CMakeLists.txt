@@ -83,6 +83,8 @@ set(SOURCE_FILES
 	GamepadHatEvent.cpp
 	IOViewer.cpp
 	InputController.cpp
+	InputItem.cpp
+	InputModel.cpp
 	InputProfile.cpp
 	KeyEditor.cpp
 	LoadSaveState.cpp
@@ -100,7 +102,6 @@ set(SOURCE_FILES
 	SensorView.cpp
 	SettingsView.cpp
 	ShaderSelector.cpp
-	ShortcutController.cpp
 	ShortcutView.cpp
 	Swatch.cpp
 	TilePainter.cpp

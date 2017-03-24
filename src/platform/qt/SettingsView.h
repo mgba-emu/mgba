@@ -16,13 +16,13 @@ namespace QGBA {
 
 class ConfigController;
 class InputController;
-class ShortcutController;
+class InputModel;
 
 class SettingsView : public QDialog {
 Q_OBJECT
 
 public:
-	SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, QWidget* parent = nullptr);
+	SettingsView(ConfigController* controller, InputController* inputController, InputModel* inputModel, QWidget* parent = nullptr);
 
 signals:
 	void biosLoaded(int platform, const QString&);

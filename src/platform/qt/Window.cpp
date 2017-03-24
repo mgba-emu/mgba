@@ -28,6 +28,7 @@
 #include "GDBController.h"
 #include "GDBWindow.h"
 #include "GIFView.h"
+#include "InputModel.h"
 #include "IOViewer.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
@@ -40,7 +41,6 @@
 #include "SensorView.h"
 #include "SettingsView.h"
 #include "ShaderSelector.h"
-#include "ShortcutController.h"
 #include "TileView.h"
 #include "VideoView.h"
 
@@ -81,7 +81,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_console(nullptr)
 #endif
 	, m_mruMenu(nullptr)
-	, m_shortcutController(new ShortcutController(this))
+	, m_inputModel(new InputModel(this))
 	, m_fullscreenOnStart(false)
 	, m_autoresume(false)
 	, m_wasOpened(false)
@@ -194,13 +194,13 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_display, &Display::showCursor, [this]() {
 		m_screenWidget->unsetCursor();
 	});
-	connect(&m_inputController, SIGNAL(profileLoaded(const QString&)), m_shortcutController, SLOT(loadProfile(const QString&)));
+	connect(&m_inputController, SIGNAL(profileLoaded(const QString&)), m_inputModel, SLOT(loadProfile(const QString&)));
 
 	m_log.setLevels(mLOG_WARN | mLOG_ERROR | mLOG_FATAL);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
 	m_focusCheck.setInterval(200);
 
-	m_shortcutController->setConfigController(m_config);
+	m_inputModel->setConfigController(m_config);
 	setupMenu(menuBar());
 }
 
@@ -476,7 +476,7 @@ void Window::exportSharkport() {
 }
 
 void Window::openSettingsWindow() {
-	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController);
+	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_inputModel);
 	connect(settingsWindow, SIGNAL(biosLoaded(int, const QString&)), m_controller, SLOT(loadBIOS(int, const QString&)));
 	connect(settingsWindow, SIGNAL(audioDriverChanged()), m_controller, SLOT(reloadAudioDriver()));
 	connect(settingsWindow, SIGNAL(displayDriverChanged()), this, SLOT(mustRestart()));
@@ -922,8 +922,8 @@ void Window::openStateWindow(LoadSave ls) {
 void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
-	m_shortcutController->addMenu(fileMenu);
-	installEventFilter(m_shortcutController);
+	m_inputModel->addMenu(fileMenu);
+	installEventFilter(m_inputModel);
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open),
 	                    "loadROM");
 #ifdef USE_SQLITE3
@@ -978,8 +978,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* quickLoadMenu = fileMenu->addMenu(tr("Quick load"));
 	QMenu* quickSaveMenu = fileMenu->addMenu(tr("Quick save"));
-	m_shortcutController->addMenu(quickLoadMenu);
-	m_shortcutController->addMenu(quickSaveMenu);
+	m_inputModel->addMenu(quickLoadMenu);
+	m_inputModel->addMenu(quickSaveMenu);
 
 	QAction* quickLoad = new QAction(tr("Load recent"), quickLoadMenu);
 	connect(quickLoad, SIGNAL(triggered()), m_controller, SLOT(loadState()));
@@ -1065,7 +1065,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	QMenu* emulationMenu = menubar->addMenu(tr("&Emulation"));
-	m_shortcutController->addMenu(emulationMenu);
+	m_inputModel->addMenu(emulationMenu);
 	QAction* reset = new QAction(tr("&Reset"), emulationMenu);
 	reset->setShortcut(tr("Ctrl+R"));
 	connect(reset, SIGNAL(triggered()), m_controller, SLOT(reset()));
@@ -1106,7 +1106,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	emulationMenu->addSeparator();
 
-	m_shortcutController->addFunctions(emulationMenu, [this]() {
+	m_inputModel->addFunctions(emulationMenu, [this]() {
 		m_controller->setTurbo(true, false);
 	}, [this]() {
 		m_controller->setTurbo(false, false);
@@ -1132,7 +1132,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 	m_config->updateOption("fastForwardRatio");
 
-	m_shortcutController->addFunctions(emulationMenu, [this]() {
+	m_inputModel->addFunctions(emulationMenu, [this]() {
 		m_controller->startRewinding();
 	}, [this]() {
 		m_controller->stopRewinding();
@@ -1171,7 +1171,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	emulationMenu->addSeparator();
 
 	QMenu* solarMenu = emulationMenu->addMenu(tr("Solar sensor"));
-	m_shortcutController->addMenu(solarMenu);
+	m_inputModel->addMenu(solarMenu);
 	QAction* solarIncrease = new QAction(tr("Increase solar level"), solarMenu);
 	connect(solarIncrease, SIGNAL(triggered()), m_controller, SLOT(increaseLuminanceLevel()));
 	addControlledAction(solarMenu, solarIncrease, "increaseLuminanceLevel");
@@ -1198,9 +1198,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
-	m_shortcutController->addMenu(avMenu);
+	m_inputModel->addMenu(avMenu);
 	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));
-	m_shortcutController->addMenu(frameMenu, avMenu);
+	m_inputModel->addMenu(frameMenu, avMenu);
 	for (int i = 1; i <= 6; ++i) {
 		QAction* setSize = new QAction(tr("%1x").arg(QString::number(i)), avMenu);
 		setSize->setCheckable(true);
@@ -1314,7 +1314,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	avMenu->addSeparator();
 	QMenu* videoLayers = avMenu->addMenu(tr("Video layers"));
-	m_shortcutController->addMenu(videoLayers, avMenu);
+	m_inputModel->addMenu(videoLayers, avMenu);
 
 	for (int i = 0; i < 4; ++i) {
 		QAction* enableBg = new QAction(tr("Background %0").arg(i), videoLayers);
@@ -1331,7 +1331,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(videoLayers, enableObj, "enableOBJ");
 
 	QMenu* audioChannels = avMenu->addMenu(tr("Audio channels"));
-	m_shortcutController->addMenu(audioChannels, avMenu);
+	m_inputModel->addMenu(audioChannels, avMenu);
 
 	for (int i = 0; i < 4; ++i) {
 		QAction* enableCh = new QAction(tr("Channel %0").arg(i + 1), audioChannels);
@@ -1354,7 +1354,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(audioChannels, enableChB, QString("enableChB"));
 
 	QMenu* toolsMenu = menubar->addMenu(tr("&Tools"));
-	m_shortcutController->addMenu(toolsMenu);
+	m_inputModel->addMenu(toolsMenu);
 	QAction* viewLogs = new QAction(tr("View &logs..."), toolsMenu);
 	connect(viewLogs, SIGNAL(triggered()), m_logView, SLOT(show()));
 	addControlledAction(toolsMenu, viewLogs, "viewLogs");
@@ -1481,63 +1481,63 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addHiddenAction(frameMenu, exitFullScreen, "exitFullScreen");
 
 	QMenu* autofireMenu = new QMenu(tr("Autofire"), this);
-	m_shortcutController->addMenu(autofireMenu);
+	m_inputModel->addMenu(autofireMenu);
 
-	m_shortcutController->addFunctions(autofireMenu, [this]() {
+	m_inputModel->addFunctions(autofireMenu, [this]() {
 		m_controller->setAutofire(GBA_KEY_A, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_A, false);
 	}, QKeySequence(), tr("Autofire A"), "autofireA");
 
-	m_shortcutController->addFunctions(autofireMenu, [this]() {
+	m_inputModel->addFunctions(autofireMenu, [this]() {
 		m_controller->setAutofire(GBA_KEY_B, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_B, false);
 	}, QKeySequence(), tr("Autofire B"), "autofireB");
 
-	m_shortcutController->addFunctions(autofireMenu, [this]() {
+	m_inputModel->addFunctions(autofireMenu, [this]() {
 		m_controller->setAutofire(GBA_KEY_L, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_L, false);
 	}, QKeySequence(), tr("Autofire L"), "autofireL");
 
-	m_shortcutController->addFunctions(autofireMenu, [this]() {
+	m_inputModel->addFunctions(autofireMenu, [this]() {
 		m_controller->setAutofire(GBA_KEY_R, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_R, false);
 	}, QKeySequence(), tr("Autofire R"), "autofireR");
 
-	m_shortcutController->addFunctions(autofireMenu, [this]() {
+	m_inputModel->addFunctions(autofireMenu, [this]() {
 		m_controller->setAutofire(GBA_KEY_START, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_START, false);
 	}, QKeySequence(), tr("Autofire Start"), "autofireStart");
 
-	m_shortcutController->addFunctions(autofireMenu, [this]() {
+	m_inputModel->addFunctions(autofireMenu, [this]() {
 		m_controller->setAutofire(GBA_KEY_SELECT, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_SELECT, false);
 	}, QKeySequence(), tr("Autofire Select"), "autofireSelect");
 
-	m_shortcutController->addFunctions(autofireMenu, [this]() {
+	m_inputModel->addFunctions(autofireMenu, [this]() {
 		m_controller->setAutofire(GBA_KEY_UP, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_UP, false);
 	}, QKeySequence(), tr("Autofire Up"), "autofireUp");
 
-	m_shortcutController->addFunctions(autofireMenu, [this]() {
+	m_inputModel->addFunctions(autofireMenu, [this]() {
 		m_controller->setAutofire(GBA_KEY_RIGHT, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_RIGHT, false);
 	}, QKeySequence(), tr("Autofire Right"), "autofireRight");
 
-	m_shortcutController->addFunctions(autofireMenu, [this]() {
+	m_inputModel->addFunctions(autofireMenu, [this]() {
 		m_controller->setAutofire(GBA_KEY_DOWN, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_DOWN, false);
 	}, QKeySequence(), tr("Autofire Down"), "autofireDown");
 
-	m_shortcutController->addFunctions(autofireMenu, [this]() {
+	m_inputModel->addFunctions(autofireMenu, [this]() {
 		m_controller->setAutofire(GBA_KEY_LEFT, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_LEFT, false);
@@ -1598,7 +1598,7 @@ QAction* Window::addControlledAction(QMenu* menu, QAction* action, const QString
 }
 
 QAction* Window::addHiddenAction(QMenu* menu, QAction* action, const QString& name) {
-	m_shortcutController->addAction(menu, action, name);
+	m_inputModel->addAction(menu, action, name);
 	action->setShortcutContext(Qt::WidgetShortcut);
 	addAction(action);
 	return action;

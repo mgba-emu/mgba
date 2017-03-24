@@ -28,10 +28,10 @@ class Display;
 class GameController;
 class GDBController;
 class GIFView;
+class InputModel;
 class LibraryView;
 class LogView;
 class ShaderSelector;
-class ShortcutController;
 class VideoView;
 class WindowBackground;
 
@@ -173,7 +173,7 @@ private:
 	QTimer m_fpsTimer;
 	QList<QString> m_mruFiles;
 	QMenu* m_mruMenu;
-	ShortcutController* m_shortcutController;
+	InputModel* m_inputModel;
 	ShaderSelector* m_shaderView;
 	bool m_fullscreenOnStart;
 	QTimer m_focusCheck;

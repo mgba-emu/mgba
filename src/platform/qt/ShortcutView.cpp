@@ -7,7 +7,7 @@
 
 #include "GamepadButtonEvent.h"
 #include "InputController.h"
-#include "ShortcutController.h"
+#include "InputModel.h"
 
 #include <QKeyEvent>
 
@@ -41,9 +41,9 @@ ShortcutView::~ShortcutView() {
 	m_input->releaseFocus(this);
 }
 
-void ShortcutView::setController(ShortcutController* controller) {
-	m_controller = controller;
-	m_ui.shortcutTable->setModel(controller);
+void ShortcutView::setModel(InputModel* model) {
+	m_controller = model;
+	m_ui.shortcutTable->setModel(model);
 }
 
 void ShortcutView::setInputController(InputController* controller) {
