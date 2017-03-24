@@ -539,35 +539,12 @@ static void _flushOutstanding(struct DSGX* gx) {
 }
 
 static bool _boxTestVertex(struct DSGX* gx, struct DSGXVertex* vertex) {
-	int32_t vx = _dotViewport(vertex, &gx->clipMatrix.m[0]);
-	int32_t vy = _dotViewport(vertex, &gx->clipMatrix.m[1]);
-	int32_t vz = _dotViewport(vertex, &gx->clipMatrix.m[2]);
-	int32_t vw = _dotViewport(vertex, &gx->clipMatrix.m[3]);
+	vertex->viewCoord[0] = _dotViewport(vertex, &gx->clipMatrix.m[0]);
+	vertex->viewCoord[1] = _dotViewport(vertex, &gx->clipMatrix.m[1]);
+	vertex->viewCoord[2] = _dotViewport(vertex, &gx->clipMatrix.m[2]);
+	vertex->viewCoord[3] = _dotViewport(vertex, &gx->clipMatrix.m[3]);
 
-	vx = (vx + vw) * (int64_t) (gx->viewportWidth << 12) / (vw * 2) + (gx->viewportX1 << 12);
-	vy = (vy + vw) * (int64_t) (gx->viewportHeight << 12) / (vw * 2) + (gx->viewportY1 << 12);
-	vx >>= 12;
-	vy >>= 12;
-
-	if (vx < gx->viewportX1) {
-		return false;
-	}
-	if (vx > gx->viewportX2) {
-		return false;
-	}
-	if (vy < gx->viewportY1) {
-		return false;
-	}
-	if (vy > gx->viewportY2) {
-		return false;
-	}
-	if (vz < -vw) {
-		return false;
-	}
-	if (vz > vw) {
-		return false;
-	}
-	return true;
+	return !_cohenSutherlandCode(vertex);
 }
 
 static bool _boxTest(struct DSGX* gx) {
