@@ -75,6 +75,7 @@ Misc:
  - GBA: Ignore invalid opcodes used by the Wii U VC emulator
  - Qt: Remove audio thread
  - Qt: Remove audio buffer sizing in AudioProcessorQt
+ - Qt: Re-enable QtMultimedia on Windows
 
 0.5.2: (2016-12-31)
 Bugfixes:
