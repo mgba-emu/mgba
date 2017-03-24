@@ -73,6 +73,7 @@ Misc:
  - GBA Video: Optimize when BLD* registers are written frequently
  - Core: Cores can now have multiple sets of callbacks
  - GBA: Ignore invalid opcodes used by the Wii U VC emulator
+ - Qt: Remove audio thread
 
 0.5.2: (2016-12-31)
 Bugfixes:
