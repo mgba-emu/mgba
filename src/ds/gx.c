@@ -1191,6 +1191,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			gx->nextPoly.palBase |= entry.params[1] << 8;
 			gx->nextPoly.palBase |= entry.params[2] << 16;
 			gx->nextPoly.palBase |= entry.params[3] << 24;
+			gx->currentPoly.palBase = gx->nextPoly.palBase;
 			break;
 		case DS_GX_CMD_BEGIN_VTXS:
 			gx->vertexMode = entry.params[0] & 3;
