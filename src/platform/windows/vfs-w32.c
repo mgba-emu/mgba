@@ -84,7 +84,7 @@ void _vdwRewind(struct VDir* vd) {
 	struct VDirW32* vdw = (struct VDirW32*) vd;
 	FindClose(vdw->handle);
 	wchar_t name[MAX_PATH + 1];
-	MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, vdw->path, -1, name, MAX_PATH);
+	MultiByteToWideChar(CP_UTF8, 0, vdw->path, -1, name, MAX_PATH);
 	StringCchCatNW(name, MAX_PATH, L"\\*", 2);
 	if (vdw->vde.utf8Name) {
 		free(vdw->vde.utf8Name);
