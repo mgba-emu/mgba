@@ -32,7 +32,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5Multimedia)
 find_package(Qt5OpenGL)
-find_package(Qt5Network)
 find_package(Qt5Widgets)
 
 if(NOT BUILD_GL AND NOT BUILD_GLES2)
@@ -41,7 +40,7 @@ if(NOT BUILD_GL AND NOT BUILD_GLES2)
 	return()
 endif()
 
-if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND OR NOT Qt5Network_FOUND)
+if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND)
 	message(WARNING "Cannot find Qt modules")
 	set(BUILD_QT OFF PARENT_SCOPE)
 	return()
