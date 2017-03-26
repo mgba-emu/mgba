@@ -63,7 +63,9 @@ VideoView::VideoView(QWidget* parent)
 	if (s_vcodecMap.empty()) {
 		s_vcodecMap["dirac"] = "libschroedinger";
 		s_vcodecMap["h264"] = "libx264";
+		s_vcodecMap["h264 nvenc"] = "h264_nvenc";
 		s_vcodecMap["hevc"] = "libx265";
+		s_vcodecMap["hevc nvenc"] = "hevc_nvenc";
 		s_vcodecMap["theora"] = "libtheora";
 		s_vcodecMap["vp8"] = "libvpx";
 		s_vcodecMap["vp9"] = "libvpx-vp9";
@@ -458,6 +460,8 @@ void VideoView::uncheckIncompatible() {
 QString VideoView::sanitizeCodec(const QString& codec, const QMap<QString, QString>& mapping) {
 	QString sanitized = codec.toLower();
 	sanitized = sanitized.remove(QChar('.'));
+	sanitized = sanitized.remove(QChar('('));
+	sanitized = sanitized.remove(QChar(')'));
 	if (mapping.contains(sanitized)) {
 		sanitized = mapping[sanitized];
 	}

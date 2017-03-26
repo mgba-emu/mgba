@@ -266,12 +266,17 @@
            </item>
            <item>
             <property name="text">
-             <string>VP8</string>
+             <string>h.264 (NVENC)</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>Xvid</string>
+             <string>HEVC</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>VP8</string>
             </property>
            </item>
            <item>
