@@ -142,7 +142,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	shortcutView->setModel(inputModel);
 	shortcutView->setInputController(inputController);
 	m_ui.stackedWidget->addWidget(shortcutView);
-	m_ui.tabs->addItem(tr("Shortcuts"));
+	m_ui.tabs->addItem(tr("Bindings"));
 }
 
 void SettingsView::selectBios(QLineEdit* bios) {
