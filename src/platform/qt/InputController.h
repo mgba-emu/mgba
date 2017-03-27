@@ -9,6 +9,8 @@
 #include "GamepadAxisEvent.h"
 #include "GamepadHatEvent.h"
 
+#include <memory>
+
 #include <QMap>
 #include <QObject>
 #include <QSet>

@@ -730,9 +730,9 @@ void InputController::bindHat(const QModelIndex& index, int hat, GamepadHatEvent
 	bindHat(platform, SDL_BINDING_BUTTON, hat, direction, coreKey);
 }
 #else
-void InputController::bindButton(const QModelIndex& index, int key, int) {}
-void InputController::bindAxis(const QModelIndex& index, int axis, GamepadAxisEvent::Direction, int) {}
-void InputController::bindHat(const QModelIndex& index, int hat, GamepadHatEvent::Direction, int) {}
+void InputController::bindButton(const QModelIndex& index, int key) {}
+void InputController::bindAxis(const QModelIndex& index, int axis, GamepadAxisEvent::Direction) {}
+void InputController::bindHat(const QModelIndex& index, int hat, GamepadHatEvent::Direction) {}
 #endif
 
 bool InputController::eventFilter(QObject*, QEvent* event) {

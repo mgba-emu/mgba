@@ -9,6 +9,8 @@
 #include "GamepadAxisEvent.h"
 #include "GamepadHatEvent.h"
 
+#include <functional>
+
 #include <QAction>
 
 #include <mgba/core/core.h>
