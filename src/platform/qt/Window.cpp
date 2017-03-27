@@ -47,6 +47,7 @@
 #include <mgba/core/version.h>
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/input.h>
 #include <mgba/internal/gb/video.h>
 #endif
 #ifdef M_CORE_GBA
@@ -207,7 +208,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	m_inputController.addPlatform(PLATFORM_GBA, tr("Game Boy Advance"), &GBAInputInfo);
 #endif
 #ifdef M_CORE_GB
-	m_inputController.addPlatform(PLATFORM_GB, tr("Game Boy"), &GBAInputInfo);
+	m_inputController.addPlatform(PLATFORM_GB, tr("Game Boy"), &GBInputInfo);
 #endif
 	m_inputController.setupCallback(m_controller);
 }
