@@ -30,11 +30,8 @@ endif()
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-if(NOT WIN32 OR NOT BUILD_SDL)
-	find_package(Qt5Multimedia)
-endif()
+find_package(Qt5Multimedia)
 find_package(Qt5OpenGL)
-find_package(Qt5Network)
 find_package(Qt5Widgets)
 
 if(NOT BUILD_GL AND NOT BUILD_GLES2)
@@ -43,7 +40,7 @@ if(NOT BUILD_GL AND NOT BUILD_GLES2)
 	return()
 endif()
 
-if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND OR NOT Qt5Network_FOUND)
+if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND)
 	message(WARNING "Cannot find Qt modules")
 	set(BUILD_QT OFF PARENT_SCOPE)
 	return()
@@ -78,7 +75,6 @@ set(SOURCE_FILES
 	DisplayGL.cpp
 	DisplayQt.cpp
 	GBAApp.cpp
-	GBAKeyEditor.cpp
 	GIFView.cpp
 	GameController.cpp
 	GamepadAxisEvent.cpp
@@ -86,6 +82,8 @@ set(SOURCE_FILES
 	GamepadHatEvent.cpp
 	IOViewer.cpp
 	InputController.cpp
+	InputItem.cpp
+	InputModel.cpp
 	InputProfile.cpp
 	KeyEditor.cpp
 	LoadSaveState.cpp
@@ -103,7 +101,6 @@ set(SOURCE_FILES
 	SensorView.cpp
 	SettingsView.cpp
 	ShaderSelector.cpp
-	ShortcutController.cpp
 	ShortcutView.cpp
 	Swatch.cpp
 	TilePainter.cpp
@@ -265,16 +262,31 @@ if(APPLE OR WIN32)
 	set_target_properties(${BINARY_NAME}-qt PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 endif()
 if(APPLE)
-	get_target_property(QTCOCOA Qt5::QCocoaIntegrationPlugin LOCATION)
-	get_target_property(COREAUDIO Qt5::CoreAudioPlugin LOCATION)
-	get_target_property(BUNDLE_PATH ${BINARY_NAME}-qt LOCATION)
-	target_sources(${BINARY_NAME}-qt PRIVATE "${PLUGINS}")
-	set_source_files_properties("${QTCOCOA}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
-	set_source_files_properties("${COREAUDIO}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
-	install(CODE "
-	   include(BundleUtilities)
-	   set(BU_CHMOD_BUNDLE_ITEMS ON)
-	   file(GLOB_RECURSE PLUGINS \"${BUNDLE_PATH}/Contents/PlugIns/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
-	   fixup_bundle(\"${BUNDLE_PATH}\"   \"${PLUGINS}\"   \"\")
-	   " COMPONENT ${BINARY_NAME}-qt)
+	message(STATUS ${CMAKE_SYSTEM_NAME})
+	if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
+		get_target_property(QTCOCOA Qt5::QCocoaIntegrationPlugin LOCATION)
+		get_target_property(COREAUDIO Qt5::CoreAudioPlugin LOCATION)
+		get_target_property(BUNDLE_PATH ${BINARY_NAME}-qt LOCATION)
+		target_sources(${BINARY_NAME}-qt PRIVATE "${PLUGINS}")
+		set_source_files_properties("${QTCOCOA}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
+		set_source_files_properties("${COREAUDIO}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
+		install(CODE "
+		   include(BundleUtilities)
+		   set(BU_CHMOD_BUNDLE_ITEMS ON)
+		   file(GLOB_RECURSE PLUGINS \"${BUNDLE_PATH}/Contents/PlugIns/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
+		   fixup_bundle(\"${BUNDLE_PATH}\"   \"${PLUGINS}\"   \"\")
+		   " COMPONENT ${BINARY_NAME}-qt)
+	else()
+		set(DEPLOY_OPTIONS -p platforms/libqcocoa.dylib,audio/libqtaudio_coreaudio.dylib)
+		if(NOT CMAKE_INSTALL_NAME_TOOL EQUAL "install_name_tool")
+			set(DEPLOY_OPTIONS ${DEPLOY_OPTIONS} -I "${CMAKE_INSTALL_NAME_TOOL}")
+		endif()
+		if(DEFINED CMAKE_OTOOL AND NOT CMAKE_OTOOL EQUAL "otool")
+			set(DEPLOY_OPTIONS ${DEPLOY_OPTIONS} -O "${CMAKE_OTOOL}")
+		endif()
+		if(DEFINED CROSS_ROOT)
+			set(DEPLOY_OPTIONS ${DEPLOY_OPTIONS} -R "${CROSS_ROOT}")
+		endif()
+		install(CODE "execute_process(COMMAND \"${CMAKE_SOURCE_DIR}/tools/deploy-mac.py\" -v ${DEPLOY_OPTIONS} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/Applications/${PROJECT_NAME}.app\")")
+	endif()
 endif()

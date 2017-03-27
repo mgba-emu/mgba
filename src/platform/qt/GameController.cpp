@@ -13,7 +13,6 @@
 
 #include <QCoreApplication>
 #include <QDateTime>
-#include <QThread>
 
 #include <ctime>
 
@@ -48,7 +47,6 @@ GameController::GameController(QObject* parent)
 	, m_gameOpen(false)
 	, m_vf(nullptr)
 	, m_useBios(false)
-	, m_audioThread(new QThread(this))
 	, m_audioProcessor(AudioProcessor::create())
 	, m_pauseAfterFrame(false)
 	, m_sync(true)
@@ -176,7 +174,7 @@ GameController::GameController(QObject* parent)
 		controller->m_patch = QString();
 		controller->clearOverride();
 
-		QMetaObject::invokeMethod(controller->m_audioProcessor, "pause", Qt::BlockingQueuedConnection);
+		controller->m_audioProcessor->pause();
 
 		QMetaObject::invokeMethod(controller, "gameStopped", Q_ARG(mCoreThread*, context));
 		QMetaObject::invokeMethod(controller, "cleanGame");
@@ -294,9 +292,6 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.userData = this;
 
-	m_audioThread->setObjectName("Audio Thread");
-	m_audioThread->start(QThread::TimeCriticalPriority);
-	m_audioProcessor->moveToThread(m_audioThread);
 	connect(this, SIGNAL(gamePaused(mCoreThread*)), m_audioProcessor, SLOT(pause()));
 	connect(this, SIGNAL(gameStarted(mCoreThread*, const QString&)), m_audioProcessor, SLOT(setInput(mCoreThread*)));
 	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(pollEvents()));
@@ -306,8 +301,6 @@ GameController::GameController(QObject* parent)
 GameController::~GameController() {
 	disconnect();
 	closeGame();
-	m_audioThread->quit();
-	m_audioThread->wait();
 	clearMultiplayerController();
 	delete m_backupLoadState;
 }
@@ -864,7 +857,7 @@ void GameController::setAudioBufferSamples(int samples) {
 		threadInterrupt();
 		redoSamples(samples);
 		threadContinue();
-		QMetaObject::invokeMethod(m_audioProcessor, "setBufferSamples", Qt::BlockingQueuedConnection, Q_ARG(int, samples));
+		m_audioProcessor->setBufferSamples(samples);
 	}
 }
 
@@ -876,7 +869,7 @@ void GameController::setAudioSampleRate(unsigned rate) {
 		threadInterrupt();
 		redoSamples(m_audioProcessor->getBufferSamples());
 		threadContinue();
-		QMetaObject::invokeMethod(m_audioProcessor, "requestSampleRate", Q_ARG(unsigned, rate));
+		m_audioProcessor->requestSampleRate(rate);
 	}
 }
 
@@ -929,9 +922,7 @@ void GameController::setAudioChannelEnabled(int channel, bool enable) {
 }
 
 void GameController::startAudio() {
-	bool started = false;
-	QMetaObject::invokeMethod(m_audioProcessor, "start", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool, started));
-	if (!started) {
+	if (!m_audioProcessor->start()) {
 		LOG(QT, ERROR) << tr("Failed to start audio processor");
 		// Don't freeze!
 		m_audioSync = false;
@@ -1149,7 +1140,7 @@ void GameController::reloadAudioDriver() {
 	int samples = 0;
 	unsigned sampleRate = 0;
 	if (m_audioProcessor) {
-		QMetaObject::invokeMethod(m_audioProcessor, "pause", Qt::BlockingQueuedConnection);
+		m_audioProcessor->pause();
 		samples = m_audioProcessor->getBufferSamples();
 		sampleRate = m_audioProcessor->sampleRate();
 		delete m_audioProcessor;
@@ -1161,7 +1152,6 @@ void GameController::reloadAudioDriver() {
 	if (sampleRate) {
 		m_audioProcessor->requestSampleRate(sampleRate);
 	}
-	m_audioProcessor->moveToThread(m_audioThread);
 	connect(this, SIGNAL(gamePaused(mCoreThread*)), m_audioProcessor, SLOT(pause()));
 	connect(this, SIGNAL(gameStarted(mCoreThread*, const QString&)), m_audioProcessor, SLOT(setInput(mCoreThread*)));
 	if (isLoaded()) {
@@ -1236,7 +1226,7 @@ void GameController::redoSamples(int samples) {
 	if (m_threadContext.core) {
 		m_threadContext.core->setAudioBufferSize(m_threadContext.core, samples);
 	}
-	QMetaObject::invokeMethod(m_audioProcessor, "inputParametersChanged");
+	m_audioProcessor->inputParametersChanged();
 }
 
 void GameController::setLogLevel(int levels) {

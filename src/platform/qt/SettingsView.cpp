@@ -9,7 +9,6 @@
 #include "ConfigController.h"
 #include "Display.h"
 #include "GBAApp.h"
-#include "GBAKeyEditor.h"
 #include "InputController.h"
 #include "ShortcutView.h"
 
@@ -18,7 +17,7 @@
 
 using namespace QGBA;
 
-SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, QWidget* parent)
+SettingsView::SettingsView(ConfigController* controller, InputController* inputController, InputModel* inputModel, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
 {
@@ -146,37 +145,13 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		selectBios(m_ui.gbcBios);
 	});
 
-	GBAKeyEditor* editor = new GBAKeyEditor(inputController, InputController::KEYBOARD, QString(), this);
-	m_ui.stackedWidget->addWidget(editor);
-	m_ui.tabs->addItem(tr("Keyboard"));
-	connect(m_ui.buttonBox, SIGNAL(accepted()), editor, SLOT(save()));
-
-	GBAKeyEditor* buttonEditor = nullptr;
-#ifdef BUILD_SDL
-	inputController->recalibrateAxes();
-	const char* profile = inputController->profileForType(SDL_BINDING_BUTTON);
-	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
-	m_ui.stackedWidget->addWidget(buttonEditor);
-	m_ui.tabs->addItem(tr("Controllers"));
-	connect(m_ui.buttonBox, SIGNAL(accepted()), buttonEditor, SLOT(save()));
-#endif
-
 	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(updateConfig()));
-	connect(m_ui.buttonBox, &QDialogButtonBox::clicked, [this, editor, buttonEditor](QAbstractButton* button) {
-		if (m_ui.buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole) {
-			updateConfig();
-			editor->save();
-			if (buttonEditor) {
-				buttonEditor->save();
-			}
-		}
-	});
 
 	ShortcutView* shortcutView = new ShortcutView();
-	shortcutView->setController(shortcutController);
+	shortcutView->setModel(inputModel);
 	shortcutView->setInputController(inputController);
 	m_ui.stackedWidget->addWidget(shortcutView);
-	m_ui.tabs->addItem(tr("Shortcuts"));
+	m_ui.tabs->addItem(tr("Bindings"));
 }
 
 void SettingsView::selectBios(QLineEdit* bios) {

@@ -15,7 +15,7 @@
 namespace QGBA {
 
 class InputController;
-class ShortcutController;
+class InputModel;
 
 class ShortcutView : public QWidget {
 Q_OBJECT
@@ -24,7 +24,7 @@ public:
 	ShortcutView(QWidget* parent = nullptr);
 	~ShortcutView();
 
-	void setController(ShortcutController* controller);
+	void setModel(InputModel* controller);
 	void setInputController(InputController* input);
 
 protected:
@@ -40,7 +40,7 @@ private slots:
 private:
 	Ui::ShortcutView m_ui;
 
-	ShortcutController* m_controller;
+	InputModel* m_controller;
 	InputController* m_input;
 };
 

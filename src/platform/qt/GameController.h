@@ -30,8 +30,6 @@ struct mCoreConfig;
 struct mDebugger;
 struct mTileCache;
 
-class QThread;
-
 namespace QGBA {
 
 class AudioProcessor;
@@ -208,7 +206,6 @@ private:
 	QString m_patch;
 	Override* m_override;
 
-	QThread* m_audioThread;
 	AudioProcessor* m_audioProcessor;
 
 	QAtomicInt m_pauseAfterFrame;

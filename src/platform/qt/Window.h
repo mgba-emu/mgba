@@ -28,10 +28,10 @@ class Display;
 class GameController;
 class GDBController;
 class GIFView;
+class InputModel;
 class LibraryView;
 class LogView;
 class ShaderSelector;
-class ShortcutController;
 class VideoView;
 class WindowBackground;
 
@@ -98,8 +98,6 @@ public slots:
 #endif
 
 protected:
-	virtual void keyPressEvent(QKeyEvent* event) override;
-	virtual void keyReleaseEvent(QKeyEvent* event) override;
 	virtual void resizeEvent(QResizeEvent*) override;
 	virtual void showEvent(QShowEvent*) override;
 	virtual void closeEvent(QCloseEvent*) override;
@@ -170,12 +168,12 @@ private:
 	WindowBackground* m_screenWidget;
 	QPixmap m_logo;
 	ConfigController* m_config;
+	InputModel* m_inputModel;
 	InputController m_inputController;
 	QList<QDateTime> m_frameList;
 	QTimer m_fpsTimer;
 	QList<QString> m_mruFiles;
 	QMenu* m_mruMenu;
-	ShortcutController* m_shortcutController;
 	ShaderSelector* m_shaderView;
 	bool m_fullscreenOnStart;
 	QTimer m_focusCheck;

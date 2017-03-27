@@ -9,6 +9,7 @@
 #include <mgba/internal/gb/cheats.h>
 #include <mgba/internal/gb/extra/cli.h>
 #include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/input.h>
 #include <mgba/internal/gb/mbc.h>
 #include <mgba/internal/gb/overrides.h>
 #include <mgba/internal/gb/renderers/software.h>
@@ -68,7 +69,7 @@ static bool _GBCoreInit(struct mCore* core) {
 #endif
 
 #ifndef MINIMAL_CORE
-	core->inputInfo = &GBAInputInfo; // TODO: GBInputInfo
+	core->inputInfo = &GBInputInfo;
 #endif
 
 	return true;
@@ -269,7 +270,7 @@ static void _GBCoreReset(struct mCore* core) {
 		}
 		if (!found) {
 			GBDetectModel(gb);
-			const char* configPath;
+			const char* configPath = NULL;
 
 			switch (gb->model) {
 			case GB_MODEL_DMG:

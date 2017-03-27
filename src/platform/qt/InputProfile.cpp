@@ -199,7 +199,8 @@ constexpr InputProfile::InputProfile(const char* name,
 {
 }
 
-const InputProfile* InputProfile::findProfile(const QString& name) {
+const InputProfile* InputProfile::findProfile(mPlatform platform, const QString& name) {
+	// TODO: Use platform
 	for (size_t i = 0; i < sizeof(s_defaultMaps) / sizeof(*s_defaultMaps); ++i) {
 		QRegExp re(s_defaultMaps[i].m_profileName);
 		if (re.exactMatch(name)) {
@@ -209,11 +210,11 @@ const InputProfile* InputProfile::findProfile(const QString& name) {
 	return nullptr;
 }
 
-void InputProfile::apply(InputController* controller) const {
+void InputProfile::apply(mPlatform platform, InputController* controller) const {
 	for (size_t i = 0; i < GBA_KEY_MAX; ++i) {
 #ifdef BUILD_SDL
-		controller->bindKey(SDL_BINDING_BUTTON, m_keys[i], static_cast<GBAKey>(i));
-		controller->bindAxis(SDL_BINDING_BUTTON, m_axes[i].axis, m_axes[i].direction, static_cast<GBAKey>(i));
+		controller->bindKey(platform, SDL_BINDING_BUTTON, m_keys[i], static_cast<GBAKey>(i));
+		controller->bindAxis(platform, SDL_BINDING_BUTTON, m_axes[i].axis, m_axes[i].direction, static_cast<GBAKey>(i));
 #endif
 	}
 	controller->registerTiltAxisX(m_tiltAxis.x);

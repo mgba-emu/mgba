@@ -27,6 +27,7 @@ GamepadAxisEvent::GamepadAxisEvent(int axis, Direction direction, bool isNew, in
 
 QEvent::Type GamepadAxisEvent::Type() {
 	if (s_type == None) {
+		qRegisterMetaType<Direction>("GamepadAxisEvent::Direction");
 		s_type = static_cast<enum Type>(registerEventType());
 	}
 	return s_type;

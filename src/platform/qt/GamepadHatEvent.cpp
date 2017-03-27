@@ -27,6 +27,7 @@ GamepadHatEvent::GamepadHatEvent(QEvent::Type pressType, int hatId, Direction di
 
 QEvent::Type GamepadHatEvent::Down() {
 	if (s_downType == None) {
+		qRegisterMetaType<Direction>("GamepadHatEvent::Direction");
 		s_downType = static_cast<Type>(registerEventType());
 	}
 	return s_downType;
