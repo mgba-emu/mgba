@@ -7,8 +7,11 @@
 #define QGBA_INPUT_ITEM
 
 #include "GamepadAxisEvent.h"
+#include "GamepadHatEvent.h"
 
 #include <QAction>
+
+#include <mgba/core/core.h>
 
 namespace QGBA {
 
@@ -19,12 +22,15 @@ public:
 	InputItem(QAction* action, const QString& name, InputItem* parent = nullptr);
 	InputItem(Functions functions, int shortcut, const QString& visibleName,
 	          const QString& name, InputItem* parent = nullptr);
+	InputItem(mPlatform platform, int key, int shortcut, const QString& name, const QString& visibleName, InputItem* parent = nullptr);
 	InputItem(QMenu* action, InputItem* parent = nullptr);
 
 	QAction* action() { return m_action; }
 	const QAction* action() const { return m_action; }
-	const int shortcut() const { return m_shortcut; }
+	int shortcut() const { return m_shortcut; }
+	mPlatform platform() const { return m_platform; }
 	Functions functions() const { return m_functions; }
+	int key() const { return m_keys; }
 	QMenu* menu() { return m_menu; }
 	const QMenu* menu() const { return m_menu; }
 	const QString& visibleName() const { return m_visibleName; }
@@ -36,6 +42,7 @@ public:
 	void addAction(QAction* action, const QString& name);
 	void addFunctions(Functions functions, int shortcut, const QString& visibleName,
 	                  const QString& name);
+	void addKey(mPlatform platform, int key, int shortcut, const QString& visibleName, const QString& name);
 	void addSubmenu(QMenu* menu);
 	int button() const { return m_button; }
 	void setShortcut(int sequence);
@@ -57,7 +64,9 @@ private:
 	QString m_visibleName;
 	int m_button;
 	int m_axis;
+	int m_keys;
 	GamepadAxisEvent::Direction m_direction;
+	mPlatform m_platform;
 	QList<InputItem> m_items;
 	InputItem* m_parent;
 };

@@ -51,6 +51,7 @@
 #endif
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/input.h>
 #include <mgba/internal/gba/video.h>
 #endif
 #include "feature/commandline.h"
@@ -67,7 +68,8 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_screenWidget(new WindowBackground())
 	, m_logo(":/res/mgba-1024.png")
 	, m_config(config)
-	, m_inputController(playerId, this)
+	, m_inputModel(new InputModel(this))
+	, m_inputController(m_inputModel, playerId, this)
 #ifdef USE_FFMPEG
 	, m_videoView(nullptr)
 #endif
@@ -81,7 +83,6 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_console(nullptr)
 #endif
 	, m_mruMenu(nullptr)
-	, m_inputModel(new InputModel(this))
 	, m_fullscreenOnStart(false)
 	, m_autoresume(false)
 	, m_wasOpened(false)
@@ -194,7 +195,6 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_display, &Display::showCursor, [this]() {
 		m_screenWidget->unsetCursor();
 	});
-	connect(&m_inputController, SIGNAL(profileLoaded(const QString&)), m_inputModel, SLOT(loadProfile(const QString&)));
 
 	m_log.setLevels(mLOG_WARN | mLOG_ERROR | mLOG_FATAL);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
@@ -202,6 +202,14 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 
 	m_inputModel->setConfigController(m_config);
 	setupMenu(menuBar());
+
+#ifdef M_CORE_GBA
+	m_inputController.addPlatform(PLATFORM_GBA, tr("Game Boy Advance"), &GBAInputInfo);
+#endif
+#ifdef M_CORE_GB
+	m_inputController.addPlatform(PLATFORM_GB, tr("Game Boy"), &GBAInputInfo);
+#endif
+	m_inputController.setupCallback(m_controller);
 }
 
 Window::~Window() {
@@ -559,34 +567,6 @@ void Window::consoleOpen() {
 }
 #endif
 
-void Window::keyPressEvent(QKeyEvent* event) {
-	if (event->isAutoRepeat()) {
-		QWidget::keyPressEvent(event);
-		return;
-	}
-	GBAKey key = m_inputController.mapKeyboard(event->key());
-	if (key == GBA_KEY_NONE) {
-		QWidget::keyPressEvent(event);
-		return;
-	}
-	m_controller->keyPressed(key);
-	event->accept();
-}
-
-void Window::keyReleaseEvent(QKeyEvent* event) {
-	if (event->isAutoRepeat()) {
-		QWidget::keyReleaseEvent(event);
-		return;
-	}
-	GBAKey key = m_inputController.mapKeyboard(event->key());
-	if (key == GBA_KEY_NONE) {
-		QWidget::keyPressEvent(event);
-		return;
-	}
-	m_controller->keyReleased(key);
-	event->accept();
-}
-
 void Window::resizeEvent(QResizeEvent* event) {
 	if (!isFullScreen()) {
 		m_config->setOption("height", m_screenWidget->height());
@@ -754,6 +734,8 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 		menuBar()->hide();
 	}
 #endif
+
+	m_inputController.setPlatform(m_controller->platform());
 
 	m_hitUnimplementedBiosCall = false;
 	m_fpsTimer.start();
@@ -923,7 +905,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
 	m_inputModel->addMenu(fileMenu);
-	installEventFilter(m_inputModel);
+	installEventFilter(&m_inputController);
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open),
 	                    "loadROM");
 #ifdef USE_SQLITE3
@@ -1479,69 +1461,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(exitFullScreen, SIGNAL(triggered()), this, SLOT(exitFullScreen()));
 	exitFullScreen->setShortcut(QKeySequence("Esc"));
 	addHiddenAction(frameMenu, exitFullScreen, "exitFullScreen");
-
-	QMenu* autofireMenu = new QMenu(tr("Autofire"), this);
-	m_inputModel->addMenu(autofireMenu);
-
-	m_inputModel->addFunctions(autofireMenu, [this]() {
-		m_controller->setAutofire(GBA_KEY_A, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_A, false);
-	}, QKeySequence(), tr("Autofire A"), "autofireA");
-
-	m_inputModel->addFunctions(autofireMenu, [this]() {
-		m_controller->setAutofire(GBA_KEY_B, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_B, false);
-	}, QKeySequence(), tr("Autofire B"), "autofireB");
-
-	m_inputModel->addFunctions(autofireMenu, [this]() {
-		m_controller->setAutofire(GBA_KEY_L, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_L, false);
-	}, QKeySequence(), tr("Autofire L"), "autofireL");
-
-	m_inputModel->addFunctions(autofireMenu, [this]() {
-		m_controller->setAutofire(GBA_KEY_R, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_R, false);
-	}, QKeySequence(), tr("Autofire R"), "autofireR");
-
-	m_inputModel->addFunctions(autofireMenu, [this]() {
-		m_controller->setAutofire(GBA_KEY_START, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_START, false);
-	}, QKeySequence(), tr("Autofire Start"), "autofireStart");
-
-	m_inputModel->addFunctions(autofireMenu, [this]() {
-		m_controller->setAutofire(GBA_KEY_SELECT, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_SELECT, false);
-	}, QKeySequence(), tr("Autofire Select"), "autofireSelect");
-
-	m_inputModel->addFunctions(autofireMenu, [this]() {
-		m_controller->setAutofire(GBA_KEY_UP, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_UP, false);
-	}, QKeySequence(), tr("Autofire Up"), "autofireUp");
-
-	m_inputModel->addFunctions(autofireMenu, [this]() {
-		m_controller->setAutofire(GBA_KEY_RIGHT, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_RIGHT, false);
-	}, QKeySequence(), tr("Autofire Right"), "autofireRight");
-
-	m_inputModel->addFunctions(autofireMenu, [this]() {
-		m_controller->setAutofire(GBA_KEY_DOWN, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_DOWN, false);
-	}, QKeySequence(), tr("Autofire Down"), "autofireDown");
-
-	m_inputModel->addFunctions(autofireMenu, [this]() {
-		m_controller->setAutofire(GBA_KEY_LEFT, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_LEFT, false);
-	}, QKeySequence(), tr("Autofire Left"), "autofireLeft");
 
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);

@@ -12,11 +12,13 @@ using namespace QGBA;
 InputItem::InputItem(QAction* action, const QString& name, InputItem* parent)
 	: m_action(action)
 	, m_shortcut(action->shortcut().isEmpty() ? 0 : action->shortcut()[0])
+	, m_keys(-1)
 	, m_menu(nullptr)
 	, m_name(name)
 	, m_button(-1)
 	, m_axis(-1)
 	, m_direction(GamepadAxisEvent::NEUTRAL)
+	, m_platform(PLATFORM_NONE)
 	, m_parent(parent)
 {
 	m_visibleName = action->text()
@@ -28,12 +30,29 @@ InputItem::InputItem(InputItem::Functions functions, int shortcut, const QString
 	: m_action(nullptr)
 	, m_shortcut(shortcut)
 	, m_functions(functions)
+	, m_keys(-1)
 	, m_menu(nullptr)
 	, m_name(name)
 	, m_visibleName(visibleName)
 	, m_button(-1)
 	, m_axis(-1)
 	, m_direction(GamepadAxisEvent::NEUTRAL)
+	, m_platform(PLATFORM_NONE)
+	, m_parent(parent)
+{
+}
+
+InputItem::InputItem(mPlatform platform, int key, int shortcut, const QString& visibleName, const QString& name, InputItem* parent)
+	: m_action(nullptr)
+	, m_shortcut(shortcut)
+	, m_keys(key)
+	, m_menu(nullptr)
+	, m_name(name)
+	, m_visibleName(visibleName)
+	, m_button(-1)
+	, m_axis(-1)
+	, m_direction(GamepadAxisEvent::NEUTRAL)
+	, m_platform(platform)
 	, m_parent(parent)
 {
 }
@@ -62,6 +81,10 @@ void InputItem::addFunctions(InputItem::Functions functions,
                              int shortcut, const QString& visibleName,
                              const QString& name) {
 	m_items.append(InputItem(functions, shortcut, visibleName, name, this));
+}
+
+void InputItem::addKey(mPlatform platform, int key, int shortcut, const QString& visibleName, const QString& name) {
+	m_items.append(InputItem(platform, key, shortcut, visibleName, name, this));
 }
 
 void InputItem::addSubmenu(QMenu* menu) {

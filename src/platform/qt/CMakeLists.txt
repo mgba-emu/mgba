@@ -75,7 +75,6 @@ set(SOURCE_FILES
 	DisplayGL.cpp
 	DisplayQt.cpp
 	GBAApp.cpp
-	GBAKeyEditor.cpp
 	GIFView.cpp
 	GameController.cpp
 	GamepadAxisEvent.cpp

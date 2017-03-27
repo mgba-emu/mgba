@@ -87,10 +87,14 @@ QModelIndex InputModel::parent(const QModelIndex& index) const {
 		return QModelIndex();
 	}
 	InputItem* item = static_cast<InputItem*>(index.internalPointer());
-	if (!item->parent() || !item->parent()->parent()) {
+	return this->index(item->parent());
+}
+
+QModelIndex InputModel::index(InputItem* item) const {
+	if (!item || !item->parent()) {
 		return QModelIndex();
 	}
-	return createIndex(item->parent()->parent()->items().indexOf(*item->parent()), 0, item->parent());
+	return createIndex(item->parent()->items().indexOf(*item), 0, item);
 }
 
 int InputModel::columnCount(const QModelIndex& index) const {
@@ -105,38 +109,42 @@ int InputModel::rowCount(const QModelIndex& index) const {
 	return item->items().count();
 }
 
-void InputModel::addAction(QMenu* menu, QAction* action, const QString& name) {
+InputItem* InputModel::add(QMenu* menu, std::function<void (InputItem*)> callback) {
 	InputItem* smenu = m_menuMap[menu];
 	if (!smenu) {
-		return;
+		return nullptr;
 	}
-	InputItem* pmenu = smenu->parent();
-	int row = pmenu->items().indexOf(*smenu);
-	QModelIndex parent = createIndex(row, 0, smenu);
+	QModelIndex parent = index(smenu);
 	beginInsertRows(parent, smenu->items().count(), smenu->items().count());
-	smenu->addAction(action, name);
+	callback(smenu);
 	endInsertRows();
 	InputItem* item = &smenu->items().last();
+	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item),
+	                 createIndex(smenu->items().count() - 1, 2, item));
+	return item;
+}
+
+void InputModel::addAction(QMenu* menu, QAction* action, const QString& name) {
+	InputItem* item = add(menu, [&](InputItem* smenu) {
+		smenu->addAction(action, name);
+	});
+	if (!item) {
+		return;
+	}
 	if (m_config) {
 		loadShortcuts(item);
 	}
-	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item),
-	                 createIndex(smenu->items().count() - 1, 2, item));
 }
 
 void InputModel::addFunctions(QMenu* menu, std::function<void()> press, std::function<void()> release,
                                       int shortcut, const QString& visibleName, const QString& name) {
-	InputItem* smenu = m_menuMap[menu];
-	if (!smenu) {
+	InputItem* item = add(menu, [&](InputItem* smenu) {
+		smenu->addFunctions(qMakePair(press, release), shortcut, visibleName, name);
+	});
+	if (!item) {
 		return;
 	}
-	InputItem* pmenu = smenu->parent();
-	int row = pmenu->items().indexOf(*smenu);
-	QModelIndex parent = createIndex(row, 0, smenu);
-	beginInsertRows(parent, smenu->items().count(), smenu->items().count());
-	smenu->addFunctions(qMakePair(press, release), shortcut, visibleName, name);
-	endInsertRows();
-	InputItem* item = &smenu->items().last();
+
 	bool loadedShortcut = false;
 	if (m_config) {
 		loadedShortcut = loadShortcuts(item);
@@ -144,8 +152,6 @@ void InputModel::addFunctions(QMenu* menu, std::function<void()> press, std::fun
 	if (!loadedShortcut && !m_heldKeys.contains(shortcut)) {
 		m_heldKeys[shortcut] = item;
 	}
-	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item),
-	                 createIndex(smenu->items().count() - 1, 2, item));
 }
 
 void InputModel::addFunctions(QMenu* menu, std::function<void()> press, std::function<void()> release,
@@ -153,17 +159,22 @@ void InputModel::addFunctions(QMenu* menu, std::function<void()> press, std::fun
 	addFunctions(menu, press, release, shortcut[0], visibleName, name);
 }
 
-void InputModel::addMenu(QMenu* menu, QMenu* parentMenu) {
+void InputModel::addKey(QMenu* menu, mPlatform platform, int key, int shortcut, const QString& visibleName, const QString& name) {
+	InputItem* item = add(menu, [&](InputItem* smenu) {
+		smenu->addKey(platform, key, shortcut, visibleName, name);
+	});
+	if (!item) {
+		return;
+	}
+	m_keys[qMakePair(platform, key)] = item;
+}
+
+QModelIndex InputModel::addMenu(QMenu* menu, QMenu* parentMenu) {
 	InputItem* smenu = m_menuMap[parentMenu];
 	if (!smenu) {
 		smenu = &m_rootMenu;
 	}
-	QModelIndex parent;
-	InputItem* pmenu = smenu->parent();
-	if (pmenu) {
-		int row = pmenu->items().indexOf(*smenu);
-		parent = createIndex(row, 0, smenu);
-	}
+	QModelIndex parent = index(smenu);
 	beginInsertRows(parent, smenu->items().count(), smenu->items().count());
 	smenu->addSubmenu(menu);
 	endInsertRows();
@@ -171,20 +182,35 @@ void InputModel::addMenu(QMenu* menu, QMenu* parentMenu) {
 	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item),
 	                 createIndex(smenu->items().count() - 1, 2, item));
 	m_menuMap[menu] = item;
+	return index(item);
 }
 
 InputItem* InputModel::itemAt(const QModelIndex& index) {
 	if (!index.isValid()) {
 		return nullptr;
 	}
-	return static_cast<InputItem*>(index.internalPointer());
+	if (index.internalPointer()) {
+		return static_cast<InputItem*>(index.internalPointer());
+	}
+	if (!index.parent().isValid()) {
+		return nullptr;
+	}
+	InputItem* pmenu = static_cast<InputItem*>(index.parent().internalPointer());
+	return &pmenu->items()[index.row()];
 }
 
 const InputItem* InputModel::itemAt(const QModelIndex& index) const {
 	if (!index.isValid()) {
 		return nullptr;
 	}
-	return static_cast<const InputItem*>(index.internalPointer());
+	if (index.internalPointer()) {
+		return static_cast<InputItem*>(index.internalPointer());
+	}
+	if (!index.parent().isValid()) {
+		return nullptr;
+	}
+	InputItem* pmenu = static_cast<InputItem*>(index.parent().internalPointer());
+	return &pmenu->items()[index.row()];
 }
 
 int InputModel::shortcutAt(const QModelIndex& index) const {
@@ -193,6 +219,14 @@ int InputModel::shortcutAt(const QModelIndex& index) const {
 		return 0;
 	}
 	return item->shortcut();
+}
+
+int InputModel::keyAt(const QModelIndex& index) const {
+	const InputItem* item = itemAt(index);
+	if (!item) {
+		return -1;
+	}
+	return item->key();
 }
 
 bool InputModel::isMenuAt(const QModelIndex& index) const {
@@ -216,22 +250,25 @@ void InputModel::updateKey(const QModelIndex& index, int keySequence) {
 	if (m_config) {
 		m_config->setQtOption(item->name(), QKeySequence(keySequence).toString(), KEY_SECTION);
 	}
-	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()),
-	                 createIndex(index.row(), 2, index.internalPointer()));
 }
 
 void InputModel::updateKey(InputItem* item, int keySequence) {
 	int oldShortcut = item->shortcut();
-	if (item->functions().first) {
+	if (item->functions().first || item->key() >= 0) {
 		if (oldShortcut > 0) {
 			m_heldKeys.take(oldShortcut);
 		}
-		if (keySequence > 0) {
-			m_heldKeys[keySequence] = item;
+		if (keySequence >= 0) {
+			m_keys[qMakePair(item->platform(), keySequence)] = item;
 		}
 	}
 
 	item->setShortcut(keySequence);
+
+	emit dataChanged(createIndex(index(item).row(), 0, item),
+	                 createIndex(index(item).row(), 2, item));
+
+	emit keyRebound(index(item), keySequence);
 }
 
 void InputModel::updateButton(const QModelIndex& index, int button) {
@@ -260,6 +297,8 @@ void InputModel::updateButton(const QModelIndex& index, int button) {
 	}
 	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()),
 	                 createIndex(index.row(), 2, index.internalPointer()));
+
+	emit buttonRebound(index, button);
 }
 
 void InputModel::updateAxis(const QModelIndex& index, int axis, GamepadAxisEvent::Direction direction) {
@@ -296,6 +335,8 @@ void InputModel::updateAxis(const QModelIndex& index, int axis, GamepadAxisEvent
 	}
 	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()),
 	                 createIndex(index.row(), 2, index.internalPointer()));
+
+	emit axisRebound(index, axis, direction);
 }
 
 void InputModel::clearKey(const QModelIndex& index) {
@@ -306,76 +347,16 @@ void InputModel::clearButton(const QModelIndex& index) {
 	updateButton(index, -1);
 }
 
-bool InputModel::eventFilter(QObject*, QEvent* event) {
-	if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
-		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-		if (keyEvent->isAutoRepeat()) {
-			return false;
-		}
-		int key = keyEvent->key();
-		if (!isModifierKey(key)) {
-			key |= (keyEvent->modifiers() & ~Qt::KeypadModifier);
-		} else {
-			key = toModifierKey(key | (keyEvent->modifiers() & ~Qt::KeypadModifier));
-		}
-		auto item = m_heldKeys.find(key);
-		if (item != m_heldKeys.end()) {
-			auto pair = item.value()->functions();
-			if (event->type() == QEvent::KeyPress) {
-				if (pair.first) {
-					pair.first();
-				}
-			} else {
-				if (pair.second) {
-					pair.second();
-				}
-			}
-			event->accept();
-			return true;
-		}
-	}
-	if (event->type() == GamepadButtonEvent::Down()) {
-		auto item = m_buttons.find(static_cast<GamepadButtonEvent*>(event)->value());
-		if (item == m_buttons.end()) {
-			return false;
-		}
-		QAction* action = item.value()->action();
-		if (action && action->isEnabled()) {
-			action->trigger();
-		}
-		auto pair = item.value()->functions();
-		if (pair.first) {
-			pair.first();
-		}
-		event->accept();
+bool InputModel::triggerKey(int keySequence, bool down, mPlatform platform) {
+	auto key = m_keys.find(qMakePair(platform, keySequence));
+	if (key != m_keys.end()) {
+		m_keyCallback(key.value()->parent()->menu(), key.value()->key(), down);
 		return true;
 	}
-	if (event->type() == GamepadButtonEvent::Up()) {
-		auto item = m_buttons.find(static_cast<GamepadButtonEvent*>(event)->value());
-		if (item == m_buttons.end()) {
-			return false;
-		}
-		auto pair = item.value()->functions();
-		if (pair.second) {
-			pair.second();
-		}
-		event->accept();
-		return true;
-	}
-	if (event->type() == GamepadAxisEvent::Type()) {
-		GamepadAxisEvent* gae = static_cast<GamepadAxisEvent*>(event);
-		auto item = m_axes.find(qMakePair(gae->axis(), gae->direction()));
-		if (item == m_axes.end()) {
-			return false;
-		}
-		if (gae->isNew()) {
-			QAction* action = item.value()->action();
-			if (action && action->isEnabled()) {
-				action->trigger();
-			}
-		}
-		auto pair = item.value()->functions();
-		if (gae->isNew()) {
+	auto heldKey = m_heldKeys.find(keySequence);
+	if (heldKey != m_heldKeys.end()) {
+		auto pair = heldKey.value()->functions();
+		if (down) {
 			if (pair.first) {
 				pair.first();
 			}
@@ -384,10 +365,56 @@ bool InputModel::eventFilter(QObject*, QEvent* event) {
 				pair.second();
 			}
 		}
-		event->accept();
 		return true;
 	}
 	return false;
+}
+
+bool InputModel::triggerButton(int button, bool down) {
+	auto item = m_buttons.find(button);
+	if (item == m_buttons.end()) {
+		return false;
+	}
+	if (down) {
+		QAction* action = item.value()->action();
+		if (action && action->isEnabled()) {
+			action->trigger();
+		}
+		auto pair = item.value()->functions();
+		if (pair.first) {
+			pair.first();
+		}
+	} else {
+		auto pair = item.value()->functions();
+		if (pair.second) {
+			pair.second();
+		}
+	}
+	return true;
+}
+
+bool InputModel::triggerAxis(int axis, GamepadAxisEvent::Direction direction, bool isNew) {
+	auto item = m_axes.find(qMakePair(axis, direction));
+	if (item == m_axes.end()) {
+		return false;
+	}
+	if (isNew) {
+		QAction* action = item.value()->action();
+		if (action && action->isEnabled()) {
+			action->trigger();
+		}
+	}
+	auto pair = item.value()->functions();
+	if (isNew) {
+		if (pair.first) {
+			pair.first();
+		}
+	} else {
+		if (pair.second) {
+			pair.second();
+		}
+	}
+	return true;
 }
 
 bool InputModel::loadShortcuts(InputItem* item) {
@@ -462,9 +489,9 @@ void InputModel::loadGamepadShortcuts(InputItem* item) {
 	}
 }
 
-void InputModel::loadProfile(const QString& profile) {
+void InputModel::loadProfile(mPlatform platform, const QString& profile) {
 	m_profileName = profile;
-	m_profile = InputProfile::findProfile(profile);
+	m_profile = InputProfile::findProfile(platform, profile);
 	onSubitems(&m_rootMenu, [this](InputItem* item) {
 		loadGamepadShortcuts(item);
 	});
@@ -534,5 +561,4 @@ int InputModel::toModifierKey(int key) {
 		break;
 	}
 	return modifiers;
-
 }

@@ -8,6 +8,7 @@
 
 #include "GamepadAxisEvent.h"
 
+#include <mgba/core/core.h>
 #include <mgba/gba/interface.h>
 
 namespace QGBA {
@@ -16,9 +17,9 @@ class InputController;
 
 class InputProfile {
 public:
-	static const InputProfile* findProfile(const QString& name);
+	static const InputProfile* findProfile(mPlatform platform, const QString& name);
 
-	void apply(InputController*) const;
+	void apply(mPlatform platform, InputController*) const;
 	bool lookupShortcutButton(const QString& shortcut, int* button) const;
 	bool lookupShortcutAxis(const QString& shortcut, int* axis, GamepadAxisEvent::Direction* direction) const;
 

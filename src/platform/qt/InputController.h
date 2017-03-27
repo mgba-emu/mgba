@@ -9,16 +9,20 @@
 #include "GamepadAxisEvent.h"
 #include "GamepadHatEvent.h"
 
+#include <QMap>
 #include <QObject>
 #include <QSet>
 #include <QTimer>
 #include <QVector>
 
-#include <mgba/internal/gba/input.h>
+#include <mgba/core/core.h>
+#include <mgba/core/input.h>
 
 #ifdef BUILD_SDL
 #include "platform/sdl/sdl-events.h"
 #endif
+
+class QMenu;
 
 struct mRotationSource;
 struct mRumble;
@@ -26,6 +30,8 @@ struct mRumble;
 namespace QGBA {
 
 class ConfigController;
+class GameController;
+class InputModel;
 
 class InputController : public QObject {
 Q_OBJECT
@@ -33,8 +39,11 @@ Q_OBJECT
 public:
 	static const uint32_t KEYBOARD = 0x51545F4B;
 
-	InputController(int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
+	InputController(InputModel* model, int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
 	~InputController();
+
+	void addPlatform(mPlatform, const QString& visibleName, const mInputPlatformInfo*);
+	void setPlatform(mPlatform);
 
 	void setConfiguration(ConfigController* config);
 	void saveConfiguration();
@@ -47,11 +56,7 @@ public:
 	bool allowOpposing() const { return m_allowOpposing; }
 	void setAllowOpposing(bool allowOpposing) { m_allowOpposing = allowOpposing; }
 
-	GBAKey mapKeyboard(int key) const;
-
-	void bindKey(uint32_t type, int key, GBAKey);
-
-	const mInputMap* map() const { return &m_inputMap; }
+	const mInputMap* map();
 
 	int pollEvents();
 
@@ -61,10 +66,9 @@ public:
 	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(int type);
 	void recalibrateAxes();
 
-	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, GBAKey);
-	void unbindAllAxes(uint32_t type);
-
-	void bindHat(uint32_t type, int hat, GamepadHatEvent::Direction, GBAKey);
+	void bindKey(mPlatform platform, uint32_t type, int key, int);
+	void bindAxis(mPlatform platform, uint32_t type, int axis, GamepadAxisEvent::Direction, int);
+	void bindHat(mPlatform platform, uint32_t type, int hat, GamepadHatEvent::Direction, int);
 
 	QStringList connectedGamepads(uint32_t type) const;
 	int gamepad(uint32_t type) const;
@@ -85,6 +89,8 @@ public:
 	mRumble* rumble();
 	mRotationSource* rotationSource();
 
+	void setupCallback(GameController* controller);
+
 signals:
 	void profileLoaded(const QString& profile);
 
@@ -97,13 +103,25 @@ public slots:
 	void resumeScreensaver();
 	void setScreensaverSuspendable(bool);
 
-private:
-	void postPendingEvent(GBAKey);
-	void clearPendingEvent(GBAKey);
-	bool hasPendingEvent(GBAKey) const;
-	void sendGamepadEvent(QEvent*);
+private slots:
+	void bindKey(const QModelIndex&, int key);
+	void bindButton(const QModelIndex&, int key);
+	void bindAxis(const QModelIndex&, int axis, GamepadAxisEvent::Direction);
+	void bindHat(const QModelIndex&, int hat, GamepadHatEvent::Direction);
 
-	mInputMap m_inputMap;
+protected:
+	bool eventFilter(QObject*, QEvent*) override;
+
+private:
+	void postPendingEvent(int key);
+	void clearPendingEvent(int key);
+	bool hasPendingEvent(int key) const;
+	void sendGamepadEvent(QEvent*);
+	void restoreModel();
+
+	InputModel* m_inputModel;
+	mPlatform m_platform;
+	QMap<mPlatform, mInputMap> m_inputMaps;
 	ConfigController* m_config;
 	int m_playerId;
 	bool m_allowOpposing;
@@ -119,12 +137,16 @@ private:
 
 	QVector<int> m_deadzones;
 
+	std::unique_ptr<QMenu> m_inputMenu;
+	std::unique_ptr<QMenu> m_autofireMenu;
+	QMap<mPlatform, QModelIndex> m_inputMenuIndices;
+
 	QSet<int> m_activeButtons;
 	QSet<QPair<int, GamepadAxisEvent::Direction>> m_activeAxes;
 	QSet<QPair<int, GamepadHatEvent::Direction>> m_activeHats;
 	QTimer m_gamepadTimer;
 
-	QSet<GBAKey> m_pendingEvents;
+	QSet<int> m_pendingEvents;
 };
 
 }
