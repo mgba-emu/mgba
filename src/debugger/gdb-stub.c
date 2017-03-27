@@ -321,11 +321,29 @@ static void _readGPRs(struct GDBStub* stub, const char* message) {
 	UNUSED(message);
 	int r;
 	int i = 0;
+
+	// General purpose registers
 	for (r = 0; r < ARM_PC; ++r) {
 		_int2hex32(cpu->gprs[r], &stub->outgoing[i]);
 		i += 8;
 	}
+
+	// Program counter
 	_int2hex32(cpu->gprs[ARM_PC] - (cpu->cpsr.t ? WORD_SIZE_THUMB : WORD_SIZE_ARM), &stub->outgoing[i]);
+	i += 8;
+
+	// Floating point registers, unused on the GBA (8 of them, 24 bits each)
+	for (r = 0; r < 8 * 3; ++r) {
+		_int2hex32(0, &stub->outgoing[i]);
+		i += 8;
+	}
+
+	// Floating point status, unused on the GBA (32 bits)
+	_int2hex32(0, &stub->outgoing[i]);
+	i += 8;
+
+	// CPU status
+	_int2hex32(cpu->cpsr.packed, &stub->outgoing[i]);
 	i += 8;
 
 	stub->outgoing[i] = 0;
