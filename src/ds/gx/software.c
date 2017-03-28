@@ -471,8 +471,13 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 	struct DSGXVertex* v0 = &verts[poly->poly->vertIds[0]];
 	struct DSGXVertex* v1;
 
-	int32_t v0x = (v0->viewCoord[0] + v0->viewCoord[3]) * (int64_t) (renderer->viewportWidth << 12) / (v0->viewCoord[3] * 2) + (renderer->viewportX << 12);
-	int32_t v0y = (-v0->viewCoord[1] + v0->viewCoord[3]) * (int64_t) (renderer->viewportHeight << 12) / (v0->viewCoord[3] * 2) + (renderer->viewportY << 12);
+	int32_t v0w = v0->viewCoord[3];
+	if (!v0w) {
+		v0w = 1;
+	}
+
+	int32_t v0x = (v0->viewCoord[0] + v0w) * (int64_t) (renderer->viewportWidth << 12) / (v0w * 2) + (renderer->viewportX << 12);
+	int32_t v0y = (-v0->viewCoord[1] + v0w) * (int64_t) (renderer->viewportHeight << 12) / (v0w * 2) + (renderer->viewportY << 12);
 	if (poly->minY > v0y >> 12) {
 		poly->minY = v0y >> 12;
 	}
@@ -483,8 +488,13 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 	int v;
 	for (v = 1; v < poly->poly->verts; ++v) {
 		v1 = &verts[poly->poly->vertIds[v]];
-		int32_t v1x = (v1->viewCoord[0] + v1->viewCoord[3]) * (int64_t) (renderer->viewportWidth << 12) / (v1->viewCoord[3] * 2) + (renderer->viewportX << 12);
-		int32_t v1y = (-v1->viewCoord[1] + v1->viewCoord[3]) * (int64_t) (renderer->viewportHeight << 12) / (v1->viewCoord[3] * 2) + (renderer->viewportY << 12);
+
+		int32_t v1w = v1->viewCoord[3];
+		if (!v1w) {
+			v1w = 1;
+		}
+		int32_t v1x = (v1->viewCoord[0] + v1w) * (int64_t) (renderer->viewportWidth << 12) / (v1w * 2) + (renderer->viewportX << 12);
+		int32_t v1y = (-v1->viewCoord[1] + v1w) * (int64_t) (renderer->viewportHeight << 12) / (v1w * 2) + (renderer->viewportY << 12);
 		if (poly->minY > v1y >> 12) {
 			poly->minY = v1y >> 12;
 		}
@@ -496,7 +506,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 			edge->y0 = v0y;
 			edge->x0 = v0x;
 			edge->z0 = v0->viewCoord[2];
-			edge->w0 = v0->viewCoord[3];
+			edge->w0 = v0w;
 			_expandColor(v0->color, &edge->cr0, &edge->cg0, &edge->cb0);
 			edge->s0 = v0->vs;
 			edge->t0 = v0->vt;
@@ -504,7 +514,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 			edge->y1 = v1y;
 			edge->x1 = v1x;
 			edge->z1 = v1->viewCoord[2];
-			edge->w1 = v1->viewCoord[3];
+			edge->w1 = v1w;
 			_expandColor(v1->color, &edge->cr1, &edge->cg1, &edge->cb1);
 			edge->s1 = v1->vs;
 			edge->t1 = v1->vt;
@@ -512,7 +522,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 			edge->y0 = v1y;
 			edge->x0 = v1x;
 			edge->z0 = v1->viewCoord[2];
-			edge->w0 = v1->viewCoord[3];
+			edge->w0 = v1w;
 			_expandColor(v1->color, &edge->cr0, &edge->cg0, &edge->cb0);
 			edge->s0 = v1->vs;
 			edge->t0 = v1->vt;
@@ -520,7 +530,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 			edge->y1 = v0y;
 			edge->x1 = v0x;
 			edge->z1 = v0->viewCoord[2];
-			edge->w1 = v0->viewCoord[3];
+			edge->w1 = v0w;
 			_expandColor(v0->color, &edge->cr1, &edge->cg1, &edge->cb1);
 			edge->s1 = v0->vs;
 			edge->t1 = v0->vt;
@@ -533,11 +543,17 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 		v0 = v1;
 		v0x = v1x;
 		v0y = v1y;
+		v0w = v1w;
 	}
 
 	v1 = &verts[poly->poly->vertIds[0]];
-	int32_t v1x = (v1->viewCoord[0] + v1->viewCoord[3]) * (int64_t) (renderer->viewportWidth << 12) / (v1->viewCoord[3] * 2) + (renderer->viewportX << 12);
-	int32_t v1y = (-v1->viewCoord[1] + v1->viewCoord[3]) * (int64_t) (renderer->viewportHeight << 12) / (v1->viewCoord[3] * 2) + (renderer->viewportY << 12);
+
+	int32_t v1w = v1->viewCoord[3];
+	if (!v1w) {
+		v1w = 1;
+	}
+	int32_t v1x = (v1->viewCoord[0] + v1w) * (int64_t) (renderer->viewportWidth << 12) / (v1w * 2) + (renderer->viewportX << 12);
+	int32_t v1y = (-v1->viewCoord[1] + v1w) * (int64_t) (renderer->viewportHeight << 12) / (v1w * 2) + (renderer->viewportY << 12);
 
 	if (poly->minY > v1y >> 12) {
 		poly->minY = v1y >> 12;
@@ -550,7 +566,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 		edge->y0 = v0y;
 		edge->x0 = v0x;
 		edge->z0 = v0->viewCoord[2];
-		edge->w0 = v0->viewCoord[3];
+		edge->w0 = v0w;
 		_expandColor(v0->color, &edge->cr0, &edge->cg0, &edge->cb0);
 		edge->s0 = v0->vs;
 		edge->t0 = v0->vt;
@@ -558,7 +574,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 		edge->y1 = v1y;
 		edge->x1 = v1x;
 		edge->z1 = v1->viewCoord[2];
-		edge->w1 = v1->viewCoord[3];
+		edge->w1 = v1w;
 		_expandColor(v1->color, &edge->cr1, &edge->cg1, &edge->cb1);
 		edge->s1 = v1->vs;
 		edge->t1 = v1->vt;
@@ -566,7 +582,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 		edge->y0 = v1y;
 		edge->x0 = v1x;
 		edge->z0 = v1->viewCoord[2];
-		edge->w0 = v1->viewCoord[3];
+		edge->w0 = v1w;
 		_expandColor(v1->color, &edge->cr0, &edge->cg0, &edge->cb0);
 		edge->s0 = v1->vs;
 		edge->t0 = v1->vt;
@@ -574,7 +590,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 		edge->y1 = v0y;
 		edge->x1 = v0x;
 		edge->z1 = v0->viewCoord[2];
-		edge->w1 = v0->viewCoord[3];
+		edge->w1 = v0w;
 		_expandColor(v0->color, &edge->cr1, &edge->cg1, &edge->cb1);
 		edge->s1 = v0->vs;
 		edge->t1 = v0->vt;
