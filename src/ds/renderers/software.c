@@ -148,8 +148,11 @@ void DSVideoSoftwareRendererCreate(struct DSVideoSoftwareRenderer* renderer) {
 
 	renderer->engA.d.cache = NULL;
 	GBAVideoSoftwareRendererCreate(&renderer->engA);
+	renderer->engA.combinedObjSort = true;
+
 	renderer->engB.d.cache = NULL;
 	GBAVideoSoftwareRendererCreate(&renderer->engB);
+	renderer->engB.combinedObjSort = true;
 }
 
 static void DSVideoSoftwareRendererInit(struct DSVideoRenderer* renderer) {

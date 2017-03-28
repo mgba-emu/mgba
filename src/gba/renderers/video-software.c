@@ -62,6 +62,7 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.disableBG[3] = false;
 	renderer->d.disableOBJ = false;
 	renderer->tileStride = 0x20;
+	renderer->combinedObjSort = false;
 	renderer->masterEnd = VIDEO_HORIZONTAL_PIXELS;
 	renderer->masterHeight = VIDEO_VERTICAL_PIXELS;
 	renderer->masterScanlines = VIDEO_VERTICAL_TOTAL_PIXELS;
@@ -477,22 +478,32 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 
 static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
 	int i;
+	int p;
 	int oamMax = 0;
-	for (i = 0; i < 128; ++i) {
-		struct GBAObj obj;
-		LOAD_16(obj.a, 0, &renderer->d.oam->obj[i].a);
-		LOAD_16(obj.b, 0, &renderer->d.oam->obj[i].b);
-		LOAD_16(obj.c, 0, &renderer->d.oam->obj[i].c);
-		if (GBAObjAttributesAIsTransformed(obj.a) || !GBAObjAttributesAIsDisable(obj.a)) {
-			int height = GBAVideoObjSizes[GBAObjAttributesAGetShape(obj.a) * 4 + GBAObjAttributesBGetSize(obj.b)][1];
-			if (GBAObjAttributesAIsTransformed(obj.a)) {
-				height <<= GBAObjAttributesAGetDoubleSize(obj.a);
+	int maxP = 1;
+	if (renderer->combinedObjSort) {
+		maxP = 4;
+	}
+	for (p = 0; p < maxP; ++p) {
+		for (i = 0; i < 128; ++i) {
+			struct GBAObj obj;
+			LOAD_16(obj.a, 0, &renderer->d.oam->obj[i].a);
+			LOAD_16(obj.b, 0, &renderer->d.oam->obj[i].b);
+			LOAD_16(obj.c, 0, &renderer->d.oam->obj[i].c);
+			if (renderer->combinedObjSort && GBAObjAttributesCGetPriority(obj.c) != p) {
+				continue;
 			}
-			if (GBAObjAttributesAGetY(obj.a) < renderer->masterHeight || GBAObjAttributesAGetY(obj.a) + height >= renderer->masterScanlines) {
-				renderer->sprites[oamMax].y = GBAObjAttributesAGetY(obj.a);
-				renderer->sprites[oamMax].endY = GBAObjAttributesAGetY(obj.a) + height;
-				renderer->sprites[oamMax].obj = obj;
-				++oamMax;
+			if (GBAObjAttributesAIsTransformed(obj.a) || !GBAObjAttributesAIsDisable(obj.a)) {
+				int height = GBAVideoObjSizes[GBAObjAttributesAGetShape(obj.a) * 4 + GBAObjAttributesBGetSize(obj.b)][1];
+				if (GBAObjAttributesAIsTransformed(obj.a)) {
+					height <<= GBAObjAttributesAGetDoubleSize(obj.a);
+				}
+				if (GBAObjAttributesAGetY(obj.a) < renderer->masterHeight || GBAObjAttributesAGetY(obj.a) + height >= 256) {
+					renderer->sprites[oamMax].y = GBAObjAttributesAGetY(obj.a);
+					renderer->sprites[oamMax].endY = GBAObjAttributesAGetY(obj.a) + height;
+					renderer->sprites[oamMax].obj = obj;
+					++oamMax;
+				}
 			}
 		}
 	}
