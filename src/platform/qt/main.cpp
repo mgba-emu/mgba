@@ -26,6 +26,9 @@ Q_IMPORT_PLUGIN(QWindowsAudioPlugin);
 #endif
 
 int main(int argc, char* argv[]) {
+#ifdef BUILD_SDL
+	SDL_SetMainReady();
+#endif
 	QGBA::GBAApp application(argc, argv);
 
 	QLocale locale = QLocale::system();
