@@ -527,14 +527,15 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 static void _flushOutstanding(struct DSGX* gx) {
 	if (gx->p->cpuBlocked & DS_CPU_BLOCK_GX) {
 		gx->p->cpuBlocked &= ~DS_CPU_BLOCK_GX;
-		DSGXWriteFIFO(gx, gx->outstandingEntry);
+		struct DSGXEntry entry = gx->outstandingEntry;
 		gx->outstandingEntry.command = 0;
+		DSGXWriteFIFO(gx, entry);
 	}
 	while (gx->outstandingCommand[0] && !gx->outstandingParams[0]) {
-		DSGXWriteFIFO(gx, (struct DSGXEntry) { 0 });
-		if (CircleBufferSize(&gx->fifo) == (DS_GX_FIFO_SIZE * sizeof(struct DSGXEntry))) {
+		if (gx->p->cpuBlocked & DS_CPU_BLOCK_GX) {
 			return;
 		}
+		DSGXWriteFIFO(gx, (struct DSGXEntry) { gx->outstandingCommand[0] });
 	}
 }
 
@@ -1352,6 +1353,21 @@ static void DSGXUnpackCommand(struct DSGX* gx, uint32_t command) {
 	if (gx->outstandingCommand[3] >= DS_GX_CMD_MAX) {
 		gx->outstandingCommand[3] = 0;
 	}
+	if (!_gxCommandCycleBase[gx->outstandingCommand[0]]) {
+		gx->outstandingCommand[0] = gx->outstandingCommand[1];
+		gx->outstandingCommand[1] = gx->outstandingCommand[2];
+		gx->outstandingCommand[2] = gx->outstandingCommand[3];
+		gx->outstandingCommand[3] = 0;
+	}
+	if (!_gxCommandCycleBase[gx->outstandingCommand[1]]) {
+		gx->outstandingCommand[1] = gx->outstandingCommand[2];
+		gx->outstandingCommand[2] = gx->outstandingCommand[3];
+		gx->outstandingCommand[3] = 0;
+	}
+	if (!_gxCommandCycleBase[gx->outstandingCommand[2]]) {
+		gx->outstandingCommand[2] = gx->outstandingCommand[3];
+		gx->outstandingCommand[3] = 0;
+	}
 	gx->outstandingParams[0] = _gxCommandParams[gx->outstandingCommand[0]];
 	gx->outstandingParams[1] = _gxCommandParams[gx->outstandingCommand[1]];
 	gx->outstandingParams[2] = _gxCommandParams[gx->outstandingCommand[2]];
@@ -1363,7 +1379,7 @@ static void DSGXUnpackCommand(struct DSGX* gx, uint32_t command) {
 static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
 	if (CircleBufferSize(&gx->fifo) == (DS_GX_FIFO_SIZE * sizeof(entry))) {
 		mLOG(DS_GX, INFO, "FIFO full");
-		if (gx->p->cpuBlocked & DS_CPU_BLOCK_GX) {
+		while (gx->p->cpuBlocked & DS_CPU_BLOCK_GX) {
 			// Can happen from STM
 			mTimingDeschedule(&gx->p->ds9.timing, &gx->fifoEvent);
 			_fifoRun(&gx->p->ds9.timing, gx, 0);
