@@ -57,7 +57,7 @@ def parseOtoolLine(line, execPath, root):
 	if not line.startswith('\t'):
 		return None, None, None, None
 	line = line[1:]
-	match = re.match('([@/].*) \(compatibility version.*\)', line)
+	match = re.match(r'(\S.*) \(compatibility version.*\)', line)
 	path = match.group(1)
 	split = splitPath(path)
 	newExecPath = ['@executable_path', '..', 'Frameworks']
