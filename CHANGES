@@ -77,6 +77,8 @@ Misc:
  - Qt: Remove audio thread
  - Qt: Remove audio buffer sizing in AudioProcessorQt
  - Qt: Re-enable QtMultimedia on Windows
+ - Wii: Enable the reset button
+ - Wii: Use GC controller's L/R triggers without needing a full-press
 
 0.5.2: (2016-12-31)
 Bugfixes:
