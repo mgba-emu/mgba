@@ -55,9 +55,6 @@ public:
 	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = QString());
 	QString getOpenDirectoryName(QWidget* owner, const QString& title);
 
-	QFileDialog* getOpenFileDialog(QWidget* owner, const QString& title, const QString& filter = QString());
-	QFileDialog* getSaveFileDialog(QWidget* owner, const QString& title, const QString& filter = QString());
-
 	const NoIntroDB* gameDB() const { return m_db; }
 	bool reloadGameDB();
 
@@ -65,16 +62,6 @@ protected:
 	bool event(QEvent*);
 
 private:
-	class FileDialog : public QFileDialog {
-	public:
-		FileDialog(GBAApp* app, QWidget* parent = nullptr, const QString& caption = QString(),
-		           const QString& filter = QString());
-		virtual int exec() override;
-
-	private:
-		GBAApp* m_app;
-	};
-
 	Window* newWindowInternal();
 
 	void pauseAll(QList<Window*>* paused);

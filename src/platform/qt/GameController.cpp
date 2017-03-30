@@ -409,10 +409,10 @@ void GameController::loadGame(VFile* vf, const QString& path, const QString& bas
 	closeGame();
 	QFileInfo info(base);
 	if (info.isDir()) {
-		m_fname = base + QDir::separator() + path;
+		m_fname = QFileInfo(base + '/' + path).canonicalFilePath();
 		m_fsub = QString();
 	} else {
-		m_fname = base;
+		m_fname = info.canonicalFilePath();
 		m_fsub = path;
 	}
 	m_vf = vf;
