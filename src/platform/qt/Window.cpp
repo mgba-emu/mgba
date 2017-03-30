@@ -1580,7 +1580,7 @@ void Window::updateMRU() {
 	m_mruMenu->clear();
 	int i = 0;
 	for (const QString& file : m_mruFiles) {
-		QAction* item = new QAction(file, m_mruMenu);
+		QAction* item = new QAction(QDir::toNativeSeparators(file).replace("&", "&&"), m_mruMenu);
 		item->setShortcut(QString("Ctrl+%1").arg(i));
 		connect(item, &QAction::triggered, [this, file]() { m_controller->loadGame(file); });
 		m_mruMenu->addAction(item);
