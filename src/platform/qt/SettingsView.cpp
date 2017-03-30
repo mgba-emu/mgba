@@ -204,6 +204,7 @@ void SettingsView::updateConfig() {
 	saveSetting("savestatePath", m_ui.savestatePath);
 	saveSetting("screenshotPath", m_ui.screenshotPath);
 	saveSetting("patchPath", m_ui.patchPath);
+	saveSetting("libraryStyle", m_ui.libraryStyle->currentIndex());
 	saveSetting("showLibrary", m_ui.showLibrary);
 	saveSetting("preload", m_ui.preload);
 

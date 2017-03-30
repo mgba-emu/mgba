@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LibraryGrid</class>
+ <widget class="QListWidget" name="LibraryGrid">
+  <property name="isWrapping" stdset="0">
+   <bool>true</bool>
+  </property>
+  <property name="resizeMode">
+   <enum>QListView::Adjust</enum>
+  </property>
+  <property name="uniformItemSizes">
+   <bool>true</bool>
+  </property>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -14,10 +14,12 @@
 #include <QPainter>
 #include <QStackedLayout>
 
-#include "AboutScreen.h"
 #ifdef USE_SQLITE3
 #include "ArchiveInspector.h"
+#include "library/LibraryController.h"
 #endif
+
+#include "AboutScreen.h"
 #include "CheatsView.h"
 #include "ConfigController.h"
 #include "DebuggerConsole.h"
@@ -108,7 +110,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 		i = m_savedScale;
 	}
 #ifdef USE_SQLITE3
-	m_libraryView = new LibraryView();
+	m_libraryView = new LibraryController(nullptr, ConfigController::configDir() + "/library.sqlite3", m_config);
 	ConfigOption* showLibrary = m_config->addOption("showLibrary");
 	showLibrary->connect([this](const QVariant& value) {
 		if (value.toBool()) {
@@ -122,12 +124,17 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 		}
 	}, this);
 	m_config->updateOption("showLibrary");
+	ConfigOption* libraryStyle = m_config->addOption("libraryStyle");
+	libraryStyle->connect([this](const QVariant& value) {
+		m_libraryView->setViewStyle(static_cast<LibraryStyle>(value.toInt()));
+	}, this);
+	m_config->updateOption("libraryStyle");
 
-	connect(m_libraryView, &LibraryView::accepted, [this]() {
+	connect(m_libraryView, &LibraryController::startGame, [this]() {
 		VFile* output = m_libraryView->selectedVFile();
-		QPair<QString, QString> path = m_libraryView->selectedPath();
 		if (output) {
-			m_controller->loadGame(output, path.first, path.second);
+			QPair<QString, QString> path = m_libraryView->selectedPath();
+			m_controller->loadGame(output, path.second, path.first);
 		}
 	});
 #elif defined(M_CORE_GBA)
