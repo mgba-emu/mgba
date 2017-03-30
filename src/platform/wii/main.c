@@ -892,6 +892,14 @@ uint16_t _pollGameInput(struct mGUIRunner* runner) {
 			keys |= 1 << angles;
 		}
 	}
+	int a_l = PAD_TriggerL(0);
+	int a_r = PAD_TriggerR(0);
+	if (a_l > 0x50) {
+		keys |= 1 << GBA_KEY_L;
+	}
+	if (a_r > 0x50) {
+		keys |= 1 << GBA_KEY_R;
+	}
 
 	return keys;
 }
