@@ -139,6 +139,8 @@ public slots:
 	void setTurbo(bool, bool forced = true);
 	void setTurboSpeed(float ratio);
 	void setSync(bool);
+	void setAudioSync(bool);
+	void setVideoSync(bool);
 	void setAVStream(mAVStream*);
 	void clearAVStream();
 	void reloadAudioDriver();

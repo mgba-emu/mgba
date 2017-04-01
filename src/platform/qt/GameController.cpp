@@ -308,6 +308,8 @@ void GameController::setConfig(const mCoreConfig* config) {
 	if (isLoaded()) {
 		threadInterrupt();
 		mCoreLoadForeignConfig(m_threadContext.core, config);
+		m_audioSync = m_threadContext.sync.audioWait;
+		m_videoSync = m_threadContext.sync.videoFrameWait;
 		m_audioProcessor->setInput(&m_threadContext);
 		threadContinue();
 	}
@@ -1040,6 +1042,17 @@ void GameController::setSync(bool enable) {
 	}
 	m_sync = enable;
 }
+
+void GameController::setAudioSync(bool enable) {
+	m_audioSync = enable;
+	m_threadContext.sync.audioWait = enable;
+}
+
+void GameController::setVideoSync(bool enable) {
+	m_videoSync = enable;
+	m_threadContext.sync.videoFrameWait = enable;
+}
+
 void GameController::setAVStream(mAVStream* stream) {
 	threadInterrupt();
 	m_stream = stream;
