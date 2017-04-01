@@ -31,6 +31,7 @@ static const struct option _options[] = {
 	{ "bios",      required_argument, 0, 'b' },
 	{ "cheats",    required_argument, 0, 'c' },
 	{ "frameskip", required_argument, 0, 's' },
+	{ "loglevel",  required_argument, 0, 'l' },
 #ifdef USE_EDITLINE
 	{ "debug",     no_argument, 0, 'd' },
 #endif
@@ -211,6 +212,7 @@ void usage(const char* arg0, const char* extraOptions) {
 	puts("\nGeneric options:");
 	puts("  -b, --bios FILE     GBA BIOS file to use");
 	puts("  -c, --cheats FILE   Apply cheat codes from a file");
+	puts("  -l, --loglevel N    Set log level to N (default is 0)");
 #ifdef USE_EDITLINE
 	puts("  -d, --debug         Use command-line debugger");
 #endif
