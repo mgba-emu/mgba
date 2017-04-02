@@ -36,7 +36,6 @@
 
 #include <errno.h>
 #include <signal.h>
-#include <sys/time.h>
 
 #define PORT "sdl"
 
@@ -46,7 +45,7 @@ static void mSDLDeinit(struct mSDLRenderer* renderer);
 static int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args);
 
 int main(int argc, char** argv) {
-	struct mSDLRenderer renderer = {};
+	struct mSDLRenderer renderer = {0};
 
 	struct mCoreOptions opts = {
 		.useBios = true,
