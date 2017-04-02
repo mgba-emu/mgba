@@ -194,6 +194,10 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		if (mCoreThreadStart(&thread)) {
 			renderer->runloop(renderer, &thread);
 			mSDLPauseAudio(&renderer->audio);
+			if (mCoreThreadHasCrashed(&thread)) {
+				didFail = true;
+				printf("The game crashed!\n");
+			}
 			mCoreThreadJoin(&thread);
 		} else {
 			didFail = true;
@@ -204,11 +208,6 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		mSDLResumeScreensaver(&renderer->events);
 		mSDLSetScreensaverSuspendable(&renderer->events, false);
 #endif
-
-		if (mCoreThreadHasCrashed(&thread)) {
-			didFail = true;
-			printf("The game crashed!\n");
-		}
 	}
 	renderer->core->unloadROM(renderer->core);
 	return didFail;

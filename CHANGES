@@ -15,6 +15,7 @@ Bugfixes:
  - Qt: Fix linking after some windows have been closed
  - GBA Video: Fix wrong palette on 256-color sprites in OBJWIN
  - Windows: Fix VDir.rewind
+ - SDL: Fix game crash check
 Misc:
  - Qt: Improved HiDPI support
  - Feature: Support ImageMagick 7
