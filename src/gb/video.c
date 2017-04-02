@@ -128,14 +128,6 @@ void _endMode0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 			video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 		}
 		video->p->memory.io[REG_IF] |= (1 << GB_IRQ_VBLANK);
-
-		size_t c;
-		for (c = 0; c < mCoreCallbacksListSize(&video->p->coreCallbacks); ++c) {
-			struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&video->p->coreCallbacks, c);
-			if (callbacks->videoFrameEnded) {
-				callbacks->videoFrameEnded(callbacks->context);
-			}
-		}
 	}
 	if (!GBRegisterSTATIsHblankIRQ(video->stat) && GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
 		video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
@@ -231,6 +223,14 @@ void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLat
 		return;
 	}
 
+	size_t c;
+	for (c = 0; c < mCoreCallbacksListSize(&video->p->coreCallbacks); ++c) {
+		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&video->p->coreCallbacks, c);
+		if (callbacks->videoFrameEnded) {
+			callbacks->videoFrameEnded(callbacks->context);
+		}
+	}
+
 	GBFrameEnded(video->p);
 	--video->frameskipCounter;
 	if (video->frameskipCounter < 0) {
@@ -247,7 +247,6 @@ void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLat
 		video->p->stream->postVideoFrame(video->p->stream, pixels, stride);
 	}
 
-	size_t c;
 	for (c = 0; c < mCoreCallbacksListSize(&video->p->coreCallbacks); ++c) {
 		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&video->p->coreCallbacks, c);
 		if (callbacks->videoFrameStarted) {
