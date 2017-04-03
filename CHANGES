@@ -16,6 +16,7 @@ Bugfixes:
  - GBA Video: Fix wrong palette on 256-color sprites in OBJWIN
  - Windows: Fix VDir.rewind
  - SDL: Fix game crash check
+ - SDL: Fix race condition with audio thread when starting
 Misc:
  - Qt: Improved HiDPI support
  - Feature: Support ImageMagick 7
