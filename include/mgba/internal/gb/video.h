@@ -119,6 +119,7 @@ struct GBVideo {
 	int ocpIndex;
 	bool ocpIncrement;
 
+	uint16_t dmgPalette[4];
 	uint16_t palette[64];
 
 	int32_t frameCounter;

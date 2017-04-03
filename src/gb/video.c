@@ -61,6 +61,11 @@ void GBVideoInit(struct GBVideo* video) {
 	video->frameEvent.name = "GB Video Frame";
 	video->frameEvent.callback = _updateFrameCount;
 	video->frameEvent.priority = 9;
+
+	video->dmgPalette[0] = 0x7FFF;
+	video->dmgPalette[1] = 0x56B5;
+	video->dmgPalette[2] = 0x294A;
+	video->dmgPalette[3] = 0x0000;
 }
 
 void GBVideoReset(struct GBVideo* video) {
@@ -157,7 +162,6 @@ void _endMode1(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 			video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 			GBUpdateIRQs(video->p);
 		}
-		video->renderer->finishFrame(video->renderer);
 		if (video->p->memory.mbcType == GB_MBC7 && video->p->memory.rotation && video->p->memory.rotation->sample) {
 			video->p->memory.rotation->sample(video->p->memory.rotation);
 		}
@@ -234,6 +238,7 @@ void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLat
 	GBFrameEnded(video->p);
 	--video->frameskipCounter;
 	if (video->frameskipCounter < 0) {
+		video->renderer->finishFrame(video->renderer);
 		mCoreSyncPostFrame(video->p->sync);
 		video->frameskipCounter = video->frameskip;
 	}
@@ -318,6 +323,8 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 			GBUpdateIRQs(video->p);
 		}
 		video->p->memory.io[REG_STAT] = video->stat;
+		video->renderer->writePalette(video->renderer, 0, video->palette[0]);
+
 		mTimingDeschedule(&video->p->timing, &video->frameEvent);
 	}
 	if (GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC]) && !GBRegisterLCDCIsEnable(value)) {
@@ -326,6 +333,8 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		video->p->memory.io[REG_STAT] = video->stat;
 		video->ly = 0;
 		video->p->memory.io[REG_LY] = 0;
+		video->renderer->writePalette(video->renderer, 0, video->dmgPalette[0]);
+	
 		mTimingDeschedule(&video->p->timing, &video->modeEvent);
 		mTimingSchedule(&video->p->timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH);
 	}
@@ -351,34 +360,33 @@ void GBVideoWriteLYC(struct GBVideo* video, uint8_t value) {
 }
 
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value) {
-	static const uint16_t dmgPalette[4] = { 0x7FFF, 0x56B5, 0x294A, 0x0000};
 	if (video->p->model < GB_MODEL_CGB) {
 		switch (address) {
 		case REG_BGP:
-			video->palette[0] = dmgPalette[value & 3];
-			video->palette[1] = dmgPalette[(value >> 2) & 3];
-			video->palette[2] = dmgPalette[(value >> 4) & 3];
-			video->palette[3] = dmgPalette[(value >> 6) & 3];
+			video->palette[0] = video->dmgPalette[value & 3];
+			video->palette[1] = video->dmgPalette[(value >> 2) & 3];
+			video->palette[2] = video->dmgPalette[(value >> 4) & 3];
+			video->palette[3] = video->dmgPalette[(value >> 6) & 3];
 			video->renderer->writePalette(video->renderer, 0, video->palette[0]);
 			video->renderer->writePalette(video->renderer, 1, video->palette[1]);
 			video->renderer->writePalette(video->renderer, 2, video->palette[2]);
 			video->renderer->writePalette(video->renderer, 3, video->palette[3]);
 			break;
 		case REG_OBP0:
-			video->palette[8 * 4 + 0] = dmgPalette[value & 3];
-			video->palette[8 * 4 + 1] = dmgPalette[(value >> 2) & 3];
-			video->palette[8 * 4 + 2] = dmgPalette[(value >> 4) & 3];
-			video->palette[8 * 4 + 3] = dmgPalette[(value >> 6) & 3];
+			video->palette[8 * 4 + 0] = video->dmgPalette[value & 3];
+			video->palette[8 * 4 + 1] = video->dmgPalette[(value >> 2) & 3];
+			video->palette[8 * 4 + 2] = video->dmgPalette[(value >> 4) & 3];
+			video->palette[8 * 4 + 3] = video->dmgPalette[(value >> 6) & 3];
 			video->renderer->writePalette(video->renderer, 8 * 4 + 0, video->palette[8 * 4 + 0]);
 			video->renderer->writePalette(video->renderer, 8 * 4 + 1, video->palette[8 * 4 + 1]);
 			video->renderer->writePalette(video->renderer, 8 * 4 + 2, video->palette[8 * 4 + 2]);
 			video->renderer->writePalette(video->renderer, 8 * 4 + 3, video->palette[8 * 4 + 3]);
 			break;
 		case REG_OBP1:
-			video->palette[9 * 4 + 0] = dmgPalette[value & 3];
-			video->palette[9 * 4 + 1] = dmgPalette[(value >> 2) & 3];
-			video->palette[9 * 4 + 2] = dmgPalette[(value >> 4) & 3];
-			video->palette[9 * 4 + 3] = dmgPalette[(value >> 6) & 3];
+			video->palette[9 * 4 + 0] = video->dmgPalette[value & 3];
+			video->palette[9 * 4 + 1] = video->dmgPalette[(value >> 2) & 3];
+			video->palette[9 * 4 + 2] = video->dmgPalette[(value >> 4) & 3];
+			video->palette[9 * 4 + 3] = video->dmgPalette[(value >> 6) & 3];
 			video->renderer->writePalette(video->renderer, 9 * 4 + 0, video->palette[9 * 4 + 0]);
 			video->renderer->writePalette(video->renderer, 9 * 4 + 1, video->palette[9 * 4 + 1]);
 			video->renderer->writePalette(video->renderer, 9 * 4 + 2, video->palette[9 * 4 + 2]);

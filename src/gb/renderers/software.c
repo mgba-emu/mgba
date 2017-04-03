@@ -24,26 +24,15 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* renderer, struct GBObj* obj, int startX, int endX, int y);
 
 static void _clearScreen(struct GBVideoSoftwareRenderer* renderer) {
-	// TODO: Dynamic from dmgPalette
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
-	color_t palette0 = 0xFFDF;
-#else
-	color_t palette0 = 0x7FFF;
-#endif
-#else
-	color_t palette0 = 0xFFFFFF;
-#endif
-
 	int y;
 	for (y = 0; y < GB_VIDEO_VERTICAL_PIXELS; ++y) {
 		color_t* row = &renderer->outputBuffer[renderer->outputBufferStride * y];
 		int x;
 		for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; x += 4) {
-			row[x + 0] = palette0;
-			row[x + 1] = palette0;
-			row[x + 2] = palette0;
-			row[x + 3] = palette0;
+			row[x + 0] = renderer->palette[0];
+			row[x + 1] = renderer->palette[0];
+			row[x + 2] = renderer->palette[0];
+			row[x + 3] = renderer->palette[0];
 		}
 	}
 }
@@ -85,9 +74,6 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	switch (address) {
 	case REG_LCDC:
-		if (GBRegisterLCDCIsEnable(softwareRenderer->lcdc) && !GBRegisterLCDCIsEnable(value)) {
-			_clearScreen(softwareRenderer);
-		}
 		softwareRenderer->lcdc = value;
 		break;
 	case REG_SCY:
@@ -196,6 +182,9 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 	if (softwareRenderer->temporaryBuffer) {
 		mappedMemoryFree(softwareRenderer->temporaryBuffer, GB_VIDEO_HORIZONTAL_PIXELS * GB_VIDEO_VERTICAL_PIXELS * 4);
 		softwareRenderer->temporaryBuffer = 0;
+	}
+	if (!GBRegisterLCDCIsEnable(softwareRenderer->lcdc)) {
+		_clearScreen(softwareRenderer);
 	}
 	softwareRenderer->currentWy = 0;
 }

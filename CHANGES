@@ -33,6 +33,7 @@ Bugfixes:
  - Windows: Fix VDir.rewind
  - SDL: Fix game crash check
  - SDL: Fix race condition with audio thread when starting
+ - GB: Fix flickering when screen is strobed quickly
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
