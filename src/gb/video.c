@@ -439,6 +439,13 @@ void GBVideoSwitchBank(struct GBVideo* video, uint8_t value) {
 	video->vramCurrentBank = value;
 }
 
+void GBVideoSetPalette(struct GBVideo* video, unsigned index, uint16_t color) {
+	if (index >= 4) {
+		return;
+	}
+	video->dmgPalette[index] = color;
+}
+
 static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model) {
 	UNUSED(renderer);
 	UNUSED(model);

@@ -139,6 +139,8 @@ void GBVideoWriteLYC(struct GBVideo* video, uint8_t value);
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value);
 void GBVideoSwitchBank(struct GBVideo* video, uint8_t value);
 
+void GBVideoSetPalette(struct GBVideo* video, unsigned index, uint16_t color);
+
 struct GBSerializedState;
 void GBVideoSerialize(const struct GBVideo* video, struct GBSerializedState* state);
 void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* state);
