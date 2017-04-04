@@ -113,6 +113,7 @@ static uint32_t referenceRetraceCount;
 static bool frameLimiter = true;
 static int scaleFactor;
 static unsigned corew, coreh;
+static bool m_reset;
 
 static void* framebuffer[2] = { 0, 0 };
 static int whichFb = 0;
@@ -123,6 +124,11 @@ static volatile int currentAudioBuffer = 0;
 static double audioSampleRate = 60.0 / 1.001;
 
 static struct GUIFont* font;
+
+static void reset_cb(void)
+{
+   m_reset = true;
+}
 
 static void reconfigureScreen(struct mGUIRunner* runner) {
 	if (runner) {
@@ -234,6 +240,7 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 
 int main(int argc, char* argv[]) {
 	VIDEO_Init();
+	SYS_SetResetCallback(reset_cb);
 	PAD_Init();
 	WPAD_Init();
 	WPAD_SetDataFormat(0, WPAD_FMT_BTNS_ACC_IR);
@@ -892,6 +899,20 @@ uint16_t _pollGameInput(struct mGUIRunner* runner) {
 			keys |= 1 << angles;
 		}
 	}
+	int a_l = PAD_TriggerL(0);
+	int a_r = PAD_TriggerR(0);
+	if (a_l > 0x50) {
+		keys |= 1 << GBA_KEY_L;
+	}
+	if (a_r > 0x50) {
+		keys |= 1 << GBA_KEY_R;
+	}
+	
+    if (m_reset)
+    {
+       runner->core->reset(runner->core);
+       m_reset = false;
+    }
 
 	return keys;
 }
