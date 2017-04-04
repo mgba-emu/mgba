@@ -320,7 +320,9 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	avcodec_parameters_from_context(encoder->videoStream->codecpar, encoder->video);
 #endif
 
-	avio_open(&encoder->context->pb, outfile, AVIO_FLAG_WRITE);
+	if (avio_open(&encoder->context->pb, outfile, AVIO_FLAG_WRITE) < 0) {
+		return false;
+	}
 	return avformat_write_header(encoder->context, 0) >= 0;
 }
 
