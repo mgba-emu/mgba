@@ -17,6 +17,7 @@ Bugfixes:
  - Windows: Fix VDir.rewind
  - SDL: Fix game crash check
  - SDL: Fix race condition with audio thread when starting
+ - FFmpeg: Fix overflow and general issues with audio encoding
 Misc:
  - Qt: Improved HiDPI support
  - Feature: Support ImageMagick 7
