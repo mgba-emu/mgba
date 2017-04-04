@@ -21,6 +21,7 @@ Bugfixes:
 Misc:
  - Qt: Improved HiDPI support
  - Feature: Support ImageMagick 7
+ - FFmpeg: Return false if a file fails to open
 
 0.5.2: (2016-12-31)
 Bugfixes:
