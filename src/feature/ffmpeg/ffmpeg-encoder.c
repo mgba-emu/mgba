@@ -389,27 +389,27 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 	encoder->audioBuffer[encoder->currentAudioSample * 2] = left;
 	encoder->audioBuffer[encoder->currentAudioSample * 2 + 1] = right;
 
-	++encoder->currentAudioFrame;
 	++encoder->currentAudioSample;
 
-	if ((encoder->currentAudioSample * 4) < encoder->audioBufferSize) {
+	if (encoder->currentAudioSample * 4 < encoder->audioBufferSize) {
 		return;
 	}
 
 	int channelSize = 2 * av_get_bytes_per_sample(encoder->audio->sample_fmt);
-	avresample_convert(encoder->resampleContext,
-	    0, 0, 0,
-	    (uint8_t**) &encoder->audioBuffer, 0, encoder->audioBufferSize / 4);
+	avresample_convert(encoder->resampleContext, 0, 0, 0,
+	                   (uint8_t**) &encoder->audioBuffer, 0, encoder->audioBufferSize / 4);
+
+	encoder->currentAudioSample = 0;
 	if (avresample_available(encoder->resampleContext) < encoder->audioFrame->nb_samples) {
 		return;
 	}
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_make_writable(encoder->audioFrame);
 #endif
-	avresample_read(encoder->resampleContext, encoder->audioFrame->data, encoder->postaudioBufferSize / channelSize);
+	int samples = avresample_read(encoder->resampleContext, encoder->audioFrame->data, encoder->postaudioBufferSize / channelSize);
 
-	encoder->audioFrame->pts = av_rescale_q(encoder->currentAudioFrame - encoder->currentAudioSample, encoder->audio->time_base, encoder->audioStream->time_base);
-	encoder->currentAudioSample = 0;
+	encoder->audioFrame->pts = av_rescale_q(encoder->currentAudioFrame, encoder->audio->time_base, encoder->audioStream->time_base);
+	encoder->currentAudioFrame += samples;
 
 	AVPacket packet;
 	av_init_packet(&packet);

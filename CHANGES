@@ -34,6 +34,7 @@ Bugfixes:
  - SDL: Fix game crash check
  - SDL: Fix race condition with audio thread when starting
  - GB: Fix flickering when screen is strobed quickly
+ - FFmpeg: Fix overflow and general issues with audio encoding
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
