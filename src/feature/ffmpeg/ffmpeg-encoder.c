@@ -304,6 +304,14 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		}
 		av_opt_set(encoder->video->priv_data, "tune", "zerolatency", 0);
 	}
+
+	if (encoder->video->codec->id == AV_CODEC_ID_H264 &&
+	    (strcasecmp(encoder->containerFormat, "mp4") ||
+	        strcasecmp(encoder->containerFormat, "m4v") ||
+	        strcasecmp(encoder->containerFormat, "mov"))) {
+		// QuickTime and a few other things require YUV420
+		encoder->video->pix_fmt = AV_PIX_FMT_YUV420P;
+	}
 	avcodec_open2(encoder->video, vcodec, 0);
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 	encoder->videoFrame = av_frame_alloc();
