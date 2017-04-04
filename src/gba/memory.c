@@ -1548,6 +1548,9 @@ void _pristineCow(struct GBA* gba) {
 	void* newRom = anonymousMemoryMap(SIZE_CART0);
 	memcpy(newRom, gba->memory.rom, gba->memory.romSize);
 	memset(((uint8_t*) newRom) + gba->memory.romSize, 0xFF, SIZE_CART0 - gba->memory.romSize);
+	if (gba->cpu->memory.activeRegion == gba->memory.rom) {
+		gba->cpu->memory.activeRegion = newRom;
+	}
 	if (gba->romVf) {
 #ifndef _3DS
 		gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->memory.romSize);

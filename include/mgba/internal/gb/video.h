@@ -119,6 +119,7 @@ struct GBVideo {
 	int ocpIndex;
 	bool ocpIncrement;
 
+	uint16_t dmgPalette[4];
 	uint16_t palette[64];
 
 	int32_t frameCounter;
@@ -137,6 +138,8 @@ void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value);
 void GBVideoWriteLYC(struct GBVideo* video, uint8_t value);
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value);
 void GBVideoSwitchBank(struct GBVideo* video, uint8_t value);
+
+void GBVideoSetPalette(struct GBVideo* video, unsigned index, uint16_t color);
 
 struct GBSerializedState;
 void GBVideoSerialize(const struct GBVideo* video, struct GBSerializedState* state);

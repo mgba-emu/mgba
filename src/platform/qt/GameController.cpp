@@ -345,6 +345,8 @@ void GameController::setConfig(const mCoreConfig* config) {
 	if (isLoaded()) {
 		Interrupter interrupter(this);
 		mCoreLoadForeignConfig(m_threadContext.core, config);
+		m_audioSync = m_threadContext.sync.audioWait;
+		m_videoSync = m_threadContext.sync.videoFrameWait;
 		m_audioProcessor->setInput(&m_threadContext);
 	}
 }
@@ -407,10 +409,10 @@ void GameController::loadGame(VFile* vf, const QString& path, const QString& bas
 	closeGame();
 	QFileInfo info(base);
 	if (info.isDir()) {
-		m_fname = base + QDir::separator() + path;
+		m_fname = QFileInfo(base + '/' + path).canonicalFilePath();
 		m_fsub = QString();
 	} else {
-		m_fname = base;
+		m_fname = info.canonicalFilePath();
 		m_fsub = path;
 	}
 	m_vf = vf;
@@ -1112,6 +1114,17 @@ void GameController::setSync(bool enable) {
 	}
 	m_sync = enable;
 }
+
+void GameController::setAudioSync(bool enable) {
+	m_audioSync = enable;
+	m_threadContext.sync.audioWait = enable;
+}
+
+void GameController::setVideoSync(bool enable) {
+	m_videoSync = enable;
+	m_threadContext.sync.videoFrameWait = enable;
+}
+
 void GameController::setAVStream(mAVStream* stream) {
 	Interrupter interrupter(this);
 	m_stream = stream;

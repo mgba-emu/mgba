@@ -34,6 +34,10 @@ Bugfixes:
  - Qt: Fix linking after some windows have been closed
  - GBA Video: Fix wrong palette on 256-color sprites in OBJWIN
  - Windows: Fix VDir.rewind
+ - SDL: Fix game crash check
+ - SDL: Fix race condition with audio thread when starting
+ - GB: Fix flickering when screen is strobed quickly
+ - FFmpeg: Fix overflow and general issues with audio encoding
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
@@ -80,6 +84,8 @@ Misc:
  - Qt: Remove audio thread
  - Qt: Remove audio buffer sizing in AudioProcessorQt
  - Qt: Re-enable QtMultimedia on Windows
+ - FFmpeg: Return false if a file fails to open
+ - FFmpeg: Force MP4 files to YUV420P
 
 0.5.2: (2016-12-31)
 Bugfixes:

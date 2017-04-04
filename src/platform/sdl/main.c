@@ -185,30 +185,31 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 	renderer->audio.samples = renderer->core->opts.audioBuffers;
 	renderer->audio.sampleRate = 44100;
 
-	bool didFail = !mSDLInitAudio(&renderer->audio, &thread);
+	bool didFail = !mCoreThreadStart(&thread);
 	if (!didFail) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		mSDLSetScreensaverSuspendable(&renderer->events, renderer->core->opts.suspendScreensaver);
 		mSDLSuspendScreensaver(&renderer->events);
 #endif
-		if (mCoreThreadStart(&thread)) {
+		if (mSDLInitAudio(&renderer->audio, &thread)) {
 			renderer->runloop(renderer, &thread);
 			mSDLPauseAudio(&renderer->audio);
-			mCoreThreadJoin(&thread);
+			if (mCoreThreadHasCrashed(&thread)) {
+				didFail = true;
+				printf("The game crashed!\n");
+			}
 		} else {
 			didFail = true;
-			printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
+			printf("Could not initialize audio.\n");
 		}
-
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		mSDLResumeScreensaver(&renderer->events);
 		mSDLSetScreensaverSuspendable(&renderer->events, false);
 #endif
 
-		if (mCoreThreadHasCrashed(&thread)) {
-			didFail = true;
-			printf("The game crashed!\n");
-		}
+		mCoreThreadJoin(&thread);
+	} else {
+		printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
 	}
 	renderer->core->unloadROM(renderer->core);
 	return didFail;

@@ -1192,14 +1192,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	ConfigOption* videoSync = m_config->addOption("videoSync");
 	videoSync->addBoolean(tr("Sync to &video"), emulationMenu);
 	videoSync->connect([this](const QVariant& value) {
-		reloadConfig();
+		m_controller->setVideoSync(value.toBool());
 	}, this);
 	m_config->updateOption("videoSync");
 
 	ConfigOption* audioSync = m_config->addOption("audioSync");
 	audioSync->addBoolean(tr("Sync to &audio"), emulationMenu);
 	audioSync->connect([this](const QVariant& value) {
-		reloadConfig();
+		m_controller->setAudioSync(value.toBool());
 	}, this);
 	m_config->updateOption("audioSync");
 
@@ -1552,7 +1552,7 @@ void Window::updateMRU() {
 	m_mruMenu->clear();
 	int i = 0;
 	for (const QString& file : m_mruFiles) {
-		QAction* item = new QAction(file, m_mruMenu);
+		QAction* item = new QAction(QDir::toNativeSeparators(file).replace("&", "&&"), m_mruMenu);
 		item->setShortcut(QString("Ctrl+%1").arg(i));
 		connect(item, &QAction::triggered, [this, file]() { m_controller->loadGame(file); });
 		m_mruMenu->addAction(item);
