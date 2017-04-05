@@ -160,10 +160,9 @@ static bool _savePNGState(struct mCore* core, struct VFile* vf, struct mStateExt
 
 	size_t stateSize = core->stateSize(core);
 	void* state = anonymousMemoryMap(stateSize);
-	if (!state) {
+	if (!state || !core->saveState(core, state)) {
 		return false;
 	}
-	core->saveState(core, state);
 
 	uLongf len = compressBound(stateSize);
 	void* buffer = malloc(len);
@@ -343,15 +342,14 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	UNUSED(flags);
 #endif
 		vf->truncate(vf, stateSize);
-		struct GBASerializedState* state = vf->map(vf, stateSize, MAP_WRITE);
-		if (!state) {
+		void* state = vf->map(vf, stateSize, MAP_WRITE);
+		if (!state || !core->saveState(core, state)) {
 			mStateExtdataDeinit(&extdata);
 			if (cheatVf) {
 				cheatVf->close(cheatVf);
 			}
 			return false;
 		}
-		core->saveState(core, state);
 		vf->unmap(vf, state, stateSize);
 		vf->seek(vf, stateSize, SEEK_SET);
 		mStateExtdataSerialize(&extdata, vf);

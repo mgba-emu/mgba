@@ -38,6 +38,7 @@ Bugfixes:
  - SDL: Fix race condition with audio thread when starting
  - GB: Fix flickering when screen is strobed quickly
  - FFmpeg: Fix overflow and general issues with audio encoding
+ - Core: Don't save state if core fails to serialize
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
