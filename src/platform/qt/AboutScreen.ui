@@ -84,7 +84,7 @@
      </property>
      <property name="text">
       <string>© 2013 – 2016 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
-Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</string>
+Game Boy and Game Boy Advance are registered trademarks of Nintendo Co., Ltd.</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -147,7 +147,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</string>
        </property>
        <property name="minimumSize">
         <size>
-         <width>256</width>
+         <width>192</width>
          <height>192</height>
         </size>
        </property>
@@ -174,7 +174,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</string>
    <item row="3" column="1">
     <widget class="QLabel" name="description">
      <property name="text">
-      <string>{projectName} is an open-source Game Boy Advance emulator</string>
+      <string>{projectName} is an open-source Game Boy/Game Boy Advance/DS emulator</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

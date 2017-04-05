@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Icon=medusa
+Exec=medusa-qt %f
+Terminal=false
+Type=Application
+Name=medusa
+GenericName=DS/Game Boy Advance/Game Boy Emulator
+Comment=Nintendo DS/Game Boy Advance/Game Boy Emulator
+Categories=Game;Emulator;
+MimeType=application/x-gameboy-advance-rom;application/x-agb-rom;application/x-gba-rom;
+Keywords=emulator;Nintendo;advance;gba;ds;Game Boy Advance;

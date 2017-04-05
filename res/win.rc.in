@@ -1,4 +1,4 @@
-IDI_ICON1 ICON DISCARDABLE "${CMAKE_SOURCE_DIR}/res/mgba.ico"
+IDI_ICON1 ICON DISCARDABLE "${CMAKE_SOURCE_DIR}/res/${BINARY_NAME}.ico"
 
 #include <windows.h>
 
@@ -11,10 +11,10 @@ BEGIN
         BLOCK "040904E4"
         BEGIN
             VALUE "CompanyName",        "endrift"
-            VALUE "FileDescription",    "mGBA Game Boy Advance emulator"
+            VALUE "FileDescription",    "${PROJECT_NAME} emulator"
             VALUE "FileVersion",        "${LIB_VERSION_STRING}.0"
             VALUE "InternalName",       "${BINARY_NAME}"
-            VALUE "LegalCopyright",     "(c) 2013 - 2016 Jeffrey Pfau"
+            VALUE "LegalCopyright",     "(c) 2013 - 2017 Jeffrey Pfau"
             VALUE "OriginalFilename",   "${BINARY_NAME}"
             VALUE "ProductName",        "${PROJECT_NAME}"
             VALUE "ProductVersion",     "${BINARY_NAME}"

@@ -88,7 +88,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_logView(new LogView(&m_log))
 	, m_stateWindow(nullptr)
 	, m_screenWidget(new WindowBackground())
-	, m_logo(":/res/mgba-1024.png")
+	, m_logo(":/res/medusa-1024.png")
 	, m_config(config)
 	, m_inputModel(new InputModel(this))
 	, m_inputController(m_inputModel, playerId, this)
@@ -1638,7 +1638,7 @@ void WindowBackground::paintEvent(QPaintEvent*) {
 	}
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::SmoothPixmapTransform);
-	painter.fillRect(QRect(QPoint(), size()), Qt::black);
+	painter.fillRect(QRect(QPoint(), size()), Qt::white);
 	QSize s = size();
 	QSize ds = s;
 	if (ds.width() * m_aspectHeight > ds.height() * m_aspectWidth) {
