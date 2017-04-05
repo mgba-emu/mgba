@@ -680,11 +680,13 @@ void Window::dropEvent(QDropEvent* event) {
 }
 
 void Window::mouseMoveEvent(QMouseEvent* event) {
+	QPoint pos = event->pos();
+	pos = m_screenWidget->mapFrom(this, pos);
 	QSize dimensions = m_controller->screenDimensions();
 	QSize viewportDimensions = m_display->viewportSize();
 	QSize screenDimensions = m_screenWidget->size();
-	int x = dimensions.width() * (event->x() - (screenDimensions.width() - viewportDimensions.width()) / 2) / viewportDimensions.width();
-	int y = dimensions.height() * (event->y() - (screenDimensions.height() - viewportDimensions.height()) / 2) / viewportDimensions.height();
+	int x = dimensions.width() * (pos.x() - (screenDimensions.width() - viewportDimensions.width()) / 2) / viewportDimensions.width();
+	int y = dimensions.height() * (pos.y() - (screenDimensions.height() - viewportDimensions.height()) / 2) / viewportDimensions.height();
 	m_controller->cursorLocation(x, y);
 	event->accept();
 }
@@ -693,12 +695,7 @@ void Window::mousePressEvent(QMouseEvent* event) {
 	if (event->button() != Qt::LeftButton) {
 		return;
 	}
-	QSize dimensions = m_controller->screenDimensions();
-	QSize viewportDimensions = m_display->viewportSize();
-	QSize screenDimensions = m_screenWidget->size();
-	int x = dimensions.width() * (event->x() - (screenDimensions.width() - viewportDimensions.width()) / 2) / viewportDimensions.width();
-	int y = dimensions.height() * (event->y() - (screenDimensions.height() - viewportDimensions.height()) / 2) / viewportDimensions.height();
-	m_controller->cursorLocation(x, y);
+	mouseMoveEvent(event);
 	m_controller->cursorDown(true);
 }
 
@@ -706,12 +703,7 @@ void Window::mouseReleaseEvent(QMouseEvent* event) {
 	if (event->button() != Qt::LeftButton) {
 		return;
 	}
-	QSize dimensions = m_controller->screenDimensions();
-	QSize viewportDimensions = m_display->viewportSize();
-	QSize screenDimensions = m_screenWidget->size();
-	int x = dimensions.width() * (event->x() - (screenDimensions.width() - viewportDimensions.width()) / 2) / viewportDimensions.width();
-	int y = dimensions.height() * (event->y() - (screenDimensions.height() - viewportDimensions.height()) / 2) / viewportDimensions.height();
-	m_controller->cursorLocation(x, y);
+	mouseMoveEvent(event);
 	m_controller->cursorDown(false);
 }
 
