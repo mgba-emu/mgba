@@ -21,6 +21,16 @@
 #include <mgba/core/interface.h>
 #include <mgba-util/configuration.h>
 
+#ifdef M_CORE_GBA
+#include <mgba/internal/gba/input.h>
+#endif
+#ifdef M_CORE_GB
+#include <mgba/internal/gb/input.h>
+#endif
+#ifdef M_CORE_DS
+#include <mgba/internal/ds/input.h>
+#endif
+
 using namespace QGBA;
 
 #ifdef BUILD_SDL
@@ -107,16 +117,52 @@ void InputController::addPlatform(mPlatform platform, const QString& visibleName
 #ifdef BUILD_SDL
 	mSDLInitBindingsGBA(inputMap);
 #endif
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_X, GBA_KEY_A);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_Z, GBA_KEY_B);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_A, GBA_KEY_L);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_S, GBA_KEY_R);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_Return, GBA_KEY_START);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_Backspace, GBA_KEY_SELECT);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_Up, GBA_KEY_UP);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_Down, GBA_KEY_DOWN);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_Left, GBA_KEY_LEFT);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_Right, GBA_KEY_RIGHT);
+	switch (platform) {
+#ifdef M_CORE_GBA
+	case PLATFORM_GBA:
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_X, GBA_KEY_A);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Z, GBA_KEY_B);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_A, GBA_KEY_L);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_S, GBA_KEY_R);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Return, GBA_KEY_START);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Backspace, GBA_KEY_SELECT);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Up, GBA_KEY_UP);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Down, GBA_KEY_DOWN);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Left, GBA_KEY_LEFT);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Right, GBA_KEY_RIGHT);
+		break;
+#endif
+#ifdef M_CORE_GB
+	case PLATFORM_GB:
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_X, GB_KEY_A);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Z, GB_KEY_B);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Return, GB_KEY_START);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Backspace, GB_KEY_SELECT);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Up, GB_KEY_UP);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Down, GB_KEY_DOWN);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Left, GB_KEY_LEFT);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Right, GB_KEY_RIGHT);
+		break;
+#endif
+#ifdef M_CORE_DS
+	case PLATFORM_DS:
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_X, DS_KEY_A);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Z, DS_KEY_B);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_A, DS_KEY_X);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_S, DS_KEY_Y);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Q, DS_KEY_L);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_W, DS_KEY_R);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Return, DS_KEY_START);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Backspace, DS_KEY_SELECT);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Up, DS_KEY_UP);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Down, DS_KEY_DOWN);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Left, DS_KEY_LEFT);
+		mInputBindKey(inputMap, KEYBOARD, Qt::Key_Right, DS_KEY_RIGHT);
+		break;
+#endif
+	default:
+		break;
+	}
 }
 
 void InputController::setPlatform(mPlatform platform) {
