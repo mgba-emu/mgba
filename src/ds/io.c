@@ -505,6 +505,7 @@ uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_TM1CNT_HI:
 	case DS_REG_TM2CNT_HI:
 	case DS_REG_TM3CNT_HI:
+	case DS7_REG_RTC:
 	case DS7_REG_SPICNT:
 	case DS7_REG_SPIDATA:
 	case DS_REG_IPCSYNC:
@@ -795,6 +796,7 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_IF_LO:
 	case DS_REG_IF_HI:
 	case DS9_REG_DIVCNT:
+	case 0x282:
 	case DS9_REG_DIV_NUMER_0:
 	case DS9_REG_DIV_NUMER_1:
 	case DS9_REG_DIV_NUMER_2:
