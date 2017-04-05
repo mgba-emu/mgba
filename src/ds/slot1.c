@@ -108,9 +108,8 @@ static void _transferEvent(struct mTiming* timing, void* context, uint32_t cycle
 		if (DSSlot1AUXSPICNTIsDoIRQ(config)) {
 			DSRaiseIRQ(dscore->cpu, dscore->memory.io, DS_IRQ_SLOT1_TRANS);
 		}
-		if (hasDMA) {
+		if (hasDMA && !GBADMARegisterIsRepeat(dma->reg)) {
 			dma->reg = GBADMARegisterClearEnable(dma->reg);
-			dma->reg = GBADMARegisterClearRepeat(dma->reg);
 			dscore->memory.io[(DS_REG_DMA0CNT_HI + ds->memory.slot1.dmaSource * (DS_REG_DMA1CNT_HI - DS_REG_DMA0CNT_HI)) >> 1] = dma->reg;
 		}
 	}
