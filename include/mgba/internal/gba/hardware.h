@@ -71,6 +71,8 @@ DECL_BITS(RTCCommandData, Command, 4, 3);
 DECL_BIT(RTCCommandData, Reading, 7);
 
 DECL_BITFIELD(RTCStatus2, uint8_t);
+DECL_BITS(RTCStatus2, INT1, 0, 4);
+DECL_BIT(RTCStatus2, INT2, 6);
 
 #pragma pack(push, 1)
 struct GBARTC {

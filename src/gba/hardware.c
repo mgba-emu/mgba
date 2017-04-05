@@ -224,6 +224,10 @@ void GBARTCProcessByte(struct GBARTC* rtc, struct mRTCSource* source) {
 				break;
 			case RTC_FORCE_IRQ:
 				break;
+			case RTC_ALARM1:
+				if (RTCStatus2GetINT1(rtc->status2) == 4) {
+					rtc->bytesRemaining = 3;
+				}
 			}
 		} else {
 			mLOG(GBA_HW, WARN, "Invalid RTC command byte: %02X", rtc->bits);
