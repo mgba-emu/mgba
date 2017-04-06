@@ -592,6 +592,7 @@ void GameController::cleanGame() {
 	delete[] m_frontBuffer;
 
 	m_threadContext.core->deinit(m_threadContext.core);
+	m_threadContext.core = nullptr;
 	m_gameOpen = false;
 }
 
@@ -1158,7 +1159,7 @@ void GameController::updateKeys() {
 }
 
 void GameController::redoSamples(int samples) {
-	if (m_threadContext.core) {
+	if (m_gameOpen && m_threadContext.core) {
 		m_threadContext.core->setAudioBufferSize(m_threadContext.core, samples);
 	}
 	QMetaObject::invokeMethod(m_audioProcessor, "inputParametersChanged");
