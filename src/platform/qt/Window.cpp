@@ -698,6 +698,9 @@ void Window::dropEvent(QDropEvent* event) {
 }
 
 void Window::mouseMoveEvent(QMouseEvent* event) {
+	if (!m_controller->isLoaded()) {
+		return;
+	}
 	QPoint pos = event->pos();
 	pos = m_screenWidget->mapFrom(this, pos);
 	QSize dimensions = m_controller->screenDimensions();
@@ -713,12 +716,18 @@ void Window::mousePressEvent(QMouseEvent* event) {
 	if (event->button() != Qt::LeftButton) {
 		return;
 	}
+	if (!m_controller->isLoaded()) {
+		return;
+	}
 	mouseMoveEvent(event);
 	m_controller->cursorDown(true);
 }
 
 void Window::mouseReleaseEvent(QMouseEvent* event) {
 	if (event->button() != Qt::LeftButton) {
+		return;
+	}
+	if (!m_controller->isLoaded()) {
 		return;
 	}
 	mouseMoveEvent(event);
