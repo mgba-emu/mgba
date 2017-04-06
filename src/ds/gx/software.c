@@ -6,6 +6,7 @@
 #include <mgba/internal/ds/gx/software.h>
 
 #include <mgba-util/memory.h>
+#include <mgba/internal/ds/io.h>
 #include "gba/renderers/software-private.h"
 
 DEFINE_VECTOR(DSGXSoftwarePolygonList, struct DSGXSoftwarePolygon);
@@ -18,6 +19,7 @@ static void DSGXSoftwareRendererInvalidateTex(struct DSGXRenderer* renderer, int
 static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount, bool wSort);
 static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int y);
 static void DSGXSoftwareRendererGetScanline(struct DSGXRenderer* renderer, int y, const color_t** output);
+static void DSGXSoftwareRendererWriteRegister(struct DSGXRenderer* renderer, uint32_t address, uint16_t value);
 
 static void _expandColor(uint16_t c15, uint8_t* r, uint8_t* g, uint8_t* b) {
 	*r = ((c15 << 1) & 0x3E) | 1;
@@ -407,6 +409,7 @@ void DSGXSoftwareRendererCreate(struct DSGXSoftwareRenderer* renderer) {
 	renderer->d.setRAM = DSGXSoftwareRendererSetRAM;
 	renderer->d.drawScanline = DSGXSoftwareRendererDrawScanline;
 	renderer->d.getScanline = DSGXSoftwareRendererGetScanline;
+	renderer->d.writeRegister = DSGXSoftwareRendererWriteRegister;
 }
 
 static void DSGXSoftwareRendererInit(struct DSGXRenderer* renderer) {
@@ -420,6 +423,8 @@ static void DSGXSoftwareRendererInit(struct DSGXRenderer* renderer) {
 
 static void DSGXSoftwareRendererReset(struct DSGXRenderer* renderer) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
+	softwareRenderer->clearColor = 0;
+	softwareRenderer->clearStencil = 0;
 }
 
 static void DSGXSoftwareRendererDeinit(struct DSGXRenderer* renderer) {
@@ -705,13 +710,22 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 		poly->polyId = DSGXSoftwarePolygonListSize(&softwareRenderer->activePolys) - 1;
 	}
 
-	memset(softwareRenderer->scanlineCache, 0, sizeof(color_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
-	memset(softwareRenderer->stencilBuffer, 0, sizeof(uint8_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
+	color_t clearColor = softwareRenderer->clearColor;
+	uint16_t clearStencil = softwareRenderer->clearStencil;
+
 	for (i = 0; i < DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS ; i += 4) {
 		softwareRenderer->depthBuffer[i] = INT32_MAX;
 		softwareRenderer->depthBuffer[i + 1] = INT32_MAX;
 		softwareRenderer->depthBuffer[i + 2] = INT32_MAX;
 		softwareRenderer->depthBuffer[i + 3] = INT32_MAX;
+		softwareRenderer->scanlineCache[i] = clearColor;
+		softwareRenderer->scanlineCache[i + 1] = clearColor;
+		softwareRenderer->scanlineCache[i + 2] = clearColor;
+		softwareRenderer->scanlineCache[i + 3] = clearColor;
+		softwareRenderer->stencilBuffer[i] = clearStencil;
+		softwareRenderer->stencilBuffer[i + 1] = clearStencil;
+		softwareRenderer->stencilBuffer[i + 2] = clearStencil;
+		softwareRenderer->stencilBuffer[i + 3] = clearStencil;
 	}
 	softwareRenderer->flushPending = true;
 }
@@ -760,4 +774,21 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 static void DSGXSoftwareRendererGetScanline(struct DSGXRenderer* renderer, int y, const color_t** output) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
 	*output = &softwareRenderer->scanlineCache[DS_VIDEO_HORIZONTAL_PIXELS * y];
+}
+
+static void DSGXSoftwareRendererWriteRegister(struct DSGXRenderer* renderer, uint32_t address, uint16_t value) {
+	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
+	switch (address) {
+	case DS9_REG_CLEAR_COLOR_LO:
+		softwareRenderer->clearColor &= 0xFF000000;
+		softwareRenderer->clearColor |= (value & 0x001F) << 3;
+		softwareRenderer->clearColor |= (value & 0x03E0) << 6;
+		softwareRenderer->clearColor |= (value & 0x7C00) << 9;
+		break;
+	case DS9_REG_CLEAR_COLOR_HI:
+		softwareRenderer->clearColor &= 0x00FFFFFF;
+		softwareRenderer->clearColor |= (value & 0x001F) << 27;
+		softwareRenderer->clearStencil = (value & 0x3F00) >> 8;
+		break;
+	}
 }

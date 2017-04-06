@@ -20,6 +20,7 @@ static void DSGXDummyRendererInvalidateTex(struct DSGXRenderer* renderer, int sl
 static void DSGXDummyRendererSetRAM(struct DSGXRenderer* renderer, struct DSGXVertex* verts, struct DSGXPolygon* polys, unsigned polyCount, bool wSort);
 static void DSGXDummyRendererDrawScanline(struct DSGXRenderer* renderer, int y);
 static void DSGXDummyRendererGetScanline(struct DSGXRenderer* renderer, int y, const color_t** output);
+static void DSGXDummyRendererWriteRegister(struct DSGXRenderer* renderer, uint32_t address, uint16_t value);
 
 static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry);
 
@@ -111,6 +112,7 @@ static struct DSGXRenderer dummyRenderer = {
 	.setRAM = DSGXDummyRendererSetRAM,
 	.drawScanline = DSGXDummyRendererDrawScanline,
 	.getScanline = DSGXDummyRendererGetScanline,
+	.writeRegister = DSGXDummyRendererWriteRegister,
 };
 
 static void _pullPipe(struct DSGX* gx) {
@@ -1436,6 +1438,10 @@ uint16_t DSGXWriteRegister(struct DSGX* gx, uint32_t address, uint16_t value) {
 	case DS9_REG_DISP3DCNT:
 		mLOG(DS_GX, STUB, "Unimplemented GX write %03X:%04X", address, value);
 		break;
+	case DS9_REG_CLEAR_COLOR_LO:
+	case DS9_REG_CLEAR_COLOR_HI:
+		gx->renderer->writeRegister(gx->renderer, address, value);
+		break;
 	case DS9_REG_GXSTAT_LO:
 		value = DSRegGXSTATIsMatrixStackError(value);
 		if (value) {
@@ -1482,6 +1488,10 @@ uint32_t DSGXWriteRegister32(struct DSGX* gx, uint32_t address, uint32_t value) 
 	case DS9_REG_GXSTAT_LO:
 		value = (value & 0xFFFF0000) | DSGXWriteRegister(gx, DS9_REG_GXSTAT_LO, value);
 		value = (value & 0x0000FFFF) | (DSGXWriteRegister(gx, DS9_REG_GXSTAT_HI, value >> 16) << 16);
+		break;
+	case DS9_REG_CLEAR_COLOR_LO:
+		gx->renderer->writeRegister(gx->renderer, address, value);
+		gx->renderer->writeRegister(gx->renderer, address + 2, value >> 16);
 		break;
 	default:
 		if (address < DS9_REG_GXFIFO_00) {
@@ -1581,5 +1591,12 @@ static void DSGXDummyRendererGetScanline(struct DSGXRenderer* renderer, int y, c
 	UNUSED(renderer);
 	UNUSED(y);
 	*output = NULL;
+	// Nothing to do
+}
+
+static void DSGXDummyRendererWriteRegister(struct DSGXRenderer* renderer, uint32_t address, uint16_t value) {
+	UNUSED(renderer);
+	UNUSED(address);
+	UNUSED(value);
 	// Nothing to do
 }
