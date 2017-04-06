@@ -562,49 +562,47 @@ static bool _boxTest(struct DSGX* gx) {
 	int16_t d = gx->activeEntries[2].params[2];
 	d |= gx->activeEntries[2].params[3] << 8;
 
-	struct DSGXVertex vertex = {
-		.coord = { x, y, z }
+	struct DSGXVertex vertex[8] = {
+		{ .coord = { x    , y    , z     } },
+		{ .coord = { x    , y    , z + d } },
+		{ .coord = { x    , y + h, z     } },
+		{ .coord = { x    , y + h, z + d } },
+		{ .coord = { x + w, y    , z     } },
+		{ .coord = { x + w, y    , z + d } },
+		{ .coord = { x + w, y + h, z     } },
+		{ .coord = { x + w, y + h, z + d } },
 	};
-	if (_boxTestVertex(gx, &vertex)) {
+	int code[8];
+	int i;
+	for (i = 0; i < 8; ++i) {
+		vertex[i].viewCoord[0] = _dotViewport(&vertex[i], &gx->clipMatrix.m[0]);
+		vertex[i].viewCoord[1] = _dotViewport(&vertex[i], &gx->clipMatrix.m[1]);
+		vertex[i].viewCoord[2] = _dotViewport(&vertex[i], &gx->clipMatrix.m[2]);
+		vertex[i].viewCoord[3] = _dotViewport(&vertex[i], &gx->clipMatrix.m[3]);
+		code[i] = _cohenSutherlandCode(&vertex[i]);
+	}
+
+	if (!(code[0] & code[2] & code[4] & code[6])) {
 		return true;
 	}
 
-	vertex.coord[0] += w;
-	if (_boxTestVertex(gx, &vertex)) {
+	if (!(code[1] & code[3] & code[5] & code[7])) {
 		return true;
 	}
 
-	vertex.coord[0] = x;
-	vertex.coord[1] += h;
-	if (_boxTestVertex(gx, &vertex)) {
+	if (!(code[0] & code[1] & code[4] & code[5])) {
 		return true;
 	}
 
-	vertex.coord[0] += w;
-	if (_boxTestVertex(gx, &vertex)) {
+	if (!(code[2] & code[3] & code[6] & code[7])) {
 		return true;
 	}
 
-	vertex.coord[0] = x;
-	vertex.coord[1] = y;
-	vertex.coord[2] += d;
-	if (_boxTestVertex(gx, &vertex)) {
+	if (!(code[0] & code[1] & code[2] & code[3])) {
 		return true;
 	}
 
-	vertex.coord[0] += w;
-	if (_boxTestVertex(gx, &vertex)) {
-		return true;
-	}
-
-	vertex.coord[0] = x;
-	vertex.coord[1] += h;
-	if (_boxTestVertex(gx, &vertex)) {
-		return true;
-	}
-
-	vertex.coord[0] += w;
-	if (_boxTestVertex(gx, &vertex)) {
+	if (!(code[4] & code[5] & code[6] & code[7])) {
 		return true;
 	}
 
