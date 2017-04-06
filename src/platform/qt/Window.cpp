@@ -767,10 +767,21 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 		return;
 	}
 	MutexUnlock(&context->stateMutex);
+	int platform = 1 << context->core->platform(context->core);
+#ifdef M_CORE_DS
+	if ((platform & SUPPORT_DS) && (!m_config->getOption("useBios").toInt() || m_config->getOption("ds.bios7").isNull() || m_config->getOption("ds.bios9").isNull() || m_config->getOption("ds.firmware").isNull())) {
+		QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("BIOS required"),
+		                                    tr("DS supoprt requires dumps of the BIOS and firmware."),
+		                                    QMessageBox::Ok, this, Qt::Sheet);
+		fail->setAttribute(Qt::WA_DeleteOnClose);
+		fail->show();
+		m_controller->closeGame();
+		return;
+	}
+#endif
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(false);
 	}
-	int platform = 1 << context->core->platform(context->core);
 	for (QPair<QAction*, int> action : m_platformActions) {
 		action.first->setEnabled(action.second & platform);
 	}
