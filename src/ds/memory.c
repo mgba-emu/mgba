@@ -786,6 +786,22 @@ static void DS9SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		cpu->memory.activeNonseqCycles32 = 0;
 		cpu->memory.activeNonseqCycles16 = 0;
 		return;
+	case DS_REGION_VRAM:
+		if (address >= 0x06800000) {
+			unsigned mask = _selectVRAM(&ds->memory, address >> DS_VRAM_OFFSET);
+			if (mask) {
+				int i = 0;
+				for (i = 0; i < 9; ++i) {
+					if (mask & (1 << i)) {
+						cpu->memory.activeRegion = (uint32_t*) ds->memory.vramBank[i];
+						cpu->memory.activeMask = _vramMask[i];
+						break;
+					}
+				}
+				break;
+			}
+		}
+		// Fall through
 	default:
 	jump_error:
 		memory->activeRegion = -1;
