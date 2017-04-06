@@ -1,30 +1,31 @@
-mGBA
-====
+medusa
+======
 
-mGBA is an emulator for running Game Boy Advance games. It aims to be faster and more accurate than many existing Game Boy Advance emulators, as well as adding features that other emulators lack. It also supports Game Boy and Game Boy Color games.
+medusa is an emulator for running Nintendo DS, Game Boy Advance and Game Boy games. It aims to be faster and more accurate than many existing Nintendo DS and Game Boy Advance emulators, as well as adding features that other emulators lack. It also supports Game Boy and Game Boy Color games.
 
 Up-to-date news and downloads can be found at [mgba.io](https://mgba.io/).
 
-[![Build status](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)](https://travis-ci.org/mgba-emu/mgba)
+[![Build status](https://travis-ci.org/mgba-emu/mgba.svg?branch=medusa)](https://travis-ci.org/mgba-emu/mgba)
 
 Features
 --------
 
 - Near full Game Boy Advance hardware support[<sup>[1]</sup>](#missing).
+- Partial DS hardware support[<sup>[1]</sup>](#missing).
 - Game Boy/Game Boy Color hardware support.
-- Fast emulation. Known to run at full speed even on low end hardware, such as netbooks.
+- Fast emulation for Game Boy and Game Boy Advance. Known to run at full speed even on low end hardware, such as netbooks[<sup>[2]</sup>](#dscaveat).
 - Qt and SDL ports for a heavy-weight and a light-weight frontend.
 - Local (same computer) link cable support.
-- Save type detection, even for flash memory size[<sup>[2]</sup>](#flashdetect).
-- Support for cartridges with motion sensors and rumble (only usable with game controllers).
+- Save type detection, even for flash memory size[<sup>[3]</sup>](#flashdetect).
+- Support for cartridges with motion sensors and rumble (only usable with game controllers)[<sup>[2]</sup>](#dscaveat).
 - Real-time clock support, even without configuration.
-- A built-in BIOS implementation, and ability to load external BIOS files.
+- A built-in GBA BIOS implementation, and ability to load external BIOS files. DS currently requires BIOS and firmware dumps[<sup>[2]</sup>](#dscaveat).
 - Turbo/fast-forward support by holding Tab.
 - Rewind by holding Backquote.
 - Frameskip, configurable up to 10.
 - Screenshot support.
-- Cheat code support.
-- 9 savestate slots. Savestates are also viewable as screenshots.
+- Cheat code support[<sup>[2]</sup>](#dscaveat).
+- 9 savestate slots. Savestates are also viewable as screenshots[<sup>[2]</sup>](#dscaveat).
 - Video and GIF recording.
 - Remappable controls for both keyboards and gamepads.
 - Loading from ZIP and 7z files.
@@ -46,14 +47,20 @@ Features
 - e-Reader support.
 - Wireless adapter support.
 - Game Boy Printer support.
+- OpenGL renderer.
+- HLE support for DS BIOS and DS ARM7 processor.
+- Synthesizing a customizable DS firmware to avoid needing a  dump.
 
 Supported Platforms
 -------------------
 
 - Windows Vista or newer
-- OS X 10.7 (Lion)[<sup>[3]</sup>](#osxver) or newer
+- OS X 10.7 (Lion)[<sup>[4]</sup>](#osxver) or newer
 - Linux
 - FreeBSD
+
+The following platforms are supported for everything except DS:
+
 - Nintendo 3DS
 - Wii
 - PlayStation Vita
@@ -62,7 +69,7 @@ Other Unix-like platforms, such as OpenBSD, are known to work as well, but are u
 
 ### System requirements
 
-Requirements are minimal. Any computer that can run Windows Vista or newer should be able to handle emulation. Support for OpenGL 1.1 or newer is also required.
+Requirements are minimal[<sup>[2]</sup>](#dscaveat). Any computer that can run Windows Vista or newer should be able to handle emulation. Support for OpenGL 1.1 or newer is also required.
 
 Downloads
 ---------
@@ -72,7 +79,7 @@ Downloads can be found on the official website, in the [Downloads][downloads] se
 Controls
 --------
 
-Controls are configurable in the settings menu. Many game controllers should be automatically mapped by default. The default keyboard controls are as follows:
+Controls are configurable in the settings menu. Many game controllers should be automatically mapped by default. The default keyboard controls are as follows for GB and GBA:
 
 - **A**: X
 - **B**: Z
@@ -81,10 +88,21 @@ Controls are configurable in the settings menu. Many game controllers should be 
 - **Start**: Enter
 - **Select**: Backspace
 
+DS default controls are slightly different:
+
+- **A**: X
+- **B**: Z
+- **X**: S
+- **Y**: A
+- **L**: Q
+- **R**: W
+- **Start**: Enter
+- **Select**: Backspace
+
 Compiling
 ---------
 
-Compiling requires using CMake 2.8.11 or newer. GCC and Clang are both known to work to compile mGBA, but Visual Studio 2013 and older are known not to work. Support for Visual Studio 2015 and newer is coming soon. To use CMake to build on a Unix-based system, the recommended commands are as follows:
+Compiling requires using CMake 2.8.11 or newer. GCC and Clang are both known to work to compile medusa, but Visual Studio 2013 and older are known not to work. Support for Visual Studio 2015 and newer is coming soon. To use CMake to build on a Unix-based system, the recommended commands are as follows:
 
 	mkdir build
 	cd build
@@ -92,7 +110,7 @@ Compiling requires using CMake 2.8.11 or newer. GCC and Clang are both known to 
 	make
 	sudo make install
 
-This will build and install mGBA into `/usr/bin` and `/usr/lib`. Dependencies that are installed will be automatically detected, and features that are disabled if the dependencies are not found will be shown after running the `cmake` command after warnings about being unable to find them.
+This will build and install medusa into `/usr/bin` and `/usr/lib`. Dependencies that are installed will be automatically detected, and features that are disabled if the dependencies are not found will be shown after running the `cmake` command after warnings about being unable to find them.
 
 #### Windows developer building
 
@@ -108,21 +126,21 @@ For x86_64 (64 bit) builds:
 
 Check out the source code by running this command:
 
-	git clone https://github.com/mgba-emu/mgba.git
+	git clone https://github.com/mgba-emu/mgba.git -b medusa medusa
 
 Then finally build it by running these commands:
 
-	cd mgba
+	cd medusa
 	mkdir build
 	cd build
 	cmake .. -G "MSYS Makefiles"
 	make
 
-Please note that this build of mGBA for Windows is not suitable for distribution, due to the scattering of DLLs it needs to run, but is perfect for development. However, if distributing such a build is desired (e.g. for testing on machines that don't have the MSYS2 environment installed), a tool called "[Dependency Walker](http://dependencywalker.com)" can be used to see which additional DLL files need to be shipped with the mGBA executable.
+Please note that this build of medusa for Windows is not suitable for distribution, due to the scattering of DLLs it needs to run, but is perfect for development. However, if distributing such a build is desired (e.g. for testing on machines that don't have the MSYS2 environment installed), a tool called "[Dependency Walker](http://dependencywalker.com)" can be used to see which additional DLL files need to be shipped with the medusa executable.
 
 ### Dependencies
 
-mGBA has no hard dependencies, however, the following optional dependencies are required for specific features. The features will be disabled if the dependencies can't be found.
+medusa has no hard dependencies, however, the following optional dependencies are required for specific features. The features will be disabled if the dependencies can't be found.
 
 - Qt 5: for the GUI frontend. Qt Multimedia or SDL are required for audio.
 - SDL: for a more basic frontend and gamepad support in the Qt frontend. SDL 2 is recommended, but 1.2 is supported.
@@ -138,14 +156,56 @@ Both libpng and zlib are included with the emulator, so they do not need to be e
 Footnotes
 ---------
 
-<a name="missing">[1]</a> Currently missing features are
+<a name="missing">[1]</a> Currently missing features on GBA  are
 
 - OBJ window for modes 3, 4 and 5 ([Bug #5](http://mgba.io/b/5))
 - Mosaic for transformed OBJs ([Bug #9](http://mgba.io/b/9))
 
-<a name="flashdetect">[2]</a> Flash memory size detection does not work in some cases. These can be configured at runtime, but filing a bug is recommended if such a case is encountered.
+Missing features on DS are
 
-<a name="osxver">[3]</a> 10.7 is only needed for the Qt port. The SDL port is known to work on 10.6, and may work on older.
+- Audio:
+	- PSG audio
+	- Master audio settings
+	- Sound output capture
+	- Microphone
+- Graphics:
+	- Edge marking
+	- Toon shading
+	- Highlight shading
+	- Fog
+	- Clear depth
+	- Anti-aliasing
+	- Alpha test
+	- Position test
+	- Vector test
+	- Bitmap rear plane
+	- 1-dot depth clipping
+	- Vector matrix memory mapping
+	- Polygon/vertex RAM entry count memory mapping
+	- Rendered line count memory mapping
+	- Video output capture blending
+	- Horizontal scrolling on 3D background
+	- Some bitmap OBJ mappings
+	- DMA FIFO backgrounds
+- Other:
+	- Cache emulation/estimation
+	- Slot-2 access/RAM/rumble
+	- BIOS protection
+	- Display start DMAs
+	- Most of Wi-Fi
+	- RTC interrupts
+	- Manual IPC sync IRQs
+	- Lid switch
+	- Power management
+	- Touchscreen temperature/pressure support
+	- Various MMIO registers
+	- DSi cart protections
+
+<a name="dscaveat">[2]</a> Many feature are still missing on the DS, including savestates, cheats, rumble, HLE BIOS, and more.
+
+<a name="flashdetect">[3]</a> Flash memory size detection does not work in some cases. These can be configured at runtime, but filing a bug is recommended if such a case is encountered.
+
+<a name="osxver">[4]</a> 10.7 is only needed for the Qt port. The SDL port is known to work on 10.6, and may work on older.
 
 [downloads]: http://mgba.io/downloads.html
 [source]: https://github.com/mgba-emu/mgba/
@@ -153,9 +213,9 @@ Footnotes
 Copyright
 ---------
 
-mGBA is Copyright © 2013 – 2016 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
+medusa is Copyright © 2013 – 2017 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
 
-mGBA contains the following third-party libraries:
+medusa contains the following third-party libraries:
 
 - [inih](https://github.com/benhoyt/inih), which is copyright © 2009 Ben Hoyt and used under a BSD 3-clause license.
 - [blip-buf](https://code.google.com/archive/p/blip-buf), which is copyright © 2003 – 2009 Shay Green and used under a Lesser GNU Public License.
@@ -164,4 +224,4 @@ mGBA contains the following third-party libraries:
 - [getopt for MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio/), which is public domain.
 - [SQLite3](https://www.sqlite.org), which is public domain.
 
-If you are a game publisher and wish to license mGBA for commercial usage, please email [licensing@mgba.io](mailto:licensing@mgba.io) for more information.
+If you are a game publisher and wish to license medusa for commercial usage, please email [licensing@mgba.io](mailto:licensing@mgba.io) for more information.
