@@ -94,6 +94,9 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 	if (!poly->texBase && poly->texFormat) {
 		return 0;
 	}
+	if (!poly->palBase && poly->texFormat && poly->texFormat != 7) {
+		return 0;
+	}
 	// TODO: Optimize
 	uint16_t texel;
 
@@ -450,22 +453,23 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 	poly->blendFormat = DSGXPolygonAttrsGetMode(poly->polyParams);
 	poly->texW = 8 << DSGXTexParamsGetSSize(poly->texParams);
 	poly->texH = 8 << DSGXTexParamsGetTSize(poly->texParams);
-	if (!renderer->tex[DSGXTexParamsGetVRAMBase(poly->texParams) >> VRAM_BLOCK_OFFSET]) {
-		poly->texBase = NULL;
-		poly->palBase = NULL;
-	} else {
+	poly->texBase = NULL;
+	poly->palBase = NULL;
+	if (renderer->tex[DSGXTexParamsGetVRAMBase(poly->texParams) >> VRAM_BLOCK_OFFSET]) {
 		switch (poly->texFormat) {
 		case 0:
-			poly->texBase = NULL;
-			poly->palBase = NULL;
 			break;
 		case 2:
-			poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
-			poly->palBase = &renderer->texPal[poly->poly->palBase >> 11][(poly->poly->palBase << 2) & 0x1FFF];
+			if (renderer->texPal[poly->poly->palBase >> 11]) {
+				poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
+				poly->palBase = &renderer->texPal[poly->poly->palBase >> 11][(poly->poly->palBase << 2) & 0x1FFF];
+			}
 			break;
 		default:
-			poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
-			poly->palBase = &renderer->texPal[poly->poly->palBase >> 10][(poly->poly->palBase << 3) & 0x1FFF];
+			if (renderer->texPal[poly->poly->palBase >> 10]) {
+				poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
+				poly->palBase = &renderer->texPal[poly->poly->palBase >> 10][(poly->poly->palBase << 3) & 0x1FFF];
+			}
 			break;
 		}
 	}
