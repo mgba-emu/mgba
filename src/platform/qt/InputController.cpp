@@ -184,6 +184,9 @@ void InputController::saveConfiguration() {
 
 void InputController::saveConfiguration(uint32_t type) {
 	for (auto& inputMap : m_inputMaps) {
+		if (!inputMap.info) {
+			continue;
+		}
 		mInputMapSave(&inputMap, type, m_config->input());
 	}
 	m_config->write();
@@ -445,6 +448,9 @@ QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes
 }
 
 void InputController::bindKey(mPlatform platform, uint32_t type, int key, int coreKey) {
+	if (m_inputMaps.find(platform) == m_inputMaps.end() || coreKey >= m_inputMaps[platform].info->nKeys) {
+		return;
+	}
 	QModelIndex index = m_inputModel->index(coreKey, 0, m_inputMenuIndices[platform]);
 	bool signalsBlocked = m_inputModel->blockSignals(true);
 	if (type != KEYBOARD) {
@@ -457,6 +463,9 @@ void InputController::bindKey(mPlatform platform, uint32_t type, int key, int co
 }
 
 void InputController::bindAxis(mPlatform platform, uint32_t type, int axis, GamepadAxisEvent::Direction direction, int key) {
+	if (m_inputMaps.find(platform) == m_inputMaps.end() || key >= m_inputMaps[platform].info->nKeys) {
+		return;
+	}
 	QModelIndex index = m_inputModel->index(key, 0, m_inputMenuIndices[platform]);
 	bool signalsBlocked = m_inputModel->blockSignals(true);
 	m_inputModel->updateAxis(index, axis, direction);
@@ -520,6 +529,9 @@ QSet<QPair<int, GamepadHatEvent::Direction>> InputController::activeGamepadHats(
 }
 
 void InputController::bindHat(mPlatform platform, uint32_t type, int hat, GamepadHatEvent::Direction direction, int coreKey) {
+	if (m_inputMaps.find(platform) == m_inputMaps.end() || coreKey >= m_inputMaps[platform].info->nKeys) {
+		return;
+	}
 	QModelIndex index = m_inputModel->index(coreKey, 0, m_inputMenuIndices[platform]);
 	//m_inputModel->updateHat(index, hat, direction);
 
