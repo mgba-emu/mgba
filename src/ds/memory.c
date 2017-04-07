@@ -656,6 +656,7 @@ uint32_t DS7LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 		LDM_LOOP(if (address < 0x06040000 && memory->vram7[(address & 0x3FFFF) >> 17]) {
 			LOAD_32(value, address & 0x1FFFF, memory->vram7[(address & 0x3FFFF) >> 17]);
 		} else {
+			value = 0;
 			mLOG(DS_MEM, STUB, "Unimplemented DS7 LDM: %08X", address);
 		});
 		break;
@@ -1271,13 +1272,15 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 		LDM_LOOP(if (address < memory->itcmSize) {
 			LOAD_32(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
 		} else {
-			mLOG(DS_MEM, STUB, "Bad DS9 LDM: %08X:%08X", address, value);
+			value = 0;
+			mLOG(DS_MEM, STUB, "Bad DS9 LDM: %08X", address);
 		});
 		break;
 	case DS_REGION_WORKING_RAM:
 		LDM_LOOP(if (ds->memory.wramSize9) {
 			LOAD_32(value, address & (ds->memory.wramSize9 - 4), memory->wramBase9);
 		} else {
+			value = 0;
 			mLOG(DS_MEM, STUB, "Bad DS9 LDM: %08X", address);
 		});
 		break;
@@ -1287,6 +1290,7 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 		} else if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
 			LOAD_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
 		} else {
+			value = 0;
 			mLOG(DS_MEM, STUB, "Unimplemented DS9 LDM: %08X", address);
 		});
 		break;
