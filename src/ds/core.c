@@ -355,6 +355,13 @@ static void _DSCoreSetCursorLocation(struct mCore* core, int x, int y) {
 	dscore->cursorY = y - DS_VIDEO_VERTICAL_PIXELS;
 	if (dscore->cursorY < 0) {
 		dscore->cursorY = 0;
+	} else if (dscore->cursorY >= DS_VIDEO_VERTICAL_PIXELS) {
+		dscore->cursorY = DS_VIDEO_VERTICAL_PIXELS - 1;
+	}
+	if (dscore->cursorX < 0) {
+		dscore->cursorX = 0;
+	} else if (dscore->cursorX >= DS_VIDEO_HORIZONTAL_PIXELS) {
+		dscore->cursorX = DS_VIDEO_HORIZONTAL_PIXELS - 1;
 	}
 }
 
