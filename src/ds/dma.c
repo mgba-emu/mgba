@@ -226,7 +226,7 @@ void DSDMAService(struct DSCommon* dscore, struct GBADMA* info) {
 	}
 	info->when += cycles;
 
-	if (source >= DS_BASE_RAM) {
+	if (source >= DS_BASE_RAM && dest >= DS_BASE_RAM) {
 		uint32_t word;
 		if (width == 4) {
 			word = cpu->memory.load32(cpu, source, 0);
