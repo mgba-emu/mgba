@@ -12,6 +12,8 @@
 DEFINE_VECTOR(DSGXSoftwarePolygonList, struct DSGXSoftwarePolygon);
 DEFINE_VECTOR(DSGXSoftwareEdgeList, struct DSGXSoftwareEdge);
 
+#define SHADOW_BIT 0x4000
+
 static void DSGXSoftwareRendererInit(struct DSGXRenderer* renderer);
 static void DSGXSoftwareRendererReset(struct DSGXRenderer* renderer);
 static void DSGXSoftwareRendererDeinit(struct DSGXRenderer* renderer);
@@ -421,7 +423,7 @@ static void DSGXSoftwareRendererInit(struct DSGXRenderer* renderer) {
 	DSGXSoftwareEdgeListInit(&softwareRenderer->activeEdges, 16);
 	softwareRenderer->scanlineCache = anonymousMemoryMap(sizeof(color_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
 	softwareRenderer->depthBuffer = anonymousMemoryMap(sizeof(int32_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
-	softwareRenderer->stencilBuffer = anonymousMemoryMap(sizeof(uint8_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
+	softwareRenderer->stencilBuffer = anonymousMemoryMap(sizeof(uint16_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
 }
 
 static void DSGXSoftwareRendererReset(struct DSGXRenderer* renderer) {
@@ -436,7 +438,7 @@ static void DSGXSoftwareRendererDeinit(struct DSGXRenderer* renderer) {
 	DSGXSoftwareEdgeListDeinit(&softwareRenderer->activeEdges);	
 	mappedMemoryFree(softwareRenderer->scanlineCache, sizeof(color_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
 	mappedMemoryFree(softwareRenderer->depthBuffer, sizeof(int32_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
-	mappedMemoryFree(softwareRenderer->stencilBuffer, sizeof(uint8_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
+	mappedMemoryFree(softwareRenderer->stencilBuffer, sizeof(uint16_t) * DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS);
 }
 
 static void DSGXSoftwareRendererInvalidateTex(struct DSGXRenderer* renderer, int slot) {
@@ -618,14 +620,15 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 static void _drawSpan(struct DSGXSoftwareRenderer* softwareRenderer, struct DSGXSoftwareSpan* span, int y) {
 	color_t* scanline = &softwareRenderer->scanlineCache[DS_VIDEO_HORIZONTAL_PIXELS * y];
 	int32_t* depth = &softwareRenderer->depthBuffer[DS_VIDEO_HORIZONTAL_PIXELS * y];
-	uint8_t* stencil = &softwareRenderer->stencilBuffer[DS_VIDEO_HORIZONTAL_PIXELS * y];
+	uint16_t* stencil = &softwareRenderer->stencilBuffer[DS_VIDEO_HORIZONTAL_PIXELS * y];
 	int32_t x = span->ep[0].coord[0] >> 12;
 	if (x < 0) {
 		x = 0;
 	}
 	unsigned stencilValue = span->polyId;
+	stencilValue |= stencilValue << 8;
 	if (span->poly->blendFormat == 3) {
-		stencilValue |= 0x40;
+		stencilValue |= SHADOW_BIT;
 	}
 	for (; x < (span->ep[1].coord[0] >> 12) && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
 		if (span->ep[0].coord[softwareRenderer->sort] < depth[x]) {
@@ -640,28 +643,36 @@ static void _drawSpan(struct DSGXSoftwareRenderer* softwareRenderer, struct DSGX
 				ab = b;
 			}
 			if (a == 0x1F) {
-				if (!(s & 0x40) || (s & 0x3F && !(stencil[x] & 0x40))) {
-					depth[x] = span->ep[0].coord[softwareRenderer->sort];
-					scanline[x] = color;
-					s &= ~0x40;
-				}
-				stencil[x] = s;
+				depth[x] = span->ep[0].coord[softwareRenderer->sort];
+				scanline[x] = color;
+				stencil[x] = s & 0x3F00;
 			} else if (a) {
 				// TODO: Disable alpha?
 				if (b) {
 					color = _mix32(a, color, 0x1F - a, current);
 					color |= ab << 27;
 				}
-				if (stencil[x] != s) {
-					if (!(s & 0x40) || (s & 0x3F && !(stencil[x] & 0x40))) {
+				if ((stencil[x] & 0x3F) != (s & 0x3F)) {
+					if (!(s & SHADOW_BIT) || ((stencil[x] & 0x3F00) != (s & 0x3F00) && s & 0x3F00 && stencil[x] & SHADOW_BIT)) {
 						if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
 							depth[x] = span->ep[0].coord[softwareRenderer->sort];
 						}
 						scanline[x] = color;
-						s &= ~0x40;
+						stencil[x] &= 0x3F00;
+					} else {
+						s = 0;
+						stencil[x] &= 0x3F3F;
 					}
-					stencil[x] = s;
 				}
+				s &= ~0x7F00;
+				stencil[x] |= s;
+			}
+		} else if ((stencilValue & 0x7F00) == SHADOW_BIT) {
+			_resolveEndpoint(span);
+			color_t color = _lookupColor(softwareRenderer, &span->ep[0], span->poly);
+			unsigned a = color >> 27;
+			if (a > 0) {
+				stencil[x] |= SHADOW_BIT;
 			}
 		}
 		_stepEndpoint(span);

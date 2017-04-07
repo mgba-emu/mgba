@@ -90,7 +90,7 @@ struct DSGXSoftwareRenderer {
 	struct DSGXSoftwareEdgeList activeEdges;
 
 	int32_t* depthBuffer;
-	uint8_t* stencilBuffer;
+	uint16_t* stencilBuffer;
 	color_t* scanlineCache;
 	int sort;
 	uint16_t clearStencil;
