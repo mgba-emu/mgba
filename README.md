@@ -179,6 +179,7 @@ Missing features on DS are
 	- Position test
 	- Vector test
 	- Bitmap rear plane
+	- Large bitmap mode 6
 	- 1-dot depth clipping
 	- Vector matrix memory mapping
 	- Polygon/vertex RAM entry count memory mapping
