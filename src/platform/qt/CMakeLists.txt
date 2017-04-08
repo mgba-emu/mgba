@@ -252,7 +252,7 @@ install(TARGETS ${BINARY_NAME}-qt
 if(UNIX AND NOT APPLE)
 	find_program(DESKTOP_FILE_INSTALL desktop-file-install)
 	if(DESKTOP_FILE_INSTALL)
-		install(CODE "execute_process(COMMAND ${DESKTOP_FILE_INSTALL} \"${CMAKE_SOURCE_DIR}/res/mgba-qt.desktop\" --dir \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/applications/\")")
+		install(CODE "execute_process(COMMAND ${DESKTOP_FILE_INSTALL} \"${CMAKE_SOURCE_DIR}/res/${BINARY_NAME}-qt.desktop\" --dir \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/applications/\")")
 	endif()
 endif()
 if(UNIX)

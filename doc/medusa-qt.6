@@ -3,14 +3,14 @@
 .\" This Source Code Form is subject to the terms of the Mozilla Public
 .\" License, v. 2.0. If a copy of the MPL was not distributed with this
 .\" file, you can obtain one at https://mozilla.org/MPL/2.0/.
-.Dd July 29, 2015
-.Dt MGBA-QT 6
+.Dd April 8, 2017
+.Dt MEDUSA-QT 6
 .Os
 .Sh NAME
-.Nm mgba-qt
-.Nd Game Boy Advance emulator
+.Nm medusa-qt
+.Nd DS emulator
 .Sh SYNOPSIS
-.Nm mgba-qt
+.Nm medusa-qt
 .Op Fl 123456fg
 .Op Fl b Ar biosfile
 .Op Fl l Ar loglevel
@@ -19,7 +19,7 @@
 .Ar file
 .Sh DESCRIPTION
 .Nm
-is a Game Boy Advance emulator.
+is a DS emulator.
 The options are as follows:
 .Bl -tag -width Ds
 .It Fl 1
@@ -115,13 +115,13 @@ is used.
 .El
 .Sh FILES
 .Bl -tag -width Ds -compact
-.It Pa $XDG_CONFIG_HOME/mgba/config.ini
+.It Pa $XDG_CONFIG_HOME/medusa/config.ini
 Default
-.Xr mgba 6
+.Xr medusa 6
 configuration file.
-.It Pa $XDG_CONFIG_HOME/mgba/qt.ini
+.It Pa $XDG_CONFIG_HOME/medusa/qt.ini
 Default
-.Nm mgba-qt
+.Nm medusa-qt
 configuration file.
 .It Pa portable.ini
 If this file exists in the current directory,
@@ -131,7 +131,7 @@ will read
 and
 .Pa qt.ini
 from the current directory instead of
-.Pa $XDG_CONFIG_HOME/mgba .
+.Pa $XDG_CONFIG_HOME/medusa .
 .El
 .Sh AUTHORS
 .An Jeffrey Pfau Aq Mt jeffrey@endrift.com
