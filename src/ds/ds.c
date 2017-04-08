@@ -607,6 +607,7 @@ void DSGetGameTitle(struct DS* ds, char* out) {
 
 void DSHitStub(struct ARMCore* cpu, uint32_t opcode) {
 	struct DS* ds = (struct DS*) cpu->master;
+#ifdef USE_DEBUGGERS
 	if (ds->debugger) {
 		struct mDebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
@@ -614,6 +615,7 @@ void DSHitStub(struct ARMCore* cpu, uint32_t opcode) {
 		};
 		mDebuggerEnter(ds->debugger->d.p, DEBUGGER_ENTER_ILLEGAL_OP, &info);
 	}
+#endif
 	// TODO: More sensible category?
 	mLOG(DS, ERROR, "Stub opcode: %08x", opcode);
 }
@@ -629,12 +631,14 @@ void DSIllegal(struct ARMCore* cpu, uint32_t opcode) {
 			cpu->gprs[ARM_PC] -= WORD_SIZE_ARM * 2;
 			ARM_WRITE_PC;
 		}
+#ifdef USE_DEBUGGERS
 	} else if (ds->debugger) {
 		struct mDebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
 			.opcode = opcode
 		};
 		mDebuggerEnter(ds->debugger->d.p, DEBUGGER_ENTER_ILLEGAL_OP, &info);
+#endif
 	} else {
 		ARMRaiseUndefined(cpu);
 	}
@@ -646,6 +650,7 @@ void DSBreakpoint(struct ARMCore* cpu, int immediate) {
 		return;
 	}
 	switch (immediate) {
+#ifdef USE_DEBUGGERS
 	case CPU_COMPONENT_DEBUGGER:
 		if (ds->debugger) {
 			struct mDebuggerEntryInfo info = {
@@ -654,6 +659,7 @@ void DSBreakpoint(struct ARMCore* cpu, int immediate) {
 			mDebuggerEnter(ds->debugger->d.p, DEBUGGER_ENTER_BREAKPOINT, &info);
 		}
 		break;
+#endif
 	default:
 		break;
 	}
