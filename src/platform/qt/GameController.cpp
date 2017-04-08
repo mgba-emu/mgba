@@ -174,7 +174,7 @@ GameController::GameController(QObject* parent)
 		controller->m_patch = QString();
 		controller->clearOverride();
 
-		controller->m_audioProcessor->pause();
+		QMetaObject::invokeMethod(controller->m_audioProcessor, "pause");
 
 		QMetaObject::invokeMethod(controller, "gameStopped", Q_ARG(mCoreThread*, context));
 		QMetaObject::invokeMethod(controller, "cleanGame");
