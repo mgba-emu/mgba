@@ -19,9 +19,6 @@ Bugfixes:
  - GBA BIOS: Implement BitUnPack
  - ARM7: Fix MLA/*MULL/*MLAL timing
  - GBA: Fix multiboot ROM loading
- - SDL: Prevent crash on cores with no audio
- - ARM7: Decode MCR/MRC
- - ARM7: Clean up instruction decoding for future expandability
  - Libretro: Fix saving in GB games (fixes mgba.io/i/486)
  - LR35902: Fix pc overflowing current region off-by-one
  - GB MBC: Fix ROM bank overflows getting set to bank 0
@@ -38,7 +35,6 @@ Bugfixes:
  - SDL: Fix race condition with audio thread when starting
  - GB: Fix flickering when screen is strobed quickly
  - FFmpeg: Fix overflow and general issues with audio encoding
- - Core: Don't save state if core fails to serialize
  - Qt: Fix crash when changing audio settings after a game is closed
 Misc:
  - SDL: Remove scancode key input
@@ -89,6 +85,15 @@ Misc:
  - FFmpeg: Return false if a file fails to open
  - FFmpeg: Force MP4 files to YUV420P
  - Qt: Make "Mute" able to be bound to a key
+
+medusa alpha 1: (2017-04-08)
+Features:
+ - Partial DS Support
+Bugfixes:
+ - SDL: Prevent crash on cores with no audio
+ - ARM7: Decode MCR/MRC
+ - ARM7: Clean up instruction decoding for future expandability
+ - Core: Don't save state if core fails to serialize
 
 0.5.2: (2016-12-31)
 Bugfixes:
