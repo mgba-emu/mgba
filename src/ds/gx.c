@@ -979,8 +979,8 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			y >>= 3;
 			z >>= 3;
 			if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) == 2) {
-				gx->currentVertex.vs = _dotFrac(x, y, z, &gx->texMatrix.m[0]) + gx->currentVertex.s;
-				gx->currentVertex.vt = _dotFrac(x, y, z, &gx->texMatrix.m[1]) + gx->currentVertex.t;
+				gx->currentVertex.vs = (_dotFrac(x, y, z, &gx->texMatrix.m[0]) + gx->currentVertex.s) >> 11;
+				gx->currentVertex.vt = (_dotFrac(x, y, z, &gx->texMatrix.m[1]) + gx->currentVertex.t) >> 11;
 			}
 			int16_t nx = _dotFrac(x, y, z, &gx->vecMatrix.m[0]);
 			int16_t ny = _dotFrac(x, y, z, &gx->vecMatrix.m[1]);
