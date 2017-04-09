@@ -780,7 +780,7 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 #ifdef M_CORE_DS
 	if ((platform & SUPPORT_DS) && (!m_config->getOption("useBios").toInt() || m_config->getOption("ds.bios7").isNull() || m_config->getOption("ds.bios9").isNull() || m_config->getOption("ds.firmware").isNull())) {
 		QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("BIOS required"),
-		                                    tr("DS supoprt requires dumps of the BIOS and firmware."),
+		                                    tr("DS support requires dumps of the BIOS and firmware."),
 		                                    QMessageBox::Ok, this, Qt::Sheet);
 		fail->setAttribute(Qt::WA_DeleteOnClose);
 		fail->show();
