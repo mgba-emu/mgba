@@ -301,6 +301,7 @@ void DS7Reset(struct ARMCore* cpu) {
 		memcpy(&ds->memory.ram[0x3FF804 >> 2], DS_CHIP_ID, 4);
 		memcpy(&ds->memory.ram[0x3FFC00 >> 2], DS_CHIP_ID, 4);
 		memcpy(&ds->memory.ram[0x3FFC04 >> 2], DS_CHIP_ID, 4);
+		ds->memory.ram[0x3FFC40 >> 2] = 1;
 		memcpy(&ds->memory.ram[0x3FFE00 >> 2], header, 0x170);
 		DS7IOWrite32(ds, DS_REG_ROMCNT_LO, header->busTiming | 0x2700000);
 		// TODO: Error check

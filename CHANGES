@@ -1,3 +1,7 @@
+medusa alpha 2: (Future)
+Misc:
+ - DS: Set boot complete bit in RAM on boot (fixes mgba.io/i/576, mgba.io/i/580, mgba.io/i/586)
+
 0.6.0: (Future)
 Features:
  - GBA: Support printing debug strings from inside a game
