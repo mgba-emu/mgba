@@ -62,6 +62,7 @@ struct mCoreThread {
 	ThreadCallback resetCallback;
 	ThreadCallback cleanCallback;
 	ThreadCallback frameCallback;
+	ThreadCallback sleepCallback;
 	void* userData;
 	void (*run)(struct mCoreThread*);
 

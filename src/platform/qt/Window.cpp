@@ -1266,11 +1266,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	avMenu->addSeparator();
 
 	ConfigOption* mute = m_config->addOption("mute");
-	mute->addBoolean(tr("Mute"), avMenu);
+	QAction* muteAction = mute->addBoolean(tr("Mute"), avMenu);
 	mute->connect([this](const QVariant& value) {
 		reloadConfig();
 	}, this);
 	m_config->updateOption("mute");
+	addControlledAction(avMenu, muteAction, "mute");
 
 	QMenu* target = avMenu->addMenu(tr("FPS target"));
 	ConfigOption* fpsTargetOption = m_config->addOption("fpsTarget");
@@ -1580,7 +1581,7 @@ void Window::updateMRU() {
 	m_mruMenu->clear();
 	int i = 0;
 	for (const QString& file : m_mruFiles) {
-		QAction* item = new QAction(file, m_mruMenu);
+		QAction* item = new QAction(QDir::toNativeSeparators(file).replace("&", "&&"), m_mruMenu);
 		item->setShortcut(QString("Ctrl+%1").arg(i));
 		connect(item, &QAction::triggered, [this, file]() { m_controller->loadGame(file); });
 		m_mruMenu->addAction(item);

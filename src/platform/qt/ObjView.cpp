@@ -244,12 +244,8 @@ void ObjView::updateTilesGB(bool force) {
 
 void ObjView::exportObj() {
 	GameController::Interrupter interrupter(m_controller);
-	QFileDialog* dialog = GBAApp::app()->getSaveFileDialog(this, tr("Export sprite"),
-	                                                       tr("Portable Network Graphics (*.png)"));
-	if (!dialog->exec()) {
-		return;
-	}
-	QString filename = dialog->selectedFiles()[0];
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export sprite"),
+	                                                  tr("Portable Network Graphics (*.png)"));
 	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
 		LOG(QT, ERROR) << tr("Failed to open output PNG file: %1").arg(filename);

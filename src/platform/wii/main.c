@@ -641,8 +641,8 @@ void _guiPrepare(void) {
 }
 
 void _setup(struct mGUIRunner* runner) {
-	runner->core->setRotation(runner->core, &rotation);
-	runner->core->setRumble(runner->core, &rumble);
+	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation);
+	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble);
 
 	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_A, GBA_KEY_A);
 	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_B, GBA_KEY_B);

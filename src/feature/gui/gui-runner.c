@@ -298,7 +298,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		return;
 	}
 	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
-		((struct GBA*) runner->core->board)->luminanceSource = &runner->luminanceSource.d;
+		runner->core->setPeripheral(runner->core, mPERIPH_GBA_LUMINANCE, &runner->luminanceSource.d);
 	}
 	mLOG(GUI_RUNNER, DEBUG, "Loading config...");
 	mCoreLoadForeignConfig(runner->core, &runner->config);

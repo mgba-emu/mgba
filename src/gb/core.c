@@ -105,6 +105,21 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 		gb->audio.masterVolume = core->opts.volume;
 	}
 	gb->video.frameskip = core->opts.frameskip;
+
+	int color;
+	if (mCoreConfigGetIntValue(&core->config, "gb.pal[0]", &color)) {
+			GBVideoSetPalette(&gb->video, 0, color);
+	}
+	if (mCoreConfigGetIntValue(&core->config, "gb.pal[1]", &color)) {
+			GBVideoSetPalette(&gb->video, 1, color);
+	}
+	if (mCoreConfigGetIntValue(&core->config, "gb.pal[2]", &color)) {
+			GBVideoSetPalette(&gb->video, 2, color);
+	}
+	if (mCoreConfigGetIntValue(&core->config, "gb.pal[3]", &color)) {
+			GBVideoSetPalette(&gb->video, 3, color);
+	}
+
 	mCoreConfigCopyValue(&core->config, config, "gb.bios");
 	mCoreConfigCopyValue(&core->config, config, "gbc.bios");
 
@@ -393,14 +408,18 @@ static void _GBCoreGetGameCode(const struct mCore* core, char* title) {
 	GBGetGameCode(core->board, title);
 }
 
-static void _GBCoreSetRotation(struct mCore* core, struct mRotationSource* rotation) {
+static void _GBCoreSetPeripheral(struct mCore* core, int type, void* periph) {
 	struct GB* gb = core->board;
-	gb->memory.rotation = rotation;
-}
-
-static void _GBCoreSetRumble(struct mCore* core, struct mRumble* rumble) {
-	struct GB* gb = core->board;
-	gb->memory.rumble = rumble;
+	switch (type) {
+	case mPERIPH_ROTATION:
+		gb->memory.rotation = periph;
+		break;
+	case mPERIPH_RUMBLE:
+		gb->memory.rumble = periph;
+		break;
+	default:
+		return;
+	}
 }
 
 static uint32_t _GBCoreBusRead8(struct mCore* core, uint32_t address) {
@@ -605,8 +624,7 @@ struct mCore* GBCoreCreate(void) {
 	core->frequency = _GBCoreFrequency;
 	core->getGameTitle = _GBCoreGetGameTitle;
 	core->getGameCode = _GBCoreGetGameCode;
-	core->setRotation = _GBCoreSetRotation;
-	core->setRumble = _GBCoreSetRumble;
+	core->setPeripheral = _GBCoreSetPeripheral;
 	core->busRead8 = _GBCoreBusRead8;
 	core->busRead16 = _GBCoreBusRead16;
 	core->busRead32 = _GBCoreBusRead32;
