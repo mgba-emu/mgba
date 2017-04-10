@@ -267,6 +267,7 @@ static void _performCapture(struct DSVideo* video, int y) {
 		pixel |= (colorA >> 6) & 0x03E0;
 		pixel |= (colorA >> 3) & 0x001F;
 #endif
+		pixel |= 0x8000;
 		STORE_16(pixel, ((x + y * DS_VIDEO_HORIZONTAL_PIXELS) * 2 + base) & 0x1FFFE, vram);
 	}
 }
