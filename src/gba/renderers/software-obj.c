@@ -197,7 +197,7 @@
 	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	current = renderer->spriteLayer[outX]; \
 	if ((current & FLAG_ORDER_MASK) > flags) { \
-		if (tileData) { \
+		if (tileData & 0x8000) { \
 			uint32_t color; \
 			TILE_TO_COLOR(tileData); \
 			renderer->spriteLayer[outX] = color | flags; \
@@ -215,7 +215,7 @@
 		return 0; \
 	} \
 	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
-	if (tileData) { \
+	if (tileData & 0x8000) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
 	}
 
