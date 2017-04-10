@@ -99,7 +99,7 @@ GameController::GameController(QObject* parent)
 		switch (context->core->platform(context->core)) {
 #ifdef M_CORE_GBA
 		case PLATFORM_GBA:
-			gba->luminanceSource = &controller->m_lux;
+			context->core->setPeripheral(context->core, mPERIPH_GBA_LUMINANCE, &controller->m_lux);
 			gba->audio.psg.forceDisableCh[0] = !controller->m_audioChannels[0];
 			gba->audio.psg.forceDisableCh[1] = !controller->m_audioChannels[1];
 			gba->audio.psg.forceDisableCh[2] = !controller->m_audioChannels[2];

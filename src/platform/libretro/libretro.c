@@ -409,8 +409,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 
 #ifdef M_CORE_GBA
 	if (core->platform(core) == PLATFORM_GBA) {
-		struct GBA* gba = core->board;
-		gba->luminanceSource = &lux;
+		core->setPeripheral(core, mPERIPH_GBA_LUMINANCE, &lux);
 
 		const char* sysDir = 0;
 		if (core->opts.useBios && environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {

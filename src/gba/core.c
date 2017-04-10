@@ -414,6 +414,9 @@ static void _GBACoreSetPeripheral(struct mCore* core, int type, void* periph) {
 	case mPERIPH_RUMBLE:
 		gba->rumble = periph;
 		break;
+	case mPERIPH_GBA_LUMINANCE:
+		gba->luminanceSource = periph;
+		break;
 	default:
 		return;
 	}
