@@ -586,6 +586,8 @@ void GameController::cleanGame() {
 	if (!m_gameOpen || mCoreThreadIsActive(&m_threadContext)) {
 		return;
 	}
+
+	m_audioProcessor->pause();
 	mCoreThreadJoin(&m_threadContext);
 
 	delete[] m_drawContext;
