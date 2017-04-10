@@ -217,18 +217,16 @@ GameController::GameController(QObject* parent)
 		}
 	};
 
-	// TODO: Put back
-	/*m_threadContext.stopCallback = [](mCoreThread* context) {
+	m_threadContext.sleepCallback = [](mCoreThread* context) {
 		if (!context) {
-			return false;
+			return;
 		}
 		GameController* controller = static_cast<GameController*>(context->userData);
 		if (!mCoreSaveState(context->core, 0, controller->m_saveStateFlags)) {
-			return false;
+			return;
 		}
 		QMetaObject::invokeMethod(controller, "closeGame");
-		return true;
-	};*/
+	};
 
 	m_threadContext.logger.d.log = [](mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
 		mThreadLogger* logContext = reinterpret_cast<mThreadLogger*>(logger);

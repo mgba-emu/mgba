@@ -89,8 +89,6 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 
 	gba->stream = NULL;
 	gba->keyCallback = NULL;
-	gba->stopCallback = NULL;
-	gba->stopCallback = NULL;
 	mCoreCallbacksListInit(&gba->coreCallbacks, 0);
 
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
@@ -450,11 +448,14 @@ void GBAHalt(struct GBA* gba) {
 }
 
 void GBAStop(struct GBA* gba) {
-	if (!gba->stopCallback) {
-		return;
+	size_t c;
+	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
+		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
+		if (callbacks->sleep) {
+			callbacks->sleep(callbacks->context);
+		}
 	}
 	gba->cpu->nextEvent = gba->cpu->cycles;
-	gba->stopCallback->stop(gba->stopCallback);
 }
 
 void GBADebug(struct GBA* gba, uint16_t flags) {

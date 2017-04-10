@@ -85,6 +85,7 @@ Misc:
  - FFmpeg: Return false if a file fails to open
  - FFmpeg: Force MP4 files to YUV420P
  - Qt: Make "Mute" able to be bound to a key
+ - Core: Restore sleep callback
 
 0.5.2: (2016-12-31)
 Bugfixes:

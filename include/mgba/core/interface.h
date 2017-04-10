@@ -38,6 +38,7 @@ struct mCoreCallbacks {
 	void (*videoFrameStarted)(void* context);
 	void (*videoFrameEnded)(void* context);
 	void (*coreCrashed)(void* context);
+	void (*sleep)(void* context);
 };
 
 DECLARE_VECTOR(mCoreCallbacksList, struct mCoreCallbacks);
@@ -51,10 +52,6 @@ struct mAVStream {
 
 struct mKeyCallback {
 	uint16_t (*readKeys)(struct mKeyCallback*);
-};
-
-struct mStopCallback {
-	void (*stop)(struct mStopCallback*);
 };
 
 struct mRotationSource {
