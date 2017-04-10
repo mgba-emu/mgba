@@ -152,7 +152,7 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 	case 2:
 		texel = ((uint8_t*) poly->texBase)[texelCoord >> 2];
 		if (texelCoord & 0x3) {
-			texel >>= 2 * texel & 3;
+			texel >>= 2 * (texelCoord & 0x3);
 		}
 		texel &= 0x3;
 		break;

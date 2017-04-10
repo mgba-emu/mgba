@@ -5,6 +5,7 @@ Bugfixes:
  - DS GX: Fix T-repeat textures (fixes mgba.io/i/577)
  - DS Video: Capture with alpha bit set
  - DS Video: Bitmap sprites use alpha bit for transparent
+ - DS GX: Fix 4-color texture coordinates
 Misc:
  - DS: Set boot complete bit in RAM on boot (fixes mgba.io/i/576, mgba.io/i/580, mgba.io/i/586)
 
