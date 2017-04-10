@@ -425,34 +425,42 @@ void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value, uint8_t oldVa
 	uint32_t offset = oldInfo.base + oldInfo.offset[(oldValue >> 3) & 3];
 	switch (oldInfo.mode) {
 	case MODE_A_BG:
-		for (i = 0; i < size; ++i) {
-			if (ds->video.vramABG[offset + i] == &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)]) {
-				ds->video.vramABG[offset + i] = NULL;
-				ds->video.renderer->vramABG[offset + i] = NULL;
+		for (j = offset; j < 0x20; j += oldInfo.mirrorSize) {
+			for (i = 0; i < size; ++i) {
+				if (ds->video.vramABG[offset + i + j] == &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)]) {
+					ds->video.vramABG[offset + i + j] = NULL;
+					ds->video.renderer->vramABG[offset + i + j] = NULL;
+				}
 			}
 		}
 		break;
 	case MODE_B_BG:
-		for (i = 0; i < size; ++i) {
-			if (ds->video.vramBBG[offset + i] == &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)]) {
-				ds->video.vramBBG[offset + i] = NULL;
-				ds->video.renderer->vramBBG[offset + i] = NULL;
+		for (j = offset; j < 0x20; j += oldInfo.mirrorSize) {
+			for (i = 0; i < size; ++i) {
+				if (ds->video.vramBBG[offset + i + j] == &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)]) {
+					ds->video.vramBBG[offset + i + j] = NULL;
+					ds->video.renderer->vramBBG[offset + i + j] = NULL;
+				}
 			}
 		}
 		break;
 	case MODE_A_OBJ:
-		for (i = 0; i < size; ++i) {
-			if (ds->video.vramAOBJ[offset + i] == &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)]) {
-				ds->video.vramAOBJ[offset + i] = NULL;
-				ds->video.renderer->vramAOBJ[offset + i] = NULL;
+		for (j = offset; j < 0x20; j += oldInfo.mirrorSize) {
+			for (i = 0; i < size; ++i) {
+				if (ds->video.vramAOBJ[offset + i + j] == &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)]) {
+					ds->video.vramAOBJ[offset + i + j] = NULL;
+					ds->video.renderer->vramAOBJ[offset + i + j] = NULL;
+				}
 			}
 		}
 		break;
 	case MODE_B_OBJ:
-		for (i = 0; i < size; ++i) {
-			if (ds->video.vramBOBJ[offset + i] == &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)]) {
-				ds->video.vramBOBJ[offset + i] = NULL;
-				ds->video.renderer->vramBOBJ[offset + i] = NULL;
+		for (j = offset; j < 0x20; j += oldInfo.mirrorSize) {
+			for (i = 0; i < size; ++i) {
+				if (ds->video.vramBOBJ[offset + i + j] == &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)]) {
+					ds->video.vramBOBJ[offset + i + j] = NULL;
+					ds->video.renderer->vramBOBJ[offset + i + j] = NULL;
+				}
 			}
 		}
 		break;
@@ -529,27 +537,35 @@ void DSVideoConfigureVRAM(struct DS* ds, int index, uint8_t value, uint8_t oldVa
 	}
 	switch (info.mode) {
 	case MODE_A_BG:
-		for (i = 0; i < size; ++i) {
-			ds->video.vramABG[offset + i] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
-			ds->video.renderer->vramABG[offset + i] = ds->video.vramABG[offset + i];
+		for (j = offset; j < 0x20; j += oldInfo.mirrorSize) {
+			for (i = 0; i < size; ++i) {
+				ds->video.vramABG[offset + i + j] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
+				ds->video.renderer->vramABG[offset + i + j] = ds->video.vramABG[offset + i + j];
+			}
 		}
 		break;
 	case MODE_B_BG:
-		for (i = 0; i < size; ++i) {
-			ds->video.vramBBG[offset + i] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
-			ds->video.renderer->vramBBG[offset + i] = ds->video.vramBBG[offset + i];
+		for (j = offset; j < 0x20; j += info.mirrorSize) {
+			for (i = 0; i < size; ++i) {
+				ds->video.vramBBG[offset + i + j] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
+				ds->video.renderer->vramBBG[offset + i + j] = ds->video.vramBBG[offset + i + j];
+			}
 		}
 		break;
 	case MODE_A_OBJ:
-		for (i = 0; i < size; ++i) {
-			ds->video.vramAOBJ[offset + i] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
-			ds->video.renderer->vramAOBJ[offset + i] = ds->video.vramAOBJ[offset + i];
+		for (j = offset; j < 0x20; j += oldInfo.mirrorSize) {
+			for (i = 0; i < size; ++i) {
+				ds->video.vramAOBJ[offset + i + j] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
+				ds->video.renderer->vramAOBJ[offset + i + j] = ds->video.vramAOBJ[offset + i + j];
+			}
 		}
 		break;
 	case MODE_B_OBJ:
-		for (i = 0; i < size; ++i) {
-			ds->video.vramBOBJ[offset + i] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
-			ds->video.renderer->vramBOBJ[offset + i] = ds->video.vramBOBJ[offset + i];
+		for (j = offset; j < 0x20; j += oldInfo.mirrorSize) {
+			for (i = 0; i < size; ++i) {
+				ds->video.vramBOBJ[offset + i + j] = &memory->vramBank[index][i << (DS_VRAM_OFFSET - 1)];
+				ds->video.renderer->vramBOBJ[offset + i + j] = ds->video.vramBOBJ[offset + i + j];
+			}
 		}
 		break;
 	case MODE_A_BG_EXT_PAL:
