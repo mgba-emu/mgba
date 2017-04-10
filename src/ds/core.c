@@ -393,12 +393,15 @@ static void _DSCoreGetGameCode(const struct mCore* core, char* title) {
 	DSGetGameCode(core->board, title);
 }
 
-static void _DSCoreSetRotation(struct mCore* core, struct mRotationSource* rotation) {
-}
-
-static void _DSCoreSetRumble(struct mCore* core, struct mRumble* rumble) {
+static void _DSCoreSetPeripheral(struct mCore* core, int type, void* periph) {
 	struct DS* ds = core->board;
-	ds->rumble = rumble;
+	switch (type) {
+	case mPERIPH_RUMBLE:
+		ds->rumble = periph;
+		break;
+	default:
+		break;
+	}
 }
 
 static uint32_t _DSCoreBusRead8(struct mCore* core, uint32_t address) {
@@ -558,8 +561,7 @@ struct mCore* DSCoreCreate(void) {
 	core->frequency = _DSCoreFrequency;
 	core->getGameTitle = _DSCoreGetGameTitle;
 	core->getGameCode = _DSCoreGetGameCode;
-	core->setRotation = _DSCoreSetRotation;
-	core->setRumble = _DSCoreSetRumble;
+	core->setPeripheral = _DSCoreSetPeripheral;
 	core->busRead8 = _DSCoreBusRead8;
 	core->busRead16 = _DSCoreBusRead16;
 	core->busRead32 = _DSCoreBusRead32;

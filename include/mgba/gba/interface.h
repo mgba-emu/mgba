@@ -28,6 +28,10 @@ struct GBAVideoRenderer;
 
 extern const int GBA_LUX_LEVELS[10];
 
+enum {
+	mPERIPH_GBA_LUMINANCE = 0x1000
+};
+
 struct GBALuminanceSource {
 	void (*sample)(struct GBALuminanceSource*);
 

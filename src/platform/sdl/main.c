@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
 	mSDLPlayerLoadConfig(&renderer.player, mCoreConfigGetInput(&renderer.core->config));
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	renderer.core->setRumble(renderer.core, &renderer.player.rumble.d);
+	renderer.core->setPeripheral(renderer.core, mPERIPH_RUMBLE, &renderer.player.rumble.d);
 #endif
 
 	int ret;

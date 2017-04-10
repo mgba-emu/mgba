@@ -87,8 +87,8 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.startCallback = [](mCoreThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		context->core->setRotation(context->core, controller->m_inputController->rotationSource());
-		context->core->setRumble(context->core, controller->m_inputController->rumble());
+		context->core->setPeripheral(context->core, mPERIPH_ROTATION, controller->m_inputController->rotationSource());
+		context->core->setPeripheral(context->core, mPERIPH_RUMBLE, controller->m_inputController->rumble());
 
 #ifdef M_CORE_GBA
 		GBA* gba = static_cast<GBA*>(context->core->board);
@@ -99,7 +99,7 @@ GameController::GameController(QObject* parent)
 		switch (context->core->platform(context->core)) {
 #ifdef M_CORE_GBA
 		case PLATFORM_GBA:
-			gba->luminanceSource = &controller->m_lux;
+			context->core->setPeripheral(context->core, mPERIPH_GBA_LUMINANCE, &controller->m_lux);
 			gba->audio.psg.forceDisableCh[0] = !controller->m_audioChannels[0];
 			gba->audio.psg.forceDisableCh[1] = !controller->m_audioChannels[1];
 			gba->audio.psg.forceDisableCh[2] = !controller->m_audioChannels[2];
@@ -217,18 +217,16 @@ GameController::GameController(QObject* parent)
 		}
 	};
 
-	// TODO: Put back
-	/*m_threadContext.stopCallback = [](mCoreThread* context) {
+	m_threadContext.sleepCallback = [](mCoreThread* context) {
 		if (!context) {
-			return false;
+			return;
 		}
 		GameController* controller = static_cast<GameController*>(context->userData);
 		if (!mCoreSaveState(context->core, 0, controller->m_saveStateFlags)) {
-			return false;
+			return;
 		}
 		QMetaObject::invokeMethod(controller, "closeGame");
-		return true;
-	};*/
+	};
 
 	m_threadContext.logger.d.log = [](mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
 		mThreadLogger* logContext = reinterpret_cast<mThreadLogger*>(logger);
@@ -643,6 +641,8 @@ void GameController::cleanGame() {
 	if (!m_gameOpen || mCoreThreadIsActive(&m_threadContext)) {
 		return;
 	}
+
+	m_audioProcessor->pause();
 	mCoreThreadJoin(&m_threadContext);
 
 	if (m_tileCache) {

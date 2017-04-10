@@ -424,14 +424,21 @@ static void _GBACoreGetGameCode(const struct mCore* core, char* title) {
 	GBAGetGameCode(core->board, title);
 }
 
-static void _GBACoreSetRotation(struct mCore* core, struct mRotationSource* rotation) {
+static void _GBACoreSetPeripheral(struct mCore* core, int type, void* periph) {
 	struct GBA* gba = core->board;
-	gba->rotationSource = rotation;
-}
-
-static void _GBACoreSetRumble(struct mCore* core, struct mRumble* rumble) {
-	struct GBA* gba = core->board;
-	gba->rumble = rumble;
+	switch (type) {
+	case mPERIPH_ROTATION:
+		gba->rotationSource = periph;
+		break;
+	case mPERIPH_RUMBLE:
+		gba->rumble = periph;
+		break;
+	case mPERIPH_GBA_LUMINANCE:
+		gba->luminanceSource = periph;
+		break;
+	default:
+		return;
+	}
 }
 
 static uint32_t _GBACoreBusRead8(struct mCore* core, uint32_t address) {
@@ -640,8 +647,7 @@ struct mCore* GBACoreCreate(void) {
 	core->frequency = _GBACoreFrequency;
 	core->getGameTitle = _GBACoreGetGameTitle;
 	core->getGameCode = _GBACoreGetGameCode;
-	core->setRotation = _GBACoreSetRotation;
-	core->setRumble = _GBACoreSetRumble;
+	core->setPeripheral = _GBACoreSetPeripheral;
 	core->busRead8 = _GBACoreBusRead8;
 	core->busRead16 = _GBACoreBusRead16;
 	core->busRead32 = _GBACoreBusRead32;
