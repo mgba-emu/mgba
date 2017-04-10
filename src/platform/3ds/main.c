@@ -242,7 +242,7 @@ static void _setup(struct mGUIRunner* runner) {
 		mCoreLoadForeignConfig(runner->core, &runner->config);
 	}
 
-	runner->core->setRotation(runner->core, &rotation.d);
+	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation.d);
 	if (hasSound != NO_SOUND) {
 		runner->core->setAVStream(runner->core, &stream);
 	}

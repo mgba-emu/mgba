@@ -110,8 +110,7 @@ struct mCore {
 	void (*getGameTitle)(const struct mCore*, char* title);
 	void (*getGameCode)(const struct mCore*, char* title);
 
-	void (*setRotation)(struct mCore*, struct mRotationSource*);
-	void (*setRumble)(struct mCore*, struct mRumble*);
+	void (*setPeripheral)(struct mCore*, int type, void*);
 
 	uint32_t (*busRead8)(struct mCore*, uint32_t address);
 	uint32_t (*busRead16)(struct mCore*, uint32_t address);

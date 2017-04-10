@@ -54,6 +54,12 @@ struct mKeyCallback {
 	uint16_t (*readKeys)(struct mKeyCallback*);
 };
 
+enum mPeripheral {
+	mPERIPH_ROTATION = 1,
+	mPERIPH_RUMBLE,
+	mPERIPH_CUSTOM = 0x1000
+};
+
 struct mRotationSource {
 	void (*sample)(struct mRotationSource*);
 

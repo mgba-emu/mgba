@@ -408,14 +408,18 @@ static void _GBCoreGetGameCode(const struct mCore* core, char* title) {
 	GBGetGameCode(core->board, title);
 }
 
-static void _GBCoreSetRotation(struct mCore* core, struct mRotationSource* rotation) {
+static void _GBCoreSetPeripheral(struct mCore* core, int type, void* periph) {
 	struct GB* gb = core->board;
-	gb->memory.rotation = rotation;
-}
-
-static void _GBCoreSetRumble(struct mCore* core, struct mRumble* rumble) {
-	struct GB* gb = core->board;
-	gb->memory.rumble = rumble;
+	switch (type) {
+	case mPERIPH_ROTATION:
+		gb->memory.rotation = periph;
+		break;
+	case mPERIPH_RUMBLE:
+		gb->memory.rumble = periph;
+		break;
+	default:
+		return;
+	}
 }
 
 static uint32_t _GBCoreBusRead8(struct mCore* core, uint32_t address) {
@@ -620,8 +624,7 @@ struct mCore* GBCoreCreate(void) {
 	core->frequency = _GBCoreFrequency;
 	core->getGameTitle = _GBCoreGetGameTitle;
 	core->getGameCode = _GBCoreGetGameCode;
-	core->setRotation = _GBCoreSetRotation;
-	core->setRumble = _GBCoreSetRumble;
+	core->setPeripheral = _GBCoreSetPeripheral;
 	core->busRead8 = _GBCoreBusRead8;
 	core->busRead16 = _GBCoreBusRead16;
 	core->busRead32 = _GBCoreBusRead32;

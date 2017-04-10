@@ -87,8 +87,8 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.startCallback = [](mCoreThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		context->core->setRotation(context->core, controller->m_inputController->rotationSource());
-		context->core->setRumble(context->core, controller->m_inputController->rumble());
+		context->core->setPeripheral(context->core, mPERIPH_ROTATION, controller->m_inputController->rotationSource());
+		context->core->setPeripheral(context->core, mPERIPH_RUMBLE, controller->m_inputController->rumble());
 
 #ifdef M_CORE_GBA
 		GBA* gba = static_cast<GBA*>(context->core->board);
