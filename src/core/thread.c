@@ -120,7 +120,7 @@ void _crashed(void* context) {
 	_changeState(thread, THREAD_CRASHED, true);
 }
 
-void _sleep(void* context) {
+void _coreSleep(void* context) {
 	struct mCoreThread* thread = context;
 	if (!thread) {
 		return;
@@ -153,7 +153,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		.videoFrameStarted = _frameStarted,
 		.videoFrameEnded = _frameEnded,
 		.coreCrashed = _crashed,
-		.sleep = _sleep,
+		.sleep = _coreSleep,
 		.context = threadContext
 	};
 	core->addCoreCallbacks(core, &callbacks);
