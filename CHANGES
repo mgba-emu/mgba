@@ -2,6 +2,7 @@ medusa alpha 2: (Future)
 Bugfixes:
  - DS Video: Fix VRAM mirroring in the renderer (fixes mgba.io/i/561)
  - DS Video: Fix extended modes 1.x screen base range (fixes mgba.io/i/568)
+ - DS GX: Fix T-repeat textures (fixes mgba.io/i/577)
 Misc:
  - DS: Set boot complete bit in RAM on boot (fixes mgba.io/i/576, mgba.io/i/580, mgba.io/i/586)
 

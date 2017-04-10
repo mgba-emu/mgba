@@ -122,7 +122,7 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 		if (t < 0) {
 			t = 0;
 		} else if (t >= poly->texH) {
-			t = poly->texW - 1;
+			t = poly->texH - 1;
 		}
 	} else if (DSGXTexParamsIsTMirror(poly->texParams)) {
 		if (t & poly->texH) {
