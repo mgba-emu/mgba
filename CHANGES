@@ -12,6 +12,7 @@ Bugfixes:
 Misc:
  - DS: Set boot complete bit in RAM on boot (fixes mgba.io/i/576, mgba.io/i/580, mgba.io/i/586)
  - DS Memory: Ensure DS9 I/O is 8-byte aligned
+ - ARM9: Implement SMLAW and SMULW
  - Qt: Add .nds files to the extension list in Info.plist
 
 0.6.0: (Future)

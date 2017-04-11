@@ -401,6 +401,14 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		y = ARM_SXT_16(cpu->gprs[rs] >> 16); \
 		BODY)
 
+#define DEFINE_MULTIPLY_INSTRUCTION_WY_ARM(NAME, BODY) \
+	DEFINE_MULTIPLY_INSTRUCTION_3_ARM(NAME ## B, \
+		y = ARM_SXT_16(cpu->gprs[rs]); \
+		BODY) \
+	DEFINE_MULTIPLY_INSTRUCTION_3_ARM(NAME ## T, \
+		y = ARM_SXT_16(cpu->gprs[rs] >> 16); \
+		BODY) \
+
 #define DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME, ADDRESS, WRITEBACK, BODY) \
 	DEFINE_INSTRUCTION_ARM(NAME, \
 		uint32_t address; \
@@ -575,6 +583,14 @@ DEFINE_MULTIPLY_INSTRUCTION_XY_ARM(SMLA,
 	cpu->cpsr.q = cpu->cpsr.q || ARM_V_ADDITION(d, dn, cpu->gprs[rd]);)
 
 DEFINE_MULTIPLY_INSTRUCTION_XY_ARM(SMUL, cpu->gprs[rd] = x * y;)
+
+DEFINE_MULTIPLY_INSTRUCTION_WY_ARM(SMLAW,
+	int32_t dn = cpu->gprs[rn]; \
+	int32_t d = (((int64_t) cpu->gprs[rm]) * ((int64_t) y)) >> 16; \
+	cpu->gprs[rd] = d + dn; \
+	cpu->cpsr.q = cpu->cpsr.q || ARM_V_ADDITION(d, dn, cpu->gprs[rd]);)
+
+DEFINE_MULTIPLY_INSTRUCTION_WY_ARM(SMULW, cpu->gprs[rd] = (((int64_t) cpu->gprs[rm]) * ((int64_t) y)) >> 16;)
 
 DEFINE_MULTIPLY_INSTRUCTION_2_ARM(SMULL,
 	int64_t d = ((int64_t) cpu->gprs[rm]) * ((int64_t) cpu->gprs[rs]);
