@@ -1175,6 +1175,8 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			memset(&gx->currentVertex, 0, sizeof(gx->currentVertex));
 			memset(&gx->nextPoly, 0, sizeof(gx-> nextPoly));
 			gx->currentVertex.color = 0x7FFF;
+			gx->currentPoly.polyParams = 0x001F00C0;
+			gx->nextPoly.polyParams = 0x001F00C0;
 			break;
 		case DS_GX_CMD_VIEWPORT:
 			gx->viewportX1 = (uint8_t) entry.params[0];
@@ -1279,6 +1281,8 @@ void DSGXReset(struct DSGX* gx) {
 	memset(&gx->currentVertex, 0, sizeof(gx->currentVertex));
 	memset(&gx->nextPoly, 0, sizeof(gx-> nextPoly));
 	gx->currentVertex.color = 0x7FFF;
+	gx->currentPoly.polyParams = 0x001F00C0;
+	gx->nextPoly.polyParams = 0x001F00C0;
 	gx->dmaSource = -1;
 }
 
