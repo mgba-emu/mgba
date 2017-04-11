@@ -126,6 +126,10 @@ bool ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* d, uint32_t addr
 		return false;
 	}
 
+	if (address >= 0x3FFF) {
+		mLOG(DEBUGGER, WARN, "Software breakpoints are not supported in the BIOS region. Ignoring software breakpoint at 0x%X.", address);
+	}
+
 	struct ARMDebugBreakpoint* breakpoint = ARMDebugBreakpointListAppend(&debugger->swBreakpoints);
 	breakpoint->address = address;
 	breakpoint->isSw = true;
