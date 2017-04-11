@@ -100,8 +100,8 @@ void InputController::addPlatform(mPlatform platform, const QString& visibleName
 	m_inputModel->addMenu(autofire, m_autofireMenu.get());
 
 	for (size_t i = 0; i < info->nKeys; ++i) {
-		m_inputModel->addKey(input, platform, i, 0, info->keyId[i], info->keyId[i]);
-		m_inputModel->addKey(autofire, platform, i, 0, info->keyId[i], info->keyId[i]);
+		m_inputModel->addKey(input, platform, i, 0, info->keyId[i], QString("%1.%2").arg(info->platformName).arg(info->keyId[i]));
+		m_inputModel->addKey(autofire, platform, i, 0, info->keyId[i], QString("%1.autofire.%2").arg(info->platformName).arg(info->keyId[i]));
 	}
 
 #ifdef BUILD_SDL
@@ -693,7 +693,7 @@ void InputController::releaseFocus(QWidget* focus) {
 
 void InputController::setupCallback(GameController* controller) {
 	m_inputModel->setKeyCallback([this, controller](QMenu* menu, int key, bool down) {
-		if (menu == m_autofireMenu.get()) {
+		if (menu->parent() == m_autofireMenu.get()) {
 			controller->setAutofire(key, down);
 		} else {
 			if (down) {
