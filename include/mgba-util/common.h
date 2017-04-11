@@ -153,9 +153,11 @@ typedef intptr_t ssize_t;
 
 #ifdef _MSC_VER
 #define ATTRIBUTE_UNUSED
+#define ATTRIBUTE_ALIGN(X)
 #define ATTRIBUTE_FORMAT(X, Y, Z)
 #else
 #define ATTRIBUTE_UNUSED __attribute__((unused))
+#define ATTRIBUTE_ALIGN(X) __attribute__((aligned(X)))
 #define ATTRIBUTE_FORMAT(X, Y, Z) __attribute__((format(X, Y, Z)))
 #endif
 

@@ -90,7 +90,7 @@ struct DSMemory {
 	uint32_t* wram7;
 	uint32_t* rom;
 	uint16_t io7[DS7_REG_MAX >> 1];
-	uint16_t io9[DS9_REG_MAX >> 1];
+	uint16_t io9[DS9_REG_MAX >> 1] ATTRIBUTE_ALIGN(8);
 	struct DSSlot1 slot1;
 	struct DSSPIBus spiBus;
 
