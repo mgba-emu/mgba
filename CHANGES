@@ -101,6 +101,7 @@ Misc:
  - FFmpeg: Force MP4 files to YUV420P
  - Qt: Make "Mute" able to be bound to a key
  - Core: Restore sleep callback
+ - Qt: Add .gb/.gbc files to the extension list in Info.plist
 
 medusa alpha 1: (2017-04-08)
 Features:
