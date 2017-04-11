@@ -132,6 +132,7 @@ void DSAudioWriteSOUNDCNT_HI(struct DSAudio* audio, int chan, uint16_t value) {
 	ch->panning = DSRegisterSOUNDxCNTGetPanning(reg);
 	ch->repeat = DSRegisterSOUNDxCNTGetRepeat(reg);
 	ch->format = DSRegisterSOUNDxCNTGetFormat(reg);
+	ch->duty = DSRegisterSOUNDxCNTGetDuty(reg);
 
 	if (ch->format > 2) {
 		mLOG(DS_AUDIO, STUB, "Unimplemented audio format %i", ch->format);
@@ -141,6 +142,7 @@ void DSAudioWriteSOUNDCNT_HI(struct DSAudio* audio, int chan, uint16_t value) {
 		mTimingDeschedule(&audio->p->ds7.timing, &ch->updateEvent);
 	} else if (!ch->enable && DSRegisterSOUNDxCNTIsBusy(reg)) {
 		ch->offset = 0;
+		ch->lfsr = 0x4000;
 		mTimingDeschedule(&audio->p->ds7.timing, &ch->updateEvent);
 		mTimingSchedule(&audio->p->ds7.timing, &ch->updateEvent, 0);
 		if (ch->format == 2) {
@@ -228,6 +230,13 @@ static void _updateAdpcm(struct DSAudioChannel* ch, int sample) {
 	ch->adpcmIndex += _adpcmIndexTable[sample & 0x7];
 }
 
+static void _updateNoiseChannel(struct DSAudioChannel* ch) {
+	int lsb = ch->lfsr & 1;
+	ch->high = lsb;
+	ch->lfsr >>= 1;
+	ch->lfsr ^= lsb * 0x6000;
+}
+
 static void _updateChannel(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	struct DSAudioChannel* ch = user;
 	struct ARMCore* cpu = ch->p->p->ds7.cpu;
@@ -249,8 +258,35 @@ static void _updateChannel(struct mTiming* timing, void* user, uint32_t cyclesLa
 			ch->adpcmStartIndex = ch->adpcmIndex;
 		}
 		break;
+	case 3:
+		switch (ch->index) {
+		case 8:
+		case 9:
+		case 10:
+		case 11:
+		case 12:
+		case 13:
+			ch->high = !ch->high;
+			break;
+		case 14:
+		case 15:
+			_updateNoiseChannel(ch);
+			break;
+		}
+		ch->sample = (0xFFFF * ch->high) - 0x8000;
 	}
 	_updateMixer(ch->p);
+	if (ch->format == 3 && ch->index < 14) {
+		int32_t period = ch->period;
+		if (ch->high) {
+			period *= ch->duty + 1;
+		} else {
+			period *= 7 - ch->duty;
+		}
+		mTimingSchedule(timing, &ch->updateEvent, period - cyclesLate);
+		return;
+	}
+
 	switch (ch->repeat) {
 	case 1:
 		if (ch->offset >= ch->length + ch->loopPoint) {
