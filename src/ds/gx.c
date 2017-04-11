@@ -24,8 +24,6 @@ static void DSGXDummyRendererWriteRegister(struct DSGXRenderer* renderer, uint32
 
 static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry);
 
-static bool _boxTestVertex(struct DSGX* gx, struct DSGXVertex* vertex);
-
 static const int32_t _gxCommandCycleBase[DS_GX_CMD_MAX] = {
 	[DS_GX_CMD_NOP] = 0,
 	[DS_GX_CMD_MTX_MODE] = 2,
@@ -539,15 +537,6 @@ static void _flushOutstanding(struct DSGX* gx) {
 		}
 		DSGXWriteFIFO(gx, (struct DSGXEntry) { gx->outstandingCommand[0] });
 	}
-}
-
-static bool _boxTestVertex(struct DSGX* gx, struct DSGXVertex* vertex) {
-	vertex->viewCoord[0] = _dotViewport(vertex, &gx->clipMatrix.m[0]);
-	vertex->viewCoord[1] = _dotViewport(vertex, &gx->clipMatrix.m[1]);
-	vertex->viewCoord[2] = _dotViewport(vertex, &gx->clipMatrix.m[2]);
-	vertex->viewCoord[3] = _dotViewport(vertex, &gx->clipMatrix.m[3]);
-
-	return !_cohenSutherlandCode(vertex);
 }
 
 static bool _boxTest(struct DSGX* gx) {
