@@ -166,7 +166,13 @@ void InputModel::addKey(QMenu* menu, mPlatform platform, int key, int shortcut, 
 	if (!item) {
 		return;
 	}
-	m_keys[qMakePair(platform, key)] = item;
+	bool loadedShortcut = false;
+	if (m_config) {
+		loadedShortcut = loadShortcuts(item);
+	}
+	if (!loadedShortcut && !m_keys.contains(qMakePair(platform, shortcut))) {
+		m_keys[qMakePair(platform, shortcut)] = item;
+	}
 }
 
 QModelIndex InputModel::addMenu(QMenu* menu, QMenu* parentMenu) {
@@ -254,11 +260,20 @@ void InputModel::updateKey(const QModelIndex& index, int keySequence) {
 
 void InputModel::updateKey(InputItem* item, int keySequence) {
 	int oldShortcut = item->shortcut();
-	if (item->functions().first || item->key() >= 0) {
+	if (item->functions().first) {
 		if (oldShortcut > 0) {
 			m_heldKeys.take(oldShortcut);
 		}
-		if (keySequence >= 0) {
+		if (keySequence > 0) {
+			m_heldKeys[keySequence] = item;
+		}
+	}
+
+	if (item->key() >= 0) {
+		if (oldShortcut > 0) {
+			m_keys.take(qMakePair(item->platform(), oldShortcut));
+		}
+		if (keySequence > 0) {
 			m_keys[qMakePair(item->platform(), keySequence)] = item;
 		}
 	}
