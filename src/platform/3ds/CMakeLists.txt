@@ -51,7 +51,7 @@ target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${M_LIBRARY} ${OS_LIB})
 
 add_custom_command(OUTPUT ${BINARY_NAME}.smdh
                    COMMAND ${BANNERTOOL} makesmdh -s "${PROJECT_NAME}" -l "${SUMMARY}" -p "endrift" -i ${CMAKE_SOURCE_DIR}/res/mgba-48.png -o ${BINARY_NAME}.smdh
-                   DEPENDS ${CMAKE_SOURCE_DIR}/res/mgba-48.png)
+                   DEPENDS ${CMAKE_SOURCE_DIR}/res/${BINARY_NAME}-48.png)
 
 add_custom_command(OUTPUT ${BINARY_NAME}.bnr
                    COMMAND ${BANNERTOOL} makebanner -ci ${CMAKE_CURRENT_SOURCE_DIR}/banner.cgfx -a ${CMAKE_CURRENT_SOURCE_DIR}/bios.wav -o ${BINARY_NAME}.bnr
