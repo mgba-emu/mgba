@@ -88,7 +88,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_logView(new LogView(&m_log))
 	, m_stateWindow(nullptr)
 	, m_screenWidget(new WindowBackground())
-	, m_logo(":/res/medusa-1024.png")
+	, m_logo(":/res/medusa-bg.jpg")
 	, m_config(config)
 	, m_inputModel(new InputModel(this))
 	, m_inputController(m_inputModel, playerId, this)
@@ -157,7 +157,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	m_screenWidget->setSizeHint(QSize(VIDEO_HORIZONTAL_PIXELS * i, VIDEO_VERTICAL_PIXELS * i));
 #endif
 	m_screenWidget->setPixmap(m_logo);
-	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
+	m_screenWidget->setCenteredAspectRatio(m_logo.width(), m_logo.height());
 	setCentralWidget(m_screenWidget);
 
 	connect(m_controller, SIGNAL(gameStarted(mCoreThread*, const QString&)), this, SLOT(gameStarted(mCoreThread*, const QString&)));
@@ -833,7 +833,7 @@ void Window::gameStopped() {
 	setWindowFilePath(QString());
 	updateTitle();
 	detachWidget(m_display);
-	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
+	m_screenWidget->setCenteredAspectRatio(m_logo.width(), m_logo.height());
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->unsetCursor();
 #ifdef M_CORE_GB
@@ -1648,6 +1648,13 @@ QSize WindowBackground::sizeHint() const {
 }
 
 void WindowBackground::setLockAspectRatio(int width, int height) {
+	m_centered = false;
+	m_aspectWidth = width;
+	m_aspectHeight = height;
+}
+
+void WindowBackground::setCenteredAspectRatio(int width, int height) {
+	m_centered = true;
 	m_aspectWidth = width;
 	m_aspectHeight = height;
 }
@@ -1659,13 +1666,21 @@ void WindowBackground::paintEvent(QPaintEvent*) {
 	}
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::SmoothPixmapTransform);
-	painter.fillRect(QRect(QPoint(), size()), Qt::white);
+	painter.fillRect(QRect(QPoint(), size()), Qt::black);
 	QSize s = size();
 	QSize ds = s;
-	if (ds.width() * m_aspectHeight > ds.height() * m_aspectWidth) {
-		ds.setWidth(ds.height() * m_aspectWidth / m_aspectHeight);
-	} else if (ds.width() * m_aspectHeight < ds.height() * m_aspectWidth) {
-		ds.setHeight(ds.width() * m_aspectHeight / m_aspectWidth);
+	if (m_centered) {
+		if (ds.width() * m_aspectHeight < ds.height() * m_aspectWidth) {
+			ds.setWidth(ds.height() * m_aspectWidth / m_aspectHeight);
+		} else if (ds.width() * m_aspectHeight > ds.height() * m_aspectWidth) {
+			ds.setHeight(ds.width() * m_aspectHeight / m_aspectWidth);
+		}
+	} else {
+		if (ds.width() * m_aspectHeight > ds.height() * m_aspectWidth) {
+			ds.setWidth(ds.height() * m_aspectWidth / m_aspectHeight);
+		} else if (ds.width() * m_aspectHeight < ds.height() * m_aspectWidth) {
+			ds.setHeight(ds.width() * m_aspectHeight / m_aspectWidth);
+		}
 	}
 	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
 	QRect full(origin, ds);
