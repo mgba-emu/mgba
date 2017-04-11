@@ -586,7 +586,7 @@ DEFINE_MULTIPLY_INSTRUCTION_XY_ARM(SMUL, cpu->gprs[rd] = x * y;)
 
 DEFINE_MULTIPLY_INSTRUCTION_WY_ARM(SMLAW,
 	int32_t dn = cpu->gprs[rn]; \
-	int64_t d = (((int64_t)cpu->gprs[rm]) * ((int64_t)y)) >> 16; \
+	int32_t d = (((int64_t)cpu->gprs[rm]) * ((int64_t)y)) >> 16; \
 	cpu->gprs[rd] = d + dn; \
 	cpu->cpsr.q = cpu->cpsr.q || ARM_V_ADDITION(d, dn, cpu->gprs[rd]);)
 
