@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 project(medusa C)
-set(BINARY_NAME medusa CACHE INTERNAL "Name of output binaries")
+set(BINARY_NAME medusa-emu CACHE INTERNAL "Name of output binaries")
 if(NOT MSVC)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-missing-field-initializers -std=c99")
 else()

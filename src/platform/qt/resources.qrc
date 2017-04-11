@@ -1,6 +1,6 @@
  <!DOCTYPE RCC><RCC version="1.0">
  <qresource>
-     <file>../../../res/medusa-1024.png</file>
+     <file>../../../res/medusa-bg.jpg</file>
      <file>../../../res/patrons.txt</file>
  </qresource>
  </RCC>

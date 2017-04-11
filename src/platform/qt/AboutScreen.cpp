@@ -17,7 +17,7 @@ AboutScreen::AboutScreen(QWidget* parent)
 {
 	m_ui.setupUi(this);
 
-	QPixmap logo(":/res/medusa-1024.png");
+	QPixmap logo(":/res/medusa-bg.jpg");
 	logo = logo.scaled(m_ui.logo->minimumSize() * devicePixelRatio(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
 	logo.setDevicePixelRatio(devicePixelRatio());
 	m_ui.logo->setPixmap(logo);
