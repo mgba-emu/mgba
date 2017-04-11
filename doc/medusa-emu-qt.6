@@ -4,13 +4,13 @@
 .\" License, v. 2.0. If a copy of the MPL was not distributed with this
 .\" file, you can obtain one at https://mozilla.org/MPL/2.0/.
 .Dd April 8, 2017
-.Dt MEDUSA-QT 6
+.Dt MEDUSA-EMU-QT 6
 .Os
 .Sh NAME
-.Nm medusa-qt
+.Nm medusa-emu-qt
 .Nd DS emulator
 .Sh SYNOPSIS
-.Nm medusa-qt
+.Nm medusa-emu-qt
 .Op Fl 123456fg
 .Op Fl b Ar biosfile
 .Op Fl l Ar loglevel
@@ -115,13 +115,13 @@ is used.
 .El
 .Sh FILES
 .Bl -tag -width Ds -compact
-.It Pa $XDG_CONFIG_HOME/medusa/config.ini
+.It Pa $XDG_CONFIG_HOME/medusa-emu/config.ini
 Default
-.Xr medusa 6
+.Xr medusa-emu 6
 configuration file.
-.It Pa $XDG_CONFIG_HOME/medusa/qt.ini
+.It Pa $XDG_CONFIG_HOME/medusa-emu/qt.ini
 Default
-.Nm medusa-qt
+.Nm medusa-emu-qt
 configuration file.
 .It Pa portable.ini
 If this file exists in the current directory,
@@ -131,7 +131,7 @@ will read
 and
 .Pa qt.ini
 from the current directory instead of
-.Pa $XDG_CONFIG_HOME/medusa .
+.Pa $XDG_CONFIG_HOME/medusa-emu .
 .El
 .Sh AUTHORS
 .An Jeffrey Pfau Aq Mt jeffrey@endrift.com
