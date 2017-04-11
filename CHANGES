@@ -1,3 +1,18 @@
+medusa alpha 2: (Future)
+Features:
+ - DS Audio: Add PSG audio
+Bugfixes:
+ - DS Video: Fix VRAM mirroring in the renderer (fixes mgba.io/i/561)
+ - DS Video: Fix extended modes 1.x screen base range (fixes mgba.io/i/568)
+ - DS GX: Fix T-repeat textures (fixes mgba.io/i/577)
+ - DS Video: Capture with alpha bit set
+ - DS Video: Bitmap sprites use alpha bit for transparent
+ - DS GX: Fix 4-color texture coordinates
+ - DS GX: Reset polygon attributes between buffer swaps
+Misc:
+ - DS: Set boot complete bit in RAM on boot (fixes mgba.io/i/576, mgba.io/i/580, mgba.io/i/586)
+ - DS Memory: Ensure DS9 I/O is 8-byte aligned
+
 0.6.0: (Future)
 Features:
  - GBA: Support printing debug strings from inside a game
@@ -85,6 +100,7 @@ Misc:
  - FFmpeg: Return false if a file fails to open
  - FFmpeg: Force MP4 files to YUV420P
  - Qt: Make "Mute" able to be bound to a key
+ - Core: Restore sleep callback
 
 medusa alpha 1: (2017-04-08)
 Features:

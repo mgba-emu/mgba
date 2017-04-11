@@ -46,6 +46,10 @@ struct DSAudioChannel {
 	uint32_t period;
 	int16_t sample;
 
+	int duty;
+	bool high;
+	uint16_t lfsr;
+
 	int adpcmOffset;
 
 	int16_t adpcmStartSample;

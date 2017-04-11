@@ -746,7 +746,7 @@ void DSVideoSoftwareRendererDrawBackgroundExt0(struct GBAVideoSoftwareRenderer* 
 void DSVideoSoftwareRendererDrawBackgroundExt1(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY) {
 	BACKGROUND_BITMAP_INIT;
 
-	uint32_t screenBase = (background->screenBase & 0x1F00) * 8;
+	uint32_t screenBase = (background->screenBase & 0xFF00) * 8;
 	uint8_t color;
 	int width, height;
 	switch (background->size) {
@@ -803,7 +803,7 @@ void DSVideoSoftwareRendererDrawBackgroundExt1(struct GBAVideoSoftwareRenderer* 
 void DSVideoSoftwareRendererDrawBackgroundExt2(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY) {
 	BACKGROUND_BITMAP_INIT;
 
-	uint32_t screenBase = (background->screenBase & 0x1F00) * 4;
+	uint32_t screenBase = (background->screenBase & 0xFF00) * 4;
 	uint32_t color;
 	int width, height;
 	switch (background->size) {

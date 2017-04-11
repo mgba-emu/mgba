@@ -164,7 +164,6 @@ Footnotes
 Missing features on DS are
 
 - Audio:
-	- PSG audio
 	- Master audio settings
 	- Sound output capture
 	- Microphone

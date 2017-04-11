@@ -398,7 +398,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 	blip_set_rates(core->getAudioChannel(core, 0), core->frequency(core), 32768);
 	blip_set_rates(core->getAudioChannel(core, 1), core->frequency(core), 32768);
 
-	core->setRumble(core, &rumble);
+	core->setPeripheral(core, mPERIPH_RUMBLE, &rumble);
 
 	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
@@ -409,8 +409,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 
 #ifdef M_CORE_GBA
 	if (core->platform(core) == PLATFORM_GBA) {
-		struct GBA* gba = core->board;
-		gba->luminanceSource = &lux;
+		core->setPeripheral(core, mPERIPH_GBA_LUMINANCE, &lux);
 
 		const char* sysDir = 0;
 		if (core->opts.useBios && environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {

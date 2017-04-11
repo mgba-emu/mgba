@@ -203,11 +203,11 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	rotation.d.readTiltX = _readTiltX;
 	rotation.d.readTiltY = _readTiltY;
 	rotation.d.readGyroZ = _readGyroZ;
-	runner->core->setRotation(runner->core, &rotation.d);
+	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation.d);
 
 	rumble.d.setRumble = _setRumble;
 	CircleBufferInit(&rumble.history, RUMBLE_PWM);
-	runner->core->setRumble(runner->core, &rumble.d);
+	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d);
 
 	frameLimiter = true;
 	backdrop = vita2d_load_PNG_buffer(_binary_backdrop_png_start);

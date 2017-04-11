@@ -99,7 +99,6 @@ struct GBA {
 
 	struct mAVStream* stream;
 	struct mKeyCallback* keyCallback;
-	struct mStopCallback* stopCallback;
 	struct mCoreCallbacksList coreCallbacks;
 
 	enum GBAIdleLoopOptimization idleOptimization;
