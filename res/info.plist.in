@@ -44,6 +44,17 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>gb</string>
+				<string>gbc</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Game Boy ROM Image</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
 	</array>
 </dict>
 </plist>
