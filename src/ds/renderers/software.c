@@ -650,7 +650,13 @@ static void DSVideoSoftwareRendererPutPixels(struct DSVideoRenderer* renderer, s
 	localX = x; \
 	localY = y;
 
-#define EXT_0_NO_MOSAIC(COORD) \
+#define EXT_0_EXT_PAL \
+	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
+	palette = &mainPalette[paletteData];
+
+#define EXT_0_PAL palette = mainPalette;
+
+#define EXT_0_NO_MOSAIC(COORD, PAL) \
 	COORD \
 	uint32_t screenBase = background->screenBase + (localX >> 10) + (((localY >> 6) & 0xFE0) << background->size); \
 	uint16_t* screenBlock = renderer->d.vramBG[screenBase >> VRAM_BLOCK_OFFSET]; \
@@ -658,8 +664,7 @@ static void DSVideoSoftwareRendererPutPixels(struct DSVideoRenderer* renderer, s
 		continue; \
 	} \
 	LOAD_16(mapData, screenBase & (VRAM_BLOCK_MASK - 1), screenBlock); \
-	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
-	palette = &mainPalette[paletteData]; \
+	PAL; \
 	if (GBA_TEXT_MAP_VFLIP(mapData)) { \
 		localY = 0x7FF - localY; \
 	} \
@@ -673,38 +678,54 @@ static void DSVideoSoftwareRendererPutPixels(struct DSVideoRenderer* renderer, s
 	} \
 	pixelData = ((uint8_t*) vram)[charBase & VRAM_BLOCK_MASK];
 
-#define EXT_0_MOSAIC(COORD) \
+#define EXT_0_MOSAIC(COORD, PAL) \
 		if (!mosaicWait) { \
-			EXT_0_NO_MOSAIC(COORD) \
+			EXT_0_NO_MOSAIC(COORD, PAL) \
 			mosaicWait = mosaicH; \
 		} else { \
 			--mosaicWait; \
 		}
 
-#define EXT_0_LOOP(MOSAIC, COORD, BLEND, OBJWIN) \
+#define EXT_0_LOOP(MOSAIC, COORD, PAL, BLEND, OBJWIN) \
 	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) { \
 		x += background->dx; \
 		y += background->dy; \
 		\
 		uint32_t current = *pixel; \
-		MOSAIC(COORD) \
+		MOSAIC(COORD, PAL) \
 		if (pixelData) { \
 			COMPOSITE_256_ ## OBJWIN (BLEND, 0); \
 		} \
 	}
 
 #define DRAW_BACKGROUND_EXT_0(BLEND, OBJWIN) \
-	if (background->overflow) { \
-		if (mosaicH > 1) { \
-			EXT_0_LOOP(EXT_0_MOSAIC, EXT_0_COORD_OVERFLOW, BLEND, OBJWIN); \
+	if (background->extPalette) { \
+		if (background->overflow) { \
+			if (mosaicH > 1) { \
+				EXT_0_LOOP(EXT_0_MOSAIC, EXT_0_COORD_OVERFLOW, EXT_0_EXT_PAL, BLEND, OBJWIN); \
+			} else { \
+				EXT_0_LOOP(EXT_0_NO_MOSAIC, EXT_0_COORD_OVERFLOW, EXT_0_EXT_PAL, BLEND, OBJWIN); \
+			} \
 		} else { \
-			EXT_0_LOOP(EXT_0_NO_MOSAIC, EXT_0_COORD_OVERFLOW, BLEND, OBJWIN); \
+			if (mosaicH > 1) { \
+				EXT_0_LOOP(EXT_0_MOSAIC, EXT_0_COORD_NO_OVERFLOW, EXT_0_EXT_PAL, BLEND, OBJWIN); \
+			} else { \
+				EXT_0_LOOP(EXT_0_NO_MOSAIC, EXT_0_COORD_NO_OVERFLOW, EXT_0_EXT_PAL, BLEND, OBJWIN); \
+			} \
 		} \
 	} else { \
-		if (mosaicH > 1) { \
-			EXT_0_LOOP(EXT_0_MOSAIC, EXT_0_COORD_NO_OVERFLOW, BLEND, OBJWIN); \
+		if (background->overflow) { \
+			if (mosaicH > 1) { \
+				EXT_0_LOOP(EXT_0_MOSAIC, EXT_0_COORD_OVERFLOW, EXT_0_PAL, BLEND, OBJWIN); \
+			} else { \
+				EXT_0_LOOP(EXT_0_NO_MOSAIC, EXT_0_COORD_OVERFLOW, EXT_0_PAL, BLEND, OBJWIN); \
+			} \
 		} else { \
-			EXT_0_LOOP(EXT_0_NO_MOSAIC, EXT_0_COORD_NO_OVERFLOW, BLEND, OBJWIN); \
+			if (mosaicH > 1) { \
+				EXT_0_LOOP(EXT_0_MOSAIC, EXT_0_COORD_NO_OVERFLOW, EXT_0_PAL, BLEND, OBJWIN); \
+			} else { \
+				EXT_0_LOOP(EXT_0_NO_MOSAIC, EXT_0_COORD_NO_OVERFLOW, EXT_0_PAL, BLEND, OBJWIN); \
+			} \
 		} \
 	}
 
@@ -718,7 +739,10 @@ void DSVideoSoftwareRendererDrawBackgroundExt0(struct GBAVideoSoftwareRenderer* 
 		mainPalette = background->variantPalette;
 	}
 	if (!mainPalette) {
-		return;
+		mainPalette = renderer->normalPalette;
+		if (variant) {
+			mainPalette = renderer->variantPalette;
+		}
 	}
 	int paletteData;
 
