@@ -10,6 +10,16 @@
 
 mLOG_DEFINE_CATEGORY(DS_IPC, "DS IPC", "ds.ipc");
 
+static void _parseIPC(struct DS* ds, uint32_t value) {
+	switch (value & 0x1F) {
+	case 0x0B: // Savedata
+		if (value & ~0x3F && ds->memory.slot1.savedataType == DS_SAVEDATA_AUTODETECT) {
+			DSSlot1ConfigureSPI(ds, value >> 6);
+		}
+		break;
+	}
+}
+
 void DSIPCWriteSYNC(struct ARMCore* remoteCpu, uint16_t* remoteIo, int16_t value) {
 	remoteIo[DS_REG_IPCSYNC >> 1] &= 0xFFF0;
 	remoteIo[DS_REG_IPCSYNC >> 1] |= (value >> 8) & 0x0F;
@@ -41,6 +51,9 @@ void DSIPCWriteFIFO(struct DSCommon* dscore, int32_t value) {
 		return;
 	}
 	mLOG(DS_IPC, DEBUG, "Written from ARM%c: %08X", (dscore == &dscore->p->ds7) ? '7' : '9', value);
+	if (!dscore->p->isHomebrew && dscore == &dscore->p->ds9) {
+		_parseIPC(dscore->p, value);
+	}
 	CircleBufferWrite32(&dscore->ipc->fifo, value);
 	size_t fullness = CircleBufferSize(&dscore->ipc->fifo);
 	if (fullness == 4) {

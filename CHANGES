@@ -2,6 +2,7 @@ medusa alpha 2: (Future)
 Features:
  - DS Audio: Add PSG audio
  - DS Video: Add display capture blending
+ - DS Slot-1: Improve savedata setup via IPC sniffing
 Bugfixes:
  - DS Video: Fix VRAM mirroring in the renderer (fixes mgba.io/i/561)
  - DS Video: Fix extended modes 1.x screen base range (fixes mgba.io/i/568)

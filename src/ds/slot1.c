@@ -37,6 +37,7 @@ void DSSlot1Reset(struct DS* ds) {
 	ds->memory.slot1.spiCommand = 0;
 	ds->memory.slot1.spiHoldEnabled = 0;
 	ds->memory.slot1.dmaSource = -1;
+	ds->memory.slot1.spiAddressingBits = 16;
 }
 
 static void _scheduleTransfer(struct DS* ds, struct mTiming* timing, uint32_t cyclesLate) {
@@ -223,20 +224,8 @@ static uint8_t _slot1SPIAutodetect(struct DSCommon* dscore, uint8_t datum) {
 		dscore->p->memory.slot1.spiAddress <<= 8;
 		dscore->p->memory.slot1.spiAddress |= datum;
 		dscore->p->memory.slot1.spiAddressingRemaining -= 8;
-		if (dscore->p->memory.slot1.spiAddressingPc >= 0) {
-			dscore->p->memory.slot1.spiAddressingPc = dscore->cpu->gprs[ARM_PC];
-		}
 		return 0xFF;
-	} else if (dscore->cpu->gprs[ARM_PC] == dscore->p->memory.slot1.spiAddressingPc) {
-		dscore->p->memory.slot1.spiAddress <<= 8;
-		dscore->p->memory.slot1.spiAddress |= datum;
-		dscore->p->memory.slot1.savedataType = DS_SAVEDATA_FLASH;
-		return 0xFF;
-	} else {
-		if (dscore->p->memory.slot1.spiAddress) {
-			// Cease autodetection
-			dscore->p->memory.slot1.spiAddressingPc = -1;
-		}
+	} else if (dscore->p->isHomebrew) {
 		if (!_slot1GuaranteeSize(&dscore->p->memory.slot1)) {
 			return 0xFF;
 		}
@@ -253,6 +242,29 @@ static uint8_t _slot1SPIAutodetect(struct DSCommon* dscore, uint8_t datum) {
 	return 0xFF;
 }
 
+static uint8_t _slot1SPIEEPROM(struct DSCommon* dscore, uint8_t datum) {
+	DSSlot1AUXSPICNT control = dscore->memory.io[DS_REG_AUXSPICNT >> 1];
+
+	if (dscore->p->memory.slot1.spiAddressingRemaining) {
+		dscore->p->memory.slot1.spiAddress <<= 8;
+		dscore->p->memory.slot1.spiAddress |= datum;
+		dscore->p->memory.slot1.spiAddressingRemaining -= 8;
+		return 0xFF;
+	}
+
+	switch (dscore->p->memory.slot1.spiCommand) {
+	case 0x03: // RDLO
+	case 0x0B: // RDHI
+		return dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress++];
+	case 0x02: // WRLO
+	case 0x0A: // WRHI
+		dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress] = datum;
+		++dscore->p->memory.slot1.spiAddress;
+		break;
+	}
+	return 0xFF;
+}
+
 static uint8_t _slot1SPIFlash(struct DSCommon* dscore, uint8_t datum) {
 	DSSlot1AUXSPICNT control = dscore->memory.io[DS_REG_AUXSPICNT >> 1];
 
@@ -261,7 +273,7 @@ static uint8_t _slot1SPIFlash(struct DSCommon* dscore, uint8_t datum) {
 		dscore->p->memory.slot1.spiAddress |= datum;
 		dscore->p->memory.slot1.spiAddressingRemaining -= 8;
 		return 0xFF;
-	} else {
+	} else if (dscore->p->isHomebrew) {
 		if (!_slot1GuaranteeSize(&dscore->p->memory.slot1)) {
 			return 0xFF;
 		}
@@ -303,15 +315,12 @@ static void _slot1SPI(struct mTiming* timing, void* context, uint32_t cyclesLate
 		if (oldValue == 0x0B && dscore->p->memory.slot1.savedataType == DS_SAVEDATA_AUTODETECT) {
 			dscore->p->memory.slot1.savedataType = DS_SAVEDATA_EEPROM512;
 		}
-		dscore->p->memory.slot1.spiAddress = 0;
-		switch (dscore->p->memory.slot1.savedataType) {
-		case DS_SAVEDATA_FLASH:
-			dscore->p->memory.slot1.spiAddressingRemaining = 24;
-			break;
-		default:
-			dscore->p->memory.slot1.spiAddressingRemaining = 16;
-			break;
+		if ((oldValue & 0x08) && dscore->p->memory.slot1.savedataType == DS_SAVEDATA_EEPROM512) {
+			dscore->p->memory.slot1.spiAddress = 1;
+		} else {
+			dscore->p->memory.slot1.spiAddress = 0;
 		}
+		dscore->p->memory.slot1.spiAddressingRemaining = dscore->p->memory.slot1.spiAddressingBits;
 	} else {
 		switch (dscore->p->memory.slot1.spiCommand) {
 		case 0x04: // WRDI
@@ -330,6 +339,10 @@ static void _slot1SPI(struct mTiming* timing, void* context, uint32_t cyclesLate
 				break;
 			case DS_SAVEDATA_FLASH:
 				newValue = _slot1SPIFlash(dscore, oldValue);
+				break;
+			case DS_SAVEDATA_EEPROM:
+			case DS_SAVEDATA_EEPROM512:
+				newValue = _slot1SPIEEPROM(dscore, oldValue);
 				break;
 			default:
 				mLOG(DS_SLOT1, STUB, "Unimplemented SPI write: %04X:%02X", control, oldValue);
@@ -378,6 +391,27 @@ static bool _slot1GuaranteeSize(struct DSSlot1* slot1) {
 		slot1->spiData = slot1->spiVf->map(slot1->spiVf, slot1->spiVf->size(slot1->spiVf), MAP_WRITE);
 	}
 	return slot1->spiData;
+}
+
+void DSSlot1ConfigureSPI(struct DS* ds, uint32_t paramPtr) {
+	struct ARMCore* cpu = ds->ds7.cpu;
+	uint32_t saveParams = cpu->memory.load32(cpu, paramPtr + 4, NULL);
+	uint32_t size = 1 << ((saveParams & 0xFF00) >> 8);
+	if ((saveParams & 0xFF) == 2) {
+		ds->memory.slot1.savedataType = DS_SAVEDATA_FLASH;
+	} else {
+		ds->memory.slot1.savedataType = DS_SAVEDATA_EEPROM;
+	}
+	if (size >= 0x10000) {
+		ds->memory.slot1.spiAddressingBits = 24;
+	} else if (size <= 0x200) {
+		ds->memory.slot1.spiAddressingBits = 8;
+		ds->memory.slot1.savedataType = DS_SAVEDATA_EEPROM512;
+	} else {
+		ds->memory.slot1.spiAddressingBits = 16;
+	}
+	ds->memory.slot1.spiAddress = size;
+	_slot1GuaranteeSize(&ds->memory.slot1);
 }
 
 void DSSlot1ScheduleDMA(struct DSCommon* dscore, int number, struct GBADMA* info) {

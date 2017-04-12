@@ -55,7 +55,7 @@ struct DSSlot1 {
 	uint8_t statusReg;
 	int spiAddressingRemaining;
 	uint32_t spiAddress;
-	int32_t spiAddressingPc;
+	int spiAddressingBits;
 
 	uint8_t* spiData;
 	struct VFile* spiVf;
@@ -70,6 +70,7 @@ void DSSlot1Reset(struct DS* ds);
 DSSlot1AUXSPICNT DSSlot1Configure(struct DS* ds, DSSlot1AUXSPICNT config);
 DSSlot1ROMCNT DSSlot1Control(struct DS* ds, DSSlot1ROMCNT control);
 void DSSlot1WriteSPI(struct DSCommon* dscore, uint8_t datum);
+void DSSlot1ConfigureSPI(struct DS* ds, uint32_t paramPtr);
 
 struct GBADMA;
 void DSSlot1ScheduleDMA(struct DSCommon* dscore, int number, struct GBADMA* info);
