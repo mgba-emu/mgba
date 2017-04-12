@@ -401,7 +401,7 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 					for (x = softwareRenderer->start; x < softwareRenderer->end; ++x) {
 						color_t color = scanline[x];
 						if (color & 0xFC000000) {
-							if (softwareRenderer->bg[0].target1) {
+							if (softwareRenderer->bg[0].target1 && GBAWindowControlIsBlendEnable(softwareRenderer->currentWindow.packed)) {
 								if (softwareRenderer->blendEffect == BLEND_DARKEN) {
 									color = _darken(color, softwareRenderer->bldy) | (color & 0xFF000000);
 								} else if (softwareRenderer->blendEffect == BLEND_BRIGHTEN) {
