@@ -570,7 +570,6 @@ bool DSLoadBIOS(struct DS* ds, struct VFile* vf) {
 
 bool DSLoadFirmware(struct DS* ds, struct VFile* vf) {
 	size_t size = vf->size(vf);
-	void* data = NULL;
 	if (!DSIsFirmware(vf)) {
 		return false;
 	}
