@@ -57,8 +57,8 @@ GameController::GameController(QObject* parent)
 	, m_turboForced(false)
 	, m_turboSpeed(-1)
 	, m_wasPaused(false)
-	, m_audioChannels{ true, true, true, true, true, true }
-	, m_videoLayers{ true, true, true, true, true }
+	, m_audioChannels()
+	, m_videoLayers()
 	, m_autofire{}
 	, m_autofireStatus{}
 	, m_inputController(nullptr)
@@ -90,35 +90,17 @@ GameController::GameController(QObject* parent)
 		context->core->setPeripheral(context->core, mPERIPH_ROTATION, controller->m_inputController->rotationSource());
 		context->core->setPeripheral(context->core, mPERIPH_RUMBLE, controller->m_inputController->rumble());
 
-#ifdef M_CORE_GBA
-		GBA* gba = static_cast<GBA*>(context->core->board);
-#endif
-#ifdef M_CORE_GB
-		GB* gb = static_cast<GB*>(context->core->board);
-#endif
+		for (size_t i = 0; i < controller->m_audioChannels.size(); ++i) {
+			context->core->enableAudioChannel(context->core, i, controller->m_audioChannels[i]);
+		}
+		for (size_t i = 0; i < controller->m_videoLayers.size(); ++i) {
+			context->core->enableVideoLayer(context->core, i, controller->m_videoLayers[i]);
+		}
+
 		switch (context->core->platform(context->core)) {
 #ifdef M_CORE_GBA
 		case PLATFORM_GBA:
 			context->core->setPeripheral(context->core, mPERIPH_GBA_LUMINANCE, &controller->m_lux);
-			gba->audio.psg.forceDisableCh[0] = !controller->m_audioChannels[0];
-			gba->audio.psg.forceDisableCh[1] = !controller->m_audioChannels[1];
-			gba->audio.psg.forceDisableCh[2] = !controller->m_audioChannels[2];
-			gba->audio.psg.forceDisableCh[3] = !controller->m_audioChannels[3];
-			gba->audio.forceDisableChA = !controller->m_audioChannels[4];
-			gba->audio.forceDisableChB = !controller->m_audioChannels[5];
-			gba->video.renderer->disableBG[0] = !controller->m_videoLayers[0];
-			gba->video.renderer->disableBG[1] = !controller->m_videoLayers[1];
-			gba->video.renderer->disableBG[2] = !controller->m_videoLayers[2];
-			gba->video.renderer->disableBG[3] = !controller->m_videoLayers[3];
-			gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];
-			break;
-#endif
-#ifdef M_CORE_GB
-		case PLATFORM_GB:
-			gb->audio.forceDisableCh[0] = !controller->m_audioChannels[0];
-			gb->audio.forceDisableCh[1] = !controller->m_audioChannels[1];
-			gb->audio.forceDisableCh[2] = !controller->m_audioChannels[2];
-			gb->audio.forceDisableCh[3] = !controller->m_audioChannels[3];
 			break;
 #endif
 		default:
@@ -866,47 +848,13 @@ void GameController::setAudioChannelEnabled(int channel, bool enable) {
 	if (channel > 5 || channel < 0) {
 		return;
 	}
-#ifdef M_CORE_GBA
-	GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
-#endif
-#ifdef M_CORE_GB
-	GB* gb = static_cast<GB*>(m_threadContext.core->board);
-#endif
+	m_audioChannels.reserve(channel + 1);
+	while (m_audioChannels.size() <= channel) {
+		m_audioChannels.append(true);
+	}
 	m_audioChannels[channel] = enable;
 	if (isLoaded()) {
-		switch (channel) {
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-			switch (m_threadContext.core->platform(m_threadContext.core)) {
-#ifdef M_CORE_GBA
-			case PLATFORM_GBA:
-				gba->audio.psg.forceDisableCh[channel] = !enable;
-				break;
-#endif
-#ifdef M_CORE_GB
-			case PLATFORM_GB:
-				gb->audio.forceDisableCh[channel] = !enable;
-				break;
-#endif
-			default:
-				break;
-			}
-			break;
-#ifdef M_CORE_GBA
-		case 4:
-			if (m_threadContext.core->platform(m_threadContext.core) == PLATFORM_GBA) {
-				gba->audio.forceDisableChA = !enable;
-			}
-			break;
-		case 5:
-			if (m_threadContext.core->platform(m_threadContext.core) == PLATFORM_GBA) {
-				gba->audio.forceDisableChB = !enable;
-			}
-			break;
-#endif
-		}
+		m_threadContext.core->enableAudioChannel(m_threadContext.core, channel, enable);
 	}
 }
 
@@ -925,23 +873,14 @@ void GameController::setVideoLayerEnabled(int layer, bool enable) {
 	if (layer > 4 || layer < 0) {
 		return;
 	}
-	m_videoLayers[layer] = enable;
-#ifdef M_CORE_GBA
-	if (isLoaded() && m_threadContext.core->platform(m_threadContext.core) == PLATFORM_GBA) {
-		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
-		switch (layer) {
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-			gba->video.renderer->disableBG[layer] = !enable;
-			break;
-		case 4:
-			gba->video.renderer->disableOBJ = !enable;
-			break;
-		}
+	m_videoLayers.reserve(layer + 1);
+	while (m_videoLayers.size() <= layer) {
+		m_videoLayers.append(true);
 	}
-#endif
+	m_videoLayers[layer] = enable;
+	if (isLoaded()) {
+		m_threadContext.core->enableVideoLayer(m_threadContext.core, layer, enable);
+	}
 }
 
 void GameController::setFPSTarget(float fps) {

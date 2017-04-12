@@ -222,8 +222,8 @@ private:
 
 	std::shared_ptr<mTileCache> m_tileCache;
 
-	bool m_audioChannels[6];
-	bool m_videoLayers[5];
+	QList<bool> m_audioChannels;
+	QList<bool> m_videoLayers;
 
 	bool m_autofire[GBA_KEY_MAX];
 	int m_autofireStatus[GBA_KEY_MAX];
