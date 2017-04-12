@@ -92,7 +92,7 @@ void ConfigOption::setValue(const QVariant& value) {
 
 ConfigController::ConfigController(QObject* parent)
 	: QObject(parent)
-	, m_opts()
+	, m_opts{}
 {
 	char path[PATH_MAX];
 	mCoreConfigDirectory(path, sizeof(path));
