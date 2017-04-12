@@ -223,6 +223,7 @@ static void _performCapture(struct DSVideo* video, int y) {
 	}
 	uint16_t* vram = &video->vram[0x10000 * block];
 	const color_t* pixelsA;
+	const uint16_t* srcB = NULL;
 	color_t pixels[DS_VIDEO_HORIZONTAL_PIXELS];
 	int width = DS_VIDEO_HORIZONTAL_PIXELS;
 	switch (DSRegisterDISPCAPCNTGetCaptureSize(dispcap)) {
@@ -249,26 +250,95 @@ static void _performCapture(struct DSVideo* video, int y) {
 		pixelsA = pixels;
 	}
 
+	if (DSRegisterDISPCAPCNTGetCaptureSource(dispcap) > 0) {
+		DSRegisterDISPCNT dispcnt = video->p->ds9.memory.io[DS9_REG_A_DISPCNT_HI >> 1] << 16;
+		int block = DSRegisterDISPCNTGetVRAMBlock(dispcnt);
+		if (!video->p->memory.vramMode[block][4]) {
+			return;
+		}
+		srcB = &video->vram[0x10000 * block];
+	}
+
 	uint32_t base = DSRegisterDISPCAPCNTGetWriteOffset(dispcap) * 0x8000;
-	uint16_t pixel;
+	uint32_t readBase = DSRegisterDISPCAPCNTGetReadOffset(dispcap) * 0x8000;
+
+	unsigned weightA = DSRegisterDISPCAPCNTGetEVA(dispcap);
+	unsigned weightB = DSRegisterDISPCAPCNTGetEVB(dispcap);
+
+	if (weightA > 0x10) {
+		weightA = 0x10;
+	}
+	if (weightB > 0x10) {
+		weightB = 0x10;
+	}
+
+	uint32_t pixel;
 	int x;
-	// TODO: Blending
-	for (x = 0; x < width; ++x) {
-		color_t colorA = pixelsA[x];
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
-		pixel = colorA & 0x1F;
-		pixel |= (colorA & 0xFFC0) >> 1;
-#else
-		pixel = colorA;
-#endif
-#else
-		pixel = (colorA >> 9) & 0x7C00;
-		pixel |= (colorA >> 6) & 0x03E0;
-		pixel |= (colorA >> 3) & 0x001F;
-#endif
-		pixel |= 0x8000;
-		STORE_16(pixel, ((x + y * DS_VIDEO_HORIZONTAL_PIXELS) * 2 + base) & 0x1FFFE, vram);
+	switch (DSRegisterDISPCAPCNTGetCaptureSource(dispcap)) {
+	case 0:
+		for (x = 0; x < width; ++x) {
+			color_t colorA = pixelsA[x];
+	#ifdef COLOR_16_BIT
+	#ifdef COLOR_5_6_5
+			pixel = colorA & 0x1F;
+			pixel |= (colorA & 0xFFC0) >> 1;
+	#else
+			pixel = colorA;
+	#endif
+	#else
+			pixel = (colorA >> 9) & 0x7C00;
+			pixel |= (colorA >> 6) & 0x03E0;
+			pixel |= (colorA >> 3) & 0x001F;
+	#endif
+			pixel |= 0x8000;
+			STORE_16(pixel, ((x + y * DS_VIDEO_HORIZONTAL_PIXELS) * 2 + base) & 0x1FFFE, vram);
+		}
+		break;
+	case 1:
+		for (x = 0; x < width; ++x) {
+			LOAD_16(pixel, ((x + y * DS_VIDEO_HORIZONTAL_PIXELS) * 2 + readBase) & 0x1FFFE, srcB);
+			STORE_16(pixel, ((x + y * DS_VIDEO_HORIZONTAL_PIXELS) * 2 + base) & 0x1FFFE, vram);
+		}
+		break;
+	case 2:
+	case 3:
+		for (x = 0; x < width; ++x) {
+			color_t colorA = pixelsA[x];
+			uint16_t colorB;
+			LOAD_16(colorB, ((x + y * DS_VIDEO_HORIZONTAL_PIXELS) * 2 + readBase) & 0x1FFFE, srcB);
+	#ifdef COLOR_16_BIT
+	#ifdef COLOR_5_6_5
+			pixel = colorA & 0x1F;
+			pixel |= (colorA & 0xFFC0) >> 1;
+	#else
+			pixel = colorA;
+	#endif
+	#else
+			pixel = (colorA >> 9) & 0x7C00;
+			pixel |= (colorA >> 6) & 0x03E0;
+			pixel |= (colorA >> 3) & 0x001F;
+	#endif
+
+			uint32_t a = pixel & 0x7C1F;
+			uint32_t b = colorB & 0x7C1F;
+			a |= (pixel & 0x3E0) << 16;
+			b |= (colorB & 0x3E0) << 16;
+			pixel = ((a * weightA + b * weightB) / 16);
+			if (pixel & 0x04000000) {
+				pixel = (pixel & ~0x07E00000) | 0x03E00000;
+			}
+			if (pixel & 0x0020) {
+				pixel = (pixel & ~0x003F) | 0x001F;
+			}
+			if (pixel & 0x8000) {
+				pixel = (pixel & ~0xF800) | 0x7C00;
+			}
+			pixel = (pixel & 0x7C1F) | ((pixel >> 16) & 0x03E0);
+
+			pixel |= 0x8000;
+			STORE_16(pixel, ((x + y * DS_VIDEO_HORIZONTAL_PIXELS) * 2 + base) & 0x1FFFE, vram);
+		}
+		break;
 	}
 }
 

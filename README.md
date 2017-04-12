@@ -183,7 +183,6 @@ Missing features on DS are
 	- Vector matrix memory mapping
 	- Polygon/vertex RAM entry count memory mapping
 	- Rendered line count memory mapping
-	- Video output capture blending
 	- Horizontal scrolling on 3D background
 	- Some bitmap OBJ mappings
 	- DMA FIFO backgrounds
