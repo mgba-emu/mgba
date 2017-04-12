@@ -291,13 +291,13 @@ static void _performCapture(struct DSVideo* video, int y) {
 			pixel |= (colorA >> 3) & 0x001F;
 	#endif
 			pixel |= 0x8000;
-			STORE_16(pixel, ((x + y * DS_VIDEO_HORIZONTAL_PIXELS) * 2 + base) & 0x1FFFE, vram);
+			STORE_16(pixel, ((x + y * width) * 2 + base) & 0x1FFFE, vram);
 		}
 		break;
 	case 1:
 		for (x = 0; x < width; ++x) {
 			LOAD_16(pixel, ((x + y * DS_VIDEO_HORIZONTAL_PIXELS) * 2 + readBase) & 0x1FFFE, srcB);
-			STORE_16(pixel, ((x + y * DS_VIDEO_HORIZONTAL_PIXELS) * 2 + base) & 0x1FFFE, vram);
+			STORE_16(pixel, ((x + y * width) * 2 + base) & 0x1FFFE, vram);
 		}
 		break;
 	case 2:
@@ -336,7 +336,7 @@ static void _performCapture(struct DSVideo* video, int y) {
 			pixel = (pixel & 0x7C1F) | ((pixel >> 16) & 0x03E0);
 
 			pixel |= 0x8000;
-			STORE_16(pixel, ((x + y * DS_VIDEO_HORIZONTAL_PIXELS) * 2 + base) & 0x1FFFE, vram);
+			STORE_16(pixel, ((x + y * width) * 2 + base) & 0x1FFFE, vram);
 		}
 		break;
 	}
