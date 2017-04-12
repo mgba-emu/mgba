@@ -12,6 +12,7 @@ Features:
  - Add option for whether rewinding restores save games
  - Qt: German translation (by Lothar Serra Mari)
  - Savestates now contain any RTC override data
+ - Command line ability to override configuration values
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
