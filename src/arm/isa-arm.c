@@ -403,9 +403,11 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 
 #define DEFINE_MULTIPLY_INSTRUCTION_WY_ARM(NAME, BODY) \
 	DEFINE_MULTIPLY_INSTRUCTION_3_ARM(NAME ## B, \
+		UNUSED(x); \
 		y = ARM_SXT_16(cpu->gprs[rs]); \
 		BODY) \
 	DEFINE_MULTIPLY_INSTRUCTION_3_ARM(NAME ## T, \
+		UNUSED(x); \
 		y = ARM_SXT_16(cpu->gprs[rs] >> 16); \
 		BODY) \
 
