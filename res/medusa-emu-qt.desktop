@@ -1,10 +1,10 @@
 [Desktop Entry]
 Version=1.0
-Icon=medusa
-Exec=medusa-qt %f
+Icon=medusa-emu
+Exec=medusa-emu-qt %f
 Terminal=false
 Type=Application
-Name=medusa
+Name=medusa-emu
 GenericName=DS/Game Boy Advance/Game Boy Emulator
 Comment=Nintendo DS/Game Boy Advance/Game Boy Emulator
 Categories=Game;Emulator;

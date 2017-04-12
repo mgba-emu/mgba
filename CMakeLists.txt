@@ -77,6 +77,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 include(GNUInstallDirs)
+string(REPLACE "${PROJECT_NAME}" "${BINARY_NAME}" CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_DOCDIR}")
 
 set(LIBDIR "${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Installed library directory")
 mark_as_advanced(LIBDIR)
