@@ -123,6 +123,8 @@ struct DS {
 
 	struct mTimingEvent divEvent;
 	struct mTimingEvent sqrtEvent;
+
+	bool isHomebrew;
 };
 
 struct DSCartridge {
@@ -158,6 +160,15 @@ struct DSCartridge {
 	uint32_t iconOffset;
 	uint16_t secureAreaCrc16;
 	uint16_t secureAreaDelay;
+	uint32_t arm9Autoload;
+	uint32_t arm7Autoload;
+	uint8_t secureAreaDisable[8];
+	uint32_t usedSize;
+	uint32_t romHeaderSize;
+	uint8_t reserved2[56];
+	uint8_t logo[156];
+	uint16_t logoCrc16;
+	uint16_t headerCrc16;
 	// TODO: Fill in more
 	// And ROM data...
 };

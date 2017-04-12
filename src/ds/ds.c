@@ -294,6 +294,7 @@ void DS7Reset(struct ARMCore* cpu) {
 	DS7IOInit(ds);
 
 	DSConfigureWRAM(&ds->memory, 3);
+	ds->isHomebrew = false;
 
 	struct DSCartridge* header = ds->romVf->map(ds->romVf, sizeof(*header), MAP_READ);
 	if (header) {
@@ -304,6 +305,9 @@ void DS7Reset(struct ARMCore* cpu) {
 		ds->memory.ram[0x3FFC40 >> 2] = 1;
 		memcpy(&ds->memory.ram[0x3FFE00 >> 2], header, 0x170);
 		DS7IOWrite32(ds, DS_REG_ROMCNT_LO, header->busTiming | 0x2700000);
+
+		ds->isHomebrew = memcmp(&header->logoCrc16, DS_ROM_MAGIC, sizeof(header->logoCrc16));
+
 		// TODO: Error check
 		ds->romVf->seek(ds->romVf, header->arm7Offset, SEEK_SET);
 		uint32_t base = header->arm7Base;

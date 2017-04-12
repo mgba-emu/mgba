@@ -17,6 +17,7 @@ Misc:
  - ARM9: Implement SMLAW<y> and SMULW<y>
  - Qt: Add .nds files to the extension list in Info.plist
  - ARM9: Implement STRD/LDRD
+ - DS: Attempt to detect if a game is homebrew
 
 0.6.0: (Future)
 Features:
