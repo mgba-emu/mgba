@@ -48,7 +48,6 @@ struct mCheat {
 mLOG_DECLARE_CATEGORY(CHEATS);
 
 DECLARE_VECTOR(mCheatList, struct mCheat);
-DECLARE_VECTOR(StringList, char*);
 
 struct mCheatDevice;
 struct mCheatSet {
