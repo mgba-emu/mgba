@@ -12,6 +12,7 @@ Bugfixes:
  - DS GX: Fix 4-color texture coordinates
  - DS GX: Reset polygon attributes between buffer swaps
  - DS Video: Fix blend bit on windows for 3D layer (fixes mgba.io/i/611)
+ - DS GX: Hack around writing to a full FIFO that has a swap pending (fixes mgba.io/i/608)
 Misc:
  - DS: Set boot complete bit in RAM on boot (fixes mgba.io/i/576, mgba.io/i/580, mgba.io/i/586)
  - DS Memory: Ensure DS9 I/O is 8-byte aligned

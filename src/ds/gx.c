@@ -1374,6 +1374,11 @@ static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
 		mLOG(DS_GX, INFO, "FIFO full");
 		while (gx->p->cpuBlocked & DS_CPU_BLOCK_GX) {
 			// Can happen from STM
+			if (gx->swapBuffers) {
+				// XXX: Let's hope those GX entries aren't important, since STM isn't preemptable
+				mLOG(DS_GX, ERROR, "FIFO full with swap pending");
+				return;
+			}
 			mTimingDeschedule(&gx->p->ds9.timing, &gx->fifoEvent);
 			_fifoRun(&gx->p->ds9.timing, gx, 0);
 		}
