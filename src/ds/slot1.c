@@ -230,6 +230,9 @@ static uint8_t _slot1SPIAutodetect(struct DSCommon* dscore, uint8_t datum) {
 			return 0xFF;
 		}
 	}
+	if (!dscore->p->memory.slot1.spiData) {
+		return 0xFF;
+	}
 
 	switch (dscore->p->memory.slot1.spiCommand) {
 	case 0x03: // RD
@@ -249,6 +252,13 @@ static uint8_t _slot1SPIEEPROM(struct DSCommon* dscore, uint8_t datum) {
 		dscore->p->memory.slot1.spiAddress <<= 8;
 		dscore->p->memory.slot1.spiAddress |= datum;
 		dscore->p->memory.slot1.spiAddressingRemaining -= 8;
+		return 0xFF;
+	} else if (dscore->p->isHomebrew) {
+		if (!_slot1GuaranteeSize(&dscore->p->memory.slot1)) {
+			return 0xFF;
+		}
+	}
+	if (!dscore->p->memory.slot1.spiData) {
 		return 0xFF;
 	}
 
@@ -277,6 +287,9 @@ static uint8_t _slot1SPIFlash(struct DSCommon* dscore, uint8_t datum) {
 		if (!_slot1GuaranteeSize(&dscore->p->memory.slot1)) {
 			return 0xFF;
 		}
+	}
+	if (!dscore->p->memory.slot1.spiData) {
+		return 0xFF;
 	}
 
 	uint8_t oldValue;
@@ -410,7 +423,7 @@ void DSSlot1ConfigureSPI(struct DS* ds, uint32_t paramPtr) {
 	} else {
 		ds->memory.slot1.spiAddressingBits = 16;
 	}
-	ds->memory.slot1.spiAddress = size;
+	ds->memory.slot1.spiAddress = size - 1;
 	_slot1GuaranteeSize(&ds->memory.slot1);
 }
 
