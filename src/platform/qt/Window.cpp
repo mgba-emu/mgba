@@ -384,6 +384,7 @@ QString Window::getFilters() const {
 #ifdef M_CORE_DS
 	QStringList dsFormats{
 		"*.nds",
+		"*.srl",
 #if defined(USE_LIBZIP) || defined(USE_ZLIB)
 		"*.zip",
 #endif

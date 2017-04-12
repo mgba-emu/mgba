@@ -20,6 +20,7 @@ Misc:
  - Qt: Add .nds files to the extension list in Info.plist
  - ARM9: Implement STRD/LDRD
  - DS: Attempt to detect if a game is homebrew
+ - Qt: Add .srl as an extension for DS ROMs
 
 0.6.0: (Future)
 Features:
