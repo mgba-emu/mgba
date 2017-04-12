@@ -743,6 +743,20 @@ void DSVideoSoftwareRendererDrawBackgroundExt0(struct GBAVideoSoftwareRenderer* 
 	}
 }
 
+#define DS_BACKGROUND_BITMAP_ITERATE(W, H)                         \
+	x += background->dx;                                           \
+	y += background->dy;                                           \
+                                                                   \
+	if (background->overflow) {                                    \
+		localX = x & ((W << 8) - 1);                               \
+		localY = y & ((H << 8) - 1);                               \
+	} else if (x < 0 || y < 0 || (x >> 8) >= W || (y >> 8) >= H) { \
+		continue;                                                  \
+	} else {                                                       \
+		localX = x;                                                \
+		localY = y;                                                \
+	}
+
 void DSVideoSoftwareRendererDrawBackgroundExt1(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY) {
 	BACKGROUND_BITMAP_INIT;
 
@@ -770,7 +784,7 @@ void DSVideoSoftwareRendererDrawBackgroundExt1(struct GBAVideoSoftwareRenderer* 
 
 	int outX;
 	for (outX = renderer->start; outX < renderer->end; ++outX) {
-		BACKGROUND_BITMAP_ITERATE(width, height);
+		DS_BACKGROUND_BITMAP_ITERATE(width, height);
 
 		if (!mosaicWait) {
 			uint32_t address = (localX >> 8) + (localY >> 8) * width + screenBase;
@@ -827,7 +841,7 @@ void DSVideoSoftwareRendererDrawBackgroundExt2(struct GBAVideoSoftwareRenderer* 
 
 	int outX;
 	for (outX = renderer->start; outX < renderer->end; ++outX) {
-		BACKGROUND_BITMAP_ITERATE(width, height);
+		DS_BACKGROUND_BITMAP_ITERATE(width, height);
 
 		if (!mosaicWait) {
 			uint32_t address = ((localX >> 8) + (localY >> 8) * width + screenBase) << 1;
