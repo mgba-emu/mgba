@@ -38,6 +38,7 @@ static const struct option _options[] = {
 	{ "gdb",       no_argument, 0, 'g' },
 #endif
 	{ "help",      no_argument, 0, 'h' },
+	{ "log-level", required_argument, 0, 'l' },
 	{ "movie",     required_argument, 0, 'v' },
 	{ "patch",     required_argument, 0, 'p' },
 	{ "version",   no_argument, 0, '\0' },
@@ -217,6 +218,7 @@ void usage(const char* arg0, const char* extraOptions) {
 #ifdef USE_GDB_STUB
 	puts("  -g, --gdb           Start GDB session (default port 2345)");
 #endif
+	puts("  -l, --log-level N   Log level mask");
 	puts("  -v, --movie FILE    Play back a movie of recorded input");
 	puts("  -p, --patch FILE    Apply a specified patch file when running");
 	puts("  -s, --frameskip N   Skip every N frames");
