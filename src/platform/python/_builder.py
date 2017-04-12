@@ -47,7 +47,7 @@ struct mLoggerPy {
 };
 """, include_dirs=[incdir, srcdir],
      extra_compile_args=cppflags,
-     libraries=["mgba"],
+     libraries=["medusa-emu"],
      library_dirs=[bindir],
      sources=[os.path.join(pydir, path) for path in ["vfs-py.c", "log.c"]])
 
