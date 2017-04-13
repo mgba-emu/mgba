@@ -147,11 +147,19 @@ struct mCore {
 
 	size_t (*savedataClone)(struct mCore*, void** sram);
 	bool (*savedataRestore)(struct mCore*, const void* sram, size_t size, bool writeback);
+
+	size_t (*listVideoLayers)(const struct mCore*, const struct mCoreChannelInfo**);
+	size_t (*listAudioChannels)(const struct mCore*, const struct mCoreChannelInfo**);
+	void (*enableVideoLayer)(struct mCore*, size_t id, bool enable);
+	void (*enableAudioChannel)(struct mCore*, size_t id, bool enable);
 };
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 struct mCore* mCoreFind(const char* path);
 bool mCoreLoadFile(struct mCore* core, const char* path);
+
+bool mCorePreloadVF(struct mCore* core, struct VFile* vf);
+bool mCorePreloadFile(struct mCore* core, const char* path);
 
 bool mCoreAutoloadSave(struct mCore* core);
 bool mCoreAutoloadPatch(struct mCore* core);

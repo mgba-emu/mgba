@@ -122,6 +122,35 @@ bool mCoreLoadFile(struct mCore* core, const char* path) {
 	return ret;
 }
 
+bool mCorePreloadVF(struct mCore* core, struct VFile* vf) {
+	struct VFile* vfm = VFileMemChunk(NULL, vf->size(vf));
+	uint8_t buffer[2048];
+	ssize_t read;
+	vf->seek(vf, 0, SEEK_SET);
+	while ((read = vf->read(vf, buffer, sizeof(buffer))) > 0) {
+		vfm->write(vfm, buffer, read);
+	}
+	vf->close(vf);
+	bool ret = core->loadROM(core, vfm);
+	if (!ret) {
+		vfm->close(vfm);
+	}
+	return ret;
+}
+
+bool mCorePreloadFile(struct mCore* core, const char* path) {
+	struct VFile* rom = mDirectorySetOpenPath(&core->dirs, path, core->isROM);
+	if (!rom) {
+		return false;
+	}
+
+	bool ret = mCorePreloadVF(core, rom);
+	if (!ret) {
+		rom->close(rom);
+	}
+	return ret;
+}
+
 bool mCoreAutoloadSave(struct mCore* core) {
 	return core->loadSave(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.save, ".sav", O_CREAT | O_RDWR));
 }

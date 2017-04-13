@@ -105,6 +105,13 @@ struct mRumble {
 	void (*setRumble)(struct mRumble*, int enable);
 };
 
+struct mCoreChannelInfo {
+	size_t id;
+	const char* internalName;
+	const char* visibleName;
+	const char* visibleType;
+};
+
 CXX_GUARD_END
 
 #endif

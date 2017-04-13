@@ -191,6 +191,7 @@ void SettingsView::updateConfig() {
 	saveSetting("screenshotPath", m_ui.screenshotPath);
 	saveSetting("patchPath", m_ui.patchPath);
 	saveSetting("showLibrary", m_ui.showLibrary);
+	saveSetting("preload", m_ui.preload);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
@@ -273,6 +274,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("screenshotPath", m_ui.screenshotPath);
 	loadSetting("patchPath", m_ui.patchPath);
 	loadSetting("showLibrary", m_ui.showLibrary);
+	loadSetting("preload", m_ui.preload);
 
 	double fastForwardRatio = loadSetting("fastForwardRatio").toDouble();
 	if (fastForwardRatio <= 0) {

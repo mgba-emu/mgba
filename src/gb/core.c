@@ -25,6 +25,19 @@
 #include <mgba/internal/gba/input.h>
 #endif
 
+const static struct mCoreChannelInfo _GBVideoLayers[] = {
+	{ 0, "bg", "Background", NULL },
+	{ 1, "obj", "Objects", NULL },
+	{ 2, "win", "Window", NULL },
+};
+
+const static struct mCoreChannelInfo _GBAudioChannels[] = {
+	{ 0, "ch0", "Channel 0", "Square/Sweep" },
+	{ 1, "ch1", "Channel 1", "Square" },
+	{ 2, "ch2", "Channel 2", "PCM" },
+	{ 3, "ch3", "Channel 3", "Noise" },
+};
+
 struct GBCore {
 	struct mCore d;
 	struct GBVideoSoftwareRenderer renderer;
@@ -599,6 +612,37 @@ static bool _GBCoreSavedataRestore(struct mCore* core, const void* sram, size_t 
 	return true;
 }
 
+static size_t _GBCoreListVideoLayers(const struct mCore* core, const struct mCoreChannelInfo** info) {
+	UNUSED(core);
+	*info = _GBVideoLayers;
+	return sizeof(_GBVideoLayers) / sizeof(*_GBVideoLayers);
+}
+
+static size_t _GBCoreListAudioChannels(const struct mCore* core, const struct mCoreChannelInfo** info) {
+	UNUSED(core);
+	*info = _GBAudioChannels;
+	return sizeof(_GBAudioChannels) / sizeof(*_GBAudioChannels);
+}
+
+static void _GBCoreEnableVideoLayer(struct mCore* core, size_t id, bool enable) {
+	struct GB* gb = core->board;
+	// TODO
+}
+
+static void _GBCoreEnableAudioChannel(struct mCore* core, size_t id, bool enable) {
+	struct GB* gb = core->board;
+	switch (id) {
+	case 0:
+	case 1:
+	case 2:
+	case 3:
+		gb->audio.forceDisableCh[id] = !enable;
+		break;
+	default:
+		break;
+	}
+}
+
 struct mCore* GBCoreCreate(void) {
 	struct GBCore* gbcore = malloc(sizeof(*gbcore));
 	struct mCore* core = &gbcore->d;
@@ -669,5 +713,9 @@ struct mCore* GBCoreCreate(void) {
 	core->cheatDevice = _GBCoreCheatDevice;
 	core->savedataClone = _GBCoreSavedataClone;
 	core->savedataRestore = _GBCoreSavedataRestore;
+	core->listVideoLayers = _GBCoreListVideoLayers;
+	core->listAudioChannels = _GBCoreListAudioChannels;
+	core->enableVideoLayer = _GBCoreEnableVideoLayer;
+	core->enableAudioChannel = _GBCoreEnableAudioChannel;
 	return core;
 }

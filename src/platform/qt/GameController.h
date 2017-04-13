@@ -156,6 +156,7 @@ public slots:
 	void reloadAudioDriver();
 	void setSaveStateExtdata(int flags);
 	void setLoadStateExtdata(int flags);
+	void setPreload(bool);
 
 #ifdef USE_PNG
 	void screenshot();
@@ -224,8 +225,8 @@ private:
 
 	std::shared_ptr<mTileCache> m_tileCache;
 
-	bool m_audioChannels[6];
-	bool m_videoLayers[5];
+	QList<bool> m_audioChannels;
+	QList<bool> m_videoLayers;
 
 	bool m_autofire[GBA_KEY_MAX];
 	int m_autofireStatus[GBA_KEY_MAX];
@@ -235,6 +236,8 @@ private:
 	QByteArray m_backupSaveState;
 	int m_saveStateFlags;
 	int m_loadStateFlags;
+
+	bool m_preload;
 
 	InputController* m_inputController;
 	MultiplayerController* m_multiplayer;

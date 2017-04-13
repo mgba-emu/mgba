@@ -92,6 +92,8 @@ CXX_GUARD_START
 		dest->size = src->size; \
 	} \
 
+DECLARE_VECTOR(StringList, char*);
+
 CXX_GUARD_END
 
 #endif

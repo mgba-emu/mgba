@@ -18,6 +18,38 @@
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
 
+const static struct mCoreChannelInfo _DSVideoLayers[] = {
+	{ 0, "abg0", "A BG0", "2D/3D" },
+	{ 1, "abg1", "A BG1", NULL },
+	{ 2, "abg2", "A BG2", NULL },
+	{ 3, "abg3", "A BG3", NULL },
+	{ 4, "aobj", "A OBJ", NULL },
+	{ 5, "bbg0", "B BG0", "2D/3D" },
+	{ 6, "bbg1", "B BG1", NULL },
+	{ 7, "bbg2", "B BG2", NULL },
+	{ 8, "bbg3", "B BG3", NULL },
+	{ 9, "bobj", "B OBJ", NULL },
+};
+
+const static struct mCoreChannelInfo _DSAudioChannels[] = {
+	{ 0, "ch00", "Channel 0", NULL },
+	{ 1, "ch01", "Channel 1", NULL },
+	{ 2, "ch02", "Channel 2", NULL },
+	{ 3, "ch03", "Channel 3", NULL },
+	{ 4, "ch04", "Channel 4", NULL },
+	{ 5, "ch05", "Channel 5", NULL },
+	{ 6, "ch06", "Channel 6", NULL },
+	{ 7, "ch07", "Channel 7", NULL },
+	{ 8, "ch08", "Channel 8", NULL },
+	{ 9, "ch09", "Channel 9", NULL },
+	{ 10, "ch10", "Channel 10", NULL },
+	{ 11, "ch11", "Channel 11", NULL },
+	{ 12, "ch12", "Channel 12", NULL },
+	{ 13, "ch13", "Channel 13", NULL },
+	{ 14, "ch14", "Channel 14", NULL },
+	{ 15, "ch15", "Channel 15", NULL },
+};
+
 struct DSCore {
 	struct mCore d;
 	struct ARMCore* arm7;
@@ -515,6 +547,27 @@ static bool _DSCoreSavedataRestore(struct mCore* core, const void* sram, size_t 
 	return false;
 }
 
+static size_t _DSCoreListVideoLayers(const struct mCore* core, const struct mCoreChannelInfo** info) {
+	UNUSED(core);
+	*info = _DSVideoLayers;
+	return sizeof(_DSVideoLayers) / sizeof(*_DSVideoLayers);
+}
+
+static size_t _DSCoreListAudioChannels(const struct mCore* core, const struct mCoreChannelInfo** info) {
+	UNUSED(core);
+	*info = _DSAudioChannels;
+	return sizeof(_DSAudioChannels) / sizeof(*_DSAudioChannels);
+}
+
+static void _DSCoreEnableVideoLayer(struct mCore* core, size_t id, bool enable) {
+	struct DS* ds = core->board;
+	// TODO
+}
+
+static void _DSCoreEnableAudioChannel(struct mCore* core, size_t id, bool enable) {
+	struct DS* ds = core->board;
+}
+
 struct mCore* DSCoreCreate(void) {
 	struct DSCore* dscore = malloc(sizeof(*dscore));
 	struct mCore* core = &dscore->d;
@@ -584,5 +637,9 @@ struct mCore* DSCoreCreate(void) {
 	core->cheatDevice = _DSCoreCheatDevice;
 	core->savedataClone = _DSCoreSavedataClone;
 	core->savedataRestore = _DSCoreSavedataRestore;
+	core->listVideoLayers = _DSCoreListVideoLayers;
+	core->listAudioChannels = _DSCoreListAudioChannels;
+	core->enableVideoLayer = _DSCoreEnableVideoLayer;
+	core->enableAudioChannel = _DSCoreEnableAudioChannel;
 	return core;
 }
