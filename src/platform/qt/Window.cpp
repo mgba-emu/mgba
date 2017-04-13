@@ -302,19 +302,6 @@ void Window::reloadConfig() {
 
 	m_log.setLevels(opts->logLevel);
 
-	QString saveStateExtdata = m_config->getOption("saveStateExtdata");
-	bool ok;
-	int flags = saveStateExtdata.toInt(&ok);
-	if (ok) {
-		m_controller->setSaveStateExtdata(flags);
-	}
-
-	QString loadStateExtdata = m_config->getOption("loadStateExtdata");
-	flags = loadStateExtdata.toInt(&ok);
-	if (ok) {
-		m_controller->setLoadStateExtdata(flags);
-	}
-
 	m_controller->setConfig(m_config->config());
 	m_display->lockAspectRatio(opts->lockAspectRatio);
 	m_display->filter(opts->resampleVideo);
@@ -1470,11 +1457,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	saveStateExtdata->connect([this](const QVariant& value) {
 		m_controller->setSaveStateExtdata(value.toInt());
 	}, this);
+	m_config->updateOption("saveStateExtdata");
 
 	ConfigOption* loadStateExtdata = m_config->addOption("loadStateExtdata");
 	loadStateExtdata->connect([this](const QVariant& value) {
 		m_controller->setLoadStateExtdata(value.toInt());
 	}, this);
+	m_config->updateOption("loadStateExtdata");
 
 	ConfigOption* preload = m_config->addOption("preload");
 	preload->connect([this](const QVariant& value) {
