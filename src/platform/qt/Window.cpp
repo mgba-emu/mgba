@@ -1476,6 +1476,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->setLoadStateExtdata(value.toInt());
 	}, this);
 
+	ConfigOption* preload = m_config->addOption("preload");
+	preload->connect([this](const QVariant& value) {
+		m_controller->setPreload(value.toBool());
+	}, this);
+	m_config->updateOption("preload");
+
 	QAction* exitFullScreen = new QAction(tr("Exit fullscreen"), frameMenu);
 	connect(exitFullScreen, SIGNAL(triggered()), this, SLOT(exitFullScreen()));
 	exitFullScreen->setShortcut(QKeySequence("Esc"));

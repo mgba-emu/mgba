@@ -151,6 +151,9 @@ struct mCore {
 struct mCore* mCoreFind(const char* path);
 bool mCoreLoadFile(struct mCore* core, const char* path);
 
+bool mCorePreloadVF(struct mCore* core, struct VFile* vf);
+bool mCorePreloadFile(struct mCore* core, const char* path);
+
 bool mCoreAutoloadSave(struct mCore* core);
 bool mCoreAutoloadPatch(struct mCore* core);
 

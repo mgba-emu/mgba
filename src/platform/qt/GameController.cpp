@@ -69,6 +69,7 @@ GameController::GameController(QObject* parent)
 	, m_backupSaveState(nullptr)
 	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC)
 	, m_loadStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_RTC)
+	, m_preload(false)
 	, m_override(nullptr)
 {
 #ifdef M_CORE_GBA
@@ -458,11 +459,20 @@ void GameController::openGame(bool biosOnly) {
 	QByteArray bytes;
 	if (!biosOnly) {
 		bytes = m_fname.toUtf8();
-		if (m_vf) {
-			m_threadContext.core->loadROM(m_threadContext.core, m_vf);
+		if (m_preload) {
+			if (m_vf) {
+				mCorePreloadVF(m_threadContext.core, m_vf);
+			} else {
+				mCorePreloadFile(m_threadContext.core, bytes.constData());
+				mDirectorySetDetachBase(&m_threadContext.core->dirs);
+			}
 		} else {
-			mCoreLoadFile(m_threadContext.core, bytes.constData());
-			mDirectorySetDetachBase(&m_threadContext.core->dirs);
+			if (m_vf) {
+				m_threadContext.core->loadROM(m_threadContext.core, m_vf);
+			} else {
+				mCoreLoadFile(m_threadContext.core, bytes.constData());
+				mDirectorySetDetachBase(&m_threadContext.core->dirs);
+			}
 		}
 	} else {
 		bytes = m_bios.toUtf8();
@@ -1105,6 +1115,10 @@ void GameController::setSaveStateExtdata(int flags) {
 
 void GameController::setLoadStateExtdata(int flags) {
 	m_loadStateFlags = flags;
+}
+
+void GameController::setPreload(bool preload) {
+	m_preload = preload;
 }
 
 void GameController::setLuminanceValue(uint8_t value) {

@@ -154,6 +154,7 @@ public slots:
 	void reloadAudioDriver();
 	void setSaveStateExtdata(int flags);
 	void setLoadStateExtdata(int flags);
+	void setPreload(bool);
 
 #ifdef USE_PNG
 	void screenshot();
@@ -233,6 +234,8 @@ private:
 	QByteArray m_backupSaveState;
 	int m_saveStateFlags;
 	int m_loadStateFlags;
+
+	bool m_preload;
 
 	InputController* m_inputController;
 	MultiplayerController* m_multiplayer;

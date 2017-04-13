@@ -13,6 +13,7 @@ Features:
  - Qt: German translation (by Lothar Serra Mari)
  - Savestates now contain any RTC override data
  - Command line ability to override configuration values
+ - Add option to allow preloading the entire ROM before running
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
