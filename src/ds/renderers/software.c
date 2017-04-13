@@ -379,10 +379,10 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 	memset(softwareRenderer->alphaA, softwareRenderer->blda, sizeof(softwareRenderer->alphaA));
 	memset(softwareRenderer->alphaB, softwareRenderer->bldb, sizeof(softwareRenderer->alphaB));
 
-	softwareRenderer->bg[2].sx = softwareRenderer->bg[2].dmx * y;
-	softwareRenderer->bg[2].sy = softwareRenderer->bg[2].dmy * y;
-	softwareRenderer->bg[3].sx = softwareRenderer->bg[3].dmx * y;
-	softwareRenderer->bg[3].sy = softwareRenderer->bg[3].dmy * y;
+	softwareRenderer->bg[2].sx = softwareRenderer->bg[2].refx + softwareRenderer->bg[2].dmx * y;
+	softwareRenderer->bg[2].sy = softwareRenderer->bg[2].refy + softwareRenderer->bg[2].dmy * y;
+	softwareRenderer->bg[3].sx = softwareRenderer->bg[3].refx + softwareRenderer->bg[3].dmx * y;
+	softwareRenderer->bg[3].sy = softwareRenderer->bg[3].refy + softwareRenderer->bg[3].dmy * y;
 
 	int w;
 	unsigned priority;
