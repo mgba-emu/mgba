@@ -487,8 +487,8 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 		v0w = 1;
 	}
 
-	int32_t v0x = (v0->viewCoord[0] + v0w) * (int64_t) (renderer->viewportWidth << 12) / (v0w * 2) + (renderer->viewportX << 12);
-	int32_t v0y = (-v0->viewCoord[1] + v0w) * (int64_t) (renderer->viewportHeight << 12) / (v0w * 2) + (renderer->viewportY << 12);
+	int32_t v0x = (v0->viewCoord[0] + v0w) * (int64_t) (v0->viewportWidth << 12) / (v0w * 2) + (v0->viewportX << 12);
+	int32_t v0y = (-v0->viewCoord[1] + v0w) * (int64_t) (v0->viewportHeight << 12) / (v0w * 2) + (v0->viewportY << 12);
 	if (poly->minY > v0y >> 12) {
 		poly->minY = v0y >> 12;
 	}
@@ -504,8 +504,8 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 		if (!v1w) {
 			v1w = 1;
 		}
-		int32_t v1x = (v1->viewCoord[0] + v1w) * (int64_t) (renderer->viewportWidth << 12) / (v1w * 2) + (renderer->viewportX << 12);
-		int32_t v1y = (-v1->viewCoord[1] + v1w) * (int64_t) (renderer->viewportHeight << 12) / (v1w * 2) + (renderer->viewportY << 12);
+		int32_t v1x = (v1->viewCoord[0] + v1w) * (int64_t) (v1->viewportWidth << 12) / (v1w * 2) + (v1->viewportX << 12);
+		int32_t v1y = (-v1->viewCoord[1] + v1w) * (int64_t) (v1->viewportHeight << 12) / (v1w * 2) + (v1->viewportY << 12);
 		if (poly->minY > v1y >> 12) {
 			poly->minY = v1y >> 12;
 		}
@@ -563,8 +563,8 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 	if (!v1w) {
 		v1w = 1;
 	}
-	int32_t v1x = (v1->viewCoord[0] + v1w) * (int64_t) (renderer->viewportWidth << 12) / (v1w * 2) + (renderer->viewportX << 12);
-	int32_t v1y = (-v1->viewCoord[1] + v1w) * (int64_t) (renderer->viewportHeight << 12) / (v1w * 2) + (renderer->viewportY << 12);
+	int32_t v1x = (v1->viewCoord[0] + v1w) * (int64_t) (v1->viewportWidth << 12) / (v1w * 2) + (v1->viewportX << 12);
+	int32_t v1y = (-v1->viewCoord[1] + v1w) * (int64_t) (v1->viewportHeight << 12) / (v1w * 2) + (v1->viewportY << 12);
 
 	if (poly->minY > v1y >> 12) {
 		poly->minY = v1y >> 12;

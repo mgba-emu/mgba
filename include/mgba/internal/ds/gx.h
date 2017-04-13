@@ -120,6 +120,11 @@ struct DSGXVertex {
 	int32_t viewCoord[4];
 	int16_t vs; // 12.4
 	int16_t vt; // 12.4
+
+	int viewportX;
+	int viewportY;
+	int viewportWidth;
+	int viewportHeight;
 };
 
 struct DSGXPolygon {
@@ -143,11 +148,6 @@ struct DSGXRenderer {
 
 	uint16_t* tex[4];
 	uint16_t* texPal[6];
-
-	int viewportX;
-	int viewportY;
-	int viewportWidth;
-	int viewportHeight;
 };
 
 struct DSGXLight {

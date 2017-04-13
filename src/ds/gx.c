@@ -1180,10 +1180,10 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			gx->viewportY2 = (uint8_t) entry.params[3];
 			gx->viewportWidth = gx->viewportX2 - gx->viewportX1 + 1;
 			gx->viewportHeight = gx->viewportY2 - gx->viewportY1 + 1;
-			gx->renderer->viewportX = gx->viewportX1;
-			gx->renderer->viewportY = gx->viewportY1;
-			gx->renderer->viewportWidth = gx->viewportWidth;
-			gx->renderer->viewportHeight = gx->viewportHeight;
+			gx->currentVertex.viewportX = gx->viewportX1;
+			gx->currentVertex.viewportY = gx->viewportY1;
+			gx->currentVertex.viewportWidth = gx->viewportWidth;
+			gx->currentVertex.viewportHeight = gx->viewportHeight;
 			break;
 		case DS_GX_CMD_BOX_TEST:
 			gxstat = DSRegGXSTATClearTestBusy(gxstat);
