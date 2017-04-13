@@ -10,7 +10,6 @@ Bugfixes:
  - DS Video: Capture with alpha bit set
  - DS Video: Bitmap sprites use alpha bit for transparent
  - DS GX: Fix 4-color texture coordinates
- - DS GX: Reset polygon attributes between buffer swaps
  - DS Video: Fix blend bit on windows for 3D layer (fixes mgba.io/i/611)
  - DS GX: Hack around writing to a full FIFO that has a swap pending (fixes mgba.io/i/608)
  - DS Video: Enable overflow bit on extended affine modes
@@ -18,6 +17,7 @@ Bugfixes:
  - DS Video: Fix caputre stride
  - DS Video: Fix affine transformations in video capture
  - DS GX: Fix bitmap textures when no palette is mapped (fixes mgba.io/i/628)
+ - DS GX: Don't reset state between buffer swaps (fixes mgba.io/i/642)
 Misc:
  - DS: Set boot complete bit in RAM on boot (fixes mgba.io/i/576, mgba.io/i/580, mgba.io/i/586)
  - DS Memory: Ensure DS9 I/O is 8-byte aligned
