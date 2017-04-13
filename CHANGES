@@ -16,6 +16,7 @@ Bugfixes:
  - DS Video: Enable overflow bit on extended affine modes
  - DS Video: Fix extended mode 0 without extended palettes
  - DS Video: Fix caputre stride
+ - DS Video: Fix affine transformations in video capture
 Misc:
  - DS: Set boot complete bit in RAM on boot (fixes mgba.io/i/576, mgba.io/i/580, mgba.io/i/586)
  - DS Memory: Ensure DS9 I/O is 8-byte aligned
