@@ -458,18 +458,18 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 	poly->texBase = NULL;
 	poly->palBase = NULL;
 	if (renderer->tex[DSGXTexParamsGetVRAMBase(poly->texParams) >> VRAM_BLOCK_OFFSET]) {
+		poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
 		switch (poly->texFormat) {
 		case 0:
+		poly->texBase = NULL;
 			break;
 		case 2:
 			if (renderer->texPal[poly->poly->palBase >> 11]) {
-				poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
 				poly->palBase = &renderer->texPal[poly->poly->palBase >> 11][(poly->poly->palBase << 2) & 0x1FFF];
 			}
 			break;
 		default:
 			if (renderer->texPal[poly->poly->palBase >> 10]) {
-				poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
 				poly->palBase = &renderer->texPal[poly->poly->palBase >> 10][(poly->poly->palBase << 3) & 0x1FFF];
 			}
 			break;
