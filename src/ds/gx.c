@@ -209,6 +209,10 @@ static bool _lerpVertex(const struct DSGXVertex* v0, const struct DSGXVertex* v1
 	out->viewCoord[1] = _lerp(v0->viewCoord[1], v1->viewCoord[1], q, r);
 	out->viewCoord[2] = _lerp(v0->viewCoord[2], v1->viewCoord[2], q, r);
 	out->viewCoord[3] = _lerp(v0->viewCoord[3], v1->viewCoord[3], q, r);
+	out->viewportX = v0->viewportX;
+	out->viewportY = v0->viewportY;
+	out->viewportWidth = v0->viewportWidth;
+	out->viewportHeight = v0->viewportHeight;
 
 	out->vs = _lerp(v0->vs, v1->vs, q, r);
 	out->vt = _lerp(v0->vt, v1->vt, q, r);
