@@ -188,7 +188,7 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 			return 0;
 		}
 		uint16_t half = DSGXTexParamsGetVRAMBase(poly->texParams) & 0x8000;
-		uint32_t slot1Base = (DSGXTexParamsGetVRAMBase(poly->texParams) << 1) + (texelCoord >> 2) + half;
+		uint32_t slot1Base = ((DSGXTexParamsGetVRAMBase(poly->texParams) << 1) & 0x7FFF) + (texelCoord >> 2) + half;
 		uint16_t texel2 = renderer->d.tex[1][slot1Base];
 		uint16_t texel2Base = (texel2 & 0x3FFF) << 1;
 		int a = 0x8;

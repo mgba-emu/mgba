@@ -19,6 +19,7 @@ Bugfixes:
  - DS GX: Fix bitmap textures when no palette is mapped (fixes mgba.io/i/628)
  - DS GX: Don't reset state between buffer swaps (fixes mgba.io/i/642)
  - DS GX: Allow viewport to change in the middle of a frame
+ - DS GX: Properly mask address for slot 2 4x4-texel textures
 Misc:
  - DS: Set boot complete bit in RAM on boot (fixes mgba.io/i/576, mgba.io/i/580, mgba.io/i/586)
  - DS Memory: Ensure DS9 I/O is 8-byte aligned
