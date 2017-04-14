@@ -13,6 +13,7 @@ DEFINE_VECTOR(DSGXSoftwarePolygonList, struct DSGXSoftwarePolygon);
 DEFINE_VECTOR(DSGXSoftwareEdgeList, struct DSGXSoftwareEdge);
 
 #define SHADOW_BIT 0x4000
+#define TRANSLUCENT_BIT 0x8000
 
 static void DSGXSoftwareRendererInit(struct DSGXRenderer* renderer);
 static void DSGXSoftwareRendererReset(struct DSGXRenderer* renderer);
@@ -488,7 +489,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 	}
 
 	int32_t v0x = (v0->viewCoord[0] + v0w) * (int64_t) (v0->viewportWidth << 12) / (v0w * 2) + (v0->viewportX << 12);
-	int32_t v0y = (-v0->viewCoord[1] + v0w) * (int64_t) (v0->viewportHeight << 12) / (v0w * 2) + (v0->viewportY << 12);
+	int32_t v0y = (DS_VIDEO_VERTICAL_PIXELS << 12) - ((v0->viewCoord[1] + v0w) * (int64_t) (v0->viewportHeight << 12) / (v0w * 2) + (v0->viewportY << 12));
 	if (poly->minY > v0y >> 12) {
 		poly->minY = v0y >> 12;
 	}
@@ -505,7 +506,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 			v1w = 1;
 		}
 		int32_t v1x = (v1->viewCoord[0] + v1w) * (int64_t) (v1->viewportWidth << 12) / (v1w * 2) + (v1->viewportX << 12);
-		int32_t v1y = (-v1->viewCoord[1] + v1w) * (int64_t) (v1->viewportHeight << 12) / (v1w * 2) + (v1->viewportY << 12);
+		int32_t v1y = (DS_VIDEO_VERTICAL_PIXELS << 12) - ((v1->viewCoord[1] + v1w) * (int64_t) (v1->viewportHeight << 12) / (v1w * 2) + (v1->viewportY << 12));
 		if (poly->minY > v1y >> 12) {
 			poly->minY = v1y >> 12;
 		}
@@ -564,7 +565,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 		v1w = 1;
 	}
 	int32_t v1x = (v1->viewCoord[0] + v1w) * (int64_t) (v1->viewportWidth << 12) / (v1w * 2) + (v1->viewportX << 12);
-	int32_t v1y = (-v1->viewCoord[1] + v1w) * (int64_t) (v1->viewportHeight << 12) / (v1w * 2) + (v1->viewportY << 12);
+	int32_t v1y = (DS_VIDEO_VERTICAL_PIXELS << 12) - ((v1->viewCoord[1] + v1w) * (int64_t) (v1->viewportHeight << 12) / (v1w * 2) + (v1->viewportY << 12));
 
 	if (poly->minY > v1y >> 12) {
 		poly->minY = v1y >> 12;
@@ -630,6 +631,11 @@ static void _drawSpan(struct DSGXSoftwareRenderer* softwareRenderer, struct DSGX
 	if (span->poly->blendFormat == 3) {
 		stencilValue |= SHADOW_BIT;
 	}
+	if (DSGXTexParamsGetFormat(span->poly->texParams) == 1 || DSGXTexParamsGetFormat(span->poly->texParams) == 6 || 
+		(DSGXPolygonAttrsGetAlpha(span->poly->polyParams) >= 1 && DSGXPolygonAttrsGetAlpha(span->poly->polyParams) <= 30)) {
+		stencilValue |= TRANSLUCENT_BIT;
+	}
+
 	for (; x < (span->ep[1].coord[0] >> 12) && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
 		if (span->ep[0].coord[softwareRenderer->sort] < depth[x]) {
 			_resolveEndpoint(span);
@@ -649,10 +655,10 @@ static void _drawSpan(struct DSGXSoftwareRenderer* softwareRenderer, struct DSGX
 			} else if (a) {
 				// TODO: Disable alpha?
 				if (b) {
-					color = _mix32(a, color, 0x1F - a, current);
+					color = _mix32(a + 1, color, 0x1F - a, current);
 					color |= ab << 27;
 				}
-				if ((stencil[x] & 0x3F) != (s & 0x3F)) {
+				if (!(stencil[x] & TRANSLUCENT_BIT) || (stencil[x] & 0x3F) != (s & 0x3F)) {
 					if (!(s & SHADOW_BIT) || ((stencil[x] & 0x3F00) != (s & 0x3F00) && s & 0x3F00 && stencil[x] & SHADOW_BIT)) {
 						if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
 							depth[x] = span->ep[0].coord[softwareRenderer->sort];
