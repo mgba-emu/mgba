@@ -28,9 +28,12 @@ struct mVideoProxyDirtyInfo {
 };
 
 struct mVideoProxy {
-	bool (*writeData)(struct mVideoProxy* proxy, void* data, size_t length);
-	uint16_t* (*vramBlock)(struct mVideoProxy* proxy, uint32_t address);
+	bool (*writeData)(struct mVideoProxy* proxy, const void* data, size_t length);
+	bool (*readData)(struct mVideoProxy* proxy, void* data, size_t length, bool block);
 	void* context;
+
+	bool (*parsePacket)(struct mVideoProxy* proxy, const struct mVideoProxyDirtyInfo* packet);
+	uint16_t* (*vramBlock)(struct mVideoProxy* proxy, uint32_t address);
 
 	size_t vramSize;
 	size_t oamSize;
@@ -55,6 +58,8 @@ void mVideoProxyRendererWriteOAM(struct mVideoProxy* proxy, uint32_t address, ui
 
 void mVideoProxyRendererDrawScanline(struct mVideoProxy* proxy, int y);
 void mVideoProxyRendererFlush(struct mVideoProxy* proxy);
+
+bool mVideoProxyRendererRun(struct mVideoProxy* proxy);
 
 CXX_GUARD_END
 

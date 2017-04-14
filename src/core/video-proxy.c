@@ -104,7 +104,6 @@ void mVideoProxyRendererDrawScanline(struct mVideoProxy* proxy, int y) {
 	proxy->writeData(proxy, &dirty, sizeof(dirty));
 }
 
-
 void mVideoProxyRendererFlush(struct mVideoProxy* proxy) {
 	struct mVideoProxyDirtyInfo dirty = {
 		DIRTY_FLUSH,
@@ -113,4 +112,25 @@ void mVideoProxyRendererFlush(struct mVideoProxy* proxy) {
 		0xDEADBEEF,
 	};
 	proxy->writeData(proxy, &dirty, sizeof(dirty));
+}
+
+bool mVideoProxyRendererRun(struct mVideoProxy* proxy) {
+	struct mVideoProxyDirtyInfo item = {0};
+	while (proxy->readData(proxy, &item, sizeof(item), false)) {
+		switch (item.type) {
+		case DIRTY_REGISTER:
+		case DIRTY_PALETTE:
+		case DIRTY_OAM:
+		case DIRTY_VRAM:
+		case DIRTY_SCANLINE:
+		case DIRTY_FLUSH:
+			if (!proxy->parsePacket(proxy, &item)) {
+				return true;
+			}
+			break;
+		default:
+			return false;
+		}
+	}
+	return true;
 }
