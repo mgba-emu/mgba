@@ -10,8 +10,8 @@
 
 CXX_GUARD_START
 
-#include <mgba/core/video-proxy.h>
 #include <mgba/internal/gba/video.h>
+#include <mgba/internal/gba/renderers/proxy.h>
 #include <mgba-util/threading.h>
 #include <mgba-util/ring-fifo.h>
 
@@ -22,9 +22,7 @@ enum GBAVideoThreadProxyState {
 };
 
 struct GBAVideoThreadProxyRenderer {
-	struct GBAVideoRenderer d;
-	struct GBAVideoRenderer* backend;
-	struct mVideoProxy proxy;
+	struct GBAVideoProxyRenderer d;
 
 	Thread thread;
 	Condition fromThreadCond;

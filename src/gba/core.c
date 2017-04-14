@@ -290,7 +290,7 @@ static void _GBACoreReset(struct mCore* core) {
 		struct GBAVideoRenderer* renderer = &gbacore->renderer.d;
 #ifndef DISABLE_THREADING
 		if (gbacore->threadedVideo) {
-			renderer = &gbacore->threadProxy.d;
+			renderer = &gbacore->threadProxy.d.d;
 		}
 #endif
 		GBAVideoAssociateRenderer(&gba->video, renderer);
