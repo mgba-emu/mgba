@@ -56,6 +56,7 @@ struct DSSlot1 {
 	int spiAddressingRemaining;
 	uint32_t spiAddress;
 	int spiAddressingBits;
+	uint32_t spiSize;
 
 	uint8_t* spiData;
 	struct VFile* spiVf;

@@ -30,6 +30,7 @@ void DSSlot1SPIInit(struct DS* ds, struct VFile* vf) {
 	ds->memory.slot1.spiVf = vf;
 	ds->memory.slot1.spiRealVf = vf;
 	ds->memory.slot1.spiData = NULL;
+	ds->memory.slot1.spiSize = 0;
 }
 
 void DSSlot1Reset(struct DS* ds) {
@@ -262,12 +263,19 @@ static uint8_t _slot1SPIEEPROM(struct DSCommon* dscore, uint8_t datum) {
 		return 0xFF;
 	}
 
+	uint8_t oldValue;
 	switch (dscore->p->memory.slot1.spiCommand) {
 	case 0x03: // RDLO
 	case 0x0B: // RDHI
-		return dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress++];
+		dscore->p->memory.slot1.spiAddress &= dscore->p->memory.slot1.spiSize - 1;
+		oldValue = dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress];
+		++dscore->p->memory.slot1.spiAddress;
+		return oldValue;
 	case 0x02: // WRLO
 	case 0x0A: // WRHI
+		if (dscore->p->memory.slot1.spiAddress >= dscore->p->memory.slot1.spiSize) {
+			break;
+		}
 		dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress] = datum;
 		++dscore->p->memory.slot1.spiAddress;
 		break;
@@ -295,14 +303,23 @@ static uint8_t _slot1SPIFlash(struct DSCommon* dscore, uint8_t datum) {
 	uint8_t oldValue;
 	switch (dscore->p->memory.slot1.spiCommand) {
 	case 0x03: // RD
+		if (dscore->p->memory.slot1.spiAddress >= dscore->p->memory.slot1.spiSize) {
+			return 0xFF;
+		}
 		oldValue = dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress];
 		++dscore->p->memory.slot1.spiAddress;
 		return oldValue;
 	case 0x02: // PP
+		if (dscore->p->memory.slot1.spiAddress >= dscore->p->memory.slot1.spiSize) {
+			break;
+		}
 		dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress] = datum;
 		++dscore->p->memory.slot1.spiAddress;
 		break;
 	case 0x0A: // PW
+		if (dscore->p->memory.slot1.spiAddress >= dscore->p->memory.slot1.spiSize) {
+			break;
+		}
 		oldValue = dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress];
 		dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress] = datum;
 		++dscore->p->memory.slot1.spiAddress;
@@ -377,6 +394,7 @@ static bool _slot1GuaranteeSize(struct DSSlot1* slot1) {
 	}
 	if (slot1->spiAddress >= slot1->spiVf->size(slot1->spiVf)) {
 		size_t size = toPow2(slot1->spiAddress + 1);
+		slot1->spiSize = size;
 		size_t oldSize = slot1->spiVf->size(slot1->spiVf);
 		if (slot1->spiData) {
 			slot1->spiVf->unmap(slot1->spiVf, slot1->spiData, oldSize);
@@ -415,7 +433,7 @@ void DSSlot1ConfigureSPI(struct DS* ds, uint32_t paramPtr) {
 	} else {
 		ds->memory.slot1.savedataType = DS_SAVEDATA_EEPROM;
 	}
-	if (size >= 0x10000) {
+	if (size > 0x10000) {
 		ds->memory.slot1.spiAddressingBits = 24;
 	} else if (size <= 0x200) {
 		ds->memory.slot1.spiAddressingBits = 8;
@@ -424,6 +442,7 @@ void DSSlot1ConfigureSPI(struct DS* ds, uint32_t paramPtr) {
 		ds->memory.slot1.spiAddressingBits = 16;
 	}
 	ds->memory.slot1.spiAddress = size - 1;
+	ds->memory.slot1.spiSize = size;
 	_slot1GuaranteeSize(&ds->memory.slot1);
 }
 
