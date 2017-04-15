@@ -41,7 +41,7 @@ void DSSlot1Reset(struct DS* ds) {
 	ds->memory.slot1.spiAddressingBits = 16;
 }
 
-static void _scheduleTransfer(struct DS* ds, struct mTiming* timing, uint32_t cyclesLate) {
+static void _scheduleTransfer(struct DS* ds, struct mTiming* timing, uint32_t bytes, uint32_t cyclesLate) {
 	DSSlot1ROMCNT romcnt = ds->memory.io7[DS_REG_ROMCNT_HI >> 1] << 16;
 	uint32_t cycles;
 	if (DSSlot1ROMCNTIsTransferRate(romcnt)) {
@@ -52,6 +52,7 @@ static void _scheduleTransfer(struct DS* ds, struct mTiming* timing, uint32_t cy
 	if (!ds->ds7.memory.slot1Access) {
 		cycles <<= 1;
 	}
+	cycles *= bytes / 4;
 	cycles -= cyclesLate;
 	mTimingDeschedule(timing, &ds->memory.slot1.transferEvent);
 	mTimingSchedule(timing, &ds->memory.slot1.transferEvent, cycles);
@@ -142,9 +143,9 @@ static void DSSlot1StartTransfer(struct DS* ds) {
 		}
 		ds->memory.slot1.transferRemaining = ds->memory.slot1.transferSize;
 		if (ds->ds7.memory.slot1Access) {
-			_scheduleTransfer(ds, &ds->ds7.timing, 0);
+			_scheduleTransfer(ds, &ds->ds7.timing, 12, 0);
 		} else {
-			_scheduleTransfer(ds, &ds->ds9.timing, 0);
+			_scheduleTransfer(ds, &ds->ds9.timing, 12, 0);
 		}
 		break;
 	case 0xB8:
@@ -185,7 +186,9 @@ DSSlot1ROMCNT DSSlot1Control(struct DS* ds, DSSlot1ROMCNT control) {
 	if (DSSlot1ROMCNTIsBlockBusy(control)) {
 		DSSlot1StartTransfer(ds);
 		// TODO: timing
-		control = DSSlot1ROMCNTFillWordReady(control);
+		if (ds->memory.slot1.command[0] != 0xB7) {
+			control = DSSlot1ROMCNTFillWordReady(control);
+		}
 	}
 	return control;
 }
@@ -194,9 +197,9 @@ uint32_t DSSlot1Read(struct DS* ds) {
 	uint32_t result;
 	LOAD_32(result, 0, ds->memory.slot1.readBuffer);
 	if (ds->ds7.memory.slot1Access) {
-		_scheduleTransfer(ds, &ds->ds7.timing, 0);
+		_scheduleTransfer(ds, &ds->ds7.timing, 4, 0);
 	} else {
-		_scheduleTransfer(ds, &ds->ds9.timing, 0);
+		_scheduleTransfer(ds, &ds->ds9.timing, 4, 0);
 	}
 	return result;
 }
