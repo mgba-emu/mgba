@@ -39,6 +39,7 @@ void GBAVideoThreadProxyRendererCreate(struct GBAVideoThreadProxyRenderer* rende
 
 	renderer->d.logger.writeData = _writeData;
 	renderer->d.logger.readData = _readData;
+	renderer->d.logger.vf = NULL;
 }
 
 void GBAVideoThreadProxyRendererInit(struct GBAVideoProxyRenderer* renderer) {

@@ -478,6 +478,13 @@ void Window::openAboutScreen() {
 	openView(about);
 }
 
+void Window::startVideoLog() {
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select video log"), tr("Video logs (*.mvl)"));
+	if (!filename.isEmpty()) {
+		m_controller->startVideoLog(filename);
+	}
+}
+
 template <typename T, typename A>
 std::function<void()> Window::openTView(A arg) {
 	return [=]() {
@@ -1349,6 +1356,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(recordGIF, SIGNAL(triggered()), this, SLOT(openGIFWindow()));
 	addControlledAction(avMenu, recordGIF, "recordGIF");
 #endif
+
+	QAction* recordVL = new QAction(tr("Record video log..."), avMenu);
+	connect(recordVL, SIGNAL(triggered()), this, SLOT(startVideoLog()));
+	addControlledAction(avMenu, recordVL, "recordVL");
+	m_gameActions.append(recordVL);
+
+	QAction* stopVL = new QAction(tr("Stop video log"), avMenu);
+	connect(stopVL, SIGNAL(triggered()), m_controller, SLOT(endVideoLog()));
+	addControlledAction(avMenu, stopVL, "stopVL");
+	m_gameActions.append(stopVL);
 
 	avMenu->addSeparator();
 	m_videoLayers = avMenu->addMenu(tr("Video layers"));

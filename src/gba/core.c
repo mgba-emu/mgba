@@ -42,6 +42,8 @@ const static struct mCoreChannelInfo _GBAAudioChannels[] = {
 struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
+	struct GBAVideoProxyRenderer logProxy;
+	struct mVideoLogContext* logContext;
 #ifndef DISABLE_THREADING
 	struct GBAVideoThreadProxyRenderer threadProxy;
 	int threadedVideo;
@@ -69,6 +71,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->overrides = NULL;
 	gbacore->debuggerPlatform = NULL;
 	gbacore->cheatDevice = NULL;
+	gbacore->logContext = NULL;
 
 	GBACreate(gba);
 	// TODO: Restore cheats
@@ -646,6 +649,37 @@ static void _GBACoreEnableAudioChannel(struct mCore* core, size_t id, bool enabl
 	}
 }
 
+static void _GBACoreStartVideoLog(struct mCore* core, struct mVideoLogContext* context) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	struct GBA* gba = core->board;
+	gbacore->logContext = context;
+
+	GBAVideoProxyRendererCreate(&gbacore->logProxy, gba->video.renderer);
+
+	context->initialStateSize = core->stateSize(core);
+	context->initialState = anonymousMemoryMap(context->initialStateSize);
+	core->saveState(core, context->initialState);
+
+	struct VFile* vf = VFileMemChunk(NULL, 0);
+	context->nChannels = 1;
+	context->channels[0].initialState = NULL;
+	context->channels[0].initialStateSize = 0;
+	context->channels[0].channelData = vf;
+	gbacore->logProxy.logger.vf = vf;
+	gbacore->logProxy.block = false;
+
+	GBAVideoProxyRendererShim(&gba->video, &gbacore->logProxy);
+}
+
+static void _GBACoreEndVideoLog(struct mCore* core) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	struct GBA* gba = core->board;
+	GBAVideoProxyRendererUnshim(&gba->video, &gbacore->logProxy);
+
+	mappedMemoryFree(gbacore->logContext->initialState, gbacore->logContext->initialStateSize);
+	gbacore->logContext->channels[0].channelData->close(gbacore->logContext->channels[0].channelData);
+}
+
 struct mCore* GBACoreCreate(void) {
 	struct GBACore* gbacore = malloc(sizeof(*gbacore));
 	struct mCore* core = &gbacore->d;
@@ -718,5 +752,7 @@ struct mCore* GBACoreCreate(void) {
 	core->listAudioChannels = _GBACoreListAudioChannels;
 	core->enableVideoLayer = _GBACoreEnableVideoLayer;
 	core->enableAudioChannel = _GBACoreEnableAudioChannel;
+	core->startVideoLog = _GBACoreStartVideoLog;
+	core->endVideoLog = _GBACoreEndVideoLog;
 	return core;
 }

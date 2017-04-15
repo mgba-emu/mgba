@@ -25,6 +25,8 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 static uint16_t* _vramBlock(struct mVideoLogger* logger, uint32_t address);
 
 void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct GBAVideoRenderer* backend) {
+	mVideoLoggerRendererCreate(&renderer->logger);
+
 	renderer->d.init = GBAVideoProxyRendererInit;
 	renderer->d.reset = GBAVideoProxyRendererReset;
 	renderer->d.deinit = GBAVideoProxyRendererDeinit;
@@ -43,9 +45,11 @@ void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct 
 	renderer->d.disableBG[3] = false;
 	renderer->d.disableOBJ = false;
 
+	renderer->init = NULL;
+	renderer->deinit = NULL;
+	renderer->reset = NULL;
+
 	renderer->logger.context = renderer;
-	renderer->logger.writeData = NULL;
-	renderer->logger.readData = NULL;
 	renderer->logger.parsePacket = _parsePacket;
 	renderer->logger.vramBlock = _vramBlock;
 	renderer->logger.paletteSize = SIZE_PALETTE_RAM;
@@ -55,9 +59,7 @@ void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct 
 	renderer->backend = backend;
 }
 
-void GBAVideoProxyRendererInit(struct GBAVideoRenderer* renderer) {
-	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
-
+static void _init(struct GBAVideoProxyRenderer* proxyRenderer) {
 	mVideoLoggerRendererInit(&proxyRenderer->logger);
 
 	if (proxyRenderer->block) {
@@ -67,20 +69,65 @@ void GBAVideoProxyRendererInit(struct GBAVideoRenderer* renderer) {
 		proxyRenderer->backend->cache = NULL;
 	}
 
-	proxyRenderer->init(proxyRenderer);
+	if (proxyRenderer->init) {
+		proxyRenderer->init(proxyRenderer);
+	}
+}
+
+static void _reset(struct GBAVideoProxyRenderer* proxyRenderer) {
+	memcpy(proxyRenderer->logger.oam, &proxyRenderer->d.oam->raw, SIZE_OAM);
+	memcpy(proxyRenderer->logger.palette, &proxyRenderer->d.palette, SIZE_PALETTE_RAM);
+	memcpy(proxyRenderer->logger.vram, &proxyRenderer->d.vram, SIZE_VRAM);
+
+	mVideoLoggerRendererReset(&proxyRenderer->logger);
+
+	if (proxyRenderer->reset) {
+		proxyRenderer->reset(proxyRenderer);
+	}
+}
+
+void GBAVideoProxyRendererShim(struct GBAVideo* video, struct GBAVideoProxyRenderer* renderer) {
+	if (video->renderer != renderer->backend) {
+		return;
+	}
+	renderer->d.cache = video->renderer->cache;
+	video->renderer = &renderer->d;
+	renderer->d.palette = video->palette;
+	renderer->d.vram = video->vram;
+	renderer->d.oam = &video->oam;
+	_init(renderer);
+	_reset(renderer);
+}
+
+void GBAVideoProxyRendererUnshim(struct GBAVideo* video, struct GBAVideoProxyRenderer* renderer) {
+	if (video->renderer != &renderer->d) {
+		return;
+	}
+	renderer->backend->cache = video->renderer->cache;
+	video->renderer = renderer->backend;
+	renderer->backend->palette = video->palette;
+	renderer->backend->vram = video->vram;
+	renderer->backend->oam = &video->oam;
+
+	if (renderer->deinit) {
+		renderer->deinit(renderer);
+	}
+
+	mVideoLoggerRendererDeinit(&renderer->logger);
+}
+
+void GBAVideoProxyRendererInit(struct GBAVideoRenderer* renderer) {
+	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
+
+	_init(proxyRenderer);
 
 	proxyRenderer->backend->init(proxyRenderer->backend);
 }
 
 void GBAVideoProxyRendererReset(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
-	memcpy(proxyRenderer->logger.oam, &renderer->oam->raw, SIZE_OAM);
-	memcpy(proxyRenderer->logger.palette, renderer->palette, SIZE_PALETTE_RAM);
-	memcpy(proxyRenderer->logger.vram, renderer->vram, SIZE_VRAM);
 
-	mVideoLoggerRendererReset(&proxyRenderer->logger);
-
-	proxyRenderer->reset(proxyRenderer);
+	_reset(proxyRenderer);
 
 	proxyRenderer->backend->reset(proxyRenderer->backend);
 }
@@ -88,7 +135,9 @@ void GBAVideoProxyRendererReset(struct GBAVideoRenderer* renderer) {
 void GBAVideoProxyRendererDeinit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
 
-	proxyRenderer->deinit(proxyRenderer);
+	if (proxyRenderer->deinit) {
+		proxyRenderer->deinit(proxyRenderer);
+	}
 
 	proxyRenderer->backend->deinit(proxyRenderer->backend);
 

@@ -31,6 +31,8 @@ struct GBAVideoProxyRenderer {
 };
 
 void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct GBAVideoRenderer* backend);
+void GBAVideoProxyRendererShim(struct GBAVideo* video, struct GBAVideoProxyRenderer* renderer);
+void GBAVideoProxyRendererUnshim(struct GBAVideo* video, struct GBAVideoProxyRenderer* renderer);
 
 CXX_GUARD_END
 

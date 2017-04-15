@@ -20,6 +20,7 @@
 #include <mgba/core/directories.h>
 #include <mgba/core/serialize.h>
 #include <mgba/core/tile-cache.h>
+#include <mgba/core/video-logger.h>
 #ifdef M_CORE_GBA
 #include <mgba/gba/interface.h>
 #include <mgba/internal/gba/gba.h>
@@ -71,6 +72,7 @@ GameController::GameController(QObject* parent)
 	, m_loadStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_RTC)
 	, m_preload(false)
 	, m_override(nullptr)
+	, m_vl(nullptr)
 {
 #ifdef M_CORE_GBA
 	m_lux.p = this;
@@ -1197,6 +1199,27 @@ void GameController::enableLogLevel(int levels) {
 void GameController::disableLogLevel(int levels) {
 	Interrupter interrupter(this);
 	m_logLevels &= ~levels;
+}
+
+void GameController::startVideoLog(const QString& path) {
+	if (!isLoaded() || m_vl) {
+		return;
+	}
+	m_vlPath = path;
+	m_vl = mVideoLoggerCreate(m_threadContext.core);
+}
+
+void GameController::endVideoLog() {
+	if (!m_vl) {
+		return;
+	}
+	if (isLoaded()) {
+		VFile* vf = VFileDevice::open(m_vlPath, O_WRONLY | O_CREAT | O_TRUNC);
+		mVideoLoggerWrite(m_threadContext.core, m_vl, vf);
+		vf->close(vf);
+	}
+	mVideoLoggerDestroy(m_threadContext.core, m_vl);
+	m_vf = nullptr;
 }
 
 void GameController::pollEvents() {

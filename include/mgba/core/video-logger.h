@@ -27,6 +27,7 @@ struct mVideoLoggerDirtyInfo {
 	uint32_t padding;
 };
 
+struct VFile;
 struct mVideoLogger {
 	bool (*writeData)(struct mVideoLogger* logger, const void* data, size_t length);
 	bool (*readData)(struct mVideoLogger* logger, void* data, size_t length, bool block);
@@ -45,8 +46,40 @@ struct mVideoLogger {
 	uint16_t* vram;
 	uint16_t* oam;
 	uint16_t* palette;
+
+	struct VFile* vf;
 };
 
+struct mVideoLogChannel {
+	uint32_t type;
+	void* initialState;
+	size_t initialStateSize;
+	struct VFile* channelData;
+};
+
+struct mVideoLogContext {
+	void* initialState;
+	size_t initialStateSize;
+	uint32_t nChannels;
+	struct mVideoLogChannel channels[32];
+};
+
+struct mVideoLogHeader {
+	char magic[4];
+	uint32_t platform;
+	uint32_t nChannels;
+	uint32_t initialStatePointer;
+	uint32_t channelPointers[32];
+};
+
+struct mVideoLogChannelHeader {
+	uint32_t type;
+	uint32_t channelInitialStatePointer;
+	uint32_t channelSize;
+	uint32_t reserved;
+};
+
+void mVideoLoggerRendererCreate(struct mVideoLogger* logger);
 void mVideoLoggerRendererInit(struct mVideoLogger* logger);
 void mVideoLoggerRendererDeinit(struct mVideoLogger* logger);
 void mVideoLoggerRendererReset(struct mVideoLogger* logger);
@@ -60,6 +93,11 @@ void mVideoLoggerRendererDrawScanline(struct mVideoLogger* logger, int y);
 void mVideoLoggerRendererFlush(struct mVideoLogger* logger);
 
 bool mVideoLoggerRendererRun(struct mVideoLogger* logger);
+
+struct mCore;
+struct mVideoLogContext* mVideoLoggerCreate(struct mCore* core);
+void mVideoLoggerDestroy(struct mCore* core, struct mVideoLogContext*);
+void mVideoLoggerWrite(struct mCore* core, struct mVideoLogContext*, struct VFile*);
 
 CXX_GUARD_END
 
