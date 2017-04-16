@@ -239,6 +239,10 @@ void VideoView::setNativeResolution(const QSize& dims) {
 	}
 }
 
+void VideoView::setNativeFrameRate(const QPair<unsigned, unsigned>& ratio) {
+	FFmpegEncoderSetInputFrameRate(&m_encoder, ratio.first, ratio.second);
+}
+
 void VideoView::selectFile() {
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select output file"));
 	if (!filename.isEmpty()) {

@@ -71,6 +71,7 @@ public:
 	bool audioSync() const { return m_audioSync; }
 	bool videoSync() const { return m_videoSync; }
 	QSize screenDimensions() const;
+	QPair<unsigned, unsigned> frameRate() const;
 
 	void setInputController(InputController* controller) { m_inputController = controller; }
 

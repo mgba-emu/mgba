@@ -29,6 +29,7 @@ public slots:
 	void startRecording();
 	void stopRecording();
 	void setNativeResolution(const QSize&);
+	void setNativeFrameRate(const QPair<unsigned, unsigned>& ratio);
 
 signals:
 	void recordingStarted(mAVStream*);

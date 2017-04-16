@@ -215,6 +215,9 @@ static void _DSCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 	if (stream && stream->videoDimensionsChanged) {
 		stream->videoDimensionsChanged(stream, DS_VIDEO_HORIZONTAL_PIXELS, DS_VIDEO_VERTICAL_PIXELS * 2);
 	}
+	if (stream && stream->videoFrameRateChanged) {
+		stream->videoFrameRateChanged(stream, core->frameCycles(core), core->frequency(core));
+	}
 }
 
 static bool _DSCoreLoadROM(struct mCore* core, struct VFile* vf) {

@@ -211,6 +211,7 @@ void retro_init(void) {
 	stream.postAudioFrame = 0;
 	stream.postAudioBuffer = _postAudioBuffer;
 	stream.postVideoFrame = 0;
+	stream.videoFrameRateChanged = 0;
 }
 
 void retro_deinit(void) {

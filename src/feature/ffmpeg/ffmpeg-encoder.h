@@ -72,6 +72,8 @@ struct FFmpegEncoder {
 	int height;
 	int iwidth;
 	int iheight;
+	unsigned frameCycles;
+	unsigned cycles;
 	int64_t currentVideoFrame;
 	struct SwsContext* scaleContext;
 	struct AVStream* videoStream;
@@ -86,6 +88,8 @@ bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder*);
 bool FFmpegEncoderOpen(struct FFmpegEncoder*, const char* outfile);
 void FFmpegEncoderClose(struct FFmpegEncoder*);
 bool FFmpegEncoderIsOpen(struct FFmpegEncoder*);
+
+void FFmpegEncoderSetInputFrameRate(struct FFmpegEncoder*, unsigned numerator, unsigned denominator);
 
 CXX_GUARD_END
 

@@ -31,6 +31,7 @@ Misc:
  - ARM9: Implement STRD/LDRD
  - DS: Attempt to detect if a game is homebrew
  - Qt: Add .srl as an extension for DS ROMs
+ - FFmpeg: Allow framerate to be adjusted
 
 0.6.0: (Future)
 Features:

@@ -33,6 +33,9 @@ struct ImageMagickGIFEncoder {
 
 	unsigned iwidth;
 	unsigned iheight;
+
+	unsigned numerator;
+	unsigned denominator;
 };
 
 void ImageMagickGIFEncoderInit(struct ImageMagickGIFEncoder*);

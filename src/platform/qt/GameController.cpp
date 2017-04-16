@@ -679,6 +679,13 @@ QSize GameController::screenDimensions() const {
 	return QSize(width, height);
 }
 
+QPair<unsigned, unsigned> GameController::frameRate() const {
+	if (!m_gameOpen) {
+		return qMakePair(1U, 60U);
+	}
+	return qMakePair(m_threadContext.core->frameCycles(m_threadContext.core), m_threadContext.core->frequency(m_threadContext.core));
+}
+
 void GameController::setPaused(bool paused) {
 	if (!isLoaded() || paused == mCoreThreadIsPaused(&m_threadContext)) {
 		return;

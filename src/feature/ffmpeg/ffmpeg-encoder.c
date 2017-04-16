@@ -25,6 +25,7 @@
 static void _ffmpegPostVideoFrame(struct mAVStream*, const color_t* pixels, size_t stride);
 static void _ffmpegPostAudioFrame(struct mAVStream*, int16_t left, int16_t right);
 static void _ffmpegSetVideoDimensions(struct mAVStream*, unsigned width, unsigned height);
+static void _ffmpegSetVideoFrameRate(struct mAVStream*, unsigned numerator, unsigned denominator);
 
 enum {
 	PREFERRED_SAMPLE_RATE = 0x8000
@@ -37,9 +38,12 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->d.postVideoFrame = _ffmpegPostVideoFrame;
 	encoder->d.postAudioFrame = _ffmpegPostAudioFrame;
 	encoder->d.postAudioBuffer = 0;
+	encoder->d.videoFrameRateChanged = _ffmpegSetVideoFrameRate;
 
 	encoder->audioCodec = 0;
 	encoder->videoCodec = 0;
+	encoder->audio = NULL;
+	encoder->video = NULL;
 	encoder->containerFormat = 0;
 	FFmpegEncoderSetAudio(encoder, "flac", 0);
 	FFmpegEncoderSetVideo(encoder, "png", 0);
@@ -47,6 +51,8 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	FFmpegEncoderSetDimensions(encoder, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 	encoder->iwidth = VIDEO_HORIZONTAL_PIXELS;
 	encoder->iheight = VIDEO_VERTICAL_PIXELS;
+	encoder->frameCycles = VIDEO_TOTAL_LENGTH;
+	encoder->cycles = GBA_ARM7TDMI_FREQUENCY;
 	encoder->resampleContext = 0;
 	encoder->absf = 0;
 	encoder->context = 0;
@@ -286,7 +292,8 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->video->bit_rate = encoder->videoBitrate;
 	encoder->video->width = encoder->width;
 	encoder->video->height = encoder->height;
-	encoder->video->time_base = (AVRational) { VIDEO_TOTAL_LENGTH, GBA_ARM7TDMI_FREQUENCY };
+	encoder->videoStream->time_base = (AVRational) { encoder->frameCycles, encoder->cycles };
+	encoder->video->time_base = encoder->videoStream->time_base;
 	encoder->video->pix_fmt = encoder->pixFormat;
 	encoder->video->gop_size = 60;
 	encoder->video->max_b_frames = 3;
@@ -352,6 +359,7 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 		avcodec_free_frame(&encoder->audioFrame);
 #endif
 		avcodec_close(encoder->audio);
+		encoder->audio = NULL;
 
 		if (encoder->resampleContext) {
 			avresample_close(encoder->resampleContext);
@@ -373,6 +381,7 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 	avcodec_free_frame(&encoder->videoFrame);
 #endif
 	avcodec_close(encoder->video);
+	encoder->video = NULL;
 
 	sws_freeContext(encoder->scaleContext);
 	encoder->scaleContext = NULL;
@@ -525,23 +534,38 @@ static void _ffmpegSetVideoDimensions(struct mAVStream* stream, unsigned width, 
 	struct FFmpegEncoder* encoder = (struct FFmpegEncoder*) stream;
 	encoder->iwidth = width;
 	encoder->iheight = height;
-	if (encoder->scaleContext) {
-		sws_freeContext(encoder->scaleContext);
-	}
-	encoder->scaleContext = sws_getContext(encoder->iwidth, encoder->iheight,
+	if (encoder->video) {
+		if (encoder->scaleContext) {
+			sws_freeContext(encoder->scaleContext);
+		}
+		encoder->scaleContext = sws_getContext(encoder->iwidth, encoder->iheight,
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	    AV_PIX_FMT_RGB565,
+		    AV_PIX_FMT_RGB565,
 #else
-	    AV_PIX_FMT_BGR555,
+		    AV_PIX_FMT_BGR555,
 #endif
 #else
 #ifndef USE_LIBAV
-	    AV_PIX_FMT_0BGR32,
+		    AV_PIX_FMT_0BGR32,
 #else
-	    AV_PIX_FMT_BGR32,
+		    AV_PIX_FMT_BGR32,
 #endif
 #endif
-	    encoder->videoFrame->width, encoder->videoFrame->height, encoder->video->pix_fmt,
-	    SWS_POINT, 0, 0, 0);
+		    encoder->videoFrame->width, encoder->videoFrame->height, encoder->video->pix_fmt,
+		    SWS_POINT, 0, 0, 0);
+	}
+}
+
+static void _ffmpegSetVideoFrameRate(struct mAVStream* stream, unsigned numerator, unsigned denominator) {
+	struct FFmpegEncoder* encoder = (struct FFmpegEncoder*) stream;
+	FFmpegEncoderSetInputFrameRate(encoder, numerator, denominator);
+}
+
+void FFmpegEncoderSetInputFrameRate(struct FFmpegEncoder* encoder, unsigned numerator, unsigned denominator) {
+	encoder->frameCycles = numerator;
+	encoder->cycles = denominator;
+	if (encoder->video) {
+		encoder->video->time_base = (AVRational) { numerator, denominator };
+	}
 }

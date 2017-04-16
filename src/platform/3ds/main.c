@@ -669,6 +669,7 @@ int main() {
 	stream.postVideoFrame = 0;
 	stream.postAudioFrame = 0;
 	stream.postAudioBuffer = _postAudioBuffer;
+	stream.videoFrameRateChanged = 0;
 
 	if (!allocateRomBuffer()) {
 		return 1;

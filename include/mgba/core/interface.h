@@ -48,6 +48,7 @@ struct mAVStream {
 	void (*postVideoFrame)(struct mAVStream*, const color_t* buffer, size_t stride);
 	void (*postAudioFrame)(struct mAVStream*, int16_t left, int16_t right);
 	void (*postAudioBuffer)(struct mAVStream*, struct blip_t* left, struct blip_t* right);
+	void (*videoFrameRateChanged)(struct mAVStream*, unsigned numerator, unsigned denominator);
 };
 
 struct mKeyCallback {

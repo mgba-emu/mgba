@@ -545,15 +545,17 @@ std::function<void()> Window::openTView() {
 void Window::openVideoWindow() {
 	if (!m_videoView) {
 		m_videoView = new VideoView();
-		connect(m_videoView, SIGNAL(recordingStarted(mAVStream*)), m_controller, SLOT(setAVStream(mAVStream*)));
+		connect(m_videoView, SIGNAL(recordingStarted(mAVStream*)), m_controller, SLOT(setAVStream(mAVStream*)), Qt::DirectConnection);
 		connect(m_videoView, SIGNAL(recordingStopped()), m_controller, SLOT(clearAVStream()), Qt::DirectConnection);
 		connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), m_videoView, SLOT(stopRecording()));
 		connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), m_videoView, SLOT(close()));
 		connect(m_controller, &GameController::gameStarted, [this]() {
 			m_videoView->setNativeResolution(m_controller->screenDimensions());
+			m_videoView->setNativeFrameRate(m_controller->frameRate());
 		});
 		if (m_controller->isLoaded()) {
 			m_videoView->setNativeResolution(m_controller->screenDimensions());
+			m_videoView->setNativeFrameRate(m_controller->frameRate());
 		}
 		connect(this, SIGNAL(shutdown()), m_videoView, SLOT(close()));
 	}

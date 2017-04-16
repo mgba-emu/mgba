@@ -229,6 +229,9 @@ static void _GBACoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 	if (stream && stream->videoDimensionsChanged) {
 		stream->videoDimensionsChanged(stream, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 	}
+	if (stream && stream->videoFrameRateChanged) {
+		stream->videoFrameRateChanged(stream, core->frameCycles(core), core->frequency(core));
+	}
 }
 
 static bool _GBACoreLoadROM(struct mCore* core, struct VFile* vf) {

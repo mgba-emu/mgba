@@ -11,6 +11,7 @@
 
 static void _magickPostVideoFrame(struct mAVStream*, const color_t* pixels, size_t stride);
 static void _magickVideoDimensionsChanged(struct mAVStream*, unsigned width, unsigned height);
+static void _magickVideoFrameRateChanged(struct mAVStream*, unsigned numerator, unsigned denominator);
 
 void ImageMagickGIFEncoderInit(struct ImageMagickGIFEncoder* encoder) {
 	encoder->wand = 0;
@@ -19,12 +20,15 @@ void ImageMagickGIFEncoderInit(struct ImageMagickGIFEncoder* encoder) {
 	encoder->d.postVideoFrame = _magickPostVideoFrame;
 	encoder->d.postAudioFrame = 0;
 	encoder->d.postAudioBuffer = 0;
+	encoder->d.videoFrameRateChanged = _magickVideoFrameRateChanged;
 
 	encoder->frameskip = 2;
 	encoder->delayMs = -1;
 
 	encoder->iwidth = VIDEO_HORIZONTAL_PIXELS;
 	encoder->iheight = VIDEO_VERTICAL_PIXELS;
+	encoder->numerator = VIDEO_TOTAL_LENGTH;
+	encoder->denominator = GBA_ARM7TDMI_FREQUENCY;
 }
 
 void ImageMagickGIFEncoderSetParams(struct ImageMagickGIFEncoder* encoder, int frameskip, int delayMs) {
@@ -87,10 +91,10 @@ static void _magickPostVideoFrame(struct mAVStream* stream, const color_t* pixel
 		ts /= 10;
 		nts /= 10;
 	} else {
-		ts *= VIDEO_TOTAL_LENGTH * 100;
-		nts *= VIDEO_TOTAL_LENGTH * 100;
-		ts /= GBA_ARM7TDMI_FREQUENCY;
-		nts /= GBA_ARM7TDMI_FREQUENCY;
+		ts *= encoder->numerator * 100;
+		nts *= encoder->numerator * 100;
+		ts /= encoder->denominator;
+		nts /= encoder->denominator;
 	}
 	MagickSetImageDelay(encoder->wand, nts - ts);
 	++encoder->currentFrame;
@@ -100,4 +104,10 @@ static void _magickVideoDimensionsChanged(struct mAVStream* stream, unsigned wid
 	struct ImageMagickGIFEncoder* encoder = (struct ImageMagickGIFEncoder*) stream;
 	encoder->iwidth = width;
 	encoder->iheight = height;
+}
+
+static void _magickVideoFrameRateChanged(struct mAVStream* stream, unsigned numerator, unsigned denominator) {
+	struct ImageMagickGIFEncoder* encoder = (struct ImageMagickGIFEncoder*) stream;
+	encoder->numerator = numerator;
+	encoder->denominator = denominator;
 }
