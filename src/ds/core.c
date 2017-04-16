@@ -409,7 +409,7 @@ static int32_t _DSCoreFrameCounter(const struct mCore* core) {
 
 static int32_t _DSCoreFrameCycles(const struct mCore* core) {
 	UNUSED(core);
-	return DS_VIDEO_TOTAL_LENGTH;
+	return DS_VIDEO_TOTAL_LENGTH * 2;
 }
 
 static int32_t _DSCoreFrequency(const struct mCore* core) {

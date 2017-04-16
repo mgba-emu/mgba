@@ -12,7 +12,7 @@
 mLOG_DEFINE_CATEGORY(DS_AUDIO, "DS Audio", "ds.audio");
 
 static const unsigned BLIP_BUFFER_SIZE = 0x4000;
-static const int CLOCKS_PER_FRAME = 0x4000;
+static const int CLOCKS_PER_FRAME = 0x8000;
 const int DS_AUDIO_VOLUME_MAX = 0x100;
 
 static void _updateChannel(struct mTiming* timing, void* user, uint32_t cyclesLate);
@@ -332,10 +332,11 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 		blip_add_delta(audio->right, audio->clock, sampleRight - audio->lastRight);
 		audio->lastLeft = sampleLeft;
 		audio->lastRight = sampleRight;
-		audio->clock += audio->sampleInterval;
+		// blip clock is in ARM9 cycles, but sampleInterval is in ARM7 cycles
+		audio->clock += audio->sampleInterval * 2;
 		if (audio->clock >= CLOCKS_PER_FRAME) {
-			blip_end_frame(audio->left, audio->clock);
-			blip_end_frame(audio->right, audio->clock);
+			blip_end_frame(audio->left, CLOCKS_PER_FRAME);
+			blip_end_frame(audio->right, CLOCKS_PER_FRAME);
 			audio->clock -= CLOCKS_PER_FRAME;
 		}
 	}
