@@ -86,6 +86,7 @@ void DSAudioReset(struct DSAudio* audio) {
 	mTimingSchedule(&audio->p->ds7.timing, &audio->sampleEvent, 0);
 	audio->sampleRate = 0x8000;
 	audio->sampleInterval = DS_ARM7TDMI_FREQUENCY / audio->sampleRate;
+	audio->sampleDrift = 0;
 
 	int ch;
 	for (ch = 0; ch < 16; ++ch) {
@@ -325,6 +326,12 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	int16_t sampleLeft = _applyBias(audio, audio->sampleLeft);
 	int16_t sampleRight = _applyBias(audio, audio->sampleRight);
 
+	audio->sampleDrift += DS_ARM7TDMI_FREQUENCY % audio->sampleRate;
+
+	if (audio->sampleDrift >= audio->sampleRate) {
+		++audio->sampleInterval;
+	}
+
 	mCoreSyncLockAudio(audio->p->sync);
 	unsigned produced;
 	if ((size_t) blip_samples_avail(audio->left) < audio->samples) {
@@ -351,4 +358,9 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 		audio->p->stream->postAudioBuffer(audio->p->stream, audio->left, audio->right);
 	}
 	mTimingSchedule(timing, &audio->sampleEvent, audio->sampleInterval - cyclesLate);
+
+	if (audio->sampleDrift >= audio->sampleRate) {
+		--audio->sampleInterval;
+		audio->sampleDrift -= audio->sampleRate;
+	}
 }

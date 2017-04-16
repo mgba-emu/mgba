@@ -80,6 +80,7 @@ struct DSAudio {
 	unsigned sampleRate;
 
 	int32_t sampleInterval;
+	unsigned sampleDrift;
 
 	bool forceDisableCh[16];
 	int bias;
