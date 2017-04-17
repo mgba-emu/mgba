@@ -103,6 +103,7 @@ Misc:
  - Feature: Make -l option explicit
  - Core: Ability to enumerate and modify video and audio channels
  - Debugger: Make attaching a backend idempotent
+ - VFS: Optimize expanding in-memory files
 
 0.5.2: (2016-12-31)
 Bugfixes:
