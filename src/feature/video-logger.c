@@ -37,11 +37,21 @@ static inline size_t _roundUp(size_t value, int shift) {
 void mVideoLoggerRendererCreate(struct mVideoLogger* logger, bool readonly) {
 	if (readonly) {
 		logger->writeData = _writeNull;
+		logger->block = true;
 	} else {
 		logger->writeData = _writeData;
 	}
 	logger->readData = _readData;
 	logger->vf = NULL;
+
+	logger->init = NULL;
+	logger->deinit = NULL;
+	logger->reset = NULL;
+
+	logger->lock = NULL;
+	logger->unlock = NULL;
+	logger->wait = NULL;
+	logger->wake = NULL;
 }
 
 void mVideoLoggerRendererInit(struct mVideoLogger* logger) {
@@ -51,9 +61,17 @@ void mVideoLoggerRendererInit(struct mVideoLogger* logger) {
 
 	logger->vramDirtyBitmap = calloc(_roundUp(logger->vramSize, 17), sizeof(uint32_t));
 	logger->oamDirtyBitmap = calloc(_roundUp(logger->oamSize, 6), sizeof(uint32_t));
+
+	if (logger->init) {
+		logger->init(logger);
+	}
 }
 
 void mVideoLoggerRendererDeinit(struct mVideoLogger* logger) {
+	if (logger->deinit) {
+		logger->deinit(logger);
+	}
+
 	mappedMemoryFree(logger->palette, logger->paletteSize);
 	mappedMemoryFree(logger->vram, logger->vramSize);
 	mappedMemoryFree(logger->oam, logger->oamSize);
@@ -65,6 +83,10 @@ void mVideoLoggerRendererDeinit(struct mVideoLogger* logger) {
 void mVideoLoggerRendererReset(struct mVideoLogger* logger) {
 	memset(logger->vramDirtyBitmap, 0, sizeof(uint32_t) * _roundUp(logger->vramSize, 17));
 	memset(logger->oamDirtyBitmap, 0, sizeof(uint32_t) * _roundUp(logger->oamSize, 6));
+
+	if (logger->reset) {
+		logger->reset(logger);
+	}
 }
 
 void mVideoLoggerRendererWriteVideoRegister(struct mVideoLogger* logger, uint32_t address, uint16_t value) {
@@ -179,6 +201,7 @@ static bool _writeNull(struct mVideoLogger* logger, const void* data, size_t len
 }
 
 static bool _readData(struct mVideoLogger* logger, void* data, size_t length, bool block) {
+	UNUSED(block);
 	return logger->vf->read(logger->vf, data, length) == (ssize_t) length;
 }
 

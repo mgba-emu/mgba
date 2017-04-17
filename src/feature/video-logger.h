@@ -33,6 +33,16 @@ struct VFile;
 struct mVideoLogger {
 	bool (*writeData)(struct mVideoLogger* logger, const void* data, size_t length);
 	bool (*readData)(struct mVideoLogger* logger, void* data, size_t length, bool block);
+
+	bool block;
+	void (*init)(struct mVideoLogger*);
+	void (*deinit)(struct mVideoLogger*);
+	void (*reset)(struct mVideoLogger*);
+
+	void (*lock)(struct mVideoLogger*);
+	void (*unlock)(struct mVideoLogger*);
+	void (*wait)(struct mVideoLogger*);
+	void (*wake)(struct mVideoLogger*, int y);
 	void* context;
 
 	bool (*parsePacket)(struct mVideoLogger* logger, const struct mVideoLoggerDirtyInfo* packet);

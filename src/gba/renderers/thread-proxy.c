@@ -11,39 +11,39 @@
 
 #ifndef DISABLE_THREADING
 
-static void GBAVideoThreadProxyRendererInit(struct GBAVideoProxyRenderer* renderer);
-static void GBAVideoThreadProxyRendererReset(struct GBAVideoProxyRenderer* renderer);
-static void GBAVideoThreadProxyRendererDeinit(struct GBAVideoProxyRenderer* renderer);
+static void GBAVideoThreadProxyRendererInit(struct mVideoLogger* logger);
+static void GBAVideoThreadProxyRendererReset(struct mVideoLogger* logger);
+static void GBAVideoThreadProxyRendererDeinit(struct mVideoLogger* logger);
 
 static THREAD_ENTRY _proxyThread(void* renderer);
 
 static bool _writeData(struct mVideoLogger* logger, const void* data, size_t length);
 static bool _readData(struct mVideoLogger* logger, void* data, size_t length, bool block);
 
-static void _lock(struct GBAVideoProxyRenderer* proxyRenderer);
-static void _unlock(struct GBAVideoProxyRenderer* proxyRenderer);
-static void _wait(struct GBAVideoProxyRenderer* proxyRenderer);
-static void _wake(struct GBAVideoProxyRenderer* proxyRenderer, int y);
+static void _lock(struct mVideoLogger* logger);
+static void _unlock(struct mVideoLogger* logger);
+static void _wait(struct mVideoLogger* logger);
+static void _wake(struct mVideoLogger* logger, int y);
 
 void GBAVideoThreadProxyRendererCreate(struct GBAVideoThreadProxyRenderer* renderer, struct GBAVideoRenderer* backend) {
-	renderer->d.block = true;
+	renderer->d.logger.block = true;
 	GBAVideoProxyRendererCreate(&renderer->d, backend, false);
 
-	renderer->d.init = GBAVideoThreadProxyRendererInit;
-	renderer->d.reset = GBAVideoThreadProxyRendererReset;
-	renderer->d.deinit = GBAVideoThreadProxyRendererDeinit;
-	renderer->d.lock = _lock;
-	renderer->d.unlock = _unlock;
-	renderer->d.wait = _wait;
-	renderer->d.wake = _wake;
+	renderer->d.logger.init = GBAVideoThreadProxyRendererInit;
+	renderer->d.logger.reset = GBAVideoThreadProxyRendererReset;
+	renderer->d.logger.deinit = GBAVideoThreadProxyRendererDeinit;
+	renderer->d.logger.lock = _lock;
+	renderer->d.logger.unlock = _unlock;
+	renderer->d.logger.wait = _wait;
+	renderer->d.logger.wake = _wake;
 
 	renderer->d.logger.writeData = _writeData;
 	renderer->d.logger.readData = _readData;
 	renderer->d.logger.vf = NULL;
 }
 
-void GBAVideoThreadProxyRendererInit(struct GBAVideoProxyRenderer* renderer) {
-	struct GBAVideoThreadProxyRenderer* proxyRenderer = (struct GBAVideoThreadProxyRenderer*) renderer;
+void GBAVideoThreadProxyRendererInit(struct mVideoLogger* logger) {
+	struct GBAVideoThreadProxyRenderer* proxyRenderer = logger->context;
 	ConditionInit(&proxyRenderer->fromThreadCond);
 	ConditionInit(&proxyRenderer->toThreadCond);
 	MutexInit(&proxyRenderer->mutex);
@@ -53,8 +53,8 @@ void GBAVideoThreadProxyRendererInit(struct GBAVideoProxyRenderer* renderer) {
 	ThreadCreate(&proxyRenderer->thread, _proxyThread, proxyRenderer);
 }
 
-void GBAVideoThreadProxyRendererReset(struct GBAVideoProxyRenderer* renderer) {
-	struct GBAVideoThreadProxyRenderer* proxyRenderer = (struct GBAVideoThreadProxyRenderer*) renderer;
+void GBAVideoThreadProxyRendererReset(struct mVideoLogger* logger) {
+	struct GBAVideoThreadProxyRenderer* proxyRenderer = logger->context;
 	MutexLock(&proxyRenderer->mutex);
 	while (proxyRenderer->threadState == PROXY_THREAD_BUSY) {
 		ConditionWake(&proxyRenderer->toThreadCond);
@@ -63,8 +63,8 @@ void GBAVideoThreadProxyRendererReset(struct GBAVideoProxyRenderer* renderer) {
 	MutexUnlock(&proxyRenderer->mutex);
 }
 
-void GBAVideoThreadProxyRendererDeinit(struct GBAVideoProxyRenderer* renderer) {
-	struct GBAVideoThreadProxyRenderer* proxyRenderer = (struct GBAVideoThreadProxyRenderer*) renderer;
+void GBAVideoThreadProxyRendererDeinit(struct mVideoLogger* logger) {
+	struct GBAVideoThreadProxyRenderer* proxyRenderer = logger->context;
 	bool waiting = false;
 	MutexLock(&proxyRenderer->mutex);
 	while (proxyRenderer->threadState == PROXY_THREAD_BUSY) {
@@ -132,33 +132,33 @@ static bool _readData(struct mVideoLogger* logger, void* data, size_t length, bo
 	return read;
 }
 
-static void _lock(struct GBAVideoProxyRenderer* proxyRenderer) {
-	struct GBAVideoThreadProxyRenderer* threadProxy = (struct GBAVideoThreadProxyRenderer*) proxyRenderer;
-	MutexLock(&threadProxy->mutex);
+static void _lock(struct mVideoLogger* logger) {
+	struct GBAVideoThreadProxyRenderer* proxyRenderer = logger->context;
+	MutexLock(&proxyRenderer->mutex);
 }
 
-static void _wait(struct GBAVideoProxyRenderer* proxyRenderer) {
-	struct GBAVideoThreadProxyRenderer* threadProxy = (struct GBAVideoThreadProxyRenderer*) proxyRenderer;
-	if (threadProxy->threadState == PROXY_THREAD_STOPPED) {
+static void _wait(struct mVideoLogger* logger) {
+	struct GBAVideoThreadProxyRenderer* proxyRenderer = logger->context;
+	if (proxyRenderer->threadState == PROXY_THREAD_STOPPED) {
 		mLOG(GBA_VIDEO, ERROR, "Proxy thread stopped prematurely!");
-		_proxyThreadRecover(threadProxy);
+		_proxyThreadRecover(proxyRenderer);
 		return;
 	}
-	while (threadProxy->threadState == PROXY_THREAD_BUSY) {
-		ConditionWake(&threadProxy->toThreadCond);
-		ConditionWait(&threadProxy->fromThreadCond, &threadProxy->mutex);
+	while (proxyRenderer->threadState == PROXY_THREAD_BUSY) {
+		ConditionWake(&proxyRenderer->toThreadCond);
+		ConditionWait(&proxyRenderer->fromThreadCond, &proxyRenderer->mutex);
 	}
 }
 
-static void _unlock(struct GBAVideoProxyRenderer* proxyRenderer) {
-	struct GBAVideoThreadProxyRenderer* threadProxy = (struct GBAVideoThreadProxyRenderer*) proxyRenderer;
-	MutexUnlock(&threadProxy->mutex);
+static void _unlock(struct mVideoLogger* logger) {
+	struct GBAVideoThreadProxyRenderer* proxyRenderer = logger->context;
+	MutexUnlock(&proxyRenderer->mutex);
 }
 
-static void _wake(struct GBAVideoProxyRenderer* proxyRenderer, int y) {
-	struct GBAVideoThreadProxyRenderer* threadProxy = (struct GBAVideoThreadProxyRenderer*) proxyRenderer;
+static void _wake(struct mVideoLogger* logger, int y) {
+	struct GBAVideoThreadProxyRenderer* proxyRenderer = logger->context;
 	if ((y & 15) == 15) {
-		ConditionWake(&threadProxy->toThreadCond);
+		ConditionWake(&proxyRenderer->toThreadCond);
 	}
 }
 

@@ -672,7 +672,7 @@ static void _GBACoreStartVideoLog(struct mCore* core, struct mVideoLogContext* c
 	context->channels[0].channelData = vf;
 	context->channels[0].type = 0;
 	gbacore->logProxy.logger.vf = vf;
-	gbacore->logProxy.block = false;
+	gbacore->logProxy.logger.block = false;
 
 	GBAVideoProxyRendererShim(&gba->video, &gbacore->logProxy);
 }

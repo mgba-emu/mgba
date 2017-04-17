@@ -17,17 +17,6 @@ struct GBAVideoProxyRenderer {
 	struct GBAVideoRenderer d;
 	struct GBAVideoRenderer* backend;
 	struct mVideoLogger logger;
-
-	bool block;
-
-	void (*init)(struct GBAVideoProxyRenderer*);
-	void (*deinit)(struct GBAVideoProxyRenderer*);
-	void (*reset)(struct GBAVideoProxyRenderer*);
-
-	void (*lock)(struct GBAVideoProxyRenderer*);
-	void (*unlock)(struct GBAVideoProxyRenderer*);
-	void (*wait)(struct GBAVideoProxyRenderer*);
-	void (*wake)(struct GBAVideoProxyRenderer*, int y);
 };
 
 void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct GBAVideoRenderer* backend, bool readonly);
