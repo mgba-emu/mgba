@@ -769,7 +769,7 @@ static void _GBAVLPStartFrameCallback(void *context) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = core->board;
 
-	if (!mVideoLoggerRendererRun(&gbacore->logProxy.logger)) {
+	if (!mVideoLoggerRendererRun(&gbacore->logProxy.logger, true)) {
 		GBAVideoProxyRendererUnshim(&gba->video, &gbacore->logProxy);
 		gbacore->logProxy.logger.vf->seek(gbacore->logProxy.logger.vf, 0, SEEK_SET);
 		core->loadState(core, gbacore->logContext->initialState);

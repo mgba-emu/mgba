@@ -174,7 +174,7 @@ static THREAD_ENTRY _proxyThread(void* renderer) {
 		}
 		proxyRenderer->threadState = PROXY_THREAD_BUSY;
 		MutexUnlock(&proxyRenderer->mutex);
-		if (!mVideoLoggerRendererRun(&proxyRenderer->d.logger)) {
+		if (!mVideoLoggerRendererRun(&proxyRenderer->d.logger, false)) {
 			// FIFO was corrupted
 			proxyRenderer->threadState = PROXY_THREAD_STOPPED;
 			mLOG(GBA_VIDEO, ERROR, "Proxy thread queue got corrupted!");

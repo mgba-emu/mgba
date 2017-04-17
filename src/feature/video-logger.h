@@ -107,7 +107,7 @@ void mVideoLoggerRendererWriteOAM(struct mVideoLogger* logger, uint32_t address,
 void mVideoLoggerRendererDrawScanline(struct mVideoLogger* logger, int y);
 void mVideoLoggerRendererFlush(struct mVideoLogger* logger);
 
-bool mVideoLoggerRendererRun(struct mVideoLogger* logger);
+bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block);
 
 struct mCore;
 struct mVideoLogContext* mVideoLoggerCreate(struct mCore* core);

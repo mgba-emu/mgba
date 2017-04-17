@@ -168,9 +168,9 @@ void mVideoLoggerRendererFlush(struct mVideoLogger* logger) {
 	logger->writeData(logger, &dirty, sizeof(dirty));
 }
 
-bool mVideoLoggerRendererRun(struct mVideoLogger* logger) {
+bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block) {
 	struct mVideoLoggerDirtyInfo item = {0};
-	while (logger->readData(logger, &item, sizeof(item), false)) {
+	while (logger->readData(logger, &item, sizeof(item), block)) {
 		switch (item.type) {
 		case DIRTY_REGISTER:
 		case DIRTY_PALETTE:
@@ -186,7 +186,7 @@ bool mVideoLoggerRendererRun(struct mVideoLogger* logger) {
 			return false;
 		}
 	}
-	return false;
+	return !block;
 }
 
 static bool _writeData(struct mVideoLogger* logger, const void* data, size_t length) {
