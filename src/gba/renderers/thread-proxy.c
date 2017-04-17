@@ -27,7 +27,7 @@ static void _wake(struct GBAVideoProxyRenderer* proxyRenderer, int y);
 
 void GBAVideoThreadProxyRendererCreate(struct GBAVideoThreadProxyRenderer* renderer, struct GBAVideoRenderer* backend) {
 	renderer->d.block = true;
-	GBAVideoProxyRendererCreate(&renderer->d, backend);
+	GBAVideoProxyRendererCreate(&renderer->d, backend, false);
 
 	renderer->d.init = GBAVideoThreadProxyRendererInit;
 	renderer->d.reset = GBAVideoThreadProxyRendererReset;

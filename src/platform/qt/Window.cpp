@@ -354,6 +354,7 @@ QString Window::getFilters() const {
 
 	formats.removeDuplicates();
 	filters.prepend(tr("All ROMs (%1)").arg(formats.join(QChar(' '))));
+	filters.append(tr("%1 Video Logs (*.mvl)").arg(projectName));
 	return filters.join(";;");
 }
 

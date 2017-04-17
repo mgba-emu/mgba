@@ -11,7 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/internal/gba/video.h>
-#include <mgba/core/video-logger.h>
+#include "feature/video-logger.h"
 
 struct GBAVideoProxyRenderer {
 	struct GBAVideoRenderer d;
@@ -30,7 +30,7 @@ struct GBAVideoProxyRenderer {
 	void (*wake)(struct GBAVideoProxyRenderer*, int y);
 };
 
-void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct GBAVideoRenderer* backend);
+void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct GBAVideoRenderer* backend, bool readonly);
 void GBAVideoProxyRendererShim(struct GBAVideo* video, struct GBAVideoProxyRenderer* renderer);
 void GBAVideoProxyRendererUnshim(struct GBAVideo* video, struct GBAVideoProxyRenderer* renderer);
 

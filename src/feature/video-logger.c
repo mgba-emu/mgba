@@ -3,15 +3,30 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include <mgba/core/video-logger.h>
+#include "video-logger.h"
 
 #include <mgba/core/core.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
 
+#ifdef M_CORE_GBA
+#include <mgba/gba/core.h>
+#endif
+
 const char mVL_MAGIC[] = "mVL\0";
 
+const static struct mVLDescriptor {
+	enum mPlatform platform;
+	struct mCore* (*open)(void);
+} _descriptors[] = {
+#ifdef M_CORE_GBA
+	{ PLATFORM_GBA, GBAVideoLogPlayerCreate },
+#endif
+	{ PLATFORM_NONE, 0 }
+};
+
 static bool _writeData(struct mVideoLogger* logger, const void* data, size_t length);
+static bool _writeNull(struct mVideoLogger* logger, const void* data, size_t length);
 static bool _readData(struct mVideoLogger* logger, void* data, size_t length, bool block);
 
 static inline size_t _roundUp(size_t value, int shift) {
@@ -19,8 +34,12 @@ static inline size_t _roundUp(size_t value, int shift) {
 	return value >> shift;
 }
 
-void mVideoLoggerRendererCreate(struct mVideoLogger* logger) {
-	logger->writeData = _writeData;
+void mVideoLoggerRendererCreate(struct mVideoLogger* logger, bool readonly) {
+	if (readonly) {
+		logger->writeData = _writeNull;
+	} else {
+		logger->writeData = _writeData;
+	}
 	logger->readData = _readData;
 	logger->vf = NULL;
 }
@@ -93,7 +112,7 @@ void mVideoLoggerRendererDrawScanline(struct mVideoLogger* logger, int y) {
 			uint32_t bitmap = logger->vramDirtyBitmap[i];
 			logger->vramDirtyBitmap[i] = 0;
 			int j;
-			for (j = 0; j < 32; ++j) {
+			for (j = 0; j < mVL_MAX_CHANNELS; ++j) {
 				if (!(bitmap & (1 << j))) {
 					continue;
 				}
@@ -145,20 +164,29 @@ bool mVideoLoggerRendererRun(struct mVideoLogger* logger) {
 			return false;
 		}
 	}
-	return true;
+	return false;
 }
 
 static bool _writeData(struct mVideoLogger* logger, const void* data, size_t length) {
 	return logger->vf->write(logger->vf, data, length) == (ssize_t) length;
 }
 
+static bool _writeNull(struct mVideoLogger* logger, const void* data, size_t length) {
+	UNUSED(logger);
+	UNUSED(data);
+	UNUSED(length);
+	return false;
+}
+
 static bool _readData(struct mVideoLogger* logger, void* data, size_t length, bool block) {
-	return logger->vf->read(logger->vf, data, length) == (ssize_t) length || !block;
+	return logger->vf->read(logger->vf, data, length) == (ssize_t) length;
 }
 
 struct mVideoLogContext* mVideoLoggerCreate(struct mCore* core) {
 	struct mVideoLogContext* context = malloc(sizeof(*context));
-	core->startVideoLog(core, context);
+	if (core) {
+		core->startVideoLog(core, context);
+	}
 	return context;
 }
 
@@ -182,6 +210,7 @@ void mVideoLoggerWrite(struct mCore* core, struct mVideoLogContext* context, str
 		ssize_t written = vf->write(vf, context->initialState, context->initialStateSize);
 		if (written > 0) {
 			STORE_32LE(pointer, 0, &header.initialStatePointer);
+			STORE_32LE(context->initialStateSize, 0, &header.initialStateSize);
 			pointer += written;
 		} else {
 			header.initialStatePointer = 0;
@@ -191,7 +220,7 @@ void mVideoLoggerWrite(struct mCore* core, struct mVideoLogContext* context, str
 	}
 
 	size_t i;
-	for (i = 0; i < context->nChannels && i < 32; ++i) {
+	for (i = 0; i < context->nChannels && i < mVL_MAX_CHANNELS; ++i) {
 		struct VFile* channel = context->channels[i].channelData;
 		void* block = channel->map(channel, channel->size(channel), MAP_READ);
 
@@ -203,6 +232,7 @@ void mVideoLoggerWrite(struct mCore* core, struct mVideoLogContext* context, str
 			ssize_t written = vf->write(vf, context->channels[i].initialState, context->channels[i].initialStateSize);
 			if (written > 0) {
 				STORE_32LE(pointer, 0, &chHeader.channelInitialStatePointer);
+				STORE_32LE(context->channels[i].initialStateSize, 0, &chHeader.channelInitialStateSize);
 				pointer += written;
 			} else {
 				chHeader.channelInitialStatePointer = 0;
@@ -222,4 +252,110 @@ void mVideoLoggerWrite(struct mCore* core, struct mVideoLogContext* context, str
 	}
 	vf->seek(vf, 0, SEEK_SET);
 	vf->write(vf, &header, sizeof(header));
+}
+
+struct mCore* mVideoLogCoreFind(struct VFile* vf) {
+	if (!vf) {
+		return NULL;
+	}
+	struct mVideoLogHeader header = {{0}};
+	vf->seek(vf, 0, SEEK_SET);
+	ssize_t read = vf->read(vf, &header, sizeof(header));
+	if (read != sizeof(header)) {
+		return NULL;
+	}
+	if (memcmp(header.magic, mVL_MAGIC, sizeof(mVL_MAGIC)) != 0) {
+		return NULL;
+	}
+	enum mPlatform platform;
+	LOAD_32LE(platform, 0, &header.platform);
+
+	const struct mVLDescriptor* descriptor;
+	for (descriptor = &_descriptors[0]; descriptor->platform != PLATFORM_NONE; ++descriptor) {
+		if (platform == descriptor->platform) {
+			break;
+		}
+	}
+	struct mCore* core = NULL;
+	if (descriptor->open) {
+		core = descriptor->open();
+	}
+	return core;
+}
+
+bool mVideoLogContextLoad(struct VFile* vf, struct mVideoLogContext* context) {
+	if (!vf) {
+		return false;
+	}
+	struct mVideoLogHeader header = {{0}};
+	vf->seek(vf, 0, SEEK_SET);
+	ssize_t read = vf->read(vf, &header, sizeof(header));
+	if (read != sizeof(header)) {
+		return false;
+	}
+	if (memcmp(header.magic, mVL_MAGIC, sizeof(mVL_MAGIC)) != 0) {
+		return false;
+	}
+
+	// TODO: Error check
+	uint32_t initialStatePointer;
+	uint32_t initialStateSize;
+	LOAD_32LE(initialStatePointer, 0, &header.initialStatePointer);
+	LOAD_32LE(initialStateSize, 0, &header.initialStateSize);
+	void* initialState = anonymousMemoryMap(initialStateSize);
+	vf->read(vf, initialState, initialStateSize);
+	context->initialState = initialState;
+	context->initialStateSize = initialStateSize;
+
+	uint32_t nChannels;
+	LOAD_32LE(nChannels, 0, &header.nChannels);
+	context->nChannels = nChannels;
+
+	size_t i;
+	for (i = 0; i < nChannels && i < mVL_MAX_CHANNELS; ++i) {
+		uint32_t channelPointer;
+		LOAD_32LE(channelPointer, 0, &header.channelPointers[i]);
+		vf->seek(vf, channelPointer, SEEK_SET);
+
+		struct mVideoLogChannelHeader chHeader;
+		vf->read(vf, &chHeader, sizeof(chHeader));
+
+		LOAD_32LE(context->channels[i].type, 0, &chHeader.type);
+		LOAD_32LE(context->channels[i].initialStateSize, 0, &chHeader.channelInitialStateSize);
+
+		LOAD_32LE(channelPointer, 0, &chHeader.channelInitialStatePointer);
+		if (channelPointer) {
+			off_t position = vf->seek(vf, 0, SEEK_CUR);
+			vf->seek(vf, channelPointer, SEEK_SET);
+
+			context->channels[i].initialState = anonymousMemoryMap(context->channels[i].initialStateSize);
+			vf->read(vf, context->channels[i].initialState, context->channels[i].initialStateSize);
+			vf->seek(vf, position, SEEK_SET);
+		}
+
+		uint32_t channelSize;
+		LOAD_32LE(channelSize, 0, &chHeader.channelSize);
+		struct VFile* vfm = VFileMemChunk(0, channelSize);
+
+		while (channelSize) {
+			uint8_t buffer[2048];
+			ssize_t toRead = channelSize;
+			if (toRead > (ssize_t) sizeof(buffer)) {
+				toRead = sizeof(buffer);
+			}
+			toRead = vf->read(vf, buffer, toRead);
+			if (toRead > 0) {
+				channelSize -= toRead;
+			} else {
+				break;
+			}
+			vfm->write(vfm, buffer, toRead);
+		}
+		context->channels[i].channelData = vfm;
+	}
+
+	for (; i < mVL_MAX_CHANNELS; ++i) {
+		context->channels[i].channelData = NULL;
+	}
+	return true;
 }

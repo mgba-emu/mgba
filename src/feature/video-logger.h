@@ -10,6 +10,8 @@
 
 CXX_GUARD_START
 
+#define mVL_MAX_CHANNELS 32
+
 enum mVideoLoggerDirtyType {
 	DIRTY_DUMMY = 0,
 	DIRTY_FLUSH,
@@ -61,25 +63,28 @@ struct mVideoLogContext {
 	void* initialState;
 	size_t initialStateSize;
 	uint32_t nChannels;
-	struct mVideoLogChannel channels[32];
+	struct mVideoLogChannel channels[mVL_MAX_CHANNELS];
 };
 
 struct mVideoLogHeader {
 	char magic[4];
+	uint32_t reserved;
 	uint32_t platform;
-	uint32_t nChannels;
+	uint32_t padding;
 	uint32_t initialStatePointer;
-	uint32_t channelPointers[32];
+	uint32_t initialStateSize;
+	uint32_t nChannels;
+	uint32_t channelPointers[mVL_MAX_CHANNELS];
 };
 
 struct mVideoLogChannelHeader {
 	uint32_t type;
 	uint32_t channelInitialStatePointer;
+	uint32_t channelInitialStateSize;
 	uint32_t channelSize;
-	uint32_t reserved;
 };
 
-void mVideoLoggerRendererCreate(struct mVideoLogger* logger);
+void mVideoLoggerRendererCreate(struct mVideoLogger* logger, bool readonly);
 void mVideoLoggerRendererInit(struct mVideoLogger* logger);
 void mVideoLoggerRendererDeinit(struct mVideoLogger* logger);
 void mVideoLoggerRendererReset(struct mVideoLogger* logger);
@@ -98,6 +103,9 @@ struct mCore;
 struct mVideoLogContext* mVideoLoggerCreate(struct mCore* core);
 void mVideoLoggerDestroy(struct mCore* core, struct mVideoLogContext*);
 void mVideoLoggerWrite(struct mCore* core, struct mVideoLogContext*, struct VFile*);
+
+struct mCore* mVideoLogCoreFind(struct VFile*);
+bool mVideoLogContextLoad(struct VFile*, struct mVideoLogContext*);
 
 CXX_GUARD_END
 

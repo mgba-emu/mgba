@@ -24,8 +24,11 @@ static void GBAVideoProxyRendererPutPixels(struct GBAVideoRenderer* renderer, si
 static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerDirtyInfo* packet);
 static uint16_t* _vramBlock(struct mVideoLogger* logger, uint32_t address);
 
-void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct GBAVideoRenderer* backend) {
-	mVideoLoggerRendererCreate(&renderer->logger);
+void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct GBAVideoRenderer* backend, bool readonly) {
+	mVideoLoggerRendererCreate(&renderer->logger, readonly);
+	if (readonly) {
+		renderer->block = true;
+	}
 
 	renderer->d.init = GBAVideoProxyRendererInit;
 	renderer->d.reset = GBAVideoProxyRendererReset;
@@ -56,6 +59,11 @@ void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct 
 	renderer->logger.vramSize = SIZE_VRAM;
 	renderer->logger.oamSize = SIZE_OAM;
 
+	renderer->lock = NULL;
+	renderer->unlock = NULL;
+	renderer->wait = NULL;
+	renderer->wake = NULL;
+
 	renderer->backend = backend;
 }
 
@@ -76,8 +84,8 @@ static void _init(struct GBAVideoProxyRenderer* proxyRenderer) {
 
 static void _reset(struct GBAVideoProxyRenderer* proxyRenderer) {
 	memcpy(proxyRenderer->logger.oam, &proxyRenderer->d.oam->raw, SIZE_OAM);
-	memcpy(proxyRenderer->logger.palette, &proxyRenderer->d.palette, SIZE_PALETTE_RAM);
-	memcpy(proxyRenderer->logger.vram, &proxyRenderer->d.vram, SIZE_VRAM);
+	memcpy(proxyRenderer->logger.palette, proxyRenderer->d.palette, SIZE_PALETTE_RAM);
+	memcpy(proxyRenderer->logger.vram, proxyRenderer->d.vram, SIZE_VRAM);
 
 	mVideoLoggerRendererReset(&proxyRenderer->logger);
 
@@ -87,11 +95,12 @@ static void _reset(struct GBAVideoProxyRenderer* proxyRenderer) {
 }
 
 void GBAVideoProxyRendererShim(struct GBAVideo* video, struct GBAVideoProxyRenderer* renderer) {
-	if (video->renderer != renderer->backend) {
+	if ((renderer->backend && video->renderer != renderer->backend) || video->renderer == &renderer->d) {
 		return;
 	}
-	renderer->d.cache = video->renderer->cache;
+	renderer->backend = video->renderer;
 	video->renderer = &renderer->d;
+	renderer->d.cache = renderer->backend->cache;
 	renderer->d.palette = video->palette;
 	renderer->d.vram = video->vram;
 	renderer->d.oam = &video->oam;
@@ -203,6 +212,9 @@ uint16_t GBAVideoProxyRendererWriteVideoRegister(struct GBAVideoRenderer* render
 	}
 
 	mVideoLoggerRendererWriteVideoRegister(&proxyRenderer->logger, address, value);
+	if (!proxyRenderer->block) {
+		proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, address, value);
+	}
 	return value;
 }
 
@@ -242,47 +254,47 @@ void GBAVideoProxyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y)
 		proxyRenderer->backend->drawScanline(proxyRenderer->backend, y);
 	}
 	mVideoLoggerRendererDrawScanline(&proxyRenderer->logger, y);
-	if (proxyRenderer->block) {
+	if (proxyRenderer->block && proxyRenderer->wake) {
 		proxyRenderer->wake(proxyRenderer, y);
 	}
 }
 
 void GBAVideoProxyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
-	if (proxyRenderer->block) {
+	if (proxyRenderer->block && proxyRenderer->wait) {
 		proxyRenderer->lock(proxyRenderer);
 		proxyRenderer->wait(proxyRenderer);
 	}
 	mVideoLoggerRendererFlush(&proxyRenderer->logger);
-	if (proxyRenderer->block) {
+	if (proxyRenderer->block && proxyRenderer->wait) {
 		proxyRenderer->unlock(proxyRenderer);
 	}
 }
 
 static void GBAVideoProxyRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels) {
 	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
-	if (proxyRenderer->block) {
+	if (proxyRenderer->block && proxyRenderer->wait) {
 		proxyRenderer->lock(proxyRenderer);
 		// Insert an extra item into the queue to make sure it gets flushed
 		mVideoLoggerRendererFlush(&proxyRenderer->logger);
 		proxyRenderer->wait(proxyRenderer);
 	}
 	proxyRenderer->backend->getPixels(proxyRenderer->backend, stride, pixels);
-	if (proxyRenderer->block) {
+	if (proxyRenderer->block && proxyRenderer->wait) {
 		proxyRenderer->unlock(proxyRenderer);
 	}
 }
 
 static void GBAVideoProxyRendererPutPixels(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels) {
 	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
-	if (proxyRenderer->block) {
+	if (proxyRenderer->block && proxyRenderer->wait) {
 		proxyRenderer->lock(proxyRenderer);
 		// Insert an extra item into the queue to make sure it gets flushed
 		mVideoLoggerRendererFlush(&proxyRenderer->logger);
 		proxyRenderer->wait(proxyRenderer);
 	}
 	proxyRenderer->backend->putPixels(proxyRenderer->backend, stride, pixels);
-	if (proxyRenderer->block) {
+	if (proxyRenderer->block && proxyRenderer->wait) {
 		proxyRenderer->unlock(proxyRenderer);
 	}
 }
