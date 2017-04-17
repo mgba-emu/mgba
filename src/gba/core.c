@@ -14,8 +14,9 @@
 #include <mgba/internal/gba/extra/cli.h>
 #include <mgba/internal/gba/overrides.h>
 #ifndef DISABLE_THREADING
-#include <mgba/internal/gba/renderers/thread-proxy.h>
+#include "feature/thread-proxy.h"
 #endif
+#include <mgba/internal/gba/renderers/proxy.h>
 #include <mgba/internal/gba/renderers/video-software.h>
 #include <mgba/internal/gba/savedata.h>
 #include <mgba/internal/gba/serialize.h>
@@ -43,11 +44,11 @@ const static struct mCoreChannelInfo _GBAAudioChannels[] = {
 struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
-	struct GBAVideoProxyRenderer logProxy;
+	struct GBAVideoProxyRenderer proxyRenderer;
 	struct mVideoLogContext* logContext;
 	struct mCoreCallbacks logCallbacks;
 #ifndef DISABLE_THREADING
-	struct GBAVideoThreadProxyRenderer threadProxy;
+	struct mVideoThreadProxy threadProxy;
 	int threadedVideo;
 #endif
 	int keys;
@@ -88,8 +89,9 @@ static bool _GBACoreInit(struct mCore* core) {
 
 #ifndef DISABLE_THREADING
 	gbacore->threadedVideo = false;
-	GBAVideoThreadProxyRendererCreate(&gbacore->threadProxy, &gbacore->renderer.d);
+	mVideoThreadProxyCreate(&gbacore->threadProxy);
 #endif
+	gbacore->proxyRenderer.logger = NULL;
 
 	gbacore->keys = 0;
 	gba->keySource = &gbacore->keys;
@@ -295,7 +297,9 @@ static void _GBACoreReset(struct mCore* core) {
 		struct GBAVideoRenderer* renderer = &gbacore->renderer.d;
 #ifndef DISABLE_THREADING
 		if (gbacore->threadedVideo) {
-			renderer = &gbacore->threadProxy.d.d;
+			gbacore->proxyRenderer.logger = &gbacore->threadProxy.d;
+			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
+			renderer = &gbacore->proxyRenderer.d;
 		}
 #endif
 		GBAVideoAssociateRenderer(&gba->video, renderer);
@@ -656,8 +660,6 @@ static void _GBACoreStartVideoLog(struct mCore* core, struct mVideoLogContext* c
 	struct GBA* gba = core->board;
 	gbacore->logContext = context;
 
-	GBAVideoProxyRendererCreate(&gbacore->logProxy, gba->video.renderer, false);
-
 	context->initialStateSize = core->stateSize(core);
 	context->initialState = anonymousMemoryMap(context->initialStateSize);
 	core->saveState(core, context->initialState);
@@ -671,16 +673,22 @@ static void _GBACoreStartVideoLog(struct mCore* core, struct mVideoLogContext* c
 	context->channels[0].initialStateSize = 0;
 	context->channels[0].channelData = vf;
 	context->channels[0].type = 0;
-	gbacore->logProxy.logger.vf = vf;
-	gbacore->logProxy.logger.block = false;
+	gbacore->proxyRenderer.logger = malloc(sizeof(struct mVideoLogger));
+	mVideoLoggerRendererCreate(gbacore->proxyRenderer.logger, false);
 
-	GBAVideoProxyRendererShim(&gba->video, &gbacore->logProxy);
+	gbacore->proxyRenderer.logger->vf = vf;
+	gbacore->proxyRenderer.logger->block = false;
+
+	GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, &gbacore->renderer.d);
+	GBAVideoProxyRendererShim(&gba->video, &gbacore->proxyRenderer);
 }
 
 static void _GBACoreEndVideoLog(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = core->board;
-	GBAVideoProxyRendererUnshim(&gba->video, &gbacore->logProxy);
+	GBAVideoProxyRendererUnshim(&gba->video, &gbacore->proxyRenderer);
+	free(gbacore->proxyRenderer.logger);
+	gbacore->proxyRenderer.logger = NULL;
 
 	mappedMemoryFree(gbacore->logContext->initialState, gbacore->logContext->initialStateSize);
 	gbacore->logContext->channels[0].channelData->close(gbacore->logContext->channels[0].channelData);
@@ -769,11 +777,11 @@ static void _GBAVLPStartFrameCallback(void *context) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = core->board;
 
-	if (!mVideoLoggerRendererRun(&gbacore->logProxy.logger, true)) {
-		GBAVideoProxyRendererUnshim(&gba->video, &gbacore->logProxy);
-		gbacore->logProxy.logger.vf->seek(gbacore->logProxy.logger.vf, 0, SEEK_SET);
+	if (!mVideoLoggerRendererRun(gbacore->proxyRenderer.logger, true)) {
+		GBAVideoProxyRendererUnshim(&gba->video, &gbacore->proxyRenderer);
+		gbacore->proxyRenderer.logger->vf->seek(gbacore->proxyRenderer.logger->vf, 0, SEEK_SET);
 		core->loadState(core, gbacore->logContext->initialState);
-		GBAVideoProxyRendererShim(&gba->video, &gbacore->logProxy);
+		GBAVideoProxyRendererShim(&gba->video, &gbacore->proxyRenderer);
 
 		// Make sure CPU loop never spins
 		GBAHalt(gba);
@@ -784,15 +792,17 @@ static void _GBAVLPStartFrameCallback(void *context) {
 
 static bool _GBAVLPInit(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
-	GBAVideoProxyRendererCreate(&gbacore->logProxy, NULL, true);
+	if (!_GBACoreInit(core)) {
+		return false;
+	}
+	gbacore->proxyRenderer.logger = malloc(sizeof(struct mVideoLogger));
+	mVideoLoggerRendererCreate(gbacore->proxyRenderer.logger, true);
+	GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, NULL);
 	memset(&gbacore->logCallbacks, 0, sizeof(gbacore->logCallbacks));
 	gbacore->logCallbacks.videoFrameStarted = _GBAVLPStartFrameCallback;
 	gbacore->logCallbacks.context = core;
-	if (_GBACoreInit(core)) {
-		core->addCoreCallbacks(core, &gbacore->logCallbacks);
-		return true;
-	}
-	return false;
+	core->addCoreCallbacks(core, &gbacore->logCallbacks);
+	return true;
 }
 
 static void _GBAVLPDeinit(struct mCore* core) {
@@ -806,17 +816,17 @@ static void _GBAVLPDeinit(struct mCore* core) {
 static void _GBAVLPReset(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = (struct GBA*) core->board;
-	if (gba->video.renderer == &gbacore->logProxy.d) {
-		GBAVideoProxyRendererUnshim(&gba->video, &gbacore->logProxy);
+	if (gba->video.renderer == &gbacore->proxyRenderer.d) {
+		GBAVideoProxyRendererUnshim(&gba->video, &gbacore->proxyRenderer);
 	} else if (gbacore->renderer.outputBuffer) {
 		struct GBAVideoRenderer* renderer = &gbacore->renderer.d;
 		GBAVideoAssociateRenderer(&gba->video, renderer);
 	}
-	gbacore->logProxy.logger.vf->seek(gbacore->logProxy.logger.vf, 0, SEEK_SET);
+	gbacore->proxyRenderer.logger->vf->seek(gbacore->proxyRenderer.logger->vf, 0, SEEK_SET);
 
 	ARMReset(core->cpu);
 	core->loadState(core, gbacore->logContext->initialState);
-	GBAVideoProxyRendererShim(&gba->video, &gbacore->logProxy);
+	GBAVideoProxyRendererShim(&gba->video, &gbacore->proxyRenderer);
 
 	// Make sure CPU loop never spins
 	GBAHalt(gba);
@@ -832,7 +842,7 @@ static bool _GBAVLPLoadROM(struct mCore* core, struct VFile* vf) {
 		gbacore->logContext = NULL;
 		return false;
 	}
-	gbacore->logProxy.logger.vf = gbacore->logContext->channels[0].channelData;
+	gbacore->proxyRenderer.logger->vf = gbacore->logContext->channels[0].channelData;
 	return true;
 }
 

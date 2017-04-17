@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2017 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,29 +11,29 @@
 CXX_GUARD_START
 
 #include <mgba/internal/gba/video.h>
-#include <mgba/internal/gba/renderers/proxy.h>
+#include "video-logger.h"
 #include <mgba-util/threading.h>
 #include <mgba-util/ring-fifo.h>
 
-enum GBAVideoThreadProxyState {
+enum mVideoThreadProxyState {
 	PROXY_THREAD_STOPPED = 0,
 	PROXY_THREAD_IDLE,
 	PROXY_THREAD_BUSY
 };
 
-struct GBAVideoThreadProxyRenderer {
-	struct GBAVideoProxyRenderer d;
+struct mVideoThreadProxy {
+	struct mVideoLogger d;
 
 	Thread thread;
 	Condition fromThreadCond;
 	Condition toThreadCond;
 	Mutex mutex;
-	enum GBAVideoThreadProxyState threadState;
+	enum mVideoThreadProxyState threadState;
 
 	struct RingFIFO dirtyQueue;
 };
 
-void GBAVideoThreadProxyRendererCreate(struct GBAVideoThreadProxyRenderer* renderer, struct GBAVideoRenderer* backend);
+void mVideoThreadProxyCreate(struct mVideoThreadProxy* renderer);
 
 CXX_GUARD_END
 
