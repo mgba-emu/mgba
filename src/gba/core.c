@@ -22,6 +22,23 @@
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
 
+const static struct mCoreChannelInfo _GBAVideoLayers[] = {
+	{ 0, "bg0", "Background 0", NULL },
+	{ 1, "bg1", "Background 1", NULL },
+	{ 2, "bg2", "Background 2", NULL },
+	{ 3, "bg3", "Background 3", NULL },
+	{ 4, "obj", "Objects", NULL },
+};
+
+const static struct mCoreChannelInfo _GBAAudioChannels[] = {
+	{ 0, "ch0", "PSG Channel 0", "Square/Sweep" },
+	{ 1, "ch1", "PSG Channel 1", "Square" },
+	{ 2, "ch2", "PSG Channel 2", "PCM" },
+	{ 3, "ch3", "PSG Channel 3", "Noise" },
+	{ 4, "chA", "FIFO Channel A", NULL },
+	{ 5, "chB", "FIFO Channel B", NULL },
+};
+
 struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
@@ -581,6 +598,54 @@ static bool _GBACoreSavedataRestore(struct mCore* core, const void* sram, size_t
 	return success;
 }
 
+static size_t _GBACoreListVideoLayers(const struct mCore* core, const struct mCoreChannelInfo** info) {
+	UNUSED(core);
+	*info = _GBAVideoLayers;
+	return sizeof(_GBAVideoLayers) / sizeof(*_GBAVideoLayers);
+}
+
+static size_t _GBACoreListAudioChannels(const struct mCore* core, const struct mCoreChannelInfo** info) {
+	UNUSED(core);
+	*info = _GBAAudioChannels;
+	return sizeof(_GBAAudioChannels) / sizeof(*_GBAAudioChannels);
+}
+
+static void _GBACoreEnableVideoLayer(struct mCore* core, size_t id, bool enable) {
+	struct GBA* gba = core->board;
+	switch (id) {
+	case 0:
+	case 1:
+	case 2:
+	case 3:
+		gba->video.renderer->disableBG[id] = !enable;
+		break;
+	case 4:
+		gba->video.renderer->disableOBJ = !enable;
+		break;
+	default:
+		break;
+	}
+}
+
+static void _GBACoreEnableAudioChannel(struct mCore* core, size_t id, bool enable) {
+	struct GBA* gba = core->board;
+	switch (id) {
+	case 0:
+	case 1:
+	case 2:
+	case 3:
+		gba->audio.psg.forceDisableCh[id] = !enable;
+		break;
+	case 4:
+		gba->audio.forceDisableChA = !enable;
+	case 5:
+		gba->audio.forceDisableChB = !enable;
+		break;
+	default:
+		break;
+	}
+}
+
 struct mCore* GBACoreCreate(void) {
 	struct GBACore* gbacore = malloc(sizeof(*gbacore));
 	struct mCore* core = &gbacore->d;
@@ -649,5 +714,9 @@ struct mCore* GBACoreCreate(void) {
 	core->cheatDevice = _GBACoreCheatDevice;
 	core->savedataClone = _GBACoreSavedataClone;
 	core->savedataRestore = _GBACoreSavedataRestore;
+	core->listVideoLayers = _GBACoreListVideoLayers;
+	core->listAudioChannels = _GBACoreListAudioChannels;
+	core->enableVideoLayer = _GBACoreEnableVideoLayer;
+	core->enableAudioChannel = _GBACoreEnableAudioChannel;
 	return core;
 }

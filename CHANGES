@@ -12,6 +12,8 @@ Features:
  - Add option for whether rewinding restores save games
  - Qt: German translation (by Lothar Serra Mari)
  - Savestates now contain any RTC override data
+ - Command line ability to override configuration values
+ - Add option to allow preloading the entire ROM before running
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
@@ -86,6 +88,9 @@ Misc:
  - FFmpeg: Force MP4 files to YUV420P
  - Qt: Make "Mute" able to be bound to a key
  - Core: Restore sleep callback
+ - Qt: Add .gb/.gbc files to the extension list in Info.plist
+ - Feature: Make -l option explicit
+ - Core: Ability to enumerate and modify video and audio channels
 
 0.5.2: (2016-12-31)
 Bugfixes:

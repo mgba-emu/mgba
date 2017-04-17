@@ -10,6 +10,8 @@
 
 CXX_GUARD_START
 
+#include <mgba-util/table.h>
+
 #include <mgba/internal/debugger/debugger.h>
 
 struct mArguments {
@@ -20,6 +22,8 @@ struct mArguments {
 	char* bios;
 	int logLevel;
 	int frameskip;
+
+	struct Table configOverrides;
 
 	enum mDebuggerType debuggerType;
 	bool debugAtStart;
