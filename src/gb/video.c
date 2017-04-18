@@ -127,7 +127,7 @@ void _endMode0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		video->mode = 1;
 		video->modeEvent.callback = _endMode1;
 
-		_updateFrameCount(timing, video, cyclesLate);
+		mTimingSchedule(&video->p->timing, &video->frameEvent, -cyclesLate);
 
 		if (GBRegisterSTATIsVblankIRQ(video->stat) || GBRegisterSTATIsOAMIRQ(video->stat)) {
 			video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
@@ -252,15 +252,15 @@ void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLat
 		video->p->stream->postVideoFrame(video->p->stream, pixels, stride);
 	}
 
+	if (!GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC])) {
+		mTimingSchedule(timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH);
+	}
+
 	for (c = 0; c < mCoreCallbacksListSize(&video->p->coreCallbacks); ++c) {
 		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&video->p->coreCallbacks, c);
 		if (callbacks->videoFrameStarted) {
 			callbacks->videoFrameStarted(callbacks->context);
 		}
-	}
-
-	if (!GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC])) {
-		mTimingSchedule(timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH);
 	}
 }
 
