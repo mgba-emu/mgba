@@ -144,6 +144,9 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 	case DIRTY_SCANLINE:
 		proxyRenderer->backend->drawScanline(proxyRenderer->backend, item->address);
 		break;
+	case DIRTY_FRAME:
+		proxyRenderer->backend->finishFrame(proxyRenderer->backend);
+		break;
 	case DIRTY_FLUSH:
 		return false;
 	default:
@@ -235,6 +238,7 @@ void GBAVideoProxyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 		proxyRenderer->logger->lock(proxyRenderer->logger);
 		proxyRenderer->logger->wait(proxyRenderer->logger);
 	}
+	mVideoLoggerRendererFinishFrame(proxyRenderer->logger);
 	mVideoLoggerRendererFlush(proxyRenderer->logger);
 	if (proxyRenderer->logger->block && proxyRenderer->logger->wait) {
 		proxyRenderer->logger->unlock(proxyRenderer->logger);

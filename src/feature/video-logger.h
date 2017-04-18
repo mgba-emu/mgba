@@ -19,14 +19,17 @@ enum mVideoLoggerDirtyType {
 	DIRTY_REGISTER,
 	DIRTY_OAM,
 	DIRTY_PALETTE,
-	DIRTY_VRAM
+	DIRTY_VRAM,
+	DIRTY_FRAME,
+	DIRTY_RANGE,
+	DIRTY_BUFFER,
 };
 
 struct mVideoLoggerDirtyInfo {
 	enum mVideoLoggerDirtyType type;
 	uint32_t address;
-	uint16_t value;
-	uint32_t padding;
+	uint32_t value;
+	uint32_t value2;
 };
 
 struct VFile;
@@ -104,8 +107,12 @@ void mVideoLoggerRendererWriteVRAM(struct mVideoLogger* logger, uint32_t address
 void mVideoLoggerRendererWritePalette(struct mVideoLogger* logger, uint32_t address, uint16_t value);
 void mVideoLoggerRendererWriteOAM(struct mVideoLogger* logger, uint32_t address, uint16_t value);
 
+void mVideoLoggerWriteBuffer(struct mVideoLogger* logger, uint32_t bufferId, uint32_t offset, uint32_t length, const void* data);
+
 void mVideoLoggerRendererDrawScanline(struct mVideoLogger* logger, int y);
+void mVideoLoggerRendererDrawRange(struct mVideoLogger* logger, int startX, int endX, int y);
 void mVideoLoggerRendererFlush(struct mVideoLogger* logger);
+void mVideoLoggerRendererFinishFrame(struct mVideoLogger* logger);
 
 bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block);
 

@@ -127,7 +127,7 @@ void mVideoLoggerRendererWriteOAM(struct mVideoLogger* logger, uint32_t address,
 	logger->writeData(logger, &dirty, sizeof(dirty));
 }
 
-void mVideoLoggerRendererDrawScanline(struct mVideoLogger* logger, int y) {
+static void _flushVRAM(struct mVideoLogger* logger) {
 	size_t i;
 	for (i = 0; i < _roundUp(logger->vramSize, 17); ++i) {
 		if (logger->vramDirtyBitmap[i]) {
@@ -141,7 +141,7 @@ void mVideoLoggerRendererDrawScanline(struct mVideoLogger* logger, int y) {
 				struct mVideoLoggerDirtyInfo dirty = {
 					DIRTY_VRAM,
 					j * 0x1000,
-					0xABCD,
+					0x1000,
 					0xDEADBEEF,
 				};
 				logger->writeData(logger, &dirty, sizeof(dirty));
@@ -149,11 +149,26 @@ void mVideoLoggerRendererDrawScanline(struct mVideoLogger* logger, int y) {
 			}
 		}
 	}
+}
+
+void mVideoLoggerRendererDrawScanline(struct mVideoLogger* logger, int y) {
+	_flushVRAM(logger);
 	struct mVideoLoggerDirtyInfo dirty = {
 		DIRTY_SCANLINE,
 		y,
 		0,
 		0xDEADBEEF,
+	};
+	logger->writeData(logger, &dirty, sizeof(dirty));
+}
+
+void mVideoLoggerRendererDrawRange(struct mVideoLogger* logger, int startX, int endX, int y) {
+	_flushVRAM(logger);
+	struct mVideoLoggerDirtyInfo dirty = {
+		DIRTY_RANGE,
+		y,
+		startX,
+		endX,
 	};
 	logger->writeData(logger, &dirty, sizeof(dirty));
 }
@@ -168,6 +183,27 @@ void mVideoLoggerRendererFlush(struct mVideoLogger* logger) {
 	logger->writeData(logger, &dirty, sizeof(dirty));
 }
 
+void mVideoLoggerRendererFinishFrame(struct mVideoLogger* logger) {
+	struct mVideoLoggerDirtyInfo dirty = {
+		DIRTY_FRAME,
+		0,
+		0,
+		0xDEADBEEF,
+	};
+	logger->writeData(logger, &dirty, sizeof(dirty));
+}
+
+void mVideoLoggerWriteBuffer(struct mVideoLogger* logger, uint32_t bufferId, uint32_t offset, uint32_t length, const void* data) {
+	struct mVideoLoggerDirtyInfo dirty = {
+		DIRTY_BUFFER,
+		bufferId,
+		offset,
+		length,
+	};
+	logger->writeData(logger, &dirty, sizeof(dirty));
+	logger->writeData(logger, data, length);
+}
+
 bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block) {
 	struct mVideoLoggerDirtyInfo item = {0};
 	while (logger->readData(logger, &item, sizeof(item), block)) {
@@ -178,6 +214,9 @@ bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block) {
 		case DIRTY_VRAM:
 		case DIRTY_SCANLINE:
 		case DIRTY_FLUSH:
+		case DIRTY_FRAME:
+		case DIRTY_RANGE:
+		case DIRTY_BUFFER:
 			if (!logger->parsePacket(logger, &item)) {
 				return true;
 			}
