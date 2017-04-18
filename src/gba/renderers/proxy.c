@@ -130,19 +130,27 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, item->address, item->value);
 		break;
 	case DIRTY_PALETTE:
-		logger->palette[item->address >> 1] = item->value;
-		proxyRenderer->backend->writePalette(proxyRenderer->backend, item->address, item->value);
+		if (item->address < SIZE_PALETTE_RAM) {
+			logger->palette[item->address >> 1] = item->value;
+			proxyRenderer->backend->writePalette(proxyRenderer->backend, item->address, item->value);
+		}
 		break;
 	case DIRTY_OAM:
-		logger->oam[item->address] = item->value;
-		proxyRenderer->backend->writeOAM(proxyRenderer->backend, item->address);
+		if (item->address < SIZE_PALETTE_RAM) {
+			logger->oam[item->address] = item->value;
+			proxyRenderer->backend->writeOAM(proxyRenderer->backend, item->address);
+		}
 		break;
 	case DIRTY_VRAM:
-		logger->readData(logger, &logger->vram[item->address >> 1], 0x1000, true);
-		proxyRenderer->backend->writeVRAM(proxyRenderer->backend, item->address);
+		if (item->address + 0x1000 <= SIZE_VRAM) {
+			logger->readData(logger, &logger->vram[item->address >> 1], 0x1000, true);
+			proxyRenderer->backend->writeVRAM(proxyRenderer->backend, item->address);
+		}
 		break;
 	case DIRTY_SCANLINE:
-		proxyRenderer->backend->drawScanline(proxyRenderer->backend, item->address);
+		if (item->address < VIDEO_VERTICAL_PIXELS) {
+			proxyRenderer->backend->drawScanline(proxyRenderer->backend, item->address);
+		}
 		break;
 	case DIRTY_FRAME:
 		proxyRenderer->backend->finishFrame(proxyRenderer->backend);
