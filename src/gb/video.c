@@ -20,6 +20,7 @@ static void GBVideoDummyRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoDummyRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 static void GBVideoDummyRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value);
 static void GBVideoDummyRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address);
+static void GBVideoDummyRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam);
 static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
 static void GBVideoDummyRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoDummyRendererFinishFrame(struct GBVideoRenderer* renderer);
@@ -39,6 +40,7 @@ static struct GBVideoRenderer dummyRenderer = {
 	.deinit = GBVideoDummyRendererDeinit,
 	.writeVideoRegister = GBVideoDummyRendererWriteVideoRegister,
 	.writeVRAM = GBVideoDummyRendererWriteVRAM,
+	.writeOAM = GBVideoDummyRendererWriteOAM,
 	.writePalette = GBVideoDummyRendererWritePalette,
 	.drawRange = GBVideoDummyRendererDrawRange,
 	.finishScanline = GBVideoDummyRendererFinishScanline,
@@ -467,6 +469,12 @@ static void GBVideoDummyRendererWriteVRAM(struct GBVideoRenderer* renderer, uint
 	if (renderer->cache) {
 		mTileCacheWriteVRAM(renderer->cache, address);
 	}
+}
+
+static void GBVideoDummyRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam) {
+	UNUSED(renderer);
+	UNUSED(oam);
+	// Nothing to do
 }
 
 static void GBVideoDummyRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value) {

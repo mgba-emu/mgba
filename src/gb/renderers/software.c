@@ -14,6 +14,7 @@ static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value);
 static void GBVideoSoftwareRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address);
+static void GBVideoSoftwareRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam);
 static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
 static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer);
@@ -43,6 +44,7 @@ void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
 	renderer->d.writeVideoRegister = GBVideoSoftwareRendererWriteVideoRegister;
 	renderer->d.writePalette = GBVideoSoftwareRendererWritePalette;
 	renderer->d.writeVRAM = GBVideoSoftwareRendererWriteVRAM;
+	renderer->d.writeOAM = GBVideoSoftwareRendererWriteOAM;
 	renderer->d.drawRange = GBVideoSoftwareRendererDrawRange;
 	renderer->d.finishScanline = GBVideoSoftwareRendererFinishScanline;
 	renderer->d.finishFrame = GBVideoSoftwareRendererFinishFrame;
@@ -124,6 +126,12 @@ static void GBVideoSoftwareRendererWriteVRAM(struct GBVideoRenderer* renderer, u
 	if (renderer->cache) {
 		mTileCacheWriteVRAM(renderer->cache, address);
 	}
+}
+
+static void GBVideoSoftwareRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam) {
+	UNUSED(renderer);
+	UNUSED(oam);
+	// Nothing to do
 }
 
 static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax) {

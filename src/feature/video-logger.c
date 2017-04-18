@@ -12,6 +12,9 @@
 #ifdef M_CORE_GBA
 #include <mgba/gba/core.h>
 #endif
+#ifdef M_CORE_GB
+#include <mgba/gb/core.h>
+#endif
 
 const char mVL_MAGIC[] = "mVL\0";
 
@@ -21,6 +24,9 @@ const static struct mVLDescriptor {
 } _descriptors[] = {
 #ifdef M_CORE_GBA
 	{ PLATFORM_GBA, GBAVideoLogPlayerCreate },
+#endif
+#ifdef M_CORE_GB
+	{ PLATFORM_GB, GBVideoLogPlayerCreate },
 #endif
 	{ PLATFORM_NONE, 0 }
 };

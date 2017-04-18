@@ -12,6 +12,7 @@ CXX_GUARD_START
 
 struct mCore;
 struct mCore* GBCoreCreate(void);
+struct mCore* GBVideoLogPlayerCreate(void);
 
 CXX_GUARD_END
 
