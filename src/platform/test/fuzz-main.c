@@ -68,6 +68,9 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 	struct mCore* core = mCoreFind(args.fname);
+	if (!core) {
+		return 1;
+	}
 	core->init(core);
 	mCoreInitConfig(core, "fuzz");
 	applyArguments(&args, NULL, &core->config);
