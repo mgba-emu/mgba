@@ -23,6 +23,7 @@ Bugfixes:
  - GBA BIOS: Fix ArcTan2 sign in HLE BIOS (fixes mgba.io/i/689)
  - GBA Video: Don't update background scanline params in mode 0 (fixes mgba.io/i/377)
  - Core: Fix crash with rewind if savestates shrink
+ - Test: Fix crash when loading invalid file
 Misc:
  - Qt: Improved HiDPI support
  - Feature: Support ImageMagick 7
