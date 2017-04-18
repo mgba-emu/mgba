@@ -176,9 +176,10 @@ loadError:
 static void _fuzzRunloop(struct mCore* core, int frames) {
 	do {
 		core->runFrame(core);
+		--frames;
 		blip_clear(core->getAudioChannel(core, 0));
 		blip_clear(core->getAudioChannel(core, 1));
-	} while (core->frameCounter(core) < frames && !_dispatchExiting);
+	} while (frames > 0 && !_dispatchExiting);
 }
 
 static void _fuzzShutdown(int signal) {
