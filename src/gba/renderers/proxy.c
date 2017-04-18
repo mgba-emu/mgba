@@ -238,6 +238,7 @@ void GBAVideoProxyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 		proxyRenderer->logger->lock(proxyRenderer->logger);
 		proxyRenderer->logger->wait(proxyRenderer->logger);
 	}
+	proxyRenderer->backend->finishFrame(proxyRenderer->backend);
 	mVideoLoggerRendererFinishFrame(proxyRenderer->logger);
 	mVideoLoggerRendererFlush(proxyRenderer->logger);
 	if (proxyRenderer->logger->block && proxyRenderer->logger->wait) {
