@@ -63,6 +63,7 @@ static void _reset(struct GBVideoProxyRenderer* proxyRenderer, enum GBModel mode
 	memcpy(proxyRenderer->logger->oam, &proxyRenderer->d.oam->raw, GB_SIZE_OAM);
 	memcpy(proxyRenderer->logger->vram, proxyRenderer->d.vram, GB_SIZE_VRAM);
 
+	proxyRenderer->oamMax = 0;
 
 	proxyRenderer->backend->deinit(proxyRenderer->backend);
 	proxyRenderer->backend->init(proxyRenderer->backend, model);
@@ -118,21 +119,31 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, item->address, item->value);
 		break;
 	case DIRTY_PALETTE:
-		proxyRenderer->backend->writePalette(proxyRenderer->backend, item->address, item->value);
+		if (item->address < 64) {
+			proxyRenderer->backend->writePalette(proxyRenderer->backend, item->address, item->value);
+		}
 		break;
 	case DIRTY_OAM:
-		logger->oam[item->address] = item->value;
-		proxyRenderer->backend->writeOAM(proxyRenderer->backend, item->address);
+		if (item->address < GB_SIZE_OAM) {
+			logger->oam[item->address] = item->value;
+			proxyRenderer->backend->writeOAM(proxyRenderer->backend, item->address);
+		}
 		break;
 	case DIRTY_VRAM:
-		logger->readData(logger, &logger->vram[item->address >> 1], 0x1000, true);
-		proxyRenderer->backend->writeVRAM(proxyRenderer->backend, item->address);
+		if (item->address + 0x1000 <= GB_SIZE_VRAM) {
+			logger->readData(logger, &logger->vram[item->address >> 1], 0x1000, true);
+			proxyRenderer->backend->writeVRAM(proxyRenderer->backend, item->address);
+		}
 		break;
 	case DIRTY_SCANLINE:
-		proxyRenderer->backend->finishScanline(proxyRenderer->backend, item->address);
+		if (item->address < GB_VIDEO_VERTICAL_PIXELS) {
+			proxyRenderer->backend->finishScanline(proxyRenderer->backend, item->address);
+		}
 		break;
 	case DIRTY_RANGE:
-		proxyRenderer->backend->drawRange(proxyRenderer->backend, item->value, item->value2, item->address, proxyRenderer->objThisLine, proxyRenderer->oamMax);
+		if (item->value < item->value2 && item->value2 <= GB_VIDEO_HORIZONTAL_PIXELS && item->address < GB_VIDEO_VERTICAL_PIXELS) {
+			proxyRenderer->backend->drawRange(proxyRenderer->backend, item->value, item->value2, item->address, proxyRenderer->objThisLine, proxyRenderer->oamMax);
+		}
 		break;
 	case DIRTY_FRAME:
 		proxyRenderer->backend->finishFrame(proxyRenderer->backend);
@@ -142,6 +153,7 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		case BUFFER_OAM:
 			proxyRenderer->oamMax = item->value2 / sizeof(struct GBObj);
 			if (proxyRenderer->oamMax > 40) {
+				proxyRenderer->oamMax = 0;
 				return false;
 			}
 			logger->readData(logger, &proxyRenderer->objThisLine, item->value2, true);
