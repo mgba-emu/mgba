@@ -147,8 +147,10 @@ struct mCore {
 	void (*enableVideoLayer)(struct mCore*, size_t id, bool enable);
 	void (*enableAudioChannel)(struct mCore*, size_t id, bool enable);
 
+#ifndef MINIMAL_CORE
 	void (*startVideoLog)(struct mCore*, struct mVideoLogContext*);
 	void (*endVideoLog)(struct mCore*);
+#endif
 };
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

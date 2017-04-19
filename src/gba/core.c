@@ -766,8 +766,10 @@ struct mCore* GBACoreCreate(void) {
 	core->listAudioChannels = _GBACoreListAudioChannels;
 	core->enableVideoLayer = _GBACoreEnableVideoLayer;
 	core->enableAudioChannel = _GBACoreEnableAudioChannel;
+#ifndef MINIMAL_CORE
 	core->startVideoLog = _GBACoreStartVideoLog;
 	core->endVideoLog = _GBACoreEndVideoLog;
+#endif
 	return core;
 }
 
