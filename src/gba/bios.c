@@ -283,7 +283,7 @@ static int16_t _ArcTan(int32_t i) {
 	return (i * b) >> 16;
 }
 
-static int16_t _ArcTan2(int16_t x, int16_t y) {
+static int16_t _ArcTan2(int32_t x, int32_t y) {
 	if (!y) {
 		if (x >= 0) {
 			return 0;
@@ -299,7 +299,7 @@ static int16_t _ArcTan2(int16_t x, int16_t y) {
 	if (y >= 0) {
 		if (x >= 0) {
 			if (x >= y) {
-				return _ArcTan((y << 14)/ x);
+				return _ArcTan((y << 14) / x);
 			}
 		} else if (-x >= y) {
 			return _ArcTan((y << 14) / x) + 0x8000;
@@ -359,7 +359,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		cpu->gprs[0] = _ArcTan(cpu->gprs[0]);
 		break;
 	case 0xA:
-		cpu->gprs[0] = (uint16_t) _ArcTan2(cpu->gprs[0], cpu->gprs[1]);
+		cpu->gprs[0] = _ArcTan2(cpu->gprs[0], cpu->gprs[1]);
 		break;
 	case 0xB:
 	case 0xC:
