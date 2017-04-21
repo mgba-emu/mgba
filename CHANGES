@@ -39,7 +39,7 @@ Bugfixes:
  - FFmpeg: Fix overflow and general issues with audio encoding
  - Qt: Fix crash when changing audio settings after a game is closed
  - GBA BIOS: Fix ArcTan sign in HLE BIOS
- - GBA BIOS: Fix ArcTan2 sign in HLE BIOS
+ - GBA BIOS: Fix ArcTan2 sign in HLE BIOS (fixes mgba.io/i/689)
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
