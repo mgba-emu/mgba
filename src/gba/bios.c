@@ -270,7 +270,7 @@ static void _Div(struct GBA* gba, int32_t num, int32_t denom) {
 	}
 }
 
-static int16_t _ArcTan(int16_t i) {
+static int16_t _ArcTan(int32_t i) {
 	int32_t a = -((i * i) >> 14);
 	int32_t b = ((0xA9 * a) >> 14) + 0x390;
 	b = ((b * a) >> 14) + 0x91C;
@@ -355,7 +355,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		cpu->gprs[0] = sqrt((uint32_t) cpu->gprs[0]);
 		break;
 	case 0x9:
-		cpu->gprs[0] = (uint16_t) _ArcTan(cpu->gprs[0]);
+		cpu->gprs[0] = _ArcTan(cpu->gprs[0]);
 		break;
 	case 0xA:
 		cpu->gprs[0] = (uint16_t) _ArcTan2(cpu->gprs[0], cpu->gprs[1]);

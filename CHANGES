@@ -19,6 +19,7 @@ Bugfixes:
  - SDL: Fix race condition with audio thread when starting
  - FFmpeg: Fix overflow and general issues with audio encoding
  - Qt: Fix crash when changing audio settings after a game is closed
+ - GBA BIOS: Fix ArcTan sign in HLE BIOS
 Misc:
  - Qt: Improved HiDPI support
  - Feature: Support ImageMagick 7
