@@ -21,6 +21,7 @@ Bugfixes:
  - Qt: Fix crash when changing audio settings after a game is closed
  - GBA BIOS: Fix ArcTan sign in HLE BIOS
  - GBA BIOS: Fix ArcTan2 sign in HLE BIOS (fixes mgba.io/i/689)
+ - GBA Video: Don't update background scanline params in mode 0 (fixes mgba.io/i/377)
 Misc:
  - Qt: Improved HiDPI support
  - Feature: Support ImageMagick 7

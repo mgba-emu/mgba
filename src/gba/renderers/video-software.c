@@ -820,10 +820,12 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			}
 		}
 	}
-	renderer->bg[2].sx += renderer->bg[2].dmx;
-	renderer->bg[2].sy += renderer->bg[2].dmy;
-	renderer->bg[3].sx += renderer->bg[3].dmx;
-	renderer->bg[3].sy += renderer->bg[3].dmy;
+	if (GBARegisterDISPCNTGetMode(renderer->dispcnt) != 0) {
+		renderer->bg[2].sx += renderer->bg[2].dmx;
+		renderer->bg[2].sy += renderer->bg[2].dmy;
+		renderer->bg[3].sx += renderer->bg[3].dmx;
+		renderer->bg[3].sy += renderer->bg[3].dmy;
+	}
 }
 
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer) {
