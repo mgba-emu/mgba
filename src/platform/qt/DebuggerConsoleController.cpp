@@ -40,6 +40,7 @@ void DebuggerConsoleController::enterLine(const QString& line) {
 
 void DebuggerConsoleController::attachInternal() {
 	mCore* core = m_gameController->thread()->core;
+	CLIDebuggerAttachBackend(&m_cliDebugger, &m_backend.d);
 	CLIDebuggerAttachSystem(&m_cliDebugger, core->cliDebuggerSystem(core));
 }
 

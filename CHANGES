@@ -41,6 +41,7 @@ Bugfixes:
  - GBA BIOS: Fix ArcTan sign in HLE BIOS
  - GBA BIOS: Fix ArcTan2 sign in HLE BIOS (fixes mgba.io/i/689)
  - GBA Video: Don't update background scanline params in mode 0 (fixes mgba.io/i/377)
+ - Qt: Ensure CLI backend is attached when submitting commands (fixes mgba.io/i/662)
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
