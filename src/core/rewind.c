@@ -48,6 +48,8 @@ void mCoreRewindAppend(struct mCoreRewindContext* context, struct mCore* core) {
 	if (size2 > size) {
 		context->currentState->truncate(context->currentState, size2);
 		size = size2;
+	} else if (size > size2) {
+		nextState->truncate(nextState, size);
 	}
 	void* current = context->currentState->map(context->currentState, size, MAP_READ);
 	void* next = nextState->map(nextState, size, MAP_READ);
