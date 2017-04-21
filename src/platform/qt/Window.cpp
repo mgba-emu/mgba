@@ -444,6 +444,7 @@ void Window::selectPatch() {
 
 void Window::openView(QWidget* widget) {
 	connect(this, SIGNAL(shutdown()), widget, SLOT(close()));
+	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), widget, SLOT(close()));
 	widget->setAttribute(Qt::WA_DeleteOnClose);
 	widget->show();
 }
