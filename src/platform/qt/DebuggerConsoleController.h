@@ -30,6 +30,7 @@ signals:
 
 public slots:
 	void enterLine(const QString&);
+	virtual void detach() override;
 
 protected:
 	virtual void attachInternal() override;

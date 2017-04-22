@@ -38,8 +38,16 @@ void DebuggerConsoleController::enterLine(const QString& line) {
 	m_cond.wakeOne();
 }
 
+void DebuggerConsoleController::detach() {
+	m_lines.append(QString());
+	m_cond.wakeOne();
+	DebuggerController::detach();
+}
+
 void DebuggerConsoleController::attachInternal() {
+	m_history.clear();
 	mCore* core = m_gameController->thread()->core;
+	CLIDebuggerAttachBackend(&m_cliDebugger, &m_backend.d);
 	CLIDebuggerAttachSystem(&m_cliDebugger, core->cliDebuggerSystem(core));
 }
 
@@ -60,6 +68,8 @@ void DebuggerConsoleController::init(struct CLIDebuggerBackend* be) {
 void DebuggerConsoleController::deinit(struct CLIDebuggerBackend* be) {
 	Backend* consoleBe = reinterpret_cast<Backend*>(be);
 	DebuggerConsoleController* self = consoleBe->self;
+	self->m_lines.append(QString());
+	self->m_cond.wakeOne();
 }
 
 const char* DebuggerConsoleController::readLine(struct CLIDebuggerBackend* be, size_t* len) {
@@ -71,6 +81,9 @@ const char* DebuggerConsoleController::readLine(struct CLIDebuggerBackend* be, s
 		self->m_cond.wait(&self->m_mutex);
 	}
 	self->m_last = self->m_lines.takeFirst().toUtf8();
+	if (self->m_last.isEmpty()) {
+		self->m_last = "\n";
+	}
 	*len = self->m_last.size();
 	return self->m_last.constData();
 
@@ -87,6 +100,9 @@ const char* DebuggerConsoleController::historyLast(struct CLIDebuggerBackend* be
 	DebuggerConsoleController* self = consoleBe->self;
 	GameController::Interrupter interrupter(self->m_gameController, true);
 	QMutexLocker lock(&self->m_mutex);
+	if (self->m_history.isEmpty()) {
+		return "\n";
+	}
 	self->m_last = self->m_history.last().toUtf8();
 	return self->m_last.constData();
 }

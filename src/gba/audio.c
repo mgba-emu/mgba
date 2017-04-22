@@ -297,8 +297,8 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 		audio->lastRight = sampleRight;
 		audio->clock += audio->sampleInterval;
 		if (audio->clock >= CLOCKS_PER_FRAME) {
-			blip_end_frame(audio->psg.left, audio->clock);
-			blip_end_frame(audio->psg.right, audio->clock);
+			blip_end_frame(audio->psg.left, CLOCKS_PER_FRAME);
+			blip_end_frame(audio->psg.right, CLOCKS_PER_FRAME);
 			audio->clock -= CLOCKS_PER_FRAME;
 		}
 	}

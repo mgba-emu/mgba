@@ -54,6 +54,7 @@ Display* Display::create(QWidget* parent) {
 Display::Display(QWidget* parent)
 	: QWidget(parent)
 	, m_lockAspectRatio(false)
+	, m_lockIntegerScaling(false)
 	, m_filter(false)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -78,6 +79,10 @@ QSize Display::viewportSize() {
 			ds.setHeight(s.width() * m_coreHeight / m_coreWidth);
 		}
 	}
+	if (isIntegerScalingLocked()) {
+		ds.setWidth(ds.width() - ds.width() % m_coreWidth);
+		ds.setHeight(ds.height() - ds.height() % m_coreHeight);
+	}
 	return ds;
 }
 
@@ -88,6 +93,10 @@ void Display::resizeEvent(QResizeEvent*) {
 void Display::lockAspectRatio(bool lock) {
 	m_lockAspectRatio = lock;
 	m_messagePainter.resize(size(), m_lockAspectRatio, devicePixelRatio());
+}
+
+void Display::lockIntegerScaling(bool lock) {
+	m_lockIntegerScaling = lock;
 }
 
 void Display::filter(bool filter) {

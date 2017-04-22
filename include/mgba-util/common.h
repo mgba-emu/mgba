@@ -56,6 +56,11 @@ typedef intptr_t ssize_t;
 #include <sys/time.h>
 #endif
 
+#ifdef PSP2
+// For PATH_MAX on modern toolchains
+#include <sys/syslimits.h>
+#endif
+
 #ifndef SSIZE_MAX
 #define SSIZE_MAX ((ssize_t) (SIZE_MAX >> 1))
 #endif

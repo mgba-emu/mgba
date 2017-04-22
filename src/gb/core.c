@@ -629,7 +629,19 @@ static size_t _GBCoreListAudioChannels(const struct mCore* core, const struct mC
 
 static void _GBCoreEnableVideoLayer(struct mCore* core, size_t id, bool enable) {
 	struct GB* gb = core->board;
-	// TODO
+	switch (id) {
+	case 0:
+		gb->video.renderer->disableBG = !enable;
+		break;
+	case 1:
+		gb->video.renderer->disableOBJ = !enable;
+		break;
+	case 2:
+		gb->video.renderer->disableWIN = !enable;
+		break;
+	default:
+		break;
+	}
 }
 
 static void _GBCoreEnableAudioChannel(struct mCore* core, size_t id, bool enable) {

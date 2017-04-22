@@ -751,6 +751,9 @@ void CLIDebuggerAttachSystem(struct CLIDebugger* debugger, struct CLIDebuggerSys
 }
 
 void CLIDebuggerAttachBackend(struct CLIDebugger* debugger, struct CLIDebuggerBackend* backend) {
+	if (debugger->backend == backend) {
+		return;
+	}
 	if (debugger->backend && debugger->backend->deinit) {
 		debugger->backend->deinit(debugger->backend);
 	}

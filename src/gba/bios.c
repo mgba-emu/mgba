@@ -271,7 +271,7 @@ static void _Div(struct GBA* gba, int32_t num, int32_t denom) {
 	}
 }
 
-static int16_t _ArcTan(int16_t i) {
+static int16_t _ArcTan(int32_t i, int32_t* r1, int32_t* r3) {
 	int32_t a = -((i * i) >> 14);
 	int32_t b = ((0xA9 * a) >> 14) + 0x390;
 	b = ((b * a) >> 14) + 0x91C;
@@ -280,10 +280,16 @@ static int16_t _ArcTan(int16_t i) {
 	b = ((b * a) >> 14) + 0x2081;
 	b = ((b * a) >> 14) + 0x3651;
 	b = ((b * a) >> 14) + 0xA2F9;
+	if (r1) {
+		*r1 = a;
+	}
+	if (r3) {
+		*r3 = b;
+	}
 	return (i * b) >> 16;
 }
 
-static int16_t _ArcTan2(int16_t x, int16_t y) {
+static int16_t _ArcTan2(int32_t x, int32_t y, int32_t* r1) {
 	if (!y) {
 		if (x >= 0) {
 			return 0;
@@ -299,21 +305,21 @@ static int16_t _ArcTan2(int16_t x, int16_t y) {
 	if (y >= 0) {
 		if (x >= 0) {
 			if (x >= y) {
-				return _ArcTan((y << 14)/ x);
+				return _ArcTan((y << 14) / x, r1, NULL);
 			}
 		} else if (-x >= y) {
-			return _ArcTan((y << 14) / x) + 0x8000;
+			return _ArcTan((y << 14) / x, r1, NULL) + 0x8000;
 		}
-		return 0x4000 - _ArcTan((x << 14) / y);
+		return 0x4000 - _ArcTan((x << 14) / y, r1, NULL);
 	} else {
 		if (x <= 0) {
 			if (-x > -y) {
-				return _ArcTan((y << 14) / x) + 0x8000;
+				return _ArcTan((y << 14) / x, r1, NULL) + 0x8000;
 			}
 		} else if (x >= -y) {
-			return _ArcTan((y << 14) / x) + 0x10000;
+			return _ArcTan((y << 14) / x, r1, NULL) + 0x10000;
 		}
-		return 0xC000 - _ArcTan((x << 14) / y);
+		return 0xC000 - _ArcTan((x << 14) / y, r1, NULL);
 	}
 }
 
@@ -356,10 +362,11 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		cpu->gprs[0] = sqrt((uint32_t) cpu->gprs[0]);
 		break;
 	case 0x9:
-		cpu->gprs[0] = (uint16_t) _ArcTan(cpu->gprs[0]);
+		cpu->gprs[0] = _ArcTan(cpu->gprs[0], &cpu->gprs[1], &cpu->gprs[3]);
 		break;
 	case 0xA:
-		cpu->gprs[0] = (uint16_t) _ArcTan2(cpu->gprs[0], cpu->gprs[1]);
+		cpu->gprs[0] = (uint16_t) _ArcTan2(cpu->gprs[0], cpu->gprs[1], &cpu->gprs[1]);
+		cpu->gprs[3] = 0x170;
 		break;
 	case 0xB:
 	case 0xC:

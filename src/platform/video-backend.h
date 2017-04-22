@@ -35,6 +35,7 @@ struct VideoBackend {
 
 	bool filter;
 	bool lockAspectRatio;
+	bool lockIntegerScaling;
 };
 
 struct VideoShader {

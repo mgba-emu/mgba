@@ -31,6 +31,11 @@ void DisplayQt::lockAspectRatio(bool lock) {
 	update();
 }
 
+void DisplayQt::lockIntegerScaling(bool lock) {
+	Display::lockIntegerScaling(lock);
+	update();
+}
+
 void DisplayQt::filter(bool filter) {
 	Display::filter(filter);
 	update();

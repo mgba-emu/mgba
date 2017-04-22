@@ -465,11 +465,13 @@ void DSAttachDebugger(struct DS* ds, struct mDebugger* debugger) {
 }
 
 void DSDetachDebugger(struct DS* ds) {
-	ds->debugger = NULL;
-	ARMHotplugDetach(ds->ds7.cpu, CPU_COMPONENT_DEBUGGER);
-	ARMHotplugDetach(ds->ds9.cpu, CPU_COMPONENT_DEBUGGER);
+	if (ds->debugger) {
+		ARMHotplugDetach(ds->ds7.cpu, CPU_COMPONENT_DEBUGGER);
+		ARMHotplugDetach(ds->ds9.cpu, CPU_COMPONENT_DEBUGGER);
+	}
 	ds->ds7.cpu->components[CPU_COMPONENT_DEBUGGER] = NULL;
 	ds->ds9.cpu->components[CPU_COMPONENT_DEBUGGER] = NULL;
+	ds->debugger = NULL;
 }
 
 bool DSLoadROM(struct DS* ds, struct VFile* vf) {

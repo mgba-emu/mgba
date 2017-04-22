@@ -73,6 +73,8 @@ void DisplayGL::startDrawing(mCoreThread* thread) {
 	mCoreSyncSetVideoSync(&m_context->sync, false);
 
 	lockAspectRatio(isAspectRatioLocked());
+	lockIntegerScaling(isIntegerScalingLocked());
+
 	unsigned width, height;
 	thread->core->desiredVideoDimensions(thread->core, &width, &height);
 	setSystemDimensions(width, height);
@@ -137,6 +139,13 @@ void DisplayGL::lockAspectRatio(bool lock) {
 	Display::lockAspectRatio(lock);
 	if (m_drawThread) {
 		QMetaObject::invokeMethod(m_painter, "lockAspectRatio", Q_ARG(bool, lock));
+	}
+}
+
+void DisplayGL::lockIntegerScaling(bool lock) {
+	Display::lockIntegerScaling(lock);
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "lockIntegerScaling", Q_ARG(bool, lock));
 	}
 }
 
@@ -289,6 +298,13 @@ void PainterGL::resize(const QSize& size) {
 
 void PainterGL::lockAspectRatio(bool lock) {
 	m_backend->lockAspectRatio = lock;
+	if (m_started && !m_active) {
+		forceDraw();
+	}
+}
+
+void PainterGL::lockIntegerScaling(bool lock) {
+	m_backend->lockIntegerScaling = lock;
 	if (m_started && !m_active) {
 		forceDraw();
 	}

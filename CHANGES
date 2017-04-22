@@ -49,6 +49,8 @@ Features:
  - Savestates now contain any RTC override data
  - Command line ability to override configuration values
  - Add option to allow preloading the entire ROM before running
+ - GB: Video/audio channel enabling/disabling
+ - Add option to lock video to integer scaling
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
@@ -73,6 +75,11 @@ Bugfixes:
  - GB: Fix flickering when screen is strobed quickly
  - FFmpeg: Fix overflow and general issues with audio encoding
  - Qt: Fix crash when changing audio settings after a game is closed
+ - GBA BIOS: Fix ArcTan sign in HLE BIOS
+ - GBA BIOS: Fix ArcTan2 sign in HLE BIOS (fixes mgba.io/i/689)
+ - GBA Video: Don't update background scanline params in mode 0 (fixes mgba.io/i/377)
+ - Qt: Ensure CLI backend is attached when submitting commands (fixes mgba.io/i/662)
+ - Core: Fix crash with rewind if savestates shrink
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
@@ -126,6 +133,7 @@ Misc:
  - Qt: Add .gb/.gbc files to the extension list in Info.plist
  - Feature: Make -l option explicit
  - Core: Ability to enumerate and modify video and audio channels
+ - Debugger: Make attaching a backend idempotent
 
 medusa alpha 1: (2017-04-08)
 Features:
