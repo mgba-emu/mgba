@@ -173,6 +173,8 @@ private:
 	QTimer m_fpsTimer;
 	QList<QString> m_mruFiles;
 	QMenu* m_mruMenu;
+	QMenu* m_videoLayers;
+	QMenu* m_audioChannels;
 	ShortcutController* m_shortcutController;
 	ShaderSelector* m_shaderView;
 	bool m_fullscreenOnStart;

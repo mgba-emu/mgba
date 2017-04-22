@@ -746,6 +746,39 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 	m_hitUnimplementedBiosCall = false;
 	m_fpsTimer.start();
 	m_focusCheck.start();
+
+	m_controller->threadInterrupt();
+	if (m_controller->isLoaded()) {
+		mCore* core = m_controller->thread()->core;
+		const mCoreChannelInfo* videoLayers;
+		const mCoreChannelInfo* audioChannels;
+		size_t nVideo = core->listVideoLayers(core, &videoLayers);
+		size_t nAudio = core->listAudioChannels(core, &audioChannels);
+
+		if (nVideo) {
+			for (size_t i = 0; i < nVideo; ++i) {
+				QAction* action = new QAction(videoLayers[i].visibleName, m_videoLayers);
+				action->setCheckable(true);
+				action->setChecked(true);
+				connect(action, &QAction::triggered, [this, videoLayers, i](bool enable) {
+					m_controller->setVideoLayerEnabled(videoLayers[i].id, enable);
+				});
+				m_videoLayers->addAction(action);
+			}
+		}
+		if (nAudio) {
+			for (size_t i = 0; i < nAudio; ++i) {
+				QAction* action = new QAction(audioChannels[i].visibleName, m_audioChannels);
+				action->setCheckable(true);
+				action->setChecked(true);
+				connect(action, &QAction::triggered, [this, audioChannels, i](bool enable) {
+					m_controller->setAudioChannelEnabled(audioChannels[i].id, enable);
+				});
+				m_audioChannels->addAction(action);
+			}
+		}
+	}
+	m_controller->threadContinue();
 }
 
 void Window::gameStopped() {
@@ -769,6 +802,9 @@ void Window::gameStopped() {
 	m_display->setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 #endif
 	m_screenWidget->setMinimumSize(m_display->minimumSize());
+
+	m_videoLayers->clear();
+	m_audioChannels->clear();
 
 	m_fpsTimer.stop();
 	m_focusCheck.stop();
@@ -1302,45 +1338,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	avMenu->addSeparator();
-	QMenu* videoLayers = avMenu->addMenu(tr("Video layers"));
-	m_shortcutController->addMenu(videoLayers, avMenu);
+	m_videoLayers = avMenu->addMenu(tr("Video layers"));
+	m_shortcutController->addMenu(m_videoLayers, avMenu);
+	m_gameWidgets.append(m_videoLayers);
 
-	for (int i = 0; i < 4; ++i) {
-		QAction* enableBg = new QAction(tr("Background %0").arg(i), videoLayers);
-		enableBg->setCheckable(true);
-		enableBg->setChecked(true);
-		connect(enableBg, &QAction::triggered, [this, i](bool enable) { m_controller->setVideoLayerEnabled(i, enable); });
-		addControlledAction(videoLayers, enableBg, QString("enableBG%0").arg(i));
-	}
-
-	QAction* enableObj = new QAction(tr("OBJ (sprites)"), videoLayers);
-	enableObj->setCheckable(true);
-	enableObj->setChecked(true);
-	connect(enableObj, &QAction::triggered, [this](bool enable) { m_controller->setVideoLayerEnabled(4, enable); });
-	addControlledAction(videoLayers, enableObj, "enableOBJ");
-
-	QMenu* audioChannels = avMenu->addMenu(tr("Audio channels"));
-	m_shortcutController->addMenu(audioChannels, avMenu);
-
-	for (int i = 0; i < 4; ++i) {
-		QAction* enableCh = new QAction(tr("Channel %0").arg(i + 1), audioChannels);
-		enableCh->setCheckable(true);
-		enableCh->setChecked(true);
-		connect(enableCh, &QAction::triggered, [this, i](bool enable) { m_controller->setAudioChannelEnabled(i, enable); });
-		addControlledAction(audioChannels, enableCh, QString("enableCh%0").arg(i + 1));
-	}
-
-	QAction* enableChA = new QAction(tr("Channel A"), audioChannels);
-	enableChA->setCheckable(true);
-	enableChA->setChecked(true);
-	connect(enableChA, &QAction::triggered, [this, i](bool enable) { m_controller->setAudioChannelEnabled(4, enable); });
-	addControlledAction(audioChannels, enableChA, QString("enableChA"));
-
-	QAction* enableChB = new QAction(tr("Channel B"), audioChannels);
-	enableChB->setCheckable(true);
-	enableChB->setChecked(true);
-	connect(enableChB, &QAction::triggered, [this, i](bool enable) { m_controller->setAudioChannelEnabled(5, enable); });
-	addControlledAction(audioChannels, enableChB, QString("enableChB"));
+	m_audioChannels = avMenu->addMenu(tr("Audio channels"));
+	m_shortcutController->addMenu(m_audioChannels, avMenu);
+	m_gameWidgets.append(m_audioChannels);
 
 	QMenu* toolsMenu = menubar->addMenu(tr("&Tools"));
 	m_shortcutController->addMenu(toolsMenu);
