@@ -112,6 +112,12 @@ struct DSVideoRenderer {
 	uint16_t* vramBOBJ[32];
 	uint16_t* vramBBGExtPal[4];
 	uint16_t* vramBOBJExtPal;
+
+	bool disableABG[4];
+	bool disableAOBJ;
+	bool disableBBG[4];
+	bool disableBOBJ;
+
 	union DSOAM* oam;
 	struct DSGX* gx;
 };

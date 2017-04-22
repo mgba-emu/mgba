@@ -146,6 +146,18 @@ void DSVideoSoftwareRendererCreate(struct DSVideoSoftwareRenderer* renderer) {
 	renderer->d.getPixels = DSVideoSoftwareRendererGetPixels;
 	renderer->d.putPixels = DSVideoSoftwareRendererPutPixels;
 
+	renderer->d.disableABG[0] = false;
+	renderer->d.disableABG[1] = false;
+	renderer->d.disableABG[2] = false;
+	renderer->d.disableABG[3] = false;
+	renderer->d.disableAOBJ = false;
+
+	renderer->d.disableBBG[0] = false;
+	renderer->d.disableBBG[1] = false;
+	renderer->d.disableBBG[2] = false;
+	renderer->d.disableBBG[3] = false;
+	renderer->d.disableBOBJ = false;
+
 	renderer->engA.d.cache = NULL;
 	GBAVideoSoftwareRendererCreate(&renderer->engA);
 	renderer->engA.combinedObjSort = true;
@@ -610,6 +622,18 @@ static void DSVideoSoftwareRendererDrawScanline(struct DSVideoRenderer* renderer
 		softwareRenderer->engA.outputBuffer = softwareRenderer->outputBuffer;
 		softwareRenderer->engB.outputBuffer = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * DS_VIDEO_VERTICAL_PIXELS];
 	}
+
+	softwareRenderer->engA.d.disableBG[0] = softwareRenderer->d.disableABG[0];
+	softwareRenderer->engA.d.disableBG[1] = softwareRenderer->d.disableABG[1];
+	softwareRenderer->engA.d.disableBG[2] = softwareRenderer->d.disableABG[2];
+	softwareRenderer->engA.d.disableBG[3] = softwareRenderer->d.disableABG[3];
+	softwareRenderer->engA.d.disableOBJ = softwareRenderer->d.disableAOBJ;
+
+	softwareRenderer->engB.d.disableBG[0] = softwareRenderer->d.disableBBG[0];
+	softwareRenderer->engB.d.disableBG[1] = softwareRenderer->d.disableBBG[1];
+	softwareRenderer->engB.d.disableBG[2] = softwareRenderer->d.disableBBG[2];
+	softwareRenderer->engB.d.disableBG[3] = softwareRenderer->d.disableBBG[3];
+	softwareRenderer->engB.d.disableOBJ = softwareRenderer->d.disableBOBJ;
 
 	_drawScanlineA(softwareRenderer, y);
 	_drawScanlineB(softwareRenderer, y);

@@ -24,11 +24,11 @@ const static struct mCoreChannelInfo _DSVideoLayers[] = {
 	{ 2, "abg2", "A BG2", NULL },
 	{ 3, "abg3", "A BG3", NULL },
 	{ 4, "aobj", "A OBJ", NULL },
-	{ 5, "bbg0", "B BG0", "2D/3D" },
-	{ 6, "bbg1", "B BG1", NULL },
-	{ 7, "bbg2", "B BG2", NULL },
-	{ 8, "bbg3", "B BG3", NULL },
-	{ 9, "bobj", "B OBJ", NULL },
+	{ 10, "bbg0", "B BG0", "2D/3D" },
+	{ 11, "bbg1", "B BG1", NULL },
+	{ 12, "bbg2", "B BG2", NULL },
+	{ 13, "bbg3", "B BG3", NULL },
+	{ 14, "bobj", "B OBJ", NULL },
 };
 
 const static struct mCoreChannelInfo _DSAudioChannels[] = {
@@ -564,7 +564,28 @@ static size_t _DSCoreListAudioChannels(const struct mCore* core, const struct mC
 
 static void _DSCoreEnableVideoLayer(struct mCore* core, size_t id, bool enable) {
 	struct DS* ds = core->board;
-	// TODO
+	switch (id) {
+	case 0:
+	case 1:
+	case 2:
+	case 3:
+		ds->video.renderer->disableABG[id] = !enable;
+		break;
+	case 4:
+		ds->video.renderer->disableAOBJ = !enable;
+		break;
+	case 10:
+	case 11:
+	case 12:
+	case 13:
+		ds->video.renderer->disableBBG[id - 10] = !enable;
+		break;
+	case 14:
+		ds->video.renderer->disableBOBJ = !enable;
+		break;
+	default:
+		break;
+	}
 }
 
 static void _DSCoreEnableAudioChannel(struct mCore* core, size_t id, bool enable) {

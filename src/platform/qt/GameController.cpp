@@ -902,7 +902,7 @@ void GameController::startAudio() {
 }
 
 void GameController::setVideoLayerEnabled(int layer, bool enable) {
-	if (layer > 4 || layer < 0) {
+	if (layer > 32 || layer < 0) {
 		return;
 	}
 	m_videoLayers.reserve(layer + 1);
