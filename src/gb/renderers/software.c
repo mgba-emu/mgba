@@ -49,6 +49,10 @@ void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
 	renderer->d.getPixels = GBVideoSoftwareRendererGetPixels;
 	renderer->d.putPixels = GBVideoSoftwareRendererPutPixels;
 
+	renderer->d.disableBG = false;
+	renderer->d.disableOBJ = false;
+	renderer->d.disableWIN = false;
+
 	renderer->temporaryBuffer = 0;
 }
 
@@ -128,9 +132,12 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	if (GBRegisterLCDCIsTileMap(softwareRenderer->lcdc)) {
 		maps += GB_SIZE_MAP;
 	}
+	if (softwareRenderer->d.disableBG) {
+		memset(&softwareRenderer->row[startX], 0, endX - startX);
+	}
 	if (GBRegisterLCDCIsBgEnable(softwareRenderer->lcdc) || softwareRenderer->model >= GB_MODEL_CGB) {
 		if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y && endX >= softwareRenderer->wx - 7) {
-			if (softwareRenderer->wx - 7 > 0) {
+			if (softwareRenderer->wx - 7 > 0 && !softwareRenderer->d.disableBG) {
 				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, softwareRenderer->wx - 7, softwareRenderer->scx, softwareRenderer->scy + y);
 			}
 
@@ -138,15 +145,17 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 			if (GBRegisterLCDCIsWindowTileMap(softwareRenderer->lcdc)) {
 				maps += GB_SIZE_MAP;
 			}
-			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, softwareRenderer->wx - 7, endX, 7 - softwareRenderer->wx, softwareRenderer->currentWy);
-		} else {
+			if (!softwareRenderer->d.disableWIN) {
+				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, softwareRenderer->wx - 7, endX, 7 - softwareRenderer->wx, softwareRenderer->currentWy);
+			}
+		} else if (!softwareRenderer->d.disableBG) {
 			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, endX, softwareRenderer->scx, softwareRenderer->scy + y);
 		}
-	} else {
+	} else if (!softwareRenderer->d.disableBG) {
 		memset(&softwareRenderer->row[startX], 0, endX - startX);
 	}
 
-	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc)) {
+	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc) && !softwareRenderer->d.disableOBJ) {
 		size_t i;
 		for (i = 0; i < oamMax; ++i) {
 			GBVideoSoftwareRendererDrawObj(softwareRenderer, &obj[i], startX, endX, y);
