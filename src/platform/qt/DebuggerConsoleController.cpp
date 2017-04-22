@@ -88,6 +88,9 @@ const char* DebuggerConsoleController::historyLast(struct CLIDebuggerBackend* be
 	DebuggerConsoleController* self = consoleBe->self;
 	GameController::Interrupter interrupter(self->m_gameController, true);
 	QMutexLocker lock(&self->m_mutex);
+	if (self->m_history.isEmpty()) {
+		return nullptr;
+	}
 	self->m_last = self->m_history.last().toUtf8();
 	return self->m_last.constData();
 }
