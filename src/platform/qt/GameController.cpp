@@ -623,6 +623,7 @@ void GameController::closeGame() {
 		return;
 	}
 
+	setDebugger(nullptr);
 	if (mCoreThreadIsPaused(&m_threadContext)) {
 		mCoreThreadUnpause(&m_threadContext);
 	}
