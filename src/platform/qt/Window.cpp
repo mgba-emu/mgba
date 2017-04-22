@@ -1263,6 +1263,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, this);
 	m_config->updateOption("lockAspectRatio");
 
+	ConfigOption* lockIntegerScaling = m_config->addOption("lockIntegerScaling");
+	lockIntegerScaling->addBoolean(tr("Force integer scaling"), avMenu);
+	lockIntegerScaling->connect([this](const QVariant& value) {
+		m_display->lockIntegerScaling(value.toBool());
+		m_screenWidget->setLockIntegerScaling(value.toBool());
+	}, this);
+	m_config->updateOption("lockIntegerScaling");
+
 	ConfigOption* resampleVideo = m_config->addOption("resampleVideo");
 	resampleVideo->addBoolean(tr("Bilinear filtering"), avMenu);
 	resampleVideo->connect([this](const QVariant& value) {
@@ -1637,6 +1645,10 @@ void WindowBackground::setLockAspectRatio(int width, int height) {
 	m_aspectHeight = height;
 }
 
+void WindowBackground::setLockIntegerScaling(bool lock) {
+	m_lockIntegerScaling = lock;
+}
+
 void WindowBackground::paintEvent(QPaintEvent*) {
 	const QPixmap* logo = pixmap();
 	if (!logo) {
@@ -1651,6 +1663,10 @@ void WindowBackground::paintEvent(QPaintEvent*) {
 		ds.setWidth(ds.height() * m_aspectWidth / m_aspectHeight);
 	} else if (ds.width() * m_aspectHeight < ds.height() * m_aspectWidth) {
 		ds.setHeight(ds.width() * m_aspectHeight / m_aspectWidth);
+	}
+	if (m_lockIntegerScaling) {
+		ds.setWidth(ds.width() - ds.width() % m_aspectWidth);
+		ds.setHeight(ds.height() - ds.height() % m_aspectHeight);
 	}
 	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
 	QRect full(origin, ds);

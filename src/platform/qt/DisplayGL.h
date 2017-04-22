@@ -55,6 +55,7 @@ public slots:
 	void unpauseDrawing() override;
 	void forceDraw() override;
 	void lockAspectRatio(bool lock) override;
+	void lockIntegerScaling(bool lock) override;
 	void filter(bool filter) override;
 	void framePosted(const uint32_t*) override;
 	void setShaders(struct VDir*) override;
@@ -96,6 +97,7 @@ public slots:
 	void unpause();
 	void resize(const QSize& size);
 	void lockAspectRatio(bool lock);
+	void lockIntegerScaling(bool lock);
 	void filter(bool filter);
 
 	void setShaders(struct VDir*);

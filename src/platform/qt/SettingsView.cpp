@@ -190,6 +190,7 @@ void SettingsView::updateConfig() {
 	saveSetting("frameskip", m_ui.frameskip);
 	saveSetting("fpsTarget", m_ui.fpsTarget);
 	saveSetting("lockAspectRatio", m_ui.lockAspectRatio);
+	saveSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
 	saveSetting("volume", m_ui.volume);
 	saveSetting("mute", m_ui.mute);
 	saveSetting("rewindEnable", m_ui.rewind);
@@ -270,6 +271,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("frameskip", m_ui.frameskip);
 	loadSetting("fpsTarget", m_ui.fpsTarget);
 	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
+	loadSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
 	loadSetting("volume", m_ui.volume);
 	loadSetting("mute", m_ui.mute);
 	loadSetting("rewindEnable", m_ui.rewind);
