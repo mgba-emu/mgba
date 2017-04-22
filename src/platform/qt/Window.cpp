@@ -1340,11 +1340,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	avMenu->addSeparator();
 	m_videoLayers = avMenu->addMenu(tr("Video layers"));
 	m_shortcutController->addMenu(m_videoLayers, avMenu);
-	m_gameWidgets.append(m_videoLayers);
 
 	m_audioChannels = avMenu->addMenu(tr("Audio channels"));
 	m_shortcutController->addMenu(m_audioChannels, avMenu);
-	m_gameWidgets.append(m_audioChannels);
 
 	QMenu* toolsMenu = menubar->addMenu(tr("&Tools"));
 	m_shortcutController->addMenu(toolsMenu);
