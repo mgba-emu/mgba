@@ -80,10 +80,11 @@ const char* DebuggerConsoleController::readLine(struct CLIDebuggerBackend* be, s
 	while (self->m_lines.isEmpty()) {
 		self->m_cond.wait(&self->m_mutex);
 	}
-	self->m_last = self->m_lines.takeFirst().toUtf8();
-	if (self->m_last.isEmpty()) {
-		self->m_last = "\n";
+	QString last = self->m_lines.takeFirst();
+	if (last.isNull()) {
+		return nullptr;
 	}
+	self->m_last = last.toUtf8();
 	*len = self->m_last.size();
 	return self->m_last.constData();
 
@@ -101,7 +102,7 @@ const char* DebuggerConsoleController::historyLast(struct CLIDebuggerBackend* be
 	GameController::Interrupter interrupter(self->m_gameController, true);
 	QMutexLocker lock(&self->m_mutex);
 	if (self->m_history.isEmpty()) {
-		return "\n";
+		return "i";
 	}
 	self->m_last = self->m_history.last().toUtf8();
 	return self->m_last.constData();
