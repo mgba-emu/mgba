@@ -23,6 +23,7 @@ Bugfixes:
  - DS Slot-1: Emulate initial SPI command delay
  - DS: Fix exposed CPU frequencies and audio timing
  - DS Audio: Fix audio sampling slightly too quickly
+ - Feature: Fix resizing GIF buffer (fixes mgba.io/i/695)
 Misc:
  - DS: Set boot complete bit in RAM on boot (fixes mgba.io/i/576, mgba.io/i/580, mgba.io/i/586)
  - DS Memory: Ensure DS9 I/O is 8-byte aligned
