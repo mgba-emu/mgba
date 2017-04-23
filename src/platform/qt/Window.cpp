@@ -135,6 +135,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 #endif
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
+	m_screenWidget->setLockIntegerScaling(false);
 	setCentralWidget(m_screenWidget);
 
 	connect(m_controller, SIGNAL(gameStarted(mCoreThread*, const QString&)), this, SLOT(gameStarted(mCoreThread*, const QString&)));
@@ -732,6 +733,7 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 	context->core->desiredVideoDimensions(context->core, &width, &height);
 	m_display->setMinimumSize(width, height);
 	m_screenWidget->setMinimumSize(m_display->minimumSize());
+	m_config->updateOption("lockIntegerScaling");
 	if (m_savedScale > 0) {
 		resizeFrame(QSize(width, height) * m_savedScale);
 	}
@@ -794,6 +796,7 @@ void Window::gameStopped() {
 	updateTitle();
 	detachWidget(m_display);
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
+	m_screenWidget->setLockIntegerScaling(false);
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->unsetCursor();
 #ifdef M_CORE_GB
@@ -1267,7 +1270,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	lockIntegerScaling->addBoolean(tr("Force integer scaling"), avMenu);
 	lockIntegerScaling->connect([this](const QVariant& value) {
 		m_display->lockIntegerScaling(value.toBool());
-		m_screenWidget->setLockIntegerScaling(value.toBool());
+		if (m_controller->isLoaded()) {
+			m_screenWidget->setLockIntegerScaling(value.toBool());
+		}
 	}, this);
 	m_config->updateOption("lockIntegerScaling");
 
