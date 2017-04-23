@@ -73,6 +73,7 @@ GameController::GameController(QObject* parent)
 	, m_preload(false)
 	, m_override(nullptr)
 	, m_vl(nullptr)
+	, m_vlVf(nullptr)
 {
 #ifdef M_CORE_GBA
 	m_lux.p = this;
@@ -1208,8 +1209,10 @@ void GameController::startVideoLog(const QString& path) {
 	}
 
 	Interrupter interrupter(this);
-	m_vlPath = path;
-	m_vl = mVideoLoggerCreate(m_threadContext.core);
+	m_vl = mVideoLogContextCreate(m_threadContext.core);
+	m_vlVf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
+	mVideoLogContextSetOutput(m_vl, m_vlVf);
+	mVideoLogContextWriteHeader(m_vl, m_threadContext.core);
 }
 
 void GameController::endVideoLog() {
@@ -1218,12 +1221,11 @@ void GameController::endVideoLog() {
 	}
 
 	Interrupter interrupter(this);
-	if (isLoaded()) {
-		VFile* vf = VFileDevice::open(m_vlPath, O_WRONLY | O_CREAT | O_TRUNC);
-		mVideoLoggerWrite(m_threadContext.core, m_vl, vf);
-		vf->close(vf);
+	mVideoLogContextDestroy(m_threadContext.core, m_vl);
+	if (m_vlVf) {
+		m_vlVf->close(m_vlVf);
+		m_vlVf = nullptr;
 	}
-	mVideoLoggerDestroy(m_threadContext.core, m_vl);
 	m_vl = nullptr;
 }
 

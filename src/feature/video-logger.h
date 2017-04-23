@@ -10,6 +10,8 @@
 
 CXX_GUARD_START
 
+#include <mgba-util/circle-buffer.h>
+
 #define mVL_MAX_CHANNELS 32
 
 enum mVideoLoggerDirtyType {
@@ -36,6 +38,7 @@ struct VFile;
 struct mVideoLogger {
 	bool (*writeData)(struct mVideoLogger* logger, const void* data, size_t length);
 	bool (*readData)(struct mVideoLogger* logger, void* data, size_t length, bool block);
+	void* dataContext;
 
 	bool block;
 	void (*init)(struct mVideoLogger*);
@@ -61,40 +64,6 @@ struct mVideoLogger {
 	uint16_t* vram;
 	uint16_t* oam;
 	uint16_t* palette;
-
-	struct VFile* vf;
-};
-
-struct mVideoLogChannel {
-	uint32_t type;
-	void* initialState;
-	size_t initialStateSize;
-	struct VFile* channelData;
-};
-
-struct mVideoLogContext {
-	void* initialState;
-	size_t initialStateSize;
-	uint32_t nChannels;
-	struct mVideoLogChannel channels[mVL_MAX_CHANNELS];
-};
-
-struct mVideoLogHeader {
-	char magic[4];
-	uint32_t reserved;
-	uint32_t platform;
-	uint32_t padding;
-	uint32_t initialStatePointer;
-	uint32_t initialStateSize;
-	uint32_t nChannels;
-	uint32_t channelPointers[mVL_MAX_CHANNELS];
-};
-
-struct mVideoLogChannelHeader {
-	uint32_t type;
-	uint32_t channelInitialStatePointer;
-	uint32_t channelInitialStateSize;
-	uint32_t channelSize;
 };
 
 void mVideoLoggerRendererCreate(struct mVideoLogger* logger, bool readonly);
@@ -116,13 +85,24 @@ void mVideoLoggerRendererFinishFrame(struct mVideoLogger* logger);
 
 bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block);
 
+struct mVideoLogContext;
+void mVideoLoggerAttachChannel(struct mVideoLogger* logger, struct mVideoLogContext* context, size_t channelId);
+
 struct mCore;
-struct mVideoLogContext* mVideoLoggerCreate(struct mCore* core);
-void mVideoLoggerDestroy(struct mCore* core, struct mVideoLogContext*);
-void mVideoLoggerWrite(struct mCore* core, struct mVideoLogContext*, struct VFile*);
+struct mVideoLogContext* mVideoLogContextCreate(struct mCore* core);
+
+void mVideoLogContextSetOutput(struct mVideoLogContext*, struct VFile*);
+void mVideoLogContextWriteHeader(struct mVideoLogContext*, struct mCore* core);
+
+bool mVideoLogContextLoad(struct mVideoLogContext*, struct VFile*);
+void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext*);
+
+void mVideoLogContextRewind(struct mVideoLogContext*, struct mCore*);
+void* mVideoLogContextInitialState(struct mVideoLogContext*, size_t* size);
+
+int mVideoLoggerAddChannel(struct mVideoLogContext*);
 
 struct mCore* mVideoLogCoreFind(struct VFile*);
-bool mVideoLogContextLoad(struct VFile*, struct mVideoLogContext*);
 
 CXX_GUARD_END
 

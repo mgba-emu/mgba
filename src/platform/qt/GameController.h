@@ -247,7 +247,7 @@ private:
 	mAVStream* m_stream;
 
 	mVideoLogContext* m_vl;
-	QString m_vlPath;
+	VFile* m_vlVf;
 
 	struct GameControllerLux : GBALuminanceSource {
 		GameController* p;

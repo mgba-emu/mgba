@@ -8,6 +8,7 @@
 #include <mgba/core/core.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
+#include <mgba-util/math.h>
 
 #ifdef M_CORE_GBA
 #include <mgba/gba/core.h>
@@ -15,6 +16,8 @@
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
 #endif
+
+#define BUFFER_BASE_SIZE 0x8000
 
 const char mVL_MAGIC[] = "mVL\0";
 
@@ -31,9 +34,63 @@ const static struct mVLDescriptor {
 	{ PLATFORM_NONE, 0 }
 };
 
+enum mVLBlockType {
+	mVL_BLOCK_DUMMY = 0,
+	mVL_BLOCK_INITIAL_STATE,
+	mVL_BLOCK_CHANNEL_HEADER,
+	mVL_BLOCK_DATA,
+	mVL_BLOCK_FOOTER = 0x784C566D
+};
+
+enum mVLHeaderFlag {
+	mVL_FLAG_HAS_INITIAL_STATE = 1
+};
+
+struct mVLBlockHeader {
+	uint32_t blockType;
+	uint32_t length;
+	uint32_t channelId;
+	uint32_t flags;
+};
+
+struct mVideoLogHeader {
+	char magic[4];
+	uint32_t flags;
+	uint32_t platform;
+	uint32_t nChannels;
+};
+
+struct mVideoLogContext;
+struct mVideoLogChannel {
+	struct mVideoLogContext* p;
+
+	uint32_t type;
+	void* initialState;
+	size_t initialStateSize;
+
+	off_t currentPointer;
+	size_t bufferRemaining;
+
+	struct CircleBuffer buffer;
+};
+
+struct mVideoLogContext {
+	void* initialState;
+	size_t initialStateSize;
+	uint32_t nChannels;
+	struct mVideoLogChannel channels[mVL_MAX_CHANNELS];
+
+	uint32_t activeChannel;
+	struct VFile* backing;
+};
+
+
 static bool _writeData(struct mVideoLogger* logger, const void* data, size_t length);
 static bool _writeNull(struct mVideoLogger* logger, const void* data, size_t length);
 static bool _readData(struct mVideoLogger* logger, void* data, size_t length, bool block);
+
+static ssize_t mVideoLoggerReadChannel(struct mVideoLogChannel* channel, void* data, size_t length);
+static ssize_t mVideoLoggerWriteChannel(struct mVideoLogChannel* channel, const void* data, size_t length);
 
 static inline size_t _roundUp(size_t value, int shift) {
 	value += (1 << shift) - 1;
@@ -48,7 +105,7 @@ void mVideoLoggerRendererCreate(struct mVideoLogger* logger, bool readonly) {
 		logger->writeData = _writeData;
 	}
 	logger->readData = _readData;
-	logger->vf = NULL;
+	logger->dataContext = NULL;
 
 	logger->init = NULL;
 	logger->deinit = NULL;
@@ -235,7 +292,8 @@ bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block) {
 }
 
 static bool _writeData(struct mVideoLogger* logger, const void* data, size_t length) {
-	return logger->vf->write(logger->vf, data, length) == (ssize_t) length;
+	struct mVideoLogChannel* channel = logger->dataContext;
+	return mVideoLoggerWriteChannel(channel, data, length) == (ssize_t) length;
 }
 
 static bool _writeNull(struct mVideoLogger* logger, const void* data, size_t length) {
@@ -247,92 +305,316 @@ static bool _writeNull(struct mVideoLogger* logger, const void* data, size_t len
 
 static bool _readData(struct mVideoLogger* logger, void* data, size_t length, bool block) {
 	UNUSED(block);
-	return logger->vf->read(logger->vf, data, length) == (ssize_t) length;
+	struct mVideoLogChannel* channel = logger->dataContext;
+	return mVideoLoggerReadChannel(channel, data, length) == (ssize_t) length;
 }
 
-struct mVideoLogContext* mVideoLoggerCreate(struct mCore* core) {
+void mVideoLoggerAttachChannel(struct mVideoLogger* logger, struct mVideoLogContext* context, size_t channelId) {
+	if (channelId >= mVL_MAX_CHANNELS) {
+		return;
+	}
+	logger->dataContext = &context->channels[channelId];
+}
+
+struct mVideoLogContext* mVideoLogContextCreate(struct mCore* core) {
 	struct mVideoLogContext* context = malloc(sizeof(*context));
+	memset(context, 0, sizeof(*context));
+
 	if (core) {
+		context->initialStateSize = core->stateSize(core);
+		context->initialState = anonymousMemoryMap(context->initialStateSize);
+		core->saveState(core, context->initialState);
 		core->startVideoLog(core, context);
 	}
+
+	context->activeChannel = 0;
 	return context;
 }
 
-void mVideoLoggerDestroy(struct mCore* core, struct mVideoLogContext* context) {
-	if (core) {
-		core->endVideoLog(core);
-	}
-	free(context);
+void mVideoLogContextSetOutput(struct mVideoLogContext* context, struct VFile* vf) {
+	context->backing = vf;
+	vf->truncate(vf, 0);
+	vf->seek(vf, 0, SEEK_SET);
 }
 
-void mVideoLoggerWrite(struct mCore* core, struct mVideoLogContext* context, struct VFile* vf) {
-	struct mVideoLogHeader header = {{0}};
-	memcpy(header.magic, mVL_MAGIC, sizeof(mVL_MAGIC));
-
+void mVideoLogContextWriteHeader(struct mVideoLogContext* context, struct mCore* core) {
+	struct mVideoLogHeader header = { { 0 } };
+	memcpy(header.magic, mVL_MAGIC, sizeof(header.magic));
 	enum mPlatform platform = core->platform(core);
 	STORE_32LE(platform, 0, &header.platform);
 	STORE_32LE(context->nChannels, 0, &header.nChannels);
 
-	ssize_t pointer = vf->seek(vf, sizeof(header), SEEK_SET);
-	if (context->initialStateSize) {
-		ssize_t written = vf->write(vf, context->initialState, context->initialStateSize);
-		if (written > 0) {
-			STORE_32LE(pointer, 0, &header.initialStatePointer);
-			STORE_32LE(context->initialStateSize, 0, &header.initialStateSize);
-			pointer += written;
-		} else {
-			header.initialStatePointer = 0;
-		}
-	} else {
-		header.initialStatePointer = 0;
+	uint32_t flags = 0;
+	if (context->initialState) {
+		flags |= mVL_FLAG_HAS_INITIAL_STATE;
 	}
+	STORE_32LE(flags, 0, &header.flags);
+	context->backing->write(context->backing, &header, sizeof(header));
+	if (context->initialState) {
+		struct mVLBlockHeader chheader = { 0 };
+		STORE_32LE(mVL_BLOCK_INITIAL_STATE, 0, &chheader.blockType);
+		STORE_32LE(context->initialStateSize, 0, &chheader.length);
+		context->backing->write(context->backing, &chheader, sizeof(chheader));
+		context->backing->write(context->backing, context->initialState, context->initialStateSize);
+	}
+
+ 	size_t i;
+	for (i = 0; i < context->nChannels; ++i) {
+		struct mVLBlockHeader chheader = { 0 };
+		STORE_32LE(mVL_BLOCK_CHANNEL_HEADER, 0, &chheader.blockType);
+		STORE_32LE(i, 0, &chheader.channelId);
+		context->backing->write(context->backing, &chheader, sizeof(chheader));
+	}
+}
+
+bool _readBlockHeader(struct mVideoLogContext* context, struct mVLBlockHeader* header) {
+	struct mVLBlockHeader buffer;
+	if (context->backing->read(context->backing, &buffer, sizeof(buffer)) != sizeof(buffer)) {
+		return false;
+	}
+	LOAD_32LE(header->blockType, 0, &buffer.blockType);
+	LOAD_32LE(header->length, 0, &buffer.length);
+	LOAD_32LE(header->channelId, 0, &buffer.channelId);
+	LOAD_32LE(header->flags, 0, &buffer.flags);
+	return true;
+}
+
+bool _readHeader(struct mVideoLogContext* context) {
+	struct mVideoLogHeader header;
+	context->backing->seek(context->backing, 0, SEEK_SET);
+	if (context->backing->read(context->backing, &header, sizeof(header)) != sizeof(header)) {
+		return false;
+	}
+	if (memcmp(header.magic, mVL_MAGIC, sizeof(header.magic)) != 0) {
+		return false;
+	}
+
+	LOAD_32LE(context->nChannels, 0, &header.nChannels);
+	if (context->nChannels > mVL_MAX_CHANNELS) {
+		return false;
+	}
+
+	uint32_t flags;
+	LOAD_32LE(flags, 0, &header.flags);
+	if (flags & mVL_FLAG_HAS_INITIAL_STATE) {
+		struct mVLBlockHeader header;
+		if (!_readBlockHeader(context, &header)) {
+			return false;
+		}
+		if (header.blockType != mVL_BLOCK_INITIAL_STATE) {
+			return false;
+		}
+		context->initialStateSize = header.length;
+		context->initialState = anonymousMemoryMap(header.length);
+		context->backing->read(context->backing, context->initialState, context->initialStateSize);
+	}
+	return true;
+}
+
+bool mVideoLogContextLoad(struct mVideoLogContext* context, struct VFile* vf) {
+	context->backing = vf;
+
+	if (!_readHeader(context)) {
+		return false;
+	}
+
+	off_t pointer = context->backing->seek(context->backing, 0, SEEK_CUR);
 
 	size_t i;
-	for (i = 0; i < context->nChannels && i < mVL_MAX_CHANNELS; ++i) {
-		struct VFile* channel = context->channels[i].channelData;
-		void* block = channel->map(channel, channel->size(channel), MAP_READ);
+	for (i = 0; i < context->nChannels; ++i) {
+		CircleBufferInit(&context->channels[i].buffer, BUFFER_BASE_SIZE);
+		context->channels[i].bufferRemaining = 0;
+		context->channels[i].currentPointer = pointer;
+		context->channels[i].p = context;
+	}
+	return true;
+}
 
-		struct mVideoLogChannelHeader chHeader = {0};
-		STORE_32LE(context->channels[i].type, 0, &chHeader.type);
-		STORE_32LE(channel->size(channel), 0, &chHeader.channelSize);
+static void _flushBuffer(struct mVideoLogContext* context) {
+	struct CircleBuffer* buffer = &context->channels[context->activeChannel].buffer;
+	if (!CircleBufferSize(buffer)) {
+		return;
+	}
+	struct mVLBlockHeader header = { 0 };
+	STORE_32LE(mVL_BLOCK_DATA, 0, &header.blockType);
+	STORE_32LE(CircleBufferSize(buffer), 0, &header.length);
+	STORE_32LE(context->activeChannel, 0, &header.channelId);
+	context->backing->write(context->backing, &header, sizeof(header));
 
-		if (context->channels[i].initialStateSize) {
-			ssize_t written = vf->write(vf, context->channels[i].initialState, context->channels[i].initialStateSize);
-			if (written > 0) {
-				STORE_32LE(pointer, 0, &chHeader.channelInitialStatePointer);
-				STORE_32LE(context->channels[i].initialStateSize, 0, &chHeader.channelInitialStateSize);
-				pointer += written;
-			} else {
-				chHeader.channelInitialStatePointer = 0;
-			}
+	uint8_t writeBuffer[0x1000];
+	while (CircleBufferSize(buffer)) {
+		size_t read = CircleBufferRead(buffer, writeBuffer, sizeof(writeBuffer));
+		context->backing->write(context->backing, writeBuffer, read);
+	}
+}
+
+void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* context) {
+	_flushBuffer(context);
+
+	struct mVLBlockHeader header = { 0 };
+	STORE_32LE(mVL_BLOCK_FOOTER, 0, &header.blockType);
+	context->backing->write(context->backing, &header, sizeof(header));
+
+	if (core) {
+		core->endVideoLog(core);
+	}
+	if (context->initialState) {
+		mappedMemoryFree(context->initialState, context->initialStateSize);
+	}
+	free(context);
+}
+
+void mVideoLogContextRewind(struct mVideoLogContext* context, struct mCore* core) {
+	_readHeader(context);
+	if (core) {
+		core->loadState(core, context->initialState);
+	}
+
+	off_t pointer = context->backing->seek(context->backing, 0, SEEK_CUR);
+
+	size_t i;
+	for (i = 0; i < context->nChannels; ++i) {
+		CircleBufferClear(&context->channels[i].buffer);
+		context->channels[i].bufferRemaining = 0;
+		context->channels[i].currentPointer = pointer;
+	}
+}
+
+void* mVideoLogContextInitialState(struct mVideoLogContext* context, size_t* size) {
+	if (size) {
+		*size = context->initialStateSize;
+	}
+	return context->initialState;
+}
+
+int mVideoLoggerAddChannel(struct mVideoLogContext* context) {
+	if (context->nChannels >= mVL_MAX_CHANNELS) {
+		return -1;
+	}
+	int chid = context->nChannels;
+	++context->nChannels;
+	context->channels[chid].p = context;
+	CircleBufferInit(&context->channels[chid].buffer, BUFFER_BASE_SIZE);
+	return chid;
+}
+
+static void _readBuffer(struct VFile* vf, struct mVideoLogChannel* channel, size_t length) {
+	uint8_t buffer[0x1000];
+	while (length) {
+		size_t thisRead = sizeof(buffer);
+		if (thisRead > length) {
+			thisRead = length;
 		}
-		STORE_32LE(pointer, 0, &header.channelPointers[i]);
-		ssize_t written = vf->write(vf, &chHeader, sizeof(chHeader));
-		if (written != sizeof(chHeader)) {
-			continue;
+		thisRead = vf->read(vf, buffer, thisRead);
+		if (thisRead <= 0) {
+			return;
 		}
-		pointer += written;
-		written = vf->write(vf, block, channel->size(channel));
-		if (written != channel->size(channel)) {
+		size_t thisWrite = CircleBufferWrite(&channel->buffer, buffer, thisRead);
+		length -= thisWrite;
+		channel->bufferRemaining -= thisWrite;
+		channel->currentPointer += thisWrite;
+		if (thisWrite < thisRead) {
 			break;
 		}
-		pointer += written;
 	}
-	vf->seek(vf, 0, SEEK_SET);
-	vf->write(vf, &header, sizeof(header));
+}
+
+static bool _fillBuffer(struct mVideoLogContext* context, size_t channelId, size_t length) {
+	struct mVideoLogChannel* channel = &context->channels[channelId];
+	context->backing->seek(context->backing, channel->currentPointer, SEEK_SET);
+	struct mVLBlockHeader header;
+	while (length) {
+		size_t bufferRemaining = channel->bufferRemaining;
+		if (bufferRemaining) {
+			if (bufferRemaining > length) {
+				bufferRemaining = length;
+			}
+			_readBuffer(context->backing, channel, bufferRemaining);
+			length -= bufferRemaining;
+			continue;
+		}
+
+		if (!_readBlockHeader(context, &header)) {
+			return false;
+		}
+		if (header.blockType == mVL_BLOCK_FOOTER) {
+			return false;
+		}
+		if (header.channelId != channelId || header.blockType != mVL_BLOCK_DATA) {
+			context->backing->seek(context->backing, header.length, SEEK_CUR);
+			continue;
+		}
+		channel->currentPointer = context->backing->seek(context->backing, 0, SEEK_CUR);
+		if (!header.length) {
+			continue;
+		}
+
+		channel->bufferRemaining = header.length;
+	}
+	return true;
+}
+
+static ssize_t mVideoLoggerReadChannel(struct mVideoLogChannel* channel, void* data, size_t length) {
+	struct mVideoLogContext* context = channel->p;
+	unsigned channelId = channel - context->channels;
+	if (channelId >= mVL_MAX_CHANNELS) {
+		return 0;
+	}
+	if (CircleBufferSize(&channel->buffer) >= length) {
+		return CircleBufferRead(&channel->buffer, data, length);
+	}
+	ssize_t size = 0;
+	if (CircleBufferSize(&channel->buffer)) {
+		size = CircleBufferRead(&channel->buffer, data, CircleBufferSize(&channel->buffer));
+		if (size <= 0) {
+			return size;
+		}
+		data = (uint8_t*) data + size;
+		length -= size;
+	}
+	if (!_fillBuffer(context, channelId, BUFFER_BASE_SIZE)) {
+		return size;
+	}
+	size += CircleBufferRead(&channel->buffer, data, length);
+	return size;
+}
+
+static ssize_t mVideoLoggerWriteChannel(struct mVideoLogChannel* channel, const void* data, size_t length) {
+	struct mVideoLogContext* context = channel->p;
+	unsigned channelId = channel - context->channels;
+	if (channelId >= mVL_MAX_CHANNELS) {
+		return 0;
+	}
+	if (channelId != context->activeChannel) {
+		_flushBuffer(context);
+		context->activeChannel = channelId;
+	}
+	if (CircleBufferCapacity(&channel->buffer) - CircleBufferSize(&channel->buffer) < length) {
+		_flushBuffer(context);
+		if (CircleBufferCapacity(&channel->buffer) < length) {
+			CircleBufferDeinit(&channel->buffer);
+			CircleBufferInit(&channel->buffer, toPow2(length << 1));
+		}
+	}
+
+	ssize_t read = CircleBufferWrite(&channel->buffer, data, length);
+	if (CircleBufferCapacity(&channel->buffer) == CircleBufferSize(&channel->buffer)) {
+		_flushBuffer(context);
+	}
+	return read;
 }
 
 struct mCore* mVideoLogCoreFind(struct VFile* vf) {
 	if (!vf) {
 		return NULL;
 	}
-	struct mVideoLogHeader header = {{0}};
+	struct mVideoLogHeader header = { { 0 } };
 	vf->seek(vf, 0, SEEK_SET);
 	ssize_t read = vf->read(vf, &header, sizeof(header));
 	if (read != sizeof(header)) {
 		return NULL;
 	}
-	if (memcmp(header.magic, mVL_MAGIC, sizeof(mVL_MAGIC)) != 0) {
+	if (memcmp(header.magic, mVL_MAGIC, sizeof(header.magic)) != 0) {
 		return NULL;
 	}
 	enum mPlatform platform;
@@ -349,81 +631,4 @@ struct mCore* mVideoLogCoreFind(struct VFile* vf) {
 		core = descriptor->open();
 	}
 	return core;
-}
-
-bool mVideoLogContextLoad(struct VFile* vf, struct mVideoLogContext* context) {
-	if (!vf) {
-		return false;
-	}
-	struct mVideoLogHeader header = {{0}};
-	vf->seek(vf, 0, SEEK_SET);
-	ssize_t read = vf->read(vf, &header, sizeof(header));
-	if (read != sizeof(header)) {
-		return false;
-	}
-	if (memcmp(header.magic, mVL_MAGIC, sizeof(mVL_MAGIC)) != 0) {
-		return false;
-	}
-
-	// TODO: Error check
-	uint32_t initialStatePointer;
-	uint32_t initialStateSize;
-	LOAD_32LE(initialStatePointer, 0, &header.initialStatePointer);
-	LOAD_32LE(initialStateSize, 0, &header.initialStateSize);
-	void* initialState = anonymousMemoryMap(initialStateSize);
-	vf->read(vf, initialState, initialStateSize);
-	context->initialState = initialState;
-	context->initialStateSize = initialStateSize;
-
-	uint32_t nChannels;
-	LOAD_32LE(nChannels, 0, &header.nChannels);
-	context->nChannels = nChannels;
-
-	size_t i;
-	for (i = 0; i < nChannels && i < mVL_MAX_CHANNELS; ++i) {
-		uint32_t channelPointer;
-		LOAD_32LE(channelPointer, 0, &header.channelPointers[i]);
-		vf->seek(vf, channelPointer, SEEK_SET);
-
-		struct mVideoLogChannelHeader chHeader;
-		vf->read(vf, &chHeader, sizeof(chHeader));
-
-		LOAD_32LE(context->channels[i].type, 0, &chHeader.type);
-		LOAD_32LE(context->channels[i].initialStateSize, 0, &chHeader.channelInitialStateSize);
-
-		LOAD_32LE(channelPointer, 0, &chHeader.channelInitialStatePointer);
-		if (channelPointer) {
-			off_t position = vf->seek(vf, 0, SEEK_CUR);
-			vf->seek(vf, channelPointer, SEEK_SET);
-
-			context->channels[i].initialState = anonymousMemoryMap(context->channels[i].initialStateSize);
-			vf->read(vf, context->channels[i].initialState, context->channels[i].initialStateSize);
-			vf->seek(vf, position, SEEK_SET);
-		}
-
-		uint32_t channelSize;
-		LOAD_32LE(channelSize, 0, &chHeader.channelSize);
-		struct VFile* vfm = VFileMemChunk(0, channelSize);
-
-		while (channelSize) {
-			uint8_t buffer[2048];
-			ssize_t toRead = channelSize;
-			if (toRead > (ssize_t) sizeof(buffer)) {
-				toRead = sizeof(buffer);
-			}
-			toRead = vf->read(vf, buffer, toRead);
-			if (toRead > 0) {
-				channelSize -= toRead;
-			} else {
-				break;
-			}
-			vfm->write(vfm, buffer, toRead);
-		}
-		context->channels[i].channelData = vfm;
-	}
-
-	for (; i < mVL_MAX_CHANNELS; ++i) {
-		context->channels[i].channelData = NULL;
-	}
-	return true;
 }

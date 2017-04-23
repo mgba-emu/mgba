@@ -39,7 +39,6 @@ void mVideoThreadProxyCreate(struct mVideoThreadProxy* renderer) {
 
 	renderer->d.writeData = _writeData;
 	renderer->d.readData = _readData;
-	renderer->d.vf = NULL;
 }
 
 void mVideoThreadProxyInit(struct mVideoLogger* logger) {
