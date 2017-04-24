@@ -76,6 +76,8 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->sio.p = gba;
 	GBASIOInit(&gba->sio);
 
+	GBAHardwareInit(&gba->memory.hw, NULL);
+
 	gba->springIRQ = 0;
 	gba->keySource = 0;
 	gba->rotationSource = 0;
