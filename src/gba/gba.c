@@ -82,6 +82,8 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->timersEnabled = 0;
 	memset(gba->timers, 0, sizeof(gba->timers));
 
+	GBAHardwareInit(&gba->memory.hw, NULL);
+
 	gba->springIRQ = 0;
 	gba->keySource = 0;
 	gba->rotationSource = 0;
