@@ -322,6 +322,133 @@ static bool _readData(struct mVideoLogger* logger, void* data, size_t length, bo
 	return mVideoLoggerReadChannel(channel, data, length) == (ssize_t) length;
 }
 
+#ifdef USE_ZLIB
+static void _copyVf(struct VFile* dest, struct VFile* src) {
+	size_t size = src->size(src);
+	void* mem = src->map(src, size, MAP_READ);
+	dest->write(dest, mem, size);
+	src->unmap(src, mem, size);
+}
+
+static void _compress(struct VFile* dest, const void* in, size_t size) {
+	uint8_t writeBuffer[0x800];
+	uint8_t compressBuffer[0x400];
+	z_stream zstr;
+	zstr.zalloc = Z_NULL;
+	zstr.zfree = Z_NULL;
+	zstr.opaque = Z_NULL;
+	zstr.avail_in = 0;
+	zstr.avail_out = sizeof(compressBuffer);
+	zstr.next_out = (Bytef*) compressBuffer;
+	if (deflateInit(&zstr, 9) != Z_OK) {
+		return;
+	}
+
+	struct VFile* src = VFileFromConstMemory(in, size);
+
+	while (true) {
+		size_t read = src->read(src, writeBuffer, sizeof(writeBuffer));
+		if (!read) {
+			break;
+		}
+		zstr.avail_in = read;
+		zstr.next_in = (Bytef*) writeBuffer;
+		while (zstr.avail_in) {
+			if (deflate(&zstr, Z_NO_FLUSH) == Z_STREAM_ERROR) {
+				break;
+			}
+			dest->write(dest, compressBuffer, sizeof(compressBuffer) - zstr.avail_out);
+			zstr.avail_out = sizeof(compressBuffer);
+			zstr.next_out = (Bytef*) compressBuffer;
+		}
+	}
+
+	do {
+		zstr.avail_out = sizeof(compressBuffer);
+		zstr.next_out = (Bytef*) compressBuffer;
+		zstr.avail_in = 0;
+		int ret = deflate(&zstr, Z_FINISH);
+		if (ret == Z_STREAM_ERROR) {
+			break;
+		}
+		dest->write(dest, compressBuffer, sizeof(compressBuffer) - zstr.avail_out);
+	} while (sizeof(compressBuffer) - zstr.avail_out);
+	src->close(src);
+}
+
+static bool _decompress(struct VFile* dest, struct VFile* src, size_t compressedLength) {
+	uint8_t fbuffer[0x400];
+	uint8_t zbuffer[0x800];
+	z_stream zstr;
+	zstr.zalloc = Z_NULL;
+	zstr.zfree = Z_NULL;
+	zstr.opaque = Z_NULL;
+	zstr.avail_in = 0;
+	zstr.avail_out = sizeof(zbuffer);
+	zstr.next_out = (Bytef*) zbuffer;
+	bool started = false;
+
+	while (true) {
+		size_t thisWrite = sizeof(zbuffer);
+		size_t thisRead = 0;
+		if (zstr.avail_in) {
+			zstr.next_out = zbuffer;
+			zstr.avail_out = thisWrite;
+			thisRead = zstr.avail_in;
+		} else if (compressedLength) {
+			thisRead = sizeof(fbuffer);
+			if (thisRead > compressedLength) {
+				thisRead = compressedLength;
+			}
+
+			thisRead = src->read(src, fbuffer, thisRead);
+			if (thisRead <= 0) {
+				break;
+			}
+
+			zstr.next_in = fbuffer;
+			zstr.avail_in = thisRead;
+			zstr.next_out = zbuffer;
+			zstr.avail_out = thisWrite;
+
+			if (!started) {
+				if (inflateInit(&zstr) != Z_OK) {
+					break;
+				}
+				started = true;
+			}
+		} else {
+			zstr.next_in = Z_NULL;
+			zstr.avail_in = 0;
+			zstr.next_out = zbuffer;
+			zstr.avail_out = thisWrite;
+		}
+
+		int ret = inflate(&zstr, Z_NO_FLUSH);
+
+		if (zstr.next_in != Z_NULL) {
+			thisRead -= zstr.avail_in;
+			compressedLength -= thisRead;
+		}
+
+		if (ret != Z_OK) {
+			inflateEnd(&zstr);
+			started = false;
+			if (ret != Z_STREAM_END) {
+				break;
+			}
+		}
+
+		thisWrite = dest->write(dest, zbuffer, thisWrite - zstr.avail_out);
+
+		if (!started) {
+			break;
+		}
+	}
+	return !compressedLength;
+}
+#endif
+
 void mVideoLoggerAttachChannel(struct mVideoLogger* logger, struct mVideoLogContext* context, size_t channelId) {
 	if (channelId >= mVL_MAX_CHANNELS) {
 		return;
@@ -368,9 +495,20 @@ void mVideoLogContextWriteHeader(struct mVideoLogContext* context, struct mCore*
 	if (context->initialState) {
 		struct mVLBlockHeader chheader = { 0 };
 		STORE_32LE(mVL_BLOCK_INITIAL_STATE, 0, &chheader.blockType);
+#ifdef USE_ZLIB
+		STORE_32LE(mVL_FLAG_BLOCK_COMPRESSED, 0, &chheader.flags);
+
+		struct VFile* vfm = VFileMemChunk(NULL, 0);
+		_compress(vfm, context->initialState, context->initialStateSize);
+		STORE_32LE(vfm->size(vfm), 0, &chheader.length);
+		context->backing->write(context->backing, &chheader, sizeof(chheader));
+		_copyVf(context->backing, vfm);
+		vfm->close(vfm);
+#else
 		STORE_32LE(context->initialStateSize, 0, &chheader.length);
 		context->backing->write(context->backing, &chheader, sizeof(chheader));
 		context->backing->write(context->backing, context->initialState, context->initialStateSize);
+#endif
 	}
 
  	size_t i;
@@ -419,9 +557,27 @@ bool _readHeader(struct mVideoLogContext* context) {
 		if (header.blockType != mVL_BLOCK_INITIAL_STATE) {
 			return false;
 		}
-		context->initialStateSize = header.length;
-		context->initialState = anonymousMemoryMap(header.length);
-		context->backing->read(context->backing, context->initialState, context->initialStateSize);
+		if (header.flags & mVL_FLAG_BLOCK_COMPRESSED) {
+#ifdef USE_ZLIB
+			struct VFile* vfm = VFileMemChunk(NULL, 0);
+			if (!_decompress(vfm, context->backing, header.length)) {
+				vfm->close(vfm);
+				return false;
+			}
+			context->initialStateSize = vfm->size(vfm);
+			context->initialState = anonymousMemoryMap(context->initialStateSize);
+			void* mem = vfm->map(vfm, context->initialStateSize, MAP_READ);
+			memcpy(context->initialState, mem, context->initialStateSize);
+			vfm->unmap(vfm, mem, context->initialStateSize);
+			vfm->close(vfm);
+#else
+			return false;
+#endif
+		} else {
+			context->initialStateSize = header.length;
+			context->initialState = anonymousMemoryMap(header.length);
+			context->backing->read(context->backing, context->initialState, context->initialStateSize);
+		}
 	}
 	return true;
 }
@@ -461,6 +617,7 @@ static void _flushBufferCompressed(struct mVideoLogContext* context) {
 	STORE_32LE(context->activeChannel, 0, &header.channelId);
 	STORE_32LE(mVL_FLAG_BLOCK_COMPRESSED, 0, &header.flags);
 
+	// TODO: Share with _compress
 	uint8_t compressBuffer[0x800];
 	z_stream zstr;
 	zstr.zalloc = Z_NULL;
@@ -503,9 +660,7 @@ static void _flushBufferCompressed(struct mVideoLogContext* context) {
 	size_t size = vfm->size(vfm);
 	STORE_32LE(size, 0, &header.length);
 	context->backing->write(context->backing, &header, sizeof(header));
-	void* vfmm = vfm->map(vfm, size, MAP_READ);
-	context->backing->write(context->backing, vfmm, size);
-	vfm->unmap(vfm, vfmm, size);
+	_copyVf(context->backing, vfm);
 	vfm->close(vfm);
 }
 #endif
@@ -555,7 +710,7 @@ void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* contex
 
 void mVideoLogContextRewind(struct mVideoLogContext* context, struct mCore* core) {
 	_readHeader(context);
-	if (core) {
+	if (core && core->stateSize(core) == context->initialStateSize) {
 		core->loadState(core, context->initialState);
 	}
 
@@ -593,6 +748,7 @@ static size_t _readBufferCompressed(struct VFile* vf, struct mVideoLogChannel* c
 	uint8_t zbuffer[0x800];
 	size_t read = 0;
 
+	// TODO: Share with _decompress
 	channel->inflateStream.avail_in = 0;
 	while (length) {
 		size_t thisWrite = sizeof(zbuffer);
