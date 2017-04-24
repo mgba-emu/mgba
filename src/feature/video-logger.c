@@ -22,6 +22,7 @@
 #endif
 
 #define BUFFER_BASE_SIZE 0x20000
+#define MAX_BLOCK_SIZE 0x800000
 
 const char mVL_MAGIC[] = "mVL\0";
 
@@ -530,6 +531,12 @@ bool _readBlockHeader(struct mVideoLogContext* context, struct mVLBlockHeader* h
 	LOAD_32LE(header->length, 0, &buffer.length);
 	LOAD_32LE(header->channelId, 0, &buffer.channelId);
 	LOAD_32LE(header->flags, 0, &buffer.flags);
+
+	if (header->length > MAX_BLOCK_SIZE) {
+		// Pre-emptively reject blocks that are too big.
+		// If we encounter one, the file is probably corrupted.
+		return false;
+	}
 	return true;
 }
 
