@@ -330,7 +330,7 @@ static void _copyVf(struct VFile* dest, struct VFile* src) {
 	src->unmap(src, mem, size);
 }
 
-static void _compress(struct VFile* dest, const void* in, size_t size) {
+static void _compress(struct VFile* dest, struct VFile* src) {
 	uint8_t writeBuffer[0x800];
 	uint8_t compressBuffer[0x400];
 	z_stream zstr;
@@ -343,8 +343,6 @@ static void _compress(struct VFile* dest, const void* in, size_t size) {
 	if (deflateInit(&zstr, 9) != Z_OK) {
 		return;
 	}
-
-	struct VFile* src = VFileFromConstMemory(in, size);
 
 	while (true) {
 		size_t read = src->read(src, writeBuffer, sizeof(writeBuffer));
@@ -373,7 +371,6 @@ static void _compress(struct VFile* dest, const void* in, size_t size) {
 		}
 		dest->write(dest, compressBuffer, sizeof(compressBuffer) - zstr.avail_out);
 	} while (sizeof(compressBuffer) - zstr.avail_out);
-	src->close(src);
 }
 
 static bool _decompress(struct VFile* dest, struct VFile* src, size_t compressedLength) {
@@ -499,7 +496,9 @@ void mVideoLogContextWriteHeader(struct mVideoLogContext* context, struct mCore*
 		STORE_32LE(mVL_FLAG_BLOCK_COMPRESSED, 0, &chheader.flags);
 
 		struct VFile* vfm = VFileMemChunk(NULL, 0);
-		_compress(vfm, context->initialState, context->initialStateSize);
+		struct VFile* src = VFileFromConstMemory(context->initialState, context->initialStateSize);
+		_compress(vfm, src);
+		src->close(src);
 		STORE_32LE(vfm->size(vfm), 0, &chheader.length);
 		context->backing->write(context->backing, &chheader, sizeof(chheader));
 		_copyVf(context->backing, vfm);
@@ -610,55 +609,19 @@ static void _flushBufferCompressed(struct mVideoLogContext* context) {
 	if (!CircleBufferSize(buffer)) {
 		return;
 	}
-	uint8_t writeBuffer[0x400];
-	struct mVLBlockHeader header = { 0 };
-	STORE_32LE(mVL_BLOCK_DATA, 0, &header.blockType);
-
-	STORE_32LE(context->activeChannel, 0, &header.channelId);
-	STORE_32LE(mVL_FLAG_BLOCK_COMPRESSED, 0, &header.flags);
-
-	// TODO: Share with _compress
-	uint8_t compressBuffer[0x800];
-	z_stream zstr;
-	zstr.zalloc = Z_NULL;
-	zstr.zfree = Z_NULL;
-	zstr.opaque = Z_NULL;
-	zstr.avail_in = 0;
-	zstr.avail_out = sizeof(compressBuffer);
-	zstr.next_out = (Bytef*) compressBuffer;
-	if (deflateInit(&zstr, 9) != Z_OK) {
-		return;
-	}
-
 	struct VFile* vfm = VFileMemChunk(NULL, 0);
-
-	while (CircleBufferSize(buffer)) {
-		size_t read = CircleBufferRead(buffer, writeBuffer, sizeof(writeBuffer));
-		zstr.avail_in = read;
-		zstr.next_in = (Bytef*) writeBuffer;
-		while (zstr.avail_in) {
-			if (deflate(&zstr, Z_NO_FLUSH) == Z_STREAM_ERROR) {
-				break;
-			}
-			vfm->write(vfm, compressBuffer, sizeof(compressBuffer) - zstr.avail_out);
-			zstr.avail_out = sizeof(compressBuffer);
-			zstr.next_out = (Bytef*) compressBuffer;
-		}
-	}
-
-	do {
-		zstr.avail_out = sizeof(compressBuffer);
-		zstr.next_out = (Bytef*) compressBuffer;
-		zstr.avail_in = 0;
-		int ret = deflate(&zstr, Z_FINISH);
-		if (ret == Z_STREAM_ERROR) {
-			break;
-		}
-		vfm->write(vfm, compressBuffer, sizeof(compressBuffer) - zstr.avail_out);
-	} while (sizeof(compressBuffer) - zstr.avail_out);
+	struct VFile* src = VFileFIFO(buffer);
+	_compress(vfm, src);
+	src->close(src);
 
 	size_t size = vfm->size(vfm);
+
+	struct mVLBlockHeader header = { 0 };
+	STORE_32LE(mVL_BLOCK_DATA, 0, &header.blockType);
+	STORE_32LE(context->activeChannel, 0, &header.channelId);
+	STORE_32LE(mVL_FLAG_BLOCK_COMPRESSED, 0, &header.flags);
 	STORE_32LE(size, 0, &header.length);
+
 	context->backing->write(context->backing, &header, sizeof(header));
 	_copyVf(context->backing, vfm);
 	vfm->close(vfm);
