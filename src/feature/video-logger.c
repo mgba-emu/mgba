@@ -834,7 +834,7 @@ static bool _fillBuffer(struct mVideoLogContext* context, size_t channelId, size
 			return false;
 		}
 		if (header.blockType == mVL_BLOCK_FOOTER) {
-			return false;
+			return true;
 		}
 		if (header.channelId != channelId || header.blockType != mVL_BLOCK_DATA) {
 			context->backing->seek(context->backing, header.length, SEEK_CUR);
