@@ -12,6 +12,8 @@
 #include <sys/time.h>
 #if defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <pthread_np.h>
+#elif defined(__HAIKU__)
+#include <OS.h>
 #endif
 
 #define THREAD_ENTRY void*
@@ -85,6 +87,9 @@ static inline int ThreadSetName(const char* name) {
 	return pthread_setname_np(name);
 #elif defined(__FreeBSD__) || defined(__OpenBSD__)
 	pthread_set_name_np(pthread_self(), name);
+	return 0;
+#elif defined(__HAIKU__)
+	rename_thread(find_thread(NULL), name);
 	return 0;
 #elif !defined(BUILD_PANDORA) // Pandora's glibc is too old
 	return pthread_setname_np(pthread_self(), name);
