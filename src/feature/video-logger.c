@@ -80,6 +80,7 @@ struct mVideoLogContext {
 	uint32_t nChannels;
 	struct mVideoLogChannel channels[mVL_MAX_CHANNELS];
 
+	bool write;
 	uint32_t activeChannel;
 	struct VFile* backing;
 };
@@ -320,6 +321,8 @@ struct mVideoLogContext* mVideoLogContextCreate(struct mCore* core) {
 	struct mVideoLogContext* context = malloc(sizeof(*context));
 	memset(context, 0, sizeof(*context));
 
+	context->write = !!core;
+
 	if (core) {
 		context->initialStateSize = core->stateSize(core);
 		context->initialState = anonymousMemoryMap(context->initialStateSize);
@@ -449,11 +452,13 @@ static void _flushBuffer(struct mVideoLogContext* context) {
 }
 
 void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* context) {
-	_flushBuffer(context);
+	if (context->write) {
+		_flushBuffer(context);
 
-	struct mVLBlockHeader header = { 0 };
-	STORE_32LE(mVL_BLOCK_FOOTER, 0, &header.blockType);
-	context->backing->write(context->backing, &header, sizeof(header));
+		struct mVLBlockHeader header = { 0 };
+		STORE_32LE(mVL_BLOCK_FOOTER, 0, &header.blockType);
+		context->backing->write(context->backing, &header, sizeof(header));
+	}
 
 	if (core) {
 		core->endVideoLog(core);
