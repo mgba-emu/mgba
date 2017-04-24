@@ -94,10 +94,15 @@ int main(int argc, char** argv) {
 #ifdef __AFL_HAVE_MANUAL_CONTROL
 	__AFL_INIT();
 #endif
+
+	bool cleanExit = true;
+	if (!mCoreLoadFile(core, args.fname)) {
+		cleanExit = false;
+		goto loadError;
+	}
 	if (args.patch) {
 		core->loadPatch(core, VFileOpen(args.patch, O_RDONLY));
 	}
-	mCoreLoadFile(core, args.fname);
 
 	struct VFile* savestate = 0;
 	struct VFile* savestateOverlay = 0;
@@ -158,13 +163,14 @@ int main(int argc, char** argv) {
 		savestateOverlay->close(savestateOverlay);
 	}
 
+loadError:
 	freeArguments(&args);
 	if (outputBuffer) {
 		free(outputBuffer);
 	}
 	core->deinit(core);
 
-	return 0;
+	return !cleanExit;
 }
 
 static void _fuzzRunloop(struct mCore* core, int frames) {

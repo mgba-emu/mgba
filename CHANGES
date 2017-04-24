@@ -47,6 +47,7 @@ Bugfixes:
  - Core: Fix crash with rewind if savestates shrink
  - Test: Fix crash when loading invalid file
  - GBA Hardware: Fix crash if a savestate lies about game hardware
+ - Test: Fix crash when fuzzing fails to load a file
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
