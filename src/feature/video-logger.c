@@ -562,7 +562,7 @@ bool _readHeader(struct mVideoLogContext* context) {
 		if (!_readBlockHeader(context, &header)) {
 			return false;
 		}
-		if (header.blockType != mVL_BLOCK_INITIAL_STATE) {
+		if (header.blockType != mVL_BLOCK_INITIAL_STATE || !header.length) {
 			return false;
 		}
 		if (context->initialState) {
