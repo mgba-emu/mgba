@@ -772,11 +772,6 @@ static void _GBAVLPStartFrameCallback(void *context) {
 		GBAVideoProxyRendererUnshim(&gba->video, &gbacore->proxyRenderer);
 		mVideoLogContextRewind(gbacore->logContext, core);
 		GBAVideoProxyRendererShim(&gba->video, &gbacore->proxyRenderer);
-
-		// Make sure CPU loop never spins
-		GBAHalt(gba);
-		gba->cpu->memory.store16(gba->cpu, BASE_IO | REG_IME, 0, NULL);
-		gba->cpu->memory.store16(gba->cpu, BASE_IO | REG_IE, 0, NULL);
 	}
 }
 
@@ -816,11 +811,6 @@ static void _GBAVLPReset(struct mCore* core) {
 	ARMReset(core->cpu);
 	mVideoLogContextRewind(gbacore->logContext, core);
 	GBAVideoProxyRendererShim(&gba->video, &gbacore->proxyRenderer);
-
-	// Make sure CPU loop never spins
-	GBAHalt(gba);
-	gba->cpu->memory.store16(gba->cpu, BASE_IO | REG_IME, 0, NULL);
-	gba->cpu->memory.store16(gba->cpu, BASE_IO | REG_IE, 0, NULL);
 }
 
 static bool _GBAVLPLoadROM(struct mCore* core, struct VFile* vf) {
@@ -835,6 +825,23 @@ static bool _GBAVLPLoadROM(struct mCore* core, struct VFile* vf) {
 	return true;
 }
 
+static bool _GBAVLPLoadState(struct mCore* core, const void* state) {
+	struct GBA* gba = (struct GBA*) core->board;
+
+	gba->timing.root = NULL;
+	gba->cpu->gprs[ARM_PC] = BASE_WORKING_RAM;
+	gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
+
+	// Make sure CPU loop never spins
+	GBAHalt(gba);
+	gba->cpu->memory.store16(gba->cpu, BASE_IO | REG_IME, 0, NULL);
+	gba->cpu->memory.store16(gba->cpu, BASE_IO | REG_IE, 0, NULL);
+	GBAVideoDeserialize(&gba->video, state);
+	GBAIODeserialize(gba, state);
+
+	return true;
+}
+
 static bool _returnTrue(struct VFile* vf) {
 	UNUSED(vf);
 	return true;
@@ -846,6 +853,7 @@ struct mCore* GBAVideoLogPlayerCreate(void) {
 	core->deinit = _GBAVLPDeinit;
 	core->reset = _GBAVLPReset;
 	core->loadROM = _GBAVLPLoadROM;
+	core->loadState = _GBAVLPLoadState;
 	core->isROM = _returnTrue;
 	return core;
 }

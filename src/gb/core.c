@@ -8,6 +8,7 @@
 #include <mgba/core/core.h>
 #include <mgba/internal/gb/cheats.h>
 #include <mgba/internal/gb/extra/cli.h>
+#include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/mbc.h>
 #include <mgba/internal/gb/overrides.h>
@@ -752,11 +753,6 @@ static void _GBVLPStartFrameCallback(void *context) {
 		GBVideoProxyRendererUnshim(&gb->video, &gbcore->proxyRenderer);
 		mVideoLogContextRewind(gbcore->logContext, core);
 		GBVideoProxyRendererShim(&gb->video, &gbcore->proxyRenderer);
-
-		// Make sure CPU loop never spins
-		GBHalt(gb->cpu);
-		gb->memory.ie = 0;
-		gb->memory.ime = false;
 	}
 }
 
@@ -796,11 +792,6 @@ static void _GBVLPReset(struct mCore* core) {
 	LR35902Reset(core->cpu);
 	mVideoLogContextRewind(gbcore->logContext, core);
 	GBVideoProxyRendererShim(&gb->video, &gbcore->proxyRenderer);
-
-	// Make sure CPU loop never spins
-	GBHalt(gb->cpu);
-	gb->memory.ie = 0;
-	gb->memory.ime = false;
 }
 
 static bool _GBVLPLoadROM(struct mCore* core, struct VFile* vf) {
@@ -815,6 +806,27 @@ static bool _GBVLPLoadROM(struct mCore* core, struct VFile* vf) {
 	return true;
 }
 
+static bool _GBVLPLoadState(struct mCore* core, const void* buffer) {
+	struct GB* gb = (struct GB*) core->board;
+	const struct GBSerializedState* state = buffer;
+
+	gb->timing.root = NULL;
+	gb->model = state->model;
+
+	gb->cpu->pc = GB_BASE_HRAM;
+	gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
+
+	GBVideoDeserialize(&gb->video, state);
+	GBIODeserialize(gb, state);
+
+	// Make sure CPU loop never spins
+	GBHalt(gb->cpu);
+	gb->memory.ie = 0;
+	gb->memory.ime = false;
+
+	return true;
+}
+
 static bool _returnTrue(struct VFile* vf) {
 	UNUSED(vf);
 	return true;
@@ -826,6 +838,7 @@ struct mCore* GBVideoLogPlayerCreate(void) {
 	core->deinit = _GBVLPDeinit;
 	core->reset = _GBVLPReset;
 	core->loadROM = _GBVLPLoadROM;
+	core->loadState = _GBVLPLoadState;
 	core->isROM = _returnTrue;
 	return core;
 }
