@@ -838,6 +838,7 @@ static bool _GBAVLPLoadState(struct mCore* core, const void* state) {
 	gba->cpu->memory.store16(gba->cpu, BASE_IO | REG_IE, 0, NULL);
 	GBAVideoDeserialize(&gba->video, state);
 	GBAIODeserialize(gba, state);
+	GBAAudioReset(&gba->audio);
 
 	return true;
 }
