@@ -684,6 +684,12 @@ void mVideoLogContextRewind(struct mVideoLogContext* context, struct mCore* core
 		CircleBufferClear(&context->channels[i].buffer);
 		context->channels[i].bufferRemaining = 0;
 		context->channels[i].currentPointer = pointer;
+#ifdef USE_ZLIB
+		if (context->channels[i].inflating) {
+			inflateEnd(&context->channels[i].inflateStream);
+			context->channels[i].inflating = false;
+		}
+#endif
 	}
 }
 
