@@ -106,6 +106,7 @@ Misc:
  - Core: Ability to enumerate and modify video and audio channels
  - Debugger: Make attaching a backend idempotent
  - VFS: Optimize expanding in-memory files
+ - VFS: Add VFileFIFO for operating on circle buffers
 
 0.5.2: (2016-12-31)
 Bugfixes:
