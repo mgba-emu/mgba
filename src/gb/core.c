@@ -792,6 +792,11 @@ static void _GBVLPReset(struct mCore* core) {
 	LR35902Reset(core->cpu);
 	mVideoLogContextRewind(gbcore->logContext, core);
 	GBVideoProxyRendererShim(&gb->video, &gbcore->proxyRenderer);
+
+	// Make sure CPU loop never spins
+	GBHalt(gb->cpu);
+	gb->memory.ie = 0;
+	gb->memory.ime = false;
 }
 
 static bool _GBVLPLoadROM(struct mCore* core, struct VFile* vf) {

@@ -811,6 +811,11 @@ static void _GBAVLPReset(struct mCore* core) {
 	ARMReset(core->cpu);
 	mVideoLogContextRewind(gbacore->logContext, core);
 	GBAVideoProxyRendererShim(&gba->video, &gbacore->proxyRenderer);
+
+	// Make sure CPU loop never spins
+	GBAHalt(gba);
+	gba->cpu->memory.store16(gba->cpu, BASE_IO | REG_IME, 0, NULL);
+	gba->cpu->memory.store16(gba->cpu, BASE_IO | REG_IE, 0, NULL);
 }
 
 static bool _GBAVLPLoadROM(struct mCore* core, struct VFile* vf) {
