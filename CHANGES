@@ -51,6 +51,7 @@ Bugfixes:
  - GBA: Fix multiboot loading resulting in too small WRAM
  - Test: Don't rely on core for frames elapsed
  - Test: Fix crash when loading invalid file
+ - GBA Hardware: Fix crash if a savestate lies about game hardware
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
