@@ -458,6 +458,8 @@ struct mVideoLogContext* mVideoLogContextCreate(struct mCore* core) {
 	memset(context, 0, sizeof(*context));
 
 	context->write = !!core;
+	context->initialStateSize = 0;
+	context->initialState = NULL;
 
 	if (core) {
 		context->initialStateSize = core->stateSize(core);
@@ -555,6 +557,11 @@ bool _readHeader(struct mVideoLogContext* context) {
 		}
 		if (header.blockType != mVL_BLOCK_INITIAL_STATE) {
 			return false;
+		}
+		if (context->initialState) {
+			mappedMemoryFree(context->initialState, context->initialStateSize);
+			context->initialState = NULL;
+			context->initialStateSize = 0;
 		}
 		if (header.flags & mVL_FLAG_BLOCK_COMPRESSED) {
 #ifdef USE_ZLIB
