@@ -645,7 +645,8 @@ static void _drawSpan(struct DSGXSoftwareRenderer* softwareRenderer, struct DSGX
 			if (a == 0x1F) {
 				depth[x] = span->ep[0].coord[softwareRenderer->sort];
 				scanline[x] = color;
-				stencil[x] = s & 0x3F00;
+				stencil[x] &= 0x00FF;
+				stencil[x] |= s & 0x3F00;
 			} else if (a) {
 				// TODO: Disable alpha?
 				if (b) {
