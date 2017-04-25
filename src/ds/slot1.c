@@ -276,9 +276,7 @@ static uint8_t _slot1SPIEEPROM(struct DSCommon* dscore, uint8_t datum) {
 		return oldValue;
 	case 0x02: // WRLO
 	case 0x0A: // WRHI
-		if (dscore->p->memory.slot1.spiAddress >= dscore->p->memory.slot1.spiSize) {
-			break;
-		}
+		dscore->p->memory.slot1.spiAddress &= dscore->p->memory.slot1.spiSize - 1;
 		dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress] = datum;
 		++dscore->p->memory.slot1.spiAddress;
 		break;
@@ -306,23 +304,17 @@ static uint8_t _slot1SPIFlash(struct DSCommon* dscore, uint8_t datum) {
 	uint8_t oldValue;
 	switch (dscore->p->memory.slot1.spiCommand) {
 	case 0x03: // RD
-		if (dscore->p->memory.slot1.spiAddress >= dscore->p->memory.slot1.spiSize) {
-			return 0xFF;
-		}
+		dscore->p->memory.slot1.spiAddress &= dscore->p->memory.slot1.spiSize - 1;
 		oldValue = dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress];
 		++dscore->p->memory.slot1.spiAddress;
 		return oldValue;
 	case 0x02: // PP
-		if (dscore->p->memory.slot1.spiAddress >= dscore->p->memory.slot1.spiSize) {
-			break;
-		}
+		dscore->p->memory.slot1.spiAddress &= dscore->p->memory.slot1.spiSize - 1;
 		dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress] = datum;
 		++dscore->p->memory.slot1.spiAddress;
 		break;
 	case 0x0A: // PW
-		if (dscore->p->memory.slot1.spiAddress >= dscore->p->memory.slot1.spiSize) {
-			break;
-		}
+		dscore->p->memory.slot1.spiAddress &= dscore->p->memory.slot1.spiSize - 1;
 		oldValue = dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress];
 		dscore->p->memory.slot1.spiData[dscore->p->memory.slot1.spiAddress] = datum;
 		++dscore->p->memory.slot1.spiAddress;
