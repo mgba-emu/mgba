@@ -34,6 +34,7 @@ Misc:
  - DS: Attempt to detect if a game is homebrew
  - Qt: Add .srl as an extension for DS ROMs
  - FFmpeg: Allow framerate to be adjusted
+ - DS Slot-1: Emulate KEY delay
 
 0.6.0: (Future)
 Features:

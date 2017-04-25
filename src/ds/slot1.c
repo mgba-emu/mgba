@@ -49,10 +49,11 @@ static void _scheduleTransfer(struct DS* ds, struct mTiming* timing, uint32_t by
 	} else {
 		cycles = 5;
 	}
+	cycles *= bytes;
+
 	if (!ds->ds7.memory.slot1Access) {
 		cycles <<= 1;
 	}
-	cycles *= bytes / 4;
 	cycles -= cyclesLate;
 	mTimingDeschedule(timing, &ds->memory.slot1.transferEvent);
 	mTimingSchedule(timing, &ds->memory.slot1.transferEvent, cycles);
@@ -91,23 +92,20 @@ static void _transferEvent(struct mTiming* timing, void* context, uint32_t cycle
 		ds->memory.slot1.dmaSource = -1;
 	}
 
-	if (ds->memory.slot1.transferRemaining) {
-		ds->romVf->read(ds->romVf, ds->memory.slot1.readBuffer, 4);
-		// TODO: Error check
-		ds->memory.slot1.address += 4;
-		ds->memory.slot1.transferRemaining -= 4;
-		romcnt = DSSlot1ROMCNTFillWordReady(romcnt);
+	ds->romVf->read(ds->romVf, ds->memory.slot1.readBuffer, 4);
+	// TODO: Error check
+	ds->memory.slot1.address += 4;
+	ds->memory.slot1.transferRemaining -= 4;
+	romcnt = DSSlot1ROMCNTFillWordReady(romcnt);
 
-		if (hasDMA) {
-			dma->when = mTimingCurrentTime(timing);
-			dma->nextCount = 1;
-			DSDMAUpdate(dscore);
-		}
-	} else {
+	if (hasDMA) {
+		dma->when = mTimingCurrentTime(timing);
+		dma->nextCount = 1;
+		DSDMAUpdate(dscore);
+	}
+
+	if (!ds->memory.slot1.transferRemaining) {
 		DSSlot1AUXSPICNT config = ds->memory.io7[DS_REG_AUXSPICNT >> 1];
-		memset(ds->memory.slot1.readBuffer, 0, 4);
-		romcnt = DSSlot1ROMCNTClearWordReady(romcnt);
-		romcnt = DSSlot1ROMCNTClearBlockBusy(romcnt);
 		if (DSSlot1AUXSPICNTIsDoIRQ(config)) {
 			DSRaiseIRQ(dscore->cpu, dscore->memory.io, DS_IRQ_SLOT1_TRANS);
 		}
@@ -142,10 +140,13 @@ static void DSSlot1StartTransfer(struct DS* ds) {
 			ds->romVf->seek(ds->romVf, ds->memory.slot1.address, SEEK_SET);
 		}
 		ds->memory.slot1.transferRemaining = ds->memory.slot1.transferSize;
+
+		DSSlot1ROMCNT romcnt = ds->memory.io7[DS_REG_ROMCNT_LO >> 1];
+		unsigned delay = DSSlot1ROMCNTGetDelay(romcnt) + 12;
 		if (ds->ds7.memory.slot1Access) {
-			_scheduleTransfer(ds, &ds->ds7.timing, 12, 0);
+			_scheduleTransfer(ds, &ds->ds7.timing, delay, 0);
 		} else {
-			_scheduleTransfer(ds, &ds->ds9.timing, 12, 0);
+			_scheduleTransfer(ds, &ds->ds9.timing, delay, 0);
 		}
 		break;
 	case 0xB8:
@@ -185,7 +186,6 @@ DSSlot1ROMCNT DSSlot1Control(struct DS* ds, DSSlot1ROMCNT control) {
 	}
 	if (DSSlot1ROMCNTIsBlockBusy(control)) {
 		DSSlot1StartTransfer(ds);
-		// TODO: timing
 		if (ds->memory.slot1.command[0] != 0xB7) {
 			control = DSSlot1ROMCNTFillWordReady(control);
 		}
@@ -196,11 +196,24 @@ DSSlot1ROMCNT DSSlot1Control(struct DS* ds, DSSlot1ROMCNT control) {
 uint32_t DSSlot1Read(struct DS* ds) {
 	uint32_t result;
 	LOAD_32(result, 0, ds->memory.slot1.readBuffer);
-	if (ds->ds7.memory.slot1Access) {
-		_scheduleTransfer(ds, &ds->ds7.timing, 4, 0);
+
+	DSSlot1ROMCNT romcnt;
+	// TODO: Big endian
+	LOAD_32(romcnt, DS_REG_ROMCNT_LO, ds->memory.io7);
+	romcnt = DSSlot1ROMCNTClearWordReady(romcnt);
+
+	if (ds->memory.slot1.transferRemaining) {
+		if (ds->ds7.memory.slot1Access) {
+			_scheduleTransfer(ds, &ds->ds7.timing, 4, 0);
+		} else {
+			_scheduleTransfer(ds, &ds->ds9.timing, 4, 0);
+		}
 	} else {
-		_scheduleTransfer(ds, &ds->ds9.timing, 4, 0);
+		romcnt = DSSlot1ROMCNTClearBlockBusy(romcnt);
 	}
+	STORE_32(romcnt, DS_REG_ROMCNT_LO, ds->memory.io7);
+	STORE_32(romcnt, DS_REG_ROMCNT_LO, ds->memory.io9);
+
 	return result;
 }
 
