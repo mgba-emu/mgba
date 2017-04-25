@@ -71,6 +71,10 @@ struct GBVideoRenderer {
 	uint8_t* vram;
 	union GBOAM* oam;
 	struct mTileCache* cache;
+
+	bool disableBG;
+	bool disableOBJ;
+	bool disableWIN;
 };
 
 DECL_BITFIELD(GBRegisterLCDC, uint8_t);

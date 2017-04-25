@@ -76,6 +76,8 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->sio.p = gba;
 	GBASIOInit(&gba->sio);
 
+	GBAHardwareInit(&gba->memory.hw, NULL);
+
 	gba->springIRQ = 0;
 	gba->keySource = 0;
 	gba->rotationSource = 0;
@@ -268,6 +270,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 	}
 }
 
+#ifdef USE_DEBUGGERS
 void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger) {
 	gba->debugger = (struct ARMDebugger*) debugger->platform;
 	gba->debugger->setSoftwareBreakpoint = _setSoftwareBreakpoint;
@@ -277,10 +280,13 @@ void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger) {
 }
 
 void GBADetachDebugger(struct GBA* gba) {
-	gba->debugger = 0;
-	ARMHotplugDetach(gba->cpu, CPU_COMPONENT_DEBUGGER);
-	gba->cpu->components[CPU_COMPONENT_DEBUGGER] = 0;
+	if (gba->debugger) {
+		ARMHotplugDetach(gba->cpu, CPU_COMPONENT_DEBUGGER);
+	}
+	gba->cpu->components[CPU_COMPONENT_DEBUGGER] = NULL;
+	gba->debugger = NULL;
 }
+#endif
 
 bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
 	GBAUnloadROM(gba);

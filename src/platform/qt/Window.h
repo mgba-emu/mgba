@@ -173,6 +173,8 @@ private:
 	QTimer m_fpsTimer;
 	QList<QString> m_mruFiles;
 	QMenu* m_mruMenu;
+	QMenu* m_videoLayers;
+	QMenu* m_audioChannels;
 	ShortcutController* m_shortcutController;
 	ShaderSelector* m_shaderView;
 	bool m_fullscreenOnStart;
@@ -208,6 +210,7 @@ public:
 	void setSizeHint(const QSize& size);
 	virtual QSize sizeHint() const override;
 	void setLockAspectRatio(int width, int height);
+	void setLockIntegerScaling(bool lock);
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override;
@@ -216,6 +219,7 @@ private:
 	QSize m_sizeHint;
 	int m_aspectWidth;
 	int m_aspectHeight;
+	bool m_lockIntegerScaling;
 };
 
 }

@@ -54,6 +54,7 @@ Display* Display::create(QWidget* parent) {
 Display::Display(QWidget* parent)
 	: QWidget(parent)
 	, m_lockAspectRatio(false)
+	, m_lockIntegerScaling(false)
 	, m_filter(false)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -75,6 +76,10 @@ void Display::resizeEvent(QResizeEvent*) {
 void Display::lockAspectRatio(bool lock) {
 	m_lockAspectRatio = lock;
 	m_messagePainter.resize(size(), m_lockAspectRatio, devicePixelRatio());
+}
+
+void Display::lockIntegerScaling(bool lock) {
+	m_lockIntegerScaling = lock;
 }
 
 void Display::filter(bool filter) {

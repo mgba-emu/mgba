@@ -77,6 +77,9 @@ void GBAHardwareClear(struct GBACartridgeHardware* hw) {
 }
 
 void GBAHardwareGPIOWrite(struct GBACartridgeHardware* hw, uint32_t address, uint16_t value) {
+	if (!hw->gpioBase) {
+		return;
+	}
 	switch (address) {
 	case GPIO_REG_DATA:
 		hw->pinState &= ~hw->direction;

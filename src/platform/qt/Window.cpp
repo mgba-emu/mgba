@@ -135,6 +135,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 #endif
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
+	m_screenWidget->setLockIntegerScaling(false);
 	setCentralWidget(m_screenWidget);
 
 	connect(m_controller, SIGNAL(gameStarted(mCoreThread*, const QString&)), this, SLOT(gameStarted(mCoreThread*, const QString&)));
@@ -444,6 +445,7 @@ void Window::selectPatch() {
 
 void Window::openView(QWidget* widget) {
 	connect(this, SIGNAL(shutdown()), widget, SLOT(close()));
+	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), widget, SLOT(close()));
 	widget->setAttribute(Qt::WA_DeleteOnClose);
 	widget->show();
 }
@@ -731,6 +733,7 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 	context->core->desiredVideoDimensions(context->core, &width, &height);
 	m_display->setMinimumSize(width, height);
 	m_screenWidget->setMinimumSize(m_display->minimumSize());
+	m_config->updateOption("lockIntegerScaling");
 	if (m_savedScale > 0) {
 		resizeFrame(QSize(width, height) * m_savedScale);
 	}
@@ -745,6 +748,39 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 	m_hitUnimplementedBiosCall = false;
 	m_fpsTimer.start();
 	m_focusCheck.start();
+
+	m_controller->threadInterrupt();
+	if (m_controller->isLoaded()) {
+		mCore* core = m_controller->thread()->core;
+		const mCoreChannelInfo* videoLayers;
+		const mCoreChannelInfo* audioChannels;
+		size_t nVideo = core->listVideoLayers(core, &videoLayers);
+		size_t nAudio = core->listAudioChannels(core, &audioChannels);
+
+		if (nVideo) {
+			for (size_t i = 0; i < nVideo; ++i) {
+				QAction* action = new QAction(videoLayers[i].visibleName, m_videoLayers);
+				action->setCheckable(true);
+				action->setChecked(true);
+				connect(action, &QAction::triggered, [this, videoLayers, i](bool enable) {
+					m_controller->setVideoLayerEnabled(videoLayers[i].id, enable);
+				});
+				m_videoLayers->addAction(action);
+			}
+		}
+		if (nAudio) {
+			for (size_t i = 0; i < nAudio; ++i) {
+				QAction* action = new QAction(audioChannels[i].visibleName, m_audioChannels);
+				action->setCheckable(true);
+				action->setChecked(true);
+				connect(action, &QAction::triggered, [this, audioChannels, i](bool enable) {
+					m_controller->setAudioChannelEnabled(audioChannels[i].id, enable);
+				});
+				m_audioChannels->addAction(action);
+			}
+		}
+	}
+	m_controller->threadContinue();
 }
 
 void Window::gameStopped() {
@@ -760,6 +796,7 @@ void Window::gameStopped() {
 	updateTitle();
 	detachWidget(m_display);
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
+	m_screenWidget->setLockIntegerScaling(false);
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->unsetCursor();
 #ifdef M_CORE_GB
@@ -768,6 +805,9 @@ void Window::gameStopped() {
 	m_display->setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 #endif
 	m_screenWidget->setMinimumSize(m_display->minimumSize());
+
+	m_videoLayers->clear();
+	m_audioChannels->clear();
 
 	m_fpsTimer.stop();
 	m_focusCheck.stop();
@@ -1226,6 +1266,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, this);
 	m_config->updateOption("lockAspectRatio");
 
+	ConfigOption* lockIntegerScaling = m_config->addOption("lockIntegerScaling");
+	lockIntegerScaling->addBoolean(tr("Force integer scaling"), avMenu);
+	lockIntegerScaling->connect([this](const QVariant& value) {
+		m_display->lockIntegerScaling(value.toBool());
+		if (m_controller->isLoaded()) {
+			m_screenWidget->setLockIntegerScaling(value.toBool());
+		}
+	}, this);
+	m_config->updateOption("lockIntegerScaling");
+
 	ConfigOption* resampleVideo = m_config->addOption("resampleVideo");
 	resampleVideo->addBoolean(tr("Bilinear filtering"), avMenu);
 	resampleVideo->connect([this](const QVariant& value) {
@@ -1301,45 +1351,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	avMenu->addSeparator();
-	QMenu* videoLayers = avMenu->addMenu(tr("Video layers"));
-	m_shortcutController->addMenu(videoLayers, avMenu);
+	m_videoLayers = avMenu->addMenu(tr("Video layers"));
+	m_shortcutController->addMenu(m_videoLayers, avMenu);
 
-	for (int i = 0; i < 4; ++i) {
-		QAction* enableBg = new QAction(tr("Background %0").arg(i), videoLayers);
-		enableBg->setCheckable(true);
-		enableBg->setChecked(true);
-		connect(enableBg, &QAction::triggered, [this, i](bool enable) { m_controller->setVideoLayerEnabled(i, enable); });
-		addControlledAction(videoLayers, enableBg, QString("enableBG%0").arg(i));
-	}
-
-	QAction* enableObj = new QAction(tr("OBJ (sprites)"), videoLayers);
-	enableObj->setCheckable(true);
-	enableObj->setChecked(true);
-	connect(enableObj, &QAction::triggered, [this](bool enable) { m_controller->setVideoLayerEnabled(4, enable); });
-	addControlledAction(videoLayers, enableObj, "enableOBJ");
-
-	QMenu* audioChannels = avMenu->addMenu(tr("Audio channels"));
-	m_shortcutController->addMenu(audioChannels, avMenu);
-
-	for (int i = 0; i < 4; ++i) {
-		QAction* enableCh = new QAction(tr("Channel %0").arg(i + 1), audioChannels);
-		enableCh->setCheckable(true);
-		enableCh->setChecked(true);
-		connect(enableCh, &QAction::triggered, [this, i](bool enable) { m_controller->setAudioChannelEnabled(i, enable); });
-		addControlledAction(audioChannels, enableCh, QString("enableCh%0").arg(i + 1));
-	}
-
-	QAction* enableChA = new QAction(tr("Channel A"), audioChannels);
-	enableChA->setCheckable(true);
-	enableChA->setChecked(true);
-	connect(enableChA, &QAction::triggered, [this, i](bool enable) { m_controller->setAudioChannelEnabled(4, enable); });
-	addControlledAction(audioChannels, enableChA, QString("enableChA"));
-
-	QAction* enableChB = new QAction(tr("Channel B"), audioChannels);
-	enableChB->setCheckable(true);
-	enableChB->setChecked(true);
-	connect(enableChB, &QAction::triggered, [this, i](bool enable) { m_controller->setAudioChannelEnabled(5, enable); });
-	addControlledAction(audioChannels, enableChB, QString("enableChB"));
+	m_audioChannels = avMenu->addMenu(tr("Audio channels"));
+	m_shortcutController->addMenu(m_audioChannels, avMenu);
 
 	QMenu* toolsMenu = menubar->addMenu(tr("&Tools"));
 	m_shortcutController->addMenu(toolsMenu);
@@ -1634,6 +1650,10 @@ void WindowBackground::setLockAspectRatio(int width, int height) {
 	m_aspectHeight = height;
 }
 
+void WindowBackground::setLockIntegerScaling(bool lock) {
+	m_lockIntegerScaling = lock;
+}
+
 void WindowBackground::paintEvent(QPaintEvent*) {
 	const QPixmap* logo = pixmap();
 	if (!logo) {
@@ -1648,6 +1668,10 @@ void WindowBackground::paintEvent(QPaintEvent*) {
 		ds.setWidth(ds.height() * m_aspectWidth / m_aspectHeight);
 	} else if (ds.width() * m_aspectHeight < ds.height() * m_aspectWidth) {
 		ds.setHeight(ds.width() * m_aspectHeight / m_aspectWidth);
+	}
+	if (m_lockIntegerScaling) {
+		ds.setWidth(ds.width() - ds.width() % m_aspectWidth);
+		ds.setHeight(ds.height() - ds.height() % m_aspectHeight);
 	}
 	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
 	QRect full(origin, ds);

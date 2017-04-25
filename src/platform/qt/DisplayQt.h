@@ -30,6 +30,7 @@ public slots:
 	void unpauseDrawing() override { m_isDrawing = true; }
 	void forceDraw() override { update(); }
 	void lockAspectRatio(bool lock) override;
+	void lockIntegerScaling(bool lock) override;
 	void filter(bool filter) override;
 	void framePosted(const uint32_t*) override;
 	void setShaders(struct VDir*) override {}
