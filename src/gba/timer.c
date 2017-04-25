@@ -128,16 +128,16 @@ void GBATimerWriteTMCNT_HI(struct GBATimer* timer, struct mTiming* timing, struc
 	unsigned oldPrescale = GBATimerFlagsGetPrescaleBits(timer->flags);
 	switch (control & 0x0003) {
 	case 0x0000:
-		timer->flags = GBATimerFlagsSetPrescaleBits(timer->flags, 0);
+		timer->flags = GBATimerFlagsSetPrescaleBits(timer->flags, timer->forcedPrescale);
 		break;
 	case 0x0001:
-		timer->flags = GBATimerFlagsSetPrescaleBits(timer->flags, 6);
+		timer->flags = GBATimerFlagsSetPrescaleBits(timer->flags, 6 + timer->forcedPrescale);
 		break;
 	case 0x0002:
-		timer->flags = GBATimerFlagsSetPrescaleBits(timer->flags, 8);
+		timer->flags = GBATimerFlagsSetPrescaleBits(timer->flags, 8 + timer->forcedPrescale);
 		break;
 	case 0x0003:
-		timer->flags = GBATimerFlagsSetPrescaleBits(timer->flags, 10);
+		timer->flags = GBATimerFlagsSetPrescaleBits(timer->flags, 10 + timer->forcedPrescale);
 		break;
 	}
 	timer->flags = GBATimerFlagsTestFillCountUp(timer->flags, timer > 0 && (control & 0x0004));

@@ -25,6 +25,7 @@ struct GBATimer {
 	struct mTimingEvent event;
 	int32_t overflowInterval;
 	GBATimerFlags flags;
+	int forcedPrescale;
 };
 
 struct ARMCore;
