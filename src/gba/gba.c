@@ -297,14 +297,9 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
 		gba->pristineRomSize = SIZE_WORKING_RAM;
 	}
 	gba->isPristine = true;
-#ifdef _3DS
-	if (gba->pristineRomSize <= romBufferSize) {
-		gba->memory.wram = romBuffer;
-		vf->read(vf, romBuffer, gba->pristineRomSize);
-	}
-#else
-	gba->memory.wram = vf->map(vf, gba->pristineRomSize, MAP_READ);
-#endif
+	gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
+	memset(gba->memory.wram, 0, SIZE_WORKING_RAM);
+	vf->read(vf, gba->memory.wram, gba->pristineRomSize);
 	if (!gba->memory.wram) {
 		mLOG(GBA, WARN, "Couldn't map ROM");
 		return false;
