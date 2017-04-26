@@ -147,7 +147,7 @@ const char* _vdeName(struct VDirEntry* vde) {
 
 static enum VFSType _vdeType(struct VDirEntry* vde) {
 	struct VDirEntryDE* vdede = (struct VDirEntryDE*) vde;
-#ifndef WIN32
+#if !defined(WIN32) && !defined(__HAIKU__)
 	if (vdede->ent->d_type == DT_DIR) {
 		return VFS_DIRECTORY;
 	}
