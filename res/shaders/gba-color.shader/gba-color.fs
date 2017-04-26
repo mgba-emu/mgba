@@ -30,5 +30,5 @@ void main() {
 	color *= adjust;
 	screen = clamp(screen * lum, 0.0, 1.0);
 	screen = color * screen;
-	gl_FragColor = pow(screen, vec4(1.0 / display_gamma + (darken_screen / 8.)));
+	gl_FragColor = pow(screen, vec4(1.0 / display_gamma + (darken_screen * 0.125)));
 }
