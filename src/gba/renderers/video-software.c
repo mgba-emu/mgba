@@ -62,6 +62,7 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.disableBG[3] = false;
 	renderer->d.disableOBJ = false;
 	renderer->tileStride = 0x20;
+	renderer->bitmapStride = 0;
 	renderer->combinedObjSort = false;
 	renderer->masterEnd = VIDEO_HORIZONTAL_PIXELS;
 	renderer->masterHeight = VIDEO_VERTICAL_PIXELS;

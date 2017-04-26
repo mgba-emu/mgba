@@ -164,6 +164,7 @@ struct GBAVideoSoftwareRenderer {
 	int oamMax;
 	struct GBAVideoSoftwareSprite sprites[128];
 	int tileStride;
+	int bitmapStride;
 	bool combinedObjSort;
 
 	int start;

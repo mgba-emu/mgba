@@ -233,8 +233,8 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	int32_t x = (uint32_t) GBAObjAttributesBGetX(sprite->b) << 23;
 	x >>= 23;
 	unsigned charBase = GBAObjAttributesCGetTile(sprite->c);
-	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_BITMAP) {
-		charBase = (charBase & 0x1F) * 0x10 + (charBase & ~0x1F) * 0x80;
+	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_BITMAP && renderer->bitmapStride) {
+		charBase = (charBase & (renderer->bitmapStride - 1)) * 0x10 + (charBase & ~(renderer->bitmapStride - 1)) * 0x80;
 	} else {
 		charBase *= renderer->tileStride;
 	}
@@ -281,8 +281,8 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 
 	int inY = y - (int) GBAObjAttributesAGetY(sprite->a);
 	int stride = GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? (width >> !GBAObjAttributesAIs256Color(sprite->a)) : 0x80;
-	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_BITMAP) {
-		stride = 0x100; // TODO: Param
+	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_BITMAP && renderer->bitmapStride) {
+		stride = renderer->bitmapStride << 3;
 	}
 
 	uint32_t current;
@@ -350,7 +350,7 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			return 0;
 		}
 
-		if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_BITMAP) {
+		if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_BITMAP && renderer->bitmapStride) {
 			int alpha = GBAObjAttributesCGetPalette(sprite->c);
 			if (flags & FLAG_OBJWIN) {
 				SPRITE_TRANSFORMED_LOOP(BITMAP, OBJWIN);
@@ -416,7 +416,7 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			inX = width - inX - 1;
 			xOffset = -1;
 		}
-		if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_BITMAP) {
+		if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_BITMAP && renderer->bitmapStride) {
 			int alpha = GBAObjAttributesCGetPalette(sprite->c);
 			if (flags & FLAG_OBJWIN) {
 				SPRITE_NORMAL_LOOP(BITMAP, OBJWIN);

@@ -217,6 +217,7 @@ static void DSVideoSoftwareRendererUpdateDISPCNT(struct DSVideoSoftwareRenderer*
 		eng->tileStride = 0x20 << DSRegisterDISPCNTGetTileBoundary(dispcnt);
 		fakeDispcnt = GBARegisterDISPCNTFillObjCharacterMapping(fakeDispcnt);
 	}
+	eng->bitmapStride = 0x10 << DSRegisterDISPCNTGetBitmapObj2D(dispcnt);
 	eng->d.writeVideoRegister(&eng->d, DS9_REG_A_DISPCNT_LO, fakeDispcnt);
 	eng->dispcnt |= dispcnt & 0xFFFF0000;
 	if (DSRegisterDISPCNTIsBgExtPalette(dispcnt)) {
