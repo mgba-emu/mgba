@@ -26,6 +26,7 @@ Bugfixes:
  - Feature: Fix resizing GIF buffer (fixes mgba.io/i/695)
  - DS GX: Retain translucent polygon ID when drawing opaque fragments (fixes mgba.io/i/661)
  - DS Timers: Fix ARM9 timers running too fast
+ - DS GX: Fix DMAs triggering too frequently (fixes mgba.io/i/620, mgba.io/i/583)
 Misc:
  - DS: Set boot complete bit in RAM on boot (fixes mgba.io/i/576, mgba.io/i/580, mgba.io/i/586)
  - DS Memory: Ensure DS9 I/O is 8-byte aligned

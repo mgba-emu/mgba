@@ -604,6 +604,22 @@ static bool _boxTest(struct DSGX* gx) {
 	return false;
 }
 
+static void _updateDMA(struct DSGX* gx) {
+	unsigned entries = CircleBufferSize(&gx->fifo) / sizeof(struct DSGXEntry);
+	struct GBADMA* dma = NULL;
+	if (gx->dmaSource < 0 || entries >= DS_GX_FIFO_SIZE / 2) {
+		return;
+	}
+	dma = &gx->p->ds9.memory.dma[gx->dmaSource];
+	if (GBADMARegisterGetTiming9(dma->reg) != DS_DMA_TIMING_GEOM_FIFO) {
+		gx->dmaSource = -1;
+	} else if (GBADMARegisterIsEnable(dma->reg) && !dma->nextCount) {
+		dma->nextCount = dma->count;
+		dma->when = mTimingCurrentTime(&gx->p->ds9.timing);
+		DSDMAUpdate(&gx->p->ds9);
+	}
+}
+
 static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct DSGX* gx = context;
 	uint32_t cycles;
@@ -1216,6 +1232,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 		_flushOutstanding(gx);
 	}
 	DSGXUpdateGXSTAT(gx);
+	_updateDMA(gx);
 }
 
 void DSGXInit(struct DSGX* gx) {
@@ -1314,18 +1331,7 @@ void DSGXUpdateGXSTAT(struct DSGX* gx) {
 	value = DSRegGXSTATSetBusy(value, mTimingIsScheduled(&gx->p->ds9.timing, &gx->fifoEvent) || gx->swapBuffers);
 
 	gx->p->memory.io9[DS9_REG_GXSTAT_HI >> 1] = value >> 16;
-
-	struct GBADMA* dma = NULL;
-	if (gx->dmaSource >= 0) {
-		dma = &gx->p->ds9.memory.dma[gx->dmaSource];
-		if (GBADMARegisterGetTiming9(dma->reg) != DS_DMA_TIMING_GEOM_FIFO) {
-			gx->dmaSource = -1;
-		} else if (GBADMARegisterIsEnable(dma->reg) && entries < (DS_GX_FIFO_SIZE / 2) && !dma->nextCount) {
-			dma->nextCount = dma->count;
-			dma->when = mTimingCurrentTime(&gx->p->ds9.timing);
-			DSDMAUpdate(&gx->p->ds9);
-		}
-	}
+	_updateDMA(gx);
 }
 
 static void DSGXUnpackCommand(struct DSGX* gx, uint32_t command) {
@@ -1546,6 +1552,7 @@ void DSGXFlush(struct DSGX* gx) {
 void DSGXScheduleDMA(struct DSCommon* dscore, int number, struct GBADMA* info) {
 	UNUSED(info);
 	dscore->p->gx.dmaSource = number;
+	_updateDMA(&dscore->p->gx);
 }
 
 static void DSGXDummyRendererInit(struct DSGXRenderer* renderer) {
