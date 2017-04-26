@@ -133,7 +133,7 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 		t &= poly->texH - 1;
 	}
 
-	uint16_t texelCoord = s + t * poly->texW;
+	unsigned texelCoord = s + t * poly->texW;
 	uint8_t ta = 0x1F;
 	uint8_t pa = DSGXPolygonAttrsGetAlpha(poly->polyParams);
 	if (pa) {
