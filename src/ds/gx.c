@@ -385,7 +385,7 @@ static int32_t _dotViewport(struct DSGXVertex* vertex, int32_t* col) {
 static int16_t _dotTexture(struct DSGXVertex* vertex, int mode, int32_t* col) {
 	int64_t a;
 	int64_t b;
-	int64_t sum;
+	int64_t sum = 0;
 	switch (mode) {
 	case 1:
 		a = col[0];
@@ -400,24 +400,23 @@ static int16_t _dotTexture(struct DSGXVertex* vertex, int mode, int32_t* col) {
 		a = col[12];
 		b = MTX_ONE >> 4;
 		sum += a * b;
-		break;
-	case 2:
-		return 0;
+		return sum >> 20;
 	case 3:
 		a = col[0];
-		b = vertex->viewCoord[0] << 8;
+		b = vertex->coord[0];
 		sum = a * b;
 		a = col[4];
-		b = vertex->viewCoord[1] << 8;
+		b = vertex->coord[1];
 		sum += a * b;
 		a = col[8];
-		b = vertex->viewCoord[2] << 8;
+		b = vertex->coord[2];
 		sum += a * b;
-		a = col[12];
+		a = col[12] << 12;
 		b = MTX_ONE;
 		sum += a * b;
+		return sum >> 24;
 	}
-	return sum >> 20;
+	return 0;
 }
 
 static int32_t _dotFrac(int16_t x, int16_t y, int16_t z, int32_t* col) {

@@ -1,6 +1,8 @@
 medusa alpha 3 (Future)
 Features:
  - DS GX: Toon shading
+Bugfixes:
+ - DS GX: Fix vertex texture transformation (fixes mgba.io/i/702)
 
 0.6.0: (Future)
 Features:
