@@ -1,44 +1,3 @@
-medusa alpha 2: (2017-04-26)
-Features:
- - DS Audio: Add PSG audio
- - DS Slot-1: Improve savedata setup via IPC sniffing
- - DS Video: Add display capture blending
-Bugfixes:
- - DS: Fix exposed CPU frequencies and audio timing
- - DS Audio: Fix audio sampling slightly too quickly
- - DS GX: Fix T-repeat textures (fixes mgba.io/i/577)
- - DS GX: Fix 4-color texture coordinates
- - DS GX: Hack around writing to a full FIFO that has a swap pending (fixes mgba.io/i/608)
- - DS GX: Fix bitmap textures when no palette is mapped (fixes mgba.io/i/628)
- - DS GX: Don't reset state between buffer swaps (fixes mgba.io/i/642)
- - DS GX: Allow viewport to change in the middle of a frame
- - DS GX: Properly mask address for slot 2 4x4-texel textures
- - DS GX: Retain translucent polygon ID when drawing opaque fragments (fixes mgba.io/i/661)
- - DS GX: Fix DMAs triggering too frequently (fixes mgba.io/i/620, mgba.io/i/583)
- - DS GX: Fix large textures wrapping
- - DS Slot-1: Emulate initial SPI command delay
- - DS Timers: Fix ARM9 timers running too fast
- - DS Video: Fix VRAM mirroring in the renderer (fixes mgba.io/i/561)
- - DS Video: Fix extended modes 1.x screen base range (fixes mgba.io/i/568)
- - DS Video: Capture with alpha bit set
- - DS Video: Bitmap sprites use alpha bit for transparent
- - DS Video: Fix blend bit on windows for 3D layer (fixes mgba.io/i/611)
- - DS Video: Enable overflow bit on extended affine modes
- - DS Video: Fix extended mode 0 without extended palettes
- - DS Video: Fix caputre stride
- - DS Video: Fix affine transformations in video capture
- - Feature: Fix resizing GIF buffer (fixes mgba.io/i/695)
-Misc:
- - ARM9: Implement SMLAW<y> and SMULW<y>
- - ARM9: Implement STRD/LDRD
- - DS: Set boot complete bit in RAM on boot (fixes mgba.io/i/576, mgba.io/i/580, mgba.io/i/586)
- - DS: Attempt to detect if a game is homebrew
- - DS Memory: Ensure DS9 I/O is 8-byte aligned
- - DS Slot-1: Emulate KEY delay
- - FFmpeg: Allow framerate to be adjusted
- - Qt: Add .nds files to the extension list in Info.plist
- - Qt: Add .srl as an extension for DS ROMs
-
 0.6.0: (Future)
 Features:
  - GBA: Support printing debug strings from inside a game
@@ -144,6 +103,47 @@ Misc:
  - Feature: Make -l option explicit
  - Core: Ability to enumerate and modify video and audio channels
  - Debugger: Make attaching a backend idempotent
+
+medusa alpha 2: (2017-04-26)
+Features:
+ - DS Audio: Add PSG audio
+ - DS Slot-1: Improve savedata setup via IPC sniffing
+ - DS Video: Add display capture blending
+Bugfixes:
+ - DS: Fix exposed CPU frequencies and audio timing
+ - DS Audio: Fix audio sampling slightly too quickly
+ - DS GX: Fix T-repeat textures (fixes mgba.io/i/577)
+ - DS GX: Fix 4-color texture coordinates
+ - DS GX: Hack around writing to a full FIFO that has a swap pending (fixes mgba.io/i/608)
+ - DS GX: Fix bitmap textures when no palette is mapped (fixes mgba.io/i/628)
+ - DS GX: Don't reset state between buffer swaps (fixes mgba.io/i/642)
+ - DS GX: Allow viewport to change in the middle of a frame
+ - DS GX: Properly mask address for slot 2 4x4-texel textures
+ - DS GX: Retain translucent polygon ID when drawing opaque fragments (fixes mgba.io/i/661)
+ - DS GX: Fix DMAs triggering too frequently (fixes mgba.io/i/620, mgba.io/i/583)
+ - DS GX: Fix large textures wrapping
+ - DS Slot-1: Emulate initial SPI command delay
+ - DS Timers: Fix ARM9 timers running too fast
+ - DS Video: Fix VRAM mirroring in the renderer (fixes mgba.io/i/561)
+ - DS Video: Fix extended modes 1.x screen base range (fixes mgba.io/i/568)
+ - DS Video: Capture with alpha bit set
+ - DS Video: Bitmap sprites use alpha bit for transparent
+ - DS Video: Fix blend bit on windows for 3D layer (fixes mgba.io/i/611)
+ - DS Video: Enable overflow bit on extended affine modes
+ - DS Video: Fix extended mode 0 without extended palettes
+ - DS Video: Fix caputre stride
+ - DS Video: Fix affine transformations in video capture
+ - Feature: Fix resizing GIF buffer (fixes mgba.io/i/695)
+Misc:
+ - ARM9: Implement SMLAW<y> and SMULW<y>
+ - ARM9: Implement STRD/LDRD
+ - DS: Set boot complete bit in RAM on boot (fixes mgba.io/i/576, mgba.io/i/580, mgba.io/i/586)
+ - DS: Attempt to detect if a game is homebrew
+ - DS Memory: Ensure DS9 I/O is 8-byte aligned
+ - DS Slot-1: Emulate KEY delay
+ - FFmpeg: Allow framerate to be adjusted
+ - Qt: Add .nds files to the extension list in Info.plist
+ - Qt: Add .srl as an extension for DS ROMs
 
 medusa alpha 1: (2017-04-08)
 Features:
