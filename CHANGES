@@ -16,6 +16,7 @@ Features:
  - Add option to allow preloading the entire ROM before running
  - GB: Video/audio channel enabling/disabling
  - Add option to lock video to integer scaling
+ - Video log recording for testing and bug reporting
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
