@@ -65,9 +65,6 @@ static void _reset(struct GBVideoProxyRenderer* proxyRenderer, enum GBModel mode
 
 	proxyRenderer->oamMax = 0;
 
-	proxyRenderer->backend->deinit(proxyRenderer->backend);
-	proxyRenderer->backend->init(proxyRenderer->backend, model);
-
 	mVideoLoggerRendererReset(proxyRenderer->logger);
 }
 
