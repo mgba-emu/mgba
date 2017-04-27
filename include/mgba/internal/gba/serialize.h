@@ -334,9 +334,6 @@ struct VDir;
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
 bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
-struct GBASerializedState* GBAAllocateState(void);
-void GBADeallocateState(struct GBASerializedState* state);
-
 CXX_GUARD_END
 
 #endif
