@@ -53,6 +53,51 @@ static inline unsigned clz32(uint32_t bits) {
 #endif
 }
 
+static inline unsigned clz64(uint64_t bits) {
+#if defined(__GNUC__) || __clang__
+	if (!bits) {
+		return 64;
+	}
+	return __builtin_clzll(bits);
+#else
+	static const int table[256] = {
+		8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4,
+		3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+		2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+		2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+	};
+
+	if (bits & 0xFF00000000000000) {
+		return table[bits >> 56];
+	} else if (bits & 0x00FF000000000000) {
+		return table[bits >> 48] + 8;
+	} else if (bits & 0x0000FF0000000000) {
+		return table[bits >> 40] + 16;
+	} else if (bits & 0x000000FF00000000) {
+		return table[bits >> 32] + 24;
+	} else if (bits & 0x00000000FF000000) {
+		return table[bits >> 24] + 32;
+	} else if (bits & 0x0000000000FF0000) {
+		return table[bits >> 16] + 40;
+	} else if (bits & 0x000000000000FF00) {
+		return table[bits >> 8] + 48;
+	}
+	return table[bits] + 56;
+#endif
+}
+
 static inline uint32_t toPow2(uint32_t bits) {
 	if (!bits) {
 		return 0;

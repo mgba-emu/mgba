@@ -7,6 +7,7 @@
 
 #include <mgba/internal/ds/ds.h>
 #include <mgba/internal/ds/io.h>
+#include <mgba-util/math.h>
 
 mLOG_DEFINE_CATEGORY(DS_GX, "DS GX", "ds.gx");
 
@@ -237,6 +238,7 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 		int64_t ny = 0;
 		int64_t nz = 0;
 		int64_t dot = 0;
+		int rank = 30;
 		for (v = 0; v < poly->verts; ++v) {
 			struct DSGXVertex* v0 = &gx->pendingVertices[poly->vertIds[v]];
 			struct DSGXVertex* v1;
@@ -251,9 +253,28 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 				v1 = &gx->pendingVertices[poly->vertIds[v + 1 - poly->verts]];
 				v2 = &gx->pendingVertices[poly->vertIds[v + 2 - poly->verts]];
 			}
-			nx = ((int64_t) v0->viewCoord[1] * v2->viewCoord[3] - (int64_t) v0->viewCoord[3] * v2->viewCoord[1]) >> 24;
-			ny = ((int64_t) v0->viewCoord[3] * v2->viewCoord[0] - (int64_t) v0->viewCoord[0] * v2->viewCoord[3]) >> 24;
-			nz = ((int64_t) v0->viewCoord[0] * v2->viewCoord[1] - (int64_t) v0->viewCoord[1] * v2->viewCoord[0]) >> 24;
+			nx = ((int64_t) v0->viewCoord[1] * v2->viewCoord[3] - (int64_t) v0->viewCoord[3] * v2->viewCoord[1]);
+			ny = ((int64_t) v0->viewCoord[3] * v2->viewCoord[0] - (int64_t) v0->viewCoord[0] * v2->viewCoord[3]);
+			nz = ((int64_t) v0->viewCoord[0] * v2->viewCoord[1] - (int64_t) v0->viewCoord[1] * v2->viewCoord[0]);
+			int rx = 64 - clz64(nx >= 0 ? nx : -nx);
+			int ry = 64 - clz64(ny >= 0 ? ny : -ny);
+			int rz = 64 - clz64(nz >= 0 ? nz : -nz);
+			if (ry > rx) {
+				rx = ry;
+			}
+			if (rz > rx) {
+				rx = rz;
+			}
+			if (rx > 30) {
+				nx >>= rx - 30;
+				ny >>= rx - 30;
+				nz >>= rx - 30;
+			}
+			if (rx > rank) {
+				dot >>= rx - rank;
+				rank = rx;
+			}
+
 			dot += nx * v1->viewCoord[0] + ny * v1->viewCoord[1] + nz * v1->viewCoord[3];
 		}
 		if (!DSGXPolygonAttrsIsBackFace(poly->polyParams) && dot < 0) {
