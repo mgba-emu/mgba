@@ -5,9 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "main.h"
 
-#include "core/thread.h"
-#include "core/version.h"
-#include "util/arm-algo.h"
+#include <mgba/core/core.h>
+#include <mgba/core/thread.h>
+#include <mgba/core/version.h>
+#include <mgba-util/arm-algo.h>
 
 static bool mSDLSWInit(struct mSDLRenderer* renderer);
 static void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user);
