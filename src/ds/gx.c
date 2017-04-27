@@ -382,17 +382,19 @@ static int32_t _dotViewport(struct DSGXVertex* vertex, int32_t* col) {
 	return sum >> 8LL;
 }
 
-static int16_t _dotTexture(struct DSGXVertex* vertex, int mode, int32_t* col) {
+static int16_t _dotTexture(struct DSGX* gx, int16_t* input, int mode, int c) {
 	int64_t a;
 	int64_t b;
 	int64_t sum = 0;
+	struct DSGXVertex* vertex = &gx->currentVertex;
+	const int32_t* col = &gx->texMatrix.m[c];
 	switch (mode) {
 	case 1:
 		a = col[0];
-		b = vertex->s << 8;
+		b = vertex->st[0] << 8;
 		sum = a * b;
 		a = col[4];
-		b = vertex->t << 8;
+		b = vertex->st[1] << 8;
 		sum += a * b;
 		a = col[8];
 		b = MTX_ONE >> 4;
@@ -401,22 +403,23 @@ static int16_t _dotTexture(struct DSGXVertex* vertex, int mode, int32_t* col) {
 		b = MTX_ONE >> 4;
 		sum += a * b;
 		return sum >> 20;
+	case 2:
 	case 3:
 		a = col[0];
-		b = vertex->coord[0];
+		b = input[0];
 		sum = a * b;
 		a = col[4];
-		b = vertex->coord[1];
+		b = input[1];
 		sum += a * b;
 		a = col[8];
-		b = vertex->coord[2];
+		b = input[2];
 		sum += a * b;
-		a = col[12] << 12;
+		a = vertex->st[c] << 12;
 		b = MTX_ONE;
 		sum += a * b;
 		return sum >> 24;
 	}
-	return 0;
+	return input[c];
 }
 
 static int32_t _dotFrac(int16_t x, int16_t y, int16_t z, int32_t* col) {
@@ -456,17 +459,11 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 	gx->currentVertex.viewCoord[3] = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[3]);
 
 	if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) == 0) {
-		gx->currentVertex.vs = gx->currentVertex.s;
-		gx->currentVertex.vt = gx->currentVertex.t;
+		gx->currentVertex.vs = gx->currentVertex.st[0];
+		gx->currentVertex.vt = gx->currentVertex.st[1];
 	} else if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) == 3) {
-		int32_t m12 = gx->texMatrix.m[12];
-		int32_t m13 = gx->texMatrix.m[13];
-		gx->texMatrix.m[12] = gx->currentVertex.s;
-		gx->texMatrix.m[13] = gx->currentVertex.t;
-		gx->currentVertex.vs = _dotTexture(&gx->currentVertex, 3, &gx->texMatrix.m[0]);
-		gx->currentVertex.vt = _dotTexture(&gx->currentVertex, 3, &gx->texMatrix.m[1]);
-		gx->texMatrix.m[12] = m12;
-		gx->texMatrix.m[13] = m13;
+		gx->currentVertex.vs = _dotTexture(gx, gx->currentVertex.coord, 3, 0);
+		gx->currentVertex.vt = _dotTexture(gx, gx->currentVertex.coord, 3, 1);
 	}
 
 	gx->pendingVertices[gx->pendingVertexIndex] = gx->currentVertex;
@@ -987,8 +984,9 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			y >>= 3;
 			z >>= 3;
 			if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) == 2) {
-				gx->currentVertex.vs = (_dotFrac(x, y, z, &gx->texMatrix.m[0]) + gx->currentVertex.s) >> 11;
-				gx->currentVertex.vt = (_dotFrac(x, y, z, &gx->texMatrix.m[1]) + gx->currentVertex.t) >> 11;
+				int16_t input[] = { x, y, z };
+				gx->currentVertex.vs = _dotTexture(gx, input, 2, 0);
+				gx->currentVertex.vt = _dotTexture(gx, input, 2, 1);
 			}
 			int16_t nx = _dotFrac(x, y, z, &gx->vecMatrix.m[0]);
 			int16_t ny = _dotFrac(x, y, z, &gx->vecMatrix.m[1]);
@@ -1054,13 +1052,13 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			break;
 		}
 		case DS_GX_CMD_TEXCOORD:
-			gx->currentVertex.s = entry.params[0];
-			gx->currentVertex.s |= entry.params[1] << 8;
-			gx->currentVertex.t = entry.params[2];
-			gx->currentVertex.t |= entry.params[3] << 8;
+			gx->currentVertex.st[0] = entry.params[0];
+			gx->currentVertex.st[0] |= entry.params[1] << 8;
+			gx->currentVertex.st[1] = entry.params[2];
+			gx->currentVertex.st[1] |= entry.params[3] << 8;
 			if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) == 1) {
-				gx->currentVertex.vs = _dotTexture(&gx->currentVertex, 1, &gx->texMatrix.m[0]);
-				gx->currentVertex.vt = _dotTexture(&gx->currentVertex, 1, &gx->texMatrix.m[1]);
+				gx->currentVertex.vs = _dotTexture(gx, NULL, 1, 0);
+				gx->currentVertex.vt = _dotTexture(gx, NULL, 1, 1);
 			}
 			break;
 		case DS_GX_CMD_VTX_16: {

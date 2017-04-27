@@ -113,8 +113,7 @@ struct DSGXVertex {
 
 	// Color/Texcoords
 	uint16_t color; // 5.5.5
-	int16_t s; // 12.4
-	int16_t t; // 12.4
+	int16_t st[2]; // 12.4
 
 	// Viewport coords
 	int32_t viewCoord[4];

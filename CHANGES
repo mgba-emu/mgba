@@ -3,6 +3,8 @@ Features:
  - DS GX: Toon shading
 Bugfixes:
  - DS GX: Fix vertex texture transformation (fixes mgba.io/i/702)
+Misc:
+ - DS GX: Clean up and unify texture mapping
 
 0.6.0: (Future)
 Features:
