@@ -1307,6 +1307,7 @@ void DSGXAssociateRenderer(struct DSGX* gx, struct DSGXRenderer* renderer) {
 	gx->renderer = renderer;
 	memcpy(gx->renderer->tex, gx->tex, sizeof(gx->renderer->tex));
 	memcpy(gx->renderer->texPal, gx->texPal, sizeof(gx->renderer->texPal));
+	gx->renderer->toonTable = &gx->p->memory.io9[DS9_REG_TOON_TABLE_00 >> 1];
 	gx->renderer->init(gx->renderer);
 }
 

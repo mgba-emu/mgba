@@ -263,6 +263,16 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 		wg = (g * ta + ep->cg * (63 - ta)) >> 6;
 		wb = (b * ta + ep->cb * (63 - ta)) >> 6;
 		return _finishColor(wr, wg, wb, pa);
+	case 2: {
+		uint8_t tr, tg, tb;
+		_expandColor(renderer->d.toonTable[ep->cr >> 1], &tr, &tg, &tb);
+		// TODO: highlight mode
+		wr = ((r + 1) * (tr + 1) - 1) >> 6;
+		wg = ((g + 1) * (tg + 1) - 1) >> 6;
+		wb = ((b + 1) * (tb + 1) - 1) >> 6;
+		wa = ((ta + 1) * (pa + 1) - 1) >> 6;
+		return _finishColor(wr, wg, wb, pa);
+	}
 	case 3:
 		return _finishColor(r, g, b, pa);
 	}

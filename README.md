@@ -169,7 +169,6 @@ Missing features on DS are
 	- Microphone
 - Graphics:
 	- Edge marking/wireframe
-	- Toon shading
 	- Highlight shading
 	- Fog
 	- Clear depth

@@ -148,6 +148,8 @@ struct DSGXRenderer {
 
 	uint16_t* tex[4];
 	uint16_t* texPal[6];
+
+	uint16_t* toonTable;
 };
 
 struct DSGXLight {
