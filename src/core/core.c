@@ -19,7 +19,7 @@
 #include <mgba/internal/gba/gba.h>
 #endif
 #ifndef MINIMAL_CORE
-#include "feature/video-logger.h"
+#include <mgba/feature/video-logger.h>
 #endif
 
 const static struct mCoreFilter {

@@ -53,7 +53,7 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/video.h>
 #endif
-#include "feature/commandline.h"
+#include <mgba/feature/commandline.h>
 #include "feature/sqlite3/no-intro.h"
 #include <mgba-util/vfs.h>
 

@@ -11,7 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/internal/gb/video.h>
-#include "feature/video-logger.h"
+#include <mgba/feature/video-logger.h>
 
 struct GBVideoProxyRenderer {
 	struct GBVideoRenderer d;

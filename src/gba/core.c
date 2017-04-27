@@ -14,7 +14,7 @@
 #include <mgba/internal/gba/extra/cli.h>
 #include <mgba/internal/gba/overrides.h>
 #ifndef DISABLE_THREADING
-#include "feature/thread-proxy.h"
+#include <mgba/feature/thread-proxy.h>
 #endif
 #include <mgba/internal/gba/renderers/proxy.h>
 #include <mgba/internal/gba/renderers/video-software.h>

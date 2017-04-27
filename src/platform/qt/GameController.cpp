@@ -32,7 +32,7 @@
 #include <mgba/internal/gb/renderers/tile-cache.h>
 #endif
 #include <mgba-util/vfs.h>
-#include "feature/video-logger.h"
+#include <mgba/feature/video-logger.h>
 
 using namespace QGBA;
 using namespace std;

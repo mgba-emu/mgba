@@ -17,7 +17,7 @@
 
 #include <mgba/core/config.h>
 #include <mgba-util/configuration.h>
-#include "feature/commandline.h"
+#include <mgba/feature/commandline.h>
 
 class QAction;
 class QMenu;

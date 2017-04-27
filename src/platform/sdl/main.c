@@ -20,7 +20,7 @@
 #include <mgba/core/thread.h>
 #include <mgba/internal/gba/input.h>
 
-#include "feature/commandline.h"
+#include <mgba/feature/commandline.h>
 #include <mgba-util/vfs.h>
 
 #include <SDL.h>

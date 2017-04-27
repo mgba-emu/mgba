@@ -12,7 +12,7 @@
 #include <mgba/gba/core.h>
 #include <mgba/internal/gba/gba.h>
 
-#include "feature/commandline.h"
+#include <mgba/feature/commandline.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
