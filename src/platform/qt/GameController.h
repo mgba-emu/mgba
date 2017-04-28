@@ -86,7 +86,7 @@ public:
 
 	int stateSlot() const { return m_stateSlot; }
 
-#ifdef USE_GDB_STUB
+#ifdef USE_DEBUGGERS
 	mDebugger* debugger();
 	void setDebugger(mDebugger*);
 #endif

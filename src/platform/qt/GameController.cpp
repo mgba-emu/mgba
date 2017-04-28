@@ -332,7 +332,7 @@ void GameController::setConfig(const mCoreConfig* config) {
 	}
 }
 
-#ifdef USE_GDB_STUB
+#ifdef USE_DEBUGGERS
 mDebugger* GameController::debugger() {
 	if (!isLoaded()) {
 		return nullptr;
@@ -622,8 +622,9 @@ void GameController::closeGame() {
 	if (!m_gameOpen) {
 		return;
 	}
-
+#ifdef USE_DEBUGGERS
 	setDebugger(nullptr);
+#endif
 	if (mCoreThreadIsPaused(&m_threadContext)) {
 		mCoreThreadUnpause(&m_threadContext);
 	}
