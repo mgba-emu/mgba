@@ -51,7 +51,11 @@ ObjView::ObjView(GameController* controller, QWidget* parent)
 	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this]() {
 		updateTiles(true);
 	});
+#ifdef USE_PNG
 	connect(m_ui.exportButton, SIGNAL(clicked()), this, SLOT(exportObj()));
+#else
+	m_ui.exportButton->setVisible(false);
+#endif
 }
 
 void ObjView::selectObj(int obj) {
@@ -242,6 +246,7 @@ void ObjView::updateTilesGB(bool force) {
 }
 #endif
 
+#ifdef USE_PNG
 void ObjView::exportObj() {
 	GameController::Interrupter interrupter(m_controller);
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export sprite"),
@@ -282,6 +287,7 @@ void ObjView::exportObj() {
 	PNGWriteClose(png, info);
 	delete[] buffer;
 }
+#endif
 
 bool ObjView::ObjInfo::operator!=(const ObjInfo& other) {
 	return other.tile != tile ||

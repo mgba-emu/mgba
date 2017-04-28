@@ -21,8 +21,10 @@ Q_OBJECT
 public:
 	ObjView(GameController* controller, QWidget* parent = nullptr);
 
+#ifdef USE_PNG
 public slots:
 	void exportObj();
+#endif
 
 private slots:
 	void selectObj(int);
