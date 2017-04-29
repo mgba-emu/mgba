@@ -168,7 +168,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 
 	if (core->opts.rewindEnable && core->opts.rewindBufferCapacity > 0) {
-		 mCoreRewindContextInit(&threadContext->rewind, core->opts.rewindBufferCapacity);
+		 mCoreRewindContextInit(&threadContext->rewind, core->opts.rewindBufferCapacity, true);
 		 threadContext->rewind.stateFlags = core->opts.rewindSave ? SAVESTATE_SAVEDATA : 0;
 	}
 

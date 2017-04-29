@@ -12,7 +12,13 @@
 
 DEFINE_VECTOR(mCoreRewindPatches, struct PatchFast);
 
-void mCoreRewindContextInit(struct mCoreRewindContext* context, size_t entries) {
+void _rewindDiff(struct mCoreRewindContext* context);
+
+#ifndef DISABLE_THREADING
+THREAD_ENTRY _rewindThread(void* context);
+#endif
+
+void mCoreRewindContextInit(struct mCoreRewindContext* context, size_t entries, bool onThread) {
 	mCoreRewindPatchesInit(&context->patchMemory, entries);
 	size_t e;
 	for (e = 0; e < entries; ++e) {
@@ -22,9 +28,30 @@ void mCoreRewindContextInit(struct mCoreRewindContext* context, size_t entries) 
 	context->currentState = VFileMemChunk(0, 0);
 	context->size = 0;
 	context->stateFlags = SAVESTATE_SAVEDATA;
+#ifndef DISABLE_THREADING
+	context->onThread = onThread;
+	if (onThread) {
+		MutexInit(&context->mutex);
+		ConditionInit(&context->cond);
+		ThreadCreate(&context->thread, _rewindThread, context);
+	}
+#else
+	UNUSED(onThread);
+#endif
 }
 
 void mCoreRewindContextDeinit(struct mCoreRewindContext* context) {
+#ifndef DISABLE_THREADING
+	if (context->onThread) {
+		MutexLock(&context->mutex);
+		context->onThread = false;
+		MutexUnlock(&context->mutex);
+		ConditionWake(&context->cond);
+		ThreadJoin(context->thread);
+		MutexDeinit(&context->mutex);
+		ConditionDeinit(&context->cond);
+	}
+#endif
 	context->previousState->close(context->previousState);
 	context->currentState->close(context->currentState);
 	size_t s;
@@ -35,7 +62,26 @@ void mCoreRewindContextDeinit(struct mCoreRewindContext* context) {
 }
 
 void mCoreRewindAppend(struct mCoreRewindContext* context, struct mCore* core) {
+#ifndef DISABLE_THREADING
+	if (context->onThread) {
+		MutexLock(&context->mutex);
+	}
+#endif
 	struct VFile* nextState = context->previousState;
+	mCoreSaveStateNamed(core, nextState, context->stateFlags);
+	context->previousState = context->currentState;
+	context->currentState = nextState;
+#ifndef DISABLE_THREADING
+	if (context->onThread) {
+		ConditionWake(&context->cond);
+		MutexUnlock(&context->mutex);
+		return;
+	}
+#endif
+	_rewindDiff(context);
+}
+
+void _rewindDiff(struct mCoreRewindContext* context) {
 	++context->current;
 	if (context->size < mCoreRewindPatchesSize(&context->patchMemory)) {
 		++context->size;
@@ -43,27 +89,34 @@ void mCoreRewindAppend(struct mCoreRewindContext* context, struct mCore* core) {
 	if (context->current >= mCoreRewindPatchesSize(&context->patchMemory)) {
 		context->current = 0;
 	}
-	mCoreSaveStateNamed(core, nextState, context->stateFlags);
 	struct PatchFast* patch = mCoreRewindPatchesGetPointer(&context->patchMemory, context->current);
-	size_t size2 = nextState->size(nextState);
-	size_t size = context->currentState->size(context->currentState);
+	size_t size2 = context->currentState->size(context->currentState);
+	size_t size = context->previousState->size(context->previousState);
 	if (size2 > size) {
-		context->currentState->truncate(context->currentState, size2);
+		context->previousState->truncate(context->previousState, size2);
 		size = size2;
 	} else if (size > size2) {
-		nextState->truncate(nextState, size);
+		context->currentState->truncate(context->currentState, size);
 	}
-	void* current = context->currentState->map(context->currentState, size, MAP_READ);
-	void* next = nextState->map(nextState, size, MAP_READ);
+	void* current = context->previousState->map(context->previousState, size, MAP_READ);
+	void* next = context->currentState->map(context->currentState, size, MAP_READ);
 	diffPatchFast(patch, current, next, size);
-	context->currentState->unmap(context->currentState, current, size);
-	nextState->unmap(next, nextState, size);
-	context->previousState = context->currentState;
-	context->currentState = nextState;
+	context->previousState->unmap(context->previousState, current, size);
+	context->currentState->unmap(context->currentState, next, size);
 }
 
 bool mCoreRewindRestore(struct mCoreRewindContext* context, struct mCore* core) {
+#ifndef DISABLE_THREADING
+	if (context->onThread) {
+		MutexLock(&context->mutex);
+	}
+#endif
 	if (!context->size) {
+#ifndef DISABLE_THREADING
+		if (context->onThread) {
+			MutexUnlock(&context->mutex);
+		}
+#endif
 		return false;
 	}
 	--context->size;
@@ -88,5 +141,29 @@ bool mCoreRewindRestore(struct mCoreRewindContext* context, struct mCore* core) 
 		context->current = mCoreRewindPatchesSize(&context->patchMemory);
 	} 
 	--context->current;
+#ifndef DISABLE_THREADING
+	if (context->onThread) {
+		MutexUnlock(&context->mutex);
+	}
+#endif
 	return true;
 }
+
+#ifndef DISABLE_THREADING
+THREAD_ENTRY _rewindThread(void* context) {
+	struct mCoreRewindContext* rewindContext = context;
+	ThreadSetName("Rewind Diff Thread");
+	MutexLock(&rewindContext->mutex);
+	struct VFile* state = rewindContext->currentState;
+	while (rewindContext->onThread) {
+		if (rewindContext->currentState != state) {
+			_rewindDiff(rewindContext);
+			state = rewindContext->currentState;
+		}
+		ConditionWait(&rewindContext->cond, &rewindContext->mutex);
+	}
+	MutexUnlock(&rewindContext->mutex);
+	return 0;
+}
+#endif
+

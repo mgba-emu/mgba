@@ -110,6 +110,7 @@ Misc:
  - Debugger: Make attaching a backend idempotent
  - VFS: Optimize expanding in-memory files
  - VFS: Add VFileFIFO for operating on circle buffers
+ - Core: Move rewind diffing to its own thread
 
 0.5.2: (2016-12-31)
 Bugfixes:
