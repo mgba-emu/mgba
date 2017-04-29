@@ -651,6 +651,7 @@ void GameController::cleanGame() {
 	delete[] m_drawContext;
 	delete[] m_frontBuffer;
 
+	mCoreConfigDeinit(&m_threadContext.core->config);
 	m_threadContext.core->deinit(m_threadContext.core);
 	m_threadContext.core = nullptr;
 	m_gameOpen = false;
