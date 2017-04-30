@@ -271,7 +271,7 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 		wg = ((g + 1) * (tg + 1) - 1) >> 6;
 		wb = ((b + 1) * (tb + 1) - 1) >> 6;
 		wa = ((ta + 1) * (pa + 1) - 1) >> 6;
-		return _finishColor(wr, wg, wb, pa);
+		return _finishColor(wr, wg, wb, wa);
 	}
 	case 3:
 		return _finishColor(r, g, b, pa);
