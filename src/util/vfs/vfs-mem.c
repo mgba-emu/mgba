@@ -4,12 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba-util/vfs.h>
+#include <mgba-util/math.h>
 #include <mgba-util/memory.h>
 
 struct VFileMem {
 	struct VFile d;
 	void* mem;
 	size_t size;
+	size_t bufferSize;
 	size_t offset;
 };
 
@@ -40,6 +42,7 @@ struct VFile* VFileFromMemory(void* mem, size_t size) {
 
 	vfm->mem = mem;
 	vfm->size = size;
+	vfm->bufferSize = size;
 	vfm->offset = 0;
 	vfm->d.close = _vfmClose;
 	vfm->d.seek = _vfmSeek;
@@ -67,6 +70,7 @@ struct VFile* VFileFromConstMemory(const void* mem, size_t size) {
 
 	vfm->mem = (void*) mem;
 	vfm->size = size;
+	vfm->bufferSize = size;
 	vfm->offset = 0;
 	vfm->d.close = _vfmClose;
 	vfm->d.seek = _vfmSeek;
@@ -89,8 +93,9 @@ struct VFile* VFileMemChunk(const void* mem, size_t size) {
 	}
 
 	vfm->size = size;
+	vfm->bufferSize = toPow2(size);
 	if (size) {
-		vfm->mem = anonymousMemoryMap(size);
+		vfm->mem = anonymousMemoryMap(vfm->bufferSize);
 		if (mem) {
 			memcpy(vfm->mem, mem, size);
 		}
@@ -113,15 +118,19 @@ struct VFile* VFileMemChunk(const void* mem, size_t size) {
 }
 
 void _vfmExpand(struct VFileMem* vfm, size_t newSize) {
-	void* oldBuf = vfm->mem;
-	vfm->mem = anonymousMemoryMap(newSize);
-	if (oldBuf) {
-		if (newSize < vfm->size) {
-			memcpy(vfm->mem, oldBuf, newSize);
-		} else {
-			memcpy(vfm->mem, oldBuf, vfm->size);
+	size_t alignedSize = toPow2(newSize);
+	if (alignedSize > vfm->bufferSize) {
+		void* oldBuf = vfm->mem;
+		vfm->mem = anonymousMemoryMap(alignedSize);
+		if (oldBuf) {
+			if (newSize < vfm->size) {
+				memcpy(vfm->mem, oldBuf, newSize);
+			} else {
+				memcpy(vfm->mem, oldBuf, vfm->size);
+			}
+			mappedMemoryFree(oldBuf, vfm->bufferSize);
 		}
-		mappedMemoryFree(oldBuf, vfm->size);
+		vfm->bufferSize = alignedSize;
 	}
 	vfm->size = newSize;
 }
@@ -135,7 +144,7 @@ bool _vfmClose(struct VFile* vf) {
 
 bool _vfmCloseFree(struct VFile* vf) {
 	struct VFileMem* vfm = (struct VFileMem*) vf;
-	mappedMemoryFree(vfm->mem, vfm->size);
+	mappedMemoryFree(vfm->mem, vfm->bufferSize);
 	vfm->mem = 0;
 	free(vfm);
 	return true;

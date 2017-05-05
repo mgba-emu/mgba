@@ -53,7 +53,7 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/video.h>
 #endif
-#include "feature/commandline.h"
+#include <mgba/feature/commandline.h>
 #include "feature/sqlite3/no-intro.h"
 #include <mgba-util/vfs.h>
 
@@ -354,6 +354,7 @@ QString Window::getFilters() const {
 
 	formats.removeDuplicates();
 	filters.prepend(tr("All ROMs (%1)").arg(formats.join(QChar(' '))));
+	filters.append(tr("%1 Video Logs (*.mvl)").arg(projectName));
 	return filters.join(";;");
 }
 
@@ -476,6 +477,13 @@ void Window::openSettingsWindow() {
 void Window::openAboutScreen() {
 	AboutScreen* about = new AboutScreen();
 	openView(about);
+}
+
+void Window::startVideoLog() {
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select video log"), tr("Video logs (*.mvl)"));
+	if (!filename.isEmpty()) {
+		m_controller->startVideoLog(filename);
+	}
 }
 
 template <typename T, typename A>
@@ -1349,6 +1357,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(recordGIF, SIGNAL(triggered()), this, SLOT(openGIFWindow()));
 	addControlledAction(avMenu, recordGIF, "recordGIF");
 #endif
+
+	QAction* recordVL = new QAction(tr("Record video log..."), avMenu);
+	connect(recordVL, SIGNAL(triggered()), this, SLOT(startVideoLog()));
+	addControlledAction(avMenu, recordVL, "recordVL");
+	m_gameActions.append(recordVL);
+
+	QAction* stopVL = new QAction(tr("Stop video log"), avMenu);
+	connect(stopVL, SIGNAL(triggered()), m_controller, SLOT(endVideoLog()));
+	addControlledAction(avMenu, stopVL, "stopVL");
+	m_gameActions.append(stopVL);
 
 	avMenu->addSeparator();
 	m_videoLayers = avMenu->addMenu(tr("Video layers"));

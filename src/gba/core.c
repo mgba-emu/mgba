@@ -10,11 +10,13 @@
 #include <mgba/internal/arm/debugger/debugger.h>
 #include <mgba/internal/gba/cheats.h>
 #include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/extra/cli.h>
 #include <mgba/internal/gba/overrides.h>
 #ifndef DISABLE_THREADING
-#include <mgba/internal/gba/renderers/thread-proxy.h>
+#include <mgba/feature/thread-proxy.h>
 #endif
+#include <mgba/internal/gba/renderers/proxy.h>
 #include <mgba/internal/gba/renderers/video-software.h>
 #include <mgba/internal/gba/savedata.h>
 #include <mgba/internal/gba/serialize.h>
@@ -39,11 +41,15 @@ const static struct mCoreChannelInfo _GBAAudioChannels[] = {
 	{ 5, "chB", "FIFO Channel B", NULL },
 };
 
+struct mVideoLogContext;
 struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
+	struct GBAVideoProxyRenderer proxyRenderer;
+	struct mVideoLogContext* logContext;
+	struct mCoreCallbacks logCallbacks;
 #ifndef DISABLE_THREADING
-	struct GBAVideoThreadProxyRenderer threadProxy;
+	struct mVideoThreadProxy threadProxy;
 	int threadedVideo;
 #endif
 	int keys;
@@ -69,6 +75,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->overrides = NULL;
 	gbacore->debuggerPlatform = NULL;
 	gbacore->cheatDevice = NULL;
+	gbacore->logContext = NULL;
 
 	GBACreate(gba);
 	// TODO: Restore cheats
@@ -83,8 +90,9 @@ static bool _GBACoreInit(struct mCore* core) {
 
 #ifndef DISABLE_THREADING
 	gbacore->threadedVideo = false;
-	GBAVideoThreadProxyRendererCreate(&gbacore->threadProxy, &gbacore->renderer.d);
+	mVideoThreadProxyCreate(&gbacore->threadProxy);
 #endif
+	gbacore->proxyRenderer.logger = NULL;
 
 	gbacore->keys = 0;
 	gba->keySource = &gbacore->keys;
@@ -290,7 +298,9 @@ static void _GBACoreReset(struct mCore* core) {
 		struct GBAVideoRenderer* renderer = &gbacore->renderer.d;
 #ifndef DISABLE_THREADING
 		if (gbacore->threadedVideo) {
-			renderer = &gbacore->threadProxy.d;
+			gbacore->proxyRenderer.logger = &gbacore->threadProxy.d;
+			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
+			renderer = &gbacore->proxyRenderer.d;
 		}
 #endif
 		GBAVideoAssociateRenderer(&gba->video, renderer);
@@ -335,7 +345,7 @@ static void _GBACoreReset(struct mCore* core) {
 			mCoreConfigDirectory(path, PATH_MAX);
 			strncat(path, PATH_SEP "gba_bios.bin", PATH_MAX - strlen(path));
 			bios = VFileOpen(path, O_RDONLY);
-			if (bios && GBIsBIOS(bios)) {
+			if (bios && GBAIsBIOS(bios)) {
 				found = true;
 			} else if (bios) {
 				bios->close(bios);
@@ -646,6 +656,33 @@ static void _GBACoreEnableAudioChannel(struct mCore* core, size_t id, bool enabl
 	}
 }
 
+static void _GBACoreStartVideoLog(struct mCore* core, struct mVideoLogContext* context) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	struct GBA* gba = core->board;
+	gbacore->logContext = context;
+
+	struct GBASerializedState* state = mVideoLogContextInitialState(context, NULL);
+	state->id = 0;
+	state->cpu.gprs[ARM_PC] = BASE_WORKING_RAM;
+
+	int channelId = mVideoLoggerAddChannel(context);
+	gbacore->proxyRenderer.logger = malloc(sizeof(struct mVideoLogger));
+	mVideoLoggerRendererCreate(gbacore->proxyRenderer.logger, false);
+	mVideoLoggerAttachChannel(gbacore->proxyRenderer.logger, context, channelId);
+	gbacore->proxyRenderer.logger->block = false;
+
+	GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, &gbacore->renderer.d);
+	GBAVideoProxyRendererShim(&gba->video, &gbacore->proxyRenderer);
+}
+
+static void _GBACoreEndVideoLog(struct mCore* core) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	struct GBA* gba = core->board;
+	GBAVideoProxyRendererUnshim(&gba->video, &gbacore->proxyRenderer);
+	free(gbacore->proxyRenderer.logger);
+	gbacore->proxyRenderer.logger = NULL;
+}
+
 struct mCore* GBACoreCreate(void) {
 	struct GBACore* gbacore = malloc(sizeof(*gbacore));
 	struct mCore* core = &gbacore->d;
@@ -718,5 +755,116 @@ struct mCore* GBACoreCreate(void) {
 	core->listAudioChannels = _GBACoreListAudioChannels;
 	core->enableVideoLayer = _GBACoreEnableVideoLayer;
 	core->enableAudioChannel = _GBACoreEnableAudioChannel;
+#ifndef MINIMAL_CORE
+	core->startVideoLog = _GBACoreStartVideoLog;
+	core->endVideoLog = _GBACoreEndVideoLog;
+#endif
 	return core;
 }
+
+#ifndef MINIMAL_CORE
+static void _GBAVLPStartFrameCallback(void *context) {
+	struct mCore* core = context;
+	struct GBACore* gbacore = (struct GBACore*) core;
+	struct GBA* gba = core->board;
+
+	if (!mVideoLoggerRendererRun(gbacore->proxyRenderer.logger, true)) {
+		GBAVideoProxyRendererUnshim(&gba->video, &gbacore->proxyRenderer);
+		mVideoLogContextRewind(gbacore->logContext, core);
+		GBAVideoProxyRendererShim(&gba->video, &gbacore->proxyRenderer);
+	}
+}
+
+static bool _GBAVLPInit(struct mCore* core) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	if (!_GBACoreInit(core)) {
+		return false;
+	}
+	gbacore->proxyRenderer.logger = malloc(sizeof(struct mVideoLogger));
+	mVideoLoggerRendererCreate(gbacore->proxyRenderer.logger, true);
+	GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, NULL);
+	memset(&gbacore->logCallbacks, 0, sizeof(gbacore->logCallbacks));
+	gbacore->logCallbacks.videoFrameStarted = _GBAVLPStartFrameCallback;
+	gbacore->logCallbacks.context = core;
+	core->addCoreCallbacks(core, &gbacore->logCallbacks);
+	return true;
+}
+
+static void _GBAVLPDeinit(struct mCore* core) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	if (gbacore->logContext) {
+		mVideoLogContextDestroy(core, gbacore->logContext);
+	}
+	_GBACoreDeinit(core);
+}
+
+static void _GBAVLPReset(struct mCore* core) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	struct GBA* gba = (struct GBA*) core->board;
+	if (gba->video.renderer == &gbacore->proxyRenderer.d) {
+		GBAVideoProxyRendererUnshim(&gba->video, &gbacore->proxyRenderer);
+	} else if (gbacore->renderer.outputBuffer) {
+		struct GBAVideoRenderer* renderer = &gbacore->renderer.d;
+		GBAVideoAssociateRenderer(&gba->video, renderer);
+	}
+
+	ARMReset(core->cpu);
+	mVideoLogContextRewind(gbacore->logContext, core);
+	GBAVideoProxyRendererShim(&gba->video, &gbacore->proxyRenderer);
+
+	// Make sure CPU loop never spins
+	GBAHalt(gba);
+	gba->cpu->memory.store16(gba->cpu, BASE_IO | REG_IME, 0, NULL);
+	gba->cpu->memory.store16(gba->cpu, BASE_IO | REG_IE, 0, NULL);
+}
+
+static bool _GBAVLPLoadROM(struct mCore* core, struct VFile* vf) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	gbacore->logContext = mVideoLogContextCreate(NULL);
+	if (!mVideoLogContextLoad(gbacore->logContext, vf)) {
+		mVideoLogContextDestroy(core, gbacore->logContext);
+		gbacore->logContext = NULL;
+		return false;
+	}
+	mVideoLoggerAttachChannel(gbacore->proxyRenderer.logger, gbacore->logContext, 0);
+	return true;
+}
+
+static bool _GBAVLPLoadState(struct mCore* core, const void* state) {
+	struct GBA* gba = (struct GBA*) core->board;
+
+	gba->timing.root = NULL;
+	gba->cpu->gprs[ARM_PC] = BASE_WORKING_RAM;
+	gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
+
+	// Make sure CPU loop never spins
+	GBAHalt(gba);
+	gba->cpu->memory.store16(gba->cpu, BASE_IO | REG_IME, 0, NULL);
+	gba->cpu->memory.store16(gba->cpu, BASE_IO | REG_IE, 0, NULL);
+	GBAVideoDeserialize(&gba->video, state);
+	GBAIODeserialize(gba, state);
+	GBAAudioReset(&gba->audio);
+
+	return true;
+}
+
+static bool _returnTrue(struct VFile* vf) {
+	UNUSED(vf);
+	return true;
+}
+
+struct mCore* GBAVideoLogPlayerCreate(void) {
+	struct mCore* core = GBACoreCreate();
+	core->init = _GBAVLPInit;
+	core->deinit = _GBAVLPDeinit;
+	core->reset = _GBAVLPReset;
+	core->loadROM = _GBAVLPLoadROM;
+	core->loadState = _GBAVLPLoadState;
+	core->isROM = _returnTrue;
+	return core;
+}
+#else
+struct mCore* GBAVideoLogPlayerCreate(void) {
+	return false;
+}
+#endif

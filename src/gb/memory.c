@@ -258,6 +258,7 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 		} else if (address < GB_BASE_UNUSABLE) {
 			if (gb->video.mode < 2) {
 				gb->video.oam.raw[address & 0xFF] = value;
+				gb->video.renderer->writeOAM(gb->video.renderer, address & 0xFF);
 			}
 		} else if (address < GB_BASE_IO) {
 			mLOG(GB_MEM, GAME_ERROR, "Attempt to write to unusable memory: %04X:%02X", address, value);
@@ -395,6 +396,7 @@ void _GBMemoryDMAService(struct mTiming* timing, void* context, uint32_t cyclesL
 	uint8_t b = GBLoad8(gb->cpu, gb->memory.dmaSource);
 	// TODO: Can DMA write OAM during modes 2-3?
 	gb->video.oam.raw[gb->memory.dmaDest] = b;
+	gb->video.renderer->writeOAM(gb->video.renderer, gb->memory.dmaDest);
 	++gb->memory.dmaSource;
 	++gb->memory.dmaDest;
 	--gb->memory.dmaRemaining;
@@ -559,6 +561,7 @@ void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* o
 		} else if (address < GB_BASE_UNUSABLE) {
 			oldValue = gb->video.oam.raw[address & 0xFF];
 			gb->video.oam.raw[address & 0xFF] = value;
+			gb->video.renderer->writeOAM(gb->video.renderer, address & 0xFF);
 		} else if (address < GB_BASE_HRAM) {
 			mLOG(GB_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
 			return;

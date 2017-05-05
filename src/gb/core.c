@@ -8,10 +8,12 @@
 #include <mgba/core/core.h>
 #include <mgba/internal/gb/cheats.h>
 #include <mgba/internal/gb/extra/cli.h>
+#include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/mbc.h>
 #include <mgba/internal/gb/overrides.h>
 #include <mgba/internal/gb/renderers/software.h>
+#include <mgba/internal/gb/renderers/proxy.h>
 #include <mgba/internal/gb/serialize.h>
 #include <mgba/internal/lr35902/lr35902.h>
 #include <mgba/internal/lr35902/debugger/debugger.h>
@@ -33,9 +35,13 @@ const static struct mCoreChannelInfo _GBAudioChannels[] = {
 	{ 3, "ch3", "Channel 3", "Noise" },
 };
 
+struct mVideoLogContext;
 struct GBCore {
 	struct mCore d;
 	struct GBVideoSoftwareRenderer renderer;
+	struct GBVideoProxyRenderer proxyRenderer;
+	struct mVideoLogContext* logContext;
+	struct mCoreCallbacks logCallbacks;
 	uint8_t keys;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	const struct Configuration* overrides;
@@ -635,6 +641,29 @@ static void _GBCoreEnableAudioChannel(struct mCore* core, size_t id, bool enable
 	}
 }
 
+static void _GBCoreStartVideoLog(struct mCore* core, struct mVideoLogContext* context) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	struct GB* gb = core->board;
+	gbcore->logContext = context;
+
+	int channelId = mVideoLoggerAddChannel(context);
+	gbcore->proxyRenderer.logger = malloc(sizeof(struct mVideoLogger));
+	mVideoLoggerRendererCreate(gbcore->proxyRenderer.logger, false);
+	mVideoLoggerAttachChannel(gbcore->proxyRenderer.logger, context, channelId);
+	gbcore->proxyRenderer.logger->block = false;
+
+	GBVideoProxyRendererCreate(&gbcore->proxyRenderer, &gbcore->renderer.d);
+	GBVideoProxyRendererShim(&gb->video, &gbcore->proxyRenderer);
+}
+
+static void _GBCoreEndVideoLog(struct mCore* core) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	struct GB* gb = core->board;
+	GBVideoProxyRendererUnshim(&gb->video, &gbcore->proxyRenderer);
+	free(gbcore->proxyRenderer.logger);
+	gbcore->proxyRenderer.logger = NULL;
+}
+
 struct mCore* GBCoreCreate(void) {
 	struct GBCore* gbcore = malloc(sizeof(*gbcore));
 	struct mCore* core = &gbcore->d;
@@ -707,5 +736,120 @@ struct mCore* GBCoreCreate(void) {
 	core->listAudioChannels = _GBCoreListAudioChannels;
 	core->enableVideoLayer = _GBCoreEnableVideoLayer;
 	core->enableAudioChannel = _GBCoreEnableAudioChannel;
+#ifndef MINIMAL_CORE
+	core->startVideoLog = _GBCoreStartVideoLog;
+	core->endVideoLog = _GBCoreEndVideoLog;
+#endif
 	return core;
 }
+
+#ifndef MINIMAL_CORE
+static void _GBVLPStartFrameCallback(void *context) {
+	struct mCore* core = context;
+	struct GBCore* gbcore = (struct GBCore*) core;
+	struct GB* gb = core->board;
+
+	if (!mVideoLoggerRendererRun(gbcore->proxyRenderer.logger, true)) {
+		GBVideoProxyRendererUnshim(&gb->video, &gbcore->proxyRenderer);
+		mVideoLogContextRewind(gbcore->logContext, core);
+		GBVideoProxyRendererShim(&gb->video, &gbcore->proxyRenderer);
+	}
+}
+
+static bool _GBVLPInit(struct mCore* core) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	if (!_GBCoreInit(core)) {
+		return false;
+	}
+	gbcore->proxyRenderer.logger = malloc(sizeof(struct mVideoLogger));
+	mVideoLoggerRendererCreate(gbcore->proxyRenderer.logger, true);
+	GBVideoProxyRendererCreate(&gbcore->proxyRenderer, NULL);
+	memset(&gbcore->logCallbacks, 0, sizeof(gbcore->logCallbacks));
+	gbcore->logCallbacks.videoFrameStarted = _GBVLPStartFrameCallback;
+	gbcore->logCallbacks.context = core;
+	core->addCoreCallbacks(core, &gbcore->logCallbacks);
+	return true;
+}
+
+static void _GBVLPDeinit(struct mCore* core) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	if (gbcore->logContext) {
+		mVideoLogContextDestroy(core, gbcore->logContext);
+	}
+	_GBCoreDeinit(core);
+}
+
+static void _GBVLPReset(struct mCore* core) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	struct GB* gb = (struct GB*) core->board;
+	if (gb->video.renderer == &gbcore->proxyRenderer.d) {
+		GBVideoProxyRendererUnshim(&gb->video, &gbcore->proxyRenderer);
+	} else if (gbcore->renderer.outputBuffer) {
+		struct GBVideoRenderer* renderer = &gbcore->renderer.d;
+		GBVideoAssociateRenderer(&gb->video, renderer);
+	}
+
+	LR35902Reset(core->cpu);
+	mVideoLogContextRewind(gbcore->logContext, core);
+	GBVideoProxyRendererShim(&gb->video, &gbcore->proxyRenderer);
+
+	// Make sure CPU loop never spins
+	GBHalt(gb->cpu);
+	gb->memory.ie = 0;
+	gb->memory.ime = false;
+}
+
+static bool _GBVLPLoadROM(struct mCore* core, struct VFile* vf) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	gbcore->logContext = mVideoLogContextCreate(NULL);
+	if (!mVideoLogContextLoad(gbcore->logContext, vf)) {
+		mVideoLogContextDestroy(core, gbcore->logContext);
+		gbcore->logContext = NULL;
+		return false;
+	}
+	mVideoLoggerAttachChannel(gbcore->proxyRenderer.logger, gbcore->logContext, 0);
+	return true;
+}
+
+static bool _GBVLPLoadState(struct mCore* core, const void* buffer) {
+	struct GB* gb = (struct GB*) core->board;
+	const struct GBSerializedState* state = buffer;
+
+	gb->timing.root = NULL;
+	gb->model = state->model;
+
+	gb->cpu->pc = GB_BASE_HRAM;
+	gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
+
+	GBVideoDeserialize(&gb->video, state);
+	GBIODeserialize(gb, state);
+	GBAudioReset(&gb->audio);
+
+	// Make sure CPU loop never spins
+	GBHalt(gb->cpu);
+	gb->memory.ie = 0;
+	gb->memory.ime = false;
+
+	return true;
+}
+
+static bool _returnTrue(struct VFile* vf) {
+	UNUSED(vf);
+	return true;
+}
+
+struct mCore* GBVideoLogPlayerCreate(void) {
+	struct mCore* core = GBCoreCreate();
+	core->init = _GBVLPInit;
+	core->deinit = _GBVLPDeinit;
+	core->reset = _GBVLPReset;
+	core->loadROM = _GBVLPLoadROM;
+	core->loadState = _GBVLPLoadState;
+	core->isROM = _returnTrue;
+	return core;
+}
+#else
+struct mCore* GBVideoLogPlayerCreate(void) {
+	return false;
+}
+#endif

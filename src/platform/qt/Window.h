@@ -81,6 +81,8 @@ public slots:
 	void openSettingsWindow();
 	void openAboutScreen();
 
+	void startVideoLog();
+
 #ifdef USE_DEBUGGERS
 	void consoleOpen();
 #endif

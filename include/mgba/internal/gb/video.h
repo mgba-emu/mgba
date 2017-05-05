@@ -61,6 +61,7 @@ struct GBVideoRenderer {
 	uint8_t (*writeVideoRegister)(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 	void (*writeVRAM)(struct GBVideoRenderer* renderer, uint16_t address);
 	void (*writePalette)(struct GBVideoRenderer* renderer, int index, uint16_t value);
+	void (*writeOAM)(struct GBVideoRenderer* renderer, uint16_t oam);
 	void (*drawRange)(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* objOnLine, size_t nObj);
 	void (*finishScanline)(struct GBVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct GBVideoRenderer* renderer);

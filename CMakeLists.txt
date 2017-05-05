@@ -54,11 +54,13 @@ file(GLOB UTIL_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/test/*.c)
 file(GLOB GUI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/gui/*.c ${CMAKE_CURRENT_SOURCE_DIR}/src/feature/gui/*.c)
 file(GLOB GBA_RENDERER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/renderers/*.c)
 file(GLOB GBA_SIO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/sio/lockstep.c)
+file(GLOB GBA_EXTRA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/extra/*.c)
 file(GLOB GB_SIO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/sio/lockstep.c)
 file(GLOB GB_RENDERER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/renderers/*.c)
+file(GLOB GB_EXTRA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/extra/*.c)
 file(GLOB THIRD_PARTY_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/inih/*.c)
-set(CLI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/feature/commandline.c)
-set(CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-mem.c)
+file(GLOB EXTRA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/feature/*.c)
+set(CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-mem.c ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-fifo.c)
 set(VFS_SRC)
 source_group("ARM core" FILES ${ARM_SRC})
 source_group("LR35902 core" FILES ${LR35902_SRC})
@@ -600,7 +602,7 @@ if(M_CORE_GB)
 	list(APPEND DEBUGGER_SRC
 		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/cli-debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/debugger.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/gb/extra/cli.c)
+		${CMAKE_CURRENT_SOURCE_DIR}/src/gb/debugger/cli.c)
 	list(APPEND TEST_SRC
 		${LR35902_TEST_SRC}
 		${GB_TEST_SRC})
@@ -617,7 +619,7 @@ if(M_CORE_GBA)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/cli-debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/memory-debugger.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/gba/extra/cli.c)
+		${CMAKE_CURRENT_SOURCE_DIR}/src/gba/debugger/cli.c)
 	list(APPEND TEST_SRC
 		${ARM_TEST_SRC}
 		${GBA_TEST_SRC})
@@ -670,11 +672,12 @@ if(NOT MINIMAL_CORE)
 	endif()
 	if(M_CORE_GB)
 		list(APPEND SRC
+			${GB_EXTRA_SRC}
 			${GB_SIO_SRC})
 	endif()
 	list(APPEND SRC
 		${FEATURE_SRC}
-		${CLI_SRC})
+		${EXTRA_SRC})
 endif()
 
 if(NOT SKIP_LIBRARY)
@@ -771,7 +774,7 @@ if(BUILD_QT)
 endif()
 
 if(BUILD_PERF)
-	set(PERF_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/test/perf-main.c ${CLI_SRC})
+	set(PERF_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/test/perf-main.c)
 	if(UNIX AND NOT APPLE)
 		list(APPEND PERF_LIB rt)
 	endif()

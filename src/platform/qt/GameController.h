@@ -29,6 +29,7 @@ struct GBAAudio;
 struct mCoreConfig;
 struct mDebugger;
 struct mTileCache;
+struct mVideoLogContext;
 
 namespace QGBA {
 
@@ -86,7 +87,7 @@ public:
 
 	int stateSlot() const { return m_stateSlot; }
 
-#ifdef USE_GDB_STUB
+#ifdef USE_DEBUGGERS
 	mDebugger* debugger();
 	void setDebugger(mDebugger*);
 #endif
@@ -174,6 +175,9 @@ public slots:
 	void enableLogLevel(int);
 	void disableLogLevel(int);
 
+	void startVideoLog(const QString& path);
+	void endVideoLog();
+
 private slots:
 	void openGame(bool bios = false);
 	void crashGame(const QString& crashMessage);
@@ -241,6 +245,9 @@ private:
 	MultiplayerController* m_multiplayer;
 
 	mAVStream* m_stream;
+
+	mVideoLogContext* m_vl;
+	VFile* m_vlVf;
 
 	struct GameControllerLux : GBALuminanceSource {
 		GameController* p;

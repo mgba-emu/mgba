@@ -12,6 +12,9 @@ CXX_GUARD_START
 
 struct mCore;
 struct mCore* GBACoreCreate(void);
+#ifndef MINIMAL_CORE
+struct mCore* GBAVideoLogPlayerCreate(void);
+#endif
 
 CXX_GUARD_END
 

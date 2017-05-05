@@ -32,6 +32,7 @@
 #include <mgba/internal/gb/renderers/tile-cache.h>
 #endif
 #include <mgba-util/vfs.h>
+#include <mgba/feature/video-logger.h>
 
 using namespace QGBA;
 using namespace std;
@@ -71,6 +72,8 @@ GameController::GameController(QObject* parent)
 	, m_loadStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_RTC)
 	, m_preload(false)
 	, m_override(nullptr)
+	, m_vl(nullptr)
+	, m_vlVf(nullptr)
 {
 #ifdef M_CORE_GBA
 	m_lux.p = this;
@@ -156,6 +159,7 @@ GameController::GameController(QObject* parent)
 		}
 		controller->m_patch = QString();
 		controller->clearOverride();
+		controller->endVideoLog();
 
 		QMetaObject::invokeMethod(controller->m_audioProcessor, "pause");
 
@@ -332,7 +336,7 @@ void GameController::setConfig(const mCoreConfig* config) {
 	}
 }
 
-#ifdef USE_GDB_STUB
+#ifdef USE_DEBUGGERS
 mDebugger* GameController::debugger() {
 	if (!isLoaded()) {
 		return nullptr;
@@ -622,8 +626,9 @@ void GameController::closeGame() {
 	if (!m_gameOpen) {
 		return;
 	}
-
+#ifdef USE_DEBUGGERS
 	setDebugger(nullptr);
+#endif
 	if (mCoreThreadIsPaused(&m_threadContext)) {
 		mCoreThreadUnpause(&m_threadContext);
 	}
@@ -646,6 +651,7 @@ void GameController::cleanGame() {
 	delete[] m_drawContext;
 	delete[] m_frontBuffer;
 
+	mCoreConfigDeinit(&m_threadContext.core->config);
 	m_threadContext.core->deinit(m_threadContext.core);
 	m_threadContext.core = nullptr;
 	m_gameOpen = false;
@@ -735,8 +741,8 @@ void GameController::setRewind(bool enable, int capacity, bool rewindSave) {
 		m_threadContext.core->opts.rewindBufferCapacity = capacity;
 		m_threadContext.core->opts.rewindSave = rewindSave;
 		if (enable && capacity > 0) {
-			mCoreRewindContextInit(&m_threadContext.rewind, capacity);
-			 m_threadContext.rewind.stateFlags = rewindSave ? SAVESTATE_SAVEDATA : 0;
+			mCoreRewindContextInit(&m_threadContext.rewind, capacity, true);
+			m_threadContext.rewind.stateFlags = rewindSave ? SAVESTATE_SAVEDATA : 0;
 		}
 	}
 }
@@ -1196,6 +1202,32 @@ void GameController::enableLogLevel(int levels) {
 void GameController::disableLogLevel(int levels) {
 	Interrupter interrupter(this);
 	m_logLevels &= ~levels;
+}
+
+void GameController::startVideoLog(const QString& path) {
+	if (!isLoaded() || m_vl) {
+		return;
+	}
+
+	Interrupter interrupter(this);
+	m_vl = mVideoLogContextCreate(m_threadContext.core);
+	m_vlVf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
+	mVideoLogContextSetOutput(m_vl, m_vlVf);
+	mVideoLogContextWriteHeader(m_vl, m_threadContext.core);
+}
+
+void GameController::endVideoLog() {
+	if (!m_vl) {
+		return;
+	}
+
+	Interrupter interrupter(this);
+	mVideoLogContextDestroy(m_threadContext.core, m_vl);
+	if (m_vlVf) {
+		m_vlVf->close(m_vlVf);
+		m_vlVf = nullptr;
+	}
+	m_vl = nullptr;
 }
 
 void GameController::pollEvents() {

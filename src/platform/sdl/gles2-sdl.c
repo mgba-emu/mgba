@@ -7,7 +7,8 @@
 
 #include "gl-common.h"
 
-#include "core/thread.h"
+#include <mgba/core/core.h>
+#include <mgba/core/thread.h>
 
 #ifndef __APPLE__
 #include <malloc.h>

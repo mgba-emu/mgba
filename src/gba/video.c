@@ -295,7 +295,7 @@ static void GBAVideoDummyRendererPutPixels(struct GBAVideoRenderer* renderer, si
 }
 
 void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* state) {
-	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);
+	memcpy(state->vram, video->vram, SIZE_VRAM);
 	memcpy(state->oam, video->oam.raw, SIZE_OAM);
 	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
 	STORE_32(video->event.when - mTimingCurrentTime(&video->p->timing), 0, &state->video.nextEvent);
@@ -303,7 +303,7 @@ void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* 
 }
 
 void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state) {
-	memcpy(video->renderer->vram, state->vram, SIZE_VRAM);
+	memcpy(video->vram, state->vram, SIZE_VRAM);
 	uint16_t value;
 	int i;
 	for (i = 0; i < SIZE_OAM; i += 2) {

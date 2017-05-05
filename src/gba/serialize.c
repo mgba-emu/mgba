@@ -206,11 +206,3 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	}
 	return true;
 }
-
-struct GBASerializedState* GBAAllocateState(void) {
-	return anonymousMemoryMap(sizeof(struct GBASerializedState));
-}
-
-void GBADeallocateState(struct GBASerializedState* state) {
-	mappedMemoryFree(state, sizeof(struct GBASerializedState));
-}

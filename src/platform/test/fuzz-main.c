@@ -12,7 +12,7 @@
 #include <mgba/gba/core.h>
 #include <mgba/internal/gba/gba.h>
 
-#include "feature/commandline.h"
+#include <mgba/feature/commandline.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
@@ -176,9 +176,10 @@ loadError:
 static void _fuzzRunloop(struct mCore* core, int frames) {
 	do {
 		core->runFrame(core);
+		--frames;
 		blip_clear(core->getAudioChannel(core, 0));
 		blip_clear(core->getAudioChannel(core, 1));
-	} while (core->frameCounter(core) < frames && !_dispatchExiting);
+	} while (frames > 0 && !_dispatchExiting);
 }
 
 static void _fuzzShutdown(int signal) {
