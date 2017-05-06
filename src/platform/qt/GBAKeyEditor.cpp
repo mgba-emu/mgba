@@ -396,14 +396,14 @@ void GBAKeyEditor::updateJoysticks() {
 	m_controller->updateJoysticks();
 	m_controller->recalibrateAxes();
 
+	// Block the currentIndexChanged signal while rearranging the combo box
+	auto wasBlocked = m_profileSelect->blockSignals(true);
 	m_profileSelect->clear();
 	m_profileSelect->addItems(m_controller->connectedGamepads(m_type));
 	int activeGamepad = m_controller->gamepad(m_type);
+	m_profileSelect->setCurrentIndex(activeGamepad);
+	m_profileSelect->blockSignals(wasBlocked);
+
 	selectGamepad(activeGamepad);
-	if (activeGamepad > 0) {
-		m_profileSelect->setCurrentIndex(activeGamepad);
-	}
-	lookupAxes(m_controller->map());
-	lookupHats(m_controller->map());
 }
 #endif
