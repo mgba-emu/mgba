@@ -38,6 +38,9 @@ void mSDLGLCommonInit(struct mSDLRenderer* renderer) {
 	SDL_GL_SetSwapInterval(1);
 	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
 	renderer->player.window = renderer->window;
+	if (renderer->lockIntegerScaling) {
+		SDL_SetWindowMinimumSize(renderer->window, renderer->width, renderer->height);
+	}
 #else
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
 #ifdef COLOR_16_BIT
