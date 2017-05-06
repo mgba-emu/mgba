@@ -1258,10 +1258,10 @@ std::shared_ptr<mTileCache> GameController::tileCache() {
 	if (m_tileCache) {
 		return m_tileCache;
 	}
+	Interrupter interrupter(this);
 	switch (platform()) {
 #ifdef M_CORE_GBA
 	case PLATFORM_GBA: {
-		Interrupter interrupter(this);
 		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
 		m_tileCache = std::make_shared<mTileCache>();
 		GBAVideoTileCacheInit(m_tileCache.get());
@@ -1272,7 +1272,6 @@ std::shared_ptr<mTileCache> GameController::tileCache() {
 #endif
 #ifdef M_CORE_GB
 	case PLATFORM_GB: {
-		Interrupter interrupter(this);
 		GB* gb = static_cast<GB*>(m_threadContext.core->board);
 		m_tileCache = std::make_shared<mTileCache>();
 		GBVideoTileCacheInit(m_tileCache.get());
