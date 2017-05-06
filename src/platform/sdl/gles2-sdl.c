@@ -109,6 +109,7 @@ bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
 	mGLES2ContextCreate(&renderer->gl2);
 	renderer->gl2.d.user = renderer;
 	renderer->gl2.d.lockAspectRatio = renderer->lockAspectRatio;
+	renderer->gl2.d.lockIntegerScaling = renderer->lockIntegerScaling;
 	renderer->gl2.d.filter = renderer->filter;
 	renderer->gl2.d.swap = mSDLGLCommonSwap;
 	renderer->gl2.d.init(&renderer->gl2.d, 0);
