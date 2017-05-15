@@ -563,7 +563,7 @@ void mInputUnbindHat(struct mInputMap* map, uint32_t type, int id) {
 		mInputHatListResize(&impl->hats, -1);
 	} else {
 		struct mInputHatBindings* description = mInputHatListGetPointer(&impl->hats, id);
-		memset(description, -1, sizeof(&description));
+		memset(description, -1, sizeof(*description));
 	}
 }
 
