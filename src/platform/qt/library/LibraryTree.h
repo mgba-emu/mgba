@@ -10,13 +10,9 @@
 
 #include "LibraryController.h"
 
-// Predefinitions
-namespace Ui { class LibraryTree; }
-
 namespace QGBA {
 
-class LibraryTree final : public QTreeWidget, public AbstractGameList {
-Q_OBJECT
+class LibraryTree final : public AbstractGameList {
 
 public:
 	enum Columns {
@@ -27,7 +23,8 @@ public:
 		COL_CRC32 = 4,
 	};
 
-	explicit LibraryTree(QWidget* parent = nullptr);
+	explicit LibraryTree(LibraryController* parent = nullptr);
+	~LibraryTree();
 
 	// AbstractGameList stuff
 	virtual LibraryEntryRef selectedEntry() override;
@@ -39,15 +36,13 @@ public:
 	virtual void addEntry(LibraryEntryRef item) override;
 	virtual void removeEntry(LibraryEntryRef item) override;
 
-signals:
-	void startGame();
-
-private slots:
-	void itemActivated(QTreeWidgetItem* item);
+	virtual QWidget* widget() override { return m_widget; }
 
 private:
-	std::unique_ptr<Ui::LibraryTree> m_ui;
+	QTreeWidget* m_widget;
 	LibraryStyle m_currentStyle;
+
+	LibraryController* m_controller;
 
 	bool m_deferredTreeRebuild = false;
 	QMap<LibraryEntryRef, QTreeWidgetItem*> m_items;

@@ -12,8 +12,8 @@
 namespace QGBA {
 
 LibraryEntry::LibraryEntry(mLibraryEntry* entry)
-    : entry(entry)
-    , m_fullpath(QString("%1/%2").arg(entry->base, entry->filename))
+	: entry(entry)
+	, m_fullpath(QString("%1/%2").arg(entry->base, entry->filename))
 {
 }
 
@@ -53,18 +53,15 @@ LibraryController::LibraryController(QWidget* parent, const QString& path, Confi
 	mLibraryAttachGameDB(m_library, GBAApp::app()->gameDB());
 
 	m_libraryTree = new LibraryTree(this);
-	addWidget(m_libraryTree);
-	connect(m_libraryTree, &LibraryTree::startGame, this, &LibraryController::startGame);
+	addWidget(m_libraryTree->widget());
 
 	m_libraryGrid = new LibraryGrid(this);
-	addWidget(m_libraryGrid);
-	connect(m_libraryGrid, &LibraryGrid::startGame, this, &LibraryController::startGame);
+	addWidget(m_libraryGrid->widget());
 
 	connect(&m_loaderThread, &QThread::finished, this, &LibraryController::refresh, Qt::QueuedConnection);
 
-	refresh();
-
 	setViewStyle(LibraryStyle::STYLE_LIST);
+	refresh();
 }
 
 LibraryController::~LibraryController() {
@@ -85,23 +82,30 @@ LibraryController::~LibraryController() {
 void LibraryController::setViewStyle(LibraryStyle newStyle) {
 	m_currentStyle = newStyle;
 
-	AbstractGameList* newCurrentWidget = nullptr;
+	AbstractGameList* newCurrentList = nullptr;
 	if (newStyle == LibraryStyle::STYLE_LIST || newStyle == LibraryStyle::STYLE_TREE) {
-		newCurrentWidget = m_libraryTree;
+		newCurrentList = m_libraryTree;
 	} else {
-		newCurrentWidget = m_libraryGrid;
+		newCurrentList = m_libraryGrid;
 	}
-	newCurrentWidget->selectEntry(selectedEntry());
-	newCurrentWidget->setViewStyle(newStyle);
-	setCurrentWidget(dynamic_cast<QWidget*>(newCurrentWidget));
+	newCurrentList->selectEntry(selectedEntry());
+	newCurrentList->setViewStyle(newStyle);
+	setCurrentWidget(newCurrentList->widget());
+	m_currentList = newCurrentList;
 }
 
 void LibraryController::selectEntry(LibraryEntryRef entry) {
-	dynamic_cast<AbstractGameList*>(currentWidget())->selectEntry(entry);
+	if (!m_currentList) {
+		return;
+	}
+	m_currentList->selectEntry(entry);
 }
 
 LibraryEntryRef LibraryController::selectedEntry() {
-	return dynamic_cast<AbstractGameList*>(currentWidget())->selectedEntry();
+	if (!m_currentList) {
+		return LibraryEntryRef();
+	}
+	return m_currentList->selectedEntry();
 }
 
 VFile* LibraryController::selectedVFile() {
@@ -124,10 +128,6 @@ void LibraryController::addDirectory(const QString& dir) {
 	// The m_loaderThread temporarily owns the library
 	m_library = nullptr;
 	m_loaderThread.start();
-}
-
-void LibraryController::setDirectory(const QString& dir) {
-	addDirectory(dir); // FIXME?
 }
 
 void LibraryController::refresh() {

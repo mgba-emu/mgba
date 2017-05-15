@@ -63,6 +63,8 @@ public:
 
 	virtual void removeEntry(LibraryEntryRef item) = 0;
 	virtual void removeEntries(QList<LibraryEntryRef> items);
+
+	virtual QWidget* widget() = 0;
 };
 
 class LibraryLoaderThread final : public QThread {
@@ -97,7 +99,6 @@ public:
 	void selectLastBootedGame();
 
 	void addDirectory(const QString& dir);
-	void setDirectory(const QString& dir);
 
 signals:
 	void startGame();
@@ -114,6 +115,8 @@ private:
 	QMap<QString, LibraryEntryRef> m_entries;
 
 	LibraryStyle m_currentStyle;
+	AbstractGameList* m_currentList = nullptr;
+
 	LibraryGrid* m_libraryGrid = nullptr;
 	LibraryTree* m_libraryTree = nullptr;
 };

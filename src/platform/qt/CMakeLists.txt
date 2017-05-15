@@ -190,9 +190,6 @@ if(USE_SQLITE3)
 		library/LibraryController.cpp
 		library/LibraryGrid.cpp
 		library/LibraryTree.cpp)
-	list(APPEND UI_FILES
-		library/LibraryGrid.ui
-		library/LibraryTree.ui)
 endif()
 
 qt5_add_resources(RESOURCES resources.qrc)

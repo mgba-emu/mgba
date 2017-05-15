@@ -7,8 +7,7 @@
 
 #include "utils.h"
 
-#include "ui_LibraryTree.h"
-
+#include <QApplication>
 #include <QDir>
 
 namespace QGBA {
@@ -35,33 +34,43 @@ bool TreeWidgetItem::operator<(const QTreeWidgetItem& other) const {
 		QTreeWidgetItem::operator<(other));
 }
 
-LibraryTree::LibraryTree(QWidget* parent)
-	: QTreeWidget(parent)
-	, m_ui(new Ui::LibraryTree)
+LibraryTree::LibraryTree(LibraryController* parent)
+	: m_widget(new QTreeWidget(parent))
+	, m_controller(parent)
 {
-	m_ui->setupUi(this);
+	m_widget->setObjectName("LibraryTree");
+	m_widget->setSortingEnabled(true);
+	m_widget->setAlternatingRowColors(true);
+
+	QTreeWidgetItem* header = new QTreeWidgetItem({
+		QApplication::translate("LibraryTree", "Name", nullptr),
+		QApplication::translate("LibraryTree", "Location", nullptr),
+		QApplication::translate("LibraryTree", "Platform", nullptr),
+		QApplication::translate("LibraryTree", "Size", nullptr),
+		QApplication::translate("LibraryTree", "CRC32", nullptr),
+	});
+	header->setTextAlignment(3, Qt::AlignTrailing | Qt::AlignVCenter);
+	m_widget->setHeaderItem(header);
 
 	setViewStyle(LibraryStyle::STYLE_TREE);
-	sortByColumn(COL_NAME, Qt::AscendingOrder);
+	m_widget->sortByColumn(COL_NAME, Qt::AscendingOrder);
 
-	connect(this, &QTreeWidget::itemActivated, this, &LibraryTree::itemActivated);
+	QObject::connect(m_widget, &QTreeWidget::itemActivated, [this](QTreeWidgetItem* item, int) -> void {
+		if (!m_pathNodes.values().contains(item)) {
+			emit m_controller->startGame();
+		}
+	});
 }
 
 void LibraryTree::resizeAllCols() {
-	for (int i = 0; i < columnCount(); i++) {
-		resizeColumnToContents(i);
-	}
-}
-
-void LibraryTree::itemActivated(QTreeWidgetItem* item) {
-	if (!m_pathNodes.values().contains(item)) {
-		emit startGame();
+	for (int i = 0; i < m_widget->columnCount(); i++) {
+		m_widget->resizeColumnToContents(i);
 	}
 }
 
 LibraryEntryRef LibraryTree::selectedEntry() {
-	if (!selectedItems().empty()) {
-		return m_items.key(selectedItems().at(0));
+	if (!m_widget->selectedItems().empty()) {
+		return m_items.key(m_widget->selectedItems().at(0));
 	} else {
 		return LibraryEntryRef();
 	}
@@ -71,8 +80,8 @@ void LibraryTree::selectEntry(LibraryEntryRef game) {
 	if (!game) {
 		return;
 	}
-	if (!selectedItems().empty()) {
-		selectedItems().at(0)->setSelected(false);
+	if (!m_widget->selectedItems().empty()) {
+		m_widget->selectedItems().at(0)->setSelected(false);
 	}
 	m_items.value(game)->setSelected(true);
 }
@@ -80,11 +89,11 @@ void LibraryTree::selectEntry(LibraryEntryRef game) {
 void LibraryTree::setViewStyle(LibraryStyle newStyle) {
 	if (newStyle == LibraryStyle::STYLE_LIST) {
 		m_currentStyle = LibraryStyle::STYLE_LIST;
-		setIndentation(0);
+		m_widget->setIndentation(0);
 		rebuildTree();
 	} else {
 		m_currentStyle = LibraryStyle::STYLE_TREE;
-		setIndentation(20);
+		m_widget->setIndentation(20);
 		rebuildTree();
 	}
 }
@@ -107,7 +116,7 @@ void LibraryTree::addEntry(LibraryEntryRef item) {
 		i->setText(0, folder.section("/", -1));
 		m_pathNodes.insert(folder, i);
 		if (m_currentStyle == LibraryStyle::STYLE_TREE) {
-			addTopLevelItem(i);
+			m_widget->addTopLevelItem(i);
 		}
 	}
 
@@ -137,9 +146,9 @@ void LibraryTree::rebuildTree() {
 
 	LibraryEntryRef currentGame = selectedEntry();
 
-	int count = topLevelItemCount();
+	int count = m_widget->topLevelItemCount();
 	for (int a = 0; a < count; a++) {
-		takeTopLevelItem(0);
+		m_widget->takeTopLevelItem(0);
 	}
 
 	for (QTreeWidgetItem* i : m_pathNodes.values()) {
@@ -151,18 +160,18 @@ void LibraryTree::rebuildTree() {
 
 	if (m_currentStyle == LibraryStyle::STYLE_TREE) {
 		for (QTreeWidgetItem* i : m_pathNodes.values()) {
-			addTopLevelItem(i);
+			m_widget->addTopLevelItem(i);
 		}
 		for (QTreeWidgetItem* i : m_items.values()) {
 			m_pathNodes.value(m_items.key(i)->base())->addChild(i);
 		}
 	} else {
 		for (QTreeWidgetItem* i : m_items.values()) {
-			addTopLevelItem(i);
+			m_widget->addTopLevelItem(i);
 		}
 	}
 
-	expandAll();
+	m_widget->expandAll();
 	resizeAllCols();
 	selectEntry(currentGame);
 }

@@ -18,7 +18,7 @@ ArchiveInspector::ArchiveInspector(const QString& filename, QWidget* parent)
 	});
 	connect(m_ui.archiveView, &LibraryController::startGame, this, &ArchiveInspector::accepted);
 	m_ui.archiveView->setViewStyle(LibraryStyle::STYLE_LIST);
-	m_ui.archiveView->setDirectory(filename);
+	m_ui.archiveView->addDirectory(filename);
 }
 
 VFile* ArchiveInspector::selectedVFile() const {

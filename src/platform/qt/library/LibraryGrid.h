@@ -10,16 +10,12 @@
 
 #include "LibraryController.h"
 
-// Predefinitions
-namespace Ui { class LibraryGrid; }
-
 namespace QGBA {
 
-class LibraryGrid final : public QListWidget, public AbstractGameList {
-Q_OBJECT
-
+class LibraryGrid final : public AbstractGameList {
 public:
-	explicit LibraryGrid(QWidget* parent = nullptr);
+	explicit LibraryGrid(LibraryController* parent = nullptr);
+	~LibraryGrid();
 
 	// AbstractGameList stuff
 	virtual LibraryEntryRef selectedEntry() override;
@@ -30,11 +26,13 @@ public:
 	virtual void addEntry(LibraryEntryRef item) override;
 	virtual void removeEntry(LibraryEntryRef entry) override;
 
+	virtual QWidget* widget() override { return m_widget; }
+
 signals:
 	void startGame();
 
 private:
-	std::unique_ptr<Ui::LibraryGrid> m_ui;
+	QListWidget* m_widget;
 
 	// Game banner image size
 	const quint32 GRID_BANNER_WIDTH = 320;

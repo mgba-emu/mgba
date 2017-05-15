@@ -5,23 +5,27 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "LibraryGrid.h"
 
-#include "ui_LibraryGrid.h"
-
 namespace QGBA {
 
-LibraryGrid::LibraryGrid(QWidget* parent)
-    : QListWidget(parent)
-    , m_ui(new Ui::LibraryGrid)
+LibraryGrid::LibraryGrid(LibraryController* parent)
+    : m_widget(new QListWidget(parent))
 {
-	m_ui->setupUi(this);
+	m_widget->setObjectName("LibraryGrid");
+	m_widget->setWrapping(true);
+	m_widget->setResizeMode(QListView::Adjust);
+	m_widget->setUniformItemSizes(true);
 	setViewStyle(LibraryStyle::STYLE_GRID);
 
-	connect(this, &QListWidget::itemActivated, this, &LibraryGrid::startGame);
+	QObject::connect(m_widget, &QListWidget::itemActivated, parent, &LibraryController::startGame);
+}
+
+LibraryGrid::~LibraryGrid() {
+	delete m_widget;
 }
 
 LibraryEntryRef LibraryGrid::selectedEntry() {
-	if (!selectedItems().empty()) {
-		return m_items.key(selectedItems().at(0));
+	if (!m_widget->selectedItems().empty()) {
+		return m_items.key(m_widget->selectedItems().at(0));
 	} else {
 		return LibraryEntryRef();
 	}
@@ -31,8 +35,8 @@ void LibraryGrid::selectEntry(LibraryEntryRef game) {
 	if (!game) {
 		return;
 	}
-	if (!selectedItems().empty()) {
-		selectedItems().at(0)->setSelected(false);
+	if (!m_widget->selectedItems().empty()) {
+		m_widget->selectedItems().at(0)->setSelected(false);
 	}
 	m_items.value(game)->setSelected(true);
 }
@@ -40,16 +44,16 @@ void LibraryGrid::selectEntry(LibraryEntryRef game) {
 void LibraryGrid::setViewStyle(LibraryStyle newStyle) {
 	if (newStyle == LibraryStyle::STYLE_GRID) {
 		m_currentStyle = LibraryStyle::STYLE_GRID;
-		setIconSize(QSize(GRID_BANNER_WIDTH, GRID_BANNER_HEIGHT));
-		setViewMode(QListView::IconMode);
+		m_widget->setIconSize(QSize(GRID_BANNER_WIDTH, GRID_BANNER_HEIGHT));
+		m_widget->setViewMode(QListView::IconMode);
 	} else {
 		m_currentStyle = LibraryStyle::STYLE_ICON;
-		setIconSize(QSize(ICON_BANNER_WIDTH, ICON_BANNER_HEIGHT));
-		setViewMode(QListView::ListMode);
+		m_widget->setIconSize(QSize(ICON_BANNER_WIDTH, ICON_BANNER_HEIGHT));
+		m_widget->setViewMode(QListView::ListMode);
 	}
 
 	// QListView resets this when you change the view mode, so let's set it again
-	setDragEnabled(false);
+	m_widget->setDragEnabled(false);
 }
 
 void LibraryGrid::addEntry(LibraryEntryRef item) {
@@ -58,11 +62,9 @@ void LibraryGrid::addEntry(LibraryEntryRef item) {
 	}
 
 	QListWidgetItem* i = new QListWidgetItem;
-	//i->setIcon(QIcon(item.bitmap
-	//	.scaled(GRID_BANNER_WIDTH, GRID_BANNER_HEIGHT, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
 	i->setText(item->displayTitle());
 
-	addItem(i);
+	m_widget->addItem(i);
 	m_items.insert(item, i);
 }
 
