@@ -29,15 +29,15 @@
     </widget>
    </item>
    <item row="0" column="0" colspan="2">
-    <widget class="QGBA::LibraryView" name="archiveView" native="true"/>
+    <widget class="QGBA::LibraryController" name="archiveView" native="true"/>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QGBA::LibraryView</class>
+   <class>QGBA::LibraryController</class>
    <extends>QWidget</extends>
-   <header>LibraryView.h</header>
+   <header>library/LibraryController.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

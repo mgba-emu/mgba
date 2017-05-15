@@ -17,6 +17,7 @@ Features:
  - GB: Video/audio channel enabling/disabling
  - Add option to lock video to integer scaling
  - Video log recording for testing and bug reporting
+ - Library view
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior

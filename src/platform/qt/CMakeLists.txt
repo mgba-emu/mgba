@@ -105,6 +105,7 @@ set(SOURCE_FILES
 	Swatch.cpp
 	TilePainter.cpp
 	TileView.cpp
+	utils.cpp
 	Window.cpp
 	VFileDevice.cpp
 	VideoView.cpp)
@@ -117,7 +118,6 @@ set(UI_FILES
 	DebuggerConsole.ui
 	GIFView.ui
 	IOViewer.ui
-	LibraryView.ui
 	LoadSaveState.ui
 	LogView.ui
 	MemoryView.ui
@@ -137,8 +137,6 @@ set(GBA_SRC
 
 set(GB_SRC
 	GBOverride.cpp)
-
-qt5_wrap_ui(UI_SRC ${UI_FILES})
 
 set(QT_LIBRARIES)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5,libqt5opengl5")
@@ -189,8 +187,9 @@ endif()
 if(USE_SQLITE3)
 	list(APPEND SOURCE_FILES
 		ArchiveInspector.cpp
-		LibraryModel.cpp
-		LibraryView.cpp)
+		library/LibraryController.cpp
+		library/LibraryGrid.cpp
+		library/LibraryTree.cpp)
 endif()
 
 qt5_add_resources(RESOURCES resources.qrc)
@@ -238,6 +237,8 @@ if(Qt5LinguistTools_FOUND)
 	qt5_add_resources(TRANSLATION_RESOURCES ${TRANSLATION_QRC})
 	list(APPEND RESOURCES ${TRANSLATION_RESOURCES})
 endif()
+
+qt5_wrap_ui(UI_SRC ${UI_FILES})
 
 add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_SRC} ${AUDIO_SRC} ${RESOURCES})
 set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in COMPILE_DEFINITIONS "${FEATURE_DEFINES};${FUNCTION_DEFINES};${OS_DEFINES};${QT_DEFINES}")
