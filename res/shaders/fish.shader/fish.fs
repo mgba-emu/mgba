@@ -130,9 +130,9 @@ vec4 interpolate_diagonal(vec4 a, vec4 b, vec4 c, vec4 d)
     else if (cd)                                                 // horizontal line 2?
       return straight_line(c,d,a,b);
 
-    else if (ac)                                                 // horizontal line 3?
+    else if (ac)                                                 // vertical line 1?
       return straight_line(a,c,b,d);
-    else if (bd)                                                 // horizontal line 4?
+    else if (bd)                                                 // vertical line 2?
       return straight_line(b,d,a,c);
 
     return( mix(mix(a,b,0.5), mix(c,d,0.5), 0.5) );
