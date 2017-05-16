@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.6)
-project(mGBA C)
+cmake_minimum_required(VERSION 2.8.11)
+project(mGBA)
 set(BINARY_NAME mgba CACHE INTERNAL "Name of output binaries")
 if(NOT MSVC)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-missing-field-initializers -std=c99")
