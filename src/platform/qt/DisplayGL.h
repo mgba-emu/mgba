@@ -6,6 +6,8 @@
 #ifndef QGBA_DISPLAY_GL
 #define QGBA_DISPLAY_GL
 
+#if defined(BUILD_GL) || defined(BUILD_GLES)
+
 #include "Display.h"
 
 #ifdef USE_EPOXY
@@ -126,5 +128,7 @@ private:
 };
 
 }
+
+#endif
 
 #endif
