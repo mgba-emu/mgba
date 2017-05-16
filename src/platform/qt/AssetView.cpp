@@ -20,9 +20,10 @@ AssetView::AssetView(GameController* controller, QWidget* parent)
 	m_updateTimer.setInterval(1);
 	connect(&m_updateTimer, SIGNAL(timeout()), this, SLOT(updateTiles()));
 
-	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), &m_updateTimer, SLOT(start()));
-	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(close()));
-	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), &m_updateTimer, SLOT(stop()));
+	connect(m_controller, &GameController::frameAvailable, &m_updateTimer,
+	        static_cast<void(QTimer::*)()>(&QTimer::start));
+	connect(m_controller, &GameController::gameStopped, this, &AssetView::close);
+	connect(m_controller, &GameController::gameStopped, &m_updateTimer, &QTimer::stop);
 }
 
 void AssetView::updateTiles(bool force) {

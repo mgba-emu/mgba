@@ -68,7 +68,7 @@ void DisplayGL::startDrawing(mCoreThread* thread) {
 	m_gl->context()->doneCurrent();
 	m_gl->context()->moveToThread(m_drawThread);
 	m_painter->moveToThread(m_drawThread);
-	connect(m_drawThread, SIGNAL(started()), m_painter, SLOT(start()));
+	connect(m_drawThread, &QThread::started, m_painter, &PainterGL::start);
 	m_drawThread->start();
 	mCoreSyncSetVideoSync(&m_context->sync, false);
 

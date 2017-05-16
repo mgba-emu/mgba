@@ -277,10 +277,10 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.userData = this;
 
-	connect(this, SIGNAL(gamePaused(mCoreThread*)), m_audioProcessor, SLOT(pause()));
-	connect(this, SIGNAL(gameStarted(mCoreThread*, const QString&)), m_audioProcessor, SLOT(setInput(mCoreThread*)));
-	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(pollEvents()));
-	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updateAutofire()));
+	connect(this, &GameController::gamePaused, m_audioProcessor, &AudioProcessor::pause);
+	connect(this, &GameController::gameStarted, m_audioProcessor, &AudioProcessor::setInput);
+	connect(this, &GameController::frameAvailable, this, &GameController::pollEvents);
+	connect(this, &GameController::frameAvailable, this, &GameController::updateAutofire);
 }
 
 GameController::~GameController() {
@@ -939,8 +939,8 @@ void GameController::loadState(int slot) {
 		}
 		mCoreLoadStateNamed(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
 		if (mCoreLoadState(context->core, controller->m_stateSlot, controller->m_loadStateFlags)) {
-			controller->frameAvailable(controller->m_drawContext);
-			controller->stateLoaded(context);
+			emit controller->frameAvailable(controller->m_drawContext);
+			emit controller->stateLoaded(context);
 		}
 	});
 }
@@ -1108,8 +1108,8 @@ void GameController::reloadAudioDriver() {
 	if (sampleRate) {
 		m_audioProcessor->requestSampleRate(sampleRate);
 	}
-	connect(this, SIGNAL(gamePaused(mCoreThread*)), m_audioProcessor, SLOT(pause()));
-	connect(this, SIGNAL(gameStarted(mCoreThread*, const QString&)), m_audioProcessor, SLOT(setInput(mCoreThread*)));
+	connect(this, &GameController::gamePaused, m_audioProcessor, &AudioProcessor::pause);
+	connect(this, &GameController::gameStarted, m_audioProcessor, &AudioProcessor::setInput);
 	if (isLoaded()) {
 		m_audioProcessor->setInput(&m_threadContext);
 		startAudio();

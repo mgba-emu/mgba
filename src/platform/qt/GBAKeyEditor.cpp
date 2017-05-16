@@ -56,7 +56,8 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 #ifdef BUILD_SDL
 	if (type == SDL_BINDING_BUTTON) {
 		m_profileSelect = new QComboBox(this);
-		connect(m_profileSelect, SIGNAL(currentIndexChanged(int)), this, SLOT(selectGamepad(int)));
+		connect(m_profileSelect, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+		        this, &GBAKeyEditor::selectGamepad);
 
 		updateJoysticks();
 
@@ -90,7 +91,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 
 		QPushButton* updateJoysticksButton = new QPushButton(tr("Refresh"));
 		layout->addWidget(updateJoysticksButton);
-		connect(updateJoysticksButton, SIGNAL(pressed()), this, SLOT(updateJoysticks()));
+		connect(updateJoysticksButton, &QAbstractButton::pressed, this, &GBAKeyEditor::updateJoysticks);
 	}
 #endif
 
@@ -99,7 +100,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	m_buttons->setLayout(layout);
 
 	QPushButton* setAll = new QPushButton(tr("Set all"));
-	connect(setAll, SIGNAL(pressed()), this, SLOT(setAll()));
+	connect(setAll, &QAbstractButton::pressed, this, &GBAKeyEditor::setAll);
 	layout->addWidget(setAll);
 
 	layout->setSpacing(6);
@@ -118,9 +119,9 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	};
 
 	for (auto& key : m_keyOrder) {
-		connect(key, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-		connect(key, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-		connect(key, SIGNAL(hatChanged(int, int)), this, SLOT(setNext()));
+		connect(key, &KeyEditor::valueChanged, this, &GBAKeyEditor::setNext);
+		connect(key, &KeyEditor::axisChanged, this, &GBAKeyEditor::setNext);
+		connect(key, &KeyEditor::hatChanged, this, &GBAKeyEditor::setNext);
 		key->installEventFilter(this);
 	}
 

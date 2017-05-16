@@ -38,12 +38,12 @@ GDBWindow::GDBWindow(GDBController* controller, QWidget* parent)
 
 	m_portEdit = new QLineEdit("2345");
 	m_portEdit->setMaxLength(5);
-	connect(m_portEdit, SIGNAL(textChanged(const QString&)), this, SLOT(portChanged(const QString&)));
+	connect(m_portEdit, &QLineEdit::textChanged, this, &GDBWindow::portChanged);
 	settingsGrid->addWidget(m_portEdit, 0, 1, Qt::AlignLeft);
 
 	m_bindAddressEdit = new QLineEdit("0.0.0.0");
 	m_bindAddressEdit->setMaxLength(15);
-	connect(m_bindAddressEdit, SIGNAL(textChanged(const QString&)), this, SLOT(bindAddressChanged(const QString&)));
+	connect(m_bindAddressEdit, &QLineEdit::textChanged, this, &GDBWindow::bindAddressChanged);
 	settingsGrid->addWidget(m_bindAddressEdit, 1, 1, Qt::AlignLeft);
 
 	QHBoxLayout* buttons = new QHBoxLayout;
@@ -57,9 +57,9 @@ GDBWindow::GDBWindow(GDBController* controller, QWidget* parent)
 
 	mainSegment->addLayout(buttons);
 
-	connect(m_gdbController, SIGNAL(listening()), this, SLOT(started()));
-	connect(m_gdbController, SIGNAL(listenFailed()), this, SLOT(failed()));
-	connect(m_breakButton, SIGNAL(clicked()), controller, SLOT(breakInto()));
+	connect(m_gdbController, &GDBController::listening, this, &GDBWindow::started);
+	connect(m_gdbController, &GDBController::listenFailed, this, &GDBWindow::failed);
+	connect(m_breakButton, &QAbstractButton::clicked, controller, &DebuggerController::breakInto);
 
 	if (m_gdbController->isAttached()) {
 		started();
@@ -103,9 +103,9 @@ void GDBWindow::started() {
 	m_bindAddressEdit->setEnabled(false);
 	m_startStopButton->setText(tr("Stop"));
 	m_breakButton->setEnabled(true);
-	disconnect(m_startStopButton, SIGNAL(clicked()), m_gdbController, SLOT(listen()));
-	connect(m_startStopButton, SIGNAL(clicked()), m_gdbController, SLOT(detach()));
-	connect(m_startStopButton, SIGNAL(clicked()), this, SLOT(stopped()));
+	disconnect(m_startStopButton, &QAbstractButton::clicked, m_gdbController, &GDBController::listen);
+	connect(m_startStopButton, &QAbstractButton::clicked, m_gdbController, &DebuggerController::detach);
+	connect(m_startStopButton, &QAbstractButton::clicked, this, &GDBWindow::stopped);
 }
 
 void GDBWindow::stopped() {
@@ -113,9 +113,9 @@ void GDBWindow::stopped() {
 	m_bindAddressEdit->setEnabled(true);
 	m_startStopButton->setText(tr("Start"));
 	m_breakButton->setEnabled(false);
-	disconnect(m_startStopButton, SIGNAL(clicked()), m_gdbController, SLOT(detach()));
-	disconnect(m_startStopButton, SIGNAL(clicked()), this, SLOT(stopped()));
-	connect(m_startStopButton, SIGNAL(clicked()), m_gdbController, SLOT(listen()));
+	disconnect(m_startStopButton, &QAbstractButton::clicked, m_gdbController, &DebuggerController::detach);
+	disconnect(m_startStopButton, &QAbstractButton::clicked, this, &GDBWindow::stopped);
+	connect(m_startStopButton, &QAbstractButton::clicked, m_gdbController, &GDBController::listen);
 }
 
 void GDBWindow::failed() {

@@ -63,7 +63,7 @@ Display::Display(QWidget* parent)
 #elif defined(M_CORE_GBA)
 	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 #endif
-	connect(&m_mouseTimer, SIGNAL(timeout()), this, SIGNAL(hideCursor()));
+	connect(&m_mouseTimer, &QTimer::timeout, this, &Display::hideCursor);
 	m_mouseTimer.setSingleShot(true);
 	m_mouseTimer.setInterval(MOUSE_DISAPPEAR_TIMER);
 	setMouseTracking(true);

@@ -76,14 +76,12 @@ void ConfigOption::setValue(const char* value) {
 }
 
 void ConfigOption::setValue(const QVariant& value) {
-	QPair<QAction*, QVariant> action;
-	foreach (action, m_actions) {
+	for (QPair<QAction*, QVariant>& action : m_actions) {
 		bool signalsEnabled = action.first->blockSignals(true);
 		action.first->setChecked(value == action.second);
 		action.first->blockSignals(signalsEnabled);
 	}
-	std::function<void(const QVariant&)> slot;
-	foreach(slot, m_slots.values()) {
+	for (std::function<void(const QVariant&)>& slot : m_slots.values()) {
 		slot(value);
 	}
 }

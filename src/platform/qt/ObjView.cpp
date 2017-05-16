@@ -46,13 +46,13 @@ ObjView::ObjView(GameController* controller, QWidget* parent)
 	m_ui.transform->setFont(font);
 	m_ui.mode->setFont(font);
 
-	connect(m_ui.tiles, SIGNAL(indexPressed(int)), this, SLOT(translateIndex(int)));
-	connect(m_ui.objId, SIGNAL(valueChanged(int)), this, SLOT(selectObj(int)));
+	connect(m_ui.tiles, &TilePainter::indexPressed, this, &ObjView::translateIndex);
+	connect(m_ui.objId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &ObjView::selectObj);
 	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this]() {
 		updateTiles(true);
 	});
 #ifdef USE_PNG
-	connect(m_ui.exportButton, SIGNAL(clicked()), this, SLOT(exportObj()));
+	connect(m_ui.exportButton, &QAbstractButton::clicked, this, &ObjView::exportObj);
 #else
 	m_ui.exportButton->setVisible(false);
 #endif
