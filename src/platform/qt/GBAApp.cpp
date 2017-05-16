@@ -127,6 +127,9 @@ Window* GBAApp::newWindow() {
 	int windowId = m_multiplayer.attached();
 	connect(w, &Window::destroyed, [this, w]() {
 		m_windows.removeAll(w);
+		for (Window* w : m_windows) {
+			w->updateMultiplayerStatus(m_windows.count() < MAX_GBAS);
+		}
 	});
 	m_windows.append(w);
 	w->setAttribute(Qt::WA_DeleteOnClose);
@@ -134,6 +137,9 @@ Window* GBAApp::newWindow() {
 	w->show();
 	w->controller()->setMultiplayerController(&m_multiplayer);
 	w->multiplayerChanged();
+	for (Window* w : m_windows) {
+		w->updateMultiplayerStatus(m_windows.count() < MAX_GBAS);
+	}
 	return w;
 }
 

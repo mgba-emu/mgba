@@ -1088,11 +1088,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	fileMenu->addSeparator();
-	QAction* multiWindow = new QAction(tr("New multiplayer window"), fileMenu);
-	connect(multiWindow, &QAction::triggered, [this]() {
+	m_multiWindow = new QAction(tr("New multiplayer window"), fileMenu);
+	connect(m_multiWindow, &QAction::triggered, [this]() {
 		GBAApp::app()->newWindow();
 	});
-	addControlledAction(fileMenu, multiWindow, "multiWindow");
+	addControlledAction(fileMenu, m_multiWindow, "multiWindow");
 
 #ifndef Q_OS_MAC
 	fileMenu->addSeparator();
