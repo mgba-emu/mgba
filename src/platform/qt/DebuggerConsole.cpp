@@ -17,10 +17,10 @@ DebuggerConsole::DebuggerConsole(DebuggerConsoleController* controller, QWidget*
 {
 	m_ui.setupUi(this);
 
-	connect(m_ui.prompt, SIGNAL(returnPressed()), this, SLOT(postLine()));
-	connect(controller, SIGNAL(log(const QString&)), this, SLOT(log(const QString&)));
-	connect(m_ui.breakpoint, SIGNAL(clicked()), controller, SLOT(attach()));
-	connect(m_ui.breakpoint, SIGNAL(clicked()), controller, SLOT(breakInto()));
+	connect(m_ui.prompt, &QLineEdit::returnPressed, this, &DebuggerConsole::postLine);
+	connect(controller, &DebuggerConsoleController::log, this, &DebuggerConsole::log);
+	connect(m_ui.breakpoint, &QAbstractButton::clicked, controller, &DebuggerController::attach);
+	connect(m_ui.breakpoint, &QAbstractButton::clicked, controller, &DebuggerController::breakInto);
 }
 
 void DebuggerConsole::log(const QString& line) {

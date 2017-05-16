@@ -21,7 +21,7 @@ MessagePainter::MessagePainter(QObject* parent)
 	m_messageFont.setFamily("Source Code Pro");
 	m_messageFont.setStyleHint(QFont::Monospace);
 	m_messageFont.setPixelSize(13);
-	connect(&m_messageTimer, SIGNAL(timeout()), this, SLOT(clearMessage()));
+	connect(&m_messageTimer, &QTimer::timeout, this, &MessagePainter::clearMessage);
 	m_messageTimer.setSingleShot(true);
 	m_messageTimer.setInterval(5000);
 

@@ -32,7 +32,7 @@ AssetTile::AssetTile(QWidget* parent)
 	m_ui.color->setDimensions(QSize(1, 1));
 	m_ui.color->setSize(50);
 
-	connect(m_ui.preview, SIGNAL(indexPressed(int)), this, SLOT(selectColor(int)));
+	connect(m_ui.preview, &Swatch::indexPressed, this, &AssetTile::selectColor);
 
 	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 

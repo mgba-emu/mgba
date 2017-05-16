@@ -30,7 +30,7 @@ void DebuggerController::attach() {
 		mDebuggerEnter(m_debugger, DEBUGGER_ENTER_ATTACHED, 0);
 	} else {
 		QObject::disconnect(m_autoattach);
-		m_autoattach = connect(m_gameController, SIGNAL(gameStarted(mCoreThread*, const QString&)), this, SLOT(attach()));
+		m_autoattach = connect(m_gameController, &GameController::gameStarted, this, &DebuggerController::attach);
 	}
 }
 

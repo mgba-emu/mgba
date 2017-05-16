@@ -57,7 +57,7 @@ LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 	}
 
 	QAction* escape = new QAction(this);
-	escape->connect(escape, SIGNAL(triggered()), this, SLOT(close()));
+	connect(escape, &QAction::triggered, this, &QWidget::close);
 	escape->setShortcut(QKeySequence("Esc"));
 	escape->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 	addAction(escape);

@@ -31,12 +31,12 @@ CheatsView::CheatsView(GameController* controller, QWidget* parent)
 	m_ui.cheatList->installEventFilter(this);
 	m_ui.cheatList->setModel(&m_model);
 
-	connect(m_ui.load, SIGNAL(clicked()), this, SLOT(load()));
-	connect(m_ui.save, SIGNAL(clicked()), this, SLOT(save()));
-	connect(m_ui.addSet, SIGNAL(clicked()), this, SLOT(addSet()));
-	connect(m_ui.remove, SIGNAL(clicked()), this, SLOT(removeSet()));
-	connect(controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(close()));
-	connect(controller, SIGNAL(stateLoaded(mCoreThread*)), &m_model, SLOT(invalidated()));
+	connect(m_ui.load, &QPushButton::clicked, this, &CheatsView::load);
+	connect(m_ui.save, &QPushButton::clicked, this, &CheatsView::save);
+	connect(m_ui.addSet, &QPushButton::clicked, this, &CheatsView::addSet);
+	connect(m_ui.remove, &QPushButton::clicked, this, &CheatsView::removeSet);
+	connect(controller, &GameController::gameStopped, this, &CheatsView::close);
+	connect(controller, &GameController::stateLoaded, &m_model, &CheatsModel::invalidated);
 
 	QPushButton* add;
 	switch (controller->platform()) {

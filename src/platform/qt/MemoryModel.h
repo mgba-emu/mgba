@@ -43,7 +43,7 @@ public slots:
 	void jumpToAddress(const QString& hex);
 	void jumpToAddress(uint32_t);
 
-	void loadTBL(const QString& path);
+	void loadTBLFromPath(const QString& path);
 	void loadTBL();
 
 	void copy();
