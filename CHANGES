@@ -25,6 +25,7 @@ Bugfixes:
  - Core: Fix crash with rewind if savestates shrink
  - Test: Fix crash when loading invalid file
  - GBA Hardware: Fix crash if a savestate lies about game hardware
+ - Qt: Disable "New multiplayer window" when MAX_GBAS is reached (fixes mgba.io/i/107)
 Misc:
  - Qt: Improved HiDPI support
  - Feature: Support ImageMagick 7
@@ -34,6 +35,7 @@ Misc:
  - Qt: Add .gb/.gbc files to the extension list in Info.plist
  - Feature: Make -l option explicit
  - Util: Tune patch-fast extent sizes
+ - Qt: Relax hard dependency on OpenGL
 
 0.5.2: (2016-12-31)
 Bugfixes:
