@@ -50,6 +50,8 @@ public:
 
 	void resizeFrame(const QSize& size);
 
+	void updateMultiplayerStatus(bool canOpenAnother) { m_multiWindow->setEnabled(canOpenAnother); }
+
 signals:
 	void startDrawing(mCoreThread*);
 	void shutdown();
@@ -160,6 +162,7 @@ private:
 #ifdef M_CORE_GBA
 	QList<QAction*> m_gbaActions;
 #endif
+	QAction* m_multiWindow;
 	QMap<int, QAction*> m_frameSizes;
 	LogController m_log;
 	LogView* m_logView;
