@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "DisplayGL.h"
 
+#if defined(BUILD_GL) || defined(BUILD_GLES)
+
 #include <QApplication>
 #include <QResizeEvent>
 #include <QTimer>
@@ -470,3 +472,5 @@ void PainterGL::clearShaders() {
 VideoShader* PainterGL::shaders() {
 	return &m_shader;
 }
+
+#endif
