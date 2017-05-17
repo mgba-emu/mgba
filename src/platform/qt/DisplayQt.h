@@ -40,10 +40,10 @@ protected:
 	virtual void paintEvent(QPaintEvent*) override;
 
 private:
-	bool m_isDrawing;
+	bool m_isDrawing = false;
 	unsigned m_width;
 	unsigned m_height;
-	QImage m_backing;
+	QImage m_backing{nullptr};
 };
 
 }

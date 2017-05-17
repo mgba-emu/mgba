@@ -71,7 +71,7 @@ private:
 	QList<Window*> m_windows;
 	MultiplayerController m_multiplayer;
 
-	NoIntroDB* m_db;
+	NoIntroDB* m_db = nullptr;
 #ifdef USE_SQLITE3
 	QThread m_parseThread;
 #endif

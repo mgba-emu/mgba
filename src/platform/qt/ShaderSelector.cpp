@@ -31,7 +31,6 @@ ShaderSelector::ShaderSelector(Display* display, ConfigController* config, QWidg
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_display(display)
 	, m_config(config)
-	, m_shaderPath("")
 {
 	m_ui.setupUi(this);
 

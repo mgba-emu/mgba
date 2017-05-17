@@ -14,8 +14,6 @@ using namespace QGBA;
 
 LogView::LogView(LogController* log, QWidget* parent)
 	: QWidget(parent)
-	, m_lines(0)
-	, m_lineLimit(DEFAULT_LINE_LIMIT)
 {
 	m_ui.setupUi(this);
 	connect(m_ui.levelDebug, &QAbstractButton::toggled, [this](bool set) {

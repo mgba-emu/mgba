@@ -90,7 +90,6 @@ QString ConfigController::s_configDir;
 
 ConfigController::ConfigController(QObject* parent)
 	: QObject(parent)
-	, m_opts{}
 {
 	QString fileName = configDir();
 	fileName.append(QDir::separator());

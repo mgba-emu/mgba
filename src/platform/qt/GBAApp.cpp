@@ -33,7 +33,6 @@ mLOG_DEFINE_CATEGORY(QT, "Qt", "platform.qt");
 
 GBAApp::GBAApp(int& argc, char* argv[])
 	: QApplication(argc, argv)
-	, m_db(nullptr)
 {
 	g_app = this;
 

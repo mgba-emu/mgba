@@ -68,11 +68,11 @@ protected:
 private:
 	void resizePainter();
 
-	bool m_isDrawing;
+	bool m_isDrawing = false;
 	QGLWidget* m_gl;
 	PainterGL* m_painter;
-	QThread* m_drawThread;
-	mCoreThread* m_context;
+	QThread* m_drawThread = nullptr;
+	mCoreThread* m_context = nullptr;
 };
 
 class PainterGL : public QObject {

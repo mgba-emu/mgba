@@ -68,8 +68,8 @@ private:
 
 	KeyEditor* keyById(GBAKey);
 
-	QComboBox* m_profileSelect;
-	QWidget* m_clear;
+	QComboBox* m_profileSelect = nullptr;
+	QWidget* m_clear = nullptr;
 	QWidget* m_buttons;
 	KeyEditor* m_keyDU;
 	KeyEditor* m_keyDD;

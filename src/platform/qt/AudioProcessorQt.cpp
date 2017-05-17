@@ -17,9 +17,6 @@ using namespace QGBA;
 
 AudioProcessorQt::AudioProcessorQt(QObject* parent)
 	: AudioProcessor(parent)
-	, m_audioOutput(nullptr)
-	, m_device(nullptr)
-	, m_sampleRate(44100)
 {
 }
 

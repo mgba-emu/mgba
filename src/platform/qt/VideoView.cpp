@@ -45,13 +45,6 @@ bool VideoView::Preset::compatible(const Preset& other) const {
 
 VideoView::VideoView(QWidget* parent)
 	: QWidget(parent)
-	, m_audioCodecCstr(nullptr)
-	, m_videoCodecCstr(nullptr)
-	, m_containerCstr(nullptr)
-	, m_nativeWidth(0)
-	, m_nativeHeight(0)
-	, m_width(1)
-	, m_height(1)
 {
 	m_ui.setupUi(this);
 

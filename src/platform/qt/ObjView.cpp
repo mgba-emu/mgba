@@ -27,9 +27,6 @@ using namespace QGBA;
 ObjView::ObjView(GameController* controller, QWidget* parent)
 	: AssetView(controller, parent)
 	, m_controller(controller)
-	, m_tileStatus{}
-	, m_objId(0)
-	, m_objInfo{}
 {
 	m_ui.setupUi(this);
 	m_ui.tile->setController(controller);
