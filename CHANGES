@@ -117,6 +117,7 @@ Misc:
  - Core: Move rewind diffing to its own thread
  - Util: Tune patch-fast extent sizes
  - Qt: Relax hard dependency on OpenGL
+ - GB Video: Improved video timings
 
 0.5.2: (2016-12-31)
 Bugfixes:

@@ -215,7 +215,7 @@ void _endMode2(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	_cleanOAM(video, video->ly);
 	video->x = 0;
 	video->dotClock = timing->masterCycles - cyclesLate;
-	int32_t next = GB_VIDEO_MODE_3_LENGTH_BASE + video->objMax * 11 - (video->p->memory.io[REG_SCX] & 7);
+	int32_t next = GB_VIDEO_MODE_3_LENGTH_BASE + video->objMax * 6 - (video->p->memory.io[REG_SCX] & 7);
 	video->mode = 3;
 	video->modeEvent.callback = _endMode3;
 	GBRegisterSTAT oldStat = video->stat;
@@ -245,7 +245,7 @@ void _endMode3(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		GBUpdateIRQs(video->p);
 	}
 	video->p->memory.io[REG_STAT] = video->stat;
-	int32_t next = GB_VIDEO_MODE_0_LENGTH_BASE - video->objMax * 11;
+	int32_t next = GB_VIDEO_MODE_0_LENGTH_BASE - video->objMax * 6;
 	mTimingSchedule(timing, &video->modeEvent, (next << video->p->doubleSpeed) - cyclesLate);
 }
 
