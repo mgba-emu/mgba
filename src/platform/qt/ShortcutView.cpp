@@ -15,8 +15,6 @@ using namespace QGBA;
 
 ShortcutView::ShortcutView(QWidget* parent)
 	: QWidget(parent)
-	, m_controller(nullptr)
-	, m_input(nullptr)
 {
 	m_ui.setupUi(this);
 	m_ui.keyEdit->setValueKey(0);

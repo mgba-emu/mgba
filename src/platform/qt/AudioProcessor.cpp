@@ -44,8 +44,6 @@ AudioProcessor* AudioProcessor::create() {
 
 AudioProcessor::AudioProcessor(QObject* parent)
 	: QObject(parent)
-	, m_context(nullptr)
-	, m_samples(2048)
 {
 }
 

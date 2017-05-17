@@ -15,7 +15,6 @@ using namespace QGBA;
 Swatch::Swatch(QWidget* parent)
 	: QWidget(parent)
 {
-	m_size = 10;
 }
 
 void Swatch::setSize(int size) {

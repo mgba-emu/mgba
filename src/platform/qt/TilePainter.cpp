@@ -13,9 +13,7 @@ using namespace QGBA;
 
 TilePainter::TilePainter(QWidget* parent)
 	: QWidget(parent)
-	, m_size(8)
 {
-	m_backing = QPixmap(256, 768);
 	m_backing.fill(Qt::transparent);
 	resize(256, 768);
 	setTileCount(3072);

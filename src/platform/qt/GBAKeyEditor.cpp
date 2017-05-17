@@ -28,8 +28,6 @@ const qreal GBAKeyEditor::DPAD_HEIGHT = 0.12;
 
 GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString& profile, QWidget* parent)
 	: QWidget(parent)
-	, m_profileSelect(nullptr)
-	, m_clear(nullptr)
 	, m_type(type)
 	, m_profile(profile)
 	, m_controller(controller)

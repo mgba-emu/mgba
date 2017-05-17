@@ -16,10 +16,6 @@ using namespace QGBA;
 
 KeyEditor::KeyEditor(QWidget* parent)
 	: QLineEdit(parent)
-	, m_key(-1)
-	, m_axis(-1)
-	, m_hat(-1)
-	, m_button(false)
 	, m_direction(GamepadAxisEvent::NEUTRAL)
 	, m_hatDirection(GamepadHatEvent::CENTER)
 {

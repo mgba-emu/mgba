@@ -19,8 +19,6 @@ using namespace QGBA;
 TileView::TileView(GameController* controller, QWidget* parent)
 	: AssetView(controller, parent)
 	, m_controller(controller)
-	, m_tileStatus{}
-	, m_paletteId(0)
 {
 	m_ui.setupUi(this);
 	m_ui.tile->setController(controller);

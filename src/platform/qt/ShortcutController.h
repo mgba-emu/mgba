@@ -69,14 +69,14 @@ private:
 		}
 
 	private:
-		QAction* m_action;
-		int m_shortcut;
-		QMenu* m_menu;
+		QAction* m_action = nullptr;
+		int m_shortcut = 0;
+		QMenu* m_menu = nullptr;
 		Functions m_functions;
 		QString m_name;
 		QString m_visibleName;
-		int m_button;
-		int m_axis;
+		int m_button = -1;
+		int m_axis = -1;
 		GamepadAxisEvent::Direction m_direction;
 		QList<ShortcutItem> m_items;
 		ShortcutItem* m_parent;
@@ -133,14 +133,14 @@ private:
 	void onSubitems(ShortcutItem*, std::function<void(ShortcutItem*)> func);
 	void updateKey(ShortcutItem* item, int keySequence);
 
-	ShortcutItem m_rootMenu;
+	ShortcutItem m_rootMenu{nullptr};
 	QMap<QMenu*, ShortcutItem*> m_menuMap;
 	QMap<int, ShortcutItem*> m_buttons;
 	QMap<QPair<int, GamepadAxisEvent::Direction>, ShortcutItem*> m_axes;
 	QMap<int, ShortcutItem*> m_heldKeys;
-	ConfigController* m_config;
+	ConfigController* m_config = nullptr;
 	QString m_profileName;
-	const InputProfile* m_profile;
+	const InputProfile* m_profile = nullptr;
 };
 
 }

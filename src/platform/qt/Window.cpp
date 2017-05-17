@@ -63,30 +63,11 @@ using namespace QGBA;
 
 Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	: QMainWindow(parent)
-	, m_log(0)
 	, m_logView(new LogView(&m_log))
-#ifdef USE_DEBUGGERS
-	, m_console(nullptr)
-#endif
-	, m_stateWindow(nullptr)
 	, m_screenWidget(new WindowBackground())
-	, m_logo(":/res/mgba-1024.png")
 	, m_config(config)
 	, m_inputController(playerId, this)
-	, m_mruMenu(nullptr)
 	, m_shortcutController(new ShortcutController(this))
-	, m_fullscreenOnStart(false)
-	, m_autoresume(false)
-	, m_wasOpened(false)
-#ifdef USE_FFMPEG
-	, m_videoView(nullptr)
-#endif
-#ifdef USE_MAGICK
-	, m_gifView(nullptr)
-#endif
-#ifdef USE_GDB_STUB
-	, m_gdbController(nullptr)
-#endif
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);

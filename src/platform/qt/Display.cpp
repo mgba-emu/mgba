@@ -53,9 +53,6 @@ Display* Display::create(QWidget* parent) {
 
 Display::Display(QWidget* parent)
 	: QWidget(parent)
-	, m_lockAspectRatio(false)
-	, m_lockIntegerScaling(false)
-	, m_filter(false)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 #ifdef M_CORE_GB

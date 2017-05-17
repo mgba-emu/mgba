@@ -35,8 +35,8 @@ private:
 	Ui::TileView m_ui;
 
 	GameController* m_controller;
-	mTileCacheEntry m_tileStatus[3072 * 32]; // TODO: Correct size
-	int m_paletteId;
+	mTileCacheEntry m_tileStatus[3072 * 32] = {}; // TODO: Correct size
+	int m_paletteId = 0;
 };
 
 }

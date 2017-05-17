@@ -27,10 +27,7 @@ using namespace QGBA;
 
 DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	: Display(parent)
-	, m_isDrawing(false)
 	, m_gl(new EmptyGLWidget(format, this))
-	, m_drawThread(nullptr)
-	, m_context(nullptr)
 {
 	m_painter = new PainterGL(format.majorVersion() < 2 ? 1 : m_gl->format().majorVersion(), m_gl);
 	m_gl->setMouseTracking(true);

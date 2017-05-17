@@ -21,10 +21,6 @@ using namespace QGBA;
 
 AssetTile::AssetTile(QWidget* parent)
 	: QGroupBox(parent)
-	, m_tileCache(nullptr)
-	, m_paletteId(0)
-	, m_paletteSet(0)
-	, m_index(0)
 {
 	m_ui.setupUi(this);
 

@@ -164,41 +164,41 @@ private:
 #endif
 	QAction* m_multiWindow;
 	QMap<int, QAction*> m_frameSizes;
-	LogController m_log;
+	LogController m_log{0};
 	LogView* m_logView;
 #ifdef USE_DEBUGGERS
-	DebuggerConsoleController* m_console;
+	DebuggerConsoleController* m_console = nullptr;
 #endif
-	LoadSaveState* m_stateWindow;
+	LoadSaveState* m_stateWindow = nullptr;
 	WindowBackground* m_screenWidget;
-	QPixmap m_logo;
+	QPixmap m_logo{":/res/mgba-1024.png"};
 	ConfigController* m_config;
 	InputController m_inputController;
 	QList<QDateTime> m_frameList;
 	QTimer m_fpsTimer;
 	QList<QString> m_mruFiles;
-	QMenu* m_mruMenu;
+	QMenu* m_mruMenu = nullptr;
 	QMenu* m_videoLayers;
 	QMenu* m_audioChannels;
 	ShortcutController* m_shortcutController;
 	ShaderSelector* m_shaderView;
-	bool m_fullscreenOnStart;
+	bool m_fullscreenOnStart = false;
 	QTimer m_focusCheck;
-	bool m_autoresume;
-	bool m_wasOpened;
+	bool m_autoresume = false;
+	bool m_wasOpened = false;
 
 	bool m_hitUnimplementedBiosCall;
 
 #ifdef USE_FFMPEG
-	VideoView* m_videoView;
+	VideoView* m_videoView = nullptr;
 #endif
 
 #ifdef USE_MAGICK
-	GIFView* m_gifView;
+	GIFView* m_gifView = nullptr;
 #endif
 
 #ifdef USE_GDB_STUB
-	GDBController* m_gdbController;
+	GDBController* m_gdbController = nullptr;
 #endif
 
 #ifdef USE_SQLITE3

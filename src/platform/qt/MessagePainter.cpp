@@ -15,8 +15,6 @@ using namespace QGBA;
 
 MessagePainter::MessagePainter(QObject* parent)
 	: QObject(parent)
-	, m_messageTimer(this)
-	, m_scaleFactor(1)
 {
 	m_messageFont.setFamily("Source Code Pro");
 	m_messageFont.setStyleHint(QFont::Monospace);
