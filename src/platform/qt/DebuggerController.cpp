@@ -11,8 +11,8 @@ using namespace QGBA;
 
 DebuggerController::DebuggerController(GameController* controller, mDebugger* debugger, QObject* parent)
 	: QObject(parent)
-	, m_gameController(controller)
 	, m_debugger(debugger)
+	, m_gameController(controller)
 {
 }
 
