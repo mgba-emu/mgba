@@ -13,8 +13,8 @@ using namespace QGBA;
 
 AssetView::AssetView(GameController* controller, QWidget* parent)
 	: QWidget(parent)
-	, m_controller(controller)
 	, m_tileCache(controller->tileCache())
+	, m_controller(controller)
 {
 	m_updateTimer.setSingleShot(true);
 	m_updateTimer.setInterval(1);

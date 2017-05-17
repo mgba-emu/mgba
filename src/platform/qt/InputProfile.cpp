@@ -179,8 +179,6 @@ constexpr InputProfile::InputProfile(const char* name,
 		keys.keyR,
 		keys.keyL,
 	}
-	, m_shortcutButtons(shortcutButtons)
-	, m_shortcutAxes(shortcutAxes)
 	, m_axes {
 		axes.keyA,
 		axes.keyB,
@@ -193,6 +191,8 @@ constexpr InputProfile::InputProfile(const char* name,
 		axes.keyR,
 		axes.keyL,
 	}
+	, m_shortcutButtons(shortcutButtons)
+	, m_shortcutAxes(shortcutAxes)
 	, m_tiltAxis(tiltAxis)
 	, m_gyroAxis(gyroAxis)
 	, m_gyroSensitivity(gyroSensitivity)

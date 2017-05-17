@@ -72,9 +72,9 @@ QString LogController::toString(int level) {
 }
 
 LogController::Stream::Stream(LogController* controller, int level, int category)
-	: m_log(controller)
-	, m_level(level)
+	: m_level(level)
 	, m_category(category)
+	, m_log(controller)
 {
 }
 

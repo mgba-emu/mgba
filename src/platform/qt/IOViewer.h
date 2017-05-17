@@ -21,16 +21,16 @@ Q_OBJECT
 public:
 	struct RegisterItem {
 		RegisterItem(const QString& description, uint start, uint size = 1, bool readonly = false)
-			: description(description)
-			, start(start)
+			: start(start)
 			, size(size)
-			, readonly(readonly) {}
+			, readonly(readonly)
+			, description(description) {}
 		RegisterItem(const QString& description, uint start, uint size, QStringList items, bool readonly = false)
-			: description(description)
-			, start(start)
+			: start(start)
 			, size(size)
-			, items(items)
-			, readonly(readonly) {}
+			, readonly(readonly)
+			, description(description)
+			, items(items) {}
 		uint start;
 		uint size;
 		bool readonly;
