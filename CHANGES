@@ -56,6 +56,7 @@ Bugfixes:
  - GBA Hardware: Fix crash if a savestate lies about game hardware
  - Test: Fix crash when fuzzing fails to load a file
  - Qt: Disable "New multiplayer window" when MAX_GBAS is reached (fixes mgba.io/i/107)
+ - LR35902: Fix decoding LD r, $imm and 0-valued immediates (fixes mgba.io/i/735)
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
