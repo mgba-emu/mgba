@@ -303,6 +303,7 @@ else()
 	endif()
 	set(DISABLE_FRONTENDS ON)
 	set(MINIMAL_CORE ON)
+	set(ENABLE_EXTRA ON)
 endif()
 
 check_function_exists(chmod HAVE_CHMOD)
@@ -664,19 +665,30 @@ list(APPEND TEST_SRC ${UTIL_TEST_SRC})
 
 set(SRC ${CORE_SRC} ${VFS_SRC})
 if(NOT MINIMAL_CORE)
+	set(ENABLE_EXTRA ON)
 	if(M_CORE_GBA)
 		list(APPEND SRC
-			${GBA_RR_SRC}
-			${GBA_EXTRA_SRC}
 			${GBA_SIO_SRC})
 	endif()
 	if(M_CORE_GB)
 		list(APPEND SRC
-			${GB_EXTRA_SRC}
 			${GB_SIO_SRC})
 	endif()
 	list(APPEND SRC
-		${FEATURE_SRC}
+		${FEATURE_SRC})
+endif()
+
+if(ENABLE_EXTRA)
+	if(M_CORE_GBA)
+		list(APPEND SRC
+			${GBA_RR_SRC}
+			${GBA_EXTRA_SRC})
+	endif()
+	if(M_CORE_GB)
+		list(APPEND SRC
+			${GB_EXTRA_SRC})
+	endif()
+	list(APPEND SRC
 		${EXTRA_SRC})
 endif()
 
