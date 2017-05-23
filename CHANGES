@@ -18,6 +18,8 @@ Features:
  - Add option to lock video to integer scaling
  - Video log recording for testing and bug reporting
  - Library view
+ - Debugger: Segment/bank support
+ - GB: Symbol table support
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
