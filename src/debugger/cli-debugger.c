@@ -137,6 +137,10 @@ static void _disassemble(struct CLIDebugger* debugger, struct CLIDebugVector* dv
 
 static void _print(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	for (; dv; dv = dv->next) {
+		if (dv->segmentValue >= 0) {
+			debugger->backend->printf(debugger->backend, " $%02X:%04X", dv->segmentValue, dv->intValue);
+			continue;
+		}
 		debugger->backend->printf(debugger->backend, " %u", dv->intValue);
 	}
 	debugger->backend->printf(debugger->backend, "\n");
