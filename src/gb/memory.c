@@ -62,6 +62,7 @@ void GBMemoryInit(struct GB* gb) {
 	cpu->memory.cpuLoad8 = GBLoad8;
 	cpu->memory.load8 = GBLoad8;
 	cpu->memory.store8 = GBStore8;
+	cpu->memory.currentSegment = GBCurrentSegment;
 	cpu->memory.setActiveRegion = GBSetActiveRegion;
 
 	gb->memory.wram = 0;
@@ -271,6 +272,37 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 		}
 	}
 }
+
+int GBCurrentSegment(struct LR35902Core* cpu, uint16_t address) {
+	struct GB* gb = (struct GB*) cpu->master;
+	struct GBMemory* memory = &gb->memory;
+	switch (address >> 12) {
+	case GB_REGION_CART_BANK0:
+	case GB_REGION_CART_BANK0 + 1:
+	case GB_REGION_CART_BANK0 + 2:
+	case GB_REGION_CART_BANK0 + 3:
+		return 0;
+	case GB_REGION_CART_BANK1:
+	case GB_REGION_CART_BANK1 + 1:
+	case GB_REGION_CART_BANK1 + 2:
+	case GB_REGION_CART_BANK1 + 3:
+		return memory->currentBank;
+	case GB_REGION_VRAM:
+	case GB_REGION_VRAM + 1:
+		return gb->video.vramCurrentBank;
+	case GB_REGION_EXTERNAL_RAM:
+	case GB_REGION_EXTERNAL_RAM + 1:
+		return memory->sramCurrentBank;
+	case GB_REGION_WORKING_RAM_BANK0:
+	case GB_REGION_WORKING_RAM_BANK0 + 2:
+		return 0;
+	case GB_REGION_WORKING_RAM_BANK1:
+		return memory->wramCurrentBank;
+	default:
+		return 0;
+	}
+}
+
 uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;

@@ -48,8 +48,8 @@ static void ARMDebuggerDeinit(struct mDebuggerPlatform* platform);
 
 static void ARMDebuggerEnter(struct mDebuggerPlatform* d, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info);
 
-static void ARMDebuggerSetBreakpoint(struct mDebuggerPlatform*, uint32_t address);
-static void ARMDebuggerClearBreakpoint(struct mDebuggerPlatform*, uint32_t address);
+static void ARMDebuggerSetBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
+static void ARMDebuggerClearBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void ARMDebuggerSetWatchpoint(struct mDebuggerPlatform*, uint32_t address, enum mWatchpointType type);
 static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform*, uint32_t address);
 static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform*);
@@ -157,14 +157,16 @@ void ARMDebuggerClearSoftwareBreakpoint(struct mDebuggerPlatform* d, uint32_t ad
 	}
 }
 
-static void ARMDebuggerSetBreakpoint(struct mDebuggerPlatform* d, uint32_t address) {
+static void ARMDebuggerSetBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
+	UNUSED(segment);
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	struct ARMDebugBreakpoint* breakpoint = ARMDebugBreakpointListAppend(&debugger->breakpoints);
 	breakpoint->address = address;
 	breakpoint->isSw = false;
 }
 
-static void ARMDebuggerClearBreakpoint(struct mDebuggerPlatform* d, uint32_t address) {
+static void ARMDebuggerClearBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
+	UNUSED(segment);
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	struct ARMDebugBreakpointList* breakpoints = &debugger->breakpoints;
 	size_t i;

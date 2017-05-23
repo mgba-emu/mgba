@@ -409,7 +409,7 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->setBreakpoint(debugger->d.platform, address);
+	debugger->d.platform->setBreakpoint(debugger->d.platform, address, dv->segmentValue);
 }
 
 static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -457,7 +457,7 @@ static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->clearBreakpoint(debugger->d.platform, address);
+	debugger->d.platform->clearBreakpoint(debugger->d.platform, address, dv->segmentValue);
 	if (debugger->d.platform->clearWatchpoint) {
 		debugger->d.platform->clearWatchpoint(debugger->d.platform, address);
 	}

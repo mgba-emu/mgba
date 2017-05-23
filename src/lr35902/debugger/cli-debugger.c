@@ -48,7 +48,7 @@ static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVect
 
 	size_t i;
 	for (i = 0; i < size; ++i) {
-		address = _printLine(debugger->p, address, -1);
+		address = _printLine(debugger->p, address, dv->segmentValue);
 	}
 }
 
@@ -58,7 +58,7 @@ static inline uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address
 	char disassembly[48];
 	char* disPtr = disassembly;
 	if (segment >= 0) {
-		be->printf(be, "%02X:  ", segment);
+		be->printf(be, "%02X:", segment);
 	}
 	be->printf(be, "%04X:  ", address);
 	uint8_t instruction;
@@ -85,7 +85,7 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	be->printf(be, "H: %02X L: %02X (HL: %04X)\n", cpu->h, cpu->l, cpu->hl);
 	be->printf(be, "PC: %04X SP: %04X\n", cpu->pc, cpu->sp);
 	_printFlags(be, cpu->f);
-	_printLine(debugger->p, cpu->pc, -1);
+	_printLine(debugger->p, cpu->pc, cpu->memory.currentSegment(cpu, cpu->pc));
 }
 
 static uint32_t _lookupPlatformIdentifier(struct CLIDebuggerSystem* debugger, const char* name, struct CLIDebugVector* dv) {

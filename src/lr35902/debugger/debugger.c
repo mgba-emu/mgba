@@ -27,7 +27,9 @@ static void LR35902DebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	if (!breakpoint) {
 		return;
 	}
-	// TODO: Segments
+	if (breakpoint->segment >= 0 && debugger->cpu->memory.currentSegment(debugger->cpu, breakpoint->address) != breakpoint->segment) {
+		return;
+	}
 	struct mDebuggerEntryInfo info = {
 		.address = breakpoint->address
 	};
@@ -39,8 +41,8 @@ static void LR35902DebuggerDeinit(struct mDebuggerPlatform* platform);
 
 static void LR35902DebuggerEnter(struct mDebuggerPlatform* d, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info);
 
-static void LR35902DebuggerSetBreakpoint(struct mDebuggerPlatform*, uint32_t address);
-static void LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform*, uint32_t address);
+static void LR35902DebuggerSetBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
+static void LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void LR35902DebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool LR35902DebuggerHasBreakpoints(struct mDebuggerPlatform*);
 
@@ -79,19 +81,20 @@ static void LR35902DebuggerEnter(struct mDebuggerPlatform* platform, enum mDebug
 	cpu->nextEvent = cpu->cycles;
 }
 
-static void LR35902DebuggerSetBreakpoint(struct mDebuggerPlatform* d, uint32_t address) {
+static void LR35902DebuggerSetBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
 	struct LR35902DebugBreakpoint* breakpoint = LR35902DebugBreakpointListAppend(&debugger->breakpoints);
 	breakpoint->address = address;
-	breakpoint->segment = -1;
+	breakpoint->segment = segment;
 }
 
-static void LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform* d, uint32_t address) {
+static void LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
 	struct LR35902DebugBreakpointList* breakpoints = &debugger->breakpoints;
 	size_t i;
 	for (i = 0; i < LR35902DebugBreakpointListSize(breakpoints); ++i) {
-		if (LR35902DebugBreakpointListGetPointer(breakpoints, i)->address == address) {
+		struct LR35902DebugBreakpoint* breakpoint = LR35902DebugBreakpointListGetPointer(breakpoints, i);
+		if (breakpoint->address == address && breakpoint->segment == segment) {
 			LR35902DebugBreakpointListShift(breakpoints, i, 1);
 		}
 	}

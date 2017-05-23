@@ -161,6 +161,8 @@ void GBMemorySwitchWramBank(struct GBMemory* memory, int bank);
 uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address);
 void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);
 
+int GBCurrentSegment(struct LR35902Core* cpu, uint16_t address);
+
 uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment);
 
 void GBMemoryDMA(struct GB* gb, uint16_t base);

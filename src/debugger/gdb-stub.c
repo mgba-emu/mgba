@@ -495,7 +495,7 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 		ARMDebuggerSetSoftwareBreakpoint(stub->d.platform, address, kind == 2 ? MODE_THUMB : MODE_ARM);
 		break;
 	case '1':
-		stub->d.platform->setBreakpoint(stub->d.platform, address);
+		stub->d.platform->setBreakpoint(stub->d.platform, address, -1);
 		break;
 	case '2':
 		stub->d.platform->setWatchpoint(stub->d.platform, address, WATCHPOINT_WRITE);
@@ -524,7 +524,7 @@ static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
 		ARMDebuggerClearSoftwareBreakpoint(stub->d.platform, address);
 		break;
 	case '1':
-		stub->d.platform->clearBreakpoint(stub->d.platform, address);
+		stub->d.platform->clearBreakpoint(stub->d.platform, address, -1);
 		break;
 	case '2':
 	case '3':
