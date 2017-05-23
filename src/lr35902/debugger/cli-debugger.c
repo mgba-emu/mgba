@@ -31,11 +31,13 @@ static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVect
 	struct LR35902Core* cpu = debugger->p->d.core->cpu;
 
 	uint16_t address;
+	int segment = -1;
 	size_t size;
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
 		address = cpu->pc;
 	} else {
 		address = dv->intValue;
+		segment = dv->segmentValue;
 		dv = dv->next;
 	}
 
@@ -48,7 +50,7 @@ static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVect
 
 	size_t i;
 	for (i = 0; i < size; ++i) {
-		address = _printLine(debugger->p, address, dv->segmentValue);
+		address = _printLine(debugger->p, address, segment);
 	}
 }
 
