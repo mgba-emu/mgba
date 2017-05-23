@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/debugger/cli-debugger.h>
 
+#include <mgba/internal/debugger/symbols.h>
+
 #include <mgba/core/core.h>
 #include <mgba/core/version.h>
 #include <mgba/internal/debugger/parser.h>
@@ -497,7 +499,11 @@ static uint32_t _performOperation(enum Operation operation, uint32_t current, ui
 static void _lookupIdentifier(struct mDebugger* debugger, const char* name, struct CLIDebugVector* dv) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	if (cliDebugger->system) {
-		uint32_t value = cliDebugger->system->lookupPlatformIdentifier(cliDebugger->system, name, dv);
+		uint32_t value;
+		if (debugger->core->symbolTable && mDebuggerSymbolLookup(debugger->core->symbolTable, name, &dv->intValue, &dv->segmentValue)) {
+			return;
+		}
+		value = cliDebugger->system->lookupPlatformIdentifier(cliDebugger->system, name, dv);
 		if (dv->type != CLIDV_ERROR_TYPE) {
 			dv->intValue = value;
 			return;

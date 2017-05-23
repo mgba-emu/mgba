@@ -39,12 +39,14 @@ enum mCoreChecksumType {
 
 struct mCoreConfig;
 struct mCoreSync;
+struct mDebuggerSymbols;
 struct mStateExtdata;
 struct mVideoLogContext;
 struct mCore {
 	void* cpu;
 	void* board;
 	struct mDebugger* debugger;
+	struct mDebuggerSymbols* symbolTable;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct mDirectorySet dirs;
@@ -135,6 +137,8 @@ struct mCore {
 	struct CLIDebuggerSystem* (*cliDebuggerSystem)(struct mCore*);
 	void (*attachDebugger)(struct mCore*, struct mDebugger*);
 	void (*detachDebugger)(struct mCore*);
+
+	void (*loadSymbols)(struct mCore*, struct VFile*);
 #endif
 
 	struct mCheatDevice* (*cheatDevice)(struct mCore*);

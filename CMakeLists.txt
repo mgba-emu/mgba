@@ -395,6 +395,7 @@ find_feature(USE_SQLITE3 "sqlite3")
 set(DEBUGGER_SRC
 	${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/debugger.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/parser.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/symbols.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/cli-debugger.c)
 
 set(FEATURE_SRC)
@@ -603,7 +604,8 @@ if(M_CORE_GB)
 	list(APPEND DEBUGGER_SRC
 		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/cli-debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/debugger.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/gb/debugger/cli.c)
+		${CMAKE_CURRENT_SOURCE_DIR}/src/gb/debugger/cli.c
+		${CMAKE_CURRENT_SOURCE_DIR}/src/gb/debugger/symbols.c)
 	list(APPEND TEST_SRC
 		${LR35902_TEST_SRC}
 		${GB_TEST_SRC})

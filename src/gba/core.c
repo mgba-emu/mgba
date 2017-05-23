@@ -72,6 +72,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	core->cpu = cpu;
 	core->board = gba;
 	core->debugger = NULL;
+	core->symbolTable = NULL;
 	gbacore->overrides = NULL;
 	gbacore->debuggerPlatform = NULL;
 	gbacore->cheatDevice = NULL;
@@ -555,6 +556,10 @@ static void _GBACoreDetachDebugger(struct mCore* core) {
 	GBADetachDebugger(core->board);
 	core->debugger = NULL;
 }
+
+static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
+	// TODO
+}
 #endif
 
 static struct mCheatDevice* _GBACoreCheatDevice(struct mCore* core) {
@@ -747,6 +752,7 @@ struct mCore* GBACoreCreate(void) {
 	core->cliDebuggerSystem = _GBACoreCliDebuggerSystem;
 	core->attachDebugger = _GBACoreAttachDebugger;
 	core->detachDebugger = _GBACoreDetachDebugger;
+	core->loadSymbols = _GBACoreLoadSymbols;
 #endif
 	core->cheatDevice = _GBACoreCheatDevice;
 	core->savedataClone = _GBACoreSavedataClone;

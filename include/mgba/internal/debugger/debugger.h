@@ -94,6 +94,7 @@ struct mDebuggerPlatform {
 	void (*checkBreakpoints)(struct mDebuggerPlatform*);
 };
 
+struct mDebuggerSymbols;
 struct mDebugger {
 	struct mCPUComponent d;
 	struct mDebuggerPlatform* platform;
