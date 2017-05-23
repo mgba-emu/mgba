@@ -209,7 +209,12 @@ static void _readByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint8_t value = debugger->d.core->busRead8(debugger->d.core, address);
+	uint8_t value;
+	if (dv->segmentValue >= 0) {
+		value = debugger->d.core->rawRead8(debugger->d.core, address, dv->segmentValue);
+	} else {
+		value = debugger->d.core->busRead8(debugger->d.core, address);
+	}
 	debugger->backend->printf(debugger->backend, " 0x%02X\n", value);
 }
 
@@ -225,7 +230,12 @@ static void _readHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* d
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint16_t value = debugger->d.core->busRead16(debugger->d.core, address & ~1);
+	uint16_t value;
+	if (dv->segmentValue >= 0) {
+		value = debugger->d.core->rawRead16(debugger->d.core, address & -1, dv->segmentValue);
+	} else {
+		value = debugger->d.core->busRead16(debugger->d.core, address & ~1);
+	}
 	debugger->backend->printf(debugger->backend, " 0x%04X\n", value);
 }
 
@@ -235,7 +245,12 @@ static void _readWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint32_t value = debugger->d.core->busRead32(debugger->d.core, address & ~3);
+	uint32_t value;
+	if (dv->segmentValue >= 0) {
+		value = debugger->d.core->rawRead32(debugger->d.core, address & -3, dv->segmentValue);
+	} else {
+		value = debugger->d.core->busRead32(debugger->d.core, address & ~3);
+	}
 	debugger->backend->printf(debugger->backend, " 0x%08X\n", value);
 }
 
@@ -254,7 +269,11 @@ static void _writeByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_OVERFLOW);
 		return;
 	}
-	debugger->d.core->busWrite8(debugger->d.core, address, value);
+	if (dv->segmentValue >= 0) {
+		debugger->d.core->rawWrite8(debugger->d.core, address, value, dv->segmentValue);
+	} else {
+		debugger->d.core->busWrite8(debugger->d.core, address, value);
+	}
 }
 
 static void _writeHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -272,7 +291,11 @@ static void _writeHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_OVERFLOW);
 		return;
 	}
-	debugger->d.core->busWrite16(debugger->d.core, address, value);
+	if (dv->segmentValue >= 0) {
+		debugger->d.core->rawWrite16(debugger->d.core, address, value, dv->segmentValue);
+	} else {
+		debugger->d.core->busWrite16(debugger->d.core, address, value);
+	}
 }
 
 static void _writeWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -286,7 +309,11 @@ static void _writeWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 	}
 	uint32_t address = dv->intValue;
 	uint32_t value = dv->next->intValue;
-	debugger->d.core->busWrite32(debugger->d.core, address, value);
+	if (dv->segmentValue >= 0) {
+		debugger->d.core->rawWrite32(debugger->d.core, address, value, dv->segmentValue);
+	} else {
+		debugger->d.core->busWrite32(debugger->d.core, address, value);
+	}
 }
 
 static void _dumpByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -306,7 +333,12 @@ static void _dumpByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		}
 		debugger->backend->printf(debugger->backend, "0x%08X:", address);
 		for (; line > 0; --line, ++address, --words) {
-			uint32_t value = debugger->d.core->busRead8(debugger->d.core, address);
+			uint32_t value;
+			if (dv->segmentValue >= 0) {
+				value = debugger->d.core->rawRead8(debugger->d.core, address, dv->segmentValue);
+			} else {
+				value = debugger->d.core->busRead8(debugger->d.core, address);
+			}
 			debugger->backend->printf(debugger->backend, " %02X", value);
 		}
 		debugger->backend->printf(debugger->backend, "\n");
@@ -330,7 +362,12 @@ static void _dumpHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* d
 		}
 		debugger->backend->printf(debugger->backend, "0x%08X:", address);
 		for (; line > 0; --line, address += 2, --words) {
-			uint32_t value = debugger->d.core->busRead16(debugger->d.core, address);
+			uint32_t value;
+			if (dv->segmentValue >= 0) {
+				value = debugger->d.core->rawRead16(debugger->d.core, address, dv->segmentValue);
+			} else {
+				value = debugger->d.core->busRead16(debugger->d.core, address);
+			}
 			debugger->backend->printf(debugger->backend, " %04X", value);
 		}
 		debugger->backend->printf(debugger->backend, "\n");
@@ -354,7 +391,12 @@ static void _dumpWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		}
 		debugger->backend->printf(debugger->backend, "0x%08X:", address);
 		for (; line > 0; --line, address += 4, --words) {
-			uint32_t value = debugger->d.core->busRead32(debugger->d.core, address);
+			uint32_t value;
+			if (dv->segmentValue >= 0) {
+				value = debugger->d.core->rawRead32(debugger->d.core, address, dv->segmentValue);
+			} else {
+				value = debugger->d.core->busRead32(debugger->d.core, address);
+			}
 			debugger->backend->printf(debugger->backend, " %08X", value);
 		}
 		debugger->backend->printf(debugger->backend, "\n");
