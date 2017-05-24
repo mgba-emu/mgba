@@ -14,7 +14,6 @@
 namespace QGBA {
 
 class AudioProcessorSDL : public AudioProcessor {
-Q_OBJECT
 
 public:
 	AudioProcessorSDL(QObject* parent = nullptr);
