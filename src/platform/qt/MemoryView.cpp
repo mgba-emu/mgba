@@ -81,8 +81,10 @@ MemoryView::MemoryView(GameController* controller, QWidget* parent)
 		break;
 	}
 
-	connect(m_ui.regions, SIGNAL(currentIndexChanged(int)), this, SLOT(setIndex(int)));
-	connect(m_ui.segments, SIGNAL(valueChanged(int)), this, SLOT(setSegment(int)));
+	connect(m_ui.regions, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+	        this, &MemoryView::setIndex);
+	connect(m_ui.segments, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+	        this, &MemoryView::setSegment);
 
 	if (info) {
 		for (size_t i = 0; info[i].name; ++i) {
@@ -93,22 +95,23 @@ MemoryView::MemoryView(GameController* controller, QWidget* parent)
 	connect(m_ui.width8, &QAbstractButton::clicked, [this]() { m_ui.hexfield->setAlignment(1); });
 	connect(m_ui.width16, &QAbstractButton::clicked, [this]() { m_ui.hexfield->setAlignment(2); });
 	connect(m_ui.width32, &QAbstractButton::clicked, [this]() { m_ui.hexfield->setAlignment(4); });
-	connect(m_ui.setAddress, SIGNAL(valueChanged(const QString&)), m_ui.hexfield, SLOT(jumpToAddress(const QString&)));
-	connect(m_ui.hexfield, SIGNAL(selectionChanged(uint32_t, uint32_t)), this, SLOT(updateSelection(uint32_t, uint32_t)));
+	connect(m_ui.setAddress, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+	        m_ui.hexfield, static_cast<void (MemoryModel::*)(uint32_t)>(&MemoryModel::jumpToAddress));
+	connect(m_ui.hexfield, &MemoryModel::selectionChanged, this, &MemoryView::updateSelection);
 
-	connect(controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(close()));
+	connect(controller, &GameController::gameStopped, this, &QWidget::close);
 
-	connect(controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(update()));
-	connect(controller, SIGNAL(gamePaused(mCoreThread*)), this, SLOT(update()));
-	connect(controller, SIGNAL(stateLoaded(mCoreThread*)), this, SLOT(update()));
-	connect(controller, SIGNAL(rewound(mCoreThread*)), this, SLOT(update()));
+	connect(controller, &GameController::frameAvailable, this, &MemoryView::update);
+	connect(controller, &GameController::gamePaused, this, &MemoryView::update);
+	connect(controller, &GameController::stateLoaded, this, &MemoryView::update);
+	connect(controller, &GameController::rewound, this, &MemoryView::update);
 
-	connect(m_ui.copy, SIGNAL(clicked()), m_ui.hexfield, SLOT(copy()));
-	connect(m_ui.save, SIGNAL(clicked()), m_ui.hexfield, SLOT(save()));
-	connect(m_ui.paste, SIGNAL(clicked()), m_ui.hexfield, SLOT(paste()));
-	connect(m_ui.load, SIGNAL(clicked()), m_ui.hexfield, SLOT(load()));
+	connect(m_ui.copy, &QAbstractButton::clicked, m_ui.hexfield, &MemoryModel::copy);
+	connect(m_ui.save, &QAbstractButton::clicked, m_ui.hexfield, &MemoryModel::save);
+	connect(m_ui.paste, &QAbstractButton::clicked, m_ui.hexfield, &MemoryModel::paste);
+	connect(m_ui.load, &QAbstractButton::clicked, m_ui.hexfield, &MemoryModel::load);
 
-	connect(m_ui.loadTBL, SIGNAL(clicked()), m_ui.hexfield, SLOT(loadTBL()));
+	connect(m_ui.loadTBL, &QAbstractButton::clicked, m_ui.hexfield, &MemoryModel::loadTBL);
 }
 
 void MemoryView::setIndex(int index) {

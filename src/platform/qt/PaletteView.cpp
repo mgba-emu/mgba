@@ -30,7 +30,7 @@ PaletteView::PaletteView(GameController* controller, QWidget* parent)
 {
 	m_ui.setupUi(this);
 
-	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updatePalette()));
+	connect(m_controller, &GameController::frameAvailable, this, &PaletteView::updatePalette);
 	m_ui.bgGrid->setDimensions(QSize(16, 16));
 	m_ui.objGrid->setDimensions(QSize(16, 16));
 	int count = 256;
@@ -56,12 +56,12 @@ PaletteView::PaletteView(GameController* controller, QWidget* parent)
 	m_ui.g->setFont(font);
 	m_ui.b->setFont(font);
 
-	connect(m_ui.bgGrid, SIGNAL(indexPressed(int)), this, SLOT(selectIndex(int)));
+	connect(m_ui.bgGrid, &Swatch::indexPressed, this, &PaletteView::selectIndex);
 	connect(m_ui.objGrid, &Swatch::indexPressed, [this, count] (int index) { selectIndex(index + count); });
 	connect(m_ui.exportBG, &QAbstractButton::clicked, [this, count] () { exportPalette(0, count); });
 	connect(m_ui.exportOBJ, &QAbstractButton::clicked, [this, count] () { exportPalette(count, count); });
 
-	connect(controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(close()));
+	connect(controller, &GameController::gameStopped, this, &QWidget::close);
 }
 
 void PaletteView::updatePalette() {

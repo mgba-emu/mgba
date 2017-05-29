@@ -15,8 +15,6 @@ using namespace QGBA;
 
 ShortcutView::ShortcutView(QWidget* parent)
 	: QWidget(parent)
-	, m_controller(nullptr)
-	, m_input(nullptr)
 {
 	m_ui.setupUi(this);
 	m_ui.keyEdit->setValueKey(0);
@@ -31,10 +29,10 @@ ShortcutView::ShortcutView(QWidget* parent)
 		m_ui.keyEdit->setValueKey(0);
 		m_ui.keyEdit->blockSignals(signalsBlocked);
 	});
-	connect(m_ui.keyEdit, SIGNAL(valueChanged(int)), this, SLOT(updateButton(int)));
-	connect(m_ui.keyEdit, SIGNAL(axisChanged(int, int)), this, SLOT(updateAxis(int, int)));
-	connect(m_ui.shortcutTable, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(load(const QModelIndex&)));
-	connect(m_ui.clearButton, SIGNAL(clicked()), this, SLOT(clear()));
+	connect(m_ui.keyEdit, &KeyEditor::valueChanged, this, &ShortcutView::updateButton);
+	connect(m_ui.keyEdit, &KeyEditor::axisChanged, this, &ShortcutView::updateAxis);
+	connect(m_ui.shortcutTable, &QAbstractItemView::doubleClicked, this, &ShortcutView::load);
+	connect(m_ui.clearButton, &QAbstractButton::clicked, this, &ShortcutView::clear);
 }
 
 ShortcutView::~ShortcutView() {

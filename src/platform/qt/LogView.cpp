@@ -14,8 +14,6 @@ using namespace QGBA;
 
 LogView::LogView(LogController* log, QWidget* parent)
 	: QWidget(parent)
-	, m_lines(0)
-	, m_lineLimit(DEFAULT_LINE_LIMIT)
 {
 	m_ui.setupUi(this);
 	connect(m_ui.levelDebug, &QAbstractButton::toggled, [this](bool set) {
@@ -39,12 +37,13 @@ LogView::LogView(LogController* log, QWidget* parent)
 	connect(m_ui.levelGameError, &QAbstractButton::toggled, [this](bool set) {
 		setLevel(mLOG_GAME_ERROR, set);
 	});
-	connect(m_ui.clear, SIGNAL(clicked()), this, SLOT(clear()));
-	connect(m_ui.maxLines, SIGNAL(valueChanged(int)), this, SLOT(setMaxLines(int)));
+	connect(m_ui.clear, &QAbstractButton::clicked, this, &LogView::clear);
+	connect(m_ui.maxLines, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+	        this, &LogView::setMaxLines);
 	m_ui.maxLines->setValue(DEFAULT_LINE_LIMIT);
 
-	connect(log, SIGNAL(logPosted(int, int, const QString&)), this, SLOT(postLog(int, int, const QString&)));
-	connect(log, SIGNAL(levelsSet(int)), this, SLOT(setLevels(int)));
+	connect(log, &LogController::logPosted, this, &LogView::postLog);
+	connect(log, &LogController::levelsSet, this, &LogView::setLevels);
 	connect(log, &LogController::levelsEnabled, [this](int level) {
 		bool s = blockSignals(true);
 		setLevel(level, true);
@@ -55,8 +54,8 @@ LogView::LogView(LogController* log, QWidget* parent)
 		setLevel(level, false);
 		blockSignals(s);
 	});
-	connect(this, SIGNAL(levelsEnabled(int)), log, SLOT(enableLevels(int)));
-	connect(this, SIGNAL(levelsDisabled(int)), log, SLOT(disableLevels(int)));
+	connect(this, &LogView::levelsEnabled, log, &LogController::enableLevels);
+	connect(this, &LogView::levelsDisabled, log, &LogController::disableLevels);
 }
 
 void LogView::postLog(int level, int category, const QString& log) {

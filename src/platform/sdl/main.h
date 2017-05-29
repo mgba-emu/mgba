@@ -65,6 +65,7 @@ struct mSDLRenderer {
 	int ratio;
 
 	bool lockAspectRatio;
+	bool lockIntegerScaling;
 	bool filter;
 
 #ifdef BUILD_GL

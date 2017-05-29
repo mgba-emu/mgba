@@ -13,7 +13,6 @@ using namespace QGBA;
 
 AudioProcessorSDL::AudioProcessorSDL(QObject* parent)
 	: AudioProcessor(parent)
-	, m_audio{ 2048, 44100 }
 {
 }
 

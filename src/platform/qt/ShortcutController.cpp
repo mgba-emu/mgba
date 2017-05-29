@@ -17,9 +17,6 @@ using namespace QGBA;
 
 ShortcutController::ShortcutController(QObject* parent)
 	: QAbstractItemModel(parent)
-	, m_rootMenu(nullptr)
-	, m_config(nullptr)
-	, m_profile(nullptr)
 {
 }
 
@@ -540,10 +537,7 @@ int ShortcutController::toModifierKey(int key) {
 ShortcutController::ShortcutItem::ShortcutItem(QAction* action, const QString& name, ShortcutItem* parent)
 	: m_action(action)
 	, m_shortcut(action->shortcut().isEmpty() ? 0 : action->shortcut()[0])
-	, m_menu(nullptr)
 	, m_name(name)
-	, m_button(-1)
-	, m_axis(-1)
 	, m_direction(GamepadAxisEvent::NEUTRAL)
 	, m_parent(parent)
 {
@@ -553,25 +547,17 @@ ShortcutController::ShortcutItem::ShortcutItem(QAction* action, const QString& n
 }
 
 ShortcutController::ShortcutItem::ShortcutItem(ShortcutController::ShortcutItem::Functions functions, int shortcut, const QString& visibleName, const QString& name, ShortcutItem* parent)
-	: m_action(nullptr)
-	, m_shortcut(shortcut)
+	: m_shortcut(shortcut)
 	, m_functions(functions)
-	, m_menu(nullptr)
 	, m_name(name)
 	, m_visibleName(visibleName)
-	, m_button(-1)
-	, m_axis(-1)
 	, m_direction(GamepadAxisEvent::NEUTRAL)
 	, m_parent(parent)
 {
 }
 
 ShortcutController::ShortcutItem::ShortcutItem(QMenu* menu, ShortcutItem* parent)
-	: m_action(nullptr)
-	, m_shortcut(0)
-	, m_menu(menu)
-	, m_button(-1)
-	, m_axis(-1)
+	: m_menu(menu)
 	, m_direction(GamepadAxisEvent::NEUTRAL)
 	, m_parent(parent)
 {

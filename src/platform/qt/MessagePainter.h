@@ -35,11 +35,11 @@ private:
 	QStaticText m_message;
 	QPixmap m_pixmap;
 	QPixmap m_pixmapBuffer;
-	QTimer m_messageTimer;
+	QTimer m_messageTimer{this};
 	QPoint m_local;
 	QTransform m_world;
 	QFont m_messageFont;
-	qreal m_scaleFactor;
+	qreal m_scaleFactor = 1;
 };
 
 }

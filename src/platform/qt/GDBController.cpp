@@ -11,7 +11,6 @@ using namespace QGBA;
 
 GDBController::GDBController(GameController* controller, QObject* parent)
 	: DebuggerController(controller, &m_gdbStub.d, parent)
-	, m_port(2345)
 	, m_bindAddress({ IPV4, 0 })
 {
 	GDBStubCreate(&m_gdbStub);

@@ -31,15 +31,14 @@ ShaderSelector::ShaderSelector(Display* display, ConfigController* config, QWidg
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_display(display)
 	, m_config(config)
-	, m_shaderPath("")
 {
 	m_ui.setupUi(this);
 
 	refreshShaders();
 
-	connect(m_ui.load, SIGNAL(clicked()), this, SLOT(selectShader()));
-	connect(m_ui.unload, SIGNAL(clicked()), this, SLOT(clearShader()));
-	connect(m_ui.buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(buttonPressed(QAbstractButton*)));
+	connect(m_ui.load, &QAbstractButton::clicked, this, &ShaderSelector::selectShader);
+	connect(m_ui.unload, &QAbstractButton::clicked, this, &ShaderSelector::clearShader);
+	connect(m_ui.buttonBox, &QDialogButtonBox::clicked, this, &ShaderSelector::buttonPressed);
 }
 
 ShaderSelector::~ShaderSelector() {
@@ -112,9 +111,9 @@ void ShaderSelector::refreshShaders() {
 		m_ui.author->clear();
 	}
 
-	disconnect(this, SIGNAL(saved()), 0, 0);
-	disconnect(this, SIGNAL(reset()), 0, 0);
-	disconnect(this, SIGNAL(resetToDefault()), 0, 0);
+	disconnect(this, &ShaderSelector::saved, 0, 0);
+	disconnect(this, &ShaderSelector::reset, 0, 0);
+	disconnect(this, &ShaderSelector::resetToDefault, 0, 0);
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
 	if (m_shaders->preprocessShader) {

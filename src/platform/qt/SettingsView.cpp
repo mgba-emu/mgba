@@ -140,7 +140,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	GBAKeyEditor* editor = new GBAKeyEditor(inputController, InputController::KEYBOARD, QString(), this);
 	m_ui.stackedWidget->addWidget(editor);
 	m_ui.tabs->addItem(tr("Keyboard"));
-	connect(m_ui.buttonBox, SIGNAL(accepted()), editor, SLOT(save()));
+	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, editor, &GBAKeyEditor::save);
 
 	GBAKeyEditor* buttonEditor = nullptr;
 #ifdef BUILD_SDL
@@ -149,10 +149,10 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
 	m_ui.stackedWidget->addWidget(buttonEditor);
 	m_ui.tabs->addItem(tr("Controllers"));
-	connect(m_ui.buttonBox, SIGNAL(accepted()), buttonEditor, SLOT(save()));
+	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, buttonEditor, &GBAKeyEditor::save);
 #endif
 
-	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(updateConfig()));
+	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &SettingsView::updateConfig);
 	connect(m_ui.buttonBox, &QDialogButtonBox::clicked, [this, editor, buttonEditor](QAbstractButton* button) {
 		if (m_ui.buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole) {
 			updateConfig();
@@ -204,6 +204,7 @@ void SettingsView::updateConfig() {
 	saveSetting("savestatePath", m_ui.savestatePath);
 	saveSetting("screenshotPath", m_ui.screenshotPath);
 	saveSetting("patchPath", m_ui.patchPath);
+	saveSetting("libraryStyle", m_ui.libraryStyle->currentIndex());
 	saveSetting("showLibrary", m_ui.showLibrary);
 	saveSetting("preload", m_ui.preload);
 

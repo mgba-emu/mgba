@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 2.8.11)
-enable_language(CXX)
-
 if(NOT MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
@@ -35,12 +32,10 @@ find_package(Qt5OpenGL)
 find_package(Qt5Widgets)
 
 if(NOT BUILD_GL AND NOT BUILD_GLES2)
-	message(WARNING "OpenGL is required to build the Qt port")
-	set(BUILD_QT OFF PARENT_SCOPE)
-	return()
+	message(WARNING "OpenGL is recommended to build the Qt port")
 endif()
 
-if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND)
+if(NOT Qt5Widgets_FOUND)
 	message(WARNING "Cannot find Qt modules")
 	set(BUILD_QT OFF PARENT_SCOPE)
 	return()
@@ -105,6 +100,7 @@ set(SOURCE_FILES
 	Swatch.cpp
 	TilePainter.cpp
 	TileView.cpp
+	utils.cpp
 	Window.cpp
 	VFileDevice.cpp
 	VideoView.cpp)
@@ -117,7 +113,6 @@ set(UI_FILES
 	DebuggerConsole.ui
 	GIFView.ui
 	IOViewer.ui
-	LibraryView.ui
 	LoadSaveState.ui
 	LogView.ui
 	MemoryView.ui
@@ -137,8 +132,6 @@ set(GBA_SRC
 
 set(GB_SRC
 	GBOverride.cpp)
-
-qt5_wrap_ui(UI_SRC ${UI_FILES})
 
 set(QT_LIBRARIES)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5,libqt5opengl5")
@@ -189,8 +182,9 @@ endif()
 if(USE_SQLITE3)
 	list(APPEND SOURCE_FILES
 		ArchiveInspector.cpp
-		LibraryModel.cpp
-		LibraryView.cpp)
+		library/LibraryController.cpp
+		library/LibraryGrid.cpp
+		library/LibraryTree.cpp)
 endif()
 
 qt5_add_resources(RESOURCES resources.qrc)
@@ -239,11 +233,16 @@ if(Qt5LinguistTools_FOUND)
 	list(APPEND RESOURCES ${TRANSLATION_RESOURCES})
 endif()
 
+qt5_wrap_ui(UI_SRC ${UI_FILES})
+
 add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_SRC} ${AUDIO_SRC} ${RESOURCES})
 set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in COMPILE_DEFINITIONS "${FEATURE_DEFINES};${FUNCTION_DEFINES};${OS_DEFINES};${QT_DEFINES}")
 
-list(APPEND QT_LIBRARIES Qt5::Widgets Qt5::OpenGL)
-target_link_libraries(${BINARY_NAME}-qt ${PLATFORM_LIBRARY} ${BINARY_NAME} ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
+list(APPEND QT_LIBRARIES Qt5::Widgets)
+if(BUILD_GL OR BUILD_GLES2)
+	list(APPEND QT_LIBRARIES Qt5::OpenGL ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
+endif()
+target_link_libraries(${BINARY_NAME}-qt ${PLATFORM_LIBRARY} ${BINARY_NAME} ${QT_LIBRARIES})
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}" PARENT_SCOPE)
 
 install(TARGETS ${BINARY_NAME}-qt
@@ -289,4 +288,8 @@ if(APPLE)
 		endif()
 		install(CODE "execute_process(COMMAND \"${CMAKE_SOURCE_DIR}/tools/deploy-mac.py\" -v ${DEPLOY_OPTIONS} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/Applications/${PROJECT_NAME}.app\")")
 	endif()
+endif()
+if(WIN32 AND CMAKE_MAJOR_VERSION GREATER 2 AND CMAKE_MINOR_VERSION GREATER 7)
+	# Work around CMake issue #16907
+	set_target_properties(${BINARY_NAME}-qt PROPERTIES AUTORCC ON SKIP_AUTORCC ON)
 endif()

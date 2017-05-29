@@ -17,6 +17,9 @@ Features:
  - GB: Video/audio channel enabling/disabling
  - Add option to lock video to integer scaling
  - Video log recording for testing and bug reporting
+ - Library view
+ - Debugger: Segment/bank support
+ - GB: Symbol table support
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
@@ -54,6 +57,9 @@ Bugfixes:
  - Test: Fix crash when loading invalid file
  - GBA Hardware: Fix crash if a savestate lies about game hardware
  - Test: Fix crash when fuzzing fails to load a file
+ - Qt: Disable "New multiplayer window" when MAX_GBAS is reached (fixes mgba.io/i/107)
+ - LR35902: Fix decoding LD r, $imm and 0-valued immediates (fixes mgba.io/i/735)
+ - GB: Fix STAT blocking
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
@@ -112,6 +118,8 @@ Misc:
  - VFS: Add VFileFIFO for operating on circle buffers
  - Core: Move rewind diffing to its own thread
  - Util: Tune patch-fast extent sizes
+ - Qt: Relax hard dependency on OpenGL
+ - GB Video: Improved video timings
 
 0.5.2: (2016-12-31)
 Bugfixes:

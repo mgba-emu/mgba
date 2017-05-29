@@ -27,13 +27,6 @@ mSDLEvents InputController::s_sdlEvents;
 InputController::InputController(int playerId, QWidget* topLevel, QObject* parent)
 	: QObject(parent)
 	, m_playerId(playerId)
-	, m_config(nullptr)
-	, m_gamepadTimer(nullptr)
-#ifdef BUILD_SDL
-	, m_sdlPlayer{}
-	, m_playerAttached(false)
-#endif
-	, m_allowOpposing(false)
 	, m_topLevel(topLevel)
 	, m_focusParent(topLevel)
 {

@@ -31,9 +31,9 @@ private:
 	Ui::AssetTile m_ui;
 
 	std::shared_ptr<mTileCache> m_tileCache;
-	int m_paletteId;
-	int m_paletteSet;
-	int m_index;
+	int m_paletteId = 0;
+	int m_paletteSet = 0;
+	int m_index = 0;
 
 	int m_addressWidth;
 	int m_addressBase;

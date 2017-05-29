@@ -43,7 +43,7 @@ public slots:
 	void jumpToAddress(const QString& hex);
 	void jumpToAddress(uint32_t);
 
-	void loadTBL(const QString& path);
+	void loadTBLFromPath(const QString& path);
 	void loadTBL();
 
 	void copy();
@@ -76,22 +76,22 @@ private:
 		void operator()(TextCodec*);
 	};
 
-	mCore* m_core;
+	mCore* m_core = nullptr;
 	std::unique_ptr<TextCodec, TextCodecFree> m_codec;
 	QFont m_font;
 	int m_cellHeight;
 	int m_letterWidth;
 	uint32_t m_base;
 	uint32_t m_size;
-	int m_top;
-	int m_align;
+	int m_top = 0;
+	int m_align = 1;
 	QMargins m_margins;
 	QVector<QStaticText> m_staticNumbers;
 	QVector<QStaticText> m_staticLatin1;
 	QStaticText m_regionName;
 	QSizeF m_cellSize;
-	QPair<uint32_t, uint32_t> m_selection;
-	uint32_t m_selectionAnchor;
+	QPair<uint32_t, uint32_t> m_selection{0, 0};
+	uint32_t m_selectionAnchor = 0;
 	uint32_t m_buffer;
 	int m_bufferedNybbles;
 	int m_currentBank;

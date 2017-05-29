@@ -28,8 +28,6 @@ const qreal GBAKeyEditor::DPAD_HEIGHT = 0.12;
 
 GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString& profile, QWidget* parent)
 	: QWidget(parent)
-	, m_profileSelect(nullptr)
-	, m_clear(nullptr)
 	, m_type(type)
 	, m_profile(profile)
 	, m_controller(controller)
@@ -56,7 +54,8 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 #ifdef BUILD_SDL
 	if (type == SDL_BINDING_BUTTON) {
 		m_profileSelect = new QComboBox(this);
-		connect(m_profileSelect, SIGNAL(currentIndexChanged(int)), this, SLOT(selectGamepad(int)));
+		connect(m_profileSelect, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+		        this, &GBAKeyEditor::selectGamepad);
 
 		updateJoysticks();
 
@@ -90,7 +89,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 
 		QPushButton* updateJoysticksButton = new QPushButton(tr("Refresh"));
 		layout->addWidget(updateJoysticksButton);
-		connect(updateJoysticksButton, SIGNAL(pressed()), this, SLOT(updateJoysticks()));
+		connect(updateJoysticksButton, &QAbstractButton::pressed, this, &GBAKeyEditor::updateJoysticks);
 	}
 #endif
 
@@ -99,7 +98,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	m_buttons->setLayout(layout);
 
 	QPushButton* setAll = new QPushButton(tr("Set all"));
-	connect(setAll, SIGNAL(pressed()), this, SLOT(setAll()));
+	connect(setAll, &QAbstractButton::pressed, this, &GBAKeyEditor::setAll);
 	layout->addWidget(setAll);
 
 	layout->setSpacing(6);
@@ -118,9 +117,9 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	};
 
 	for (auto& key : m_keyOrder) {
-		connect(key, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-		connect(key, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-		connect(key, SIGNAL(hatChanged(int, int)), this, SLOT(setNext()));
+		connect(key, &KeyEditor::valueChanged, this, &GBAKeyEditor::setNext);
+		connect(key, &KeyEditor::axisChanged, this, &GBAKeyEditor::setNext);
+		connect(key, &KeyEditor::hatChanged, this, &GBAKeyEditor::setNext);
 		key->installEventFilter(this);
 	}
 
@@ -396,14 +395,14 @@ void GBAKeyEditor::updateJoysticks() {
 	m_controller->updateJoysticks();
 	m_controller->recalibrateAxes();
 
+	// Block the currentIndexChanged signal while rearranging the combo box
+	auto wasBlocked = m_profileSelect->blockSignals(true);
 	m_profileSelect->clear();
 	m_profileSelect->addItems(m_controller->connectedGamepads(m_type));
 	int activeGamepad = m_controller->gamepad(m_type);
+	m_profileSelect->setCurrentIndex(activeGamepad);
+	m_profileSelect->blockSignals(wasBlocked);
+
 	selectGamepad(activeGamepad);
-	if (activeGamepad > 0) {
-		m_profileSelect->setCurrentIndex(activeGamepad);
-	}
-	lookupAxes(m_controller->map());
-	lookupHats(m_controller->map());
 }
 #endif

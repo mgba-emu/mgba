@@ -39,41 +39,9 @@ using namespace std;
 
 GameController::GameController(QObject* parent)
 	: QObject(parent)
-	, m_drawContext(nullptr)
-	, m_frontBuffer(nullptr)
-	, m_threadContext()
-	, m_activeKeys(0)
-	, m_inactiveKeys(0)
-	, m_logLevels(0)
-	, m_gameOpen(false)
-	, m_vf(nullptr)
-	, m_useBios(false)
 	, m_audioProcessor(AudioProcessor::create())
-	, m_pauseAfterFrame(false)
-	, m_sync(true)
-	, m_videoSync(VIDEO_SYNC)
-	, m_audioSync(AUDIO_SYNC)
-	, m_fpsTarget(-1)
-	, m_turbo(false)
-	, m_turboForced(false)
-	, m_turboSpeed(-1)
-	, m_wasPaused(false)
-	, m_audioChannels()
-	, m_videoLayers()
-	, m_autofire{}
-	, m_autofireStatus{}
-	, m_inputController(nullptr)
-	, m_multiplayer(nullptr)
-	, m_stream(nullptr)
-	, m_stateSlot(1)
-	, m_backupLoadState(nullptr)
-	, m_backupSaveState(nullptr)
 	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC)
 	, m_loadStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_RTC)
-	, m_preload(false)
-	, m_override(nullptr)
-	, m_vl(nullptr)
-	, m_vlVf(nullptr)
 {
 #ifdef M_CORE_GBA
 	m_lux.p = this;
@@ -277,10 +245,10 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.userData = this;
 
-	connect(this, SIGNAL(gamePaused(mCoreThread*)), m_audioProcessor, SLOT(pause()));
-	connect(this, SIGNAL(gameStarted(mCoreThread*, const QString&)), m_audioProcessor, SLOT(setInput(mCoreThread*)));
-	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(pollEvents()));
-	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updateAutofire()));
+	connect(this, &GameController::gamePaused, m_audioProcessor, &AudioProcessor::pause);
+	connect(this, &GameController::gameStarted, m_audioProcessor, &AudioProcessor::setInput);
+	connect(this, &GameController::frameAvailable, this, &GameController::pollEvents);
+	connect(this, &GameController::frameAvailable, this, &GameController::updateAutofire);
 }
 
 GameController::~GameController() {
@@ -939,8 +907,8 @@ void GameController::loadState(int slot) {
 		}
 		mCoreLoadStateNamed(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
 		if (mCoreLoadState(context->core, controller->m_stateSlot, controller->m_loadStateFlags)) {
-			controller->frameAvailable(controller->m_drawContext);
-			controller->stateLoaded(context);
+			emit controller->frameAvailable(controller->m_drawContext);
+			emit controller->stateLoaded(context);
 		}
 	});
 }
@@ -1108,8 +1076,8 @@ void GameController::reloadAudioDriver() {
 	if (sampleRate) {
 		m_audioProcessor->requestSampleRate(sampleRate);
 	}
-	connect(this, SIGNAL(gamePaused(mCoreThread*)), m_audioProcessor, SLOT(pause()));
-	connect(this, SIGNAL(gameStarted(mCoreThread*, const QString&)), m_audioProcessor, SLOT(setInput(mCoreThread*)));
+	connect(this, &GameController::gamePaused, m_audioProcessor, &AudioProcessor::pause);
+	connect(this, &GameController::gameStarted, m_audioProcessor, &AudioProcessor::setInput);
 	if (isLoaded()) {
 		m_audioProcessor->setInput(&m_threadContext);
 		startAudio();
@@ -1258,10 +1226,10 @@ std::shared_ptr<mTileCache> GameController::tileCache() {
 	if (m_tileCache) {
 		return m_tileCache;
 	}
+	Interrupter interrupter(this);
 	switch (platform()) {
 #ifdef M_CORE_GBA
 	case PLATFORM_GBA: {
-		Interrupter interrupter(this);
 		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
 		m_tileCache = std::make_shared<mTileCache>();
 		GBAVideoTileCacheInit(m_tileCache.get());
@@ -1272,7 +1240,6 @@ std::shared_ptr<mTileCache> GameController::tileCache() {
 #endif
 #ifdef M_CORE_GB
 	case PLATFORM_GB: {
-		Interrupter interrupter(this);
 		GB* gb = static_cast<GB*>(m_threadContext.core->board);
 		m_tileCache = std::make_shared<mTileCache>();
 		GBVideoTileCacheInit(m_tileCache.get());

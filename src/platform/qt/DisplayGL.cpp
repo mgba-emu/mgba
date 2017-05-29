@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "DisplayGL.h"
 
+#if defined(BUILD_GL) || defined(BUILD_GLES)
+
 #include <QApplication>
 #include <QResizeEvent>
 #include <QTimer>
@@ -25,10 +27,7 @@ using namespace QGBA;
 
 DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	: Display(parent)
-	, m_isDrawing(false)
 	, m_gl(new EmptyGLWidget(format, this))
-	, m_drawThread(nullptr)
-	, m_context(nullptr)
 {
 	m_painter = new PainterGL(format.majorVersion() < 2 ? 1 : m_gl->format().majorVersion(), m_gl);
 	m_gl->setMouseTracking(true);
@@ -68,7 +67,7 @@ void DisplayGL::startDrawing(mCoreThread* thread) {
 	m_gl->context()->doneCurrent();
 	m_gl->context()->moveToThread(m_drawThread);
 	m_painter->moveToThread(m_drawThread);
-	connect(m_drawThread, SIGNAL(started()), m_painter, SLOT(start()));
+	connect(m_drawThread, &QThread::started, m_painter, &PainterGL::start);
 	m_drawThread->start();
 	mCoreSyncSetVideoSync(&m_context->sync, false);
 
@@ -483,3 +482,5 @@ void PainterGL::clearShaders() {
 VideoShader* PainterGL::shaders() {
 	return &m_shader;
 }
+
+#endif

@@ -18,10 +18,6 @@ KeyEditor::KeyEditor(QWidget* parent)
 	: QLineEdit(parent)
 	, m_direction(GamepadAxisEvent::NEUTRAL)
 	, m_hatDirection(GamepadHatEvent::CENTER)
-	, m_key(-1)
-	, m_axis(-1)
-	, m_hat(-1)
-	, m_button(false)
 {
 	setAlignment(Qt::AlignCenter);
 	setFocusPolicy(Qt::ClickFocus);

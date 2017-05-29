@@ -6,7 +6,9 @@
 #include <mgba/gb/core.h>
 
 #include <mgba/core/core.h>
+#include <mgba/internal/debugger/symbols.h>
 #include <mgba/internal/gb/cheats.h>
+#include <mgba/internal/gb/debugger/symbols.h>
 #include <mgba/internal/gb/extra/cli.h>
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/gb.h>
@@ -90,8 +92,11 @@ static void _GBCoreDeinit(struct mCore* core) {
 	GBDestroy(core->board);
 	mappedMemoryFree(core->cpu, sizeof(struct LR35902Core));
 	mappedMemoryFree(core->board, sizeof(struct GB));
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if defined USE_DEBUGGERS && (!defined(MINIMAL_CORE) || MINIMAL_CORE < 2)
 	mDirectorySetDeinit(&core->dirs);
+	if (core->symbolTable) {
+		mDebuggerSymbolTableDestroy(core->symbolTable);
+	}
 #endif
 
 	struct GBCore* gbcore = (struct GBCore*) core;
@@ -552,6 +557,19 @@ static void _GBCoreDetachDebugger(struct mCore* core) {
 	cpu->components[CPU_COMPONENT_DEBUGGER] = NULL;
 	core->debugger = NULL;
 }
+
+static void _GBCoreLoadSymbols(struct mCore* core, struct VFile* vf) {
+	core->symbolTable = mDebuggerSymbolTableCreate();
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	if (!vf) {
+		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".sym", O_RDONLY);
+	}
+#endif
+	if (!vf) {
+		return;
+	}
+	GBLoadSymbols(core->symbolTable, vf);
+}
 #endif
 
 static struct mCheatDevice* _GBCoreCheatDevice(struct mCore* core) {
@@ -671,6 +689,7 @@ struct mCore* GBCoreCreate(void) {
 	core->cpu = NULL;
 	core->board = NULL;
 	core->debugger = NULL;
+	core->symbolTable = NULL;
 	core->init = _GBCoreInit;
 	core->deinit = _GBCoreDeinit;
 	core->platform = _GBCorePlatform;
@@ -728,6 +747,7 @@ struct mCore* GBCoreCreate(void) {
 	core->cliDebuggerSystem = _GBCoreCliDebuggerSystem;
 	core->attachDebugger = _GBCoreAttachDebugger;
 	core->detachDebugger = _GBCoreDetachDebugger;
+	core->loadSymbols = _GBCoreLoadSymbols;
 #endif
 	core->cheatDevice = _GBCoreCheatDevice;
 	core->savedataClone = _GBCoreSavedataClone;

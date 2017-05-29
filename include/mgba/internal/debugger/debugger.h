@@ -87,13 +87,14 @@ struct mDebuggerPlatform {
 	void (*entered)(struct mDebuggerPlatform*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 
 	bool (*hasBreakpoints)(struct mDebuggerPlatform*);
-	void (*setBreakpoint)(struct mDebuggerPlatform*, uint32_t address);
-	void (*clearBreakpoint)(struct mDebuggerPlatform*, uint32_t address);
+	void (*setBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
+	void (*clearBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
 	void (*setWatchpoint)(struct mDebuggerPlatform*, uint32_t address, enum mWatchpointType type);
 	void (*clearWatchpoint)(struct mDebuggerPlatform*, uint32_t address);
 	void (*checkBreakpoints)(struct mDebuggerPlatform*);
 };
 
+struct mDebuggerSymbols;
 struct mDebugger {
 	struct mCPUComponent d;
 	struct mDebuggerPlatform* platform;

@@ -104,17 +104,17 @@ private:
 	void sendGamepadEvent(QEvent*);
 
 	mInputMap m_inputMap;
-	ConfigController* m_config;
+	ConfigController* m_config = nullptr;
 	int m_playerId;
-	bool m_allowOpposing;
+	bool m_allowOpposing = false;
 	QWidget* m_topLevel;
 	QWidget* m_focusParent;
 
 #ifdef BUILD_SDL
 	static int s_sdlInited;
 	static mSDLEvents s_sdlEvents;
-	mSDLPlayer m_sdlPlayer;
-	bool m_playerAttached;
+	mSDLPlayer m_sdlPlayer{};
+	bool m_playerAttached = false;
 #endif
 
 	QVector<int> m_deadzones;
@@ -122,7 +122,7 @@ private:
 	QSet<int> m_activeButtons;
 	QSet<QPair<int, GamepadAxisEvent::Direction>> m_activeAxes;
 	QSet<QPair<int, GamepadHatEvent::Direction>> m_activeHats;
-	QTimer m_gamepadTimer;
+	QTimer m_gamepadTimer{nullptr};
 
 	QSet<GBAKey> m_pendingEvents;
 };
