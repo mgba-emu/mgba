@@ -20,6 +20,7 @@ Features:
  - Library view
  - Debugger: Segment/bank support
  - GB: Symbol table support
+ - GB MBC: Add MBC1 multicart support
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior

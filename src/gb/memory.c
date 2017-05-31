@@ -165,7 +165,13 @@ void GBMemoryReset(struct GB* gb) {
 	memset(&gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
 
 	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
-	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
+	switch (gb->memory.mbcType) {
+	case GB_MBC1:
+		gb->memory.mbcState.mbc1.mode = 0;
+		break;
+	default:
+		memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
+	}
 
 	GBMBCInit(gb);
 	gb->memory.sramBank = gb->memory.sram;

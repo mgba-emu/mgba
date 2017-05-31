@@ -385,7 +385,9 @@ bool GBIsBIOS(struct VFile* vf) {
 
 void GBReset(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
+	gb->memory.romBase = gb->memory.rom;
 	GBDetectModel(gb);
+
 	if (gb->biosVf) {
 		if (!GBIsBIOS(gb->biosVf)) {
 			gb->biosVf->close(gb->biosVf);

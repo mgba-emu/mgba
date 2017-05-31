@@ -46,6 +46,33 @@ void GBMBCSwitchBank(struct GB* gb, int bank) {
 	}
 }
 
+static void _switchBank0(struct GB* gb, int bank) {
+	size_t bankStart = bank * GB_SIZE_CART_BANK0 << gb->memory.mbcState.mbc1.multicartStride;
+	if (bankStart + GB_SIZE_CART_BANK0 > gb->memory.romSize) {
+		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
+		bankStart &= (gb->memory.romSize - 1);
+	}
+	gb->memory.romBase = &gb->memory.rom[bankStart];
+	if (gb->cpu->pc < GB_SIZE_CART_BANK0) {
+		gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
+	}
+}
+
+static bool _isMulticart(const uint8_t* mem) {
+	bool success = true;
+	struct VFile* vf;
+
+	vf = VFileFromConstMemory(&mem[GB_SIZE_CART_BANK0 * 0x10], 1024);
+	success = success && GBIsROM(vf);
+	vf->close(vf);
+
+	vf = VFileFromConstMemory(&mem[GB_SIZE_CART_BANK0 * 0x20], 1024);
+	success = success && GBIsROM(vf);
+	vf->close(vf);
+
+	return success;
+}
+
 void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_EXTERNAL_RAM;
 	GBResizeSram(gb, (bank + 1) * GB_SIZE_EXTERNAL_RAM);
@@ -83,6 +110,11 @@ void GBMBCInit(struct GB* gb) {
 			case 2:
 			case 3:
 				gb->memory.mbcType = GB_MBC1;
+				if (gb->memory.romSize >= GB_SIZE_CART_BANK0 * 0x31 && _isMulticart(gb->memory.rom)) {
+					gb->memory.mbcState.mbc1.multicartStride = 4;
+				} else {
+					gb->memory.mbcState.mbc1.multicartStride = 5;
+				}
 				break;
 			case 5:
 			case 6:
@@ -233,6 +265,7 @@ static void _latchRtc(struct mRTCSource* rtc, uint8_t* rtcRegs, time_t* rtcLastL
 void _GBMBC1(struct GB* gb, uint16_t address, uint8_t value) {
 	struct GBMemory* memory = &gb->memory;
 	int bank = value & 0x1F;
+	int stride = 1 << memory->mbcState.mbc1.multicartStride;
 	switch (address >> 13) {
 	case 0x0:
 		switch (value) {
@@ -253,21 +286,23 @@ void _GBMBC1(struct GB* gb, uint16_t address, uint8_t value) {
 		if (!bank) {
 			++bank;
 		}
-		GBMBCSwitchBank(gb, bank | (memory->currentBank & 0x60));
+		bank &= stride - 1;
+		GBMBCSwitchBank(gb, bank | (memory->currentBank & (3 * stride)));
 		break;
 	case 0x2:
 		bank &= 3;
-		if (!memory->mbcState.mbc1.mode) {
-			GBMBCSwitchBank(gb, (bank << 5) | (memory->currentBank & 0x1F));
-		} else {
+		if (memory->mbcState.mbc1.mode) {
+			_switchBank0(gb, bank);
 			GBMBCSwitchSramBank(gb, bank);
 		}
+		GBMBCSwitchBank(gb, (bank << memory->mbcState.mbc1.multicartStride) | (memory->currentBank & (stride - 1)));
 		break;
 	case 0x3:
 		memory->mbcState.mbc1.mode = value & 1;
 		if (memory->mbcState.mbc1.mode) {
-			GBMBCSwitchBank(gb, memory->currentBank & 0x1F);
+			_switchBank0(gb, memory->currentBank >> memory->mbcState.mbc1.multicartStride);
 		} else {
+			_switchBank0(gb, 0);
 			GBMBCSwitchSramBank(gb, 0);
 		}
 		break;

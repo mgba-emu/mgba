@@ -85,6 +85,7 @@ enum GBMBC7MachineState {
 
 struct GBMBC1State {
 	int mode;
+	int multicartStride;
 };
 
 struct GBMBC7State {
