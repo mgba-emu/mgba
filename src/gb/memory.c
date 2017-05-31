@@ -689,4 +689,5 @@ void _pristineCow(struct GB* gb) {
 	}
 	gb->memory.rom = newRom;
 	GBMBCSwitchBank(gb, gb->memory.currentBank);
+	gb->isPristine = false;
 }
