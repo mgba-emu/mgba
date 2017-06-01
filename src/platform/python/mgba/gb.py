@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2016 Jeffrey Pfau
+# Copyright (c) 2013-2017 Jeffrey Pfau
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@ from .lr35902 import LR35902Core
 from .core import Core, needsReset
 from .memory import Memory
 from .tile import Sprite
+from . import createCallback
 
 class GB(Core):
     KEY_A = lib.GBA_KEY_A
@@ -33,6 +34,48 @@ class GB(Core):
     def _deinitTileCache(self, cache):
         self._native.video.renderer.cache = ffi.NULL
         lib.mTileCacheDeinit(cache)
+
+    def attachSIO(self, link):
+        lib.GBSIOSetDriver(ffi.addressof(self._native.sio), link._native)
+
+createCallback("GBSIOPythonDriver", "init")
+createCallback("GBSIOPythonDriver", "deinit")
+createCallback("GBSIOPythonDriver", "writeSB")
+createCallback("GBSIOPythonDriver", "writeSC")
+
+class GBSIODriver(object):
+    def __init__(self):
+        self._handle = ffi.new_handle(self)
+        self._native = ffi.gc(lib.GBSIOPythonDriverCreate(self._handle), lib.free)
+
+    def init(self):
+        return True
+
+    def deinit(self):
+        pass
+
+    def writeSB(self, value):
+        pass
+
+    def writeSC(self, value):
+        return value
+
+class GBSIOSimpleDriver(GBSIODriver):
+    def __init__(self):
+        super(GBSIOSimpleDriver, self).__init__()
+        self.tx = 0xFF
+        self.rx = 0xFF
+
+    def writeSB(self, value):
+        self.rx = value
+
+    def schedule(self, period=0x100, when=0):
+        self._native.p.remainingBits = 8
+        self._native.p.period = period
+        self._native.p.pendingSB = self.tx
+        self.tx = 0xFF
+        lib.mTimingDeschedule(ffi.addressof(self._native.p.p.timing), ffi.addressof(self._native.p.event))
+        lib.mTimingSchedule(ffi.addressof(self._native.p.p.timing), ffi.addressof(self._native.p.event), when)
 
 class GBMemory(Memory):
     def __init__(self, core):

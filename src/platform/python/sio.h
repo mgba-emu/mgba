@@ -21,3 +21,21 @@ PYEXPORT bool _pyGBASIOPythonDriverUnload(void* driver);
 PYEXPORT uint16_t _pyGBASIOPythonDriverWriteRegister(void* driver, uint32_t address, uint16_t value);
 
 #endif
+
+#ifdef M_CORE_GB
+
+#include <mgba/gb/interface.h>
+
+struct GBSIOPythonDriver {
+    struct GBSIODriver d;
+    void* pyobj;
+};
+
+struct GBSIODriver* GBSIOPythonDriverCreate(void* pyobj);
+
+PYEXPORT bool _pyGBSIOPythonDriverInit(void* driver);
+PYEXPORT void _pyGBSIOPythonDriverDeinit(void* driver);
+PYEXPORT void _pyGBSIOPythonDriverWriteSB(void* driver, uint8_t value);
+PYEXPORT uint8_t _pyGBSIOPythonDriverWriteSC(void* driver, uint8_t value);
+
+#endif
