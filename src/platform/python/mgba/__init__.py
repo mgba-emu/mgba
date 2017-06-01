@@ -6,10 +6,10 @@
 from ._pylib import ffi, lib
 
 def createCallback(structName, cbName, funcName=None):
-    funcName = funcName or "_py{}{}".format(structName, cbName.capitalize())
+    funcName = funcName or "_py{}{}".format(structName, cbName[0].upper() + cbName[1:])
     fullStruct = "struct {}*".format(structName)
     def cb(handle, *args):
         h = ffi.cast(fullStruct, handle)
-        getattr(ffi.from_handle(h.pyobj), cbName)(*args)
+        return getattr(ffi.from_handle(h.pyobj), cbName)(*args)
 
     return ffi.def_extern(name=funcName)(cb)
