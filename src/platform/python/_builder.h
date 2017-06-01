@@ -29,8 +29,11 @@ void free(void*);
 
 #include <mgba/core/core.h>
 #include <mgba/core/tile-cache.h>
+
+#define PYEXPORT extern "Python+C"
 #include "platform/python/vfs-py.h"
 #include "platform/python/log.h"
+#undef PYEXPORT
 
 #ifdef USE_PNG
 #include <mgba-util/png-io.h>
