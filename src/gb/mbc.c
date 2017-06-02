@@ -204,6 +204,14 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	}
 
+	gb->memory.currentBank = 1;
+	gb->memory.sramCurrentBank = 0;
+	gb->memory.sramAccess = false;
+	gb->memory.rtcAccess = false;
+	gb->memory.activeRtcReg = 0;
+	gb->memory.rtcLatched = false;
+	memset(&gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
+
 	GBResizeSram(gb, gb->sramSize);
 
 	if (gb->memory.mbcType == GB_MBC3_RTC) {

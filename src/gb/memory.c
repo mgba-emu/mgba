@@ -158,12 +158,6 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.hdmaEvent.callback = _GBMemoryHDMAService;
 	gb->memory.hdmaEvent.priority = 0x41;
 
-	gb->memory.sramAccess = false;
-	gb->memory.rtcAccess = false;
-	gb->memory.activeRtcReg = 0;
-	gb->memory.rtcLatched = false;
-	memset(&gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
-
 	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
 	switch (gb->memory.mbcType) {
 	case GB_MBC1:
