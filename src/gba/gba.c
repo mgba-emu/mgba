@@ -696,13 +696,9 @@ void GBATestKeypadIRQ(struct GBA* gba) {
 	keycnt &= 0x3FF;
 	keyInput = *gba->keySource;
 
-	if (popcount32(keyInput) > 2) {
-		keycnt = keycnt;
-	}
-
 	if (isAnd && keycnt == keyInput) {
 		GBARaiseIRQ(gba, IRQ_KEYPAD);
-	} else if (!isAnd && keyInput) {
+	} else if (!isAnd && keycnt & keyInput) {
 		GBARaiseIRQ(gba, IRQ_KEYPAD);
 	}
 }
