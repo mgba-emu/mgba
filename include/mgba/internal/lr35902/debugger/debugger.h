@@ -12,6 +12,9 @@ CXX_GUARD_START
 
 #include <mgba/internal/debugger/debugger.h>
 
+#include <mgba/internal/lr35902/lr35902.h>
+
+
 struct LR35902DebugBreakpoint {
 	uint16_t address;
 	int segment;
@@ -32,6 +35,7 @@ struct LR35902Debugger {
 
 	struct LR35902DebugBreakpointList breakpoints;
 	struct LR35902DebugWatchpointList watchpoints;
+	struct LR35902Memory originalMemory;
 };
 
 struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void);

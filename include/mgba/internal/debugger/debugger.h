@@ -89,8 +89,8 @@ struct mDebuggerPlatform {
 	bool (*hasBreakpoints)(struct mDebuggerPlatform*);
 	void (*setBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
 	void (*clearBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
-	void (*setWatchpoint)(struct mDebuggerPlatform*, uint32_t address, enum mWatchpointType type);
-	void (*clearWatchpoint)(struct mDebuggerPlatform*, uint32_t address);
+	void (*setWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type);
+	void (*clearWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
 	void (*checkBreakpoints)(struct mDebuggerPlatform*);
 };
 

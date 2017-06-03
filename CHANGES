@@ -22,6 +22,7 @@ Features:
  - GB: Symbol table support
  - GB MBC: Add MBC1 multicart support
  - GBA: Implement keypad interrupts
+ - LR35902: Watchpoints
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior

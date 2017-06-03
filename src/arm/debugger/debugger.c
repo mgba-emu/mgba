@@ -50,8 +50,8 @@ static void ARMDebuggerEnter(struct mDebuggerPlatform* d, enum mDebuggerEntryRea
 
 static void ARMDebuggerSetBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void ARMDebuggerClearBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
-static void ARMDebuggerSetWatchpoint(struct mDebuggerPlatform*, uint32_t address, enum mWatchpointType type);
-static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform*, uint32_t address);
+static void ARMDebuggerSetWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type);
+static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform*);
 
@@ -182,7 +182,8 @@ static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform* d) {
 	return ARMDebugBreakpointListSize(&debugger->breakpoints) || ARMDebugWatchpointListSize(&debugger->watchpoints);
 }
 
-static void ARMDebuggerSetWatchpoint(struct mDebuggerPlatform* d, uint32_t address, enum mWatchpointType type) {
+static void ARMDebuggerSetWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, enum mWatchpointType type) {
+	UNUSED(segment);
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	if (!ARMDebugWatchpointListSize(&debugger->watchpoints)) {
 		ARMDebuggerInstallMemoryShim(debugger);
@@ -192,7 +193,8 @@ static void ARMDebuggerSetWatchpoint(struct mDebuggerPlatform* d, uint32_t addre
 	watchpoint->type = type;
 }
 
-static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform* d, uint32_t address) {
+static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
+	UNUSED(segment);
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	struct ARMDebugWatchpointList* watchpoints = &debugger->watchpoints;
 	size_t i;

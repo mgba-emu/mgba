@@ -428,7 +428,7 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_RW);
+	debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_RW);
 }
 
 static void _setReadWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -441,7 +441,7 @@ static void _setReadWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVect
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_READ);
+	debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_READ);
 }
 
 static void _setWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -454,7 +454,7 @@ static void _setWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVec
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_WRITE);
+	debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_WRITE);
 }
 
 static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -465,7 +465,7 @@ static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector
 	uint32_t address = dv->intValue;
 	debugger->d.platform->clearBreakpoint(debugger->d.platform, address, dv->segmentValue);
 	if (debugger->d.platform->clearWatchpoint) {
-		debugger->d.platform->clearWatchpoint(debugger->d.platform, address);
+		debugger->d.platform->clearWatchpoint(debugger->d.platform, address, dv->segmentValue);
 	}
 }
 
