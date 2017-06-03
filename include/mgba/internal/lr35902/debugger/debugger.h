@@ -26,6 +26,12 @@ struct LR35902DebugWatchpoint {
 	enum mWatchpointType type;
 };
 
+struct LR35902Segment {
+	uint16_t start;
+	uint16_t end;
+	const char* name;
+};
+
 DECLARE_VECTOR(LR35902DebugBreakpointList, struct LR35902DebugBreakpoint);
 DECLARE_VECTOR(LR35902DebugWatchpointList, struct LR35902DebugWatchpoint);
 
@@ -36,6 +42,8 @@ struct LR35902Debugger {
 	struct LR35902DebugBreakpointList breakpoints;
 	struct LR35902DebugWatchpointList watchpoints;
 	struct LR35902Memory originalMemory;
+
+	const struct LR35902Segment* segments;
 };
 
 struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void);

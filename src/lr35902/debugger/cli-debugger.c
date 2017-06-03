@@ -8,6 +8,7 @@
 #include <mgba/core/core.h>
 #include <mgba/internal/debugger/cli-debugger.h>
 #include <mgba/internal/lr35902/decoder.h>
+#include <mgba/internal/lr35902/debugger/debugger.h>
 #include <mgba/internal/lr35902/lr35902.h>
 
 static void _printStatus(struct CLIDebuggerSystem*);
@@ -86,6 +87,15 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	be->printf(be, "D: %02X E: %02X (DE: %04X)\n", cpu->d, cpu->e, cpu->de);
 	be->printf(be, "H: %02X L: %02X (HL: %04X)\n", cpu->h, cpu->l, cpu->hl);
 	be->printf(be, "PC: %04X SP: %04X\n", cpu->pc, cpu->sp);
+
+	struct LR35902Debugger* platDebugger = (struct LR35902Debugger*) debugger->p->d.platform;
+	size_t i;
+	for (i = 0; platDebugger->segments[i].name; ++i) {
+		be->printf(be, "%s%s: %02X", i ? " " : "", platDebugger->segments[i].name, cpu->memory.currentSegment(cpu, platDebugger->segments[i].start));
+	}
+	if (i) {
+		be->printf(be, "\n");
+	}
 	_printFlags(be, cpu->f);
 	_printLine(debugger->p, cpu->pc, cpu->memory.currentSegment(cpu, cpu->pc));
 }

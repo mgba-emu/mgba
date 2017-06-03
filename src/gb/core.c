@@ -37,6 +37,20 @@ const static struct mCoreChannelInfo _GBAudioChannels[] = {
 	{ 3, "ch3", "Channel 3", "Noise" },
 };
 
+const static struct LR35902Segment _GBSegments[] = {
+	{ .name = "ROM", .start = GB_BASE_CART_BANK1, .end = GB_BASE_VRAM },
+	{ .name = "RAM", .start = GB_BASE_EXTERNAL_RAM, .end = GB_BASE_WORKING_RAM_BANK0 },
+	{ 0 }
+};
+
+const static struct LR35902Segment _GBCSegments[] = {
+	{ .name = "ROM", .start = GB_BASE_CART_BANK1, .end = GB_BASE_VRAM },
+	{ .name = "RAM", .start = GB_BASE_EXTERNAL_RAM, .end = GB_BASE_WORKING_RAM_BANK0 },
+	{ .name = "WRAM", .start = GB_BASE_WORKING_RAM_BANK1, .end = 0xE000 },
+	{ .name = "VRAM", .start = GB_BASE_VRAM, .end = GB_BASE_EXTERNAL_RAM },
+	{ 0 }
+};
+
 struct mVideoLogContext;
 struct GBCore {
 	struct mCore d;
@@ -529,8 +543,15 @@ static bool _GBCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType t
 
 static struct mDebuggerPlatform* _GBCoreDebuggerPlatform(struct mCore* core) {
 	struct GBCore* gbcore = (struct GBCore*) core;
+	struct GB* gb = core->board;
 	if (!gbcore->debuggerPlatform) {
-		gbcore->debuggerPlatform = LR35902DebuggerPlatformCreate();
+		struct LR35902Debugger* platform = (struct LR35902Debugger*) LR35902DebuggerPlatformCreate();
+		if (gb->model >= GB_MODEL_CGB) {
+			platform->segments = _GBCSegments;
+		} else {
+			platform->segments = _GBSegments;
+		}
+		gbcore->debuggerPlatform = &platform->d;
 	}
 	return gbcore->debuggerPlatform;
 }
