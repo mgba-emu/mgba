@@ -147,15 +147,12 @@ void LibraryTree::rebuildTree() {
 	LibraryEntryRef currentGame = selectedEntry();
 
 	int count = m_widget->topLevelItemCount();
-	for (int a = 0; a < count; a++) {
-		m_widget->takeTopLevelItem(0);
+	for (int a = count - 1; a >= 0; --a) {
+		m_widget->takeTopLevelItem(a);
 	}
 
 	for (QTreeWidgetItem* i : m_pathNodes.values()) {
-		count = i->childCount();
-		for (int a = 0; a < count; a++) {
-			i->takeChild(0);
-		}
+		i->takeChildren();
 	}
 
 	if (m_currentStyle == LibraryStyle::STYLE_TREE) {

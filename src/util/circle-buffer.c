@@ -127,7 +127,7 @@ int CircleBufferWrite16(struct CircleBuffer* buffer, int16_t value) {
 
 size_t CircleBufferWrite(struct CircleBuffer* buffer, const void* input, size_t length) {
 	int8_t* data = buffer->writePtr;
-	if (buffer->size + sizeof(int16_t) > buffer->capacity) {
+	if (buffer->size + length > buffer->capacity) {
 		return 0;
 	}
 	size_t remaining = buffer->capacity - ((int8_t*) data - (int8_t*) buffer->data);
