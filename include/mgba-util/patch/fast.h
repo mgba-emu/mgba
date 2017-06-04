@@ -13,7 +13,7 @@ CXX_GUARD_START
 #include <mgba-util/patch.h>
 #include <mgba-util/vector.h>
 
-#define PATCH_FAST_EXTENT 256
+#define PATCH_FAST_EXTENT 128
 
 struct PatchFastExtent {
 	size_t length;

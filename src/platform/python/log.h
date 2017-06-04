@@ -12,4 +12,4 @@ struct mLoggerPy {
 
 struct mLogger* mLoggerPythonCreate(void* pyobj);
 
-extern "Python+C" void _pyLog(void* logger, int category, enum mLogLevel level, const char* message);
+PYEXPORT void _pyLog(void* logger, int category, enum mLogLevel level, const char* message);

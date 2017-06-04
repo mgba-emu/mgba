@@ -21,10 +21,6 @@ using namespace QGBA;
 
 AssetTile::AssetTile(QWidget* parent)
 	: QGroupBox(parent)
-	, m_tileCache(nullptr)
-	, m_paletteId(0)
-	, m_paletteSet(0)
-	, m_index(0)
 {
 	m_ui.setupUi(this);
 
@@ -32,7 +28,7 @@ AssetTile::AssetTile(QWidget* parent)
 	m_ui.color->setDimensions(QSize(1, 1));
 	m_ui.color->setSize(50);
 
-	connect(m_ui.preview, SIGNAL(indexPressed(int)), this, SLOT(selectColor(int)));
+	connect(m_ui.preview, &Swatch::indexPressed, this, &AssetTile::selectColor);
 
 	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 

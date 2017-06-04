@@ -6,6 +6,7 @@
 #include <mgba/internal/gb/overrides.h>
 
 #include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/mbc.h>
 
 #include <mgba-util/configuration.h>
 #include <mgba-util/crc32.h>
@@ -102,6 +103,7 @@ void GBOverrideApply(struct GB* gb, const struct GBCartridgeOverride* override) 
 
 	if (override->mbc != GB_MBC_AUTODETECT) {
 		gb->memory.mbcType = override->mbc;
+		GBMBCInit(gb);
 	}
 }
 

@@ -21,8 +21,10 @@ Q_OBJECT
 public:
 	ObjView(GameController* controller, QWidget* parent = nullptr);
 
+#ifdef USE_PNG
 public slots:
 	void exportObj();
+#endif
 
 private slots:
 	void selectObj(int);
@@ -39,8 +41,8 @@ private:
 	Ui::ObjView m_ui;
 
 	GameController* m_controller;
-	mTileCacheEntry m_tileStatus[1024 * 32]; // TODO: Correct size
-	int m_objId;
+	mTileCacheEntry m_tileStatus[1024 * 32] = {}; // TODO: Correct size
+	int m_objId = 0;
 	struct ObjInfo {
 		unsigned tile;
 		unsigned width;
@@ -51,7 +53,7 @@ private:
 		unsigned bits;
 
 		bool operator!=(const ObjInfo&);
-	} m_objInfo;
+	} m_objInfo = {};
 
 	int m_tileOffset;
 };

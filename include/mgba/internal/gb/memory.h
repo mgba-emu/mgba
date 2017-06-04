@@ -85,6 +85,7 @@ enum GBMBC7MachineState {
 
 struct GBMBC1State {
 	int mode;
+	int multicartStride;
 };
 
 struct GBMBC7State {
@@ -161,13 +162,12 @@ void GBMemorySwitchWramBank(struct GBMemory* memory, int bank);
 uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address);
 void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);
 
+int GBCurrentSegment(struct LR35902Core* cpu, uint16_t address);
+
 uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment);
 
 void GBMemoryDMA(struct GB* gb, uint16_t base);
 void GBMemoryWriteHDMA5(struct GB* gb, uint8_t value);
-
-uint8_t GBDMALoad8(struct LR35902Core* cpu, uint16_t address);
-void GBDMAStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);
 
 void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old, int segment);
 

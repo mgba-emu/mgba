@@ -33,7 +33,7 @@ public slots:
 	virtual void requestSampleRate(unsigned) override;
 
 private:
-	mSDLAudio m_audio;
+	mSDLAudio m_audio{2048, 44100};
 };
 
 }

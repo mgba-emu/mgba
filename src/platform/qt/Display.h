@@ -79,9 +79,9 @@ private:
 	static const int MOUSE_DISAPPEAR_TIMER = 1000;
 
 	MessagePainter m_messagePainter;
-	bool m_lockAspectRatio;
-	bool m_lockIntegerScaling;
-	bool m_filter;
+	bool m_lockAspectRatio = false;
+	bool m_lockIntegerScaling = false;
+	bool m_filter = false;
 	QTimer m_mouseTimer;
 	int m_coreWidth;
 	int m_coreHeight;

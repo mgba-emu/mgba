@@ -22,8 +22,11 @@
 #include <mgba/ds/core.h>
 #include <mgba/internal/ds/ds.h>
 #endif
+#ifndef MINIMAL_CORE
+#include <mgba/feature/video-logger.h>
+#endif
 
-static struct mCoreFilter {
+const static struct mCoreFilter {
 	bool (*filter)(struct VFile*);
 	struct mCore* (*open)(void);
 	enum mPlatform platform;
@@ -44,7 +47,7 @@ struct mCore* mCoreFindVF(struct VFile* vf) {
 	if (!vf) {
 		return NULL;
 	}
-	struct mCoreFilter* filter;
+	const struct mCoreFilter* filter;
 	for (filter = &_filters[0]; filter->filter; ++filter) {
 		if (filter->filter(vf)) {
 			break;
@@ -53,6 +56,9 @@ struct mCore* mCoreFindVF(struct VFile* vf) {
 	if (filter->open) {
 		return filter->open();
 	}
+#ifndef MINIMAL_CORE
+	return mVideoLogCoreFind(vf);
+#endif
 	return NULL;
 }
 
@@ -60,7 +66,7 @@ enum mPlatform mCoreIsCompatible(struct VFile* vf) {
 	if (!vf) {
 		return false;
 	}
-	struct mCoreFilter* filter;
+	const struct mCoreFilter* filter;
 	for (filter = &_filters[0]; filter->filter; ++filter) {
 		if (filter->filter(vf)) {
 			return filter->platform;

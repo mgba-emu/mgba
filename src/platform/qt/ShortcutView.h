@@ -40,8 +40,8 @@ private slots:
 private:
 	Ui::ShortcutView m_ui;
 
-	InputModel* m_controller;
-	InputController* m_input;
+	InputModel* m_controller = nullptr;
+	InputController* m_input = nullptr;
 };
 
 }

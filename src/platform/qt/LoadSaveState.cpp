@@ -23,8 +23,8 @@ using namespace QGBA;
 LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
-	, m_currentFocus(controller->stateSlot() - 1)
 	, m_mode(LoadSave::LOAD)
+	, m_currentFocus(controller->stateSlot() - 1)
 {
 	setAttribute(Qt::WA_TranslucentBackground);
 	m_ui.setupUi(this);
@@ -57,7 +57,7 @@ LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 	}
 
 	QAction* escape = new QAction(this);
-	escape->connect(escape, SIGNAL(triggered()), this, SLOT(close()));
+	connect(escape, &QAction::triggered, this, &QWidget::close);
 	escape->setShortcut(QKeySequence("Esc"));
 	escape->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 	addAction(escape);

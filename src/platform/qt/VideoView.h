@@ -87,18 +87,18 @@ private:
 	QString m_audioCodec;
 	QString m_videoCodec;
 	QString m_container;
-	char* m_audioCodecCstr;
-	char* m_videoCodecCstr;
-	char* m_containerCstr;
+	char* m_audioCodecCstr = nullptr;
+	char* m_videoCodecCstr = nullptr;
+	char* m_containerCstr = nullptr;
 
 	int m_abr;
 	int m_vbr;
 
-	int m_width;
-	int m_height;
+	int m_width = 1;
+	int m_height = 1;
 
-	int m_nativeWidth;
-	int m_nativeHeight;
+	int m_nativeWidth = 0;
+	int m_nativeHeight = 0;
 
 	QMap<QAbstractButton*, Preset> m_presets;
 

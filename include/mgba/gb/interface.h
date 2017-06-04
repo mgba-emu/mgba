@@ -34,6 +34,15 @@ enum GBMemoryBankControllerType {
 	GB_MBC5_RUMBLE = 0x105
 };
 
+struct GBSIODriver {
+	struct GBSIO* p;
+
+	bool (*init)(struct GBSIODriver* driver);
+	void (*deinit)(struct GBSIODriver* driver);
+	void (*writeSB)(struct GBSIODriver* driver, uint8_t value);
+	uint8_t (*writeSC)(struct GBSIODriver* driver, uint8_t value);
+};
+
 CXX_GUARD_END
 
 #endif

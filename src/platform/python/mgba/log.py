@@ -4,11 +4,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from ._pylib import ffi, lib
+from . import createCallback
 
-@ffi.def_extern()
-def _pyLog(logger, category, level, message):
-	l = ffi.cast("struct mLoggerPy*", logger)
-	ffi.from_handle(l.pyobj).log(category, level, ffi.string(message).decode('UTF-8'))
+createCallback("mLoggerPy", "log", "_pyLog")
 
 def installDefault(logger):
 	lib.mLogSetDefaultLogger(logger._native)

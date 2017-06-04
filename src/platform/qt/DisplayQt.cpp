@@ -14,8 +14,6 @@ using namespace QGBA;
 
 DisplayQt::DisplayQt(QWidget* parent)
 	: Display(parent)
-	, m_isDrawing(false)
-	, m_backing(nullptr)
 {
 }
 

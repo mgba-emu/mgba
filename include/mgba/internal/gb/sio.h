@@ -12,6 +12,7 @@ CXX_GUARD_START
 
 #include <mgba/core/log.h>
 #include <mgba/core/timing.h>
+#include <mgba/gb/interface.h>
 
 #define MAX_GBS 2
 
@@ -32,15 +33,6 @@ struct GBSIO {
 	int remainingBits;
 
 	uint8_t pendingSB;
-};
-
-struct GBSIODriver {
-	struct GBSIO* p;
-
-	bool (*init)(struct GBSIODriver* driver);
-	void (*deinit)(struct GBSIODriver* driver);
-	void (*writeSB)(struct GBSIODriver* driver, uint8_t value);
-	uint8_t (*writeSC)(struct GBSIODriver* driver, uint8_t value);
 };
 
 DECL_BITFIELD(GBRegisterSC, uint8_t);

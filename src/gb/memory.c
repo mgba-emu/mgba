@@ -16,6 +16,33 @@
 
 mLOG_DEFINE_CATEGORY(GB_MEM, "GB Memory", "gb.memory");
 
+struct OAMBlock {
+	uint16_t low;
+	uint16_t high;
+};
+
+static const struct OAMBlock _oamBlockDMG[] = {
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+	{ 0x8000, 0xA000 },
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+};
+
+static const struct OAMBlock _oamBlockCGB[] = {
+	{ 0xA000, 0xC000 },
+	{ 0xA000, 0xC000 },
+	{ 0xA000, 0xC000 },
+	{ 0xA000, 0xC000 },
+	{ 0x8000, 0xA000 },
+	{ 0xA000, 0xC000 },
+	{ 0xC000, 0xFE00 },
+	{ 0xA000, 0xC000 },
+};
+
 static void _pristineCow(struct GB* gba);
 
 static uint8_t GBFastLoad8(struct LR35902Core* cpu, uint16_t address) {
@@ -62,6 +89,7 @@ void GBMemoryInit(struct GB* gb) {
 	cpu->memory.cpuLoad8 = GBLoad8;
 	cpu->memory.load8 = GBLoad8;
 	cpu->memory.store8 = GBStore8;
+	cpu->memory.currentSegment = GBCurrentSegment;
 	cpu->memory.setActiveRegion = GBSetActiveRegion;
 
 	gb->memory.wram = 0;
@@ -130,14 +158,14 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.hdmaEvent.callback = _GBMemoryHDMAService;
 	gb->memory.hdmaEvent.priority = 0x41;
 
-	gb->memory.sramAccess = false;
-	gb->memory.rtcAccess = false;
-	gb->memory.activeRtcReg = 0;
-	gb->memory.rtcLatched = false;
-	memset(&gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
-
 	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
-	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
+	switch (gb->memory.mbcType) {
+	case GB_MBC1:
+		gb->memory.mbcState.mbc1.mode = 0;
+		break;
+	default:
+		memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
+	}
 
 	GBMBCInit(gb);
 	gb->memory.sramBank = gb->memory.sram;
@@ -159,6 +187,16 @@ void GBMemorySwitchWramBank(struct GBMemory* memory, int bank) {
 uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
+	if (gb->memory.dmaRemaining) {
+		const struct OAMBlock* block = gb->model < GB_MODEL_CGB ? _oamBlockDMG : _oamBlockCGB;
+		block = &block[memory->dmaSource >> 13];
+		if (address >= block->low && address < block->high) {
+			return 0xFF;
+		}
+		if (address >= GB_BASE_OAM && address < GB_BASE_UNUSABLE) {
+			return 0xFF;
+		}
+	}
 	switch (address >> 12) {
 	case GB_REGION_CART_BANK0:
 	case GB_REGION_CART_BANK0 + 1:
@@ -217,6 +255,16 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
+	if (gb->memory.dmaRemaining) {
+		const struct OAMBlock* block = gb->model < GB_MODEL_CGB ? _oamBlockDMG : _oamBlockCGB;
+		block = &block[memory->dmaSource >> 13];
+		if (address >= block->low && address < block->high) {
+			return;
+		}
+		if (address >= GB_BASE_OAM && address < GB_BASE_UNUSABLE) {
+			return;
+		}
+	}
 	switch (address >> 12) {
 	case GB_REGION_CART_BANK0:
 	case GB_REGION_CART_BANK0 + 1:
@@ -258,6 +306,7 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 		} else if (address < GB_BASE_UNUSABLE) {
 			if (gb->video.mode < 2) {
 				gb->video.oam.raw[address & 0xFF] = value;
+				gb->video.renderer->writeOAM(gb->video.renderer, address & 0xFF);
 			}
 		} else if (address < GB_BASE_IO) {
 			mLOG(GB_MEM, GAME_ERROR, "Attempt to write to unusable memory: %04X:%02X", address, value);
@@ -270,6 +319,37 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 		}
 	}
 }
+
+int GBCurrentSegment(struct LR35902Core* cpu, uint16_t address) {
+	struct GB* gb = (struct GB*) cpu->master;
+	struct GBMemory* memory = &gb->memory;
+	switch (address >> 12) {
+	case GB_REGION_CART_BANK0:
+	case GB_REGION_CART_BANK0 + 1:
+	case GB_REGION_CART_BANK0 + 2:
+	case GB_REGION_CART_BANK0 + 3:
+		return 0;
+	case GB_REGION_CART_BANK1:
+	case GB_REGION_CART_BANK1 + 1:
+	case GB_REGION_CART_BANK1 + 2:
+	case GB_REGION_CART_BANK1 + 3:
+		return memory->currentBank;
+	case GB_REGION_VRAM:
+	case GB_REGION_VRAM + 1:
+		return gb->video.vramCurrentBank;
+	case GB_REGION_EXTERNAL_RAM:
+	case GB_REGION_EXTERNAL_RAM + 1:
+		return memory->sramCurrentBank;
+	case GB_REGION_WORKING_RAM_BANK0:
+	case GB_REGION_WORKING_RAM_BANK0 + 2:
+		return 0;
+	case GB_REGION_WORKING_RAM_BANK1:
+		return memory->wramCurrentBank;
+	default:
+		return 0;
+	}
+}
+
 uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
@@ -356,9 +436,6 @@ void GBMemoryDMA(struct GB* gb, uint16_t base) {
 	if (base > 0xF100) {
 		return;
 	}
-	gb->cpu->memory.store8 = GBDMAStore8;
-	gb->cpu->memory.load8 = GBDMALoad8;
-	gb->cpu->memory.cpuLoad8 = GBDMALoad8;
 	mTimingSchedule(&gb->timing, &gb->memory.dmaEvent, 8);
 	if (gb->cpu->cycles + 8 < gb->cpu->nextEvent) {
 		gb->cpu->nextEvent = gb->cpu->cycles + 8;
@@ -392,17 +469,17 @@ void GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
 
 void _GBMemoryDMAService(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GB* gb = context;
+	int dmaRemaining = gb->memory.dmaRemaining;
+	gb->memory.dmaRemaining = 0;
 	uint8_t b = GBLoad8(gb->cpu, gb->memory.dmaSource);
 	// TODO: Can DMA write OAM during modes 2-3?
 	gb->video.oam.raw[gb->memory.dmaDest] = b;
+	gb->video.renderer->writeOAM(gb->video.renderer, gb->memory.dmaDest);
 	++gb->memory.dmaSource;
 	++gb->memory.dmaDest;
-	--gb->memory.dmaRemaining;
+	gb->memory.dmaRemaining = dmaRemaining - 1;
 	if (gb->memory.dmaRemaining) {
 		mTimingSchedule(timing, &gb->memory.dmaEvent, 4 - cyclesLate);
-	} else {
-		gb->cpu->memory.store8 = GBStore8;
-		gb->cpu->memory.load8 = GBLoad8;
 	}
 }
 
@@ -432,61 +509,6 @@ void _GBMemoryHDMAService(struct mTiming* timing, void* context, uint32_t cycles
 			gb->memory.io[REG_HDMA5] = 0xFF;
 		}
 	}
-}
-
-struct OAMBlock {
-	uint16_t low;
-	uint16_t high;
-};
-
-static const struct OAMBlock _oamBlockDMG[] = {
-	{ 0xA000, 0xFE00 },
-	{ 0xA000, 0xFE00 },
-	{ 0xA000, 0xFE00 },
-	{ 0xA000, 0xFE00 },
-	{ 0x8000, 0xA000 },
-	{ 0xA000, 0xFE00 },
-	{ 0xA000, 0xFE00 },
-	{ 0xA000, 0xFE00 },
-};
-
-static const struct OAMBlock _oamBlockCGB[] = {
-	{ 0xA000, 0xC000 },
-	{ 0xA000, 0xC000 },
-	{ 0xA000, 0xC000 },
-	{ 0xA000, 0xC000 },
-	{ 0x8000, 0xA000 },
-	{ 0xA000, 0xC000 },
-	{ 0xC000, 0xFE00 },
-	{ 0xA000, 0xC000 },
-};
-
-uint8_t GBDMALoad8(struct LR35902Core* cpu, uint16_t address) {
-	struct GB* gb = (struct GB*) cpu->master;
-	struct GBMemory* memory = &gb->memory;
-	const struct OAMBlock* block = gb->model < GB_MODEL_CGB ? _oamBlockDMG : _oamBlockCGB;
-	block = &block[memory->dmaSource >> 13];
-	if (address >= block->low && address < block->high) {
-		return 0xFF;
-	}
-	if (address >= GB_BASE_OAM && address < GB_BASE_UNUSABLE) {
-		return 0xFF;
-	}
-	return GBLoad8(cpu, address);
-}
-
-void GBDMAStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
-	struct GB* gb = (struct GB*) cpu->master;
-	struct GBMemory* memory = &gb->memory;
-	const struct OAMBlock* block = gb->model < GB_MODEL_CGB ? _oamBlockDMG : _oamBlockCGB;
-	block = &block[memory->dmaSource >> 13];
-	if (address >= block->low && address < block->high) {
-		return;
-	}
-	if (address >= GB_BASE_OAM && address < GB_BASE_UNUSABLE) {
-		return;
-	}
-	GBStore8(cpu, address, value);
 }
 
 void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old, int segment) {
@@ -559,6 +581,7 @@ void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* o
 		} else if (address < GB_BASE_UNUSABLE) {
 			oldValue = gb->video.oam.raw[address & 0xFF];
 			gb->video.oam.raw[address & 0xFF] = value;
+			gb->video.renderer->writeOAM(gb->video.renderer, address & 0xFF);
 		} else if (address < GB_BASE_HRAM) {
 			mLOG(GB_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
 			return;
@@ -660,4 +683,5 @@ void _pristineCow(struct GB* gb) {
 	}
 	gb->memory.rom = newRom;
 	GBMBCSwitchBank(gb, gb->memory.currentBank);
+	gb->isPristine = false;
 }

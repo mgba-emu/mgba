@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/debugger/cli-debugger.h>
 
+#include <mgba/internal/debugger/symbols.h>
+
 #include <mgba/core/core.h>
 #include <mgba/core/version.h>
 #include <mgba/internal/debugger/parser.h>
@@ -135,6 +137,10 @@ static void _disassemble(struct CLIDebugger* debugger, struct CLIDebugVector* dv
 
 static void _print(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	for (; dv; dv = dv->next) {
+		if (dv->segmentValue >= 0) {
+			debugger->backend->printf(debugger->backend, " $%02X:%04X", dv->segmentValue, dv->intValue);
+			continue;
+		}
 		debugger->backend->printf(debugger->backend, " %u", dv->intValue);
 	}
 	debugger->backend->printf(debugger->backend, "\n");
@@ -209,7 +215,12 @@ static void _readByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint8_t value = debugger->d.core->busRead8(debugger->d.core, address);
+	uint8_t value;
+	if (dv->segmentValue >= 0) {
+		value = debugger->d.core->rawRead8(debugger->d.core, address, dv->segmentValue);
+	} else {
+		value = debugger->d.core->busRead8(debugger->d.core, address);
+	}
 	debugger->backend->printf(debugger->backend, " 0x%02X\n", value);
 }
 
@@ -225,7 +236,12 @@ static void _readHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* d
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint16_t value = debugger->d.core->busRead16(debugger->d.core, address & ~1);
+	uint16_t value;
+	if (dv->segmentValue >= 0) {
+		value = debugger->d.core->rawRead16(debugger->d.core, address & -1, dv->segmentValue);
+	} else {
+		value = debugger->d.core->busRead16(debugger->d.core, address & ~1);
+	}
 	debugger->backend->printf(debugger->backend, " 0x%04X\n", value);
 }
 
@@ -235,7 +251,12 @@ static void _readWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint32_t value = debugger->d.core->busRead32(debugger->d.core, address & ~3);
+	uint32_t value;
+	if (dv->segmentValue >= 0) {
+		value = debugger->d.core->rawRead32(debugger->d.core, address & -3, dv->segmentValue);
+	} else {
+		value = debugger->d.core->busRead32(debugger->d.core, address & ~3);
+	}
 	debugger->backend->printf(debugger->backend, " 0x%08X\n", value);
 }
 
@@ -254,7 +275,11 @@ static void _writeByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_OVERFLOW);
 		return;
 	}
-	debugger->d.core->busWrite8(debugger->d.core, address, value);
+	if (dv->segmentValue >= 0) {
+		debugger->d.core->rawWrite8(debugger->d.core, address, value, dv->segmentValue);
+	} else {
+		debugger->d.core->busWrite8(debugger->d.core, address, value);
+	}
 }
 
 static void _writeHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -272,7 +297,11 @@ static void _writeHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_OVERFLOW);
 		return;
 	}
-	debugger->d.core->busWrite16(debugger->d.core, address, value);
+	if (dv->segmentValue >= 0) {
+		debugger->d.core->rawWrite16(debugger->d.core, address, value, dv->segmentValue);
+	} else {
+		debugger->d.core->busWrite16(debugger->d.core, address, value);
+	}
 }
 
 static void _writeWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -286,7 +315,11 @@ static void _writeWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 	}
 	uint32_t address = dv->intValue;
 	uint32_t value = dv->next->intValue;
-	debugger->d.core->busWrite32(debugger->d.core, address, value);
+	if (dv->segmentValue >= 0) {
+		debugger->d.core->rawWrite32(debugger->d.core, address, value, dv->segmentValue);
+	} else {
+		debugger->d.core->busWrite32(debugger->d.core, address, value);
+	}
 }
 
 static void _dumpByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -306,7 +339,12 @@ static void _dumpByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		}
 		debugger->backend->printf(debugger->backend, "0x%08X:", address);
 		for (; line > 0; --line, ++address, --words) {
-			uint32_t value = debugger->d.core->busRead8(debugger->d.core, address);
+			uint32_t value;
+			if (dv->segmentValue >= 0) {
+				value = debugger->d.core->rawRead8(debugger->d.core, address, dv->segmentValue);
+			} else {
+				value = debugger->d.core->busRead8(debugger->d.core, address);
+			}
 			debugger->backend->printf(debugger->backend, " %02X", value);
 		}
 		debugger->backend->printf(debugger->backend, "\n");
@@ -330,7 +368,12 @@ static void _dumpHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* d
 		}
 		debugger->backend->printf(debugger->backend, "0x%08X:", address);
 		for (; line > 0; --line, address += 2, --words) {
-			uint32_t value = debugger->d.core->busRead16(debugger->d.core, address);
+			uint32_t value;
+			if (dv->segmentValue >= 0) {
+				value = debugger->d.core->rawRead16(debugger->d.core, address, dv->segmentValue);
+			} else {
+				value = debugger->d.core->busRead16(debugger->d.core, address);
+			}
 			debugger->backend->printf(debugger->backend, " %04X", value);
 		}
 		debugger->backend->printf(debugger->backend, "\n");
@@ -354,7 +397,12 @@ static void _dumpWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		}
 		debugger->backend->printf(debugger->backend, "0x%08X:", address);
 		for (; line > 0; --line, address += 4, --words) {
-			uint32_t value = debugger->d.core->busRead32(debugger->d.core, address);
+			uint32_t value;
+			if (dv->segmentValue >= 0) {
+				value = debugger->d.core->rawRead32(debugger->d.core, address, dv->segmentValue);
+			} else {
+				value = debugger->d.core->busRead32(debugger->d.core, address);
+			}
 			debugger->backend->printf(debugger->backend, " %08X", value);
 		}
 		debugger->backend->printf(debugger->backend, "\n");
@@ -367,7 +415,7 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->setBreakpoint(debugger->d.platform, address);
+	debugger->d.platform->setBreakpoint(debugger->d.platform, address, dv->segmentValue);
 }
 
 static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -380,7 +428,7 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_RW);
+	debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_RW);
 }
 
 static void _setReadWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -393,7 +441,7 @@ static void _setReadWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVect
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_READ);
+	debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_READ);
 }
 
 static void _setWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -406,7 +454,7 @@ static void _setWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVec
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_WRITE);
+	debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_WRITE);
 }
 
 static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -415,9 +463,9 @@ static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->clearBreakpoint(debugger->d.platform, address);
+	debugger->d.platform->clearBreakpoint(debugger->d.platform, address, dv->segmentValue);
 	if (debugger->d.platform->clearWatchpoint) {
-		debugger->d.platform->clearWatchpoint(debugger->d.platform, address);
+		debugger->d.platform->clearWatchpoint(debugger->d.platform, address, dv->segmentValue);
 	}
 }
 
@@ -455,7 +503,11 @@ static uint32_t _performOperation(enum Operation operation, uint32_t current, ui
 static void _lookupIdentifier(struct mDebugger* debugger, const char* name, struct CLIDebugVector* dv) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	if (cliDebugger->system) {
-		uint32_t value = cliDebugger->system->lookupPlatformIdentifier(cliDebugger->system, name, dv);
+		uint32_t value;
+		if (debugger->core->symbolTable && mDebuggerSymbolLookup(debugger->core->symbolTable, name, &dv->intValue, &dv->segmentValue)) {
+			return;
+		}
+		value = cliDebugger->system->lookupPlatformIdentifier(cliDebugger->system, name, dv);
 		if (dv->type != CLIDV_ERROR_TYPE) {
 			dv->intValue = value;
 			return;

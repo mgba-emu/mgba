@@ -98,7 +98,7 @@ void GBAMemoryDeinit(struct GBA* gba) {
 }
 
 void GBAMemoryReset(struct GBA* gba) {
-	if (gba->memory.rom || gba->memory.fullBios) {
+	if (gba->memory.rom || gba->memory.fullBios || !gba->memory.wram) {
 		// Not multiboot
 		if (gba->memory.wram) {
 			mappedMemoryFree(gba->memory.wram, SIZE_WORKING_RAM);

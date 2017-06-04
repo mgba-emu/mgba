@@ -26,10 +26,10 @@ CXX_GUARD_START
 enum mPlatform {
 	PLATFORM_NONE = -1,
 #ifdef M_CORE_GBA
-	PLATFORM_GBA,
+	PLATFORM_GBA = 0,
 #endif
 #ifdef M_CORE_GB
-	PLATFORM_GB,
+	PLATFORM_GB = 1,
 #endif
 #ifdef M_CORE_DS
 	PLATFORM_DS,
@@ -42,11 +42,14 @@ enum mCoreChecksumType {
 
 struct mCoreConfig;
 struct mCoreSync;
+struct mDebuggerSymbols;
 struct mStateExtdata;
+struct mVideoLogContext;
 struct mCore {
 	void* cpu;
 	void* board;
 	struct mDebugger* debugger;
+	struct mDebuggerSymbols* symbolTable;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct mDirectorySet dirs;
@@ -141,6 +144,8 @@ struct mCore {
 	struct CLIDebuggerSystem* (*cliDebuggerSystem)(struct mCore*);
 	void (*attachDebugger)(struct mCore*, struct mDebugger*);
 	void (*detachDebugger)(struct mCore*);
+
+	void (*loadSymbols)(struct mCore*, struct VFile*);
 #endif
 
 	struct mCheatDevice* (*cheatDevice)(struct mCore*);
@@ -152,6 +157,11 @@ struct mCore {
 	size_t (*listAudioChannels)(const struct mCore*, const struct mCoreChannelInfo**);
 	void (*enableVideoLayer)(struct mCore*, size_t id, bool enable);
 	void (*enableAudioChannel)(struct mCore*, size_t id, bool enable);
+
+#ifndef MINIMAL_CORE
+	void (*startVideoLog)(struct mCore*, struct mVideoLogContext*);
+	void (*endVideoLog)(struct mCore*);
+#endif
 };
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

@@ -145,7 +145,12 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		selectBios(m_ui.gbcBios);
 	});
 
-	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(updateConfig()));
+	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &SettingsView::updateConfig);
+	connect(m_ui.buttonBox, &QDialogButtonBox::clicked, [this](QAbstractButton* button) {
+		if (m_ui.buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole) {
+			updateConfig();
+		}
+	});
 
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setModel(inputModel);
@@ -191,6 +196,7 @@ void SettingsView::updateConfig() {
 	saveSetting("savestatePath", m_ui.savestatePath);
 	saveSetting("screenshotPath", m_ui.screenshotPath);
 	saveSetting("patchPath", m_ui.patchPath);
+	saveSetting("libraryStyle", m_ui.libraryStyle->currentIndex());
 	saveSetting("showLibrary", m_ui.showLibrary);
 	saveSetting("preload", m_ui.preload);
 

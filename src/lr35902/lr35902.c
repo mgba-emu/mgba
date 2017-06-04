@@ -158,6 +158,10 @@ void LR35902Tick(struct LR35902Core* cpu) {
 void LR35902Run(struct LR35902Core* cpu) {
 	bool running = true;
 	while (running || cpu->executionState != LR35902_CORE_FETCH) {
+		if (cpu->cycles >= cpu->nextEvent) {
+			cpu->irqh.processEvents(cpu);
+			break;
+		}
 		_LR35902Step(cpu);
 		if (cpu->cycles + 2 >= cpu->nextEvent) {
 			int32_t diff = cpu->nextEvent - cpu->cycles;
@@ -172,9 +176,5 @@ void LR35902Run(struct LR35902Core* cpu) {
 		cpu->executionState = LR35902_CORE_FETCH;
 		cpu->instruction(cpu);
 		++cpu->cycles;
-		if (cpu->cycles >= cpu->nextEvent) {
-			cpu->irqh.processEvents(cpu);
-			running = false;
-		}
 	}
 }

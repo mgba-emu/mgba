@@ -29,6 +29,7 @@ struct GBAAudio;
 struct mCoreConfig;
 struct mDebugger;
 struct mTileCache;
+struct mVideoLogContext;
 
 namespace QGBA {
 
@@ -87,7 +88,7 @@ public:
 
 	int stateSlot() const { return m_stateSlot; }
 
-#ifdef USE_GDB_STUB
+#ifdef USE_DEBUGGERS
 	mDebugger* debugger();
 	void setDebugger(mDebugger*);
 #endif
@@ -177,6 +178,9 @@ public slots:
 	void enableLogLevel(int);
 	void disableLogLevel(int);
 
+	void startVideoLog(const QString& path);
+	void endVideoLog();
+
 private slots:
 	void openGame(bool bios = false);
 	void crashGame(const QString& crashMessage);
@@ -190,60 +194,63 @@ private:
 	void redoSamples(int samples);
 	void enableTurbo();
 
-	uint32_t* m_drawContext;
-	uint32_t* m_frontBuffer;
-	mCoreThread m_threadContext;
+	uint32_t* m_drawContext = nullptr;
+	uint32_t* m_frontBuffer = nullptr;
+	mCoreThread m_threadContext{};
 	const mCoreConfig* m_config;
 	mCheatDevice* m_cheatDevice;
-	int m_activeKeys;
-	int m_activeButtons;
-	int m_inactiveKeys;
-	int m_logLevels;
+	int m_activeKeys = 0;
+	int m_activeButtons = 0;
+	int m_inactiveKeys = 0;
+	int m_logLevels = 0;
 
-	bool m_gameOpen;
+	bool m_gameOpen = false;
 
 	QString m_fname;
 	QString m_fsub;
-	VFile* m_vf;
+	VFile* m_vf = nullptr;
 	QString m_bios;
-	bool m_useBios;
+	bool m_useBios = false;
 	QString m_patch;
-	Override* m_override;
+	Override* m_override = nullptr;
 
 	AudioProcessor* m_audioProcessor;
 
-	QAtomicInt m_pauseAfterFrame;
+	QAtomicInt m_pauseAfterFrame{false};
 	QList<std::function<void ()>> m_resetActions;
 
-	bool m_sync;
-	bool m_videoSync;
-	bool m_audioSync;
-	float m_fpsTarget;
-	bool m_turbo;
-	bool m_turboForced;
-	float m_turboSpeed;
-	bool m_wasPaused;
+	bool m_sync = true;
+	bool m_videoSync = VIDEO_SYNC;
+	bool m_audioSync = AUDIO_SYNC;
+	float m_fpsTarget = -1;
+	bool m_turbo = false;
+	bool m_turboForced = false;
+	float m_turboSpeed = -1;
+	bool m_wasPaused = false;
 
 	std::shared_ptr<mTileCache> m_tileCache;
 
 	QList<bool> m_audioChannels;
 	QList<bool> m_videoLayers;
 
-	bool m_autofire[GBA_KEY_MAX];
-	int m_autofireStatus[GBA_KEY_MAX];
+	bool m_autofire[GBA_KEY_MAX] = {};
+	int m_autofireStatus[GBA_KEY_MAX] = {};
 
-	int m_stateSlot;
-	struct VFile* m_backupLoadState;
-	QByteArray m_backupSaveState;
+	int m_stateSlot = 1;
+	struct VFile* m_backupLoadState = nullptr;
+	QByteArray m_backupSaveState{nullptr};
 	int m_saveStateFlags;
 	int m_loadStateFlags;
 
-	bool m_preload;
+	bool m_preload = false;
 
-	InputController* m_inputController;
-	MultiplayerController* m_multiplayer;
+	InputController* m_inputController = nullptr;
+	MultiplayerController* m_multiplayer = nullptr;
 
-	mAVStream* m_stream;
+	mAVStream* m_stream = nullptr;
+
+	mVideoLogContext* m_vl = nullptr;
+	VFile* m_vlVf = nullptr;
 
 	struct GameControllerLux : GBALuminanceSource {
 		GameController* p;

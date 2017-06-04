@@ -22,6 +22,7 @@ static void _pyLogShim(struct mLogger* logger, int category, enum mLogLevel leve
 struct mLogger* mLoggerPythonCreate(void* pyobj) {
 	struct mLoggerPy* logger = malloc(sizeof(*logger));
 	logger->d.log = _pyLogShim;
+	logger->d.filter = NULL;
 	logger->pyobj = pyobj;
 	return &logger->d;
 }

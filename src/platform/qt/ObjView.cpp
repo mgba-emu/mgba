@@ -27,9 +27,6 @@ using namespace QGBA;
 ObjView::ObjView(GameController* controller, QWidget* parent)
 	: AssetView(controller, parent)
 	, m_controller(controller)
-	, m_tileStatus{}
-	, m_objId(0)
-	, m_objInfo{}
 {
 	m_ui.setupUi(this);
 	m_ui.tile->setController(controller);
@@ -46,12 +43,16 @@ ObjView::ObjView(GameController* controller, QWidget* parent)
 	m_ui.transform->setFont(font);
 	m_ui.mode->setFont(font);
 
-	connect(m_ui.tiles, SIGNAL(indexPressed(int)), this, SLOT(translateIndex(int)));
-	connect(m_ui.objId, SIGNAL(valueChanged(int)), this, SLOT(selectObj(int)));
+	connect(m_ui.tiles, &TilePainter::indexPressed, this, &ObjView::translateIndex);
+	connect(m_ui.objId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &ObjView::selectObj);
 	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this]() {
 		updateTiles(true);
 	});
-	connect(m_ui.exportButton, SIGNAL(clicked()), this, SLOT(exportObj()));
+#ifdef USE_PNG
+	connect(m_ui.exportButton, &QAbstractButton::clicked, this, &ObjView::exportObj);
+#else
+	m_ui.exportButton->setVisible(false);
+#endif
 }
 
 void ObjView::selectObj(int obj) {
@@ -242,6 +243,7 @@ void ObjView::updateTilesGB(bool force) {
 }
 #endif
 
+#ifdef USE_PNG
 void ObjView::exportObj() {
 	GameController::Interrupter interrupter(m_controller);
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export sprite"),
@@ -282,6 +284,7 @@ void ObjView::exportObj() {
 	PNGWriteClose(png, info);
 	delete[] buffer;
 }
+#endif
 
 bool ObjView::ObjInfo::operator!=(const ObjInfo& other) {
 	return other.tile != tile ||

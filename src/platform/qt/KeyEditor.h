@@ -54,10 +54,10 @@ private:
 
 	void updateButtonText();
 
-	int m_key;
-	int m_axis;
-	int m_hat;
-	bool m_button;
+	int m_key = -1;
+	int m_axis = -1;
+	int m_hat = -1;
+	bool m_button = false;
 	GamepadAxisEvent::Direction m_direction;
 	GamepadHatEvent::Direction m_hatDirection;
 	QTimer m_lastKey;

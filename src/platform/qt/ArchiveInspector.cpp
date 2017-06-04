@@ -13,11 +13,12 @@ ArchiveInspector::ArchiveInspector(const QString& filename, QWidget* parent)
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);
-	connect(m_ui.archiveView, &LibraryView::doneLoading, [this]() {
+	connect(m_ui.archiveView, &LibraryController::doneLoading, [this]() {
 		m_ui.loading->hide();
 	});
-	connect(m_ui.archiveView, SIGNAL(accepted()), this, SIGNAL(accepted()));
-	m_ui.archiveView->setDirectory(filename);
+	connect(m_ui.archiveView, &LibraryController::startGame, this, &ArchiveInspector::accepted);
+	m_ui.archiveView->setViewStyle(LibraryStyle::STYLE_LIST);
+	m_ui.archiveView->addDirectory(filename);
 }
 
 VFile* ArchiveInspector::selectedVFile() const {

@@ -47,8 +47,8 @@ protected:
 	mCoreThread* input() { return m_context; }
 
 private:
-	mCoreThread* m_context;
-	int m_samples;
+	mCoreThread* m_context = nullptr;
+	int m_samples = 2048;
 	static Driver s_driver;
 };
 

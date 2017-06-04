@@ -20,7 +20,7 @@
 #include <mgba/core/thread.h>
 #include <mgba/internal/gba/input.h>
 
-#include "feature/commandline.h"
+#include <mgba/feature/commandline.h>
 #include <mgba-util/vfs.h>
 
 #include <SDL.h>
@@ -114,6 +114,7 @@ int main(int argc, char** argv) {
 #endif
 
 	renderer.lockAspectRatio = renderer.core->opts.lockAspectRatio;
+	renderer.lockIntegerScaling = renderer.core->opts.lockIntegerScaling;
 	renderer.filter = renderer.core->opts.resampleVideo;
 
 	if (!mSDLInit(&renderer)) {

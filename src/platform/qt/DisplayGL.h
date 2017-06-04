@@ -6,6 +6,8 @@
 #ifndef QGBA_DISPLAY_GL
 #define QGBA_DISPLAY_GL
 
+#if defined(BUILD_GL) || defined(BUILD_GLES)
+
 #include "Display.h"
 
 #ifdef USE_EPOXY
@@ -68,11 +70,11 @@ protected:
 private:
 	void resizePainter();
 
-	bool m_isDrawing;
+	bool m_isDrawing = false;
 	QGLWidget* m_gl;
 	PainterGL* m_painter;
-	QThread* m_drawThread;
-	mCoreThread* m_context;
+	QThread* m_drawThread = nullptr;
+	mCoreThread* m_context = nullptr;
 };
 
 class PainterGL : public QObject {
@@ -126,5 +128,7 @@ private:
 };
 
 }
+
+#endif
 
 #endif

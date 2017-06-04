@@ -11,7 +11,7 @@
 
 #include <inttypes.h>
 
-#define SECTION_NAME_MAX 128
+#define SECTION_NAME_MAX 50
 #define KEY_NAME_MAX 32
 #define KEY_VALUE_MAX 16
 #define AXIS_INFO_MAX 12
@@ -563,7 +563,7 @@ void mInputUnbindHat(struct mInputMap* map, uint32_t type, int id) {
 		mInputHatListResize(&impl->hats, -1);
 	} else {
 		struct mInputHatBindings* description = mInputHatListGetPointer(&impl->hats, id);
-		memset(description, -1, sizeof(&description));
+		memset(description, -1, sizeof(*description));
 	}
 }
 

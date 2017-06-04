@@ -40,8 +40,8 @@ private:
 	static const int DEFAULT_LINE_LIMIT = 1000;
 
 	Ui::LogView m_ui;
-	int m_lines;
-	int m_lineLimit;
+	int m_lines = 0;
+	int m_lineLimit = DEFAULT_LINE_LIMIT;
 	QQueue<QString> m_pendingLines;
 
 	void setLevel(int level, bool);

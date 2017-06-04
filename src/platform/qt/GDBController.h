@@ -40,7 +40,7 @@ private:
 
 	GDBStub m_gdbStub;
 
-	ushort m_port;
+	ushort m_port = 2345;
 	Address m_bindAddress;
 };
 

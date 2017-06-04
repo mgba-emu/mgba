@@ -11,6 +11,9 @@
 CXX_GUARD_START
 
 #include <mgba-util/vector.h>
+#ifndef DISABLE_THREADING
+#include <mgba-util/threading.h>
+#endif
 
 DECLARE_VECTOR(mCoreRewindPatches, struct PatchFast);
 
@@ -22,9 +25,16 @@ struct mCoreRewindContext {
 	int stateFlags;
 	struct VFile* previousState;
 	struct VFile* currentState;
+
+#ifndef DISABLE_THREADING
+	bool onThread;
+	Thread thread;
+	Condition cond;
+	Mutex mutex;
+#endif
 };
 
-void mCoreRewindContextInit(struct mCoreRewindContext*, size_t entries);
+void mCoreRewindContextInit(struct mCoreRewindContext*, size_t entries, bool onThread);
 void mCoreRewindContextDeinit(struct mCoreRewindContext*);
 
 struct mCore;
