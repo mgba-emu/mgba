@@ -54,6 +54,8 @@ struct LR35902Memory {
 	uint8_t (*load8)(struct LR35902Core*, uint16_t address);
 	void (*store8)(struct LR35902Core*, uint16_t address, int8_t value);
 
+	int (*currentSegment)(struct LR35902Core*, uint16_t address);
+
 	uint8_t* activeRegion;
 	uint16_t activeMask;
 	uint16_t activeRegionEnd;

@@ -349,6 +349,9 @@ void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts)
 	if (_lookupIntValue(config, "lockAspectRatio", &fakeBool)) {
 		opts->lockAspectRatio = fakeBool;
 	}
+	if (_lookupIntValue(config, "lockIntegerScaling", &fakeBool)) {
+		opts->lockIntegerScaling = fakeBool;
+	}
 	if (_lookupIntValue(config, "resampleVideo", &fakeBool)) {
 		opts->resampleVideo = fakeBool;
 	}
@@ -396,6 +399,7 @@ void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptio
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "volume", opts->volume);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "mute", opts->mute);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "lockAspectRatio", opts->lockAspectRatio);
+	ConfigurationSetIntValue(&config->defaultsTable, 0, "lockIntegerScaling", opts->lockIntegerScaling);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "resampleVideo", opts->resampleVideo);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "suspendScreensaver", opts->suspendScreensaver);
 }

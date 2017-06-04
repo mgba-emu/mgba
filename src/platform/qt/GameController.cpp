@@ -32,44 +32,16 @@
 #include <mgba/internal/gb/renderers/tile-cache.h>
 #endif
 #include <mgba-util/vfs.h>
+#include <mgba/feature/video-logger.h>
 
 using namespace QGBA;
 using namespace std;
 
 GameController::GameController(QObject* parent)
 	: QObject(parent)
-	, m_drawContext(nullptr)
-	, m_frontBuffer(nullptr)
-	, m_threadContext()
-	, m_activeKeys(0)
-	, m_inactiveKeys(0)
-	, m_logLevels(0)
-	, m_gameOpen(false)
-	, m_vf(nullptr)
-	, m_useBios(false)
 	, m_audioProcessor(AudioProcessor::create())
-	, m_pauseAfterFrame(false)
-	, m_sync(true)
-	, m_videoSync(VIDEO_SYNC)
-	, m_audioSync(AUDIO_SYNC)
-	, m_fpsTarget(-1)
-	, m_turbo(false)
-	, m_turboForced(false)
-	, m_turboSpeed(-1)
-	, m_wasPaused(false)
-	, m_audioChannels{ true, true, true, true, true, true }
-	, m_videoLayers{ true, true, true, true, true }
-	, m_autofire{}
-	, m_autofireStatus{}
-	, m_inputController(nullptr)
-	, m_multiplayer(nullptr)
-	, m_stream(nullptr)
-	, m_stateSlot(1)
-	, m_backupLoadState(nullptr)
-	, m_backupSaveState(nullptr)
 	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC)
 	, m_loadStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_RTC)
-	, m_override(nullptr)
 {
 #ifdef M_CORE_GBA
 	m_lux.p = this;
@@ -87,38 +59,20 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.startCallback = [](mCoreThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		context->core->setRotation(context->core, controller->m_inputController->rotationSource());
-		context->core->setRumble(context->core, controller->m_inputController->rumble());
+		context->core->setPeripheral(context->core, mPERIPH_ROTATION, controller->m_inputController->rotationSource());
+		context->core->setPeripheral(context->core, mPERIPH_RUMBLE, controller->m_inputController->rumble());
 
-#ifdef M_CORE_GBA
-		GBA* gba = static_cast<GBA*>(context->core->board);
-#endif
-#ifdef M_CORE_GB
-		GB* gb = static_cast<GB*>(context->core->board);
-#endif
+		for (size_t i = 0; i < controller->m_audioChannels.size(); ++i) {
+			context->core->enableAudioChannel(context->core, i, controller->m_audioChannels[i]);
+		}
+		for (size_t i = 0; i < controller->m_videoLayers.size(); ++i) {
+			context->core->enableVideoLayer(context->core, i, controller->m_videoLayers[i]);
+		}
+
 		switch (context->core->platform(context->core)) {
 #ifdef M_CORE_GBA
 		case PLATFORM_GBA:
-			gba->luminanceSource = &controller->m_lux;
-			gba->audio.psg.forceDisableCh[0] = !controller->m_audioChannels[0];
-			gba->audio.psg.forceDisableCh[1] = !controller->m_audioChannels[1];
-			gba->audio.psg.forceDisableCh[2] = !controller->m_audioChannels[2];
-			gba->audio.psg.forceDisableCh[3] = !controller->m_audioChannels[3];
-			gba->audio.forceDisableChA = !controller->m_audioChannels[4];
-			gba->audio.forceDisableChB = !controller->m_audioChannels[5];
-			gba->video.renderer->disableBG[0] = !controller->m_videoLayers[0];
-			gba->video.renderer->disableBG[1] = !controller->m_videoLayers[1];
-			gba->video.renderer->disableBG[2] = !controller->m_videoLayers[2];
-			gba->video.renderer->disableBG[3] = !controller->m_videoLayers[3];
-			gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];
-			break;
-#endif
-#ifdef M_CORE_GB
-		case PLATFORM_GB:
-			gb->audio.forceDisableCh[0] = !controller->m_audioChannels[0];
-			gb->audio.forceDisableCh[1] = !controller->m_audioChannels[1];
-			gb->audio.forceDisableCh[2] = !controller->m_audioChannels[2];
-			gb->audio.forceDisableCh[3] = !controller->m_audioChannels[3];
+			context->core->setPeripheral(context->core, mPERIPH_GBA_LUMINANCE, &controller->m_lux);
 			break;
 #endif
 		default:
@@ -173,8 +127,9 @@ GameController::GameController(QObject* parent)
 		}
 		controller->m_patch = QString();
 		controller->clearOverride();
+		controller->endVideoLog();
 
-		controller->m_audioProcessor->pause();
+		QMetaObject::invokeMethod(controller->m_audioProcessor, "pause");
 
 		QMetaObject::invokeMethod(controller, "gameStopped", Q_ARG(mCoreThread*, context));
 		QMetaObject::invokeMethod(controller, "cleanGame");
@@ -217,18 +172,16 @@ GameController::GameController(QObject* parent)
 		}
 	};
 
-	// TODO: Put back
-	/*m_threadContext.stopCallback = [](mCoreThread* context) {
+	m_threadContext.sleepCallback = [](mCoreThread* context) {
 		if (!context) {
-			return false;
+			return;
 		}
 		GameController* controller = static_cast<GameController*>(context->userData);
 		if (!mCoreSaveState(context->core, 0, controller->m_saveStateFlags)) {
-			return false;
+			return;
 		}
 		QMetaObject::invokeMethod(controller, "closeGame");
-		return true;
-	};*/
+	};
 
 	m_threadContext.logger.d.log = [](mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
 		mThreadLogger* logContext = reinterpret_cast<mThreadLogger*>(logger);
@@ -292,10 +245,10 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.userData = this;
 
-	connect(this, SIGNAL(gamePaused(mCoreThread*)), m_audioProcessor, SLOT(pause()));
-	connect(this, SIGNAL(gameStarted(mCoreThread*, const QString&)), m_audioProcessor, SLOT(setInput(mCoreThread*)));
-	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(pollEvents()));
-	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updateAutofire()));
+	connect(this, &GameController::gamePaused, m_audioProcessor, &AudioProcessor::pause);
+	connect(this, &GameController::gameStarted, m_audioProcessor, &AudioProcessor::setInput);
+	connect(this, &GameController::frameAvailable, this, &GameController::pollEvents);
+	connect(this, &GameController::frameAvailable, this, &GameController::updateAutofire);
 }
 
 GameController::~GameController() {
@@ -345,11 +298,13 @@ void GameController::setConfig(const mCoreConfig* config) {
 	if (isLoaded()) {
 		Interrupter interrupter(this);
 		mCoreLoadForeignConfig(m_threadContext.core, config);
+		m_audioSync = m_threadContext.sync.audioWait;
+		m_videoSync = m_threadContext.sync.videoFrameWait;
 		m_audioProcessor->setInput(&m_threadContext);
 	}
 }
 
-#ifdef USE_GDB_STUB
+#ifdef USE_DEBUGGERS
 mDebugger* GameController::debugger() {
 	if (!isLoaded()) {
 		return nullptr;
@@ -407,10 +362,10 @@ void GameController::loadGame(VFile* vf, const QString& path, const QString& bas
 	closeGame();
 	QFileInfo info(base);
 	if (info.isDir()) {
-		m_fname = base + QDir::separator() + path;
+		m_fname = QFileInfo(base + '/' + path).canonicalFilePath();
 		m_fsub = QString();
 	} else {
-		m_fname = base;
+		m_fname = info.canonicalFilePath();
 		m_fsub = path;
 	}
 	m_vf = vf;
@@ -476,11 +431,20 @@ void GameController::openGame(bool biosOnly) {
 	QByteArray bytes;
 	if (!biosOnly) {
 		bytes = m_fname.toUtf8();
-		if (m_vf) {
-			m_threadContext.core->loadROM(m_threadContext.core, m_vf);
+		if (m_preload) {
+			if (m_vf) {
+				mCorePreloadVF(m_threadContext.core, m_vf);
+			} else {
+				mCorePreloadFile(m_threadContext.core, bytes.constData());
+				mDirectorySetDetachBase(&m_threadContext.core->dirs);
+			}
 		} else {
-			mCoreLoadFile(m_threadContext.core, bytes.constData());
-			mDirectorySetDetachBase(&m_threadContext.core->dirs);
+			if (m_vf) {
+				m_threadContext.core->loadROM(m_threadContext.core, m_vf);
+			} else {
+				mCoreLoadFile(m_threadContext.core, bytes.constData());
+				mDirectorySetDetachBase(&m_threadContext.core->dirs);
+			}
 		}
 	} else {
 		bytes = m_bios.toUtf8();
@@ -630,7 +594,9 @@ void GameController::closeGame() {
 	if (!m_gameOpen) {
 		return;
 	}
-
+#ifdef USE_DEBUGGERS
+	setDebugger(nullptr);
+#endif
 	if (mCoreThreadIsPaused(&m_threadContext)) {
 		mCoreThreadUnpause(&m_threadContext);
 	}
@@ -641,6 +607,8 @@ void GameController::cleanGame() {
 	if (!m_gameOpen || mCoreThreadIsActive(&m_threadContext)) {
 		return;
 	}
+
+	m_audioProcessor->pause();
 	mCoreThreadJoin(&m_threadContext);
 
 	if (m_tileCache) {
@@ -651,7 +619,9 @@ void GameController::cleanGame() {
 	delete[] m_drawContext;
 	delete[] m_frontBuffer;
 
+	mCoreConfigDeinit(&m_threadContext.core->config);
 	m_threadContext.core->deinit(m_threadContext.core);
+	m_threadContext.core = nullptr;
 	m_gameOpen = false;
 }
 
@@ -739,8 +709,8 @@ void GameController::setRewind(bool enable, int capacity, bool rewindSave) {
 		m_threadContext.core->opts.rewindBufferCapacity = capacity;
 		m_threadContext.core->opts.rewindSave = rewindSave;
 		if (enable && capacity > 0) {
-			mCoreRewindContextInit(&m_threadContext.rewind, capacity);
-			 m_threadContext.rewind.stateFlags = rewindSave ? SAVESTATE_SAVEDATA : 0;
+			mCoreRewindContextInit(&m_threadContext.rewind, capacity, true);
+			m_threadContext.rewind.stateFlags = rewindSave ? SAVESTATE_SAVEDATA : 0;
 		}
 	}
 }
@@ -863,47 +833,13 @@ void GameController::setAudioChannelEnabled(int channel, bool enable) {
 	if (channel > 5 || channel < 0) {
 		return;
 	}
-#ifdef M_CORE_GBA
-	GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
-#endif
-#ifdef M_CORE_GB
-	GB* gb = static_cast<GB*>(m_threadContext.core->board);
-#endif
+	m_audioChannels.reserve(channel + 1);
+	while (m_audioChannels.size() <= channel) {
+		m_audioChannels.append(true);
+	}
 	m_audioChannels[channel] = enable;
 	if (isLoaded()) {
-		switch (channel) {
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-			switch (m_threadContext.core->platform(m_threadContext.core)) {
-#ifdef M_CORE_GBA
-			case PLATFORM_GBA:
-				gba->audio.psg.forceDisableCh[channel] = !enable;
-				break;
-#endif
-#ifdef M_CORE_GB
-			case PLATFORM_GB:
-				gb->audio.forceDisableCh[channel] = !enable;
-				break;
-#endif
-			default:
-				break;
-			}
-			break;
-#ifdef M_CORE_GBA
-		case 4:
-			if (m_threadContext.core->platform(m_threadContext.core) == PLATFORM_GBA) {
-				gba->audio.forceDisableChA = !enable;
-			}
-			break;
-		case 5:
-			if (m_threadContext.core->platform(m_threadContext.core) == PLATFORM_GBA) {
-				gba->audio.forceDisableChB = !enable;
-			}
-			break;
-#endif
-		}
+		m_threadContext.core->enableAudioChannel(m_threadContext.core, channel, enable);
 	}
 }
 
@@ -922,23 +858,14 @@ void GameController::setVideoLayerEnabled(int layer, bool enable) {
 	if (layer > 4 || layer < 0) {
 		return;
 	}
-	m_videoLayers[layer] = enable;
-#ifdef M_CORE_GBA
-	if (isLoaded() && m_threadContext.core->platform(m_threadContext.core) == PLATFORM_GBA) {
-		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
-		switch (layer) {
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-			gba->video.renderer->disableBG[layer] = !enable;
-			break;
-		case 4:
-			gba->video.renderer->disableOBJ = !enable;
-			break;
-		}
+	m_videoLayers.reserve(layer + 1);
+	while (m_videoLayers.size() <= layer) {
+		m_videoLayers.append(true);
 	}
-#endif
+	m_videoLayers[layer] = enable;
+	if (isLoaded()) {
+		m_threadContext.core->enableVideoLayer(m_threadContext.core, layer, enable);
+	}
 }
 
 void GameController::setFPSTarget(float fps) {
@@ -980,8 +907,8 @@ void GameController::loadState(int slot) {
 		}
 		mCoreLoadStateNamed(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
 		if (mCoreLoadState(context->core, controller->m_stateSlot, controller->m_loadStateFlags)) {
-			controller->frameAvailable(controller->m_drawContext);
-			controller->stateLoaded(context);
+			emit controller->frameAvailable(controller->m_drawContext);
+			emit controller->stateLoaded(context);
 		}
 	});
 }
@@ -1098,6 +1025,17 @@ void GameController::setSync(bool enable) {
 	}
 	m_sync = enable;
 }
+
+void GameController::setAudioSync(bool enable) {
+	m_audioSync = enable;
+	m_threadContext.sync.audioWait = enable;
+}
+
+void GameController::setVideoSync(bool enable) {
+	m_videoSync = enable;
+	m_threadContext.sync.videoFrameWait = enable;
+}
+
 void GameController::setAVStream(mAVStream* stream) {
 	Interrupter interrupter(this);
 	m_stream = stream;
@@ -1138,8 +1076,8 @@ void GameController::reloadAudioDriver() {
 	if (sampleRate) {
 		m_audioProcessor->requestSampleRate(sampleRate);
 	}
-	connect(this, SIGNAL(gamePaused(mCoreThread*)), m_audioProcessor, SLOT(pause()));
-	connect(this, SIGNAL(gameStarted(mCoreThread*, const QString&)), m_audioProcessor, SLOT(setInput(mCoreThread*)));
+	connect(this, &GameController::gamePaused, m_audioProcessor, &AudioProcessor::pause);
+	connect(this, &GameController::gameStarted, m_audioProcessor, &AudioProcessor::setInput);
 	if (isLoaded()) {
 		m_audioProcessor->setInput(&m_threadContext);
 		startAudio();
@@ -1152,6 +1090,10 @@ void GameController::setSaveStateExtdata(int flags) {
 
 void GameController::setLoadStateExtdata(int flags) {
 	m_loadStateFlags = flags;
+}
+
+void GameController::setPreload(bool preload) {
+	m_preload = preload;
 }
 
 void GameController::setLuminanceValue(uint8_t value) {
@@ -1209,7 +1151,7 @@ void GameController::updateKeys() {
 }
 
 void GameController::redoSamples(int samples) {
-	if (m_threadContext.core) {
+	if (m_gameOpen && m_threadContext.core) {
 		m_threadContext.core->setAudioBufferSize(m_threadContext.core, samples);
 	}
 	m_audioProcessor->inputParametersChanged();
@@ -1228,6 +1170,32 @@ void GameController::enableLogLevel(int levels) {
 void GameController::disableLogLevel(int levels) {
 	Interrupter interrupter(this);
 	m_logLevels &= ~levels;
+}
+
+void GameController::startVideoLog(const QString& path) {
+	if (!isLoaded() || m_vl) {
+		return;
+	}
+
+	Interrupter interrupter(this);
+	m_vl = mVideoLogContextCreate(m_threadContext.core);
+	m_vlVf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
+	mVideoLogContextSetOutput(m_vl, m_vlVf);
+	mVideoLogContextWriteHeader(m_vl, m_threadContext.core);
+}
+
+void GameController::endVideoLog() {
+	if (!m_vl) {
+		return;
+	}
+
+	Interrupter interrupter(this);
+	mVideoLogContextDestroy(m_threadContext.core, m_vl);
+	if (m_vlVf) {
+		m_vlVf->close(m_vlVf);
+		m_vlVf = nullptr;
+	}
+	m_vl = nullptr;
 }
 
 void GameController::pollEvents() {
@@ -1258,10 +1226,10 @@ std::shared_ptr<mTileCache> GameController::tileCache() {
 	if (m_tileCache) {
 		return m_tileCache;
 	}
+	Interrupter interrupter(this);
 	switch (platform()) {
 #ifdef M_CORE_GBA
 	case PLATFORM_GBA: {
-		Interrupter interrupter(this);
 		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
 		m_tileCache = std::make_shared<mTileCache>();
 		GBAVideoTileCacheInit(m_tileCache.get());
@@ -1272,7 +1240,6 @@ std::shared_ptr<mTileCache> GameController::tileCache() {
 #endif
 #ifdef M_CORE_GB
 	case PLATFORM_GB: {
-		Interrupter interrupter(this);
 		GB* gb = static_cast<GB*>(m_threadContext.core->board);
 		m_tileCache = std::make_shared<mTileCache>();
 		GBVideoTileCacheInit(m_tileCache.get());

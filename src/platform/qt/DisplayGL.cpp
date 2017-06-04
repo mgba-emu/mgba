@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "DisplayGL.h"
 
+#if defined(BUILD_GL) || defined(BUILD_GLES)
+
 #include <QApplication>
 #include <QResizeEvent>
 #include <QTimer>
@@ -25,10 +27,7 @@ using namespace QGBA;
 
 DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	: Display(parent)
-	, m_isDrawing(false)
 	, m_gl(new EmptyGLWidget(format, this))
-	, m_drawThread(nullptr)
-	, m_context(nullptr)
 {
 	m_painter = new PainterGL(format.majorVersion() < 2 ? 1 : m_gl->format().majorVersion(), m_gl);
 	m_gl->setMouseTracking(true);
@@ -68,11 +67,12 @@ void DisplayGL::startDrawing(mCoreThread* thread) {
 	m_gl->context()->doneCurrent();
 	m_gl->context()->moveToThread(m_drawThread);
 	m_painter->moveToThread(m_drawThread);
-	connect(m_drawThread, SIGNAL(started()), m_painter, SLOT(start()));
+	connect(m_drawThread, &QThread::started, m_painter, &PainterGL::start);
 	m_drawThread->start();
 	mCoreSyncSetVideoSync(&m_context->sync, false);
 
 	lockAspectRatio(isAspectRatioLocked());
+	lockIntegerScaling(isIntegerScalingLocked());
 	filter(isFiltered());
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatioF());
@@ -133,6 +133,13 @@ void DisplayGL::lockAspectRatio(bool lock) {
 	Display::lockAspectRatio(lock);
 	if (m_drawThread) {
 		QMetaObject::invokeMethod(m_painter, "lockAspectRatio", Q_ARG(bool, lock));
+	}
+}
+
+void DisplayGL::lockIntegerScaling(bool lock) {
+	Display::lockIntegerScaling(lock);
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "lockIntegerScaling", Q_ARG(bool, lock));
 	}
 }
 
@@ -290,6 +297,13 @@ void PainterGL::lockAspectRatio(bool lock) {
 	}
 }
 
+void PainterGL::lockIntegerScaling(bool lock) {
+	m_backend->lockIntegerScaling = lock;
+	if (m_started && !m_active) {
+		forceDraw();
+	}
+}
+
 void PainterGL::filter(bool filter) {
 	m_backend->filter = filter;
 	if (m_started && !m_active) {
@@ -318,15 +332,6 @@ void PainterGL::draw() {
 	if (m_queue.isEmpty() || !mCoreThreadIsActive(m_context)) {
 		return;
 	}
-	if (!m_delayTimer.isValid()) {
-		m_delayTimer.start();
-	} else if (m_delayTimer.elapsed() < 16) {
-		QMetaObject::invokeMethod(this, "draw", Qt::QueuedConnection);
-		QThread::usleep(500);
-		return;
-	} else {
-		m_delayTimer.restart();
-	}
 
 	if (mCoreSyncWaitFrameStart(&m_context->sync) || !m_queue.isEmpty()) {
 		dequeue();
@@ -335,6 +340,14 @@ void PainterGL::draw() {
 		performDraw();
 		m_painter.end();
 		m_backend->swap(m_backend);
+		if (!m_delayTimer.isValid()) {
+			m_delayTimer.start();
+		} else {
+			while (m_delayTimer.elapsed() < 15) {
+				QThread::usleep(100);
+			}
+			m_delayTimer.restart();
+		}
 	} else {
 		mCoreSyncWaitFrameEnd(&m_context->sync);
 	}
@@ -469,3 +482,5 @@ void PainterGL::clearShaders() {
 VideoShader* PainterGL::shaders() {
 	return &m_shader;
 }
+
+#endif

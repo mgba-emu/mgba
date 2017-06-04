@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "commandline.h"
+#include <mgba/feature/commandline.h>
 
 #include <mgba/core/config.h>
 #include <mgba/core/version.h>
@@ -38,6 +38,7 @@ static const struct option _options[] = {
 	{ "gdb",       no_argument, 0, 'g' },
 #endif
 	{ "help",      no_argument, 0, 'h' },
+	{ "log-level", required_argument, 0, 'l' },
 	{ "movie",     required_argument, 0, 'v' },
 	{ "patch",     required_argument, 0, 'p' },
 	{ "version",   no_argument, 0, '\0' },
@@ -47,10 +48,27 @@ static const struct option _options[] = {
 static bool _parseGraphicsArg(struct mSubParser* parser, int option, const char* arg);
 static void _applyGraphicsArgs(struct mSubParser* parser, struct mCoreConfig* config);
 
+static void _tableInsert(struct Table* table, const char* pair) {
+	char* eq = strchr(pair, '=');
+	if (eq) {
+		char option[128] = "";
+		strncpy(option, pair, eq - pair);
+		option[sizeof(option) - 1] = '\0';
+		HashTableInsert(table, option, strdup(&eq[1]));
+	} else {
+		HashTableInsert(table, pair, strdup("1"));
+	}
+}
+
+static void _tableApply(const char* key, void* value, void* user) {
+	struct mCoreConfig* config = user;
+	mCoreConfigSetOverrideValue(config, key, value);
+}
+
 bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct mSubParser* subparser) {
 	int ch;
 	char options[64] =
-		"b:c:hl:p:s:v:"
+		"b:c:C:hl:p:s:v:"
 #ifdef USE_EDITLINE
 		"d"
 #endif
@@ -61,6 +79,7 @@ bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct
 	memset(args, 0, sizeof(*args));
 	args->frameskip = -1;
 	args->logLevel = INT_MIN;
+	HashTableInit(&args->configOverrides, 0, free);
 	if (subparser && subparser->extraOptions) {
 		// TODO: modularize options to subparsers
 		strncat(options, subparser->extraOptions, sizeof(options) - strlen(options) - 1);
@@ -81,6 +100,9 @@ bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct
 			break;
 		case 'c':
 			args->cheatsFile = strdup(optarg);
+			break;
+		case 'C':
+			_tableInsert(&args->configOverrides, optarg);
 			break;
 #ifdef USE_EDITLINE
 		case 'd':
@@ -144,6 +166,7 @@ void applyArguments(const struct mArguments* args, struct mSubParser* subparser,
 	if (args->bios) {
 		mCoreConfigSetOverrideValue(config, "bios", args->bios);
 	}
+	HashTableEnumerate(&args->configOverrides, _tableApply, config);
 	if (subparser) {
 		subparser->apply(subparser, config);
 	}
@@ -164,6 +187,8 @@ void freeArguments(struct mArguments* args) {
 
 	free(args->bios);
 	args->bios = 0;
+
+	HashTableDeinit(&args->configOverrides);
 }
 
 void initParserForGraphics(struct mSubParser* parser, struct mGraphicsOpts* opts) {
@@ -209,18 +234,20 @@ void _applyGraphicsArgs(struct mSubParser* parser, struct mCoreConfig* config) {
 void usage(const char* arg0, const char* extraOptions) {
 	printf("usage: %s [option ...] file\n", arg0);
 	puts("\nGeneric options:");
-	puts("  -b, --bios FILE     GBA BIOS file to use");
-	puts("  -c, --cheats FILE   Apply cheat codes from a file");
+	puts("  -b, --bios FILE            GBA BIOS file to use");
+	puts("  -c, --cheats FILE          Apply cheat codes from a file");
+	puts("  -C, --config OPTION=VALUE  Override config value");
 #ifdef USE_EDITLINE
-	puts("  -d, --debug         Use command-line debugger");
+	puts("  -d, --debug                Use command-line debugger");
 #endif
 #ifdef USE_GDB_STUB
-	puts("  -g, --gdb           Start GDB session (default port 2345)");
+	puts("  -g, --gdb                  Start GDB session (default port 2345)");
 #endif
-	puts("  -v, --movie FILE    Play back a movie of recorded input");
-	puts("  -p, --patch FILE    Apply a specified patch file when running");
-	puts("  -s, --frameskip N   Skip every N frames");
-	puts("  --version           Print version and exit");
+	puts("  -l, --log-level N          Log level mask");
+	puts("  -v, --movie FILE           Play back a movie of recorded input");
+	puts("  -p, --patch FILE           Apply a specified patch file when running");
+	puts("  -s, --frameskip N          Skip every N frames");
+	puts("  --version                  Print version and exit");
 	if (extraOptions) {
 		puts(extraOptions);
 	}

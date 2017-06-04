@@ -32,9 +32,9 @@ public slots:
 	virtual void requestSampleRate(unsigned) override;
 
 private:
-	QAudioOutput* m_audioOutput;
-	AudioDevice* m_device;
-	unsigned m_sampleRate;
+	QAudioOutput* m_audioOutput = nullptr;
+	AudioDevice* m_device = nullptr;
+	unsigned m_sampleRate = 44100;
 };
 
 }

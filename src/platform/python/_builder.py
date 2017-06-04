@@ -32,24 +32,16 @@ ffi.set_source("mgba._pylib", """
 #include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
 
-struct VFile* VFileFromPython(void* fileobj);
-
-struct VFilePy {
-    struct VFile d;
-    void* fileobj;
-};
-
-struct mLogger* mLoggerPythonCreate(void* pyobj);
-
-struct mLoggerPy {
-    struct mLogger d;
-    void* pyobj;
-};
+#define PYEXPORT
+#include "platform/python/log.h"
+#include "platform/python/sio.h"
+#include "platform/python/vfs-py.h"
+#undef PYEXPORT
 """, include_dirs=[incdir, srcdir],
      extra_compile_args=cppflags,
      libraries=["mgba"],
      library_dirs=[bindir],
-     sources=[os.path.join(pydir, path) for path in ["vfs-py.c", "log.c"]])
+     sources=[os.path.join(pydir, path) for path in ["vfs-py.c", "log.c", "sio.c"]])
 
 preprocessed = subprocess.check_output(cpp + ["-fno-inline", "-P"] + cppflags + [os.path.join(pydir, "_builder.h")], universal_newlines=True)
 

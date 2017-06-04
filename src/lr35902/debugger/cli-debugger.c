@@ -8,6 +8,7 @@
 #include <mgba/core/core.h>
 #include <mgba/internal/debugger/cli-debugger.h>
 #include <mgba/internal/lr35902/decoder.h>
+#include <mgba/internal/lr35902/debugger/debugger.h>
 #include <mgba/internal/lr35902/lr35902.h>
 
 static void _printStatus(struct CLIDebuggerSystem*);
@@ -31,11 +32,13 @@ static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVect
 	struct LR35902Core* cpu = debugger->p->d.core->cpu;
 
 	uint16_t address;
+	int segment = -1;
 	size_t size;
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
 		address = cpu->pc;
 	} else {
 		address = dv->intValue;
+		segment = dv->segmentValue;
 		dv = dv->next;
 	}
 
@@ -48,7 +51,7 @@ static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVect
 
 	size_t i;
 	for (i = 0; i < size; ++i) {
-		address = _printLine(debugger->p, address, -1);
+		address = _printLine(debugger->p, address, segment);
 	}
 }
 
@@ -58,7 +61,7 @@ static inline uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address
 	char disassembly[48];
 	char* disPtr = disassembly;
 	if (segment >= 0) {
-		be->printf(be, "%02X:  ", segment);
+		be->printf(be, "%02X:", segment);
 	}
 	be->printf(be, "%04X:  ", address);
 	uint8_t instruction;
@@ -84,8 +87,17 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	be->printf(be, "D: %02X E: %02X (DE: %04X)\n", cpu->d, cpu->e, cpu->de);
 	be->printf(be, "H: %02X L: %02X (HL: %04X)\n", cpu->h, cpu->l, cpu->hl);
 	be->printf(be, "PC: %04X SP: %04X\n", cpu->pc, cpu->sp);
+
+	struct LR35902Debugger* platDebugger = (struct LR35902Debugger*) debugger->p->d.platform;
+	size_t i;
+	for (i = 0; platDebugger->segments[i].name; ++i) {
+		be->printf(be, "%s%s: %02X", i ? " " : "", platDebugger->segments[i].name, cpu->memory.currentSegment(cpu, platDebugger->segments[i].start));
+	}
+	if (i) {
+		be->printf(be, "\n");
+	}
 	_printFlags(be, cpu->f);
-	_printLine(debugger->p, cpu->pc, -1);
+	_printLine(debugger->p, cpu->pc, cpu->memory.currentSegment(cpu, cpu->pc));
 }
 
 static uint32_t _lookupPlatformIdentifier(struct CLIDebuggerSystem* debugger, const char* name, struct CLIDebugVector* dv) {

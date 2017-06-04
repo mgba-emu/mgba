@@ -32,7 +32,7 @@ protected:
 	void mousePressEvent(QMouseEvent*) override;
 
 private:
-	int m_size;
+	int m_size = 10;
 	QVector<QColor> m_colors;
 	QPixmap m_backing;
 	QSize m_dims;

@@ -120,6 +120,16 @@ void _crashed(void* context) {
 	_changeState(thread, THREAD_CRASHED, true);
 }
 
+void _coreSleep(void* context) {
+	struct mCoreThread* thread = context;
+	if (!thread) {
+		return;
+	}
+	if (thread->sleepCallback) {
+		thread->sleepCallback(thread);
+	}
+}
+
 static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	struct mCoreThread* threadContext = context;
 #ifdef USE_PTHREADS
@@ -143,6 +153,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		.videoFrameStarted = _frameStarted,
 		.videoFrameEnded = _frameEnded,
 		.coreCrashed = _crashed,
+		.sleep = _coreSleep,
 		.context = threadContext
 	};
 	core->addCoreCallbacks(core, &callbacks);
@@ -157,7 +168,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 
 	if (core->opts.rewindEnable && core->opts.rewindBufferCapacity > 0) {
-		 mCoreRewindContextInit(&threadContext->rewind, core->opts.rewindBufferCapacity);
+		 mCoreRewindContextInit(&threadContext->rewind, core->opts.rewindBufferCapacity, true);
 		 threadContext->rewind.stateFlags = core->opts.rewindSave ? SAVESTATE_SAVEDATA : 0;
 	}
 

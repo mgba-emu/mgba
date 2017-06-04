@@ -171,6 +171,10 @@ static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h)
 			drawH = w * v->height / v->width;
 		}
 	}
+	if (v->lockIntegerScaling) {
+		drawW -= drawW % v->width;
+		drawH -= drawH % v->height;
+	}
 	glViewport(0, 0, v->width, v->height);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT);

@@ -17,7 +17,7 @@
 
 #include <mgba/core/config.h>
 #include <mgba-util/configuration.h>
-#include "feature/commandline.h"
+#include <mgba/feature/commandline.h>
 
 class QAction;
 class QMenu;
@@ -102,7 +102,7 @@ private:
 	Configuration* defaults() { return &m_config.defaultsTable; }
 
 	mCoreConfig m_config;
-	mCoreOptions m_opts;
+	mCoreOptions m_opts{};
 
 	QMap<QString, ConfigOption*> m_optionSet;
 	QSettings* m_settings;

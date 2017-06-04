@@ -136,7 +136,12 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		selectBios(m_ui.gbcBios);
 	});
 
-	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(updateConfig()));
+	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &SettingsView::updateConfig);
+	connect(m_ui.buttonBox, &QDialogButtonBox::clicked, [this](QAbstractButton* button) {
+		if (m_ui.buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole) {
+			updateConfig();
+		}
+	});
 
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setModel(inputModel);
@@ -165,6 +170,7 @@ void SettingsView::updateConfig() {
 	saveSetting("frameskip", m_ui.frameskip);
 	saveSetting("fpsTarget", m_ui.fpsTarget);
 	saveSetting("lockAspectRatio", m_ui.lockAspectRatio);
+	saveSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
 	saveSetting("volume", m_ui.volume);
 	saveSetting("mute", m_ui.mute);
 	saveSetting("rewindEnable", m_ui.rewind);
@@ -178,7 +184,9 @@ void SettingsView::updateConfig() {
 	saveSetting("savestatePath", m_ui.savestatePath);
 	saveSetting("screenshotPath", m_ui.screenshotPath);
 	saveSetting("patchPath", m_ui.patchPath);
+	saveSetting("libraryStyle", m_ui.libraryStyle->currentIndex());
 	saveSetting("showLibrary", m_ui.showLibrary);
+	saveSetting("preload", m_ui.preload);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
@@ -244,6 +252,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("frameskip", m_ui.frameskip);
 	loadSetting("fpsTarget", m_ui.fpsTarget);
 	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
+	loadSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
 	loadSetting("volume", m_ui.volume);
 	loadSetting("mute", m_ui.mute);
 	loadSetting("rewindEnable", m_ui.rewind);
@@ -258,6 +267,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("screenshotPath", m_ui.screenshotPath);
 	loadSetting("patchPath", m_ui.patchPath);
 	loadSetting("showLibrary", m_ui.showLibrary);
+	loadSetting("preload", m_ui.preload);
 
 	double fastForwardRatio = loadSetting("fastForwardRatio").toDouble();
 	if (fastForwardRatio <= 0) {

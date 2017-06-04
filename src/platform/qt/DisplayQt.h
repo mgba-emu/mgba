@@ -30,6 +30,7 @@ public slots:
 	void unpauseDrawing() override { m_isDrawing = true; }
 	void forceDraw() override { update(); }
 	void lockAspectRatio(bool lock) override;
+	void lockIntegerScaling(bool lock) override;
 	void filter(bool filter) override;
 	void framePosted(const uint32_t*) override;
 	void setShaders(struct VDir*) override {}
@@ -39,10 +40,10 @@ protected:
 	virtual void paintEvent(QPaintEvent*) override;
 
 private:
-	bool m_isDrawing;
+	bool m_isDrawing = false;
 	unsigned m_width;
 	unsigned m_height;
-	QImage m_backing;
+	QImage m_backing{nullptr};
 };
 
 }

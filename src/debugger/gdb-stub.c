@@ -321,11 +321,29 @@ static void _readGPRs(struct GDBStub* stub, const char* message) {
 	UNUSED(message);
 	int r;
 	int i = 0;
+
+	// General purpose registers
 	for (r = 0; r < ARM_PC; ++r) {
 		_int2hex32(cpu->gprs[r], &stub->outgoing[i]);
 		i += 8;
 	}
+
+	// Program counter
 	_int2hex32(cpu->gprs[ARM_PC] - (cpu->cpsr.t ? WORD_SIZE_THUMB : WORD_SIZE_ARM), &stub->outgoing[i]);
+	i += 8;
+
+	// Floating point registers, unused on the GBA (8 of them, 24 bits each)
+	for (r = 0; r < 8 * 3; ++r) {
+		_int2hex32(0, &stub->outgoing[i]);
+		i += 8;
+	}
+
+	// Floating point status, unused on the GBA (32 bits)
+	_int2hex32(0, &stub->outgoing[i]);
+	i += 8;
+
+	// CPU status
+	_int2hex32(cpu->cpsr.packed, &stub->outgoing[i]);
 	i += 8;
 
 	stub->outgoing[i] = 0;
@@ -477,16 +495,16 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 		ARMDebuggerSetSoftwareBreakpoint(stub->d.platform, address, kind == 2 ? MODE_THUMB : MODE_ARM);
 		break;
 	case '1':
-		stub->d.platform->setBreakpoint(stub->d.platform, address);
+		stub->d.platform->setBreakpoint(stub->d.platform, address, -1);
 		break;
 	case '2':
-		stub->d.platform->setWatchpoint(stub->d.platform, address, WATCHPOINT_WRITE);
+		stub->d.platform->setWatchpoint(stub->d.platform, address, -1, WATCHPOINT_WRITE);
 		break;
 	case '3':
-		stub->d.platform->setWatchpoint(stub->d.platform, address, WATCHPOINT_READ);
+		stub->d.platform->setWatchpoint(stub->d.platform, address, -1, WATCHPOINT_READ);
 		break;
 	case '4':
-		stub->d.platform->setWatchpoint(stub->d.platform, address, WATCHPOINT_RW);
+		stub->d.platform->setWatchpoint(stub->d.platform, address, -1, WATCHPOINT_RW);
 		break;
 	default:
 		stub->outgoing[0] = '\0';
@@ -506,12 +524,12 @@ static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
 		ARMDebuggerClearSoftwareBreakpoint(stub->d.platform, address);
 		break;
 	case '1':
-		stub->d.platform->clearBreakpoint(stub->d.platform, address);
+		stub->d.platform->clearBreakpoint(stub->d.platform, address, -1);
 		break;
 	case '2':
 	case '3':
 	case '4':
-		stub->d.platform->clearWatchpoint(stub->d.platform, address);
+		stub->d.platform->clearWatchpoint(stub->d.platform, address, -1);
 		break;
 	default:
 		break;

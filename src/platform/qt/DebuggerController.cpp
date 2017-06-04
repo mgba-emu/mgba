@@ -11,8 +11,8 @@ using namespace QGBA;
 
 DebuggerController::DebuggerController(GameController* controller, mDebugger* debugger, QObject* parent)
 	: QObject(parent)
-	, m_gameController(controller)
 	, m_debugger(debugger)
+	, m_gameController(controller)
 {
 }
 
@@ -30,7 +30,7 @@ void DebuggerController::attach() {
 		mDebuggerEnter(m_debugger, DEBUGGER_ENTER_ATTACHED, 0);
 	} else {
 		QObject::disconnect(m_autoattach);
-		m_autoattach = connect(m_gameController, SIGNAL(gameStarted(mCoreThread*, const QString&)), this, SLOT(attach()));
+		m_autoattach = connect(m_gameController, &GameController::gameStarted, this, &DebuggerController::attach);
 	}
 }
 

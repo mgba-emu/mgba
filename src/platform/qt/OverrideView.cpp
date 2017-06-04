@@ -56,8 +56,8 @@ OverrideView::OverrideView(GameController* controller, ConfigController* config,
 #endif
 	m_ui.setupUi(this);
 
-	connect(controller, SIGNAL(gameStarted(mCoreThread*, const QString&)), this, SLOT(gameStarted(mCoreThread*)));
-	connect(controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(gameStopped()));
+	connect(controller, &GameController::gameStarted, this, &OverrideView::gameStarted);
+	connect(controller, &GameController::gameStopped, this, &OverrideView::gameStopped);
 
 	connect(m_ui.hwAutodetect, &QAbstractButton::toggled, [this] (bool enabled) {
 		m_ui.hwRTC->setEnabled(!enabled);
@@ -67,19 +67,19 @@ OverrideView::OverrideView(GameController* controller, ConfigController* config,
 		m_ui.hwRumble->setEnabled(!enabled);
 	});
 
-	connect(m_ui.savetype, SIGNAL(currentIndexChanged(int)), this, SLOT(updateOverrides()));
-	connect(m_ui.hwAutodetect, SIGNAL(clicked()), this, SLOT(updateOverrides()));
-	connect(m_ui.hwRTC, SIGNAL(clicked()), this, SLOT(updateOverrides()));
-	connect(m_ui.hwGyro, SIGNAL(clicked()), this, SLOT(updateOverrides()));
-	connect(m_ui.hwLight, SIGNAL(clicked()), this, SLOT(updateOverrides()));
-	connect(m_ui.hwTilt, SIGNAL(clicked()), this, SLOT(updateOverrides()));
-	connect(m_ui.hwRumble, SIGNAL(clicked()), this, SLOT(updateOverrides()));
-	connect(m_ui.hwGBPlayer, SIGNAL(clicked()), this, SLOT(updateOverrides()));
+	connect(m_ui.savetype, &QComboBox::currentTextChanged, this, &OverrideView::updateOverrides);
+	connect(m_ui.hwAutodetect, &QAbstractButton::clicked, this, &OverrideView::updateOverrides);
+	connect(m_ui.hwRTC, &QAbstractButton::clicked, this, &OverrideView::updateOverrides);
+	connect(m_ui.hwGyro, &QAbstractButton::clicked, this, &OverrideView::updateOverrides);
+	connect(m_ui.hwLight, &QAbstractButton::clicked, this, &OverrideView::updateOverrides);
+	connect(m_ui.hwTilt, &QAbstractButton::clicked, this, &OverrideView::updateOverrides);
+	connect(m_ui.hwRumble, &QAbstractButton::clicked, this, &OverrideView::updateOverrides);
+	connect(m_ui.hwGBPlayer, &QAbstractButton::clicked, this, &OverrideView::updateOverrides);
 
-	connect(m_ui.gbModel, SIGNAL(currentIndexChanged(int)), this, SLOT(updateOverrides()));
-	connect(m_ui.mbc, SIGNAL(currentIndexChanged(int)), this, SLOT(updateOverrides()));
+	connect(m_ui.gbModel, &QComboBox::currentTextChanged, this, &OverrideView::updateOverrides);
+	connect(m_ui.mbc, &QComboBox::currentTextChanged, this, &OverrideView::updateOverrides);
 
-	connect(m_ui.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateOverrides()));
+	connect(m_ui.tabWidget, &QTabWidget::currentChanged, this, &OverrideView::updateOverrides);
 #ifndef M_CORE_GBA
 	m_ui.tabWidget->removeTab(m_ui.tabWidget->indexOf(m_ui.tabGBA));
 #endif
@@ -87,8 +87,8 @@ OverrideView::OverrideView(GameController* controller, ConfigController* config,
 	m_ui.tabWidget->removeTab(m_ui.tabWidget->indexOf(m_ui.tabGB));
 #endif
 
-	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(saveOverride()));
-	connect(m_ui.buttonBox, SIGNAL(rejected()), this, SLOT(close()));
+	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &OverrideView::saveOverride);
+	connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);
 	m_ui.buttonBox->button(QDialogButtonBox::Save)->setEnabled(false);
 
 	if (controller->isLoaded()) {

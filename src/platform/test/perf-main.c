@@ -11,7 +11,7 @@
 #include <mgba/gb/core.h>
 #include <mgba/gba/core.h>
 
-#include "feature/commandline.h"
+#include <mgba/feature/commandline.h>
 #include <mgba-util/socket.h>
 #include <mgba-util/string.h>
 #include <mgba-util/vfs.h>

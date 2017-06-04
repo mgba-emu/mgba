@@ -38,6 +38,7 @@ struct mCoreCallbacks {
 	void (*videoFrameStarted)(void* context);
 	void (*videoFrameEnded)(void* context);
 	void (*coreCrashed)(void* context);
+	void (*sleep)(void* context);
 };
 
 DECLARE_VECTOR(mCoreCallbacksList, struct mCoreCallbacks);
@@ -53,8 +54,10 @@ struct mKeyCallback {
 	uint16_t (*readKeys)(struct mKeyCallback*);
 };
 
-struct mStopCallback {
-	void (*stop)(struct mStopCallback*);
+enum mPeripheral {
+	mPERIPH_ROTATION = 1,
+	mPERIPH_RUMBLE,
+	mPERIPH_CUSTOM = 0x1000
 };
 
 struct mRotationSource {
@@ -100,6 +103,13 @@ void mRTCGenericSourceInit(struct mRTCGenericSource* rtc, struct mCore* core);
 
 struct mRumble {
 	void (*setRumble)(struct mRumble*, int enable);
+};
+
+struct mCoreChannelInfo {
+	size_t id;
+	const char* internalName;
+	const char* visibleName;
+	const char* visibleType;
 };
 
 CXX_GUARD_END

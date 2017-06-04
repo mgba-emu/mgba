@@ -62,6 +62,9 @@ void mDebuggerAttach(struct mDebugger* debugger, struct mCore* core) {
 	debugger->d.init = mDebuggerInit;
 	debugger->d.deinit = mDebuggerDeinit;
 	debugger->core = core;
+	if (!debugger->core->symbolTable) {
+		debugger->core->loadSymbols(debugger->core, NULL);
+	}
 	debugger->platform = core->debuggerPlatform(core);
 	debugger->platform->p = debugger;
 	core->attachDebugger(core, debugger);

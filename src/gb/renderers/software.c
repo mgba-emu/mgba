@@ -14,6 +14,7 @@ static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value);
 static void GBVideoSoftwareRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address);
+static void GBVideoSoftwareRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam);
 static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
 static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer);
@@ -24,26 +25,15 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* renderer, struct GBObj* obj, int startX, int endX, int y);
 
 static void _clearScreen(struct GBVideoSoftwareRenderer* renderer) {
-	// TODO: Dynamic from dmgPalette
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
-	color_t palette0 = 0xFFDF;
-#else
-	color_t palette0 = 0x7FFF;
-#endif
-#else
-	color_t palette0 = 0xFFFFFF;
-#endif
-
 	int y;
 	for (y = 0; y < GB_VIDEO_VERTICAL_PIXELS; ++y) {
 		color_t* row = &renderer->outputBuffer[renderer->outputBufferStride * y];
 		int x;
 		for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; x += 4) {
-			row[x + 0] = palette0;
-			row[x + 1] = palette0;
-			row[x + 2] = palette0;
-			row[x + 3] = palette0;
+			row[x + 0] = renderer->palette[0];
+			row[x + 1] = renderer->palette[0];
+			row[x + 2] = renderer->palette[0];
+			row[x + 3] = renderer->palette[0];
 		}
 	}
 }
@@ -54,11 +44,16 @@ void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
 	renderer->d.writeVideoRegister = GBVideoSoftwareRendererWriteVideoRegister;
 	renderer->d.writePalette = GBVideoSoftwareRendererWritePalette;
 	renderer->d.writeVRAM = GBVideoSoftwareRendererWriteVRAM;
+	renderer->d.writeOAM = GBVideoSoftwareRendererWriteOAM;
 	renderer->d.drawRange = GBVideoSoftwareRendererDrawRange;
 	renderer->d.finishScanline = GBVideoSoftwareRendererFinishScanline;
 	renderer->d.finishFrame = GBVideoSoftwareRendererFinishFrame;
 	renderer->d.getPixels = GBVideoSoftwareRendererGetPixels;
 	renderer->d.putPixels = GBVideoSoftwareRendererPutPixels;
+
+	renderer->d.disableBG = false;
+	renderer->d.disableOBJ = false;
+	renderer->d.disableWIN = false;
 
 	renderer->temporaryBuffer = 0;
 }
@@ -85,9 +80,6 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	switch (address) {
 	case REG_LCDC:
-		if (GBRegisterLCDCIsEnable(softwareRenderer->lcdc) && !GBRegisterLCDCIsEnable(value)) {
-			_clearScreen(softwareRenderer);
-		}
 		softwareRenderer->lcdc = value;
 		break;
 	case REG_SCY:
@@ -136,15 +128,24 @@ static void GBVideoSoftwareRendererWriteVRAM(struct GBVideoRenderer* renderer, u
 	}
 }
 
+static void GBVideoSoftwareRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam) {
+	UNUSED(renderer);
+	UNUSED(oam);
+	// Nothing to do
+}
+
 static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	uint8_t* maps = &softwareRenderer->d.vram[GB_BASE_MAP];
 	if (GBRegisterLCDCIsTileMap(softwareRenderer->lcdc)) {
 		maps += GB_SIZE_MAP;
 	}
+	if (softwareRenderer->d.disableBG) {
+		memset(&softwareRenderer->row[startX], 0, endX - startX);
+	}
 	if (GBRegisterLCDCIsBgEnable(softwareRenderer->lcdc) || softwareRenderer->model >= GB_MODEL_CGB) {
 		if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y && endX >= softwareRenderer->wx - 7) {
-			if (softwareRenderer->wx - 7 > 0) {
+			if (softwareRenderer->wx - 7 > 0 && !softwareRenderer->d.disableBG) {
 				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, softwareRenderer->wx - 7, softwareRenderer->scx, softwareRenderer->scy + y);
 			}
 
@@ -152,15 +153,17 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 			if (GBRegisterLCDCIsWindowTileMap(softwareRenderer->lcdc)) {
 				maps += GB_SIZE_MAP;
 			}
-			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, softwareRenderer->wx - 7, endX, 7 - softwareRenderer->wx, softwareRenderer->currentWy);
-		} else {
+			if (!softwareRenderer->d.disableWIN) {
+				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, softwareRenderer->wx - 7, endX, 7 - softwareRenderer->wx, softwareRenderer->currentWy);
+			}
+		} else if (!softwareRenderer->d.disableBG) {
 			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, endX, softwareRenderer->scx, softwareRenderer->scy + y);
 		}
-	} else {
+	} else if (!softwareRenderer->d.disableBG) {
 		memset(&softwareRenderer->row[startX], 0, endX - startX);
 	}
 
-	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc)) {
+	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc) && !softwareRenderer->d.disableOBJ) {
 		size_t i;
 		for (i = 0; i < oamMax; ++i) {
 			GBVideoSoftwareRendererDrawObj(softwareRenderer, &obj[i], startX, endX, y);
@@ -196,6 +199,9 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 	if (softwareRenderer->temporaryBuffer) {
 		mappedMemoryFree(softwareRenderer->temporaryBuffer, GB_VIDEO_HORIZONTAL_PIXELS * GB_VIDEO_VERTICAL_PIXELS * 4);
 		softwareRenderer->temporaryBuffer = 0;
+	}
+	if (!GBRegisterLCDCIsEnable(softwareRenderer->lcdc)) {
+		_clearScreen(softwareRenderer);
 	}
 	softwareRenderer->currentWy = 0;
 }

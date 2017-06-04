@@ -20,6 +20,7 @@
 
 #include <mgba-util/memory.h>
 #include <mgba-util/circle-buffer.h>
+#include <mgba-util/math.h>
 #include <mgba-util/ring-fifo.h>
 #include <mgba-util/threading.h>
 #include <mgba-util/vfs.h>
@@ -31,7 +32,6 @@
 #include <psp2/gxm.h>
 #include <psp2/kernel/sysmem.h>
 #include <psp2/motion.h>
-#include <psp2/power.h>
 
 #include <vita2d.h>
 
@@ -63,8 +63,8 @@ bool frameLimiter = true;
 extern const uint8_t _binary_backdrop_png_start[];
 static vita2d_texture* backdrop = 0;
 
-#define PSP2_SAMPLES 128
-#define PSP2_AUDIO_BUFFER_SIZE (PSP2_SAMPLES * 40)
+#define PSP2_SAMPLES 256
+#define PSP2_AUDIO_BUFFER_SIZE (PSP2_SAMPLES * 20)
 
 static struct mPSP2AudioContext {
 	struct RingFIFO buffer;
@@ -176,7 +176,6 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	mCoreConfigSetDefaultIntValue(&runner->config, "threadedVideo", 1);
 	mCoreLoadForeignConfig(runner->core, &runner->config);
 
-	scePowerSetArmClockFrequency(333);
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_CROSS, GBA_KEY_A);
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_CIRCLE, GBA_KEY_B);
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_START, GBA_KEY_START);
@@ -193,8 +192,10 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	desc = (struct mInputAxis) { GBA_KEY_RIGHT, GBA_KEY_LEFT, 192, 64 };
 	mInputBindAxis(&runner->core->inputMap, PSP2_INPUT, 1, &desc);
 
-	tex = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
-	screenshot = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
+	unsigned width, height;
+	runner->core->desiredVideoDimensions(runner->core, &width, &height);
+	tex = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
+	screenshot = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 
 	outputBuffer = vita2d_texture_get_datap(tex);
 	runner->core->setVideoBuffer(runner->core, outputBuffer, 256);
@@ -203,11 +204,11 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	rotation.d.readTiltX = _readTiltX;
 	rotation.d.readTiltY = _readTiltY;
 	rotation.d.readGyroZ = _readGyroZ;
-	runner->core->setRotation(runner->core, &rotation.d);
+	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation.d);
 
 	rumble.d.setRumble = _setRumble;
 	CircleBufferInit(&rumble.history, RUMBLE_PWM);
-	runner->core->setRumble(runner->core, &rumble.d);
+	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d);
 
 	frameLimiter = true;
 	backdrop = vita2d_load_PNG_buffer(_binary_backdrop_png_start);
@@ -219,7 +220,6 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 }
 
 void mPSP2LoadROM(struct mGUIRunner* runner) {
-	scePowerSetArmClockFrequency(444);
 	float rate = 60.0f / 1.001f;
 	sceDisplayGetRefreshRate(&rate);
 	double ratio = GBAAudioCalculateRatio(1, rate, 1);
@@ -262,7 +262,6 @@ void mPSP2PrepareForFrame(struct mGUIRunner* runner) {
 				blip_clear(runner->core->getAudioChannel(runner->core, 1));
 				break;
 			}
-			sceKernelDelayThread(400);
 		}
 		blip_read_samples(runner->core->getAudioChannel(runner->core, 0), &samples[0].left, PSP2_SAMPLES, true);
 		blip_read_samples(runner->core->getAudioChannel(runner->core, 1), &samples[0].right, PSP2_SAMPLES, true);
@@ -297,7 +296,6 @@ void mPSP2UnloadROM(struct mGUIRunner* runner) {
 	default:
 		break;
 	}
-	scePowerSetArmClockFrequency(333);
 }
 
 void mPSP2Paused(struct mGUIRunner* runner) {

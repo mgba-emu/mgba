@@ -26,10 +26,10 @@ CXX_GUARD_START
 enum mPlatform {
 	PLATFORM_NONE = -1,
 #ifdef M_CORE_GBA
-	PLATFORM_GBA,
+	PLATFORM_GBA = 0,
 #endif
 #ifdef M_CORE_GB
-	PLATFORM_GB,
+	PLATFORM_GB = 1,
 #endif
 };
 
@@ -39,11 +39,14 @@ enum mCoreChecksumType {
 
 struct mCoreConfig;
 struct mCoreSync;
+struct mDebuggerSymbols;
 struct mStateExtdata;
+struct mVideoLogContext;
 struct mCore {
 	void* cpu;
 	void* board;
 	struct mDebugger* debugger;
+	struct mDebuggerSymbols* symbolTable;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct mDirectorySet dirs;
@@ -111,8 +114,7 @@ struct mCore {
 	void (*getGameTitle)(const struct mCore*, char* title);
 	void (*getGameCode)(const struct mCore*, char* title);
 
-	void (*setRotation)(struct mCore*, struct mRotationSource*);
-	void (*setRumble)(struct mCore*, struct mRumble*);
+	void (*setPeripheral)(struct mCore*, int type, void*);
 
 	uint32_t (*busRead8)(struct mCore*, uint32_t address);
 	uint32_t (*busRead16)(struct mCore*, uint32_t address);
@@ -136,17 +138,32 @@ struct mCore {
 	struct CLIDebuggerSystem* (*cliDebuggerSystem)(struct mCore*);
 	void (*attachDebugger)(struct mCore*, struct mDebugger*);
 	void (*detachDebugger)(struct mCore*);
+
+	void (*loadSymbols)(struct mCore*, struct VFile*);
 #endif
 
 	struct mCheatDevice* (*cheatDevice)(struct mCore*);
 
 	size_t (*savedataClone)(struct mCore*, void** sram);
 	bool (*savedataRestore)(struct mCore*, const void* sram, size_t size, bool writeback);
+
+	size_t (*listVideoLayers)(const struct mCore*, const struct mCoreChannelInfo**);
+	size_t (*listAudioChannels)(const struct mCore*, const struct mCoreChannelInfo**);
+	void (*enableVideoLayer)(struct mCore*, size_t id, bool enable);
+	void (*enableAudioChannel)(struct mCore*, size_t id, bool enable);
+
+#ifndef MINIMAL_CORE
+	void (*startVideoLog)(struct mCore*, struct mVideoLogContext*);
+	void (*endVideoLog)(struct mCore*);
+#endif
 };
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 struct mCore* mCoreFind(const char* path);
 bool mCoreLoadFile(struct mCore* core, const char* path);
+
+bool mCorePreloadVF(struct mCore* core, struct VFile* vf);
+bool mCorePreloadFile(struct mCore* core, const char* path);
 
 bool mCoreAutoloadSave(struct mCore* core);
 bool mCoreAutoloadPatch(struct mCore* core);

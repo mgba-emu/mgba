@@ -18,8 +18,6 @@ using namespace QGBA;
 InputModel::InputModel(QObject* parent)
 	: QAbstractItemModel(parent)
 	, m_rootMenu(nullptr)
-	, m_config(nullptr)
-	, m_profile(nullptr)
 {
 }
 

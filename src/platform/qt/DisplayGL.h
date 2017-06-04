@@ -6,6 +6,8 @@
 #ifndef QGBA_DISPLAY_GL
 #define QGBA_DISPLAY_GL
 
+#if defined(BUILD_GL) || defined(BUILD_GLES)
+
 #include "Display.h"
 
 #ifdef USE_EPOXY
@@ -55,6 +57,7 @@ public slots:
 	void unpauseDrawing() override;
 	void forceDraw() override;
 	void lockAspectRatio(bool lock) override;
+	void lockIntegerScaling(bool lock) override;
 	void filter(bool filter) override;
 	void framePosted(const uint32_t*) override;
 	void setShaders(struct VDir*) override;
@@ -67,11 +70,11 @@ protected:
 private:
 	void resizePainter();
 
-	bool m_isDrawing;
+	bool m_isDrawing = false;
 	QGLWidget* m_gl;
 	PainterGL* m_painter;
-	QThread* m_drawThread;
-	mCoreThread* m_context;
+	QThread* m_drawThread = nullptr;
+	mCoreThread* m_context = nullptr;
 };
 
 class PainterGL : public QObject {
@@ -96,6 +99,7 @@ public slots:
 	void unpause();
 	void resize(const QSize& size);
 	void lockAspectRatio(bool lock);
+	void lockIntegerScaling(bool lock);
 	void filter(bool filter);
 
 	void setShaders(struct VDir*);
@@ -124,5 +128,7 @@ private:
 };
 
 }
+
+#endif
 
 #endif

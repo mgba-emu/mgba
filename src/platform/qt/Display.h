@@ -38,6 +38,7 @@ public:
 	static void setDriver(Driver driver) { s_driver = driver; }
 
 	bool isAspectRatioLocked() const { return m_lockAspectRatio; }
+	bool isIntegerScalingLocked() const { return m_lockIntegerScaling; }
 	bool isFiltered() const { return m_filter; }
 
 	virtual bool isDrawing() const = 0;
@@ -55,6 +56,7 @@ public slots:
 	virtual void unpauseDrawing() = 0;
 	virtual void forceDraw() = 0;
 	virtual void lockAspectRatio(bool lock);
+	virtual void lockIntegerScaling(bool lock);
 	virtual void filter(bool filter);
 	virtual void framePosted(const uint32_t*) = 0;
 	virtual void setShaders(struct VDir*) = 0;
@@ -73,8 +75,9 @@ private:
 	static const int MOUSE_DISAPPEAR_TIMER = 1000;
 
 	MessagePainter m_messagePainter;
-	bool m_lockAspectRatio;
-	bool m_filter;
+	bool m_lockAspectRatio = false;
+	bool m_lockIntegerScaling = false;
+	bool m_filter = false;
 	QTimer m_mouseTimer;
 };
 

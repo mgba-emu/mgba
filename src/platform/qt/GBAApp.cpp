@@ -33,7 +33,6 @@ mLOG_DEFINE_CATEGORY(QT, "Qt", "platform.qt");
 
 GBAApp::GBAApp(int& argc, char* argv[])
 	: QApplication(argc, argv)
-	, m_db(nullptr)
 {
 	g_app = this;
 
@@ -127,6 +126,9 @@ Window* GBAApp::newWindow() {
 	int windowId = m_multiplayer.attached();
 	connect(w, &Window::destroyed, [this, w]() {
 		m_windows.removeAll(w);
+		for (Window* w : m_windows) {
+			w->updateMultiplayerStatus(m_windows.count() < MAX_GBAS);
+		}
 	});
 	m_windows.append(w);
 	w->setAttribute(Qt::WA_DeleteOnClose);
@@ -134,6 +136,9 @@ Window* GBAApp::newWindow() {
 	w->show();
 	w->controller()->setMultiplayerController(&m_multiplayer);
 	w->multiplayerChanged();
+	for (Window* w : m_windows) {
+		w->updateMultiplayerStatus(m_windows.count() < MAX_GBAS);
+	}
 	return w;
 }
 
@@ -163,7 +168,7 @@ QString GBAApp::getOpenFileName(QWidget* owner, const QString& title, const QStr
 	QString filename = QFileDialog::getOpenFileName(owner, title, m_configController.getOption("lastDirectory"), filter);
 	continueAll(paused);
 	if (!filename.isEmpty()) {
-		m_configController.setOption("lastDirectory", QFileInfo(filename).dir().path());
+		m_configController.setOption("lastDirectory", QFileInfo(filename).dir().canonicalPath());
 	}
 	return filename;
 }
@@ -174,7 +179,7 @@ QString GBAApp::getSaveFileName(QWidget* owner, const QString& title, const QStr
 	QString filename = QFileDialog::getSaveFileName(owner, title, m_configController.getOption("lastDirectory"), filter);
 	continueAll(paused);
 	if (!filename.isEmpty()) {
-		m_configController.setOption("lastDirectory", QFileInfo(filename).dir().path());
+		m_configController.setOption("lastDirectory", QFileInfo(filename).dir().canonicalPath());
 	}
 	return filename;
 }
@@ -185,21 +190,9 @@ QString GBAApp::getOpenDirectoryName(QWidget* owner, const QString& title) {
 	QString filename = QFileDialog::getExistingDirectory(owner, title, m_configController.getOption("lastDirectory"));
 	continueAll(paused);
 	if (!filename.isEmpty()) {
-		m_configController.setOption("lastDirectory", QFileInfo(filename).dir().path());
+		m_configController.setOption("lastDirectory", QFileInfo(filename).dir().canonicalPath());
 	}
 	return filename;
-}
-
-QFileDialog* GBAApp::getOpenFileDialog(QWidget* owner, const QString& title, const QString& filter) {
-	FileDialog* dialog = new FileDialog(this, owner, title, filter);
-	dialog->setAcceptMode(QFileDialog::AcceptOpen);
-	return dialog;
-}
-
-QFileDialog* GBAApp::getSaveFileDialog(QWidget* owner, const QString& title, const QString& filter) {
-	FileDialog* dialog = new FileDialog(this, owner, title, filter);
-	dialog->setAcceptMode(QFileDialog::AcceptSave);
-	return dialog;
 }
 
 QString GBAApp::dataDir() {
@@ -240,24 +233,6 @@ bool GBAApp::reloadGameDB() {
 	return false;
 }
 #endif
-
-GBAApp::FileDialog::FileDialog(GBAApp* app, QWidget* parent, const QString& caption, const QString& filter)
-	: QFileDialog(parent, caption, app->m_configController.getOption("lastDirectory"), filter)
-	, m_app(app)
-{
-}
-
-int GBAApp::FileDialog::exec() {
-	QList<Window*> paused;
-	m_app->pauseAll(&paused);
-	bool didAccept = QFileDialog::exec() == QDialog::Accepted;
-	QStringList filenames = selectedFiles();
-	if (!filenames.isEmpty()) {
-		m_app->m_configController.setOption("lastDirectory", QFileInfo(filenames[0]).dir().path());
-	}
-	m_app->continueAll(paused);
-	return didAccept;
-}
 
 #ifdef USE_SQLITE3
 GameDBParser::GameDBParser(NoIntroDB* db, QObject* parent)

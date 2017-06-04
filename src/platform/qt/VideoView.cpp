@@ -45,13 +45,6 @@ bool VideoView::Preset::compatible(const Preset& other) const {
 
 VideoView::VideoView(QWidget* parent)
 	: QWidget(parent)
-	, m_audioCodecCstr(nullptr)
-	, m_videoCodecCstr(nullptr)
-	, m_containerCstr(nullptr)
-	, m_nativeWidth(0)
-	, m_nativeHeight(0)
-	, m_width(1)
-	, m_height(1)
 {
 	m_ui.setupUi(this);
 
@@ -63,7 +56,9 @@ VideoView::VideoView(QWidget* parent)
 	if (s_vcodecMap.empty()) {
 		s_vcodecMap["dirac"] = "libschroedinger";
 		s_vcodecMap["h264"] = "libx264";
+		s_vcodecMap["h264 nvenc"] = "h264_nvenc";
 		s_vcodecMap["hevc"] = "libx265";
+		s_vcodecMap["hevc nvenc"] = "hevc_nvenc";
 		s_vcodecMap["theora"] = "libtheora";
 		s_vcodecMap["vp8"] = "libvpx";
 		s_vcodecMap["vp9"] = "libvpx-vp9";
@@ -73,12 +68,12 @@ VideoView::VideoView(QWidget* parent)
 		s_containerMap["mkv"] = "matroska";
 	}
 
-	connect(m_ui.buttonBox, SIGNAL(rejected()), this, SLOT(close()));
-	connect(m_ui.start, SIGNAL(clicked()), this, SLOT(startRecording()));
-	connect(m_ui.stop, SIGNAL(clicked()), this, SLOT(stopRecording()));
+	connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &VideoView::close);
+	connect(m_ui.start, &QAbstractButton::clicked, this, &VideoView::startRecording);
+	connect(m_ui.stop, &QAbstractButton::clicked, this, &VideoView::stopRecording);
 
-	connect(m_ui.selectFile, SIGNAL(clicked()), this, SLOT(selectFile()));
-	connect(m_ui.filename, SIGNAL(textChanged(const QString&)), this, SLOT(setFilename(const QString&)));
+	connect(m_ui.selectFile, &QAbstractButton::clicked, this, &VideoView::selectFile);
+	connect(m_ui.filename, &QLineEdit::textChanged, this, &VideoView::setFilename);
 
 	connect(m_ui.audio, SIGNAL(activated(const QString&)), this, SLOT(setAudioCodec(const QString&)));
 	connect(m_ui.video, SIGNAL(activated(const QString&)), this, SLOT(setVideoCodec(const QString&)));
@@ -96,7 +91,7 @@ VideoView::VideoView(QWidget* parent)
 	connect(m_ui.wratio, SIGNAL(valueChanged(int)), this, SLOT(setAspectWidth(int)));
 	connect(m_ui.hratio, SIGNAL(valueChanged(int)), this, SLOT(setAspectHeight(int)));
 
-	connect(m_ui.showAdvanced, SIGNAL(clicked(bool)), this, SLOT(showAdvanced(bool)));
+	connect(m_ui.showAdvanced, &QAbstractButton::clicked, this, &VideoView::showAdvanced);
 
 	FFmpegEncoderInit(&m_encoder);
 
@@ -458,6 +453,8 @@ void VideoView::uncheckIncompatible() {
 QString VideoView::sanitizeCodec(const QString& codec, const QMap<QString, QString>& mapping) {
 	QString sanitized = codec.toLower();
 	sanitized = sanitized.remove(QChar('.'));
+	sanitized = sanitized.remove(QChar('('));
+	sanitized = sanitized.remove(QChar(')'));
 	if (mapping.contains(sanitized)) {
 		sanitized = mapping[sanitized];
 	}

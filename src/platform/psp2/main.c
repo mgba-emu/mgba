@@ -16,7 +16,6 @@
 #include <psp2/display.h>
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/threadmgr.h>
-#include <psp2/moduleinfo.h>
 #include <psp2/power.h>
 #include <psp2/sysmodule.h>
 #include <psp2/touch.h>
@@ -164,6 +163,7 @@ int main() {
 	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_RIGHT, GUI_INPUT_RIGHT);
 	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_SQUARE, mGUI_INPUT_SCREEN_MODE);
 
+	scePowerSetArmClockFrequency(444);
 	mGUIRunloop(&runner);
 
 	vita2d_fini();

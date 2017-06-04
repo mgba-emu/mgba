@@ -1,6 +1,6 @@
 // This source file is placed into the public domain.
 #include <mgba/core/core.h>
-#include "feature/commandline.h"
+#include <mgba/feature/commandline.h>
 #include <mgba-util/socket.h>
 
 #define DEFAULT_PORT 13721

@@ -20,9 +20,9 @@ enum {
 	GB_VIDEO_VERTICAL_TOTAL_PIXELS = 154,
 
 	// TODO: Figure out exact lengths
-	GB_VIDEO_MODE_2_LENGTH = 76,
-	GB_VIDEO_MODE_3_LENGTH_BASE = 171,
-	GB_VIDEO_MODE_0_LENGTH_BASE = 209,
+	GB_VIDEO_MODE_2_LENGTH = 80,
+	GB_VIDEO_MODE_3_LENGTH_BASE = 172,
+	GB_VIDEO_MODE_0_LENGTH_BASE = 204,
 
 	GB_VIDEO_HORIZONTAL_LENGTH = 456,
 
@@ -61,6 +61,7 @@ struct GBVideoRenderer {
 	uint8_t (*writeVideoRegister)(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 	void (*writeVRAM)(struct GBVideoRenderer* renderer, uint16_t address);
 	void (*writePalette)(struct GBVideoRenderer* renderer, int index, uint16_t value);
+	void (*writeOAM)(struct GBVideoRenderer* renderer, uint16_t oam);
 	void (*drawRange)(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* objOnLine, size_t nObj);
 	void (*finishScanline)(struct GBVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct GBVideoRenderer* renderer);
@@ -71,6 +72,10 @@ struct GBVideoRenderer {
 	uint8_t* vram;
 	union GBOAM* oam;
 	struct mTileCache* cache;
+
+	bool disableBG;
+	bool disableOBJ;
+	bool disableWIN;
 };
 
 DECL_BITFIELD(GBRegisterLCDC, uint8_t);
@@ -119,6 +124,7 @@ struct GBVideo {
 	int ocpIndex;
 	bool ocpIncrement;
 
+	uint16_t dmgPalette[4];
 	uint16_t palette[64];
 
 	int32_t frameCounter;
@@ -137,6 +143,8 @@ void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value);
 void GBVideoWriteLYC(struct GBVideo* video, uint8_t value);
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value);
 void GBVideoSwitchBank(struct GBVideo* video, uint8_t value);
+
+void GBVideoSetPalette(struct GBVideo* video, unsigned index, uint16_t color);
 
 struct GBSerializedState;
 void GBVideoSerialize(const struct GBVideo* video, struct GBSerializedState* state);

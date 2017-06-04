@@ -32,8 +32,8 @@ protected:
 	void resizeEvent(QResizeEvent*) override;
 
 private:
-	QPixmap m_backing;
-	int m_size;
+	QPixmap m_backing{256, 768};
+	int m_size = 8;
 	int m_tileCount;
 };
 

@@ -76,6 +76,8 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->sio.p = gba;
 	GBASIOInit(&gba->sio);
 
+	GBAHardwareInit(&gba->memory.hw, NULL);
+
 	gba->springIRQ = 0;
 	gba->keySource = 0;
 	gba->rotationSource = 0;
@@ -89,8 +91,6 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 
 	gba->stream = NULL;
 	gba->keyCallback = NULL;
-	gba->stopCallback = NULL;
-	gba->stopCallback = NULL;
 	mCoreCallbacksListInit(&gba->coreCallbacks, 0);
 
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
@@ -270,6 +270,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 	}
 }
 
+#ifdef USE_DEBUGGERS
 void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger) {
 	gba->debugger = (struct ARMDebugger*) debugger->platform;
 	gba->debugger->setSoftwareBreakpoint = _setSoftwareBreakpoint;
@@ -279,10 +280,13 @@ void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger) {
 }
 
 void GBADetachDebugger(struct GBA* gba) {
-	gba->debugger = 0;
-	ARMHotplugDetach(gba->cpu, CPU_COMPONENT_DEBUGGER);
-	gba->cpu->components[CPU_COMPONENT_DEBUGGER] = 0;
+	if (gba->debugger) {
+		ARMHotplugDetach(gba->cpu, CPU_COMPONENT_DEBUGGER);
+	}
+	gba->cpu->components[CPU_COMPONENT_DEBUGGER] = NULL;
+	gba->debugger = NULL;
 }
+#endif
 
 bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
 	GBAUnloadROM(gba);
@@ -293,14 +297,9 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
 		gba->pristineRomSize = SIZE_WORKING_RAM;
 	}
 	gba->isPristine = true;
-#ifdef _3DS
-	if (gba->pristineRomSize <= romBufferSize) {
-		gba->memory.wram = romBuffer;
-		vf->read(vf, romBuffer, gba->pristineRomSize);
-	}
-#else
-	gba->memory.wram = vf->map(vf, gba->pristineRomSize, MAP_READ);
-#endif
+	gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
+	memset(gba->memory.wram, 0, SIZE_WORKING_RAM);
+	vf->read(vf, gba->memory.wram, gba->pristineRomSize);
 	if (!gba->memory.wram) {
 		mLOG(GBA, WARN, "Couldn't map ROM");
 		return false;
@@ -410,10 +409,6 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 }
 
 void GBAWriteIE(struct GBA* gba, uint16_t value) {
-	if (value & (1 << IRQ_KEYPAD)) {
-		mLOG(GBA, STUB, "Keypad interrupts not implemented");
-	}
-
 	if (gba->memory.io[REG_IME >> 1] && value & gba->memory.io[REG_IF >> 1]) {
 		ARMRaiseIRQ(gba->cpu);
 	}
@@ -450,11 +445,14 @@ void GBAHalt(struct GBA* gba) {
 }
 
 void GBAStop(struct GBA* gba) {
-	if (!gba->stopCallback) {
-		return;
+	size_t c;
+	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
+		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
+		if (callbacks->sleep) {
+			callbacks->sleep(callbacks->context);
+		}
 	}
 	gba->cpu->nextEvent = gba->cpu->cycles;
-	gba->stopCallback->stop(gba->stopCallback);
 }
 
 void GBADebug(struct GBA* gba, uint16_t flags) {
@@ -635,7 +633,7 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 }
 
 void GBAFrameStarted(struct GBA* gba) {
-	UNUSED(gba);
+	GBATestKeypadIRQ(gba);
 
 	size_t c;
 	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
@@ -679,6 +677,29 @@ void GBAFrameEnded(struct GBA* gba) {
 		if (callbacks->videoFrameEnded) {
 			callbacks->videoFrameEnded(callbacks->context);
 		}
+	}
+}
+
+void GBATestKeypadIRQ(struct GBA* gba) {
+	uint16_t keycnt = gba->memory.io[REG_KEYCNT >> 1];
+	if (!(keycnt & 0x4000)) {
+		return;
+	}
+	int isAnd = keycnt & 0x8000;
+	uint16_t keyInput;
+
+	if (!gba->keySource) {
+		// TODO?
+		return;
+	}
+
+	keycnt &= 0x3FF;
+	keyInput = *gba->keySource;
+
+	if (isAnd && keycnt == keyInput) {
+		GBARaiseIRQ(gba, IRQ_KEYPAD);
+	} else if (!isAnd && keycnt & keyInput) {
+		GBARaiseIRQ(gba, IRQ_KEYPAD);
 	}
 }
 

@@ -33,13 +33,6 @@ InputController::InputController(InputModel* model, int playerId, QWidget* topLe
 	, m_inputModel(model)
 	, m_platform(PLATFORM_NONE)
 	, m_playerId(playerId)
-	, m_config(nullptr)
-	, m_gamepadTimer(nullptr)
-#ifdef BUILD_SDL
-	, m_sdlPlayer{}
-	, m_playerAttached(false)
-#endif
-	, m_allowOpposing(false)
 	, m_topLevel(topLevel)
 	, m_focusParent(topLevel)
 {

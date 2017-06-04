@@ -102,7 +102,7 @@ void GBAMemoryDeinit(struct GBA* gba) {
 }
 
 void GBAMemoryReset(struct GBA* gba) {
-	if (gba->memory.rom || gba->memory.fullBios) {
+	if (gba->memory.rom || gba->memory.fullBios || !gba->memory.wram) {
 		// Not multiboot
 		if (gba->memory.wram) {
 			mappedMemoryFree(gba->memory.wram, SIZE_WORKING_RAM);
@@ -274,10 +274,10 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		break;
 	case REGION_VRAM:
 		if (address & 0x10000) {
-			cpu->memory.activeRegion = (uint32_t*) &gba->video.renderer->vram[0x8000];
+			cpu->memory.activeRegion = (uint32_t*) &gba->video.vram[0x8000];
 			cpu->memory.activeMask = 0x00007FFF;
 		} else {
-			cpu->memory.activeRegion = (uint32_t*) gba->video.renderer->vram;
+			cpu->memory.activeRegion = (uint32_t*) gba->video.vram;
 			cpu->memory.activeMask = 0x0000FFFF;
 		}
 		break;
@@ -377,9 +377,9 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 
 #define LOAD_VRAM \
 	if ((address & 0x0001FFFF) < SIZE_VRAM) { \
-		LOAD_32(value, address & 0x0001FFFC, gba->video.renderer->vram); \
+		LOAD_32(value, address & 0x0001FFFC, gba->video.vram); \
 	} else { \
-		LOAD_32(value, address & 0x00017FFC, gba->video.renderer->vram); \
+		LOAD_32(value, address & 0x00017FFC, gba->video.vram); \
 	} \
 	wait += waitstatesRegion[REGION_VRAM];
 
@@ -507,9 +507,9 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		break;
 	case REGION_VRAM:
 		if ((address & 0x0001FFFF) < SIZE_VRAM) {
-			LOAD_16(value, address & 0x0001FFFE, gba->video.renderer->vram);
+			LOAD_16(value, address & 0x0001FFFE, gba->video.vram);
 		} else {
-			LOAD_16(value, address & 0x00017FFE, gba->video.renderer->vram);
+			LOAD_16(value, address & 0x00017FFE, gba->video.vram);
 		}
 		break;
 	case REGION_OAM:
@@ -608,9 +608,9 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		break;
 	case REGION_VRAM:
 		if ((address & 0x0001FFFF) < SIZE_VRAM) {
-			value = ((uint8_t*) gba->video.renderer->vram)[address & 0x0001FFFF];
+			value = ((uint8_t*) gba->video.vram)[address & 0x0001FFFF];
 		} else {
-			value = ((uint8_t*) gba->video.renderer->vram)[address & 0x00017FFF];
+			value = ((uint8_t*) gba->video.vram)[address & 0x00017FFF];
 		}
 		break;
 	case REGION_OAM:
@@ -691,11 +691,11 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 
 #define STORE_VRAM \
 	if ((address & 0x0001FFFF) < SIZE_VRAM) { \
-		STORE_32(value, address & 0x0001FFFC, gba->video.renderer->vram); \
+		STORE_32(value, address & 0x0001FFFC, gba->video.vram); \
 		gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x0001FFFC) + 2); \
 		gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x0001FFFC)); \
 	} else { \
-		STORE_32(value, address & 0x00017FFC, gba->video.renderer->vram); \
+		STORE_32(value, address & 0x00017FFC, gba->video.vram); \
 		gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x00017FFC) + 2); \
 		gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x00017FFC)); \
 	} \
@@ -796,10 +796,10 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		break;
 	case REGION_VRAM:
 		if ((address & 0x0001FFFF) < SIZE_VRAM) {
-			STORE_16(value, address & 0x0001FFFE, gba->video.renderer->vram);
+			STORE_16(value, address & 0x0001FFFE, gba->video.vram);
 			gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x0001FFFE);
 		} else {
-			STORE_16(value, address & 0x00017FFE, gba->video.renderer->vram);
+			STORE_16(value, address & 0x00017FFE, gba->video.vram);
 			gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x00017FFE);
 		}
 		break;
@@ -1052,11 +1052,11 @@ void GBAPatch32(struct ARMCore* cpu, uint32_t address, int32_t value, int32_t* o
 		break;
 	case REGION_VRAM:
 		if ((address & 0x0001FFFF) < SIZE_VRAM) {
-			LOAD_32(oldValue, address & 0x0001FFFC, gba->video.renderer->vram);
-			STORE_32(value, address & 0x0001FFFC, gba->video.renderer->vram);
+			LOAD_32(oldValue, address & 0x0001FFFC, gba->video.vram);
+			STORE_32(value, address & 0x0001FFFC, gba->video.vram);
 		} else {
-			LOAD_32(oldValue, address & 0x00017FFC, gba->video.renderer->vram);
-			STORE_32(value, address & 0x00017FFC, gba->video.renderer->vram);
+			LOAD_32(oldValue, address & 0x00017FFC, gba->video.vram);
+			STORE_32(value, address & 0x00017FFC, gba->video.vram);
 		}
 		break;
 	case REGION_OAM:
@@ -1121,11 +1121,11 @@ void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* o
 		break;
 	case REGION_VRAM:
 		if ((address & 0x0001FFFF) < SIZE_VRAM) {
-			LOAD_16(oldValue, address & 0x0001FFFE, gba->video.renderer->vram);
-			STORE_16(value, address & 0x0001FFFE, gba->video.renderer->vram);
+			LOAD_16(oldValue, address & 0x0001FFFE, gba->video.vram);
+			STORE_16(value, address & 0x0001FFFE, gba->video.vram);
 		} else {
-			LOAD_16(oldValue, address & 0x00017FFE, gba->video.renderer->vram);
-			STORE_16(value, address & 0x00017FFE, gba->video.renderer->vram);
+			LOAD_16(oldValue, address & 0x00017FFE, gba->video.vram);
+			STORE_16(value, address & 0x00017FFE, gba->video.vram);
 		}
 		break;
 	case REGION_OAM:
@@ -1552,6 +1552,9 @@ void _pristineCow(struct GBA* gba) {
 	void* newRom = anonymousMemoryMap(SIZE_CART0);
 	memcpy(newRom, gba->memory.rom, gba->memory.romSize);
 	memset(((uint8_t*) newRom) + gba->memory.romSize, 0xFF, SIZE_CART0 - gba->memory.romSize);
+	if (gba->cpu->memory.activeRegion == gba->memory.rom) {
+		gba->cpu->memory.activeRegion = newRom;
+	}
 	if (gba->romVf) {
 #ifndef _3DS
 		gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->memory.romSize);

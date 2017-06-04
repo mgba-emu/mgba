@@ -17,7 +17,6 @@ mLOG_DEFINE_CATEGORY(CHEATS, "Cheats", "core.cheats");
 
 DEFINE_VECTOR(mCheatList, struct mCheat);
 DEFINE_VECTOR(mCheatSets, struct mCheatSet*);
-DEFINE_VECTOR(StringList, char*);
 
 static int32_t _readMem(struct mCore* core, uint32_t address, int width) {
 	switch (width) {

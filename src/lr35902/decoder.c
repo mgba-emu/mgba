@@ -66,8 +66,7 @@ DEFINE_DECODER_LR35902(NOP, info->mnemonic = LR35902_MN_NOP;)
 	DEFINE_LD_DECODER_LR35902_MEM(NAME, HL) \
 	DEFINE_LD_DECODER_LR35902_MEM_2(NAME, HL) \
 	DEFINE_DECODER_LR35902(LD ## NAME ## _, info->mnemonic = LR35902_MN_LD; \
-		info->op1.reg = LR35902_REG_A; \
-		info->op1.flags = LR35902_OP_FLAG_IMPLICIT; \
+		info->op1.reg = LR35902_REG_ ## NAME; \
 		return 1;) \
 	DEFINE_LD_DECODER_LR35902_NOHL(NAME)
 
@@ -500,17 +499,16 @@ static int _decodeOperand(struct LR35902Operand op, char* buffer, int blen) {
 		strncpy(buffer, "(", blen - 1);
 		ADVANCE(1);
 	}
-	if (op.immediate) {
+	if (op.reg) {
+		int written = snprintf(buffer, blen - 1, "%s", _lr35902Registers[op.reg]);
+		ADVANCE(written);
+	} else {
 		int written = snprintf(buffer, blen - 1, "$%02X", op.immediate);
 		ADVANCE(written);
 		if (op.reg) {
 			strncpy(buffer, "+", blen - 1);
 			ADVANCE(1);
 		}
-	}
-	if (op.reg) {
-		int written = snprintf(buffer, blen - 1, "%s", _lr35902Registers[op.reg]);
-		ADVANCE(written);
 	}
 	if (op.flags & LR35902_OP_FLAG_INCREMENT) {
 		strncpy(buffer, "+", blen - 1);
@@ -546,10 +544,12 @@ int LR35902Disassemble(struct LR35902InstructionInfo* info, char* buffer, int bl
 		}
 	}
 
-	written = _decodeOperand(info->op1, buffer, blen);
-	ADVANCE(written);
+	if (info->op1.reg || info->op1.immediate) {
+		written = _decodeOperand(info->op1, buffer, blen);
+		ADVANCE(written);
+	}
 
-	if (info->op2.reg || info->op2.immediate) {
+	if (info->op2.reg || (!info->op1.immediate && info->opcodeSize > 1 && info->opcode[0] != 0xCB)) {
 		if (written) {
 			strncpy(buffer, ", ", blen - 1);
 			ADVANCE(2);

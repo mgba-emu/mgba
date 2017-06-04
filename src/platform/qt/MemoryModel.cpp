@@ -26,12 +26,6 @@ using namespace QGBA;
 
 MemoryModel::MemoryModel(QWidget* parent)
 	: QAbstractScrollArea(parent)
-	, m_core(nullptr)
-	, m_top(0)
-	, m_align(1)
-	, m_selection(0, 0)
-	, m_selectionAnchor(0)
-	, m_codec(nullptr)
 {
 	m_font.setFamily("Source Code Pro");
 	m_font.setStyleHint(QFont::Monospace);
@@ -49,22 +43,22 @@ MemoryModel::MemoryModel(QWidget* parent)
 
 	QAction* copy = new QAction(tr("Copy selection"), this);
 	copy->setShortcut(QKeySequence::Copy);
-	connect(copy, SIGNAL(triggered()), this, SLOT(copy()));
+	connect(copy, &QAction::triggered, this, &MemoryModel::copy);
 	addAction(copy);
 
 	QAction* save = new QAction(tr("Save selection"), this);
 	save->setShortcut(QKeySequence::Save);
-	connect(save, SIGNAL(triggered()), this, SLOT(save()));
+	connect(save, &QAction::triggered, this, &MemoryModel::save);
 	addAction(save);
 
 	QAction* paste = new QAction(tr("Paste"), this);
 	paste->setShortcut(QKeySequence::Paste);
-	connect(paste, SIGNAL(triggered()), this, SLOT(paste()));
+	connect(paste, &QAction::triggered, this, &MemoryModel::paste);
 	addAction(paste);
 
 	QAction* load = new QAction(tr("Load"), this);
 	load->setShortcut(QKeySequence::Open);
-	connect(load, SIGNAL(triggered()), this, SLOT(load()));
+	connect(load, &QAction::triggered, this, &MemoryModel::load);
 	addAction(load);
 
 	static QString arg("%0");
@@ -128,7 +122,7 @@ void MemoryModel::setAlignment(int width) {
 	viewport()->update();
 }
 
-void MemoryModel::loadTBL(const QString& path) {
+void MemoryModel::loadTBLFromPath(const QString& path) {
 	VFile* vf = VFileDevice::open(path, O_RDONLY);
 	if (!vf) {
 		return;
@@ -143,7 +137,7 @@ void MemoryModel::loadTBL() {
 	if (filename.isNull()) {
 		return;
 	}
-	loadTBL(filename);
+	loadTBLFromPath(filename);
 }
 
 void MemoryModel::jumpToAddress(const QString& hex) {
