@@ -131,6 +131,9 @@ struct mCore {
 	void (*rawWrite16)(struct mCore*, uint32_t address, int segment, uint16_t);
 	void (*rawWrite32)(struct mCore*, uint32_t address, int segment, uint32_t);
 
+	size_t (*listMemoryBlocks)(const struct mCore*, const struct mCoreMemoryBlock**);
+	void* (*getMemoryBlock)(struct mCore*, size_t id, size_t* sizeOut);
+
 #ifdef USE_DEBUGGERS
 	bool (*supportsDebuggerType)(struct mCore*, enum mDebuggerType);
 	struct mDebuggerPlatform* (*debuggerPlatform)(struct mCore*);

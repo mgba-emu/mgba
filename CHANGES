@@ -124,6 +124,7 @@ Misc:
  - Util: Tune patch-fast extent sizes
  - Qt: Relax hard dependency on OpenGL
  - GB Video: Improved video timings
+ - Core: List memory segments in the core
 
 0.5.2: (2016-12-31)
 Bugfixes:

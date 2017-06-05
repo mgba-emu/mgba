@@ -112,6 +112,27 @@ struct mCoreChannelInfo {
 	const char* visibleType;
 };
 
+enum mCoreMemoryBlockFlags {
+	mCORE_MEMORY_READ = 0x01,
+	mCORE_MEMORY_WRITE = 0x02,
+	mCORE_MEMORY_RW = 0x03,
+	mCORE_MEMORY_MAPPED = 0x10,
+	mCORE_MEMORY_VIRTUAL = 0x20,
+};
+
+struct mCoreMemoryBlock {
+	size_t id;
+	const char* internalName;
+	const char* shortName;
+	const char* longName;
+	uint32_t start;
+	uint32_t end;
+	uint32_t size;
+	uint32_t flags;
+	uint16_t maxSegment;
+	uint32_t segmentStart;
+};
+
 CXX_GUARD_END
 
 #endif
