@@ -41,6 +41,7 @@ DECLARE_VECTOR(mCoreMemorySearchResults, struct mCoreMemorySearchResult);
 
 struct mCore;
 void mCoreMemorySearch(struct mCore* core, const struct mCoreMemorySearchParams* params, struct mCoreMemorySearchResults* out, size_t limit);
+void mCoreMemorySearchRepeat(struct mCore* core, const struct mCoreMemorySearchParams* params, struct mCoreMemorySearchResults* inout);
 
 CXX_GUARD_END
 

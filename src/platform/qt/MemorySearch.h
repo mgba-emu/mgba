@@ -8,6 +8,8 @@
 
 #include "ui_MemorySearch.h"
 
+#include <mgba/core/mem-search.h>
+
 namespace QGBA {
 
 class GameController;
@@ -16,15 +18,25 @@ class MemorySearch : public QWidget {
 Q_OBJECT
 
 public:
+	static constexpr size_t LIMIT = 10000;
+
 	MemorySearch(GameController* controller, QWidget* parent = nullptr);
+	~MemorySearch();
 
 public slots:
+	void refresh();
 	void search();
+	void searchWithin();
 
 private:
+	bool createParams(mCoreMemorySearchParams*);
+
 	Ui::MemorySearch m_ui;
 
 	GameController* m_controller;
+
+	mCoreMemorySearchResults m_results;
+	QByteArray m_string;
 };
 
 }

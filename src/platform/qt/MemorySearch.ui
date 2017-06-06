@@ -28,6 +28,9 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
      <property name="showGrid">
       <bool>false</bool>
      </property>
@@ -74,6 +77,9 @@
       <widget class="QRadioButton" name="typeNum">
        <property name="text">
         <string>Numeric</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
        <attribute name="buttonGroup">
         <string notr="true">type</string>
@@ -122,6 +128,9 @@
        <property name="text">
         <string>4 Bytes (32-bit)</string>
        </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
        <attribute name="buttonGroup">
         <string notr="true">width</string>
        </attribute>
@@ -135,14 +144,17 @@
       </widget>
      </item>
      <item row="6" column="1">
-      <widget class="QCheckBox" name="numHex">
+      <widget class="QRadioButton" name="numHex">
        <property name="text">
         <string>Hexadecimal</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
      <item row="7" column="1">
-      <widget class="QCheckBox" name="numDec">
+      <widget class="QRadioButton" name="numDec">
        <property name="text">
         <string>Decimal</string>
        </property>
@@ -168,9 +180,6 @@
      </item>
      <item>
       <widget class="QPushButton" name="searchWithin">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
        <property name="text">
         <string>Search Within</string>
        </property>
@@ -186,6 +195,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="refresh">
+       <property name="text">
+        <string>Refresh</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>
@@ -195,5 +211,6 @@
  <buttongroups>
   <buttongroup name="type"/>
   <buttongroup name="width"/>
+  <buttongroup name="numType"/>
  </buttongroups>
 </ui>

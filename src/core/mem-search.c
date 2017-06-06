@@ -284,3 +284,73 @@ void mCoreMemorySearch(struct mCore* core, const struct mCoreMemorySearchParams*
 		found += _search(mem, size, block, params, out, limit ? limit - found : 0);
 	}
 }
+
+void mCoreMemorySearchRepeat(struct mCore* core, const struct mCoreMemorySearchParams* params, struct mCoreMemorySearchResults* inout) {
+	size_t i;
+	for (i = 0; i < mCoreMemorySearchResultsSize(inout); ++i) {
+		struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsGetPointer(inout, i);
+		switch (res->type) {
+		case mCORE_MEMORY_SEARCH_8:
+			switch (params->type) {
+			case mCORE_MEMORY_SEARCH_8:
+			case mCORE_MEMORY_SEARCH_GUESS:
+				if (core->rawRead8(core, res->address, res->segment) != params->value8) {
+					mCoreMemorySearchResultsShift(inout, i, 1);
+					--i;
+				}
+				break;
+			case mCORE_MEMORY_SEARCH_16:
+				if (core->rawRead8(core, res->address, res->segment) != params->value16) {
+					mCoreMemorySearchResultsShift(inout, i, 1);
+					--i;
+				}
+				break;
+			case mCORE_MEMORY_SEARCH_32:
+				if (core->rawRead32(core, res->address, res->segment) != params->value32) {
+					mCoreMemorySearchResultsShift(inout, i, 1);
+					--i;
+				}
+				break;
+			default:
+				break;
+			}
+			break;
+		case mCORE_MEMORY_SEARCH_16:
+			switch (params->type) {
+			case mCORE_MEMORY_SEARCH_16:
+			case mCORE_MEMORY_SEARCH_GUESS:
+				if (core->rawRead16(core, res->address, res->segment) != params->value16) {
+					mCoreMemorySearchResultsShift(inout, i, 1);
+					--i;
+				}
+				break;
+			case mCORE_MEMORY_SEARCH_32:
+				if (core->rawRead32(core, res->address, res->segment) != params->value32) {
+					mCoreMemorySearchResultsShift(inout, i, 1);
+					--i;
+				}
+				break;
+			default:
+				break;
+			}
+			break;
+		case mCORE_MEMORY_SEARCH_32:
+			switch (params->type) {
+			case mCORE_MEMORY_SEARCH_32:
+			case mCORE_MEMORY_SEARCH_GUESS:
+				if (core->rawRead32(core, res->address, res->segment) != params->value32) {
+					mCoreMemorySearchResultsShift(inout, i, 1);
+					--i;
+				}
+				break;
+			default:
+				break;
+			}
+			break;
+		case mCORE_MEMORY_SEARCH_STRING:
+		case mCORE_MEMORY_SEARCH_GUESS:
+			// TOOD
+			break;
+		}
+	}
+}
