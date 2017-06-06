@@ -34,6 +34,7 @@ struct mCoreMemorySearchParams {
 struct mCoreMemorySearchResult {
 	uint32_t address;
 	int segment;
+	uint64_t guessDivisor;
 	enum mCoreMemorySearchType type;
 };
 

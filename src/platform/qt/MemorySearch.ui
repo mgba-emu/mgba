@@ -160,6 +160,13 @@
        </property>
       </widget>
      </item>
+     <item row="8" column="1">
+      <widget class="QRadioButton" name="numGuess">
+       <property name="text">
+        <string>Guess</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item row="2" column="0" colspan="2">

@@ -87,6 +87,12 @@ bool MemorySearch::createParams(mCoreMemorySearchParams* params) {
 				}
 			}
 		}
+		if (m_ui.numGuess->isChecked()) {
+			params->type = mCORE_MEMORY_SEARCH_GUESS;
+			m_string = m_ui.value->text().toLocal8Bit();
+			params->valueStr = m_string.constData();
+			ok = true;
+		}
 	}
 	if (m_ui.typeStr->isChecked()) {
 		params->type = mCORE_MEMORY_SEARCH_STRING;
