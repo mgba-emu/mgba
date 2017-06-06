@@ -84,6 +84,7 @@ set(SOURCE_FILES
 	LogController.cpp
 	LogView.cpp
 	MemoryModel.cpp
+	MemorySearch.cpp
 	MemoryView.cpp
 	MessagePainter.cpp
 	MultiplayerController.cpp
@@ -115,6 +116,7 @@ set(UI_FILES
 	IOViewer.ui
 	LoadSaveState.ui
 	LogView.ui
+	MemorySearch.ui
 	MemoryView.ui
 	ObjView.ui
 	OverrideView.ui
