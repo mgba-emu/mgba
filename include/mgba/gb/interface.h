@@ -30,6 +30,7 @@ enum GBMemoryBankControllerType {
 	GB_MMM01 = 0x10,
 	GB_HuC1 = 0x11,
 	GB_HuC3 = 0x12,
+	GB_POCKETCAM = 0x13,
 	GB_MBC3_RTC = 0x103,
 	GB_MBC5_RUMBLE = 0x105
 };
