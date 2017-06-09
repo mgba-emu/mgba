@@ -126,6 +126,7 @@ Misc:
  - Qt: Relax hard dependency on OpenGL
  - GB Video: Improved video timings
  - Core: List memory segments in the core
+ - Core: Move savestate creation time to extdata
 
 0.5.2: (2016-12-31)
 Bugfixes:

@@ -190,8 +190,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * | 0x002F8 - 0x002FB: CPU prefecth (decode slot)
  * | 0x002FC - 0x002FF: CPU prefetch (fetch slot)
  * 0x00300 - 0x00303: Associated movie stream ID for record/replay (or 0 if no stream)
- * 0x00304 - 0x0030F: Reserved (leave zero)
- * 0x00310 - 0x00317: Savestate creation time (usec since 1970)
+ * 0x00304 - 0x00317: Savestate creation time (usec since 1970)
  * 0x00318 - 0x0031B: Last prefetched program counter
  * 0x0031C - 0x0031F: Miscellaneous flags
  *  | bit 0: Is CPU halted?
@@ -312,9 +311,7 @@ struct GBASerializedState {
 	uint32_t cpuPrefetch[2];
 
 	uint32_t associatedStreamId;
-	uint32_t reservedRr[3];
-
-	uint64_t creationUsec;
+	uint32_t reservedRr[5];
 
 	uint32_t lastPrefetchedPc;
 	GBASerializedMiscFlags miscFlags;

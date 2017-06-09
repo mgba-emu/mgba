@@ -59,25 +59,6 @@ void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	GBVideoSerialize(&gb->video, state);
 	GBTimerSerialize(&gb->timer, state);
 	GBAudioSerialize(&gb->audio, state);
-
-#ifndef _MSC_VER
-	struct timeval tv;
-	if (!gettimeofday(&tv, 0)) {
-		uint64_t usec = tv.tv_usec;
-		usec += tv.tv_sec * 1000000LL;
-		STORE_64LE(usec, 0, &state->creationUsec);
-	}
-#else
-	struct timespec ts;
-	if (timespec_get(&ts, TIME_UTC)) {
-		uint64_t usec = ts.tv_nsec / 1000;
-		usec += ts.tv_sec * 1000000LL;
-		STORE_64LE(usec, 0, &state->creationUsec);
-	}
-#endif
-	else {
-		state->creationUsec = 0;
-	}
 }
 
 bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {

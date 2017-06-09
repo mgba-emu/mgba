@@ -16,6 +16,7 @@ enum mStateExtdataTag {
 	EXTDATA_SAVEDATA = 2,
 	EXTDATA_CHEATS = 3,
 	EXTDATA_RTC = 4,
+	EXTDATA_META_TIME = 0x101,
 	EXTDATA_MAX
 };
 
@@ -23,6 +24,7 @@ enum mStateExtdataTag {
 #define SAVESTATE_SAVEDATA   2
 #define SAVESTATE_CHEATS     4
 #define SAVESTATE_RTC        8
+#define SAVESTATE_METADATA   16
 
 struct mStateExtdataItem {
 	int32_t size;
