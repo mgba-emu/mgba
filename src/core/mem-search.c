@@ -387,10 +387,10 @@ bool _testGuess(struct mCore* core, const struct mCoreMemorySearchResult* res, c
 		if (core->rawRead8(core, res->address, res->segment) * res->guessDivisor == value) {
 			return true;
 		}
-		if ((!res->address & 1) && core->rawRead16(core, res->address, res->segment) * res->guessDivisor == value) {
+		if (!(res->address & 1) && core->rawRead16(core, res->address, res->segment) * res->guessDivisor == value) {
 			return true;
 		}
-		if ((!res->address & 3) && core->rawRead32(core, res->address, res->segment) * res->guessDivisor == value) {
+		if (!(res->address & 3) && core->rawRead32(core, res->address, res->segment) * res->guessDivisor == value) {
 			return true;
 		}
 	}
@@ -400,10 +400,10 @@ bool _testGuess(struct mCore* core, const struct mCoreMemorySearchResult* res, c
 		if (core->rawRead8(core, res->address, res->segment) * res->guessDivisor == value) {
 			return true;
 		}
-		if ((!res->address & 1) && core->rawRead16(core, res->address, res->segment) * res->guessDivisor == value) {
+		if (!(res->address & 1) && core->rawRead16(core, res->address, res->segment) * res->guessDivisor == value) {
 			return true;
 		}
-		if ((!res->address & 3) && core->rawRead32(core, res->address, res->segment) * res->guessDivisor == value) {
+		if (!(res->address & 3) && core->rawRead32(core, res->address, res->segment) * res->guessDivisor == value) {
 			return true;
 		}
 	}
