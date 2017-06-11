@@ -710,4 +710,6 @@ void GBFrameEnded(struct GB* gb) {
 			mCheatRefresh(device, cheats);
 		}
 	}
+
+	GBTestKeypadIRQ(gb);
 }

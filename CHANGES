@@ -21,7 +21,7 @@ Features:
  - Debugger: Segment/bank support
  - GB: Symbol table support
  - GB MBC: Add MBC1 multicart support
- - GBA: Implement keypad interrupts
+ - Implement keypad interrupts
  - LR35902: Watchpoints
  - Memory search
  - Debugger: Execution tracing

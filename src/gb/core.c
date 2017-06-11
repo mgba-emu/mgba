@@ -432,11 +432,13 @@ static bool _GBCoreSaveState(struct mCore* core, void* state) {
 static void _GBCoreSetKeys(struct mCore* core, uint32_t keys) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	gbcore->keys = keys;
+	GBTestKeypadIRQ(core->board);
 }
 
 static void _GBCoreAddKeys(struct mCore* core, uint32_t keys) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	gbcore->keys |= keys;
+	GBTestKeypadIRQ(core->board);
 }
 
 static void _GBCoreClearKeys(struct mCore* core, uint32_t keys) {
