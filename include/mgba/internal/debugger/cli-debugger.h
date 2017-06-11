@@ -10,7 +10,10 @@
 
 CXX_GUARD_START
 
-#include <mgba/internal/debugger/debugger.h>
+#include <mgba/debugger/debugger.h>
+
+extern const char* ERROR_MISSING_ARGS;
+extern const char* ERROR_OVERFLOW;
 
 struct CLIDebugger;
 

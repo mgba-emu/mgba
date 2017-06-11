@@ -19,8 +19,7 @@ CXX_GUARD_START
 #endif
 #include <mgba/core/interface.h>
 #ifdef USE_DEBUGGERS
-// TODO: Fix layering violation
-#include <mgba/internal/debugger/debugger.h>
+#include <mgba/debugger/debugger.h>
 #endif
 
 enum mPlatform {
