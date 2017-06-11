@@ -97,6 +97,13 @@ void mDebuggerRun(struct mDebugger* debugger) {
 	}
 }
 
+void mDebuggerRunFrame(struct mDebugger* debugger) {
+	int32_t frame = debugger->core->frameCounter(debugger->core);
+	do {
+		mDebuggerRun(debugger);
+	} while (debugger->core->frameCounter(debugger->core) == frame);
+}
+
 void mDebuggerEnter(struct mDebugger* debugger, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
 	debugger->state = DEBUGGER_PAUSED;
 	if (debugger->platform->entered) {

@@ -128,6 +128,7 @@ Misc:
  - GB Video: Improved video timings
  - Core: List memory segments in the core
  - Core: Move savestate creation time to extdata
+ - Debugger: Add mDebuggerRunFrame convenience function
 
 0.5.2: (2016-12-31)
 Bugfixes:

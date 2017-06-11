@@ -113,6 +113,7 @@ struct mDebugger {
 struct mDebugger* mDebuggerCreate(enum mDebuggerType type, struct mCore*);
 void mDebuggerAttach(struct mDebugger*, struct mCore*);
 void mDebuggerRun(struct mDebugger*);
+void mDebuggerRunFrame(struct mDebugger*);
 void mDebuggerEnter(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 
 CXX_GUARD_END
