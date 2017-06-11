@@ -28,6 +28,7 @@ void free(void*);
 #include "flags.h"
 
 #include <mgba/core/core.h>
+#include <mgba/core/mem-search.h>
 #include <mgba/core/tile-cache.h>
 
 #define PYEXPORT extern "Python+C"
