@@ -6,6 +6,7 @@
 #include <mgba/internal/lr35902/debugger/debugger.h>
 
 #include <mgba/core/core.h>
+#include <mgba/internal/lr35902/decoder.h>
 #include <mgba/internal/lr35902/lr35902.h>
 #include <mgba/internal/lr35902/debugger/memory-debugger.h>
 
@@ -48,6 +49,7 @@ static void LR35902DebuggerSetWatchpoint(struct mDebuggerPlatform*, uint32_t add
 static void LR35902DebuggerClearWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void LR35902DebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool LR35902DebuggerHasBreakpoints(struct mDebuggerPlatform*);
+static void LR35902DebuggerTrace(struct mDebuggerPlatform*, char* out, size_t* length);
 
 struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void) {
 	struct mDebuggerPlatform* platform = (struct mDebuggerPlatform*) malloc(sizeof(struct LR35902Debugger));
@@ -60,6 +62,7 @@ struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void) {
 	platform->clearWatchpoint = LR35902DebuggerClearWatchpoint;
 	platform->checkBreakpoints = LR35902DebuggerCheckBreakpoints;
 	platform->hasBreakpoints = LR35902DebuggerHasBreakpoints;
+	platform->trace = LR35902DebuggerTrace;
 	return platform;
 }
 
@@ -136,4 +139,32 @@ static void LR35902DebuggerClearWatchpoint(struct mDebuggerPlatform* d, uint32_t
 	if (!LR35902DebugWatchpointListSize(&debugger->watchpoints)) {
 		LR35902DebuggerRemoveMemoryShim(debugger);
 	}
+}
+
+static void LR35902DebuggerTrace(struct mDebuggerPlatform* d, char* out, size_t* length) {
+	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
+	struct LR35902Core* cpu = debugger->cpu;
+
+	char disassembly[64];
+
+	struct LR35902InstructionInfo info = {{0}};
+	char* disPtr = disassembly;
+	uint8_t instruction;
+	uint16_t address = cpu->pc;
+	size_t bytesRemaining = 1;
+	for (bytesRemaining = 1; bytesRemaining; --bytesRemaining) {
+		instruction = debugger->d.p->core->rawRead8(debugger->d.p->core, address, -1);
+		disPtr += snprintf(disPtr, sizeof(disassembly) - (disPtr - disassembly), "%02X", instruction);
+		++address;
+		bytesRemaining += LR35902Decode(instruction, &info);
+	};
+	disPtr[0] = ':';
+	disPtr[1] = ' ';
+	disPtr += 2;
+	LR35902Disassemble(&info, disPtr, sizeof(disassembly) - (disPtr - disassembly));
+
+	*length = snprintf(out, *length, "A: %02X F: %02X B: %02X C: %02X D: %02X E: %02X H: %02X L: %02X SP: %04X PC: %04X | %s",
+		               cpu->a, cpu->f.packed, cpu->b, cpu->c,
+		               cpu->d, cpu->e, cpu->h, cpu->l,
+		               cpu->sp, cpu->pc, disassembly);
 }

@@ -24,6 +24,7 @@ Features:
  - GBA: Implement keypad interrupts
  - LR35902: Watchpoints
  - Memory search
+ - Debugger: Execution tracing
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
