@@ -337,6 +337,7 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 		}
 		audio->ch3.window = 0;
 	}
+	mTimingDeschedule(audio->timing, &audio->ch3Fade);
 	mTimingDeschedule(audio->timing, &audio->ch3Event);
 	if (audio->playingCh3) {
 		audio->ch3.readable = audio->style != GB_AUDIO_DMG;
@@ -863,6 +864,7 @@ static void _updateChannel3(struct mTiming* timing, void* user, uint32_t cyclesL
 	ch->sample *= volume * 4;
 	audio->ch3.readable = true;
 	if (audio->style == GB_AUDIO_DMG) {
+		mTimingDeschedule(audio->timing, &audio->ch3Fade);
 		mTimingSchedule(timing, &audio->ch3Fade, 2 - cyclesLate);
 	}
 	int cycles = 2 * (2048 - ch->rate);
