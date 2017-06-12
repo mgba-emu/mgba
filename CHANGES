@@ -66,6 +66,7 @@ Bugfixes:
  - LR35902: Fix decoding LD r, $imm and 0-valued immediates (fixes mgba.io/i/735)
  - GB: Fix STAT blocking
  - GB MBC: Fix swapping carts not detect new MBC
+ - GB Timer: Fix DIV batching if TAC changes
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
