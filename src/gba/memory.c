@@ -1505,33 +1505,32 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 		previousLoads = dist;
 	}
 
-	int32_t s = cpu->memory.activeSeqCycles16 + 1;
-	int32_t n2s = cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16 + 1;
+	int32_t s = cpu->memory.activeSeqCycles16;
+	int32_t n2s = cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16;
 
 	// Figure out how many sequential loads we can jam in
 	int32_t stall = s;
 	int32_t loads = 1;
 
-	if (stall > wait && !previousLoads) {
-		// We might need to stall a bit extra if we haven't finished the first S cycle
-		wait = stall;
-	} else {
-		while (stall < wait) {
+	if (stall < wait) {
+		int32_t maxLoads = 8 - previousLoads;
+		while (stall < wait && loads < maxLoads) {
 			stall += s;
 			++loads;
 		}
-		if (loads + previousLoads > 8) {
-			loads = 8 - previousLoads;
-		}
 	}
+	if (stall > wait) {
+		// The wait cannot take less time than the prefetch stalls
+		wait = stall;
+	}
+
 	// This instruction used to have an N, convert it to an S.
 	wait -= n2s;
 
-	// TODO: Invalidate prefetch on branch
-	memory->lastPrefetchedPc = cpu->gprs[ARM_PC] + WORD_SIZE_THUMB * loads;
+	memory->lastPrefetchedPc = cpu->gprs[ARM_PC] + WORD_SIZE_THUMB * (loads + previousLoads - 1);
 
 	// The next |loads|S waitstates disappear entirely, so long as they're all in a row
-	cpu->cycles -= (s - 1) * loads;
+	cpu->cycles -= stall;
 	return wait;
 }
 

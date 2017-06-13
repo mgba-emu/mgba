@@ -83,13 +83,13 @@ void GBATimerInit(struct GBA* gba) {
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	if (GBATimerFlagsIsEnable(currentTimer->flags) && !GBATimerFlagsIsCountUp(currentTimer->flags)) {
-		int32_t prefetchSkew = 0;
-		if (gba->memory.lastPrefetchedPc >= (uint32_t) gba->cpu->gprs[ARM_PC]) {
-			prefetchSkew = (gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) * (gba->cpu->memory.activeSeqCycles16 + 1) / WORD_SIZE_THUMB;
+		int32_t prefetchSkew = -2;
+		if (gba->memory.lastPrefetchedPc > (uint32_t) gba->cpu->gprs[ARM_PC]) {
+			prefetchSkew += ((gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) * gba->cpu->memory.activeSeqCycles16) / WORD_SIZE_THUMB;
 		}
 		// Reading this takes two cycles (1N+1I), so let's remove them preemptively
 		int32_t diff = gba->cpu->cycles - (currentTimer->lastEvent - gba->timing.masterCycles);
-		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((diff - 2 + prefetchSkew) >> GBATimerFlagsGetPrescaleBits(currentTimer->flags));
+		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((diff + prefetchSkew) >> GBATimerFlagsGetPrescaleBits(currentTimer->flags));
 	}
 }
 
