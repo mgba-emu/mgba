@@ -130,6 +130,7 @@ Misc:
  - Core: List memory segments in the core
  - Core: Move savestate creation time to extdata
  - Debugger: Add mDebuggerRunFrame convenience function
+ - GBA Memory: Remove unused prefetch cruft
 
 0.5.2: (2016-12-31)
 Bugfixes:
