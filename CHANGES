@@ -68,6 +68,7 @@ Bugfixes:
  - GB MBC: Fix swapping carts not detect new MBC
  - GB Timer: Fix DIV batching if TAC changes
  - GB Video: Reset renderer when loading state
+ - GBA BIOS: Fix INT_MIN/-1 crash
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
