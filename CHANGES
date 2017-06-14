@@ -135,6 +135,7 @@ Misc:
  - Debugger: Add mDebuggerRunFrame convenience function
  - GBA Memory: Remove unused prefetch cruft
  - GB: Trust ROM header for number of SRAM banks (fixes mgba.io/i/726)
+ - Core: Config values can now be hexadecimal
 
 0.5.2: (2016-12-31)
 Bugfixes:

@@ -86,6 +86,9 @@ static bool _lookupIntValue(const struct mCoreConfig* config, const char* key, i
 	}
 	char* end;
 	long value = strtol(charValue, &end, 10);
+	if (end == &charValue[1] && *end == 'x') {
+		value = strtol(charValue, &end, 16);
+	}
 	if (*end) {
 		return false;
 	}
