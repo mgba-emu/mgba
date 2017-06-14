@@ -31,6 +31,9 @@ typedef uint32_t color_t;
 #define M_G8(X) (((((X) >> 2) & 0xF8) * 0x21) >> 5)
 #define M_B8(X) (((((X) >> 7) & 0xF8) * 0x21) >> 5)
 
+#define M_RGB5_TO_RGB8(X) ((M_R5(X) << 3) | (M_G5(X) << 11) | (M_B5(X) << 19))
+#define M_RGB8_TO_RGB5(X) ((((X) & 0xF8) >> 3) | (((X) & 0xF800) >> 6) | (((X) & 0xF80000) >> 9))
+
 struct blip_t;
 
 struct mCoreCallbacks {
