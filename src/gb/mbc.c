@@ -79,7 +79,11 @@ static bool _isMulticart(const uint8_t* mem) {
 
 void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_EXTERNAL_RAM;
-	GBResizeSram(gb, (bank + 1) * GB_SIZE_EXTERNAL_RAM);
+	if (bankStart + GB_SIZE_EXTERNAL_RAM > gb->sramSize) {
+		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid RAM bank: %0X", bank);
+		bankStart &= (gb->sramSize - 1);
+		bank = bankStart / GB_SIZE_EXTERNAL_RAM;
+	}
 	gb->memory.sramBank = &gb->memory.sram[bankStart];
 	gb->memory.sramCurrentBank = bank;
 }

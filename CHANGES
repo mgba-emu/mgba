@@ -133,6 +133,7 @@ Misc:
  - Core: Move savestate creation time to extdata
  - Debugger: Add mDebuggerRunFrame convenience function
  - GBA Memory: Remove unused prefetch cruft
+ - GB: Trust ROM header for number of SRAM banks (fixes mgba.io/i/726)
 
 0.5.2: (2016-12-31)
 Bugfixes:
