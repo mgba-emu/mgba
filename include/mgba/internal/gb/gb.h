@@ -139,6 +139,8 @@ bool GBIsROM(struct VFile* vf);
 void GBGetGameTitle(const struct GB* gba, char* out);
 void GBGetGameCode(const struct GB* gba, char* out);
 
+void GBTestKeypadIRQ(struct GB* gb);
+
 void GBFrameEnded(struct GB* gb);
 
 CXX_GUARD_END

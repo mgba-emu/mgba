@@ -7,6 +7,7 @@
 
 #include <mgba/core/core.h>
 #include <mgba/internal/arm/arm.h>
+#include <mgba/internal/arm/decoder.h>
 #include <mgba/internal/arm/isa-inlines.h>
 #include <mgba/internal/arm/debugger/memory-debugger.h>
 
@@ -54,6 +55,7 @@ static void ARMDebuggerSetWatchpoint(struct mDebuggerPlatform*, uint32_t address
 static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform*);
+static void ARMDebuggerTrace(struct mDebuggerPlatform*, char* out, size_t* length);
 
 struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	struct mDebuggerPlatform* platform = (struct mDebuggerPlatform*) malloc(sizeof(struct ARMDebugger));
@@ -66,6 +68,7 @@ struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	platform->clearWatchpoint = ARMDebuggerClearWatchpoint;
 	platform->checkBreakpoints = ARMDebuggerCheckBreakpoints;
 	platform->hasBreakpoints = ARMDebuggerHasBreakpoints;
+	platform->trace = ARMDebuggerTrace;
 	return platform;
 }
 
@@ -206,4 +209,40 @@ static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform* d, uint32_t add
 	if (!ARMDebugWatchpointListSize(&debugger->watchpoints)) {
 		ARMDebuggerRemoveMemoryShim(debugger);
 	}
+}
+
+static void ARMDebuggerTrace(struct mDebuggerPlatform* d, char* out, size_t* length) {
+	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
+	struct ARMCore* cpu = debugger->cpu;
+
+	char disassembly[64];
+
+	struct ARMInstructionInfo info;
+	if (cpu->executionMode == MODE_ARM) {
+		uint32_t instruction = cpu->prefetch[0];
+		sprintf(disassembly, "%08X: ", instruction);
+		ARMDecodeARM(instruction, &info);
+		ARMDisassemble(&info, cpu->gprs[ARM_PC], disassembly + strlen("00000000: "), sizeof(disassembly) - strlen("00000000: "));
+	} else {
+		struct ARMInstructionInfo info2;
+		struct ARMInstructionInfo combined;
+		uint16_t instruction = cpu->prefetch[0];
+		uint16_t instruction2 = cpu->prefetch[1];
+		ARMDecodeThumb(instruction, &info);
+		ARMDecodeThumb(instruction2, &info2);
+		if (ARMDecodeThumbCombine(&info, &info2, &combined)) {
+			sprintf(disassembly, "%04X%04X: ", instruction, instruction2);
+			ARMDisassemble(&combined, cpu->gprs[ARM_PC], disassembly + strlen("00000000: "), sizeof(disassembly) - strlen("00000000: "));
+		} else {
+			sprintf(disassembly, "    %04X: ", instruction);
+			ARMDisassemble(&info, cpu->gprs[ARM_PC], disassembly + strlen("00000000: "), sizeof(disassembly) - strlen("00000000: "));
+		}
+	}
+
+	*length = snprintf(out, *length, "%08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X cpsr: %08X | %s",
+		               cpu->gprs[0],  cpu->gprs[1],  cpu->gprs[2],  cpu->gprs[3],
+		               cpu->gprs[4],  cpu->gprs[5],  cpu->gprs[6],  cpu->gprs[7],
+		               cpu->gprs[8],  cpu->gprs[9],  cpu->gprs[10], cpu->gprs[11],
+		               cpu->gprs[12], cpu->gprs[13], cpu->gprs[14], cpu->gprs[15],
+		               cpu->cpsr.packed, disassembly);
 }

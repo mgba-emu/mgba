@@ -628,4 +628,7 @@ void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* s
 
 	_cleanOAM(video, video->ly);
 	GBVideoSwitchBank(video, video->vramCurrentBank);
+
+	video->renderer->deinit(video->renderer);
+	video->renderer->init(video->renderer, video->p->model);
 }

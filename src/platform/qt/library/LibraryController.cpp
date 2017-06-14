@@ -181,7 +181,7 @@ void LibraryController::refresh() {
 }
 
 void LibraryController::selectLastBootedGame() {
-	if (!m_config) {
+	if (!m_config || m_config->getMRU().isEmpty()) {
 		return;
 	}
 	const QString lastfile = m_config->getMRU().first();

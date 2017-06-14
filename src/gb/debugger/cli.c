@@ -118,5 +118,5 @@ static void _save(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	struct GBCLIDebugger* gbDebugger = (struct GBCLIDebugger*) debugger->system;
 
-	mCoreSaveState(gbDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
+	mCoreSaveState(gbDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT | SAVESTATE_RTC | SAVESTATE_METADATA);
 }

@@ -105,18 +105,18 @@ void GBATimerInit(struct GBA* gba) {
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	if (GBATimerFlagsIsEnable(currentTimer->flags) && !GBATimerFlagsIsCountUp(currentTimer->flags)) {
-		int32_t prefetchSkew = 0;
-		if (gba->memory.lastPrefetchedPc >= (uint32_t) gba->cpu->gprs[ARM_PC]) {
-			prefetchSkew = (gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) * (gba->cpu->memory.activeSeqCycles16 + 1) / WORD_SIZE_THUMB;
+		// Reading this takes two cycles (1N+1I), so let's remove them preemptively
+		int32_t prefetchSkew = -2;
+		if (gba->memory.lastPrefetchedPc > (uint32_t) gba->cpu->gprs[ARM_PC]) {
+			prefetchSkew += ((gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) * gba->cpu->memory.activeSeqCycles16) / WORD_SIZE_THUMB;
 		}
 		GBATimerUpdateRegisterInternal(currentTimer, &gba->timing, gba->cpu, &gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1], prefetchSkew);
 	}
 }
 
 void GBATimerUpdateRegisterInternal(struct GBATimer* timer, struct mTiming* timing, struct ARMCore* cpu, uint16_t* io, int32_t skew) {
-	// Reading this takes two cycles (1N+1I), so let's remove them preemptively
 	int32_t diff = cpu->cycles - (timer->lastEvent - timing->masterCycles);
-	*io = timer->oldReload + ((diff - 2 + skew) >> GBATimerFlagsGetPrescaleBits(timer->flags));
+	*io = timer->oldReload + ((diff + skew) >> GBATimerFlagsGetPrescaleBits(timer->flags));
 }
 
 void GBATimerWriteTMCNT_LO(struct GBATimer* timer, uint16_t reload) {

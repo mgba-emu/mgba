@@ -10,7 +10,7 @@
 
 CXX_GUARD_START
 
-#include <mgba/internal/debugger/debugger.h>
+#include <mgba/debugger/debugger.h>
 
 enum LexState {
 	LEX_ERROR = -1,

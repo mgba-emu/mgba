@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2017 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,6 @@ CXX_GUARD_START
 
 #include <mgba/core/cpu.h>
 #include <mgba/core/log.h>
-#include <mgba-util/vector.h>
 
 mLOG_DECLARE_CATEGORY(DEBUGGER);
 
@@ -53,14 +52,6 @@ enum mDebuggerEntryReason {
 	DEBUGGER_ENTER_ILLEGAL_OP
 };
 
-struct mDebugWatchpoint {
-	uint32_t address;
-	enum mWatchpointType type;
-};
-
-extern const char* ERROR_MISSING_ARGS;
-extern const char* ERROR_OVERFLOW;
-
 struct mDebuggerEntryInfo {
 	uint32_t address;
 	union {
@@ -92,6 +83,7 @@ struct mDebuggerPlatform {
 	void (*setWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type);
 	void (*clearWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
 	void (*checkBreakpoints)(struct mDebuggerPlatform*);
+	void (*trace)(struct mDebuggerPlatform*, char* out, size_t* length);
 };
 
 struct mDebuggerSymbols;
@@ -112,6 +104,7 @@ struct mDebugger {
 struct mDebugger* mDebuggerCreate(enum mDebuggerType type, struct mCore*);
 void mDebuggerAttach(struct mDebugger*, struct mCore*);
 void mDebuggerRun(struct mDebugger*);
+void mDebuggerRunFrame(struct mDebugger*);
 void mDebuggerEnter(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 
 CXX_GUARD_END

@@ -97,10 +97,6 @@ struct GBAMemory {
 	char waitstatesSeq16[256];
 	char waitstatesNonseq32[256];
 	char waitstatesNonseq16[256];
-	char waitstatesPrefetchSeq32[16];
-	char waitstatesPrefetchSeq16[16];
-	char waitstatesPrefetchNonseq32[16];
-	char waitstatesPrefetchNonseq16[16];
 	int activeRegion;
 	bool prefetch;
 	uint32_t lastPrefetchedPc;

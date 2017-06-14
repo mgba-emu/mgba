@@ -28,6 +28,10 @@ static void _GBMBC5(struct GB*, uint16_t address, uint8_t value);
 static void _GBMBC6(struct GB*, uint16_t address, uint8_t value);
 static void _GBMBC7(struct GB*, uint16_t address, uint8_t value);
 static void _GBHuC3(struct GB*, uint16_t address, uint8_t value);
+static void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value);
+
+static uint8_t _GBMBC7Read(struct GBMemory*, uint16_t address);
+static uint8_t _GBPocketCamRead(struct GBMemory*, uint16_t address);
 
 void GBMBCSwitchBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_BANK0;
@@ -148,6 +152,12 @@ void GBMBCInit(struct GB* gb) {
 			case 0x22:
 				gb->memory.mbcType = GB_MBC7;
 				break;
+			case 0xFC:
+				gb->memory.mbcType = GB_POCKETCAM;
+				break;
+			case 0xFD:
+				gb->memory.mbcType = GB_HuC1;
+				break;
 			case 0xFE:
 				gb->memory.mbcType = GB_HuC3;
 				break;
@@ -156,51 +166,57 @@ void GBMBCInit(struct GB* gb) {
 	} else {
 		gb->memory.mbcType = GB_MBC_NONE;
 	}
+	gb->memory.mbcRead = NULL;
 	switch (gb->memory.mbcType) {
 	case GB_MBC_NONE:
-		gb->memory.mbc = _GBMBCNone;
+		gb->memory.mbcWrite = _GBMBCNone;
 		break;
 	case GB_MBC1:
-		gb->memory.mbc = _GBMBC1;
+		gb->memory.mbcWrite = _GBMBC1;
 		break;
 	case GB_MBC2:
-		gb->memory.mbc = _GBMBC2;
+		gb->memory.mbcWrite = _GBMBC2;
 		gb->sramSize = 0x200;
 		break;
 	case GB_MBC3:
-		gb->memory.mbc = _GBMBC3;
+		gb->memory.mbcWrite = _GBMBC3;
 		break;
 	default:
 		mLOG(GB_MBC, WARN, "Unknown MBC type: %02X", cart->type);
 		// Fall through
 	case GB_MBC5:
-		gb->memory.mbc = _GBMBC5;
+		gb->memory.mbcWrite = _GBMBC5;
 		break;
 	case GB_MBC6:
 		mLOG(GB_MBC, WARN, "unimplemented MBC: MBC6");
-		gb->memory.mbc = _GBMBC6;
+		gb->memory.mbcWrite = _GBMBC6;
 		break;
 	case GB_MBC7:
-		gb->memory.mbc = _GBMBC7;
+		gb->memory.mbcWrite = _GBMBC7;
+		gb->memory.mbcRead = _GBMBC7Read;
 		gb->sramSize = GB_SIZE_EXTERNAL_RAM;
 		break;
 	case GB_MMM01:
 		mLOG(GB_MBC, WARN, "unimplemented MBC: MMM01");
-		gb->memory.mbc = _GBMBC1;
+		gb->memory.mbcWrite = _GBMBC1;
 		break;
 	case GB_HuC1:
 		mLOG(GB_MBC, WARN, "unimplemented MBC: HuC-1");
-		gb->memory.mbc = _GBMBC1;
+		gb->memory.mbcWrite = _GBMBC1;
 		break;
 	case GB_HuC3:
-		gb->memory.mbc = _GBHuC3;
+		gb->memory.mbcWrite = _GBHuC3;
 		break;
 	case GB_MBC3_RTC:
 		memset(gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
-		gb->memory.mbc = _GBMBC3;
+		gb->memory.mbcWrite = _GBMBC3;
 		break;
 	case GB_MBC5_RUMBLE:
-		gb->memory.mbc = _GBMBC5;
+		gb->memory.mbcWrite = _GBMBC5;
+		break;
+	case GB_POCKETCAM:
+		gb->memory.mbcWrite = _GBPocketCam;
+		gb->memory.mbcRead = _GBPocketCamRead;
 		break;
 	}
 
@@ -350,7 +366,8 @@ void _GBMBC2(struct GB* gb, uint16_t address, uint8_t value) {
 		// TODO
 		mLOG(GB_MBC, STUB, "MBC2 unknown address: %04X:%02X", address, value);
 		break;
-	}}
+	}
+}
 
 void _GBMBC3(struct GB* gb, uint16_t address, uint8_t value) {
 	struct GBMemory* memory = &gb->memory;
@@ -466,7 +483,7 @@ void _GBMBC7(struct GB* gb, uint16_t address, uint8_t value) {
 	}
 }
 
-uint8_t GBMBC7Read(struct GBMemory* memory, uint16_t address) {
+uint8_t _GBMBC7Read(struct GBMemory* memory, uint16_t address) {
 	struct GBMBC7State* mbc7 = &memory->mbcState.mbc7;
 	switch (address & 0xF0) {
 	case 0x00:
@@ -672,6 +689,52 @@ void _GBHuC3(struct GB* gb, uint16_t address, uint8_t value) {
 		mLOG(GB_MBC, STUB, "HuC-3 unknown address: %04X:%02X", address, value);
 		break;
 	}
+}
+
+void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value) {
+	struct GBMemory* memory = &gb->memory;
+	int bank = value & 0x3F;
+	switch (address >> 13) {
+	case 0x0:
+		switch (value) {
+		case 0:
+			memory->sramAccess = false;
+			break;
+		case 0xA:
+			memory->sramAccess = true;
+			GBMBCSwitchSramBank(gb, memory->sramCurrentBank);
+			break;
+		default:
+			// TODO
+			mLOG(GB_MBC, STUB, "Pocket Cam unknown value %02X", value);
+			break;
+		}
+		break;
+	case 0x1:
+		GBMBCSwitchBank(gb, bank);
+		break;
+	case 0x2:
+		if (value < 0x10) {
+			GBMBCSwitchSramBank(gb, value);
+			memory->mbcState.pocketCam.registersActive = false;
+		} else {
+			memory->mbcState.pocketCam.registersActive = true;
+		}
+		break;
+	default:
+		mLOG(GB_MBC, STUB, "Pocket Cam unknown address: %04X:%02X", address, value);
+		break;
+	}
+}
+
+uint8_t _GBPocketCamRead(struct GBMemory* memory, uint16_t address) {
+	if (memory->mbcState.pocketCam.registersActive) {
+		return 0;
+	}
+	if (!memory->sramAccess) {
+		return 0xFF;
+	}
+	return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
 }
 
 void GBMBCRTCRead(struct GB* gb) {

@@ -67,10 +67,53 @@ class MemoryView(object):
         self._addrCheck(address)
         self._rawWrite(self._core, self._base + address, segment, value & self._mask)
 
+
+class MemorySearchResult(object):
+    def __init__(self, memory, result):
+        self.address = result.address
+        self.segment = result.segment
+        self.guessDivisor = result.guessDivisor
+        self.type = result.type
+
+        if result.type == Memory.SEARCH_8:
+            self._memory = memory.u8
+        elif result.type == Memory.SEARCH_16:
+            self._memory = memory.u16
+        elif result.type == Memory.SEARCH_32:
+            self._memory = memory.u32
+        elif result.type == Memory.SEARCH_STRING:
+            self._memory = memory.u8
+        else:
+            raise ValueError("Unknown type: %X" % result.type)
+
+    @property
+    def value(self):
+        if self.type == Memory.SEARCH_STRING:
+            raise ValueError
+        return self._memory[self.address] * self.guessDivisor
+
+    @value.setter
+    def value(self, v):
+        if self.type == Memory.SEARCH_STRING:
+            raise IndexError
+        self._memory[self.address] = v // self.guessDivisor
+
+
 class Memory(object):
+    SEARCH_32 = lib.mCORE_MEMORY_SEARCH_32
+    SEARCH_16 = lib.mCORE_MEMORY_SEARCH_16
+    SEARCH_8 = lib.mCORE_MEMORY_SEARCH_8
+    SEARCH_STRING = lib.mCORE_MEMORY_SEARCH_STRING
+    SEARCH_GUESS = lib.mCORE_MEMORY_SEARCH_GUESS
+
+    READ = lib.mCORE_MEMORY_READ
+    WRITE = lib.mCORE_MEMORY_READ
+    RW = lib.mCORE_MEMORY_RW
+
     def __init__(self, core, size, base=0):
         self.size = size
         self.base = base
+        self._core = core
 
         self.u8 = MemoryView(core, 1, size, base, "u")
         self.u16 = MemoryView(core, 2, size, base, "u")
@@ -81,3 +124,32 @@ class Memory(object):
 
     def __len__(self):
         return self._size
+
+    def search(self, value, type=SEARCH_GUESS, flags=RW, limit=10000, old_results=[]):
+        results = ffi.new("struct mCoreMemorySearchResults*")
+        lib.mCoreMemorySearchResultsInit(results, len(old_results))
+        params = ffi.new("struct mCoreMemorySearchParams*")
+        params.memoryFlags = flags
+        params.type = type
+        if type == self.SEARCH_8:
+            params.value8 = int(value)
+        elif type == self.SEARCH_16:
+            params.value16 = int(value)
+        elif type == self.SEARCH_32:
+            params.value32 = int(value)
+        else:
+            params.valueStr = ffi.new("char[]", str(value).encode("ascii"))
+
+        for result in old_results:
+            r = lib.mCoreMemorySearchResultsAppend(results)
+            r.address = result.address
+            r.segment = result.segment
+            r.guessDivisor = result.guessDivisor
+            r.type = result.type
+        if old_results:
+            lib.mCoreMemorySearchRepeat(self._core, params, results)
+        else:
+            lib.mCoreMemorySearch(self._core, params, results, limit)
+        new_results = [MemorySearchResult(self, lib.mCoreMemorySearchResultsGetPointer(results, i)) for i in range(lib.mCoreMemorySearchResultsSize(results))]
+        lib.mCoreMemorySearchResultsDeinit(results)
+        return new_results

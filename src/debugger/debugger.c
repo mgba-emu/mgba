@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include <mgba/internal/debugger/debugger.h>
+#include <mgba/debugger/debugger.h>
 
 #include <mgba/core/core.h>
 
@@ -95,6 +95,13 @@ void mDebuggerRun(struct mDebugger* debugger) {
 	case DEBUGGER_SHUTDOWN:
 		return;
 	}
+}
+
+void mDebuggerRunFrame(struct mDebugger* debugger) {
+	int32_t frame = debugger->core->frameCounter(debugger->core);
+	do {
+		mDebuggerRun(debugger);
+	} while (debugger->core->frameCounter(debugger->core) == frame);
 }
 
 void mDebuggerEnter(struct mDebugger* debugger, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {

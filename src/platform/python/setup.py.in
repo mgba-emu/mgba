@@ -1,5 +1,10 @@
 from setuptools import setup
 import re
+import os
+
+os.environ["BINDIR"] = "${CMAKE_BINARY_DIR}"
+os.environ["CPPFLAGS"] = " ".join([d for d in "${INCLUDE_FLAGS}".split(";") if d])
+os.chdir("${CMAKE_CURRENT_SOURCE_DIR}")
 
 classifiers = [
     "Programming Language :: C",

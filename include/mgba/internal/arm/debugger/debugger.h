@@ -10,9 +10,10 @@
 
 CXX_GUARD_START
 
-#include <mgba/internal/debugger/debugger.h>
+#include <mgba/debugger/debugger.h>
 
 #include <mgba/internal/arm/arm.h>
+#include <mgba-util/vector.h>
 
 struct ARMDebugBreakpoint {
 	uint32_t address;

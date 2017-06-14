@@ -36,7 +36,6 @@ struct GBMBCRTCSaveBuffer {
 void GBMBCRTCRead(struct GB* gb);
 void GBMBCRTCWrite(struct GB* gb);
 
-uint8_t GBMBC7Read(struct GBMemory*, uint16_t address);
 void GBMBC7Write(struct GBMemory*, uint16_t address, uint8_t value);
 
 CXX_GUARD_END

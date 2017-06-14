@@ -63,7 +63,8 @@ enum {
 };
 
 struct GBMemory;
-typedef void (*GBMemoryBankController)(struct GB*, uint16_t address, uint8_t value);
+typedef void (*GBMemoryBankControllerWrite)(struct GB*, uint16_t address, uint8_t value);
+typedef uint8_t (*GBMemoryBankControllerRead)(struct GBMemory*, uint16_t address);
 
 DECL_BITFIELD(GBMBC7Field, uint8_t);
 DECL_BIT(GBMBC7Field, SK, 6);
@@ -98,9 +99,14 @@ struct GBMBC7State {
 	GBMBC7Field field;
 };
 
+struct GBPocketCamState {
+	bool registersActive;
+};
+
 union GBMBCState {
 	struct GBMBC1State mbc1;
 	struct GBMBC7State mbc7;
+	struct GBPocketCamState pocketCam;
 };
 
 struct mRotationSource;
@@ -109,7 +115,8 @@ struct GBMemory {
 	uint8_t* romBase;
 	uint8_t* romBank;
 	enum GBMemoryBankControllerType mbcType;
-	GBMemoryBankController mbc;
+	GBMemoryBankControllerWrite mbcWrite;
+	GBMemoryBankControllerRead mbcRead;
 	union GBMBCState mbcState;
 	int currentBank;
 
