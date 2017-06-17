@@ -9,8 +9,6 @@
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/serialize.h>
 
-static void _GBTimerUpdateDIV(struct GBTimer* timer, uint32_t cyclesLate);
-
 void _GBTimerIRQ(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	UNUSED(timing);
 	UNUSED(cyclesLate);
@@ -36,12 +34,8 @@ void _GBTimerIncrement(struct mTiming* timing, void* context, uint32_t cyclesLat
 		++timer->internalDiv;
 		timer->p->memory.io[REG_DIV] = timer->internalDiv >> 4;
 	}
-	_GBTimerUpdateDIV(timer, cyclesLate);
-}
-
-void _GBTimerUpdateDIV(struct GBTimer* timer, uint32_t cyclesLate) {
 	// Batch div increments
-	int divsToGo = 16 - (timer->internalDiv & 15) + (timer->nextDiv / GB_DMG_DIV_PERIOD);
+	int divsToGo = 16 - (timer->internalDiv & 15);
 	int timaToGo = INT_MAX;
 	if (timer->timaPeriod) {
 		timaToGo = timer->timaPeriod - (timer->internalDiv & (timer->timaPeriod - 1));
@@ -49,12 +43,8 @@ void _GBTimerUpdateDIV(struct GBTimer* timer, uint32_t cyclesLate) {
 	if (timaToGo < divsToGo) {
 		divsToGo = timaToGo;
 	}
-	if (divsToGo > 16) {
-		divsToGo = 16;
-	}
-	timer->nextDiv &= GB_DMG_DIV_PERIOD - 1;
-	timer->nextDiv += GB_DMG_DIV_PERIOD * divsToGo;
-	mTimingSchedule(&timer->p->timing, &timer->event, timer->nextDiv - cyclesLate);
+	timer->nextDiv = GB_DMG_DIV_PERIOD * divsToGo;
+	mTimingSchedule(timing, &timer->event, timer->nextDiv - cyclesLate);
 }
 
 void GBTimerReset(struct GBTimer* timer) {
@@ -96,11 +86,13 @@ uint8_t GBTimerUpdateTAC(struct GBTimer* timer, GBRegisterTAC tac) {
 			timer->timaPeriod = 256 >> 4;
 			break;
 		}
+
+		timer->nextDiv -= mTimingUntil(&timer->p->timing, &timer->event);
+		mTimingDeschedule(&timer->p->timing, &timer->event);
+		mTimingSchedule(&timer->p->timing, &timer->event, 0);
 	} else {
 		timer->timaPeriod = 0;
 	}
-	mTimingDeschedule(&timer->p->timing, &timer->event);
-	_GBTimerUpdateDIV(timer, 0);
 	return tac;
 }
 
