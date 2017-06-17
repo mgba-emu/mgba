@@ -537,6 +537,11 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			break;
 
 		// Interrupts and misc
+		case REG_KEYCNT:
+			value &= 0xC3FF;
+			gba->memory.io[address >> 1] = value;
+			GBATestKeypadIRQ(gba);
+			return;
 		case REG_WAITCNT:
 			value &= 0x5FFF;
 			GBAAdjustWaitstates(gba, value);
@@ -689,6 +694,7 @@ bool GBAIOIsReadConstant(uint32_t address) {
 	case REG_TM2CNT_HI:
 	case REG_TM3CNT_HI:
 	case REG_KEYINPUT:
+	case REG_KEYCNT:
 	case REG_IE:
 		return true;
 	}
@@ -721,6 +727,9 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 			uint16_t input = 0x3FF;
 			if (gba->keyCallback) {
 				input = gba->keyCallback->readKeys(gba->keyCallback);
+				if (gba->keySource) {
+					*gba->keySource = input;
+				}
 			} else if (gba->keySource) {
 				input = *gba->keySource;
 			}
@@ -814,7 +823,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		break;
 
 	case REG_SOUNDBIAS:
-	case REG_KEYCNT:
 	case REG_POSTFLG:
 		mLOG(GBA_IO, STUB, "Stub I/O register read: %03x", address);
 		break;
@@ -863,6 +871,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_TM1CNT_HI:
 	case REG_TM2CNT_HI:
 	case REG_TM3CNT_HI:
+	case REG_KEYCNT:
 	case REG_SIOMULTI0:
 	case REG_SIOMULTI1:
 	case REG_SIOMULTI2:

@@ -382,7 +382,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		value = gb->video.stat;
 		break;
 	case 0x50:
-		if (gb->memory.romBase != gb->memory.rom) {
+		if (gb->memory.romBase < gb->memory.rom || gb->memory.romBase > &gb->memory.rom[gb->memory.romSize - 1]) {
 			free(gb->memory.romBase);
 			gb->memory.romBase = gb->memory.rom;
 		}
@@ -562,6 +562,13 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	}
 	success:
 	return gb->memory.io[address] | _registerMask[address];
+}
+
+void GBTestKeypadIRQ(struct GB* gb) {
+	if (_readKeys(gb)) {
+		gb->memory.io[REG_IF] |= (1 << GB_IRQ_KEYPAD);
+		GBUpdateIRQs(gb);
+	}
 }
 
 struct GBSerializedState;

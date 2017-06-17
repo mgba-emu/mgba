@@ -12,7 +12,7 @@ CXX_GUARD_START
 
 #include <mgba-util/table.h>
 
-#include <mgba/internal/debugger/debugger.h>
+#include <mgba/debugger/debugger.h>
 
 struct mArguments {
 	char* fname;

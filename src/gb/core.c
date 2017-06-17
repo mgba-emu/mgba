@@ -37,6 +37,42 @@ const static struct mCoreChannelInfo _GBAudioChannels[] = {
 	{ 3, "ch3", "Channel 3", "Noise" },
 };
 
+const static struct LR35902Segment _GBSegments[] = {
+	{ .name = "ROM", .start = GB_BASE_CART_BANK1, .end = GB_BASE_VRAM },
+	{ .name = "RAM", .start = GB_BASE_EXTERNAL_RAM, .end = GB_BASE_WORKING_RAM_BANK0 },
+	{ 0 }
+};
+
+const static struct LR35902Segment _GBCSegments[] = {
+	{ .name = "ROM", .start = GB_BASE_CART_BANK1, .end = GB_BASE_VRAM },
+	{ .name = "RAM", .start = GB_BASE_EXTERNAL_RAM, .end = GB_BASE_WORKING_RAM_BANK0 },
+	{ .name = "WRAM", .start = GB_BASE_WORKING_RAM_BANK1, .end = 0xE000 },
+	{ .name = "VRAM", .start = GB_BASE_VRAM, .end = GB_BASE_EXTERNAL_RAM },
+	{ 0 }
+};
+
+const static struct mCoreMemoryBlock _GBMemoryBlocks[] = {
+	{ -1, "mem", "All", "All", 0, 0x10000, 0x10000, mCORE_MEMORY_VIRTUAL },
+	{ GB_REGION_CART_BANK0, "cart0", "ROM Bank", "Game Pak (32kiB)", GB_BASE_CART_BANK0, GB_SIZE_CART_BANK0 * 2, 0x800000, mCORE_MEMORY_READ | mCORE_MEMORY_MAPPED, 511 },
+	{ GB_REGION_VRAM, "vram", "VRAM", "Video RAM (8kiB)", GB_BASE_VRAM, GB_BASE_VRAM + GB_SIZE_VRAM, GB_SIZE_VRAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
+	{ GB_REGION_EXTERNAL_RAM, "sram", "SRAM", "External RAM (8kiB)", GB_BASE_EXTERNAL_RAM, GB_BASE_EXTERNAL_RAM + GB_SIZE_EXTERNAL_RAM, GB_SIZE_EXTERNAL_RAM * 4, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED, 3 },
+	{ GB_REGION_WORKING_RAM_BANK0, "wram", "WRAM", "Working RAM (8kiB)", GB_BASE_WORKING_RAM_BANK0, GB_BASE_WORKING_RAM_BANK0 + GB_SIZE_WORKING_RAM_BANK0 * 2 , GB_SIZE_WORKING_RAM_BANK0 * 2, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
+	{ GB_BASE_OAM, "oam", "OAM", "OBJ Attribute Memory", GB_BASE_OAM, GB_BASE_OAM + GB_SIZE_OAM, GB_SIZE_OAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
+	{ GB_BASE_IO, "io", "MMIO", "Memory-Mapped I/O", GB_BASE_IO, GB_BASE_IO + GB_SIZE_IO, GB_SIZE_IO, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
+	{ GB_BASE_HRAM, "hram", "HRAM", "High RAM", GB_BASE_HRAM, GB_BASE_HRAM + GB_SIZE_HRAM, GB_SIZE_HRAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
+};
+
+const static struct mCoreMemoryBlock _GBCMemoryBlocks[] = {
+	{ -1, "mem", "All", "All", 0, 0x10000, 0x10000, mCORE_MEMORY_VIRTUAL },
+	{ GB_REGION_CART_BANK0, "cart0", "ROM Bank", "Game Pak (32kiB)", GB_BASE_CART_BANK0, GB_SIZE_CART_BANK0 * 2, 0x800000, mCORE_MEMORY_READ | mCORE_MEMORY_MAPPED, 511 },
+	{ GB_REGION_VRAM, "vram", "VRAM", "Video RAM (8kiB)", GB_BASE_VRAM, GB_BASE_VRAM + GB_SIZE_VRAM, GB_SIZE_VRAM * 2, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED, 1 },
+	{ GB_REGION_EXTERNAL_RAM, "sram", "SRAM", "External RAM (8kiB)", GB_BASE_EXTERNAL_RAM, GB_BASE_EXTERNAL_RAM + GB_SIZE_EXTERNAL_RAM, GB_SIZE_EXTERNAL_RAM * 4, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED, 3 },
+	{ GB_REGION_WORKING_RAM_BANK0, "wram", "WRAM", "Working RAM (8kiB)", GB_BASE_WORKING_RAM_BANK0, GB_BASE_WORKING_RAM_BANK0 + GB_SIZE_WORKING_RAM_BANK0 * 2, GB_SIZE_WORKING_RAM_BANK0 * 8, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED, 7 },
+	{ GB_BASE_OAM, "oam", "OAM", "OBJ Attribute Memory", GB_BASE_OAM, GB_BASE_OAM + GB_SIZE_OAM, GB_SIZE_OAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
+	{ GB_BASE_IO, "io", "MMIO", "Memory-Mapped I/O", GB_BASE_IO, GB_BASE_IO + GB_SIZE_IO, GB_SIZE_IO, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
+	{ GB_BASE_HRAM, "hram", "HRAM", "High RAM", GB_BASE_HRAM, GB_BASE_HRAM + GB_SIZE_HRAM, GB_SIZE_HRAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
+};
+
 struct mVideoLogContext;
 struct GBCore {
 	struct mCore d;
@@ -396,11 +432,13 @@ static bool _GBCoreSaveState(struct mCore* core, void* state) {
 static void _GBCoreSetKeys(struct mCore* core, uint32_t keys) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	gbcore->keys = keys;
+	GBTestKeypadIRQ(core->board);
 }
 
 static void _GBCoreAddKeys(struct mCore* core, uint32_t keys) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	gbcore->keys |= keys;
+	GBTestKeypadIRQ(core->board);
 }
 
 static void _GBCoreClearKeys(struct mCore* core, uint32_t keys) {
@@ -516,6 +554,48 @@ static void _GBCoreRawWrite32(struct mCore* core, uint32_t address, int segment,
 	GBPatch8(cpu, address + 3, value >> 24, NULL, segment);
 }
 
+size_t _GBListMemoryBlocks(const struct mCore* core, const struct mCoreMemoryBlock** blocks) {
+	const struct GB* gb = core->board;
+	switch (gb->model) {
+	case GB_MODEL_DMG:
+	case GB_MODEL_SGB:
+	default:
+		*blocks = _GBMemoryBlocks;
+		return sizeof(_GBMemoryBlocks) / sizeof(*_GBMemoryBlocks);
+	case GB_MODEL_CGB:
+	case GB_MODEL_AGB:
+		*blocks = _GBCMemoryBlocks;
+		return sizeof(_GBCMemoryBlocks) / sizeof(*_GBCMemoryBlocks);
+	}
+}
+
+void* _GBGetMemoryBlock(struct mCore* core, size_t id, size_t* sizeOut) {
+	struct GB* gb = core->board;
+	bool isCgb = gb->model >= GB_MODEL_CGB;
+	switch (id) {
+	default:
+		return NULL;
+	case GB_REGION_CART_BANK0:
+		*sizeOut = gb->memory.romSize;
+		return gb->memory.rom;
+	case GB_REGION_VRAM:
+		*sizeOut = GB_SIZE_WORKING_RAM_BANK0 * (isCgb ? 1 : 2);
+		return gb->video.vram;
+	case GB_REGION_EXTERNAL_RAM:
+		*sizeOut = gb->sramSize;
+		return gb->memory.sram;
+	case GB_REGION_WORKING_RAM_BANK0:
+		*sizeOut = GB_SIZE_VRAM * (isCgb ? 8 : 2);
+		return gb->memory.wram;
+	case GB_BASE_OAM:
+		*sizeOut = GB_SIZE_OAM;
+		return gb->video.oam.raw;
+	case GB_BASE_HRAM:
+		*sizeOut = GB_SIZE_HRAM;
+		return gb->memory.hram;
+	}
+}
+
 #ifdef USE_DEBUGGERS
 static bool _GBCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
 	UNUSED(core);
@@ -529,8 +609,15 @@ static bool _GBCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType t
 
 static struct mDebuggerPlatform* _GBCoreDebuggerPlatform(struct mCore* core) {
 	struct GBCore* gbcore = (struct GBCore*) core;
+	struct GB* gb = core->board;
 	if (!gbcore->debuggerPlatform) {
-		gbcore->debuggerPlatform = LR35902DebuggerPlatformCreate();
+		struct LR35902Debugger* platform = (struct LR35902Debugger*) LR35902DebuggerPlatformCreate();
+		if (gb->model >= GB_MODEL_CGB) {
+			platform->segments = _GBCSegments;
+		} else {
+			platform->segments = _GBSegments;
+		}
+		gbcore->debuggerPlatform = &platform->d;
 	}
 	return gbcore->debuggerPlatform;
 }
@@ -741,6 +828,8 @@ struct mCore* GBCoreCreate(void) {
 	core->rawWrite8 = _GBCoreRawWrite8;
 	core->rawWrite16 = _GBCoreRawWrite16;
 	core->rawWrite32 = _GBCoreRawWrite32;
+	core->listMemoryBlocks = _GBListMemoryBlocks;
+	core->getMemoryBlock = _GBGetMemoryBlock;
 #ifdef USE_DEBUGGERS
 	core->supportsDebuggerType = _GBCoreSupportsDebuggerType;
 	core->debuggerPlatform = _GBCoreDebuggerPlatform;

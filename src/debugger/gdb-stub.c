@@ -498,13 +498,13 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 		stub->d.platform->setBreakpoint(stub->d.platform, address, -1);
 		break;
 	case '2':
-		stub->d.platform->setWatchpoint(stub->d.platform, address, WATCHPOINT_WRITE);
+		stub->d.platform->setWatchpoint(stub->d.platform, address, -1, WATCHPOINT_WRITE);
 		break;
 	case '3':
-		stub->d.platform->setWatchpoint(stub->d.platform, address, WATCHPOINT_READ);
+		stub->d.platform->setWatchpoint(stub->d.platform, address, -1, WATCHPOINT_READ);
 		break;
 	case '4':
-		stub->d.platform->setWatchpoint(stub->d.platform, address, WATCHPOINT_RW);
+		stub->d.platform->setWatchpoint(stub->d.platform, address, -1, WATCHPOINT_RW);
 		break;
 	default:
 		stub->outgoing[0] = '\0';
@@ -529,7 +529,7 @@ static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
 	case '2':
 	case '3':
 	case '4':
-		stub->d.platform->clearWatchpoint(stub->d.platform, address);
+		stub->d.platform->clearWatchpoint(stub->d.platform, address, -1);
 		break;
 	default:
 		break;

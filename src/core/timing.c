@@ -91,3 +91,7 @@ int32_t mTimingNextEvent(struct mTiming* timing) {
 	}
 	return next->when - timing->masterCycles;
 }
+
+int32_t mTimingUntil(const struct mTiming* timing, const struct mTimingEvent* event) {
+	return event->when - timing->masterCycles;
+}

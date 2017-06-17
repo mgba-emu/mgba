@@ -99,7 +99,8 @@ void GBMemoryInit(struct GB* gb) {
 	gb->memory.romSize = 0;
 	gb->memory.sram = 0;
 	gb->memory.mbcType = GB_MBC_AUTODETECT;
-	gb->memory.mbc = 0;
+	gb->memory.mbcRead = NULL;
+	gb->memory.mbcWrite = NULL;
 
 	gb->memory.rtc = NULL;
 
@@ -158,14 +159,14 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.hdmaEvent.callback = _GBMemoryHDMAService;
 	gb->memory.hdmaEvent.priority = 0x41;
 
-	gb->memory.sramAccess = false;
-	gb->memory.rtcAccess = false;
-	gb->memory.activeRtcReg = 0;
-	gb->memory.rtcLatched = false;
-	memset(&gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
-
 	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
-	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
+	switch (gb->memory.mbcType) {
+	case GB_MBC1:
+		gb->memory.mbcState.mbc1.mode = 0;
+		break;
+	default:
+		memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
+	}
 
 	GBMBCInit(gb);
 	gb->memory.sramBank = gb->memory.sram;
@@ -215,10 +216,10 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	case GB_REGION_EXTERNAL_RAM + 1:
 		if (memory->rtcAccess) {
 			return memory->rtcRegs[memory->activeRtcReg];
+		} else if (memory->mbcRead) {
+			return memory->mbcRead(memory, address);
 		} else if (memory->sramAccess) {
 			return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
-		} else if (memory->mbcType == GB_MBC7) {
-			return GBMBC7Read(memory, address);
 		} else if (memory->mbcType == GB_HuC3) {
 			return 0x01; // TODO: Is this supposed to be the current SRAM bank?
 		}
@@ -274,7 +275,7 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	case GB_REGION_CART_BANK1 + 1:
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
-		memory->mbc(gb, address, value);
+		memory->mbcWrite(gb, address, value);
 		cpu->memory.setActiveRegion(cpu, cpu->pc);
 		return;
 	case GB_REGION_VRAM:
@@ -391,8 +392,8 @@ uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment) {
 			} else {
 				return 0xFF;
 			}
-		} else if (memory->mbcType == GB_MBC7) {
-			return GBMBC7Read(memory, address);
+		} else if (memory->mbcRead) {
+			return memory->mbcRead(memory, address);
 		} else if (memory->mbcType == GB_HuC3) {
 			return 0x01; // TODO: Is this supposed to be the current SRAM bank?
 		}
@@ -683,4 +684,5 @@ void _pristineCow(struct GB* gb) {
 	}
 	gb->memory.rom = newRom;
 	GBMBCSwitchBank(gb, gb->memory.currentBank);
+	gb->isPristine = false;
 }

@@ -155,8 +155,6 @@ add_custom_target(version-info ALL
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/version.cmake)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/core/version.c.in ${CMAKE_CURRENT_BINARY_DIR}/version.c)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/core/flags.h.in ${CMAKE_CURRENT_BINARY_DIR}/flags.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/flags.h DESTINATION include/mgba COMPONENT lib${BINARY_NAME})
 
 list(APPEND UTIL_SRC ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 source_group("Generated sources" FILES ${CMAKE_CURRENT_BINARY_DIR}/version.c)
@@ -200,6 +198,7 @@ if(WIN32)
 		set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 	endif()
 elseif(UNIX)
+	set(USE_PTHREADS ON)
 	add_definitions(-DUSE_PTHREADS)
 
 	if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -604,6 +603,7 @@ if(M_CORE_GB)
 	list(APPEND DEBUGGER_SRC
 		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/cli-debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/debugger.c
+		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/memory-debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/gb/debugger/cli.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/gb/debugger/symbols.c)
 	list(APPEND TEST_SRC
@@ -842,6 +842,10 @@ if(BUILD_EXAMPLE)
 		                      INCLUDE_DIRECTORIES "${SDL_INCLUDE_DIR};${CMAKE_CURRENT_SOURCE_DIR}/src;${CMAKE_CURRENT_SOURCE_DIR}/include")
 	endif()
 endif()
+
+message(STATUS ${USE_PTHREADS})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/core/flags.h.in ${CMAKE_CURRENT_BINARY_DIR}/flags.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/flags.h DESTINATION include/mgba COMPONENT lib${BINARY_NAME})
 
 # Packaging
 set(CPACK_PACKAGE_VERSION ${VERSION_STRING})

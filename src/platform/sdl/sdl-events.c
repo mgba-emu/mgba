@@ -9,7 +9,7 @@
 #include <mgba/core/input.h>
 #include <mgba/core/serialize.h>
 #include <mgba/core/thread.h>
-#include <mgba/internal/debugger/debugger.h>
+#include <mgba/debugger/debugger.h>
 #include <mgba/internal/gba/input.h>
 #include <mgba-util/configuration.h>
 #include <mgba-util/formatting.h>

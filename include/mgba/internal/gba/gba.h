@@ -175,6 +175,8 @@ bool GBAIsBIOS(struct VFile* vf);
 void GBAGetGameCode(const struct GBA* gba, char* out);
 void GBAGetGameTitle(const struct GBA* gba, char* out);
 
+void GBATestKeypadIRQ(struct GBA* gba);
+
 void GBAFrameStarted(struct GBA* gba);
 void GBAFrameEnded(struct GBA* gba);
 

@@ -8,6 +8,7 @@ from .arm import ARMCore
 from .core import Core, needsReset
 from .tile import Sprite
 from .memory import Memory
+from . import createCallback
 
 class GBA(Core):
     KEY_A = lib.GBA_KEY_A
@@ -20,6 +21,12 @@ class GBA(Core):
     KEY_RIGHT = lib.GBA_KEY_RIGHT
     KEY_L = lib.GBA_KEY_L
     KEY_R = lib.GBA_KEY_R
+
+    SIO_NORMAL_8 = lib.SIO_NORMAL_8
+    SIO_NORMAL_32 = lib.SIO_NORMAL_32
+    SIO_MULTI = lib.SIO_MULTI
+    SIO_UART = lib.SIO_UART
+    SIO_GPIO = lib.SIO_GPIO
 
     def __init__(self, native):
         super(GBA, self).__init__(native)
@@ -39,6 +46,35 @@ class GBA(Core):
     def reset(self):
         super(GBA, self).reset()
         self.memory = GBAMemory(self._core, self._native.memory.romSize)
+
+    def attachSIO(self, link, mode=lib.SIO_MULTI):
+        lib.GBASIOSetDriver(ffi.addressof(self._native.sio), link._native, mode)
+
+createCallback("GBASIOPythonDriver", "init")
+createCallback("GBASIOPythonDriver", "deinit")
+createCallback("GBASIOPythonDriver", "load")
+createCallback("GBASIOPythonDriver", "unload")
+createCallback("GBASIOPythonDriver", "writeRegister")
+
+class GBASIODriver(object):
+    def __init__(self):
+        self._handle = ffi.new_handle(self)
+        self._native = ffi.gc(lib.GBASIOPythonDriverCreate(self._handle), lib.free)
+
+    def init(self):
+        return True
+
+    def deinit(self):
+        pass
+
+    def load(self):
+        return True
+
+    def unload(self):
+        return True
+
+    def writeRegister(self, address, value):
+        return value
 
 class GBAMemory(Memory):
     def __init__(self, core, romSize=lib.SIZE_CART0):

@@ -471,11 +471,11 @@ void GBVideoSwitchBank(struct GBVideo* video, uint8_t value) {
 	video->vramCurrentBank = value;
 }
 
-void GBVideoSetPalette(struct GBVideo* video, unsigned index, uint16_t color) {
+void GBVideoSetPalette(struct GBVideo* video, unsigned index, uint32_t color) {
 	if (index >= 4) {
 		return;
 	}
-	video->dmgPalette[index] = color;
+	video->dmgPalette[index] = M_RGB8_TO_RGB5(color);
 }
 
 static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model) {
@@ -628,4 +628,7 @@ void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* s
 
 	_cleanOAM(video, video->ly);
 	GBVideoSwitchBank(video, video->vramCurrentBank);
+
+	video->renderer->deinit(video->renderer);
+	video->renderer->init(video->renderer, video->p->model);
 }

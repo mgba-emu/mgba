@@ -86,6 +86,10 @@ uint8_t GBTimerUpdateTAC(struct GBTimer* timer, GBRegisterTAC tac) {
 			timer->timaPeriod = 256 >> 4;
 			break;
 		}
+
+		timer->nextDiv -= mTimingUntil(&timer->p->timing, &timer->event);
+		mTimingDeschedule(&timer->p->timing, &timer->event);
+		mTimingSchedule(&timer->p->timing, &timer->event, 0);
 	} else {
 		timer->timaPeriod = 0;
 	}

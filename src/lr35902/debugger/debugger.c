@@ -6,7 +6,9 @@
 #include <mgba/internal/lr35902/debugger/debugger.h>
 
 #include <mgba/core/core.h>
+#include <mgba/internal/lr35902/decoder.h>
 #include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/lr35902/debugger/memory-debugger.h>
 
 DEFINE_VECTOR(LR35902DebugBreakpointList, struct LR35902DebugBreakpoint);
 DEFINE_VECTOR(LR35902DebugWatchpointList, struct LR35902DebugWatchpoint);
@@ -43,8 +45,11 @@ static void LR35902DebuggerEnter(struct mDebuggerPlatform* d, enum mDebuggerEntr
 
 static void LR35902DebuggerSetBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
+static void LR35902DebuggerSetWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type);
+static void LR35902DebuggerClearWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void LR35902DebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool LR35902DebuggerHasBreakpoints(struct mDebuggerPlatform*);
+static void LR35902DebuggerTrace(struct mDebuggerPlatform*, char* out, size_t* length);
 
 struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void) {
 	struct mDebuggerPlatform* platform = (struct mDebuggerPlatform*) malloc(sizeof(struct LR35902Debugger));
@@ -53,10 +58,11 @@ struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void) {
 	platform->deinit = LR35902DebuggerDeinit;
 	platform->setBreakpoint = LR35902DebuggerSetBreakpoint;
 	platform->clearBreakpoint = LR35902DebuggerClearBreakpoint;
-	platform->setWatchpoint = NULL;
-	platform->clearWatchpoint = NULL;
+	platform->setWatchpoint = LR35902DebuggerSetWatchpoint;
+	platform->clearWatchpoint = LR35902DebuggerClearWatchpoint;
 	platform->checkBreakpoints = LR35902DebuggerCheckBreakpoints;
 	platform->hasBreakpoints = LR35902DebuggerHasBreakpoints;
+	platform->trace = LR35902DebuggerTrace;
 	return platform;
 }
 
@@ -79,6 +85,10 @@ static void LR35902DebuggerEnter(struct mDebuggerPlatform* platform, enum mDebug
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) platform;
 	struct LR35902Core* cpu = debugger->cpu;
 	cpu->nextEvent = cpu->cycles;
+
+	if (debugger->d.p->entered) {
+		debugger->d.p->entered(debugger->d.p, reason, info);
+	}
 }
 
 static void LR35902DebuggerSetBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
@@ -103,4 +113,58 @@ static void LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform* d, uint32_t
 static bool LR35902DebuggerHasBreakpoints(struct mDebuggerPlatform* d) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
 	return LR35902DebugBreakpointListSize(&debugger->breakpoints) || LR35902DebugWatchpointListSize(&debugger->watchpoints);
+}
+
+static void LR35902DebuggerSetWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, enum mWatchpointType type) {
+	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
+	if (!LR35902DebugWatchpointListSize(&debugger->watchpoints)) {
+		LR35902DebuggerInstallMemoryShim(debugger);
+	}
+	struct LR35902DebugWatchpoint* watchpoint = LR35902DebugWatchpointListAppend(&debugger->watchpoints);
+	watchpoint->address = address;
+	watchpoint->type = type;
+	watchpoint->segment = segment;
+}
+
+static void LR35902DebuggerClearWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
+	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
+	struct LR35902DebugWatchpointList* watchpoints = &debugger->watchpoints;
+	size_t i;
+	for (i = 0; i < LR35902DebugWatchpointListSize(watchpoints); ++i) {
+		struct LR35902DebugWatchpoint* watchpoint = LR35902DebugWatchpointListGetPointer(watchpoints, i);
+		if (watchpoint->address == address && watchpoint->segment == segment) {
+			LR35902DebugWatchpointListShift(watchpoints, i, 1);
+		}
+	}
+	if (!LR35902DebugWatchpointListSize(&debugger->watchpoints)) {
+		LR35902DebuggerRemoveMemoryShim(debugger);
+	}
+}
+
+static void LR35902DebuggerTrace(struct mDebuggerPlatform* d, char* out, size_t* length) {
+	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
+	struct LR35902Core* cpu = debugger->cpu;
+
+	char disassembly[64];
+
+	struct LR35902InstructionInfo info = {{0}};
+	char* disPtr = disassembly;
+	uint8_t instruction;
+	uint16_t address = cpu->pc;
+	size_t bytesRemaining = 1;
+	for (bytesRemaining = 1; bytesRemaining; --bytesRemaining) {
+		instruction = debugger->d.p->core->rawRead8(debugger->d.p->core, address, -1);
+		disPtr += snprintf(disPtr, sizeof(disassembly) - (disPtr - disassembly), "%02X", instruction);
+		++address;
+		bytesRemaining += LR35902Decode(instruction, &info);
+	};
+	disPtr[0] = ':';
+	disPtr[1] = ' ';
+	disPtr += 2;
+	LR35902Disassemble(&info, disPtr, sizeof(disassembly) - (disPtr - disassembly));
+
+	*length = snprintf(out, *length, "A: %02X F: %02X B: %02X C: %02X D: %02X E: %02X H: %02X L: %02X SP: %04X PC: %04X | %s",
+		               cpu->a, cpu->f.packed, cpu->b, cpu->c,
+		               cpu->d, cpu->e, cpu->h, cpu->l,
+		               cpu->sp, cpu->pc, disassembly);
 }

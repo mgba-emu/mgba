@@ -409,10 +409,6 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 }
 
 void GBAWriteIE(struct GBA* gba, uint16_t value) {
-	if (value & (1 << IRQ_KEYPAD)) {
-		mLOG(GBA, STUB, "Keypad interrupts not implemented");
-	}
-
 	if (gba->memory.io[REG_IME >> 1] && value & gba->memory.io[REG_IF >> 1]) {
 		ARMRaiseIRQ(gba->cpu);
 	}
@@ -637,7 +633,7 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 }
 
 void GBAFrameStarted(struct GBA* gba) {
-	UNUSED(gba);
+	GBATestKeypadIRQ(gba);
 
 	size_t c;
 	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
@@ -681,6 +677,29 @@ void GBAFrameEnded(struct GBA* gba) {
 		if (callbacks->videoFrameEnded) {
 			callbacks->videoFrameEnded(callbacks->context);
 		}
+	}
+}
+
+void GBATestKeypadIRQ(struct GBA* gba) {
+	uint16_t keycnt = gba->memory.io[REG_KEYCNT >> 1];
+	if (!(keycnt & 0x4000)) {
+		return;
+	}
+	int isAnd = keycnt & 0x8000;
+	uint16_t keyInput;
+
+	if (!gba->keySource) {
+		// TODO?
+		return;
+	}
+
+	keycnt &= 0x3FF;
+	keyInput = *gba->keySource;
+
+	if (isAnd && keycnt == keyInput) {
+		GBARaiseIRQ(gba, IRQ_KEYPAD);
+	} else if (!isAnd && keycnt & keyInput) {
+		GBARaiseIRQ(gba, IRQ_KEYPAD);
 	}
 }
 

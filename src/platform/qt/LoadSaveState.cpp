@@ -188,7 +188,7 @@ void LoadSaveState::loadState(int slot) {
 		return;
 	}
 
-	QDateTime creation/*(QDateTime::fromMSecsSinceEpoch(state->creationUsec / 1000LL))*/; // TODO
+	QDateTime creation;
 	QImage stateImage;
 
 	unsigned width, height;
@@ -196,6 +196,12 @@ void LoadSaveState::loadState(int slot) {
 	mStateExtdataItem item;
 	if (mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item) && item.size >= width * height * 4) {
 		stateImage = QImage((uchar*) item.data, width, height, QImage::Format_ARGB32).rgbSwapped();
+	}
+
+	if (mStateExtdataGet(&extdata, EXTDATA_META_TIME, &item) && item.size == sizeof(uint64_t)) {
+		uint64_t creationUsec;
+		LOAD_64LE(creationUsec, 0, item.data);
+		creation = QDateTime::fromMSecsSinceEpoch(creationUsec / 1000LL);
 	}
 
 	if (!stateImage.isNull()) {

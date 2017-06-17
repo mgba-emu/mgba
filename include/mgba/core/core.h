@@ -19,8 +19,7 @@ CXX_GUARD_START
 #endif
 #include <mgba/core/interface.h>
 #ifdef USE_DEBUGGERS
-// TODO: Fix layering violation
-#include <mgba/internal/debugger/debugger.h>
+#include <mgba/debugger/debugger.h>
 #endif
 
 enum mPlatform {
@@ -130,6 +129,9 @@ struct mCore {
 	void (*rawWrite8)(struct mCore*, uint32_t address, int segment, uint8_t);
 	void (*rawWrite16)(struct mCore*, uint32_t address, int segment, uint16_t);
 	void (*rawWrite32)(struct mCore*, uint32_t address, int segment, uint32_t);
+
+	size_t (*listMemoryBlocks)(const struct mCore*, const struct mCoreMemoryBlock**);
+	void* (*getMemoryBlock)(struct mCore*, size_t id, size_t* sizeOut);
 
 #ifdef USE_DEBUGGERS
 	bool (*supportsDebuggerType)(struct mCore*, enum mDebuggerType);

@@ -124,7 +124,7 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	gb->memory.romBase = gb->memory.rom;
 	gb->memory.romSize = gb->pristineRomSize;
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
-	GBMBCSwitchBank(gb, gb->memory.currentBank);
+	GBMBCInit(gb);
 
 	if (gb->cpu) {
 		struct LR35902Core* cpu = gb->cpu;
@@ -133,12 +133,6 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 
 	// TODO: error check
 	return true;
-}
-
-bool GBLoadSave(struct GB* gb, struct VFile* vf) {
-	gb->sramVf = vf;
-	gb->sramRealVf = vf;
-	return vf;
 }
 
 static void GBSramDeinit(struct GB* gb) {
@@ -152,6 +146,16 @@ static void GBSramDeinit(struct GB* gb) {
 		mappedMemoryFree(gb->memory.sram, gb->sramSize);
 	}
 	gb->memory.sram = 0;
+}
+
+bool GBLoadSave(struct GB* gb, struct VFile* vf) {
+	GBSramDeinit(gb);
+	gb->sramVf = vf;
+	gb->sramRealVf = vf;
+	if (gb->sramSize) {
+		GBResizeSram(gb, gb->sramSize);
+	}
+	return vf;
 }
 
 void GBResizeSram(struct GB* gb, size_t size) {
@@ -280,6 +284,7 @@ void GBUnloadROM(struct GB* gb) {
 		gb->romVf = NULL;
 	}
 	gb->memory.rom = NULL;
+	gb->memory.mbcType = GB_MBC_AUTODETECT;
 	gb->isPristine = false;
 
 	GBSavedataUnmask(gb);
@@ -385,7 +390,9 @@ bool GBIsBIOS(struct VFile* vf) {
 
 void GBReset(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
+	gb->memory.romBase = gb->memory.rom;
 	GBDetectModel(gb);
+
 	if (gb->biosVf) {
 		if (!GBIsBIOS(gb->biosVf)) {
 			gb->biosVf->close(gb->biosVf);
@@ -703,4 +710,6 @@ void GBFrameEnded(struct GB* gb) {
 			mCheatRefresh(device, cheats);
 		}
 	}
+
+	GBTestKeypadIRQ(gb);
 }
