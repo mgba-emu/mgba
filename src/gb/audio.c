@@ -709,7 +709,7 @@ bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value) {
 }
 
 static void _updateSquareSample(struct GBAudioSquareChannel* ch) {
-	ch->sample = (ch->control.hi * ch->envelope.currentVolume - 8) * 0x10;
+	ch->sample = (ch->control.hi * 2 - 1) * ch->envelope.currentVolume * 0x8;
 }
 
 static int32_t _updateSquareChannel(struct GBAudioSquareChannel* ch) {
