@@ -555,7 +555,7 @@ void _updateFrame(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 				if (audio->ch2.envelope.dead == 2) {
 					mTimingDeschedule(timing, &audio->ch2Event);
 				}
-				_updateSquareSample(&audio->ch1);
+				_updateSquareSample(&audio->ch2);
 			}
 		}
 
