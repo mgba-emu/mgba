@@ -162,6 +162,7 @@ GameController::GameController(QObject* parent)
 			default:
 				break;
 			}
+			mTileCacheDeinit(controller->m_tileCache.get());
 			controller->m_tileCache.reset();
 		}
 
