@@ -437,6 +437,7 @@ void GBMemoryDMA(struct GB* gb, uint16_t base) {
 	if (base > 0xF100) {
 		return;
 	}
+	mTimingDeschedule(&gb->timing, &gb->memory.dmaEvent);
 	mTimingSchedule(&gb->timing, &gb->memory.dmaEvent, 8);
 	if (gb->cpu->cycles + 8 < gb->cpu->nextEvent) {
 		gb->cpu->nextEvent = gb->cpu->cycles + 8;
