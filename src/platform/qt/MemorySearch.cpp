@@ -49,7 +49,6 @@ bool MemorySearch::createParams(mCoreMemorySearchParams* params) {
 			params->type = mCORE_MEMORY_SEARCH_32;
 		}
 		if (m_ui.numHex->isChecked()) {
-			bool ok;
 			uint32_t v = m_ui.value->text().toUInt(&ok, 16);
 			if (ok) {
 				switch (params->type) {
