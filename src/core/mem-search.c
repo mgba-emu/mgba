@@ -272,7 +272,7 @@ static size_t _searchGuess(const void* mem, size_t size, const struct mCoreMemor
 
 	// Decimal:
 	value = strtoull(valueStr, &end, 10);
-	if (end) {
+	if (end && !end[0]) {
 		if (value > 0x10000) {
 			found += _search32(mem, size, block, value, out, limit ? limit - found : 0);
 		} else if (value > 0x100) {
@@ -305,7 +305,7 @@ static size_t _searchGuess(const void* mem, size_t size, const struct mCoreMemor
 
 	// Hex:
 	value = strtoull(valueStr, &end, 16);
-	if (end) {
+	if (end && !end[0]) {
 		if (value > 0x10000) {
 			found += _search32(mem, size, block, value, out, limit ? limit - found : 0);
 		} else if (value > 0x100) {
