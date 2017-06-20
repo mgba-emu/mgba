@@ -697,6 +697,7 @@ void GameController::threadContinue() {
 void GameController::frameAdvance() {
 	if (m_pauseAfterFrame.testAndSetRelaxed(false, true)) {
 		setPaused(false);
+		m_wasPaused = true;
 	}
 }
 

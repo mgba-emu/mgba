@@ -71,6 +71,7 @@ Bugfixes:
  - GBA BIOS: Fix INT_MIN/-1 crash
  - GBA Savedata: Update and fix Sharkport importing (fixes mgba.io/i/658)
  - OpenGL: Fix some shaders causing offset graphics
+ - Qt: Fix game unpausing after frame advancing and refocusing
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
