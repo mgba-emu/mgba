@@ -28,6 +28,9 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>
      </property>
@@ -194,11 +197,8 @@
      </item>
      <item>
       <widget class="QPushButton" name="viewMem">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
        <property name="text">
-        <string>View in Memory View</string>
+        <string>Open in Memory Viewer</string>
        </property>
       </widget>
      </item>

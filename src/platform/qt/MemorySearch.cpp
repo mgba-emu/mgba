@@ -9,6 +9,7 @@
 #include <mgba/core/core.h>
 
 #include "GameController.h"
+#include "MemoryView.h"
 
 using namespace QGBA;
 
@@ -24,6 +25,7 @@ MemorySearch::MemorySearch(GameController* controller, QWidget* parent)
 	connect(m_ui.refresh, &QPushButton::clicked, this, &MemorySearch::refresh);
 	connect(m_ui.numHex, &QPushButton::clicked, this, &MemorySearch::refresh);
 	connect(m_ui.numDec, &QPushButton::clicked, this, &MemorySearch::refresh);
+	connect(m_ui.viewMem, &QPushButton::clicked, this, &MemorySearch::openMemory);
 }
 
 MemorySearch::~MemorySearch() {
@@ -184,4 +186,20 @@ void MemorySearch::refresh() {
 		m_ui.results->setItem(i, 1, item);
 	}
 	m_ui.results->sortItems(0);
+}
+
+void MemorySearch::openMemory() {
+	auto items = m_ui.results->selectedItems();
+	if (items.empty()) {
+		return;
+	}
+	QTableWidgetItem* item = items[0];
+	uint32_t address = item->text().toUInt(nullptr, 16);
+
+	MemoryView* memView = new MemoryView(m_controller);
+	memView->jumpToAddress(address);
+
+	connect(m_controller, &GameController::gameStopped, memView, &QWidget::close);
+	memView->setAttribute(Qt::WA_DeleteOnClose);
+	memView->show();
 }
