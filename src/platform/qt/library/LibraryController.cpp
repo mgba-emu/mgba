@@ -130,6 +130,20 @@ void LibraryController::addDirectory(const QString& dir) {
 	m_loaderThread.start();
 }
 
+void LibraryController::clear() {
+	if (!m_library) {
+		if (!m_loaderThread.isRunning() && m_loaderThread.m_library) {
+			m_library = m_loaderThread.m_library;
+			m_loaderThread.m_library = nullptr;
+		} else {
+			return;
+		}
+	}
+
+	mLibraryClear(m_library);
+	refresh();
+}
+
 void LibraryController::refresh() {
 	if (!m_library) {
 		if (!m_loaderThread.isRunning() && m_loaderThread.m_library) {

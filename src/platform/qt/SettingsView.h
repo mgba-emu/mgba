@@ -29,6 +29,7 @@ signals:
 	void audioDriverChanged();
 	void displayDriverChanged();
 	void pathsChanged();
+	void libraryCleared();
 
 private slots:
 	void selectBios(QLineEdit*);

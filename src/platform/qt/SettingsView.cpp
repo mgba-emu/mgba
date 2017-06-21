@@ -89,6 +89,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 			m_ui.patchPath->setText(path);
 		}
 	});
+	connect(m_ui.clearCache, &QAbstractButton::pressed, this, &SettingsView::libraryCleared);
 
 	// TODO: Move to reloadConfig()
 	QVariant audioDriver = m_controller->getQtOption("audioDriver");

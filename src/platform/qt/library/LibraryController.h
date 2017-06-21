@@ -100,6 +100,9 @@ public:
 
 	void addDirectory(const QString& dir);
 
+public slots:
+	void clear();
+
 signals:
 	void startGame();
 	void doneLoading();
