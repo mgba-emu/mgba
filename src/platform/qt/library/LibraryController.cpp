@@ -24,7 +24,7 @@ void AbstractGameList::addEntries(QList<LibraryEntryRef> items) {
 }
 void AbstractGameList::removeEntries(QList<LibraryEntryRef> items) {
 	for (LibraryEntryRef o : items) {
-		addEntry(o);
+		removeEntry(o);
 	}
 }
 
