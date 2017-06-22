@@ -72,6 +72,7 @@ Bugfixes:
  - GBA Savedata: Update and fix Sharkport importing (fixes mgba.io/i/658)
  - OpenGL: Fix some shaders causing offset graphics
  - Qt: Fix game unpausing after frame advancing and refocusing
+ - GB Timer: Fix sub-M-cycle DIV reset timing and edge triggering
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers

@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gb/timer.h>
 
+#include <mgba/internal/lr35902/lr35902.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/serialize.h>
@@ -63,11 +64,17 @@ void GBTimerReset(struct GBTimer* timer) {
 }
 
 void GBTimerDivReset(struct GBTimer* timer) {
+	if (timer->internalDiv & (timer->timaPeriod >> 1)) {
+		++timer->p->memory.io[REG_TIMA];
+		if (!timer->p->memory.io[REG_TIMA]) {
+			mTimingSchedule(&timer->p->timing, &timer->irq, 4 - ((timer->p->cpu->executionState + 1) & 3));
+		}
+	}
 	timer->p->memory.io[REG_DIV] = 0;
 	timer->internalDiv = 0;
 	timer->nextDiv = GB_DMG_DIV_PERIOD;
 	mTimingDeschedule(&timer->p->timing, &timer->event);
-	mTimingSchedule(&timer->p->timing, &timer->event, timer->nextDiv);
+	mTimingSchedule(&timer->p->timing, &timer->event, timer->nextDiv - ((timer->p->cpu->executionState + 1) & 3));
 }
 
 uint8_t GBTimerUpdateTAC(struct GBTimer* timer, GBRegisterTAC tac) {
