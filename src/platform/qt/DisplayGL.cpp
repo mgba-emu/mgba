@@ -69,7 +69,7 @@ void DisplayGL::startDrawing(mCoreThread* thread) {
 	m_painter->moveToThread(m_drawThread);
 	connect(m_drawThread, &QThread::started, m_painter, &PainterGL::start);
 	m_drawThread->start();
-	mCoreSyncSetVideoSync(&m_context->sync, false);
+	mCoreSyncSetVideoSync(&m_context->impl->sync, false);
 
 	lockAspectRatio(isAspectRatioLocked());
 	lockIntegerScaling(isIntegerScalingLocked());
@@ -333,9 +333,9 @@ void PainterGL::draw() {
 		return;
 	}
 
-	if (mCoreSyncWaitFrameStart(&m_context->sync) || !m_queue.isEmpty()) {
+	if (mCoreSyncWaitFrameStart(&m_context->impl->sync) || !m_queue.isEmpty()) {
 		dequeue();
-		mCoreSyncWaitFrameEnd(&m_context->sync);
+		mCoreSyncWaitFrameEnd(&m_context->impl->sync);
 		m_painter.begin(m_gl->context()->device());
 		performDraw();
 		m_painter.end();
@@ -349,7 +349,7 @@ void PainterGL::draw() {
 			m_delayTimer.restart();
 		}
 	} else {
-		mCoreSyncWaitFrameEnd(&m_context->sync);
+		mCoreSyncWaitFrameEnd(&m_context->impl->sync);
 	}
 	if (!m_queue.isEmpty()) {
 		QMetaObject::invokeMethod(this, "draw", Qt::QueuedConnection);

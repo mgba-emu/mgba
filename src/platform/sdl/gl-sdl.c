@@ -53,7 +53,7 @@ void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user) {
 	SDL_Event event;
 	struct VideoBackend* v = &renderer->gl.d;
 
-	while (context->state < THREAD_EXITING) {
+	while (mCoreThreadIsActive(context)) {
 		while (SDL_PollEvent(&event)) {
 			mSDLHandleEvent(context, &renderer->player, &event);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -66,10 +66,10 @@ void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user) {
 #endif
 		}
 
-		if (mCoreSyncWaitFrameStart(&context->sync)) {
+		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
 			v->postFrame(v, renderer->outputBuffer);
 		}
-		mCoreSyncWaitFrameEnd(&context->sync);
+		mCoreSyncWaitFrameEnd(&context->impl->sync);
 		v->drawFrame(v);
 		v->swap(v);
 	}

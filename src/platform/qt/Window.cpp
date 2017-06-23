@@ -718,14 +718,10 @@ void Window::toggleFullScreen() {
 }
 
 void Window::gameStarted(mCoreThread* context, const QString& fname) {
-	MutexLock(&context->stateMutex);
-	if (context->state < THREAD_EXITING) {
-		emit startDrawing(context);
-	} else {
-		MutexUnlock(&context->stateMutex);
+	if (!mCoreThreadIsActive(context)) {
 		return;
 	}
-	MutexUnlock(&context->stateMutex);
+	emit startDrawing(context);
 	for (QAction* action : m_gameActions) {
 		action->setDisabled(false);
 	}
