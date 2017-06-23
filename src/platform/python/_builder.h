@@ -1,5 +1,6 @@
 #define COMMON_H
 #define PNG_H
+#define OPAQUE_THREADING
 #define _SYS_TIME_H
 #define _SYS_TIME_H_
 #define _TIME_H
@@ -30,6 +31,7 @@ void free(void*);
 #include <mgba/core/core.h>
 #include <mgba/core/mem-search.h>
 #include <mgba/core/tile-cache.h>
+#include <mgba/core/thread.h>
 #include <mgba/core/version.h>
 
 #define PYEXPORT extern "Python+C"

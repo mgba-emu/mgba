@@ -38,10 +38,18 @@ def needsReset(f):
         return f(self, *args, **kwargs)
     return wrapper
 
+def protected(f):
+    def wrapper(self, *args, **kwargs):
+        if self._protected:
+            raise RuntimeError("Core is protected")
+        return f(self, *args, **kwargs)
+    return wrapper
+
 class Core(object):
     def __init__(self, native):
         self._core = native
         self._wasReset = False
+        self._protected = False
 
     @cached_property
     def tiles(self):
@@ -51,6 +59,7 @@ class Core(object):
     def _init(cls, native):
         core = ffi.gc(native, native.deinit)
         success = bool(core.init(core))
+        lib.mCoreInitConfig(core, ffi.NULL)
         if not success:
             raise RuntimeError("Failed to initialize core")
         if hasattr(cls, 'PLATFORM_GBA') and core.platform(core) == cls.PLATFORM_GBA:
@@ -62,6 +71,7 @@ class Core(object):
     def _deinit(self):
         self._core.deinit(self._core)
 
+    @protected
     def loadFile(self, path):
         return bool(lib.mCoreLoadFile(self._core, path.encode('UTF-8')))
 
@@ -77,6 +87,7 @@ class Core(object):
     def loadTemporarySave(self, vf):
         return bool(self._core.loadTemporarySave(self._core, vf.handle))
 
+    @protected
     def loadPatch(self, vf):
         return bool(self._core.loadPatch(self._core, vf.handle))
 
@@ -98,19 +109,23 @@ class Core(object):
     def setVideoBuffer(self, image):
         self._core.setVideoBuffer(self._core, image.buffer, image.stride)
 
+    @protected
     def reset(self):
         self._core.reset(self._core)
         self._wasReset = True
 
     @needsReset
+    @protected
     def runFrame(self):
         self._core.runFrame(self._core)
 
     @needsReset
+    @protected
     def runLoop(self):
         self._core.runLoop(self._core)
 
     @needsReset
+    @protected
     def step(self):
         self._core.step(self._core)
 
@@ -151,6 +166,38 @@ class Core(object):
         code = ffi.new("char[12]")
         self._core.getGameCode(self._core, code)
         return ffi.string(code, 12).decode("ascii")
+
+class ICoreOwner(object):
+    def claim(self):
+        raise NotImplementedError
+
+    def release(self):
+        raise NotImplementedError
+
+    def __enter__(self):
+        self.core = self.claim()
+        self.core._protected = True
+        return self.core
+
+    def __exit__(self, type, value, traceback):
+        self.core._protected = False
+        self.release()
+
+class IRunner(object):
+    def pause(self):
+        raise NotImplementedError
+
+    def unpause(self):
+        raise NotImplementedError
+
+    def useCore(self):
+        raise NotImplementedError
+
+    def isRunning(self):
+        raise NotImplementedError
+
+    def isPaused(self):
+        raise NotImplementedError
 
 if hasattr(lib, 'PLATFORM_GBA'):
     from .gba import GBA

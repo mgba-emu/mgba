@@ -18,10 +18,12 @@ cppflags.extend(["-I" + incdir, "-I" + srcdir, "-I" + bindir])
 
 ffi.set_source("mgba._pylib", """
 #include "flags.h"
+#define OPAQUE_THREADING
 #include <mgba-util/common.h>
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
 #include <mgba/core/mem-search.h>
+#include <mgba/core/thread.h>
 #include <mgba/core/tile-cache.h>
 #include <mgba/core/version.h>
 #include <mgba/internal/arm/arm.h>
