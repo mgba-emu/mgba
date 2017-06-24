@@ -36,6 +36,9 @@ private slots:
 	void gameStarted(mCoreThread*);
 	void gameStopped();
 
+protected:
+	bool eventFilter(QObject* obj, QEvent* event) override;
+
 private:
 	Ui::OverrideView m_ui;
 
@@ -43,6 +46,8 @@ private:
 	ConfigController* m_config;
 
 #ifdef M_CORE_GB
+	uint32_t m_gbColors[4]{};
+
 	static QList<enum GBModel> s_gbModelList;
 	static QList<enum GBMemoryBankControllerType> s_mbcList;
 #endif
