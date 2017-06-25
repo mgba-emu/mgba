@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "GBAKeyEditor.h"
 
+#include <QApplication>
 #include <QComboBox>
 #include <QHBoxLayout>
 #include <QPaintEvent>
@@ -182,10 +183,20 @@ bool GBAKeyEditor::event(QEvent* event) {
 }
 
 bool GBAKeyEditor::eventFilter(QObject* obj, QEvent* event) {
+	KeyEditor* keyEditor = static_cast<KeyEditor*>(obj);
+	if (event->type() == QEvent::FocusOut) {
+		keyEditor->setPalette(QApplication::palette(keyEditor));
+	}
 	if (event->type() != QEvent::FocusIn) {
 		return false;
 	}
-	findFocus(static_cast<KeyEditor*>(obj));
+
+	QPalette palette = keyEditor->palette();
+	palette.setBrush(keyEditor->backgroundRole(), palette.highlight());
+	palette.setBrush(keyEditor->foregroundRole(), palette.highlightedText());
+	keyEditor->setPalette(palette);
+
+	findFocus(keyEditor);
 	return true;
 }
 
