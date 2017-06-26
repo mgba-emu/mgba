@@ -69,25 +69,6 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAAudioSerialize(&gba->audio, state);
 	GBASavedataSerialize(&gba->memory.savedata, state);
 
-
-#ifndef _MSC_VER
-	struct timeval tv;
-	if (!gettimeofday(&tv, 0)) {
-		uint64_t usec = tv.tv_usec;
-		usec += tv.tv_sec * 1000000LL;
-		STORE_64(usec, 0, &state->creationUsec);
-	}
-#else
-	struct timespec ts;
-	if (timespec_get(&ts, TIME_UTC)) {
-		uint64_t usec = ts.tv_nsec / 1000;
-		usec += ts.tv_sec * 1000000LL;
-		STORE_64(usec, 0, &state->creationUsec);
-	}
-#endif
-	else {
-		state->creationUsec = 0;
-	}
 	state->associatedStreamId = 0;
 	if (gba->rr) {
 		gba->rr->stateSaved(gba->rr, state);

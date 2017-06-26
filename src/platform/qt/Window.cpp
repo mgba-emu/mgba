@@ -35,6 +35,7 @@
 #include "LoadSaveState.h"
 #include "LogView.h"
 #include "MultiplayerController.h"
+#include "MemorySearch.h"
 #include "MemoryView.h"
 #include "OverrideView.h"
 #include "ObjView.h"
@@ -468,6 +469,7 @@ void Window::openSettingsWindow() {
 	connect(settingsWindow, &SettingsView::audioDriverChanged, m_controller, &GameController::reloadAudioDriver);
 	connect(settingsWindow, &SettingsView::displayDriverChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::pathsChanged, this, &Window::reloadConfig);
+	connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
 	openView(settingsWindow);
 }
 
@@ -1404,6 +1406,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(memoryView, &QAction::triggered, openTView<MemoryView>());
 	m_gameActions.append(memoryView);
 	addControlledAction(toolsMenu, memoryView, "memoryView");
+
+	QAction* memorySearch = new QAction(tr("Search memory..."), toolsMenu);
+	connect(memorySearch, &QAction::triggered, openTView<MemorySearch>());
+	m_gameActions.append(memorySearch);
+	addControlledAction(toolsMenu, memorySearch, "memorySearch");
 
 #ifdef M_CORE_GBA
 	QAction* ioViewer = new QAction(tr("View &I/O registers..."), toolsMenu);

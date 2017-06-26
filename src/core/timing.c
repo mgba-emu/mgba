@@ -89,5 +89,9 @@ int32_t mTimingNextEvent(struct mTiming* timing) {
 	if (!next) {
 		return INT_MAX;
 	}
-	return next->when - timing->masterCycles;
+	return next->when - timing->masterCycles - *timing->relativeCycles;
+}
+
+int32_t mTimingUntil(const struct mTiming* timing, const struct mTimingEvent* event) {
+	return event->when - timing->masterCycles - *timing->relativeCycles;
 }

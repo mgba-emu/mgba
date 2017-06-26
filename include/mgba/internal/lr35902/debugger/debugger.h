@@ -10,9 +10,10 @@
 
 CXX_GUARD_START
 
-#include <mgba/internal/debugger/debugger.h>
+#include <mgba/debugger/debugger.h>
 
 #include <mgba/internal/lr35902/lr35902.h>
+#include <mgba-util/vector.h>
 
 
 struct LR35902DebugBreakpoint {

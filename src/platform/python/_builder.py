@@ -21,7 +21,9 @@ ffi.set_source("mgba._pylib", """
 #include <mgba-util/common.h>
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
+#include <mgba/core/mem-search.h>
 #include <mgba/core/tile-cache.h>
+#include <mgba/core/version.h>
 #include <mgba/internal/arm/arm.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>

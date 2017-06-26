@@ -22,6 +22,7 @@ public:
 
 public slots:
 	void update();
+	void jumpToAddress(uint32_t address) { m_ui.hexfield->jumpToAddress(address); }
 
 private slots:
 	void setIndex(int);

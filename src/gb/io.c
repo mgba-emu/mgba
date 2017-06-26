@@ -564,6 +564,13 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	return gb->memory.io[address] | _registerMask[address];
 }
 
+void GBTestKeypadIRQ(struct GB* gb) {
+	if (_readKeys(gb)) {
+		gb->memory.io[REG_IF] |= (1 << GB_IRQ_KEYPAD);
+		GBUpdateIRQs(gb);
+	}
+}
+
 struct GBSerializedState;
 void GBIOSerialize(const struct GB* gb, struct GBSerializedState* state) {
 	memcpy(state->io, gb->memory.io, GB_SIZE_IO);

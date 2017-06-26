@@ -24,7 +24,7 @@ void AbstractGameList::addEntries(QList<LibraryEntryRef> items) {
 }
 void AbstractGameList::removeEntries(QList<LibraryEntryRef> items) {
 	for (LibraryEntryRef o : items) {
-		addEntry(o);
+		removeEntry(o);
 	}
 }
 
@@ -130,6 +130,20 @@ void LibraryController::addDirectory(const QString& dir) {
 	m_loaderThread.start();
 }
 
+void LibraryController::clear() {
+	if (!m_library) {
+		if (!m_loaderThread.isRunning() && m_loaderThread.m_library) {
+			m_library = m_loaderThread.m_library;
+			m_loaderThread.m_library = nullptr;
+		} else {
+			return;
+		}
+	}
+
+	mLibraryClear(m_library);
+	refresh();
+}
+
 void LibraryController::refresh() {
 	if (!m_library) {
 		if (!m_loaderThread.isRunning() && m_loaderThread.m_library) {
@@ -181,7 +195,7 @@ void LibraryController::refresh() {
 }
 
 void LibraryController::selectLastBootedGame() {
-	if (!m_config) {
+	if (!m_config || m_config->getMRU().isEmpty()) {
 		return;
 	}
 	const QString lastfile = m_config->getMRU().first();

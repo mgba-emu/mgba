@@ -28,6 +28,10 @@ static void _GBMBC5(struct GB*, uint16_t address, uint8_t value);
 static void _GBMBC6(struct GB*, uint16_t address, uint8_t value);
 static void _GBMBC7(struct GB*, uint16_t address, uint8_t value);
 static void _GBHuC3(struct GB*, uint16_t address, uint8_t value);
+static void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value);
+
+static uint8_t _GBMBC7Read(struct GBMemory*, uint16_t address);
+static uint8_t _GBPocketCamRead(struct GBMemory*, uint16_t address);
 
 void GBMBCSwitchBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_BANK0;
@@ -75,7 +79,11 @@ static bool _isMulticart(const uint8_t* mem) {
 
 void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_EXTERNAL_RAM;
-	GBResizeSram(gb, (bank + 1) * GB_SIZE_EXTERNAL_RAM);
+	if (bankStart + GB_SIZE_EXTERNAL_RAM > gb->sramSize) {
+		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid RAM bank: %0X", bank);
+		bankStart &= (gb->sramSize - 1);
+		bank = bankStart / GB_SIZE_EXTERNAL_RAM;
+	}
 	gb->memory.sramBank = &gb->memory.sram[bankStart];
 	gb->memory.sramCurrentBank = bank;
 }
@@ -148,6 +156,12 @@ void GBMBCInit(struct GB* gb) {
 			case 0x22:
 				gb->memory.mbcType = GB_MBC7;
 				break;
+			case 0xFC:
+				gb->memory.mbcType = GB_POCKETCAM;
+				break;
+			case 0xFD:
+				gb->memory.mbcType = GB_HuC1;
+				break;
 			case 0xFE:
 				gb->memory.mbcType = GB_HuC3;
 				break;
@@ -156,51 +170,57 @@ void GBMBCInit(struct GB* gb) {
 	} else {
 		gb->memory.mbcType = GB_MBC_NONE;
 	}
+	gb->memory.mbcRead = NULL;
 	switch (gb->memory.mbcType) {
 	case GB_MBC_NONE:
-		gb->memory.mbc = _GBMBCNone;
+		gb->memory.mbcWrite = _GBMBCNone;
 		break;
 	case GB_MBC1:
-		gb->memory.mbc = _GBMBC1;
+		gb->memory.mbcWrite = _GBMBC1;
 		break;
 	case GB_MBC2:
-		gb->memory.mbc = _GBMBC2;
+		gb->memory.mbcWrite = _GBMBC2;
 		gb->sramSize = 0x200;
 		break;
 	case GB_MBC3:
-		gb->memory.mbc = _GBMBC3;
+		gb->memory.mbcWrite = _GBMBC3;
 		break;
 	default:
 		mLOG(GB_MBC, WARN, "Unknown MBC type: %02X", cart->type);
 		// Fall through
 	case GB_MBC5:
-		gb->memory.mbc = _GBMBC5;
+		gb->memory.mbcWrite = _GBMBC5;
 		break;
 	case GB_MBC6:
 		mLOG(GB_MBC, WARN, "unimplemented MBC: MBC6");
-		gb->memory.mbc = _GBMBC6;
+		gb->memory.mbcWrite = _GBMBC6;
 		break;
 	case GB_MBC7:
-		gb->memory.mbc = _GBMBC7;
-		gb->sramSize = GB_SIZE_EXTERNAL_RAM;
+		gb->memory.mbcWrite = _GBMBC7;
+		gb->memory.mbcRead = _GBMBC7Read;
+		gb->sramSize = 0x100;
 		break;
 	case GB_MMM01:
 		mLOG(GB_MBC, WARN, "unimplemented MBC: MMM01");
-		gb->memory.mbc = _GBMBC1;
+		gb->memory.mbcWrite = _GBMBC1;
 		break;
 	case GB_HuC1:
 		mLOG(GB_MBC, WARN, "unimplemented MBC: HuC-1");
-		gb->memory.mbc = _GBMBC1;
+		gb->memory.mbcWrite = _GBMBC1;
 		break;
 	case GB_HuC3:
-		gb->memory.mbc = _GBHuC3;
+		gb->memory.mbcWrite = _GBHuC3;
 		break;
 	case GB_MBC3_RTC:
 		memset(gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
-		gb->memory.mbc = _GBMBC3;
+		gb->memory.mbcWrite = _GBMBC3;
 		break;
 	case GB_MBC5_RUMBLE:
-		gb->memory.mbc = _GBMBC5;
+		gb->memory.mbcWrite = _GBMBC5;
+		break;
+	case GB_POCKETCAM:
+		gb->memory.mbcWrite = _GBPocketCam;
+		gb->memory.mbcRead = _GBPocketCamRead;
 		break;
 	}
 
@@ -350,7 +370,8 @@ void _GBMBC2(struct GB* gb, uint16_t address, uint8_t value) {
 		// TODO
 		mLOG(GB_MBC, STUB, "MBC2 unknown address: %04X:%02X", address, value);
 		break;
-	}}
+	}
+}
 
 void _GBMBC3(struct GB* gb, uint16_t address, uint8_t value) {
 	struct GBMemory* memory = &gb->memory;
@@ -451,12 +472,25 @@ void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 void _GBMBC7(struct GB* gb, uint16_t address, uint8_t value) {
 	int bank = value & 0x7F;
 	switch (address >> 13) {
+	case 0x0:
+		switch (value) {
+		default:
+		case 0:
+			gb->memory.mbcState.mbc7.access = 0;
+			break;
+		case 0xA:
+			gb->memory.mbcState.mbc7.access |= 1;
+			break;
+		}
+		break;
 	case 0x1:
 		GBMBCSwitchBank(gb, bank);
 		break;
 	case 0x2:
-		if (value < 0x10) {
-			GBMBCSwitchSramBank(gb, value);
+		if (value == 0x40) {
+			gb->memory.mbcState.mbc7.access |= 2;
+		} else {
+			gb->memory.mbcState.mbc7.access &= ~2;
 		}
 		break;
 	default:
@@ -466,19 +500,17 @@ void _GBMBC7(struct GB* gb, uint16_t address, uint8_t value) {
 	}
 }
 
-uint8_t GBMBC7Read(struct GBMemory* memory, uint16_t address) {
+uint8_t _GBMBC7Read(struct GBMemory* memory, uint16_t address) {
 	struct GBMBC7State* mbc7 = &memory->mbcState.mbc7;
+	if (mbc7->access != 3) {
+		return 0xFF;
+	}
 	switch (address & 0xF0) {
-	case 0x00:
-	case 0x10:
-	case 0x60:
-	case 0x70:
-		return 0;
 	case 0x20:
 		if (memory->rotation && memory->rotation->readTiltX) {
 			int32_t x = -memory->rotation->readTiltX(memory->rotation);
 			x >>= 21;
-			x += 2047;
+			x += 0x81D0;
 			return x;
 		}
 		return 0xFF;
@@ -486,7 +518,7 @@ uint8_t GBMBC7Read(struct GBMemory* memory, uint16_t address) {
 		if (memory->rotation && memory->rotation->readTiltX) {
 			int32_t x = -memory->rotation->readTiltX(memory->rotation);
 			x >>= 21;
-			x += 2047;
+			x += 0x81D0;
 			return x >> 8;
 		}
 		return 7;
@@ -494,7 +526,7 @@ uint8_t GBMBC7Read(struct GBMemory* memory, uint16_t address) {
 		if (memory->rotation && memory->rotation->readTiltY) {
 			int32_t y = -memory->rotation->readTiltY(memory->rotation);
 			y >>= 21;
-			y += 2047;
+			y += 0x81D0;
 			return y;
 		}
 		return 0xFF;
@@ -502,144 +534,142 @@ uint8_t GBMBC7Read(struct GBMemory* memory, uint16_t address) {
 		if (memory->rotation && memory->rotation->readTiltY) {
 			int32_t y = -memory->rotation->readTiltY(memory->rotation);
 			y >>= 21;
-			y += 2047;
+			y += 0x81D0;
 			return y >> 8;
 		}
 		return 7;
+	case 0x60:
+		return 0;
 	case 0x80:
-		return (mbc7->sr >> 16) & 1;
+		return mbc7->eeprom;
 	default:
 		return 0xFF;
 	}
 }
 
 void GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	if ((address & 0xF0) != 0x80) {
+	struct GBMBC7State* mbc7 = &memory->mbcState.mbc7;
+	if (mbc7->access != 3) {
 		return;
 	}
-	struct GBMBC7State* mbc7 = &memory->mbcState.mbc7;
-	GBMBC7Field old = memory->mbcState.mbc7.field;
-	mbc7->field = GBMBC7FieldClearIO(value);
-	if (!GBMBC7FieldIsCS(old) && GBMBC7FieldIsCS(value)) {
-		if (mbc7->state == GBMBC7_STATE_WRITE) {
-			if (mbc7->writable) {
-				memory->sramBank[mbc7->address * 2] = mbc7->sr >> 8;
-				memory->sramBank[mbc7->address * 2 + 1] = mbc7->sr;
-			}
-			mbc7->sr = 0x1FFFF;
-			mbc7->state = GBMBC7_STATE_NULL;
-		} else {
-			mbc7->state = GBMBC7_STATE_IDLE;
+	switch (address & 0xF0) {
+	case 0x00:
+		mbc7->latch = (value & 0x55) == 0x55;
+		return;
+	case 0x10:
+		mbc7->latch |= (value & 0xAA);
+		if (mbc7->latch == 0xFF && memory->rotation && memory->rotation->sample) {
+			memory->rotation->sample(memory->rotation);
 		}
+		mbc7->latch = 0;
+		return;
+	default:
+		mLOG(GB_MBC, STUB, "MBC7 unknown register: %04X:%02X", address, value);
+		return;
+	case 0x80:
+		break;
 	}
-	if (!GBMBC7FieldIsSK(old) && GBMBC7FieldIsSK(value)) {
-		if (mbc7->state > GBMBC7_STATE_IDLE && mbc7->state != GBMBC7_STATE_READ) {
+	GBMBC7Field old = memory->mbcState.mbc7.eeprom;
+	value = GBMBC7FieldFillDO(value); // Hi-Z
+	if (!GBMBC7FieldIsCS(old) && GBMBC7FieldIsCS(value)) {
+		mbc7->state = GBMBC7_STATE_IDLE;
+	}
+	if (!GBMBC7FieldIsCLK(old) && GBMBC7FieldIsCLK(value)) {
+		if (mbc7->state == GBMBC7_STATE_READ_COMMAND || mbc7->state == GBMBC7_STATE_EEPROM_WRITE || mbc7->state == GBMBC7_STATE_EEPROM_WRAL) {
 			mbc7->sr <<= 1;
-			mbc7->sr |= GBMBC7FieldGetIO(value);
+			mbc7->sr |= GBMBC7FieldGetDI(value);
 			++mbc7->srBits;
 		}
 		switch (mbc7->state) {
 		case GBMBC7_STATE_IDLE:
-			if (GBMBC7FieldIsIO(value)) {
+			if (GBMBC7FieldIsDI(value)) {
 				mbc7->state = GBMBC7_STATE_READ_COMMAND;
 				mbc7->srBits = 0;
 				mbc7->sr = 0;
 			}
 			break;
 		case GBMBC7_STATE_READ_COMMAND:
-			if (mbc7->srBits == 2) {
-				mbc7->state = GBMBC7_STATE_READ_ADDRESS;
-				mbc7->srBits = 0;
-				mbc7->command = mbc7->sr;
-			}
-			break;
-		case GBMBC7_STATE_READ_ADDRESS:
-			if (mbc7->srBits == 8) {
-				mbc7->state = GBMBC7_STATE_COMMAND_0 + mbc7->command;
-				mbc7->srBits = 0;
-				mbc7->address = mbc7->sr;
-				if (mbc7->state == GBMBC7_STATE_COMMAND_0) {
-					switch (mbc7->address >> 6) {
-					case 0:
-						mbc7->writable = false;
-						mbc7->state = GBMBC7_STATE_NULL;
-						break;
-					case 3:
-						mbc7->writable = true;
-						mbc7->state = GBMBC7_STATE_NULL;
-						break;
-					}
+			if (mbc7->srBits == 10) {
+				mbc7->state = 0x10 | (mbc7->sr >> 6);
+				if (mbc7->state & 0xC) {
+					mbc7->state &= ~0x3;
 				}
-			}
-			break;
-		case GBMBC7_STATE_COMMAND_0:
-			if (mbc7->srBits == 16) {
-				switch (mbc7->address >> 6) {
-				case 0:
-					mbc7->writable = false;
-					mbc7->state = GBMBC7_STATE_NULL;
-					break;
-				case 1:
-					mbc7->state = GBMBC7_STATE_WRITE;
-					if (mbc7->writable) {
-						int i;
-						for (i = 0; i < 256; ++i) {
-							memory->sramBank[i * 2] = mbc7->sr >> 8;
-							memory->sramBank[i * 2 + 1] = mbc7->sr;
-						}
-					}
-					break;
-				case 2:
-					mbc7->state = GBMBC7_STATE_WRITE;
-					if (mbc7->writable) {
-						int i;
-						for (i = 0; i < 256; ++i) {
-							memory->sramBank[i * 2] = 0xFF;
-							memory->sramBank[i * 2 + 1] = 0xFF;
-						}
-					}
-					break;
-				case 3:
-					mbc7->writable = true;
-					mbc7->state = GBMBC7_STATE_NULL;
-					break;
-				}
-			}
-			break;
-		case GBMBC7_STATE_COMMAND_SR_WRITE:
-			if (mbc7->srBits == 16) {
 				mbc7->srBits = 0;
-				mbc7->state = GBMBC7_STATE_WRITE;
+				mbc7->address = mbc7->sr & 0x7F;
 			}
 			break;
-		case GBMBC7_STATE_COMMAND_SR_READ:
-			if (mbc7->srBits == 1) {
-				mbc7->sr = memory->sramBank[mbc7->address * 2] << 8;
-				mbc7->sr |= memory->sramBank[mbc7->address * 2 + 1];
-				mbc7->srBits = 0;
-				mbc7->state = GBMBC7_STATE_READ;
-			}
-			break;
-		case GBMBC7_STATE_COMMAND_SR_FILL:
-			if (mbc7->srBits == 16) {
-				mbc7->sr = 0xFFFF;
-				mbc7->srBits = 0;
-				mbc7->state = GBMBC7_STATE_WRITE;
+		case GBMBC7_STATE_DO:
+			value = GBMBC7FieldSetDO(value, mbc7->sr >> 15);
+			mbc7->sr <<= 1;
+			--mbc7->srBits;
+			if (!mbc7->srBits) {
+				mbc7->state = GBMBC7_STATE_IDLE;
 			}
 			break;
 		default:
 			break;
 		}
-	} else if (GBMBC7FieldIsSK(old) && !GBMBC7FieldIsSK(value)) {
-		if (mbc7->state == GBMBC7_STATE_READ) {
-			mbc7->sr <<= 1;
-			++mbc7->srBits;
+		switch (mbc7->state) {
+		case GBMBC7_STATE_EEPROM_EWEN:
+			mbc7->writable = true;
+			mbc7->state = GBMBC7_STATE_IDLE;
+			break;
+		case GBMBC7_STATE_EEPROM_EWDS:
+			mbc7->writable = false;
+			mbc7->state = GBMBC7_STATE_IDLE;
+			break;
+		case GBMBC7_STATE_EEPROM_WRITE:
 			if (mbc7->srBits == 16) {
-				mbc7->srBits = 0;
-				mbc7->state = GBMBC7_STATE_NULL;
+				if (mbc7->writable) {
+					memory->sram[mbc7->address * 2] = mbc7->sr >> 8;
+					memory->sram[mbc7->address * 2 + 1] = mbc7->sr;
+				}
+				mbc7->state = GBMBC7_STATE_IDLE;
 			}
+			break;
+		case GBMBC7_STATE_EEPROM_ERASE:
+			if (mbc7->writable) {
+				memory->sram[mbc7->address * 2] = 0xFF;
+				memory->sram[mbc7->address * 2 + 1] = 0xFF;
+			}
+			mbc7->state = GBMBC7_STATE_IDLE;
+			break;
+		case GBMBC7_STATE_EEPROM_READ:
+			mbc7->srBits = 16;
+			mbc7->sr = memory->sram[mbc7->address * 2] << 8;
+			mbc7->sr |= memory->sram[mbc7->address * 2 + 1];
+			mbc7->state = GBMBC7_STATE_DO;
+			value = GBMBC7FieldClearDO(value);
+			break;
+		case GBMBC7_STATE_EEPROM_WRAL:
+			if (mbc7->srBits == 16) {
+				if (mbc7->writable) {
+					int i;
+					for (i = 0; i < 128; ++i) {
+						memory->sram[i * 2] = mbc7->sr >> 8;
+						memory->sram[i * 2 + 1] = mbc7->sr;
+					}
+				}
+				mbc7->state = GBMBC7_STATE_IDLE;
+			}
+			break;
+		case GBMBC7_STATE_EEPROM_ERAL:
+			if (mbc7->writable) {
+				int i;
+				for (i = 0; i < 128; ++i) {
+					memory->sram[i * 2] = 0xFF;
+					memory->sram[i * 2 + 1] = 0xFF;
+				}
+			}
+			mbc7->state = GBMBC7_STATE_IDLE;
+			break;
+		default:
+			break;
 		}
+	} else if (GBMBC7FieldIsCS(value) && GBMBC7FieldIsCLK(old) && !GBMBC7FieldIsCLK(value)) {
+		value = GBMBC7FieldSetDO(value, GBMBC7FieldGetDO(old));
 	}
+	mbc7->eeprom = value;
 }
 
 void _GBHuC3(struct GB* gb, uint16_t address, uint8_t value) {
@@ -672,6 +702,52 @@ void _GBHuC3(struct GB* gb, uint16_t address, uint8_t value) {
 		mLOG(GB_MBC, STUB, "HuC-3 unknown address: %04X:%02X", address, value);
 		break;
 	}
+}
+
+void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value) {
+	struct GBMemory* memory = &gb->memory;
+	int bank = value & 0x3F;
+	switch (address >> 13) {
+	case 0x0:
+		switch (value) {
+		case 0:
+			memory->sramAccess = false;
+			break;
+		case 0xA:
+			memory->sramAccess = true;
+			GBMBCSwitchSramBank(gb, memory->sramCurrentBank);
+			break;
+		default:
+			// TODO
+			mLOG(GB_MBC, STUB, "Pocket Cam unknown value %02X", value);
+			break;
+		}
+		break;
+	case 0x1:
+		GBMBCSwitchBank(gb, bank);
+		break;
+	case 0x2:
+		if (value < 0x10) {
+			GBMBCSwitchSramBank(gb, value);
+			memory->mbcState.pocketCam.registersActive = false;
+		} else {
+			memory->mbcState.pocketCam.registersActive = true;
+		}
+		break;
+	default:
+		mLOG(GB_MBC, STUB, "Pocket Cam unknown address: %04X:%02X", address, value);
+		break;
+	}
+}
+
+uint8_t _GBPocketCamRead(struct GBMemory* memory, uint16_t address) {
+	if (memory->mbcState.pocketCam.registersActive) {
+		return 0;
+	}
+	if (!memory->sramAccess) {
+		return 0xFF;
+	}
+	return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
 }
 
 void GBMBCRTCRead(struct GB* gb) {

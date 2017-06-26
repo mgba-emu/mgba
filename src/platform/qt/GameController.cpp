@@ -40,7 +40,7 @@ using namespace std;
 GameController::GameController(QObject* parent)
 	: QObject(parent)
 	, m_audioProcessor(AudioProcessor::create())
-	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC)
+	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC | SAVESTATE_METADATA)
 	, m_loadStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_RTC)
 {
 #ifdef M_CORE_GBA
@@ -162,6 +162,7 @@ GameController::GameController(QObject* parent)
 			default:
 				break;
 			}
+			mTileCacheDeinit(controller->m_tileCache.get());
 			controller->m_tileCache.reset();
 		}
 
@@ -696,6 +697,7 @@ void GameController::threadContinue() {
 void GameController::frameAdvance() {
 	if (m_pauseAfterFrame.testAndSetRelaxed(false, true)) {
 		setPaused(false);
+		m_wasPaused = true;
 	}
 }
 

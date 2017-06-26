@@ -44,6 +44,7 @@ static void _clearBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setReadWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setWriteWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _trace(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeByte(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeHalfword(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeWord(struct CLIDebugger*, struct CLIDebugVector*);
@@ -80,6 +81,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "r/2", _readHalfword, CLIDVParse, "Read a halfword from a specified offset" },
 	{ "r/4", _readWord, CLIDVParse, "Read a word from a specified offset" },
 	{ "status", _printStatus, 0, "Print the current status" },
+	{ "trace", _trace, CLIDVParse, "Trace a fixed number of instructions" },
 	{ "w", _setWatchpoint, CLIDVParse, "Set a watchpoint" },
 	{ "w/1", _writeByte, CLIDVParse, "Write a byte at a specified offset" },
 	{ "w/2", _writeHalfword, CLIDVParse, "Write a halfword at a specified offset" },
@@ -466,6 +468,27 @@ static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector
 	debugger->d.platform->clearBreakpoint(debugger->d.platform, address, dv->segmentValue);
 	if (debugger->d.platform->clearWatchpoint) {
 		debugger->d.platform->clearWatchpoint(debugger->d.platform, address, dv->segmentValue);
+	}
+}
+
+static void _trace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+
+	char trace[1024];
+	trace[sizeof(trace) - 1] = '\0';
+
+	int i;
+	for (i = 0; i < dv->intValue; ++i) {
+		debugger->d.core->step(debugger->d.core);
+		size_t traceSize = sizeof(trace) - 1;
+		debugger->d.platform->trace(debugger->d.platform, trace, &traceSize);
+		if (traceSize + 1 < sizeof(trace)) {
+			trace[traceSize + 1] = '\0';
+		}
+		debugger->backend->printf(debugger->backend, "%s\n", trace);
 	}
 }
 

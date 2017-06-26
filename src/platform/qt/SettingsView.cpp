@@ -88,6 +88,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 			m_ui.patchPath->setText(path);
 		}
 	});
+	connect(m_ui.clearCache, &QAbstractButton::pressed, this, &SettingsView::libraryCleared);
 
 	// TODO: Move to reloadConfig()
 	QVariant audioDriver = m_controller->getQtOption("audioDriver");
@@ -212,7 +213,7 @@ void SettingsView::updateConfig() {
 	loadState |= m_ui.loadStateCheats->isChecked() ? SAVESTATE_CHEATS : 0;
 	saveSetting("loadStateExtdata", loadState);
 
-	int saveState = SAVESTATE_RTC;
+	int saveState = SAVESTATE_RTC | SAVESTATE_METADATA;
 	saveState |= m_ui.saveStateScreenshot->isChecked() ? SAVESTATE_SCREENSHOT : 0;
 	saveState |= m_ui.saveStateSave->isChecked() ? SAVESTATE_SAVEDATA : 0;
 	saveState |= m_ui.saveStateCheats->isChecked() ? SAVESTATE_CHEATS : 0;
@@ -299,7 +300,7 @@ void SettingsView::reloadConfig() {
 
 	int saveState = loadSetting("saveStateExtdata").toInt(&ok);
 	if (!ok) {
-		saveState = SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC;
+		saveState = SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC | SAVESTATE_METADATA;
 	}
 	m_ui.saveStateScreenshot->setChecked(saveState & SAVESTATE_SCREENSHOT);
 	m_ui.saveStateSave->setChecked(saveState & SAVESTATE_SAVEDATA);

@@ -337,6 +337,7 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 		}
 		audio->ch3.window = 0;
 	}
+	mTimingDeschedule(audio->timing, &audio->ch3Fade);
 	mTimingDeschedule(audio->timing, &audio->ch3Event);
 	if (audio->playingCh3) {
 		audio->ch3.readable = audio->style != GB_AUDIO_DMG;
@@ -554,7 +555,7 @@ void _updateFrame(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 				if (audio->ch2.envelope.dead == 2) {
 					mTimingDeschedule(timing, &audio->ch2Event);
 				}
-				_updateSquareSample(&audio->ch1);
+				_updateSquareSample(&audio->ch2);
 			}
 		}
 
@@ -708,7 +709,7 @@ bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value) {
 }
 
 static void _updateSquareSample(struct GBAudioSquareChannel* ch) {
-	ch->sample = (ch->control.hi * ch->envelope.currentVolume - 8) * 0x10;
+	ch->sample = (ch->control.hi * 2 - 1) * ch->envelope.currentVolume * 0x8;
 }
 
 static int32_t _updateSquareChannel(struct GBAudioSquareChannel* ch) {
@@ -863,6 +864,7 @@ static void _updateChannel3(struct mTiming* timing, void* user, uint32_t cyclesL
 	ch->sample *= volume * 4;
 	audio->ch3.readable = true;
 	if (audio->style == GB_AUDIO_DMG) {
+		mTimingDeschedule(audio->timing, &audio->ch3Fade);
 		mTimingSchedule(timing, &audio->ch3Fade, 2 - cyclesLate);
 	}
 	int cycles = 2 * (2048 - ch->rate);
