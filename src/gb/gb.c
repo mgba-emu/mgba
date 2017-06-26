@@ -433,6 +433,7 @@ void GBReset(struct LR35902Core* cpu) {
 			cpu->e = 0xD8;
 			cpu->h = 1;
 			cpu->l = 0x4D;
+			gb->timer.internalDiv = 0x2AF3;
 			break;
 		case GB_MODEL_AGB:
 			cpu->b = 1;
@@ -444,6 +445,7 @@ void GBReset(struct LR35902Core* cpu) {
 			cpu->e = 0x08;
 			cpu->h = 0;
 			cpu->l = 0x7C;
+			gb->timer.internalDiv = 0x7A8;
 			break;
 		}
 

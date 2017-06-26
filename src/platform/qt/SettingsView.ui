@@ -431,9 +431,6 @@
        </item>
        <item row="2" column="1">
         <widget class="QPushButton" name="clearCache">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
          <property name="text">
           <string>Clear cache</string>
          </property>

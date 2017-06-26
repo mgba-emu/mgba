@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gb/timer.h>
 
+#include <mgba/internal/lr35902/lr35902.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/serialize.h>
@@ -18,22 +19,26 @@ void _GBTimerIRQ(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	GBUpdateIRQs(timer->p);
 }
 
-void _GBTimerIncrement(struct mTiming* timing, void* context, uint32_t cyclesLate) {
-	struct GBTimer* timer = context;
-	timer->nextDiv += cyclesLate;
-	while (timer->nextDiv > 0) {
+static void _GBTimerDivIncrement(struct GBTimer* timer, uint32_t cyclesLate) {
+	while (timer->nextDiv >= GB_DMG_DIV_PERIOD) {
 		timer->nextDiv -= GB_DMG_DIV_PERIOD;
 
 		// Make sure to trigger when the correct bit is a falling edge
 		if (timer->timaPeriod > 0 && (timer->internalDiv & (timer->timaPeriod - 1)) == timer->timaPeriod - 1) {
 			++timer->p->memory.io[REG_TIMA];
 			if (!timer->p->memory.io[REG_TIMA]) {
-				mTimingSchedule(timing, &timer->irq, 4 - cyclesLate);
+				mTimingSchedule(&timer->p->timing, &timer->irq, 4 - cyclesLate);
 			}
 		}
 		++timer->internalDiv;
 		timer->p->memory.io[REG_DIV] = timer->internalDiv >> 4;
 	}
+}
+
+void _GBTimerUpdate(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+	struct GBTimer* timer = context;
+	timer->nextDiv += cyclesLate;
+	_GBTimerDivIncrement(timer, cyclesLate);
 	// Batch div increments
 	int divsToGo = 16 - (timer->internalDiv & 15);
 	int timaToGo = INT_MAX;
@@ -50,7 +55,7 @@ void _GBTimerIncrement(struct mTiming* timing, void* context, uint32_t cyclesLat
 void GBTimerReset(struct GBTimer* timer) {
 	timer->event.context = timer;
 	timer->event.name = "GB Timer";
-	timer->event.callback = _GBTimerIncrement;
+	timer->event.callback = _GBTimerUpdate;
 	timer->event.priority = 0x20;
 	timer->irq.context = timer;
 	timer->irq.name = "GB Timer IRQ";
@@ -63,11 +68,19 @@ void GBTimerReset(struct GBTimer* timer) {
 }
 
 void GBTimerDivReset(struct GBTimer* timer) {
+	timer->nextDiv -= mTimingUntil(&timer->p->timing, &timer->event);
+	mTimingDeschedule(&timer->p->timing, &timer->event);
+	_GBTimerDivIncrement(timer, (timer->p->cpu->executionState + 1) & 3);
+	if (timer->internalDiv & (timer->timaPeriod >> 1)) {
+		++timer->p->memory.io[REG_TIMA];
+		if (!timer->p->memory.io[REG_TIMA]) {
+			mTimingSchedule(&timer->p->timing, &timer->irq, 4 - (timer->p->cpu->executionState + 1) & 3);
+		}
+	}
 	timer->p->memory.io[REG_DIV] = 0;
 	timer->internalDiv = 0;
 	timer->nextDiv = GB_DMG_DIV_PERIOD;
-	mTimingDeschedule(&timer->p->timing, &timer->event);
-	mTimingSchedule(&timer->p->timing, &timer->event, timer->nextDiv);
+	mTimingSchedule(&timer->p->timing, &timer->event, timer->nextDiv - ((timer->p->cpu->executionState + 1) & 3));
 }
 
 uint8_t GBTimerUpdateTAC(struct GBTimer* timer, GBRegisterTAC tac) {
@@ -89,7 +102,9 @@ uint8_t GBTimerUpdateTAC(struct GBTimer* timer, GBRegisterTAC tac) {
 
 		timer->nextDiv -= mTimingUntil(&timer->p->timing, &timer->event);
 		mTimingDeschedule(&timer->p->timing, &timer->event);
-		mTimingSchedule(&timer->p->timing, &timer->event, 0);
+		_GBTimerDivIncrement(timer, (timer->p->cpu->executionState + 1) & 3);
+		timer->nextDiv += GB_DMG_DIV_PERIOD;
+		mTimingSchedule(&timer->p->timing, &timer->event, timer->nextDiv);
 	} else {
 		timer->timaPeriod = 0;
 	}

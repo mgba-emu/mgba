@@ -28,6 +28,9 @@ public slots:
 	void search();
 	void searchWithin();
 
+private slots:
+	void openMemory();
+
 private:
 	bool createParams(mCoreMemorySearchParams*);
 

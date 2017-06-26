@@ -24,7 +24,7 @@ void AbstractGameList::addEntries(QList<LibraryEntryRef> items) {
 }
 void AbstractGameList::removeEntries(QList<LibraryEntryRef> items) {
 	for (LibraryEntryRef o : items) {
-		addEntry(o);
+		removeEntry(o);
 	}
 }
 
@@ -128,6 +128,20 @@ void LibraryController::addDirectory(const QString& dir) {
 	// The m_loaderThread temporarily owns the library
 	m_library = nullptr;
 	m_loaderThread.start();
+}
+
+void LibraryController::clear() {
+	if (!m_library) {
+		if (!m_loaderThread.isRunning() && m_loaderThread.m_library) {
+			m_library = m_loaderThread.m_library;
+			m_loaderThread.m_library = nullptr;
+		} else {
+			return;
+		}
+	}
+
+	mLibraryClear(m_library);
+	refresh();
 }
 
 void LibraryController::refresh() {
