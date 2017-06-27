@@ -37,6 +37,9 @@ private:
 
 private slots:
 	void itemAdded(InputItem* parent, InputItem* child);
+	void rebindShortcut(InputItem*, int shortcut);
+	void rebindButton(InputItem*, int button);
+	void rebindAxis(InputItem*, int axis, GamepadAxisEvent::Direction);
 
 public:
 	InputModel(QObject* parent = nullptr);
@@ -60,11 +63,12 @@ public:
 	InputItem* itemAt(const QModelIndex& index);
 	const InputItem* itemAt(const QModelIndex& index) const;
 
-	InputItem* itemForKey(int key);
-	const InputItem* itemForKey(int key) const;
-
 	InputItem* itemForMenu(const QMenu* menu);
 	const InputItem* itemForMenu(const QMenu* menu) const;
+
+	InputItem* itemForShortcut(int shortcut);
+	InputItem* itemForButton(int button);
+	InputItem* itemForAxis(int axis, GamepadAxisEvent::Direction);
 
 	static int toModifierShortcut(const QString& shortcut);
 	static bool isModifierKey(int key);
@@ -84,6 +88,9 @@ private:
 	InputItem m_rootMenu;
 	QMap<QString, InputItem*> m_names;
 	QMap<const QMenu*, InputItem*> m_menus;
+	QMap<int, InputItem*> m_shortcuts;
+	QMap<int, InputItem*> m_buttons;
+	QMap<QPair<int, GamepadAxisEvent::Direction>, InputItem*> m_axes;
 	ConfigController* m_config;
 	QString m_profileName;
 	const InputProfile* m_profile;

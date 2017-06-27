@@ -136,6 +136,14 @@ const InputItem* InputModel::itemAt(const QModelIndex& index) const {
 	return pmenu->items()[index.row()];
 }
 
+InputItem* InputModel::itemAt(const QString& name) {
+	return m_names[name];
+}
+
+const InputItem* InputModel::itemAt(const QString& name) const {
+	return m_names[name];
+}
+
 InputItem* InputModel::itemForMenu(const QMenu* menu) {
 	InputItem* item = m_menus[menu];
 	if (!item) {
@@ -143,12 +151,25 @@ InputItem* InputModel::itemForMenu(const QMenu* menu) {
 	}
 	return item;
 }
+
 const InputItem* InputModel::itemForMenu(const QMenu* menu) const {
 	const InputItem* item = m_menus[menu];
 	if (!item) {
 		return &m_rootMenu;
 	}
 	return item;
+}
+
+InputItem* InputModel::itemForShortcut(int shortcut) {
+	return m_shortcuts[shortcut];
+}
+
+InputItem* InputModel::itemForButton(int button) {
+	return m_buttons[button];
+}
+
+InputItem* InputModel::itemForAxis(int axis, GamepadAxisEvent::Direction direction) {
+	return m_axes[qMakePair(axis, direction)];
 }
 
 bool InputModel::loadShortcuts(InputItem* item) {
@@ -293,6 +314,36 @@ void InputModel::itemAdded(InputItem* parent, InputItem* child) {
 	if (menu) {
 		m_menus[menu] = child;
 	}
+	if (child->shortcut()) {
+		m_shortcuts[child->shortcut()] = child;
+	}
+	if (child->button() >= 0) {
+		m_buttons[child->button()] = child;
+	}
+	if (child->direction() != GamepadAxisEvent::NEUTRAL) {
+		m_axes[qMakePair(child->axis(), child->direction())] = child;
+	}
 	m_names[child->name()] = child;
 	connect(child, &InputItem::childAdded, this, &InputModel::itemAdded);
+	connect(child, &InputItem::shortcutBound, this, &InputModel::rebindShortcut);
+	connect(child, &InputItem::buttonBound, this, &InputModel::rebindButton);
+	connect(child, &InputItem::axisBound, this, &InputModel::rebindAxis);
+}
+
+void InputModel::rebindShortcut(InputItem* item, int shortcut) {
+	if (shortcut) {
+		m_shortcuts[shortcut] = item;
+	}
+}
+
+void InputModel::rebindButton(InputItem* item, int button) {
+	if (button >= 0) {
+		m_buttons[button] = item;
+	}
+}
+
+void InputModel::rebindAxis(InputItem* item, int axis, GamepadAxisEvent::Direction direction) {
+	if (axis != GamepadAxisEvent::NEUTRAL) {
+		m_axes[qMakePair(axis, direction)] = item;
+	}
 }

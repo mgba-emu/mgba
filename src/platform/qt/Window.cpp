@@ -193,8 +193,6 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 
 	m_inputModel->setConfigController(m_config);
 	setupMenu(menuBar());
-
-	m_inputController.setupCallback(m_controller);
 }
 
 Window::~Window() {
@@ -1542,6 +1540,69 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_LEFT, false);
 	}), tr("Autofire Left"), "autofireLeft");
+
+	QMenu* bindingsMenu = new QMenu(tr("Bindings"), this);
+	InputItem* bindingsMenuItem = m_inputModel->addItem(bindingsMenu, "bindings");
+
+	bindingsMenuItem->addItem(qMakePair([this]() {
+		m_controller->keyPressed(GBA_KEY_A);
+	}, [this]() {
+		m_controller->keyReleased(GBA_KEY_A);
+	}), tr("A"), "keyA");
+
+	bindingsMenuItem->addItem(qMakePair([this]() {
+		m_controller->keyPressed(GBA_KEY_B);
+	}, [this]() {
+		m_controller->keyReleased(GBA_KEY_B);
+	}), tr("B"), "keyB");
+
+	bindingsMenuItem->addItem(qMakePair([this]() {
+		m_controller->keyPressed(GBA_KEY_START);
+	}, [this]() {
+		m_controller->keyReleased(GBA_KEY_START);
+	}), tr("Start"), "keyStart");
+
+	bindingsMenuItem->addItem(qMakePair([this]() {
+		m_controller->keyPressed(GBA_KEY_SELECT);
+	}, [this]() {
+		m_controller->keyReleased(GBA_KEY_SELECT);
+	}), tr("Select"), "keySelect");
+
+	bindingsMenuItem->addItem(qMakePair([this]() {
+		m_controller->keyPressed(GBA_KEY_L);
+	}, [this]() {
+		m_controller->keyReleased(GBA_KEY_L);
+	}), tr("L"), "keyL");
+
+	bindingsMenuItem->addItem(qMakePair([this]() {
+		m_controller->keyPressed(GBA_KEY_R);
+	}, [this]() {
+		m_controller->keyReleased(GBA_KEY_R);
+	}), tr("R"), "keyR");
+
+	bindingsMenuItem->addItem(qMakePair([this]() {
+		m_controller->keyPressed(GBA_KEY_UP);
+	}, [this]() {
+		m_controller->keyReleased(GBA_KEY_UP);
+	}), tr("Up"), "keyUp");
+
+	bindingsMenuItem->addItem(qMakePair([this]() {
+		m_controller->keyPressed(GBA_KEY_DOWN);
+	}, [this]() {
+		m_controller->keyReleased(GBA_KEY_DOWN);
+	}), tr("Down"), "keyDown");
+
+	bindingsMenuItem->addItem(qMakePair([this]() {
+		m_controller->keyPressed(GBA_KEY_LEFT);
+	}, [this]() {
+		m_controller->keyReleased(GBA_KEY_LEFT);
+	}), tr("Left"), "keyLeft");
+
+	bindingsMenuItem->addItem(qMakePair([this]() {
+		m_controller->keyPressed(GBA_KEY_RIGHT);
+	}, [this]() {
+		m_controller->keyReleased(GBA_KEY_RIGHT);
+	}), tr("Right"), "keyRight");
 
 	for (QAction* action : m_gameActions) {
 		action->setDisabled(true);

@@ -32,7 +32,7 @@ public:
 	const QAction* action() const { return m_action; }
 	const QMenu* menu() const { return m_menu; }
 	Functions functions() const { return m_functions; }
-	int key() const { return m_keys; }
+	int key() const { return m_key; }
 
 	const QString& visibleName() const { return m_visibleName; }
 	const QString& name() const { return m_name; }
@@ -64,6 +64,9 @@ public:
 		return m_name == other.m_name && m_visibleName == other.m_visibleName;
 	}
 
+public slots:
+	void trigger(bool = true);
+
 signals:
 	void shortcutBound(InputItem*, int shortcut);
 	void buttonBound(InputItem*, int button);
@@ -80,7 +83,7 @@ private:
 	int m_shortcut = 0;
 	int m_button = -1;
 	int m_axis = -1;
-	int m_keys =-1;
+	int m_key = -1;
 	GamepadAxisEvent::Direction m_direction = GamepadAxisEvent::NEUTRAL;
 	QList<InputItem*> m_items;
 	InputItem* m_parent;

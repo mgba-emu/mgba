@@ -54,9 +54,6 @@ InputController::InputController(InputModel* model, int playerId, QWidget* topLe
 	m_gamepadTimer.setInterval(50);
 	m_gamepadTimer.start();
 
-	m_autofireMenu = m_inputModel->root()->addItem(tr("Autofire"), "autofire");
-	m_inputMenu = m_inputModel->root()->addItem(tr("Bindings"), "bindings");
-
 	mInputMapInit(&m_inputMap, &GBAInputInfo);
 
 #ifdef BUILD_SDL
@@ -632,20 +629,6 @@ void InputController::releaseFocus(QWidget* focus) {
 	}
 }
 
-void InputController::setupCallback(GameController* controller) {
-	[this, controller](InputItem* item, int key, bool down) {
-		if (item->parent() == m_autofireMenu) {
-			controller->setAutofire(key, down);
-		} else {
-			if (down) {
-				controller->keyPressed(key);
-			} else {
-				controller->keyReleased(key);
-			}
-		}
-	};
-}
-
 void InputController::doBindKey(const QModelIndex& index, int key) {
 	int coreKey = m_inputModel->itemAt(index)->key();
 	if (coreKey < 0) {
@@ -699,26 +682,48 @@ bool InputController::eventFilter(QObject*, QEvent* event) {
 			return true;
 		}
 
-		// TODO
+		InputItem* item = m_inputModel->itemForShortcut(key);
+		if (item) {
+			item->trigger(event->type() == QEvent::KeyPress);
+			event->accept();
+			return true;
+		}
 	}
 
 
 	if (event->type() == GamepadButtonEvent::Down() || event->type() == GamepadButtonEvent::Up()) {
 		GamepadButtonEvent* gbe = static_cast<GamepadButtonEvent*>(event);
-		// TODO
+		InputItem* item = m_inputModel->itemForButton(gbe->value());
+		if (item) {
+			item->trigger(event->type() == GamepadButtonEvent::Down());
+			event->accept();
+			return true;
+		}
 	}
 	if (event->type() == GamepadAxisEvent::Type()) {
 		GamepadAxisEvent* gae = static_cast<GamepadAxisEvent*>(event);
-		// TODO
+		InputItem* item = m_inputModel->itemForAxis(gae->axis(), gae->direction());
+		if (item) {
+			item->trigger(event->type() == gae->isNew());
+			event->accept();
+			return true;
+		}
 	}
 	return false;
+}
+
+InputItem* InputController::itemForKey(int key) {
+	if (key < 0 || key >= m_inputMap.info->nKeys) {
+		return nullptr;
+	}
+	return m_inputModel->itemAt(QString("key%0").arg(m_inputMap.info->keyId[key]));
 }
 
 void InputController::restoreModel() {
 	bool signalsBlocked = m_inputModel->blockSignals(true);
 	int nKeys = m_inputMap.info->nKeys;
-	/*for (int i = 0; i < nKeys; ++i) {
-		InputItem* item = m_inputModel->itemForKey(i);
+	for (int i = 0; i < nKeys; ++i) {
+		InputItem* item = itemForKey(i);
 		if (item) {
 			int key = mInputQueryBinding(&m_inputMap, KEYBOARD, i);
 			if (key >= 0) {
@@ -737,22 +742,31 @@ void InputController::restoreModel() {
 		}
 	}
 #ifdef BUILD_SDL
+	struct Context {
+		InputModel* model;
+		InputController* controller;
+	} context {
+		m_inputModel,
+		this
+	};
 	mInputEnumerateAxes(&m_inputMap, SDL_BINDING_BUTTON, [](int axis, const struct mInputAxis* description, void* user) {
-		InputModel* model = static_cast<InputModel*>(user);
+		Context* context = static_cast<Context*>(user);
+		InputModel* model = context->model;
+		InputController* controller = context->controller;
 		InputItem* item;
-		if (description->highDirection >= 0) {
-			item = model->itemForKey(description->highDirection);
+		if (description->highDirection >= 0 && description->highDirection < controller->m_inputMap.info->nKeys) {
+			item = controller->itemForKey(description->highDirection);
 			if (item) {
 				item->setAxis(axis, GamepadAxisEvent::POSITIVE);
 			}
 		}
-		if (description->lowDirection >= 0) {
-			item = model->itemForKey(description->lowDirection);
+		if (description->lowDirection >= 0 && description->lowDirection < controller->m_inputMap.info->nKeys) {
+			item = controller->itemForKey(description->lowDirection);
 			if (item) {
 				item->setAxis(axis, GamepadAxisEvent::NEGATIVE);
 			}
 		}
-	}, m_inputModel);
-#endif*/
+	}, &context);
+#endif
 	m_inputModel->blockSignals(signalsBlocked);
 }

@@ -43,7 +43,7 @@ InputItem::InputItem(InputItem::Functions functions, const QString& visibleName,
 
 InputItem::InputItem(int key, const QString& visibleName, const QString& name, InputItem* parent)
 	: QObject(parent)
-	, m_keys(key)
+	, m_key(key)
 	, m_name(name)
 	, m_visibleName(visibleName)
 	, m_parent(parent)
@@ -83,4 +83,16 @@ void InputItem::setAxis(int axis, GamepadAxisEvent::Direction direction) {
 	m_axis = axis;
 	m_direction = direction;
 	emit axisBound(this, axis, direction);
+}
+
+void InputItem::trigger(bool active) {
+	if (active) {
+		if (m_functions.first) {
+			m_functions.first();
+		}
+	} else {
+		if (m_functions.second) {
+			m_functions.second();
+		}
+	}
 }

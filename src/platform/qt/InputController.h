@@ -89,8 +89,6 @@ public:
 	mRumble* rumble();
 	mRotationSource* rotationSource();
 
-	void setupCallback(GameController* controller);
-
 signals:
 	void profileLoaded(const QString& profile);
 
@@ -119,6 +117,8 @@ private:
 	void sendGamepadEvent(QEvent*);
 	void restoreModel();
 
+	InputItem* itemForKey(int key);
+
 	InputModel* m_inputModel = nullptr;
 	mInputMap m_inputMap;
 	ConfigController* m_config = nullptr;
@@ -135,9 +135,6 @@ private:
 #endif
 
 	QVector<int> m_deadzones;
-
-	InputItem* m_inputMenu;
-	InputItem* m_autofireMenu;
 
 	QSet<int> m_activeButtons;
 	QSet<QPair<int, GamepadAxisEvent::Direction>> m_activeAxes;
