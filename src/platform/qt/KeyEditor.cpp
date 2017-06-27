@@ -7,7 +7,7 @@
 
 #include "GamepadAxisEvent.h"
 #include "GamepadButtonEvent.h"
-#include "InputModel.h"
+#include "InputIndex.h"
 
 #include <QFontMetrics>
 #include <QKeyEvent>
@@ -99,7 +99,7 @@ void KeyEditor::keyPressEvent(QKeyEvent* event) {
 		}
 		m_lastKey.start(KEY_TIME);
 		if (m_key) {
-			if (InputModel::isModifierKey(m_key)) {
+			if (InputIndex::isModifierKey(m_key)) {
 				switch (event->key()) {
 				case Qt::Key_Shift:
 					setValue(Qt::ShiftModifier);
@@ -115,7 +115,7 @@ void KeyEditor::keyPressEvent(QKeyEvent* event) {
 					break;
 				}
 			}
-			if (InputModel::isModifierKey(event->key())) {
+			if (InputIndex::isModifierKey(event->key())) {
 				switch (event->key()) {
 				case Qt::Key_Shift:
 					setValue(m_key | Qt::ShiftModifier);

@@ -78,6 +78,7 @@ set(SOURCE_FILES
 	IOViewer.cpp
 	InputController.cpp
 	InputItem.cpp
+	InputIndex.cpp
 	InputModel.cpp
 	InputProfile.cpp
 	KeyEditor.cpp

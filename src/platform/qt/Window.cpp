@@ -69,8 +69,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_logView(new LogView(&m_log))
 	, m_screenWidget(new WindowBackground())
 	, m_config(config)
-	, m_inputModel(new InputModel(this))
-	, m_inputController(m_inputModel, playerId, this)
+	, m_inputController(playerId, this)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);
@@ -191,7 +190,6 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
 	m_focusCheck.setInterval(200);
 
-	m_inputModel->setConfigController(m_config);
 	setupMenu(menuBar());
 }
 
@@ -456,7 +454,7 @@ void Window::exportSharkport() {
 }
 
 void Window::openSettingsWindow() {
-	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_inputModel);
+	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController);
 	connect(settingsWindow, &SettingsView::biosLoaded, m_controller, &GameController::loadBIOS);
 	connect(settingsWindow, &SettingsView::audioDriverChanged, m_controller, &GameController::reloadAudioDriver);
 	connect(settingsWindow, &SettingsView::displayDriverChanged, this, &Window::mustRestart);
@@ -919,9 +917,10 @@ void Window::openStateWindow(LoadSave ls) {
 
 void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
-	QMenu* fileMenu = menubar->addMenu(tr("&File"));
-	m_inputModel->addItem(fileMenu, "file");
 	installEventFilter(&m_inputController);
+
+	QMenu* fileMenu = menubar->addMenu(tr("&File"));
+	m_inputController.inputIndex()->addItem(fileMenu, "file");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open),
 	                    "loadROM");
 #ifdef USE_SQLITE3
@@ -976,8 +975,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* quickLoadMenu = fileMenu->addMenu(tr("Quick load"));
 	QMenu* quickSaveMenu = fileMenu->addMenu(tr("Quick save"));
-	m_inputModel->addItem(quickLoadMenu, "quickLoadMenu");
-	m_inputModel->addItem(quickSaveMenu, "quickSaveMenu");
+	m_inputController.inputIndex()->addItem(quickLoadMenu, "quickLoadMenu");
+	m_inputController.inputIndex()->addItem(quickSaveMenu, "quickSaveMenu");
 
 	QAction* quickLoad = new QAction(tr("Load recent"), quickLoadMenu);
 	connect(quickLoad, &QAction::triggered, m_controller, &GameController::loadState);
@@ -1063,7 +1062,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	QMenu* emulationMenu = menubar->addMenu(tr("&Emulation"));
-	InputItem* emulationMenuItem = m_inputModel->addItem(emulationMenu, "emulation");
+	InputItem* emulationMenuItem = m_inputController.inputIndex()->addItem(emulationMenu, "emulation");
 	QAction* reset = new QAction(tr("&Reset"), emulationMenu);
 	reset->setShortcut(tr("Ctrl+R"));
 	connect(reset, &QAction::triggered, m_controller, &GameController::reset);
@@ -1169,7 +1168,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	emulationMenu->addSeparator();
 
 	QMenu* solarMenu = emulationMenu->addMenu(tr("Solar sensor"));
-	m_inputModel->addItem(solarMenu, "luminance");
+	m_inputController.inputIndex()->addItem(solarMenu, "luminance");
 	QAction* solarIncrease = new QAction(tr("Increase solar level"), solarMenu);
 	connect(solarIncrease, &QAction::triggered, m_controller, &GameController::increaseLuminanceLevel);
 	addControlledAction(solarMenu, solarIncrease, "increaseLuminanceLevel");
@@ -1196,9 +1195,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
-	InputItem* avMenuItem = m_inputModel->addItem(avMenu, "av");
+	InputItem* avMenuItem = m_inputController.inputIndex()->addItem(avMenu, "av");
 	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));
-	avMenuItem->addItem(frameMenu, "frameSize");
+	InputItem* frameMenuItem = avMenuItem->addItem(frameMenu, "frameSize");
 	for (int i = 1; i <= 6; ++i) {
 		QAction* setSize = new QAction(tr("%1x").arg(QString::number(i)), avMenu);
 		setSize->setCheckable(true);
@@ -1220,7 +1219,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 			setSize->blockSignals(enableSignals);
 		});
 		m_frameSizes[i] = setSize;
-		addControlledAction(frameMenu, setSize, QString("frame%1x").arg(QString::number(i)));
+		addControlledAction(frameMenuItem, setSize, QString("frame%1x").arg(QString::number(i)));
 	}
 	QKeySequence fullscreenKeys;
 #ifdef Q_OS_WIN
@@ -1228,7 +1227,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 #else
 	fullscreenKeys = QKeySequence("Ctrl+F");
 #endif
-	addControlledAction(frameMenu, frameMenu->addAction(tr("Toggle fullscreen"), this, SLOT(toggleFullScreen()), fullscreenKeys), "fullscreen");
+	addControlledAction(frameMenuItem, frameMenu->addAction(tr("Toggle fullscreen"), this, SLOT(toggleFullScreen()), fullscreenKeys), "fullscreen");
 
 	ConfigOption* lockAspectRatio = m_config->addOption("lockAspectRatio");
 	lockAspectRatio->addBoolean(tr("Lock aspect ratio"), avMenu);
@@ -1339,7 +1338,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	avMenuItem->addItem(m_audioChannels, "audioChannels");
 
 	QMenu* toolsMenu = menubar->addMenu(tr("&Tools"));
-	m_inputModel->addItem(toolsMenu, "tools");
+	m_inputController.inputIndex()->addItem(toolsMenu, "tools");
 	QAction* viewLogs = new QAction(tr("View &logs..."), toolsMenu);
 	connect(viewLogs, &QAction::triggered, m_logView, &QWidget::show);
 	addControlledAction(toolsMenu, viewLogs, "viewLogs");
@@ -1476,10 +1475,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* exitFullScreen = new QAction(tr("Exit fullscreen"), frameMenu);
 	connect(exitFullScreen, &QAction::triggered, this, &Window::exitFullScreen);
 	exitFullScreen->setShortcut(QKeySequence("Esc"));
-	addHiddenAction(frameMenu, exitFullScreen, "exitFullScreen");
+	addHiddenAction(frameMenuItem, exitFullScreen, "exitFullScreen");
 
 	QMenu* autofireMenu = new QMenu(tr("Autofire"), this);
-	InputItem* autofireMenuItem = m_inputModel->addItem(autofireMenu, "autofire");
+	InputItem* autofireMenuItem = m_inputController.inputIndex()->addItem(autofireMenu, "autofire");
 
 	autofireMenuItem->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_A, true);
@@ -1542,7 +1541,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}), tr("Autofire Left"), "autofireLeft");
 
 	QMenu* bindingsMenu = new QMenu(tr("Bindings"), this);
-	InputItem* bindingsMenuItem = m_inputModel->addItem(bindingsMenu, "bindings");
+	InputItem* bindingsMenuItem = m_inputController.inputIndex()->addItem(bindingsMenu, "bindings");
 
 	bindingsMenuItem->addItem(qMakePair([this]() {
 		m_controller->keyPressed(GBA_KEY_A);
@@ -1607,6 +1606,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	for (QAction* action : m_gameActions) {
 		action->setDisabled(true);
 	}
+
+	m_inputController.rebuildIndex();
 }
 
 void Window::attachWidget(QWidget* widget) {
@@ -1658,9 +1659,22 @@ QAction* Window::addControlledAction(QMenu* menu, QAction* action, const QString
 	return action;
 }
 
+QAction* Window::addControlledAction(InputItem* parent, QAction* action, const QString& name) {
+	addHiddenAction(parent, action, name);
+	parent->menu()->addAction(action);
+	return action;
+}
+
 QAction* Window::addHiddenAction(QMenu* menu, QAction* action, const QString& name) {
-	InputItem* item = m_inputModel->itemForMenu(menu);
-	item->addItem(action, name);
+	InputItem* parent = m_inputController.inputIndex()->itemForMenu(menu);
+	parent->addItem(action, name);
+	action->setShortcutContext(Qt::WidgetShortcut);
+	addAction(action);
+	return action;
+}
+
+QAction* Window::addHiddenAction(InputItem* parent, QAction* action, const QString& name) {
+	parent->addItem(action, name);
 	action->setShortcutContext(Qt::WidgetShortcut);
 	addAction(action);
 	return action;

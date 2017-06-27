@@ -17,9 +17,10 @@
 
 using namespace QGBA;
 
-SettingsView::SettingsView(ConfigController* controller, InputController* inputController, InputModel* inputModel, QWidget* parent)
+SettingsView::SettingsView(ConfigController* controller, InputController* inputController, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
+	, m_input(inputController)
 {
 	m_ui.setupUi(this);
 
@@ -144,10 +145,10 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 
-	ShortcutView* shortcutView = new ShortcutView();
-	shortcutView->setModel(inputModel);
-	shortcutView->setInputController(inputController);
-	m_ui.stackedWidget->addWidget(shortcutView);
+	m_shortcutView = new ShortcutView();
+	m_shortcutView->setModel(inputController->inputIndex());
+	m_shortcutView->setInputController(inputController);
+	m_ui.stackedWidget->addWidget(m_shortcutView);
 	m_ui.tabs->addItem(tr("Bindings"));
 }
 
@@ -234,6 +235,9 @@ void SettingsView::updateConfig() {
 	}
 
 	m_controller->write();
+
+	m_input->rebuildIndex(m_shortcutView->root());
+	m_input->saveConfiguration();
 
 	emit pathsChanged();
 	emit biosLoaded(PLATFORM_GBA, m_ui.gbaBios->text());

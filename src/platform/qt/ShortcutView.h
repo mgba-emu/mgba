@@ -7,6 +7,8 @@
 #define QGBA_SHORTCUT_VIEW
 
 #include "GamepadAxisEvent.h"
+#include "InputIndex.h"
+#include "InputModel.h"
 
 #include <QWidget>
 
@@ -15,7 +17,6 @@
 namespace QGBA {
 
 class InputController;
-class InputModel;
 
 class ShortcutView : public QWidget {
 Q_OBJECT
@@ -24,8 +25,10 @@ public:
 	ShortcutView(QWidget* parent = nullptr);
 	~ShortcutView();
 
-	void setModel(InputModel* controller);
+	void setModel(InputIndex* model);
 	void setInputController(InputController* input);
+
+	const InputItem* root() { return m_model.root(); }
 
 protected:
 	virtual bool event(QEvent*) override;
@@ -40,7 +43,7 @@ private slots:
 private:
 	Ui::ShortcutView m_ui;
 
-	InputModel* m_controller = nullptr;
+	InputModel m_model;
 	InputController* m_input = nullptr;
 };
 

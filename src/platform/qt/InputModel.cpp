@@ -5,9 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "InputModel.h"
 
-#include "ConfigController.h"
 #include "GamepadButtonEvent.h"
-#include "InputProfile.h"
+#include "InputIndex.h"
 
 #include <QAction>
 #include <QKeyEvent>
@@ -15,15 +14,21 @@
 
 using namespace QGBA;
 
-InputModel::InputModel(QObject* parent)
+InputModel::InputModel(const InputIndex& index, QObject* parent)
 	: QAbstractItemModel(parent)
-	, m_rootMenu(QString(), QString())
 {
-	connect(&m_rootMenu, &InputItem::childAdded, this, &InputModel::itemAdded);
+	m_root.clone(&index);
 }
 
-void InputModel::setConfigController(ConfigController* controller) {
-	m_config = controller;
+InputModel::InputModel(QObject* parent)
+	: QAbstractItemModel(parent)
+{
+}
+
+void InputModel::clone(const InputIndex& index) {
+	emit beginResetModel();
+	m_root.clone(&index);
+	emit endResetModel();
 }
 
 QVariant InputModel::data(const QModelIndex& index, int role) const {
@@ -74,7 +79,7 @@ QVariant InputModel::headerData(int section, Qt::Orientation orientation, int ro
 }
 
 QModelIndex InputModel::index(int row, int column, const QModelIndex& parent) const {
-	const InputItem* pmenu = &m_rootMenu;
+	const InputItem* pmenu = m_root.root();
 	if (parent.isValid()) {
 		pmenu = static_cast<InputItem*>(parent.internalPointer());
 	}
@@ -102,7 +107,7 @@ int InputModel::columnCount(const QModelIndex& index) const {
 
 int InputModel::rowCount(const QModelIndex& index) const {
 	if (!index.isValid()) {
-		return m_rootMenu.items().count();
+		return m_root.root()->items().count();
 	}
 	const InputItem* item = static_cast<const InputItem*>(index.internalPointer());
 	return item->items().count();
@@ -134,216 +139,4 @@ const InputItem* InputModel::itemAt(const QModelIndex& index) const {
 	}
 	InputItem* pmenu = static_cast<InputItem*>(index.parent().internalPointer());
 	return pmenu->items()[index.row()];
-}
-
-InputItem* InputModel::itemAt(const QString& name) {
-	return m_names[name];
-}
-
-const InputItem* InputModel::itemAt(const QString& name) const {
-	return m_names[name];
-}
-
-InputItem* InputModel::itemForMenu(const QMenu* menu) {
-	InputItem* item = m_menus[menu];
-	if (!item) {
-		return &m_rootMenu;
-	}
-	return item;
-}
-
-const InputItem* InputModel::itemForMenu(const QMenu* menu) const {
-	const InputItem* item = m_menus[menu];
-	if (!item) {
-		return &m_rootMenu;
-	}
-	return item;
-}
-
-InputItem* InputModel::itemForShortcut(int shortcut) {
-	return m_shortcuts[shortcut];
-}
-
-InputItem* InputModel::itemForButton(int button) {
-	return m_buttons[button];
-}
-
-InputItem* InputModel::itemForAxis(int axis, GamepadAxisEvent::Direction direction) {
-	return m_axes[qMakePair(axis, direction)];
-}
-
-bool InputModel::loadShortcuts(InputItem* item) {
-	if (item->name().isNull()) {
-		return false;
-	}
-	loadGamepadShortcuts(item);
-	QVariant shortcut = m_config->getQtOption(item->name(), KEY_SECTION);
-	if (!shortcut.isNull()) {
-		if (shortcut.toString().endsWith("+")) {
-			item->setShortcut(toModifierShortcut(shortcut.toString()));
-		} else {
-			item->setShortcut(QKeySequence(shortcut.toString())[0]);
-		}
-		return true;
-	}
-	return false;
-}
-
-void InputModel::loadGamepadShortcuts(InputItem* item) {
-	if (item->name().isNull()) {
-		return;
-	}
-	QVariant button = m_config->getQtOption(item->name(), !m_profileName.isNull() ? BUTTON_PROFILE_SECTION + m_profileName : BUTTON_SECTION);
-	if (button.isNull() && m_profile) {
-		int buttonInt;
-		if (m_profile->lookupShortcutButton(item->name(), &buttonInt)) {
-			button = buttonInt;
-		}
-	}
-	if (!button.isNull()) {
-		item->setButton(button.toInt());
-	}
-
-	QVariant axis = m_config->getQtOption(item->name(), !m_profileName.isNull() ? AXIS_PROFILE_SECTION + m_profileName : AXIS_SECTION);
-	int oldAxis = item->axis();
-	if (oldAxis >= 0) {
-		item->setAxis(-1, GamepadAxisEvent::NEUTRAL);
-	}
-	if (axis.isNull() && m_profile) {
-		int axisInt;
-		GamepadAxisEvent::Direction direction;
-		if (m_profile->lookupShortcutAxis(item->name(), &axisInt, &direction)) {
-			axis = QLatin1String(direction == GamepadAxisEvent::Direction::NEGATIVE ? "-" : "+") + QString::number(axisInt);
-		}
-	}
-	if (!axis.isNull()) {
-		QString axisDesc = axis.toString();
-		if (axisDesc.size() >= 2) {
-			GamepadAxisEvent::Direction direction = GamepadAxisEvent::NEUTRAL;
-			if (axisDesc[0] == '-') {
-				direction = GamepadAxisEvent::NEGATIVE;
-			}
-			if (axisDesc[0] == '+') {
-				direction = GamepadAxisEvent::POSITIVE;
-			}
-			bool ok;
-			int axis = axisDesc.mid(1).toInt(&ok);
-			if (ok) {
-				item->setAxis(axis, direction);
-			}
-		}
-	}
-}
-
-void InputModel::loadProfile(const QString& profile) {
-	m_profileName = profile;
-	m_profile = InputProfile::findProfile(profile);
-	onSubitems(&m_rootMenu, [this](InputItem* item) {
-		loadGamepadShortcuts(item);
-	});
-}
-
-void InputModel::onSubitems(InputItem* item, std::function<void(InputItem*)> func) {
-	for (InputItem* subitem : item->items()) {
-		func(subitem);
-		onSubitems(subitem, func);
-	}
-}
-
-int InputModel::toModifierShortcut(const QString& shortcut) {
-	// Qt doesn't seem to work with raw modifier shortcuts!
-	QStringList modifiers = shortcut.split('+');
-	int value = 0;
-	for (const auto& mod : modifiers) {
-		if (mod == QLatin1String("Shift")) {
-			value |= Qt::ShiftModifier;
-			continue;
-		}
-		if (mod == QLatin1String("Ctrl")) {
-			value |= Qt::ControlModifier;
-			continue;
-		}
-		if (mod == QLatin1String("Alt")) {
-			value |= Qt::AltModifier;
-			continue;
-		}
-		if (mod == QLatin1String("Meta")) {
-			value |= Qt::MetaModifier;
-			continue;
-		}
-	}
-	return value;
-}
-
-bool InputModel::isModifierKey(int key) {
-	switch (key) {
-	case Qt::Key_Shift:
-	case Qt::Key_Control:
-	case Qt::Key_Alt:
-	case Qt::Key_Meta:
-		return true;
-	default:
-		return false;
-	}
-}
-
-int InputModel::toModifierKey(int key) {
-	int modifiers = key & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier);
-	key ^= modifiers;
-	switch (key) {
-	case Qt::Key_Shift:
-		modifiers |= Qt::ShiftModifier;
-		break;
-	case Qt::Key_Control:
-		modifiers |= Qt::ControlModifier;
-		break;
-	case Qt::Key_Alt:
-		modifiers |= Qt::AltModifier;
-		break;
-	case Qt::Key_Meta:
-		modifiers |= Qt::MetaModifier;
-		break;
-	default:
-		break;
-	}
-	return modifiers;
-}
-
-void InputModel::itemAdded(InputItem* parent, InputItem* child) {
-	const QMenu* menu = child->menu();
-	if (menu) {
-		m_menus[menu] = child;
-	}
-	if (child->shortcut()) {
-		m_shortcuts[child->shortcut()] = child;
-	}
-	if (child->button() >= 0) {
-		m_buttons[child->button()] = child;
-	}
-	if (child->direction() != GamepadAxisEvent::NEUTRAL) {
-		m_axes[qMakePair(child->axis(), child->direction())] = child;
-	}
-	m_names[child->name()] = child;
-	connect(child, &InputItem::childAdded, this, &InputModel::itemAdded);
-	connect(child, &InputItem::shortcutBound, this, &InputModel::rebindShortcut);
-	connect(child, &InputItem::buttonBound, this, &InputModel::rebindButton);
-	connect(child, &InputItem::axisBound, this, &InputModel::rebindAxis);
-}
-
-void InputModel::rebindShortcut(InputItem* item, int shortcut) {
-	if (shortcut) {
-		m_shortcuts[shortcut] = item;
-	}
-}
-
-void InputModel::rebindButton(InputItem* item, int button) {
-	if (button >= 0) {
-		m_buttons[button] = item;
-	}
-}
-
-void InputModel::rebindAxis(InputItem* item, int axis, GamepadAxisEvent::Direction direction) {
-	if (axis != GamepadAxisEvent::NEUTRAL) {
-		m_axes[qMakePair(axis, direction)] = item;
-	}
 }

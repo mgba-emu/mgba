@@ -16,13 +16,14 @@ namespace QGBA {
 
 class ConfigController;
 class InputController;
-class InputModel;
+class InputIndex;
+class ShortcutView;
 
 class SettingsView : public QDialog {
 Q_OBJECT
 
 public:
-	SettingsView(ConfigController* controller, InputController* inputController, InputModel* inputModel, QWidget* parent = nullptr);
+	SettingsView(ConfigController* controller, InputController* inputController, QWidget* parent = nullptr);
 
 signals:
 	void biosLoaded(int platform, const QString&);
@@ -41,6 +42,7 @@ private:
 
 	ConfigController* m_controller;
 	InputController* m_input;
+	ShortcutView* m_shortcutView;
 
 	void saveSetting(const char* key, const QAbstractButton*);
 	void saveSetting(const char* key, const QComboBox*);

@@ -28,7 +28,6 @@ class Display;
 class GameController;
 class GDBController;
 class GIFView;
-class InputModel;
 class LibraryController;
 class LogView;
 class ShaderSelector;
@@ -144,7 +143,9 @@ private:
 	template <typename T> std::function<void()> openTView();
 
 	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
+	QAction* addControlledAction(InputItem* parent, QAction* action, const QString& name);
 	QAction* addHiddenAction(QMenu* menu, QAction* action, const QString& name);
+	QAction* addHiddenAction(InputItem* parent, QAction* action, const QString& name);
 
 	void updateTitle(float fps = -1);
 
@@ -171,7 +172,6 @@ private:
 	WindowBackground* m_screenWidget;
 	QPixmap m_logo{":/res/mgba-1024.png"};
 	ConfigController* m_config;
-	InputModel* m_inputModel;
 	InputController m_inputController;
 	QList<QDateTime> m_frameList;
 	QTimer m_fpsTimer;

@@ -18,18 +18,24 @@ namespace QGBA {
 class InputItem : public QObject {
 Q_OBJECT
 
-public:
+private:
 	typedef QPair<std::function<void ()>, std::function<void ()>> Functions;
 
 	InputItem(QAction* action, const QString& name, InputItem* parent = nullptr);
-	InputItem(QMenu* action, const QString& name, InputItem* parent = nullptr);
+	InputItem(QMenu* menu, const QString& name, InputItem* parent = nullptr);
 	InputItem(Functions functions, const QString& visibleName, const QString& name,
 	          InputItem* parent = nullptr);
 	InputItem(int key, const QString& name, const QString& visibleName, InputItem* parent = nullptr);
 	InputItem(const QString& visibleName, const QString& name, InputItem* parent = nullptr);
 
+public:
+	InputItem();
+	InputItem(InputItem&, InputItem* parent = nullptr);
+	InputItem(const InputItem&, InputItem* parent = nullptr);
+
 	QAction* action() { return m_action; }
 	const QAction* action() const { return m_action; }
+	QMenu* menu() { return m_menu; }
 	const QMenu* menu() const { return m_menu; }
 	Functions functions() const { return m_functions; }
 	int key() const { return m_key; }
@@ -60,8 +66,10 @@ public:
 	GamepadAxisEvent::Direction direction() const { return m_direction; }
 	void setAxis(int axis, GamepadAxisEvent::Direction direction);
 
+	void clear();
+
 	bool operator==(const InputItem& other) const {
-		return m_name == other.m_name && m_visibleName == other.m_visibleName;
+		return m_name == other.m_name;
 	}
 
 public slots:
@@ -75,20 +83,23 @@ signals:
 
 private:
 	QAction* m_action = nullptr;
-	QMenu* m_menu = nullptr;
 	Functions m_functions;
+	int m_key = -1;
+
+	QMenu* m_menu = nullptr;
 	QString m_name;
 	QString m_visibleName;
 
 	int m_shortcut = 0;
 	int m_button = -1;
 	int m_axis = -1;
-	int m_key = -1;
 	GamepadAxisEvent::Direction m_direction = GamepadAxisEvent::NEUTRAL;
 	QList<InputItem*> m_items;
 	InputItem* m_parent;
 };
 
 }
+
+Q_DECLARE_METATYPE(QGBA::InputItem)
 
 #endif

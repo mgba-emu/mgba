@@ -9,6 +9,12 @@
 
 using namespace QGBA;
 
+InputItem::InputItem()
+	: QObject(nullptr)
+	, m_parent(nullptr)
+{
+}
+
 InputItem::InputItem(QAction* action, const QString& name, InputItem* parent)
 	: QObject(parent)
 	, m_action(action)
@@ -58,6 +64,35 @@ InputItem::InputItem(const QString& visibleName, const QString& name, InputItem*
 {
 }
 
+InputItem::InputItem(const InputItem& other, InputItem* parent)
+	: QObject(parent)
+	, m_menu(other.m_menu)
+	, m_name(other.m_name)
+	, m_visibleName(other.m_visibleName)
+	, m_shortcut(other.m_shortcut)
+	, m_button(other.m_button)
+	, m_axis(other.m_axis)
+	, m_direction(other.m_direction)
+	, m_parent(parent)
+{
+}
+
+InputItem::InputItem(InputItem& other, InputItem* parent)
+	: QObject(parent)
+	, m_action(other.m_action)
+	, m_functions(other.m_functions)
+	, m_key(other.m_key)
+	, m_menu(other.m_menu)
+	, m_name(other.m_name)
+	, m_visibleName(other.m_visibleName)
+	, m_shortcut(other.m_shortcut)
+	, m_button(other.m_button)
+	, m_axis(other.m_axis)
+	, m_direction(other.m_direction)
+	, m_parent(parent)
+{
+}
+
 void InputItem::setShortcut(int shortcut) {
 	m_shortcut = shortcut;
 	if (m_action) {
@@ -83,6 +118,11 @@ void InputItem::setAxis(int axis, GamepadAxisEvent::Direction direction) {
 	m_axis = axis;
 	m_direction = direction;
 	emit axisBound(this, axis, direction);
+}
+
+void InputItem::clear() {
+	qDeleteAll(m_items);
+	m_items.clear();
 }
 
 void InputItem::trigger(bool active) {

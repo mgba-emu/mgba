@@ -15,9 +15,11 @@ using namespace QGBA;
 
 ShortcutView::ShortcutView(QWidget* parent)
 	: QWidget(parent)
+	, m_model()
 {
 	m_ui.setupUi(this);
 	m_ui.keyEdit->setValueKey(0);
+	m_ui.shortcutTable->setModel(&m_model);
 
 	connect(m_ui.gamepadButton, &QAbstractButton::pressed, [this]() {
 		bool signalsBlocked = m_ui.keyEdit->blockSignals(true);
@@ -39,9 +41,8 @@ ShortcutView::~ShortcutView() {
 	m_input->releaseFocus(this);
 }
 
-void ShortcutView::setModel(InputModel* model) {
-	m_controller = model;
-	m_ui.shortcutTable->setModel(model);
+void ShortcutView::setModel(InputIndex* model) {
+	m_model.clone(*model);
 }
 
 void ShortcutView::setInputController(InputController* controller) {
@@ -53,10 +54,10 @@ void ShortcutView::setInputController(InputController* controller) {
 }
 
 void ShortcutView::load(const QModelIndex& index) {
-	if (!m_controller) {
+	InputItem* item = m_model.itemAt(index);
+	if (!item) {
 		return;
 	}
-	InputItem* item = m_controller->itemAt(index);
 	int shortcut = item->shortcut();
 	if (index.column() == 1) {
 		m_ui.keyboardButton->click();
@@ -74,11 +75,11 @@ void ShortcutView::load(const QModelIndex& index) {
 }
 
 void ShortcutView::clear() {
-	if (!m_controller) {
+	QModelIndex index = m_ui.shortcutTable->selectionModel()->currentIndex();
+	InputItem* item = m_model.itemAt(index);
+	if (!item) {
 		return;
 	}
-	QModelIndex index = m_ui.shortcutTable->selectionModel()->currentIndex();
-	InputItem* item = m_controller->itemAt(index);
 	if (m_ui.gamepadButton->isChecked()) {
 		item->clearButton();
 		m_ui.keyEdit->setValueButton(-1);
@@ -89,10 +90,10 @@ void ShortcutView::clear() {
 }
 
 void ShortcutView::updateButton(int button) {
-	if (!m_controller) {
+	InputItem* item = m_model.itemAt(m_ui.shortcutTable->selectionModel()->currentIndex());
+	if (!item) {
 		return;
 	}
-	InputItem* item = m_controller->itemAt(m_ui.shortcutTable->selectionModel()->currentIndex());
 	if (m_ui.gamepadButton->isChecked()) {
 		item->setButton(button);
 	} else {
@@ -101,10 +102,10 @@ void ShortcutView::updateButton(int button) {
 }
 
 void ShortcutView::updateAxis(int axis, int direction) {
-	if (!m_controller) {
+	InputItem* item = m_model.itemAt(m_ui.shortcutTable->selectionModel()->currentIndex());
+	if (!item) {
 		return;
 	}
-	InputItem* item = m_controller->itemAt(m_ui.shortcutTable->selectionModel()->currentIndex());
 	item->setAxis(axis, static_cast<GamepadAxisEvent::Direction>(direction));
 }
 

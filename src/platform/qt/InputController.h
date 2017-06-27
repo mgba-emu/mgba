@@ -8,6 +8,7 @@
 
 #include "GamepadAxisEvent.h"
 #include "GamepadHatEvent.h"
+#include "InputIndex.h"
 
 #include <memory>
 
@@ -34,7 +35,6 @@ namespace QGBA {
 class ConfigController;
 class GameController;
 class InputItem;
-class InputModel;
 
 class InputController : public QObject {
 Q_OBJECT
@@ -42,8 +42,11 @@ Q_OBJECT
 public:
 	static const uint32_t KEYBOARD = 0x51545F4B;
 
-	InputController(InputModel* model, int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
+	InputController(int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
 	~InputController();
+
+	InputIndex* inputIndex() { return &m_inputIndex; }
+	void rebuildIndex(const InputItem* = nullptr);
 
 	void setConfiguration(ConfigController* config);
 	void saveConfiguration();
@@ -101,12 +104,6 @@ public slots:
 	void resumeScreensaver();
 	void setScreensaverSuspendable(bool);
 
-private slots:
-	void doBindKey(const QModelIndex&, int key);
-	void doBindButton(const QModelIndex&, int key);
-	void doBindAxis(const QModelIndex&, int axis, GamepadAxisEvent::Direction);
-	void doBindHat(const QModelIndex&, int hat, GamepadHatEvent::Direction);
-
 protected:
 	bool eventFilter(QObject*, QEvent*) override;
 
@@ -116,10 +113,11 @@ private:
 	bool hasPendingEvent(int key) const;
 	void sendGamepadEvent(QEvent*);
 	void restoreModel();
+	void rebindKey(int key);
 
 	InputItem* itemForKey(int key);
 
-	InputModel* m_inputModel = nullptr;
+	InputIndex m_inputIndex;
 	mInputMap m_inputMap;
 	ConfigController* m_config = nullptr;
 	int m_playerId;
