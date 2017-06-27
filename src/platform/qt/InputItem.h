@@ -13,63 +13,76 @@
 
 #include <QAction>
 
-#include <mgba/core/core.h>
-
 namespace QGBA {
 
-class InputItem {
+class InputItem : public QObject {
+Q_OBJECT
+
 public:
 	typedef QPair<std::function<void ()>, std::function<void ()>> Functions;
 
 	InputItem(QAction* action, const QString& name, InputItem* parent = nullptr);
-	InputItem(Functions functions, int shortcut, const QString& visibleName,
-	          const QString& name, InputItem* parent = nullptr);
-	InputItem(mPlatform platform, int key, int shortcut, const QString& name, const QString& visibleName, InputItem* parent = nullptr);
-	InputItem(QMenu* action, InputItem* parent = nullptr);
+	InputItem(QMenu* action, const QString& name, InputItem* parent = nullptr);
+	InputItem(Functions functions, const QString& visibleName, const QString& name,
+	          InputItem* parent = nullptr);
+	InputItem(int key, const QString& name, const QString& visibleName, InputItem* parent = nullptr);
+	InputItem(const QString& visibleName, const QString& name, InputItem* parent = nullptr);
 
 	QAction* action() { return m_action; }
 	const QAction* action() const { return m_action; }
-	int shortcut() const { return m_shortcut; }
-	mPlatform platform() const { return m_platform; }
+	const QMenu* menu() const { return m_menu; }
 	Functions functions() const { return m_functions; }
 	int key() const { return m_keys; }
-	QMenu* menu() { return m_menu; }
-	const QMenu* menu() const { return m_menu; }
+
 	const QString& visibleName() const { return m_visibleName; }
 	const QString& name() const { return m_name; }
-	QList<InputItem>& items() { return m_items; }
-	const QList<InputItem>& items() const { return m_items; }
+
+	QList<InputItem*>& items() { return m_items; }
+	const QList<InputItem*>& items() const { return m_items; }
 	InputItem* parent() { return m_parent; }
 	const InputItem* parent() const { return m_parent; }
-	void addAction(QAction* action, const QString& name);
-	void addFunctions(Functions functions, int shortcut, const QString& visibleName,
-	                  const QString& name);
-	void addKey(mPlatform platform, int key, int shortcut, const QString& visibleName, const QString& name);
-	void addSubmenu(QMenu* menu);
-	int button() const { return m_button; }
+	template<typename... Args> InputItem* addItem(Args... params) {
+		InputItem* item = new InputItem(params..., this);
+		m_items.append(item);
+		emit childAdded(this, item);
+		return item;
+	}
+
+	int shortcut() const { return m_shortcut; }
 	void setShortcut(int sequence);
-	void setButton(int button) { m_button = button; }
+	void clearShortcut();
+
+	int button() const { return m_button; }
+	void setButton(int button);
+	void clearButton();
+
 	int axis() const { return m_axis; }
 	GamepadAxisEvent::Direction direction() const { return m_direction; }
 	void setAxis(int axis, GamepadAxisEvent::Direction direction);
 
 	bool operator==(const InputItem& other) const {
-		return m_menu == other.m_menu && m_action == other.m_action;
+		return m_name == other.m_name && m_visibleName == other.m_visibleName;
 	}
 
+signals:
+	void shortcutBound(InputItem*, int shortcut);
+	void buttonBound(InputItem*, int button);
+	void axisBound(InputItem*, int axis, GamepadAxisEvent::Direction);
+	void childAdded(InputItem* parent, InputItem* child);
+
 private:
-	QAction* m_action;
-	int m_shortcut;
-	QMenu* m_menu;
+	QAction* m_action = nullptr;
+	QMenu* m_menu = nullptr;
 	Functions m_functions;
 	QString m_name;
 	QString m_visibleName;
-	int m_button;
-	int m_axis;
-	int m_keys;
-	GamepadAxisEvent::Direction m_direction;
-	mPlatform m_platform;
-	QList<InputItem> m_items;
+
+	int m_shortcut = 0;
+	int m_button = -1;
+	int m_axis = -1;
+	int m_keys =-1;
+	GamepadAxisEvent::Direction m_direction = GamepadAxisEvent::NEUTRAL;
+	QList<InputItem*> m_items;
 	InputItem* m_parent;
 };
 

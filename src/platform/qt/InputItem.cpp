@@ -10,15 +10,10 @@
 using namespace QGBA;
 
 InputItem::InputItem(QAction* action, const QString& name, InputItem* parent)
-	: m_action(action)
+	: QObject(parent)
+	, m_action(action)
 	, m_shortcut(action->shortcut().isEmpty() ? 0 : action->shortcut()[0])
-	, m_keys(-1)
-	, m_menu(nullptr)
 	, m_name(name)
-	, m_button(-1)
-	, m_axis(-1)
-	, m_direction(GamepadAxisEvent::NEUTRAL)
-	, m_platform(PLATFORM_NONE)
 	, m_parent(parent)
 {
 	m_visibleName = action->text()
@@ -26,69 +21,41 @@ InputItem::InputItem(QAction* action, const QString& name, InputItem* parent)
 		.remove("...");
 }
 
-InputItem::InputItem(InputItem::Functions functions, int shortcut, const QString& visibleName, const QString& name, InputItem* parent)
-	: m_action(nullptr)
-	, m_shortcut(shortcut)
-	, m_functions(functions)
-	, m_keys(-1)
-	, m_menu(nullptr)
-	, m_name(name)
-	, m_visibleName(visibleName)
-	, m_button(-1)
-	, m_axis(-1)
-	, m_direction(GamepadAxisEvent::NEUTRAL)
-	, m_platform(PLATFORM_NONE)
-	, m_parent(parent)
-{
-}
-
-InputItem::InputItem(mPlatform platform, int key, int shortcut, const QString& visibleName, const QString& name, InputItem* parent)
-	: m_action(nullptr)
-	, m_shortcut(shortcut)
-	, m_keys(key)
-	, m_menu(nullptr)
-	, m_name(name)
-	, m_visibleName(visibleName)
-	, m_button(-1)
-	, m_axis(-1)
-	, m_direction(GamepadAxisEvent::NEUTRAL)
-	, m_platform(platform)
-	, m_parent(parent)
-{
-}
-
-InputItem::InputItem(QMenu* menu, InputItem* parent)
-	: m_action(nullptr)
-	, m_shortcut(0)
+InputItem::InputItem(QMenu* menu, const QString& name, InputItem* parent)
+	: QObject(parent)
 	, m_menu(menu)
-	, m_button(-1)
-	, m_axis(-1)
-	, m_direction(GamepadAxisEvent::NEUTRAL)
+	, m_name(name)
 	, m_parent(parent)
 {
-	if (menu) {
-		m_visibleName = menu->title()
-			.remove(QRegExp("&(?!&)"))
-			.remove("...");
-	}
+	m_visibleName = menu->title()
+		.remove(QRegExp("&(?!&)"))
+		.remove("...");
 }
 
-void InputItem::addAction(QAction* action, const QString& name) {
-	m_items.append(InputItem(action, name, this));
+InputItem::InputItem(InputItem::Functions functions, const QString& visibleName, const QString& name, InputItem* parent)
+	: QObject(parent)
+	, m_functions(functions)
+	, m_name(name)
+	, m_visibleName(visibleName)
+	, m_parent(parent)
+{
 }
 
-void InputItem::addFunctions(InputItem::Functions functions,
-                             int shortcut, const QString& visibleName,
-                             const QString& name) {
-	m_items.append(InputItem(functions, shortcut, visibleName, name, this));
+InputItem::InputItem(int key, const QString& visibleName, const QString& name, InputItem* parent)
+	: QObject(parent)
+	, m_keys(key)
+	, m_name(name)
+	, m_visibleName(visibleName)
+	, m_parent(parent)
+{
 }
 
-void InputItem::addKey(mPlatform platform, int key, int shortcut, const QString& visibleName, const QString& name) {
-	m_items.append(InputItem(platform, key, shortcut, visibleName, name, this));
-}
-
-void InputItem::addSubmenu(QMenu* menu) {
-	m_items.append(InputItem(menu, this));
+InputItem::InputItem(const QString& visibleName, const QString& name, InputItem* parent)
+	: QObject(parent)
+	, m_name(name)
+	, m_visibleName(visibleName)
+	, m_parent(parent)
+{
 }
 
 void InputItem::setShortcut(int shortcut) {
@@ -96,9 +63,24 @@ void InputItem::setShortcut(int shortcut) {
 	if (m_action) {
 		m_action->setShortcut(QKeySequence(shortcut));
 	}
+	emit shortcutBound(this, shortcut);
+}
+
+void InputItem::clearShortcut() {
+	setShortcut(0);
+}
+
+void InputItem::setButton(int button) {
+	m_button = button;
+	emit buttonBound(this, button);
+}
+
+void InputItem::clearButton() {
+	setButton(-1);
 }
 
 void InputItem::setAxis(int axis, GamepadAxisEvent::Direction direction) {
 	m_axis = axis;
 	m_direction = direction;
+	emit axisBound(this, axis, direction);
 }

@@ -31,7 +31,6 @@ mSDLEvents InputController::s_sdlEvents;
 InputController::InputController(InputModel* model, int playerId, QWidget* topLevel, QObject* parent)
 	: QObject(parent)
 	, m_inputModel(model)
-	, m_platform(PLATFORM_NONE)
 	, m_playerId(playerId)
 	, m_topLevel(topLevel)
 	, m_focusParent(topLevel)
@@ -55,21 +54,29 @@ InputController::InputController(InputModel* model, int playerId, QWidget* topLe
 	m_gamepadTimer.setInterval(50);
 	m_gamepadTimer.start();
 
-	m_autofireMenu = std::unique_ptr<QMenu>(new QMenu(tr("Autofire")));
-	m_inputModel->addMenu(m_autofireMenu.get());
+	m_autofireMenu = m_inputModel->root()->addItem(tr("Autofire"), "autofire");
+	m_inputMenu = m_inputModel->root()->addItem(tr("Bindings"), "bindings");
 
-	m_inputMenu = std::unique_ptr<QMenu>(new QMenu(tr("Bindings")));
-	m_inputModel->addMenu(m_inputMenu.get());
+	mInputMapInit(&m_inputMap, &GBAInputInfo);
 
-	connect(m_inputModel, SIGNAL(keyRebound(const QModelIndex&, int)), this, SLOT(bindKey(const QModelIndex&, int)));
-	connect(m_inputModel, SIGNAL(buttonRebound(const QModelIndex&, int)), this, SLOT(bindButton(const QModelIndex&, int)));
-	connect(m_inputModel, SIGNAL(axisRebound(const QModelIndex&, int,  GamepadAxisEvent::Direction)), this, SLOT(bindAxis(const QModelIndex&, int, GamepadAxisEvent::Direction)));
+#ifdef BUILD_SDL
+	mSDLInitBindingsGBA(&m_inputMap);
+#endif
+
+	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_X, GBA_KEY_A);
+	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Z, GBA_KEY_B);
+	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_A, GBA_KEY_L);
+	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_S, GBA_KEY_R);
+	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Return, GBA_KEY_START);
+	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Backspace, GBA_KEY_SELECT);
+	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Up, GBA_KEY_UP);
+	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Down, GBA_KEY_DOWN);
+	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Left, GBA_KEY_LEFT);
+	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Right, GBA_KEY_RIGHT);
 }
 
 InputController::~InputController() {
-	for (auto& inputMap : m_inputMaps) {
-		mInputMapDeinit(&inputMap);
-	}
+	mInputMapDeinit(&m_inputMap);
 
 #ifdef BUILD_SDL
 	if (m_playerAttached) {
@@ -81,42 +88,6 @@ InputController::~InputController() {
 		mSDLDeinitEvents(&s_sdlEvents);
 	}
 #endif
-}
-
-void InputController::addPlatform(mPlatform platform, const QString& visibleName, const mInputPlatformInfo* info) {
-	mInputMap* inputMap = &m_inputMaps[platform];
-	mInputMapInit(inputMap, info);
-
-	QMenu* input = m_inputMenu->addMenu(visibleName);
-	QMenu* autofire = m_autofireMenu->addMenu(visibleName);
-	m_inputMenuIndices[platform] = m_inputModel->addMenu(input, m_inputMenu.get());
-	m_inputModel->addMenu(autofire, m_autofireMenu.get());
-
-	for (size_t i = 0; i < info->nKeys; ++i) {
-		m_inputModel->addKey(input, platform, i, 0, info->keyId[i], QString("%1.%2").arg(info->platformName).arg(info->keyId[i]));
-		m_inputModel->addKey(autofire, platform, i, 0, info->keyId[i], QString("%1.autofire.%2").arg(info->platformName).arg(info->keyId[i]));
-	}
-
-#ifdef BUILD_SDL
-	mSDLInitBindingsGBA(inputMap);
-#endif
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_X, GBA_KEY_A);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_Z, GBA_KEY_B);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_A, GBA_KEY_L);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_S, GBA_KEY_R);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_Return, GBA_KEY_START);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_Backspace, GBA_KEY_SELECT);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_Up, GBA_KEY_UP);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_Down, GBA_KEY_DOWN);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_Left, GBA_KEY_LEFT);
-	mInputBindKey(inputMap, KEYBOARD, Qt::Key_Right, GBA_KEY_RIGHT);
-}
-
-void InputController::setPlatform(mPlatform platform) {
-#ifdef BUILD_SDL
-	m_sdlPlayer.bindings = &m_inputMaps[platform];
-#endif
-	m_platform = platform;
 }
 
 void InputController::setConfiguration(ConfigController* config) {
@@ -135,31 +106,27 @@ void InputController::setConfiguration(ConfigController* config) {
 }
 
 void InputController::loadConfiguration(uint32_t type) {
-	for (auto& inputMap : m_inputMaps) {
-		mInputMapLoad(&inputMap, type, m_config->input());
+	mInputMapLoad(&m_inputMap, type, m_config->input());
 #ifdef BUILD_SDL
-		if (m_playerAttached) {
-			mInputMap* bindings = m_sdlPlayer.bindings;
-			m_sdlPlayer.bindings = &inputMap;
-			mSDLPlayerLoadConfig(&m_sdlPlayer, m_config->input());
-			m_sdlPlayer.bindings = bindings;
-		}
-#endif
+	if (m_playerAttached) {
+		mInputMap* bindings = m_sdlPlayer.bindings;
+		m_sdlPlayer.bindings = &m_inputMap;
+		mSDLPlayerLoadConfig(&m_sdlPlayer, m_config->input());
+		m_sdlPlayer.bindings = bindings;
 	}
+#endif
 }
 
 void InputController::loadProfile(uint32_t type, const QString& profile) {
-	for (auto iter = m_inputMaps.begin(); iter != m_inputMaps.end(); ++iter) {
-		bool loaded = mInputProfileLoad(&iter.value(), type, m_config->input(), profile.toUtf8().constData());
-		if (!loaded) {
-			const InputProfile* ip = InputProfile::findProfile(iter.key(), profile);
-			if (ip) {
-				ip->apply(iter.key(), this);
-			}
+	bool loaded = mInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
+	if (!loaded) {
+		const InputProfile* ip = InputProfile::findProfile(profile);
+		if (ip) {
+			ip->apply(this);
 		}
 	}
 	recalibrateAxes();
-	m_inputModel->loadProfile(PLATFORM_NONE, profile); // TODO
+	m_inputModel->loadProfile(profile); // TODO
 	emit profileLoaded(profile);
 }
 
@@ -176,19 +143,12 @@ void InputController::saveConfiguration() {
 }
 
 void InputController::saveConfiguration(uint32_t type) {
-	for (auto& inputMap : m_inputMaps) {
-		if (!inputMap.info) {
-			continue;
-		}
-		mInputMapSave(&inputMap, type, m_config->input());
-	}
+	mInputMapSave(&m_inputMap, type, m_config->input());
 	m_config->write();
 }
 
 void InputController::saveProfile(uint32_t type, const QString& profile) {
-	for (auto& inputMap : m_inputMaps) {
-		mInputProfileSave(&inputMap, type, m_config->input(), profile.toUtf8().constData());
-	}
+	mInputProfileSave(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	m_config->write();
 }
 
@@ -337,7 +297,7 @@ void InputController::updateJoysticks() {
 }
 
 const mInputMap* InputController::map() {
-	return &m_inputMaps[m_platform];
+	return &m_inputMap;
 }
 
 int InputController::pollEvents() {
@@ -349,7 +309,7 @@ int InputController::pollEvents() {
 		int numButtons = SDL_JoystickNumButtons(joystick);
 		int i;
 		for (i = 0; i < numButtons; ++i) {
-			GBAKey key = static_cast<GBAKey>(mInputMapKey(&m_inputMaps[m_platform], SDL_BINDING_BUTTON, i));
+			GBAKey key = static_cast<GBAKey>(mInputMapKey(&m_inputMap, SDL_BINDING_BUTTON, i));
 			if (key == GBA_KEY_NONE) {
 				continue;
 			}
@@ -363,14 +323,14 @@ int InputController::pollEvents() {
 		int numHats = SDL_JoystickNumHats(joystick);
 		for (i = 0; i < numHats; ++i) {
 			int hat = SDL_JoystickGetHat(joystick, i);
-			activeButtons |= mInputMapHat(&m_inputMaps[m_platform], SDL_BINDING_BUTTON, i, hat);
+			activeButtons |= mInputMapHat(&m_inputMap, SDL_BINDING_BUTTON, i, hat);
 		}
 
 		int numAxes = SDL_JoystickNumAxes(joystick);
 		for (i = 0; i < numAxes; ++i) {
 			int value = SDL_JoystickGetAxis(joystick, i);
 
-			enum GBAKey key = static_cast<GBAKey>(mInputMapAxis(&m_inputMaps[m_platform], SDL_BINDING_BUTTON, i, value));
+			enum GBAKey key = static_cast<GBAKey>(mInputMapAxis(&m_inputMap, SDL_BINDING_BUTTON, i, value));
 			if (key != GBA_KEY_NONE) {
 				activeButtons |= 1 << key;
 			}
@@ -440,31 +400,23 @@ QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes
 	return activeAxes;
 }
 
-void InputController::bindKey(mPlatform platform, uint32_t type, int key, int coreKey) {
-	if (m_inputMaps.find(platform) == m_inputMaps.end() || coreKey >= m_inputMaps[platform].info->nKeys) {
-		return;
-	}
-	QModelIndex index = m_inputModel->index(coreKey, 0, m_inputMenuIndices[platform]);
-	bool signalsBlocked = m_inputModel->blockSignals(true);
+void InputController::bindKey(uint32_t type, int key, int coreKey) {
+	/*InputItem* item = m_inputModel->itemForKey(coreKey);
 	if (type != KEYBOARD) {
-		m_inputModel->updateButton(index, key);
+		item->setButton(key);
 	} else {
-		m_inputModel->updateKey(index, key);		
-	}
-	m_inputModel->blockSignals(signalsBlocked);
-	mInputBindKey(&m_inputMaps[platform], type, key, coreKey);
+		item->setShortcut(key);		
+	}*/
+	mInputBindKey(&m_inputMap, type, key, coreKey);
 }
 
-void InputController::bindAxis(mPlatform platform, uint32_t type, int axis, GamepadAxisEvent::Direction direction, int key) {
-	if (m_inputMaps.find(platform) == m_inputMaps.end() || key >= m_inputMaps[platform].info->nKeys) {
-		return;
-	}
-	QModelIndex index = m_inputModel->index(key, 0, m_inputMenuIndices[platform]);
+void InputController::bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction direction, int key) {
+	//InputItem* item = m_inputModel->itemForKey(key);
 	bool signalsBlocked = m_inputModel->blockSignals(true);
-	m_inputModel->updateAxis(index, axis, direction);
+	//item->setAxis(axis, direction);
 	m_inputModel->blockSignals(signalsBlocked);
 
-	const mInputAxis* old = mInputQueryAxis(&m_inputMaps[platform], type, axis);
+	const mInputAxis* old = mInputQueryAxis(&m_inputMap, type, axis);
 	mInputAxis description = { GBA_KEY_NONE, GBA_KEY_NONE, -AXIS_THRESHOLD, AXIS_THRESHOLD };
 	if (old) {
 		description = *old;
@@ -486,7 +438,7 @@ void InputController::bindAxis(mPlatform platform, uint32_t type, int axis, Game
 	default:
 		return;
 	}
-	mInputBindAxis(&m_inputMaps[platform], type, axis, &description);
+	mInputBindAxis(&m_inputMap, type, axis, &description);
 }
 
 QSet<QPair<int, GamepadHatEvent::Direction>> InputController::activeGamepadHats(int type) {
@@ -521,15 +473,11 @@ QSet<QPair<int, GamepadHatEvent::Direction>> InputController::activeGamepadHats(
 	return activeHats;
 }
 
-void InputController::bindHat(mPlatform platform, uint32_t type, int hat, GamepadHatEvent::Direction direction, int coreKey) {
-	if (m_inputMaps.find(platform) == m_inputMaps.end() || coreKey >= m_inputMaps[platform].info->nKeys) {
-		return;
-	}
-	QModelIndex index = m_inputModel->index(coreKey, 0, m_inputMenuIndices[platform]);
+void InputController::bindHat(uint32_t type, int hat, GamepadHatEvent::Direction direction, int coreKey) {
 	//m_inputModel->updateHat(index, hat, direction);
 
 	mInputHatBindings bindings{ -1, -1, -1, -1 };
-	mInputQueryHat(&m_inputMaps[platform], type, hat, &bindings);
+	mInputQueryHat(&m_inputMap, type, hat, &bindings);
 	switch (direction) {
 	case GamepadHatEvent::UP:
 		bindings.up = coreKey;
@@ -546,7 +494,7 @@ void InputController::bindHat(mPlatform platform, uint32_t type, int hat, Gamepa
 	default:
 		return;
 	}
-	mInputBindHat(&m_inputMaps[platform], type, hat, &bindings);
+	mInputBindHat(&m_inputMap, type, hat, &bindings);
 }
 
 void InputController::testGamepad(int type) {
@@ -685,8 +633,8 @@ void InputController::releaseFocus(QWidget* focus) {
 }
 
 void InputController::setupCallback(GameController* controller) {
-	m_inputModel->setKeyCallback([this, controller](QMenu* menu, int key, bool down) {
-		if (menu->parent() == m_autofireMenu.get()) {
+	[this, controller](InputItem* item, int key, bool down) {
+		if (item->parent() == m_autofireMenu) {
 			controller->setAutofire(key, down);
 		} else {
 			if (down) {
@@ -695,44 +643,40 @@ void InputController::setupCallback(GameController* controller) {
 				controller->keyReleased(key);
 			}
 		}
-	});
+	};
 }
 
-void InputController::bindKey(const QModelIndex& index, int key) {
-	int coreKey = m_inputModel->keyAt(index);
+void InputController::doBindKey(const QModelIndex& index, int key) {
+	int coreKey = m_inputModel->itemAt(index)->key();
 	if (coreKey < 0) {
 		return;
 	}
-	mPlatform platform = m_inputMenuIndices.key(index.parent(), PLATFORM_NONE);
-	bindKey(platform, KEYBOARD, key, coreKey);
+	bindKey(KEYBOARD, key, coreKey);
 }
 
 #ifdef BUILD_SDL
-void InputController::bindButton(const QModelIndex& index, int key) {
-	int coreKey = m_inputModel->keyAt(index);
+void InputController::doBindButton(const QModelIndex& index, int key) {
+	int coreKey = m_inputModel->itemAt(index)->key();
 	if (coreKey < 0) {
 		return;
 	}
-	mPlatform platform = m_inputMenuIndices.key(index.parent(), PLATFORM_NONE);
-	bindKey(platform, SDL_BINDING_BUTTON, key, coreKey);
+	bindKey(SDL_BINDING_BUTTON, key, coreKey);
 }
 
-void InputController::bindAxis(const QModelIndex& index, int axis, GamepadAxisEvent::Direction direction) {
-	int coreKey = m_inputModel->keyAt(index);
+void InputController::doBindAxis(const QModelIndex& index, int axis, GamepadAxisEvent::Direction direction) {
+	int coreKey = m_inputModel->itemAt(index)->key();
 	if (coreKey < 0) {
 		return;
 	}
-	mPlatform platform = m_inputMenuIndices.key(index.parent(), PLATFORM_NONE);
-	bindAxis(platform, SDL_BINDING_BUTTON, axis, direction, coreKey);
+	bindAxis(SDL_BINDING_BUTTON, axis, direction, coreKey);
 }
 
-void InputController::bindHat(const QModelIndex& index, int hat, GamepadHatEvent::Direction direction) {
-	int coreKey = m_inputModel->keyAt(index);
+void InputController::doBindHat(const QModelIndex& index, int hat, GamepadHatEvent::Direction direction) {
+	int coreKey = m_inputModel->itemAt(index)->key();
 	if (coreKey < 0) {
 		return;
 	}
-	mPlatform platform = m_inputMenuIndices.key(index.parent(), PLATFORM_NONE);
-	bindHat(platform, SDL_BINDING_BUTTON, hat, direction, coreKey);
+	bindHat(SDL_BINDING_BUTTON, hat, direction, coreKey);
 }
 #else
 void InputController::bindButton(const QModelIndex& index, int key) {}
@@ -755,67 +699,60 @@ bool InputController::eventFilter(QObject*, QEvent* event) {
 			return true;
 		}
 
-		if (m_inputModel->triggerKey(key, event->type() == QEvent::KeyPress, m_platform)) {
-			event->accept();
-			return true;			
-		}
+		// TODO
 	}
 
 
 	if (event->type() == GamepadButtonEvent::Down() || event->type() == GamepadButtonEvent::Up()) {
 		GamepadButtonEvent* gbe = static_cast<GamepadButtonEvent*>(event);
-		if (m_inputModel->triggerButton(gbe->value(), event->type() == GamepadButtonEvent::Down())) {
-			event->accept();
-			return true;
-		}
+		// TODO
 	}
 	if (event->type() == GamepadAxisEvent::Type()) {
 		GamepadAxisEvent* gae = static_cast<GamepadAxisEvent*>(event);
-		if (m_inputModel->triggerAxis(gae->axis(), gae->direction(), gae->isNew())) {
-			event->accept();
-			return true;
-		}
+		// TODO
 	}
 	return false;
 }
 
 void InputController::restoreModel() {
 	bool signalsBlocked = m_inputModel->blockSignals(true);
-	for (auto iter = m_inputMaps.begin(); iter != m_inputMaps.end(); ++iter) {
-		mPlatform platform = iter.key();
-		QModelIndex parent = m_inputMenuIndices[platform];
-		int nKeys = iter->info->nKeys;
-		for (int i = 0; i < nKeys; ++i) {
-			int key = mInputQueryBinding(&iter.value(), KEYBOARD, i);
+	int nKeys = m_inputMap.info->nKeys;
+	/*for (int i = 0; i < nKeys; ++i) {
+		InputItem* item = m_inputModel->itemForKey(i);
+		if (item) {
+			int key = mInputQueryBinding(&m_inputMap, KEYBOARD, i);
 			if (key >= 0) {
-				m_inputModel->updateKey(m_inputModel->index(i, 0, parent), key);
+				item->setShortcut(key);
 			} else {
-				m_inputModel->clearKey(m_inputModel->index(i, 0, parent));
+				item->clearShortcut();
 			}
 #ifdef BUILD_SDL
-			key = mInputQueryBinding(&iter.value(), SDL_BINDING_BUTTON, i);
+			key = mInputQueryBinding(&m_inputMap, SDL_BINDING_BUTTON, i);
 			if (key >= 0) {
-				m_inputModel->updateButton(m_inputModel->index(i, 0, parent), key);
+				item->setButton(key);
 			} else {
-				m_inputModel->clearButton(m_inputModel->index(i, 0, parent));
+				item->clearButton();
 			}
 #endif
 		}
-#ifdef BUILD_SDL
-		struct Context {
-			InputModel* model;
-			QModelIndex parent;
-		} context{ m_inputModel, parent };
-		mInputEnumerateAxes(&iter.value(), SDL_BINDING_BUTTON, [](int axis, const struct mInputAxis* description, void* user) {
-			Context* context = static_cast<Context*>(user);
-			if (description->highDirection >= 0) {
-				context->model->updateAxis(context->model->index(description->highDirection, 0, context->parent), axis, GamepadAxisEvent::POSITIVE);
-			}
-			if (description->lowDirection >= 0) {
-				context->model->updateAxis(context->model->index(description->lowDirection, 0, context->parent), axis, GamepadAxisEvent::NEGATIVE);
-			}
-		}, &context);
-#endif
 	}
+#ifdef BUILD_SDL
+	mInputEnumerateAxes(&m_inputMap, SDL_BINDING_BUTTON, [](int axis, const struct mInputAxis* description, void* user) {
+		InputModel* model = static_cast<InputModel*>(user);
+		InputItem* item;
+		if (description->highDirection >= 0) {
+			item = model->itemForKey(description->highDirection);
+			if (item) {
+				item->setAxis(axis, GamepadAxisEvent::POSITIVE);
+			}
+		}
+		if (description->lowDirection >= 0) {
+			item = model->itemForKey(description->lowDirection);
+			if (item) {
+				item->setAxis(axis, GamepadAxisEvent::NEGATIVE);
+			}
+		}
+	}, m_inputModel);
+#endif*/
 	m_inputModel->blockSignals(signalsBlocked);
 }

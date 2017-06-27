@@ -194,12 +194,6 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	m_inputModel->setConfigController(m_config);
 	setupMenu(menuBar());
 
-#ifdef M_CORE_GBA
-	m_inputController.addPlatform(PLATFORM_GBA, tr("Game Boy Advance"), &GBAInputInfo);
-#endif
-#ifdef M_CORE_GB
-	m_inputController.addPlatform(PLATFORM_GB, tr("Game Boy"), &GBInputInfo);
-#endif
 	m_inputController.setupCallback(m_controller);
 }
 
@@ -724,8 +718,6 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 	}
 #endif
 
-	m_inputController.setPlatform(m_controller->platform());
-
 	m_hitUnimplementedBiosCall = false;
 	m_fpsTimer.start();
 	m_focusCheck.start();
@@ -930,7 +922,7 @@ void Window::openStateWindow(LoadSave ls) {
 void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
-	m_inputModel->addMenu(fileMenu);
+	m_inputModel->addItem(fileMenu, "file");
 	installEventFilter(&m_inputController);
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open),
 	                    "loadROM");
@@ -986,8 +978,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* quickLoadMenu = fileMenu->addMenu(tr("Quick load"));
 	QMenu* quickSaveMenu = fileMenu->addMenu(tr("Quick save"));
-	m_inputModel->addMenu(quickLoadMenu);
-	m_inputModel->addMenu(quickSaveMenu);
+	m_inputModel->addItem(quickLoadMenu, "quickLoadMenu");
+	m_inputModel->addItem(quickSaveMenu, "quickSaveMenu");
 
 	QAction* quickLoad = new QAction(tr("Load recent"), quickLoadMenu);
 	connect(quickLoad, &QAction::triggered, m_controller, &GameController::loadState);
@@ -1073,7 +1065,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	QMenu* emulationMenu = menubar->addMenu(tr("&Emulation"));
-	m_inputModel->addMenu(emulationMenu);
+	InputItem* emulationMenuItem = m_inputModel->addItem(emulationMenu, "emulation");
 	QAction* reset = new QAction(tr("&Reset"), emulationMenu);
 	reset->setShortcut(tr("Ctrl+R"));
 	connect(reset, &QAction::triggered, m_controller, &GameController::reset);
@@ -1114,11 +1106,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	emulationMenu->addSeparator();
 
-	m_inputModel->addFunctions(emulationMenu, [this]() {
+	emulationMenuItem->addItem(qMakePair([this]() {
 		m_controller->setTurbo(true, false);
 	}, [this]() {
 		m_controller->setTurbo(false, false);
-	}, QKeySequence(Qt::Key_Tab), tr("Fast forward (held)"), "holdFastForward");
+	}), tr("Fast forward (held)"), "holdFastForward")->setShortcut(QKeySequence(Qt::Key_Tab)[0]);
 
 	QAction* turbo = new QAction(tr("&Fast forward"), emulationMenu);
 	turbo->setCheckable(true);
@@ -1140,11 +1132,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 	m_config->updateOption("fastForwardRatio");
 
-	m_inputModel->addFunctions(emulationMenu, [this]() {
+	emulationMenuItem->addItem(qMakePair([this]() {
 		m_controller->startRewinding();
 	}, [this]() {
 		m_controller->stopRewinding();
-	}, QKeySequence("`"), tr("Rewind (held)"), "holdRewind");
+	}), tr("Rewind (held)"), "holdRewind")->setShortcut(QKeySequence("`")[0]);
 
 	QAction* rewind = new QAction(tr("Re&wind"), emulationMenu);
 	rewind->setShortcut(tr("~"));
@@ -1179,7 +1171,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	emulationMenu->addSeparator();
 
 	QMenu* solarMenu = emulationMenu->addMenu(tr("Solar sensor"));
-	m_inputModel->addMenu(solarMenu);
+	m_inputModel->addItem(solarMenu, "luminance");
 	QAction* solarIncrease = new QAction(tr("Increase solar level"), solarMenu);
 	connect(solarIncrease, &QAction::triggered, m_controller, &GameController::increaseLuminanceLevel);
 	addControlledAction(solarMenu, solarIncrease, "increaseLuminanceLevel");
@@ -1206,9 +1198,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
-	m_inputModel->addMenu(avMenu);
+	InputItem* avMenuItem = m_inputModel->addItem(avMenu, "av");
 	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));
-	m_inputModel->addMenu(frameMenu, avMenu);
+	avMenuItem->addItem(frameMenu, "frameSize");
 	for (int i = 1; i <= 6; ++i) {
 		QAction* setSize = new QAction(tr("%1x").arg(QString::number(i)), avMenu);
 		setSize->setCheckable(true);
@@ -1343,13 +1335,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	avMenu->addSeparator();
 	m_videoLayers = avMenu->addMenu(tr("Video layers"));
-	m_inputModel->addMenu(m_videoLayers, avMenu);
+	avMenuItem->addItem(m_videoLayers, "videoLayers");
 
 	m_audioChannels = avMenu->addMenu(tr("Audio channels"));
-	m_inputModel->addMenu(m_audioChannels, avMenu);
+	avMenuItem->addItem(m_audioChannels, "audioChannels");
 
 	QMenu* toolsMenu = menubar->addMenu(tr("&Tools"));
-	m_inputModel->addMenu(toolsMenu);
+	m_inputModel->addItem(toolsMenu, "tools");
 	QAction* viewLogs = new QAction(tr("View &logs..."), toolsMenu);
 	connect(viewLogs, &QAction::triggered, m_logView, &QWidget::show);
 	addControlledAction(toolsMenu, viewLogs, "viewLogs");
@@ -1489,67 +1481,67 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addHiddenAction(frameMenu, exitFullScreen, "exitFullScreen");
 
 	QMenu* autofireMenu = new QMenu(tr("Autofire"), this);
-	m_inputModel->addMenu(autofireMenu);
+	InputItem* autofireMenuItem = m_inputModel->addItem(autofireMenu, "autofire");
 
-	m_inputModel->addFunctions(autofireMenu, [this]() {
+	autofireMenuItem->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_A, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_A, false);
-	}, QKeySequence(), tr("Autofire A"), "autofireA");
+	}), tr("Autofire A"), "autofireA");
 
-	m_inputModel->addFunctions(autofireMenu, [this]() {
+	autofireMenuItem->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_B, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_B, false);
-	}, QKeySequence(), tr("Autofire B"), "autofireB");
+	}), tr("Autofire B"), "autofireB");
 
-	m_inputModel->addFunctions(autofireMenu, [this]() {
+	autofireMenuItem->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_L, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_L, false);
-	}, QKeySequence(), tr("Autofire L"), "autofireL");
+	}), tr("Autofire L"), "autofireL");
 
-	m_inputModel->addFunctions(autofireMenu, [this]() {
+	autofireMenuItem->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_R, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_R, false);
-	}, QKeySequence(), tr("Autofire R"), "autofireR");
+	}), tr("Autofire R"), "autofireR");
 
-	m_inputModel->addFunctions(autofireMenu, [this]() {
+	autofireMenuItem->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_START, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_START, false);
-	}, QKeySequence(), tr("Autofire Start"), "autofireStart");
+	}), tr("Autofire Start"), "autofireStart");
 
-	m_inputModel->addFunctions(autofireMenu, [this]() {
+	autofireMenuItem->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_SELECT, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_SELECT, false);
-	}, QKeySequence(), tr("Autofire Select"), "autofireSelect");
+	}), tr("Autofire Select"), "autofireSelect");
 
-	m_inputModel->addFunctions(autofireMenu, [this]() {
+	autofireMenuItem->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_UP, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_UP, false);
-	}, QKeySequence(), tr("Autofire Up"), "autofireUp");
+	}), tr("Autofire Up"), "autofireUp");
 
-	m_inputModel->addFunctions(autofireMenu, [this]() {
+	autofireMenuItem->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_RIGHT, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_RIGHT, false);
-	}, QKeySequence(), tr("Autofire Right"), "autofireRight");
+	}), tr("Autofire Right"), "autofireRight");
 
-	m_inputModel->addFunctions(autofireMenu, [this]() {
+	autofireMenuItem->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_DOWN, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_DOWN, false);
-	}, QKeySequence(), tr("Autofire Down"), "autofireDown");
+	}), tr("Autofire Down"), "autofireDown");
 
-	m_inputModel->addFunctions(autofireMenu, [this]() {
+	autofireMenuItem->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_LEFT, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_LEFT, false);
-	}, QKeySequence(), tr("Autofire Left"), "autofireLeft");
+	}), tr("Autofire Left"), "autofireLeft");
 
 	for (QAction* action : m_gameActions) {
 		action->setDisabled(true);
@@ -1606,7 +1598,8 @@ QAction* Window::addControlledAction(QMenu* menu, QAction* action, const QString
 }
 
 QAction* Window::addHiddenAction(QMenu* menu, QAction* action, const QString& name) {
-	m_inputModel->addAction(menu, action, name);
+	InputItem* item = m_inputModel->itemForMenu(menu);
+	item->addItem(action, name);
 	action->setShortcutContext(Qt::WidgetShortcut);
 	addAction(action);
 	return action;

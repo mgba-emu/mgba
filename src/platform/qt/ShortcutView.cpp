@@ -56,10 +56,8 @@ void ShortcutView::load(const QModelIndex& index) {
 	if (!m_controller) {
 		return;
 	}
-	if (m_controller->isMenuAt(index)) {
-		return;
-	}
-	int shortcut = m_controller->shortcutAt(index);
+	InputItem* item = m_controller->itemAt(index);
+	int shortcut = item->shortcut();
 	if (index.column() == 1) {
 		m_ui.keyboardButton->click();
 	} else if (index.column() == 2) {
@@ -80,35 +78,34 @@ void ShortcutView::clear() {
 		return;
 	}
 	QModelIndex index = m_ui.shortcutTable->selectionModel()->currentIndex();
-	if (m_controller->isMenuAt(index)) {
-		return;
-	}
+	InputItem* item = m_controller->itemAt(index);
 	if (m_ui.gamepadButton->isChecked()) {
-		m_controller->clearButton(index);
+		item->clearButton();
 		m_ui.keyEdit->setValueButton(-1);
 	} else {
-		m_controller->clearKey(index);
+		item->clearShortcut();
 		m_ui.keyEdit->setValueKey(-1);
 	}
 }
 
 void ShortcutView::updateButton(int button) {
-	if (!m_controller || m_controller->isMenuAt(m_ui.shortcutTable->selectionModel()->currentIndex())) {
+	if (!m_controller) {
 		return;
 	}
+	InputItem* item = m_controller->itemAt(m_ui.shortcutTable->selectionModel()->currentIndex());
 	if (m_ui.gamepadButton->isChecked()) {
-		m_controller->updateButton(m_ui.shortcutTable->selectionModel()->currentIndex(), button);
+		item->setButton(button);
 	} else {
-		m_controller->updateKey(m_ui.shortcutTable->selectionModel()->currentIndex(), button);
+		item->setShortcut(button);
 	}
 }
 
 void ShortcutView::updateAxis(int axis, int direction) {
-	if (!m_controller || m_controller->isMenuAt(m_ui.shortcutTable->selectionModel()->currentIndex())) {
+	if (!m_controller) {
 		return;
 	}
-	m_controller->updateAxis(m_ui.shortcutTable->selectionModel()->currentIndex(), axis,
-	                         static_cast<GamepadAxisEvent::Direction>(direction));
+	InputItem* item = m_controller->itemAt(m_ui.shortcutTable->selectionModel()->currentIndex());
+	item->setAxis(axis, static_cast<GamepadAxisEvent::Direction>(direction));
 }
 
 void ShortcutView::closeEvent(QCloseEvent*) {

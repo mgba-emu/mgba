@@ -33,6 +33,7 @@ namespace QGBA {
 
 class ConfigController;
 class GameController;
+class InputItem;
 class InputModel;
 
 class InputController : public QObject {
@@ -43,9 +44,6 @@ public:
 
 	InputController(InputModel* model, int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
 	~InputController();
-
-	void addPlatform(mPlatform, const QString& visibleName, const mInputPlatformInfo*);
-	void setPlatform(mPlatform);
 
 	void setConfiguration(ConfigController* config);
 	void saveConfiguration();
@@ -68,9 +66,9 @@ public:
 	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(int type);
 	void recalibrateAxes();
 
-	void bindKey(mPlatform platform, uint32_t type, int key, int);
-	void bindAxis(mPlatform platform, uint32_t type, int axis, GamepadAxisEvent::Direction, int);
-	void bindHat(mPlatform platform, uint32_t type, int hat, GamepadHatEvent::Direction, int);
+	void bindKey(uint32_t type, int key, int);
+	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, int);
+	void bindHat(uint32_t type, int hat, GamepadHatEvent::Direction, int);
 
 	QStringList connectedGamepads(uint32_t type) const;
 	int gamepad(uint32_t type) const;
@@ -106,10 +104,10 @@ public slots:
 	void setScreensaverSuspendable(bool);
 
 private slots:
-	void bindKey(const QModelIndex&, int key);
-	void bindButton(const QModelIndex&, int key);
-	void bindAxis(const QModelIndex&, int axis, GamepadAxisEvent::Direction);
-	void bindHat(const QModelIndex&, int hat, GamepadHatEvent::Direction);
+	void doBindKey(const QModelIndex&, int key);
+	void doBindButton(const QModelIndex&, int key);
+	void doBindAxis(const QModelIndex&, int axis, GamepadAxisEvent::Direction);
+	void doBindHat(const QModelIndex&, int hat, GamepadHatEvent::Direction);
 
 protected:
 	bool eventFilter(QObject*, QEvent*) override;
@@ -121,9 +119,8 @@ private:
 	void sendGamepadEvent(QEvent*);
 	void restoreModel();
 
-	InputModel* m_inputModel;
-	mPlatform m_platform;
-	QMap<mPlatform, mInputMap> m_inputMaps;
+	InputModel* m_inputModel = nullptr;
+	mInputMap m_inputMap;
 	ConfigController* m_config = nullptr;
 	int m_playerId;
 	bool m_allowOpposing = false;
@@ -139,9 +136,8 @@ private:
 
 	QVector<int> m_deadzones;
 
-	std::unique_ptr<QMenu> m_inputMenu;
-	std::unique_ptr<QMenu> m_autofireMenu;
-	QMap<mPlatform, QModelIndex> m_inputMenuIndices;
+	InputItem* m_inputMenu;
+	InputItem* m_autofireMenu;
 
 	QSet<int> m_activeButtons;
 	QSet<QPair<int, GamepadAxisEvent::Direction>> m_activeAxes;

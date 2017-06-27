@@ -35,12 +35,14 @@ private:
 	constexpr static const char* const BUTTON_PROFILE_SECTION = "shortcutProfileButton.";
 	constexpr static const char* const AXIS_PROFILE_SECTION = "shortcutProfileAxis.";
 
+private slots:
+	void itemAdded(InputItem* parent, InputItem* child);
+
 public:
 	InputModel(QObject* parent = nullptr);
 
 	void setConfigController(ConfigController* controller);
 	void setProfile(const QString& profile);
-	void setKeyCallback(std::function<void (QMenu*, int, bool)> callback) { m_keyCallback = callback; }
 
 	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 	virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -51,63 +53,38 @@ public:
 	virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-	void addAction(QMenu* menu, QAction* action, const QString& name);
-	void addFunctions(QMenu* menu, std::function<void()> press, std::function<void()> release,
-	                         int shortcut, const QString& visibleName, const QString& name);
-	void addFunctions(QMenu* menu, std::function<void()> press, std::function<void()> release,
-	                         const QKeySequence& shortcut, const QString& visibleName, const QString& name);
-	void addKey(QMenu* menu, mPlatform platform, int key, int shortcut, const QString& visibleName, const QString& name);
-	QModelIndex addMenu(QMenu* menu, QMenu* parent = nullptr);
+	template<typename... Args> InputItem* addItem(Args... params) { return m_rootMenu.addItem(params...); }
 
-	QAction* getAction(const QString& name);
-	int shortcutAt(const QModelIndex& index) const;
-	int keyAt(const QModelIndex& index) const;
-	bool isMenuAt(const QModelIndex& index) const;
+	InputItem* itemAt(const QString& name);
+	const InputItem* itemAt(const QString& name) const;
+	InputItem* itemAt(const QModelIndex& index);
+	const InputItem* itemAt(const QModelIndex& index) const;
 
-	void updateKey(const QModelIndex& index, int keySequence);
-	void updateButton(const QModelIndex& index, int button);
-	void updateAxis(const QModelIndex& index, int axis, GamepadAxisEvent::Direction);
-	void updateHat(const QModelIndex& index, int hat, GamepadHatEvent::Direction);
+	InputItem* itemForKey(int key);
+	const InputItem* itemForKey(int key) const;
 
-	void clearKey(const QModelIndex& index);
-	void clearButton(const QModelIndex& index);
+	InputItem* itemForMenu(const QMenu* menu);
+	const InputItem* itemForMenu(const QMenu* menu) const;
 
 	static int toModifierShortcut(const QString& shortcut);
 	static bool isModifierKey(int key);
 	static int toModifierKey(int key);
 
-	void loadProfile(mPlatform platform, const QString& profile);
+	void loadProfile(const QString& profile);
 
-	bool triggerKey(int keySequence, bool down, mPlatform platform = PLATFORM_NONE);
-	bool triggerButton(int button, bool down);
-	bool triggerAxis(int axis, GamepadAxisEvent::Direction, bool isNew);
-	bool triggerHat(int hat, GamepadHatEvent::Direction);
-
-signals:
-	void keyRebound(const QModelIndex&, int keySequence);
-	void buttonRebound(const QModelIndex&, int button);
-	void axisRebound(const QModelIndex& index, int axis, GamepadAxisEvent::Direction);
-	void hatRebound(const QModelIndex& index, int hat, GamepadHatEvent::Direction);
+	InputItem* root() { return &m_rootMenu; }
 
 private:
-	InputItem* add(QMenu* menu, std::function<void (InputItem*)>);
-	InputItem* itemAt(const QModelIndex& index);
-	const InputItem* itemAt(const QModelIndex& index) const;
 	bool loadShortcuts(InputItem*);
 	void loadGamepadShortcuts(InputItem*);
 	void onSubitems(InputItem*, std::function<void(InputItem*)> func);
-	void updateKey(InputItem* item, int keySequence);
 
-	QModelIndex index(InputItem* item) const;
+	QModelIndex index(InputItem* item, int column = 0) const;
 
 	InputItem m_rootMenu;
-	QMap<QMenu*, InputItem*> m_menuMap;
-	QMap<int, InputItem*> m_buttons;
-	QMap<QPair<int, GamepadAxisEvent::Direction>, InputItem*> m_axes;
-	QMap<int, InputItem*> m_heldKeys;
-	QMap<QPair<mPlatform, int>, InputItem*> m_keys;
+	QMap<QString, InputItem*> m_names;
+	QMap<const QMenu*, InputItem*> m_menus;
 	ConfigController* m_config;
-	std::function<void (QMenu*, int key, bool down)> m_keyCallback;
 	QString m_profileName;
 	const InputProfile* m_profile;
 };
