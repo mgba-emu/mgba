@@ -87,7 +87,7 @@ InputController::~InputController() {
 #endif
 }
 
-void InputController::rebuildIndex(const InputItem* index) {
+void InputController::rebuildIndex(const InputIndex* index) {
 	m_inputIndex.rebuild(index);
 
 	rebindKey(GBA_KEY_A);

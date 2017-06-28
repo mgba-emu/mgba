@@ -920,7 +920,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	installEventFilter(&m_inputController);
 
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
-	m_inputController.inputIndex()->addItem(fileMenu, "file");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open),
 	                    "loadROM");
 #ifdef USE_SQLITE3
@@ -975,8 +974,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* quickLoadMenu = fileMenu->addMenu(tr("Quick load"));
 	QMenu* quickSaveMenu = fileMenu->addMenu(tr("Quick save"));
-	m_inputController.inputIndex()->addItem(quickLoadMenu, "quickLoadMenu");
-	m_inputController.inputIndex()->addItem(quickSaveMenu, "quickSaveMenu");
 
 	QAction* quickLoad = new QAction(tr("Load recent"), quickLoadMenu);
 	connect(quickLoad, &QAction::triggered, m_controller, &GameController::loadState);
@@ -1062,7 +1059,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	QMenu* emulationMenu = menubar->addMenu(tr("&Emulation"));
-	InputItem* emulationMenuItem = m_inputController.inputIndex()->addItem(emulationMenu, "emulation");
 	QAction* reset = new QAction(tr("&Reset"), emulationMenu);
 	reset->setShortcut(tr("Ctrl+R"));
 	connect(reset, &QAction::triggered, m_controller, &GameController::reset);
@@ -1103,11 +1099,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	emulationMenu->addSeparator();
 
-	emulationMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->setTurbo(true, false);
 	}, [this]() {
 		m_controller->setTurbo(false, false);
-	}), tr("Fast forward (held)"), "holdFastForward")->setShortcut(QKeySequence(Qt::Key_Tab)[0]);
+	}), tr("Fast forward (held)"), "holdFastForward", emulationMenu)->setShortcut(QKeySequence(Qt::Key_Tab)[0]);
 
 	QAction* turbo = new QAction(tr("&Fast forward"), emulationMenu);
 	turbo->setCheckable(true);
@@ -1129,11 +1125,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 	m_config->updateOption("fastForwardRatio");
 
-	emulationMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->startRewinding();
 	}, [this]() {
 		m_controller->stopRewinding();
-	}), tr("Rewind (held)"), "holdRewind")->setShortcut(QKeySequence("`")[0]);
+	}), tr("Rewind (held)"), "holdRewind", emulationMenu)->setShortcut(QKeySequence("`")[0]);
 
 	QAction* rewind = new QAction(tr("Re&wind"), emulationMenu);
 	rewind->setShortcut(tr("~"));
@@ -1168,7 +1164,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	emulationMenu->addSeparator();
 
 	QMenu* solarMenu = emulationMenu->addMenu(tr("Solar sensor"));
-	m_inputController.inputIndex()->addItem(solarMenu, "luminance");
 	QAction* solarIncrease = new QAction(tr("Increase solar level"), solarMenu);
 	connect(solarIncrease, &QAction::triggered, m_controller, &GameController::increaseLuminanceLevel);
 	addControlledAction(solarMenu, solarIncrease, "increaseLuminanceLevel");
@@ -1195,9 +1190,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
-	InputItem* avMenuItem = m_inputController.inputIndex()->addItem(avMenu, "av");
 	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));
-	InputItem* frameMenuItem = avMenuItem->addItem(frameMenu, "frameSize");
 	for (int i = 1; i <= 6; ++i) {
 		QAction* setSize = new QAction(tr("%1x").arg(QString::number(i)), avMenu);
 		setSize->setCheckable(true);
@@ -1219,7 +1212,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 			setSize->blockSignals(enableSignals);
 		});
 		m_frameSizes[i] = setSize;
-		addControlledAction(frameMenuItem, setSize, QString("frame%1x").arg(QString::number(i)));
+		addControlledAction(frameMenu, setSize, QString("frame%1x").arg(QString::number(i)));
 	}
 	QKeySequence fullscreenKeys;
 #ifdef Q_OS_WIN
@@ -1227,7 +1220,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 #else
 	fullscreenKeys = QKeySequence("Ctrl+F");
 #endif
-	addControlledAction(frameMenuItem, frameMenu->addAction(tr("Toggle fullscreen"), this, SLOT(toggleFullScreen()), fullscreenKeys), "fullscreen");
+	addControlledAction(frameMenu, frameMenu->addAction(tr("Toggle fullscreen"), this, SLOT(toggleFullScreen()), fullscreenKeys), "fullscreen");
 
 	ConfigOption* lockAspectRatio = m_config->addOption("lockAspectRatio");
 	lockAspectRatio->addBoolean(tr("Lock aspect ratio"), avMenu);
@@ -1332,13 +1325,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	avMenu->addSeparator();
 	m_videoLayers = avMenu->addMenu(tr("Video layers"));
-	avMenuItem->addItem(m_videoLayers, "videoLayers");
-
 	m_audioChannels = avMenu->addMenu(tr("Audio channels"));
-	avMenuItem->addItem(m_audioChannels, "audioChannels");
 
 	QMenu* toolsMenu = menubar->addMenu(tr("&Tools"));
-	m_inputController.inputIndex()->addItem(toolsMenu, "tools");
 	QAction* viewLogs = new QAction(tr("View &logs..."), toolsMenu);
 	connect(viewLogs, &QAction::triggered, m_logView, &QWidget::show);
 	addControlledAction(toolsMenu, viewLogs, "viewLogs");
@@ -1475,133 +1464,131 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* exitFullScreen = new QAction(tr("Exit fullscreen"), frameMenu);
 	connect(exitFullScreen, &QAction::triggered, this, &Window::exitFullScreen);
 	exitFullScreen->setShortcut(QKeySequence("Esc"));
-	addHiddenAction(frameMenuItem, exitFullScreen, "exitFullScreen");
+	addHiddenAction(frameMenu, exitFullScreen, "exitFullScreen");
 
 	QMenu* autofireMenu = new QMenu(tr("Autofire"), this);
-	InputItem* autofireMenuItem = m_inputController.inputIndex()->addItem(autofireMenu, "autofire");
 
-	autofireMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_A, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_A, false);
-	}), tr("Autofire A"), "autofireA");
+	}), tr("Autofire A"), "autofireA", autofireMenu);
 
-	autofireMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_B, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_B, false);
-	}), tr("Autofire B"), "autofireB");
+	}), tr("Autofire B"), "autofireB", autofireMenu);
 
-	autofireMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_L, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_L, false);
-	}), tr("Autofire L"), "autofireL");
+	}), tr("Autofire L"), "autofireL", autofireMenu);
 
-	autofireMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_R, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_R, false);
-	}), tr("Autofire R"), "autofireR");
+	}), tr("Autofire R"), "autofireR", autofireMenu);
 
-	autofireMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_START, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_START, false);
-	}), tr("Autofire Start"), "autofireStart");
+	}), tr("Autofire Start"), "autofireStart", autofireMenu);
 
-	autofireMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_SELECT, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_SELECT, false);
-	}), tr("Autofire Select"), "autofireSelect");
+	}), tr("Autofire Select"), "autofireSelect", autofireMenu);
 
-	autofireMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_UP, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_UP, false);
-	}), tr("Autofire Up"), "autofireUp");
+	}), tr("Autofire Up"), "autofireUp", autofireMenu);
 
-	autofireMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_RIGHT, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_RIGHT, false);
-	}), tr("Autofire Right"), "autofireRight");
+	}), tr("Autofire Right"), "autofireRight", autofireMenu);
 
-	autofireMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_DOWN, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_DOWN, false);
-	}), tr("Autofire Down"), "autofireDown");
+	}), tr("Autofire Down"), "autofireDown", autofireMenu);
 
-	autofireMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->setAutofire(GBA_KEY_LEFT, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_LEFT, false);
-	}), tr("Autofire Left"), "autofireLeft");
+	}), tr("Autofire Left"), "autofireLeft", autofireMenu);
 
 	QMenu* bindingsMenu = new QMenu(tr("Bindings"), this);
-	InputItem* bindingsMenuItem = m_inputController.inputIndex()->addItem(bindingsMenu, "bindings");
 
-	bindingsMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->keyPressed(GBA_KEY_A);
 	}, [this]() {
 		m_controller->keyReleased(GBA_KEY_A);
-	}), tr("A"), "keyA");
+	}), tr("A"), "keyA", bindingsMenu);
 
-	bindingsMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->keyPressed(GBA_KEY_B);
 	}, [this]() {
 		m_controller->keyReleased(GBA_KEY_B);
-	}), tr("B"), "keyB");
+	}), tr("B"), "keyB", bindingsMenu);
 
-	bindingsMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->keyPressed(GBA_KEY_START);
 	}, [this]() {
 		m_controller->keyReleased(GBA_KEY_START);
-	}), tr("Start"), "keyStart");
+	}), tr("Start"), "keyStart", bindingsMenu);
 
-	bindingsMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->keyPressed(GBA_KEY_SELECT);
 	}, [this]() {
 		m_controller->keyReleased(GBA_KEY_SELECT);
-	}), tr("Select"), "keySelect");
+	}), tr("Select"), "keySelect", bindingsMenu);
 
-	bindingsMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->keyPressed(GBA_KEY_L);
 	}, [this]() {
 		m_controller->keyReleased(GBA_KEY_L);
-	}), tr("L"), "keyL");
+	}), tr("L"), "keyL", bindingsMenu);
 
-	bindingsMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->keyPressed(GBA_KEY_R);
 	}, [this]() {
 		m_controller->keyReleased(GBA_KEY_R);
-	}), tr("R"), "keyR");
+	}), tr("R"), "keyR", bindingsMenu);
 
-	bindingsMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->keyPressed(GBA_KEY_UP);
 	}, [this]() {
 		m_controller->keyReleased(GBA_KEY_UP);
-	}), tr("Up"), "keyUp");
+	}), tr("Up"), "keyUp", bindingsMenu);
 
-	bindingsMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->keyPressed(GBA_KEY_DOWN);
 	}, [this]() {
 		m_controller->keyReleased(GBA_KEY_DOWN);
-	}), tr("Down"), "keyDown");
+	}), tr("Down"), "keyDown", bindingsMenu);
 
-	bindingsMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->keyPressed(GBA_KEY_LEFT);
 	}, [this]() {
 		m_controller->keyReleased(GBA_KEY_LEFT);
-	}), tr("Left"), "keyLeft");
+	}), tr("Left"), "keyLeft", bindingsMenu);
 
-	bindingsMenuItem->addItem(qMakePair([this]() {
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
 		m_controller->keyPressed(GBA_KEY_RIGHT);
 	}, [this]() {
 		m_controller->keyReleased(GBA_KEY_RIGHT);
-	}), tr("Right"), "keyRight");
+	}), tr("Right"), "keyRight", bindingsMenu);
 
 	for (QAction* action : m_gameActions) {
 		action->setDisabled(true);
@@ -1659,22 +1646,8 @@ QAction* Window::addControlledAction(QMenu* menu, QAction* action, const QString
 	return action;
 }
 
-QAction* Window::addControlledAction(InputItem* parent, QAction* action, const QString& name) {
-	addHiddenAction(parent, action, name);
-	parent->menu()->addAction(action);
-	return action;
-}
-
 QAction* Window::addHiddenAction(QMenu* menu, QAction* action, const QString& name) {
-	InputItem* parent = m_inputController.inputIndex()->itemForMenu(menu);
-	parent->addItem(action, name);
-	action->setShortcutContext(Qt::WidgetShortcut);
-	addAction(action);
-	return action;
-}
-
-QAction* Window::addHiddenAction(InputItem* parent, QAction* action, const QString& name) {
-	parent->addItem(action, name);
+	m_inputController.inputIndex()->addItem(action, name, menu);
 	action->setShortcutContext(Qt::WidgetShortcut);
 	addAction(action);
 	return action;

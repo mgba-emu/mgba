@@ -11,6 +11,8 @@
 #include "InputIndex.h"
 
 #include <QAbstractItemModel>
+#include <QMenu>
+#include <QSet>
 
 #include <functional>
 
@@ -48,12 +50,28 @@ public:
 	InputItem* itemAt(const QModelIndex& index);
 	const InputItem* itemAt(const QModelIndex& index) const;
 
-	InputItem* root() { return m_root.root(); }
+	InputIndex* inputIndex() { return &m_index; }
 
 private:
-	QModelIndex index(InputItem* item, int column = 0) const;
+	struct InputModelItem {
+		InputModelItem(InputItem* i) : item(i), obj(i) {}
+		InputModelItem(const QMenu* i) : menu(i), obj(i) {}
+		InputModelItem(const QObject* i) : obj(i) {}
 
-	InputIndex m_root;
+		InputItem* item = nullptr;
+		const QMenu* menu = nullptr;
+		const QObject* obj;
+
+		QString visibleName() const;
+		bool operator==(const InputModelItem& other) { return obj == other.obj; }
+	};
+
+	QModelIndex index(const QObject* item, int column = 0) const;
+
+	InputIndex m_index;
+	QList<InputModelItem> m_topLevelMenus;
+	QSet<const QObject*> m_menus;
+	QMap<const QObject*, QList<InputModelItem>> m_tree;
 	QString m_profileName;
 };
 

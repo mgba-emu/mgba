@@ -46,7 +46,7 @@ public:
 	~InputController();
 
 	InputIndex* inputIndex() { return &m_inputIndex; }
-	void rebuildIndex(const InputItem* = nullptr);
+	void rebuildIndex(const InputIndex* = nullptr);
 
 	void setConfiguration(ConfigController* config);
 	void saveConfiguration();

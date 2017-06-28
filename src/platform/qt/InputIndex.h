@@ -32,11 +32,13 @@ public:
 
 	void clone(InputIndex* root, bool actions = false);
 	void clone(const InputIndex* root);
-	void rebuild(const InputIndex* root);
-	void rebuild(const InputItem* root = nullptr);
+	void rebuild(const InputIndex* root = nullptr);
+
+	const QList<InputItem*>& items() const { return m_items; }
 
 	template<typename... Args> InputItem* addItem(Args... params) {
-		InputItem* newItem = m_root.addItem(params...);
+		InputItem* newItem = new InputItem(params...);
+		m_items.append(newItem);
 		itemAdded(newItem);
 		return newItem; 
 	}
@@ -55,21 +57,15 @@ public:
 	static bool isModifierKey(int key);
 	static int toModifierKey(int key);
 
-	InputItem* root() { return &m_root; }
-	const InputItem* root() const { return &m_root; }
-
 	void loadProfile(const QString& profile);
 
 private:
 	bool loadShortcuts(InputItem*);
 	void loadGamepadShortcuts(InputItem*);
-	void onSubitems(InputItem*, std::function<void(InputItem*)> func);
-	void onSubitems(InputItem*, std::function<QVariant(InputItem*, InputItem* parent, QVariant accum)> func, QVariant accum = QVariant());
-	void onSubitems(const InputItem*, std::function<QVariant(const InputItem*, const InputItem* parent, QVariant accum)> func, QVariant accum = QVariant());
 
 	void itemAdded(InputItem*);
 
-	InputItem m_root;
+	QList<InputItem*> m_items;
 
 	QMap<QString, InputItem*> m_names;
 	QMap<const QMenu*, InputItem*> m_menus;

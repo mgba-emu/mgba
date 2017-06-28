@@ -18,36 +18,31 @@ void InputIndex::clone(InputIndex* root, bool actions) {
 	if (!actions) {
 		clone(const_cast<const InputIndex*>(root));
 	} else {
-		m_root.clear();
-		onSubitems(root->root(), [this](InputItem* item, InputItem* parent, QVariant accum) -> QVariant {
-			InputItem* newParent = qvariant_cast<InputItem*>(accum);
-			InputItem* newItem = newParent->addItem(*item);
+		qDeleteAll(m_items);
+		m_items.clear();
+		for (auto& item : root->m_items) {
+			InputItem* newItem = new InputItem(*item);
+			m_items.append(newItem);
 			itemAdded(newItem);
-			return QVariant::fromValue(newItem);
-		}, QVariant::fromValue(&m_root));
+		}
 	}
+	rebuild();
 }
 
 void InputIndex::clone(const InputIndex* root) {
-	m_root.clear();
-	onSubitems(root->root(), [this](const InputItem* item, const InputItem* parent, QVariant accum) -> QVariant {
-		InputItem* newParent = qvariant_cast<InputItem*>(accum);
-		InputItem* newItem = newParent->addItem(*item);
+	qDeleteAll(m_items);
+	m_items.clear();
+	for (auto& item : root->m_items) {
+		InputItem* newItem = new InputItem(*item);
+		m_items.append(newItem);
 		itemAdded(newItem);
-		return QVariant::fromValue(newItem);
-	}, QVariant::fromValue(&m_root));
+	}
+	rebuild();
 }
 
 void InputIndex::rebuild(const InputIndex* root) {
-	rebuild(root->root());
-}
-
-void InputIndex::rebuild(const InputItem* root) {
-	const InputItem* sourceRoot;
 	if (!root) {
-		sourceRoot = &m_root;
-	} else {
-		sourceRoot = root;
+		root = this;
 	}
 
 	m_names.clear();
@@ -56,10 +51,9 @@ void InputIndex::rebuild(const InputItem* root) {
 	m_buttons.clear();
 	m_axes.clear();
 
-	onSubitems(sourceRoot, [this](const InputItem* item, const InputItem* parent, QVariant accum) -> QVariant {
-		InputItem* newParent = qvariant_cast<InputItem*>(accum);
+	for (auto& item : root->m_items) {
 		InputItem* newItem = nullptr;
-		for (auto iter : newParent->items()) {
+		for (auto &iter : m_items) {
 			if (*iter == *item) {
 				newItem = iter;
 				break;
@@ -70,8 +64,7 @@ void InputIndex::rebuild(const InputItem* root) {
 		newItem->setAxis(item->axis(), item->direction());
 
 		itemAdded(newItem);
-		return QVariant::fromValue(newItem);
-	}, QVariant::fromValue(&m_root));
+	}
 }
 
 InputItem* InputIndex::itemAt(const QString& name) {
@@ -244,32 +237,11 @@ int InputIndex::toModifierKey(int key) {
 	return modifiers;
 }
 
-void InputIndex::onSubitems(InputItem* item, std::function<void(InputItem*)> func) {
-	for (InputItem* subitem : item->items()) {
-		func(subitem);
-		onSubitems(subitem, func);
-	}
-}
-
-void InputIndex::onSubitems(InputItem* item, std::function<QVariant(InputItem*, InputItem*, QVariant)> func, QVariant accum) {
-	for (InputItem* subitem : item->items()) {
-		QVariant newAccum = func(subitem, item, accum);
-		onSubitems(subitem, func, newAccum);
-	}
-}
-
-void InputIndex::onSubitems(const InputItem* item, std::function<QVariant(const InputItem*, const InputItem*, QVariant)> func, QVariant accum) {
-	for (const InputItem* subitem : item->items()) {
-		QVariant newAccum = func(subitem, item, accum);
-		onSubitems(subitem, func, newAccum);
-	}
-}
-
 void InputIndex::loadProfile(const QString& profile) {
 	m_profileName = profile;
 	m_profile = InputProfile::findProfile(profile);
-	onSubitems(&m_root, [this](InputItem* item) {
+	for (auto& item : m_items) {
 		loadGamepadShortcuts(item);
-	});
+	}
 }
 

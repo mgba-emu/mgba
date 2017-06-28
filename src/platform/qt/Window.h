@@ -143,9 +143,7 @@ private:
 	template <typename T> std::function<void()> openTView();
 
 	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
-	QAction* addControlledAction(InputItem* parent, QAction* action, const QString& name);
 	QAction* addHiddenAction(QMenu* menu, QAction* action, const QString& name);
-	QAction* addHiddenAction(InputItem* parent, QAction* action, const QString& name);
 
 	void updateTitle(float fps = -1);
 

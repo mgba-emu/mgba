@@ -28,7 +28,7 @@ public:
 	void setModel(InputIndex* model);
 	void setInputController(InputController* input);
 
-	const InputItem* root() { return m_model.root(); }
+	const InputIndex* root() { return m_model.inputIndex(); }
 
 protected:
 	virtual bool event(QEvent*) override;

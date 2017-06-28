@@ -14,10 +14,22 @@
 
 using namespace QGBA;
 
+QString InputModel::InputModelItem::visibleName() const {
+	if (item) {
+		return item->visibleName();
+	}
+	if (menu) {
+		return menu->title()
+			.remove(QRegExp("&(?!&)"))
+			.remove("...");
+	}
+	return QString();
+}
+
 InputModel::InputModel(const InputIndex& index, QObject* parent)
 	: QAbstractItemModel(parent)
 {
-	m_root.clone(&index);
+	clone(index);
 }
 
 InputModel::InputModel(QObject* parent)
@@ -27,7 +39,28 @@ InputModel::InputModel(QObject* parent)
 
 void InputModel::clone(const InputIndex& index) {
 	emit beginResetModel();
-	m_root.clone(&index);
+	m_index.clone(&index);
+	m_menus.clear();
+	m_topLevelMenus.clear();
+	QList<const QMenu*> menus;
+	for (auto& item : m_index.items()) {
+		const QMenu* menu = item->menu();
+		if (!menus.contains(menu)) {
+			menus.append(menu);
+			m_menus.insert(menu);
+		}
+	}
+	for (auto& menu : menus) {
+		if (m_menus.contains(menu->parent())) {
+			m_tree[menu->parent()].append(menu);
+		} else {
+			m_topLevelMenus.append(menu);
+		}
+	}
+	for (auto& item : m_index.items()) {
+		const QMenu* menu = item->menu();
+		m_tree[menu].append(item);
+	}
 	emit endResetModel();
 }
 
@@ -36,25 +69,31 @@ QVariant InputModel::data(const QModelIndex& index, int role) const {
 		return QVariant();
 	}
 	int row = index.row();
-	const InputItem* item = static_cast<const InputItem*>(index.internalPointer());
+	const InputModelItem* item = static_cast<const InputModelItem*>(index.internalPointer());
 	switch (index.column()) {
 	case 0:
 		return item->visibleName();
 	case 1:
-		return QKeySequence(item->shortcut()).toString(QKeySequence::NativeText);
-	case 2:
-		if (item->button() >= 0) {
-			return item->button();
+		if (item->item) {
+			return QKeySequence(item->item->shortcut()).toString(QKeySequence::NativeText);
 		}
-		if (item->axis() >= 0) {
+		break;
+	case 2:
+		if (!item->item) {
+			break;
+		}
+		if (item->item->button() >= 0) {
+			return item->item->button();
+		}
+		if (item->item->axis() >= 0) {
 			char d = '\0';
-			if (item->direction() == GamepadAxisEvent::POSITIVE) {
+			if (item->item->direction() == GamepadAxisEvent::POSITIVE) {
 				d = '+';
 			}
-			if (item->direction() == GamepadAxisEvent::NEGATIVE) {
+			if (item->item->direction() == GamepadAxisEvent::NEGATIVE) {
 				d = '-';
 			}
-			return QString("%1%2").arg(d).arg(item->axis());
+			return QString("%1%2").arg(d).arg(item->item->axis());
 		}
 		break;
 	}
@@ -79,26 +118,39 @@ QVariant InputModel::headerData(int section, Qt::Orientation orientation, int ro
 }
 
 QModelIndex InputModel::index(int row, int column, const QModelIndex& parent) const {
-	const InputItem* pmenu = m_root.root();
 	if (parent.isValid()) {
-		pmenu = static_cast<InputItem*>(parent.internalPointer());
+		InputModelItem* p = static_cast<InputModelItem*>(parent.internalPointer());
+		return createIndex(row, column, const_cast<InputModelItem*>(&m_tree[p->obj][row]));
 	}
-	return createIndex(row, column, const_cast<InputItem*>(pmenu->items()[row]));
+	return createIndex(row, column, const_cast<InputModelItem*>(&m_topLevelMenus[row]));
 }
 
 QModelIndex InputModel::parent(const QModelIndex& index) const {
 	if (!index.isValid() || !index.internalPointer()) {
 		return QModelIndex();
 	}
-	InputItem* item = static_cast<InputItem*>(index.internalPointer());
-	return this->index(item->parent());
+	const QObject* obj = static_cast<const InputModelItem*>(index.internalPointer())->obj;
+	if (m_menus.contains(obj->parent())) {
+		return this->index(obj->parent());
+	} else {
+		return QModelIndex();
+	}
 }
 
-QModelIndex InputModel::index(InputItem* item, int row) const {
+QModelIndex InputModel::index(const QObject* item, int column) const {
 	if (!item || !item->parent()) {
 		return QModelIndex();
 	}
-	return createIndex(item->parent()->items().indexOf(item), row, item);
+	const QObject* parent = item->parent();
+	if (m_tree.contains(parent)) {
+		int index = m_tree[parent].indexOf(item);
+		return createIndex(index, column, const_cast<InputModelItem*>(&m_tree[parent][index]));
+	} 
+	if (m_topLevelMenus.contains(item)) {
+		int index = m_topLevelMenus.indexOf(item);
+		return createIndex(index, column, const_cast<InputModelItem*>(&m_topLevelMenus[index]));
+	}
+	return QModelIndex();
 }
 
 int InputModel::columnCount(const QModelIndex& index) const {
@@ -106,37 +158,27 @@ int InputModel::columnCount(const QModelIndex& index) const {
 }
 
 int InputModel::rowCount(const QModelIndex& index) const {
-	if (!index.isValid()) {
-		return m_root.root()->items().count();
+	if (!index.isValid() || !index.internalPointer()) {
+		return m_topLevelMenus.count();
 	}
-	const InputItem* item = static_cast<const InputItem*>(index.internalPointer());
-	return item->items().count();
+	const QObject* obj = static_cast<const InputModelItem*>(index.internalPointer())->obj;
+	if (!m_tree.contains(obj)) {
+		return 0;
+	}
+	return m_tree[obj].count();
 }
 
 InputItem* InputModel::itemAt(const QModelIndex& index) {
-	if (!index.isValid()) {
+	if (!index.isValid() || !index.internalPointer()) {
 		return nullptr;
 	}
-	if (index.internalPointer()) {
-		return static_cast<InputItem*>(index.internalPointer());
-	}
-	if (!index.parent().isValid()) {
-		return nullptr;
-	}
-	InputItem* pmenu = static_cast<InputItem*>(index.parent().internalPointer());
-	return pmenu->items()[index.row()];
+	return static_cast<InputModelItem*>(index.internalPointer())->item;
 }
 
 const InputItem* InputModel::itemAt(const QModelIndex& index) const {
-	if (!index.isValid()) {
+	if (!index.isValid() || !index.internalPointer()) {
 		return nullptr;
 	}
-	if (index.internalPointer()) {
-		return static_cast<InputItem*>(index.internalPointer());
-	}
-	if (!index.parent().isValid()) {
-		return nullptr;
-	}
-	InputItem* pmenu = static_cast<InputItem*>(index.parent().internalPointer());
-	return pmenu->items()[index.row()];
+	return static_cast<const InputModelItem*>(index.internalPointer())->item;
+
 }

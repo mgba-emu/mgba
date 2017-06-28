@@ -10,86 +10,71 @@
 using namespace QGBA;
 
 InputItem::InputItem()
-	: QObject(nullptr)
-	, m_parent(nullptr)
 {
 }
 
-InputItem::InputItem(QAction* action, const QString& name, InputItem* parent)
+InputItem::InputItem(QAction* action, const QString& name, QMenu* parent)
 	: QObject(parent)
 	, m_action(action)
 	, m_shortcut(action->shortcut().isEmpty() ? 0 : action->shortcut()[0])
 	, m_name(name)
-	, m_parent(parent)
+	, m_menu(parent)
 {
 	m_visibleName = action->text()
 		.remove(QRegExp("&(?!&)"))
 		.remove("...");
 }
 
-InputItem::InputItem(QMenu* menu, const QString& name, InputItem* parent)
-	: QObject(parent)
-	, m_menu(menu)
-	, m_name(name)
-	, m_parent(parent)
-{
-	m_visibleName = menu->title()
-		.remove(QRegExp("&(?!&)"))
-		.remove("...");
-}
-
-InputItem::InputItem(InputItem::Functions functions, const QString& visibleName, const QString& name, InputItem* parent)
+InputItem::InputItem(InputItem::Functions functions, const QString& visibleName, const QString& name, QMenu* parent)
 	: QObject(parent)
 	, m_functions(functions)
 	, m_name(name)
 	, m_visibleName(visibleName)
-	, m_parent(parent)
+	, m_menu(parent)
 {
 }
 
-InputItem::InputItem(int key, const QString& visibleName, const QString& name, InputItem* parent)
+InputItem::InputItem(int key, const QString& visibleName, const QString& name, QMenu* parent)
 	: QObject(parent)
 	, m_key(key)
 	, m_name(name)
 	, m_visibleName(visibleName)
-	, m_parent(parent)
+	, m_menu(parent)
 {
 }
 
-InputItem::InputItem(const QString& visibleName, const QString& name, InputItem* parent)
+InputItem::InputItem(const QString& visibleName, const QString& name, QMenu* parent)
 	: QObject(parent)
 	, m_name(name)
 	, m_visibleName(visibleName)
-	, m_parent(parent)
+	, m_menu(parent)
 {
 }
 
-InputItem::InputItem(const InputItem& other, InputItem* parent)
-	: QObject(parent)
-	, m_menu(other.m_menu)
+InputItem::InputItem(const InputItem& other)
+	: QObject(other.m_menu)
 	, m_name(other.m_name)
 	, m_visibleName(other.m_visibleName)
 	, m_shortcut(other.m_shortcut)
 	, m_button(other.m_button)
 	, m_axis(other.m_axis)
 	, m_direction(other.m_direction)
-	, m_parent(parent)
+	, m_menu(other.m_menu)
 {
 }
 
-InputItem::InputItem(InputItem& other, InputItem* parent)
-	: QObject(parent)
+InputItem::InputItem(InputItem& other)
+	: QObject(other.m_menu)
 	, m_action(other.m_action)
 	, m_functions(other.m_functions)
 	, m_key(other.m_key)
-	, m_menu(other.m_menu)
 	, m_name(other.m_name)
 	, m_visibleName(other.m_visibleName)
 	, m_shortcut(other.m_shortcut)
 	, m_button(other.m_button)
 	, m_axis(other.m_axis)
 	, m_direction(other.m_direction)
-	, m_parent(parent)
+	, m_menu(other.m_menu)
 {
 }
 
@@ -118,11 +103,6 @@ void InputItem::setAxis(int axis, GamepadAxisEvent::Direction direction) {
 	m_axis = axis;
 	m_direction = direction;
 	emit axisBound(this, axis, direction);
-}
-
-void InputItem::clear() {
-	qDeleteAll(m_items);
-	m_items.clear();
 }
 
 void InputItem::trigger(bool active) {

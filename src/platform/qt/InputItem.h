@@ -18,41 +18,29 @@ namespace QGBA {
 class InputItem : public QObject {
 Q_OBJECT
 
-private:
+public:
 	typedef QPair<std::function<void ()>, std::function<void ()>> Functions;
 
-	InputItem(QAction* action, const QString& name, InputItem* parent = nullptr);
-	InputItem(QMenu* menu, const QString& name, InputItem* parent = nullptr);
+	InputItem(QAction* action, const QString& name, QMenu* parent = nullptr);
 	InputItem(Functions functions, const QString& visibleName, const QString& name,
-	          InputItem* parent = nullptr);
-	InputItem(int key, const QString& name, const QString& visibleName, InputItem* parent = nullptr);
-	InputItem(const QString& visibleName, const QString& name, InputItem* parent = nullptr);
+	          QMenu* parent = nullptr);
+	InputItem(int key, const QString& name, const QString& visibleName, QMenu* parent = nullptr);
+	InputItem(const QString& visibleName, const QString& name, QMenu* parent = nullptr);
 
-public:
 	InputItem();
-	InputItem(InputItem&, InputItem* parent = nullptr);
-	InputItem(const InputItem&, InputItem* parent = nullptr);
+	InputItem(InputItem&);
+	InputItem(const InputItem&);
 
 	QAction* action() { return m_action; }
 	const QAction* action() const { return m_action; }
-	QMenu* menu() { return m_menu; }
-	const QMenu* menu() const { return m_menu; }
 	Functions functions() const { return m_functions; }
 	int key() const { return m_key; }
 
+	QMenu* menu() { return m_menu; }
+	const QMenu* menu() const { return m_menu; }
+
 	const QString& visibleName() const { return m_visibleName; }
 	const QString& name() const { return m_name; }
-
-	QList<InputItem*>& items() { return m_items; }
-	const QList<InputItem*>& items() const { return m_items; }
-	InputItem* parent() { return m_parent; }
-	const InputItem* parent() const { return m_parent; }
-	template<typename... Args> InputItem* addItem(Args... params) {
-		InputItem* item = new InputItem(params..., this);
-		m_items.append(item);
-		emit childAdded(this, item);
-		return item;
-	}
 
 	int shortcut() const { return m_shortcut; }
 	void setShortcut(int sequence);
@@ -65,8 +53,6 @@ public:
 	int axis() const { return m_axis; }
 	GamepadAxisEvent::Direction direction() const { return m_direction; }
 	void setAxis(int axis, GamepadAxisEvent::Direction direction);
-
-	void clear();
 
 	bool operator==(const InputItem& other) const {
 		return m_name == other.m_name;
@@ -94,8 +80,6 @@ private:
 	int m_button = -1;
 	int m_axis = -1;
 	GamepadAxisEvent::Direction m_direction = GamepadAxisEvent::NEUTRAL;
-	QList<InputItem*> m_items;
-	InputItem* m_parent;
 };
 
 }
