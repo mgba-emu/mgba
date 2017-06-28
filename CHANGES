@@ -143,6 +143,7 @@ Misc:
  - GB: Reset with initial state of DIV register
  - GB MBC: New MBC7 implementation
  - Qt: Better highlight active key in control binding
+ - Core: Improved threading interrupted detection
 
 0.5.2: (2016-12-31)
 Bugfixes:
