@@ -401,11 +401,14 @@ void mCoreThreadInterruptFromThread(struct mCoreThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
 	++threadContext->interruptDepth;
 	if (threadContext->interruptDepth > 1 || !mCoreThreadIsActive(threadContext)) {
+		if (threadContext->state == THREAD_INTERRUPTING) {
+			threadContext->state = THREAD_INTERRUPTED;
+		}
 		MutexUnlock(&threadContext->stateMutex);
 		return;
 	}
 	threadContext->savedState = threadContext->state;
-	threadContext->state = THREAD_INTERRUPTING;
+	threadContext->state = THREAD_INTERRUPTED;
 	ConditionWake(&threadContext->stateCond);
 	MutexUnlock(&threadContext->stateMutex);
 }
