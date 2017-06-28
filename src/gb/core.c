@@ -24,26 +24,26 @@
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
 
-const static struct mCoreChannelInfo _GBVideoLayers[] = {
+static const struct mCoreChannelInfo _GBVideoLayers[] = {
 	{ 0, "bg", "Background", NULL },
 	{ 1, "obj", "Objects", NULL },
 	{ 2, "win", "Window", NULL },
 };
 
-const static struct mCoreChannelInfo _GBAudioChannels[] = {
-	{ 0, "ch0", "Channel 0", "Square/Sweep" },
-	{ 1, "ch1", "Channel 1", "Square" },
-	{ 2, "ch2", "Channel 2", "PCM" },
-	{ 3, "ch3", "Channel 3", "Noise" },
+static const struct mCoreChannelInfo _GBAudioChannels[] = {
+	{ 0, "ch1", "Channel 1", "Square/Sweep" },
+	{ 1, "ch2", "Channel 2", "Square" },
+	{ 2, "ch3", "Channel 3", "PCM" },
+	{ 3, "ch4", "Channel 4", "Noise" },
 };
 
-const static struct LR35902Segment _GBSegments[] = {
+static const struct LR35902Segment _GBSegments[] = {
 	{ .name = "ROM", .start = GB_BASE_CART_BANK1, .end = GB_BASE_VRAM },
 	{ .name = "RAM", .start = GB_BASE_EXTERNAL_RAM, .end = GB_BASE_WORKING_RAM_BANK0 },
 	{ 0 }
 };
 
-const static struct LR35902Segment _GBCSegments[] = {
+static const struct LR35902Segment _GBCSegments[] = {
 	{ .name = "ROM", .start = GB_BASE_CART_BANK1, .end = GB_BASE_VRAM },
 	{ .name = "RAM", .start = GB_BASE_EXTERNAL_RAM, .end = GB_BASE_WORKING_RAM_BANK0 },
 	{ .name = "WRAM", .start = GB_BASE_WORKING_RAM_BANK1, .end = 0xE000 },
@@ -51,7 +51,7 @@ const static struct LR35902Segment _GBCSegments[] = {
 	{ 0 }
 };
 
-const static struct mCoreMemoryBlock _GBMemoryBlocks[] = {
+static const struct mCoreMemoryBlock _GBMemoryBlocks[] = {
 	{ -1, "mem", "All", "All", 0, 0x10000, 0x10000, mCORE_MEMORY_VIRTUAL },
 	{ GB_REGION_CART_BANK0, "cart0", "ROM Bank", "Game Pak (32kiB)", GB_BASE_CART_BANK0, GB_SIZE_CART_BANK0 * 2, 0x800000, mCORE_MEMORY_READ | mCORE_MEMORY_MAPPED, 511 },
 	{ GB_REGION_VRAM, "vram", "VRAM", "Video RAM (8kiB)", GB_BASE_VRAM, GB_BASE_VRAM + GB_SIZE_VRAM, GB_SIZE_VRAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
@@ -62,7 +62,7 @@ const static struct mCoreMemoryBlock _GBMemoryBlocks[] = {
 	{ GB_BASE_HRAM, "hram", "HRAM", "High RAM", GB_BASE_HRAM, GB_BASE_HRAM + GB_SIZE_HRAM, GB_SIZE_HRAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
 };
 
-const static struct mCoreMemoryBlock _GBCMemoryBlocks[] = {
+static const struct mCoreMemoryBlock _GBCMemoryBlocks[] = {
 	{ -1, "mem", "All", "All", 0, 0x10000, 0x10000, mCORE_MEMORY_VIRTUAL },
 	{ GB_REGION_CART_BANK0, "cart0", "ROM Bank", "Game Pak (32kiB)", GB_BASE_CART_BANK0, GB_SIZE_CART_BANK0 * 2, 0x800000, mCORE_MEMORY_READ | mCORE_MEMORY_MAPPED, 511 },
 	{ GB_REGION_VRAM, "vram", "VRAM", "Video RAM (8kiB)", GB_BASE_VRAM, GB_BASE_VRAM + GB_SIZE_VRAM, GB_SIZE_VRAM * 2, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED, 1 },
