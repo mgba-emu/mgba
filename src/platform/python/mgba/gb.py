@@ -35,6 +35,10 @@ class GB(Core):
         self._native.video.renderer.cache = ffi.NULL
         lib.mTileCacheDeinit(cache)
 
+    def reset(self):
+        super(GB, self).reset()
+        self.memory = GBMemory(self._core)
+
     def attachSIO(self, link):
         lib.GBSIOSetDriver(ffi.addressof(self._native.sio), link._native)
 
