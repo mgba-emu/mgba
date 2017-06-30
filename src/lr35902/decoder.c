@@ -496,7 +496,7 @@ static int _decodeOperand(struct LR35902Operand op, char* buffer, int blen) {
 	}
 
 	if (op.flags & LR35902_OP_FLAG_MEMORY) {
-		strncpy(buffer, "(", blen - 1);
+		strncpy(buffer, "[", blen - 1);
 		ADVANCE(1);
 	}
 	if (op.reg) {
@@ -519,7 +519,7 @@ static int _decodeOperand(struct LR35902Operand op, char* buffer, int blen) {
 		ADVANCE(1);
 	}
 	if (op.flags & LR35902_OP_FLAG_MEMORY) {
-		strncpy(buffer, ")", blen - 1);
+		strncpy(buffer, "]", blen - 1);
 		ADVANCE(1);
 	}
 	return total;
