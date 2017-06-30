@@ -150,6 +150,7 @@ Misc:
 Bugfixes:
  - Qt: Fix memory search close button (fixes mgba.io/i/769)
  - Qt: Fix window icon being stretched
+ - Qt: Fix initial window size (fixes mgba.io/i/766)
 Misc:
  - Qt: Add language selector
 

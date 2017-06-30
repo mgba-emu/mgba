@@ -85,7 +85,11 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 
 	m_screenWidget->setMinimumSize(m_display->minimumSize());
 	m_screenWidget->setSizePolicy(m_display->sizePolicy());
-	int i = 2;
+#if defined(M_CORE_GBA)
+	float i = 2;
+#elif defined(M_CORE_GB)
+	float i = 3;
+#endif
 	QVariant multiplier = m_config->getOption("scaleMultiplier");
 	if (!multiplier.isNull()) {
 		m_savedScale = multiplier.toInt();
@@ -119,8 +123,11 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 			m_controller->loadGame(output, path.second, path.first);
 		}
 	});
-#elif defined(M_CORE_GBA)
-	m_screenWidget->setSizeHint(QSize(VIDEO_HORIZONTAL_PIXELS * i, VIDEO_VERTICAL_PIXELS * i));
+#endif
+#if defined(M_CORE_GBA)
+	resizeFrame(QSize(VIDEO_HORIZONTAL_PIXELS * i, VIDEO_VERTICAL_PIXELS * i));
+#elif defined(M_CORE_GB)
+	resizeFrame(QSize(GB_VIDEO_HORIZONTAL_PIXELS * i, GB_VIDEO_VERTICAL_PIXELS * i));
 #endif
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
@@ -233,9 +240,6 @@ void Window::argumentsPassed(mArguments* args) {
 
 void Window::resizeFrame(const QSize& size) {
 	QSize newSize(size);
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
-	newSize /= m_screenWidget->devicePixelRatioF();
-#endif
 	m_screenWidget->setSizeHint(newSize);
 	newSize -= m_screenWidget->size();
 	newSize += this->size();
