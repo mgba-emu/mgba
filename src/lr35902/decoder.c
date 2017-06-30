@@ -315,24 +315,24 @@ DEFINE_POPPUSH_DECODER_LR35902(HL);
 DEFINE_POPPUSH_DECODER_LR35902(AF);
 
 #define DEFINE_CB_2_DECODER_LR35902(NAME, BODY) \
-	DEFINE_DECODER_LR35902(NAME ## B, info->op1.reg = LR35902_REG_B; BODY) \
-	DEFINE_DECODER_LR35902(NAME ## C, info->op1.reg = LR35902_REG_C; BODY) \
-	DEFINE_DECODER_LR35902(NAME ## D, info->op1.reg = LR35902_REG_D; BODY) \
-	DEFINE_DECODER_LR35902(NAME ## E, info->op1.reg = LR35902_REG_E; BODY) \
-	DEFINE_DECODER_LR35902(NAME ## H, info->op1.reg = LR35902_REG_H; BODY) \
-	DEFINE_DECODER_LR35902(NAME ## L, info->op1.reg = LR35902_REG_L; BODY) \
-	DEFINE_DECODER_LR35902(NAME ## HL, info->op1.reg = LR35902_REG_HL; BODY) \
-	DEFINE_DECODER_LR35902(NAME ## A, info->op1.reg = LR35902_REG_A; BODY)
+	DEFINE_DECODER_LR35902(NAME ## B, info->op2.reg = LR35902_REG_B; BODY) \
+	DEFINE_DECODER_LR35902(NAME ## C, info->op2.reg = LR35902_REG_C; BODY) \
+	DEFINE_DECODER_LR35902(NAME ## D, info->op2.reg = LR35902_REG_D; BODY) \
+	DEFINE_DECODER_LR35902(NAME ## E, info->op2.reg = LR35902_REG_E; BODY) \
+	DEFINE_DECODER_LR35902(NAME ## H, info->op2.reg = LR35902_REG_H; BODY) \
+	DEFINE_DECODER_LR35902(NAME ## L, info->op2.reg = LR35902_REG_L; BODY) \
+	DEFINE_DECODER_LR35902(NAME ## HL, info->op2.reg = LR35902_REG_HL; info->op2.flags = LR35902_OP_FLAG_MEMORY; BODY) \
+	DEFINE_DECODER_LR35902(NAME ## A, info->op2.reg = LR35902_REG_A; BODY)
 
 #define DEFINE_CB_DECODER_LR35902(NAME, BODY) \
-	DEFINE_CB_2_DECODER_LR35902(NAME ## 0, info->op2.immediate = 1; BODY) \
-	DEFINE_CB_2_DECODER_LR35902(NAME ## 1, info->op2.immediate = 2; BODY) \
-	DEFINE_CB_2_DECODER_LR35902(NAME ## 2, info->op2.immediate = 4; BODY) \
-	DEFINE_CB_2_DECODER_LR35902(NAME ## 3, info->op2.immediate = 8; BODY) \
-	DEFINE_CB_2_DECODER_LR35902(NAME ## 4, info->op2.immediate = 16; BODY) \
-	DEFINE_CB_2_DECODER_LR35902(NAME ## 5, info->op2.immediate = 32; BODY) \
-	DEFINE_CB_2_DECODER_LR35902(NAME ## 6, info->op2.immediate = 64; BODY) \
-	DEFINE_CB_2_DECODER_LR35902(NAME ## 7, info->op2.immediate = 128; BODY)
+	DEFINE_CB_2_DECODER_LR35902(NAME ## 0, info->op1.immediate = 0; BODY) \
+	DEFINE_CB_2_DECODER_LR35902(NAME ## 1, info->op1.immediate = 1; BODY) \
+	DEFINE_CB_2_DECODER_LR35902(NAME ## 2, info->op1.immediate = 2; BODY) \
+	DEFINE_CB_2_DECODER_LR35902(NAME ## 3, info->op1.immediate = 3; BODY) \
+	DEFINE_CB_2_DECODER_LR35902(NAME ## 4, info->op1.immediate = 4; BODY) \
+	DEFINE_CB_2_DECODER_LR35902(NAME ## 5, info->op1.immediate = 5; BODY) \
+	DEFINE_CB_2_DECODER_LR35902(NAME ## 6, info->op1.immediate = 6; BODY) \
+	DEFINE_CB_2_DECODER_LR35902(NAME ## 7, info->op1.immediate = 7; BODY)
 
 DEFINE_CB_DECODER_LR35902(BIT, info->mnemonic = LR35902_MN_BIT)
 DEFINE_CB_DECODER_LR35902(RES, info->mnemonic = LR35902_MN_RES)
@@ -544,7 +544,7 @@ int LR35902Disassemble(struct LR35902InstructionInfo* info, char* buffer, int bl
 		}
 	}
 
-	if (info->op1.reg || info->op1.immediate) {
+	if (info->op1.reg || info->op1.immediate || info->op2.reg || info->op2.immediate) {
 		written = _decodeOperand(info->op1, buffer, blen);
 		ADVANCE(written);
 	}
