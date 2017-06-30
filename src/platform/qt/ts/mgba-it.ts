@@ -3110,12 +3110,12 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../Window.cpp" line="1027"/>
         <source>Import GameShark Save</source>
-        <translation>Importa salvataggio GameShark</translation>
+        <translation>Importa il salvataggio del GameShark</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1033"/>
         <source>Export GameShark Save</source>
-        <translation>Esporta salvataggio GameShark</translation>
+        <translation>Esporta salvataggio dal GameShark</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1041"/>
