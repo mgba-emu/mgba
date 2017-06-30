@@ -66,7 +66,7 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation>Caricamento...</translation>
+        <translation>Caricamento in corso...</translation>
     </message>
 </context>
 <context>
@@ -1464,7 +1464,7 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="264"/>
         <source>OBJ window enable blend</source>
-        <translation>Abilita OBJ window mezcla</translation>
+        <translation>Abilita OBJ window blend</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="268"/>
