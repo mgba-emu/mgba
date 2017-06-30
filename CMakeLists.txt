@@ -843,7 +843,6 @@ if(BUILD_EXAMPLE)
 	endif()
 endif()
 
-message(STATUS ${USE_PTHREADS})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/core/flags.h.in ${CMAKE_CURRENT_BINARY_DIR}/flags.h)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/flags.h DESTINATION include/mgba COMPONENT lib${BINARY_NAME})
 
@@ -897,6 +896,7 @@ else()
 endif()
 
 if(NOT QUIET)
+	message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 	message(STATUS "Platforms:")
 	message(STATUS "	Game Boy Advance: ${M_CORE_GBA}")
 	message(STATUS "	Game Boy: ${M_CORE_GB}")

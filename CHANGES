@@ -73,6 +73,8 @@ Bugfixes:
  - OpenGL: Fix some shaders causing offset graphics
  - Qt: Fix game unpausing after frame advancing and refocusing
  - GB Timer: Fix sub-M-cycle DIV reset timing and edge triggering
+ - Core: Fix interrupting a thread while on the thread (fixes mgba.io/i/692)
+ - Core: Fix directory sets crashing on close if base isn't properly detached
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
@@ -140,6 +142,12 @@ Misc:
  - GB: Trust ROM header for number of SRAM banks (fixes mgba.io/i/726)
  - Core: Config values can now be hexadecimal
  - GB: Reset with initial state of DIV register
+ - GB MBC: New MBC7 implementation
+ - Qt: Better highlight active key in control binding
+ - Core: Improved threading interrupted detection
+
+0.6 beta 1: (2017-06-29)
+- Initial beta for 0.6
 
 0.5.2: (2016-12-31)
 Bugfixes:

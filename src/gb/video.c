@@ -185,9 +185,6 @@ void _endMode1(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		next = GB_VIDEO_MODE_2_LENGTH + (video->p->memory.io[REG_SCX] & 7);
 		video->mode = 2;
 		video->modeEvent.callback = _endMode2;
-		if (video->p->memory.mbcType == GB_MBC7 && video->p->memory.rotation && video->p->memory.rotation->sample) {
-			video->p->memory.rotation->sample(video->p->memory.rotation);
-		}
 	} else if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
 		video->p->memory.io[REG_LY] = 0;
 		next = GB_VIDEO_HORIZONTAL_LENGTH - 8;

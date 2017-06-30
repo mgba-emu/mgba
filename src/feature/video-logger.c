@@ -26,7 +26,7 @@
 
 const char mVL_MAGIC[] = "mVL\0";
 
-const static struct mVLDescriptor {
+static const struct mVLDescriptor {
 	enum mPlatform platform;
 	struct mCore* (*open)(void);
 } _descriptors[] = {

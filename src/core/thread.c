@@ -401,11 +401,14 @@ void mCoreThreadInterruptFromThread(struct mCoreThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
 	++threadContext->interruptDepth;
 	if (threadContext->interruptDepth > 1 || !mCoreThreadIsActive(threadContext)) {
+		if (threadContext->state == THREAD_INTERRUPTING) {
+			threadContext->state = THREAD_INTERRUPTED;
+		}
 		MutexUnlock(&threadContext->stateMutex);
 		return;
 	}
 	threadContext->savedState = threadContext->state;
-	threadContext->state = THREAD_INTERRUPTING;
+	threadContext->state = THREAD_INTERRUPTED;
 	ConditionWake(&threadContext->stateCond);
 	MutexUnlock(&threadContext->stateMutex);
 }
@@ -465,7 +468,7 @@ void mCoreThreadUnpause(struct mCoreThread* threadContext) {
 bool mCoreThreadIsPaused(struct mCoreThread* threadContext) {
 	bool isPaused;
 	MutexLock(&threadContext->stateMutex);
-	if (threadContext->state == THREAD_INTERRUPTED || threadContext->state == THREAD_INTERRUPTING) {
+	if (threadContext->interruptDepth) {
 		isPaused = threadContext->savedState == THREAD_PAUSED;
 	} else {
 		isPaused = threadContext->state == THREAD_PAUSED;
@@ -495,7 +498,7 @@ void mCoreThreadTogglePause(struct mCoreThread* threadContext) {
 void mCoreThreadPauseFromThread(struct mCoreThread* threadContext) {
 	bool frameOn = true;
 	MutexLock(&threadContext->stateMutex);
-	if (threadContext->state == THREAD_RUNNING || (threadContext->state == THREAD_INTERRUPTING && threadContext->savedState == THREAD_RUNNING)) {
+	if (threadContext->state == THREAD_RUNNING || (threadContext->interruptDepth && threadContext->savedState == THREAD_RUNNING)) {
 		threadContext->state = THREAD_PAUSING;
 		frameOn = false;
 	}
@@ -506,11 +509,11 @@ void mCoreThreadPauseFromThread(struct mCoreThread* threadContext) {
 
 void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool rewinding) {
 	MutexLock(&threadContext->stateMutex);
-	if (rewinding && (threadContext->state == THREAD_REWINDING || (threadContext->state == THREAD_INTERRUPTING && threadContext->savedState == THREAD_REWINDING))) {
+	if (rewinding && (threadContext->state == THREAD_REWINDING || (threadContext->interruptDepth && threadContext->savedState == THREAD_REWINDING))) {
 		MutexUnlock(&threadContext->stateMutex);
 		return;
 	}
-	if (!rewinding && (threadContext->state == THREAD_RUNNING || (threadContext->state == THREAD_INTERRUPTING && threadContext->savedState == THREAD_RUNNING))) {
+	if (!rewinding && ((!threadContext->interruptDepth && threadContext->state != THREAD_REWINDING) || (threadContext->interruptDepth && threadContext->savedState != THREAD_REWINDING))) {
 		MutexUnlock(&threadContext->stateMutex);
 		return;
 	}
@@ -526,7 +529,7 @@ void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool rewinding) 
 
 void mCoreThreadWaitFromThread(struct mCoreThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
-	if ((threadContext->state == THREAD_INTERRUPTED || threadContext->state == THREAD_INTERRUPTING) && threadContext->savedState == THREAD_RUNNING) {
+	if (threadContext->interruptDepth && threadContext->savedState == THREAD_RUNNING) {
 		threadContext->savedState = THREAD_WAITING;
 	} else if (threadContext->state == THREAD_RUNNING) {
 		threadContext->state = THREAD_WAITING;
@@ -536,7 +539,7 @@ void mCoreThreadWaitFromThread(struct mCoreThread* threadContext) {
 
 void mCoreThreadStopWaiting(struct mCoreThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
-	if ((threadContext->state == THREAD_INTERRUPTED || threadContext->state == THREAD_INTERRUPTING) && threadContext->savedState == THREAD_WAITING) {
+	if (threadContext->interruptDepth && threadContext->savedState == THREAD_WAITING) {
 		threadContext->savedState = THREAD_RUNNING;
 	} else if (threadContext->state == THREAD_WAITING) {
 		threadContext->state = THREAD_RUNNING;

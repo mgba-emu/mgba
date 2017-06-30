@@ -22,7 +22,7 @@
 #include <mgba/feature/video-logger.h>
 #endif
 
-const static struct mCoreFilter {
+static const struct mCoreFilter {
 	bool (*filter)(struct VFile*);
 	struct mCore* (*open)(void);
 	enum mPlatform platform;
