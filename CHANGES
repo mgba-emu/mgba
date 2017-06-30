@@ -146,6 +146,9 @@ Misc:
  - Qt: Better highlight active key in control binding
  - Core: Improved threading interrupted detection
 
+0.6 beta 1: (2017-06-29)
+- Initial beta for 0.6
+
 0.5.2: (2016-12-31)
 Bugfixes:
  - All: Fix fullscreen config option being ignored
