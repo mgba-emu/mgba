@@ -214,10 +214,26 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>MemorySearch</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>315</x>
+     <y>357</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>315</x>
+     <y>188</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <buttongroups>
-  <buttongroup name="type"/>
   <buttongroup name="width"/>
-  <buttongroup name="numType"/>
+  <buttongroup name="type"/>
  </buttongroups>
 </ui>
