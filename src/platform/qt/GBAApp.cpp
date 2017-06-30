@@ -14,6 +14,7 @@
 #include <QFileInfo>
 #include <QFileOpenEvent>
 #include <QIcon>
+#include <QLibraryInfo>
 #include <QTranslator>
 
 #include <mgba/core/version.h>
@@ -44,11 +45,19 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	setWindowIcon(QIcon(":/res/mgba-512.png"));
 #endif
 
-	QTranslator* translator = new QTranslator(this);
-	if (translator->load(QLocale(), QLatin1String(binaryName), QLatin1String("-"), QLatin1String(":/translations"))) {
-		installTranslator(translator);
+	QLocale locale;
+
+	if (!m_configController.getQtOption("language").isNull()) {
+		locale = QLocale(m_configController.getQtOption("language").toString());
 	}
 
+	QTranslator qtTranslator;
+	qtTranslator.load(locale, "qt", "_", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+	installTranslator(&qtTranslator);
+
+	QTranslator langTranslator;
+	langTranslator.load(locale, binaryName, "-", ":/translations/");
+	installTranslator(&langTranslator);
 
 	SocketSubsystemInit();
 	qRegisterMetaType<const uint32_t*>("const uint32_t*");

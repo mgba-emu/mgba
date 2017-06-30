@@ -29,6 +29,7 @@ signals:
 	void audioDriverChanged();
 	void displayDriverChanged();
 	void pathsChanged();
+	void languageChanged();
 	void libraryCleared();
 
 private slots:
