@@ -149,6 +149,7 @@ Misc:
 0.6 beta 2: (Future)
 Bugfixes:
  - Qt: Fix memory search close button (fixes mgba.io/i/769)
+ - Qt: Fix window icon being stretched
 
 0.6 beta 1: (2017-06-29)
  - Initial beta for 0.6

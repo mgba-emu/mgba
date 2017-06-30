@@ -41,7 +41,7 @@ GBAApp::GBAApp(int& argc, char* argv[])
 #endif
 
 #ifndef Q_OS_MAC
-	setWindowIcon(QIcon(":/res/mgba-1024.png"));
+	setWindowIcon(QIcon(":/res/mgba-512.png"));
 #endif
 
 	QTranslator* translator = new QTranslator(this);
