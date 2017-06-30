@@ -1733,17 +1733,17 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="399"/>
         <source>Shifter frequency</source>
-        <translation>Frecuencia de cambio</translation>
+        <translation>Cambio di frequenza</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="407"/>
         <source>PSG volume right</source>
-        <translation>Volumen pulso derecha</translation>
+        <translation>PSG volume destro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="408"/>
         <source>PSG volume left</source>
-        <translation>Volumen pulso sinistro</translation>
+        <translation>PSG volume sinistro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="409"/>
