@@ -215,7 +215,7 @@ endif()
 
 if(APPLE)
 	add_definitions(-D_DARWIN_C_SOURCE)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.5")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
 endif()
 
 if(NOT HAIKU AND NOT MSVC AND NOT PSP2)
