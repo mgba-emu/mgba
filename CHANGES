@@ -75,6 +75,8 @@ Bugfixes:
  - GB Timer: Fix sub-M-cycle DIV reset timing and edge triggering
  - Core: Fix interrupting a thread while on the thread (fixes mgba.io/i/692)
  - Core: Fix directory sets crashing on close if base isn't properly detached
+ - Qt: Fix window icon being stretched
+ - Qt: Fix data directory path
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
@@ -145,6 +147,7 @@ Misc:
  - GB MBC: New MBC7 implementation
  - Qt: Better highlight active key in control binding
  - Core: Improved threading interrupted detection
+ - GBA Timer: Improve accuracy of timers
 
 0.6 beta 2: (Future)
 Bugfixes:
@@ -154,6 +157,7 @@ Bugfixes:
  - Qt: Fix data directory path
 Misc:
  - Qt: Add language selector
+ - GBA Timer: Improve accuracy of timers
 
 0.6 beta 1: (2017-06-29)
  - Initial beta for 0.6
