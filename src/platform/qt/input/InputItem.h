@@ -24,7 +24,6 @@ public:
 	InputItem(QAction* action, const QString& name, QMenu* parent = nullptr);
 	InputItem(Functions functions, const QString& visibleName, const QString& name,
 	          QMenu* parent = nullptr);
-	InputItem(int key, const QString& name, const QString& visibleName, QMenu* parent = nullptr);
 	InputItem(const QString& visibleName, const QString& name, QMenu* parent = nullptr);
 
 	InputItem();
@@ -34,7 +33,6 @@ public:
 	QAction* action() { return m_action; }
 	const QAction* action() const { return m_action; }
 	Functions functions() const { return m_functions; }
-	int key() const { return m_key; }
 
 	QMenu* menu() { return m_menu; }
 	const QMenu* menu() const { return m_menu; }
@@ -70,7 +68,6 @@ signals:
 private:
 	QAction* m_action = nullptr;
 	Functions m_functions;
-	int m_key = -1;
 
 	QMenu* m_menu = nullptr;
 	QString m_name;

@@ -138,11 +138,11 @@ QModelIndex InputModel::parent(const QModelIndex& index) const {
 }
 
 QModelIndex InputModel::index(const QObject* item, int column) const {
-	if (!item || !item->parent()) {
+	if (!item) {
 		return QModelIndex();
 	}
 	const QObject* parent = item->parent();
-	if (m_tree.contains(parent)) {
+	if (parent && m_tree.contains(parent)) {
 		int index = m_tree[parent].indexOf(item);
 		return createIndex(index, column, const_cast<InputModelItem*>(&m_tree[parent][index]));
 	} 

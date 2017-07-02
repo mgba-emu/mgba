@@ -12,6 +12,9 @@ using namespace QGBA;
 
 void InputIndex::setConfigController(ConfigController* controller) {
 	m_config = controller;
+	for (auto& item : m_items) {
+		loadShortcuts(item);
+	}
 }
 
 void InputIndex::clone(InputIndex* root, bool actions) {
@@ -241,7 +244,16 @@ void InputIndex::loadProfile(const QString& profile) {
 	m_profileName = profile;
 	m_profile = InputProfile::findProfile(profile);
 	for (auto& item : m_items) {
-		loadGamepadShortcuts(item);
+		loadShortcuts(item);
 	}
 }
 
+void InputIndex::saveConfig() {
+	for (auto& item : m_items) {
+		m_config->setQtOption(item->name(), QKeySequence(item->shortcut()).toString(), KEY_SECTION);
+		m_config->setQtOption(item->name(), item->button(), BUTTON_SECTION);
+		if (item->direction() != GamepadAxisEvent::NEUTRAL) {
+			m_config->setQtOption(item->name(), QString("%1%2").arg(GamepadAxisEvent::POSITIVE ? '+' : '-').arg(item->axis()), AXIS_SECTION);
+		}
+	}
+}

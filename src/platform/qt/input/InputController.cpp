@@ -22,6 +22,8 @@
 #include <mgba/core/interface.h>
 #include <mgba-util/configuration.h>
 
+#include <initializer_list>
+
 using namespace QGBA;
 
 #ifdef BUILD_SDL
@@ -34,6 +36,8 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 	, m_playerId(playerId)
 	, m_topLevel(topLevel)
 	, m_focusParent(topLevel)
+	, m_bindings(new QMenu(tr("Controls")))
+	, m_autofire(new QMenu(tr("Autofire")))
 {
 #ifdef BUILD_SDL
 	if (s_sdlInited == 0) {
@@ -54,26 +58,75 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 	m_gamepadTimer.setInterval(50);
 	m_gamepadTimer.start();
 
-	mInputMapInit(&m_inputMap, &GBAInputInfo);
+	static QList<QPair<QString, int>> defaultBindings({
+		qMakePair(QLatin1String("A"), Qt::Key_Z),
+		qMakePair(QLatin1String("B"), Qt::Key_X),
+		qMakePair(QLatin1String("L"), Qt::Key_A),
+		qMakePair(QLatin1String("R"), Qt::Key_S),
+		qMakePair(QLatin1String("Start"), Qt::Key_Return),
+		qMakePair(QLatin1String("Select"), Qt::Key_Backspace),
+		qMakePair(QLatin1String("Up"), Qt::Key_Up),
+		qMakePair(QLatin1String("Down"), Qt::Key_Down),
+		qMakePair(QLatin1String("Left"), Qt::Key_Left),
+		qMakePair(QLatin1String("Right"), Qt::Key_Right)
+	});
 
+	for (auto k : defaultBindings) {
+		addKey(k.first);
+	}
+	m_keyIndex.rebuild();
+	for (auto k : defaultBindings) {
+		bindKey(KEYBOARD, k.second, k.first);
+	}
+}
+
+void InputController::addKey(const QString& name) {
+	if (itemForKey(name)) {
+		return;
+	}
+	m_keyIndex.addItem(qMakePair([this, name]() {
+		emit keyPressed(keyId(name));
+	}, [this, name]() {
+		emit keyReleased(keyId(name));
+	}), name, QString("key%0").arg(name), m_bindings.get());
+
+	m_keyIndex.addItem(qMakePair([this, name]() {
+		emit keyAutofire(keyId(name), true);
+	}, [this, name]() {
+		emit keyAutofire(keyId(name), false);
+	}), name, QString("autofire%1").arg(name), m_autofire.get());
+}
+
+void InputController::addPlatform(mPlatform platform, const mInputPlatformInfo* info) {
+	m_keyInfo[platform] = info;
+	for (size_t i = 0; i < info->nKeys; ++i) {
+		addKey(info->keyId[i]);
+	}
+}
+
+void InputController::setPlatform(mPlatform platform) {
+	if (m_activeKeyInfo) {
+		mInputMapDeinit(&m_inputMap);
+	}
+
+	m_sdlPlayer.bindings = &m_inputMap;
+	m_activeKeyInfo = m_keyInfo[platform];
+	mInputMapInit(&m_inputMap, m_activeKeyInfo);
+
+	loadConfiguration(KEYBOARD);
 #ifdef BUILD_SDL
 	mSDLInitBindingsGBA(&m_inputMap);
+	loadConfiguration(SDL_BINDING_BUTTON);
 #endif
 
-	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_X, GBA_KEY_A);
-	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Z, GBA_KEY_B);
-	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_A, GBA_KEY_L);
-	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_S, GBA_KEY_R);
-	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Return, GBA_KEY_START);
-	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Backspace, GBA_KEY_SELECT);
-	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Up, GBA_KEY_UP);
-	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Down, GBA_KEY_DOWN);
-	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Left, GBA_KEY_LEFT);
-	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Right, GBA_KEY_RIGHT);
+	rebuildKeyIndex();
+	restoreModel();
 }
 
 InputController::~InputController() {
-	mInputMapDeinit(&m_inputMap);
+	if (m_activeKeyInfo) {
+		mInputMapDeinit(&m_inputMap);
+	}
 
 #ifdef BUILD_SDL
 	if (m_playerAttached) {
@@ -89,24 +142,25 @@ InputController::~InputController() {
 
 void InputController::rebuildIndex(const InputIndex* index) {
 	m_inputIndex.rebuild(index);
+}
 
-	rebindKey(GBA_KEY_A);
-	rebindKey(GBA_KEY_B);
-	rebindKey(GBA_KEY_L);
-	rebindKey(GBA_KEY_R);
-	rebindKey(GBA_KEY_START);
-	rebindKey(GBA_KEY_SELECT);
-	rebindKey(GBA_KEY_UP);
-	rebindKey(GBA_KEY_DOWN);
-	rebindKey(GBA_KEY_LEFT);
-	rebindKey(GBA_KEY_RIGHT);
+void InputController::rebuildKeyIndex(const InputIndex* index) {
+	m_keyIndex.rebuild(index);
+
+	for (const InputItem* item : m_keyIndex.items()) {
+		if (!item->name().startsWith(QLatin1String("key"))) {
+			rebindKey(item->visibleName());
+		}
+	}
 }
 
 void InputController::setConfiguration(ConfigController* config) {
 	m_config = config;
 	m_inputIndex.setConfigController(config);
+	m_keyIndex.setConfigController(config);
 	setAllowOpposing(config->getOption("allowOpposingDirections").toInt());
 	loadConfiguration(KEYBOARD);
+	loadProfile(KEYBOARD, profileForType(KEYBOARD));
 #ifdef BUILD_SDL
 	mSDLEventsLoadConfig(&s_sdlEvents, config->input());
 	if (!m_playerAttached) {
@@ -119,27 +173,30 @@ void InputController::setConfiguration(ConfigController* config) {
 }
 
 void InputController::loadConfiguration(uint32_t type) {
+	if (!m_activeKeyInfo) {
+		return;
+	}
 	mInputMapLoad(&m_inputMap, type, m_config->input());
 #ifdef BUILD_SDL
 	if (m_playerAttached) {
-		mInputMap* bindings = m_sdlPlayer.bindings;
-		m_sdlPlayer.bindings = &m_inputMap;
 		mSDLPlayerLoadConfig(&m_sdlPlayer, m_config->input());
-		m_sdlPlayer.bindings = bindings;
 	}
 #endif
 }
 
 void InputController::loadProfile(uint32_t type, const QString& profile) {
-	bool loaded = mInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
-	if (!loaded) {
-		const InputProfile* ip = InputProfile::findProfile(profile);
-		if (ip) {
-			ip->apply(this);
+	if (m_activeKeyInfo) {
+		bool loaded = mInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
+		if (!loaded) {
+			const InputProfile* ip = InputProfile::findProfile(profile);
+			if (ip) {
+				ip->apply(this);
+			}
 		}
 	}
 	recalibrateAxes();
 	m_inputIndex.loadProfile(profile);
+	m_keyIndex.loadProfile(profile);
 	emit profileLoaded(profile);
 }
 
@@ -151,17 +208,23 @@ void InputController::saveConfiguration() {
 	if (m_playerAttached) {
 		mSDLPlayerSaveConfig(&m_sdlPlayer, m_config->input());
 	}
-	m_config->write();
 #endif
+	m_inputIndex.saveConfig();
+	m_keyIndex.saveConfig();
+	m_config->write();
 }
 
 void InputController::saveConfiguration(uint32_t type) {
-	mInputMapSave(&m_inputMap, type, m_config->input());
+	if (m_activeKeyInfo) {
+		mInputMapSave(&m_inputMap, type, m_config->input());
+	}
 	m_config->write();
 }
 
 void InputController::saveProfile(uint32_t type, const QString& profile) {
-	mInputProfileSave(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
+	if (m_activeKeyInfo) {
+		mInputProfileSave(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
+	}
 	m_config->write();
 }
 
@@ -413,20 +476,27 @@ QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes
 	return activeAxes;
 }
 
-void InputController::bindKey(uint32_t type, int key, int coreKey) {
-	InputItem* item = itemForKey(coreKey);
+void InputController::bindKey(uint32_t type, int key, const QString& keyName) {
+	InputItem* item = itemForKey(keyName);
 	if (type != KEYBOARD) {
 		item->setButton(key);
 	} else {
 		item->setShortcut(key);
 	}
-	mInputBindKey(&m_inputMap, type, key, coreKey);
+	if (m_activeKeyInfo) {
+		int coreKey = keyId(keyName);
+		mInputBindKey(&m_inputMap, type, key, coreKey);
+	}
 }
 
-void InputController::bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction direction, int key) {
+void InputController::bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction direction, const QString& key) {
 	InputItem* item = itemForKey(key);
 	item->setAxis(axis, direction);
 	
+	if (!m_activeKeyInfo) {
+		return;
+	}
+
 	const mInputAxis* old = mInputQueryAxis(&m_inputMap, type, axis);
 	mInputAxis description = { GBA_KEY_NONE, GBA_KEY_NONE, -AXIS_THRESHOLD, AXIS_THRESHOLD };
 	if (old) {
@@ -438,12 +508,12 @@ void InputController::bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direct
 	}
 	switch (direction) {
 	case GamepadAxisEvent::NEGATIVE:
-		description.lowDirection = key;
+		description.lowDirection = keyId(key);
 
 		description.deadLow = deadzone - AXIS_THRESHOLD;
 		break;
 	case GamepadAxisEvent::POSITIVE:
-		description.highDirection = key;
+		description.highDirection = keyId(key);
 		description.deadHigh = deadzone + AXIS_THRESHOLD;
 		break;
 	default:
@@ -484,23 +554,25 @@ QSet<QPair<int, GamepadHatEvent::Direction>> InputController::activeGamepadHats(
 	return activeHats;
 }
 
-void InputController::bindHat(uint32_t type, int hat, GamepadHatEvent::Direction direction, int coreKey) {
-	//m_inputModel->updateHat(index, hat, direction);
+void InputController::bindHat(uint32_t type, int hat, GamepadHatEvent::Direction direction, const QString& key) {
+	if (!m_activeKeyInfo) {
+		return;
+	}
 
 	mInputHatBindings bindings{ -1, -1, -1, -1 };
 	mInputQueryHat(&m_inputMap, type, hat, &bindings);
 	switch (direction) {
 	case GamepadHatEvent::UP:
-		bindings.up = coreKey;
+		bindings.up = keyId(key);
 		break;
 	case GamepadHatEvent::RIGHT:
-		bindings.right = coreKey;
+		bindings.right = keyId(key);
 		break;
 	case GamepadHatEvent::DOWN:
-		bindings.down = coreKey;
+		bindings.down = keyId(key);
 		break;
 	case GamepadHatEvent::LEFT:
-		bindings.left = coreKey;
+		bindings.left = keyId(key);
 		break;
 	default:
 		return;
@@ -644,6 +716,7 @@ void InputController::releaseFocus(QWidget* focus) {
 }
 
 bool InputController::eventFilter(QObject*, QEvent* event) {
+	event->ignore();
 	if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
 		int key = keyEvent->key();
@@ -658,11 +731,16 @@ bool InputController::eventFilter(QObject*, QEvent* event) {
 			return true;
 		}
 
+		event->ignore();
 		InputItem* item = m_inputIndex.itemForShortcut(key);
 		if (item) {
 			item->trigger(event->type() == QEvent::KeyPress);
 			event->accept();
-			return true;
+		}
+		item = m_keyIndex.itemForShortcut(key);
+		if (item) {
+			item->trigger(event->type() == QEvent::KeyPress);
+			event->accept();
 		}
 	}
 
@@ -673,7 +751,11 @@ bool InputController::eventFilter(QObject*, QEvent* event) {
 		if (item) {
 			item->trigger(event->type() == GamepadButtonEvent::Down());
 			event->accept();
-			return true;
+		}
+		item = m_keyIndex.itemForButton(gbe->value());
+		if (item) {
+			item->trigger(event->type() == GamepadButtonEvent::Down());
+			event->accept();
 		}
 	}
 	if (event->type() == GamepadAxisEvent::Type()) {
@@ -682,23 +764,37 @@ bool InputController::eventFilter(QObject*, QEvent* event) {
 		if (item) {
 			item->trigger(event->type() == gae->isNew());
 			event->accept();
-			return true;
+		}
+		item = m_keyIndex.itemForAxis(gae->axis(), gae->direction());
+		if (item) {
+			item->trigger(event->type() == gae->isNew());
+			event->accept();
 		}
 	}
-	return false;
+	return event->isAccepted();
 }
 
-InputItem* InputController::itemForKey(int key) {
-	if (key < 0 || key >= m_inputMap.info->nKeys) {
-		return nullptr;
+InputItem* InputController::itemForKey(const QString& key) {
+	return m_keyIndex.itemAt(QString("key%0").arg(key));
+}
+
+int InputController::keyId(const QString& key) {
+	for (int i = 0; i < m_activeKeyInfo->nKeys; ++i) {
+		if (m_activeKeyInfo->keyId[i] == key) {
+			return i;
+		}
 	}
-	return m_inputIndex.itemAt(QString("key%0").arg(m_inputMap.info->keyId[key]));
+	return -1;
 }
 
 void InputController::restoreModel() {
+	if (!m_activeKeyInfo) {
+		return;
+	}
 	int nKeys = m_inputMap.info->nKeys;
 	for (int i = 0; i < nKeys; ++i) {
-		InputItem* item = itemForKey(i);
+		const QString& keyName = m_inputMap.info->keyId[i];
+		InputItem* item = itemForKey(keyName);
 		if (item) {
 			int key = mInputQueryBinding(&m_inputMap, KEYBOARD, i);
 			if (key >= 0) {
@@ -717,36 +813,34 @@ void InputController::restoreModel() {
 		}
 	}
 #ifdef BUILD_SDL
-	struct Context {
-		InputIndex* model;
-		InputController* controller;
-	} context {
-		&m_inputIndex,
-		this
-	};
 	mInputEnumerateAxes(&m_inputMap, SDL_BINDING_BUTTON, [](int axis, const struct mInputAxis* description, void* user) {
-		Context* context = static_cast<Context*>(user);
-		InputIndex* model = context->model;
-		InputController* controller = context->controller;
+		InputController* controller = static_cast<InputController*>(user);
 		InputItem* item;
+		const mInputPlatformInfo* inputMap = controller->m_inputMap.info;
 		if (description->highDirection >= 0 && description->highDirection < controller->m_inputMap.info->nKeys) {
-			item = controller->itemForKey(description->highDirection);
-			if (item) {
-				item->setAxis(axis, GamepadAxisEvent::POSITIVE);
+			int id = description->lowDirection;
+			if (id >= 0 && id < inputMap->nKeys) {
+				item = controller->itemForKey(inputMap->keyId[id]);
+				if (item) {
+					item->setAxis(axis, GamepadAxisEvent::POSITIVE);
+				}
 			}
 		}
 		if (description->lowDirection >= 0 && description->lowDirection < controller->m_inputMap.info->nKeys) {
-			item = controller->itemForKey(description->lowDirection);
-			if (item) {
-				item->setAxis(axis, GamepadAxisEvent::NEGATIVE);
+			int id = description->highDirection;
+			if (id >= 0 && id < inputMap->nKeys) {
+				item = controller->itemForKey(inputMap->keyId[id]);
+				if (item) {
+					item->setAxis(axis, GamepadAxisEvent::NEGATIVE);
+				}
 			}
 		}
-	}, &context);
+	}, this);
 #endif
-	rebuildIndex();
+	rebuildKeyIndex();
 }
 
-void InputController::rebindKey(int key) {
+void InputController::rebindKey(const QString& key) {
 	InputItem* item = itemForKey(key);
 	bindKey(KEYBOARD, item->shortcut(), key);
 #ifdef BUILD_SDL

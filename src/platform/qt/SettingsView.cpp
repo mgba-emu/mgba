@@ -145,11 +145,16 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 
+	m_keyView = new ShortcutView();
+	m_keyView->setModel(inputController->keyIndex());
+	m_keyView->setInputController(inputController);
 	m_shortcutView = new ShortcutView();
 	m_shortcutView->setModel(inputController->inputIndex());
 	m_shortcutView->setInputController(inputController);
+	m_ui.stackedWidget->addWidget(m_keyView);
+	m_ui.tabs->addItem(tr("Controls"));
 	m_ui.stackedWidget->addWidget(m_shortcutView);
-	m_ui.tabs->addItem(tr("Bindings"));
+	m_ui.tabs->addItem(tr("Shortcuts"));
 }
 
 void SettingsView::selectBios(QLineEdit* bios) {
@@ -237,6 +242,7 @@ void SettingsView::updateConfig() {
 	m_controller->write();
 
 	m_input->rebuildIndex(m_shortcutView->root());
+	m_input->rebuildKeyIndex(m_keyView->root());
 	m_input->saveConfiguration();
 
 	emit pathsChanged();

@@ -175,6 +175,9 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, &Window::audioBufferSamplesChanged, m_controller, &GameController::setAudioBufferSamples);
 	connect(this, &Window::sampleRateChanged, m_controller, &GameController::setAudioSampleRate);
 	connect(this, &Window::fpsTargetChanged, m_controller, &GameController::setFPSTarget);
+	connect(&m_inputController, &InputController::keyPressed, m_controller, &GameController::keyPressed);
+	connect(&m_inputController, &InputController::keyReleased, m_controller, &GameController::keyReleased);
+	connect(&m_inputController, &InputController::keyAutofire, m_controller, &GameController::setAutofire);
 	connect(&m_fpsTimer, &QTimer::timeout, this, &Window::showFPS);
 	connect(&m_focusCheck, &QTimer::timeout, this, &Window::focusCheck);
 	connect(m_display, &Display::hideCursor, [this]() {
@@ -191,6 +194,13 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	m_focusCheck.setInterval(200);
 
 	setupMenu(menuBar());
+
+#ifdef M_CORE_GBA
+	m_inputController.addPlatform(PLATFORM_GBA, &GBAInputInfo);
+#endif
+#ifdef M_CORE_GB
+	m_inputController.addPlatform(PLATFORM_GB, &GBInputInfo);
+#endif
 }
 
 Window::~Window() {
@@ -720,6 +730,8 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 
 	m_controller->threadInterrupt();
 	if (m_controller->isLoaded()) {
+		m_inputController.setPlatform(m_controller->platform());
+
 		mCore* core = m_controller->thread()->core;
 		const mCoreChannelInfo* videoLayers;
 		const mCoreChannelInfo* audioChannels;
@@ -1465,130 +1477,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(exitFullScreen, &QAction::triggered, this, &Window::exitFullScreen);
 	exitFullScreen->setShortcut(QKeySequence("Esc"));
 	addHiddenAction(frameMenu, exitFullScreen, "exitFullScreen");
-
-	QMenu* autofireMenu = new QMenu(tr("Autofire"), this);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->setAutofire(GBA_KEY_A, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_A, false);
-	}), tr("Autofire A"), "autofireA", autofireMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->setAutofire(GBA_KEY_B, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_B, false);
-	}), tr("Autofire B"), "autofireB", autofireMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->setAutofire(GBA_KEY_L, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_L, false);
-	}), tr("Autofire L"), "autofireL", autofireMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->setAutofire(GBA_KEY_R, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_R, false);
-	}), tr("Autofire R"), "autofireR", autofireMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->setAutofire(GBA_KEY_START, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_START, false);
-	}), tr("Autofire Start"), "autofireStart", autofireMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->setAutofire(GBA_KEY_SELECT, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_SELECT, false);
-	}), tr("Autofire Select"), "autofireSelect", autofireMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->setAutofire(GBA_KEY_UP, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_UP, false);
-	}), tr("Autofire Up"), "autofireUp", autofireMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->setAutofire(GBA_KEY_RIGHT, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_RIGHT, false);
-	}), tr("Autofire Right"), "autofireRight", autofireMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->setAutofire(GBA_KEY_DOWN, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_DOWN, false);
-	}), tr("Autofire Down"), "autofireDown", autofireMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->setAutofire(GBA_KEY_LEFT, true);
-	}, [this]() {
-		m_controller->setAutofire(GBA_KEY_LEFT, false);
-	}), tr("Autofire Left"), "autofireLeft", autofireMenu);
-
-	QMenu* bindingsMenu = new QMenu(tr("Bindings"), this);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->keyPressed(GBA_KEY_A);
-	}, [this]() {
-		m_controller->keyReleased(GBA_KEY_A);
-	}), tr("A"), "keyA", bindingsMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->keyPressed(GBA_KEY_B);
-	}, [this]() {
-		m_controller->keyReleased(GBA_KEY_B);
-	}), tr("B"), "keyB", bindingsMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->keyPressed(GBA_KEY_START);
-	}, [this]() {
-		m_controller->keyReleased(GBA_KEY_START);
-	}), tr("Start"), "keyStart", bindingsMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->keyPressed(GBA_KEY_SELECT);
-	}, [this]() {
-		m_controller->keyReleased(GBA_KEY_SELECT);
-	}), tr("Select"), "keySelect", bindingsMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->keyPressed(GBA_KEY_L);
-	}, [this]() {
-		m_controller->keyReleased(GBA_KEY_L);
-	}), tr("L"), "keyL", bindingsMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->keyPressed(GBA_KEY_R);
-	}, [this]() {
-		m_controller->keyReleased(GBA_KEY_R);
-	}), tr("R"), "keyR", bindingsMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->keyPressed(GBA_KEY_UP);
-	}, [this]() {
-		m_controller->keyReleased(GBA_KEY_UP);
-	}), tr("Up"), "keyUp", bindingsMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->keyPressed(GBA_KEY_DOWN);
-	}, [this]() {
-		m_controller->keyReleased(GBA_KEY_DOWN);
-	}), tr("Down"), "keyDown", bindingsMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->keyPressed(GBA_KEY_LEFT);
-	}, [this]() {
-		m_controller->keyReleased(GBA_KEY_LEFT);
-	}), tr("Left"), "keyLeft", bindingsMenu);
-
-	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->keyPressed(GBA_KEY_RIGHT);
-	}, [this]() {
-		m_controller->keyReleased(GBA_KEY_RIGHT);
-	}), tr("Right"), "keyRight", bindingsMenu);
 
 	for (QAction* action : m_gameActions) {
 		action->setDisabled(true);

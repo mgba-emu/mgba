@@ -46,7 +46,13 @@ public:
 	~InputController();
 
 	InputIndex* inputIndex() { return &m_inputIndex; }
+	InputIndex* keyIndex() { return &m_keyIndex; }
 	void rebuildIndex(const InputIndex* = nullptr);
+	void rebuildKeyIndex(const InputIndex* = nullptr);
+
+	void addPlatform(mPlatform, const mInputPlatformInfo*);
+	void setPlatform(mPlatform);
+	void addKey(const QString& name);
 
 	void setConfiguration(ConfigController* config);
 	void saveConfiguration();
@@ -69,9 +75,9 @@ public:
 	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(int type);
 	void recalibrateAxes();
 
-	void bindKey(uint32_t type, int key, int);
-	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, int);
-	void bindHat(uint32_t type, int hat, GamepadHatEvent::Direction, int);
+	void bindKey(uint32_t type, int key, const QString&);
+	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, const QString&);
+	void bindHat(uint32_t type, int hat, GamepadHatEvent::Direction, const QString&);
 
 	QStringList connectedGamepads(uint32_t type) const;
 	int gamepad(uint32_t type) const;
@@ -94,6 +100,9 @@ public:
 
 signals:
 	void profileLoaded(const QString& profile);
+	void keyPressed(int);
+	void keyReleased(int);
+	void keyAutofire(int, bool enabled);
 
 public slots:
 	void testGamepad(int type);
@@ -113,17 +122,24 @@ private:
 	bool hasPendingEvent(int key) const;
 	void sendGamepadEvent(QEvent*);
 	void restoreModel();
-	void rebindKey(int key);
+	void rebindKey(const QString& key);
 
-	InputItem* itemForKey(int key);
+	InputItem* itemForKey(const QString& key);
+	int keyId(const QString& key);
 
 	InputIndex m_inputIndex;
+	InputIndex m_keyIndex;
 	mInputMap m_inputMap;
 	ConfigController* m_config = nullptr;
 	int m_playerId;
 	bool m_allowOpposing = false;
 	QWidget* m_topLevel;
 	QWidget* m_focusParent;
+	QMap<mPlatform, const mInputPlatformInfo*> m_keyInfo;
+	const mInputPlatformInfo* m_activeKeyInfo = nullptr;
+
+	std::unique_ptr<QMenu> m_bindings;
+	std::unique_ptr<QMenu> m_autofire;
 
 #ifdef BUILD_SDL
 	static int s_sdlInited;

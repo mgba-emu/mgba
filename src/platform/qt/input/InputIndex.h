@@ -24,8 +24,11 @@ private:
 	constexpr static const char* const KEY_SECTION = "shortcutKey";
 	constexpr static const char* const BUTTON_SECTION = "shortcutButton";
 	constexpr static const char* const AXIS_SECTION = "shortcutAxis";
+	constexpr static const char* const HAT_SECTION = "shortcutHat";
+	constexpr static const char* const KEY_PROFILE_SECTION = "shortcutProfileKey.";
 	constexpr static const char* const BUTTON_PROFILE_SECTION = "shortcutProfileButton.";
 	constexpr static const char* const AXIS_PROFILE_SECTION = "shortcutProfileAxis.";
+	constexpr static const char* const HAT_PROFILE_SECTION = "shortcutProfileHat.";
 
 public:
 	void setConfigController(ConfigController* controller);
@@ -58,6 +61,8 @@ public:
 	static int toModifierKey(int key);
 
 	void loadProfile(const QString& profile);
+
+	void saveConfig();
 
 private:
 	bool loadShortcuts(InputItem*);

@@ -43,6 +43,7 @@ private:
 	ConfigController* m_controller;
 	InputController* m_input;
 	ShortcutView* m_shortcutView;
+	ShortcutView* m_keyView;
 
 	void saveSetting(const char* key, const QAbstractButton*);
 	void saveSetting(const char* key, const QComboBox*);

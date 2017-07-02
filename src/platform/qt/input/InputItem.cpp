@@ -34,15 +34,6 @@ InputItem::InputItem(InputItem::Functions functions, const QString& visibleName,
 {
 }
 
-InputItem::InputItem(int key, const QString& visibleName, const QString& name, QMenu* parent)
-	: QObject(parent)
-	, m_key(key)
-	, m_name(name)
-	, m_visibleName(visibleName)
-	, m_menu(parent)
-{
-}
-
 InputItem::InputItem(const QString& visibleName, const QString& name, QMenu* parent)
 	: QObject(parent)
 	, m_name(name)
@@ -67,7 +58,6 @@ InputItem::InputItem(InputItem& other)
 	: QObject(other.m_menu)
 	, m_action(other.m_action)
 	, m_functions(other.m_functions)
-	, m_key(other.m_key)
 	, m_name(other.m_name)
 	, m_visibleName(other.m_visibleName)
 	, m_shortcut(other.m_shortcut)
