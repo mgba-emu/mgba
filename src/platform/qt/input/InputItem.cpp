@@ -16,7 +16,7 @@ InputItem::InputItem()
 InputItem::InputItem(QAction* action, const QString& name, QMenu* parent)
 	: QObject(parent)
 	, m_action(action)
-	, m_shortcut(action->shortcut().isEmpty() ? 0 : action->shortcut()[0])
+	, m_shortcut(action->shortcut().isEmpty() ? -2 : action->shortcut()[0])
 	, m_name(name)
 	, m_menu(parent)
 {

@@ -64,9 +64,15 @@ void InputIndex::rebuild(const InputIndex* root) {
 		if (!newItem) {
 			continue;
 		}
-		newItem->setShortcut(item->shortcut());
-		newItem->setButton(item->button());
-		newItem->setAxis(item->axis(), item->direction());
+		if (item->hasShortcut()) {
+			newItem->setShortcut(item->shortcut());
+		}
+		if (item->hasButton()) {
+			newItem->setButton(item->button());
+		}
+		if (item->hasAxis()) {
+			newItem->setAxis(item->axis(), item->direction());
+		}
 
 		itemAdded(newItem);
 	}
@@ -184,7 +190,7 @@ void InputIndex::itemAdded(InputItem* child) {
 	}
 	m_names[child->name()] = child;
 
-	if (child->shortcut()) {
+	if (child->shortcut() > 0) {
 		m_shortcuts[child->shortcut()] = child;
 	}
 	if (child->button() >= 0) {
@@ -231,9 +237,13 @@ int InputIndex::toModifierKey(int key) {
 
 void InputIndex::saveConfig() {
 	for (auto& item : m_items) {
-		m_config->setQtOption(item->name(), QKeySequence(item->shortcut()).toString(), KEY_SECTION);
-		m_config->setQtOption(item->name(), item->button(), BUTTON_SECTION);
-		if (item->direction() != GamepadAxisEvent::NEUTRAL) {
+		if (item->hasShortcut()) {
+			m_config->setQtOption(item->name(), QKeySequence(item->shortcut()).toString(), KEY_SECTION);
+		}
+		if (item->hasButton()) {
+			m_config->setQtOption(item->name(), item->button(), BUTTON_SECTION);
+		}
+		if (item->hasAxis()) {
 			m_config->setQtOption(item->name(), QString("%1%2").arg(GamepadAxisEvent::POSITIVE ? '+' : '-').arg(item->axis()), AXIS_SECTION);
 		}
 	}

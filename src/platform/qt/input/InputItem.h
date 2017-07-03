@@ -43,14 +43,17 @@ public:
 	int shortcut() const { return m_shortcut; }
 	void setShortcut(int sequence);
 	void clearShortcut();
+	bool hasShortcut() { return m_shortcut > -2; }
 
 	int button() const { return m_button; }
 	void setButton(int button);
 	void clearButton();
+	bool hasButton() { return m_button > -2; }
 
 	int axis() const { return m_axis; }
 	GamepadAxisEvent::Direction direction() const { return m_direction; }
 	void setAxis(int axis, GamepadAxisEvent::Direction direction);
+	bool hasAxis() { return m_axis > -2; }
 
 	bool operator==(const InputItem& other) const {
 		return m_name == other.m_name;
@@ -73,9 +76,9 @@ private:
 	QString m_name;
 	QString m_visibleName;
 
-	int m_shortcut = 0;
-	int m_button = -1;
-	int m_axis = -1;
+	int m_shortcut = -2;
+	int m_button = -2;
+	int m_axis = -2;
 	GamepadAxisEvent::Direction m_direction = GamepadAxisEvent::NEUTRAL;
 };
 
