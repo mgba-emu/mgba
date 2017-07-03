@@ -189,11 +189,8 @@ bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 				break;
 			}
 		}
-		if (claimed) {
-			continue;
-		}
 
-		if (firstUnclaimed == SIZE_MAX) {
+		if (!claimed && firstUnclaimed == SIZE_MAX) {
 			firstUnclaimed = i;
 		}
 
