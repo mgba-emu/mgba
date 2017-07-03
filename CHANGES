@@ -155,6 +155,7 @@ Bugfixes:
  - Qt: Fix window icon being stretched
  - Qt: Fix initial window size (fixes mgba.io/i/766)
  - Qt: Fix data directory path
+ - Qt: Fix controls not saving on non-SDL builds
 Misc:
  - Qt: Add language selector
  - GBA Timer: Improve accuracy of timers

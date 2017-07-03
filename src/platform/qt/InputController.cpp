@@ -123,8 +123,8 @@ void InputController::saveConfiguration() {
 	if (m_playerAttached) {
 		mSDLPlayerSaveConfig(&m_sdlPlayer, m_config->input());
 	}
-	m_config->write();
 #endif
+	m_config->write();
 }
 
 void InputController::saveConfiguration(uint32_t type) {
