@@ -6,7 +6,6 @@
 #include "InputIndex.h"
 
 #include "ConfigController.h"
-#include "InputProfile.h"
 
 using namespace QGBA;
 
@@ -61,6 +60,9 @@ void InputIndex::rebuild(const InputIndex* root) {
 				newItem = iter;
 				break;
 			}
+		}
+		if (!newItem) {
+			continue;
 		}
 		newItem->setShortcut(item->shortcut());
 		newItem->setButton(item->button());
@@ -121,28 +123,15 @@ void InputIndex::loadGamepadShortcuts(InputItem* item) {
 	if (item->name().isNull()) {
 		return;
 	}
-	QVariant button = m_config->getQtOption(item->name(), !m_profileName.isNull() ? BUTTON_PROFILE_SECTION + m_profileName : BUTTON_SECTION);
-	if (button.isNull() && m_profile) {
-		int buttonInt;
-		if (m_profile->lookupShortcutButton(item->name(), &buttonInt)) {
-			button = buttonInt;
-		}
-	}
+	QVariant button = m_config->getQtOption(item->name(), BUTTON_SECTION);
 	if (!button.isNull()) {
 		item->setButton(button.toInt());
 	}
 
-	QVariant axis = m_config->getQtOption(item->name(), !m_profileName.isNull() ? AXIS_PROFILE_SECTION + m_profileName : AXIS_SECTION);
+	QVariant axis = m_config->getQtOption(item->name(), AXIS_SECTION);
 	int oldAxis = item->axis();
 	if (oldAxis >= 0) {
 		item->setAxis(-1, GamepadAxisEvent::NEUTRAL);
-	}
-	if (axis.isNull() && m_profile) {
-		int axisInt;
-		GamepadAxisEvent::Direction direction;
-		if (m_profile->lookupShortcutAxis(item->name(), &axisInt, &direction)) {
-			axis = QLatin1String(direction == GamepadAxisEvent::Direction::NEGATIVE ? "-" : "+") + QString::number(axisInt);
-		}
 	}
 	if (!axis.isNull()) {
 		QString axisDesc = axis.toString();
@@ -238,14 +227,6 @@ int InputIndex::toModifierKey(int key) {
 		break;
 	}
 	return modifiers;
-}
-
-void InputIndex::loadProfile(const QString& profile) {
-	m_profileName = profile;
-	m_profile = InputProfile::findProfile(profile);
-	for (auto& item : m_items) {
-		loadShortcuts(item);
-	}
 }
 
 void InputIndex::saveConfig() {

@@ -185,18 +185,11 @@ void InputController::loadConfiguration(uint32_t type) {
 }
 
 void InputController::loadProfile(uint32_t type, const QString& profile) {
-	if (m_activeKeyInfo) {
-		bool loaded = mInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
-		if (!loaded) {
-			const InputProfile* ip = InputProfile::findProfile(profile);
-			if (ip) {
-				ip->apply(this);
-			}
-		}
+	const InputProfile* ip = InputProfile::findProfile(profile);
+	if (ip) {
+		ip->apply(this);
 	}
 	recalibrateAxes();
-	m_inputIndex.loadProfile(profile);
-	m_keyIndex.loadProfile(profile);
 	emit profileLoaded(profile);
 }
 
