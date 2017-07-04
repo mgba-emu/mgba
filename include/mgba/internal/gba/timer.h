@@ -21,15 +21,14 @@ DECL_BIT(GBATimerFlags, Enable, 6);
 struct GBA;
 struct GBATimer {
 	uint16_t reload;
-	uint16_t oldReload;
-	uint32_t lastEvent;
+	int32_t lastEvent;
 	struct mTimingEvent event;
 	int32_t overflowInterval;
 	GBATimerFlags flags;
 };
 
 void GBATimerInit(struct GBA* gba);
-void GBATimerUpdateRegister(struct GBA* gba, int timer);
+void GBATimerUpdateRegister(struct GBA* gba, int timer, int32_t cyclesLate);
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t value);
 void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t value);
 

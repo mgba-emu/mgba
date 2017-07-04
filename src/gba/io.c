@@ -707,17 +707,18 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	}
 
 	switch (address) {
+	// Reading this takes two cycles (1N+1I), so let's remove them preemptively
 	case REG_TM0CNT_LO:
-		GBATimerUpdateRegister(gba, 0);
+		GBATimerUpdateRegister(gba, 0, 2);
 		break;
 	case REG_TM1CNT_LO:
-		GBATimerUpdateRegister(gba, 1);
+		GBATimerUpdateRegister(gba, 1, 2);
 		break;
 	case REG_TM2CNT_LO:
-		GBATimerUpdateRegister(gba, 2);
+		GBATimerUpdateRegister(gba, 2, 2);
 		break;
 	case REG_TM3CNT_LO:
-		GBATimerUpdateRegister(gba, 3);
+		GBATimerUpdateRegister(gba, 3, 2);
 		break;
 
 	case REG_KEYINPUT:
@@ -925,7 +926,6 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 	for (i = 0; i < 4; ++i) {
 		STORE_16(gba->memory.io[(REG_DMA0CNT_LO + i * 12) >> 1], (REG_DMA0CNT_LO + i * 12), state->io);
 		STORE_16(gba->timers[i].reload, 0, &state->timers[i].reload);
-		STORE_16(gba->timers[i].oldReload, 0, &state->timers[i].oldReload);
 		STORE_32(gba->timers[i].lastEvent - mTimingCurrentTime(&gba->timing), 0, &state->timers[i].lastEvent);
 		STORE_32(gba->timers[i].event.when - mTimingCurrentTime(&gba->timing), 0, &state->timers[i].nextEvent);
 		STORE_32(gba->timers[i].overflowInterval, 0, &state->timers[i].overflowInterval);
@@ -952,9 +952,12 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	}
 
 	uint32_t when;
+	LOAD_32(when, 0, &state->masterCycles);
+	when += state->cpu.cycles;
+	when = 0x400 - (when & 0x3FF);
+	mTimingSchedule(&gba->timing, &gba->timerMaster, when);
 	for (i = 0; i < 4; ++i) {
 		LOAD_16(gba->timers[i].reload, 0, &state->timers[i].reload);
-		LOAD_16(gba->timers[i].oldReload, 0, &state->timers[i].oldReload);
 		LOAD_32(gba->timers[i].overflowInterval, 0, &state->timers[i].overflowInterval);
 		LOAD_32(gba->timers[i].flags, 0, &state->timers[i].flags);
 		if (i > 0 && GBATimerFlagsIsCountUp(gba->timers[i].flags)) {

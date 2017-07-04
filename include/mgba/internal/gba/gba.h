@@ -79,6 +79,7 @@ struct GBA {
 	uint32_t bus;
 	int performingDMA;
 
+	struct mTimingEvent timerMaster;
 	struct GBATimer timers[4];
 
 	int springIRQ;

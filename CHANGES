@@ -1,3 +1,7 @@
+0.7.0: (Future)
+Misc:
+ - GBA Timer: Use global cycles for timers
+
 0.6.0: (Future)
 Features:
  - GBA: Support printing debug strings from inside a game
