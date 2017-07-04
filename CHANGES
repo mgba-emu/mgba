@@ -29,6 +29,7 @@ Features:
  - LR35902: Watchpoints
  - Memory search
  - Debugger: Execution tracing
+ - Qt: Italian translation (by theheroGAC)
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
@@ -154,6 +155,8 @@ Misc:
  - GBA Timer: Improve accuracy of timers
 
 0.6 beta 2: (Future)
+Features:
+ - Qt: Italian translation (by theheroGAC)
 Bugfixes:
  - Qt: Fix memory search close button (fixes mgba.io/i/769)
  - Qt: Fix window icon being stretched
