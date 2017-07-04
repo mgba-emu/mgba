@@ -23,7 +23,6 @@ struct GBATimer {
 	uint16_t reload;
 	int32_t lastEvent;
 	struct mTimingEvent event;
-	int32_t overflowInterval;
 	GBATimerFlags flags;
 };
 

@@ -13,7 +13,11 @@
 static void GBATimerUpdate(struct GBA* gba, int timerId, uint32_t cyclesLate) {
 	struct GBATimer* timer = &gba->timers[timerId];
 	gba->memory.io[(REG_TM0CNT_LO >> 1) + (timerId << 1)] = timer->reload;
-	GBATimerUpdateRegister(gba, timerId, cyclesLate);
+	int32_t currentTime = mTimingCurrentTime(&gba->timing) - cyclesLate;
+	int32_t tickMask = (1 << GBATimerFlagsGetPrescaleBits(timer->flags)) - 1;
+	currentTime &= ~tickMask;
+	timer->lastEvent = currentTime;
+	GBATimerUpdateRegister(gba, timerId, 0);
 
 	if (GBATimerFlagsIsDoIrq(timer->flags)) {
 		GBARaiseIRQ(gba, IRQ_TIMER0 + timerId);

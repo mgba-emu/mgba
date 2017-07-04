@@ -928,7 +928,6 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 		STORE_16(gba->timers[i].reload, 0, &state->timers[i].reload);
 		STORE_32(gba->timers[i].lastEvent - mTimingCurrentTime(&gba->timing), 0, &state->timers[i].lastEvent);
 		STORE_32(gba->timers[i].event.when - mTimingCurrentTime(&gba->timing), 0, &state->timers[i].nextEvent);
-		STORE_32(gba->timers[i].overflowInterval, 0, &state->timers[i].overflowInterval);
 		STORE_32(gba->timers[i].flags, 0, &state->timers[i].flags);
 		STORE_32(gba->memory.dma[i].nextSource, 0, &state->dma[i].nextSource);
 		STORE_32(gba->memory.dma[i].nextDest, 0, &state->dma[i].nextDest);
@@ -958,7 +957,6 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	mTimingSchedule(&gba->timing, &gba->timerMaster, when);
 	for (i = 0; i < 4; ++i) {
 		LOAD_16(gba->timers[i].reload, 0, &state->timers[i].reload);
-		LOAD_32(gba->timers[i].overflowInterval, 0, &state->timers[i].overflowInterval);
 		LOAD_32(gba->timers[i].flags, 0, &state->timers[i].flags);
 		if (i > 0 && GBATimerFlagsIsCountUp(gba->timers[i].flags)) {
 			// Overwrite invalid values in savestate
