@@ -49,6 +49,7 @@ GBAApp::GBAApp(int& argc, char* argv[])
 
 	if (!m_configController.getQtOption("language").isNull()) {
 		locale = QLocale(m_configController.getQtOption("language").toString());
+		QLocale::setDefault(locale);
 	}
 
 	QTranslator qtTranslator;
