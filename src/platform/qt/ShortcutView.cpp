@@ -35,6 +35,11 @@ ShortcutView::ShortcutView(QWidget* parent)
 	connect(m_ui.keyEdit, &KeyEditor::axisChanged, this, &ShortcutView::updateAxis);
 	connect(m_ui.shortcutTable, &QAbstractItemView::doubleClicked, this, &ShortcutView::load);
 	connect(m_ui.clearButton, &QAbstractButton::clicked, this, &ShortcutView::clear);
+#ifdef BUILD_SDL
+	connect(m_ui.gamepadName, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this](int index) {
+		m_input->setGamepad(SDL_BINDING_BUTTON, index);
+	});
+#endif
 }
 
 ShortcutView::~ShortcutView() {
@@ -51,6 +56,25 @@ void ShortcutView::setInputController(InputController* controller) {
 	}
 	m_input = controller;
 	m_input->stealFocus(this);
+	updateGamepads();
+}
+
+void ShortcutView::updateGamepads() {
+	if (!m_input) {
+		return;
+	}
+#ifdef BUILD_SDL
+	m_ui.gamepadName->clear();
+
+	QStringList gamepads = m_input->connectedGamepads(SDL_BINDING_BUTTON);
+	int activeGamepad = m_input->gamepad(SDL_BINDING_BUTTON);
+
+	for (const auto& gamepad : gamepads) {
+		m_ui.gamepadName->addItem(gamepad);
+	}
+	m_ui.gamepadName->setCurrentIndex(activeGamepad);
+#endif
+
 }
 
 void ShortcutView::load(const QModelIndex& index) {

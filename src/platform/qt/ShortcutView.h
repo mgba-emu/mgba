@@ -39,6 +39,7 @@ private slots:
 	void clear();
 	void updateButton(int button);
 	void updateAxis(int axis, int direction);
+	void updateGamepads();
 
 private:
 	Ui::ShortcutView m_ui;
