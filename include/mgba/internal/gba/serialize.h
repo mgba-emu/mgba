@@ -264,10 +264,10 @@ struct GBASerializedState {
 
 	struct {
 		uint16_t reload;
-		uint16_t oldReload;
+		uint16_t reserved;
 		uint32_t lastEvent;
 		uint32_t nextEvent;
-		int32_t overflowInterval;
+		uint32_t nextIrq;
 		GBATimerFlags flags;
 	} timers[4];
 
