@@ -24,13 +24,6 @@
         <translation>{projectName} möchte den folgenden Unterstützern auf Patreon danken:</translation>
     </message>
     <message>
-        <location filename="../AboutScreen.ui" line="86"/>
-        <source>© 2013 – 2016 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
-Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation>© 2013 – 2016 Jeffrey Pfau, lizenziert unter der Mozilla Public License, Version 2.0
-Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</translation>
-    </message>
-    <message>
         <location filename="../AboutScreen.ui" line="190"/>
         <source>{patrons}</source>
         <translation>{patrons}</translation>
@@ -39,6 +32,13 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../AboutScreen.ui" line="106"/>
         <source>{projectVersion}</source>
         <translation>{projectVersion}</translation>
+    </message>
+    <message>
+        <location filename="../AboutScreen.ui" line="86"/>
+        <source>© 2013 – 2017 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
+Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
+        <translation>© 2013 – 2017 Jeffrey Pfau, lizenziert unter der Mozilla Public License, Version 2.0
+Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="155"/>
@@ -458,8 +458,8 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <name>MemorySearch</name>
     <message>
         <location filename="../MemorySearch.ui" line="20"/>
-        <source>Form</source>
-        <translation>Eingabemaske</translation>
+        <source>Memory Search</source>
+        <translation>Speicher durchsuchen</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="45"/>
@@ -1169,28 +1169,28 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
 <context>
     <name>QGBA::GameController</name>
     <message>
-        <location filename="../GameController.cpp" line="351"/>
-        <location filename="../GameController.cpp" line="535"/>
+        <location filename="../GameController.cpp" line="352"/>
+        <location filename="../GameController.cpp" line="536"/>
         <source>Failed to open game file: %1</source>
         <translation>Fehler beim Öffnen der Spieldatei: %1</translation>
     </message>
     <message>
-        <location filename="../GameController.cpp" line="507"/>
+        <location filename="../GameController.cpp" line="508"/>
         <source>Failed to open save file: %1</source>
         <translation>Fehler beim Öffnen der Speicherdatei: %1</translation>
     </message>
     <message>
-        <location filename="../GameController.cpp" line="564"/>
+        <location filename="../GameController.cpp" line="565"/>
         <source>Failed to open snapshot file for reading: %1</source>
         <translation>Konnte Snapshot-Datei %1 nicht zum Lesen öffnen</translation>
     </message>
     <message>
-        <location filename="../GameController.cpp" line="584"/>
+        <location filename="../GameController.cpp" line="585"/>
         <source>Failed to open snapshot file for writing: %1</source>
         <translation>Konnte Snapshot-Datei %1 nicht zum Schreiben öffnen</translation>
     </message>
     <message>
-        <location filename="../GameController.cpp" line="850"/>
+        <location filename="../GameController.cpp" line="851"/>
         <source>Failed to start audio processor</source>
         <translation>Fehler beim Starten des Audio-Prozessors</translation>
     </message>
@@ -3280,7 +3280,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../Window.cpp" line="1105"/>
         <source>Sh&amp;utdown</source>
-        <translation>B&amp;eenden</translation>
+        <translation>Schli&amp;eßen</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1111"/>
@@ -3910,7 +3910,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../SettingsView.ui" line="173"/>
         <source>Sample rate:</source>
-        <translation>Sample-Rate:</translation>
+        <translation>Abtastrate:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="185"/>
