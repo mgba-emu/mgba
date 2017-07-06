@@ -160,6 +160,7 @@ Bugfixes:
  - Qt: Fix data directory path
  - Qt: Fix controls not saving on non-SDL builds
  - GB Video: Fix LYC regression
+ - Qt: Fix translation initialization (fixes mgba.io/i/776)
 Misc:
  - Qt: Add language selector
  - GBA Timer: Improve accuracy of timers

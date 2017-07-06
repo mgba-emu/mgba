@@ -9,6 +9,7 @@
 #include "InputController.h"
 #include "LogController.h"
 #include "MultiplayerController.h"
+#include "Override.h"
 #include "VFileDevice.h"
 
 #include <QCoreApplication>
