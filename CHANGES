@@ -153,6 +153,7 @@ Misc:
 0.6 beta 2: (Future)
 Features:
  - Qt: Italian translation (by theheroGAC)
+ - Qt: Updated German translation
 Bugfixes:
  - Qt: Fix memory search close button (fixes mgba.io/i/769)
  - Qt: Fix window icon being stretched
@@ -164,6 +165,7 @@ Bugfixes:
 Misc:
  - Qt: Add language selector
  - GBA Timer: Improve accuracy of timers
+ - Qt: Minor test fixes
 
 0.6 beta 1: (2017-06-29)
  - Initial beta for 0.6
