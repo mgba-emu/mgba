@@ -74,7 +74,7 @@ QVariant InputModel::data(const QModelIndex& index, int role) const {
 	case 0:
 		return item->visibleName();
 	case 1:
-		if (item->item) {
+		if (item->item && item->item->shortcut() > 0) {
 			return QKeySequence(item->item->shortcut()).toString(QKeySequence::NativeText);
 		}
 		break;
