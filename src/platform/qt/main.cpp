@@ -7,13 +7,15 @@
 // This must be defined before anything else is included.
 #define SDL_MAIN_HANDLED
 
+#include "ConfigController.h"
 #include "GBAApp.h"
 #include "Window.h"
 
+#include <mgba/core/version.h>
+#include <mgba/internal/gba/video.h>
+
 #include <QLibraryInfo>
 #include <QTranslator>
-
-#include <mgba/core/version.h>
 
 #ifdef QT_STATIC
 #include <QtPlugin>
@@ -25,13 +27,32 @@ Q_IMPORT_PLUGIN(QWindowsAudioPlugin);
 #endif
 #endif
 
+using namespace QGBA;
+
 int main(int argc, char* argv[]) {
 #ifdef BUILD_SDL
 	SDL_SetMainReady();
 #endif
-	QGBA::GBAApp application(argc, argv);
 
-	QLocale locale = QLocale::system();
+	ConfigController configController;
+
+	QLocale locale;
+	if (!configController.getQtOption("language").isNull()) {
+		locale = QLocale(configController.getQtOption("language").toString());
+		QLocale::setDefault(locale);
+	}
+
+	mArguments args;
+	mGraphicsOpts graphicsOpts;
+	mSubParser subparser;
+	initParserForGraphics(&subparser, &graphicsOpts);
+	bool loaded = configController.parseArguments(&args, argc, argv, &subparser);
+	if (loaded && args.showHelp) {
+		usage(argv[0], subparser.usage);
+		return 0;
+	}
+
+	GBAApp application(argc, argv, &configController);
 
 	QTranslator qtTranslator;
 	qtTranslator.load(locale, "qt", "_", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
@@ -40,6 +61,23 @@ int main(int argc, char* argv[]) {
 	QTranslator langTranslator;
 	langTranslator.load(locale, binaryName, "-", ":/translations/");
 	application.installTranslator(&langTranslator);
+
+	Window* w = application.newWindow();
+	if (loaded) {
+		w->argumentsPassed(&args);
+	} else {
+		w->loadConfig();
+	}
+	freeArguments(&args);
+
+	if (graphicsOpts.multiplier) {
+		w->resizeFrame(QSize(VIDEO_HORIZONTAL_PIXELS * graphicsOpts.multiplier, VIDEO_VERTICAL_PIXELS * graphicsOpts.multiplier));
+	}
+	if (graphicsOpts.fullscreen) {
+		w->enterFullScreen();
+	}
+
+	w->show();
 
 	return application.exec();
 }

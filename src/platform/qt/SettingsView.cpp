@@ -13,6 +13,7 @@
 #include "ShortcutView.h"
 
 #include <mgba/core/serialize.h>
+#include <mgba/core/version.h>
 #include <mgba/internal/gba/gba.h>
 
 using namespace QGBA;
@@ -145,6 +146,19 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 
+	m_ui.languages->setItemData(0, QLocale("en"));
+	QDir ts(":/translations/");
+	for (auto name : ts.entryList()) {
+		if (!name.endsWith(".qm")) {
+			continue;
+		}
+		QLocale locale(name.remove(QString("%0-").arg(binaryName)).remove(".qm"));
+		m_ui.languages->addItem(locale.nativeLanguageName(), locale);
+		if (locale == QLocale()) {
+			m_ui.languages->setCurrentIndex(m_ui.languages->count() - 1);
+		}
+	}
+
 	m_keyView = new ShortcutView();
 	m_keyView->setModel(inputController->keyIndex());
 	m_keyView->setInputController(inputController);
@@ -237,6 +251,12 @@ void SettingsView::updateConfig() {
 		m_controller->setQtOption("displayDriver", displayDriver);
 		Display::setDriver(static_cast<Display::Driver>(displayDriver.toInt()));
 		emit displayDriverChanged();
+	}
+
+	QLocale language = m_ui.languages->itemData(m_ui.languages->currentIndex()).toLocale();
+	if (language != m_controller->getQtOption("language").toLocale() && !(language.bcp47Name() == QLocale::system().bcp47Name() && m_controller->getQtOption("language").isNull())) {
+		m_controller->setQtOption("language", language.bcp47Name());
+		emit languageChanged();
 	}
 
 	m_controller->write();

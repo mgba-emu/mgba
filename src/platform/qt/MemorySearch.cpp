@@ -151,6 +151,7 @@ void MemorySearch::refresh() {
 		mCoreMemorySearchResult* result = mCoreMemorySearchResultsGetPointer(&m_results, i);
 		QTableWidgetItem* item = new QTableWidgetItem(QString("%1").arg(result->address, 8, 16, QChar('0')));
 		m_ui.results->setItem(i, 0, item);
+		QTableWidgetItem* type;
 		if (m_ui.numHex->isChecked()) {
 			switch (result->type) {
 			case mCORE_MEMORY_SEARCH_8:
@@ -182,9 +183,30 @@ void MemorySearch::refresh() {
 				item = new QTableWidgetItem("?"); // TODO
 			}
 		}
+		QString divisor;
+		if (result->guessDivisor > 1) {
+			divisor = tr(" (⅟%0×)").arg(result->guessDivisor);
+		}
+		switch (result->type) {
+		case mCORE_MEMORY_SEARCH_8:
+			type = new QTableWidgetItem(tr("1 byte%0").arg(divisor));
+			break;
+		case mCORE_MEMORY_SEARCH_16:
+			type = new QTableWidgetItem(tr("2 bytes%0").arg(divisor));
+			break;
+		case mCORE_MEMORY_SEARCH_GUESS:
+		case mCORE_MEMORY_SEARCH_32:
+			type = new QTableWidgetItem(tr("4 bytes%0").arg(divisor));
+			break;
+		case mCORE_MEMORY_SEARCH_STRING:
+			item = new QTableWidgetItem("?"); // TODO
+		}
 		m_ui.results->setItem(i, 1, item);
+		m_ui.results->setItem(i, 2, type);
 	}
 	m_ui.results->sortItems(0);
+	m_ui.results->resizeColumnsToContents();
+	m_ui.results->resizeRowsToContents();
 }
 
 void MemorySearch::openMemory() {

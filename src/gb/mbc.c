@@ -558,7 +558,7 @@ void GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value) {
 		return;
 	case 0x10:
 		mbc7->latch |= (value & 0xAA);
-		if (mbc7->latch == 0xFF && memory->rotation && memory->rotation->sample) {
+		if (mbc7->latch == 0xAB && memory->rotation && memory->rotation->sample) {
 			memory->rotation->sample(memory->rotation);
 		}
 		mbc7->latch = 0;

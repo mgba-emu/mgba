@@ -28,7 +28,7 @@
 #include <mgba/internal/gba/input.h>
 #endif
 
-const static struct mCoreChannelInfo _GBAVideoLayers[] = {
+static const struct mCoreChannelInfo _GBAVideoLayers[] = {
 	{ 0, "bg0", "Background 0", NULL },
 	{ 1, "bg1", "Background 1", NULL },
 	{ 2, "bg2", "Background 2", NULL },
@@ -36,16 +36,16 @@ const static struct mCoreChannelInfo _GBAVideoLayers[] = {
 	{ 4, "obj", "Objects", NULL },
 };
 
-const static struct mCoreChannelInfo _GBAAudioChannels[] = {
-	{ 0, "ch0", "PSG Channel 0", "Square/Sweep" },
-	{ 1, "ch1", "PSG Channel 1", "Square" },
-	{ 2, "ch2", "PSG Channel 2", "PCM" },
-	{ 3, "ch3", "PSG Channel 3", "Noise" },
+static const struct mCoreChannelInfo _GBAAudioChannels[] = {
+	{ 0, "ch1", "PSG Channel 1", "Square/Sweep" },
+	{ 1, "ch2", "PSG Channel 2", "Square" },
+	{ 2, "ch3", "PSG Channel 3", "PCM" },
+	{ 3, "ch4", "PSG Channel 4", "Noise" },
 	{ 4, "chA", "FIFO Channel A", NULL },
 	{ 5, "chB", "FIFO Channel B", NULL },
 };
 
-const static struct mCoreMemoryBlock _GBAMemoryBlocks[] = {
+static const struct mCoreMemoryBlock _GBAMemoryBlocks[] = {
 	{ -1, "mem", "All", "All", 0, 0x10000000, 0x10000000, mCORE_MEMORY_VIRTUAL },
 	{ REGION_BIOS, "bios", "BIOS", "BIOS (16kiB)", BASE_BIOS, SIZE_BIOS, SIZE_BIOS, mCORE_MEMORY_READ | mCORE_MEMORY_MAPPED },
 	{ REGION_WORKING_RAM, "wram", "EWRAM", "Working RAM (256kiB)", BASE_WORKING_RAM, BASE_WORKING_RAM + SIZE_WORKING_RAM, SIZE_WORKING_RAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
@@ -59,7 +59,7 @@ const static struct mCoreMemoryBlock _GBAMemoryBlocks[] = {
 	{ REGION_CART2, "cart2", "ROM WS2", "Game Pak (Waitstate 2)", BASE_CART2, BASE_CART2 + SIZE_CART2, SIZE_CART2, mCORE_MEMORY_READ | mCORE_MEMORY_MAPPED },
 };
 
-const static struct mCoreMemoryBlock _GBAMemoryBlocksSRAM[] = {
+static const struct mCoreMemoryBlock _GBAMemoryBlocksSRAM[] = {
 	{ -1, "mem", "All", "All", 0, 0x10000000, 0x10000000, mCORE_MEMORY_VIRTUAL },
 	{ REGION_BIOS, "bios", "BIOS", "BIOS (16kiB)", BASE_BIOS, SIZE_BIOS, SIZE_BIOS, mCORE_MEMORY_READ | mCORE_MEMORY_MAPPED },
 	{ REGION_WORKING_RAM, "wram", "EWRAM", "Working RAM (256kiB)", BASE_WORKING_RAM, BASE_WORKING_RAM + SIZE_WORKING_RAM, SIZE_WORKING_RAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
@@ -74,7 +74,7 @@ const static struct mCoreMemoryBlock _GBAMemoryBlocksSRAM[] = {
 	{ REGION_CART_SRAM, "sram", "SRAM", "Static RAM (64kiB)", BASE_CART_SRAM, BASE_CART_SRAM + SIZE_CART_SRAM, SIZE_CART_SRAM, true },
 };
 
-const static struct mCoreMemoryBlock _GBAMemoryBlocksFlash512[] = {
+static const struct mCoreMemoryBlock _GBAMemoryBlocksFlash512[] = {
 	{ -1, "mem", "All", "All", 0, 0x10000000, 0x10000000, mCORE_MEMORY_VIRTUAL },
 	{ REGION_BIOS, "bios", "BIOS", "BIOS (16kiB)", BASE_BIOS, SIZE_BIOS, SIZE_BIOS, mCORE_MEMORY_READ | mCORE_MEMORY_MAPPED },
 	{ REGION_WORKING_RAM, "wram", "EWRAM", "Working RAM (256kiB)", BASE_WORKING_RAM, BASE_WORKING_RAM + SIZE_WORKING_RAM, SIZE_WORKING_RAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
@@ -89,7 +89,7 @@ const static struct mCoreMemoryBlock _GBAMemoryBlocksFlash512[] = {
 	{ REGION_CART_SRAM, "sram", "Flash", "Flash Memory (64kiB)", BASE_CART_SRAM, BASE_CART_SRAM + SIZE_CART_FLASH512, SIZE_CART_FLASH512, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
 };
 
-const static struct mCoreMemoryBlock _GBAMemoryBlocksFlash1M[] = {
+static const struct mCoreMemoryBlock _GBAMemoryBlocksFlash1M[] = {
 	{ -1, "mem", "All", "All", 0, 0x10000000, 0x10000000, mCORE_MEMORY_VIRTUAL },
 	{ REGION_BIOS, "bios", "BIOS", "BIOS (16kiB)", BASE_BIOS, SIZE_BIOS, SIZE_BIOS, mCORE_MEMORY_READ | mCORE_MEMORY_MAPPED },
 	{ REGION_WORKING_RAM, "wram", "EWRAM", "Working RAM (256kiB)", BASE_WORKING_RAM, BASE_WORKING_RAM + SIZE_WORKING_RAM, SIZE_WORKING_RAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
@@ -104,7 +104,7 @@ const static struct mCoreMemoryBlock _GBAMemoryBlocksFlash1M[] = {
 	{ REGION_CART_SRAM, "sram", "Flash", "Flash Memory (64kiB)", BASE_CART_SRAM, BASE_CART_SRAM + SIZE_CART_FLASH512, SIZE_CART_FLASH1M, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED, 1 },
 };
 
-const static struct mCoreMemoryBlock _GBAMemoryBlocksEEPROM[] = {
+static const struct mCoreMemoryBlock _GBAMemoryBlocksEEPROM[] = {
 	{ -1, "mem", "All", "All", 0, 0x10000000, 0x10000000, mCORE_MEMORY_VIRTUAL },
 	{ REGION_BIOS, "bios", "BIOS", "BIOS (16kiB)", BASE_BIOS, SIZE_BIOS, SIZE_BIOS, mCORE_MEMORY_READ | mCORE_MEMORY_MAPPED },
 	{ REGION_WORKING_RAM, "wram", "EWRAM", "Working RAM (256kiB)", BASE_WORKING_RAM, BASE_WORKING_RAM + SIZE_WORKING_RAM, SIZE_WORKING_RAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },

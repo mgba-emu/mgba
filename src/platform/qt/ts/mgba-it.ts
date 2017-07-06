@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="de_DE" sourcelanguage="en_US">
+<TS version="2.1" language="it" sourcelanguage="en_US">
 <context>
     <name>AboutScreen</name>
     <message>
         <location filename="../AboutScreen.ui" line="14"/>
         <source>About</source>
-        <translation>Über</translation>
+        <translation>About</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Foren / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Spenden&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Quellcode&lt;/a&gt;</translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;Sitio web&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Foros / Supporto&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donar&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Codice sorgente&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="58"/>
@@ -21,14 +21,14 @@
     <message>
         <location filename="../AboutScreen.ui" line="68"/>
         <source>{projectName} would like to thank the following patrons from Patreon:</source>
-        <translation>{projectName} möchte den folgenden Unterstützern auf Patreon danken:</translation>
+        <translation>{projectName} desidera ringraziare i seguenti sponsor di Patreon:</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="86"/>
         <source>© 2013 – 2016 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation>© 2013 – 2016 Jeffrey Pfau, lizenziert unter der Mozilla Public License, Version 2.0
-Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</translation>
+        <translation>© 2013 - 2016 Jeffrey Pfau, sotto licenza Mozilla Public License, versione 2.0
+Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="190"/>
@@ -48,12 +48,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
-        <translation>{projectName} ist ein quelloffener Game Boy Advance-Emulator</translation>
+        <translation>{projectName} è un emulatore open-source del Game Boy Advance</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="41"/>
         <source>Branch: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Revision: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</source>
-        <translation>Branch: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Revision: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
+        <translation>Ramo Git: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Revisione: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
     </message>
 </context>
 <context>
@@ -61,12 +61,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../ArchiveInspector.ui" line="14"/>
         <source>Open in archive...</source>
-        <translation>In Archiv öffnen...</translation>
+        <translation>Apri il file in ...</translation>
     </message>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation>Laden...</translation>
+        <translation>Caricamento in corso...</translation>
     </message>
 </context>
 <context>
@@ -79,7 +79,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../AssetTile.ui" line="33"/>
         <source>Tile #</source>
-        <translation>Tile #</translation>
+        <translation>Tile Nº</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="40"/>
@@ -89,7 +89,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../AssetTile.ui" line="54"/>
         <source>Address</source>
-        <translation>Adresse</translation>
+        <translation>Indirizzo</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="61"/>
@@ -99,17 +99,17 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../AssetTile.ui" line="100"/>
         <source>Red</source>
-        <translation>Rot</translation>
+        <translation>Rosso</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="107"/>
         <source>Green</source>
-        <translation>Grün</translation>
+        <translation>Verde</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="114"/>
         <source>Blue</source>
-        <translation>Blau</translation>
+        <translation>Blue</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="128"/>
@@ -124,32 +124,32 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../CheatsView.ui" line="14"/>
         <source>Cheats</source>
-        <translation>Cheats</translation>
+        <translation>Trucchi</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="20"/>
         <source>Remove</source>
-        <translation>Entfernen</translation>
+        <translation>Rimuovere</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="34"/>
         <source>Save</source>
-        <translation>Speichern</translation>
+        <translation>Salva</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="41"/>
         <source>Load</source>
-        <translation>Laden</translation>
+        <translation>Carica</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="69"/>
         <source>Add New Set</source>
-        <translation>Neues Set hinzufügen</translation>
+        <translation>Aggiungere Nuovo Set</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="76"/>
         <source>Add</source>
-        <translation>Hinzufügen</translation>
+        <translation>Aggiungi</translation>
     </message>
 </context>
 <context>
@@ -162,12 +162,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../DebuggerConsole.ui" line="25"/>
         <source>Enter command (try `help` for more info)</source>
-        <translation>Geben Sie ein Kommando ein (versuchen Sie &apos;help&apos; für weitere Informationen)</translation>
+        <translation>Inserire un comando (premere `help` per maggiori informazioni)</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="32"/>
         <source>Break</source>
-        <translation>Unterbrechen</translation>
+        <translation>Pausa</translation>
     </message>
 </context>
 <context>
@@ -175,12 +175,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../GIFView.ui" line="14"/>
         <source>Record GIF</source>
-        <translation>GIF aufzeichnen</translation>
+        <translation>Registra GIF</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="34"/>
         <source>Start</source>
-        <translation>Start</translation>
+        <translation>Avvia</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="50"/>
@@ -190,22 +190,22 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../GIFView.ui" line="63"/>
         <source>Select File</source>
-        <translation>Datei wählen</translation>
+        <translation>Seleziona File</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="101"/>
         <source>Frameskip</source>
-        <translation>Frameskip</translation>
+        <translation>Salta Frame</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="115"/>
         <source>Frame delay (ms)</source>
-        <translation>Bildverzögerung (ms)</translation>
+        <translation>Ritardo Frame (ms)</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="122"/>
         <source>Automatic</source>
-        <translation>Automatisch</translation>
+        <translation>Automatico</translation>
     </message>
 </context>
 <context>
@@ -213,7 +213,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../IOViewer.ui" line="14"/>
         <source>I/O Viewer</source>
-        <translation>I/O-Betrachter</translation>
+        <translation>Visualizzatore I/O</translation>
     </message>
     <message>
         <location filename="../IOViewer.ui" line="26"/>
@@ -302,31 +302,11 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     </message>
 </context>
 <context>
-    <name>LibraryTree</name>
+    <name>LibraryView</name>
     <message>
-        <location filename="../library/LibraryTree.cpp" line="46"/>
-        <source>Name</source>
-        <translation>Name</translation>
-    </message>
-    <message>
-        <location filename="../library/LibraryTree.cpp" line="47"/>
-        <source>Location</source>
-        <translation>Ort</translation>
-    </message>
-    <message>
-        <location filename="../library/LibraryTree.cpp" line="48"/>
-        <source>Platform</source>
-        <translation>Plattform</translation>
-    </message>
-    <message>
-        <location filename="../library/LibraryTree.cpp" line="49"/>
-        <source>Size</source>
-        <translation>Größe</translation>
-    </message>
-    <message>
-        <location filename="../library/LibraryTree.cpp" line="50"/>
-        <source>CRC32</source>
-        <translation>CRC32</translation>
+        <location filename="../LibraryView.ui" line="14"/>
+        <source>Library</source>
+        <translation>Biblioteca</translation>
     </message>
 </context>
 <context>
@@ -335,7 +315,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../LoadSaveState.ui" line="14"/>
         <location filename="../LoadSaveState.ui" line="88"/>
         <source>%1 State</source>
-        <translation>Savestate %1</translation>
+        <translation>%1 cattura stato</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="41"/>
@@ -348,7 +328,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../LoadSaveState.ui" line="217"/>
         <location filename="../LoadSaveState.ui" line="239"/>
         <source>No Save</source>
-        <translation>Kein Savestate</translation>
+        <translation>Senza Salvare</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="50"/>
@@ -406,7 +386,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../LogView.ui" line="22"/>
         <source>Enabled Levels</source>
-        <translation>Aktivierte Log-Level</translation>
+        <translation>Abilita Livelli</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="28"/>
@@ -421,136 +401,37 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../LogView.ui" line="48"/>
         <source>Info</source>
-        <translation>Info</translation>
+        <translation>Informazioni</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="58"/>
         <source>Warning</source>
-        <translation>Warnung</translation>
+        <translation>Avvertenze</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="68"/>
         <source>Error</source>
-        <translation>Fehler</translation>
+        <translation>Errore</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="78"/>
         <source>Fatal</source>
-        <translation>Fatal</translation>
+        <translation>Fatale</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="95"/>
         <source>Game Error</source>
-        <translation>Spiel-Fehler</translation>
+        <translation>Errore del gioco</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="121"/>
         <source>Clear</source>
-        <translation>Leeren</translation>
+        <translation>Pulisci</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="130"/>
         <source>Max Lines</source>
-        <translation>Max. Zeilen</translation>
-    </message>
-</context>
-<context>
-    <name>MemorySearch</name>
-    <message>
-        <location filename="../MemorySearch.ui" line="20"/>
-        <source>Form</source>
-        <translation>Eingabemaske</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="45"/>
-        <source>Address</source>
-        <translation>Adresse</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="50"/>
-        <source>Current Value</source>
-        <translation>Aktueller Wert</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="55"/>
-        <location filename="../MemorySearch.ui" line="75"/>
-        <source>Type</source>
-        <translation>Typ</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="65"/>
-        <source>Value</source>
-        <translation>Wert</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="82"/>
-        <source>Numeric</source>
-        <translation>Numerisch</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="95"/>
-        <source>Text</source>
-        <translation>Text</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="105"/>
-        <source>Width</source>
-        <translation>Breite</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="112"/>
-        <source>1 Byte (8-bit)</source>
-        <translation>1 Byte (8-bit)</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="122"/>
-        <source>2 Bytes (16-bit)</source>
-        <translation>2 Bytes (16-bit)</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="132"/>
-        <source>4 Bytes (32-bit)</source>
-        <translation>4 Bytes (32-bit)</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="145"/>
-        <source>Number type</source>
-        <translation>Zahlensystem</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="152"/>
-        <source>Hexadecimal</source>
-        <translation>Hexadezimal</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="162"/>
-        <source>Decimal</source>
-        <translation>Dezimal</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="169"/>
-        <source>Guess</source>
-        <translation>automatisch</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="187"/>
-        <source>Search</source>
-        <translation>Suchen</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="194"/>
-        <source>Search Within</source>
-        <translation>Suchen innerhalb</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="201"/>
-        <source>Open in Memory Viewer</source>
-        <translation>Im Speicher-Monitor öffnen</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="208"/>
-        <source>Refresh</source>
-        <translation>Aktualisieren</translation>
+        <translation>Linee di massima</translation>
     </message>
 </context>
 <context>
@@ -558,12 +439,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../MemoryView.ui" line="14"/>
         <source>Memory</source>
-        <translation>Speicher</translation>
+        <translation>Memoria</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="38"/>
         <source>Inspect Address:</source>
-        <translation>Untersuche Adresse:</translation>
+        <translation>Ispezionare indirizzo:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="61"/>
@@ -573,62 +454,62 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../MemoryView.ui" line="81"/>
         <source>Set Alignment:</source>
-        <translation>Ausrichtung festlegen:</translation>
+        <translation>Set di allignamento:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="101"/>
         <source>1 Byte</source>
-        <translation>1 Byte</translation>
+        <translation>1 byte</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="124"/>
         <source>2 Bytes</source>
-        <translation>2 Bytes</translation>
+        <translation>2 bytes</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="144"/>
         <source>4 Bytes</source>
-        <translation>4 Bytes</translation>
+        <translation>4 bytes</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="199"/>
         <source>Signed Integer:</source>
-        <translation>Signed Integer:</translation>
+        <translation>Integer Signato:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="217"/>
         <source>String:</source>
-        <translation>String:</translation>
+        <translation>Stringa:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="231"/>
         <source>Load TBL</source>
-        <translation>TBL laden</translation>
+        <translation>Carica TBL</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="244"/>
         <source>Copy Selection</source>
-        <translation>Auswahl kopieren</translation>
+        <translation>Copia la selezione</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="251"/>
         <source>Paste</source>
-        <translation>Einfügen</translation>
+        <translation>Incolla</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="271"/>
         <source>Save Selection</source>
-        <translation>Auswahl speichern</translation>
+        <translation>Salva Selezione</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="278"/>
         <source>Load</source>
-        <translation>Laden</translation>
+        <translation>Carica</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="181"/>
         <source>Unsigned Integer:</source>
-        <translation>Unsigned Integer:</translation>
+        <translation>Integer non signato:</translation>
     </message>
 </context>
 <context>
@@ -640,139 +521,134 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     </message>
     <message>
         <location filename="../ObjView.ui" line="56"/>
-        <location filename="../ObjView.ui" line="506"/>
+        <location filename="../ObjView.ui" line="499"/>
         <source>×</source>
         <translation>×</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="69"/>
         <source>Magnification</source>
-        <translation>Vergrößerung</translation>
+        <translation>Magnification</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="76"/>
-        <source>Export</source>
-        <translation>Exportieren</translation>
-    </message>
-    <message>
-        <location filename="../ObjView.ui" line="85"/>
+        <location filename="../ObjView.ui" line="78"/>
         <source>Attributes</source>
-        <translation>Eigenschaften</translation>
+        <translation>Attributi</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="93"/>
+        <location filename="../ObjView.ui" line="86"/>
         <source>Transform</source>
-        <translation>Transform</translation>
+        <translation>Transformazione</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="113"/>
+        <location filename="../ObjView.ui" line="106"/>
         <source>Off</source>
-        <translation>Aus</translation>
+        <translation>No</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="124"/>
+        <location filename="../ObjView.ui" line="117"/>
         <source>Palette</source>
         <translation>Palette</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="144"/>
-        <location filename="../ObjView.ui" line="374"/>
-        <location filename="../ObjView.ui" line="430"/>
-        <location filename="../ObjView.ui" line="456"/>
+        <location filename="../ObjView.ui" line="137"/>
+        <location filename="../ObjView.ui" line="367"/>
+        <location filename="../ObjView.ui" line="423"/>
+        <location filename="../ObjView.ui" line="449"/>
         <source>0</source>
         <translation>0</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="158"/>
+        <location filename="../ObjView.ui" line="151"/>
         <source>Double Size</source>
-        <translation>Doppelte Größe</translation>
+        <translation>Doppia Dimensione</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="184"/>
-        <location filename="../ObjView.ui" line="228"/>
-        <location filename="../ObjView.ui" line="241"/>
-        <location filename="../ObjView.ui" line="309"/>
+        <location filename="../ObjView.ui" line="177"/>
+        <location filename="../ObjView.ui" line="221"/>
+        <location filename="../ObjView.ui" line="234"/>
+        <location filename="../ObjView.ui" line="302"/>
         <source>Return, Ctrl+R</source>
-        <translation>Eingabe, Strg+R</translation>
+        <translation>Return, Ctrl+R</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="202"/>
+        <location filename="../ObjView.ui" line="195"/>
         <source>Flipped</source>
-        <translation>Gespiegelt</translation>
+        <translation>Flippato</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="225"/>
+        <location filename="../ObjView.ui" line="218"/>
         <source>H</source>
         <translation>H</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="238"/>
+        <location filename="../ObjView.ui" line="231"/>
         <source>V</source>
         <translation>V</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="252"/>
+        <location filename="../ObjView.ui" line="245"/>
         <source>Mode</source>
-        <translation>Modus</translation>
+        <translation>Modalità</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="272"/>
+        <location filename="../ObjView.ui" line="265"/>
         <source>Normal</source>
-        <translation>Normal</translation>
+        <translation>Normale</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="283"/>
+        <location filename="../ObjView.ui" line="276"/>
         <source>Mosaic</source>
-        <translation>Mosaic</translation>
+        <translation>Mosaico</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="320"/>
+        <location filename="../ObjView.ui" line="313"/>
         <source>Enabled</source>
-        <translation>Aktiviert</translation>
+        <translation>Abilitato</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="354"/>
+        <location filename="../ObjView.ui" line="347"/>
         <source>Priority</source>
-        <translation>Priorität</translation>
+        <translation>Priorità</translation>
+    </message>
+    <message>
+        <location filename="../ObjView.ui" line="382"/>
+        <source>Tile</source>
+        <translation>Tile</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="389"/>
-        <source>Tile</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ObjView.ui" line="396"/>
         <source>Geometry</source>
-        <translation>Geometrie</translation>
+        <translation>Geometria</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="404"/>
+        <location filename="../ObjView.ui" line="397"/>
         <source>Position</source>
-        <translation>Position</translation>
+        <translation>Posizione</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="440"/>
+        <location filename="../ObjView.ui" line="433"/>
         <source>, </source>
         <translation>, </translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="470"/>
+        <location filename="../ObjView.ui" line="463"/>
         <source>Dimensions</source>
-        <translation>Abmessungen</translation>
+        <translation>Dimensione</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="496"/>
-        <location filename="../ObjView.ui" line="522"/>
+        <location filename="../ObjView.ui" line="489"/>
+        <location filename="../ObjView.ui" line="515"/>
         <source>8</source>
         <translation>8</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="552"/>
+        <location filename="../ObjView.ui" line="545"/>
         <source>Address</source>
-        <translation>Adresse</translation>
+        <translation>Indirizzo</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="559"/>
+        <location filename="../ObjView.ui" line="552"/>
         <source>0x07000000</source>
         <translation>0x07000000</translation>
     </message>
@@ -782,7 +658,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../OverrideView.ui" line="20"/>
         <source>Game Overrides</source>
-        <translation>Spiel-Überschreibungen</translation>
+        <translation>Valori specifici per gioco</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="30"/>
@@ -795,43 +671,43 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../OverrideView.ui" line="248"/>
         <location filename="../OverrideView.ui" line="279"/>
         <source>Autodetect</source>
-        <translation>Automatisch erkennen</translation>
+        <translation>Rilevamento automatico</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="55"/>
         <source>Realtime clock</source>
-        <translation>Echtzeituhr</translation>
+        <translation>RealTime clock</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="65"/>
         <source>Gyroscope</source>
-        <translation>Gyroskop</translation>
+        <translation>Giroscopio</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="75"/>
         <source>Tilt</source>
-        <translation>Neigungssensor</translation>
+        <translation>Inclinazione</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="85"/>
         <source>Light sensor</source>
-        <translation>Lichtsensor</translation>
+        <translation>Sensore di luce</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="95"/>
         <source>Rumble</source>
-        <translation>Rüttel-Effekt</translation>
+        <translation>Vibrazione</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="113"/>
         <source>Save type</source>
-        <translation>Speichertyp</translation>
+        <translation>Tipo di salvataggio</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="126"/>
         <location filename="../OverrideView.ui" line="284"/>
         <source>None</source>
-        <translation>keiner</translation>
+        <translation>Nessuno</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="131"/>
@@ -856,12 +732,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../OverrideView.ui" line="154"/>
         <source>Idle loop</source>
-        <translation>Leerlaufprozess</translation>
+        <translation>Idle loop</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="195"/>
         <source>Game Boy Player features</source>
-        <translation>Game Boy Player-Features</translation>
+        <translation>Caratteristiche Game Boy Player</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="234"/>
@@ -871,7 +747,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../OverrideView.ui" line="240"/>
         <source>Game Boy model</source>
-        <translation>Game Boy-Modell</translation>
+        <translation>Modello del Game Boy</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="253"/>
@@ -891,7 +767,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../OverrideView.ui" line="271"/>
         <source>Memory bank controller</source>
-        <translation>Speicherbank-Controller</translation>
+        <translation>Controller del banco di memoria</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="289"/>
@@ -911,7 +787,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../OverrideView.ui" line="304"/>
         <source>MBC3 + RTC</source>
-        <translation>MBC3 + RTC</translation>
+        <translation>MBC3 + Reloj</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="309"/>
@@ -921,7 +797,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../OverrideView.ui" line="314"/>
         <source>MBC5 + Rumble</source>
-        <translation>MBC5 + Rumble</translation>
+        <translation>MBC5 + Vibrazione</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="319"/>
@@ -932,11 +808,6 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../OverrideView.ui" line="324"/>
         <source>HuC-3</source>
         <translation>HuC-3</translation>
-    </message>
-    <message>
-        <location filename="../OverrideView.ui" line="332"/>
-        <source>Colors</source>
-        <translation>Farben</translation>
     </message>
 </context>
 <context>
@@ -949,32 +820,32 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../PaletteView.ui" line="44"/>
         <source>Background</source>
-        <translation>Hintergrund</translation>
+        <translation>SFondo (BG)</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="94"/>
         <source>Objects</source>
-        <translation>Objekte</translation>
+        <translation>Oggetti (OBJ)</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="153"/>
         <source>Selection</source>
-        <translation>Auswahl</translation>
+        <translation>Selezione</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="184"/>
         <source>Red</source>
-        <translation>Rot</translation>
+        <translation>Rosso</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="191"/>
         <source>Green</source>
-        <translation>Grün</translation>
+        <translation>Verde</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="198"/>
         <source>Blue</source>
-        <translation>Blau</translation>
+        <translation>Blue</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="212"/>
@@ -986,17 +857,17 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../PaletteView.ui" line="244"/>
         <source>16-bit value</source>
-        <translation>16-Bit-Wert</translation>
+        <translation>Valore in 16 bits</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="251"/>
         <source>Hex code</source>
-        <translation>Hex-Code</translation>
+        <translation>Codice esadecimale</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="258"/>
         <source>Palette index</source>
-        <translation>Paletten-Index</translation>
+        <translation>Indice palette</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="272"/>
@@ -1016,25 +887,25 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../PaletteView.ui" line="322"/>
         <source>Export BG</source>
-        <translation>BG exportieren</translation>
+        <translation>Esporta BG</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="342"/>
         <source>Export OBJ</source>
-        <translation>OBJ exportieren</translation>
+        <translation>Esporta OBJ</translation>
     </message>
 </context>
 <context>
     <name>QGBA::AssetTile</name>
     <message>
-        <location filename="../AssetTile.cpp" line="103"/>
+        <location filename="../AssetTile.cpp" line="107"/>
         <source>%0%1%2</source>
         <translation>%0%1%2</translation>
     </message>
     <message>
-        <location filename="../AssetTile.cpp" line="132"/>
-        <location filename="../AssetTile.cpp" line="133"/>
-        <location filename="../AssetTile.cpp" line="134"/>
+        <location filename="../AssetTile.cpp" line="136"/>
+        <location filename="../AssetTile.cpp" line="137"/>
+        <location filename="../AssetTile.cpp" line="138"/>
         <source>0x%0 (%1)</source>
         <translation>0x%0 (%1)</translation>
     </message>
@@ -1044,12 +915,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../CheatsModel.cpp" line="54"/>
         <source>(untitled)</source>
-        <translation>(unbenannt)</translation>
+        <translation>(senza titolo)</translation>
     </message>
     <message>
         <location filename="../CheatsModel.cpp" line="209"/>
         <source>Failed to open cheats file: %1</source>
-        <translation>Fehler beim Öffnen der Cheat-Datei: %1</translation>
+        <translation>Impossibile aprire il file cheats: %1</translation>
     </message>
 </context>
 <context>
@@ -1058,28 +929,28 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../CheatsView.cpp" line="49"/>
         <location filename="../CheatsView.cpp" line="74"/>
         <source>Add GameShark</source>
-        <translation>GameShark hinzufügen</translation>
+        <translation>Aggiungi GameShark</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="55"/>
         <source>Add Pro Action Replay</source>
-        <translation>Pro Action Replay hinzufügen</translation>
+        <translation>Aggiungi Pro Action Replay</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="61"/>
         <source>Add CodeBreaker</source>
-        <translation>CodeBreaker hinzufügen</translation>
+        <translation>Aggiungi CodeBreaker</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="80"/>
         <source>Add GameGenie</source>
-        <translation>GameGenie hinzufügen</translation>
+        <translation>Aggiungi GameGenie</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="112"/>
         <location filename="../CheatsView.cpp" line="119"/>
         <source>Select cheats file</source>
-        <translation>Cheat-Datei auswählen</translation>
+        <translation>Seleziona il file cheats</translation>
     </message>
 </context>
 <context>
@@ -1087,22 +958,22 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../GBAKeyEditor.cpp" line="68"/>
         <source>Clear Button</source>
-        <translation>Button löschen</translation>
+        <translation>Pulisci bottoni</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="80"/>
         <source>Clear Analog</source>
-        <translation>Analog löschen</translation>
+        <translation>Pulisci analogici</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="91"/>
         <source>Refresh</source>
-        <translation>Aktualisieren</translation>
+        <translation>Aggiornare</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="101"/>
         <source>Set all</source>
-        <translation>Alle belegen</translation>
+        <translation>Impostare tutti</translation>
     </message>
 </context>
 <context>
@@ -1110,22 +981,22 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../GDBWindow.cpp" line="28"/>
         <source>Server settings</source>
-        <translation>Server-Einstellungen</translation>
+        <translation>Impostazioni Server</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="34"/>
         <source>Local port</source>
-        <translation>Lokaler Port</translation>
+        <translation>Porta locale</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="36"/>
         <source>Bind address</source>
-        <translation>Bind-Adresse</translation>
+        <translation>Indirizzo Bind</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="55"/>
         <source>Break</source>
-        <translation>Unterbrechen</translation>
+        <translation>Break</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="104"/>
@@ -1135,64 +1006,64 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../GDBWindow.cpp" line="114"/>
         <source>Start</source>
-        <translation>Start</translation>
+        <translation>Avvia</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="122"/>
         <source>Crash</source>
-        <translation>Absturz</translation>
+        <translation>Errore</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="122"/>
         <source>Could not start GDB server</source>
-        <translation>Konnte GDB-Server nicht starten</translation>
+        <translation>Impossibile avviare il server GDB</translation>
     </message>
 </context>
 <context>
     <name>QGBA::GIFView</name>
     <message>
-        <location filename="../GIFView.cpp" line="46"/>
+        <location filename="../GIFView.cpp" line="45"/>
         <source>Failed to open output GIF file: %1</source>
-        <translation>Fehler beim Öffnen der Ausgabe-GIF-Datei: %1</translation>
+        <translation>Impossibile aprire il file GIF di output: %1</translation>
     </message>
     <message>
-        <location filename="../GIFView.cpp" line="64"/>
+        <location filename="../GIFView.cpp" line="63"/>
         <source>Select output file</source>
-        <translation>Ausgabedatei auswählen</translation>
+        <translation>Seleziona file di output</translation>
     </message>
     <message>
-        <location filename="../GIFView.cpp" line="64"/>
+        <location filename="../GIFView.cpp" line="63"/>
         <source>Graphics Interchange Format (*.gif)</source>
-        <translation>Graphics Interchange Format (*.gif)</translation>
+        <translation>Formato di interconnessione grafica (*.gif)</translation>
     </message>
 </context>
 <context>
     <name>QGBA::GameController</name>
     <message>
-        <location filename="../GameController.cpp" line="351"/>
-        <location filename="../GameController.cpp" line="535"/>
+        <location filename="../GameController.cpp" line="397"/>
+        <location filename="../GameController.cpp" line="572"/>
         <source>Failed to open game file: %1</source>
-        <translation>Fehler beim Öffnen der Spieldatei: %1</translation>
+        <translation>Impossibile aprire il file di gioco: %1</translation>
     </message>
     <message>
-        <location filename="../GameController.cpp" line="507"/>
+        <location filename="../GameController.cpp" line="544"/>
         <source>Failed to open save file: %1</source>
-        <translation>Fehler beim Öffnen der Speicherdatei: %1</translation>
+        <translation>Impossibile aprire il file di salvataggio: %1</translation>
     </message>
     <message>
-        <location filename="../GameController.cpp" line="564"/>
+        <location filename="../GameController.cpp" line="601"/>
         <source>Failed to open snapshot file for reading: %1</source>
-        <translation>Konnte Snapshot-Datei %1 nicht zum Lesen öffnen</translation>
+        <translation>Impossibile aprire il file snapshot per la lettura: %1</translation>
     </message>
     <message>
-        <location filename="../GameController.cpp" line="584"/>
+        <location filename="../GameController.cpp" line="621"/>
         <source>Failed to open snapshot file for writing: %1</source>
-        <translation>Konnte Snapshot-Datei %1 nicht zum Schreiben öffnen</translation>
+        <translation>Impossibile aprire il file snapshot per la scrittura: %1</translation>
     </message>
     <message>
-        <location filename="../GameController.cpp" line="850"/>
+        <location filename="../GameController.cpp" line="914"/>
         <source>Failed to start audio processor</source>
-        <translation>Fehler beim Starten des Audio-Prozessors</translation>
+        <translation>Impossibile avviare il processore audio</translation>
     </message>
 </context>
 <context>
@@ -1200,142 +1071,142 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../IOViewer.cpp" line="30"/>
         <source>Background mode</source>
-        <translation>Hintergrund-Modus</translation>
+        <translation>Modalità Background (BG)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="31"/>
         <source>Mode 0: 4 tile layers</source>
-        <translation>Mode 0: 4 Tile-Ebenen</translation>
+        <translation>Modalità 0: 4 tiles layers</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="32"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
-        <translation>Mode 1: 2 Tile-Ebenen + 1 rotierte/skalierte Tile-Ebene</translation>
+        <translation>Modalità 1: 2 tile layers + 1 ruotato/scalato tile layer</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="33"/>
         <source>Mode 2: 2 rotated/scaled tile layers</source>
-        <translation>Mode 2: 2 rotierte/skalierte Tile-Ebenen</translation>
+        <translation>Modalità 2: 2 ruotato/scalato tile layers</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="34"/>
         <source>Mode 3: Full 15-bit bitmap</source>
-        <translation>Mode 3: Volles 15-Bit-Bitmap</translation>
+        <translation>Modalità 3: completo 15 bitmap</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="35"/>
         <source>Mode 4: Full 8-bit bitmap</source>
-        <translation>Mode 4: Volles 8-Bit-Bitmap</translation>
+        <translation>Modalità 4: completo 8 bits</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="36"/>
         <source>Mode 5: Small 15-bit bitmap</source>
-        <translation>Mode 5: Kleines 15-Bit-Bitmap</translation>
+        <translation>Modalità 5: basso 15-bit bitmap</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="40"/>
         <source>CGB Mode</source>
-        <translation>CGB-Modus</translation>
+        <translation>Modalità CGB</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="41"/>
         <source>Frame select</source>
-        <translation>Bildauswahl</translation>
+        <translation>Seleziona Frame</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="42"/>
         <source>Unlocked HBlank</source>
-        <translation>HBlank entsperrt</translation>
+        <translation>HBlank sbloccato</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="43"/>
         <source>Linear OBJ tile mapping</source>
-        <translation>Lineares OBJ-Tile-Mapping</translation>
+        <translation>Mappatura lineare tile OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="44"/>
         <source>Force blank screen</source>
-        <translation>Leeren Bildschirm erzwingen</translation>
+        <translation>Forza schermo bianco</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="45"/>
         <source>Enable background 0</source>
-        <translation>Aktiviere Hintergrund 0</translation>
+        <translation>Abilitare sfondo 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="46"/>
         <source>Enable background 1</source>
-        <translation>Aktiviere Hintergrund 1</translation>
+        <translation>Abilitare sfondo 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="47"/>
         <source>Enable background 2</source>
-        <translation>Aktiviere Hintergrund 2</translation>
+        <translation>Abilitare sfondo 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="48"/>
         <source>Enable background 3</source>
-        <translation>Aktiviere Hintergrund 3</translation>
+        <translation>Abilitare sfondo 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="49"/>
         <source>Enable OBJ</source>
-        <translation>Aktiviere OBJ</translation>
+        <translation>Abilitare OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="50"/>
         <source>Enable Window 0</source>
-        <translation>Aktiviere Fenster 0</translation>
+        <translation>Abilitare Window 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="51"/>
         <source>Enable Window 1</source>
-        <translation>Aktiviere Fenster 1</translation>
+        <translation>Abilitare Window 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="52"/>
         <source>Enable OBJ Window</source>
-        <translation>Aktiviere OBJ-Fenster</translation>
+        <translation>Abilitare Window OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="58"/>
         <source>Currently in VBlank</source>
-        <translation>Aktuell in VBlank</translation>
+        <translation>Attualmente in VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="59"/>
         <source>Currently in HBlank</source>
-        <translation>Aktuell in HBlank</translation>
+        <translation>Attualmente in HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="60"/>
         <source>Currently in VCounter</source>
-        <translation>Aktuell in VCounter</translation>
+        <translation>Attualmente in VCounter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="61"/>
         <source>Enable VBlank IRQ generation</source>
-        <translation>Aktiviere VBlank IRQ-Generierung</translation>
+        <translation>Abilita VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="62"/>
         <source>Enable HBlank IRQ generation</source>
-        <translation>Aktiviere HBlank IRQ-Generierung</translation>
+        <translation>Abilita HBlank generazione IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="63"/>
         <source>Enable VCounter IRQ generation</source>
-        <translation>Aktiviere VCounter IRQ-Generierung</translation>
+        <translation>Abilita generazione IRQ VCounter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="64"/>
         <source>VCounter scanline</source>
-        <translation>VCounter-Rasterzeile</translation>
+        <translation>VCounter scanline</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="68"/>
         <source>Current scanline</source>
-        <translation>Aktuelle Rasterzeile</translation>
+        <translation>Scanline corrente</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="72"/>
@@ -1343,7 +1214,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="90"/>
         <location filename="../IOViewer.cpp" line="100"/>
         <source>Priority</source>
-        <translation>Priorität</translation>
+        <translation>Priorità</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="73"/>
@@ -1351,7 +1222,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="91"/>
         <location filename="../IOViewer.cpp" line="101"/>
         <source>Tile data base (* 16kB)</source>
-        <translation>Tile-Daten-Basis (* 16kB)</translation>
+        <translation>Tile data base (* 16kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="74"/>
@@ -1359,7 +1230,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="92"/>
         <location filename="../IOViewer.cpp" line="102"/>
         <source>Enable mosaic</source>
-        <translation>Aktiviere Mosaic</translation>
+        <translation>Abilita Mosaico</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="75"/>
@@ -1367,7 +1238,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="93"/>
         <location filename="../IOViewer.cpp" line="103"/>
         <source>Enable 256-color</source>
-        <translation>Aktiviere 256 Farben</translation>
+        <translation>Abilita 256 colori</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="76"/>
@@ -1375,7 +1246,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="94"/>
         <location filename="../IOViewer.cpp" line="104"/>
         <source>Tile map base (* 2kB)</source>
-        <translation>Tile-Map-Basis (* 2kB)</translation>
+        <translation>Tile map base (* 2kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="77"/>
@@ -1383,13 +1254,13 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="96"/>
         <location filename="../IOViewer.cpp" line="106"/>
         <source>Background dimensions</source>
-        <translation>Hintergrund-Abmessungen</translation>
+        <translation>Dimensioni dello sfondo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="95"/>
         <location filename="../IOViewer.cpp" line="105"/>
         <source>Overflow wraps</source>
-        <translation>Umbrüche</translation>
+        <translation>Overflow wraps</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="110"/>
@@ -1397,7 +1268,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="126"/>
         <location filename="../IOViewer.cpp" line="134"/>
         <source>Horizontal offset</source>
-        <translation>Horizontaler Versatz</translation>
+        <translation>Compensazione orizzontale</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="114"/>
@@ -1405,7 +1276,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="130"/>
         <location filename="../IOViewer.cpp" line="138"/>
         <source>Vertical offset</source>
-        <translation>Vertikaler Versatz</translation>
+        <translation>Compensazione verticale</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="142"/>
@@ -1421,7 +1292,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="200"/>
         <location filename="../IOViewer.cpp" line="209"/>
         <source>Fractional part</source>
-        <translation type="unfinished"></translation>
+        <translation>Parte frazionale</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="143"/>
@@ -1433,7 +1304,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="191"/>
         <location filename="../IOViewer.cpp" line="196"/>
         <source>Integer part</source>
-        <translation>Ganzzahl-Anteil</translation>
+        <translation>Parte Integer</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="163"/>
@@ -1441,7 +1312,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="201"/>
         <location filename="../IOViewer.cpp" line="210"/>
         <source>Integer part (bottom)</source>
-        <translation>Ganzzahl-Anteil (unten)</translation>
+        <translation>Parte Integer (inferiore)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="167"/>
@@ -1449,286 +1320,286 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="205"/>
         <location filename="../IOViewer.cpp" line="214"/>
         <source>Integer part (top)</source>
-        <translation>Ganzzahl-Anteil (oben)</translation>
+        <translation>Parte Integer (superiore)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="218"/>
         <location filename="../IOViewer.cpp" line="223"/>
         <source>End x</source>
-        <translation>x-Endwert</translation>
+        <translation>Fine x</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="219"/>
         <location filename="../IOViewer.cpp" line="224"/>
         <source>Start x</source>
-        <translation>x-Startwert</translation>
+        <translation>Inizio x</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="228"/>
         <location filename="../IOViewer.cpp" line="233"/>
         <source>End y</source>
-        <translation>y-Endwert</translation>
+        <translation>Fine y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="229"/>
         <location filename="../IOViewer.cpp" line="234"/>
         <source>Start y</source>
-        <translation>y-Startwert</translation>
+        <translation>Inizio y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="238"/>
         <source>Window 0 enable BG 0</source>
-        <translation>Fenster 0: aktiviere BG 0</translation>
+        <translation>Window 0 BG 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="239"/>
         <source>Window 0 enable BG 1</source>
-        <translation>Fenster 0: aktiviere BG 1</translation>
+        <translation>Window 0 BG 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="240"/>
         <source>Window 0 enable BG 2</source>
-        <translation>Fenster 0: aktiviere BG2</translation>
+        <translation>Window 0 BG 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="241"/>
         <source>Window 0 enable BG 3</source>
-        <translation>Fenster 0: aktiviere BG 3</translation>
+        <translation>Window 0 BG 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="242"/>
         <source>Window 0 enable OBJ</source>
-        <translation>Fenster 0: aktiviere OBJ</translation>
+        <translation>Window 0 OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="243"/>
         <source>Window 0 enable blend</source>
-        <translation>Fenster 0: aktiviere Überblendung</translation>
+        <translation>Abilita Window 0 miscelato</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="244"/>
         <source>Window 1 enable BG 0</source>
-        <translation>Fenster 1: aktiviere BG 0</translation>
+        <translation>Abilita Window 1 BG 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="245"/>
         <source>Window 1 enable BG 1</source>
-        <translation>Fenster 1: aktiviere BG 1</translation>
+        <translation>Abilita Window 1 BG 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="246"/>
         <source>Window 1 enable BG 2</source>
-        <translation>Fenster 1: aktiviere BG 2</translation>
+        <translation>Abilita Window 1 BG 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="247"/>
         <source>Window 1 enable BG 3</source>
-        <translation>Fenster 1: aktiviere BG 3</translation>
+        <translation>AbilitaWindow 1 BG 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="248"/>
         <source>Window 1 enable OBJ</source>
-        <translation>Fenster 1: Aktiviere OBJ</translation>
+        <translation>Abilita Window 1 OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="249"/>
         <source>Window 1 enable blend</source>
-        <translation>Fenster 1: aktivieren Überblendung</translation>
+        <translation>Abilita Window 1 miscelato</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="253"/>
         <source>Outside window enable BG 0</source>
-        <translation>Äußeres Fenster: aktiviere BG 0</translation>
+        <translation>Abilita Outside window BG 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="254"/>
         <source>Outside window enable BG 1</source>
-        <translation>Äußeres Fenster: aktiviere BG 1</translation>
+        <translation>Abilita Outside window BG 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="255"/>
         <source>Outside window enable BG 2</source>
-        <translation>Äußeres Fenster: aktiviere BG 2</translation>
+        <translation>Abilita Outside window BG 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="256"/>
         <source>Outside window enable BG 3</source>
-        <translation>Äußeres Fenster: aktiviere BG 3</translation>
+        <translation>Abilita Outside window BG 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="257"/>
         <source>Outside window enable OBJ</source>
-        <translation>Äußeres Fenster: aktiviere OBJ</translation>
+        <translation>Abilita Outside window OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="258"/>
         <source>Outside window enable blend</source>
-        <translation>Äußeres Fenster: aktiviere Überblendung</translation>
+        <translation>Outside window mezcla</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="259"/>
         <source>OBJ window enable BG 0</source>
-        <translation>OBJ-Fenster: aktiviere BG 0</translation>
+        <translation>Abilita OBJ window BG 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="260"/>
         <source>OBJ window enable BG 1</source>
-        <translation>OBJ-Fenster: aktiviere BG 1</translation>
+        <translation>Abilita OBJ window BG 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="261"/>
         <source>OBJ window enable BG 2</source>
-        <translation>OBJ-Fenster: aktiviere BG 2</translation>
+        <translation>Abilita OBJ window BG 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="262"/>
         <source>OBJ window enable BG 3</source>
-        <translation>OBJ-Fenster: aktiviere BG 3</translation>
+        <translation>Abilita OBJ window BG 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="263"/>
         <source>OBJ window enable OBJ</source>
-        <translation>OBJ-Fenster: aktiviere OBJ</translation>
+        <translation>Abilita OBJ window OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="264"/>
         <source>OBJ window enable blend</source>
-        <translation>OBJ-Fenster: aktiviere Überblendung</translation>
+        <translation>Abilita OBJ window blend</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="268"/>
         <source>Background mosaic size vertical</source>
-        <translation>Vertikale Größe der Hintergrund-Pixelierung</translation>
+        <translation>Sfondo mosaico verticale</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="269"/>
         <source>Background mosaic size horizontal</source>
-        <translation>Horizontale Größe der Hintergrund-Pixelierung</translation>
+        <translation>Sfondo mosaico orizzontale</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="270"/>
         <source>Object mosaic size vertical</source>
-        <translation>Vertikale Größe der Objekt-Pixelierung</translation>
+        <translation>Sfondo mosaico oggetto verticale</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="271"/>
         <source>Object mosaic size horizontal</source>
-        <translation>Horizontale Größe der Objekt-Pixelierung</translation>
+        <translation>Sfondo mosaico oggetto orizzontale</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="277"/>
         <source>BG 0 target 1</source>
-        <translation>BG 0 Ziel 1</translation>
+        <translation>BG 0 target 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="278"/>
         <source>BG 1 target 1</source>
-        <translation>BG 1 Ziel 1</translation>
+        <translation>BG 1 target 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="279"/>
         <source>BG 2 target 1</source>
-        <translation>BG 2 Ziel 1</translation>
+        <translation>BG 2 target 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="280"/>
         <source>BG 3 target 1</source>
-        <translation>BG 3 Ziel 1</translation>
+        <translation>BG 3 target 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="281"/>
         <source>OBJ target 1</source>
-        <translation>OBJ Ziel 1</translation>
+        <translation>OBJ target 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="282"/>
         <source>Backdrop target 1</source>
-        <translation>Hintergrund Ziel 1</translation>
+        <translation>Backdrop target 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="283"/>
         <source>Blend mode</source>
-        <translation>Überblend-Modus</translation>
+        <translation>Modalità miscelato</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="284"/>
         <source>Disabled</source>
-        <translation>Deaktiviert</translation>
+        <translation>Disabilitato</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="285"/>
         <source>Additive blending</source>
-        <translation>Additive Überblendung</translation>
+        <translation>Miscelazione dell'additivo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="286"/>
         <source>Brighten</source>
-        <translation>Aufhellen</translation>
+        <translation>Schiarire</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="287"/>
         <source>Darken</source>
-        <translation>Abdunkeln</translation>
+        <translation>Oscurire</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="289"/>
         <source>BG 0 target 2</source>
-        <translation>BG 0 Ziel 2</translation>
+        <translation>BG 0 target 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="290"/>
         <source>BG 1 target 2</source>
-        <translation>BG 1 Ziel 2</translation>
+        <translation>BG 1 target 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="291"/>
         <source>BG 2 target 2</source>
-        <translation>BG 2 Ziel 2</translation>
+        <translation>BG 2 target 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="292"/>
         <source>BG 3 target 2</source>
-        <translation>BG 3 Ziel 2</translation>
+        <translation>BG 3 target 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="293"/>
         <source>OBJ target 2</source>
-        <translation>OBJ Ziel 2</translation>
+        <translation>OBJ target 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="294"/>
         <source>Backdrop target 2</source>
-        <translation>Hintergrund Ziel 2</translation>
+        <translation>Backdrop target 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="298"/>
         <source>Blend A (target 1)</source>
-        <translation>A Überblenden (Ziel 1)</translation>
+        <translation>Miscelato A (target 1)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="299"/>
         <source>Blend B (target 2)</source>
-        <translation>B Überblenden (Ziel 2)</translation>
+        <translation>Miscelato B (target 2)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="303"/>
         <source>Blend Y</source>
-        <translation>Y Überblenden</translation>
+        <translation>Miscelato Y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="317"/>
         <source>Sweep shifts</source>
-        <translation type="unfinished"></translation>
+        <translation>Sweep shifts</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="318"/>
         <source>Sweep subtract</source>
-        <translation type="unfinished"></translation>
+        <translation>Sposta subastratto</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="319"/>
         <source>Sweep time (in 1/128s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tempo di sweep (in 1/128seg)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="323"/>
@@ -1736,41 +1607,41 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="363"/>
         <location filename="../IOViewer.cpp" line="385"/>
         <source>Sound length</source>
-        <translation>Sound-Länge</translation>
+        <translation>Lunghezza del suono</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="324"/>
         <location filename="../IOViewer.cpp" line="340"/>
         <source>Duty cycle</source>
-        <translation type="unfinished"></translation>
+        <translation>Ciclo di lavoro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="325"/>
         <location filename="../IOViewer.cpp" line="341"/>
         <location filename="../IOViewer.cpp" line="386"/>
         <source>Envelope step time</source>
-        <translation type="unfinished"></translation>
+        <translation>Envelope step time</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="326"/>
         <location filename="../IOViewer.cpp" line="342"/>
         <location filename="../IOViewer.cpp" line="387"/>
         <source>Envelope increase</source>
-        <translation>Hüllkurve erhöhen</translation>
+        <translation>Aumento envelope</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="327"/>
         <location filename="../IOViewer.cpp" line="343"/>
         <location filename="../IOViewer.cpp" line="388"/>
         <source>Initial volume</source>
-        <translation>Initiale Lautstärke</translation>
+        <translation>Volume iniziale</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="331"/>
         <location filename="../IOViewer.cpp" line="349"/>
         <location filename="../IOViewer.cpp" line="377"/>
         <source>Sound frequency</source>
-        <translation>Sound-Frequenz</translation>
+        <translation>Frequenza del suono</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="332"/>
@@ -1778,7 +1649,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="378"/>
         <location filename="../IOViewer.cpp" line="400"/>
         <source>Timed</source>
-        <translation type="unfinished"></translation>
+        <translation>Temporizzato</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="333"/>
@@ -1791,22 +1662,22 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../IOViewer.cpp" line="357"/>
         <source>Double-size wave table</source>
-        <translation type="unfinished"></translation>
+        <translation>Tavola delle onde a doppia dimensione</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="358"/>
         <source>Active wave table</source>
-        <translation>Aktive Wave-Table</translation>
+        <translation>Tavola delle onde attive</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="359"/>
         <source>Enable channel 3</source>
-        <translation>Aktiviere Kanal 3</translation>
+        <translation>Canale 3 attivo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="364"/>
         <source>Volume</source>
-        <translation>Lautstärke</translation>
+        <translation>Volume</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="365"/>
@@ -1842,12 +1713,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../IOViewer.cpp" line="394"/>
         <source>Clock divider</source>
-        <translation>Frequenzteiler</translation>
+        <translation>Divisore dell'orologio</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="395"/>
         <source>Register stages</source>
-        <translation type="unfinished"></translation>
+        <translation>Stadi di registrazione</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="396"/>
@@ -1862,87 +1733,87 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../IOViewer.cpp" line="399"/>
         <source>Shifter frequency</source>
-        <translation type="unfinished"></translation>
+        <translation>Cambio di frequenza</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="407"/>
         <source>PSG volume right</source>
-        <translation>PSG-Lautstärke rechts</translation>
+        <translation>PSG volume destro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="408"/>
         <source>PSG volume left</source>
-        <translation>PSG-Lautstärke links</translation>
+        <translation>PSG volume sinistro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="409"/>
         <source>Enable channel 1 right</source>
-        <translation>Aktiviere Kanal 1 rechts</translation>
+        <translation>Abilita Canale 1 destro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="410"/>
         <source>Enable channel 2 right</source>
-        <translation>Aktiviere Kanal 2 rechts</translation>
+        <translation>Abilita Canale 2 destro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="411"/>
         <source>Enable channel 3 right</source>
-        <translation>Aktiviere Kanal 3 rechts</translation>
+        <translation>Abilita Canale 3 destro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="412"/>
         <source>Enable channel 4 right</source>
-        <translation>Aktiviere Kanal 4 rechts</translation>
+        <translation>Abilita Canale 4 destro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="413"/>
         <source>Enable channel 1 left</source>
-        <translation>Aktiviere Kanal 1 links</translation>
+        <translation>Abilita Canale 1 sinistro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="414"/>
         <source>Enable channel 2 left</source>
-        <translation>Aktiviere Kanal 2 links</translation>
+        <translation>Abilita Canale 2 sinistro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="415"/>
         <source>Enable channel 3 left</source>
-        <translation>Aktiviere Kanal 3 links</translation>
+        <translation>Abilita Canale 3 sinistro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="416"/>
         <source>Enable channel 4 left</source>
-        <translation>Aktiviere Kanal 4 links</translation>
+        <translation>Abilita Canale 4 sinistro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="420"/>
         <source>PSG master volume</source>
-        <translation>PSG-Master-Lauststärke</translation>
+        <translation>PSG volume master</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="426"/>
         <source>Loud channel A</source>
-        <translation type="unfinished"></translation>
+        <translation>Canale A forte</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="427"/>
         <source>Loud channel B</source>
-        <translation type="unfinished"></translation>
+        <translation>Canale B forte</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="428"/>
         <source>Enable channel A right</source>
-        <translation>Aktiviere Kanal A rechts</translation>
+        <translation>Abilita Canale A destro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="429"/>
         <source>Enable channel A left</source>
-        <translation>Aktiviere Kanal A links</translation>
+        <translation>Abilta Canale A sinistro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="430"/>
         <source>Channel A timer</source>
-        <translation>Kanal A-Zeitgeber</translation>
+        <translation>Canale A temporizzato</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="431"/>
@@ -1966,62 +1837,62 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../IOViewer.cpp" line="434"/>
         <source>Channel A reset</source>
-        <translation>Kanal A zurücksetzen</translation>
+        <translation>Resetta canale A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="435"/>
         <source>Enable channel B right</source>
-        <translation>Aktiviere Kanal B rechts</translation>
+        <translation>Abilita Canale B destro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="436"/>
         <source>Enable channel B left</source>
-        <translation>Aktiviere Kanal B links</translation>
+        <translation>Abilita Canale B sinistro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="437"/>
         <source>Channel B timer</source>
-        <translation>Kanal B-Zeitgeber</translation>
+        <translation>Canale B temporizzato</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="441"/>
         <source>Channel B reset</source>
-        <translation>Kanal B zurücksetzen</translation>
+        <translation>Resetta canale B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="445"/>
         <source>Active channel 1</source>
-        <translation>Kanal 1 aktiv</translation>
+        <translation>Canale 1 attivo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="446"/>
         <source>Active channel 2</source>
-        <translation>Kanal 2 aktiv</translation>
+        <translation>Canale 2 attivo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="447"/>
         <source>Active channel 3</source>
-        <translation>Kanal 3 aktiv</translation>
+        <translation>Canale 3 attivo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="448"/>
         <source>Active channel 4</source>
-        <translation>Kanal 4 aktiv</translation>
+        <translation>Canale 4 attivo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="449"/>
         <source>Enable audio</source>
-        <translation>Audio aktivieren</translation>
+        <translation>Abilitare audio</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="455"/>
         <source>Bias</source>
-        <translation type="unfinished"></translation>
+        <translation>Polarizzazione</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="456"/>
         <source>Resolution</source>
-        <translation>Auflösung</translation>
+        <translation>Risoluzione</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="466"/>
@@ -2065,7 +1936,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="537"/>
         <location filename="../IOViewer.cpp" line="538"/>
         <source>Sample</source>
-        <translation>Sample</translation>
+        <translation>Mostra</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="550"/>
@@ -2077,7 +1948,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="685"/>
         <location filename="../IOViewer.cpp" line="693"/>
         <source>Address (bottom)</source>
-        <translation>Adresse (unten)</translation>
+        <translation>Indirizzo (inferiore)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="554"/>
@@ -2089,7 +1960,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="689"/>
         <location filename="../IOViewer.cpp" line="697"/>
         <source>Address (top)</source>
-        <translation>Adresse (oben)</translation>
+        <translation>Indirizzo (superiore)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="566"/>
@@ -2097,7 +1968,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="656"/>
         <location filename="../IOViewer.cpp" line="701"/>
         <source>Word count</source>
-        <translation>Wort-Anzahl</translation>
+        <translation>Contatore di parole</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="570"/>
@@ -2105,7 +1976,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="660"/>
         <location filename="../IOViewer.cpp" line="705"/>
         <source>Destination offset</source>
-        <translation>Zielversatz</translation>
+        <translation>Compensazione offset</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="571"/>
@@ -2117,7 +1988,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="706"/>
         <location filename="../IOViewer.cpp" line="712"/>
         <source>Increment</source>
-        <translation>Erhöhen</translation>
+        <translation>Incremento</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="572"/>
@@ -2129,7 +2000,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="707"/>
         <location filename="../IOViewer.cpp" line="713"/>
         <source>Decrement</source>
-        <translation>Verringern</translation>
+        <translation>Decremento</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="573"/>
@@ -2141,7 +2012,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="708"/>
         <location filename="../IOViewer.cpp" line="714"/>
         <source>Fixed</source>
-        <translation>Fest</translation>
+        <translation>Fissato</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="574"/>
@@ -2149,7 +2020,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="664"/>
         <location filename="../IOViewer.cpp" line="709"/>
         <source>Increment and reload</source>
-        <translation>Erhöhen und neu laden</translation>
+        <translation>Incremento e ricarica</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="576"/>
@@ -2157,7 +2028,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="666"/>
         <location filename="../IOViewer.cpp" line="711"/>
         <source>Source offset</source>
-        <translation>Quellversatz</translation>
+        <translation>Compensazione di origine</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="582"/>
@@ -2165,7 +2036,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="672"/>
         <location filename="../IOViewer.cpp" line="718"/>
         <source>Repeat</source>
-        <translation>Wiederholen</translation>
+        <translation>Ripeti</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="583"/>
@@ -2173,7 +2044,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="673"/>
         <location filename="../IOViewer.cpp" line="719"/>
         <source>32-bit</source>
-        <translation>32-Bit</translation>
+        <translation>32 bit</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="584"/>
@@ -2181,7 +2052,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="674"/>
         <location filename="../IOViewer.cpp" line="720"/>
         <source>Start timing</source>
-        <translation type="unfinished"></translation>
+        <translation>Avvia temporizzatore</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="585"/>
@@ -2189,7 +2060,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="675"/>
         <location filename="../IOViewer.cpp" line="721"/>
         <source>Immediate</source>
-        <translation>Unmittelbar</translation>
+        <translation>Immediato</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="586"/>
@@ -2234,7 +2105,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="806"/>
         <location filename="../IOViewer.cpp" line="822"/>
         <source>Enable</source>
-        <translation>Aktivieren</translation>
+        <translation>Abilitare</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="633"/>
@@ -2246,7 +2117,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../IOViewer.cpp" line="715"/>
         <source>Video Capture</source>
-        <translation>Videoaufzeichnung</translation>
+        <translation>Cattura video</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="717"/>
@@ -2259,7 +2130,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="794"/>
         <location filename="../IOViewer.cpp" line="810"/>
         <source>Value</source>
-        <translation>Wert</translation>
+        <translation>Valore</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="767"/>
@@ -2267,7 +2138,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="798"/>
         <location filename="../IOViewer.cpp" line="814"/>
         <source>Scale</source>
-        <translation>Skalierung</translation>
+        <translation>Scala</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="769"/>
@@ -2298,7 +2169,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="804"/>
         <location filename="../IOViewer.cpp" line="820"/>
         <source>Cascade</source>
-        <translation>Kaskade</translation>
+        <translation>Cascata</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="858"/>
@@ -2316,37 +2187,37 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="860"/>
         <location filename="../IOViewer.cpp" line="873"/>
         <source>Select</source>
-        <translation>Select</translation>
+        <translation>Seleziona</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="861"/>
         <location filename="../IOViewer.cpp" line="874"/>
         <source>Start</source>
-        <translation>Start</translation>
+        <translation>Avvia</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="862"/>
         <location filename="../IOViewer.cpp" line="875"/>
         <source>Right</source>
-        <translation>Rechts</translation>
+        <translation>Destro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="863"/>
         <location filename="../IOViewer.cpp" line="876"/>
         <source>Left</source>
-        <translation>Links</translation>
+        <translation>Sinistro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="864"/>
         <location filename="../IOViewer.cpp" line="877"/>
         <source>Up</source>
-        <translation>Oben</translation>
+        <translation>Sù</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="865"/>
         <location filename="../IOViewer.cpp" line="878"/>
         <source>Down</source>
-        <translation>Unten</translation>
+        <translation>Giù</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="866"/>
@@ -2363,7 +2234,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../IOViewer.cpp" line="882"/>
         <source>Condition</source>
-        <translation>Zustand</translation>
+        <translation>Condizione</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="886"/>
@@ -2395,25 +2266,25 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="942"/>
         <location filename="../IOViewer.cpp" line="959"/>
         <source>Timer 0</source>
-        <translation>Zähler 0</translation>
+        <translation>Timer 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="943"/>
         <location filename="../IOViewer.cpp" line="960"/>
         <source>Timer 1</source>
-        <translation>Zähler 1</translation>
+        <translation>Timer 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="944"/>
         <location filename="../IOViewer.cpp" line="961"/>
         <source>Timer 2</source>
-        <translation>Zähler 2</translation>
+        <translation>Timer 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="945"/>
         <location filename="../IOViewer.cpp" line="962"/>
         <source>Timer 3</source>
-        <translation>Zähler 3</translation>
+        <translation>Timer 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="946"/>
@@ -2449,18 +2320,18 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../IOViewer.cpp" line="951"/>
         <location filename="../IOViewer.cpp" line="968"/>
         <source>Keypad</source>
-        <translation type="unfinished"></translation>
+        <translation>Tastiera</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="952"/>
         <location filename="../IOViewer.cpp" line="969"/>
         <source>Gamepak</source>
-        <translation>Spielmodul</translation>
+        <translation>Gamepak</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="973"/>
         <source>SRAM wait</source>
-        <translation>Warten auf SRAM</translation>
+        <translation>Attesa SRAM</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="974"/>
@@ -2500,42 +2371,42 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../IOViewer.cpp" line="979"/>
         <source>Cart 0 non-sequential</source>
-        <translation>Modul 0 nicht-sequenziell</translation>
+        <translation>Cart 0 non sequenziale</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="985"/>
         <source>Cart 0 sequential</source>
-        <translation>Modul 0 sequenziell</translation>
+        <translation>Cart 0 sequenziale</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="989"/>
         <source>Cart 1 non-sequential</source>
-        <translation>Modul 1 nicht-sequenziell</translation>
+        <translation>Cart 1 non sequenziale</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="995"/>
         <source>Cart 1 sequential</source>
-        <translation>Modul 1 sequenziell</translation>
+        <translation>Cart 1 sequenziale</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="999"/>
         <source>Cart 2 non-sequential</source>
-        <translation>Modul 2 nicht-sequenziell</translation>
+        <translation>Cart 2 non sequenziale</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1005"/>
         <source>Cart 2 sequential</source>
-        <translation>Modul 2 sequenziell</translation>
+        <translation>Cart 2 sequenziale</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1009"/>
         <source>PHI terminal</source>
-        <translation type="unfinished"></translation>
+        <translation>Terminale PHI</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1010"/>
         <source>Disable</source>
-        <translation>Deaktivieren</translation>
+        <translation>Disabilita</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1011"/>
@@ -2555,21 +2426,69 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../IOViewer.cpp" line="1015"/>
         <source>Gamepak prefetch</source>
-        <translation>Spielmodul vorladen</translation>
+        <translation>Gamepak prefetch</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1021"/>
         <source>Enable IRQs</source>
-        <translation>Aktiviere IRQs</translation>
+        <translation>Abilitare IRQs</translation>
     </message>
 </context>
 <context>
     <name>QGBA::KeyEditor</name>
     <message>
-        <location filename="../KeyEditor.cpp" line="33"/>
-        <location filename="../KeyEditor.cpp" line="207"/>
+        <location filename="../KeyEditor.cpp" line="37"/>
+        <location filename="../KeyEditor.cpp" line="211"/>
         <source>---</source>
         <translation>---</translation>
+    </message>
+</context>
+<context>
+    <name>QGBA::LibraryModel</name>
+    <message>
+        <location filename="../LibraryModel.cpp" line="24"/>
+        <source>Name</source>
+        <translation>Nome</translation>
+    </message>
+    <message>
+        <location filename="../LibraryModel.cpp" line="33"/>
+        <source>Filename</source>
+        <translation>Nome del file</translation>
+    </message>
+    <message>
+        <location filename="../LibraryModel.cpp" line="39"/>
+        <source>Size</source>
+        <translation>Dimensione</translation>
+    </message>
+    <message>
+        <location filename="../LibraryModel.cpp" line="56"/>
+        <source>Platform</source>
+        <translation>Piattaforma</translation>
+    </message>
+    <message>
+        <location filename="../LibraryModel.cpp" line="62"/>
+        <source>GBA</source>
+        <translation>GBA</translation>
+    </message>
+    <message>
+        <location filename="../LibraryModel.cpp" line="66"/>
+        <source>GB</source>
+        <translation>GB</translation>
+    </message>
+    <message>
+        <location filename="../LibraryModel.cpp" line="69"/>
+        <source>?</source>
+        <translation>?</translation>
+    </message>
+    <message>
+        <location filename="../LibraryModel.cpp" line="74"/>
+        <source>Location</source>
+        <translation>Posizione</translation>
+    </message>
+    <message>
+        <location filename="../LibraryModel.cpp" line="80"/>
+        <source>CRC32</source>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -2577,27 +2496,27 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../LoadSaveState.cpp" line="68"/>
         <source>Load State</source>
-        <translation>Savestate laden</translation>
+        <translation>Carica stato</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="68"/>
         <source>Save State</source>
-        <translation>Savestate speichern</translation>
+        <translation>Salva stato</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="177"/>
         <source>Empty</source>
-        <translation>Leer</translation>
+        <translation>Vuoto</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="186"/>
         <source>Corrupted</source>
-        <translation>Defekt</translation>
+        <translation>Corrotto</translation>
     </message>
     <message>
-        <location filename="../LoadSaveState.cpp" line="215"/>
+        <location filename="../LoadSaveState.cpp" line="209"/>
         <source>Slot %1</source>
-        <translation>Speicherplatz %1</translation>
+        <translation>Slot %1</translation>
     </message>
 </context>
 <context>
@@ -2615,169 +2534,131 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../LogController.cpp" line="61"/>
         <source>INFO</source>
-        <translation>INFO</translation>
+        <translation>INFORMAZIONI</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="63"/>
         <source>WARN</source>
-        <translation>WARN</translation>
+        <translation>AVVERTENZA</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="65"/>
         <source>ERROR</source>
-        <translation>ERROR</translation>
+        <translation>ERRORE</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="67"/>
         <source>FATAL</source>
-        <translation>FATAL</translation>
+        <translation>FATALE</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="69"/>
         <source>GAME ERROR</source>
-        <translation>GAME ERROR</translation>
+        <translation>ERRORE NEL GIOCO</translation>
     </message>
 </context>
 <context>
     <name>QGBA::MemoryModel</name>
     <message>
-        <location filename="../MemoryModel.cpp" line="44"/>
+        <location filename="../MemoryModel.cpp" line="50"/>
         <source>Copy selection</source>
-        <translation>Auswahl kopieren</translation>
+        <translation>Copia selezionato</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="49"/>
+        <location filename="../MemoryModel.cpp" line="55"/>
         <source>Save selection</source>
-        <translation>Auswahl speichern</translation>
+        <translation>Salva selezionato</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="54"/>
+        <location filename="../MemoryModel.cpp" line="60"/>
         <source>Paste</source>
-        <translation>Einfügen</translation>
+        <translation>Incolla</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="59"/>
+        <location filename="../MemoryModel.cpp" line="65"/>
         <source>Load</source>
-        <translation>Laden</translation>
+        <translation>Carica</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="91"/>
-        <location filename="../MemoryModel.cpp" line="156"/>
+        <location filename="../MemoryModel.cpp" line="97"/>
+        <location filename="../MemoryModel.cpp" line="162"/>
         <source>All</source>
-        <translation>Alle</translation>
+        <translation>Tutto</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="136"/>
+        <location filename="../MemoryModel.cpp" line="142"/>
         <source>Load TBL</source>
-        <translation>TBL laden</translation>
-    </message>
-    <message>
-        <location filename="../MemoryModel.cpp" line="196"/>
-        <source>Save selected memory</source>
-        <translation>Ausgewählten Speicher abspeichern</translation>
+        <translation>Carica TBL</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="202"/>
-        <source>Failed to open output file: %1</source>
-        <translation>Fehler beim Öffnen der Ausgabedatei: %1</translation>
+        <source>Save selected memory</source>
+        <translation>Salva la memoria selezionate</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="210"/>
-        <source>Load memory</source>
-        <translation>Lade Speicher</translation>
+        <location filename="../MemoryModel.cpp" line="208"/>
+        <source>Failed to open output file: %1</source>
+        <translation>Impossibile aprire il file di output: %1</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="216"/>
-        <source>Failed to open input file: %1</source>
-        <translation>Fehler beim Laden der Eingabedatei: %1</translation>
+        <source>Load memory</source>
+        <translation>Carica memoria</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="332"/>
+        <location filename="../MemoryModel.cpp" line="222"/>
+        <source>Failed to open input file: %1</source>
+        <translation>Impossibile aprire il file di input: %1</translation>
+    </message>
+    <message>
+        <location filename="../MemoryModel.cpp" line="338"/>
         <source>TBL</source>
         <translation>TBL</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="332"/>
+        <location filename="../MemoryModel.cpp" line="338"/>
         <source>ISO-8859-1</source>
         <translation>ISO-8859-1</translation>
     </message>
 </context>
 <context>
-    <name>QGBA::MemorySearch</name>
-    <message>
-        <location filename="../MemorySearch.cpp" line="188"/>
-        <source> (⅟%0×)</source>
-        <translation> (⅟%0×)</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.cpp" line="192"/>
-        <source>1 byte%0</source>
-        <translation>1 Byte%0</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.cpp" line="195"/>
-        <source>2 bytes%0</source>
-        <translation>2 Bytes%0</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.cpp" line="199"/>
-        <source>4 bytes%0</source>
-        <translation>4 Bytes%0</translation>
-    </message>
-</context>
-<context>
     <name>QGBA::ObjView</name>
     <message>
-        <location filename="../ObjView.cpp" line="143"/>
-        <location filename="../ObjView.cpp" line="236"/>
+        <location filename="../ObjView.cpp" line="135"/>
+        <location filename="../ObjView.cpp" line="221"/>
         <source>0x%0</source>
         <translation>0x%0</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="154"/>
+        <location filename="../ObjView.cpp" line="146"/>
         <source>Off</source>
-        <translation>Aus</translation>
+        <translation>No</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="159"/>
+        <location filename="../ObjView.cpp" line="151"/>
         <source>Normal</source>
-        <translation>Normal</translation>
+        <translation>Normale</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="162"/>
+        <location filename="../ObjView.cpp" line="154"/>
         <source>Trans</source>
         <translation>Trans</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="165"/>
+        <location filename="../ObjView.cpp" line="157"/>
         <source>OBJWIN</source>
         <translation>OBJWIN</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="168"/>
+        <location filename="../ObjView.cpp" line="160"/>
         <source>Invalid</source>
-        <translation>Ungültig</translation>
+        <translation>Invalido</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="243"/>
-        <location filename="../ObjView.cpp" line="244"/>
+        <location filename="../ObjView.cpp" line="228"/>
+        <location filename="../ObjView.cpp" line="229"/>
         <source>N/A</source>
-        <translation>N/A</translation>
-    </message>
-    <message>
-        <location filename="../ObjView.cpp" line="251"/>
-        <source>Export sprite</source>
-        <translation>Sprite exportieren</translation>
-    </message>
-    <message>
-        <location filename="../ObjView.cpp" line="252"/>
-        <source>Portable Network Graphics (*.png)</source>
-        <translation>Portable Network Graphics (*.png)</translation>
-    </message>
-    <message>
-        <location filename="../ObjView.cpp" line="255"/>
-        <source>Failed to open output PNG file: %1</source>
-        <translation>Fehler beim Öffnen der Ausgabe-PNG-Datei: %1</translation>
+        <translation>n/d</translation>
     </message>
 </context>
 <context>
@@ -2807,17 +2688,17 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../PaletteView.cpp" line="137"/>
         <source>Export palette</source>
-        <translation>Palette exportieren</translation>
+        <translation>Esporta palette</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="138"/>
         <source>Windows PAL (*.pal);;Adobe Color Table (*.act)</source>
-        <translation>Windows PAL (*.pal);;Adobe Color Table (*.act)</translation>
+        <translation>WIndows PAL (*.pal);;Tabella dei colori Adobe (*.act)</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="141"/>
+        <location filename="../PaletteView.cpp" line="145"/>
         <source>Failed to open output palette file: %1</source>
-        <translation>Fehler beim Öffnen der Ausgabe-Palettendatei: %1</translation>
+        <translation>Errore nell'aprire il file palette di output : %1</translation>
     </message>
 </context>
 <context>
@@ -2829,120 +2710,120 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../ROMInfo.cpp" line="89"/>
         <location filename="../ROMInfo.cpp" line="90"/>
         <source>(unknown)</source>
-        <translation>(unbekannt)</translation>
+        <translation>(sconosciuto)</translation>
     </message>
     <message>
         <location filename="../ROMInfo.cpp" line="57"/>
         <location filename="../ROMInfo.cpp" line="64"/>
         <source> bytes</source>
-        <translation> Bytes</translation>
+        <translation> bytes</translation>
     </message>
     <message>
         <location filename="../ROMInfo.cpp" line="83"/>
         <source>(no database present)</source>
-        <translation>(keine Datenbank vorhanden)</translation>
+        <translation>(nessun database presente)</translation>
     </message>
 </context>
 <context>
     <name>QGBA::SettingsView</name>
     <message>
-        <location filename="../SettingsView.cpp" line="98"/>
+        <location filename="../SettingsView.cpp" line="96"/>
         <source>Qt Multimedia</source>
         <translation>Qt Multimedia</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="105"/>
+        <location filename="../SettingsView.cpp" line="103"/>
         <source>SDL</source>
         <translation>SDL</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="113"/>
+        <location filename="../SettingsView.cpp" line="111"/>
         <source>Software (Qt)</source>
         <translation>Software (Qt)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="119"/>
+        <location filename="../SettingsView.cpp" line="117"/>
         <source>OpenGL</source>
         <translation>OpenGL</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="126"/>
+        <location filename="../SettingsView.cpp" line="124"/>
         <source>OpenGL (force version 1.x)</source>
-        <translation>OpenGL (erzwinge Version 1.x)</translation>
+        <translation>OpenGL (forza la versione 1.x)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="144"/>
+        <location filename="../SettingsView.cpp" line="142"/>
         <source>Keyboard</source>
-        <translation>Tastatur</translation>
+        <translation>Tastiera</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="153"/>
+        <location filename="../SettingsView.cpp" line="151"/>
         <source>Controllers</source>
-        <translation>Gamepads</translation>
+        <translation>Controllers</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="185"/>
+        <location filename="../SettingsView.cpp" line="170"/>
         <source>Shortcuts</source>
-        <translation>Tastenkürzel</translation>
+        <translation>Tasti di scelta rapida</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="189"/>
+        <location filename="../SettingsView.cpp" line="174"/>
         <source>Select BIOS</source>
-        <translation>BIOS auswählen</translation>
+        <translation>Seleziona BIOS</translation>
     </message>
 </context>
 <context>
     <name>QGBA::ShaderSelector</name>
     <message>
-        <location filename="../ShaderSelector.cpp" line="49"/>
+        <location filename="../ShaderSelector.cpp" line="50"/>
         <source>No shader active</source>
-        <translation>Kein Shader aktiv</translation>
+        <translation>Nessun shader attivo</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="62"/>
+        <location filename="../ShaderSelector.cpp" line="63"/>
         <source>Load shader</source>
-        <translation>Shader laden</translation>
+        <translation>Carica shader</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="62"/>
+        <location filename="../ShaderSelector.cpp" line="63"/>
         <source>%1 Shader (%.shader)</source>
         <translation>%1 Shader (%.shader)</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="101"/>
+        <location filename="../ShaderSelector.cpp" line="102"/>
         <source>No shader loaded</source>
-        <translation>Kein Shader geladen</translation>
+        <translation>Nessun shader caricato</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="109"/>
+        <location filename="../ShaderSelector.cpp" line="110"/>
         <source>by %1</source>
-        <translation>von %1</translation>
+        <translation>por %1</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="120"/>
+        <location filename="../ShaderSelector.cpp" line="121"/>
         <source>Preprocessing</source>
-        <translation>Vorbehandlung</translation>
+        <translation>Preprocesso</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="127"/>
+        <location filename="../ShaderSelector.cpp" line="128"/>
         <source>Pass %1</source>
-        <translation>Durchlauf %1</translation>
+        <translation>Pass %1</translation>
     </message>
 </context>
 <context>
     <name>QGBA::ShortcutController</name>
     <message>
-        <location filename="../ShortcutController.cpp" line="64"/>
+        <location filename="../ShortcutController.cpp" line="67"/>
         <source>Action</source>
-        <translation>Aktion</translation>
+        <translation>Azione</translation>
     </message>
     <message>
-        <location filename="../ShortcutController.cpp" line="66"/>
+        <location filename="../ShortcutController.cpp" line="69"/>
         <source>Keyboard</source>
-        <translation>Tastatur</translation>
+        <translation>Tastiera</translation>
     </message>
     <message>
-        <location filename="../ShortcutController.cpp" line="68"/>
+        <location filename="../ShortcutController.cpp" line="71"/>
         <source>Gamepad</source>
         <translation>Gamepad</translation>
     </message>
@@ -2950,750 +2831,726 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
 <context>
     <name>QGBA::VideoView</name>
     <message>
-        <location filename="../VideoView.cpp" line="203"/>
+        <location filename="../VideoView.cpp" line="208"/>
         <source>Failed to open output video file: %1</source>
-        <translation>Fehler beim Öffnen der Ausgabe-Videodatei: %1</translation>
+        <translation>Errore durante l'archiviazione del video: %1</translation>
     </message>
     <message>
-        <location filename="../VideoView.cpp" line="221"/>
+        <location filename="../VideoView.cpp" line="226"/>
         <source>Native (%0x%1)</source>
-        <translation>Nativ (%0x%1)</translation>
+        <translation>Nativo (%0x%1)</translation>
     </message>
     <message>
-        <location filename="../VideoView.cpp" line="236"/>
+        <location filename="../VideoView.cpp" line="241"/>
         <source>Select output file</source>
-        <translation>Ausgabedatei auswählen</translation>
+        <translation>Seleziona file di output</translation>
     </message>
 </context>
 <context>
     <name>QGBA::Window</name>
     <message>
-        <location filename="../Window.cpp" line="329"/>
+        <location filename="../Window.cpp" line="340"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation>Game Boy Advance-ROMs (%1)</translation>
+        <translation>ROM di Game Boy Advance (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="345"/>
+        <location filename="../Window.cpp" line="356"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation>Game Boy-ROMs (%1)</translation>
+        <translation>ROMs del Game Boy (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="349"/>
+        <location filename="../Window.cpp" line="360"/>
         <source>All ROMs (%1)</source>
-        <translation>Alle ROMs (%1)</translation>
+        <translation>Tutte le ROM (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="350"/>
-        <source>%1 Video Logs (*.mvl)</source>
-        <translation>%1 Video-Logs (*.mvl)</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="365"/>
+        <location filename="../Window.cpp" line="375"/>
         <source>Archives (%1)</source>
-        <translation>Archive (%1)</translation>
+        <translation>Archivio (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="370"/>
-        <location filename="../Window.cpp" line="378"/>
-        <location filename="../Window.cpp" line="405"/>
+        <location filename="../Window.cpp" line="380"/>
+        <location filename="../Window.cpp" line="388"/>
+        <location filename="../Window.cpp" line="415"/>
         <source>Select ROM</source>
-        <translation>ROM auswählen</translation>
+        <translation>Seleziona ROM</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="413"/>
+        <location filename="../Window.cpp" line="423"/>
         <source>Game Boy Advance save files (%1)</source>
-        <translation>Game Boy Advance-Speicherdateien (%1)</translation>
+        <translation>Game Boy Advance file di salvataggio (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="414"/>
-        <location filename="../Window.cpp" line="448"/>
-        <location filename="../Window.cpp" line="455"/>
+        <location filename="../Window.cpp" line="424"/>
+        <location filename="../Window.cpp" line="457"/>
+        <location filename="../Window.cpp" line="464"/>
         <source>Select save</source>
-        <translation>Speicherdatei wählen</translation>
+        <translation>Seleziona salvataggio</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="434"/>
+        <location filename="../Window.cpp" line="444"/>
         <source>Select patch</source>
-        <translation>Patch wählen</translation>
+        <translation>Seleziona patch</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="434"/>
+        <location filename="../Window.cpp" line="444"/>
         <source>Patches (*.ips *.ups *.bps)</source>
         <translation>Patches (*.ips *.ups *.bps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="448"/>
-        <location filename="../Window.cpp" line="455"/>
+        <location filename="../Window.cpp" line="457"/>
+        <location filename="../Window.cpp" line="464"/>
         <source>GameShark saves (*.sps *.xps)</source>
-        <translation>GameShark-Speicherdaten (*.sps *.xps)</translation>
+        <translation>Salvataggi GameShark (*.sps *.xps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="478"/>
-        <source>Select video log</source>
-        <translation>Video-Log auswählen</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="478"/>
-        <source>Video logs (*.mvl)</source>
-        <translation>Video-Logs (*.mvl)</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="820"/>
+        <location filename="../Window.cpp" line="782"/>
         <source>Crash</source>
-        <translation>Absturz</translation>
+        <translation>Errore fatale</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="821"/>
+        <location filename="../Window.cpp" line="783"/>
         <source>The game has crashed with the following error:
 
 %1</source>
-        <translation>Das Spiel ist mit der folgenden Fehlermeldung abgestürzt:
+        <translation>Il gioco è andato in crash con il seguente errore::
 
 %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="828"/>
+        <location filename="../Window.cpp" line="790"/>
         <source>Couldn&apos;t Load</source>
-        <translation>Konnte nicht geladen werden</translation>
+        <translation>Non è possibile caricare</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="829"/>
+        <location filename="../Window.cpp" line="791"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
-        <translation>Konnte das Spiel nicht laden. Sind Sie sicher, dass es im korrekten Format vorliegt?</translation>
+        <translation>Impossibile caricare il gioco. Sei sicuro che sia nel formato corretto?</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="842"/>
+        <location filename="../Window.cpp" line="804"/>
         <source>Unimplemented BIOS call</source>
-        <translation>Nicht implementierter BIOS-Aufruf</translation>
+        <translation>BIOS non implementato</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="843"/>
+        <location filename="../Window.cpp" line="805"/>
         <source>This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience.</source>
-        <translation>Dieses Spiel verwendet einen BIOS-Aufruf, der nicht implementiert ist. Bitte verwenden Sie für die beste Spielerfahrung das offizielle BIOS.</translation>
+        <translation>Questo gioco utilizza una chiamata BIOS non implementata. Utilizza il BIOS ufficiale per una migliore esperienza</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="850"/>
+        <location filename="../Window.cpp" line="812"/>
         <source>Really make portable?</source>
-        <translation>Portablen Modus wirklich aktivieren?</translation>
+        <translation>Davvero rendere portatile?</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="851"/>
+        <location filename="../Window.cpp" line="813"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
-        <translation>Diese Einstellung wird den Emulator so konfigurieren, dass er seine Konfiguration aus dem gleichen Verzeichnis wie die Programmdatei lädt. Möchten Sie fortfahren?</translation>
+        <translation>In questo modo l'emulatore carica la propria configurazione dalla stessa directory dell'eseguibile. Vuoi continuare?</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="859"/>
+        <location filename="../Window.cpp" line="821"/>
         <source>Restart needed</source>
-        <translation>Neustart benötigt</translation>
+        <translation>È necessario riavviare</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="860"/>
+        <location filename="../Window.cpp" line="822"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
-        <translation>Einige Änderungen werden erst übernommen, wenn der Emulator neu gestartet wurde.</translation>
+        <translation>Alcune modifiche non avranno effetto finché l'emulatore non viene riavviato.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="907"/>
+        <location filename="../Window.cpp" line="869"/>
         <source> -  Player %1 of %2</source>
-        <translation> -  Spieler %1 von %2</translation>
+        <translation> -  Giocatore %1 di %2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="918"/>
+        <location filename="../Window.cpp" line="880"/>
         <source>%1 - %2</source>
         <translation>%1 - %2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="920"/>
+        <location filename="../Window.cpp" line="882"/>
         <source>%1 - %2 - %3</source>
         <translation>%1 - %2 - %3</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="922"/>
+        <location filename="../Window.cpp" line="884"/>
         <source>%1 - %2 (%3 fps) - %4</source>
-        <translation>%1 - %2 (%3 Bilder/Sekunde) - %4</translation>
+        <translation>%1 - %2 (%3 fps) - %4</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="954"/>
+        <location filename="../Window.cpp" line="916"/>
         <source>&amp;File</source>
-        <translation>&amp;Datei</translation>
+        <translation>&amp;File</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="919"/>
+        <source>Load &amp;ROM...</source>
+        <translation>Carica &amp;ROM...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="922"/>
+        <source>Load ROM in archive...</source>
+        <translation>Carica la ROM in archivio...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="928"/>
+        <source>Load temporary save...</source>
+        <translation>Carica il salvataggio temporaneo..</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="933"/>
+        <source>Load &amp;patch...</source>
+        <translation>Carica &amp;patch...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="935"/>
+        <source>Boot BIOS</source>
+        <translation>Boot BIOS</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="942"/>
+        <source>Replace ROM...</source>
+        <translation>Sostituire la ROM...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="944"/>
+        <source>ROM &amp;info...</source>
+        <translation>ROM &amp;info...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="949"/>
+        <source>Recent</source>
+        <translation>Recente</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="953"/>
+        <source>Make portable</source>
+        <translation>Rendi portatile</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="957"/>
-        <source>Load &amp;ROM...</source>
-        <translation>&amp;ROM laden...</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="960"/>
-        <source>Load ROM in archive...</source>
-        <translation>ROM aus Archiv laden...</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="966"/>
-        <source>Load temporary save...</source>
-        <translation>Temporäre Speicherdatei laden...</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="971"/>
-        <source>Load &amp;patch...</source>
-        <translation>&amp;Patch laden...</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="973"/>
-        <source>Boot BIOS</source>
-        <translation>BIOS booten</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="980"/>
-        <source>Replace ROM...</source>
-        <translation>ROM ersetzen...</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="982"/>
-        <source>ROM &amp;info...</source>
-        <translation>ROM-&amp;Informationen...</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="987"/>
-        <source>Recent</source>
-        <translation>Zuletzt verwendet</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="991"/>
-        <source>Make portable</source>
-        <translation>Portablen Modus aktivieren</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="995"/>
         <source>&amp;Load state</source>
-        <translation>Savestate &amp;laden</translation>
+        <translation>&amp;Carica stato</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="996"/>
+        <location filename="../Window.cpp" line="958"/>
         <source>F10</source>
         <translation>F10</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1002"/>
+        <location filename="../Window.cpp" line="964"/>
         <source>&amp;Save state</source>
-        <translation>Savestate &amp;speichern</translation>
+        <translation>&amp;Salva stato</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1003"/>
+        <location filename="../Window.cpp" line="965"/>
         <source>Shift+F10</source>
-        <translation>Umschalt+F10</translation>
+        <translatorcomment>DO NOT TRANSLATE</translatorcomment>
+        <translation>Shift+F10</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1009"/>
+        <location filename="../Window.cpp" line="971"/>
         <source>Quick load</source>
-        <translation>Schnell laden</translation>
+        <translation>Caricamento rapido</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1010"/>
+        <location filename="../Window.cpp" line="972"/>
         <source>Quick save</source>
-        <translation>Schnell speichern</translation>
+        <translation>Salvataggio rapido</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1014"/>
+        <location filename="../Window.cpp" line="976"/>
         <source>Load recent</source>
-        <translation>Lade zuletzt gespeicherten Savestate</translation>
+        <translation>Carica recente</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1020"/>
+        <location filename="../Window.cpp" line="982"/>
         <source>Save recent</source>
-        <translation>Speichere aktuellen Stand</translation>
+        <translation>Salva recente</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1029"/>
+        <location filename="../Window.cpp" line="991"/>
         <source>Undo load state</source>
-        <translation>Laden des Savestate rückgängig machen</translation>
+        <translation>Annulla il caricamento dello stato</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1030"/>
+        <location filename="../Window.cpp" line="992"/>
         <source>F11</source>
+        <translatorcomment>DO NOT TRANSLATE</translatorcomment>
         <translation>F11</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1036"/>
+        <location filename="../Window.cpp" line="998"/>
         <source>Undo save state</source>
-        <translation>Speichern des Savestate rückgängig machen</translation>
+        <translation>Annulla salva stato</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1037"/>
+        <location filename="../Window.cpp" line="999"/>
         <source>Shift+F11</source>
-        <translation>Umschalt+F11</translation>
+        <translatorcomment>DO NOT TRANSLATE</translatorcomment>
+        <translation>Shift+F11</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1048"/>
-        <location filename="../Window.cpp" line="1055"/>
+        <location filename="../Window.cpp" line="1010"/>
+        <location filename="../Window.cpp" line="1017"/>
         <source>State &amp;%1</source>
-        <translation>Savestate &amp;%1</translation>
+        <translation>Stato &amp;%1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1049"/>
+        <location filename="../Window.cpp" line="1011"/>
         <source>F%1</source>
         <translation>F%1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1056"/>
+        <location filename="../Window.cpp" line="1018"/>
         <source>Shift+F%1</source>
-        <translation>Umschalt+F%1</translation>
+        <translatorcomment>DO NOT TRANSLATE</translatorcomment>
+        <translation>Shift+F%1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1065"/>
+        <location filename="../Window.cpp" line="1027"/>
         <source>Import GameShark Save</source>
-        <translation>Importiere GameShark-Speicherstand</translation>
+        <translation>Importa il salvataggio del GameShark</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1071"/>
+        <location filename="../Window.cpp" line="1033"/>
         <source>Export GameShark Save</source>
-        <translation>Exportiere GameShark-Speicherstand</translation>
+        <translation>Esporta salvataggio dal GameShark</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1079"/>
+        <location filename="../Window.cpp" line="1041"/>
         <source>New multiplayer window</source>
-        <translation>Neues Multiplayer-Fenster</translation>
+        <translation>Nuova finestra multigiocatore</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1089"/>
+        <location filename="../Window.cpp" line="1051"/>
         <source>About</source>
-        <translation>Über</translation>
+        <translation>About</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1056"/>
+        <source>E&amp;xit</source>
+        <translation>Uscire (&amp;X)</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1059"/>
+        <source>&amp;Emulation</source>
+        <translation>&amp;Emulazione</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1061"/>
+        <source>&amp;Reset</source>
+        <translation>&amp;Reset</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1062"/>
+        <source>Ctrl+R</source>
+        <translation>Ctrl+R</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1067"/>
+        <source>Sh&amp;utdown</source>
+        <translation>Spegni (&amp;U)</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1073"/>
+        <source>Yank game pak</source>
+        <translation>Yank game pak</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1081"/>
+        <source>&amp;Pause</source>
+        <translation>&amp;Pausa</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1084"/>
+        <source>Ctrl+P</source>
+        <translation>Ctrl+P</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1093"/>
+        <source>&amp;Next frame</source>
+        <translation>Salta il prossimo frame (&amp;N)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1094"/>
-        <source>E&amp;xit</source>
-        <translation>&amp;Beenden</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1097"/>
-        <source>&amp;Emulation</source>
-        <translation>&amp;Emulation</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1099"/>
-        <source>&amp;Reset</source>
-        <translation>Zu&amp;rücksetzen</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1100"/>
-        <source>Ctrl+R</source>
-        <translation>Strg+R</translation>
+        <source>Ctrl+N</source>
+        <translation>Ctrl+N</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1105"/>
-        <source>Sh&amp;utdown</source>
-        <translation>B&amp;eenden</translation>
+        <source>Fast forward (held)</source>
+        <translation>Avanzamento rapido (sostenuto)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1111"/>
-        <source>Yank game pak</source>
-        <translation>Spielmodul herausziehen</translation>
+        <location filename="../Window.cpp" line="1107"/>
+        <source>&amp;Fast forward</source>
+        <translation>Avanzamento rapido (&amp;F)</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1110"/>
+        <source>Shift+Tab</source>
+        <translation>Shift+Tab</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1114"/>
+        <source>Fast forward speed</source>
+        <translation>Velocità di avanzamento rapido</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1119"/>
-        <source>&amp;Pause</source>
-        <translation>&amp;Pause</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1122"/>
-        <source>Ctrl+P</source>
-        <translation>Strg+P</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1131"/>
-        <source>&amp;Next frame</source>
-        <translation>&amp;Nächstes Bild</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1132"/>
-        <source>Ctrl+N</source>
-        <translation>Strg+N</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1143"/>
-        <source>Fast forward (held)</source>
-        <translation>Schneller Vorlauf (gehalten)</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1145"/>
-        <source>&amp;Fast forward</source>
-        <translation>Schneller &amp;Vorlauf</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1148"/>
-        <source>Shift+Tab</source>
-        <translation>Umschalt+Tab</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1152"/>
-        <source>Fast forward speed</source>
-        <translation>Vorlauf-Geschwindigkeit</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1157"/>
         <source>Unbounded</source>
-        <translation>Unbegrenzt</translation>
+        <translation>Illimitato</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1161"/>
+        <location filename="../Window.cpp" line="1123"/>
         <source>%0x</source>
         <translation>%0x</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1169"/>
+        <location filename="../Window.cpp" line="1131"/>
         <source>Rewind (held)</source>
-        <translation>Zurückspulen (gehalten)</translation>
+        <translation>Riavvolgi (sostenuto)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1171"/>
+        <location filename="../Window.cpp" line="1133"/>
         <source>Re&amp;wind</source>
-        <translation>Zur&amp;ückspulen</translation>
+        <translation>Riavvolgi (&amp;W)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1172"/>
+        <location filename="../Window.cpp" line="1134"/>
         <source>~</source>
         <translation>~</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1178"/>
+        <location filename="../Window.cpp" line="1140"/>
         <source>Step backwards</source>
-        <translation>Schrittweiser Rücklauf</translation>
+        <translation>Torna indietro</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1141"/>
+        <source>Ctrl+B</source>
+        <translation>Ctrl+B</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1150"/>
+        <source>Sync to &amp;video</source>
+        <translation>Sincronizzare su &amp;video</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1157"/>
+        <source>Sync to &amp;audio</source>
+        <translation>Sincronizzare su &amp;audio</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1165"/>
+        <source>Solar sensor</source>
+        <translation>Sensore solare</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1167"/>
+        <source>Increase solar level</source>
+        <translation>Aumenta il livello solare</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1171"/>
+        <source>Decrease solar level</source>
+        <translation>Riduce il livello solare</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1175"/>
+        <source>Brightest solar level</source>
+        <translation>Livello solare brillante</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1179"/>
-        <source>Ctrl+B</source>
-        <translation>Strg+B</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1188"/>
-        <source>Sync to &amp;video</source>
-        <translation>Mit &amp;Video synchronisieren</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1195"/>
-        <source>Sync to &amp;audio</source>
-        <translation>Mit &amp;Audio synchronisieren</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1203"/>
-        <source>Solar sensor</source>
-        <translation>Solar-Sensor</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1205"/>
-        <source>Increase solar level</source>
-        <translation>Sonnen-Level erhöhen</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1209"/>
-        <source>Decrease solar level</source>
-        <translation>Sonnen-Level verringern</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1213"/>
-        <source>Brightest solar level</source>
-        <translation>Hellster Sonnen-Level</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1217"/>
         <source>Darkest solar level</source>
-        <translation>Dunkelster Sonnen-Level</translation>
+        <translation>Livello solare più scuro</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1223"/>
+        <location filename="../Window.cpp" line="1185"/>
         <source>Brightness %1</source>
-        <translation>Helligkeit %1</translation>
+        <translation>Luminosità %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1230"/>
+        <location filename="../Window.cpp" line="1192"/>
         <source>Audio/&amp;Video</source>
         <translation>Audio/&amp;Video</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1232"/>
+        <location filename="../Window.cpp" line="1194"/>
         <source>Frame size</source>
-        <translation>Bildgröße</translation>
+        <translation>Dimensione Frame</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1235"/>
+        <location filename="../Window.cpp" line="1197"/>
         <source>%1x</source>
         <translation>%1x</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1263"/>
+        <location filename="../Window.cpp" line="1225"/>
         <source>Toggle fullscreen</source>
-        <translation>Vollbildmodus umschalten</translation>
+        <translation>Abilita schermo intero</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1266"/>
+        <location filename="../Window.cpp" line="1228"/>
         <source>Lock aspect ratio</source>
-        <translation>Seitenverhältnis korrigieren</translation>
+        <translation>Blocca aspect ratio</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1273"/>
-        <source>Force integer scaling</source>
-        <translation>Pixelgenaue Skalierung (Integer scaling)</translation>
+        <location filename="../Window.cpp" line="1235"/>
+        <source>Resample video</source>
+        <translation>Rimostra video</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1289"/>
+        <location filename="../Window.cpp" line="1241"/>
         <source>Frame&amp;skip</source>
         <translation>Frame&amp;skip</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1299"/>
+        <location filename="../Window.cpp" line="1251"/>
         <source>Shader options...</source>
-        <translation>Shader-Optionen...</translation>
+        <translation>Opzioni shader...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1309"/>
+        <location filename="../Window.cpp" line="1261"/>
         <source>Mute</source>
-        <translation>Stummschalten</translation>
+        <translation>Muto</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1316"/>
+        <location filename="../Window.cpp" line="1267"/>
         <source>FPS target</source>
-        <translation>Bildwiederholrate</translation>
+        <translation>FPS mirato</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1321"/>
+        <location filename="../Window.cpp" line="1272"/>
         <source>15</source>
         <translation>15</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1322"/>
+        <location filename="../Window.cpp" line="1273"/>
         <source>30</source>
         <translation>30</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1323"/>
+        <location filename="../Window.cpp" line="1274"/>
         <source>45</source>
         <translation>45</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1324"/>
+        <location filename="../Window.cpp" line="1275"/>
         <source>Native (59.7)</source>
-        <translation>Nativ (59.7)</translation>
+        <translation>Nativo (59.7)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1325"/>
+        <location filename="../Window.cpp" line="1276"/>
         <source>60</source>
         <translation>60</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1326"/>
+        <location filename="../Window.cpp" line="1277"/>
         <source>90</source>
         <translation>90</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1327"/>
+        <location filename="../Window.cpp" line="1278"/>
         <source>120</source>
         <translation>120</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1328"/>
+        <location filename="../Window.cpp" line="1279"/>
         <source>240</source>
         <translation>240</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1336"/>
+        <location filename="../Window.cpp" line="1287"/>
         <source>Take &amp;screenshot</source>
-        <translation>&amp;Screenshot erstellen</translation>
+        <translation>Effettua &amp;screenshot</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1337"/>
+        <location filename="../Window.cpp" line="1288"/>
         <source>F12</source>
         <translation>F12</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1344"/>
+        <location filename="../Window.cpp" line="1295"/>
         <source>Record output...</source>
-        <translation>Ausgabe aufzeichen...</translation>
+        <translation>Registra salida...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1351"/>
+        <location filename="../Window.cpp" line="1302"/>
         <source>Record GIF...</source>
-        <translation>GIF aufzeichen...</translation>
+        <translation>Registra GIF...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1356"/>
-        <source>Record video log...</source>
-        <translation>Video-Log aufzeichnen...</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1361"/>
-        <source>Stop video log</source>
-        <translation>Video-Log beenden</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1367"/>
+        <location filename="../Window.cpp" line="1308"/>
         <source>Video layers</source>
-        <translation>Video-Ebenen</translation>
+        <translation>Layers video</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1370"/>
+        <location filename="../Window.cpp" line="1312"/>
+        <source>Background %0</source>
+        <translation>Sfondo %0</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1319"/>
+        <source>OBJ (sprites)</source>
+        <translation>OBJ (sprites)</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1325"/>
         <source>Audio channels</source>
-        <translation>Audio-Kanäle</translation>
+        <translation>Canali audio</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1373"/>
+        <location filename="../Window.cpp" line="1329"/>
+        <source>Channel %0</source>
+        <translation>Canale %0</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1336"/>
+        <source>Channel A</source>
+        <translation>Canale A</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1342"/>
+        <source>Channel B</source>
+        <translation>Canale B</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1348"/>
         <source>&amp;Tools</source>
-        <translation>&amp;Werkzeuge</translation>
+        <translation>&amp;Strumenti</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1375"/>
+        <location filename="../Window.cpp" line="1350"/>
         <source>View &amp;logs...</source>
-        <translation>&amp;Logs ansehen...</translation>
+        <translation>Visualizza registri... (&amp;L)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1379"/>
+        <location filename="../Window.cpp" line="1354"/>
         <source>Game &amp;overrides...</source>
-        <translation>Spiel-&amp;Überschreibungen...</translation>
+        <translation>Val&amp;specifico per il gioco...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1383"/>
+        <location filename="../Window.cpp" line="1358"/>
         <source>Game &amp;Pak sensors...</source>
-        <translation>Game &amp;Pak-Sensoren...</translation>
+        <translation>Sensori di gioco &amp;Pak...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1362"/>
+        <source>&amp;Cheats...</source>
+        <translation>&amp;Trucchi...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1374"/>
+        <source>Open debugger console...</source>
+        <translation>Apri debugger console...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1380"/>
+        <source>Start &amp;GDB server...</source>
+        <translation>Avvia server &amp;GDB...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1368"/>
+        <source>Settings...</source>
+        <translation>Impostazioni...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="406"/>
+        <source>Select folder</source>
+        <translation>Seleziona cartella</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="924"/>
+        <source>Add folder to library...</source>
+        <translation>Aggiungi cartella alla libreria...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1387"/>
-        <source>&amp;Cheats...</source>
-        <translation>&amp;Cheats...</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1399"/>
-        <source>Open debugger console...</source>
-        <translation>Debugger-Konsole äffnen...</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1405"/>
-        <source>Start &amp;GDB server...</source>
-        <translation>&amp;GDB-Server starten...</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1393"/>
-        <source>Settings...</source>
-        <translation>Einstellungen...</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="396"/>
-        <source>Select folder</source>
-        <translation>Ordner auswählen</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="962"/>
-        <source>Add folder to library...</source>
-        <translation>Ordner zur Bibliothek hinzufügen...</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1283"/>
-        <source>Bilinear filtering</source>
-        <translation>Bilineare Filterung</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1412"/>
         <source>View &amp;palette...</source>
-        <translation>&amp;Palette betrachten...</translation>
+        <translation>Ver &amp;palette...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1417"/>
+        <location filename="../Window.cpp" line="1392"/>
         <source>View &amp;sprites...</source>
-        <translation>&amp;Sprites betrachten...</translation>
+        <translation>Ver &amp;sprites...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1422"/>
+        <location filename="../Window.cpp" line="1397"/>
         <source>View &amp;tiles...</source>
-        <translation>&amp;Tiles betrachten...</translation>
+        <translation>Ver &amp;tiles...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1427"/>
+        <location filename="../Window.cpp" line="1402"/>
         <source>View memory...</source>
-        <translation>Speicher betrachten...</translation>
+        <translation>Ver memoria...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1432"/>
-        <source>Search memory...</source>
-        <translation>Speicher durchsuchen...</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1438"/>
+        <location filename="../Window.cpp" line="1408"/>
         <source>View &amp;I/O registers...</source>
-        <translation>&amp;I/O-Register betrachten...</translation>
+        <translation>Ver reg&amp;registri I/O...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1508"/>
+        <location filename="../Window.cpp" line="1465"/>
         <source>Exit fullscreen</source>
-        <translation>Vollbildmodus beenden</translation>
+        <translation>Esci da schermo intero</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1470"/>
+        <source>Autofire</source>
+        <translation>Pulsanti Auto fuoco</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1477"/>
+        <source>Autofire A</source>
+        <translation>Auto fuoco A</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1483"/>
+        <source>Autofire B</source>
+        <translation>Auto fuoco B</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1489"/>
+        <source>Autofire L</source>
+        <translation>Auto fuoco L</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1495"/>
+        <source>Autofire R</source>
+        <translation>Auto fuoco R</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1501"/>
+        <source>Autofire Start</source>
+        <translation>Avvia Auto fuoco</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1507"/>
+        <source>Autofire Select</source>
+        <translation>Seleziona Auto fuoco</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1513"/>
-        <source>Autofire</source>
-        <translation>Autofeuer</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1520"/>
-        <source>Autofire A</source>
-        <translation>Autofeuer A</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1526"/>
-        <source>Autofire B</source>
-        <translation>Autofeuer B</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1532"/>
-        <source>Autofire L</source>
-        <translation>Autofeuer L</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1538"/>
-        <source>Autofire R</source>
-        <translation>Autofeuer R</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1544"/>
-        <source>Autofire Start</source>
-        <translation>Autofeuer Start</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1550"/>
-        <source>Autofire Select</source>
-        <translation>Autofeuer Select</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1556"/>
         <source>Autofire Up</source>
-        <translation>Autofeuer nach oben</translation>
+        <translation>Auto fuoco sù</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1562"/>
+        <location filename="../Window.cpp" line="1519"/>
         <source>Autofire Right</source>
-        <translation>Autofeuer rechts</translation>
+        <translation>Auto fuoco destro</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1568"/>
+        <location filename="../Window.cpp" line="1525"/>
         <source>Autofire Down</source>
-        <translation>Autofeuer nach unten</translation>
+        <translation>Auto fuoco giù</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1574"/>
+        <location filename="../Window.cpp" line="1531"/>
         <source>Autofire Left</source>
-        <translation>Autofeuer links</translation>
-    </message>
-</context>
-<context>
-    <name>QObject</name>
-    <message>
-        <location filename="../utils.cpp" line="29"/>
-        <source>GBA</source>
-        <translation>GBA</translation>
-    </message>
-    <message>
-        <location filename="../utils.cpp" line="33"/>
-        <source>GB</source>
-        <translation>GB</translation>
-    </message>
-    <message>
-        <location filename="../utils.cpp" line="36"/>
-        <source>?</source>
-        <translation>?</translation>
+        <translation>Auto fuoco sinistro</translation>
     </message>
 </context>
 <context>
@@ -3701,12 +3558,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../ROMInfo.ui" line="14"/>
         <source>ROM Info</source>
-        <translation>ROM-Info</translation>
+        <translation>Informazioni della ROM</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="26"/>
         <source>Game name:</source>
-        <translation>Spiel-Name:</translation>
+        <translation>Nome del gioco:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="33"/>
@@ -3716,7 +3573,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../ROMInfo.ui" line="46"/>
         <source>Internal name:</source>
-        <translation>Interner Name:</translation>
+        <translation>Nome interno:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="53"/>
@@ -3726,7 +3583,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../ROMInfo.ui" line="63"/>
         <source>Game ID:</source>
-        <translation>Spiele-ID:</translation>
+        <translation>ID del gioco:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="70"/>
@@ -3736,7 +3593,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../ROMInfo.ui" line="80"/>
         <source>File size:</source>
-        <translation>Dateigröße:</translation>
+        <translation>Dimensione del file:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="87"/>
@@ -3759,74 +3616,74 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../SensorView.ui" line="20"/>
         <source>Sensors</source>
-        <translation>Sensoren</translation>
+        <translation>Sensori</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="31"/>
         <source>Realtime clock</source>
-        <translation>Echtzeituhr</translation>
+        <translation>Realtime clock</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="37"/>
         <source>Fixed time</source>
-        <translation>Feste Zeit</translation>
+        <translation>Ora fissa</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="47"/>
         <source>System time</source>
-        <translation>Systemzeit</translation>
+        <translation>Ora del sistema</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="60"/>
         <source>Start time at</source>
-        <translation>Starte Zeit ab</translation>
+        <translation>Avvia tempo a</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="70"/>
         <source>Now</source>
-        <translation>Jetzt</translation>
+        <translation>Adesso</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="97"/>
         <source>MM/dd/yy hh:mm:ss AP</source>
-        <translation>dd/mm/yy hh:mm:ss</translation>
+        <translation>dd/MM/yy HH:mm:ss</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="110"/>
         <source>Light sensor</source>
-        <translation>Lichtsensor</translation>
+        <translation>Sensore di luce</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="116"/>
         <source>Brightness</source>
-        <translation>Helligkeit</translation>
+        <translation>Luminosità</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="153"/>
         <source>Tilt sensor</source>
-        <translation>Neigungssensor</translation>
+        <translation>Sensore di inclinazione</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="161"/>
         <location filename="../SensorView.ui" line="250"/>
         <source>Set Y</source>
-        <translation>Setze Y</translation>
+        <translation>Config. Y</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="171"/>
         <location filename="../SensorView.ui" line="260"/>
         <source>Set X</source>
-        <translation>Setze X</translation>
+        <translation>Config. X</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="242"/>
         <source>Gyroscope</source>
-        <translation>Gyroskop</translation>
+        <translation>Giroscopio</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="270"/>
         <source>Sensitivity</source>
-        <translation>Empfindlichkeit</translation>
+        <translation>Sensibilità</translation>
     </message>
 </context>
 <context>
@@ -3834,7 +3691,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../SettingsView.ui" line="20"/>
         <source>Settings</source>
-        <translation>Einstellungen</translation>
+        <translation>Impostazioni</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="45"/>
@@ -3844,27 +3701,27 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../SettingsView.ui" line="50"/>
         <source>Interface</source>
-        <translation>Benutzeroberfläche</translation>
+        <translation>Interfaccia</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
         <source>Emulation</source>
-        <translation>Emulation</translation>
+        <translation>Emulazione</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="65"/>
         <source>Paths</source>
-        <translation>Verzeichnisse</translation>
+        <translation>Paths</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="90"/>
         <source>Audio driver:</source>
-        <translation>Audio-Treiber:</translation>
+        <translation>Audio driver:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="107"/>
         <source>Audio buffer:</source>
-        <translation>Audio-Puffer:</translation>
+        <translation>Buffer audio:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="119"/>
@@ -3905,12 +3762,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../SettingsView.ui" line="164"/>
         <source>samples</source>
-        <translation>Samples</translation>
+        <translation>samples</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="173"/>
         <source>Sample rate:</source>
-        <translation>Sample-Rate:</translation>
+        <translation>Sample rate:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="185"/>
@@ -3941,17 +3798,17 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../SettingsView.ui" line="224"/>
         <source>Volume:</source>
-        <translation>Lautstärke:</translation>
+        <translation>Volume:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="255"/>
         <source>Mute</source>
-        <translation>Stummschalten</translation>
+        <translation>Muto</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="271"/>
         <source>Display driver:</source>
-        <translation>Anzeige-Treiber:</translation>
+        <translation>Visualizza driver:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="288"/>
@@ -3961,28 +3818,28 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../SettingsView.ui" line="297"/>
         <source>Skip every</source>
-        <translation>Alle</translation>
+        <translation>Salta ognuno</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="307"/>
-        <location filename="../SettingsView.ui" line="576"/>
+        <location filename="../SettingsView.ui" line="532"/>
         <source>frames</source>
-        <translation>Bilder</translation>
+        <translation>frames</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="316"/>
         <source>FPS target:</source>
-        <translation>Bildwiederholrate:</translation>
+        <translation>FPS mirato:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="338"/>
         <source>frames per second</source>
-        <translation>Bilder pro Sekunde</translation>
+        <translation>frame per secondo</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="354"/>
         <source>Sync:</source>
-        <translation>Synchronisierung:</translation>
+        <translation>Sincronizzare:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="363"/>
@@ -3997,102 +3854,68 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../SettingsView.ui" line="379"/>
         <source>Lock aspect ratio</source>
-        <translation>Seitenverhältnis korrigieren</translation>
+        <translation>Blocca aspect ratio</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="393"/>
-        <source>Force integer scaling</source>
-        <translation>Erzwinge pixelgenaue Skalierung
-(Integer scaling)</translation>
+        <location filename="../SettingsView.ui" line="386"/>
+        <source>Resample video</source>
+        <translation>Rimostrare video</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="404"/>
-        <source>Language</source>
-        <translation>Sprache</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="412"/>
-        <source>English</source>
-        <translation>Englisch</translation>
+        <location filename="../SettingsView.ui" line="421"/>
+        <source>Library:</source>
+        <translation>Biblioteca:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="428"/>
-        <source>List view</source>
-        <translation>Listenansicht</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="433"/>
-        <source>Tree view</source>
-        <translation>Baumansicht</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="420"/>
-        <source>Library:</source>
-        <translation>Bibliothek:</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="441"/>
         <source>Show when no game open</source>
-        <translation>Anzeigen, wenn kein Spiel geöffnet ist</translation>
+        <translation>Mostra quando nessun gioco è aperto</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="451"/>
+        <location filename="../SettingsView.ui" line="445"/>
         <source>Clear cache</source>
-        <translation>Cache leeren</translation>
+        <translation>Cancella cache</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="503"/>
+        <location filename="../SettingsView.ui" line="459"/>
         <source>Fast forward speed:</source>
-        <translation>Vorlauf-Geschwindigkeit:</translation>
+        <translation>Velocità di avanzamento rapido:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="700"/>
-        <source>Rewind affects save data</source>
-        <translation>Rücklauf beeinflusst
-Speicherdaten</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="710"/>
-        <source>Preload entire ROM into memory</source>
-        <translation>ROM-Datei vollständig
-in Arbeitsspeicher vorladen</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="740"/>
-        <location filename="../SettingsView.ui" line="778"/>
-        <location filename="../SettingsView.ui" line="813"/>
-        <location filename="../SettingsView.ui" line="854"/>
-        <location filename="../SettingsView.ui" line="902"/>
-        <location filename="../SettingsView.ui" line="950"/>
-        <location filename="../SettingsView.ui" line="998"/>
+        <location filename="../SettingsView.ui" line="679"/>
+        <location filename="../SettingsView.ui" line="717"/>
+        <location filename="../SettingsView.ui" line="752"/>
+        <location filename="../SettingsView.ui" line="793"/>
+        <location filename="../SettingsView.ui" line="841"/>
+        <location filename="../SettingsView.ui" line="889"/>
+        <location filename="../SettingsView.ui" line="937"/>
         <source>Browse</source>
-        <translation>Durchsuchen</translation>
+        <translation>Sfoglia</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="749"/>
+        <location filename="../SettingsView.ui" line="688"/>
         <source>Use BIOS file if found</source>
-        <translation>BIOS-Datei verwenden,
-wenn vorhanden</translation>
+        <translation>Utilizzare il file del BIOS se è stato trovato</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="759"/>
+        <location filename="../SettingsView.ui" line="698"/>
         <source>Skip BIOS intro</source>
-        <translation>BIOS-Intro überspringen</translation>
+        <translation>Salta BIOS intro</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="515"/>
+        <location filename="../SettingsView.ui" line="471"/>
         <source>×</source>
         <translation>×</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="534"/>
+        <location filename="../SettingsView.ui" line="490"/>
         <source>Unbounded</source>
-        <translation>unbegrenzt</translation>
+        <translation>Illimitato</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="472"/>
+        <location filename="../SettingsView.ui" line="404"/>
         <source>Suspend screensaver</source>
-        <translation>Bildschirmschoner deaktivieren</translation>
+        <translation>Sospendi screensaver</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="60"/>
@@ -4100,118 +3923,113 @@ wenn vorhanden</translation>
         <translation>BIOS</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="482"/>
+        <location filename="../SettingsView.ui" line="414"/>
         <source>Pause when inactive</source>
-        <translation>Pause, wenn inaktiv</translation>
+        <translation>Pausa se inattivo</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="600"/>
+        <location filename="../SettingsView.ui" line="556"/>
         <source>Run all</source>
-        <translation>Alle ausführen</translation>
+        <translation>Avviare tutto</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="605"/>
+        <location filename="../SettingsView.ui" line="561"/>
         <source>Remove known</source>
-        <translation>Bekannte entfernen</translation>
+        <translation>Rimuovi conosciuto</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="610"/>
+        <location filename="../SettingsView.ui" line="566"/>
         <source>Detect and remove</source>
-        <translation>Erkennen und entfernen</translation>
+        <translation>Rileva e rimuovi</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="465"/>
+        <location filename="../SettingsView.ui" line="397"/>
         <source>Allow opposing input directions</source>
-        <translation>Gegensätzliche Eingaberichtungen erlauben</translation>
+        <translation>Consenti direzioni opposte</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="632"/>
-        <location filename="../SettingsView.ui" line="669"/>
+        <location filename="../SettingsView.ui" line="588"/>
+        <location filename="../SettingsView.ui" line="625"/>
         <source>Screenshot</source>
         <translation>Screenshot</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="642"/>
-        <location filename="../SettingsView.ui" line="679"/>
+        <location filename="../SettingsView.ui" line="598"/>
+        <location filename="../SettingsView.ui" line="635"/>
         <source>Save data</source>
-        <translation>Speicherdaten</translation>
+        <translation>Salva dati</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="652"/>
-        <location filename="../SettingsView.ui" line="686"/>
+        <location filename="../SettingsView.ui" line="608"/>
+        <location filename="../SettingsView.ui" line="642"/>
         <source>Cheat codes</source>
-        <translation>Cheat-Codes</translation>
+        <translation>Trucchi</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="553"/>
+        <location filename="../SettingsView.ui" line="509"/>
         <source>Enable rewind</source>
-        <translation>Rücklauf aktivieren</translation>
+        <translation>Abilita riavvolgi</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="386"/>
-        <source>Bilinear filtering</source>
-        <translation>Bilineare Filterung</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="560"/>
+        <location filename="../SettingsView.ui" line="516"/>
         <source>Rewind history:</source>
-        <translation>Rücklauf-Verlauf:</translation>
+        <translation>Riavvolgi storia:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="592"/>
+        <location filename="../SettingsView.ui" line="548"/>
         <source>Idle loops:</source>
-        <translation>Leerlaufprozesse:</translation>
+        <translation>Idle loops:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="625"/>
+        <location filename="../SettingsView.ui" line="581"/>
         <source>Savestate extra data:</source>
-        <translation>Zusätzliche Savestate-Daten:</translation>
+        <translation>Salva dati extra:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="662"/>
+        <location filename="../SettingsView.ui" line="618"/>
         <source>Load extra data:</source>
-        <translation>Lade zusätzliche Daten:</translation>
+        <translation>Carica dati extra:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="721"/>
+        <location filename="../SettingsView.ui" line="660"/>
         <source>GB BIOS file:</source>
-        <translation>Datei mit GB-BIOS:</translation>
+        <translation>File GB BIOS:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="787"/>
+        <location filename="../SettingsView.ui" line="726"/>
         <source>GBA BIOS file:</source>
-        <translation>Datei mit GBA-BIOS:</translation>
+        <translation>File GBA BIOS:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="794"/>
+        <location filename="../SettingsView.ui" line="733"/>
         <source>GBC BIOS file:</source>
-        <translation>Datei mit GBC-BIOS:</translation>
+        <translation>File GBC BIOS:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="829"/>
+        <location filename="../SettingsView.ui" line="768"/>
         <source>Save games</source>
-        <translation>Spielstände</translation>
+        <translation>Salva il gioco</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="863"/>
-        <location filename="../SettingsView.ui" line="911"/>
-        <location filename="../SettingsView.ui" line="959"/>
-        <location filename="../SettingsView.ui" line="1007"/>
+        <location filename="../SettingsView.ui" line="802"/>
+        <location filename="../SettingsView.ui" line="850"/>
+        <location filename="../SettingsView.ui" line="898"/>
+        <location filename="../SettingsView.ui" line="946"/>
         <source>Same directory as the ROM</source>
-        <translation>Verzeichnis der ROM-Datei</translation>
+        <translation>Stessa directory della ROM</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="877"/>
+        <location filename="../SettingsView.ui" line="816"/>
         <source>Save states</source>
-        <translation>Savestates</translation>
+        <translation>Salva Stato</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="925"/>
+        <location filename="../SettingsView.ui" line="864"/>
         <source>Screenshots</source>
         <translation>Screenshots</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="973"/>
+        <location filename="../SettingsView.ui" line="912"/>
         <source>Patches</source>
         <translation>Patches</translation>
     </message>
@@ -4221,37 +4039,37 @@ wenn vorhanden</translation>
     <message>
         <location filename="../ShaderSelector.ui" line="14"/>
         <source>Shaders</source>
-        <translation>Shader</translation>
+        <translation>Shaders</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="28"/>
         <source>Active Shader:</source>
-        <translation>Aktiver Shader:</translation>
+        <translation>Attiva Shader:</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="35"/>
         <source>Name</source>
-        <translation>Name</translation>
+        <translation>Nome</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="45"/>
         <source>Author</source>
-        <translation>Autor</translation>
+        <translation>Autore</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="62"/>
         <source>Description</source>
-        <translation>Beschreibung</translation>
+        <translation>Descrizione</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="88"/>
         <source>Unload Shader</source>
-        <translation>Shader entladen</translation>
+        <translation>Non caricare shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="95"/>
         <source>Load New Shader</source>
-        <translation>Neuen Shader laden</translation>
+        <translation>Carica Nuovo shader</translation>
     </message>
 </context>
 <context>
@@ -4259,12 +4077,12 @@ wenn vorhanden</translation>
     <message>
         <location filename="../ShortcutView.ui" line="14"/>
         <source>Edit Shortcuts</source>
-        <translation>Tastenkürzel bearbeiten</translation>
+        <translation>Edita Shortcuts</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="29"/>
         <source>Keyboard</source>
-        <translation>Tastatur</translation>
+        <translation>Tastiera</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="39"/>
@@ -4274,7 +4092,7 @@ wenn vorhanden</translation>
     <message>
         <location filename="../ShortcutView.ui" line="46"/>
         <source>Clear</source>
-        <translation>Löschen</translation>
+        <translation>Cancella</translation>
     </message>
 </context>
 <context>
@@ -4287,7 +4105,7 @@ wenn vorhanden</translation>
     <message>
         <location filename="../TileView.ui" line="20"/>
         <source>256 colors</source>
-        <translation>256 Farben</translation>
+        <translation>256 colori</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="70"/>
@@ -4297,7 +4115,7 @@ wenn vorhanden</translation>
     <message>
         <location filename="../TileView.ui" line="83"/>
         <source>Magnification</source>
-        <translation>Vergrößerung</translation>
+        <translation>Magnification</translation>
     </message>
 </context>
 <context>
@@ -4305,12 +4123,12 @@ wenn vorhanden</translation>
     <message>
         <location filename="../VideoView.ui" line="20"/>
         <source>Record Video</source>
-        <translation>Video aufzeichen</translation>
+        <translation>Registra video</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="40"/>
         <source>Start</source>
-        <translation>Start</translation>
+        <translation>Avvia</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="56"/>
@@ -4320,17 +4138,17 @@ wenn vorhanden</translation>
     <message>
         <location filename="../VideoView.ui" line="69"/>
         <source>Select File</source>
-        <translation>Datei wählen</translation>
+        <translation>Seleziona File</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="101"/>
         <source>Presets</source>
-        <translation>Vorgaben</translation>
+        <translation>Presets</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="109"/>
         <source>High Quality</source>
-        <translation>Hohe Qualität</translation>
+        <translation>Alta Qualità</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="119"/>
@@ -4346,7 +4164,7 @@ wenn vorhanden</translation>
     <message>
         <location filename="../VideoView.ui" line="139"/>
         <source>Lossless</source>
-        <translation>Verlustfrei</translation>
+        <translation>Senza perdite</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="156"/>
@@ -4366,12 +4184,12 @@ wenn vorhanden</translation>
     <message>
         <location filename="../VideoView.ui" line="189"/>
         <source>Native</source>
-        <translation>Nativ</translation>
+        <translation>Nativo</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="222"/>
         <source>Format</source>
-        <translation>Format</translation>
+        <translation>Formato</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="232"/>
@@ -4400,93 +4218,88 @@ wenn vorhanden</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="269"/>
-        <source>h.264 (NVENC)</source>
-        <translation>h.264 (NVENC)</translation>
+        <source>VP8</source>
+        <translation></translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="274"/>
-        <source>HEVC</source>
-        <translation>HEVC</translation>
+        <source>Xvid</source>
+        <translation>Xvid</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="279"/>
-        <source>VP8</source>
-        <translation>VP8</translation>
-    </message>
-    <message>
-        <location filename="../VideoView.ui" line="284"/>
         <source>FFV1</source>
         <translation>FFV1</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="296"/>
+        <location filename="../VideoView.ui" line="291"/>
         <source>FLAC</source>
         <translation>FLAC</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="301"/>
+        <location filename="../VideoView.ui" line="296"/>
         <source>Opus</source>
         <translation>Opus</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="306"/>
+        <location filename="../VideoView.ui" line="301"/>
         <source>Vorbis</source>
         <translation>Vorbis</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="311"/>
+        <location filename="../VideoView.ui" line="306"/>
         <source>MP3</source>
         <translation>MP3</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="316"/>
+        <location filename="../VideoView.ui" line="311"/>
         <source>AAC</source>
         <translation>AAC</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="321"/>
+        <location filename="../VideoView.ui" line="316"/>
         <source>Uncompressed</source>
-        <translation>Unkomprimiert</translation>
+        <translation>Senza compressione</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="332"/>
+        <location filename="../VideoView.ui" line="327"/>
         <source> Bitrate (kbps)</source>
-        <translation> Bitrate (kbps)</translation>
+        <translation>Bitrate (kbps)</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="338"/>
+        <location filename="../VideoView.ui" line="333"/>
         <source>VBR </source>
         <translation>VBR </translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="386"/>
+        <location filename="../VideoView.ui" line="381"/>
         <source>ABR</source>
         <translation>ABR</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="402"/>
+        <location filename="../VideoView.ui" line="397"/>
         <source>Dimensions</source>
-        <translation>Abmessungen</translation>
+        <translation>Dimensioni</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="408"/>
+        <location filename="../VideoView.ui" line="403"/>
         <source>:</source>
         <translation>:</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="418"/>
+        <location filename="../VideoView.ui" line="413"/>
         <source>×</source>
         <translation>×</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="468"/>
+        <location filename="../VideoView.ui" line="463"/>
         <source>Lock aspect ratio</source>
-        <translation>Seitenverhältnis sperren</translation>
+        <translation>Blocca aspect ratio</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="483"/>
+        <location filename="../VideoView.ui" line="478"/>
         <source>Show advanced</source>
-        <translation>Erweiterte Optionen anzeigen</translation>
+        <translation>Mostra avanzato</translation>
     </message>
 </context>
 </TS>

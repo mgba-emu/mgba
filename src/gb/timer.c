@@ -74,7 +74,7 @@ void GBTimerDivReset(struct GBTimer* timer) {
 	if (timer->internalDiv & (timer->timaPeriod >> 1)) {
 		++timer->p->memory.io[REG_TIMA];
 		if (!timer->p->memory.io[REG_TIMA]) {
-			mTimingSchedule(&timer->p->timing, &timer->irq, 4 - (timer->p->cpu->executionState + 1) & 3);
+			mTimingSchedule(&timer->p->timing, &timer->irq, 4 - ((timer->p->cpu->executionState + 1) & 3));
 		}
 	}
 	timer->p->memory.io[REG_DIV] = 0;
