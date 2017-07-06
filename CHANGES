@@ -166,6 +166,7 @@ Misc:
  - Qt: Add language selector
  - GBA Timer: Improve accuracy of timers
  - Qt: Minor test fixes
+ - PSP2: Update toolchain to use vita.cmake
 
 0.6 beta 1: (2017-06-29)
  - Initial beta for 0.6
