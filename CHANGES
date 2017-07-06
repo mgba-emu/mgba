@@ -166,6 +166,7 @@ Bugfixes:
  - Qt: Fix controls not saving on non-SDL builds
  - GB Video: Fix LYC regression
  - Qt: Fix translation initialization (fixes mgba.io/i/776)
+ - PSP2: Use custom localtime_r since newlib version is broken (fixes mgba.io/i/560)
 Misc:
  - Qt: Add language selector
  - GBA Timer: Improve accuracy of timers
