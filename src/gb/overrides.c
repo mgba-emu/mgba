@@ -13,7 +13,7 @@
 
 static const struct GBCartridgeOverride _overrides[] = {
 	// None yet
-	{ 0, 0, 0 }
+	{ 0, 0, 0, { 0 } }
 };
 
 bool GBOverrideFind(const struct Configuration* config, struct GBCartridgeOverride* override) {
@@ -35,6 +35,12 @@ bool GBOverrideFind(const struct Configuration* config, struct GBCartridgeOverri
 		snprintf(sectionName, sizeof(sectionName), "gb.override.%08X", override->headerCrc32);
 		const char* model = ConfigurationGetValue(config, sectionName, "model");
 		const char* mbc = ConfigurationGetValue(config, sectionName, "mbc");
+		const char* pal[4] = {
+			ConfigurationGetValue(config, sectionName, "pal[0]"),
+			ConfigurationGetValue(config, sectionName, "pal[1]"),
+			ConfigurationGetValue(config, sectionName, "pal[2]"),
+			ConfigurationGetValue(config, sectionName, "pal[3]")
+		};
 
 		if (model) {
 			if (strcasecmp(model, "DMG") == 0) {
@@ -63,6 +69,21 @@ bool GBOverrideFind(const struct Configuration* config, struct GBCartridgeOverri
 				found = true;
 			}
 		}
+
+		if (pal[0] && pal[1] && pal[2] && pal[3]) {
+			int i;
+			for (i = 0; i < 4; ++i) {
+				char* end;
+				unsigned long value = strtoul(pal[i], &end, 10);
+				if (end == &pal[i][1] && *end == 'x') {
+					value = strtoul(pal[i], &end, 16);
+				}
+				if (*end) {
+					continue;
+				}
+				override->gbColors[i] = value;
+			}
+		}
 	}
 	return found;
 }
@@ -89,6 +110,12 @@ void GBOverrideSave(struct Configuration* config, const struct GBCartridgeOverri
 	}
 	ConfigurationSetValue(config, sectionName, "model", model);
 
+	if (override->gbColors[0] | override->gbColors[1] | override->gbColors[2] | override->gbColors[3]) {
+		ConfigurationSetIntValue(config, sectionName, "pal[0]", override->gbColors[0]);
+		ConfigurationSetIntValue(config, sectionName, "pal[1]", override->gbColors[1]);
+		ConfigurationSetIntValue(config, sectionName, "pal[2]", override->gbColors[2]);
+		ConfigurationSetIntValue(config, sectionName, "pal[3]", override->gbColors[3]);
+	}
 	if (override->mbc != GB_MBC_AUTODETECT) {
 		ConfigurationSetIntValue(config, sectionName, "mbc", override->mbc);
 	} else {
@@ -104,6 +131,13 @@ void GBOverrideApply(struct GB* gb, const struct GBCartridgeOverride* override) 
 	if (override->mbc != GB_MBC_AUTODETECT) {
 		gb->memory.mbcType = override->mbc;
 		GBMBCInit(gb);
+	}
+
+	if (override->gbColors[0] | override->gbColors[1] | override->gbColors[2] | override->gbColors[3]) {
+		GBVideoSetPalette(&gb->video, 0, override->gbColors[0]);
+		GBVideoSetPalette(&gb->video, 1, override->gbColors[1]);
+		GBVideoSetPalette(&gb->video, 2, override->gbColors[2]);
+		GBVideoSetPalette(&gb->video, 3, override->gbColors[3]);
 	}
 }
 

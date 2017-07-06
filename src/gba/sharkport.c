@@ -115,24 +115,14 @@ bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChec
 
 	uint32_t copySize = size - 0x1C;
 	switch (gba->memory.savedata.type) {
-	case SAVEDATA_SRAM:
-		if (copySize > SIZE_CART_SRAM) {
-			copySize = SIZE_CART_SRAM;
-		}
-		break;
 	case SAVEDATA_FLASH512:
 		if (copySize > SIZE_CART_FLASH512) {
 			GBASavedataForceType(&gba->memory.savedata, SAVEDATA_FLASH1M, gba->memory.savedata.realisticTiming);
 		}
 	// Fall through
-	case SAVEDATA_FLASH1M:
-		if (copySize > SIZE_CART_FLASH1M) {
-			copySize = SIZE_CART_FLASH1M;
-		}
-		break;
-	case SAVEDATA_EEPROM:
-		if (copySize > SIZE_CART_EEPROM) {
-			copySize = SAVEDATA_EEPROM;
+	default:
+		if (copySize > GBASavedataSize(&gba->memory.savedata)) {
+			copySize = GBASavedataSize(&gba->memory.savedata);
 		}
 		break;
 	case SAVEDATA_FORCE_NONE:
@@ -141,6 +131,7 @@ bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChec
 	}
 
 	memcpy(gba->memory.savedata.data, &payload[0x1C], copySize);
+	gba->memory.savedata.vf && gba->memory.savedata.vf->sync(gba->memory.savedata.vf, gba->memory.savedata.data, size);
 
 	free(payload);
 	return true;

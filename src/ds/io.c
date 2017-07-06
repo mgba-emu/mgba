@@ -78,19 +78,19 @@ static uint32_t DSIOWrite(struct DSCommon* dscore, uint32_t address, uint16_t va
 
 	case DS_REG_TM0CNT_HI:
 		value &= 0x00C7;
-		DSTimerWriteTMCNT_HI(&dscore->timers[0], &dscore->timing, dscore->cpu, &dscore->memory.io[DS_REG_TM0CNT_LO >> 1], value);
+		DSTimerWriteTMCNT_HI(&dscore->timers[0], &dscore->timing, &dscore->memory.io[DS_REG_TM0CNT_LO >> 1], value);
 		break;
 	case DS_REG_TM1CNT_HI:
 		value &= 0x00C7;
-		DSTimerWriteTMCNT_HI(&dscore->timers[1], &dscore->timing, dscore->cpu, &dscore->memory.io[DS_REG_TM1CNT_LO >> 1], value);
+		DSTimerWriteTMCNT_HI(&dscore->timers[1], &dscore->timing, &dscore->memory.io[DS_REG_TM1CNT_LO >> 1], value);
 		break;
 	case DS_REG_TM2CNT_HI:
 		value &= 0x00C7;
-		DSTimerWriteTMCNT_HI(&dscore->timers[2], &dscore->timing, dscore->cpu, &dscore->memory.io[DS_REG_TM2CNT_LO >> 1], value);
+		DSTimerWriteTMCNT_HI(&dscore->timers[2], &dscore->timing, &dscore->memory.io[DS_REG_TM2CNT_LO >> 1], value);
 		break;
 	case DS_REG_TM3CNT_HI:
 		value &= 0x00C7;
-		DSTimerWriteTMCNT_HI(&dscore->timers[3], &dscore->timing, dscore->cpu, &dscore->memory.io[DS_REG_TM3CNT_LO >> 1], value);
+		DSTimerWriteTMCNT_HI(&dscore->timers[3], &dscore->timing, &dscore->memory.io[DS_REG_TM3CNT_LO >> 1], value);
 		break;
 
 	// IPC
@@ -243,16 +243,16 @@ static uint16_t DSIOReadKeyInput(struct DS* ds) {
 static void DSIOUpdateTimer(struct DSCommon* dscore, uint32_t address) {
 	switch (address) {
 	case DS_REG_TM0CNT_LO:
-		GBATimerUpdateRegisterInternal(&dscore->timers[0], &dscore->timing, dscore->cpu, &dscore->memory.io[address >> 1], 0);
+		GBATimerUpdateRegisterInternal(&dscore->timers[0], &dscore->timing, &dscore->memory.io[address >> 1], 0);
 		break;
 	case DS_REG_TM1CNT_LO:
-		GBATimerUpdateRegisterInternal(&dscore->timers[1], &dscore->timing, dscore->cpu, &dscore->memory.io[address >> 1], 0);
+		GBATimerUpdateRegisterInternal(&dscore->timers[1], &dscore->timing, &dscore->memory.io[address >> 1], 0);
 		break;
 	case DS_REG_TM2CNT_LO:
-		GBATimerUpdateRegisterInternal(&dscore->timers[2], &dscore->timing, dscore->cpu, &dscore->memory.io[address >> 1], 0);
+		GBATimerUpdateRegisterInternal(&dscore->timers[2], &dscore->timing, &dscore->memory.io[address >> 1], 0);
 		break;
 	case DS_REG_TM3CNT_LO:
-		GBATimerUpdateRegisterInternal(&dscore->timers[3], &dscore->timing, dscore->cpu, &dscore->memory.io[address >> 1], 0);
+		GBATimerUpdateRegisterInternal(&dscore->timers[3], &dscore->timing, &dscore->memory.io[address >> 1], 0);
 		break;
 	}
 }

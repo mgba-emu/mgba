@@ -35,6 +35,10 @@ class GB(Core):
         self._native.video.renderer.cache = ffi.NULL
         lib.mTileCacheDeinit(cache)
 
+    def reset(self):
+        super(GB, self).reset()
+        self.memory = GBMemory(self._core)
+
     def attachSIO(self, link):
         lib.GBSIOSetDriver(ffi.addressof(self._native.sio), link._native)
 
@@ -61,21 +65,46 @@ class GBSIODriver(object):
         return value
 
 class GBSIOSimpleDriver(GBSIODriver):
-    def __init__(self):
+    def __init__(self, period=0x100):
         super(GBSIOSimpleDriver, self).__init__()
-        self.tx = 0xFF
-        self.rx = 0xFF
+        self.rx = 0x00
+        self._period = period
+
+    def init(self):
+        self._native.p.period = self._period
+        return True
 
     def writeSB(self, value):
         self.rx = value
 
-    def schedule(self, period=0x100, when=0):
+    def writeSC(self, value):
+        self._native.p.period = self._period
+        if value & 0x80:
+            lib.mTimingDeschedule(ffi.addressof(self._native.p.p.timing), ffi.addressof(self._native.p.event))
+            lib.mTimingSchedule(ffi.addressof(self._native.p.p.timing), ffi.addressof(self._native.p.event), self._native.p.period)
+        return value
+
+    def isReady(self):
+        return not self._native.p.remainingBits
+
+    @property
+    def tx(self):
+        self._native.p.pendingSB
+
+    @property
+    def period(self):
+        return self._native.p.period
+
+    @tx.setter
+    def tx(self, newTx):
+        self._native.p.pendingSB = newTx
         self._native.p.remainingBits = 8
-        self._native.p.period = period
-        self._native.p.pendingSB = self.tx
-        self.tx = 0xFF
-        lib.mTimingDeschedule(ffi.addressof(self._native.p.p.timing), ffi.addressof(self._native.p.event))
-        lib.mTimingSchedule(ffi.addressof(self._native.p.p.timing), ffi.addressof(self._native.p.event), when)
+
+    @period.setter
+    def period(self, newPeriod):
+        self._period = newPeriod
+        if self._native.p:
+            self._native.p.period = newPeriod
 
 class GBMemory(Memory):
     def __init__(self, core):

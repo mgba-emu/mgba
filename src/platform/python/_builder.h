@@ -30,6 +30,7 @@ void free(void*);
 #include <mgba/core/core.h>
 #include <mgba/core/mem-search.h>
 #include <mgba/core/tile-cache.h>
+#include <mgba/core/version.h>
 
 #define PYEXPORT extern "Python+C"
 #include "platform/python/log.h"

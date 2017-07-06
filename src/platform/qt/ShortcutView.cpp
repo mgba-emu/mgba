@@ -15,9 +15,11 @@ using namespace QGBA;
 
 ShortcutView::ShortcutView(QWidget* parent)
 	: QWidget(parent)
+	, m_model()
 {
 	m_ui.setupUi(this);
 	m_ui.keyEdit->setValueKey(0);
+	m_ui.shortcutTable->setModel(&m_model);
 
 	connect(m_ui.gamepadButton, &QAbstractButton::pressed, [this]() {
 		bool signalsBlocked = m_ui.keyEdit->blockSignals(true);
@@ -33,15 +35,19 @@ ShortcutView::ShortcutView(QWidget* parent)
 	connect(m_ui.keyEdit, &KeyEditor::axisChanged, this, &ShortcutView::updateAxis);
 	connect(m_ui.shortcutTable, &QAbstractItemView::doubleClicked, this, &ShortcutView::load);
 	connect(m_ui.clearButton, &QAbstractButton::clicked, this, &ShortcutView::clear);
+#ifdef BUILD_SDL
+	connect(m_ui.gamepadName, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this](int index) {
+		m_input->setGamepad(SDL_BINDING_BUTTON, index);
+	});
+#endif
 }
 
 ShortcutView::~ShortcutView() {
 	m_input->releaseFocus(this);
 }
 
-void ShortcutView::setModel(InputModel* model) {
-	m_controller = model;
-	m_ui.shortcutTable->setModel(model);
+void ShortcutView::setModel(InputIndex* model) {
+	m_model.clone(*model);
 }
 
 void ShortcutView::setInputController(InputController* controller) {
@@ -50,16 +56,33 @@ void ShortcutView::setInputController(InputController* controller) {
 	}
 	m_input = controller;
 	m_input->stealFocus(this);
+	updateGamepads();
+}
+
+void ShortcutView::updateGamepads() {
+	if (!m_input) {
+		return;
+	}
+#ifdef BUILD_SDL
+	m_ui.gamepadName->clear();
+
+	QStringList gamepads = m_input->connectedGamepads(SDL_BINDING_BUTTON);
+	int activeGamepad = m_input->gamepad(SDL_BINDING_BUTTON);
+
+	for (const auto& gamepad : gamepads) {
+		m_ui.gamepadName->addItem(gamepad);
+	}
+	m_ui.gamepadName->setCurrentIndex(activeGamepad);
+#endif
+
 }
 
 void ShortcutView::load(const QModelIndex& index) {
-	if (!m_controller) {
+	InputItem* item = m_model.itemAt(index);
+	if (!item) {
 		return;
 	}
-	if (m_controller->isMenuAt(index)) {
-		return;
-	}
-	int shortcut = m_controller->shortcutAt(index);
+	int shortcut = item->shortcut();
 	if (index.column() == 1) {
 		m_ui.keyboardButton->click();
 	} else if (index.column() == 2) {
@@ -76,39 +99,38 @@ void ShortcutView::load(const QModelIndex& index) {
 }
 
 void ShortcutView::clear() {
-	if (!m_controller) {
-		return;
-	}
 	QModelIndex index = m_ui.shortcutTable->selectionModel()->currentIndex();
-	if (m_controller->isMenuAt(index)) {
+	InputItem* item = m_model.itemAt(index);
+	if (!item) {
 		return;
 	}
 	if (m_ui.gamepadButton->isChecked()) {
-		m_controller->clearButton(index);
+		item->clearButton();
 		m_ui.keyEdit->setValueButton(-1);
 	} else {
-		m_controller->clearKey(index);
+		item->clearShortcut();
 		m_ui.keyEdit->setValueKey(-1);
 	}
 }
 
 void ShortcutView::updateButton(int button) {
-	if (!m_controller || m_controller->isMenuAt(m_ui.shortcutTable->selectionModel()->currentIndex())) {
+	InputItem* item = m_model.itemAt(m_ui.shortcutTable->selectionModel()->currentIndex());
+	if (!item) {
 		return;
 	}
 	if (m_ui.gamepadButton->isChecked()) {
-		m_controller->updateButton(m_ui.shortcutTable->selectionModel()->currentIndex(), button);
+		item->setButton(button);
 	} else {
-		m_controller->updateKey(m_ui.shortcutTable->selectionModel()->currentIndex(), button);
+		item->setShortcut(button);
 	}
 }
 
 void ShortcutView::updateAxis(int axis, int direction) {
-	if (!m_controller || m_controller->isMenuAt(m_ui.shortcutTable->selectionModel()->currentIndex())) {
+	InputItem* item = m_model.itemAt(m_ui.shortcutTable->selectionModel()->currentIndex());
+	if (!item) {
 		return;
 	}
-	m_controller->updateAxis(m_ui.shortcutTable->selectionModel()->currentIndex(), axis,
-	                         static_cast<GamepadAxisEvent::Direction>(direction));
+	item->setAxis(axis, static_cast<GamepadAxisEvent::Direction>(direction));
 }
 
 void ShortcutView::closeEvent(QCloseEvent*) {

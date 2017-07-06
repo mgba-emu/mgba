@@ -67,21 +67,23 @@ typedef void (*GBMemoryBankControllerWrite)(struct GB*, uint16_t address, uint8_
 typedef uint8_t (*GBMemoryBankControllerRead)(struct GBMemory*, uint16_t address);
 
 DECL_BITFIELD(GBMBC7Field, uint8_t);
-DECL_BIT(GBMBC7Field, SK, 6);
 DECL_BIT(GBMBC7Field, CS, 7);
-DECL_BIT(GBMBC7Field, IO, 1);
+DECL_BIT(GBMBC7Field, CLK, 6);
+DECL_BIT(GBMBC7Field, DI, 1);
+DECL_BIT(GBMBC7Field, DO, 0);
 
 enum GBMBC7MachineState {
-	GBMBC7_STATE_NULL = -1,
 	GBMBC7_STATE_IDLE = 0,
 	GBMBC7_STATE_READ_COMMAND = 1,
-	GBMBC7_STATE_READ_ADDRESS = 2,
-	GBMBC7_STATE_COMMAND_0 = 3,
-	GBMBC7_STATE_COMMAND_SR_WRITE = 4,
-	GBMBC7_STATE_COMMAND_SR_READ = 5,
-	GBMBC7_STATE_COMMAND_SR_FILL = 6,
-	GBMBC7_STATE_READ = 7,
-	GBMBC7_STATE_WRITE = 8,
+	GBMBC7_STATE_DO = 2,
+
+	GBMBC7_STATE_EEPROM_EWDS = 0x10,
+	GBMBC7_STATE_EEPROM_WRAL = 0x11,
+	GBMBC7_STATE_EEPROM_ERAL = 0x12,
+	GBMBC7_STATE_EEPROM_EWEN = 0x13,
+	GBMBC7_STATE_EEPROM_WRITE = 0x14,
+	GBMBC7_STATE_EEPROM_READ = 0x18,
+	GBMBC7_STATE_EEPROM_ERASE = 0x1C,
 };
 
 struct GBMBC1State {
@@ -91,12 +93,13 @@ struct GBMBC1State {
 
 struct GBMBC7State {
 	enum GBMBC7MachineState state;
-	uint32_t sr;
+	uint16_t sr;
 	uint8_t address;
 	bool writable;
 	int srBits;
-	int command;
-	GBMBC7Field field;
+	uint8_t access;
+	uint8_t latch;
+	GBMBC7Field eeprom;
 };
 
 struct GBPocketCamState {

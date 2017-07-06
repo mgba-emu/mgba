@@ -9,6 +9,7 @@
 #include <mgba/core/core.h>
 
 #include "GameController.h"
+#include "MemoryView.h"
 
 using namespace QGBA;
 
@@ -24,6 +25,7 @@ MemorySearch::MemorySearch(GameController* controller, QWidget* parent)
 	connect(m_ui.refresh, &QPushButton::clicked, this, &MemorySearch::refresh);
 	connect(m_ui.numHex, &QPushButton::clicked, this, &MemorySearch::refresh);
 	connect(m_ui.numDec, &QPushButton::clicked, this, &MemorySearch::refresh);
+	connect(m_ui.viewMem, &QPushButton::clicked, this, &MemorySearch::openMemory);
 }
 
 MemorySearch::~MemorySearch() {
@@ -47,7 +49,6 @@ bool MemorySearch::createParams(mCoreMemorySearchParams* params) {
 			params->type = mCORE_MEMORY_SEARCH_32;
 		}
 		if (m_ui.numHex->isChecked()) {
-			bool ok;
 			uint32_t v = m_ui.value->text().toUInt(&ok, 16);
 			if (ok) {
 				switch (params->type) {
@@ -150,6 +151,7 @@ void MemorySearch::refresh() {
 		mCoreMemorySearchResult* result = mCoreMemorySearchResultsGetPointer(&m_results, i);
 		QTableWidgetItem* item = new QTableWidgetItem(QString("%1").arg(result->address, 8, 16, QChar('0')));
 		m_ui.results->setItem(i, 0, item);
+		QTableWidgetItem* type;
 		if (m_ui.numHex->isChecked()) {
 			switch (result->type) {
 			case mCORE_MEMORY_SEARCH_8:
@@ -181,7 +183,44 @@ void MemorySearch::refresh() {
 				item = new QTableWidgetItem("?"); // TODO
 			}
 		}
+		QString divisor;
+		if (result->guessDivisor > 1) {
+			divisor = tr(" (⅟%0×)").arg(result->guessDivisor);
+		}
+		switch (result->type) {
+		case mCORE_MEMORY_SEARCH_8:
+			type = new QTableWidgetItem(tr("1 byte%0").arg(divisor));
+			break;
+		case mCORE_MEMORY_SEARCH_16:
+			type = new QTableWidgetItem(tr("2 bytes%0").arg(divisor));
+			break;
+		case mCORE_MEMORY_SEARCH_GUESS:
+		case mCORE_MEMORY_SEARCH_32:
+			type = new QTableWidgetItem(tr("4 bytes%0").arg(divisor));
+			break;
+		case mCORE_MEMORY_SEARCH_STRING:
+			item = new QTableWidgetItem("?"); // TODO
+		}
 		m_ui.results->setItem(i, 1, item);
+		m_ui.results->setItem(i, 2, type);
 	}
 	m_ui.results->sortItems(0);
+	m_ui.results->resizeColumnsToContents();
+	m_ui.results->resizeRowsToContents();
+}
+
+void MemorySearch::openMemory() {
+	auto items = m_ui.results->selectedItems();
+	if (items.empty()) {
+		return;
+	}
+	QTableWidgetItem* item = items[0];
+	uint32_t address = item->text().toUInt(nullptr, 16);
+
+	MemoryView* memView = new MemoryView(m_controller);
+	memView->jumpToAddress(address);
+
+	connect(m_controller, &GameController::gameStopped, memView, &QWidget::close);
+	memView->setAttribute(Qt::WA_DeleteOnClose);
+	memView->show();
 }

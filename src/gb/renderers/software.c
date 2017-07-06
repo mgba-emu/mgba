@@ -67,8 +67,6 @@ static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum G
 	softwareRenderer->currentWy = 0;
 	softwareRenderer->wx = 0;
 	softwareRenderer->model = model;
-
-	_clearScreen(softwareRenderer);
 }
 
 static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer) {

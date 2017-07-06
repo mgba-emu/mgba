@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "OverrideView.h"
 
+#include <QColorDialog>
 #include <QPushButton>
 
 #include "ConfigController.h"
@@ -79,6 +80,21 @@ OverrideView::OverrideView(GameController* controller, ConfigController* config,
 	connect(m_ui.gbModel, &QComboBox::currentTextChanged, this, &OverrideView::updateOverrides);
 	connect(m_ui.mbc, &QComboBox::currentTextChanged, this, &OverrideView::updateOverrides);
 
+	QPalette palette = m_ui.color0->palette();
+	palette.setColor(backgroundRole(), QColor(0xF8, 0xF8, 0xF8));
+	m_ui.color0->setPalette(palette);
+	palette.setColor(backgroundRole(), QColor(0xA8, 0xA8, 0xA8));
+	m_ui.color1->setPalette(palette);
+	palette.setColor(backgroundRole(), QColor(0x50, 0x50, 0x50));
+	m_ui.color2->setPalette(palette);
+	palette.setColor(backgroundRole(), QColor(0x00, 0x00, 0x00));
+	m_ui.color3->setPalette(palette);
+
+	m_ui.color0->installEventFilter(this);
+	m_ui.color1->installEventFilter(this);
+	m_ui.color2->installEventFilter(this);
+	m_ui.color3->installEventFilter(this);
+
 	connect(m_ui.tabWidget, &QTabWidget::currentChanged, this, &OverrideView::updateOverrides);
 #ifndef M_CORE_GBA
 	m_ui.tabWidget->removeTab(m_ui.tabWidget->indexOf(m_ui.tabGBA));
@@ -94,6 +110,42 @@ OverrideView::OverrideView(GameController* controller, ConfigController* config,
 	if (controller->isLoaded()) {
 		gameStarted(controller->thread());
 	}
+}
+
+bool OverrideView::eventFilter(QObject* obj, QEvent* event) {
+#ifdef M_CORE_GB
+	if (event->type() != QEvent::MouseButtonRelease) {
+		return false;
+	}
+	int colorId;
+	if (obj == m_ui.color0) {
+		colorId = 0;
+	} else if (obj == m_ui.color1) {
+		colorId = 1;
+	} else if (obj == m_ui.color2) {
+		colorId = 2;
+	} else if (obj == m_ui.color3) {
+		colorId = 3;
+	} else {
+		return false;
+	}
+
+	QWidget* swatch = static_cast<QWidget*>(obj);
+
+	QColorDialog* colorPicker = new QColorDialog;
+	colorPicker->setAttribute(Qt::WA_DeleteOnClose);
+	colorPicker->open();
+	connect(colorPicker, &QColorDialog::colorSelected, [this, swatch, colorId](const QColor& color) {
+		QPalette palette = swatch->palette();
+		palette.setColor(backgroundRole(), color);
+		swatch->setPalette(palette);
+		m_gbColors[colorId] = color.rgb();
+		updateOverrides();
+	});
+	return true;
+#else
+	return false;
+#endif
 }
 
 void OverrideView::saveOverride() {
@@ -155,7 +207,13 @@ void OverrideView::updateOverrides() {
 		GBOverride* gb = new GBOverride;
 		gb->override.mbc = s_mbcList[m_ui.mbc->currentIndex()];
 		gb->override.model = s_gbModelList[m_ui.gbModel->currentIndex()];
-		if (gb->override.mbc != GB_MBC_AUTODETECT || gb->override.model != GB_MODEL_AUTODETECT) {
+		gb->override.gbColors[0] = m_gbColors[0];
+		gb->override.gbColors[1] = m_gbColors[1];
+		gb->override.gbColors[2] = m_gbColors[2];
+		gb->override.gbColors[3] = m_gbColors[3];
+		bool hasOverride = gb->override.mbc != GB_MBC_AUTODETECT || gb->override.model != GB_MODEL_AUTODETECT;
+		hasOverride = hasOverride || (m_gbColors[0] | m_gbColors[1] | m_gbColors[2] | m_gbColors[3]);
+		if (hasOverride) {
 			m_controller->setOverride(gb);
 		} else {
 			m_controller->clearOverride();

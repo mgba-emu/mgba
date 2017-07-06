@@ -169,8 +169,8 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	}
 
 	GBMemoryDeserialize(gb, state);
-	GBIODeserialize(gb, state);
 	GBVideoDeserialize(&gb->video, state);
+	GBIODeserialize(gb, state);
 	GBTimerDeserialize(&gb->timer, state);
 	GBAudioDeserialize(&gb->audio, state);
 

@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Memory Search</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="1">
@@ -27,6 +27,9 @@
        <horstretch>1</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
      </property>
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>
@@ -194,11 +197,8 @@
      </item>
      <item>
       <widget class="QPushButton" name="viewMem">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
        <property name="text">
-        <string>View in Memory View</string>
+        <string>Open in Memory Viewer</string>
        </property>
       </widget>
      </item>
@@ -214,10 +214,26 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>MemorySearch</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>315</x>
+     <y>357</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>315</x>
+     <y>188</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <buttongroups>
-  <buttongroup name="type"/>
   <buttongroup name="width"/>
-  <buttongroup name="numType"/>
+  <buttongroup name="type"/>
  </buttongroups>
 </ui>

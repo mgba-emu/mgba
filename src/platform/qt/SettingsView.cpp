@@ -13,13 +13,15 @@
 #include "ShortcutView.h"
 
 #include <mgba/core/serialize.h>
+#include <mgba/core/version.h>
 #include <mgba/internal/gba/gba.h>
 
 using namespace QGBA;
 
-SettingsView::SettingsView(ConfigController* controller, InputController* inputController, InputModel* inputModel, QWidget* parent)
+SettingsView::SettingsView(ConfigController* controller, InputController* inputController, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
+	, m_input(inputController)
 {
 	m_ui.setupUi(this);
 
@@ -88,6 +90,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 			m_ui.patchPath->setText(path);
 		}
 	});
+	connect(m_ui.clearCache, &QAbstractButton::pressed, this, &SettingsView::libraryCleared);
 
 	// TODO: Move to reloadConfig()
 	QVariant audioDriver = m_controller->getQtOption("audioDriver");
@@ -152,11 +155,29 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 
-	ShortcutView* shortcutView = new ShortcutView();
-	shortcutView->setModel(inputModel);
-	shortcutView->setInputController(inputController);
-	m_ui.stackedWidget->addWidget(shortcutView);
-	m_ui.tabs->addItem(tr("Bindings"));
+	m_ui.languages->setItemData(0, QLocale("en"));
+	QDir ts(":/translations/");
+	for (auto name : ts.entryList()) {
+		if (!name.endsWith(".qm")) {
+			continue;
+		}
+		QLocale locale(name.remove(QString("%0-").arg(binaryName)).remove(".qm"));
+		m_ui.languages->addItem(locale.nativeLanguageName(), locale);
+		if (locale == QLocale()) {
+			m_ui.languages->setCurrentIndex(m_ui.languages->count() - 1);
+		}
+	}
+
+	m_keyView = new ShortcutView();
+	m_keyView->setModel(inputController->keyIndex());
+	m_keyView->setInputController(inputController);
+	m_shortcutView = new ShortcutView();
+	m_shortcutView->setModel(inputController->inputIndex());
+	m_shortcutView->setInputController(inputController);
+	m_ui.stackedWidget->addWidget(m_keyView);
+	m_ui.tabs->addItem(tr("Controls"));
+	m_ui.stackedWidget->addWidget(m_shortcutView);
+	m_ui.tabs->addItem(tr("Shortcuts"));
 }
 
 void SettingsView::selectBios(QLineEdit* bios) {
@@ -244,7 +265,17 @@ void SettingsView::updateConfig() {
 		emit displayDriverChanged();
 	}
 
+	QLocale language = m_ui.languages->itemData(m_ui.languages->currentIndex()).toLocale();
+	if (language != m_controller->getQtOption("language").toLocale() && !(language.bcp47Name() == QLocale::system().bcp47Name() && m_controller->getQtOption("language").isNull())) {
+		m_controller->setQtOption("language", language.bcp47Name());
+		emit languageChanged();
+	}
+
 	m_controller->write();
+
+	m_input->rebuildIndex(m_shortcutView->root());
+	m_input->rebuildKeyIndex(m_keyView->root());
+	m_input->saveConfiguration();
 
 	emit pathsChanged();
 	emit biosLoaded(PLATFORM_GBA, m_ui.gbaBios->text());

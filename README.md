@@ -30,7 +30,7 @@ Features
 - Remappable controls for both keyboards and gamepads.
 - Loading from ZIP and 7z files.
 - IPS, UPS and BPS patch support.
-- Game debugging via a command-line interface (not available with Qt port) and GDB remote support, compatible with IDA Pro.
+- Game debugging via a command-line interface and GDB remote support, compatible with IDA Pro.
 - Configurable emulation rewinding.
 - Support for loading and exporting GameShark and Action Replay snapshots.
 - Cores available for RetroArch/Libretro and OpenEmu.
@@ -112,6 +112,16 @@ Compiling requires using CMake 2.8.11 or newer. GCC and Clang are both known to 
 
 This will build and install medusa into `/usr/bin` and `/usr/lib`. Dependencies that are installed will be automatically detected, and features that are disabled if the dependencies are not found will be shown after running the `cmake` command after warnings about being unable to find them.
 
+If you are on macOS, the steps are a little different. Assuming you are using the homebrew package manager, the recommended commands to obtain the dependencies and build are:
+
+	brew install cmake ffmpeg imagemagick libzip qt5 sdl2 libedit
+	mkdir build
+	cd build
+	cmake -DCMAKE_PREFIX_PATH=`brew --prefix qt5` ..
+	make
+
+Note that you should not do a `make install` on macOS, as it will not work properly.
+
 #### Windows developer building
 
 To build on Windows for development, using MSYS2 is recommended. Follow the installation steps found on their [website](https://msys2.github.io). Make sure you're running the 32-bit version ("MSYS2 MinGW 32-bit") (or the 64-bit version "MSYS2 MinGW 64-bit" if you want to build for x86_64) and run this additional command (including the braces) to install the needed dependencies (please note that this involves downloading over 500MiB of packages, so it will take a long time):
@@ -151,7 +161,7 @@ medusa has no hard dependencies, however, the following optional dependencies ar
 - ImageMagick: for GIF recording.
 - SQLite3: for game databases.
 
-Both libpng and zlib are included with the emulator, so they do not need to be externally compiled first.
+SQLite3, libpng, and zlib are included with the emulator, so they do not need to be externally compiled first.
 
 Footnotes
 ---------
@@ -203,7 +213,7 @@ Missing features on DS are
 
 <a name="flashdetect">[3]</a> Flash memory size detection does not work in some cases. These can be configured at runtime, but filing a bug is recommended if such a case is encountered.
 
-<a name="osxver">[4]</a> 10.7 is only needed for the Qt port. The SDL port is known to work on 10.6, and may work on older.
+<a name="osxver">[3]</a> 10.7 is only needed for the Qt port. The SDL port is known to work on 10.5, and may work on older.
 
 [downloads]: http://mgba.io/downloads.html
 [source]: https://github.com/mgba-emu/mgba/

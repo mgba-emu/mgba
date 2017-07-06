@@ -26,6 +26,7 @@ endif()
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/input)
 
 find_package(Qt5Multimedia)
 find_package(Qt5OpenGL)
@@ -76,10 +77,6 @@ set(SOURCE_FILES
 	GamepadButtonEvent.cpp
 	GamepadHatEvent.cpp
 	IOViewer.cpp
-	InputController.cpp
-	InputItem.cpp
-	InputModel.cpp
-	InputProfile.cpp
 	KeyEditor.cpp
 	LoadSaveState.cpp
 	LogController.cpp
@@ -104,7 +101,12 @@ set(SOURCE_FILES
 	utils.cpp
 	Window.cpp
 	VFileDevice.cpp
-	VideoView.cpp)
+	VideoView.cpp
+	input/InputController.cpp
+	input/InputIndex.cpp
+	input/InputItem.cpp
+	input/InputModel.cpp
+	input/InputProfile.cpp)
 
 set(UI_FILES
 	AboutScreen.ui
@@ -215,7 +217,7 @@ endif()
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/res/shaders DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
 install(FILES ${CMAKE_SOURCE_DIR}/res/nointro.dat DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
 if(NOT WIN32 AND NOT APPLE)
-	list(APPEND QT_DEFINES DATADIR="${DATADIR}")
+	list(APPEND QT_DEFINES DATADIR="${CMAKE_INSTALL_PREFIX}/${DATADIR}")
 endif()
 
 find_package(Qt5LinguistTools)

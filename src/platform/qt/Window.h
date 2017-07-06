@@ -28,7 +28,6 @@ class Display;
 class GameController;
 class GDBController;
 class GIFView;
-class InputModel;
 class LibraryController;
 class LogView;
 class ShaderSelector;
@@ -171,7 +170,6 @@ private:
 	WindowBackground* m_screenWidget;
 	QPixmap m_logo{":/res/medusa-bg.png"};
 	ConfigController* m_config;
-	InputModel* m_inputModel;
 	InputController m_inputController;
 	QList<QDateTime> m_frameList;
 	QTimer m_fpsTimer;

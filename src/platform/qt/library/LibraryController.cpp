@@ -5,7 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "LibraryController.h"
 
-#include "../GBAApp.h"
+#include "ConfigController.h"
+#include "GBAApp.h"
 #include "LibraryGrid.h"
 #include "LibraryTree.h"
 
@@ -24,7 +25,7 @@ void AbstractGameList::addEntries(QList<LibraryEntryRef> items) {
 }
 void AbstractGameList::removeEntries(QList<LibraryEntryRef> items) {
 	for (LibraryEntryRef o : items) {
-		addEntry(o);
+		removeEntry(o);
 	}
 }
 
@@ -45,8 +46,10 @@ LibraryController::LibraryController(QWidget* parent, const QString& path, Confi
 	mLibraryListingInit(&m_listing, 0);
 
 	if (!path.isNull()) {
+		// This can return NULL if the library is already open
 		m_library = mLibraryLoad(path.toUtf8().constData());
-	} else {
+	}
+	if (!m_library) {
 		m_library = mLibraryCreateEmpty();
 	}
 
@@ -128,6 +131,20 @@ void LibraryController::addDirectory(const QString& dir) {
 	// The m_loaderThread temporarily owns the library
 	m_library = nullptr;
 	m_loaderThread.start();
+}
+
+void LibraryController::clear() {
+	if (!m_library) {
+		if (!m_loaderThread.isRunning() && m_loaderThread.m_library) {
+			m_library = m_loaderThread.m_library;
+			m_loaderThread.m_library = nullptr;
+		} else {
+			return;
+		}
+	}
+
+	mLibraryClear(m_library);
+	refresh();
 }
 
 void LibraryController::refresh() {

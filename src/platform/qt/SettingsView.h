@@ -16,19 +16,22 @@ namespace QGBA {
 
 class ConfigController;
 class InputController;
-class InputModel;
+class InputIndex;
+class ShortcutView;
 
 class SettingsView : public QDialog {
 Q_OBJECT
 
 public:
-	SettingsView(ConfigController* controller, InputController* inputController, InputModel* inputModel, QWidget* parent = nullptr);
+	SettingsView(ConfigController* controller, InputController* inputController, QWidget* parent = nullptr);
 
 signals:
 	void biosLoaded(int platform, const QString&);
 	void audioDriverChanged();
 	void displayDriverChanged();
 	void pathsChanged();
+	void languageChanged();
+	void libraryCleared();
 
 private slots:
 	void selectBios(QLineEdit*);
@@ -40,6 +43,8 @@ private:
 
 	ConfigController* m_controller;
 	InputController* m_input;
+	ShortcutView* m_shortcutView;
+	ShortcutView* m_keyView;
 
 	void saveSetting(const char* key, const QAbstractButton*);
 	void saveSetting(const char* key, const QComboBox*);

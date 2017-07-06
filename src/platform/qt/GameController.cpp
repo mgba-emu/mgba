@@ -9,6 +9,7 @@
 #include "InputController.h"
 #include "LogController.h"
 #include "MultiplayerController.h"
+#include "Override.h"
 #include "VFileDevice.h"
 
 #include <QCoreApplication>
@@ -162,6 +163,7 @@ GameController::GameController(QObject* parent)
 			default:
 				break;
 			}
+			mTileCacheDeinit(controller->m_tileCache.get());
 			controller->m_tileCache.reset();
 		}
 
@@ -703,6 +705,7 @@ void GameController::threadContinue() {
 void GameController::frameAdvance() {
 	if (m_pauseAfterFrame.testAndSetRelaxed(false, true)) {
 		setPaused(false);
+		m_wasPaused = true;
 	}
 }
 

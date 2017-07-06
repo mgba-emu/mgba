@@ -2,5 +2,6 @@
  <qresource>
      <file>../../../res/medusa-bg.jpg</file>
      <file>../../../res/patrons.txt</file>
+     <file>input/default-profiles.ini</file>
  </qresource>
  </RCC>

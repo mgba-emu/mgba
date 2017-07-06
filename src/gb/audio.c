@@ -555,7 +555,7 @@ void _updateFrame(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 				if (audio->ch2.envelope.dead == 2) {
 					mTimingDeschedule(timing, &audio->ch2Event);
 				}
-				_updateSquareSample(&audio->ch1);
+				_updateSquareSample(&audio->ch2);
 			}
 		}
 
@@ -709,7 +709,7 @@ bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value) {
 }
 
 static void _updateSquareSample(struct GBAudioSquareChannel* ch) {
-	ch->sample = (ch->control.hi * ch->envelope.currentVolume - 8) * 0x10;
+	ch->sample = (ch->control.hi * 2 - 1) * ch->envelope.currentVolume * 0x8;
 }
 
 static int32_t _updateSquareChannel(struct GBAudioSquareChannel* ch) {

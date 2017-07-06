@@ -339,6 +339,16 @@ static void _mLibraryDeleteEntry(struct mLibrary* library, struct mLibraryEntry*
 	sqlite3_step(library->insertPath);
 }
 
+void mLibraryClear(struct mLibrary* library) {
+	int result = sqlite3_exec(library->db,
+		"   BEGIN TRANSACTION;"
+		"\n DELETE FROM roots;"
+		"\n DELETE FROM roms;"
+		"\n DELETE FROM paths;"
+		"\n COMMIT;"
+		"\n VACUUM;", NULL, NULL, NULL);
+}
+
 size_t mLibraryCount(struct mLibrary* library, const struct mLibraryEntry* constraints) {
 	sqlite3_clear_bindings(library->count);
 	sqlite3_reset(library->count);

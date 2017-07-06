@@ -8,6 +8,7 @@
 
 #include "GamepadAxisEvent.h"
 #include "GamepadHatEvent.h"
+#include "InputIndex.h"
 
 #include <memory>
 
@@ -33,7 +34,7 @@ namespace QGBA {
 
 class ConfigController;
 class GameController;
-class InputModel;
+class InputItem;
 
 class InputController : public QObject {
 Q_OBJECT
@@ -41,11 +42,17 @@ Q_OBJECT
 public:
 	static const uint32_t KEYBOARD = 0x51545F4B;
 
-	InputController(InputModel* model, int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
+	InputController(int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
 	~InputController();
 
-	void addPlatform(mPlatform, const QString& visibleName, const mInputPlatformInfo*);
+	InputIndex* inputIndex() { return &m_inputIndex; }
+	InputIndex* keyIndex() { return &m_keyIndex; }
+	void rebuildIndex(const InputIndex* = nullptr);
+	void rebuildKeyIndex(const InputIndex* = nullptr);
+
+	void addPlatform(mPlatform, const mInputPlatformInfo*);
 	void setPlatform(mPlatform);
+	void addKey(const QString& name);
 
 	void setConfiguration(ConfigController* config);
 	void saveConfiguration();
@@ -68,9 +75,9 @@ public:
 	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(int type);
 	void recalibrateAxes();
 
-	void bindKey(mPlatform platform, uint32_t type, int key, int);
-	void bindAxis(mPlatform platform, uint32_t type, int axis, GamepadAxisEvent::Direction, int);
-	void bindHat(mPlatform platform, uint32_t type, int hat, GamepadHatEvent::Direction, int);
+	void bindKey(uint32_t type, int key, const QString&);
+	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, const QString&);
+	void bindHat(uint32_t type, int hat, GamepadHatEvent::Direction, const QString&);
 
 	QStringList connectedGamepads(uint32_t type) const;
 	int gamepad(uint32_t type) const;
@@ -91,10 +98,11 @@ public:
 	mRumble* rumble();
 	mRotationSource* rotationSource();
 
-	void setupCallback(GameController* controller);
-
 signals:
 	void profileLoaded(const QString& profile);
+	void keyPressed(int);
+	void keyReleased(int);
+	void keyAutofire(int, bool enabled);
 
 public slots:
 	void testGamepad(int type);
@@ -105,12 +113,6 @@ public slots:
 	void resumeScreensaver();
 	void setScreensaverSuspendable(bool);
 
-private slots:
-	void bindKey(const QModelIndex&, int key);
-	void bindButton(const QModelIndex&, int key);
-	void bindAxis(const QModelIndex&, int axis, GamepadAxisEvent::Direction);
-	void bindHat(const QModelIndex&, int hat, GamepadHatEvent::Direction);
-
 protected:
 	bool eventFilter(QObject*, QEvent*) override;
 
@@ -120,15 +122,24 @@ private:
 	bool hasPendingEvent(int key) const;
 	void sendGamepadEvent(QEvent*);
 	void restoreModel();
+	void rebindKey(const QString& key);
 
-	InputModel* m_inputModel;
-	mPlatform m_platform;
-	QMap<mPlatform, mInputMap> m_inputMaps;
+	InputItem* itemForKey(const QString& key);
+	int keyId(const QString& key);
+
+	InputIndex m_inputIndex;
+	InputIndex m_keyIndex;
+	mInputMap m_inputMap;
 	ConfigController* m_config = nullptr;
 	int m_playerId;
 	bool m_allowOpposing = false;
 	QWidget* m_topLevel;
 	QWidget* m_focusParent;
+	QMap<mPlatform, const mInputPlatformInfo*> m_keyInfo;
+	const mInputPlatformInfo* m_activeKeyInfo = nullptr;
+
+	std::unique_ptr<QMenu> m_bindings;
+	std::unique_ptr<QMenu> m_autofire;
 
 #ifdef BUILD_SDL
 	static int s_sdlInited;
@@ -138,10 +149,6 @@ private:
 #endif
 
 	QVector<int> m_deadzones;
-
-	std::unique_ptr<QMenu> m_inputMenu;
-	std::unique_ptr<QMenu> m_autofireMenu;
-	QMap<mPlatform, QModelIndex> m_inputMenuIndices;
 
 	QSet<int> m_activeButtons;
 	QSet<QPair<int, GamepadAxisEvent::Direction>> m_activeAxes;

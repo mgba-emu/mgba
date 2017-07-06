@@ -175,7 +175,7 @@ static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h)
 		drawW -= drawW % v->width;
 		drawH -= drawH % v->height;
 	}
-	glViewport(0, 0, v->width, v->height);
+	glViewport(0, 0, w, h);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
@@ -203,13 +203,13 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 	int drawH = shader->height;
 	int padW = 0;
 	int padH = 0;
-	if (!shader->width) {
+	if (!drawW) {
 		drawW = viewport[2];
 		padW = viewport[0];
 	} else if (shader->width < 0) {
 		drawW = context->d.width * -shader->width;
 	}
-	if (!shader->height) {
+	if (!drawH) {
 		drawH = viewport[3];
 		padH = viewport[1];
 	} else if (shader->height < 0) {
@@ -234,7 +234,7 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shader->filter ? GL_LINEAR : GL_NEAREST);
 	glUseProgram(shader->program);
 	glUniform1i(shader->texLocation, 0);
-	glUniform2f(shader->texSizeLocation, context->d.width, context->d.height);
+	glUniform2f(shader->texSizeLocation, context->d.width - padW, context->d.height - padH);
 	glVertexAttribPointer(shader->positionLocation, 2, GL_FLOAT, GL_FALSE, 0, _vertices);
 	glEnableVertexAttribArray(shader->positionLocation);
 	size_t u;
@@ -290,7 +290,6 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 	}
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glBindTexture(GL_TEXTURE_2D, shader->tex);
-	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
 
 void mGLES2ContextDrawFrame(struct VideoBackend* v) {
@@ -298,12 +297,17 @@ void mGLES2ContextDrawFrame(struct VideoBackend* v) {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, context->tex);
 
+	GLint viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+
 	context->finalShader.filter = v->filter;
 	_drawShader(context, &context->initialShader);
 	size_t n;
 	for (n = 0; n < context->nShaders; ++n) {
+		glViewport(0, 0, viewport[2], viewport[3]);
 		_drawShader(context, &context->shaders[n]);
 	}
+	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 	_drawShader(context, &context->finalShader);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glUseProgram(0);

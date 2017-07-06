@@ -68,6 +68,7 @@ void ObjView::translateIndex(int index) {
 
 #ifdef M_CORE_GBA
 void ObjView::updateTilesGBA(bool force) {
+	m_ui.objId->setMaximum(127);
 	const GBA* gba = static_cast<const GBA*>(m_controller->thread()->core->board);
 	const GBAObj* obj = &gba->video.oam.obj[m_objId];
 
@@ -172,6 +173,7 @@ void ObjView::updateTilesGBA(bool force) {
 
 #ifdef M_CORE_GB
 void ObjView::updateTilesGB(bool force) {
+	m_ui.objId->setMaximum(39);
 	const GB* gb = static_cast<const GB*>(m_controller->thread()->core->board);
 	const GBObj* obj = &gb->video.oam.obj[m_objId];
 
