@@ -9,6 +9,8 @@
 #include <mgba/internal/gba/io.h>
 
 #define TIMER_IRQ_DELAY 7
+#define TIMER_RELOAD_DELAY 0
+#define TIMER_STARTUP_DELAY 2
 
 static void GBATimerIrq(struct GBA* gba, int timerId) {
 	struct GBATimer* timer = &gba->timers[timerId];
@@ -157,7 +159,7 @@ void GBATimerUpdateRegister(struct GBA* gba, int timer, int32_t cyclesLate) {
 	if (!mTimingIsScheduled(&gba->timing, &currentTimer->event)) {
 		tickIncrement = (0x10000 - tickIncrement) << prescaleBits;
 		currentTime -= mTimingCurrentTime(&gba->timing) - cyclesLate;
-		mTimingSchedule(&gba->timing, &currentTimer->event, tickIncrement + currentTime);
+		mTimingSchedule(&gba->timing, &currentTimer->event, TIMER_RELOAD_DELAY + tickIncrement + currentTime);
 	}
 }
 
@@ -194,14 +196,14 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 		mTimingDeschedule(&gba->timing, &currentTimer->event);
 		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->reload;
 		int32_t tickMask = (1 << prescaleBits) - 1;
-		currentTimer->lastEvent = (mTimingCurrentTime(&gba->timing)) & ~tickMask;
-		GBATimerUpdateRegister(gba, timer, 0);
+		currentTimer->lastEvent = (mTimingCurrentTime(&gba->timing) - TIMER_STARTUP_DELAY) & ~tickMask;
+		GBATimerUpdateRegister(gba, timer, TIMER_STARTUP_DELAY);
 	} else if (wasEnabled && !GBATimerFlagsIsEnable(currentTimer->flags)) {
 		mTimingDeschedule(&gba->timing, &currentTimer->event);
 	} else if (GBATimerFlagsIsEnable(currentTimer->flags) && GBATimerFlagsGetPrescaleBits(currentTimer->flags) != oldPrescale && !GBATimerFlagsIsCountUp(currentTimer->flags)) {
 		mTimingDeschedule(&gba->timing, &currentTimer->event);
 		int32_t tickMask = (1 << prescaleBits) - 1;
-		currentTimer->lastEvent = (mTimingCurrentTime(&gba->timing)) & ~tickMask;
-		GBATimerUpdateRegister(gba, timer, 0);
+		currentTimer->lastEvent = (mTimingCurrentTime(&gba->timing) - TIMER_STARTUP_DELAY) & ~tickMask;
+		GBATimerUpdateRegister(gba, timer, TIMER_STARTUP_DELAY);
 	}
 }
