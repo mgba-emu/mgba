@@ -30,6 +30,7 @@ enum mDebuggerState {
 	DEBUGGER_PAUSED,
 	DEBUGGER_RUNNING,
 	DEBUGGER_CUSTOM,
+	DEBUGGER_SCRIPT,
 	DEBUGGER_SHUTDOWN
 };
 
@@ -92,6 +93,7 @@ struct mDebugger {
 	struct mDebuggerPlatform* platform;
 	enum mDebuggerState state;
 	struct mCore* core;
+	struct mScriptBridge* bridge;
 
 	void (*init)(struct mDebugger*);
 	void (*deinit)(struct mDebugger*);

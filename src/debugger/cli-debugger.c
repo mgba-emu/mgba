@@ -12,6 +12,10 @@
 #include <mgba/internal/debugger/parser.h>
 #include <mgba-util/string.h>
 
+#if ENABLE_SCRIPTING
+#include <mgba/core/scripting.h>
+#endif
+
 #if !defined(NDEBUG) && !defined(_WIN32)
 #include <signal.h>
 #endif
@@ -51,6 +55,9 @@ static void _writeWord(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpByte(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpHalfword(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpWord(struct CLIDebugger*, struct CLIDebugVector*);
+#ifdef ENABLE_SCRIPTING
+static void _source(struct CLIDebugger*, struct CLIDebugVector*);
+#endif
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "b", _setBreakpoint, CLIDVParse, "Set a breakpoint" },
@@ -92,6 +99,9 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "x/1", _dumpByte, CLIDVParse, "Examine bytes at a specified offset" },
 	{ "x/2", _dumpHalfword, CLIDVParse, "Examine halfwords at a specified offset" },
 	{ "x/4", _dumpWord, CLIDVParse, "Examine words at a specified offset" },
+#ifdef ENABLE_SCRIPTING
+	{ "source", _source, CLIDVStringParse, "Load a script" },
+#endif
 #if !defined(NDEBUG) && !defined(_WIN32)
 	{ "!", _breakInto, 0, "Break into attached debugger (for developers)" },
 #endif
@@ -410,6 +420,20 @@ static void _dumpWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		debugger->backend->printf(debugger->backend, "\n");
 	}
 }
+
+#ifdef ENABLE_SCRIPTING
+static void _source(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv) {
+		debugger->backend->printf(debugger->backend, "Needs a filename\n");
+		return;
+	}
+	if (debugger->d.bridge && mScriptBridgeLoadScript(debugger->d.bridge, dv->charValue)) {
+		debugger->d.state = DEBUGGER_SCRIPT;
+	} else {
+		debugger->backend->printf(debugger->backend, "Failed to load script\n");
+	}
+}
+#endif
 
 static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {

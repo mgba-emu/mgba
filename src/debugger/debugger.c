@@ -13,6 +13,10 @@
 #include <mgba/internal/debugger/gdb-stub.h>
 #endif
 
+#if ENABLE_SCRIPTING
+#include <mgba/core/scripting.h>
+#endif
+
 const uint32_t DEBUGGER_ID = 0xDEADBEEF;
 
 mLOG_DEFINE_CATEGORY(DEBUGGER, "Debugger", "core.debugger");
@@ -34,6 +38,7 @@ struct mDebugger* mDebuggerCreate(enum mDebuggerType type, struct mCore* core) {
 	};
 
 	union DebugUnion* debugger = malloc(sizeof(union DebugUnion));
+	memset(debugger, 0, sizeof(*debugger));
 
 	switch (type) {
 	case DEBUGGER_CLI:
@@ -89,6 +94,14 @@ void mDebuggerRun(struct mDebugger* debugger) {
 		if (debugger->paused) {
 			debugger->paused(debugger);
 		} else {
+			debugger->state = DEBUGGER_RUNNING;
+		}
+		break;
+	case DEBUGGER_SCRIPT:
+#ifdef ENABLE_SCRIPTING
+		mScriptBridgeRun(debugger->bridge);
+#endif
+		if (debugger->state == DEBUGGER_SCRIPT) {
 			debugger->state = DEBUGGER_RUNNING;
 		}
 		break;

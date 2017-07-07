@@ -13,6 +13,9 @@
 #ifdef USE_EDITLINE
 #include "feature/editline/cli-el-backend.h"
 #endif
+#ifdef ENABLE_SCRIPTING
+#include <mgba/core/scripting.h>
+#endif
 
 #include <mgba/core/core.h>
 #include <mgba/core/config.h>
@@ -159,6 +162,10 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		return 1;
 	}
 	mCoreAutoloadSave(renderer->core);
+#ifdef ENABLE_SCRIPTING
+	struct mScriptBridge* bridge = mScriptBridgeCreate();
+#endif
+
 #ifdef USE_DEBUGGERS
 	struct mDebugger* debugger = mDebuggerCreate(args->debuggerType, renderer->core);
 	if (debugger) {
@@ -171,6 +178,9 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		mDebuggerAttach(debugger, renderer->core);
 		mDebuggerEnter(debugger, DEBUGGER_ENTER_MANUAL, NULL);
 	}
+#ifdef ENABLE_SCRIPTING
+	mScriptBridgeSetDebugger(bridge, debugger);
+#endif
 #endif
 
 	if (args->patch) {
@@ -212,6 +222,11 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
 	}
 	renderer->core->unloadROM(renderer->core);
+
+#ifdef ENABLE_SCRIPTING
+	mScriptBridgeDestroy(bridge);
+#endif
+
 	return didFail;
 }
 

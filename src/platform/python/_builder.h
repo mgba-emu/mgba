@@ -55,3 +55,6 @@ void free(void*);
 #include <mgba/internal/gba/input.h>
 #include <mgba/internal/gb/renderers/tile-cache.h>
 #endif
+#ifdef USE_DEBUGGERS
+#include <mgba/debugger/debugger.h>
+#endif
