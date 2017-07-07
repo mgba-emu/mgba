@@ -11,6 +11,7 @@
 #include "GBAApp.h"
 #include "GBAKeyEditor.h"
 #include "InputController.h"
+#include "ShaderSelector.h"
 #include "ShortcutView.h"
 
 #include <mgba/core/serialize.h>
@@ -183,6 +184,20 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	shortcutView->setInputController(inputController);
 	m_ui.stackedWidget->addWidget(shortcutView);
 	m_ui.tabs->addItem(tr("Shortcuts"));
+}
+
+SettingsView::~SettingsView() {
+	if (m_shader) {
+		m_ui.stackedWidget->removeWidget(m_shader);
+		m_shader->setParent(nullptr);
+	}
+}
+
+void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
+	m_shader = shaderSelector;
+	m_ui.stackedWidget->addWidget(m_shader);
+	m_ui.tabs->addItem(tr("Shaders"));
+	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, m_shader, &ShaderSelector::saved);
 }
 
 void SettingsView::selectBios(QLineEdit* bios) {

@@ -172,6 +172,7 @@ Misc:
  - GBA Timer: Improve accuracy of timers
  - Qt: Minor test fixes
  - PSP2: Update toolchain to use vita.cmake
+ - Qt: Move shader settings into main settings window
 
 0.6 beta 1: (2017-06-29)
  - Initial beta for 0.6
