@@ -177,7 +177,6 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, &Window::shutdown, m_display, &Display::stopDrawing);
 	connect(this, &Window::shutdown, m_controller, &GameController::closeGame);
 	connect(this, &Window::shutdown, m_logView, &QWidget::hide);
-	connect(this, &Window::shutdown, m_shaderView, &QWidget::hide);
 	connect(this, &Window::audioBufferSamplesChanged, m_controller, &GameController::setAudioBufferSamples);
 	connect(this, &Window::sampleRateChanged, m_controller, &GameController::setAudioSampleRate);
 	connect(this, &Window::fpsTargetChanged, m_controller, &GameController::setFPSTarget);
@@ -460,6 +459,9 @@ void Window::exportSharkport() {
 
 void Window::openSettingsWindow() {
 	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController);
+	if (m_display->supportsShaders()) {
+		settingsWindow->setShaderSelector(m_shaderView);
+	}
 	connect(settingsWindow, &SettingsView::biosLoaded, m_controller, &GameController::loadBIOS);
 	connect(settingsWindow, &SettingsView::audioDriverChanged, m_controller, &GameController::reloadAudioDriver);
 	connect(settingsWindow, &SettingsView::displayDriverChanged, this, &Window::mustRestart);
@@ -1295,13 +1297,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		skip->addValue(QString::number(i), i, skipMenu);
 	}
 	m_config->updateOption("frameskip");
-
-	QAction* shaderView = new QAction(tr("Shader options..."), avMenu);
-	connect(shaderView, &QAction::triggered, m_shaderView, &QWidget::show);
-	if (!m_display->supportsShaders()) {
-		shaderView->setEnabled(false);
-	}
-	addControlledAction(avMenu, shaderView, "shaderSelector");
 
 	avMenu->addSeparator();
 
