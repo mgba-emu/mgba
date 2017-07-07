@@ -2962,6 +2962,7 @@ Game Boy und Game Boy Advance sind eingetragene Warenzeichen von Nintendo Co., L
         <source>Game Boy Advance ROMs (%1)</source>
         <translation>Game Boy Advance-ROMs (%1)</translation>
     </message>
+    <message>
         <location filename="../Window.cpp" line="385"/>
         <source>DS ROMs (%1)</source>
         <translation>DS-ROMs (%1)</translation>
