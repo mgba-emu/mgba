@@ -177,6 +177,7 @@ Misc:
  - Qt: Minor test fixes
  - PSP2: Update toolchain to use vita.cmake
  - Qt: Move shader settings into main settings window
+ - GB Serialize: Add MBC state serialization
 
 0.6 beta 1: (2017-06-29)
  - Initial beta for 0.6
