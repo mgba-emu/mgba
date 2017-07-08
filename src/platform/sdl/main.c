@@ -15,6 +15,10 @@
 #endif
 #ifdef ENABLE_SCRIPTING
 #include <mgba/core/scripting.h>
+
+#ifdef ENABLE_PYTHON
+#include "platform/python/engine.h"
+#endif
 #endif
 
 #include <mgba/core/core.h>
@@ -164,6 +168,9 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 	mCoreAutoloadSave(renderer->core);
 #ifdef ENABLE_SCRIPTING
 	struct mScriptBridge* bridge = mScriptBridgeCreate();
+#ifdef ENABLE_PYTHON
+	mPythonSetup(bridge);
+#endif
 #endif
 
 #ifdef USE_DEBUGGERS

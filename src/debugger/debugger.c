@@ -102,7 +102,7 @@ void mDebuggerRun(struct mDebugger* debugger) {
 		mScriptBridgeRun(debugger->bridge);
 #endif
 		if (debugger->state == DEBUGGER_SCRIPT) {
-			debugger->state = DEBUGGER_RUNNING;
+			debugger->state = DEBUGGER_PAUSED;
 		}
 		break;
 	case DEBUGGER_SHUTDOWN:

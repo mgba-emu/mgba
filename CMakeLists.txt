@@ -397,6 +397,7 @@ find_feature(USE_MAGICK "MagickWand")
 find_feature(USE_EPOXY "epoxy")
 find_feature(USE_CMOCKA "cmocka")
 find_feature(USE_SQLITE3 "sqlite3")
+find_feature(ENABLE_PYTHON "PythonLibs")
 
 # Features
 set(DEBUGGER_SRC
@@ -603,6 +604,14 @@ endif()
 
 if(ENABLE_SCRIPTING)
 	list(APPEND ENABLES SCRIPTING)
+
+	if(BUILD_PYTHON)
+		find_program(PYTHON python)
+		include(FindPythonLibs)
+		list(APPEND DEPENDENCY_LIB ${PYTHON_LIBRARIES})
+		include_directories(AFTER ${PYTHON_INCLUDE_DIRS})
+		list(APPEND ENABLES PYTHON)
+	endif()
 endif()
 
 set(TEST_SRC ${CORE_TEST_SRC})
@@ -768,6 +777,11 @@ if(DISABLE_FRONTENDS)
 	set(BUILD_QT OFF)
 endif()
 
+if(BUILD_PYTHON)
+	enable_testing()
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/platform/python ${CMAKE_CURRENT_BINARY_DIR}/python)
+endif()
+
 if(BUILD_LIBRETRO)
 	file(GLOB RETRO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/libretro/*.c)
 	add_library(${BINARY_NAME}_libretro SHARED ${CORE_SRC} ${RETRO_SRC})
@@ -838,11 +852,6 @@ if(BUILD_SUITE)
 	target_link_libraries(${BINARY_NAME}-suite ${BINARY_NAME} ${PLATFORM_LIBRARY} cmocka)
 	set_target_properties(${BINARY_NAME}-suite PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 	add_test(${BINARY_NAME}-suite ${BINARY_NAME}-suite)
-endif()
-
-if(BUILD_PYTHON)
-	enable_testing()
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/platform/python ${CMAKE_CURRENT_BINARY_DIR}/python)
 endif()
 
 if(BUILD_EXAMPLE)

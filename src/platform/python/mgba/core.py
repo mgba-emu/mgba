@@ -62,14 +62,18 @@ class Core(object):
         lib.mCoreInitConfig(core, ffi.NULL)
         if not success:
             raise RuntimeError("Failed to initialize core")
+        return cls._detect(core)
+
+    def _deinit(self):
+        self._core.deinit(self._core)
+
+    @classmethod
+    def _detect(cls, core):
         if hasattr(cls, 'PLATFORM_GBA') and core.platform(core) == cls.PLATFORM_GBA:
             return GBA(core)
         if hasattr(cls, 'PLATFORM_GB') and core.platform(core) == cls.PLATFORM_GB:
             return GB(core)
         return Core(core)
-
-    def _deinit(self):
-        self._core.deinit(self._core)
 
     @protected
     def loadFile(self, path):
@@ -125,7 +129,6 @@ class Core(object):
         self._core.runLoop(self._core)
 
     @needsReset
-    @protected
     def step(self):
         self._core.step(self._core)
 

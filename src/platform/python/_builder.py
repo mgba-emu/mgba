@@ -58,5 +58,47 @@ for line in preprocessed.splitlines():
     lines.append(line)
 ffi.cdef('\n'.join(lines))
 
+preprocessed = subprocess.check_output(cpp + ["-fno-inline", "-P"] + cppflags + [os.path.join(pydir, "lib.h")], universal_newlines=True)
+
+lines = []
+for line in preprocessed.splitlines():
+    line = line.strip()
+    if line.startswith('#'):
+        continue
+    lines.append(line)
+ffi.embedding_api('\n'.join(lines))
+
+ffi.embedding_init_code("""
+    from mgba._pylib import ffi
+    debugger = None
+    pendingCode = []
+
+    @ffi.def_extern()
+    def mPythonSetDebugger(_debugger):
+        from mgba.debugger import NativeDebugger
+        global debugger
+        debugger = _debugger and NativeDebugger(_debugger)
+
+    @ffi.def_extern()
+    def mPythonLoadScript(name, vf):
+        from mgba.vfs import VFile
+        vf = VFile(vf)
+        name = ffi.string(name)
+        source = vf.readAll().decode('utf-8')
+        try:
+            code = compile(source, name, 'exec')
+            pendingCode.append(code)
+        except:
+            return False
+        return True
+
+    @ffi.def_extern()
+    def mPythonRunPending():
+        global pendingCode
+        for code in pendingCode:
+            exec(code)
+        pendingCode = []
+""")
+
 if __name__ == "__main__":
-    ffi.compile()
+    ffi.emit_c_code("lib.c")
