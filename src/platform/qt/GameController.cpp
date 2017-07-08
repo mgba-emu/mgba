@@ -543,10 +543,16 @@ void GameController::replaceGame(const QString& path) {
 }
 
 void GameController::loadPatch(const QString& path) {
-	if (m_gameOpen) {
+	if (isLoaded()) {
 		closeGame();
-		m_patch = path;
-		openGame();
+	}
+	if (m_gameOpen) {
+		QTimer::singleShot(10, this, [this, path]() {
+			loadPatch(path);
+			if (!m_gameOpen) {
+				openGame();
+			}
+		});
 	} else {
 		m_patch = path;
 	}
