@@ -126,7 +126,6 @@ GameController::GameController(QObject* parent)
 		if (controller->m_multiplayer) {
 			controller->m_multiplayer->detachGame(controller);
 		}
-		controller->m_patch = QString();
 		controller->clearOverride();
 		controller->endVideoLog();
 
@@ -474,6 +473,7 @@ void GameController::openGame(bool biosOnly) {
 				m_threadContext.core->loadPatch(m_threadContext.core, patch);
 			}
 			patch->close(patch);
+			m_patch = QString();
 		} else {
 			mCoreAutoloadPatch(m_threadContext.core);
 		}
@@ -543,18 +543,10 @@ void GameController::replaceGame(const QString& path) {
 }
 
 void GameController::loadPatch(const QString& path) {
-	if (isLoaded()) {
-		closeGame();
-	}
+	m_patch = path;
 	if (m_gameOpen) {
-		QTimer::singleShot(10, this, [this, path]() {
-			loadPatch(path);
-			if (!m_gameOpen) {
-				openGame();
-			}
-		});
-	} else {
-		m_patch = path;
+		closeGame();
+		openGame();
 	}
 }
 
