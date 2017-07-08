@@ -38,6 +38,7 @@ ffi.set_source("mgba._pylib", """
 #include <mgba-util/vfs.h>
 
 #define PYEXPORT
+#include "platform/python/core.h"
 #include "platform/python/log.h"
 #include "platform/python/sio.h"
 #include "platform/python/vfs-py.h"
@@ -46,7 +47,7 @@ ffi.set_source("mgba._pylib", """
      extra_compile_args=cppflags,
      libraries=["mgba"],
      library_dirs=[bindir],
-     sources=[os.path.join(pydir, path) for path in ["vfs-py.c", "log.c", "sio.c"]])
+     sources=[os.path.join(pydir, path) for path in ["vfs-py.c", "core.c", "log.c", "sio.c"]])
 
 preprocessed = subprocess.check_output(cpp + ["-fno-inline", "-P"] + cppflags + [os.path.join(pydir, "_builder.h")], universal_newlines=True)
 

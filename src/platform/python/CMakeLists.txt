@@ -10,17 +10,20 @@ include(FindPythonLibs)
 list(APPEND DEPENDENCY_LIB ${PYTHON_LIBRARIES})
 include_directories(AFTER ${PYTHON_INCLUDE_DIRS})
 
+file(GLOB PYTHON_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in ${CMAKE_CURRENT_BINARY_DIR}/setup.py)
 add_custom_command(OUTPUT build/lib/${BINARY_NAME}/__init__.py
                    COMMAND BINDIR=${CMAKE_CURRENT_BINARY_DIR}/.. CPPFLAGS="${INCLUDE_FLAGS}" ${PYTHON} ${CMAKE_CURRENT_BINARY_DIR}/setup.py build --build-base ${CMAKE_CURRENT_BINARY_DIR}
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                    DEPENDS ${BINARY_NAME}
                    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/setup.py
+                   DEPENDS ${PYTHON_HEADERS}
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/_builder.py)
 
 add_custom_command(OUTPUT lib.c
                   COMMAND BINDIR=${CMAKE_CURRENT_BINARY_DIR}/.. CPPFLAGS="${INCLUDE_FLAGS}" ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/_builder.py
-                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/lib.h
+                  DEPENDS ${PYTHON_HEADERS}
                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/_builder.py)
 
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/lib.c PROPERTIES GENERATED ON)

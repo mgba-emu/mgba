@@ -4,7 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from ._pylib import ffi, lib
-from . import tile
+from . import tile, createCallback
 from cached_property import cached_property
 
 def find(path):
@@ -45,11 +45,58 @@ def protected(f):
         return f(self, *args, **kwargs)
     return wrapper
 
+@ffi.def_extern()
+def _mCorePythonCallbacksVideoFrameStarted(user):
+    context = ffi.from_handle(user)
+    context._videoFrameStarted()
+
+@ffi.def_extern()
+def _mCorePythonCallbacksVideoFrameEnded(user):
+    context = ffi.from_handle(user)
+    context._videoFrameEnded()
+
+@ffi.def_extern()
+def _mCorePythonCallbacksCoreCrashed(user):
+    context = ffi.from_handle(user)
+    context._coreCrashed()
+
+@ffi.def_extern()
+def _mCorePythonCallbacksSleep(user):
+    context = ffi.from_handle(user)
+    context._sleep()
+
+class CoreCallbacks(object):
+    def __init__(self):
+        self._handle = ffi.new_handle(self)
+        self.videoFrameStarted = []
+        self.videoFrameEnded = []
+        self.coreCrashed = []
+        self.sleep = []
+        self.context = lib.mCorePythonCallbackCreate(self._handle)
+
+    def _videoFrameStarted(self):
+        for cb in self.videoFrameStarted:
+            cb()
+
+    def _videoFrameEnded(self):
+        for cb in self.videoFrameEnded:
+            cb()
+
+    def _coreCrashed(self):
+        for cb in self.coreCrashed:
+            cb()
+
+    def _sleep(self):
+        for cb in self.sleep:
+            cb()
+
 class Core(object):
     def __init__(self, native):
         self._core = native
         self._wasReset = False
         self._protected = False
+        self._callbacks = CoreCallbacks()
+        self._core.addCoreCallbacks(self._core, self._callbacks.context)
 
     @cached_property
     def tiles(self):
@@ -150,25 +197,33 @@ class Core(object):
     def clearKeys(self, *args, **kwargs):
         self._core.clearKeys(self._core, self._keysToInt(*args, **kwargs))
 
+    @property
     @needsReset
     def frameCounter(self):
         return self._core.frameCounter(self._core)
 
+    @property
     def frameCycles(self):
         return self._core.frameCycles(self._core)
 
+    @property
     def frequency(self):
         return self._core.frequency(self._core)
 
-    def getGameTitle(self):
+    @property
+    def gameTitle(self):
         title = ffi.new("char[16]")
         self._core.getGameTitle(self._core, title)
         return ffi.string(title, 16).decode("ascii")
 
-    def getGameCode(self):
+    @property
+    def gameCode(self):
         code = ffi.new("char[12]")
         self._core.getGameCode(self._core, code)
         return ffi.string(code, 12).decode("ascii")
+
+    def addFrameCallback(self, cb):
+        self._callbacks.videoFrameEnded.append(cb)
 
 class ICoreOwner(object):
     def claim(self):
