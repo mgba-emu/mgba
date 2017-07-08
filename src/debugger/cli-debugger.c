@@ -428,7 +428,7 @@ static void _source(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		return;
 	}
 	if (debugger->d.bridge && mScriptBridgeLoadScript(debugger->d.bridge, dv->charValue)) {
-		debugger->d.state = DEBUGGER_SCRIPT;
+		mScriptBridgeRun(debugger->d.bridge);
 	} else {
 		debugger->backend->printf(debugger->backend, "Failed to load script\n");
 	}

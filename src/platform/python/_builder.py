@@ -78,6 +78,8 @@ ffi.embedding_init_code("""
     def mPythonSetDebugger(_debugger):
         from mgba.debugger import NativeDebugger
         global debugger
+        if debugger and debugger._native == _debugger:
+            return
         debugger = _debugger and NativeDebugger(_debugger)
 
     @ffi.def_extern()
@@ -99,6 +101,16 @@ ffi.embedding_init_code("""
         for code in pendingCode:
             exec(code)
         pendingCode = []
+
+    @ffi.def_extern()
+    def mPythonDebuggerEntered(reason, info):
+        global debugger
+        if not debugger:
+            return
+        if info == ffi.NULL:
+            info = None
+        for cb in debugger._cbs:
+            cb(reason, info)
 """)
 
 if __name__ == "__main__":

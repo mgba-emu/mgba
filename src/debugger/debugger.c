@@ -97,14 +97,6 @@ void mDebuggerRun(struct mDebugger* debugger) {
 			debugger->state = DEBUGGER_RUNNING;
 		}
 		break;
-	case DEBUGGER_SCRIPT:
-#ifdef ENABLE_SCRIPTING
-		mScriptBridgeRun(debugger->bridge);
-#endif
-		if (debugger->state == DEBUGGER_SCRIPT) {
-			debugger->state = DEBUGGER_PAUSED;
-		}
-		break;
 	case DEBUGGER_SHUTDOWN:
 		return;
 	}
@@ -122,6 +114,11 @@ void mDebuggerEnter(struct mDebugger* debugger, enum mDebuggerEntryReason reason
 	if (debugger->platform->entered) {
 		debugger->platform->entered(debugger->platform, reason, info);
 	}
+#ifdef ENABLE_SCRIPTING
+	if (debugger->bridge) {
+		mScriptBridgeDebuggerEntered(debugger->bridge, reason, info);
+	}
+#endif
 }
 
 static void mDebuggerInit(void* cpu, struct mCPUComponent* component) {

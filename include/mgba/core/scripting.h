@@ -10,9 +10,12 @@
 
 CXX_GUARD_START
 
+#ifdef USE_DEBUGGERS
+#include <mgba/debugger/debugger.h>
+#endif
+
 struct mScriptBridge;
 struct VFile;
-struct mDebugger;
 struct mScriptEngine {
 	const char* (*name)(struct mScriptEngine*);
 
@@ -21,6 +24,10 @@ struct mScriptEngine {
 	bool (*isScript)(struct mScriptEngine*, const char* name, struct VFile* vf);
 	bool (*loadScript)(struct mScriptEngine*, const char* name, struct VFile* vf);
 	void (*run)(struct mScriptEngine*);
+
+#ifdef USE_DEBUGGERS
+	void (*debuggerEntered)(struct mScriptEngine*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
+#endif
 };
 
 struct mScriptBridge* mScriptBridgeCreate(void);
@@ -28,8 +35,11 @@ void mScriptBridgeDestroy(struct mScriptBridge*);
 
 void mScriptBridgeInstallEngine(struct mScriptBridge*, struct mScriptEngine*);
 
+#ifdef USE_DEBUGGERS
 void mScriptBridgeSetDebugger(struct mScriptBridge*, struct mDebugger*);
 struct mDebugger* mScriptBridgeGetDebugger(struct mScriptBridge*);
+void mScriptBridgeDebuggerEntered(struct mScriptBridge*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
+#endif
 
 void mScriptBridgeRun(struct mScriptBridge*);
 bool mScriptBridgeLoadScript(struct mScriptBridge*, const char* name);

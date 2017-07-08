@@ -26,8 +26,18 @@ class NativeDebugger(IRunner):
     WATCHPOINT_READ = lib.WATCHPOINT_READ
     WATCHPOINT_RW = lib.WATCHPOINT_RW
 
+    BREAKPOINT_HARDWARE = lib.BREAKPOINT_HARDWARE
+    BREAKPOINT_SOFTWARE = lib.BREAKPOINT_SOFTWARE
+
+    ENTER_MANUAL = lib.DEBUGGER_ENTER_MANUAL
+    ENTER_ATTACHED = lib.DEBUGGER_ENTER_ATTACHED
+    ENTER_BREAKPOINT = lib.DEBUGGER_ENTER_BREAKPOINT
+    ENTER_WATCHPOINT = lib.DEBUGGER_ENTER_WATCHPOINT
+    ENTER_ILLEGAL_OP = lib.DEBUGGER_ENTER_ILLEGAL_OP
+
     def __init__(self, native):
         self._native = native
+        self._cbs = []
         self._core = Core._detect(native.core)
         self._core._wasReset = True
 
@@ -65,3 +75,6 @@ class NativeDebugger(IRunner):
         if not self._native.platform.clearWatchpoint:
             raise RuntimeError("Platform does not support watchpoints")
         self._native.platform.clearWatchpoint(self._native.platform, address)
+
+    def addCallback(self, cb):
+        self._cbs.append(cb)

@@ -6,9 +6,12 @@
 #include "engine.h"
 
 #include <mgba/core/scripting.h>
-#include <mgba/debugger/debugger.h>
 #include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
+
+#ifdef USE_DEBUGGERS
+#include <mgba/debugger/debugger.h>
+#endif
 
 #include "lib.h"
 
@@ -18,6 +21,10 @@ static void mPythonScriptEngineDeinit(struct mScriptEngine*);
 static bool mPythonScriptEngineIsScript(struct mScriptEngine*, const char* name, struct VFile* vf);
 static bool mPythonScriptEngineLoadScript(struct mScriptEngine*, const char* name, struct VFile* vf);
 static void mPythonScriptEngineRun(struct mScriptEngine*);
+
+#ifdef USE_DEBUGGERS
+static void mPythonScriptDebuggerEntered(struct mScriptEngine*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
+#endif
 
 struct mPythonScriptEngine {
 	struct mScriptEngine d;
@@ -32,6 +39,9 @@ struct mPythonScriptEngine* mPythonCreateScriptEngine(void) {
 	engine->d.isScript = mPythonScriptEngineIsScript;
 	engine->d.loadScript = mPythonScriptEngineLoadScript;
 	engine->d.run = mPythonScriptEngineRun;
+#ifdef USE_DEBUGGERS
+	engine->d.debuggerEntered = mPythonScriptDebuggerEntered;
+#endif
 	engine->sb = NULL;
 	return engine;
 }
@@ -78,3 +88,16 @@ void mPythonScriptEngineRun(struct mScriptEngine* se) {
 
 	mPythonRunPending();
 }
+
+#ifdef USE_DEBUGGERS
+void mPythonScriptDebuggerEntered(struct mScriptEngine* se, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
+	struct mPythonScriptEngine* engine = (struct mPythonScriptEngine*) se;
+
+	struct mDebugger* debugger = mScriptBridgeGetDebugger(engine->sb);
+	if (!debugger) {
+		return;
+	}
+
+	mPythonDebuggerEntered(reason, info);
+}
+#endif
