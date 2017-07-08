@@ -62,7 +62,7 @@ void ShaderSelector::clear() {
 void ShaderSelector::selectShader() {
 	QString path(GBAApp::dataDir());
 	path += QLatin1String("/shaders");
-	QFileDialog dialog(nullptr, tr("Load shader"), path, tr("%1 Shader (%.shader)").arg(projectName));
+	QFileDialog dialog(nullptr, tr("Load shader"), path);
 	dialog.setFileMode(QFileDialog::Directory);
 	dialog.exec();
 	QStringList names = dialog.selectedFiles();
