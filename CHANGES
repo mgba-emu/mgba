@@ -170,6 +170,7 @@ Bugfixes:
  - GBA SIO: Improve SIO Normal dummy driver (fixes mgba.io/i/520)
  - Qt: Fix patch loading while a game is running
  - Qt: Fix shader selector on Ubuntu (fixes mgba.io/i/767)
+ - GB Serialize: Fix timer serialization
 Misc:
  - Qt: Add language selector
  - GBA Timer: Improve accuracy of timers
