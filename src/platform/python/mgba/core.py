@@ -122,7 +122,6 @@ class Core(object):
             return GB(core)
         return Core(core)
 
-    @protected
     def loadFile(self, path):
         return bool(lib.mCoreLoadFile(self._core, path.encode('UTF-8')))
 
@@ -138,7 +137,6 @@ class Core(object):
     def loadTemporarySave(self, vf):
         return bool(self._core.loadTemporarySave(self._core, vf.handle))
 
-    @protected
     def loadPatch(self, vf):
         return bool(self._core.loadPatch(self._core, vf.handle))
 
@@ -160,7 +158,6 @@ class Core(object):
     def setVideoBuffer(self, image):
         self._core.setVideoBuffer(self._core, image.buffer, image.stride)
 
-    @protected
     def reset(self):
         self._core.reset(self._core)
         self._wasReset = True
