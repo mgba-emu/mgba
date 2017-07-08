@@ -325,6 +325,8 @@ void SettingsView::reloadConfig() {
 	loadSetting("showLibrary", m_ui.showLibrary);
 	loadSetting("preload", m_ui.preload);
 
+	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
+
 	double fastForwardRatio = loadSetting("fastForwardRatio").toDouble();
 	if (fastForwardRatio <= 0) {
 		m_ui.fastForwardUnbounded->setChecked(true);
