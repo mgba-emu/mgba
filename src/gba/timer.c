@@ -143,10 +143,6 @@ void GBATimerUpdateRegister(struct GBA* gba, int timer, int32_t cyclesLate) {
 		return;
 	}
 
-	if (gba->memory.lastPrefetchedPc > (uint32_t) gba->cpu->gprs[ARM_PC]) {
-		cyclesLate -= ((gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) * gba->cpu->memory.activeSeqCycles16) / WORD_SIZE_THUMB;
-	}
-
 	int prescaleBits = GBATimerFlagsGetPrescaleBits(currentTimer->flags);
 	int32_t currentTime = mTimingCurrentTime(&gba->timing) - cyclesLate;
 	int32_t tickMask = (1 << prescaleBits) - 1;
