@@ -1,6 +1,7 @@
 0.7.0: (Future)
 Bugfixes:
  - GB Audio: Fix zombie mode bit masking
+ - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
 Misc:
  - GBA Timer: Use global cycles for timers
 
