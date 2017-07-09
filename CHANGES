@@ -175,6 +175,7 @@ Misc:
  - Qt: Move shader settings into main settings window
  - GB Serialize: Add MBC state serialization
  - Qt: Dismiss game crashing/failing dialogs when a new game loads
+ - GBA Memory: Call crash callbacks regardless of if hard crash is enabled
 
 0.6 beta 1: (2017-06-29)
  - Initial beta for 0.6
