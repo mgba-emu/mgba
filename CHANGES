@@ -168,6 +168,7 @@ Bugfixes:
  - Qt: Fix shader selector on Ubuntu (fixes mgba.io/i/767)
  - GB Serialize: Fix timer serialization
  - GB Audio: Fix incorrect channel 4 iteration
+ - GB Audio: Fix zombie mode bit masking
 Misc:
  - Qt: Add language selector
  - GBA Timer: Improve accuracy of timers
