@@ -702,6 +702,7 @@ bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value) {
 	if (!envelope->stepTime) {
 		// TODO: Improve "zombie" mode
 		++envelope->currentVolume;
+		envelope->currentVolume &= 0xF;
 	}
 	_updateEnvelopeDead(envelope);
 	envelope->nextStep = envelope->stepTime;

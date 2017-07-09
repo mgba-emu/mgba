@@ -1,4 +1,6 @@
 0.7.0: (Future)
+Bugfixes:
+ - GB Audio: Fix zombie mode bit masking
 Misc:
  - GBA Timer: Use global cycles for timers
 
