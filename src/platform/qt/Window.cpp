@@ -824,6 +824,7 @@ void Window::gameCrashed(const QString& errorMessage) {
 	                                     QMessageBox::Ok, this, Qt::Sheet);
 	crash->setAttribute(Qt::WA_DeleteOnClose);
 	crash->show();
+	connect(m_controller, &GameController::gameStarted, crash, &QWidget::close);
 }
 
 void Window::gameFailed() {
@@ -832,6 +833,7 @@ void Window::gameFailed() {
 	                                    QMessageBox::Ok, this, Qt::Sheet);
 	fail->setAttribute(Qt::WA_DeleteOnClose);
 	fail->show();
+	connect(m_controller, &GameController::gameStarted, fail, &QWidget::close);
 }
 
 void Window::unimplementedBiosCall(int call) {
