@@ -70,7 +70,7 @@ static void GBATimerUpdate(struct GBA* gba, int timerId, uint32_t cyclesLate) {
 		}
 	}
 
-	if (timerId < 4) {
+	if (timerId < 3) {
 		struct GBATimer* nextTimer = &gba->timers[timerId + 1];
 		if (GBATimerFlagsIsCountUp(nextTimer->flags)) { // TODO: Does this increment while disabled?
 			++gba->memory.io[(REG_TM1CNT_LO >> 1) + (timerId << 1)];
