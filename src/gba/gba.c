@@ -342,6 +342,16 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
 	GBAVFameDetect(&gba->memory.vfame, gba->memory.rom, gba->memory.romSize);
+	if (popcount32(gba->memory.romSize) != 1) {
+		// This ROM is either a bad dump or homebrew. Emulate flash cart behavior.
+#ifndef _3DS
+		void* newRom = anonymousMemoryMap(SIZE_CART0);
+		memcpy(newRom, gba->memory.rom, gba->pristineRomSize);
+		gba->memory.rom = newRom;
+#endif
+		gba->memory.romSize = SIZE_CART0;
+		gba->isPristine = false;
+	}
 	// TODO: error check
 	return true;
 }
