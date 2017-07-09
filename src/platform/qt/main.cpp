@@ -30,7 +30,7 @@ Q_IMPORT_PLUGIN(QWindowsAudioPlugin);
 using namespace QGBA;
 
 int main(int argc, char* argv[]) {
-#ifdef BUILD_SDL
+#if defined(BUILD_SDL) && SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_SetMainReady();
 #endif
 
