@@ -255,6 +255,10 @@ if(DEFINED 3DS OR DEFINED PSP2 OR DEFINED WII)
 	set(USE_SQLITE3 OFF)
 endif()
 
+if(DEFINED 3DS OR DEFINED WII)
+	add_definitions(-DFIXED_ROM_BUFFER)
+endif()
+
 if(NOT M_CORE_GBA)
 	set(USE_GDB_STUB OFF)
 endif()

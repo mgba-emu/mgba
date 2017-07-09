@@ -5,6 +5,7 @@ Bugfixes:
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
+ - All: Make FIXED_ROM_BUFFER an option instead of 3DS-only
 
 0.6.0: (Future)
 Features:

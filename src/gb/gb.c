@@ -42,7 +42,7 @@ static void GBStop(struct LR35902Core* cpu);
 
 static void _enableInterrupts(struct mTiming* timing, void* user, uint32_t cyclesLate);
 
-#ifdef _3DS
+#ifdef FIXED_ROM_BUFFER
 extern uint32_t* romBuffer;
 extern size_t romBufferSize;
 #endif
@@ -109,7 +109,7 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	gb->pristineRomSize = vf->size(vf);
 	vf->seek(vf, 0, SEEK_SET);
 	gb->isPristine = true;
-#ifdef _3DS
+#ifdef FIXED_ROM_BUFFER
 	if (gb->pristineRomSize <= romBufferSize) {
 		gb->memory.rom = romBuffer;
 		vf->read(vf, romBuffer, gb->pristineRomSize);
@@ -277,7 +277,7 @@ void GBUnloadROM(struct GB* gb) {
 	}
 
 	if (gb->romVf) {
-#ifndef _3DS
+#ifndef FIXED_ROM_BUFFER
 		gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->pristineRomSize);
 #endif
 		gb->romVf->close(gb->romVf);
@@ -326,7 +326,7 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 		return;
 	}
 	if (gb->romVf) {
-#ifndef _3DS
+#ifndef FIXED_ROM_BUFFER
 		gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->pristineRomSize);
 #endif
 		gb->romVf->close(gb->romVf);

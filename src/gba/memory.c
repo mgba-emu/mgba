@@ -1553,7 +1553,7 @@ void _pristineCow(struct GBA* gba) {
 		gba->cpu->memory.activeRegion = newRom;
 	}
 	if (gba->romVf) {
-#ifndef _3DS
+#ifndef FIXED_ROM_BUFFER
 		gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->memory.romSize);
 #endif
 		gba->romVf->close(gba->romVf);
