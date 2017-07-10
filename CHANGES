@@ -25,6 +25,7 @@ Features:
  - LR35902: Watchpoints
  - Memory search
  - Debugger: Execution tracing
+ - Qt: Italian translation (by theheroGAC)
 Bugfixes:
  - LR35902: Fix core never exiting with certain event patterns
  - GB Timer: Improve DIV reset behavior
@@ -75,6 +76,8 @@ Bugfixes:
  - GB Timer: Fix sub-M-cycle DIV reset timing and edge triggering
  - Core: Fix interrupting a thread while on the thread (fixes mgba.io/i/692)
  - Core: Fix directory sets crashing on close if base isn't properly detached
+ - Qt: Fix window icon being stretched
+ - Qt: Fix data directory path
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
@@ -145,9 +148,41 @@ Misc:
  - GB MBC: New MBC7 implementation
  - Qt: Better highlight active key in control binding
  - Core: Improved threading interrupted detection
+ - GBA Timer: Improve accuracy of timers
+
+0.6 beta 2: (Future)
+Features:
+ - Qt: Italian translation (by theheroGAC)
+ - Qt: Updated German translation
+Bugfixes:
+ - Qt: Fix memory search close button (fixes mgba.io/i/769)
+ - Qt: Fix window icon being stretched
+ - Qt: Fix initial window size (fixes mgba.io/i/766)
+ - Qt: Fix data directory path
+ - Qt: Fix controls not saving on non-SDL builds
+ - GB Video: Fix LYC regression
+ - Qt: Fix translation initialization (fixes mgba.io/i/776)
+ - PSP2: Use custom localtime_r since newlib version is broken (fixes mgba.io/i/560)
+ - GBA SIO: Improve SIO Normal dummy driver (fixes mgba.io/i/520)
+ - Qt: Fix patch loading while a game is running
+ - Qt: Fix shader selector on Ubuntu (fixes mgba.io/i/767)
+ - GB Serialize: Fix timer serialization
+ - GB Audio: Fix incorrect channel 4 iteration
+ - GB Audio: Fix zombie mode bit masking
+ - GBA Timer: Fix count-up timing overflowing timer 3
+Misc:
+ - Qt: Add language selector
+ - GBA Timer: Improve accuracy of timers
+ - Qt: Minor test fixes
+ - PSP2: Update toolchain to use vita.cmake
+ - Qt: Move shader settings into main settings window
+ - GB Serialize: Add MBC state serialization
+ - Qt: Dismiss game crashing/failing dialogs when a new game loads
+ - GBA Memory: Call crash callbacks regardless of if hard crash is enabled
+ - SDL: Remove writing back obtained samples (fixes mgba.io/i/768)
 
 0.6 beta 1: (2017-06-29)
-- Initial beta for 0.6
+ - Initial beta for 0.6
 
 0.5.2: (2016-12-31)
 Bugfixes:

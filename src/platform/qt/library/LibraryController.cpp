@@ -5,7 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "LibraryController.h"
 
-#include "../GBAApp.h"
+#include "ConfigController.h"
+#include "GBAApp.h"
 #include "LibraryGrid.h"
 #include "LibraryTree.h"
 

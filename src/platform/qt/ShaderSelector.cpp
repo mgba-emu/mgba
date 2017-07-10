@@ -39,6 +39,9 @@ ShaderSelector::ShaderSelector(Display* display, ConfigController* config, QWidg
 	connect(m_ui.load, &QAbstractButton::clicked, this, &ShaderSelector::selectShader);
 	connect(m_ui.unload, &QAbstractButton::clicked, this, &ShaderSelector::clearShader);
 	connect(m_ui.buttonBox, &QDialogButtonBox::clicked, this, &ShaderSelector::buttonPressed);
+	connect(this, &ShaderSelector::saved, [this]() {
+		m_config->setOption("shader", m_shaderPath);
+	});
 }
 
 ShaderSelector::~ShaderSelector() {
@@ -59,7 +62,7 @@ void ShaderSelector::clear() {
 void ShaderSelector::selectShader() {
 	QString path(GBAApp::dataDir());
 	path += QLatin1String("/shaders");
-	QFileDialog dialog(nullptr, tr("Load shader"), path, tr("%1 Shader (%.shader)").arg(projectName));
+	QFileDialog dialog(nullptr, tr("Load shader"), path);
 	dialog.setFileMode(QFileDialog::Directory);
 	dialog.exec();
 	QStringList names = dialog.selectedFiles();
@@ -86,7 +89,6 @@ void ShaderSelector::clearShader() {
 	m_display->clearShaders();
 	refreshShaders();
 	m_shaderPath = "";
-	m_config->setOption("shader", nullptr);
 }
 
 void ShaderSelector::refreshShaders() {
@@ -114,6 +116,10 @@ void ShaderSelector::refreshShaders() {
 	disconnect(this, &ShaderSelector::saved, 0, 0);
 	disconnect(this, &ShaderSelector::reset, 0, 0);
 	disconnect(this, &ShaderSelector::resetToDefault, 0, 0);
+
+	connect(this, &ShaderSelector::saved, [this]() {
+		m_config->setOption("shader", m_shaderPath);
+	});
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
 	if (m_shaders->preprocessShader) {
@@ -264,7 +270,6 @@ void ShaderSelector::buttonPressed(QAbstractButton* button) {
 		emit reset();
 		break;
 	case QDialogButtonBox::Ok:
-		m_config->setOption("shader", m_shaderPath);
 		emit saved();
 		close();
 		break;

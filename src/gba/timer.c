@@ -28,7 +28,7 @@ static void GBATimerUpdate(struct mTiming* timing, struct GBA* gba, int timerId,
 		}
 	}
 
-	if (timerId < 4) {
+	if (timerId < 3) {
 		struct GBATimer* nextTimer = &gba->timers[timerId + 1];
 		if (GBATimerFlagsIsCountUp(nextTimer->flags)) { // TODO: Does this increment while disabled?
 			++gba->memory.io[(REG_TM1CNT_LO >> 1) + (timerId << 1)];
@@ -103,20 +103,22 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 	GBATimerUpdateRegister(gba, timer);
 
 	unsigned oldPrescale = GBATimerFlagsGetPrescaleBits(currentTimer->flags);
+	unsigned prescaleBits;
 	switch (control & 0x0003) {
 	case 0x0000:
-		currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, 0);
+		prescaleBits = 0;
 		break;
 	case 0x0001:
-		currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, 6);
+		prescaleBits = 6;
 		break;
 	case 0x0002:
-		currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, 8);
+		prescaleBits = 8;
 		break;
 	case 0x0003:
-		currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, 10);
+		prescaleBits = 10;
 		break;
 	}
+	currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, prescaleBits);
 	currentTimer->flags = GBATimerFlagsTestFillCountUp(currentTimer->flags, timer > 0 && (control & 0x0004));
 	currentTimer->flags = GBATimerFlagsTestFillDoIrq(currentTimer->flags, control & 0x0040);
 	currentTimer->overflowInterval = (0x10000 - currentTimer->reload) << GBATimerFlagsGetPrescaleBits(currentTimer->flags);
@@ -125,7 +127,7 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 	if (!wasEnabled && GBATimerFlagsIsEnable(currentTimer->flags)) {
 		mTimingDeschedule(&gba->timing, &currentTimer->event);
 		if (!GBATimerFlagsIsCountUp(currentTimer->flags)) {
-			mTimingSchedule(&gba->timing, &currentTimer->event, currentTimer->overflowInterval);
+			mTimingSchedule(&gba->timing, &currentTimer->event, currentTimer->overflowInterval + 7 - 6 * prescaleBits);
 		}
 		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->reload;
 		currentTimer->oldReload = currentTimer->reload;

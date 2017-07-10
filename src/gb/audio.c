@@ -702,6 +702,7 @@ bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value) {
 	if (!envelope->stepTime) {
 		// TODO: Improve "zombie" mode
 		++envelope->currentVolume;
+		envelope->currentVolume &= 0xF;
 	}
 	_updateEnvelopeDead(envelope);
 	envelope->nextStep = envelope->stepTime;
@@ -893,7 +894,7 @@ static void _updateChannel4(struct mTiming* timing, void* user, uint32_t cyclesL
 		ch->lfsr >>= 1;
 		ch->lfsr ^= (lsb * 0x60) << (ch->power ? 0 : 8);
 		cycles += baseCycles;
-	} while (cycles < audio->sampleInterval);
+	} while (cycles + baseCycles < audio->sampleInterval);
 	mTimingSchedule(timing, &audio->ch4Event, cycles - cyclesLate);
 }
 

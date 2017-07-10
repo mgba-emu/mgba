@@ -9,6 +9,7 @@
 #include "InputController.h"
 #include "LogController.h"
 #include "MultiplayerController.h"
+#include "Override.h"
 #include "VFileDevice.h"
 
 #include <QCoreApplication>
@@ -125,7 +126,6 @@ GameController::GameController(QObject* parent)
 		if (controller->m_multiplayer) {
 			controller->m_multiplayer->detachGame(controller);
 		}
-		controller->m_patch = QString();
 		controller->clearOverride();
 		controller->endVideoLog();
 
@@ -473,6 +473,7 @@ void GameController::openGame(bool biosOnly) {
 				m_threadContext.core->loadPatch(m_threadContext.core, patch);
 			}
 			patch->close(patch);
+			m_patch = QString();
 		} else {
 			mCoreAutoloadPatch(m_threadContext.core);
 		}
@@ -542,12 +543,10 @@ void GameController::replaceGame(const QString& path) {
 }
 
 void GameController::loadPatch(const QString& path) {
+	m_patch = path;
 	if (m_gameOpen) {
 		closeGame();
-		m_patch = path;
 		openGame();
-	} else {
-		m_patch = path;
 	}
 }
 

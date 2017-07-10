@@ -40,7 +40,6 @@ bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext)
 		mLOG(SDL_AUDIO, ERROR, "Could not open SDL sound system");
 		return false;
 	}
-	context->samples = context->obtainedSpec.samples;
 	context->core = 0;
 
 	if (threadContext) {

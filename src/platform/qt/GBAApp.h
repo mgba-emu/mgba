@@ -10,7 +10,6 @@
 #include <QFileDialog>
 #include <QThread>
 
-#include "ConfigController.h"
 #include "MultiplayerController.h"
 
 struct NoIntroDB;
@@ -21,6 +20,7 @@ mLOG_DECLARE_CATEGORY(QT);
 
 namespace QGBA {
 
+class ConfigController;
 class GameController;
 class Window;
 
@@ -43,7 +43,7 @@ class GBAApp : public QApplication {
 Q_OBJECT
 
 public:
-	GBAApp(int& argc, char* argv[]);
+	GBAApp(int& argc, char* argv[], ConfigController*);
 	~GBAApp();
 	static GBAApp* app();
 
@@ -67,7 +67,7 @@ private:
 	void pauseAll(QList<Window*>* paused);
 	void continueAll(const QList<Window*>& paused);
 
-	ConfigController m_configController;
+	ConfigController* m_configController;
 	QList<Window*> m_windows;
 	MultiplayerController m_multiplayer;
 

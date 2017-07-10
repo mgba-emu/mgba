@@ -386,6 +386,7 @@ void GBVideoWriteLYC(struct GBVideo* video, uint8_t value) {
 		video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 		GBUpdateIRQs(video->p);
 	}
+	video->p->memory.io[REG_STAT] = video->stat;
 }
 
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value) {

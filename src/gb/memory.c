@@ -629,6 +629,28 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 	flags = GBSerializedMemoryFlagsSetIsHdma(flags, memory->isHdma);
 	flags = GBSerializedMemoryFlagsSetActiveRtcReg(flags, memory->activeRtcReg);
 	STORE_16LE(flags, 0, &state->memory.flags);
+
+	switch (memory->mbcType) {
+	case GB_MBC1:
+		state->memory.mbc1.mode = memory->mbcState.mbc1.mode;
+		state->memory.mbc1.multicartStride = memory->mbcState.mbc1.multicartStride;
+		break;
+	case GB_MBC3_RTC:
+		STORE_64LE(gb->memory.rtcLastLatch, 0, &state->memory.rtc.lastLatch);
+		break;
+	case GB_MBC7:
+		state->memory.mbc7.state = memory->mbcState.mbc7.state;
+		state->memory.mbc7.eeprom = memory->mbcState.mbc7.eeprom;
+		state->memory.mbc7.address = memory->mbcState.mbc7.address;
+		state->memory.mbc7.access = memory->mbcState.mbc7.access;
+		state->memory.mbc7.latch = memory->mbcState.mbc7.latch;
+		state->memory.mbc7.srBits = memory->mbcState.mbc7.srBits;
+		STORE_16LE(memory->mbcState.mbc7.sr, 0, &state->memory.mbc7.sr);
+		STORE_32LE(memory->mbcState.mbc7.writable, 0, &state->memory.mbc7.writable);
+		break;
+	default:
+		break;
+	}
 }
 
 void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
@@ -671,6 +693,32 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	memory->ime = GBSerializedMemoryFlagsGetIme(flags);
 	memory->isHdma = GBSerializedMemoryFlagsGetIsHdma(flags);
 	memory->activeRtcReg = GBSerializedMemoryFlagsGetActiveRtcReg(flags);
+
+	switch (memory->mbcType) {
+	case GB_MBC1:
+		memory->mbcState.mbc1.mode = state->memory.mbc1.mode;
+		memory->mbcState.mbc1.multicartStride = state->memory.mbc1.multicartStride;
+		if (memory->mbcState.mbc1.mode) {
+			GBMBCSwitchBank0(gb, memory->currentBank >> memory->mbcState.mbc1.multicartStride);
+		}
+		break;
+	case GB_MBC3_RTC:
+		// TODO?
+		//LOAD_64LE(gb->memory.rtcLastLatch, 0, &state->memory.rtc.lastLatch);
+		break;
+	case GB_MBC7:
+		memory->mbcState.mbc7.state = state->memory.mbc7.state;
+		memory->mbcState.mbc7.eeprom = state->memory.mbc7.eeprom;
+		memory->mbcState.mbc7.address = state->memory.mbc7.address & 0x7F;
+		memory->mbcState.mbc7.access = state->memory.mbc7.access;
+		memory->mbcState.mbc7.latch = state->memory.mbc7.latch;
+		memory->mbcState.mbc7.srBits = state->memory.mbc7.srBits;
+		LOAD_16LE(memory->mbcState.mbc7.sr, 0, &state->memory.mbc7.sr);
+		LOAD_32LE(memory->mbcState.mbc7.writable, 0, &state->memory.mbc7.writable);
+		break;
+	default:
+		break;
+	}
 }
 
 void _pristineCow(struct GB* gb) {

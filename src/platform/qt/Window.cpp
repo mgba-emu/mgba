@@ -85,7 +85,11 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 
 	m_screenWidget->setMinimumSize(m_display->minimumSize());
 	m_screenWidget->setSizePolicy(m_display->sizePolicy());
-	int i = 2;
+#if defined(M_CORE_GBA)
+	float i = 2;
+#elif defined(M_CORE_GB)
+	float i = 3;
+#endif
 	QVariant multiplier = m_config->getOption("scaleMultiplier");
 	if (!multiplier.isNull()) {
 		m_savedScale = multiplier.toInt();
@@ -119,8 +123,11 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 			m_controller->loadGame(output, path.second, path.first);
 		}
 	});
-#elif defined(M_CORE_GBA)
-	m_screenWidget->setSizeHint(QSize(VIDEO_HORIZONTAL_PIXELS * i, VIDEO_VERTICAL_PIXELS * i));
+#endif
+#if defined(M_CORE_GBA)
+	resizeFrame(QSize(VIDEO_HORIZONTAL_PIXELS * i, VIDEO_VERTICAL_PIXELS * i));
+#elif defined(M_CORE_GB)
+	resizeFrame(QSize(GB_VIDEO_HORIZONTAL_PIXELS * i, GB_VIDEO_VERTICAL_PIXELS * i));
 #endif
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
@@ -170,7 +177,6 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, &Window::shutdown, m_display, &Display::stopDrawing);
 	connect(this, &Window::shutdown, m_controller, &GameController::closeGame);
 	connect(this, &Window::shutdown, m_logView, &QWidget::hide);
-	connect(this, &Window::shutdown, m_shaderView, &QWidget::hide);
 	connect(this, &Window::audioBufferSamplesChanged, m_controller, &GameController::setAudioBufferSamples);
 	connect(this, &Window::sampleRateChanged, m_controller, &GameController::setAudioSampleRate);
 	connect(this, &Window::fpsTargetChanged, m_controller, &GameController::setFPSTarget);
@@ -233,9 +239,6 @@ void Window::argumentsPassed(mArguments* args) {
 
 void Window::resizeFrame(const QSize& size) {
 	QSize newSize(size);
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
-	newSize /= m_screenWidget->devicePixelRatioF();
-#endif
 	m_screenWidget->setSizeHint(newSize);
 	newSize -= m_screenWidget->size();
 	newSize += this->size();
@@ -456,9 +459,13 @@ void Window::exportSharkport() {
 
 void Window::openSettingsWindow() {
 	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController);
+	if (m_display->supportsShaders()) {
+		settingsWindow->setShaderSelector(m_shaderView);
+	}
 	connect(settingsWindow, &SettingsView::biosLoaded, m_controller, &GameController::loadBIOS);
 	connect(settingsWindow, &SettingsView::audioDriverChanged, m_controller, &GameController::reloadAudioDriver);
 	connect(settingsWindow, &SettingsView::displayDriverChanged, this, &Window::mustRestart);
+	connect(settingsWindow, &SettingsView::languageChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::pathsChanged, this, &Window::reloadConfig);
 	connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
 	openView(settingsWindow);
@@ -817,6 +824,7 @@ void Window::gameCrashed(const QString& errorMessage) {
 	                                     QMessageBox::Ok, this, Qt::Sheet);
 	crash->setAttribute(Qt::WA_DeleteOnClose);
 	crash->show();
+	connect(m_controller, &GameController::gameStarted, crash, &QWidget::close);
 }
 
 void Window::gameFailed() {
@@ -825,6 +833,7 @@ void Window::gameFailed() {
 	                                    QMessageBox::Ok, this, Qt::Sheet);
 	fail->setAttribute(Qt::WA_DeleteOnClose);
 	fail->show();
+	connect(m_controller, &GameController::gameStarted, fail, &QWidget::close);
 }
 
 void Window::unimplementedBiosCall(int call) {
@@ -1290,13 +1299,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		skip->addValue(QString::number(i), i, skipMenu);
 	}
 	m_config->updateOption("frameskip");
-
-	QAction* shaderView = new QAction(tr("Shader options..."), avMenu);
-	connect(shaderView, &QAction::triggered, m_shaderView, &QWidget::show);
-	if (!m_display->supportsShaders()) {
-		shaderView->setEnabled(false);
-	}
-	addControlledAction(avMenu, shaderView, "shaderSelector");
 
 	avMenu->addSeparator();
 

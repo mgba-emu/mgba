@@ -17,18 +17,23 @@ namespace QGBA {
 class ConfigController;
 class InputController;
 class ShortcutController;
+class ShaderSelector;
 
 class SettingsView : public QDialog {
 Q_OBJECT
 
 public:
 	SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, QWidget* parent = nullptr);
+	~SettingsView();
+
+	void setShaderSelector(ShaderSelector* shaderSelector);
 
 signals:
 	void biosLoaded(int platform, const QString&);
 	void audioDriverChanged();
 	void displayDriverChanged();
 	void pathsChanged();
+	void languageChanged();
 	void libraryCleared();
 
 private slots:
@@ -41,6 +46,7 @@ private:
 
 	ConfigController* m_controller;
 	InputController* m_input;
+	ShaderSelector* m_shader = nullptr;
 
 	void saveSetting(const char* key, const QAbstractButton*);
 	void saveSetting(const char* key, const QComboBox*);

@@ -11,9 +11,11 @@
 #include "GBAApp.h"
 #include "GBAKeyEditor.h"
 #include "InputController.h"
+#include "ShaderSelector.h"
 #include "ShortcutView.h"
 
 #include <mgba/core/serialize.h>
+#include <mgba/core/version.h>
 #include <mgba/internal/gba/gba.h>
 
 using namespace QGBA;
@@ -164,11 +166,38 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 
+	m_ui.languages->setItemData(0, QLocale("en"));
+	QDir ts(":/translations/");
+	for (auto name : ts.entryList()) {
+		if (!name.endsWith(".qm")) {
+			continue;
+		}
+		QLocale locale(name.remove(QString("%0-").arg(binaryName)).remove(".qm"));
+		m_ui.languages->addItem(locale.nativeLanguageName(), locale);
+		if (locale == QLocale()) {
+			m_ui.languages->setCurrentIndex(m_ui.languages->count() - 1);
+		}
+	}
+
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setController(shortcutController);
 	shortcutView->setInputController(inputController);
 	m_ui.stackedWidget->addWidget(shortcutView);
 	m_ui.tabs->addItem(tr("Shortcuts"));
+}
+
+SettingsView::~SettingsView() {
+	if (m_shader) {
+		m_ui.stackedWidget->removeWidget(m_shader);
+		m_shader->setParent(nullptr);
+	}
+}
+
+void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
+	m_shader = shaderSelector;
+	m_ui.stackedWidget->addWidget(m_shader);
+	m_ui.tabs->addItem(tr("Shaders"));
+	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, m_shader, &ShaderSelector::saved);
 }
 
 void SettingsView::selectBios(QLineEdit* bios) {
@@ -253,6 +282,12 @@ void SettingsView::updateConfig() {
 		emit displayDriverChanged();
 	}
 
+	QLocale language = m_ui.languages->itemData(m_ui.languages->currentIndex()).toLocale();
+	if (language != m_controller->getQtOption("language").toLocale() && !(language.bcp47Name() == QLocale::system().bcp47Name() && m_controller->getQtOption("language").isNull())) {
+		m_controller->setQtOption("language", language.bcp47Name());
+		emit languageChanged();
+	}
+
 	m_controller->write();
 
 	emit pathsChanged();
@@ -289,6 +324,8 @@ void SettingsView::reloadConfig() {
 	loadSetting("patchPath", m_ui.patchPath);
 	loadSetting("showLibrary", m_ui.showLibrary);
 	loadSetting("preload", m_ui.preload);
+
+	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 
 	double fastForwardRatio = loadSetting("fastForwardRatio").toDouble();
 	if (fastForwardRatio <= 0) {
