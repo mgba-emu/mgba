@@ -178,6 +178,7 @@ Bugfixes:
  - GB Audio: Fix incorrect channel 4 iteration
  - GB Audio: Fix zombie mode bit masking
  - GBA Timer: Fix count-up timing overflowing timer 3
+ - Core: Fix rewinding getting out of sync (fixes mgba.io/i/791)
 Misc:
  - Qt: Add language selector
  - GBA Timer: Improve accuracy of timers
