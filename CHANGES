@@ -8,190 +8,189 @@ Misc:
 
 0.6.0: (Future)
 Features:
- - GBA: Support printing debug strings from inside a game
- - GBA: Better cheat type autodetection
- - GB: Tile viewer
+ - Library view
  - Sprite viewer
  - Debugging console
  - Improved memory viewer
- - GB: LR35902/GB-Z80 disassembler
- - Configuration of gamepad hats
- - Qt: Spanish translation (by Kevin López)
- - Add option for whether rewinding restores save games
- - Qt: German translation (by Lothar Serra Mari)
- - Savestates now contain any RTC override data
+ - Memory search
  - Command line ability to override configuration values
  - Add option to allow preloading the entire ROM before running
- - GB: Video/audio channel enabling/disabling
+ - Add option for whether rewinding restores save games
+ - Savestates now contain any RTC override data
  - Add option to lock video to integer scaling
- - Video log recording for testing and bug reporting
- - Library view
- - Debugger: Segment/bank support
+ - LR35902: Watchpoints
+ - LR35902/GB-Z80 disassembler
+ - GB: Tile viewer
+ - GB: Video/audio channel enabling/disabling
  - GB: Symbol table support
  - GB MBC: Add MBC1 multicart support
+ - GBA: Support printing debug strings from inside a game
+ - GBA: Better cheat type autodetection
  - Implement keypad interrupts
- - LR35902: Watchpoints
- - Memory search
+ - Configuration of gamepad hats
+ - Video log recording for testing and bug reporting
+ - Debugger: Segment/bank support
  - Debugger: Execution tracing
+ - Qt: German translation (by Lothar Serra Mari)
+ - Qt: Spanish translation (by Kevin López)
  - Qt: Italian translation (by theheroGAC)
 Bugfixes:
- - LR35902: Fix core never exiting with certain event patterns
- - GB Timer: Improve DIV reset behavior
- - GBA Memory: Improve initial skipped BIOS state
- - GBA BIOS: Implement BitUnPack
  - ARM7: Fix MLA/*MULL/*MLAL timing
- - GBA: Fix multiboot ROM loading
- - Libretro: Fix saving in GB games (fixes mgba.io/i/486)
- - LR35902: Fix pc overflowing current region off-by-one
- - GB MBC: Fix ROM bank overflows getting set to bank 0
- - Qt: Fix timing issues on high refresh rate monitors
- - GBA Savedata: Fix savedata unmasking (fixes mgba.io/i/441)
- - Util: Fix overflow when loading invalid UPS patches
- - Tools: Fix recurring multiple times over the same library
- - GBA I/O: Handle audio registers specially when deserializing
- - Util: Fix highest-fd socket not being returned by SocketAccept
- - Qt: Fix linking after some windows have been closed
- - GBA Video: Fix wrong palette on 256-color sprites in OBJWIN
- - Windows: Fix VDir.rewind
- - SDL: Fix game crash check
- - SDL: Fix race condition with audio thread when starting
- - GB: Fix flickering when screen is strobed quickly
- - FFmpeg: Fix overflow and general issues with audio encoding
- - Qt: Fix crash when changing audio settings after a game is closed
- - GBA BIOS: Fix ArcTan sign in HLE BIOS
- - GBA BIOS: Fix ArcTan2 sign in HLE BIOS (fixes mgba.io/i/689)
- - GBA Video: Don't update background scanline params in mode 0 (fixes mgba.io/i/377)
- - Qt: Ensure CLI backend is attached when submitting commands (fixes mgba.io/i/662)
  - Core: Fix crash with rewind if savestates shrink
- - Test: Fix crash when loading invalid file
- - GBA Hardware: Fix crash if a savestate lies about game hardware
- - Test: Fix crash when fuzzing fails to load a file
- - GBA: Fix multiboot loading resulting in too small WRAM
- - Test: Don't rely on core for frames elapsed
- - Test: Fix crash when loading invalid file
- - GBA Hardware: Fix crash if a savestate lies about game hardware
- - Test: Fix crash when fuzzing fails to load a file
- - Qt: Disable "New multiplayer window" when MAX_GBAS is reached (fixes mgba.io/i/107)
- - LR35902: Fix decoding LD r, $imm and 0-valued immediates (fixes mgba.io/i/735)
- - GB: Fix STAT blocking
- - GB MBC: Fix swapping carts not detect new MBC
- - GB Timer: Fix DIV batching if TAC changes
- - GB Video: Reset renderer when loading state
- - GBA BIOS: Fix INT_MIN/-1 crash
- - GBA Savedata: Update and fix Sharkport importing (fixes mgba.io/i/658)
- - OpenGL: Fix some shaders causing offset graphics
- - Qt: Fix game unpausing after frame advancing and refocusing
- - GB Timer: Fix sub-M-cycle DIV reset timing and edge triggering
  - Core: Fix interrupting a thread while on the thread (fixes mgba.io/i/692)
  - Core: Fix directory sets crashing on close if base isn't properly detached
+ - FFmpeg: Fix overflow and general issues with audio encoding
+ - GB: Fix flickering when screen is strobed quickly
+ - GB: Fix STAT blocking
+ - GB MBC: Fix ROM bank overflows getting set to bank 0
+ - GB MBC: Fix swapping carts not detect new MBC
+ - GB Timer: Improve DIV reset behavior
+ - GB Timer: Fix DIV batching if TAC changes
+ - GB Video: Reset renderer when loading state
+ - GBA: Fix multiboot ROM loading
+ - GBA: Fix multiboot loading resulting in too small WRAM
+ - GBA BIOS: Implement BitUnPack
+ - GBA BIOS: Fix ArcTan sign in HLE BIOS
+ - GBA BIOS: Fix ArcTan2 sign in HLE BIOS (fixes mgba.io/i/689)
+ - GBA BIOS: Fix INT_MIN/-1 crash
+ - GBA Hardware: Fix crash if a savestate lies about game hardware
+ - GBA I/O: Handle audio registers specially when deserializing
+ - GBA Memory: Improve initial skipped BIOS state
+ - GBA Savedata: Fix savedata unmasking (fixes mgba.io/i/441)
+ - GBA Savedata: Update and fix Sharkport importing (fixes mgba.io/i/658)
+ - GBA Video: Fix wrong palette on 256-color sprites in OBJWIN
+ - GBA Video: Don't update background scanline params in mode 0 (fixes mgba.io/i/377)
+ - Libretro: Fix saving in GB games (fixes mgba.io/i/486)
+ - LR35902: Fix core never exiting with certain event patterns
+ - LR35902: Fix pc overflowing current region off-by-one
+ - LR35902: Fix decoding LD r, $imm and 0-valued immediates (fixes mgba.io/i/735)
+ - OpenGL: Fix some shaders causing offset graphics
+ - GB Timer: Fix sub-M-cycle DIV reset timing and edge triggering
  - Qt: Fix window icon being stretched
  - Qt: Fix data directory path
+ - Qt: Fix timing issues on high refresh rate monitors
+ - Qt: Fix linking after some windows have been closed
+ - Qt: Fix crash when changing audio settings after a game is closed
+ - Qt: Ensure CLI backend is attached when submitting commands (fixes mgba.io/i/662)
+ - Qt: Disable "New multiplayer window" when MAX_GBAS is reached (fixes mgba.io/i/107)
+ - Qt: Fix game unpausing after frame advancing and refocusing
+ - SDL: Fix game crash check
+ - SDL: Fix race condition with audio thread when starting
+ - Test: Fix crash when loading invalid file
+ - Test: Fix crash when fuzzing fails to load a file
+ - Test: Don't rely on core for frames elapsed
+ - Test: Fix crash when loading invalid file
+ - Test: Fix crash when fuzzing fails to load a file
+ - Tools: Fix recurring multiple times over the same library
+ - Util: Fix overflow when loading invalid UPS patches
+ - Util: Fix highest-fd socket not being returned by SocketAccept
+ - Windows: Fix VDir.rewind
 Misc:
- - SDL: Remove scancode key input
- - GBA Video: Clean up unused timers
- - Test: Add a basic test suite
- - GBA Video: Allow multiple handles into the same tile cache
- - VFS: Call msync when syncing mapped data
- - GBA Video, GB Video: Colors are now fully scaled
- - VFS: Allow truncating memory chunk VFiles
- - Debugger: Modularize CLI debugger
- - Core: Clean up some thread state checks
- - Debugger: Make building with debugging aspects optional
- - GBA Memory: Support for Mo Jie Qi Bing by Vast Fame (taizou)
- - GBA Memory: Support reading/writing POSTFLG
- - Util: Add size counting to Table
- - Qt: Move last directory setting from qt.ini to config.ini
+ - All: Add C++ header guards
+ - All: Move time.h include to common.h
  - 3DS, PSP2, Wii: Last directory loaded is saved
+ - CMake: Add ability to just print version string
+ - Core: New, faster event timing subsystem
+ - Core: Clean up some thread state checks
+ - Core: Add generic checksum function
+ - Core: Cores can now have multiple sets of callbacks
+ - Core: Restore sleep callback
+ - Core: Move rewind diffing to its own thread
+ - Core: Ability to enumerate and modify video and audio channels
+ - Core: List memory segments in the core
+ - Core: Move savestate creation time to extdata
+ - Core: Config values can now be hexadecimal
+ - Core: Improved threading interrupted detection
+ - Debugger: Modularize CLI debugger
+ - Debugger: Make building with debugging aspects optional
+ - Debugger: Add functions for read- or write-only watchpoints
+ - Debugger: Make attaching a backend idempotent
+ - Debugger: Add mDebuggerRunFrame convenience function
+ - Feature: Move game database from flatfile to SQLite3
+ - Feature: Support ImageMagick 7
+ - Feature: Make -l option explicit
+ - FFmpeg: Return false if a file fails to open
+ - FFmpeg: Force MP4 files to YUV420P
+ - GB: Trust ROM header for number of SRAM banks (fixes mgba.io/i/726)
+ - GB: Reset with initial state of DIV register
+ - GB MBC: New MBC7 implementation
  - GB Audio: Simplify envelope code
  - GB Audio: Improve initial envelope samples
- - Debugger: Add functions for read- or write-only watchpoints
+ - GB Audio: Start implementing "zombie" audio (fixes mgba.io/i/389)
+ - GB Video: Improved video timings
+ - GBA: Ignore invalid opcodes used by the Wii U VC emulator
+ - GBA, GB: ROM is now unloaded if a patch is applied
  - GBA DMA: Refactor DMA out of memory.c
  - GBA DMA: Move DMAs to using absolute timing
- - All: Add C++ header guards
  - GBA I/O: Clear JOYSTAT RECV flag when reading JOY_RECV registers
  - GBA I/O: Set JOYSTAT TRANS flag when writing JOY_TRANS registers
+ - GBA Memory: Support for Mo Jie Qi Bing by Vast Fame (taizou)
+ - GBA Memory: Support reading/writing POSTFLG
+ - GBA Memory: Remove unused prefetch cruft
+ - GBA Timer: Improve accuracy of timers
+ - GBA Video: Clean up unused timers
+ - GBA Video: Allow multiple handles into the same tile cache
+ - GBA Video, GB Video: Colors are now fully scaled
+ - GBA Video: Optimize when BLD* registers are written frequently
+ - OpenGL: Add xBR-lv2 shader
+ - Qt: Move last directory setting from qt.ini to config.ini
  - Qt: Improved HiDPI support
  - Qt: Expose configuration directory
- - Feature: Move game database from flatfile to SQLite3
- - GB Audio: Start implementing "zombie" audio (fixes mgba.io/i/389)
- - VFS: Fix some minor VFile issues with FILEs
- - Core: Add generic checksum function
- - Feature: Support ImageMagick 7
- - All: Move time.h include to common.h
- - CMake: Add ability to just print version string
  - Qt: Merge "Save" and "OK" buttons in shader options
- - SDL: Automatically map controllers when plugged in
  - Qt: Automatically load controller profile when plugged in
- - OpenGL: Add xBR-lv2 shader
- - GBA, GB: ROM is now unloaded if a patch is applied
- - Util: Add 8-bit PNG write support
  - Qt: Rename "Resample video" option to "Bilinear filtering"
- - GBA Video: Optimize when BLD* registers are written frequently
- - Core: Cores can now have multiple sets of callbacks
- - GBA: Ignore invalid opcodes used by the Wii U VC emulator
  - Qt: Remove audio thread
  - Qt: Remove audio buffer sizing in AudioProcessorQt
  - Qt: Re-enable QtMultimedia on Windows
- - FFmpeg: Return false if a file fails to open
- - FFmpeg: Force MP4 files to YUV420P
  - Qt: Make "Mute" able to be bound to a key
- - Core: Restore sleep callback
  - Qt: Add .gb/.gbc files to the extension list in Info.plist
- - Feature: Make -l option explicit
- - Core: Ability to enumerate and modify video and audio channels
- - Debugger: Make attaching a backend idempotent
+ - Qt: Relax hard dependency on OpenGL
+ - Qt: Better highlight active key in control binding
+ - SDL: Remove scancode key input
+ - SDL: Automatically map controllers when plugged in
+ - Test: Add a basic test suite
+ - Util: Add size counting to Table
+ - Util: Add 8-bit PNG write support
+ - Util: Tune patch-fast extent sizes
+ - VFS: Call msync when syncing mapped data
+ - VFS: Allow truncating memory chunk VFiles
+ - VFS: Fix some minor VFile issues with FILEs
  - VFS: Optimize expanding in-memory files
  - VFS: Add VFileFIFO for operating on circle buffers
- - Core: Move rewind diffing to its own thread
- - Util: Tune patch-fast extent sizes
- - Qt: Relax hard dependency on OpenGL
- - GB Video: Improved video timings
- - Core: List memory segments in the core
- - Core: Move savestate creation time to extdata
- - Debugger: Add mDebuggerRunFrame convenience function
- - GBA Memory: Remove unused prefetch cruft
- - GB: Trust ROM header for number of SRAM banks (fixes mgba.io/i/726)
- - Core: Config values can now be hexadecimal
- - GB: Reset with initial state of DIV register
- - GB MBC: New MBC7 implementation
- - Qt: Better highlight active key in control binding
- - Core: Improved threading interrupted detection
- - GBA Timer: Improve accuracy of timers
-
-0.6 beta 2: (Future)
+Changes from beta 1:
 Features:
  - Qt: Italian translation (by theheroGAC)
  - Qt: Updated German translation
 Bugfixes:
+ - GB Audio: Fix incorrect channel 4 iteration
+ - GB Audio: Fix zombie mode bit masking
+ - GB Serialize: Fix timer serialization
+ - GB Video: Fix LYC regression
+ - GBA SIO: Improve SIO Normal dummy driver (fixes mgba.io/i/520)
+ - GBA Timer: Fix count-up timing overflowing timer 3
+ - PSP2: Use custom localtime_r since newlib version is broken (fixes mgba.io/i/560)
  - Qt: Fix memory search close button (fixes mgba.io/i/769)
  - Qt: Fix window icon being stretched
  - Qt: Fix initial window size (fixes mgba.io/i/766)
  - Qt: Fix data directory path
  - Qt: Fix controls not saving on non-SDL builds
- - GB Video: Fix LYC regression
  - Qt: Fix translation initialization (fixes mgba.io/i/776)
- - PSP2: Use custom localtime_r since newlib version is broken (fixes mgba.io/i/560)
- - GBA SIO: Improve SIO Normal dummy driver (fixes mgba.io/i/520)
  - Qt: Fix patch loading while a game is running
  - Qt: Fix shader selector on Ubuntu (fixes mgba.io/i/767)
- - GB Serialize: Fix timer serialization
- - GB Audio: Fix incorrect channel 4 iteration
- - GB Audio: Fix zombie mode bit masking
- - GBA Timer: Fix count-up timing overflowing timer 3
  - Core: Fix rewinding getting out of sync (fixes mgba.io/i/791)
  - Qt: Fix GL-less build
  - Qt: Fix Software renderer not handling alpha bits properly
 Misc:
- - Qt: Add language selector
- - GBA Timer: Improve accuracy of timers
- - Qt: Minor test fixes
- - PSP2: Update toolchain to use vita.cmake
- - Qt: Move shader settings into main settings window
  - GB Serialize: Add MBC state serialization
- - Qt: Dismiss game crashing/failing dialogs when a new game loads
  - GBA Memory: Call crash callbacks regardless of if hard crash is enabled
- - SDL: Remove writing back obtained samples (fixes mgba.io/i/768)
+ - GBA Timer: Improve accuracy of timers
+ - PSP2: Update toolchain to use vita.cmake
+ - Qt: Add language selector
+ - Qt: Minor test fixes
+ - Qt: Move shader settings into main settings window
+ - Qt: Dismiss game crashing/failing dialogs when a new game loads
  - Qt: Properly ship Qt translations
+ - SDL: Remove writing back obtained samples (fixes mgba.io/i/768)
 
 0.6 beta 1: (2017-06-29)
  - Initial beta for 0.6
