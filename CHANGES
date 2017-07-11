@@ -188,6 +188,7 @@ Misc:
  - Qt: Dismiss game crashing/failing dialogs when a new game loads
  - GBA Memory: Call crash callbacks regardless of if hard crash is enabled
  - SDL: Remove writing back obtained samples (fixes mgba.io/i/768)
+ - Qt: Properly ship Qt translations
 
 0.6 beta 1: (2017-06-29)
  - Initial beta for 0.6

@@ -169,7 +169,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	m_ui.languages->setItemData(0, QLocale("en"));
 	QDir ts(":/translations/");
 	for (auto name : ts.entryList()) {
-		if (!name.endsWith(".qm")) {
+		if (!name.endsWith(".qm") || !name.startsWith(binaryName)) {
 			continue;
 		}
 		QLocale locale(name.remove(QString("%0-").arg(binaryName)).remove(".qm"));
