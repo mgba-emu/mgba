@@ -172,6 +172,7 @@ Bugfixes:
  - GBA Timer: Fix count-up timing overflowing timer 3
  - Core: Fix rewinding getting out of sync (fixes mgba.io/i/791)
  - Qt: Fix GL-less build
+ - Qt: Fix Software renderer not handling alpha bits properly
 Misc:
  - Qt: Add language selector
  - GBA Timer: Improve accuracy of timers
