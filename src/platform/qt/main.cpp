@@ -58,6 +58,12 @@ int main(int argc, char* argv[]) {
 	qtTranslator.load(locale, "qt", "_", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
 	application.installTranslator(&qtTranslator);
 
+#ifdef QT_STATIC
+	QTranslator qtStaticTranslator;
+	qtStaticTranslator.load(locale, "qtbase", "_", ":/translations/");
+	application.installTranslator(&qtStaticTranslator);
+#endif
+
 	QTranslator langTranslator;
 	langTranslator.load(locale, binaryName, "-", ":/translations/");
 	application.installTranslator(&langTranslator);
