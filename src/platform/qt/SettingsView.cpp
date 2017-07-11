@@ -187,17 +187,21 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 }
 
 SettingsView::~SettingsView() {
+#if defined(BUILD_GL) || defined(BUILD_GLES)
 	if (m_shader) {
 		m_ui.stackedWidget->removeWidget(m_shader);
 		m_shader->setParent(nullptr);
 	}
+#endif
 }
 
 void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
+#if defined(BUILD_GL) || defined(BUILD_GLES)
 	m_shader = shaderSelector;
 	m_ui.stackedWidget->addWidget(m_shader);
 	m_ui.tabs->addItem(tr("Shaders"));
 	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, m_shader, &ShaderSelector::saved);
+#endif
 }
 
 void SettingsView::selectBios(QLineEdit* bios) {

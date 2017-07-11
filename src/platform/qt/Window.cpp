@@ -78,7 +78,9 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	updateTitle();
 
 	m_display = Display::create(this);
+#if defined(BUILD_GL) || defined(BUILD_GLES)
 	m_shaderView = new ShaderSelector(m_display, m_config);
+#endif
 
 	m_logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
 	m_logo = m_logo; // Free memory left over in old pixmap
@@ -274,6 +276,7 @@ void Window::loadConfig() {
 		enterFullScreen();
 	}
 
+#if defined(BUILD_GL) || defined(BUILD_GLES)
 	if (opts->shader) {
 		struct VDir* shader = VDirOpen(opts->shader);
 		if (shader) {
@@ -282,6 +285,7 @@ void Window::loadConfig() {
 			shader->close(shader);
 		}
 	}
+#endif
 
 	m_mruFiles = m_config->getMRU();
 	updateMRU();
@@ -459,9 +463,11 @@ void Window::exportSharkport() {
 
 void Window::openSettingsWindow() {
 	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController);
+#if defined(BUILD_GL) || defined(BUILD_GLES)
 	if (m_display->supportsShaders()) {
 		settingsWindow->setShaderSelector(m_shaderView);
 	}
+#endif
 	connect(settingsWindow, &SettingsView::biosLoaded, m_controller, &GameController::loadBIOS);
 	connect(settingsWindow, &SettingsView::audioDriverChanged, m_controller, &GameController::reloadAudioDriver);
 	connect(settingsWindow, &SettingsView::displayDriverChanged, this, &Window::mustRestart);
