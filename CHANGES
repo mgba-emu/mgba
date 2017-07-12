@@ -23,6 +23,7 @@ Features:
  - Video log recording for testing and bug reporting
  - Debugger: Segment/bank support
  - Debugger: Execution tracing
+ - Partial Python scripting support
  - Qt: German translation (by Lothar Serra Mari)
  - Qt: Spanish translation (by Kevin López)
  - Qt: Italian translation (by theheroGAC)
@@ -58,8 +59,6 @@ Bugfixes:
  - LR35902: Fix decoding LD r, $imm and 0-valued immediates (fixes mgba.io/i/735)
  - OpenGL: Fix some shaders causing offset graphics
  - GB Timer: Fix sub-M-cycle DIV reset timing and edge triggering
- - Qt: Fix window icon being stretched
- - Qt: Fix data directory path
  - Qt: Fix timing issues on high refresh rate monitors
  - Qt: Fix linking after some windows have been closed
  - Qt: Fix crash when changing audio settings after a game is closed
@@ -155,6 +154,7 @@ Features:
  - Qt: Italian translation (by theheroGAC)
  - Qt: Updated German translation
 Bugfixes:
+ - Core: Fix rewinding getting out of sync (fixes mgba.io/i/791)
  - GB Audio: Fix incorrect channel 4 iteration
  - GB Audio: Fix zombie mode bit masking
  - GB Serialize: Fix timer serialization
@@ -170,7 +170,6 @@ Bugfixes:
  - Qt: Fix translation initialization (fixes mgba.io/i/776)
  - Qt: Fix patch loading while a game is running
  - Qt: Fix shader selector on Ubuntu (fixes mgba.io/i/767)
- - Core: Fix rewinding getting out of sync (fixes mgba.io/i/791)
  - Qt: Fix GL-less build
  - Qt: Fix Software renderer not handling alpha bits properly
 Misc:
@@ -179,7 +178,7 @@ Misc:
  - GBA Timer: Improve accuracy of timers
  - PSP2: Update toolchain to use vita.cmake
  - Qt: Add language selector
- - Qt: Minor test fixes
+ - Qt: Minor text fixes
  - Qt: Move shader settings into main settings window
  - Qt: Dismiss game crashing/failing dialogs when a new game loads
  - Qt: Properly ship Qt translations
