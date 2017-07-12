@@ -157,10 +157,12 @@ THREAD_ENTRY _rewindThread(void* context) {
 	ThreadSetName("Rewind Diff Thread");
 	MutexLock(&rewindContext->mutex);
 	while (rewindContext->onThread) {
-		while (!rewindContext->ready) {
+		while (!rewindContext->ready && rewindContext->onThread) {
 			ConditionWait(&rewindContext->cond, &rewindContext->mutex);
 		}
-		_rewindDiff(rewindContext);
+		if (rewindContext->ready) {
+			_rewindDiff(rewindContext);
+		}
 		rewindContext->ready = false;
 	}
 	MutexUnlock(&rewindContext->mutex);
