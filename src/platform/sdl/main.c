@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
 
 	initParserForGraphics(&subparser, &graphicsOpts);
 	bool parsed = parseArguments(&args, argc, argv, &subparser);
-	if (!args.fname) {
+	if (!args.fname && !args.showVersion) {
 		parsed = false;
 	}
 	if (!parsed || args.showHelp) {
