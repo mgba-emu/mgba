@@ -120,7 +120,13 @@ QVariant InputModel::headerData(int section, Qt::Orientation orientation, int ro
 QModelIndex InputModel::index(int row, int column, const QModelIndex& parent) const {
 	if (parent.isValid()) {
 		InputModelItem* p = static_cast<InputModelItem*>(parent.internalPointer());
+		if (row >= m_tree[p->obj].count()) {
+			return QModelIndex();
+		}
 		return createIndex(row, column, const_cast<InputModelItem*>(&m_tree[p->obj][row]));
+	}
+	if (row >= m_topLevelMenus.count()) {
+		return QModelIndex();
 	}
 	return createIndex(row, column, const_cast<InputModelItem*>(&m_topLevelMenus[row]));
 }
