@@ -30,7 +30,7 @@ Q_IMPORT_PLUGIN(QWindowsAudioPlugin);
 using namespace QGBA;
 
 int main(int argc, char* argv[]) {
-#ifdef BUILD_SDL
+#if defined(BUILD_SDL) && SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_SetMainReady();
 #endif
 
@@ -57,6 +57,12 @@ int main(int argc, char* argv[]) {
 	QTranslator qtTranslator;
 	qtTranslator.load(locale, "qt", "_", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
 	application.installTranslator(&qtTranslator);
+
+#ifdef QT_STATIC
+	QTranslator qtStaticTranslator;
+	qtStaticTranslator.load(locale, "qtbase", "_", ":/translations/");
+	application.installTranslator(&qtStaticTranslator);
+#endif
 
 	QTranslator langTranslator;
 	langTranslator.load(locale, binaryName, "-", ":/translations/");
