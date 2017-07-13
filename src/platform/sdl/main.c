@@ -13,6 +13,13 @@
 #ifdef USE_EDITLINE
 #include "feature/editline/cli-el-backend.h"
 #endif
+#ifdef ENABLE_SCRIPTING
+#include <mgba/core/scripting.h>
+
+#ifdef ENABLE_PYTHON
+#include "platform/python/engine.h"
+#endif
+#endif
 
 #include <mgba/core/core.h>
 #include <mgba/core/config.h>
@@ -56,7 +63,7 @@ int main(int argc, char** argv) {
 
 	initParserForGraphics(&subparser, &graphicsOpts);
 	bool parsed = parseArguments(&args, argc, argv, &subparser);
-	if (!args.fname) {
+	if (!args.fname && !args.showVersion) {
 		parsed = false;
 	}
 	if (!parsed || args.showHelp) {
@@ -159,6 +166,13 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		return 1;
 	}
 	mCoreAutoloadSave(renderer->core);
+#ifdef ENABLE_SCRIPTING
+	struct mScriptBridge* bridge = mScriptBridgeCreate();
+#ifdef ENABLE_PYTHON
+	mPythonSetup(bridge);
+#endif
+#endif
+
 #ifdef USE_DEBUGGERS
 	struct mDebugger* debugger = mDebuggerCreate(args->debuggerType, renderer->core);
 	if (debugger) {
@@ -171,6 +185,9 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		mDebuggerAttach(debugger, renderer->core);
 		mDebuggerEnter(debugger, DEBUGGER_ENTER_MANUAL, NULL);
 	}
+#ifdef ENABLE_SCRIPTING
+	mScriptBridgeSetDebugger(bridge, debugger);
+#endif
 #endif
 
 	if (args->patch) {
@@ -212,6 +229,11 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
 	}
 	renderer->core->unloadROM(renderer->core);
+
+#ifdef ENABLE_SCRIPTING
+	mScriptBridgeDestroy(bridge);
+#endif
+
 	return didFail;
 }
 

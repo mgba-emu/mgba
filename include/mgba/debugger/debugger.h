@@ -92,6 +92,7 @@ struct mDebugger {
 	struct mDebuggerPlatform* platform;
 	enum mDebuggerState state;
 	struct mCore* core;
+	struct mScriptBridge* bridge;
 
 	void (*init)(struct mDebugger*);
 	void (*deinit)(struct mDebugger*);

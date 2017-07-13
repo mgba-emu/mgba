@@ -79,7 +79,7 @@ GameController::GameController(QObject* parent)
 		default:
 			break;
 		}
-		controller->m_fpsTarget = context->sync.fpsTarget;
+		controller->m_fpsTarget = context->impl->sync.fpsTarget;
 
 		if (controller->m_override) {
 			controller->m_override->identify(context->core);
@@ -126,7 +126,6 @@ GameController::GameController(QObject* parent)
 		if (controller->m_multiplayer) {
 			controller->m_multiplayer->detachGame(controller);
 		}
-		controller->m_patch = QString();
 		controller->clearOverride();
 		controller->endVideoLog();
 
@@ -300,8 +299,8 @@ void GameController::setConfig(const mCoreConfig* config) {
 	if (isLoaded()) {
 		Interrupter interrupter(this);
 		mCoreLoadForeignConfig(m_threadContext.core, config);
-		m_audioSync = m_threadContext.sync.audioWait;
-		m_videoSync = m_threadContext.sync.videoFrameWait;
+		m_audioSync = m_threadContext.impl->sync.audioWait;
+		m_videoSync = m_threadContext.impl->sync.videoFrameWait;
 		m_audioProcessor->setInput(&m_threadContext);
 	}
 }
@@ -411,13 +410,6 @@ void GameController::openGame(bool biosOnly) {
 
 	m_pauseAfterFrame = false;
 
-	if (m_turbo) {
-		m_threadContext.sync.videoFrameWait = false;
-		m_threadContext.sync.audioWait = false;
-	} else {
-		m_threadContext.sync.videoFrameWait = m_videoSync;
-		m_threadContext.sync.audioWait = m_audioSync;
-	}
 	m_threadContext.core->init(m_threadContext.core);
 	mCoreInitConfig(m_threadContext.core, nullptr);
 
@@ -474,6 +466,7 @@ void GameController::openGame(bool biosOnly) {
 				m_threadContext.core->loadPatch(m_threadContext.core, patch);
 			}
 			patch->close(patch);
+			m_patch = QString();
 		} else {
 			mCoreAutoloadPatch(m_threadContext.core);
 		}
@@ -482,6 +475,13 @@ void GameController::openGame(bool biosOnly) {
 
 	if (!mCoreThreadStart(&m_threadContext)) {
 		emit gameFailed();
+	}
+	if (m_turbo) {
+		m_threadContext.impl->sync.videoFrameWait = false;
+		m_threadContext.impl->sync.audioWait = false;
+	} else {
+		m_threadContext.impl->sync.videoFrameWait = m_videoSync;
+		m_threadContext.impl->sync.audioWait = m_audioSync;
 	}
 }
 
@@ -543,12 +543,10 @@ void GameController::replaceGame(const QString& path) {
 }
 
 void GameController::loadPatch(const QString& path) {
+	m_patch = path;
 	if (m_gameOpen) {
 		closeGame();
-		m_patch = path;
 		openGame();
-	} else {
-		m_patch = path;
 	}
 }
 
@@ -713,14 +711,14 @@ void GameController::setRewind(bool enable, int capacity, bool rewindSave) {
 	if (m_gameOpen) {
 		Interrupter interrupter(this);
 		if (m_threadContext.core->opts.rewindEnable && m_threadContext.core->opts.rewindBufferCapacity > 0) {
-			mCoreRewindContextDeinit(&m_threadContext.rewind);
+			mCoreRewindContextDeinit(&m_threadContext.impl->rewind);
 		}
 		m_threadContext.core->opts.rewindEnable = enable;
 		m_threadContext.core->opts.rewindBufferCapacity = capacity;
 		m_threadContext.core->opts.rewindSave = rewindSave;
 		if (enable && capacity > 0) {
-			mCoreRewindContextInit(&m_threadContext.rewind, capacity, true);
-			m_threadContext.rewind.stateFlags = rewindSave ? SAVESTATE_SAVEDATA : 0;
+			mCoreRewindContextInit(&m_threadContext.impl->rewind, capacity, true);
+			m_threadContext.impl->rewind.stateFlags = rewindSave ? SAVESTATE_SAVEDATA : 0;
 		}
 	}
 }
@@ -731,7 +729,7 @@ void GameController::rewind(int states) {
 		states = INT_MAX;
 	}
 	for (int i = 0; i < states; ++i) {
-		if (!mCoreRewindRestore(&m_threadContext.rewind, m_threadContext.core)) {
+		if (!mCoreRewindRestore(&m_threadContext.impl->rewind, m_threadContext.core)) {
 			break;
 		}
 	}
@@ -873,8 +871,10 @@ void GameController::startAudio() {
 		// Don't freeze!
 		m_audioSync = false;
 		m_videoSync = true;
-		m_threadContext.sync.audioWait = false;
-		m_threadContext.sync.videoFrameWait = true;
+		if (isLoaded()) {
+			m_threadContext.impl->sync.audioWait = false;
+			m_threadContext.impl->sync.videoFrameWait = true;
+		}
 	}
 }
 
@@ -895,9 +895,11 @@ void GameController::setVideoLayerEnabled(int layer, bool enable) {
 void GameController::setFPSTarget(float fps) {
 	Interrupter interrupter(this);
 	m_fpsTarget = fps;
-	m_threadContext.sync.fpsTarget = fps;
-	if (m_turbo && m_turboSpeed > 0) {
-		m_threadContext.sync.fpsTarget *= m_turboSpeed;
+	if (isLoaded()) {
+		m_threadContext.impl->sync.fpsTarget = fps;
+		if (m_turbo && m_turboSpeed > 0) {
+			m_threadContext.impl->sync.fpsTarget *= m_turboSpeed;
+		}
 	}
 	if (m_audioProcessor) {
 		redoSamples(m_audioProcessor->getBufferSamples());
@@ -1015,22 +1017,25 @@ void GameController::setTurboSpeed(float ratio) {
 
 void GameController::enableTurbo() {
 	Interrupter interrupter(this);
+	if (!isLoaded()) {
+		return;
+	}
 	bool shouldRedoSamples = false;
 	if (!m_turbo) {
-		shouldRedoSamples = m_threadContext.sync.fpsTarget != m_fpsTarget;
-		m_threadContext.sync.fpsTarget = m_fpsTarget;
-		m_threadContext.sync.audioWait = m_audioSync;
-		m_threadContext.sync.videoFrameWait = m_videoSync;
+		shouldRedoSamples = m_threadContext.impl->sync.fpsTarget != m_fpsTarget;
+		m_threadContext.impl->sync.fpsTarget = m_fpsTarget;
+		m_threadContext.impl->sync.audioWait = m_audioSync;
+		m_threadContext.impl->sync.videoFrameWait = m_videoSync;
 	} else if (m_turboSpeed <= 0) {
-		shouldRedoSamples = m_threadContext.sync.fpsTarget != m_fpsTarget;
-		m_threadContext.sync.fpsTarget = m_fpsTarget;
-		m_threadContext.sync.audioWait = false;
-		m_threadContext.sync.videoFrameWait = false;
+		shouldRedoSamples = m_threadContext.impl->sync.fpsTarget != m_fpsTarget;
+		m_threadContext.impl->sync.fpsTarget = m_fpsTarget;
+		m_threadContext.impl->sync.audioWait = false;
+		m_threadContext.impl->sync.videoFrameWait = false;
 	} else {
-		shouldRedoSamples = m_threadContext.sync.fpsTarget != m_fpsTarget * m_turboSpeed;
-		m_threadContext.sync.fpsTarget = m_fpsTarget * m_turboSpeed;
-		m_threadContext.sync.audioWait = true;
-		m_threadContext.sync.videoFrameWait = false;
+		shouldRedoSamples = m_threadContext.impl->sync.fpsTarget != m_fpsTarget * m_turboSpeed;
+		m_threadContext.impl->sync.fpsTarget = m_fpsTarget * m_turboSpeed;
+		m_threadContext.impl->sync.audioWait = true;
+		m_threadContext.impl->sync.videoFrameWait = false;
 	}
 	if (m_audioProcessor && shouldRedoSamples) {
 		redoSamples(m_audioProcessor->getBufferSamples());
@@ -1040,24 +1045,30 @@ void GameController::enableTurbo() {
 void GameController::setSync(bool enable) {
 	m_turbo = false;
 	m_turboForced = false;
-	if (!enable) {
-		m_threadContext.sync.audioWait = false;
-		m_threadContext.sync.videoFrameWait = false;
-	} else {
-		m_threadContext.sync.audioWait = m_audioSync;
-		m_threadContext.sync.videoFrameWait = m_videoSync;
+	if (isLoaded()) {
+		if (!enable) {
+			m_threadContext.impl->sync.audioWait = false;
+			m_threadContext.impl->sync.videoFrameWait = false;
+		} else {
+			m_threadContext.impl->sync.audioWait = m_audioSync;
+			m_threadContext.impl->sync.videoFrameWait = m_videoSync;
+		}
 	}
 	m_sync = enable;
 }
 
 void GameController::setAudioSync(bool enable) {
 	m_audioSync = enable;
-	m_threadContext.sync.audioWait = enable;
+	if (isLoaded()) {
+		m_threadContext.impl->sync.audioWait = enable;
+	}
 }
 
 void GameController::setVideoSync(bool enable) {
 	m_videoSync = enable;
-	m_threadContext.sync.videoFrameWait = enable;
+	if (isLoaded()) {
+		m_threadContext.impl->sync.videoFrameWait = enable;
+	}
 }
 
 void GameController::setAVStream(mAVStream* stream) {

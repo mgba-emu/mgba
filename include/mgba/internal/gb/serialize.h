@@ -145,7 +145,7 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * | 0x0017C - 0x0017D: HDMA remaining
  * | 0x0017E: DMA remaining
  * | 0x0017F - 0x00183: RTC registers
- * | 0x00184 - 0x00193: MBC state (TODO)
+ * | 0x00184 - 0x00193: MBC state
  * | 0x00194 - 0x00195: Flags
  *   | bit 0: SRAM accessable
  *   | bit 1: RTC accessible
@@ -331,18 +331,21 @@ struct GBSerializedState {
 
 		union {
 			struct {
-				uint32_t mode;
+				uint8_t mode;
+				uint8_t multicartStride;
 			} mbc1;
 			struct {
 				uint64_t lastLatch;
 			} rtc;
 			struct {
-				int8_t machineState;
-				GBMBC7Field field;
-				int8_t address;
+				uint8_t state;
+				GBMBC7Field eeprom;
+				uint8_t address;
+				uint8_t access;
+				uint8_t latch;
 				uint8_t srBits;
-				uint32_t sr;
-				GBSerializedMBC7Flags flags;
+				uint16_t sr;
+				uint32_t writable;
 			} mbc7;
 			struct {
 				uint8_t reserved[16];

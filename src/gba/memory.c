@@ -297,10 +297,8 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		memory->activeRegion = -1;
 		cpu->memory.activeRegion = _deadbeef;
 		cpu->memory.activeMask = 0;
-		if (gba->yankedRomSize || !gba->hardCrash) {
-			mLOG(GBA_MEM, GAME_ERROR, "Jumped to invalid address: %08X", address);
-		} else if (mCoreCallbacksListSize(&gba->coreCallbacks)) {
-			mLOG(GBA_MEM, GAME_ERROR, "Jumped to invalid address: %08X", address);
+
+		if (!gba->yankedRomSize && mCoreCallbacksListSize(&gba->coreCallbacks)) {
 			size_t c;
 			for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
 				struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
@@ -308,6 +306,10 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 					callbacks->coreCrashed(callbacks->context);
 				}
 			}
+		}
+
+		if (gba->yankedRomSize || !gba->hardCrash) {
+			mLOG(GBA_MEM, GAME_ERROR, "Jumped to invalid address: %08X", address);
 		} else {
 			mLOG(GBA_MEM, FATAL, "Jumped to invalid address: %08X", address);
 		}
@@ -1551,7 +1553,7 @@ void _pristineCow(struct GBA* gba) {
 		gba->cpu->memory.activeRegion = newRom;
 	}
 	if (gba->romVf) {
-#ifndef _3DS
+#ifndef FIXED_ROM_BUFFER
 		gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->memory.romSize);
 #endif
 		gba->romVf->close(gba->romVf);

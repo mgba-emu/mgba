@@ -51,7 +51,8 @@ void DisplayQt::framePosted(const uint32_t* buffer) {
 	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), m_width, m_height, QImage::Format_RGB555);
 #endif
 #else
-	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), m_width, m_height, QImage::Format_RGB32);
+	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), m_width, m_height, QImage::Format_ARGB32);
+	m_backing = m_backing.convertToFormat(QImage::Format_RGB32);
 #endif
 }
 

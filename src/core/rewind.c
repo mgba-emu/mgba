@@ -30,6 +30,7 @@ void mCoreRewindContextInit(struct mCoreRewindContext* context, size_t entries, 
 	context->stateFlags = SAVESTATE_SAVEDATA;
 #ifndef DISABLE_THREADING
 	context->onThread = onThread;
+	context->ready = false;
 	if (onThread) {
 		MutexInit(&context->mutex);
 		ConditionInit(&context->cond);
@@ -73,6 +74,7 @@ void mCoreRewindAppend(struct mCoreRewindContext* context, struct mCore* core) {
 	context->currentState = nextState;
 #ifndef DISABLE_THREADING
 	if (context->onThread) {
+		context->ready = true;
 		ConditionWake(&context->cond);
 		MutexUnlock(&context->mutex);
 		return;
@@ -121,6 +123,12 @@ bool mCoreRewindRestore(struct mCoreRewindContext* context, struct mCore* core) 
 	}
 	--context->size;
 
+	mCoreLoadStateNamed(core, context->previousState, context->stateFlags);
+	if (context->current == 0) {
+		context->current = mCoreRewindPatchesSize(&context->patchMemory);
+	}
+	--context->current;
+
 	struct PatchFast* patch = mCoreRewindPatchesGetPointer(&context->patchMemory, context->current);
 	size_t size2 = context->previousState->size(context->previousState);
 	size_t size = context->currentState->size(context->currentState);
@@ -129,18 +137,12 @@ bool mCoreRewindRestore(struct mCoreRewindContext* context, struct mCore* core) 
 	}
 	void* current = context->currentState->map(context->currentState, size, MAP_READ);
 	void* previous = context->previousState->map(context->previousState, size, MAP_WRITE);
-	patch->d.applyPatch(&patch->d, current, size, previous, size);
+	patch->d.applyPatch(&patch->d, previous, size, current, size);
 	context->currentState->unmap(context->currentState, current, size);
 	context->previousState->unmap(context->previousState, previous, size);
-	mCoreLoadStateNamed(core, context->previousState, context->stateFlags);
 	struct VFile* nextState = context->previousState;
 	context->previousState = context->currentState;
 	context->currentState = nextState;
-
-	if (context->current == 0) {
-		context->current = mCoreRewindPatchesSize(&context->patchMemory);
-	} 
-	--context->current;
 #ifndef DISABLE_THREADING
 	if (context->onThread) {
 		MutexUnlock(&context->mutex);
@@ -154,13 +156,14 @@ THREAD_ENTRY _rewindThread(void* context) {
 	struct mCoreRewindContext* rewindContext = context;
 	ThreadSetName("Rewind Diff Thread");
 	MutexLock(&rewindContext->mutex);
-	struct VFile* state = rewindContext->currentState;
 	while (rewindContext->onThread) {
-		if (rewindContext->currentState != state) {
-			_rewindDiff(rewindContext);
-			state = rewindContext->currentState;
+		while (!rewindContext->ready && rewindContext->onThread) {
+			ConditionWait(&rewindContext->cond, &rewindContext->mutex);
 		}
-		ConditionWait(&rewindContext->cond, &rewindContext->mutex);
+		if (rewindContext->ready) {
+			_rewindDiff(rewindContext);
+		}
+		rewindContext->ready = false;
 	}
 	MutexUnlock(&rewindContext->mutex);
 	return 0;

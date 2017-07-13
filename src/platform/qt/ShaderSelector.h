@@ -6,6 +6,8 @@
 #ifndef QGBA_SHADER_SELECTOR_H
 #define QGBA_SHADER_SELECTOR_H
 
+#if defined(BUILD_GL) || defined(BUILD_GLES)
+
 #include <QDialog>
 
 #include "ui_ShaderSelector.h"
@@ -54,5 +56,7 @@ private:
 };
 
 }
+
+#endif
 
 #endif
