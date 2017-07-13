@@ -19,7 +19,7 @@ GamepadButtonEvent::GamepadButtonEvent(QEvent::Type pressType, int button, int t
 	, m_key(GBA_KEY_NONE)
 {
 	ignore();
-	if (controller) {
+	if (controller && controller->map()) {
 		m_key = static_cast<GBAKey>(mInputMapKey(controller->map(), type, button));
 	}
 }

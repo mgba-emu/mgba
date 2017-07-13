@@ -20,7 +20,7 @@ GamepadHatEvent::GamepadHatEvent(QEvent::Type pressType, int hatId, Direction di
 	, m_key(GBA_KEY_NONE)
 {
 	ignore();
-	if (controller) {
+	if (controller && controller->map()) {
 		m_key = static_cast<GBAKey>(mInputMapHat(controller->map(), type, hatId, direction));
 	}
 }

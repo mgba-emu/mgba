@@ -366,6 +366,9 @@ void InputController::updateJoysticks() {
 }
 
 const mInputMap* InputController::map() {
+	if (!m_activeKeyInfo) {
+		return nullptr;
+	}
 	return &m_inputMap;
 }
 
