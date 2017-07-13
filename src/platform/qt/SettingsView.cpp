@@ -10,6 +10,7 @@
 #include "Display.h"
 #include "GBAApp.h"
 #include "InputController.h"
+#include "ShaderSelector.h"
 #include "ShortcutView.h"
 
 #include <mgba/core/serialize.h>
@@ -149,7 +150,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	m_ui.languages->setItemData(0, QLocale("en"));
 	QDir ts(":/translations/");
 	for (auto name : ts.entryList()) {
-		if (!name.endsWith(".qm")) {
+		if (!name.endsWith(".qm") || !name.startsWith(binaryName)) {
 			continue;
 		}
 		QLocale locale(name.remove(QString("%0-").arg(binaryName)).remove(".qm"));
@@ -169,6 +170,24 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	m_ui.tabs->addItem(tr("Controls"));
 	m_ui.stackedWidget->addWidget(m_shortcutView);
 	m_ui.tabs->addItem(tr("Shortcuts"));
+}
+
+SettingsView::~SettingsView() {
+#if defined(BUILD_GL) || defined(BUILD_GLES)
+	if (m_shader) {
+		m_ui.stackedWidget->removeWidget(m_shader);
+		m_shader->setParent(nullptr);
+	}
+#endif
+}
+
+void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
+#if defined(BUILD_GL) || defined(BUILD_GLES)
+	m_shader = shaderSelector;
+	m_ui.stackedWidget->addWidget(m_shader);
+	m_ui.tabs->addItem(tr("Shaders"));
+	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, m_shader, &ShaderSelector::saved);
+#endif
 }
 
 void SettingsView::selectBios(QLineEdit* bios) {
@@ -299,6 +318,8 @@ void SettingsView::reloadConfig() {
 	loadSetting("patchPath", m_ui.patchPath);
 	loadSetting("showLibrary", m_ui.showLibrary);
 	loadSetting("preload", m_ui.preload);
+
+	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 
 	double fastForwardRatio = loadSetting("fastForwardRatio").toDouble();
 	if (fastForwardRatio <= 0) {

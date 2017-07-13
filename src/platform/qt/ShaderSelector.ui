@@ -81,32 +81,35 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
       <widget class="QPushButton" name="unload">
        <property name="text">
         <string>Unload Shader</string>
        </property>
       </widget>
      </item>
-     <item>
+     <item row="0" column="1">
       <widget class="QPushButton" name="load">
        <property name="text">
         <string>Load New Shader</string>
        </property>
       </widget>
      </item>
+     <item row="1" column="0" colspan="2">
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Reset|QDialogButtonBox::RestoreDefaults</set>
+       </property>
+       <property name="centerButtons">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
     </layout>
-   </item>
-   <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Ok|QDialogButtonBox::Reset|QDialogButtonBox::RestoreDefaults</set>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>

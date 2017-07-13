@@ -70,7 +70,7 @@ static void GBATimerUpdate(struct GBA* gba, int timerId, uint32_t cyclesLate) {
 		}
 	}
 
-	if (timerId < 4) {
+	if (timerId < 3) {
 		struct GBATimer* nextTimer = &gba->timers[timerId + 1];
 		if (GBATimerFlagsIsCountUp(nextTimer->flags)) { // TODO: Does this increment while disabled?
 			++gba->memory.io[(REG_TM1CNT_LO >> 1) + (timerId << 1)];
@@ -141,10 +141,6 @@ void GBATimerUpdateRegister(struct GBA* gba, int timer, int32_t cyclesLate) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	if (!GBATimerFlagsIsEnable(currentTimer->flags) || GBATimerFlagsIsCountUp(currentTimer->flags)) {
 		return;
-	}
-
-	if (gba->memory.lastPrefetchedPc > (uint32_t) gba->cpu->gprs[ARM_PC]) {
-		cyclesLate -= ((gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) * gba->cpu->memory.activeSeqCycles16) / WORD_SIZE_THUMB;
 	}
 
 	int prescaleBits = GBATimerFlagsGetPrescaleBits(currentTimer->flags);

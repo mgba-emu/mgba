@@ -31,6 +31,7 @@ struct mCoreRewindContext {
 	Thread thread;
 	Condition cond;
 	Mutex mutex;
+	bool ready;
 #endif
 };
 

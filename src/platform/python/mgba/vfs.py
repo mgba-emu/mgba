@@ -108,6 +108,13 @@ class VFile:
 	def read(self, buffer, size):
 		return self.handle.read(self.handle, buffer, size)
 
+	def readAll(self, size=0):
+		if not size:
+			size = self.size()
+		buffer = ffi.new("char[%i]" % size)
+		size = self.handle.read(self.handle, buffer, size)
+		return ffi.unpack(buffer, size)
+
 	def readline(self, buffer, size):
 		return self.handle.readline(self.handle, buffer, size)
 

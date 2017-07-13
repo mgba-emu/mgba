@@ -18,12 +18,16 @@ class ConfigController;
 class InputController;
 class InputIndex;
 class ShortcutView;
+class ShaderSelector;
 
 class SettingsView : public QDialog {
 Q_OBJECT
 
 public:
 	SettingsView(ConfigController* controller, InputController* inputController, QWidget* parent = nullptr);
+	~SettingsView();
+
+	void setShaderSelector(ShaderSelector* shaderSelector);
 
 signals:
 	void biosLoaded(int platform, const QString&);
@@ -45,6 +49,7 @@ private:
 	InputController* m_input;
 	ShortcutView* m_shortcutView;
 	ShortcutView* m_keyView;
+	ShaderSelector* m_shader = nullptr;
 
 	void saveSetting(const char* key, const QAbstractButton*);
 	void saveSetting(const char* key, const QComboBox*);

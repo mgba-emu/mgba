@@ -79,7 +79,9 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	updateTitle();
 
 	m_display = Display::create(this);
+#if defined(BUILD_GL) || defined(BUILD_GLES)
 	m_shaderView = new ShaderSelector(m_display, m_config);
+#endif
 
 	m_logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
 	m_logo = m_logo; // Free memory left over in old pixmap
@@ -178,7 +180,6 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, &Window::shutdown, m_display, &Display::stopDrawing);
 	connect(this, &Window::shutdown, m_controller, &GameController::closeGame);
 	connect(this, &Window::shutdown, m_logView, &QWidget::hide);
-	connect(this, &Window::shutdown, m_shaderView, &QWidget::hide);
 	connect(this, &Window::audioBufferSamplesChanged, m_controller, &GameController::setAudioBufferSamples);
 	connect(this, &Window::sampleRateChanged, m_controller, &GameController::setAudioSampleRate);
 	connect(this, &Window::fpsTargetChanged, m_controller, &GameController::setFPSTarget);
@@ -284,6 +285,7 @@ void Window::loadConfig() {
 		enterFullScreen();
 	}
 
+#if defined(BUILD_GL) || defined(BUILD_GLES)
 	if (opts->shader) {
 		struct VDir* shader = VDirOpen(opts->shader);
 		if (shader) {
@@ -292,6 +294,7 @@ void Window::loadConfig() {
 			shader->close(shader);
 		}
 	}
+#endif
 
 	m_mruFiles = m_config->getMRU();
 	updateMRU();
@@ -469,6 +472,11 @@ void Window::exportSharkport() {
 
 void Window::openSettingsWindow() {
 	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController);
+#if defined(BUILD_GL) || defined(BUILD_GLES)
+	if (m_display->supportsShaders()) {
+		settingsWindow->setShaderSelector(m_shaderView);
+	}
+#endif
 	connect(settingsWindow, &SettingsView::biosLoaded, m_controller, &GameController::loadBIOS);
 	connect(settingsWindow, &SettingsView::audioDriverChanged, m_controller, &GameController::reloadAudioDriver);
 	connect(settingsWindow, &SettingsView::displayDriverChanged, this, &Window::mustRestart);
@@ -691,14 +699,10 @@ void Window::toggleFullScreen() {
 }
 
 void Window::gameStarted(mCoreThread* context, const QString& fname) {
-	MutexLock(&context->stateMutex);
-	if (context->state < THREAD_EXITING) {
-		emit startDrawing(context);
-	} else {
-		MutexUnlock(&context->stateMutex);
+	if (!mCoreThreadIsActive(context)) {
 		return;
 	}
-	MutexUnlock(&context->stateMutex);
+	emit startDrawing(context);
 	for (QAction* action : m_gameActions) {
 		action->setDisabled(false);
 	}
@@ -805,6 +809,7 @@ void Window::gameCrashed(const QString& errorMessage) {
 	                                     QMessageBox::Ok, this, Qt::Sheet);
 	crash->setAttribute(Qt::WA_DeleteOnClose);
 	crash->show();
+	connect(m_controller, &GameController::gameStarted, crash, &QWidget::close);
 }
 
 void Window::gameFailed() {
@@ -813,6 +818,7 @@ void Window::gameFailed() {
 	                                    QMessageBox::Ok, this, Qt::Sheet);
 	fail->setAttribute(Qt::WA_DeleteOnClose);
 	fail->show();
+	connect(m_controller, &GameController::gameStarted, fail, &QWidget::close);
 }
 
 void Window::unimplementedBiosCall(int call) {
@@ -1272,13 +1278,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		skip->addValue(QString::number(i), i, skipMenu);
 	}
 	m_config->updateOption("frameskip");
-
-	QAction* shaderView = new QAction(tr("Shader options..."), avMenu);
-	connect(shaderView, &QAction::triggered, m_shaderView, &QWidget::show);
-	if (!m_display->supportsShaders()) {
-		shaderView->setEnabled(false);
-	}
-	addControlledAction(avMenu, shaderView, "shaderSelector");
 
 	avMenu->addSeparator();
 
