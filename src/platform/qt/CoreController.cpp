@@ -42,6 +42,10 @@ CoreController::CoreController(mCore* core, QObject* parent)
 	m_threadContext.userData = this;
 	updateROMInfo();
 
+#ifdef M_CORE_GBA
+	GBASIODolphinCreate(&m_dolphin);
+#endif
+
 	m_resetActions.append([this]() {
 		if (m_autoload) {
 			mCoreLoadState(m_threadContext.core, 0, m_loadStateFlags);
@@ -113,6 +117,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		}
 
 		controller->clearMultiplayerController();
+		controller->detachDolphin();
 		QMetaObject::invokeMethod(controller, "stopping");
 	};
 
@@ -355,6 +360,29 @@ mCacheSet* CoreController::graphicCaches() {
 		return nullptr;
 	}
 	return m_cacheSet.get();
+}
+
+bool CoreController::connectDolphin(uint32_t ipv4) {
+	if (platform() != mPLATFORM_GBA) {
+		return false;
+	}
+	Address ipaddr;
+	ipaddr.version = IPV4;
+	ipaddr.ipv4 = htonl(ipv4);
+	if (GBASIODolphinConnect(&m_dolphin, &ipaddr, 0, 0)) {
+		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
+		GBASIOSetDriver(&gba->sio, &m_dolphin.d, SIO_JOYBUS);
+		return true;
+	}
+	return false;
+}
+
+void CoreController::detachDolphin() {
+	if (platform() == mPLATFORM_GBA) {
+		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
+		GBASIOSetDriver(&gba->sio, nullptr, SIO_JOYBUS);
+	}
+	GBASIODolphinDestroy(&m_dolphin);
 }
 
 void CoreController::setOverride(std::unique_ptr<Override> override) {

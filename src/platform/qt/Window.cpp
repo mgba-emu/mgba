@@ -1192,6 +1192,17 @@ void Window::setupMenu(QMenuBar* menubar) {
 		GBAApp::app()->newWindow();
 	}, "file");
 
+	Action* dolphin = m_actions.addAction(tr("Connect to Dolphin"), "connectDolphin", [this]() {
+		CoreController::Interrupter interrupter;
+		if (m_controller) {
+			interrupter.interrupt(m_controller);
+		} else {
+			setController(m_manager->loadBIOS(mPLATFORM_GBA, m_config->getOption("gba.bios")), QString());
+		}
+		m_controller->connectDolphin(0x0100007F);
+	}, "file");
+	m_platformActions.insert(mPLATFORM_GBA, dolphin);
+
 #ifndef Q_OS_MAC
 	m_actions.addSeparator("file");
 #endif
