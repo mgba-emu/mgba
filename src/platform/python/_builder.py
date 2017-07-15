@@ -28,6 +28,7 @@ ffi.set_source("mgba._pylib", """
 #include <mgba/core/version.h>
 #include <mgba/debugger/debugger.h>
 #include <mgba/internal/arm/arm.h>
+#include <mgba/internal/debugger/cli-debugger.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
 #include <mgba/internal/gba/renderers/tile-cache.h>
@@ -70,17 +71,23 @@ for line in preprocessed.splitlines():
 ffi.embedding_api('\n'.join(lines))
 
 ffi.embedding_init_code("""
-    from mgba._pylib import ffi
+    from mgba._pylib import ffi, lib
     debugger = None
     pendingCode = []
 
     @ffi.def_extern()
     def mPythonSetDebugger(_debugger):
-        from mgba.debugger import NativeDebugger
+        from mgba.debugger import NativeDebugger, CLIDebugger
         global debugger
         if debugger and debugger._native == _debugger:
             return
-        debugger = _debugger and NativeDebugger(_debugger)
+        if not _debugger:
+            debugger = None
+            return
+        if _debugger.type == lib.DEBUGGER_CLI:
+            debugger = CLIDebugger(_debugger)
+        else:
+            debugger = NativeDebugger(_debugger)
 
     @ffi.def_extern()
     def mPythonLoadScript(name, vf):

@@ -832,6 +832,7 @@ void CLIDebuggerCreate(struct CLIDebugger* debugger) {
 	debugger->d.custom = _cliDebuggerCustom;
 	debugger->d.paused = _commandLine;
 	debugger->d.entered = _reportEntry;
+	debugger->d.type = DEBUGGER_CLI;
 
 	debugger->system = NULL;
 	debugger->backend = NULL;
