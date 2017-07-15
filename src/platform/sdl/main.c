@@ -184,10 +184,10 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 #endif
 		mDebuggerAttach(debugger, renderer->core);
 		mDebuggerEnter(debugger, DEBUGGER_ENTER_MANUAL, NULL);
-	}
-#ifdef ENABLE_SCRIPTING
-	mScriptBridgeSetDebugger(bridge, debugger);
+ #ifdef ENABLE_SCRIPTING
+		mScriptBridgeSetDebugger(bridge, debugger);
 #endif
+	}
 #endif
 
 	if (args->patch) {
