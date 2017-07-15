@@ -68,6 +68,7 @@ Bugfixes:
  - SDL: Fix game crash check
  - SDL: Fix race condition with audio thread when starting
  - SDL: Fix showing version number
+ - SDL: Fix cheats not loading
  - Test: Fix crash when loading invalid file
  - Test: Fix crash when fuzzing fails to load a file
  - Test: Don't rely on core for frames elapsed
