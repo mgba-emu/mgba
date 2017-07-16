@@ -24,6 +24,7 @@ struct mScriptEngine {
 	bool (*isScript)(struct mScriptEngine*, const char* name, struct VFile* vf);
 	bool (*loadScript)(struct mScriptEngine*, const char* name, struct VFile* vf);
 	void (*run)(struct mScriptEngine*);
+	bool (*lookupSymbol)(struct mScriptEngine*, const char* name, int32_t* out);
 
 #ifdef USE_DEBUGGERS
 	void (*debuggerEntered)(struct mScriptEngine*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
@@ -43,6 +44,8 @@ void mScriptBridgeDebuggerEntered(struct mScriptBridge*, enum mDebuggerEntryReas
 
 void mScriptBridgeRun(struct mScriptBridge*);
 bool mScriptBridgeLoadScript(struct mScriptBridge*, const char* name);
+
+bool mScriptBridgeLookupSymbol(struct mScriptBridge*, const char* name, int32_t* out);
 
 CXX_GUARD_END
 

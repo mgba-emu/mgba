@@ -19,6 +19,12 @@ struct mScriptInfo {
 	bool success;
 };
 
+struct mScriptSymbol {
+	const char* name;
+	int32_t* out;
+	bool success;
+};
+
 static void _seDeinit(void* value) {
 	struct mScriptEngine* se = value;
 	se->deinit(se);
@@ -30,6 +36,15 @@ static void _seTryLoad(const char* key, void* value, void* user) {
 	struct mScriptInfo* si = user;
 	if (!si->success && se->isScript(se, si->name, si->vf)) {
 		si->success = se->loadScript(se, si->name, si->vf);
+	}
+}
+
+static void _seLookupSymbol(const char* key, void* value, void* user) {
+	UNUSED(key);
+	struct mScriptEngine* se = value;
+	struct mScriptSymbol* si = user;
+	if (!si->success) {
+		si->success = se->lookupSymbol(se, si->name, si->out);
 	}
 }
 
@@ -109,5 +124,15 @@ bool mScriptBridgeLoadScript(struct mScriptBridge* sb, const char* name) {
 	};
 	HashTableEnumerate(&sb->engines, _seTryLoad, &info);
 	vf->close(vf);
+	return info.success;
+}
+
+bool mScriptBridgeLookupSymbol(struct mScriptBridge* sb, const char* name, int32_t* out) {
+	struct mScriptSymbol info = {
+		.name = name,
+		.out = out,
+		.success = false
+	};
+	HashTableEnumerate(&sb->engines, _seLookupSymbol, &info);
 	return info.success;
 }

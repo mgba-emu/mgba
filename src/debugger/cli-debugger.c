@@ -551,6 +551,11 @@ static void _lookupIdentifier(struct mDebugger* debugger, const char* name, stru
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	if (cliDebugger->system) {
 		uint32_t value;
+#ifdef ENABLE_SCRIPTING
+		if (debugger->bridge && mScriptBridgeLookupSymbol(debugger->bridge, name, &dv->intValue)) {
+			return;
+		}
+#endif
 		if (debugger->core->symbolTable && mDebuggerSymbolLookup(debugger->core->symbolTable, name, &dv->intValue, &dv->segmentValue)) {
 			return;
 		}
