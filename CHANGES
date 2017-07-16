@@ -8,7 +8,7 @@ Misc:
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
  - All: Make FIXED_ROM_BUFFER an option instead of 3DS-only
 
-0.6.0: (Future)
+0.6.0: (2017-07-16)
 Features:
  - Library view
  - Sprite viewer
@@ -76,11 +76,9 @@ Bugfixes:
  - Qt: Ensure CLI backend is attached when submitting commands (fixes mgba.io/i/662)
  - Qt: Disable "New multiplayer window" when MAX_GBAS is reached (fixes mgba.io/i/107)
  - Qt: Fix game unpausing after frame advancing and refocusing
- - Qt: Fix screen background improperly stretching
  - SDL: Fix game crash check
  - SDL: Fix race condition with audio thread when starting
  - SDL: Fix showing version number
- - SDL: Fix cheats not loading
  - Test: Fix crash when loading invalid file
  - Test: Fix crash when fuzzing fails to load a file
  - Test: Don't rely on core for frames elapsed
@@ -185,6 +183,8 @@ Bugfixes:
  - Core: Fix rewinding getting out of sync (fixes mgba.io/i/791)
  - Qt: Fix GL-less build
  - Qt: Fix Software renderer not handling alpha bits properly
+ - Qt: Fix screen background improperly stretching
+ - SDL: Fix cheats not loading
 Misc:
  - GB Serialize: Add MBC state serialization
  - GBA Memory: Call crash callbacks regardless of if hard crash is enabled
