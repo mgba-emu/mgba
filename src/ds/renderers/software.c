@@ -699,9 +699,6 @@ static void DSVideoSoftwareRendererPutPixels(struct DSVideoRenderer* renderer, s
 	} \
 	uint32_t charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8); \
 	uint16_t* vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
-	if (UNLIKELY(!vram)) { \
-		continue; \
-	} \
 	pixelData = ((uint8_t*) vram)[charBase & VRAM_BLOCK_MASK];
 
 #define EXT_0_MOSAIC(COORD, PAL) \
@@ -839,9 +836,6 @@ void DSVideoSoftwareRendererDrawBackgroundExt1(struct GBAVideoSoftwareRenderer* 
 		if (!mosaicWait) {
 			uint32_t address = (localX >> 8) + (localY >> 8) * width + screenBase;
 			uint8_t* vram = (uint8_t*) renderer->d.vramBG[address >> VRAM_BLOCK_OFFSET];
-			if (UNLIKELY(!vram)) {
-				continue;
-			}
 			color = vram[address & VRAM_BLOCK_MASK];
 			mosaicWait = mosaicH;
 		} else {
@@ -896,9 +890,6 @@ void DSVideoSoftwareRendererDrawBackgroundExt2(struct GBAVideoSoftwareRenderer* 
 		if (!mosaicWait) {
 			uint32_t address = ((localX >> 8) + (localY >> 8) * width + screenBase) << 1;
 			uint16_t* vram = renderer->d.vramBG[address >> VRAM_BLOCK_OFFSET];
-			if (UNLIKELY(!vram)) {
-				continue;
-			}
 			LOAD_16(color, address & VRAM_BLOCK_MASK, vram);
 #ifndef COLOR_16_BIT
 			unsigned color32;

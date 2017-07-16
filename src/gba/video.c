@@ -32,6 +32,8 @@ static void GBAVideoDummyRendererPutPixels(struct GBAVideoRenderer* renderer, si
 static void _startHblank(struct mTiming*, void* context, uint32_t cyclesLate);
 static void _startHdraw(struct mTiming*, void* context, uint32_t cyclesLate);
 
+static uint16_t _zeroes[0x2000] = {};
+
 const int GBAVideoObjSizes[16][2] = {
 	{ 8, 8 },
 	{ 16, 16 },
@@ -103,6 +105,8 @@ void GBAVideoReset(struct GBAVideo* video) {
 	memset(video->renderer->vramOBJ, 0, sizeof(video->renderer->vramOBJ));
 	video->renderer->vramOBJ[0] = &video->vram[0x8000];
 	video->renderer->vramOBJ[1] = &video->vram[0xA000];
+	video->renderer->vramOBJ[2] = _zeroes;
+	video->renderer->vramOBJ[3] = _zeroes;
 
 	memset(video->palette, 0, sizeof(video->palette));
 	memset(video->oam.raw, 0, sizeof(video->oam.raw));
@@ -129,6 +133,8 @@ void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* 
 	memset(renderer->vramOBJ, 0, sizeof(renderer->vramOBJ));
 	renderer->vramOBJ[0] = &video->vram[0x8000];
 	renderer->vramOBJ[1] = &video->vram[0xA000];
+	renderer->vramOBJ[2] = _zeroes;
+	renderer->vramOBJ[3] = _zeroes;
 	renderer->oam = &video->oam;
 	video->renderer->init(video->renderer);
 }

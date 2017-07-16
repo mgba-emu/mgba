@@ -7,6 +7,7 @@ Bugfixes:
 Misc:
  - DS GX: Clean up and unify texture mapping
  - DS Core: Add symbol loading
+ - DS Video: Simplify VRAM mapping
 
 0.7.0: (Future)
 Features:
