@@ -210,9 +210,10 @@ public:
 
 	void setSizeHint(const QSize& size);
 	virtual QSize sizeHint() const override;
-	void setLockAspectRatio(int width, int height);
+	void setDimensions(int width, int height);
 	void setCenteredAspectRatio(int width, int height);
 	void setLockIntegerScaling(bool lock);
+	void setLockAspectRatio(bool lock);
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override;
@@ -222,6 +223,7 @@ private:
 	bool m_centered;
 	int m_aspectWidth;
 	int m_aspectHeight;
+	bool m_lockAspectRatio;
 	bool m_lockIntegerScaling;
 };
 

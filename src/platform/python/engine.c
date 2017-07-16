@@ -21,6 +21,7 @@ static void mPythonScriptEngineDeinit(struct mScriptEngine*);
 static bool mPythonScriptEngineIsScript(struct mScriptEngine*, const char* name, struct VFile* vf);
 static bool mPythonScriptEngineLoadScript(struct mScriptEngine*, const char* name, struct VFile* vf);
 static void mPythonScriptEngineRun(struct mScriptEngine*);
+static bool mPythonScriptEngineLookupSymbol(struct mScriptEngine*, const char* name, int32_t* out);
 
 #ifdef USE_DEBUGGERS
 static void mPythonScriptDebuggerEntered(struct mScriptEngine*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
@@ -39,6 +40,7 @@ struct mPythonScriptEngine* mPythonCreateScriptEngine(void) {
 	engine->d.isScript = mPythonScriptEngineIsScript;
 	engine->d.loadScript = mPythonScriptEngineLoadScript;
 	engine->d.run = mPythonScriptEngineRun;
+	engine->d.lookupSymbol = mPythonScriptEngineLookupSymbol;
 #ifdef USE_DEBUGGERS
 	engine->d.debuggerEntered = mPythonScriptDebuggerEntered;
 #endif
@@ -87,6 +89,11 @@ void mPythonScriptEngineRun(struct mScriptEngine* se) {
 	}
 
 	mPythonRunPending();
+}
+
+bool mPythonScriptEngineLookupSymbol(struct mScriptEngine* se, const char* name, int32_t* out) {
+	struct mPythonScriptEngine* engine = (struct mPythonScriptEngine*) se;
+	return mPythonLookupSymbol(name, out);
 }
 
 #ifdef USE_DEBUGGERS

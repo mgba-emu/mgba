@@ -58,4 +58,5 @@ void free(void*);
 #endif
 #ifdef USE_DEBUGGERS
 #include <mgba/debugger/debugger.h>
+#include <mgba/internal/debugger/cli-debugger.h>
 #endif

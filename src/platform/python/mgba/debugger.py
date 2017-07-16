@@ -5,6 +5,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from ._pylib import ffi, lib
 from .core import IRunner, ICoreOwner, Core
+import io
+import sys
 
 class DebuggerCoreOwner(ICoreOwner):
     def __init__(self, debugger):
@@ -78,3 +80,22 @@ class NativeDebugger(IRunner):
 
     def addCallback(self, cb):
         self._cbs.append(cb)
+
+class CLIBackend(object):
+    def __init__(self, backend):
+        self.backend = backend
+
+    def write(self, string):
+        self.backend.printf(string)
+
+class CLIDebugger(NativeDebugger):
+    def __init__(self, native):
+        super(CLIDebugger, self).__init__(native)
+        self._cli = ffi.cast("struct CLIDebugger*", native)
+
+    def printf(self, message, *args, **kwargs):
+        message = message.format(*args, **kwargs)
+        self._cli.backend.printf(ffi.new("char []", b"%s"), ffi.new("char []", message.encode('utf-8')))
+
+    def installPrint(self):
+        sys.stdout = CLIBackend(self)

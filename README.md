@@ -160,6 +160,7 @@ medusa has no hard dependencies, however, the following optional dependencies ar
 - libzip or zlib: for loading ROMs stored in zip files.
 - ImageMagick: for GIF recording.
 - SQLite3: for game databases.
+- libelf: for ELF loading.
 
 SQLite3, libpng, and zlib are included with the emulator, so they do not need to be externally compiled first.
 

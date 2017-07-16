@@ -21,6 +21,10 @@
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
 
+#ifdef USE_ELF
+#include <mgba-util/elf-read.h>
+#endif
+
 mLOG_DEFINE_CATEGORY(GBA, "GBA", "gba");
 mLOG_DEFINE_CATEGORY(GBA_DEBUG, "GBA Debug", "gba.debug");
 
@@ -203,6 +207,10 @@ void GBAReset(struct ARMCore* cpu) {
 
 	gba->debug = false;
 	memset(gba->debugString, 0, sizeof(gba->debugString));
+
+	if (!gba->romVf) {
+		GBASkipBIOS(gba);
+	}
 }
 
 void GBASkipBIOS(struct GBA* gba) {
@@ -287,6 +295,25 @@ void GBADetachDebugger(struct GBA* gba) {
 	gba->debugger = NULL;
 }
 #endif
+
+bool GBALoadNull(struct GBA* gba) {
+	GBAUnloadROM(gba);
+	gba->romVf = NULL;
+	gba->pristineRomSize = 0;
+	gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
+#ifndef FIXED_ROM_BUFFER
+	gba->memory.rom = anonymousMemoryMap(SIZE_CART0);
+#else
+	gba->memory.rom = romBuffer;
+#endif
+	gba->isPristine = false;
+	gba->yankedRomSize = 0;
+	gba->memory.romSize = SIZE_CART0;
+	gba->memory.romMask = SIZE_CART0 - 1;
+	gba->memory.mirroring = false;
+	gba->romCrc32 = 0;
+	return true;
+}
 
 bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
 	GBAUnloadROM(gba);
@@ -478,6 +505,17 @@ void GBADebug(struct GBA* gba, uint16_t flags) {
 }
 
 bool GBAIsROM(struct VFile* vf) {
+#ifdef USE_ELF
+	struct ELF* elf = ELFOpen(vf);
+	if (elf) {
+		uint32_t entry = ELFEntry(elf);
+		bool isGBA = true;
+		isGBA = isGBA && ELFMachine(elf) == EM_ARM;
+		isGBA = isGBA && (entry == BASE_CART0 || entry == BASE_WORKING_RAM);
+		ELFClose(elf);
+		return isGBA;
+	}
+#endif
 	if (vf->seek(vf, GBA_ROM_MAGIC_OFFSET, SEEK_SET) < 0) {
 		return false;
 	}
@@ -495,6 +533,14 @@ bool GBAIsMB(struct VFile* vf) {
 	if (!GBAIsROM(vf)) {
 		return false;
 	}
+#ifdef USE_ELF
+	struct ELF* elf = ELFOpen(vf);
+	if (elf) {
+		bool isMB = ELFEntry(elf) == BASE_WORKING_RAM;
+		ELFClose(elf);
+		return isMB;
+	}
+#endif
 	if (vf->size(vf) > SIZE_WORKING_RAM) {
 		return false;
 	}
