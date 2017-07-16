@@ -1,4 +1,6 @@
 0.7.0: (Future)
+Features:
+ - ELF support
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
 Misc:

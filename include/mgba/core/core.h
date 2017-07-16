@@ -189,6 +189,14 @@ void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config
 
 void mCoreSetRTC(struct mCore* core, struct mRTCSource* rtc);
 
+void* mCoreGetMemoryBlock(struct mCore* core, uint32_t start, size_t* size);
+
+#ifdef USE_ELF
+struct ELF;
+bool mCoreLoadELF(struct mCore* core, struct ELF* elf);
+void mCoreLoadELFSymbols(struct mDebuggerSymbols* symbols, struct ELF*);
+#endif
+
 CXX_GUARD_END
 
 #endif
