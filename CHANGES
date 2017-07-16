@@ -4,6 +4,7 @@ Features:
 Bugfixes:
  - DS GX: Fix vertex texture transformation (fixes mgba.io/i/702)
  - DS GX: Automatically normalize winding culling calculations (fixes mgba.io/i/699)
+ - DS GX: Fixed viewport calculations (fixes mgba.io/i/709)
 Misc:
  - DS GX: Clean up and unify texture mapping
  - DS Core: Add symbol loading
