@@ -13,7 +13,12 @@ CXX_GUARD_START
 #ifdef USE_ELF
 
 #include <libelf.h>
+
+#if USE_ELF_REPL
 #include <elf_repl.h>
+#else
+#include <elf.h>
+#endif
 
 #include <mgba-util/vector.h>
 
