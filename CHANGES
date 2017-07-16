@@ -74,6 +74,7 @@ Bugfixes:
  - Qt: Ensure CLI backend is attached when submitting commands (fixes mgba.io/i/662)
  - Qt: Disable "New multiplayer window" when MAX_GBAS is reached (fixes mgba.io/i/107)
  - Qt: Fix game unpausing after frame advancing and refocusing
+ - Qt: Fix screen background improperly stretching
  - SDL: Fix game crash check
  - SDL: Fix race condition with audio thread when starting
  - SDL: Fix showing version number
