@@ -6,6 +6,7 @@ Bugfixes:
  - DS GX: Automatically normalize winding culling calculations (fixes mgba.io/i/699)
 Misc:
  - DS GX: Clean up and unify texture mapping
+ - DS Core: Add symbol loading
 
 0.7.0: (Future)
 Features:

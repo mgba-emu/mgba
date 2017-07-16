@@ -9,11 +9,13 @@
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
 #include <mgba/internal/arm/debugger/debugger.h>
+#include <mgba/internal/debugger/symbols.h>
 #include <mgba/internal/ds/ds.h>
 #include <mgba/internal/ds/extra/cli.h>
 #include <mgba/internal/ds/gx/software.h>
 #include <mgba/internal/ds/input.h>
 #include <mgba/internal/ds/renderers/software.h>
+#include <mgba-util/elf-read.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
@@ -536,6 +538,30 @@ static void _DSCoreDetachDebugger(struct mCore* core) {
 	DSDetachDebugger(core->board);
 	core->debugger = NULL;
 }
+
+static void _DSCoreLoadSymbols(struct mCore* core, struct VFile* vf) {
+#ifdef USE_ELF
+	bool closeAfter = false;
+	core->symbolTable = mDebuggerSymbolTableCreate();
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	if (!vf) {
+		closeAfter = true;
+		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".elf", O_RDONLY);
+	}
+#endif
+	if (!vf) {
+		return;
+	}
+	struct ELF* elf = ELFOpen(vf);
+	if (elf) {
+		mCoreLoadELFSymbols(core->symbolTable, elf);
+		ELFClose(elf);
+	}
+	if (closeAfter) {
+		vf->close(vf);
+	}
+#endif
+}
 #endif
 
 static struct mCheatDevice* _DSCoreCheatDevice(struct mCore* core) {
@@ -657,6 +683,7 @@ struct mCore* DSCoreCreate(void) {
 	core->cliDebuggerSystem = _DSCoreCliDebuggerSystem;
 	core->attachDebugger = _DSCoreAttachDebugger;
 	core->detachDebugger = _DSCoreDetachDebugger;
+	core->loadSymbols = _DSCoreLoadSymbols;
 #endif
 	core->cheatDevice = _DSCoreCheatDevice;
 	core->savedataClone = _DSCoreSavedataClone;
