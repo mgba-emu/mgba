@@ -168,7 +168,7 @@ private:
 #endif
 	LoadSaveState* m_stateWindow = nullptr;
 	WindowBackground* m_screenWidget;
-	QPixmap m_logo{":/res/medusa-bg.png"};
+	QPixmap m_logo{":/res/medusa-bg.jpg"};
 	ConfigController* m_config;
 	InputController m_inputController;
 	QList<QDateTime> m_frameList;
