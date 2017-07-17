@@ -596,6 +596,7 @@ void DS9IOInit(struct DS* ds) {
 	ds->memory.io9[DS_REG_POSTFLG >> 1] = 0x0001;
 	ds->memory.io9[DS9_REG_GXSTAT_HI >> 1] = 0x0600;
 	DS9IOWrite(ds, DS9_REG_VRAMCNT_G, 0x0300);
+	DS9IOWrite(ds, DS9_REG_POWCNT1, 0x0001);
 }
 
 void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {

@@ -11,6 +11,7 @@ Bugfixes:
  - DS Video: Fix affine parameter advancing (fixes mgba.io/i/802)
  - DS GX: Fix incorrect W values
  - DS Video: Fix 2D/3D blending alpha values
+ - DS I/O: Enable POWCNT1 bit 1 at boot (fixes mgba.io/i/616)
 Misc:
  - DS GX: Clean up and unify texture mapping
  - DS Core: Add symbol loading
