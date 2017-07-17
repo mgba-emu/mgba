@@ -10,6 +10,7 @@ Bugfixes:
  - DS GX: Properly center cross product in polygon normal calculations
  - DS Video: Fix affine parameter advancing (fixes mgba.io/i/802)
  - DS GX: Fix incorrect W values
+ - DS Video: Fix 2D/3D blending alpha values
 Misc:
  - DS GX: Clean up and unify texture mapping
  - DS Core: Add symbol loading

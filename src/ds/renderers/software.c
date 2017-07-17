@@ -429,11 +429,12 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 							} else {
 								if (!(flags & FLAG_TARGET_2) || !(softwareRenderer->row[x] & FLAG_TARGET_1)) {
 									_compositeNoBlendNoObjwin(softwareRenderer, x, (color & 0x00FFFFFF) | flags, softwareRenderer->row[x]);
-									softwareRenderer->alphaA[x] = 0x10;
-									softwareRenderer->alphaB[x] = 0;
 								} else if (softwareRenderer->row[x] & FLAG_TARGET_1) {
+									softwareRenderer->alphaB[x] = 0x10;
 									_compositeBlendNoObjwin(softwareRenderer, x, (color & 0x00FFFFFF) | flags, softwareRenderer->row[x]);
 								}
+								softwareRenderer->alphaA[x] = 0x10;
+								softwareRenderer->alphaB[x] = 0;
 							}
 						}
 					}
