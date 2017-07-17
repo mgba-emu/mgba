@@ -1,4 +1,4 @@
-0.6.0: (Future)
+0.6.0: (2017-07-16)
 Features:
  - Library view
  - Sprite viewer
@@ -172,6 +172,8 @@ Bugfixes:
  - Qt: Fix shader selector on Ubuntu (fixes mgba.io/i/767)
  - Qt: Fix GL-less build
  - Qt: Fix Software renderer not handling alpha bits properly
+ - Qt: Fix screen background improperly stretching
+ - SDL: Fix cheats not loading
 Misc:
  - GB Serialize: Add MBC state serialization
  - GBA Memory: Call crash callbacks regardless of if hard crash is enabled

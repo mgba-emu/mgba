@@ -132,8 +132,9 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	resizeFrame(QSize(GB_VIDEO_HORIZONTAL_PIXELS * i, GB_VIDEO_VERTICAL_PIXELS * i));
 #endif
 	m_screenWidget->setPixmap(m_logo);
-	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
+	m_screenWidget->setDimensions(m_logo.width(), m_logo.height());
 	m_screenWidget->setLockIntegerScaling(false);
+	m_screenWidget->setLockAspectRatio(true);
 	setCentralWidget(m_screenWidget);
 
 	connect(m_controller, &GameController::gameStarted, this, &Window::gameStarted);
@@ -151,7 +152,6 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 		QPixmap pixmap;
 		pixmap.convertFromImage(currentImage);
 		m_screenWidget->setPixmap(pixmap);
-		m_screenWidget->setLockAspectRatio(width, height);
 	});
 	connect(m_controller, &GameController::gamePaused, m_display, &Display::pauseDrawing);
 #ifndef Q_OS_MAC
@@ -744,7 +744,9 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 	context->core->desiredVideoDimensions(context->core, &width, &height);
 	m_display->setMinimumSize(width, height);
 	m_screenWidget->setMinimumSize(m_display->minimumSize());
+	m_screenWidget->setDimensions(width, height);
 	m_config->updateOption("lockIntegerScaling");
+	m_config->updateOption("lockAspectRatio");
 	if (m_savedScale > 0) {
 		resizeFrame(QSize(width, height) * m_savedScale);
 	}
@@ -806,8 +808,9 @@ void Window::gameStopped() {
 	setWindowFilePath(QString());
 	updateTitle();
 	detachWidget(m_display);
-	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
+	m_screenWidget->setDimensions(m_logo.width(), m_logo.height());
 	m_screenWidget->setLockIntegerScaling(false);
+	m_screenWidget->setLockAspectRatio(true);
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->unsetCursor();
 #ifdef M_CORE_GB
@@ -1276,6 +1279,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	lockAspectRatio->addBoolean(tr("Lock aspect ratio"), avMenu);
 	lockAspectRatio->connect([this](const QVariant& value) {
 		m_display->lockAspectRatio(value.toBool());
+		if (m_controller->isLoaded()) {
+			m_screenWidget->setLockAspectRatio(value.toBool());
+		}
 	}, this);
 	m_config->updateOption("lockAspectRatio");
 
@@ -1666,13 +1672,17 @@ QSize WindowBackground::sizeHint() const {
 	return m_sizeHint;
 }
 
-void WindowBackground::setLockAspectRatio(int width, int height) {
+void WindowBackground::setDimensions(int width, int height) {
 	m_aspectWidth = width;
 	m_aspectHeight = height;
 }
 
 void WindowBackground::setLockIntegerScaling(bool lock) {
 	m_lockIntegerScaling = lock;
+}
+
+void WindowBackground::setLockAspectRatio(bool lock) {
+	m_lockAspectRatio = lock;
 }
 
 void WindowBackground::paintEvent(QPaintEvent*) {
@@ -1685,10 +1695,12 @@ void WindowBackground::paintEvent(QPaintEvent*) {
 	painter.fillRect(QRect(QPoint(), size()), Qt::black);
 	QSize s = size();
 	QSize ds = s;
-	if (ds.width() * m_aspectHeight > ds.height() * m_aspectWidth) {
-		ds.setWidth(ds.height() * m_aspectWidth / m_aspectHeight);
-	} else if (ds.width() * m_aspectHeight < ds.height() * m_aspectWidth) {
-		ds.setHeight(ds.width() * m_aspectHeight / m_aspectWidth);
+	if (m_lockAspectRatio) {
+		if (ds.width() * m_aspectHeight > ds.height() * m_aspectWidth) {
+			ds.setWidth(ds.height() * m_aspectWidth / m_aspectHeight);
+		} else if (ds.width() * m_aspectHeight < ds.height() * m_aspectWidth) {
+			ds.setHeight(ds.width() * m_aspectHeight / m_aspectWidth);
+		}
 	}
 	if (m_lockIntegerScaling) {
 		ds.setWidth(ds.width() - ds.width() % m_aspectWidth);
