@@ -407,9 +407,7 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 				if (DSRegisterDISPCNTIs3D(softwareRenderer->dispcnt) && gx) {
 					const color_t* scanline;
 					gx->renderer->getScanline(gx->renderer, y, &scanline);
-					uint32_t flags = (softwareRenderer->bg[0].priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND;
-					flags |= FLAG_TARGET_2 * softwareRenderer->bg[0].target2;
-					flags |= FLAG_TARGET_1 * (softwareRenderer->bg[0].target1 && softwareRenderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(softwareRenderer->currentWindow.packed));
+					uint32_t flags = (softwareRenderer->bg[0].priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND | FLAG_TARGET_1 | FLAG_TARGET_2;
 					int x;
 					for (x = softwareRenderer->start; x < softwareRenderer->end; ++x) {
 						color_t color = scanline[x];
@@ -425,12 +423,11 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 								// TODO: More precise values
 								softwareRenderer->alphaA[x] = (color >> 28) + 1;
 								softwareRenderer->alphaB[x] = 0xF - (color >> 28);
-								_compositeBlendNoObjwin(softwareRenderer, x, (color & 0x00FFFFFF) | flags | FLAG_TARGET_1, softwareRenderer->row[x]);
+								_compositeBlendNoObjwin(softwareRenderer, x, (color & 0x00FFFFFF) | flags, softwareRenderer->row[x]);
 							} else {
-								if (!(flags & FLAG_TARGET_2) || !(softwareRenderer->row[x] & FLAG_TARGET_1)) {
+								if (!(softwareRenderer->row[x] & FLAG_TARGET_1)) {
 									_compositeNoBlendNoObjwin(softwareRenderer, x, (color & 0x00FFFFFF) | flags, softwareRenderer->row[x]);
-								} else if (softwareRenderer->row[x] & FLAG_TARGET_1) {
-									softwareRenderer->alphaB[x] = 0x10;
+								} else {
 									_compositeBlendNoObjwin(softwareRenderer, x, (color & 0x00FFFFFF) | flags, softwareRenderer->row[x]);
 								}
 								softwareRenderer->alphaA[x] = 0x10;
