@@ -440,6 +440,7 @@ static void DSGXSoftwareRendererReset(struct DSGXRenderer* renderer) {
 	struct DSGXSoftwareRenderer* softwareRenderer = (struct DSGXSoftwareRenderer*) renderer;
 	softwareRenderer->clearColor = 0;
 	softwareRenderer->clearStencil = 0;
+	softwareRenderer->clearDepth = 0xFFFFFF;
 }
 
 static void DSGXSoftwareRendererDeinit(struct DSGXRenderer* renderer) {
@@ -738,12 +739,13 @@ static void DSGXSoftwareRendererSetRAM(struct DSGXRenderer* renderer, struct DSG
 
 	color_t clearColor = softwareRenderer->clearColor;
 	uint16_t clearStencil = softwareRenderer->clearStencil;
+	uint32_t clearDepth = softwareRenderer->clearDepth;
 
 	for (i = 0; i < DS_VIDEO_VERTICAL_PIXELS * DS_VIDEO_HORIZONTAL_PIXELS ; i += 4) {
-		softwareRenderer->depthBuffer[i] = INT32_MAX;
-		softwareRenderer->depthBuffer[i + 1] = INT32_MAX;
-		softwareRenderer->depthBuffer[i + 2] = INT32_MAX;
-		softwareRenderer->depthBuffer[i + 3] = INT32_MAX;
+		softwareRenderer->depthBuffer[i] = clearDepth;
+		softwareRenderer->depthBuffer[i + 1] = clearDepth;
+		softwareRenderer->depthBuffer[i + 2] = clearDepth;
+		softwareRenderer->depthBuffer[i + 3] = clearDepth;
 		softwareRenderer->scanlineCache[i] = clearColor;
 		softwareRenderer->scanlineCache[i + 1] = clearColor;
 		softwareRenderer->scanlineCache[i + 2] = clearColor;
@@ -815,6 +817,9 @@ static void DSGXSoftwareRendererWriteRegister(struct DSGXRenderer* renderer, uin
 		softwareRenderer->clearColor &= 0x00FFFFFF;
 		softwareRenderer->clearColor |= (value & 0x001F) << 27;
 		softwareRenderer->clearStencil = (value & 0x3F00) >> 8;
+		break;
+	case DS9_REG_CLEAR_DEPTH:
+		softwareRenderer->clearDepth = (value & 0x7FFF) * 0x200 + 0x1FF;
 		break;
 	}
 }

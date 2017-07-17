@@ -1326,6 +1326,7 @@ void DSGXReset(struct DSGX* gx) {
 	gx->currentPoly.polyParams = 0x001F00C0;
 	gx->nextPoly.polyParams = 0x001F00C0;
 	gx->dmaSource = -1;
+	gx->renderer->reset(gx->renderer);
 }
 
 void DSGXAssociateRenderer(struct DSGX* gx, struct DSGXRenderer* renderer) {

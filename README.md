@@ -182,7 +182,6 @@ Missing features on DS are
 	- Edge marking/wireframe
 	- Highlight shading
 	- Fog
-	- Clear depth
 	- Anti-aliasing
 	- Alpha test
 	- Position test

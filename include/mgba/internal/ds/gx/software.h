@@ -95,6 +95,7 @@ struct DSGXSoftwareRenderer {
 	int sort;
 	uint16_t clearStencil;
 	color_t clearColor;
+	uint32_t clearDepth;
 	bool flushPending;
 
 	struct DSGXVertex* verts;
