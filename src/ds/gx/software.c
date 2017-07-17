@@ -12,7 +12,10 @@
 DEFINE_VECTOR(DSGXSoftwarePolygonList, struct DSGXSoftwarePolygon);
 DEFINE_VECTOR(DSGXSoftwareEdgeList, struct DSGXSoftwareEdge);
 
-#define SHADOW_BIT 0x4000
+#define S_BIT_POLY_ID 0x003F
+#define S_BIT_POLY_SHADOW_ID 0x3F00
+#define S_BIT_SHADOW 0x4000
+#define S_BIT_FOG 0x8000
 
 static void DSGXSoftwareRendererInit(struct DSGXRenderer* renderer);
 static void DSGXSoftwareRendererReset(struct DSGXRenderer* renderer);
@@ -639,7 +642,7 @@ static void _drawSpan(struct DSGXSoftwareRenderer* softwareRenderer, struct DSGX
 	unsigned stencilValue = span->polyId;
 	stencilValue |= stencilValue << 8;
 	if (span->poly->blendFormat == 3) {
-		stencilValue |= SHADOW_BIT;
+		stencilValue |= S_BIT_SHADOW;
 	}
 	for (; x < (span->ep[1].coord[0] >> 12) && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
 		if (span->ep[0].coord[softwareRenderer->sort] < depth[x]) {
@@ -654,37 +657,41 @@ static void _drawSpan(struct DSGXSoftwareRenderer* softwareRenderer, struct DSGX
 				ab = b;
 			}
 			if (a == 0x1F) {
+				// Opaque blending
 				depth[x] = span->ep[0].coord[softwareRenderer->sort];
 				scanline[x] = color;
-				stencil[x] &= 0x00FF;
-				stencil[x] |= s & 0x3F00;
+				stencil[x] &= S_BIT_POLY_ID;
+				stencil[x] |= s & S_BIT_POLY_SHADOW_ID;
 			} else if (a) {
 				// TODO: Disable alpha?
 				if (b) {
 					color = _mix32(a, color, 0x1F - a, current);
 					color |= ab << 27;
 				}
-				if ((stencil[x] & 0x3F) != (s & 0x3F)) {
-					if (!(s & SHADOW_BIT) || ((stencil[x] & 0x3F00) != (s & 0x3F00) && s & 0x3F00 && stencil[x] & SHADOW_BIT)) {
+
+				if ((stencil[x] ^ s) & S_BIT_POLY_ID) {
+					if (!(s & S_BIT_SHADOW) || (((stencil[x] ^ s) & S_BIT_POLY_SHADOW_ID) && s & S_BIT_POLY_SHADOW_ID && stencil[x] & S_BIT_SHADOW)) {
 						if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
 							depth[x] = span->ep[0].coord[softwareRenderer->sort];
 						}
 						scanline[x] = color;
-						stencil[x] &= 0x3F00;
+						stencil[x] &= S_BIT_POLY_SHADOW_ID;
 					} else {
 						s = 0;
-						stencil[x] &= 0x3F3F;
+						stencil[x] &= S_BIT_POLY_SHADOW_ID | S_BIT_POLY_ID;
 					}
 				}
-				s &= ~0x7F00;
+
+				s &= ~(S_BIT_POLY_SHADOW_ID | S_BIT_SHADOW);
 				stencil[x] |= s;
 			}
-		} else if ((stencilValue & 0x7F00) == SHADOW_BIT) {
+		} else if ((stencilValue & 0x7F00) == S_BIT_SHADOW) {
+			// Set stencil buffer bit if depth test fails
 			_resolveEndpoint(span);
 			color_t color = _lookupColor(softwareRenderer, &span->ep[0], span->poly);
 			unsigned a = color >> 27;
 			if (a > 0) {
-				stencil[x] |= SHADOW_BIT;
+				stencil[x] |= S_BIT_SHADOW;
 			}
 		}
 		_stepEndpoint(span);
@@ -817,6 +824,7 @@ static void DSGXSoftwareRendererWriteRegister(struct DSGXRenderer* renderer, uin
 		softwareRenderer->clearColor &= 0x00FFFFFF;
 		softwareRenderer->clearColor |= (value & 0x001F) << 27;
 		softwareRenderer->clearStencil = (value & 0x3F00) >> 8;
+		softwareRenderer->clearStencil |= value & S_BIT_FOG;
 		break;
 	case DS9_REG_CLEAR_DEPTH:
 		softwareRenderer->clearDepth = (value & 0x7FFF) * 0x200 + 0x1FF;
