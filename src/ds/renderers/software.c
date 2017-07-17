@@ -392,11 +392,6 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 	memset(softwareRenderer->alphaA, softwareRenderer->blda, sizeof(softwareRenderer->alphaA));
 	memset(softwareRenderer->alphaB, softwareRenderer->bldb, sizeof(softwareRenderer->alphaB));
 
-	softwareRenderer->bg[2].sx = softwareRenderer->bg[2].refx + softwareRenderer->bg[2].dmx * y;
-	softwareRenderer->bg[2].sy = softwareRenderer->bg[2].refy + softwareRenderer->bg[2].dmy * y;
-	softwareRenderer->bg[3].sx = softwareRenderer->bg[3].refx + softwareRenderer->bg[3].dmx * y;
-	softwareRenderer->bg[3].sy = softwareRenderer->bg[3].refy + softwareRenderer->bg[3].dmy * y;
-
 	int w;
 	unsigned priority;
 	for (priority = 0; priority < 4; ++priority) {
@@ -499,6 +494,38 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 	GBAVideoSoftwareRendererPostprocessBuffer(softwareRenderer);
 }
 
+static void _advanceAffine(struct GBAVideoSoftwareRenderer* softwareRenderer) {
+	switch (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt)) {
+	case 2:
+	case 4:
+	case 5:
+		softwareRenderer->bg[2].sx += softwareRenderer->bg[2].dmx;
+		softwareRenderer->bg[2].sy += softwareRenderer->bg[2].dmy;
+		// Fall through
+	case 1:
+	case 3:
+		softwareRenderer->bg[3].sx += softwareRenderer->bg[3].dmx;
+		softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
+		break;
+	}
+}
+
+static void _deadvanceAffine(struct GBAVideoSoftwareRenderer* softwareRenderer) {
+	switch (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt)) {
+	case 2:
+	case 4:
+	case 5:
+		softwareRenderer->bg[2].sx -= softwareRenderer->bg[2].dmx;
+		softwareRenderer->bg[2].sy -= softwareRenderer->bg[2].dmy;
+		// Fall through
+	case 1:
+	case 3:
+		softwareRenderer->bg[3].sx -= softwareRenderer->bg[3].dmx;
+		softwareRenderer->bg[3].sy -= softwareRenderer->bg[3].dmy;
+		break;
+	}
+}
+
 static void _drawScanlineA(struct DSVideoSoftwareRenderer* softwareRenderer, int y) {
 	memcpy(softwareRenderer->engA.d.vramBG, softwareRenderer->d.vramABG, sizeof(softwareRenderer->engA.d.vramBG));
 	memcpy(softwareRenderer->engA.d.vramOBJ, softwareRenderer->d.vramAOBJ, sizeof(softwareRenderer->engA.d.vramOBJ));
@@ -540,6 +567,8 @@ static void _drawScanlineA(struct DSVideoSoftwareRenderer* softwareRenderer, int
 	case 3:
 		break;
 	}
+
+	_advanceAffine(&softwareRenderer->engA);
 
 #ifdef COLOR_16_BIT
 #if defined(__ARM_NEON) && !defined(__APPLE__)
@@ -585,6 +614,8 @@ static void _drawScanlineB(struct DSVideoSoftwareRenderer* softwareRenderer, int
 		DSVideoSoftwareRendererDrawGBAScanline(&softwareRenderer->engB.d, NULL, y);
 		break;
 	}
+
+	_advanceAffine(&softwareRenderer->engB);
 
 #ifdef COLOR_16_BIT
 #if defined(__ARM_NEON) && !defined(__APPLE__)
@@ -642,7 +673,9 @@ static void DSVideoSoftwareRendererDrawScanline(struct DSVideoRenderer* renderer
 
 static void DSVideoSoftwareRendererDrawScanlineDirectly(struct DSVideoRenderer* renderer, int y, color_t* scanline) {
 	struct DSVideoSoftwareRenderer* softwareRenderer = (struct DSVideoSoftwareRenderer*) renderer;
+	_deadvanceAffine(&softwareRenderer->engA);
 	DSVideoSoftwareRendererDrawGBAScanline(&softwareRenderer->engA.d, softwareRenderer->d.gx, y);
+	_advanceAffine(&softwareRenderer->engA);
 	memcpy(scanline, softwareRenderer->engA.row, softwareRenderer->engA.masterEnd * sizeof(*scanline));
 }
 
