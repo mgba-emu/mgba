@@ -11,6 +11,7 @@ Misc:
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
  - All: Make FIXED_ROM_BUFFER an option instead of 3DS-only
  - Qt: Don't rebuild library view if style hasn't changed
+ - Qt: Redo GameController into multiple classes
 
 0.6.0: (2017-07-16)
 Features:

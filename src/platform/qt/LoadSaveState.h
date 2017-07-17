@@ -8,11 +8,13 @@
 
 #include <QWidget>
 
+#include <memory>
+
 #include "ui_LoadSaveState.h"
 
 namespace QGBA {
 
-class GameController;
+class CoreController;
 class InputController;
 class SavestateButton;
 
@@ -27,7 +29,7 @@ Q_OBJECT
 public:
 	const static int NUM_SLOTS = 9;
 
-	LoadSaveState(GameController* controller, QWidget* parent = nullptr);
+	LoadSaveState(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
 	void setInputController(InputController* controller);
 	void setMode(LoadSave mode);
@@ -46,7 +48,7 @@ private:
 	void triggerState(int slot);
 
 	Ui::LoadSaveState m_ui;
-	GameController* m_controller;
+	std::shared_ptr<CoreController> m_controller;
 	SavestateButton* m_slots[NUM_SLOTS];
 	LoadSave m_mode;
 

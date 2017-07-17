@@ -103,6 +103,7 @@ void mCoreThreadWaitFromThread(struct mCoreThread* threadContext);
 void mCoreThreadStopWaiting(struct mCoreThread* threadContext);
 
 void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool);
+void mCoreThreadRewindParamsChanged(struct mCoreThread* threadContext);
 
 struct mCoreThread* mCoreThreadGet(void);
 struct mLogger* mCoreThreadLogger(void);

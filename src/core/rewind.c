@@ -19,6 +19,9 @@ THREAD_ENTRY _rewindThread(void* context);
 #endif
 
 void mCoreRewindContextInit(struct mCoreRewindContext* context, size_t entries, bool onThread) {
+	if (context->currentState) {
+		return;
+	}
 	mCoreRewindPatchesInit(&context->patchMemory, entries);
 	size_t e;
 	for (e = 0; e < entries; ++e) {
@@ -42,6 +45,9 @@ void mCoreRewindContextInit(struct mCoreRewindContext* context, size_t entries, 
 }
 
 void mCoreRewindContextDeinit(struct mCoreRewindContext* context) {
+	if (!context->currentState) {
+		return;
+	}
 #ifndef DISABLE_THREADING
 	if (context->onThread) {
 		MutexLock(&context->mutex);
@@ -55,6 +61,8 @@ void mCoreRewindContextDeinit(struct mCoreRewindContext* context) {
 #endif
 	context->previousState->close(context->previousState);
 	context->currentState->close(context->currentState);
+	context->previousState = NULL;
+	context->currentState = NULL;
 	size_t s;
 	for (s = 0; s < mCoreRewindPatchesSize(&context->patchMemory); ++s) {
 		deinitPatchFast(mCoreRewindPatchesGetPointer(&context->patchMemory, s));

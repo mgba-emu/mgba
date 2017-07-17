@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.1)
 project(mGBA)
 set(BINARY_NAME mgba CACHE INTERNAL "Name of output binaries")
 if(NOT MSVC)

@@ -8,12 +8,12 @@
 
 #include <mgba/core/core.h>
 
-#include "GameController.h"
+#include "CoreController.h"
 #include "MemoryView.h"
 
 using namespace QGBA;
 
-MemorySearch::MemorySearch(GameController* controller, QWidget* parent)
+MemorySearch::MemorySearch(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
 {
@@ -26,6 +26,8 @@ MemorySearch::MemorySearch(GameController* controller, QWidget* parent)
 	connect(m_ui.numHex, &QPushButton::clicked, this, &MemorySearch::refresh);
 	connect(m_ui.numDec, &QPushButton::clicked, this, &MemorySearch::refresh);
 	connect(m_ui.viewMem, &QPushButton::clicked, this, &MemorySearch::openMemory);
+
+	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 }
 
 MemorySearch::~MemorySearch() {
@@ -109,10 +111,7 @@ void MemorySearch::search() {
 
 	mCoreMemorySearchParams params;
 
-	GameController::Interrupter interrupter(m_controller);
-	if (!m_controller->isLoaded()) {
-		return;
-	}
+	CoreController::Interrupter interrupter(m_controller);
 	mCore* core = m_controller->thread()->core;
 
 	if (createParams(&params)) {
@@ -125,10 +124,7 @@ void MemorySearch::search() {
 void MemorySearch::searchWithin() {
 	mCoreMemorySearchParams params;
 
-	GameController::Interrupter interrupter(m_controller);
-	if (!m_controller->isLoaded()) {
-		return;
-	}
+	CoreController::Interrupter interrupter(m_controller);
 	mCore* core = m_controller->thread()->core;
 
 	if (createParams(&params)) {
@@ -139,10 +135,7 @@ void MemorySearch::searchWithin() {
 }
 
 void MemorySearch::refresh() {
-	GameController::Interrupter interrupter(m_controller);
-	if (!m_controller->isLoaded()) {
-		return;
-	}
+	CoreController::Interrupter interrupter(m_controller);
 	mCore* core = m_controller->thread()->core;
 
 	m_ui.results->clearContents();
@@ -220,7 +213,6 @@ void MemorySearch::openMemory() {
 	MemoryView* memView = new MemoryView(m_controller);
 	memView->jumpToAddress(address);
 
-	connect(m_controller, &GameController::gameStopped, memView, &QWidget::close);
 	memView->setAttribute(Qt::WA_DeleteOnClose);
 	memView->show();
 }

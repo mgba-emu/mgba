@@ -23,7 +23,7 @@ struct GBASIOLockstepNode;
 
 namespace QGBA {
 
-class GameController;
+class CoreController;
 
 class MultiplayerController : public QObject {
 Q_OBJECT
@@ -31,11 +31,11 @@ Q_OBJECT
 public:
 	MultiplayerController();
 
-	bool attachGame(GameController*);
-	void detachGame(GameController*);
+	bool attachGame(CoreController*);
+	void detachGame(CoreController*);
 
 	int attached();
-	int playerId(GameController*);
+	int playerId(CoreController*);
 
 signals:
 	void gameAttached();
@@ -43,7 +43,7 @@ signals:
 
 private:
 	struct Player {
-		GameController* controller;
+		CoreController* controller;
 		GBSIOLockstepNode* gbNode;
 		GBASIOLockstepNode* gbaNode;
 		int awake;

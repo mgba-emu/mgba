@@ -46,12 +46,12 @@ public:
 	DisplayGL(const QGLFormat& format, QWidget* parent = nullptr);
 	~DisplayGL();
 
+	void startDrawing(std::shared_ptr<CoreController>) override;
 	bool isDrawing() const override { return m_isDrawing; }
 	bool supportsShaders() const override;
 	VideoShader* shaders() override;
 
 public slots:
-	void startDrawing(mCoreThread* context) override;
 	void stopDrawing() override;
 	void pauseDrawing() override;
 	void unpauseDrawing() override;
@@ -59,7 +59,7 @@ public slots:
 	void lockAspectRatio(bool lock) override;
 	void lockIntegerScaling(bool lock) override;
 	void filter(bool filter) override;
-	void framePosted(const uint32_t*) override;
+	void framePosted() override;
 	void setShaders(struct VDir*) override;
 	void clearShaders() override;
 
@@ -74,7 +74,7 @@ private:
 	QGLWidget* m_gl;
 	PainterGL* m_painter;
 	QThread* m_drawThread = nullptr;
-	mCoreThread* m_context = nullptr;
+	std::shared_ptr<CoreController> m_context;
 };
 
 class PainterGL : public QObject {
@@ -84,7 +84,7 @@ public:
 	PainterGL(int majorVersion, QGLWidget* parent);
 	~PainterGL();
 
-	void setContext(mCoreThread*);
+	void setContext(std::shared_ptr<CoreController>);
 	void setMessagePainter(MessagePainter*);
 	void enqueue(const uint32_t* backing);
 
@@ -116,14 +116,14 @@ private:
 	QPainter m_painter;
 	QMutex m_mutex;
 	QGLWidget* m_gl;
-	bool m_active;
-	bool m_started;
-	mCoreThread* m_context;
+	bool m_active = false;
+	bool m_started = false;
+	std::shared_ptr<CoreController> m_context = nullptr;
 	bool m_supportsShaders;
-	VideoShader m_shader;
-	VideoBackend* m_backend;
+	VideoShader m_shader{};
+	VideoBackend* m_backend = nullptr;
 	QSize m_size;
-	MessagePainter* m_messagePainter;
+	MessagePainter* m_messagePainter = nullptr;
 	QElapsedTimer m_delayTimer;
 };
 

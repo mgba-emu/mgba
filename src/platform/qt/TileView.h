@@ -7,7 +7,6 @@
 #define QGBA_TILE_VIEW
 
 #include "AssetView.h"
-#include "GameController.h"
 
 #include "ui_TileView.h"
 
@@ -15,11 +14,13 @@
 
 namespace QGBA {
 
+class CoreController;
+
 class TileView : public AssetView {
 Q_OBJECT
 
 public:
-	TileView(GameController* controller, QWidget* parent = nullptr);
+	TileView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
 public slots:
 	void updatePalette(int);
@@ -34,7 +35,7 @@ private:
 
 	Ui::TileView m_ui;
 
-	GameController* m_controller;
+	std::shared_ptr<CoreController> m_controller;
 	mTileCacheEntry m_tileStatus[3072 * 32] = {}; // TODO: Correct size
 	int m_paletteId = 0;
 };

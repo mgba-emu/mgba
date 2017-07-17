@@ -6,13 +6,15 @@
 #ifndef QGBA_MEMORY_SEARCH
 #define QGBA_MEMORY_SEARCH
 
+#include <memory>
+
 #include "ui_MemorySearch.h"
 
 #include <mgba/core/mem-search.h>
 
 namespace QGBA {
 
-class GameController;
+class CoreController;
 
 class MemorySearch : public QWidget {
 Q_OBJECT
@@ -20,7 +22,7 @@ Q_OBJECT
 public:
 	static constexpr size_t LIMIT = 10000;
 
-	MemorySearch(GameController* controller, QWidget* parent = nullptr);
+	MemorySearch(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 	~MemorySearch();
 
 public slots:
@@ -36,7 +38,7 @@ private:
 
 	Ui::MemorySearch m_ui;
 
-	GameController* m_controller;
+	std::shared_ptr<CoreController> m_controller;
 
 	mCoreMemorySearchResults m_results;
 	QByteArray m_string;

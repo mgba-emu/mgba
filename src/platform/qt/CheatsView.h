@@ -9,6 +9,7 @@
 #include <QWidget>
 
 #include <functional>
+#include <memory>
 
 #include "CheatsModel.h"
 
@@ -18,13 +19,13 @@ struct mCheatDevice;
 
 namespace QGBA {
 
-class GameController;
+class CoreController;
 
 class CheatsView : public QWidget {
 Q_OBJECT
 
 public:
-	CheatsView(GameController* controller, QWidget* parent = nullptr);
+	CheatsView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
 	virtual bool eventFilter(QObject*, QEvent*) override;
 
@@ -38,7 +39,7 @@ private:
 	void enterCheat(int codeType);
 
 	Ui::CheatsView m_ui;
-	GameController* m_controller;
+	std::shared_ptr<CoreController> m_controller;
 	CheatsModel m_model;
 };
 

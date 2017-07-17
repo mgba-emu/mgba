@@ -6,22 +6,28 @@
 #ifndef QGBA_ASSET_VIEW
 #define QGBA_ASSET_VIEW
 
+#include <QTimer>
 #include <QWidget>
 
-#include "GameController.h"
+#include <mgba/core/tile-cache.h>
+
+#include <memory>
 
 namespace QGBA {
+
+class CoreController;
 
 class AssetView : public QWidget {
 Q_OBJECT
 
 public:
-	AssetView(GameController* controller, QWidget* parent = nullptr);
+	AssetView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
 	void compositeTile(unsigned tileId, void* image, size_t stride, size_t x, size_t y, int depth = 8);
 
 protected slots:
-	void updateTiles(bool force = false);
+	void updateTiles();
+	void updateTiles(bool force);
 
 protected:
 #ifdef M_CORE_GBA
@@ -34,10 +40,10 @@ protected:
 	void resizeEvent(QResizeEvent*) override;
 	void showEvent(QShowEvent*) override;
 
-	const std::shared_ptr<mTileCache> m_tileCache;
+	mTileCache* const m_tileCache;
 
 private:
-	GameController* m_controller;
+	std::shared_ptr<CoreController> m_controller;
 	QTimer m_updateTimer;
 };
 
