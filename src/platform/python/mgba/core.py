@@ -91,6 +91,12 @@ class CoreCallbacks(object):
             cb()
 
 class Core(object):
+    if hasattr(lib, 'PLATFORM_GBA'):
+        PLATFORM_GBA = lib.PLATFORM_GBA
+
+    if hasattr(lib, 'PLATFORM_GB'):
+        PLATFORM_GB = lib.PLATFORM_GB
+
     def __init__(self, native):
         self._core = native
         self._wasReset = False
@@ -117,8 +123,10 @@ class Core(object):
     @classmethod
     def _detect(cls, core):
         if hasattr(cls, 'PLATFORM_GBA') and core.platform(core) == cls.PLATFORM_GBA:
+            from .gba import GBA
             return GBA(core)
         if hasattr(cls, 'PLATFORM_GB') and core.platform(core) == cls.PLATFORM_GB:
+            from .gb import GB
             return GB(core)
         return Core(core)
 
@@ -253,12 +261,3 @@ class IRunner(object):
 
     def isPaused(self):
         raise NotImplementedError
-
-if hasattr(lib, 'PLATFORM_GBA'):
-    from .gba import GBA
-    Core.PLATFORM_GBA = lib.PLATFORM_GBA
-
-if hasattr(lib, 'PLATFORM_GB'):
-    from .gb import GB
-    from .lr35902 import LR35902Core
-    Core.PLATFORM_GB = lib.PLATFORM_GB

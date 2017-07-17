@@ -17,6 +17,7 @@ Features:
  - ELF support
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
+ - Python: Fix importing .gb or .gba before .core
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
