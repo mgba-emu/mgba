@@ -6,6 +6,7 @@ Bugfixes:
  - DS GX: Automatically normalize winding culling calculations (fixes mgba.io/i/699)
  - DS GX: Fixed viewport calculations (fixes mgba.io/i/709)
  - DS Video: Fix display capture blending value 16 (fixes mgba.io/i/757)
+ - DS GX: Properly center cross product in polygon normal calculations
 Misc:
  - DS GX: Clean up and unify texture mapping
  - DS Core: Add symbol loading
