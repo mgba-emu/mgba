@@ -408,7 +408,7 @@ static int32_t _dotViewport(struct DSGXVertex* vertex, int32_t* col) {
 	a = col[12];
 	b = MTX_ONE;
 	sum += a * b;
-	return sum >> 8LL;
+	return sum >> 12LL;
 }
 
 static int16_t _dotTexture(struct DSGX* gx, int16_t* input, int mode, int c) {
