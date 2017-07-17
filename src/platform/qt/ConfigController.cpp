@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ConfigController.h"
 
-#include "GameController.h"
+#include "CoreController.h"
 
 #include <QAction>
 #include <QDir>
@@ -98,8 +98,8 @@ ConfigController::ConfigController(QObject* parent)
 
 	mCoreConfigInit(&m_config, PORT);
 
-	m_opts.audioSync = GameController::AUDIO_SYNC;
-	m_opts.videoSync = GameController::VIDEO_SYNC;
+	m_opts.audioSync = CoreController::AUDIO_SYNC;
+	m_opts.videoSync = CoreController::VIDEO_SYNC;
 	m_opts.fpsTarget = 60;
 	m_opts.audioBuffers = 1536;
 	m_opts.sampleRate = 44100;

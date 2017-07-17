@@ -167,10 +167,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		mLogFilterLoad(threadContext->logger.d.filter, &core->config);
 	}
 
-	if (core->opts.rewindEnable && core->opts.rewindBufferCapacity > 0) {
-		 mCoreRewindContextInit(&threadContext->impl->rewind, core->opts.rewindBufferCapacity, true);
-		 threadContext->impl->rewind.stateFlags = core->opts.rewindSave ? SAVESTATE_SAVEDATA : 0;
-	}
+	mCoreThreadRewindParamsChanged(threadContext);
 
 	_changeState(threadContext->impl, THREAD_RUNNING, true);
 
@@ -252,7 +249,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 }
 
 bool mCoreThreadStart(struct mCoreThread* threadContext) {
-	threadContext->impl = malloc(sizeof(*threadContext->impl));
+	threadContext->impl = calloc(sizeof(*threadContext->impl), 1);
 	threadContext->impl->state = THREAD_INITIALIZED;
 	threadContext->logger.p = threadContext;
 	if (!threadContext->logger.d.log) {
@@ -545,6 +542,16 @@ void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool rewinding) 
 		threadContext->impl->state = THREAD_RUNNING;
 	}
 	MutexUnlock(&threadContext->impl->stateMutex);
+}
+
+void mCoreThreadRewindParamsChanged(struct mCoreThread* threadContext) {
+	struct mCore* core = threadContext->core;
+	if (core->opts.rewindEnable && core->opts.rewindBufferCapacity > 0) {
+		 mCoreRewindContextInit(&threadContext->impl->rewind, core->opts.rewindBufferCapacity, true);
+		 threadContext->impl->rewind.stateFlags = core->opts.rewindSave ? SAVESTATE_SAVEDATA : 0;
+	} else {
+		 mCoreRewindContextDeinit(&threadContext->impl->rewind);
+	}
 }
 
 void mCoreThreadWaitFromThread(struct mCoreThread* threadContext) {

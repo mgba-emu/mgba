@@ -22,7 +22,8 @@ public:
 	virtual unsigned sampleRate() const override;
 
 public slots:
-	virtual void setInput(mCoreThread* input) override;
+	virtual void setInput(std::shared_ptr<CoreController> input) override;
+	virtual void stop() override;
 	virtual bool start() override;
 	virtual void pause() override;
 
@@ -33,7 +34,7 @@ public slots:
 
 private:
 	QAudioOutput* m_audioOutput = nullptr;
-	AudioDevice* m_device = nullptr;
+	std::unique_ptr<AudioDevice> m_device;
 	unsigned m_sampleRate = 44100;
 };
 

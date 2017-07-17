@@ -6,9 +6,10 @@
 #include "GBAApp.h"
 
 #include "AudioProcessor.h"
+#include "CoreController.h"
+#include "CoreManager.h"
 #include "ConfigController.h"
 #include "Display.h"
-#include "GameController.h"
 #include "Window.h"
 #include "VFileDevice.h"
 
@@ -57,6 +58,9 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 
 	reloadGameDB();
 
+	m_manager.setConfig(m_configController->config());
+	m_manager.setMultiplayerController(&m_multiplayer);
+
 	if (!m_configController->getQtOption("audioDriver").isNull()) {
 		AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController->getQtOption("audioDriver").toInt()));
 	}
@@ -71,7 +75,8 @@ GBAApp::~GBAApp() {
 
 bool GBAApp::event(QEvent* event) {
 	if (event->type() == QEvent::FileOpen) {
-		m_windows[0]->controller()->loadGame(static_cast<QFileOpenEvent*>(event)->file());
+		CoreController* core = m_manager.loadGame(static_cast<QFileOpenEvent*>(event)->file());
+		m_windows[0]->setController(core, static_cast<QFileOpenEvent*>(event)->file());
 		return true;
 	}
 	return QApplication::event(event);
@@ -81,7 +86,7 @@ Window* GBAApp::newWindow() {
 	if (m_windows.count() >= MAX_GBAS) {
 		return nullptr;
 	}
-	Window* w = new Window(m_configController, m_multiplayer.attached());
+	Window* w = new Window(&m_manager, m_configController, m_multiplayer.attached());
 	int windowId = m_multiplayer.attached();
 	connect(w, &Window::destroyed, [this, w]() {
 		m_windows.removeAll(w);
@@ -93,7 +98,6 @@ Window* GBAApp::newWindow() {
 	w->setAttribute(Qt::WA_DeleteOnClose);
 	w->loadConfig();
 	w->show();
-	w->controller()->setMultiplayerController(&m_multiplayer);
 	w->multiplayerChanged();
 	for (Window* w : m_windows) {
 		w->updateMultiplayerStatus(m_windows.count() < MAX_GBAS);
@@ -107,7 +111,7 @@ GBAApp* GBAApp::app() {
 
 void GBAApp::pauseAll(QList<Window*>* paused) {
 	for (auto& window : m_windows) {
-		if (!window->controller()->isLoaded() || window->controller()->isPaused()) {
+		if (!window->controller() || window->controller()->isPaused()) {
 			continue;
 		}
 		window->controller()->setPaused(true);
@@ -117,7 +121,9 @@ void GBAApp::pauseAll(QList<Window*>* paused) {
 
 void GBAApp::continueAll(const QList<Window*>& paused) {
 	for (auto& window : paused) {
-		window->controller()->setPaused(false);
+		if (window->controller()) {
+			window->controller()->setPaused(false);
+		}
 	}
 }
 

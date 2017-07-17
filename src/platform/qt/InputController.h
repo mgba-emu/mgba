@@ -14,6 +14,7 @@
 #include <QTimer>
 #include <QVector>
 
+#include <mgba/gba/interface.h>
 #include <mgba/internal/gba/input.h>
 
 #ifdef BUILD_SDL
@@ -43,9 +44,6 @@ public:
 	void saveConfiguration(uint32_t type);
 	void saveProfile(uint32_t type, const QString& profile);
 	const char* profileForType(uint32_t type);
-
-	bool allowOpposing() const { return m_allowOpposing; }
-	void setAllowOpposing(bool allowOpposing) { m_allowOpposing = allowOpposing; }
 
 	GBAKey mapKeyboard(int key) const;
 
@@ -84,9 +82,11 @@ public:
 
 	mRumble* rumble();
 	mRotationSource* rotationSource();
+	GBALuminanceSource* luminance() { return &m_lux; }
 
 signals:
 	void profileLoaded(const QString& profile);
+	void luminanceValueChanged(int value);
 
 public slots:
 	void testGamepad(int type);
@@ -97,16 +97,27 @@ public slots:
 	void resumeScreensaver();
 	void setScreensaverSuspendable(bool);
 
+	void increaseLuminanceLevel();
+	void decreaseLuminanceLevel();
+	void setLuminanceLevel(int level);
+	void setLuminanceValue(uint8_t value);
+
 private:
 	void postPendingEvent(GBAKey);
 	void clearPendingEvent(GBAKey);
 	bool hasPendingEvent(GBAKey) const;
 	void sendGamepadEvent(QEvent*);
 
+	struct InputControllerLux : GBALuminanceSource {
+		InputController* p;
+		uint8_t value;
+	} m_lux;
+	uint8_t m_luxValue;
+	int m_luxLevel;
+
 	mInputMap m_inputMap;
 	ConfigController* m_config = nullptr;
 	int m_playerId;
-	bool m_allowOpposing = false;
 	QWidget* m_topLevel;
 	QWidget* m_focusParent;
 

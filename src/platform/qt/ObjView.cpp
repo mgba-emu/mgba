@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ObjView.h"
 
+#include "CoreController.h"
 #include "GBAApp.h"
 
 #include <QFontDatabase>
@@ -24,7 +25,7 @@
 
 using namespace QGBA;
 
-ObjView::ObjView(GameController* controller, QWidget* parent)
+ObjView::ObjView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: AssetView(controller, parent)
 	, m_controller(controller)
 {
@@ -119,16 +120,16 @@ void ObjView::updateTilesGBA(bool force) {
 	};
 	m_objInfo = newInfo;
 	m_tileOffset = tile;
-	mTileCacheSetPalette(m_tileCache.get(), paletteSet);
+	mTileCacheSetPalette(m_tileCache, paletteSet);
 
 	int i = 0;
 	for (int y = 0; y < height / 8; ++y) {
 		for (int x = 0; x < width / 8; ++x, ++i, ++tile, ++tileBase) {
-			const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[32 * tileBase], tile, palette);
+			const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache, &m_tileStatus[32 * tileBase], tile, palette);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
 			} else if (force) {
-				m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), tile, palette));
+				m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache, tile, palette));
 			}
 		}
 		tile += newInfo.stride - width / 8;
@@ -215,16 +216,16 @@ void ObjView::updateTilesGB(bool force) {
 	m_tileOffset = tile;
 
 	int i = 0;
-	mTileCacheSetPalette(m_tileCache.get(), 0);
+	mTileCacheSetPalette(m_tileCache, 0);
 	m_ui.tile->setPalette(palette);
 	m_ui.tile->setPaletteSet(0, 512, 1024);
 	for (int y = 0; y < height / 8; ++y, ++i) {
 		unsigned t = tile + i;
-		const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[16 * t], t, palette);
+		const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache, &m_tileStatus[16 * t], t, palette);
 		if (data) {
 			m_ui.tiles->setTile(i, data);
 		} else if (force) {
-			m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), t, palette));
+			m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache, t, palette));
 		}
 	}
 
@@ -247,7 +248,7 @@ void ObjView::updateTilesGB(bool force) {
 
 #ifdef USE_PNG
 void ObjView::exportObj() {
-	GameController::Interrupter interrupter(m_controller);
+	CoreController::Interrupter interrupter(m_controller);
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export sprite"),
 	                                                  tr("Portable Network Graphics (*.png)"));
 	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
@@ -256,11 +257,11 @@ void ObjView::exportObj() {
 		return;
 	}
 
-	mTileCacheSetPalette(m_tileCache.get(), m_objInfo.paletteSet);
+	mTileCacheSetPalette(m_tileCache, m_objInfo.paletteSet);
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = PNGWriteHeader8(png, m_objInfo.width * 8, m_objInfo.height * 8);
 
-	const uint16_t* rawPalette = mTileCacheGetPalette(m_tileCache.get(), m_objInfo.paletteId);
+	const uint16_t* rawPalette = mTileCacheGetPalette(m_tileCache, m_objInfo.paletteId);
 	unsigned colors = 1 << m_objInfo.bits;
 	uint32_t palette[256];
 	for (unsigned c = 0; c < colors && c < 256; ++c) {

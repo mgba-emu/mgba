@@ -12,13 +12,13 @@
 
 namespace QGBA {
 
-class GameController;
+class CoreController;
 
 class MemoryView : public QWidget {
 Q_OBJECT
 
 public:
-	MemoryView(GameController* controller, QWidget* parent = nullptr);
+	MemoryView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
 public slots:
 	void update();
@@ -33,7 +33,7 @@ private slots:
 private:
 	Ui::MemoryView m_ui;
 
-	GameController* m_controller;
+	std::shared_ptr<CoreController> m_controller;
 	QPair<uint32_t, uint32_t> m_selection;
 };
 

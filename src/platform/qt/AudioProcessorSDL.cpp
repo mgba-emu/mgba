@@ -16,16 +16,17 @@ AudioProcessorSDL::AudioProcessorSDL(QObject* parent)
 {
 }
 
-AudioProcessorSDL::~AudioProcessorSDL() {
-	mSDLDeinitAudio(&m_audio);
+void AudioProcessorSDL::setInput(std::shared_ptr<CoreController> controller) {
+	AudioProcessor::setInput(controller);
+	if (m_audio.core && input()->core != m_audio.core) {
+		mSDLDeinitAudio(&m_audio);
+		mSDLInitAudio(&m_audio, input());
+	}
 }
 
-void AudioProcessorSDL::setInput(mCoreThread* input) {
-	AudioProcessor::setInput(input);
-	if (m_audio.core && input->core != m_audio.core) {
-		mSDLDeinitAudio(&m_audio);
-		mSDLInitAudio(&m_audio, input);
-	}
+void AudioProcessorSDL::stop() {
+	mSDLDeinitAudio(&m_audio);
+	AudioProcessor::stop();
 }
 
 bool AudioProcessorSDL::start() {
@@ -51,10 +52,12 @@ void AudioProcessorSDL::pause() {
 
 void AudioProcessorSDL::setBufferSamples(int samples) {
 	AudioProcessor::setBufferSamples(samples);
-	m_audio.samples = samples;
-	if (m_audio.core) {
-		mSDLDeinitAudio(&m_audio);
-		mSDLInitAudio(&m_audio, input());
+	if (m_audio.samples != samples) {
+		m_audio.samples = samples;
+		if (m_audio.core) {
+			mSDLDeinitAudio(&m_audio);
+			mSDLInitAudio(&m_audio, input());
+		}
 	}
 }
 
@@ -62,10 +65,12 @@ void AudioProcessorSDL::inputParametersChanged() {
 }
 
 void AudioProcessorSDL::requestSampleRate(unsigned rate) {
-	m_audio.sampleRate = rate;
-	if (m_audio.core) {
-		mSDLDeinitAudio(&m_audio);
-		mSDLInitAudio(&m_audio, input());
+	if (m_audio.sampleRate != rate) {
+		m_audio.sampleRate = rate;
+		if (m_audio.core) {
+			mSDLDeinitAudio(&m_audio);
+			mSDLInitAudio(&m_audio, input());
+		}
 	}
 }
 
