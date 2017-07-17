@@ -10,6 +10,7 @@
 #define DECL_BITFIELD(newtype, oldtype) typedef oldtype newtype
 #define DECL_BIT(type, name, bit)
 #define DECL_BITS(type, name, bit, nbits)
+#define ATTRIBUTE_ALIGN(align)
 
 #define CXX_GUARD_START
 #define CXX_GUARD_END
@@ -55,6 +56,11 @@ void free(void*);
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gba/input.h>
 #include <mgba/internal/gb/renderers/tile-cache.h>
+#endif
+#ifdef M_CORE_DS
+#include <mgba/internal/arm/arm.h>
+#include <mgba/internal/ds/ds.h>
+#include <mgba/internal/ds/input.h>
 #endif
 #ifdef USE_DEBUGGERS
 #include <mgba/debugger/debugger.h>

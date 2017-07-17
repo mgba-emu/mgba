@@ -35,6 +35,10 @@
 #cmakedefine M_CORE_GB
 #endif
 
+#ifndef M_CORE_DS
+#cmakedefine M_CORE_DS
+#endif
+
 // USE flags
 
 #ifndef MINIMAL_CORE

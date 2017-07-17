@@ -29,6 +29,8 @@ ffi.set_source("mgba._pylib", """
 #include <mgba/debugger/debugger.h>
 #include <mgba/internal/arm/arm.h>
 #include <mgba/internal/debugger/cli-debugger.h>
+#include <mgba/internal/ds/ds.h>
+#include <mgba/internal/ds/input.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
 #include <mgba/internal/gba/renderers/tile-cache.h>

@@ -97,6 +97,9 @@ class Core(object):
     if hasattr(lib, 'PLATFORM_GB'):
         PLATFORM_GB = lib.PLATFORM_GB
 
+    if hasattr(lib, 'PLATFORM_DS'):
+        PLATFORM_GB = lib.PLATFORM_DS
+
     def __init__(self, native):
         self._core = native
         self._wasReset = False
@@ -128,6 +131,9 @@ class Core(object):
         if hasattr(cls, 'PLATFORM_GB') and core.platform(core) == cls.PLATFORM_GB:
             from .gb import GB
             return GB(core)
+        if hasattr(cls, 'PLATFORM_DS') and core.platform(core) == cls.PLATFORM_DS:
+            from .ds import DS
+            return DS(core)
         return Core(core)
 
     def loadFile(self, path):

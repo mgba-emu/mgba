@@ -564,9 +564,6 @@ enum DS9IORegisters {
 
 mLOG_DECLARE_CATEGORY(DS_IO);
 
-extern const char* const DS7IORegisterNames[];
-extern const char* const DS9IORegisterNames[];
-
 DECL_BITFIELD(DSRegisterRTC, uint16_t);
 DECL_BIT(DSRegisterRTC, Data, 0);
 DECL_BIT(DSRegisterRTC, Clock, 1);
