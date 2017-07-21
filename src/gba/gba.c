@@ -208,7 +208,7 @@ void GBAReset(struct ARMCore* cpu) {
 	gba->debug = false;
 	memset(gba->debugString, 0, sizeof(gba->debugString));
 
-	if (!gba->romVf) {
+	if (!gba->romVf && gba->memory.rom) {
 		GBASkipBIOS(gba);
 	}
 }
