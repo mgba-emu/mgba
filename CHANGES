@@ -1,6 +1,8 @@
 0.6.1: (Future)
 Bugfixes:
  - Python: Fix importing .gb or .gba before .core
+Misc:
+ - Qt: Don't rebuild library view if style hasn't changed
 
 0.6.0: (2017-07-16)
 Features:

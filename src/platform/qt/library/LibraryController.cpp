@@ -83,6 +83,9 @@ LibraryController::~LibraryController() {
 }
 
 void LibraryController::setViewStyle(LibraryStyle newStyle) {
+	if (m_currentStyle == newStyle) {
+		return;
+	}
 	m_currentStyle = newStyle;
 
 	AbstractGameList* newCurrentList = nullptr;
