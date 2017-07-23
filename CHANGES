@@ -2,6 +2,7 @@
 Bugfixes:
  - Python: Fix importing .gb or .gba before .core
  - GBA: Reset active region as needed when loading a ROM
+ - Qt: Fix command line debugger closing second game
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
 
