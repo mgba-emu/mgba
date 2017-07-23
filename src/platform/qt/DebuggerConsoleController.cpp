@@ -39,8 +39,10 @@ void DebuggerConsoleController::enterLine(const QString& line) {
 }
 
 void DebuggerConsoleController::detach() {
-	m_lines.append(QString());
-	m_cond.wakeOne();
+	if (m_cliDebugger.d.state != DEBUGGER_SHUTDOWN) {
+		m_lines.append(QString());
+		m_cond.wakeOne();
+	}
 	DebuggerController::detach();
 }
 
@@ -68,8 +70,10 @@ void DebuggerConsoleController::init(struct CLIDebuggerBackend* be) {
 void DebuggerConsoleController::deinit(struct CLIDebuggerBackend* be) {
 	Backend* consoleBe = reinterpret_cast<Backend*>(be);
 	DebuggerConsoleController* self = consoleBe->self;
-	self->m_lines.append(QString());
-	self->m_cond.wakeOne();
+	if (be->p->d.state != DEBUGGER_SHUTDOWN) {
+		self->m_lines.append(QString());
+		self->m_cond.wakeOne();
+	}
 }
 
 const char* DebuggerConsoleController::readLine(struct CLIDebuggerBackend* be, size_t* len) {
