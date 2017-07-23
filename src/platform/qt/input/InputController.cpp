@@ -6,7 +6,7 @@
 #include "InputController.h"
 
 #include "ConfigController.h"
-#include "GameController.h"
+#include "CoreController.h"
 #include "GamepadAxisEvent.h"
 #include "GamepadButtonEvent.h"
 #include "InputItem.h"
@@ -85,16 +85,40 @@ void InputController::addKey(const QString& name) {
 		return;
 	}
 	m_keyIndex.addItem(qMakePair([this, name]() {
-		emit keyPressed(keyId(name));
+		m_activeKeys |= 1 << keyId(name);
 	}, [this, name]() {
-		emit keyReleased(keyId(name));
+		m_activeKeys &= ~(1 << keyId(name));
 	}), name, QString("key%0").arg(name), m_bindings.get());
 
 	m_keyIndex.addItem(qMakePair([this, name]() {
-		emit keyAutofire(keyId(name), true);
+		setAutofire(keyId(name), true);
 	}, [this, name]() {
-		emit keyAutofire(keyId(name), false);
+		setAutofire(keyId(name), false);
 	}), name, QString("autofire%1").arg(name), m_autofire.get());
+}
+
+void InputController::setAutofire(int key, bool enable) {
+	if (key >= 32 || key < 0) {
+		return;
+	}
+
+	m_autofireEnabled[key] = enable;
+	m_autofireStatus[key] = 0;
+}
+
+int InputController::updateAutofire() {
+	int active = 0;
+	for (int k = 0; k < 32; ++k) {
+		if (!m_autofireEnabled[k]) {
+			continue;
+		}
+		++m_autofireStatus[k];
+		if (m_autofireStatus[k]) {
+			m_autofireStatus[k] = 0;
+			active |= 1 << k;
+		}
+	}
+	return active;
 }
 
 void InputController::addPlatform(mPlatform platform, const mInputPlatformInfo* info) {
@@ -121,6 +145,20 @@ void InputController::setPlatform(mPlatform platform) {
 
 	rebuildKeyIndex();
 	restoreModel();
+
+#ifdef M_CORE_GBA
+	m_lux.p = this;
+	m_lux.sample = [](GBALuminanceSource* context) {
+		InputControllerLux* lux = static_cast<InputControllerLux*>(context);
+		lux->value = 0xFF - lux->p->m_luxValue;
+	};
+
+	m_lux.readLuminance = [](GBALuminanceSource* context) {
+		InputControllerLux* lux = static_cast<InputControllerLux*>(context);
+		return lux->value;
+	};
+	setLuminanceLevel(0);
+#endif
 }
 
 InputController::~InputController() {
@@ -158,7 +196,6 @@ void InputController::setConfiguration(ConfigController* config) {
 	m_config = config;
 	m_inputIndex.setConfigController(config);
 	m_keyIndex.setConfigController(config);
-	setAllowOpposing(config->getOption("allowOpposingDirections").toInt());
 	loadConfiguration(KEYBOARD);
 	loadProfile(KEYBOARD, profileForType(KEYBOARD));
 #ifdef BUILD_SDL
@@ -373,7 +410,7 @@ const mInputMap* InputController::map() {
 }
 
 int InputController::pollEvents() {
-	int activeButtons = 0;
+	int activeButtons = m_activeKeys;
 #ifdef BUILD_SDL
 	if (m_playerAttached && m_sdlPlayer.joystick) {
 		SDL_Joystick* joystick = m_sdlPlayer.joystick->joystick;
@@ -844,3 +881,34 @@ void InputController::rebindKey(const QString& key) {
 	bindAxis(SDL_BINDING_BUTTON, item->axis(), item->direction(), key);
 #endif
 }
+
+void InputController::increaseLuminanceLevel() {
+	setLuminanceLevel(m_luxLevel + 1);
+}
+
+void InputController::decreaseLuminanceLevel() {
+	setLuminanceLevel(m_luxLevel - 1);
+}
+
+void InputController::setLuminanceLevel(int level) {
+	int value = 0x16;
+	level = std::max(0, std::min(10, level));
+	if (level > 0) {
+		value += GBA_LUX_LEVELS[level - 1];
+	}
+	setLuminanceValue(value);
+}
+
+void InputController::setLuminanceValue(uint8_t value) {
+	m_luxValue = value;
+	value = std::max<int>(value - 0x16, 0);
+	m_luxLevel = 10;
+	for (int i = 0; i < 10; ++i) {
+		if (value < GBA_LUX_LEVELS[i]) {
+			m_luxLevel = i;
+			break;
+		}
+	}
+	emit luminanceValueChanged(m_luxValue);
+}
+

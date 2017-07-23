@@ -80,6 +80,8 @@ void GBAMemoryInit(struct GBA* gba) {
 	gba->memory.biosPrefetch = 0;
 	gba->memory.mirroring = false;
 
+	gba->memory.iwram = anonymousMemoryMap(SIZE_WORKING_IRAM);
+
 	GBADMAInit(gba);
 	GBAVFameInit(&gba->memory.vfame);
 }
@@ -107,9 +109,8 @@ void GBAMemoryReset(struct GBA* gba) {
 	}
 
 	if (gba->memory.iwram) {
-		mappedMemoryFree(gba->memory.iwram, SIZE_WORKING_IRAM);
+		memset(gba->memory.iwram, 0, SIZE_WORKING_IRAM);
 	}
-	gba->memory.iwram = anonymousMemoryMap(SIZE_WORKING_IRAM);
 
 	memset(gba->memory.io, 0, sizeof(gba->memory.io));
 

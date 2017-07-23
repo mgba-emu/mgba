@@ -11,6 +11,7 @@
 #include <QSize>
 #include <QStaticText>
 #include <QVector>
+
 #include <memory>
 
 #include <mgba-util/text-codec.h>
@@ -19,7 +20,7 @@ struct mCore;
 
 namespace QGBA {
 
-class GameController;
+class CoreController;
 
 class MemoryModel : public QAbstractScrollArea {
 Q_OBJECT
@@ -27,7 +28,7 @@ Q_OBJECT
 public:
 	MemoryModel(QWidget* parent = nullptr);
 
-	void setController(GameController* controller);
+	void setController(std::shared_ptr<CoreController> controller);
 
 	void setRegion(uint32_t base, uint32_t size, const QString& name = QString(), int segment = -1);
 	void setSegment(int segment);

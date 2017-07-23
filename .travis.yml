@@ -4,9 +4,6 @@ matrix:
   include:
     - os: linux
       dist: trusty
-      compiler: clang
-    - os: linux
-      dist: trusty
       compiler: gcc
     - os: osx
       compiler: clang
@@ -16,4 +13,4 @@ matrix:
 before_install:
   - source ./.travis-deps.sh
 
-script: mkdir build && cd build && cmake -DCMAKE_PREFIX_PATH=/usr/local/opt/qt5 .. && make
+script: mkdir build && cd build && cmake -DCMAKE_PREFIX_PATH=/usr/local/opt/qt5 .. && make -j2

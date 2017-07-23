@@ -91,6 +91,7 @@ struct mDebugger {
 	struct mCPUComponent d;
 	struct mDebuggerPlatform* platform;
 	enum mDebuggerState state;
+	enum mDebuggerType type;
 	struct mCore* core;
 	struct mScriptBridge* bridge;
 

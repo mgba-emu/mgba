@@ -6,7 +6,7 @@
 #include "ROMInfo.h"
 
 #include "GBAApp.h"
-#include "GameController.h"
+#include "CoreController.h"
 
 #include <mgba/core/core.h>
 #ifdef M_CORE_GB
@@ -21,21 +21,17 @@
 
 using namespace QGBA;
 
-ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
+ROMInfo::ROMInfo(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
 	m_ui.setupUi(this);
-
-	if (!controller->isLoaded()) {
-		return;
-	}
 
 #ifdef USE_SQLITE3
 	const NoIntroDB* db = GBAApp::app()->gameDB();
 #endif
 	uint32_t crc32 = 0;
 
-	GameController::Interrupter interrupter(controller);
+	CoreController::Interrupter interrupter(controller);
 	mCore* core = controller->thread()->core;
 	char title[17] = {};
 	core->getGameTitle(core, title);

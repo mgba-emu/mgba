@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "TileView.h"
 
+#include "CoreController.h"
 #include "GBAApp.h"
 
 #include <QFontDatabase>
@@ -16,7 +17,7 @@
 
 using namespace QGBA;
 
-TileView::TileView(GameController* controller, QWidget* parent)
+TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: AssetView(controller, parent)
 	, m_controller(controller)
 {
@@ -79,40 +80,40 @@ TileView::TileView(GameController* controller, QWidget* parent)
 void TileView::updateTilesGBA(bool force) {
 	if (m_ui.palette256->isChecked()) {
 		m_ui.tiles->setTileCount(1536);
-		mTileCacheSetPalette(m_tileCache.get(), 1);
+		mTileCacheSetPalette(m_tileCache, 1);
 		for (int i = 0; i < 1024; ++i) {
-			const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[32 * i], i, 0);
+			const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache, &m_tileStatus[32 * i], i, 0);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
 			} else if (force) {
-				m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), i, 0));
+				m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache, i, 0));
 			}
 		}
 		for (int i = 1024; i < 1536; ++i) {
-			const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[32 * i], i, 1);
+			const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache, &m_tileStatus[32 * i], i, 1);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
 			} else if (force) {
-				m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), i, 1));
+				m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache, i, 1));
 			}
 		}
 	} else {
 		m_ui.tiles->setTileCount(3072);
-		mTileCacheSetPalette(m_tileCache.get(), 0);
+		mTileCacheSetPalette(m_tileCache, 0);
 		for (int i = 0; i < 2048; ++i) {
-			const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[32 * i], i, m_paletteId);
+			const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache, &m_tileStatus[32 * i], i, m_paletteId);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
 			} else if (force) {
-				m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), i, m_paletteId));
+				m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache, i, m_paletteId));
 			}
 		}
 		for (int i = 2048; i < 3072; ++i) {
-			const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[32 * i], i, m_paletteId + 16);
+			const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache, &m_tileStatus[32 * i], i, m_paletteId + 16);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
 			} else if (force) {
-				m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), i, m_paletteId + 16));
+				m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache, i, m_paletteId + 16));
 			}
 		}
 	}
@@ -124,13 +125,13 @@ void TileView::updateTilesGB(bool force) {
 	const GB* gb = static_cast<const GB*>(m_controller->thread()->core->board);
 	int count = gb->model >= GB_MODEL_CGB ? 1024 : 512;
 	m_ui.tiles->setTileCount(count);
-	mTileCacheSetPalette(m_tileCache.get(), 0);
+	mTileCacheSetPalette(m_tileCache, 0);
 	for (int i = 0; i < count; ++i) {
-		const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache.get(), &m_tileStatus[16 * i], i, m_paletteId);
+		const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache, &m_tileStatus[16 * i], i, m_paletteId);
 		if (data) {
 			m_ui.tiles->setTile(i, data);
 		} else if (force) {
-			m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache.get(), i, m_paletteId));
+			m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache, i, m_paletteId));
 		}
 	}
 }

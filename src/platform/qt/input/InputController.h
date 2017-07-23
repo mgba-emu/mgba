@@ -21,6 +21,8 @@
 #include <mgba/core/core.h>
 #include <mgba/core/input.h>
 
+#include <mgba/gba/interface.h>
+
 #ifdef BUILD_SDL
 #include "platform/sdl/sdl-events.h"
 #endif
@@ -62,8 +64,9 @@ public:
 	void saveProfile(uint32_t type, const QString& profile);
 	const char* profileForType(uint32_t type);
 
-	bool allowOpposing() const { return m_allowOpposing; }
-	void setAllowOpposing(bool allowOpposing) { m_allowOpposing = allowOpposing; }
+	GBAKey mapKeyboard(int key) const;
+
+	void bindKey(uint32_t type, int key, GBAKey);
 
 	const mInputMap* map();
 
@@ -97,21 +100,28 @@ public:
 
 	mRumble* rumble();
 	mRotationSource* rotationSource();
+	GBALuminanceSource* luminance() { return &m_lux; }
 
 signals:
 	void profileLoaded(const QString& profile);
-	void keyPressed(int);
-	void keyReleased(int);
-	void keyAutofire(int, bool enabled);
+	void luminanceValueChanged(int value);
 
 public slots:
 	void testGamepad(int type);
 	void updateJoysticks();
+	int updateAutofire();
+
+	void setAutofire(int key, bool enable);
 
 	// TODO: Move these to somewhere that makes sense
 	void suspendScreensaver();
 	void resumeScreensaver();
 	void setScreensaverSuspendable(bool);
+
+	void increaseLuminanceLevel();
+	void decreaseLuminanceLevel();
+	void setLuminanceLevel(int level);
+	void setLuminanceValue(uint8_t value);
 
 protected:
 	bool eventFilter(QObject*, QEvent*) override;
@@ -129,10 +139,21 @@ private:
 
 	InputIndex m_inputIndex;
 	InputIndex m_keyIndex;
+
+	struct InputControllerLux : GBALuminanceSource {
+		InputController* p;
+		uint8_t value;
+	} m_lux;
+	uint8_t m_luxValue;
+	int m_luxLevel;
+
 	mInputMap m_inputMap;
+	int m_activeKeys;
+	bool m_autofireEnabled[32] = {};
+	int m_autofireStatus[32] = {};
+
 	ConfigController* m_config = nullptr;
 	int m_playerId;
-	bool m_allowOpposing = false;
 	QWidget* m_topLevel;
 	QWidget* m_focusParent;
 	QMap<mPlatform, const mInputPlatformInfo*> m_keyInfo;

@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "AssetTile.h"
 
+#include "CoreController.h"
 #include "GBAApp.h"
 
 #include <QFontDatabase>
@@ -39,7 +40,7 @@ AssetTile::AssetTile(QWidget* parent)
 	m_ui.b->setFont(font);
 }
 
-void AssetTile::setController(GameController* controller) {
+void AssetTile::setController(std::shared_ptr<CoreController> controller) {
 	m_tileCache = controller->tileCache();
 	switch (controller->platform()) {
 #ifdef M_CORE_GBA
@@ -83,7 +84,7 @@ void AssetTile::selectIndex(int index) {
 	m_index = index;
 	const uint16_t* data;
 
-	mTileCacheSetPalette(m_tileCache.get(), m_paletteSet);
+	mTileCacheSetPalette(m_tileCache, m_paletteSet);
 	unsigned bpp = 8 << m_tileCache->bpp;
 	int dispIndex = index;
 	int paletteId = m_paletteId;
@@ -98,7 +99,7 @@ void AssetTile::selectIndex(int index) {
 #endif
 		dispIndex -= m_boundary;
 	}
-	data = mTileCacheGetTile(m_tileCache.get(), index, paletteId);
+	data = mTileCacheGetTile(m_tileCache, index, paletteId);
 	m_ui.tileId->setText(QString::number(dispIndex * (1 + m_paletteSet)));
 	m_ui.address->setText(tr("%0%1%2")
 		.arg(m_addressWidth == 4 ? index >= m_boundary : 0)
@@ -112,7 +113,7 @@ void AssetTile::selectIndex(int index) {
 
 void AssetTile::selectColor(int index) {
 	const uint16_t* data;
-	mTileCacheSetPalette(m_tileCache.get(), m_paletteSet);
+	mTileCacheSetPalette(m_tileCache, m_paletteSet);
 	unsigned bpp = 8 << m_tileCache->bpp;
 	int paletteId = m_paletteId;
 	// XXX: Do this better
@@ -121,7 +122,7 @@ void AssetTile::selectColor(int index) {
 		paletteId += m_tileCache->count / 2;
 	}
 #endif
-	data = mTileCacheGetTile(m_tileCache.get(), m_index, m_paletteId);
+	data = mTileCacheGetTile(m_tileCache, m_index, m_paletteId);
 	uint16_t color = data[index];
 	m_ui.color->setColor(0, color);
 	m_ui.color->update();

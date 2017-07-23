@@ -1,12 +1,19 @@
 0.7.0: (Future)
+Features:
+ - ELF support
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
+ - Python: Fix importing .gb or .gba before .core
+ - GBA: Reset active region as needed when loading a ROM
+ - Qt: Fix command line debugger closing second game
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
  - All: Make FIXED_ROM_BUFFER an option instead of 3DS-only
+ - Qt: Don't rebuild library view if style hasn't changed
+ - Qt: Redo GameController into multiple classes
 
-0.6.0: (Future)
+0.6.0: (2017-07-16)
 Features:
  - Library view
  - Sprite viewer
@@ -181,6 +188,8 @@ Bugfixes:
  - Core: Fix rewinding getting out of sync (fixes mgba.io/i/791)
  - Qt: Fix GL-less build
  - Qt: Fix Software renderer not handling alpha bits properly
+ - Qt: Fix screen background improperly stretching
+ - SDL: Fix cheats not loading
 Misc:
  - GB Serialize: Add MBC state serialization
  - GBA Memory: Call crash callbacks regardless of if hard crash is enabled

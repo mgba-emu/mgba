@@ -7,6 +7,7 @@
 
 #ifdef USE_MAGICK
 
+#include "CoreController.h"
 #include "GBAApp.h"
 #include "LogController.h"
 
@@ -37,6 +38,12 @@ GIFView::GIFView(QWidget* parent)
 
 GIFView::~GIFView() {
 	stopRecording();
+}
+
+void GIFView::setController(std::shared_ptr<CoreController> controller) {
+	connect(controller.get(), &CoreController::stopping, this, &GIFView::stopRecording);
+	connect(this, &GIFView::recordingStarted, controller.get(), &CoreController::setAVStream);
+	connect(this, &GIFView::recordingStopped, controller.get(), &CoreController::clearAVStream, Qt::DirectConnection);
 }
 
 void GIFView::startRecording() {

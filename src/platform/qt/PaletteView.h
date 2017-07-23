@@ -8,20 +8,22 @@
 
 #include <QWidget>
 
-#include "GameController.h"
+#include <memory>
+
 #include "Swatch.h"
 
 #include "ui_PaletteView.h"
 
 namespace QGBA {
 
+class CoreController;
 class Swatch;
 
 class PaletteView : public QWidget {
 Q_OBJECT
 
 public:
-	PaletteView(GameController* controller, QWidget* parent = nullptr);
+	PaletteView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
 public slots:
 	void updatePalette();
@@ -34,7 +36,7 @@ private:
 
 	Ui::PaletteView m_ui;
 
-	GameController* m_controller;
+	std::shared_ptr<CoreController> m_controller;
 };
 
 }

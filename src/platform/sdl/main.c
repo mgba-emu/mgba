@@ -21,6 +21,7 @@
 #endif
 #endif
 
+#include <mgba/core/cheats.h>
 #include <mgba/core/core.h>
 #include <mgba/core/config.h>
 #include <mgba/core/input.h>
@@ -104,6 +105,16 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
+	struct mCheatDevice* device = NULL;
+	if (args.cheatsFile && (device = renderer.core->cheatDevice(renderer.core))) {
+		struct VFile* vf = VFileOpen(args.cheatsFile, O_RDONLY);
+		if (vf) {
+			mCheatDeviceClear(device);
+			mCheatParseFile(device, vf);
+			vf->close(vf);
+		}
+	}
+
 	mInputMapInit(&renderer.core->inputMap, renderer.core->inputInfo);
 	mCoreInitConfig(renderer.core, PORT);
 	applyArguments(&args, &subparser, &renderer.core->config);
@@ -148,6 +159,10 @@ int main(int argc, char** argv) {
 	mSDLDetachPlayer(&renderer.events, &renderer.player);
 	mInputMapDeinit(&renderer.core->inputMap);
 
+	if (device) {
+		mCheatDeviceDestroy(device);
+	}
+
 	mSDLDeinit(&renderer);
 
 	freeArguments(&args);
@@ -184,10 +199,10 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 #endif
 		mDebuggerAttach(debugger, renderer->core);
 		mDebuggerEnter(debugger, DEBUGGER_ENTER_MANUAL, NULL);
-	}
-#ifdef ENABLE_SCRIPTING
-	mScriptBridgeSetDebugger(bridge, debugger);
+ #ifdef ENABLE_SCRIPTING
+		mScriptBridgeSetDebugger(bridge, debugger);
 #endif
+	}
 #endif
 
 	if (args->patch) {

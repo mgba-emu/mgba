@@ -8,6 +8,11 @@
 #include <mgba/core/log.h>
 #include <mgba/core/serialize.h>
 #include <mgba-util/vfs.h>
+#include <mgba/internal/debugger/symbols.h>
+
+#ifdef USE_ELF
+#include <mgba-util/elf-read.h>
+#endif
 
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
@@ -273,3 +278,67 @@ void mCoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
 	core->rtc.custom = rtc;
 	core->rtc.override = RTC_CUSTOM_START;
 }
+
+void* mCoreGetMemoryBlock(struct mCore* core, uint32_t start, size_t* size) {
+	const struct mCoreMemoryBlock* blocks;
+	size_t nBlocks = core->listMemoryBlocks(core, &blocks);
+	size_t i;
+	for (i = 0; i < nBlocks; ++i) {
+		if (!(blocks[i].flags & mCORE_MEMORY_MAPPED)) {
+			continue;
+		}
+		if (start < blocks[i].start) {
+			continue;
+		}
+		if (start >= blocks[i].start + blocks[i].size) {
+			continue;
+		}
+		uint8_t* out = core->getMemoryBlock(core, blocks[i].id, size);
+		out += start - blocks[i].start;
+		*size -= start - blocks[i].start;
+		return out;
+	}
+	return NULL;
+}
+
+#ifdef USE_ELF
+bool mCoreLoadELF(struct mCore* core, struct ELF* elf) {
+	struct ELFProgramHeaders ph;
+	ELFProgramHeadersInit(&ph, 0);
+	ELFGetProgramHeaders(elf, &ph);
+	size_t i;
+	for (i = 0; i < ELFProgramHeadersSize(&ph); ++i) {
+		size_t bsize, esize;
+		Elf32_Phdr* phdr = ELFProgramHeadersGetPointer(&ph, i);
+		void* block = mCoreGetMemoryBlock(core, phdr->p_paddr, &bsize);
+		char* bytes = ELFBytes(elf, &esize);
+		if (block && bsize >= phdr->p_filesz && esize >= phdr->p_filesz + phdr->p_offset) {
+			memcpy(block, &bytes[phdr->p_offset], phdr->p_filesz);
+		} else {
+			return false;
+		}
+	}
+	return true;
+}
+
+void mCoreLoadELFSymbols(struct mDebuggerSymbols* symbols, struct ELF* elf) {
+	size_t symIndex = ELFFindSection(elf, ".symtab");
+	size_t names = ELFFindSection(elf, ".strtab");
+	Elf32_Shdr* symHeader = ELFGetSectionHeader(elf, symIndex);
+	char* bytes = ELFBytes(elf, NULL);
+
+	Elf32_Sym* syms = (Elf32_Sym*) &bytes[symHeader->sh_offset];
+	size_t i;
+	for (i = 0; i * sizeof(*syms) < symHeader->sh_size; ++i) {
+		if (!syms[i].st_name || ELF32_ST_TYPE(syms[i].st_info) == STT_FILE) {
+			continue;
+		}
+		const char* name = ELFGetString(elf, names, syms[i].st_name);
+		if (name[0] == '$') {
+			continue;
+		}
+		mDebuggerSymbolAdd(symbols, name, syms[i].st_value, -1);
+	}
+}
+
+#endif
