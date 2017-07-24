@@ -224,6 +224,7 @@ void GBMBCInit(struct GB* gb) {
 		memset(gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
 		gb->memory.mbcWrite = _GBTAMA5;
 		gb->memory.mbcRead = _GBTAMA5Read;
+		gb->sramSize = 0x20;
 		break;
 	case GB_MBC3_RTC:
 		memset(gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
@@ -772,31 +773,39 @@ void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value) {
 	switch (address >> 13) {
 	case 0x5:
 		if (address & 1) {
-			if (tama5->unlocked) {
-				tama5->reg = value;
-			} else if (value == 0xA) {
-				tama5->unlocked = true;
-			}
+			tama5->reg = value;
 		} else {
-			uint8_t reg = tama5->reg >> 1;
-			if (reg < GBTAMA5_MAX) {
-				uint8_t mask = 0xF << (4 * (tama5->reg & 1));
-				value <<= (4 * (tama5->reg & 1));
-				value |= tama5->registers[reg] & ~mask;
-				tama5->registers[reg] = value;
-				if (tama5->reg & 1) {
-					switch (reg) {
-					case GBTAMA5_BANK:
-						GBMBCSwitchBank(gb, value & 0x1F);
-						// Fall through
-					default:
-						mLOG(GB_MBC, STUB, "TAMA5 unknown register: %02X:%02X", reg, value);
+			value &= 0xF;
+			if (tama5->reg < GBTAMA5_MAX) {
+				tama5->registers[tama5->reg] = value;
+				uint8_t address = ((tama5->registers[GBTAMA5_CS] << 4) & 0x10) | tama5->registers[GBTAMA5_ADDR_LO];
+				uint8_t out = (tama5->registers[GBTAMA5_WRITE_HI] << 4) | tama5->registers[GBTAMA5_WRITE_LO];
+				switch (tama5->reg) {
+				case GBTAMA5_BANK_LO:
+				case GBTAMA5_BANK_HI:
+					GBMBCSwitchBank(gb, tama5->registers[GBTAMA5_BANK_LO] | (tama5->registers[GBTAMA5_BANK_HI] << 4));
+					break;
+				case GBTAMA5_WRITE_LO:
+				case GBTAMA5_WRITE_HI:
+				case GBTAMA5_CS:
+					break;
+				case GBTAMA5_ADDR_LO:
+					switch (tama5->registers[GBTAMA5_CS] >> 1) {
+					case 0x0: // RAM write
+						memory->sram[address] = out;
 						break;
+					case 0x1: // RAM read
+						break;
+					default:
+						mLOG(GB_MBC, STUB, "TAMA5 unknown address: %X-%02X:%02X", tama5->registers[GBTAMA5_CS] >> 1, address, out);
 					}
-					tama5->unlocked = false;
+					break;
+				default:
+					mLOG(GB_MBC, STUB, "TAMA5 unknown write: %02X:%X", tama5->reg, value);
+					break;
 				}
 			} else {
-				mLOG(GB_MBC, STUB, "TAMA5 unknown register: %02X", reg);
+				mLOG(GB_MBC, STUB, "TAMA5 unknown write: %02X", tama5->reg);
 			}
 		}
 		break;
@@ -807,11 +816,36 @@ void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value) {
 
 uint8_t _GBTAMA5Read(struct GBMemory* memory, uint16_t address) {
 	struct GBTAMA5State* tama5 = &memory->mbcState.tama5;
-	mLOG(GB_MBC, STUB, "TAMA5 unknown address: %04X", address);
+	if ((address & 0x1FFF) > 1) {
+		mLOG(GB_MBC, STUB, "TAMA5 unknown address: %04X", address);
+	}
 	if (address & 1) {
 		return 0xFF;
 	} else {
-		return 0xF0 | tama5->unlocked;
+		uint8_t value = 0xF0;
+		uint8_t address = ((tama5->registers[GBTAMA5_CS] << 4) & 0x10) | tama5->registers[GBTAMA5_ADDR_LO];
+		switch (tama5->reg) {
+		case GBTAMA5_ACTIVE:
+			return 0xF1;
+		case GBTAMA5_READ_LO:
+		case GBTAMA5_READ_HI:
+			switch (tama5->registers[GBTAMA5_CS] >> 1) {
+			case 1:
+				value = memory->sram[address];
+				break;
+			default:
+				mLOG(GB_MBC, STUB, "TAMA5 unknown read: %02X", tama5->reg);
+				break;
+			}
+			if (tama5->reg == GBTAMA5_READ_HI) {
+				value >>= 4;
+			}
+			value |= 0xF0;
+			return value;
+		default:
+			mLOG(GB_MBC, STUB, "TAMA5 unknown read: %02X", tama5->reg);
+			return 0xF1;
+		}
 	}
 }
 
