@@ -14,13 +14,13 @@
 
 namespace QGBA {
 
-class GameController;
+class CoreController;
 
 class GDBController : public DebuggerController {
 Q_OBJECT
 
 public:
-	GDBController(GameController* controller, QObject* parent = nullptr);
+	GDBController(QObject* parent = nullptr);
 
 public:
 	ushort port();
@@ -38,7 +38,7 @@ signals:
 private:
 	virtual void shutdownInternal() override;
 
-	GDBStub m_gdbStub;
+	GDBStub m_gdbStub{};
 
 	ushort m_port = 2345;
 	Address m_bindAddress;

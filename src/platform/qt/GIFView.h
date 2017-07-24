@@ -10,11 +10,15 @@
 
 #include <QWidget>
 
+#include <memory>
+
 #include "ui_GIFView.h"
 
 #include "feature/imagemagick/imagemagick-gif-encoder.h"
 
 namespace QGBA {
+
+class CoreController;
 
 class GIFView : public QWidget {
 Q_OBJECT
@@ -26,6 +30,8 @@ public:
 	mAVStream* getStream() { return &m_encoder.d; }
 
 public slots:
+	void setController(std::shared_ptr<CoreController>);
+
 	void startRecording();
 	void stopRecording();
 

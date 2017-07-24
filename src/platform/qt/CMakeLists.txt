@@ -1,6 +1,6 @@
-if(NOT MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(APPLE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.7")
@@ -67,12 +67,13 @@ set(SOURCE_FILES
 	CheatsModel.cpp
 	CheatsView.cpp
 	ConfigController.cpp
+	CoreManager.cpp
+	CoreController.cpp
 	Display.cpp
 	DisplayGL.cpp
 	DisplayQt.cpp
 	GBAApp.cpp
 	GIFView.cpp
-	GameController.cpp
 	GamepadAxisEvent.cpp
 	GamepadButtonEvent.cpp
 	GamepadHatEvent.cpp
@@ -282,7 +283,7 @@ if(APPLE)
 	if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
 		get_target_property(QTCOCOA Qt5::QCocoaIntegrationPlugin LOCATION)
 		get_target_property(COREAUDIO Qt5::CoreAudioPlugin LOCATION)
-		get_target_property(BUNDLE_PATH ${BINARY_NAME}-qt LOCATION)
+		set(BUNDLE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.app)
 		target_sources(${BINARY_NAME}-qt PRIVATE "${PLUGINS}")
 		set_source_files_properties("${QTCOCOA}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
 		set_source_files_properties("${COREAUDIO}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)

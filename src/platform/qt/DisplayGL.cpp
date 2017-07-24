@@ -7,12 +7,13 @@
 
 #if defined(BUILD_GL) || defined(BUILD_GLES)
 
+#include "CoreController.h"
+
 #include <QApplication>
 #include <QResizeEvent>
 #include <QTimer>
 
 #include <mgba/core/core.h>
-#include <mgba/core/thread.h>
 #ifdef BUILD_GL
 #include "platform/opengl/gl.h"
 #endif
@@ -52,14 +53,17 @@ VideoShader* DisplayGL::shaders() {
 	return shaders;
 }
 
-void DisplayGL::startDrawing(mCoreThread* thread) {
+void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	if (m_drawThread) {
 		return;
 	}
+	QSize dims = controller->screenDimensions();
+	setSystemDimensions(dims.width(), dims.height());
+
 	m_isDrawing = true;
-	m_painter->setContext(thread);
+	m_painter->setContext(controller);
 	m_painter->setMessagePainter(messagePainter());
-	m_context = thread;
+	m_context = controller;
 	m_painter->resize(size());
 	m_gl->move(0, 0);
 	m_drawThread = new QThread(this);
@@ -69,14 +73,9 @@ void DisplayGL::startDrawing(mCoreThread* thread) {
 	m_painter->moveToThread(m_drawThread);
 	connect(m_drawThread, &QThread::started, m_painter, &PainterGL::start);
 	m_drawThread->start();
-	mCoreSyncSetVideoSync(&m_context->impl->sync, false);
 
 	lockAspectRatio(isAspectRatioLocked());
 	lockIntegerScaling(isIntegerScalingLocked());
-
-	unsigned width, height;
-	thread->core->desiredVideoDimensions(thread->core, &width, &height);
-	setSystemDimensions(width, height);
 
 	filter(isFiltered());
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
@@ -90,41 +89,27 @@ void DisplayGL::startDrawing(mCoreThread* thread) {
 void DisplayGL::stopDrawing() {
 	if (m_drawThread) {
 		m_isDrawing = false;
-		if (mCoreThreadIsActive(m_context)) {
-			mCoreThreadInterrupt(m_context);
-		}
+		CoreController::Interrupter interrupter(m_context);
 		QMetaObject::invokeMethod(m_painter, "stop", Qt::BlockingQueuedConnection);
 		m_drawThread->exit();
 		m_drawThread = nullptr;
-		if (mCoreThreadIsActive(m_context)) {
-			mCoreThreadContinue(m_context);
-		}
 	}
+	m_context.reset();
 }
 
 void DisplayGL::pauseDrawing() {
 	if (m_drawThread) {
 		m_isDrawing = false;
-		if (mCoreThreadIsActive(m_context)) {
-			mCoreThreadInterrupt(m_context);
-		}
+		CoreController::Interrupter interrupter(m_context);
 		QMetaObject::invokeMethod(m_painter, "pause", Qt::BlockingQueuedConnection);
-		if (mCoreThreadIsActive(m_context)) {
-			mCoreThreadContinue(m_context);
-		}
 	}
 }
 
 void DisplayGL::unpauseDrawing() {
 	if (m_drawThread) {
 		m_isDrawing = true;
-		if (mCoreThreadIsActive(m_context)) {
-			mCoreThreadInterrupt(m_context);
-		}
+		CoreController::Interrupter interrupter(m_context);
 		QMetaObject::invokeMethod(m_painter, "unpause", Qt::BlockingQueuedConnection);
-		if (mCoreThreadIsActive(m_context)) {
-			mCoreThreadContinue(m_context);
-		}
 	}
 }
 
@@ -155,9 +140,9 @@ void DisplayGL::filter(bool filter) {
 	}
 }
 
-void DisplayGL::framePosted(const uint32_t* buffer) {
-	if (m_drawThread && buffer) {
-		m_painter->enqueue(buffer);
+void DisplayGL::framePosted() {
+	if (m_drawThread) {
+		m_painter->enqueue(m_context->drawContext());
 		QMetaObject::invokeMethod(m_painter, "draw");
 	}
 }
@@ -188,12 +173,6 @@ void DisplayGL::resizePainter() {
 
 PainterGL::PainterGL(int majorVersion, QGLWidget* parent)
 	: m_gl(parent)
-	, m_active(false)
-	, m_started(false)
-	, m_context(nullptr)
-	, m_shader{}
-	, m_backend(nullptr)
-	, m_messagePainter(nullptr)
 {
 #ifdef BUILD_GL
 	mGLContext* glBackend;
@@ -267,7 +246,7 @@ PainterGL::~PainterGL() {
 	m_backend = nullptr;
 }
 
-void PainterGL::setContext(mCoreThread* context) {
+void PainterGL::setContext(std::shared_ptr<CoreController> context) {
 	m_context = context;
 
 	if (!context) {
@@ -278,9 +257,8 @@ void PainterGL::setContext(mCoreThread* context) {
 #if defined(_WIN32) && defined(USE_EPOXY)
 	epoxy_handle_external_wglMakeCurrent();
 #endif
-	unsigned width, height;
-	context->core->desiredVideoDimensions(context->core, &width, &height);
-	m_backend->setDimensions(m_backend, width, height);
+	QSize size = m_context->screenDimensions();
+	m_backend->setDimensions(m_backend, size.width(), size.height());
 	m_gl->doneCurrent();
 }
 
@@ -334,13 +312,13 @@ void PainterGL::start() {
 }
 
 void PainterGL::draw() {
-	if (m_queue.isEmpty() || !mCoreThreadIsActive(m_context)) {
+	if (m_queue.isEmpty()) {
 		return;
 	}
 
-	if (mCoreSyncWaitFrameStart(&m_context->impl->sync) || !m_queue.isEmpty()) {
+	if (mCoreSyncWaitFrameStart(&m_context->thread()->impl->sync) || !m_queue.isEmpty()) {
 		dequeue();
-		mCoreSyncWaitFrameEnd(&m_context->impl->sync);
+		mCoreSyncWaitFrameEnd(&m_context->thread()->impl->sync);
 		m_painter.begin(m_gl->context()->device());
 		performDraw();
 		m_painter.end();
@@ -354,7 +332,7 @@ void PainterGL::draw() {
 			m_delayTimer.restart();
 		}
 	} else {
-		mCoreSyncWaitFrameEnd(&m_context->impl->sync);
+		mCoreSyncWaitFrameEnd(&m_context->thread()->impl->sync);
 	}
 	if (!m_queue.isEmpty()) {
 		QMetaObject::invokeMethod(this, "draw", Qt::QueuedConnection);
@@ -380,6 +358,7 @@ void PainterGL::stop() {
 	m_backend->swap(m_backend);
 	m_gl->doneCurrent();
 	m_gl->context()->moveToThread(m_gl->thread());
+	m_context.reset();
 	moveToThread(m_gl->thread());
 }
 
@@ -414,9 +393,8 @@ void PainterGL::enqueue(const uint32_t* backing) {
 	} else {
 		buffer = m_free.takeLast();
 	}
-	unsigned width, height;
-	m_context->core->desiredVideoDimensions(m_context->core, &width, &height);
-	memcpy(buffer, backing, width * height * BYTES_PER_PIXEL);
+	QSize size = m_context->screenDimensions();
+	memcpy(buffer, backing, size.width() * size.height() * BYTES_PER_PIXEL);
 	m_queue.enqueue(buffer);
 	m_mutex.unlock();
 }

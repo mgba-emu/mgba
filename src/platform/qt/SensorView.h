@@ -10,6 +10,7 @@
 #include <QDialog>
 
 #include <functional>
+#include <memory>
 
 #include "ui_SensorView.h"
 
@@ -18,7 +19,7 @@ struct mRotationSource;
 namespace QGBA {
 
 class ConfigController;
-class GameController;
+class CoreController;
 class GamepadAxisEvent;
 class InputController;
 
@@ -26,7 +27,9 @@ class SensorView : public QDialog {
 Q_OBJECT
 
 public:
-	SensorView(GameController* controller, InputController* input, QWidget* parent = nullptr);
+	SensorView(InputController* input, QWidget* parent = nullptr);
+
+	void setController(std::shared_ptr<CoreController>);
 
 protected:
 	bool eventFilter(QObject*, QEvent* event) override;
@@ -41,7 +44,7 @@ private:
 	Ui::SensorView m_ui;
 
 	std::function<void(int)> m_jiggered;
-	GameController* m_controller;
+	std::shared_ptr<CoreController> m_controller;
 	InputController* m_input;
 	mRotationSource* m_rotation;
 	QTimer m_timer;

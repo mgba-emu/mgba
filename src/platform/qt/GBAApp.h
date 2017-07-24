@@ -8,8 +8,12 @@
 
 #include <QApplication>
 #include <QFileDialog>
+#include <QList>
+#include <QObject>
+#include <QString>
 #include <QThread>
 
+#include "CoreManager.h"
 #include "MultiplayerController.h"
 
 struct NoIntroDB;
@@ -70,6 +74,7 @@ private:
 	ConfigController* m_configController;
 	QList<Window*> m_windows;
 	MultiplayerController m_multiplayer;
+	CoreManager m_manager;
 
 	NoIntroDB* m_db = nullptr;
 #ifdef USE_SQLITE3

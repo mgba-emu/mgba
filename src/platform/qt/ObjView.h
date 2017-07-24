@@ -7,7 +7,6 @@
 #define QGBA_OBJ_VIEW
 
 #include "AssetView.h"
-#include "GameController.h"
 
 #include "ui_ObjView.h"
 
@@ -15,11 +14,13 @@
 
 namespace QGBA {
 
+class CoreController;
+
 class ObjView : public AssetView {
 Q_OBJECT
 
 public:
-	ObjView(GameController* controller, QWidget* parent = nullptr);
+	ObjView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
 #ifdef USE_PNG
 public slots:
@@ -40,7 +41,7 @@ private:
 
 	Ui::ObjView m_ui;
 
-	GameController* m_controller;
+	std::shared_ptr<CoreController> m_controller;
 	mTileCacheEntry m_tileStatus[1024 * 32] = {}; // TODO: Correct size
 	int m_objId = 0;
 	struct ObjInfo {

@@ -6,20 +6,22 @@
 #ifndef QGBA_ASSET_TILE
 #define QGBA_ASSET_TILE
 
-#include "GameController.h"
-
 #include "ui_AssetTile.h"
+
+#include <memory>
 
 #include <mgba/core/tile-cache.h>
 
 namespace QGBA {
+
+class CoreController;
 
 class AssetTile : public QGroupBox {
 Q_OBJECT
 
 public:
 	AssetTile(QWidget* parent = nullptr);
-	void setController(GameController*);
+	void setController(std::shared_ptr<CoreController>);
 
 public slots:
 	void setPalette(int);
@@ -30,7 +32,7 @@ public slots:
 private:
 	Ui::AssetTile m_ui;
 
-	std::shared_ptr<mTileCache> m_tileCache;
+	mTileCache* m_tileCache;
 	int m_paletteId = 0;
 	int m_paletteSet = 0;
 	int m_index = 0;

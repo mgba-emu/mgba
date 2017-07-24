@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "LoadSaveState.h"
 
-#include "GameController.h"
+#include "CoreController.h"
 #include "GamepadAxisEvent.h"
 #include "GamepadButtonEvent.h"
 #include "VFileDevice.h"
@@ -20,7 +20,7 @@
 
 using namespace QGBA;
 
-LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
+LoadSaveState::LoadSaveState(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
 	, m_mode(LoadSave::LOAD)
@@ -61,6 +61,8 @@ LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 	escape->setShortcut(QKeySequence("Esc"));
 	escape->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 	addAction(escape);
+
+	connect(m_controller.get(), &CoreController::stopping, this, &QWidget::close);
 }
 
 void LoadSaveState::setMode(LoadSave mode) {

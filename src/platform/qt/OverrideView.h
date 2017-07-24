@@ -8,9 +8,13 @@
 
 #include <QDialog>
 
+#include <memory>
+
 #ifdef M_CORE_GB
 #include <mgba/gb/interface.h>
 #endif
+
+#include "Override.h"
 
 #include "ui_OverrideView.h"
 
@@ -19,21 +23,23 @@ struct mCoreThread;
 namespace QGBA {
 
 class ConfigController;
-class GameController;
+class CoreController;
 class Override;
 
 class OverrideView : public QDialog {
 Q_OBJECT
 
 public:
-	OverrideView(GameController* controller, ConfigController* config, QWidget* parent = nullptr);
+	OverrideView(ConfigController* config, QWidget* parent = nullptr);
+
+	void setController(std::shared_ptr<CoreController> controller);
 
 public slots:
 	void saveOverride();
 
 private slots:
 	void updateOverrides();
-	void gameStarted(mCoreThread*);
+	void gameStarted();
 	void gameStopped();
 
 protected:
@@ -42,7 +48,8 @@ protected:
 private:
 	Ui::OverrideView m_ui;
 
-	GameController* m_controller;
+	std::shared_ptr<CoreController> m_controller;
+	std::unique_ptr<Override> m_override;
 	ConfigController* m_config;
 
 #ifdef M_CORE_GB

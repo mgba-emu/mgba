@@ -8,6 +8,8 @@
 
 #include "GBAApp.h"
 
+#include <mgba/core/log.h>
+
 #include <QObject>
 #include <QStringList>
 
@@ -35,7 +37,8 @@ private:
 public:
 	LogController(int levels, QObject* parent = nullptr);
 
-	int levels() const { return m_logLevel; }
+	int levels() const { return m_filter.defaultLevels; }
+	mLogFilter* filter() { return &m_filter; }
 
 	Stream operator()(int category, int level);
 
@@ -55,7 +58,7 @@ public slots:
 	void disableLevels(int levels);
 
 private:
-	int m_logLevel;
+	mLogFilter m_filter;
 
 	static LogController s_global;
 };

@@ -208,7 +208,7 @@ void GBAReset(struct ARMCore* cpu) {
 	gba->debug = false;
 	memset(gba->debugString, 0, sizeof(gba->debugString));
 
-	if (!gba->romVf) {
+	if (!gba->romVf && gba->memory.rom) {
 		GBASkipBIOS(gba);
 	}
 }
@@ -312,6 +312,10 @@ bool GBALoadNull(struct GBA* gba) {
 	gba->memory.romMask = SIZE_CART0 - 1;
 	gba->memory.mirroring = false;
 	gba->romCrc32 = 0;
+
+	if (gba->cpu) {
+		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
+	}
 	return true;
 }
 
@@ -335,6 +339,9 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
 	gba->memory.romSize = 0;
 	gba->memory.romMask = 0;
 	gba->romCrc32 = doCrc32(gba->memory.wram, gba->pristineRomSize);
+	if (gba->cpu && gba->memory.activeRegion == REGION_WORKING_RAM) {
+		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
+	}
 	return true;
 }
 
@@ -378,6 +385,9 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 #endif
 		gba->memory.romSize = SIZE_CART0;
 		gba->isPristine = false;
+	}
+	if (gba->cpu && gba->memory.activeRegion >= REGION_CART0) {
+		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
 	// TODO: error check
 	return true;

@@ -195,6 +195,14 @@ VideoView::~VideoView() {
 	free(m_containerCstr);
 }
 
+void VideoView::setController(std::shared_ptr<CoreController> controller) {
+	connect(controller.get(), &CoreController::stopping, this, &VideoView::stopRecording);
+	connect(this, &VideoView::recordingStarted, controller.get(), &CoreController::setAVStream);
+	connect(this, &VideoView::recordingStopped, controller.get(), &CoreController::clearAVStream, Qt::DirectConnection);
+
+	setNativeResolution(controller->screenDimensions());
+}
+
 void VideoView::startRecording() {
 	if (!validateSettings()) {
 		return;

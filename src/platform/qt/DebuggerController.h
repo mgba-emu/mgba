@@ -8,20 +8,23 @@
 
 #include <QObject>
 
+#include <memory>
+
 struct mDebugger;
 
 namespace QGBA {
 
-class GameController;
+class CoreController;
 
 class DebuggerController : public QObject {
 Q_OBJECT
 
 public:
-	DebuggerController(GameController* controller, mDebugger* debugger, QObject* parent = nullptr);
+	DebuggerController(mDebugger* debugger, QObject* parent = nullptr);
 
 public:
 	bool isAttached();
+	void setController(std::shared_ptr<CoreController>);
 
 public slots:
 	virtual void attach();
@@ -34,7 +37,7 @@ protected:
 	virtual void shutdownInternal();
 
 	mDebugger* const m_debugger;
-	GameController* const m_gameController;
+	std::shared_ptr<CoreController> m_gameController;
 
 private:
 	QMetaObject::Connection m_autoattach;

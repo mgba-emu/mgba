@@ -18,12 +18,12 @@ Q_OBJECT
 
 public:
 	AudioProcessorSDL(QObject* parent = nullptr);
-	~AudioProcessorSDL();
 
 	virtual unsigned sampleRate() const override;
 
 public slots:
-	virtual void setInput(mCoreThread* input) override;
+	virtual void setInput(std::shared_ptr<CoreController> input) override;
+	virtual void stop() override;
 	virtual bool start() override;
 	virtual void pause() override;
 

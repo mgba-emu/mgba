@@ -10,11 +10,17 @@
 
 #include <QWidget>
 
+#include <memory>
+
+#include "CoreController.h"
+
 #include "ui_VideoView.h"
 
 #include "feature/ffmpeg/ffmpeg-encoder.h"
 
 namespace QGBA {
+
+class CoreController;
 
 class VideoView : public QWidget {
 Q_OBJECT
@@ -26,6 +32,8 @@ public:
 	mAVStream* getStream() { return &m_encoder.d; }
 
 public slots:
+	void setController(std::shared_ptr<CoreController>);
+
 	void startRecording();
 	void stopRecording();
 	void setNativeResolution(const QSize&);

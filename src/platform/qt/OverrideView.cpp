@@ -9,7 +9,7 @@
 #include <QPushButton>
 
 #include "ConfigController.h"
-#include "GameController.h"
+#include "CoreController.h"
 
 #ifdef M_CORE_GBA
 #include "GBAOverride.h"
@@ -28,9 +28,8 @@ QList<enum GBModel> OverrideView::s_gbModelList;
 QList<enum GBMemoryBankControllerType> OverrideView::s_mbcList;
 #endif
 
-OverrideView::OverrideView(GameController* controller, ConfigController* config, QWidget* parent)
+OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
-	, m_controller(controller)
 	, m_config(config)
 {
 #ifdef M_CORE_GB
@@ -56,9 +55,6 @@ OverrideView::OverrideView(GameController* controller, ConfigController* config,
 	}
 #endif
 	m_ui.setupUi(this);
-
-	connect(controller, &GameController::gameStarted, this, &OverrideView::gameStarted);
-	connect(controller, &GameController::gameStopped, this, &OverrideView::gameStopped);
 
 	connect(m_ui.hwAutodetect, &QAbstractButton::toggled, [this] (bool enabled) {
 		m_ui.hwRTC->setEnabled(!enabled);
@@ -106,9 +102,16 @@ OverrideView::OverrideView(GameController* controller, ConfigController* config,
 	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &OverrideView::saveOverride);
 	connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);
 	m_ui.buttonBox->button(QDialogButtonBox::Save)->setEnabled(false);
+}
 
-	if (controller->isLoaded()) {
-		gameStarted(controller->thread());
+void OverrideView::setController(std::shared_ptr<CoreController> controller) {
+	m_controller = controller;
+	gameStarted();
+	connect(controller.get(), &CoreController::stopping, this, &OverrideView::gameStopped);
+	if (m_override) {
+		m_controller->setOverride(std::move(m_override));
+	} else {
+		m_controller->clearOverride();
 	}
 }
 
@@ -149,7 +152,7 @@ bool OverrideView::eventFilter(QObject* obj, QEvent* event) {
 }
 
 void OverrideView::saveOverride() {
-	if (!m_config) {
+	if (!m_config || !m_controller) {
 		return;
 	}
 	m_config->saveOverride(*m_controller->override());
@@ -158,7 +161,7 @@ void OverrideView::saveOverride() {
 void OverrideView::updateOverrides() {
 #ifdef M_CORE_GBA
 	if (m_ui.tabWidget->currentWidget() == m_ui.tabGBA) {
-		GBAOverride* gba = new GBAOverride;
+		std::unique_ptr<GBAOverride> gba(new GBAOverride);
 		memset(gba->override.id, 0, 4);
 		gba->override.savetype = static_cast<SavedataType>(m_ui.savetype->currentIndex() - 1);
 		gba->override.hardware = HW_NO_OVERRIDE;
@@ -193,18 +196,18 @@ void OverrideView::updateOverrides() {
 			gba->override.idleLoop = parsedIdleLoop;
 		}
 
+
 		if (gba->override.savetype != SAVEDATA_AUTODETECT || gba->override.hardware != HW_NO_OVERRIDE ||
 		    gba->override.idleLoop != IDLE_LOOP_NONE) {
-			m_controller->setOverride(gba);
+			m_override = std::move(gba);
 		} else {
-			m_controller->clearOverride();
-			delete gba;
+			m_override.reset();
 		}
 	}
 #endif
 #ifdef M_CORE_GB
 	if (m_ui.tabWidget->currentWidget() == m_ui.tabGB) {
-		GBOverride* gb = new GBOverride;
+		std::unique_ptr<GBOverride> gb(new GBOverride);
 		gb->override.mbc = s_mbcList[m_ui.mbc->currentIndex()];
 		gb->override.model = s_gbModelList[m_ui.gbModel->currentIndex()];
 		gb->override.gbColors[0] = m_gbColors[0];
@@ -214,20 +217,17 @@ void OverrideView::updateOverrides() {
 		bool hasOverride = gb->override.mbc != GB_MBC_AUTODETECT || gb->override.model != GB_MODEL_AUTODETECT;
 		hasOverride = hasOverride || (m_gbColors[0] | m_gbColors[1] | m_gbColors[2] | m_gbColors[3]);
 		if (hasOverride) {
-			m_controller->setOverride(gb);
+			m_override = std::move(gb);
 		} else {
-			m_controller->clearOverride();
-			delete gb;
+			m_override.reset();
 		}
 	}
 #endif
 }
 
-void OverrideView::gameStarted(mCoreThread* thread) {
-	if (!thread->core) {
-		gameStopped();
-		return;
-	}
+void OverrideView::gameStarted() {
+	CoreController::Interrupter interrupter(m_controller);
+	mCoreThread* thread = m_controller->thread();
 
 	m_ui.tabWidget->setEnabled(false);
 	m_ui.buttonBox->button(QDialogButtonBox::Save)->setEnabled(true);
@@ -278,6 +278,7 @@ void OverrideView::gameStarted(mCoreThread* thread) {
 }
 
 void OverrideView::gameStopped() {
+	m_controller.reset();
 	m_ui.tabWidget->setEnabled(true);
 	m_ui.savetype->setCurrentIndex(0);
 	m_ui.idleLoop->clear();

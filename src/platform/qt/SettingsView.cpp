@@ -183,19 +183,26 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 SettingsView::~SettingsView() {
 #if defined(BUILD_GL) || defined(BUILD_GLES)
-	if (m_shader) {
-		m_ui.stackedWidget->removeWidget(m_shader);
-		m_shader->setParent(nullptr);
-	}
+	setShaderSelector(nullptr);
 #endif
 }
 
 void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
 #if defined(BUILD_GL) || defined(BUILD_GLES)
+	if (m_shader) {
+		auto items = m_ui.tabs->findItems(tr("Shaders"), Qt::MatchFixedString);
+		for (const auto& item : items) {
+			m_ui.tabs->removeItemWidget(item);
+		}
+		m_ui.stackedWidget->removeWidget(m_shader);
+		m_shader->setParent(nullptr);
+	}
 	m_shader = shaderSelector;
-	m_ui.stackedWidget->addWidget(m_shader);
-	m_ui.tabs->addItem(tr("Shaders"));
-	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, m_shader, &ShaderSelector::saved);
+	if (shaderSelector) {
+		m_ui.stackedWidget->addWidget(m_shader);
+		m_ui.tabs->addItem(tr("Shaders"));
+		connect(m_ui.buttonBox, &QDialogButtonBox::accepted, m_shader, &ShaderSelector::saved);
+	}
 #endif
 }
 
@@ -281,6 +288,7 @@ void SettingsView::updateConfig() {
 	if (displayDriver != m_controller->getQtOption("displayDriver")) {
 		m_controller->setQtOption("displayDriver", displayDriver);
 		Display::setDriver(static_cast<Display::Driver>(displayDriver.toInt()));
+		setShaderSelector(nullptr);
 		emit displayDriverChanged();
 	}
 
