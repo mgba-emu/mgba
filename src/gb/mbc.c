@@ -29,8 +29,13 @@ static void _GBMBC6(struct GB*, uint16_t address, uint8_t value);
 static void _GBMBC7(struct GB*, uint16_t address, uint8_t value);
 static void _GBHuC3(struct GB*, uint16_t address, uint8_t value);
 static void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value);
+static void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value);
 
 static uint8_t _GBMBC7Read(struct GBMemory*, uint16_t address);
+static void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value);
+
+static uint8_t _GBTAMA5Read(struct GBMemory*, uint16_t address);
+
 static uint8_t _GBPocketCamRead(struct GBMemory*, uint16_t address);
 
 void GBMBCSwitchBank(struct GB* gb, int bank) {
@@ -160,10 +165,13 @@ void GBMBCInit(struct GB* gb) {
 				gb->memory.mbcType = GB_POCKETCAM;
 				break;
 			case 0xFD:
-				gb->memory.mbcType = GB_HuC1;
+				gb->memory.mbcType = GB_TAMA5;
 				break;
 			case 0xFE:
 				gb->memory.mbcType = GB_HuC3;
+				break;
+			case 0xFF:
+				gb->memory.mbcType = GB_HuC1;
 				break;
 			}
 		}
@@ -210,6 +218,12 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_HuC3:
 		gb->memory.mbcWrite = _GBHuC3;
+		break;
+	case GB_TAMA5:
+		mLOG(GB_MBC, WARN, "unimplemented MBC: TAMA5");
+		memset(gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
+		gb->memory.mbcWrite = _GBTAMA5;
+		gb->memory.mbcRead = _GBTAMA5Read;
 		break;
 	case GB_MBC3_RTC:
 		memset(gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
@@ -493,6 +507,8 @@ void _GBMBC7(struct GB* gb, uint16_t address, uint8_t value) {
 			gb->memory.mbcState.mbc7.access &= ~2;
 		}
 		break;
+	case 0x5:
+		_GBMBC7Write(&gb->memory, address, value);
 	default:
 		// TODO
 		mLOG(GB_MBC, STUB, "MBC7 unknown address: %04X:%02X", address, value);
@@ -547,7 +563,7 @@ uint8_t _GBMBC7Read(struct GBMemory* memory, uint16_t address) {
 	}
 }
 
-void GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value) {
+static void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	struct GBMBC7State* mbc7 = &memory->mbcState.mbc7;
 	if (mbc7->access != 3) {
 		return;
@@ -748,6 +764,55 @@ uint8_t _GBPocketCamRead(struct GBMemory* memory, uint16_t address) {
 		return 0xFF;
 	}
 	return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
+}
+
+void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value) {
+	struct GBMemory* memory = &gb->memory;
+	struct GBTAMA5State* tama5 = &memory->mbcState.tama5;
+	switch (address >> 13) {
+	case 0x5:
+		if (address & 1) {
+			if (tama5->unlocked) {
+				tama5->reg = value;
+			} else if (value == 0xA) {
+				tama5->unlocked = true;
+			}
+		} else {
+			uint8_t reg = tama5->reg >> 1;
+			if (reg < GBTAMA5_MAX) {
+				uint8_t mask = 0xF << (4 * (tama5->reg & 1));
+				value <<= (4 * (tama5->reg & 1));
+				value |= tama5->registers[reg] & ~mask;
+				tama5->registers[reg] = value;
+				if (tama5->reg & 1) {
+					switch (reg) {
+					case GBTAMA5_BANK:
+						GBMBCSwitchBank(gb, value & 0x1F);
+						// Fall through
+					default:
+						mLOG(GB_MBC, STUB, "TAMA5 unknown register: %02X:%02X", reg, value);
+						break;
+					}
+					tama5->unlocked = false;
+				}
+			} else {
+				mLOG(GB_MBC, STUB, "TAMA5 unknown register: %02X", reg);
+			}
+		}
+		break;
+	default:
+		mLOG(GB_MBC, STUB, "TAMA5 unknown address: %04X:%02X", address, value);
+	}
+}
+
+uint8_t _GBTAMA5Read(struct GBMemory* memory, uint16_t address) {
+	struct GBTAMA5State* tama5 = &memory->mbcState.tama5;
+	mLOG(GB_MBC, STUB, "TAMA5 unknown address: %04X", address);
+	if (address & 1) {
+		return 0xFF;
+	} else {
+		return 0xF0 | tama5->unlocked;
+	}
 }
 
 void GBMBCRTCRead(struct GB* gb) {

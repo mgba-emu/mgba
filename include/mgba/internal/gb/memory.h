@@ -86,6 +86,11 @@ enum GBMBC7MachineState {
 	GBMBC7_STATE_EEPROM_ERASE = 0x1C,
 };
 
+enum GBTAMA5Register {
+	GBTAMA5_BANK = 0x0,
+	GBTAMA5_MAX
+};
+
 struct GBMBC1State {
 	int mode;
 	int multicartStride;
@@ -106,10 +111,18 @@ struct GBPocketCamState {
 	bool registersActive;
 };
 
+struct GBTAMA5State {
+	bool unlocked;
+	uint8_t reg;
+	uint8_t value;
+	uint8_t registers[GBTAMA5_MAX];
+};
+
 union GBMBCState {
 	struct GBMBC1State mbc1;
 	struct GBMBC7State mbc7;
 	struct GBPocketCamState pocketCam;
+	struct GBTAMA5State tama5;
 };
 
 struct mRotationSource;
