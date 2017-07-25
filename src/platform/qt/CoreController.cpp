@@ -408,7 +408,7 @@ void CoreController::loadState(int slot) {
 		if (!controller->m_backupLoadState.isOpen()) {
 			controller->m_backupLoadState = VFileMemChunk(nullptr, 0);
 		}
-		mCoreLoadStateNamed(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
+		mCoreSaveStateNamed(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
 		if (mCoreLoadState(context->core, controller->m_stateSlot, controller->m_loadStateFlags)) {
 			emit controller->frameAvailable();
 			emit controller->stateLoaded();
