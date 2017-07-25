@@ -1753,15 +1753,23 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	if (m_gdbController) {
 		m_gdbController->setController(m_controller);
 	}
+
 	if (m_console) {
 		m_console->setController(m_controller);
 	}
+
+#ifdef USE_MAGICK
 	if (m_gifView) {
 		m_gifView->setController(m_controller);
 	}
+#endif
+
+#ifdef USE_FFMPEG
 	if (m_videoView) {
 		m_videoView->setController(m_controller);
 	}
+#endif
+
 	if (m_overrideView) {
 		m_overrideView->setController(m_controller);
 	}
