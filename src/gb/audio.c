@@ -960,6 +960,8 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	mTimingSchedule(audio->timing, &audio->frameEvent, when);
 
 	LOAD_32LE(flags, 0, flagsIn);
+	audio->frame = GBSerializedAudioFlagsGetFrame(flags);
+
 	LOAD_32LE(ch1Flags, 0, &state->ch1.envelope);
 	audio->ch1.envelope.currentVolume = GBSerializedAudioFlagsGetCh1Volume(flags);
 	audio->ch1.envelope.dead = GBSerializedAudioFlagsGetCh1Dead(flags);

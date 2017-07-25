@@ -6,6 +6,7 @@ Bugfixes:
  - Python: Fix importing .gb or .gba before .core
  - GBA: Reset active region as needed when loading a ROM
  - Qt: Fix command line debugger closing second game
+ - GB Serialize: Fix audio state loading
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
