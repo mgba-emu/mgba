@@ -372,6 +372,13 @@ void Window::openView(QWidget* widget) {
 	widget->show();
 }
 
+void Window::loadCamImage() {
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select image"), tr("Image file (*.png *.gif *.jpg *.jpeg);;All files (*)"));
+	if (!filename.isEmpty()) {
+		m_inputController.loadCamImage(filename);
+	}
+}
+
 void Window::importSharkport() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save"), tr("GameShark saves (*.sps *.xps)"));
 	if (!filename.isEmpty()) {
@@ -1063,6 +1070,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_nonMpActions.append(quickSave);
 		addControlledAction(quickSaveMenu, quickSave, QString("quickSave.%1").arg(i));
 	}
+
+	fileMenu->addSeparator();
+	QAction* camImage = new QAction(tr("Load camera image..."), fileMenu);
+	connect(camImage, &QAction::triggered, this, &Window::loadCamImage);
+	addControlledAction(fileMenu, camImage, "loadCamImage");
 
 #ifdef M_CORE_GBA
 	fileMenu->addSeparator();

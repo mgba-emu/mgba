@@ -81,6 +81,8 @@ public:
 	void stealFocus(QWidget* focus);
 	void releaseFocus(QWidget* focus);
 
+	void loadCamImage(const QString& path);
+
 	mRumble* rumble();
 	mRotationSource* rotationSource();
 	mImageSource* imageSource() { return &m_image; }

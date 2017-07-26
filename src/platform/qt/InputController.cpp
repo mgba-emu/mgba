@@ -81,7 +81,9 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 
 	m_image.startRequestImage = [](mImageSource* context) {
 		InputControllerImage* image = static_cast<InputControllerImage*>(context);
-		image->image.load(":/res/no-cam.png");
+		if (image->image.isNull()) {
+			image->image.load(":/res/no-cam.png");
+		}
 	};
 	m_image.stopRequestImage = nullptr;
 	m_image.requestImage = [](mImageSource* context, unsigned w, unsigned h, const uint32_t** buffer, size_t* stride) {
@@ -91,10 +93,10 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 		const uint32_t* bits = reinterpret_cast<const uint32_t*>(image->resizedImage.constBits());
 		QSize size = image->resizedImage.size();
 		if (size.width() > w) {
-			bits += size.width() / 2;
+			bits += (size.width() - w) / 2;
 		}
 		if (size.height() > h) {
-			bits += (size.height() / 2) * size.width();
+			bits += ((size.height() - h) / 2) * size.width();
 		}
 		*buffer = bits;
 		*stride = size.width();
@@ -641,6 +643,11 @@ void InputController::releaseFocus(QWidget* focus) {
 	if (focus == m_focusParent) {
 		m_focusParent = m_topLevel;
 	}
+}
+
+void InputController::loadCamImage(const QString& path) {
+	m_image.image.load(path);
+	m_image.resizedImage = QImage();
 }
 
 void InputController::increaseLuminanceLevel() {

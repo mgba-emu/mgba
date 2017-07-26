@@ -76,6 +76,8 @@ public slots:
 	void reloadConfig();
 	void saveConfig();
 
+	void loadCamImage();
+
 	void replaceROM();
 
 	void multiplayerChanged();
