@@ -103,6 +103,8 @@ void GBMemoryInit(struct GB* gb) {
 	gb->memory.mbcWrite = NULL;
 
 	gb->memory.rtc = NULL;
+	gb->memory.rotation = NULL;
+	gb->memory.rumble = NULL;
 
 	GBIOInit(gb);
 }
