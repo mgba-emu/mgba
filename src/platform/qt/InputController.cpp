@@ -13,6 +13,9 @@
 #include <QApplication>
 #include <QTimer>
 #include <QWidget>
+#ifdef BUILD_QT_MULTIMEDIA
+#include <QCamera>
+#endif
 
 #include <mgba/core/interface.h>
 #include <mgba-util/configuration.h>
@@ -53,6 +56,10 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 	m_gamepadTimer.setInterval(50);
 	m_gamepadTimer.start();
 
+#ifdef BUILD_QT_MULTIMEDIA
+	connect(&m_videoDumper, &VideoDumper::imageAvailable, this, &InputController::setCamImage);
+#endif
+
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_X, GBA_KEY_A);
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Z, GBA_KEY_B);
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_A, GBA_KEY_L);
@@ -79,13 +86,33 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 	setLuminanceLevel(0);
 #endif
 
+	m_image.p = this;
 	m_image.startRequestImage = [](mImageSource* context) {
 		InputControllerImage* image = static_cast<InputControllerImage*>(context);
 		if (image->image.isNull()) {
 			image->image.load(":/res/no-cam.png");
 		}
+#ifdef BUILD_QT_MULTIMEDIA
+		if (image->p->m_config->getQtOption("cameraDriver").toInt() == static_cast<int>(CameraDriver::QT_MULTIMEDIA)) {
+			if (!image->p->m_camera) {
+				image->p->m_camera = new QCamera;
+			}
+			image->p->m_camera->setViewfinder(&image->p->m_videoDumper);
+			image->p->m_camera->start();
+		}
+#endif
 	};
-	m_image.stopRequestImage = nullptr;
+
+	m_image.stopRequestImage = [](mImageSource* context) {
+		InputControllerImage* image = static_cast<InputControllerImage*>(context);
+#ifdef BUILD_QT_MULTIMEDIA
+		if (image->p->m_camera) {
+			image->p->m_camera->stop();
+			delete image->p->m_camera;
+		}
+#endif
+	};
+
 	m_image.requestImage = [](mImageSource* context, unsigned w, unsigned h, const uint32_t** buffer, size_t* stride) {
 		InputControllerImage* image = static_cast<InputControllerImage*>(context);
 		image->resizedImage = image->image.scaled(w, h, Qt::KeepAspectRatioByExpanding);
@@ -647,6 +674,11 @@ void InputController::releaseFocus(QWidget* focus) {
 
 void InputController::loadCamImage(const QString& path) {
 	m_image.image.load(path);
+	m_image.resizedImage = QImage();
+}
+
+void InputController::setCamImage(const QImage& image) {
+	m_image.image = image;
 	m_image.resizedImage = QImage();
 }
 

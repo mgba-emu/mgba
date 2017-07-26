@@ -157,6 +157,8 @@ if(Qt5Multimedia_FOUND)
 	list(APPEND AUDIO_SRC
 		AudioProcessorQt.cpp
 		AudioDevice.cpp)
+	list(APPEND SOURCE_FILES
+		VideoDumper.cpp)
 	if (WIN32 AND QT_STATIC)
 		list(APPEND QT_LIBRARIES qtaudio_windows strmiids winmm)
 	endif()

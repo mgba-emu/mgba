@@ -22,8 +22,15 @@
 #include "platform/sdl/sdl-events.h"
 #endif
 
+
+#ifdef BUILD_QT_MULTIMEDIA
+#include "VideoDumper.h"
+#endif
+
 struct mRotationSource;
 struct mRumble;
+
+class QCamera;
 
 namespace QGBA {
 
@@ -33,6 +40,13 @@ class InputController : public QObject {
 Q_OBJECT
 
 public:
+	enum class CameraDriver : int {
+		NONE = 0,
+#ifdef BUILD_QT_MULTIMEDIA
+		QT_MULTIMEDIA = 1,
+#endif
+	};
+
 	static const uint32_t KEYBOARD = 0x51545F4B;
 
 	InputController(int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
@@ -81,8 +95,6 @@ public:
 	void stealFocus(QWidget* focus);
 	void releaseFocus(QWidget* focus);
 
-	void loadCamImage(const QString& path);
-
 	mRumble* rumble();
 	mRotationSource* rotationSource();
 	mImageSource* imageSource() { return &m_image; }
@@ -106,6 +118,9 @@ public slots:
 	void setLuminanceLevel(int level);
 	void setLuminanceValue(uint8_t value);
 
+	void loadCamImage(const QString& path);
+	void setCamImage(const QImage& image);
+
 private:
 	void postPendingEvent(GBAKey);
 	void clearPendingEvent(GBAKey);
@@ -124,6 +139,11 @@ private:
 		QImage image;
 		QImage resizedImage;
 	} m_image;
+
+#ifdef BUILD_QT_MULTIMEDIA
+	QCamera* m_camera = nullptr;
+	VideoDumper m_videoDumper;
+#endif
 
 	mInputMap m_inputMap;
 	ConfigController* m_config = nullptr;
