@@ -8,6 +8,7 @@ Bugfixes:
  - Qt: Fix command line debugger closing second game
  - GB Serialize: Fix audio state loading
  - GB Video: Fix dot clock timing being slightly wrong
+ - GB MBC: Pocket Cam memory should be accessible without enabling
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
