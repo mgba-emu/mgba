@@ -4,6 +4,7 @@ Bugfixes:
  - GBA: Reset active region as needed when loading a ROM
  - Qt: Fix command line debugger closing second game
  - GB MBC: Pocket Cam memory should be accessible without enabling
+ - GB Memory: Initialize peripheral pointers
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
 
