@@ -31,10 +31,10 @@ bool VideoDumper::present(const QVideoFrame& frame) {
 
 QList<QVideoFrame::PixelFormat> VideoDumper::supportedPixelFormats(QAbstractVideoBuffer::HandleType) const {
 	QList<QVideoFrame::PixelFormat> list;
-	list.append(QVideoFrame::Format_ARGB32);
-	list.append(QVideoFrame::Format_ARGB32_Premultiplied);
 	list.append(QVideoFrame::Format_RGB32);
+	list.append(QVideoFrame::Format_ARGB32);
 	list.append(QVideoFrame::Format_RGB24);
+	list.append(QVideoFrame::Format_ARGB32_Premultiplied);
 	list.append(QVideoFrame::Format_RGB565);
 	list.append(QVideoFrame::Format_RGB555);
 	return list;

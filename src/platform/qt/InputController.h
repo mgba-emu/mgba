@@ -138,6 +138,7 @@ private:
 		InputController* p;
 		QImage image;
 		QImage resizedImage;
+		unsigned w, h;
 	} m_image;
 
 #ifdef BUILD_QT_MULTIMEDIA

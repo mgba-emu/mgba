@@ -84,9 +84,9 @@ struct mRTCSource {
 };
 
 struct mImageSource {
-	void (*startRequestImage)(struct mImageSource*);
+	void (*startRequestImage)(struct mImageSource*, unsigned w, unsigned h);
 	void (*stopRequestImage)(struct mImageSource*);
-	void (*requestImage)(struct mImageSource*, unsigned w, unsigned h, const uint32_t** buffer, size_t* stride);
+	void (*requestImage)(struct mImageSource*, const uint32_t** buffer, size_t* stride);
 };
 
 enum mRTCGenericType {

@@ -244,7 +244,7 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcWrite = _GBPocketCam;
 		gb->memory.mbcRead = _GBPocketCamRead;
 		if (gb->memory.cam && gb->memory.cam->startRequestImage) {
-			gb->memory.cam->startRequestImage(gb->memory.cam);
+			gb->memory.cam->startRequestImage(gb->memory.cam, GBCAM_WIDTH, GBCAM_HEIGHT);
 		}
 		break;
 	}
@@ -793,7 +793,7 @@ void _GBPocketCamCapture(struct GBMemory* memory) {
 	}
 	const uint32_t* image = NULL;
 	size_t stride;
-	memory->cam->requestImage(memory->cam, GBCAM_WIDTH, GBCAM_HEIGHT, &image, &stride);
+	memory->cam->requestImage(memory->cam, &image, &stride);
 	if (!image) {
 		return;
 	}

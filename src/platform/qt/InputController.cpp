@@ -87,16 +87,42 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 #endif
 
 	m_image.p = this;
-	m_image.startRequestImage = [](mImageSource* context) {
+	m_image.startRequestImage = [](mImageSource* context, unsigned w, unsigned h) {
 		InputControllerImage* image = static_cast<InputControllerImage*>(context);
+		image->w = w;
+		image->h = h;
 		if (image->image.isNull()) {
 			image->image.load(":/res/no-cam.png");
 		}
+		image->resizedImage = image->image.scaled(w, h, Qt::KeepAspectRatioByExpanding);
 #ifdef BUILD_QT_MULTIMEDIA
 		if (image->p->m_config->getQtOption("cameraDriver").toInt() == static_cast<int>(CameraDriver::QT_MULTIMEDIA)) {
 			if (!image->p->m_camera) {
 				image->p->m_camera = new QCamera;
 			}
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
+			QCameraViewfinderSettings settings;
+			QSize size(1920, 1080);
+			auto cameraRes = image->p->m_camera->supportedViewfinderResolutions(settings);
+			for (auto& cameraSize : cameraRes) {
+				if (cameraSize.width() < w || cameraSize.height() < h) {
+					continue;
+				}
+				if (cameraSize.width() <= size.width() && cameraSize.height() <= size.height()) {
+					size = cameraSize;
+				}
+			}
+			settings.setResolution(size);
+			auto cameraFormats = image->p->m_camera->supportedViewfinderPixelFormats(settings);
+			auto goodFormats = image->p->m_videoDumper.supportedPixelFormats();
+			for (auto& format : goodFormats) {
+				if (cameraFormats.contains(format)) {
+					settings.setPixelFormat(format);
+					break;
+				}
+			}
+			image->p->m_camera->setViewfinderSettings(settings);
+#endif
 			image->p->m_camera->setViewfinder(&image->p->m_videoDumper);
 			image->p->m_camera->start();
 		}
@@ -113,17 +139,16 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 #endif
 	};
 
-	m_image.requestImage = [](mImageSource* context, unsigned w, unsigned h, const uint32_t** buffer, size_t* stride) {
+	m_image.requestImage = [](mImageSource* context, const uint32_t** buffer, size_t* stride) {
 		InputControllerImage* image = static_cast<InputControllerImage*>(context);
-		image->resizedImage = image->image.scaled(w, h, Qt::KeepAspectRatioByExpanding);
 		image->resizedImage = image->resizedImage.convertToFormat(QImage::Format_RGB32);
 		const uint32_t* bits = reinterpret_cast<const uint32_t*>(image->resizedImage.constBits());
 		QSize size = image->resizedImage.size();
-		if (size.width() > w) {
-			bits += (size.width() - w) / 2;
+		if (size.width() > image->w) {
+			bits += (size.width() - image->w) / 2;
 		}
-		if (size.height() > h) {
-			bits += ((size.height() - h) / 2) * size.width();
+		if (size.height() > image->h) {
+			bits += ((size.height() - image->h) / 2) * size.width();
 		}
 		*buffer = bits;
 		*stride = size.width();
