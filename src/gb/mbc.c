@@ -744,9 +744,6 @@ uint8_t _GBPocketCamRead(struct GBMemory* memory, uint16_t address) {
 	if (memory->mbcState.pocketCam.registersActive) {
 		return 0;
 	}
-	if (!memory->sramAccess) {
-		return 0xFF;
-	}
 	return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
 }
 
