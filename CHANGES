@@ -1,6 +1,7 @@
 0.7.0: (Future)
 Features:
  - ELF support
+ - Game Boy Camera support
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
  - Python: Fix importing .gb or .gba before .core

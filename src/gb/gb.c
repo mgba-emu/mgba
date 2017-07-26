@@ -294,6 +294,9 @@ void GBUnloadROM(struct GB* gb) {
 	}
 	gb->sramRealVf = NULL;
 	gb->sramVf = NULL;
+	if (gb->memory.cam && gb->memory.cam->stopRequestImage) {
+		gb->memory.cam->stopRequestImage(gb->memory.cam);
+	}
 }
 
 void GBSynthesizeROM(struct VFile* vf) {

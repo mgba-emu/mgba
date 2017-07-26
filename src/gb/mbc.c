@@ -37,6 +37,7 @@ static void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t valu
 static uint8_t _GBTAMA5Read(struct GBMemory*, uint16_t address);
 
 static uint8_t _GBPocketCamRead(struct GBMemory*, uint16_t address);
+static void _GBPocketCamCapture(struct GBMemory*);
 
 void GBMBCSwitchBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_BANK0;
@@ -242,6 +243,9 @@ void GBMBCInit(struct GB* gb) {
 	case GB_POCKETCAM:
 		gb->memory.mbcWrite = _GBPocketCam;
 		gb->memory.mbcRead = _GBPocketCamRead;
+		if (gb->memory.cam && gb->memory.cam->startRequestImage) {
+			gb->memory.cam->startRequestImage(gb->memory.cam);
+		}
 		break;
 	}
 
@@ -757,6 +761,16 @@ void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value) {
 			memory->mbcState.pocketCam.registersActive = true;
 		}
 		break;
+	case 0x5:
+		address &= 0x7F;
+		if (address == 0 && value & 1) {
+			value &= 6; // TODO: Timing
+			_GBPocketCamCapture(memory);
+		}
+		if (address < sizeof(memory->mbcState.pocketCam.registers)) {
+			memory->mbcState.pocketCam.registers[address] = value;
+		}
+		break;
 	default:
 		mLOG(GB_MBC, STUB, "Pocket Cam unknown address: %04X:%02X", address, value);
 		break;
@@ -765,9 +779,51 @@ void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value) {
 
 uint8_t _GBPocketCamRead(struct GBMemory* memory, uint16_t address) {
 	if (memory->mbcState.pocketCam.registersActive) {
+		if ((address & 0x7F) == 0) {
+			return memory->mbcState.pocketCam.registers[0];
+		}
 		return 0;
 	}
 	return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
+}
+
+void _GBPocketCamCapture(struct GBMemory* memory) {
+	if (!memory->cam) {
+		return;
+	}
+	const uint32_t* image = NULL;
+	size_t stride;
+	memory->cam->requestImage(memory->cam, GBCAM_WIDTH, GBCAM_HEIGHT, &image, &stride);
+	if (!image) {
+		return;
+	}
+	memset(&memory->sram[0x100], 0, GBCAM_HEIGHT * GBCAM_WIDTH / 4);
+	struct GBPocketCamState* pocketCam = &memory->mbcState.pocketCam;
+	size_t x, y;
+	for (y = 0; y < GBCAM_HEIGHT; ++y) {
+		for (x = 0; x < GBCAM_WIDTH; ++x) {
+			uint32_t color = image[y * stride + x];
+			uint32_t gray = ((color & 0xFF) + ((color >> 8) & 0xFF) + ((color >> 16) & 0xFF));
+			uint16_t exposure = (pocketCam->registers[2] << 8) | (pocketCam->registers[3]);
+			gray = (gray + 1) * exposure / 0x300;
+			// TODO: Additional processing
+			int matrixEntry = 3 * ((x & 3) + 4 * (y & 3));
+			if (gray < pocketCam->registers[matrixEntry + 6]) {
+				gray = 0x101;
+			} else if (gray < pocketCam->registers[matrixEntry + 7]) {
+				gray = 0x100;
+			} else if (gray < pocketCam->registers[matrixEntry + 8]) {
+				gray = 0x001;
+			} else {
+				gray = 0;
+			}
+			int coord = (((x >> 3) & 0xF) * 8 + (y & 0x7)) * 2 + (y & ~0x7) * 0x20;
+			uint16_t existing;
+			LOAD_16LE(existing, coord + 0x100, memory->sram);
+			existing |= gray << (7 - (x & 7));
+			STORE_16LE(existing, coord + 0x100, memory->sram);
+		}
+	}
 }
 
 void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value) {

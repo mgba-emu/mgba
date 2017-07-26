@@ -9,6 +9,7 @@
 #include "GamepadAxisEvent.h"
 #include "GamepadHatEvent.h"
 
+#include <QImage>
 #include <QObject>
 #include <QSet>
 #include <QTimer>
@@ -82,6 +83,7 @@ public:
 
 	mRumble* rumble();
 	mRotationSource* rotationSource();
+	mImageSource* imageSource() { return &m_image; }
 	GBALuminanceSource* luminance() { return &m_lux; }
 
 signals:
@@ -114,6 +116,12 @@ private:
 	} m_lux;
 	uint8_t m_luxValue;
 	int m_luxLevel;
+
+	struct InputControllerImage : mImageSource {
+		InputController* p;
+		QImage image;
+		QImage resizedImage;
+	} m_image;
 
 	mInputMap m_inputMap;
 	ConfigController* m_config = nullptr;

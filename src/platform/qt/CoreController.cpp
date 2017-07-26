@@ -47,8 +47,6 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 	m_threadContext.startCallback = [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
-		context->core->setPeripheral(context->core, mPERIPH_ROTATION, controller->m_inputController->rotationSource());
-		context->core->setPeripheral(context->core, mPERIPH_RUMBLE, controller->m_inputController->rumble());
 
 		switch (context->core->platform(context->core)) {
 #ifdef M_CORE_GBA
@@ -285,6 +283,9 @@ void CoreController::setOverride(std::unique_ptr<Override> override) {
 
 void CoreController::setInputController(InputController* inputController) {
 	m_inputController = inputController;
+	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_ROTATION, m_inputController->rotationSource());
+	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_RUMBLE, m_inputController->rumble());
+	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_IMAGE_SOURCE, m_inputController->imageSource());
 }
 
 void CoreController::setLogger(LogController* logger) {

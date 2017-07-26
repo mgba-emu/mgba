@@ -479,6 +479,9 @@ static void _GBCoreSetPeripheral(struct mCore* core, int type, void* periph) {
 	case mPERIPH_RUMBLE:
 		gb->memory.rumble = periph;
 		break;
+	case mPERIPH_IMAGE_SOURCE:
+		gb->memory.cam = periph;
+		break;
 	default:
 		return;
 	}

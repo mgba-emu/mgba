@@ -117,6 +117,7 @@ struct GBMBC7State {
 
 struct GBPocketCamState {
 	bool registersActive;
+	uint8_t registers[0x36];
 };
 
 struct GBTAMA5State {
@@ -179,6 +180,7 @@ struct GBMemory {
 	struct mRTCSource* rtc;
 	struct mRotationSource* rotation;
 	struct mRumble* rumble;
+	struct mImageSource* cam;
 };
 
 struct LR35902Core;

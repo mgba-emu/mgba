@@ -78,6 +78,27 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 	};
 	setLuminanceLevel(0);
 #endif
+
+	m_image.startRequestImage = [](mImageSource* context) {
+		InputControllerImage* image = static_cast<InputControllerImage*>(context);
+		image->image.load(":/res/no-cam.png");
+	};
+	m_image.stopRequestImage = nullptr;
+	m_image.requestImage = [](mImageSource* context, unsigned w, unsigned h, const uint32_t** buffer, size_t* stride) {
+		InputControllerImage* image = static_cast<InputControllerImage*>(context);
+		image->resizedImage = image->image.scaled(w, h, Qt::KeepAspectRatioByExpanding);
+		image->resizedImage = image->resizedImage.convertToFormat(QImage::Format_RGB32);
+		const uint32_t* bits = reinterpret_cast<const uint32_t*>(image->resizedImage.constBits());
+		QSize size = image->resizedImage.size();
+		if (size.width() > w) {
+			bits += size.width() / 2;
+		}
+		if (size.height() > h) {
+			bits += (size.height() / 2) * size.width();
+		}
+		*buffer = bits;
+		*stride = size.width();
+	};
 }
 
 InputController::~InputController() {

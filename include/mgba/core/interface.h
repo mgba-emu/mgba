@@ -61,6 +61,7 @@ struct mKeyCallback {
 enum mPeripheral {
 	mPERIPH_ROTATION = 1,
 	mPERIPH_RUMBLE,
+	mPERIPH_IMAGE_SOURCE,
 	mPERIPH_CUSTOM = 0x1000
 };
 
@@ -80,6 +81,12 @@ struct mRTCSource {
 
 	void (*serialize)(struct mRTCSource*, struct mStateExtdataItem*);
 	bool (*deserialize)(struct mRTCSource*, const struct mStateExtdataItem*);
+};
+
+struct mImageSource {
+	void (*startRequestImage)(struct mImageSource*);
+	void (*stopRequestImage)(struct mImageSource*);
+	void (*requestImage)(struct mImageSource*, unsigned w, unsigned h, const uint32_t** buffer, size_t* stride);
 };
 
 enum mRTCGenericType {
