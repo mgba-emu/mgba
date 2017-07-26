@@ -10,6 +10,7 @@ Bugfixes:
  - GB Video: Fix dot clock timing being slightly wrong
  - GB MBC: Pocket Cam memory should be accessible without enabling
  - GB Memory: Initialize peripheral pointers
+ - GB MBC: Fix SRAM sizes 4 and 5
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)

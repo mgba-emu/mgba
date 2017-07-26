@@ -110,6 +110,12 @@ void GBMBCInit(struct GB* gb) {
 		case 3:
 			gb->sramSize = 0x8000;
 			break;
+		case 4:
+			gb->sramSize = 0x20000;
+			break;
+		case 5:
+			gb->sramSize = 0x10000;
+			break;
 		}
 
 		if (gb->memory.mbcType == GB_MBC_AUTODETECT) {
