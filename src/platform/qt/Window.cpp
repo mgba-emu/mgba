@@ -1163,6 +1163,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->forceFastForward(value);
 	});
 	addControlledAction(emulationMenu, turbo, "fastForward");
+	m_gameActions.append(turbo);
 
 	QMenu* ffspeedMenu = emulationMenu->addMenu(tr("Fast forward speed"));
 	ConfigOption* ffspeed = m_config->addOption("fastForwardRatio");
@@ -1178,9 +1179,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_config->updateOption("fastForwardRatio");
 
 	m_shortcutController->addFunctions(emulationMenu, [this]() {
-		m_controller->setRewinding(true);
+		if (m_controller) {
+			m_controller->setRewinding(true);
+		}
 	}, [this]() {
-		m_controller->setRewinding(false);
+		if (m_controller) {
+			m_controller->setRewinding(false);
+		}
 	}, QKeySequence("`"), tr("Rewind (held)"), "holdRewind");
 
 	QAction* rewind = new QAction(tr("Re&wind"), emulationMenu);
