@@ -111,12 +111,17 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 
 	m_image.requestImage = [](mImageSource* context, const uint32_t** buffer, size_t* stride) {
 		InputControllerImage* image = static_cast<InputControllerImage*>(context);
-		if (image->resizedImage.isNull()) {
-			image->resizedImage = image->image.scaled(image->w, image->h, Qt::KeepAspectRatioByExpanding);
+		QSize size;
+		{
+			QMutexLocker locker(&image->mutex);
+			if (image->outOfDate) {
+				image->resizedImage = image->image.scaled(image->w, image->h, Qt::KeepAspectRatioByExpanding);
+				image->resizedImage = image->resizedImage.convertToFormat(QImage::Format_RGB32);
+				image->outOfDate = false;
+			}
 		}
-		image->resizedImage = image->resizedImage.convertToFormat(QImage::Format_RGB32);
+		size = image->resizedImage.size();
 		const uint32_t* bits = reinterpret_cast<const uint32_t*>(image->resizedImage.constBits());
-		QSize size = image->resizedImage.size();
 		if (size.width() > image->w) {
 			bits += (size.width() - image->w) / 2;
 		}
@@ -671,13 +676,17 @@ void InputController::releaseFocus(QWidget* focus) {
 }
 
 void InputController::loadCamImage(const QString& path) {
+	QMutexLocker locker(&m_image.mutex);
 	m_image.image.load(path);
 	m_image.resizedImage = QImage();
+	m_image.outOfDate = true;
 }
 
 void InputController::setCamImage(const QImage& image) {
+	QMutexLocker locker(&m_image.mutex);
 	m_image.image = image;
 	m_image.resizedImage = QImage();
+	m_image.outOfDate = true;
 }
 
 void InputController::increaseLuminanceLevel() {

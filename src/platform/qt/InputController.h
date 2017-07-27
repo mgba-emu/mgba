@@ -10,6 +10,7 @@
 #include "GamepadHatEvent.h"
 
 #include <QImage>
+#include <QMutex>
 #include <QObject>
 #include <QSet>
 #include <QTimer>
@@ -144,6 +145,8 @@ private:
 		InputController* p;
 		QImage image;
 		QImage resizedImage;
+		bool outOfDate;
+		QMutex mutex;
 		unsigned w, h;
 	} m_image;
 
