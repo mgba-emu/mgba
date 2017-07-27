@@ -27,6 +27,9 @@
 #include <3ds.h>
 #include <3ds/gpu/gx.h>
 
+mLOG_DECLARE_CATEGORY(GUI_3DS);
+mLOG_DEFINE_CATEGORY(GUI_3DS, "3DS", "gui.3ds");
+
 static enum ScreenMode {
 	SM_PA_BOTTOM,
 	SM_AF_BOTTOM,
@@ -58,11 +61,20 @@ static enum DarkenMode {
 #define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 16)
 #define DSP_BUFFERS 4
 
-static struct GBA3DSRotationSource {
+static struct m3DSRotationSource {
 	struct mRotationSource d;
 	accelVector accel;
 	angularRate gyro;
 } rotation;
+
+static struct m3DSImageSource {
+	struct mImageSource d;
+	Handle handles[2];
+	u32 bufferSize;
+	u32 transferSize;
+	void* buffer;
+	unsigned cam;
+} camera;
 
 static enum {
 	NO_SOUND,
@@ -128,6 +140,7 @@ static void _cleanup(void) {
 		ndspExit();
 	}
 
+	camExit();
 	csndExit();
 	ptmuExit();
 }
@@ -234,6 +247,19 @@ static void _guiFinish(void) {
 	ctrFlushBatch();
 }
 
+static void _resetCamera(struct m3DSImageSource* imageSource) {
+	if (!imageSource->cam) {
+		return;
+	}
+	CAMU_SetSize(imageSource->cam, SIZE_QCIF, CONTEXT_A);
+	CAMU_SetOutputFormat(imageSource->cam, OUTPUT_RGB_565, CONTEXT_A);
+	CAMU_SetFrameRate(imageSource->cam, FRAME_RATE_30);
+
+	CAMU_SetNoiseFilter(imageSource->cam, true);
+	CAMU_SetAutoExposure(imageSource->cam, false);
+	CAMU_SetAutoWhiteBalance(imageSource->cam, false);
+}
+
 static void _setup(struct mGUIRunner* runner) {
 	bool isNew3DS = false;
 	APT_CheckNew3DS(&isNew3DS);
@@ -243,6 +269,7 @@ static void _setup(struct mGUIRunner* runner) {
 	}
 
 	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation.d);
+	runner->core->setPeripheral(runner->core, mPERIPH_IMAGE_SOURCE, &camera.d);
 	if (hasSound != NO_SOUND) {
 		runner->core->setAVStream(runner->core, &stream);
 	}
@@ -284,6 +311,7 @@ static void _setup(struct mGUIRunner* runner) {
 static void _gameLoaded(struct mGUIRunner* runner) {
 	switch (runner->core->platform(runner->core)) {
 #ifdef M_CORE_GBA
+		// TODO: Move these to callbacks
 	case PLATFORM_GBA:
 		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_TILT) {
 			HIDUSER_EnableAccelerometer();
@@ -334,6 +362,27 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	if (mCoreConfigGetUIntValue(&runner->config, "darkenMode", &mode) && mode < DM_MAX) {
 		darkenMode = mode;
 	}
+	if (mCoreConfigGetUIntValue(&runner->config, "camera", &mode)) {
+		switch (mode) {
+		case 0:
+		default:
+			mode = SELECT_NONE;
+			break;
+		case 1:
+			mode = SELECT_IN1;
+			break;
+		case 2:
+			mode = SELECT_OUT1;
+			break;
+		}
+		if (mode != camera.cam) {
+			camera.cam = mode;
+			if (camera.buffer) {
+				_resetCamera(&camera);
+				CAMU_Activate(camera.cam);
+			}
+		}
+	}
 }
 
 static void _gameUnloaded(struct mGUIRunner* runner) {
@@ -347,6 +396,7 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 
 	switch (runner->core->platform(runner->core)) {
 #ifdef M_CORE_GBA
+		// TODO: Move these to callbacks
 	case PLATFORM_GBA:
 		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_TILT) {
 			HIDUSER_DisableAccelerometer();
@@ -600,25 +650,95 @@ static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 }
 
 static void _sampleRotation(struct mRotationSource* source) {
-	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
+	struct m3DSRotationSource* rotation = (struct m3DSRotationSource*) source;
 	// Work around ctrulib getting the entries wrong
 	rotation->accel = *(accelVector*) &hidSharedMem[0x48];
 	rotation->gyro = *(angularRate*) &hidSharedMem[0x5C];
 }
 
 static int32_t _readTiltX(struct mRotationSource* source) {
-	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
+	struct m3DSRotationSource* rotation = (struct m3DSRotationSource*) source;
 	return rotation->accel.x << 18L;
 }
 
 static int32_t _readTiltY(struct mRotationSource* source) {
-	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
+	struct m3DSRotationSource* rotation = (struct m3DSRotationSource*) source;
 	return rotation->accel.y << 18L;
 }
 
 static int32_t _readGyroZ(struct mRotationSource* source) {
-	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
+	struct m3DSRotationSource* rotation = (struct m3DSRotationSource*) source;
 	return rotation->gyro.y << 18L; // Yes, y
+}
+
+static void _startRequestImage(struct mImageSource* source, unsigned w, unsigned h, int colorFormats) {
+	UNUSED(colorFormats);
+	struct m3DSImageSource* imageSource = (struct m3DSImageSource*) source;
+
+	_resetCamera(imageSource);
+
+	CAMU_SetTrimming(PORT_CAM1, true);
+	CAMU_SetTrimmingParamsCenter(PORT_CAM1, w, h, 176, 144);
+	CAMU_GetBufferErrorInterruptEvent(&imageSource->handles[1], PORT_CAM1);
+
+	if (imageSource->bufferSize != w * h * 2 && imageSource->buffer) {
+		free(imageSource->buffer);
+		imageSource->buffer = NULL;
+	}
+	imageSource->bufferSize = w * h * 2;
+	if (!imageSource->buffer) {
+		imageSource->buffer = malloc(imageSource->bufferSize);
+	}
+	CAMU_GetMaxBytes(&imageSource->transferSize, w, h);
+	CAMU_SetTransferBytes(PORT_CAM1, imageSource->transferSize, w, h);
+	CAMU_Activate(imageSource->cam);
+	CAMU_ClearBuffer(PORT_CAM1);
+	CAMU_StartCapture(PORT_CAM1);
+	CAMU_PlayShutterSound(SHUTTER_SOUND_TYPE_MOVIE);
+
+	if (imageSource->cam) {
+		CAMU_SetReceiving(&imageSource->handles[0], imageSource->buffer, PORT_CAM1, imageSource->bufferSize, imageSource->transferSize);
+	}
+}
+
+static void _stopRequestImage(struct mImageSource* source) {
+	struct m3DSImageSource* imageSource = (struct m3DSImageSource*) source;
+
+	free(imageSource->buffer);
+	imageSource->buffer = NULL;
+	svcCloseHandle(imageSource->handles[0]);
+	svcCloseHandle(imageSource->handles[1]);
+
+	CAMU_StopCapture(PORT_CAM1);
+	CAMU_Activate(SELECT_NONE);
+}
+
+
+static void _requestImage(struct mImageSource* source, const void** buffer, size_t* stride, enum mColorFormat* colorFormat) {
+	struct m3DSImageSource* imageSource = (struct m3DSImageSource*) source;
+
+	if (!imageSource->cam) {
+		memset(imageSource->buffer, 0, imageSource->bufferSize);
+		*buffer = imageSource->buffer;
+		*stride = 128;
+		*colorFormat = mCOLOR_RGB565;
+		return;
+	}
+
+	s32 i;
+	svcWaitSynchronizationN(&i, imageSource->handles, 2, false, U64_MAX);
+
+	if (i == 0) {
+		*buffer = imageSource->buffer;
+		*stride = 128;
+		*colorFormat = mCOLOR_RGB565;
+	} else {
+		CAMU_ClearBuffer(PORT_CAM1);
+		CAMU_StartCapture(PORT_CAM1);
+	}
+
+	svcCloseHandle(imageSource->handles[0]);
+	CAMU_SetReceiving(&imageSource->handles[0], imageSource->buffer, PORT_CAM1, imageSource->bufferSize, imageSource->transferSize);
 }
 
 static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
@@ -670,6 +790,13 @@ int main() {
 	stream.postAudioFrame = 0;
 	stream.postAudioBuffer = _postAudioBuffer;
 
+	camera.d.startRequestImage = _startRequestImage;
+	camera.d.stopRequestImage = _stopRequestImage;
+	camera.d.requestImage = _requestImage;
+	camera.buffer = NULL;
+	camera.bufferSize = 0;
+	camera.cam = SELECT_IN1;
+
 	if (!allocateRomBuffer()) {
 		return 1;
 	}
@@ -677,6 +804,8 @@ int main() {
 	aptHook(&cookie, _aptHook, 0);
 
 	ptmuInit();
+	camInit();
+
 	hasSound = NO_SOUND;
 	if (!ndspInit()) {
 		hasSound = DSP_SUPPORTED;
@@ -819,9 +948,21 @@ int main() {
 					"Grayed",
 				},
 				.nStates = 4
+			},
+			{
+				.title = "Camera",
+				.data = "camera",
+				.submenu = 0,
+				.state = 1,
+				.validStates = (const char*[]) {
+					"None",
+					"Inner",
+					"Outer",
+				},
+				.nStates = 3
 			}
 		},
-		.nConfigExtra = 3,
+		.nConfigExtra = 4,
 		.setup = _setup,
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,
