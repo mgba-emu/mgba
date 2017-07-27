@@ -448,36 +448,9 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 
 static void GBVideoSoftwareRendererGetPixels(struct GBVideoRenderer* renderer, size_t* stride, const void** pixels) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
-	// TODO: Share with GBAVideoSoftwareRendererGetPixels
-#ifdef COLOR_16_BIT
-	*stride = GB_VIDEO_HORIZONTAL_PIXELS;
-	if (!softwareRenderer->temporaryBuffer) {
-		softwareRenderer->temporaryBuffer = anonymousMemoryMap(GB_VIDEO_HORIZONTAL_PIXELS * GB_VIDEO_VERTICAL_PIXELS * 4);
-	}
-	*pixels = softwareRenderer->temporaryBuffer;
-	unsigned y, x;
-	for (y = 0; y < GB_VIDEO_VERTICAL_PIXELS; ++y) {
-		for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; ++x) {
-			color_t inColor = softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y + x];
-			uint32_t outColor;
-#ifdef COLOR_5_6_5
-			outColor = (inColor & 0x1F) << 19;
-			outColor |= (inColor & 0x7C0) << 5;
-			outColor |= (inColor & 0xF800) >> 8;
-#else
-			outColor = (inColor & 0x1F) << 3;
-			outColor |= (inColor & 0x3E0) << 6;
-			outColor |= (inColor & 0x7C00) << 9;
-#endif
-			softwareRenderer->temporaryBuffer[GB_VIDEO_HORIZONTAL_PIXELS * y + x] = outColor;
-		}
-	}
-#else
 	*stride = softwareRenderer->outputBufferStride;
 	*pixels = softwareRenderer->outputBuffer;
-#endif
 }
-
 
 static void GBVideoSoftwareRendererPutPixels(struct GBVideoRenderer* renderer, size_t stride, const void* pixels) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
