@@ -15,6 +15,7 @@
 #include <QWidget>
 #ifdef BUILD_QT_MULTIMEDIA
 #include <QCamera>
+#include <QVideoSurfaceFormat>
 #endif
 
 #include <mgba/core/interface.h>
@@ -94,37 +95,9 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 		if (image->image.isNull()) {
 			image->image.load(":/res/no-cam.png");
 		}
-		image->resizedImage = image->image.scaled(w, h, Qt::KeepAspectRatioByExpanding);
 #ifdef BUILD_QT_MULTIMEDIA
 		if (image->p->m_config->getQtOption("cameraDriver").toInt() == static_cast<int>(CameraDriver::QT_MULTIMEDIA)) {
-			if (!image->p->m_camera) {
-				image->p->m_camera = new QCamera;
-			}
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
-			QCameraViewfinderSettings settings;
-			QSize size(1920, 1080);
-			auto cameraRes = image->p->m_camera->supportedViewfinderResolutions(settings);
-			for (auto& cameraSize : cameraRes) {
-				if (cameraSize.width() < w || cameraSize.height() < h) {
-					continue;
-				}
-				if (cameraSize.width() <= size.width() && cameraSize.height() <= size.height()) {
-					size = cameraSize;
-				}
-			}
-			settings.setResolution(size);
-			auto cameraFormats = image->p->m_camera->supportedViewfinderPixelFormats(settings);
-			auto goodFormats = image->p->m_videoDumper.supportedPixelFormats();
-			for (auto& format : goodFormats) {
-				if (cameraFormats.contains(format)) {
-					settings.setPixelFormat(format);
-					break;
-				}
-			}
-			image->p->m_camera->setViewfinderSettings(settings);
-#endif
-			image->p->m_camera->setViewfinder(&image->p->m_videoDumper);
-			image->p->m_camera->start();
+			QMetaObject::invokeMethod(image->p, "setupCam");
 		}
 #endif
 	};
@@ -132,15 +105,15 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 	m_image.stopRequestImage = [](mImageSource* context) {
 		InputControllerImage* image = static_cast<InputControllerImage*>(context);
 #ifdef BUILD_QT_MULTIMEDIA
-		if (image->p->m_camera) {
-			image->p->m_camera->stop();
-			delete image->p->m_camera;
-		}
+		QMetaObject::invokeMethod(image->p, "teardownCam");
 #endif
 	};
 
 	m_image.requestImage = [](mImageSource* context, const uint32_t** buffer, size_t* stride) {
 		InputControllerImage* image = static_cast<InputControllerImage*>(context);
+		if (image->resizedImage.isNull()) {
+			image->resizedImage = image->image.scaled(image->w, image->h, Qt::KeepAspectRatioByExpanding);
+		}
 		image->resizedImage = image->resizedImage.convertToFormat(QImage::Format_RGB32);
 		const uint32_t* bits = reinterpret_cast<const uint32_t*>(image->resizedImage.constBits());
 		QSize size = image->resizedImage.size();
@@ -737,3 +710,48 @@ void InputController::setLuminanceValue(uint8_t value) {
 	emit luminanceValueChanged(m_luxValue);
 }
 
+void InputController::setupCam() {
+#ifdef BUILD_QT_MULTIMEDIA
+	if (!m_camera) {
+		m_camera = std::make_unique<QCamera>();
+	}
+	QVideoFrame::PixelFormat format(QVideoFrame::Format_RGB32);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
+	m_camera->load();
+	QCameraViewfinderSettings settings;
+	QSize size(1920, 1080);
+	auto cameraRes = m_camera->supportedViewfinderResolutions(settings);
+	for (auto& cameraSize : cameraRes) {
+		if (cameraSize.width() < m_image.w || cameraSize.height() < m_image.h) {
+			continue;
+		}
+		if (cameraSize.width() <= size.width() && cameraSize.height() <= size.height()) {
+			size = cameraSize;
+		}
+	}
+	settings.setResolution(size);
+	auto cameraFormats = m_camera->supportedViewfinderPixelFormats(settings);
+	auto goodFormats = m_videoDumper.supportedPixelFormats();
+	for (auto& goodFormat : goodFormats) {
+		if (cameraFormats.contains(goodFormat)) {
+			settings.setPixelFormat(goodFormat);
+			format = goodFormat;
+			break;
+		}
+	}
+	m_camera->setViewfinderSettings(settings);
+#endif
+	m_camera->setCaptureMode(QCamera::CaptureVideo);
+	m_camera->setViewfinder(&m_videoDumper);
+	m_camera->start();
+#endif
+}
+
+void InputController::teardownCam() {
+#ifdef BUILD_QT_MULTIMEDIA
+	if (m_camera) {
+		m_camera->stop();
+		m_camera.reset();
+	}
+#endif
+}

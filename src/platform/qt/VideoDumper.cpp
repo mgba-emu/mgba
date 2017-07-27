@@ -20,12 +20,11 @@ bool VideoDumper::present(const QVideoFrame& frame) {
 		return false;
 	}
 	QImage::Format format = QVideoFrame::imageFormatFromPixelFormat(mappedFrame.pixelFormat());
-	const uchar* bits = mappedFrame.bits();
-	QImage image(bits, mappedFrame.width(), mappedFrame.height(), mappedFrame.bytesPerLine(),
-	             format);
-	image = std::move(image.copy()); // Create a deep copy of the bits
-	emit imageAvailable(image);
+	uchar* bits = mappedFrame.bits();
+	QImage image(bits, mappedFrame.width(), mappedFrame.height(), mappedFrame.bytesPerLine(), format);
+	image = image.copy(); // Create a deep copy of the bits
 	mappedFrame.unmap();
+	emit imageAvailable(image);
 	return true;
 }
 

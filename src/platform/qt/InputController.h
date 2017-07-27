@@ -15,6 +15,8 @@
 #include <QTimer>
 #include <QVector>
 
+#include <memory>
+
 #include <mgba/gba/interface.h>
 #include <mgba/internal/gba/input.h>
 
@@ -121,6 +123,10 @@ public slots:
 	void loadCamImage(const QString& path);
 	void setCamImage(const QImage& image);
 
+private slots:
+	void setupCam();
+	void teardownCam();
+
 private:
 	void postPendingEvent(GBAKey);
 	void clearPendingEvent(GBAKey);
@@ -142,7 +148,7 @@ private:
 	} m_image;
 
 #ifdef BUILD_QT_MULTIMEDIA
-	QCamera* m_camera = nullptr;
+	std::unique_ptr<QCamera> m_camera;
 	VideoDumper m_videoDumper;
 #endif
 
