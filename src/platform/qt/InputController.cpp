@@ -88,7 +88,7 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 #endif
 
 	m_image.p = this;
-	m_image.startRequestImage = [](mImageSource* context, unsigned w, unsigned h) {
+	m_image.startRequestImage = [](mImageSource* context, unsigned w, unsigned h, int) {
 		InputControllerImage* image = static_cast<InputControllerImage*>(context);
 		image->w = w;
 		image->h = h;
@@ -109,19 +109,19 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 #endif
 	};
 
-	m_image.requestImage = [](mImageSource* context, const uint32_t** buffer, size_t* stride) {
+	m_image.requestImage = [](mImageSource* context, const void** buffer, size_t* stride, mColorFormat* format) {
 		InputControllerImage* image = static_cast<InputControllerImage*>(context);
 		QSize size;
 		{
 			QMutexLocker locker(&image->mutex);
 			if (image->outOfDate) {
 				image->resizedImage = image->image.scaled(image->w, image->h, Qt::KeepAspectRatioByExpanding);
-				image->resizedImage = image->resizedImage.convertToFormat(QImage::Format_RGB32);
+				image->resizedImage = image->resizedImage.convertToFormat(QImage::Format_RGB16);
 				image->outOfDate = false;
 			}
 		}
 		size = image->resizedImage.size();
-		const uint32_t* bits = reinterpret_cast<const uint32_t*>(image->resizedImage.constBits());
+		const uint16_t* bits = reinterpret_cast<const uint16_t*>(image->resizedImage.constBits());
 		if (size.width() > image->w) {
 			bits += (size.width() - image->w) / 2;
 		}
@@ -129,7 +129,8 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 			bits += ((size.height() - image->h) / 2) * size.width();
 		}
 		*buffer = bits;
-		*stride = size.width();
+		*stride = image->resizedImage.bytesPerLine() / sizeof(*bits);
+		*format = mCOLOR_RGB565;
 	};
 }
 

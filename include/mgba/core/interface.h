@@ -37,6 +37,29 @@ typedef uint32_t color_t;
 
 struct blip_t;
 
+enum mColorFormat {
+	mCOLOR_XBGR8  = 0x00001,
+	mCOLOR_XRGB8  = 0x00002,
+	mCOLOR_BGRX8  = 0x00004,
+	mCOLOR_RGBX8  = 0x00008,
+	mCOLOR_ABGR8  = 0x00010,
+	mCOLOR_ARGB8  = 0x00020,
+	mCOLOR_BGRA8  = 0x00040,
+	mCOLOR_RGBA8  = 0x00080,
+	mCOLOR_RGB5   = 0x00100,
+	mCOLOR_BGR5   = 0x00200,
+	mCOLOR_RGB565 = 0x00400,
+	mCOLOR_BGR565 = 0x00800,
+	mCOLOR_ARGB5  = 0x01000,
+	mCOLOR_ABGR5  = 0x02000,
+	mCOLOR_RGBA5  = 0x04000,
+	mCOLOR_BGRA5  = 0x08000,
+	mCOLOR_RGB8   = 0x10000,
+	mCOLOR_BGR8   = 0x20000,
+
+	mCOLOR_ANY    = -1
+};
+
 struct mCoreCallbacks {
 	void* context;
 	void (*videoFrameStarted)(void* context);
@@ -84,9 +107,9 @@ struct mRTCSource {
 };
 
 struct mImageSource {
-	void (*startRequestImage)(struct mImageSource*, unsigned w, unsigned h);
+	void (*startRequestImage)(struct mImageSource*, unsigned w, unsigned h, int colorFormats);
 	void (*stopRequestImage)(struct mImageSource*);
-	void (*requestImage)(struct mImageSource*, const uint32_t** buffer, size_t* stride);
+	void (*requestImage)(struct mImageSource*, const void** buffer, size_t* stride, enum mColorFormat* colorFormat);
 };
 
 enum mRTCGenericType {
