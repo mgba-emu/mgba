@@ -402,6 +402,7 @@ void Window::openSettingsWindow() {
 #endif
 	connect(settingsWindow, &SettingsView::displayDriverChanged, this, &Window::reloadDisplayDriver);
 	connect(settingsWindow, &SettingsView::audioDriverChanged, this, &Window::reloadAudioDriver);
+	connect(settingsWindow, &SettingsView::cameraDriverChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::languageChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::pathsChanged, this, &Window::reloadConfig);
 	connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);

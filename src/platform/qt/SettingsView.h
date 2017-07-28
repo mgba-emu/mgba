@@ -32,6 +32,7 @@ signals:
 	void biosLoaded(int platform, const QString&);
 	void audioDriverChanged();
 	void displayDriverChanged();
+	void cameraDriverChanged();
 	void pathsChanged();
 	void languageChanged();
 	void libraryCleared();

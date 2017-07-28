@@ -130,15 +130,40 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	}
 #endif
 
+	// TODO: Move to reloadConfig()
+	QVariant cameraDriver = m_controller->getQtOption("cameraDriver");
+	m_ui.cameraDriver->addItem(tr("None (Still Image)"), static_cast<int>(InputController::CameraDriver::NONE));
+	if (cameraDriver.isNull() || cameraDriver.toInt() == static_cast<int>(InputController::CameraDriver::NONE)) {
+		m_ui.cameraDriver->setCurrentIndex(m_ui.cameraDriver->count() - 1);
+	}
+
+#ifdef BUILD_QT_MULTIMEDIA
+	m_ui.cameraDriver->addItem(tr("Qt Multimedia"), static_cast<int>(InputController::CameraDriver::QT_MULTIMEDIA));
+	if (!cameraDriver.isNull() && cameraDriver.toInt() == static_cast<int>(InputController::CameraDriver::QT_MULTIMEDIA)) {
+		m_ui.cameraDriver->setCurrentIndex(m_ui.cameraDriver->count() - 1);
+	}
+#endif
+
+#ifdef M_CORE_GBA
 	connect(m_ui.gbaBiosBrowse, &QPushButton::clicked, [this]() {
 		selectBios(m_ui.gbaBios);
 	});
+#else
+	m_ui.gbaBiosBrowse->hide();
+#endif
+
+#ifdef M_CORE_GB
 	connect(m_ui.gbBiosBrowse, &QPushButton::clicked, [this]() {
 		selectBios(m_ui.gbBios);
 	});
 	connect(m_ui.gbcBiosBrowse, &QPushButton::clicked, [this]() {
 		selectBios(m_ui.gbcBios);
 	});
+#else
+	m_ui.gbBiosBrowse->hide();
+	m_ui.gbcBiosBrowse->hide();
+	m_ui.gb->hide();
+#endif
 
 	GBAKeyEditor* editor = new GBAKeyEditor(inputController, InputController::KEYBOARD, QString(), this);
 	m_ui.stackedWidget->addWidget(editor);
@@ -292,6 +317,12 @@ void SettingsView::updateConfig() {
 		Display::setDriver(static_cast<Display::Driver>(displayDriver.toInt()));
 		setShaderSelector(nullptr);
 		emit displayDriverChanged();
+	}
+
+	QVariant cameraDriver = m_ui.cameraDriver->itemData(m_ui.cameraDriver->currentIndex());
+	if (cameraDriver != m_controller->getQtOption("cameraDriver")) {
+		m_controller->setQtOption("cameraDriver", cameraDriver);
+		emit cameraDriverChanged();
 	}
 
 	QLocale language = m_ui.languages->itemData(m_ui.languages->currentIndex()).toLocale();
