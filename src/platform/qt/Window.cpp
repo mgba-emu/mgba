@@ -1722,11 +1722,8 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	connect(m_controller.get(), &CoreController::started, &m_inputController, &InputController::suspendScreensaver);
 	connect(m_controller.get(), &CoreController::stopping, this, &Window::gameStopped);
 	{
-		std::shared_ptr<CoreController> controller(m_controller);
-		connect(m_controller.get(), &CoreController::stopping, [this, controller]() {
-			if (m_controller == controller) {
-				m_controller.reset();
-			}
+		connect(m_controller.get(), &CoreController::stopping, [this]() {
+			m_controller.reset();
 		});
 	}
 	connect(m_controller.get(), &CoreController::stopping, &m_inputController, &InputController::resumeScreensaver);
