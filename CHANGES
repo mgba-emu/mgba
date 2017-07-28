@@ -8,6 +8,7 @@ Bugfixes:
  - GB MBC: Fix SRAM sizes 4 and 5
  - GB Video: Fix 16-bit screenshots (fixes mgba.io/i/826)
  - GB Core: Fix palette loading when loading a foreign config
+ - Qt: Fix LOG argument order
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
 
