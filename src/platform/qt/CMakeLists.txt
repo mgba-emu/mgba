@@ -66,6 +66,7 @@ set(SOURCE_FILES
 	CheatsModel.cpp
 	CheatsView.cpp
 	ConfigController.cpp
+	ColorPicker.cpp
 	CoreManager.cpp
 	CoreController.cpp
 	Display.cpp

@@ -8,6 +8,8 @@
 
 #include <QDialog>
 
+#include "ColorPicker.h"
+
 #include <mgba/core/core.h>
 
 #include "ui_SettingsView.h"
@@ -48,6 +50,8 @@ private:
 	ConfigController* m_controller;
 	InputController* m_input;
 	ShaderSelector* m_shader = nullptr;
+	uint32_t m_gbColors[4]{};
+	ColorPicker m_colorPickers[4];
 
 	void saveSetting(const char* key, const QAbstractButton*);
 	void saveSetting(const char* key, const QComboBox*);

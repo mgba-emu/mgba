@@ -14,6 +14,7 @@
 #include <mgba/gb/interface.h>
 #endif
 
+#include "ColorPicker.h"
 #include "Override.h"
 
 #include "ui_OverrideView.h"
@@ -42,9 +43,6 @@ private slots:
 	void gameStarted();
 	void gameStopped();
 
-protected:
-	bool eventFilter(QObject* obj, QEvent* event) override;
-
 private:
 	Ui::OverrideView m_ui;
 
@@ -54,6 +52,7 @@ private:
 
 #ifdef M_CORE_GB
 	uint32_t m_gbColors[4]{};
+	ColorPicker m_colorPickers[4];
 
 	static QList<enum GBModel> s_gbModelList;
 	static QList<enum GBMemoryBankControllerType> s_mbcList;
