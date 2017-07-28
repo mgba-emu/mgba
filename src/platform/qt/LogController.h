@@ -63,7 +63,7 @@ private:
 	static LogController s_global;
 };
 
-#define LOG(C, L) (*LogController::global())(_mLOG_CAT_ ## C (), mLOG_ ## L)
+#define LOG(C, L) (*LogController::global())(mLOG_ ## L, _mLOG_CAT_ ## C ())
 
 }
 
