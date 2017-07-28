@@ -7,6 +7,7 @@ Bugfixes:
  - GB Memory: Initialize peripheral pointers
  - GB MBC: Fix SRAM sizes 4 and 5
  - GB Video: Fix 16-bit screenshots (fixes mgba.io/i/826)
+ - GB Core: Fix palette loading when loading a foreign config
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
 
