@@ -9,6 +9,7 @@
 #include "GamepadAxisEvent.h"
 #include "GamepadButtonEvent.h"
 #include "InputProfile.h"
+#include "LogController.h"
 
 #include <QApplication>
 #include <QTimer>
@@ -742,12 +743,17 @@ void InputController::setupCam() {
 	settings.setResolution(size);
 	auto cameraFormats = m_camera->supportedViewfinderPixelFormats(settings);
 	auto goodFormats = m_videoDumper.supportedPixelFormats();
+	bool goodFormatFound = false;
 	for (auto& goodFormat : goodFormats) {
 		if (cameraFormats.contains(goodFormat)) {
 			settings.setPixelFormat(goodFormat);
 			format = goodFormat;
+			goodFormatFound = true;
 			break;
 		}
+	}
+	if (!goodFormatFound) {
+		LOG(QT, WARN) << "Could not find a valid camera format!";
 	}
 	m_camera->setViewfinderSettings(settings);
 #endif

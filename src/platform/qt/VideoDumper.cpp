@@ -19,10 +19,26 @@ bool VideoDumper::present(const QVideoFrame& frame) {
 	if (!mappedFrame.map(QAbstractVideoBuffer::ReadOnly)) {
 		return false;
 	}
-	QImage::Format format = QVideoFrame::imageFormatFromPixelFormat(mappedFrame.pixelFormat());
+	QVideoFrame::PixelFormat vFormat = mappedFrame.pixelFormat();
+	QImage::Format format = QVideoFrame::imageFormatFromPixelFormat(vFormat);
+	bool swap = false;
+	if (format == QImage::Format_Invalid) {
+		vFormat = static_cast<QVideoFrame::PixelFormat>(vFormat - QVideoFrame::Format_BGRA32 + QVideoFrame::Format_ARGB32);
+		format = QVideoFrame::imageFormatFromPixelFormat(vFormat);
+		if (format == QImage::Format_ARGB32) {
+			format = QImage::Format_RGBA8888;
+		} else if (format == QImage::Format_ARGB32_Premultiplied) {
+			format = QImage::Format_RGBA8888_Premultiplied;
+		}
+		swap = true;
+	}
 	uchar* bits = mappedFrame.bits();
 	QImage image(bits, mappedFrame.width(), mappedFrame.height(), mappedFrame.bytesPerLine(), format);
-	image = image.copy(); // Create a deep copy of the bits
+	if (swap) {
+		image = image.rgbSwapped();
+	} else {
+		image = image.copy(); // Create a deep copy of the bits
+	}
 	mappedFrame.unmap();
 	emit imageAvailable(image);
 	return true;
@@ -36,5 +52,11 @@ QList<QVideoFrame::PixelFormat> VideoDumper::supportedPixelFormats(QAbstractVide
 	list.append(QVideoFrame::Format_ARGB32_Premultiplied);
 	list.append(QVideoFrame::Format_RGB565);
 	list.append(QVideoFrame::Format_RGB555);
+	list.append(QVideoFrame::Format_BGR32);
+	list.append(QVideoFrame::Format_BGRA32);
+	list.append(QVideoFrame::Format_BGR24);
+	list.append(QVideoFrame::Format_BGRA32_Premultiplied);
+	list.append(QVideoFrame::Format_BGR565);
+	list.append(QVideoFrame::Format_BGR555);
 	return list;
 }
