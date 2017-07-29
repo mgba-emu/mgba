@@ -23,6 +23,7 @@ Misc:
  - All: Make FIXED_ROM_BUFFER an option instead of 3DS-only
  - Qt: Don't rebuild library view if style hasn't changed
  - Qt: Redo GameController into multiple classes
+ - SDL: Fix 2.0.5 build on macOS under some circumstances
 
 0.6.0: (2017-07-16)
 Features:
