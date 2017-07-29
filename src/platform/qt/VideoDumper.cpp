@@ -37,7 +37,12 @@ bool VideoDumper::present(const QVideoFrame& frame) {
 	if (swap) {
 		image = image.rgbSwapped();
 	} else {
+#ifdef Q_OS_WIN
+		// Qt's DirectShow plug-in is pretty dang buggy
+		image = image.mirrored(true);
+#else
 		image = image.copy(); // Create a deep copy of the bits
+#endif
 	}
 	mappedFrame.unmap();
 	emit imageAvailable(image);
