@@ -43,6 +43,8 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 		s_mbcList.append(GB_MBC5);
 		s_mbcList.append(GB_MBC5_RUMBLE);
 		s_mbcList.append(GB_MBC7);
+		s_mbcList.append(GB_POCKETCAM);
+		s_mbcList.append(GB_TAMA5);
 		s_mbcList.append(GB_HuC3);
 	}
 	if (s_gbModelList.isEmpty()) {
