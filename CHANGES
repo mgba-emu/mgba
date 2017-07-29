@@ -12,6 +12,7 @@ Bugfixes:
  - GB Memory: Prevent accessing empty SRAM (fixes mgba.io/i/831)
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
+ - SDL: Fix 2.0.5 build on macOS under some circumstances
 
 0.6.0: (2017-07-16)
 Features:
