@@ -960,17 +960,10 @@ void GBMBCRTCRead(struct GB* gb) {
 	if (!vf) {
 		return;
 	}
-	ssize_t end = vf->seek(vf, -sizeof(rtcBuffer), SEEK_END);
-	switch (end & 0x1FFF) {
-	case 0:
-		break;
-	case 0x1FFC:
-		vf->seek(vf, -sizeof(rtcBuffer) - 4, SEEK_END);
-		break;
-	default:
+	vf->seek(vf, gb->sramSize, SEEK_SET);
+	if (vf->read(vf, &rtcBuffer, sizeof(rtcBuffer)) < (ssize_t) sizeof(rtcBuffer) - 4) {
 		return;
 	}
-	vf->read(vf, &rtcBuffer, sizeof(rtcBuffer));
 
 	LOAD_32LE(gb->memory.rtcRegs[0], 0, &rtcBuffer.latchedSec);
 	LOAD_32LE(gb->memory.rtcRegs[1], 0, &rtcBuffer.latchedMin);
@@ -1004,7 +997,7 @@ void GBMBCRTCWrite(struct GB* gb) {
 	STORE_32LE(gb->memory.rtcRegs[4], 0, &rtcBuffer.latchedDaysHi);
 	STORE_64LE(gb->memory.rtcLastLatch, 0, &rtcBuffer.unixTime);
 
-	if (vf->size(vf) == gb->sramSize) {
+	if ((size_t) vf->size(vf) < gb->sramSize + sizeof(rtcBuffer)) {
 		// Writing past the end of the file can invalidate the file mapping
 		vf->unmap(vf, gb->memory.sram, gb->sramSize);
 		gb->memory.sram = NULL;
