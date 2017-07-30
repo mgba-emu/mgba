@@ -10,6 +10,7 @@ Bugfixes:
  - GB Core: Fix palette loading when loading a foreign config
  - Qt: Fix LOG argument order
  - GB Memory: Prevent accessing empty SRAM (fixes mgba.io/i/831)
+ - GB, GBA: Fix crashes when attempting to identify null VFiles
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
  - SDL: Fix 2.0.5 build on macOS under some circumstances

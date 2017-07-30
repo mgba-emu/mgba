@@ -475,6 +475,9 @@ void GBADebug(struct GBA* gba, uint16_t flags) {
 }
 
 bool GBAIsROM(struct VFile* vf) {
+	if (!vf) {
+		return false;
+	}
 	if (vf->seek(vf, GBA_ROM_MAGIC_OFFSET, SEEK_SET) < 0) {
 		return false;
 	}
