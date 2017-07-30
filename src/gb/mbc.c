@@ -236,6 +236,15 @@ void GBMBCInit(struct GB* gb) {
 	gb->memory.rtcAccess = false;
 	gb->memory.activeRtcReg = 0;
 	gb->memory.rtcLatched = false;
+	gb->memory.rtcLastLatch = 0;
+	if (gb->memory.rtc) {
+		if (gb->memory.rtc->sample) {
+			gb->memory.rtc->sample(gb->memory.rtc);
+		}
+		gb->memory.rtcLastLatch = gb->memory.rtc->unixTime(gb->memory.rtc);
+	} else {
+		gb->memory.rtcLastLatch = time(0);
+	}
 	memset(&gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
 
 	GBResizeSram(gb, gb->sramSize);
@@ -801,7 +810,7 @@ void GBMBCRTCWrite(struct GB* gb) {
 	STORE_32LE(gb->memory.rtcRegs[2], 0, &rtcBuffer.latchedHour);
 	STORE_32LE(gb->memory.rtcRegs[3], 0, &rtcBuffer.latchedDays);
 	STORE_32LE(gb->memory.rtcRegs[4], 0, &rtcBuffer.latchedDaysHi);
-	STORE_64LE(rtcLastLatch, 0, &rtcBuffer.unixTime);
+	STORE_64LE(gb->memory.rtcLastLatch, 0, &rtcBuffer.unixTime);
 
 	if (vf->size(vf) == gb->sramSize) {
 		// Writing past the end of the file can invalidate the file mapping
