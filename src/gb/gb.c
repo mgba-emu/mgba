@@ -658,6 +658,9 @@ void GBIllegal(struct LR35902Core* cpu) {
 }
 
 bool GBIsROM(struct VFile* vf) {
+	if (!vf) {
+		return false;
+	}
 	vf->seek(vf, 0x104, SEEK_SET);
 	uint8_t header[4];
 

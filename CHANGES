@@ -17,6 +17,7 @@ Bugfixes:
  - GB Core: Fix palette loading when loading a foreign config
  - Qt: Fix LOG argument order
  - GB Memory: Prevent accessing empty SRAM (fixes mgba.io/i/831)
+ - GB, GBA: Fix crashes when attempting to identify null VFiles
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)

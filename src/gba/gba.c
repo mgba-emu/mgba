@@ -527,6 +527,9 @@ bool GBAIsROM(struct VFile* vf) {
 		return isGBA;
 	}
 #endif
+	if (!vf) {
+		return false;
+	}
 	if (vf->seek(vf, GBA_ROM_MAGIC_OFFSET, SEEK_SET) < 0) {
 		return false;
 	}
