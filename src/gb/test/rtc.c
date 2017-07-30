@@ -14,7 +14,6 @@
 struct GBRTCTest {
 	struct mRTCSource d;
 	struct mCore* core;
-	struct VFile* fakeROM;
 	time_t nextTime;
 };
 
@@ -51,10 +50,10 @@ M_TEST_SUITE_SETUP(GBRTC) {
 	struct VFile* vf = VFileMemChunk(NULL, 2048);
 	GBSynthesizeROM(vf);
 	test->core->loadROM(test->core, vf);
-	test->core->setRTC(test->core, &test->d);
+	mCoreSetRTC(test->core, &test->d);
+
 	struct GB* gb = test->core->board;
-	struct GBCartridge* cart = (struct GBCartridge*) &gb->memory.rom[0x100];
-	cart->type = 0x0F;
+	gb->memory.mbcType = GB_MBC3_RTC;
 
 	*state = test;
 	return 0;
@@ -77,6 +76,7 @@ M_TEST_DEFINE(create) {
 
 	uint8_t expected[sizeof(gb->memory.rtcRegs)] = { 0, 0, 0, 0, 0 };
 	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	assert_int_equal(gb->memory.mbcType, GB_MBC3_RTC);
 }
 
 M_TEST_DEFINE(tickSecond) {
