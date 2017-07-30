@@ -18,6 +18,7 @@ Bugfixes:
  - Qt: Fix LOG argument order
  - GB Memory: Prevent accessing empty SRAM (fixes mgba.io/i/831)
  - GB, GBA: Fix crashes when attempting to identify null VFiles
+ - GB MBC: Fix RTC initialization (fixes mgba.io/i/825)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
