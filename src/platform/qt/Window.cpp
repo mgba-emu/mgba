@@ -147,7 +147,6 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 
 Window::~Window() {
 	delete m_logView;
-	delete m_overrideView;
 
 #ifdef USE_FFMPEG
 	delete m_videoView;
@@ -1414,18 +1413,27 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* overrides = new QAction(tr("Game &overrides..."), toolsMenu);
 	connect(overrides, &QAction::triggered, [this]() {
 		if (!m_overrideView) {
-			m_overrideView = new OverrideView(m_config);
+			m_overrideView = std::move(std::make_unique<OverrideView>(m_config));
 			if (m_controller) {
 				m_overrideView->setController(m_controller);
 			}
-			connect(this, &Window::shutdown, m_overrideView, &QWidget::close);
+			connect(this, &Window::shutdown, m_overrideView.get(), &QWidget::close);
 		}
 		m_overrideView->show();
 	});
 	addControlledAction(toolsMenu, overrides, "overrideWindow");
 
 	QAction* sensors = new QAction(tr("Game &Pak sensors..."), toolsMenu);
-	connect(sensors, &QAction::triggered, openTView<SensorView, InputController*>(&m_inputController));
+	connect(sensors, &QAction::triggered, [this]() {
+		if (!m_sensorView) {
+			m_sensorView = std::move(std::make_unique<SensorView>(&m_inputController));
+			if (m_controller) {
+				m_sensorView->setController(m_controller);
+			}
+			connect(this, &Window::shutdown, m_sensorView.get(), &QWidget::close);
+		}
+		m_sensorView->show();
+	});
 	addControlledAction(toolsMenu, sensors, "sensorWindow");
 
 	QAction* cheats = new QAction(tr("&Cheats..."), toolsMenu);
@@ -1784,6 +1792,10 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		m_videoView->setController(m_controller);
 	}
 #endif
+
+	if (m_sensorView) {
+		m_sensorView->setController(m_controller);
+	}
 
 	if (m_overrideView) {
 		m_overrideView->setController(m_controller);

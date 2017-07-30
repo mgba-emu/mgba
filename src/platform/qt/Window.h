@@ -34,6 +34,7 @@ class GIFView;
 class LibraryController;
 class LogView;
 class OverrideView;
+class SensorView;
 class ShaderSelector;
 class ShortcutController;
 class VideoView;
@@ -200,7 +201,8 @@ private:
 
 	bool m_hitUnimplementedBiosCall;
 
-	OverrideView* m_overrideView = nullptr;
+	std::unique_ptr<OverrideView> m_overrideView;
+	std::unique_ptr<SensorView> m_sensorView;
 
 #ifdef USE_FFMPEG
 	VideoView* m_videoView = nullptr;
