@@ -41,6 +41,7 @@ void PrinterView::save() {
 
 void PrinterView::clear() {
 	m_ui.image->setFixedHeight(0);
+	m_image = QPixmap();
 	m_ui.image->clear();
 	m_ui.buttonBox->button(QDialogButtonBox::Save)->setEnabled(false);
 }
