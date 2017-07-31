@@ -27,6 +27,7 @@ void DSSlot1SPIInit(struct DS* ds, struct VFile* vf) {
 	ds->memory.slot1.transferEvent.context = ds;
 	ds->memory.slot1.transferEvent.callback = _transferEvent;
 	ds->memory.slot1.savedataType = DS_SAVEDATA_AUTODETECT;
+	ds->memory.slot1.hasIR = false;
 	ds->memory.slot1.spiVf = vf;
 	ds->memory.slot1.spiRealVf = vf;
 	ds->memory.slot1.spiData = NULL;
@@ -358,7 +359,11 @@ static void _slot1SPI(struct mTiming* timing, void* context, uint32_t cyclesLate
 		} else {
 			dscore->p->memory.slot1.spiAddress = 0;
 		}
-		dscore->p->memory.slot1.spiAddressingRemaining = dscore->p->memory.slot1.spiAddressingBits;
+		if (oldValue == 0x08 && dscore->p->memory.slot1.hasIR) {
+			dscore->p->memory.slot1.spiCommand |= 0x80; // TODO: Move to a separate variable
+		} else {
+			dscore->p->memory.slot1.spiAddressingRemaining = dscore->p->memory.slot1.spiAddressingBits;
+		}
 	} else {
 		switch (dscore->p->memory.slot1.spiCommand) {
 		case 0x04: // WRDI
@@ -371,6 +376,10 @@ static void _slot1SPI(struct mTiming* timing, void* context, uint32_t cyclesLate
 			dscore->p->memory.slot1.statusReg |= 2;
 			break;
 		default:
+			if (dscore->p->memory.slot1.hasIR && dscore->p->memory.slot1.spiCommand == 0x88) {
+				newValue = 0xAA;
+				break;
+			}
 			switch (dscore->p->memory.slot1.savedataType) {
 			case DS_SAVEDATA_AUTODETECT:
 				newValue = _slot1SPIAutodetect(dscore, oldValue);
@@ -448,6 +457,9 @@ void DSSlot1ConfigureSPI(struct DS* ds, uint32_t paramPtr) {
 		ds->memory.slot1.savedataType = DS_SAVEDATA_EEPROM512;
 	} else {
 		ds->memory.slot1.spiAddressingBits = 16;
+	}
+	if (saveParams & 0xFF0000) {
+		ds->memory.slot1.hasIR = true;
 	}
 	ds->memory.slot1.spiAddress = size - 1;
 	ds->memory.slot1.spiSize = size;

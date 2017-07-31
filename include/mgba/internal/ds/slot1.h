@@ -51,6 +51,7 @@ struct DSSlot1 {
 	int dmaSource;
 
 	enum DSSavedataType savedataType;
+	bool hasIR;
 	struct mTimingEvent spiEvent;
 	bool spiHoldEnabled;
 	uint8_t spiCommand;
