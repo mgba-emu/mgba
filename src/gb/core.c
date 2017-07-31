@@ -176,17 +176,17 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	gb->video.frameskip = core->opts.frameskip;
 
 	int color;
-	if (mCoreConfigGetIntValue(&core->config, "gb.pal[0]", &color)) {
-			GBVideoSetPalette(&gb->video, 0, color);
+	if (mCoreConfigGetIntValue(config, "gb.pal[0]", &color)) {
+		GBVideoSetPalette(&gb->video, 0, color);
 	}
-	if (mCoreConfigGetIntValue(&core->config, "gb.pal[1]", &color)) {
-			GBVideoSetPalette(&gb->video, 1, color);
+	if (mCoreConfigGetIntValue(config, "gb.pal[1]", &color)) {
+		GBVideoSetPalette(&gb->video, 1, color);
 	}
-	if (mCoreConfigGetIntValue(&core->config, "gb.pal[2]", &color)) {
-			GBVideoSetPalette(&gb->video, 2, color);
+	if (mCoreConfigGetIntValue(config, "gb.pal[2]", &color)) {
+		GBVideoSetPalette(&gb->video, 2, color);
 	}
-	if (mCoreConfigGetIntValue(&core->config, "gb.pal[3]", &color)) {
-			GBVideoSetPalette(&gb->video, 3, color);
+	if (mCoreConfigGetIntValue(config, "gb.pal[3]", &color)) {
+		GBVideoSetPalette(&gb->video, 3, color);
 	}
 
 	mCoreConfigCopyValue(&core->config, config, "gb.bios");
@@ -487,6 +487,9 @@ static void _GBCoreSetPeripheral(struct mCore* core, int type, void* periph) {
 		break;
 	case mPERIPH_RUMBLE:
 		gb->memory.rumble = periph;
+		break;
+	case mPERIPH_IMAGE_SOURCE:
+		gb->memory.cam = periph;
 		break;
 	default:
 		return;

@@ -294,6 +294,9 @@ void GBUnloadROM(struct GB* gb) {
 	}
 	gb->sramRealVf = NULL;
 	gb->sramVf = NULL;
+	if (gb->memory.cam && gb->memory.cam->stopRequestImage) {
+		gb->memory.cam->stopRequestImage(gb->memory.cam);
+	}
 }
 
 void GBSynthesizeROM(struct VFile* vf) {
@@ -613,7 +616,7 @@ void GBHalt(struct LR35902Core* cpu) {
 void GBStop(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	if (cpu->bus) {
-		mLOG(GB, GAME_ERROR, "Hit illegal stop at address %04X:%02X\n", cpu->pc, cpu->bus);
+		mLOG(GB, GAME_ERROR, "Hit illegal stop at address %04X:%02X", cpu->pc, cpu->bus);
 	}
 	if (gb->memory.io[REG_KEY1] & 1) {
 		gb->doubleSpeed ^= 1;
@@ -639,7 +642,7 @@ void GBStop(struct LR35902Core* cpu) {
 
 void GBIllegal(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-	mLOG(GB, GAME_ERROR, "Hit illegal opcode at address %04X:%02X\n", cpu->pc, cpu->bus);
+	mLOG(GB, GAME_ERROR, "Hit illegal opcode at address %04X:%02X", cpu->pc, cpu->bus);
 #ifdef USE_DEBUGGERS
 	if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
 		struct mDebuggerEntryInfo info = {
@@ -655,6 +658,9 @@ void GBIllegal(struct LR35902Core* cpu) {
 }
 
 bool GBIsROM(struct VFile* vf) {
+	if (!vf) {
+		return false;
+	}
 	vf->seek(vf, 0x104, SEEK_SET);
 	uint8_t header[4];
 

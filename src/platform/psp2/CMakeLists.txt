@@ -13,7 +13,7 @@ source_group("PS Vita-specific code" FILES ${OS_SRC})
 list(APPEND CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/sce-vfs.c)
 set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)
 
-set(OS_LIB -lvita2d -lSceAppMgr_stub -lSceCtrl_stub -lScePgf_stub -lSceGxm_stub -lSceDisplay_stub -lSceAudio_stub -lSceCommonDialog_stub -lSceMotion_stub -lScePhotoExport_stub -lScePower_stub -lSceSysmodule_stub -lSceTouch_stub -l${M_LIBRARY})
+set(OS_LIB -lvita2d -lSceAppMgr_stub -lSceCtrl_stub -lSceAudio_stub -lSceCamera_stub -lSceCommonDialog_stub -lSceDisplay_stub -lSceGxm_stub -lSceMotion_stub -lScePgf_stub -lScePhotoExport_stub -lScePower_stub -lSceSysmodule_stub -lSceTouch_stub -l${M_LIBRARY})
 set(OBJCOPY_CMD ${OBJCOPY} -I binary -O elf32-littlearm -B arm)
 
 list(APPEND GUI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/gui-font.c)

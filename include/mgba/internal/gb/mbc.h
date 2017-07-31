@@ -21,6 +21,11 @@ void GBMBCSwitchBank(struct GB* gb, int bank);
 void GBMBCSwitchBank0(struct GB* gb, int bank);
 void GBMBCSwitchSramBank(struct GB* gb, int bank);
 
+enum GBCam {
+	GBCAM_WIDTH = 128,
+	GBCAM_HEIGHT = 112
+};
+
 struct GBMBCRTCSaveBuffer {
 	uint32_t sec;
 	uint32_t min;
@@ -36,8 +41,6 @@ struct GBMBCRTCSaveBuffer {
 };
 void GBMBCRTCRead(struct GB* gb);
 void GBMBCRTCWrite(struct GB* gb);
-
-void GBMBC7Write(struct GBMemory*, uint16_t address, uint8_t value);
 
 CXX_GUARD_END
 

@@ -57,7 +57,7 @@ file(GLOB GUI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/gui/*.c ${CMAKE_CURRENT_S
 file(GLOB GBA_RENDERER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/renderers/*.c)
 file(GLOB GBA_SIO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/sio/lockstep.c)
 file(GLOB GBA_EXTRA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/extra/*.c)
-file(GLOB GB_SIO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/sio/lockstep.c)
+file(GLOB GB_SIO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/sio/*.c)
 file(GLOB GB_RENDERER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/renderers/*.c)
 file(GLOB GB_EXTRA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/extra/*.c)
 file(GLOB THIRD_PARTY_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/inih/*.c)

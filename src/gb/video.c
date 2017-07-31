@@ -211,7 +211,7 @@ void _endMode2(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBVideo* video = context;
 	_cleanOAM(video, video->ly);
 	video->x = 0;
-	video->dotClock = timing->masterCycles - cyclesLate;
+	video->dotClock = mTimingCurrentTime(timing) - cyclesLate;
 	int32_t next = GB_VIDEO_MODE_3_LENGTH_BASE + video->objMax * 6 - (video->p->memory.io[REG_SCX] & 7);
 	video->mode = 3;
 	video->modeEvent.callback = _endMode3;

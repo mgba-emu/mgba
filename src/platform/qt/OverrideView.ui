@@ -321,6 +321,16 @@
          </item>
          <item>
           <property name="text">
+           <string>Pocket Cam</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>TAMA5</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>HuC-3</string>
           </property>
          </item>

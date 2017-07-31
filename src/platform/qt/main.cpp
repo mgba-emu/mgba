@@ -23,6 +23,7 @@
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
 #ifdef BUILD_QT_MULTIMEDIA
 Q_IMPORT_PLUGIN(QWindowsAudioPlugin);
+Q_IMPORT_PLUGIN(DSServicePlugin);
 #endif
 #endif
 #endif

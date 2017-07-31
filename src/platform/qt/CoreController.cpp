@@ -47,8 +47,6 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 	m_threadContext.startCallback = [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
-		context->core->setPeripheral(context->core, mPERIPH_ROTATION, controller->m_inputController->rotationSource());
-		context->core->setPeripheral(context->core, mPERIPH_RUMBLE, controller->m_inputController->rumble());
 
 		switch (context->core->platform(context->core)) {
 #ifdef M_CORE_GBA
@@ -286,6 +284,9 @@ void CoreController::setOverride(std::unique_ptr<Override> override) {
 void CoreController::setInputController(InputController* inputController) {
 	m_inputController = inputController;
 	m_inputController->setPlatform(platform());
+	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_ROTATION, m_inputController->rotationSource());
+	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_RUMBLE, m_inputController->rumble());
+	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_IMAGE_SOURCE, m_inputController->imageSource());
 }
 
 void CoreController::setLogger(LogController* logger) {
@@ -409,7 +410,7 @@ void CoreController::loadState(int slot) {
 		if (!controller->m_backupLoadState.isOpen()) {
 			controller->m_backupLoadState = VFileMemChunk(nullptr, 0);
 		}
-		mCoreLoadStateNamed(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
+		mCoreSaveStateNamed(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
 		if (mCoreLoadState(context->core, controller->m_stateSlot, controller->m_loadStateFlags)) {
 			emit controller->frameAvailable();
 			emit controller->stateLoaded();
@@ -570,6 +571,59 @@ void CoreController::exportSharkport(const QString& path) {
 	Interrupter interrupter(this);
 	GBASavedataExportSharkPort(static_cast<GBA*>(m_threadContext.core->board), vf);
 	vf->close(vf);
+#endif
+}
+
+void CoreController::attachPrinter() {
+#ifdef M_CORE_GB
+	if (platform() != PLATFORM_GB) {
+		return;
+	}
+	GB* gb = static_cast<GB*>(m_threadContext.core->board);
+	clearMultiplayerController();
+	GBPrinterCreate(&m_printer.d);
+	m_printer.parent = this;
+	m_printer.d.print = [](GBPrinter* printer, int height, const uint8_t* data) {
+		QGBPrinter* qPrinter = reinterpret_cast<QGBPrinter*>(printer);
+		QImage image(GB_VIDEO_HORIZONTAL_PIXELS, height, QImage::Format_Indexed8);
+		QVector<QRgb> colors;
+		colors.append(qRgb(0xF8, 0xF8, 0xF8));
+		colors.append(qRgb(0xA8, 0xA8, 0xA8));
+		colors.append(qRgb(0x50, 0x50, 0x50));
+		colors.append(qRgb(0x00, 0x00, 0x00));
+		image.setColorTable(colors);
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; x += 4) {
+				uint8_t byte = data[(x + y * GB_VIDEO_HORIZONTAL_PIXELS) / 4];
+				image.setPixel(x + 0, y, (byte & 0xC0) >> 6);
+				image.setPixel(x + 1, y, (byte & 0x30) >> 4);
+				image.setPixel(x + 2, y, (byte & 0x0C) >> 2);
+				image.setPixel(x + 3, y, (byte & 0x03) >> 0);
+			}
+		}
+		QMetaObject::invokeMethod(qPrinter->parent, "imagePrinted", Q_ARG(const QImage&, image));
+	};
+	GBSIOSetDriver(&gb->sio, &m_printer.d.d);
+#endif
+}
+
+void CoreController::detachPrinter() {
+#ifdef M_CORE_GB
+	if (platform() != PLATFORM_GB) {
+		return;
+	}
+	GB* gb = static_cast<GB*>(m_threadContext.core->board);
+	GBPrinterDonePrinting(&m_printer.d);
+	GBSIOSetDriver(&gb->sio, nullptr);
+#endif
+}
+
+void CoreController::endPrint() {
+#ifdef M_CORE_GB
+	if (platform() != PLATFORM_GB) {
+		return;
+	}
+	GBPrinterDonePrinting(&m_printer.d);
 #endif
 }
 

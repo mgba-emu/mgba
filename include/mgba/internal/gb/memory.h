@@ -86,6 +86,19 @@ enum GBMBC7MachineState {
 	GBMBC7_STATE_EEPROM_ERASE = 0x1C,
 };
 
+enum GBTAMA5Register {
+	GBTAMA5_BANK_LO = 0x0,
+	GBTAMA5_BANK_HI = 0x1,
+	GBTAMA5_WRITE_LO = 0x4,
+	GBTAMA5_WRITE_HI = 0x5,
+	GBTAMA5_CS = 0x6,
+	GBTAMA5_ADDR_LO = 0x7,
+	GBTAMA5_MAX = 0x8,
+	GBTAMA5_ACTIVE = 0xA,
+	GBTAMA5_READ_LO = 0xC,
+	GBTAMA5_READ_HI = 0xD,
+};
+
 struct GBMBC1State {
 	int mode;
 	int multicartStride;
@@ -104,12 +117,19 @@ struct GBMBC7State {
 
 struct GBPocketCamState {
 	bool registersActive;
+	uint8_t registers[0x36];
+};
+
+struct GBTAMA5State {
+	uint8_t reg;
+	uint8_t registers[GBTAMA5_MAX];
 };
 
 union GBMBCState {
 	struct GBMBC1State mbc1;
 	struct GBMBC7State mbc7;
 	struct GBPocketCamState pocketCam;
+	struct GBTAMA5State tama5;
 };
 
 struct mRotationSource;
@@ -160,6 +180,7 @@ struct GBMemory {
 	struct mRTCSource* rtc;
 	struct mRotationSource* rotation;
 	struct mRumble* rumble;
+	struct mImageSource* cam;
 };
 
 struct LR35902Core;

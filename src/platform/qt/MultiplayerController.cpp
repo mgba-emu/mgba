@@ -233,6 +233,9 @@ bool MultiplayerController::attachGame(CoreController* controller) {
 }
 
 void MultiplayerController::detachGame(CoreController* controller) {
+	if (m_players.empty()) {
+		return;
+	}
 	mCoreThread* thread = controller->thread();
 	if (!thread) {
 		return;

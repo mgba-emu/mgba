@@ -5,7 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "OverrideView.h"
 
-#include <QColorDialog>
 #include <QPushButton>
 
 #include "ConfigController.h"
@@ -44,6 +43,8 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 		s_mbcList.append(GB_MBC5);
 		s_mbcList.append(GB_MBC5_RUMBLE);
 		s_mbcList.append(GB_MBC7);
+		s_mbcList.append(GB_POCKETCAM);
+		s_mbcList.append(GB_TAMA5);
 		s_mbcList.append(GB_HuC3);
 	}
 	if (s_gbModelList.isEmpty()) {
@@ -76,20 +77,16 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 	connect(m_ui.gbModel, &QComboBox::currentTextChanged, this, &OverrideView::updateOverrides);
 	connect(m_ui.mbc, &QComboBox::currentTextChanged, this, &OverrideView::updateOverrides);
 
-	QPalette palette = m_ui.color0->palette();
-	palette.setColor(backgroundRole(), QColor(0xF8, 0xF8, 0xF8));
-	m_ui.color0->setPalette(palette);
-	palette.setColor(backgroundRole(), QColor(0xA8, 0xA8, 0xA8));
-	m_ui.color1->setPalette(palette);
-	palette.setColor(backgroundRole(), QColor(0x50, 0x50, 0x50));
-	m_ui.color2->setPalette(palette);
-	palette.setColor(backgroundRole(), QColor(0x00, 0x00, 0x00));
-	m_ui.color3->setPalette(palette);
-
-	m_ui.color0->installEventFilter(this);
-	m_ui.color1->installEventFilter(this);
-	m_ui.color2->installEventFilter(this);
-	m_ui.color3->installEventFilter(this);
+	m_colorPickers[0] = ColorPicker(m_ui.color0, QColor(0xF8, 0xF8, 0xF8));
+	m_colorPickers[1] = ColorPicker(m_ui.color1, QColor(0xA8, 0xA8, 0xA8));
+	m_colorPickers[2] = ColorPicker(m_ui.color2, QColor(0x50, 0x50, 0x50));
+	m_colorPickers[3] = ColorPicker(m_ui.color3, QColor(0x00, 0x00, 0x00));
+	for (int colorId = 0; colorId < 4; ++colorId) {
+		connect(&m_colorPickers[colorId], &ColorPicker::colorChanged, this, [this, colorId](const QColor& color) {
+			m_gbColors[colorId] = color.rgb();
+			updateOverrides();
+		});
+	}
 
 	connect(m_ui.tabWidget, &QTabWidget::currentChanged, this, &OverrideView::updateOverrides);
 #ifndef M_CORE_GBA
@@ -113,42 +110,6 @@ void OverrideView::setController(std::shared_ptr<CoreController> controller) {
 	} else {
 		m_controller->clearOverride();
 	}
-}
-
-bool OverrideView::eventFilter(QObject* obj, QEvent* event) {
-#ifdef M_CORE_GB
-	if (event->type() != QEvent::MouseButtonRelease) {
-		return false;
-	}
-	int colorId;
-	if (obj == m_ui.color0) {
-		colorId = 0;
-	} else if (obj == m_ui.color1) {
-		colorId = 1;
-	} else if (obj == m_ui.color2) {
-		colorId = 2;
-	} else if (obj == m_ui.color3) {
-		colorId = 3;
-	} else {
-		return false;
-	}
-
-	QWidget* swatch = static_cast<QWidget*>(obj);
-
-	QColorDialog* colorPicker = new QColorDialog;
-	colorPicker->setAttribute(Qt::WA_DeleteOnClose);
-	colorPicker->open();
-	connect(colorPicker, &QColorDialog::colorSelected, [this, swatch, colorId](const QColor& color) {
-		QPalette palette = swatch->palette();
-		palette.setColor(backgroundRole(), color);
-		swatch->setPalette(palette);
-		m_gbColors[colorId] = color.rgb();
-		updateOverrides();
-	});
-	return true;
-#else
-	return false;
-#endif
 }
 
 void OverrideView::saveOverride() {

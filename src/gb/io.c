@@ -580,6 +580,36 @@ void GBIOSerialize(const struct GB* gb, struct GBSerializedState* state) {
 void GBIODeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	memcpy(gb->memory.io, state->io, GB_SIZE_IO);
 	gb->memory.ie = state->ie;
+
+	if (GBAudioEnableGetEnable(*gb->audio.nr52)) {
+		GBIOWrite(gb, REG_NR10, gb->memory.io[REG_NR10]);
+		GBIOWrite(gb, REG_NR11, gb->memory.io[REG_NR11]);
+		GBIOWrite(gb, REG_NR12, gb->memory.io[REG_NR12]);
+		GBIOWrite(gb, REG_NR13, gb->memory.io[REG_NR13]);
+		gb->audio.ch1.control.frequency &= 0xFF;
+		gb->audio.ch1.control.frequency |= GBAudioRegisterControlGetFrequency(gb->memory.io[REG_NR14] << 8);
+		gb->audio.ch1.control.stop = GBAudioRegisterControlGetStop(gb->memory.io[REG_NR14] << 8);
+		GBIOWrite(gb, REG_NR21, gb->memory.io[REG_NR21]);
+		GBIOWrite(gb, REG_NR22, gb->memory.io[REG_NR22]);
+		GBIOWrite(gb, REG_NR22, gb->memory.io[REG_NR23]);
+		gb->audio.ch2.control.frequency &= 0xFF;
+		gb->audio.ch2.control.frequency |= GBAudioRegisterControlGetFrequency(gb->memory.io[REG_NR24] << 8);
+		gb->audio.ch2.control.stop = GBAudioRegisterControlGetStop(gb->memory.io[REG_NR24] << 8);
+		GBIOWrite(gb, REG_NR30, gb->memory.io[REG_NR30]);
+		GBIOWrite(gb, REG_NR31, gb->memory.io[REG_NR31]);
+		GBIOWrite(gb, REG_NR32, gb->memory.io[REG_NR32]);
+		GBIOWrite(gb, REG_NR32, gb->memory.io[REG_NR33]);
+		gb->audio.ch3.rate &= 0xFF;
+		gb->audio.ch3.rate |= GBAudioRegisterControlGetRate(gb->memory.io[REG_NR34] << 8);
+		gb->audio.ch3.stop = GBAudioRegisterControlGetStop(gb->memory.io[REG_NR34] << 8);
+		GBIOWrite(gb, REG_NR41, gb->memory.io[REG_NR41]);
+		GBIOWrite(gb, REG_NR42, gb->memory.io[REG_NR42]);
+		GBIOWrite(gb, REG_NR43, gb->memory.io[REG_NR43]);
+		gb->audio.ch4.stop = GBAudioRegisterNoiseControlGetStop(gb->memory.io[REG_NR44]);
+		GBIOWrite(gb, REG_NR50, gb->memory.io[REG_NR50]);
+		GBIOWrite(gb, REG_NR51, gb->memory.io[REG_NR51]);
+	}
+
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_LCDC, state->io[REG_LCDC]);
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_SCY, state->io[REG_SCY]);
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_SCX, state->io[REG_SCX]);

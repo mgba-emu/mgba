@@ -8,6 +8,8 @@
 
 #include <QDialog>
 
+#include "ColorPicker.h"
+
 #include <mgba/core/core.h>
 
 #include "ui_SettingsView.h"
@@ -33,6 +35,7 @@ signals:
 	void biosLoaded(int platform, const QString&);
 	void audioDriverChanged();
 	void displayDriverChanged();
+	void cameraDriverChanged();
 	void pathsChanged();
 	void languageChanged();
 	void libraryCleared();
@@ -50,6 +53,8 @@ private:
 	ShortcutView* m_shortcutView;
 	ShortcutView* m_keyView;
 	ShaderSelector* m_shader = nullptr;
+	uint32_t m_gbColors[4]{};
+	ColorPicker m_colorPickers[4];
 
 	void saveSetting(const char* key, const QAbstractButton*);
 	void saveSetting(const char* key, const QComboBox*);

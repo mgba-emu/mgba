@@ -105,6 +105,7 @@ void mPythonScriptDebuggerEntered(struct mScriptEngine* se, enum mDebuggerEntryR
 		return;
 	}
 
+	mPythonSetDebugger(debugger);
 	mPythonDebuggerEntered(reason, info);
 }
 #endif
