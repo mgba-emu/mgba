@@ -93,6 +93,7 @@ set(SOURCE_FILES
 	ObjView.cpp
 	OverrideView.cpp
 	PaletteView.cpp
+	PrinterView.cpp
 	ROMInfo.cpp
 	SavestateButton.cpp
 	SensorView.cpp
@@ -123,6 +124,7 @@ set(UI_FILES
 	ObjView.ui
 	OverrideView.ui
 	PaletteView.ui
+	PrinterView.ui
 	ROMInfo.ui
 	SensorView.ui
 	SettingsView.ui

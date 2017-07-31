@@ -22,6 +22,10 @@
 #include <mgba/core/thread.h>
 #include <mgba/core/tile-cache.h>
 
+#ifdef M_CORE_GB
+#include <mgba/internal/gb/sio/printer.h>
+#endif
+
 struct mCore;
 
 namespace QGBA {
@@ -123,6 +127,10 @@ public slots:
 	void importSharkport(const QString& path);
 	void exportSharkport(const QString& path);
 
+	void attachPrinter();
+	void detachPrinter();
+	void endPrint();
+
 	void setAVStream(mAVStream*);
 	void clearAVStream();
 
@@ -148,6 +156,8 @@ signals:
 	void unimplementedBiosCall(int);
 	void statusPosted(const QString& message);
 	void logPosted(int level, int category, const QString& log);
+
+	void imagePrinted(const QImage&);
 
 private:
 	void updateKeys();
@@ -195,6 +205,13 @@ private:
 
 	mVideoLogContext* m_vl = nullptr;
 	VFile* m_vlVf = nullptr;
+
+#ifdef M_CORE_GB
+	struct QGBPrinter {
+		GBPrinter d;
+		CoreController* parent;
+	} m_printer;
+#endif
 };
 
 }

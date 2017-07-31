@@ -41,6 +41,7 @@
 #include "OverrideView.h"
 #include "ObjView.h"
 #include "PaletteView.h"
+#include "PrinterView.h"
 #include "ROMInfo.h"
 #include "SensorView.h"
 #include "SettingsView.h"
@@ -1358,9 +1359,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	fpsTargetOption->addValue(tr("240"), 240, target);
 	m_config->updateOption("fpsTarget");
 
-#if defined(USE_PNG) || defined(USE_FFMPEG) || defined(USE_MAGICK)
 	avMenu->addSeparator();
-#endif
 
 #ifdef USE_PNG
 	QAction* screenshot = new QAction(tr("Take &screenshot"), avMenu);
@@ -1396,6 +1395,18 @@ void Window::setupMenu(QMenuBar* menubar) {
 	});
 	addControlledAction(avMenu, stopVL, "stopVL");
 	m_gameActions.append(stopVL);
+
+#ifdef M_CORE_GB
+	QAction* gbPrint = new QAction(tr("Game Boy Printer..."), avMenu);
+	connect(gbPrint, &QAction::triggered, [this]() {
+		PrinterView* view = new PrinterView(m_controller);
+		openView(view);
+		m_controller->attachPrinter();
+
+	});
+	addControlledAction(avMenu, gbPrint, "gbPrint");
+	m_gameActions.append(gbPrint);
+#endif
 
 	avMenu->addSeparator();
 	m_videoLayers = avMenu->addMenu(tr("Video layers"));
@@ -1807,6 +1818,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	}
 
 	m_controller->start();
+	m_controller->loadConfig(m_config);
 }
 
 WindowBackground::WindowBackground(QWidget* parent)
