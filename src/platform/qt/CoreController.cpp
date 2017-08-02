@@ -25,6 +25,7 @@
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/renderers/tile-cache.h>
 #endif
+#include <mgba-util/math.h>
 #include <mgba-util/vfs.h>
 
 using namespace QGBA;
@@ -38,9 +39,11 @@ CoreController::CoreController(mCore* core, QObject* parent)
 	m_threadContext.core = core;
 	m_threadContext.userData = this;
 
-	QSize size = screenDimensions();
-	m_buffers[0].resize(size.width() * size.height() * sizeof(color_t));
-	m_buffers[1].resize(size.width() * size.height() * sizeof(color_t));
+	QSize size(256, 512);
+	m_buffers[0].resize(toPow2(size.width()) * size.height() * sizeof(color_t));
+	m_buffers[1].resize(toPow2(size.width()) * size.height() * sizeof(color_t));
+	m_buffers[0].fill(0xFF);
+	m_buffers[1].fill(0xFF);
 	m_activeBuffer = &m_buffers[0];
 
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), size.width());
@@ -81,7 +84,15 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		}
 		controller->m_resetActions.clear();
 
-		controller->m_activeBuffer->fill(0xFF);
+		QSize size = controller->screenDimensions();
+		controller->m_buffers[0].resize(toPow2(size.width()) * size.height() * sizeof(color_t));
+		controller->m_buffers[1].resize(toPow2(size.width()) * size.height() * sizeof(color_t));
+		controller->m_buffers[0].fill(0xFF);
+		controller->m_buffers[1].fill(0xFF);
+		controller->m_activeBuffer = &controller->m_buffers[0];
+
+		context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), toPow2(size.width()));
+
 		controller->finishFrame();
 	};
 
@@ -712,7 +723,7 @@ void CoreController::finishFrame() {
 	if (m_activeBuffer == m_completeBuffer) {
 		m_activeBuffer = &m_buffers[1];
 	}
-	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), screenDimensions().width());
+	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), toPow2(screenDimensions().width()));
 
 	for (auto& action : m_frameActions) {
 		action();

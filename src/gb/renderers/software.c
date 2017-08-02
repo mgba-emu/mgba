@@ -7,11 +7,13 @@
 
 #include <mgba/core/tile-cache.h>
 #include <mgba/internal/gb/io.h>
+#include <mgba-util/math.h>
 #include <mgba-util/memory.h>
 
 static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum GBModel model);
 static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
+static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* renderer, uint8_t* data);
 static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value);
 static void GBVideoSoftwareRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address);
 static void GBVideoSoftwareRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam);
@@ -25,9 +27,13 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* renderer, struct GBObj* obj, int startX, int endX, int y);
 
 static void _clearScreen(struct GBVideoSoftwareRenderer* renderer) {
+	size_t sgbOffset = 0;
+	if (renderer->model == GB_MODEL_SGB) {
+		sgbOffset = renderer->outputBufferStride * 40 + 48;
+	}
 	int y;
 	for (y = 0; y < GB_VIDEO_VERTICAL_PIXELS; ++y) {
-		color_t* row = &renderer->outputBuffer[renderer->outputBufferStride * y];
+		color_t* row = &renderer->outputBuffer[renderer->outputBufferStride * y + sgbOffset];
 		int x;
 		for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; x += 4) {
 			row[x + 0] = renderer->palette[0];
@@ -38,10 +44,64 @@ static void _clearScreen(struct GBVideoSoftwareRenderer* renderer) {
 	}
 }
 
+static void _regenerateSGBBorder(struct GBVideoSoftwareRenderer* renderer) {
+	int  i;
+	for (i = 0; i < 0x40; ++i) {
+		uint16_t color;
+		LOAD_16LE(color, 0x800 + i * 2, renderer->d.sgbMapRam);
+		renderer->d.writePalette(&renderer->d, i + 0x40, color);
+	}
+	int x, y;
+	for (y = 0; y < 224; ++y) {
+		for (x = 0; x < 256; x += 8) {
+			uint16_t mapData;
+			LOAD_16LE(mapData, (x >> 2) + (y & ~7) * 8, renderer->d.sgbMapRam);
+			if (UNLIKELY(SGBBgAttributesGetTile(mapData) > 0x100)) {
+				continue;
+			}
+			int localY = y & 0x7;
+			if (SGBBgAttributesIsYFlip(mapData)) {
+				localY = 7 - y;
+			}
+			uint8_t tileData[4];
+			tileData[0] = renderer->d.sgbCharRam[(SGBBgAttributesGetTile(mapData) * 16 + localY) * 2 + 0x00];
+			tileData[1] = renderer->d.sgbCharRam[(SGBBgAttributesGetTile(mapData) * 16 + localY) * 2 + 0x01];
+			tileData[2] = renderer->d.sgbCharRam[(SGBBgAttributesGetTile(mapData) * 16 + localY) * 2 + 0x10];
+			tileData[3] = renderer->d.sgbCharRam[(SGBBgAttributesGetTile(mapData) * 16 + localY) * 2 + 0x11];
+			if (!(tileData[0] | tileData[1] | tileData[2] | tileData[3])) {
+				continue;
+			}
+
+			size_t base = y * renderer->outputBufferStride + x;
+			int p = SGBBgAttributesGetPalette(mapData) * 0x10;
+			if (SGBBgAttributesIsXFlip(mapData)) {
+				renderer->outputBuffer[base + 0] = renderer->palette[p | ((tileData[0] >> 0) & 0x1) | ((tileData[1] << 1) & 0x2) | ((tileData[2] << 2) & 0x4) | ((tileData[3] << 3) & 0x8)];
+				renderer->outputBuffer[base + 1] = renderer->palette[p | ((tileData[0] >> 1) & 0x1) | ((tileData[1] >> 0) & 0x2) | ((tileData[2] << 1) & 0x4) | ((tileData[3] << 2) & 0x8)];
+				renderer->outputBuffer[base + 2] = renderer->palette[p | ((tileData[0] >> 2) & 0x1) | ((tileData[1] >> 1) & 0x2) | ((tileData[2] >> 0) & 0x4) | ((tileData[3] << 1) & 0x8)];
+				renderer->outputBuffer[base + 3] = renderer->palette[p | ((tileData[0] >> 3) & 0x1) | ((tileData[1] >> 2) & 0x2) | ((tileData[2] >> 1) & 0x4) | ((tileData[3] >> 0) & 0x8)];
+				renderer->outputBuffer[base + 4] = renderer->palette[p | ((tileData[0] >> 4) & 0x1) | ((tileData[1] >> 3) & 0x2) | ((tileData[2] >> 2) & 0x4) | ((tileData[3] >> 1) & 0x8)];
+				renderer->outputBuffer[base + 5] = renderer->palette[p | ((tileData[0] >> 5) & 0x1) | ((tileData[1] >> 4) & 0x2) | ((tileData[2] >> 3) & 0x4) | ((tileData[3] >> 2) & 0x8)];
+				renderer->outputBuffer[base + 6] = renderer->palette[p | ((tileData[0] >> 6) & 0x1) | ((tileData[1] >> 5) & 0x2) | ((tileData[2] >> 4) & 0x4) | ((tileData[3] >> 3) & 0x8)];
+				renderer->outputBuffer[base + 7] = renderer->palette[p | ((tileData[0] >> 7) & 0x1) | ((tileData[1] >> 6) & 0x2) | ((tileData[2] >> 5) & 0x4) | ((tileData[3] >> 4) & 0x8)];
+			} else {
+				renderer->outputBuffer[base + 0] = renderer->palette[p | ((tileData[0] >> 7) & 0x1) | ((tileData[1] >> 6) & 0x2) | ((tileData[2] >> 5) & 0x4) | ((tileData[3] >> 4) & 0x8)];
+				renderer->outputBuffer[base + 1] = renderer->palette[p | ((tileData[0] >> 6) & 0x1) | ((tileData[1] >> 5) & 0x2) | ((tileData[2] >> 4) & 0x4) | ((tileData[3] >> 3) & 0x8)];
+				renderer->outputBuffer[base + 2] = renderer->palette[p | ((tileData[0] >> 5) & 0x1) | ((tileData[1] >> 4) & 0x2) | ((tileData[2] >> 3) & 0x4) | ((tileData[3] >> 2) & 0x8)];
+				renderer->outputBuffer[base + 3] = renderer->palette[p | ((tileData[0] >> 4) & 0x1) | ((tileData[1] >> 3) & 0x2) | ((tileData[2] >> 2) & 0x4) | ((tileData[3] >> 1) & 0x8)];
+				renderer->outputBuffer[base + 4] = renderer->palette[p | ((tileData[0] >> 3) & 0x1) | ((tileData[1] >> 2) & 0x2) | ((tileData[2] >> 1) & 0x4) | ((tileData[3] >> 0) & 0x8)];
+				renderer->outputBuffer[base + 5] = renderer->palette[p | ((tileData[0] >> 2) & 0x1) | ((tileData[1] >> 1) & 0x2) | ((tileData[2] >> 0) & 0x4) | ((tileData[3] << 1) & 0x8)];
+				renderer->outputBuffer[base + 6] = renderer->palette[p | ((tileData[0] >> 1) & 0x1) | ((tileData[1] >> 0) & 0x2) | ((tileData[2] << 1) & 0x4) | ((tileData[3] << 2) & 0x8)];
+				renderer->outputBuffer[base + 7] = renderer->palette[p | ((tileData[0] >> 0) & 0x1) | ((tileData[1] << 1) & 0x2) | ((tileData[2] << 2) & 0x4) | ((tileData[3] << 3) & 0x8)];
+			}
+		}
+	}
+}
+
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBVideoSoftwareRendererInit;
 	renderer->d.deinit = GBVideoSoftwareRendererDeinit;
 	renderer->d.writeVideoRegister = GBVideoSoftwareRendererWriteVideoRegister;
+	renderer->d.writeSGBPacket = GBVideoSoftwareRendererWriteSGBPacket;
 	renderer->d.writePalette = GBVideoSoftwareRendererWritePalette;
 	renderer->d.writeVRAM = GBVideoSoftwareRendererWriteVRAM;
 	renderer->d.writeOAM = GBVideoSoftwareRendererWriteOAM;
@@ -67,6 +127,7 @@ static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum G
 	softwareRenderer->currentWy = 0;
 	softwareRenderer->wx = 0;
 	softwareRenderer->model = model;
+	softwareRenderer->sgbTransfer = 0;
 }
 
 static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer) {
@@ -94,6 +155,11 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 		break;
 	}
 	return value;
+}
+
+static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* renderer, uint8_t* data) {
+	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
+	memcpy(softwareRenderer->sgbPacket, data, sizeof(softwareRenderer->sgbPacket));
 }
 
 static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value) {
@@ -167,20 +233,60 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 			GBVideoSoftwareRendererDrawObj(softwareRenderer, &obj[i], startX, endX, y);
 		}
 	}
-	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
-	int x;
-	for (x = startX; x + 7 < (endX & ~7); x += 8) {
-		row[x] = softwareRenderer->palette[softwareRenderer->row[x] & 0x7F];
-		row[x + 1] = softwareRenderer->palette[softwareRenderer->row[x + 1] & 0x7F];
-		row[x + 2] = softwareRenderer->palette[softwareRenderer->row[x + 2] & 0x7F];
-		row[x + 3] = softwareRenderer->palette[softwareRenderer->row[x + 3] & 0x7F];
-		row[x + 4] = softwareRenderer->palette[softwareRenderer->row[x + 4] & 0x7F];
-		row[x + 5] = softwareRenderer->palette[softwareRenderer->row[x + 5] & 0x7F];
-		row[x + 6] = softwareRenderer->palette[softwareRenderer->row[x + 6] & 0x7F];
-		row[x + 7] = softwareRenderer->palette[softwareRenderer->row[x + 7] & 0x7F];
+	size_t sgbOffset = 0;
+	if (softwareRenderer->model == GB_MODEL_SGB) {
+		sgbOffset = softwareRenderer->outputBufferStride * 40 + 48;
 	}
-	for (; x < endX; ++x) {
-		row[x] = softwareRenderer->palette[softwareRenderer->row[x] & 0x7F];
+	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y + sgbOffset];
+	int x;
+	switch (softwareRenderer->d.sgbRenderMode) {
+	case 0:
+		for (x = startX; x + 7 < (endX & ~7); x += 8) {
+			row[x] = softwareRenderer->palette[softwareRenderer->row[x] & 0x7F];
+			row[x + 1] = softwareRenderer->palette[softwareRenderer->row[x + 1] & 0x7F];
+			row[x + 2] = softwareRenderer->palette[softwareRenderer->row[x + 2] & 0x7F];
+			row[x + 3] = softwareRenderer->palette[softwareRenderer->row[x + 3] & 0x7F];
+			row[x + 4] = softwareRenderer->palette[softwareRenderer->row[x + 4] & 0x7F];
+			row[x + 5] = softwareRenderer->palette[softwareRenderer->row[x + 5] & 0x7F];
+			row[x + 6] = softwareRenderer->palette[softwareRenderer->row[x + 6] & 0x7F];
+			row[x + 7] = softwareRenderer->palette[softwareRenderer->row[x + 7] & 0x7F];
+		}
+		for (; x < endX; ++x) {
+			row[x] = softwareRenderer->palette[softwareRenderer->row[x] & 0x7F];
+		}
+		break;
+	case 1:
+		return;
+	case 2:
+		for (x = startX; x + 7 < (endX & ~7); x += 8) {
+			row[x] = 0;
+			row[x + 1] = 0;
+			row[x + 2] = 0;
+			row[x + 3] = 0;
+			row[x + 4] = 0;
+			row[x + 5] = 0;
+			row[x + 6] = 0;
+			row[x + 7] = 0;
+		}
+		for (; x < endX; ++x) {
+			row[x] = 0;
+		}
+		return;
+	case 3:
+		for (x = startX; x + 7 < (endX & ~7); x += 8) {
+			row[x] = softwareRenderer->palette[0];
+			row[x + 1] = softwareRenderer->palette[0];
+			row[x + 2] = softwareRenderer->palette[0];
+			row[x + 3] = softwareRenderer->palette[0];
+			row[x + 4] = softwareRenderer->palette[0];
+			row[x + 5] = softwareRenderer->palette[0];
+			row[x + 6] = softwareRenderer->palette[0];
+			row[x + 7] = softwareRenderer->palette[0];
+		}
+		for (; x < endX; ++x) {
+			row[x] = softwareRenderer->palette[0];
+		}
+		return;
 	}
 }
 
@@ -188,6 +294,53 @@ static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* render
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y && softwareRenderer->wx - 7 < GB_VIDEO_HORIZONTAL_PIXELS) {
 		++softwareRenderer->currentWy;
+	}
+	if (softwareRenderer->sgbTransfer == 1) {
+		uint8_t* buffer = NULL;
+		switch (softwareRenderer->sgbPacket[0] >> 3) {
+		case SGB_PAL_TRN:
+			buffer = renderer->sgbPalRam;
+			break;
+		case SGB_CHR_TRN:
+			buffer = &renderer->sgbCharRam[SGB_SIZE_CHAR_RAM / 2 * (softwareRenderer->sgbPacket[1] & 1)];
+			break;
+		case SGB_PCT_TRN:
+			buffer = renderer->sgbMapRam;
+			break;
+		default:
+			break;
+		}
+		if (buffer) {
+			size_t offset = 2 * ((y & 7) + (y >> 3) * GB_VIDEO_HORIZONTAL_PIXELS);
+			if (offset < 0x1000) {
+				int i;
+				for (i = 0; i < GB_VIDEO_HORIZONTAL_PIXELS; i += 8) {
+					if (UNLIKELY(offset + (i << 1) + 1 >= 0x1000)) {
+						break;
+					}
+					uint8_t hi = 0;
+					uint8_t lo = 0;
+					hi |= (softwareRenderer->row[i + 0] & 0x2) << 6;
+					lo |= (softwareRenderer->row[i + 0] & 0x1) << 7;
+					hi |= (softwareRenderer->row[i + 1] & 0x2) << 5;
+					lo |= (softwareRenderer->row[i + 1] & 0x1) << 6;
+					hi |= (softwareRenderer->row[i + 2] & 0x2) << 4;
+					lo |= (softwareRenderer->row[i + 2] & 0x1) << 5;
+					hi |= (softwareRenderer->row[i + 3] & 0x2) << 3;
+					lo |= (softwareRenderer->row[i + 3] & 0x1) << 4;
+					hi |= (softwareRenderer->row[i + 4] & 0x2) << 2;
+					lo |= (softwareRenderer->row[i + 4] & 0x1) << 3;
+					hi |= (softwareRenderer->row[i + 5] & 0x2) << 1;
+					lo |= (softwareRenderer->row[i + 5] & 0x1) << 2;
+					hi |= (softwareRenderer->row[i + 6] & 0x2) << 0;
+					lo |= (softwareRenderer->row[i + 6] & 0x1) << 1;
+					hi |= (softwareRenderer->row[i + 7] & 0x2) >> 1;
+					lo |= (softwareRenderer->row[i + 7] & 0x1) >> 0;
+					buffer[offset + (i << 1) + 0] = lo;
+					buffer[offset + (i << 1) + 1] = hi;
+				}
+			}
+		}
 	}
 }
 
@@ -200,6 +353,34 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 	}
 	if (!GBRegisterLCDCIsEnable(softwareRenderer->lcdc)) {
 		_clearScreen(softwareRenderer);
+	}
+	if (softwareRenderer->model == GB_MODEL_SGB) {
+		switch (softwareRenderer->sgbPacket[0] >> 3) {
+		case SGB_PAL_SET:
+			if (softwareRenderer->sgbPacket[9] & 0x40) {
+				renderer->sgbRenderMode = 0;
+			}
+			break;
+		case SGB_ATTR_SET:
+			if (softwareRenderer->sgbPacket[1] & 0x40) {
+				renderer->sgbRenderMode = 0;
+			}
+			break;
+		case SGB_PAL_TRN:
+		case SGB_CHR_TRN:
+		case SGB_PCT_TRN:
+			if (softwareRenderer->sgbTransfer > 0) {
+				// Make sure every buffer sees this if we're multibuffering
+				_regenerateSGBBorder(softwareRenderer);
+			}
+			++softwareRenderer->sgbTransfer;
+			if (softwareRenderer->sgbTransfer == 5) {
+				softwareRenderer->sgbTransfer = 0;
+				softwareRenderer->sgbPacket[0] = 0;
+			}
+		default:
+			break;
+		}
 	}
 	softwareRenderer->currentWy = 0;
 }

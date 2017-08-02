@@ -110,12 +110,12 @@ void mGLContextPostFrame(struct VideoBackend* v, const void* frame) {
 	glBindTexture(GL_TEXTURE_2D, context->tex);
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, v->width, v->height, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, frame);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, toPow2(v->width), v->height, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, frame);
 #else
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, v->width, v->height, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, frame);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, toPow2(v->width), v->height, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, frame);
 #endif
 #else
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, v->width, v->height,  GL_RGBA, GL_UNSIGNED_BYTE, frame);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, toPow2(v->width), v->height,  GL_RGBA, GL_UNSIGNED_BYTE, frame);
 #endif
 }
 

@@ -34,6 +34,9 @@ struct GBVideoSoftwareRenderer {
 
 	GBRegisterLCDC lcdc;
 	enum GBModel model;
+
+	int sgbTransfer;
+	uint8_t sgbPacket[16];
 };
 
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer*);

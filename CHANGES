@@ -4,6 +4,7 @@ Features:
  - Game Boy Camera support
  - Qt: Set default Game Boy colors
  - Game Boy Printer support
+ - Super Game Boy borders
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
  - Python: Fix importing .gb or .gba before .core

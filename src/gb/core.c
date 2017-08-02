@@ -190,9 +190,14 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 }
 
 static void _GBCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
-	UNUSED(core);
-	*width = GB_VIDEO_HORIZONTAL_PIXELS;
-	*height = GB_VIDEO_VERTICAL_PIXELS;
+	struct GB* gb = core->board;
+	if (!gb || gb->model != GB_MODEL_SGB) {
+		*width = GB_VIDEO_HORIZONTAL_PIXELS;
+		*height = GB_VIDEO_VERTICAL_PIXELS;
+	} else {
+		*width = 256;
+		*height = 224;
+	}
 }
 
 static void _GBCoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t stride) {

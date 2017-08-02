@@ -11,6 +11,7 @@
 
 #include <mgba/core/core.h>
 #include <mgba/core/thread.h>
+#include <mgba-util/math.h>
 
 using namespace QGBA;
 
@@ -56,12 +57,12 @@ void DisplayQt::framePosted() {
 	}
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), m_width, m_height, QImage::Format_RGB16);
+	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), toPow2(m_width), m_height, QImage::Format_RGB16);
 #else
-	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), m_width, m_height, QImage::Format_RGB555);
+	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), toPow2(m_width), m_height, QImage::Format_RGB555);
 #endif
 #else
-	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), m_width, m_height, QImage::Format_ARGB32);
+	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), toPow2(m_width), m_height, QImage::Format_ARGB32);
 	m_backing = m_backing.convertToFormat(QImage::Format_RGB32);
 #endif
 }

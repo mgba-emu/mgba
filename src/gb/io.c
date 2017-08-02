@@ -105,6 +105,33 @@ static const uint8_t _registerMask[] = {
 	[REG_IE]   = 0xE0,
 };
 
+static void _writeSGBBits(struct GB* gb, int bits) {
+	if (!bits) {
+		gb->sgbBit = 0;
+		memset(gb->sgbPacket, 0, sizeof(gb->sgbPacket));
+	}
+	if (bits == gb->currentSgbBits) {
+		return;
+	}
+	gb->currentSgbBits = bits;
+	if (gb->sgbBit == 128 && bits == 2) {
+		GBVideoWriteSGBPacket(&gb->video, gb->sgbPacket);
+		++gb->sgbBit;
+	}
+	if (gb->sgbBit >= 128) {
+		return;
+	}
+	switch (bits) {
+	case 1:
+		gb->sgbPacket[gb->sgbBit >> 3] |= 1 << (gb->sgbBit & 7);
+		// Fall through
+	case 2:
+		++gb->sgbBit;
+	default:
+		break;
+	}
+}
+
 void GBIOInit(struct GB* gb) {
 	memset(gb->memory.io, 0, sizeof(gb->memory.io));
 }
@@ -341,6 +368,10 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		}
 		break;
 	case REG_JOYP:
+		if (gb->model == GB_MODEL_SGB) {
+			_writeSGBBits(gb, (value >> 4) & 3);
+		}
+		break;
 	case REG_TIMA:
 	case REG_TMA:
 		// Handled transparently by the registers
@@ -453,7 +484,8 @@ static uint8_t _readKeys(struct GB* gb) {
 	uint8_t keys = *gb->keySource;
 	switch (gb->memory.io[REG_JOYP] & 0x30) {
 	case 0x30:
-		keys = 0;
+	// TODO: Increment
+		keys = gb->model == GB_MODEL_SGB ? 0xF : 0;
 		break;
 	case 0x20:
 		keys >>= 4;

@@ -255,6 +255,11 @@
          </item>
          <item>
           <property name="text">
+           <string>Super Game Boy (SGB)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>Game Boy Color (CGB)</string>
           </property>
          </item>

@@ -51,6 +51,7 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 		// NB: Keep in sync with OverrideView.ui
 		s_gbModelList.append(GB_MODEL_AUTODETECT);
 		s_gbModelList.append(GB_MODEL_DMG);
+		s_gbModelList.append(GB_MODEL_SGB);
 		s_gbModelList.append(GB_MODEL_CGB);
 		s_gbModelList.append(GB_MODEL_AGB);
 	}

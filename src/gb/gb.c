@@ -28,6 +28,7 @@ static const uint8_t _knownHeader[4] = { 0xCE, 0xED, 0x66, 0x66};
 
 #define DMG_BIOS_CHECKSUM 0xC2F5CC97
 #define DMG_2_BIOS_CHECKSUM 0x59C8598E
+#define SGB_BIOS_CHECKSUM 0xEC8A83B9
 #define CGB_BIOS_CHECKSUM 0x41884E46
 
 mLOG_DEFINE_CATEGORY(GB, "GB", "gb");
@@ -384,6 +385,7 @@ bool GBIsBIOS(struct VFile* vf) {
 	switch (_GBBiosCRC32(vf)) {
 	case DMG_BIOS_CHECKSUM:
 	case DMG_2_BIOS_CHECKSUM:
+	case SGB_BIOS_CHECKSUM:
 	case CGB_BIOS_CHECKSUM:
 		return true;
 	default:
@@ -425,11 +427,11 @@ void GBReset(struct LR35902Core* cpu) {
 
 	if (!gb->biosVf) {
 		switch (gb->model) {
-		case GB_MODEL_DMG:
-			// TODO: SGB
-		case GB_MODEL_SGB:
 		case GB_MODEL_AUTODETECT: // Silence warnings
 			gb->model = GB_MODEL_DMG;
+			// TODO: SGB registers
+		case GB_MODEL_SGB:
+		case GB_MODEL_DMG:
 			cpu->a = 1;
 			cpu->f.packed = 0xB0;
 			cpu->c = 0x13;
@@ -467,6 +469,10 @@ void GBReset(struct LR35902Core* cpu) {
 		gb->yankedRomSize = 0;
 	}
 
+	gb->sgbBit = -1;
+	gb->currentSgbBits = 0;
+	memset(gb->sgbPacket, 0, sizeof(gb->sgbPacket));
+
 	mTimingClear(&gb->timing);
 
 	GBMemoryReset(gb);
@@ -491,6 +497,9 @@ void GBDetectModel(struct GB* gb) {
 		case DMG_2_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_DMG;
 			break;
+		case SGB_BIOS_CHECKSUM:
+			gb->model = GB_MODEL_SGB;
+			break;
 		case CGB_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_CGB;
 			break;
@@ -503,6 +512,8 @@ void GBDetectModel(struct GB* gb) {
 		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 		if (cart->cgb & 0x80) {
 			gb->model = GB_MODEL_CGB;
+		} else if (cart->sgb == 0x03 && cart->oldLicensee == 0x33) {
+			gb->model = GB_MODEL_SGB;
 		} else {
 			gb->model = GB_MODEL_DMG;
 		}
