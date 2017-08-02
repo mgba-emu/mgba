@@ -47,7 +47,6 @@ private:
 	Ui::OverrideView m_ui;
 
 	std::shared_ptr<CoreController> m_controller;
-	std::unique_ptr<Override> m_override;
 	ConfigController* m_config;
 
 #ifdef M_CORE_GB

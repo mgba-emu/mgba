@@ -66,18 +66,6 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 		m_ui.hwRumble->setEnabled(!enabled);
 	});
 
-	connect(m_ui.savetype, &QComboBox::currentTextChanged, this, &OverrideView::updateOverrides);
-	connect(m_ui.hwAutodetect, &QAbstractButton::clicked, this, &OverrideView::updateOverrides);
-	connect(m_ui.hwRTC, &QAbstractButton::clicked, this, &OverrideView::updateOverrides);
-	connect(m_ui.hwGyro, &QAbstractButton::clicked, this, &OverrideView::updateOverrides);
-	connect(m_ui.hwLight, &QAbstractButton::clicked, this, &OverrideView::updateOverrides);
-	connect(m_ui.hwTilt, &QAbstractButton::clicked, this, &OverrideView::updateOverrides);
-	connect(m_ui.hwRumble, &QAbstractButton::clicked, this, &OverrideView::updateOverrides);
-	connect(m_ui.hwGBPlayer, &QAbstractButton::clicked, this, &OverrideView::updateOverrides);
-
-	connect(m_ui.gbModel, &QComboBox::currentTextChanged, this, &OverrideView::updateOverrides);
-	connect(m_ui.mbc, &QComboBox::currentTextChanged, this, &OverrideView::updateOverrides);
-
 	m_colorPickers[0] = ColorPicker(m_ui.color0, QColor(0xF8, 0xF8, 0xF8));
 	m_colorPickers[1] = ColorPicker(m_ui.color1, QColor(0xA8, 0xA8, 0xA8));
 	m_colorPickers[2] = ColorPicker(m_ui.color2, QColor(0x50, 0x50, 0x50));
@@ -85,11 +73,9 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 	for (int colorId = 0; colorId < 4; ++colorId) {
 		connect(&m_colorPickers[colorId], &ColorPicker::colorChanged, this, [this, colorId](const QColor& color) {
 			m_gbColors[colorId] = color.rgb();
-			updateOverrides();
 		});
 	}
 
-	connect(m_ui.tabWidget, &QTabWidget::currentChanged, this, &OverrideView::updateOverrides);
 #ifndef M_CORE_GBA
 	m_ui.tabWidget->removeTab(m_ui.tabWidget->indexOf(m_ui.tabGBA));
 #endif
@@ -104,13 +90,9 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 
 void OverrideView::setController(std::shared_ptr<CoreController> controller) {
 	m_controller = controller;
-	gameStarted();
+	connect(controller.get(), &CoreController::started, this, &OverrideView::gameStarted);
 	connect(controller.get(), &CoreController::stopping, this, &OverrideView::gameStopped);
-	if (m_override) {
-		m_controller->setOverride(std::move(m_override));
-	} else {
-		m_controller->clearOverride();
-	}
+	updateOverrides();
 }
 
 void OverrideView::saveOverride() {
@@ -121,6 +103,9 @@ void OverrideView::saveOverride() {
 }
 
 void OverrideView::updateOverrides() {
+	if (!m_controller) {
+		return;
+	}
 #ifdef M_CORE_GBA
 	if (m_ui.tabWidget->currentWidget() == m_ui.tabGBA) {
 		std::unique_ptr<GBAOverride> gba(new GBAOverride);
@@ -158,12 +143,11 @@ void OverrideView::updateOverrides() {
 			gba->override.idleLoop = parsedIdleLoop;
 		}
 
-
 		if (gba->override.savetype != SAVEDATA_AUTODETECT || gba->override.hardware != HW_NO_OVERRIDE ||
 		    gba->override.idleLoop != IDLE_LOOP_NONE) {
-			m_override = std::move(gba);
+			m_controller->setOverride(std::move(gba));
 		} else {
-			m_override.reset();
+			m_controller->clearOverride();
 		}
 	}
 #endif
@@ -179,9 +163,9 @@ void OverrideView::updateOverrides() {
 		bool hasOverride = gb->override.mbc != GB_MBC_AUTODETECT || gb->override.model != GB_MODEL_AUTODETECT;
 		hasOverride = hasOverride || (m_gbColors[0] | m_gbColors[1] | m_gbColors[2] | m_gbColors[3]);
 		if (hasOverride) {
-			m_override = std::move(gb);
+			m_controller->setOverride(std::move(gb));
 		} else {
-			m_override.reset();
+			m_controller->clearOverride();
 		}
 	}
 #endif
@@ -248,6 +232,4 @@ void OverrideView::gameStopped() {
 
 	m_ui.mbc->setCurrentIndex(0);
 	m_ui.gbModel->setCurrentIndex(0);
-
-	updateOverrides();
 }
