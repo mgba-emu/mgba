@@ -35,6 +35,28 @@ typedef uint32_t color_t;
 #define M_RGB8_TO_BGR5(X) ((((X) & 0xF8) >> 3) | (((X) & 0xF800) >> 6) | (((X) & 0xF80000) >> 9))
 #define M_RGB8_TO_RGB5(X) ((((X) & 0xF8) << 7) | (((X) & 0xF800) >> 6) | (((X) & 0xF80000) >> 19))
 
+#ifndef PYCPARSE
+static inline color_t mColorFrom555(uint16_t value) {
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	color_t color = 0;
+	color |= (value & 0x001F) << 11;
+	color |= (value & 0x03E0) << 1;
+	color |= (value & 0x7C00) >> 10;
+#else
+	color_t color = value;
+#endif
+#else
+	color_t color = 0;
+	color |= (value << 3) & 0xF8;
+	color |= (value << 6) & 0xF800;
+	color |= (value << 9) & 0xF80000;
+	color |= (color >> 5) & 0x070707;
+#endif
+	return color;
+}
+#endif
+
 struct blip_t;
 
 enum mColorFormat {

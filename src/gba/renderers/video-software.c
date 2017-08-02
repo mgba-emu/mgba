@@ -359,22 +359,7 @@ static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, 
 
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
-	unsigned color = 0;
-	color |= (value & 0x001F) << 11;
-	color |= (value & 0x03E0) << 1;
-	color |= (value & 0x7C00) >> 10;
-#else
-	unsigned color = value;
-#endif
-#else
-	unsigned color = 0;
-	color |= (value << 3) & 0xF8;
-	color |= (value << 6) & 0xF800;
-	color |= (value << 9) & 0xF80000;
-	color |= (color >> 5) & 0x070707;
-#endif
+	color_t color = mColorFrom555(value);
 	softwareRenderer->normalPalette[address >> 1] = color;
 	if (softwareRenderer->blendEffect == BLEND_BRIGHTEN) {
 		softwareRenderer->variantPalette[address >> 1] = _brighten(color, softwareRenderer->bldy);

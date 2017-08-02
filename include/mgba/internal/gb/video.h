@@ -34,7 +34,8 @@ enum {
 
 	SGB_SIZE_CHAR_RAM = 0x2000,
 	SGB_SIZE_MAP_RAM = 0x1000,
-	SGB_SIZE_PAL_RAM = 0x1000
+	SGB_SIZE_PAL_RAM = 0x1000,
+	SGB_SIZE_ATF_RAM = 0x1000
 };
 
 DECL_BITFIELD(GBObjAttributes, uint8_t);
@@ -89,6 +90,8 @@ struct GBVideoRenderer {
 	uint8_t* sgbMapRam;
 	uint8_t* sgbPalRam;
 	int sgbRenderMode;
+	uint8_t* sgbAttributes;
+	uint8_t* sgbAttributeFiles;
 
 	bool disableBG;
 	bool disableOBJ;
@@ -140,6 +143,7 @@ struct GBVideo {
 	bool bcpIncrement;
 	int ocpIndex;
 	bool ocpIncrement;
+	uint8_t sgbCommandHeader;
 
 	uint16_t dmgPalette[4];
 	uint16_t palette[64];

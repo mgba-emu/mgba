@@ -98,7 +98,7 @@ bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
 	mSDLGLCommonInit(renderer);
 #endif
 
-	size_t size = toPow2(renderer->width) * renderer->height * BYTES_PER_PIXEL;
+	size_t size = toPow2(renderer->width) * toPow2(renderer->height) * BYTES_PER_PIXEL;
 #ifndef __APPLE__
 	renderer->outputBuffer = memalign(16, size);
 #else

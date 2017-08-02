@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gba/renderers/software-private.h"
 
+#include <mgba/core/interface.h>
 #include <mgba/internal/gba/gba.h>
 
 #define MODE_2_COORD_OVERFLOW \
@@ -101,6 +102,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode3(struct GBAVideoSoftwareRenderer
 
 		if (!mosaicWait) {
 			LOAD_16(color, ((localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS) << 1, renderer->d.vram);
+			color = mColorFrom555(color);
 #ifndef COLOR_16_BIT
 			unsigned color32;
 			color32 = 0;

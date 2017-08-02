@@ -14,6 +14,8 @@
 #define CXX_GUARD_START
 #define CXX_GUARD_END
 
+#define PYCPARSE
+
 typedef int... time_t;
 typedef int... off_t;
 typedef ... va_list;
@@ -24,7 +26,6 @@ typedef ...* png_unknown_chunkp;
 void free(void*);
 
 #include <limits.h>
-#undef const
 
 #include "flags.h"
 

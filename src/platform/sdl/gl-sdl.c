@@ -33,7 +33,7 @@ void mSDLGLCreate(struct mSDLRenderer* renderer) {
 bool mSDLGLInit(struct mSDLRenderer* renderer) {
 	mSDLGLCommonInit(renderer);
 
-	size_t size = toPow2(renderer->width) * renderer->height * BYTES_PER_PIXEL;
+	size_t size = toPow2(renderer->width) * toPow2(renderer->height) * BYTES_PER_PIXEL;
 	renderer->outputBuffer = malloc(size);
 	memset(renderer->outputBuffer, 0, size);
 	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, toPow2(renderer->width));
@@ -67,9 +67,9 @@ void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user) {
 				renderer->player.windowUpdated = 0;
 			}
 #endif
-			if (renderer->width != v->width || renderer->height != v->height) {
-				renderer->gl.d.setDimensions(&renderer->gl.d, renderer->width, renderer->height);
-			}
+		}
+		if (renderer->width != v->width || renderer->height != v->height) {
+			v->setDimensions(v, renderer->width, renderer->height);
 		}
 
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {

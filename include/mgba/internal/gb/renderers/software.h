@@ -23,6 +23,7 @@ struct GBVideoSoftwareRenderer {
 	uint8_t row[GB_VIDEO_HORIZONTAL_PIXELS + 8];
 
 	color_t palette[128];
+	uint8_t lookup[64];
 
 	uint32_t* temporaryBuffer;
 
@@ -37,6 +38,10 @@ struct GBVideoSoftwareRenderer {
 
 	int sgbTransfer;
 	uint8_t sgbPacket[16];
+	uint8_t sgbCommandHeader;
+	int sgbPacketId;
+	int sgbDataSets;
+	uint8_t sgbPartialDataSet[15];
 };
 
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer*);

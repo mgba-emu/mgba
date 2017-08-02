@@ -75,6 +75,8 @@ void GBVideoInit(struct GBVideo* video) {
 	video->renderer->sgbCharRam = NULL;
 	video->renderer->sgbMapRam = NULL;
 	video->renderer->sgbPalRam = NULL;
+	video->renderer->sgbAttributes = NULL;
+	video->renderer->sgbAttributeFiles = NULL;
 }
 
 void GBVideoReset(struct GBVideo* video) {
@@ -100,10 +102,40 @@ void GBVideoReset(struct GBVideo* video) {
 		video->renderer->sgbCharRam = anonymousMemoryMap(SGB_SIZE_CHAR_RAM);
 		video->renderer->sgbMapRam = anonymousMemoryMap(SGB_SIZE_MAP_RAM);
 		video->renderer->sgbPalRam = anonymousMemoryMap(SGB_SIZE_PAL_RAM);
+		video->renderer->sgbAttributeFiles = anonymousMemoryMap(SGB_SIZE_ATF_RAM);
+		video->renderer->sgbAttributes = malloc(90 * 45);
+		memset(video->renderer->sgbAttributes, 0, 90 * 45);
+		video->sgbCommandHeader = 0;
 	}
+
+	video->palette[0] = video->dmgPalette[0];
+	video->palette[1] = video->dmgPalette[1];
+	video->palette[2] = video->dmgPalette[2];
+	video->palette[3] = video->dmgPalette[3];
+	video->palette[8 * 4 + 0] = video->dmgPalette[0];
+	video->palette[8 * 4 + 1] = video->dmgPalette[1];
+	video->palette[8 * 4 + 2] = video->dmgPalette[2];
+	video->palette[8 * 4 + 3] = video->dmgPalette[3];
+	video->palette[9 * 4 + 0] = video->dmgPalette[0];
+	video->palette[9 * 4 + 1] = video->dmgPalette[1];
+	video->palette[9 * 4 + 2] = video->dmgPalette[2];
+	video->palette[9 * 4 + 3] = video->dmgPalette[3];
 
 	video->renderer->deinit(video->renderer);
 	video->renderer->init(video->renderer, video->p->model);
+
+	video->renderer->writePalette(video->renderer, 0, video->palette[0]);
+	video->renderer->writePalette(video->renderer, 1, video->palette[1]);
+	video->renderer->writePalette(video->renderer, 2, video->palette[2]);
+	video->renderer->writePalette(video->renderer, 3, video->palette[3]);
+	video->renderer->writePalette(video->renderer, 8 * 4 + 0, video->palette[8 * 4 + 0]);
+	video->renderer->writePalette(video->renderer, 8 * 4 + 1, video->palette[8 * 4 + 1]);
+	video->renderer->writePalette(video->renderer, 8 * 4 + 2, video->palette[8 * 4 + 2]);
+	video->renderer->writePalette(video->renderer, 8 * 4 + 3, video->palette[8 * 4 + 3]);
+	video->renderer->writePalette(video->renderer, 9 * 4 + 0, video->palette[9 * 4 + 0]);
+	video->renderer->writePalette(video->renderer, 9 * 4 + 1, video->palette[9 * 4 + 1]);
+	video->renderer->writePalette(video->renderer, 9 * 4 + 2, video->palette[9 * 4 + 2]);
+	video->renderer->writePalette(video->renderer, 9 * 4 + 3, video->palette[9 * 4 + 3]);
 }
 
 void GBVideoDeinit(struct GBVideo* video) {
@@ -121,6 +153,14 @@ void GBVideoDeinit(struct GBVideo* video) {
 		mappedMemoryFree(video->renderer->sgbPalRam, SGB_SIZE_PAL_RAM);
 		video->renderer->sgbPalRam = NULL;
 	}
+	if (video->renderer->sgbAttributeFiles) {
+		mappedMemoryFree(video->renderer->sgbAttributeFiles, SGB_SIZE_ATF_RAM);
+		video->renderer->sgbAttributeFiles = NULL;
+	}
+	if (video->renderer->sgbAttributes) {
+		free(video->renderer->sgbAttributes);
+		video->renderer->sgbAttributes = NULL;
+	}
 }
 
 void GBVideoAssociateRenderer(struct GBVideo* video, struct GBVideoRenderer* renderer) {
@@ -130,6 +170,8 @@ void GBVideoAssociateRenderer(struct GBVideo* video, struct GBVideoRenderer* ren
 	renderer->sgbCharRam = video->renderer->sgbCharRam;
 	renderer->sgbMapRam = video->renderer->sgbMapRam;
 	renderer->sgbPalRam = video->renderer->sgbPalRam;
+	renderer->sgbAttributeFiles = video->renderer->sgbAttributeFiles;
+	renderer->sgbAttributes = video->renderer->sgbAttributes;
 	video->renderer = renderer;
 	renderer->vram = video->vram;
 	video->renderer->init(video->renderer, video->p->model);
@@ -419,7 +461,7 @@ void GBVideoWriteLYC(struct GBVideo* video, uint8_t value) {
 }
 
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value) {
-	if (video->p->model < GB_MODEL_CGB) {
+	if (video->p->model < GB_MODEL_SGB) {
 		switch (address) {
 		case REG_BGP:
 			video->palette[0] = video->dmgPalette[value & 3];
@@ -452,6 +494,8 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 			video->renderer->writePalette(video->renderer, 9 * 4 + 3, video->palette[9 * 4 + 3]);
 			break;
 		}
+	} else if (video->p->model == GB_MODEL_SGB) {
+		video->renderer->writeVideoRegister(video->renderer, address, value);
 	} else {
 		switch (address) {
 		case REG_BCPD:
@@ -506,7 +550,12 @@ void GBVideoSetPalette(struct GBVideo* video, unsigned index, uint32_t color) {
 }
 
 void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
-	switch (data[0] >> 3) {
+	int i;
+	if (!(video->sgbCommandHeader & 7)) {
+		video->sgbCommandHeader = data[0];
+	}
+	--video->sgbCommandHeader;
+	switch (video->sgbCommandHeader >> 3) {
 	case SGB_PAL01:
 		video->palette[0] = data[1] | (data[2] << 8);
 		video->palette[1] = data[3] | (data[4] << 8);
@@ -516,13 +565,17 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->palette[17] = data[9] | (data[10] << 8);
 		video->palette[18] = data[11] | (data[12] << 8);
 		video->palette[19] = data[13] | (data[14] << 8);
+
 		video->renderer->writePalette(video->renderer, 0, video->palette[0]);
 		video->renderer->writePalette(video->renderer, 1, video->palette[1]);
 		video->renderer->writePalette(video->renderer, 2, video->palette[2]);
 		video->renderer->writePalette(video->renderer, 3, video->palette[3]);
+		video->renderer->writePalette(video->renderer, 16, video->palette[0]);
 		video->renderer->writePalette(video->renderer, 17, video->palette[17]);
 		video->renderer->writePalette(video->renderer, 18, video->palette[18]);
 		video->renderer->writePalette(video->renderer, 19, video->palette[19]);
+		video->renderer->writePalette(video->renderer, 32, video->palette[0]);
+		video->renderer->writePalette(video->renderer, 48, video->palette[0]);
 		break;
 	case SGB_PAL23:
 		video->palette[32] = data[1] | (data[2] << 8);
@@ -533,7 +586,6 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->palette[49] = data[9] | (data[10] << 8);
 		video->palette[50] = data[11] | (data[12] << 8);
 		video->palette[51] = data[13] | (data[14] << 8);
-		video->renderer->writePalette(video->renderer, 32, video->palette[32]);
 		video->renderer->writePalette(video->renderer, 33, video->palette[33]);
 		video->renderer->writePalette(video->renderer, 34, video->palette[34]);
 		video->renderer->writePalette(video->renderer, 35, video->palette[35]);
@@ -547,6 +599,7 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->palette[2] = data[5] | (data[6] << 8);
 		video->palette[3] = data[7] | (data[8] << 8);
 
+		video->palette[48] = data[1] | (data[2] << 8);
 		video->palette[49] = data[9] | (data[10] << 8);
 		video->palette[50] = data[11] | (data[12] << 8);
 		video->palette[51] = data[13] | (data[14] << 8);
@@ -554,6 +607,9 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->renderer->writePalette(video->renderer, 1, video->palette[1]);
 		video->renderer->writePalette(video->renderer, 2, video->palette[2]);
 		video->renderer->writePalette(video->renderer, 3, video->palette[3]);
+		video->renderer->writePalette(video->renderer, 16, video->palette[0]);
+		video->renderer->writePalette(video->renderer, 32, video->palette[0]);
+		video->renderer->writePalette(video->renderer, 48, video->palette[0]);
 		video->renderer->writePalette(video->renderer, 49, video->palette[49]);
 		video->renderer->writePalette(video->renderer, 50, video->palette[50]);
 		video->renderer->writePalette(video->renderer, 51, video->palette[51]);
@@ -567,7 +623,6 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->palette[33] = data[9] | (data[10] << 8);
 		video->palette[34] = data[11] | (data[12] << 8);
 		video->palette[35] = data[13] | (data[14] << 8);
-		video->renderer->writePalette(video->renderer, 16, video->palette[16]);
 		video->renderer->writePalette(video->renderer, 17, video->palette[17]);
 		video->renderer->writePalette(video->renderer, 18, video->palette[18]);
 		video->renderer->writePalette(video->renderer, 19, video->palette[19]);
@@ -575,18 +630,34 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->renderer->writePalette(video->renderer, 34, video->palette[34]);
 		video->renderer->writePalette(video->renderer, 35, video->palette[35]);
 		break;
+	case SGB_PAL_SET:
+		for (i = 0; i < 4; ++i) {
+			uint16_t entry = (data[2 + (i * 2)] << 8) | data[1 + (i * 2)];
+			if (entry >= 0x200) {
+				mLOG(GB, STUB, "Unimplemented SGB palette overflow: %03X", entry);
+				continue;
+			}
+			LOAD_16LE(video->palette[i * 4 + 0], entry * 8 + 0, video->renderer->sgbPalRam);
+			video->renderer->writePalette(video->renderer, i * 4 + 0, video->palette[0]);
+			LOAD_16LE(video->palette[i * 4 + 1], entry * 8 + 2, video->renderer->sgbPalRam);
+			video->renderer->writePalette(video->renderer, i * 4 + 1, video->palette[i * 4 + 1]);
+			LOAD_16LE(video->palette[i * 4 + 2], entry * 8 + 4, video->renderer->sgbPalRam);
+			video->renderer->writePalette(video->renderer, i * 4 + 2, video->palette[i * 4 + 2]);
+			LOAD_16LE(video->palette[i * 4 + 3], entry * 8 + 6, video->renderer->sgbPalRam);
+			video->renderer->writePalette(video->renderer, i * 4 + 3, video->palette[i * 4 + 3]);
+		}
+		break;
+	case SGB_ATTR_BLK:
+	case SGB_PAL_TRN:
+	case SGB_CHR_TRN:
+	case SGB_PCT_TRN:
+	case SGB_ATTR_TRN:
+	case SGB_ATTR_SET:
+		break;
 	case SGB_MLT_REG:
 		return;
 	case SGB_MASK_EN:
 		video->renderer->sgbRenderMode = data[1] & 0x3;
-		break;
-	case SGB_PAL_TRN:
-	case SGB_CHR_TRN:
-	case SGB_PCT_TRN:
-		break;
-	case SGB_PAL_SET:
-	case SGB_ATTR_SET:
-		mLOG(GB, STUB, "Unimplemented SGB command: %02X", data[0] >> 3);
 		break;
 	default:
 		mLOG(GB, STUB, "Unimplemented SGB command: %02X", data[0] >> 3);
