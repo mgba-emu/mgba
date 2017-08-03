@@ -159,7 +159,10 @@ struct GBAVideoSoftwareRenderer {
 	struct GBAVideoSoftwareSprite sprites[128];
 
 	uint32_t scanlineDirty[5];
-	uint16_t ioCache[REG_SOUND1CNT_LO];
+	uint16_t ioCache[VIDEO_VERTICAL_PIXELS][REG_SOUND1CNT_LO];
+	uint16_t nextIo[REG_SOUND1CNT_LO];
+	int32_t scaleCache[VIDEO_VERTICAL_PIXELS][2][2];
+	int nextY;
 
 	int start;
 	int end;
