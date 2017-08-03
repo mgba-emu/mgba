@@ -562,9 +562,13 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->palette[2] = data[5] | (data[6] << 8);
 		video->palette[3] = data[7] | (data[8] << 8);
 
+		video->palette[16] = data[1] | (data[2] << 8);
 		video->palette[17] = data[9] | (data[10] << 8);
 		video->palette[18] = data[11] | (data[12] << 8);
 		video->palette[19] = data[13] | (data[14] << 8);
+
+		video->palette[32] = data[1] | (data[2] << 8);
+		video->palette[48] = data[1] | (data[2] << 8);
 
 		video->renderer->writePalette(video->renderer, 0, video->palette[0]);
 		video->renderer->writePalette(video->renderer, 1, video->palette[1]);
@@ -578,7 +582,6 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->renderer->writePalette(video->renderer, 48, video->palette[0]);
 		break;
 	case SGB_PAL23:
-		video->palette[32] = data[1] | (data[2] << 8);
 		video->palette[33] = data[3] | (data[4] << 8);
 		video->palette[34] = data[5] | (data[6] << 8);
 		video->palette[35] = data[7] | (data[8] << 8);
@@ -599,6 +602,9 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->palette[2] = data[5] | (data[6] << 8);
 		video->palette[3] = data[7] | (data[8] << 8);
 
+		video->palette[16] = data[1] | (data[2] << 8);
+		video->palette[32] = data[1] | (data[2] << 8);
+
 		video->palette[48] = data[1] | (data[2] << 8);
 		video->palette[49] = data[9] | (data[10] << 8);
 		video->palette[50] = data[11] | (data[12] << 8);
@@ -615,7 +621,6 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->renderer->writePalette(video->renderer, 51, video->palette[51]);
 		break;
 	case SGB_PAL12:
-		video->palette[16] = data[1] | (data[2] << 8);
 		video->palette[17] = data[3] | (data[4] << 8);
 		video->palette[18] = data[5] | (data[6] << 8);
 		video->palette[19] = data[7] | (data[8] << 8);
@@ -649,6 +654,7 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		break;
 	case SGB_ATTR_BLK:
 	case SGB_PAL_TRN:
+	case SGB_ATRC_EN:
 	case SGB_CHR_TRN:
 	case SGB_PCT_TRN:
 	case SGB_ATTR_TRN:

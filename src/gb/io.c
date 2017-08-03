@@ -647,5 +647,10 @@ void GBIODeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_SCX, state->io[REG_SCX]);
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_WY, state->io[REG_WY]);
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_WX, state->io[REG_WX]);
+	if (gb->model == GB_MODEL_SGB) {
+		gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_BGP, state->io[REG_BGP]);
+		gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_OBP0, state->io[REG_OBP0]);
+		gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_OBP1, state->io[REG_OBP1]);
+	}
 	gb->video.stat = state->io[REG_STAT];
 }

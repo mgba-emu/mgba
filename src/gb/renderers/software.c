@@ -270,6 +270,9 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 			memcpy(softwareRenderer->sgbPartialDataSet, &softwareRenderer->sgbPacket[i], 16 - i);
 		}
 		break;
+	case SGB_ATRC_EN:
+		_regenerateSGBBorder(softwareRenderer);
+		break;
 	}
 }
 
@@ -474,6 +477,7 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 			if (softwareRenderer->sgbTransfer == 5) {
 				softwareRenderer->sgbCommandHeader = 0;
 			}
+			break;
 		default:
 			break;
 		}

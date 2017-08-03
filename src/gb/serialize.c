@@ -12,7 +12,10 @@
 mLOG_DEFINE_CATEGORY(GB_STATE, "GB Savestate", "gb.serialize");
 
 const uint32_t GB_SAVESTATE_MAGIC = 0x00400000;
-const uint32_t GB_SAVESTATE_VERSION = 0x00000001;
+const uint32_t GB_SAVESTATE_VERSION = 0x00000002;
+
+static void GBSGBSerialize(struct GB* gb, struct GBSerializedState* state);
+static void GBSGBDeserialize(struct GB* gb, const struct GBSerializedState* state);
 
 void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	STORE_32LE(GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, 0, &state->versionMagic);
@@ -59,6 +62,10 @@ void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	GBVideoSerialize(&gb->video, state);
 	GBTimerSerialize(&gb->timer, state);
 	GBAudioSerialize(&gb->audio, state);
+
+	if (gb->model == GB_MODEL_SGB) {
+		GBSGBSerialize(gb, state);
+	}
 }
 
 bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
@@ -77,6 +84,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	} else if (ucheck < GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION) {
 		mLOG(GB_STATE, WARN, "Old savestate: expected %08X, got %08X, continuing anyway", GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, ucheck);
 	}
+	bool canSgb = ucheck >= GB_SAVESTATE_MAGIC + 2;
 
 	if (gb->memory.rom && memcmp(state->title, ((struct GBCartridge*) gb->memory.rom)->titleLong, sizeof(state->title))) {
 		mLOG(GB_STATE, WARN, "Savestate is for a different game");
@@ -174,7 +182,71 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	GBTimerDeserialize(&gb->timer, state);
 	GBAudioDeserialize(&gb->audio, state);
 
+	if (gb->model == GB_MODEL_SGB && canSgb) {
+		GBSGBDeserialize(gb, state);
+	}
+
 	gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
 
 	return true;
+}
+
+// TODO: Reorganize SGB into its own file
+void GBSGBSerialize(struct GB* gb, struct GBSerializedState* state) {
+	state->sgb.command = gb->video.sgbCommandHeader;
+	state->sgb.bits = gb->sgbBit;
+
+	GBSerializedSGBFlags flags = 0;
+	flags = GBSerializedSGBFlagsSetP1Bits(flags, gb->currentSgbBits);
+	flags = GBSerializedSGBFlagsSetRenderMode(flags, gb->video.renderer->sgbRenderMode);
+	STORE_32LE(flags, 0, &state->sgb.flags);
+
+	memcpy(state->sgb.packet, gb->sgbPacket, sizeof(state->sgb.packet));
+
+	if (gb->video.renderer->sgbCharRam) {
+		memcpy(state->sgb.charRam, gb->video.renderer->sgbCharRam, sizeof(state->sgb.charRam));
+	}
+	if (gb->video.renderer->sgbMapRam) {
+		memcpy(state->sgb.mapRam, gb->video.renderer->sgbMapRam, sizeof(state->sgb.mapRam));
+	}
+	if (gb->video.renderer->sgbPalRam) {
+		memcpy(state->sgb.palRam, gb->video.renderer->sgbPalRam, sizeof(state->sgb.palRam));
+	}
+	if (gb->video.renderer->sgbAttributeFiles) {
+		memcpy(state->sgb.atfRam, gb->video.renderer->sgbAttributeFiles, sizeof(state->sgb.atfRam));
+	}
+	if (gb->video.renderer->sgbAttributes) {
+		memcpy(state->sgb.attributes, gb->video.renderer->sgbAttributes, sizeof(state->sgb.attributes));
+	}
+}
+
+void GBSGBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
+	gb->video.sgbCommandHeader = state->sgb.command;
+	gb->sgbBit = state->sgb.bits;
+
+	GBSerializedSGBFlags flags;
+	LOAD_32LE(flags, 0, &state->sgb.flags);
+	gb->currentSgbBits = GBSerializedSGBFlagsGetP1Bits(flags);
+	gb->video.renderer->sgbRenderMode = GBSerializedSGBFlagsGetRenderMode(flags);
+
+	memcpy(gb->sgbPacket, state->sgb.packet, sizeof(state->sgb.packet));
+
+	if (gb->video.renderer->sgbCharRam) {
+		memcpy(gb->video.renderer->sgbCharRam, state->sgb.charRam, sizeof(state->sgb.charRam));
+	}
+	if (gb->video.renderer->sgbMapRam) {
+		memcpy(gb->video.renderer->sgbMapRam, state->sgb.mapRam, sizeof(state->sgb.mapRam));
+	}
+	if (gb->video.renderer->sgbPalRam) {
+		memcpy(gb->video.renderer->sgbPalRam, state->sgb.palRam, sizeof(state->sgb.palRam));
+	}
+	if (gb->video.renderer->sgbAttributeFiles) {
+		memcpy(gb->video.renderer->sgbAttributeFiles, state->sgb.atfRam, sizeof(state->sgb.atfRam));
+	}
+	if (gb->video.renderer->sgbAttributes) {
+		memcpy(gb->video.renderer->sgbAttributes, state->sgb.attributes, sizeof(state->sgb.attributes));
+	}
+
+	GBVideoWriteSGBPacket(&gb->video, (uint8_t[16]) { (SGB_ATRC_EN << 3) | 1, 0 });
+	GBVideoWriteSGBPacket(&gb->video, gb->sgbPacket);
 }
