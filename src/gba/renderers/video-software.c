@@ -542,6 +542,12 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
 	if (!(softwareRenderer->scanlineDirty[y >> 5] & (1 << (y & 0x1F)))) {
+		if (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) != 0) {
+			softwareRenderer->bg[2].sx += softwareRenderer->bg[2].dmx;
+			softwareRenderer->bg[2].sy += softwareRenderer->bg[2].dmy;
+			softwareRenderer->bg[3].sx += softwareRenderer->bg[3].dmx;
+			softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
+		}
 		return;
 	}
 
