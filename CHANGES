@@ -13,6 +13,7 @@ Bugfixes:
  - GB, GBA: Fix crashes when attempting to identify null VFiles
  - GB MBC: Fix RTC initialization (fixes mgba.io/i/825)
  - GB MBC: Fix RTC loading when file size is off
+ - GB Serialize: Fix deserializing video STAT
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
  - SDL: Fix 2.0.5 build on macOS under some circumstances
