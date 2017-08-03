@@ -485,7 +485,7 @@ static uint8_t _readKeys(struct GB* gb) {
 	switch (gb->memory.io[REG_JOYP] & 0x30) {
 	case 0x30:
 	// TODO: Increment
-		keys = gb->model == GB_MODEL_SGB ? 0xF : 0;
+		keys = (gb->video.sgbCommandHeader >> 3) == SGB_MLT_REG ? 0xF : 0;
 		break;
 	case 0x20:
 		keys >>= 4;
