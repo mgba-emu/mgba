@@ -181,6 +181,7 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	}
 
 	mCoreConfigCopyValue(&core->config, config, "gb.bios");
+	mCoreConfigCopyValue(&core->config, config, "sgb.bios");
 	mCoreConfigCopyValue(&core->config, config, "gbc.bios");
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
@@ -345,8 +346,12 @@ static void _GBCoreReset(struct mCore* core) {
 
 			switch (gb->model) {
 			case GB_MODEL_DMG:
-			case GB_MODEL_SGB: // TODO
+			case GB_MODEL_MGB: // TODO
 				configPath = mCoreConfigGetValue(&core->config, "gb.bios");
+				break;
+			case GB_MODEL_SGB:
+			case GB_MODEL_SGB2: // TODO
+				configPath = mCoreConfigGetValue(&core->config, "sgb.bios");
 				break;
 			case GB_MODEL_CGB:
 			case GB_MODEL_AGB:
@@ -370,8 +375,12 @@ static void _GBCoreReset(struct mCore* core) {
 			mCoreConfigDirectory(path, PATH_MAX);
 			switch (gb->model) {
 			case GB_MODEL_DMG:
-			case GB_MODEL_SGB: // TODO
+			case GB_MODEL_MGB: // TODO
 				strncat(path, PATH_SEP "gb_bios.bin", PATH_MAX - strlen(path));
+				break;
+			case GB_MODEL_SGB:
+			case GB_MODEL_SGB2: // TODO
+				strncat(path, PATH_SEP "sgb_bios.bin", PATH_MAX - strlen(path));
 				break;
 			case GB_MODEL_CGB:
 			case GB_MODEL_AGB:
@@ -566,7 +575,9 @@ size_t _GBListMemoryBlocks(const struct mCore* core, const struct mCoreMemoryBlo
 	const struct GB* gb = core->board;
 	switch (gb->model) {
 	case GB_MODEL_DMG:
+	case GB_MODEL_MGB:
 	case GB_MODEL_SGB:
+	case GB_MODEL_SGB2:
 	default:
 		*blocks = _GBMemoryBlocks;
 		return sizeof(_GBMemoryBlocks) / sizeof(*_GBMemoryBlocks);

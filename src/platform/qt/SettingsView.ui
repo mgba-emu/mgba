@@ -748,7 +748,7 @@
          </item>
         </layout>
        </item>
-       <item row="3" column="1">
+       <item row="4" column="1">
         <widget class="QCheckBox" name="useBios">
          <property name="text">
           <string>Use BIOS file if found</string>
@@ -758,14 +758,14 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="5" column="1">
         <widget class="QCheckBox" name="skipBios">
          <property name="text">
           <string>Skip BIOS intro</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_8">
          <item>
           <widget class="QLineEdit" name="gbaBios">
@@ -786,21 +786,21 @@
          </item>
         </layout>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="label_4">
          <property name="text">
           <string>GBA BIOS file:</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item row="2" column="0">
         <widget class="QLabel" name="label_5">
          <property name="text">
           <string>GBC BIOS file:</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="2" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_30">
          <item>
           <widget class="QLineEdit" name="gbcBios">
@@ -814,6 +814,34 @@
          </item>
          <item>
           <widget class="QPushButton" name="gbcBiosBrowse">
+           <property name="text">
+            <string>Browse</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_30">
+         <property name="text">
+          <string>SGB BIOS file:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_12">
+         <item>
+          <widget class="QLineEdit" name="sgbBios">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="sgbBiosBrowse">
            <property name="text">
             <string>Browse</string>
            </property>

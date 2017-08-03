@@ -159,6 +159,9 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	connect(m_ui.gbcBiosBrowse, &QPushButton::clicked, [this]() {
 		selectBios(m_ui.gbcBios);
 	});
+	connect(m_ui.sgbBiosBrowse, &QPushButton::clicked, [this]() {
+		selectBios(m_ui.sgbBios);
+	});
 
 	QList<QColor> defaultColors;
 	defaultColors.append(QColor(0xF8, 0xF8, 0xF8));
@@ -190,6 +193,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 #else
 	m_ui.gbBiosBrowse->hide();
 	m_ui.gbcBiosBrowse->hide();
+	m_ui.sgbBiosBrowse->hide();
 	m_ui.gb->hide();
 #endif
 
@@ -275,6 +279,7 @@ void SettingsView::updateConfig() {
 	saveSetting("gba.bios", m_ui.gbaBios);
 	saveSetting("gb.bios", m_ui.gbBios);
 	saveSetting("gbc.bios", m_ui.gbcBios);
+	saveSetting("sgb.bios", m_ui.sgbBios);
 	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
 	saveSetting("audioBuffers", m_ui.audioBufferSize);
@@ -377,6 +382,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("gba.bios", m_ui.gbaBios);
 	loadSetting("gb.bios", m_ui.gbBios);
 	loadSetting("gbc.bios", m_ui.gbcBios);
+	loadSetting("sgb.bios", m_ui.sgbBios);
 	loadSetting("useBios", m_ui.useBios);
 	loadSetting("skipBios", m_ui.skipBios);
 	loadSetting("audioBuffers", m_ui.audioBufferSize);

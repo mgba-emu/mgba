@@ -57,7 +57,10 @@ bool GBOverrideFind(const struct Configuration* config, struct GBCartridgeOverri
 				override->model = GB_MODEL_SGB;
 			} else if (strcasecmp(model, "MGB") == 0) {
 				found = true;
-				override->model = GB_MODEL_DMG; // TODO
+				override->model = GB_MODEL_MGB;
+			} else if (strcasecmp(model, "SGB2") == 0) {
+				found = true;
+				override->model = GB_MODEL_SGB2;
 			}
 		}
 
@@ -98,6 +101,12 @@ void GBOverrideSave(struct Configuration* config, const struct GBCartridgeOverri
 		break;
 	case GB_MODEL_SGB:
 		model = "SGB";
+		break;
+	case GB_MODEL_MGB:
+		model = "MGB";
+		break;
+	case GB_MODEL_SGB2:
+		model = "SGB2";
 		break;
 	case GB_MODEL_CGB:
 		model = "CGB";
