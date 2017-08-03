@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/core/core.h>
+#include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/video.h>
 
 struct GBAVideoSoftwareSprite {
@@ -156,6 +157,9 @@ struct GBAVideoSoftwareRenderer {
 	int oamDirty;
 	int oamMax;
 	struct GBAVideoSoftwareSprite sprites[128];
+
+	uint32_t scanlineDirty[5];
+	uint16_t ioCache[REG_SOUND1CNT_LO];
 
 	int start;
 	int end;

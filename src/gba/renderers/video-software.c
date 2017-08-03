@@ -26,10 +26,6 @@ static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer,
 
 static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRenderer* renderer);
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value);
-static void GBAVideoSoftwareRendererWriteBGPA(struct GBAVideoSoftwareBackground* bg, uint16_t value);
-static void GBAVideoSoftwareRendererWriteBGPB(struct GBAVideoSoftwareBackground* bg, uint16_t value);
-static void GBAVideoSoftwareRendererWriteBGPC(struct GBAVideoSoftwareBackground* bg, uint16_t value);
-static void GBAVideoSoftwareRendererWriteBGPD(struct GBAVideoSoftwareBackground* bg, uint16_t value);
 static void GBAVideoSoftwareRendererWriteBGX_LO(struct GBAVideoSoftwareBackground* bg, uint16_t value);
 static void GBAVideoSoftwareRendererWriteBGX_HI(struct GBAVideoSoftwareBackground* bg, uint16_t value);
 static void GBAVideoSoftwareRendererWriteBGY_LO(struct GBAVideoSoftwareBackground* bg, uint16_t value);
@@ -112,6 +108,9 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 
 	softwareRenderer->mosaic = 0;
 
+	memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+	memset(softwareRenderer->ioCache, 0, sizeof(softwareRenderer->ioCache));
+
 	for (i = 0; i < 4; ++i) {
 		struct GBAVideoSoftwareBackground* bg = &softwareRenderer->bg[i];
 		bg->index = i;
@@ -145,106 +144,162 @@ static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer) {
 
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+	if (softwareRenderer->ioCache[address >> 1] == value) {
+		return value;
+	}
 	switch (address) {
 	case REG_DISPCNT:
 		softwareRenderer->dispcnt = value;
 		GBAVideoSoftwareRendererUpdateDISPCNT(softwareRenderer);
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG0CNT:
 		value &= 0xDFFF;
 		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[0], value);
+		if (softwareRenderer->bg[0].enabled) {
+			memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+		}
 		break;
 	case REG_BG1CNT:
 		value &= 0xDFFF;
 		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[1], value);
+		if (softwareRenderer->bg[1].enabled) {
+			memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+		}
 		break;
 	case REG_BG2CNT:
 		value &= 0xFFFF;
 		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[2], value);
+		if (softwareRenderer->bg[2].enabled) {
+			memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+		}
 		break;
 	case REG_BG3CNT:
 		value &= 0xFFFF;
 		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[3], value);
+		if (softwareRenderer->bg[3].enabled) {
+			memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+		}
 		break;
 	case REG_BG0HOFS:
 		value &= 0x01FF;
 		softwareRenderer->bg[0].x = value;
+		if (softwareRenderer->bg[0].enabled && GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) < 2) {
+			memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+		}
 		break;
 	case REG_BG0VOFS:
 		value &= 0x01FF;
 		softwareRenderer->bg[0].y = value;
+		if (softwareRenderer->bg[0].enabled && GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) < 2) {
+			memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+		}
 		break;
 	case REG_BG1HOFS:
 		value &= 0x01FF;
 		softwareRenderer->bg[1].x = value;
+		if (softwareRenderer->bg[1].enabled && GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) < 2) {
+			memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+		}
 		break;
 	case REG_BG1VOFS:
 		value &= 0x01FF;
 		softwareRenderer->bg[1].y = value;
+		if (softwareRenderer->bg[1].enabled && GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) < 2) {
+			memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+		}
 		break;
 	case REG_BG2HOFS:
 		value &= 0x01FF;
 		softwareRenderer->bg[2].x = value;
+		if (softwareRenderer->bg[2].enabled && GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) == 0) {
+			memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+		}
 		break;
 	case REG_BG2VOFS:
 		value &= 0x01FF;
 		softwareRenderer->bg[2].y = value;
+		if (softwareRenderer->bg[2].enabled && GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) == 0) {
+			memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+		}
 		break;
 	case REG_BG3HOFS:
 		value &= 0x01FF;
 		softwareRenderer->bg[3].x = value;
+		if (softwareRenderer->bg[3].enabled && GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) == 0) {
+			memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+		}
 		break;
 	case REG_BG3VOFS:
 		value &= 0x01FF;
 		softwareRenderer->bg[3].y = value;
+		if (softwareRenderer->bg[2].enabled && GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) == 0) {
+			memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+		}
 		break;
 	case REG_BG2PA:
-		GBAVideoSoftwareRendererWriteBGPA(&softwareRenderer->bg[2], value);
+		softwareRenderer->bg[2].dx = value;
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG2PB:
-		GBAVideoSoftwareRendererWriteBGPB(&softwareRenderer->bg[2], value);
+		softwareRenderer->bg[2].dmx = value;
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG2PC:
-		GBAVideoSoftwareRendererWriteBGPC(&softwareRenderer->bg[2], value);
+		softwareRenderer->bg[2].dy = value;
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG2PD:
-		GBAVideoSoftwareRendererWriteBGPD(&softwareRenderer->bg[2], value);
+		softwareRenderer->bg[2].dmy = value;
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG2X_LO:
 		GBAVideoSoftwareRendererWriteBGX_LO(&softwareRenderer->bg[2], value);
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG2X_HI:
 		GBAVideoSoftwareRendererWriteBGX_HI(&softwareRenderer->bg[2], value);
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG2Y_LO:
 		GBAVideoSoftwareRendererWriteBGY_LO(&softwareRenderer->bg[2], value);
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG2Y_HI:
 		GBAVideoSoftwareRendererWriteBGY_HI(&softwareRenderer->bg[2], value);
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG3PA:
-		GBAVideoSoftwareRendererWriteBGPA(&softwareRenderer->bg[3], value);
+		softwareRenderer->bg[3].dx = value;
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG3PB:
-		GBAVideoSoftwareRendererWriteBGPB(&softwareRenderer->bg[3], value);
+		softwareRenderer->bg[3].dmx = value;
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG3PC:
-		GBAVideoSoftwareRendererWriteBGPC(&softwareRenderer->bg[3], value);
+		softwareRenderer->bg[3].dy = value;
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG3PD:
-		GBAVideoSoftwareRendererWriteBGPD(&softwareRenderer->bg[3], value);
+		softwareRenderer->bg[3].dmy = value;
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG3X_LO:
 		GBAVideoSoftwareRendererWriteBGX_LO(&softwareRenderer->bg[3], value);
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG3X_HI:
 		GBAVideoSoftwareRendererWriteBGX_HI(&softwareRenderer->bg[3], value);
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG3Y_LO:
 		GBAVideoSoftwareRendererWriteBGY_LO(&softwareRenderer->bg[3], value);
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BG3Y_HI:
 		GBAVideoSoftwareRendererWriteBGY_HI(&softwareRenderer->bg[3], value);
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BLDCNT:
 		GBAVideoSoftwareRendererWriteBLDCNT(softwareRenderer, value);
@@ -260,6 +315,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 			softwareRenderer->bldb = 0x10;
 		}
 		value &= 0x1F1F;
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_BLDY:
 		value &= 0x1F;
@@ -270,6 +326,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 			softwareRenderer->bldy = value;
 			softwareRenderer->blendDirty = true;
 		}
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_WIN0H:
 		softwareRenderer->winN[0].h.end = value;
@@ -283,6 +340,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 				softwareRenderer->winN[0].h.start = VIDEO_HORIZONTAL_PIXELS;
 			}
 		}
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_WIN1H:
 		softwareRenderer->winN[1].h.end = value;
@@ -296,6 +354,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 				softwareRenderer->winN[1].h.start = VIDEO_HORIZONTAL_PIXELS;
 			}
 		}
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_WIN0V:
 		softwareRenderer->winN[0].v.end = value;
@@ -309,6 +368,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 				softwareRenderer->winN[0].v.start = VIDEO_VERTICAL_PIXELS;
 			}
 		}
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_WIN1V:
 		softwareRenderer->winN[1].v.end = value;
@@ -322,19 +382,23 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 				softwareRenderer->winN[1].v.start = VIDEO_VERTICAL_PIXELS;
 			}
 		}
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_WININ:
 		value &= 0x3F3F;
 		softwareRenderer->winN[0].control.packed = value;
 		softwareRenderer->winN[1].control.packed = value >> 8;
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_WINOUT:
 		value &= 0x3F3F;
 		softwareRenderer->winout.packed = value;
 		softwareRenderer->objwin.packed = value >> 8;
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_MOSAIC:
 		softwareRenderer->mosaic = value;
+		memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 		break;
 	case REG_GREENSWP:
 		mLOG(GBA_VIDEO, STUB, "Stub video register write: 0x%03X", address);
@@ -342,19 +406,23 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 	default:
 		mLOG(GBA_VIDEO, GAME_ERROR, "Invalid video register: 0x%03X", address);
 	}
+	softwareRenderer->ioCache[address >> 1] = value;
 	return value;
 }
 
 static void GBAVideoSoftwareRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
+	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	if (renderer->cache) {
 		mTileCacheWriteVRAM(renderer->cache, address);
 	}
+	memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 }
 
 static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
-	softwareRenderer->oamDirty = 1;
 	UNUSED(oam);
+	softwareRenderer->oamDirty = 1;
+	memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 }
 
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
@@ -369,6 +437,7 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 	if (renderer->cache) {
 		mTileCacheWritePalette(renderer->cache, address);
 	}
+	memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 }
 
 static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win, int y) {
@@ -471,6 +540,10 @@ static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
 
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+
+	if (!(softwareRenderer->scanlineDirty[y >> 5] & (1 << (y & 0x1F)))) {
+		return;
+	}
 
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	if (GBARegisterDISPCNTIsForcedBlank(softwareRenderer->dispcnt)) {
@@ -587,6 +660,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 #else
 	memcpy(row, softwareRenderer->row, VIDEO_HORIZONTAL_PIXELS * sizeof(*row));
 #endif
+	softwareRenderer->scanlineDirty[y >> 5] &= ~(1 << (y & 0x1F));
 }
 
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer) {
@@ -634,22 +708,6 @@ static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* 
 	bg->screenBase = GBARegisterBGCNTGetScreenBase(value) << 11;
 	bg->overflow = GBARegisterBGCNTGetOverflow(value);
 	bg->size = GBARegisterBGCNTGetSize(value);
-}
-
-static void GBAVideoSoftwareRendererWriteBGPA(struct GBAVideoSoftwareBackground* bg, uint16_t value) {
-	bg->dx = value;
-}
-
-static void GBAVideoSoftwareRendererWriteBGPB(struct GBAVideoSoftwareBackground* bg, uint16_t value) {
-	bg->dmx = value;
-}
-
-static void GBAVideoSoftwareRendererWriteBGPC(struct GBAVideoSoftwareBackground* bg, uint16_t value) {
-	bg->dy = value;
-}
-
-static void GBAVideoSoftwareRendererWriteBGPD(struct GBAVideoSoftwareBackground* bg, uint16_t value) {
-	bg->dmy = value;
 }
 
 static void GBAVideoSoftwareRendererWriteBGX_LO(struct GBAVideoSoftwareBackground* bg, uint16_t value) {
