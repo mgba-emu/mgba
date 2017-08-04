@@ -694,7 +694,6 @@ static void _startRequestImage(struct mImageSource* source, unsigned w, unsigned
 	CAMU_Activate(imageSource->cam);
 	CAMU_ClearBuffer(PORT_CAM1);
 	CAMU_StartCapture(PORT_CAM1);
-	CAMU_PlayShutterSound(SHUTTER_SOUND_TYPE_MOVIE);
 
 	if (imageSource->cam) {
 		CAMU_SetReceiving(&imageSource->handles[0], imageSource->buffer, PORT_CAM1, imageSource->bufferSize, imageSource->transferSize);
