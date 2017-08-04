@@ -70,8 +70,8 @@ public:
 	ConfigOption* addOption(const char* key);
 	void updateOption(const char* key);
 
-	QString getOption(const char* key) const;
-	QString getOption(const QString& key) const;
+	QString getOption(const char* key, const QVariant& defaultVal = QVariant()) const;
+	QString getOption(const QString& key, const QVariant& defaultVal = QVariant()) const;
 
 	QVariant getQtOption(const QString& key, const QString& group = QString()) const;
 
