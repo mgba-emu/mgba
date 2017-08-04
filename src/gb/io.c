@@ -144,15 +144,17 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, REG_OBP1, 0xFF);
 	GBIOWrite(gb, REG_WY, 0x00);
 	GBIOWrite(gb, REG_WX, 0x00);
-	GBIOWrite(gb, REG_VBK, 0);
-	GBIOWrite(gb, REG_BCPS, 0);
-	GBIOWrite(gb, REG_OCPS, 0);
-	GBIOWrite(gb, REG_SVBK, 1);
-	GBIOWrite(gb, REG_HDMA1, 0xFF);
-	GBIOWrite(gb, REG_HDMA2, 0xFF);
-	GBIOWrite(gb, REG_HDMA3, 0xFF);
-	GBIOWrite(gb, REG_HDMA4, 0xFF);
-	gb->memory.io[REG_HDMA5] = 0xFF;
+	if (gb->model >= GB_MODEL_CGB) {
+		GBIOWrite(gb, REG_VBK, 0);
+		GBIOWrite(gb, REG_BCPS, 0);
+		GBIOWrite(gb, REG_OCPS, 0);
+		GBIOWrite(gb, REG_SVBK, 1);
+		GBIOWrite(gb, REG_HDMA1, 0xFF);
+		GBIOWrite(gb, REG_HDMA2, 0xFF);
+		GBIOWrite(gb, REG_HDMA3, 0xFF);
+		GBIOWrite(gb, REG_HDMA4, 0xFF);
+		gb->memory.io[REG_HDMA5] = 0xFF;
+	}
 	GBIOWrite(gb, REG_IE, 0x00);
 }
 
