@@ -209,12 +209,13 @@ QSize CoreController::screenDimensions() const {
 
 void CoreController::loadConfig(ConfigController* config) {
 	Interrupter interrupter(this);
-	m_loadStateFlags = config->getOption("loadStateExtdata").toInt();
-	m_saveStateFlags = config->getOption("saveStateExtdata").toInt();
-	m_fastForwardRatio = config->getOption("fastForwardRatio").toFloat();
-	m_videoSync = config->getOption("videoSync").toInt();
-	m_audioSync = config->getOption("audioSync").toInt();
+	m_loadStateFlags = config->getOption("loadStateExtdata", m_loadStateFlags).toInt();
+	m_saveStateFlags = config->getOption("saveStateExtdata", m_saveStateFlags).toInt();
+	m_fastForwardRatio = config->getOption("fastForwardRatio", m_fastForwardRatio).toFloat();
+	m_videoSync = config->getOption("videoSync", m_videoSync).toInt();
+	m_audioSync = config->getOption("audioSync", m_audioSync).toInt();
 	m_fpsTarget = config->getOption("fpsTarget").toFloat();
+	m_autofireThreshold = config->getOption("autofireThreshold", m_autofireThreshold).toInt();
 	updateFastForward();
 	mCoreLoadForeignConfig(m_threadContext.core, config->config());
 	mCoreThreadRewindParamsChanged(&m_threadContext);
@@ -706,8 +707,9 @@ int CoreController::updateAutofire() {
 			continue;
 		}
 		++m_autofireStatus[k];
-		if (m_autofireStatus[k]) {
+		if (m_autofireStatus[k] >= 2 * m_autofireThreshold) {
 			m_autofireStatus[k] = 0;
+		} else if (m_autofireStatus[k] >= m_autofireThreshold) {
 			active |= 1 << k;
 		}
 	}

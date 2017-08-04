@@ -184,6 +184,7 @@ private:
 	int m_activeKeys = 0;
 	bool m_autofire[32] = {};
 	int m_autofireStatus[32] = {};
+	int m_autofireThreshold = 1;
 
 	VFileDevice m_backupLoadState;
 	QByteArray m_backupSaveState{nullptr};
