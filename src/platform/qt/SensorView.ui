@@ -96,9 +96,6 @@
           <property name="displayFormat">
            <string>MM/dd/yy hh:mm:ss AP</string>
           </property>
-          <property name="timeSpec">
-           <enum>Qt::UTC</enum>
-          </property>
          </widget>
         </item>
        </layout>

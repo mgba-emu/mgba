@@ -26,6 +26,7 @@ Bugfixes:
  - GB Serialize: Fix deserializing video STAT
  - Qt: Fix GL display when loading a game from CLI (fixes mgba.io/i/843)
  - GB, GBA Savedata: Fix savestate-related save overwriting (fixes mgba.io/i/834)
+ - Qt: Fix timezone issues with time overrides
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
