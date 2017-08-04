@@ -288,6 +288,7 @@ void SettingsView::updateConfig() {
 	saveSetting("audioSync", m_ui.audioSync);
 	saveSetting("frameskip", m_ui.frameskip);
 	saveSetting("fpsTarget", m_ui.fpsTarget);
+	saveSetting("autofireThreshold", m_ui.autofireThreshold);
 	saveSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	saveSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
 	saveSetting("volume", m_ui.volume);
@@ -391,6 +392,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("audioSync", m_ui.audioSync);
 	loadSetting("frameskip", m_ui.frameskip);
 	loadSetting("fpsTarget", m_ui.fpsTarget);
+	loadSetting("autofireThreshold", m_ui.autofireThreshold);
 	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	loadSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
 	loadSetting("volume", m_ui.volume);
