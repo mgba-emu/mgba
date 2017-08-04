@@ -66,10 +66,6 @@ CoreController::CoreController(mCore* core, QObject* parent)
 			controller->m_override->apply(context->core);
 		}
 
-		if (mCoreLoadState(context->core, 0, controller->m_loadStateFlags)) {
-			mCoreDeleteState(context->core, 0);
-		}
-
 		if (controller->m_multiplayer) {
 			controller->m_multiplayer->attachGame(controller);
 		}
@@ -82,6 +78,11 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		for (auto action : controller->m_resetActions) {
 			action();
 		}
+
+		if (mCoreLoadState(context->core, 0, controller->m_loadStateFlags)) {
+			mCoreDeleteState(context->core, 0);
+		}
+
 		controller->m_resetActions.clear();
 
 		QSize size = controller->screenDimensions();

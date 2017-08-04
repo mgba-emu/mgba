@@ -158,7 +158,6 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	};
 	core->addCoreCallbacks(core, &callbacks);
 	core->setSync(core, &threadContext->impl->sync);
-	core->reset(core);
 
 	struct mLogFilter filter;
 	if (!threadContext->logger.d.filter) {
@@ -168,12 +167,13 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 
 	mCoreThreadRewindParamsChanged(threadContext);
-
-	_changeState(threadContext->impl, THREAD_RUNNING, true);
-
 	if (threadContext->startCallback) {
 		threadContext->startCallback(threadContext);
 	}
+
+	core->reset(core);
+	_changeState(threadContext->impl, THREAD_RUNNING, true);
+
 	if (threadContext->resetCallback) {
 		threadContext->resetCallback(threadContext);
 	}
