@@ -552,6 +552,10 @@ void GBVideoSetPalette(struct GBVideo* video, unsigned index, uint32_t color) {
 void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 	int i;
 	if (!(video->sgbCommandHeader & 7)) {
+		if ((data[0] >> 3) > SGB_OBJ_TRN) {
+			video->sgbCommandHeader = 0;
+			return;
+		}
 		video->sgbCommandHeader = data[0];
 	}
 	--video->sgbCommandHeader;
