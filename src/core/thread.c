@@ -195,38 +195,58 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 			}
 		}
 
-		int resetScheduled = 0;
+		enum mCoreThreadState deferred = THREAD_RUNNING;
 		MutexLock(&impl->stateMutex);
 		while (impl->state > THREAD_MAX_RUNNING && impl->state < THREAD_EXITING) {
-			if (impl->state == THREAD_PAUSING) {
-				impl->state = THREAD_PAUSED;
-				ConditionWake(&impl->stateCond);
-			}
+			deferred = impl->state;
+
 			if (impl->state == THREAD_INTERRUPTING) {
 				impl->state = THREAD_INTERRUPTED;
 				ConditionWake(&impl->stateCond);
 			}
-			if (impl->state == THREAD_RUN_ON) {
-				if (threadContext->run) {
-					threadContext->run(threadContext);
-				}
-				impl->state = impl->savedState;
-				ConditionWake(&impl->stateCond);
+
+			if (impl->state == THREAD_PAUSING) {
+				impl->state = THREAD_PAUSED;
 			}
 			if (impl->state == THREAD_RESETING) {
 				impl->state = THREAD_RUNNING;
-				resetScheduled = 1;
 			}
-			while (impl->state == THREAD_PAUSED || impl->state == THREAD_INTERRUPTED || impl->state == THREAD_WAITING) {
+
+			if (deferred >= THREAD_MIN_DEFERRED && deferred <= THREAD_MAX_DEFERRED) {
+				break;
+			}
+
+			deferred = impl->state;
+			while (impl->state >= THREAD_WAITING && impl->state <= THREAD_MAX_WAITING) {
 				ConditionWait(&impl->stateCond, &impl->stateMutex);
 			}
 		}
 		MutexUnlock(&impl->stateMutex);
-		if (resetScheduled) {
+		switch (deferred) {
+		case THREAD_PAUSING:
+			if (threadContext->pauseCallback) {
+				threadContext->pauseCallback(threadContext);
+			}
+			break;
+		case THREAD_PAUSED:
+			if (threadContext->unpauseCallback) {
+				threadContext->unpauseCallback(threadContext);
+			}
+			break;
+		case THREAD_RUN_ON:
+			if (threadContext->run) {
+				threadContext->run(threadContext);
+			}
+			threadContext->impl->state = threadContext->impl->savedState;
+			break;
+		case THREAD_RESETING:
 			core->reset(core);
 			if (threadContext->resetCallback) {
 				threadContext->resetCallback(threadContext);
 			}
+			break;
+		default:
+			break;
 		}
 	}
 

@@ -109,6 +109,18 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		QMetaObject::invokeMethod(controller, "stopping");
 	};
 
+	m_threadContext.pauseCallback = [](mCoreThread* context) {
+		CoreController* controller = static_cast<CoreController*>(context->userData);
+
+		QMetaObject::invokeMethod(controller, "paused");
+	};
+
+	m_threadContext.unpauseCallback = [](mCoreThread* context) {
+		CoreController* controller = static_cast<CoreController*>(context->userData);
+
+		QMetaObject::invokeMethod(controller, "unpaused");
+	};
+
 	m_threadContext.logger.d.log = [](mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
 		mThreadLogger* logContext = reinterpret_cast<mThreadLogger*>(logger);
 		mCoreThread* context = logContext->p;
@@ -344,11 +356,9 @@ void CoreController::setPaused(bool paused) {
 		QMutexLocker locker(&m_mutex);
 		m_frameActions.append([this]() {
 			mCoreThreadPauseFromThread(&m_threadContext);
-			QMetaObject::invokeMethod(this, "paused");
 		});
 	} else {
 		mCoreThreadUnpause(&m_threadContext);
-		emit unpaused();
 	}
 }
 
