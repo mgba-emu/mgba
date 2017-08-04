@@ -254,6 +254,7 @@ static void _resetCamera(struct m3DSImageSource* imageSource) {
 	CAMU_SetSize(imageSource->cam, SIZE_QCIF, CONTEXT_A);
 	CAMU_SetOutputFormat(imageSource->cam, OUTPUT_RGB_565, CONTEXT_A);
 	CAMU_SetFrameRate(imageSource->cam, FRAME_RATE_30);
+	CAMU_FlipImage(imageSource->cam, FLIP_NONE, CONTEXT_A);
 
 	CAMU_SetNoiseFilter(imageSource->cam, true);
 	CAMU_SetAutoExposure(imageSource->cam, false);
