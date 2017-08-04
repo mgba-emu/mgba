@@ -28,10 +28,10 @@ SensorView::SensorView(GameController* controller, InputController* input, QWidg
 
 	connect(m_ui.timeNoOverride, &QAbstractButton::clicked, controller, &GameController::setRealTime);
 	connect(m_ui.timeFixed, &QRadioButton::clicked, [controller, this] () {
-		controller->setFixedTime(m_ui.time->dateTime());
+		controller->setFixedTime(m_ui.time->dateTime().toUTC());
 	});
 	connect(m_ui.timeFakeEpoch, &QRadioButton::clicked, [controller, this] () {
-		controller->setFakeEpoch(m_ui.time->dateTime());
+		controller->setFakeEpoch(m_ui.time->dateTime().toUTC());
 	});
 	connect(m_ui.time, &QDateTimeEdit::dateTimeChanged, [controller, this] (const QDateTime&) {
 		m_ui.timeButtons->checkedButton()->clicked();
