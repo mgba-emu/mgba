@@ -332,20 +332,26 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 			GBVideoSoftwareRendererDrawObj(softwareRenderer, &obj[i], startX, endX, y);
 		}
 	}
-}
 
-static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* renderer, int y) {
-	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	size_t sgbOffset = 0;
 	if (softwareRenderer->model == GB_MODEL_SGB) {
 		sgbOffset = softwareRenderer->outputBufferStride * 40 + 48;
 	}
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y + sgbOffset];
 	int x;
+	int p = 0;
 	switch (softwareRenderer->d.sgbRenderMode) {
 	case 0:
-		for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; x += 8) {
-			int p = 0;
+		if (softwareRenderer->model == GB_MODEL_SGB) {
+			p = softwareRenderer->d.sgbAttributes[(startX >> 5) + 5 * (y >> 3)];
+			p >>= 6 - ((x / 4) & 0x6);
+			p &= 3;
+			p <<= 2;
+		}
+		for (x = startX; x < ((startX + 7) & ~7) && x < endX; ++x) {
+			row[x] = softwareRenderer->palette[p | softwareRenderer->lookup[softwareRenderer->row[x] & 0x7F]];
+		}
+		for (; x + 7 < (endX & ~7); x += 8) {
 			if (softwareRenderer->model == GB_MODEL_SGB) {
 				p = softwareRenderer->d.sgbAttributes[(x >> 5) + 5 * (y >> 3)];
 				p >>= 6 - ((x / 4) & 0x6);
@@ -361,11 +367,23 @@ static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* render
 			row[x + 6] = softwareRenderer->palette[p | softwareRenderer->lookup[softwareRenderer->row[x + 6] & 0x7F]];
 			row[x + 7] = softwareRenderer->palette[p | softwareRenderer->lookup[softwareRenderer->row[x + 7] & 0x7F]];
 		}
+		if (softwareRenderer->model == GB_MODEL_SGB) {
+			p = softwareRenderer->d.sgbAttributes[(x >> 5) + 5 * (y >> 3)];
+			p >>= 6 - ((x / 4) & 0x6);
+			p &= 3;
+			p <<= 2;
+		}
+		for (; x < endX; ++x) {
+			row[x] = softwareRenderer->palette[p | softwareRenderer->lookup[softwareRenderer->row[x] & 0x7F]];
+		}
 		break;
 	case 1:
 		break;
 	case 2:
-		for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; x += 8) {
+		for (x = startX; x < ((startX + 7) & ~7) && x < endX; ++x) {
+			row[x] = 0;
+		}
+		for (; x + 7 < (endX & ~7); x += 8) {
 			row[x] = 0;
 			row[x + 1] = 0;
 			row[x + 2] = 0;
@@ -375,9 +393,15 @@ static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* render
 			row[x + 6] = 0;
 			row[x + 7] = 0;
 		}
+		for (; x < endX; ++x) {
+			row[x] = 0;
+		}
 		break;
 	case 3:
-		for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; x += 8) {
+		for (x = startX; x < ((startX + 7) & ~7) && x < endX; ++x) {
+			row[x] = softwareRenderer->palette[0];
+		}
+		for (; x + 7 < (endX & ~7); x += 8) {
 			row[x] = softwareRenderer->palette[0];
 			row[x + 1] = softwareRenderer->palette[0];
 			row[x + 2] = softwareRenderer->palette[0];
@@ -387,8 +411,15 @@ static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* render
 			row[x + 6] = softwareRenderer->palette[0];
 			row[x + 7] = softwareRenderer->palette[0];
 		}
+		for (; x < endX; ++x) {
+			row[x] = softwareRenderer->palette[0];
+		}
 		break;
 	}
+}
+
+static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* renderer, int y) {
+	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 
 	if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y && softwareRenderer->wx - 7 < GB_VIDEO_HORIZONTAL_PIXELS) {
 		++softwareRenderer->currentWy;
