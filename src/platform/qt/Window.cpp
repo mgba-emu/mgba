@@ -560,6 +560,9 @@ void Window::showEvent(QShowEvent* event) {
 		enterFullScreen();
 		m_fullscreenOnStart = false;
 	}
+	if (m_display) {
+		reloadDisplayDriver();
+	}
 }
 
 void Window::closeEvent(QCloseEvent* event) {
