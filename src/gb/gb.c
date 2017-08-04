@@ -163,7 +163,6 @@ void GBResizeSram(struct GB* gb, size_t size) {
 	if (gb->memory.sram && size <= gb->sramSize) {
 		return;
 	}
-	mLOG(GB, INFO, "Resizing SRAM to %"PRIz"u bytes", size);
 	struct VFile* vf = gb->sramVf;
 	if (vf) {
 		if (vf == gb->sramRealVf) {
