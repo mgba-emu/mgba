@@ -663,8 +663,9 @@ DEFINE_INSTRUCTION_ARM(MSR,
 	}
 	_ARMReadCPSR(cpu);
 	if (cpu->executionMode == MODE_THUMB) {
-		LOAD_16(cpu->prefetch[0], (cpu->gprs[ARM_PC] - WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
-		LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+		cpu->prefetch[0] = 0x46C0; // nop
+		cpu->prefetch[1] &= 0xFFFF;
+		cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
 	} else {
 		LOAD_32(cpu->prefetch[0], (cpu->gprs[ARM_PC] - WORD_SIZE_ARM) & cpu->memory.activeMask, cpu->memory.activeRegion);
 		LOAD_32(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
@@ -704,8 +705,9 @@ DEFINE_INSTRUCTION_ARM(MSRI,
 	}
 	_ARMReadCPSR(cpu);
 	if (cpu->executionMode == MODE_THUMB) {
-		LOAD_16(cpu->prefetch[0], (cpu->gprs[ARM_PC] - WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
-		LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+		cpu->prefetch[0] = 0x46C0; // nop
+		cpu->prefetch[1] &= 0xFFFF;
+		cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
 	} else {
 		LOAD_32(cpu->prefetch[0], (cpu->gprs[ARM_PC] - WORD_SIZE_ARM) & cpu->memory.activeMask, cpu->memory.activeRegion);
 		LOAD_32(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
