@@ -28,6 +28,7 @@ static const uint8_t _knownHeader[4] = { 0xCE, 0xED, 0x66, 0x66};
 
 #define DMG_BIOS_CHECKSUM 0xC2F5CC97
 #define DMG_2_BIOS_CHECKSUM 0x59C8598E
+#define MGB_BIOS_CHECKSUM 0xE6920754
 #define SGB_BIOS_CHECKSUM 0xEC8A83B9
 #define CGB_BIOS_CHECKSUM 0x41884E46
 
@@ -390,6 +391,7 @@ bool GBIsBIOS(struct VFile* vf) {
 	switch (_GBBiosCRC32(vf)) {
 	case DMG_BIOS_CHECKSUM:
 	case DMG_2_BIOS_CHECKSUM:
+	case MGB_BIOS_CHECKSUM:
 	case SGB_BIOS_CHECKSUM:
 	case CGB_BIOS_CHECKSUM:
 		return true;
@@ -434,8 +436,6 @@ void GBReset(struct LR35902Core* cpu) {
 		switch (gb->model) {
 		case GB_MODEL_AUTODETECT: // Silence warnings
 			gb->model = GB_MODEL_DMG;
-			// TODO: SGB registers
-		case GB_MODEL_SGB:
 		case GB_MODEL_DMG:
 			cpu->a = 1;
 			cpu->f.packed = 0xB0;
@@ -443,6 +443,33 @@ void GBReset(struct LR35902Core* cpu) {
 			cpu->e = 0xD8;
 			cpu->h = 1;
 			cpu->l = 0x4D;
+			gb->timer.internalDiv = 0x2AF3;
+			break;
+		case GB_MODEL_SGB:
+			cpu->a = 1;
+			cpu->f.packed = 0x00;
+			cpu->c = 0x14;
+			cpu->e = 0x00;
+			cpu->h = 0xC0;
+			cpu->l = 0x60;
+			gb->timer.internalDiv = 0x2AF3;
+			break;
+		case GB_MODEL_MGB:
+			cpu->a = 0xFF;
+			cpu->f.packed = 0xB0;
+			cpu->c = 0x13;
+			cpu->e = 0xD8;
+			cpu->h = 1;
+			cpu->l = 0x4D;
+			gb->timer.internalDiv = 0x2AF3;
+			break;
+		case GB_MODEL_SGB2:
+			cpu->a = 0xFF;
+			cpu->f.packed = 0x00;
+			cpu->c = 0x14;
+			cpu->e = 0x00;
+			cpu->h = 0xC0;
+			cpu->l = 0x60;
 			gb->timer.internalDiv = 0x2AF3;
 			break;
 		case GB_MODEL_AGB:
@@ -502,6 +529,9 @@ void GBDetectModel(struct GB* gb) {
 		case DMG_2_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_DMG;
 			break;
+		case MGB_BIOS_CHECKSUM:
+			gb->model = GB_MODEL_MGB;
+			break;
 		case SGB_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_SGB;
 			break;
@@ -529,6 +559,10 @@ void GBDetectModel(struct GB* gb) {
 	case GB_MODEL_SGB:
 	case GB_MODEL_AUTODETECT: //Silence warnings
 		gb->audio.style = GB_AUDIO_DMG;
+		break;
+	case GB_MODEL_MGB:
+	case GB_MODEL_SGB2:
+		gb->audio.style = GB_AUDIO_MGB;
 		break;
 	case GB_MODEL_AGB:
 	case GB_MODEL_CGB:
