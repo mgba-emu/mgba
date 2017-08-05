@@ -248,7 +248,6 @@ void ObjView::updateTilesGB(bool force) {
 
 #ifdef USE_PNG
 void ObjView::exportObj() {
-	CoreController::Interrupter interrupter(m_controller);
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export sprite"),
 	                                                  tr("Portable Network Graphics (*.png)"));
 	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
@@ -257,6 +256,7 @@ void ObjView::exportObj() {
 		return;
 	}
 
+	CoreController::Interrupter interrupter(m_controller);
 	mTileCacheSetPalette(m_tileCache, m_objInfo.paletteSet);
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = PNGWriteHeader8(png, m_objInfo.width * 8, m_objInfo.height * 8);

@@ -27,6 +27,7 @@ Bugfixes:
  - Qt: Fix GL display when loading a game from CLI (fixes mgba.io/i/843)
  - GB, GBA Savedata: Fix savestate-related save overwriting (fixes mgba.io/i/834)
  - Qt: Fix timezone issues with time overrides
+ - Qt: Fix sprite export pausing game indefinitely (fixes mgba.io/i/841)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
