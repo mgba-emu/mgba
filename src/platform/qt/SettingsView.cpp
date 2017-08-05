@@ -20,11 +20,26 @@
 
 using namespace QGBA;
 
+#ifdef M_CORE_GB
+QList<enum GBModel> SettingsView::s_gbModelList;
+#endif
+
 SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
 {
 	m_ui.setupUi(this);
+
+#ifdef M_CORE_GB
+	if (s_gbModelList.isEmpty()) {
+		// NB: Keep in sync with SettingsView.ui
+		s_gbModelList.append(GB_MODEL_AUTODETECT);
+		s_gbModelList.append(GB_MODEL_DMG);
+		s_gbModelList.append(GB_MODEL_SGB);
+		s_gbModelList.append(GB_MODEL_CGB);
+		s_gbModelList.append(GB_MODEL_AGB);
+	}
+#endif
 
 	reloadConfig();
 
@@ -365,12 +380,23 @@ void SettingsView::updateConfig() {
 		emit languageChanged();
 	}
 
+#ifdef M_CORE_GB
+	GBModel modelGB = s_gbModelList[m_ui.gbModel->currentIndex()];
+	m_controller->setOption("gb.model", GBModelToName(modelGB));
+
+	GBModel modelSGB = s_gbModelList[m_ui.sgbModel->currentIndex()];
+	m_controller->setOption("sgb.model", GBModelToName(modelSGB));
+
+	GBModel modelCGB = s_gbModelList[m_ui.cgbModel->currentIndex()];
+	m_controller->setOption("cgb.model", GBModelToName(modelCGB));
+
 	if (m_gbColors[0] | m_gbColors[1] | m_gbColors[2] | m_gbColors[3]) {
 		m_controller->setOption("gb.pal[0]", m_gbColors[0]);
 		m_controller->setOption("gb.pal[1]", m_gbColors[1]);
 		m_controller->setOption("gb.pal[2]", m_gbColors[2]);
 		m_controller->setOption("gb.pal[3]", m_gbColors[3]);
 	}
+#endif
 
 	m_controller->write();
 
@@ -448,6 +474,29 @@ void SettingsView::reloadConfig() {
 	m_ui.saveStateScreenshot->setChecked(saveState & SAVESTATE_SCREENSHOT);
 	m_ui.saveStateSave->setChecked(saveState & SAVESTATE_SAVEDATA);
 	m_ui.saveStateCheats->setChecked(saveState & SAVESTATE_CHEATS);
+
+#ifdef M_CORE_GB
+	QString modelGB = m_controller->getOption("gb.model");
+	if (!modelGB.isNull()) {
+		GBModel model = GBNameToModel(modelGB.toUtf8().constData());
+		int index = s_gbModelList.indexOf(model);
+		m_ui.gbModel->setCurrentIndex(index >= 0 ? index : 0);
+	}
+
+	QString modelSGB = m_controller->getOption("sgb.model");
+	if (!modelSGB.isNull()) {
+		GBModel model = GBNameToModel(modelSGB.toUtf8().constData());
+		int index = s_gbModelList.indexOf(model);
+		m_ui.sgbModel->setCurrentIndex(index >= 0 ? index : 0);
+	}
+
+	QString modelCGB = m_controller->getOption("cgb.model");
+	if (!modelCGB.isNull()) {
+		GBModel model = GBNameToModel(modelCGB.toUtf8().constData());
+		int index = s_gbModelList.indexOf(model);
+		m_ui.cgbModel->setCurrentIndex(index >= 0 ? index : 0);
+	}
+#endif
 }
 
 void SettingsView::saveSetting(const char* key, const QAbstractButton* field) {

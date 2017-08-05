@@ -12,6 +12,10 @@
 
 #include <mgba/core/core.h>
 
+#ifdef M_CORE_GB
+#include <mgba/gb/interface.h>
+#endif
+
 #include "ui_SettingsView.h"
 
 namespace QGBA {
@@ -50,8 +54,12 @@ private:
 	ConfigController* m_controller;
 	InputController* m_input;
 	ShaderSelector* m_shader = nullptr;
+
+#ifdef M_CORE_GB
 	uint32_t m_gbColors[4]{};
 	ColorPicker m_colorPickers[4];
+	static QList<enum GBModel> s_gbModelList;
+#endif
 
 	void saveSetting(const char* key, const QAbstractButton*);
 	void saveSetting(const char* key, const QComboBox*);

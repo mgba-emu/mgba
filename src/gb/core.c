@@ -183,6 +183,9 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	mCoreConfigCopyValue(&core->config, config, "gb.bios");
 	mCoreConfigCopyValue(&core->config, config, "sgb.bios");
 	mCoreConfigCopyValue(&core->config, config, "gbc.bios");
+	mCoreConfigCopyValue(&core->config, config, "gb.model");
+	mCoreConfigCopyValue(&core->config, config, "sgb.model");
+	mCoreConfigCopyValue(&core->config, config, "cgb.model");
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBCore* gbcore = (struct GBCore*) core;
@@ -324,6 +327,20 @@ static void _GBCoreReset(struct mCore* core) {
 		override.headerCrc32 = doCrc32(cart, sizeof(*cart));
 		if (GBOverrideFind(gbcore->overrides, &override)) {
 			GBOverrideApply(gb, &override);
+		}
+	}
+
+	const char* modelGB = mCoreConfigGetValue(&core->config, "gb.model");
+	const char* modelCGB = mCoreConfigGetValue(&core->config, "cgb.model");
+	const char* modelSGB = mCoreConfigGetValue(&core->config, "sgb.model");
+	if (modelGB || modelCGB || modelSGB) {
+		GBDetectModel(gb);
+		if (gb->model == GB_MODEL_DMG && modelGB) {
+			gb->model = GBNameToModel(modelGB);
+		} else if (gb->model == GB_MODEL_CGB && modelCGB) {
+			gb->model = GBNameToModel(modelCGB);
+		} else if (gb->model == GB_MODEL_SGB && modelSGB) {
+			gb->model = GBNameToModel(modelSGB);
 		}
 	}
 

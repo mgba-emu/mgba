@@ -737,3 +737,40 @@ void GBFrameEnded(struct GB* gb) {
 
 	GBTestKeypadIRQ(gb);
 }
+
+enum GBModel GBNameToModel(const char* model) {
+	if (strcasecmp(model, "DMG") == 0) {
+		return GB_MODEL_DMG;
+	} else if (strcasecmp(model, "CGB") == 0) {
+		return GB_MODEL_CGB;
+	} else if (strcasecmp(model, "AGB") == 0) {
+		return GB_MODEL_AGB;
+	} else if (strcasecmp(model, "SGB") == 0) {
+		return GB_MODEL_SGB;
+	} else if (strcasecmp(model, "MGB") == 0) {
+		return GB_MODEL_MGB;
+	} else if (strcasecmp(model, "SGB2") == 0) {
+		return GB_MODEL_SGB2;
+	}
+	return GB_MODEL_AUTODETECT;
+}
+
+const char* GBModelToName(enum GBModel model) {
+	switch (model) {
+	case GB_MODEL_DMG:
+		return "DMG";
+	case GB_MODEL_SGB:
+		return "SGB";
+	case GB_MODEL_MGB:
+		return "MGB";
+	case GB_MODEL_SGB2:
+		return "SGB2";
+	case GB_MODEL_CGB:
+		return "CGB";
+	case GB_MODEL_AGB:
+		return "AGB";
+	default:
+	case GB_MODEL_AUTODETECT:
+		return NULL;
+	}
+}

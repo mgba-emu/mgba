@@ -47,6 +47,9 @@ struct GBSIODriver {
 	uint8_t (*writeSC)(struct GBSIODriver* driver, uint8_t value);
 };
 
+enum GBModel GBNameToModel(const char*);
+const char* GBModelToName(enum GBModel);
+
 CXX_GUARD_END
 
 #endif

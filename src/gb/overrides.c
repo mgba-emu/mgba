@@ -43,25 +43,8 @@ bool GBOverrideFind(const struct Configuration* config, struct GBCartridgeOverri
 		};
 
 		if (model) {
-			if (strcasecmp(model, "DMG") == 0) {
-				found = true;
-				override->model = GB_MODEL_DMG;
-			} else if (strcasecmp(model, "CGB") == 0) {
-				found = true;
-				override->model = GB_MODEL_CGB;
-			} else if (strcasecmp(model, "AGB") == 0) {
-				found = true;
-				override->model = GB_MODEL_AGB;
-			} else if (strcasecmp(model, "SGB") == 0) {
-				found = true;
-				override->model = GB_MODEL_SGB;
-			} else if (strcasecmp(model, "MGB") == 0) {
-				found = true;
-				override->model = GB_MODEL_MGB;
-			} else if (strcasecmp(model, "SGB2") == 0) {
-				found = true;
-				override->model = GB_MODEL_SGB2;
-			}
+			override->model = GBNameToModel(model);
+			found = override->model != GB_MODEL_AUTODETECT;
 		}
 
 		if (mbc) {
@@ -94,29 +77,7 @@ bool GBOverrideFind(const struct Configuration* config, struct GBCartridgeOverri
 void GBOverrideSave(struct Configuration* config, const struct GBCartridgeOverride* override) {
 	char sectionName[24] = "";
 	snprintf(sectionName, sizeof(sectionName), "gb.override.%08X", override->headerCrc32);
-	const char* model = 0;
-	switch (override->model) {
-	case GB_MODEL_DMG:
-		model = "DMG";
-		break;
-	case GB_MODEL_SGB:
-		model = "SGB";
-		break;
-	case GB_MODEL_MGB:
-		model = "MGB";
-		break;
-	case GB_MODEL_SGB2:
-		model = "SGB2";
-		break;
-	case GB_MODEL_CGB:
-		model = "CGB";
-		break;
-	case GB_MODEL_AGB:
-		model = "AGB";
-		break;
-	case GB_MODEL_AUTODETECT:
-		break;
-	}
+	const char* model = GBModelToName(override->model);
 	ConfigurationSetValue(config, sectionName, "model", model);
 
 	if (override->gbColors[0] | override->gbColors[1] | override->gbColors[2] | override->gbColors[3]) {
