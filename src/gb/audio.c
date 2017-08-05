@@ -153,6 +153,10 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->playingCh2 = false;
 	audio->playingCh3 = false;
 	audio->playingCh4 = false;
+	if (audio->p && (audio->p->model == GB_MODEL_DMG || audio->p->model == GB_MODEL_CGB)) {
+		audio->playingCh1 = true;
+		*audio->nr52 |= 0x01;
+	}
 }
 
 void GBAudioResizeBuffer(struct GBAudio* audio, size_t samples) {

@@ -432,6 +432,8 @@ void GBReset(struct LR35902Core* cpu) {
 	cpu->b = 0;
 	cpu->d = 0;
 
+	gb->timer.internalDiv = 0;
+	int nextDiv = 0;
 	if (!gb->biosVf) {
 		switch (gb->model) {
 		case GB_MODEL_AUTODETECT: // Silence warnings
@@ -443,7 +445,8 @@ void GBReset(struct LR35902Core* cpu) {
 			cpu->e = 0xD8;
 			cpu->h = 1;
 			cpu->l = 0x4D;
-			gb->timer.internalDiv = 0x2AF3;
+			gb->timer.internalDiv = 0xABC;
+			nextDiv = 4;
 			break;
 		case GB_MODEL_SGB:
 			cpu->a = 1;
@@ -452,7 +455,8 @@ void GBReset(struct LR35902Core* cpu) {
 			cpu->e = 0x00;
 			cpu->h = 0xC0;
 			cpu->l = 0x60;
-			gb->timer.internalDiv = 0x2AF3;
+			gb->timer.internalDiv = 0xABC;
+			nextDiv = 4;
 			break;
 		case GB_MODEL_MGB:
 			cpu->a = 0xFF;
@@ -461,7 +465,8 @@ void GBReset(struct LR35902Core* cpu) {
 			cpu->e = 0xD8;
 			cpu->h = 1;
 			cpu->l = 0x4D;
-			gb->timer.internalDiv = 0x2AF3;
+			gb->timer.internalDiv = 0xABC;
+			nextDiv = 4;
 			break;
 		case GB_MODEL_SGB2:
 			cpu->a = 0xFF;
@@ -470,11 +475,20 @@ void GBReset(struct LR35902Core* cpu) {
 			cpu->e = 0x00;
 			cpu->h = 0xC0;
 			cpu->l = 0x60;
-			gb->timer.internalDiv = 0x2AF3;
+			gb->timer.internalDiv = 0xABC;
+			nextDiv = 4;
 			break;
 		case GB_MODEL_AGB:
+			cpu->a = 0x11;
 			cpu->b = 1;
-			// Fall through
+			cpu->f.packed = 0x00;
+			cpu->c = 0;
+			cpu->e = 0x08;
+			cpu->h = 0;
+			cpu->l = 0x7C;
+			gb->timer.internalDiv = 0x1EA;
+			nextDiv = 0xC;
+			break;
 		case GB_MODEL_CGB:
 			cpu->a = 0x11;
 			cpu->f.packed = 0x80;
@@ -482,7 +496,8 @@ void GBReset(struct LR35902Core* cpu) {
 			cpu->e = 0x08;
 			cpu->h = 0;
 			cpu->l = 0x7C;
-			gb->timer.internalDiv = 0x7A8;
+			gb->timer.internalDiv = 0x1EA;
+			nextDiv = 0xC;
 			break;
 		}
 
@@ -510,10 +525,10 @@ void GBReset(struct LR35902Core* cpu) {
 	GBMemoryReset(gb);
 	GBVideoReset(&gb->video);
 	GBTimerReset(&gb->timer);
-	mTimingSchedule(&gb->timing, &gb->timer.event, GB_DMG_DIV_PERIOD);
+	mTimingSchedule(&gb->timing, &gb->timer.event, nextDiv);
 
-	GBAudioReset(&gb->audio);
 	GBIOReset(gb);
+	GBAudioReset(&gb->audio);
 	GBSIOReset(&gb->sio);
 
 	GBSavedataUnmask(gb);

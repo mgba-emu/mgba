@@ -64,7 +64,6 @@ void GBTimerReset(struct GBTimer* timer) {
 
 	timer->nextDiv = GB_DMG_DIV_PERIOD; // TODO: GBC differences
 	timer->timaPeriod = 1024 >> 4;
-	timer->internalDiv = 0;
 }
 
 void GBTimerDivReset(struct GBTimer* timer) {

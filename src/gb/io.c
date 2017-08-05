@@ -144,19 +144,19 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, REG_TAC, 0);
 	GBIOWrite(gb, REG_IF, 1);
 	GBIOWrite(gb, REG_NR52, 0xF1);
-	GBIOWrite(gb, REG_NR14, 0xBF);
+	GBIOWrite(gb, REG_NR14, 0x3F);
 	GBIOWrite(gb, REG_NR10, 0x80);
 	GBIOWrite(gb, REG_NR11, 0xBF);
 	GBIOWrite(gb, REG_NR12, 0xF3);
 	GBIOWrite(gb, REG_NR13, 0xF3);
-	GBIOWrite(gb, REG_NR24, 0xBF);
+	GBIOWrite(gb, REG_NR24, 0x3F);
 	GBIOWrite(gb, REG_NR21, 0x3F);
 	GBIOWrite(gb, REG_NR22, 0x00);
-	GBIOWrite(gb, REG_NR34, 0xBF);
+	GBIOWrite(gb, REG_NR34, 0x3F);
 	GBIOWrite(gb, REG_NR30, 0x7F);
 	GBIOWrite(gb, REG_NR31, 0xFF);
 	GBIOWrite(gb, REG_NR32, 0x9F);
-	GBIOWrite(gb, REG_NR44, 0xBF);
+	GBIOWrite(gb, REG_NR44, 0x3F);
 	GBIOWrite(gb, REG_NR41, 0xFF);
 	GBIOWrite(gb, REG_NR42, 0x00);
 	GBIOWrite(gb, REG_NR43, 0x00);
@@ -167,11 +167,14 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, REG_SCX, 0x00);
 	GBIOWrite(gb, REG_LYC, 0x00);
 	GBIOWrite(gb, REG_BGP, 0xFC);
-	GBIOWrite(gb, REG_OBP0, 0xFF);
-	GBIOWrite(gb, REG_OBP1, 0xFF);
+	if (gb->model < GB_MODEL_CGB) {
+		GBIOWrite(gb, REG_OBP0, 0xFF);
+		GBIOWrite(gb, REG_OBP1, 0xFF);
+	}
 	GBIOWrite(gb, REG_WY, 0x00);
 	GBIOWrite(gb, REG_WX, 0x00);
 	if (gb->model >= GB_MODEL_CGB) {
+		GBIOWrite(gb, REG_JOYP, 0xFF);
 		GBIOWrite(gb, REG_VBK, 0);
 		GBIOWrite(gb, REG_BCPS, 0);
 		GBIOWrite(gb, REG_OCPS, 0);
@@ -181,6 +184,8 @@ void GBIOReset(struct GB* gb) {
 		GBIOWrite(gb, REG_HDMA3, 0xFF);
 		GBIOWrite(gb, REG_HDMA4, 0xFF);
 		gb->memory.io[REG_HDMA5] = 0xFF;
+	} else if (gb->model == GB_MODEL_SGB) {
+		GBIOWrite(gb, REG_JOYP, 0xFF);
 	}
 	GBIOWrite(gb, REG_IE, 0x00);
 }
@@ -587,6 +592,9 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 			case REG_SVBK:
 				// Handled transparently by the registers
 				goto success;
+			case REG_DMA:
+				mLOG(GB_IO, STUB, "Reading from unknown register FF%02X", address);
+				return 0;
 			default:
 				break;
 			}
