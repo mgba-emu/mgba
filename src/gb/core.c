@@ -187,6 +187,11 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	mCoreConfigCopyValue(&core->config, config, "sgb.model");
 	mCoreConfigCopyValue(&core->config, config, "cgb.model");
 
+	int fakeBool;
+	if (mCoreConfigGetIntValue(config, "sgb.borders", &fakeBool)) {
+		gb->video.sgbBorders = fakeBool;
+	}
+
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBCore* gbcore = (struct GBCore*) core;
 	gbcore->overrides = mCoreConfigGetOverridesConst(config);
@@ -195,7 +200,7 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 
 static void _GBCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
 	struct GB* gb = core->board;
-	if (!gb || gb->model != GB_MODEL_SGB) {
+	if (!gb || gb->model != GB_MODEL_SGB || !gb->video.sgbBorders) {
 		*width = GB_VIDEO_HORIZONTAL_PIXELS;
 		*height = GB_VIDEO_VERTICAL_PIXELS;
 	} else {

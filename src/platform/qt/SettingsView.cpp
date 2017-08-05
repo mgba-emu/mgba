@@ -295,6 +295,7 @@ void SettingsView::updateConfig() {
 	saveSetting("gb.bios", m_ui.gbBios);
 	saveSetting("gbc.bios", m_ui.gbcBios);
 	saveSetting("sgb.bios", m_ui.sgbBios);
+	saveSetting("sgb.borders", m_ui.sgbBorders);
 	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
 	saveSetting("audioBuffers", m_ui.audioBufferSize);
@@ -410,6 +411,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("gb.bios", m_ui.gbBios);
 	loadSetting("gbc.bios", m_ui.gbcBios);
 	loadSetting("sgb.bios", m_ui.sgbBios);
+	loadSetting("sgb.borders", m_ui.sgbBorders, true);
 	loadSetting("useBios", m_ui.useBios);
 	loadSetting("skipBios", m_ui.skipBios);
 	loadSetting("audioBuffers", m_ui.audioBufferSize);
@@ -529,9 +531,9 @@ void SettingsView::saveSetting(const char* key, const QVariant& field) {
 	m_controller->updateOption(key);
 }
 
-void SettingsView::loadSetting(const char* key, QAbstractButton* field) {
+void SettingsView::loadSetting(const char* key, QAbstractButton* field, bool defaultVal) {
 	QString option = loadSetting(key);
-	field->setChecked(!option.isNull() && option != "0");
+	field->setChecked((!option.isNull() && option != "0") || defaultVal);
 }
 
 void SettingsView::loadSetting(const char* key, QComboBox* field) {

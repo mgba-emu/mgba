@@ -15,7 +15,7 @@
 
 #include <mgba-util/memory.h>
 
-static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model);
+static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model, bool borders);
 static void GBVideoDummyRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoDummyRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 static void GBVideoDummyRendererWriteSGBPacket(struct GBVideoRenderer* renderer, uint8_t* data);
@@ -72,6 +72,8 @@ void GBVideoInit(struct GBVideo* video) {
 	video->dmgPalette[2] = 0x294A;
 	video->dmgPalette[3] = 0x0000;
 
+	video->sgbBorders = true;
+
 	video->renderer->sgbCharRam = NULL;
 	video->renderer->sgbMapRam = NULL;
 	video->renderer->sgbPalRam = NULL;
@@ -122,7 +124,7 @@ void GBVideoReset(struct GBVideo* video) {
 	video->palette[9 * 4 + 3] = video->dmgPalette[3];
 
 	video->renderer->deinit(video->renderer);
-	video->renderer->init(video->renderer, video->p->model);
+	video->renderer->init(video->renderer, video->p->model, video->sgbBorders);
 
 	video->renderer->writePalette(video->renderer, 0, video->palette[0]);
 	video->renderer->writePalette(video->renderer, 1, video->palette[1]);
@@ -174,7 +176,7 @@ void GBVideoAssociateRenderer(struct GBVideo* video, struct GBVideoRenderer* ren
 	renderer->sgbAttributes = video->renderer->sgbAttributes;
 	video->renderer = renderer;
 	renderer->vram = video->vram;
-	video->renderer->init(video->renderer, video->p->model);
+	video->renderer->init(video->renderer, video->p->model, video->sgbBorders);
 }
 
 static bool _statIRQAsserted(struct GBVideo* video, GBRegisterSTAT stat) {
@@ -676,9 +678,10 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 	video->renderer->writeSGBPacket(video->renderer, data);
 }
 
-static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model) {
+static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model, bool borders) {
 	UNUSED(renderer);
 	UNUSED(model);
+	UNUSED(borders);
 	// Nothing to do
 }
 
@@ -833,5 +836,5 @@ void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* s
 	GBVideoSwitchBank(video, video->vramCurrentBank);
 
 	video->renderer->deinit(video->renderer);
-	video->renderer->init(video->renderer, video->p->model);
+	video->renderer->init(video->renderer, video->p->model, video->sgbBorders);
 }

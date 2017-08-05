@@ -42,6 +42,7 @@ struct GBVideoSoftwareRenderer {
 	int sgbPacketId;
 	int sgbDataSets;
 	uint8_t sgbPartialDataSet[15];
+	bool sgbBorders;
 };
 
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer*);

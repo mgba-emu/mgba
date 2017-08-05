@@ -67,7 +67,7 @@ union GBOAM {
 
 struct mTileCache;
 struct GBVideoRenderer {
-	void (*init)(struct GBVideoRenderer* renderer, enum GBModel model);
+	void (*init)(struct GBVideoRenderer* renderer, enum GBModel model, bool borders);
 	void (*deinit)(struct GBVideoRenderer* renderer);
 
 	uint8_t (*writeVideoRegister)(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
@@ -147,6 +147,8 @@ struct GBVideo {
 
 	uint16_t dmgPalette[4];
 	uint16_t palette[64];
+
+	bool sgbBorders;
 
 	int32_t frameCounter;
 	int frameskip;

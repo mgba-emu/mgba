@@ -12,7 +12,7 @@
 #define BUFFER_OAM 1
 #define BUFFER_SGB 2
 
-static void GBVideoProxyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model);
+static void GBVideoProxyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model, bool borders);
 static void GBVideoProxyRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoProxyRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 static void GBVideoProxyRendererWriteSGBPacket(struct GBVideoRenderer* renderer, uint8_t* data);
@@ -96,12 +96,12 @@ void GBVideoProxyRendererUnshim(struct GBVideo* video, struct GBVideoProxyRender
 	mVideoLoggerRendererDeinit(renderer->logger);
 }
 
-void GBVideoProxyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model) {
+void GBVideoProxyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model, bool borders) {
 	struct GBVideoProxyRenderer* proxyRenderer = (struct GBVideoProxyRenderer*) renderer;
 
 	_init(proxyRenderer);
 
-	proxyRenderer->backend->init(proxyRenderer->backend, model);
+	proxyRenderer->backend->init(proxyRenderer->backend, model, borders);
 }
 
 void GBVideoProxyRendererDeinit(struct GBVideoRenderer* renderer) {

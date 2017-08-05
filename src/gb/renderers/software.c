@@ -10,7 +10,7 @@
 #include <mgba-util/math.h>
 #include <mgba-util/memory.h>
 
-static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum GBModel model);
+static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum GBModel model, bool borders);
 static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* renderer, uint8_t* data);
@@ -28,7 +28,7 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 
 static void _clearScreen(struct GBVideoSoftwareRenderer* renderer) {
 	size_t sgbOffset = 0;
-	if (renderer->model == GB_MODEL_SGB) {
+	if (renderer->model == GB_MODEL_SGB && renderer->sgbBorders) {
 		sgbOffset = renderer->outputBufferStride * 40 + 48;
 	}
 	int y;
@@ -166,7 +166,7 @@ void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
 	renderer->temporaryBuffer = 0;
 }
 
-static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum GBModel model) {
+static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum GBModel model, bool sgbBorders) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	softwareRenderer->lcdc = 0;
 	softwareRenderer->scy = 0;
@@ -177,6 +177,7 @@ static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum G
 	softwareRenderer->model = model;
 	softwareRenderer->sgbTransfer = 0;
 	softwareRenderer->sgbCommandHeader = 0;
+	softwareRenderer->sgbBorders = sgbBorders;
 	int i;
 	for (i = 0; i < 64; ++i) {
 		softwareRenderer->lookup[i] = i;
@@ -271,7 +272,9 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 		}
 		break;
 	case SGB_ATRC_EN:
-		_regenerateSGBBorder(softwareRenderer);
+		if (softwareRenderer->sgbBorders) {
+			_regenerateSGBBorder(softwareRenderer);
+		}
 		break;
 	}
 }
@@ -334,11 +337,11 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	}
 
 	size_t sgbOffset = 0;
-	if (softwareRenderer->model == GB_MODEL_SGB) {
+	if (softwareRenderer->model == GB_MODEL_SGB && softwareRenderer->sgbBorders) {
 		sgbOffset = softwareRenderer->outputBufferStride * 40 + 48;
 	}
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y + sgbOffset];
-	int x;
+	int x = startX;
 	int p = 0;
 	switch (softwareRenderer->d.sgbRenderMode) {
 	case 0:
@@ -348,7 +351,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 			p &= 3;
 			p <<= 2;
 		}
-		for (x = startX; x < ((startX + 7) & ~7) && x < endX; ++x) {
+		for (; x < ((startX + 7) & ~7) && x < endX; ++x) {
 			row[x] = softwareRenderer->palette[p | softwareRenderer->lookup[softwareRenderer->row[x] & 0x7F]];
 		}
 		for (; x + 7 < (endX & ~7); x += 8) {
@@ -380,7 +383,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	case 1:
 		break;
 	case 2:
-		for (x = startX; x < ((startX + 7) & ~7) && x < endX; ++x) {
+		for (; x < ((startX + 7) & ~7) && x < endX; ++x) {
 			row[x] = 0;
 		}
 		for (; x + 7 < (endX & ~7); x += 8) {
@@ -398,7 +401,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 		}
 		break;
 	case 3:
-		for (x = startX; x < ((startX + 7) & ~7) && x < endX; ++x) {
+		for (; x < ((startX + 7) & ~7) && x < endX; ++x) {
 			row[x] = softwareRenderer->palette[0];
 		}
 		for (; x + 7 < (endX & ~7); x += 8) {
@@ -498,7 +501,7 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 		case SGB_PAL_TRN:
 		case SGB_CHR_TRN:
 		case SGB_PCT_TRN:
-			if (softwareRenderer->sgbTransfer > 0) {
+			if (softwareRenderer->sgbTransfer > 0 && softwareRenderer->sgbBorders) {
 				// Make sure every buffer sees this if we're multibuffering
 				_regenerateSGBBorder(softwareRenderer);
 			}
