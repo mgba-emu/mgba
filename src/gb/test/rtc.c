@@ -48,6 +48,7 @@ M_TEST_SUITE_SETUP(GBRTC) {
 		return -1;
 	}
 	test->core->init(test->core);
+	mCoreInitConfig(test->core, NULL);
 	struct VFile* vf = VFileMemChunk(NULL, 2048);
 	GBSynthesizeROM(vf);
 	test->core->loadROM(test->core, vf);
