@@ -134,6 +134,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		return false;
 	}
 	gb->timing.root = NULL;
+	LOAD_32LE(gb->timing.masterCycles, 0, &state->masterCycles);
 
 	gb->cpu->a = state->cpu.a;
 	gb->cpu->f.packed = state->cpu.f;
@@ -187,6 +188,9 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	}
 
 	gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
+
+	gb->timing.reroot = gb->timing.root;
+	gb->timing.root = NULL;
 
 	return true;
 }

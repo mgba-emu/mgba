@@ -23,6 +23,7 @@ struct mTimingEvent {
 
 struct mTiming {
 	struct mTimingEvent* root;
+	struct mTimingEvent* reroot;
 
 	uint32_t masterCycles;
 	int32_t* relativeCycles;

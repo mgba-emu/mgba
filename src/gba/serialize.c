@@ -128,6 +128,8 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		return false;
 	}
 	gba->timing.root = NULL;
+	LOAD_32(gba->timing.masterCycles, 0, &state->masterCycles);
+
 	size_t i;
 	for (i = 0; i < 16; ++i) {
 		LOAD_32(gba->cpu->gprs[i], i * sizeof(gba->cpu->gprs[0]), state->cpu.gprs);
@@ -185,5 +187,9 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	if (gba->rr) {
 		gba->rr->stateLoaded(gba->rr, state);
 	}
+
+	gba->timing.reroot = gba->timing.root;
+	gba->timing.root = NULL;
+
 	return true;
 }
