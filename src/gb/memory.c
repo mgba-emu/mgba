@@ -464,10 +464,13 @@ void GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
 	bool wasHdma = gb->memory.isHdma;
 	gb->memory.isHdma = value & 0x80;
 	if ((!wasHdma && !gb->memory.isHdma) || gb->video.mode == 0) {
-		gb->memory.hdmaRemaining = ((value & 0x7F) + 1) * 0x10;
+		if (gb->memory.isHdma) {
+			gb->memory.hdmaRemaining = 0x10;
+		} else {
+			gb->memory.hdmaRemaining = ((value & 0x7F) + 1) * 0x10;
+		}
 		gb->cpuBlocked = true;
 		mTimingSchedule(&gb->timing, &gb->memory.hdmaEvent, 0);
-		gb->cpu->nextEvent = gb->cpu->cycles;
 	}
 }
 
