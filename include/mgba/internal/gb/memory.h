@@ -22,6 +22,8 @@ struct GB;
 enum {
 	GB_BASE_CART_BANK0 = 0x0000,
 	GB_BASE_CART_BANK1 = 0x4000,
+	GB_BASE_CART_HALFBANK1 = 0x4000,
+	GB_BASE_CART_HALFBANK2 = 0x6000,
 	GB_BASE_VRAM = 0x8000,
 	GB_BASE_EXTERNAL_RAM = 0xA000,
 	GB_BASE_WORKING_RAM_BANK0 = 0xC000,
@@ -46,6 +48,7 @@ enum {
 
 enum {
 	GB_SIZE_CART_BANK0 = 0x4000,
+	GB_SIZE_CART_HALFBANK = 0x2000,
 	GB_SIZE_CART_MAX = 0x800000,
 	GB_SIZE_VRAM = 0x4000,
 	GB_SIZE_VRAM_BANK0 = 0x2000,
@@ -104,6 +107,11 @@ struct GBMBC1State {
 	int multicartStride;
 };
 
+struct GBMBC6State {
+	int currentBank1;
+	uint8_t* romBank1;
+};
+
 struct GBMBC7State {
 	enum GBMBC7MachineState state;
 	uint16_t sr;
@@ -127,6 +135,7 @@ struct GBTAMA5State {
 
 union GBMBCState {
 	struct GBMBC1State mbc1;
+	struct GBMBC6State mbc6;
 	struct GBMBC7State mbc7;
 	struct GBPocketCamState pocketCam;
 	struct GBTAMA5State tama5;
