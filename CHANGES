@@ -32,6 +32,7 @@ Bugfixes:
  - ARM: Fix MSR when T bit is set
  - GB Video: Fix potential hang when ending mode 0
  - GB Memory: Fix HDMA count starting in mode 0 (fixes mgba.io/i/855)
+ - GB Memory: Actually load latch time from savestate
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)

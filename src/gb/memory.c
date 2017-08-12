@@ -713,8 +713,7 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		}
 		break;
 	case GB_MBC3_RTC:
-		// TODO?
-		//LOAD_64LE(gb->memory.rtcLastLatch, 0, &state->memory.rtc.lastLatch);
+		LOAD_64LE(gb->memory.rtcLastLatch, 0, &state->memory.rtc.lastLatch);
 		break;
 	case GB_MBC7:
 		memory->mbcState.mbc7.state = state->memory.mbc7.state;
