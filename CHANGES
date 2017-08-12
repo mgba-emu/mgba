@@ -19,6 +19,7 @@ Bugfixes:
  - Qt: Fix sprite export pausing game indefinitely (fixes mgba.io/i/841)
  - GB Video: Fix potential hang when ending mode 0
  - GB Memory: Fix HDMA count starting in mode 0 (fixes mgba.io/i/855)
+ - GB Memory: Actually load latch time from savestate
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
  - SDL: Fix 2.0.5 build on macOS under some circumstances
