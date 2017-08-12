@@ -31,6 +31,7 @@ Bugfixes:
  - Qt: Fix sprite export pausing game indefinitely (fixes mgba.io/i/841)
  - ARM: Fix MSR when T bit is set
  - GB Video: Fix potential hang when ending mode 0
+ - GB Memory: Fix HDMA count starting in mode 0 (fixes mgba.io/i/855)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
