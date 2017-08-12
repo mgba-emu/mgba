@@ -227,6 +227,7 @@ void _endMode0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		video->mode = 1;
 		video->modeEvent.callback = _endMode1;
 
+		mTimingDeschedule(&video->p->timing, &video->frameEvent);
 		mTimingSchedule(&video->p->timing, &video->frameEvent, -cyclesLate);
 
 		if (!_statIRQAsserted(video, oldStat) && GBRegisterSTATIsOAMIRQ(video->stat)) {
