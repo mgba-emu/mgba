@@ -25,7 +25,7 @@ setup(name="${BINARY_NAME}",
       setup_requires=['cffi>=1.6', 'pytest-runner'],
       install_requires=['cffi>=1.6', 'cached-property'],
       extras_require={'pil': ['Pillow>=2.3'], 'cinema': ['pyyaml', 'pytest']},
-      tests_require=['mgba[cinema]', 'pytest'],
+      tests_require=['Pillow>=2.3', 'pyyaml', 'pytest'],
       cffi_modules=["_builder.py:ffi"],
       license="MPL 2.0",
       classifiers=classifiers
