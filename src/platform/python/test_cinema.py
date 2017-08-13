@@ -40,7 +40,7 @@ def test_video(vtest, pytestconfig):
     else:
         try:
             vtest.test()
-        except FileNotFoundError:
+        except IOError:
             raise
         if pytestconfig.getoption('--mark-succeeding') and 'fail' in vtest.settings:
             # TODO: This can fail if an entire directory is marked as failing
@@ -48,7 +48,7 @@ def test_video(vtest, pytestconfig):
             try:
                 with open(os.path.join(vtest.path, 'manifest.yml'), 'r') as f:
                     settings = yaml.safe_load(f)
-            except FileNotFoundError:
+            except IOError:
                 pass
             if 'fail' in settings:
                 del settings['fail']

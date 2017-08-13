@@ -21,7 +21,7 @@ class CinemaTest(object):
         try:
             with open(os.path.join(self.path, 'manifest.yml'), 'r') as f:
                 dictMerge(self.settings, yaml.safe_load(f))
-        except FileNotFoundError:
+        except IOError:
             pass
         self.tests = {}
 
@@ -66,7 +66,7 @@ class VideoTest(CinemaTest):
             try:
                 baseline = VideoFrame.load(os.path.join(self.path, self.BASELINE % i))
                 yield baseline, frame, VideoFrame.diff(baseline, frame)
-            except FileNotFoundError:
+            except IOError:
                 yield None, frame, (None, None)
 
     def test(self):
@@ -83,7 +83,7 @@ def gatherTests(root=os.getcwd()):
         test = [f for f in files if re.match(CinemaTest.TEST, f)]
         if not test:
             continue
-        prefix = os.path.commonpath([path, root])
+        prefix = os.path.commonprefix([path, root])
         suffix = path[len(prefix)+1:]
         testPath = suffix.split(os.sep)
         testRoot = tests

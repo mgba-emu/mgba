@@ -42,7 +42,7 @@ def pytest_exception_interact(node, call, report):
             try:
                 with open(os.path.join(vtest.path, 'manifest.yml'), 'r') as f:
                     settings = yaml.safe_load(f)
-            except FileNotFoundError:
+            except IOError:
                 settings = {}
             settings['fail'] = True
             with open(os.path.join(vtest.path, 'manifest.yml'), 'w') as f:

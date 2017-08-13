@@ -41,7 +41,7 @@ def ingestDirectory(path, dest):
                     try:
                         with open(os.path.join(dest, root, fname, 'manifest.yml'), 'r') as f:
                             manifest = yaml.safe_load(f) or {}
-                    except FileNotFoundError:
+                    except IOError:
                         pass
                     dictMerge(manifest, {
                         'config': {
