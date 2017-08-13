@@ -12,11 +12,8 @@ bindir = os.environ.get("BINDIR", os.path.join(os.getcwd(), ".."))
 
 cpp = shlex.split(os.environ.get("CPP", "cc -E"))
 cppflags = shlex.split(os.environ.get("CPPFLAGS", ""))
-ldflags = shlex.split(os.environ.get("LDFLAGS", ""))
 if __name__ == "__main__":
     cppflags.extend(sys.argv[1:])
-if sys.platform == 'darwin':
-    ldflags.append('-Wl,-rpath,' + bindir)
 cppflags.extend(["-I" + incdir, "-I" + srcdir, "-I" + bindir])
 
 ffi.set_source("mgba._pylib", """
@@ -49,7 +46,6 @@ ffi.set_source("mgba._pylib", """
 #undef PYEXPORT
 """, include_dirs=[incdir, srcdir],
      extra_compile_args=cppflags,
-     extra_link_args=ldflags,
      libraries=["mgba"],
      library_dirs=[bindir],
      sources=[os.path.join(pydir, path) for path in ["vfs-py.c", "core.c", "log.c", "sio.c"]])
