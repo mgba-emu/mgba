@@ -35,3 +35,10 @@ set_target_properties(${BINARY_NAME}-pylib PROPERTIES COMPILE_DEFINITIONS "${OS_
 set(PYTHON_LIBRARY ${BINARY_NAME}-pylib PARENT_SCOPE)
 
 add_custom_target(${BINARY_NAME}-py ALL DEPENDS ${BINARY_NAME}-pylib ${CMAKE_CURRENT_BINARY_DIR}/build/lib/${BINARY_NAME}/__init__.py)
+
+file(GLOB TESTS ${CMAKE_CURRENT_SOURCE_DIR}/test_*.py)
+foreach(TEST IN LISTS TESTS)
+	string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/test_" "" TEST_NAME "${TEST}")
+	string(REPLACE ".py" "" TEST_NAME "${TEST_NAME}")
+	add_test(python-${TEST_NAME} pytest ${TEST})
+endforeach()
