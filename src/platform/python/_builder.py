@@ -71,6 +71,11 @@ for line in preprocessed.splitlines():
 ffi.embedding_api('\n'.join(lines))
 
 ffi.embedding_init_code("""
+    import os, os.path
+    venv = os.getenv('VIRTUAL_ENV')
+    if venv:
+        activate = os.path.join(venv, 'bin', 'activate_this.py')
+        execfile(activate, dict(__file__=activate))
     from mgba._pylib import ffi, lib
     symbols = {}
     globalSyms = {
