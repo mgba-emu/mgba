@@ -11,14 +11,14 @@ endforeach()
 
 file(GLOB PYTHON_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 
+if(NOT GIT_TAG)
+	if(GIT_BRANCH STREQUAL "master" OR NOT GIT_BRANCH)
+		set(PYLIB_VERSION -b -${GIT_REV}-${GIT_COMMIT_SHORT})
+	else()
+		set(PYLIB_VERSION -b -${GIT_BRANCH}-${GIT_REV}-${GIT_COMMIT_SHORT})
+	endif()
+endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in ${CMAKE_CURRENT_BINARY_DIR}/setup.py)
-add_custom_command(OUTPUT build/lib/${BINARY_NAME}/__init__.py
-                   COMMAND BINDIR=${CMAKE_CURRENT_BINARY_DIR}/.. CPPFLAGS="${INCLUDE_FLAGS}" ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/setup.py build --build-base ${CMAKE_CURRENT_BINARY_DIR}
-                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                   DEPENDS ${BINARY_NAME}
-                   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/setup.py
-                   DEPENDS ${PYTHON_HEADERS}
-                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/_builder.py)
 
 add_custom_command(OUTPUT lib.c
                   COMMAND BINDIR=${CMAKE_CURRENT_BINARY_DIR}/.. CPPFLAGS="${INCLUDE_FLAGS}" ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/_builder.py
@@ -34,11 +34,18 @@ set_target_properties(${BINARY_NAME}-pylib PROPERTIES COMPILE_DEFINITIONS "${OS_
 set(PYTHON_LIBRARY ${BINARY_NAME}-pylib PARENT_SCOPE)
 
 add_custom_target(${BINARY_NAME}-py ALL
-                  COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/setup.py build
-                  DEPENDS ${BINARY_NAME}-pylib ${CMAKE_CURRENT_BINARY_DIR}/build/lib/${BINARY_NAME}/__init__.py)
+                  COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/setup.py egg_info -e ${CMAKE_CURRENT_BINARY_DIR} ${PYLIB_VERSION}
+                  COMMAND BINDIR=${CMAKE_CURRENT_BINARY_DIR}/.. CPPFLAGS="${INCLUDE_FLAGS}" ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/setup.py build -b ${CMAKE_CURRENT_BINARY_DIR}
+                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                  DEPENDS ${BINARY_NAME}
+                  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/setup.py
+                  DEPENDS ${PYTHON_HEADERS}
+                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/_builder.py
+                  DEPENDS ${BINARY_NAME}-pylib)
 
-file(GLOB TESTS ${CMAKE_CURRENT_SOURCE_DIR}/test_*.py)
-foreach(TEST IN LISTS TESTS)
+file(GLOB BASE_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/test_*.py)
+file(GLOB SUBTESTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/*/test_*.py)
+foreach(TEST IN LISTS BASE_TESTS SUBTESTS)
 	if(APPLE)
 		set(PATH DYLD_LIBRARY_PATH)
 	elseif(WIN32)
@@ -46,8 +53,8 @@ foreach(TEST IN LISTS TESTS)
 	else()
 		set(PATH LD_LIBRARY_PATH)
 	endif()
-	string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/test_" "" TEST_NAME "${TEST}")
+	string(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/(tests/.*/)?test_" "" TEST_NAME "${TEST}")
 	string(REPLACE ".py" "" TEST_NAME "${TEST_NAME}")
-	add_test(python-${TEST_NAME} ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/setup.py pytest --addopts ${TEST})
+	add_test(python-${TEST_NAME} ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/setup.py build -b ${CMAKE_CURRENT_BINARY_DIR} pytest --extras --addopts ${TEST})
 	set_tests_properties(python-${TEST_NAME} PROPERTIES ENVIRONMENT "${PATH}=${CMAKE_CURRENT_BINARY_DIR}/..")
 endforeach()
