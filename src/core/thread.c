@@ -10,7 +10,9 @@
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
 
+#ifdef USE_PTHREADS
 #include <signal.h>
+#endif
 
 #ifndef DISABLE_THREADING
 
