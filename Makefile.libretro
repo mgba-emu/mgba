@@ -164,7 +164,7 @@ else ifneq (,$(filter $(platform), ps3 sncps3 psl1ght))
    TARGET := $(TARGET_NAME)_libretro_ps3.a
    PLATFORM_DEFINES := -D__CELLOS_LV2__
    STATIC_LINKING = 1
-   DEFINES += -std=c99
+   DEFINES += -std=c99 -fms-extensions
    HAVE_VFS_FD = 0
 
    # sncps3

@@ -70,7 +70,7 @@ void mLog(int category, enum mLogLevel level, const char* format, ...) {
 	va_start(args, format);
 	if (context) {
 		if (!context->filter || mLogFilterTest(context->filter, category, level)) {
-			context->log(context, category, level, format, args);
+			(context->log)(context, category, level, format, args);
 		}
 	} else {
 		printf("%s: ", mLogCategoryName(category));
