@@ -23,7 +23,7 @@ void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	STORE_32LE(gb->timing.masterCycles, 0, &state->masterCycles);
 
 	if (gb->memory.rom) {
-		memcpy(state->title, ((struct GBCartridge*) gb->memory.rom)->titleLong, sizeof(state->title));
+		memcpy(state->title, ((struct GBCartridge*) &gb->memory.rom[0x100])->titleLong, sizeof(state->title));
 	} else {
 		memset(state->title, 0, sizeof(state->title));
 	}
@@ -86,9 +86,13 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	}
 	bool canSgb = ucheck >= GB_SAVESTATE_MAGIC + 2;
 
-	if (gb->memory.rom && memcmp(state->title, ((struct GBCartridge*) gb->memory.rom)->titleLong, sizeof(state->title))) {
-		mLOG(GB_STATE, WARN, "Savestate is for a different game");
-		error = true;
+	if (gb->memory.rom && memcmp(state->title, ((struct GBCartridge*) &gb->memory.rom[0x100])->titleLong, sizeof(state->title))) {
+		LOAD_32LE(ucheck, 0, &state->versionMagic);
+		if (ucheck > GB_SAVESTATE_MAGIC + 2 || memcmp(state->title, ((struct GBCartridge*) gb->memory.rom)->titleLong, sizeof(state->title))) {
+			// There was a bug in previous versions where the memory address being compared was wrong
+			mLOG(GB_STATE, WARN, "Savestate is for a different game");
+			error = true;
+		}
 	}
 	LOAD_32LE(ucheck, 0, &state->romCrc32);
 	if (ucheck != gb->romCrc32) {
