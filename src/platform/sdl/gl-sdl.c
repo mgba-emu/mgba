@@ -33,10 +33,10 @@ void mSDLGLCreate(struct mSDLRenderer* renderer) {
 bool mSDLGLInit(struct mSDLRenderer* renderer) {
 	mSDLGLCommonInit(renderer);
 
-	size_t size = toPow2(renderer->width) * toPow2(renderer->height) * BYTES_PER_PIXEL;
+	size_t size = renderer->width * renderer->height * BYTES_PER_PIXEL;
 	renderer->outputBuffer = malloc(size);
 	memset(renderer->outputBuffer, 0, size);
-	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, toPow2(renderer->width));
+	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
 
 	mGLContextCreate(&renderer->gl);
 	renderer->gl.d.user = renderer;
@@ -69,6 +69,7 @@ void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user) {
 #endif
 		}
 		if (renderer->width != v->width || renderer->height != v->height) {
+			renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
 			v->setDimensions(v, renderer->width, renderer->height);
 		}
 

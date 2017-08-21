@@ -318,7 +318,6 @@ void mGLES2ContextDrawFrame(struct VideoBackend* v) {
 void mGLES2ContextPostFrame(struct VideoBackend* v, const void* frame) {
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	glBindTexture(GL_TEXTURE_2D, context->tex);
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, toPow2(v->width));
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, v->width, v->height, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, frame);

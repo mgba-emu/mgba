@@ -391,7 +391,7 @@ void PainterGL::enqueue(const uint32_t* backing) {
 		buffer = m_free.takeLast();
 	}
 	QSize size = m_context->screenDimensions();
-	memcpy(buffer, backing, toPow2(size.width()) * size.height() * BYTES_PER_PIXEL);
+	memcpy(buffer, backing, size.width() * size.height() * BYTES_PER_PIXEL);
 	m_queue.enqueue(buffer);
 	m_mutex.unlock();
 }
