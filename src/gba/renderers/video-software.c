@@ -641,13 +641,12 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 
 #ifdef COLOR_16_BIT
-#if defined(__ARM_NEON) && !defined(__APPLE__)
-	_to16Bit(row, softwareRenderer->row, VIDEO_HORIZONTAL_PIXELS);
-#else
-	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; x += 4) {
 		row[x] = softwareRenderer->row[x];
+		row[x + 1] = softwareRenderer->row[x + 1];
+		row[x + 2] = softwareRenderer->row[x + 2];
+		row[x + 3] = softwareRenderer->row[x + 3];
 	}
-#endif
 #else
 	memcpy(row, softwareRenderer->row, VIDEO_HORIZONTAL_PIXELS * sizeof(*row));
 #endif

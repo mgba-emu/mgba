@@ -7,8 +7,6 @@
 #define ARM_ALGO_H
 
 #ifdef __arm__
-void _to16Bit(uint16_t* dest, uint32_t* src, size_t words);
-
 #if defined(__ARM_NEON)
 void _neon2x(void* dest, void* src, int width, int height);
 void _neon4x(void* dest, void* src, int width, int height);
