@@ -27,11 +27,13 @@ struct ctrUIVertex {
 };
 
 #define MAX_NUM_QUADS 256
-#define VERTEX_BUFFER_SIZE MAX_NUM_QUADS * sizeof(struct ctrUIVertex)
+#define BUFFER_PARTITIONS 4
+#define VERTEX_BUFFER_SIZE MAX_NUM_QUADS * BUFFER_PARTITIONS * sizeof(struct ctrUIVertex)
 
 static struct ctrUIVertex* ctrVertexBuffer = NULL;
 static int ctrNumVerts = 0;
 static int ctrVertStart = 0;
+static int ctrVertPartition = 0;
 
 static C3D_Tex* activeTexture = NULL;
 
@@ -174,9 +176,11 @@ void ctrAddRectEx(u32 color, s16 x, s16 y, s16 w, s16 h, s16 u, s16 v, s16 uw, s
 
 	if (ctrNumVerts + ctrVertStart == MAX_NUM_QUADS) {
 		ctrFlushBatch();
-		C3D_Flush();
-		ctrNumVerts = 0;
-		ctrVertStart = 0;
+		++ctrVertPartition;
+		if (ctrVertPartition == BUFFER_PARTITIONS) {
+			svcBreak(USERBREAK_PANIC);
+		}
+		ctrVertStart = ctrVertPartition * MAX_NUM_QUADS;
 	}
 
 	struct ctrUIVertex* vtx = &ctrVertexBuffer[ctrVertStart + ctrNumVerts];
@@ -217,7 +221,6 @@ void ctrFlushBatch(void) {
 
 void ctrFinalize(void) {
 	ctrFlushBatch();
-	C3D_Flush();
-	ctrNumVerts = 0;
 	ctrVertStart = 0;
+	ctrVertPartition = 0;
 }
