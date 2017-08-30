@@ -214,7 +214,9 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 
 static void _drawStart(void) {
 	C3D_FrameBegin(frameLimiter ? 0 : C3D_FRAME_NONBLOCK);
-	frameCounter = C3D_FrameCounter(0);
+	// Mark both buffers used to make sure they get cleared
+	C3D_FrameDrawOn(topScreen[doubleBuffer]);
+	C3D_FrameDrawOn(bottomScreen[doubleBuffer]);
 }
 
 static void _drawEnd(void) {
@@ -257,9 +259,8 @@ static void _guiFinish(void) {
 }
 
 static void _setup(struct mGUIRunner* runner) {
-	bool isNew3DS = false;
-	APT_CheckNew3DS(&isNew3DS);
-	if (isNew3DS && !envIsHomebrew()) {
+	uint8_t mask;
+	if (R_SUCCEEDED(svcGetProcessAffinityMask(&mask, CUR_PROCESS_HANDLE, 4)) && mask >= 4) {
 		mCoreConfigSetDefaultIntValue(&runner->config, "threadedVideo", 1);
 		mCoreLoadForeignConfig(runner->core, &runner->config);
 	}
@@ -388,6 +389,11 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 	default:
 		break;
 	}
+}
+
+static void _storeCounter(struct mGUIRunner* runner) {
+	UNUSED(runner);
+	frameCounter = C3D_FrameCounter(0);
 }
 
 static void _drawTex(struct mCore* core, bool faded) {
@@ -848,7 +854,7 @@ int main() {
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,
 		.gameUnloaded = _gameUnloaded,
-		.prepareForFrame = 0,
+		.prepareForFrame = _storeCounter,
 		.drawFrame = _drawFrame,
 		.drawScreenshot = _drawScreenshot,
 		.paused = _gameUnloaded,
