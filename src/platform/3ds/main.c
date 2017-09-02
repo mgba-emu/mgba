@@ -80,11 +80,12 @@ static C3D_Tex outputTexture;
 static ndspWaveBuf dspBuffer[DSP_BUFFERS];
 static int bufferId = 0;
 static bool frameLimiter = true;
-static unsigned frameCounter;
+static u64 tickCounter;
 
 static C3D_RenderTarget* topScreen[2];
 static C3D_RenderTarget* bottomScreen[2];
 static int doubleBuffer = 0;
+static bool frameStarted = false;
 
 static C3D_RenderTarget* upscaleBuffer;
 static C3D_Tex upscaleBufferTex;
@@ -213,22 +214,38 @@ static void _csndPlaySound(u32 flags, u32 sampleRate, float vol, void* left, voi
 static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right);
 
 static void _drawStart(void) {
-	C3D_FrameBegin(frameLimiter ? 0 : C3D_FRAME_NONBLOCK);
+}
+
+static void _frameStart(void) {
+	if (frameStarted) {
+		return;
+	}
+	frameStarted = true;
+	u8 flags = 0;
+	if (!frameLimiter) {
+		if (tickCounter + 4481000 > svcGetSystemTick()) {
+			flags = C3D_FRAME_NONBLOCK;
+		} else {
+			tickCounter = svcGetSystemTick();
+		}
+	}
+	C3D_FrameBegin(flags);
 	// Mark both buffers used to make sure they get cleared
 	C3D_FrameDrawOn(topScreen[doubleBuffer]);
 	C3D_FrameDrawOn(bottomScreen[doubleBuffer]);
+	ctrStartFrame();
 }
 
 static void _drawEnd(void) {
-	ctrFinalize();
+	if (!frameStarted) {
+		return;
+	}
+	ctrEndFrame();
 	C3D_RenderTargetSetOutput(topScreen[doubleBuffer], GFX_TOP, GFX_LEFT, GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
 	C3D_RenderTargetSetOutput(bottomScreen[doubleBuffer], GFX_BOTTOM, GFX_LEFT, GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
 	C3D_FrameEnd(GX_CMDLIST_FLUSH);
-	if (frameLimiter) {
-		while (frameCounter == C3D_FrameCounter(0)) {
-			gspWaitForAnyEvent();
-		}
-	}
+	frameStarted = false;
+
 	doubleBuffer ^= 1;
 	C3D_FrameBufClear(&bottomScreen[doubleBuffer]->frameBuf, C3D_CLEAR_COLOR, 0, 0);
 	C3D_FrameBufClear(&topScreen[doubleBuffer]->frameBuf, C3D_CLEAR_COLOR, 0, 0);
@@ -250,6 +267,7 @@ static int _batteryState(void) {
 }
 
 static void _guiPrepare(void) {
+	_frameStart();
 	C3D_FrameDrawOn(bottomScreen[doubleBuffer]);
 	ctrSetViewportSize(320, 240, true);
 }
@@ -391,12 +409,8 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 	}
 }
 
-static void _storeCounter(struct mGUIRunner* runner) {
-	UNUSED(runner);
-	frameCounter = C3D_FrameCounter(0);
-}
-
 static void _drawTex(struct mCore* core, bool faded) {
+	_frameStart();
 	unsigned screen_w, screen_h;
 	switch (screenMode) {
 	case SM_PA_BOTTOM:
@@ -606,7 +620,11 @@ static void _incrementScreenMode(struct mGUIRunner* runner) {
 
 static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 	UNUSED(runner);
+	if (frameLimiter == limit) {
+		return;
+	}
 	frameLimiter = limit;
+	tickCounter = svcGetSystemTick();
 }
 
 static uint32_t _pollInput(const struct mInputMap* map) {
@@ -854,7 +872,7 @@ int main() {
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,
 		.gameUnloaded = _gameUnloaded,
-		.prepareForFrame = _storeCounter,
+		.prepareForFrame = 0,
 		.drawFrame = _drawFrame,
 		.drawScreenshot = _drawScreenshot,
 		.paused = _gameUnloaded,
