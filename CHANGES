@@ -34,6 +34,7 @@ Bugfixes:
  - GB Memory: Fix HDMA count starting in mode 0 (fixes mgba.io/i/855)
  - GB Memory: Actually load latch time from savestate
  - GB Serialize: Fix game title check
+ - GB, GBA: Fix sync to video with frameskip
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)

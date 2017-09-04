@@ -338,10 +338,10 @@ void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLat
 	}
 
 	GBFrameEnded(video->p);
+	mCoreSyncPostFrame(video->p->sync);
 	--video->frameskipCounter;
 	if (video->frameskipCounter < 0) {
 		video->renderer->finishFrame(video->renderer);
-		mCoreSyncPostFrame(video->p->sync);
 		video->frameskipCounter = video->frameskip;
 	}
 	++video->frameCounter;
