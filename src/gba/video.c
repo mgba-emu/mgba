@@ -157,9 +157,9 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 			GBARaiseIRQ(video->p, IRQ_VBLANK);
 		}
 		GBAFrameEnded(video->p);
+		mCoreSyncPostFrame(video->p->sync);
 		--video->frameskipCounter;
 		if (video->frameskipCounter < 0) {
-			mCoreSyncPostFrame(video->p->sync);
 			video->frameskipCounter = video->frameskip;
 		}
 		++video->frameCounter;
