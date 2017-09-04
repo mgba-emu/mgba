@@ -88,7 +88,7 @@ endif()
 
 if(ENABLE_SCRIPTING)
 	if(BUILD_PYTHON)
-		list(APPEND PLATFORM_LIBRARY "${PYTHON_LIBRARY}")
+		list(APPEND PLATFORM_LIBRARY ${BINARY_NAME}-pylib)
 	endif()
 endif()
 

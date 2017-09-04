@@ -20,9 +20,11 @@ if(NOT GIT_TAG)
 endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in ${CMAKE_CURRENT_BINARY_DIR}/setup.py)
 
-add_custom_command(OUTPUT lib.c
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib.c
                   COMMAND BINDIR=${CMAKE_CURRENT_BINARY_DIR}/.. CPPFLAGS="${INCLUDE_FLAGS}" ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/_builder.py
+                  COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/lib.c
                   DEPENDS ${PYTHON_HEADERS}
+                  DEPENDS ${BINARY_NAME}
                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/_builder.py)
 
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/lib.c PROPERTIES GENERATED ON)
@@ -31,7 +33,6 @@ file(GLOB PYTHON_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
 add_library(${BINARY_NAME}-pylib STATIC ${CMAKE_CURRENT_BINARY_DIR}/lib.c ${PYTHON_SRC})
 set_target_properties(${BINARY_NAME}-pylib PROPERTIES INCLUDE_DIRECTORIES "${CMAKE_BINARY_DIR};${INCLUDE_DIRECTORIES}")
 set_target_properties(${BINARY_NAME}-pylib PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
-set(PYTHON_LIBRARY ${BINARY_NAME}-pylib PARENT_SCOPE)
 
 add_custom_target(${BINARY_NAME}-py ALL
                   COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/setup.py egg_info -e ${CMAKE_CURRENT_BINARY_DIR} ${PYLIB_VERSION}
