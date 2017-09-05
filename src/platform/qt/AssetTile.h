@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include <mgba/core/tile-cache.h>
+#include <mgba/core/cache-set.h>
 
 namespace QGBA {
 
@@ -24,16 +24,16 @@ public:
 
 public slots:
 	void setPalette(int);
-	void setPaletteSet(int, int boundary, int max);
+	void setBoundary(int boundary, int set0, int set1);
 	void selectIndex(int);
 	void selectColor(int);
 
 private:
 	Ui::AssetTile m_ui;
 
-	mTileCache* m_tileCache;
+	mCacheSet* m_cacheSet;
+	mTileCache* m_tileCaches[2];
 	int m_paletteId = 0;
-	int m_paletteSet = 0;
 	int m_index = 0;
 
 	int m_addressWidth;

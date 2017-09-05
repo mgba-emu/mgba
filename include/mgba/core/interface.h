@@ -47,10 +47,7 @@ static inline color_t mColorFrom555(uint16_t value) {
 	color_t color = value;
 #endif
 #else
-	color_t color = 0;
-	color |= (value << 3) & 0xF8;
-	color |= (value << 6) & 0xF800;
-	color |= (value << 9) & 0xF80000;
+	color_t color = M_RGB5_TO_BGR8(value);
 	color |= (color >> 5) & 0x070707;
 #endif
 	return color;

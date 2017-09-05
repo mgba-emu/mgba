@@ -24,17 +24,17 @@ ffi.set_source("mgba._pylib", """
 #include <mgba/core/log.h>
 #include <mgba/core/mem-search.h>
 #include <mgba/core/thread.h>
-#include <mgba/core/tile-cache.h>
+#include <mgba/core/cache-set.h>
 #include <mgba/core/version.h>
 #include <mgba/debugger/debugger.h>
 #include <mgba/internal/arm/arm.h>
 #include <mgba/internal/debugger/cli-debugger.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
-#include <mgba/internal/gba/renderers/tile-cache.h>
+#include <mgba/internal/gba/renderers/cache-set.h>
 #include <mgba/internal/lr35902/lr35902.h>
 #include <mgba/internal/gb/gb.h>
-#include <mgba/internal/gb/renderers/tile-cache.h>
+#include <mgba/internal/gb/renderers/cache-set.h>
 #include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
 

@@ -7,7 +7,7 @@
 
 #include <mgba/core/sync.h>
 #include <mgba/core/thread.h>
-#include <mgba/core/tile-cache.h>
+#include <mgba/core/cache-set.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/serialize.h>
@@ -705,7 +705,7 @@ static void GBVideoDummyRendererWriteSGBPacket(struct GBVideoRenderer* renderer,
 
 static void GBVideoDummyRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address) {
 	if (renderer->cache) {
-		mTileCacheWriteVRAM(renderer->cache, address);
+		mCacheSetWriteVRAM(renderer->cache, address);
 	}
 }
 
@@ -716,9 +716,8 @@ static void GBVideoDummyRendererWriteOAM(struct GBVideoRenderer* renderer, uint1
 }
 
 static void GBVideoDummyRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value) {
-	UNUSED(value);
 	if (renderer->cache) {
-		mTileCacheWritePalette(renderer->cache, index << 1);
+		mCacheSetWritePalette(renderer->cache, index, mColorFrom555(value));
 	}
 }
 

@@ -18,12 +18,12 @@
 #include <mgba/feature/video-logger.h>
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/gba.h>
-#include <mgba/internal/gba/renderers/tile-cache.h>
+#include <mgba/internal/gba/renderers/cache-set.h>
 #include <mgba/internal/gba/sharkport.h>
 #endif
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
-#include <mgba/internal/gb/renderers/tile-cache.h>
+#include <mgba/internal/gb/renderers/cache-set.h>
 #endif
 #include <mgba-util/math.h>
 #include <mgba-util/vfs.h>
@@ -186,9 +186,9 @@ CoreController::~CoreController() {
 	stop();
 	disconnect();
 
-	if (m_tileCache) {
-		mTileCacheDeinit(m_tileCache.get());
-		m_tileCache.reset();
+	if (m_cacheSet) {
+		mCacheSetDeinit(m_cacheSet.get());
+		m_cacheSet.reset();
 	}
 
 	mCoreThreadJoin(&m_threadContext);
@@ -268,36 +268,34 @@ void CoreController::clearMultiplayerController() {
 	m_multiplayer = nullptr;
 }
 
-mTileCache* CoreController::tileCache() {
-	if (m_tileCache) {
-		return m_tileCache.get();
+mCacheSet* CoreController::graphicCaches() {
+	if (m_cacheSet) {
+		return m_cacheSet.get();
 	}
 	Interrupter interrupter(this);
 	switch (platform()) {
 #ifdef M_CORE_GBA
 	case PLATFORM_GBA: {
 		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
-		m_tileCache = std::make_unique<mTileCache>();
-		GBAVideoTileCacheInit(m_tileCache.get());
-		GBAVideoTileCacheAssociate(m_tileCache.get(), &gba->video);
-		mTileCacheSetPalette(m_tileCache.get(), 0);
+		m_cacheSet = std::make_unique<mCacheSet>();
+		GBAVideoCacheInit(m_cacheSet.get());
+		GBAVideoCacheAssociate(m_cacheSet.get(), &gba->video);
 		break;
 	}
 #endif
 #ifdef M_CORE_GB
 	case PLATFORM_GB: {
 		GB* gb = static_cast<GB*>(m_threadContext.core->board);
-		m_tileCache = std::make_unique<mTileCache>();
-		GBVideoTileCacheInit(m_tileCache.get());
-		GBVideoTileCacheAssociate(m_tileCache.get(), &gb->video);
-		mTileCacheSetPalette(m_tileCache.get(), 0);
+		m_cacheSet = std::make_unique<mCacheSet>();
+		GBVideoCacheInit(m_cacheSet.get());
+		GBVideoCacheAssociate(m_cacheSet.get(), &gb->video);
 		break;
 	}
 #endif
 	default:
 		return nullptr;
 	}
-	return m_tileCache.get();
+	return m_cacheSet.get();
 }
 
 void CoreController::setOverride(std::unique_ptr<Override> override) {

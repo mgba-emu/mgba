@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gb/renderers/software.h>
 
-#include <mgba/core/tile-cache.h>
+#include <mgba/core/cache-set.h>
 #include <mgba/internal/gb/io.h>
 #include <mgba-util/math.h>
 #include <mgba-util/memory.h>
@@ -284,13 +284,13 @@ static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer
 	color_t color = mColorFrom555(value);
 	softwareRenderer->palette[index] = color;
 	if (renderer->cache) {
-		mTileCacheWritePalette(renderer->cache, index << 1);
+		mCacheSetWritePalette(renderer->cache, index, color);
 	}
 }
 
 static void GBVideoSoftwareRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address) {
 	if (renderer->cache) {
-		mTileCacheWriteVRAM(renderer->cache, address);
+		mCacheSetWriteVRAM(renderer->cache, address);
 	}
 }
 

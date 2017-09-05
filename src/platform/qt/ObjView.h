@@ -56,6 +56,7 @@ private:
 	} m_objInfo = {};
 
 	int m_tileOffset;
+	int m_boundary;
 };
 
 }

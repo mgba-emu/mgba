@@ -22,6 +22,7 @@ public:
 
 public slots:
 	void setColor(int index, uint16_t);
+	void setColor(int index, uint32_t);
 
 signals:
 	void indexPressed(int index);

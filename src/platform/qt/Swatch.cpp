@@ -42,6 +42,14 @@ void Swatch::setColor(int index, uint16_t color) {
 	updateFill(index);
 }
 
+void Swatch::setColor(int index, uint32_t color) {
+	m_colors[index].setRgb(
+		(color >> 0) & 0xFF,
+		(color >> 8) & 0xFF,
+		(color >> 16) & 0xFF);
+	updateFill(index);
+}
+
 void Swatch::paintEvent(QPaintEvent* event) {
 	QPainter painter(this);
 	painter.drawPixmap(QPoint(), m_backing);

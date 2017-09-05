@@ -5,9 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gba/renderers/software-private.h"
 
-#include <mgba/core/tile-cache.h>
+#include <mgba/core/cache-set.h>
 #include <mgba/internal/arm/macros.h>
 #include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/renderers/cache-set.h>
 
 #include <mgba-util/arm-algo.h>
 #include <mgba-util/memory.h>
@@ -149,6 +150,10 @@ static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer) {
 
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+	if (renderer->cache) {
+		GBAVideoCacheWriteVideoRegister(renderer->cache, address, value);
+	}
+
 	switch (address) {
 	case REG_DISPCNT:
 		softwareRenderer->dispcnt = value;
@@ -381,7 +386,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 static void GBAVideoSoftwareRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	if (renderer->cache) {
-		mTileCacheWriteVRAM(renderer->cache, address);
+		mCacheSetWriteVRAM(renderer->cache, address);
 	}
 	memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 }
@@ -403,7 +408,7 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 		softwareRenderer->variantPalette[address >> 1] = _darken(color, softwareRenderer->bldy);
 	}
 	if (renderer->cache) {
-		mTileCacheWritePalette(renderer->cache, address);
+		mCacheSetWritePalette(renderer->cache, address >> 1, color);
 	}
 	memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 }

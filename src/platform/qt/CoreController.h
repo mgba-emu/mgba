@@ -19,7 +19,7 @@
 #include <mgba/core/core.h>
 #include <mgba/core/interface.h>
 #include <mgba/core/thread.h>
-#include <mgba/core/tile-cache.h>
+#include <mgba/core/cache-set.h>
 
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/sio/printer.h>
@@ -78,7 +78,7 @@ public:
 	void clearMultiplayerController();
 	MultiplayerController* multiplayerController() { return m_multiplayer; }
 
-	mTileCache* tileCache();
+	mCacheSet* graphicCaches();
 	int stateSlot() const { return m_stateSlot; }
 
 	void setOverride(std::unique_ptr<Override> override);
@@ -173,7 +173,7 @@ private:
 	QByteArray* m_activeBuffer;
 	QByteArray* m_completeBuffer = nullptr;
 
-	std::unique_ptr<mTileCache> m_tileCache;
+	std::unique_ptr<mCacheSet> m_cacheSet;
 	std::unique_ptr<Override> m_override;
 
 	QList<std::function<void()>> m_resetActions;

@@ -6,11 +6,12 @@
 #include <mgba/internal/gba/video.h>
 
 #include <mgba/core/sync.h>
-#include <mgba/core/tile-cache.h>
+#include <mgba/core/cache-set.h>
 #include <mgba/internal/arm/macros.h>
 #include <mgba/internal/gba/dma.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/renderers/cache-set.h>
 #include <mgba/internal/gba/serialize.h>
 
 #include <mgba-util/memory.h>
@@ -214,7 +215,9 @@ static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer) {
 }
 
 static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
-	UNUSED(renderer);
+	if (renderer->cache) {
+		GBAVideoCacheWriteVideoRegister(renderer->cache, address, value);
+	}
 	switch (address) {
 	case REG_BG0CNT:
 	case REG_BG1CNT:
@@ -252,14 +255,13 @@ static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer*
 
 static void GBAVideoDummyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
 	if (renderer->cache) {
-		mTileCacheWriteVRAM(renderer->cache, address);
+		mCacheSetWriteVRAM(renderer->cache, address);
 	}
 }
 
 static void GBAVideoDummyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
-	UNUSED(value);
 	if (renderer->cache) {
-		mTileCacheWritePalette(renderer->cache, address);
+		mCacheSetWritePalette(renderer->cache, address >> 1, mColorFrom555(value));
 	}
 }
 

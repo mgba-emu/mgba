@@ -65,7 +65,7 @@ union GBOAM {
 	uint8_t raw[160];
 };
 
-struct mTileCache;
+struct mCacheSet;
 struct GBVideoRenderer {
 	void (*init)(struct GBVideoRenderer* renderer, enum GBModel model, bool borders);
 	void (*deinit)(struct GBVideoRenderer* renderer);
@@ -84,7 +84,7 @@ struct GBVideoRenderer {
 
 	uint8_t* vram;
 	union GBOAM* oam;
-	struct mTileCache* cache;
+	struct mCacheSet* cache;
 
 	uint8_t* sgbCharRam;
 	uint8_t* sgbMapRam;

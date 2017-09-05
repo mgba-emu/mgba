@@ -64,7 +64,7 @@ void ObjView::selectObj(int obj) {
 void ObjView::translateIndex(int index) {
 	unsigned x = index % m_objInfo.width;
 	unsigned y = index / m_objInfo.width;
-	m_ui.tile->selectIndex(x + y * m_objInfo.stride + m_tileOffset);
+	m_ui.tile->selectIndex(x + y * m_objInfo.stride + m_tileOffset + m_boundary);
 }
 
 #ifdef M_CORE_GBA
@@ -87,19 +87,19 @@ void ObjView::updateTilesGBA(bool force) {
 	unsigned bits;
 	if (GBAObjAttributesAIs256Color(obj->a)) {
 		m_ui.palette->setText("256-color");
-		paletteSet = 1;
+		paletteSet = 3;
+		m_ui.tile->setBoundary(1024, 1, 3);
 		m_ui.tile->setPalette(0);
-		m_ui.tile->setPaletteSet(1, 1024, 1536);
-		palette = 1;
-		tile = tile / 2 + 1024;
+		m_boundary = 1024;
+		palette = 0;
+		tile /= 2;
 		bits = 8;
 	} else {
 		m_ui.palette->setText(QString::number(palette));
-		paletteSet = 0;
+		paletteSet = 2;
+		m_ui.tile->setBoundary(2048, 0, 2);
 		m_ui.tile->setPalette(palette);
-		m_ui.tile->setPaletteSet(0, 2048, 3072);
-		palette += 16;
-		tile += 2048;
+		m_boundary = 2048;
 		bits = 4;
 	}
 	ObjInfo newInfo{
@@ -120,16 +120,16 @@ void ObjView::updateTilesGBA(bool force) {
 	};
 	m_objInfo = newInfo;
 	m_tileOffset = tile;
-	mTileCacheSetPalette(m_tileCache, paletteSet);
+	mTileCache* tileCache = mTileCacheSetGetPointer(&m_cacheSet->tiles, paletteSet);
 
 	int i = 0;
 	for (int y = 0; y < height / 8; ++y) {
 		for (int x = 0; x < width / 8; ++x, ++i, ++tile, ++tileBase) {
-			const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache, &m_tileStatus[32 * tileBase], tile, palette);
+			const color_t* data = mTileCacheGetTileIfDirty(tileCache, &m_tileStatus[16 * tileBase], tile, palette);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
 			} else if (force) {
-				m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache, tile, palette));
+				m_ui.tiles->setTile(i, mTileCacheGetTile(tileCache, tile, palette));
 			}
 		}
 		tile += newInfo.stride - width / 8;
@@ -178,6 +178,7 @@ void ObjView::updateTilesGB(bool force) {
 	const GB* gb = static_cast<const GB*>(m_controller->thread()->core->board);
 	const GBObj* obj = &gb->video.oam.obj[m_objId];
 
+	mTileCache* tileCache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 0);
 	unsigned width = 8;
 	unsigned height = 8;
 	GBRegisterLCDC lcdc = gb->memory.io[REG_LCDC];
@@ -186,6 +187,7 @@ void ObjView::updateTilesGB(bool force) {
 	}
 	unsigned tile = obj->tile;
 	m_ui.tiles->setTileCount(width * height / 64);
+	m_ui.tile->setBoundary(1024, 0, 0);
 	m_ui.tiles->setMinimumSize(QSize(width, height) * m_ui.magnification->value());
 	m_ui.tiles->resize(QSize(width, height) * m_ui.magnification->value());
 	unsigned palette = 0;
@@ -214,18 +216,17 @@ void ObjView::updateTilesGB(bool force) {
 	}
 	m_objInfo = newInfo;
 	m_tileOffset = tile;
+	m_boundary = 1024;
 
 	int i = 0;
-	mTileCacheSetPalette(m_tileCache, 0);
 	m_ui.tile->setPalette(palette);
-	m_ui.tile->setPaletteSet(0, 512, 1024);
 	for (int y = 0; y < height / 8; ++y, ++i) {
 		unsigned t = tile + i;
-		const uint16_t* data = mTileCacheGetTileIfDirty(m_tileCache, &m_tileStatus[16 * t], t, palette);
+		const color_t* data = mTileCacheGetTileIfDirty(tileCache, &m_tileStatus[8 * t], t, palette);
 		if (data) {
 			m_ui.tiles->setTile(i, data);
 		} else if (force) {
-			m_ui.tiles->setTile(i, mTileCacheGetTile(m_tileCache, t, palette));
+			m_ui.tiles->setTile(i, mTileCacheGetTile(tileCache, t, palette));
 		}
 	}
 
@@ -257,21 +258,17 @@ void ObjView::exportObj() {
 	}
 
 	CoreController::Interrupter interrupter(m_controller);
-	mTileCacheSetPalette(m_tileCache, m_objInfo.paletteSet);
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = PNGWriteHeader8(png, m_objInfo.width * 8, m_objInfo.height * 8);
 
-	const uint16_t* rawPalette = mTileCacheGetPalette(m_tileCache, m_objInfo.paletteId);
+	mTileCache* tileCache = mTileCacheSetGetPointer(&m_cacheSet->tiles, m_objInfo.paletteSet);
+	const color_t* rawPalette = mTileCacheGetPalette(tileCache, m_objInfo.paletteId);
 	unsigned colors = 1 << m_objInfo.bits;
 	uint32_t palette[256];
-	for (unsigned c = 0; c < colors && c < 256; ++c) {
-		uint16_t color = rawPalette[c];
-		palette[c] = M_R8(rawPalette[c]);
-		palette[c] |= M_G8(rawPalette[c]) << 8;
-		palette[c] |= M_B8(rawPalette[c]) << 16;
-		if (c) {
-			palette[c] |= 0xFF000000;
-		}
+
+	palette[0] = rawPalette[0];
+	for (unsigned c = 1; c < colors && c < 256; ++c) {
+		palette[c] = rawPalette[c] | 0xFF000000;
 	}
 	PNGWritePalette(png, info, palette, colors);
 
@@ -279,7 +276,7 @@ void ObjView::exportObj() {
 	unsigned t = m_objInfo.tile;
 	for (int y = 0; y < m_objInfo.height; ++y) {
 		for (int x = 0; x < m_objInfo.width; ++x, ++t) {
-			compositeTile(t, static_cast<void*>(buffer), m_objInfo.width * 8, x * 8, y * 8, m_objInfo.bits);
+			compositeTile(static_cast<const void*>(mTileCacheGetVRAM(tileCache, t)), reinterpret_cast<color_t*>(buffer), m_objInfo.width * 8, x * 8, y * 8, m_objInfo.bits);
 		}
 		t += m_objInfo.stride - m_objInfo.width;
 	}

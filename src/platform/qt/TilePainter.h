@@ -9,6 +9,8 @@
 #include <QWidget>
 #include <QVector>
 
+#include <mgba/core/interface.h>
+
 namespace QGBA {
 
 class TilePainter : public QWidget {
@@ -18,7 +20,7 @@ public:
 	TilePainter(QWidget* parent = nullptr);
 
 public slots:
-	void setTile(int index, const uint16_t*);
+	void setTile(int index, const color_t*);
 	void setTileCount(int tiles);
 	void setTileMagnification(int mag);
 
