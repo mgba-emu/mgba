@@ -21,6 +21,7 @@ Bugfixes:
  - GB Memory: Fix HDMA count starting in mode 0 (fixes mgba.io/i/855)
  - GB Memory: Actually load latch time from savestate
  - GB, GBA: Fix sync to video with frameskip
+ - GB Audio: Fix NRx2 writes while active (fixes mgba.io/i/866)
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
  - SDL: Fix 2.0.5 build on macOS under some circumstances
