@@ -35,6 +35,7 @@ Bugfixes:
  - GB Memory: Actually load latch time from savestate
  - GB Serialize: Fix game title check
  - GB, GBA: Fix sync to video with frameskip
+ - GB Audio: Fix NRx2 writes while active (fixes mgba.io/i/866)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
