@@ -10,6 +10,7 @@
 #include <mgba/core/blip_buf.h>
 #include <mgba/core/cheats.h>
 #include <mgba/core/core.h>
+#include <mgba/core/log.h>
 #include <mgba/core/version.h>
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
@@ -582,7 +583,12 @@ void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel level, con
 		break;
 	}
 #ifdef NDEBUG
-	if (category == _mLOG_CAT_GBA_BIOS()) {
+	static int biosCat = -1;
+	if (biosCat < 0) {
+		biosCat = mLogCategoryById("gba.bios");
+	}
+
+	if (category == biosCat) {
 		return;
 	}
 #endif
