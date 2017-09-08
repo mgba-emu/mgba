@@ -186,11 +186,7 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	mCoreConfigCopyValue(&core->config, config, "gb.model");
 	mCoreConfigCopyValue(&core->config, config, "sgb.model");
 	mCoreConfigCopyValue(&core->config, config, "cgb.model");
-
-	int fakeBool;
-	if (mCoreConfigGetIntValue(config, "sgb.borders", &fakeBool)) {
-		gb->video.sgbBorders = fakeBool;
-	}
+	mCoreConfigCopyValue(&core->config, config, "sgb.borders");
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBCore* gbcore = (struct GBCore*) core;
@@ -347,6 +343,11 @@ static void _GBCoreReset(struct mCore* core) {
 		} else if (gb->model == GB_MODEL_SGB && modelSGB) {
 			gb->model = GBNameToModel(modelSGB);
 		}
+	}
+
+	int fakeBool;
+	if (mCoreConfigGetIntValue(&core->config, "sgb.borders", &fakeBool)) {
+		gb->video.sgbBorders = fakeBool;
 	}
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
