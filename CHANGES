@@ -45,6 +45,7 @@ Misc:
  - SDL: Fix 2.0.5 build on macOS under some circumstances
  - Test: Restructure test suite into multiple executables
  - Python: Integrate tests from cinema test suite
+ - Util: Don't build crc32 if the function already exists
 
 0.6.0: (2017-07-16)
 Features:

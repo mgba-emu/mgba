@@ -500,6 +500,14 @@ if(USE_ZLIB)
 	include_directories(AFTER ${ZLIB_INCLUDE_DIRS})
 	list(APPEND DEPENDENCY_LIB ${ZLIB_LIBRARIES})
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},zlib1g")
+	set(HAVE_CRC32 ON)
+else()
+	# zlib pulls in crc32
+	check_function_exists(crc32 HAVE_CRC32)
+endif()
+
+if(HAVE_CRC32)
+	list(APPEND FUNCTION_DEFINES HAVE_CRC32)
 endif()
 
 if(WANT_PNG AND USE_ZLIB AND NOT USE_PNG)
