@@ -395,14 +395,7 @@ static void _GBACoreReset(struct mCore* core) {
 		GBAVideoAssociateRenderer(&gba->video, renderer);
 	}
 
-	struct GBACartridgeOverride override;
-	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
-	if (cart) {
-		memcpy(override.id, &cart->id, sizeof(override.id));
-		if (GBAOverrideFind(gbacore->overrides, &override)) {
-			GBAOverrideApply(gba, &override);
-		}
-	}
+	GBAOverrideApplyDefaults(gba, gbacore->overrides);
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	if (!gba->biosVf && core->opts.useBios) {

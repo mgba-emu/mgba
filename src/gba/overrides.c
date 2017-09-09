@@ -338,11 +338,19 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 	}
 }
 
-void GBAOverrideApplyDefaults(struct GBA* gba) {
-	struct GBACartridgeOverride override;
+void GBAOverrideApplyDefaults(struct GBA* gba, const struct Configuration* overrides) {
+	struct GBACartridgeOverride override = { .idleLoop = IDLE_LOOP_NONE };
 	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
-	memcpy(override.id, &cart->id, sizeof(override.id));
-	if (GBAOverrideFind(0, &override)) {
-		GBAOverrideApply(gba, &override);
+	if (cart) {
+		memcpy(override.id, &cart->id, sizeof(override.id));
+
+		if (!strncmp("pokemon red version", &((const char*) gba->memory.rom)[0x108], 20) && gba->romCrc32 != 0xDD88761C) {
+			// Enable FLASH1M and RTC on Pokémon FireRed ROM hacks
+			override.savetype = SAVEDATA_FLASH1M;
+			override.hardware = HW_RTC;
+			GBAOverrideApply(gba, &override);
+		} else if (GBAOverrideFind(overrides, &override)) {
+			GBAOverrideApply(gba, &override);
+		}
 	}
 }
