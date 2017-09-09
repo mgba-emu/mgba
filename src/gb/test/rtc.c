@@ -14,7 +14,7 @@
 struct GBRTCTest {
 	struct mRTCSource d;
 	struct mCore* core;
-	struct VFile* fakeROM;
+	struct VFile* fakeSave;
 	time_t nextTime;
 };
 
@@ -51,10 +51,13 @@ M_TEST_SUITE_SETUP(GBRTC) {
 	struct VFile* vf = VFileMemChunk(NULL, 2048);
 	GBSynthesizeROM(vf);
 	test->core->loadROM(test->core, vf);
-	test->core->setRTC(test->core, &test->d);
+	mCoreSetRTC(test->core, &test->d);
+
+	test->fakeSave = VFileMemChunk(NULL, 0);
+	test->core->loadSave(test->core, test->fakeSave);
+
 	struct GB* gb = test->core->board;
-	struct GBCartridge* cart = (struct GBCartridge*) &gb->memory.rom[0x100];
-	cart->type = 0x0F;
+	gb->memory.mbcType = GB_MBC3_RTC;
 
 	*state = test;
 	return 0;
@@ -77,10 +80,12 @@ M_TEST_DEFINE(create) {
 
 	uint8_t expected[sizeof(gb->memory.rtcRegs)] = { 0, 0, 0, 0, 0 };
 	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	assert_int_equal(gb->memory.mbcType, GB_MBC3_RTC);
 }
 
 M_TEST_DEFINE(tickSecond) {
 	struct GBRTCTest* test = *state;
+	test->nextTime = 0;
 	test->core->reset(test->core);
 	struct GB* gb = test->core->board;
 	test->nextTime = 1;
@@ -108,6 +113,7 @@ M_TEST_DEFINE(tickSecond) {
 
 M_TEST_DEFINE(tick30Seconds) {
 	struct GBRTCTest* test = *state;
+	test->nextTime = 0;
 	test->core->reset(test->core);
 	struct GB* gb = test->core->board;
 	test->nextTime = 30;
@@ -142,6 +148,7 @@ M_TEST_DEFINE(tick30Seconds) {
 
 M_TEST_DEFINE(tickMinute) {
 	struct GBRTCTest* test = *state;
+	test->nextTime = 0;
 	test->core->reset(test->core);
 	struct GB* gb = test->core->board;
 	test->nextTime = 60;
@@ -184,6 +191,7 @@ M_TEST_DEFINE(tickMinute) {
 
 M_TEST_DEFINE(tick90Seconds) {
 	struct GBRTCTest* test = *state;
+	test->nextTime = 0;
 	test->core->reset(test->core);
 	struct GB* gb = test->core->board;
 	test->nextTime = 90;
@@ -240,6 +248,7 @@ M_TEST_DEFINE(tick90Seconds) {
 
 M_TEST_DEFINE(tick30Minutes) {
 	struct GBRTCTest* test = *state;
+	test->nextTime = 0;
 	test->core->reset(test->core);
 	struct GB* gb = test->core->board;
 	test->nextTime = 1800;
@@ -282,6 +291,7 @@ M_TEST_DEFINE(tick30Minutes) {
 
 M_TEST_DEFINE(tickHour) {
 	struct GBRTCTest* test = *state;
+	test->nextTime = 0;
 	test->core->reset(test->core);
 	struct GB* gb = test->core->board;
 	test->nextTime = 3600;
@@ -339,6 +349,7 @@ M_TEST_DEFINE(tickHour) {
 
 M_TEST_DEFINE(tick12Hours) {
 	struct GBRTCTest* test = *state;
+	test->nextTime = 0;
 	test->core->reset(test->core);
 	struct GB* gb = test->core->board;
 	test->nextTime = 3600 * 12;
@@ -407,6 +418,7 @@ M_TEST_DEFINE(tick12Hours) {
 
 M_TEST_DEFINE(tickDay) {
 	struct GBRTCTest* test = *state;
+	test->nextTime = 0;
 	test->core->reset(test->core);
 	struct GB* gb = test->core->board;
 	test->nextTime = 3600 * 24;
@@ -505,6 +517,7 @@ M_TEST_DEFINE(tickDay) {
 
 M_TEST_DEFINE(wideTickDay) {
 	struct GBRTCTest* test = *state;
+	test->nextTime = 0;
 	test->core->reset(test->core);
 	struct GB* gb = test->core->board;
 	test->nextTime = 3600 * 24 * 2001;
@@ -611,6 +624,7 @@ M_TEST_DEFINE(wideTickDay) {
 
 M_TEST_DEFINE(rolloverSecond) {
 	struct GBRTCTest* test = *state;
+	test->nextTime = 0;
 	test->core->reset(test->core);
 	struct GB* gb = test->core->board;
 	test->nextTime = 1;
@@ -672,6 +686,270 @@ M_TEST_DEFINE(rolloverSecond) {
 	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
 }
 
+M_TEST_DEFINE(roundtrip0) {
+	struct GBRTCTest* test = *state;
+	test->nextTime = 0;
+	test->fakeSave->truncate(test->fakeSave, 0);
+	test->core->reset(test->core);
+	struct GB* gb = test->core->board;
+
+	uint8_t expected[sizeof(gb->memory.rtcRegs)] = { 0, 0, 0, 0, 0 };
+	memset(gb->memory.rtcRegs, 0, sizeof(expected));
+	GBMBCRTCWrite(gb);
+
+	GBMBCRTCRead(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	GBMBCRTCRead(gb);
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	GBMBCRTCWrite(gb);
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	GBMBCRTCRead(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->nextTime = 3600;
+	expected[2] = 1;
+	GBMBCRTCWrite(gb);
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	GBMBCRTCRead(gb);
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	GBMBCRTCWrite(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	GBMBCRTCRead(gb);
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->nextTime = 3600 * 2;
+	expected[2] = 2;
+	GBMBCRTCWrite(gb);
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	GBMBCRTCRead(gb);
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+}
+
+M_TEST_DEFINE(roundtripSecond) {
+	struct GBRTCTest* test = *state;
+	test->nextTime = 0;
+	test->fakeSave->truncate(test->fakeSave, 0);
+	test->core->reset(test->core);
+	struct GB* gb = test->core->board;
+
+	uint8_t expected[sizeof(gb->memory.rtcRegs)] = { 0, 0, 0, 0, 0 };
+	memset(gb->memory.rtcRegs, 0, sizeof(expected));
+	GBMBCRTCWrite(gb);
+
+	test->nextTime = 1;
+	GBMBCRTCRead(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	expected[0] = 1;
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	GBMBCRTCWrite(gb);
+
+	test->nextTime = 2;
+	GBMBCRTCRead(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	_sampleRtcKeepLatch(gb);
+	expected[0] = 2;
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->core->reset(test->core);
+	expected[0] = 1;
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	_sampleRtcKeepLatch(gb);
+	expected[0] = 2;
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->core->reset(test->core);
+	expected[0] = 1;
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	GBMBCRTCRead(gb);
+	_sampleRtcKeepLatch(gb);
+	expected[0] = 2;
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->nextTime = 3;
+	test->core->reset(test->core);
+	expected[0] = 1;
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	_sampleRtcKeepLatch(gb);
+	expected[0] = 3;
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->nextTime = 1;
+	test->core->reset(test->core);
+	expected[0] = 1;
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	test->nextTime = 4;
+	_sampleRtcKeepLatch(gb);
+	expected[0] = 4;
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+}
+
+M_TEST_DEFINE(roundtripDay) {
+	struct GBRTCTest* test = *state;
+	test->nextTime = 0;
+	test->fakeSave->truncate(test->fakeSave, 0);
+	test->core->reset(test->core);
+	struct GB* gb = test->core->board;
+
+	uint8_t expected[sizeof(gb->memory.rtcRegs)] = { 0, 0, 0, 0, 0 };
+	memset(gb->memory.rtcRegs, 0, sizeof(expected));
+	GBMBCRTCWrite(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->nextTime = 3600 * 24;
+	GBMBCRTCRead(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 0;
+	expected[3] = 1;
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->nextTime = 3600 * 24 * 2;
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 0;
+	expected[3] = 2;
+	GBMBCRTCRead(gb);
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	GBMBCRTCWrite(gb);
+
+	test->nextTime = 3600 * 24 * 2;
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 0;
+	expected[3] = 2;
+	GBMBCRTCRead(gb);
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->nextTime = 3600 * 24 * 3;
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 0;
+	expected[3] = 3;
+	GBMBCRTCRead(gb);
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->nextTime = 3600 * 24 * 2;
+	test->core->reset(test->core);
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 0;
+	expected[3] = 2;
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->nextTime = 3600 * 24 * 3;
+	test->core->reset(test->core);
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 0;
+	expected[3] = 2;
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 0;
+	expected[3] = 3;
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+}
+
+M_TEST_DEFINE(roundtripHuge) {
+	struct GBRTCTest* test = *state;
+	test->nextTime = 1500000000;
+	test->fakeSave->truncate(test->fakeSave, 0);
+	test->core->reset(test->core);
+	struct GB* gb = test->core->board;
+
+	uint8_t expected[sizeof(gb->memory.rtcRegs)] = { 0, 0, 0, 0, 0 };
+	memset(gb->memory.rtcRegs, 0, sizeof(expected));
+	GBMBCRTCWrite(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->nextTime = 1500000000 + 3600 * 24;
+	GBMBCRTCRead(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 0;
+	expected[3] = 1;
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->nextTime = 1500000000 + 3600 * 24 * 2;
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 0;
+	expected[3] = 2;
+	GBMBCRTCRead(gb);
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	GBMBCRTCWrite(gb);
+
+	test->nextTime = 1500000000 + 3600 * 24 * 2;
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 0;
+	expected[3] = 2;
+	GBMBCRTCRead(gb);
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->nextTime = 1500000000 + 3600 * 24 * 3;
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 0;
+	expected[3] = 3;
+	GBMBCRTCRead(gb);
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->nextTime = 1500000000 + 3600 * 24 * 2;
+	test->core->reset(test->core);
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 0;
+	expected[3] = 2;
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+
+	test->nextTime = 1500000000 + 3600 * 24 * 3;
+	test->core->reset(test->core);
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 0;
+	expected[3] = 2;
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 0;
+	expected[3] = 3;
+	_sampleRtcKeepLatch(gb);
+	assert_memory_equal(gb->memory.rtcRegs, expected, sizeof(expected));
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(GBRTC,
 	cmocka_unit_test(create),
 	cmocka_unit_test(tickSecond),
@@ -683,4 +961,8 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(GBRTC,
 	cmocka_unit_test(tick12Hours),
 	cmocka_unit_test(tickDay),
 	cmocka_unit_test(wideTickDay),
-	cmocka_unit_test(rolloverSecond))
+	cmocka_unit_test(rolloverSecond),
+	cmocka_unit_test(roundtrip0),
+	cmocka_unit_test(roundtripSecond),
+	cmocka_unit_test(roundtripDay),
+	cmocka_unit_test(roundtripHuge))

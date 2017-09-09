@@ -154,6 +154,7 @@ void _endMode0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		video->mode = 1;
 		video->modeEvent.callback = _endMode1;
 
+		mTimingDeschedule(&video->p->timing, &video->frameEvent);
 		mTimingSchedule(&video->p->timing, &video->frameEvent, -cyclesLate);
 
 		if (!_statIRQAsserted(video, oldStat) && GBRegisterSTATIsOAMIRQ(video->stat)) {
@@ -230,6 +231,7 @@ void _endMode3(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	GBVideoProcessDots(video);
 	if (video->ly < GB_VIDEO_VERTICAL_PIXELS && video->p->memory.isHdma && video->p->memory.io[REG_HDMA5] != 0xFF) {
 		video->p->memory.hdmaRemaining = 0x10;
+		video->p->cpuBlocked = true;
 		mTimingDeschedule(timing, &video->p->memory.hdmaEvent);
 		mTimingSchedule(timing, &video->p->memory.hdmaEvent, 0);
 	}

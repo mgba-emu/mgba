@@ -105,6 +105,12 @@ void GBMBCInit(struct GB* gb) {
 		case 3:
 			gb->sramSize = 0x8000;
 			break;
+		case 4:
+			gb->sramSize = 0x20000;
+			break;
+		case 5:
+			gb->sramSize = 0x10000;
+			break;
 		}
 
 		if (gb->memory.mbcType == GB_MBC_AUTODETECT) {
@@ -230,6 +236,15 @@ void GBMBCInit(struct GB* gb) {
 	gb->memory.rtcAccess = false;
 	gb->memory.activeRtcReg = 0;
 	gb->memory.rtcLatched = false;
+	gb->memory.rtcLastLatch = 0;
+	if (gb->memory.rtc) {
+		if (gb->memory.rtc->sample) {
+			gb->memory.rtc->sample(gb->memory.rtc);
+		}
+		gb->memory.rtcLastLatch = gb->memory.rtc->unixTime(gb->memory.rtc);
+	} else {
+		gb->memory.rtcLastLatch = time(0);
+	}
 	memset(&gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
 
 	GBResizeSram(gb, gb->sramSize);
@@ -744,9 +759,6 @@ uint8_t _GBPocketCamRead(struct GBMemory* memory, uint16_t address) {
 	if (memory->mbcState.pocketCam.registersActive) {
 		return 0;
 	}
-	if (!memory->sramAccess) {
-		return 0xFF;
-	}
 	return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
 }
 
@@ -756,17 +768,10 @@ void GBMBCRTCRead(struct GB* gb) {
 	if (!vf) {
 		return;
 	}
-	ssize_t end = vf->seek(vf, -sizeof(rtcBuffer), SEEK_END);
-	switch (end & 0x1FFF) {
-	case 0:
-		break;
-	case 0x1FFC:
-		vf->seek(vf, -sizeof(rtcBuffer) - 4, SEEK_END);
-		break;
-	default:
+	vf->seek(vf, gb->sramSize, SEEK_SET);
+	if (vf->read(vf, &rtcBuffer, sizeof(rtcBuffer)) < (ssize_t) sizeof(rtcBuffer) - 4) {
 		return;
 	}
-	vf->read(vf, &rtcBuffer, sizeof(rtcBuffer));
 
 	LOAD_32LE(gb->memory.rtcRegs[0], 0, &rtcBuffer.latchedSec);
 	LOAD_32LE(gb->memory.rtcRegs[1], 0, &rtcBuffer.latchedMin);
@@ -798,9 +803,9 @@ void GBMBCRTCWrite(struct GB* gb) {
 	STORE_32LE(gb->memory.rtcRegs[2], 0, &rtcBuffer.latchedHour);
 	STORE_32LE(gb->memory.rtcRegs[3], 0, &rtcBuffer.latchedDays);
 	STORE_32LE(gb->memory.rtcRegs[4], 0, &rtcBuffer.latchedDaysHi);
-	STORE_64LE(rtcLastLatch, 0, &rtcBuffer.unixTime);
+	STORE_64LE(gb->memory.rtcLastLatch, 0, &rtcBuffer.unixTime);
 
-	if (vf->size(vf) == gb->sramSize) {
+	if ((size_t) vf->size(vf) < gb->sramSize + sizeof(rtcBuffer)) {
 		// Writing past the end of the file can invalidate the file mapping
 		vf->unmap(vf, gb->memory.sram, gb->sramSize);
 		gb->memory.sram = NULL;

@@ -1,3 +1,29 @@
+0.6.1: (Future)
+Bugfixes:
+ - Python: Fix importing .gb or .gba before .core
+ - GBA: Reset active region as needed when loading a ROM
+ - Qt: Fix command line debugger closing second game
+ - GB MBC: Pocket Cam memory should be accessible without enabling
+ - GB Memory: Initialize peripheral pointers
+ - GB MBC: Fix SRAM sizes 4 and 5
+ - GB Video: Fix 16-bit screenshots (fixes mgba.io/i/826)
+ - GB Core: Fix palette loading when loading a foreign config
+ - Qt: Fix LOG argument order
+ - GB Memory: Prevent accessing empty SRAM (fixes mgba.io/i/831)
+ - GB, GBA: Fix crashes when attempting to identify null VFiles
+ - GB MBC: Fix RTC initialization (fixes mgba.io/i/825)
+ - GB MBC: Fix RTC loading when file size is off
+ - GB Serialize: Fix deserializing video STAT
+ - GB, GBA Savedata: Fix savestate-related save overwriting (fixes mgba.io/i/834)
+ - Qt: Fix timezone issues with time overrides
+ - Qt: Fix sprite export pausing game indefinitely (fixes mgba.io/i/841)
+ - GB Video: Fix potential hang when ending mode 0
+ - GB Memory: Fix HDMA count starting in mode 0 (fixes mgba.io/i/855)
+ - GB Memory: Actually load latch time from savestate
+Misc:
+ - Qt: Don't rebuild library view if style hasn't changed
+ - SDL: Fix 2.0.5 build on macOS under some circumstances
+
 0.6.0: (2017-07-16)
 Features:
  - Library view

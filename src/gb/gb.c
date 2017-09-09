@@ -162,7 +162,6 @@ void GBResizeSram(struct GB* gb, size_t size) {
 	if (gb->memory.sram && size <= gb->sramSize) {
 		return;
 	}
-	mLOG(GB, INFO, "Resizing SRAM to %"PRIz"u bytes", size);
 	struct VFile* vf = gb->sramVf;
 	if (vf) {
 		if (vf == gb->sramRealVf) {
@@ -220,7 +219,7 @@ void GBResizeSram(struct GB* gb, size_t size) {
 
 void GBSramClean(struct GB* gb, uint32_t frameCount) {
 	// TODO: Share with GBASavedataClean
-	if (!gb->sramVf || gb->sramVf != gb->sramRealVf) {
+	if (!gb->sramVf) {
 		return;
 	}
 	if (gb->sramDirty & GB_SRAM_DIRT_NEW) {
@@ -230,6 +229,9 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 			gb->sramDirty |= GB_SRAM_DIRT_SEEN;
 		}
 	} else if ((gb->sramDirty & GB_SRAM_DIRT_SEEN) && frameCount - gb->sramDirtAge > CLEANUP_THRESHOLD) {
+		if (gb->sramMaskWriteback) {
+			GBSavedataUnmask(gb);
+		}
 		if (gb->memory.mbcType == GB_MBC3_RTC) {
 			GBMBCRTCWrite(gb);
 		}
@@ -259,7 +261,9 @@ void GBSavedataUnmask(struct GB* gb) {
 	gb->sramVf = gb->sramRealVf;
 	gb->memory.sram = gb->sramVf->map(gb->sramVf, gb->sramSize, MAP_WRITE);
 	if (gb->sramMaskWriteback) {
+		vf->seek(vf, 0, SEEK_SET);
 		vf->read(vf, gb->memory.sram, gb->sramSize);
+		gb->sramMaskWriteback = false;
 	}
 	vf->close(vf);
 }
@@ -287,6 +291,7 @@ void GBUnloadROM(struct GB* gb) {
 	gb->memory.mbcType = GB_MBC_AUTODETECT;
 	gb->isPristine = false;
 
+	gb->sramMaskWriteback = false;
 	GBSavedataUnmask(gb);
 	GBSramDeinit(gb);
 	if (gb->sramRealVf) {
@@ -655,6 +660,9 @@ void GBIllegal(struct LR35902Core* cpu) {
 }
 
 bool GBIsROM(struct VFile* vf) {
+	if (!vf) {
+		return false;
+	}
 	vf->seek(vf, 0x104, SEEK_SET);
 	uint8_t header[4];
 
