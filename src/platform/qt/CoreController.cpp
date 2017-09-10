@@ -736,6 +736,8 @@ void CoreController::finishFrame() {
 	if (m_activeBuffer == m_completeBuffer) {
 		m_activeBuffer = &m_buffers[1];
 	}
+	// Copy contents to avoid issues when doing frameskip
+	*m_activeBuffer = *m_completeBuffer;
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), screenDimensions().width());
 
 	for (auto& action : m_frameActions) {
