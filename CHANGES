@@ -36,6 +36,7 @@ Bugfixes:
  - GB Serialize: Fix game title check
  - GB, GBA: Fix sync to video with frameskip
  - GB Audio: Fix NRx2 writes while active (fixes mgba.io/i/866)
+ - GBA BIOS: Use core's VRAM variable instead of renderer's
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
