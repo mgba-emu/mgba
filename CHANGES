@@ -22,6 +22,7 @@ Bugfixes:
  - GB Memory: Actually load latch time from savestate
  - GB, GBA: Fix sync to video with frameskip
  - GB Audio: Fix NRx2 writes while active (fixes mgba.io/i/866)
+ - GBA BIOS: Use core's VRAM variable instead of renderer's
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
  - SDL: Fix 2.0.5 build on macOS under some circumstances
