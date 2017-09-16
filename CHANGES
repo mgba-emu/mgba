@@ -48,6 +48,7 @@ Misc:
  - Python: Integrate tests from cinema test suite
  - Util: Don't build crc32 if the function already exists
  - GBA: Detect hardware for Pokémon FireRed ROM hacks
+ - CMake: Fix CPack dependencies for libpng 1.6
 
 0.6.0: (2017-07-16)
 Features:
