@@ -489,7 +489,6 @@ static void _GBACoreAddKeys(struct mCore* core, uint32_t keys) {
 static void _GBACoreClearKeys(struct mCore* core, uint32_t keys) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->keys &= ~keys;
-	GBATestKeypadIRQ(core->board);
 }
 
 static int32_t _GBACoreFrameCounter(const struct mCore* core) {
