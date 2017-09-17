@@ -23,6 +23,7 @@ Bugfixes:
  - GB, GBA: Fix sync to video with frameskip
  - GB Audio: Fix NRx2 writes while active (fixes mgba.io/i/866)
  - GBA BIOS: Use core's VRAM variable instead of renderer's
+ - GBA Savedata: Fix 512 byte EEPROM saving as 8kB (fixes mgba.io/i/877)
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
  - SDL: Fix 2.0.5 build on macOS under some circumstances
