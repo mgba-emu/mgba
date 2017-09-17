@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/core/interface.h>
+#include <mgba/core/tile-cache.h>
 
 DECL_BITFIELD(mMapCacheConfiguration, uint32_t);
 DECL_BIT(mMapCacheConfiguration, ShouldStore, 0);
@@ -28,11 +29,13 @@ DECL_BITS(mMapCacheEntryFlags, PaletteId, 0, 4);
 DECL_BIT(mMapCacheEntryFlags, VramClean, 4);
 DECL_BIT(mMapCacheEntryFlags, HMirror, 5);
 DECL_BIT(mMapCacheEntryFlags, VMirror, 6);
+DECL_BITS(mMapCacheEntryFlags, Mirror, 5, 2);
 
 struct mMapCacheEntry {
 	uint32_t vramVersion;
 	uint16_t tileId;
 	mMapCacheEntryFlags flags;
+	struct mTileCacheEntry tileStatus[16];
 };
 
 struct mTileCache;
@@ -40,7 +43,6 @@ struct mTileCacheEntry;
 struct mMapCache {
 	color_t* cache;
 	struct mTileCache* tileCache;
-	struct mTileCacheEntry* tileEntries;
 	struct mMapCacheEntry* status;
 
 	uint8_t* vram;
@@ -65,6 +67,8 @@ void mMapCacheWriteVRAM(struct mMapCache* cache, uint32_t address);
 
 bool mMapCacheCheckTile(struct mMapCache* cache, const struct mMapCacheEntry* entry, unsigned x, unsigned y);
 void mMapCacheCleanTile(struct mMapCache* cache, struct mMapCacheEntry* entry, unsigned x, unsigned y);
+
+const color_t* mMapCacheGetRow(struct mMapCache* cache, unsigned y);
 
 CXX_GUARD_END
 

@@ -49,14 +49,19 @@ void GBAVideoCacheAssociate(struct mCacheSet* cache, struct GBAVideo* video) {
 	for (i = 0; i < SIZE_PALETTE_RAM / 2; ++i) {
 		mCacheSetWritePalette(cache, i, mColorFrom555(video->palette[i]));
 	}
+	GBAVideoCacheWriteVideoRegister(cache, REG_DISPCNT, video->p->memory.io[REG_DISPCNT >> 1]);
+	GBAVideoCacheWriteVideoRegister(cache, REG_BG0CNT, video->p->memory.io[REG_BG0CNT >> 1]);
+	GBAVideoCacheWriteVideoRegister(cache, REG_BG1CNT, video->p->memory.io[REG_BG1CNT >> 1]);
+	GBAVideoCacheWriteVideoRegister(cache, REG_BG2CNT, video->p->memory.io[REG_BG2CNT >> 1]);
+	GBAVideoCacheWriteVideoRegister(cache, REG_BG3CNT, video->p->memory.io[REG_BG3CNT >> 1]);
 }
 
 static void mapParser0(struct mMapCache* cache, struct mMapCacheEntry* entry, void* vram) {
 	UNUSED(cache);
 	uint16_t map = *(uint16_t*) vram;
 	entry->tileId = GBA_TEXT_MAP_TILE(map);
-	entry->flags = mMapCacheEntryFlagsSetHMirror(entry->flags, GBA_TEXT_MAP_HFLIP(map));
-	entry->flags = mMapCacheEntryFlagsSetHMirror(entry->flags, GBA_TEXT_MAP_VFLIP(map));
+	entry->flags = mMapCacheEntryFlagsSetHMirror(entry->flags, !!GBA_TEXT_MAP_HFLIP(map));
+	entry->flags = mMapCacheEntryFlagsSetVMirror(entry->flags, !!GBA_TEXT_MAP_VFLIP(map));
 	entry->flags = mMapCacheEntryFlagsSetPaletteId(entry->flags, GBA_TEXT_MAP_PALETTE(map));
 }
 
@@ -64,7 +69,7 @@ static void mapParser2(struct mMapCache* cache, struct mMapCacheEntry* entry, vo
 	UNUSED(cache);
 	entry->tileId = *(uint8_t*) vram;
 	entry->flags = mMapCacheEntryFlagsClearHMirror(entry->flags);
-	entry->flags = mMapCacheEntryFlagsClearHMirror(entry->flags);
+	entry->flags = mMapCacheEntryFlagsClearVMirror(entry->flags);
 	entry->flags = mMapCacheEntryFlagsClearPaletteId(entry->flags);
 }
 
@@ -89,8 +94,8 @@ static void GBAVideoCacheWriteDISPCNT(struct mCacheSet* cache, uint16_t value) {
 		mMapCacheSetGetPointer(&cache->maps, 2)->mapParser = mapParser2;
 		mMapCacheSetGetPointer(&cache->maps, 3)->mapParser = mapParser2;
 
-		mMapCacheSetGetPointer(&cache->maps, 0)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 1);
-		mMapCacheSetGetPointer(&cache->maps, 1)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 1);
+		mMapCacheSetGetPointer(&cache->maps, 0)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 0);
+		mMapCacheSetGetPointer(&cache->maps, 1)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 0);
 		mMapCacheSetGetPointer(&cache->maps, 2)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 1);
 		mMapCacheSetGetPointer(&cache->maps, 3)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 1);
 		break;
@@ -100,9 +105,8 @@ static void GBAVideoCacheWriteDISPCNT(struct mCacheSet* cache, uint16_t value) {
 static void GBAVideoCacheWriteBGCNT(struct mCacheSet* cache, size_t bg, uint16_t value) {
 	struct mMapCache* map = mMapCacheSetGetPointer(&cache->maps, bg);
 
-	int tileStart = GBARegisterBGCNTGetCharBase(value) * 128;
+	int tileStart = GBARegisterBGCNTGetCharBase(value) * 256;
 	bool p = GBARegisterBGCNTGet256Color(value);
-	mMapCacheConfigureMap(map, GBARegisterBGCNTGetScreenBase(value) << 11);
 	int size = GBARegisterBGCNTGetSize(value);
 	int tilesWide = 0;
 	int tilesHigh = 0;
@@ -134,6 +138,7 @@ static void GBAVideoCacheWriteBGCNT(struct mCacheSet* cache, size_t bg, uint16_t
 	sysconfig = mMapCacheSystemInfoSetTilesHigh(sysconfig, tilesHigh);
 	sysconfig = mMapCacheSystemInfoSetTilesWide(sysconfig, tilesWide);
 	mMapCacheConfigureSystem(map, sysconfig);
+	mMapCacheConfigureMap(map, GBARegisterBGCNTGetScreenBase(value) << 11);
 }
 
 void GBAVideoCacheWriteVideoRegister(struct mCacheSet* cache, uint32_t address, uint16_t value) {
