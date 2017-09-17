@@ -85,6 +85,7 @@ set(SOURCE_FILES
 	LoadSaveState.cpp
 	LogController.cpp
 	LogView.cpp
+	MapView.cpp
 	MemoryModel.cpp
 	MemorySearch.cpp
 	MemoryView.cpp
@@ -119,6 +120,7 @@ set(UI_FILES
 	IOViewer.ui
 	LoadSaveState.ui
 	LogView.ui
+	MapView.ui
 	MemorySearch.ui
 	MemoryView.ui
 	ObjView.ui

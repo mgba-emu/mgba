@@ -35,9 +35,10 @@
 #include "IOViewer.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
-#include "MultiplayerController.h"
+#include "MapView.h"
 #include "MemorySearch.h"
 #include "MemoryView.h"
+#include "MultiplayerController.h"
 #include "OverrideView.h"
 #include "ObjView.h"
 #include "PaletteView.h"
@@ -1490,6 +1491,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(tileView, &QAction::triggered, openControllerTView<TileView>());
 	m_gameActions.append(tileView);
 	addControlledAction(toolsMenu, tileView, "tileWindow");
+
+	QAction* mapView = new QAction(tr("View &map..."), toolsMenu);
+	connect(mapView, &QAction::triggered, openControllerTView<MapView>());
+	m_gameActions.append(mapView);
+	addControlledAction(toolsMenu, mapView, "mapWindow");
 
 	QAction* memoryView = new QAction(tr("View memory..."), toolsMenu);
 	connect(memoryView, &QAction::triggered, openControllerTView<MemoryView>());
