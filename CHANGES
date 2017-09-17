@@ -38,6 +38,7 @@ Bugfixes:
  - GB Audio: Fix NRx2 writes while active (fixes mgba.io/i/866)
  - GBA BIOS: Use core's VRAM variable instead of renderer's
  - GBA Savedata: Fix 512 byte EEPROM saving as 8kB (fixes mgba.io/i/877)
+ - SDL: Fix potential race condition when pressing keys (fixes mgba.io/i/872)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
