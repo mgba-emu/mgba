@@ -8,7 +8,9 @@
 #include "CoreController.h"
 #include "GBAApp.h"
 
+#include <QButtonGroup>
 #include <QFontDatabase>
+#include <QRadioButton>
 #include <QTimer>
 
 using namespace QGBA;
@@ -38,19 +40,51 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this]() {
 		updateTiles(true);
 	});
+
+	CoreController::Interrupter interrupter(m_controller);
+	const mCoreChannelInfo* videoLayers;
+	size_t nVideo = m_controller->thread()->core->listVideoLayers(m_controller->thread()->core, &videoLayers);
+	QButtonGroup* group = new QButtonGroup(this);
+	for (size_t i = 0; i < nVideo; ++i) {
+		if (strncmp(videoLayers[i].internalName, "bg", 2) != 0) {
+			continue;
+		}
+		QRadioButton* button = new QRadioButton(tr(videoLayers[i].visibleName));
+		if (!i) {
+			button->setChecked(true);
+		}
+		m_ui.bgLayout->addWidget(button);
+		connect(button, &QAbstractButton::pressed, button, [this, i]() {
+			selectMap(i);
+		});
+		group->addButton(button);
+	}
+}
+
+void MapView::selectMap(int map) {
+	if (map >= mMapCacheSetSize(&m_cacheSet->maps)) {
+		return;
+	}
+	m_map = map;
 }
 
 #ifdef M_CORE_GBA
 void MapView::updateTilesGBA(bool force) {
-	QImage bg(QSize(256, 256), QImage::Format_ARGB32);
-	uchar* bgBits = bg.bits();
-	mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, 0);
-	for (int j = 0; j < 32; ++j) {
-		for (int i = 0; i < 32; ++i) {
-			mMapCacheCleanTile(mapCache, &m_mapStatus[i + j * 32], i, j);
-		}
-		for (int i = 0; i < 8; ++i) {
-			memcpy(static_cast<void*>(&bgBits[256 * 4 * (i + j * 8)]), mMapCacheGetRow(mapCache, i + j * 8), 256 * 4);
+	QImage bg;
+	{
+		CoreController::Interrupter interrupter(m_controller);
+		mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, m_map);
+		int tilesW = 1 << mMapCacheSystemInfoGetTilesWide(mapCache->sysConfig);
+		int tilesH = 1 << mMapCacheSystemInfoGetTilesHigh(mapCache->sysConfig);
+		bg = QImage(QSize(tilesW * 8, tilesH * 8), QImage::Format_ARGB32);
+		uchar* bgBits = bg.bits();
+		for (int j = 0; j < tilesH; ++j) {
+			for (int i = 0; i < tilesW; ++i) {
+				mMapCacheCleanTile(mapCache, &m_mapStatus[i + j * tilesW], i, j);
+			}
+			for (int i = 0; i < 8; ++i) {
+				memcpy(static_cast<void*>(&bgBits[tilesW * 32 * (i + j * 8)]), mMapCacheGetRow(mapCache, i + j * 8), tilesW * 32);
+			}
 		}
 	}
 	bg = bg.convertToFormat(QImage::Format_RGB32).rgbSwapped();

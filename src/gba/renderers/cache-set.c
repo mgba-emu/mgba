@@ -114,7 +114,7 @@ static void GBAVideoCacheWriteBGCNT(struct mCacheSet* cache, size_t bg, uint16_t
 	if (map->mapParser == mapParser0) {
 		sysconfig = mMapCacheSystemInfoSetPaletteBPP(sysconfig, 2 + p);
 		sysconfig = mMapCacheSystemInfoSetPaletteCount(sysconfig, 4 * !p);
-		sysconfig = mMapCacheSystemInfoSetMaxTiles(sysconfig, 512);
+		sysconfig = mMapCacheSystemInfoSetMaxTiles(sysconfig, 1024);
 		sysconfig = mMapCacheSystemInfoSetMapAlign(sysconfig, 1);
 		tilesWide = 5;
 		tilesHigh = 5;

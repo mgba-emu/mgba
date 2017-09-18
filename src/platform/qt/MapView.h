@@ -21,6 +21,9 @@ Q_OBJECT
 public:
 	MapView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
+private slots:
+	void selectMap(int);
+
 private:
 #ifdef M_CORE_GBA
 	void updateTilesGBA(bool force) override;
@@ -33,6 +36,7 @@ private:
 
 	std::shared_ptr<CoreController> m_controller;
 	mMapCacheEntry m_mapStatus[1024 * 1024] = {}; // TODO: Correct size
+	int m_map = 0;
 };
 
 }
