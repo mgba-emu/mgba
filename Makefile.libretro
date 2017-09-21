@@ -37,14 +37,21 @@ else ifeq ($(platform),android_mips)
    include $(BUILD_DIR)/Makefile.android_mips
 else
 
+# system platform
 ifeq ($(platform),)
    platform = unix
    ifeq ($(shell uname -a),)
+      EXE_EXT = .exe
       platform = win
    else ifneq ($(findstring MINGW,$(shell uname -a)),)
       platform = win
    else ifneq ($(findstring Darwin,$(shell uname -a)),)
       platform = osx
+      ifeq ($(shell uname -p),powerpc)
+         arch = ppc
+      else
+         arch = intel
+      endif
    else ifneq ($(findstring win,$(shell uname -a)),)
       platform = win
    endif
@@ -52,22 +59,6 @@ else ifneq (,$(findstring armv,$(platform)))
    override platform += unix
 else ifneq (,$(findstring rpi3,$(platform)))
    override platform += unix
-endif
-
-# system platform
-system_platform = unix
-ifeq ($(shell uname -a),)
-   EXE_EXT = .exe
-   system_platform = win
-else ifneq ($(findstring Darwin,$(shell uname -a)),)
-   system_platform = osx
-   ifeq ($(shell uname -p),powerpc)
-      arch = ppc
-   else
-      arch = intel
-   endif
-else ifneq ($(findstring MINGW,$(shell uname -a)),)
-   system_platform = win
 endif
 
 prefix := /usr
