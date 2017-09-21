@@ -26,6 +26,7 @@ Bugfixes:
  - GBA Savedata: Fix 512 byte EEPROM saving as 8kB (fixes mgba.io/i/877)
  - SDL: Fix potential race condition when pressing keys (fixes mgba.io/i/872)
  - GBA: Fix keypad IRQs not firing when extra buttons are pressed
+ - GBA Video: Fix broken sprite blending hack (fixes mgba.io/i/532)
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
  - SDL: Fix 2.0.5 build on macOS under some circumstances
