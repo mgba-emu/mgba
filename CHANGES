@@ -27,6 +27,7 @@ Bugfixes:
  - SDL: Fix potential race condition when pressing keys (fixes mgba.io/i/872)
  - GBA: Fix keypad IRQs not firing when extra buttons are pressed
  - GBA Video: Fix broken sprite blending hack (fixes mgba.io/i/532)
+ - GBA I/O: Fix reading from a few invalid I/O registers (fixes mgba.io/i/876)
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
  - SDL: Fix 2.0.5 build on macOS under some circumstances
