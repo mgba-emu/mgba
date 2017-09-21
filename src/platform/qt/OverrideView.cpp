@@ -105,7 +105,6 @@ OverrideView::OverrideView(GameController* controller, ConfigController* config,
 
 	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &OverrideView::saveOverride);
 	connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);
-	m_ui.buttonBox->button(QDialogButtonBox::Save)->setEnabled(false);
 
 	if (controller->isLoaded()) {
 		gameStarted(controller->thread());
@@ -149,10 +148,15 @@ bool OverrideView::eventFilter(QObject* obj, QEvent* event) {
 }
 
 void OverrideView::saveOverride() {
-	if (!m_config) {
+	Override* override = m_controller->override();
+	if (!override) {
 		return;
 	}
-	m_config->saveOverride(*m_controller->override());
+	if (m_controller->isLoaded()) {
+		m_config->saveOverride(*override);
+	} else {
+		m_savePending = true;
+	}
 }
 
 void OverrideView::updateOverrides() {
@@ -230,7 +234,6 @@ void OverrideView::gameStarted(mCoreThread* thread) {
 	}
 
 	m_ui.tabWidget->setEnabled(false);
-	m_ui.buttonBox->button(QDialogButtonBox::Save)->setEnabled(true);
 
 	switch (thread->core->platform(thread->core)) {
 #ifdef M_CORE_GBA
@@ -275,13 +278,17 @@ void OverrideView::gameStarted(mCoreThread* thread) {
 	case PLATFORM_NONE:
 		break;
 	}
+
+	if (m_savePending) {
+		m_savePending = false;
+		saveOverride();
+	}
 }
 
 void OverrideView::gameStopped() {
 	m_ui.tabWidget->setEnabled(true);
 	m_ui.savetype->setCurrentIndex(0);
 	m_ui.idleLoop->clear();
-	m_ui.buttonBox->button(QDialogButtonBox::Save)->setEnabled(false);
 
 	m_ui.mbc->setCurrentIndex(0);
 	m_ui.gbModel->setCurrentIndex(0);

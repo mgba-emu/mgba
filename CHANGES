@@ -33,6 +33,7 @@ Misc:
  - SDL: Fix 2.0.5 build on macOS under some circumstances
  - GBA: Detect hardware for Pokémon FireRed ROM hacks
  - CMake: Fix CPack dependencies for libpng 1.6
+ - Qt: Allow overrides to be saved before a game is loaded
 
 0.6.0: (2017-07-16)
 Features:
