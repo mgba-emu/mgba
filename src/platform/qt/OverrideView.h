@@ -47,6 +47,7 @@ private:
 
 	std::shared_ptr<CoreController> m_controller;
 	ConfigController* m_config;
+	bool m_savePending = false;
 
 #ifdef M_CORE_GB
 	uint32_t m_gbColors[4]{};
