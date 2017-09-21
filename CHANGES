@@ -20,9 +20,19 @@ Bugfixes:
  - GB Video: Fix potential hang when ending mode 0
  - GB Memory: Fix HDMA count starting in mode 0 (fixes mgba.io/i/855)
  - GB Memory: Actually load latch time from savestate
+ - GB, GBA: Fix sync to video with frameskip
+ - GB Audio: Fix NRx2 writes while active (fixes mgba.io/i/866)
+ - GBA BIOS: Use core's VRAM variable instead of renderer's
+ - GBA Savedata: Fix 512 byte EEPROM saving as 8kB (fixes mgba.io/i/877)
+ - SDL: Fix potential race condition when pressing keys (fixes mgba.io/i/872)
+ - GBA: Fix keypad IRQs not firing when extra buttons are pressed
+ - GBA Video: Fix broken sprite blending hack (fixes mgba.io/i/532)
+ - GBA I/O: Fix reading from a few invalid I/O registers (fixes mgba.io/i/876)
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
  - SDL: Fix 2.0.5 build on macOS under some circumstances
+ - GBA: Detect hardware for Pokémon FireRed ROM hacks
+ - CMake: Fix CPack dependencies for libpng 1.6
 
 0.6.0: (2017-07-16)
 Features:

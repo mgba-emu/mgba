@@ -387,11 +387,16 @@ static void _GBACoreReset(struct mCore* core) {
 	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
 	if (cart) {
 		memcpy(override.id, &cart->id, sizeof(override.id));
-		if (GBAOverrideFind(gbacore->overrides, &override)) {
+
+		if (!strncmp("pokemon red version", &((const char*) gba->memory.rom)[0x108], 20) && gba->romCrc32 != 0xDD88761C) {
+			// Enable FLASH1M and RTC on Pokémon FireRed ROM hacks
+			override.savetype = SAVEDATA_FLASH1M;
+			override.hardware = HW_RTC;
+			GBAOverrideApply(gba, &override);
+		} else if (GBAOverrideFind(gbacore->overrides, &override)) {
 			GBAOverrideApply(gba, &override);
 		}
 	}
-
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	if (!gba->biosVf && core->opts.useBios) {
 		struct VFile* bios = NULL;
@@ -486,7 +491,6 @@ static void _GBACoreAddKeys(struct mCore* core, uint32_t keys) {
 static void _GBACoreClearKeys(struct mCore* core, uint32_t keys) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->keys &= ~keys;
-	GBATestKeypadIRQ(core->board);
 }
 
 static int32_t _GBACoreFrameCounter(const struct mCore* core) {

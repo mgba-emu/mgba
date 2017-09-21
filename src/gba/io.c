@@ -889,14 +889,17 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		break;
 	case REG_MAX:
 		// Some bad interrupt libraries will read from this
-		break;
-	case 0x66:
-	case 0x6E:
-	case 0x76:
-	case 0x7A:
-	case 0x7E:
-	case 0x86:
-	case 0x8A:
+	case 0x066:
+	case 0x06E:
+	case 0x076:
+	case 0x07A:
+	case 0x07E:
+	case 0x086:
+	case 0x08A:
+	case 0x136:
+	case 0x142:
+	case 0x15A:
+	case 0x206:
 		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return 0;
 	case REG_DEBUG_ENABLE:
