@@ -166,8 +166,9 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 		target2 |= renderer->bg[2].target2 << (renderer->bg[2].priority);
 		target2 |= renderer->bg[3].target2 << (renderer->bg[3].priority);
 		if ((1 << GBAObjAttributesCGetPriority(sprite->c)) <= target2) {
+			flags |= FLAG_REBLEND;
 			variant = 0;
-		} else {
+		} else if (!target2) {
 			flags &= ~FLAG_TARGET_1;
 		}
 	}
