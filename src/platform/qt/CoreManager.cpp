@@ -102,7 +102,10 @@ CoreController* CoreManager::loadGame(VFile* vf, const QString& path, const QStr
 	QByteArray bytes(path.toUtf8());
 	separatePath(bytes.constData(), nullptr, core->dirs.baseName, nullptr);
 
-	QFileInfo info(base + "/" + path);
+	QFileInfo info(base);
+	if (info.isDir()) {
+		info = QFileInfo(base + "/" + path);
+	}
 	bytes = info.dir().canonicalPath().toUtf8();
 	mDirectorySetAttachBase(&core->dirs, VDirOpen(bytes.constData()));
 	mCoreAutoloadSave(core);
