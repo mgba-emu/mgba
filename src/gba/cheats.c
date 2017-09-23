@@ -367,7 +367,7 @@ int GBACheatAddressIsReal(uint32_t address) {
 		return -0x8;
 	case REGION_CART_SRAM:
 	case REGION_CART_SRAM_MIRROR:
-		if ((address & OFFSET_MASK) > SIZE_CART_SRAM) {
+		if ((address & OFFSET_MASK) > SIZE_CART_FLASH512) {
 			return -0x80;
 		}
 		return -0x8;

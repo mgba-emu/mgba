@@ -42,6 +42,7 @@ Bugfixes:
  - GBA: Fix keypad IRQs not firing when extra buttons are pressed
  - GBA Video: Fix broken sprite blending hack (fixes mgba.io/i/532)
  - GBA I/O: Fix reading from a few invalid I/O registers (fixes mgba.io/i/876)
+ - GBA Savedata: Fix size of SRAM saves (fixes mgba.io/i/883)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
