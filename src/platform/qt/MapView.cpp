@@ -65,7 +65,11 @@ void MapView::selectMap(int map) {
 	if (map >= mMapCacheSetSize(&m_cacheSet->maps)) {
 		return;
 	}
+	if (map == m_map) {
+		return;
+	}
 	m_map = map;
+	updateTiles(true);
 }
 
 #ifdef M_CORE_GBA
@@ -88,7 +92,11 @@ void MapView::updateTilesGBA(bool force) {
 		}
 	}
 	bg = bg.convertToFormat(QImage::Format_RGB32).rgbSwapped();
-	m_ui.map->setPixmap(QPixmap::fromImage(bg));
+	QPixmap map = QPixmap::fromImage(bg);
+	if (m_ui.magnification->value() > 1) {
+		map = map.scaled(map.size() * m_ui.magnification->value());
+	}
+	m_ui.map->setPixmap(map);
 }
 #endif
 
