@@ -10,6 +10,7 @@
 #include <mgba/core/cache-set.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/io.h>
+#include <mgba/internal/gb/renderers/cache-set.h>
 #include <mgba/internal/gb/serialize.h>
 #include <mgba/internal/lr35902/lr35902.h>
 
@@ -693,8 +694,9 @@ static void GBVideoDummyRendererDeinit(struct GBVideoRenderer* renderer) {
 }
 
 static uint8_t GBVideoDummyRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value) {
-	UNUSED(renderer);
-	UNUSED(address);
+	if (renderer->cache) {
+		GBVideoCacheWriteVideoRegister(renderer->cache, address, value);
+	}
 	return value;
 }
 

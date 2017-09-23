@@ -26,8 +26,8 @@
 
 static const struct mCoreChannelInfo _GBVideoLayers[] = {
 	{ 0, "bg", "Background", NULL },
-	{ 1, "obj", "Objects", NULL },
-	{ 2, "win", "Window", NULL },
+	{ 1, "bgwin", "Window", NULL },
+	{ 2, "obj", "Objects", NULL },
 };
 
 static const struct mCoreChannelInfo _GBAudioChannels[] = {

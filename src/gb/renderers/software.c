@@ -7,6 +7,7 @@
 
 #include <mgba/core/cache-set.h>
 #include <mgba/internal/gb/io.h>
+#include <mgba/internal/gb/renderers/cache-set.h>
 #include <mgba-util/math.h>
 #include <mgba-util/memory.h>
 
@@ -194,6 +195,9 @@ static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer) {
 
 static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
+	if (renderer->cache) {
+		GBVideoCacheWriteVideoRegister(renderer->cache, address, value);
+	}
 	switch (address) {
 	case REG_LCDC:
 		softwareRenderer->lcdc = value;

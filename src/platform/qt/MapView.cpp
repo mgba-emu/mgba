@@ -72,7 +72,6 @@ void MapView::selectMap(int map) {
 	updateTiles(true);
 }
 
-#ifdef M_CORE_GBA
 void MapView::updateTilesGBA(bool force) {
 	QImage bg;
 	{
@@ -98,10 +97,10 @@ void MapView::updateTilesGBA(bool force) {
 	}
 	m_ui.map->setPixmap(map);
 }
-#endif
 
 #ifdef M_CORE_GB
 void MapView::updateTilesGB(bool force) {
+	updateTilesGBA(force);
 }
 #endif
 
