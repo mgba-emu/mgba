@@ -38,7 +38,7 @@ png_structp PNGWriteOpen(struct VFile* source) {
 	return png;
 }
 
-png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height) {
+static png_infop _pngWriteHeader(png_structp png, unsigned width, unsigned height, int type) {
 	png_infop info = png_create_info_struct(png);
 	if (!info) {
 		return 0;
@@ -46,21 +46,21 @@ png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height) {
 	if (setjmp(png_jmpbuf(png))) {
 		return 0;
 	}
-	png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+	png_set_IHDR(png, info, width, height, 8, type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 	png_write_info(png, info);
 	return info;
 }
 
+png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height) {
+	return _pngWriteHeader(png, width, height, PNG_COLOR_TYPE_RGB);
+}
+
+png_infop PNGWriteHeaderA(png_structp png, unsigned width, unsigned height) {
+	return _pngWriteHeader(png, width, height, PNG_COLOR_TYPE_RGB_ALPHA);
+}
+
 png_infop PNGWriteHeader8(png_structp png, unsigned width, unsigned height) {
-	png_infop info = png_create_info_struct(png);
-	if (!info) {
-		return 0;
-	}
-	if (setjmp(png_jmpbuf(png))) {
-		return 0;
-	}
-	png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_PALETTE, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-	return info;
+	return _pngWriteHeader(png, width, height, PNG_COLOR_TYPE_PALETTE);
 }
 
 bool PNGWritePalette(png_structp png, png_infop info, const uint32_t* palette, unsigned entries) {
@@ -119,6 +119,53 @@ bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned s
 			row[x * 3] = pixelData[stride * i * 4 + x * 4];
 			row[x * 3 + 1] = pixelData[stride * i * 4 + x * 4 + 1];
 			row[x * 3 + 2] = pixelData[stride * i * 4 + x * 4 + 2];
+#endif
+#endif
+		}
+		png_write_row(png, row);
+	}
+	free(row);
+	return true;
+}
+
+bool PNGWritePixelsA(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels) {
+	png_bytep row = malloc(sizeof(png_byte) * width * 4);
+	if (!row) {
+		return false;
+	}
+	const png_byte* pixelData = pixels;
+	if (setjmp(png_jmpbuf(png))) {
+		free(row);
+		return false;
+	}
+	unsigned i;
+	for (i = 0; i < height; ++i) {
+		unsigned x;
+		for (x = 0; x < width; ++x) {
+#ifdef COLOR_16_BIT
+			uint16_t c = ((uint16_t*) pixelData)[stride * i + x];
+#ifdef COLOR_5_6_5
+			row[x * 4] = (c >> 8) & 0xF8;
+			row[x * 4 + 1] = (c >> 3) & 0xFC;
+			row[x * 4 + 2] = (c << 3) & 0xF8;
+			row[x * 4 + 3] = 0xFF;
+#else
+			row[x * 4] = (c >> 7) & 0xF8;
+			row[x * 4 + 1] = (c >> 2) & 0xF8;
+			row[x * 4 + 2] = (c << 3) & 0xF8;
+			row[x * 4 + 3] = (c >> 15) * 0xFF;
+#endif
+#else
+#ifdef __BIG_ENDIAN__
+			row[x * 4] = pixelData[stride * i * 4 + x * 4 + 3];
+			row[x * 4 + 1] = pixelData[stride * i * 4 + x * 4 + 2];
+			row[x * 4 + 2] = pixelData[stride * i * 4 + x * 4 + 1];
+			row[x * 4 + 3] = pixelData[stride * i * 4 + x * 4];
+#else
+			row[x * 4] = pixelData[stride * i * 4 + x * 4];
+			row[x * 4 + 1] = pixelData[stride * i * 4 + x * 4 + 1];
+			row[x * 4 + 2] = pixelData[stride * i * 4 + x * 4 + 2];
+			row[x * 4 + 3] = pixelData[stride * i * 4 + x * 4 + 3];
 #endif
 #endif
 		}
