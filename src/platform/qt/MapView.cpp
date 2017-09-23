@@ -7,6 +7,9 @@
 
 #include "CoreController.h"
 #include "GBAApp.h"
+#include "LogController.h"
+
+#include <mgba-util/png-io.h>
 
 #include <QButtonGroup>
 #include <QFontDatabase>
@@ -59,6 +62,11 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 		});
 		group->addButton(button);
 	}
+#ifdef USE_PNG
+	connect(m_ui.exportButton, &QAbstractButton::clicked, this, &MapView::exportMap);
+#else
+	m_ui.exportButton->setVisible(false);
+#endif
 }
 
 void MapView::selectMap(int map) {
@@ -73,14 +81,13 @@ void MapView::selectMap(int map) {
 }
 
 void MapView::updateTilesGBA(bool force) {
-	QImage bg;
 	{
 		CoreController::Interrupter interrupter(m_controller);
 		mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, m_map);
 		int tilesW = 1 << mMapCacheSystemInfoGetTilesWide(mapCache->sysConfig);
 		int tilesH = 1 << mMapCacheSystemInfoGetTilesHigh(mapCache->sysConfig);
-		bg = QImage(QSize(tilesW * 8, tilesH * 8), QImage::Format_ARGB32);
-		uchar* bgBits = bg.bits();
+		m_rawMap = QImage(QSize(tilesW * 8, tilesH * 8), QImage::Format_ARGB32);
+		uchar* bgBits = m_rawMap.bits();
 		for (int j = 0; j < tilesH; ++j) {
 			for (int i = 0; i < tilesW; ++i) {
 				mMapCacheCleanTile(mapCache, &m_mapStatus[i + j * tilesW], i, j);
@@ -90,8 +97,8 @@ void MapView::updateTilesGBA(bool force) {
 			}
 		}
 	}
-	bg = bg.convertToFormat(QImage::Format_RGB32).rgbSwapped();
-	QPixmap map = QPixmap::fromImage(bg);
+	m_rawMap = m_rawMap.rgbSwapped();
+	QPixmap map = QPixmap::fromImage(m_rawMap.convertToFormat(QImage::Format_RGB32));
 	if (m_ui.magnification->value() > 1) {
 		map = map.scaled(map.size() * m_ui.magnification->value());
 	}
@@ -104,3 +111,23 @@ void MapView::updateTilesGB(bool force) {
 }
 #endif
 
+#ifdef USE_PNG
+void MapView::exportMap() {
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export map"),
+	                                                  tr("Portable Network Graphics (*.png)"));
+	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
+	if (!vf) {
+		LOG(QT, ERROR) << tr("Failed to open output PNG file: %1").arg(filename);
+		return;
+	}
+
+	CoreController::Interrupter interrupter(m_controller);
+	png_structp png = PNGWriteOpen(vf);
+	png_infop info = PNGWriteHeaderA(png, m_rawMap.width(), m_rawMap.height());
+
+	mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, m_map);
+	QImage map = m_rawMap.rgbSwapped();
+	PNGWritePixelsA(png, map.width(), map.height(), map.bytesPerLine() / 4, static_cast<const void*>(map.constBits()));
+	PNGWriteClose(png, info);
+}
+#endif

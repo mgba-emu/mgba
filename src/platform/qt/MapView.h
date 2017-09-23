@@ -21,6 +21,11 @@ Q_OBJECT
 public:
 	MapView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
+#ifdef USE_PNG
+public slots:
+	void exportMap();
+#endif
+
 private slots:
 	void selectMap(int);
 
@@ -37,6 +42,7 @@ private:
 	std::shared_ptr<CoreController> m_controller;
 	mMapCacheEntry m_mapStatus[1024 * 1024] = {}; // TODO: Correct size
 	int m_map = 0;
+	QImage m_rawMap;
 };
 
 }
