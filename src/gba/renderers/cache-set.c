@@ -104,6 +104,7 @@ static void GBAVideoCacheWriteDISPCNT(struct mCacheSet* cache, uint16_t value) {
 
 static void GBAVideoCacheWriteBGCNT(struct mCacheSet* cache, size_t bg, uint16_t value) {
 	struct mMapCache* map = mMapCacheSetGetPointer(&cache->maps, bg);
+	map->context = (void*) (uintptr_t) value;
 
 	int tileStart = GBARegisterBGCNTGetCharBase(value) * 256;
 	bool p = GBARegisterBGCNTGet256Color(value);
@@ -145,6 +146,10 @@ void GBAVideoCacheWriteVideoRegister(struct mCacheSet* cache, uint32_t address, 
 	switch (address) {
 	case REG_DISPCNT:
 		GBAVideoCacheWriteDISPCNT(cache, value);
+		GBAVideoCacheWriteBGCNT(cache, 0, (uint16_t) mMapCacheSetGetPointer(&cache->maps, 0)->context);
+		GBAVideoCacheWriteBGCNT(cache, 1, (uint16_t) mMapCacheSetGetPointer(&cache->maps, 1)->context);
+		GBAVideoCacheWriteBGCNT(cache, 2, (uint16_t) mMapCacheSetGetPointer(&cache->maps, 2)->context);
+		GBAVideoCacheWriteBGCNT(cache, 3, (uint16_t) mMapCacheSetGetPointer(&cache->maps, 3)->context);
 		break;
 	case REG_BG0CNT:
 		GBAVideoCacheWriteBGCNT(cache, 0, value);

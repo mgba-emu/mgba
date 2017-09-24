@@ -56,6 +56,7 @@ struct mMapCache {
 	mMapCacheSystemInfo sysConfig;
 
 	void (*mapParser)(struct mMapCache*, struct mMapCacheEntry* entry, void* vram);
+	void* context;
 };
 
 void mMapCacheInit(struct mMapCache* cache);

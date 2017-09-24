@@ -40,7 +40,7 @@ private:
 	Ui::MapView m_ui;
 
 	std::shared_ptr<CoreController> m_controller;
-	mMapCacheEntry m_mapStatus[1024 * 1024] = {}; // TODO: Correct size
+	mMapCacheEntry m_mapStatus[128 * 128] = {}; // TODO: Correct size
 	int m_map = 0;
 	QImage m_rawMap;
 };

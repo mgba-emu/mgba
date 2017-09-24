@@ -90,7 +90,7 @@ void MapView::updateTilesGBA(bool force) {
 		uchar* bgBits = m_rawMap.bits();
 		for (int j = 0; j < tilesH; ++j) {
 			for (int i = 0; i < tilesW; ++i) {
-				mMapCacheCleanTile(mapCache, &m_mapStatus[i + j * tilesW], i, j);
+				mMapCacheCleanTile(mapCache, m_mapStatus, i, j);
 			}
 			for (int i = 0; i < 8; ++i) {
 				memcpy(static_cast<void*>(&bgBits[tilesW * 32 * (i + j * 8)]), mMapCacheGetRow(mapCache, i + j * 8), tilesW * 32);
