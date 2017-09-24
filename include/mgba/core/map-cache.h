@@ -21,8 +21,8 @@ DECL_BITS(mMapCacheSystemInfo, PaletteBPP, 0, 2);
 DECL_BITS(mMapCacheSystemInfo, PaletteCount, 2, 4);
 DECL_BITS(mMapCacheSystemInfo, TilesWide, 8, 4);
 DECL_BITS(mMapCacheSystemInfo, TilesHigh, 12, 4);
-DECL_BITS(mMapCacheSystemInfo, MaxTiles, 16, 13);
-DECL_BITS(mMapCacheSystemInfo, MapAlign, 29, 2);
+DECL_BITS(mMapCacheSystemInfo, MacroTileSize, 16, 7);
+DECL_BITS(mMapCacheSystemInfo, MapAlign, 23, 2);
 
 DECL_BITFIELD(mMapCacheEntryFlags, uint16_t);
 DECL_BITS(mMapCacheEntryFlags, PaletteId, 0, 4);

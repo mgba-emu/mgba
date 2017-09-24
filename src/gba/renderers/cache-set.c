@@ -114,7 +114,7 @@ static void GBAVideoCacheWriteBGCNT(struct mCacheSet* cache, size_t bg, uint16_t
 	if (map->mapParser == mapParser0) {
 		sysconfig = mMapCacheSystemInfoSetPaletteBPP(sysconfig, 2 + p);
 		sysconfig = mMapCacheSystemInfoSetPaletteCount(sysconfig, 4 * !p);
-		sysconfig = mMapCacheSystemInfoSetMaxTiles(sysconfig, 1024);
+		sysconfig = mMapCacheSystemInfoSetMacroTileSize(sysconfig, 5);
 		sysconfig = mMapCacheSystemInfoSetMapAlign(sysconfig, 1);
 		tilesWide = 5;
 		tilesHigh = 5;
@@ -128,7 +128,7 @@ static void GBAVideoCacheWriteBGCNT(struct mCacheSet* cache, size_t bg, uint16_t
 	} else if (map->mapParser == mapParser2) {
 		sysconfig = mMapCacheSystemInfoSetPaletteBPP(sysconfig, 3);
 		sysconfig = mMapCacheSystemInfoSetPaletteCount(sysconfig, 0);
-		sysconfig = mMapCacheSystemInfoSetMaxTiles(sysconfig, 256);
+		sysconfig = mMapCacheSystemInfoSetMacroTileSize(sysconfig, 4 + size);
 		sysconfig = mMapCacheSystemInfoSetMapAlign(sysconfig, 0);
 
 		tilesHigh = 4 + size;

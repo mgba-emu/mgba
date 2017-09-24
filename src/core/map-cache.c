@@ -117,14 +117,14 @@ static inline void _cleanTile(struct mMapCache* cache, const color_t* tile, colo
 static inline size_t _tileId(struct mMapCache* cache, unsigned x, unsigned y) {
 	int tilesWide = mMapCacheSystemInfoGetTilesWide(cache->sysConfig);
 	int tilesHigh = mMapCacheSystemInfoGetTilesHigh(cache->sysConfig);
-	int stride = tilesHigh < 5 ? (1 << tilesHigh) : 32;
+	int stride = 1 << mMapCacheSystemInfoGetMacroTileSize(cache->sysConfig);
 	x &= (1 << tilesWide) - 1;
 	y &= (1 << tilesHigh) - 1;
-	unsigned xMajor = x & ~0x1F;
-	unsigned yMajor = y >> 5;
-	x &= 0x1F;
-	y &= 0x1F;
-	yMajor <<= tilesHigh;
+	unsigned xMajor = x & ~(stride - 1);
+	unsigned yMajor = y >> mMapCacheSystemInfoGetMacroTileSize(cache->sysConfig);
+	x &= stride - 1;
+	y &= stride - 1;
+	yMajor <<= tilesWide;
 	y += xMajor + yMajor;
 	return stride * y + x;
 }

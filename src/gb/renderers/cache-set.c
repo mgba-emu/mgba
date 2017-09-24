@@ -117,11 +117,7 @@ void GBVideoCacheWriteVideoRegister(struct mCacheSet* cache, uint16_t address, u
 	}
 	map->tileStart = tileStart;
 	window->tileStart = tileStart;
-	if (sysconfig) {
-		sysconfig = mMapCacheSystemInfoSetMaxTiles(sysconfig, 896);
-	} else {
-		sysconfig = mMapCacheSystemInfoSetMaxTiles(sysconfig, 384);
-	}
+	sysconfig = mMapCacheSystemInfoSetMacroTileSize(sysconfig, 5);
 	sysconfig = mMapCacheSystemInfoSetPaletteBPP(sysconfig, 1);
 	sysconfig = mMapCacheSystemInfoSetMapAlign(sysconfig, 0);
 	sysconfig = mMapCacheSystemInfoSetTilesHigh(sysconfig, 5);
