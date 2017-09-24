@@ -56,6 +56,7 @@ Misc:
  - GBA: Detect hardware for Pokémon FireRed ROM hacks
  - CMake: Fix CPack dependencies for libpng 1.6
  - Qt: Allow overrides to be saved before a game is loaded
+ - VFS: Make VFile.truncate work growing files on PSV (fixes mgba.io/i/885)
 
 0.6.0: (2017-07-16)
 Features:
