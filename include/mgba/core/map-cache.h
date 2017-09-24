@@ -66,6 +66,8 @@ void mMapCacheConfigureSystem(struct mMapCache* cache, mMapCacheSystemInfo confi
 void mMapCacheConfigureMap(struct mMapCache* cache, uint32_t mapStart);
 void mMapCacheWriteVRAM(struct mMapCache* cache, uint32_t address);
 
+uint32_t mMapCacheTileId(struct mMapCache* cache, unsigned x, unsigned y);
+
 bool mMapCacheCheckTile(struct mMapCache* cache, const struct mMapCacheEntry* entry, unsigned x, unsigned y);
 void mMapCacheCleanTile(struct mMapCache* cache, struct mMapCacheEntry* entry, unsigned x, unsigned y);
 

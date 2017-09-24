@@ -114,7 +114,7 @@ static inline void _cleanTile(struct mMapCache* cache, const color_t* tile, colo
 	}
 }
 
-static inline size_t _tileId(struct mMapCache* cache, unsigned x, unsigned y) {
+uint32_t mMapCacheTileId(struct mMapCache* cache, unsigned x, unsigned y) {
 	int tilesWide = mMapCacheSystemInfoGetTilesWide(cache->sysConfig);
 	int tilesHigh = mMapCacheSystemInfoGetTilesHigh(cache->sysConfig);
 	int stride = 1 << mMapCacheSystemInfoGetMacroTileSize(cache->sysConfig);
@@ -130,7 +130,7 @@ static inline size_t _tileId(struct mMapCache* cache, unsigned x, unsigned y) {
 }
 
 void mMapCacheCleanTile(struct mMapCache* cache, struct mMapCacheEntry* entry, unsigned x, unsigned y) {
-	size_t location = _tileId(cache, x, y);
+	size_t location = mMapCacheTileId(cache, x, y);
 	struct mMapCacheEntry* status = &cache->status[location];
 	const color_t* tile = NULL;
 	if (!mMapCacheEntryFlagsIsVramClean(status->flags)) {
@@ -156,7 +156,7 @@ void mMapCacheCleanTile(struct mMapCache* cache, struct mMapCacheEntry* entry, u
 }
 
 bool mMapCacheCheckTile(struct mMapCache* cache, const struct mMapCacheEntry* entry, unsigned x, unsigned y) {
-	size_t location = _tileId(cache, x, y);
+	size_t location = mMapCacheTileId(cache, x, y);
 	struct mMapCacheEntry* status = &cache->status[location];
 	int paletteId = mMapCacheEntryFlagsGetPaletteId(status->flags);
 	const color_t* tile = NULL;

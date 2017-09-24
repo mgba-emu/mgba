@@ -28,6 +28,10 @@ public slots:
 
 private slots:
 	void selectMap(int);
+	void selectTile(int x, int y);
+
+protected:
+	bool eventFilter(QObject*, QEvent*) override;
 
 private:
 #ifdef M_CORE_GBA
@@ -43,6 +47,9 @@ private:
 	mMapCacheEntry m_mapStatus[128 * 128] = {}; // TODO: Correct size
 	int m_map = 0;
 	QImage m_rawMap;
+	int m_boundary;
+	int m_addressBase;
+	int m_addressWidth;
 };
 
 }

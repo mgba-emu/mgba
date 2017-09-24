@@ -21,12 +21,15 @@ Q_OBJECT
 public:
 	AssetTile(QWidget* parent = nullptr);
 	void setController(std::shared_ptr<CoreController>);
+	void addCustomProperty(const QString& id, const QString& visibleName);
 
 public slots:
 	void setPalette(int);
 	void setBoundary(int boundary, int set0, int set1);
 	void selectIndex(int);
+	void setFlip(bool h, bool v);
 	void selectColor(int);
+	void setCustomProperty(const QString& id, const QVariant& value);
 
 private:
 	Ui::AssetTile m_ui;
@@ -40,6 +43,10 @@ private:
 	int m_addressBase;
 	int m_boundary;
 	int m_boundaryBase;
+	bool m_flipH = false;
+	bool m_flipV = false;
+
+	QMap<QString, QLabel*> m_customProperties;
 };
 
 }

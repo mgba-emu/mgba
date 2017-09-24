@@ -9,6 +9,7 @@
 #include "GBAApp.h"
 
 #include <QFontDatabase>
+#include <QHBoxLayout>
 
 #include <mgba/core/interface.h>
 #ifdef M_CORE_GBA
@@ -34,10 +35,23 @@ AssetTile::AssetTile(QWidget* parent)
 	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 
 	m_ui.tileId->setFont(font);
+	m_ui.paletteId->setFont(font);
 	m_ui.address->setFont(font);
 	m_ui.r->setFont(font);
 	m_ui.g->setFont(font);
 	m_ui.b->setFont(font);
+}
+
+void AssetTile::addCustomProperty(const QString& id, const QString& visibleName) {
+	QHBoxLayout* newLayout = new QHBoxLayout;
+	newLayout->addWidget(new QLabel(visibleName));
+	QLabel* value = new QLabel;
+	value->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+	value->setAlignment(Qt::AlignRight);
+	newLayout->addWidget(value);
+	m_customProperties[id] = value;
+	int index = layout()->indexOf(m_ui.line);
+	static_cast<QBoxLayout*>(layout())->insertLayout(index, newLayout);
 }
 
 void AssetTile::setController(std::shared_ptr<CoreController> controller) {
@@ -94,14 +108,28 @@ void AssetTile::selectIndex(int index) {
 	}
 	data = mTileCacheGetTile(tileCache, index, paletteId);
 	m_ui.tileId->setText(QString::number(dispIndex));
+	m_ui.paletteId->setText(QString::number(paletteId));
 	m_ui.address->setText(tr("%0%1%2")
 		.arg(m_addressWidth == 4 ? index >= m_boundary / 2 : 0)
 		.arg(m_addressWidth == 4 ? ":" : "x")
 		.arg(dispIndex * bpp | base, m_addressWidth, 16, QChar('0')));
+	int flip = 0;
+	if (m_flipH) {
+		flip |= 007;
+	}
+	if (m_flipV) {
+		flip |= 070;
+	}
 	for (int i = 0; i < 64; ++i) {
-		m_ui.preview->setColor(i, data[i]);
+		m_ui.preview->setColor(i ^ flip, data[i]);
 	}
 	m_ui.preview->update();
+}
+
+void AssetTile::setFlip(bool h, bool v) {
+	m_flipH = h;
+	m_flipV = v;
+	selectIndex(m_index);
 }
 
 void AssetTile::selectColor(int index) {
@@ -122,3 +150,10 @@ void AssetTile::selectColor(int index) {
 	m_ui.b->setText(tr("0x%0 (%1)").arg(b, 2, 16, QChar('0')).arg(b, 2, 10, QChar('0')));
 }
 
+void AssetTile::setCustomProperty(const QString& id, const QVariant& value) {
+	QLabel* label = m_customProperties[id];
+	if (!label) {
+		return;
+	}
+	label->setText(value.toString());
+}

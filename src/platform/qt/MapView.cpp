@@ -10,9 +10,16 @@
 #include "LogController.h"
 
 #include <mgba-util/png-io.h>
+#ifdef M_CORE_GBA
+#include <mgba/internal/gba/memory.h>
+#endif
+#ifdef M_CORE_GB
+#include <mgba/internal/gb/memory.h>
+#endif
 
 #include <QButtonGroup>
 #include <QFontDatabase>
+#include <QMouseEvent>
 #include <QRadioButton>
 #include <QTimer>
 
@@ -28,17 +35,22 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
 	case PLATFORM_GBA:
-		m_ui.tile->setBoundary(2048, 0, 2);
+		m_boundary = 2048;
+		m_addressBase = BASE_VRAM;
+		m_addressWidth = 8;
 		break;
 #endif
 #ifdef M_CORE_GB
 	case PLATFORM_GB:
-		m_ui.tile->setBoundary(1024, 0, 0);
+		m_boundary = 1024;
+		m_addressBase = GB_BASE_VRAM;
+		m_addressWidth = 4;
 		break;
 #endif
 	default:
 		return;
 	}
+	m_ui.tile->setBoundary(m_boundary, 0, 0);
 
 	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this]() {
 		updateTiles(true);
@@ -67,6 +79,10 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 #else
 	m_ui.exportButton->setVisible(false);
 #endif
+	m_ui.map->installEventFilter(this);
+	m_ui.tile->addCustomProperty("mapAddr", tr("Map Addr."));
+	m_ui.tile->addCustomProperty("flip", tr("Mirror"));
+	selectTile(0, 0);
 }
 
 void MapView::selectMap(int map) {
@@ -78,6 +94,45 @@ void MapView::selectMap(int map) {
 	}
 	m_map = map;
 	updateTiles(true);
+}
+
+void MapView::selectTile(int x, int y) {
+	CoreController::Interrupter interrupter(m_controller);
+	mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, m_map);
+	size_t tileCache = mTileCacheSetIndex(&m_cacheSet->tiles, mapCache->tileCache);
+	m_ui.tile->setBoundary(m_boundary, tileCache, tileCache);
+	uint32_t location = mMapCacheTileId(mapCache, x, y);
+	mMapCacheEntry* entry = &m_mapStatus[location];
+	m_ui.tile->selectIndex(entry->tileId + mapCache->tileStart);
+	m_ui.tile->setPalette(mMapCacheEntryFlagsGetPaletteId(entry->flags));
+	m_ui.tile->setFlip(mMapCacheEntryFlagsGetHMirror(entry->flags), mMapCacheEntryFlagsGetVMirror(entry->flags));
+	location <<= (mMapCacheSystemInfoGetMapAlign(mapCache->sysConfig));
+	location += m_addressBase + mapCache->mapStart;
+
+	QString flip(tr("None"));
+	if (mMapCacheEntryFlagsGetHMirror(entry->flags) && mMapCacheEntryFlagsGetVMirror(entry->flags)) {
+		flip = tr("Both");
+	} else if (mMapCacheEntryFlagsGetHMirror(entry->flags)) {
+		flip = tr("Horizontal");
+	} else if (mMapCacheEntryFlagsGetVMirror(entry->flags)) {
+		flip = tr("Vertical");
+	}
+	m_ui.tile->setCustomProperty("flip", flip);
+	m_ui.tile->setCustomProperty("mapAddr", QString("%0%1")
+		.arg(m_addressWidth == 8 ? "0x" : "")
+		.arg(location, m_addressWidth, 16, QChar('0')));
+}
+
+bool MapView::eventFilter(QObject* obj, QEvent* event) {
+	if (event->type() != QEvent::MouseButtonPress) {
+		return false;
+	}
+	int x = static_cast<QMouseEvent*>(event)->x();
+	int y = static_cast<QMouseEvent*>(event)->y();
+	x /= 8 * m_ui.magnification->value();
+	y /= 8 * m_ui.magnification->value();
+	selectTile(x, y);
+	return true;
 }
 
 void MapView::updateTilesGBA(bool force) {
