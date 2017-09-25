@@ -106,8 +106,16 @@ class Core(object):
         self.config = Config(ffi.addressof(native.config))
 
     @cached_property
+    def graphicsCache(self):
+        return tile.CacheSet(self)
+
+    @cached_property
     def tiles(self):
-        return tile.TileView(self)
+        t = []
+        ts = ffi.addressof(self.graphicsCache.cache.tiles)
+        for i in range(lib.mTileCacheSetSize(ts)):
+            t.append(tile.TileView(lib.mTileCacheSetGetPointer(ts, i)))
+        return t
 
     @classmethod
     def _init(cls, native):

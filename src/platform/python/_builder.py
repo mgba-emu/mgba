@@ -75,7 +75,7 @@ ffi.embedding_init_code("""
     venv = os.getenv('VIRTUAL_ENV')
     if venv:
         activate = os.path.join(venv, 'bin', 'activate_this.py')
-        execfile(activate, dict(__file__=activate))
+        exec(compile(open(activate, "rb").read(), activate, 'exec'), dict(__file__=activate))
     from mgba._pylib import ffi, lib
     symbols = {}
     globalSyms = {

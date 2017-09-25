@@ -27,13 +27,13 @@ class GB(Core):
         self.cpu = LR35902Core(self._core.cpu)
 
     @needsReset
-    def _initTileCache(self, cache):
-        lib.GBVideoTileCacheInit(cache)
-        lib.GBVideoTileCacheAssociate(cache, ffi.addressof(self._native.video))
+    def _initCache(self, cache):
+        lib.GBVideoCacheInit(cache)
+        lib.GBVideoCacheAssociate(cache, ffi.addressof(self._native.video))
 
-    def _deinitTileCache(self, cache):
+    def _deinitCache(self, cache):
         self._native.video.renderer.cache = ffi.NULL
-        lib.mTileCacheDeinit(cache)
+        lib.mCacheSetDeinit(cache)
 
     def reset(self):
         super(GB, self).reset()
@@ -135,6 +135,7 @@ class GBSprite(Sprite):
             self.paletteId = self._attr & 7
         else:
             self.paletteId = (self._attr >> 4) & 1
+        self.paletteId += 8
 
 
 class GBObjs:
@@ -149,5 +150,5 @@ class GBObjs:
         if index >= len(self):
             raise IndexError()
         sprite = GBSprite(self._obj[index], self._core)
-        sprite.constitute(self._core.tiles, 0, 0)
+        sprite.constitute(self._core.tiles[0], 0)
         return sprite
