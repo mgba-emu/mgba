@@ -18,6 +18,7 @@ Features
 - Save type detection, even for flash memory size[<sup>[2]</sup>](#flashdetect).
 - Support for cartridges with motion sensors and rumble (only usable with game controllers).
 - Real-time clock support, even without configuration.
+- Game Boy Camera and Game Boy Printer support.
 - A built-in BIOS implementation, and ability to load external BIOS files.
 - Turbo/fast-forward support by holding Tab.
 - Rewind by holding Backquote.
@@ -45,7 +46,6 @@ Features
 - A comprehensive debug suite.
 - e-Reader support.
 - Wireless adapter support.
-- Game Boy Printer support.
 
 Supported Platforms
 -------------------
