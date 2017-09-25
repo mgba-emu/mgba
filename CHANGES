@@ -7,6 +7,7 @@ Features:
  - Super Game Boy support
  - Customizable autofire speed
  - Ability to set default Game Boy model
+ - Map viewer
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
  - Python: Fix importing .gb or .gba before .core
