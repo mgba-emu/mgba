@@ -1167,9 +1167,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	emulationMenu->addSeparator();
 
 	m_shortcutController->addFunctions(emulationMenu, [this]() {
-		m_controller->setFastForward(true);
+		if (m_controller) {
+			m_controller->setFastForward(true);
+		}
 	}, [this]() {
-		m_controller->setFastForward(false);
+		if (m_controller) {
+			m_controller->setFastForward(false);
+		}
 	}, QKeySequence(Qt::Key_Tab), tr("Fast forward (held)"), "holdFastForward");
 
 	QAction* turbo = new QAction(tr("&Fast forward"), emulationMenu);
