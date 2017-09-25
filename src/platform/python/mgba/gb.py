@@ -32,8 +32,9 @@ class GB(Core):
         lib.GBVideoCacheAssociate(cache, ffi.addressof(self._native.video))
 
     def _deinitCache(self, cache):
-        self._native.video.renderer.cache = ffi.NULL
         lib.mCacheSetDeinit(cache)
+        if self._wasReset:
+            self._native.video.renderer.cache = ffi.NULL
 
     def reset(self):
         super(GB, self).reset()

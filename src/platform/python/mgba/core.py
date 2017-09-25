@@ -105,8 +105,13 @@ class Core(object):
         self._core.addCoreCallbacks(self._core, self._callbacks.context)
         self.config = Config(ffi.addressof(native.config))
 
+    def __del__(self):
+        self._wasReset = False
+
     @cached_property
     def graphicsCache(self):
+        if not self._wasReset:
+            raise RuntimeError("Core must be reset first")
         return tile.CacheSet(self)
 
     @cached_property
