@@ -32,6 +32,27 @@ class TileView:
     def getTile(self, tile, palette):
         return Tile(lib.mTileCacheGetTile(self.cache, tile, palette))
 
+class MapView:
+    def __init__(self, cache):
+        self.cache = cache
+
+    @property
+    def width(self):
+        return 1 << lib.mMapCacheSystemInfoGetTilesWide(self.cache.sysConfig)
+
+    @property
+    def height(self):
+        return 1 << lib.mMapCacheSystemInfoGetTilesHigh(self.cache.sysConfig)
+
+    @property
+    def image(self):
+        i = image.Image(self.width * 8, self.height * 8, alpha=True)
+        for y in range(self.height * 8):
+            if not y & 7:
+                lib.mMapCacheCleanRow(self.cache, y >> 3)
+            row = lib.mMapCacheGetRow(self.cache, y)
+            ffi.memmove(ffi.addressof(i.buffer, i.stride * y), row, self.width * 8 * ffi.sizeof("color_t"))
+        return i
 
 class Sprite(object):
     def constitute(self, tileView, tilePitch):

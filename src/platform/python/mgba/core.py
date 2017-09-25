@@ -117,6 +117,14 @@ class Core(object):
             t.append(tile.TileView(lib.mTileCacheSetGetPointer(ts, i)))
         return t
 
+    @cached_property
+    def maps(self):
+        m = []
+        ms = ffi.addressof(self.graphicsCache.cache.maps)
+        for i in range(lib.mMapCacheSetSize(ms)):
+            m.append(tile.MapView(lib.mMapCacheSetGetPointer(ms, i)))
+        return m
+
     @classmethod
     def _init(cls, native):
         core = ffi.gc(native, native.deinit)

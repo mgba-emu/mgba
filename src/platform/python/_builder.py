@@ -17,14 +17,17 @@ if __name__ == "__main__":
 cppflags.extend(["-I" + incdir, "-I" + srcdir, "-I" + bindir])
 
 ffi.set_source("mgba._pylib", """
+#define static
+#define inline
 #include "flags.h"
 #define OPAQUE_THREADING
+#include <mgba/core/cache-set.h>
 #include <mgba-util/common.h>
 #include <mgba/core/core.h>
+#include <mgba/core/map-cache.h>
 #include <mgba/core/log.h>
 #include <mgba/core/mem-search.h>
 #include <mgba/core/thread.h>
-#include <mgba/core/cache-set.h>
 #include <mgba/core/version.h>
 #include <mgba/debugger/debugger.h>
 #include <mgba/internal/arm/arm.h>

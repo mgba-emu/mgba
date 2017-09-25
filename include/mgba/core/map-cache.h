@@ -71,6 +71,7 @@ uint32_t mMapCacheTileId(struct mMapCache* cache, unsigned x, unsigned y);
 bool mMapCacheCheckTile(struct mMapCache* cache, const struct mMapCacheEntry* entry, unsigned x, unsigned y);
 void mMapCacheCleanTile(struct mMapCache* cache, struct mMapCacheEntry* entry, unsigned x, unsigned y);
 
+void mMapCacheCleanRow(struct mMapCache* cache, unsigned y);
 const color_t* mMapCacheGetRow(struct mMapCache* cache, unsigned y);
 
 CXX_GUARD_END
