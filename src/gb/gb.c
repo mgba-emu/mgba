@@ -39,6 +39,7 @@ static void GBDeinit(struct mCPUComponent* component);
 static void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh);
 static void GBProcessEvents(struct LR35902Core* cpu);
 static void GBSetInterrupts(struct LR35902Core* cpu, bool enable);
+static uint16_t GBIRQVector(struct LR35902Core* cpu);
 static void GBIllegal(struct LR35902Core* cpu);
 static void GBStop(struct LR35902Core* cpu);
 
@@ -371,6 +372,7 @@ void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh) {
 	irqh->reset = GBReset;
 	irqh->processEvents = GBProcessEvents;
 	irqh->setInterrupts = GBSetInterrupts;
+	irqh->irqVector = GBIRQVector;
 	irqh->hitIllegal = GBIllegal;
 	irqh->stop = GBStop;
 	irqh->halt = GBHalt;
@@ -596,31 +598,7 @@ void GBUpdateIRQs(struct GB* gb) {
 	if (!gb->memory.ime || gb->cpu->irqPending) {
 		return;
 	}
-
-	if (irqs & (1 << GB_IRQ_VBLANK)) {
-		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_VBLANK);
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_VBLANK);
-		return;
-	}
-	if (irqs & (1 << GB_IRQ_LCDSTAT)) {
-		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_LCDSTAT);
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_LCDSTAT);
-		return;
-	}
-	if (irqs & (1 << GB_IRQ_TIMER)) {
-		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_TIMER);
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_TIMER);
-		return;
-	}
-	if (irqs & (1 << GB_IRQ_SIO)) {
-		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_SIO);
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_SIO);
-		return;
-	}
-	if (irqs & (1 << GB_IRQ_KEYPAD)) {
-		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_KEYPAD);
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_KEYPAD);
-	}
+	LR35902RaiseIRQ(gb->cpu);
 }
 
 void GBProcessEvents(struct LR35902Core* cpu) {
@@ -661,6 +639,33 @@ void GBSetInterrupts(struct LR35902Core* cpu, bool enable) {
 		mTimingDeschedule(&gb->timing, &gb->eiPending);
 		mTimingSchedule(&gb->timing, &gb->eiPending, 4);
 	}
+}
+
+uint16_t GBIRQVector(struct LR35902Core* cpu) {
+	struct GB* gb = (struct GB*) cpu->master;
+	int irqs = gb->memory.ie & gb->memory.io[REG_IF];
+
+	if (irqs & (1 << GB_IRQ_VBLANK)) {
+		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_VBLANK);
+		return GB_VECTOR_VBLANK;
+	}
+	if (irqs & (1 << GB_IRQ_LCDSTAT)) {
+		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_LCDSTAT);
+		return GB_VECTOR_LCDSTAT;
+	}
+	if (irqs & (1 << GB_IRQ_TIMER)) {
+		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_TIMER);
+		return GB_VECTOR_TIMER;
+	}
+	if (irqs & (1 << GB_IRQ_SIO)) {
+		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_SIO);
+		return GB_VECTOR_SIO;
+	}
+	if (irqs & (1 << GB_IRQ_KEYPAD)) {
+		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_KEYPAD);
+		return GB_VECTOR_KEYPAD;
+	}
+	return 0;
 }
 
 static void _enableInterrupts(struct mTiming* timing, void* user, uint32_t cyclesLate) {

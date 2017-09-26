@@ -42,7 +42,7 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * | 0x00036 - 0x00037: Index address
  * | 0x00038: Bus value
  * | 0x00039: Execution state
- * | 0x0003A - 0x0003B: IRQ vector
+ * | 0x0003A - 0x0003B: Reserved
  * | 0x0003C - 0x0003F: EI pending cycles
  * | 0x00040 - 0x00043: Reserved (DI pending cycles)
  * | 0x00044 - 0x00047: Flags
@@ -287,7 +287,7 @@ struct GBSerializedState {
 		uint8_t bus;
 		uint8_t executionState;
 
-		uint16_t irqVector;
+		uint16_t reserved;
 
 		uint32_t eiPending;
 		int32_t reservedDiPending;
