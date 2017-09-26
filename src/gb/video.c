@@ -418,9 +418,8 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 
 		video->ly = 0;
 		video->p->memory.io[REG_LY] = 0;
-		// TODO: Does this read as 0 for 4 T-cycles?
 		GBRegisterSTAT oldStat = video->stat;
-		video->stat = GBRegisterSTATSetMode(video->stat, 2);
+		video->stat = GBRegisterSTATSetMode(video->stat, 0);
 		video->stat = GBRegisterSTATSetLYC(video->stat, video->ly == video->p->memory.io[REG_LYC]);
 		if (!_statIRQAsserted(video, oldStat) && _statIRQAsserted(video, video->stat)) {
 			video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
