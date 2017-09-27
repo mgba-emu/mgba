@@ -70,9 +70,17 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 	m_colorPickers[1] = ColorPicker(m_ui.color1, QColor(0xA8, 0xA8, 0xA8));
 	m_colorPickers[2] = ColorPicker(m_ui.color2, QColor(0x50, 0x50, 0x50));
 	m_colorPickers[3] = ColorPicker(m_ui.color3, QColor(0x00, 0x00, 0x00));
-	for (int colorId = 0; colorId < 4; ++colorId) {
+	m_colorPickers[4] = ColorPicker(m_ui.color4, QColor(0xF8, 0xF8, 0xF8));
+	m_colorPickers[5] = ColorPicker(m_ui.color5, QColor(0xA8, 0xA8, 0xA8));
+	m_colorPickers[6] = ColorPicker(m_ui.color6, QColor(0x50, 0x50, 0x50));
+	m_colorPickers[7] = ColorPicker(m_ui.color7, QColor(0x00, 0x00, 0x00));
+	m_colorPickers[8] = ColorPicker(m_ui.color8, QColor(0xF8, 0xF8, 0xF8));
+	m_colorPickers[9] = ColorPicker(m_ui.color9, QColor(0xA8, 0xA8, 0xA8));
+	m_colorPickers[10] = ColorPicker(m_ui.color10, QColor(0x50, 0x50, 0x50));
+	m_colorPickers[11] = ColorPicker(m_ui.color11, QColor(0x00, 0x00, 0x00));
+	for (int colorId = 0; colorId < 12; ++colorId) {
 		connect(&m_colorPickers[colorId], &ColorPicker::colorChanged, this, [this, colorId](const QColor& color) {
-			m_gbColors[colorId] = color.rgb();
+			m_gbColors[colorId] = color.rgb() | 0xFF000000;
 		});
 	}
 
@@ -161,12 +169,13 @@ void OverrideView::updateOverrides() {
 		std::unique_ptr<GBOverride> gb(new GBOverride);
 		gb->override.mbc = s_mbcList[m_ui.mbc->currentIndex()];
 		gb->override.model = s_gbModelList[m_ui.gbModel->currentIndex()];
-		gb->override.gbColors[0] = m_gbColors[0];
-		gb->override.gbColors[1] = m_gbColors[1];
-		gb->override.gbColors[2] = m_gbColors[2];
-		gb->override.gbColors[3] = m_gbColors[3];
+		bool hasColor = false;
+		for (int i = 0; i < 12; ++i) {
+			gb->override.gbColors[i] = m_gbColors[i];
+			hasColor = hasColor || (m_gbColors[i] & 0xFF000000);
+		}
 		bool hasOverride = gb->override.mbc != GB_MBC_AUTODETECT || gb->override.model != GB_MODEL_AUTODETECT;
-		hasOverride = hasOverride || (m_gbColors[0] | m_gbColors[1] | m_gbColors[2] | m_gbColors[3]);
+		hasOverride = hasOverride || hasColor;
 		if (hasOverride) {
 			m_controller->setOverride(std::move(gb));
 		} else {

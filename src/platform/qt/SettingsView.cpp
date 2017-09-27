@@ -183,24 +183,38 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	defaultColors.append(QColor(0xA8, 0xA8, 0xA8));
 	defaultColors.append(QColor(0x50, 0x50, 0x50));
 	defaultColors.append(QColor(0x00, 0x00, 0x00));
-	bool ok;
-	if (m_controller->getOption("gb.pal[0]").toUInt(&ok) || ok) {
-		defaultColors[0] = QColor::fromRgb(m_controller->getOption("gb.pal[0]").toUInt());
-	}
-	if (m_controller->getOption("gb.pal[1]").toUInt(&ok) || ok) {
-		defaultColors[1] = QColor::fromRgb(m_controller->getOption("gb.pal[1]").toUInt());
-	}
-	if (m_controller->getOption("gb.pal[2]").toUInt(&ok) || ok) {
-		defaultColors[2] = QColor::fromRgb(m_controller->getOption("gb.pal[2]").toUInt());
-	}
-	if (m_controller->getOption("gb.pal[3]").toUInt(&ok) || ok) {
-		defaultColors[3] = QColor::fromRgb(m_controller->getOption("gb.pal[3]").toUInt());
-	}
-	m_colorPickers[0] = ColorPicker(m_ui.color0, defaultColors[0]);
-	m_colorPickers[1] = ColorPicker(m_ui.color1, defaultColors[1]);
-	m_colorPickers[2] = ColorPicker(m_ui.color2, defaultColors[2]);
-	m_colorPickers[3] = ColorPicker(m_ui.color3, defaultColors[3]);
-	for (int colorId = 0; colorId < 4; ++colorId) {
+	defaultColors.append(QColor(0xF8, 0xF8, 0xF8));
+	defaultColors.append(QColor(0xA8, 0xA8, 0xA8));
+	defaultColors.append(QColor(0x50, 0x50, 0x50));
+	defaultColors.append(QColor(0x00, 0x00, 0x00));
+	defaultColors.append(QColor(0xF8, 0xF8, 0xF8));
+	defaultColors.append(QColor(0xA8, 0xA8, 0xA8));
+	defaultColors.append(QColor(0x50, 0x50, 0x50));
+	defaultColors.append(QColor(0x00, 0x00, 0x00));
+	QList<QWidget*> colors{
+		m_ui.color0,
+		m_ui.color1,
+		m_ui.color2,
+		m_ui.color3,
+		m_ui.color4,
+		m_ui.color5,
+		m_ui.color6,
+		m_ui.color7,
+		m_ui.color8,
+		m_ui.color9,
+		m_ui.color10,
+		m_ui.color11
+	};
+	for (int colorId = 0; colorId < 12; ++colorId) {
+		bool ok;
+		uint color = m_controller->getOption(QString("gb.pal[%0]").arg(colorId)).toUInt(&ok);
+		if (ok) {
+			defaultColors[colorId] = QColor::fromRgb(color);
+			m_gbColors[colorId] = color | 0xFF000000;
+		} else {
+			m_gbColors[colorId] = defaultColors[colorId].rgb() & ~0xFF000000;
+		}
+		m_colorPickers[colorId] = ColorPicker(colors[colorId], defaultColors[colorId]);
 		connect(&m_colorPickers[colorId], &ColorPicker::colorChanged, this, [this, colorId](const QColor& color) {
 			m_gbColors[colorId] = color.rgb();
 		});
@@ -391,11 +405,13 @@ void SettingsView::updateConfig() {
 	GBModel modelCGB = s_gbModelList[m_ui.cgbModel->currentIndex()];
 	m_controller->setOption("cgb.model", GBModelToName(modelCGB));
 
-	if (m_gbColors[0] | m_gbColors[1] | m_gbColors[2] | m_gbColors[3]) {
-		m_controller->setOption("gb.pal[0]", m_gbColors[0]);
-		m_controller->setOption("gb.pal[1]", m_gbColors[1]);
-		m_controller->setOption("gb.pal[2]", m_gbColors[2]);
-		m_controller->setOption("gb.pal[3]", m_gbColors[3]);
+	for (int colorId = 0; colorId < 12; ++colorId) {
+		if (!(m_gbColors[colorId] & 0xFF000000)) {
+			continue;
+		}
+		QString color = QString("gb.pal[%0]").arg(colorId);
+		m_controller->setOption(color.toUtf8().constData(), m_gbColors[colorId] & ~0xFF000000);
+
 	}
 #endif
 

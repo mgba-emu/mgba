@@ -5,9 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
+#include <QColor>
 #include <QObject>
 
-class QColor;
 class QWidget;
 
 namespace QGBA {
@@ -29,6 +29,7 @@ protected:
 
 private:
 	QWidget* m_parent = nullptr;
+	QColor m_defaultColor;
 };
 
 }

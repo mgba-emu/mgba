@@ -15,6 +15,7 @@ ColorPicker::ColorPicker() {
 
 ColorPicker::ColorPicker(QWidget* parent, const QColor& defaultColor)
 	: m_parent(parent)
+	, m_defaultColor(defaultColor)
 {
 	QPalette palette = parent->palette();
 	palette.setColor(parent->backgroundRole(), defaultColor);
@@ -27,6 +28,7 @@ ColorPicker& ColorPicker::operator=(const ColorPicker& other) {
 		m_parent->removeEventFilter(this);
 	}
 	m_parent = other.m_parent;
+	m_defaultColor = other.m_defaultColor;
 	m_parent->installEventFilter(this);
 
 	return *this;
@@ -45,8 +47,10 @@ bool ColorPicker::eventFilter(QObject* obj, QEvent* event) {
 
 	QColorDialog* colorPicker = new QColorDialog;
 	colorPicker->setAttribute(Qt::WA_DeleteOnClose);
+	colorPicker->setCurrentColor(m_defaultColor);
 	colorPicker->open();
 	connect(colorPicker, &QColorDialog::colorSelected, [this, swatch](const QColor& color) {
+		m_defaultColor = color;
 		QPalette palette = swatch->palette();
 		palette.setColor(swatch->backgroundRole(), color);
 		swatch->setPalette(palette);
