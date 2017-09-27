@@ -145,7 +145,7 @@ struct GBVideo {
 	bool ocpIncrement;
 	uint8_t sgbCommandHeader;
 
-	uint16_t dmgPalette[4];
+	uint16_t dmgPalette[12];
 	uint16_t palette[64];
 
 	bool sgbBorders;

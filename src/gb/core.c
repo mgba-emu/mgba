@@ -179,6 +179,30 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	if (mCoreConfigGetIntValue(config, "gb.pal[3]", &color)) {
 		GBVideoSetPalette(&gb->video, 3, color);
 	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[4]", &color)) {
+		GBVideoSetPalette(&gb->video, 4, color);
+	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[5]", &color)) {
+		GBVideoSetPalette(&gb->video, 5, color);
+	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[6]", &color)) {
+		GBVideoSetPalette(&gb->video, 6, color);
+	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[7]", &color)) {
+		GBVideoSetPalette(&gb->video, 7, color);
+	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[8]", &color)) {
+		GBVideoSetPalette(&gb->video, 8, color);
+	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[9]", &color)) {
+		GBVideoSetPalette(&gb->video, 9, color);
+	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[10]", &color)) {
+		GBVideoSetPalette(&gb->video, 10, color);
+	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[11]", &color)) {
+		GBVideoSetPalette(&gb->video, 11, color);
+	}
 
 	mCoreConfigCopyValue(&core->config, config, "gb.bios");
 	mCoreConfigCopyValue(&core->config, config, "sgb.bios");

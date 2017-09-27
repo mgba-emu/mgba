@@ -72,6 +72,14 @@ void GBVideoInit(struct GBVideo* video) {
 	video->dmgPalette[1] = 0x56B5;
 	video->dmgPalette[2] = 0x294A;
 	video->dmgPalette[3] = 0x0000;
+	video->dmgPalette[4] = 0x7FFF;
+	video->dmgPalette[5] = 0x56B5;
+	video->dmgPalette[6] = 0x294A;
+	video->dmgPalette[7] = 0x0000;
+	video->dmgPalette[8] = 0x7FFF;
+	video->dmgPalette[9] = 0x56B5;
+	video->dmgPalette[10] = 0x294A;
+	video->dmgPalette[11] = 0x0000;
 
 	video->sgbBorders = true;
 
@@ -115,14 +123,14 @@ void GBVideoReset(struct GBVideo* video) {
 	video->palette[1] = video->dmgPalette[1];
 	video->palette[2] = video->dmgPalette[2];
 	video->palette[3] = video->dmgPalette[3];
-	video->palette[8 * 4 + 0] = video->dmgPalette[0];
-	video->palette[8 * 4 + 1] = video->dmgPalette[1];
-	video->palette[8 * 4 + 2] = video->dmgPalette[2];
-	video->palette[8 * 4 + 3] = video->dmgPalette[3];
-	video->palette[9 * 4 + 0] = video->dmgPalette[0];
-	video->palette[9 * 4 + 1] = video->dmgPalette[1];
-	video->palette[9 * 4 + 2] = video->dmgPalette[2];
-	video->palette[9 * 4 + 3] = video->dmgPalette[3];
+	video->palette[8 * 4 + 0] = video->dmgPalette[4];
+	video->palette[8 * 4 + 1] = video->dmgPalette[5];
+	video->palette[8 * 4 + 2] = video->dmgPalette[6];
+	video->palette[8 * 4 + 3] = video->dmgPalette[7];
+	video->palette[9 * 4 + 0] = video->dmgPalette[8];
+	video->palette[9 * 4 + 1] = video->dmgPalette[9];
+	video->palette[9 * 4 + 2] = video->dmgPalette[10];
+	video->palette[9 * 4 + 3] = video->dmgPalette[11];
 
 	video->renderer->deinit(video->renderer);
 	video->renderer->init(video->renderer, video->p->model, video->sgbBorders);
@@ -478,20 +486,20 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 			video->renderer->writePalette(video->renderer, 3, video->palette[3]);
 			break;
 		case REG_OBP0:
-			video->palette[8 * 4 + 0] = video->dmgPalette[value & 3];
-			video->palette[8 * 4 + 1] = video->dmgPalette[(value >> 2) & 3];
-			video->palette[8 * 4 + 2] = video->dmgPalette[(value >> 4) & 3];
-			video->palette[8 * 4 + 3] = video->dmgPalette[(value >> 6) & 3];
+			video->palette[8 * 4 + 0] = video->dmgPalette[(value & 3) + 4];
+			video->palette[8 * 4 + 1] = video->dmgPalette[((value >> 2) & 3) + 4];
+			video->palette[8 * 4 + 2] = video->dmgPalette[((value >> 4) & 3) + 4];
+			video->palette[8 * 4 + 3] = video->dmgPalette[((value >> 6) & 3) + 4];
 			video->renderer->writePalette(video->renderer, 8 * 4 + 0, video->palette[8 * 4 + 0]);
 			video->renderer->writePalette(video->renderer, 8 * 4 + 1, video->palette[8 * 4 + 1]);
 			video->renderer->writePalette(video->renderer, 8 * 4 + 2, video->palette[8 * 4 + 2]);
 			video->renderer->writePalette(video->renderer, 8 * 4 + 3, video->palette[8 * 4 + 3]);
 			break;
 		case REG_OBP1:
-			video->palette[9 * 4 + 0] = video->dmgPalette[value & 3];
-			video->palette[9 * 4 + 1] = video->dmgPalette[(value >> 2) & 3];
-			video->palette[9 * 4 + 2] = video->dmgPalette[(value >> 4) & 3];
-			video->palette[9 * 4 + 3] = video->dmgPalette[(value >> 6) & 3];
+			video->palette[9 * 4 + 0] = video->dmgPalette[(value & 3) + 8];
+			video->palette[9 * 4 + 1] = video->dmgPalette[((value >> 2) & 3) + 8];
+			video->palette[9 * 4 + 2] = video->dmgPalette[((value >> 4) & 3) + 8];
+			video->palette[9 * 4 + 3] = video->dmgPalette[((value >> 6) & 3) + 8];
 			video->renderer->writePalette(video->renderer, 9 * 4 + 0, video->palette[9 * 4 + 0]);
 			video->renderer->writePalette(video->renderer, 9 * 4 + 1, video->palette[9 * 4 + 1]);
 			video->renderer->writePalette(video->renderer, 9 * 4 + 2, video->palette[9 * 4 + 2]);
@@ -547,7 +555,7 @@ void GBVideoSwitchBank(struct GBVideo* video, uint8_t value) {
 }
 
 void GBVideoSetPalette(struct GBVideo* video, unsigned index, uint32_t color) {
-	if (index >= 4) {
+	if (index >= 12) {
 		return;
 	}
 	video->dmgPalette[index] = M_RGB8_TO_RGB5(color);
