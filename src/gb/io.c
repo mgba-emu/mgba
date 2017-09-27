@@ -424,6 +424,10 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			free(gb->memory.romBase);
 			gb->memory.romBase = gb->memory.rom;
 		}
+		if (gb->model >= GB_MODEL_CGB && gb->memory.io[0x6C]) {
+			gb->model = GB_MODEL_DMG;
+			GBVideoDisableCGB(&gb->video);
+		}
 		break;
 	case REG_IE:
 		gb->memory.ie = value;

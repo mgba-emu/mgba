@@ -561,6 +561,23 @@ void GBVideoSetPalette(struct GBVideo* video, unsigned index, uint32_t color) {
 	video->dmgPalette[index] = M_RGB8_TO_RGB5(color);
 }
 
+void GBVideoDisableCGB(struct GBVideo* video) {
+	video->dmgPalette[0] = video->palette[0];
+	video->dmgPalette[1] = video->palette[1];
+	video->dmgPalette[2] = video->palette[2];
+	video->dmgPalette[3] = video->palette[3];
+	video->dmgPalette[4] = video->palette[8 * 4 + 0];
+	video->dmgPalette[5] = video->palette[8 * 4 + 1];
+	video->dmgPalette[6] = video->palette[8 * 4 + 2];
+	video->dmgPalette[7] = video->palette[8 * 4 + 3];
+	video->dmgPalette[8] = video->palette[9 * 4 + 0];
+	video->dmgPalette[9] = video->palette[9 * 4 + 1];
+	video->dmgPalette[10] = video->palette[9 * 4 + 2];
+	video->dmgPalette[11] = video->palette[9 * 4 + 3];
+	video->renderer->deinit(video->renderer);
+	video->renderer->init(video->renderer, video->p->model, video->sgbBorders);
+}
+
 void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 	int i;
 	if (!(video->sgbCommandHeader & 7)) {

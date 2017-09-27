@@ -167,6 +167,7 @@ void GBVideoWriteLYC(struct GBVideo* video, uint8_t value);
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value);
 void GBVideoSwitchBank(struct GBVideo* video, uint8_t value);
 
+void GBVideoDisableCGB(struct GBVideo* video);
 void GBVideoSetPalette(struct GBVideo* video, unsigned index, uint32_t color);
 
 void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data);
