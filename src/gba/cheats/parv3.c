@@ -303,8 +303,9 @@ bool GBACheatAddProActionReplay(struct GBACheatSet* set, uint32_t op1, uint32_t 
 		GBACheatSetGameSharkVersion(set, 3);
 	// Fall through
 	case 3:
-	case 4:
 		GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
+	// Fall through
+	case 4:
 		return GBACheatAddProActionReplayRaw(set, o1, o2);
 	}
 	return false;
@@ -370,7 +371,7 @@ int GBACheatProActionReplayProbability(uint32_t op1, uint32_t op2) {
 	int width = ((op1 & PAR3_WIDTH) >> (PAR3_WIDTH_BASE - 3));
 	if (op1 & PAR3_COND) {
 		probability += 0x20;
-		if (width == 32) {
+		if (width >= 24) {
 			return 0;
 		}
 		if (op2 & ~((1 << width) - 1)) {
