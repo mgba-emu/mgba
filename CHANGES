@@ -30,6 +30,7 @@ Bugfixes:
  - GBA I/O: Fix reading from a few invalid I/O registers (fixes mgba.io/i/876)
  - GBA Savedata: Fix size of SRAM saves (fixes mgba.io/i/883)
  - GB Video: Fix read mode when enabling LCD
+ - GBA Cheats: Fix PARv3 multiline blocks (fixes mgba.io/i/889)
 Misc:
  - Qt: Don't rebuild library view if style hasn't changed
  - SDL: Fix 2.0.5 build on macOS under some circumstances

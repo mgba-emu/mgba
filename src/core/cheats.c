@@ -256,35 +256,23 @@ void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {
 	if (!cheats->enabled) {
 		return;
 	}
-	bool condition = true;
-	int conditionRemaining = 0;
-	int negativeConditionRemaining = 0;
 	cheats->refresh(cheats, device);
 
+	size_t elseLoc = 0;
+	size_t endLoc = 0;
 	size_t nCodes = mCheatListSize(&cheats->list);
 	size_t i;
 	for (i = 0; i < nCodes; ++i) {
-		if (conditionRemaining > 0) {
-			--conditionRemaining;
-			if (!condition) {
-				continue;
-			}
-		} else if (negativeConditionRemaining > 0) {
-			conditionRemaining = negativeConditionRemaining - 1;
-			negativeConditionRemaining = 0;
-			condition = !condition;
-			if (!condition) {
-				continue;
-			}
-		} else {
-			condition = true;
-		}
 		struct mCheat* cheat = mCheatListGetPointer(&cheats->list, i);
 		int32_t value = 0;
 		int32_t operand = cheat->operand;
 		uint32_t operationsRemaining = cheat->repeat;
 		uint32_t address = cheat->address;
 		bool performAssignment = false;
+		bool condition = true;
+		int conditionRemaining = 0;
+		int negativeConditionRemaining = 0;
+
 		for (; operationsRemaining; --operationsRemaining) {
 			switch (cheat->type) {
 			case CHEAT_ASSIGN:
@@ -312,46 +300,55 @@ void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {
 				condition = _readMem(device->p, address, cheat->width) == operand;
 				conditionRemaining = cheat->repeat;
 				negativeConditionRemaining = cheat->negativeRepeat;
+				operationsRemaining = 1;
 				break;
 			case CHEAT_IF_NE:
 				condition = _readMem(device->p, address, cheat->width) != operand;
 				conditionRemaining = cheat->repeat;
 				negativeConditionRemaining = cheat->negativeRepeat;
+				operationsRemaining = 1;
 				break;
 			case CHEAT_IF_LT:
 				condition = _readMem(device->p, address, cheat->width) < operand;
 				conditionRemaining = cheat->repeat;
 				negativeConditionRemaining = cheat->negativeRepeat;
+				operationsRemaining = 1;
 				break;
 			case CHEAT_IF_GT:
 				condition = _readMem(device->p, address, cheat->width) > operand;
 				conditionRemaining = cheat->repeat;
 				negativeConditionRemaining = cheat->negativeRepeat;
+				operationsRemaining = 1;
 				break;
 			case CHEAT_IF_ULT:
 				condition = (uint32_t) _readMem(device->p, address, cheat->width) < (uint32_t) operand;
 				conditionRemaining = cheat->repeat;
 				negativeConditionRemaining = cheat->negativeRepeat;
+				operationsRemaining = 1;
 				break;
 			case CHEAT_IF_UGT:
 				condition = (uint32_t) _readMem(device->p, address, cheat->width) > (uint32_t) operand;
 				conditionRemaining = cheat->repeat;
 				negativeConditionRemaining = cheat->negativeRepeat;
+				operationsRemaining = 1;
 				break;
 			case CHEAT_IF_AND:
 				condition = _readMem(device->p, address, cheat->width) & operand;
 				conditionRemaining = cheat->repeat;
 				negativeConditionRemaining = cheat->negativeRepeat;
+				operationsRemaining = 1;
 				break;
 			case CHEAT_IF_LAND:
 				condition = _readMem(device->p, address, cheat->width) && operand;
 				conditionRemaining = cheat->repeat;
 				negativeConditionRemaining = cheat->negativeRepeat;
+				operationsRemaining = 1;
 				break;
 			case CHEAT_IF_NAND:
 				condition = !(_readMem(device->p, address, cheat->width) & operand);
 				conditionRemaining = cheat->repeat;
 				negativeConditionRemaining = cheat->negativeRepeat;
+				operationsRemaining = 1;
 				break;
 			}
 
@@ -361,6 +358,18 @@ void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {
 
 			address += cheat->addressOffset;
 			operand += cheat->operandOffset;
+		}
+
+
+		if (elseLoc && i == elseLoc) {
+			i = endLoc;
+			endLoc = 0;
+		}
+		if (conditionRemaining > 0 && !condition) {
+			i += conditionRemaining;
+		} else if (negativeConditionRemaining > 0) {
+			elseLoc = i + conditionRemaining;
+			endLoc = elseLoc + negativeConditionRemaining;
 		}
 	}
 }
