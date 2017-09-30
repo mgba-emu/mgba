@@ -194,7 +194,7 @@ else ifeq ($(platform), vita)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = arm-vita-eabi-gcc$(EXE_EXT)
    AR = arm-vita-eabi-ar$(EXE_EXT)
-   PLATFORM_DEFINES := -DVITA -DCC_RESAMPLER -DPSP2 -DDISABLE_THREADING
+   PLATFORM_DEFINES := -DVITA -DCC_RESAMPLER -DPSP2
    STATIC_LINKING = 1
    DEFINES += -std=c99
 
@@ -212,7 +212,6 @@ else ifeq ($(platform), ctr)
    DEFINES += -std=c99
 
    PLATFORM_DEFINES += -DUSE_VFS_3DS
-   CFLAGS += -DDISABLE_THREADING
    STATIC_LINKING = 1
 
 # Xbox 360
@@ -260,7 +259,7 @@ else
    TARGET := $(TARGET_NAME)_libretro.dll
    CC = gcc
    SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T
-   DEFINES += -std=c99 -DDISABLE_THREADING
+   DEFINES += -std=c99
 
 endif
 
@@ -272,7 +271,7 @@ else
    CFLAGS += -O3
 endif
 
-DEFINES += -DHAVE_STRNDUP -DHAVE_STRDUP
+DEFINES += -DHAVE_STRNDUP -DHAVE_STRDUP -DDISABLE_THREADING
 
 
 include $(BUILD_DIR)/Makefile.common
