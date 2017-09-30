@@ -45,7 +45,7 @@ M_TEST_DEFINE(addRawPARv3) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "80000000 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_false(set->addLine(set, "43000000 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
 	set->deinit(set);
@@ -57,7 +57,7 @@ M_TEST_DEFINE(doPARv3Assign) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300000 00000078", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "02300002 00005678", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "04300004 12345678", GBA_CHEAT_PRO_ACTION_REPLAY));
@@ -81,7 +81,7 @@ M_TEST_DEFINE(doPARv3If1) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300001 00000011", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "08300000 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300001 00000012", GBA_CHEAT_PRO_ACTION_REPLAY));
@@ -110,7 +110,7 @@ M_TEST_DEFINE(doPARv3If1x1) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300002 00000021", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300003 00000031", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "08300000 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
@@ -165,7 +165,7 @@ M_TEST_DEFINE(doPARv3If2) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300001 00000011", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300002 00000021", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "48300000 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
@@ -199,7 +199,7 @@ M_TEST_DEFINE(doPARv3If2x2) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300002 00000021", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300003 00000031", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300004 00000041", GBA_CHEAT_PRO_ACTION_REPLAY));
@@ -267,7 +267,7 @@ M_TEST_DEFINE(doPARv3If2Contain1) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300002 00000021", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "48300000 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "08300001 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
@@ -314,7 +314,7 @@ M_TEST_DEFINE(doPARv3IfX) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300001 00000011", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "88300000 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300001 00000012", GBA_CHEAT_PRO_ACTION_REPLAY));
@@ -342,7 +342,7 @@ M_TEST_DEFINE(doPARv3IfXxX) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300002 00000021", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300003 00000031", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300004 00000041", GBA_CHEAT_PRO_ACTION_REPLAY));
@@ -404,7 +404,7 @@ M_TEST_DEFINE(doPARv3IfXElse) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300001 00000011", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300002 00000021", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "88300000 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
@@ -438,7 +438,7 @@ M_TEST_DEFINE(doPARv3IfXElsexX) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300002 00000021", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300003 00000031", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300004 00000041", GBA_CHEAT_PRO_ACTION_REPLAY));
@@ -508,7 +508,7 @@ M_TEST_DEFINE(doPARv3IfXElsexXElse) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300002 00000021", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300003 00000031", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300004 00000041", GBA_CHEAT_PRO_ACTION_REPLAY));
@@ -585,7 +585,7 @@ M_TEST_DEFINE(doPARv3IfXContain1) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300002 00000021", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300003 00000031", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300004 00000041", GBA_CHEAT_PRO_ACTION_REPLAY));
@@ -646,7 +646,7 @@ M_TEST_DEFINE(doPARv3IfXContain1Else) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300002 00000021", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300003 00000031", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300004 00000041", GBA_CHEAT_PRO_ACTION_REPLAY));
@@ -715,7 +715,7 @@ M_TEST_DEFINE(doPARv3IfXElseContain1) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300002 00000021", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300003 00000031", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300004 00000041", GBA_CHEAT_PRO_ACTION_REPLAY));
@@ -784,7 +784,7 @@ M_TEST_DEFINE(doPARv3IfXContain1ElseContain1) {
 	assert_non_null(device);
 	struct mCheatSet* set = device->createSet(device, NULL);
 	assert_non_null(set);
-	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, 4);
 	assert_true(set->addLine(set, "00300003 00000031", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300004 00000041", GBA_CHEAT_PRO_ACTION_REPLAY));
 	assert_true(set->addLine(set, "00300005 00000051", GBA_CHEAT_PRO_ACTION_REPLAY));

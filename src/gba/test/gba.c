@@ -6,9 +6,11 @@
 #include "util/test/suite.h"
 
 M_TEST_SUITE_DECLARE(GBACore);
+M_TEST_SUITE_DECLARE(GBACheats);
 
 int TestRunGBA(void) {
 	int failures = 0;
 	failures += M_TEST_SUITE_RUN(GBACore);
+	failures += M_TEST_SUITE_RUN(GBACheats);
 	return failures;
 }
