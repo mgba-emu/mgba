@@ -62,6 +62,7 @@ Misc:
  - Qt: Allow overrides to be saved before a game is loaded
  - VFS: Make VFile.truncate work growing files on PSV (fixes mgba.io/i/885)
  - GBA Cheats: Improve detection of raw cheats
+ - Qt: Hide mouse immediately when loading
 
 0.6.0: (2017-07-16)
 Features:
