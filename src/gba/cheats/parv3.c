@@ -284,6 +284,10 @@ bool GBACheatAddProActionReplayRaw(struct GBACheatSet* cheats, uint32_t op1, uin
 		cheat->address = BASE_IO | (op1 & OFFSET_MASK);
 		break;
 	}
+	if (op1 & 0x01000000 && (op1 & 0xFE000000) != 0xC6000000) {
+		return false;
+	}
+
 
 	cheat->width = width;
 	cheat->operand = op2 & (0xFFFFFFFFU >> ((4 - width) * 8));
@@ -385,10 +389,13 @@ int GBACheatProActionReplayProbability(uint32_t op1, uint32_t op2) {
 			if (op2 & ~((1 << width) - 1)) {
 				probability -= 0x10;
 			}
+			// Fall through
 		case PAR3_BASE_ASSIGN:
 		case PAR3_BASE_INDIRECT:
 			probability += GBACheatAddressIsReal(address);
-			// Fall through
+			if (op1 & 0x01000000) {
+				return 0;
+			}
 			break;
 		case PAR3_BASE_OTHER:
 			break;
