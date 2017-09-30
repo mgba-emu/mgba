@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gba/cheats.h>
 
+#include "gba/cheats/gameshark.h"
 #include "gba/cheats/parv3.h"
 #include <mgba/internal/gba/gba.h>
 #include <mgba-util/string.h>
@@ -73,16 +74,18 @@ void GBACheatReseedGameShark(uint32_t* seeds, uint16_t params, const uint8_t* t1
 	}
 }
 
-void GBACheatSetGameSharkVersion(struct GBACheatSet* cheats, int version) {
+void GBACheatSetGameSharkVersion(struct GBACheatSet* cheats, enum GBACheatGameSharkVersion version) {
 	cheats->gsaVersion = version;
 	switch (version) {
-	case 1:
-	case 2:
+	case GBA_GS_GSAV1:
+	case GBA_GS_GSAV1_RAW:
 		memcpy(cheats->gsaSeeds, GBACheatGameSharkSeeds, 4 * sizeof(uint32_t));
 		break;
-	case 3:
-	case 4:
+	case GBA_GS_PARV3:
+	case GBA_GS_PARV3_RAW:
 		memcpy(cheats->gsaSeeds, GBACheatProActionReplaySeeds, 4 * sizeof(uint32_t));
+		break;
+	default:
 		break;
 	}
 }
@@ -197,15 +200,13 @@ bool GBACheatAddGameShark(struct GBACheatSet* set, uint32_t op1, uint32_t op2) {
 	snprintf(line, sizeof(line), "%08X %08X", op1, op2);
 
 	switch (set->gsaVersion) {
-	case 0:
-	case 3:
-	case 4:
-		GBACheatSetGameSharkVersion(set, 1);
+	default:
+		GBACheatSetGameSharkVersion(set, GBA_GS_GSAV1);
 	// Fall through
-	case 1:
+	case GBA_GS_GSAV1:
 		GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
 	// Fall through
-	case 2:
+	case GBA_GS_GSAV1_RAW:
 		return GBACheatAddGameSharkRaw(set, o1, o2);
 	}
 	return false;
