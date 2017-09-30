@@ -53,7 +53,7 @@ static uint32_t _parAddr(uint32_t x) {
 }
 
 static void _parEndBlock(struct GBACheatSet* cheats) {
-	size_t size = mCheatListSize(&cheats->d.list) - cheats->currentBlock;
+	size_t size = mCheatListSize(&cheats->d.list) - cheats->currentBlock - 1;
 	struct mCheat* currentBlock = mCheatListGetPointer(&cheats->d.list, cheats->currentBlock);
 	if (currentBlock->repeat) {
 		currentBlock->negativeRepeat = size - currentBlock->repeat;
@@ -64,7 +64,7 @@ static void _parEndBlock(struct GBACheatSet* cheats) {
 }
 
 static void _parElseBlock(struct GBACheatSet* cheats) {
-	size_t size = mCheatListSize(&cheats->d.list) - cheats->currentBlock;
+	size_t size = mCheatListSize(&cheats->d.list) - cheats->currentBlock - 1;
 	struct mCheat* currentBlock = mCheatListGetPointer(&cheats->d.list, cheats->currentBlock);
 	currentBlock->repeat = size;
 }

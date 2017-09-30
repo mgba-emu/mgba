@@ -46,6 +46,7 @@ Bugfixes:
  - GBA Savedata: Fix size of SRAM saves (fixes mgba.io/i/883)
  - GB: Revamp IRQ handling based on new information
  - GB Video: Fix read mode when enabling LCD
+ - GBA Cheats: Fix PARv3 multiline blocks (fixes mgba.io/i/889)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
