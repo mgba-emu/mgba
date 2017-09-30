@@ -761,6 +761,9 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 	m_hitUnimplementedBiosCall = false;
 	m_fpsTimer.start();
 	m_focusCheck.start();
+	if (m_display->underMouse()) {
+		m_screenWidget->setCursor(Qt::BlankCursor);
+	}
 
 	m_controller->threadInterrupt();
 	if (m_controller->isLoaded()) {

@@ -53,7 +53,7 @@ static uint32_t _parAddr(uint32_t x) {
 }
 
 static void _parEndBlock(struct GBACheatSet* cheats) {
-	size_t size = mCheatListSize(&cheats->d.list) - cheats->currentBlock;
+	size_t size = mCheatListSize(&cheats->d.list) - cheats->currentBlock - 1;
 	struct mCheat* currentBlock = mCheatListGetPointer(&cheats->d.list, cheats->currentBlock);
 	if (currentBlock->repeat) {
 		currentBlock->negativeRepeat = size - currentBlock->repeat;
@@ -64,7 +64,7 @@ static void _parEndBlock(struct GBACheatSet* cheats) {
 }
 
 static void _parElseBlock(struct GBACheatSet* cheats) {
-	size_t size = mCheatListSize(&cheats->d.list) - cheats->currentBlock;
+	size_t size = mCheatListSize(&cheats->d.list) - cheats->currentBlock - 1;
 	struct mCheat* currentBlock = mCheatListGetPointer(&cheats->d.list, cheats->currentBlock);
 	currentBlock->repeat = size;
 }
@@ -284,6 +284,10 @@ bool GBACheatAddProActionReplayRaw(struct GBACheatSet* cheats, uint32_t op1, uin
 		cheat->address = BASE_IO | (op1 & OFFSET_MASK);
 		break;
 	}
+	if (op1 & 0x01000000 && (op1 & 0xFE000000) != 0xC6000000) {
+		return false;
+	}
+
 
 	cheat->width = width;
 	cheat->operand = op2 & (0xFFFFFFFFU >> ((4 - width) * 8));
@@ -303,8 +307,9 @@ bool GBACheatAddProActionReplay(struct GBACheatSet* set, uint32_t op1, uint32_t 
 		GBACheatSetGameSharkVersion(set, 3);
 	// Fall through
 	case 3:
-	case 4:
 		GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
+	// Fall through
+	case 4:
 		return GBACheatAddProActionReplayRaw(set, o1, o2);
 	}
 	return false;
@@ -370,7 +375,7 @@ int GBACheatProActionReplayProbability(uint32_t op1, uint32_t op2) {
 	int width = ((op1 & PAR3_WIDTH) >> (PAR3_WIDTH_BASE - 3));
 	if (op1 & PAR3_COND) {
 		probability += 0x20;
-		if (width == 32) {
+		if (width >= 24) {
 			return 0;
 		}
 		if (op2 & ~((1 << width) - 1)) {
@@ -384,10 +389,13 @@ int GBACheatProActionReplayProbability(uint32_t op1, uint32_t op2) {
 			if (op2 & ~((1 << width) - 1)) {
 				probability -= 0x10;
 			}
+			// Fall through
 		case PAR3_BASE_ASSIGN:
 		case PAR3_BASE_INDIRECT:
 			probability += GBACheatAddressIsReal(address);
-			// Fall through
+			if (op1 & 0x01000000) {
+				return 0;
+			}
 			break;
 		case PAR3_BASE_OTHER:
 			break;
