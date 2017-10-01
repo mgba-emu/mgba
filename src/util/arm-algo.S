@@ -6,32 +6,6 @@
 #if defined(__ARM_NEON) && !defined(PSP2)
 # r0: Destination
 # r1: Source
-# r2: Number of words to copy as halfwords
-.global _to16Bit
-_to16Bit:
-push {r4-r10}
-mov r8, r0
-mov r9, r1
-mov r10, r2
-.L0:
-tst r10, #15
-beq .L1
-ldr r0, [r9], #4
-strh r0, [r8], #2
-sub r10, #1
-b .L0
-.L1:
-vld4.16 {d0, d1, d2, d3}, [r9]!
-vld4.16 {d4, d5, d6, d7}, [r9]!
-vst2.16 {d0, d2}, [r8]!
-vst2.16 {d4, d6}, [r8]!
-subs r10, #16
-bne .L1
-pop {r4-r10}
-bx lr
-
-# r0: Destination
-# r1: Source
 # r2: Width
 # r3: Height
 .global _neon2x
