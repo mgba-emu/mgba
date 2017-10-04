@@ -17,24 +17,27 @@ if __name__ == "__main__":
 cppflags.extend(["-I" + incdir, "-I" + srcdir, "-I" + bindir])
 
 ffi.set_source("mgba._pylib", """
+#define static
+#define inline
 #include "flags.h"
 #define OPAQUE_THREADING
+#include <mgba/core/cache-set.h>
 #include <mgba-util/common.h>
 #include <mgba/core/core.h>
+#include <mgba/core/map-cache.h>
 #include <mgba/core/log.h>
 #include <mgba/core/mem-search.h>
 #include <mgba/core/thread.h>
-#include <mgba/core/tile-cache.h>
 #include <mgba/core/version.h>
 #include <mgba/debugger/debugger.h>
 #include <mgba/internal/arm/arm.h>
 #include <mgba/internal/debugger/cli-debugger.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
-#include <mgba/internal/gba/renderers/tile-cache.h>
+#include <mgba/internal/gba/renderers/cache-set.h>
 #include <mgba/internal/lr35902/lr35902.h>
 #include <mgba/internal/gb/gb.h>
-#include <mgba/internal/gb/renderers/tile-cache.h>
+#include <mgba/internal/gb/renderers/cache-set.h>
 #include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
 
@@ -71,6 +74,11 @@ for line in preprocessed.splitlines():
 ffi.embedding_api('\n'.join(lines))
 
 ffi.embedding_init_code("""
+    import os, os.path
+    venv = os.getenv('VIRTUAL_ENV')
+    if venv:
+        activate = os.path.join(venv, 'bin', 'activate_this.py')
+        exec(compile(open(activate, "rb").read(), activate, 'exec'), dict(__file__=activate))
     from mgba._pylib import ffi, lib
     symbols = {}
     globalSyms = {

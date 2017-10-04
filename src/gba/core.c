@@ -266,6 +266,7 @@ static void _GBACoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t s
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->renderer.outputBuffer = buffer;
 	gbacore->renderer.outputBufferStride = stride;
+	memset(gbacore->renderer.scanlineDirty, 0xFFFFFFFF, sizeof(gbacore->renderer.scanlineDirty));
 }
 
 static void _GBACoreGetPixels(struct mCore* core, const void** buffer, size_t* stride) {
@@ -402,14 +403,7 @@ static void _GBACoreReset(struct mCore* core) {
 		GBAVideoAssociateRenderer(&gba->video, renderer);
 	}
 
-	struct GBACartridgeOverride override;
-	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
-	if (cart) {
-		memcpy(override.id, &cart->id, sizeof(override.id));
-		if (GBAOverrideFind(gbacore->overrides, &override)) {
-			GBAOverrideApply(gba, &override);
-		}
-	}
+	GBAOverrideApplyDefaults(gba, gbacore->overrides);
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	if (!gba->biosVf && core->opts.useBios) {
@@ -505,7 +499,6 @@ static void _GBACoreAddKeys(struct mCore* core, uint32_t keys) {
 static void _GBACoreClearKeys(struct mCore* core, uint32_t keys) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->keys &= ~keys;
-	GBATestKeypadIRQ(core->board);
 }
 
 static int32_t _GBACoreFrameCounter(const struct mCore* core) {

@@ -19,7 +19,7 @@ extern const uint32_t GB_SAVESTATE_VERSION;
 mLOG_DECLARE_CATEGORY(GB_STATE);
 
 /* Savestate format:
- * 0x00000 - 0x00003: Version Magic (0x01000001)
+ * 0x00000 - 0x00003: Version Magic (0x01000002)
  * 0x00004 - 0x00007: ROM CRC32
  * 0x00008: Game Boy model
  * 0x00009 - 0x0000B: Reserved (leave zero)
@@ -42,7 +42,7 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * | 0x00036 - 0x00037: Index address
  * | 0x00038: Bus value
  * | 0x00039: Execution state
- * | 0x0003A - 0x0003B: IRQ vector
+ * | 0x0003A - 0x0003B: Reserved
  * | 0x0003C - 0x0003F: EI pending cycles
  * | 0x00040 - 0x00043: Reserved (DI pending cycles)
  * | 0x00044 - 0x00047: Flags
@@ -161,7 +161,22 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * 0x003FF: Interrupts enabled
  * 0x00400 - 0x043FF: VRAM
  * 0x04400 - 0x0C3FF: WRAM
- * Total size: 0xC400 (50,176) bytes
+ * 0x0C400 - 0x0C77F: Reserved
+ * 0x0C780 - 0x117FF: Super Game Boy
+ * | 0x0C780 - 0x0C7D9: Current attributes
+ * | 0x0C7DA: Current command
+ * | 0x0C7DB: Current bit count
+ * | 0x0C7DC - 0x0C7DF: Flags
+ *   | bits 0 - 1: Current P1 bits
+ *   | bits 2 - 3: Current render mode
+ *   | bits 4 - 31: Reserved (leave 0)
+ * | 0x0C7E0 - 0x0C7EF: Current packet
+ * | 0x0C7F0 - 0x0C7FF: Reserved
+ * | 0x0C800 - 0x0E7FF: Character VRAM
+ * | 0x0E800 - 0x0F7FF: Tile map VRAM
+ * | 0x0F800 - 0x107FF: Palette VRAM
+ * | 0x10800 - 0x117FF: Attribute file
+ * Total size: 0x11800 (71,680) bytes
 */
 
 DECL_BITFIELD(GBSerializedAudioFlags, uint32_t);
@@ -238,6 +253,10 @@ DECL_BIT(GBSerializedMemoryFlags, Ime, 3);
 DECL_BIT(GBSerializedMemoryFlags, IsHdma, 4);
 DECL_BITS(GBSerializedMemoryFlags, ActiveRtcReg, 5, 3);
 
+DECL_BITFIELD(GBSerializedSGBFlags, uint32_t);
+DECL_BITS(GBSerializedSGBFlags, P1Bits, 0, 2);
+DECL_BITS(GBSerializedSGBFlags, RenderMode, 2, 2);
+
 #pragma pack(push, 1)
 struct GBSerializedState {
 	uint32_t versionMagic;
@@ -268,7 +287,7 @@ struct GBSerializedState {
 		uint8_t bus;
 		uint8_t executionState;
 
-		uint16_t irqVector;
+		uint16_t reserved;
 
 		uint32_t eiPending;
 		int32_t reservedDiPending;
@@ -366,6 +385,21 @@ struct GBSerializedState {
 
 	uint8_t vram[GB_SIZE_VRAM];
 	uint8_t wram[GB_SIZE_WORKING_RAM];
+
+	uint32_t reserved2[0xE0];
+
+	struct {
+		uint8_t attributes[90];
+		uint8_t command;
+		uint8_t bits;
+		GBSerializedSGBFlags flags;
+		uint8_t packet[16];
+		uint32_t reserved[4];
+		uint8_t charRam[SGB_SIZE_CHAR_RAM];
+		uint8_t mapRam[SGB_SIZE_MAP_RAM];
+		uint8_t palRam[SGB_SIZE_PAL_RAM];
+		uint8_t atfRam[SGB_SIZE_ATF_RAM];
+	} sgb;
 };
 #pragma pack(pop)
 

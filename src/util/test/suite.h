@@ -12,14 +12,12 @@
 
 #define M_TEST_DEFINE(NAME) static void NAME (void **state ATTRIBUTE_UNUSED)
 
-#define M_TEST_SUITE(NAME) _testSuite_ ## NAME
-#define M_TEST_SUITE_RUN(NAME) (printf("\nRunning suite %s\n", # NAME), M_TEST_SUITE(NAME)())
 #define M_TEST_SUITE_DEFINE(NAME, ...) M_TEST_SUITE_DEFINE_EX(NAME, NULL, NULL, __VA_ARGS__)
 #define M_TEST_SUITE_DEFINE_SETUP(NAME, ...) M_TEST_SUITE_DEFINE_EX(NAME, _testSuite_setup_ ## NAME, NULL, __VA_ARGS__)
 #define M_TEST_SUITE_DEFINE_TEARDOWN(NAME, ...) M_TEST_SUITE_DEFINE_EX(NAME, NULL, _testSuite_teardown_ ## NAME, __VA_ARGS__)
 #define M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(NAME, ...) M_TEST_SUITE_DEFINE_EX(NAME, _testSuite_setup_ ## NAME, _testSuite_teardown_ ## NAME, __VA_ARGS__)
 #define M_TEST_SUITE_DEFINE_EX(NAME, SETUP, TEARDOWN, ...) \
-	int M_TEST_SUITE(NAME) (void) { \
+	int main(void) { \
 		const static struct CMUnitTest tests[] = { \
 			__VA_ARGS__ \
 		}; \
@@ -28,7 +26,5 @@
 
 #define M_TEST_SUITE_SETUP(NAME) static int _testSuite_setup_ ## NAME (void **state ATTRIBUTE_UNUSED)
 #define M_TEST_SUITE_TEARDOWN(NAME) static int _testSuite_teardown_ ## NAME (void **state ATTRIBUTE_UNUSED)
-
-#define M_TEST_SUITE_DECLARE(NAME) extern int M_TEST_SUITE(NAME) (void)
 
 #endif

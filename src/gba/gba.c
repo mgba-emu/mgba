@@ -755,19 +755,17 @@ void GBATestKeypadIRQ(struct GBA* gba) {
 		return;
 	}
 	int isAnd = keycnt & 0x8000;
-	uint16_t keyInput;
-
 	if (!gba->keySource) {
 		// TODO?
 		return;
 	}
 
 	keycnt &= 0x3FF;
-	keyInput = *gba->keySource;
+	uint16_t keyInput = *gba->keySource & keycnt;
 
 	if (isAnd && keycnt == keyInput) {
 		GBARaiseIRQ(gba, IRQ_KEYPAD);
-	} else if (!isAnd && keycnt & keyInput) {
+	} else if (!isAnd && keyInput) {
 		GBARaiseIRQ(gba, IRQ_KEYPAD);
 	}
 }

@@ -35,13 +35,14 @@ class GBA(Core):
         self.cpu = ARMCore(self._core.cpu)
 
     @needsReset
-    def _initTileCache(self, cache):
-        lib.GBAVideoTileCacheInit(cache)
-        lib.GBAVideoTileCacheAssociate(cache, ffi.addressof(self._native.video))
+    def _initCache(self, cache):
+        lib.GBAVideoCacheInit(cache)
+        lib.GBAVideoCacheAssociate(cache, ffi.addressof(self._native.video))
 
-    def _deinitTileCache(self, cache):
-        self._native.video.renderer.cache = ffi.NULL
-        lib.mTileCacheDeinit(cache)
+    def _deinitCache(self, cache):
+        lib.mCacheSetDeinit(cache)
+        if self._wasReset:
+            self._native.video.renderer.cache = ffi.NULL
 
     def reset(self):
         super(GBA, self).reset()
@@ -127,6 +128,7 @@ class GBAObjs:
         if index >= len(self):
             raise IndexError()
         sprite = GBASprite(self._obj[index])
+        tiles = self._core.tiles[3 if sprite._256Color else 2]
         map1D = bool(self._core._native.memory.io[0] & 0x40)
-        sprite.constitute(self._core.tiles, 0 if map1D else 0x20, int(sprite._256Color))
+        sprite.constitute(tiles, 0 if map1D else 0x20)
         return sprite

@@ -39,7 +39,7 @@ bool VideoDumper::present(const QVideoFrame& frame) {
 	} else {
 #ifdef Q_OS_WIN
 		// Qt's DirectShow plug-in is pretty dang buggy
-		image = image.mirrored(true);
+		image = image.mirrored();
 #else
 		image = image.copy(); // Create a deep copy of the bits
 #endif

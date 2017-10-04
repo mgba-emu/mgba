@@ -147,7 +147,7 @@ size_t GBASavedataSize(struct GBASavedata* savedata) {
 	case SAVEDATA_FLASH1M:
 		return SIZE_CART_FLASH1M;
 	case SAVEDATA_EEPROM:
-		return SIZE_CART_EEPROM;
+		return (savedata->vf && savedata->vf->size(savedata->vf) == SIZE_CART_EEPROM512) ? SIZE_CART_EEPROM512 : SIZE_CART_EEPROM;
 	case SAVEDATA_FORCE_NONE:
 		return 0;
 	case SAVEDATA_AUTODETECT:
@@ -257,20 +257,23 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata, bool realisticTiming) {
 		mLOG(GBA_SAVE, WARN, "Can't re-initialize savedata");
 		return;
 	}
+	int32_t eepromSize = SIZE_CART_EEPROM512;
 	off_t end;
 	if (!savedata->vf) {
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_EEPROM);
 	} else {
 		end = savedata->vf->size(savedata->vf);
-		if (end < SIZE_CART_EEPROM) {
-			savedata->vf->truncate(savedata->vf, SIZE_CART_EEPROM);
+		if (end < SIZE_CART_EEPROM512) {
+			savedata->vf->truncate(savedata->vf, SIZE_CART_EEPROM512);
+		} else if (end > SIZE_CART_EEPROM512) {
+			eepromSize = SIZE_CART_EEPROM;
 		}
-		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_EEPROM, savedata->mapMode);
+		savedata->data = savedata->vf->map(savedata->vf, eepromSize, savedata->mapMode);
 	}
 	savedata->realisticTiming = realisticTiming;
-	if (end < SIZE_CART_EEPROM) {
-		memset(&savedata->data[end], 0xFF, SIZE_CART_EEPROM - end);
+	if (end < SIZE_CART_EEPROM512) {
+		memset(&savedata->data[end], 0xFF, SIZE_CART_EEPROM512 - end);
 	}
 }
 
@@ -405,6 +408,19 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 	}
 }
 
+static void _ensureEeprom(struct GBASavedata* savedata, uint32_t size) {
+	if (size < SIZE_CART_EEPROM512) {
+		return;
+	}
+	if (!savedata->vf || savedata->vf->size(savedata->vf) > SIZE_CART_EEPROM512) {
+		return;
+	}
+	savedata->vf->unmap(savedata->vf, savedata->data, SIZE_CART_EEPROM512);
+	savedata->vf->truncate(savedata->vf, SIZE_CART_EEPROM);
+	savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_EEPROM, savedata->mapMode);
+	memset(&savedata->data[SIZE_CART_EEPROM512], 0xFF, SIZE_CART_EEPROM - SIZE_CART_EEPROM512);
+}
+
 void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32_t writeSize) {
 	switch (savedata->command) {
 	// Read header
@@ -430,6 +446,7 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 		} else if (writeSize == 1) {
 			savedata->command = EEPROM_COMMAND_NULL;
 		} else if ((savedata->writeAddress >> 3) < SIZE_CART_EEPROM) {
+			_ensureEeprom(savedata, savedata->writeAddress >> 3);
 			uint8_t current = savedata->data[savedata->writeAddress >> 3];
 			current &= ~(1 << (0x7 - (savedata->writeAddress & 0x7)));
 			current |= (value & 0x1) << (0x7 - (savedata->writeAddress & 0x7));
@@ -471,6 +488,7 @@ uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 	if (savedata->readBitsRemaining < 64) {
 		int step = 63 - savedata->readBitsRemaining;
 		uint32_t address = (savedata->readAddress + step) >> 3;
+		_ensureEeprom(savedata, address);
 		if (address >= SIZE_CART_EEPROM) {
 			mLOG(GBA_SAVE, GAME_ERROR, "Reading beyond end of EEPROM: %08X", address);
 			return 0xFF;

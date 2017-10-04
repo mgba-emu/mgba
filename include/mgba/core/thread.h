@@ -34,6 +34,8 @@ struct mCoreThread {
 	ThreadCallback cleanCallback;
 	ThreadCallback frameCallback;
 	ThreadCallback sleepCallback;
+	ThreadCallback pauseCallback;
+	ThreadCallback unpauseCallback;
 	void* userData;
 	void (*run)(struct mCoreThread*);
 
@@ -50,13 +52,19 @@ enum mCoreThreadState {
 	THREAD_RUNNING = 0,
 	THREAD_REWINDING,
 	THREAD_MAX_RUNNING = THREAD_REWINDING,
+
+	THREAD_WAITING,
 	THREAD_INTERRUPTED,
-	THREAD_INTERRUPTING,
 	THREAD_PAUSED,
+	THREAD_MAX_WAITING = THREAD_PAUSED,
+
 	THREAD_PAUSING,
 	THREAD_RUN_ON,
-	THREAD_WAITING,
 	THREAD_RESETING,
+	THREAD_MIN_DEFERRED = THREAD_PAUSING,
+	THREAD_MAX_DEFERRED = THREAD_RESETING,
+
+	THREAD_INTERRUPTING,
 	THREAD_EXITING,
 	THREAD_SHUTDOWN,
 	THREAD_CRASHED

@@ -19,12 +19,27 @@
 
 using namespace QGBA;
 
+#ifdef M_CORE_GB
+QList<enum GBModel> SettingsView::s_gbModelList;
+#endif
+
 SettingsView::SettingsView(ConfigController* controller, InputController* inputController, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
 	, m_input(inputController)
 {
 	m_ui.setupUi(this);
+
+#ifdef M_CORE_GB
+	if (s_gbModelList.isEmpty()) {
+		// NB: Keep in sync with SettingsView.ui
+		s_gbModelList.append(GB_MODEL_AUTODETECT);
+		s_gbModelList.append(GB_MODEL_DMG);
+		s_gbModelList.append(GB_MODEL_SGB);
+		s_gbModelList.append(GB_MODEL_CGB);
+		s_gbModelList.append(GB_MODEL_AGB);
+	}
+#endif
 
 	reloadConfig();
 
@@ -159,30 +174,47 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	connect(m_ui.gbcBiosBrowse, &QPushButton::clicked, [this]() {
 		selectBios(m_ui.gbcBios);
 	});
+	connect(m_ui.sgbBiosBrowse, &QPushButton::clicked, [this]() {
+		selectBios(m_ui.sgbBios);
+	});
 
 	QList<QColor> defaultColors;
 	defaultColors.append(QColor(0xF8, 0xF8, 0xF8));
 	defaultColors.append(QColor(0xA8, 0xA8, 0xA8));
 	defaultColors.append(QColor(0x50, 0x50, 0x50));
 	defaultColors.append(QColor(0x00, 0x00, 0x00));
-	bool ok;
-	if (m_controller->getOption("gb.pal[0]").toUInt(&ok) || ok) {
-		defaultColors[0] = QColor::fromRgb(m_controller->getOption("gb.pal[0]").toUInt());
-	}
-	if (m_controller->getOption("gb.pal[1]").toUInt(&ok) || ok) {
-		defaultColors[1] = QColor::fromRgb(m_controller->getOption("gb.pal[1]").toUInt());
-	}
-	if (m_controller->getOption("gb.pal[2]").toUInt(&ok) || ok) {
-		defaultColors[2] = QColor::fromRgb(m_controller->getOption("gb.pal[2]").toUInt());
-	}
-	if (m_controller->getOption("gb.pal[3]").toUInt(&ok) || ok) {
-		defaultColors[3] = QColor::fromRgb(m_controller->getOption("gb.pal[3]").toUInt());
-	}
-	m_colorPickers[0] = ColorPicker(m_ui.color0, defaultColors[0]);
-	m_colorPickers[1] = ColorPicker(m_ui.color1, defaultColors[1]);
-	m_colorPickers[2] = ColorPicker(m_ui.color2, defaultColors[2]);
-	m_colorPickers[3] = ColorPicker(m_ui.color3, defaultColors[3]);
-	for (int colorId = 0; colorId < 4; ++colorId) {
+	defaultColors.append(QColor(0xF8, 0xF8, 0xF8));
+	defaultColors.append(QColor(0xA8, 0xA8, 0xA8));
+	defaultColors.append(QColor(0x50, 0x50, 0x50));
+	defaultColors.append(QColor(0x00, 0x00, 0x00));
+	defaultColors.append(QColor(0xF8, 0xF8, 0xF8));
+	defaultColors.append(QColor(0xA8, 0xA8, 0xA8));
+	defaultColors.append(QColor(0x50, 0x50, 0x50));
+	defaultColors.append(QColor(0x00, 0x00, 0x00));
+	QList<QWidget*> colors{
+		m_ui.color0,
+		m_ui.color1,
+		m_ui.color2,
+		m_ui.color3,
+		m_ui.color4,
+		m_ui.color5,
+		m_ui.color6,
+		m_ui.color7,
+		m_ui.color8,
+		m_ui.color9,
+		m_ui.color10,
+		m_ui.color11
+	};
+	for (int colorId = 0; colorId < 12; ++colorId) {
+		bool ok;
+		uint color = m_controller->getOption(QString("gb.pal[%0]").arg(colorId)).toUInt(&ok);
+		if (ok) {
+			defaultColors[colorId] = QColor::fromRgb(color);
+			m_gbColors[colorId] = color | 0xFF000000;
+		} else {
+			m_gbColors[colorId] = defaultColors[colorId].rgb() & ~0xFF000000;
+		}
+		m_colorPickers[colorId] = ColorPicker(colors[colorId], defaultColors[colorId]);
 		connect(&m_colorPickers[colorId], &ColorPicker::colorChanged, this, [this, colorId](const QColor& color) {
 			m_gbColors[colorId] = color.rgb();
 		});
@@ -190,6 +222,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 #else
 	m_ui.gbBiosBrowse->hide();
 	m_ui.gbcBiosBrowse->hide();
+	m_ui.sgbBiosBrowse->hide();
 	m_ui.gb->hide();
 #endif
 
@@ -261,6 +294,8 @@ void SettingsView::updateConfig() {
 	saveSetting("gba.bios", m_ui.gbaBios);
 	saveSetting("gb.bios", m_ui.gbBios);
 	saveSetting("gbc.bios", m_ui.gbcBios);
+	saveSetting("sgb.bios", m_ui.sgbBios);
+	saveSetting("sgb.borders", m_ui.sgbBorders);
 	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
 	saveSetting("audioBuffers", m_ui.audioBufferSize);
@@ -269,6 +304,7 @@ void SettingsView::updateConfig() {
 	saveSetting("audioSync", m_ui.audioSync);
 	saveSetting("frameskip", m_ui.frameskip);
 	saveSetting("fpsTarget", m_ui.fpsTarget);
+	saveSetting("autofireThreshold", m_ui.autofireThreshold);
 	saveSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	saveSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
 	saveSetting("volume", m_ui.volume);
@@ -345,12 +381,25 @@ void SettingsView::updateConfig() {
 		emit languageChanged();
 	}
 
-	if (m_gbColors[0] | m_gbColors[1] | m_gbColors[2] | m_gbColors[3]) {
-		m_controller->setOption("gb.pal[0]", m_gbColors[0]);
-		m_controller->setOption("gb.pal[1]", m_gbColors[1]);
-		m_controller->setOption("gb.pal[2]", m_gbColors[2]);
-		m_controller->setOption("gb.pal[3]", m_gbColors[3]);
+#ifdef M_CORE_GB
+	GBModel modelGB = s_gbModelList[m_ui.gbModel->currentIndex()];
+	m_controller->setOption("gb.model", GBModelToName(modelGB));
+
+	GBModel modelSGB = s_gbModelList[m_ui.sgbModel->currentIndex()];
+	m_controller->setOption("sgb.model", GBModelToName(modelSGB));
+
+	GBModel modelCGB = s_gbModelList[m_ui.cgbModel->currentIndex()];
+	m_controller->setOption("cgb.model", GBModelToName(modelCGB));
+
+	for (int colorId = 0; colorId < 12; ++colorId) {
+		if (!(m_gbColors[colorId] & 0xFF000000)) {
+			continue;
+		}
+		QString color = QString("gb.pal[%0]").arg(colorId);
+		m_controller->setOption(color.toUtf8().constData(), m_gbColors[colorId] & ~0xFF000000);
+
 	}
+#endif
 
 	m_controller->write();
 
@@ -367,6 +416,8 @@ void SettingsView::reloadConfig() {
 	loadSetting("gba.bios", m_ui.gbaBios);
 	loadSetting("gb.bios", m_ui.gbBios);
 	loadSetting("gbc.bios", m_ui.gbcBios);
+	loadSetting("sgb.bios", m_ui.sgbBios);
+	loadSetting("sgb.borders", m_ui.sgbBorders, true);
 	loadSetting("useBios", m_ui.useBios);
 	loadSetting("skipBios", m_ui.skipBios);
 	loadSetting("audioBuffers", m_ui.audioBufferSize);
@@ -375,6 +426,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("audioSync", m_ui.audioSync);
 	loadSetting("frameskip", m_ui.frameskip);
 	loadSetting("fpsTarget", m_ui.fpsTarget);
+	loadSetting("autofireThreshold", m_ui.autofireThreshold);
 	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	loadSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
 	loadSetting("volume", m_ui.volume);
@@ -430,6 +482,29 @@ void SettingsView::reloadConfig() {
 	m_ui.saveStateScreenshot->setChecked(saveState & SAVESTATE_SCREENSHOT);
 	m_ui.saveStateSave->setChecked(saveState & SAVESTATE_SAVEDATA);
 	m_ui.saveStateCheats->setChecked(saveState & SAVESTATE_CHEATS);
+
+#ifdef M_CORE_GB
+	QString modelGB = m_controller->getOption("gb.model");
+	if (!modelGB.isNull()) {
+		GBModel model = GBNameToModel(modelGB.toUtf8().constData());
+		int index = s_gbModelList.indexOf(model);
+		m_ui.gbModel->setCurrentIndex(index >= 0 ? index : 0);
+	}
+
+	QString modelSGB = m_controller->getOption("sgb.model");
+	if (!modelSGB.isNull()) {
+		GBModel model = GBNameToModel(modelSGB.toUtf8().constData());
+		int index = s_gbModelList.indexOf(model);
+		m_ui.sgbModel->setCurrentIndex(index >= 0 ? index : 0);
+	}
+
+	QString modelCGB = m_controller->getOption("cgb.model");
+	if (!modelCGB.isNull()) {
+		GBModel model = GBNameToModel(modelCGB.toUtf8().constData());
+		int index = s_gbModelList.indexOf(model);
+		m_ui.cgbModel->setCurrentIndex(index >= 0 ? index : 0);
+	}
+#endif
 }
 
 void SettingsView::saveSetting(const char* key, const QAbstractButton* field) {
@@ -462,9 +537,9 @@ void SettingsView::saveSetting(const char* key, const QVariant& field) {
 	m_controller->updateOption(key);
 }
 
-void SettingsView::loadSetting(const char* key, QAbstractButton* field) {
+void SettingsView::loadSetting(const char* key, QAbstractButton* field, bool defaultVal) {
 	QString option = loadSetting(key);
-	field->setChecked(!option.isNull() && option != "0");
+	field->setChecked(option.isNull() ? defaultVal : option != "0");
 }
 
 void SettingsView::loadSetting(const char* key, QComboBox* field) {

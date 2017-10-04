@@ -18,13 +18,14 @@
 #include <mgba/feature/video-logger.h>
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/gba.h>
-#include <mgba/internal/gba/renderers/tile-cache.h>
+#include <mgba/internal/gba/renderers/cache-set.h>
 #include <mgba/internal/gba/sharkport.h>
 #endif
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
-#include <mgba/internal/gb/renderers/tile-cache.h>
+#include <mgba/internal/gb/renderers/cache-set.h>
 #endif
+#include <mgba-util/math.h>
 #include <mgba-util/vfs.h>
 
 using namespace QGBA;
@@ -38,9 +39,11 @@ CoreController::CoreController(mCore* core, QObject* parent)
 	m_threadContext.core = core;
 	m_threadContext.userData = this;
 
-	QSize size = screenDimensions();
+	QSize size(256, 512);
 	m_buffers[0].resize(size.width() * size.height() * sizeof(color_t));
 	m_buffers[1].resize(size.width() * size.height() * sizeof(color_t));
+	m_buffers[0].fill(0xFF);
+	m_buffers[1].fill(0xFF);
 	m_activeBuffer = &m_buffers[0];
 
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), size.width());
@@ -58,15 +61,6 @@ CoreController::CoreController(mCore* core, QObject* parent)
 			break;
 		}
 
-		if (controller->m_override) {
-			controller->m_override->identify(context->core);
-			controller->m_override->apply(context->core);
-		}
-
-		if (mCoreLoadState(context->core, 0, controller->m_loadStateFlags)) {
-			mCoreDeleteState(context->core, 0);
-		}
-
 		if (controller->m_multiplayer) {
 			controller->m_multiplayer->attachGame(controller);
 		}
@@ -79,9 +73,27 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		for (auto action : controller->m_resetActions) {
 			action();
 		}
+
+		if (controller->m_override) {
+			controller->m_override->identify(context->core);
+			controller->m_override->apply(context->core);
+		}
+
+		if (mCoreLoadState(context->core, 0, controller->m_loadStateFlags)) {
+			mCoreDeleteState(context->core, 0);
+		}
+
 		controller->m_resetActions.clear();
 
-		controller->m_activeBuffer->fill(0xFF);
+		QSize size = controller->screenDimensions();
+		controller->m_buffers[0].resize(size.width() * size.height() * sizeof(color_t));
+		controller->m_buffers[1].resize(size.width() * size.height() * sizeof(color_t));
+		controller->m_buffers[0].fill(0xFF);
+		controller->m_buffers[1].fill(0xFF);
+		controller->m_activeBuffer = &controller->m_buffers[0];
+
+		context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), size.width());
+
 		controller->finishFrame();
 	};
 
@@ -96,6 +108,18 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 		controller->clearMultiplayerController();
 		QMetaObject::invokeMethod(controller, "stopping");
+	};
+
+	m_threadContext.pauseCallback = [](mCoreThread* context) {
+		CoreController* controller = static_cast<CoreController*>(context->userData);
+
+		QMetaObject::invokeMethod(controller, "paused");
+	};
+
+	m_threadContext.unpauseCallback = [](mCoreThread* context) {
+		CoreController* controller = static_cast<CoreController*>(context->userData);
+
+		QMetaObject::invokeMethod(controller, "unpaused");
 	};
 
 	m_threadContext.logger.d.log = [](mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
@@ -162,9 +186,9 @@ CoreController::~CoreController() {
 	stop();
 	disconnect();
 
-	if (m_tileCache) {
-		mTileCacheDeinit(m_tileCache.get());
-		m_tileCache.reset();
+	if (m_cacheSet) {
+		mCacheSetDeinit(m_cacheSet.get());
+		m_cacheSet.reset();
 	}
 
 	mCoreThreadJoin(&m_threadContext);
@@ -198,12 +222,13 @@ QSize CoreController::screenDimensions() const {
 
 void CoreController::loadConfig(ConfigController* config) {
 	Interrupter interrupter(this);
-	m_loadStateFlags = config->getOption("loadStateExtdata").toInt();
-	m_saveStateFlags = config->getOption("saveStateExtdata").toInt();
-	m_fastForwardRatio = config->getOption("fastForwardRatio").toFloat();
-	m_videoSync = config->getOption("videoSync").toInt();
-	m_audioSync = config->getOption("audioSync").toInt();
+	m_loadStateFlags = config->getOption("loadStateExtdata", m_loadStateFlags).toInt();
+	m_saveStateFlags = config->getOption("saveStateExtdata", m_saveStateFlags).toInt();
+	m_fastForwardRatio = config->getOption("fastForwardRatio", m_fastForwardRatio).toFloat();
+	m_videoSync = config->getOption("videoSync", m_videoSync).toInt();
+	m_audioSync = config->getOption("audioSync", m_audioSync).toInt();
 	m_fpsTarget = config->getOption("fpsTarget").toFloat();
+	m_autofireThreshold = config->getOption("autofireThreshold", m_autofireThreshold).toInt();
 	updateFastForward();
 	mCoreLoadForeignConfig(m_threadContext.core, config->config());
 	mCoreThreadRewindParamsChanged(&m_threadContext);
@@ -243,36 +268,34 @@ void CoreController::clearMultiplayerController() {
 	m_multiplayer = nullptr;
 }
 
-mTileCache* CoreController::tileCache() {
-	if (m_tileCache) {
-		return m_tileCache.get();
+mCacheSet* CoreController::graphicCaches() {
+	if (m_cacheSet) {
+		return m_cacheSet.get();
 	}
 	Interrupter interrupter(this);
 	switch (platform()) {
 #ifdef M_CORE_GBA
 	case PLATFORM_GBA: {
 		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
-		m_tileCache = std::make_unique<mTileCache>();
-		GBAVideoTileCacheInit(m_tileCache.get());
-		GBAVideoTileCacheAssociate(m_tileCache.get(), &gba->video);
-		mTileCacheSetPalette(m_tileCache.get(), 0);
+		m_cacheSet = std::make_unique<mCacheSet>();
+		GBAVideoCacheInit(m_cacheSet.get());
+		GBAVideoCacheAssociate(m_cacheSet.get(), &gba->video);
 		break;
 	}
 #endif
 #ifdef M_CORE_GB
 	case PLATFORM_GB: {
 		GB* gb = static_cast<GB*>(m_threadContext.core->board);
-		m_tileCache = std::make_unique<mTileCache>();
-		GBVideoTileCacheInit(m_tileCache.get());
-		GBVideoTileCacheAssociate(m_tileCache.get(), &gb->video);
-		mTileCacheSetPalette(m_tileCache.get(), 0);
+		m_cacheSet = std::make_unique<mCacheSet>();
+		GBVideoCacheInit(m_cacheSet.get());
+		GBVideoCacheAssociate(m_cacheSet.get(), &gb->video);
 		break;
 	}
 #endif
 	default:
 		return nullptr;
 	}
-	return m_tileCache.get();
+	return m_cacheSet.get();
 }
 
 void CoreController::setOverride(std::unique_ptr<Override> override) {
@@ -333,11 +356,9 @@ void CoreController::setPaused(bool paused) {
 		QMutexLocker locker(&m_mutex);
 		m_frameActions.append([this]() {
 			mCoreThreadPauseFromThread(&m_threadContext);
-			QMetaObject::invokeMethod(this, "paused");
 		});
 	} else {
 		mCoreThreadUnpause(&m_threadContext);
-		emit unpaused();
 	}
 }
 
@@ -681,6 +702,8 @@ void CoreController::finishFrame() {
 	if (m_activeBuffer == m_completeBuffer) {
 		m_activeBuffer = &m_buffers[1];
 	}
+	// Copy contents to avoid issues when doing frameskip
+	*m_activeBuffer = *m_completeBuffer;
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), screenDimensions().width());
 
 	for (auto& action : m_frameActions) {

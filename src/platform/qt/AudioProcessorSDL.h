@@ -3,8 +3,8 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_AUDIO_PROCESSOR_SDL
-#define QGBA_AUDIO_PROCESSOR_SDL
+#pragma once
+
 #include "AudioProcessor.h"
 
 #ifdef BUILD_SDL
@@ -37,7 +37,5 @@ private:
 };
 
 }
-
-#endif
 
 #endif

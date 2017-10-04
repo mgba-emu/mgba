@@ -36,9 +36,10 @@
 #include "IOViewer.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
-#include "MultiplayerController.h"
+#include "MapView.h"
 #include "MemorySearch.h"
 #include "MemoryView.h"
+#include "MultiplayerController.h"
 #include "OverrideView.h"
 #include "ObjView.h"
 #include "PaletteView.h"
@@ -534,6 +535,9 @@ void Window::showEvent(QShowEvent* event) {
 		enterFullScreen();
 		m_fullscreenOnStart = false;
 	}
+	if (m_display) {
+		reloadDisplayDriver();
+	}
 }
 
 void Window::closeEvent(QCloseEvent* event) {
@@ -648,6 +652,9 @@ void Window::gameStarted() {
 	m_hitUnimplementedBiosCall = false;
 	m_fpsTimer.start();
 	m_focusCheck.start();
+	if (m_display->underMouse()) {
+		m_screenWidget->setCursor(Qt::BlankCursor);
+	}
 
 	CoreController::Interrupter interrupter(m_controller, true);
 	mCore* core = m_controller->thread()->core;
@@ -1134,9 +1141,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	emulationMenu->addSeparator();
 
 	m_inputController.inputIndex()->addItem(qMakePair([this]() {
-		m_controller->setFastForward(true);
+		if (m_controller) {
+			m_controller->setFastForward(true);
+		}
 	}, [this]() {
-		m_controller->setFastForward(false);
+		if (m_controller) {
+			m_controller->setFastForward(false);
+		}
 	}), tr("Fast forward (held)"), "holdFastForward", emulationMenu)->setShortcut(QKeySequence(Qt::Key_Tab)[0]);
 
 	QAction* turbo = new QAction(tr("&Fast forward"), emulationMenu);
@@ -1451,6 +1462,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(tileView, &QAction::triggered, openControllerTView<TileView>());
 	m_gameActions.append(tileView);
 	addControlledAction(toolsMenu, tileView, "tileWindow");
+
+	QAction* mapView = new QAction(tr("View &map..."), toolsMenu);
+	connect(mapView, &QAction::triggered, openControllerTView<MapView>());
+	m_gameActions.append(mapView);
+	addControlledAction(toolsMenu, mapView, "mapWindow");
 
 	QAction* memoryView = new QAction(tr("View memory..."), toolsMenu);
 	connect(memoryView, &QAction::triggered, openControllerTView<MemoryView>());

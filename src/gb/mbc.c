@@ -68,6 +68,28 @@ void GBMBCSwitchBank0(struct GB* gb, int bank) {
 	}
 }
 
+void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank) {
+	size_t bankStart = bank * GB_SIZE_CART_HALFBANK;
+	if (bankStart + GB_SIZE_CART_HALFBANK > gb->memory.romSize) {
+		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
+		bankStart &= (gb->memory.romSize - 1);
+		bank = bankStart / GB_SIZE_CART_HALFBANK;
+		if (!bank) {
+			++bank;
+		}
+	}
+	if (!half) {
+		gb->memory.romBank = &gb->memory.rom[bankStart];
+		gb->memory.currentBank = bank;
+	} else {
+		gb->memory.mbcState.mbc6.romBank1 = &gb->memory.rom[bankStart];
+		gb->memory.mbcState.mbc6.currentBank1 = bank;
+	}
+	if (gb->cpu->pc < GB_BASE_VRAM) {
+		gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
+	}
+}
+
 static bool _isMulticart(const uint8_t* mem) {
 	bool success = true;
 	struct VFile* vf;
@@ -496,11 +518,34 @@ void _GBMBC5(struct GB* gb, uint16_t address, uint8_t value) {
 }
 
 void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
-	// TODO
-	mLOG(GB_MBC, STUB, "MBC6 unimplemented");
-	UNUSED(gb);
-	UNUSED(address);
-	UNUSED(value);
+	struct GBMemory* memory = &gb->memory;
+	int bank = value & 0x7F;
+	switch (address >> 10) {
+	case 0:
+		switch (value) {
+		case 0:
+			memory->sramAccess = false;
+			break;
+		case 0xA:
+			memory->sramAccess = true;
+			GBMBCSwitchSramBank(gb, memory->sramCurrentBank);
+			break;
+		default:
+			// TODO
+			mLOG(GB_MBC, STUB, "MBC6 unknown value %02X", value);
+			break;
+		}
+		break;
+	case 0x9:
+		GBMBCSwitchHalfBank(gb, 0, bank);
+		break;
+	case 0xD:
+		GBMBCSwitchHalfBank(gb, 1, bank);
+		break;
+	default:
+		mLOG(GB_MBC, STUB, "MBC6 unknown address: %04X:%02X", address, value);
+		break;
+	}
 }
 
 void _GBMBC7(struct GB* gb, uint16_t address, uint8_t value) {

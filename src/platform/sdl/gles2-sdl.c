@@ -98,12 +98,13 @@ bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
 	mSDLGLCommonInit(renderer);
 #endif
 
+	size_t size = renderer->width * renderer->height * BYTES_PER_PIXEL;
 #ifndef __APPLE__
-	renderer->outputBuffer = memalign(16, renderer->width * renderer->height * BYTES_PER_PIXEL);
+	renderer->outputBuffer = memalign(16, size);
 #else
-	posix_memalign((void**) &renderer->outputBuffer, 16, renderer->width * renderer->height * BYTES_PER_PIXEL);
+	posix_memalign((void**) &renderer->outputBuffer, 16, size);
 #endif
-	memset(renderer->outputBuffer, 0, renderer->width * renderer->height * BYTES_PER_PIXEL);
+	memset(renderer->outputBuffer, 0, size);
 	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
 
 	mGLES2ContextCreate(&renderer->gl2);

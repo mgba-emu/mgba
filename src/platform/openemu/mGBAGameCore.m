@@ -65,13 +65,9 @@
 		};
 		mCoreConfigLoadDefaults(&core->config, &opts);
 		core->init(core);
+		outputBuffer = nil;
 
-		unsigned width, height;
-		core->desiredVideoDimensions(core, &width, &height);
-		outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
-		core->setVideoBuffer(core, outputBuffer, width);
 		core->setAudioBufferSize(core, SAMPLES);
-
 		cheatSets = [[NSMutableDictionary alloc] init];
 	}
 
@@ -108,6 +104,15 @@
 	mCoreAutoloadSave(core);
 
 	core->reset(core);
+
+	unsigned width, height;
+	core->desiredVideoDimensions(core, &width, &height);
+	if (outputBuffer) {
+		free(outputBuffer);
+	}
+	outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
+	core->setVideoBuffer(core, outputBuffer, width);
+
 	return YES;
 }
 

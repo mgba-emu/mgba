@@ -103,10 +103,32 @@ class Core(object):
         self._protected = False
         self._callbacks = CoreCallbacks()
         self._core.addCoreCallbacks(self._core, self._callbacks.context)
+        self.config = Config(ffi.addressof(native.config))
+
+    def __del__(self):
+        self._wasReset = False
+
+    @cached_property
+    def graphicsCache(self):
+        if not self._wasReset:
+            raise RuntimeError("Core must be reset first")
+        return tile.CacheSet(self)
 
     @cached_property
     def tiles(self):
-        return tile.TileView(self)
+        t = []
+        ts = ffi.addressof(self.graphicsCache.cache.tiles)
+        for i in range(lib.mTileCacheSetSize(ts)):
+            t.append(tile.TileView(lib.mTileCacheSetGetPointer(ts, i)))
+        return t
+
+    @cached_property
+    def maps(self):
+        m = []
+        ms = ffi.addressof(self.graphicsCache.cache.maps)
+        for i in range(lib.mMapCacheSetSize(ms)):
+            m.append(tile.MapView(lib.mMapCacheSetGetPointer(ms, i)))
+        return m
 
     @classmethod
     def _init(cls, native):
@@ -147,6 +169,9 @@ class Core(object):
 
     def loadPatch(self, vf):
         return bool(self._core.loadPatch(self._core, vf.handle))
+
+    def loadConfig(self, config):
+        lib.mCoreLoadForeignConfig(self._core, config._native)
 
     def autoloadSave(self):
         return bool(lib.mCoreAutoloadSave(self._core))
@@ -261,3 +286,28 @@ class IRunner(object):
 
     def isPaused(self):
         raise NotImplementedError
+
+class Config(object):
+    def __init__(self, native=None, port=None, defaults={}):
+        if not native:
+            self._port = ffi.NULL
+            if port:
+                self._port = ffi.new("char[]", port.encode("UTF-8"))
+            native = ffi.gc(ffi.new("struct mCoreConfig*"), lib.mCoreConfigDeinit)
+            lib.mCoreConfigInit(native, self._port)
+        self._native = native
+        for key, value in defaults.items():
+            if isinstance(value, bool):
+                value = int(value)
+            lib.mCoreConfigSetDefaultValue(self._native, ffi.new("char[]", key.encode("UTF-8")), ffi.new("char[]", str(value).encode("UTF-8")))
+
+    def __getitem__(self, key):
+        string = lib.mCoreConfigGetValue(self._native, ffi.new("char[]", key.encode("UTF-8")))
+        if not string:
+            return None
+        return ffi.string(string)
+
+    def __setitem__(self, key, value):
+        if isinstance(value, bool):
+            value = int(value)
+        lib.mCoreConfigSetValue(self._native, ffi.new("char[]", key.encode("UTF-8")), ffi.new("char[]", str(value).encode("UTF-8")))

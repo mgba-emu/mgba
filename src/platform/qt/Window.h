@@ -3,8 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_WINDOW
-#define QGBA_WINDOW
+#pragma once
 
 #include <QDateTime>
 #include <QList>
@@ -188,7 +187,9 @@ private:
 	QMenu* m_mruMenu = nullptr;
 	QMenu* m_videoLayers;
 	QMenu* m_audioChannels;
+#if defined(BUILD_GL) || defined(BUILD_GLES)
 	std::unique_ptr<ShaderSelector> m_shaderView;
+#endif
 	bool m_fullscreenOnStart = false;
 	QTimer m_focusCheck;
 	bool m_autoresume = false;
@@ -241,5 +242,3 @@ private:
 };
 
 }
-
-#endif

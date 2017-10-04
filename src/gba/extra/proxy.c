@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gba/renderers/proxy.h>
 
-#include <mgba/core/tile-cache.h>
+#include <mgba/core/cache-set.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
 
@@ -206,7 +206,7 @@ void GBAVideoProxyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t 
 		proxyRenderer->backend->writeVRAM(proxyRenderer->backend, address);
 	}
 	if (renderer->cache) {
-		mTileCacheWriteVRAM(renderer->cache, address);
+		mCacheSetWriteVRAM(renderer->cache, address);
 	}
 }
 
@@ -217,7 +217,7 @@ void GBAVideoProxyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32
 		proxyRenderer->backend->writePalette(proxyRenderer->backend, address, value);
 	}
 	if (renderer->cache) {
-		mTileCacheWritePalette(renderer->cache, address);
+		mCacheSetWritePalette(renderer->cache, address >> 1, mColorFrom555(value));
 	}
 }
 

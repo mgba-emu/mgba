@@ -4,30 +4,69 @@ Features:
  - Game Boy Camera support
  - Qt: Set default Game Boy colors
  - Game Boy Printer support
+ - Super Game Boy support
+ - Customizable autofire speed
+ - Ability to set default Game Boy model
+ - Map viewer
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
- - Python: Fix importing .gb or .gba before .core
- - GBA: Reset active region as needed when loading a ROM
- - Qt: Fix command line debugger closing second game
  - GB Serialize: Fix audio state loading
  - GB Video: Fix dot clock timing being slightly wrong
- - GB MBC: Pocket Cam memory should be accessible without enabling
- - GB Memory: Initialize peripheral pointers
- - GB MBC: Fix SRAM sizes 4 and 5
- - GB Video: Fix 16-bit screenshots (fixes mgba.io/i/826)
- - GB Core: Fix palette loading when loading a foreign config
- - Qt: Fix LOG argument order
- - GB Memory: Prevent accessing empty SRAM (fixes mgba.io/i/831)
- - GB, GBA: Fix crashes when attempting to identify null VFiles
- - GB MBC: Fix RTC initialization (fixes mgba.io/i/825)
- - GB MBC: Fix RTC loading when file size is off
+ - Qt: Fix GL display when loading a game from CLI (fixes mgba.io/i/843)
+ - ARM: Fix MSR when T bit is set
+ - GB Serialize: Fix game title check
+ - GB: Revamp IRQ handling based on new information
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
  - All: Make FIXED_ROM_BUFFER an option instead of 3DS-only
- - Qt: Don't rebuild library view if style hasn't changed
  - Qt: Redo GameController into multiple classes
+ - Test: Restructure test suite into multiple executables
+ - Python: Integrate tests from cinema test suite
+ - Util: Don't build crc32 if the function already exists
+
+0.6.1: (2017-10-01)
+Bugfixes:
+ - GB, GBA: Fix crashes when attempting to identify null VFiles
+ - GB, GBA: Fix sync to video with frameskip
+ - GB, GBA Savedata: Fix savestate-related save overwriting (fixes mgba.io/i/834)
+ - GB Audio: Fix NRx2 writes while active (fixes mgba.io/i/866)
+ - GB Core: Fix palette loading when loading a foreign config
+ - GB MBC: Pocket Cam memory should be accessible without enabling
+ - GB MBC: Fix SRAM sizes 4 and 5
+ - GB MBC: Fix RTC initialization (fixes mgba.io/i/825)
+ - GB MBC: Fix RTC loading when file size is off
+ - GB Memory: Initialize peripheral pointers
+ - GB Memory: Prevent accessing empty SRAM (fixes mgba.io/i/831)
+ - GB Memory: Fix HDMA count starting in mode 0 (fixes mgba.io/i/855)
+ - GB Memory: Actually load latch time from savestate
+ - GB Serialize: Fix deserializing video STAT
+ - GB Video: Fix 16-bit screenshots (fixes mgba.io/i/826)
+ - GB Video: Fix potential hang when ending mode 0
+ - GB Video: Fix read mode when enabling LCD
+ - GBA: Reset active region as needed when loading a ROM
+ - GBA: Fix keypad IRQs not firing when extra buttons are pressed
+ - GBA BIOS: Use core's VRAM variable instead of renderer's
+ - GBA Cheats: Fix PARv3 multiline blocks (fixes mgba.io/i/889)
+ - GBA I/O: Fix reading from a few invalid I/O registers (fixes mgba.io/i/876)
+ - GBA Savedata: Fix 512 byte EEPROM saving as 8kB (fixes mgba.io/i/877)
+ - GBA Savedata: Fix size of SRAM saves (fixes mgba.io/i/883)
+ - GBA Video: Fix broken sprite blending hack (fixes mgba.io/i/532)
+ - Python: Fix importing .gb or .gba before .core
+ - Qt: Fix command line debugger closing second game
+ - Qt: Fix LOG argument order
+ - Qt: Fix timezone issues with time overrides
+ - Qt: Fix sprite export pausing game indefinitely (fixes mgba.io/i/841)
+ - SDL: Fix potential race condition when pressing keys (fixes mgba.io/i/872)
+Misc:
+ - CMake: Fix CPack dependencies for libpng 1.6
+ - GBA: Detect hardware for Pokémon FireRed ROM hacks
+ - GBA Cheats: Improve detection of raw cheats
+ - Qt: Don't rebuild library view if style hasn't changed
+ - Qt: Allow overrides to be saved before a game is loaded
+ - Qt: Hide mouse immediately when loading
  - SDL: Fix 2.0.5 build on macOS under some circumstances
+ - VFS: Make VFile.truncate work growing files on PSV (fixes mgba.io/i/885)
 
 0.6.0: (2017-07-16)
 Features:

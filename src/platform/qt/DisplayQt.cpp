@@ -11,6 +11,7 @@
 
 #include <mgba/core/core.h>
 #include <mgba/core/thread.h>
+#include <mgba-util/math.h>
 
 using namespace QGBA;
 

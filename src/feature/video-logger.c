@@ -687,8 +687,16 @@ void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* contex
 
 void mVideoLogContextRewind(struct mVideoLogContext* context, struct mCore* core) {
 	_readHeader(context);
-	if (core && core->stateSize(core) == context->initialStateSize) {
-		core->loadState(core, context->initialState);
+	if (core) {
+		size_t size = core->stateSize(core);
+		if (size <= context->initialStateSize) {
+			core->loadState(core, context->initialState);
+		} else {
+			void* extendedState = anonymousMemoryMap(size);
+			memcpy(extendedState, context->initialState, context->initialStateSize);
+			core->loadState(core, extendedState);
+			mappedMemoryFree(extendedState, size);
+		}
 	}
 
 	off_t pointer = context->backing->seek(context->backing, 0, SEEK_CUR);

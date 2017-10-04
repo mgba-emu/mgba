@@ -40,14 +40,15 @@ void TilePainter::mousePressEvent(QMouseEvent* event) {
 	emit indexPressed(y * (width() / m_size) + x);
 }
 
-void TilePainter::setTile(int index, const uint16_t* data) {
+void TilePainter::setTile(int index, const color_t* data) {
 	QPainter painter(&m_backing);
 	int w = width() / m_size;
 	int x = index % w;
 	int y = index / w;
 	QRect r(x * m_size, y * m_size, m_size, m_size);
-	QImage tile(reinterpret_cast<const uchar*>(data), 8, 8, QImage::Format_RGB555);
-	painter.drawImage(r, tile.rgbSwapped());
+	QImage tile(reinterpret_cast<const uchar*>(data), 8, 8, QImage::Format_ARGB32);
+	tile = tile.convertToFormat(QImage::Format_RGB32).rgbSwapped();
+	painter.drawImage(r, tile);
 	update(r);
 }
 

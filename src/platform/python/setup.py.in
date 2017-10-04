@@ -1,6 +1,7 @@
 from setuptools import setup
 import re
 import os
+import sys
 
 os.environ["BINDIR"] = "${CMAKE_BINARY_DIR}"
 os.environ["CPPFLAGS"] = " ".join([d for d in "${INCLUDE_FLAGS}".split(";") if d])
@@ -16,14 +17,15 @@ classifiers = [
 ]
 
 setup(name="${BINARY_NAME}",
-      version=re.sub("/", "-", "${VERSION_STRING}"),
+      version="${LIB_VERSION_STRING}",
       author="Jeffrey Pfau",
       author_email="jeffrey@endrift.com",
       url="http://github.com/mgba-emu/mgba/",
       packages=["mgba"],
-      setup_requires=['cffi>=1.6'],
+      setup_requires=['cffi>=1.6', 'pytest-runner'],
       install_requires=['cffi>=1.6', 'cached-property'],
-      extras_require={'pil': ['Pillow>=2.3']},
+      extras_require={'pil': ['Pillow>=2.3'], 'cinema': ['pyyaml', 'pytest']},
+      tests_require=['pytest'],
       cffi_modules=["_builder.py:ffi"],
       license="MPL 2.0",
       classifiers=classifiers

@@ -105,6 +105,33 @@ static const uint8_t _registerMask[] = {
 	[REG_IE]   = 0xE0,
 };
 
+static void _writeSGBBits(struct GB* gb, int bits) {
+	if (!bits) {
+		gb->sgbBit = 0;
+		memset(gb->sgbPacket, 0, sizeof(gb->sgbPacket));
+	}
+	if (bits == gb->currentSgbBits) {
+		return;
+	}
+	gb->currentSgbBits = bits;
+	if (gb->sgbBit == 128 && bits == 2) {
+		GBVideoWriteSGBPacket(&gb->video, gb->sgbPacket);
+		++gb->sgbBit;
+	}
+	if (gb->sgbBit >= 128) {
+		return;
+	}
+	switch (bits) {
+	case 1:
+		gb->sgbPacket[gb->sgbBit >> 3] |= 1 << (gb->sgbBit & 7);
+		// Fall through
+	case 2:
+		++gb->sgbBit;
+	default:
+		break;
+	}
+}
+
 void GBIOInit(struct GB* gb) {
 	memset(gb->memory.io, 0, sizeof(gb->memory.io));
 }
@@ -117,19 +144,19 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, REG_TAC, 0);
 	GBIOWrite(gb, REG_IF, 1);
 	GBIOWrite(gb, REG_NR52, 0xF1);
-	GBIOWrite(gb, REG_NR14, 0xBF);
+	GBIOWrite(gb, REG_NR14, 0x3F);
 	GBIOWrite(gb, REG_NR10, 0x80);
 	GBIOWrite(gb, REG_NR11, 0xBF);
 	GBIOWrite(gb, REG_NR12, 0xF3);
 	GBIOWrite(gb, REG_NR13, 0xF3);
-	GBIOWrite(gb, REG_NR24, 0xBF);
+	GBIOWrite(gb, REG_NR24, 0x3F);
 	GBIOWrite(gb, REG_NR21, 0x3F);
 	GBIOWrite(gb, REG_NR22, 0x00);
-	GBIOWrite(gb, REG_NR34, 0xBF);
+	GBIOWrite(gb, REG_NR34, 0x3F);
 	GBIOWrite(gb, REG_NR30, 0x7F);
 	GBIOWrite(gb, REG_NR31, 0xFF);
 	GBIOWrite(gb, REG_NR32, 0x9F);
-	GBIOWrite(gb, REG_NR44, 0xBF);
+	GBIOWrite(gb, REG_NR44, 0x3F);
 	GBIOWrite(gb, REG_NR41, 0xFF);
 	GBIOWrite(gb, REG_NR42, 0x00);
 	GBIOWrite(gb, REG_NR43, 0x00);
@@ -140,19 +167,26 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, REG_SCX, 0x00);
 	GBIOWrite(gb, REG_LYC, 0x00);
 	GBIOWrite(gb, REG_BGP, 0xFC);
-	GBIOWrite(gb, REG_OBP0, 0xFF);
-	GBIOWrite(gb, REG_OBP1, 0xFF);
+	if (gb->model < GB_MODEL_CGB) {
+		GBIOWrite(gb, REG_OBP0, 0xFF);
+		GBIOWrite(gb, REG_OBP1, 0xFF);
+	}
 	GBIOWrite(gb, REG_WY, 0x00);
 	GBIOWrite(gb, REG_WX, 0x00);
-	GBIOWrite(gb, REG_VBK, 0);
-	GBIOWrite(gb, REG_BCPS, 0);
-	GBIOWrite(gb, REG_OCPS, 0);
-	GBIOWrite(gb, REG_SVBK, 1);
-	GBIOWrite(gb, REG_HDMA1, 0xFF);
-	GBIOWrite(gb, REG_HDMA2, 0xFF);
-	GBIOWrite(gb, REG_HDMA3, 0xFF);
-	GBIOWrite(gb, REG_HDMA4, 0xFF);
-	gb->memory.io[REG_HDMA5] = 0xFF;
+	if (gb->model >= GB_MODEL_CGB) {
+		GBIOWrite(gb, REG_JOYP, 0xFF);
+		GBIOWrite(gb, REG_VBK, 0);
+		GBIOWrite(gb, REG_BCPS, 0);
+		GBIOWrite(gb, REG_OCPS, 0);
+		GBIOWrite(gb, REG_SVBK, 1);
+		GBIOWrite(gb, REG_HDMA1, 0xFF);
+		GBIOWrite(gb, REG_HDMA2, 0xFF);
+		GBIOWrite(gb, REG_HDMA3, 0xFF);
+		GBIOWrite(gb, REG_HDMA4, 0xFF);
+		gb->memory.io[REG_HDMA5] = 0xFF;
+	} else if (gb->model == GB_MODEL_SGB) {
+		GBIOWrite(gb, REG_JOYP, 0xFF);
+	}
 	GBIOWrite(gb, REG_IE, 0x00);
 }
 
@@ -341,6 +375,10 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		}
 		break;
 	case REG_JOYP:
+		if (gb->model == GB_MODEL_SGB) {
+			_writeSGBBits(gb, (value >> 4) & 3);
+		}
+		break;
 	case REG_TIMA:
 	case REG_TMA:
 		// Handled transparently by the registers
@@ -385,6 +423,10 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		if (gb->memory.romBase < gb->memory.rom || gb->memory.romBase > &gb->memory.rom[gb->memory.romSize - 1]) {
 			free(gb->memory.romBase);
 			gb->memory.romBase = gb->memory.rom;
+		}
+		if (gb->model >= GB_MODEL_CGB && gb->memory.io[0x6C]) {
+			gb->model = GB_MODEL_DMG;
+			GBVideoDisableCGB(&gb->video);
 		}
 		break;
 	case REG_IE:
@@ -453,7 +495,8 @@ static uint8_t _readKeys(struct GB* gb) {
 	uint8_t keys = *gb->keySource;
 	switch (gb->memory.io[REG_JOYP] & 0x30) {
 	case 0x30:
-		keys = 0;
+	// TODO: Increment
+		keys = (gb->video.sgbCommandHeader >> 3) == SGB_MLT_REG ? 0xF : 0;
 		break;
 	case 0x20:
 		keys >>= 4;
@@ -553,6 +596,9 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 			case REG_SVBK:
 				// Handled transparently by the registers
 				goto success;
+			case REG_DMA:
+				mLOG(GB_IO, STUB, "Reading from unknown register FF%02X", address);
+				return 0;
 			default:
 				break;
 			}
@@ -615,4 +661,10 @@ void GBIODeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_SCX, state->io[REG_SCX]);
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_WY, state->io[REG_WY]);
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_WX, state->io[REG_WX]);
+	if (gb->model == GB_MODEL_SGB) {
+		gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_BGP, state->io[REG_BGP]);
+		gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_OBP0, state->io[REG_OBP0]);
+		gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_OBP1, state->io[REG_OBP1]);
+	}
+	gb->video.stat = state->io[REG_STAT];
 }

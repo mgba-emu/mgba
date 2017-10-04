@@ -409,11 +409,8 @@ void* mCoreExtractState(struct mCore* core, struct VFile* vf, struct mStateExtda
 	}
 #endif
 	ssize_t stateSize = core->stateSize(core);
-	vf->seek(vf, 0, SEEK_SET);
-	if (vf->size(vf) < stateSize) {
-		return false;
-	}
 	void* state = anonymousMemoryMap(stateSize);
+	vf->seek(vf, 0, SEEK_SET);
 	if (vf->read(vf, state, stateSize) != stateSize) {
 		mappedMemoryFree(state, stateSize);
 		return 0;

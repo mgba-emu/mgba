@@ -33,7 +33,7 @@
 #define CLASSIC_INPUT 0x57494943
 
 #define TEX_W 256
-#define TEX_H 160
+#define TEX_H 224
 
 static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, enum GBAKey key) {
 	mInputBindKey(map, binding, __builtin_ctz(nativeKey), key);

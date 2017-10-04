@@ -31,8 +31,8 @@
 
 static const struct mCoreChannelInfo _GBVideoLayers[] = {
 	{ 0, "bg", "Background", NULL },
-	{ 1, "obj", "Objects", NULL },
-	{ 2, "win", "Window", NULL },
+	{ 1, "bgwin", "Window", NULL },
+	{ 2, "obj", "Objects", NULL },
 };
 
 static const struct mCoreChannelInfo _GBAudioChannels[] = {
@@ -188,9 +188,38 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	if (mCoreConfigGetIntValue(config, "gb.pal[3]", &color)) {
 		GBVideoSetPalette(&gb->video, 3, color);
 	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[4]", &color)) {
+		GBVideoSetPalette(&gb->video, 4, color);
+	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[5]", &color)) {
+		GBVideoSetPalette(&gb->video, 5, color);
+	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[6]", &color)) {
+		GBVideoSetPalette(&gb->video, 6, color);
+	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[7]", &color)) {
+		GBVideoSetPalette(&gb->video, 7, color);
+	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[8]", &color)) {
+		GBVideoSetPalette(&gb->video, 8, color);
+	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[9]", &color)) {
+		GBVideoSetPalette(&gb->video, 9, color);
+	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[10]", &color)) {
+		GBVideoSetPalette(&gb->video, 10, color);
+	}
+	if (mCoreConfigGetIntValue(config, "gb.pal[11]", &color)) {
+		GBVideoSetPalette(&gb->video, 11, color);
+	}
 
 	mCoreConfigCopyValue(&core->config, config, "gb.bios");
+	mCoreConfigCopyValue(&core->config, config, "sgb.bios");
 	mCoreConfigCopyValue(&core->config, config, "gbc.bios");
+	mCoreConfigCopyValue(&core->config, config, "gb.model");
+	mCoreConfigCopyValue(&core->config, config, "sgb.model");
+	mCoreConfigCopyValue(&core->config, config, "cgb.model");
+	mCoreConfigCopyValue(&core->config, config, "sgb.borders");
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBCore* gbcore = (struct GBCore*) core;
@@ -199,9 +228,14 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 }
 
 static void _GBCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
-	UNUSED(core);
-	*width = GB_VIDEO_HORIZONTAL_PIXELS;
-	*height = GB_VIDEO_VERTICAL_PIXELS;
+	struct GB* gb = core->board;
+	if (gb && (gb->model != GB_MODEL_SGB || !gb->video.sgbBorders)) {
+		*width = GB_VIDEO_HORIZONTAL_PIXELS;
+		*height = GB_VIDEO_VERTICAL_PIXELS;
+	} else {
+		*width = 256;
+		*height = 224;
+	}
 }
 
 static void _GBCoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t stride) {
@@ -330,6 +364,25 @@ static void _GBCoreReset(struct mCore* core) {
 		}
 	}
 
+	const char* modelGB = mCoreConfigGetValue(&core->config, "gb.model");
+	const char* modelCGB = mCoreConfigGetValue(&core->config, "cgb.model");
+	const char* modelSGB = mCoreConfigGetValue(&core->config, "sgb.model");
+	if (modelGB || modelCGB || modelSGB) {
+		GBDetectModel(gb);
+		if (gb->model == GB_MODEL_DMG && modelGB) {
+			gb->model = GBNameToModel(modelGB);
+		} else if (gb->model == GB_MODEL_CGB && modelCGB) {
+			gb->model = GBNameToModel(modelCGB);
+		} else if (gb->model == GB_MODEL_SGB && modelSGB) {
+			gb->model = GBNameToModel(modelSGB);
+		}
+	}
+
+	int fakeBool;
+	if (mCoreConfigGetIntValue(&core->config, "sgb.borders", &fakeBool)) {
+		gb->video.sgbBorders = fakeBool;
+	}
+
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	if (!gb->biosVf && core->opts.useBios) {
 		struct VFile* bios = NULL;
@@ -349,8 +402,12 @@ static void _GBCoreReset(struct mCore* core) {
 
 			switch (gb->model) {
 			case GB_MODEL_DMG:
-			case GB_MODEL_SGB: // TODO
+			case GB_MODEL_MGB: // TODO
 				configPath = mCoreConfigGetValue(&core->config, "gb.bios");
+				break;
+			case GB_MODEL_SGB:
+			case GB_MODEL_SGB2: // TODO
+				configPath = mCoreConfigGetValue(&core->config, "sgb.bios");
 				break;
 			case GB_MODEL_CGB:
 			case GB_MODEL_AGB:
@@ -374,8 +431,12 @@ static void _GBCoreReset(struct mCore* core) {
 			mCoreConfigDirectory(path, PATH_MAX);
 			switch (gb->model) {
 			case GB_MODEL_DMG:
-			case GB_MODEL_SGB: // TODO
+			case GB_MODEL_MGB: // TODO
 				strncat(path, PATH_SEP "gb_bios.bin", PATH_MAX - strlen(path));
+				break;
+			case GB_MODEL_SGB:
+			case GB_MODEL_SGB2: // TODO
+				strncat(path, PATH_SEP "sgb_bios.bin", PATH_MAX - strlen(path));
 				break;
 			case GB_MODEL_CGB:
 			case GB_MODEL_AGB:
@@ -570,7 +631,9 @@ size_t _GBListMemoryBlocks(const struct mCore* core, const struct mCoreMemoryBlo
 	const struct GB* gb = core->board;
 	switch (gb->model) {
 	case GB_MODEL_DMG:
+	case GB_MODEL_MGB:
 	case GB_MODEL_SGB:
+	case GB_MODEL_SGB2:
 	default:
 		*blocks = _GBMemoryBlocks;
 		return sizeof(_GBMemoryBlocks) / sizeof(*_GBMemoryBlocks);
