@@ -103,6 +103,9 @@ void GBMemoryInit(struct GB* gb) {
 	gb->memory.mbcWrite = NULL;
 
 	gb->memory.rtc = NULL;
+	gb->memory.rotation = NULL;
+	gb->memory.rumble = NULL;
+	gb->memory.cam = NULL;
 
 	GBIOInit(gb);
 }
@@ -204,10 +207,14 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK0 + 2:
 	case GB_REGION_CART_BANK0 + 3:
 		return memory->romBase[address & (GB_SIZE_CART_BANK0 - 1)];
-	case GB_REGION_CART_BANK1:
-	case GB_REGION_CART_BANK1 + 1:
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
+		if (memory->mbcType == GB_MBC6) {
+			return memory->mbcState.mbc6.romBank1[address & (GB_SIZE_CART_HALFBANK - 1)];
+		}
+		// Fall through
+	case GB_REGION_CART_BANK1:
+	case GB_REGION_CART_BANK1 + 1:
 		return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
 	case GB_REGION_VRAM:
 	case GB_REGION_VRAM + 1:
@@ -218,7 +225,7 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 			return memory->rtcRegs[memory->activeRtcReg];
 		} else if (memory->mbcRead) {
 			return memory->mbcRead(memory, address);
-		} else if (memory->sramAccess) {
+		} else if (memory->sramAccess && memory->sram) {
 			return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
 		} else if (memory->mbcType == GB_HuC3) {
 			return 0x01; // TODO: Is this supposed to be the current SRAM bank?
@@ -287,10 +294,10 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	case GB_REGION_EXTERNAL_RAM + 1:
 		if (memory->rtcAccess) {
 			memory->rtcRegs[memory->activeRtcReg] = value;
-		} else if (memory->sramAccess) {
+		} else if (memory->sramAccess && memory->sram) {
 			memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
-		} else if (memory->mbcType == GB_MBC7) {
-			GBMBC7Write(memory, address, value);
+		} else {
+			memory->mbcWrite(gb, address, value);
 		}
 		gb->sramDirty |= GB_SRAM_DIRT_NEW;
 		return;
@@ -385,7 +392,7 @@ uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment) {
 		if (memory->rtcAccess) {
 			return memory->rtcRegs[memory->activeRtcReg];
 		} else if (memory->sramAccess) {
-			if (segment < 0) {
+			if (segment < 0 && memory->sram) {
 				return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
 			} else if ((size_t) segment * GB_SIZE_EXTERNAL_RAM < gb->sramSize) {
 				return memory->sram[(address & (GB_SIZE_EXTERNAL_RAM - 1)) + segment *GB_SIZE_EXTERNAL_RAM];
@@ -462,10 +469,13 @@ void GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
 	bool wasHdma = gb->memory.isHdma;
 	gb->memory.isHdma = value & 0x80;
 	if ((!wasHdma && !gb->memory.isHdma) || gb->video.mode == 0) {
-		gb->memory.hdmaRemaining = ((value & 0x7F) + 1) * 0x10;
+		if (gb->memory.isHdma) {
+			gb->memory.hdmaRemaining = 0x10;
+		} else {
+			gb->memory.hdmaRemaining = ((value & 0x7F) + 1) * 0x10;
+		}
 		gb->cpuBlocked = true;
 		mTimingSchedule(&gb->timing, &gb->memory.hdmaEvent, 0);
-		gb->cpu->nextEvent = gb->cpu->cycles;
 	}
 }
 
@@ -703,8 +713,7 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		}
 		break;
 	case GB_MBC3_RTC:
-		// TODO?
-		//LOAD_64LE(gb->memory.rtcLastLatch, 0, &state->memory.rtc.lastLatch);
+		LOAD_64LE(gb->memory.rtcLastLatch, 0, &state->memory.rtc.lastLatch);
 		break;
 	case GB_MBC7:
 		memory->mbcState.mbc7.state = state->memory.mbc7.state;

@@ -3,12 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_TILE_PAINTER
-#define QGBA_TILE_PAINTER
+#pragma once
 
 #include <QColor>
 #include <QWidget>
 #include <QVector>
+
+#include <mgba/core/interface.h>
 
 namespace QGBA {
 
@@ -19,7 +20,7 @@ public:
 	TilePainter(QWidget* parent = nullptr);
 
 public slots:
-	void setTile(int index, const uint16_t*);
+	void setTile(int index, const color_t*);
 	void setTileCount(int tiles);
 	void setTileMagnification(int mag);
 
@@ -38,5 +39,3 @@ private:
 };
 
 }
-
-#endif

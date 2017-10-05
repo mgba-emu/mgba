@@ -19,6 +19,7 @@ Features
 - Save type detection, even for flash memory size[<sup>[3]</sup>](#flashdetect).
 - Support for cartridges with motion sensors and rumble (only usable with game controllers)[<sup>[2]</sup>](#dscaveat).
 - Real-time clock support, even without configuration.
+- Game Boy Camera and Game Boy Printer support.
 - A built-in GBA BIOS implementation, and ability to load external BIOS files. DS currently requires BIOS and firmware dumps[<sup>[2]</sup>](#dscaveat).
 - Turbo/fast-forward support by holding Tab.
 - Rewind by holding Backquote.
@@ -46,7 +47,6 @@ Features
 - A comprehensive debug suite.
 - e-Reader support.
 - Wireless adapter support.
-- Game Boy Printer support.
 - OpenGL renderer.
 - HLE support for DS BIOS and DS ARM7 processor.
 - Synthesizing a customizable DS firmware to avoid needing a  dump.

@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/core/core.h>
+#include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/video.h>
 
 struct GBAVideoSoftwareSprite {
@@ -166,6 +167,14 @@ struct GBAVideoSoftwareRenderer {
 	int tileStride;
 	int bitmapStride;
 	bool combinedObjSort;
+
+	uint32_t scanlineDirty[5];
+	uint16_t nextIo[REG_SOUND1CNT_LO];
+	struct ScanlineCache {
+		uint16_t io[REG_SOUND1CNT_LO];
+		int32_t scale[2][2];
+	} cache[VIDEO_VERTICAL_PIXELS];
+	int nextY;
 
 	int start;
 	int end;

@@ -142,6 +142,7 @@ struct GBAudioNoiseChannel {
 
 enum GBAudioStyle {
 	GB_AUDIO_DMG,
+	GB_AUDIO_MGB = GB_AUDIO_DMG, // TODO
 	GB_AUDIO_CGB,
 	GB_AUDIO_AGB, // GB in GBA
 	GB_AUDIO_GBA, // GBA PSG

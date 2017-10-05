@@ -3,8 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_CORE_CONTROLLER
-#define QGBA_CORE_CONTROLLER
+#pragma once
 
 #include <QByteArray>
 #include <QList>
@@ -20,7 +19,11 @@
 #include <mgba/core/core.h>
 #include <mgba/core/interface.h>
 #include <mgba/core/thread.h>
-#include <mgba/core/tile-cache.h>
+#include <mgba/core/cache-set.h>
+
+#ifdef M_CORE_GB
+#include <mgba/internal/gb/sio/printer.h>
+#endif
 
 struct mCore;
 
@@ -76,7 +79,7 @@ public:
 	void clearMultiplayerController();
 	MultiplayerController* multiplayerController() { return m_multiplayer; }
 
-	mTileCache* tileCache();
+	mCacheSet* graphicCaches();
 	int stateSlot() const { return m_stateSlot; }
 
 	void setOverride(std::unique_ptr<Override> override);
@@ -120,6 +123,10 @@ public slots:
 	void importSharkport(const QString& path);
 	void exportSharkport(const QString& path);
 
+	void attachPrinter();
+	void detachPrinter();
+	void endPrint();
+
 	void setAVStream(mAVStream*);
 	void clearAVStream();
 
@@ -146,6 +153,8 @@ signals:
 	void statusPosted(const QString& message);
 	void logPosted(int level, int category, const QString& log);
 
+	void imagePrinted(const QImage&);
+
 private:
 	void updateKeys();
 	void finishFrame();
@@ -160,12 +169,17 @@ private:
 	QByteArray* m_activeBuffer;
 	QByteArray* m_completeBuffer = nullptr;
 
-	std::unique_ptr<mTileCache> m_tileCache;
+	std::unique_ptr<mCacheSet> m_cacheSet;
 	std::unique_ptr<Override> m_override;
 
 	QList<std::function<void()>> m_resetActions;
 	QList<std::function<void()>> m_frameActions;
 	QMutex m_mutex;
+
+	int m_activeKeys = 0;
+	bool m_autofire[32] = {};
+	int m_autofireStatus[32] = {};
+	int m_autofireThreshold = 1;
 
 	VFileDevice m_backupLoadState;
 	QByteArray m_backupSaveState{nullptr};
@@ -187,8 +201,13 @@ private:
 
 	mVideoLogContext* m_vl = nullptr;
 	VFile* m_vlVf = nullptr;
+
+#ifdef M_CORE_GB
+	struct QGBPrinter {
+		GBPrinter d;
+		CoreController* parent;
+	} m_printer;
+#endif
 };
 
 }
-
-#endif

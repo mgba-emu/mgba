@@ -25,7 +25,7 @@ const int GB_AUDIO_VOLUME_MAX = 0x100;
 
 static bool _writeSweep(struct GBAudioSweep* sweep, uint8_t value);
 static void _writeDuty(struct GBAudioEnvelope* envelope, uint8_t value);
-static bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value);
+static bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value, enum GBAudioStyle style);
 
 static void _resetSweep(struct GBAudioSweep* sweep);
 static bool _resetEnvelope(struct GBAudioEnvelope* sweep);
@@ -153,6 +153,10 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->playingCh2 = false;
 	audio->playingCh3 = false;
 	audio->playingCh4 = false;
+	if (audio->p && (audio->p->model == GB_MODEL_DMG || audio->p->model == GB_MODEL_CGB)) {
+		audio->playingCh1 = true;
+		*audio->nr52 |= 0x01;
+	}
 }
 
 void GBAudioResizeBuffer(struct GBAudio* audio, size_t samples) {
@@ -178,7 +182,7 @@ void GBAudioWriteNR11(struct GBAudio* audio, uint8_t value) {
 }
 
 void GBAudioWriteNR12(struct GBAudio* audio, uint8_t value) {
-	if (!_writeEnvelope(&audio->ch1.envelope, value)) {
+	if (!_writeEnvelope(&audio->ch1.envelope, value, audio->style)) {
 		mTimingDeschedule(audio->timing, &audio->ch1Event);
 		audio->playingCh1 = false;
 		*audio->nr52 &= ~0x0001;
@@ -236,7 +240,7 @@ void GBAudioWriteNR21(struct GBAudio* audio, uint8_t value) {
 }
 
 void GBAudioWriteNR22(struct GBAudio* audio, uint8_t value) {
-	if (!_writeEnvelope(&audio->ch2.envelope, value)) {
+	if (!_writeEnvelope(&audio->ch2.envelope, value, audio->style)) {
 		mTimingDeschedule(audio->timing, &audio->ch2Event);
 		audio->playingCh2 = false;
 		*audio->nr52 &= ~0x0002;
@@ -354,7 +358,7 @@ void GBAudioWriteNR41(struct GBAudio* audio, uint8_t value) {
 }
 
 void GBAudioWriteNR42(struct GBAudio* audio, uint8_t value) {
-	if (!_writeEnvelope(&audio->ch4.envelope, value)) {
+	if (!_writeEnvelope(&audio->ch4.envelope, value, audio->style)) {
 		mTimingDeschedule(audio->timing, &audio->ch4Event);
 		audio->playingCh4 = false;
 		*audio->nr52 &= ~0x0008;
@@ -696,17 +700,16 @@ void _writeDuty(struct GBAudioEnvelope* envelope, uint8_t value) {
 	envelope->duty = GBAudioRegisterDutyGetDuty(value);
 }
 
-bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value) {
+bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value, enum GBAudioStyle style) {
 	envelope->stepTime = GBAudioRegisterSweepGetStepTime(value);
 	envelope->direction = GBAudioRegisterSweepGetDirection(value);
 	envelope->initialVolume = GBAudioRegisterSweepGetInitialVolume(value);
-	if (!envelope->stepTime) {
+	if (style == GB_AUDIO_DMG && !envelope->stepTime) {
 		// TODO: Improve "zombie" mode
 		++envelope->currentVolume;
 		envelope->currentVolume &= 0xF;
 	}
 	_updateEnvelopeDead(envelope);
-	envelope->nextStep = envelope->stepTime;
 	return (envelope->initialVolume || envelope->direction) && envelope->dead != 2;
 }
 
@@ -960,6 +963,8 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	mTimingSchedule(audio->timing, &audio->frameEvent, when);
 
 	LOAD_32LE(flags, 0, flagsIn);
+	audio->frame = GBSerializedAudioFlagsGetFrame(flags);
+
 	LOAD_32LE(ch1Flags, 0, &state->ch1.envelope);
 	audio->ch1.envelope.currentVolume = GBSerializedAudioFlagsGetCh1Volume(flags);
 	audio->ch1.envelope.dead = GBSerializedAudioFlagsGetCh1Dead(flags);

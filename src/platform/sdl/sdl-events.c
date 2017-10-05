@@ -408,11 +408,13 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 		key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.sym);
 	}
 	if (key != -1) {
+		mCoreThreadInterrupt(context);
 		if (event->type == SDL_KEYDOWN) {
 			context->core->addKeys(context->core, 1 << key);
 		} else {
 			context->core->clearKeys(context->core, 1 << key);
 		}
+		mCoreThreadContinue(context);
 		return;
 	}
 	if (event->keysym.sym == SDLK_TAB) {
@@ -549,21 +551,23 @@ static void _mSDLHandleMouseMotion(struct mCore* core, struct mSDLPlayer* sdlCon
 	core->setCursorLocation(core, x, y);
 }
 
-static void _mSDLHandleJoyButton(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_JoyButtonEvent* event) {
+static void _mSDLHandleJoyButton(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_JoyButtonEvent* event) {
 	int key = 0;
 	key = mInputMapKey(sdlContext->bindings, SDL_BINDING_BUTTON, event->button);
 	if (key == -1) {
 		return;
 	}
 
+	mCoreThreadInterrupt(context);
 	if (event->type == SDL_JOYBUTTONDOWN) {
-		core->addKeys(core, 1 << key);
+		context->core->addKeys(context->core, 1 << key);
 	} else {
-		core->clearKeys(core, 1 << key);
+		context->core->clearKeys(context->core, 1 << key);
 	}
+	mCoreThreadContinue(context);
 }
 
-static void _mSDLHandleJoyHat(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_JoyHatEvent* event) {
+static void _mSDLHandleJoyHat(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_JoyHatEvent* event) {
 	int allKeys = mInputMapHat(sdlContext->bindings, SDL_BINDING_BUTTON, event->hat, -1);
 	if (allKeys == 0) {
 		return;
@@ -571,11 +575,13 @@ static void _mSDLHandleJoyHat(struct mCore* core, struct mSDLPlayer* sdlContext,
 
 	int keys = mInputMapHat(sdlContext->bindings, SDL_BINDING_BUTTON, event->hat, event->value);
 
-	core->clearKeys(core, allKeys ^ keys);
-	core->addKeys(core, keys);
+	mCoreThreadInterrupt(context);
+	context->core->clearKeys(context->core, allKeys ^ keys);
+	context->core->addKeys(context->core, keys);
+	mCoreThreadContinue(context);
 }
 
-static void _mSDLHandleJoyAxis(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_JoyAxisEvent* event) {
+static void _mSDLHandleJoyAxis(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_JoyAxisEvent* event) {
 	int clearKeys = ~mInputClearAxis(sdlContext->bindings, SDL_BINDING_BUTTON, event->axis, -1);
 	int newKeys = 0;
 	int key = mInputMapAxis(sdlContext->bindings, SDL_BINDING_BUTTON, event->axis, event->value);
@@ -583,8 +589,10 @@ static void _mSDLHandleJoyAxis(struct mCore* core, struct mSDLPlayer* sdlContext
 		newKeys |= 1 << key;
 	}
 	clearKeys &= ~newKeys;
-	core->clearKeys(core, clearKeys);
-	core->addKeys(core, newKeys);
+	mCoreThreadInterrupt(context);
+	context->core->clearKeys(context->core, clearKeys);
+	context->core->addKeys(context->core, newKeys);
+	mCoreThreadContinue(context);
 
 }
 
@@ -621,13 +629,13 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 		break;
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
-		_mSDLHandleJoyButton(context->core, sdlContext, &event->jbutton);
+		_mSDLHandleJoyButton(context, sdlContext, &event->jbutton);
 		break;
 	case SDL_JOYHATMOTION:
-		_mSDLHandleJoyHat(context->core, sdlContext, &event->jhat);
+		_mSDLHandleJoyHat(context, sdlContext, &event->jhat);
 		break;
 	case SDL_JOYAXISMOTION:
-		_mSDLHandleJoyAxis(context->core, sdlContext, &event->jaxis);
+		_mSDLHandleJoyAxis(context, sdlContext, &event->jaxis);
 		break;
 	}
 }

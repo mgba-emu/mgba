@@ -105,6 +105,18 @@ int main() {
 					"Fit Aspect Ratio",
 				},
 				.nStates = 4
+			},
+			{
+				.title = "Camera",
+				.data = "camera",
+				.submenu = 0,
+				.state = 1,
+				.validStates = (const char*[]) {
+					"None",
+					"Front",
+					"Back",
+				},
+				.nStates = 3
 			}
 		},
 		.keySources = (struct GUIInputKeys[]) {
@@ -133,7 +145,7 @@ int main() {
 			},
 			{ .id = 0 }
 		},
-		.nConfigExtra = 1,
+		.nConfigExtra = 2,
 		.setup = mPSP2Setup,
 		.teardown = mPSP2Teardown,
 		.gameLoaded = mPSP2LoadROM,

@@ -63,11 +63,12 @@ void SensorView::setController(std::shared_ptr<CoreController> controller) {
 	m_controller = controller;
 	connect(m_ui.timeNoOverride, &QAbstractButton::clicked, controller.get(), &CoreController::setRealTime);
 	connect(m_ui.timeFixed, &QRadioButton::clicked, [controller, this] () {
-		controller->setFixedTime(m_ui.time->dateTime());
+		controller->setFixedTime(m_ui.time->dateTime().toUTC());
 	});
 	connect(m_ui.timeFakeEpoch, &QRadioButton::clicked, [controller, this] () {
-		controller->setFakeEpoch(m_ui.time->dateTime());
+		controller->setFakeEpoch(m_ui.time->dateTime().toUTC());
 	});
+	m_ui.timeButtons->checkedButton()->clicked();
 
 	connect(controller.get(), &CoreController::stopping, [this]() {
 		m_controller.reset();

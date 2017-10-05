@@ -34,7 +34,7 @@ endif()
 if(WIN32)
 	list(APPEND SDL_LIBRARY imm32 version winmm)
 elseif(APPLE)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework AppKit -framework AudioUnit -framework Carbon -framework CoreAudio -framework ForceFeedback -framework IOKit")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework AppKit -framework AudioUnit -framework Carbon -framework CoreAudio -framework AudioToolbox -framework ForceFeedback -framework IOKit")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}" PARENT_SCOPE)
 endif()
 
@@ -88,7 +88,7 @@ endif()
 
 if(ENABLE_SCRIPTING)
 	if(BUILD_PYTHON)
-		list(APPEND PLATFORM_LIBRARY "${PYTHON_LIBRARY}")
+		list(APPEND PLATFORM_LIBRARY ${BINARY_NAME}-pylib)
 	endif()
 endif()
 

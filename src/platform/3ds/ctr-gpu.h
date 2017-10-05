@@ -16,12 +16,13 @@ void ctrDeinitGpu(void);
 
 void ctrSetViewportSize(s16 w, s16 h, bool tilt);
 
-void ctrActivateTexture(C3D_Tex* texture);
+void ctrActivateTexture(const C3D_Tex* texture);
 void ctrTextureMultiply(void);
 void ctrTextureBias(u32 color);
 void ctrAddRectEx(u32 color, s16 x, s16 y, s16 w, s16 h, s16 u, s16 v, s16 uw, s16 vh, float rotate);
 void ctrAddRect(u32 color, s16 x, s16 y, s16 u, s16 v, s16 w, s16 h);
 void ctrFlushBatch(void);
-void ctrFinalize(void);
+void ctrStartFrame(void);
+void ctrEndFrame(void);
 
 #endif

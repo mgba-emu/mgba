@@ -20,6 +20,9 @@ VFileDevice::VFileDevice(VFile* vf, QObject* parent)
 }
 
 void VFileDevice::close() {
+	if (!m_vf) {
+		return;
+	}
 	QIODevice::close();
 	m_vf->close(m_vf);
 	m_vf = nullptr;

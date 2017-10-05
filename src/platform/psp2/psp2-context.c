@@ -27,6 +27,7 @@
 #include <mgba-util/platform/psp2/sce-vfs.h>
 
 #include <psp2/audioout.h>
+#include <psp2/camera.h>
 #include <psp2/ctrl.h>
 #include <psp2/display.h>
 #include <psp2/gxm.h>
@@ -36,6 +37,7 @@
 #include <vita2d.h>
 
 #define RUMBLE_PWM 8
+#define CDRAM_ALIGN 0x40000
 
 static enum ScreenMode {
 	SM_BACKDROP,
@@ -49,15 +51,26 @@ static void* outputBuffer;
 static vita2d_texture* tex;
 static vita2d_texture* screenshot;
 static Thread audioThread;
+
 static struct mSceRotationSource {
 	struct mRotationSource d;
 	struct SceMotionSensorState state;
 } rotation;
+
 static struct mSceRumble {
 	struct mRumble d;
 	struct CircleBuffer history;
 	int current;
 } rumble;
+
+static struct mSceImageSource {
+	struct mImageSource d;
+	SceUID memblock;
+	void* buffer;
+	unsigned cam;
+	size_t bufferOffset;
+} camera;
+
 bool frameLimiter = true;
 
 extern const uint8_t _binary_backdrop_png_start[];
@@ -143,6 +156,79 @@ static void _setRumble(struct mRumble* source, int enable) {
 	sceCtrlSetActuator(1, &state);
 }
 
+static void _resetCamera(struct mSceImageSource* imageSource) {
+	if (!imageSource->cam) {
+		return;
+	}
+
+	sceCameraOpen(imageSource->cam - 1, &(SceCameraInfo) {
+		.size = sizeof(SceCameraInfo),
+		.format = 5, // SCE_CAMERA_FORMAT_ABGR
+		.resolution = SCE_CAMERA_RESOLUTION_176_144,
+		.framerate = SCE_CAMERA_FRAMERATE_30_FPS,
+		.sizeIBase = 176 * 144 * 4,
+		.pitch = 0,
+		.pIBase = imageSource->buffer,
+	});
+	sceCameraStart(imageSource->cam - 1);
+}
+
+static void _startRequestImage(struct mImageSource* source, unsigned w, unsigned h, int colorFormats) {
+	UNUSED(colorFormats);
+	struct mSceImageSource* imageSource = (struct mSceImageSource*) source;
+
+	if (!imageSource->buffer) {
+		imageSource->memblock = sceKernelAllocMemBlock("camera", SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, CDRAM_ALIGN, NULL);
+		sceKernelGetMemBlockBase(imageSource->memblock, &imageSource->buffer);
+	}
+
+	if (!imageSource->cam) {
+		return;
+	}
+
+	_resetCamera(imageSource);
+	imageSource->bufferOffset = (176 - w) / 2 + (144 - h) * 176 / 2;
+
+	SceCameraRead read = {
+		sizeof(SceCameraRead),
+		1
+	};
+	sceCameraRead(imageSource->cam - 1, &read);
+}
+
+static void _stopRequestImage(struct mImageSource* source) {
+	struct mSceImageSource* imageSource = (struct mSceImageSource*) source;
+	if (imageSource->cam) {
+		sceCameraStop(imageSource->cam - 1);
+		sceCameraClose(imageSource->cam - 1);
+	}
+	sceKernelFreeMemBlock(imageSource->memblock);
+	imageSource->buffer = NULL;
+}
+
+
+static void _requestImage(struct mImageSource* source, const void** buffer, size_t* stride, enum mColorFormat* colorFormat) {
+	struct mSceImageSource* imageSource = (struct mSceImageSource*) source;
+
+	if (!imageSource->cam) {
+		memset(imageSource->buffer, 0, 176 * 144 * 4);
+		*buffer = (uint32_t*) imageSource->buffer;
+		*stride = 176;
+		*colorFormat = mCOLOR_XBGR8;
+		return;
+	}
+
+	*buffer = (uint32_t*) imageSource->buffer + imageSource->bufferOffset;
+	*stride = 176;
+	*colorFormat = mCOLOR_XBGR8;
+
+	SceCameraRead read = {
+		sizeof(SceCameraRead),
+		1
+	};
+	sceCameraRead(imageSource->cam - 1, &read);
+}
+
 uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 	SceCtrlData pad;
 	sceCtrlPeekBufferPositive(0, &pad, 1);
@@ -210,12 +296,22 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	CircleBufferInit(&rumble.history, RUMBLE_PWM);
 	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d);
 
+	camera.d.startRequestImage = _startRequestImage;
+	camera.d.stopRequestImage = _stopRequestImage;
+	camera.d.requestImage = _requestImage;
+	camera.buffer = NULL;
+	camera.cam = 1;
+	runner->core->setPeripheral(runner->core, mPERIPH_IMAGE_SOURCE, &camera.d);
+
 	frameLimiter = true;
 	backdrop = vita2d_load_PNG_buffer(_binary_backdrop_png_start);
 
 	unsigned mode;
 	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
+	}
+	if (mCoreConfigGetUIntValue(&runner->config, "camera", &mode)) {
+		camera.cam = mode;
 	}
 }
 
@@ -312,6 +408,19 @@ void mPSP2Unpaused(struct mGUIRunner* runner) {
 	unsigned mode;
 	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode != screenMode) {
 		screenMode = mode;
+	}
+
+	if (mCoreConfigGetUIntValue(&runner->config, "camera", &mode)) {
+		if (mode != camera.cam) {
+			if (camera.buffer) {
+				sceCameraStop(camera.cam - 1);
+				sceCameraClose(camera.cam - 1);
+			}
+			camera.cam = mode;
+			if (camera.buffer) {
+				_resetCamera(&camera);
+			}
+		}
 	}
 }
 

@@ -14,6 +14,7 @@
 #include <QTimer>
 
 #include <mgba/core/core.h>
+#include <mgba-util/math.h>
 #ifdef BUILD_GL
 #include "platform/opengl/gl.h"
 #endif

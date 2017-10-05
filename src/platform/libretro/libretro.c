@@ -10,6 +10,7 @@
 #include <mgba/core/blip_buf.h>
 #include <mgba/core/cheats.h>
 #include <mgba/core/core.h>
+#include <mgba/core/log.h>
 #include <mgba/core/version.h>
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
@@ -101,8 +102,8 @@ void retro_set_environment(retro_environment_t env) {
 	struct retro_variable vars[] = {
 		{ "mgba_solar_sensor_level", "Solar sensor level; 0|1|2|3|4|5|6|7|8|9|10" },
 		{ "mgba_allow_opposing_directions", "Allow opposing directional input; OFF|ON" },
-		{ "mgba_use_bios", "Use BIOS file if found; ON|OFF" },
-		{ "mgba_skip_bios", "Skip BIOS intro; OFF|ON" },
+		{ "mgba_use_bios", "Use BIOS file if found (requires restart); ON|OFF" },
+		{ "mgba_skip_bios", "Skip BIOS intro (requires restart); OFF|ON" },
 		{ "mgba_idle_optimization", "Idle loop removal; Remove Known|Detect and Remove|Don't Remove" },
 		{ 0, 0 }
 	};
@@ -391,7 +392,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 	core->init(core);
 	core->setAVStream(core, &stream);
 
-	outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	outputBuffer = malloc(256 * 224 * BYTES_PER_PIXEL);
 	core->setVideoBuffer(core, outputBuffer, 256);
 
 	core->setAudioBufferSize(core, SAMPLES);
@@ -528,16 +529,9 @@ size_t retro_get_memory_size(unsigned id) {
 	if (core->platform(core) == PLATFORM_GBA) {
 		switch (((struct GBA*) core->board)->memory.savedata.type) {
 		case SAVEDATA_AUTODETECT:
-		case SAVEDATA_FLASH1M:
 			return SIZE_CART_FLASH1M;
-		case SAVEDATA_FLASH512:
-			return SIZE_CART_FLASH512;
-		case SAVEDATA_EEPROM:
-			return SIZE_CART_EEPROM;
-		case SAVEDATA_SRAM:
-			return SIZE_CART_SRAM;
-		case SAVEDATA_FORCE_NONE:
-			return 0;
+		default:
+			return GBASavedataSize(&((struct GBA*) core->board)->memory.savedata);
 		}
 	}
 #endif
@@ -583,7 +577,12 @@ void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel level, con
 		break;
 	}
 #ifdef NDEBUG
-	if (category == _mLOG_CAT_GBA_BIOS()) {
+	static int biosCat = -1;
+	if (biosCat < 0) {
+		biosCat = mLogCategoryById("gba.bios");
+	}
+
+	if (category == biosCat) {
 		return;
 	}
 #endif

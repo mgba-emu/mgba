@@ -7,13 +7,21 @@
 #define _TIME_H_
 
 #define ATTRIBUTE_FORMAT(X, Y, Z)
-#define DECL_BITFIELD(newtype, oldtype) typedef oldtype newtype
-#define DECL_BIT(type, name, bit)
-#define DECL_BITS(type, name, bit, nbits)
 #define ATTRIBUTE_ALIGN(align)
+#define DECL_BITFIELD(newtype, oldtype) typedef oldtype newtype
+#define DECL_BIT(type, field, bit) DECL_BITS(type, field, bit, 1)
+#define DECL_BITS(TYPE, FIELD, START, SIZE) \
+	TYPE TYPE ## Is ## FIELD (TYPE); \
+	TYPE TYPE ## Get ## FIELD (TYPE); \
+	TYPE TYPE ## Clear ## FIELD (TYPE); \
+	TYPE TYPE ## Fill ## FIELD (TYPE); \
+	TYPE TYPE ## Set ## FIELD (TYPE, TYPE); \
+	TYPE TYPE ## TestFill ## FIELD (TYPE, bool);
 
 #define CXX_GUARD_START
 #define CXX_GUARD_END
+
+#define PYCPARSE
 
 typedef int... time_t;
 typedef int... off_t;
@@ -25,13 +33,13 @@ typedef ...* png_unknown_chunkp;
 void free(void*);
 
 #include <limits.h>
-#undef const
 
 #include "flags.h"
 
+#include <mgba/core/cache-set.h>
 #include <mgba/core/core.h>
+#include <mgba/core/map-cache.h>
 #include <mgba/core/mem-search.h>
-#include <mgba/core/tile-cache.h>
 #include <mgba/core/thread.h>
 #include <mgba/core/version.h>
 
@@ -49,13 +57,13 @@ void free(void*);
 #include <mgba/internal/arm/arm.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
-#include <mgba/internal/gba/renderers/tile-cache.h>
+#include <mgba/internal/gba/renderers/cache-set.h>
 #endif
 #ifdef M_CORE_GB
 #include <mgba/internal/lr35902/lr35902.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gba/input.h>
-#include <mgba/internal/gb/renderers/tile-cache.h>
+#include <mgba/internal/gb/renderers/cache-set.h>
 #endif
 #ifdef M_CORE_DS
 #include <mgba/internal/arm/arm.h>

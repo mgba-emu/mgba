@@ -2,6 +2,7 @@
  <qresource>
      <file>../../../res/medusa-bg.jpg</file>
      <file>../../../res/patrons.txt</file>
+     <file>../../../res/no-cam.png</file>
      <file>input/default-profiles.ini</file>
  </qresource>
  </RCC>

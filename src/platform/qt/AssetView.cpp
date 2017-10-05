@@ -13,7 +13,7 @@ using namespace QGBA;
 
 AssetView::AssetView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: QWidget(parent)
-	, m_tileCache(controller->tileCache())
+	, m_cacheSet(controller->graphicCaches())
 	, m_controller(controller)
 {
 	m_updateTimer.setSingleShot(true);
@@ -55,8 +55,8 @@ void AssetView::showEvent(QShowEvent*) {
 	updateTiles(true);
 }
 
-void AssetView::compositeTile(unsigned tileId, void* buffer, size_t stride, size_t x, size_t y, int depth) {
-	const uint8_t* tile = mTileCacheGetRawTile(m_tileCache, tileId);
+void AssetView::compositeTile(const void* tBuffer, void* buffer, size_t stride, size_t x, size_t y, int depth) {
+	const uint8_t* tile = static_cast<const uint8_t*>(tBuffer);
 	uint8_t* pixels = static_cast<uint8_t*>(buffer);
 	size_t base = stride * y + x;
 	switch (depth) {

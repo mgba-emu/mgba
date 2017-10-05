@@ -3,8 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_INPUT_CONTROLLER_H
-#define QGBA_INPUT_CONTROLLER_H
+#pragma once
 
 #include "GamepadAxisEvent.h"
 #include "GamepadHatEvent.h"
@@ -12,7 +11,9 @@
 
 #include <memory>
 
+#include <QImage>
 #include <QMap>
+#include <QMutex>
 #include <QObject>
 #include <QSet>
 #include <QTimer>
@@ -27,10 +28,15 @@
 #include "platform/sdl/sdl-events.h"
 #endif
 
-class QMenu;
+#ifdef BUILD_QT_MULTIMEDIA
+#include "VideoDumper.h"
+#endif
 
 struct mRotationSource;
 struct mRumble;
+
+class QCamera;
+class QMenu;
 
 namespace QGBA {
 
@@ -42,6 +48,13 @@ class InputController : public QObject {
 Q_OBJECT
 
 public:
+	enum class CameraDriver : int {
+		NONE = 0,
+#ifdef BUILD_QT_MULTIMEDIA
+		QT_MULTIMEDIA = 1,
+#endif
+	};
+
 	static const uint32_t KEYBOARD = 0x51545F4B;
 
 	InputController(int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
@@ -100,6 +113,7 @@ public:
 
 	mRumble* rumble();
 	mRotationSource* rotationSource();
+	mImageSource* imageSource() { return &m_image; }
 	GBALuminanceSource* luminance() { return &m_lux; }
 
 signals:
@@ -123,8 +137,15 @@ public slots:
 	void setLuminanceLevel(int level);
 	void setLuminanceValue(uint8_t value);
 
+	void loadCamImage(const QString& path);
+	void setCamImage(const QImage& image);
+
 protected:
 	bool eventFilter(QObject*, QEvent*) override;
+
+private slots:
+	void setupCam();
+	void teardownCam();
 
 private:
 	void postPendingEvent(int key);
@@ -146,6 +167,20 @@ private:
 	} m_lux;
 	uint8_t m_luxValue;
 	int m_luxLevel;
+
+	struct InputControllerImage : mImageSource {
+		InputController* p;
+		QImage image;
+		QImage resizedImage;
+		bool outOfDate;
+		QMutex mutex;
+		unsigned w, h;
+	} m_image;
+
+#ifdef BUILD_QT_MULTIMEDIA
+	std::unique_ptr<QCamera> m_camera;
+	VideoDumper m_videoDumper;
+#endif
 
 	mInputMap m_inputMap;
 	int m_activeKeys;
@@ -180,5 +215,3 @@ private:
 };
 
 }
-
-#endif

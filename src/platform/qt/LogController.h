@@ -3,8 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_LOG_CONTROLLER
-#define QGBA_LOG_CONTROLLER
+#pragma once
 
 #include "GBAApp.h"
 
@@ -63,8 +62,6 @@ private:
 	static LogController s_global;
 };
 
-#define LOG(C, L) (*LogController::global())(_mLOG_CAT_ ## C (), mLOG_ ## L)
+#define LOG(C, L) (*LogController::global())(mLOG_ ## L, _mLOG_CAT_ ## C ())
 
 }
-
-#endif

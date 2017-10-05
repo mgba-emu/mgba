@@ -3,8 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_OVERRIDE_VIEW
-#define QGBA_OVERRIDE_VIEW
+#pragma once
 
 #include <QDialog>
 
@@ -14,6 +13,7 @@
 #include <mgba/gb/interface.h>
 #endif
 
+#include "ColorPicker.h"
 #include "Override.h"
 
 #include "ui_OverrideView.h"
@@ -42,18 +42,16 @@ private slots:
 	void gameStarted();
 	void gameStopped();
 
-protected:
-	bool eventFilter(QObject* obj, QEvent* event) override;
-
 private:
 	Ui::OverrideView m_ui;
 
 	std::shared_ptr<CoreController> m_controller;
-	std::unique_ptr<Override> m_override;
 	ConfigController* m_config;
+	bool m_savePending = false;
 
 #ifdef M_CORE_GB
-	uint32_t m_gbColors[4]{};
+	uint32_t m_gbColors[12]{};
+	ColorPicker m_colorPickers[12];
 
 	static QList<enum GBModel> s_gbModelList;
 	static QList<enum GBMemoryBankControllerType> s_mbcList;
@@ -61,5 +59,3 @@ private:
 };
 
 }
-
-#endif

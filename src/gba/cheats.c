@@ -139,7 +139,8 @@ static bool GBACheatAddAutodetect(struct GBACheatSet* set, uint32_t op1, uint32_
 	char line[18] = "XXXXXXXX XXXXXXXX";
 	snprintf(line, sizeof(line), "%08X %08X", op1, op2);
 
-	int gsaP, parP;
+	int gsaP, rgsaP, parP, rparP;
+	int maxProbability = INT_MIN;
 	switch (set->gsaVersion) {
 	case 0:
 		// Try to detect GameShark version
@@ -147,27 +148,42 @@ static bool GBACheatAddAutodetect(struct GBACheatSet* set, uint32_t op1, uint32_
 		gsaP = GBACheatGameSharkProbability(o1, o2);
 		o1 = op1;
 		o2 = op2;
+		if (gsaP > maxProbability) {
+			maxProbability = gsaP;
+			GBACheatSetGameSharkVersion(set, GBA_GS_GSAV1);
+		}
+
 		GBACheatDecryptGameShark(&o1, &o2, GBACheatProActionReplaySeeds);
 		parP = GBACheatProActionReplayProbability(o1, o2);
-		o1 = op1;
-		o2 = op2;
-		if (gsaP > parP) {
-			GBACheatSetGameSharkVersion(set, 1);
-			GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
-			return GBACheatAddGameSharkRaw(set, o1, o2);
+		if (parP > maxProbability) {
+			maxProbability = parP;
+			GBACheatSetGameSharkVersion(set, GBA_GS_PARV3);
+		}
+
+		rgsaP = GBACheatGameSharkProbability(op1, op1);
+		if (rgsaP > maxProbability) {
+			maxProbability = rgsaP;
+			GBACheatSetGameSharkVersion(set, GBA_GS_GSAV1_RAW);
+		}
+
+		rparP = GBACheatProActionReplayProbability(op1, op1);
+		if (rparP > maxProbability) {
+			maxProbability = rparP;
+			GBACheatSetGameSharkVersion(set, GBA_GS_PARV3_RAW);
+		}
+
+		if (set->gsaVersion < 3) {
+			return GBACheatAddGameShark(set, op1, op2);
 		} else {
-			// If probabilities are equal, assume PARv3
-			GBACheatSetGameSharkVersion(set, 3);
-			GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
-			return GBACheatAddProActionReplayRaw(set, o1, o2);
+			return GBACheatAddProActionReplay(set, op1, op2);
 		}
 		break;
 	case 1:
-		GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
-		return GBACheatAddGameSharkRaw(set, o1, o2);
+	case 2:
+		return GBACheatAddGameShark(set, o1, o2);
 	case 3:
-		GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
-		return GBACheatAddProActionReplayRaw(set, o1, o2);
+	case 4:
+		return GBACheatAddProActionReplay(set, o1, o2);
 	}
 	return false;
 }
@@ -288,11 +304,19 @@ static void GBACheatParseDirectives(struct mCheatSet* set, const struct StringLi
 	for (d = 0; d < StringListSize(directives); ++d) {
 		const char* directive = *StringListGetConstPointer(directives, d);
 		if (strcmp(directive, "GSAv1") == 0) {
-			GBACheatSetGameSharkVersion(cheats, 1);
+			GBACheatSetGameSharkVersion(cheats, GBA_GS_GSAV1);
+			continue;
+		}
+		if (strcmp(directive, "GSAv1 raw") == 0) {
+			GBACheatSetGameSharkVersion(cheats, GBA_GS_GSAV1_RAW);
 			continue;
 		}
 		if (strcmp(directive, "PARv3") == 0) {
-			GBACheatSetGameSharkVersion(cheats, 3);
+			GBACheatSetGameSharkVersion(cheats, GBA_GS_PARV3);
+			continue;
+		}
+		if (strcmp(directive, "PARv3 raw") == 0) {
+			GBACheatSetGameSharkVersion(cheats, GBA_GS_PARV3_RAW);
 			continue;
 		}
 	}
@@ -311,14 +335,20 @@ static void GBACheatDumpDirectives(struct mCheatSet* set, struct StringList* dir
 	char** directive;
 	switch (cheats->gsaVersion) {
 	case 1:
-	case 2:
 		directive = StringListAppend(directives);
 		*directive = strdup("GSAv1");
 		break;
+	case 2:
+		directive = StringListAppend(directives);
+		*directive = strdup("GSAv1 raw");
+		break;
 	case 3:
-	case 4:
 		directive = StringListAppend(directives);
 		*directive = strdup("PARv3");
+		break;
+	case 4:
+		directive = StringListAppend(directives);
+		*directive = strdup("PARv3 raw");
 		break;
 	}
 }
@@ -367,7 +397,7 @@ int GBACheatAddressIsReal(uint32_t address) {
 		return -0x8;
 	case REGION_CART_SRAM:
 	case REGION_CART_SRAM_MIRROR:
-		if ((address & OFFSET_MASK) > SIZE_CART_SRAM) {
+		if ((address & OFFSET_MASK) > SIZE_CART_FLASH512) {
 			return -0x80;
 		}
 		return -0x8;

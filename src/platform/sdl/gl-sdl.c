@@ -9,6 +9,8 @@
 
 #include <mgba/core/core.h>
 #include <mgba/core/thread.h>
+#include <mgba-util/math.h>
+
 #include "platform/opengl/gl.h"
 
 static void _doViewport(int w, int h, struct VideoBackend* v) {
@@ -31,8 +33,9 @@ void mSDLGLCreate(struct mSDLRenderer* renderer) {
 bool mSDLGLInit(struct mSDLRenderer* renderer) {
 	mSDLGLCommonInit(renderer);
 
-	renderer->outputBuffer = malloc(renderer->width * renderer->height * BYTES_PER_PIXEL);
-	memset(renderer->outputBuffer, 0, renderer->width * renderer->height * BYTES_PER_PIXEL);
+	size_t size = renderer->width * renderer->height * BYTES_PER_PIXEL;
+	renderer->outputBuffer = malloc(size);
+	memset(renderer->outputBuffer, 0, size);
 	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
 
 	mGLContextCreate(&renderer->gl);
@@ -64,6 +67,10 @@ void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user) {
 				renderer->player.windowUpdated = 0;
 			}
 #endif
+		}
+		if (renderer->width != v->width || renderer->height != v->height) {
+			renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
+			v->setDimensions(v, renderer->width, renderer->height);
 		}
 
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {

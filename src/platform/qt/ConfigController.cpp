@@ -158,12 +158,16 @@ void ConfigController::updateOption(const char* key) {
 	m_optionSet[optionName]->setValue(mCoreConfigGetValue(&m_config, key));
 }
 
-QString ConfigController::getOption(const char* key) const {
-	return QString(mCoreConfigGetValue(&m_config, key));
+QString ConfigController::getOption(const char* key, const QVariant& defaultVal) const {
+	const char* val = mCoreConfigGetValue(&m_config, key);
+	if (val) {
+		return QString(val);
+	}
+	return defaultVal.toString();
 }
 
-QString ConfigController::getOption(const QString& key) const {
-	return getOption(key.toUtf8().constData());
+QString ConfigController::getOption(const QString& key, const QVariant& defaultVal) const {
+	return getOption(key.toUtf8().constData(), defaultVal);
 }
 
 QVariant ConfigController::getQtOption(const QString& key, const QString& group) const {

@@ -255,9 +255,13 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 		target2 |= renderer->bg[2].target2 << (renderer->bg[2].priority);
 		target2 |= renderer->bg[3].target2 << (renderer->bg[3].priority);
 		if ((1 << GBAObjAttributesCGetPriority(sprite->c)) <= target2) {
+			flags |= FLAG_REBLEND;
 			variant = 0;
+		} else if (!target2) {
+			flags &= ~FLAG_TARGET_1;
 		}
 	}
+
 	color_t* palette = &renderer->normalPalette[0x100];
 	color_t* objwinPalette = palette;
 	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt) && GBAWindowControlGetBlendEnable(renderer->objwin.packed) != GBAWindowControlIsBlendEnable(renderer->currentWindow.packed);

@@ -3,8 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_WINDOW
-#define QGBA_WINDOW
+#pragma once
 
 #include <QDateTime>
 #include <QList>
@@ -34,6 +33,7 @@ class GIFView;
 class LibraryController;
 class LogView;
 class OverrideView;
+class SensorView;
 class ShaderSelector;
 class VideoView;
 class WindowBackground;
@@ -74,6 +74,8 @@ public slots:
 	void loadConfig();
 	void reloadConfig();
 	void saveConfig();
+
+	void loadCamImage();
 
 	void replaceROM();
 
@@ -185,7 +187,9 @@ private:
 	QMenu* m_mruMenu = nullptr;
 	QMenu* m_videoLayers;
 	QMenu* m_audioChannels;
+#if defined(BUILD_GL) || defined(BUILD_GLES)
 	std::unique_ptr<ShaderSelector> m_shaderView;
+#endif
 	bool m_fullscreenOnStart = false;
 	QTimer m_focusCheck;
 	bool m_autoresume = false;
@@ -194,7 +198,8 @@ private:
 
 	bool m_hitUnimplementedBiosCall;
 
-	OverrideView* m_overrideView = nullptr;
+	std::unique_ptr<OverrideView> m_overrideView;
+	std::unique_ptr<SensorView> m_sensorView;
 
 #ifdef USE_FFMPEG
 	VideoView* m_videoView = nullptr;
@@ -239,5 +244,3 @@ private:
 };
 
 }
-
-#endif

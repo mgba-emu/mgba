@@ -220,6 +220,13 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 	bool didFail = !mCoreThreadStart(&thread);
 	if (!didFail) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+		renderer->core->desiredVideoDimensions(renderer->core, &renderer->width, &renderer->height);
+		unsigned width = renderer->width * renderer->ratio;
+		unsigned height = renderer->height * renderer->ratio;
+		if (width != (unsigned) renderer->viewportWidth && height != (unsigned) renderer->viewportHeight) {
+			SDL_SetWindowSize(renderer->window, width, height);
+			renderer->player.windowUpdated = 1;
+		}
 		mSDLSetScreensaverSuspendable(&renderer->events, renderer->core->opts.suspendScreensaver);
 		mSDLSuspendScreensaver(&renderer->events);
 #endif

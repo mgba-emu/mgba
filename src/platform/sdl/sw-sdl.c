@@ -93,12 +93,12 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 	SDL_Surface* surface = SDL_GetVideoSurface();
 #endif
 
-	while (context->state < THREAD_EXITING) {
+	while (mCoreThreadIsActive(context)) {
 		while (SDL_PollEvent(&event)) {
 			mSDLHandleEvent(context, &renderer->player, &event);
 		}
 
-		if (mCoreSyncWaitFrameStart(&context->sync)) {
+		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			SDL_UnlockTexture(renderer->sdlTex);
 			SDL_RenderCopy(renderer->sdlRenderer, renderer->sdlTex, 0, 0);
@@ -134,7 +134,7 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 			SDL_LockSurface(surface);
 #endif
 		}
-		mCoreSyncWaitFrameEnd(&context->sync);
+		mCoreSyncWaitFrameEnd(&context->impl->sync);
 	}
 }
 
