@@ -44,8 +44,8 @@ class GBA(Core):
         if self._wasReset:
             self._native.video.renderer.cache = ffi.NULL
 
-    def reset(self):
-        super(GBA, self).reset()
+    def _load(self):
+        super(GBA, self)._load()
         self.memory = GBAMemory(self._core, self._native.memory.romSize)
 
     def attachSIO(self, link, mode=lib.SIO_MULTI):

@@ -152,6 +152,9 @@ class Core(object):
             return GB(core)
         return Core(core)
 
+    def _load(self):
+        self._wasReset = True
+
     def loadFile(self, path):
         return bool(lib.mCoreLoadFile(self._core, path.encode('UTF-8')))
 
@@ -193,7 +196,7 @@ class Core(object):
 
     def reset(self):
         self._core.reset(self._core)
-        self._wasReset = True
+        self._load()
 
     @needsReset
     @protected
