@@ -153,3 +153,9 @@ class Memory(object):
         new_results = [MemorySearchResult(self, lib.mCoreMemorySearchResultsGetPointer(results, i)) for i in range(lib.mCoreMemorySearchResultsSize(results))]
         lib.mCoreMemorySearchResultsDeinit(results)
         return new_results
+
+    def __getitem__(self, address):
+        if isinstance(address, slice):
+            return bytearray(self.u8[address])
+        else:
+            return self.u8[address]
