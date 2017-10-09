@@ -258,6 +258,10 @@ class Core(object):
     def addFrameCallback(self, cb):
         self._callbacks.videoFrameEnded.append(cb)
 
+    @property
+    def crc32(self):
+        return self._native.romCrc32
+
 class ICoreOwner(object):
     def claim(self):
         raise NotImplementedError
