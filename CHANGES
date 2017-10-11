@@ -16,6 +16,7 @@ Bugfixes:
  - ARM: Fix MSR when T bit is set
  - GB Serialize: Fix game title check
  - GB: Revamp IRQ handling based on new information
+ - GBA Video: Don't mask out high bits of BLDY (fixes mgba.io/i/899)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
