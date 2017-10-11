@@ -640,6 +640,7 @@ void CoreController::attachPrinter() {
 		}
 		QMetaObject::invokeMethod(qPrinter->parent, "imagePrinted", Q_ARG(const QImage&, image));
 	};
+	Interrupter interrupter(this);
 	GBSIOSetDriver(&gb->sio, &m_printer.d.d);
 #endif
 }
@@ -649,6 +650,7 @@ void CoreController::detachPrinter() {
 	if (platform() != PLATFORM_GB) {
 		return;
 	}
+	Interrupter interrupter(this);
 	GB* gb = static_cast<GB*>(m_threadContext.core->board);
 	GBPrinterDonePrinting(&m_printer.d);
 	GBSIOSetDriver(&gb->sio, nullptr);
@@ -660,6 +662,7 @@ void CoreController::endPrint() {
 	if (platform() != PLATFORM_GB) {
 		return;
 	}
+	Interrupter interrupter(this);
 	GBPrinterDonePrinting(&m_printer.d);
 #endif
 }
