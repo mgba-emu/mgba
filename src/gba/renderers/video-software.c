@@ -295,7 +295,6 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		value &= 0x1F1F;
 		break;
 	case REG_BLDY:
-		value &= 0x1F;
 		if (value > 0x10) {
 			value = 0x10;
 		}
