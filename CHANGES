@@ -1,3 +1,7 @@
+0.6.2: (Future)
+Bugfixes:
+ - GBA Video: Force align 256-color tiles
+
 0.6.1: (2017-10-01)
 Bugfixes:
  - GB, GBA: Fix crashes when attempting to identify null VFiles
