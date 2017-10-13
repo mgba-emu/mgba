@@ -18,6 +18,7 @@ Bugfixes:
  - GB: Revamp IRQ handling based on new information
  - GBA Video: Don't mask out high bits of BLDY (fixes mgba.io/i/899)
  - GBA Video: Force align 256-color tiles
+ - GBA DMA: ROM reads are forced to increment
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
