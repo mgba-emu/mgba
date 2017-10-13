@@ -60,50 +60,50 @@ static void _source(struct CLIDebugger*, struct CLIDebugVector*);
 #endif
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
-	{ "b", _setBreakpoint, CLIDVParse, "Set a breakpoint" },
-	{ "break", _setBreakpoint, CLIDVParse, "Set a breakpoint" },
-	{ "c", _continue, 0, "Continue execution" },
-	{ "continue", _continue, 0, "Continue execution" },
-	{ "d", _clearBreakpoint, CLIDVParse, "Delete a breakpoint" },
-	{ "delete", _clearBreakpoint, CLIDVParse, "Delete a breakpoint" },
-	{ "dis", _disassemble, CLIDVParse, "Disassemble instructions" },
-	{ "disasm", _disassemble, CLIDVParse, "Disassemble instructions" },
-	{ "disassemble", _disassemble, CLIDVParse, "Disassemble instructions" },
-	{ "h", _printHelp, CLIDVStringParse, "Print help" },
-	{ "help", _printHelp, CLIDVStringParse, "Print help" },
-	{ "i", _printStatus, 0, "Print the current status" },
-	{ "info", _printStatus, 0, "Print the current status" },
-	{ "n", _next, 0, "Execute next instruction" },
-	{ "next", _next, 0, "Execute next instruction" },
-	{ "p", _print, CLIDVParse, "Print a value" },
-	{ "p/t", _printBin, CLIDVParse, "Print a value as binary" },
-	{ "p/x", _printHex, CLIDVParse, "Print a value as hexadecimal" },
-	{ "print", _print, CLIDVParse, "Print a value" },
-	{ "print/t", _printBin, CLIDVParse, "Print a value as binary" },
-	{ "print/x", _printHex, CLIDVParse, "Print a value as hexadecimal" },
-	{ "q", _quit, 0, "Quit the emulator" },
-	{ "quit", _quit, 0, "Quit the emulator" },
-	{ "reset", _reset, 0, "Reset the emulation" },
-	{ "r/1", _readByte, CLIDVParse, "Read a byte from a specified offset" },
-	{ "r/2", _readHalfword, CLIDVParse, "Read a halfword from a specified offset" },
-	{ "r/4", _readWord, CLIDVParse, "Read a word from a specified offset" },
-	{ "status", _printStatus, 0, "Print the current status" },
-	{ "trace", _trace, CLIDVParse, "Trace a fixed number of instructions" },
-	{ "w", _setWatchpoint, CLIDVParse, "Set a watchpoint" },
-	{ "w/1", _writeByte, CLIDVParse, "Write a byte at a specified offset" },
-	{ "w/2", _writeHalfword, CLIDVParse, "Write a halfword at a specified offset" },
-	{ "w/4", _writeWord, CLIDVParse, "Write a word at a specified offset" },
-	{ "watch", _setWatchpoint, CLIDVParse, "Set a watchpoint" },
-	{ "watch/r", _setReadWatchpoint, CLIDVParse, "Set a read watchpoint" },
-	{ "watch/w", _setWriteWatchpoint, CLIDVParse, "Set a write watchpoint" },
-	{ "x/1", _dumpByte, CLIDVParse, "Examine bytes at a specified offset" },
-	{ "x/2", _dumpHalfword, CLIDVParse, "Examine halfwords at a specified offset" },
-	{ "x/4", _dumpWord, CLIDVParse, "Examine words at a specified offset" },
+	{ "b", _setBreakpoint, "I", "Set a breakpoint" },
+	{ "break", _setBreakpoint, "I", "Set a breakpoint" },
+	{ "c", _continue, "", "Continue execution" },
+	{ "continue", _continue, "", "Continue execution" },
+	{ "d", _clearBreakpoint, "I", "Delete a breakpoint" },
+	{ "delete", _clearBreakpoint, "I", "Delete a breakpoint" },
+	{ "dis", _disassemble, "Ii", "Disassemble instructions" },
+	{ "disasm", _disassemble, "Ii", "Disassemble instructions" },
+	{ "disassemble", _disassemble, "Ii", "Disassemble instructions" },
+	{ "h", _printHelp, "S", "Print help" },
+	{ "help", _printHelp, "S", "Print help" },
+	{ "i", _printStatus, "", "Print the current status" },
+	{ "info", _printStatus, "", "Print the current status" },
+	{ "n", _next, "", "Execute next instruction" },
+	{ "next", _next, "", "Execute next instruction" },
+	{ "p", _print, "I", "Print a value" },
+	{ "p/t", _printBin, "I", "Print a value as binary" },
+	{ "p/x", _printHex, "I", "Print a value as hexadecimal" },
+	{ "print", _print, "I", "Print a value" },
+	{ "print/t", _printBin, "I", "Print a value as binary" },
+	{ "print/x", _printHex, "I", "Print a value as hexadecimal" },
+	{ "q", _quit, "", "Quit the emulator" },
+	{ "quit", _quit, "", "Quit the emulator" },
+	{ "reset", _reset, "", "Reset the emulation" },
+	{ "r/1", _readByte, "I", "Read a byte from a specified offset" },
+	{ "r/2", _readHalfword, "I", "Read a halfword from a specified offset" },
+	{ "r/4", _readWord, "I", "Read a word from a specified offset" },
+	{ "status", _printStatus, "", "Print the current status" },
+	{ "trace", _trace, "I", "Trace a fixed number of instructions" },
+	{ "w", _setWatchpoint, "I", "Set a watchpoint" },
+	{ "w/1", _writeByte, "II", "Write a byte at a specified offset" },
+	{ "w/2", _writeHalfword, "II", "Write a halfword at a specified offset" },
+	{ "w/4", _writeWord, "II", "Write a word at a specified offset" },
+	{ "watch", _setWatchpoint, "I", "Set a watchpoint" },
+	{ "watch/r", _setReadWatchpoint, "I", "Set a read watchpoint" },
+	{ "watch/w", _setWriteWatchpoint, "I", "Set a write watchpoint" },
+	{ "x/1", _dumpByte, "Ii", "Examine bytes at a specified offset" },
+	{ "x/2", _dumpHalfword, "Ii", "Examine halfwords at a specified offset" },
+	{ "x/4", _dumpWord, "Ii", "Examine words at a specified offset" },
 #ifdef ENABLE_SCRIPTING
-	{ "source", _source, CLIDVStringParse, "Load a script" },
+	{ "source", _source, "S", "Load a script" },
 #endif
 #if !defined(NDEBUG) && !defined(_WIN32)
-	{ "!", _breakInto, 0, "Break into attached debugger (for developers)" },
+	{ "!", _breakInto, "", "Break into attached debugger (for developers)" },
 #endif
 	{ 0, 0, 0, 0 }
 };
@@ -626,52 +626,28 @@ struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* stri
 	parseFree(tree.lhs);
 	parseFree(tree.rhs);
 
-	length -= adjusted;
-	string += adjusted;
-
 	struct CLIDebugVector* dv = malloc(sizeof(struct CLIDebugVector));
 	if (dvTemp.type == CLIDV_ERROR_TYPE) {
 		dv->type = CLIDV_ERROR_TYPE;
 		dv->next = 0;
 	} else {
 		*dv = dvTemp;
-		if (string[0] == ' ') {
-			dv->next = CLIDVParse(debugger, string + 1, length - 1);
-			if (dv->next && dv->next->type == CLIDV_ERROR_TYPE) {
-				dv->type = CLIDV_ERROR_TYPE;
-			}
-		}
 	}
 	return dv;
 }
 
 struct CLIDebugVector* CLIDVStringParse(struct CLIDebugger* debugger, const char* string, size_t length) {
+	UNUSED(debugger);
 	if (!string || length < 1) {
 		return 0;
 	}
 
 	struct CLIDebugVector dvTemp = { .type = CLIDV_CHAR_TYPE };
 
-	size_t adjusted;
-	const char* next = strchr(string, ' ');
-	if (next) {
-		adjusted = next - string;
-	} else {
-		adjusted = length;
-	}
-	dvTemp.charValue = strndup(string, adjusted);
-
-	length -= adjusted;
-	string += adjusted;
+	dvTemp.charValue = strndup(string, length);
 
 	struct CLIDebugVector* dv = malloc(sizeof(struct CLIDebugVector));
 	*dv = dvTemp;
-	if (string[0] == ' ') {
-		dv->next = CLIDVStringParse(debugger, string + 1, length - 1);
-		if (dv->next && dv->next->type == CLIDV_ERROR_TYPE) {
-			dv->type = CLIDV_ERROR_TYPE;
-		}
-	}
 	return dv;
 }
 
@@ -687,8 +663,28 @@ static void _DVFree(struct CLIDebugVector* dv) {
 	}
 }
 
+static struct CLIDebugVector* _parseArg(struct CLIDebugger* debugger, const char* args, size_t argsLen, char type) {
+	struct CLIDebugVector* dv = NULL;
+	switch (type) {
+	case 'I':
+	case 'i':
+		return CLIDVParse(debugger, args, argsLen);
+	case 'S':
+	case 's':
+		return CLIDVStringParse(debugger, args, argsLen);
+	case '*':
+		dv = _parseArg(debugger, args, argsLen, 'I');
+		if (!dv) {
+			dv = _parseArg(debugger, args, argsLen, 'S');
+		}
+		break;
+	}
+	return dv;
+}
+
 static int _tryCommands(struct CLIDebugger* debugger, struct CLIDebuggerCommandSummary* commands, const char* command, size_t commandLen, const char* args, size_t argsLen) {
-	struct CLIDebugVector* dv = 0;
+	struct CLIDebugVector* dv = NULL;
+	struct CLIDebugVector* dvLast = NULL;
 	int i;
 	const char* name;
 	for (i = 0; (name = commands[i].name); ++i) {
@@ -696,22 +692,78 @@ static int _tryCommands(struct CLIDebugger* debugger, struct CLIDebuggerCommandS
 			continue;
 		}
 		if (strncasecmp(name, command, commandLen) == 0) {
-			if (commands[i].parser) {
-				if (args) {
-					dv = commands[i].parser(debugger, args, argsLen);
-					if (dv && dv->type == CLIDV_ERROR_TYPE) {
+			if (commands[i].format && args) {
+				char lastArg = '\0';
+				int arg;
+				for (arg = 0; commands[i].format[arg] && argsLen; ++arg) {
+					while (isspace(args[0]) && argsLen) {
+						++args;
+						--argsLen;
+					}
+					if (!args[0] || !argsLen) {
+						debugger->backend->printf(debugger->backend, "Wrong number of arguments\n");
+						_DVFree(dv);
+						return 0;
+					}
+
+					size_t adjusted;
+					const char* next = strchr(args, ' ');
+					if (next) {
+						adjusted = next - args;
+					} else {
+						adjusted = argsLen;
+					}
+
+					struct CLIDebugVector* dvNext = NULL;
+					bool nextArgMandatory = false;
+
+					if (commands[i].format[arg] == '+') {
+						dvNext = _parseArg(debugger, args, adjusted, lastArg);
+						--args;
+					} else {
+						nextArgMandatory = isupper(commands[i].format[arg]) || (commands[i].format[arg] == '*');
+						dvNext = _parseArg(debugger, args, adjusted, commands[i].format[arg]);
+					}
+
+					args += adjusted;
+					argsLen -= adjusted;
+
+					if (!dvNext) {
+						if (!nextArgMandatory) {
+							args = NULL;
+						}
+						break;
+					}
+					if (dvNext->type == CLIDV_ERROR_TYPE) {
 						debugger->backend->printf(debugger->backend, "Parse error\n");
 						_DVFree(dv);
-						return false;
+						return 0;
+					}
+
+					if (dvLast) {
+						dvLast->next = dvNext;
+						dvLast = dvNext;
+					} else {
+						dv = dvNext;
+						dvLast = dv;
 					}
 				}
-			} else if (args) {
+			}
+
+			if (args) {
+				while (isspace(args[0]) && argsLen) {
+					++args;
+					--argsLen;
+				}
+			}
+			if (args && argsLen) {
 				debugger->backend->printf(debugger->backend, "Wrong number of arguments\n");
-				return false;
+				_DVFree(dv);
+				return 0;
 			}
 			commands[i].command(debugger, dv);
 			_DVFree(dv);
-			return true;
+			return 1;
 		}
 	}
 	return -1;

@@ -21,9 +21,9 @@ static void _load(struct CLIDebugger*, struct CLIDebugVector*);
 static void _save(struct CLIDebugger*, struct CLIDebugVector*);
 
 struct CLIDebuggerCommandSummary _GBCLIDebuggerCommands[] = {
-	{ "frame", _frame, 0, "Frame advance" },
-	{ "load", _load, CLIDVParse, "Load a savestate" },
-	{ "save", _save, CLIDVParse, "Save a savestate" },
+	{ "frame", _frame, "", "Frame advance" },
+	{ "load", _load, "*", "Load a savestate" },
+	{ "save", _save, "*", "Save a savestate" },
 	{ 0, 0, 0, 0 }
 };
 

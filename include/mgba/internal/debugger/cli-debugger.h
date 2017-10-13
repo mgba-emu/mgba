@@ -34,12 +34,11 @@ struct CLIDebugVector {
 };
 
 typedef void (*CLIDebuggerCommand)(struct CLIDebugger*, struct CLIDebugVector*);
-typedef struct CLIDebugVector* (*CLIDVParser)(struct CLIDebugger* debugger, const char* string, size_t length);
 
 struct CLIDebuggerCommandSummary {
 	const char* name;
 	CLIDebuggerCommand command;
-	CLIDVParser parser;
+	const char* format;
 	const char* summary;
 };
 
@@ -81,9 +80,6 @@ struct CLIDebugger {
 	struct CLIDebuggerSystem* system;
 	struct CLIDebuggerBackend* backend;
 };
-
-struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* string, size_t length);
-struct CLIDebugVector* CLIDVStringParse(struct CLIDebugger* debugger, const char* string, size_t length);
 
 void CLIDebuggerCreate(struct CLIDebugger*);
 void CLIDebuggerAttachSystem(struct CLIDebugger*, struct CLIDebuggerSystem*);

@@ -23,17 +23,17 @@ static void _disassembleMode(struct CLIDebugger*, struct CLIDebugVector*, enum E
 static uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode);
 
 static struct CLIDebuggerCommandSummary _armCommands[] = {
-	{ "b/a", _setBreakpointARM, CLIDVParse, "Set a software breakpoint as ARM" },
-	{ "b/t", _setBreakpointThumb, CLIDVParse, "Set a software breakpoint as Thumb" },
-	{ "break/a", _setBreakpointARM, CLIDVParse, "Set a software breakpoint as ARM" },
-	{ "break/t", _setBreakpointThumb, CLIDVParse, "Set a software breakpoint as Thumb" },
-	{ "dis/a", _disassembleArm, CLIDVParse, "Disassemble instructions as ARM" },
-	{ "dis/t", _disassembleThumb, CLIDVParse, "Disassemble instructions as Thumb" },
-	{ "disasm/a", _disassembleArm, CLIDVParse, "Disassemble instructions as ARM" },
-	{ "disasm/t", _disassembleThumb, CLIDVParse, "Disassemble instructions as Thumb" },
-	{ "disassemble/a", _disassembleArm, CLIDVParse, "Disassemble instructions as ARM" },
-	{ "disassemble/t", _disassembleThumb, CLIDVParse, "Disassemble instructions as Thumb" },
-	{ "w/r", _writeRegister, CLIDVParse, "Write a register" },
+	{ "b/a", _setBreakpointARM, "I", "Set a software breakpoint as ARM" },
+	{ "b/t", _setBreakpointThumb, "I", "Set a software breakpoint as Thumb" },
+	{ "break/a", _setBreakpointARM, "I", "Set a software breakpoint as ARM" },
+	{ "break/t", _setBreakpointThumb, "I", "Set a software breakpoint as Thumb" },
+	{ "dis/a", _disassembleArm, "Ii", "Disassemble instructions as ARM" },
+	{ "dis/t", _disassembleThumb, "Ii", "Disassemble instructions as Thumb" },
+	{ "disasm/a", _disassembleArm, "Ii", "Disassemble instructions as ARM" },
+	{ "disasm/t", _disassembleThumb, "Ii", "Disassemble instructions as Thumb" },
+	{ "disassemble/a", _disassembleArm, "Ii", "Disassemble instructions as ARM" },
+	{ "disassemble/t", _disassembleThumb, "Ii", "Disassemble instructions as Thumb" },
+	{ "w/r", _writeRegister, "SI", "Write a register" },
 	{ 0, 0, 0, 0 }
 };
 
@@ -148,7 +148,7 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 static void _writeRegister(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	struct CLIDebuggerBackend* be = debugger->backend;
 	struct ARMCore* cpu = debugger->d.core->cpu;
-	if (!dv || dv->type != CLIDV_INT_TYPE) {
+	if (!dv || dv->type != CLIDV_CHAR_TYPE) {
 		be->printf(be, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
@@ -156,11 +156,17 @@ static void _writeRegister(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		be->printf(be, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
-	uint32_t regid = dv->intValue;
-	uint32_t value = dv->next->intValue;
-	if (regid >= ARM_PC) {
+	char* end;
+	uint32_t regid = strtoul(&dv->charValue[1], &end, 10);
+	if (dv->charValue[0] != 'r' || (*end && !isspace(*end)) || regid > ARM_PC) {
+		be->printf(be, "%s\n", "Unknown register name");
 		return;
 	}
+	if (regid == ARM_PC) {
+		be->printf(be, "%s\n", "Cannot write to program counter");
+		return;
+	}
+	uint32_t value = dv->next->intValue;
 	cpu->gprs[regid] = value;
 }
 
