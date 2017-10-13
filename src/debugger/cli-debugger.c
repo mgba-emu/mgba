@@ -26,6 +26,7 @@
 
 const char* ERROR_MISSING_ARGS = "Arguments missing"; // TODO: share
 const char* ERROR_OVERFLOW = "Arguments overflow";
+const char* ERROR_INVALID_ARGS = "Invalid arguments";
 
 #if !defined(NDEBUG) && !defined(_WIN32)
 static void _breakInto(struct CLIDebugger*, struct CLIDebugVector*);
@@ -51,6 +52,7 @@ static void _setWriteWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _trace(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeByte(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeHalfword(struct CLIDebugger*, struct CLIDebugVector*);
+static void _writeRegister(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeWord(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpByte(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpHalfword(struct CLIDebugger*, struct CLIDebugVector*);
@@ -92,6 +94,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "w", _setWatchpoint, "I", "Set a watchpoint" },
 	{ "w/1", _writeByte, "II", "Write a byte at a specified offset" },
 	{ "w/2", _writeHalfword, "II", "Write a halfword at a specified offset" },
+	{ "w/r", _writeRegister, "SI", "Write a register" },
 	{ "w/4", _writeWord, "II", "Write a word at a specified offset" },
 	{ "watch", _setWatchpoint, "I", "Set a watchpoint" },
 	{ "watch/r", _setReadWatchpoint, "I", "Set a read watchpoint" },
@@ -273,12 +276,12 @@ static void _readWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 }
 
 static void _writeByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	if (!dv || dv->type != CLIDV_INT_TYPE) {
+	if (!dv || !dv->next) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
-	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
-		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+	if (dv->type != CLIDV_INT_TYPE || dv->next->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
@@ -295,12 +298,12 @@ static void _writeByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 }
 
 static void _writeHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	if (!dv || dv->type != CLIDV_INT_TYPE) {
+	if (!dv || !dv->next) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
-	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
-		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+	if (dv->type != CLIDV_INT_TYPE || dv->next->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
@@ -316,13 +319,27 @@ static void _writeHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* 
 	}
 }
 
-static void _writeWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	if (!dv || dv->type != CLIDV_INT_TYPE) {
+static void _writeRegister(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || !dv->next) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
-	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
+	if (dv->type != CLIDV_CHAR_TYPE || dv->next->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+		return;
+	}
+	if (!debugger->d.platform->setRegister(debugger->d.platform, dv->charValue, dv->next->intValue)) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+	}
+}
+
+static void _writeWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || !dv->next) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (dv->type != CLIDV_INT_TYPE || dv->next->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
@@ -559,12 +576,10 @@ static void _lookupIdentifier(struct mDebugger* debugger, const char* name, stru
 		if (debugger->core->symbolTable && mDebuggerSymbolLookup(debugger->core->symbolTable, name, &dv->intValue, &dv->segmentValue)) {
 			return;
 		}
-		value = cliDebugger->system->lookupPlatformIdentifier(cliDebugger->system, name, dv);
-		if (dv->type != CLIDV_ERROR_TYPE) {
-			dv->intValue = value;
+		dv->type = CLIDV_INT_TYPE;
+		if (debugger->platform->getRegister(debugger->platform, name, &dv->intValue)) {
 			return;
 		}
-		dv->type = CLIDV_INT_TYPE;
 		value = cliDebugger->system->lookupIdentifier(cliDebugger->system, name, dv);
 		if (dv->type != CLIDV_ERROR_TYPE) {
 			dv->intValue = value;

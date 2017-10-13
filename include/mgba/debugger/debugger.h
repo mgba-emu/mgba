@@ -84,6 +84,9 @@ struct mDebuggerPlatform {
 	void (*clearWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
 	void (*checkBreakpoints)(struct mDebuggerPlatform*);
 	void (*trace)(struct mDebuggerPlatform*, char* out, size_t* length);
+
+	bool (*getRegister)(struct mDebuggerPlatform*, const char* name, int32_t* value);
+	bool (*setRegister)(struct mDebuggerPlatform*, const char* name, int32_t value);
 };
 
 struct mDebuggerSymbols;

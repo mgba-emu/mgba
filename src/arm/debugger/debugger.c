@@ -56,6 +56,8 @@ static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform*, uint32_t addre
 static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform*);
 static void ARMDebuggerTrace(struct mDebuggerPlatform*, char* out, size_t* length);
+static bool ARMDebuggerGetRegister(struct mDebuggerPlatform*, const char* name, int32_t* value);
+static bool ARMDebuggerSetRegister(struct mDebuggerPlatform*, const char* name, int32_t value);
 
 struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	struct mDebuggerPlatform* platform = (struct mDebuggerPlatform*) malloc(sizeof(struct ARMDebugger));
@@ -69,6 +71,8 @@ struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	platform->checkBreakpoints = ARMDebuggerCheckBreakpoints;
 	platform->hasBreakpoints = ARMDebuggerHasBreakpoints;
 	platform->trace = ARMDebuggerTrace;
+	platform->getRegister = ARMDebuggerGetRegister;
+	platform->setRegister = ARMDebuggerSetRegister;
 	return platform;
 }
 
@@ -245,4 +249,82 @@ static void ARMDebuggerTrace(struct mDebuggerPlatform* d, char* out, size_t* len
 		               cpu->gprs[8],  cpu->gprs[9],  cpu->gprs[10], cpu->gprs[11],
 		               cpu->gprs[12], cpu->gprs[13], cpu->gprs[14], cpu->gprs[15],
 		               cpu->cpsr.packed, disassembly);
+}
+
+bool ARMDebuggerGetRegister(struct mDebuggerPlatform* d, const char* name, int32_t* value) {
+	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
+	struct ARMCore* cpu = debugger->cpu;
+
+	if (strcmp(name, "sp") == 0) {
+		*value = cpu->gprs[ARM_SP];
+		return true;
+	}
+	if (strcmp(name, "lr") == 0) {
+		*value = cpu->gprs[ARM_LR];
+		return true;
+	}
+	if (strcmp(name, "pc") == 0) {
+		*value = cpu->gprs[ARM_PC];
+		return true;
+	}
+	if (strcmp(name, "cpsr") == 0) {
+		*value = cpu->cpsr.packed;
+		return true;
+	}
+	// TODO: test if mode has SPSR
+	if (strcmp(name, "spsr") == 0) {
+		*value = cpu->spsr.packed;
+		return true;
+	}
+	if (name[0] == 'r') {
+		char* end;
+		uint32_t reg = strtoul(&name[1], &end, 10);
+		if (reg <= ARM_PC) {
+			*value = cpu->gprs[reg];
+			return true;
+		}
+	}
+	return false;
+}
+
+bool ARMDebuggerSetRegister(struct mDebuggerPlatform* d, const char* name, int32_t value) {
+	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
+	struct ARMCore* cpu = debugger->cpu;
+
+	if (strcmp(name, "sp") == 0) {
+		cpu->gprs[ARM_SP] = value;
+		return true;
+	}
+	if (strcmp(name, "lr") == 0) {
+		cpu->gprs[ARM_LR] = value;
+		return true;
+	}
+	if (strcmp(name, "pc") == 0) {
+		cpu->gprs[ARM_PC] = value;
+		int32_t currentCycles = 0;
+		if (cpu->executionMode == MODE_ARM) {
+			ARM_WRITE_PC;
+		} else {
+			THUMB_WRITE_PC;
+		}
+		return true;
+	}
+	if (name[0] == 'r') {
+		char* end;
+		uint32_t reg = strtoul(&name[1], &end, 10);
+		if (reg > ARM_PC) {
+			return false;
+		}
+		cpu->gprs[reg] = value;
+		if (reg == ARM_PC) {
+			int32_t currentCycles = 0;
+			if (cpu->executionMode == MODE_ARM) {
+				ARM_WRITE_PC;
+			} else {
+				THUMB_WRITE_PC;
+			}
+		}
+		return true;
+	}
+	return false;
 }

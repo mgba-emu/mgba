@@ -14,6 +14,7 @@ CXX_GUARD_START
 
 extern const char* ERROR_MISSING_ARGS;
 extern const char* ERROR_OVERFLOW;
+extern const char* ERROR_INVALID_ARGS;
 
 struct CLIDebugger;
 
@@ -51,7 +52,6 @@ struct CLIDebuggerSystem {
 
 	void (*disassemble)(struct CLIDebuggerSystem*, struct CLIDebugVector* dv);
 	uint32_t (*lookupIdentifier)(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
-	uint32_t (*lookupPlatformIdentifier)(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
 	void (*printStatus)(struct CLIDebuggerSystem*);
 
 	struct CLIDebuggerCommandSummary* commands;

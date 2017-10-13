@@ -50,6 +50,8 @@ static void LR35902DebuggerClearWatchpoint(struct mDebuggerPlatform*, uint32_t a
 static void LR35902DebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool LR35902DebuggerHasBreakpoints(struct mDebuggerPlatform*);
 static void LR35902DebuggerTrace(struct mDebuggerPlatform*, char* out, size_t* length);
+static bool LR35902DebuggerGetRegister(struct mDebuggerPlatform*, const char* name, int32_t* value);
+static bool LR35902DebuggerSetRegister(struct mDebuggerPlatform*, const char* name, int32_t value);
 
 struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void) {
 	struct mDebuggerPlatform* platform = (struct mDebuggerPlatform*) malloc(sizeof(struct LR35902Debugger));
@@ -63,6 +65,8 @@ struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void) {
 	platform->checkBreakpoints = LR35902DebuggerCheckBreakpoints;
 	platform->hasBreakpoints = LR35902DebuggerHasBreakpoints;
 	platform->trace = LR35902DebuggerTrace;
+	platform->getRegister = LR35902DebuggerGetRegister;
+	platform->setRegister = LR35902DebuggerSetRegister;
 	return platform;
 }
 
@@ -167,4 +171,132 @@ static void LR35902DebuggerTrace(struct mDebuggerPlatform* d, char* out, size_t*
 		               cpu->a, cpu->f.packed, cpu->b, cpu->c,
 		               cpu->d, cpu->e, cpu->h, cpu->l,
 		               cpu->sp, cpu->pc, disassembly);
+}
+
+bool LR35902DebuggerGetRegister(struct mDebuggerPlatform* d, const char* name, int32_t* value) {
+	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
+	struct LR35902Core* cpu = debugger->cpu;
+
+	if (strcmp(name, "a") == 0) {
+		*value = cpu->a;
+		return true;
+	}
+	if (strcmp(name, "b") == 0) {
+		*value = cpu->b;
+		return true;
+	}
+	if (strcmp(name, "c") == 0) {
+		*value = cpu->c;
+		return true;
+	}
+	if (strcmp(name, "d") == 0) {
+		*value = cpu->d;
+		return true;
+	}
+	if (strcmp(name, "e") == 0) {
+		*value = cpu->e;
+		return true;
+	}
+	if (strcmp(name, "h") == 0) {
+		*value = cpu->h;
+		return true;
+	}
+	if (strcmp(name, "l") == 0) {
+		*value = cpu->l;
+		return true;
+	}
+	if (strcmp(name, "bc") == 0) {
+		*value = cpu->bc;
+		return true;
+	}
+	if (strcmp(name, "de") == 0) {
+		*value = cpu->de;
+		return true;
+	}
+	if (strcmp(name, "hl") == 0) {
+		*value = cpu->hl;
+		return true;
+	}
+	if (strcmp(name, "af") == 0) {
+		*value = cpu->af;
+		return true;
+	}
+	if (strcmp(name, "pc") == 0) {
+		*value = cpu->pc;
+		return true;
+	}
+	if (strcmp(name, "sp") == 0) {
+		*value = cpu->sp;
+		return true;
+	}
+	if (strcmp(name, "f") == 0) {
+		*value = cpu->f.packed;
+		return true;
+	}
+	return false;
+}
+
+bool LR35902DebuggerSetRegister(struct mDebuggerPlatform* d, const char* name, int32_t value) {
+	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
+	struct LR35902Core* cpu = debugger->cpu;
+
+	if (strcmp(name, "a") == 0) {
+		cpu->a = value;
+		return true;
+	}
+	if (strcmp(name, "b") == 0) {
+		cpu->b = value;
+		return true;
+	}
+	if (strcmp(name, "c") == 0) {
+		cpu->c = value;
+		return true;
+	}
+	if (strcmp(name, "d") == 0) {
+		cpu->d = value;
+		return true;
+	}
+	if (strcmp(name, "e") == 0) {
+		cpu->e = value;
+		return true;
+	}
+	if (strcmp(name, "h") == 0) {
+		cpu->h = value;
+		return true;
+	}
+	if (strcmp(name, "l") == 0) {
+		cpu->l = value;
+		return true;
+	}
+	if (strcmp(name, "bc") == 0) {
+		cpu->bc = value;
+		return true;
+	}
+	if (strcmp(name, "de") == 0) {
+		cpu->de = value;
+		return true;
+	}
+	if (strcmp(name, "hl") == 0) {
+		cpu->hl = value;
+		return true;
+	}
+	if (strcmp(name, "af") == 0) {
+		cpu->af = value;
+		cpu->f.packed &= 0xF0;
+		return true;
+	}
+	if (strcmp(name, "pc") == 0) {
+		cpu->pc = value;
+		cpu->memory.setActiveRegion(cpu, cpu->pc);
+		return true;
+	}
+	if (strcmp(name, "sp") == 0) {
+		cpu->sp = value;
+		return true;
+	}
+	if (strcmp(name, "f") == 0) {
+		cpu->f.packed = value & 0xF0;
+		return true;
+	}
+	return false;
 }
