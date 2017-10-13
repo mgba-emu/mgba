@@ -81,6 +81,9 @@ uint16_t GBADMAWriteCNT_HI(struct GBA* gba, int dma, uint16_t control) {
 
 	if (!wasEnabled && GBADMARegisterIsEnable(currentDma->reg)) {
 		currentDma->nextSource = currentDma->source;
+		if (currentDma->nextSource >= BASE_CART0 && currentDma->nextSource < BASE_CART_SRAM && GBADMARegisterGetSrcControl(currentDma->reg) < 3) {
+			currentDma->reg = GBADMARegisterClearSrcControl(currentDma->reg);
+		}
 		currentDma->nextDest = currentDma->dest;
 		GBADMASchedule(gba, dma, currentDma);
 	}
