@@ -29,33 +29,41 @@ static size_t _search32(const void* mem, size_t size, const struct mCoreMemoryBl
 		if ((mask & 1) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i;
-			res->type = mCORE_MEMORY_SEARCH_32;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 4;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 2) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 4;
-			res->type = mCORE_MEMORY_SEARCH_32;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 4;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 4) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 8;
-			res->type = mCORE_MEMORY_SEARCH_32;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 4;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 8) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 12;
-			res->type = mCORE_MEMORY_SEARCH_32;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 4;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 	}
@@ -86,65 +94,81 @@ static size_t _search16(const void* mem, size_t size, const struct mCoreMemoryBl
 		if ((mask & 1) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i;
-			res->type = mCORE_MEMORY_SEARCH_16;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 2;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 2) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 2;
-			res->type = mCORE_MEMORY_SEARCH_16;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 2;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 4) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 4;
-			res->type = mCORE_MEMORY_SEARCH_16;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 2;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 8) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 6;
-			res->type = mCORE_MEMORY_SEARCH_16;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 2;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 16) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 8;
-			res->type = mCORE_MEMORY_SEARCH_16;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 2;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 32) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 10;
-			res->type = mCORE_MEMORY_SEARCH_16;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 2;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 64) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 12;
-			res->type = mCORE_MEMORY_SEARCH_16;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 2;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 128) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 14;
-			res->type = mCORE_MEMORY_SEARCH_16;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 2;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 	}
@@ -174,65 +198,81 @@ static size_t _search8(const void* mem, size_t size, const struct mCoreMemoryBlo
 		if ((mask & 1) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i;
-			res->type = mCORE_MEMORY_SEARCH_8;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 1;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 2) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 1;
-			res->type = mCORE_MEMORY_SEARCH_8;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 1;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 4) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 2;
-			res->type = mCORE_MEMORY_SEARCH_8;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 1;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 8) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 3;
-			res->type = mCORE_MEMORY_SEARCH_8;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 1;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 16) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 4;
-			res->type = mCORE_MEMORY_SEARCH_8;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 1;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 32) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 5;
-			res->type = mCORE_MEMORY_SEARCH_8;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 1;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 64) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 6;
-			res->type = mCORE_MEMORY_SEARCH_8;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 1;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 		if ((mask & 128) && (!limit || found < limit)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i + 7;
-			res->type = mCORE_MEMORY_SEARCH_8;
+			res->type = mCORE_MEMORY_SEARCH_INT;
+			res->width = 1;
 			res->segment = -1; // TODO
 			res->guessDivisor = 1;
+			res->guessMultiplier = 1;
 			++found;
 		}
 	}
@@ -240,18 +280,32 @@ static size_t _search8(const void* mem, size_t size, const struct mCoreMemoryBlo
 	return found;
 }
 
-static size_t _searchStr(const void* mem, size_t size, const struct mCoreMemoryBlock* block, const char* valueStr, struct mCoreMemorySearchResults* out, size_t limit) {
+static size_t _searchInt(const void* mem, size_t size, const struct mCoreMemoryBlock* block, const struct mCoreMemorySearchParams* params, struct mCoreMemorySearchResults* out, size_t limit) {
+	if (params->align == params->width || params->align == -1) {
+		switch (params->width) {
+		case 4:
+			return _search32(mem, size, block, params->valueInt, out, limit);
+		case 2:
+			return _search16(mem, size, block, params->valueInt, out, limit);
+		case 1:
+			return _search8(mem, size, block, params->valueInt, out, limit);
+		}
+	}
+	return 0;
+}
+
+static size_t _searchStr(const void* mem, size_t size, const struct mCoreMemoryBlock* block, const char* valueStr, int len, struct mCoreMemorySearchResults* out, size_t limit) {
 	const char* memStr = mem;
 	size_t found = 0;
-	size_t len = strlen(valueStr);
 	uint32_t start = block->start;
 	uint32_t end = size; // TODO: Segments
 	size_t i;
 	for (i = 0; (!limit || found < limit) && i < end - len; ++i) {
-		if (!strncmp(valueStr, &memStr[i], len)) {
+		if (!memcmp(valueStr, &memStr[i], len)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i;
 			res->type = mCORE_MEMORY_SEARCH_STRING;
+			res->width = len;
 			res->segment = -1; // TODO
 			++found;
 		}
@@ -342,14 +396,10 @@ static size_t _searchGuess(const void* mem, size_t size, const struct mCoreMemor
 
 static size_t _search(const void* mem, size_t size, const struct mCoreMemoryBlock* block, const struct mCoreMemorySearchParams* params, struct mCoreMemorySearchResults* out, size_t limit) {
 	switch (params->type) {
-	case mCORE_MEMORY_SEARCH_32:
-		return _search32(mem, size, block, params->value32, out, limit);
-	case mCORE_MEMORY_SEARCH_16:
-		return _search16(mem, size, block, params->value16, out, limit);
-	case mCORE_MEMORY_SEARCH_8:
-		return _search8(mem, size, block, params->value8, out, limit);
+	case mCORE_MEMORY_SEARCH_INT:
+		return _searchInt(mem, size, block, params, out, limit);
 	case mCORE_MEMORY_SEARCH_STRING:
-		return _searchStr(mem, size, block, params->valueStr, out, limit);
+		return _searchStr(mem, size, block, params->valueStr, params->width, out, limit);
 	case mCORE_MEMORY_SEARCH_GUESS:
 		return _searchGuess(mem, size, block, params->valueStr, out, limit);
 	}
@@ -384,26 +434,26 @@ bool _testGuess(struct mCore* core, const struct mCoreMemorySearchResult* res, c
 
 	value = strtoull(params->valueStr, &end, 10);
 	if (end) {
-		if (core->rawRead8(core, res->address, res->segment) * res->guessDivisor == value) {
+		if (core->rawRead8(core, res->address, res->segment) * res->guessDivisor / res->guessMultiplier == value) {
 			return true;
 		}
-		if (!(res->address & 1) && core->rawRead16(core, res->address, res->segment) * res->guessDivisor == value) {
+		if (!(res->address & 1) && core->rawRead16(core, res->address, res->segment) * res->guessDivisor / res->guessMultiplier == value) {
 			return true;
 		}
-		if (!(res->address & 3) && core->rawRead32(core, res->address, res->segment) * res->guessDivisor == value) {
+		if (!(res->address & 3) && core->rawRead32(core, res->address, res->segment) * res->guessDivisor / res->guessMultiplier == value) {
 			return true;
 		}
 	}
 
 	value = strtoull(params->valueStr, &end, 16);
 	if (end) {
-		if (core->rawRead8(core, res->address, res->segment) * res->guessDivisor == value) {
+		if (core->rawRead8(core, res->address, res->segment) * res->guessDivisor / res->guessMultiplier == value) {
 			return true;
 		}
-		if (!(res->address & 1) && core->rawRead16(core, res->address, res->segment) * res->guessDivisor == value) {
+		if (!(res->address & 1) && core->rawRead16(core, res->address, res->segment) * res->guessDivisor / res->guessMultiplier == value) {
 			return true;
 		}
-		if (!(res->address & 3) && core->rawRead32(core, res->address, res->segment) * res->guessDivisor == value) {
+		if (!(res->address & 3) && core->rawRead32(core, res->address, res->segment) * res->guessDivisor / res->guessMultiplier == value) {
 			return true;
 		}
 	}
@@ -415,69 +465,27 @@ void mCoreMemorySearchRepeat(struct mCore* core, const struct mCoreMemorySearchP
 	for (i = 0; i < mCoreMemorySearchResultsSize(inout); ++i) {
 		struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsGetPointer(inout, i);
 		switch (res->type) {
-		case mCORE_MEMORY_SEARCH_8:
-			switch (params->type) {
-			case mCORE_MEMORY_SEARCH_8:
-				if (core->rawRead8(core, res->address, res->segment) != params->value8) {
+		case mCORE_MEMORY_SEARCH_INT:
+			switch (params->width) {
+			case 1:
+				if (core->rawRead8(core, res->address, res->segment) != params->valueInt) {
 					mCoreMemorySearchResultsShift(inout, i, 1);
 					--i;
 				}
 				break;
-			case mCORE_MEMORY_SEARCH_16:
-				if (core->rawRead8(core, res->address, res->segment) != params->value16) {
+			case 2:
+				if (core->rawRead8(core, res->address, res->segment) != params->valueInt) {
 					mCoreMemorySearchResultsShift(inout, i, 1);
 					--i;
 				}
 				break;
-			case mCORE_MEMORY_SEARCH_32:
-				if (core->rawRead32(core, res->address, res->segment) != params->value32) {
+			case 4:
+				if (core->rawRead32(core, res->address, res->segment) != params->valueInt) {
 					mCoreMemorySearchResultsShift(inout, i, 1);
 					--i;
 				}
 				break;
-			case mCORE_MEMORY_SEARCH_GUESS:
-				if (!_testGuess(core, res, params)) {
-					mCoreMemorySearchResultsShift(inout, i, 1);
-					--i;
-				}
-				break;
-			default:
-				break;
-			}
-			break;
-		case mCORE_MEMORY_SEARCH_16:
-			switch (params->type) {
-			case mCORE_MEMORY_SEARCH_16:
-				if (core->rawRead16(core, res->address, res->segment) != params->value16) {
-					mCoreMemorySearchResultsShift(inout, i, 1);
-					--i;
-				}
-				break;
-			case mCORE_MEMORY_SEARCH_32:
-				if (core->rawRead32(core, res->address, res->segment) != params->value32) {
-					mCoreMemorySearchResultsShift(inout, i, 1);
-					--i;
-				}
-				break;
-			case mCORE_MEMORY_SEARCH_GUESS:
-				if (!_testGuess(core, res, params)) {
-					mCoreMemorySearchResultsShift(inout, i, 1);
-					--i;
-				}
-				break;
-			default:
-				break;
-			}
-			break;
-		case mCORE_MEMORY_SEARCH_32:
-			switch (params->type) {
-			case mCORE_MEMORY_SEARCH_32:
-				if (core->rawRead32(core, res->address, res->segment) != params->value32) {
-					mCoreMemorySearchResultsShift(inout, i, 1);
-					--i;
-				}
-				break;
-			case mCORE_MEMORY_SEARCH_GUESS:
+			case -1:
 				if (!_testGuess(core, res, params)) {
 					mCoreMemorySearchResultsShift(inout, i, 1);
 					--i;
