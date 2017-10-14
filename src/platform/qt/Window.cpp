@@ -1442,6 +1442,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 			connect(this, &Window::shutdown, m_overrideView.get(), &QWidget::close);
 		}
 		m_overrideView->show();
+		m_overrideView->recheck();
 	});
 	addControlledAction(toolsMenu, overrides, "overrideWindow");
 

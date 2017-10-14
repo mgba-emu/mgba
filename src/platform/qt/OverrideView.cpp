@@ -93,13 +93,16 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 
 	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &OverrideView::saveOverride);
 	connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);
+
+	m_recheck.setInterval(200);
+	connect(&m_recheck, &QTimer::timeout, this, &OverrideView::recheck);
 }
 
 void OverrideView::setController(std::shared_ptr<CoreController> controller) {
 	m_controller = controller;
 	connect(controller.get(), &CoreController::started, this, &OverrideView::gameStarted);
 	connect(controller.get(), &CoreController::stopping, this, &OverrideView::gameStopped);
-	updateOverrides();
+	recheck();
 }
 
 void OverrideView::saveOverride() {
@@ -113,6 +116,17 @@ void OverrideView::saveOverride() {
 		return;
 	}
 	m_config->saveOverride(*override);
+}
+
+void OverrideView::recheck() {
+	if (!m_controller) {
+		return;
+	}
+	if (m_controller->hasStarted()) {
+		gameStarted();
+	} else {
+		updateOverrides();
+	}
 }
 
 void OverrideView::updateOverrides() {
@@ -190,6 +204,7 @@ void OverrideView::gameStarted() {
 	mCoreThread* thread = m_controller->thread();
 
 	m_ui.tabWidget->setEnabled(false);
+	m_recheck.start();
 
 	switch (thread->core->platform(thread->core)) {
 #ifdef M_CORE_GBA
@@ -242,6 +257,7 @@ void OverrideView::gameStarted() {
 }
 
 void OverrideView::gameStopped() {
+	m_recheck.stop();
 	m_controller.reset();
 	m_ui.tabWidget->setEnabled(true);
 	m_ui.savetype->setCurrentIndex(0);

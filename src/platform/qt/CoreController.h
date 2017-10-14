@@ -61,6 +61,7 @@ public:
 	color_t* drawContext();
 
 	bool isPaused();
+	bool hasStarted();
 
 	mPlatform platform() const;
 	QSize screenDimensions() const;

@@ -209,6 +209,10 @@ bool CoreController::isPaused() {
 	return mCoreThreadIsPaused(&m_threadContext);
 }
 
+bool CoreController::hasStarted() {
+	return mCoreThreadHasStarted(&m_threadContext);
+}
+
 mPlatform CoreController::platform() const {
 	return m_threadContext.core->platform(m_threadContext.core);
 }
