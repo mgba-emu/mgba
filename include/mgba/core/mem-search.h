@@ -18,24 +18,31 @@ enum mCoreMemorySearchType {
 	mCORE_MEMORY_SEARCH_GUESS,
 };
 
+enum mCoreMemorySearchOp {
+	mCORE_MEMORY_SEARCH_FIXED,
+	mCORE_MEMORY_SEARCH_DELTA,
+};
+
 struct mCoreMemorySearchParams {
 	int memoryFlags;
 	enum mCoreMemorySearchType type;
+	enum mCoreMemorySearchOp op;
 	int align;
 	int width;
 	union {
 		const char* valueStr;
-		uint32_t valueInt;
+		int32_t valueInt;
 	};
 };
 
 struct mCoreMemorySearchResult {
 	uint32_t address;
 	int segment;
-	uint64_t guessDivisor;
-	uint64_t guessMultiplier;
+	uint32_t guessDivisor;
+	uint32_t guessMultiplier;
 	enum mCoreMemorySearchType type;
 	int width;
+	int32_t oldValue;
 };
 
 DECLARE_VECTOR(mCoreMemorySearchResults, struct mCoreMemorySearchResult);

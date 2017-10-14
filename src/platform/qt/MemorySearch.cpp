@@ -40,8 +40,9 @@ bool MemorySearch::createParams(mCoreMemorySearchParams* params) {
 
 	QByteArray string;
 	bool ok = false;
-	if (m_ui.typeNum->isChecked()) {
+	if (m_ui.typeNum->isChecked() || m_ui.typeDelta->isChecked()) {
 		params->type = mCORE_MEMORY_SEARCH_INT;
+		params->op = m_ui.typeDelta->isChecked() ? mCORE_MEMORY_SEARCH_DELTA : mCORE_MEMORY_SEARCH_FIXED;
 		params->align = -1;
 		if (m_ui.bits8->isChecked()) {
 			params->width = 1;
@@ -140,6 +141,7 @@ void MemorySearch::refresh() {
 
 	m_ui.results->clearContents();
 	m_ui.results->setRowCount(mCoreMemorySearchResultsSize(&m_results));
+	m_ui.typeDelta->setEnabled(false);
 	for (size_t i = 0; i < mCoreMemorySearchResultsSize(&m_results); ++i) {
 		mCoreMemorySearchResult* result = mCoreMemorySearchResultsGetPointer(&m_results, i);
 		QTableWidgetItem* item = new QTableWidgetItem(QString("%1").arg(result->address, 8, 16, QChar('0')));
@@ -200,6 +202,10 @@ void MemorySearch::refresh() {
 		}
 		m_ui.results->setItem(i, 1, item);
 		m_ui.results->setItem(i, 2, type);
+		m_ui.typeDelta->setEnabled(true);
+	}
+	if (m_ui.typeDelta->isChecked() && !m_ui.typeDelta->isEnabled()) {
+		m_ui.typeNum->setChecked(true);
 	}
 	m_ui.results->sortItems(0);
 }
