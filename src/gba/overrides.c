@@ -180,6 +180,9 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "KYGE", SAVEDATA_EEPROM, HW_TILT, IDLE_LOOP_NONE, false },
 	{ "KYGP", SAVEDATA_EEPROM, HW_TILT, IDLE_LOOP_NONE, false },
 
+	// Aging cartridge
+	{ "TCHK", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+
 	{ { 0, 0, 0, 0 }, 0, 0, IDLE_LOOP_NONE, false }
 };
 
