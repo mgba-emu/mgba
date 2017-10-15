@@ -61,6 +61,9 @@ bool MemorySearch::createParams(mCoreMemorySearchParams* params) {
 		if (m_ui.bits32->isChecked()) {
 			params->width = 4;
 		}
+		if (m_ui.bitsGuess->isChecked()) {
+			params->width = -1;
+		}
 		if (m_ui.numHex->isChecked()) {
 			uint32_t v = m_ui.value->text().toUInt(&ok, 16);
 			if (ok) {

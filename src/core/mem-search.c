@@ -137,9 +137,9 @@ static size_t _searchGuess(const void* mem, size_t size, const struct mCoreMemor
 	// Decimal:
 	value = strtoll(params->valueStr, &end, 10);
 	if (end && !end[0]) {
-		if (value > 0x10000) {
+		if ((params->width == -1 && value > 0x10000) || params->width == 4) {
 			found += _search32(mem, size, block, value, params->op, out, limit ? limit - found : 0);
-		} else if (value > 0x100) {
+		} else if ((params->width == -1 && value > 0x100) || params->width == 2) {
 			found += _search16(mem, size, block, value, params->op, out, limit ? limit - found : 0);
 		} else {
 			found += _search8(mem, size, block, value, params->op, out, limit ? limit - found : 0);
@@ -151,9 +151,9 @@ static size_t _searchGuess(const void* mem, size_t size, const struct mCoreMemor
 			value /= 10;
 			divisor *= 10;
 
-			if (value > 0x10000) {
+			if ((params->width == -1 && value > 0x10000) || params->width == 4) {
 				found += _search32(mem, size, block, value, params->op, &tmp, limit ? limit - found : 0);
-			} else if (value > 0x100) {
+			} else if ((params->width == -1 && value > 0x100) || params->width == 2) {
 				found += _search16(mem, size, block, value, params->op, &tmp, limit ? limit - found : 0);
 			} else {
 				found += _search8(mem, size, block, value, params->op, &tmp, limit ? limit - found : 0);
@@ -170,9 +170,9 @@ static size_t _searchGuess(const void* mem, size_t size, const struct mCoreMemor
 	// Hex:
 	value = strtoll(params->valueStr, &end, 16);
 	if (end && !end[0]) {
-		if (value > 0x10000) {
+		if ((params->width == -1 && value > 0x10000) || params->width == 4) {
 			found += _search32(mem, size, block, value, params->op, out, limit ? limit - found : 0);
-		} else if (value > 0x100) {
+		} else if ((params->width == -1 && value > 0x100) || params->width == 2) {
 			found += _search16(mem, size, block, value, params->op, out, limit ? limit - found : 0);
 		} else {
 			found += _search8(mem, size, block, value, params->op, out, limit ? limit - found : 0);
@@ -184,9 +184,9 @@ static size_t _searchGuess(const void* mem, size_t size, const struct mCoreMemor
 			value >>= 4;
 			divisor <<= 4;
 
-			if (value > 0x10000) {
+			if ((params->width == -1 && value > 0x10000) || params->width == 4) {
 				found += _search32(mem, size, block, value, params->op, &tmp, limit ? limit - found : 0);
-			} else if (value > 0x100) {
+			} else if ((params->width == -1 && value > 0x100) || params->width == 2) {
 				found += _search16(mem, size, block, value, params->op, &tmp, limit ? limit - found : 0);
 			} else {
 				found += _search8(mem, size, block, value, params->op, &tmp, limit ? limit - found : 0);
