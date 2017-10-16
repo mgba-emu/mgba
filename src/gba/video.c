@@ -187,6 +187,9 @@ void _startHblank(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	if (video->vcount < VIDEO_VERTICAL_PIXELS) {
 		GBADMARunHblank(video->p, -cyclesLate);
 	}
+	if (video->vcount >= 2 && video->vcount < VIDEO_VERTICAL_PIXELS + 2) {
+		GBADMARunDisplayStart(video->p, -cyclesLate);
+	}
 	if (GBARegisterDISPSTATIsHblankIRQ(dispstat)) {
 		GBARaiseIRQ(video->p, IRQ_HBLANK);
 	}
