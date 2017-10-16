@@ -206,6 +206,10 @@ elseif(UNIX)
 
 	if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 		add_definitions(-D_GNU_SOURCE)
+
+		if(BUILD_STATIC)
+			link_libraries(-pthread)
+		endif()
 	endif()
 	if(NOT APPLE AND NOT HAIKU)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
