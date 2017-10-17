@@ -34,7 +34,8 @@ enum GBAHardwareDevice {
 	HW_GYRO = 8,
 	HW_TILT = 16,
 	HW_GB_PLAYER = 32,
-	HW_GB_PLAYER_DETECTION = 64
+	HW_GB_PLAYER_DETECTION = 64,
+	HW_EREADER = 128
 };
 
 enum GPIORegister {
@@ -122,6 +123,12 @@ struct GBACartridgeHardware {
 	struct mTimingEvent gbpNextEvent;
 	struct GBAGBPKeyCallback gbpCallback;
 	struct GBAGBPSIODriver gbpDriver;
+
+	uint16_t eReaderData[44];
+	uint16_t eReaderRegisterUnk;
+	uint16_t eReaderRegisterReset;
+	uint16_t eReaderRegisterControl;
+	uint16_t eReaderRegisterLed;
 };
 
 void GBAHardwareInit(struct GBACartridgeHardware* gpio, uint16_t* gpioBase);
@@ -140,6 +147,12 @@ uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* gpio, uint32_t address)
 struct GBAVideo;
 void GBAHardwarePlayerUpdate(struct GBA* gba);
 bool GBAHardwarePlayerCheckScreen(const struct GBAVideo* video);
+
+void GBAHardwareInitEReader(struct GBACartridgeHardware* hw);
+void GBAHardwareEReaderWrite(struct GBACartridgeHardware* hw, uint32_t address, uint16_t value);
+void GBAHardwareEReaderWriteFlash(struct GBACartridgeHardware* hw, uint32_t address, uint8_t value);
+uint16_t GBAHardwareEReaderRead(struct GBACartridgeHardware* hw, uint32_t address);
+uint8_t GBAHardwareEReaderReadFlash(struct GBACartridgeHardware* hw, uint32_t address);
 
 void GBARTCGenericSourceInit(struct GBARTCGenericSource* rtc, struct GBA* gba);
 

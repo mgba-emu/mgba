@@ -36,6 +36,8 @@ static uint16_t _gbpRead(struct mKeyCallback*);
 static uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 static void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLate);
 
+static void _eReaderReset(struct GBACartridgeHardware* hw);
+
 static const int RTC_BYTES[8] = {
 	0, // Force reset
 	0, // Empty
@@ -589,6 +591,67 @@ void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLat
 	}
 	gbp->d.p->siocnt = GBASIONormalClearStart(gbp->d.p->siocnt);
 	gbp->p->p->memory.io[REG_SIOCNT >> 1] = gbp->d.p->siocnt & ~0x0080;
+}
+
+// == e-Reader
+
+void GBAHardwareInitEReader(struct GBACartridgeHardware* hw) {
+	hw->devices |= HW_EREADER;
+	_eReaderReset(hw);
+}
+
+void GBAHardwareEReaderWrite(struct GBACartridgeHardware* hw, uint32_t address, uint16_t value) {
+	address &= 0x700FF;
+	switch (address >> 17) {
+	case 0:
+		hw->eReaderRegisterUnk = value & 0xF;
+		break;
+	case 1:
+		hw->eReaderRegisterReset = (value & 0x8A) | 4;
+		if (value & 2) {
+			_eReaderReset(hw);
+		}
+		break;
+	case 2:
+		mLOG(GBA_HW, GAME_ERROR, "e-Reader write to read-only registers: %05X:%04X", address, value);
+		break;
+	default:
+		mLOG(GBA_HW, STUB, "Unimplemented e-Reader write: %05X:%04X", address, value);
+	}
+}
+
+void GBAHardwareEReaderWriteFlash(struct GBACartridgeHardware* hw, uint32_t address, uint8_t value) {
+	address &= 0xFFFF;
+	mLOG(GBA_HW, STUB, "Unimplemented e-Reader write to flash: %04X:%02X", address, value);
+}
+
+uint16_t GBAHardwareEReaderRead(struct GBACartridgeHardware* hw, uint32_t address) {
+	address &= 0x700FF;
+	switch (address >> 17) {
+	case 0:
+		return hw->eReaderRegisterUnk;
+	case 1:
+		return hw->eReaderRegisterReset;
+	case 2:
+		if (address > 0x40088) {
+			return 0;
+		}
+		return hw->eReaderData[(address & 0xFE) >> 1];
+	}
+	mLOG(GBA_HW, STUB, "Unimplemented e-Reader read: %05X", address);
+	return 0;
+}
+
+uint8_t GBAHardwareEReaderReadFlash(struct GBACartridgeHardware* hw, uint32_t address) {
+	address &= 0xFFFF;
+	mLOG(GBA_HW, STUB, "Unimplemented e-Reader read from flash: %04X", address);
+	return 0;
+}
+
+void _eReaderReset(struct GBACartridgeHardware* hw) {
+	memset(hw->eReaderData, 0, sizeof(hw->eReaderData));
+	hw->eReaderRegisterUnk = 0;
+	hw->eReaderRegisterReset = 4;
 }
 
 // == Serialization
