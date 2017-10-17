@@ -550,11 +550,12 @@ void Window::showEvent(QShowEvent* event) {
 	m_wasOpened = true;
 	resizeFrame(m_screenWidget->sizeHint());
 	QVariant windowPos = m_config->getQtOption("windowPos");
-	if (!windowPos.isNull()) {
+	QRect geom = QApplication::desktop()->availableGeometry(this);
+	if (!windowPos.isNull() && geom.contains(windowPos.toPoint())) {
 		move(windowPos.toPoint());
 	} else {
 		QRect rect = frameGeometry();
-		rect.moveCenter(QApplication::desktop()->availableGeometry().center());
+		rect.moveCenter(geom.center());
 		move(rect.topLeft());
 	}
 	if (m_fullscreenOnStart) {
