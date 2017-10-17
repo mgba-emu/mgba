@@ -177,7 +177,6 @@ struct GBACartridgeHardware {
 
 void GBAHardwareInit(struct GBACartridgeHardware* gpio, uint16_t* gpioBase);
 void GBAHardwareClear(struct GBACartridgeHardware* gpio);
-int32_t GBAHardwareProcessEvents(struct GBA* gba, int32_t cycles);
 
 void GBAHardwareInitRTC(struct GBACartridgeHardware* gpio);
 void GBAHardwareInitGyro(struct GBACartridgeHardware* gpio);

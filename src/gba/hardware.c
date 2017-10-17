@@ -40,7 +40,6 @@ static void _eReaderReset(struct GBACartridgeHardware* hw);
 static void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value);
 static void _eReaderWriteControl1(struct GBACartridgeHardware* hw, uint8_t value);
 static void _eReaderReadData(struct GBACartridgeHardware* hw);
-static int32_t _eReaderProcessEvents(struct GBACartridgeHardware* hw, int32_t cycles);
 
 static const int RTC_BYTES[8] = {
 	0, // Force reset
@@ -80,13 +79,6 @@ void GBAHardwareClear(struct GBACartridgeHardware* hw) {
 	if (hw->p->sio.drivers.normal == &hw->gbpDriver.d) {
 		GBASIOSetDriver(&hw->p->sio, 0, SIO_NORMAL_32);
 	}
-}
-
-int32_t GBAHardwareProcessEvents(struct GBA* gba, int32_t cycles) {
-	if (gba->memory.hw.devices & HW_EREADER) {
-		return _eReaderProcessEvents(&gba->memory.hw, cycles);
-	}
-	return INT_MAX;
 }
 
 void GBAHardwareGPIOWrite(struct GBACartridgeHardware* hw, uint32_t address, uint16_t value) {
@@ -793,17 +785,6 @@ void _eReaderReadData(struct GBACartridgeHardware* hw) {
 			GBARaiseIRQ(hw->p, IRQ_GAMEPAK, 0);
 		}
 	}
-}
-
-static int32_t _eReaderProcessEvents(struct GBACartridgeHardware* hw, int32_t cycles) {
-	if (hw->eReaderState != EREADER_SERIAL_INACTIVE) {
-		hw->eReaderDelay += cycles;
-		if (hw->eReaderDelay > 1024) {
-			mLOG(GBA_HW, DEBUG, "[e-Reader] Command timed out");
-			hw->eReaderState = EREADER_SERIAL_INACTIVE;
-		}
-	}
-	return INT_MAX;
 }
 
 // == Serialization
