@@ -681,7 +681,9 @@ void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value) {
 	EReaderControl0 control = value & 0x7F;
 	EReaderControl0 oldControl = hw->eReaderRegisterControl0;
 	++hw->eReaderDelay;
-	if (hw->eReaderDelay > 5) {
+	// Huge hack to prevent having to do cycle counting for the delay
+	// This is the timing the e-Reader uses
+	if (hw->eReaderDelay > 6) {
 		// Timed out
 		hw->eReaderState = EREADER_SERIAL_INACTIVE;
 	}
@@ -699,7 +701,10 @@ void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value) {
 	} else if (EReaderControl0IsClock(oldControl) && !EReaderControl0IsClock(control)) {
 		mLOG(GBA_HW, DEBUG, "[e-Reader] Serial falling edge: %c %i", EReaderControl0IsDirection(control) ? '>' : '<', EReaderControl0GetData(control));
 		// TODO: Improve direction control
-		if (EReaderControl0IsDirection(control)) {
+		if (hw->eReaderState == EREADER_SERIAL_BIT_0 && hw->eReaderDelay > 5) {
+			// This is 4 for an actual write, and 6 an SioBegin delay
+			hw->eReaderCommand = EREADER_COMMAND_IDLE;
+		} else if (EReaderControl0IsDirection(control)) {
 			hw->eReaderByte |= EReaderControl0GetData(control) << (7 - (hw->eReaderState - EREADER_SERIAL_BIT_0));
 			++hw->eReaderState;
 			if (hw->eReaderState == EREADER_SERIAL_END_BIT) {
@@ -731,17 +736,27 @@ void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value) {
 						break;
 					}
 					++hw->eReaderActiveRegister;
+					break;
+				default:
+					mLOG(GBA_HW, ERROR, "???");
+					break;
 				}
 				hw->eReaderState = EREADER_SERIAL_BIT_0;
 				hw->eReaderByte = 0;
 			}
-		} else {
-			if (hw->eReaderCommand != EREADER_COMMAND_READ_DATA) {
-				// Clear the error bit
-				control = EReaderControl0ClearData(control);
+		} else if (hw->eReaderCommand == EREADER_COMMAND_READ_DATA) {
+			int bit = hw->eReaderSerial[hw->eReaderActiveRegister & 0x7F] >> (7 - (hw->eReaderState - EREADER_SERIAL_BIT_0));
+			control = EReaderControl0SetData(control, bit);
+			++hw->eReaderState;
+			if (hw->eReaderState == EREADER_SERIAL_END_BIT) {
+				++hw->eReaderActiveRegister;
+				mLOG(GBA_HW, DEBUG, "[e-Reader] Read serial byte: %02x", hw->eReaderSerial[hw->eReaderActiveRegister & 0x7F]);
 			}
 		}
 		hw->eReaderDelay = 0;
+	} else if (!EReaderControl0IsDirection(control)) {
+		// Clear the error bit
+		control = EReaderControl0ClearData(control);
 	}
 	hw->eReaderRegisterControl0 = control;
 	mLOG(GBA_HW, STUB, "Unimplemented e-Reader Control0 write: %02X", value);
