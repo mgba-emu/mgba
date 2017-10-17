@@ -96,6 +96,40 @@ struct GBAGBPSIODriver {
 
 DECL_BITFIELD(GPIOPin, uint16_t);
 
+DECL_BITFIELD(EReaderControl0, uint8_t);
+DECL_BIT(EReaderControl0, Data, 0);
+DECL_BIT(EReaderControl0, Clock, 1);
+DECL_BIT(EReaderControl0, Direction, 2);
+DECL_BIT(EReaderControl0, LedEnable, 3);
+DECL_BIT(EReaderControl0, Scan, 4);
+DECL_BIT(EReaderControl0, Phi, 5);
+DECL_BIT(EReaderControl0, PowerEnable, 6);
+DECL_BITFIELD(EReaderControl1, uint8_t);
+DECL_BIT(EReaderControl1, Scanline, 1);
+DECL_BIT(EReaderControl1, Unk1, 4);
+DECL_BIT(EReaderControl1, Voltage, 5);
+
+enum EReaderStateMachine {
+	EREADER_SERIAL_INACTIVE = 0,
+	EREADER_SERIAL_STARTING,
+	EREADER_SERIAL_BIT_0,
+	EREADER_SERIAL_BIT_1,
+	EREADER_SERIAL_BIT_2,
+	EREADER_SERIAL_BIT_3,
+	EREADER_SERIAL_BIT_4,
+	EREADER_SERIAL_BIT_5,
+	EREADER_SERIAL_BIT_6,
+	EREADER_SERIAL_BIT_7,
+	EREADER_SERIAL_END_BIT,
+};
+
+enum EReaderCommand {
+	EREADER_COMMAND_IDLE = 0, // TODO: Verify on hardware
+	EREADER_COMMAND_WRITE_DATA = 1,
+	EREADER_COMMAND_SET_INDEX = 0x22,
+	EREADER_COMMAND_READ_DATA = 0x23,
+};
+
 struct GBACartridgeHardware {
 	struct GBA* p;
 	uint32_t devices;
@@ -125,10 +159,19 @@ struct GBACartridgeHardware {
 	struct GBAGBPSIODriver gbpDriver;
 
 	uint16_t eReaderData[44];
+	uint8_t eReaderSerial[92];
 	uint16_t eReaderRegisterUnk;
 	uint16_t eReaderRegisterReset;
-	uint16_t eReaderRegisterControl;
+	EReaderControl0 eReaderRegisterControl0;
+	EReaderControl1 eReaderRegisterControl1;
 	uint16_t eReaderRegisterLed;
+
+	// TODO: Serialize these
+	enum EReaderStateMachine eReaderState;
+	enum EReaderCommand eReaderCommand;
+	uint8_t eReaderActiveRegister;
+	uint8_t eReaderByte;
+	uint8_t eReaderDelay;
 };
 
 void GBAHardwareInit(struct GBACartridgeHardware* gpio, uint16_t* gpioBase);

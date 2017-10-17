@@ -37,6 +37,8 @@ static uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t addre
 static void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLate);
 
 static void _eReaderReset(struct GBACartridgeHardware* hw);
+static void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value);
+static void _eReaderWriteControl1(struct GBACartridgeHardware* hw, uint8_t value);
 
 static const int RTC_BYTES[8] = {
 	0, // Force reset
@@ -622,7 +624,16 @@ void GBAHardwareEReaderWrite(struct GBACartridgeHardware* hw, uint32_t address, 
 
 void GBAHardwareEReaderWriteFlash(struct GBACartridgeHardware* hw, uint32_t address, uint8_t value) {
 	address &= 0xFFFF;
-	mLOG(GBA_HW, STUB, "Unimplemented e-Reader write to flash: %04X:%02X", address, value);
+	switch (address) {
+	case 0xFFB0:
+		_eReaderWriteControl0(hw, value);
+		break;
+	case 0xFFB1:
+		_eReaderWriteControl1(hw, value);
+		break;
+	default:
+		mLOG(GBA_HW, STUB, "Unimplemented e-Reader write to flash: %04X:%02X", address, value);
+	}
 }
 
 uint16_t GBAHardwareEReaderRead(struct GBACartridgeHardware* hw, uint32_t address) {
@@ -644,14 +655,102 @@ uint16_t GBAHardwareEReaderRead(struct GBACartridgeHardware* hw, uint32_t addres
 
 uint8_t GBAHardwareEReaderReadFlash(struct GBACartridgeHardware* hw, uint32_t address) {
 	address &= 0xFFFF;
-	mLOG(GBA_HW, STUB, "Unimplemented e-Reader read from flash: %04X", address);
-	return 0;
+	switch (address) {
+	case 0xFFB0:
+		return hw->eReaderRegisterControl0;
+	case 0xFFB1:
+		return hw->eReaderRegisterControl1;
+	default:
+		mLOG(GBA_HW, STUB, "Unimplemented e-Reader read from flash: %04X", address);
+		return 0;
+	}
 }
 
 void _eReaderReset(struct GBACartridgeHardware* hw) {
 	memset(hw->eReaderData, 0, sizeof(hw->eReaderData));
 	hw->eReaderRegisterUnk = 0;
 	hw->eReaderRegisterReset = 4;
+	hw->eReaderRegisterControl0 = 0;
+	hw->eReaderRegisterControl1 = 0x80;
+	hw->eReaderRegisterLed = 0;
+	hw->eReaderState = false;
+	hw->eReaderActiveRegister = 0;
+}
+
+void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value) {
+	EReaderControl0 control = value & 0x7F;
+	EReaderControl0 oldControl = hw->eReaderRegisterControl0;
+	++hw->eReaderDelay;
+	if (hw->eReaderDelay > 5) {
+		// Timed out
+		hw->eReaderState = EREADER_SERIAL_INACTIVE;
+	}
+	if (hw->eReaderState == EREADER_SERIAL_INACTIVE) {
+		if (EReaderControl0IsClock(oldControl) && EReaderControl0IsData(oldControl) && !EReaderControl0IsData(control)) {
+			hw->eReaderState = EREADER_SERIAL_STARTING;
+			hw->eReaderDelay = 0;
+		}
+	} else if (hw->eReaderState == EREADER_SERIAL_STARTING) {
+		if (EReaderControl0IsClock(oldControl) && !EReaderControl0IsData(oldControl) && !EReaderControl0IsClock(control)) {
+			hw->eReaderState = EREADER_SERIAL_BIT_0;
+			hw->eReaderCommand = EREADER_COMMAND_IDLE;
+			hw->eReaderDelay = 0;
+		}
+	} else if (EReaderControl0IsClock(oldControl) && !EReaderControl0IsClock(control)) {
+		mLOG(GBA_HW, DEBUG, "[e-Reader] Serial falling edge: %c %i", EReaderControl0IsDirection(control) ? '>' : '<', EReaderControl0GetData(control));
+		// TODO: Improve direction control
+		if (EReaderControl0IsDirection(control)) {
+			hw->eReaderByte |= EReaderControl0GetData(control) << (7 - (hw->eReaderState - EREADER_SERIAL_BIT_0));
+			++hw->eReaderState;
+			if (hw->eReaderState == EREADER_SERIAL_END_BIT) {
+				mLOG(GBA_HW, DEBUG, "[e-Reader] Wrote serial byte: %02x", hw->eReaderByte);
+				switch (hw->eReaderCommand) {
+				case EREADER_COMMAND_IDLE:
+					hw->eReaderCommand = hw->eReaderByte;
+					break;
+				case EREADER_COMMAND_SET_INDEX:
+					hw->eReaderActiveRegister = hw->eReaderByte;
+					hw->eReaderCommand = EREADER_COMMAND_WRITE_DATA;
+					break;
+				case EREADER_COMMAND_WRITE_DATA:
+					switch (hw->eReaderActiveRegister & 0x7F) {
+					case 0:
+					case 0x57:
+					case 0x58:
+					case 0x59:
+					case 0x5A:
+						// Read-only
+						mLOG(GBA_HW, GAME_ERROR, "Writing to read-only e-Reader serial register: %02X", hw->eReaderActiveRegister);
+						break;
+					default:
+						if ((hw->eReaderActiveRegister & 0x7F) > 0x5A) {
+							mLOG(GBA_HW, GAME_ERROR, "Writing to non-existent e-Reader serial register: %02X", hw->eReaderActiveRegister);
+							break;
+						}
+						hw->eReaderSerial[hw->eReaderActiveRegister & 0x7F] = hw->eReaderByte;
+						break;
+					}
+					++hw->eReaderActiveRegister;
+				}
+				hw->eReaderState = EREADER_SERIAL_BIT_0;
+				hw->eReaderByte = 0;
+			}
+		} else {
+			if (hw->eReaderCommand != EREADER_COMMAND_READ_DATA) {
+				// Clear the error bit
+				control = EReaderControl0ClearData(control);
+			}
+		}
+		hw->eReaderDelay = 0;
+	}
+	hw->eReaderRegisterControl0 = control;
+	mLOG(GBA_HW, STUB, "Unimplemented e-Reader Control0 write: %02X", value);
+}
+
+void _eReaderWriteControl1(struct GBACartridgeHardware* hw, uint8_t value) {
+	EReaderControl1 control = (value & 0x32) | 0x80;
+	hw->eReaderRegisterControl1 = control;
+	mLOG(GBA_HW, STUB, "Unimplemented e-Reader Control1 write: %02X", value);
 }
 
 // == Serialization
