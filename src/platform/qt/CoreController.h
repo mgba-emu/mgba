@@ -6,6 +6,7 @@
 #pragma once
 
 #include <QByteArray>
+#include <QFile>
 #include <QList>
 #include <QMutex>
 #include <QObject>
@@ -127,6 +128,7 @@ public slots:
 
 	void loadSave(const QString&, bool temporary);
 	void loadPatch(const QString&);
+	void scanCard(const QString&);
 	void replaceGame(const QString&);
 	void yankPak();
 
@@ -256,6 +258,10 @@ private:
 
 #ifdef M_CORE_GBA
 	GBASIOBattlechipGate m_battlechip;
+	struct GameControllerEReader : GBAEReaderDataSource {
+		CoreController* p;
+		QFile file;
+	} m_eReader;
 #endif
 };
 

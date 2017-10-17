@@ -39,6 +39,7 @@ static void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cy
 static void _eReaderReset(struct GBACartridgeHardware* hw);
 static void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value);
 static void _eReaderWriteControl1(struct GBACartridgeHardware* hw, uint8_t value);
+static void _eReaderReadData(struct GBACartridgeHardware* hw);
 
 static const int RTC_BYTES[8] = {
 	0, // Force reset
@@ -666,6 +667,14 @@ uint8_t GBAHardwareEReaderReadFlash(struct GBACartridgeHardware* hw, uint32_t ad
 	}
 }
 
+void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, struct GBAEReaderDataSource* source) {
+	if (!EReaderControl0IsScan(hw->eReaderRegisterControl0)) {
+		return;
+	}
+	hw->eReaderSource = source;
+	_eReaderReadData(hw);
+}
+
 void _eReaderReset(struct GBACartridgeHardware* hw) {
 	memset(hw->eReaderData, 0, sizeof(hw->eReaderData));
 	hw->eReaderRegisterUnk = 0;
@@ -738,7 +747,7 @@ void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value) {
 					++hw->eReaderActiveRegister;
 					break;
 				default:
-					mLOG(GBA_HW, ERROR, "???");
+					mLOG(GBA_HW, ERROR, "Hit undefined state in e-Reader state machine");
 					break;
 				}
 				hw->eReaderState = EREADER_SERIAL_BIT_0;
@@ -759,13 +768,31 @@ void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value) {
 		control = EReaderControl0ClearData(control);
 	}
 	hw->eReaderRegisterControl0 = control;
+	if (!EReaderControl0IsScan(oldControl) && EReaderControl0IsScan(control)) {
+		_eReaderReadData(hw);
+	}
 	mLOG(GBA_HW, STUB, "Unimplemented e-Reader Control0 write: %02X", value);
 }
 
 void _eReaderWriteControl1(struct GBACartridgeHardware* hw, uint8_t value) {
 	EReaderControl1 control = (value & 0x32) | 0x80;
 	hw->eReaderRegisterControl1 = control;
+	if (EReaderControl0IsScan(hw->eReaderRegisterControl0) && !EReaderControl1IsScanline(control)) {
+		_eReaderReadData(hw);
+	}
 	mLOG(GBA_HW, STUB, "Unimplemented e-Reader Control1 write: %02X", value);
+}
+
+void _eReaderReadData(struct GBACartridgeHardware* hw) {
+	if (!hw->eReaderSource) {
+		return;
+	}
+	memset(hw->eReaderData, 0, EREADER_BLOCK_SIZE);
+	hw->eReaderSource->readBlock(hw->eReaderSource, hw->eReaderData);
+	hw->eReaderRegisterControl1 = EReaderControl1FillScanline(hw->eReaderRegisterControl1);
+	if (EReaderControl0IsLedEnable(hw->eReaderRegisterControl0)) {
+		GBARaiseIRQ(hw->p, IRQ_GAMEPAK, 0);
+	}
 }
 
 // == Serialization

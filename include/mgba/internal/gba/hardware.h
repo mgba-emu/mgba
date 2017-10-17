@@ -172,6 +172,7 @@ struct GBACartridgeHardware {
 	uint8_t eReaderActiveRegister;
 	uint8_t eReaderByte;
 	uint8_t eReaderDelay;
+	struct GBAEReaderDataSource* eReaderSource;
 };
 
 void GBAHardwareInit(struct GBACartridgeHardware* gpio, uint16_t* gpioBase);
@@ -196,6 +197,7 @@ void GBAHardwareEReaderWrite(struct GBACartridgeHardware* hw, uint32_t address, 
 void GBAHardwareEReaderWriteFlash(struct GBACartridgeHardware* hw, uint32_t address, uint8_t value);
 uint16_t GBAHardwareEReaderRead(struct GBACartridgeHardware* hw, uint32_t address);
 uint8_t GBAHardwareEReaderReadFlash(struct GBACartridgeHardware* hw, uint32_t address);
+void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, struct GBAEReaderDataSource* source);
 
 void GBARTCGenericSourceInit(struct GBARTCGenericSource* rtc, struct GBA* gba);
 

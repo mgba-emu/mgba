@@ -680,6 +680,24 @@ void CoreController::setFakeEpoch(const QDateTime& time) {
 	m_threadContext.core->rtc.value = time.toMSecsSinceEpoch();
 }
 
+void CoreController::scanCard(const QString& path) {
+#ifdef M_CORE_GBA
+	if (m_eReader.file.isOpen()) {
+		m_eReader.file.close();
+	}
+	m_eReader.file.setFileName(path);
+	if (!m_eReader.file.open(QIODevice::ReadOnly)) {
+		return;
+	}
+
+	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* thread) {
+		CoreController* controller = static_cast<CoreController*>(thread->userData);
+		GBAHardwareEReaderScan(&static_cast<GBA*>(thread->core->board)->memory.hw, &controller->m_eReader);
+	});
+#endif
+}
+
+
 void CoreController::importSharkport(const QString& path) {
 #ifdef M_CORE_GBA
 	if (platform() != PLATFORM_GBA) {

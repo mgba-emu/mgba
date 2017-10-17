@@ -88,6 +88,12 @@ struct GBASIOBattlechipGate {
 
 void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate*);
 
+#define EREADER_BLOCK_SIZE 40
+
+struct GBAEReaderDataSource {
+	bool (*readBlock)(struct GBAEReaderDataSource*, void*);
+};
+
 CXX_GUARD_END
 
 #endif
