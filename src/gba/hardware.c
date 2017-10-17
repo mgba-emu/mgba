@@ -40,6 +40,7 @@ static void _eReaderReset(struct GBACartridgeHardware* hw);
 static void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value);
 static void _eReaderWriteControl1(struct GBACartridgeHardware* hw, uint8_t value);
 static void _eReaderReadData(struct GBACartridgeHardware* hw);
+static int32_t _eReaderProcessEvents(struct GBACartridgeHardware* hw, int32_t cycles);
 
 static const int RTC_BYTES[8] = {
 	0, // Force reset
@@ -79,6 +80,13 @@ void GBAHardwareClear(struct GBACartridgeHardware* hw) {
 	if (hw->p->sio.drivers.normal == &hw->gbpDriver.d) {
 		GBASIOSetDriver(&hw->p->sio, 0, SIO_NORMAL_32);
 	}
+}
+
+int32_t GBAHardwareProcessEvents(struct GBA* gba, int32_t cycles) {
+	if (gba->memory.hw.devices & HW_EREADER) {
+		return _eReaderProcessEvents(&gba->memory.hw, cycles);
+	}
+	return INT_MAX;
 }
 
 void GBAHardwareGPIOWrite(struct GBACartridgeHardware* hw, uint32_t address, uint16_t value) {
@@ -689,31 +697,22 @@ void _eReaderReset(struct GBACartridgeHardware* hw) {
 void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value) {
 	EReaderControl0 control = value & 0x7F;
 	EReaderControl0 oldControl = hw->eReaderRegisterControl0;
-	++hw->eReaderDelay;
-	// Huge hack to prevent having to do cycle counting for the delay
-	// This is the timing the e-Reader uses
-	if (hw->eReaderDelay > 6) {
-		// Timed out
-		hw->eReaderState = EREADER_SERIAL_INACTIVE;
-	}
 	if (hw->eReaderState == EREADER_SERIAL_INACTIVE) {
 		if (EReaderControl0IsClock(oldControl) && EReaderControl0IsData(oldControl) && !EReaderControl0IsData(control)) {
 			hw->eReaderState = EREADER_SERIAL_STARTING;
-			hw->eReaderDelay = 0;
 		}
+	} else if (EReaderControl0IsClock(oldControl) && !EReaderControl0IsData(oldControl) && EReaderControl0IsData(control)) {
+		hw->eReaderState = EREADER_SERIAL_INACTIVE;
+
 	} else if (hw->eReaderState == EREADER_SERIAL_STARTING) {
 		if (EReaderControl0IsClock(oldControl) && !EReaderControl0IsData(oldControl) && !EReaderControl0IsClock(control)) {
 			hw->eReaderState = EREADER_SERIAL_BIT_0;
 			hw->eReaderCommand = EREADER_COMMAND_IDLE;
-			hw->eReaderDelay = 0;
 		}
 	} else if (EReaderControl0IsClock(oldControl) && !EReaderControl0IsClock(control)) {
 		mLOG(GBA_HW, DEBUG, "[e-Reader] Serial falling edge: %c %i", EReaderControl0IsDirection(control) ? '>' : '<', EReaderControl0GetData(control));
 		// TODO: Improve direction control
-		if (hw->eReaderState == EREADER_SERIAL_BIT_0 && hw->eReaderDelay > 5) {
-			// This is 4 for an actual write, and 6 an SioBegin delay
-			hw->eReaderCommand = EREADER_COMMAND_IDLE;
-		} else if (EReaderControl0IsDirection(control)) {
+		if (EReaderControl0IsDirection(control)) {
 			hw->eReaderByte |= EReaderControl0GetData(control) << (7 - (hw->eReaderState - EREADER_SERIAL_BIT_0));
 			++hw->eReaderState;
 			if (hw->eReaderState == EREADER_SERIAL_END_BIT) {
@@ -788,11 +787,23 @@ void _eReaderReadData(struct GBACartridgeHardware* hw) {
 		return;
 	}
 	memset(hw->eReaderData, 0, EREADER_BLOCK_SIZE);
-	hw->eReaderSource->readBlock(hw->eReaderSource, hw->eReaderData);
-	hw->eReaderRegisterControl1 = EReaderControl1FillScanline(hw->eReaderRegisterControl1);
-	if (EReaderControl0IsLedEnable(hw->eReaderRegisterControl0)) {
-		GBARaiseIRQ(hw->p, IRQ_GAMEPAK, 0);
+	if (hw->eReaderSource->readBlock(hw->eReaderSource, hw->eReaderData)) {
+		hw->eReaderRegisterControl1 = EReaderControl1FillScanline(hw->eReaderRegisterControl1);
+		if (EReaderControl0IsLedEnable(hw->eReaderRegisterControl0)) {
+			GBARaiseIRQ(hw->p, IRQ_GAMEPAK, 0);
+		}
 	}
+}
+
+static int32_t _eReaderProcessEvents(struct GBACartridgeHardware* hw, int32_t cycles) {
+	if (hw->eReaderState != EREADER_SERIAL_INACTIVE) {
+		hw->eReaderDelay += cycles;
+		if (hw->eReaderDelay > 1024) {
+			mLOG(GBA_HW, DEBUG, "[e-Reader] Command timed out");
+			hw->eReaderState = EREADER_SERIAL_INACTIVE;
+		}
+	}
+	return INT_MAX;
 }
 
 // == Serialization

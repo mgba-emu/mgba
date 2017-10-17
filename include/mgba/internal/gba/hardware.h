@@ -171,12 +171,13 @@ struct GBACartridgeHardware {
 	enum EReaderCommand eReaderCommand;
 	uint8_t eReaderActiveRegister;
 	uint8_t eReaderByte;
-	uint8_t eReaderDelay;
+	int32_t eReaderDelay;
 	struct GBAEReaderDataSource* eReaderSource;
 };
 
 void GBAHardwareInit(struct GBACartridgeHardware* gpio, uint16_t* gpioBase);
 void GBAHardwareClear(struct GBACartridgeHardware* gpio);
+int32_t GBAHardwareProcessEvents(struct GBA* gba, int32_t cycles);
 
 void GBAHardwareInitRTC(struct GBACartridgeHardware* gpio);
 void GBAHardwareInitGyro(struct GBACartridgeHardware* gpio);
