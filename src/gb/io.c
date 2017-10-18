@@ -392,7 +392,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		return;
 	case REG_LCDC:
 		// TODO: handle GBC differences
-		GBVideoProcessDots(&gb->video);
+		GBVideoProcessDots(&gb->video, 0);
 		value = gb->video.renderer->writeVideoRegister(gb->video.renderer, address, value);
 		GBVideoWriteLCDC(&gb->video, value);
 		break;
@@ -406,13 +406,13 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case REG_SCX:
 	case REG_WY:
 	case REG_WX:
-		GBVideoProcessDots(&gb->video);
+		GBVideoProcessDots(&gb->video, 0);
 		value = gb->video.renderer->writeVideoRegister(gb->video.renderer, address, value);
 		break;
 	case REG_BGP:
 	case REG_OBP0:
 	case REG_OBP1:
-		GBVideoProcessDots(&gb->video);
+		GBVideoProcessDots(&gb->video, 0);
 		GBVideoWritePalette(&gb->video, address, value);
 		break;
 	case REG_STAT:
@@ -459,7 +459,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 				gb->memory.io[REG_BCPD] = gb->video.palette[gb->video.bcpIndex >> 1] >> (8 * (gb->video.bcpIndex & 1));
 				break;
 			case REG_BCPD:
-				GBVideoProcessDots(&gb->video);
+				GBVideoProcessDots(&gb->video, 0);
 				GBVideoWritePalette(&gb->video, address, value);
 				return;
 			case REG_OCPS:
@@ -468,7 +468,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 				gb->memory.io[REG_OCPD] = gb->video.palette[8 * 4 + (gb->video.ocpIndex >> 1)] >> (8 * (gb->video.ocpIndex & 1));
 				break;
 			case REG_OCPD:
-				GBVideoProcessDots(&gb->video);
+				GBVideoProcessDots(&gb->video, 0);
 				GBVideoWritePalette(&gb->video, address, value);
 				return;
 			case REG_SVBK:

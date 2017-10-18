@@ -310,7 +310,7 @@ void _endMode2(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 
 void _endMode3(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBVideo* video = context;
-	GBVideoProcessDots(video);
+	GBVideoProcessDots(video, cyclesLate);
 	if (video->ly < GB_VIDEO_VERTICAL_PIXELS && video->p->memory.isHdma && video->p->memory.io[REG_HDMA5] != 0xFF) {
 		video->p->memory.hdmaRemaining = 0x10;
 		video->p->cpuBlocked = true;
@@ -400,12 +400,12 @@ static void _cleanOAM(struct GBVideo* video, int y) {
 	video->objMax = o;
 }
 
-void GBVideoProcessDots(struct GBVideo* video) {
+void GBVideoProcessDots(struct GBVideo* video, uint32_t cyclesLate) {
 	if (video->mode != 3) {
 		return;
 	}
 	int oldX = video->x;
-	video->x = (video->p->timing.masterCycles - video->dotClock + video->p->cpu->cycles) >> video->p->doubleSpeed;
+	video->x = (mTimingCurrentTime(&video->p->timing) - video->dotClock - cyclesLate) >> video->p->doubleSpeed;
 	if (video->x > GB_VIDEO_HORIZONTAL_PIXELS) {
 		video->x = GB_VIDEO_HORIZONTAL_PIXELS;
 	} else if (video->x < 0) {
@@ -786,6 +786,7 @@ void GBVideoSerialize(const struct GBVideo* video, struct GBSerializedState* sta
 	STORE_16LE(video->x, 0, &state->video.x);
 	STORE_16LE(video->ly, 0, &state->video.ly);
 	STORE_32LE(video->frameCounter, 0, &state->video.frameCounter);
+	STORE_32LE(video->dotClock, 0, &state->video.dotCounter);
 	state->video.vramCurrentBank = video->vramCurrentBank;
 
 	GBSerializedVideoFlags flags = 0;
@@ -814,6 +815,7 @@ void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* s
 	LOAD_16LE(video->x, 0, &state->video.x);
 	LOAD_16LE(video->ly, 0, &state->video.ly);
 	LOAD_32LE(video->frameCounter, 0, &state->video.frameCounter);
+	LOAD_32LE(video->dotClock, 0, &state->video.dotCounter);
 	video->vramCurrentBank = state->video.vramCurrentBank;
 
 	GBSerializedVideoFlags flags = state->video.flags;

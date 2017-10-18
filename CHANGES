@@ -19,6 +19,7 @@ Bugfixes:
  - GBA Video: Don't mask out high bits of BLDY (fixes mgba.io/i/899)
  - GBA Video: Force align 256-color tiles
  - GBA DMA: ROM reads are forced to increment
+ - GB Video: Fix loading states while in mode 3
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
