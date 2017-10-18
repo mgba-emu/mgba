@@ -20,6 +20,7 @@ Bugfixes:
  - GBA Video: Force align 256-color tiles
  - GBA DMA: ROM reads are forced to increment
  - GB Video: Fix loading states while in mode 3
+ - GB Video: Only trigger STAT write IRQs when screen is on (fixes mgba.io/i/912)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)

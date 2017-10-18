@@ -455,7 +455,10 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value) {
 	GBRegisterSTAT oldStat = video->stat;
 	video->stat = (video->stat & 0x7) | (value & 0x78);
-	if (video->p->model < GB_MODEL_CGB && !_statIRQAsserted(video, oldStat) && video->mode < 3) {
+	if (!GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC]) || video->p->model >= GB_MODEL_CGB) {
+		return;
+	}
+	if (!_statIRQAsserted(video, oldStat) && video->mode < 3) {
 		// TODO: variable for the IRQ line value?
 		video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 		GBUpdateIRQs(video->p);
