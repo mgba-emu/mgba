@@ -9,7 +9,6 @@
 
 #include <QList>
 #include <QMap>
-#include <QThread>
 #include <QStackedWidget>
 
 #include <mgba/core/library.h>
@@ -66,19 +65,6 @@ public:
 	virtual QWidget* widget() = 0;
 };
 
-class LibraryLoaderThread final : public QThread {
-Q_OBJECT
-
-public:
-	LibraryLoaderThread(QObject* parent = nullptr);
-
-	mLibrary* m_library = nullptr;
-	QString m_directory;
-
-protected:
-	virtual void run() override;
-};
-
 class LibraryController final : public QStackedWidget {
 Q_OBJECT
 
@@ -110,9 +96,11 @@ private slots:
 	void refresh();
 
 private:
+	void loadDirectory(const QString&); // Called on separate thread
+
 	ConfigController* m_config = nullptr;
-	LibraryLoaderThread m_loaderThread;
-	mLibrary* m_library = nullptr;
+	std::shared_ptr<mLibrary> m_library;
+	qint64 m_libraryJob = -1;
 	mLibraryListing m_listing;
 	QMap<QString, LibraryEntryRef> m_entries;
 
