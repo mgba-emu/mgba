@@ -9,6 +9,8 @@
 #include <mgba/internal/gb/timer.h>
 #include <mgba/internal/lr35902/lr35902.h>
 
+#include <mgba-util/memory.h>
+
 mLOG_DEFINE_CATEGORY(GB_STATE, "GB Savestate", "gb.serialize");
 
 const uint32_t GB_SAVESTATE_MAGIC = 0x00400000;
@@ -171,12 +173,17 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		mTimingSchedule(&gb->timing, &gb->eiPending, when);
 	}
 
+	enum GBModel oldModel = gb->model;
 	gb->model = state->model;
 
 	if (gb->model < GB_MODEL_CGB) {
 		gb->audio.style = GB_AUDIO_DMG;
 	} else {
 		gb->audio.style = GB_AUDIO_CGB;
+	}
+
+	if (gb->model != GB_MODEL_SGB || oldModel != GB_MODEL_SGB) {
+		gb->video.sgbBorders = false;
 	}
 
 	GBMemoryDeserialize(gb, state);
@@ -237,21 +244,27 @@ void GBSGBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 
 	memcpy(gb->sgbPacket, state->sgb.packet, sizeof(state->sgb.packet));
 
-	if (gb->video.renderer->sgbCharRam) {
-		memcpy(gb->video.renderer->sgbCharRam, state->sgb.charRam, sizeof(state->sgb.charRam));
+	if (!gb->video.renderer->sgbCharRam) {
+		gb->video.renderer->sgbCharRam = anonymousMemoryMap(SGB_SIZE_CHAR_RAM);
 	}
-	if (gb->video.renderer->sgbMapRam) {
-		memcpy(gb->video.renderer->sgbMapRam, state->sgb.mapRam, sizeof(state->sgb.mapRam));
+	if (!gb->video.renderer->sgbMapRam) {
+		gb->video.renderer->sgbMapRam = anonymousMemoryMap(SGB_SIZE_MAP_RAM);
 	}
-	if (gb->video.renderer->sgbPalRam) {
-		memcpy(gb->video.renderer->sgbPalRam, state->sgb.palRam, sizeof(state->sgb.palRam));
+	if (!gb->video.renderer->sgbPalRam) {
+		gb->video.renderer->sgbPalRam = anonymousMemoryMap(SGB_SIZE_PAL_RAM);
 	}
-	if (gb->video.renderer->sgbAttributeFiles) {
-		memcpy(gb->video.renderer->sgbAttributeFiles, state->sgb.atfRam, sizeof(state->sgb.atfRam));
+	if (!gb->video.renderer->sgbAttributeFiles) {
+		gb->video.renderer->sgbAttributeFiles = anonymousMemoryMap(SGB_SIZE_ATF_RAM);
 	}
-	if (gb->video.renderer->sgbAttributes) {
-		memcpy(gb->video.renderer->sgbAttributes, state->sgb.attributes, sizeof(state->sgb.attributes));
+	if (!gb->video.renderer->sgbAttributes) {
+		gb->video.renderer->sgbAttributes = malloc(90 * 45);
 	}
+
+	memcpy(gb->video.renderer->sgbCharRam, state->sgb.charRam, sizeof(state->sgb.charRam));
+	memcpy(gb->video.renderer->sgbMapRam, state->sgb.mapRam, sizeof(state->sgb.mapRam));
+	memcpy(gb->video.renderer->sgbPalRam, state->sgb.palRam, sizeof(state->sgb.palRam));
+	memcpy(gb->video.renderer->sgbAttributeFiles, state->sgb.atfRam, sizeof(state->sgb.atfRam));
+	memcpy(gb->video.renderer->sgbAttributes, state->sgb.attributes, sizeof(state->sgb.attributes));
 
 	GBVideoWriteSGBPacket(&gb->video, (uint8_t[16]) { (SGB_ATRC_EN << 3) | 1, 0 });
 	GBVideoWriteSGBPacket(&gb->video, gb->sgbPacket);
