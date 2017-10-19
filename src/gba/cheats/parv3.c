@@ -80,6 +80,9 @@ static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2)
 		// TODO: Codes that disable
 		return false;
 	}
+	if (condition == PAR3_COND_AND) {
+		width = 1 << ((op1 & PAR3_WIDTH_AND) >> PAR3_WIDTH_BASE_AND);
+	}
 
 	struct mCheat* cheat = mCheatListAppend(&cheats->d.list);
 	cheat->address = _parAddr(op1);
@@ -132,8 +135,8 @@ static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2)
 	case PAR3_COND_UGT:
 		cheat->type = CHEAT_IF_UGT;
 		break;
-	case PAR3_COND_LAND:
-		cheat->type = CHEAT_IF_LAND;
+	case PAR3_COND_AND:
+		cheat->type = CHEAT_IF_AND;
 		break;
 	}
 	return true;
