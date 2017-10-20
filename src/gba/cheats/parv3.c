@@ -132,8 +132,8 @@ static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2)
 	case PAR3_COND_UGT:
 		cheat->type = CHEAT_IF_UGT;
 		break;
-	case PAR3_COND_LAND:
-		cheat->type = CHEAT_IF_LAND;
+	case PAR3_COND_AND:
+		cheat->type = CHEAT_IF_AND;
 		break;
 	}
 	return true;
