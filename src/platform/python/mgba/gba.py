@@ -26,6 +26,7 @@ class GBA(Core):
     SIO_NORMAL_32 = lib.SIO_NORMAL_32
     SIO_MULTI = lib.SIO_MULTI
     SIO_UART = lib.SIO_UART
+    SIO_JOYBUS = lib.SIO_JOYBUS
     SIO_GPIO = lib.SIO_GPIO
 
     def __init__(self, native):
@@ -82,6 +83,32 @@ class GBASIODriver(object):
 
     def writeRegister(self, address, value):
         return value
+
+class GBASIOJOYDriver(GBASIODriver):
+    RESET = lib.JOY_RESET
+    POLL = lib.JOY_POLL
+    TRANS = lib.JOY_TRANS
+    RECV = lib.JOY_RECV
+
+    def __init__(self):
+        self._handle = ffi.new_handle(self)
+        self._native = ffi.gc(lib.GBASIOJOYPythonDriverCreate(self._handle), lib.free)
+
+    def sendCommand(self, cmd, data):
+        buffer = ffi.new('uint8_t[5]')
+        try:
+            buffer[0] = data[0]
+            buffer[1] = data[1]
+            buffer[2] = data[2]
+            buffer[3] = data[3]
+            buffer[4] = data[4]
+        except IndexError:
+            pass
+
+        outlen = lib.GBASIOJOYSendCommand(self._native, cmd, buffer)
+        if outlen > 0 and outlen <= 5:
+            return bytes(buffer[0:outlen])
+        return None
 
 class GBAMemory(Memory):
     def __init__(self, core, romSize=lib.SIZE_CART0):
