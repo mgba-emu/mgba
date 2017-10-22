@@ -33,6 +33,7 @@ class GBA(Core):
         self._native = ffi.cast("struct GBA*", native.board)
         self.sprites = GBAObjs(self)
         self.cpu = ARMCore(self._core.cpu)
+        self._sio = set()
 
     @needsReset
     def _initCache(self, cache):
@@ -49,7 +50,12 @@ class GBA(Core):
         self.memory = GBAMemory(self._core, self._native.memory.romSize)
 
     def attachSIO(self, link, mode=lib.SIO_MULTI):
+        self._sio.add(mode)
         lib.GBASIOSetDriver(ffi.addressof(self._native.sio), link._native, mode)
+
+    def __del__(self):
+        for mode in self._sio:
+            lib.GBASIOSetDriver(ffi.addressof(self._native.sio), ffi.NULL, mode)
 
 createCallback("GBASIOPythonDriver", "init")
 createCallback("GBASIOPythonDriver", "deinit")

@@ -139,9 +139,6 @@ class Core(object):
             raise RuntimeError("Failed to initialize core")
         return cls._detect(core)
 
-    def _deinit(self):
-        self._core.deinit(self._core)
-
     @classmethod
     def _detect(cls, core):
         if hasattr(cls, 'PLATFORM_GBA') and core.platform(core) == cls.PLATFORM_GBA:
@@ -163,6 +160,9 @@ class Core(object):
 
     def loadROM(self, vf):
         return bool(self._core.loadROM(self._core, vf.handle))
+
+    def loadBIOS(self, vf, id=0):
+        return bool(self._core.loadBIOS(self._core, vf.handle, id))
 
     def loadSave(self, vf):
         return bool(self._core.loadSave(self._core, vf.handle))

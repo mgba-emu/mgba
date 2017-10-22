@@ -43,6 +43,9 @@ class GB(Core):
     def attachSIO(self, link):
         lib.GBSIOSetDriver(ffi.addressof(self._native.sio), link._native)
 
+    def __del__(self):
+        lib.GBSIOSetDriver(ffi.addressof(self._native.sio), ffi.NULL)
+
 createCallback("GBSIOPythonDriver", "init")
 createCallback("GBSIOPythonDriver", "deinit")
 createCallback("GBSIOPythonDriver", "writeSB")
