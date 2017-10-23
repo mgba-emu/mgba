@@ -203,7 +203,7 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 	case PAR3_OTHER_FILL_4:
 		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->address = _parAddr(op2);
-		cheat->width = 3;
+		cheat->width = 4;
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	}
@@ -219,7 +219,7 @@ bool GBACheatAddProActionReplayRaw(struct GBACheatSet* cheats, uint32_t op1, uin
 	if (cheats->incompleteCheat != COMPLETE) {
 		struct mCheat* incompleteCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat);
 		incompleteCheat->operand = op1 & (0xFFFFFFFFU >> ((4 - incompleteCheat->width) * 8));
-		incompleteCheat->addressOffset = op2 >> 24;
+		incompleteCheat->operandOffset = op2 >> 24;
 		incompleteCheat->repeat = (op2 >> 16) & 0xFF;
 		incompleteCheat->addressOffset = (op2 & 0xFFFF) * incompleteCheat->width;
 		cheats->incompleteCheat = COMPLETE;
