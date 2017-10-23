@@ -21,6 +21,7 @@ Bugfixes:
  - GBA DMA: ROM reads are forced to increment
  - GB Video: Fix loading states while in mode 3
  - GB Video: Only trigger STAT write IRQs when screen is on (fixes mgba.io/i/912)
+ - GBA Cheats: Fix PARv3 slide codes (fixes mgba.io/i/919)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
