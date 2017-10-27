@@ -43,7 +43,7 @@ static inline void _compositeBlendObjwin(struct GBAVideoSoftwareRenderer* render
 		if (current & FLAG_TARGET_1 && color & FLAG_TARGET_2) {
 			color = _mix(renderer->blda, current, renderer->bldb, color);
 		} else {
-			color = (current & 0x00FFFFFF) | (current & FLAG_REBLEND);
+			color = (current & 0x00FFFFFF) | (current & (FLAG_REBLEND | FLAG_OBJWIN));
 		}
 	} else {
 		color = (color & ~FLAG_TARGET_2) | (current & FLAG_OBJWIN);
@@ -59,7 +59,7 @@ static inline void _compositeBlendNoObjwin(struct GBAVideoSoftwareRenderer* rend
 		if (current & FLAG_TARGET_1 && color & FLAG_TARGET_2) {
 			color = _mix(renderer->blda, current, renderer->bldb, color);
 		} else {
-			color = (current & 0x00FFFFFF) | (current & FLAG_REBLEND);
+			color = (current & 0x00FFFFFF) | (current & (FLAG_REBLEND | FLAG_OBJWIN));
 		}
 	} else {
 		color = color & ~FLAG_TARGET_2;
@@ -73,7 +73,7 @@ static inline void _compositeNoBlendObjwin(struct GBAVideoSoftwareRenderer* rend
 	if (color < current) {
 		color |= (current & FLAG_OBJWIN);
 	} else {
-		color = (current & 0x00FFFFFF) | (current & FLAG_REBLEND);
+		color = (current & 0x00FFFFFF) | (current & (FLAG_REBLEND | FLAG_OBJWIN));
 	}
 	*pixel = color;
 }
@@ -82,7 +82,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
                                              uint32_t current) {
 	UNUSED(renderer);
 	if (color >= current) {
-		color = (current & 0x00FFFFFF) | (current & FLAG_REBLEND);
+		color = (current & 0x00FFFFFF) | (current & (FLAG_REBLEND | FLAG_OBJWIN));
 	}
 	*pixel = color;
 }
