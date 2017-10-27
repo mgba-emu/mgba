@@ -677,7 +677,9 @@ void Window::gameStarted() {
 #endif
 
 	m_hitUnimplementedBiosCall = false;
-	m_fpsTimer.start();
+	if (m_config->getOption("showFps", "1").toInt()) {
+		m_fpsTimer.start();
+	}
 	m_focusCheck.start();
 	if (m_display->underMouse()) {
 		m_screenWidget->setCursor(Qt::BlankCursor);
@@ -1584,6 +1586,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_manager->setPreload(value.toBool());
 	}, this);
 	m_config->updateOption("preload");
+
+	ConfigOption* showFps = m_config->addOption("showFps");
+	showFps->connect([this](const QVariant& value) {
+		if (!value.toInt()) {
+			m_fpsTimer.stop();
+			updateTitle();
+		} else if (m_controller) {
+			m_fpsTimer.start();
+		}
+	}, this);
 
 	QAction* exitFullScreen = new QAction(tr("Exit fullscreen"), frameMenu);
 	connect(exitFullScreen, &QAction::triggered, this, &Window::exitFullScreen);

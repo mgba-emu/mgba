@@ -33,6 +33,7 @@ Misc:
  - Util: Don't build crc32 if the function already exists
  - GBA: Implement display start DMAs
  - Qt: Prevent window from being created off-screen
+ - Qt: Add option to disable FPS display
 
 0.6.1: (2017-10-01)
 Bugfixes:

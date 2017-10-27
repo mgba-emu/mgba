@@ -337,6 +337,7 @@ void SettingsView::updateConfig() {
 	saveSetting("libraryStyle", m_ui.libraryStyle->currentIndex());
 	saveSetting("showLibrary", m_ui.showLibrary);
 	saveSetting("preload", m_ui.preload);
+	saveSetting("showFps", m_ui.showFps);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
@@ -454,6 +455,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("patchPath", m_ui.patchPath);
 	loadSetting("showLibrary", m_ui.showLibrary);
 	loadSetting("preload", m_ui.preload);
+	loadSetting("showFps", m_ui.showFps, true);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 
