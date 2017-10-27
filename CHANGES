@@ -22,6 +22,7 @@ Bugfixes:
  - GB Video: Fix loading states while in mode 3
  - GB Video: Only trigger STAT write IRQs when screen is on (fixes mgba.io/i/912)
  - GBA Cheats: Fix PARv3 slide codes (fixes mgba.io/i/919)
+ - GBA Video: OBJWIN can change blend params after OBJ is drawn (fixes mgba.io/i/921)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
