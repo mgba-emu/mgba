@@ -140,6 +140,7 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 		bg->dmy = 256;
 		bg->sx = 0;
 		bg->sy = 0;
+		bg->yCache = -1;
 	}
 }
 
@@ -388,6 +389,10 @@ static void GBAVideoSoftwareRendererWriteVRAM(struct GBAVideoRenderer* renderer,
 		mCacheSetWriteVRAM(renderer->cache, address);
 	}
 	memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+	softwareRenderer->bg[0].yCache = -1;
+	softwareRenderer->bg[1].yCache = -1;
+	softwareRenderer->bg[2].yCache = -1;
+	softwareRenderer->bg[3].yCache = -1;
 }
 
 static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
