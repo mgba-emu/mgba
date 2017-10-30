@@ -1499,9 +1499,11 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	int32_t previousLoads = 0;
 
 	// Don't prefetch too much if we're overlapping with a previous prefetch
-	uint32_t dist = (memory->lastPrefetchedPc - cpu->gprs[ARM_PC]) >> 1;
-	if (dist < 8) {
-		previousLoads = dist;
+	uint32_t dist = (memory->lastPrefetchedPc - cpu->gprs[ARM_PC]);
+	int32_t maxLoads = 8;
+	if (dist < 16) {
+		previousLoads = dist >> 1;
+		maxLoads -= previousLoads;
 	}
 
 	int32_t s = cpu->memory.activeSeqCycles16;
@@ -1511,12 +1513,9 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	int32_t stall = s;
 	int32_t loads = 1;
 
-	if (stall < wait) {
-		int32_t maxLoads = 8 - previousLoads;
-		while (stall < wait && loads < maxLoads) {
-			stall += s;
-			++loads;
-		}
+	while (stall < wait && loads < maxLoads) {
+		stall += s;
+		++loads;
 	}
 	if (stall > wait) {
 		// The wait cannot take less time than the prefetch stalls
