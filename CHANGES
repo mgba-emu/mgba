@@ -24,6 +24,7 @@ Bugfixes:
  - GBA Cheats: Fix PARv3 slide codes (fixes mgba.io/i/919)
  - GBA Video: OBJWIN can change blend params after OBJ is drawn (fixes mgba.io/i/921)
  - GBA DMA: Fix invalid DMA reads (fixes mgba.io/i/142)
+ - GBA Savedata: Fix crash when resizing flash
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)

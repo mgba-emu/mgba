@@ -576,9 +576,15 @@ void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
 	if (bank > 0 && savedata->type == SAVEDATA_FLASH512) {
 		mLOG(GBA_SAVE, INFO, "Updating flash chip from 512kb to 1Mb");
 		savedata->type = SAVEDATA_FLASH1M;
-		if (savedata->vf && savedata->vf->size(savedata->vf) == SIZE_CART_FLASH512) {
-			savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
-			memset(&savedata->data[SIZE_CART_FLASH512], 0xFF, SIZE_CART_FLASH512);
+		if (savedata->vf) {
+			savedata->vf->unmap(savedata->vf, savedata->data, SIZE_CART_FLASH512);
+			if (savedata->vf->size(savedata->vf) == SIZE_CART_FLASH512) {
+				savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
+				savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_FLASH1M, MAP_WRITE);
+				memset(&savedata->data[SIZE_CART_FLASH512], 0xFF, SIZE_CART_FLASH512);
+			} else {
+				savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_FLASH1M, MAP_WRITE);
+			}
 		}
 	}
 }
