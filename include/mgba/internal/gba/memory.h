@@ -106,6 +106,7 @@ struct GBAMemory {
 	struct GBADMA dma[4];
 	struct mTimingEvent dmaEvent;
 	int activeDMA;
+	uint32_t dmaTransferRegister;
 
 	bool mirroring;
 };

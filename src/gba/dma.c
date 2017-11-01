@@ -46,6 +46,8 @@ uint32_t GBADMAWriteSAD(struct GBA* gba, int dma, uint32_t address) {
 	address &= 0x0FFFFFFE;
 	if (_isValidDMASAD(dma, address)) {
 		memory->dma[dma].source = address;
+	} else {
+		memory->dma[dma].source = 0;
 	}
 	return memory->dma[dma].source;
 }
@@ -242,31 +244,44 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	info->when += cycles;
 
 	gba->performingDMA = 1 | (number << 1);
-	uint32_t word;
 	if (width == 4) {
-		word = cpu->memory.load32(cpu, source, 0);
-		gba->bus = word;
-		cpu->memory.store32(cpu, dest, word, 0);
+		if (source) {
+			memory->dmaTransferRegister = cpu->memory.load32(cpu, source, 0);
+		}
+		gba->bus = memory->dmaTransferRegister;
+		cpu->memory.store32(cpu, dest, memory->dmaTransferRegister, 0);
+		memory->dmaTransferRegister &= 0xFFFF0000;
+		memory->dmaTransferRegister |= memory->dmaTransferRegister >> 16;
 	} else {
 		if (sourceRegion == REGION_CART2_EX && memory->savedata.type == SAVEDATA_EEPROM) {
-			word = GBASavedataReadEEPROM(&memory->savedata);
-			cpu->memory.store16(cpu, dest, word, 0);
-		} else if (destRegion == REGION_CART2_EX) {
 			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 				mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
 				GBASavedataInitEEPROM(&memory->savedata, gba->realisticTiming);
 			}
-			word = cpu->memory.load16(cpu, source, 0);
-			GBASavedataWriteEEPROM(&memory->savedata, word, wordsRemaining);
+			memory->dmaTransferRegister = GBASavedataReadEEPROM(&memory->savedata);
 		} else {
-			word = cpu->memory.load16(cpu, source, 0);
-			cpu->memory.store16(cpu, dest, word, 0);
+			if (source) {
+				memory->dmaTransferRegister = cpu->memory.load16(cpu, source, 0);
+			}
 		}
-		gba->bus = word | (word << 16);
+		if (destRegion == REGION_CART2_EX) {
+			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
+				mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
+				GBASavedataInitEEPROM(&memory->savedata, gba->realisticTiming);
+			}
+			GBASavedataWriteEEPROM(&memory->savedata, memory->dmaTransferRegister, wordsRemaining);
+		} else {
+			cpu->memory.store16(cpu, dest, memory->dmaTransferRegister, 0);
+
+		}
+		memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
+		gba->bus = memory->dmaTransferRegister;
 	}
 	int sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
 	int destOffset = DMA_OFFSET[GBADMARegisterGetDestControl(info->reg)] * width;
-	source += sourceOffset;
+	if (source) {
+		source += sourceOffset;
+	}
 	dest += destOffset;
 	--wordsRemaining;
 	gba->performingDMA = 0;
