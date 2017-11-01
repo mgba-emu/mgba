@@ -35,6 +35,7 @@ Misc:
  - GBA: Implement display start DMAs
  - Qt: Prevent window from being created off-screen
  - Qt: Add option to disable FPS display
+ - GBA: Improve multiboot image detection
 
 0.6.1: (2017-10-01)
 Bugfixes:
