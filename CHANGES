@@ -5,6 +5,7 @@ Bugfixes:
  - GB Video: Only trigger STAT write IRQs when screen is on (fixes mgba.io/i/912)
  - GBA Cheats: Fix PARv3 slide codes (fixes mgba.io/i/919)
  - GBA Video: OBJWIN can change blend params after OBJ is drawn (fixes mgba.io/i/921)
+ - GBA Savedata: Fix crash when resizing flash
 Misc:
  - GBA: Improve multiboot image detection
 
