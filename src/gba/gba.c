@@ -509,16 +509,49 @@ bool GBAIsMB(struct VFile* vf) {
 	LOAD_32(opcode, 0, &signature);
 	struct ARMInstructionInfo info;
 	ARMDecodeARM(opcode, &info);
-	if (info.branchType != ARM_BRANCH) {
-		return false;
+	if (info.branchType == ARM_BRANCH) {
+		if (info.op1.immediate <= 0) {
+			return false;
+		} else if (info.op1.immediate == 28) {
+			// Ancient toolchain that is known to throw MB detection for a loop
+			return false;
+		} else if (info.op1.immediate != 24) {
+			return true;
+		}
 	}
-	if (info.op1.immediate <= 0) {
-		return false;
-	} else if (info.op1.immediate == 28) {
-		// Ancient toolchain that is known to throw MB detection for a loop
-		return false;
-	} else if (info.op1.immediate != 24) {
-		return true;
+
+	uint32_t pc = GBA_MB_MAGIC_OFFSET;
+	int i;
+	for (i = 0; i < 80; ++i) {
+		if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
+			break;
+		}
+		pc += 4;
+		LOAD_32(opcode, 0, &signature);
+		ARMDecodeARM(opcode, &info);
+		if (info.mnemonic != ARM_MN_LDR) {
+			continue;
+		}
+		if ((info.operandFormat & ARM_OPERAND_MEMORY) && info.memory.baseReg == ARM_PC && info.memory.format & ARM_MEMORY_IMMEDIATE_OFFSET) {
+			uint32_t immediate = info.memory.offset.immediate;
+			if (info.memory.format & ARM_MEMORY_OFFSET_SUBTRACT) {
+				immediate = -immediate;
+			}
+			immediate += pc + 8;
+			if (vf->seek(vf, immediate, SEEK_SET) < 0) {
+				break;
+			}
+			if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
+				break;
+			}
+			LOAD_32(immediate, 0, &signature);
+			if (vf->seek(vf, pc, SEEK_SET) < 0) {
+				break;
+			}
+			if ((immediate & ~0x7FF) == BASE_WORKING_RAM) {
+				return true;
+			}
+		}
 	}
 	// Found a libgba-linked cart...these are a bit harder to detect.
 	return false;
