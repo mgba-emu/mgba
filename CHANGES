@@ -25,6 +25,7 @@ Bugfixes:
  - GBA Video: OBJWIN can change blend params after OBJ is drawn (fixes mgba.io/i/921)
  - GBA DMA: Fix invalid DMA reads (fixes mgba.io/i/142)
  - GBA Savedata: Fix crash when resizing flash
+ - GBA Video: Add delay when enabling BGs (fixes mgba.io/i/744, mgba.io/i/752)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
