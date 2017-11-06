@@ -6,6 +6,7 @@ Bugfixes:
  - GBA Cheats: Fix PARv3 slide codes (fixes mgba.io/i/919)
  - GBA Video: OBJWIN can change blend params after OBJ is drawn (fixes mgba.io/i/921)
  - GBA Savedata: Fix crash when resizing flash
+ - GB Memory: HDMAs should not start when LCD is off (fixes mgba.io/i/310)
 Misc:
  - GBA: Improve multiboot image detection
  - GB MBC: Remove erroneous bank 0 wrapping
