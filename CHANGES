@@ -8,6 +8,7 @@ Bugfixes:
  - GBA Savedata: Fix crash when resizing flash
 Misc:
  - GBA: Improve multiboot image detection
+ - GB MBC: Remove erroneous bank 0 wrapping
 
 0.6.1: (2017-10-01)
 Bugfixes:
