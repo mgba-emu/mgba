@@ -1,1 +1,2 @@
-fail: true
+config:
+  gb.model: CGB
