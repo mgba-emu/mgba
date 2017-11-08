@@ -174,6 +174,7 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, REG_WY, 0x00);
 	GBIOWrite(gb, REG_WX, 0x00);
 	if (gb->model >= GB_MODEL_CGB) {
+		GBIOWrite(gb, REG_UNK4C, 0);
 		GBIOWrite(gb, REG_JOYP, 0xFF);
 		GBIOWrite(gb, REG_VBK, 0);
 		GBIOWrite(gb, REG_BCPS, 0);
@@ -424,7 +425,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			free(gb->memory.romBase);
 			gb->memory.romBase = gb->memory.rom;
 		}
-		if (gb->model >= GB_MODEL_CGB && gb->memory.io[0x6C]) {
+		if (gb->model >= GB_MODEL_CGB && gb->memory.io[REG_UNK4C] < 0x80) {
 			gb->model = GB_MODEL_DMG;
 			GBVideoDisableCGB(&gb->video);
 		}
@@ -436,6 +437,8 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	default:
 		if (gb->model >= GB_MODEL_CGB) {
 			switch (address) {
+			case REG_UNK4C:
+				break;
 			case REG_KEY1:
 				value &= 0x1;
 				value |= gb->memory.io[address] & 0x80;
