@@ -101,7 +101,6 @@ static const uint8_t _registerMask[] = {
 	[REG_BCPS] = 0x40,
 	[REG_UNK6C] = 0xFE,
 	[REG_SVBK] = 0xF8,
-	[REG_UNK75] = 0x8F,
 	[REG_IE]   = 0xE0,
 };
 
