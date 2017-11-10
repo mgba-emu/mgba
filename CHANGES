@@ -1,3 +1,9 @@
+0.6.2: (Future)
+Bugfixes:
+ - GBA Video: Force align 256-color tiles
+ - GBA DMA: ROM reads are forced to increment
+ - GB Video: Only trigger STAT write IRQs when screen is on (fixes mgba.io/i/912)
+
 0.6.1: (2017-10-01)
 Bugfixes:
  - GB, GBA: Fix crashes when attempting to identify null VFiles
