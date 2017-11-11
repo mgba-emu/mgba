@@ -190,18 +190,21 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		return false;
 	case PAR3_OTHER_FILL_1:
 		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
 		cheat->address = _parAddr(op2);
 		cheat->width = 1;
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case PAR3_OTHER_FILL_2:
 		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
 		cheat->address = _parAddr(op2);
 		cheat->width = 2;
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case PAR3_OTHER_FILL_4:
 		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
 		cheat->address = _parAddr(op2);
 		cheat->width = 4;
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
