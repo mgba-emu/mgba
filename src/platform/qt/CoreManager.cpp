@@ -109,6 +109,7 @@ CoreController* CoreManager::loadGame(VFile* vf, const QString& path, const QStr
 	bytes = info.dir().canonicalPath().toUtf8();
 	mDirectorySetAttachBase(&core->dirs, VDirOpen(bytes.constData()));
 	mCoreAutoloadSave(core);
+	mCoreAutoloadCheats(core);
 
 	CoreController* cc = new CoreController(core);
 	if (m_multiplayer) {

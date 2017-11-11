@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/core/core.h>
 
+#include <mgba/core/cheats.h>
 #include <mgba/core/log.h>
 #include <mgba/core/serialize.h>
 #include <mgba-util/vfs.h>
@@ -165,6 +166,24 @@ bool mCoreAutoloadPatch(struct mCore* core) {
 	       core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".bps", O_RDONLY));
 }
 
+bool mCoreAutoloadCheats(struct mCore* core) {
+	bool success = true;
+	int cheatAuto;
+	if (!mCoreConfigGetIntValue(&core->config, "cheatAutoload", &cheatAuto) || cheatAuto) {
+		struct VFile* vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.cheats, ".cheats", O_RDONLY);
+		if (vf) {
+			struct mCheatDevice* device = core->cheatDevice(core);
+			success = mCheatParseFile(device, vf);
+			vf->close(vf);
+		}
+	}
+	if (!mCoreConfigGetIntValue(&core->config, "cheatAutosave", &cheatAuto) || cheatAuto) {
+		struct mCheatDevice* device = core->cheatDevice(core);
+		device->autosave = true;
+	}
+	return success;
+}
+
 bool mCoreSaveState(struct mCore* core, int slot, int flags) {
 	struct VFile* vf = mCoreGetState(core, slot, true);
 	if (!vf) {
@@ -271,6 +290,10 @@ void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config
 	if (core->opts.audioBuffers) {
 		core->setAudioBufferSize(core, core->opts.audioBuffers);
 	}
+
+	mCoreConfigCopyValue(&core->config, config, "cheatAutosave");
+	mCoreConfigCopyValue(&core->config, config, "cheatAutoload");
+
 	core->loadConfig(core, config);
 }
 

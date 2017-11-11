@@ -79,6 +79,7 @@ struct mCheatDevice {
 	struct mCheatSet* (*createSet)(struct mCheatDevice*, const char* name);
 
 	struct mCheatSets cheats;
+	bool autosave;
 };
 
 struct VFile;
@@ -98,6 +99,7 @@ void mCheatRemoveSet(struct mCheatDevice*, struct mCheatSet*);
 
 bool mCheatParseFile(struct mCheatDevice*, struct VFile*);
 bool mCheatSaveFile(struct mCheatDevice*, struct VFile*);
+void mCheatAutosave(struct mCheatDevice*);
 
 void mCheatRefresh(struct mCheatDevice*, struct mCheatSet*);
 

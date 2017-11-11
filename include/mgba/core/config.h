@@ -51,6 +51,7 @@ struct mCoreOptions {
 	char* savestatePath;
 	char* screenshotPath;
 	char* patchPath;
+	char* cheatsPath;
 
 	int volume;
 	bool mute;

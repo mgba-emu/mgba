@@ -16,6 +16,7 @@ void mDirectorySetInit(struct mDirectorySet* dirs) {
 	dirs->patch = 0;
 	dirs->state = 0;
 	dirs->screenshot = 0;
+	dirs->cheats = 0;
 }
 
 void mDirectorySetDeinit(struct mDirectorySet* dirs) {
@@ -34,6 +35,9 @@ void mDirectorySetDeinit(struct mDirectorySet* dirs) {
 		if (dirs->archive == dirs->screenshot) {
 			dirs->screenshot = NULL;
 		}
+		if (dirs->archive == dirs->cheats) {
+			dirs->cheats = NULL;
+		}
 		dirs->archive->close(dirs->archive);
 		dirs->archive = NULL;
 	}
@@ -48,6 +52,9 @@ void mDirectorySetDeinit(struct mDirectorySet* dirs) {
 		if (dirs->save == dirs->screenshot) {
 			dirs->screenshot = NULL;
 		}
+		if (dirs->save == dirs->cheats) {
+			dirs->cheats = NULL;
+		}
 		dirs->save->close(dirs->save);
 		dirs->save = NULL;
 	}
@@ -59,6 +66,9 @@ void mDirectorySetDeinit(struct mDirectorySet* dirs) {
 		if (dirs->patch == dirs->screenshot) {
 			dirs->screenshot = NULL;
 		}
+		if (dirs->patch == dirs->cheats) {
+			dirs->cheats = NULL;
+		}
 		dirs->patch->close(dirs->patch);
 		dirs->patch = NULL;
 	}
@@ -67,13 +77,24 @@ void mDirectorySetDeinit(struct mDirectorySet* dirs) {
 		if (dirs->state == dirs->screenshot) {
 			dirs->state = NULL;
 		}
+		if (dirs->state == dirs->cheats) {
+			dirs->cheats = NULL;
+		}
 		dirs->state->close(dirs->state);
 		dirs->state = NULL;
 	}
 
 	if (dirs->screenshot) {
+		if (dirs->screenshot == dirs->cheats) {
+			dirs->cheats = NULL;
+		}
 		dirs->screenshot->close(dirs->screenshot);
 		dirs->screenshot = NULL;
+	}
+
+	if (dirs->cheats) {
+		dirs->cheats->close(dirs->cheats);
+		dirs->cheats = NULL;
 	}
 }
 
@@ -91,6 +112,9 @@ void mDirectorySetAttachBase(struct mDirectorySet* dirs, struct VDir* base) {
 	if (!dirs->screenshot) {
 		dirs->screenshot = dirs->base;
 	}
+	if (!dirs->cheats) {
+		dirs->cheats = dirs->base;
+	}
 }
 
 void mDirectorySetDetachBase(struct mDirectorySet* dirs) {
@@ -105,6 +129,9 @@ void mDirectorySetDetachBase(struct mDirectorySet* dirs) {
 	}
 	if (dirs->screenshot == dirs->base) {
 		dirs->screenshot = NULL;
+	}
+	if (dirs->cheats == dirs->base) {
+		dirs->cheats = NULL;
 	}
 
 	if (dirs->base) {
@@ -181,6 +208,16 @@ void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct mCoreOptio
 				dirs->patch->close(dirs->patch);
 			}
 			dirs->patch = dir;
+		}
+	}
+
+	if (opts->cheatsPath) {
+		struct VDir* dir = VDirOpen(opts->cheatsPath);
+		if (dir) {
+			if (dirs->cheats && dirs->cheats != dirs->base) {
+				dirs->cheats->close(dirs->cheats);
+			}
+			dirs->cheats = dir;
 		}
 	}
 }

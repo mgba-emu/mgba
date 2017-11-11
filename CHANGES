@@ -8,6 +8,7 @@ Features:
  - Customizable autofire speed
  - Ability to set default Game Boy model
  - Map viewer
+ - Automatic cheat loading and saving
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
  - GB Serialize: Fix audio state loading

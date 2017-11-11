@@ -379,6 +379,7 @@ void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts)
 	_lookupCharValue(config, "savestatePath", &opts->savestatePath);
 	_lookupCharValue(config, "screenshotPath", &opts->screenshotPath);
 	_lookupCharValue(config, "patchPath", &opts->patchPath);
+	_lookupCharValue(config, "cheatsPath", &opts->cheatsPath);
 }
 
 void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptions* opts) {
@@ -443,10 +444,12 @@ void mCoreConfigFreeOpts(struct mCoreOptions* opts) {
 	free(opts->savestatePath);
 	free(opts->screenshotPath);
 	free(opts->patchPath);
+	free(opts->cheatsPath);
 	opts->bios = 0;
 	opts->shader = 0;
 	opts->savegamePath = 0;
 	opts->savestatePath = 0;
 	opts->screenshotPath = 0;
 	opts->patchPath = 0;
+	opts->cheatsPath = 0;
 }

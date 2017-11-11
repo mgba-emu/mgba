@@ -182,6 +182,9 @@ class Core(object):
     def autoloadPatch(self):
         return bool(lib.mCoreAutoloadPatch(self._core))
 
+    def autoloadCheats(self):
+        return bool(lib.mCoreAutoloadCheats(self._core))
+
     def platform(self):
         return self._core.platform(self._core)
 

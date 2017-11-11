@@ -51,6 +51,7 @@ void mCheatDeviceCreate(struct mCheatDevice* device) {
 	device->d.id = M_CHEAT_DEVICE_ID;
 	device->d.init = mCheatDeviceInit;
 	device->d.deinit = mCheatDeviceDeinit;
+	device->autosave = false;
 	mCheatSetsInit(&device->cheats, 4);
 }
 
@@ -250,6 +251,15 @@ bool mCheatSaveFile(struct mCheatDevice* device, struct VFile* vf) {
 	StringListClear(&directives);
 	StringListDeinit(&directives);
 	return true;
+}
+
+void mCheatAutosave(struct mCheatDevice* device) {
+	if (!device->autosave) {
+		return;
+	}
+	struct VFile* vf = mDirectorySetOpenSuffix(&device->p->dirs, device->p->dirs.cheats, ".cheats", O_WRONLY | O_CREAT | O_TRUNC);
+	mCheatSaveFile(device, vf);
+	vf->close(vf);
 }
 
 void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {
