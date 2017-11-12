@@ -1145,7 +1145,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <translation>(unbenannt)</translation>
     </message>
     <message>
-        <location filename="../CheatsModel.cpp" line="209"/>
+        <location filename="../CheatsModel.cpp" line="213"/>
         <source>Failed to open cheats file: %1</source>
         <translation>Fehler beim Öffnen der Cheat-Datei: %1</translation>
     </message>
@@ -3007,59 +3007,59 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
 <context>
     <name>QGBA::SettingsView</name>
     <message>
-        <location filename="../SettingsView.cpp" line="114"/>
-        <location filename="../SettingsView.cpp" line="156"/>
+        <location filename="../SettingsView.cpp" line="130"/>
+        <location filename="../SettingsView.cpp" line="172"/>
         <source>Qt Multimedia</source>
         <translation>Qt Multimedia</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="121"/>
+        <location filename="../SettingsView.cpp" line="137"/>
         <source>SDL</source>
         <translation>SDL</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="129"/>
+        <location filename="../SettingsView.cpp" line="145"/>
         <source>Software (Qt)</source>
         <translation>Software (Qt)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="135"/>
+        <location filename="../SettingsView.cpp" line="151"/>
         <source>OpenGL</source>
         <translation>OpenGL</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="142"/>
+        <location filename="../SettingsView.cpp" line="158"/>
         <source>OpenGL (force version 1.x)</source>
         <translation>OpenGL (erzwinge Version 1.x)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="150"/>
+        <location filename="../SettingsView.cpp" line="166"/>
         <source>None (Still Image)</source>
         <translation>Keiner (Standbild)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="231"/>
+        <location filename="../SettingsView.cpp" line="247"/>
         <source>Keyboard</source>
         <translation>Tastatur</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="240"/>
+        <location filename="../SettingsView.cpp" line="256"/>
         <source>Controllers</source>
         <translation>Gamepads</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="272"/>
+        <location filename="../SettingsView.cpp" line="288"/>
         <source>Shortcuts</source>
         <translation>Tastenkürzel</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="284"/>
-        <location filename="../SettingsView.cpp" line="294"/>
+        <location filename="../SettingsView.cpp" line="300"/>
+        <location filename="../SettingsView.cpp" line="310"/>
         <source>Shaders</source>
         <translation>Shader</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="301"/>
+        <location filename="../SettingsView.cpp" line="317"/>
         <source>Select BIOS</source>
         <translation>BIOS auswählen</translation>
     </message>
@@ -4158,7 +4158,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     </message>
     <message>
         <location filename="../SettingsView.ui" line="312"/>
-        <location filename="../SettingsView.ui" line="591"/>
+        <location filename="../SettingsView.ui" line="618"/>
         <source>frames</source>
         <translation>Bilder</translation>
     </message>
@@ -4209,12 +4209,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <translation>Englisch</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="433"/>
+        <location filename="../SettingsView.ui" line="440"/>
         <source>List view</source>
         <translation>Listenansicht</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="438"/>
+        <location filename="../SettingsView.ui" line="445"/>
         <source>Tree view</source>
         <translation>Baumansicht</translation>
     </message>
@@ -4224,147 +4224,163 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <translation>Bildwiederholrate in der Titelleiste anzeigen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1078"/>
+        <location filename="../SettingsView.ui" line="518"/>
+        <source>Automatically save cheats</source>
+        <translation>Cheats automatisch speichern</translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="528"/>
+        <source>Automatically load cheats</source>
+        <translation>Cheats automatisch laden</translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1108"/>
+        <source>Cheats</source>
+        <translation>Cheats</translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1153"/>
         <source>Game Boy model</source>
         <translation>Game Boy-Modell</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1086"/>
-        <location filename="../SettingsView.ui" line="1122"/>
-        <location filename="../SettingsView.ui" line="1158"/>
+        <location filename="../SettingsView.ui" line="1161"/>
+        <location filename="../SettingsView.ui" line="1197"/>
+        <location filename="../SettingsView.ui" line="1233"/>
         <source>Autodetect</source>
         <translation>Automatisch erkennen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1091"/>
-        <location filename="../SettingsView.ui" line="1127"/>
-        <location filename="../SettingsView.ui" line="1163"/>
+        <location filename="../SettingsView.ui" line="1166"/>
+        <location filename="../SettingsView.ui" line="1202"/>
+        <location filename="../SettingsView.ui" line="1238"/>
         <source>Game Boy (DMG)</source>
         <translation>Game Boy (DMG)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1096"/>
-        <location filename="../SettingsView.ui" line="1132"/>
-        <location filename="../SettingsView.ui" line="1168"/>
+        <location filename="../SettingsView.ui" line="1171"/>
+        <location filename="../SettingsView.ui" line="1207"/>
+        <location filename="../SettingsView.ui" line="1243"/>
         <source>Super Game Boy (SGB)</source>
         <translation>Super Game Boy (SGB)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1101"/>
-        <location filename="../SettingsView.ui" line="1137"/>
-        <location filename="../SettingsView.ui" line="1173"/>
+        <location filename="../SettingsView.ui" line="1176"/>
+        <location filename="../SettingsView.ui" line="1212"/>
+        <location filename="../SettingsView.ui" line="1248"/>
         <source>Game Boy Color (CGB)</source>
         <translation>Game Boy Color (CGB)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1106"/>
-        <location filename="../SettingsView.ui" line="1142"/>
-        <location filename="../SettingsView.ui" line="1178"/>
+        <location filename="../SettingsView.ui" line="1181"/>
+        <location filename="../SettingsView.ui" line="1217"/>
+        <location filename="../SettingsView.ui" line="1253"/>
         <source>Game Boy Advance (AGB)</source>
         <translation>Game Boy Advance (AGB)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1114"/>
+        <location filename="../SettingsView.ui" line="1189"/>
         <source>Super Game Boy model</source>
         <translation>Super Game Boy-Modell</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1150"/>
+        <location filename="../SettingsView.ui" line="1225"/>
         <source>Game Boy Color model</source>
         <translation>Game Boy Color-Modell</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1193"/>
+        <location filename="../SettingsView.ui" line="1268"/>
         <source>Default BG colors:</source>
         <translation>Standard-Hintergrundfarben:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1471"/>
+        <location filename="../SettingsView.ui" line="1546"/>
         <source>Default sprite colors 1:</source>
         <translation>Standard-Sprite-Farben 1:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1478"/>
+        <location filename="../SettingsView.ui" line="1553"/>
         <source>Default sprite colors 2:</source>
         <translation>Standard-Sprite-Farben 2:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1360"/>
+        <location filename="../SettingsView.ui" line="1435"/>
         <source>Super Game Boy borders</source>
         <translation>Super Game Boy-Rahmen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1374"/>
+        <location filename="../SettingsView.ui" line="1449"/>
         <source>Camera driver:</source>
         <translation>Kamera-Treiber:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="425"/>
+        <location filename="../SettingsView.ui" line="432"/>
         <source>Library:</source>
         <translation>Bibliothek:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="446"/>
+        <location filename="../SettingsView.ui" line="453"/>
         <source>Show when no game open</source>
         <translation>Anzeigen, wenn kein Spiel geöffnet ist</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="456"/>
+        <location filename="../SettingsView.ui" line="463"/>
         <source>Clear cache</source>
         <translation>Cache leeren</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="518"/>
+        <location filename="../SettingsView.ui" line="545"/>
         <source>Fast forward speed:</source>
         <translation>Vorlauf-Geschwindigkeit:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="715"/>
+        <location filename="../SettingsView.ui" line="742"/>
         <source>Rewind affects save data</source>
         <translation>Rücklauf beeinflusst
 Speicherdaten</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="725"/>
+        <location filename="../SettingsView.ui" line="752"/>
         <source>Preload entire ROM into memory</source>
         <translation>ROM-Datei vollständig
 in Arbeitsspeicher vorladen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="772"/>
-        <location filename="../SettingsView.ui" line="810"/>
-        <location filename="../SettingsView.ui" line="845"/>
-        <location filename="../SettingsView.ui" line="873"/>
-        <location filename="../SettingsView.ui" line="914"/>
-        <location filename="../SettingsView.ui" line="962"/>
-        <location filename="../SettingsView.ui" line="1010"/>
-        <location filename="../SettingsView.ui" line="1058"/>
+        <location filename="../SettingsView.ui" line="799"/>
+        <location filename="../SettingsView.ui" line="837"/>
+        <location filename="../SettingsView.ui" line="872"/>
+        <location filename="../SettingsView.ui" line="900"/>
+        <location filename="../SettingsView.ui" line="941"/>
+        <location filename="../SettingsView.ui" line="989"/>
+        <location filename="../SettingsView.ui" line="1037"/>
+        <location filename="../SettingsView.ui" line="1085"/>
+        <location filename="../SettingsView.ui" line="1133"/>
         <source>Browse</source>
         <translation>Durchsuchen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="781"/>
+        <location filename="../SettingsView.ui" line="808"/>
         <source>Use BIOS file if found</source>
         <translation>BIOS-Datei verwenden,
 wenn vorhanden</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="791"/>
+        <location filename="../SettingsView.ui" line="818"/>
         <source>Skip BIOS intro</source>
         <translation>BIOS-Intro überspringen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="530"/>
+        <location filename="../SettingsView.ui" line="557"/>
         <source>×</source>
         <translation>×</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="549"/>
+        <location filename="../SettingsView.ui" line="576"/>
         <source>Unbounded</source>
         <translation>unbegrenzt</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="477"/>
+        <location filename="../SettingsView.ui" line="484"/>
         <source>Suspend screensaver</source>
         <translation>Bildschirmschoner deaktivieren</translation>
     </message>
@@ -4374,50 +4390,50 @@ wenn vorhanden</translation>
         <translation>BIOS</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="487"/>
+        <location filename="../SettingsView.ui" line="494"/>
         <source>Pause when inactive</source>
         <translation>Pause, wenn inaktiv</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="615"/>
+        <location filename="../SettingsView.ui" line="642"/>
         <source>Run all</source>
         <translation>Alle ausführen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="620"/>
+        <location filename="../SettingsView.ui" line="647"/>
         <source>Remove known</source>
         <translation>Bekannte entfernen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="625"/>
+        <location filename="../SettingsView.ui" line="652"/>
         <source>Detect and remove</source>
         <translation>Erkennen und entfernen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="470"/>
+        <location filename="../SettingsView.ui" line="477"/>
         <source>Allow opposing input directions</source>
         <translation>Gegensätzliche Eingaberichtungen erlauben</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="647"/>
-        <location filename="../SettingsView.ui" line="684"/>
+        <location filename="../SettingsView.ui" line="674"/>
+        <location filename="../SettingsView.ui" line="711"/>
         <source>Screenshot</source>
         <translation>Screenshot</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="657"/>
-        <location filename="../SettingsView.ui" line="694"/>
+        <location filename="../SettingsView.ui" line="684"/>
+        <location filename="../SettingsView.ui" line="721"/>
         <source>Save data</source>
         <translation>Speicherdaten</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="667"/>
-        <location filename="../SettingsView.ui" line="701"/>
+        <location filename="../SettingsView.ui" line="694"/>
+        <location filename="../SettingsView.ui" line="728"/>
         <source>Cheat codes</source>
         <translation>Cheat-Codes</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="568"/>
+        <location filename="../SettingsView.ui" line="595"/>
         <source>Enable rewind</source>
         <translation>Rücklauf aktivieren</translation>
     </message>
@@ -4427,75 +4443,76 @@ wenn vorhanden</translation>
         <translation>Bilineare Filterung</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="575"/>
+        <location filename="../SettingsView.ui" line="602"/>
         <source>Rewind history:</source>
         <translation>Rücklauf-Verlauf:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="607"/>
+        <location filename="../SettingsView.ui" line="634"/>
         <source>Idle loops:</source>
         <translation>Leerlaufprozesse:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="640"/>
+        <location filename="../SettingsView.ui" line="667"/>
         <source>Savestate extra data:</source>
         <translation>Zusätzliche Savestate-Daten:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="677"/>
+        <location filename="../SettingsView.ui" line="704"/>
         <source>Load extra data:</source>
         <translation>Lade zusätzliche Daten:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="732"/>
+        <location filename="../SettingsView.ui" line="759"/>
         <source>Autofire interval:</source>
         <translation>Autofeuer-Intervall:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="753"/>
+        <location filename="../SettingsView.ui" line="780"/>
         <source>GB BIOS file:</source>
         <translation>Datei mit GB-BIOS:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="819"/>
+        <location filename="../SettingsView.ui" line="846"/>
         <source>GBA BIOS file:</source>
         <translation>Datei mit GBA-BIOS:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="826"/>
+        <location filename="../SettingsView.ui" line="853"/>
         <source>GBC BIOS file:</source>
         <translation>Datei mit GBC-BIOS:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="854"/>
+        <location filename="../SettingsView.ui" line="881"/>
         <source>SGB BIOS file:</source>
         <translation>Datei mit SGB-BIOS:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="889"/>
+        <location filename="../SettingsView.ui" line="916"/>
         <source>Save games</source>
         <translation>Spielstände</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="923"/>
-        <location filename="../SettingsView.ui" line="971"/>
-        <location filename="../SettingsView.ui" line="1019"/>
-        <location filename="../SettingsView.ui" line="1067"/>
+        <location filename="../SettingsView.ui" line="950"/>
+        <location filename="../SettingsView.ui" line="998"/>
+        <location filename="../SettingsView.ui" line="1046"/>
+        <location filename="../SettingsView.ui" line="1094"/>
+        <location filename="../SettingsView.ui" line="1142"/>
         <source>Same directory as the ROM</source>
         <translation>Verzeichnis der ROM-Datei</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="937"/>
+        <location filename="../SettingsView.ui" line="964"/>
         <source>Save states</source>
         <translation>Savestates</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="985"/>
+        <location filename="../SettingsView.ui" line="1012"/>
         <source>Screenshots</source>
         <translation>Screenshots</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1033"/>
+        <location filename="../SettingsView.ui" line="1060"/>
         <source>Patches</source>
         <translation>Patches</translation>
     </message>
