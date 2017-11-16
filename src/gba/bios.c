@@ -529,7 +529,11 @@ static void _unLz77(struct GBA* gba, int width) {
 				source += 2;
 				disp = dest - (block & 0x0FFF) - 1;
 				bytes = (block >> 12) + 3;
-				while (bytes-- && remaining) {
+				while (bytes--) {
+					if (!remaining) {
+						mLOG(GBA_BIOS, GAME_ERROR, "Improperly compressed LZ77 data. Real BIOS would hang.");
+						break;
+					}
 					--remaining;
 					if (width == 2) {
 						byte = (int16_t) cpu->memory.load16(cpu, disp & ~1, 0);
