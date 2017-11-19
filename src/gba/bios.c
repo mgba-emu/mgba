@@ -531,7 +531,11 @@ static void _unLz77(struct GBA* gba, int width) {
 				bytes = (block >> 12) + 3;
 				while (bytes--) {
 					if (!remaining) {
-						mLOG(GBA_BIOS, GAME_ERROR, "Improperly compressed LZ77 data. Real BIOS would hang.");
+						if (gba->hardCrash) {
+							mLOG(GBA_BIOS, FATAL, "Improperly compressed LZ77 data. Real BIOS would hang.");
+						} else {
+							mLOG(GBA_BIOS, GAME_ERROR, "Improperly compressed LZ77 data. Real BIOS would hang.");
+						}
 						break;
 					}
 					--remaining;
