@@ -144,13 +144,41 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 	switch (op2 & 0xFF000000) {
 	case PAR3_OTHER_SLOWDOWN:
 		// TODO: Slowdown
+		mLOG(CHEATS, STUB, "Unimplemented PARv3 slowdown");
 		return false;
 	case PAR3_OTHER_BUTTON_1:
+		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_IF_BUTTON;
+		cheat->repeat = 1;
+		cheat->negativeRepeat = 0;
+		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
+		cheat->width = 1;
+		cheat->address = _parAddr(op2);
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
+		break;
 	case PAR3_OTHER_BUTTON_2:
+		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_IF_BUTTON;
+		cheat->repeat = 1;
+		cheat->negativeRepeat = 0;
+		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
+		cheat->width = 2;
+		cheat->address = _parAddr(op2);
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
+		break;
 	case PAR3_OTHER_BUTTON_4:
-		// TODO: Button
-		mLOG(CHEATS, STUB, "GameShark button unimplemented");
-		return false;
+		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_IF_BUTTON;
+		cheat->repeat = 1;
+		cheat->negativeRepeat = 0;
+		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
+		cheat->width = 4;
+		cheat->address = _parAddr(op2);
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
+		break;
 	// TODO: Fix overriding existing patches
 	case PAR3_OTHER_PATCH_1:
 		cheats->romPatches[0].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);

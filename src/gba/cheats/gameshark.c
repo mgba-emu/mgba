@@ -154,9 +154,32 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 		cheats->romPatches[0].exists = true;
 		return true;
 	case GSA_BUTTON:
-		// TODO: Implement button
-		mLOG(CHEATS, STUB, "GameShark button unimplemented");
-		return false;
+		switch (op1 & 0x00F00000) {
+		case 0x00100000:
+			cheat = mCheatListAppend(&cheats->d.list);
+			cheat->type = CHEAT_IF_BUTTON;
+			cheat->repeat = 1;
+			cheat->negativeRepeat = 0;
+			cheat = mCheatListAppend(&cheats->d.list);
+			cheat->type = CHEAT_ASSIGN;
+			cheat->width = 1;
+			cheat->address = op1 & 0x0F0FFFFF;
+			break;
+		case 0x00200000:
+			cheat = mCheatListAppend(&cheats->d.list);
+			cheat->type = CHEAT_IF_BUTTON;
+			cheat->repeat = 1;
+			cheat->negativeRepeat = 0;
+			cheat = mCheatListAppend(&cheats->d.list);
+			cheat->type = CHEAT_ASSIGN;
+			cheat->width = 2;
+			cheat->address = op1 & 0x0F0FFFFF;
+			break;
+		default:
+			mLOG(CHEATS, STUB, "GameShark button type unimplemented");
+			return false;
+		}
+		break;
 	case GSA_IF_EQ:
 		if (op1 == 0xDEADFACE) {
 			GBACheatReseedGameShark(cheats->gsaSeeds, op2, _gsa1T1, _gsa1T2);

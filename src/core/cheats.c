@@ -52,6 +52,7 @@ void mCheatDeviceCreate(struct mCheatDevice* device) {
 	device->d.init = mCheatDeviceInit;
 	device->d.deinit = mCheatDeviceDeinit;
 	device->autosave = false;
+	device->buttonDown = false;
 	mCheatSetsInit(&device->cheats, 4);
 }
 
@@ -360,6 +361,12 @@ void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {
 				negativeConditionRemaining = cheat->negativeRepeat;
 				operationsRemaining = 1;
 				break;
+			case CHEAT_IF_BUTTON:
+				condition = device->buttonDown;
+				conditionRemaining = cheat->repeat;
+				negativeConditionRemaining = cheat->negativeRepeat;
+				operationsRemaining = 1;
+				break;
 			}
 
 			if (performAssignment) {
@@ -382,6 +389,10 @@ void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {
 			endLoc = elseLoc + negativeConditionRemaining;
 		}
 	}
+}
+
+void mCheatPressButton(struct mCheatDevice* device, bool down) {
+	device->buttonDown = down;
 }
 
 void mCheatDeviceInit(void* cpu, struct mCPUComponent* component) {

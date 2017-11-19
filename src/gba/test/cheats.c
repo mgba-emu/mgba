@@ -1016,6 +1016,34 @@ M_TEST_DEFINE(doPARv3IfXContain1ElseContain1) {
 	assert_int_equal(core->rawRead8(core, 0x03000006, -1), 0x62);
 	assert_int_equal(core->rawRead8(core, 0x03000007, -1), 0x71);
 	assert_int_equal(core->rawRead8(core, 0x03000008, -1), 0x82);
+	set->deinit(set);
+}
+
+M_TEST_DEFINE(doPARv3IfButton) {
+	struct mCore* core = *state;
+	struct mCheatDevice* device = core->cheatDevice(core);
+	assert_non_null(device);
+	struct mCheatSet* set = device->createSet(device, NULL);
+	assert_non_null(set);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	assert_true(set->addLine(set, "00000000 10300000", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00000001 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
+
+	core->reset(core);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0);
+
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0);
+
+	mCheatPressButton(device, true);
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0);
+
+	mCheatPressButton(device, false);
+	core->rawWrite8(core, 0x03000000, -1, 0);
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0);
+	set->deinit(set);
 }
 
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(GBACheats,
@@ -1038,4 +1066,5 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(GBACheats,
 	cmocka_unit_test(doPARv3IfXContain1),
 	cmocka_unit_test(doPARv3IfXContain1Else),
 	cmocka_unit_test(doPARv3IfXElseContain1),
-	cmocka_unit_test(doPARv3IfXContain1ElseContain1))
+	cmocka_unit_test(doPARv3IfXContain1ElseContain1),
+	cmocka_unit_test(doPARv3IfButton))

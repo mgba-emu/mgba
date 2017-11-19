@@ -52,6 +52,7 @@
 #include "VideoView.h"
 
 #include <mgba/core/version.h>
+#include <mgba/core/cheats.h>
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/video.h>
@@ -1601,6 +1602,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(exitFullScreen, &QAction::triggered, this, &Window::exitFullScreen);
 	exitFullScreen->setShortcut(QKeySequence("Esc"));
 	addHiddenAction(frameMenu, exitFullScreen, "exitFullScreen");
+
+	m_shortcutController->addFunctions(toolsMenu, [this]() {
+		if (m_controller) {
+			mCheatPressButton(m_controller->cheatDevice(), true);
+		}
+	}, [this]() {
+		if (m_controller) {
+			mCheatPressButton(m_controller->cheatDevice(), false);
+		}
+	}, QKeySequence(Qt::Key_Apostrophe), tr("GameShark Button (held)"), "holdGSButton");
 
 	QMenu* autofireMenu = new QMenu(tr("Autofire"), this);
 	m_shortcutController->addMenu(autofireMenu);

@@ -30,7 +30,8 @@ enum mCheatType {
 	CHEAT_IF_UGT,
 	CHEAT_IF_AND,
 	CHEAT_IF_LAND,
-	CHEAT_IF_NAND
+	CHEAT_IF_NAND,
+	CHEAT_IF_BUTTON,
 };
 
 struct mCheat {
@@ -80,6 +81,7 @@ struct mCheatDevice {
 
 	struct mCheatSets cheats;
 	bool autosave;
+	bool buttonDown;
 };
 
 struct VFile;
@@ -102,6 +104,7 @@ bool mCheatSaveFile(struct mCheatDevice*, struct VFile*);
 void mCheatAutosave(struct mCheatDevice*);
 
 void mCheatRefresh(struct mCheatDevice*, struct mCheatSet*);
+void mCheatPressButton(struct mCheatDevice*, bool down);
 
 CXX_GUARD_END
 
