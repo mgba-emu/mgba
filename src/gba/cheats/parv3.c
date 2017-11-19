@@ -223,7 +223,7 @@ bool GBACheatAddProActionReplayRaw(struct GBACheatSet* cheats, uint32_t op1, uin
 		struct mCheat* incompleteCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat);
 		incompleteCheat->operand = op1 & (0xFFFFFFFFU >> ((4 - incompleteCheat->width) * 8));
 		incompleteCheat->operandOffset = op2 >> 24;
-		incompleteCheat->repeat = (op2 >> 16) & 0xFF;
+		incompleteCheat->repeat = ((op2 >> 16) & 0xFF) + 1;
 		incompleteCheat->addressOffset = (op2 & 0xFFFF) * incompleteCheat->width;
 		cheats->incompleteCheat = COMPLETE;
 		return true;
@@ -342,7 +342,7 @@ int GBACheatProActionReplayProbability(uint32_t op1, uint32_t op2) {
 		return 0x100;
 	}
 	if (!op1) {
-		probability += 0x20;
+		probability += 0x40;
 		uint32_t address = _parAddr(op2);
 		switch (op2 & 0xFE000000) {
 		case PAR3_OTHER_FILL_1:
@@ -363,8 +363,8 @@ int GBACheatProActionReplayProbability(uint32_t op1, uint32_t op2) {
 		case PAR3_OTHER_BUTTON_4:
 		case PAR3_OTHER_ENDIF:
 		case PAR3_OTHER_ELSE:
-			if (op2 & 0x01FFFFFF) {
-				probability -= 0x20;
+			if (op2 & 0x01000000) {
+				probability -= 0x40;
 			}
 			break;
 		default:

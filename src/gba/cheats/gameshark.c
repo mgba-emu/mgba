@@ -174,6 +174,7 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 		cheat->address = op2 & 0x0FFFFFFF;
 		cheat->operand = op1 & 0xFFFF;
 		cheat->repeat = (op1 >> 16) & 0xFF;
+		cheat->negativeRepeat = 0;
 		return true;
 	case GSA_HOOK:
 		if (cheats->hook) {
@@ -190,6 +191,7 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 	}
 	cheat->operand = op2;
 	cheat->repeat = 1;
+	cheat->negativeRepeat = 0;
 	return true;
 }
 
