@@ -421,6 +421,7 @@ M_TEST_DEFINE(doPARv3IfX) {
 	mCheatRefresh(device, set);
 	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
 	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0x11);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXxX) {
@@ -483,6 +484,7 @@ M_TEST_DEFINE(doPARv3IfXxX) {
 	assert_int_equal(core->rawRead8(core, 0x03000002, -1), 0x21);
 	assert_int_equal(core->rawRead8(core, 0x03000003, -1), 0x32);
 	assert_int_equal(core->rawRead8(core, 0x03000004, -1), 0x41);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXElse) {
@@ -517,6 +519,7 @@ M_TEST_DEFINE(doPARv3IfXElse) {
 	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
 	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0x11);
 	assert_int_equal(core->rawRead8(core, 0x03000002, -1), 0x22);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXElsexX) {
@@ -587,6 +590,7 @@ M_TEST_DEFINE(doPARv3IfXElsexX) {
 	assert_int_equal(core->rawRead8(core, 0x03000003, -1), 0x32);
 	assert_int_equal(core->rawRead8(core, 0x03000004, -1), 0x42);
 	assert_int_equal(core->rawRead8(core, 0x03000005, -1), 0x51);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXElsexXElse) {
@@ -664,6 +668,7 @@ M_TEST_DEFINE(doPARv3IfXElsexXElse) {
 	assert_int_equal(core->rawRead8(core, 0x03000004, -1), 0x42);
 	assert_int_equal(core->rawRead8(core, 0x03000005, -1), 0x51);
 	assert_int_equal(core->rawRead8(core, 0x03000006, -1), 0x62);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXContain1) {
@@ -725,6 +730,7 @@ M_TEST_DEFINE(doPARv3IfXContain1) {
 	assert_int_equal(core->rawRead8(core, 0x03000002, -1), 0x21);
 	assert_int_equal(core->rawRead8(core, 0x03000003, -1), 0x31);
 	assert_int_equal(core->rawRead8(core, 0x03000004, -1), 0x41);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXContain1Else) {
@@ -794,6 +800,7 @@ M_TEST_DEFINE(doPARv3IfXContain1Else) {
 	assert_int_equal(core->rawRead8(core, 0x03000003, -1), 0x31);
 	assert_int_equal(core->rawRead8(core, 0x03000004, -1), 0x41);
 	assert_int_equal(core->rawRead8(core, 0x03000005, -1), 0x52);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXElseContain1) {
@@ -863,6 +870,7 @@ M_TEST_DEFINE(doPARv3IfXElseContain1) {
 	assert_int_equal(core->rawRead8(core, 0x03000003, -1), 0x32);
 	assert_int_equal(core->rawRead8(core, 0x03000004, -1), 0x41);
 	assert_int_equal(core->rawRead8(core, 0x03000005, -1), 0x52);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXContain1ElseContain1) {
