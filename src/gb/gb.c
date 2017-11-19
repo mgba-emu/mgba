@@ -622,8 +622,6 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 		}
 		if (cpu->halted) {
 			cpu->cycles = cpu->nextEvent;
-			cpu->executionState += cpu->nextEvent;
-			cpu->executionState &= 3;
 			if (!gb->memory.ie || !gb->memory.ime) {
 				break;
 			}
@@ -681,8 +679,6 @@ static void _enableInterrupts(struct mTiming* timing, void* user, uint32_t cycle
 void GBHalt(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	if (!(gb->memory.ie & gb->memory.io[REG_IF])) {
-		cpu->executionState += cpu->nextEvent - cpu->cycles;
-		cpu->executionState &= 3;
 		cpu->cycles = cpu->nextEvent;
 		cpu->halted = true;
 	} else if (gb->model < GB_MODEL_CGB) {
