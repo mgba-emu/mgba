@@ -140,6 +140,7 @@ static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2)
 }
 
 static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
+	int romPatch = -1;
 	struct mCheat* cheat;
 	switch (op2 & 0xFF000000) {
 	case PAR3_OTHER_SLOWDOWN:
@@ -179,30 +180,17 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		cheat->address = _parAddr(op2);
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
-	// TODO: Fix overriding existing patches
 	case PAR3_OTHER_PATCH_1:
-		cheats->romPatches[0].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
-		cheats->romPatches[0].applied = false;
-		cheats->romPatches[0].exists = true;
-		cheats->incompletePatch = &cheats->romPatches[0];
+		romPatch = 0;
 		break;
 	case PAR3_OTHER_PATCH_2:
-		cheats->romPatches[1].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
-		cheats->romPatches[1].applied = false;
-		cheats->romPatches[1].exists = true;
-		cheats->incompletePatch = &cheats->romPatches[1];
+		romPatch = 1;
 		break;
 	case PAR3_OTHER_PATCH_3:
-		cheats->romPatches[2].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
-		cheats->romPatches[2].applied = false;
-		cheats->romPatches[2].exists = true;
-		cheats->incompletePatch = &cheats->romPatches[2];
+		romPatch = 2;
 		break;
 	case PAR3_OTHER_PATCH_4:
-		cheats->romPatches[3].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
-		cheats->romPatches[3].applied = false;
-		cheats->romPatches[3].exists = true;
-		cheats->incompletePatch = &cheats->romPatches[3];
+		romPatch = 3;
 		break;
 	case PAR3_OTHER_ENDIF:
 		if (cheats->currentBlock != COMPLETE) {
@@ -237,6 +225,18 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		cheat->width = 4;
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
+	}
+	if (romPatch >= 0) {
+		while (cheats->romPatches[romPatch].exists) {
+			++romPatch;
+			if (romPatch >= MAX_ROM_PATCHES) {
+				break;
+			}
+		}
+		cheats->romPatches[romPatch].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
+		cheats->romPatches[romPatch].applied = false;
+		cheats->romPatches[romPatch].exists = true;
+		cheats->incompletePatch = &cheats->romPatches[romPatch];
 	}
 	return true;
 }

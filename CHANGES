@@ -43,6 +43,7 @@ Misc:
  - Qt: Add option to disable FPS display
  - GBA: Improve multiboot image detection
  - GB MBC: Remove erroneous bank 0 wrapping
+ - GBA Cheats: Allow multiple ROM patches in the same slot
 
 0.6.1: (2017-10-01)
 Bugfixes:
