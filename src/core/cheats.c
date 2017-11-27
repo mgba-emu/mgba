@@ -254,6 +254,7 @@ bool mCheatSaveFile(struct mCheatDevice* device, struct VFile* vf) {
 	return true;
 }
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 void mCheatAutosave(struct mCheatDevice* device) {
 	if (!device->autosave) {
 		return;
@@ -262,6 +263,7 @@ void mCheatAutosave(struct mCheatDevice* device) {
 	mCheatSaveFile(device, vf);
 	vf->close(vf);
 }
+#endif
 
 void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {
 	if (!cheats->enabled) {

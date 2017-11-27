@@ -502,6 +502,7 @@ if(USE_ZLIB)
 	list(APPEND DEPENDENCY_LIB ${ZLIB_LIBRARIES})
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},zlib1g")
 	set(HAVE_CRC32 ON)
+	list(APPEND OS_LIB ${ZLIB_LIBRARIES})
 else()
 	# zlib pulls in crc32
 	check_function_exists(crc32 HAVE_CRC32)
@@ -819,7 +820,7 @@ if(BUILD_OPENEMU)
 	find_library(FOUNDATION Foundation)
 	find_library(OPENEMUBASE OpenEmuBase)
 	file(GLOB OE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/openemu/*.m)
-	add_library(${BINARY_NAME}-openemu MODULE ${CORE_SRC} ${OE_SRC})
+	add_library(${BINARY_NAME}-openemu MODULE ${CORE_SRC} ${OS_SRC})
 	set_target_properties(${BINARY_NAME}-openemu PROPERTIES
 		MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/openemu/Info.plist.in
 		BUNDLE TRUE
