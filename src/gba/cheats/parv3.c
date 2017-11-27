@@ -222,8 +222,15 @@ bool GBACheatAddProActionReplayRaw(struct GBACheatSet* cheats, uint32_t op1, uin
 	if (cheats->incompleteCheat != COMPLETE) {
 		struct mCheat* incompleteCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat);
 		incompleteCheat->operand = op1 & (0xFFFFFFFFU >> ((4 - incompleteCheat->width) * 8));
+		if (cheats->incompleteCheat > 0) {
+			struct mCheat* lastCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat - 1);
+			if (lastCheat->type == CHEAT_IF_BUTTON) {
+				cheats->incompleteCheat = COMPLETE;
+				return true;
+			}
+		}
 		incompleteCheat->operandOffset = op2 >> 24;
-		incompleteCheat->repeat = ((op2 >> 16) & 0xFF) + 1;
+		incompleteCheat->repeat = (op2 >> 16) & 0xFF;
 		incompleteCheat->addressOffset = (op2 & 0xFFFF) * incompleteCheat->width;
 		cheats->incompleteCheat = COMPLETE;
 		return true;

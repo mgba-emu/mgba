@@ -1016,6 +1016,7 @@ M_TEST_DEFINE(doPARv3IfXContain1ElseContain1) {
 	assert_int_equal(core->rawRead8(core, 0x03000006, -1), 0x62);
 	assert_int_equal(core->rawRead8(core, 0x03000007, -1), 0x71);
 	assert_int_equal(core->rawRead8(core, 0x03000008, -1), 0x82);
+	set->deinit(set);
 }
 
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(GBACheats,
