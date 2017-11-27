@@ -1037,9 +1037,12 @@ M_TEST_DEFINE(doPARv3IfButton) {
 
 	mCheatPressButton(device, true);
 	mCheatRefresh(device, set);
-	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
 
 	mCheatPressButton(device, false);
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
+
 	core->rawWrite8(core, 0x03000000, -1, 0);
 	mCheatRefresh(device, set);
 	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0);
