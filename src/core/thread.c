@@ -625,7 +625,9 @@ static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level
 	printf("\n");
 	struct mCoreThread* thread = mCoreThreadGet();
 	if (thread && level == mLOG_FATAL) {
+#ifndef DISABLE_THREADING
 		mCoreThreadMarkCrashed(thread);
+#endif
 	}
 }
 
