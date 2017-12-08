@@ -39,8 +39,10 @@ UsePreviousTasks=True
 AlwaysShowGroupOnReadyPage=True
 LicenseFile=LICENSE.txt
 #if IsRelease==yes;
+  AppVerName=mGBA {#AppVer}
   OutputBaseFilename=mGBA-{#AppVer}-win32
 #elif IsRelease==no;
+  AppVerName=mGBA (Development build)
   OutputBaseFilename=mGBA-setup-latest-win32
   #endif
 UsePreviousLanguage=False
