@@ -3,6 +3,14 @@ Bugfixes:
  - GBA Video: Force align 256-color tiles
  - GBA DMA: ROM reads are forced to increment
  - GB Video: Only trigger STAT write IRQs when screen is on (fixes mgba.io/i/912)
+ - GBA Cheats: Fix PARv3 slide codes (fixes mgba.io/i/919)
+ - GBA Video: OBJWIN can change blend params after OBJ is drawn (fixes mgba.io/i/921)
+ - GBA Savedata: Fix crash when resizing flash
+ - GB Memory: HDMAs should not start when LCD is off (fixes mgba.io/i/310)
+ - GBA Cheats: Fix slide codes not initializing properly
+Misc:
+ - GBA: Improve multiboot image detection
+ - GB MBC: Remove erroneous bank 0 wrapping
 
 0.6.1: (2017-10-01)
 Bugfixes:

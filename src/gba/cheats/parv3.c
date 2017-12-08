@@ -132,8 +132,8 @@ static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2)
 	case PAR3_COND_UGT:
 		cheat->type = CHEAT_IF_UGT;
 		break;
-	case PAR3_COND_LAND:
-		cheat->type = CHEAT_IF_LAND;
+	case PAR3_COND_AND:
+		cheat->type = CHEAT_IF_AND;
 		break;
 	}
 	return true;
@@ -190,20 +190,23 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		return false;
 	case PAR3_OTHER_FILL_1:
 		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
 		cheat->address = _parAddr(op2);
 		cheat->width = 1;
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case PAR3_OTHER_FILL_2:
 		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
 		cheat->address = _parAddr(op2);
 		cheat->width = 2;
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case PAR3_OTHER_FILL_4:
 		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
 		cheat->address = _parAddr(op2);
-		cheat->width = 3;
+		cheat->width = 4;
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	}
@@ -219,8 +222,8 @@ bool GBACheatAddProActionReplayRaw(struct GBACheatSet* cheats, uint32_t op1, uin
 	if (cheats->incompleteCheat != COMPLETE) {
 		struct mCheat* incompleteCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat);
 		incompleteCheat->operand = op1 & (0xFFFFFFFFU >> ((4 - incompleteCheat->width) * 8));
-		incompleteCheat->addressOffset = op2 >> 24;
-		incompleteCheat->repeat = (op2 >> 16) & 0xFF;
+		incompleteCheat->operandOffset = op2 >> 24;
+		incompleteCheat->repeat = ((op2 >> 16) & 0xFF) + 1;
 		incompleteCheat->addressOffset = (op2 & 0xFFFF) * incompleteCheat->width;
 		cheats->incompleteCheat = COMPLETE;
 		return true;
@@ -341,7 +344,7 @@ int GBACheatProActionReplayProbability(uint32_t op1, uint32_t op2) {
 		return 0x100;
 	}
 	if (!op1) {
-		probability += 0x20;
+		probability += 0x40;
 		uint32_t address = _parAddr(op2);
 		switch (op2 & 0xFE000000) {
 		case PAR3_OTHER_FILL_1:
@@ -362,8 +365,8 @@ int GBACheatProActionReplayProbability(uint32_t op1, uint32_t op2) {
 		case PAR3_OTHER_BUTTON_4:
 		case PAR3_OTHER_ENDIF:
 		case PAR3_OTHER_ELSE:
-			if (op2 & 0x01FFFFFF) {
-				probability -= 0x20;
+			if (op2 & 0x01000000) {
+				probability -= 0x40;
 			}
 			break;
 		default:

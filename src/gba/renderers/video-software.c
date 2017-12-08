@@ -568,6 +568,14 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 	if (softwareRenderer->target1Obj && (softwareRenderer->blendEffect == BLEND_DARKEN || softwareRenderer->blendEffect == BLEND_BRIGHTEN)) {
 		x = 0;
+		uint32_t mask = 0xFF000000 & ~FLAG_OBJWIN;
+		uint32_t match = FLAG_REBLEND;
+		if (GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt)) {
+			mask |= FLAG_OBJWIN;
+			if (GBAWindowControlIsBlendEnable(softwareRenderer->objwin.packed)) {
+				match |= FLAG_OBJWIN;
+			}
+		}
 		for (w = 0; w < softwareRenderer->nWindows; ++w) {
 			if (!GBAWindowControlIsBlendEnable(softwareRenderer->windows[w].control.packed)) {
 				continue;
@@ -576,14 +584,14 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			if (softwareRenderer->blendEffect == BLEND_DARKEN) {
 				for (; x < end; ++x) {
 					uint32_t color = softwareRenderer->row[x];
-					if ((color & 0xFF000000) == FLAG_REBLEND) {
+					if ((color & mask) == match) {
 						softwareRenderer->row[x] = _darken(color, softwareRenderer->bldy);
 					}
 				}
 			} else if (softwareRenderer->blendEffect == BLEND_BRIGHTEN) {
 				for (; x < end; ++x) {
 					uint32_t color = softwareRenderer->row[x];
-					if ((color & 0xFF000000) == FLAG_REBLEND) {
+					if ((color & mask) == match) {
 						softwareRenderer->row[x] = _brighten(color, softwareRenderer->bldy);
 					}
 				}

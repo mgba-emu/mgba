@@ -410,8 +410,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 				// Handled transparently by the registers
 				break;
 			case REG_HDMA5:
-				GBMemoryWriteHDMA5(gb, value);
-				value &= 0x7F;
+				value = GBMemoryWriteHDMA5(gb, value);
 				break;
 			case REG_BCPS:
 				gb->video.bcpIndex = value & 0x3F;
