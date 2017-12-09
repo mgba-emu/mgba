@@ -1674,5 +1674,21 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cheatsSameDir</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>cheatsPath</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>351</x>
+     <y>407</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>343</x>
+     <y>372</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
 </ui>
