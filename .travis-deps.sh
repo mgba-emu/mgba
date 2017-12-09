@@ -2,11 +2,6 @@
 if [ $TRAVIS_OS_NAME = "osx" ]; then
 	brew update
 	brew install qt5 ffmpeg imagemagick sdl2 libzip libpng
-	if [ "$CC" == "gcc" ]; then
-		brew install gcc@4.9
-		export CC=gcc-4.9
-		export CXX=g++-4.9
-	fi
 else
 	sudo apt-get clean
 	sudo apt-get update
