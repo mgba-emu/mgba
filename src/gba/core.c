@@ -805,6 +805,7 @@ static void _GBACoreEnableAudioChannel(struct mCore* core, size_t id, bool enabl
 	}
 }
 
+#ifndef MINIMAL_CORE
 static void _GBACoreStartVideoLog(struct mCore* core, struct mVideoLogContext* context) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = core->board;
@@ -831,6 +832,7 @@ static void _GBACoreEndVideoLog(struct mCore* core) {
 	free(gbacore->proxyRenderer.logger);
 	gbacore->proxyRenderer.logger = NULL;
 }
+#endif
 
 struct mCore* GBACoreCreate(void) {
 	struct GBACore* gbacore = malloc(sizeof(*gbacore));

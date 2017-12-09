@@ -10,8 +10,6 @@ matrix:
       compiler: gcc
     - os: osx
       compiler: clang
-    - os: osx
-      compiler: gcc
 
 before_install:
   - source ./.travis-deps.sh
