@@ -2,11 +2,6 @@
 if [ $TRAVIS_OS_NAME = "osx" ]; then
 	brew update
 	brew install qt5 ffmpeg imagemagick sdl2 libzip libpng
-	if [ "$CC" == "gcc" ]; then
-		brew install gcc@5
-		export CC=gcc-5
-		export CXX=g++-5
-	fi
 else
 	sudo apt-get clean
 	sudo add-apt-repository -y ppa:george-edison55/cmake-3.x
