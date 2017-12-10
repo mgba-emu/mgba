@@ -282,7 +282,9 @@ DEFINES += $(PLATFORM_DEFINES) $(RETRODEFS)
 
 CFLAGS += $(CODE_DEFINES) $(fpic) $(DEFINES)
 
-LIBS :=
+ifeq (,$(findstring msvc,$(platform)))
+LIBS += -lm
+endif
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(INCLUDES)
