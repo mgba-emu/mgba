@@ -99,7 +99,7 @@ void MemoryModel::setRegion(uint32_t base, uint32_t size, const QString& name, i
 	m_top = 0;
 	m_base = base;
 	m_size = size;
-	m_regionName = name;
+	m_regionName = QStaticText(name);
 	m_regionName.prepare(QTransform(), m_font);
 	m_currentBank = segment;
 	verticalScrollBar()->setRange(0, (size >> 4) + 1 - viewport()->size().height() / m_cellHeight);
