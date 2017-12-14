@@ -157,12 +157,6 @@ italian.FileAssoc=Register file associations
 spanish.FileAssoc=Register file associations
 german.FileAssoc=Dateierweiterungen registrieren
 
-[INI]
-Filename: "{userappdata}\mGBA\qt.ini"; Section: "General"; Key: "language"; String: "en"; Languages: english
-Filename: "{userappdata}\mGBA\qt.ini"; Section: "General"; Key: "language"; String: "de"; Languages: german
-Filename: "{userappdata}\mGBA\qt.ini"; Section: "General"; Key: "language"; String: "es"; Languages: spanish
-Filename: "{userappdata}\mGBA\qt.ini"; Section: "General"; Key: "language"; String: "it"; Languages: italian
-
 [Registry]
 Root: HKCR; Subkey: ".gb"; ValueType: string; ValueName: ""; ValueData: "Game Boy ROM"; Flags: uninsdeletevalue; Tasks: gbfileassoc
 Root: HKCR; Subkey: ".gb\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\mGBA.exe,0"; Tasks: gbfileassoc
