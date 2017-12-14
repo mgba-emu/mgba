@@ -174,7 +174,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 		QLocale locale(name.remove(QString("%0-").arg(binaryName)).remove(".qm"));
 		m_ui.languages->addItem(locale.nativeLanguageName(), locale);
-		if (locale == QLocale()) {
+		if (locale.bcp47Name() == QLocale().bcp47Name()) {
 			m_ui.languages->setCurrentIndex(m_ui.languages->count() - 1);
 		}
 	}
