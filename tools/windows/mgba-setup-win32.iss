@@ -3,7 +3,7 @@
 
 ;IsRelease = yes will create a setup file named after the current version of mGBA.
 ;IsRelease = no will create a setup fille named mGBA-setup-latest-win32.exe.
-#define IsRelease = yes
+#define IsRelease = 'no'
 
 #define VerMajor
 #define VerMinor
@@ -38,10 +38,10 @@ UsePreviousSetupType=True
 UsePreviousTasks=True
 AlwaysShowGroupOnReadyPage=True
 LicenseFile=LICENSE.txt
-#if IsRelease==yes;
+#if IsRelease=='yes';
   AppVerName=mGBA {#AppVer}
   OutputBaseFilename=mGBA-{#AppVer}-win32
-#elif IsRelease==no;
+#elif IsRelease=='no';
   AppVerName=mGBA (Development build)
   OutputBaseFilename=mGBA-setup-latest-win32
   #endif
@@ -165,5 +165,21 @@ Root: HKCR; Subkey: ".gbc"; ValueType: string; ValueName: ""; ValueData: "Game B
 Root: HKCR; Subkey: ".gbc\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\mGBA.exe,0"; Tasks: gbcfileassoc
 Root: HKCR; Subkey: ".gbc\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\mGBA.exe"" ""%1"""; Tasks: gbcfileassoc
 Root: HKCR; Subkey: ".gba"; ValueType: string; ValueName: ""; ValueData: "Game Boy Advance ROM"; Flags: uninsdeletevalue; Tasks: gbafileassoc
-Root: HKCR; Subkey: ".gba\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\mGBA.exe,0"; Tasks: gbafileassoc
-Root: HKCR; Subkey: ".gba\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\mGBA.exe"" ""%1"""; Tasks: gbafileassoc
+Root: HKCR; Subkey: ".gba\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\mGBA.exe,0"; Tasks: gbafileassocRoot: HKCR; Subkey: ".gba\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\mGBA.exe"" ""%1"""; Tasks: gbafileassoc
+
+[Code]
+var 
+  noReleaseWarning: String;
+
+procedure InitializeWizard();
+  begin
+      if ExpandConstant('{#IsRelease}') = 'no' then
+        begin
+        if ExpandConstant('{language}') = 'english' then noReleaseWarning := 'You are about to install a development build of mGBA.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'italian' then noReleaseWarning := 'You are about to install a development build of mGBA.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'spanish' then noReleaseWarning := 'You are about to install a development build of mGBA.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'german' then noReleaseWarning := 'Sie möchten eine Entwicklerversion von mGBA installieren.' + #13#10#13#10 + 'Entwicklerversionen können bislang noch nicht endeckte Fehler beinhalten. Bitte melden Sie alle Fehler, die Sie finden können, auf der GitHub-Projektseite.';
+        MsgBox(noReleaseWarning, mbInformation, MB_OK);
+      end;
+  end;
+end.
