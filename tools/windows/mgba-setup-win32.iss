@@ -1,9 +1,8 @@
 ;For automation purposes it is highly recommended to copy the files from
 ;\tools\windows\ to the directory that contains the win32 distribution files!
 
-;IsRelease = yes will create a setup file named after the current version of mGBA.
-;IsRelease = no will create a setup fille named mGBA-setup-latest-win32.exe.
-#define IsRelease = 'no'
+;Set CurrentReleaseVersion to the number of the latest stable mGBA build.
+#define CurrentReleaseVersion = '0.6.1'
 
 #define VerMajor
 #define VerMinor
@@ -38,10 +37,12 @@ UsePreviousSetupType=True
 UsePreviousTasks=True
 AlwaysShowGroupOnReadyPage=True
 LicenseFile=LICENSE.txt
-#if IsRelease=='yes';
+#if CurrentReleaseVersion == AppVer;
+  #define IsRelease = 'yes'
   AppVerName=mGBA {#AppVer}
   OutputBaseFilename=mGBA-{#AppVer}-win32
-#elif IsRelease=='no';
+#elif CurrentReleaseVersion != AppVer;
+  #define IsRelease = 'no'
   AppVerName=mGBA (Development build)
   OutputBaseFilename=mGBA-setup-latest-win32
   #endif
