@@ -39,7 +39,7 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	}
 	struct mDebuggerEntryInfo info = {
 		.address = breakpoint->address,
-		.breakType = BREAKPOINT_HARDWARE
+		.type.bp.breakType = BREAKPOINT_HARDWARE
 	};
 	mDebuggerEnter(d->p, DEBUGGER_ENTER_BREAKPOINT, &info);
 }
