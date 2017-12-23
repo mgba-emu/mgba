@@ -25,13 +25,9 @@ struct CLIDebugVector {
 		CLIDV_INT_TYPE,
 		CLIDV_CHAR_TYPE,
 	} type;
-	union {
-		char* charValue;
-		struct {
-			int32_t intValue;
-			int segmentValue;
-		};
-	};
+	char* charValue;
+	int32_t intValue;
+	int segmentValue;
 };
 
 typedef void (*CLIDebuggerCommand)(struct CLIDebugger*, struct CLIDebugVector*);

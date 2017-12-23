@@ -60,13 +60,13 @@ struct mDebuggerEntryInfo {
 			uint32_t newValue;
 			enum mWatchpointType watchType;
 			enum mWatchpointType accessType;
-		};
+		} wp;
 
 		struct {
 			uint32_t opcode;
 			enum mBreakpointType breakType;
-		};
-	};
+		} bp;
+	} type;
 };
 
 struct mDebugger;

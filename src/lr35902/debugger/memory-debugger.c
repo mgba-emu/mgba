@@ -47,11 +47,11 @@ static bool _checkWatchpoints(struct LR35902Debugger* debugger, uint16_t address
 	for (i = 0; i < LR35902DebugWatchpointListSize(&debugger->watchpoints); ++i) {
 		watchpoint = LR35902DebugWatchpointListGetPointer(&debugger->watchpoints, i);
 		if (watchpoint->address == address && (watchpoint->segment < 0 || watchpoint->segment == debugger->originalMemory.currentSegment(debugger->cpu, address)) && watchpoint->type & type) {
-			info->oldValue = debugger->originalMemory.load8(debugger->cpu, address);
-			info->newValue = newValue;
+			info->type.wp.oldValue = debugger->originalMemory.load8(debugger->cpu, address);
+			info->type.wp.newValue = newValue;
 			info->address = address;
-			info->watchType = watchpoint->type;
-			info->accessType = type;
+			info->type.wp.watchType = watchpoint->type;
+			info->type.wp.accessType = type;
 			return true;
 		}
 	}
