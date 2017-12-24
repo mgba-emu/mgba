@@ -107,7 +107,7 @@ else ifeq ($(platform), osx)
       DEFINES += -D__POWERPC__ -D__PPC__ -DMSB_FIRST
    endif
    DEFINES += -DHAVE_LOCALE
-   DEFINES += -std=c99
+   DEFINES += -std=gnu99
 
 # iOS
 else ifneq (,$(findstring ios,$(platform)))
