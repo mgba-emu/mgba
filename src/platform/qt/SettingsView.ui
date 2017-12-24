@@ -1690,5 +1690,21 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>fastForwardUnbounded</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>fastForwardRatio</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>445</x>
+     <y>38</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>349</x>
+     <y>38</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
 </ui>
