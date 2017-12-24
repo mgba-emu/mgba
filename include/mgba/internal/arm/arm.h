@@ -91,7 +91,7 @@ union PSR {
 		unsigned z : 1;
 		unsigned n : 1;
 #endif
-	} a;
+	};
 
 	int32_t packed;
 };

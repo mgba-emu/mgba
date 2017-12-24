@@ -39,13 +39,13 @@ static struct CLIDebuggerCommandSummary _armCommands[] = {
 
 static inline void _printPSR(struct CLIDebuggerBackend* be, union PSR psr) {
 	be->printf(be, "%08X [%c%c%c%c%c%c%c]\n", psr.packed,
-	           psr.a.n ? 'N' : '-',
-	           psr.a.z ? 'Z' : '-',
-	           psr.a.c ? 'C' : '-',
-	           psr.a.v ? 'V' : '-',
-	           psr.a.i ? 'I' : '-',
-	           psr.a.f ? 'F' : '-',
-	           psr.a.t ? 'T' : '-');
+	           psr.n ? 'N' : '-',
+	           psr.z ? 'Z' : '-',
+	           psr.c ? 'C' : '-',
+	           psr.v ? 'V' : '-',
+	           psr.i ? 'I' : '-',
+	           psr.f ? 'F' : '-',
+	           psr.t ? 'T' : '-');
 }
 
 static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVector* dv) {
@@ -136,7 +136,7 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	}
 	_printPSR(be, cpu->cpsr);
 	int instructionLength;
-	enum ExecutionMode mode = cpu->cpsr.a.t;
+	enum ExecutionMode mode = cpu->cpsr.t;
 	if (mode == MODE_ARM) {
 		instructionLength = WORD_SIZE_ARM;
 	} else {

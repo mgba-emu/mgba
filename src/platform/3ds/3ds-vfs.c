@@ -293,7 +293,7 @@ static const char* _vd3deName(struct VDirEntry* vde) {
 
 static enum VFSType _vd3deType(struct VDirEntry* vde) {
 	struct VDirEntry3DS* vd3de = (struct VDirEntry3DS*) vde;
-	if (vd3de->ent.attributes & 0xFF) {
+	if (vd3de->ent.attributes & FS_ATTRIBUTE_DIRECTORY) {
 		return VFS_DIRECTORY;
 	}
 	return VFS_FILE;

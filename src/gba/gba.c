@@ -228,7 +228,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		gba->bus |= cpu->prefetch[1] << 16;
 	}
 
-	if (gba->springIRQ && !cpu->cpsr.a.i) {
+	if (gba->springIRQ && !cpu->cpsr.i) {
 		ARMRaiseIRQ(cpu);
 		gba->springIRQ = 0;
 	}
@@ -602,7 +602,7 @@ void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 	if (gba->debugger) {
 		struct mDebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
-			.a.c.opcode = opcode
+			.type.bp.opcode = opcode
 		};
 		mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_ILLEGAL_OP, &info);
 	}
@@ -625,7 +625,7 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	if (gba->debugger) {
 		struct mDebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
-			.a.c.opcode = opcode
+			.type.bp.opcode = opcode
 		};
 		mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_ILLEGAL_OP, &info);
 	} else
@@ -646,7 +646,7 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 		if (gba->debugger) {
 			struct mDebuggerEntryInfo info = {
 				.address = _ARMPCAddress(cpu),
-				.a.c.breakType = BREAKPOINT_SOFTWARE
+				.type.bp.breakType = BREAKPOINT_SOFTWARE
 			};
 			mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_BREAKPOINT, &info);
 		}

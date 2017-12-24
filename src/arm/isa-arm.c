@@ -30,7 +30,7 @@ static inline void _shiftLSL(struct ARMCore* cpu, uint32_t opcode) {
 		}
 		if (!shift) {
 			cpu->shifterOperand = shiftVal;
-			cpu->shifterCarryOut = cpu->cpsr.a.c;
+			cpu->shifterCarryOut = cpu->cpsr.c;
 		} else if (shift < 32) {
 			cpu->shifterOperand = shiftVal << shift;
 			cpu->shifterCarryOut = (shiftVal >> (32 - shift)) & 1;
@@ -45,7 +45,7 @@ static inline void _shiftLSL(struct ARMCore* cpu, uint32_t opcode) {
 		int immediate = (opcode & 0x00000F80) >> 7;
 		if (!immediate) {
 			cpu->shifterOperand = cpu->gprs[rm];
-			cpu->shifterCarryOut = cpu->cpsr.a.c;
+			cpu->shifterCarryOut = cpu->cpsr.c;
 		} else {
 			cpu->shifterOperand = cpu->gprs[rm] << immediate;
 			cpu->shifterCarryOut = (cpu->gprs[rm] >> (32 - immediate)) & 1;
@@ -69,7 +69,7 @@ static inline void _shiftLSR(struct ARMCore* cpu, uint32_t opcode) {
 		}
 		if (!shift) {
 			cpu->shifterOperand = shiftVal;
-			cpu->shifterCarryOut = cpu->cpsr.a.c;
+			cpu->shifterCarryOut = cpu->cpsr.c;
 		} else if (shift < 32) {
 			cpu->shifterOperand = shiftVal >> shift;
 			cpu->shifterCarryOut = (shiftVal >> (shift - 1)) & 1;
@@ -108,7 +108,7 @@ static inline void _shiftASR(struct ARMCore* cpu, uint32_t opcode) {
 		}
 		if (!shift) {
 			cpu->shifterOperand = shiftVal;
-			cpu->shifterCarryOut = cpu->cpsr.a.c;
+			cpu->shifterCarryOut = cpu->cpsr.c;
 		} else if (shift < 32) {
 			cpu->shifterOperand = shiftVal >> shift;
 			cpu->shifterCarryOut = (shiftVal >> (shift - 1)) & 1;
@@ -148,7 +148,7 @@ static inline void _shiftROR(struct ARMCore* cpu, uint32_t opcode) {
 		int rotate = shift & 0x1F;
 		if (!shift) {
 			cpu->shifterOperand = shiftVal;
-			cpu->shifterCarryOut = cpu->cpsr.a.c;
+			cpu->shifterCarryOut = cpu->cpsr.c;
 		} else if (rotate) {
 			cpu->shifterOperand = ROR(shiftVal, rotate);
 			cpu->shifterCarryOut = (shiftVal >> (rotate - 1)) & 1;
@@ -163,7 +163,7 @@ static inline void _shiftROR(struct ARMCore* cpu, uint32_t opcode) {
 			cpu->shifterCarryOut = (cpu->gprs[rm] >> (immediate - 1)) & 1;
 		} else {
 			// RRX
-			cpu->shifterOperand = (cpu->cpsr.a.c << 31) | (((uint32_t) cpu->gprs[rm]) >> 1);
+			cpu->shifterOperand = (cpu->cpsr.c << 31) | (((uint32_t) cpu->gprs[rm]) >> 1);
 			cpu->shifterCarryOut = cpu->gprs[rm] & 0x00000001;
 		}
 	}
@@ -174,7 +174,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 	int immediate = opcode & 0x000000FF;
 	if (!rotate) {
 		cpu->shifterOperand = immediate;
-		cpu->shifterCarryOut = cpu->cpsr.a.c;
+		cpu->shifterCarryOut = cpu->cpsr.c;
 	} else {
 		cpu->shifterOperand = ROR(immediate, rotate);
 		cpu->shifterCarryOut = ARM_SIGN(cpu->shifterOperand);
@@ -185,51 +185,51 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 // Beware pre-processor antics
 
 #define ARM_ADDITION_S(M, N, D) \
-	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.a.priv)) { \
+	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.priv)) { \
 		cpu->cpsr = cpu->spsr; \
 		_ARMReadCPSR(cpu); \
 	} else { \
-		cpu->cpsr.a.n = ARM_SIGN(D); \
-		cpu->cpsr.a.z = !(D); \
-		cpu->cpsr.a.c = ARM_CARRY_FROM(M, N, D); \
-		cpu->cpsr.a.v = ARM_V_ADDITION(M, N, D); \
+		cpu->cpsr.n = ARM_SIGN(D); \
+		cpu->cpsr.z = !(D); \
+		cpu->cpsr.c = ARM_CARRY_FROM(M, N, D); \
+		cpu->cpsr.v = ARM_V_ADDITION(M, N, D); \
 	}
 
 #define ARM_SUBTRACTION_S(M, N, D) \
-	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.a.priv)) { \
+	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.priv)) { \
 		cpu->cpsr = cpu->spsr; \
 		_ARMReadCPSR(cpu); \
 	} else { \
-		cpu->cpsr.a.n = ARM_SIGN(D); \
-		cpu->cpsr.a.z = !(D); \
-		cpu->cpsr.a.c = ARM_BORROW_FROM(M, N, D); \
-		cpu->cpsr.a.v = ARM_V_SUBTRACTION(M, N, D); \
+		cpu->cpsr.n = ARM_SIGN(D); \
+		cpu->cpsr.z = !(D); \
+		cpu->cpsr.c = ARM_BORROW_FROM(M, N, D); \
+		cpu->cpsr.v = ARM_V_SUBTRACTION(M, N, D); \
 	}
 
 #define ARM_SUBTRACTION_CARRY_S(M, N, D, C) \
-	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.a.priv)) { \
+	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.priv)) { \
 		cpu->cpsr = cpu->spsr; \
 		_ARMReadCPSR(cpu); \
 	} else { \
-		cpu->cpsr.a.n = ARM_SIGN(D); \
-		cpu->cpsr.a.z = !(D); \
-		cpu->cpsr.a.c = ARM_BORROW_FROM_CARRY(M, N, D, C); \
-		cpu->cpsr.a.v = ARM_V_SUBTRACTION(M, N, D); \
+		cpu->cpsr.n = ARM_SIGN(D); \
+		cpu->cpsr.z = !(D); \
+		cpu->cpsr.c = ARM_BORROW_FROM_CARRY(M, N, D, C); \
+		cpu->cpsr.v = ARM_V_SUBTRACTION(M, N, D); \
 	}
 
 #define ARM_NEUTRAL_S(M, N, D) \
-	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.a.priv)) { \
+	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.priv)) { \
 		cpu->cpsr = cpu->spsr; \
 		_ARMReadCPSR(cpu); \
 	} else { \
-		cpu->cpsr.a.n = ARM_SIGN(D); \
-		cpu->cpsr.a.z = !(D); \
-		cpu->cpsr.a.c = cpu->shifterCarryOut; \
+		cpu->cpsr.n = ARM_SIGN(D); \
+		cpu->cpsr.z = !(D); \
+		cpu->cpsr.c = cpu->shifterCarryOut; \
 	}
 
 #define ARM_NEUTRAL_HI_S(DLO, DHI) \
-	cpu->cpsr.a.n = ARM_SIGN(DHI); \
-	cpu->cpsr.a.z = !((DHI) | (DLO));
+	cpu->cpsr.n = ARM_SIGN(DHI); \
+	cpu->cpsr.z = !((DHI) | (DLO));
 
 #define ADDR_MODE_2_I_TEST (opcode & 0x00000F80)
 #define ADDR_MODE_2_I ((opcode & 0x00000F80) >> 7)
@@ -247,7 +247,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 #define ADDR_MODE_2_LSL (cpu->gprs[rm] << ADDR_MODE_2_I)
 #define ADDR_MODE_2_LSR (ADDR_MODE_2_I_TEST ? ((uint32_t) cpu->gprs[rm]) >> ADDR_MODE_2_I : 0)
 #define ADDR_MODE_2_ASR (ADDR_MODE_2_I_TEST ? ((int32_t) cpu->gprs[rm]) >> ADDR_MODE_2_I : ((int32_t) cpu->gprs[rm]) >> 31)
-#define ADDR_MODE_2_ROR (ADDR_MODE_2_I_TEST ? ROR(cpu->gprs[rm], ADDR_MODE_2_I) : (cpu->cpsr.a.c << 31) | (((uint32_t) cpu->gprs[rm]) >> 1))
+#define ADDR_MODE_2_ROR (ADDR_MODE_2_I_TEST ? ROR(cpu->gprs[rm], ADDR_MODE_2_I) : (cpu->cpsr.c << 31) | (((uint32_t) cpu->gprs[rm]) >> 1))
 
 #define ADDR_MODE_3_ADDRESS ADDR_MODE_2_ADDRESS
 #define ADDR_MODE_3_RN ADDR_MODE_2_RN
@@ -450,7 +450,7 @@ DEFINE_ALU_INSTRUCTION_ARM(ADD, ARM_ADDITION_S(n, cpu->shifterOperand, cpu->gprs
 
 DEFINE_ALU_INSTRUCTION_ARM(ADC, ARM_ADDITION_S(n, cpu->shifterOperand, cpu->gprs[rd]),
 	int32_t n = cpu->gprs[rn];
-	cpu->gprs[rd] = n + cpu->shifterOperand + cpu->cpsr.a.c;)
+	cpu->gprs[rd] = n + cpu->shifterOperand + cpu->cpsr.c;)
 
 DEFINE_ALU_INSTRUCTION_ARM(AND, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
 	cpu->gprs[rd] = cpu->gprs[rn] & cpu->shifterOperand;)
@@ -480,13 +480,13 @@ DEFINE_ALU_INSTRUCTION_ARM(RSB, ARM_SUBTRACTION_S(cpu->shifterOperand, n, cpu->g
 	int32_t n = cpu->gprs[rn];
 	cpu->gprs[rd] = cpu->shifterOperand - n;)
 
-DEFINE_ALU_INSTRUCTION_ARM(RSC, ARM_SUBTRACTION_CARRY_S(cpu->shifterOperand, n, cpu->gprs[rd], !cpu->cpsr.a.c),
+DEFINE_ALU_INSTRUCTION_ARM(RSC, ARM_SUBTRACTION_CARRY_S(cpu->shifterOperand, n, cpu->gprs[rd], !cpu->cpsr.c),
 	int32_t n = cpu->gprs[rn];
-	cpu->gprs[rd] = cpu->shifterOperand - n - !cpu->cpsr.a.c;)
+	cpu->gprs[rd] = cpu->shifterOperand - n - !cpu->cpsr.c;)
 
-DEFINE_ALU_INSTRUCTION_ARM(SBC, ARM_SUBTRACTION_CARRY_S(n, cpu->shifterOperand, cpu->gprs[rd], !cpu->cpsr.a.c),
+DEFINE_ALU_INSTRUCTION_ARM(SBC, ARM_SUBTRACTION_CARRY_S(n, cpu->shifterOperand, cpu->gprs[rd], !cpu->cpsr.c),
 	int32_t n = cpu->gprs[rn];
-	cpu->gprs[rd] = n - cpu->shifterOperand - !cpu->cpsr.a.c;)
+	cpu->gprs[rd] = n - cpu->shifterOperand - !cpu->cpsr.c;)
 
 DEFINE_ALU_INSTRUCTION_ARM(SUB, ARM_SUBTRACTION_S(n, cpu->shifterOperand, cpu->gprs[rd]),
 	int32_t n = cpu->gprs[rn];

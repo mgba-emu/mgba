@@ -46,7 +46,7 @@ static void _gdbStubEntered(struct mDebugger* debugger, enum mDebuggerEntryReaso
 		break;
 	case DEBUGGER_ENTER_BREAKPOINT:
 		if (stub->supportsHwbreak && stub->supportsSwbreak && info) {
-			snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "T%02x%cwbreak:;", SIGTRAP, info->a.c.breakType == BREAKPOINT_SOFTWARE ? 's' : 'h');
+			snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "T%02x%cwbreak:;", SIGTRAP, info->type.bp.breakType == BREAKPOINT_SOFTWARE ? 's' : 'h');
 		} else {
 			snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02xk", SIGTRAP);
 		}
@@ -54,9 +54,9 @@ static void _gdbStubEntered(struct mDebugger* debugger, enum mDebuggerEntryReaso
 	case DEBUGGER_ENTER_WATCHPOINT:
 		if (info) {
 			const char* type = 0;
-			switch (info->a.b.watchType) {
+			switch (info->type.wp.watchType) {
 			case WATCHPOINT_WRITE:
-				if (info->a.b.newValue == info->a.b.oldValue) {
+				if (info->type.wp.newValue == info->type.wp.oldValue) {
 					if (stub->d.state == DEBUGGER_PAUSED) {
 						stub->d.state = DEBUGGER_RUNNING;
 					}
@@ -329,7 +329,7 @@ static void _readGPRs(struct GDBStub* stub, const char* message) {
 	}
 
 	// Program counter
-	_int2hex32(cpu->gprs[ARM_PC] - (cpu->cpsr.a.t ? WORD_SIZE_THUMB : WORD_SIZE_ARM), &stub->outgoing[i]);
+	_int2hex32(cpu->gprs[ARM_PC] - (cpu->cpsr.t ? WORD_SIZE_THUMB : WORD_SIZE_ARM), &stub->outgoing[i]);
 	i += 8;
 
 	// Floating point registers, unused on the GBA (8 of them, 24 bits each)
@@ -363,7 +363,7 @@ static void _writeRegister(struct GDBStub* stub, const char* message) {
 #ifdef _MSC_VER
 	value = _byteswap_ulong(value);
 #else
-	value = __builtin_bswap32(value);
+	LOAD_32BE(value, 0, &value);
 #endif
 
 	if (reg <= ARM_PC) {

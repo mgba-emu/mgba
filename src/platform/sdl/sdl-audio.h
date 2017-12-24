@@ -13,6 +13,14 @@ CXX_GUARD_START
 #include <mgba/core/log.h>
 
 #include <SDL.h>
+// Altivec sometimes defines this
+#ifdef vector
+#undef vector
+#endif
+#ifdef bool
+#undef bool
+#define bool _Bool
+#endif
 
 mLOG_DECLARE_CATEGORY(SDL_AUDIO);
 

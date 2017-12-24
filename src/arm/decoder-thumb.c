@@ -19,8 +19,8 @@
 #define DEFINE_IMMEDIATE_5_DECODER_DATA_THUMB(NAME, MNEMONIC) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
 		info->op3.immediate = (opcode >> 6) & 0x001F; \
-		info->op1.a.reg = opcode & 0x0007; \
-		info->op2.a.reg = (opcode >> 3) & 0x0007; \
+		info->op1.reg = opcode & 0x0007; \
+		info->op2.reg = (opcode >> 3) & 0x0007; \
 		info->affectsCPSR = 1; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			ARM_OPERAND_AFFECTED_1 | \
@@ -29,7 +29,7 @@
 
 #define DEFINE_IMMEDIATE_5_DECODER_MEM_THUMB(NAME, MNEMONIC, CYCLES, WIDTH, AFFECTED) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
-		info->op1.a.reg = opcode & 0x0007; \
+		info->op1.reg = opcode & 0x0007; \
 		info->memory.baseReg = (opcode >> 3) & 0x0007; \
 		info->memory.offset.immediate = ((opcode >> 6) & 0x001F) * WIDTH; \
 		info->memory.width = (enum ARMMemoryAccessType) WIDTH; \
@@ -52,9 +52,9 @@ DEFINE_IMMEDIATE_5_DECODER_MEM_THUMB(STRH1, STR, STORE_CYCLES, 2, 2)
 
 #define DEFINE_DATA_FORM_1_DECODER_THUMB(NAME, MNEMONIC) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
-		info->op1.a.reg = opcode & 0x0007; \
-		info->op2.a.reg = (opcode >> 3) & 0x0007; \
-		info->op3.a.reg = (opcode >> 6) & 0x0007; \
+		info->op1.reg = opcode & 0x0007; \
+		info->op2.reg = (opcode >> 3) & 0x0007; \
+		info->op3.reg = (opcode >> 6) & 0x0007; \
 		info->affectsCPSR = 1; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			ARM_OPERAND_AFFECTED_1 | \
@@ -66,8 +66,8 @@ DEFINE_DATA_FORM_1_DECODER_THUMB(SUB3, SUB)
 
 #define DEFINE_DATA_FORM_2_DECODER_THUMB(NAME, MNEMONIC) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
-		info->op1.a.reg = opcode & 0x0007; \
-		info->op2.a.reg = (opcode >> 3) & 0x0007; \
+		info->op1.reg = opcode & 0x0007; \
+		info->op2.reg = (opcode >> 3) & 0x0007; \
 		info->op3.immediate = (opcode >> 6) & 0x0007; \
 		info->affectsCPSR = 1; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
@@ -80,7 +80,7 @@ DEFINE_DATA_FORM_2_DECODER_THUMB(SUB1, SUB)
 
 #define DEFINE_DATA_FORM_3_DECODER_THUMB(NAME, MNEMONIC, AFFECTED) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
-		info->op1.a.reg = (opcode >> 8) & 0x0007; \
+		info->op1.reg = (opcode >> 8) & 0x0007; \
 		info->op2.immediate = opcode & 0x00FF; \
 		info->affectsCPSR = 1; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
@@ -94,8 +94,8 @@ DEFINE_DATA_FORM_3_DECODER_THUMB(SUB2, SUB, ARM_OPERAND_AFFECTED_1)
 
 #define DEFINE_DATA_FORM_5_DECODER_THUMB(NAME, MNEMONIC, AFFECTED) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
-		info->op1.a.reg = opcode & 0x0007; \
-		info->op2.a.reg = (opcode >> 3) & 0x0007; \
+		info->op1.reg = opcode & 0x0007; \
+		info->op2.reg = (opcode >> 3) & 0x0007; \
 		info->affectsCPSR = 1; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			AFFECTED | \
@@ -120,9 +120,9 @@ DEFINE_DATA_FORM_5_DECODER_THUMB(MVN, MVN, ARM_OPERAND_AFFECTED_1)
 
 #define DEFINE_DECODER_WITH_HIGH_EX_THUMB(NAME, H1, H2, MNEMONIC, AFFECTED, CPSR) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
-		info->op1.a.reg = (opcode & 0x0007) | H1; \
-		info->op2.a.reg = ((opcode >> 3) & 0x0007) | H2; \
-		if (info->op1.a.reg == ARM_PC) { \
+		info->op1.reg = (opcode & 0x0007) | H1; \
+		info->op2.reg = ((opcode >> 3) & 0x0007) | H2; \
+		if (info->op1.reg == ARM_PC) { \
 			info->branchType = ARM_BRANCH_INDIRECT; \
 		} \
 		info->affectsCPSR = CPSR; \
@@ -143,8 +143,8 @@ DEFINE_DECODER_WITH_HIGH_THUMB(MOV3, MOV, ARM_OPERAND_AFFECTED_1, 0)
 
 #define DEFINE_IMMEDIATE_WITH_REGISTER_DATA_THUMB(NAME, MNEMONIC, REG) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
-		info->op1.a.reg = (opcode >> 8) & 0x0007; \
-		info->op2.a.reg = REG; \
+		info->op1.reg = (opcode >> 8) & 0x0007; \
+		info->op2.reg = REG; \
 		info->op3.immediate = (opcode & 0x00FF) << 2; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			ARM_OPERAND_AFFECTED_1 | \
@@ -153,7 +153,7 @@ DEFINE_DECODER_WITH_HIGH_THUMB(MOV3, MOV, ARM_OPERAND_AFFECTED_1, 0)
 
 #define DEFINE_IMMEDIATE_WITH_REGISTER_MEM_THUMB(NAME, MNEMONIC, REG, CYCLES, AFFECTED) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
-		info->op1.a.reg = (opcode >> 8) & 0x0007; \
+		info->op1.reg = (opcode >> 8) & 0x0007; \
 		info->memory.baseReg = REG; \
 		info->memory.offset.immediate = (opcode & 0x00FF) << 2; \
 		info->memory.width = ARM_ACCESS_WORD; \
@@ -173,8 +173,8 @@ DEFINE_IMMEDIATE_WITH_REGISTER_DATA_THUMB(ADD6, ADD, ARM_SP)
 
 #define DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(NAME, MNEMONIC, CYCLES, TYPE, AFFECTED) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
-		info->memory.offset.a.reg = (opcode >> 6) & 0x0007; \
-		info->op1.a.reg = opcode & 0x0007; \
+		info->memory.offset.reg = (opcode >> 6) & 0x0007; \
+		info->op1.reg = opcode & 0x0007; \
 		info->memory.baseReg = (opcode >> 3) & 0x0007; \
 		info->memory.width = TYPE; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
@@ -237,7 +237,7 @@ DEFINE_CONDITIONAL_BRANCH_THUMB(LE)
 
 #define DEFINE_SP_MODIFY_THUMB(NAME, MNEMONIC) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
-		info->op1.a.reg = ARM_SP; \
+		info->op1.reg = ARM_SP; \
 		info->op2.immediate = (opcode & 0x7F) << 2; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			ARM_OPERAND_AFFECTED_1 | \
@@ -267,23 +267,23 @@ DEFINE_THUMB_DECODER(B, B,
 
 DEFINE_THUMB_DECODER(BL1, BL,
 	int16_t immediate = (opcode & 0x07FF) << 5;
-	info->op1.a.reg = ARM_LR;
-	info->op2.a.reg = ARM_PC;
+	info->op1.reg = ARM_LR;
+	info->op2.reg = ARM_PC;
 	info->op3.immediate = (((int32_t) immediate) << 7);
 	info->operandFormat = ARM_OPERAND_REGISTER_1 | ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_REGISTER_2 | ARM_OPERAND_AFFECTED_2 |
 		ARM_OPERAND_IMMEDIATE_3;)
 
 DEFINE_THUMB_DECODER(BL2, BL,
-	info->op1.a.reg = ARM_PC;
-	info->op2.a.reg = ARM_LR;
+	info->op1.reg = ARM_PC;
+	info->op2.reg = ARM_LR;
 	info->op3.immediate = (opcode & 0x07FF) << 1;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 | ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_REGISTER_2 | ARM_OPERAND_IMMEDIATE_3;
 	info->branchType = ARM_BRANCH_LINKED;)
 
 DEFINE_THUMB_DECODER(BX, BX,
-	info->op1.a.reg = (opcode >> 3) & 0xF;
+	info->op1.reg = (opcode >> 3) & 0xF;
 	info->operandFormat = ARM_OPERAND_REGISTER_1;
 	info->branchType = ARM_BRANCH_INDIRECT;)
 
@@ -316,10 +316,10 @@ bool ARMDecodeThumbCombine(struct ARMInstructionInfo* info1, struct ARMInstructi
 	if (info2->execMode != MODE_THUMB || info2->mnemonic != ARM_MN_BL) {
 		return false;
 	}
-	if (info1->op1.a.reg != ARM_LR || info1->op2.a.reg != ARM_PC) {
+	if (info1->op1.reg != ARM_LR || info1->op2.reg != ARM_PC) {
 		return false;
 	}
-	if (info2->op1.a.reg != ARM_PC || info2->op2.a.reg != ARM_LR) {
+	if (info2->op1.reg != ARM_PC || info2->op2.reg != ARM_LR) {
 		return false;
 	}
 	out->op1.immediate = info1->op3.immediate | info2->op3.immediate;

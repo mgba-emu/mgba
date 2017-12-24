@@ -146,7 +146,7 @@ static void _analyzeForIdleLoop(struct GBA* gba, struct ARMCore* cpu, uint32_t a
 					if (info.memory.format & ARM_MEMORY_IMMEDIATE_OFFSET) {
 						offset = info.memory.offset.immediate;
 					} else if (info.memory.format & ARM_MEMORY_REGISTER_OFFSET) {
-						int reg = info.memory.offset.a.reg;
+						int reg = info.memory.offset.reg;
 						if (gba->cachedRegisters[reg]) {
 							gba->idleDetectionStep = -1;
 							return;
@@ -163,22 +163,22 @@ static void _analyzeForIdleLoop(struct GBA* gba, struct ARMCore* cpu, uint32_t a
 						return;
 					}
 					if ((loadAddress >> BASE_OFFSET) < REGION_CART0 || (loadAddress >> BASE_OFFSET) > REGION_CART2_EX) {
-						gba->taintedRegisters[info.op1.a.reg] = true;
+						gba->taintedRegisters[info.op1.reg] = true;
 					} else {
 						switch (info.memory.width) {
 						case 1:
-							gba->cachedRegisters[info.op1.a.reg] = GBALoad8(cpu, loadAddress, 0);
+							gba->cachedRegisters[info.op1.reg] = GBALoad8(cpu, loadAddress, 0);
 							break;
 						case 2:
-							gba->cachedRegisters[info.op1.a.reg] = GBALoad16(cpu, loadAddress, 0);
+							gba->cachedRegisters[info.op1.reg] = GBALoad16(cpu, loadAddress, 0);
 							break;
 						case 4:
-							gba->cachedRegisters[info.op1.a.reg] = GBALoad32(cpu, loadAddress, 0);
+							gba->cachedRegisters[info.op1.reg] = GBALoad32(cpu, loadAddress, 0);
 							break;
 						}
 					}
 				} else if (info.operandFormat & ARM_OPERAND_AFFECTED_1) {
-					gba->taintedRegisters[info.op1.a.reg] = true;
+					gba->taintedRegisters[info.op1.reg] = true;
 				}
 				nextAddress += WORD_SIZE_THUMB;
 				break;
