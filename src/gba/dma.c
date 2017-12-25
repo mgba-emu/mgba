@@ -87,6 +87,15 @@ uint16_t GBADMAWriteCNT_HI(struct GBA* gba, int dma, uint16_t control) {
 			currentDma->reg = GBADMARegisterClearSrcControl(currentDma->reg);
 		}
 		currentDma->nextDest = currentDma->dest;
+
+		uint32_t width = 2 << GBADMARegisterGetWidth(currentDma->reg);
+		if (currentDma->nextSource & (width - 1)) {
+			mLOG(GBA_MEM, GAME_ERROR, "Misaligned DMA source address: 0x%08X", currentDma->nextSource);
+		}
+		if (currentDma->nextDest & (width - 1)) {
+			mLOG(GBA_MEM, GAME_ERROR, "Misaligned DMA destination address: 0x%08X", currentDma->nextDest);
+		}
+
 		GBADMASchedule(gba, dma, currentDma);
 	}
 	// If the DMA has already occurred, this value might have changed since the function started
