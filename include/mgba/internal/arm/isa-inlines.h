@@ -10,20 +10,20 @@
 
 #include "arm.h"
 
-#define ARM_COND_EQ (cpu->cpsr.a.z)
-#define ARM_COND_NE (!cpu->cpsr.a.z)
-#define ARM_COND_CS (cpu->cpsr.a.c)
-#define ARM_COND_CC (!cpu->cpsr.a.c)
-#define ARM_COND_MI (cpu->cpsr.a.n)
-#define ARM_COND_PL (!cpu->cpsr.a.n)
-#define ARM_COND_VS (cpu->cpsr.a.v)
-#define ARM_COND_VC (!cpu->cpsr.a.v)
-#define ARM_COND_HI (cpu->cpsr.a.c && !cpu->cpsr.a.z)
-#define ARM_COND_LS (!cpu->cpsr.a.c || cpu->cpsr.a.z)
-#define ARM_COND_GE (!cpu->cpsr.a.n == !cpu->cpsr.a.v)
-#define ARM_COND_LT (!cpu->cpsr.a.n != !cpu->cpsr.a.v)
-#define ARM_COND_GT (!cpu->cpsr.a.z && !cpu->cpsr.a.n == !cpu->cpsr.a.v)
-#define ARM_COND_LE (cpu->cpsr.a.z || !cpu->cpsr.a.n != !cpu->cpsr.a.v)
+#define ARM_COND_EQ (cpu->cpsr.z)
+#define ARM_COND_NE (!cpu->cpsr.z)
+#define ARM_COND_CS (cpu->cpsr.c)
+#define ARM_COND_CC (!cpu->cpsr.c)
+#define ARM_COND_MI (cpu->cpsr.n)
+#define ARM_COND_PL (!cpu->cpsr.n)
+#define ARM_COND_VS (cpu->cpsr.v)
+#define ARM_COND_VC (!cpu->cpsr.v)
+#define ARM_COND_HI (cpu->cpsr.c && !cpu->cpsr.z)
+#define ARM_COND_LS (!cpu->cpsr.c || cpu->cpsr.z)
+#define ARM_COND_GE (!cpu->cpsr.n == !cpu->cpsr.v)
+#define ARM_COND_LT (!cpu->cpsr.n != !cpu->cpsr.v)
+#define ARM_COND_GT (!cpu->cpsr.z && !cpu->cpsr.n == !cpu->cpsr.v)
+#define ARM_COND_LE (cpu->cpsr.z || !cpu->cpsr.n != !cpu->cpsr.v)
 #define ARM_COND_AL 1
 
 #define ARM_SIGN(I) ((I) >> 31)
@@ -83,23 +83,23 @@ static inline void _ARMSetMode(struct ARMCore* cpu, enum ExecutionMode execution
 	cpu->executionMode = executionMode;
 	switch (executionMode) {
 	case MODE_ARM:
-		cpu->cpsr.a.t = 0;
+		cpu->cpsr.t = 0;
 		break;
 	case MODE_THUMB:
-		cpu->cpsr.a.t = 1;
+		cpu->cpsr.t = 1;
 	}
 	cpu->nextEvent = cpu->cycles;
 }
 
 static inline void _ARMReadCPSR(struct ARMCore* cpu) {
-	_ARMSetMode(cpu, cpu->cpsr.a.t);
-	ARMSetPrivilegeMode(cpu, cpu->cpsr.a.priv);
+	_ARMSetMode(cpu, cpu->cpsr.t);
+	ARMSetPrivilegeMode(cpu, cpu->cpsr.priv);
 	cpu->irqh.readCPSR(cpu);
 }
 
 static inline uint32_t _ARMPCAddress(struct ARMCore* cpu) {
 	int instructionLength;
-	enum ExecutionMode mode = cpu->cpsr.a.t;
+	enum ExecutionMode mode = cpu->cpsr.t;
 	if (mode == MODE_ARM) {
 		instructionLength = WORD_SIZE_ARM;
 	} else {

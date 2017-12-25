@@ -239,10 +239,8 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 
 	mCoreConfigCopyValue(&core->config, config, "gba.bios");
 
-#if (!defined(MINIMAL_CORE) || MINIMAL_CORE < 2)
 #ifndef DISABLE_THREADING
 	mCoreConfigGetIntValue(config, "threadedVideo", &gbacore->threadedVideo);
-#endif
 #endif
 }
 

@@ -143,13 +143,13 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		}
 		LOAD_32(gba->cpu->bankedSPSRs[i], i * sizeof(gba->cpu->bankedSPSRs[0]), state->cpu.bankedSPSRs);
 	}
-	gba->cpu->privilegeMode = gba->cpu->cpsr.a.priv;
+	gba->cpu->privilegeMode = gba->cpu->cpsr.priv;
 	gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	if (state->biosPrefetch) {
 		LOAD_32(gba->memory.biosPrefetch, 0, &state->biosPrefetch);
 	}
 	LOAD_32(gba->memory.lastPrefetchedPc, 0, &state->lastPrefetchedPc);
-	if (gba->cpu->cpsr.a.t) {
+	if (gba->cpu->cpsr.t) {
 		gba->cpu->executionMode = MODE_THUMB;
 		if (state->cpuPrefetch[0] && state->cpuPrefetch[1]) {
 			LOAD_32(gba->cpu->prefetch[0], 0, state->cpuPrefetch);

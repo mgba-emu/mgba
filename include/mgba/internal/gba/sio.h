@@ -76,7 +76,7 @@ struct GBASIO {
 		} multiplayerControl;
 
 		uint16_t siocnt;
-	} a;
+	};
 };
 
 void GBASIOInit(struct GBASIO* sio);

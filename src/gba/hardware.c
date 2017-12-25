@@ -288,8 +288,8 @@ void _rtcUpdateClock(struct GBACartridgeHardware* hw) {
 		t = rtc->unixTime(rtc);
 	} else {
 		t = time(0);
-   }
-   struct tm date;
+	}
+	struct tm date;
 	localtime_r(&t, &date);
 	hw->rtc.time[0] = _rtcBCD(date.tm_year - 100);
 	hw->rtc.time[1] = _rtcBCD(date.tm_mon + 1);
@@ -581,11 +581,11 @@ void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLat
 	++gbp->p->gbpTxPosition;
 	gbp->p->p->memory.io[REG_SIODATA32_LO >> 1] = tx;
 	gbp->p->p->memory.io[REG_SIODATA32_HI >> 1] = tx >> 16;
-	if (gbp->d.p->a.normalControl.irq) {
+	if (gbp->d.p->normalControl.irq) {
 		GBARaiseIRQ(gbp->p->p, IRQ_SIO);
 	}
-	gbp->d.p->a.normalControl.start = 0;
-	gbp->p->p->memory.io[REG_SIOCNT >> 1] = gbp->d.p->a.siocnt & ~0x0080;
+	gbp->d.p->normalControl.start = 0;
+	gbp->p->p->memory.io[REG_SIOCNT >> 1] = gbp->d.p->siocnt & ~0x0080;
 }
 
 // == Serialization

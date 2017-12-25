@@ -10,31 +10,31 @@
 #include <mgba/internal/arm/isa-inlines.h>
 
 #define ADDR_MODE_1_SHIFT(OP) \
-	info->op3.a.reg = opcode & 0x0000000F; \
-	info->op3.a.shifterOp = ARM_SHIFT_ ## OP; \
+	info->op3.reg = opcode & 0x0000000F; \
+	info->op3.shifterOp = ARM_SHIFT_ ## OP; \
 	info->operandFormat |= ARM_OPERAND_REGISTER_3; \
 	if (opcode & 0x00000010) { \
-		info->op3.a.b.shifterReg = (opcode >> 8) & 0xF; \
+		info->op3.shifterReg = (opcode >> 8) & 0xF; \
 		++info->iCycles; \
 		info->operandFormat |= ARM_OPERAND_SHIFT_REGISTER_3; \
 	} else { \
-		info->op3.a.b.shifterImm = (opcode >> 7) & 0x1F; \
+		info->op3.shifterImm = (opcode >> 7) & 0x1F; \
 		info->operandFormat |= ARM_OPERAND_SHIFT_IMMEDIATE_3; \
 	}
 
 #define ADDR_MODE_1_LSL \
 	ADDR_MODE_1_SHIFT(LSL) \
-	if (!info->op3.a.b.shifterImm) { \
+	if (!info->op3.shifterImm) { \
 		info->operandFormat &= ~ARM_OPERAND_SHIFT_IMMEDIATE_3; \
-		info->op3.a.shifterOp = ARM_SHIFT_NONE; \
+		info->op3.shifterOp = ARM_SHIFT_NONE; \
 	}
 
 #define ADDR_MODE_1_LSR ADDR_MODE_1_SHIFT(LSR)
 #define ADDR_MODE_1_ASR ADDR_MODE_1_SHIFT(ASR)
 #define ADDR_MODE_1_ROR \
 	ADDR_MODE_1_SHIFT(ROR) \
-	if (!info->op3.a.b.shifterImm) { \
-		info->op3.a.shifterOp = ARM_SHIFT_RRX; \
+	if (!info->op3.shifterImm) { \
+		info->op3.shifterOp = ARM_SHIFT_RRX; \
 	}
 
 #define ADDR_MODE_1_IMM \
@@ -45,31 +45,31 @@
 
 #define ADDR_MODE_2_SHIFT(OP) \
 	info->memory.format |= ARM_MEMORY_REGISTER_OFFSET | ARM_MEMORY_SHIFTED_OFFSET; \
-	info->memory.offset.a.shifterOp = ARM_SHIFT_ ## OP; \
-	info->memory.offset.a.b.shifterImm = (opcode >> 7) & 0x1F; \
-	info->memory.offset.a.reg = opcode & 0x0000000F;
+	info->memory.offset.shifterOp = ARM_SHIFT_ ## OP; \
+	info->memory.offset.shifterImm = (opcode >> 7) & 0x1F; \
+	info->memory.offset.reg = opcode & 0x0000000F;
 
 #define ADDR_MODE_2_LSL \
 	ADDR_MODE_2_SHIFT(LSL) \
-	if (!info->memory.offset.a.b.shifterImm) { \
+	if (!info->memory.offset.shifterImm) { \
 		info->memory.format &= ~ARM_MEMORY_SHIFTED_OFFSET; \
-		info->memory.offset.a.shifterOp = ARM_SHIFT_NONE; \
+		info->memory.offset.shifterOp = ARM_SHIFT_NONE; \
 	}
 
 #define ADDR_MODE_2_LSR ADDR_MODE_2_SHIFT(LSR) \
-	if (!info->memory.offset.a.b.shifterImm) { \
-		info->memory.offset.a.b.shifterImm = 32; \
+	if (!info->memory.offset.shifterImm) { \
+		info->memory.offset.shifterImm = 32; \
 	}
 
 #define ADDR_MODE_2_ASR ADDR_MODE_2_SHIFT(ASR) \
-	if (!info->memory.offset.a.b.shifterImm) { \
-		info->memory.offset.a.b.shifterImm = 32; \
+	if (!info->memory.offset.shifterImm) { \
+		info->memory.offset.shifterImm = 32; \
 	}
 
 #define ADDR_MODE_2_ROR \
 	ADDR_MODE_2_SHIFT(ROR) \
-	if (!info->memory.offset.a.b.shifterImm) { \
-		info->memory.offset.a.shifterOp = ARM_SHIFT_RRX; \
+	if (!info->memory.offset.shifterImm) { \
+		info->memory.offset.shifterOp = ARM_SHIFT_RRX; \
 	}
 
 #define ADDR_MODE_2_IMM \
@@ -78,7 +78,7 @@
 
 #define ADDR_MODE_3_REG \
 	info->memory.format |= ARM_MEMORY_REGISTER_OFFSET; \
-	info->memory.offset.a.reg = opcode & 0x0000000F;
+	info->memory.offset.reg = opcode & 0x0000000F;
 
 #define ADDR_MODE_3_IMM \
 	info->memory.format |= ARM_MEMORY_IMMEDIATE_OFFSET; \
@@ -93,8 +93,8 @@
 
 #define DEFINE_ALU_DECODER_EX_ARM(NAME, MNEMONIC, S, SHIFTER, OTHER_AFFECTED, SKIPPED) \
 	DEFINE_DECODER_ARM(NAME, MNEMONIC, \
-		info->op1.a.reg = (opcode >> 12) & 0xF; \
-		info->op2.a.reg = (opcode >> 16) & 0xF; \
+		info->op1.reg = (opcode >> 12) & 0xF; \
+		info->op2.reg = (opcode >> 16) & 0xF; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			OTHER_AFFECTED | \
 			ARM_OPERAND_REGISTER_2; \
@@ -109,7 +109,7 @@
 			info->operandFormat |= info->operandFormat >> 8; \
 			info->operandFormat &= ~ARM_OPERAND_3; \
 		} \
-		if (info->op1.a.reg == ARM_PC) { \
+		if (info->op1.reg == ARM_PC) { \
 			info->branchType = ARM_BRANCH_INDIRECT; \
 		})
 
@@ -134,26 +134,26 @@
 
 #define DEFINE_MULTIPLY_DECODER_EX_ARM(NAME, MNEMONIC, S, OTHER_AFFECTED) \
 	DEFINE_DECODER_ARM(NAME, MNEMONIC, \
-		info->op1.a.reg = (opcode >> 16) & 0xF; \
-		info->op2.a.reg = opcode & 0xF; \
-		info->op3.a.reg = (opcode >> 8) & 0xF; \
-		info->op4.a.reg = (opcode >> 12) & 0xF; \
+		info->op1.reg = (opcode >> 16) & 0xF; \
+		info->op2.reg = opcode & 0xF; \
+		info->op3.reg = (opcode >> 8) & 0xF; \
+		info->op4.reg = (opcode >> 12) & 0xF; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			ARM_OPERAND_AFFECTED_1 | \
 			ARM_OPERAND_REGISTER_2 | \
 			ARM_OPERAND_REGISTER_3 | \
 			OTHER_AFFECTED; \
 		info->affectsCPSR = S; \
-		if (info->op1.a.reg == ARM_PC) { \
+		if (info->op1.reg == ARM_PC) { \
 			info->branchType = ARM_BRANCH_INDIRECT; \
 		})
 
 #define DEFINE_LONG_MULTIPLY_DECODER_EX_ARM(NAME, MNEMONIC, S) \
 	DEFINE_DECODER_ARM(NAME, MNEMONIC, \
-		info->op1.a.reg = (opcode >> 12) & 0xF; \
-		info->op2.a.reg = (opcode >> 16) & 0xF; \
-		info->op3.a.reg = opcode & 0xF; \
-		info->op4.a.reg = (opcode >> 8) & 0xF; \
+		info->op1.reg = (opcode >> 12) & 0xF; \
+		info->op2.reg = (opcode >> 16) & 0xF; \
+		info->op3.reg = opcode & 0xF; \
+		info->op4.reg = (opcode >> 8) & 0xF; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			ARM_OPERAND_AFFECTED_1 | \
 			ARM_OPERAND_REGISTER_2 | \
@@ -161,7 +161,7 @@
 			ARM_OPERAND_REGISTER_3 | \
 			ARM_OPERAND_REGISTER_4; \
 		info->affectsCPSR = S; \
-		if (info->op1.a.reg == ARM_PC) { \
+		if (info->op1.reg == ARM_PC) { \
 			info->branchType = ARM_BRANCH_INDIRECT; \
 		})
 
@@ -175,7 +175,7 @@
 
 #define DEFINE_LOAD_STORE_DECODER_EX_ARM(NAME, MNEMONIC, ADDRESSING_MODE, ADDRESSING_DECODING, CYCLES, TYPE) \
 	DEFINE_DECODER_ARM(NAME, MNEMONIC, \
-		info->op1.a.reg = (opcode >> 12) & 0xF; \
+		info->op1.reg = (opcode >> 12) & 0xF; \
 		info->memory.baseReg = (opcode >> 16) & 0xF; \
 		info->memory.width = TYPE; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
@@ -273,8 +273,8 @@
 #define DEFINE_SWP_DECODER_ARM(NAME, TYPE) \
 	DEFINE_DECODER_ARM(NAME, SWP, \
 		info->memory.baseReg = (opcode >> 16) & 0xF; \
-		info->op1.a.reg = (opcode >> 12) & 0xF; \
-		info->op2.a.reg = opcode & 0xF; \
+		info->op1.reg = (opcode >> 12) & 0xF; \
+		info->op2.reg = opcode & 0xF; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			ARM_OPERAND_AFFECTED_1 | \
 			ARM_OPERAND_REGISTER_2 | \
@@ -347,7 +347,7 @@ DEFINE_DECODER_ARM(BL, BL,
 	info->branchType = ARM_BRANCH_LINKED;)
 
 DEFINE_DECODER_ARM(BX, BX,
-	info->op1.a.reg = opcode & 0x0000000F;
+	info->op1.reg = opcode & 0x0000000F;
 	info->operandFormat = ARM_OPERAND_REGISTER_1;
 	info->branchType = ARM_BRANCH_INDIRECT;)
 
@@ -372,34 +372,34 @@ DEFINE_DECODER_ARM(ILL, ILL,
 
 DEFINE_DECODER_ARM(MSR, MSR,
 	info->affectsCPSR = 1;
-	info->op1.a.reg = ARM_CPSR;
-	info->op1.a.b.psrBits = (opcode >> 16) & ARM_PSR_MASK;
-	info->op2.a.reg = opcode & 0x0000000F;
+	info->op1.reg = ARM_CPSR;
+	info->op1.psrBits = (opcode >> 16) & ARM_PSR_MASK;
+	info->op2.reg = opcode & 0x0000000F;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_REGISTER_2;)
 
 DEFINE_DECODER_ARM(MSRR, MSR,
-	info->op1.a.reg = ARM_SPSR;
-	info->op1.a.b.psrBits = (opcode >> 16) & ARM_PSR_MASK;
-	info->op2.a.reg = opcode & 0x0000000F;
+	info->op1.reg = ARM_SPSR;
+	info->op1.psrBits = (opcode >> 16) & ARM_PSR_MASK;
+	info->op2.reg = opcode & 0x0000000F;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_REGISTER_2;)
 
 DEFINE_DECODER_ARM(MRS, MRS,
 	info->affectsCPSR = 1;
-	info->op1.a.reg = (opcode >> 12) & 0xF;
-	info->op2.a.reg = ARM_CPSR;
-	info->op2.a.b.psrBits = 0;
+	info->op1.reg = (opcode >> 12) & 0xF;
+	info->op2.reg = ARM_CPSR;
+	info->op2.psrBits = 0;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_REGISTER_2;)
 
 DEFINE_DECODER_ARM(MRSR, MRS,
-	info->op1.a.reg = (opcode >> 12) & 0xF;
-	info->op2.a.reg = ARM_SPSR;
-	info->op2.a.b.psrBits = 0;
+	info->op1.reg = (opcode >> 12) & 0xF;
+	info->op2.reg = ARM_SPSR;
+	info->op2.psrBits = 0;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_REGISTER_2;)
@@ -408,8 +408,8 @@ DEFINE_DECODER_ARM(MSRI, MSR,
 	int rotate = (opcode & 0x00000F00) >> 7;
 	int32_t operand = ROR(opcode & 0x000000FF, rotate);
 	info->affectsCPSR = 1;
-	info->op1.a.reg = ARM_CPSR;
-	info->op1.a.b.psrBits = (opcode >> 16) & ARM_PSR_MASK;
+	info->op1.reg = ARM_CPSR;
+	info->op1.psrBits = (opcode >> 16) & ARM_PSR_MASK;
 	info->op2.immediate = operand;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
@@ -418,8 +418,8 @@ DEFINE_DECODER_ARM(MSRI, MSR,
 DEFINE_DECODER_ARM(MSRRI, MSR,
 	int rotate = (opcode & 0x00000F00) >> 7;
 	int32_t operand = ROR(opcode & 0x000000FF, rotate);
-	info->op1.a.reg = ARM_SPSR;
-	info->op1.a.b.psrBits = (opcode >> 16) & ARM_PSR_MASK;
+	info->op1.reg = ARM_SPSR;
+	info->op1.psrBits = (opcode >> 16) & ARM_PSR_MASK;
 	info->op2.immediate = operand;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
