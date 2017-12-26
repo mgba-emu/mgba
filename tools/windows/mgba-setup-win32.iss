@@ -72,11 +72,11 @@ Name: "gbafileassoc"; Description: "{cm:AssocFileExtension,mGBA,Game Boy Advance
 
 [Files]
 Source: "mGBA.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "CHANGES.txt"; DestDir: "{app}\"; Flags: ignoreversion
+Source: "CHANGES.txt"; DestDir: "{app}\"; Flags: ignoreversion isreadme
 Source: "LICENSE.txt"; DestDir: "{app}\"; Flags: ignoreversion
 Source: "mGBA.exe"; DestDir: "{app}\"; Flags: ignoreversion
 Source: "nointro.dat"; DestDir: "{app}\"; Flags: ignoreversion
-Source: "README.html"; DestDir: "{app}\"; Flags: ignoreversion
+Source: "README.html"; DestDir: "{app}\"; Flags: ignoreversion isreadme; Languages: english italian spanish
 Source: "README_DE.html"; DestDir: "{app}\"; DestName: "LIESMICH.html"; Flags: ignoreversion isreadme; Languages: german                        
 Source: "shaders\agb001.shader\agb001.fs"; DestDir: "{app}\shaders\agb001.shader\"; Flags: ignoreversion
 Source: "shaders\agb001.shader\manifest.ini"; DestDir: "{app}\shaders\agb001.shader\"; Flags: ignoreversion
@@ -126,14 +126,6 @@ Name: "{commondesktop}\mGBA"; Filename: "{app}\mGBA.exe"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\mGBA.exe"; Description: "{cm:LaunchProgram,mGBA}"; Flags: nowait postinstall skipifsilent
-Filename: "{app}\README.html"; Description: "View README"; Flags: nowait postinstall skipifsilent unchecked; Languages: english
-Filename: "{app}\README.html"; Description: "View README"; Flags: nowait postinstall skipifsilent unchecked; Languages: italian
-Filename: "{app}\README.html"; Description: "View README"; Flags: nowait postinstall skipifsilent unchecked; Languages: spanish
-Filename: "{app}\README_DE.html"; Description: "README anzeigen"; Flags: nowait postinstall skipifsilent unchecked; Languages: german
-Filename: "{app}\CHANGES.txt"; Description: "View Changelog"; Flags: nowait postinstall skipifsilent unchecked; Languages: english
-Filename: "{app}\CHANGES.txt"; Description: "View Changelog"; Flags: nowait postinstall skipifsilent unchecked; Languages: italian
-Filename: "{app}\CHANGES.txt"; Description: "View Changelog"; Flags: nowait postinstall skipifsilent unchecked; Languages: spanish
-Filename: "{app}\CHANGES.txt"; Description: "Changelog anzeigen"; Flags: nowait postinstall skipifsilent unchecked; Languages: german
 
 [Dirs]
 Name: "{app}\shaders\"
