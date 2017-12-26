@@ -51,7 +51,9 @@ typedef intptr_t ssize_t;
 #include <sys/time.h>
 typedef intptr_t ssize_t;
 #else
+#ifndef __CELLOS_LV2__
 #include <strings.h>
+#endif
 #include <unistd.h>
 #include <sys/time.h>
 #endif
