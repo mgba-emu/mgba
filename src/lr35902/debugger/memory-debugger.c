@@ -27,19 +27,19 @@ static bool _checkWatchpoints(struct LR35902Debugger* debugger, uint16_t address
 		debuggerFound: break; \
 	} while(0)
 
-#define CREATE_WATCHPOINT_SHIM(NAME, RW, RETURN, TYPES, ...) \
+#define CREATE_WATCHPOINT_SHIM(NAME, RW, VALUE, RETURN, TYPES, ...) \
 	static RETURN DebuggerShim_ ## NAME TYPES { \
 		struct LR35902Debugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
 		struct mDebuggerEntryInfo info; \
-		if (_checkWatchpoints(debugger, address, &info, WATCHPOINT_ ## RW, 0)) { \
+		if (_checkWatchpoints(debugger, address, &info, WATCHPOINT_ ## RW, VALUE)) { \
 			mDebuggerEnter(debugger->d.p, DEBUGGER_ENTER_WATCHPOINT, &info); \
 		} \
 		return debugger->originalMemory.NAME(cpu, __VA_ARGS__); \
 	}
 
-CREATE_WATCHPOINT_SHIM(load8, READ, uint8_t, (struct LR35902Core* cpu, uint16_t address), address)
-CREATE_WATCHPOINT_SHIM(store8, WRITE, void, (struct LR35902Core* cpu, uint16_t address, int8_t value), address, value)
+CREATE_WATCHPOINT_SHIM(load8, READ, 0, uint8_t, (struct LR35902Core* cpu, uint16_t address), address)
+CREATE_WATCHPOINT_SHIM(store8, WRITE, value, void, (struct LR35902Core* cpu, uint16_t address, int8_t value), address, value)
 
 static bool _checkWatchpoints(struct LR35902Debugger* debugger, uint16_t address, struct mDebuggerEntryInfo* info, enum mWatchpointType type, uint8_t newValue) {
 	struct LR35902DebugWatchpoint* watchpoint;
