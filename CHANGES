@@ -31,6 +31,7 @@ Bugfixes:
  - GB Memory: HDMAs should not start when LCD is off (fixes mgba.io/i/310)
  - GBA Cheats: Fix slide codes not initializing properly
  - Qt: Fix locale being set to English on settings save (fixes mgba.io/i/906)
+ - LR35902: Fix watchpoints not reporting new value
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
