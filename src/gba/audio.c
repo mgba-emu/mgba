@@ -260,7 +260,7 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	struct GBAAudio* audio = user;
 	int16_t sampleLeft = 0;
 	int16_t sampleRight = 0;
-	int psgShift = 5 - audio->volume;
+	int psgShift = 4 - audio->volume;
 	GBAudioSamplePSG(&audio->psg, &sampleLeft, &sampleRight);
 	sampleLeft >>= psgShift;
 	sampleRight >>= psgShift;
