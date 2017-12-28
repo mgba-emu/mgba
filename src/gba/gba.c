@@ -300,7 +300,6 @@ bool GBALoadNull(struct GBA* gba) {
 	GBAUnloadROM(gba);
 	gba->romVf = NULL;
 	gba->pristineRomSize = 0;
-	gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
 #ifndef FIXED_ROM_BUFFER
 	gba->memory.rom = anonymousMemoryMap(SIZE_CART0);
 #else
@@ -328,7 +327,6 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
 		gba->pristineRomSize = SIZE_WORKING_RAM;
 	}
 	gba->isPristine = true;
-	gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
 	memset(gba->memory.wram, 0, SIZE_WORKING_RAM);
 	vf->read(vf, gba->memory.wram, gba->pristineRomSize);
 	if (!gba->memory.wram) {

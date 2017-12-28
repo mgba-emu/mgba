@@ -81,6 +81,7 @@ void GBAMemoryInit(struct GBA* gba) {
 	gba->memory.mirroring = false;
 
 	gba->memory.iwram = anonymousMemoryMap(SIZE_WORKING_IRAM);
+	gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
 
 	GBADMAInit(gba);
 	GBAVFameInit(&gba->memory.vfame);
@@ -98,15 +99,15 @@ void GBAMemoryDeinit(struct GBA* gba) {
 	if (gba->memory.savedata.realVf) {
 		gba->memory.savedata.realVf->close(gba->memory.savedata.realVf);
 	}
+
+	if (gba->memory.agbPrintBuffer) {
+		mappedMemoryFree(gba->memory.agbPrintBuffer, SIZE_AGB_PRINT);
+	}
 }
 
 void GBAMemoryReset(struct GBA* gba) {
-	if (gba->memory.rom || gba->memory.fullBios || !gba->memory.wram) {
-		// Not multiboot
-		if (gba->memory.wram) {
-			mappedMemoryFree(gba->memory.wram, SIZE_WORKING_RAM);
-		}
-		gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
+	if (gba->memory.wram && gba->memory.rom) {
+		memset(gba->memory.wram, 0, SIZE_WORKING_RAM);
 	}
 
 	if (gba->memory.iwram) {
