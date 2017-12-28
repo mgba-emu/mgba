@@ -69,7 +69,9 @@ enum {
 	SIZE_CART_FLASH512 = 0x00010000,
 	SIZE_CART_FLASH1M = 0x00020000,
 	SIZE_CART_EEPROM = 0x00002000,
-	SIZE_CART_EEPROM512 = 0x00000200
+	SIZE_CART_EEPROM512 = 0x00000200,
+
+	SIZE_AGB_PRINT = 0x10000
 };
 
 enum {
@@ -77,7 +79,22 @@ enum {
 	BASE_OFFSET = 24
 };
 
+enum {
+	AGB_PRINT_BASE = 0x00FD0000,
+	AGB_PRINT_TOP = 0x00FE0000,
+	AGB_PRINT_PROTECT = 0x00FE2FFE,
+	AGB_PRINT_STRUCT = 0x01FE20F8,
+	AGB_PRINT_FLUSH_ADDR = 0x01FE209C,
+};
+
 mLOG_DECLARE_CATEGORY(GBA_MEM);
+
+struct GBAPrintContext {
+	uint16_t request;
+	uint16_t bank;
+	uint16_t get;
+	uint16_t put;
+};
 
 struct GBAMemory {
 	uint32_t* bios;
@@ -107,6 +124,10 @@ struct GBAMemory {
 	struct mTimingEvent dmaEvent;
 	int activeDMA;
 	uint32_t dmaTransferRegister;
+
+	uint16_t agbPrint;
+	struct GBAPrintContext agbPrintCtx;
+	uint16_t* agbPrintBuffer;
 
 	bool mirroring;
 };
@@ -145,6 +166,8 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters);
 struct GBASerializedState;
 void GBAMemorySerialize(const struct GBAMemory* memory, struct GBASerializedState* state);
 void GBAMemoryDeserialize(struct GBAMemory* memory, const struct GBASerializedState* state);
+
+void GBAPrintFlush(struct GBA* gba);
 
 CXX_GUARD_END
 
