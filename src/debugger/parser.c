@@ -7,6 +7,17 @@
 
 #include <mgba-util/string.h>
 
+enum LexState {
+	LEX_ERROR = -1,
+	LEX_ROOT = 0,
+	LEX_EXPECT_IDENTIFIER,
+	LEX_EXPECT_BINARY,
+	LEX_EXPECT_DECIMAL,
+	LEX_EXPECT_HEX,
+	LEX_EXPECT_PREFIX,
+	LEX_EXPECT_OPERATOR
+};
+
 static struct LexVector* _lexOperator(struct LexVector* lv, char operator) {
 	struct LexVector* lvNext = malloc(sizeof(struct LexVector));
 	lvNext->token.type = TOKEN_OPERATOR_TYPE;
@@ -22,6 +33,15 @@ static struct LexVector* _lexOperator(struct LexVector* lv, char operator) {
 		break;
 	case '/':
 		lvNext->token.operatorValue = OP_DIVIDE;
+		break;
+	case '&':
+		lvNext->token.operatorValue = OP_AND;
+		break;
+	case '|':
+		lvNext->token.operatorValue = OP_OR;
+		break;
+	case '^':
+		lvNext->token.operatorValue = OP_XOR;
 		break;
 	default:
 		lvNext->token.type = TOKEN_ERROR_TYPE;
@@ -102,6 +122,9 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '-':
 			case '*':
 			case '/':
+			case '&':
+			case '|':
+			case '^':
 				lv->token.type = TOKEN_IDENTIFIER_TYPE;
 				lv->token.identifierValue = strndup(tokenStart, string - tokenStart - 1);
 				lv = _lexOperator(lv, token);
@@ -163,6 +186,9 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '-':
 			case '*':
 			case '/':
+			case '&':
+			case '|':
+			case '^':
 				lv->token.type = TOKEN_UINT_TYPE;
 				lv->token.uintValue = next;
 				lv = _lexOperator(lv, token);
@@ -217,6 +243,9 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '-':
 			case '*':
 			case '/':
+			case '&':
+			case '|':
+			case '^':
 				lv->token.type = TOKEN_UINT_TYPE;
 				lv->token.uintValue = next;
 				lv = _lexOperator(lv, token);
@@ -259,6 +288,9 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '-':
 			case '*':
 			case '/':
+			case '&':
+			case '|':
+			case '^':
 				lv->token.type = TOKEN_UINT_TYPE;
 				lv->token.uintValue = next;
 				lv = _lexOperator(lv, token);
@@ -292,6 +324,9 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '-':
 			case '*':
 			case '/':
+			case '&':
+			case '|':
+			case '^':
 				lvNext = malloc(sizeof(struct LexVector));
 				lvNext->next = lv->next;
 				lvNext->token.type = TOKEN_CLOSE_PAREN_TYPE;
@@ -336,11 +371,19 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 }
 
 static const int _operatorPrecedence[] = {
-	2,
-	1,
-	1,
-	0,
-	0
+	14,
+	4,
+	4,
+	3,
+	3,
+	8,
+	10,
+	9,
+	6,
+	6,
+	7,
+	6,
+	6
 };
 
 static struct ParseTree* _parseTreeCreate() {
@@ -421,7 +464,7 @@ void parseLexedExpression(struct ParseTree* tree, struct LexVector* lv) {
 	tree->lhs = 0;
 	tree->rhs = 0;
 
-	_parseExpression(tree, lv, _operatorPrecedence[OP_ASSIGN], 0);
+	_parseExpression(tree, lv, INT_MAX, 0);
 }
 
 void lexFree(struct LexVector* lv) {

@@ -560,6 +560,15 @@ static uint32_t _performOperation(enum Operation operation, uint32_t current, ui
 			return 0;
 		}
 		break;
+	case OP_AND:
+		current &= next;
+		break;
+	case OP_OR:
+		current |= next;
+		break;
+	case OP_XOR:
+		current ^= next;
+		break;
 	}
 	return current;
 }

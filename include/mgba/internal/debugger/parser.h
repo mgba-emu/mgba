@@ -12,23 +12,20 @@ CXX_GUARD_START
 
 #include <mgba/debugger/debugger.h>
 
-enum LexState {
-	LEX_ERROR = -1,
-	LEX_ROOT = 0,
-	LEX_EXPECT_IDENTIFIER,
-	LEX_EXPECT_BINARY,
-	LEX_EXPECT_DECIMAL,
-	LEX_EXPECT_HEX,
-	LEX_EXPECT_PREFIX,
-	LEX_EXPECT_OPERATOR
-};
-
 enum Operation {
 	OP_ASSIGN,
 	OP_ADD,
 	OP_SUBTRACT,
 	OP_MULTIPLY,
-	OP_DIVIDE
+	OP_DIVIDE,
+	OP_AND,
+	OP_OR,
+	OP_XOR,
+	OP_LESS,
+	OP_GREATER,
+	OP_EQUAL,
+	OP_LE,
+	OP_GE,
 };
 
 struct Token {
