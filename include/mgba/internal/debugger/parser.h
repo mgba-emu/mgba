@@ -10,8 +10,6 @@
 
 CXX_GUARD_START
 
-#include <mgba/debugger/debugger.h>
-
 enum Operation {
 	OP_ASSIGN,
 	OP_ADD,
@@ -61,6 +59,9 @@ void parseLexedExpression(struct ParseTree* tree, struct LexVector* lv);
 
 void lexFree(struct LexVector* lv);
 void parseFree(struct ParseTree* tree);
+
+struct mDebugger;
+bool mDebuggerEvaluateParseTree(struct mDebugger* debugger, struct ParseTree* tree, int32_t* value, int* segment);
 
 CXX_GUARD_END
 

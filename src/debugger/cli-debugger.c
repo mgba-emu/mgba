@@ -538,85 +538,6 @@ static void _printStatus(struct CLIDebugger* debugger, struct CLIDebugVector* dv
 	debugger->system->printStatus(debugger->system);
 }
 
-static uint32_t _performOperation(enum Operation operation, uint32_t current, uint32_t next, struct CLIDebugVector* dv) {
-	switch (operation) {
-	case OP_ASSIGN:
-		current = next;
-		break;
-	case OP_ADD:
-		current += next;
-		break;
-	case OP_SUBTRACT:
-		current -= next;
-		break;
-	case OP_MULTIPLY:
-		current *= next;
-		break;
-	case OP_DIVIDE:
-		if (next != 0) {
-			current /= next;
-		} else {
-			dv->type = CLIDV_ERROR_TYPE;
-			return 0;
-		}
-		break;
-	case OP_AND:
-		current &= next;
-		break;
-	case OP_OR:
-		current |= next;
-		break;
-	case OP_XOR:
-		current ^= next;
-		break;
-	case OP_LESS:
-		current = current < next;
-		break;
-	case OP_GREATER:
-		current = current > next;
-		break;
-	case OP_EQUAL:
-		current = current == next;
-		break;
-	case OP_LE:
-		current = current <= next;
-		break;
-	case OP_GE:
-		current = current >= next;
-		break;
-	}
-	return current;
-}
-
-static void _evaluateParseTree(struct mDebugger* debugger, struct ParseTree* tree, struct CLIDebugVector* dv) {
-	int32_t lhs, rhs;
-	switch (tree->token.type) {
-	case TOKEN_UINT_TYPE:
-		dv->intValue = tree->token.uintValue;
-		break;
-	case TOKEN_SEGMENT_TYPE:
-		_evaluateParseTree(debugger, tree->lhs, dv);
-		dv->segmentValue = dv->intValue;
-		_evaluateParseTree(debugger, tree->rhs, dv);
-		break;
-	case TOKEN_OPERATOR_TYPE:
-		_evaluateParseTree(debugger, tree->lhs, dv);
-		lhs = dv->intValue;
-		_evaluateParseTree(debugger, tree->rhs, dv);
-		rhs = dv->intValue;
-		dv->intValue = _performOperation(tree->token.operatorValue, lhs, rhs, dv);
-		break;
-	case TOKEN_IDENTIFIER_TYPE:
-		if (mDebuggerLookupIdentifier(debugger, tree->token.identifierValue, &dv->intValue, &dv->segmentValue)) {
-			break;
-		}
-		// Fall through
-	case TOKEN_ERROR_TYPE:
-	default:
-		dv->type = CLIDV_ERROR_TYPE;
-	}
-}
-
 struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* string, size_t length) {
 	if (!string || length < 1) {
 		return 0;
@@ -636,7 +557,9 @@ struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* stri
 	if (tree.token.type == TOKEN_ERROR_TYPE) {
 		dvTemp.type = CLIDV_ERROR_TYPE;
 	} else {
-		_evaluateParseTree(&debugger->d, &tree, &dvTemp);
+		if (!mDebuggerEvaluateParseTree(&debugger->d, &tree, &dvTemp.intValue, &dvTemp.segmentValue)) {
+			dvTemp.type = CLIDV_ERROR_TYPE;
+		}
 	}
 
 	parseFree(tree.lhs);

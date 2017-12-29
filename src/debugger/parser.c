@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/debugger/parser.h>
 
+#include <mgba/debugger/debugger.h>
 #include <mgba-util/string.h>
 
 enum LexState {
@@ -508,4 +509,88 @@ void parseFree(struct ParseTree* tree) {
 		free(tree->token.identifierValue);
 	}
 	free(tree);
+}
+
+static bool _performOperation(enum Operation operation, int32_t current, int32_t next, int32_t* value) {
+	switch (operation) {
+	case OP_ASSIGN:
+		current = next;
+		break;
+	case OP_ADD:
+		current += next;
+		break;
+	case OP_SUBTRACT:
+		current -= next;
+		break;
+	case OP_MULTIPLY:
+		current *= next;
+		break;
+	case OP_DIVIDE:
+		if (next != 0) {
+			current /= next;
+		} else {
+			return false;
+		}
+		break;
+	case OP_AND:
+		current &= next;
+		break;
+	case OP_OR:
+		current |= next;
+		break;
+	case OP_XOR:
+		current ^= next;
+		break;
+	case OP_LESS:
+		current = current < next;
+		break;
+	case OP_GREATER:
+		current = current > next;
+		break;
+	case OP_EQUAL:
+		current = current == next;
+		break;
+	case OP_LE:
+		current = current <= next;
+		break;
+	case OP_GE:
+		current = current >= next;
+		break;
+	}
+	*value = current;
+	return true;
+}
+
+bool mDebuggerEvaluateParseTree(struct mDebugger* debugger, struct ParseTree* tree, int32_t* value, int* segment) {
+	if (!value) {
+		return false;
+	}
+	int32_t lhs, rhs;
+	switch (tree->token.type) {
+	case TOKEN_UINT_TYPE:
+		if (segment) {
+			*segment = -1;
+		}
+		*value = tree->token.uintValue;
+		return true;
+	case TOKEN_SEGMENT_TYPE:
+		if (!mDebuggerEvaluateParseTree(debugger, tree->rhs, value, segment)) {
+			return false;
+		}
+		return mDebuggerEvaluateParseTree(debugger, tree->lhs, segment, NULL);
+	case TOKEN_OPERATOR_TYPE:
+		if (!mDebuggerEvaluateParseTree(debugger, tree->lhs, &lhs, segment)) {
+			return false;
+		}
+		if (!mDebuggerEvaluateParseTree(debugger, tree->rhs, &rhs, segment)) {
+			return false;
+		}
+		return _performOperation(tree->token.operatorValue, lhs, rhs, value);
+	case TOKEN_IDENTIFIER_TYPE:
+		return mDebuggerLookupIdentifier(debugger, tree->token.identifierValue, value, segment);
+	case TOKEN_ERROR_TYPE:
+	default:
+		break;
+	}
+	return false;
 }
