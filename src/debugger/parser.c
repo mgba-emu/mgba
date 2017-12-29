@@ -12,8 +12,10 @@ enum LexState {
 	LEX_ERROR = -1,
 	LEX_ROOT = 0,
 	LEX_EXPECT_IDENTIFIER,
+	LEX_EXPECT_BINARY_FIRST,
 	LEX_EXPECT_BINARY,
 	LEX_EXPECT_DECIMAL,
+	LEX_EXPECT_HEX_FIRST,
 	LEX_EXPECT_HEX,
 	LEX_EXPECT_PREFIX,
 	LEX_EXPECT_OPERATOR
@@ -62,6 +64,41 @@ static struct LexVector* _lexOperator(struct LexVector* lv, char operator) {
 	lvNext->token.type = TOKEN_ERROR_TYPE;
 	lv->next = lvNext;
 	return lvNext;
+}
+
+static struct LexVector* _lexValue(struct LexVector* lv, char token, uint32_t next, enum LexState* state) {
+	struct LexVector* lvNext;
+
+	switch (token) {
+	case '+':
+	case '-':
+	case '*':
+	case '/':
+	case '&':
+	case '|':
+	case '^':
+	case '<':
+	case '>':
+		lv->token.type = TOKEN_UINT_TYPE;
+		lv->token.uintValue = next;
+		lv = _lexOperator(lv, token);
+		*state = LEX_ROOT;
+		break;
+	case ')':
+		lvNext = malloc(sizeof(struct LexVector));
+		lvNext->next = lv->next;
+		lvNext->token.type = TOKEN_CLOSE_PAREN_TYPE;
+		lv->next = lvNext;
+		lv->token.type = TOKEN_UINT_TYPE;
+		lv->token.uintValue = next;
+		lv = lvNext;
+		*state = LEX_EXPECT_OPERATOR;
+		break;
+	default:
+		*state = LEX_ERROR;
+		break;
+	}
+	return lv;
 }
 
 size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
@@ -148,6 +185,9 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				break;
 			}
 			break;
+		case LEX_EXPECT_BINARY_FIRST:
+			state = LEX_EXPECT_BINARY;
+			// Fall through
 		case LEX_EXPECT_BINARY:
 			switch (token) {
 			case '0':
@@ -156,27 +196,8 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				next <<= 1;
 				next += token - '0';
 				break;
-			case '+':
-			case '-':
-			case '*':
-			case '/':
-			case '&':
-			case '|':
-			case '^':
-			case '<':
-			case '>':
-				lv->token.type = TOKEN_UINT_TYPE;
-				lv->token.uintValue = next;
-				lv = _lexOperator(lv, token);
-				state = LEX_ROOT;
-				break;
-			case ')':
-				lv->token.type = TOKEN_UINT_TYPE;
-				lv->token.uintValue = next;
-				state = LEX_EXPECT_OPERATOR;
-				break;
 			default:
-				state = LEX_ERROR;
+				lv = _lexValue(lv, token, next, &state);
 				break;
 			}
 			break;
@@ -196,29 +217,14 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				next *= 10;
 				next += token - '0';
 				break;
-			case '+':
-			case '-':
-			case '*':
-			case '/':
-			case '&':
-			case '|':
-			case '^':
-			case '<':
-			case '>':
-				lv->token.type = TOKEN_UINT_TYPE;
-				lv->token.uintValue = next;
-				lv = _lexOperator(lv, token);
-				state = LEX_ROOT;
-				break;
-			case ')':
-				lv->token.type = TOKEN_UINT_TYPE;
-				lv->token.uintValue = next;
-				state = LEX_EXPECT_OPERATOR;
-				break;
 			default:
-				state = LEX_ERROR;
+				lv = _lexValue(lv, token, next, &state);
+				break;
 			}
 			break;
+		case LEX_EXPECT_HEX_FIRST:
+			state = LEX_EXPECT_HEX;
+			// Fall through
 		case LEX_EXPECT_HEX:
 			switch (token) {
 			case '0':
@@ -255,20 +261,6 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				next *= 16;
 				next += token - 'a' + 10;
 				break;
-			case '+':
-			case '-':
-			case '*':
-			case '/':
-			case '&':
-			case '|':
-			case '^':
-			case '<':
-			case '>':
-				lv->token.type = TOKEN_UINT_TYPE;
-				lv->token.uintValue = next;
-				lv = _lexOperator(lv, token);
-				state = LEX_ROOT;
-				break;
 			case ':':
 				lv->token.type = TOKEN_SEGMENT_TYPE;
 				lv->token.uintValue = next;
@@ -278,15 +270,9 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				lv->next = lvNext;
 				lv = lvNext;
 				next = 0;
-				state = LEX_EXPECT_HEX;
-				break;
-			case ')':
-				lv->token.type = TOKEN_UINT_TYPE;
-				lv->token.uintValue = next;
-				state = LEX_EXPECT_OPERATOR;
 				break;
 			default:
-				state = LEX_ERROR;
+				lv = _lexValue(lv, token, next, &state);
 				break;
 			}
 			break;
@@ -295,31 +281,12 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case 'X':
 			case 'x':
 				next = 0;
-				state = LEX_EXPECT_HEX;
+				state = LEX_EXPECT_HEX_FIRST;
 				break;
 			case 'B':
 			case 'b':
 				next = 0;
-				state = LEX_EXPECT_BINARY;
-				break;
-			case '+':
-			case '-':
-			case '*':
-			case '/':
-			case '&':
-			case '|':
-			case '^':
-			case '<':
-			case '>':
-				lv->token.type = TOKEN_UINT_TYPE;
-				lv->token.uintValue = next;
-				lv = _lexOperator(lv, token);
-				state = LEX_ROOT;
-				break;
-			case ')':
-				lv->token.type = TOKEN_UINT_TYPE;
-				lv->token.uintValue = next;
-				state = LEX_EXPECT_OPERATOR;
+				state = LEX_EXPECT_BINARY_FIRST;
 				break;
 			case '0':
 			case '1':
@@ -335,7 +302,8 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				state = LEX_EXPECT_DECIMAL;
 				break;
 			default:
-				state = LEX_ERROR;
+				lv = _lexValue(lv, token, next, &state);
+				break;
 			}
 			break;
 		case LEX_EXPECT_OPERATOR:
@@ -349,11 +317,7 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '^':
 			case '<':
 			case '>':
-				lvNext = malloc(sizeof(struct LexVector));
-				lvNext->next = lv->next;
-				lvNext->token.type = TOKEN_CLOSE_PAREN_TYPE;
-				lv->next = lvNext;
-				lv = _lexOperator(lv->next, token);
+				lv = _lexOperator(lv, token);
 				state = LEX_ROOT;
 				break;
 			default:
@@ -384,6 +348,8 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 		lvNext->token.type = TOKEN_CLOSE_PAREN_TYPE;
 		lv->next = lvNext;
 		break;
+	case LEX_EXPECT_BINARY_FIRST:
+	case LEX_EXPECT_HEX_FIRST:
 	case LEX_ERROR:
 	default:
 		lv->token.type = TOKEN_ERROR_TYPE;
