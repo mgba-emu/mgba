@@ -25,8 +25,16 @@ enum Operation {
 	OP_LESS,
 	OP_GREATER,
 	OP_EQUAL,
+	OP_NOT_EQUAL,
+	OP_LOGICAL_AND,
+	OP_LOGICAL_OR,
 	OP_LE,
 	OP_GE,
+	OP_NEGATE,
+	OP_FLIP,
+	OP_NOT,
+	OP_SHIFT_L,
+	OP_SHIFT_R,
 };
 
 struct Token {
