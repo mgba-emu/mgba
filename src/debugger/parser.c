@@ -43,6 +43,12 @@ static struct LexVector* _lexOperator(struct LexVector* lv, char operator) {
 	case '^':
 		lvNext->token.operatorValue = OP_XOR;
 		break;
+	case '<':
+		lvNext->token.operatorValue = OP_LESS;
+		break;
+	case '>':
+		lvNext->token.operatorValue = OP_GREATER;
+		break;
 	default:
 		lvNext->token.type = TOKEN_ERROR_TYPE;
 		break;
@@ -125,6 +131,8 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '&':
 			case '|':
 			case '^':
+			case '<':
+			case '>':
 				lv->token.type = TOKEN_IDENTIFIER_TYPE;
 				lv->token.identifierValue = strndup(tokenStart, string - tokenStart - 1);
 				lv = _lexOperator(lv, token);
@@ -151,6 +159,11 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '-':
 			case '*':
 			case '/':
+			case '&':
+			case '|':
+			case '^':
+			case '<':
+			case '>':
 				lv->token.type = TOKEN_UINT_TYPE;
 				lv->token.uintValue = next;
 				lv = _lexOperator(lv, token);
@@ -189,6 +202,8 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '&':
 			case '|':
 			case '^':
+			case '<':
+			case '>':
 				lv->token.type = TOKEN_UINT_TYPE;
 				lv->token.uintValue = next;
 				lv = _lexOperator(lv, token);
@@ -246,6 +261,8 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '&':
 			case '|':
 			case '^':
+			case '<':
+			case '>':
 				lv->token.type = TOKEN_UINT_TYPE;
 				lv->token.uintValue = next;
 				lv = _lexOperator(lv, token);
@@ -291,6 +308,8 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '&':
 			case '|':
 			case '^':
+			case '<':
+			case '>':
 				lv->token.type = TOKEN_UINT_TYPE;
 				lv->token.uintValue = next;
 				lv = _lexOperator(lv, token);
@@ -327,6 +346,8 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '&':
 			case '|':
 			case '^':
+			case '<':
+			case '>':
 				lvNext = malloc(sizeof(struct LexVector));
 				lvNext->next = lv->next;
 				lvNext->token.type = TOKEN_CLOSE_PAREN_TYPE;

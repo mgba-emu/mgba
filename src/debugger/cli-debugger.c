@@ -569,6 +569,21 @@ static uint32_t _performOperation(enum Operation operation, uint32_t current, ui
 	case OP_XOR:
 		current ^= next;
 		break;
+	case OP_LESS:
+		current = current < next;
+		break;
+	case OP_GREATER:
+		current = current > next;
+		break;
+	case OP_EQUAL:
+		current = current == next;
+		break;
+	case OP_LE:
+		current = current <= next;
+		break;
+	case OP_GE:
+		current = current >= next;
+		break;
 	}
 	return current;
 }
