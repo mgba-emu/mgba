@@ -87,16 +87,15 @@ void GBAMemoryInit(struct GBA* gba) {
 	memset(&gba->memory.agbPrintCtx, 0, sizeof(gba->memory.agbPrintCtx));
 	gba->memory.agbPrintBuffer = NULL;
 
-	gba->memory.iwram = anonymousMemoryMap(SIZE_WORKING_IRAM);
-	gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
+	gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM + SIZE_WORKING_IRAM);
+	gba->memory.iwram = &gba->memory.wram[SIZE_WORKING_RAM >> 2];
 
 	GBADMAInit(gba);
 	GBAVFameInit(&gba->memory.vfame);
 }
 
 void GBAMemoryDeinit(struct GBA* gba) {
-	mappedMemoryFree(gba->memory.wram, SIZE_WORKING_RAM);
-	mappedMemoryFree(gba->memory.iwram, SIZE_WORKING_IRAM);
+	mappedMemoryFree(gba->memory.wram, SIZE_WORKING_RAM + SIZE_WORKING_IRAM);
 	if (gba->memory.rom) {
 		mappedMemoryFree(gba->memory.rom, gba->memory.romSize);
 	}
