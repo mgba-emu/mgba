@@ -11,7 +11,7 @@
 	struct LexVector* lv = *state; \
 	lexFree(lv); \
 	LexVectorClear(lv); \
-	size_t adjusted = lexExpression(lv, STR, strlen(STR)); \
+	size_t adjusted = lexExpression(lv, STR, strlen(STR), ""); \
 	assert_false(adjusted > strlen(STR))
 
 M_TEST_SUITE_SETUP(Lexer) {
@@ -715,6 +715,68 @@ M_TEST_DEFINE(lexNestedParentheticalExpression) {
 	assert_int_equal(LexVectorGetPointer(lv, 8)->type, TOKEN_CLOSE_PAREN_TYPE);
 }
 
+M_TEST_DEFINE(lexSpaceSimple) {
+	LEX(" 1 ");
+
+	assert_int_equal(LexVectorSize(lv), 1);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 1);
+}
+
+M_TEST_DEFINE(lexSpaceIdentifier) {
+	LEX(" x ");
+
+	assert_int_equal(LexVectorSize(lv), 1);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_IDENTIFIER_TYPE);
+	assert_string_equal(LexVectorGetPointer(lv, 0)->identifierValue, "x");
+}
+
+M_TEST_DEFINE(lexSpaceOperator) {
+	LEX("1 + 2");
+
+	assert_int_equal(LexVectorSize(lv), 3);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 1);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_ADD);
+	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 2)->uintValue, 2);
+}
+
+M_TEST_DEFINE(lexSpaceParen) {
+	LEX(" ( 1 + 2 ) ");
+
+	assert_int_equal(LexVectorSize(lv), 5);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_OPEN_PAREN_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->uintValue, 1);
+	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 2)->operatorValue, OP_ADD);
+	assert_int_equal(LexVectorGetPointer(lv, 3)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 3)->uintValue, 2);
+	assert_int_equal(LexVectorGetPointer(lv, 4)->type, TOKEN_CLOSE_PAREN_TYPE);
+}
+
+M_TEST_DEFINE(lexSpaceParens) {
+	LEX(" ( 1 + ( 2 + 3 ) ) ");
+
+	assert_int_equal(LexVectorSize(lv), 9);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_OPEN_PAREN_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->uintValue, 1);
+	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 2)->operatorValue, OP_ADD);
+	assert_int_equal(LexVectorGetPointer(lv, 3)->type, TOKEN_OPEN_PAREN_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 4)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 4)->uintValue, 2);
+	assert_int_equal(LexVectorGetPointer(lv, 5)->type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 5)->operatorValue, OP_ADD);
+	assert_int_equal(LexVectorGetPointer(lv, 6)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 6)->uintValue, 3);
+	assert_int_equal(LexVectorGetPointer(lv, 7)->type, TOKEN_CLOSE_PAREN_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 8)->type, TOKEN_CLOSE_PAREN_TYPE);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(Lexer,
 	cmocka_unit_test(lexEmpty),
 	cmocka_unit_test(lexInt),
@@ -785,4 +847,9 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(Lexer,
 	cmocka_unit_test(lexCloseParen),
 	cmocka_unit_test(lexIdentifierCloseParen),
 	cmocka_unit_test(lexParentheticalExpression),
-	cmocka_unit_test(lexNestedParentheticalExpression))
+	cmocka_unit_test(lexNestedParentheticalExpression),
+	cmocka_unit_test(lexSpaceSimple),
+	cmocka_unit_test(lexSpaceIdentifier),
+	cmocka_unit_test(lexSpaceOperator),
+	cmocka_unit_test(lexSpaceParen),
+	cmocka_unit_test(lexSpaceParens))

@@ -70,6 +70,7 @@ struct mDebuggerEntryInfo {
 };
 
 struct mDebugger;
+struct ParseTree;
 struct mDebuggerPlatform {
 	struct mDebugger* p;
 
@@ -79,6 +80,7 @@ struct mDebuggerPlatform {
 
 	bool (*hasBreakpoints)(struct mDebuggerPlatform*);
 	void (*setBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
+	void (*setConditionalBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment, struct ParseTree* condition);
 	void (*clearBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
 	void (*setWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type);
 	void (*clearWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);

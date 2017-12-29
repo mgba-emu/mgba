@@ -62,8 +62,8 @@ static void _source(struct CLIDebugger*, struct CLIDebugVector*);
 #endif
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
-	{ "b", _setBreakpoint, "I", "Set a breakpoint" },
-	{ "break", _setBreakpoint, "I", "Set a breakpoint" },
+	{ "b", _setBreakpoint, "Is", "Set a breakpoint" },
+	{ "break", _setBreakpoint, "Is", "Set a breakpoint" },
 	{ "c", _continue, "", "Continue execution" },
 	{ "continue", _continue, "", "Continue execution" },
 	{ "d", _clearBreakpoint, "I", "Delete a breakpoint" },
@@ -458,7 +458,39 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->setBreakpoint(debugger->d.platform, address, dv->segmentValue);
+	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
+		struct LexVector lv;
+		bool error = false;
+		LexVectorInit(&lv, 0);
+		const char* string = dv->next->charValue;
+		size_t length = strlen(dv->next->charValue);
+		size_t adjusted = lexExpression(&lv, string, length, NULL);
+		struct ParseTree* tree = malloc(sizeof(*tree));
+		if (!adjusted) {
+			error = true;
+		} else {
+			parseLexedExpression(tree, &lv);
+
+			if (adjusted > length) {
+				error = true;
+			} else {
+				length -= adjusted;
+				string += adjusted;
+			}
+		}
+		lexFree(&lv);
+		LexVectorClear(&lv);
+		LexVectorDeinit(&lv);
+		if (error) {
+			parseFree(tree);
+			free(tree);
+			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+		} else {
+			debugger->d.platform->setConditionalBreakpoint(debugger->d.platform, address, dv->segmentValue, tree);
+		}
+	} else {
+		debugger->d.platform->setBreakpoint(debugger->d.platform, address, dv->segmentValue);
+	}
 }
 
 static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -547,7 +579,7 @@ struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* stri
 
 	struct LexVector lv;
 	LexVectorInit(&lv, 0);
-	size_t adjusted = lexExpression(&lv, string, length);
+	size_t adjusted = lexExpression(&lv, string, length, " ");
 	if (adjusted > length) {
 		dvTemp.type = CLIDV_ERROR_TYPE;
 	}
@@ -562,8 +594,7 @@ struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* stri
 		}
 	}
 
-	parseFree(tree.lhs);
-	parseFree(tree.rhs);
+	parseFree(&tree);
 
 	lexFree(&lv);
 	LexVectorDeinit(&lv);

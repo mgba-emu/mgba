@@ -10,6 +10,7 @@
 #include <mgba/internal/arm/decoder.h>
 #include <mgba/internal/arm/isa-inlines.h>
 #include <mgba/internal/arm/debugger/memory-debugger.h>
+#include <mgba/internal/debugger/parser.h>
 
 DEFINE_VECTOR(ARMDebugBreakpointList, struct ARMDebugBreakpoint);
 DEFINE_VECTOR(ARMDebugWatchpointList, struct ARMDebugWatchpoint);
@@ -22,6 +23,13 @@ static struct ARMDebugBreakpoint* _lookupBreakpoint(struct ARMDebugBreakpointLis
 		}
 	}
 	return 0;
+}
+
+static void _destroyBreakpoint(struct ARMDebugBreakpoint* breakpoint) {
+	if (breakpoint->condition) {
+		parseFree(breakpoint->condition);
+		free(breakpoint->condition);
+	}
 }
 
 static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
@@ -37,6 +45,13 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	if (!breakpoint) {
 		return;
 	}
+	if (breakpoint->condition) {
+		int32_t value;
+		int segment;
+		if (!mDebuggerEvaluateParseTree(d->p, breakpoint->condition, &value, &segment) || !(value || segment >= 0)) {
+			return;
+		}
+	}
 	struct mDebuggerEntryInfo info = {
 		.address = breakpoint->address,
 		.type.bp.breakType = BREAKPOINT_HARDWARE
@@ -50,6 +65,7 @@ static void ARMDebuggerDeinit(struct mDebuggerPlatform* platform);
 static void ARMDebuggerEnter(struct mDebuggerPlatform* d, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info);
 
 static void ARMDebuggerSetBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
+static void ARMDebuggerSetConditionalBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment, struct ParseTree* condition);
 static void ARMDebuggerClearBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void ARMDebuggerSetWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type);
 static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
@@ -65,6 +81,7 @@ struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	platform->init = ARMDebuggerInit;
 	platform->deinit = ARMDebuggerDeinit;
 	platform->setBreakpoint = ARMDebuggerSetBreakpoint;
+	platform->setConditionalBreakpoint = ARMDebuggerSetConditionalBreakpoint;
 	platform->clearBreakpoint = ARMDebuggerClearBreakpoint;
 	platform->setWatchpoint = ARMDebuggerSetWatchpoint;
 	platform->clearWatchpoint = ARMDebuggerClearWatchpoint;
@@ -97,6 +114,10 @@ void ARMDebuggerDeinit(struct mDebuggerPlatform* platform) {
 	}
 	ARMDebuggerRemoveMemoryShim(debugger);
 
+	size_t i;
+	for (i = 0; i < ARMDebugBreakpointListSize(&debugger->breakpoints); ++i) {
+		_destroyBreakpoint(ARMDebugBreakpointListGetPointer(&debugger->breakpoints, i));
+	}
 	ARMDebugBreakpointListDeinit(&debugger->breakpoints);
 	ARMDebugBreakpointListDeinit(&debugger->swBreakpoints);
 	ARMDebugWatchpointListDeinit(&debugger->watchpoints);
@@ -168,6 +189,16 @@ static void ARMDebuggerSetBreakpoint(struct mDebuggerPlatform* d, uint32_t addre
 	UNUSED(segment);
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	struct ARMDebugBreakpoint* breakpoint = ARMDebugBreakpointListAppend(&debugger->breakpoints);
+	breakpoint->condition = NULL;
+	breakpoint->address = address;
+	breakpoint->isSw = false;
+}
+
+static void ARMDebuggerSetConditionalBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, struct ParseTree* condition) {
+	UNUSED(segment);
+	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
+	struct ARMDebugBreakpoint* breakpoint = ARMDebugBreakpointListAppend(&debugger->breakpoints);
+	breakpoint->condition = condition;
 	breakpoint->address = address;
 	breakpoint->isSw = false;
 }
@@ -179,6 +210,7 @@ static void ARMDebuggerClearBreakpoint(struct mDebuggerPlatform* d, uint32_t add
 	size_t i;
 	for (i = 0; i < ARMDebugBreakpointListSize(breakpoints); ++i) {
 		if (ARMDebugBreakpointListGetPointer(breakpoints, i)->address == address) {
+			_destroyBreakpoint(ARMDebugBreakpointListGetPointer(breakpoints, i));
 			ARMDebugBreakpointListShift(breakpoints, i, 1);
 		}
 	}

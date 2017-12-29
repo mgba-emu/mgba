@@ -12,6 +12,9 @@
 
 CXX_GUARD_START
 
+struct Token;
+DECLARE_VECTOR(LexVector, struct Token);
+
 enum Operation {
 	OP_ASSIGN,
 	OP_ADD,
@@ -54,15 +57,13 @@ struct Token {
 	};
 };
 
-DECLARE_VECTOR(LexVector, struct Token);
-
 struct ParseTree {
 	struct Token token;
 	struct ParseTree* lhs;
 	struct ParseTree* rhs;
 };
 
-size_t lexExpression(struct LexVector* lv, const char* string, size_t length);
+size_t lexExpression(struct LexVector* lv, const char* string, size_t length, const char* eol);
 void parseLexedExpression(struct ParseTree* tree, struct LexVector* lv);
 
 void lexFree(struct LexVector* lv);

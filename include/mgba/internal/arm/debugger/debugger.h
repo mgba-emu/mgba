@@ -15,8 +15,10 @@ CXX_GUARD_START
 #include <mgba/internal/arm/arm.h>
 #include <mgba-util/vector.h>
 
+struct ParseTree;
 struct ARMDebugBreakpoint {
 	uint32_t address;
+	struct ParseTree* condition;
 	bool isSw;
 	struct {
 		uint32_t opcode;

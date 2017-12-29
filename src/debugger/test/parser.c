@@ -16,7 +16,7 @@ struct LPTest {
 	struct LPTest* lp = *state; \
 	lexFree(&lp->lv); \
 	LexVectorClear(&lp->lv); \
-	size_t adjusted = lexExpression(&lp->lv, STR, strlen(STR)); \
+	size_t adjusted = lexExpression(&lp->lv, STR, strlen(STR), ""); \
 	assert_false(adjusted > strlen(STR)); \
 	struct ParseTree* tree = &lp->tree; \
 	parseLexedExpression(tree, &lp->lv)
@@ -30,8 +30,7 @@ M_TEST_SUITE_SETUP(Parser) {
 
 M_TEST_SUITE_TEARDOWN(Parser) {
 	struct LPTest* lp = *state;
-	parseFree(lp->tree.lhs); \
-	parseFree(lp->tree.rhs); \
+	parseFree(&lp->tree); \
 	lexFree(&lp->lv);
 	LexVectorDeinit(&lp->lv);
 	free(lp);
