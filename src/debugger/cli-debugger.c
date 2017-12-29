@@ -545,11 +545,11 @@ struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* stri
 
 	struct CLIDebugVector dvTemp = { .type = CLIDV_INT_TYPE, .segmentValue = -1 };
 
-	struct LexVector lv = { .next = 0 };
+	struct LexVector lv;
+	LexVectorInit(&lv, 0);
 	size_t adjusted = lexExpression(&lv, string, length);
 	if (adjusted > length) {
 		dvTemp.type = CLIDV_ERROR_TYPE;
-		lexFree(lv.next);
 	}
 
 	struct ParseTree tree;
@@ -564,6 +564,9 @@ struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* stri
 
 	parseFree(tree.lhs);
 	parseFree(tree.rhs);
+
+	lexFree(&lv);
+	LexVectorDeinit(&lv);
 
 	struct CLIDebugVector* dv = malloc(sizeof(struct CLIDebugVector));
 	if (dvTemp.type == CLIDV_ERROR_TYPE) {

@@ -8,6 +8,8 @@
 
 #include <mgba-util/common.h>
 
+#include <mgba-util/vector.h>
+
 CXX_GUARD_START
 
 enum Operation {
@@ -43,10 +45,7 @@ struct Token {
 	};
 };
 
-struct LexVector {
-	struct LexVector* next;
-	struct Token token;
-};
+DECLARE_VECTOR(LexVector, struct Token);
 
 struct ParseTree {
 	struct Token token;

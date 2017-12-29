@@ -8,6 +8,8 @@
 #include <mgba/debugger/debugger.h>
 #include <mgba-util/string.h>
 
+DEFINE_VECTOR(LexVector, struct Token);
+
 enum LexState {
 	LEX_ERROR = -1,
 	LEX_ROOT = 0,
@@ -21,53 +23,45 @@ enum LexState {
 	LEX_EXPECT_OPERATOR
 };
 
-static struct LexVector* _lexOperator(struct LexVector* lv, char operator) {
-	struct LexVector* lvNext = malloc(sizeof(struct LexVector));
-	lvNext->token.type = TOKEN_OPERATOR_TYPE;
+static void _lexOperator(struct LexVector* lv, char operator) {
+	struct Token* lvNext = LexVectorAppend(lv);
+	lvNext->type = TOKEN_OPERATOR_TYPE;
 	switch (operator) {
 	case '+':
-		lvNext->token.operatorValue = OP_ADD;
+		lvNext->operatorValue = OP_ADD;
 		break;
 	case '-':
-		lvNext->token.operatorValue = OP_SUBTRACT;
+		lvNext->operatorValue = OP_SUBTRACT;
 		break;
 	case '*':
-		lvNext->token.operatorValue = OP_MULTIPLY;
+		lvNext->operatorValue = OP_MULTIPLY;
 		break;
 	case '/':
-		lvNext->token.operatorValue = OP_DIVIDE;
+		lvNext->operatorValue = OP_DIVIDE;
 		break;
 	case '&':
-		lvNext->token.operatorValue = OP_AND;
+		lvNext->operatorValue = OP_AND;
 		break;
 	case '|':
-		lvNext->token.operatorValue = OP_OR;
+		lvNext->operatorValue = OP_OR;
 		break;
 	case '^':
-		lvNext->token.operatorValue = OP_XOR;
+		lvNext->operatorValue = OP_XOR;
 		break;
 	case '<':
-		lvNext->token.operatorValue = OP_LESS;
+		lvNext->operatorValue = OP_LESS;
 		break;
 	case '>':
-		lvNext->token.operatorValue = OP_GREATER;
+		lvNext->operatorValue = OP_GREATER;
 		break;
 	default:
-		lvNext->token.type = TOKEN_ERROR_TYPE;
+		lvNext->type = TOKEN_ERROR_TYPE;
 		break;
 	}
-	lvNext->next = lv->next;
-	lv->next = lvNext;
-	lv = lvNext;
-	lvNext = malloc(sizeof(struct LexVector));
-	lvNext->next = lv->next;
-	lvNext->token.type = TOKEN_ERROR_TYPE;
-	lv->next = lvNext;
-	return lvNext;
 }
 
-static struct LexVector* _lexValue(struct LexVector* lv, char token, uint32_t next, enum LexState* state) {
-	struct LexVector* lvNext;
+static void _lexValue(struct LexVector* lv, char token, uint32_t next, enum LexState* state) {
+	struct Token* lvNext;
 
 	switch (token) {
 	case '+':
@@ -79,26 +73,24 @@ static struct LexVector* _lexValue(struct LexVector* lv, char token, uint32_t ne
 	case '^':
 	case '<':
 	case '>':
-		lv->token.type = TOKEN_UINT_TYPE;
-		lv->token.uintValue = next;
-		lv = _lexOperator(lv, token);
+		lvNext = LexVectorAppend(lv);
+		lvNext->type = TOKEN_UINT_TYPE;
+		lvNext->uintValue = next;
+		_lexOperator(lv, token);
 		*state = LEX_ROOT;
 		break;
 	case ')':
-		lvNext = malloc(sizeof(struct LexVector));
-		lvNext->next = lv->next;
-		lvNext->token.type = TOKEN_CLOSE_PAREN_TYPE;
-		lv->next = lvNext;
-		lv->token.type = TOKEN_UINT_TYPE;
-		lv->token.uintValue = next;
-		lv = lvNext;
+		lvNext = LexVectorAppend(lv);
+		lvNext->type = TOKEN_UINT_TYPE;
+		lvNext->uintValue = next;
+		lvNext = LexVectorAppend(lv);
+		lvNext->type = TOKEN_CLOSE_PAREN_TYPE;
 		*state = LEX_EXPECT_OPERATOR;
 		break;
 	default:
 		*state = LEX_ERROR;
 		break;
 	}
-	return lv;
 }
 
 size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
@@ -111,7 +103,7 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 
 	enum LexState state = LEX_ROOT;
 	const char* tokenStart = 0;
-	struct LexVector* lvNext;
+	struct Token* lvNext;
 
 	while (length > 0 && string[0] && string[0] != ' ' && state != LEX_ERROR) {
 		char token = string[0];
@@ -144,12 +136,8 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				break;
 			case '(':
 				state = LEX_ROOT;
-				lv->token.type = TOKEN_OPEN_PAREN_TYPE;
-				lvNext = malloc(sizeof(struct LexVector));
-				lvNext->next = lv->next;
-				lvNext->token.type = TOKEN_ERROR_TYPE;
-				lv->next = lvNext;
-				lv = lvNext;
+				lvNext = LexVectorAppend(lv);
+				lvNext->type = TOKEN_OPEN_PAREN_TYPE;
 				break;
 			default:
 				if (tolower(token) >= 'a' && tolower(token <= 'z')) {
@@ -171,14 +159,18 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '^':
 			case '<':
 			case '>':
-				lv->token.type = TOKEN_IDENTIFIER_TYPE;
-				lv->token.identifierValue = strndup(tokenStart, string - tokenStart - 1);
-				lv = _lexOperator(lv, token);
+				lvNext = LexVectorAppend(lv);
+				lvNext->type = TOKEN_IDENTIFIER_TYPE;
+				lvNext->identifierValue = strndup(tokenStart, string - tokenStart - 1);
+				_lexOperator(lv, token);
 				state = LEX_ROOT;
 				break;
 			case ')':
-				lv->token.type = TOKEN_IDENTIFIER_TYPE;
-				lv->token.identifierValue = strndup(tokenStart, string - tokenStart - 1);
+				lvNext = LexVectorAppend(lv);
+				lvNext->type = TOKEN_IDENTIFIER_TYPE;
+				lvNext->identifierValue = strndup(tokenStart, string - tokenStart - 1);
+				lvNext = LexVectorAppend(lv);
+				lvNext->type = TOKEN_CLOSE_PAREN_TYPE;
 				state = LEX_EXPECT_OPERATOR;
 				break;
 			default:
@@ -197,7 +189,7 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				next += token - '0';
 				break;
 			default:
-				lv = _lexValue(lv, token, next, &state);
+				_lexValue(lv, token, next, &state);
 				break;
 			}
 			break;
@@ -218,7 +210,7 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				next += token - '0';
 				break;
 			default:
-				lv = _lexValue(lv, token, next, &state);
+				_lexValue(lv, token, next, &state);
 				break;
 			}
 			break;
@@ -262,17 +254,13 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				next += token - 'a' + 10;
 				break;
 			case ':':
-				lv->token.type = TOKEN_SEGMENT_TYPE;
-				lv->token.uintValue = next;
-				lvNext = malloc(sizeof(struct LexVector));
-				lvNext->next = lv->next;
-				lvNext->token.type = TOKEN_UINT_TYPE;
-				lv->next = lvNext;
-				lv = lvNext;
+				lvNext = LexVectorAppend(lv);
+				lvNext->type = TOKEN_SEGMENT_TYPE;
+				lvNext->uintValue = next;
 				next = 0;
 				break;
 			default:
-				lv = _lexValue(lv, token, next, &state);
+				_lexValue(lv, token, next, &state);
 				break;
 			}
 			break;
@@ -302,7 +290,7 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				state = LEX_EXPECT_DECIMAL;
 				break;
 			default:
-				lv = _lexValue(lv, token, next, &state);
+				_lexValue(lv, token, next, &state);
 				break;
 			}
 			break;
@@ -317,7 +305,7 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '^':
 			case '<':
 			case '>':
-				lv = _lexOperator(lv, token);
+				_lexOperator(lv, token);
 				state = LEX_ROOT;
 				break;
 			default:
@@ -335,24 +323,23 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 	case LEX_EXPECT_DECIMAL:
 	case LEX_EXPECT_HEX:
 	case LEX_EXPECT_PREFIX:
-		lv->token.type = TOKEN_UINT_TYPE;
-		lv->token.uintValue = next;
+		lvNext = LexVectorAppend(lv);
+		lvNext->type = TOKEN_UINT_TYPE;
+		lvNext->uintValue = next;
 		break;
 	case LEX_EXPECT_IDENTIFIER:
-		lv->token.type = TOKEN_IDENTIFIER_TYPE;
-		lv->token.identifierValue = strndup(tokenStart, string - tokenStart);
+		lvNext = LexVectorAppend(lv);
+		lvNext->type = TOKEN_IDENTIFIER_TYPE;
+		lvNext->identifierValue = strndup(tokenStart, string - tokenStart);
 		break;
 	case LEX_EXPECT_OPERATOR:
-		lvNext = malloc(sizeof(struct LexVector));
-		lvNext->next = lv->next;
-		lvNext->token.type = TOKEN_CLOSE_PAREN_TYPE;
-		lv->next = lvNext;
 		break;
 	case LEX_EXPECT_BINARY_FIRST:
 	case LEX_EXPECT_HEX_FIRST:
 	case LEX_ERROR:
 	default:
-		lv->token.type = TOKEN_ERROR_TYPE;
+		lvNext = LexVectorAppend(lv);
+		lvNext->type = TOKEN_ERROR_TYPE;
 		break;
 	}
 	return adjusted;
@@ -382,65 +369,67 @@ static struct ParseTree* _parseTreeCreate() {
 	return tree;
 }
 
-static struct LexVector* _parseExpression(struct ParseTree* tree, struct LexVector* lv, int precedence, int openParens) {
+static size_t _parseExpression(struct ParseTree* tree, struct LexVector* lv, size_t i, int precedence, int openParens) {
 	struct ParseTree* newTree = 0;
-	while (lv) {
+	while (i < LexVectorSize(lv)) {
+		struct Token* token = LexVectorGetPointer(lv, i);
 		int newPrecedence;
-		switch (lv->token.type) {
+		switch (token->type) {
 		case TOKEN_IDENTIFIER_TYPE:
 		case TOKEN_UINT_TYPE:
 			if (tree->token.type == TOKEN_ERROR_TYPE) {
-				tree->token = lv->token;
-				lv = lv->next;
+				tree->token = *token;
+				if (token->type == TOKEN_IDENTIFIER_TYPE) {
+					tree->token.identifierValue = strdup(token->identifierValue);
+				}
+				++i;
 			} else {
 				tree->token.type = TOKEN_ERROR_TYPE;
-				return 0;
+				return i + 1;
 			}
 			break;
 		case TOKEN_SEGMENT_TYPE:
 			tree->lhs = _parseTreeCreate();
 			tree->lhs->token.type = TOKEN_UINT_TYPE;
-			tree->lhs->token.uintValue = lv->token.uintValue;
+			tree->lhs->token.uintValue = token->uintValue;
 			tree->rhs = _parseTreeCreate();
 			tree->token.type = TOKEN_SEGMENT_TYPE;
-			lv = _parseExpression(tree->rhs, lv->next, precedence, openParens);
+			i = _parseExpression(tree->rhs, lv, i + 1, precedence, openParens);
 			if (tree->token.type == TOKEN_ERROR_TYPE) {
 				tree->token.type = TOKEN_ERROR_TYPE;
 			}
 			break;
 		case TOKEN_OPEN_PAREN_TYPE:
-			lv = _parseExpression(tree, lv->next, INT_MAX, openParens + 1);
+			i = _parseExpression(tree, lv, i + 1, INT_MAX, openParens + 1);
 			break;
 		case TOKEN_CLOSE_PAREN_TYPE:
 			if (openParens <= 0) {
 				tree->token.type = TOKEN_ERROR_TYPE;
-				return 0;
 			}
-			return lv->next;
-			break;
+			return i + 1;
 		case TOKEN_OPERATOR_TYPE:
-			newPrecedence = _operatorPrecedence[lv->token.operatorValue];
+			newPrecedence = _operatorPrecedence[token->operatorValue];
 			if (newPrecedence < precedence) {
 				newTree = _parseTreeCreate();
 				*newTree = *tree;
 				tree->lhs = newTree;
 				tree->rhs = _parseTreeCreate();
-				tree->token = lv->token;
-				lv = _parseExpression(tree->rhs, lv->next, newPrecedence, openParens);
+				tree->token = *token;
+				i = _parseExpression(tree->rhs, lv, i + 1, newPrecedence, openParens);
 				if (tree->token.type == TOKEN_ERROR_TYPE) {
 					tree->token.type = TOKEN_ERROR_TYPE;
 				}
 			} else {
-				return lv;
+				return i;
 			}
 			break;
 		case TOKEN_ERROR_TYPE:
 			tree->token.type = TOKEN_ERROR_TYPE;
-			return 0;
+			return i + 1;
 		}
 	}
 
-	return 0;
+	return i;
 }
 
 void parseLexedExpression(struct ParseTree* tree, struct LexVector* lv) {
@@ -452,14 +441,16 @@ void parseLexedExpression(struct ParseTree* tree, struct LexVector* lv) {
 	tree->lhs = 0;
 	tree->rhs = 0;
 
-	_parseExpression(tree, lv, INT_MAX, 0);
+	_parseExpression(tree, lv, 0, INT_MAX, 0);
 }
 
 void lexFree(struct LexVector* lv) {
-	while (lv) {
-		struct LexVector* lvNext = lv->next;
-		free(lv);
-		lv = lvNext;
+	size_t i;
+	for (i = 0; i < LexVectorSize(lv); ++i) {
+		struct Token* token = LexVectorGetPointer(lv, i);
+		if (token->type == TOKEN_IDENTIFIER_TYPE) {
+			free(token->identifierValue);
+		}
 	}
 }
 
