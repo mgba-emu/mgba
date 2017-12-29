@@ -308,6 +308,11 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				_lexOperator(lv, token);
 				state = LEX_ROOT;
 				break;
+			case ')':
+				lvNext = LexVectorAppend(lv);
+				lvNext->type = TOKEN_CLOSE_PAREN_TYPE;
+				state = LEX_EXPECT_OPERATOR;
+				break;
 			default:
 				state = LEX_ERROR;
 			}
@@ -332,6 +337,7 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 		lvNext->type = TOKEN_IDENTIFIER_TYPE;
 		lvNext->identifierValue = strndup(tokenStart, string - tokenStart);
 		break;
+	case LEX_ROOT:
 	case LEX_EXPECT_OPERATOR:
 		break;
 	case LEX_EXPECT_BINARY_FIRST:
@@ -369,7 +375,7 @@ static struct ParseTree* _parseTreeCreate() {
 	return tree;
 }
 
-static size_t _parseExpression(struct ParseTree* tree, struct LexVector* lv, size_t i, int precedence, int openParens) {
+static size_t _parseExpression(struct ParseTree* tree, struct LexVector* lv, size_t i, int precedence, int* openParens) {
 	struct ParseTree* newTree = 0;
 	while (i < LexVectorSize(lv)) {
 		struct Token* token = LexVectorGetPointer(lv, i);
@@ -400,12 +406,14 @@ static size_t _parseExpression(struct ParseTree* tree, struct LexVector* lv, siz
 			}
 			break;
 		case TOKEN_OPEN_PAREN_TYPE:
-			i = _parseExpression(tree, lv, i + 1, INT_MAX, openParens + 1);
+			++*openParens;
+			i = _parseExpression(tree, lv, i + 1, INT_MAX, openParens);
 			break;
 		case TOKEN_CLOSE_PAREN_TYPE:
-			if (openParens <= 0) {
+			if (*openParens <= 0) {
 				tree->token.type = TOKEN_ERROR_TYPE;
 			}
+			--*openParens;
 			return i + 1;
 		case TOKEN_OPERATOR_TYPE:
 			newPrecedence = _operatorPrecedence[token->operatorValue];
@@ -441,7 +449,14 @@ void parseLexedExpression(struct ParseTree* tree, struct LexVector* lv) {
 	tree->lhs = 0;
 	tree->rhs = 0;
 
-	_parseExpression(tree, lv, 0, INT_MAX, 0);
+	int openParens = 0;
+	_parseExpression(tree, lv, 0, INT_MAX, &openParens);
+	if (openParens) {
+		if (tree->token.type == TOKEN_IDENTIFIER_TYPE) {
+			free(tree->token.identifierValue);
+		}
+		tree->token.type = TOKEN_ERROR_TYPE;
+	}
 }
 
 void lexFree(struct LexVector* lv) {

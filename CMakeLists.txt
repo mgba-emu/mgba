@@ -415,6 +415,8 @@ set(DEBUGGER_SRC
 	${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/symbols.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/cli-debugger.c)
 
+file(GLOB DEBUGGER_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/test/*.c)
+
 set(FEATURE_SRC)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6")
 
@@ -686,6 +688,7 @@ endif()
 
 if(USE_DEBUGGERS)
 	list(APPEND FEATURE_SRC ${DEBUGGER_SRC})
+	list(APPEND TEST_SRC ${DEBUGGER_TEST_SRC})
 	list(APPEND FEATURES DEBUGGERS)
 endif()
 
