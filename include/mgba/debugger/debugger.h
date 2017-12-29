@@ -83,6 +83,7 @@ struct mDebuggerPlatform {
 	void (*setConditionalBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment, struct ParseTree* condition);
 	void (*clearBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
 	void (*setWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type);
+	void (*setConditionalWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type, struct ParseTree* condition);
 	void (*clearWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
 	void (*checkBreakpoints)(struct mDebuggerPlatform*);
 	void (*trace)(struct mDebuggerPlatform*, char* out, size_t* length);

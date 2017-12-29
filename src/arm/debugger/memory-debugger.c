@@ -6,6 +6,7 @@
 #include <mgba/internal/arm/debugger/memory-debugger.h>
 
 #include <mgba/internal/arm/debugger/debugger.h>
+#include <mgba/internal/debugger/parser.h>
 
 #include <mgba-util/math.h>
 
@@ -97,6 +98,14 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 	for (i = 0; i < ARMDebugWatchpointListSize(&debugger->watchpoints); ++i) {
 		watchpoint = ARMDebugWatchpointListGetPointer(&debugger->watchpoints, i);
 		if (!((watchpoint->address ^ address) & ~width) && watchpoint->type & type) {
+			if (watchpoint->condition) {
+				int32_t value;
+				int segment;
+				if (!mDebuggerEvaluateParseTree(debugger->d.p, watchpoint->condition, &value, &segment) || !(value || segment >= 0)) {
+					return false;
+				}
+			}
+
 			switch (width + 1) {
 			case 1:
 				info->type.wp.oldValue = debugger->originalMemory.load8(debugger->cpu, address, 0);

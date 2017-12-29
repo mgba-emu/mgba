@@ -11,7 +11,7 @@ Features:
  - Automatic cheat loading and saving
  - GameShark and Action Replay button support
  - AGBPrint support
- - Debugger: Conditional breakpoints
+ - Debugger: Conditional breakpoints and watchpoints
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
  - GB Serialize: Fix audio state loading

@@ -91,14 +91,14 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "r/4", _readWord, "I", "Read a word from a specified offset" },
 	{ "status", _printStatus, "", "Print the current status" },
 	{ "trace", _trace, "I", "Trace a fixed number of instructions" },
-	{ "w", _setWatchpoint, "I", "Set a watchpoint" },
+	{ "w", _setWatchpoint, "Is", "Set a watchpoint" },
 	{ "w/1", _writeByte, "II", "Write a byte at a specified offset" },
 	{ "w/2", _writeHalfword, "II", "Write a halfword at a specified offset" },
 	{ "w/r", _writeRegister, "SI", "Write a register" },
 	{ "w/4", _writeWord, "II", "Write a word at a specified offset" },
-	{ "watch", _setWatchpoint, "I", "Set a watchpoint" },
-	{ "watch/r", _setReadWatchpoint, "I", "Set a read watchpoint" },
-	{ "watch/w", _setWriteWatchpoint, "I", "Set a write watchpoint" },
+	{ "watch", _setWatchpoint, "Is", "Set a watchpoint" },
+	{ "watch/r", _setReadWatchpoint, "Is", "Set a read watchpoint" },
+	{ "watch/w", _setWriteWatchpoint, "Is", "Set a write watchpoint" },
 	{ "x/1", _dumpByte, "Ii", "Examine bytes at a specified offset" },
 	{ "x/2", _dumpHalfword, "Ii", "Examine halfwords at a specified offset" },
 	{ "x/4", _dumpWord, "Ii", "Examine words at a specified offset" },
@@ -452,6 +452,37 @@ static void _source(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 }
 #endif
 
+static struct ParseTree* _parseTree(const char* string) {
+	struct LexVector lv;
+	bool error = false;
+	LexVectorInit(&lv, 0);
+	size_t length = strlen(string);
+	size_t adjusted = lexExpression(&lv, string, length, NULL);
+	struct ParseTree* tree = malloc(sizeof(*tree));
+	if (!adjusted) {
+		error = true;
+	} else {
+		parseLexedExpression(tree, &lv);
+
+		if (adjusted > length) {
+			error = true;
+		} else {
+			length -= adjusted;
+			string += adjusted;
+		}
+	}
+	lexFree(&lv);
+	LexVectorClear(&lv);
+	LexVectorDeinit(&lv);
+	if (error) {
+		parseFree(tree);
+		free(tree);
+		return NULL;
+	} else {
+		return tree;
+	}
+}
+
 static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
@@ -459,34 +490,11 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 	}
 	uint32_t address = dv->intValue;
 	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
-		struct LexVector lv;
-		bool error = false;
-		LexVectorInit(&lv, 0);
-		const char* string = dv->next->charValue;
-		size_t length = strlen(dv->next->charValue);
-		size_t adjusted = lexExpression(&lv, string, length, NULL);
-		struct ParseTree* tree = malloc(sizeof(*tree));
-		if (!adjusted) {
-			error = true;
-		} else {
-			parseLexedExpression(tree, &lv);
-
-			if (adjusted > length) {
-				error = true;
-			} else {
-				length -= adjusted;
-				string += adjusted;
-			}
-		}
-		lexFree(&lv);
-		LexVectorClear(&lv);
-		LexVectorDeinit(&lv);
-		if (error) {
-			parseFree(tree);
-			free(tree);
-			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
-		} else {
+		struct ParseTree* tree = _parseTree(dv->next->charValue);
+		if (tree) {
 			debugger->d.platform->setConditionalBreakpoint(debugger->d.platform, address, dv->segmentValue, tree);
+		} else {
+			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
 		}
 	} else {
 		debugger->d.platform->setBreakpoint(debugger->d.platform, address, dv->segmentValue);
@@ -503,7 +511,16 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_RW);
+	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
+		struct ParseTree* tree = _parseTree(dv->next->charValue);
+		if (tree) {
+			debugger->d.platform->setConditionalWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_RW, tree);
+		} else {
+			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+		}
+	} else {
+		debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_RW);
+	}
 }
 
 static void _setReadWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -516,7 +533,16 @@ static void _setReadWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVect
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_READ);
+	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
+		struct ParseTree* tree = _parseTree(dv->next->charValue);
+		if (tree) {
+			debugger->d.platform->setConditionalWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_READ, tree);
+		} else {
+			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+		}
+	} else {
+		debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_READ);
+	}
 }
 
 static void _setWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -529,8 +555,16 @@ static void _setWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVec
 		return;
 	}
 	uint32_t address = dv->intValue;
-	debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_WRITE);
-}
+	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
+		struct ParseTree* tree = _parseTree(dv->next->charValue);
+		if (tree) {
+			debugger->d.platform->setConditionalWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_WRITE, tree);
+		} else {
+			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+		}
+	} else {
+		debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_WRITE);
+	}}
 
 static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {

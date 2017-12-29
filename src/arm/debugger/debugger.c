@@ -32,6 +32,13 @@ static void _destroyBreakpoint(struct ARMDebugBreakpoint* breakpoint) {
 	}
 }
 
+static void _destroyWatchpoint(struct ARMDebugWatchpoint* watchpoint) {
+	if (watchpoint->condition) {
+		parseFree(watchpoint->condition);
+		free(watchpoint->condition);
+	}
+}
+
 static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	int instructionLength;
@@ -68,6 +75,7 @@ static void ARMDebuggerSetBreakpoint(struct mDebuggerPlatform*, uint32_t address
 static void ARMDebuggerSetConditionalBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment, struct ParseTree* condition);
 static void ARMDebuggerClearBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void ARMDebuggerSetWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type);
+static void ARMDebuggerSetConditionalWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type, struct ParseTree* condition);
 static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform*);
@@ -84,6 +92,7 @@ struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	platform->setConditionalBreakpoint = ARMDebuggerSetConditionalBreakpoint;
 	platform->clearBreakpoint = ARMDebuggerClearBreakpoint;
 	platform->setWatchpoint = ARMDebuggerSetWatchpoint;
+	platform->setConditionalWatchpoint = ARMDebuggerSetConditionalWatchpoint;
 	platform->clearWatchpoint = ARMDebuggerClearWatchpoint;
 	platform->checkBreakpoints = ARMDebuggerCheckBreakpoints;
 	platform->hasBreakpoints = ARMDebuggerHasBreakpoints;
@@ -119,6 +128,10 @@ void ARMDebuggerDeinit(struct mDebuggerPlatform* platform) {
 		_destroyBreakpoint(ARMDebugBreakpointListGetPointer(&debugger->breakpoints, i));
 	}
 	ARMDebugBreakpointListDeinit(&debugger->breakpoints);
+
+	for (i = 0; i < ARMDebugWatchpointListSize(&debugger->watchpoints); ++i) {
+		_destroyWatchpoint(ARMDebugWatchpointListGetPointer(&debugger->watchpoints, i));
+	}
 	ARMDebugBreakpointListDeinit(&debugger->swBreakpoints);
 	ARMDebugWatchpointListDeinit(&debugger->watchpoints);
 }
@@ -186,12 +199,7 @@ void ARMDebuggerClearSoftwareBreakpoint(struct mDebuggerPlatform* d, uint32_t ad
 }
 
 static void ARMDebuggerSetBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
-	UNUSED(segment);
-	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
-	struct ARMDebugBreakpoint* breakpoint = ARMDebugBreakpointListAppend(&debugger->breakpoints);
-	breakpoint->condition = NULL;
-	breakpoint->address = address;
-	breakpoint->isSw = false;
+	ARMDebuggerSetConditionalBreakpoint(d, address, segment, NULL);
 }
 
 static void ARMDebuggerSetConditionalBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, struct ParseTree* condition) {
@@ -222,6 +230,10 @@ static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform* d) {
 }
 
 static void ARMDebuggerSetWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, enum mWatchpointType type) {
+	ARMDebuggerSetConditionalWatchpoint(d, address, segment, type, NULL);
+}
+
+static void ARMDebuggerSetConditionalWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, enum mWatchpointType type, struct ParseTree* condition) {
 	UNUSED(segment);
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	if (!ARMDebugWatchpointListSize(&debugger->watchpoints)) {
@@ -230,6 +242,7 @@ static void ARMDebuggerSetWatchpoint(struct mDebuggerPlatform* d, uint32_t addre
 	struct ARMDebugWatchpoint* watchpoint = ARMDebugWatchpointListAppend(&debugger->watchpoints);
 	watchpoint->address = address;
 	watchpoint->type = type;
+	watchpoint->condition = condition;
 }
 
 static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
@@ -239,6 +252,7 @@ static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform* d, uint32_t add
 	size_t i;
 	for (i = 0; i < ARMDebugWatchpointListSize(watchpoints); ++i) {
 		if (ARMDebugWatchpointListGetPointer(watchpoints, i)->address == address) {
+			_destroyWatchpoint(ARMDebugWatchpointListGetPointer(watchpoints, i));
 			ARMDebugWatchpointListShift(watchpoints, i, 1);
 		}
 	}

@@ -29,6 +29,7 @@ struct ARMDebugBreakpoint {
 struct ARMDebugWatchpoint {
 	uint32_t address;
 	enum mWatchpointType type;
+	struct ParseTree* condition;
 };
 
 DECLARE_VECTOR(ARMDebugBreakpointList, struct ARMDebugBreakpoint);

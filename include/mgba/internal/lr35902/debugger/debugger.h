@@ -26,6 +26,7 @@ struct LR35902DebugWatchpoint {
 	uint16_t address;
 	int segment;
 	enum mWatchpointType type;
+	struct ParseTree* condition;
 };
 
 struct LR35902Segment {

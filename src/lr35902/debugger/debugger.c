@@ -31,6 +31,13 @@ static void _destroyBreakpoint(struct LR35902DebugBreakpoint* breakpoint) {
 	}
 }
 
+static void _destroyWatchpoint(struct LR35902DebugWatchpoint* watchpoint) {
+	if (watchpoint->condition) {
+		parseFree(watchpoint->condition);
+		free(watchpoint->condition);
+	}
+}
+
 static void LR35902DebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
 	struct LR35902DebugBreakpoint* breakpoint = _lookupBreakpoint(&debugger->breakpoints, debugger->cpu->pc);
@@ -62,6 +69,7 @@ static void LR35902DebuggerSetBreakpoint(struct mDebuggerPlatform*, uint32_t add
 static void LR35902DebuggerSetConditionalBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment, struct ParseTree* condition);
 static void LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void LR35902DebuggerSetWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type);
+static void LR35902DebuggerSetConditionalWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type, struct ParseTree* condition);
 static void LR35902DebuggerClearWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void LR35902DebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool LR35902DebuggerHasBreakpoints(struct mDebuggerPlatform*);
@@ -78,6 +86,7 @@ struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void) {
 	platform->setConditionalBreakpoint = LR35902DebuggerSetConditionalBreakpoint;
 	platform->clearBreakpoint = LR35902DebuggerClearBreakpoint;
 	platform->setWatchpoint = LR35902DebuggerSetWatchpoint;
+	platform->setConditionalWatchpoint = LR35902DebuggerSetConditionalWatchpoint;
 	platform->clearWatchpoint = LR35902DebuggerClearWatchpoint;
 	platform->checkBreakpoints = LR35902DebuggerCheckBreakpoints;
 	platform->hasBreakpoints = LR35902DebuggerHasBreakpoints;
@@ -101,6 +110,10 @@ void LR35902DebuggerDeinit(struct mDebuggerPlatform* platform) {
 		_destroyBreakpoint(LR35902DebugBreakpointListGetPointer(&debugger->breakpoints, i));
 	}
 	LR35902DebugBreakpointListDeinit(&debugger->breakpoints);
+
+	for (i = 0; i < LR35902DebugWatchpointListSize(&debugger->watchpoints); ++i) {
+		_destroyWatchpoint(LR35902DebugWatchpointListGetPointer(&debugger->watchpoints, i));
+	}
 	LR35902DebugWatchpointListDeinit(&debugger->watchpoints);
 }
 
@@ -117,11 +130,7 @@ static void LR35902DebuggerEnter(struct mDebuggerPlatform* platform, enum mDebug
 }
 
 static void LR35902DebuggerSetBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
-	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
-	struct LR35902DebugBreakpoint* breakpoint = LR35902DebugBreakpointListAppend(&debugger->breakpoints);
-	breakpoint->address = address;
-	breakpoint->segment = segment;
-	breakpoint->condition = NULL;
+	LR35902DebuggerSetConditionalBreakpoint(d, address, segment, NULL);
 }
 
 static void LR35902DebuggerSetConditionalBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, struct ParseTree* condition) {
@@ -151,6 +160,10 @@ static bool LR35902DebuggerHasBreakpoints(struct mDebuggerPlatform* d) {
 }
 
 static void LR35902DebuggerSetWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, enum mWatchpointType type) {
+	LR35902DebuggerSetConditionalWatchpoint(d, address, segment, type, NULL);
+}
+
+static void LR35902DebuggerSetConditionalWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, enum mWatchpointType type, struct ParseTree* condition) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
 	if (!LR35902DebugWatchpointListSize(&debugger->watchpoints)) {
 		LR35902DebuggerInstallMemoryShim(debugger);
@@ -159,6 +172,7 @@ static void LR35902DebuggerSetWatchpoint(struct mDebuggerPlatform* d, uint32_t a
 	watchpoint->address = address;
 	watchpoint->type = type;
 	watchpoint->segment = segment;
+	watchpoint->condition = condition;
 }
 
 static void LR35902DebuggerClearWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
