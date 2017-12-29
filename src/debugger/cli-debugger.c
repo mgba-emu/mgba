@@ -588,31 +588,6 @@ static uint32_t _performOperation(enum Operation operation, uint32_t current, ui
 	return current;
 }
 
-static void _lookupIdentifier(struct mDebugger* debugger, const char* name, struct CLIDebugVector* dv) {
-	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
-	if (cliDebugger->system) {
-		uint32_t value;
-#ifdef ENABLE_SCRIPTING
-		if (debugger->bridge && mScriptBridgeLookupSymbol(debugger->bridge, name, &dv->intValue)) {
-			return;
-		}
-#endif
-		if (debugger->core->symbolTable && mDebuggerSymbolLookup(debugger->core->symbolTable, name, &dv->intValue, &dv->segmentValue)) {
-			return;
-		}
-		dv->type = CLIDV_INT_TYPE;
-		if (debugger->platform->getRegister(debugger->platform, name, &dv->intValue)) {
-			return;
-		}
-		value = cliDebugger->system->lookupIdentifier(cliDebugger->system, name, dv);
-		if (dv->type != CLIDV_ERROR_TYPE) {
-			dv->intValue = value;
-			return;
-		}
-	}
-	dv->type = CLIDV_ERROR_TYPE;
-}
-
 static void _evaluateParseTree(struct mDebugger* debugger, struct ParseTree* tree, struct CLIDebugVector* dv) {
 	int32_t lhs, rhs;
 	switch (tree->token.type) {
@@ -632,8 +607,10 @@ static void _evaluateParseTree(struct mDebugger* debugger, struct ParseTree* tre
 		dv->intValue = _performOperation(tree->token.operatorValue, lhs, rhs, dv);
 		break;
 	case TOKEN_IDENTIFIER_TYPE:
-		_lookupIdentifier(debugger, tree->token.identifierValue, dv);
-		break;
+		if (mDebuggerLookupIdentifier(debugger, tree->token.identifierValue, &dv->intValue, &dv->segmentValue)) {
+			break;
+		}
+		// Fall through
 	case TOKEN_ERROR_TYPE:
 	default:
 		dv->type = CLIDV_ERROR_TYPE;

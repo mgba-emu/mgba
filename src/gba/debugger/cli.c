@@ -14,7 +14,6 @@
 
 static void _GBACLIDebuggerInit(struct CLIDebuggerSystem*);
 static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem*);
-static uint32_t _GBACLIDebuggerLookupIdentifier(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
 
 static void _frame(struct CLIDebugger*, struct CLIDebugVector*);
 static void _load(struct CLIDebugger*, struct CLIDebugVector*);
@@ -33,7 +32,6 @@ struct GBACLIDebugger* GBACLIDebuggerCreate(struct mCore* core) {
 	debugger->d.init = _GBACLIDebuggerInit;
 	debugger->d.deinit = NULL;
 	debugger->d.custom = _GBACLIDebuggerCustom;
-	debugger->d.lookupIdentifier = _GBACLIDebuggerLookupIdentifier;
 
 	debugger->d.name = "Game Boy Advance";
 	debugger->d.commands = _GBACLIDebuggerCommands;
@@ -62,19 +60,6 @@ static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 		return true;
 	}
 	return false;
-}
-
-static uint32_t _GBACLIDebuggerLookupIdentifier(struct CLIDebuggerSystem* debugger, const char* name, struct CLIDebugVector* dv) {
-	UNUSED(debugger);
-	int i;
-	for (i = 0; i < REG_MAX; i += 2) {
-		const char* reg = GBAIORegisterNames[i >> 1];
-		if (reg && strcasecmp(reg, name) == 0) {
-			return BASE_IO | i;
-		}
-	}
-	dv->type = CLIDV_ERROR_TYPE;
-	return 0;
 }
 
 static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {

@@ -8,6 +8,7 @@
 #include <mgba/core/core.h>
 
 #include <mgba/internal/debugger/cli-debugger.h>
+#include <mgba/internal/debugger/symbols.h>
 
 #ifdef USE_GDB_STUB
 #include <mgba/internal/debugger/gdb-stub.h>
@@ -136,4 +137,23 @@ static void mDebuggerDeinit(struct mCPUComponent* component) {
 		debugger->deinit(debugger);
 	}
 	debugger->platform->deinit(debugger->platform);
+}
+
+bool mDebuggerLookupIdentifier(struct mDebugger* debugger, const char* name, int32_t* value, int* segment) {
+	*segment = -1;
+#ifdef ENABLE_SCRIPTING
+	if (debugger->bridge && mScriptBridgeLookupSymbol(debugger->bridge, name, value)) {
+		return true;
+	}
+#endif
+	if (debugger->core->symbolTable && mDebuggerSymbolLookup(debugger->core->symbolTable, name, value, segment)) {
+		return true;
+	}
+	if (debugger->core->lookupIdentifier(debugger->core, name, value, segment)) {
+		return true;
+	}
+	if (debugger->platform && debugger->platform->getRegister(debugger->platform, name, value)) {
+		return true;
+	}
+	return false;
 }

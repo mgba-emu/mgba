@@ -87,9 +87,9 @@ struct mDebuggerPlatform {
 
 	bool (*getRegister)(struct mDebuggerPlatform*, const char* name, int32_t* value);
 	bool (*setRegister)(struct mDebuggerPlatform*, const char* name, int32_t value);
+	bool (*lookupIdentifier)(struct mDebuggerPlatform*, const char* name, int32_t* value, int* segment);
 };
 
-struct mDebuggerSymbols;
 struct mDebugger {
 	struct mCPUComponent d;
 	struct mDebuggerPlatform* platform;
@@ -111,6 +111,8 @@ void mDebuggerAttach(struct mDebugger*, struct mCore*);
 void mDebuggerRun(struct mDebugger*);
 void mDebuggerRunFrame(struct mDebugger*);
 void mDebuggerEnter(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
+
+bool mDebuggerLookupIdentifier(struct mDebugger* debugger, const char* name, int32_t* value, int* segment);
 
 CXX_GUARD_END
 

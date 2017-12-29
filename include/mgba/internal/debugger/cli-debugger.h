@@ -47,7 +47,6 @@ struct CLIDebuggerSystem {
 	bool (*custom)(struct CLIDebuggerSystem*);
 
 	void (*disassemble)(struct CLIDebuggerSystem*, struct CLIDebugVector* dv);
-	uint32_t (*lookupIdentifier)(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
 	void (*printStatus)(struct CLIDebuggerSystem*);
 
 	struct CLIDebuggerCommandSummary* commands;

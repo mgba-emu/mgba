@@ -141,6 +141,7 @@ struct mCore {
 	void (*detachDebugger)(struct mCore*);
 
 	void (*loadSymbols)(struct mCore*, struct VFile*);
+	bool (*lookupIdentifier)(struct mCore*, const char* name, int32_t* value, int* segment);
 #endif
 
 	struct mCheatDevice* (*cheatDevice)(struct mCore*);
