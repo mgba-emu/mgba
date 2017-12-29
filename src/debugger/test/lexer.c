@@ -59,8 +59,24 @@ M_TEST_DEFINE(lexBinary) {
 	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 2);
 }
 
+M_TEST_DEFINE(lexSigilBinary) {
+	LEX("%10");
+
+	assert_int_equal(LexVectorSize(lv), 1);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 2);
+}
+
 M_TEST_DEFINE(lexHex) {
 	LEX("0x10");
+
+	assert_int_equal(LexVectorSize(lv), 1);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 0x10);
+}
+
+M_TEST_DEFINE(lexSigilHex) {
+	LEX("$10");
 
 	assert_int_equal(LexVectorSize(lv), 1);
 	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_UINT_TYPE);
@@ -95,11 +111,35 @@ M_TEST_DEFINE(lexTruncatedBinary) {
 	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_ERROR_TYPE);
 }
 
+M_TEST_DEFINE(lexTruncatedSigilBinary) {
+	LEX("%");
+
+	assert_int_equal(LexVectorSize(lv), 1);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_ERROR_TYPE);
+}
+
+M_TEST_DEFINE(lexTruncatedSigilHex) {
+	LEX("$");
+
+	assert_int_equal(LexVectorSize(lv), 1);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_ERROR_TYPE);
+}
+
 M_TEST_DEFINE(lexTruncatedHex) {
 	LEX("0x");
 
 	assert_int_equal(LexVectorSize(lv), 1);
 	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_ERROR_TYPE);
+}
+
+M_TEST_DEFINE(lexSigilSegmentHex) {
+	LEX("$01:0010");
+
+	assert_int_equal(LexVectorSize(lv), 2);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_SEGMENT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 1);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->uintValue, 0x10);
 }
 
 M_TEST_DEFINE(lexIdentifier) {
@@ -367,13 +407,18 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(Lexer,
 	cmocka_unit_test(lexEmpty),
 	cmocka_unit_test(lexInt),
 	cmocka_unit_test(lexDecimal),
-	cmocka_unit_test(lexHex),
 	cmocka_unit_test(lexBinary),
+	cmocka_unit_test(lexSigilBinary),
+	cmocka_unit_test(lexHex),
+	cmocka_unit_test(lexSigilHex),
+	cmocka_unit_test(lexSigilSegmentHex),
 	cmocka_unit_test(lexInvalidDecimal),
 	cmocka_unit_test(lexInvalidHex),
 	cmocka_unit_test(lexInvalidBinary),
 	cmocka_unit_test(lexTruncatedHex),
+	cmocka_unit_test(lexTruncatedSigilHex),
 	cmocka_unit_test(lexTruncatedBinary),
+	cmocka_unit_test(lexTruncatedSigilBinary),
 	cmocka_unit_test(lexIdentifier),
 	cmocka_unit_test(lexAddOperator),
 	cmocka_unit_test(lexIdentifierAddOperator),

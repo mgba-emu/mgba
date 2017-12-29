@@ -131,7 +131,11 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				next = 0;
 				break;
 			case '$':
-				state = LEX_EXPECT_HEX;
+				state = LEX_EXPECT_HEX_FIRST;
+				next = 0;
+				break;
+			case '%':
+				state = LEX_EXPECT_BINARY_FIRST;
 				next = 0;
 				break;
 			case '(':
