@@ -230,6 +230,26 @@ M_TEST_DEFINE(lexIdentifierDivOperator) {
 	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_DIVIDE);
 }
 
+M_TEST_DEFINE(lexModOperator) {
+	LEX("1%");
+
+	assert_int_equal(LexVectorSize(lv), 2);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 1);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_MODULO);
+}
+
+M_TEST_DEFINE(lexIdentifierModOperator) {
+	LEX("x%");
+
+	assert_int_equal(LexVectorSize(lv), 2);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_IDENTIFIER_TYPE);
+	assert_string_equal(LexVectorGetPointer(lv, 0)->identifierValue, "x");
+	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_MODULO);
+}
+
 M_TEST_DEFINE(lexAndOperator) {
 	LEX("1&");
 
@@ -428,6 +448,8 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(Lexer,
 	cmocka_unit_test(lexIdentifierMulOperator),
 	cmocka_unit_test(lexDivOperator),
 	cmocka_unit_test(lexIdentifierDivOperator),
+	cmocka_unit_test(lexModOperator),
+	cmocka_unit_test(lexIdentifierModOperator),
 	cmocka_unit_test(lexAndOperator),
 	cmocka_unit_test(lexIdentifierAndOperator),
 	cmocka_unit_test(lexOrOperator),

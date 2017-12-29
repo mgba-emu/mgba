@@ -39,6 +39,9 @@ static void _lexOperator(struct LexVector* lv, char operator) {
 	case '/':
 		lvNext->operatorValue = OP_DIVIDE;
 		break;
+	case '%':
+		lvNext->operatorValue = OP_MODULO;
+		break;
 	case '&':
 		lvNext->operatorValue = OP_AND;
 		break;
@@ -68,6 +71,7 @@ static void _lexValue(struct LexVector* lv, char token, uint32_t next, enum LexS
 	case '-':
 	case '*':
 	case '/':
+	case '%':
 	case '&':
 	case '|':
 	case '^':
@@ -158,6 +162,7 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '-':
 			case '*':
 			case '/':
+			case '%':
 			case '&':
 			case '|':
 			case '^':
@@ -304,6 +309,7 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '-':
 			case '*':
 			case '/':
+			case '%':
 			case '&':
 			case '|':
 			case '^':
@@ -356,19 +362,20 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 }
 
 static const int _operatorPrecedence[] = {
-	14,
-	4,
-	4,
-	3,
-	3,
-	8,
-	10,
-	9,
-	6,
-	6,
-	7,
-	6,
-	6
+	[OP_ASSIGN] = 14,
+	[OP_ADD] = 4,
+	[OP_SUBTRACT] = 4,
+	[OP_MULTIPLY] = 3,
+	[OP_DIVIDE] = 3,
+	[OP_MODULO] = 3,
+	[OP_AND] = 8,
+	[OP_OR] = 10,
+	[OP_XOR] = 9,
+	[OP_LESS] = 6,
+	[OP_GREATER] = 6,
+	[OP_EQUAL] = 7,
+	[OP_LE] = 6,
+	[OP_GE] = 6
 };
 
 static struct ParseTree* _parseTreeCreate() {
@@ -504,6 +511,13 @@ static bool _performOperation(enum Operation operation, int32_t current, int32_t
 	case OP_DIVIDE:
 		if (next != 0) {
 			current /= next;
+		} else {
+			return false;
+		}
+		break;
+	case OP_MODULO:
+		if (next != 0) {
+			current %= next;
 		} else {
 			return false;
 		}

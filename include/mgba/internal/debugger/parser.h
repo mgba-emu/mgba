@@ -18,6 +18,7 @@ enum Operation {
 	OP_SUBTRACT,
 	OP_MULTIPLY,
 	OP_DIVIDE,
+	OP_MODULO,
 	OP_AND,
 	OP_OR,
 	OP_XOR,
