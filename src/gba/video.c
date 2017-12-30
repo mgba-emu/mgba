@@ -69,7 +69,7 @@ static struct GBAVideoRenderer dummyRenderer = {
 void GBAVideoInit(struct GBAVideo* video) {
 	video->renderer = &dummyRenderer;
 	video->renderer->cache = NULL;
-	video->vram = 0;
+	video->vram = anonymousMemoryMap(SIZE_VRAM);
 	video->frameskip = 0;
 	video->event.name = "GBA Video";
 	video->event.callback = NULL;
@@ -91,11 +91,6 @@ void GBAVideoReset(struct GBAVideo* video) {
 
 	video->frameCounter = 0;
 	video->frameskipCounter = 0;
-
-	if (video->vram) {
-		mappedMemoryFree(video->vram, SIZE_VRAM);
-	}
-	video->vram = anonymousMemoryMap(SIZE_VRAM);
 	video->renderer->vram = video->vram;
 
 	memset(video->palette, 0, sizeof(video->palette));

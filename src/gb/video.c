@@ -56,7 +56,7 @@ void GBVideoInit(struct GBVideo* video) {
 	video->renderer = &dummyRenderer;
 	video->renderer->cache = NULL;
 	video->renderer->sgbRenderMode = 0;
-	video->vram = 0;
+	video->vram = anonymousMemoryMap(GB_SIZE_VRAM);
 	video->frameskip = 0;
 
 	video->modeEvent.context = video;
@@ -99,10 +99,6 @@ void GBVideoReset(struct GBVideo* video) {
 	video->frameCounter = 0;
 	video->frameskipCounter = 0;
 
-	if (video->vram) {
-		mappedMemoryFree(video->vram, GB_SIZE_VRAM);
-	}
-	video->vram = anonymousMemoryMap(GB_SIZE_VRAM);
 	GBVideoSwitchBank(video, 0);
 	video->renderer->vram = video->vram;
 	memset(&video->oam, 0, sizeof(video->oam));
