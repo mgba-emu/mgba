@@ -5,7 +5,6 @@ import sys
 
 os.environ["BINDIR"] = "${CMAKE_BINARY_DIR}"
 os.environ["CPPFLAGS"] = " ".join([d for d in "${INCLUDE_FLAGS}".split(";") if d])
-os.chdir("${CMAKE_CURRENT_SOURCE_DIR}")
 
 classifiers = [
     "Programming Language :: C",
@@ -22,11 +21,14 @@ setup(name="${BINARY_NAME}",
       author_email="jeffrey@endrift.com",
       url="http://github.com/mgba-emu/mgba/",
       packages=["mgba"],
+      package_dir={
+        "mgba": "${CMAKE_CURRENT_SOURCE_DIR}"
+      },
       setup_requires=['cffi>=1.6', 'pytest-runner'],
       install_requires=['cffi>=1.6', 'cached-property'],
       extras_require={'pil': ['Pillow>=2.3'], 'cinema': ['pyyaml', 'pytest']},
       tests_require=['pytest'],
-      cffi_modules=["_builder.py:ffi"],
+      cffi_modules=["${CMAKE_CURRENT_SOURCE_DIR}/_builder.py:ffi"],
       license="MPL 2.0",
       classifiers=classifiers
       )
