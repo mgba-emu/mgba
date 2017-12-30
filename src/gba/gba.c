@@ -255,6 +255,11 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 #endif
 		nextEvent = cycles;
 		do {
+#ifndef NDEBUG
+			if (cpu->cycles) {
+				mLOG(GBA, FATAL, "Cycles passed inexplicably: %i", cpu->cycles);
+			}
+#endif
 			nextEvent = mTimingTick(&gba->timing, nextEvent);
 		} while (gba->cpuBlocked);
 
@@ -276,6 +281,11 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		}
 #endif
 	}
+#ifndef NDEBUG
+	if (gba->cpuBlocked) {
+		mLOG(GBA, FATAL, "CPU is blocked!");
+	}
+#endif
 }
 
 #ifdef USE_DEBUGGERS
