@@ -99,6 +99,7 @@ set(SOURCE_FILES
 	OverrideView.cpp
 	PaletteView.cpp
 	PrinterView.cpp
+	RegisterView.cpp
 	ROMInfo.cpp
 	SavestateButton.cpp
 	SensorView.cpp
