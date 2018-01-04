@@ -3,7 +3,7 @@ project(mGBA)
 set(BINARY_NAME mgba CACHE INTERNAL "Name of output binaries")
 if(NOT MSVC)
 	set(GCC_STD "c99")
-        if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_COMPILER_VERSION VERSION_LESS "4.3")
+	if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_COMPILER_VERSION VERSION_LESS "4.3")
 		set(GCC_STD "gnu99")
 	endif()
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-missing-field-initializers -std=${GCC_STD}")
@@ -167,7 +167,7 @@ list(APPEND UTIL_SRC ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 source_group("Generated sources" FILES ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 
 # Advanced settings
-if(NOT DEFINED 3DS)
+if(NOT DEFINED 3DS AND NOT (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_COMPILER_VERSION VERSION_LESS "4.5"))
 	# LTO appears to make 3DS binary slower
 	set(DEFAULT_LTO ON)
 else()
