@@ -243,24 +243,17 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 
 	int32_t nextEvent = cpu->nextEvent;
 	while (cpu->cycles >= nextEvent) {
-		int32_t cycles = cpu->cycles;
-
-		cpu->cycles = 0;
 		cpu->nextEvent = INT_MAX;
-
-#ifndef NDEBUG
-		if (cycles < 0) {
-			mLOG(GBA, FATAL, "Negative cycles passed: %i", cycles);
-		}
-#endif
-		nextEvent = cycles;
+		nextEvent = 0;
 		do {
+			int32_t cycles = cpu->cycles;
+			cpu->cycles = 0;
 #ifndef NDEBUG
-			if (cpu->cycles) {
-				mLOG(GBA, FATAL, "Cycles passed inexplicably: %i", cpu->cycles);
+			if (cycles < 0) {
+				mLOG(GBA, FATAL, "Negative cycles passed: %i", cycles);
 			}
 #endif
-			nextEvent = mTimingTick(&gba->timing, nextEvent);
+			nextEvent = mTimingTick(&gba->timing, nextEvent + cycles);
 		} while (gba->cpuBlocked);
 
 		cpu->nextEvent = nextEvent;
