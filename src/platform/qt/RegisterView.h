@@ -8,6 +8,8 @@
 #include <QMap>
 #include <QWidget>
 
+#include <memory>
+
 class QLabel;
 
 namespace QGBA {
