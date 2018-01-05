@@ -11,6 +11,7 @@ Bugfixes:
  - Qt: Fix locale being set to English on settings save (fixes mgba.io/i/906)
  - LR35902: Fix watchpoints not reporting new value
  - GBA Audio: Increase PSG volume (fixes mgba.io/i/932)
+ - GBA BIOS: Fix incorrect exit condition in LZ77
 Misc:
  - GBA: Improve multiboot image detection
  - GB MBC: Remove erroneous bank 0 wrapping
