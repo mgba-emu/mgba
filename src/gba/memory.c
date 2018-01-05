@@ -1649,6 +1649,7 @@ void GBAPrintFlush(struct GBA* gba) {
 			value &= 0xFF;
 		}
 		oolBuf[i] = value;
+		oolBuf[i + 1] = 0;
 		++gba->memory.agbPrintCtx.get;
 	}
 	_agbPrintStore(gba, AGB_PRINT_STRUCT + 4, gba->memory.agbPrintCtx.get);
@@ -1670,6 +1671,9 @@ static void _agbPrintStore(struct GBA* gba, uint32_t address, int16_t value) {
 		_pristineCow(gba);
 		memcpy(&memory->rom[AGB_PRINT_FLUSH_ADDR >> 2], _agbPrintFunc, sizeof(_agbPrintFunc));
 		STORE_16(value, address & (SIZE_CART0 - 2), memory->rom);
+	} else if (memory->agbPrintCtx.bank == 0xFD && memory->romSize >= SIZE_CART0 / 2) {
+		_pristineCow(gba);
+		STORE_16(value, address & (SIZE_CART0 / 2 - 2), memory->rom);
 	}
 }
 
