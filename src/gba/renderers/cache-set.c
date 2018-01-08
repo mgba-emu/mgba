@@ -101,8 +101,11 @@ static void GBAVideoCacheWriteDISPCNT(struct mCacheSet* cache, uint16_t value) {
 		mMapCacheSetGetPointer(&cache->maps, 2)->mapParser = mapParser2;
 		mMapCacheSetGetPointer(&cache->maps, 3)->mapParser = mapParser2;
 
-		mMapCacheSetGetPointer(&cache->maps, 0)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 0);
-		mMapCacheSetGetPointer(&cache->maps, 1)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 0);
+		mMapCacheSetGetPointer(&cache->maps, 0)->tileCache = mTileCacheSetGetPointer(&cache->tiles,
+			mMapCacheSystemInfoGetPaletteBPP(mMapCacheSetGetPointer(&cache->maps, 0)->sysConfig) == 3);
+		mMapCacheSetGetPointer(&cache->maps, 1)->tileCache = mTileCacheSetGetPointer(&cache->tiles,
+			mMapCacheSystemInfoGetPaletteBPP(mMapCacheSetGetPointer(&cache->maps, 1)->sysConfig) == 3);
+
 		mMapCacheSetGetPointer(&cache->maps, 2)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 1);
 		mMapCacheSetGetPointer(&cache->maps, 3)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 1);
 		break;
