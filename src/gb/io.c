@@ -420,10 +420,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		value = gb->video.stat;
 		break;
 	case 0x50:
-		if (gb->memory.romBase < gb->memory.rom || gb->memory.romBase > &gb->memory.rom[gb->memory.romSize - 1]) {
-			free(gb->memory.romBase);
-			gb->memory.romBase = gb->memory.rom;
-		}
+		GBUnmapBIOS(gb);
 		if (gb->model >= GB_MODEL_CGB && gb->memory.io[REG_UNK4C] < 0x80) {
 			gb->model = GB_MODEL_DMG;
 			GBVideoDisableCGB(&gb->video);

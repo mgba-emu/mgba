@@ -451,6 +451,10 @@ static void _GBCoreReset(struct mCore* core) {
 #endif
 
 	LR35902Reset(core->cpu);
+
+	if (core->opts.skipBios) {
+		GBSkipBIOS(core->board);
+	}
 }
 
 static void _GBCoreRunFrame(struct mCore* core) {
