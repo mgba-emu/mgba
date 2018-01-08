@@ -35,6 +35,7 @@ Bugfixes:
  - Qt: Fix locale being set to English on settings save (fixes mgba.io/i/906)
  - LR35902: Fix watchpoints not reporting new value
  - GBA Audio: Increase PSG volume (fixes mgba.io/i/932)
+ - 3DS: Fix opening files in directory names with trailing slashes
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
