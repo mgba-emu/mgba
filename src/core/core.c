@@ -276,7 +276,7 @@ void mCoreInitConfig(struct mCore* core, const char* port) {
 }
 
 void mCoreLoadConfig(struct mCore* core) {
-#ifndef MINIMAL_CORE
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mCoreConfigLoad(&core->config);
 #endif
 	mCoreLoadForeignConfig(core, &core->config);
@@ -284,7 +284,7 @@ void mCoreLoadConfig(struct mCore* core) {
 
 void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config) {
 	mCoreConfigMap(config, &core->opts);
-#ifndef MINIMAL_CORE
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetMapOptions(&core->dirs, &core->opts);
 #endif
 	if (core->opts.audioBuffers) {
