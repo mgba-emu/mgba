@@ -1635,6 +1635,7 @@ void _pristineCow(struct GBA* gba) {
 	}
 	gba->memory.rom = newRom;
 	gba->memory.hw.gpioBase = &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1];
+	gba->isPristine = false;
 }
 
 void GBAPrintFlush(struct GBA* gba) {
