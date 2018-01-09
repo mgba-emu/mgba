@@ -13,6 +13,7 @@ Bugfixes:
  - GBA Audio: Increase PSG volume (fixes mgba.io/i/932)
  - GBA BIOS: Fix incorrect exit condition in LZ77
  - 3DS: Fix opening files in directory names with trailing slashes
+ - GB MBC: Fix MBC2 saves (fixes mgba.io/i/954)
 Misc:
  - GBA: Improve multiboot image detection
  - GB MBC: Remove erroneous bank 0 wrapping
