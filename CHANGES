@@ -14,6 +14,7 @@ Bugfixes:
  - GBA BIOS: Fix incorrect exit condition in LZ77
  - 3DS: Fix opening files in directory names with trailing slashes
  - GB MBC: Fix MBC2 saves (fixes mgba.io/i/954)
+ - GBA Memory: Fix copy-on-write memory leak
 Misc:
  - GBA: Improve multiboot image detection
  - GB MBC: Remove erroneous bank 0 wrapping
