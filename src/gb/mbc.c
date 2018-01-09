@@ -31,6 +31,7 @@ static void _GBHuC3(struct GB*, uint16_t address, uint8_t value);
 static void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value);
 
+static uint8_t _GBMBC2Read(struct GBMemory*, uint16_t address);
 static uint8_t _GBMBC7Read(struct GBMemory*, uint16_t address);
 static void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value);
 
@@ -214,7 +215,8 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_MBC2:
 		gb->memory.mbcWrite = _GBMBC2;
-		gb->sramSize = 0x200;
+		gb->memory.mbcRead = _GBMBC2Read;
+		gb->sramSize = 0x100;
 		break;
 	case GB_MBC3:
 		gb->memory.mbcWrite = _GBMBC3;
@@ -396,6 +398,7 @@ void _GBMBC1(struct GB* gb, uint16_t address, uint8_t value) {
 
 void _GBMBC2(struct GB* gb, uint16_t address, uint8_t value) {
 	struct GBMemory* memory = &gb->memory;
+	int shift = (address & 1) * 4;
 	int bank = value & 0xF;
 	switch (address >> 13) {
 	case 0x0:
@@ -405,7 +408,6 @@ void _GBMBC2(struct GB* gb, uint16_t address, uint8_t value) {
 			break;
 		case 0xA:
 			memory->sramAccess = true;
-			GBMBCSwitchSramBank(gb, memory->sramCurrentBank);
 			break;
 		default:
 			// TODO
@@ -419,11 +421,24 @@ void _GBMBC2(struct GB* gb, uint16_t address, uint8_t value) {
 		}
 		GBMBCSwitchBank(gb, bank);
 		break;
+	case 0x5:
+		if (!memory->sramAccess) {
+			return;
+		}
+		address &= 0x1FF;
+		memory->sramBank[(address >> 1)] &= 0xF0 >> shift;
+		memory->sramBank[(address >> 1)] |= (value & 0xF) << shift;
 	default:
 		// TODO
 		mLOG(GB_MBC, STUB, "MBC2 unknown address: %04X:%02X", address, value);
 		break;
 	}
+}
+
+static uint8_t _GBMBC2Read(struct GBMemory* memory, uint16_t address) {
+	address &= 0x1FF;
+	int shift = (address & 1) * 4;
+	return (memory->sramBank[(address >> 1)] >> shift) | 0xF0;
 }
 
 void _GBMBC3(struct GB* gb, uint16_t address, uint8_t value) {

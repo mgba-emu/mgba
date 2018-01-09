@@ -294,7 +294,7 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	case GB_REGION_EXTERNAL_RAM + 1:
 		if (memory->rtcAccess) {
 			memory->rtcRegs[memory->activeRtcReg] = value;
-		} else if (memory->sramAccess && memory->sram) {
+		} else if (memory->sramAccess && memory->sram && memory->mbcType != GB_MBC2) {
 			memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
 		} else {
 			memory->mbcWrite(gb, address, value);
