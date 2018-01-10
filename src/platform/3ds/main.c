@@ -6,6 +6,7 @@
 
 #include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
+#include <mgba/core/serialize.h>
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
@@ -22,6 +23,7 @@
 #include <mgba-util/memory.h>
 
 #include <mgba-util/platform/3ds/3ds-vfs.h>
+#include <mgba-util/threading.h>
 #include "ctr-gpu.h"
 
 #include <3ds.h>
@@ -103,6 +105,12 @@ static C3D_RenderTarget* upscaleBuffer;
 static C3D_Tex upscaleBufferTex;
 
 static aptHookCookie cookie;
+
+static Thread autosave;
+static struct VFile* autosaveBuffer = NULL;
+static Mutex autosaveMutex;
+static Condition autosaveCond;
+static struct mCore* autosaveCore = NULL;
 
 extern bool allocateRomBuffer(void);
 
@@ -191,6 +199,33 @@ static void _aptHook(APT_HookType hook, void* user) {
 	default:
 		break;
 	}
+}
+
+static void _autosaveThread(void* context) {
+	bool* running = context;
+	MutexLock(&autosaveMutex);
+	while (*running) {
+		ConditionWait(&autosaveCond, &autosaveMutex);
+		if (*running && autosaveCore) {
+			struct VFile* vf = mCoreGetState(autosaveCore, 0, true);
+			void* mem = autosaveBuffer->map(autosaveBuffer, autosaveBuffer->size(autosaveBuffer), MAP_READ);
+			vf->write(vf, mem, autosaveBuffer->size(autosaveBuffer));
+			autosaveBuffer->unmap(autosaveBuffer, mem, autosaveBuffer->size(autosaveBuffer));
+			vf->close(vf);
+		}
+	}
+	MutexUnlock(&autosaveMutex);
+}
+
+static void _tryAutosave(struct mCore* core) {
+	if (!autosaveBuffer) {
+		autosaveBuffer = VFileMemChunk(NULL, 0);
+	}
+	MutexLock(&autosaveMutex);
+	autosaveCore = core;
+	mCoreSaveStateNamed(core, autosaveBuffer, SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
+	ConditionWake(&autosaveCond);
+	MutexUnlock(&autosaveMutex);
 }
 
 static void _map3DSKey(struct mInputMap* map, int ctrKey, enum GBAKey key) {
@@ -425,6 +460,10 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 			}
 		}
 	}
+
+	MutexLock(&autosaveMutex);
+	autosaveCore = runner->core;
+	MutexUnlock(&autosaveMutex);
 }
 
 static void _gameUnloaded(struct mGUIRunner* runner) {
@@ -458,6 +497,10 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 	default:
 		break;
 	}
+
+	MutexLock(&autosaveMutex);
+	autosaveCore = NULL;
+	MutexUnlock(&autosaveMutex);
 }
 
 static void _drawTex(struct mCore* core, bool faded) {
@@ -679,6 +722,16 @@ static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 }
 
 static bool _running(struct mGUIRunner* runner) {
+	static int frame = 0;
+	if (autosaveCore) {
+		++frame;
+		if (frame == 300) {
+			_tryAutosave(autosaveCore);
+			frame = 0;
+		}
+	} else {
+		frame = 0;
+	}
 	return aptMainLoop();
 }
 
@@ -1041,7 +1094,29 @@ int main() {
 	_map3DSKey(&runner.params.keyMap, KEY_CSTICK_UP, mGUI_INPUT_INCREASE_BRIGHTNESS);
 	_map3DSKey(&runner.params.keyMap, KEY_CSTICK_DOWN, mGUI_INPUT_DECREASE_BRIGHTNESS);
 
+	bool autosaveActive = true;
+	MutexInit(&autosaveMutex);
+	ConditionInit(&autosaveCond);
+
+	APT_SetAppCpuTimeLimit(20);
+	autosave = threadCreate(_autosaveThread, &autosaveActive, 0x4000, 0x1F, 1, true);
+
 	mGUIRunloop(&runner);
+
+	MutexLock(&autosaveMutex);
+	autosaveActive = false;
+	ConditionWake(&autosaveCond);
+	MutexUnlock(&autosaveMutex);
+
+	threadJoin(autosave, U64_MAX);
+
+	if (autosaveBuffer) {
+		autosaveBuffer->close(autosaveBuffer);
+	}
+
+	ConditionDeinit(&autosaveCond);
+	MutexDeinit(&autosaveMutex);
+
 	mGUIDeinit(&runner);
 
 	_cleanup();

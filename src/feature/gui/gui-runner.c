@@ -317,6 +317,13 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	mLOG(GUI_RUNNER, DEBUG, "Reseting...");
 	runner->core->reset(runner->core);
 	mLOG(GUI_RUNNER, DEBUG, "Reset!");
+
+	if (mCoreLoadState(runner->core, 0, SAVESTATE_SCREENSHOT | SAVESTATE_RTC)) {
+		struct VFile* autosave = mCoreGetState(runner->core, 0, true);
+		autosave->truncate(autosave, 0);
+		autosave->close(autosave);
+	}
+
 	bool running = true;
 	if (runner->gameLoaded) {
 		runner->gameLoaded(runner);
@@ -469,6 +476,14 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		mappedMemoryFree(drawState.screenshot, w * h * 4);
 	}
 
+	struct VFile* autosave = mCoreGetState(runner->core, 0, false);
+	if (autosave) {
+		autosave->close(autosave);
+		autosave = mCoreGetState(runner->core, 0, true);
+		autosave->truncate(autosave, 0);
+		autosave->close(autosave);
+	}
+
 	if (runner->config.port) {
 		mLOG(GUI_RUNNER, DEBUG, "Saving key sources...");
 		if (runner->keySources) {
@@ -483,6 +498,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	mInputMapDeinit(&runner->core->inputMap);
 	mLOG(GUI_RUNNER, DEBUG, "Deinitializing core...");
 	runner->core->deinit(runner->core);
+	runner->core = NULL;
 
 	GUIMenuItemListDeinit(&pauseMenu.items);
 	GUIMenuItemListDeinit(&stateSaveMenu.items);
