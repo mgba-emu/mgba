@@ -18,10 +18,6 @@
 #include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
 
-#ifdef _3DS
-#include <3ds.h>
-#endif
-
 #include <sys/time.h>
 
 mLOG_DECLARE_CATEGORY(GUI_RUNNER);
@@ -334,13 +330,13 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		gettimeofday(&tv, 0);
 		runner->lastFpsCheck = 1000000LL * tv.tv_sec + tv.tv_usec;
 
-		while (true) {
-#ifdef _3DS
-			running = aptMainLoop();
-			if (!running) {
-				break;
+		while (running) {
+			if (runner->running) {
+				running = runner->running(runner);
+				if (!running) {
+					break;
+				}
 			}
-#endif
 			uint32_t guiKeys;
 			uint32_t heldKeys;
 			GUIPollInput(&runner->params, &guiKeys, &heldKeys);

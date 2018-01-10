@@ -70,6 +70,7 @@ struct mGUIRunner {
 	void (*incrementScreenMode)(struct mGUIRunner*);
 	void (*setFrameLimiter)(struct mGUIRunner*, bool limit);
 	uint16_t (*pollGameInput)(struct mGUIRunner*);
+	bool (*running)(struct mGUIRunner*);
 };
 
 void mGUIInit(struct mGUIRunner*, const char* port);

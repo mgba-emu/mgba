@@ -678,6 +678,10 @@ static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 	tickCounter = svcGetSystemTick();
 }
 
+static bool _running(struct mGUIRunner* runner) {
+	return aptMainLoop();
+}
+
 static uint32_t _pollInput(const struct mInputMap* map) {
 	hidScanInput();
 	int activeKeys = hidKeysHeld();
@@ -1020,7 +1024,8 @@ int main() {
 		.unpaused = _gameLoaded,
 		.incrementScreenMode = _incrementScreenMode,
 		.setFrameLimiter = _setFrameLimiter,
-		.pollGameInput = _pollGameInput
+		.pollGameInput = _pollGameInput,
+		.running = _running
 	};
 
 	mGUIInit(&runner, "3ds");
