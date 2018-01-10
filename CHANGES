@@ -12,6 +12,7 @@ Features:
  - GameShark and Action Replay button support
  - AGBPrint support
  - Debugger: Conditional breakpoints and watchpoints
+ - Ability to select GB/GBC/SGB BIOS on console ports
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
  - GB Serialize: Fix audio state loading
