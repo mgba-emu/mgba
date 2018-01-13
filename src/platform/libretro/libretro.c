@@ -96,6 +96,13 @@ static void _reloadSettings(void) {
 			mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "detect");
 		}
 	}
+	
+	var.key = "mgba_frameskip";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		opts.frameskip = strtol(var.value, NULL, 10);
+
+	}
 
 	mCoreConfigLoadDefaults(&core->config, &opts);
 	mCoreLoadConfig(core);
@@ -114,6 +121,7 @@ void retro_set_environment(retro_environment_t env) {
 		{ "mgba_use_bios", "Use BIOS file if found; ON|OFF" },
 		{ "mgba_skip_bios", "Skip BIOS intro; OFF|ON" },
 		{ "mgba_idle_optimization", "Idle loop removal; Remove Known|Detect and Remove|Don't Remove" },
+		{ "mgba_frameskip", "Frameskip; 0|1|2|3|4|5|6|7|8|9|10" },
 		{ 0, 0 }
 	};
 
@@ -284,6 +292,13 @@ void retro_run(void) {
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 			((struct GBA*) core->board)->allowOpposingDirections = strcmp(var.value, "yes") == 0;
 		}
+		
+		var.key = "mgba_frameskip";
+		var.value = 0;
+		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+			mCoreConfigSetUIntValue(&core->config, "frameskip", strtol(var.value, NULL, 10));
+			mCoreLoadConfig(core);
+	 	}
 	}
 
 	keys = 0;
