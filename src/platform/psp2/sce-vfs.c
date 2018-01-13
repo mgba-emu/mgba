@@ -10,6 +10,10 @@
 #include <mgba-util/vfs.h>
 #include <mgba-util/memory.h>
 
+#ifndef SCE_CST_SIZE
+#define SCE_CST_SIZE 0x0004
+#endif
+
 struct VFileSce {
 	struct VFile d;
 
@@ -120,20 +124,8 @@ static void _vfsceUnmap(struct VFile* vf, void* memory, size_t size) {
 
 static void _vfsceTruncate(struct VFile* vf, size_t size) {
 	struct VFileSce* vfsce = (struct VFileSce*) vf;
-	SceOff cur = sceIoLseek(vfsce->fd, 0, SEEK_CUR);
-	SceOff end = sceIoLseek(vfsce->fd, 0, SEEK_END);
-	if (end < size) {
-		uint8_t buffer[2048] = {};
-		size_t write = size - end;
-		while (write >= sizeof(buffer)) {
-			sceIoWrite(vfsce->fd, buffer, sizeof(buffer));
-			write -= sizeof(buffer);
-		}
-		if (write) {
-			sceIoWrite(vfsce->fd, buffer, write);
-		}
-	} // TODO: Else
-	sceIoLseek(vfsce->fd, cur, SEEK_SET);
+	SceIoStat stat = { .st_size = size };
+	sceIoChstatByFd(vfsce->fd, &stat, SCE_CST_SIZE);
 }
 
 ssize_t _vfsceSize(struct VFile* vf) {

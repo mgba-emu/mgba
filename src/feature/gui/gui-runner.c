@@ -165,6 +165,7 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 	mCoreConfigSetDefaultIntValue(&runner->config, "volume", 0x100);
 	mCoreConfigSetDefaultValue(&runner->config, "idleOptimization", "detect");
 	mCoreConfigLoad(&runner->config);
+	mCoreConfigGetIntValue(&runner->config, "logLevel", &logger.logLevel);
 
 	char path[PATH_MAX];
 	mCoreConfigDirectory(path, PATH_MAX);
@@ -283,7 +284,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	if (runner->core) {
 		mLOG(GUI_RUNNER, INFO, "Found core");
 		runner->core->init(runner->core);
-		mCoreConfigInit(&runner->core->config, runner->port);
+		mCoreInitConfig(runner->core, runner->port);
 		mInputMapInit(&runner->core->inputMap, &GBAInputInfo);
 		found = mCoreLoadFile(runner->core, path);
 		if (!found) {
@@ -302,7 +303,6 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	}
 	mLOG(GUI_RUNNER, DEBUG, "Loading config...");
 	mCoreLoadForeignConfig(runner->core, &runner->config);
-	logger.logLevel = runner->core->opts.logLevel;
 
 	mLOG(GUI_RUNNER, DEBUG, "Loading save...");
 	mCoreAutoloadSave(runner->core);
