@@ -101,7 +101,6 @@ static void _reloadSettings(void) {
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		opts.frameskip = strtol(var.value, NULL, 10);
-
 	}
 
 	mCoreConfigLoadDefaults(&core->config, &opts);
