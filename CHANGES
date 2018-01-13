@@ -9,6 +9,12 @@ Bugfixes:
  - GB Memory: HDMAs should not start when LCD is off (fixes mgba.io/i/310)
  - GBA Cheats: Fix slide codes not initializing properly
  - Qt: Fix locale being set to English on settings save (fixes mgba.io/i/906)
+ - LR35902: Fix watchpoints not reporting new value
+ - GBA Audio: Increase PSG volume (fixes mgba.io/i/932)
+ - GBA BIOS: Fix incorrect exit condition in LZ77
+ - 3DS: Fix opening files in directory names with trailing slashes
+ - GB MBC: Fix MBC2 saves (fixes mgba.io/i/954)
+ - GBA Memory: Fix copy-on-write memory leak
 Misc:
  - GBA: Improve multiboot image detection
  - GB MBC: Remove erroneous bank 0 wrapping
