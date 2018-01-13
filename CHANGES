@@ -54,6 +54,7 @@ Misc:
  - GB MBC: Remove erroneous bank 0 wrapping
  - GBA Cheats: Allow multiple ROM patches in the same slot
  - GB: Skip BIOS option now works
+ - Libretro: Add frameskip option
 
 0.6.1: (2017-10-01)
 Bugfixes:
