@@ -125,7 +125,9 @@ void GBAUnloadROM(struct GBA* gba) {
 
 	if (gba->romVf) {
 #ifndef FIXED_ROM_BUFFER
-		gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->pristineRomSize);
+		if (gba->isPristine) {
+			gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->pristineRomSize);
+		}
 #endif
 		gba->romVf->close(gba->romVf);
 		gba->romVf = NULL;
@@ -207,6 +209,9 @@ void GBAReset(struct ARMCore* cpu) {
 
 	gba->debug = false;
 	memset(gba->debugString, 0, sizeof(gba->debugString));
+	if (gba->pristineRomSize > SIZE_CART0) {
+		GBAMatrixReset(gba);
+	}
 
 	if (!gba->romVf && gba->memory.rom) {
 		GBASkipBIOS(gba);
@@ -355,23 +360,30 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 	gba->pristineRomSize = vf->size(vf);
 	vf->seek(vf, 0, SEEK_SET);
 	if (gba->pristineRomSize > SIZE_CART0) {
-		gba->pristineRomSize = SIZE_CART0;
-	}
-	gba->isPristine = true;
+		gba->isPristine = false;
+		gba->memory.romSize = 0x01000000;
 #ifdef FIXED_ROM_BUFFER
-	if (gba->pristineRomSize <= romBufferSize) {
 		gba->memory.rom = romBuffer;
-		vf->read(vf, romBuffer, gba->pristineRomSize);
-	}
 #else
-	gba->memory.rom = vf->map(vf, gba->pristineRomSize, MAP_READ);
+		gba->memory.rom = anonymousMemoryMap(SIZE_CART0);
 #endif
+	} else {
+		gba->isPristine = true;
+#ifdef FIXED_ROM_BUFFER
+		if (gba->pristineRomSize <= romBufferSize) {
+			gba->memory.rom = romBuffer;
+			vf->read(vf, romBuffer, gba->pristineRomSize);
+		}
+#else
+		gba->memory.rom = vf->map(vf, gba->pristineRomSize, MAP_READ);
+#endif
+		gba->memory.romSize = gba->pristineRomSize;
+	}
 	if (!gba->memory.rom) {
 		mLOG(GBA, WARN, "Couldn't map ROM");
 		return false;
 	}
 	gba->yankedRomSize = 0;
-	gba->memory.romSize = gba->pristineRomSize;
 	gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
 	gba->memory.mirroring = false;
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);

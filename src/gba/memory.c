@@ -137,6 +137,7 @@ void GBAMemoryReset(struct GBA* gba) {
 	}
 
 	GBADMAReset(gba);
+	memset(&gba->memory.matrix, 0, sizeof(gba->memory.matrix));
 }
 
 static void _analyzeForIdleLoop(struct GBA* gba, struct ARMCore* cpu, uint32_t address) {
@@ -748,6 +749,10 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 
 #define STORE_CART \
 	wait += waitstatesRegion[address >> BASE_OFFSET]; \
+	if (memory->matrix.size && (address & 0x01FFFF00) == 0x00800100) { \
+		GBAMatrixWrite(gba, address & 0x3C, value); \
+		break; \
+	} \
 	mLOG(GBA_MEM, STUB, "Unimplemented memory Store32: 0x%08X", address);
 
 #define STORE_SRAM \
@@ -865,6 +870,10 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		if (memory->hw.devices != HW_NONE && IS_GPIO_REGISTER(address & 0xFFFFFE)) {
 			uint32_t reg = address & 0xFFFFFE;
 			GBAHardwareGPIOWrite(&memory->hw, reg, value);
+			break;
+		}
+		if (memory->matrix.size && (address & 0x01FFFF00) == 0x00800100) {
+			GBAMatrixWrite16(gba, address & 0x3C, value);
 			break;
 		}
 		// Fall through

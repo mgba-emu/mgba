@@ -55,6 +55,7 @@ Misc:
  - GBA Cheats: Allow multiple ROM patches in the same slot
  - GB: Skip BIOS option now works
  - Libretro: Add frameskip option
+ - GBA Memory: 64 MiB GBA Video cartridge support
 
 0.6.1: (2017-10-01)
 Bugfixes:

@@ -17,6 +17,7 @@ CXX_GUARD_START
 #include <mgba/internal/gba/hardware.h>
 #include <mgba/internal/gba/savedata.h>
 #include <mgba/internal/gba/vfame.h>
+#include <mgba/internal/gba/matrix.h>
 
 enum GBAMemoryRegion {
 	REGION_BIOS = 0x0,
@@ -106,6 +107,7 @@ struct GBAMemory {
 	struct GBACartridgeHardware hw;
 	struct GBASavedata savedata;
 	struct GBAVFameCart vfame;
+	struct GBAMatrix matrix;
 	size_t romSize;
 	uint32_t romMask;
 	uint16_t romID;
