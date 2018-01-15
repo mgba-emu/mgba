@@ -217,6 +217,9 @@ static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer*
 		GBAVideoCacheWriteVideoRegister(renderer->cache, address, value);
 	}
 	switch (address) {
+	case REG_DISPCNT:
+		value &= 0xFFF7;
+		break;
 	case REG_BG0CNT:
 	case REG_BG1CNT:
 		value &= 0xDFFF;
