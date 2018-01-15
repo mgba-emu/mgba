@@ -260,6 +260,9 @@ void mCheatAutosave(struct mCheatDevice* device) {
 		return;
 	}
 	struct VFile* vf = mDirectorySetOpenSuffix(&device->p->dirs, device->p->dirs.cheats, ".cheats", O_WRONLY | O_CREAT | O_TRUNC);
+	if (!vf) {
+		return;
+	}
 	mCheatSaveFile(device, vf);
 	vf->close(vf);
 }
