@@ -16,6 +16,7 @@ Bugfixes:
  - GB MBC: Fix MBC2 saves (fixes mgba.io/i/954)
  - GBA Memory: Fix copy-on-write memory leak
  - Core: Fix ROM patches not being unloaded when disabled (fixes mgba.io/i/962)
+ - GBA I/O: Fix writing to DISPCNT CGB flag (fixes mgba.io/i/902)
 Misc:
  - GBA: Improve multiboot image detection
  - GB MBC: Remove erroneous bank 0 wrapping
