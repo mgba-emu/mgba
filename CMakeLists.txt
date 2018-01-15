@@ -211,6 +211,7 @@ elseif(UNIX)
 	endif()
 	if(NOT APPLE AND NOT HAIKU)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 	endif()
 
 	list(APPEND CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
