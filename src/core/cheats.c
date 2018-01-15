@@ -266,10 +266,10 @@ void mCheatAutosave(struct mCheatDevice* device) {
 #endif
 
 void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {
+	cheats->refresh(cheats, device);
 	if (!cheats->enabled) {
 		return;
 	}
-	cheats->refresh(cheats, device);
 
 	size_t elseLoc = 0;
 	size_t endLoc = 0;
