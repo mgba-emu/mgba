@@ -291,7 +291,11 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->video->gop_size = 60;
 	encoder->video->max_b_frames = 3;
 	if (encoder->context->oformat->flags & AVFMT_GLOBALHEADER) {
+#ifdef AV_CODEC_FLAG_GLOBAL_HEADER
+		encoder->video->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+#else
 		encoder->video->flags |= CODEC_FLAG_GLOBAL_HEADER;
+#endif
 	}
 	if (strcmp(vcodec->name, "libx264") == 0) {
 		// Try to adaptively figure out when you can use a slower encoder
