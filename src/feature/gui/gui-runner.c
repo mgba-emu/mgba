@@ -135,6 +135,12 @@ static uint8_t _readLux(struct GBALuminanceSource* lux) {
 }
 
 static void _tryAutosave(struct mGUIRunner* runner) {
+	int autosave = false;
+	mCoreConfigGetIntValue(&runner->config, "autosave", &autosave);
+	if (!autosave) {
+		return;
+	}
+
 #ifdef DISABLE_THREADING
 	mCoreSaveState(runner->core, 0, SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
 #else
@@ -168,6 +174,12 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 	// TODO: Do we need to load more defaults?
 	mCoreConfigSetDefaultIntValue(&runner->config, "volume", 0x100);
 	mCoreConfigSetDefaultValue(&runner->config, "idleOptimization", "detect");
+	mCoreConfigSetDefaultIntValue(&runner->config, "autoload", true);
+#ifdef DISABLE_THREADING
+	mCoreConfigSetDefaultIntValue(&runner->config, "autosave", false);
+#else
+	mCoreConfigSetDefaultIntValue(&runner->config, "autosave", true);
+#endif
 	mCoreConfigLoad(&runner->config);
 	mCoreConfigGetIntValue(&runner->config, "logLevel", &logger.logLevel);
 
@@ -352,10 +364,11 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	runner->core->reset(runner->core);
 	mLOG(GUI_RUNNER, DEBUG, "Reset!");
 
-	if (mCoreLoadState(runner->core, 0, SAVESTATE_SCREENSHOT | SAVESTATE_RTC)) {
-		struct VFile* autosave = mCoreGetState(runner->core, 0, true);
-		autosave->truncate(autosave, 0);
-		autosave->close(autosave);
+
+	int autoload = false;
+	mCoreConfigGetIntValue(&runner->config, "autoload", &autoload);
+	if (autoload) {
+		mCoreLoadState(runner->core, 0, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
 	}
 
 	bool running = true;
@@ -516,6 +529,13 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	runner->autosave.core = NULL;
 	MutexUnlock(&runner->autosave.mutex);
 #endif
+
+	int autosave = false;
+	mCoreConfigGetIntValue(&runner->config, "autosave", &autosave);
+	if (autosave) {
+		mCoreSaveState(runner->core, 0, SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
+	}
+
 	mLOG(GUI_RUNNER, DEBUG, "Unloading game...");
 	runner->core->unloadROM(runner->core);
 	drawState.screenshotId = 0;
@@ -523,14 +543,6 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		unsigned w, h;
 		runner->core->desiredVideoDimensions(runner->core, &w, &h);
 		mappedMemoryFree(drawState.screenshot, w * h * 4);
-	}
-
-	struct VFile* autosave = mCoreGetState(runner->core, 0, false);
-	if (autosave) {
-		autosave->close(autosave);
-		autosave = mCoreGetState(runner->core, 0, true);
-		autosave->truncate(autosave, 0);
-		autosave->close(autosave);
 	}
 
 	if (runner->config.port) {

@@ -48,6 +48,26 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		.nStates = 2
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Autosave state",
+		.data = "autosave",
+		.submenu = 0,
+		.state = true,
+		.validStates = (const char*[]) {
+			"Off", "On"
+		},
+		.nStates = 2
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Autoload state",
+		.data = "autoload",
+		.submenu = 0,
+		.state = true,
+		.validStates = (const char*[]) {
+			"Off", "On"
+		},
+		.nStates = 2
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Use BIOS if found",
 		.data = "useBios",
 		.submenu = 0,
