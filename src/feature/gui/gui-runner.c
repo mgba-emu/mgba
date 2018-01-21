@@ -391,6 +391,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		gettimeofday(&tv, 0);
 		runner->lastFpsCheck = 1000000LL * tv.tv_sec + tv.tv_usec;
 
+		int frame = 0;
 		while (running) {
 			if (runner->running) {
 				running = runner->running(runner);
@@ -469,9 +470,11 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 						runner->fps = (CircleBufferSize(&runner->fpsBuffer) * FPS_GRANULARITY * 1000000.0f) / (runner->totalDelta * sizeof(uint32_t));
 					}
 				}
-				if (runner->core->frameCounter(runner->core) % AUTOSAVE_GRANULARITY == 0) {
+				if (frame == AUTOSAVE_GRANULARITY) {
+					frame = 0;
 					_tryAutosave(runner);
 				}
+				++frame;
 			}
 		}
 
