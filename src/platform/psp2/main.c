@@ -12,12 +12,14 @@
 #include <mgba-util/gui/file-select.h>
 #include <mgba-util/gui/menu.h>
 
+#include <psp2/apputil.h>
 #include <psp2/ctrl.h>
 #include <psp2/display.h>
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/power.h>
 #include <psp2/sysmodule.h>
+#include <psp2/system_param.h>
 #include <psp2/touch.h>
 
 #include <vita2d.h>
@@ -151,11 +153,26 @@ int main() {
 	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
 	sceSysmoduleLoadModule(SCE_SYSMODULE_PHOTO_EXPORT);
+	sceSysmoduleLoadModule(SCE_SYSMODULE_APPUTIL);
 
 	mGUIInit(&runner, "psvita");
 
-	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_CROSS, GUI_INPUT_SELECT);
-	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_CIRCLE, GUI_INPUT_BACK);
+	int enterButton;
+	SceAppUtilInitParam initParam;
+	SceAppUtilBootParam bootParam;
+	memset(&initParam, 0, sizeof(SceAppUtilInitParam));
+	memset(&bootParam, 0, sizeof(SceAppUtilBootParam));
+	sceAppUtilInit(&initParam, &bootParam);
+	sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, &enterButton);
+	sceAppUtilShutdown();
+
+	if (enterButton == SCE_SYSTEM_PARAM_ENTER_BUTTON_CIRCLE) {
+		mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_CROSS, GUI_INPUT_BACK);
+		mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_CIRCLE, GUI_INPUT_SELECT);
+	} else {
+		mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_CROSS, GUI_INPUT_SELECT);
+		mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_CIRCLE, GUI_INPUT_BACK);
+	}
 	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_TRIANGLE, GUI_INPUT_CANCEL);
 	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_UP, GUI_INPUT_UP);
 	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_DOWN, GUI_INPUT_DOWN);
