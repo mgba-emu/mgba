@@ -248,6 +248,16 @@ else ifneq (,$(filter $(platform), ngc wii wiiu))
       PLATFORM_DEFINES += -DHW_DOL -mrvl
    endif
 
+# Nintendo Switch (libtransistor)
+else ifeq ($(platform), switch)
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
+   include $(LIBTRANSISTOR_HOME)/libtransistor.mk
+   STATIC_LINKING=1
+   STATIC_LINKING_LINK=1
+   HAVE_VFS_FD = 0
+   CFLAGS += -fomit-frame-pointer -ffast-math
+   DEFINES += -std=c99
+
 # emscripten
 else ifeq ($(platform), emscripten)
    TARGET := $(TARGET_NAME)_libretro_$(platform).bc
