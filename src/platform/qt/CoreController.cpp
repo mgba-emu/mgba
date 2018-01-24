@@ -28,8 +28,9 @@
 #include <mgba-util/math.h>
 #include <mgba-util/vfs.h>
 
-using namespace QGBA;
+#define AUTOSAVE_GRANULARITY 600
 
+using namespace QGBA;
 
 CoreController::CoreController(mCore* core, QObject* parent)
 	: QObject(parent)
@@ -48,6 +49,12 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), size.width());
 
+	m_resetActions.append([this]() {
+		if (m_autoload) {
+			mCoreLoadState(m_threadContext.core, 0, m_loadStateFlags);
+		}
+	});
+
 	m_threadContext.startCallback = [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
 
@@ -60,6 +67,8 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		default:
 			break;
 		}
+
+		controller->updateFastForward();
 
 		if (controller->m_multiplayer) {
 			controller->m_multiplayer->attachGame(controller);
@@ -79,10 +88,6 @@ CoreController::CoreController(mCore* core, QObject* parent)
 			controller->m_override->apply(context->core);
 		}
 
-		if (mCoreLoadState(context->core, 0, controller->m_loadStateFlags)) {
-			mCoreDeleteState(context->core, 0);
-		}
-
 		controller->m_resetActions.clear();
 
 		QSize size = controller->screenDimensions();
@@ -100,11 +105,23 @@ CoreController::CoreController(mCore* core, QObject* parent)
 	m_threadContext.frameCallback = [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
 
+		if (controller->m_autosaveCounter == AUTOSAVE_GRANULARITY) {
+			if (controller->m_autosave) {
+				mCoreSaveState(context->core, 0, controller->m_saveStateFlags);
+			}
+			controller->m_autosaveCounter = 0;
+		}
+		++controller->m_autosaveCounter;
+
 		controller->finishFrame();
 	};
 
 	m_threadContext.cleanCallback = [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
+
+		if (controller->m_autosave) {
+			mCoreSaveState(context->core, 0, controller->m_saveStateFlags);
+		}
 
 		controller->clearMultiplayerController();
 		QMetaObject::invokeMethod(controller, "stopping");
@@ -126,7 +143,8 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		mThreadLogger* logContext = reinterpret_cast<mThreadLogger*>(logger);
 		mCoreThread* context = logContext->p;
 
-		static const char* savestateMessage = "State %i loaded";
+		static const char* savestateMessage = "State %i saved";
+		static const char* loadstateMessage = "State %i loaded";
 		static const char* savestateFailedMessage = "State %i failed to load";
 		static int biosCat = -1;
 		static int statusCat = -1;
@@ -152,7 +170,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 #endif
 		if (category == statusCat) {
 			// Slot 0 is reserved for suspend points
-			if (strncmp(savestateMessage, format, strlen(savestateMessage)) == 0) {
+			if (strncmp(loadstateMessage, format, strlen(loadstateMessage)) == 0) {
 				va_list argc;
 				va_copy(argc, args);
 				int slot = va_arg(argc, int);
@@ -160,7 +178,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 				if (slot == 0) {
 					format = "Loaded suspend state";
 				}
-			} else if (strncmp(savestateFailedMessage, format, strlen(savestateFailedMessage)) == 0) {
+			} else if (strncmp(savestateFailedMessage, format, strlen(savestateFailedMessage)) == 0 || strncmp(savestateMessage, format, strlen(savestateMessage)) == 0) {
 				va_list argc;
 				va_copy(argc, args);
 				int slot = va_arg(argc, int);
@@ -232,10 +250,14 @@ void CoreController::loadConfig(ConfigController* config) {
 	m_videoSync = config->getOption("videoSync", m_videoSync).toInt();
 	m_audioSync = config->getOption("audioSync", m_audioSync).toInt();
 	m_fpsTarget = config->getOption("fpsTarget").toFloat();
+	m_autosave = config->getOption("autosave", false).toInt();
+	m_autoload = config->getOption("autoload", true).toInt();
 	m_autofireThreshold = config->getOption("autofireThreshold", m_autofireThreshold).toInt();
-	updateFastForward();
 	mCoreLoadForeignConfig(m_threadContext.core, config->config());
-	mCoreThreadRewindParamsChanged(&m_threadContext);
+	if (hasStarted()) {
+		updateFastForward();
+		mCoreThreadRewindParamsChanged(&m_threadContext);
+	}
 }
 
 #ifdef USE_DEBUGGERS

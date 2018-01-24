@@ -1858,8 +1858,8 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		m_pendingPatch = QString();
 	}
 
-	m_controller->start();
 	m_controller->loadConfig(m_config);
+	m_controller->start();
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

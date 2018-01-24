@@ -195,6 +195,10 @@ private:
 	bool m_audioSync = AUDIO_SYNC;
 	bool m_videoSync = VIDEO_SYNC;
 
+	bool m_autosave;
+	bool m_autoload;
+	int m_autosaveCounter;
+
 	int m_fastForward = false;
 	int m_fastForwardForced = false;
 	float m_fastForwardRatio = -1.f;

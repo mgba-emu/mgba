@@ -357,6 +357,8 @@ void SettingsView::updateConfig() {
 	saveSetting("showFps", m_ui.showFps);
 	saveSetting("cheatAutoload", m_ui.cheatAutoload);
 	saveSetting("cheatAutosave", m_ui.cheatAutosave);
+	saveSetting("autoload", m_ui.autoload);
+	saveSetting("autosave", m_ui.autosave);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
@@ -478,6 +480,8 @@ void SettingsView::reloadConfig() {
 	loadSetting("showFps", m_ui.showFps, true);
 	loadSetting("cheatAutoload", m_ui.cheatAutoload, true);
 	loadSetting("cheatAutosave", m_ui.cheatAutosave, true);
+	loadSetting("autoload", m_ui.autoload, true);
+	loadSetting("autosave", m_ui.autosave, false);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 
