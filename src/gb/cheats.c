@@ -244,7 +244,11 @@ bool GBCheatAddLine(struct mCheatSet* set, const char* line, int type) {
 
 static void GBCheatRefresh(struct mCheatSet* cheats, struct mCheatDevice* device) {
 	struct GBCheatSet* gbset = (struct GBCheatSet*) cheats;
-	_patchROM(device, gbset);
+	if (cheats->enabled) {
+		_patchROM(device, gbset);
+	} else {
+		_unpatchROM(device, gbset);
+	}
 }
 
 static void GBCheatSetCopyProperties(struct mCheatSet* set, struct mCheatSet* oldSet) {

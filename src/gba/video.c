@@ -216,6 +216,9 @@ static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer) {
 static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	UNUSED(renderer);
 	switch (address) {
+	case REG_DISPCNT:
+		value &= 0xFFF7;
+		break;
 	case REG_BG0CNT:
 	case REG_BG1CNT:
 		value &= 0xDFFF;

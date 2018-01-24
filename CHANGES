@@ -15,9 +15,13 @@ Bugfixes:
  - 3DS: Fix opening files in directory names with trailing slashes
  - GB MBC: Fix MBC2 saves (fixes mgba.io/i/954)
  - GBA Memory: Fix copy-on-write memory leak
+ - Core: Fix ROM patches not being unloaded when disabled (fixes mgba.io/i/962)
+ - GBA I/O: Fix writing to DISPCNT CGB flag (fixes mgba.io/i/902)
+ - GBA Memory: Partially revert prefetch changes (fixes mgba.io/i/840)
 Misc:
  - GBA: Improve multiboot image detection
  - GB MBC: Remove erroneous bank 0 wrapping
+ - 3DS: Scale font based on glyph heights (fixes mgba.io/i/961)
 
 0.6.1: (2017-10-01)
 Bugfixes:

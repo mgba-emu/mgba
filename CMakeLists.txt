@@ -211,6 +211,7 @@ elseif(UNIX)
 	endif()
 	if(NOT APPLE AND NOT HAIKU)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 	endif()
 
 	list(APPEND CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
@@ -567,7 +568,7 @@ elseif(USE_ZLIB)
 endif()
 
 if (USE_LZMA)
-	include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/third-party/lzma)
+	include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/lzma)
 	add_definitions(-D_7ZIP_PPMD_SUPPPORT)
 	list(APPEND VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-lzma.c)
 	set(LZMA_SRC
