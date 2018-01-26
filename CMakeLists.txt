@@ -257,14 +257,9 @@ if(WIN32)
 	endif()
 elseif(UNIX)
 	set(USE_PTHREADS ON)
-	add_definitions(-DUSE_PTHREADS)
 
 	if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 		add_definitions(-D_GNU_SOURCE)
-	endif()
-	if(NOT APPLE AND NOT HAIKU)
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 	endif()
 
 	list(APPEND CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
@@ -351,6 +346,7 @@ if(3DS OR WII)
 	add_definitions(-D_GNU_SOURCE)
 endif()
 
+include(CheckCCompilerFlag)
 include(CheckFunctionExists)
 include(CheckIncludeFiles)
 check_function_exists(strdup HAVE_STRDUP)
@@ -402,6 +398,27 @@ endif()
 check_function_exists(chmod HAVE_CHMOD)
 check_function_exists(umask HAVE_UMASK)
 
+if(USE_PTHREADS)
+	check_include_files("pthread.h" HAVE_PTHREAD_H)
+	if(HAVE_PTHREAD_H)
+		check_c_compiler_flag(-pthread HAVE_PTHREAD)
+		if(HAVE_PTHREAD AND NOT APPLE AND NOT HAIKU)
+			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
+			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+		endif()
+
+		check_function_exists(pthread_create HAVE_PTHREAD_CREATE)
+		if(HAVE_PTHREAD_CREATE)
+			add_definitions(-DUSE_PTHREADS)
+
+			check_include_files("pthread_np.h" HAVE_PTHREAD_NP_H)
+
+			check_function_exists(pthread_setname_np HAVE_PTHREAD_SETNAME_NP)
+			check_function_exists(pthread_set_name_np HAVE_PTHREAD_SET_NAME_NP)
+		endif()
+	endif()
+endif()
+
 set(FUNCTION_DEFINES)
 
 if(HAVE_STRDUP)
@@ -441,6 +458,18 @@ endif()
 
 if(HAVE_UMASK)
 	list(APPEND FUNCTION_DEFINES HAVE_UMASK)
+endif()
+
+if(HAVE_PTHREAD_NP_H)
+	list(APPEND FUNCTION_DEFINES HAVE_PTHREAD_NP_H)
+endif()
+
+if(HAVE_PTHREAD_SETNAME_NP)
+	list(APPEND FUNCTION_DEFINES HAVE_PTHREAD_SETNAME_NP)
+endif()
+
+if(HAVE_PTHREAD_SET_NAME_NP)
+	list(APPEND FUNCTION_DEFINES HAVE_PTHREAD_SET_NAME_NP)
 endif()
 
 # Feature dependencies
