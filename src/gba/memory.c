@@ -1629,6 +1629,7 @@ void _pristineCow(struct GBA* gba) {
 	if (!gba->isPristine) {
 		return;
 	}
+#ifndef FIXED_ROM_BUFFER
 	void* newRom = anonymousMemoryMap(SIZE_CART0);
 	memcpy(newRom, gba->memory.rom, gba->memory.romSize);
 	memset(((uint8_t*) newRom) + gba->memory.romSize, 0xFF, SIZE_CART0 - gba->memory.romSize);
@@ -1636,14 +1637,13 @@ void _pristineCow(struct GBA* gba) {
 		gba->cpu->memory.activeRegion = newRom;
 	}
 	if (gba->romVf) {
-#ifndef FIXED_ROM_BUFFER
 		gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->memory.romSize);
-#endif
 		gba->romVf->close(gba->romVf);
 		gba->romVf = NULL;
 	}
 	gba->memory.rom = newRom;
 	gba->memory.hw.gpioBase = &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1];
+#endif
 	gba->isPristine = false;
 }
 
