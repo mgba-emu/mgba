@@ -14,6 +14,7 @@ Features:
  - Debugger: Conditional breakpoints and watchpoints
  - Ability to select GB/GBC/SGB BIOS on console ports
  - Optional automatic state saving/loading
+ - Access to ur0 and uma0 partitions on the Vita
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
  - GB Serialize: Fix audio state loading
