@@ -130,6 +130,10 @@ Then finally build it by running these commands:
 
 Please note that this build of mGBA for Windows is not suitable for distribution, due to the scattering of DLLs it needs to run, but is perfect for development. However, if distributing such a build is desired (e.g. for testing on machines that don't have the MSYS2 environment installed), running `cpack -G ZIP` will prepare a zip file with all of the necessary DLLs.
 
+Another way to bundle all the required DDLs is to use the tool "ntldd" [<sup>[4]</sup>](#ntldd). It is recommended to copy the mGBA executable into an empty directory. Navigate to this directory within your MinGW shell and execute the following command:
+
+	for i in $(seq 3); do for bin in $(ntldd -R *exe | grep -i mingw | cut -d">" -f2 | cut -d" " -f2); do cp -vu "$bin" . ; done; done;
+
 ### Dependencies
 
 mGBA has no hard dependencies, however, the following optional dependencies are required for specific features. The features will be disabled if the dependencies can't be found.
@@ -157,6 +161,9 @@ Footnotes
 <a name="flashdetect">[2]</a> Flash memory size detection does not work in some cases. These can be configured at runtime, but filing a bug is recommended if such a case is encountered.
 
 <a name="osxver">[3]</a> 10.7 is only needed for the Qt port. The SDL port is known to work on 10.5, and may work on older.
+
+<a name="ntldd">[4]</a> This information was taken from the [Libretro documentation](https://buildbot.libretro.com/docs/compilation/windows/#packaging-retroarch).
+
 
 [downloads]: http://mgba.io/downloads.html
 [source]: https://github.com/mgba-emu/mgba/
