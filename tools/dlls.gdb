@@ -1,0 +1,3 @@
+start
+info sharedlibrary
+q
