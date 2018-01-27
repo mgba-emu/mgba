@@ -110,11 +110,11 @@ Um mGBA auf Windows zu kompilieren, wird MSYS2 empfohlen. Befolge die Installati
 
 Für x86 (32 Bit):
 
-	pacman -Sy mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2}
+	pacman -Sy mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 Für x86_64 (64 Bit):
 
-	pacman -Sy mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2}
+	pacman -Sy mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 Lade den aktuellen mGBA-Quellcode mithilfe des folgenden Kommandos herunter:
 
@@ -128,7 +128,7 @@ Abschließend wird mGBA über folgende Kommandos kompiliert:
 	cmake .. -G "MSYS Makefiles"
 	make
 
-Bitte beachte, dass mGBA für Windows aufgrund der Vielzahl an benötigten DLLs nicht für die weitere Verteilung geeignet ist, wenn es auf diese Weise gebaut wurde. Es ist jedoch perfekt für Entwickler geeignet. Soll mGBA dennoch weiter verteilt werden (beispielsweise zu Testzwecken auf Systemen, auf denen keine MSYS2-Umgebung installier ist), kann ein Tool namens "[Dependency Walker](http://dependencywalker.com)" verwendet werden, um zu sehen, welche DLLs zusammen mit der mGBA-Programmdatei ausgeliefert werden müssen.
+Bitte beachte, dass mGBA für Windows aufgrund der Vielzahl an benötigten DLLs nicht für die weitere Verteilung geeignet ist, wenn es auf diese Weise gebaut wurde. Es ist jedoch perfekt für Entwickler geeignet. Soll mGBA dennoch weiter verteilt werden (beispielsweise zu Testzwecken auf Systemen, auf denen keine MSYS2-Umgebung installiert ist), kann mithilfe des Befehls 'cpack -G ZIP' ein ZIP-Archiv mit allen benötigten DLLs erstellt werden.
 
 ### Abhängigkeiten
 
