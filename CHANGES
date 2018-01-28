@@ -63,6 +63,7 @@ Misc:
  - GBA Memory: 64 MiB GBA Video cartridge support
  - 3DS: Scale font based on glyph heights (fixes mgba.io/i/961)
  - PSP2: Use system enter key by default
+ - 3DS: Remove deprecated CSND interface
 
 0.6.1: (2017-10-01)
 Bugfixes:

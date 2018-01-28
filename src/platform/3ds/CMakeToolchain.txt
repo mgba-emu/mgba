@@ -23,9 +23,9 @@ endif()
 
 set(CMAKE_PROGRAM_PATH ${DEVKITARM}/bin)
 set(cross_prefix arm-none-eabi-)
-set(arch_flags "-march=armv6k -mtune=mpcore -mfpu=vfp -mfloat-abi=hard")
+set(arch_flags "-march=armv6k -mtune=mpcore -mfloat-abi=hard -ffunction-sections")
 set(inc_flags "-I${CTRULIB}/include ${arch_flags} -mword-relocations")
-set(link_flags "-L${CTRULIB}/lib -lctru -specs=3dsx.specs ${arch_flags}")
+set(link_flags "-L${CTRULIB}/lib -lctru -specs=3dsx.specs ${arch_flags} -Wl,--gc-sections")
 
 set(CMAKE_SYSTEM_NAME Generic CACHE INTERNAL "system name")
 set(CMAKE_SYSTEM_PROCESSOR arm CACHE INTERNAL "processor")
