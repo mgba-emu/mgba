@@ -247,6 +247,9 @@ QString Window::getFilters() const {
 #ifdef USE_LZMA
 		"*.7z",
 #endif
+#ifdef USE_ELF
+		"*.elf",
+#endif
 		"*.agb",
 		"*.mb",
 		"*.rom",
