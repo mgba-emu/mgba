@@ -13,13 +13,6 @@
 
 #include "platform/opengl/gl.h"
 
-static void _doViewport(int w, int h, struct VideoBackend* v) {
-	v->resized(v, w, h);
-	v->clear(v);
-	v->swap(v);
-	v->clear(v);
-}
-
 static bool mSDLGLInit(struct mSDLRenderer* renderer);
 static void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user);
 static void mSDLGLDeinit(struct mSDLRenderer* renderer);
@@ -47,7 +40,7 @@ bool mSDLGLInit(struct mSDLRenderer* renderer) {
 	renderer->gl.d.init(&renderer->gl.d, 0);
 	renderer->gl.d.setDimensions(&renderer->gl.d, renderer->width, renderer->height);
 
-	_doViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
+	mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
 	return true;
 }
 
@@ -63,7 +56,7 @@ void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user) {
 			// Event handling can change the size of the screen
 			if (renderer->player.windowUpdated) {
 				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
-				_doViewport(renderer->viewportWidth, renderer->viewportHeight, v);
+				mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, v);
 				renderer->player.windowUpdated = 0;
 			}
 #endif
