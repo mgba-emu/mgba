@@ -44,6 +44,7 @@ Bugfixes:
  - Core: Fix ROM patches not being unloaded when disabled (fixes mgba.io/i/962)
  - GBA I/O: Fix writing to DISPCNT CGB flag (fixes mgba.io/i/902)
  - GBA Memory: Partially revert prefetch changes (fixes mgba.io/i/840)
+ - PSP2: Fix issues causing poor audio
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
