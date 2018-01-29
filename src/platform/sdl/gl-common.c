@@ -7,6 +7,13 @@
 
 #include <mgba/core/version.h>
 
+void mSDLGLDoViewport(int w, int h, struct VideoBackend* v) {
+	v->resized(v, w, h);
+	v->clear(v);
+	v->swap(v);
+	v->clear(v);
+}
+
 void mSDLGLCommonSwap(struct VideoBackend* context) {
 	struct mSDLRenderer* renderer = (struct mSDLRenderer*) context->user;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
