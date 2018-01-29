@@ -123,15 +123,15 @@ void mSDLGLES2Runloop(struct mSDLRenderer* renderer, void* user) {
 	SDL_Event event;
 	struct VideoBackend* v = &renderer->gl2.d;
 
-	while (context->state < THREAD_EXITING) {
+	while (mCoreThreadIsActive(context)) {
 		while (SDL_PollEvent(&event)) {
 			mSDLHandleEvent(context, &renderer->player, &event);
 		}
 
-		if (mCoreSyncWaitFrameStart(&context->sync)) {
+		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
 			v->postFrame(v, renderer->outputBuffer);
 		}
-		mCoreSyncWaitFrameEnd(&context->sync);
+		mCoreSyncWaitFrameEnd(&context->impl->sync);
 		v->drawFrame(v);
 #ifdef BUILD_RASPI
 		eglSwapBuffers(renderer->display, renderer->surface);
