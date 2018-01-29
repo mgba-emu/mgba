@@ -6,7 +6,7 @@
 #ifndef QGBA_SHADER_SELECTOR_H
 #define QGBA_SHADER_SELECTOR_H
 
-#if defined(BUILD_GL) || defined(BUILD_GLES)
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
 
 #include <QDialog>
 

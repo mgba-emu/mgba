@@ -6,7 +6,7 @@
 #ifndef QGBA_DISPLAY_GL
 #define QGBA_DISPLAY_GL
 
-#if defined(BUILD_GL) || defined(BUILD_GLES)
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
 
 #include "Display.h"
 

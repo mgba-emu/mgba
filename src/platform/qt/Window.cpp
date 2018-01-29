@@ -78,7 +78,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	updateTitle();
 
 	m_display = Display::create(this);
-#if defined(BUILD_GL) || defined(BUILD_GLES)
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
 	m_shaderView = new ShaderSelector(m_display, m_config);
 #endif
 
@@ -276,7 +276,7 @@ void Window::loadConfig() {
 		enterFullScreen();
 	}
 
-#if defined(BUILD_GL) || defined(BUILD_GLES)
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (opts->shader) {
 		struct VDir* shader = VDirOpen(opts->shader);
 		if (shader) {
@@ -463,7 +463,7 @@ void Window::exportSharkport() {
 
 void Window::openSettingsWindow() {
 	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController);
-#if defined(BUILD_GL) || defined(BUILD_GLES)
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (m_display->supportsShaders()) {
 		settingsWindow->setShaderSelector(m_shaderView);
 	}
