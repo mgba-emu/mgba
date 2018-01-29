@@ -21,7 +21,7 @@
 #include <mgba-util/vfs.h>
 #include "platform/video-backend.h"
 
-#if defined(BUILD_GL) || defined(BUILD_GLES)
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
 #include "platform/opengl/gles2.h"

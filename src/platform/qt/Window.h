@@ -191,7 +191,7 @@ private:
 	QMenu* m_videoLayers;
 	QMenu* m_audioChannels;
 	ShortcutController* m_shortcutController;
-#if defined(BUILD_GL) || defined(BUILD_GLES)
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
 	std::unique_ptr<ShaderSelector> m_shaderView;
 #endif
 	bool m_fullscreenOnStart = false;
