@@ -81,7 +81,13 @@ ifneq (,$(findstring unix,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
    SHARED := -shared -Wl,-version-script=link.T
-   DEFINES += -std=c99 -D_GNU_SOURCE -DHAVE_LOCALE
+
+   ifneq ($(findstring Haiku,$(shell uname -s)),)
+	  # Haiku does not handle locales like Linux
+      DEFINES += -std=c99 -D_GNU_SOURCE
+   else
+      DEFINES += -std=c99 -D_GNU_SOURCE -DHAVE_LOCALE
+   endif
 
    # Raspberry Pi 3
    ifneq (,$(findstring rpi3,$(platform)))
