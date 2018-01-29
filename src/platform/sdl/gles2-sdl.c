@@ -114,6 +114,8 @@ bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
 	renderer->gl2.d.swap = mSDLGLCommonSwap;
 	renderer->gl2.d.init(&renderer->gl2.d, 0);
 	renderer->gl2.d.setDimensions(&renderer->gl2.d, renderer->width, renderer->height);
+
+	mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl2.d);
 	return true;
 }
 
@@ -125,6 +127,14 @@ void mSDLGLES2Runloop(struct mSDLRenderer* renderer, void* user) {
 	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
 			mSDLHandleEvent(context, &renderer->player, &event);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+			// Event handling can change the size of the screen
+			if (renderer->player.windowUpdated) {
+				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
+				mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, v);
+				renderer->player.windowUpdated = 0;
+			}
+#endif
 		}
 
 		if (mCoreSyncWaitFrameStart(&context->sync)) {
