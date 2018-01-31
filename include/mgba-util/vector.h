@@ -10,6 +10,10 @@
 
 CXX_GUARD_START
 
+#ifdef vector
+#undef vector
+#endif
+
 #define DECLARE_VECTOR(NAME, TYPE) \
 	struct NAME { \
 		TYPE* vector; \

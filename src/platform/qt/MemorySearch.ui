@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>631</width>
-    <height>378</height>
+    <width>540</width>
+    <height>491</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -99,14 +99,34 @@
        </attribute>
       </widget>
      </item>
-     <item row="3" column="0">
+     <item row="3" column="0" colspan="2">
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Width</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="4" column="1">
+      <widget class="QRadioButton" name="bitsGuess">
+       <property name="text">
+        <string>Guess</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">width</string>
+       </attribute>
+      </widget>
+     </item>
+     <item row="5" column="1">
       <widget class="QRadioButton" name="bits8">
        <property name="text">
         <string>1 Byte (8-bit)</string>
@@ -116,7 +136,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="4" column="1">
+     <item row="6" column="1">
       <widget class="QRadioButton" name="bits16">
        <property name="text">
         <string>2 Bytes (16-bit)</string>
@@ -126,48 +146,115 @@
        </attribute>
       </widget>
      </item>
-     <item row="5" column="1">
+     <item row="7" column="1">
       <widget class="QRadioButton" name="bits32">
        <property name="text">
         <string>4 Bytes (32-bit)</string>
        </property>
        <property name="checked">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <attribute name="buttonGroup">
         <string notr="true">width</string>
        </attribute>
       </widget>
      </item>
-     <item row="6" column="0">
+     <item row="8" column="0" colspan="2">
+      <widget class="Line" name="line_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
         <string>Number type</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="1">
-      <widget class="QRadioButton" name="numHex">
+     <item row="9" column="1">
+      <widget class="QRadioButton" name="numGuess">
        <property name="text">
-        <string>Hexadecimal</string>
+        <string>Guess</string>
        </property>
        <property name="checked">
         <bool>true</bool>
        </property>
       </widget>
      </item>
-     <item row="7" column="1">
+     <item row="10" column="1">
       <widget class="QRadioButton" name="numDec">
        <property name="text">
         <string>Decimal</string>
        </property>
       </widget>
      </item>
-     <item row="8" column="1">
-      <widget class="QRadioButton" name="numGuess">
+     <item row="11" column="1">
+      <widget class="QRadioButton" name="numHex">
        <property name="text">
-        <string>Guess</string>
+        <string>Hexadecimal</string>
        </property>
+      </widget>
+     </item>
+     <item row="12" column="0" colspan="2">
+      <widget class="Line" name="line_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="13" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Compare</string>
+       </property>
+      </widget>
+     </item>
+     <item row="13" column="1">
+      <widget class="QRadioButton" name="opEqual">
+       <property name="text">
+        <string>Equal</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">op</string>
+       </attribute>
+      </widget>
+     </item>
+     <item row="14" column="1">
+      <widget class="QRadioButton" name="opGreater">
+       <property name="text">
+        <string>Greater</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">op</string>
+       </attribute>
+      </widget>
+     </item>
+     <item row="15" column="1">
+      <widget class="QRadioButton" name="opLess">
+       <property name="text">
+        <string>Less</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">op</string>
+       </attribute>
+      </widget>
+     </item>
+     <item row="16" column="1">
+      <widget class="QRadioButton" name="opDelta">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Delta</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">op</string>
+       </attribute>
       </widget>
      </item>
     </layout>
@@ -235,5 +322,6 @@
  <buttongroups>
   <buttongroup name="width"/>
   <buttongroup name="type"/>
+  <buttongroup name="op"/>
  </buttongroups>
 </ui>

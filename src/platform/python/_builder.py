@@ -30,6 +30,7 @@ ffi.set_source("mgba._pylib", """
 #include <mgba/core/thread.h>
 #include <mgba/core/version.h>
 #include <mgba/debugger/debugger.h>
+#include <mgba/gba/interface.h>
 #include <mgba/internal/arm/arm.h>
 #include <mgba/internal/debugger/cli-debugger.h>
 #include <mgba/internal/ds/ds.h>

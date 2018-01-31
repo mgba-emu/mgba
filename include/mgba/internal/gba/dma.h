@@ -10,18 +10,18 @@
 
 CXX_GUARD_START
 
-enum DMAControl {
-	DMA_INCREMENT = 0,
-	DMA_DECREMENT = 1,
-	DMA_FIXED = 2,
-	DMA_INCREMENT_RELOAD = 3
+enum GBADMAControl {
+	GBA_DMA_INCREMENT = 0,
+	GBA_DMA_DECREMENT = 1,
+	GBA_DMA_FIXED = 2,
+	GBA_DMA_INCREMENT_RELOAD = 3
 };
 
-enum DMATiming {
-	DMA_TIMING_NOW = 0,
-	DMA_TIMING_VBLANK = 1,
-	DMA_TIMING_HBLANK = 2,
-	DMA_TIMING_CUSTOM = 3
+enum GBADMATiming {
+	GBA_DMA_TIMING_NOW = 0,
+	GBA_DMA_TIMING_VBLANK = 1,
+	GBA_DMA_TIMING_HBLANK = 2,
+	GBA_DMA_TIMING_CUSTOM = 3
 };
 
 DECL_BITFIELD(GBADMARegister, uint16_t);
@@ -59,6 +59,7 @@ struct GBADMA;
 void GBADMASchedule(struct GBA* gba, int number, struct GBADMA* info);
 void GBADMARunHblank(struct GBA* gba, int32_t cycles);
 void GBADMARunVblank(struct GBA* gba, int32_t cycles);
+void GBADMARunDisplayStart(struct GBA* gba, int32_t cycles);
 void GBADMAUpdate(struct GBA* gba);
 
 CXX_GUARD_END

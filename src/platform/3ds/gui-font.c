@@ -11,13 +11,12 @@
 
 #include "ctr-gpu.h"
 
-#define CELL_HEIGHT 16
-#define CELL_WIDTH 16
-#define FONT_SIZE 0.52f
+#define FONT_SIZE 15.6f
 
 struct GUIFont {
 	C3D_Tex* sheets;
 	C3D_Tex icons;
+	float size;
 };
 
 struct GUIFont* GUIFontCreate(void) {
@@ -29,6 +28,7 @@ struct GUIFont* GUIFontCreate(void) {
 	C3D_Tex* tex;
 
 	TGLP_s* glyphInfo = fontGetGlyphInfo();
+	guiFont->size = FONT_SIZE / glyphInfo->cellHeight;
 	guiFont->sheets = malloc(sizeof(*guiFont->sheets) * glyphInfo->nSheets);
 
 	int i;
@@ -59,16 +59,14 @@ void GUIFontDestroy(struct GUIFont* font) {
 }
 
 unsigned GUIFontHeight(const struct GUIFont* font) {
-	UNUSED(font);
-	return fontGetInfo()->lineFeed * FONT_SIZE;
+	return fontGetInfo()->lineFeed * font->size;
 }
 
 unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
-	UNUSED(font);
 	int index = fontGlyphIndexFromCodePoint(glyph);
 	charWidthInfo_s* info = fontGetCharWidthInfo(index);
 	if (info) {
-		return info->charWidth * FONT_SIZE;
+		return info->charWidth * font->size;
 	}
 	return 0;
 }
@@ -108,7 +106,7 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int glyph_x, int glyph_y, uint
 	u16 v = tex->height * data.texcoord.bottom;
 
 	ctrAddRectEx(color, x, y,
-	             tex->width * width * FONT_SIZE, tex->height * height * -FONT_SIZE,
+	             tex->width * width * font->size, tex->height * height * -font->size,
 	             u, v, tex->width * width, tex->height * height, 0);
 }
 

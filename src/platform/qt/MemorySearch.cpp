@@ -41,49 +41,60 @@ bool MemorySearch::createParams(mCoreMemorySearchParams* params) {
 	QByteArray string;
 	bool ok = false;
 	if (m_ui.typeNum->isChecked()) {
+		params->type = mCORE_MEMORY_SEARCH_INT;
+		if (m_ui.opDelta->isChecked()) {
+			params->op = mCORE_MEMORY_SEARCH_DELTA;
+		} else if (m_ui.opGreater->isChecked()) {
+			params->op = mCORE_MEMORY_SEARCH_GREATER;
+		} else if (m_ui.opLess->isChecked()) {
+			params->op = mCORE_MEMORY_SEARCH_LESS;
+		} else {
+			params->op = mCORE_MEMORY_SEARCH_EQUAL;
+		}
+		params->align = -1;
 		if (m_ui.bits8->isChecked()) {
-			params->type = mCORE_MEMORY_SEARCH_8;
+			params->width = 1;
 		}
 		if (m_ui.bits16->isChecked()) {
-			params->type = mCORE_MEMORY_SEARCH_16;
+			params->width = 2;
 		}
 		if (m_ui.bits32->isChecked()) {
-			params->type = mCORE_MEMORY_SEARCH_32;
+			params->width = 4;
+		}
+		if (m_ui.bitsGuess->isChecked()) {
+			params->width = -1;
 		}
 		if (m_ui.numHex->isChecked()) {
 			uint32_t v = m_ui.value->text().toUInt(&ok, 16);
 			if (ok) {
-				switch (params->type) {
-				case mCORE_MEMORY_SEARCH_8:
+				params->valueInt = v;
+				switch (params->width) {
+				case 1:
 					ok = v < 0x100;
-					params->value8 = v;
 					break;
-				case mCORE_MEMORY_SEARCH_16:
+				case 2:
 					ok = v < 0x10000;
-					params->value16 = v;
 					break;
-				case mCORE_MEMORY_SEARCH_32:
-					params->value32 = v;
+				case 4:
 					break;
 				default:
 					ok = false;
+					break;
 				}
 			}
 		}
 		if (m_ui.numDec->isChecked()) {
 			uint32_t v = m_ui.value->text().toUInt(&ok, 10);
 			if (ok) {
-				switch (params->type) {
-				case mCORE_MEMORY_SEARCH_8:
+				params->valueInt = v;
+				switch (params->width) {
+				case 1:
 					ok = v < 0x100;
-					params->value8 = v;
 					break;
-				case mCORE_MEMORY_SEARCH_16:
+				case 2:
 					ok = v < 0x10000;
-					params->value16 = v;
 					break;
-				case mCORE_MEMORY_SEARCH_32:
-					params->value32 = v;
+				case 4:
 					break;
 				default:
 					ok = false;
@@ -101,6 +112,7 @@ bool MemorySearch::createParams(mCoreMemorySearchParams* params) {
 		params->type = mCORE_MEMORY_SEARCH_STRING;
 		m_string = m_ui.value->text().toLocal8Bit();
 		params->valueStr = m_string.constData();
+		params->width = m_ui.value->text().size();
 		ok = true;
 	}
 	return ok;
@@ -140,66 +152,73 @@ void MemorySearch::refresh() {
 
 	m_ui.results->clearContents();
 	m_ui.results->setRowCount(mCoreMemorySearchResultsSize(&m_results));
+	m_ui.opDelta->setEnabled(false);
 	for (size_t i = 0; i < mCoreMemorySearchResultsSize(&m_results); ++i) {
 		mCoreMemorySearchResult* result = mCoreMemorySearchResultsGetPointer(&m_results, i);
 		QTableWidgetItem* item = new QTableWidgetItem(QString("%1").arg(result->address, 8, 16, QChar('0')));
 		m_ui.results->setItem(i, 0, item);
 		QTableWidgetItem* type;
-		if (m_ui.numHex->isChecked()) {
-			switch (result->type) {
-			case mCORE_MEMORY_SEARCH_8:
+		QByteArray string;
+		if (result->type == mCORE_MEMORY_SEARCH_INT && m_ui.numHex->isChecked()) {
+			switch (result->width) {
+			case 1:
 				item = new QTableWidgetItem(QString("%1").arg(core->rawRead8(core, result->address, result->segment), 2, 16, QChar('0')));
 				break;
-			case mCORE_MEMORY_SEARCH_16:
+			case 2:
 				item = new QTableWidgetItem(QString("%1").arg(core->rawRead16(core, result->address, result->segment), 4, 16, QChar('0')));
 				break;
-			case mCORE_MEMORY_SEARCH_GUESS:
-			case mCORE_MEMORY_SEARCH_32:
+			case 4:
 				item = new QTableWidgetItem(QString("%1").arg(core->rawRead32(core, result->address, result->segment), 8, 16, QChar('0')));
 				break;
-			case mCORE_MEMORY_SEARCH_STRING:
-				item = new QTableWidgetItem("?"); // TODO
 			}
 		} else {
 			switch (result->type) {
-			case mCORE_MEMORY_SEARCH_8:
-				item = new QTableWidgetItem(QString::number(core->rawRead8(core, result->address, result->segment)));
-				break;
-			case mCORE_MEMORY_SEARCH_16:
-				item = new QTableWidgetItem(QString::number(core->rawRead16(core, result->address, result->segment)));
-				break;
-			case mCORE_MEMORY_SEARCH_GUESS:
-			case mCORE_MEMORY_SEARCH_32:
-				item = new QTableWidgetItem(QString::number(core->rawRead32(core, result->address, result->segment)));
+			case mCORE_MEMORY_SEARCH_INT:
+				switch (result->width) {
+				case 1:
+					item = new QTableWidgetItem(QString::number(core->rawRead8(core, result->address, result->segment)));
+					break;
+				case 2:
+					item = new QTableWidgetItem(QString::number(core->rawRead16(core, result->address, result->segment)));
+					break;
+				case 4:
+					item = new QTableWidgetItem(QString::number(core->rawRead32(core, result->address, result->segment)));
+					break;
+				}
 				break;
 			case mCORE_MEMORY_SEARCH_STRING:
-				item = new QTableWidgetItem("?"); // TODO
+				string.reserve(result->width);
+				for (int i = 0; i < result->width; ++i) {
+					string.append(core->rawRead8(core, result->address + i, result->segment));
+				}
+				item = new QTableWidgetItem(QLatin1String(string)); // TODO
 			}
 		}
 		QString divisor;
 		if (result->guessDivisor > 1) {
-			divisor = tr(" (⅟%0×)").arg(result->guessDivisor);
+			if (result->guessMultiplier > 1) {
+				divisor = tr(" (%0/%1×)").arg(result->guessMultiplier).arg(result->guessMultiplier);
+			} else {
+				divisor = tr(" (⅟%0×)").arg(result->guessDivisor);
+			}
+		} else if (result->guessMultiplier > 1) {
+			divisor = tr(" (%0×)").arg(result->guessMultiplier);
 		}
 		switch (result->type) {
-		case mCORE_MEMORY_SEARCH_8:
-			type = new QTableWidgetItem(tr("1 byte%0").arg(divisor));
-			break;
-		case mCORE_MEMORY_SEARCH_16:
-			type = new QTableWidgetItem(tr("2 bytes%0").arg(divisor));
-			break;
-		case mCORE_MEMORY_SEARCH_GUESS:
-		case mCORE_MEMORY_SEARCH_32:
-			type = new QTableWidgetItem(tr("4 bytes%0").arg(divisor));
+		case mCORE_MEMORY_SEARCH_INT:
+			type = new QTableWidgetItem(tr("%1 byte%2").arg(result->width).arg(divisor));
 			break;
 		case mCORE_MEMORY_SEARCH_STRING:
-			item = new QTableWidgetItem("?"); // TODO
+			type = new QTableWidgetItem("string");
 		}
 		m_ui.results->setItem(i, 1, item);
 		m_ui.results->setItem(i, 2, type);
+		m_ui.opDelta->setEnabled(true);
+	}
+	if (m_ui.opDelta->isChecked() && !m_ui.opDelta->isEnabled()) {
+		m_ui.opEqual->setChecked(true);
 	}
 	m_ui.results->sortItems(0);
-	m_ui.results->resizeColumnsToContents();
-	m_ui.results->resizeRowsToContents();
 }
 
 void MemorySearch::openMemory() {

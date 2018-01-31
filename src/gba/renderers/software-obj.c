@@ -245,26 +245,26 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 		return 0;
 	}
 
+	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt) && GBAWindowControlGetBlendEnable(renderer->objwin.packed) != GBAWindowControlIsBlendEnable(renderer->currentWindow.packed);
 	int variant = renderer->target1Obj &&
 	              GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) &&
 	              (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
-	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) {
-		int target2 = renderer->target2Bd << 4;
-		target2 |= renderer->bg[0].target2 << (renderer->bg[0].priority);
-		target2 |= renderer->bg[1].target2 << (renderer->bg[1].priority);
-		target2 |= renderer->bg[2].target2 << (renderer->bg[2].priority);
-		target2 |= renderer->bg[3].target2 << (renderer->bg[3].priority);
-		if ((1 << GBAObjAttributesCGetPriority(sprite->c)) <= target2) {
+	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT || objwinSlowPath) {
+		int target2 = renderer->target2Bd;
+		target2 |= renderer->bg[0].target2;
+		target2 |= renderer->bg[1].target2;
+		target2 |= renderer->bg[2].target2;
+		target2 |= renderer->bg[3].target2;
+		if (target2) {
 			flags |= FLAG_REBLEND;
 			variant = 0;
-		} else if (!target2) {
+		} else {
 			flags &= ~FLAG_TARGET_1;
 		}
 	}
 
 	color_t* palette = &renderer->normalPalette[0x100];
 	color_t* objwinPalette = palette;
-	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt) && GBAWindowControlGetBlendEnable(renderer->objwin.packed) != GBAWindowControlIsBlendEnable(renderer->currentWindow.packed);
 
 	if (GBAObjAttributesAIs256Color(sprite->a) && renderer->objExtPalette) {
 		if (!variant) {

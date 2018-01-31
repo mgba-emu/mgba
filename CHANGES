@@ -28,6 +28,13 @@ Features:
  - Customizable autofire speed
  - Ability to set default Game Boy model
  - Map viewer
+ - Automatic cheat loading and saving
+ - GameShark and Action Replay button support
+ - AGBPrint support
+ - Debugger: Conditional breakpoints and watchpoints
+ - Ability to select GB/GBC/SGB BIOS on console ports
+ - Optional automatic state saving/loading
+ - Access to ur0 and uma0 partitions on the Vita
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
  - GB Serialize: Fix audio state loading
@@ -36,6 +43,28 @@ Bugfixes:
  - ARM: Fix MSR when T bit is set
  - GB Serialize: Fix game title check
  - GB: Revamp IRQ handling based on new information
+ - GBA Video: Don't mask out high bits of BLDY (fixes mgba.io/i/899)
+ - GBA Video: Force align 256-color tiles
+ - GBA DMA: ROM reads are forced to increment
+ - GB Video: Fix loading states while in mode 3
+ - GB Video: Only trigger STAT write IRQs when screen is on (fixes mgba.io/i/912)
+ - GBA Cheats: Fix PARv3 slide codes (fixes mgba.io/i/919)
+ - GBA Video: OBJWIN can change blend params after OBJ is drawn (fixes mgba.io/i/921)
+ - GBA DMA: Fix invalid DMA reads (fixes mgba.io/i/142)
+ - GBA Savedata: Fix crash when resizing flash
+ - GBA Video: Add delay when enabling BGs (fixes mgba.io/i/744, mgba.io/i/752)
+ - GB Memory: HDMAs should not start when LCD is off (fixes mgba.io/i/310)
+ - GBA Cheats: Fix slide codes not initializing properly
+ - Qt: Fix locale being set to English on settings save (fixes mgba.io/i/906)
+ - LR35902: Fix watchpoints not reporting new value
+ - GBA Audio: Increase PSG volume (fixes mgba.io/i/932)
+ - 3DS: Fix opening files in directory names with trailing slashes
+ - GB MBC: Fix MBC2 saves (fixes mgba.io/i/954)
+ - GBA Memory: Fix copy-on-write memory leak
+ - Core: Fix ROM patches not being unloaded when disabled (fixes mgba.io/i/962)
+ - GBA I/O: Fix writing to DISPCNT CGB flag (fixes mgba.io/i/902)
+ - GBA Memory: Partially revert prefetch changes (fixes mgba.io/i/840)
+ - PSP2: Fix issues causing poor audio
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
@@ -44,6 +73,18 @@ Misc:
  - Test: Restructure test suite into multiple executables
  - Python: Integrate tests from cinema test suite
  - Util: Don't build crc32 if the function already exists
+ - GBA: Implement display start DMAs
+ - Qt: Prevent window from being created off-screen
+ - Qt: Add option to disable FPS display
+ - GBA: Improve multiboot image detection
+ - GB MBC: Remove erroneous bank 0 wrapping
+ - GBA Cheats: Allow multiple ROM patches in the same slot
+ - GB: Skip BIOS option now works
+ - Libretro: Add frameskip option
+ - GBA Memory: 64 MiB GBA Video cartridge support
+ - 3DS: Scale font based on glyph heights (fixes mgba.io/i/961)
+ - PSP2: Use system enter key by default
+ - 3DS: Remove deprecated CSND interface
 
 0.6.1: (2017-10-01)
 Bugfixes:

@@ -43,6 +43,8 @@ struct GBAVideoSoftwareBackground {
 	int16_t dmy;
 	int32_t sx;
 	int32_t sy;
+	int yCache;
+	uint16_t mapCache[64];
 	color_t* extPalette;
 	color_t* variantPalette;
 };

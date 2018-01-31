@@ -133,13 +133,13 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		}
 	} else {
 		dma->nextCount = 0;
-		if (!GBADMARegisterIsRepeat(dma->reg) || GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_NOW) {
+		if (!GBADMARegisterIsRepeat(dma->reg) || GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_NOW) {
 			dma->reg = GBADMARegisterClearEnable(dma->reg);
 
 			// Clear the enable bit in memory
 			memory->io[(DS_REG_DMA0CNT_HI + memory->activeDMA * (DS_REG_DMA1CNT_HI - DS_REG_DMA0CNT_HI)) >> 1] &= 0x7FFF;
 		}
-		if (GBADMARegisterGetDestControl(dma->reg) == DMA_INCREMENT_RELOAD) {
+		if (GBADMARegisterGetDestControl(dma->reg) == GBA_DMA_INCREMENT_RELOAD) {
 			dma->nextDest = dma->dest;
 		}
 		if (GBADMARegisterIsDoIRQ(dma->reg)) {

@@ -100,11 +100,11 @@ class MemorySearchResult(object):
 
 
 class Memory(object):
-    SEARCH_32 = lib.mCORE_MEMORY_SEARCH_32
-    SEARCH_16 = lib.mCORE_MEMORY_SEARCH_16
-    SEARCH_8 = lib.mCORE_MEMORY_SEARCH_8
+    SEARCH_INT = lib.mCORE_MEMORY_SEARCH_INT
     SEARCH_STRING = lib.mCORE_MEMORY_SEARCH_STRING
     SEARCH_GUESS = lib.mCORE_MEMORY_SEARCH_GUESS
+
+    SEARCH_EQUAL = lib.mCORE_MEMORY_SEARCH_EQUAL
 
     READ = lib.mCORE_MEMORY_READ
     WRITE = lib.mCORE_MEMORY_READ
@@ -131,12 +131,9 @@ class Memory(object):
         params = ffi.new("struct mCoreMemorySearchParams*")
         params.memoryFlags = flags
         params.type = type
-        if type == self.SEARCH_8:
-            params.value8 = int(value)
-        elif type == self.SEARCH_16:
-            params.value16 = int(value)
-        elif type == self.SEARCH_32:
-            params.value32 = int(value)
+        params.op = self.SEARCH_EQUAL
+        if type == self.SEARCH_INT:
+            params.valueInt = int(value)
         else:
             params.valueStr = ffi.new("char[]", str(value).encode("ascii"))
 
@@ -153,3 +150,9 @@ class Memory(object):
         new_results = [MemorySearchResult(self, lib.mCoreMemorySearchResultsGetPointer(results, i)) for i in range(lib.mCoreMemorySearchResultsSize(results))]
         lib.mCoreMemorySearchResultsDeinit(results)
         return new_results
+
+    def __getitem__(self, address):
+        if isinstance(address, slice):
+            return bytearray(self.u8[address])
+        else:
+            return self.u8[address]

@@ -241,7 +241,11 @@ static struct VFile* _vd3dOpenFile(struct VDir* vd, const char* path, int mode) 
 	}
 	const char* dir = vd3d->path;
 	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
-	sprintf(combined, "%s/%s", dir, path);
+	if (dir[strlen(dir) - 1] == '/') {
+		sprintf(combined, "%s%s", dir, path);
+	} else {
+		sprintf(combined, "%s/%s", dir, path);
+	}
 
 	struct VFile* file = VFileOpen(combined, mode);
 	free(combined);
@@ -255,7 +259,11 @@ static struct VDir* _vd3dOpenDir(struct VDir* vd, const char* path) {
 	}
 	const char* dir = vd3d->path;
 	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
-	sprintf(combined, "%s/%s", dir, path);
+	if (dir[strlen(dir) - 1] == '/') {
+		sprintf(combined, "%s%s", dir, path);
+	} else {
+		sprintf(combined, "%s/%s", dir, path);
+	}
 
 	struct VDir* vd2 = VDirOpen(combined);
 	if (!vd2) {
@@ -272,7 +280,11 @@ static bool _vd3dDeleteFile(struct VDir* vd, const char* path) {
 	}
 	const char* dir = vd3d->path;
 	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
-	sprintf(combined, "%s/%s", dir, path);
+	if (dir[strlen(dir) - 1] == '/') {
+		sprintf(combined, "%s%s", dir, path);
+	} else {
+		sprintf(combined, "%s/%s", dir, path);
+	}
 
 	uint16_t utf16Path[PATH_MAX + 1];
 	ssize_t units = utf8_to_utf16(utf16Path, (const uint8_t*) combined, PATH_MAX);

@@ -15,16 +15,18 @@ CXX_GUARD_START
 #include <mgba/internal/lr35902/lr35902.h>
 #include <mgba-util/vector.h>
 
-
+struct ParseTree;
 struct LR35902DebugBreakpoint {
 	uint16_t address;
 	int segment;
+	struct ParseTree* condition;
 };
 
 struct LR35902DebugWatchpoint {
 	uint16_t address;
 	int segment;
 	enum mWatchpointType type;
+	struct ParseTree* condition;
 };
 
 struct LR35902Segment {

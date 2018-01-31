@@ -18,15 +18,12 @@
 #include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
 
-#ifdef _3DS
-#include <3ds.h>
-#endif
-
 #include <sys/time.h>
 
 mLOG_DECLARE_CATEGORY(GUI_RUNNER);
 mLOG_DEFINE_CATEGORY(GUI_RUNNER, "GUI Runner", "gui.runner");
 
+#define AUTOSAVE_GRANULARITY 600
 #define FPS_GRANULARITY 120
 #define FPS_BUFFER_SIZE 3
 
@@ -38,18 +35,10 @@ enum {
 	RUNNER_SCREENSHOT,
 	RUNNER_CONFIG,
 	RUNNER_RESET,
-	RUNNER_COMMAND_MASK = 0xFFFF,
-
-	RUNNER_STATE_1 = 0x10000,
-	RUNNER_STATE_2 = 0x20000,
-	RUNNER_STATE_3 = 0x30000,
-	RUNNER_STATE_4 = 0x40000,
-	RUNNER_STATE_5 = 0x50000,
-	RUNNER_STATE_6 = 0x60000,
-	RUNNER_STATE_7 = 0x70000,
-	RUNNER_STATE_8 = 0x80000,
-	RUNNER_STATE_9 = 0x90000,
+	RUNNER_COMMAND_MASK = 0xFFFF
 };
+
+#define RUNNER_STATE(X) ((X) << 16)
 
 static const struct mInputPlatformInfo _mGUIKeyInfo = {
 	.platformName = "gui",
@@ -145,6 +134,27 @@ static uint8_t _readLux(struct GBALuminanceSource* lux) {
 	return 0xFF - value;
 }
 
+static void _tryAutosave(struct mGUIRunner* runner) {
+	int autosave = false;
+	mCoreConfigGetIntValue(&runner->config, "autosave", &autosave);
+	if (!autosave) {
+		return;
+	}
+
+#ifdef DISABLE_THREADING
+	mCoreSaveState(runner->core, 0, SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
+#else
+	if (!runner->autosave.buffer) {
+		runner->autosave.buffer = VFileMemChunk(NULL, 0);
+	}
+	MutexLock(&runner->autosave.mutex);
+	runner->autosave.core = runner->core;
+	mCoreSaveStateNamed(runner->core, runner->autosave.buffer, SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
+	ConditionWake(&runner->autosave.cond);
+	MutexUnlock(&runner->autosave.mutex);
+#endif
+}
+
 void mGUIInit(struct mGUIRunner* runner, const char* port) {
 	GUIInit(&runner->params);
 	runner->port = port;
@@ -164,7 +174,14 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 	// TODO: Do we need to load more defaults?
 	mCoreConfigSetDefaultIntValue(&runner->config, "volume", 0x100);
 	mCoreConfigSetDefaultValue(&runner->config, "idleOptimization", "detect");
+	mCoreConfigSetDefaultIntValue(&runner->config, "autoload", true);
+#ifdef DISABLE_THREADING
+	mCoreConfigSetDefaultIntValue(&runner->config, "autosave", false);
+#else
+	mCoreConfigSetDefaultIntValue(&runner->config, "autosave", true);
+#endif
 	mCoreConfigLoad(&runner->config);
+	mCoreConfigGetIntValue(&runner->config, "logLevel", &logger.logLevel);
 
 	char path[PATH_MAX];
 	mCoreConfigDirectory(path, PATH_MAX);
@@ -177,9 +194,34 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 		strncpy(runner->params.currentPath, lastPath, PATH_MAX - 1);
 		runner->params.currentPath[PATH_MAX - 1] = '\0';
 	}
+
+#ifndef DISABLE_THREADING
+	if (!runner->autosave.running) {
+		runner->autosave.running = true;
+		MutexInit(&runner->autosave.mutex);
+		ConditionInit(&runner->autosave.cond);
+		ThreadCreate(&runner->autosave.thread, mGUIAutosaveThread, &runner->autosave);
+	}
+#endif
 }
 
 void mGUIDeinit(struct mGUIRunner* runner) {
+#ifndef DISABLE_THREADING
+	MutexLock(&runner->autosave.mutex);
+	runner->autosave.running = false;
+	ConditionWake(&runner->autosave.cond);
+	MutexUnlock(&runner->autosave.mutex);
+
+	ThreadJoin(runner->autosave.thread);
+
+	ConditionDeinit(&runner->autosave.cond);
+	MutexDeinit(&runner->autosave.mutex);
+
+	if (runner->autosave.buffer) {
+		runner->autosave.buffer->close(runner->autosave.buffer);
+	}
+#endif
+
 	if (runner->teardown) {
 		runner->teardown(runner);
 	}
@@ -242,25 +284,26 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Save state", .submenu = &stateSaveMenu };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Load state", .submenu = &stateLoadMenu };
 
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 1", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_1) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 2", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_2) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 3", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_3) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 4", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_4) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 5", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_5) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 6", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_6) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 7", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_7) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 8", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_8) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 9", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_9) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 1", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(1)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 2", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(2)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 3", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(3)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 4", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(4)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 5", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(5)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 6", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(6)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 7", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(7)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 8", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(8)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 9", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(9)) };
 
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 1", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_1) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 2", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_2) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 3", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_3) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 4", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_4) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 5", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_5) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 6", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_6) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 7", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_7) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 8", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_8) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 9", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_9) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "Autosave", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(0)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 1", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(1)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 2", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(2)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 3", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(3)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 4", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(4)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 5", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(5)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 6", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(6)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 7", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(7)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 8", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(8)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 9", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(9)) };
 
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Take screenshot", .data = (void*) RUNNER_SCREENSHOT };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Configure", .data = (void*) RUNNER_CONFIG };
@@ -283,7 +326,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	if (runner->core) {
 		mLOG(GUI_RUNNER, INFO, "Found core");
 		runner->core->init(runner->core);
-		mCoreConfigInit(&runner->core->config, runner->port);
+		mCoreInitConfig(runner->core, runner->port);
 		mInputMapInit(&runner->core->inputMap, &GBAInputInfo);
 		found = mCoreLoadFile(runner->core, path);
 		if (!found) {
@@ -302,10 +345,10 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	}
 	mLOG(GUI_RUNNER, DEBUG, "Loading config...");
 	mCoreLoadForeignConfig(runner->core, &runner->config);
-	logger.logLevel = runner->core->opts.logLevel;
 
 	mLOG(GUI_RUNNER, DEBUG, "Loading save...");
 	mCoreAutoloadSave(runner->core);
+	mCoreAutoloadCheats(runner->core);
 	if (runner->setup) {
 		mLOG(GUI_RUNNER, DEBUG, "Setting up runner...");
 		runner->setup(runner);
@@ -320,7 +363,22 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	mLOG(GUI_RUNNER, DEBUG, "Reseting...");
 	runner->core->reset(runner->core);
 	mLOG(GUI_RUNNER, DEBUG, "Reset!");
+
+
+	int autoload = false;
+	mCoreConfigGetIntValue(&runner->config, "autoload", &autoload);
+	if (autoload) {
+		mCoreLoadState(runner->core, 0, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
+	}
+
 	bool running = true;
+
+#ifndef DISABLE_THREADING
+	MutexLock(&runner->autosave.mutex);
+	runner->autosave.core = runner->core;
+	MutexUnlock(&runner->autosave.mutex);
+#endif
+
 	if (runner->gameLoaded) {
 		runner->gameLoaded(runner);
 	}
@@ -333,13 +391,14 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		gettimeofday(&tv, 0);
 		runner->lastFpsCheck = 1000000LL * tv.tv_sec + tv.tv_usec;
 
-		while (true) {
-#ifdef _3DS
-			running = aptMainLoop();
-			if (!running) {
-				break;
+		int frame = 0;
+		while (running) {
+			if (runner->running) {
+				running = runner->running(runner);
+				if (!running) {
+					break;
+				}
 			}
-#endif
 			uint32_t guiKeys;
 			uint32_t heldKeys;
 			GUIPollInput(&runner->params, &guiKeys, &heldKeys);
@@ -411,6 +470,11 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 						runner->fps = (CircleBufferSize(&runner->fpsBuffer) * FPS_GRANULARITY * 1000000.0f) / (runner->totalDelta * sizeof(uint32_t));
 					}
 				}
+				if (frame == AUTOSAVE_GRANULARITY) {
+					frame = 0;
+					_tryAutosave(runner);
+				}
+				++frame;
 			}
 		}
 
@@ -463,6 +527,18 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	if (runner->gameUnloaded) {
 		runner->gameUnloaded(runner);
 	}
+#ifndef DISABLE_THREADING
+	MutexLock(&runner->autosave.mutex);
+	runner->autosave.core = NULL;
+	MutexUnlock(&runner->autosave.mutex);
+#endif
+
+	int autosave = false;
+	mCoreConfigGetIntValue(&runner->config, "autosave", &autosave);
+	if (autosave) {
+		mCoreSaveState(runner->core, 0, SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
+	}
+
 	mLOG(GUI_RUNNER, DEBUG, "Unloading game...");
 	runner->core->unloadROM(runner->core);
 	drawState.screenshotId = 0;
@@ -486,6 +562,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	mInputMapDeinit(&runner->core->inputMap);
 	mLOG(GUI_RUNNER, DEBUG, "Deinitializing core...");
 	runner->core->deinit(runner->core);
+	runner->core = NULL;
 
 	GUIMenuItemListDeinit(&pauseMenu.items);
 	GUIMenuItemListDeinit(&stateSaveMenu.items);
@@ -511,3 +588,21 @@ void mGUIRunloop(struct mGUIRunner* runner) {
 		mGUIRun(runner, path);
 	}
 }
+
+#ifndef DISABLE_THREADING
+THREAD_ENTRY mGUIAutosaveThread(void* context) {
+	struct mGUIAutosaveContext* autosave = context;
+	MutexLock(&autosave->mutex);
+	while (autosave->running) {
+		ConditionWait(&autosave->cond, &autosave->mutex);
+		if (autosave->running && autosave->core) {
+			struct VFile* vf = mCoreGetState(autosave->core, 0, true);
+			void* mem = autosave->buffer->map(autosave->buffer, autosave->buffer->size(autosave->buffer), MAP_READ);
+			vf->write(vf, mem, autosave->buffer->size(autosave->buffer));
+			autosave->buffer->unmap(autosave->buffer, mem, autosave->buffer->size(autosave->buffer));
+			vf->close(vf);
+		}
+	}
+	MutexUnlock(&autosave->mutex);
+}
+#endif

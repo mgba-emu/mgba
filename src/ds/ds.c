@@ -617,7 +617,7 @@ void DSHitStub(struct ARMCore* cpu, uint32_t opcode) {
 	if (ds->debugger) {
 		struct mDebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
-			.opcode = opcode
+			.type.bp.opcode = opcode
 		};
 		mDebuggerEnter(ds->debugger->d.p, DEBUGGER_ENTER_ILLEGAL_OP, &info);
 	}
@@ -641,7 +641,7 @@ void DSIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	} else if (ds->debugger) {
 		struct mDebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
-			.opcode = opcode
+			.type.bp.opcode = opcode
 		};
 		mDebuggerEnter(ds->debugger->d.p, DEBUGGER_ENTER_ILLEGAL_OP, &info);
 #endif

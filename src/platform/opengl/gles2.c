@@ -149,6 +149,8 @@ static void mGLES2ContextSetDimensions(struct VideoBackend* v, unsigned width, u
 #else
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
 #endif
+#elif defined(__BIG_ENDIAN__)
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, 0);
 #else
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 #endif
@@ -324,6 +326,8 @@ void mGLES2ContextPostFrame(struct VideoBackend* v, const void* frame) {
 #else
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, v->width, v->height, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, frame);
 #endif
+#elif defined(__BIG_ENDIAN__)
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, v->width, v->height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, frame);
 #else
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, v->width, v->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame);
 #endif

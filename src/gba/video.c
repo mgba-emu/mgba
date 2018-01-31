@@ -71,7 +71,7 @@ static struct GBAVideoRenderer dummyRenderer = {
 void GBAVideoInit(struct GBAVideo* video) {
 	video->renderer = &dummyRenderer;
 	video->renderer->cache = NULL;
-	video->vram = 0;
+	video->vram = anonymousMemoryMap(SIZE_VRAM);
 	video->frameskip = 0;
 	video->event.name = "GBA Video";
 	video->event.callback = NULL;
@@ -94,10 +94,6 @@ void GBAVideoReset(struct GBAVideo* video) {
 	video->frameCounter = 0;
 	video->frameskipCounter = 0;
 
-	if (video->vram) {
-		mappedMemoryFree(video->vram, SIZE_VRAM);
-	}
-	video->vram = anonymousMemoryMap(SIZE_VRAM);
 	memset(video->renderer->vramBG, 0, sizeof(video->renderer->vramBG));
 	video->renderer->vramBG[0] = &video->vram[0x0000];
 	video->renderer->vramBG[1] = &video->vram[0x2000];
@@ -207,6 +203,9 @@ void _startHblank(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	if (video->vcount < VIDEO_VERTICAL_PIXELS) {
 		GBADMARunHblank(video->p, -cyclesLate);
 	}
+	if (video->vcount >= 2 && video->vcount < VIDEO_VERTICAL_PIXELS + 2) {
+		GBADMARunDisplayStart(video->p, -cyclesLate);
+	}
 	if (GBARegisterDISPSTATIsHblankIRQ(dispstat)) {
 		GBARaiseIRQ(video->p, IRQ_HBLANK);
 	}
@@ -239,6 +238,9 @@ static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer*
 		GBAVideoCacheWriteVideoRegister(renderer->cache, address, value);
 	}
 	switch (address) {
+	case REG_DISPCNT:
+		value &= 0xFFF7;
+		break;
 	case REG_BG0CNT:
 	case REG_BG1CNT:
 		value &= 0xDFFF;

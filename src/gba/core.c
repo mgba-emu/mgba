@@ -746,6 +746,20 @@ static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	}
 #endif
 }
+
+static bool _GBACoreLookupIdentifier(struct mCore* core, const char* name, int32_t* value, int* segment) {
+	UNUSED(core);
+	*segment = -1;
+	int i;
+	for (i = 0; i < REG_MAX; i += 2) {
+		const char* reg = GBAIORegisterNames[i >> 1];
+		if (reg && strcasecmp(reg, name) == 0) {
+			*value = BASE_IO | i;
+			return true;
+		}
+	}
+	return false;
+}
 #endif
 
 static struct mCheatDevice* _GBACoreCheatDevice(struct mCore* core) {
@@ -847,6 +861,7 @@ static void _GBACoreEnableAudioChannel(struct mCore* core, size_t id, bool enabl
 	}
 }
 
+#ifndef MINIMAL_CORE
 static void _GBACoreStartVideoLog(struct mCore* core, struct mVideoLogContext* context) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = core->board;
@@ -873,6 +888,7 @@ static void _GBACoreEndVideoLog(struct mCore* core) {
 	free(gbacore->proxyRenderer.logger);
 	gbacore->proxyRenderer.logger = NULL;
 }
+#endif
 
 struct mCore* GBACoreCreate(void) {
 	struct GBACore* gbacore = malloc(sizeof(*gbacore));
@@ -943,6 +959,7 @@ struct mCore* GBACoreCreate(void) {
 	core->attachDebugger = _GBACoreAttachDebugger;
 	core->detachDebugger = _GBACoreDetachDebugger;
 	core->loadSymbols = _GBACoreLoadSymbols;
+	core->lookupIdentifier = _GBACoreLookupIdentifier;
 #endif
 	core->cheatDevice = _GBACoreCheatDevice;
 	core->savedataClone = _GBACoreSavedataClone;

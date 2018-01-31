@@ -149,6 +149,7 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 		bg->dmy = 256;
 		bg->sx = 0;
 		bg->sy = 0;
+		bg->yCache = -1;
 		bg->extPalette = NULL;
 		bg->variantPalette = NULL;
 	}
@@ -167,6 +168,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 
 	switch (address) {
 	case REG_DISPCNT:
+		value &= 0xFFF7;
 		softwareRenderer->dispcnt = value;
 		GBAVideoSoftwareRendererUpdateDISPCNT(softwareRenderer);
 		break;
@@ -407,6 +409,10 @@ static void GBAVideoSoftwareRendererWriteVRAM(struct GBAVideoRenderer* renderer,
 		mCacheSetWriteVRAM(renderer->cache, address);
 	}
 	memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
+	softwareRenderer->bg[0].yCache = -1;
+	softwareRenderer->bg[1].yCache = -1;
+	softwareRenderer->bg[2].yCache = -1;
+	softwareRenderer->bg[3].yCache = -1;
 }
 
 static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
@@ -586,6 +592,10 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	GBAVideoSoftwareRendererPreprocessBuffer(softwareRenderer, y);
 	int spriteLayers = GBAVideoSoftwareRendererPreprocessSpriteLayer(softwareRenderer, y);
 	softwareRenderer->d.vramOBJ[0] = objVramBase;
+	if (softwareRenderer->blendDirty) {
+		_updatePalettes(softwareRenderer);
+		softwareRenderer->blendDirty = false;
+	}
 
 	int w;
 	unsigned priority;
@@ -636,11 +646,56 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			}
 		}
 	}
+	if (softwareRenderer->target1Obj && (softwareRenderer->blendEffect == BLEND_DARKEN || softwareRenderer->blendEffect == BLEND_BRIGHTEN)) {
+		int x = 0;
+		uint32_t mask = 0xFF000000 & ~FLAG_OBJWIN;
+		uint32_t match = FLAG_REBLEND;
+		if (GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt)) {
+			mask |= FLAG_OBJWIN;
+			if (GBAWindowControlIsBlendEnable(softwareRenderer->objwin.packed)) {
+				match |= FLAG_OBJWIN;
+			}
+		}
+		for (w = 0; w < softwareRenderer->nWindows; ++w) {
+			if (!GBAWindowControlIsBlendEnable(softwareRenderer->windows[w].control.packed)) {
+				continue;
+			}
+			int end = softwareRenderer->windows[w].endX;
+			if (softwareRenderer->blendEffect == BLEND_DARKEN) {
+				for (; x < end; ++x) {
+					uint32_t color = softwareRenderer->row[x];
+					if ((color & mask) == match) {
+						softwareRenderer->row[x] = _darken(color, softwareRenderer->bldy);
+					}
+				}
+			} else if (softwareRenderer->blendEffect == BLEND_BRIGHTEN) {
+				for (; x < end; ++x) {
+					uint32_t color = softwareRenderer->row[x];
+					if ((color & mask) == match) {
+						softwareRenderer->row[x] = _brighten(color, softwareRenderer->bldy);
+					}
+				}
+			}
+		}
+	}
 	if (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) != 0) {
 		softwareRenderer->bg[2].sx += softwareRenderer->bg[2].dmx;
 		softwareRenderer->bg[2].sy += softwareRenderer->bg[2].dmy;
 		softwareRenderer->bg[3].sx += softwareRenderer->bg[3].dmx;
 		softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
+	}
+
+	if (softwareRenderer->bg[0].enabled > 0 && softwareRenderer->bg[0].enabled < 4) {
+		++softwareRenderer->bg[0].enabled;
+	}
+	if (softwareRenderer->bg[1].enabled > 0 && softwareRenderer->bg[1].enabled < 4) {
+		++softwareRenderer->bg[1].enabled;
+	}
+	if (softwareRenderer->bg[2].enabled > 0 && softwareRenderer->bg[2].enabled < 4) {
+		++softwareRenderer->bg[2].enabled;
+	}
+	if (softwareRenderer->bg[3].enabled > 0 && softwareRenderer->bg[3].enabled < 4) {
+		++softwareRenderer->bg[3].enabled;
 	}
 
 	GBAVideoSoftwareRendererPostprocessBuffer(softwareRenderer);
@@ -671,6 +726,19 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 	softwareRenderer->bg[2].sy = softwareRenderer->bg[2].refy;
 	softwareRenderer->bg[3].sx = softwareRenderer->bg[3].refx;
 	softwareRenderer->bg[3].sy = softwareRenderer->bg[3].refy;
+
+	if (softwareRenderer->bg[0].enabled > 0) {
+		softwareRenderer->bg[0].enabled = 4;
+	}
+	if (softwareRenderer->bg[1].enabled > 0) {
+		softwareRenderer->bg[1].enabled = 4;
+	}
+	if (softwareRenderer->bg[2].enabled > 0) {
+		softwareRenderer->bg[2].enabled = 4;
+	}
+	if (softwareRenderer->bg[3].enabled > 0) {
+		softwareRenderer->bg[3].enabled = 4;
+	}
 }
 
 static void GBAVideoSoftwareRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels) {
@@ -689,11 +757,23 @@ static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer,
 	}
 }
 
+static void _enableBg(struct GBAVideoSoftwareRenderer* renderer, int bg, bool active) {
+	if (renderer->d.disableBG[bg] || !active) {
+		renderer->bg[bg].enabled = 0;
+	} else if (!renderer->bg[bg].enabled && active) {
+		if (renderer->nextY == 0) {
+			renderer->bg[bg].enabled = 4;
+		} else {
+			renderer->bg[bg].enabled = 1;
+		}
+	}
+}
+
 static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRenderer* renderer) {
-	renderer->bg[0].enabled = GBARegisterDISPCNTGetBg0Enable(renderer->dispcnt) && !renderer->d.disableBG[0];
-	renderer->bg[1].enabled = GBARegisterDISPCNTGetBg1Enable(renderer->dispcnt) && !renderer->d.disableBG[1];
-	renderer->bg[2].enabled = GBARegisterDISPCNTGetBg2Enable(renderer->dispcnt) && !renderer->d.disableBG[2];
-	renderer->bg[3].enabled = GBARegisterDISPCNTGetBg3Enable(renderer->dispcnt) && !renderer->d.disableBG[3];
+	_enableBg(renderer, 0, GBARegisterDISPCNTGetBg0Enable(renderer->dispcnt));
+	_enableBg(renderer, 1, GBARegisterDISPCNTGetBg1Enable(renderer->dispcnt));
+	_enableBg(renderer, 2, GBARegisterDISPCNTGetBg2Enable(renderer->dispcnt));
+	_enableBg(renderer, 3, GBARegisterDISPCNTGetBg3Enable(renderer->dispcnt));
 }
 
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value) {

@@ -132,49 +132,65 @@ static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2)
 	case PAR3_COND_UGT:
 		cheat->type = CHEAT_IF_UGT;
 		break;
-	case PAR3_COND_LAND:
-		cheat->type = CHEAT_IF_LAND;
+	case PAR3_COND_AND:
+		cheat->type = CHEAT_IF_AND;
 		break;
 	}
 	return true;
 }
 
 static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
+	int romPatch = -1;
 	struct mCheat* cheat;
 	switch (op2 & 0xFF000000) {
 	case PAR3_OTHER_SLOWDOWN:
 		// TODO: Slowdown
+		mLOG(CHEATS, STUB, "Unimplemented PARv3 slowdown");
 		return false;
 	case PAR3_OTHER_BUTTON_1:
+		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_IF_BUTTON;
+		cheat->repeat = 1;
+		cheat->negativeRepeat = 0;
+		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
+		cheat->width = 1;
+		cheat->address = _parAddr(op2);
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
+		break;
 	case PAR3_OTHER_BUTTON_2:
+		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_IF_BUTTON;
+		cheat->repeat = 1;
+		cheat->negativeRepeat = 0;
+		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
+		cheat->width = 2;
+		cheat->address = _parAddr(op2);
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
+		break;
 	case PAR3_OTHER_BUTTON_4:
-		// TODO: Button
-		mLOG(CHEATS, STUB, "GameShark button unimplemented");
-		return false;
-	// TODO: Fix overriding existing patches
+		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_IF_BUTTON;
+		cheat->repeat = 1;
+		cheat->negativeRepeat = 0;
+		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
+		cheat->width = 4;
+		cheat->address = _parAddr(op2);
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
+		break;
 	case PAR3_OTHER_PATCH_1:
-		cheats->romPatches[0].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
-		cheats->romPatches[0].applied = false;
-		cheats->romPatches[0].exists = true;
-		cheats->incompletePatch = &cheats->romPatches[0];
+		romPatch = 0;
 		break;
 	case PAR3_OTHER_PATCH_2:
-		cheats->romPatches[1].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
-		cheats->romPatches[1].applied = false;
-		cheats->romPatches[1].exists = true;
-		cheats->incompletePatch = &cheats->romPatches[1];
+		romPatch = 1;
 		break;
 	case PAR3_OTHER_PATCH_3:
-		cheats->romPatches[2].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
-		cheats->romPatches[2].applied = false;
-		cheats->romPatches[2].exists = true;
-		cheats->incompletePatch = &cheats->romPatches[2];
+		romPatch = 2;
 		break;
 	case PAR3_OTHER_PATCH_4:
-		cheats->romPatches[3].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
-		cheats->romPatches[3].applied = false;
-		cheats->romPatches[3].exists = true;
-		cheats->incompletePatch = &cheats->romPatches[3];
+		romPatch = 3;
 		break;
 	case PAR3_OTHER_ENDIF:
 		if (cheats->currentBlock != COMPLETE) {
@@ -190,22 +206,37 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		return false;
 	case PAR3_OTHER_FILL_1:
 		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
 		cheat->address = _parAddr(op2);
 		cheat->width = 1;
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case PAR3_OTHER_FILL_2:
 		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
 		cheat->address = _parAddr(op2);
 		cheat->width = 2;
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case PAR3_OTHER_FILL_4:
 		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
 		cheat->address = _parAddr(op2);
-		cheat->width = 3;
+		cheat->width = 4;
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
+	}
+	if (romPatch >= 0) {
+		while (cheats->romPatches[romPatch].exists) {
+			++romPatch;
+			if (romPatch >= MAX_ROM_PATCHES) {
+				break;
+			}
+		}
+		cheats->romPatches[romPatch].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
+		cheats->romPatches[romPatch].applied = false;
+		cheats->romPatches[romPatch].exists = true;
+		cheats->incompletePatch = &cheats->romPatches[romPatch];
 	}
 	return true;
 }
@@ -219,7 +250,14 @@ bool GBACheatAddProActionReplayRaw(struct GBACheatSet* cheats, uint32_t op1, uin
 	if (cheats->incompleteCheat != COMPLETE) {
 		struct mCheat* incompleteCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat);
 		incompleteCheat->operand = op1 & (0xFFFFFFFFU >> ((4 - incompleteCheat->width) * 8));
-		incompleteCheat->addressOffset = op2 >> 24;
+		if (cheats->incompleteCheat > 0) {
+			struct mCheat* lastCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat - 1);
+			if (lastCheat->type == CHEAT_IF_BUTTON) {
+				cheats->incompleteCheat = COMPLETE;
+				return true;
+			}
+		}
+		incompleteCheat->operandOffset = op2 >> 24;
 		incompleteCheat->repeat = (op2 >> 16) & 0xFF;
 		incompleteCheat->addressOffset = (op2 & 0xFFFF) * incompleteCheat->width;
 		cheats->incompleteCheat = COMPLETE;
@@ -339,7 +377,7 @@ int GBACheatProActionReplayProbability(uint32_t op1, uint32_t op2) {
 		return 0x100;
 	}
 	if (!op1) {
-		probability += 0x20;
+		probability += 0x40;
 		uint32_t address = _parAddr(op2);
 		switch (op2 & 0xFE000000) {
 		case PAR3_OTHER_FILL_1:
@@ -360,8 +398,8 @@ int GBACheatProActionReplayProbability(uint32_t op1, uint32_t op2) {
 		case PAR3_OTHER_BUTTON_4:
 		case PAR3_OTHER_ENDIF:
 		case PAR3_OTHER_ELSE:
-			if (op2 & 0x01FFFFFF) {
-				probability -= 0x20;
+			if (op2 & 0x01000000) {
+				probability -= 0x40;
 			}
 			break;
 		default:

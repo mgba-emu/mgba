@@ -41,7 +41,7 @@ class NativeDebugger(IRunner):
         self._native = native
         self._cbs = []
         self._core = Core._detect(native.core)
-        self._core._wasReset = True
+        self._core._load()
 
     def pause(self):
         lib.mDebuggerEnter(self._native, lib.DEBUGGER_ENTER_MANUAL, ffi.NULL)

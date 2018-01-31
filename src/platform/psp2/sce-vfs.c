@@ -10,6 +10,10 @@
 #include <mgba-util/vfs.h>
 #include <mgba-util/memory.h>
 
+#ifndef SCE_CST_SIZE
+#define SCE_CST_SIZE 0x0004
+#endif
+
 struct VFileSce {
 	struct VFile d;
 
@@ -47,6 +51,16 @@ static bool _vdsceDeleteFile(struct VDir* vd, const char* path);
 
 static const char* _vdesceName(struct VDirEntry* vde);
 static enum VFSType _vdesceType(struct VDirEntry* vde);
+
+static bool _vdlsceClose(struct VDir* vd);
+static void _vdlsceRewind(struct VDir* vd);
+static struct VDirEntry* _vdlsceListNext(struct VDir* vd);
+static struct VFile* _vdlsceOpenFile(struct VDir* vd, const char* path, int mode);
+static struct VDir* _vdlsceOpenDir(struct VDir* vd, const char* path);
+static bool _vdlsceDeleteFile(struct VDir* vd, const char* path);
+
+static const char* _vdlesceName(struct VDirEntry* vde);
+static enum VFSType _vdlesceType(struct VDirEntry* vde);
 
 struct VFile* VFileOpenSce(const char* path, int flags, SceMode mode) {
 	struct VFileSce* vfsce = malloc(sizeof(struct VFileSce));
@@ -120,20 +134,8 @@ static void _vfsceUnmap(struct VFile* vf, void* memory, size_t size) {
 
 static void _vfsceTruncate(struct VFile* vf, size_t size) {
 	struct VFileSce* vfsce = (struct VFileSce*) vf;
-	SceOff cur = sceIoLseek(vfsce->fd, 0, SEEK_CUR);
-	SceOff end = sceIoLseek(vfsce->fd, 0, SEEK_END);
-	if (end < size) {
-		uint8_t buffer[2048] = {};
-		size_t write = size - end;
-		while (write >= sizeof(buffer)) {
-			sceIoWrite(vfsce->fd, buffer, sizeof(buffer));
-			write -= sizeof(buffer);
-		}
-		if (write) {
-			sceIoWrite(vfsce->fd, buffer, write);
-		}
-	} // TODO: Else
-	sceIoLseek(vfsce->fd, cur, SEEK_SET);
+	SceIoStat stat = { .st_size = size };
+	sceIoChstatByFd(vfsce->fd, &stat, SCE_CST_SIZE);
 }
 
 ssize_t _vfsceSize(struct VFile* vf) {
@@ -156,6 +158,10 @@ bool _vfsceSync(struct VFile* vf, const void* buffer, size_t size) {
 }
 
 struct VDir* VDirOpen(const char* path) {
+	if (!path || !path[0]) {
+		return VDeviceList();
+	}
+
 	SceUID dir = sceIoDopen(path);
 	if (dir < 0) {
 		return 0;
@@ -257,4 +263,97 @@ static enum VFSType _vdesceType(struct VDirEntry* vde) {
 		return VFS_DIRECTORY;
 	}
 	return VFS_FILE;
+}
+
+struct VDirEntrySceDevList {
+	struct VDirEntry d;
+	ssize_t index;
+	const char* name;
+};
+
+struct VDirSceDevList {
+	struct VDir d;
+	struct VDirEntrySceDevList vde;
+};
+
+static const char* _devs[] = {
+	"ux0:",
+	"ur0:",
+	"uma0:"
+};
+
+struct VDir* VDeviceList() {
+	struct VDirSceDevList* vd = malloc(sizeof(struct VDirSceDevList));
+	if (!vd) {
+		return 0;
+	}
+
+	vd->d.close = _vdlsceClose;
+	vd->d.rewind = _vdlsceRewind;
+	vd->d.listNext = _vdlsceListNext;
+	vd->d.openFile = _vdlsceOpenFile;
+	vd->d.openDir = _vdlsceOpenDir;
+	vd->d.deleteFile = _vdlsceDeleteFile;
+
+	vd->vde.d.name = _vdlesceName;
+	vd->vde.d.type = _vdlesceType;
+	vd->vde.index = -1;
+	vd->vde.name = 0;
+
+	return &vd->d;
+}
+
+static bool _vdlsceClose(struct VDir* vd) {
+	struct VDirSceDevList* vdl = (struct VDirSceDevList*) vd;
+	free(vdl);
+	return true;
+}
+
+static void _vdlsceRewind(struct VDir* vd) {
+	struct VDirSceDevList* vdl = (struct VDirSceDevList*) vd;
+	vdl->vde.name = NULL;
+	vdl->vde.index = -1;
+}
+
+static struct VDirEntry* _vdlsceListNext(struct VDir* vd) {
+	struct VDirSceDevList* vdl = (struct VDirSceDevList*) vd;
+	while (vdl->vde.index < 3) {
+		++vdl->vde.index;
+		vdl->vde.name = _devs[vdl->vde.index];
+		SceUID dir = sceIoDopen(vdl->vde.name);
+		if (dir < 0) {
+			continue;
+		}
+		sceIoDclose(dir);
+		return &vdl->vde.d;
+	}
+	return 0;
+}
+
+static struct VFile* _vdlsceOpenFile(struct VDir* vd, const char* path, int mode) {
+	UNUSED(vd);
+	UNUSED(path);
+	UNUSED(mode);
+	return NULL;
+}
+
+static struct VDir* _vdlsceOpenDir(struct VDir* vd, const char* path) {
+	UNUSED(vd);
+	return VDirOpen(path);
+}
+
+static bool _vdlsceDeleteFile(struct VDir* vd, const char* path) {
+	UNUSED(vd);
+	UNUSED(path);
+	return false;
+}
+
+static const char* _vdlesceName(struct VDirEntry* vde) {
+	struct VDirEntrySceDevList* vdle = (struct VDirEntrySceDevList*) vde;
+	return vdle->name;
+}
+
+static enum VFSType _vdlesceType(struct VDirEntry* vde) {
+	UNUSED(vde);
+	return VFS_DIRECTORY;
 }

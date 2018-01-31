@@ -8,7 +8,6 @@
 #include <mgba/internal/gba/gba.h>
 
 #define BACKGROUND_TEXT_SELECT_CHARACTER \
-	localX = tileX * 8 + inX; \
 	xBase = localX & 0xF8; \
 	if (background->size & 1) { \
 		xBase += (localX & 0x100) << 5; \
@@ -16,10 +15,6 @@
 	screenBase = background->screenBase + yBase + (xBase >> 2); \
 	uint16_t* screenBlock = renderer->d.vramBG[screenBase >> VRAM_BLOCK_OFFSET]; \
 	LOAD_16(mapData, screenBase & VRAM_BLOCK_MASK, screenBlock); \
-	localY = inY & 0x7; \
-	if (GBA_TEXT_MAP_VFLIP(mapData)) { \
-		localY = 7 - localY; \
-	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_16(BLEND, OBJWIN) \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
@@ -75,11 +70,21 @@
 		if (baseX < 0) { \
 			int disturbX = (16 + baseX) >> 3; \
 			inX -= disturbX << 3; \
+			localX = tileX * 8 + inX; \
 			BACKGROUND_TEXT_SELECT_CHARACTER; \
+			localY = inY & 0x7; \
+			if (GBA_TEXT_MAP_VFLIP(mapData)) { \
+				localY = 7 - localY; \
+			} \
 			baseX -= disturbX << 3; \
 			inX += disturbX << 3; \
 		} else { \
+			localX = tileX * 8 + inX; \
 			BACKGROUND_TEXT_SELECT_CHARACTER; \
+			localY = inY & 0x7; \
+			if (GBA_TEXT_MAP_VFLIP(mapData)) { \
+				localY = 7 - localY; \
+			} \
 		} \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
 		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
@@ -97,8 +102,14 @@
 		tileData |= tileData << 16; \
 		carryData = tileData; \
 	} \
+	localX = tileX * 8 + inX; \
 	for (; length; ++tileX) { \
-		BACKGROUND_TEXT_SELECT_CHARACTER; \
+		mapData = background->mapCache[(localX >> 3) & 0x3F]; \
+		localX += 8; \
+		localY = inY & 0x7; \
+		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
+			localY = 7 - localY; \
+		} \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
 		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 		tileData = carryData; \
@@ -128,7 +139,12 @@
 
 #define DRAW_BACKGROUND_MODE_0_TILES_16(BLEND, OBJWIN) \
 	for (; tileX < tileEnd; ++tileX) { \
-		BACKGROUND_TEXT_SELECT_CHARACTER; \
+		mapData = background->mapCache[(localX >> 3) & 0x3F]; \
+		localX += 8; \
+		localY = inY & 0x7; \
+		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
+			localY = 7 - localY; \
+		} \
 		paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 		palette = &mainPalette[paletteData]; \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
@@ -238,7 +254,12 @@
 
 #define DRAW_BACKGROUND_MODE_0_TILES_256(BLEND, OBJWIN) \
 	for (; tileX < tileEnd; ++tileX) { \
-		BACKGROUND_TEXT_SELECT_CHARACTER; \
+		mapData = background->mapCache[(localX >> 3) & 0x3F]; \
+		localX += 8; \
+		localY = inY & 0x7; \
+		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
+			localY = 7 - localY; \
+		} \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
@@ -279,8 +300,14 @@
 	}
 
 #define DRAW_BACKGROUND_MODE_0_MOSAIC_256(BLEND, OBJWIN) \
+	localX = tileX * 8 + inX; \
 	for (; tileX < tileEnd; ++tileX) { \
-		BACKGROUND_TEXT_SELECT_CHARACTER; \
+		mapData = background->mapCache[(localX >> 3) & 0x3F]; \
+		localX += 8; \
+		localY = inY & 0x7; \
+		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
+			localY = 7 - localY; \
+		} \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 		tileData = carryData; \
@@ -398,9 +425,14 @@
 
 #define DRAW_BACKGROUND_MODE_0_TILES_256EXT(BLEND, OBJWIN) \
 	for (; tileX < tileEnd; ++tileX) { \
-		BACKGROUND_TEXT_SELECT_CHARACTER; \
+		mapData = background->mapCache[(localX >> 3) & 0x3F]; \
 		paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
 		palette = &mainPalette[paletteData]; \
+		localX += 8; \
+		localY = inY & 0x7; \
+		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
+			localY = 7 - localY; \
+		} \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
@@ -441,8 +473,14 @@
 	}
 
 #define DRAW_BACKGROUND_MODE_0_MOSAIC_256EXT(BLEND, OBJWIN) \
+	localX = tileX * 8 + inX; \
 	for (; tileX < tileEnd; ++tileX) { \
-		BACKGROUND_TEXT_SELECT_CHARACTER; \
+		mapData = background->mapCache[(localX >> 3) & 0x3F]; \
+		localX += 8; \
+		localY = inY & 0x7; \
+		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
+			localY = 7 - localY; \
+		} \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 		tileData = carryData; \
@@ -490,8 +528,12 @@
 	} \
 	\
 	if (inX & 0x7) { \
+		localX = tileX * 8 + inX; \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
-		\
+		localY = inY & 0x7; \
+		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
+			localY = 7 - localY; \
+		} \
 		int mod8 = inX & 0x7; \
 		int end = outX + 0x8 - mod8; \
 		if (end > renderer->end) { \
@@ -514,10 +556,15 @@
 		} \
 		length -= end - renderer->start; \
 	} \
+	localX = (tileX * 8 + inX) & 0x1FF; \
 	DRAW_BACKGROUND_MODE_0_TILES_ ## BPP (BLEND, OBJWIN) \
 	if (length & 0x7) { \
+		localX = tileX * 8 + inX; \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
-		\
+		localY = inY & 0x7; \
+		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
+			localY = 7 - localY; \
+		} \
 		int mod8 = length & 0x7; \
 		if (VIDEO_CHECKS && UNLIKELY(outX + mod8 != renderer->end)) { \
 			mLOG(GBA_VIDEO, FATAL, "Invariant doesn't hold in background draw!"); \
@@ -531,7 +578,7 @@
 	}
 
 void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y) {
-	int inX = renderer->start + background->x;
+	int inX = (renderer->start + background->x) & 0x1FF;
 	int length = renderer->end - renderer->start;
 	if (background->mosaic) {
 		int mosaicV = GBAMosaicControlGetBgV(renderer->mosaic) + 1;
@@ -587,10 +634,20 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 	uint32_t current;
 	int pixelData;
 	int paletteData;
-	int tileX = 0;
+	int tileX;
 	int tileEnd = ((length + inX) >> 3) - (inX >> 3);
 	uint16_t* vram = NULL;
 
+	if (background->yCache != inY >> 3) {
+		localX = 0;
+		for (tileX = 0; tileX < 64; ++tileX, localX += 8) {
+			BACKGROUND_TEXT_SELECT_CHARACTER;
+			background->mapCache[tileX] = mapData;
+		}
+		background->yCache = inY >> 3;
+	}
+
+	tileX = 0;
 	if (!objwinSlowPath) {
 		if (!(flags & FLAG_TARGET_2)) {
 			if (!background->multipalette) {

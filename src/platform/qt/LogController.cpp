@@ -13,7 +13,7 @@ LogController::LogController(int levels, QObject* parent)
 	: QObject(parent)
 {
 	mLogFilterInit(&m_filter);
-	mLogFilterSet(&m_filter, "gba.bios", mLOG_STUB);
+	mLogFilterSet(&m_filter, "gba.bios", mLOG_STUB | mLOG_FATAL);
 	mLogFilterSet(&m_filter, "core.status", mLOG_ALL & ~mLOG_DEBUG);
 	m_filter.defaultLevels = levels;
 

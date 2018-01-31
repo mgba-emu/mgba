@@ -148,6 +148,7 @@ struct mCore {
 	void (*detachDebugger)(struct mCore*);
 
 	void (*loadSymbols)(struct mCore*, struct VFile*);
+	bool (*lookupIdentifier)(struct mCore*, const char* name, int32_t* value, int* segment);
 #endif
 
 	struct mCheatDevice* (*cheatDevice)(struct mCore*);
@@ -175,6 +176,7 @@ bool mCorePreloadFile(struct mCore* core, const char* path);
 
 bool mCoreAutoloadSave(struct mCore* core);
 bool mCoreAutoloadPatch(struct mCore* core);
+bool mCoreAutoloadCheats(struct mCore* core);
 
 bool mCoreSaveState(struct mCore* core, int slot, int flags);
 bool mCoreLoadState(struct mCore* core, int slot, int flags);

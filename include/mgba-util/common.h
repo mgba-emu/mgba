@@ -73,7 +73,7 @@ typedef intptr_t ssize_t;
 #define M_PI 3.141592654f
 #endif
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && (defined(__llvm__) || (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
 #define ATOMIC_STORE(DST, SRC) __atomic_store_n(&DST, SRC, __ATOMIC_RELEASE)
 #define ATOMIC_LOAD(DST, SRC) DST = __atomic_load_n(&SRC, __ATOMIC_ACQUIRE)
 #define ATOMIC_ADD(DST, OP) __atomic_add_fetch(&DST, OP, __ATOMIC_RELEASE)
@@ -101,6 +101,8 @@ typedef intptr_t ssize_t;
 #define PRIz "z"
 #endif
 
+#if defined __BIG_ENDIAN__
+#define LOAD_32BE(DEST, ADDR, ARR) DEST = *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR))
 #if defined(__PPC__) || defined(__POWERPC__)
 #define LOAD_32LE(DEST, ADDR, ARR) { \
 	uint32_t _addr = (ADDR); \
@@ -126,10 +128,39 @@ typedef intptr_t ssize_t;
 	__asm__("sthbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr)); \
 }
 
-#define LOAD_64LE(DEST, ADDR, ARR) DEST = __builtin_bswap64(((uint64_t*) ARR)[(ADDR) >> 3])
-#define STORE_64LE(SRC, ADDR, ARR) ((uint64_t*) ARR)[(ADDR) >> 3] = __builtin_bswap64(SRC)
-#elif defined __BIG_ENDIAN__
-#if defined(__llvm__) || (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+#define LOAD_64LE(DEST, ADDR, ARR) { \
+	uint32_t _addr = (ADDR); \
+	union { \
+		struct { \
+			uint32_t hi; \
+			uint32_t lo; \
+		}; \
+		uint64_t b64; \
+	} *bswap = (void*) &DEST; \
+	const void* _ptr = (ARR); \
+	__asm__( \
+		"lwbrx %0, %2, %3 \n" \
+		"lwbrx %1, %2, %4 \n" \
+		: "=r"(bswap->lo), "=r"(bswap->hi) : "b"(_ptr), "r"(_addr), "r"(_addr + 4)); \
+}
+
+#define STORE_64LE(SRC, ADDR, ARR) { \
+	uint32_t _addr = (ADDR); \
+	union { \
+		struct { \
+			uint32_t hi; \
+			uint32_t lo; \
+		}; \
+		uint64_t b64; \
+	} *bswap = (void*) &SRC; \
+	const void* _ptr = (ARR); \
+	__asm__( \
+		"stwbrx %0, %2, %3 \n" \
+		"stwbrx %1, %2, %4 \n" \
+		: : "r"(bswap->hi), "r"(bswap->lo), "b"(_ptr), "r"(_addr), "r"(_addr + 4)); \
+}
+
+#elif defined(__llvm__) || (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
 #define LOAD_64LE(DEST, ADDR, ARR) DEST = __builtin_bswap64(((uint64_t*) ARR)[(ADDR) >> 3])
 #define LOAD_32LE(DEST, ADDR, ARR) DEST = __builtin_bswap32(((uint32_t*) ARR)[(ADDR) >> 2])
 #define LOAD_16LE(DEST, ADDR, ARR) DEST = __builtin_bswap16(((uint16_t*) ARR)[(ADDR) >> 1])
@@ -146,6 +177,7 @@ typedef intptr_t ssize_t;
 #define STORE_64LE(SRC, ADDR, ARR) *(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
 #define STORE_32LE(SRC, ADDR, ARR) *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
 #define STORE_16LE(SRC, ADDR, ARR) *(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
+#define LOAD_32BE(DEST, ADDR, ARR) DEST = __builtin_bswap32(((uint32_t*) ARR)[(ADDR) >> 2])
 #endif
 
 #define MAKE_MASK(START, END) (((1 << ((END) - (START))) - 1) << (START))

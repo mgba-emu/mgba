@@ -52,6 +52,7 @@
 #include "VideoView.h"
 
 #include <mgba/core/version.h>
+#include <mgba/core/cheats.h>
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/input.h>
@@ -275,6 +276,9 @@ QString Window::getFilters() const {
 #endif
 #ifdef USE_LZMA
 		"*.7z",
+#endif
+#ifdef USE_ELF
+		"*.elf",
 #endif
 		"*.agb",
 		"*.mb",
@@ -564,11 +568,12 @@ void Window::showEvent(QShowEvent* event) {
 	m_wasOpened = true;
 	resizeFrame(m_screenWidget->sizeHint());
 	QVariant windowPos = m_config->getQtOption("windowPos");
-	if (!windowPos.isNull()) {
+	QRect geom = QApplication::desktop()->availableGeometry(this);
+	if (!windowPos.isNull() && geom.contains(windowPos.toPoint())) {
 		move(windowPos.toPoint());
 	} else {
 		QRect rect = frameGeometry();
-		rect.moveCenter(QApplication::desktop()->availableGeometry().center());
+		rect.moveCenter(geom.center());
 		move(rect.topLeft());
 	}
 	if (m_fullscreenOnStart) {
@@ -734,7 +739,9 @@ void Window::gameStarted() {
 #endif
 
 	m_hitUnimplementedBiosCall = false;
-	m_fpsTimer.start();
+	if (m_config->getOption("showFps", "1").toInt()) {
+		m_fpsTimer.start();
+	}
 	m_focusCheck.start();
 	if (m_display->underMouse()) {
 		m_screenWidget->setCursor(Qt::BlankCursor);
@@ -1499,6 +1506,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 			connect(this, &Window::shutdown, m_overrideView.get(), &QWidget::close);
 		}
 		m_overrideView->show();
+		m_overrideView->recheck();
 	});
 	addControlledAction(toolsMenu, overrides, "overrideWindow");
 
@@ -1644,10 +1652,30 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, this);
 	m_config->updateOption("preload");
 
+	ConfigOption* showFps = m_config->addOption("showFps");
+	showFps->connect([this](const QVariant& value) {
+		if (!value.toInt()) {
+			m_fpsTimer.stop();
+			updateTitle();
+		} else if (m_controller) {
+			m_fpsTimer.start();
+		}
+	}, this);
+
 	QAction* exitFullScreen = new QAction(tr("Exit fullscreen"), frameMenu);
 	connect(exitFullScreen, &QAction::triggered, this, &Window::exitFullScreen);
 	exitFullScreen->setShortcut(QKeySequence("Esc"));
 	addHiddenAction(frameMenu, exitFullScreen, "exitFullScreen");
+
+	m_inputController.inputIndex()->addItem(qMakePair([this]() {
+		if (m_controller) {
+			mCheatPressButton(m_controller->cheatDevice(), true);
+		}
+	}, [this]() {
+		if (m_controller) {
+			mCheatPressButton(m_controller->cheatDevice(), false);
+		}
+	}), tr("GameShark Button (held)"), "holdGSButton", toolsMenu)->setShortcut(QKeySequence(Qt::Key_Apostrophe)[0]);
 
 	for (QAction* action : m_gameActions) {
 		action->setDisabled(true);
@@ -1834,8 +1862,8 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		m_pendingPatch = QString();
 	}
 
-	m_controller->start();
 	m_controller->loadConfig(m_config);
+	m_controller->start();
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

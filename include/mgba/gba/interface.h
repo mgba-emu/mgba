@@ -21,6 +21,13 @@ enum GBASIOMode {
 	SIO_JOYBUS = 12
 };
 
+enum GBASIOJOYCommand {
+	JOY_RESET = 0xFF,
+	JOY_POLL = 0x00,
+	JOY_TRANS = 0x14,
+	JOY_RECV = 0x15
+};
+
 struct GBA;
 struct GBAAudio;
 struct GBASIO;
@@ -47,6 +54,10 @@ struct GBASIODriver {
 	bool (*unload)(struct GBASIODriver* driver);
 	uint16_t (*writeRegister)(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 };
+
+void GBASIOJOYCreate(struct GBASIODriver* sio);
+int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command, uint8_t* data);
+
 
 CXX_GUARD_END
 

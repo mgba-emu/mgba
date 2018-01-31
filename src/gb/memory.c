@@ -294,7 +294,7 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	case GB_REGION_EXTERNAL_RAM + 1:
 		if (memory->rtcAccess) {
 			memory->rtcRegs[memory->activeRtcReg] = value;
-		} else if (memory->sramAccess && memory->sram) {
+		} else if (memory->sramAccess && memory->sram && memory->mbcType != GB_MBC2) {
 			memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
 		} else {
 			memory->mbcWrite(gb, address, value);
@@ -454,7 +454,7 @@ void GBMemoryDMA(struct GB* gb, uint16_t base) {
 	gb->memory.dmaRemaining = 0xA0;
 }
 
-void GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
+uint8_t GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
 	gb->memory.hdmaSource = gb->memory.io[REG_HDMA1] << 8;
 	gb->memory.hdmaSource |= gb->memory.io[REG_HDMA2];
 	gb->memory.hdmaDest = gb->memory.io[REG_HDMA3] << 8;
@@ -462,7 +462,7 @@ void GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
 	gb->memory.hdmaSource &= 0xFFF0;
 	if (gb->memory.hdmaSource >= 0x8000 && gb->memory.hdmaSource < 0xA000) {
 		mLOG(GB_MEM, GAME_ERROR, "Invalid HDMA source: %04X", gb->memory.hdmaSource);
-		return;
+		return value | 0x80;
 	}
 	gb->memory.hdmaDest &= 0x1FF0;
 	gb->memory.hdmaDest |= 0x8000;
@@ -476,7 +476,10 @@ void GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
 		}
 		gb->cpuBlocked = true;
 		mTimingSchedule(&gb->timing, &gb->memory.hdmaEvent, 0);
+	} else if (gb->memory.isHdma && !GBRegisterLCDCIsEnable(gb->memory.io[REG_LCDC])) {
+		return 0x80 | ((value + 1) & 0x7F);
 	}
+	return value & 0x7F;
 }
 
 void _GBMemoryDMAService(struct mTiming* timing, void* context, uint32_t cyclesLate) {

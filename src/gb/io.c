@@ -101,7 +101,6 @@ static const uint8_t _registerMask[] = {
 	[REG_BCPS] = 0x40,
 	[REG_UNK6C] = 0xFE,
 	[REG_SVBK] = 0xF8,
-	[REG_UNK75] = 0x8F,
 	[REG_IE]   = 0xE0,
 };
 
@@ -174,6 +173,7 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, REG_WY, 0x00);
 	GBIOWrite(gb, REG_WX, 0x00);
 	if (gb->model >= GB_MODEL_CGB) {
+		GBIOWrite(gb, REG_UNK4C, 0);
 		GBIOWrite(gb, REG_JOYP, 0xFF);
 		GBIOWrite(gb, REG_VBK, 0);
 		GBIOWrite(gb, REG_BCPS, 0);
@@ -392,7 +392,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		return;
 	case REG_LCDC:
 		// TODO: handle GBC differences
-		GBVideoProcessDots(&gb->video);
+		GBVideoProcessDots(&gb->video, 0);
 		value = gb->video.renderer->writeVideoRegister(gb->video.renderer, address, value);
 		GBVideoWriteLCDC(&gb->video, value);
 		break;
@@ -406,13 +406,13 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case REG_SCX:
 	case REG_WY:
 	case REG_WX:
-		GBVideoProcessDots(&gb->video);
+		GBVideoProcessDots(&gb->video, 0);
 		value = gb->video.renderer->writeVideoRegister(gb->video.renderer, address, value);
 		break;
 	case REG_BGP:
 	case REG_OBP0:
 	case REG_OBP1:
-		GBVideoProcessDots(&gb->video);
+		GBVideoProcessDots(&gb->video, 0);
 		GBVideoWritePalette(&gb->video, address, value);
 		break;
 	case REG_STAT:
@@ -420,11 +420,8 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		value = gb->video.stat;
 		break;
 	case 0x50:
-		if (gb->memory.romBase < gb->memory.rom || gb->memory.romBase > &gb->memory.rom[gb->memory.romSize - 1]) {
-			free(gb->memory.romBase);
-			gb->memory.romBase = gb->memory.rom;
-		}
-		if (gb->model >= GB_MODEL_CGB && gb->memory.io[0x6C]) {
+		GBUnmapBIOS(gb);
+		if (gb->model >= GB_MODEL_CGB && gb->memory.io[REG_UNK4C] < 0x80) {
 			gb->model = GB_MODEL_DMG;
 			GBVideoDisableCGB(&gb->video);
 		}
@@ -436,6 +433,8 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	default:
 		if (gb->model >= GB_MODEL_CGB) {
 			switch (address) {
+			case REG_UNK4C:
+				break;
 			case REG_KEY1:
 				value &= 0x1;
 				value |= gb->memory.io[address] & 0x80;
@@ -450,8 +449,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 				// Handled transparently by the registers
 				break;
 			case REG_HDMA5:
-				GBMemoryWriteHDMA5(gb, value);
-				value &= 0x7F;
+				value = GBMemoryWriteHDMA5(gb, value);
 				break;
 			case REG_BCPS:
 				gb->video.bcpIndex = value & 0x3F;
@@ -459,7 +457,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 				gb->memory.io[REG_BCPD] = gb->video.palette[gb->video.bcpIndex >> 1] >> (8 * (gb->video.bcpIndex & 1));
 				break;
 			case REG_BCPD:
-				GBVideoProcessDots(&gb->video);
+				GBVideoProcessDots(&gb->video, 0);
 				GBVideoWritePalette(&gb->video, address, value);
 				return;
 			case REG_OCPS:
@@ -468,7 +466,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 				gb->memory.io[REG_OCPD] = gb->video.palette[8 * 4 + (gb->video.ocpIndex >> 1)] >> (8 * (gb->video.ocpIndex & 1));
 				break;
 			case REG_OCPD:
-				GBVideoProcessDots(&gb->video);
+				GBVideoProcessDots(&gb->video, 0);
 				GBVideoWritePalette(&gb->video, address, value);
 				return;
 			case REG_SVBK:

@@ -13,29 +13,38 @@ CXX_GUARD_START
 #include <mgba-util/vector.h>
 
 enum mCoreMemorySearchType {
-	mCORE_MEMORY_SEARCH_32,
-	mCORE_MEMORY_SEARCH_16,
-	mCORE_MEMORY_SEARCH_8,
+	mCORE_MEMORY_SEARCH_INT,
 	mCORE_MEMORY_SEARCH_STRING,
 	mCORE_MEMORY_SEARCH_GUESS,
+};
+
+enum mCoreMemorySearchOp {
+	mCORE_MEMORY_SEARCH_EQUAL,
+	mCORE_MEMORY_SEARCH_GREATER,
+	mCORE_MEMORY_SEARCH_LESS,
+	mCORE_MEMORY_SEARCH_DELTA,
 };
 
 struct mCoreMemorySearchParams {
 	int memoryFlags;
 	enum mCoreMemorySearchType type;
+	enum mCoreMemorySearchOp op;
+	int align;
+	int width;
 	union {
 		const char* valueStr;
-		uint32_t value32;
-		uint32_t value16;
-		uint32_t value8;
+		int32_t valueInt;
 	};
 };
 
 struct mCoreMemorySearchResult {
 	uint32_t address;
 	int segment;
-	uint64_t guessDivisor;
+	uint32_t guessDivisor;
+	uint32_t guessMultiplier;
 	enum mCoreMemorySearchType type;
+	int width;
+	int32_t oldValue;
 };
 
 DECLARE_VECTOR(mCoreMemorySearchResults, struct mCoreMemorySearchResult);

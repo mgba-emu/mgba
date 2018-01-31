@@ -419,6 +419,13 @@
          </item>
         </widget>
        </item>
+       <item row="1" column="0" colspan="2">
+        <widget class="Line" name="line_10">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_6">
          <property name="text">
@@ -488,10 +495,67 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0" colspan="2">
-        <widget class="Line" name="line_10">
+       <item row="9" column="1">
+        <widget class="QCheckBox" name="showFps">
+         <property name="text">
+          <string>Show FPS in title bar</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="0" colspan="2">
+        <widget class="Line" name="line_13">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="0" colspan="2">
+        <widget class="Line" name="line_16">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="1">
+        <widget class="QCheckBox" name="cheatAutosave">
+         <property name="text">
+          <string>Automatically save cheats</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="1">
+        <widget class="QCheckBox" name="cheatAutoload">
+         <property name="text">
+          <string>Automatically load cheats</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="1">
+        <widget class="QCheckBox" name="autosave">
+         <property name="text">
+          <string>Automatically save state</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="1">
+        <widget class="QCheckBox" name="autoload">
+         <property name="text">
+          <string>Automatically load state</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -1138,6 +1202,54 @@
          </property>
         </widget>
        </item>
+       <item row="12" column="0" colspan="2">
+        <widget class="Line" name="line_14">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="0">
+        <widget class="QLabel" name="label_48">
+         <property name="text">
+          <string>Cheats</string>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_27">
+         <item>
+          <widget class="QLineEdit" name="cheatsPath">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>170</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="cheatsBrowse">
+           <property name="text">
+            <string>Browse</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="14" column="1">
+        <widget class="QCheckBox" name="cheatsSameDir">
+         <property name="text">
+          <string>Same directory as the ROM</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="gb">
@@ -1666,6 +1778,38 @@
     <hint type="destinationlabel">
      <x>340</x>
      <y>285</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cheatsSameDir</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>cheatsPath</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>351</x>
+     <y>407</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>343</x>
+     <y>372</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fastForwardUnbounded</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>fastForwardRatio</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>445</x>
+     <y>38</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>349</x>
+     <y>38</y>
     </hint>
    </hints>
   </connection>

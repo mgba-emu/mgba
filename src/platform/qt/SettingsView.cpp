@@ -106,6 +106,22 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 			m_ui.patchPath->setText(path);
 		}
 	});
+
+	if (m_ui.cheatsPath->text().isEmpty()) {
+		m_ui.cheatsSameDir->setChecked(true);
+	}
+	connect(m_ui.cheatsSameDir, &QAbstractButton::toggled, [this] (bool e) {
+		if (e) {
+			m_ui.cheatsPath->clear();
+		}
+	});
+	connect(m_ui.cheatsBrowse, &QAbstractButton::pressed, [this] () {
+		QString path = GBAApp::app()->getOpenDirectoryName(this, "Select directory");
+		if (!path.isNull()) {
+			m_ui.cheatsSameDir->setChecked(false);
+			m_ui.cheatsPath->setText(path);
+		}
+	});
 	connect(m_ui.clearCache, &QAbstractButton::pressed, this, &SettingsView::libraryCleared);
 
 	// TODO: Move to reloadConfig()
@@ -257,7 +273,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 		QLocale locale(name.remove(QString("%0-").arg(binaryName)).remove(".qm"));
 		m_ui.languages->addItem(locale.nativeLanguageName(), locale);
-		if (locale == QLocale()) {
+		if (locale.bcp47Name() == QLocale().bcp47Name()) {
 			m_ui.languages->setCurrentIndex(m_ui.languages->count() - 1);
 		}
 	}
@@ -339,9 +355,15 @@ void SettingsView::updateConfig() {
 	saveSetting("savestatePath", m_ui.savestatePath);
 	saveSetting("screenshotPath", m_ui.screenshotPath);
 	saveSetting("patchPath", m_ui.patchPath);
+	saveSetting("cheatsPath", m_ui.cheatsPath);
 	saveSetting("libraryStyle", m_ui.libraryStyle->currentIndex());
 	saveSetting("showLibrary", m_ui.showLibrary);
 	saveSetting("preload", m_ui.preload);
+	saveSetting("showFps", m_ui.showFps);
+	saveSetting("cheatAutoload", m_ui.cheatAutoload);
+	saveSetting("cheatAutosave", m_ui.cheatAutosave);
+	saveSetting("autoload", m_ui.autoload);
+	saveSetting("autosave", m_ui.autosave);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
@@ -464,8 +486,14 @@ void SettingsView::reloadConfig() {
 	loadSetting("savestatePath", m_ui.savestatePath);
 	loadSetting("screenshotPath", m_ui.screenshotPath);
 	loadSetting("patchPath", m_ui.patchPath);
+	loadSetting("cheatsPath", m_ui.cheatsPath);
 	loadSetting("showLibrary", m_ui.showLibrary);
 	loadSetting("preload", m_ui.preload);
+	loadSetting("showFps", m_ui.showFps, true);
+	loadSetting("cheatAutoload", m_ui.cheatAutoload, true);
+	loadSetting("cheatAutosave", m_ui.cheatAutosave, true);
+	loadSetting("autoload", m_ui.autoload, true);
+	loadSetting("autosave", m_ui.autosave, false);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 
