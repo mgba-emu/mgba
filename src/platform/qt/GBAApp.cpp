@@ -67,10 +67,7 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 }
 
 GBAApp::~GBAApp() {
-#ifdef USE_SQLITE3
-	m_parseThread.quit();
-	m_parseThread.wait();
-#endif
+	m_workerThreads.waitForDone();
 }
 
 bool GBAApp::event(QEvent* event) {
@@ -180,14 +177,8 @@ bool GBAApp::reloadGameDB() {
 		NoIntroDBDestroy(m_db);
 	}
 	if (db) {
-		if (m_parseThread.isRunning()) {
-			m_parseThread.quit();
-			m_parseThread.wait();
-		}
 		GameDBParser* parser = new GameDBParser(db);
-		m_parseThread.start();
-		parser->moveToThread(&m_parseThread);
-		QMetaObject::invokeMethod(parser, "parseNoIntroDB");
+		submitWorkerJob(std::bind(&GameDBParser::parseNoIntroDB, parser));
 		m_db = db;
 		return true;
 	}
@@ -198,6 +189,77 @@ bool GBAApp::reloadGameDB() {
 	return false;
 }
 #endif
+
+qint64 GBAApp::submitWorkerJob(std::function<void ()> job, std::function<void ()> callback) {
+	return submitWorkerJob(job, nullptr, callback);
+}
+
+qint64 GBAApp::submitWorkerJob(std::function<void ()> job, QObject* context, std::function<void ()> callback) {
+	qint64 jobId = m_nextJob;
+	++m_nextJob;
+	WorkerJob* jobRunnable = new WorkerJob(jobId, job, this);
+	m_workerJobs.insert(jobId, jobRunnable);
+	if (callback) {
+		waitOnJob(jobId, context, callback);
+	}
+	m_workerThreads.start(jobRunnable);
+	return jobId;
+}
+
+bool GBAApp::removeWorkerJob(qint64 jobId) {
+	for (auto& job : m_workerJobCallbacks.values(jobId)) {
+		disconnect(job);
+	}
+	m_workerJobCallbacks.remove(jobId);
+	if (!m_workerJobs.contains(jobId)) {
+		return true;
+	}
+	bool success = false;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
+	success = m_workerThreads.tryTake(m_workerJobs[jobId]);
+#endif
+	if (success) {
+		m_workerJobs.remove(jobId);
+	}
+	return success;
+}
+
+
+bool GBAApp::waitOnJob(qint64 jobId, QObject* context, std::function<void ()> callback) {
+	if (!m_workerJobs.contains(jobId)) {
+		return false;
+	}
+	if (!context) {
+		context = this;
+	}
+	QMetaObject::Connection connection = connect(this, &GBAApp::jobFinished, context, [jobId, callback](qint64 testedJobId) {
+		if (jobId != testedJobId) {
+			return;
+		}
+		callback();
+	});
+	m_workerJobCallbacks.insert(m_nextJob, connection);
+	return true;
+}
+
+void GBAApp::finishJob(qint64 jobId) {
+	m_workerJobs.remove(jobId);
+	emit jobFinished(jobId);
+	m_workerJobCallbacks.remove(jobId);
+}
+
+GBAApp::WorkerJob::WorkerJob(qint64 id, std::function<void ()> job, GBAApp* owner)
+	: m_id(id)
+	, m_job(job)
+	, m_owner(owner)
+{
+	setAutoDelete(true);
+}
+
+void GBAApp::WorkerJob::run() {
+	m_job();
+	QMetaObject::invokeMethod(m_owner, "finishJob", Q_ARG(qint64, m_id));
+}
 
 #ifdef USE_SQLITE3
 GameDBParser::GameDBParser(NoIntroDB* db, QObject* parent)

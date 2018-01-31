@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/lr35902/debugger/memory-debugger.h>
 
+#include <mgba/internal/debugger/parser.h>
 #include <mgba/internal/lr35902/debugger/debugger.h>
 
 #include <mgba-util/math.h>
@@ -27,19 +28,19 @@ static bool _checkWatchpoints(struct LR35902Debugger* debugger, uint16_t address
 		debuggerFound: break; \
 	} while(0)
 
-#define CREATE_WATCHPOINT_SHIM(NAME, RW, RETURN, TYPES, ...) \
+#define CREATE_WATCHPOINT_SHIM(NAME, RW, VALUE, RETURN, TYPES, ...) \
 	static RETURN DebuggerShim_ ## NAME TYPES { \
 		struct LR35902Debugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
 		struct mDebuggerEntryInfo info; \
-		if (_checkWatchpoints(debugger, address, &info, WATCHPOINT_ ## RW, 0)) { \
+		if (_checkWatchpoints(debugger, address, &info, WATCHPOINT_ ## RW, VALUE)) { \
 			mDebuggerEnter(debugger->d.p, DEBUGGER_ENTER_WATCHPOINT, &info); \
 		} \
 		return debugger->originalMemory.NAME(cpu, __VA_ARGS__); \
 	}
 
-CREATE_WATCHPOINT_SHIM(load8, READ, uint8_t, (struct LR35902Core* cpu, uint16_t address), address)
-CREATE_WATCHPOINT_SHIM(store8, WRITE, void, (struct LR35902Core* cpu, uint16_t address, int8_t value), address, value)
+CREATE_WATCHPOINT_SHIM(load8, READ, 0, uint8_t, (struct LR35902Core* cpu, uint16_t address), address)
+CREATE_WATCHPOINT_SHIM(store8, WRITE, value, void, (struct LR35902Core* cpu, uint16_t address, int8_t value), address, value)
 
 static bool _checkWatchpoints(struct LR35902Debugger* debugger, uint16_t address, struct mDebuggerEntryInfo* info, enum mWatchpointType type, uint8_t newValue) {
 	struct LR35902DebugWatchpoint* watchpoint;
@@ -47,11 +48,18 @@ static bool _checkWatchpoints(struct LR35902Debugger* debugger, uint16_t address
 	for (i = 0; i < LR35902DebugWatchpointListSize(&debugger->watchpoints); ++i) {
 		watchpoint = LR35902DebugWatchpointListGetPointer(&debugger->watchpoints, i);
 		if (watchpoint->address == address && (watchpoint->segment < 0 || watchpoint->segment == debugger->originalMemory.currentSegment(debugger->cpu, address)) && watchpoint->type & type) {
-			info->oldValue = debugger->originalMemory.load8(debugger->cpu, address);
-			info->newValue = newValue;
+			if (watchpoint->condition) {
+				int32_t value;
+				int segment;
+				if (!mDebuggerEvaluateParseTree(debugger->d.p, watchpoint->condition, &value, &segment) || !(value || segment >= 0)) {
+					return false;
+				}
+			}
+			info->type.wp.oldValue = debugger->originalMemory.load8(debugger->cpu, address);
+			info->type.wp.newValue = newValue;
 			info->address = address;
-			info->watchType = watchpoint->type;
-			info->accessType = type;
+			info->type.wp.watchType = watchpoint->type;
+			info->type.wp.accessType = type;
 			return true;
 		}
 	}

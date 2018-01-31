@@ -36,12 +36,15 @@ class GB(Core):
         if self._wasReset:
             self._native.video.renderer.cache = ffi.NULL
 
-    def reset(self):
-        super(GB, self).reset()
+    def _load(self):
+        super(GB, self)._load()
         self.memory = GBMemory(self._core)
 
     def attachSIO(self, link):
         lib.GBSIOSetDriver(ffi.addressof(self._native.sio), link._native)
+
+    def __del__(self):
+        lib.GBSIOSetDriver(ffi.addressof(self._native.sio), ffi.NULL)
 
 createCallback("GBSIOPythonDriver", "init")
 createCallback("GBSIOPythonDriver", "deinit")

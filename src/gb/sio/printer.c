@@ -69,8 +69,8 @@ static void _processByte(struct GBPrinter* printer) {
 static uint8_t GBPrinterWriteSC(struct GBSIODriver* driver, uint8_t value) {
 	struct GBPrinter* printer = (struct GBPrinter*) driver;
 	if ((value & 0x81) == 0x81) {
-		switch (printer->next) {
 		driver->p->pendingSB = 0;
+		switch (printer->next) {
 		case GB_PRINTER_BYTE_MAGIC_0:
 			if (printer->byte == 0x88) {
 				printer->next = GB_PRINTER_BYTE_MAGIC_1;
@@ -183,51 +183,54 @@ static uint8_t GBPrinterWriteSC(struct GBSIODriver* driver, uint8_t value) {
 				}
 				break;
 			case GB_PRINTER_COMMAND_STATUS:
-				if (!printer->printWait) {
-					printer->status &= ~GB_PRINTER_STATUS_READY;
-					printer->status |= GB_PRINTER_STATUS_PRINTING | GB_PRINTER_STATUS_PRINT_REQ;
-					if (printer->print) {
-						size_t y;
-						for (y = 0; y < printer->currentIndex / (2 * GB_VIDEO_HORIZONTAL_PIXELS); ++y) {
-							uint8_t lineBuffer[GB_VIDEO_HORIZONTAL_PIXELS * 2];
-							uint8_t* buffer = &printer->buffer[sizeof(lineBuffer) * y];
-							size_t i;
-							for (i = 0; i < sizeof(lineBuffer); i += 2) {
-								uint8_t ilo = buffer[i + 0x0];
-								uint8_t ihi = buffer[i + 0x1];
-								uint8_t olo = 0;
-								uint8_t ohi = 0;
-								olo |= ((ihi & 0x80) >> 0) | ((ilo & 0x80) >> 1);
-								olo |= ((ihi & 0x40) >> 1) | ((ilo & 0x40) >> 2);
-								olo |= ((ihi & 0x20) >> 2) | ((ilo & 0x20) >> 3);
-								olo |= ((ihi & 0x10) >> 3) | ((ilo & 0x10) >> 4);
-								ohi |= ((ihi & 0x08) << 4) | ((ilo & 0x08) << 3);
-								ohi |= ((ihi & 0x04) << 3) | ((ilo & 0x04) << 2);
-								ohi |= ((ihi & 0x02) << 2) | ((ilo & 0x02) << 1);
-								ohi |= ((ihi & 0x01) << 1) | ((ilo & 0x01) << 0);
-								lineBuffer[(((i >> 1) & 0x7) * GB_VIDEO_HORIZONTAL_PIXELS / 4) + ((i >> 3) & ~1)] = olo;
-								lineBuffer[(((i >> 1) & 0x7) * GB_VIDEO_HORIZONTAL_PIXELS / 4) + ((i >> 3) |  1)] = ohi;
-							}
-							memcpy(buffer, lineBuffer, sizeof(lineBuffer));
-						}
-						printer->print(printer, printer->currentIndex * 4 / GB_VIDEO_HORIZONTAL_PIXELS, printer->buffer);
-					}
-				}
-				if (printer->printWait >= 0) {
-					--printer->printWait;
-				}
 			default:
 				break;
 			}
+
 			driver->p->pendingSB = printer->status;
 			printer->next = GB_PRINTER_BYTE_MAGIC_0;
 			break;
 		}
+
+		if (!printer->printWait) {
+			printer->status &= ~GB_PRINTER_STATUS_READY;
+			printer->status |= GB_PRINTER_STATUS_PRINTING | GB_PRINTER_STATUS_PRINT_REQ;
+			if (printer->print) {
+				size_t y;
+				for (y = 0; y < printer->currentIndex / (2 * GB_VIDEO_HORIZONTAL_PIXELS); ++y) {
+					uint8_t lineBuffer[GB_VIDEO_HORIZONTAL_PIXELS * 2];
+					uint8_t* buffer = &printer->buffer[sizeof(lineBuffer) * y];
+					size_t i;
+					for (i = 0; i < sizeof(lineBuffer); i += 2) {
+						uint8_t ilo = buffer[i + 0x0];
+						uint8_t ihi = buffer[i + 0x1];
+						uint8_t olo = 0;
+						uint8_t ohi = 0;
+						olo |= ((ihi & 0x80) >> 0) | ((ilo & 0x80) >> 1);
+						olo |= ((ihi & 0x40) >> 1) | ((ilo & 0x40) >> 2);
+						olo |= ((ihi & 0x20) >> 2) | ((ilo & 0x20) >> 3);
+						olo |= ((ihi & 0x10) >> 3) | ((ilo & 0x10) >> 4);
+						ohi |= ((ihi & 0x08) << 4) | ((ilo & 0x08) << 3);
+						ohi |= ((ihi & 0x04) << 3) | ((ilo & 0x04) << 2);
+						ohi |= ((ihi & 0x02) << 2) | ((ilo & 0x02) << 1);
+						ohi |= ((ihi & 0x01) << 1) | ((ilo & 0x01) << 0);
+						lineBuffer[(((i >> 1) & 0x7) * GB_VIDEO_HORIZONTAL_PIXELS / 4) + ((i >> 3) & ~1)] = olo;
+						lineBuffer[(((i >> 1) & 0x7) * GB_VIDEO_HORIZONTAL_PIXELS / 4) + ((i >> 3) |  1)] = ohi;
+					}
+					memcpy(buffer, lineBuffer, sizeof(lineBuffer));
+				}
+				printer->print(printer, printer->currentIndex * 4 / GB_VIDEO_HORIZONTAL_PIXELS, printer->buffer);
+			}
+			printer->printWait = -1;
+		} else if (printer->printWait > 0) {
+			--printer->printWait;
+		}
+
 		printer->byte = 0;
 	}
 	return value;
 }
 
 void GBPrinterDonePrinting(struct GBPrinter* printer) {
-	printer->status &= ~GB_PRINTER_STATUS_PRINTING;
+	printer->status &= ~(GB_PRINTER_STATUS_PRINTING | GB_PRINTER_STATUS_PRINT_REQ);
 }

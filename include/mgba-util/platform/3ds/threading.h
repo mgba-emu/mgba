@@ -11,18 +11,9 @@
 #include <3ds.h>
 #include <malloc.h>
 
-#ifdef _3DS
-// ctrulib already has a type called Thread
-#define Thread CustomThread
-#endif
-
 #define THREAD_ENTRY void
 typedef ThreadFunc ThreadEntry;
 
-typedef struct {
-	Handle handle;
-	u8* stack;
-} Thread;
 typedef LightLock Mutex;
 typedef struct {
 	Mutex mutex;
@@ -103,22 +94,12 @@ static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context)
 	if (!entry || !thread) {
 		return 1;
 	}
-	thread->stack = memalign(8, 0x8000);
-	if (!thread->stack) {
-		return 1;
-	}
-	bool isNew3DS;
-	APT_CheckNew3DS(&isNew3DS);
-	if (isNew3DS && svcCreateThread(&thread->handle, entry, (u32) context, (u32*) &thread->stack[0x8000], 0x18, 2) == 0) {
-		return 0;
-	}
-	return svcCreateThread(&thread->handle, entry, (u32) context, (u32*) &thread->stack[0x8000], 0x18, -1);
+	*thread = threadCreate(entry, context, 0x8000, 0x18, 2, true);
+	return !*thread;
 }
 
 static inline int ThreadJoin(Thread thread) {
-	svcWaitSynchronization(thread.handle, U64_MAX);
-	free(thread.stack);
-	return 0;
+	return threadJoin(thread, U64_MAX);
 }
 
 static inline void ThreadSetName(const char* name) {

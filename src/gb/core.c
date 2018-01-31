@@ -460,6 +460,10 @@ static void _GBCoreReset(struct mCore* core) {
 #endif
 
 	LR35902Reset(core->cpu);
+
+	if (core->opts.skipBios) {
+		GBSkipBIOS(core->board);
+	}
 }
 
 static void _GBCoreRunFrame(struct mCore* core) {
@@ -732,6 +736,20 @@ static void _GBCoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	}
 	GBLoadSymbols(core->symbolTable, vf);
 }
+
+static bool _GBCoreLookupIdentifier(struct mCore* core, const char* name, int32_t* value, int* segment) {
+	UNUSED(core);
+	*segment = -1;
+	int i;
+	for (i = 0; i < REG_MAX; ++i) {
+		const char* reg = GBIORegisterNames[i];
+		if (reg && strcasecmp(reg, name) == 0) {
+			*value = GB_BASE_IO | i;
+			return true;
+		}
+	}
+	return false;
+}
 #endif
 
 static struct mCheatDevice* _GBCoreCheatDevice(struct mCore* core) {
@@ -821,6 +839,7 @@ static void _GBCoreEnableAudioChannel(struct mCore* core, size_t id, bool enable
 	}
 }
 
+#ifndef MINIMAL_CORE
 static void _GBCoreStartVideoLog(struct mCore* core, struct mVideoLogContext* context) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	struct GB* gb = core->board;
@@ -843,6 +862,7 @@ static void _GBCoreEndVideoLog(struct mCore* core) {
 	free(gbcore->proxyRenderer.logger);
 	gbcore->proxyRenderer.logger = NULL;
 }
+#endif
 
 struct mCore* GBCoreCreate(void) {
 	struct GBCore* gbcore = malloc(sizeof(*gbcore));
@@ -912,6 +932,7 @@ struct mCore* GBCoreCreate(void) {
 	core->attachDebugger = _GBCoreAttachDebugger;
 	core->detachDebugger = _GBCoreDetachDebugger;
 	core->loadSymbols = _GBCoreLoadSymbols;
+	core->lookupIdentifier = _GBCoreLookupIdentifier;
 #endif
 	core->cheatDevice = _GBCoreCheatDevice;
 	core->savedataClone = _GBCoreSavedataClone;

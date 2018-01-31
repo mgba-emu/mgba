@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/core/core.h>
 
+#include <mgba/core/cheats.h>
 #include <mgba/core/log.h>
 #include <mgba/core/serialize.h>
 #include <mgba-util/vfs.h>
@@ -165,6 +166,24 @@ bool mCoreAutoloadPatch(struct mCore* core) {
 	       core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".bps", O_RDONLY));
 }
 
+bool mCoreAutoloadCheats(struct mCore* core) {
+	bool success = true;
+	int cheatAuto;
+	if (!mCoreConfigGetIntValue(&core->config, "cheatAutoload", &cheatAuto) || cheatAuto) {
+		struct VFile* vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.cheats, ".cheats", O_RDONLY);
+		if (vf) {
+			struct mCheatDevice* device = core->cheatDevice(core);
+			success = mCheatParseFile(device, vf);
+			vf->close(vf);
+		}
+	}
+	if (!mCoreConfigGetIntValue(&core->config, "cheatAutosave", &cheatAuto) || cheatAuto) {
+		struct mCheatDevice* device = core->cheatDevice(core);
+		device->autosave = true;
+	}
+	return success;
+}
+
 bool mCoreSaveState(struct mCore* core, int slot, int flags) {
 	struct VFile* vf = mCoreGetState(core, slot, true);
 	if (!vf) {
@@ -257,7 +276,7 @@ void mCoreInitConfig(struct mCore* core, const char* port) {
 }
 
 void mCoreLoadConfig(struct mCore* core) {
-#ifndef MINIMAL_CORE
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mCoreConfigLoad(&core->config);
 #endif
 	mCoreLoadForeignConfig(core, &core->config);
@@ -265,12 +284,16 @@ void mCoreLoadConfig(struct mCore* core) {
 
 void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config) {
 	mCoreConfigMap(config, &core->opts);
-#ifndef MINIMAL_CORE
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetMapOptions(&core->dirs, &core->opts);
 #endif
 	if (core->opts.audioBuffers) {
 		core->setAudioBufferSize(core, core->opts.audioBuffers);
 	}
+
+	mCoreConfigCopyValue(&core->config, config, "cheatAutosave");
+	mCoreConfigCopyValue(&core->config, config, "cheatAutoload");
+
 	core->loadConfig(core, config);
 }
 

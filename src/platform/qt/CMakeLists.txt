@@ -2,13 +2,6 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(APPLE)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.7")
-	if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-	endif()
-endif()
-
 set(PLATFORM_SRC)
 set(QT_STATIC OFF)
 
@@ -40,6 +33,17 @@ if(NOT Qt5Widgets_FOUND)
 	message(WARNING "Cannot find Qt modules")
 	set(BUILD_QT OFF PARENT_SCOPE)
 	return()
+endif()
+
+if(APPLE)
+	if(Qt5Widgets_VERSION MATCHES "^5.1[0-9]")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8")
+	else()
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.7")
+	endif()
+	if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+	endif()
 endif()
 
 if(BUILD_GL)
@@ -93,6 +97,7 @@ set(SOURCE_FILES
 	OverrideView.cpp
 	PaletteView.cpp
 	PrinterView.cpp
+	RegisterView.cpp
 	ROMInfo.cpp
 	SavestateButton.cpp
 	SensorView.cpp
@@ -219,6 +224,8 @@ endif()
 if(NOT DEFINED DATADIR)
 	if(APPLE)
 		set(DATADIR Applications/${PROJECT_NAME}.app/Contents/Resources)
+	elseif(WIN32 AND NOT WIN32_UNIX_PATHS)
+		set(DATADIR ".")
 	else()
 		set(DATADIR ${CMAKE_INSTALL_DATADIR}/${BINARY_NAME})
 	endif()
@@ -316,8 +323,13 @@ if(APPLE)
 		endif()
 		install(CODE "execute_process(COMMAND \"${CMAKE_SOURCE_DIR}/tools/deploy-mac.py\" -v ${DEPLOY_OPTIONS} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/Applications/${PROJECT_NAME}.app\")")
 	endif()
-endif()
-if(WIN32 AND CMAKE_MAJOR_VERSION GREATER 2 AND CMAKE_MINOR_VERSION GREATER 7)
-	# Work around CMake issue #16907
-	set_target_properties(${BINARY_NAME}-qt PROPERTIES AUTORCC ON SKIP_AUTORCC ON)
+elseif(WIN32)
+	if(CMAKE_MAJOR_VERSION EQUAL 3 AND CMAKE_MINOR_VERSION EQUAL 8)
+		# Work around CMake issue #16907
+		set_target_properties(${BINARY_NAME}-qt PROPERTIES AUTORCC ON SKIP_AUTORCC ON)
+	endif()
+	if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+		find_program(BASH bash)
+		install(CODE "execute_process(COMMAND \"${BASH}\" \"${CMAKE_SOURCE_DIR}/tools/deploy-win.sh\" \"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.exe\" \"\${CMAKE_INSTALL_PREFIX}\" \"\$ENV{PWD}\" WORKING_DIRECTORY \"${CMAKE_BINARY_DIR}\")" COMPONENT ${BINARY_NAME}-qt)
+	endif()
 endif()

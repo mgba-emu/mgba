@@ -13,7 +13,7 @@ CXX_GUARD_START
 #include <mgba/internal/arm/arm.h>
 #include <mgba/core/cheats.h>
 
-#define MAX_ROM_PATCHES 4
+#define MAX_ROM_PATCHES 10
 #define COMPLETE ((size_t) -1)
 
 enum GBACheatType {
@@ -63,7 +63,7 @@ enum GBAActionReplay3Condition {
 	PAR3_COND_GT = 0x20000000,
 	PAR3_COND_ULT = 0x28000000,
 	PAR3_COND_UGT = 0x30000000,
-	PAR3_COND_LAND = 0x38000000,
+	PAR3_COND_AND = 0x38000000,
 };
 
 enum GBAActionReplay3Width {

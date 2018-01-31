@@ -139,9 +139,6 @@ class Core(object):
             raise RuntimeError("Failed to initialize core")
         return cls._detect(core)
 
-    def _deinit(self):
-        self._core.deinit(self._core)
-
     @classmethod
     def _detect(cls, core):
         if hasattr(cls, 'PLATFORM_GBA') and core.platform(core) == cls.PLATFORM_GBA:
@@ -152,6 +149,9 @@ class Core(object):
             return GB(core)
         return Core(core)
 
+    def _load(self):
+        self._wasReset = True
+
     def loadFile(self, path):
         return bool(lib.mCoreLoadFile(self._core, path.encode('UTF-8')))
 
@@ -160,6 +160,9 @@ class Core(object):
 
     def loadROM(self, vf):
         return bool(self._core.loadROM(self._core, vf.handle))
+
+    def loadBIOS(self, vf, id=0):
+        return bool(self._core.loadBIOS(self._core, vf.handle, id))
 
     def loadSave(self, vf):
         return bool(self._core.loadSave(self._core, vf.handle))
@@ -179,6 +182,9 @@ class Core(object):
     def autoloadPatch(self):
         return bool(lib.mCoreAutoloadPatch(self._core))
 
+    def autoloadCheats(self):
+        return bool(lib.mCoreAutoloadCheats(self._core))
+
     def platform(self):
         return self._core.platform(self._core)
 
@@ -193,7 +199,7 @@ class Core(object):
 
     def reset(self):
         self._core.reset(self._core)
-        self._wasReset = True
+        self._load()
 
     @needsReset
     @protected
@@ -254,6 +260,10 @@ class Core(object):
 
     def addFrameCallback(self, cb):
         self._callbacks.videoFrameEnded.append(cb)
+
+    @property
+    def crc32(self):
+        return self._native.romCrc32
 
 class ICoreOwner(object):
     def claim(self):

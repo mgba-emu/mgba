@@ -46,6 +46,18 @@ struct GBASIODriver* GBASIOPythonDriverCreate(void* pyobj) {
 	return &driver->d;
 }
 
+struct GBASIODriver* GBASIOJOYPythonDriverCreate(void* pyobj) {
+	struct GBASIOPythonDriver* driver = malloc(sizeof(*driver));
+	GBASIOJOYCreate(&driver->d);
+	driver->d.init = _pyGBASIOPythonDriverInitShim;
+	driver->d.deinit = _pyGBASIOPythonDriverDeinitShim;
+	driver->d.load = _pyGBASIOPythonDriverLoadShim;
+	driver->d.unload = _pyGBASIOPythonDriverUnloadShim;
+
+	driver->pyobj = pyobj;
+	return &driver->d;
+}
+
 #endif
 
 #ifdef M_CORE_GB

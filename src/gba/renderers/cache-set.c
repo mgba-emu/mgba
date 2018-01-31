@@ -57,12 +57,15 @@ void GBAVideoCacheAssociate(struct mCacheSet* cache, struct GBAVideo* video) {
 }
 
 static void mapParser0(struct mMapCache* cache, struct mMapCacheEntry* entry, void* vram) {
-	UNUSED(cache);
 	uint16_t map = *(uint16_t*) vram;
 	entry->tileId = GBA_TEXT_MAP_TILE(map);
 	entry->flags = mMapCacheEntryFlagsSetHMirror(entry->flags, !!GBA_TEXT_MAP_HFLIP(map));
 	entry->flags = mMapCacheEntryFlagsSetVMirror(entry->flags, !!GBA_TEXT_MAP_VFLIP(map));
-	entry->flags = mMapCacheEntryFlagsSetPaletteId(entry->flags, GBA_TEXT_MAP_PALETTE(map));
+	if (mMapCacheSystemInfoGetPaletteBPP(cache->sysConfig) == 3) {
+		entry->flags = mMapCacheEntryFlagsClearPaletteId(entry->flags);
+	} else {
+		entry->flags = mMapCacheEntryFlagsSetPaletteId(entry->flags, GBA_TEXT_MAP_PALETTE(map));
+	}
 }
 
 static void mapParser2(struct mMapCache* cache, struct mMapCacheEntry* entry, void* vram) {
@@ -82,10 +85,14 @@ static void GBAVideoCacheWriteDISPCNT(struct mCacheSet* cache, uint16_t value) {
 		mMapCacheSetGetPointer(&cache->maps, 2)->mapParser = mapParser0;
 		mMapCacheSetGetPointer(&cache->maps, 3)->mapParser = mapParser0;
 
-		mMapCacheSetGetPointer(&cache->maps, 0)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 0);
-		mMapCacheSetGetPointer(&cache->maps, 1)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 0);
-		mMapCacheSetGetPointer(&cache->maps, 2)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 0);
-		mMapCacheSetGetPointer(&cache->maps, 3)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 0);
+		mMapCacheSetGetPointer(&cache->maps, 0)->tileCache = mTileCacheSetGetPointer(&cache->tiles,
+			mMapCacheSystemInfoGetPaletteBPP(mMapCacheSetGetPointer(&cache->maps, 0)->sysConfig) == 3);
+		mMapCacheSetGetPointer(&cache->maps, 1)->tileCache = mTileCacheSetGetPointer(&cache->tiles,
+			mMapCacheSystemInfoGetPaletteBPP(mMapCacheSetGetPointer(&cache->maps, 1)->sysConfig) == 3);
+		mMapCacheSetGetPointer(&cache->maps, 2)->tileCache = mTileCacheSetGetPointer(&cache->tiles,
+			mMapCacheSystemInfoGetPaletteBPP(mMapCacheSetGetPointer(&cache->maps, 2)->sysConfig) == 3);
+		mMapCacheSetGetPointer(&cache->maps, 3)->tileCache = mTileCacheSetGetPointer(&cache->tiles,
+			mMapCacheSystemInfoGetPaletteBPP(mMapCacheSetGetPointer(&cache->maps, 3)->sysConfig) == 3);
 		break;
 	case 1:
 	case 2:
@@ -94,8 +101,11 @@ static void GBAVideoCacheWriteDISPCNT(struct mCacheSet* cache, uint16_t value) {
 		mMapCacheSetGetPointer(&cache->maps, 2)->mapParser = mapParser2;
 		mMapCacheSetGetPointer(&cache->maps, 3)->mapParser = mapParser2;
 
-		mMapCacheSetGetPointer(&cache->maps, 0)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 0);
-		mMapCacheSetGetPointer(&cache->maps, 1)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 0);
+		mMapCacheSetGetPointer(&cache->maps, 0)->tileCache = mTileCacheSetGetPointer(&cache->tiles,
+			mMapCacheSystemInfoGetPaletteBPP(mMapCacheSetGetPointer(&cache->maps, 0)->sysConfig) == 3);
+		mMapCacheSetGetPointer(&cache->maps, 1)->tileCache = mTileCacheSetGetPointer(&cache->tiles,
+			mMapCacheSystemInfoGetPaletteBPP(mMapCacheSetGetPointer(&cache->maps, 1)->sysConfig) == 3);
+
 		mMapCacheSetGetPointer(&cache->maps, 2)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 1);
 		mMapCacheSetGetPointer(&cache->maps, 3)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 1);
 		break;
@@ -113,6 +123,7 @@ static void GBAVideoCacheWriteBGCNT(struct mCacheSet* cache, size_t bg, uint16_t
 	int tilesHigh = 0;
 	mMapCacheSystemInfo sysconfig = 0;
 	if (map->mapParser == mapParser0) {
+		map->tileCache = mTileCacheSetGetPointer(&cache->tiles, p);
 		sysconfig = mMapCacheSystemInfoSetPaletteBPP(sysconfig, 2 + p);
 		sysconfig = mMapCacheSystemInfoSetPaletteCount(sysconfig, 4 * !p);
 		sysconfig = mMapCacheSystemInfoSetMacroTileSize(sysconfig, 5);
@@ -125,8 +136,9 @@ static void GBAVideoCacheWriteBGCNT(struct mCacheSet* cache, size_t bg, uint16_t
 		if (size & 2) {
 			++tilesHigh;
 		}
-		map->tileStart = tileStart * 2;
+		map->tileStart = tileStart * (2 - p);
 	} else if (map->mapParser == mapParser2) {
+		map->tileCache = mTileCacheSetGetPointer(&cache->tiles, 1);
 		sysconfig = mMapCacheSystemInfoSetPaletteBPP(sysconfig, 3);
 		sysconfig = mMapCacheSystemInfoSetPaletteCount(sysconfig, 0);
 		sysconfig = mMapCacheSystemInfoSetMacroTileSize(sysconfig, 4 + size);

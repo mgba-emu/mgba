@@ -169,7 +169,8 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 4 - 8: GB Player transmit position
  *   | bits 9 - 23: Reserved
  * 0x002C4 - 0x002C7: Game Boy Player next event
- * 0x002C8 - 0x002DF: Reserved (leave zero)
+ * 0x002C8 - 0x002CB: Current DMA transfer word
+ * 0x002CC - 0x002DF: Reserved (leave zero)
  * 0x002E0 - 0x002EF: Savedata state
  * | 0x002E0 - 0x002E0: Savedata type
  * | 0x002E1 - 0x002E1: Savedata command (see savedata.h)
@@ -293,7 +294,9 @@ struct GBASerializedState {
 		uint32_t gbpNextEvent;
 	} hw;
 
-	uint32_t reservedHardware[6];
+	uint32_t dmaTransferRegister;
+
+	uint32_t reservedHardware[5];
 
 	struct {
 		uint8_t type;

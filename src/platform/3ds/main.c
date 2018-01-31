@@ -6,6 +6,7 @@
 
 #include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
+#include <mgba/core/serialize.h>
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
@@ -22,6 +23,7 @@
 #include <mgba-util/memory.h>
 
 #include <mgba-util/platform/3ds/3ds-vfs.h>
+#include <mgba-util/threading.h>
 #include "ctr-gpu.h"
 
 #include <3ds.h>
@@ -78,8 +80,7 @@ static struct m3DSImageSource {
 
 static enum {
 	NO_SOUND,
-	DSP_SUPPORTED,
-	CSND_SUPPORTED
+	DSP_SUPPORTED
 } hasSound;
 
 // TODO: Move into context
@@ -154,37 +155,19 @@ static void _cleanup(void) {
 		linearFree(audioLeft);
 	}
 
-	if (hasSound == CSND_SUPPORTED) {
-		linearFree(audioRight);
-		csndExit();
-	}
-
 	if (hasSound == DSP_SUPPORTED) {
 		ndspExit();
 	}
 
 	camExit();
-	csndExit();
+	ndspExit();
 	ptmuExit();
 }
 
 static void _aptHook(APT_HookType hook, void* user) {
 	UNUSED(user);
 	switch (hook) {
-	case APTHOOK_ONSUSPEND:
-	case APTHOOK_ONSLEEP:
-		if (hasSound == CSND_SUPPORTED) {
-			CSND_SetPlayState(8, 0);
-			CSND_SetPlayState(9, 0);
-			csndExecCmds(false);
-		}
-		break;
 	case APTHOOK_ONEXIT:
-		if (hasSound == CSND_SUPPORTED) {
-			CSND_SetPlayState(8, 0);
-			CSND_SetPlayState(9, 0);
-			csndExecCmds(false);
-		}
 		_cleanup();
 		exit(0);
 		break;
@@ -195,33 +178,6 @@ static void _aptHook(APT_HookType hook, void* user) {
 
 static void _map3DSKey(struct mInputMap* map, int ctrKey, enum GBAKey key) {
 	mInputBindKey(map, _3DS_INPUT, __builtin_ctz(ctrKey), key);
-}
-
-static void _csndPlaySound(u32 flags, u32 sampleRate, float vol, void* left, void* right, u32 size) {
-	u32 pleft = 0, pright = 0;
-
-	int loopMode = (flags >> 10) & 3;
-	if (!loopMode) {
-		flags |= SOUND_ONE_SHOT;
-	}
-
-	pleft = osConvertVirtToPhys(left);
-	pright = osConvertVirtToPhys(right);
-
-	u32 timer = CSND_TIMER(sampleRate);
-	if (timer < 0x0042) {
-		timer = 0x0042;
-	}
-	else if (timer > 0xFFFF) {
-		timer = 0xFFFF;
-	}
-	flags &= ~0xFFFF001F;
-	flags |= SOUND_ENABLE | (timer << 16);
-
-	u32 volumes = CSND_VOL(vol, -1.0);
-	CSND_SetChnRegs(flags | SOUND_CHANNEL(8), pleft, pleft, size, volumes, volumes);
-	volumes = CSND_VOL(vol, 1.0);
-	CSND_SetChnRegs(flags | SOUND_CHANNEL(9), pright, pright, size, volumes, volumes);
 }
 
 static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right);
@@ -381,12 +337,7 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	if (hasSound != NO_SOUND) {
 		audioPos = 0;
 	}
-	if (hasSound == CSND_SUPPORTED) {
-		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
-		memset(audioRight, 0, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
-		_csndPlaySound(SOUND_REPEAT | SOUND_FORMAT_16BIT, 32768, 1.0, audioLeft, audioRight, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
-		csndExecCmds(false);
-	} else if (hasSound == DSP_SUPPORTED) {
+	if (hasSound == DSP_SUPPORTED) {
 		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * 2 * sizeof(int16_t));
 	}
 	unsigned mode;
@@ -428,11 +379,6 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 }
 
 static void _gameUnloaded(struct mGUIRunner* runner) {
-	if (hasSound == CSND_SUPPORTED) {
-		CSND_SetPlayState(8, 0);
-		CSND_SetPlayState(9, 0);
-		csndExecCmds(false);
-	}
 	osSetSpeedupEnable(false);
 	frameLimiter = true;
 
@@ -678,6 +624,11 @@ static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 	tickCounter = svcGetSystemTick();
 }
 
+static bool _running(struct mGUIRunner* runner) {
+	UNUSED(runner);
+	return aptMainLoop();
+}
+
 static uint32_t _pollInput(const struct mInputMap* map) {
 	hidScanInput();
 	int activeKeys = hidKeysHeld();
@@ -789,22 +740,7 @@ static void _requestImage(struct mImageSource* source, const void** buffer, size
 
 static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
 	UNUSED(stream);
-	if (hasSound == CSND_SUPPORTED) {
-		blip_read_samples(left, &audioLeft[audioPos], AUDIO_SAMPLES, false);
-		blip_read_samples(right, &audioRight[audioPos], AUDIO_SAMPLES, false);
-		GSPGPU_FlushDataCache(&audioLeft[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
-		GSPGPU_FlushDataCache(&audioRight[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
-		audioPos = (audioPos + AUDIO_SAMPLES) % AUDIO_SAMPLE_BUFFER;
-		if (audioPos == AUDIO_SAMPLES * 3) {
-			u8 playing = 0;
-			csndIsPlaying(0x8, &playing);
-			if (!playing) {
-				CSND_SetPlayState(0x8, 1);
-				CSND_SetPlayState(0x9, 1);
-				csndExecCmds(false);
-			}
-		}
-	} else if (hasSound == DSP_SUPPORTED) {
+	if (hasSound == DSP_SUPPORTED) {
 		int startId = bufferId;
 		while (dspBuffer[bufferId].status == NDSP_WBUF_QUEUED || dspBuffer[bufferId].status == NDSP_WBUF_PLAYING) {
 			bufferId = (bufferId + 1) & (DSP_BUFFERS - 1);
@@ -869,12 +805,6 @@ int main() {
 			dspBuffer[i].data_pcm16 = &audioLeft[AUDIO_SAMPLES * i * 2];
 			dspBuffer[i].nsamples = AUDIO_SAMPLES;
 		}
-	}
-
-	if (hasSound == NO_SOUND && !csndInit()) {
-		hasSound = CSND_SUPPORTED;
-		audioLeft = linearMemAlign(AUDIO_SAMPLE_BUFFER * sizeof(int16_t), 0x80);
-		audioRight = linearMemAlign(AUDIO_SAMPLE_BUFFER * sizeof(int16_t), 0x80);
 	}
 
 	gfxInit(GSP_BGR8_OES, GSP_BGR8_OES, true);
@@ -1020,8 +950,16 @@ int main() {
 		.unpaused = _gameLoaded,
 		.incrementScreenMode = _incrementScreenMode,
 		.setFrameLimiter = _setFrameLimiter,
-		.pollGameInput = _pollGameInput
+		.pollGameInput = _pollGameInput,
+		.running = _running
 	};
+
+	runner.autosave.running = true;
+	MutexInit(&runner.autosave.mutex);
+	ConditionInit(&runner.autosave.cond);
+
+	APT_SetAppCpuTimeLimit(20);
+	runner.autosave.thread = threadCreate(mGUIAutosaveThread, &runner.autosave, 0x4000, 0x1F, 1, true);
 
 	mGUIInit(&runner, "3ds");
 

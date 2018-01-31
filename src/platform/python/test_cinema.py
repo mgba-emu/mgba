@@ -18,7 +18,7 @@ def flatten(d):
 
 def pytest_generate_tests(metafunc):
     if 'vtest' in metafunc.fixturenames:
-        tests = cinema.test.gatherTests(os.path.join(os.path.dirname(__file__), 'tests/cinema'))
+        tests = cinema.test.gatherTests(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'cinema'))
         testList = flatten(tests)
         params = []
         for test in testList:

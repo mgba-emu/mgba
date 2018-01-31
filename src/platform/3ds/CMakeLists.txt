@@ -57,6 +57,10 @@ add_custom_command(OUTPUT ${BINARY_NAME}.smdh
                    COMMAND ${BANNERTOOL} makesmdh -s "${PROJECT_NAME}" -l "${SUMMARY}" -p "endrift" -i ${CMAKE_SOURCE_DIR}/res/mgba-48.png -o ${BINARY_NAME}.smdh
                    DEPENDS ${CMAKE_SOURCE_DIR}/res/mgba-48.png)
 
+add_custom_command(OUTPUT ${BINARY_NAME}.xml
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/hbl.xml ${BINARY_NAME}.xml
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/hbl.xml)
+
 add_custom_command(OUTPUT ${BINARY_NAME}.bnr
                    COMMAND ${BANNERTOOL} makebanner -ci ${CMAKE_CURRENT_SOURCE_DIR}/banner.cgfx -a ${CMAKE_CURRENT_SOURCE_DIR}/bios.wav -o ${BINARY_NAME}.bnr
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/banner.cgfx ${CMAKE_CURRENT_SOURCE_DIR}/bios.wav)
@@ -84,7 +88,7 @@ add_custom_command(
 
 add_custom_command(OUTPUT ${BINARY_NAME}.3dsx
                    COMMAND ${3DSXTOOL} ${BINARY_NAME}.elf ${BINARY_NAME}.3dsx --smdh=${BINARY_NAME}.smdh
-                   DEPENDS ${BINARY_NAME}.elf ${BINARY_NAME}.smdh)
+                   DEPENDS ${BINARY_NAME}.elf ${BINARY_NAME}.smdh ${BINARY_NAME}.xml)
 add_custom_target(${BINARY_NAME}.3dsx ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.3dsx)
 
 add_custom_command(OUTPUT ${BINARY_NAME}.cia
@@ -112,5 +116,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cia.rsf.in ${CMAKE_CURRENT_BINARY_DIR
 install(FILES
 	    ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.3dsx
 	    ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.smdh
+	    ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.xml
+	    DESTINATION 3dsx COMPONENT ${BINARY_NAME}-3ds)
+install(FILES
 	    ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.cia
-	    DESTINATION . COMPONENT ${BINARY_NAME}-3ds)
+	    DESTINATION cia COMPONENT ${BINARY_NAME}-3ds)

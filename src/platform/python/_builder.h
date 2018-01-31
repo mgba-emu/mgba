@@ -53,6 +53,7 @@ void free(void*);
 #include <mgba-util/png-io.h>
 #endif
 #ifdef M_CORE_GBA
+#include <mgba/gba/interface.h>
 #include <mgba/internal/arm/arm.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>

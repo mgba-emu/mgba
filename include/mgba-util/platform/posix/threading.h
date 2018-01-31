@@ -86,7 +86,12 @@ static inline int ThreadJoin(Thread thread) {
 
 static inline int ThreadSetName(const char* name) {
 #ifdef __APPLE__
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1060
 	return pthread_setname_np(name);
+#else
+	UNUSED(name);
+	return 0;
+#endif
 #elif defined(__FreeBSD__) || defined(__OpenBSD__)
 	pthread_set_name_np(pthread_self(), name);
 	return 0;

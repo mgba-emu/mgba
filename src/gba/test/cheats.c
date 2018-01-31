@@ -75,6 +75,93 @@ M_TEST_DEFINE(doPARv3Assign) {
 	set->deinit(set);
 }
 
+M_TEST_DEFINE(doPARv3Slide1) {
+	struct mCore* core = *state;
+	struct mCheatDevice* device = core->cheatDevice(core);
+	assert_non_null(device);
+	struct mCheatSet* set = device->createSet(device, NULL);
+	assert_non_null(set);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	assert_true(set->addLine(set, "00000000 80300000", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00000001 01020002", GBA_CHEAT_PRO_ACTION_REPLAY));
+
+	core->reset(core);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000002, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000003, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000004, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000005, -1), 0);
+
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 1);
+	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000002, -1), 2);
+	assert_int_equal(core->rawRead8(core, 0x03000003, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000004, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000005, -1), 0);
+
+	set->deinit(set);
+}
+
+M_TEST_DEFINE(doPARv3Slide2) {
+	struct mCore* core = *state;
+	struct mCheatDevice* device = core->cheatDevice(core);
+	assert_non_null(device);
+	struct mCheatSet* set = device->createSet(device, NULL);
+	assert_non_null(set);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	assert_true(set->addLine(set, "00000000 82300000", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00000001 01020002", GBA_CHEAT_PRO_ACTION_REPLAY));
+
+	core->reset(core);
+	assert_int_equal(core->rawRead16(core, 0x03000000, -1), 0);
+	assert_int_equal(core->rawRead16(core, 0x03000002, -1), 0);
+	assert_int_equal(core->rawRead16(core, 0x03000004, -1), 0);
+	assert_int_equal(core->rawRead16(core, 0x03000006, -1), 0);
+	assert_int_equal(core->rawRead16(core, 0x03000008, -1), 0);
+	assert_int_equal(core->rawRead16(core, 0x0300000A, -1), 0);
+
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead16(core, 0x03000000, -1), 1);
+	assert_int_equal(core->rawRead16(core, 0x03000002, -1), 0);
+	assert_int_equal(core->rawRead16(core, 0x03000004, -1), 2);
+	assert_int_equal(core->rawRead16(core, 0x03000006, -1), 0);
+	assert_int_equal(core->rawRead16(core, 0x03000008, -1), 0);
+	assert_int_equal(core->rawRead16(core, 0x0300000A, -1), 0);
+
+	set->deinit(set);
+}
+
+M_TEST_DEFINE(doPARv3Slide4) {
+	struct mCore* core = *state;
+	struct mCheatDevice* device = core->cheatDevice(core);
+	assert_non_null(device);
+	struct mCheatSet* set = device->createSet(device, NULL);
+	assert_non_null(set);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	assert_true(set->addLine(set, "00000000 84300000", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00000001 01020002", GBA_CHEAT_PRO_ACTION_REPLAY));
+
+	core->reset(core);
+	assert_int_equal(core->rawRead32(core, 0x03000000, -1), 0);
+	assert_int_equal(core->rawRead32(core, 0x03000004, -1), 0);
+	assert_int_equal(core->rawRead32(core, 0x03000008, -1), 0);
+	assert_int_equal(core->rawRead32(core, 0x0300000C, -1), 0);
+	assert_int_equal(core->rawRead32(core, 0x03000010, -1), 0);
+	assert_int_equal(core->rawRead32(core, 0x03000014, -1), 0);
+
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead16(core, 0x03000000, -1), 1);
+	assert_int_equal(core->rawRead16(core, 0x03000004, -1), 0);
+	assert_int_equal(core->rawRead16(core, 0x03000008, -1), 2);
+	assert_int_equal(core->rawRead16(core, 0x0300000C, -1), 0);
+	assert_int_equal(core->rawRead16(core, 0x03000010, -1), 0);
+	assert_int_equal(core->rawRead16(core, 0x03000014, -1), 0);
+
+	set->deinit(set);
+}
+
 M_TEST_DEFINE(doPARv3If1) {
 	struct mCore* core = *state;
 	struct mCheatDevice* device = core->cheatDevice(core);
@@ -334,6 +421,7 @@ M_TEST_DEFINE(doPARv3IfX) {
 	mCheatRefresh(device, set);
 	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
 	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0x11);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXxX) {
@@ -396,6 +484,7 @@ M_TEST_DEFINE(doPARv3IfXxX) {
 	assert_int_equal(core->rawRead8(core, 0x03000002, -1), 0x21);
 	assert_int_equal(core->rawRead8(core, 0x03000003, -1), 0x32);
 	assert_int_equal(core->rawRead8(core, 0x03000004, -1), 0x41);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXElse) {
@@ -430,6 +519,7 @@ M_TEST_DEFINE(doPARv3IfXElse) {
 	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
 	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0x11);
 	assert_int_equal(core->rawRead8(core, 0x03000002, -1), 0x22);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXElsexX) {
@@ -500,6 +590,7 @@ M_TEST_DEFINE(doPARv3IfXElsexX) {
 	assert_int_equal(core->rawRead8(core, 0x03000003, -1), 0x32);
 	assert_int_equal(core->rawRead8(core, 0x03000004, -1), 0x42);
 	assert_int_equal(core->rawRead8(core, 0x03000005, -1), 0x51);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXElsexXElse) {
@@ -577,6 +668,7 @@ M_TEST_DEFINE(doPARv3IfXElsexXElse) {
 	assert_int_equal(core->rawRead8(core, 0x03000004, -1), 0x42);
 	assert_int_equal(core->rawRead8(core, 0x03000005, -1), 0x51);
 	assert_int_equal(core->rawRead8(core, 0x03000006, -1), 0x62);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXContain1) {
@@ -638,6 +730,7 @@ M_TEST_DEFINE(doPARv3IfXContain1) {
 	assert_int_equal(core->rawRead8(core, 0x03000002, -1), 0x21);
 	assert_int_equal(core->rawRead8(core, 0x03000003, -1), 0x31);
 	assert_int_equal(core->rawRead8(core, 0x03000004, -1), 0x41);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXContain1Else) {
@@ -707,6 +800,7 @@ M_TEST_DEFINE(doPARv3IfXContain1Else) {
 	assert_int_equal(core->rawRead8(core, 0x03000003, -1), 0x31);
 	assert_int_equal(core->rawRead8(core, 0x03000004, -1), 0x41);
 	assert_int_equal(core->rawRead8(core, 0x03000005, -1), 0x52);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXElseContain1) {
@@ -776,6 +870,7 @@ M_TEST_DEFINE(doPARv3IfXElseContain1) {
 	assert_int_equal(core->rawRead8(core, 0x03000003, -1), 0x32);
 	assert_int_equal(core->rawRead8(core, 0x03000004, -1), 0x41);
 	assert_int_equal(core->rawRead8(core, 0x03000005, -1), 0x52);
+	set->deinit(set);
 }
 
 M_TEST_DEFINE(doPARv3IfXContain1ElseContain1) {
@@ -921,12 +1016,46 @@ M_TEST_DEFINE(doPARv3IfXContain1ElseContain1) {
 	assert_int_equal(core->rawRead8(core, 0x03000006, -1), 0x62);
 	assert_int_equal(core->rawRead8(core, 0x03000007, -1), 0x71);
 	assert_int_equal(core->rawRead8(core, 0x03000008, -1), 0x82);
+	set->deinit(set);
+}
+
+M_TEST_DEFINE(doPARv3IfButton) {
+	struct mCore* core = *state;
+	struct mCheatDevice* device = core->cheatDevice(core);
+	assert_non_null(device);
+	struct mCheatSet* set = device->createSet(device, NULL);
+	assert_non_null(set);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	assert_true(set->addLine(set, "00000000 10300000", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00000001 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
+
+	core->reset(core);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0);
+
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0);
+
+	mCheatPressButton(device, true);
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
+
+	mCheatPressButton(device, false);
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
+
+	core->rawWrite8(core, 0x03000000, -1, 0);
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0);
+	set->deinit(set);
 }
 
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(GBACheats,
 	cmocka_unit_test(createSet),
 	cmocka_unit_test(addRawPARv3),
 	cmocka_unit_test(doPARv3Assign),
+	cmocka_unit_test(doPARv3Slide1),
+	cmocka_unit_test(doPARv3Slide2),
+	cmocka_unit_test(doPARv3Slide4),
 	cmocka_unit_test(doPARv3If1),
 	cmocka_unit_test(doPARv3If1x1),
 	cmocka_unit_test(doPARv3If2),
@@ -940,4 +1069,5 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(GBACheats,
 	cmocka_unit_test(doPARv3IfXContain1),
 	cmocka_unit_test(doPARv3IfXContain1Else),
 	cmocka_unit_test(doPARv3IfXElseContain1),
-	cmocka_unit_test(doPARv3IfXContain1ElseContain1))
+	cmocka_unit_test(doPARv3IfXContain1ElseContain1),
+	cmocka_unit_test(doPARv3IfButton))

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <QDialog>
+#include <QTimer>
 
 #include <memory>
 
@@ -36,6 +37,7 @@ public:
 
 public slots:
 	void saveOverride();
+	void recheck();
 
 private slots:
 	void updateOverrides();
@@ -48,6 +50,7 @@ private:
 	std::shared_ptr<CoreController> m_controller;
 	ConfigController* m_config;
 	bool m_savePending = false;
+	QTimer m_recheck;
 
 #ifdef M_CORE_GB
 	uint32_t m_gbColors[12]{};

@@ -169,7 +169,9 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * | 0x0C7DC - 0x0C7DF: Flags
  *   | bits 0 - 1: Current P1 bits
  *   | bits 2 - 3: Current render mode
- *   | bits 4 - 31: Reserved (leave 0)
+ *   | bit 4: Is a mode event not scheduled?
+ *   | bit 5: Is a frame event not scheduled?
+ *   | bits 6 - 31: Reserved (leave 0)
  * | 0x0C7E0 - 0x0C7EF: Current packet
  * | 0x0C7F0 - 0x0C7FF: Reserved
  * | 0x0C800 - 0x0E7FF: Character VRAM

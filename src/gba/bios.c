@@ -333,6 +333,12 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	mLOG(GBA_BIOS, DEBUG, "SWI: %02X r0: %08X r1: %08X r2: %08X r3: %08X",
 	    immediate, cpu->gprs[0], cpu->gprs[1], cpu->gprs[2], cpu->gprs[3]);
 
+	switch (immediate) {
+	case 0xFA:
+		GBAPrintFlush(gba);
+		return;
+	}
+
 	if (gba->memory.fullBios) {
 		ARMRaiseSWI(cpu);
 		return;
@@ -529,8 +535,10 @@ static void _unLz77(struct GBA* gba, int width) {
 				source += 2;
 				disp = dest - (block & 0x0FFF) - 1;
 				bytes = (block >> 12) + 3;
-				while (bytes-- && remaining) {
-					--remaining;
+				while (bytes--) {
+					if (remaining) {
+						--remaining;
+					}
 					if (width == 2) {
 						byte = (int16_t) cpu->memory.load16(cpu, disp & ~1, 0);
 						if (dest & 1) {

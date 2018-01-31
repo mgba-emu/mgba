@@ -32,6 +32,8 @@ struct GBVideoSoftwareRenderer {
 	uint8_t wy;
 	uint8_t wx;
 	uint8_t currentWy;
+	int lastY;
+	bool hasWindow;
 
 	GBRegisterLCDC lcdc;
 	enum GBModel model;
@@ -43,6 +45,9 @@ struct GBVideoSoftwareRenderer {
 	int sgbDataSets;
 	uint8_t sgbPartialDataSet[15];
 	bool sgbBorders;
+	int sgbAttrX;
+	int sgbAttrY;
+	int sgbAttrDirection;
 };
 
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer*);

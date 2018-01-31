@@ -19,7 +19,7 @@ def test_vfs_read():
     vf = vfs.openPath(__file__)
     buffer = ffi.new('char[13]')
     assert vf.read(buffer, 13) == 13
-    assert ffi.string(buffer) == 'import pytest'
+    assert ffi.string(buffer) == b'import pytest'
     vf.close()
 
 def test_vfs_readline():
@@ -28,9 +28,9 @@ def test_vfs_readline():
     linelen = vf.readline(buffer, 16)
     assert linelen in (14, 15)
     if linelen == 14:
-        assert ffi.string(buffer) == 'import pytest\n'
+        assert ffi.string(buffer) == b'import pytest\n'
     elif linelen == 15:
-        assert ffi.string(buffer) == 'import pytest\r\n'
+        assert ffi.string(buffer) == b'import pytest\r\n'
     vf.close()
 
 def test_vfs_readAllSize():
