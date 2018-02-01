@@ -46,6 +46,7 @@ Bugfixes:
  - GBA Memory: Partially revert prefetch changes (fixes mgba.io/i/840)
  - PSP2: Fix issues causing poor audio
  - Wii: Fix screen tear when unpausing
+ - GBA: Fix some GBA ROM misdetection (fixes mgba.io/i/978)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
