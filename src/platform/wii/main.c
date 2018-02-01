@@ -721,6 +721,7 @@ void _gameLoaded(struct mGUIRunner* runner) {
 
 void _unpaused(struct mGUIRunner* runner) {
 	u32 level = 0;
+	VIDEO_WaitVSync();
 	_CPU_ISR_Disable(level);
 	referenceRetraceCount = retraceCount;
 	_CPU_ISR_Restore(level);
