@@ -21,6 +21,7 @@ Bugfixes:
  - PSP2: Fix issues causing poor audio
  - Wii: Fix screen tear when unpausing
  - GBA: Fix some GBA ROM misdetection (fixes mgba.io/i/978)
+ - GBA Hardware: RTC accuracy improvements
 Misc:
  - GBA: Improve multiboot image detection
  - GB MBC: Remove erroneous bank 0 wrapping
