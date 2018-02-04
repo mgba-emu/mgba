@@ -30,6 +30,10 @@ static void _GBTimerDivIncrement(struct GBTimer* timer, uint32_t cyclesLate) {
 				mTimingSchedule(&timer->p->timing, &timer->irq, 7 - ((timer->p->cpu->executionState - cyclesLate) & 3));
 			}
 		}
+		int timingFactor = 0x3FF >> !timer->p->doubleSpeed;
+		if ((timer->internalDiv & timingFactor) == timingFactor) {
+			GBAudioUpdateFrame(&timer->p->audio, &timer->p->timing);
+		}
 		++timer->internalDiv;
 		timer->p->memory.io[REG_DIV] = timer->internalDiv >> 4;
 	}
@@ -75,6 +79,10 @@ void GBTimerDivReset(struct GBTimer* timer) {
 		if (!timer->p->memory.io[REG_TIMA]) {
 			mTimingSchedule(&timer->p->timing, &timer->irq, 7 - (timer->p->cpu->executionState & 3));
 		}
+	}
+	int timingFactor = 0x200 >> !timer->p->doubleSpeed;
+	if (timer->internalDiv & 0x200) {
+		GBAudioUpdateFrame(&timer->p->audio, &timer->p->timing);
 	}
 	timer->p->memory.io[REG_DIV] = 0;
 	timer->internalDiv = 0;
