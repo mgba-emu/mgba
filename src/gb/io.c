@@ -380,8 +380,17 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		}
 		break;
 	case REG_TIMA:
+		if (value && mTimingUntil(&gb->timing, &gb->timer.irq) > 1) {
+			mTimingDeschedule(&gb->timing, &gb->timer.irq);
+		}
+		if (mTimingUntil(&gb->timing, &gb->timer.irq) == -1) {
+			return;
+		}
+		break;
 	case REG_TMA:
-		// Handled transparently by the registers
+		if (mTimingUntil(&gb->timing, &gb->timer.irq) == -1) {
+			gb->memory.io[REG_TIMA] = value;
+		}
 		break;
 	case REG_TAC:
 		value = GBTimerUpdateTAC(&gb->timer, value);
