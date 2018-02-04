@@ -70,7 +70,7 @@ void GBTimerDivReset(struct GBTimer* timer) {
 	timer->nextDiv -= mTimingUntil(&timer->p->timing, &timer->event);
 	mTimingDeschedule(&timer->p->timing, &timer->event);
 	_GBTimerDivIncrement(timer, (timer->p->cpu->executionState + 1) & 3);
-	if (timer->internalDiv & (timer->timaPeriod >> 1)) {
+	if (((timer->internalDiv << 1) | ((timer->nextDiv >> 3) & 1)) & timer->timaPeriod) {
 		++timer->p->memory.io[REG_TIMA];
 		if (!timer->p->memory.io[REG_TIMA]) {
 			mTimingSchedule(&timer->p->timing, &timer->irq, 4 - ((timer->p->cpu->executionState + 1) & 3));
