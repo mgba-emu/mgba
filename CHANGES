@@ -22,6 +22,7 @@ Bugfixes:
  - Wii: Fix screen tear when unpausing
  - GBA: Fix some GBA ROM misdetection (fixes mgba.io/i/978)
  - GBA Hardware: RTC accuracy improvements
+ - GBA: Fix SharkPort saves for EEPROM games
 Misc:
  - GBA: Improve multiboot image detection
  - GB MBC: Remove erroneous bank 0 wrapping
