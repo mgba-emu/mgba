@@ -50,6 +50,7 @@ Bugfixes:
  - GBA Hardware: RTC accuracy improvements
  - GB Timer: Minor accuracy improvements
  - GB Audio: Clock frame events on DIV
+ - GBA: Fix SharkPort saves for EEPROM games
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
