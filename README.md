@@ -110,11 +110,11 @@ To build on Windows for development, using MSYS2 is recommended. Follow the inst
 
 For x86 (32 bit) builds:
 
-	pacman -Sy mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2}
+	pacman -Sy mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 For x86_64 (64 bit) builds:
 
-	pacman -Sy mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2}
+	pacman -Sy mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 Check out the source code by running this command:
 
@@ -128,7 +128,7 @@ Then finally build it by running these commands:
 	cmake .. -G "MSYS Makefiles"
 	make
 
-Please note that this build of mGBA for Windows is not suitable for distribution, due to the scattering of DLLs it needs to run, but is perfect for development. However, if distributing such a build is desired (e.g. for testing on machines that don't have the MSYS2 environment installed), a tool called "[Dependency Walker](http://dependencywalker.com)" can be used to see which additional DLL files need to be shipped with the mGBA executable.
+Please note that this build of mGBA for Windows is not suitable for distribution, due to the scattering of DLLs it needs to run, but is perfect for development. However, if distributing such a build is desired (e.g. for testing on machines that don't have the MSYS2 environment installed), running `cpack -G ZIP` will prepare a zip file with all of the necessary DLLs.
 
 ### Dependencies
 

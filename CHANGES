@@ -18,10 +18,16 @@ Bugfixes:
  - Core: Fix ROM patches not being unloaded when disabled (fixes mgba.io/i/962)
  - GBA I/O: Fix writing to DISPCNT CGB flag (fixes mgba.io/i/902)
  - GBA Memory: Partially revert prefetch changes (fixes mgba.io/i/840)
+ - PSP2: Fix issues causing poor audio
+ - Wii: Fix screen tear when unpausing
+ - GBA: Fix some GBA ROM misdetection (fixes mgba.io/i/978)
+ - GBA Hardware: RTC accuracy improvements
+ - GBA: Fix SharkPort saves for EEPROM games
 Misc:
  - GBA: Improve multiboot image detection
  - GB MBC: Remove erroneous bank 0 wrapping
  - 3DS: Scale font based on glyph heights (fixes mgba.io/i/961)
+ - PSP2: Use system enter key by default
 
 0.6.1: (2017-10-01)
 Bugfixes:
