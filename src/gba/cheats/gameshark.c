@@ -90,6 +90,7 @@ void GBACheatSetGameSharkVersion(struct GBACheatSet* cheats, int version) {
 bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 	enum GBAGameSharkType type = op1 >> 28;
 	struct mCheat* cheat = 0;
+	int romPatch = 0;
 
 	if (cheats->incompleteCheat != COMPLETE) {
 		struct mCheat* incompleteCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat);
@@ -145,10 +146,16 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case GSA_PATCH:
-		cheats->romPatches[0].address = BASE_CART0 | ((op1 & 0xFFFFFF) << 1);
-		cheats->romPatches[0].newValue = op2;
-		cheats->romPatches[0].applied = false;
-		cheats->romPatches[0].exists = true;
+		while (cheats->romPatches[romPatch].exists) {
+			++romPatch;
+			if (romPatch >= MAX_ROM_PATCHES) {
+				break;
+			}
+		}
+		cheats->romPatches[romPatch].address = BASE_CART0 | ((op1 & 0xFFFFFF) << 1);
+		cheats->romPatches[romPatch].newValue = op2;
+		cheats->romPatches[romPatch].applied = false;
+		cheats->romPatches[romPatch].exists = true;
 		return true;
 	case GSA_BUTTON:
 		// TODO: Implement button
