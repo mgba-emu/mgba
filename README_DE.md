@@ -106,7 +106,7 @@ Bitte beachte, dass Du unter macOS nicht 'make install' verwenden solltest, da d
 
 ### Für Entwickler: Kompilieren unter Windows
 
-Um mGBA auf Windows zu kompilieren, wird MSYS2 empfohlen. Befolge die Installationsschritte auf der [MSYS2-Website](https://msys2.github.io). Stelle sicher, dass Du die 32-Bit-Version ("MSYS2 MinGW 32-bit") (oder die 64-Bit-Version "MSYS2 MinGW 64-bit", wenn Du mGBA für x86_64 kompilieren willst) verwendest und führe folgendes Kommando (einschließlich der Klammern) aus, um alle benötigten Abhängigkeiten zu installieren. Bitte beachte, dass dafür über 500MiB an Paketen heruntergeladen werden, was eine Weile dauern kann):
+Um mGBA auf Windows zu kompilieren, wird MSYS2 empfohlen. Befolge die Installationsschritte auf der [MSYS2-Website](https://msys2.github.io). Stelle sicher, dass Du die 32-Bit-Version ("MSYS2 MinGW 32-bit") (oder die 64-Bit-Version "MSYS2 MinGW 64-bit", wenn Du mGBA für x86_64 kompilieren willst) verwendest und führe folgendes Kommando (einschließlich der Klammern) aus, um alle benötigten Abhängigkeiten zu installieren. Bitte beachte, dass dafür über 1100MiB an Paketen heruntergeladen werden, was eine Weile dauern kann:
 
 Für x86 (32 Bit):
 
