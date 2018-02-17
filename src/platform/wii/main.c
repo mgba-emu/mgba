@@ -512,7 +512,9 @@ int main(int argc, char* argv[]) {
 		for (i = 0; runner.keySources[i].id; ++i) {
 			mInputMapLoad(&runner.params.keyMap, runner.keySources[i].id, mCoreConfigGetInput(&runner.config));
 		}
+		VIDEO_SetBlack(true);
 		mGUIRun(&runner, argv[1]);
+		VIDEO_SetBlack(false);
 	} else {
 		mGUIRunloop(&runner);
 	}
