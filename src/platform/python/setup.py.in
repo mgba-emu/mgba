@@ -22,7 +22,7 @@ setup(name="${BINARY_NAME}",
       url="http://github.com/mgba-emu/mgba/",
       packages=["mgba"],
       package_dir={
-        "mgba": "${CMAKE_CURRENT_SOURCE_DIR}"
+        "mgba": "${CMAKE_CURRENT_SOURCE_DIR}/mgba"
       },
       setup_requires=['cffi>=1.6', 'pytest-runner'],
       install_requires=['cffi>=1.6', 'cached-property'],
