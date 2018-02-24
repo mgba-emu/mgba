@@ -51,6 +51,7 @@ Bugfixes:
  - GB Timer: Minor accuracy improvements
  - GB Audio: Clock frame events on DIV
  - GBA: Fix SharkPort saves for EEPROM games
+ - Qt: Fix opening in fullscreen (fixes mgba.io/i/993)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
