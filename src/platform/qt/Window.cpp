@@ -244,7 +244,9 @@ void Window::resizeFrame(const QSize& size) {
 	m_screenWidget->setSizeHint(newSize);
 	newSize -= m_screenWidget->size();
 	newSize += this->size();
-	resize(newSize);
+	if (!isFullScreen()) {
+		resize(newSize);
+	}
 }
 
 void Window::setConfig(ConfigController* config) {

@@ -23,6 +23,7 @@ Bugfixes:
  - GBA: Fix some GBA ROM misdetection (fixes mgba.io/i/978)
  - GBA Hardware: RTC accuracy improvements
  - GBA: Fix SharkPort saves for EEPROM games
+ - Qt: Fix opening in fullscreen (fixes mgba.io/i/993)
 Misc:
  - GBA: Improve multiboot image detection
  - GB MBC: Remove erroneous bank 0 wrapping
