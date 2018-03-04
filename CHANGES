@@ -62,6 +62,7 @@ Bugfixes:
  - Qt: Fix timezone issues with time overrides
  - Qt: Fix sprite export pausing game indefinitely (fixes mgba.io/i/841)
  - SDL: Fix potential race condition when pressing keys (fixes mgba.io/i/872)
+ - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
 Misc:
  - CMake: Fix CPack dependencies for libpng 1.6
  - GBA: Detect hardware for Pokémon FireRed ROM hacks
