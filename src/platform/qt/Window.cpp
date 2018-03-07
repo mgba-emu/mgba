@@ -412,7 +412,9 @@ void Window::openSettingsWindow() {
 	connect(settingsWindow, &SettingsView::cameraDriverChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::languageChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::pathsChanged, this, &Window::reloadConfig);
+#ifdef USE_SQLITE3
 	connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
+#endif
 	openView(settingsWindow);
 }
 
@@ -1830,13 +1832,17 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	connect(m_controller.get(), &CoreController::failed, this, &Window::gameFailed);
 	connect(m_controller.get(), &CoreController::unimplementedBiosCall, this, &Window::unimplementedBiosCall);
 
+#ifdef USE_GDB_STUB
 	if (m_gdbController) {
 		m_gdbController->setController(m_controller);
 	}
+#endif
 
+#ifdef USE_DEBUGGERS
 	if (m_console) {
 		m_console->setController(m_controller);
 	}
+#endif
 
 #ifdef USE_MAGICK
 	if (m_gifView) {
