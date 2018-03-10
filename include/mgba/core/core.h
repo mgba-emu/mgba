@@ -196,7 +196,9 @@ void* mCoreGetMemoryBlock(struct mCore* core, uint32_t start, size_t* size);
 #ifdef USE_ELF
 struct ELF;
 bool mCoreLoadELF(struct mCore* core, struct ELF* elf);
+#ifdef USE_DEBUGGERS
 void mCoreLoadELFSymbols(struct mDebuggerSymbols* symbols, struct ELF*);
+#endif
 #endif
 
 CXX_GUARD_END

@@ -716,7 +716,9 @@ static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	}
 	struct ELF* elf = ELFOpen(vf);
 	if (elf) {
+#ifdef USE_DEBUGGERS
 		mCoreLoadELFSymbols(core->symbolTable, elf);
+#endif
 		ELFClose(elf);
 	}
 	if (closeAfter) {
