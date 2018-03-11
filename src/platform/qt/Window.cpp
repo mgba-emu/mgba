@@ -963,6 +963,7 @@ void Window::openStateWindow(LoadSave ls) {
 	}
 	m_stateWindow->setAttribute(Qt::WA_DeleteOnClose);
 	m_stateWindow->setMode(ls);
+	updateFrame();
 	attachWidget(m_stateWindow);
 }
 
@@ -1759,6 +1760,16 @@ void Window::focusCheck() {
 	}
 }
 
+void Window::updateFrame() {
+	QSize size = m_controller->screenDimensions();
+	QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), size.width(), size.height(),
+	                    size.width() * BYTES_PER_PIXEL, QImage::Format_RGBX8888);
+	QPixmap pixmap;
+	pixmap.convertFromImage(currentImage);
+	m_screenWidget->setPixmap(pixmap);
+	emit paused(true);
+}
+
 void Window::setController(CoreController* controller, const QString& fname) {
 	if (!controller) {
 		return;
@@ -1795,15 +1806,8 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		});
 	}
 	connect(m_controller.get(), &CoreController::stopping, &m_inputController, &InputController::resumeScreensaver);
-	connect(m_controller.get(), &CoreController::paused, [this]() {
-		QSize size = m_controller->screenDimensions();
-		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), size.width(), size.height(),
-		                    size.width() * BYTES_PER_PIXEL, QImage::Format_RGBX8888);
-		QPixmap pixmap;
-		pixmap.convertFromImage(currentImage);
-		m_screenWidget->setPixmap(pixmap);
-		emit paused(true);
-	});
+	connect(m_controller.get(), &CoreController::paused, this, &Window::updateFrame);
+
 #ifndef Q_OS_MAC
 	connect(m_controller.get(), &CoreController::paused, menuBar(), &QWidget::show);
 	connect(m_controller.get(), &CoreController::unpaused, [this]() {
@@ -1874,11 +1878,15 @@ void Window::setController(CoreController* controller, const QString& fname) {
 }
 
 WindowBackground::WindowBackground(QWidget* parent)
-	: QLabel(parent)
+	: QWidget(parent)
 {
 	setLayout(new QStackedLayout());
 	layout()->setContentsMargins(0, 0, 0, 0);
-	setAlignment(Qt::AlignCenter);
+}
+
+void WindowBackground::setPixmap(const QPixmap& pmap) {
+	m_pixmap = pmap;
+	update();
 }
 
 void WindowBackground::setSizeHint(const QSize& hint) {
@@ -1902,11 +1910,9 @@ void WindowBackground::setLockAspectRatio(bool lock) {
 	m_lockAspectRatio = lock;
 }
 
-void WindowBackground::paintEvent(QPaintEvent*) {
-	const QPixmap* logo = pixmap();
-	if (!logo) {
-		return;
-	}
+void WindowBackground::paintEvent(QPaintEvent* event) {
+	QWidget::paintEvent(event);
+	const QPixmap& logo = pixmap();
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::SmoothPixmapTransform);
 	painter.fillRect(QRect(QPoint(), size()), Qt::black);
@@ -1925,5 +1931,5 @@ void WindowBackground::paintEvent(QPaintEvent*) {
 	}
 	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
 	QRect full(origin, ds);
-	painter.drawPixmap(full, *logo);
+	painter.drawPixmap(full, logo);
 }

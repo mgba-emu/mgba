@@ -134,6 +134,8 @@ private slots:
 	void showFPS();
 	void focusCheck();
 
+	void updateFrame();
+
 private:
 	static const int FPS_TIMER_INTERVAL = 2000;
 	static const int FRAME_LIST_SIZE = 120;
@@ -222,22 +224,26 @@ private:
 #endif
 };
 
-class WindowBackground : public QLabel {
+class WindowBackground : public QWidget {
 Q_OBJECT
 
 public:
 	WindowBackground(QWidget* parent = 0);
 
+	void setPixmap(const QPixmap& pixmap);
 	void setSizeHint(const QSize& size);
 	virtual QSize sizeHint() const override;
 	void setDimensions(int width, int height);
 	void setLockIntegerScaling(bool lock);
 	void setLockAspectRatio(bool lock);
 
+	const QPixmap& pixmap() const { return m_pixmap; }
+
 protected:
 	virtual void paintEvent(QPaintEvent*) override;
 
 private:
+	QPixmap m_pixmap;
 	QSize m_sizeHint;
 	int m_aspectWidth;
 	int m_aspectHeight;
