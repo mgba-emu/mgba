@@ -668,8 +668,6 @@ void Window::gameStarted() {
 	multiplayerChanged();
 	updateTitle();
 	QSize size = m_controller->screenDimensions();
-	m_display->setMinimumSize(size);
-	m_screenWidget->setMinimumSize(m_display->minimumSize());
 	m_screenWidget->setDimensions(size.width(), size.height());
 	m_config->updateOption("lockIntegerScaling");
 	m_config->updateOption("lockAspectRatio");
@@ -677,6 +675,7 @@ void Window::gameStarted() {
 		resizeFrame(size * m_savedScale);
 	}
 	attachWidget(m_display.get());
+	m_display->setMinimumSize(size);
 
 #ifndef Q_OS_MAC
 	if (isFullScreen()) {
@@ -751,7 +750,6 @@ void Window::gameStopped() {
 #elif defined(M_CORE_GBA)
 	m_display->setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 #endif
-	m_screenWidget->setMinimumSize(m_display->minimumSize());
 
 	m_videoLayers->clear();
 	m_audioChannels->clear();
@@ -803,8 +801,7 @@ void Window::reloadDisplayDriver() {
 	m_shaderView.reset();
 	m_shaderView = std::make_unique<ShaderSelector>(m_display.get(), m_config);
 #endif
-	m_screenWidget->setMinimumSize(m_display->minimumSize());
-	m_screenWidget->setSizePolicy(m_display->sizePolicy());
+
 	connect(this, &Window::shutdown, m_display.get(), &Display::stopDrawing);
 	connect(m_display.get(), &Display::hideCursor, [this]() {
 		if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() == m_display.get()) {
@@ -830,6 +827,7 @@ void Window::reloadDisplayDriver() {
 #endif
 
 	if (m_controller) {
+		m_display->setMinimumSize(m_controller->screenDimensions());
 		connect(m_controller.get(), &CoreController::stopping, m_display.get(), &Display::stopDrawing);
 		connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::forceDraw);
 		connect(m_controller.get(), &CoreController::rewound, m_display.get(), &Display::forceDraw);
@@ -840,6 +838,12 @@ void Window::reloadDisplayDriver() {
 
 		attachWidget(m_display.get());
 		m_display->startDrawing(m_controller);
+	} else {
+#ifdef M_CORE_GB
+		m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
+#elif defined(M_CORE_GBA)
+		m_display->setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+#endif
 	}
 }
 
