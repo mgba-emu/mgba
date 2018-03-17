@@ -136,11 +136,11 @@ Um mGBA auf Windows zu kompilieren, wird MSYS2 empfohlen. Befolge die Installati
 
 Für x86 (32 Bit):
 
-	pacman -Sy mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 Für x86_64 (64 Bit):
 
-	pacman -Sy mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 Lade den aktuellen mGBA-Quellcode mithilfe des folgenden Kommandos herunter:
 
