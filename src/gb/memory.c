@@ -16,31 +16,33 @@
 
 mLOG_DEFINE_CATEGORY(GB_MEM, "GB Memory", "gb.memory");
 
-struct OAMBlock {
-	uint16_t low;
-	uint16_t high;
+enum GBBus {
+	GB_BUS_CPU,
+	GB_BUS_MAIN,
+	GB_BUS_VRAM,
+	GB_BUS_RAM
 };
 
-static const struct OAMBlock _oamBlockDMG[] = {
-	{ 0xA000, 0xFE00 },
-	{ 0xA000, 0xFE00 },
-	{ 0xA000, 0xFE00 },
-	{ 0xA000, 0xFE00 },
-	{ 0x8000, 0xA000 },
-	{ 0xA000, 0xFE00 },
-	{ 0xA000, 0xFE00 },
-	{ 0xA000, 0xFE00 },
+static const enum GBBus _oamBlockDMG[] = {
+	GB_BUS_MAIN, // 0x0000
+	GB_BUS_MAIN, // 0x2000
+	GB_BUS_MAIN, // 0x4000
+	GB_BUS_MAIN, // 0x6000
+	GB_BUS_VRAM, // 0x8000
+	GB_BUS_MAIN, // 0xA000
+	GB_BUS_MAIN, // 0xC000
+	GB_BUS_CPU, // 0xE000
 };
 
-static const struct OAMBlock _oamBlockCGB[] = {
-	{ 0xA000, 0xC000 },
-	{ 0xA000, 0xC000 },
-	{ 0xA000, 0xC000 },
-	{ 0xA000, 0xC000 },
-	{ 0x8000, 0xA000 },
-	{ 0xA000, 0xC000 },
-	{ 0xC000, 0xFE00 },
-	{ 0xA000, 0xC000 },
+static const enum GBBus _oamBlockCGB[] = {
+	GB_BUS_MAIN, // 0x0000
+	GB_BUS_MAIN, // 0x2000
+	GB_BUS_MAIN, // 0x4000
+	GB_BUS_MAIN, // 0x6000
+	GB_BUS_VRAM, // 0x8000
+	GB_BUS_MAIN, // 0xA000
+	GB_BUS_RAM, // 0xC000
+	GB_BUS_CPU // 0xE000
 };
 
 static void _pristineCow(struct GB* gba);
@@ -192,9 +194,10 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
 	if (gb->memory.dmaRemaining) {
-		const struct OAMBlock* block = gb->model < GB_MODEL_CGB ? _oamBlockDMG : _oamBlockCGB;
-		block = &block[memory->dmaSource >> 13];
-		if (address >= block->low && address < block->high) {
+		const enum GBBus* block = gb->model < GB_MODEL_CGB ? _oamBlockDMG : _oamBlockCGB;
+		enum GBBus dmaBus = block[memory->dmaSource >> 13];
+		enum GBBus accessBus = block[address >> 13];
+		if (dmaBus != GB_BUS_CPU && dmaBus == accessBus) {
 			return 0xFF;
 		}
 		if (address >= GB_BASE_OAM && address < GB_BASE_UNUSABLE) {
@@ -264,9 +267,10 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
 	if (gb->memory.dmaRemaining) {
-		const struct OAMBlock* block = gb->model < GB_MODEL_CGB ? _oamBlockDMG : _oamBlockCGB;
-		block = &block[memory->dmaSource >> 13];
-		if (address >= block->low && address < block->high) {
+		const enum GBBus* block = gb->model < GB_MODEL_CGB ? _oamBlockDMG : _oamBlockCGB;
+		enum GBBus dmaBus = block[memory->dmaSource >> 13];
+		enum GBBus accessBus = block[address >> 13];
+		if (dmaBus != GB_BUS_CPU && dmaBus == accessBus) {
 			return;
 		}
 		if (address >= GB_BASE_OAM && address < GB_BASE_UNUSABLE) {
