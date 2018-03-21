@@ -25,6 +25,7 @@ Bugfixes:
  - GBA: Fix SharkPort saves for EEPROM games
  - Qt: Fix opening in fullscreen (fixes mgba.io/i/993)
  - Python: Fix package directory
+ - GB Memory: Fix OAM DMA blocking regions (fixes mgba.io/i/1013)
 Misc:
  - GBA: Improve multiboot image detection
  - GB MBC: Remove erroneous bank 0 wrapping
