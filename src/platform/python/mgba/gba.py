@@ -26,6 +26,7 @@ class GBA(Core):
     SIO_NORMAL_32 = lib.SIO_NORMAL_32
     SIO_MULTI = lib.SIO_MULTI
     SIO_UART = lib.SIO_UART
+    SIO_JOYBUS = lib.SIO_JOYBUS
     SIO_GPIO = lib.SIO_GPIO
 
     def __init__(self, native):
@@ -33,22 +34,29 @@ class GBA(Core):
         self._native = ffi.cast("struct GBA*", native.board)
         self.sprites = GBAObjs(self)
         self.cpu = ARMCore(self._core.cpu)
+        self._sio = set()
 
     @needsReset
-    def _initTileCache(self, cache):
-        lib.GBAVideoTileCacheInit(cache)
-        lib.GBAVideoTileCacheAssociate(cache, ffi.addressof(self._native.video))
+    def _initCache(self, cache):
+        lib.GBAVideoCacheInit(cache)
+        lib.GBAVideoCacheAssociate(cache, ffi.addressof(self._native.video))
 
-    def _deinitTileCache(self, cache):
-        self._native.video.renderer.cache = ffi.NULL
-        lib.mTileCacheDeinit(cache)
+    def _deinitCache(self, cache):
+        lib.mCacheSetDeinit(cache)
+        if self._wasReset:
+            self._native.video.renderer.cache = ffi.NULL
 
-    def reset(self):
-        super(GBA, self).reset()
+    def _load(self):
+        super(GBA, self)._load()
         self.memory = GBAMemory(self._core, self._native.memory.romSize)
 
     def attachSIO(self, link, mode=lib.SIO_MULTI):
+        self._sio.add(mode)
         lib.GBASIOSetDriver(ffi.addressof(self._native.sio), link._native, mode)
+
+    def __del__(self):
+        for mode in self._sio:
+            lib.GBASIOSetDriver(ffi.addressof(self._native.sio), ffi.NULL, mode)
 
 createCallback("GBASIOPythonDriver", "init")
 createCallback("GBASIOPythonDriver", "deinit")
@@ -75,6 +83,32 @@ class GBASIODriver(object):
 
     def writeRegister(self, address, value):
         return value
+
+class GBASIOJOYDriver(GBASIODriver):
+    RESET = lib.JOY_RESET
+    POLL = lib.JOY_POLL
+    TRANS = lib.JOY_TRANS
+    RECV = lib.JOY_RECV
+
+    def __init__(self):
+        self._handle = ffi.new_handle(self)
+        self._native = ffi.gc(lib.GBASIOJOYPythonDriverCreate(self._handle), lib.free)
+
+    def sendCommand(self, cmd, data):
+        buffer = ffi.new('uint8_t[5]')
+        try:
+            buffer[0] = data[0]
+            buffer[1] = data[1]
+            buffer[2] = data[2]
+            buffer[3] = data[3]
+            buffer[4] = data[4]
+        except IndexError:
+            pass
+
+        outlen = lib.GBASIOJOYSendCommand(self._native, cmd, buffer)
+        if outlen > 0 and outlen <= 5:
+            return bytes(buffer[0:outlen])
+        return None
 
 class GBAMemory(Memory):
     def __init__(self, core, romSize=lib.SIZE_CART0):
@@ -127,6 +161,7 @@ class GBAObjs:
         if index >= len(self):
             raise IndexError()
         sprite = GBASprite(self._obj[index])
+        tiles = self._core.tiles[3 if sprite._256Color else 2]
         map1D = bool(self._core._native.memory.io[0] & 0x40)
-        sprite.constitute(self._core.tiles, 0 if map1D else 0x20, int(sprite._256Color))
+        sprite.constitute(tiles, 0 if map1D else 0x20)
         return sprite

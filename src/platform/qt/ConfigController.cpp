@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ConfigController.h"
 
-#include "GameController.h"
+#include "CoreController.h"
 
 #include <QAction>
 #include <QDir>
@@ -98,8 +98,8 @@ ConfigController::ConfigController(QObject* parent)
 
 	mCoreConfigInit(&m_config, PORT);
 
-	m_opts.audioSync = GameController::AUDIO_SYNC;
-	m_opts.videoSync = GameController::VIDEO_SYNC;
+	m_opts.audioSync = CoreController::AUDIO_SYNC;
+	m_opts.videoSync = CoreController::VIDEO_SYNC;
 	m_opts.fpsTarget = 60;
 	m_opts.audioBuffers = 1536;
 	m_opts.sampleRate = 44100;
@@ -158,12 +158,16 @@ void ConfigController::updateOption(const char* key) {
 	m_optionSet[optionName]->setValue(mCoreConfigGetValue(&m_config, key));
 }
 
-QString ConfigController::getOption(const char* key) const {
-	return QString(mCoreConfigGetValue(&m_config, key));
+QString ConfigController::getOption(const char* key, const QVariant& defaultVal) const {
+	const char* val = mCoreConfigGetValue(&m_config, key);
+	if (val) {
+		return QString(val);
+	}
+	return defaultVal.toString();
 }
 
-QString ConfigController::getOption(const QString& key) const {
-	return getOption(key.toUtf8().constData());
+QString ConfigController::getOption(const QString& key, const QVariant& defaultVal) const {
+	return getOption(key.toUtf8().constData(), defaultVal);
 }
 
 QVariant ConfigController::getQtOption(const QString& key, const QString& group) const {

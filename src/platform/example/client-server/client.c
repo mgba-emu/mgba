@@ -29,19 +29,19 @@ int main() {
 	SocketRecv(server, &bpp, sizeof(bpp));
 	width = ntohl(width);
 	height = ntohl(height);
-	if (ntohl(bpp) != BYTES_PER_PIXEL) {
+	bpp = ntohl(bpp);
+	ssize_t bufferSize = width * height * bpp;
+
+#if !SDL_VERSION_ATLEAST(2, 0, 0)
+	if (bpp == 2) {
+		SDL_SetVideoMode(width, height, 16, SDL_DOUBLEBUF | SDL_HWSURFACE);
+	} else if (bpp == 4) {
+		SDL_SetVideoMode(width, height, 32, SDL_DOUBLEBUF | SDL_HWSURFACE);
+	} else {
 		SocketClose(server);
 		SocketSubsystemDeinit();
 		return 1;
 	}
-	ssize_t bufferSize = width * height * BYTES_PER_PIXEL;
-
-#if !SDL_VERSION_ATLEAST(2, 0, 0)
-#ifdef COLOR_16_BIT
-	SDL_SetVideoMode(width, height, 16, SDL_DOUBLEBUF | SDL_HWSURFACE);
-#else
-	SDL_SetVideoMode(width, height, 32, SDL_DOUBLEBUF | SDL_HWSURFACE);
-#endif
 #endif
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -49,15 +49,16 @@ int main() {
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
 	Uint32 pixfmt;
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
-	pixfmt = SDL_PIXELFORMAT_RGB565;
-#else
-	pixfmt = SDL_PIXELFORMAT_ABGR1555;
-#endif
-#else
-	pixfmt = SDL_PIXELFORMAT_ABGR8888;
-#endif
+	if (bpp == 2) {
+		pixfmt = SDL_PIXELFORMAT_RGB565;
+	} else if (bpp == 4) {
+		pixfmt = SDL_PIXELFORMAT_ABGR8888;
+	} else {
+		SocketClose(server);
+		SocketSubsystemDeinit();
+		return 1;
+	}
+
 	SDL_Texture* sdlTex = SDL_CreateTexture(renderer, pixfmt, SDL_TEXTUREACCESS_STREAMING, width, height);
 #endif
 

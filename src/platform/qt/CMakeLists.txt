@@ -1,6 +1,6 @@
-if(NOT MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(PLATFORM_SRC)
 set(QT_STATIC OFF)
@@ -70,13 +70,15 @@ set(SOURCE_FILES
 	CheatsModel.cpp
 	CheatsView.cpp
 	ConfigController.cpp
+	ColorPicker.cpp
+	CoreManager.cpp
+	CoreController.cpp
 	Display.cpp
 	DisplayGL.cpp
 	DisplayQt.cpp
 	GBAApp.cpp
 	GBAKeyEditor.cpp
 	GIFView.cpp
-	GameController.cpp
 	GamepadAxisEvent.cpp
 	GamepadButtonEvent.cpp
 	GamepadHatEvent.cpp
@@ -87,6 +89,7 @@ set(SOURCE_FILES
 	LoadSaveState.cpp
 	LogController.cpp
 	LogView.cpp
+	MapView.cpp
 	MemoryModel.cpp
 	MemorySearch.cpp
 	MemoryView.cpp
@@ -95,6 +98,8 @@ set(SOURCE_FILES
 	ObjView.cpp
 	OverrideView.cpp
 	PaletteView.cpp
+	PrinterView.cpp
+	RegisterView.cpp
 	ROMInfo.cpp
 	SavestateButton.cpp
 	SensorView.cpp
@@ -120,11 +125,13 @@ set(UI_FILES
 	IOViewer.ui
 	LoadSaveState.ui
 	LogView.ui
+	MapView.ui
 	MemorySearch.ui
 	MemoryView.ui
 	ObjView.ui
 	OverrideView.ui
 	PaletteView.ui
+	PrinterView.ui
 	ROMInfo.ui
 	SensorView.ui
 	SettingsView.ui
@@ -160,8 +167,11 @@ if(Qt5Multimedia_FOUND)
 	list(APPEND AUDIO_SRC
 		AudioProcessorQt.cpp
 		AudioDevice.cpp)
+	list(APPEND SOURCE_FILES
+		VideoDumper.cpp)
 	if (WIN32 AND QT_STATIC)
-		list(APPEND QT_LIBRARIES qtaudio_windows strmiids winmm)
+		list(APPEND QT_LIBRARIES Qt5::QWindowsAudioPlugin Qt5::DSServicePlugin
+                                 strmiids winmm mfuuid mfplat mf ksguid dxva2 evr d3d9)
 	endif()
 	list(APPEND QT_LIBRARIES Qt5::Multimedia)
 	list(APPEND QT_DEFINES BUILD_QT_MULTIMEDIA)
@@ -205,9 +215,6 @@ if(WIN32)
 	configure_file(${CMAKE_SOURCE_DIR}/res/mgba.rc.in ${CMAKE_BINARY_DIR}/res/mgba.rc)
 	list(APPEND RESOURCES ${CMAKE_BINARY_DIR}/res/mgba.rc)
 	set_source_files_properties(${CMAKE_BINARY_DIR}/res/mgba.rc PROPERTIES OBJECT_DEPENDS ${CMAKE_SOURCE_DIR}/res/mgba.ico)
-	if(QT_STATIC)
-		list(APPEND QT_LIBRARIES qwindows Qt5PlatformSupport imm32)
-	endif()
 endif()
 if(NOT DEFINED DATADIR)
 	if(APPLE)
@@ -264,6 +271,10 @@ list(APPEND QT_LIBRARIES Qt5::Widgets)
 if(BUILD_GL OR BUILD_GLES2)
 	list(APPEND QT_LIBRARIES Qt5::OpenGL ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 endif()
+if(WIN32 AND QT_STATIC)
+	list(APPEND QT_LIBRARIES qwindows dwmapi imm32 uxtheme Qt5EventDispatcherSupport Qt5FontDatabaseSupport Qt5ThemeSupport)
+	set_target_properties(Qt5::Core PROPERTIES INTERFACE_LINK_LIBRARIES "qtpcre2;version;ws2_32")
+endif()
 target_link_libraries(${BINARY_NAME}-qt ${PLATFORM_LIBRARY} ${BINARY_NAME} ${QT_LIBRARIES})
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}" PARENT_SCOPE)
 
@@ -286,10 +297,12 @@ if(APPLE)
 	if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
 		get_target_property(QTCOCOA Qt5::QCocoaIntegrationPlugin LOCATION)
 		get_target_property(COREAUDIO Qt5::CoreAudioPlugin LOCATION)
-		get_target_property(BUNDLE_PATH ${BINARY_NAME}-qt LOCATION)
+		get_target_property(QTAVFSERVICE Qt5::AVFServicePlugin LOCATION)
+		set(BUNDLE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.app)
 		target_sources(${BINARY_NAME}-qt PRIVATE "${PLUGINS}")
 		set_source_files_properties("${QTCOCOA}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
 		set_source_files_properties("${COREAUDIO}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
+		set_source_files_properties("${QTAVFSERVICE}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
 		install(CODE "
 		   include(BundleUtilities)
 		   set(BU_CHMOD_BUNDLE_ITEMS ON)
@@ -297,7 +310,7 @@ if(APPLE)
 		   fixup_bundle(\"${BUNDLE_PATH}\"   \"${PLUGINS}\"   \"\")
 		   " COMPONENT ${BINARY_NAME}-qt)
 	else()
-		set(DEPLOY_OPTIONS -p platforms/libqcocoa.dylib,audio/libqtaudio_coreaudio.dylib)
+		set(DEPLOY_OPTIONS -p platforms/libqcocoa.dylib,audio/libqtaudio_coreaudio.dylib,mediaservice/libqavfcamera.dylib)
 		if(NOT CMAKE_INSTALL_NAME_TOOL EQUAL "install_name_tool")
 			set(DEPLOY_OPTIONS ${DEPLOY_OPTIONS} -I "${CMAKE_INSTALL_NAME_TOOL}")
 		endif()

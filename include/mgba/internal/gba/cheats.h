@@ -13,7 +13,7 @@ CXX_GUARD_START
 #include <mgba/internal/arm/arm.h>
 #include <mgba/core/cheats.h>
 
-#define MAX_ROM_PATCHES 4
+#define MAX_ROM_PATCHES 10
 #define COMPLETE ((size_t) -1)
 
 enum GBACheatType {

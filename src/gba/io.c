@@ -707,17 +707,18 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	}
 
 	switch (address) {
+	// Reading this takes two cycles (1N+1I), so let's remove them preemptively
 	case REG_TM0CNT_LO:
-		GBATimerUpdateRegister(gba, 0);
+		GBATimerUpdateRegister(gba, 0, 4);
 		break;
 	case REG_TM1CNT_LO:
-		GBATimerUpdateRegister(gba, 1);
+		GBATimerUpdateRegister(gba, 1, 4);
 		break;
 	case REG_TM2CNT_LO:
-		GBATimerUpdateRegister(gba, 2);
+		GBATimerUpdateRegister(gba, 2, 4);
 		break;
 	case REG_TM3CNT_LO:
-		GBATimerUpdateRegister(gba, 3);
+		GBATimerUpdateRegister(gba, 3, 4);
 		break;
 
 	case REG_KEYINPUT:
@@ -928,16 +929,17 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 	for (i = 0; i < 4; ++i) {
 		STORE_16(gba->memory.io[(REG_DMA0CNT_LO + i * 12) >> 1], (REG_DMA0CNT_LO + i * 12), state->io);
 		STORE_16(gba->timers[i].reload, 0, &state->timers[i].reload);
-		STORE_16(gba->timers[i].oldReload, 0, &state->timers[i].oldReload);
 		STORE_32(gba->timers[i].lastEvent - mTimingCurrentTime(&gba->timing), 0, &state->timers[i].lastEvent);
 		STORE_32(gba->timers[i].event.when - mTimingCurrentTime(&gba->timing), 0, &state->timers[i].nextEvent);
-		STORE_32(gba->timers[i].overflowInterval, 0, &state->timers[i].overflowInterval);
+		STORE_32(gba->timers[i].irq.when - mTimingCurrentTime(&gba->timing), 0, &state->timers[i].nextIrq);
 		STORE_32(gba->timers[i].flags, 0, &state->timers[i].flags);
 		STORE_32(gba->memory.dma[i].nextSource, 0, &state->dma[i].nextSource);
 		STORE_32(gba->memory.dma[i].nextDest, 0, &state->dma[i].nextDest);
 		STORE_32(gba->memory.dma[i].nextCount, 0, &state->dma[i].nextCount);
 		STORE_32(gba->memory.dma[i].when, 0, &state->dma[i].when);
 	}
+
+	state->dmaTransferRegister = gba->memory.dmaTransferRegister;
 
 	GBAHardwareSerialize(&gba->memory.hw, state);
 }
@@ -957,8 +959,6 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	uint32_t when;
 	for (i = 0; i < 4; ++i) {
 		LOAD_16(gba->timers[i].reload, 0, &state->timers[i].reload);
-		LOAD_16(gba->timers[i].oldReload, 0, &state->timers[i].oldReload);
-		LOAD_32(gba->timers[i].overflowInterval, 0, &state->timers[i].overflowInterval);
 		LOAD_32(gba->timers[i].flags, 0, &state->timers[i].flags);
 		if (i > 0 && GBATimerFlagsIsCountUp(gba->timers[i].flags)) {
 			// Overwrite invalid values in savestate
@@ -971,17 +971,22 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		if (GBATimerFlagsIsEnable(gba->timers[i].flags)) {
 			mTimingSchedule(&gba->timing, &gba->timers[i].event, when);
 		}
+		LOAD_32(when, 0, &state->timers[i].nextIrq);
+		if (GBATimerFlagsIsIrqPending(gba->timers[i].flags)) {
+			mTimingSchedule(&gba->timing, &gba->timers[i].irq, when);
+		}
 
 		LOAD_16(gba->memory.dma[i].reg, (REG_DMA0CNT_HI + i * 12), state->io);
 		LOAD_32(gba->memory.dma[i].nextSource, 0, &state->dma[i].nextSource);
 		LOAD_32(gba->memory.dma[i].nextDest, 0, &state->dma[i].nextDest);
 		LOAD_32(gba->memory.dma[i].nextCount, 0, &state->dma[i].nextCount);
 		LOAD_32(gba->memory.dma[i].when, 0, &state->dma[i].when);
-		if (GBADMARegisterGetTiming(gba->memory.dma[i].reg) != DMA_TIMING_NOW) {
+		if (GBADMARegisterGetTiming(gba->memory.dma[i].reg) != GBA_DMA_TIMING_NOW) {
 			GBADMASchedule(gba, i, &gba->memory.dma[i]);
 		}
 	}
 	GBAAudioWriteSOUNDCNT_X(&gba->audio, gba->memory.io[REG_SOUNDCNT_X >> 1]);
+	gba->memory.dmaTransferRegister = state->dmaTransferRegister;
 	GBADMAUpdate(gba);
 	GBAHardwareDeserialize(&gba->memory.hw, state);
 }

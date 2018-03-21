@@ -8,27 +8,36 @@
 
 #include <mgba-util/common.h>
 
+#include <mgba-util/vector.h>
+
 CXX_GUARD_START
 
-#include <mgba/debugger/debugger.h>
-
-enum LexState {
-	LEX_ERROR = -1,
-	LEX_ROOT = 0,
-	LEX_EXPECT_IDENTIFIER,
-	LEX_EXPECT_BINARY,
-	LEX_EXPECT_DECIMAL,
-	LEX_EXPECT_HEX,
-	LEX_EXPECT_PREFIX,
-	LEX_EXPECT_OPERATOR
-};
+struct Token;
+DECLARE_VECTOR(LexVector, struct Token);
 
 enum Operation {
 	OP_ASSIGN,
 	OP_ADD,
 	OP_SUBTRACT,
 	OP_MULTIPLY,
-	OP_DIVIDE
+	OP_DIVIDE,
+	OP_MODULO,
+	OP_AND,
+	OP_OR,
+	OP_XOR,
+	OP_LESS,
+	OP_GREATER,
+	OP_EQUAL,
+	OP_NOT_EQUAL,
+	OP_LOGICAL_AND,
+	OP_LOGICAL_OR,
+	OP_LE,
+	OP_GE,
+	OP_NEGATE,
+	OP_FLIP,
+	OP_NOT,
+	OP_SHIFT_L,
+	OP_SHIFT_R,
 };
 
 struct Token {
@@ -48,22 +57,20 @@ struct Token {
 	};
 };
 
-struct LexVector {
-	struct LexVector* next;
-	struct Token token;
-};
-
 struct ParseTree {
 	struct Token token;
 	struct ParseTree* lhs;
 	struct ParseTree* rhs;
 };
 
-size_t lexExpression(struct LexVector* lv, const char* string, size_t length);
+size_t lexExpression(struct LexVector* lv, const char* string, size_t length, const char* eol);
 void parseLexedExpression(struct ParseTree* tree, struct LexVector* lv);
 
 void lexFree(struct LexVector* lv);
 void parseFree(struct ParseTree* tree);
+
+struct mDebugger;
+bool mDebuggerEvaluateParseTree(struct mDebugger* debugger, struct ParseTree* tree, int32_t* value, int* segment);
 
 CXX_GUARD_END
 

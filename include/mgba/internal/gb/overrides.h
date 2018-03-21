@@ -17,7 +17,7 @@ struct GBCartridgeOverride {
 	enum GBModel model;
 	enum GBMemoryBankControllerType mbc;
 
-	uint32_t gbColors[4];
+	uint32_t gbColors[12];
 };
 
 struct Configuration;

@@ -12,6 +12,7 @@ CXX_GUARD_START
 
 #include "main.h"
 
+void mSDLGLDoViewport(int w, int h, struct VideoBackend* v);
 void mSDLGLCommonSwap(struct VideoBackend* context);
 void mSDLGLCommonInit(struct mSDLRenderer* renderer);
 

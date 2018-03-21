@@ -6,7 +6,7 @@
 #include "MemoryModel.h"
 
 #include "GBAApp.h"
-#include "GameController.h"
+#include "CoreController.h"
 #include "LogController.h"
 #include "VFileDevice.h"
 
@@ -91,7 +91,7 @@ MemoryModel::MemoryModel(QWidget* parent)
 	setRegion(0, 0x10000000, tr("All"));
 }
 
-void MemoryModel::setController(GameController* controller) {
+void MemoryModel::setController(std::shared_ptr<CoreController> controller) {
 	m_core = controller->thread()->core;
 }
 

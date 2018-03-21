@@ -3,17 +3,18 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_IOVIEWER
-#define QGBA_IOVIEWER
+#pragma once
 
 #include <QDialog>
 #include <QList>
+
+#include <memory>
 
 #include "ui_IOViewer.h"
 
 namespace QGBA {
 
-class GameController;
+class CoreController;
 
 class IOViewer : public QDialog {
 Q_OBJECT
@@ -39,7 +40,7 @@ public:
 	};
 	typedef QList<RegisterItem> RegisterDescription;
 
-	IOViewer(GameController* controller, QWidget* parent = nullptr);
+	IOViewer(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
 	static const QList<RegisterDescription>& registerDescriptions();
 
@@ -65,9 +66,7 @@ private:
 
 	QCheckBox* m_b[16];
 
-	GameController* m_controller;
+	std::shared_ptr<CoreController> m_controller;
 };
 
 }
-
-#endif

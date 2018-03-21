@@ -3,8 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_CONFIG_CONTROLLER
-#define QGBA_CONFIG_CONTROLLER
+#pragma once
 
 #include "Override.h"
 
@@ -70,8 +69,8 @@ public:
 	ConfigOption* addOption(const char* key);
 	void updateOption(const char* key);
 
-	QString getOption(const char* key) const;
-	QString getOption(const QString& key) const;
+	QString getOption(const char* key, const QVariant& defaultVal = QVariant()) const;
+	QString getOption(const QString& key, const QVariant& defaultVal = QVariant()) const;
 
 	QVariant getQtOption(const QString& key, const QString& group = QString()) const;
 
@@ -110,5 +109,3 @@ private:
 };
 
 }
-
-#endif

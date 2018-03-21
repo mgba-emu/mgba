@@ -5,12 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "GDBController.h"
 
-#include "GameController.h"
+#include "CoreController.h"
 
 using namespace QGBA;
 
-GDBController::GDBController(GameController* controller, QObject* parent)
-	: DebuggerController(controller, &m_gdbStub.d, parent)
+GDBController::GDBController(QObject* parent)
+	: DebuggerController(&m_gdbStub.d, parent)
 	, m_bindAddress({ IPV4, 0 })
 {
 	GDBStubCreate(&m_gdbStub);
@@ -21,7 +21,7 @@ ushort GDBController::port() {
 }
 
 bool GDBController::isAttached() {
-	return m_gameController->debugger() == &m_gdbStub.d;
+	return m_gameController && m_gameController->debugger() == &m_gdbStub.d;
 }
 
 void GDBController::setPort(ushort port) {
@@ -34,7 +34,7 @@ void GDBController::setBindAddress(uint32_t bindAddress) {
 }
 
 void GDBController::listen() {
-	GameController::Interrupter interrupter(m_gameController);
+	CoreController::Interrupter interrupter(m_gameController);
 	if (!isAttached()) {
 		attach();
 	}

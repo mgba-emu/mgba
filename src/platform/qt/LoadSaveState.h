@@ -3,16 +3,17 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_LOAD_SAVE_STATE
-#define QGBA_LOAD_SAVE_STATE
+#pragma once
 
 #include <QWidget>
+
+#include <memory>
 
 #include "ui_LoadSaveState.h"
 
 namespace QGBA {
 
-class GameController;
+class CoreController;
 class InputController;
 class SavestateButton;
 
@@ -27,7 +28,7 @@ Q_OBJECT
 public:
 	const static int NUM_SLOTS = 9;
 
-	LoadSaveState(GameController* controller, QWidget* parent = nullptr);
+	LoadSaveState(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
 	void setInputController(InputController* controller);
 	void setMode(LoadSave mode);
@@ -46,7 +47,7 @@ private:
 	void triggerState(int slot);
 
 	Ui::LoadSaveState m_ui;
-	GameController* m_controller;
+	std::shared_ptr<CoreController> m_controller;
 	SavestateButton* m_slots[NUM_SLOTS];
 	LoadSave m_mode;
 
@@ -55,5 +56,3 @@ private:
 };
 
 }
-
-#endif

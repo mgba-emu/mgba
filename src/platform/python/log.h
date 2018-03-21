@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/core/log.h>
 
+#include "pycommon.h"
+
 struct mLoggerPy {
     struct mLogger d;
     void* pyobj;

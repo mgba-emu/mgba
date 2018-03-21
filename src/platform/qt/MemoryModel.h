@@ -3,14 +3,14 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_MEMORY_MODEL
-#define QGBA_MEMORY_MODEL
+#pragma once
 
 #include <QAbstractScrollArea>
 #include <QFont>
 #include <QSize>
 #include <QStaticText>
 #include <QVector>
+
 #include <memory>
 
 #include <mgba-util/text-codec.h>
@@ -19,7 +19,7 @@ struct mCore;
 
 namespace QGBA {
 
-class GameController;
+class CoreController;
 
 class MemoryModel : public QAbstractScrollArea {
 Q_OBJECT
@@ -27,7 +27,7 @@ Q_OBJECT
 public:
 	MemoryModel(QWidget* parent = nullptr);
 
-	void setController(GameController* controller);
+	void setController(std::shared_ptr<CoreController> controller);
 
 	void setRegion(uint32_t base, uint32_t size, const QString& name = QString(), int segment = -1);
 	void setSegment(int segment);
@@ -98,5 +98,3 @@ private:
 };
 
 }
-
-#endif

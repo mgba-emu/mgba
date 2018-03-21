@@ -46,6 +46,8 @@ uint32_t GBADMAWriteSAD(struct GBA* gba, int dma, uint32_t address) {
 	address &= 0x0FFFFFFE;
 	if (_isValidDMASAD(dma, address)) {
 		memory->dma[dma].source = address;
+	} else {
+		memory->dma[dma].source = 0;
 	}
 	return memory->dma[dma].source;
 }
@@ -102,15 +104,15 @@ uint16_t GBADMAWriteCNT_HI(struct GBA* gba, int dma, uint16_t control) {
 
 void GBADMASchedule(struct GBA* gba, int number, struct GBADMA* info) {
 	switch (GBADMARegisterGetTiming(info->reg)) {
-	case DMA_TIMING_NOW:
+	case GBA_DMA_TIMING_NOW:
 		info->when = mTimingCurrentTime(&gba->timing) + 3; // DMAs take 3 cycles to start
 		info->nextCount = info->count;
 		break;
-	case DMA_TIMING_HBLANK:
-	case DMA_TIMING_VBLANK:
+	case GBA_DMA_TIMING_HBLANK:
+	case GBA_DMA_TIMING_VBLANK:
 		// Handled implicitly
 		return;
-	case DMA_TIMING_CUSTOM:
+	case GBA_DMA_TIMING_CUSTOM:
 		switch (number) {
 		case 0:
 			mLOG(GBA_MEM, WARN, "Discarding invalid DMA0 scheduling");
@@ -120,7 +122,7 @@ void GBADMASchedule(struct GBA* gba, int number, struct GBADMA* info) {
 			GBAAudioScheduleFifoDma(&gba->audio, number, info);
 			break;
 		case 3:
-			// GBAVideoScheduleVCaptureDma(dma, info);
+			// Handled implicitly
 			break;
 		}
 	}
@@ -133,7 +135,7 @@ void GBADMARunHblank(struct GBA* gba, int32_t cycles) {
 	int i;
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
-		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_HBLANK && !dma->nextCount) {
+		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_HBLANK && !dma->nextCount) {
 			dma->when = mTimingCurrentTime(&gba->timing) + 3 + cycles;
 			dma->nextCount = dma->count;
 		}
@@ -147,12 +149,22 @@ void GBADMARunVblank(struct GBA* gba, int32_t cycles) {
 	int i;
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
-		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_VBLANK && !dma->nextCount) {
+		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_VBLANK && !dma->nextCount) {
 			dma->when = mTimingCurrentTime(&gba->timing) + 3 + cycles;
 			dma->nextCount = dma->count;
 		}
 	}
 	GBADMAUpdate(gba);
+}
+
+void GBADMARunDisplayStart(struct GBA* gba, int32_t cycles) {
+	struct GBAMemory* memory = &gba->memory;
+	struct GBADMA* dma = &memory->dma[3];
+	if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_CUSTOM && !dma->nextCount) {
+		dma->when = mTimingCurrentTime(&gba->timing) + 3 + cycles;
+		dma->nextCount = dma->count;
+		GBADMAUpdate(gba);
+	}
 }
 
 void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
@@ -168,13 +180,16 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		GBADMAService(gba, memory->activeDMA, dma);
 	} else {
 		dma->nextCount = 0;
-		if (!GBADMARegisterIsRepeat(dma->reg) || GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_NOW) {
+		bool noRepeat = !GBADMARegisterIsRepeat(dma->reg);
+		noRepeat |= GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_NOW;
+		noRepeat |= memory->activeDMA == 3 && GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_CUSTOM;
+		if (noRepeat) {
 			dma->reg = GBADMARegisterClearEnable(dma->reg);
 
 			// Clear the enable bit in memory
 			memory->io[(REG_DMA0CNT_HI + memory->activeDMA * (REG_DMA1CNT_HI - REG_DMA0CNT_HI)) >> 1] &= 0x7FE0;
 		}
-		if (GBADMARegisterGetDestControl(dma->reg) == DMA_INCREMENT_RELOAD) {
+		if (GBADMARegisterGetDestControl(dma->reg) == GBA_DMA_INCREMENT_RELOAD) {
 			dma->nextDest = dma->dest;
 		}
 		if (GBADMARegisterIsDoIRQ(dma->reg)) {
@@ -238,31 +253,44 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	info->when += cycles;
 
 	gba->performingDMA = 1 | (number << 1);
-	uint32_t word;
 	if (width == 4) {
-		word = cpu->memory.load32(cpu, source, 0);
-		gba->bus = word;
-		cpu->memory.store32(cpu, dest, word, 0);
+		if (source) {
+			memory->dmaTransferRegister = cpu->memory.load32(cpu, source, 0);
+		}
+		gba->bus = memory->dmaTransferRegister;
+		cpu->memory.store32(cpu, dest, memory->dmaTransferRegister, 0);
+		memory->dmaTransferRegister &= 0xFFFF0000;
+		memory->dmaTransferRegister |= memory->dmaTransferRegister >> 16;
 	} else {
 		if (sourceRegion == REGION_CART2_EX && memory->savedata.type == SAVEDATA_EEPROM) {
-			word = GBASavedataReadEEPROM(&memory->savedata);
-			cpu->memory.store16(cpu, dest, word, 0);
-		} else if (destRegion == REGION_CART2_EX) {
 			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 				mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
 				GBASavedataInitEEPROM(&memory->savedata, gba->realisticTiming);
 			}
-			word = cpu->memory.load16(cpu, source, 0);
-			GBASavedataWriteEEPROM(&memory->savedata, word, wordsRemaining);
+			memory->dmaTransferRegister = GBASavedataReadEEPROM(&memory->savedata);
 		} else {
-			word = cpu->memory.load16(cpu, source, 0);
-			cpu->memory.store16(cpu, dest, word, 0);
+			if (source) {
+				memory->dmaTransferRegister = cpu->memory.load16(cpu, source, 0);
+			}
 		}
-		gba->bus = word | (word << 16);
+		if (destRegion == REGION_CART2_EX) {
+			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
+				mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
+				GBASavedataInitEEPROM(&memory->savedata, gba->realisticTiming);
+			}
+			GBASavedataWriteEEPROM(&memory->savedata, memory->dmaTransferRegister, wordsRemaining);
+		} else {
+			cpu->memory.store16(cpu, dest, memory->dmaTransferRegister, 0);
+
+		}
+		memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
+		gba->bus = memory->dmaTransferRegister;
 	}
 	int sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
 	int destOffset = DMA_OFFSET[GBADMARegisterGetDestControl(info->reg)] * width;
-	source += sourceOffset;
+	if (source) {
+		source += sourceOffset;
+	}
 	dest += destOffset;
 	--wordsRemaining;
 	gba->performingDMA = 0;

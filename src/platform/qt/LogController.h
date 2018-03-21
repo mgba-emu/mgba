@@ -3,10 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_LOG_CONTROLLER
-#define QGBA_LOG_CONTROLLER
+#pragma once
 
 #include "GBAApp.h"
+
+#include <mgba/core/log.h>
 
 #include <QObject>
 #include <QStringList>
@@ -35,7 +36,8 @@ private:
 public:
 	LogController(int levels, QObject* parent = nullptr);
 
-	int levels() const { return m_logLevel; }
+	int levels() const { return m_filter.defaultLevels; }
+	mLogFilter* filter() { return &m_filter; }
 
 	Stream operator()(int category, int level);
 
@@ -55,7 +57,7 @@ public slots:
 	void disableLevels(int levels);
 
 private:
-	int m_logLevel;
+	mLogFilter m_filter;
 
 	static LogController s_global;
 };
@@ -63,5 +65,3 @@ private:
 #define LOG(C, L) (*LogController::global())(mLOG_ ## L, _mLOG_CAT_ ## C ())
 
 }
-
-#endif

@@ -26,11 +26,15 @@ enum {
 
 	GB_VIDEO_HORIZONTAL_LENGTH = 456,
 
-	GB_VIDEO_MODE_1_LENGTH = 65664,
 	GB_VIDEO_TOTAL_LENGTH = 70224,
 
 	GB_BASE_MAP = 0x1800,
-	GB_SIZE_MAP = 0x0400
+	GB_SIZE_MAP = 0x0400,
+
+	SGB_SIZE_CHAR_RAM = 0x2000,
+	SGB_SIZE_MAP_RAM = 0x1000,
+	SGB_SIZE_PAL_RAM = 0x1000,
+	SGB_SIZE_ATF_RAM = 0x1000
 };
 
 DECL_BITFIELD(GBObjAttributes, uint8_t);
@@ -40,6 +44,13 @@ DECL_BIT(GBObjAttributes, Palette, 4);
 DECL_BIT(GBObjAttributes, XFlip, 5);
 DECL_BIT(GBObjAttributes, YFlip, 6);
 DECL_BIT(GBObjAttributes, Priority, 7);
+
+DECL_BITFIELD(SGBBgAttributes, uint16_t);
+DECL_BITS(SGBBgAttributes, Tile, 0, 10);
+DECL_BITS(SGBBgAttributes, Palette, 10, 3);
+DECL_BIT(SGBBgAttributes, Priority, 13);
+DECL_BIT(SGBBgAttributes, XFlip, 14);
+DECL_BIT(SGBBgAttributes, YFlip, 15);
 
 struct GBObj {
 	uint8_t y;
@@ -53,12 +64,13 @@ union GBOAM {
 	uint8_t raw[160];
 };
 
-struct mTileCache;
+struct mCacheSet;
 struct GBVideoRenderer {
-	void (*init)(struct GBVideoRenderer* renderer, enum GBModel model);
+	void (*init)(struct GBVideoRenderer* renderer, enum GBModel model, bool borders);
 	void (*deinit)(struct GBVideoRenderer* renderer);
 
 	uint8_t (*writeVideoRegister)(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
+	void (*writeSGBPacket)(struct GBVideoRenderer* renderer, uint8_t* data);
 	void (*writeVRAM)(struct GBVideoRenderer* renderer, uint16_t address);
 	void (*writePalette)(struct GBVideoRenderer* renderer, int index, uint16_t value);
 	void (*writeOAM)(struct GBVideoRenderer* renderer, uint16_t oam);
@@ -71,7 +83,14 @@ struct GBVideoRenderer {
 
 	uint8_t* vram;
 	union GBOAM* oam;
-	struct mTileCache* cache;
+	struct mCacheSet* cache;
+
+	uint8_t* sgbCharRam;
+	uint8_t* sgbMapRam;
+	uint8_t* sgbPalRam;
+	int sgbRenderMode;
+	uint8_t* sgbAttributes;
+	uint8_t* sgbAttributeFiles;
 
 	bool disableBG;
 	bool disableOBJ;
@@ -123,9 +142,12 @@ struct GBVideo {
 	bool bcpIncrement;
 	int ocpIndex;
 	bool ocpIncrement;
+	uint8_t sgbCommandHeader;
 
-	uint16_t dmgPalette[4];
+	uint16_t dmgPalette[12];
 	uint16_t palette[64];
+
+	bool sgbBorders;
 
 	int32_t frameCounter;
 	int frameskip;
@@ -136,7 +158,7 @@ void GBVideoInit(struct GBVideo* video);
 void GBVideoReset(struct GBVideo* video);
 void GBVideoDeinit(struct GBVideo* video);
 void GBVideoAssociateRenderer(struct GBVideo* video, struct GBVideoRenderer* renderer);
-void GBVideoProcessDots(struct GBVideo* video);
+void GBVideoProcessDots(struct GBVideo* video, uint32_t cyclesLate);
 
 void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value);
 void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value);
@@ -144,7 +166,10 @@ void GBVideoWriteLYC(struct GBVideo* video, uint8_t value);
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value);
 void GBVideoSwitchBank(struct GBVideo* video, uint8_t value);
 
+void GBVideoDisableCGB(struct GBVideo* video);
 void GBVideoSetPalette(struct GBVideo* video, unsigned index, uint32_t color);
+
+void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data);
 
 struct GBSerializedState;
 void GBVideoSerialize(const struct GBVideo* video, struct GBSerializedState* state);

@@ -24,6 +24,7 @@
 #include <mgba-util/gui/file-select.h>
 #include <mgba-util/gui/font.h>
 #include <mgba-util/gui/menu.h>
+#include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
 
 #define GCN1_INPUT 0x47434E31
@@ -32,7 +33,7 @@
 #define CLASSIC_INPUT 0x57494943
 
 #define TEX_W 256
-#define TEX_H 160
+#define TEX_H 224
 
 static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, enum GBAKey key) {
 	mInputBindKey(map, binding, __builtin_ctz(nativeKey), key);
@@ -113,6 +114,9 @@ static uint32_t referenceRetraceCount;
 static bool frameLimiter = true;
 static int scaleFactor;
 static unsigned corew, coreh;
+
+uint32_t* romBuffer;
+size_t romBufferSize;
 
 static void* framebuffer[2] = { 0, 0 };
 static int whichFb = 0;
@@ -242,6 +246,10 @@ int main(int argc, char* argv[]) {
 	AUDIO_RegisterDMACallback(_audioDMA);
 
 	memset(audioBuffer, 0, sizeof(audioBuffer));
+#ifdef FIXED_ROM_BUFFER
+	romBufferSize = SIZE_CART0;
+	romBuffer = anonymousMemoryMap(romBufferSize);
+#endif
 
 #if !defined(COLOR_16_BIT) && !defined(COLOR_5_6_5)
 #error This pixel format is unsupported. Please use -DCOLOR_16-BIT -DCOLOR_5_6_5
@@ -509,6 +517,10 @@ int main(int argc, char* argv[]) {
 		mGUIRunloop(&runner);
 	}
 	mGUIDeinit(&runner);
+
+#ifdef FIXED_ROM_BUFFER
+	mappedMemoryFree(romBuffer, romBufferSize);
+#endif
 
 	free(fifo);
 	free(texmem);

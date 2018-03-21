@@ -3,8 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_MULTIPLAYER_CONTROLLER
-#define QGBA_MULTIPLAYER_CONTROLLER
+#pragma once
 
 #include <QMutex>
 #include <QList>
@@ -23,7 +22,7 @@ struct GBASIOLockstepNode;
 
 namespace QGBA {
 
-class GameController;
+class CoreController;
 
 class MultiplayerController : public QObject {
 Q_OBJECT
@@ -31,11 +30,11 @@ Q_OBJECT
 public:
 	MultiplayerController();
 
-	bool attachGame(GameController*);
-	void detachGame(GameController*);
+	bool attachGame(CoreController*);
+	void detachGame(CoreController*);
 
 	int attached();
-	int playerId(GameController*);
+	int playerId(CoreController*);
 
 signals:
 	void gameAttached();
@@ -43,7 +42,7 @@ signals:
 
 private:
 	struct Player {
-		GameController* controller;
+		CoreController* controller;
 		GBSIOLockstepNode* gbNode;
 		GBASIOLockstepNode* gbaNode;
 		int awake;
@@ -64,4 +63,3 @@ private:
 };
 
 }
-#endif

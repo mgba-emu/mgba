@@ -70,9 +70,8 @@ void LR35902Reset(struct LR35902Core* cpu) {
 	cpu->irqh.reset(cpu);
 }
 
-void LR35902RaiseIRQ(struct LR35902Core* cpu, uint8_t vector) {
+void LR35902RaiseIRQ(struct LR35902Core* cpu) {
 	cpu->irqPending = true;
-	cpu->irqVector = vector;
 }
 
 static void _LR35902InstructionIRQStall(struct LR35902Core* cpu) {
@@ -85,18 +84,19 @@ static void _LR35902InstructionIRQFinish(struct LR35902Core* cpu) {
 }
 
 static void _LR35902InstructionIRQDelay(struct LR35902Core* cpu) {
-	cpu->index = cpu->sp + 1;
-	cpu->bus = cpu->pc >> 8;
+	--cpu->sp;
+	cpu->index = cpu->sp;
+	cpu->bus = cpu->pc;
 	cpu->executionState = LR35902_CORE_MEMORY_STORE;
 	cpu->instruction = _LR35902InstructionIRQFinish;
-	cpu->pc = cpu->irqVector;
+	cpu->pc = cpu->irqh.irqVector(cpu);
 	cpu->memory.setActiveRegion(cpu, cpu->pc);
 }
 
 static void _LR35902InstructionIRQ(struct LR35902Core* cpu) {
-	cpu->sp -= 2; /* TODO: Atomic incrementing? */
+	--cpu->sp;
 	cpu->index = cpu->sp;
-	cpu->bus = cpu->pc;
+	cpu->bus = cpu->pc >> 8;
 	cpu->executionState = LR35902_CORE_MEMORY_STORE;
 	cpu->instruction = _LR35902InstructionIRQDelay;
 }
@@ -137,22 +137,22 @@ static void _LR35902Step(struct LR35902Core* cpu) {
 }
 
 void LR35902Tick(struct LR35902Core* cpu) {
+	if (cpu->cycles >= cpu->nextEvent) {
+		cpu->irqh.processEvents(cpu);
+	}
 	_LR35902Step(cpu);
 	if (cpu->cycles + 2 >= cpu->nextEvent) {
 		int32_t diff = cpu->nextEvent - cpu->cycles;
 		cpu->cycles = cpu->nextEvent;
 		cpu->executionState += diff;
 		cpu->irqh.processEvents(cpu);
-		cpu->cycles += 2 - diff;
+		cpu->cycles += LR35902_CORE_EXECUTE - cpu->executionState;
 	} else {
 		cpu->cycles += 2;
 	}
 	cpu->executionState = LR35902_CORE_FETCH;
 	cpu->instruction(cpu);
 	++cpu->cycles;
-	if (cpu->cycles >= cpu->nextEvent) {
-		cpu->irqh.processEvents(cpu);
-	}
 }
 
 void LR35902Run(struct LR35902Core* cpu) {
@@ -168,7 +168,7 @@ void LR35902Run(struct LR35902Core* cpu) {
 			cpu->cycles = cpu->nextEvent;
 			cpu->executionState += diff;
 			cpu->irqh.processEvents(cpu);
-			cpu->cycles += 2 - diff;
+			cpu->cycles += LR35902_CORE_EXECUTE - cpu->executionState;
 			running = false;
 		} else {
 			cpu->cycles += 2;

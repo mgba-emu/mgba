@@ -14,6 +14,7 @@ CXX_GUARD_START
 
 extern const char* ERROR_MISSING_ARGS;
 extern const char* ERROR_OVERFLOW;
+extern const char* ERROR_INVALID_ARGS;
 
 struct CLIDebugger;
 
@@ -30,12 +31,11 @@ struct CLIDebugVector {
 };
 
 typedef void (*CLIDebuggerCommand)(struct CLIDebugger*, struct CLIDebugVector*);
-typedef struct CLIDebugVector* (*CLIDVParser)(struct CLIDebugger* debugger, const char* string, size_t length);
 
 struct CLIDebuggerCommandSummary {
 	const char* name;
 	CLIDebuggerCommand command;
-	CLIDVParser parser;
+	const char* format;
 	const char* summary;
 };
 
@@ -47,8 +47,6 @@ struct CLIDebuggerSystem {
 	bool (*custom)(struct CLIDebuggerSystem*);
 
 	void (*disassemble)(struct CLIDebuggerSystem*, struct CLIDebugVector* dv);
-	uint32_t (*lookupIdentifier)(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
-	uint32_t (*lookupPlatformIdentifier)(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
 	void (*printStatus)(struct CLIDebuggerSystem*);
 
 	struct CLIDebuggerCommandSummary* commands;
@@ -77,9 +75,6 @@ struct CLIDebugger {
 	struct CLIDebuggerSystem* system;
 	struct CLIDebuggerBackend* backend;
 };
-
-struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* string, size_t length);
-struct CLIDebugVector* CLIDVStringParse(struct CLIDebugger* debugger, const char* string, size_t length);
 
 void CLIDebuggerCreate(struct CLIDebugger*);
 void CLIDebuggerAttachSystem(struct CLIDebugger*, struct CLIDebuggerSystem*);

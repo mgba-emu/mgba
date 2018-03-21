@@ -85,6 +85,22 @@ static void _reloadSettings(void) {
 		opts.skipBios = strcmp(var.value, "ON") == 0;
 	}
 
+	var.key = "mgba_sgb_borders";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		if (strcmp(var.value, "ON") == 0) {
+			mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", true);
+		} else {
+			mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", false);
+		}
+	}
+	
+	var.key = "mgba_frameskip";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		opts.frameskip = strtol(var.value, NULL, 10);
+	}
+
 	var.key = "mgba_idle_optimization";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
@@ -96,11 +112,12 @@ static void _reloadSettings(void) {
 			mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "detect");
 		}
 	}
-	
+
 	var.key = "mgba_frameskip";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		opts.frameskip = strtol(var.value, NULL, 10);
+
 	}
 
 	mCoreConfigLoadDefaults(&core->config, &opts);
@@ -117,8 +134,9 @@ void retro_set_environment(retro_environment_t env) {
 	struct retro_variable vars[] = {
 		{ "mgba_solar_sensor_level", "Solar sensor level; 0|1|2|3|4|5|6|7|8|9|10" },
 		{ "mgba_allow_opposing_directions", "Allow opposing directional input; OFF|ON" },
-		{ "mgba_use_bios", "Use BIOS file if found; ON|OFF" },
-		{ "mgba_skip_bios", "Skip BIOS intro; OFF|ON" },
+		{ "mgba_use_bios", "Use BIOS file if found (requires restart); ON|OFF" },
+		{ "mgba_skip_bios", "Skip BIOS intro (requires restart); OFF|ON" },
+		{ "mgba_sgb_borders", "Use Super Game Boy borders (requires restart); ON|OFF" },
 		{ "mgba_idle_optimization", "Idle loop removal; Remove Known|Detect and Remove|Don't Remove" },
 		{ "mgba_frameskip", "Frameskip; 0|1|2|3|4|5|6|7|8|9|10" },
 		{ 0, 0 }
@@ -153,7 +171,7 @@ void retro_get_system_info(struct retro_system_info* info) {
 #ifndef GIT_VERSION
 #define GIT_VERSION ""
 #endif
-	info->library_version = "0.6.1" GIT_VERSION;
+	info->library_version = "0.7.0" GIT_VERSION;
 	info->library_name = "mGBA";
 	info->block_extract = false;
 }
@@ -281,15 +299,21 @@ void retro_run(void) {
 	uint16_t keys;
 	inputPollCallback();
 
-	struct retro_variable var = {
-		.key = "mgba_allow_opposing_directions",
-		.value = 0
-	};
-
 	bool updated = false;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated) {
+		struct retro_variable var = {
+			.key = "mgba_allow_opposing_directions",
+			.value = 0
+		};
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 			((struct GBA*) core->board)->allowOpposingDirections = strcmp(var.value, "yes") == 0;
+		}
+
+		var.key = "mgba_frameskip";
+		var.value = 0;
+		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+			mCoreConfigSetUIntValue(&core->config, "frameskip", strtol(var.value, NULL, 10));
+			mCoreLoadConfig(core);
 		}
 		
 		var.key = "mgba_frameskip";
@@ -475,9 +499,9 @@ bool retro_load_game(const struct retro_game_info* game)
 	core->setAVStream(core, &stream);
 
 #ifdef _3DS
-	outputBuffer = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL, 0x80);
+	outputBuffer = linearMemAlign(256 * 224 * BYTES_PER_PIXEL, 0x80);
 #else
-	outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	outputBuffer = malloc(256 * 224 * BYTES_PER_PIXEL);
 #endif
 	core->setVideoBuffer(core, outputBuffer, 256);
 

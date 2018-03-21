@@ -11,6 +11,7 @@ import os
 def _vfpClose(vf):
 	vfp = ffi.cast("struct VFilePy*", vf)
 	ffi.from_handle(vfp.fileobj).close()
+	return True
 
 @ffi.def_extern()
 def _vfpSeek(vf, offset, whence):
@@ -93,20 +94,30 @@ def openPath(path, mode="r"):
 	if "x" in mode[1:]:
 		flags |= os.O_EXCL
 
-	return VFile(lib.VFileOpen(path.encode("UTF-8"), flags))
+	vf = lib.VFileOpen(path.encode("UTF-8"), flags);
+	if vf == ffi.NULL:
+		return None
+	return VFile(vf)
 
 class VFile:
 	def __init__(self, vf):
 		self.handle = vf
 
 	def close(self):
-		return self.handle.close(self.handle)
+		return bool(self.handle.close(self.handle))
 
 	def seek(self, offset, whence):
 		return self.handle.seek(self.handle, offset, whence)
 
 	def read(self, buffer, size):
 		return self.handle.read(self.handle, buffer, size)
+
+	def readAll(self, size=0):
+		if not size:
+			size = self.size()
+		buffer = ffi.new("char[%i]" % size)
+		size = self.handle.read(self.handle, buffer, size)
+		return ffi.unpack(buffer, size)
 
 	def readline(self, buffer, size):
 		return self.handle.readline(self.handle, buffer, size)

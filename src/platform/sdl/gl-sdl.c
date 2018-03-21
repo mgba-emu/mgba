@@ -9,14 +9,9 @@
 
 #include <mgba/core/core.h>
 #include <mgba/core/thread.h>
-#include "platform/opengl/gl.h"
+#include <mgba-util/math.h>
 
-static void _doViewport(int w, int h, struct VideoBackend* v) {
-	v->resized(v, w, h);
-	v->clear(v);
-	v->swap(v);
-	v->clear(v);
-}
+#include "platform/opengl/gl.h"
 
 static bool mSDLGLInit(struct mSDLRenderer* renderer);
 static void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user);
@@ -31,8 +26,9 @@ void mSDLGLCreate(struct mSDLRenderer* renderer) {
 bool mSDLGLInit(struct mSDLRenderer* renderer) {
 	mSDLGLCommonInit(renderer);
 
-	renderer->outputBuffer = malloc(renderer->width * renderer->height * BYTES_PER_PIXEL);
-	memset(renderer->outputBuffer, 0, renderer->width * renderer->height * BYTES_PER_PIXEL);
+	size_t size = renderer->width * renderer->height * BYTES_PER_PIXEL;
+	renderer->outputBuffer = malloc(size);
+	memset(renderer->outputBuffer, 0, size);
 	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
 
 	mGLContextCreate(&renderer->gl);
@@ -44,7 +40,7 @@ bool mSDLGLInit(struct mSDLRenderer* renderer) {
 	renderer->gl.d.init(&renderer->gl.d, 0);
 	renderer->gl.d.setDimensions(&renderer->gl.d, renderer->width, renderer->height);
 
-	_doViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
+	mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
 	return true;
 }
 
@@ -53,23 +49,27 @@ void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user) {
 	SDL_Event event;
 	struct VideoBackend* v = &renderer->gl.d;
 
-	while (context->state < THREAD_EXITING) {
+	while (mCoreThreadIsActive(context)) {
 		while (SDL_PollEvent(&event)) {
 			mSDLHandleEvent(context, &renderer->player, &event);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			// Event handling can change the size of the screen
 			if (renderer->player.windowUpdated) {
 				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
-				_doViewport(renderer->viewportWidth, renderer->viewportHeight, v);
+				mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, v);
 				renderer->player.windowUpdated = 0;
 			}
 #endif
 		}
+		if (renderer->width != v->width || renderer->height != v->height) {
+			renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
+			v->setDimensions(v, renderer->width, renderer->height);
+		}
 
-		if (mCoreSyncWaitFrameStart(&context->sync)) {
+		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
 			v->postFrame(v, renderer->outputBuffer);
 		}
-		mCoreSyncWaitFrameEnd(&context->sync);
+		mCoreSyncWaitFrameEnd(&context->impl->sync);
 		v->drawFrame(v);
 		v->swap(v);
 	}

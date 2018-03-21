@@ -6,11 +6,12 @@
 #include <mgba/internal/gba/video.h>
 
 #include <mgba/core/sync.h>
-#include <mgba/core/tile-cache.h>
+#include <mgba/core/cache-set.h>
 #include <mgba/internal/arm/macros.h>
 #include <mgba/internal/gba/dma.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/renderers/cache-set.h>
 #include <mgba/internal/gba/serialize.h>
 
 #include <mgba-util/memory.h>
@@ -68,7 +69,7 @@ static struct GBAVideoRenderer dummyRenderer = {
 void GBAVideoInit(struct GBAVideo* video) {
 	video->renderer = &dummyRenderer;
 	video->renderer->cache = NULL;
-	video->vram = 0;
+	video->vram = anonymousMemoryMap(SIZE_VRAM);
 	video->frameskip = 0;
 	video->event.name = "GBA Video";
 	video->event.callback = NULL;
@@ -90,11 +91,6 @@ void GBAVideoReset(struct GBAVideo* video) {
 
 	video->frameCounter = 0;
 	video->frameskipCounter = 0;
-
-	if (video->vram) {
-		mappedMemoryFree(video->vram, SIZE_VRAM);
-	}
-	video->vram = anonymousMemoryMap(SIZE_VRAM);
 	video->renderer->vram = video->vram;
 
 	memset(video->palette, 0, sizeof(video->palette));
@@ -186,6 +182,9 @@ void _startHblank(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	if (video->vcount < VIDEO_VERTICAL_PIXELS) {
 		GBADMARunHblank(video->p, -cyclesLate);
 	}
+	if (video->vcount >= 2 && video->vcount < VIDEO_VERTICAL_PIXELS + 2) {
+		GBADMARunDisplayStart(video->p, -cyclesLate);
+	}
 	if (GBARegisterDISPSTATIsHblankIRQ(dispstat)) {
 		GBARaiseIRQ(video->p, IRQ_HBLANK);
 	}
@@ -214,7 +213,9 @@ static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer) {
 }
 
 static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
-	UNUSED(renderer);
+	if (renderer->cache) {
+		GBAVideoCacheWriteVideoRegister(renderer->cache, address, value);
+	}
 	switch (address) {
 	case REG_DISPCNT:
 		value &= 0xFFF7;
@@ -255,14 +256,13 @@ static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer*
 
 static void GBAVideoDummyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
 	if (renderer->cache) {
-		mTileCacheWriteVRAM(renderer->cache, address);
+		mCacheSetWriteVRAM(renderer->cache, address);
 	}
 }
 
 static void GBAVideoDummyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
-	UNUSED(value);
 	if (renderer->cache) {
-		mTileCacheWritePalette(renderer->cache, address);
+		mCacheSetWritePalette(renderer->cache, address >> 1, mColorFrom555(value));
 	}
 }
 

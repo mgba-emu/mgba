@@ -70,10 +70,12 @@ bool CheatsModel::setData(const QModelIndex& index, const QVariant& value, int r
 	case Qt::DisplayRole:
 	case Qt::EditRole:
 		mCheatSetRename(cheats, value.toString().toUtf8().constData());
+		mCheatAutosave(m_device);
 		emit dataChanged(index, index);
 		return true;
 	case Qt::CheckStateRole:
 		cheats->enabled = value == Qt::Checked;
+		mCheatAutosave(m_device);
 		emit dataChanged(index, index);
 		return true;
 	default:
@@ -154,7 +156,8 @@ void CheatsModel::removeAt(const QModelIndex& index) {
 	beginRemoveRows(QModelIndex(), row, row);
 	mCheatRemoveSet(m_device, set);
 	mCheatSetDeinit(set);
-	endInsertRows();
+	endRemoveRows();
+	mCheatAutosave(m_device);
 }
 
 QString CheatsModel::toString(const QModelIndexList& indices) const {
@@ -201,6 +204,7 @@ void CheatsModel::beginAppendRow(const QModelIndex& index) {
 
 void CheatsModel::endAppendRow() {
 	endInsertRows();
+	mCheatAutosave(m_device);
 }
 
 void CheatsModel::loadFile(const QString& path) {
@@ -232,6 +236,7 @@ void CheatsModel::addSet(mCheatSet* set) {
 	}
 	mCheatAddSet(m_device, set);
 	endInsertRows();
+	mCheatAutosave(m_device);
 }
 
 void CheatsModel::invalidated() {

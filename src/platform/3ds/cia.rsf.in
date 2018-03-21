@@ -174,7 +174,6 @@ AccessControlInfo:
    - ldr:ro
    - ir:USER
    - ir:u
-   - csnd:SND
 
 
 SystemControlInfo:
@@ -195,7 +194,6 @@ SystemControlInfo:
     cecd: 0x0004013000002602L
     cfg: 0x0004013000001702L
     codec: 0x0004013000001802L
-    csnd: 0x0004013000002702L
     dlp: 0x0004013000002802L
     dsp: 0x0004013000001a02L
     friends: 0x0004013000003202L

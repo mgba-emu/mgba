@@ -11,8 +11,12 @@ LogController LogController::s_global(mLOG_ALL);
 
 LogController::LogController(int levels, QObject* parent)
 	: QObject(parent)
-	, m_logLevel(levels)
 {
+	mLogFilterInit(&m_filter);
+	mLogFilterSet(&m_filter, "gba.bios", mLOG_STUB | mLOG_FATAL);
+	mLogFilterSet(&m_filter, "core.status", mLOG_ALL & ~mLOG_DEBUG);
+	m_filter.defaultLevels = levels;
+
 	if (this != &s_global) {
 		connect(&s_global, &LogController::logPosted, this, &LogController::postLog);
 		connect(this, &LogController::levelsSet, &s_global, &LogController::setLevels);
@@ -26,24 +30,24 @@ LogController::Stream LogController::operator()(int category, int level) {
 }
 
 void LogController::postLog(int level, int category, const QString& string) {
-	if (!(m_logLevel & level)) {
+	if (!mLogFilterTest(&m_filter, category, static_cast<mLogLevel>(level))) {
 		return;
 	}
 	emit logPosted(level, category, string);
 }
 
 void LogController::setLevels(int levels) {
-	m_logLevel = levels;
+	m_filter.defaultLevels = levels;
 	emit levelsSet(levels);
 }
 
 void LogController::enableLevels(int levels) {
-	m_logLevel |= levels;
+	m_filter.defaultLevels |= levels;
 	emit levelsEnabled(levels);
 }
 
 void LogController::disableLevels(int levels) {
-	m_logLevel &= ~levels;
+	m_filter.defaultLevels &= ~levels;
 	emit levelsDisabled(levels);
 }
 

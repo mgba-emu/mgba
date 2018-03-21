@@ -142,6 +142,7 @@ struct GBAudioNoiseChannel {
 
 enum GBAudioStyle {
 	GB_AUDIO_DMG,
+	GB_AUDIO_MGB = GB_AUDIO_DMG, // TODO
 	GB_AUDIO_CGB,
 	GB_AUDIO_AGB, // GB in GBA
 	GB_AUDIO_GBA, // GBA PSG
@@ -230,6 +231,8 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t);
 void GBAudioWriteNR50(struct GBAudio* audio, uint8_t);
 void GBAudioWriteNR51(struct GBAudio* audio, uint8_t);
 void GBAudioWriteNR52(struct GBAudio* audio, uint8_t);
+
+void GBAudioUpdateFrame(struct GBAudio* audio, struct mTiming* timing);
 
 void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right);
 

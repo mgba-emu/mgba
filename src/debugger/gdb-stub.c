@@ -658,6 +658,7 @@ void GDBStubCreate(struct GDBStub* stub) {
 	stub->d.paused = _gdbStubWait;
 	stub->d.entered = _gdbStubEntered;
 	stub->d.custom = _gdbStubPoll;
+	stub->d.type = DEBUGGER_GDB;
 	stub->untilPoll = GDB_STUB_INTERVAL;
 	stub->lineAck = GDB_ACK_PENDING;
 	stub->shouldBlock = false;

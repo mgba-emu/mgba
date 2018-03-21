@@ -7,6 +7,7 @@
 
 void mTimingInit(struct mTiming* timing, int32_t* relativeCycles, int32_t* nextEvent) {
 	timing->root = NULL;
+	timing->reroot = NULL;
 	timing->masterCycles = 0;
 	timing->relativeCycles = relativeCycles;
 	timing->nextEvent = nextEvent;
@@ -17,6 +18,7 @@ void mTimingDeinit(struct mTiming* timing) {
 
 void mTimingClear(struct mTiming* timing) {
 	timing->root = NULL;
+	timing->reroot = NULL;
 	timing->masterCycles = 0;
 }
 
@@ -76,6 +78,11 @@ int32_t mTimingTick(struct mTiming* timing, int32_t cycles) {
 		}
 		timing->root = next->next;
 		next->callback(timing, next->context, -nextWhen);
+	}
+	if (timing->reroot) {
+		timing->root = timing->reroot;
+		timing->reroot = NULL;
+		*timing->nextEvent = mTimingNextEvent(timing); 
 	}
 	return *timing->nextEvent;
 }

@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gba/renderers/software-private.h"
 
+#include <mgba/core/interface.h>
 #include <mgba/internal/gba/gba.h>
 
 #define MODE_2_COORD_OVERFLOW \
@@ -101,21 +102,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode3(struct GBAVideoSoftwareRenderer
 
 		if (!mosaicWait) {
 			LOAD_16(color, ((localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS) << 1, renderer->d.vram);
-#ifndef COLOR_16_BIT
-			unsigned color32;
-			color32 = 0;
-			color32 |= (color << 3) & 0xF8;
-			color32 |= (color << 6) & 0xF800;
-			color32 |= (color << 9) & 0xF80000;
-			color32 |= (color32 >> 5) & 0x070707;
-			color = color32;
-#elif COLOR_5_6_5
-			uint16_t color16 = 0;
-			color16 |= (color & 0x001F) << 11;
-			color16 |= (color & 0x03E0) << 1;
-			color16 |= (color & 0x7C00) >> 10;
-			color = color16;
-#endif
+			color = mColorFrom555(color);
 			mosaicWait = mosaicH;
 		} else {
 			--mosaicWait;
@@ -192,20 +179,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode5(struct GBAVideoSoftwareRenderer
 
 		if (!mosaicWait) {
 			LOAD_16(color, offset + (localX >> 8) * 2 + (localY >> 8) * 320, renderer->d.vram);
-#ifndef COLOR_16_BIT
-			unsigned color32 = 0;
-			color32 |= (color << 9) & 0xF80000;
-			color32 |= (color << 3) & 0xF8;
-			color32 |= (color << 6) & 0xF800;
-			color32 |= (color32 >> 5) & 0x070707;
-			color = color32;
-#elif COLOR_5_6_5
-			uint16_t color16 = 0;
-			color16 |= (color & 0x001F) << 11;
-			color16 |= (color & 0x03E0) << 1;
-			color16 |= (color & 0x7C00) >> 10;
-			color = color16;
-#endif
+			color = mColorFrom555(color);
 			mosaicWait = mosaicH;
 		} else {
 			--mosaicWait;

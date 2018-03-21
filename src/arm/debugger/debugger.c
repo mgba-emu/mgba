@@ -10,6 +10,7 @@
 #include <mgba/internal/arm/decoder.h>
 #include <mgba/internal/arm/isa-inlines.h>
 #include <mgba/internal/arm/debugger/memory-debugger.h>
+#include <mgba/internal/debugger/parser.h>
 
 DEFINE_VECTOR(ARMDebugBreakpointList, struct ARMDebugBreakpoint);
 DEFINE_VECTOR(ARMDebugWatchpointList, struct ARMDebugWatchpoint);
@@ -22,6 +23,20 @@ static struct ARMDebugBreakpoint* _lookupBreakpoint(struct ARMDebugBreakpointLis
 		}
 	}
 	return 0;
+}
+
+static void _destroyBreakpoint(struct ARMDebugBreakpoint* breakpoint) {
+	if (breakpoint->condition) {
+		parseFree(breakpoint->condition);
+		free(breakpoint->condition);
+	}
+}
+
+static void _destroyWatchpoint(struct ARMDebugWatchpoint* watchpoint) {
+	if (watchpoint->condition) {
+		parseFree(watchpoint->condition);
+		free(watchpoint->condition);
+	}
 }
 
 static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
@@ -37,6 +52,13 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	if (!breakpoint) {
 		return;
 	}
+	if (breakpoint->condition) {
+		int32_t value;
+		int segment;
+		if (!mDebuggerEvaluateParseTree(d->p, breakpoint->condition, &value, &segment) || !(value || segment >= 0)) {
+			return;
+		}
+	}
 	struct mDebuggerEntryInfo info = {
 		.address = breakpoint->address,
 		.type.bp.breakType = BREAKPOINT_HARDWARE
@@ -50,12 +72,16 @@ static void ARMDebuggerDeinit(struct mDebuggerPlatform* platform);
 static void ARMDebuggerEnter(struct mDebuggerPlatform* d, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info);
 
 static void ARMDebuggerSetBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
+static void ARMDebuggerSetConditionalBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment, struct ParseTree* condition);
 static void ARMDebuggerClearBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void ARMDebuggerSetWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type);
+static void ARMDebuggerSetConditionalWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type, struct ParseTree* condition);
 static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
 static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform*);
 static void ARMDebuggerTrace(struct mDebuggerPlatform*, char* out, size_t* length);
+static bool ARMDebuggerGetRegister(struct mDebuggerPlatform*, const char* name, int32_t* value);
+static bool ARMDebuggerSetRegister(struct mDebuggerPlatform*, const char* name, int32_t value);
 
 struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	struct mDebuggerPlatform* platform = (struct mDebuggerPlatform*) malloc(sizeof(struct ARMDebugger));
@@ -63,12 +89,16 @@ struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	platform->init = ARMDebuggerInit;
 	platform->deinit = ARMDebuggerDeinit;
 	platform->setBreakpoint = ARMDebuggerSetBreakpoint;
+	platform->setConditionalBreakpoint = ARMDebuggerSetConditionalBreakpoint;
 	platform->clearBreakpoint = ARMDebuggerClearBreakpoint;
 	platform->setWatchpoint = ARMDebuggerSetWatchpoint;
+	platform->setConditionalWatchpoint = ARMDebuggerSetConditionalWatchpoint;
 	platform->clearWatchpoint = ARMDebuggerClearWatchpoint;
 	platform->checkBreakpoints = ARMDebuggerCheckBreakpoints;
 	platform->hasBreakpoints = ARMDebuggerHasBreakpoints;
 	platform->trace = ARMDebuggerTrace;
+	platform->getRegister = ARMDebuggerGetRegister;
+	platform->setRegister = ARMDebuggerSetRegister;
 	return platform;
 }
 
@@ -93,7 +123,15 @@ void ARMDebuggerDeinit(struct mDebuggerPlatform* platform) {
 	}
 	ARMDebuggerRemoveMemoryShim(debugger);
 
+	size_t i;
+	for (i = 0; i < ARMDebugBreakpointListSize(&debugger->breakpoints); ++i) {
+		_destroyBreakpoint(ARMDebugBreakpointListGetPointer(&debugger->breakpoints, i));
+	}
 	ARMDebugBreakpointListDeinit(&debugger->breakpoints);
+
+	for (i = 0; i < ARMDebugWatchpointListSize(&debugger->watchpoints); ++i) {
+		_destroyWatchpoint(ARMDebugWatchpointListGetPointer(&debugger->watchpoints, i));
+	}
 	ARMDebugBreakpointListDeinit(&debugger->swBreakpoints);
 	ARMDebugWatchpointListDeinit(&debugger->watchpoints);
 }
@@ -161,9 +199,14 @@ void ARMDebuggerClearSoftwareBreakpoint(struct mDebuggerPlatform* d, uint32_t ad
 }
 
 static void ARMDebuggerSetBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
+	ARMDebuggerSetConditionalBreakpoint(d, address, segment, NULL);
+}
+
+static void ARMDebuggerSetConditionalBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, struct ParseTree* condition) {
 	UNUSED(segment);
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	struct ARMDebugBreakpoint* breakpoint = ARMDebugBreakpointListAppend(&debugger->breakpoints);
+	breakpoint->condition = condition;
 	breakpoint->address = address;
 	breakpoint->isSw = false;
 }
@@ -175,6 +218,7 @@ static void ARMDebuggerClearBreakpoint(struct mDebuggerPlatform* d, uint32_t add
 	size_t i;
 	for (i = 0; i < ARMDebugBreakpointListSize(breakpoints); ++i) {
 		if (ARMDebugBreakpointListGetPointer(breakpoints, i)->address == address) {
+			_destroyBreakpoint(ARMDebugBreakpointListGetPointer(breakpoints, i));
 			ARMDebugBreakpointListShift(breakpoints, i, 1);
 		}
 	}
@@ -186,6 +230,10 @@ static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform* d) {
 }
 
 static void ARMDebuggerSetWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, enum mWatchpointType type) {
+	ARMDebuggerSetConditionalWatchpoint(d, address, segment, type, NULL);
+}
+
+static void ARMDebuggerSetConditionalWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, enum mWatchpointType type, struct ParseTree* condition) {
 	UNUSED(segment);
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	if (!ARMDebugWatchpointListSize(&debugger->watchpoints)) {
@@ -194,6 +242,7 @@ static void ARMDebuggerSetWatchpoint(struct mDebuggerPlatform* d, uint32_t addre
 	struct ARMDebugWatchpoint* watchpoint = ARMDebugWatchpointListAppend(&debugger->watchpoints);
 	watchpoint->address = address;
 	watchpoint->type = type;
+	watchpoint->condition = condition;
 }
 
 static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
@@ -203,6 +252,7 @@ static void ARMDebuggerClearWatchpoint(struct mDebuggerPlatform* d, uint32_t add
 	size_t i;
 	for (i = 0; i < ARMDebugWatchpointListSize(watchpoints); ++i) {
 		if (ARMDebugWatchpointListGetPointer(watchpoints, i)->address == address) {
+			_destroyWatchpoint(ARMDebugWatchpointListGetPointer(watchpoints, i));
 			ARMDebugWatchpointListShift(watchpoints, i, 1);
 		}
 	}
@@ -245,4 +295,82 @@ static void ARMDebuggerTrace(struct mDebuggerPlatform* d, char* out, size_t* len
 		               cpu->gprs[8],  cpu->gprs[9],  cpu->gprs[10], cpu->gprs[11],
 		               cpu->gprs[12], cpu->gprs[13], cpu->gprs[14], cpu->gprs[15],
 		               cpu->cpsr.packed, disassembly);
+}
+
+bool ARMDebuggerGetRegister(struct mDebuggerPlatform* d, const char* name, int32_t* value) {
+	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
+	struct ARMCore* cpu = debugger->cpu;
+
+	if (strcmp(name, "sp") == 0) {
+		*value = cpu->gprs[ARM_SP];
+		return true;
+	}
+	if (strcmp(name, "lr") == 0) {
+		*value = cpu->gprs[ARM_LR];
+		return true;
+	}
+	if (strcmp(name, "pc") == 0) {
+		*value = cpu->gprs[ARM_PC];
+		return true;
+	}
+	if (strcmp(name, "cpsr") == 0) {
+		*value = cpu->cpsr.packed;
+		return true;
+	}
+	// TODO: test if mode has SPSR
+	if (strcmp(name, "spsr") == 0) {
+		*value = cpu->spsr.packed;
+		return true;
+	}
+	if (name[0] == 'r') {
+		char* end;
+		uint32_t reg = strtoul(&name[1], &end, 10);
+		if (reg <= ARM_PC) {
+			*value = cpu->gprs[reg];
+			return true;
+		}
+	}
+	return false;
+}
+
+bool ARMDebuggerSetRegister(struct mDebuggerPlatform* d, const char* name, int32_t value) {
+	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
+	struct ARMCore* cpu = debugger->cpu;
+
+	if (strcmp(name, "sp") == 0) {
+		cpu->gprs[ARM_SP] = value;
+		return true;
+	}
+	if (strcmp(name, "lr") == 0) {
+		cpu->gprs[ARM_LR] = value;
+		return true;
+	}
+	if (strcmp(name, "pc") == 0) {
+		cpu->gprs[ARM_PC] = value;
+		int32_t currentCycles = 0;
+		if (cpu->executionMode == MODE_ARM) {
+			ARM_WRITE_PC;
+		} else {
+			THUMB_WRITE_PC;
+		}
+		return true;
+	}
+	if (name[0] == 'r') {
+		char* end;
+		uint32_t reg = strtoul(&name[1], &end, 10);
+		if (reg > ARM_PC) {
+			return false;
+		}
+		cpu->gprs[reg] = value;
+		if (reg == ARM_PC) {
+			int32_t currentCycles = 0;
+			if (cpu->executionMode == MODE_ARM) {
+				ARM_WRITE_PC;
+			} else {
+				THUMB_WRITE_PC;
+			}
+		}
+		return true;
+	}
+	return false;
 }

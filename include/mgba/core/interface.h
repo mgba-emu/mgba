@@ -35,7 +35,49 @@ typedef uint32_t color_t;
 #define M_RGB8_TO_BGR5(X) ((((X) & 0xF8) >> 3) | (((X) & 0xF800) >> 6) | (((X) & 0xF80000) >> 9))
 #define M_RGB8_TO_RGB5(X) ((((X) & 0xF8) << 7) | (((X) & 0xF800) >> 6) | (((X) & 0xF80000) >> 19))
 
+#ifndef PYCPARSE
+static inline color_t mColorFrom555(uint16_t value) {
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	color_t color = 0;
+	color |= (value & 0x001F) << 11;
+	color |= (value & 0x03E0) << 1;
+	color |= (value & 0x7C00) >> 10;
+#else
+	color_t color = value;
+#endif
+#else
+	color_t color = M_RGB5_TO_BGR8(value);
+	color |= (color >> 5) & 0x070707;
+#endif
+	return color;
+}
+#endif
+
 struct blip_t;
+
+enum mColorFormat {
+	mCOLOR_XBGR8  = 0x00001,
+	mCOLOR_XRGB8  = 0x00002,
+	mCOLOR_BGRX8  = 0x00004,
+	mCOLOR_RGBX8  = 0x00008,
+	mCOLOR_ABGR8  = 0x00010,
+	mCOLOR_ARGB8  = 0x00020,
+	mCOLOR_BGRA8  = 0x00040,
+	mCOLOR_RGBA8  = 0x00080,
+	mCOLOR_RGB5   = 0x00100,
+	mCOLOR_BGR5   = 0x00200,
+	mCOLOR_RGB565 = 0x00400,
+	mCOLOR_BGR565 = 0x00800,
+	mCOLOR_ARGB5  = 0x01000,
+	mCOLOR_ABGR5  = 0x02000,
+	mCOLOR_RGBA5  = 0x04000,
+	mCOLOR_BGRA5  = 0x08000,
+	mCOLOR_RGB8   = 0x10000,
+	mCOLOR_BGR8   = 0x20000,
+
+	mCOLOR_ANY    = -1
+};
 
 struct mCoreCallbacks {
 	void* context;
@@ -61,6 +103,7 @@ struct mKeyCallback {
 enum mPeripheral {
 	mPERIPH_ROTATION = 1,
 	mPERIPH_RUMBLE,
+	mPERIPH_IMAGE_SOURCE,
 	mPERIPH_CUSTOM = 0x1000
 };
 
@@ -73,9 +116,6 @@ struct mRotationSource {
 	int32_t (*readGyroZ)(struct mRotationSource*);
 };
 
-/* Have to include this here because of time_t returntype below. */
-#include <time.h>
-
 struct mRTCSource {
 	void (*sample)(struct mRTCSource*);
 
@@ -83,6 +123,12 @@ struct mRTCSource {
 
 	void (*serialize)(struct mRTCSource*, struct mStateExtdataItem*);
 	bool (*deserialize)(struct mRTCSource*, const struct mStateExtdataItem*);
+};
+
+struct mImageSource {
+	void (*startRequestImage)(struct mImageSource*, unsigned w, unsigned h, int colorFormats);
+	void (*stopRequestImage)(struct mImageSource*);
+	void (*requestImage)(struct mImageSource*, const void** buffer, size_t* stride, enum mColorFormat* colorFormat);
 };
 
 enum mRTCGenericType {

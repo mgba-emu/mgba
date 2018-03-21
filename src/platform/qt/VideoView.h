@@ -3,18 +3,23 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_VIDEO_VIEW
-#define QGBA_VIDEO_VIEW
+#pragma once
 
 #ifdef USE_FFMPEG
 
 #include <QWidget>
+
+#include <memory>
+
+#include "CoreController.h"
 
 #include "ui_VideoView.h"
 
 #include "feature/ffmpeg/ffmpeg-encoder.h"
 
 namespace QGBA {
+
+class CoreController;
 
 class VideoView : public QWidget {
 Q_OBJECT
@@ -26,6 +31,8 @@ public:
 	mAVStream* getStream() { return &m_encoder.d; }
 
 public slots:
+	void setController(std::shared_ptr<CoreController>);
+
 	void startRecording();
 	void stopRecording();
 	void setNativeResolution(const QSize&);
@@ -107,7 +114,5 @@ private:
 };
 
 }
-
-#endif
 
 #endif

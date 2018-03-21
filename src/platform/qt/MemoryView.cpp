@@ -6,13 +6,13 @@
 
 #include "MemoryView.h"
 
-#include "GameController.h"
+#include "CoreController.h"
 
 #include <mgba/core/core.h>
 
 using namespace QGBA;
 
-MemoryView::MemoryView(GameController* controller, QWidget* parent)
+MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
 {
@@ -45,12 +45,12 @@ MemoryView::MemoryView(GameController* controller, QWidget* parent)
 	        m_ui.hexfield, static_cast<void (MemoryModel::*)(uint32_t)>(&MemoryModel::jumpToAddress));
 	connect(m_ui.hexfield, &MemoryModel::selectionChanged, this, &MemoryView::updateSelection);
 
-	connect(controller, &GameController::gameStopped, this, &QWidget::close);
+	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 
-	connect(controller, &GameController::frameAvailable, this, &MemoryView::update);
-	connect(controller, &GameController::gamePaused, this, &MemoryView::update);
-	connect(controller, &GameController::stateLoaded, this, &MemoryView::update);
-	connect(controller, &GameController::rewound, this, &MemoryView::update);
+	connect(controller.get(), &CoreController::frameAvailable, this, &MemoryView::update);
+	connect(controller.get(), &CoreController::paused, this, &MemoryView::update);
+	connect(controller.get(), &CoreController::stateLoaded, this, &MemoryView::update);
+	connect(controller.get(), &CoreController::rewound, this, &MemoryView::update);
 
 	connect(m_ui.copy, &QAbstractButton::clicked, m_ui.hexfield, &MemoryModel::copy);
 	connect(m_ui.save, &QAbstractButton::clicked, m_ui.hexfield, &MemoryModel::save);
@@ -94,9 +94,6 @@ void MemoryView::updateSelection(uint32_t start, uint32_t end) {
 
 void MemoryView::updateStatus() {
 	int align = m_ui.hexfield->alignment();
-	if (!m_controller->isLoaded()) {
-		return;
-	}
 	mCore* core = m_controller->thread()->core;
 	QByteArray selection(m_ui.hexfield->serialize());
 	QString text(m_ui.hexfield->decodeText(selection));

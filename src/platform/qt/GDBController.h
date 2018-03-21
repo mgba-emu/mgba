@@ -3,8 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_GDB_CONTROLLER
-#define QGBA_GDB_CONTROLLER
+#pragma once
 
 #include "DebuggerController.h"
 
@@ -14,13 +13,13 @@
 
 namespace QGBA {
 
-class GameController;
+class CoreController;
 
 class GDBController : public DebuggerController {
 Q_OBJECT
 
 public:
-	GDBController(GameController* controller, QObject* parent = nullptr);
+	GDBController(QObject* parent = nullptr);
 
 public:
 	ushort port();
@@ -38,14 +37,12 @@ signals:
 private:
 	virtual void shutdownInternal() override;
 
-	GDBStub m_gdbStub;
+	GDBStub m_gdbStub{};
 
 	ushort m_port = 2345;
 	Address m_bindAddress;
 };
 
 }
-
-#endif
 
 #endif

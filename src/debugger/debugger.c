@@ -8,9 +8,14 @@
 #include <mgba/core/core.h>
 
 #include <mgba/internal/debugger/cli-debugger.h>
+#include <mgba/internal/debugger/symbols.h>
 
 #ifdef USE_GDB_STUB
 #include <mgba/internal/debugger/gdb-stub.h>
+#endif
+
+#if ENABLE_SCRIPTING
+#include <mgba/core/scripting.h>
 #endif
 
 const uint32_t DEBUGGER_ID = 0xDEADBEEF;
@@ -34,6 +39,7 @@ struct mDebugger* mDebuggerCreate(enum mDebuggerType type, struct mCore* core) {
 	};
 
 	union DebugUnion* debugger = malloc(sizeof(union DebugUnion));
+	memset(debugger, 0, sizeof(*debugger));
 
 	switch (type) {
 	case DEBUGGER_CLI:
@@ -109,6 +115,11 @@ void mDebuggerEnter(struct mDebugger* debugger, enum mDebuggerEntryReason reason
 	if (debugger->platform->entered) {
 		debugger->platform->entered(debugger->platform, reason, info);
 	}
+#ifdef ENABLE_SCRIPTING
+	if (debugger->bridge) {
+		mScriptBridgeDebuggerEntered(debugger->bridge, reason, info);
+	}
+#endif
 }
 
 static void mDebuggerInit(void* cpu, struct mCPUComponent* component) {
@@ -126,4 +137,23 @@ static void mDebuggerDeinit(struct mCPUComponent* component) {
 		debugger->deinit(debugger);
 	}
 	debugger->platform->deinit(debugger->platform);
+}
+
+bool mDebuggerLookupIdentifier(struct mDebugger* debugger, const char* name, int32_t* value, int* segment) {
+	*segment = -1;
+#ifdef ENABLE_SCRIPTING
+	if (debugger->bridge && mScriptBridgeLookupSymbol(debugger->bridge, name, value)) {
+		return true;
+	}
+#endif
+	if (debugger->core->symbolTable && mDebuggerSymbolLookup(debugger->core->symbolTable, name, value, segment)) {
+		return true;
+	}
+	if (debugger->core->lookupIdentifier(debugger->core, name, value, segment)) {
+		return true;
+	}
+	if (debugger->platform && debugger->platform->getRegister(debugger->platform, name, value)) {
+		return true;
+	}
+	return false;
 }

@@ -138,7 +138,7 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 	return true;
 }
 
-size_t GBASavedataSize(struct GBASavedata* savedata) {
+size_t GBASavedataSize(const struct GBASavedata* savedata) {
 	switch (savedata->type) {
 	case SAVEDATA_SRAM:
 		return SIZE_CART_SRAM;

@@ -109,9 +109,11 @@ void GBAudioReset(struct GBAudio* audio) {
 	mTimingDeschedule(audio->timing, &audio->ch3Fade);
 	mTimingDeschedule(audio->timing, &audio->ch4Event);
 	mTimingDeschedule(audio->timing, &audio->sampleEvent);
-	mTimingSchedule(audio->timing, &audio->frameEvent, 0);
 	if (audio->style != GB_AUDIO_GBA) {
 		mTimingSchedule(audio->timing, &audio->sampleEvent, 0);
+	}
+	if (audio->style == GB_AUDIO_GBA) {
+		mTimingSchedule(audio->timing, &audio->frameEvent, 0);
 	}
 	audio->ch1 = (struct GBAudioSquareChannel) { .envelope = { .dead = 2 } };
 	audio->ch2 = (struct GBAudioSquareChannel) { .envelope = { .dead = 2 } };
@@ -153,6 +155,10 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->playingCh2 = false;
 	audio->playingCh3 = false;
 	audio->playingCh4 = false;
+	if (audio->p && (audio->p->model == GB_MODEL_DMG || audio->p->model == GB_MODEL_CGB)) {
+		audio->playingCh1 = true;
+		*audio->nr52 |= 0x01;
+	}
 }
 
 void GBAudioResizeBuffer(struct GBAudio* audio, size_t samples) {
@@ -482,7 +488,13 @@ void GBAudioWriteNR52(struct GBAudio* audio, uint8_t value) {
 
 void _updateFrame(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	struct GBAudio* audio = user;
+	GBAudioUpdateFrame(audio, timing);
+	if (audio->style == GB_AUDIO_GBA) {
+		mTimingSchedule(timing, &audio->frameEvent, audio->timingFactor * FRAME_CYCLES - cyclesLate);
+	}
+}
 
+void GBAudioUpdateFrame(struct GBAudio* audio, struct mTiming* timing) {
 	int frame = (audio->frame + 1) & 7;
 	audio->frame = frame;
 
@@ -572,8 +584,6 @@ void _updateFrame(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 		}
 		break;
 	}
-
-	mTimingSchedule(timing, &audio->frameEvent, audio->timingFactor * FRAME_CYCLES - cyclesLate);
 }
 
 void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
@@ -955,10 +965,14 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	audio->playingCh4 = !!(*audio->nr52 & 0x0008);
 	audio->enable = GBAudioEnableGetEnable(*audio->nr52);
 
-	LOAD_32LE(when, 0, &state->ch1.nextFrame);
-	mTimingSchedule(audio->timing, &audio->frameEvent, when);
+	if (audio->style == GB_AUDIO_GBA) {
+		LOAD_32LE(when, 0, &state->ch1.nextFrame);
+		mTimingSchedule(audio->timing, &audio->frameEvent, when);
+	}
 
 	LOAD_32LE(flags, 0, flagsIn);
+	audio->frame = GBSerializedAudioFlagsGetFrame(flags);
+
 	LOAD_32LE(ch1Flags, 0, &state->ch1.envelope);
 	audio->ch1.envelope.currentVolume = GBSerializedAudioFlagsGetCh1Volume(flags);
 	audio->ch1.envelope.dead = GBSerializedAudioFlagsGetCh1Dead(flags);

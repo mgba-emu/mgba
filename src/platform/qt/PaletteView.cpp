@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "PaletteView.h"
 
+#include "CoreController.h"
 #include "GBAApp.h"
 #include "LogController.h"
 #include "VFileDevice.h"
@@ -24,13 +25,13 @@
 
 using namespace QGBA;
 
-PaletteView::PaletteView(GameController* controller, QWidget* parent)
+PaletteView::PaletteView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
 {
 	m_ui.setupUi(this);
 
-	connect(m_controller, &GameController::frameAvailable, this, &PaletteView::updatePalette);
+	connect(controller.get(), &CoreController::frameAvailable, this, &PaletteView::updatePalette);
 	m_ui.bgGrid->setDimensions(QSize(16, 16));
 	m_ui.objGrid->setDimensions(QSize(16, 16));
 	int count = 256;
@@ -61,7 +62,7 @@ PaletteView::PaletteView(GameController* controller, QWidget* parent)
 	connect(m_ui.exportBG, &QAbstractButton::clicked, [this, count] () { exportPalette(0, count); });
 	connect(m_ui.exportOBJ, &QAbstractButton::clicked, [this, count] () { exportPalette(count, count); });
 
-	connect(controller, &GameController::gameStopped, this, &QWidget::close);
+	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 }
 
 void PaletteView::updatePalette() {
@@ -133,7 +134,7 @@ void PaletteView::exportPalette(int start, int length) {
 		length = 512 - start;
 	}
 
-	GameController::Interrupter interrupter(m_controller);
+	CoreController::Interrupter interrupter(m_controller);
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export palette"),
 	                                                  tr("Windows PAL (*.pal);;Adobe Color Table (*.act)"));
 	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
