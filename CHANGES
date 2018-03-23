@@ -54,6 +54,7 @@ Bugfixes:
  - Qt: Fix opening in fullscreen (fixes mgba.io/i/993)
  - Python: Fix package directory
  - GB Memory: Fix OAM DMA blocking regions (fixes mgba.io/i/1013)
+ - Wii: Fix various setup and teardown drawing issues (fixes mgba.io/i/988)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)

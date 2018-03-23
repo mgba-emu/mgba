@@ -194,18 +194,20 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 	free(framebuffer[0]);
 	free(framebuffer[1]);
 
-	framebuffer[0] = SYS_AllocateFramebuffer(vmode);
-	framebuffer[1] = SYS_AllocateFramebuffer(vmode);
-
 	VIDEO_SetBlack(true);
 	VIDEO_Configure(vmode);
+
+	framebuffer[0] = SYS_AllocateFramebuffer(vmode);
+	framebuffer[1] = SYS_AllocateFramebuffer(vmode);
+	VIDEO_ClearFrameBuffer(vmode, framebuffer[0], COLOR_BLACK);
+	VIDEO_ClearFrameBuffer(vmode, framebuffer[1], COLOR_BLACK);
+
 	VIDEO_SetNextFramebuffer(framebuffer[whichFb]);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
 	if (vmode->viTVMode & VI_NON_INTERLACE) {
 		VIDEO_WaitVSync();
 	}
-	VIDEO_SetBlack(false);
 	GX_SetViewport(0, 0, vmode->fbWidth, vmode->efbHeight, 0, 1);
 
 	f32 yscale = GX_GetYScaleFactor(vmode->efbHeight, vmode->xfbHeight);
@@ -238,6 +240,9 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 
 int main(int argc, char* argv[]) {
 	VIDEO_Init();
+	VIDEO_SetBlack(true);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
 	PAD_Init();
 	WPAD_Init();
 	WPAD_SetDataFormat(0, WPAD_FMT_BTNS_ACC_IR);
@@ -481,6 +486,10 @@ int main(int argc, char* argv[]) {
 	mGUIInit(&runner, "wii");
 	reconfigureScreen(&runner);
 
+	// Make sure screen is properly initialized by drawing a blank frame
+	_drawStart();
+	_drawEnd();
+
 	_mapKey(&runner.params.keyMap, GCN1_INPUT, PAD_BUTTON_A, GUI_INPUT_SELECT);
 	_mapKey(&runner.params.keyMap, GCN1_INPUT, PAD_BUTTON_B, GUI_INPUT_BACK);
 	_mapKey(&runner.params.keyMap, GCN1_INPUT, PAD_TRIGGER_Z, GUI_INPUT_CANCEL);
@@ -516,6 +525,9 @@ int main(int argc, char* argv[]) {
 	} else {
 		mGUIRunloop(&runner);
 	}
+	VIDEO_SetBlack(true);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
 	mGUIDeinit(&runner);
 
 #ifdef FIXED_ROM_BUFFER
@@ -546,6 +558,8 @@ static void _audioDMA(void) {
 }
 
 static void _drawStart(void) {
+	VIDEO_SetBlack(false);
+
 	u32 level = 0;
 	_CPU_ISR_Disable(level);
 	if (referenceRetraceCount > retraceCount) {
@@ -563,12 +577,11 @@ static void _drawStart(void) {
 }
 
 static void _drawEnd(void) {
-	whichFb = !whichFb;
-
 	GX_CopyDisp(framebuffer[whichFb], GX_TRUE);
 	GX_DrawDone();
 	VIDEO_SetNextFramebuffer(framebuffer[whichFb]);
 	VIDEO_Flush();
+	whichFb = !whichFb;
 
 	u32 level = 0;
 	_CPU_ISR_Disable(level);
@@ -713,6 +726,9 @@ void _gameUnloaded(struct mGUIRunner* runner) {
 	UNUSED(runner);
 	AUDIO_StopDMA();
 	frameLimiter = true;
+	VIDEO_SetBlack(true);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
 }
 
 void _gameLoaded(struct mGUIRunner* runner) {
