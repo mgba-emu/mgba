@@ -26,6 +26,7 @@ Bugfixes:
  - Qt: Fix opening in fullscreen (fixes mgba.io/i/993)
  - Python: Fix package directory
  - GB Memory: Fix OAM DMA blocking regions (fixes mgba.io/i/1013)
+ - Wii: Fix various setup and teardown drawing issues (fixes mgba.io/i/988)
 Misc:
  - GBA: Improve multiboot image detection
  - GB MBC: Remove erroneous bank 0 wrapping
