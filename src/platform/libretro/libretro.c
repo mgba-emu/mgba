@@ -320,7 +320,7 @@ void retro_run(void) {
 	videoCallback(outputBuffer, width, height, BYTES_PER_PIXEL * 256);
 }
 
-void static _setupMaps(struct mCore* core) {
+static void _setupMaps(struct mCore* core) {
 #ifdef M_CORE_GBA
 	if (core->platform(core) == PLATFORM_GBA) {
 		struct GBA* gba = core->board;
