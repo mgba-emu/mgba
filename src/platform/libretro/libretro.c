@@ -455,21 +455,52 @@ bool retro_load_game(const struct retro_game_info* game) {
 	core->loadROM(core, rom);
 	core->loadSave(core, save);
 
+	const char* sysDir = 0;
+	const char* biosName = 0;
+	char biosPath[PATH_MAX];
+	environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir);
+
 #ifdef M_CORE_GBA
 	if (core->platform(core) == PLATFORM_GBA) {
 		core->setPeripheral(core, mPERIPH_GBA_LUMINANCE, &lux);
+		biosName = "gba_bios.bin";
 
-		const char* sysDir = 0;
-		if (core->opts.useBios && environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
-			char biosPath[PATH_MAX];
-			snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, "gba_bios.bin");
-			struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
-			if (bios) {
-				core->loadBIOS(core, bios, 0);
-			}
-		}
 	}
 #endif
+
+#ifdef M_CORE_GB
+	if (core->platform(core) == PLATFORM_GB) {
+		const char* modelName = mCoreConfigGetValue(&core->config, "gb.model");
+		struct GB* gb = core->board;
+
+		if (modelName) {
+			gb->model = GBNameToModel(modelName);
+		} else {
+			GBDetectModel(gb);
+		}
+
+		switch (gb->model) {
+		case GB_MODEL_CGB:
+			biosName = "gbc_bios.bin";
+			break;
+		case GB_MODEL_SGB:
+			biosName = "sgb_bios.bin";
+			break;
+		case GB_MODEL_DMG:
+		default:
+			biosName = "gb_bios.bin";
+			break;
+		};
+	}
+#endif
+
+	if (core->opts.useBios && sysDir && biosName) {
+		snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, biosName);
+		struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
+		if (bios) {
+			core->loadBIOS(core, bios, 0);
+		}
+	}
 
 	core->reset(core);
 	_setupMaps(core);
