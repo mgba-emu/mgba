@@ -75,25 +75,25 @@ static void _regenerateSGBBorder(struct GBVideoSoftwareRenderer* renderer) {
 			tileData[3] = renderer->d.sgbCharRam[(SGBBgAttributesGetTile(mapData) * 16 + localY) * 2 + 0x11];
 
 			size_t base = y * renderer->outputBufferStride + x;
-			int p = SGBBgAttributesGetPalette(mapData) * 0x10;
+			int paletteBase = SGBBgAttributesGetPalette(mapData) * 0x10;
+			int colorSelector;
+
 			if (SGBBgAttributesIsXFlip(mapData)) {
-				renderer->outputBuffer[base + 0] = renderer->palette[p | ((tileData[0] >> 0) & 0x1) | ((tileData[1] << 1) & 0x2) | ((tileData[2] << 2) & 0x4) | ((tileData[3] << 3) & 0x8)];
-				renderer->outputBuffer[base + 1] = renderer->palette[p | ((tileData[0] >> 1) & 0x1) | ((tileData[1] >> 0) & 0x2) | ((tileData[2] << 1) & 0x4) | ((tileData[3] << 2) & 0x8)];
-				renderer->outputBuffer[base + 2] = renderer->palette[p | ((tileData[0] >> 2) & 0x1) | ((tileData[1] >> 1) & 0x2) | ((tileData[2] >> 0) & 0x4) | ((tileData[3] << 1) & 0x8)];
-				renderer->outputBuffer[base + 3] = renderer->palette[p | ((tileData[0] >> 3) & 0x1) | ((tileData[1] >> 2) & 0x2) | ((tileData[2] >> 1) & 0x4) | ((tileData[3] >> 0) & 0x8)];
-				renderer->outputBuffer[base + 4] = renderer->palette[p | ((tileData[0] >> 4) & 0x1) | ((tileData[1] >> 3) & 0x2) | ((tileData[2] >> 2) & 0x4) | ((tileData[3] >> 1) & 0x8)];
-				renderer->outputBuffer[base + 5] = renderer->palette[p | ((tileData[0] >> 5) & 0x1) | ((tileData[1] >> 4) & 0x2) | ((tileData[2] >> 3) & 0x4) | ((tileData[3] >> 2) & 0x8)];
-				renderer->outputBuffer[base + 6] = renderer->palette[p | ((tileData[0] >> 6) & 0x1) | ((tileData[1] >> 5) & 0x2) | ((tileData[2] >> 4) & 0x4) | ((tileData[3] >> 3) & 0x8)];
-				renderer->outputBuffer[base + 7] = renderer->palette[p | ((tileData[0] >> 7) & 0x1) | ((tileData[1] >> 6) & 0x2) | ((tileData[2] >> 5) & 0x4) | ((tileData[3] >> 4) & 0x8)];
+				for (i = 0; i < 8; ++i) {
+					colorSelector = (tileData[0] >> i & 0x1) << 0 | (tileData[1] >> i & 0x1) << 1 | (tileData[2] >> i & 0x1) << 2 | (tileData[3] >> i & 0x1) << 3;
+					// The first color of every palette is transparent
+					if (colorSelector) {
+						renderer->outputBuffer[base + i] = renderer->palette[paletteBase | colorSelector];
+					}
+				}
 			} else {
-				renderer->outputBuffer[base + 0] = renderer->palette[p | ((tileData[0] >> 7) & 0x1) | ((tileData[1] >> 6) & 0x2) | ((tileData[2] >> 5) & 0x4) | ((tileData[3] >> 4) & 0x8)];
-				renderer->outputBuffer[base + 1] = renderer->palette[p | ((tileData[0] >> 6) & 0x1) | ((tileData[1] >> 5) & 0x2) | ((tileData[2] >> 4) & 0x4) | ((tileData[3] >> 3) & 0x8)];
-				renderer->outputBuffer[base + 2] = renderer->palette[p | ((tileData[0] >> 5) & 0x1) | ((tileData[1] >> 4) & 0x2) | ((tileData[2] >> 3) & 0x4) | ((tileData[3] >> 2) & 0x8)];
-				renderer->outputBuffer[base + 3] = renderer->palette[p | ((tileData[0] >> 4) & 0x1) | ((tileData[1] >> 3) & 0x2) | ((tileData[2] >> 2) & 0x4) | ((tileData[3] >> 1) & 0x8)];
-				renderer->outputBuffer[base + 4] = renderer->palette[p | ((tileData[0] >> 3) & 0x1) | ((tileData[1] >> 2) & 0x2) | ((tileData[2] >> 1) & 0x4) | ((tileData[3] >> 0) & 0x8)];
-				renderer->outputBuffer[base + 5] = renderer->palette[p | ((tileData[0] >> 2) & 0x1) | ((tileData[1] >> 1) & 0x2) | ((tileData[2] >> 0) & 0x4) | ((tileData[3] << 1) & 0x8)];
-				renderer->outputBuffer[base + 6] = renderer->palette[p | ((tileData[0] >> 1) & 0x1) | ((tileData[1] >> 0) & 0x2) | ((tileData[2] << 1) & 0x4) | ((tileData[3] << 2) & 0x8)];
-				renderer->outputBuffer[base + 7] = renderer->palette[p | ((tileData[0] >> 0) & 0x1) | ((tileData[1] << 1) & 0x2) | ((tileData[2] << 2) & 0x4) | ((tileData[3] << 3) & 0x8)];
+				for (i = 7; i >= 0; --i) {
+					colorSelector = (tileData[0] >> i & 0x1) << 0 | (tileData[1] >> i & 0x1) << 1 | (tileData[2] >> i & 0x1) << 2 | (tileData[3] >> i & 0x1) << 3;
+
+					if (colorSelector) {
+						renderer->outputBuffer[base + 7 - i] = renderer->palette[paletteBase | colorSelector];
+					}
+				}
 			}
 		}
 	}
