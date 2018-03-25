@@ -438,7 +438,9 @@ bool retro_load_game(const struct retro_game_info* game) {
 	core->init(core);
 	core->setAVStream(core, &stream);
 
-	outputBuffer = malloc(256 * 224 * BYTES_PER_PIXEL);
+	size_t size = 256 * 224 * BYTES_PER_PIXEL;
+	outputBuffer = malloc(size);
+	memset(outputBuffer, 0xFF, size);
 	core->setVideoBuffer(core, outputBuffer, 256);
 
 	core->setAudioBufferSize(core, SAMPLES);
