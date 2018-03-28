@@ -51,7 +51,7 @@ static void GBATimerUpdate(struct GBA* gba, int timerId, uint32_t cyclesLate) {
 	int32_t tickMask = (1 << GBATimerFlagsGetPrescaleBits(timer->flags)) - 1;
 	currentTime &= ~tickMask;
 	timer->lastEvent = currentTime;
-	GBATimerUpdateRegister(gba, timerId, 0);
+	GBATimerUpdateRegister(gba, timerId, TIMER_RELOAD_DELAY + cyclesLate);
 
 	if (GBATimerFlagsIsDoIrq(timer->flags)) {
 		timer->flags = GBATimerFlagsFillIrqPending(timer->flags);
@@ -155,7 +155,7 @@ void GBATimerUpdateRegister(struct GBA* gba, int timer, int32_t cyclesLate) {
 	if (!mTimingIsScheduled(&gba->timing, &currentTimer->event)) {
 		tickIncrement = (0x10000 - tickIncrement) << prescaleBits;
 		currentTime -= mTimingCurrentTime(&gba->timing) - cyclesLate;
-		mTimingSchedule(&gba->timing, &currentTimer->event, TIMER_RELOAD_DELAY + tickIncrement + currentTime);
+		mTimingSchedule(&gba->timing, &currentTimer->event, tickIncrement + currentTime);
 	}
 }
 
