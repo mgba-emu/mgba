@@ -555,6 +555,10 @@ void GBUnmapBIOS(struct GB* gb) {
 		free(gb->memory.romBase);
 		gb->memory.romBase = gb->memory.rom;
 	}
+	// XXX: Force AGB registers for AGB-mode
+	if (gb->model == GB_MODEL_AGB && gb->cpu->pc == 0x100) {
+		gb->cpu->b = 1;
+	}
 }
 
 void GBDetectModel(struct GB* gb) {
