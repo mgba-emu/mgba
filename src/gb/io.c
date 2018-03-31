@@ -106,7 +106,7 @@ static const uint8_t _registerMask[] = {
 
 static void _writeSGBBits(struct GB* gb, int bits) {
 	if (!bits) {
-		gb->sgbBit = 0;
+		gb->sgbBit = -1;
 		memset(gb->sgbPacket, 0, sizeof(gb->sgbPacket));
 	}
 	if (bits == gb->currentSgbBits) {
@@ -122,9 +122,12 @@ static void _writeSGBBits(struct GB* gb, int bits) {
 	}
 	switch (bits) {
 	case 1:
+		if (gb->sgbBit < 0) {
+			return;
+		}
 		gb->sgbPacket[gb->sgbBit >> 3] |= 1 << (gb->sgbBit & 7);
-		// Fall through
-	case 2:
+		break;
+	case 3:
 		++gb->sgbBit;
 	default:
 		break;
