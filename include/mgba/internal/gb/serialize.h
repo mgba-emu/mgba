@@ -395,8 +395,7 @@ struct GBSerializedState {
 		uint8_t command;
 		uint8_t bits;
 		GBSerializedSGBFlags flags;
-		uint8_t packet[16];
-		uint32_t reserved[4];
+		uint32_t reserved[8];
 		uint8_t charRam[SGB_SIZE_CHAR_RAM];
 		uint8_t mapRam[SGB_SIZE_MAP_RAM];
 		uint8_t palRam[SGB_SIZE_PAL_RAM];

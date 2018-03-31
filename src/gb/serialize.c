@@ -214,8 +214,6 @@ void GBSGBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	flags = GBSerializedSGBFlagsSetRenderMode(flags, gb->video.renderer->sgbRenderMode);
 	STORE_32LE(flags, 0, &state->sgb.flags);
 
-	memcpy(state->sgb.packet, gb->sgbPacket, sizeof(state->sgb.packet));
-
 	if (gb->video.renderer->sgbCharRam) {
 		memcpy(state->sgb.charRam, gb->video.renderer->sgbCharRam, sizeof(state->sgb.charRam));
 	}
@@ -242,8 +240,6 @@ void GBSGBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->currentSgbBits = GBSerializedSGBFlagsGetP1Bits(flags);
 	gb->video.renderer->sgbRenderMode = GBSerializedSGBFlagsGetRenderMode(flags);
 
-	memcpy(gb->sgbPacket, state->sgb.packet, sizeof(state->sgb.packet));
-
 	if (!gb->video.renderer->sgbCharRam) {
 		gb->video.renderer->sgbCharRam = anonymousMemoryMap(SGB_SIZE_CHAR_RAM);
 	}
@@ -267,5 +263,4 @@ void GBSGBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	memcpy(gb->video.renderer->sgbAttributes, state->sgb.attributes, sizeof(state->sgb.attributes));
 
 	GBVideoWriteSGBPacket(&gb->video, (uint8_t[16]) { (SGB_ATRC_EN << 3) | 1, 0 });
-	GBVideoWriteSGBPacket(&gb->video, gb->sgbPacket);
 }
