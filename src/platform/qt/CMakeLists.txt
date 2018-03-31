@@ -17,6 +17,10 @@ if(BUILD_SDL)
 	include_directories(${SDL_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/src/platform/sdl)
 endif()
 
+if(POLICY CMP0071)
+	cmake_policy(SET CMP0071 OLD)
+endif()
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
