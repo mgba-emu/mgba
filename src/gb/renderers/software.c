@@ -90,7 +90,7 @@ static void GBVideoSoftwareRendererUpdateWindow(struct GBVideoSoftwareRenderer* 
 			renderer->hasWindow = true;
 		} else {
 			if (!renderer->hasWindow) {
-				renderer->currentWy = renderer->lastY + 1 - renderer->wy;
+				renderer->currentWy = renderer->lastY - renderer->wy;
 			} else {
 				renderer->currentWy += renderer->lastY;
 			}
