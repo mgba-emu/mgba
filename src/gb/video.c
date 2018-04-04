@@ -606,12 +606,12 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->renderer->writePalette(video->renderer, 1, video->palette[1]);
 		video->renderer->writePalette(video->renderer, 2, video->palette[2]);
 		video->renderer->writePalette(video->renderer, 3, video->palette[3]);
-		video->renderer->writePalette(video->renderer, 4, video->palette[0]);
+		video->renderer->writePalette(video->renderer, 4, video->palette[4]);
 		video->renderer->writePalette(video->renderer, 5, video->palette[5]);
 		video->renderer->writePalette(video->renderer, 6, video->palette[6]);
 		video->renderer->writePalette(video->renderer, 7, video->palette[7]);
-		video->renderer->writePalette(video->renderer, 8, video->palette[0]);
-		video->renderer->writePalette(video->renderer, 12, video->palette[0]);
+		video->renderer->writePalette(video->renderer, 8, video->palette[8]);
+		video->renderer->writePalette(video->renderer, 12, video->palette[12]);
 		break;
 	case SGB_PAL23:
 		video->palette[9] = data[3] | (data[4] << 8);
@@ -645,9 +645,9 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->renderer->writePalette(video->renderer, 1, video->palette[1]);
 		video->renderer->writePalette(video->renderer, 2, video->palette[2]);
 		video->renderer->writePalette(video->renderer, 3, video->palette[3]);
-		video->renderer->writePalette(video->renderer, 4, video->palette[0]);
-		video->renderer->writePalette(video->renderer, 8, video->palette[0]);
-		video->renderer->writePalette(video->renderer, 12, video->palette[0]);
+		video->renderer->writePalette(video->renderer, 4, video->palette[4]);
+		video->renderer->writePalette(video->renderer, 8, video->palette[8]);
+		video->renderer->writePalette(video->renderer, 12, video->palette[12]);
 		video->renderer->writePalette(video->renderer, 13, video->palette[13]);
 		video->renderer->writePalette(video->renderer, 14, video->palette[14]);
 		video->renderer->writePalette(video->renderer, 15, video->palette[15]);
@@ -675,7 +675,7 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 				continue;
 			}
 			LOAD_16LE(video->palette[i * 4 + 0], entry * 8 + 0, video->renderer->sgbPalRam);
-			video->renderer->writePalette(video->renderer, i * 4 + 0, video->palette[0]);
+			video->renderer->writePalette(video->renderer, i * 4 + 0, video->palette[i * 4 + 0]);
 			LOAD_16LE(video->palette[i * 4 + 1], entry * 8 + 2, video->renderer->sgbPalRam);
 			video->renderer->writePalette(video->renderer, i * 4 + 1, video->palette[i * 4 + 1]);
 			LOAD_16LE(video->palette[i * 4 + 2], entry * 8 + 4, video->renderer->sgbPalRam);

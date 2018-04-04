@@ -72,6 +72,29 @@ static void _reloadSettings(void) {
 	};
 
 	struct retro_variable var;
+	enum GBModel model;
+	const char* modelName;
+
+	var.key = "mgba_gb_model";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		if (strcmp(var.value, "Game Boy") == 0) {
+			model = GB_MODEL_DMG;
+		} else if (strcmp(var.value, "Super Game Boy") == 0) {
+			model = GB_MODEL_SGB;
+		} else if (strcmp(var.value, "Game Boy Color") == 0) {
+			model = GB_MODEL_CGB;
+		} else if (strcmp(var.value, "Game Boy Advance") == 0) {
+			model = GB_MODEL_AGB;
+		} else {
+			model = GB_MODEL_AUTODETECT;
+		}
+
+		modelName = GBModelToName(model);
+		mCoreConfigSetDefaultValue(&core->config, "gb.model", modelName);
+		mCoreConfigSetDefaultValue(&core->config, "sgb.model", modelName);
+		mCoreConfigSetDefaultValue(&core->config, "cgb.model", modelName);
+	}
 
 	var.key = "mgba_use_bios";
 	var.value = 0;
@@ -134,6 +157,7 @@ void retro_set_environment(retro_environment_t env) {
 	struct retro_variable vars[] = {
 		{ "mgba_solar_sensor_level", "Solar sensor level; 0|1|2|3|4|5|6|7|8|9|10" },
 		{ "mgba_allow_opposing_directions", "Allow opposing directional input; OFF|ON" },
+		{ "mgba_gb_model", "Game Boy model (requires restart); Autodetect|Game Boy|Super Game Boy|Game Boy Color|Game Boy Advance" },
 		{ "mgba_use_bios", "Use BIOS file if found (requires restart); ON|OFF" },
 		{ "mgba_skip_bios", "Skip BIOS intro (requires restart); OFF|ON" },
 		{ "mgba_sgb_borders", "Use Super Game Boy borders (requires restart); ON|OFF" },
@@ -375,7 +399,7 @@ void retro_run(void) {
 */
 }
 
-void static _setupMaps(struct mCore* core) {
+static void _setupMaps(struct mCore* core) {
 #ifdef M_CORE_GBA
 	if (core->platform(core) == PLATFORM_GBA) {
 		struct GBA* gba = core->board;
@@ -498,11 +522,13 @@ bool retro_load_game(const struct retro_game_info* game)
 	core->init(core);
 	core->setAVStream(core, &stream);
 
+	size_t size = 256 * 224 * BYTES_PER_PIXEL;
 #ifdef _3DS
-	outputBuffer = linearMemAlign(256 * 224 * BYTES_PER_PIXEL, 0x80);
+	outputBuffer = linearMemAlign(size, 0x80);
 #else
-	outputBuffer = malloc(256 * 224 * BYTES_PER_PIXEL);
+	outputBuffer = malloc(size);
 #endif
+	memset(outputBuffer, 0xFF, size);
 	core->setVideoBuffer(core, outputBuffer, 256);
 
 	core->setAudioBufferSize(core, SAMPLES);
@@ -519,21 +545,53 @@ bool retro_load_game(const struct retro_game_info* game)
 	core->loadROM(core, rom);
 	core->loadSave(core, save);
 
+	const char* sysDir = 0;
+	const char* biosName = 0;
+	char biosPath[PATH_MAX];
+	environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir);
+
 #ifdef M_CORE_GBA
 	if (core->platform(core) == PLATFORM_GBA) {
 		core->setPeripheral(core, mPERIPH_GBA_LUMINANCE, &lux);
+		biosName = "gba_bios.bin";
 
-		const char* sysDir = 0;
-		if (core->opts.useBios && environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
-			char biosPath[PATH_MAX];
-			snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, "gba_bios.bin");
-			struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
-			if (bios) {
-				core->loadBIOS(core, bios, 0);
-			}
-		}
 	}
 #endif
+
+#ifdef M_CORE_GB
+	if (core->platform(core) == PLATFORM_GB) {
+		const char* modelName = mCoreConfigGetValue(&core->config, "gb.model");
+		struct GB* gb = core->board;
+
+		if (modelName) {
+			gb->model = GBNameToModel(modelName);
+		} else {
+			GBDetectModel(gb);
+		}
+
+		switch (gb->model) {
+		case GB_MODEL_AGB:
+		case GB_MODEL_CGB:
+			biosName = "gbc_bios.bin";
+			break;
+		case GB_MODEL_SGB:
+			biosName = "sgb_bios.bin";
+			break;
+		case GB_MODEL_DMG:
+		default:
+			biosName = "gb_bios.bin";
+			break;
+		};
+	}
+#endif
+
+	if (core->opts.useBios && sysDir && biosName) {
+		snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, biosName);
+		struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
+		if (bios) {
+			core->loadBIOS(core, bios, 0);
+		}
+	}
 
 	core->reset(core);
 	_setupMaps(core);
