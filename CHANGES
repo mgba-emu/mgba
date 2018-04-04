@@ -24,37 +24,11 @@ Bugfixes:
  - GB Serialize: Fix game title check
  - GB: Revamp IRQ handling based on new information
  - GBA Video: Don't mask out high bits of BLDY (fixes mgba.io/i/899)
- - GBA Video: Force align 256-color tiles
- - GBA DMA: ROM reads are forced to increment
  - GB Video: Fix loading states while in mode 3
- - GB Video: Only trigger STAT write IRQs when screen is on (fixes mgba.io/i/912)
- - GBA Cheats: Fix PARv3 slide codes (fixes mgba.io/i/919)
- - GBA Video: OBJWIN can change blend params after OBJ is drawn (fixes mgba.io/i/921)
  - GBA DMA: Fix invalid DMA reads (fixes mgba.io/i/142)
- - GBA Savedata: Fix crash when resizing flash
  - GBA Video: Add delay when enabling BGs (fixes mgba.io/i/744, mgba.io/i/752)
- - GB Memory: HDMAs should not start when LCD is off (fixes mgba.io/i/310)
- - GBA Cheats: Fix slide codes not initializing properly
- - Qt: Fix locale being set to English on settings save (fixes mgba.io/i/906)
- - LR35902: Fix watchpoints not reporting new value
- - GBA Audio: Increase PSG volume (fixes mgba.io/i/932)
- - 3DS: Fix opening files in directory names with trailing slashes
- - GB MBC: Fix MBC2 saves (fixes mgba.io/i/954)
- - GBA Memory: Fix copy-on-write memory leak
- - Core: Fix ROM patches not being unloaded when disabled (fixes mgba.io/i/962)
- - GBA I/O: Fix writing to DISPCNT CGB flag (fixes mgba.io/i/902)
- - GBA Memory: Partially revert prefetch changes (fixes mgba.io/i/840)
- - PSP2: Fix issues causing poor audio
- - Wii: Fix screen tear when unpausing
- - GBA: Fix some GBA ROM misdetection (fixes mgba.io/i/978)
- - GBA Hardware: RTC accuracy improvements
  - GB Timer: Minor accuracy improvements
  - GB Audio: Clock frame events on DIV
- - GBA: Fix SharkPort saves for EEPROM games
- - Qt: Fix opening in fullscreen (fixes mgba.io/i/993)
- - Python: Fix package directory
- - GB Memory: Fix OAM DMA blocking regions (fixes mgba.io/i/1013)
- - Wii: Fix various setup and teardown drawing issues (fixes mgba.io/i/988)
  - GBA Timer: Fix timers sometimes being late (fixes mgba.io/i/1012)
 Misc:
  - GBA Timer: Use global cycles for timers
@@ -73,9 +47,43 @@ Misc:
  - GB: Skip BIOS option now works
  - Libretro: Add frameskip option
  - GBA Memory: 64 MiB GBA Video cartridge support
- - 3DS: Scale font based on glyph heights (fixes mgba.io/i/961)
  - PSP2: Use system enter key by default
  - 3DS: Remove deprecated CSND interface
+
+0.6.2: (2017-04-03)
+Bugfixes:
+ - Core: Fix ROM patches not being unloaded when disabled (fixes mgba.io/i/962)
+ - 3DS: Fix opening files in directory names with trailing slashes
+ - LR35902: Fix watchpoints not reporting new value
+ - GB MBC: Fix MBC2 saves (fixes mgba.io/i/954)
+ - GB Memory: HDMAs should not start when LCD is off (fixes mgba.io/i/310)
+ - GB Memory: Fix OAM DMA blocking regions (fixes mgba.io/i/1013)
+ - GB Video: Only trigger STAT write IRQs when screen is on (fixes mgba.io/i/912)
+ - GBA: Fix some GBA ROM misdetection (fixes mgba.io/i/978)
+ - GBA: Fix SharkPort saves for EEPROM games
+ - GBA Audio: Increase PSG volume (fixes mgba.io/i/932)
+ - GBA BIOS: Fix incorrect exit condition in LZ77
+ - GBA Cheats: Fix PARv3 slide codes (fixes mgba.io/i/919)
+ - GBA Cheats: Fix slide codes not initializing properly
+ - GBA DMA: ROM reads are forced to increment
+ - GBA Hardware: RTC accuracy improvements
+ - GBA I/O: Fix writing to DISPCNT CGB flag (fixes mgba.io/i/902)
+ - GBA Memory: Fix copy-on-write memory leak
+ - GBA Memory: Partially revert prefetch changes (fixes mgba.io/i/840)
+ - GBA Savedata: Fix crash when resizing flash
+ - GBA Video: Force align 256-color tiles
+ - GBA Video: OBJWIN can change blend params after OBJ is drawn (fixes mgba.io/i/921)
+ - PSP2: Fix issues causing poor audio
+ - Python: Fix package directory
+ - Qt: Fix locale being set to English on settings save (fixes mgba.io/i/906)
+ - Qt: Fix opening in fullscreen (fixes mgba.io/i/993)
+ - Wii: Fix screen tear when unpausing
+ - Wii: Fix various setup and teardown drawing issues (fixes mgba.io/i/988)
+Misc:
+ - 3DS: Scale font based on glyph heights (fixes mgba.io/i/961)
+ - GB MBC: Remove erroneous bank 0 wrapping
+ - GBA: Improve multiboot image detection
+ - PSP2: Use system enter key by default
 
 0.6.1: (2017-10-01)
 Bugfixes:
