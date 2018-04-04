@@ -100,6 +100,9 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/util/vfs.c \
 					$(CORE_DIR)/src/util/vfs/vfs-mem.c
 
+ifneq ($(STATIC_LINKING), 1)
+SOURCES_C += $(CORE_DIR)/src/util/crc32.c
+endif
 
 ifeq ($(platform), ctr)
 SOURCES_C += $(CORE_DIR)/src/platform/3ds/ctru-heap.c
