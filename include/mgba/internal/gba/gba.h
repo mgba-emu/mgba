@@ -168,6 +168,7 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf);
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch);
 
 bool GBALoadMB(struct GBA* gba, struct VFile* vf);
+bool GBALoadNull(struct GBA* gba);
 
 bool GBAIsROM(struct VFile* vf);
 bool GBAIsMB(struct VFile* vf);

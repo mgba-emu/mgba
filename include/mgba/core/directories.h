@@ -21,6 +21,7 @@ struct mDirectorySet {
 	struct VDir* patch;
 	struct VDir* state;
 	struct VDir* screenshot;
+	struct VDir* cheats;
 };
 
 void mDirectorySetInit(struct mDirectorySet* dirs);

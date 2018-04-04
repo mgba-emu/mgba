@@ -12,10 +12,11 @@ except ImportError:
     pass
 
 class Image:
-    def __init__(self, width, height, stride=0):
+    def __init__(self, width, height, stride=0, alpha=False):
         self.width = width
         self.height = height
         self.stride = stride
+        self.alpha = alpha
         self.constitute()
 
     def constitute(self):
@@ -24,7 +25,7 @@ class Image:
         self.buffer = ffi.new("color_t[{}]".format(self.stride * self.height))
 
     def savePNG(self, f):
-        p = png.PNG(f)
+        p = png.PNG(f, mode=png.MODE_RGBA if self.alpha else png.MODE_RGB)
         success = p.writeHeader(self)
         success = success and p.writePixels(self)
         p.writeClose()
@@ -32,8 +33,9 @@ class Image:
 
     if 'PImage' in globals():
         def toPIL(self):
-            return PImage.frombytes("RGBX", (self.width, self.height), ffi.buffer(self.buffer), "raw",
-                                    "RGBX", self.stride * 4)
+            type = "RGBA" if self.alpha else "RGBX"
+            return PImage.frombytes(type, (self.width, self.height), ffi.buffer(self.buffer), "raw",
+                                    type, self.stride * 4)
 
 def u16ToU32(c):
     r = c & 0x1F

@@ -141,6 +141,7 @@ struct mCore {
 	void (*detachDebugger)(struct mCore*);
 
 	void (*loadSymbols)(struct mCore*, struct VFile*);
+	bool (*lookupIdentifier)(struct mCore*, const char* name, int32_t* value, int* segment);
 #endif
 
 	struct mCheatDevice* (*cheatDevice)(struct mCore*);
@@ -168,6 +169,7 @@ bool mCorePreloadFile(struct mCore* core, const char* path);
 
 bool mCoreAutoloadSave(struct mCore* core);
 bool mCoreAutoloadPatch(struct mCore* core);
+bool mCoreAutoloadCheats(struct mCore* core);
 
 bool mCoreSaveState(struct mCore* core, int slot, int flags);
 bool mCoreLoadState(struct mCore* core, int slot, int flags);
@@ -188,6 +190,16 @@ void mCoreLoadConfig(struct mCore* core);
 void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config);
 
 void mCoreSetRTC(struct mCore* core, struct mRTCSource* rtc);
+
+void* mCoreGetMemoryBlock(struct mCore* core, uint32_t start, size_t* size);
+
+#ifdef USE_ELF
+struct ELF;
+bool mCoreLoadELF(struct mCore* core, struct ELF* elf);
+#ifdef USE_DEBUGGERS
+void mCoreLoadELFSymbols(struct mDebuggerSymbols* symbols, struct ELF*);
+#endif
+#endif
 
 CXX_GUARD_END
 

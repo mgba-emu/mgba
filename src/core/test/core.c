@@ -34,9 +34,3 @@ M_TEST_SUITE_DEFINE(mCore,
 #endif
 	cmocka_unit_test(findNullVF),
 	cmocka_unit_test(findEmpty))
-
-int TestRunCore(void) {
-	int failures = 0;
-	failures += M_TEST_SUITE_RUN(mCore);
-	return failures;
-}

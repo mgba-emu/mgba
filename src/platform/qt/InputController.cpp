@@ -9,10 +9,15 @@
 #include "GamepadAxisEvent.h"
 #include "GamepadButtonEvent.h"
 #include "InputProfile.h"
+#include "LogController.h"
 
 #include <QApplication>
 #include <QTimer>
 #include <QWidget>
+#ifdef BUILD_QT_MULTIMEDIA
+#include <QCamera>
+#include <QVideoSurfaceFormat>
+#endif
 
 #include <mgba/core/interface.h>
 #include <mgba-util/configuration.h>
@@ -53,6 +58,10 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 	m_gamepadTimer.setInterval(50);
 	m_gamepadTimer.start();
 
+#ifdef BUILD_QT_MULTIMEDIA
+	connect(&m_videoDumper, &VideoDumper::imageAvailable, this, &InputController::setCamImage);
+#endif
+
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_X, GBA_KEY_A);
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Z, GBA_KEY_B);
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_A, GBA_KEY_L);
@@ -63,6 +72,67 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Down, GBA_KEY_DOWN);
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Left, GBA_KEY_LEFT);
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Right, GBA_KEY_RIGHT);
+
+
+#ifdef M_CORE_GBA
+	m_lux.p = this;
+	m_lux.sample = [](GBALuminanceSource* context) {
+		InputControllerLux* lux = static_cast<InputControllerLux*>(context);
+		lux->value = 0xFF - lux->p->m_luxValue;
+	};
+
+	m_lux.readLuminance = [](GBALuminanceSource* context) {
+		InputControllerLux* lux = static_cast<InputControllerLux*>(context);
+		return lux->value;
+	};
+	setLuminanceLevel(0);
+#endif
+
+	m_image.p = this;
+	m_image.startRequestImage = [](mImageSource* context, unsigned w, unsigned h, int) {
+		InputControllerImage* image = static_cast<InputControllerImage*>(context);
+		image->w = w;
+		image->h = h;
+		if (image->image.isNull()) {
+			image->image.load(":/res/no-cam.png");
+		}
+#ifdef BUILD_QT_MULTIMEDIA
+		if (image->p->m_config->getQtOption("cameraDriver").toInt() == static_cast<int>(CameraDriver::QT_MULTIMEDIA)) {
+			QMetaObject::invokeMethod(image->p, "setupCam");
+		}
+#endif
+	};
+
+	m_image.stopRequestImage = [](mImageSource* context) {
+		InputControllerImage* image = static_cast<InputControllerImage*>(context);
+#ifdef BUILD_QT_MULTIMEDIA
+		QMetaObject::invokeMethod(image->p, "teardownCam");
+#endif
+	};
+
+	m_image.requestImage = [](mImageSource* context, const void** buffer, size_t* stride, mColorFormat* format) {
+		InputControllerImage* image = static_cast<InputControllerImage*>(context);
+		QSize size;
+		{
+			QMutexLocker locker(&image->mutex);
+			if (image->outOfDate) {
+				image->resizedImage = image->image.scaled(image->w, image->h, Qt::KeepAspectRatioByExpanding);
+				image->resizedImage = image->resizedImage.convertToFormat(QImage::Format_RGB16);
+				image->outOfDate = false;
+			}
+		}
+		size = image->resizedImage.size();
+		const uint16_t* bits = reinterpret_cast<const uint16_t*>(image->resizedImage.constBits());
+		if (size.width() > image->w) {
+			bits += (size.width() - image->w) / 2;
+		}
+		if (size.height() > image->h) {
+			bits += ((size.height() - image->h) / 2) * size.width();
+		}
+		*buffer = bits;
+		*stride = image->resizedImage.bytesPerLine() / sizeof(*bits);
+		*format = mCOLOR_RGB565;
+	};
 }
 
 InputController::~InputController() {
@@ -82,7 +152,6 @@ InputController::~InputController() {
 
 void InputController::setConfiguration(ConfigController* config) {
 	m_config = config;
-	setAllowOpposing(config->getOption("allowOpposingDirections").toInt());
 	loadConfiguration(KEYBOARD);
 #ifdef BUILD_SDL
 	mSDLEventsLoadConfig(&s_sdlEvents, config->input());
@@ -606,4 +675,99 @@ void InputController::releaseFocus(QWidget* focus) {
 	if (focus == m_focusParent) {
 		m_focusParent = m_topLevel;
 	}
+}
+
+void InputController::loadCamImage(const QString& path) {
+	QMutexLocker locker(&m_image.mutex);
+	m_image.image.load(path);
+	m_image.resizedImage = QImage();
+	m_image.outOfDate = true;
+}
+
+void InputController::setCamImage(const QImage& image) {
+	QMutexLocker locker(&m_image.mutex);
+	m_image.image = image;
+	m_image.resizedImage = QImage();
+	m_image.outOfDate = true;
+}
+
+void InputController::increaseLuminanceLevel() {
+	setLuminanceLevel(m_luxLevel + 1);
+}
+
+void InputController::decreaseLuminanceLevel() {
+	setLuminanceLevel(m_luxLevel - 1);
+}
+
+void InputController::setLuminanceLevel(int level) {
+	int value = 0x16;
+	level = std::max(0, std::min(10, level));
+	if (level > 0) {
+		value += GBA_LUX_LEVELS[level - 1];
+	}
+	setLuminanceValue(value);
+}
+
+void InputController::setLuminanceValue(uint8_t value) {
+	m_luxValue = value;
+	value = std::max<int>(value - 0x16, 0);
+	m_luxLevel = 10;
+	for (int i = 0; i < 10; ++i) {
+		if (value < GBA_LUX_LEVELS[i]) {
+			m_luxLevel = i;
+			break;
+		}
+	}
+	emit luminanceValueChanged(m_luxValue);
+}
+
+void InputController::setupCam() {
+#ifdef BUILD_QT_MULTIMEDIA
+	if (!m_camera) {
+		m_camera = std::make_unique<QCamera>();
+	}
+	QVideoFrame::PixelFormat format(QVideoFrame::Format_RGB32);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
+	m_camera->load();
+	QCameraViewfinderSettings settings;
+	QSize size(1920, 1080);
+	auto cameraRes = m_camera->supportedViewfinderResolutions(settings);
+	for (auto& cameraSize : cameraRes) {
+		if (cameraSize.width() < m_image.w || cameraSize.height() < m_image.h) {
+			continue;
+		}
+		if (cameraSize.width() <= size.width() && cameraSize.height() <= size.height()) {
+			size = cameraSize;
+		}
+	}
+	settings.setResolution(size);
+	auto cameraFormats = m_camera->supportedViewfinderPixelFormats(settings);
+	auto goodFormats = m_videoDumper.supportedPixelFormats();
+	bool goodFormatFound = false;
+	for (auto& goodFormat : goodFormats) {
+		if (cameraFormats.contains(goodFormat)) {
+			settings.setPixelFormat(goodFormat);
+			format = goodFormat;
+			goodFormatFound = true;
+			break;
+		}
+	}
+	if (!goodFormatFound) {
+		LOG(QT, WARN) << "Could not find a valid camera format!";
+	}
+	m_camera->setViewfinderSettings(settings);
+#endif
+	m_camera->setCaptureMode(QCamera::CaptureVideo);
+	m_camera->setViewfinder(&m_videoDumper);
+	m_camera->start();
+#endif
+}
+
+void InputController::teardownCam() {
+#ifdef BUILD_QT_MULTIMEDIA
+	if (m_camera) {
+		m_camera->stop();
+		m_camera.reset();
+	}
+#endif
 }

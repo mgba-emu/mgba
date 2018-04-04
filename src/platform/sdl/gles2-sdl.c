@@ -98,12 +98,13 @@ bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
 	mSDLGLCommonInit(renderer);
 #endif
 
+	size_t size = renderer->width * renderer->height * BYTES_PER_PIXEL;
 #ifndef __APPLE__
-	renderer->outputBuffer = memalign(16, renderer->width * renderer->height * BYTES_PER_PIXEL);
+	renderer->outputBuffer = memalign(16, size);
 #else
-	posix_memalign((void**) &renderer->outputBuffer, 16, renderer->width * renderer->height * BYTES_PER_PIXEL);
+	posix_memalign((void**) &renderer->outputBuffer, 16, size);
 #endif
-	memset(renderer->outputBuffer, 0, renderer->width * renderer->height * BYTES_PER_PIXEL);
+	memset(renderer->outputBuffer, 0, size);
 	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
 
 	mGLES2ContextCreate(&renderer->gl2);
@@ -114,6 +115,8 @@ bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
 	renderer->gl2.d.swap = mSDLGLCommonSwap;
 	renderer->gl2.d.init(&renderer->gl2.d, 0);
 	renderer->gl2.d.setDimensions(&renderer->gl2.d, renderer->width, renderer->height);
+
+	mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl2.d);
 	return true;
 }
 
@@ -122,15 +125,23 @@ void mSDLGLES2Runloop(struct mSDLRenderer* renderer, void* user) {
 	SDL_Event event;
 	struct VideoBackend* v = &renderer->gl2.d;
 
-	while (context->state < THREAD_EXITING) {
+	while (mCoreThreadIsActive(context)) {
 		while (SDL_PollEvent(&event)) {
 			mSDLHandleEvent(context, &renderer->player, &event);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+			// Event handling can change the size of the screen
+			if (renderer->player.windowUpdated) {
+				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
+				mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, v);
+				renderer->player.windowUpdated = 0;
+			}
+#endif
 		}
 
-		if (mCoreSyncWaitFrameStart(&context->sync)) {
+		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
 			v->postFrame(v, renderer->outputBuffer);
 		}
-		mCoreSyncWaitFrameEnd(&context->sync);
+		mCoreSyncWaitFrameEnd(&context->impl->sync);
 		v->drawFrame(v);
 #ifdef BUILD_RASPI
 		eglSwapBuffers(renderer->display, renderer->surface);

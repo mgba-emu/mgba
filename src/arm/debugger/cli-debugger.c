@@ -17,23 +17,21 @@ static void _disassembleArm(struct CLIDebugger*, struct CLIDebugVector*);
 static void _disassembleThumb(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setBreakpointARM(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setBreakpointThumb(struct CLIDebugger*, struct CLIDebugVector*);
-static void _writeRegister(struct CLIDebugger*, struct CLIDebugVector*);
 
 static void _disassembleMode(struct CLIDebugger*, struct CLIDebugVector*, enum ExecutionMode mode);
 static uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode);
 
 static struct CLIDebuggerCommandSummary _armCommands[] = {
-	{ "b/a", _setBreakpointARM, CLIDVParse, "Set a software breakpoint as ARM" },
-	{ "b/t", _setBreakpointThumb, CLIDVParse, "Set a software breakpoint as Thumb" },
-	{ "break/a", _setBreakpointARM, CLIDVParse, "Set a software breakpoint as ARM" },
-	{ "break/t", _setBreakpointThumb, CLIDVParse, "Set a software breakpoint as Thumb" },
-	{ "dis/a", _disassembleArm, CLIDVParse, "Disassemble instructions as ARM" },
-	{ "dis/t", _disassembleThumb, CLIDVParse, "Disassemble instructions as Thumb" },
-	{ "disasm/a", _disassembleArm, CLIDVParse, "Disassemble instructions as ARM" },
-	{ "disasm/t", _disassembleThumb, CLIDVParse, "Disassemble instructions as Thumb" },
-	{ "disassemble/a", _disassembleArm, CLIDVParse, "Disassemble instructions as ARM" },
-	{ "disassemble/t", _disassembleThumb, CLIDVParse, "Disassemble instructions as Thumb" },
-	{ "w/r", _writeRegister, CLIDVParse, "Write a register" },
+	{ "b/a", _setBreakpointARM, "I", "Set a software breakpoint as ARM" },
+	{ "b/t", _setBreakpointThumb, "I", "Set a software breakpoint as Thumb" },
+	{ "break/a", _setBreakpointARM, "I", "Set a software breakpoint as ARM" },
+	{ "break/t", _setBreakpointThumb, "I", "Set a software breakpoint as Thumb" },
+	{ "dis/a", _disassembleArm, "Ii", "Disassemble instructions as ARM" },
+	{ "dis/t", _disassembleThumb, "Ii", "Disassemble instructions as Thumb" },
+	{ "disasm/a", _disassembleArm, "Ii", "Disassemble instructions as ARM" },
+	{ "disasm/t", _disassembleThumb, "Ii", "Disassemble instructions as Thumb" },
+	{ "disassemble/a", _disassembleArm, "Ii", "Disassemble instructions as ARM" },
+	{ "disassemble/t", _disassembleThumb, "Ii", "Disassemble instructions as Thumb" },
 	{ 0, 0, 0, 0 }
 };
 
@@ -145,25 +143,6 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	_printLine(debugger->p, cpu->gprs[ARM_PC] - instructionLength, mode);
 }
 
-static void _writeRegister(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	struct CLIDebuggerBackend* be = debugger->backend;
-	struct ARMCore* cpu = debugger->d.core->cpu;
-	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		be->printf(be, "%s\n", ERROR_MISSING_ARGS);
-		return;
-	}
-	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
-		be->printf(be, "%s\n", ERROR_MISSING_ARGS);
-		return;
-	}
-	uint32_t regid = dv->intValue;
-	uint32_t value = dv->next->intValue;
-	if (regid >= ARM_PC) {
-		return;
-	}
-	cpu->gprs[regid] = value;
-}
-
 static void _setBreakpointARM(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	struct CLIDebuggerBackend* be = debugger->backend;
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
@@ -184,38 +163,9 @@ static void _setBreakpointThumb(struct CLIDebugger* debugger, struct CLIDebugVec
 	ARMDebuggerSetSoftwareBreakpoint(debugger->d.platform, address, MODE_THUMB);
 }
 
-static uint32_t _lookupPlatformIdentifier(struct CLIDebuggerSystem* debugger, const char* name, struct CLIDebugVector* dv) {
-	struct ARMCore* cpu = debugger->p->d.core->cpu;
-	if (strcmp(name, "sp") == 0) {
-		return cpu->gprs[ARM_SP];
-	}
-	if (strcmp(name, "lr") == 0) {
-		return cpu->gprs[ARM_LR];
-	}
-	if (strcmp(name, "pc") == 0) {
-		return cpu->gprs[ARM_PC];
-	}
-	if (strcmp(name, "cpsr") == 0) {
-		return cpu->cpsr.packed;
-	}
-	// TODO: test if mode has SPSR
-	if (strcmp(name, "spsr") == 0) {
-		return cpu->spsr.packed;
-	}
-	if (name[0] == 'r' && name[1] >= '0' && name[1] <= '9') {
-		int reg = atoi(&name[1]);
-		if (reg < 16) {
-			return cpu->gprs[reg];
-		}
-	}
-	dv->type = CLIDV_ERROR_TYPE;
-	return 0;
-}
-
 void ARMCLIDebuggerCreate(struct CLIDebuggerSystem* debugger) {
 	debugger->printStatus = _printStatus;
 	debugger->disassemble = _disassemble;
-	debugger->lookupPlatformIdentifier = _lookupPlatformIdentifier;
 	debugger->platformName = "ARM";
 	debugger->platformCommands = _armCommands;
 }

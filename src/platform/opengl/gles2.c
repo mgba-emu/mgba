@@ -8,6 +8,7 @@
 #include <mgba/core/log.h>
 #include <mgba-util/configuration.h>
 #include <mgba-util/formatting.h>
+#include <mgba-util/math.h>
 #include <mgba-util/vector.h>
 #include <mgba-util/vfs.h>
 
@@ -192,13 +193,6 @@ static void mGLES2ContextClear(struct VideoBackend* v) {
 void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 	GLint viewport[4];
 	glBindFramebuffer(GL_FRAMEBUFFER, shader->fbo);
-	if (shader->blend) {
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	} else {
-		glDisable(GL_BLEND);
-		glClear(GL_COLOR_BUFFER_BIT);
-	}
 
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	int drawW = shader->width;
@@ -224,6 +218,14 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 		drawH -= drawH % context->d.height;
 	}
 	glViewport(padW, padH, drawW, drawH);
+	if (shader->blend) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	} else {
+		glDisable(GL_BLEND);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+
 	if (shader->tex && (shader->width <= 0 || shader->height <= 0)) {
 		GLint oldTex;
 		glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTex);

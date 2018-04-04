@@ -154,7 +154,7 @@ bool _BPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* ou
 		case 0x0:
 			// SourceRead
 			memmove(&writeBuffer[writeLocation], &readBuffer[writeLocation], length);
-			outputChecksum = updateCrc32(outputChecksum, &writeBuffer[writeLocation], length);
+			outputChecksum = crc32(outputChecksum, &writeBuffer[writeLocation], length);
 			writeLocation += length;
 			break;
 		case 0x1:
@@ -162,7 +162,7 @@ bool _BPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* ou
 			if (patch->vf->read(patch->vf, &writeBuffer[writeLocation], length) != (ssize_t) length) {
 				return false;
 			}
-			outputChecksum = updateCrc32(outputChecksum, &writeBuffer[writeLocation], length);
+			outputChecksum = crc32(outputChecksum, &writeBuffer[writeLocation], length);
 			writeLocation += length;
 			break;
 		case 0x2:
@@ -177,7 +177,7 @@ bool _BPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* ou
 				return false;
 			}
 			memmove(&writeBuffer[writeLocation], &readBuffer[readSourceLocation], length);
-			outputChecksum = updateCrc32(outputChecksum, &writeBuffer[writeLocation], length);
+			outputChecksum = crc32(outputChecksum, &writeBuffer[writeLocation], length);
 			writeLocation += length;
 			readSourceLocation += length;
 			break;
@@ -198,7 +198,7 @@ bool _BPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* ou
 				++writeLocation;
 				++readTargetLocation;
 			}
-			outputChecksum = updateCrc32(outputChecksum, &writeBuffer[writeLocation - length], length);
+			outputChecksum = crc32(outputChecksum, &writeBuffer[writeLocation - length], length);
 			break;
 		}
 	}

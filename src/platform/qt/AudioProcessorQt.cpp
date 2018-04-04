@@ -20,14 +20,22 @@ AudioProcessorQt::AudioProcessorQt(QObject* parent)
 {
 }
 
-void AudioProcessorQt::setInput(mCoreThread* input) {
-	AudioProcessor::setInput(input);
+void AudioProcessorQt::setInput(std::shared_ptr<CoreController> controller) {
+	AudioProcessor::setInput(controller);
 	if (m_device) {
-		m_device->setInput(input);
+		m_device->setInput(input());
 		if (m_audioOutput) {
 			m_device->setFormat(m_audioOutput->format());
 		}
 	}
+}
+
+void AudioProcessorQt::stop() {
+	if (m_device) {
+		m_device.reset();
+	}
+	pause();
+	AudioProcessor::stop();
 }
 
 bool AudioProcessorQt::start() {
@@ -37,7 +45,7 @@ bool AudioProcessorQt::start() {
 	}
 
 	if (!m_device) {
-		m_device = new AudioDevice(this);
+		m_device = std::make_unique<AudioDevice>(this);
 	}
 
 	if (!m_audioOutput) {
@@ -56,7 +64,7 @@ bool AudioProcessorQt::start() {
 	m_device->setInput(input());
 	m_device->setFormat(m_audioOutput->format());
 
-	m_audioOutput->start(m_device);
+	m_audioOutput->start(m_device.get());
 	return m_audioOutput->state() == QAudio::ActiveState;
 }
 

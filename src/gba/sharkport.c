@@ -200,22 +200,8 @@ bool GBASavedataExportSharkPort(const struct GBA* gba, struct VFile* vf) {
 	}
 
 	// Write payload
-	size = 0x1C;
-	switch (gba->memory.savedata.type) {
-	case SAVEDATA_SRAM:
-		size += SIZE_CART_SRAM;
-		break;
-	case SAVEDATA_FLASH512:
-		size += SIZE_CART_FLASH512;
-		break;
-	case SAVEDATA_FLASH1M:
-		size += SIZE_CART_FLASH1M;
-		break;
-	case SAVEDATA_EEPROM:
-		size += SIZE_CART_EEPROM;
-		break;
-	case SAVEDATA_FORCE_NONE:
-	case SAVEDATA_AUTODETECT:
+	size = 0x1C + GBASavedataSize(&gba->memory.savedata);
+	if (size == 0x1C) {
 		return false;
 	}
 	STORE_32(size, 0, &buffer.i);

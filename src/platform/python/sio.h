@@ -13,6 +13,7 @@ struct GBASIOPythonDriver {
 };
 
 struct GBASIODriver* GBASIOPythonDriverCreate(void* pyobj);
+struct GBASIODriver* GBASIOJOYPythonDriverCreate(void* pyobj);
 
 PYEXPORT bool _pyGBASIOPythonDriverInit(void* driver);
 PYEXPORT void _pyGBASIOPythonDriverDeinit(void* driver);

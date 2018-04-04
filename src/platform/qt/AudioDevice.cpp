@@ -26,13 +26,13 @@ void AudioDevice::setFormat(const QAudioFormat& format) {
 		LOG(QT, INFO) << tr("Can't set format of context-less audio device");
 		return;
 	}
-	double fauxClock = GBAAudioCalculateRatio(1, m_context->sync.fpsTarget, 1);
-	mCoreSyncLockAudio(&m_context->sync);
+	double fauxClock = GBAAudioCalculateRatio(1, m_context->impl->sync.fpsTarget, 1);
+	mCoreSyncLockAudio(&m_context->impl->sync);
 	blip_set_rates(m_context->core->getAudioChannel(m_context->core, 0),
 		           m_context->core->frequency(m_context->core), format.sampleRate() * fauxClock);
 	blip_set_rates(m_context->core->getAudioChannel(m_context->core, 1),
 		           m_context->core->frequency(m_context->core), format.sampleRate() * fauxClock);
-	mCoreSyncUnlockAudio(&m_context->sync);
+	mCoreSyncUnlockAudio(&m_context->impl->sync);
 }
 
 void AudioDevice::setInput(mCoreThread* input) {
@@ -49,14 +49,14 @@ qint64 AudioDevice::readData(char* data, qint64 maxSize) {
 		return 0;
 	}
 
-	mCoreSyncLockAudio(&m_context->sync);
+	mCoreSyncLockAudio(&m_context->impl->sync);
 	int available = blip_samples_avail(m_context->core->getAudioChannel(m_context->core, 0));
 	if (available > maxSize / sizeof(GBAStereoSample)) {
 		available = maxSize / sizeof(GBAStereoSample);
 	}
 	blip_read_samples(m_context->core->getAudioChannel(m_context->core, 0), &reinterpret_cast<GBAStereoSample*>(data)->left, available, true);
 	blip_read_samples(m_context->core->getAudioChannel(m_context->core, 1), &reinterpret_cast<GBAStereoSample*>(data)->right, available, true);
-	mCoreSyncConsumeAudio(&m_context->sync);
+	mCoreSyncConsumeAudio(&m_context->impl->sync);
 	return available * sizeof(GBAStereoSample);
 }
 

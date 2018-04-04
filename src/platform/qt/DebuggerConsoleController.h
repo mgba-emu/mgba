@@ -3,8 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_DEBUGGER_CONSOLE_CONTROLLER
-#define QGBA_DEBUGGER_CONSOLE_CONTROLLER
+#pragma once
 
 #include "DebuggerController.h"
 
@@ -16,13 +15,13 @@
 
 namespace QGBA {
 
-class GameController;
+class CoreController;
 
 class DebuggerConsoleController : public DebuggerController {
 Q_OBJECT
 
 public:
-	DebuggerConsoleController(GameController* controller, QObject* parent = nullptr);
+	DebuggerConsoleController(QObject* parent = nullptr);
 
 signals:
 	void log(const QString&);
@@ -44,7 +43,7 @@ private:
 	static const char* historyLast(struct CLIDebuggerBackend* be, size_t* len);
 	static void historyAppend(struct CLIDebuggerBackend* be, const char* line);
 
-	CLIDebugger m_cliDebugger;
+	CLIDebugger m_cliDebugger{};
 
 	QMutex m_mutex;
 	QWaitCondition m_cond;
@@ -59,5 +58,3 @@ private:
 };
 
 }
-
-#endif

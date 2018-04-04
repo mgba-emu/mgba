@@ -100,58 +100,9 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	_printLine(debugger->p, cpu->pc, cpu->memory.currentSegment(cpu, cpu->pc));
 }
 
-static uint32_t _lookupPlatformIdentifier(struct CLIDebuggerSystem* debugger, const char* name, struct CLIDebugVector* dv) {
-	struct LR35902Core* cpu = debugger->p->d.core->cpu;
-	if (strcmp(name, "a") == 0) {
-		return cpu->a;
-	}
-	if (strcmp(name, "b") == 0) {
-		return cpu->b;
-	}
-	if (strcmp(name, "c") == 0) {
-		return cpu->c;
-	}
-	if (strcmp(name, "d") == 0) {
-		return cpu->d;
-	}
-	if (strcmp(name, "e") == 0) {
-		return cpu->e;
-	}
-	if (strcmp(name, "h") == 0) {
-		return cpu->h;
-	}
-	if (strcmp(name, "l") == 0) {
-		return cpu->l;
-	}
-	if (strcmp(name, "bc") == 0) {
-		return cpu->bc;
-	}
-	if (strcmp(name, "de") == 0) {
-		return cpu->de;
-	}
-	if (strcmp(name, "hl") == 0) {
-		return cpu->hl;
-	}
-	if (strcmp(name, "af") == 0) {
-		return cpu->af;
-	}
-	if (strcmp(name, "pc") == 0) {
-		return cpu->pc;
-	}
-	if (strcmp(name, "sp") == 0) {
-		return cpu->sp;
-	}
-	if (strcmp(name, "f") == 0) {
-		return cpu->f.packed;
-	}
-	dv->type = CLIDV_ERROR_TYPE;
-	return 0;
-}
-
 void LR35902CLIDebuggerCreate(struct CLIDebuggerSystem* debugger) {
 	debugger->printStatus = _printStatus;
 	debugger->disassemble = _disassemble;
-	debugger->lookupPlatformIdentifier = _lookupPlatformIdentifier;
 	debugger->platformName = "GB-Z80";
 	debugger->platformCommands = _lr35902Commands;
 }

@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "MultiplayerController.h"
 
-#include "GameController.h"
+#include "CoreController.h"
 
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/gba.h>
@@ -153,7 +153,7 @@ MultiplayerController::MultiplayerController() {
 	};
 }
 
-bool MultiplayerController::attachGame(GameController* controller) {
+bool MultiplayerController::attachGame(CoreController* controller) {
 	if (m_lockstep.attached == MAX_GBAS) {
 		return false;
 	}
@@ -232,13 +232,18 @@ bool MultiplayerController::attachGame(GameController* controller) {
 	return false;
 }
 
-void MultiplayerController::detachGame(GameController* controller) {
+void MultiplayerController::detachGame(CoreController* controller) {
+	if (m_players.empty()) {
+		return;
+	}
 	mCoreThread* thread = controller->thread();
 	if (!thread) {
 		return;
 	}
+	QList<CoreController::Interrupter> interrupters;
+
 	for (int i = 0; i < m_players.count(); ++i) {
-		m_players[i].controller->threadInterrupt();
+		interrupters.append(m_players[i].controller);
 	}
 	switch (controller->platform()) {
 #ifdef M_CORE_GBA
@@ -269,20 +274,16 @@ void MultiplayerController::detachGame(GameController* controller) {
 		break;
 	}
 
-	controller->threadContinue();
 	for (int i = 0; i < m_players.count(); ++i) {
 		if (m_players[i].controller == controller) {
 			m_players.removeAt(i);
 			break;
 		}
 	}
-	for (int i = 0; i < m_players.count(); ++i) {
-		m_players[i].controller->threadContinue();
-	}
 	emit gameDetached();
 }
 
-int MultiplayerController::playerId(GameController* controller) {
+int MultiplayerController::playerId(CoreController* controller) {
 	for (int i = 0; i < m_players.count(); ++i) {
 		if (m_players[i].controller == controller) {
 			return i;

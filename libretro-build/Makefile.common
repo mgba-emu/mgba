@@ -28,12 +28,14 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/arm/decoder-thumb.c \
 					$(CORE_DIR)/src/arm/isa-thumb.c \
 					$(CORE_DIR)/src/arm/isa-arm.c \
+					$(CORE_DIR)/src/core/cache-set.c \
 					$(CORE_DIR)/src/core/cheats.c \
 					$(CORE_DIR)/src/core/config.c \
 					$(CORE_DIR)/src/core/core.c \
 					$(CORE_DIR)/src/core/interface.c \
 					$(CORE_DIR)/src/core/lockstep.c \
 					$(CORE_DIR)/src/core/log.c \
+					$(CORE_DIR)/src/core/map-cache.c \
 					$(CORE_DIR)/src/core/sync.c \
 					$(CORE_DIR)/src/core/thread.c \
 					$(CORE_DIR)/src/core/tile-cache.c \
@@ -46,6 +48,7 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/gb/mbc.c \
 					$(CORE_DIR)/src/gb/memory.c \
 					$(CORE_DIR)/src/gb/overrides.c \
+					$(CORE_DIR)/src/gb/renderers/cache-set.c \
 					$(CORE_DIR)/src/gb/renderers/software.c \
 					$(CORE_DIR)/src/gb/serialize.c \
 					$(CORE_DIR)/src/gb/sio.c \
@@ -64,8 +67,10 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/gba/hle-bios.c \
 					$(CORE_DIR)/src/gba/input.c \
 					$(CORE_DIR)/src/gba/io.c \
+					$(CORE_DIR)/src/gba/matrix.c \
 					$(CORE_DIR)/src/gba/memory.c \
 					$(CORE_DIR)/src/gba/overrides.c \
+					$(CORE_DIR)/src/gba/renderers/cache-set.c \
 					$(CORE_DIR)/src/gba/renderers/software-mode0.c \
 					$(CORE_DIR)/src/gba/renderers/software-obj.c \
 					$(CORE_DIR)/src/gba/renderers/software-bg.c \

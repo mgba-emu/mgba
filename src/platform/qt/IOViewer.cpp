@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "IOViewer.h"
 
-#include "GameController.h"
+#include "CoreController.h"
 
 #include <QComboBox>
 #include <QFontDatabase>
@@ -1023,7 +1023,7 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions() {
 	return s_registers;
 }
 
-IOViewer::IOViewer(GameController* controller, QWidget* parent)
+IOViewer::IOViewer(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: QDialog(parent)
 	, m_controller(controller)
 {
@@ -1067,16 +1067,17 @@ IOViewer::IOViewer(GameController* controller, QWidget* parent)
 	}
 
 	selectRegister(0);
+
+	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 }
 
 void IOViewer::updateRegister() {
 	m_value = 0;
 	uint16_t value = 0;
-	m_controller->threadInterrupt();
-	if (m_controller->isLoaded()) {
+	{
+		CoreController::Interrupter interrupter(m_controller);
 		value = GBAView16(static_cast<ARMCore*>(m_controller->thread()->core->cpu), BASE_IO | m_register);
 	}
-	m_controller->threadContinue();
 
 	for (int i = 0; i < 16; ++i) {
 		m_b[i]->setChecked(value & (1 << i) ? Qt::Checked : Qt::Unchecked);
@@ -1095,11 +1096,10 @@ void IOViewer::bitFlipped() {
 }
 
 void IOViewer::writeback() {
-	m_controller->threadInterrupt();
-	if (m_controller->isLoaded()) {
+	{
+		CoreController::Interrupter interrupter(m_controller);
 		GBAIOWrite(static_cast<GBA*>(m_controller->thread()->core->board), m_register, m_value);
 	}
-	m_controller->threadContinue();
 	updateRegister();
 }
 

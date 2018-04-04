@@ -5,15 +5,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gb/renderers/proxy.h>
 
-#include <mgba/core/tile-cache.h>
+#include <mgba/core/cache-set.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/io.h>
 
 #define BUFFER_OAM 1
+#define BUFFER_SGB 2
 
-static void GBVideoProxyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model);
+static void GBVideoProxyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model, bool borders);
 static void GBVideoProxyRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoProxyRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
+static void GBVideoProxyRendererWriteSGBPacket(struct GBVideoRenderer* renderer, uint8_t* data);
 static void GBVideoProxyRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address);
 static void GBVideoProxyRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam);
 static void GBVideoProxyRendererWritePalette(struct GBVideoRenderer* renderer, int address, uint16_t value);
@@ -30,6 +32,7 @@ void GBVideoProxyRendererCreate(struct GBVideoProxyRenderer* renderer, struct GB
 	renderer->d.init = GBVideoProxyRendererInit;
 	renderer->d.deinit = GBVideoProxyRendererDeinit;
 	renderer->d.writeVideoRegister = GBVideoProxyRendererWriteVideoRegister;
+	renderer->d.writeSGBPacket = GBVideoProxyRendererWriteSGBPacket;
 	renderer->d.writeVRAM = GBVideoProxyRendererWriteVRAM;
 	renderer->d.writeOAM = GBVideoProxyRendererWriteOAM;
 	renderer->d.writePalette = GBVideoProxyRendererWritePalette;
@@ -93,12 +96,12 @@ void GBVideoProxyRendererUnshim(struct GBVideo* video, struct GBVideoProxyRender
 	mVideoLoggerRendererDeinit(renderer->logger);
 }
 
-void GBVideoProxyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model) {
+void GBVideoProxyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model, bool borders) {
 	struct GBVideoProxyRenderer* proxyRenderer = (struct GBVideoProxyRenderer*) renderer;
 
 	_init(proxyRenderer);
 
-	proxyRenderer->backend->init(proxyRenderer->backend, model);
+	proxyRenderer->backend->init(proxyRenderer->backend, model, borders);
 }
 
 void GBVideoProxyRendererDeinit(struct GBVideoRenderer* renderer) {
@@ -111,6 +114,7 @@ void GBVideoProxyRendererDeinit(struct GBVideoRenderer* renderer) {
 
 static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerDirtyInfo* item) {
 	struct GBVideoProxyRenderer* proxyRenderer = logger->context;
+	uint8_t sgbPacket[16];
 	switch (item->type) {
 	case DIRTY_REGISTER:
 		proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, item->address, item->value);
@@ -154,6 +158,11 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 				return false;
 			}
 			logger->readData(logger, &proxyRenderer->objThisLine, item->value2, true);
+			break;
+		case BUFFER_SGB:
+			logger->readData(logger, sgbPacket, 16, true);
+			proxyRenderer->backend->writeSGBPacket(proxyRenderer->backend, sgbPacket);
+			break;
 		}
 		break;
 	case DIRTY_FLUSH:
@@ -179,6 +188,14 @@ uint8_t GBVideoProxyRendererWriteVideoRegister(struct GBVideoRenderer* renderer,
 	return value;
 }
 
+void GBVideoProxyRendererWriteSGBPacket(struct GBVideoRenderer* renderer, uint8_t* data) {
+	struct GBVideoProxyRenderer* proxyRenderer = (struct GBVideoProxyRenderer*) renderer;
+	if (!proxyRenderer->logger->block) {
+		proxyRenderer->backend->writeSGBPacket(proxyRenderer->backend, data);
+	}
+	mVideoLoggerWriteBuffer(proxyRenderer->logger, BUFFER_SGB, 0, 16, data);
+}
+
 void GBVideoProxyRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address) {
 	struct GBVideoProxyRenderer* proxyRenderer = (struct GBVideoProxyRenderer*) renderer;
 	mVideoLoggerRendererWriteVRAM(proxyRenderer->logger, address);
@@ -186,7 +203,7 @@ void GBVideoProxyRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t ad
 		proxyRenderer->backend->writeVRAM(proxyRenderer->backend, address);
 	}
 	if (renderer->cache) {
-		mTileCacheWriteVRAM(renderer->cache, address);
+		mCacheSetWriteVRAM(renderer->cache, address);
 	}
 }
 
@@ -197,7 +214,7 @@ void GBVideoProxyRendererWritePalette(struct GBVideoRenderer* renderer, int addr
 		proxyRenderer->backend->writePalette(proxyRenderer->backend, address, value);
 	}
 	if (renderer->cache) {
-		mTileCacheWritePalette(renderer->cache, address);
+		mCacheSetWritePalette(renderer->cache, address, mColorFrom555(value));
 	}
 }
 

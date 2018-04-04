@@ -14,8 +14,6 @@ CXX_GUARD_START
 #include <mgba/core/log.h>
 #include <mgba-util/vector.h>
 
-#define MAX_ROM_PATCHES 4
-
 enum mCheatType {
 	CHEAT_ASSIGN,
 	CHEAT_ASSIGN_INDIRECT,
@@ -30,7 +28,8 @@ enum mCheatType {
 	CHEAT_IF_UGT,
 	CHEAT_IF_AND,
 	CHEAT_IF_LAND,
-	CHEAT_IF_NAND
+	CHEAT_IF_NAND,
+	CHEAT_IF_BUTTON,
 };
 
 struct mCheat {
@@ -79,6 +78,8 @@ struct mCheatDevice {
 	struct mCheatSet* (*createSet)(struct mCheatDevice*, const char* name);
 
 	struct mCheatSets cheats;
+	bool autosave;
+	bool buttonDown;
 };
 
 struct VFile;
@@ -99,7 +100,12 @@ void mCheatRemoveSet(struct mCheatDevice*, struct mCheatSet*);
 bool mCheatParseFile(struct mCheatDevice*, struct VFile*);
 bool mCheatSaveFile(struct mCheatDevice*, struct VFile*);
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+void mCheatAutosave(struct mCheatDevice*);
+#endif
+
 void mCheatRefresh(struct mCheatDevice*, struct mCheatSet*);
+void mCheatPressButton(struct mCheatDevice*, bool down);
 
 CXX_GUARD_END
 

@@ -17,6 +17,7 @@ set(OS_LIB -lvita2d -l${M_LIBRARY}
     -lSceAppMgr_stub
     -lSceAppUtil_stub
     -lSceAudio_stub
+    -lSceCamera_stub
     -lSceCommonDialog_stub
     -lSceCtrl_stub
     -lSceDisplay_stub

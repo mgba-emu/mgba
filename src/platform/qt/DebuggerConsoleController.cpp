@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "DebuggerConsoleController.h"
 
-#include "GameController.h"
+#include "CoreController.h"
 
 #include <QMutexLocker>
 
@@ -13,8 +13,8 @@
 
 using namespace QGBA;
 
-DebuggerConsoleController::DebuggerConsoleController(GameController* controller, QObject* parent)
-	: DebuggerController(controller, &m_cliDebugger.d, parent)
+DebuggerConsoleController::DebuggerConsoleController(QObject* parent)
+	: DebuggerController(&m_cliDebugger.d, parent)
 {
 	m_backend.d.printf = printf;
 	m_backend.d.init = init;
@@ -79,7 +79,7 @@ void DebuggerConsoleController::deinit(struct CLIDebuggerBackend* be) {
 const char* DebuggerConsoleController::readLine(struct CLIDebuggerBackend* be, size_t* len) {
 	Backend* consoleBe = reinterpret_cast<Backend*>(be);
 	DebuggerConsoleController* self = consoleBe->self;
-	GameController::Interrupter interrupter(self->m_gameController, true);
+	CoreController::Interrupter interrupter(self->m_gameController, true);
 	QMutexLocker lock(&self->m_mutex);
 	while (self->m_lines.isEmpty()) {
 		self->m_cond.wait(&self->m_mutex);
@@ -103,7 +103,7 @@ void DebuggerConsoleController::lineAppend(struct CLIDebuggerBackend* be, const 
 const char* DebuggerConsoleController::historyLast(struct CLIDebuggerBackend* be, size_t* len) {
 	Backend* consoleBe = reinterpret_cast<Backend*>(be);
 	DebuggerConsoleController* self = consoleBe->self;
-	GameController::Interrupter interrupter(self->m_gameController, true);
+	CoreController::Interrupter interrupter(self->m_gameController, true);
 	QMutexLocker lock(&self->m_mutex);
 	if (self->m_history.isEmpty()) {
 		return "i";
@@ -115,7 +115,7 @@ const char* DebuggerConsoleController::historyLast(struct CLIDebuggerBackend* be
 void DebuggerConsoleController::historyAppend(struct CLIDebuggerBackend* be, const char* line) {
 	Backend* consoleBe = reinterpret_cast<Backend*>(be);
 	DebuggerConsoleController* self = consoleBe->self;
-	GameController::Interrupter interrupter(self->m_gameController, true);
+	CoreController::Interrupter interrupter(self->m_gameController, true);
 	QMutexLocker lock(&self->m_mutex);
 	self->m_history.append(QString::fromUtf8(line));
 }

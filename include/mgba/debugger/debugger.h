@@ -70,6 +70,7 @@ struct mDebuggerEntryInfo {
 };
 
 struct mDebugger;
+struct ParseTree;
 struct mDebuggerPlatform {
 	struct mDebugger* p;
 
@@ -79,19 +80,26 @@ struct mDebuggerPlatform {
 
 	bool (*hasBreakpoints)(struct mDebuggerPlatform*);
 	void (*setBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
+	void (*setConditionalBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment, struct ParseTree* condition);
 	void (*clearBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
 	void (*setWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type);
+	void (*setConditionalWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type, struct ParseTree* condition);
 	void (*clearWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
 	void (*checkBreakpoints)(struct mDebuggerPlatform*);
 	void (*trace)(struct mDebuggerPlatform*, char* out, size_t* length);
+
+	bool (*getRegister)(struct mDebuggerPlatform*, const char* name, int32_t* value);
+	bool (*setRegister)(struct mDebuggerPlatform*, const char* name, int32_t value);
+	bool (*lookupIdentifier)(struct mDebuggerPlatform*, const char* name, int32_t* value, int* segment);
 };
 
-struct mDebuggerSymbols;
 struct mDebugger {
 	struct mCPUComponent d;
 	struct mDebuggerPlatform* platform;
 	enum mDebuggerState state;
+	enum mDebuggerType type;
 	struct mCore* core;
+	struct mScriptBridge* bridge;
 
 	void (*init)(struct mDebugger*);
 	void (*deinit)(struct mDebugger*);
@@ -106,6 +114,8 @@ void mDebuggerAttach(struct mDebugger*, struct mCore*);
 void mDebuggerRun(struct mDebugger*);
 void mDebuggerRunFrame(struct mDebugger*);
 void mDebuggerEnter(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
+
+bool mDebuggerLookupIdentifier(struct mDebugger* debugger, const char* name, int32_t* value, int* segment);
 
 CXX_GUARD_END
 

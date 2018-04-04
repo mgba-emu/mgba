@@ -26,9 +26,11 @@ enum {
 
 png_structp PNGWriteOpen(struct VFile* source);
 png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height);
+png_infop PNGWriteHeaderA(png_structp png, unsigned width, unsigned height);
 png_infop PNGWriteHeader8(png_structp png, unsigned width, unsigned height);
 bool PNGWritePalette(png_structp png, png_infop info, const uint32_t* palette, unsigned entries);
 bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels);
+bool PNGWritePixelsA(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels);
 bool PNGWritePixels8(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels);
 bool PNGWriteCustomChunk(png_structp png, const char* name, size_t size, void* data);
 void PNGWriteClose(png_structp png, png_infop info);

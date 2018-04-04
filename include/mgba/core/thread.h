@@ -11,31 +11,11 @@
 CXX_GUARD_START
 
 #include <mgba/core/log.h>
-#include <mgba/core/rewind.h>
-#include <mgba/core/sync.h>
-#include <mgba-util/threading.h>
 
 struct mCoreThread;
 struct mCore;
 
 typedef void (*ThreadCallback)(struct mCoreThread* threadContext);
-
-enum mCoreThreadState {
-	THREAD_INITIALIZED = -1,
-	THREAD_RUNNING = 0,
-	THREAD_REWINDING,
-	THREAD_MAX_RUNNING = THREAD_REWINDING,
-	THREAD_INTERRUPTED,
-	THREAD_INTERRUPTING,
-	THREAD_PAUSED,
-	THREAD_PAUSING,
-	THREAD_RUN_ON,
-	THREAD_WAITING,
-	THREAD_RESETING,
-	THREAD_EXITING,
-	THREAD_SHUTDOWN,
-	THREAD_CRASHED
-};
 
 struct mCoreThread;
 struct mThreadLogger {
@@ -43,11 +23,54 @@ struct mThreadLogger {
 	struct mCoreThread* p;
 };
 
+struct mCoreThreadInternal;
 struct mCoreThread {
 	// Input
 	struct mCore* core;
 
-	// Threading state
+	struct mThreadLogger logger;
+	ThreadCallback startCallback;
+	ThreadCallback resetCallback;
+	ThreadCallback cleanCallback;
+	ThreadCallback frameCallback;
+	ThreadCallback sleepCallback;
+	ThreadCallback pauseCallback;
+	ThreadCallback unpauseCallback;
+	void* userData;
+	void (*run)(struct mCoreThread*);
+
+	struct mCoreThreadInternal* impl;
+};
+
+#ifndef OPAQUE_THREADING
+#include <mgba/core/rewind.h>
+#include <mgba/core/sync.h>
+#include <mgba-util/threading.h>
+
+enum mCoreThreadState {
+	THREAD_INITIALIZED = -1,
+	THREAD_RUNNING = 0,
+	THREAD_REWINDING,
+	THREAD_MAX_RUNNING = THREAD_REWINDING,
+
+	THREAD_WAITING,
+	THREAD_INTERRUPTED,
+	THREAD_PAUSED,
+	THREAD_MAX_WAITING = THREAD_PAUSED,
+
+	THREAD_PAUSING,
+	THREAD_RUN_ON,
+	THREAD_RESETING,
+	THREAD_MIN_DEFERRED = THREAD_PAUSING,
+	THREAD_MAX_DEFERRED = THREAD_RESETING,
+
+	THREAD_INTERRUPTING,
+	THREAD_EXITING,
+	THREAD_SHUTDOWN,
+	THREAD_CRASHED
+};
+
+struct mCoreThreadInternal {
 	Thread thread;
 	enum mCoreThreadState state;
 
@@ -57,18 +80,11 @@ struct mCoreThread {
 	int interruptDepth;
 	bool frameWasOn;
 
-	struct mThreadLogger logger;
-	ThreadCallback startCallback;
-	ThreadCallback resetCallback;
-	ThreadCallback cleanCallback;
-	ThreadCallback frameCallback;
-	ThreadCallback sleepCallback;
-	void* userData;
-	void (*run)(struct mCoreThread*);
-
 	struct mCoreSync sync;
 	struct mCoreRewindContext rewind;
 };
+
+#endif
 
 bool mCoreThreadStart(struct mCoreThread* threadContext);
 bool mCoreThreadHasStarted(struct mCoreThread* threadContext);
@@ -95,6 +111,7 @@ void mCoreThreadWaitFromThread(struct mCoreThread* threadContext);
 void mCoreThreadStopWaiting(struct mCoreThread* threadContext);
 
 void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool);
+void mCoreThreadRewindParamsChanged(struct mCoreThread* threadContext);
 
 struct mCoreThread* mCoreThreadGet(void);
 struct mLogger* mCoreThreadLogger(void);

@@ -3,20 +3,22 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_DISPLAY
-#define QGBA_DISPLAY
+#pragma once
 
 #include <mgba-util/common.h>
+
+#include <memory>
 
 #include <QWidget>
 
 #include "MessagePainter.h"
 
-struct mCoreThread;
 struct VDir;
 struct VideoShader;
 
 namespace QGBA {
+
+class CoreController;
 
 class Display : public QWidget {
 Q_OBJECT
@@ -41,6 +43,7 @@ public:
 	bool isIntegerScalingLocked() const { return m_lockIntegerScaling; }
 	bool isFiltered() const { return m_filter; }
 
+	virtual void startDrawing(std::shared_ptr<CoreController>) = 0;
 	virtual bool isDrawing() const = 0;
 	virtual bool supportsShaders() const = 0;
 	virtual VideoShader* shaders() = 0;
@@ -50,7 +53,6 @@ signals:
 	void hideCursor();
 
 public slots:
-	virtual void startDrawing(mCoreThread* context) = 0;
 	virtual void stopDrawing() = 0;
 	virtual void pauseDrawing() = 0;
 	virtual void unpauseDrawing() = 0;
@@ -58,7 +60,7 @@ public slots:
 	virtual void lockAspectRatio(bool lock);
 	virtual void lockIntegerScaling(bool lock);
 	virtual void filter(bool filter);
-	virtual void framePosted(const uint32_t*) = 0;
+	virtual void framePosted() = 0;
 	virtual void setShaders(struct VDir*) = 0;
 	virtual void clearShaders() = 0;
 
@@ -82,5 +84,3 @@ private:
 };
 
 }
-
-#endif

@@ -28,7 +28,7 @@ void GBAOverrideSave(struct Configuration*, const struct GBACartridgeOverride* o
 
 struct GBA;
 void GBAOverrideApply(struct GBA*, const struct GBACartridgeOverride*);
-void GBAOverrideApplyDefaults(struct GBA*);
+void GBAOverrideApplyDefaults(struct GBA*, const struct Configuration*);
 
 CXX_GUARD_END
 

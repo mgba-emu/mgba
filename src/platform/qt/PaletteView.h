@@ -3,25 +3,26 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_PALETTE_VIEW
-#define QGBA_PALETTE_VIEW
+#pragma once
 
 #include <QWidget>
 
-#include "GameController.h"
+#include <memory>
+
 #include "Swatch.h"
 
 #include "ui_PaletteView.h"
 
 namespace QGBA {
 
+class CoreController;
 class Swatch;
 
 class PaletteView : public QWidget {
 Q_OBJECT
 
 public:
-	PaletteView(GameController* controller, QWidget* parent = nullptr);
+	PaletteView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
 public slots:
 	void updatePalette();
@@ -34,9 +35,7 @@ private:
 
 	Ui::PaletteView m_ui;
 
-	GameController* m_controller;
+	std::shared_ptr<CoreController> m_controller;
 };
 
 }
-
-#endif

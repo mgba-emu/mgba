@@ -3,13 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_SENSOR_VIEW
-#define QGBA_SENSOR_VIEW
+#pragma once
 
 #include <QTimer>
 #include <QDialog>
 
 #include <functional>
+#include <memory>
 
 #include "ui_SensorView.h"
 
@@ -18,7 +18,7 @@ struct mRotationSource;
 namespace QGBA {
 
 class ConfigController;
-class GameController;
+class CoreController;
 class GamepadAxisEvent;
 class InputController;
 
@@ -26,7 +26,9 @@ class SensorView : public QDialog {
 Q_OBJECT
 
 public:
-	SensorView(GameController* controller, InputController* input, QWidget* parent = nullptr);
+	SensorView(InputController* input, QWidget* parent = nullptr);
+
+	void setController(std::shared_ptr<CoreController>);
 
 protected:
 	bool eventFilter(QObject*, QEvent* event) override;
@@ -41,7 +43,7 @@ private:
 	Ui::SensorView m_ui;
 
 	std::function<void(int)> m_jiggered;
-	GameController* m_controller;
+	std::shared_ptr<CoreController> m_controller;
 	InputController* m_input;
 	mRotationSource* m_rotation;
 	QTimer m_timer;
@@ -50,5 +52,3 @@ private:
 };
 
 }
-
-#endif

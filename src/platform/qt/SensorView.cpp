@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "SensorView.h"
 
-#include "GameController.h"
+#include "CoreController.h"
 #include "GamepadAxisEvent.h"
 #include "InputController.h"
 
@@ -14,9 +14,8 @@
 
 using namespace QGBA;
 
-SensorView::SensorView(GameController* controller, InputController* input, QWidget* parent)
+SensorView::SensorView(InputController* input, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
-	, m_controller(controller)
 	, m_input(input)
 	, m_rotation(input->rotationSource())
  {
@@ -26,21 +25,12 @@ SensorView::SensorView(GameController* controller, InputController* input, QWidg
 	        this, &SensorView::setLuminanceValue);
 	connect(m_ui.lightSlide, &QAbstractSlider::valueChanged, this, &SensorView::setLuminanceValue);
 
-	connect(m_ui.timeNoOverride, &QAbstractButton::clicked, controller, &GameController::setRealTime);
-	connect(m_ui.timeFixed, &QRadioButton::clicked, [controller, this] () {
-		controller->setFixedTime(m_ui.time->dateTime().toUTC());
-	});
-	connect(m_ui.timeFakeEpoch, &QRadioButton::clicked, [controller, this] () {
-		controller->setFakeEpoch(m_ui.time->dateTime().toUTC());
-	});
-	connect(m_ui.time, &QDateTimeEdit::dateTimeChanged, [controller, this] (const QDateTime&) {
+	connect(m_ui.time, &QDateTimeEdit::dateTimeChanged, [this] (const QDateTime&) {
 		m_ui.timeButtons->checkedButton()->clicked();
 	});
-	connect(m_ui.timeNow, &QPushButton::clicked, [controller, this] () {
+	connect(m_ui.timeNow, &QPushButton::clicked, [this] () {
 		m_ui.time->setDateTime(QDateTime::currentDateTime());
 	});
-
-	connect(m_controller, &GameController::luminanceValueChanged, this, &SensorView::luminanceValueChanged);
 
 	m_timer.setInterval(2);
 	connect(&m_timer, &QTimer::timeout, this, &SensorView::updateSensors);
@@ -66,6 +56,23 @@ SensorView::SensorView(GameController* controller, InputController* input, QWidg
 		m_input->setGyroSensitivity(value * 1e8f);
 	});
 	m_input->stealFocus(this);
+	connect(m_input, &InputController::luminanceValueChanged, this, &SensorView::luminanceValueChanged);
+}
+
+void SensorView::setController(std::shared_ptr<CoreController> controller) {
+	m_controller = controller;
+	connect(m_ui.timeNoOverride, &QAbstractButton::clicked, controller.get(), &CoreController::setRealTime);
+	connect(m_ui.timeFixed, &QRadioButton::clicked, [controller, this] () {
+		controller->setFixedTime(m_ui.time->dateTime().toUTC());
+	});
+	connect(m_ui.timeFakeEpoch, &QRadioButton::clicked, [controller, this] () {
+		controller->setFakeEpoch(m_ui.time->dateTime().toUTC());
+	});
+	m_ui.timeButtons->checkedButton()->clicked();
+
+	connect(controller.get(), &CoreController::stopping, [this]() {
+		m_controller.reset();
+	});
 }
 
 void SensorView::jiggerer(QAbstractButton* button, void (InputController::*setter)(int)) {
@@ -107,16 +114,7 @@ bool SensorView::eventFilter(QObject*, QEvent* event) {
 }
 
 void SensorView::updateSensors() {
-	GameController::Interrupter interrupter(m_controller);
-	if (m_rotation->sample &&
-	    (!m_controller->isLoaded() || !(static_cast<GBA*>(m_controller->thread()->core->board)->memory.hw.devices & (HW_GYRO | HW_TILT)))) {
-		m_rotation->sample(m_rotation);
-		m_rotation->sample(m_rotation);
-		m_rotation->sample(m_rotation);
-		m_rotation->sample(m_rotation);
-		m_rotation->sample(m_rotation);
-		m_rotation->sample(m_rotation);
-		m_rotation->sample(m_rotation);
+	if (m_rotation->sample && (!m_controller || m_controller->isPaused())) {
 		m_rotation->sample(m_rotation);
 	}
 	if (m_rotation->readTiltX && m_rotation->readTiltY) {
@@ -132,7 +130,9 @@ void SensorView::updateSensors() {
 
 void SensorView::setLuminanceValue(int value) {
 	value = std::max(0, std::min(value, 255));
-	m_controller->setLuminanceValue(value);
+	if (m_input) {
+		m_input->setLuminanceValue(value);
+	}
 }
 
 void SensorView::luminanceValueChanged(int value) {

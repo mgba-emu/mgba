@@ -3,18 +3,21 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_GIF_VIEW
-#define QGBA_GIF_VIEW
+#pragma once
 
 #ifdef USE_MAGICK
 
 #include <QWidget>
+
+#include <memory>
 
 #include "ui_GIFView.h"
 
 #include "feature/imagemagick/imagemagick-gif-encoder.h"
 
 namespace QGBA {
+
+class CoreController;
 
 class GIFView : public QWidget {
 Q_OBJECT
@@ -26,6 +29,8 @@ public:
 	mAVStream* getStream() { return &m_encoder.d; }
 
 public slots:
+	void setController(std::shared_ptr<CoreController>);
+
 	void startRecording();
 	void stopRecording();
 
@@ -47,7 +52,5 @@ private:
 };
 
 }
-
-#endif
 
 #endif

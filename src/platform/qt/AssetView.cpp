@@ -5,32 +5,32 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "AssetView.h"
 
-#include <QTimer>
+#include "CoreController.h"
 
-#include <mgba/core/tile-cache.h>
+#include <QTimer>
 
 using namespace QGBA;
 
-AssetView::AssetView(GameController* controller, QWidget* parent)
+AssetView::AssetView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: QWidget(parent)
-	, m_tileCache(controller->tileCache())
+	, m_cacheSet(controller->graphicCaches())
 	, m_controller(controller)
 {
 	m_updateTimer.setSingleShot(true);
 	m_updateTimer.setInterval(1);
-	connect(&m_updateTimer, SIGNAL(timeout()), this, SLOT(updateTiles()));
+	connect(&m_updateTimer, &QTimer::timeout, this, static_cast<void(AssetView::*)()>(&AssetView::updateTiles));
 
-	connect(m_controller, &GameController::frameAvailable, &m_updateTimer,
+	connect(controller.get(), &CoreController::frameAvailable, &m_updateTimer,
 	        static_cast<void(QTimer::*)()>(&QTimer::start));
-	connect(m_controller, &GameController::gameStopped, this, &AssetView::close);
-	connect(m_controller, &GameController::gameStopped, &m_updateTimer, &QTimer::stop);
+	connect(controller.get(), &CoreController::stopping, this, &AssetView::close);
+	connect(controller.get(), &CoreController::stopping, &m_updateTimer, &QTimer::stop);
+}
+
+void AssetView::updateTiles() {
+	updateTiles(false);
 }
 
 void AssetView::updateTiles(bool force) {
-	if (!m_controller->isLoaded()) {
-		return;
-	}
-
 	switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
 	case PLATFORM_GBA:
@@ -55,8 +55,8 @@ void AssetView::showEvent(QShowEvent*) {
 	updateTiles(true);
 }
 
-void AssetView::compositeTile(unsigned tileId, void* buffer, size_t stride, size_t x, size_t y, int depth) {
-	const uint8_t* tile = mTileCacheGetRawTile(m_tileCache.get(), tileId);
+void AssetView::compositeTile(const void* tBuffer, void* buffer, size_t stride, size_t x, size_t y, int depth) {
+	const uint8_t* tile = static_cast<const uint8_t*>(tBuffer);
 	uint8_t* pixels = static_cast<uint8_t*>(buffer);
 	size_t base = stride * y + x;
 	switch (depth) {

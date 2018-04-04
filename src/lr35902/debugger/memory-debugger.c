@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/lr35902/debugger/memory-debugger.h>
 
+#include <mgba/internal/debugger/parser.h>
 #include <mgba/internal/lr35902/debugger/debugger.h>
 
 #include <mgba-util/math.h>
@@ -47,6 +48,13 @@ static bool _checkWatchpoints(struct LR35902Debugger* debugger, uint16_t address
 	for (i = 0; i < LR35902DebugWatchpointListSize(&debugger->watchpoints); ++i) {
 		watchpoint = LR35902DebugWatchpointListGetPointer(&debugger->watchpoints, i);
 		if (watchpoint->address == address && (watchpoint->segment < 0 || watchpoint->segment == debugger->originalMemory.currentSegment(debugger->cpu, address)) && watchpoint->type & type) {
+			if (watchpoint->condition) {
+				int32_t value;
+				int segment;
+				if (!mDebuggerEvaluateParseTree(debugger->d.p, watchpoint->condition, &value, &segment) || !(value || segment >= 0)) {
+					return false;
+				}
+			}
 			info->type.wp.oldValue = debugger->originalMemory.load8(debugger->cpu, address);
 			info->type.wp.newValue = newValue;
 			info->address = address;

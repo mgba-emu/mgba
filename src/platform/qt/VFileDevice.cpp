@@ -13,7 +13,36 @@ VFileDevice::VFileDevice(VFile* vf, QObject* parent)
 	: QIODevice(parent)
 	, m_vf(vf)
 {
-	// Nothing to do
+	// TODO: Correct mode
+	if (vf) {
+		setOpenMode(QIODevice::ReadWrite);
+	}
+}
+
+void VFileDevice::close() {
+	if (!m_vf) {
+		return;
+	}
+	QIODevice::close();
+	m_vf->close(m_vf);
+	m_vf = nullptr;
+}
+
+bool VFileDevice::resize(qint64 sz) {
+	m_vf->truncate(m_vf, sz);
+	return true;
+}
+
+bool VFileDevice::seek(qint64 pos) {
+	QIODevice::seek(pos);
+	return m_vf->seek(m_vf, pos, SEEK_SET) == pos;
+}
+
+VFileDevice& VFileDevice::operator=(VFile* vf) {
+	close();
+	m_vf = vf;
+	setOpenMode(QIODevice::ReadWrite);
+	return *this;
 }
 
 qint64 VFileDevice::readData(char* data, qint64 maxSize) {

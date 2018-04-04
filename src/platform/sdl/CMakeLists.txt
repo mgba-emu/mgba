@@ -86,6 +86,12 @@ else()
 	endif()
 endif()
 
+if(ENABLE_SCRIPTING)
+	if(BUILD_PYTHON)
+		list(APPEND PLATFORM_LIBRARY ${BINARY_NAME}-pylib)
+	endif()
+endif()
+
 add_executable(${BINARY_NAME}-sdl WIN32 ${PLATFORM_SRC} ${MAIN_SRC})
 set_target_properties(${BINARY_NAME}-sdl PROPERTIES COMPILE_DEFINITIONS "${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 target_link_libraries(${BINARY_NAME}-sdl ${BINARY_NAME} ${PLATFORM_LIBRARY} ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})

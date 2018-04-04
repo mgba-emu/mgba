@@ -10,14 +10,14 @@
 
 CXX_GUARD_START
 
+#include <mgba/core/interface.h>
+
 DECL_BITFIELD(mTileCacheConfiguration, uint32_t);
 DECL_BIT(mTileCacheConfiguration, ShouldStore, 0);
 
 DECL_BITFIELD(mTileCacheSystemInfo, uint32_t);
-DECL_BITS(mTileCacheSystemInfo, Palette0BPP, 0, 2);
-DECL_BITS(mTileCacheSystemInfo, Palette0Count, 2, 4);
-DECL_BITS(mTileCacheSystemInfo, Palette1BPP, 8, 2);
-DECL_BITS(mTileCacheSystemInfo, Palette1Count, 10, 4);
+DECL_BITS(mTileCacheSystemInfo, PaletteBPP, 0, 2);
+DECL_BITS(mTileCacheSystemInfo, PaletteCount, 2, 4);
 DECL_BITS(mTileCacheSystemInfo, MaxTiles, 16, 13);
 
 struct mTileCacheEntry {
@@ -25,24 +25,22 @@ struct mTileCacheEntry {
 	uint32_t vramVersion;
 	uint8_t vramClean;
 	uint8_t paletteId;
-	uint8_t activePalette;
-	uint8_t padding;
+	uint16_t padding;
 };
 
 struct mTileCache {
-	uint16_t* cache;
+	color_t* cache;
 	struct mTileCacheEntry* status;
-	uint32_t* globalPaletteVersion[2];
+	uint32_t* globalPaletteVersion;
 
-	int activePalette;
-	unsigned entries;
-	unsigned count;
+	uint32_t tileBase;
+	uint32_t paletteBase;
 	unsigned entriesPerTile;
 	unsigned bpp;
 
 	uint16_t* vram;
-	uint16_t* palette;
-	uint16_t temporaryTile[64];
+	color_t* palette;
+	color_t temporaryTile[64];
 
 	mTileCacheConfiguration config;
 	mTileCacheSystemInfo sysConfig;
@@ -51,15 +49,14 @@ struct mTileCache {
 void mTileCacheInit(struct mTileCache* cache);
 void mTileCacheDeinit(struct mTileCache* cache);
 void mTileCacheConfigure(struct mTileCache* cache, mTileCacheConfiguration config);
-void mTileCacheConfigureSystem(struct mTileCache* cache, mTileCacheSystemInfo config);
+void mTileCacheConfigureSystem(struct mTileCache* cache, mTileCacheSystemInfo config, uint32_t tileBase, uint32_t paletteBase);
 void mTileCacheWriteVRAM(struct mTileCache* cache, uint32_t address);
-void mTileCacheWritePalette(struct mTileCache* cache, uint32_t address);
-void mTileCacheSetPalette(struct mTileCache* cache, int palette);
+void mTileCacheWritePalette(struct mTileCache* cache, uint32_t entry, color_t color);
 
-const uint16_t* mTileCacheGetTile(struct mTileCache* cache, unsigned tileId, unsigned paletteId);
-const uint16_t* mTileCacheGetTileIfDirty(struct mTileCache* cache, struct mTileCacheEntry* entry, unsigned tileId, unsigned paletteId);
-const uint8_t* mTileCacheGetRawTile(struct mTileCache* cache, unsigned tileId);
-const uint16_t* mTileCacheGetPalette(struct mTileCache* cache, unsigned paletteId);
+const color_t* mTileCacheGetTile(struct mTileCache* cache, unsigned tileId, unsigned paletteId);
+const color_t* mTileCacheGetTileIfDirty(struct mTileCache* cache, struct mTileCacheEntry* entry, unsigned tileId, unsigned paletteId);
+const color_t* mTileCacheGetPalette(struct mTileCache* cache, unsigned paletteId);
+const uint16_t* mTileCacheGetVRAM(struct mTileCache* cache, unsigned tileId);
 
 CXX_GUARD_END
 

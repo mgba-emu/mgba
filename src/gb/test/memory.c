@@ -16,6 +16,7 @@ M_TEST_SUITE_SETUP(GBMemory) {
 	GBSynthesizeROM(vf);
 	struct mCore* core = GBCoreCreate();
 	core->init(core);
+	mCoreInitConfig(core, NULL);
 	core->loadROM(core, vf);
 	*state = core;
 	return 0;

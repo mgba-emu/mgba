@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gba/cheats.h>
 
+#include "gba/cheats/gameshark.h"
 #include "gba/cheats/parv3.h"
 #include <mgba/internal/gba/gba.h>
 #include <mgba-util/string.h>
@@ -73,16 +74,18 @@ void GBACheatReseedGameShark(uint32_t* seeds, uint16_t params, const uint8_t* t1
 	}
 }
 
-void GBACheatSetGameSharkVersion(struct GBACheatSet* cheats, int version) {
+void GBACheatSetGameSharkVersion(struct GBACheatSet* cheats, enum GBACheatGameSharkVersion version) {
 	cheats->gsaVersion = version;
 	switch (version) {
-	case 1:
-	case 2:
+	case GBA_GS_GSAV1:
+	case GBA_GS_GSAV1_RAW:
 		memcpy(cheats->gsaSeeds, GBACheatGameSharkSeeds, 4 * sizeof(uint32_t));
 		break;
-	case 3:
-	case 4:
+	case GBA_GS_PARV3:
+	case GBA_GS_PARV3_RAW:
 		memcpy(cheats->gsaSeeds, GBACheatProActionReplaySeeds, 4 * sizeof(uint32_t));
+		break;
+	default:
 		break;
 	}
 }
@@ -90,6 +93,7 @@ void GBACheatSetGameSharkVersion(struct GBACheatSet* cheats, int version) {
 bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 	enum GBAGameSharkType type = op1 >> 28;
 	struct mCheat* cheat = 0;
+	int romPatch = 0;
 
 	if (cheats->incompleteCheat != COMPLETE) {
 		struct mCheat* incompleteCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat);
@@ -145,15 +149,44 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case GSA_PATCH:
-		cheats->romPatches[0].address = BASE_CART0 | ((op1 & 0xFFFFFF) << 1);
-		cheats->romPatches[0].newValue = op2;
-		cheats->romPatches[0].applied = false;
-		cheats->romPatches[0].exists = true;
+		while (cheats->romPatches[romPatch].exists) {
+			++romPatch;
+			if (romPatch >= MAX_ROM_PATCHES) {
+				break;
+			}
+		}
+		cheats->romPatches[romPatch].address = BASE_CART0 | ((op1 & 0xFFFFFF) << 1);
+		cheats->romPatches[romPatch].newValue = op2;
+		cheats->romPatches[romPatch].applied = false;
+		cheats->romPatches[romPatch].exists = true;
 		return true;
 	case GSA_BUTTON:
-		// TODO: Implement button
-		mLOG(CHEATS, STUB, "GameShark button unimplemented");
-		return false;
+		switch (op1 & 0x00F00000) {
+		case 0x00100000:
+			cheat = mCheatListAppend(&cheats->d.list);
+			cheat->type = CHEAT_IF_BUTTON;
+			cheat->repeat = 1;
+			cheat->negativeRepeat = 0;
+			cheat = mCheatListAppend(&cheats->d.list);
+			cheat->type = CHEAT_ASSIGN;
+			cheat->width = 1;
+			cheat->address = op1 & 0x0F0FFFFF;
+			break;
+		case 0x00200000:
+			cheat = mCheatListAppend(&cheats->d.list);
+			cheat->type = CHEAT_IF_BUTTON;
+			cheat->repeat = 1;
+			cheat->negativeRepeat = 0;
+			cheat = mCheatListAppend(&cheats->d.list);
+			cheat->type = CHEAT_ASSIGN;
+			cheat->width = 2;
+			cheat->address = op1 & 0x0F0FFFFF;
+			break;
+		default:
+			mLOG(CHEATS, STUB, "GameShark button type unimplemented");
+			return false;
+		}
+		break;
 	case GSA_IF_EQ:
 		if (op1 == 0xDEADFACE) {
 			GBACheatReseedGameShark(cheats->gsaSeeds, op2, _gsa1T1, _gsa1T2);
@@ -199,15 +232,13 @@ bool GBACheatAddGameShark(struct GBACheatSet* set, uint32_t op1, uint32_t op2) {
 	snprintf(line, sizeof(line), "%08X %08X", op1, op2);
 
 	switch (set->gsaVersion) {
-	case 0:
-	case 3:
-	case 4:
-		GBACheatSetGameSharkVersion(set, 1);
+	default:
+		GBACheatSetGameSharkVersion(set, GBA_GS_GSAV1);
 	// Fall through
-	case 1:
+	case GBA_GS_GSAV1:
 		GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
 	// Fall through
-	case 2:
+	case GBA_GS_GSAV1_RAW:
 		return GBACheatAddGameSharkRaw(set, o1, o2);
 	}
 	return false;
