@@ -89,7 +89,6 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/third-party/inih/ini.c \
 					$(CORE_DIR)/src/util/circle-buffer.c \
 					$(CORE_DIR)/src/util/configuration.c \
-					$(CORE_DIR)/src/util/crc32.c \
 					$(CORE_DIR)/src/util/formatting.c \
 					$(CORE_DIR)/src/util/hash.c \
 					$(CORE_DIR)/src/util/patch.c \
