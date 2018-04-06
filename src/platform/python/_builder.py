@@ -9,6 +9,7 @@ pydir = os.path.dirname(os.path.abspath(__file__))
 srcdir = os.path.join(pydir, "..", "..")
 incdir = os.path.join(pydir, "..", "..", "..", "include")
 bindir = os.environ.get("BINDIR", os.path.join(os.getcwd(), ".."))
+libdir = os.environ.get("LIBDIR")
 
 cpp = shlex.split(os.environ.get("CPP", "cc -E"))
 cppflags = shlex.split(os.environ.get("CPPFLAGS", ""))
@@ -52,6 +53,7 @@ ffi.set_source("mgba._pylib", """
      extra_compile_args=cppflags,
      libraries=["mgba"],
      library_dirs=[bindir],
+     runtime_library_dirs=[libdir],
      sources=[os.path.join(pydir, path) for path in ["vfs-py.c", "core.c", "log.c", "sio.c"]])
 
 preprocessed = subprocess.check_output(cpp + ["-fno-inline", "-P"] + cppflags + [os.path.join(pydir, "_builder.h")], universal_newlines=True)
