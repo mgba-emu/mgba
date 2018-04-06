@@ -4,6 +4,7 @@ import os
 import sys
 
 os.environ["BINDIR"] = "${CMAKE_BINARY_DIR}"
+os.environ["LIBDIR"] = "${CMAKE_INSTALL_PREFIX}/${LIBDIR}"
 os.environ["CPPFLAGS"] = " ".join([d for d in "${INCLUDE_FLAGS}".split(";") if d])
 
 classifiers = [
