@@ -8,7 +8,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
-#elif defined(GEKKO) || defined(__CELLOS_LV2__) || defined(_3DS) || defined(__SWITCH__)
+#elif defined(GEKKO) || defined(__CELLOS_LV2__) || defined(_3DS) || defined(__SWITCH__) || defined(PSP)
 /* stub */
 #elif defined(VITA)
 #include <psp2/kernel/sysmem.h>
