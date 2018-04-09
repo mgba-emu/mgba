@@ -33,7 +33,7 @@ static bool listInit = false;
 void* anonymousMemoryMap(size_t size) {
 #ifdef _WIN32
 	return VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-#elif defined(__CELLOS_LV2__) || defined(GEKKO) || defined(_3DS) || defined(__SWITCH__)
+#elif defined(__CELLOS_LV2__) || defined(GEKKO) || defined(_3DS) || defined(__SWITCH__) || defined(PSP)
    return (void*)malloc(size);
 #elif defined(VITA)
 	if (!listInit)
@@ -61,7 +61,7 @@ void mappedMemoryFree(void* memory, size_t size) {
 #ifdef _WIN32
 	// size is not useful here because we're freeing the memory, not decommitting it
 	VirtualFree(memory, 0, MEM_RELEASE);
-#elif defined(__CELLOS_LV2__) || defined(GEKKO) || defined(_3DS) || defined(__SWITCH__)
+#elif defined(__CELLOS_LV2__) || defined(GEKKO) || defined(_3DS) || defined(__SWITCH__) || defined(PSP)
    free(memory);
 #elif defined(VITA)
 	UNUSED(size);
