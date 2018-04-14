@@ -1,3 +1,9 @@
+0.6.3: (Future)
+Bugfixes:
+ - GB Video: Fix bad merge (fixes mgba.io/i/1040)
+ - GB Audio: Revert unsigned audio changes
+ - GBA Video: Fix OBJ blending regression (fixes mgba.io/i/1037)
+
 0.6.2: (2017-04-03)
 Bugfixes:
  - Core: Fix ROM patches not being unloaded when disabled (fixes mgba.io/i/962)
