@@ -1,7 +1,7 @@
-0.6.3: (Future)
+0.6.3: (2017-04-14)
 Bugfixes:
- - GB Video: Fix bad merge (fixes mgba.io/i/1040)
  - GB Audio: Revert unsigned audio changes
+ - GB Video: Fix bad merge (fixes mgba.io/i/1040)
  - GBA Video: Fix OBJ blending regression (fixes mgba.io/i/1037)
 
 0.6.2: (2017-04-03)
