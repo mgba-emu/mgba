@@ -531,7 +531,7 @@ void _GBMBC5(struct GB* gb, uint16_t address, uint8_t value) {
 
 void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 	struct GBMemory* memory = &gb->memory;
-	int bank = value & 0x7F;
+	int bank = value;
 	switch (address >> 10) {
 	case 0:
 		switch (value) {
@@ -548,9 +548,11 @@ void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 			break;
 		}
 		break;
+	case 0x8:
 	case 0x9:
 		GBMBCSwitchHalfBank(gb, 0, bank);
 		break;
+	case 0xC:
 	case 0xD:
 		GBMBCSwitchHalfBank(gb, 1, bank);
 		break;
