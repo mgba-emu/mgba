@@ -81,18 +81,12 @@ static void _regenerateSGBBorder(struct GBVideoSoftwareRenderer* renderer) {
 			if (SGBBgAttributesIsXFlip(mapData)) {
 				for (i = 0; i < 8; ++i) {
 					colorSelector = (tileData[0] >> i & 0x1) << 0 | (tileData[1] >> i & 0x1) << 1 | (tileData[2] >> i & 0x1) << 2 | (tileData[3] >> i & 0x1) << 3;
-					// The first color of every palette is transparent
-					if (colorSelector) {
-						renderer->outputBuffer[base + i] = renderer->palette[paletteBase | colorSelector];
-					}
+					renderer->outputBuffer[base + i] = renderer->palette[paletteBase | colorSelector];
 				}
 			} else {
 				for (i = 7; i >= 0; --i) {
 					colorSelector = (tileData[0] >> i & 0x1) << 0 | (tileData[1] >> i & 0x1) << 1 | (tileData[2] >> i & 0x1) << 2 | (tileData[3] >> i & 0x1) << 3;
-
-					if (colorSelector) {
-						renderer->outputBuffer[base + 7 - i] = renderer->palette[paletteBase | colorSelector];
-					}
+					renderer->outputBuffer[base + 7 - i] = renderer->palette[paletteBase | colorSelector];
 				}
 			}
 		}
@@ -359,12 +353,27 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	color_t color = mColorFrom555(value);
-	if (softwareRenderer->model == GB_MODEL_SGB && index < 0x10 && index && !(index & 3)) {
-		color = softwareRenderer->palette[0];
+	if (softwareRenderer->model == GB_MODEL_SGB) {
+		if (index < 0x10 && index && !(index & 3)) {
+			color = softwareRenderer->palette[0];
+		} else if (index >= 0x40 && !(index & 0xF)) {
+			color = softwareRenderer->palette[0];
+		}
 	}
 	softwareRenderer->palette[index] = color;
 	if (renderer->cache) {
 		mCacheSetWritePalette(renderer->cache, index, color);
+	}
+
+	if (softwareRenderer->model == GB_MODEL_SGB && !index && GBRegisterLCDCIsEnable(softwareRenderer->lcdc)) {
+		renderer->writePalette(renderer, 0x04, value);
+		renderer->writePalette(renderer, 0x08, value);
+		renderer->writePalette(renderer, 0x0C, value);
+		renderer->writePalette(renderer, 0x40, value);
+		renderer->writePalette(renderer, 0x50, value);
+		renderer->writePalette(renderer, 0x60, value);
+		renderer->writePalette(renderer, 0x70, value);
+		_regenerateSGBBorder(softwareRenderer);
 	}
 }
 
