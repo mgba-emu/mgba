@@ -183,6 +183,9 @@ void GBMemoryReset(struct GB* gb) {
 	case GB_MBC6:
 		GBMBCSwitchHalfBank(gb, 0, 2);
 		GBMBCSwitchHalfBank(gb, 1, 3);
+		gb->memory.mbcState.mbc6.sramAccess = false;
+		GBMBCSwitchSramHalfBank(gb, 0, 0);
+		GBMBCSwitchSramHalfBank(gb, 0, 1);
 		break;
 	default:
 		memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
