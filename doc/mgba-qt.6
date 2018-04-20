@@ -13,6 +13,7 @@
 .Nm mgba-qt
 .Op Fl 123456fg
 .Op Fl b Ar biosfile
+.Op Fl C Ar option Ns = Ns Ar value
 .Op Fl l Ar loglevel
 .Op Fl p Ar patchfile
 .Op Fl s Ar n
@@ -40,6 +41,11 @@ If this flag is omitted,
 .Nm
 will use the BIOS specified in the configuration file,
 or a high\(hylevel emulated BIOS if none is specified.
+.It Fl C Ar option Ns = Ns Ar value , Fl -config Ar option Ns = Ns Ar value
+Override the given config
+.Ar option
+with
+.Ar value .
 .It Fl f
 Start the emulator full\(hyscreen.
 .It Fl g
