@@ -102,12 +102,7 @@ static inline void _setAttribute(uint8_t* sgbAttributes, unsigned x, unsigned y,
 
 static void _parseAttrBlock(struct GBVideoSoftwareRenderer* renderer, int start) {
 	uint8_t block[6];
-	if (start < 0) {
-		memcpy(block, renderer->sgbPartialDataSet, -start);
-		memcpy(&block[-start], renderer->sgbPacket, 6 + start);
-	} else {
-		memcpy(block, &renderer->sgbPacket[start], 6);
-	}
+	memcpy(block, &renderer->sgbPacket[start], 6);
 	unsigned x0 = block[2];
 	unsigned x1 = block[4];
 	unsigned y0 = block[3];
@@ -262,14 +257,13 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	memcpy(softwareRenderer->sgbPacket, data, sizeof(softwareRenderer->sgbPacket));
 	int i;
-	if (!(softwareRenderer->sgbCommandHeader & 7)) {
-		softwareRenderer->sgbCommandHeader = data[0];
-		softwareRenderer->sgbPacketId = 0;
-		softwareRenderer->sgbTransfer = 0;
-	}
-	--softwareRenderer->sgbCommandHeader;
-	++softwareRenderer->sgbPacketId;
+	softwareRenderer->sgbCommandHeader = data[0];
+	softwareRenderer->sgbTransfer = 0;
 	int set;
+	int sets;
+	int attrX;
+	int attrY;
+	int attrDirection;
 	switch (softwareRenderer->sgbCommandHeader >> 3) {
 	case SGB_PAL_SET:
 		softwareRenderer->sgbPacket[1] = data[9];
@@ -284,58 +278,47 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 		}
 		break;
 	case SGB_ATTR_BLK:
-		if (softwareRenderer->sgbPacketId == 1) {
-			softwareRenderer->sgbDataSets = softwareRenderer->sgbPacket[1];
-			i = 2;
-		} else {
-			i = (9 - softwareRenderer->sgbPacketId) % 3 * -2;
-		}
-		for (; i <= 10 && softwareRenderer->sgbDataSets; i += 6, --softwareRenderer->sgbDataSets) {
+		sets = softwareRenderer->sgbPacket[1];
+		i = 2;
+		for (; i < (softwareRenderer->sgbCommandHeader & 7) << 4 && sets; i += 6, --sets) {
 			_parseAttrBlock(softwareRenderer, i);
-		}
-		if (i < 16 && softwareRenderer->sgbDataSets) {
-			memcpy(softwareRenderer->sgbPartialDataSet, &softwareRenderer->sgbPacket[i], 16 - i);
 		}
 		break;
 	case SGB_ATTR_CHR:
-		if (softwareRenderer->sgbPacketId == 1) {
-			softwareRenderer->sgbAttrX = softwareRenderer->sgbPacket[1];
-			softwareRenderer->sgbAttrY = softwareRenderer->sgbPacket[2];
-			if (softwareRenderer->sgbAttrX >= GB_VIDEO_HORIZONTAL_PIXELS / 8) {
-				softwareRenderer->sgbAttrX = 0;
-			}
-			if (softwareRenderer->sgbAttrY >= GB_VIDEO_VERTICAL_PIXELS / 8) {
-				softwareRenderer->sgbAttrY = 0;
-			}
-			softwareRenderer->sgbDataSets = softwareRenderer->sgbPacket[3];
-			softwareRenderer->sgbDataSets |= softwareRenderer->sgbPacket[4] << 8;
-			softwareRenderer->sgbAttrDirection = softwareRenderer->sgbPacket[5];
-			i = 6;
-		} else {
-			i = 0;
+		attrX = softwareRenderer->sgbPacket[1];
+		attrY = softwareRenderer->sgbPacket[2];
+		if (attrX >= GB_VIDEO_HORIZONTAL_PIXELS / 8) {
+			attrX = 0;
 		}
-		for (; i < 16 && softwareRenderer->sgbDataSets; ++i) {
+		if (attrY >= GB_VIDEO_VERTICAL_PIXELS / 8) {
+			attrY = 0;
+		}
+		sets = softwareRenderer->sgbPacket[3];
+		sets |= softwareRenderer->sgbPacket[4] << 8;
+		attrDirection = softwareRenderer->sgbPacket[5];
+		i = 6;
+		for (; i < (softwareRenderer->sgbCommandHeader & 7) << 4 && sets; ++i) {
 			int j;
-			for (j = 0; j < 4 && softwareRenderer->sgbDataSets; ++j, --softwareRenderer->sgbDataSets) {
+			for (j = 0; j < 4 && sets; ++j, --sets) {
 				uint8_t p = softwareRenderer->sgbPacket[i] >> (6 - j * 2);
-				_setAttribute(renderer->sgbAttributes, softwareRenderer->sgbAttrX, softwareRenderer->sgbAttrY, p & 3);
-				if (softwareRenderer->sgbAttrDirection) {
-					++softwareRenderer->sgbAttrY;
-					if (softwareRenderer->sgbAttrY >= GB_VIDEO_VERTICAL_PIXELS / 8) {
-						softwareRenderer->sgbAttrY = 0;
-						++softwareRenderer->sgbAttrX;
+				_setAttribute(renderer->sgbAttributes, attrX, attrY, p & 3);
+				if (attrDirection) {
+					++attrY;
+					if (attrY >= GB_VIDEO_VERTICAL_PIXELS / 8) {
+						attrY = 0;
+						++attrX;
 					}
-					if (softwareRenderer->sgbAttrX >= GB_VIDEO_HORIZONTAL_PIXELS / 8) {
-						softwareRenderer->sgbAttrX = 0;
+					if (attrX >= GB_VIDEO_HORIZONTAL_PIXELS / 8) {
+						attrX = 0;
 					}
 				} else {
-					++softwareRenderer->sgbAttrX;
-					if (softwareRenderer->sgbAttrX >= GB_VIDEO_HORIZONTAL_PIXELS / 8) {
-						softwareRenderer->sgbAttrX = 0;
-						++softwareRenderer->sgbAttrY;
+					++attrX;
+					if (attrX >= GB_VIDEO_HORIZONTAL_PIXELS / 8) {
+						attrX = 0;
+						++attrY;
 					}
-					if (softwareRenderer->sgbAttrY >= GB_VIDEO_VERTICAL_PIXELS / 8) {
-						softwareRenderer->sgbAttrY = 0;
+					if (attrY >= GB_VIDEO_VERTICAL_PIXELS / 8) {
+						attrY = 0;
 					}
 				}
 			}

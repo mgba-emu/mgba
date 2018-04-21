@@ -39,15 +39,9 @@ struct GBVideoSoftwareRenderer {
 	enum GBModel model;
 
 	int sgbTransfer;
-	uint8_t sgbPacket[16];
+	uint8_t sgbPacket[128];
 	uint8_t sgbCommandHeader;
-	int sgbPacketId;
-	int sgbDataSets;
-	uint8_t sgbPartialDataSet[15];
 	bool sgbBorders;
-	int sgbAttrX;
-	int sgbAttrY;
-	int sgbAttrDirection;
 };
 
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer*);
