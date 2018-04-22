@@ -326,10 +326,14 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 
 		break;
 	case SGB_ATRC_EN:
-		if (softwareRenderer->sgbBorders) {
+		if (softwareRenderer->sgbBorders && !renderer->sgbRenderMode) {
 			_regenerateSGBBorder(softwareRenderer);
 		}
 		break;
+	case SGB_MASK_EN:
+		if (!renderer->sgbRenderMode) {
+			_regenerateSGBBorder(softwareRenderer);
+		}
 	}
 }
 
@@ -356,7 +360,9 @@ static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer
 		renderer->writePalette(renderer, 0x50, value);
 		renderer->writePalette(renderer, 0x60, value);
 		renderer->writePalette(renderer, 0x70, value);
-		_regenerateSGBBorder(softwareRenderer);
+		if (!renderer->sgbRenderMode) {
+			_regenerateSGBBorder(softwareRenderer);
+		}
 	}
 }
 
@@ -572,7 +578,7 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 		case SGB_PAL_TRN:
 		case SGB_CHR_TRN:
 		case SGB_PCT_TRN:
-			if (softwareRenderer->sgbTransfer > 0 && softwareRenderer->sgbBorders) {
+			if (softwareRenderer->sgbTransfer > 0 && softwareRenderer->sgbBorders && !renderer->sgbRenderMode) {
 				// Make sure every buffer sees this if we're multibuffering
 				_regenerateSGBBorder(softwareRenderer);
 			}
