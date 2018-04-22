@@ -378,12 +378,8 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 
 		break;
 	case SGB_ATRC_EN:
-		if (softwareRenderer->sgbBorders && !renderer->sgbRenderMode) {
-			_regenerateSGBBorder(softwareRenderer);
-		}
-		break;
 	case SGB_MASK_EN:
-		if (!renderer->sgbRenderMode) {
+		if (softwareRenderer->sgbBorders && !renderer->sgbRenderMode) {
 			_regenerateSGBBorder(softwareRenderer);
 		}
 	}
@@ -412,7 +408,7 @@ static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer
 		renderer->writePalette(renderer, 0x50, value);
 		renderer->writePalette(renderer, 0x60, value);
 		renderer->writePalette(renderer, 0x70, value);
-		if (!renderer->sgbRenderMode) {
+		if (softwareRenderer->sgbBorders && !renderer->sgbRenderMode) {
 			_regenerateSGBBorder(softwareRenderer);
 		}
 	}
