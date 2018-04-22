@@ -264,6 +264,9 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 	int attrX;
 	int attrY;
 	int attrDirection;
+	int pBefore;
+	int pAfter;
+	int pDiv;
 	switch (softwareRenderer->sgbCommandHeader >> 3) {
 	case SGB_PAL_SET:
 		softwareRenderer->sgbPacket[1] = data[9];
@@ -282,6 +285,55 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 		i = 2;
 		for (; i < (softwareRenderer->sgbCommandHeader & 7) << 4 && sets; i += 6, --sets) {
 			_parseAttrBlock(softwareRenderer, i);
+		}
+		break;
+	case SGB_ATTR_DIV:
+		pAfter = softwareRenderer->sgbPacket[1] & 3;
+		pBefore = (softwareRenderer->sgbPacket[1] >> 2) & 3;
+		pDiv = (softwareRenderer->sgbPacket[1] >> 4) & 3;
+		attrX = softwareRenderer->sgbPacket[2];
+		if (softwareRenderer->sgbPacket[1] & 0x40) {
+			if (attrX > GB_VIDEO_VERTICAL_PIXELS / 8) {
+				attrX = GB_VIDEO_VERTICAL_PIXELS / 8;
+			}
+			int j;
+			for (j = 0; j < attrX; ++j) {
+				for (i = 0; i < GB_VIDEO_HORIZONTAL_PIXELS / 8; ++i) {
+					_setAttribute(renderer->sgbAttributes, i, j, pBefore);
+				}
+			}
+			if (attrX < GB_VIDEO_VERTICAL_PIXELS / 8) {
+				for (i = 0; i < GB_VIDEO_HORIZONTAL_PIXELS / 8; ++i) {
+					_setAttribute(renderer->sgbAttributes, i, attrX, pDiv);
+				}
+
+			}
+			for (; j < GB_VIDEO_VERTICAL_PIXELS / 8; ++j) {
+				for (i = 0; i < GB_VIDEO_HORIZONTAL_PIXELS / 8; ++i) {
+					_setAttribute(renderer->sgbAttributes, i, j, pAfter);
+				}
+			}
+		} else {
+			if (attrX > GB_VIDEO_HORIZONTAL_PIXELS / 8) {
+				attrX = GB_VIDEO_HORIZONTAL_PIXELS / 8;
+			}
+			int j;
+			for (j = 0; j < attrX; ++j) {
+				for (i = 0; i < GB_VIDEO_HORIZONTAL_PIXELS / 8; ++i) {
+					_setAttribute(renderer->sgbAttributes, j, i, pBefore);
+				}
+			}
+			if (attrX < GB_VIDEO_HORIZONTAL_PIXELS / 8) {
+				for (i = 0; i < GB_VIDEO_VERTICAL_PIXELS / 8; ++i) {
+					_setAttribute(renderer->sgbAttributes, attrX, i, pDiv);
+				}
+
+			}
+			for (; j < GB_VIDEO_HORIZONTAL_PIXELS / 8; ++j) {
+				for (i = 0; i < GB_VIDEO_VERTICAL_PIXELS / 8; ++i) {
+					_setAttribute(renderer->sgbAttributes, j, i, pAfter);
+				}
+			}
 		}
 		break;
 	case SGB_ATTR_CHR:
