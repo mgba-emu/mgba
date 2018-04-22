@@ -701,7 +701,8 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 	case SGB_ATTR_TRN:
 	case SGB_ATTR_SET:
 		break;
-	case SGB_MLT_REG:
+	case SGB_MLT_REQ:
+		video->p->sgbControllers = video->sgbPacketBuffer[1] & 0x3;
 		return;
 	case SGB_MASK_EN:
 		video->renderer->sgbRenderMode = video->sgbPacketBuffer[1] & 0x3;

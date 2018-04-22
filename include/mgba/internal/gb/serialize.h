@@ -258,7 +258,9 @@ DECL_BITS(GBSerializedMemoryFlags, ActiveRtcReg, 5, 3);
 DECL_BITFIELD(GBSerializedSGBFlags, uint32_t);
 DECL_BITS(GBSerializedSGBFlags, P1Bits, 0, 2);
 DECL_BITS(GBSerializedSGBFlags, RenderMode, 2, 2);
-DECL_BITS(GBSerializedSGBFlags, BufferIndex, 4, 3)
+DECL_BITS(GBSerializedSGBFlags, BufferIndex, 4, 3);
+DECL_BITS(GBSerializedSGBFlags, CurrentController, 7, 2);
+DECL_BITS(GBSerializedSGBFlags, ReqControllers, 9, 2);
 
 #pragma pack(push, 1)
 struct GBSerializedState {

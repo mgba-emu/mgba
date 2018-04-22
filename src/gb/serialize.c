@@ -213,6 +213,8 @@ void GBSGBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	flags = GBSerializedSGBFlagsSetP1Bits(flags, gb->currentSgbBits);
 	flags = GBSerializedSGBFlagsSetRenderMode(flags, gb->video.renderer->sgbRenderMode);
 	flags = GBSerializedSGBFlagsSetBufferIndex(flags, gb->video.sgbBufferIndex);
+	flags = GBSerializedSGBFlagsSetReqControllers(flags, gb->sgbControllers);
+	flags = GBSerializedSGBFlagsSetCurrentController(flags, gb->sgbCurrentController);
 	STORE_32LE(flags, 0, &state->sgb.flags);
 
 	memcpy(state->sgb.packet, gb->video.sgbPacketBuffer, sizeof(state->sgb.packet));
@@ -244,6 +246,8 @@ void GBSGBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->currentSgbBits = GBSerializedSGBFlagsGetP1Bits(flags);
 	gb->video.renderer->sgbRenderMode = GBSerializedSGBFlagsGetRenderMode(flags);
 	gb->video.sgbBufferIndex = GBSerializedSGBFlagsGetBufferIndex(flags);
+	gb->sgbControllers = GBSerializedSGBFlagsGetReqControllers(flags);
+	gb->sgbCurrentController = GBSerializedSGBFlagsGetCurrentController(flags);
 
 	memcpy(gb->video.sgbPacketBuffer, state->sgb.packet, sizeof(state->sgb.packet));
 	memcpy(gb->sgbPacket, state->sgb.inProgressPacket, sizeof(state->sgb.inProgressPacket));
