@@ -108,6 +108,7 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->winN[1] = (struct WindowN) { .control = { .priority = 1 } };
 	softwareRenderer->objwin = (struct WindowControl) { .priority = 2 };
 	softwareRenderer->winout = (struct WindowControl) { .priority = 3 };
+	softwareRenderer->oamDirty = 1;
 	softwareRenderer->oamMax = 0;
 
 	softwareRenderer->mosaic = 0;
