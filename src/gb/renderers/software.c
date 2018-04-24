@@ -29,8 +29,8 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 
 static void _clearScreen(struct GBVideoSoftwareRenderer* renderer) {
 	size_t sgbOffset = 0;
-	if (renderer->model == GB_MODEL_SGB && renderer->sgbBorders) {
-		sgbOffset = renderer->outputBufferStride * 40 + 48;
+	if (renderer->model == GB_MODEL_SGB) {
+		return;
 	}
 	int y;
 	for (y = 0; y < GB_VIDEO_VERTICAL_PIXELS; ++y) {
