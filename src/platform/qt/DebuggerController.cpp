@@ -32,6 +32,10 @@ void DebuggerController::setController(std::shared_ptr<CoreController> controlle
 		connect(m_gameController.get(), &CoreController::stopping, [this]() {
 			setController(nullptr);
 		});
+		if (m_autoattach) {
+			m_autoattach = false;
+			attach();
+		}
 	}
 }
 
@@ -43,11 +47,12 @@ void DebuggerController::attach() {
 		attachInternal();
 		m_gameController->setDebugger(m_debugger);
 		mDebuggerEnter(m_debugger, DEBUGGER_ENTER_ATTACHED, 0);
+	} else {
+		m_autoattach = true;
 	}
 }
 
 void DebuggerController::detach() {
-	QObject::disconnect(m_autoattach);
 	if (!isAttached()) {
 		return;
 	}
@@ -55,6 +60,8 @@ void DebuggerController::detach() {
 		CoreController::Interrupter interrupter(m_gameController);
 		shutdownInternal();
 		m_gameController->setDebugger(nullptr);
+	} else {
+		m_autoattach = false;
 	}
 }
 
@@ -67,7 +74,7 @@ void DebuggerController::breakInto() {
 }
 
 void DebuggerController::shutdown() {
-	QObject::disconnect(m_autoattach);
+	m_autoattach = false;
 	if (!isAttached()) {
 		return;
 	}

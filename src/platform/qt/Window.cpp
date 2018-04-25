@@ -175,6 +175,9 @@ void Window::argumentsPassed(mArguments* args) {
 	if (args->debuggerType == DEBUGGER_GDB) {
 		if (!m_gdbController) {
 			m_gdbController = new GDBController(this);
+			if (m_controller) {
+				m_gdbController->setController(m_controller);
+			}
 			m_gdbController->listen();
 		}
 	}
