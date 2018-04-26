@@ -60,6 +60,7 @@ VersionInfoProductTextVersion={#AppVer}
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
@@ -147,6 +148,7 @@ Name: "{app}\third-party\"
 
 [CustomMessages]
 english.FileAssoc=Register file associations
+french.FileAssoc=Register file associations
 italian.FileAssoc=Register file associations
 spanish.FileAssoc=Register file associations
 german.FileAssoc=Dateierweiterungen registrieren
@@ -170,6 +172,7 @@ procedure InitializeWizard();
       if ExpandConstant('{#IsRelease}') = 'no' then
         begin
         if ExpandConstant('{language}') = 'english' then noReleaseWarning := 'You are about to install a development build of mGBA.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'french' then noReleaseWarning := 'You are about to install a development build of mGBA.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
         if ExpandConstant('{language}') = 'italian' then noReleaseWarning := 'You are about to install a development build of mGBA.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
         if ExpandConstant('{language}') = 'spanish' then noReleaseWarning := 'You are about to install a development build of mGBA.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
         if ExpandConstant('{language}') = 'german' then noReleaseWarning := 'Sie möchten eine Entwicklerversion von mGBA installieren.' + #13#10#13#10 + 'Entwicklerversionen können bislang noch nicht endeckte Fehler beinhalten. Bitte melden Sie alle Fehler, die Sie finden können, auf der GitHub-Projektseite.';
