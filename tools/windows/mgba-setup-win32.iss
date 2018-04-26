@@ -2,7 +2,7 @@
 ;\tools\windows\ to the directory that contains the win32 distribution files!
 
 ;Set CurrentReleaseVersion to the number of the latest stable mGBA build.
-#define CurrentReleaseVersion = '0.6.1'
+#define CurrentReleaseVersion = '0.6.3'
 
 #define VerMajor
 #define VerMinor
