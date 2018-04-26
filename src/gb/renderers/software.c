@@ -135,6 +135,30 @@ static void _parseAttrBlock(struct GBVideoSoftwareRenderer* renderer, int start)
 	}
 }
 
+static void _parseAttrLine(struct GBVideoSoftwareRenderer* renderer, int start) {
+	uint8_t byte = renderer->sgbPacket[start];
+	unsigned line = byte & 0x1F;
+	int pal = (byte >> 5) & 3;
+
+	if (byte & 0x80) {
+		if (line > GB_VIDEO_VERTICAL_PIXELS / 8) {
+			return;
+		}
+		int x;
+		for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS / 8; ++x) {
+			_setAttribute(renderer->d.sgbAttributes, x, line, pal);
+		}
+	} else {
+		if (line > GB_VIDEO_HORIZONTAL_PIXELS / 8) {
+			return;
+		}
+		int y;
+		for (y = 0; y < GB_VIDEO_VERTICAL_PIXELS / 8; ++y) {
+			_setAttribute(renderer->d.sgbAttributes, line, y, pal);
+		}
+	}
+}
+
 static bool _inWindow(struct GBVideoSoftwareRenderer* renderer) {
 	return GBRegisterLCDCIsWindow(renderer->lcdc) && GB_VIDEO_HORIZONTAL_PIXELS + 7 > renderer->wx;
 }
@@ -285,6 +309,13 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 		i = 2;
 		for (; i < (softwareRenderer->sgbCommandHeader & 7) << 4 && sets; i += 6, --sets) {
 			_parseAttrBlock(softwareRenderer, i);
+		}
+		break;
+	case SGB_ATTR_LIN:
+		sets = softwareRenderer->sgbPacket[1];
+		i = 2;
+		for (; i < (softwareRenderer->sgbCommandHeader & 7) << 4 && sets; ++i, --sets) {
+			_parseAttrLine(softwareRenderer, i);
 		}
 		break;
 	case SGB_ATTR_DIV:

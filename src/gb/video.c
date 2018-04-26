@@ -694,6 +694,7 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 	case SGB_ATTR_BLK:
 	case SGB_ATTR_DIV:
 	case SGB_ATTR_CHR:
+	case SGB_ATTR_LIN:
 	case SGB_PAL_TRN:
 	case SGB_ATRC_EN:
 	case SGB_CHR_TRN:
