@@ -102,6 +102,7 @@ set(SOURCE_FILES
 	ObjView.cpp
 	OverrideView.cpp
 	PaletteView.cpp
+	PlacementControl.cpp
 	PrinterView.cpp
 	RegisterView.cpp
 	ROMInfo.cpp
@@ -135,6 +136,7 @@ set(UI_FILES
 	ObjView.ui
 	OverrideView.ui
 	PaletteView.ui
+	PlacementControl.ui
 	PrinterView.ui
 	ROMInfo.ui
 	SensorView.ui
