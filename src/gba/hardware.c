@@ -167,7 +167,6 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 		if ((hw->pinState & 5) == 1) {
 			hw->rtc.transferStep = 1;
 		}
-		_outputPins(hw, 1);
 		break;
 	case 1:
 		if ((hw->pinState & 5) == 5) {
@@ -175,7 +174,6 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 		} else {
 			hw->rtc.transferStep = 0;
 		}
-		_outputPins(hw, 5);
 		break;
 	case 2:
 		if (!(hw->pinState & 1)) {
