@@ -1,6 +1,7 @@
 0.6.4:
 Bugfixes:
  - GBA Video: Mark OAM dirty on reset (fixes mgba.io/i/1062)
+ - GBA Hardware: Fix RTC overriding light sensor (fixes mgba.io/i/1069)
 
 0.6.3: (2017-04-14)
 Bugfixes:
