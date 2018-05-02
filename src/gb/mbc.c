@@ -32,6 +32,7 @@ static void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value);
 
 static uint8_t _GBMBC2Read(struct GBMemory*, uint16_t address);
+static uint8_t _GBMBC6Read(struct GBMemory*, uint16_t address);
 static uint8_t _GBMBC7Read(struct GBMemory*, uint16_t address);
 static void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value);
 
@@ -112,6 +113,22 @@ void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 	}
 	gb->memory.sramBank = &gb->memory.sram[bankStart];
 	gb->memory.sramCurrentBank = bank;
+}
+
+void GBMBCSwitchSramHalfBank(struct GB* gb, int half, int bank) {
+	size_t bankStart = bank * GB_SIZE_EXTERNAL_RAM_HALFBANK;
+	if (bankStart + GB_SIZE_EXTERNAL_RAM_HALFBANK > gb->sramSize) {
+		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid RAM bank: %0X", bank);
+		bankStart &= (gb->sramSize - 1);
+		bank = bankStart / GB_SIZE_EXTERNAL_RAM_HALFBANK;
+	}
+	if (!half) {
+		gb->memory.sramBank = &gb->memory.sram[bankStart];
+		gb->memory.sramCurrentBank = bank;
+	} else {
+		gb->memory.mbcState.mbc6.sramBank1 = &gb->memory.sram[bankStart];
+		gb->memory.mbcState.mbc6.currentSramBank1 = bank;
+	}
 }
 
 void GBMBCInit(struct GB* gb) {
@@ -230,6 +247,7 @@ void GBMBCInit(struct GB* gb) {
 	case GB_MBC6:
 		mLOG(GB_MBC, WARN, "unimplemented MBC: MBC6");
 		gb->memory.mbcWrite = _GBMBC6;
+		gb->memory.mbcRead = _GBMBC6Read;
 		break;
 	case GB_MBC7:
 		gb->memory.mbcWrite = _GBMBC7;
@@ -531,16 +549,15 @@ void _GBMBC5(struct GB* gb, uint16_t address, uint8_t value) {
 
 void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 	struct GBMemory* memory = &gb->memory;
-	int bank = value & 0x7F;
+	int bank = value;
 	switch (address >> 10) {
 	case 0:
 		switch (value) {
 		case 0:
-			memory->sramAccess = false;
+			memory->mbcState.mbc6.sramAccess = false;
 			break;
 		case 0xA:
-			memory->sramAccess = true;
-			GBMBCSwitchSramBank(gb, memory->sramCurrentBank);
+			memory->mbcState.mbc6.sramAccess = true;
 			break;
 		default:
 			// TODO
@@ -548,16 +565,53 @@ void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 			break;
 		}
 		break;
+	case 0x1:
+		GBMBCSwitchSramHalfBank(gb, 0, bank);
+		break;
+	case 0x2:
+		GBMBCSwitchSramHalfBank(gb, 1, bank);
+		break;
+	case 0x8:
 	case 0x9:
 		GBMBCSwitchHalfBank(gb, 0, bank);
 		break;
+	case 0xC:
 	case 0xD:
 		GBMBCSwitchHalfBank(gb, 1, bank);
+		break;
+	case 0x28:
+	case 0x29:
+	case 0x2A:
+	case 0x2B:
+		if (memory->mbcState.mbc6.sramAccess) {
+			memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)] = value;
+		}
+		break;
+	case 0x2C:
+	case 0x2D:
+	case 0x2E:
+	case 0x2F:
+		if (memory->mbcState.mbc6.sramAccess) {
+			memory->mbcState.mbc6.sramBank1[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)] = value;
+		}
 		break;
 	default:
 		mLOG(GB_MBC, STUB, "MBC6 unknown address: %04X:%02X", address, value);
 		break;
 	}
+}
+
+uint8_t _GBMBC6Read(struct GBMemory* memory, uint16_t address) {
+	if (!memory->mbcState.mbc6.sramAccess) {
+		return 0xFF;
+	}
+	switch (address >> 12) {
+	case 0xA:
+		return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)];
+	case 0xB:
+		return memory->mbcState.mbc6.sramBank1[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)];
+	}
+	return 0xFF;
 }
 
 void _GBMBC7(struct GB* gb, uint16_t address, uint8_t value) {

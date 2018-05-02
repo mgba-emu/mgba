@@ -39,7 +39,7 @@ protected:
 	std::shared_ptr<CoreController> m_gameController;
 
 private:
-	QMetaObject::Connection m_autoattach;
+	bool m_autoattach = false;
 };
 
 }

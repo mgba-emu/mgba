@@ -113,6 +113,7 @@ void GBVideoReset(struct GBVideo* video) {
 		video->renderer->sgbAttributes = malloc(90 * 45);
 		memset(video->renderer->sgbAttributes, 0, 90 * 45);
 		video->sgbCommandHeader = 0;
+		video->sgbBufferIndex = 0;
 	}
 
 	video->palette[0] = video->dmgPalette[0];
@@ -580,6 +581,7 @@ void GBVideoDisableCGB(struct GBVideo* video) {
 void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 	int i;
 	if (!(video->sgbCommandHeader & 7)) {
+		video->sgbBufferIndex = 0;
 		if ((data[0] >> 3) > SGB_OBJ_TRN) {
 			video->sgbCommandHeader = 0;
 			return;
@@ -587,20 +589,25 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->sgbCommandHeader = data[0];
 	}
 	--video->sgbCommandHeader;
+	memcpy(&video->sgbPacketBuffer[video->sgbBufferIndex << 4], data, 16);
+	++video->sgbBufferIndex;
+	if (video->sgbCommandHeader & 7) {
+		return;
+	}
 	switch (video->sgbCommandHeader >> 3) {
 	case SGB_PAL01:
-		video->palette[0] = data[1] | (data[2] << 8);
-		video->palette[1] = data[3] | (data[4] << 8);
-		video->palette[2] = data[5] | (data[6] << 8);
-		video->palette[3] = data[7] | (data[8] << 8);
+		video->palette[0] = video->sgbPacketBuffer[1] | (video->sgbPacketBuffer[2] << 8);
+		video->palette[1] = video->sgbPacketBuffer[3] | (video->sgbPacketBuffer[4] << 8);
+		video->palette[2] = video->sgbPacketBuffer[5] | (video->sgbPacketBuffer[6] << 8);
+		video->palette[3] = video->sgbPacketBuffer[7] | (video->sgbPacketBuffer[8] << 8);
 
-		video->palette[4] = data[1] | (data[2] << 8);
-		video->palette[5] = data[9] | (data[10] << 8);
-		video->palette[6] = data[11] | (data[12] << 8);
-		video->palette[7] = data[13] | (data[14] << 8);
+		video->palette[4] = video->sgbPacketBuffer[1] | (video->sgbPacketBuffer[2] << 8);
+		video->palette[5] = video->sgbPacketBuffer[9] | (video->sgbPacketBuffer[10] << 8);
+		video->palette[6] = video->sgbPacketBuffer[11] | (video->sgbPacketBuffer[12] << 8);
+		video->palette[7] = video->sgbPacketBuffer[13] | (video->sgbPacketBuffer[14] << 8);
 
-		video->palette[8] = data[1] | (data[2] << 8);
-		video->palette[12] = data[1] | (data[2] << 8);
+		video->palette[8] = video->sgbPacketBuffer[1] | (video->sgbPacketBuffer[2] << 8);
+		video->palette[12] = video->sgbPacketBuffer[1] | (video->sgbPacketBuffer[2] << 8);
 
 		video->renderer->writePalette(video->renderer, 0, video->palette[0]);
 		video->renderer->writePalette(video->renderer, 1, video->palette[1]);
@@ -614,13 +621,13 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->renderer->writePalette(video->renderer, 12, video->palette[12]);
 		break;
 	case SGB_PAL23:
-		video->palette[9] = data[3] | (data[4] << 8);
-		video->palette[10] = data[5] | (data[6] << 8);
-		video->palette[11] = data[7] | (data[8] << 8);
+		video->palette[9] = video->sgbPacketBuffer[3] | (video->sgbPacketBuffer[4] << 8);
+		video->palette[10] = video->sgbPacketBuffer[5] | (video->sgbPacketBuffer[6] << 8);
+		video->palette[11] = video->sgbPacketBuffer[7] | (video->sgbPacketBuffer[8] << 8);
 
-		video->palette[13] = data[9] | (data[10] << 8);
-		video->palette[14] = data[11] | (data[12] << 8);
-		video->palette[15] = data[13] | (data[14] << 8);
+		video->palette[13] = video->sgbPacketBuffer[9] | (video->sgbPacketBuffer[10] << 8);
+		video->palette[14] = video->sgbPacketBuffer[11] | (video->sgbPacketBuffer[12] << 8);
+		video->palette[15] = video->sgbPacketBuffer[13] | (video->sgbPacketBuffer[14] << 8);
 		video->renderer->writePalette(video->renderer, 9, video->palette[9]);
 		video->renderer->writePalette(video->renderer, 10, video->palette[10]);
 		video->renderer->writePalette(video->renderer, 11, video->palette[11]);
@@ -629,18 +636,18 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->renderer->writePalette(video->renderer, 15, video->palette[15]);
 		break;
 	case SGB_PAL03:
-		video->palette[0] = data[1] | (data[2] << 8);
-		video->palette[1] = data[3] | (data[4] << 8);
-		video->palette[2] = data[5] | (data[6] << 8);
-		video->palette[3] = data[7] | (data[8] << 8);
+		video->palette[0] = video->sgbPacketBuffer[1] | (video->sgbPacketBuffer[2] << 8);
+		video->palette[1] = video->sgbPacketBuffer[3] | (video->sgbPacketBuffer[4] << 8);
+		video->palette[2] = video->sgbPacketBuffer[5] | (video->sgbPacketBuffer[6] << 8);
+		video->palette[3] = video->sgbPacketBuffer[7] | (video->sgbPacketBuffer[8] << 8);
 
-		video->palette[4] = data[1] | (data[2] << 8);
-		video->palette[8] = data[1] | (data[2] << 8);
+		video->palette[4] = video->sgbPacketBuffer[1] | (video->sgbPacketBuffer[2] << 8);
+		video->palette[8] = video->sgbPacketBuffer[1] | (video->sgbPacketBuffer[2] << 8);
 
-		video->palette[12] = data[1] | (data[2] << 8);
-		video->palette[13] = data[9] | (data[10] << 8);
-		video->palette[14] = data[11] | (data[12] << 8);
-		video->palette[15] = data[13] | (data[14] << 8);
+		video->palette[12] = video->sgbPacketBuffer[1] | (video->sgbPacketBuffer[2] << 8);
+		video->palette[13] = video->sgbPacketBuffer[9] | (video->sgbPacketBuffer[10] << 8);
+		video->palette[14] = video->sgbPacketBuffer[11] | (video->sgbPacketBuffer[12] << 8);
+		video->palette[15] = video->sgbPacketBuffer[13] | (video->sgbPacketBuffer[14] << 8);
 		video->renderer->writePalette(video->renderer, 0, video->palette[0]);
 		video->renderer->writePalette(video->renderer, 1, video->palette[1]);
 		video->renderer->writePalette(video->renderer, 2, video->palette[2]);
@@ -653,13 +660,13 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		video->renderer->writePalette(video->renderer, 15, video->palette[15]);
 		break;
 	case SGB_PAL12:
-		video->palette[5] = data[3] | (data[4] << 8);
-		video->palette[6] = data[5] | (data[6] << 8);
-		video->palette[7] = data[7] | (data[8] << 8);
+		video->palette[5] = video->sgbPacketBuffer[3] | (video->sgbPacketBuffer[4] << 8);
+		video->palette[6] = video->sgbPacketBuffer[5] | (video->sgbPacketBuffer[6] << 8);
+		video->palette[7] = video->sgbPacketBuffer[7] | (video->sgbPacketBuffer[8] << 8);
 
-		video->palette[9] = data[9] | (data[10] << 8);
-		video->palette[10] = data[11] | (data[12] << 8);
-		video->palette[11] = data[13] | (data[14] << 8);
+		video->palette[9] = video->sgbPacketBuffer[9] | (video->sgbPacketBuffer[10] << 8);
+		video->palette[10] = video->sgbPacketBuffer[11] | (video->sgbPacketBuffer[12] << 8);
+		video->palette[11] = video->sgbPacketBuffer[13] | (video->sgbPacketBuffer[14] << 8);
 		video->renderer->writePalette(video->renderer, 5, video->palette[5]);
 		video->renderer->writePalette(video->renderer, 6, video->palette[6]);
 		video->renderer->writePalette(video->renderer, 7, video->palette[7]);
@@ -669,7 +676,7 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		break;
 	case SGB_PAL_SET:
 		for (i = 0; i < 4; ++i) {
-			uint16_t entry = (data[2 + (i * 2)] << 8) | data[1 + (i * 2)];
+			uint16_t entry = (video->sgbPacketBuffer[2 + (i * 2)] << 8) | video->sgbPacketBuffer[1 + (i * 2)];
 			if (entry >= 0x200) {
 				mLOG(GB, STUB, "Unimplemented SGB palette overflow: %03X", entry);
 				continue;
@@ -685,7 +692,9 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 		}
 		break;
 	case SGB_ATTR_BLK:
+	case SGB_ATTR_DIV:
 	case SGB_ATTR_CHR:
+	case SGB_ATTR_LIN:
 	case SGB_PAL_TRN:
 	case SGB_ATRC_EN:
 	case SGB_CHR_TRN:
@@ -693,16 +702,18 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 	case SGB_ATTR_TRN:
 	case SGB_ATTR_SET:
 		break;
-	case SGB_MLT_REG:
+	case SGB_MLT_REQ:
+		video->p->sgbControllers = video->sgbPacketBuffer[1] & 0x3;
+		video->p->sgbCurrentController = 0;
 		return;
 	case SGB_MASK_EN:
-		video->renderer->sgbRenderMode = data[1] & 0x3;
+		video->renderer->sgbRenderMode = video->sgbPacketBuffer[1] & 0x3;
 		break;
 	default:
-		mLOG(GB, STUB, "Unimplemented SGB command: %02X", data[0] >> 3);
+		mLOG(GB, STUB, "Unimplemented SGB command: %02X", video->sgbPacketBuffer[0] >> 3);
 		return;
 	}
-	video->renderer->writeSGBPacket(video->renderer, data);
+	video->renderer->writeSGBPacket(video->renderer, video->sgbPacketBuffer);
 }
 
 static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model, bool borders) {

@@ -281,7 +281,9 @@ static void _GBCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 	struct GB* gb = core->board;
 	gb->stream = stream;
 	if (stream && stream->videoDimensionsChanged) {
-		stream->videoDimensionsChanged(stream, GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
+		unsigned width, height;
+		core->desiredVideoDimensions(core, &width, &height);
+		stream->videoDimensionsChanged(stream, width, height);
 	}
 }
 
@@ -789,13 +791,17 @@ static bool _GBCoreSavedataRestore(struct mCore* core, const void* sram, size_t 
 
 static size_t _GBCoreListVideoLayers(const struct mCore* core, const struct mCoreChannelInfo** info) {
 	UNUSED(core);
-	*info = _GBVideoLayers;
+	if (info) {
+		*info = _GBVideoLayers;
+	}
 	return sizeof(_GBVideoLayers) / sizeof(*_GBVideoLayers);
 }
 
 static size_t _GBCoreListAudioChannels(const struct mCore* core, const struct mCoreChannelInfo** info) {
 	UNUSED(core);
-	*info = _GBAudioChannels;
+	if (info) {
+		*info = _GBAudioChannels;
+	}
 	return sizeof(_GBAudioChannels) / sizeof(*_GBAudioChannels);
 }
 
@@ -827,6 +833,26 @@ static void _GBCoreEnableAudioChannel(struct mCore* core, size_t id, bool enable
 		break;
 	default:
 		break;
+	}
+}
+
+static void _GBCoreAdjustVideoLayer(struct mCore* core, size_t id, int32_t x, int32_t y) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	switch (id) {
+	case 0:
+		gbcore->renderer.offsetScx = x;
+		gbcore->renderer.offsetScy = y;
+		break;
+	case 1:
+		gbcore->renderer.offsetWx = x;
+		gbcore->renderer.offsetWy = y;
+		break;
+	case 2:
+		gbcore->renderer.objOffsetX = x;
+		gbcore->renderer.objOffsetY = y;
+		break;
+	default:
+		return;
 	}
 }
 
@@ -932,6 +958,7 @@ struct mCore* GBCoreCreate(void) {
 	core->listAudioChannels = _GBCoreListAudioChannels;
 	core->enableVideoLayer = _GBCoreEnableVideoLayer;
 	core->enableAudioChannel = _GBCoreEnableAudioChannel;
+	core->adjustVideoLayer = _GBCoreAdjustVideoLayer;
 #ifndef MINIMAL_CORE
 	core->startVideoLog = _GBCoreStartVideoLog;
 	core->endVideoLog = _GBCoreEndVideoLog;

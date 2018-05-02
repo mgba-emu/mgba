@@ -30,6 +30,7 @@ Bugfixes:
  - GB Timer: Minor accuracy improvements
  - GB Audio: Clock frame events on DIV
  - GBA Timer: Fix timers sometimes being late (fixes mgba.io/i/1012)
+ - GBA Hardware: Fix RTC overriding light sensor (fixes mgba.io/i/1069)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
@@ -49,6 +50,13 @@ Misc:
  - GBA Memory: 64 MiB GBA Video cartridge support
  - PSP2: Use system enter key by default
  - 3DS: Remove deprecated CSND interface
+ - Qt: Options to mess around with layer placement
+
+0.6.3: (2017-04-14)
+Bugfixes:
+ - GB Audio: Revert unsigned audio changes
+ - GB Video: Fix bad merge (fixes mgba.io/i/1040)
+ - GBA Video: Fix OBJ blending regression (fixes mgba.io/i/1037)
 
 0.6.2: (2017-04-03)
 Bugfixes:

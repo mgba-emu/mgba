@@ -805,7 +805,9 @@ void GBAFrameEnded(struct GBA* gba) {
 		size_t i;
 		for (i = 0; i < mCheatSetsSize(&device->cheats); ++i) {
 			struct GBACheatSet* cheats = (struct GBACheatSet*) *mCheatSetsGetPointer(&device->cheats, i);
-			mCheatRefresh(device, &cheats->d);
+			if (!cheats->hook) {
+				mCheatRefresh(device, &cheats->d);
+			}
 		}
 	}
 

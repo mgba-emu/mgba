@@ -73,9 +73,20 @@ static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
 		cpu->memory.cpuLoad8 = GBFastLoad8;
-		cpu->memory.activeRegion = memory->romBank;
-		cpu->memory.activeRegionEnd = GB_BASE_VRAM;
-		cpu->memory.activeMask = GB_SIZE_CART_BANK0 - 1;
+		if (gb->memory.mbcType != GB_MBC6) {
+			cpu->memory.activeRegion = memory->romBank;
+			cpu->memory.activeRegionEnd = GB_BASE_VRAM;
+			cpu->memory.activeMask = GB_SIZE_CART_BANK0 - 1;
+		} else {
+			cpu->memory.activeMask = GB_SIZE_CART_HALFBANK - 1;
+			if (address & 0x2000) {
+				cpu->memory.activeRegion = memory->mbcState.mbc6.romBank1;
+				cpu->memory.activeRegionEnd = GB_BASE_VRAM;
+			} else {
+				cpu->memory.activeRegion = memory->romBank;
+				cpu->memory.activeRegionEnd = GB_BASE_CART_BANK1 + 0x2000;
+			}
+		}
 		break;
 	default:
 		cpu->memory.cpuLoad8 = GBLoad8;
@@ -168,6 +179,13 @@ void GBMemoryReset(struct GB* gb) {
 	switch (gb->memory.mbcType) {
 	case GB_MBC1:
 		gb->memory.mbcState.mbc1.mode = 0;
+		break;
+	case GB_MBC6:
+		GBMBCSwitchHalfBank(gb, 0, 2);
+		GBMBCSwitchHalfBank(gb, 1, 3);
+		gb->memory.mbcState.mbc6.sramAccess = false;
+		GBMBCSwitchSramHalfBank(gb, 0, 0);
+		GBMBCSwitchSramHalfBank(gb, 0, 1);
 		break;
 	default:
 		memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));

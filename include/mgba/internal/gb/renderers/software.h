@@ -38,16 +38,17 @@ struct GBVideoSoftwareRenderer {
 	GBRegisterLCDC lcdc;
 	enum GBModel model;
 
+	int16_t objOffsetX;
+	int16_t objOffsetY;
+	int16_t offsetScx;
+	int16_t offsetScy;
+	int16_t offsetWx;
+	int16_t offsetWy;
+
 	int sgbTransfer;
-	uint8_t sgbPacket[16];
+	uint8_t sgbPacket[128];
 	uint8_t sgbCommandHeader;
-	int sgbPacketId;
-	int sgbDataSets;
-	uint8_t sgbPartialDataSet[15];
 	bool sgbBorders;
-	int sgbAttrX;
-	int sgbAttrY;
-	int sgbAttrDirection;
 };
 
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer*);
