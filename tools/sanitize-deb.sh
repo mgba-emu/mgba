@@ -17,17 +17,17 @@ adddep() {
 while [ $# -gt 0 ]; do
     DEB=$1
     dpkg-deb -R $DEB deb-temp
-    mv $DEB $DEB~
-    sed -i~ s/mgba-// deb-temp/DEBIAN/control
     PKG=`head -n1 deb-temp/DEBIAN/control | cut -f2 -d ' '`
-    echo Found pacakge $PKG
+    echo Found package $PKG
 
     case $PKG in
-    lib$BINARY)
+    *-base)
+        PKG=lib$BINARY
         rmdep sdl
         rmdep qt
     ;;
-    $BINARY-qt)
+    *-qt)
+        PKG=$BINARY-qt
         rmdep libav
         rmdep libedit
         rmdep libpng
@@ -37,7 +37,8 @@ while [ $# -gt 0 ]; do
         rmdep zlib
         adddep lib$BINARY
     ;;
-    $BINARY-sdl)
+    *-sdl)
+        PKG=$BINARY-sdl
         rmdep libav
         rmdep libedit
         rmdep libpng
@@ -55,10 +56,11 @@ while [ $# -gt 0 ]; do
     sed -i~ "s/,,*/,/g" deb-temp/DEBIAN/control
     sed -i~ "s/,$//g" deb-temp/DEBIAN/control
     sed -i~ "/^[^:]*: $/d" deb-temp/DEBIAN/control
+    sed -i~ "s/^Package: .*$/Package: $PKG/" deb-temp/DEBIAN/control
     rm deb-temp/DEBIAN/control~
     chmod 644 deb-temp/DEBIAN/md5sums
     chown -R root:root deb-temp
-    dpkg-deb -b deb-temp $DEB
+    dpkg-deb -b deb-temp $PKG.deb
     rm -rf deb-temp
     shift
 done
