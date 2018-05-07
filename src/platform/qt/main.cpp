@@ -19,10 +19,16 @@
 
 #ifdef QT_STATIC
 #include <QtPlugin>
-#ifdef _WIN32
+#ifdef Q_OS_WIN
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
 #ifdef BUILD_QT_MULTIMEDIA
 Q_IMPORT_PLUGIN(QWindowsAudioPlugin);
+#endif
+#elif defined(Q_OS_MAC)
+Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin);
+#ifdef BUILD_QT_MULTIMEDIA
+Q_IMPORT_PLUGIN(CoreAudioPlugin);
+Q_IMPORT_PLUGIN(AVFServicePlugin);
 #endif
 #endif
 #endif
