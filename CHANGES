@@ -31,6 +31,7 @@ Bugfixes:
  - GB Audio: Clock frame events on DIV
  - GBA Timer: Fix timers sometimes being late (fixes mgba.io/i/1012)
  - GBA Hardware: Fix RTC overriding light sensor (fixes mgba.io/i/1069)
+ - GBA Savedata: Fix savedata modified time updating when read-only
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
