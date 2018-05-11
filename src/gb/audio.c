@@ -212,7 +212,6 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 		audio->playingCh1 = _resetEnvelope(&audio->ch1.envelope);
 
 		if (audio->playingCh1) {
-			audio->ch1.control.hi = 0;
 			_updateSquareSample(&audio->ch1);
 		}
 
@@ -227,8 +226,7 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 				--audio->ch1.control.length;
 			}
 		}
-		mTimingDeschedule(audio->timing, &audio->ch1Event);
-		if (audio->playingCh1 && audio->ch1.envelope.dead != 2) {
+		if (audio->playingCh1 && audio->ch1.envelope.dead != 2 && !mTimingIsScheduled(audio->timing, &audio->ch1Event)) {
 			mTimingSchedule(audio->timing, &audio->ch1Event, 0);
 		}
 	}
@@ -270,7 +268,6 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 		audio->playingCh2 = _resetEnvelope(&audio->ch2.envelope);
 
 		if (audio->playingCh2) {
-			audio->ch2.control.hi = 0;
 			_updateSquareSample(&audio->ch2);
 		}
 
@@ -280,8 +277,7 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 				--audio->ch2.control.length;
 			}
 		}
-		mTimingDeschedule(audio->timing, &audio->ch2Event);
-		if (audio->playingCh2 && audio->ch2.envelope.dead != 2) {
+		if (audio->playingCh2 && audio->ch2.envelope.dead != 2 && !mTimingIsScheduled(audio->timing, &audio->ch2Event)) {
 			mTimingSchedule(audio->timing, &audio->ch2Event, 0);
 		}
 	}
@@ -397,8 +393,7 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 				--audio->ch4.length;
 			}
 		}
-		mTimingDeschedule(audio->timing, &audio->ch4Event);
-		if (audio->playingCh4 && audio->ch4.envelope.dead != 2) {
+		if (audio->playingCh4 && audio->ch4.envelope.dead != 2 && !mTimingIsScheduled(audio->timing, &audio->ch4Event)) {
 			mTimingSchedule(audio->timing, &audio->ch4Event, 0);
 		}
 	}
@@ -574,7 +569,7 @@ void GBAudioUpdateFrame(struct GBAudio* audio, struct mTiming* timing) {
 		if (audio->playingCh4 && !audio->ch4.envelope.dead) {
 			--audio->ch4.envelope.nextStep;
 			if (audio->ch4.envelope.nextStep == 0) {
-				int8_t sample = (audio->ch4.sample >> 7) * 0x8;
+				int8_t sample = (audio->ch4.sample > 0) * 0x8;
 				_updateEnvelope(&audio->ch4.envelope);
 				if (audio->ch4.envelope.dead == 2) {
 					mTimingDeschedule(timing, &audio->ch4Event);
