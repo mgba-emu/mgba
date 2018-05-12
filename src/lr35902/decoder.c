@@ -409,7 +409,7 @@ size_t LR35902Decode(uint8_t opcode, struct LR35902InstructionInfo* info) {
 }
 
 #define ADVANCE(AMOUNT) \
-	if (AMOUNT > blen) { \
+	if (AMOUNT >= blen) { \
 		buffer[blen - 1] = '\0'; \
 		return total; \
 	} \

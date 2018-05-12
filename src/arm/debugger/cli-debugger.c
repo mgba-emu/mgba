@@ -93,7 +93,7 @@ static void _disassembleMode(struct CLIDebugger* debugger, struct CLIDebugVector
 
 static inline uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
 	struct CLIDebuggerBackend* be = debugger->backend;
-	char disassembly[48];
+	char disassembly[64];
 	struct ARMInstructionInfo info;
 	be->printf(be, "%08X:  ", address);
 	if (mode == MODE_ARM) {
