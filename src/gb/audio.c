@@ -627,7 +627,7 @@ void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
 		}
 	}
 
-	int dcOffset = audio->style == GB_AUDIO_GBA ? 0 : 0x1FC;
+	int dcOffset = audio->style == GB_AUDIO_GBA ? 0 : 0x20A;
 	*left = (sampleLeft - dcOffset) * (1 + audio->volumeLeft);
 	*right = (sampleRight - dcOffset) * (1 + audio->volumeRight);
 }
@@ -637,8 +637,8 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	int16_t sampleLeft = 0;
 	int16_t sampleRight = 0;
 	GBAudioSamplePSG(audio, &sampleLeft, &sampleRight);
-	sampleLeft = (sampleLeft * audio->masterVolume) >> 6;
-	sampleRight = (sampleRight * audio->masterVolume) >> 6;
+	sampleLeft = (sampleLeft * audio->masterVolume * 9) >> 7;
+	sampleRight = (sampleRight * audio->masterVolume * 9) >> 7;
 
 	mCoreSyncLockAudio(audio->p->sync);
 	unsigned produced;

@@ -253,7 +253,7 @@ static int _applyBias(struct GBAAudio* audio, int sample) {
 	} else if (sample < 0) {
 		sample = 0;
 	}
-	return ((sample - GBARegisterSOUNDBIASGetBias(audio->soundbias)) * audio->masterVolume) >> 3;
+	return ((sample - GBARegisterSOUNDBIASGetBias(audio->soundbias)) * audio->masterVolume) >> 2;
 }
 
 static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
