@@ -161,6 +161,8 @@ struct GBAudio {
 	struct blip_t* right;
 	int16_t lastLeft;
 	int16_t lastRight;
+	int32_t capLeft;
+	int32_t capRight;
 	int clock;
 	int32_t clockRate;
 

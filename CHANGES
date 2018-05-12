@@ -54,6 +54,7 @@ Misc:
  - Qt: Options to mess around with layer placement
  - GBA Savedata: Remove ability to disable realistic timing
  - Qt: Add load alternate save option
+ - GB Audio: Improved audio quality
 
 0.6.3: (2017-04-14)
 Bugfixes:

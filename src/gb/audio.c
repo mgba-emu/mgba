@@ -140,6 +140,8 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->sampleInterval = 128;
 	audio->lastLeft = 0;
 	audio->lastRight = 0;
+	audio->capLeft = 0;
+	audio->capRight = 0;
 	audio->clock = 0;
 	audio->volumeRight = 0;
 	audio->volumeLeft = 0;
@@ -640,11 +642,17 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 
 	mCoreSyncLockAudio(audio->p->sync);
 	unsigned produced;
+
+	int16_t degradedLeft = sampleLeft - (audio->capLeft >> 16);
+	int16_t degradedRight = sampleRight - (audio->capRight >> 16);
+	audio->capLeft = (sampleLeft << 16) - degradedLeft * 65184;
+	audio->capRight = (sampleRight << 16) - degradedRight * 65184;
+	sampleLeft = degradedLeft;
+	sampleRight = degradedRight;
+
 	if ((size_t) blip_samples_avail(audio->left) < audio->samples) {
 		blip_add_delta(audio->left, audio->clock, sampleLeft - audio->lastLeft);
 		blip_add_delta(audio->right, audio->clock, sampleRight - audio->lastRight);
-		audio->lastLeft = sampleLeft;
-		audio->lastRight = sampleRight;
 		audio->clock += audio->sampleInterval;
 		if (audio->clock >= CLOCKS_PER_BLIP_FRAME) {
 			blip_end_frame(audio->left, CLOCKS_PER_BLIP_FRAME);
@@ -652,6 +660,8 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 			audio->clock -= CLOCKS_PER_BLIP_FRAME;
 		}
 	}
+	audio->lastLeft = sampleLeft;
+	audio->lastRight = sampleRight;
 	produced = blip_samples_avail(audio->left);
 	if (audio->p->stream && audio->p->stream->postAudioFrame) {
 		audio->p->stream->postAudioFrame(audio->p->stream, sampleLeft, sampleRight);
@@ -1020,11 +1030,15 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 
 void GBAudioSerialize(const struct GBAudio* audio, struct GBSerializedState* state) {
 	GBAudioPSGSerialize(audio, &state->audio.psg, &state->audio.flags);
+	STORE_32LE(audio->capLeft, 0, &state->audio.capLeft);
+	STORE_32LE(audio->capRight, 0, &state->audio.capRight);
 	STORE_32LE(audio->sampleEvent.when - mTimingCurrentTime(audio->timing), 0, &state->audio.nextSample);
 }
 
 void GBAudioDeserialize(struct GBAudio* audio, const struct GBSerializedState* state) {
 	GBAudioPSGDeserialize(audio, &state->audio.psg, &state->audio.flags);
+	LOAD_32LE(audio->capLeft, 0, &state->audio.capLeft);
+	LOAD_32LE(audio->capRight, 0, &state->audio.capRight);
 	uint32_t when;
 	LOAD_32LE(when, 0, &state->audio.nextSample);
 	mTimingSchedule(audio->timing, &audio->sampleEvent, when);
