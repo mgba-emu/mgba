@@ -91,7 +91,7 @@ void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf, bool writeb
 	savedata->vf = vf;
 	savedata->mapMode = MAP_READ;
 	savedata->maskWriteback = writeback;
-	GBASavedataForceType(savedata, type, savedata->realisticTiming);
+	GBASavedataForceType(savedata, type);
 }
 
 void GBASavedataUnmask(struct GBASavedata* savedata) {
@@ -103,7 +103,7 @@ void GBASavedataUnmask(struct GBASavedata* savedata) {
 	GBASavedataDeinit(savedata);
 	savedata->vf = savedata->realVf;
 	savedata->mapMode = MAP_WRITE;
-	GBASavedataForceType(savedata, type, savedata->realisticTiming);
+	GBASavedataForceType(savedata, type);
 	if (savedata->maskWriteback) {
 		GBASavedataLoad(savedata, vf);
 		savedata->maskWriteback = false;
@@ -193,7 +193,7 @@ bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in) {
 	return true;
 }
 
-void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type, bool realisticTiming) {
+void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) {
 	if (savedata->type != SAVEDATA_AUTODETECT) {
 		struct VFile* vf = savedata->vf;
 		GBASavedataDeinit(savedata);
@@ -203,10 +203,10 @@ void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type, 
 	case SAVEDATA_FLASH512:
 	case SAVEDATA_FLASH1M:
 		savedata->type = type;
-		GBASavedataInitFlash(savedata, realisticTiming);
+		GBASavedataInitFlash(savedata);
 		break;
 	case SAVEDATA_EEPROM:
-		GBASavedataInitEEPROM(savedata, realisticTiming);
+		GBASavedataInitEEPROM(savedata);
 		break;
 	case SAVEDATA_SRAM:
 		GBASavedataInitSRAM(savedata);
@@ -219,7 +219,7 @@ void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type, 
 	}
 }
 
-void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming) {
+void GBASavedataInitFlash(struct GBASavedata* savedata) {
 	if (savedata->type == SAVEDATA_AUTODETECT) {
 		savedata->type = SAVEDATA_FLASH512;
 	}
@@ -244,13 +244,12 @@ void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming) {
 	}
 
 	savedata->currentBank = savedata->data;
-	savedata->realisticTiming = realisticTiming;
 	if (end < SIZE_CART_FLASH512) {
 		memset(&savedata->data[end], 0xFF, flashSize - end);
 	}
 }
 
-void GBASavedataInitEEPROM(struct GBASavedata* savedata, bool realisticTiming) {
+void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 	if (savedata->type == SAVEDATA_AUTODETECT) {
 		savedata->type = SAVEDATA_EEPROM;
 	} else {
@@ -271,7 +270,6 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata, bool realisticTiming) {
 		}
 		savedata->data = savedata->vf->map(savedata->vf, eepromSize, savedata->mapMode);
 	}
-	savedata->realisticTiming = realisticTiming;
 	if (end < SIZE_CART_EEPROM512) {
 		memset(&savedata->data[end], 0xFF, SIZE_CART_EEPROM512 - end);
 	}
@@ -327,10 +325,8 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 			savedata->dirty |= SAVEDATA_DIRT_NEW;
 			savedata->currentBank[address] = value;
 			savedata->command = FLASH_COMMAND_NONE;
-			if (savedata->realisticTiming) {
-				mTimingDeschedule(savedata->timing, &savedata->dust);
-				mTimingSchedule(savedata->timing, &savedata->dust, FLASH_PROGRAM_CYCLES);
-			}
+			mTimingDeschedule(savedata->timing, &savedata->dust);
+			mTimingSchedule(savedata->timing, &savedata->dust, FLASH_PROGRAM_CYCLES);
 			break;
 		case FLASH_COMMAND_SWITCH_BANK:
 			if (address == 0 && value < 2) {
@@ -452,10 +448,8 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 			current |= (value & 0x1) << (0x7 - (savedata->writeAddress & 0x7));
 			savedata->dirty |= SAVEDATA_DIRT_NEW;
 			savedata->data[savedata->writeAddress >> 3] = current;
-			if (savedata->realisticTiming) {
-				mTimingDeschedule(savedata->timing, &savedata->dust);
-				mTimingSchedule(savedata->timing, &savedata->dust, EEPROM_SETTLE_CYCLES);
-			}
+			mTimingDeschedule(savedata->timing, &savedata->dust);
+			mTimingSchedule(savedata->timing, &savedata->dust, EEPROM_SETTLE_CYCLES);
 			++savedata->writeAddress;
 		} else {
 			mLOG(GBA_SAVE, GAME_ERROR, "Writing beyond end of EEPROM: %08X", (savedata->writeAddress >> 3));
@@ -478,7 +472,7 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 
 uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 	if (savedata->command != EEPROM_COMMAND_READ) {
-		if (!savedata->realisticTiming || !mTimingIsScheduled(savedata->timing, &savedata->dust)) {
+		if (!mTimingIsScheduled(savedata->timing, &savedata->dust)) {
 			return 1;
 		} else {
 			return 0;
@@ -516,12 +510,14 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
 		if (savedata->maskWriteback) {
 			GBASavedataUnmask(savedata);
 		}
-		size_t size = GBASavedataSize(savedata);
-		savedata->dirty = 0;
-		if (savedata->data && savedata->vf->sync(savedata->vf, savedata->data, size)) {
-			mLOG(GBA_SAVE, INFO, "Savedata synced");
-		} else {
-			mLOG(GBA_SAVE, INFO, "Savedata failed to sync!");
+		if (savedata->mapMode & MAP_WRITE) {
+			size_t size = GBASavedataSize(savedata);
+			savedata->dirty = 0;
+			if (savedata->data && savedata->vf->sync(savedata->vf, savedata->data, size)) {
+				mLOG(GBA_SAVE, INFO, "Savedata synced");
+			} else {
+				mLOG(GBA_SAVE, INFO, "Savedata failed to sync!");
+			}
 		}
 	}
 }
@@ -549,7 +545,7 @@ void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializ
 void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerializedState* state) {
 	if (savedata->type != state->savedata.type) {
 		mLOG(GBA_SAVE, DEBUG, "Switching save types");
-		GBASavedataForceType(savedata, state->savedata.type, savedata->realisticTiming);
+		GBASavedataForceType(savedata, state->savedata.type);
 	}
 	savedata->command = state->savedata.command;
 	GBASerializedSavedataFlags flags = state->savedata.flags;
@@ -607,9 +603,7 @@ void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart) {
 		mLOG(GBA_SAVE, DEBUG, "Performing unknown sector-size erase at 0x%04x", sectorStart);
 	}
 	savedata->settling = sectorStart >> 12;
-	if (savedata->realisticTiming) {
-		mTimingDeschedule(savedata->timing, &savedata->dust);
-		mTimingSchedule(savedata->timing, &savedata->dust, FLASH_ERASE_CYCLES);
-	}
+	mTimingDeschedule(savedata->timing, &savedata->dust);
+	mTimingSchedule(savedata->timing, &savedata->dust, FLASH_ERASE_CYCLES);
 	memset(&savedata->currentBank[sectorStart & ~(size - 1)], 0xFF, size);
 }

@@ -193,9 +193,11 @@ typedef intptr_t ssize_t;
 #ifdef _MSC_VER
 #define ATTRIBUTE_UNUSED
 #define ATTRIBUTE_FORMAT(X, Y, Z)
+#define ATTRIBUTE_NOINLINE
 #else
 #define ATTRIBUTE_UNUSED __attribute__((unused))
 #define ATTRIBUTE_FORMAT(X, Y, Z) __attribute__((format(X, Y, Z)))
+#define ATTRIBUTE_NOINLINE __attribute__((noinline))
 #endif
 
 #define DECL_BITFIELD(NAME, TYPE) typedef TYPE NAME

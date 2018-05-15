@@ -87,7 +87,6 @@ struct GBASavedata {
 	uint8_t* currentBank;
 
 	struct mTiming* timing;
-	bool realisticTiming;
 	unsigned settling;
 	struct mTimingEvent dust;
 
@@ -105,10 +104,10 @@ void GBASavedataUnmask(struct GBASavedata* savedata);
 size_t GBASavedataSize(const struct GBASavedata* savedata);
 bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out);
 bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in);
-void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type, bool realisticTiming);
+void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type);
 
-void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming);
-void GBASavedataInitEEPROM(struct GBASavedata* savedata, bool realisticTiming);
+void GBASavedataInitFlash(struct GBASavedata* savedata);
+void GBASavedataInitEEPROM(struct GBASavedata* savedata);
 void GBASavedataInitSRAM(struct GBASavedata* savedata);
 
 uint8_t GBASavedataReadFlash(struct GBASavedata* savedata, uint16_t address);
