@@ -98,6 +98,16 @@ set(pngvalid_sources
 set(pngstest_sources
   contrib/libtests/pngstest.c
 )
+if(SWITCH)
+  enable_language(ASM)
+  set(libpng_sources ${libpng_sources}
+    arm/arm_init.c
+    arm/filter_neon_intrinsics.c
+    arm/filter_neon.S
+    )
+  set_source_files_properties(arm/filter_neon.S PROPERTIES COMPILE_FLAGS "${CMAKE_ASM_FLAGS} ${CMAKE_CXX_FLAGS} -x assembler-with-cpp")
+endif()
+
 # SOME NEEDED DEFINITIONS
 
 if(MSVC)

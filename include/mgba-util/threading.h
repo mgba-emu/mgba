@@ -27,10 +27,20 @@ CXX_GUARD_START
 #ifdef _3DS
 // ctrulib already has a type called Thread
 #include <3ds/thread.h>
-#else
+#define THREAD_DEFINED
+#elif defined(SWITCH)
+#include <switch/kernel/thread.h>
+#include <switch/kernel/mutex.h>
+#define THREAD_DEFINED
+#define MUTEX_DEFINED
+#endif
+
+#ifndef THREAD_DEFINED
 typedef void* Thread;
 #endif
+#ifndef MUTEX_DEFINED
 typedef void* Mutex;
+#endif
 typedef void* Condition;
 
 static inline int MutexInit(Mutex* mutex) {
