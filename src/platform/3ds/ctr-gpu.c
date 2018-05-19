@@ -133,7 +133,7 @@ void ctrActivateTexture(const C3D_Tex* texture) {
 	C3D_TexBind(0, activeTexture);
 
 	C3D_TexEnv* env = C3D_GetTexEnv(0);
-	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvInit(env);
 	if (texture->fmt < GPU_LA8) {
 		C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0);
 		C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
@@ -144,11 +144,11 @@ void ctrActivateTexture(const C3D_Tex* texture) {
 		C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
 	}
 	env = C3D_GetTexEnv(1);
-	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvInit(env);
 	C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, 0, 0);
 	C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
 	env = C3D_GetTexEnv(2);
-	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvInit(env);
 	C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, 0, 0);
 	C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
 
@@ -164,14 +164,14 @@ void ctrActivateTexture(const C3D_Tex* texture) {
 
 void ctrTextureMultiply(void) {
 	C3D_TexEnv* env = C3D_GetTexEnv(1);
-	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvInit(env);
 	C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_TEXTURE0, 0);
 	C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
 }
 
 void ctrTextureBias(u32 color) {
 	C3D_TexEnv* env = C3D_GetTexEnv(2);
-	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvInit(env);
 	C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_CONSTANT, 0);
 	C3D_TexEnvFunc(env, C3D_Both, GPU_ADD);
 	C3D_TexEnvColor(env, color);
