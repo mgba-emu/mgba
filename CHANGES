@@ -3,6 +3,7 @@ Bugfixes:
  - GBA Video: Mark OAM dirty on reset (fixes mgba.io/i/1062)
  - GBA Hardware: Fix RTC overriding light sensor (fixes mgba.io/i/1069)
  - GBA Savedata: Fix savedata modified time updating when read-only
+ - GB Video: Fix enabling window when LY > WY (fixes mgba.io/i/409)
 
 0.6.3: (2017-04-14)
 Bugfixes:
