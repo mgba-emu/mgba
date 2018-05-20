@@ -24,10 +24,15 @@ void nxFreeImage(nxImage* image);
 bool nxInitGfx(void);
 void nxDeinitGfx(void);
 
+void nxSetAlphaTest(bool enable);
+
 void nxDrawImage(int x, int y, nxImage* image);
 void nxDrawImageEx(int x, int y, int u, int v, int uw, int vh, int sx, int sy, u8 r, u8 g, u8 b, u8 a, nxImage* image);
 
 void nxStartFrame(void);
 void nxEndFrame(void);
+
+u32 nxGetFrameWidth();
+u32 nxGetFrameHeight();
 
 #endif

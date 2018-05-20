@@ -19,6 +19,8 @@ CXX_GUARD_START
 #include <mgba-util/platform/psp2/threading.h>
 #elif _3DS
 #include <mgba-util/platform/3ds/threading.h>
+#elif SWITCH
+#include <mgba-util/platform/switch/threading.h>
 #else
 #define DISABLE_THREADING
 #endif

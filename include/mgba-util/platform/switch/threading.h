@@ -16,7 +16,10 @@
 #define THREAD_ENTRY void
 typedef ThreadFunc ThreadEntry;
 
-typedef CondVar Condition;
+typedef struct {
+	CondVar condVar;
+	Mutex mutex;
+} Condition;
 
 static inline int MutexInit(Mutex* mutex) {
 	mutexInit(mutex);
@@ -43,37 +46,57 @@ static inline int MutexUnlock(Mutex* mutex) {
 }
 
 static inline int ConditionInit(Condition* cond) {
+	mutexInit(&cond->mutex);
+	condvarInit(&cond->condVar, &cond->mutex);
 	return 0;
 }
 
 static inline int ConditionDeinit(Condition* cond) {
+	UNUSED(cond);
 	return 0;
 }
 
 static inline int ConditionWait(Condition* cond, Mutex* mutex) {
-	cond->mutex = mutex;
-	return condvarWait(cond);
+	int retval;
+
+	condvarInit(&cond->condVar, mutex);
+
+	mutexUnlock(mutex);
+	retval = condvarWait(&cond->condVar);
+
+	mutexLock(mutex);
+
+	return retval;
 }
 
 static inline int ConditionWaitTimed(Condition* cond, Mutex* mutex, int32_t timeoutMs) {
-	cond->mutex = mutex;
-	return condvarWaitTimeout(cond, timeoutMs * 10000000LL);
+	int retval;
+
+	condvarInit(&cond->condVar, mutex);
+
+	mutexUnlock(mutex);
+	retval = condvarWaitTimeout(&cond->condVar, timeoutMs * 10000000LL);
+
+	mutexLock(mutex);
+
+	return retval;
 }
 
 static inline int ConditionWake(Condition* cond) {
-	return condvarWakeOne(cond);
+	return condvarWakeOne(&cond->condVar);
 }
 
 static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context) {
 	if (!entry || !thread) {
 		return 1;
 	}
-	*thread = threadCreate(entry, context, 0x8000, 0x18, 2, true);
-	return !*thread;
+	Result r = threadCreate(thread, entry, context, 0x10000, 0x2B, -2);
+	if(R_FAILED(r)) return 1;
+	return threadStart(thread);
 }
 
 static inline int ThreadJoin(Thread thread) {
-	return threadJoin(thread, U64_MAX);
+	return threadWaitForExit(&thread);
 }
 
 static inline void ThreadSetName(const char* name) {
