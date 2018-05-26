@@ -9,6 +9,7 @@
 #include <QList>
 #include <QMainWindow>
 #include <QTimer>
+#include <QAction>
 
 #include <functional>
 #include <memory>

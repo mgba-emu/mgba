@@ -13,6 +13,7 @@
 #include <QDateTime>
 #include <QKeyEvent>
 #include <QPainter>
+#include <QAction>
 
 #include <mgba/core/serialize.h>
 #include <mgba-util/memory.h>
