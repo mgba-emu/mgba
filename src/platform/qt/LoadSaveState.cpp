@@ -10,6 +10,7 @@
 #include "GamepadButtonEvent.h"
 #include "VFileDevice.h"
 
+#include <QAction>
 #include <QDateTime>
 #include <QKeyEvent>
 #include <QPainter>
