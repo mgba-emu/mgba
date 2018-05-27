@@ -33,6 +33,7 @@ Bugfixes:
  - GBA Hardware: Fix RTC overriding light sensor (fixes mgba.io/i/1069)
  - GBA Savedata: Fix savedata modified time updating when read-only
  - GB Video: Fix enabling window when LY > WY (fixes mgba.io/i/409)
+ - GBA Video: Start timing mid-scanline when skipping BIOS
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)

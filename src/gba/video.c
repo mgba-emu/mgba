@@ -78,16 +78,18 @@ void GBAVideoInit(struct GBAVideo* video) {
 }
 
 void GBAVideoReset(struct GBAVideo* video) {
+	int32_t nextEvent = VIDEO_HDRAW_LENGTH;
 	if (video->p->memory.fullBios) {
 		video->vcount = 0;
 	} else {
-		// TODO: Verify exact scanline hardware
+		// TODO: Verify exact scanline on hardware
 		video->vcount = 0x7E;
+		nextEvent = 170;
 	}
 	video->p->memory.io[REG_VCOUNT >> 1] = video->vcount;
 
 	video->event.callback = _startHblank;
-	mTimingSchedule(&video->p->timing, &video->event, VIDEO_HDRAW_LENGTH);
+	mTimingSchedule(&video->p->timing, &video->event, nextEvent);
 
 	video->frameCounter = 0;
 	video->frameskipCounter = 0;
