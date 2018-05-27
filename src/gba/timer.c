@@ -12,7 +12,7 @@
 #define TIMER_RELOAD_DELAY 0
 #define TIMER_STARTUP_DELAY 2
 
-#define REG_TMCNT_LO(X) (REG_TM0CNT_LO + (X << 2))
+#define REG_TMCNT_LO(X) (REG_TM0CNT_LO + ((X) << 2))
 
 static void GBATimerIrq(struct GBA* gba, int timerId) {
 	struct GBATimer* timer = &gba->timers[timerId];
@@ -48,7 +48,11 @@ static void GBATimerIrq3(struct mTiming* timing, void* context, uint32_t cyclesL
 
 static void GBATimerUpdate(struct GBA* gba, int timerId, uint32_t cyclesLate) {
 	struct GBATimer* timer = &gba->timers[timerId];
-	GBATimerUpdateRegister(gba, timerId, TIMER_RELOAD_DELAY + cyclesLate);
+	if (GBATimerFlagsIsCountUp(timer->flags)) {
+		gba->memory.io[REG_TMCNT_LO(timerId) >> 1] = timer->reload;
+	} else {
+		GBATimerUpdateRegister(gba, timerId, TIMER_RELOAD_DELAY + cyclesLate);
+	}
 
 	if (GBATimerFlagsIsDoIrq(timer->flags)) {
 		timer->flags = GBATimerFlagsFillIrqPending(timer->flags);
@@ -70,8 +74,8 @@ static void GBATimerUpdate(struct GBA* gba, int timerId, uint32_t cyclesLate) {
 	if (timerId < 3) {
 		struct GBATimer* nextTimer = &gba->timers[timerId + 1];
 		if (GBATimerFlagsIsCountUp(nextTimer->flags)) { // TODO: Does this increment while disabled?
-			++gba->memory.io[(REG_TM1CNT_LO >> 1) + (timerId << 1)];
-			if (!gba->memory.io[(REG_TM1CNT_LO >> 1) + (timerId << 1)] && GBATimerFlagsIsEnable(nextTimer->flags)) {
+			++gba->memory.io[REG_TMCNT_LO(timerId + 1) >> 1];
+			if (!gba->memory.io[REG_TMCNT_LO(timerId + 1) >> 1] && GBATimerFlagsIsEnable(nextTimer->flags)) {
 				GBATimerUpdate(gba, timerId + 1, cyclesLate);
 			}
 		}
