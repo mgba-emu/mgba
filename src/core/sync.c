@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/core/sync.h>
 
+#include <mgba/core/blip_buf.h>
+
 static void _changeVideoSync(struct mCoreSync* sync, bool frameOn) {
 	// Make sure the video thread can process events while the GBA thread is paused
 	MutexLock(&sync->videoFrameMutex);
@@ -76,16 +78,20 @@ void mCoreSyncSetVideoSync(struct mCoreSync* sync, bool wait) {
 	_changeVideoSync(sync, wait);
 }
 
-void mCoreSyncProduceAudio(struct mCoreSync* sync, bool wait) {
+bool mCoreSyncProduceAudio(struct mCoreSync* sync, const struct blip_t* buf, size_t samples) {
 	if (!sync) {
-		return;
+		return true;
 	}
 
-	if (sync->audioWait && wait) {
-		// TODO loop properly in event of spurious wakeups
+	size_t produced = blip_samples_avail(buf);
+	size_t producedNew = produced;
+	while (sync->audioWait && producedNew >= samples) {
 		ConditionWait(&sync->audioRequiredCond, &sync->audioBufferMutex);
+		produced = producedNew;
+		producedNew = blip_samples_avail(buf);
 	}
 	MutexUnlock(&sync->audioBufferMutex);
+	return producedNew != produced;
 }
 
 void mCoreSyncLockAudio(struct mCoreSync* sync) {
