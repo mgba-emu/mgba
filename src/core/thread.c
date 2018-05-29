@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/core/thread.h>
 
+#include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
 #include <mgba-util/patch.h>
@@ -221,6 +222,11 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 			deferred = impl->state;
 			while (impl->state >= THREAD_WAITING && impl->state <= THREAD_MAX_WAITING) {
 				ConditionWait(&impl->stateCond, &impl->stateMutex);
+
+				if (impl->sync.audioWait) {
+					mCoreSyncLockAudio(&impl->sync);
+					mCoreSyncProduceAudio(&impl->sync, core->getAudioChannel(core, 0), core->getAudioBufferSize(core));
+				}
 			}
 		}
 		MutexUnlock(&impl->stateMutex);

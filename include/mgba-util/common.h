@@ -121,13 +121,13 @@ typedef intptr_t ssize_t;
 #define STORE_32LE(SRC, ADDR, ARR) { \
 	uint32_t _addr = (ADDR); \
 	void* _ptr = (ARR); \
-	__asm__("stwbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr)); \
+	__asm__("stwbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr) : "memory"); \
 }
 
 #define STORE_16LE(SRC, ADDR, ARR) { \
 	uint32_t _addr = (ADDR); \
 	void* _ptr = (ARR); \
-	__asm__("sthbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr)); \
+	__asm__("sthbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr) : "memory"); \
 }
 
 #define LOAD_64LE(DEST, ADDR, ARR) { \
@@ -138,12 +138,13 @@ typedef intptr_t ssize_t;
 			uint32_t lo; \
 		}; \
 		uint64_t b64; \
-	} *bswap = (void*) &DEST; \
+	} bswap; \
 	const void* _ptr = (ARR); \
 	__asm__( \
 		"lwbrx %0, %2, %3 \n" \
 		"lwbrx %1, %2, %4 \n" \
-		: "=r"(bswap->lo), "=r"(bswap->hi) : "b"(_ptr), "r"(_addr), "r"(_addr + 4)); \
+		: "=&r"(bswap.lo), "=&r"(bswap.hi) : "b"(_ptr), "r"(_addr), "r"(_addr + 4)) ; \
+	DEST = bswap.b64; \
 }
 
 #define STORE_64LE(SRC, ADDR, ARR) { \
@@ -154,12 +155,12 @@ typedef intptr_t ssize_t;
 			uint32_t lo; \
 		}; \
 		uint64_t b64; \
-	} *bswap = (void*) &SRC; \
+	} bswap = { .b64 = SRC }; \
 	const void* _ptr = (ARR); \
 	__asm__( \
 		"stwbrx %0, %2, %3 \n" \
 		"stwbrx %1, %2, %4 \n" \
-		: : "r"(bswap->hi), "r"(bswap->lo), "b"(_ptr), "r"(_addr), "r"(_addr + 4)); \
+		: : "r"(bswap.hi), "r"(bswap.lo), "b"(_ptr), "r"(_addr), "r"(_addr + 4) : "memory"); \
 }
 
 #elif defined(__llvm__) || (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)

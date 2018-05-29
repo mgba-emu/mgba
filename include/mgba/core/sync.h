@@ -33,7 +33,8 @@ bool mCoreSyncWaitFrameStart(struct mCoreSync* sync);
 void mCoreSyncWaitFrameEnd(struct mCoreSync* sync);
 void mCoreSyncSetVideoSync(struct mCoreSync* sync, bool wait);
 
-void mCoreSyncProduceAudio(struct mCoreSync* sync, bool wait);
+struct blip_t;
+bool mCoreSyncProduceAudio(struct mCoreSync* sync, const struct blip_t*, size_t samples);
 void mCoreSyncLockAudio(struct mCoreSync* sync);
 void mCoreSyncUnlockAudio(struct mCoreSync* sync);
 void mCoreSyncConsumeAudio(struct mCoreSync* sync);
