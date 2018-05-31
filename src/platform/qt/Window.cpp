@@ -138,11 +138,13 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 
 	connect(this, &Window::shutdown, m_logView, &QWidget::hide);
 	connect(&m_fpsTimer, &QTimer::timeout, this, &Window::showFPS);
+	connect(&m_frameTimer, &QTimer::timeout, this, &Window::delimitFrames);
 	connect(&m_focusCheck, &QTimer::timeout, this, &Window::focusCheck);
 	connect(&m_inputController, &InputController::profileLoaded, m_shortcutController, &ShortcutController::loadProfile);
 
 	m_log.setLevels(mLOG_WARN | mLOG_ERROR | mLOG_FATAL);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
+	m_frameTimer.setInterval(FRAME_LIST_INTERVAL);
 	m_focusCheck.setInterval(200);
 
 	m_shortcutController->setConfigController(m_config);
@@ -690,6 +692,7 @@ void Window::gameStarted() {
 	m_hitUnimplementedBiosCall = false;
 	if (m_config->getOption("showFps", "1").toInt()) {
 		m_fpsTimer.start();
+		m_frameTimer.start();
 	}
 	m_focusCheck.start();
 	if (m_display->underMouse()) {
@@ -759,6 +762,7 @@ void Window::gameStopped() {
 	m_audioChannels->clear();
 
 	m_fpsTimer.stop();
+	m_frameTimer.stop();
 	m_focusCheck.stop();
 
 	emit paused(false);
@@ -887,10 +891,19 @@ void Window::mustRestart() {
 }
 
 void Window::recordFrame() {
-	m_frameList.append(QDateTime::currentDateTime());
-	while (m_frameList.count() > FRAME_LIST_SIZE) {
-		m_frameList.removeFirst();
+	if (m_frameList.isEmpty()) {
+		m_frameList.append(1);
+	} else {
+		++m_frameList.back();
 	}
+}
+
+void Window::delimitFrames() {
+	if (m_frameList.size() >= FRAME_LIST_SIZE) {
+		m_frameCounter -= m_frameList.takeAt(0);
+	}
+	m_frameCounter += m_frameList.back();
+	m_frameList.append(0);
 }
 
 void Window::showFPS() {
@@ -898,8 +911,7 @@ void Window::showFPS() {
 		updateTitle();
 		return;
 	}
-	qint64 interval = m_frameList.first().msecsTo(m_frameList.last());
-	float fps = (m_frameList.count() - 1) * 10000.f / interval;
+	float fps = m_frameCounter * 10000.f / (FRAME_LIST_INTERVAL * (m_frameList.size() - 1));
 	fps = round(fps) / 10.f;
 	updateTitle(fps);
 }
@@ -1618,9 +1630,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	showFps->connect([this](const QVariant& value) {
 		if (!value.toInt()) {
 			m_fpsTimer.stop();
+			m_frameTimer.stop();
 			updateTitle();
 		} else if (m_controller) {
 			m_fpsTimer.start();
+			m_frameTimer.start();
 		}
 	}, this);
 
