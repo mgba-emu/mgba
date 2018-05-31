@@ -122,7 +122,7 @@ Damit wird mGBA gebaut und in `/usr/bin` und `/usr/lib` installiert. Installiert
 
 Wenn Du macOS verwendest, sind die einzelnen Schritte etwas anders. Angenommen, dass Du eine Homebrew-Paketverwaltung verwendest, werden folgende Schritte zum installieren der Abhängigkeiten und anschließenden bauen von mGBA empfohlen:
 
-	brew install cmake ffmpeg imagemagick libzip qt5 sdl2 libedit
+	brew install cmake ffmpeg imagemagick libzip qt5 sdl2 libedit pkg-config
 	mkdir build
 	cd build
 	cmake -DCMAKE_PREFIX_PATH='brew --prefix qt5' ..
