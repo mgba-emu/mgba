@@ -996,7 +996,7 @@ if(BUILD_SDL)
 	cpack_add_component(${BINARY_NAME}-sdl GROUP sdl DEPENDS base)
 endif()
 
-cpack_add_component_group($test PARENT_GROUP dev)
+cpack_add_component_group(test PARENT_GROUP dev)
 cpack_add_component(${BINARY_NAME}-perf GROUP test DEPENDS dev)
 cpack_add_component(${BINARY_NAME}-fuzz GROUP test DEPENDS dev)
 cpack_add_component(tbl-fuzz GROUP test DEPENDS dev)
