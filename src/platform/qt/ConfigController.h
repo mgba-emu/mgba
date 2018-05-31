@@ -7,6 +7,7 @@
 
 #include "Override.h"
 
+#include <QAction>
 #include <QMap>
 #include <QObject>
 #include <QSettings>
