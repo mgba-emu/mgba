@@ -12,7 +12,9 @@
 #include <mgba-util/crc32.h>
 
 static const struct GBCartridgeOverride _overrides[] = {
-	// None yet
+	// Pokemon Gold Spaceworld 1997 demo
+	{ 0x232a067d, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } },
+
 	{ 0, 0, 0, { 0 } }
 };
 
