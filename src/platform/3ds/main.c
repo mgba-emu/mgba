@@ -74,6 +74,7 @@ static enum {
 static void* outputBuffer;
 static struct mAVStream stream;
 static int16_t* audioLeft = 0;
+static int16_t* audioRight = 0;
 static size_t audioPos = 0;
 static C3D_Tex outputTexture;
 static ndspWaveBuf dspBuffer[DSP_BUFFERS];
