@@ -17,6 +17,10 @@
 #include <QLibraryInfo>
 #include <QTranslator>
 
+#if defined(BUILD_SDL)
+#include <SDL.h>
+#endif
+
 #ifdef QT_STATIC
 #include <QtPlugin>
 #ifdef Q_OS_WIN
