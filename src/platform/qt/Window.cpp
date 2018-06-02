@@ -270,6 +270,7 @@ QString Window::getFilters() const {
 	QStringList gbFormats{
 		"*.gb",
 		"*.gbc",
+		"*.sgb",
 #if defined(USE_LIBZIP) || defined(USE_ZLIB)
 		"*.zip",
 #endif
