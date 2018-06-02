@@ -672,8 +672,6 @@ void Window::gameStarted() {
 		action->setDisabled(m_controller->platform() != PLATFORM_GBA);
 	}
 #endif
-	multiplayerChanged();
-	updateTitle();
 	QSize size = m_controller->screenDimensions();
 	m_screenWidget->setDimensions(size.width(), size.height());
 	m_config->updateOption("lockIntegerScaling");
@@ -689,6 +687,11 @@ void Window::gameStarted() {
 		menuBar()->hide();
 	}
 #endif
+	m_display->startDrawing(m_controller);
+
+	reloadAudioDriver();
+	multiplayerChanged();
+	updateTitle();
 
 	m_hitUnimplementedBiosCall = false;
 	if (m_config->getOption("showFps", "1").toInt()) {
@@ -731,9 +734,6 @@ void Window::gameStarted() {
 			m_audioChannels->addAction(action);
 		}
 	}
-	m_display->startDrawing(m_controller);
-
-	reloadAudioDriver();
 }
 
 void Window::gameStopped() {
