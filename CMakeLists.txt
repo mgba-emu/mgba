@@ -878,10 +878,6 @@ endif()
 
 if(BUILD_SDL)
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/platform/sdl ${CMAKE_CURRENT_BINARY_DIR}/sdl)
-	# The SDL platform CMakeLists could decide to disable SDL, so check again before adding the define.
-	if(BUILD_SDL)
-		add_definitions(-DBUILD_SDL)
-	endif()
 endif()
 
 if(BUILD_QT)
@@ -936,7 +932,7 @@ if(BUILD_EXAMPLE)
 	target_link_libraries(${BINARY_NAME}-example-server ${BINARY_NAME})
 	set_target_properties(${BINARY_NAME}-example-server PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 
-	if(BUILD_SDL)
+	if(FOUND_SDL)
 		add_executable(${BINARY_NAME}-example-client ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/example/client-server/client.c)
 		target_link_libraries(${BINARY_NAME}-example-client ${BINARY_NAME} ${SDL_LIBRARY} ${SDLMAIN_LIBRARY} ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 		set_target_properties(${BINARY_NAME}-example-client PROPERTIES
@@ -1040,7 +1036,7 @@ if(BUILD_QT)
 	cpack_add_component(${BINARY_NAME}-qt GROUP qt DEPENDS base)
 endif()
 
-if(BUILD_SDL)
+if(FOUND_SDL)
 	cpack_add_component_group(sdl PARENT_GROUP base)
 	cpack_add_component(${BINARY_NAME}-sdl GROUP sdl DEPENDS base)
 endif()
