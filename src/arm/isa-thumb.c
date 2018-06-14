@@ -48,7 +48,7 @@
 	currentCycles += cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16;
 
 #define DEFINE_INSTRUCTION_THUMB(NAME, BODY) \
-	static void _ThumbInstruction ## NAME (struct ARMCore* cpu, uint16_t opcode) {  \
+	static void _ThumbInstruction ## NAME (struct ARMCore* cpu, unsigned opcode) {  \
 		int currentCycles = THUMB_PREFETCH_CYCLES; \
 		BODY; \
 		cpu->cycles += currentCycles; \
