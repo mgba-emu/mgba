@@ -99,6 +99,7 @@ struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void) {
 void LR35902DebuggerInit(void* cpu, struct mDebuggerPlatform* platform) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) platform;
 	debugger->cpu = cpu;
+	debugger->originalMemory = debugger->cpu->memory;
 	LR35902DebugBreakpointListInit(&debugger->breakpoints, 0);
 	LR35902DebugWatchpointListInit(&debugger->watchpoints, 0);
 }
