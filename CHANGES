@@ -6,6 +6,7 @@ Bugfixes:
  - GB Video: Fix enabling window when LY > WY (fixes mgba.io/i/409)
  - PowerPC: Fix several potential crashes (fixes mgba.io/i/1089)
  - Qt: Fix build with Qt 5.11 (fixes mgba.io/i/1094)
+ - GBA Serialize: Fix loading channel 3 volume (fixes mgba.io/i/1107)
 
 0.6.3: (2017-04-14)
 Bugfixes:
