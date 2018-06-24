@@ -437,6 +437,7 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 	}
 	if (GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC]) && !GBRegisterLCDCIsEnable(value)) {
 		// TODO: Fix serialization; this gets internal and visible modes out of sync
+		video->mode = 0;
 		video->stat = GBRegisterSTATSetMode(video->stat, 0);
 		video->p->memory.io[REG_STAT] = video->stat;
 		video->ly = 0;
