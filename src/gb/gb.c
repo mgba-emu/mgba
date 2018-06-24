@@ -644,17 +644,17 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 		} while (gb->cpuBlocked);
 		cpu->nextEvent = nextEvent;
 
-		if (gb->earlyExit) {
-			gb->earlyExit = false;
-			break;
-		}
 		if (cpu->halted) {
 			cpu->cycles = cpu->nextEvent;
 			if (!gb->memory.ie || !gb->memory.ime) {
 				break;
 			}
 		}
+		if (gb->earlyExit) {
+			break;
+		}
 	} while (cpu->cycles >= cpu->nextEvent);
+	gb->earlyExit = false;
 }
 
 void GBSetInterrupts(struct LR35902Core* cpu, bool enable) {
