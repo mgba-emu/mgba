@@ -37,6 +37,7 @@ Bugfixes:
  - Core: Fix audio sync breaking when interrupted
  - Qt: Improve FPS timer stability
  - GBA Serialize: Fix loading channel 3 volume (fixes mgba.io/i/1107)
+ - GBA SIO: Fix unconnected SIOCNT for multi mode (fixes mgba.io/i/1105)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
