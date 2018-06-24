@@ -62,6 +62,7 @@ Misc:
  - Qt: Add load alternate save option
  - GB Audio: Improved audio quality
  - GB, GBA Audio: Increase max audio volume
+ - GB: Fix VRAM/palette locking (fixes mgba.io/i/1109)
 
 0.6.3: (2017-04-14)
 Bugfixes:
