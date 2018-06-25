@@ -355,6 +355,7 @@ void CoreController::start() {
 }
 
 void CoreController::stop() {
+	setSync(false);
 #ifdef USE_DEBUGGERS
 	setDebugger(nullptr);
 #endif
