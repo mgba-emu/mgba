@@ -204,12 +204,12 @@ CoreController::~CoreController() {
 	stop();
 	disconnect();
 
+	mCoreThreadJoin(&m_threadContext);
+
 	if (m_cacheSet) {
 		mCacheSetDeinit(m_cacheSet.get());
 		m_cacheSet.reset();
 	}
-
-	mCoreThreadJoin(&m_threadContext);
 
 	mCoreConfigDeinit(&m_threadContext.core->config);
 	m_threadContext.core->deinit(m_threadContext.core);
