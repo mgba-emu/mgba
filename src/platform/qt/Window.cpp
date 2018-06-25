@@ -737,6 +737,7 @@ void Window::gameStarted() {
 }
 
 void Window::gameStopped() {
+	m_controller.reset();
 #ifdef M_CORE_GBA
 	for (QAction* action : m_gbaActions) {
 		action->setDisabled(false);
@@ -1807,15 +1808,17 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	if (!controller) {
 		return;
 	}
+
+	if (m_controller) {
+		m_controller->stop();
+		QTimer::singleShot(0, this, [this, controller, fname]() {
+			setController(controller, fname);
+		});
+		return;
+	}
 	if (!fname.isEmpty()) {
 		setWindowFilePath(fname);
 		appendMRU(fname);
-	}
-
-	if (m_controller) {
-		m_controller->disconnect(this);
-		m_controller->stop();
-		m_controller.reset();
 	}
 
 	m_controller = std::shared_ptr<CoreController>(controller);
