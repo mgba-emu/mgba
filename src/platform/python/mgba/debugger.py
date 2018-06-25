@@ -3,25 +3,26 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-from ._pylib import ffi, lib
+from ._pylib import ffi, lib  # pylint: disable=no-name-in-module
 from .core import IRunner, ICoreOwner, Core
-import io
 import sys
+
 
 class DebuggerCoreOwner(ICoreOwner):
     def __init__(self, debugger):
         self.debugger = debugger
-        self.wasPaused = False
+        self.was_paused = False
 
     def claim(self):
         if self.debugger.isRunning():
-            self.wasPaused = True
+            self.was_paused = True
             self.debugger.pause()
         return self.debugger._core
 
     def release(self):
-        if self.wasPaused:
+        if self.was_paused:
             self.debugger.unpause()
+
 
 class NativeDebugger(IRunner):
     WATCHPOINT_WRITE = lib.WATCHPOINT_WRITE
@@ -49,37 +50,40 @@ class NativeDebugger(IRunner):
     def unpause(self):
         self._native.state = lib.DEBUGGER_RUNNING
 
-    def isRunning(self):
+    @property
+    def running(self):
         return self._native.state == lib.DEBUGGER_RUNNING
 
-    def isPaused(self):
+    @property
+    def paused(self):
         return self._native.state in (lib.DEBUGGER_PAUSED, lib.DEBUGGER_CUSTOM)
 
-    def useCore(self):
+    def use_core(self):
         return DebuggerCoreOwner(self)
 
-    def setBreakpoint(self, address):
+    def set_breakpoint(self, address):
         if not self._native.platform.setBreakpoint:
             raise RuntimeError("Platform does not support breakpoints")
         self._native.platform.setBreakpoint(self._native.platform, address)
 
-    def clearBreakpoint(self, address):
+    def clear_breakpoint(self, address):
         if not self._native.platform.setBreakpoint:
             raise RuntimeError("Platform does not support breakpoints")
         self._native.platform.clearBreakpoint(self._native.platform, address)
 
-    def setWatchpoint(self, address):
+    def set_watchpoint(self, address):
         if not self._native.platform.setWatchpoint:
             raise RuntimeError("Platform does not support watchpoints")
         self._native.platform.setWatchpoint(self._native.platform, address)
 
-    def clearWatchpoint(self, address):
+    def clear_watchpoint(self, address):
         if not self._native.platform.clearWatchpoint:
             raise RuntimeError("Platform does not support watchpoints")
         self._native.platform.clearWatchpoint(self._native.platform, address)
 
-    def addCallback(self, cb):
-        self._cbs.append(cb)
+    def add_callback(self, callback):
+        self._cbs.append(callback)
+
 
 class CLIBackend(object):
     def __init__(self, backend):
@@ -87,6 +91,7 @@ class CLIBackend(object):
 
     def write(self, string):
         self.backend.printf(string)
+
 
 class CLIDebugger(NativeDebugger):
     def __init__(self, native):
@@ -97,5 +102,5 @@ class CLIDebugger(NativeDebugger):
         message = message.format(*args, **kwargs)
         self._cli.backend.printf(ffi.new("char []", b"%s"), ffi.new("char []", message.encode('utf-8')))
 
-    def installPrint(self):
+    def install_print(self):
         sys.stdout = CLIBackend(self)

@@ -3,8 +3,9 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-from ._pylib import ffi, lib
+from ._pylib import ffi, lib  # pylint: disable=no-name-in-module
 from .core import IRunner, ICoreOwner, Core
+
 
 class ThreadCoreOwner(ICoreOwner):
     def __init__(self, thread):
@@ -19,12 +20,13 @@ class ThreadCoreOwner(ICoreOwner):
     def release(self):
         lib.mCoreThreadContinue(self.thread._native)
 
+
 class Thread(IRunner):
     def __init__(self, native=None):
         if native:
             self._native = native
             self._core = Core(native.core)
-            self._core._wasReset = lib.mCoreThreadHasStarted(self._native)
+            self._core._was_reset = lib.mCoreThreadHasStarted(self._native)
         else:
             self._native = ffi.new("struct mCoreThread*")
 
@@ -34,7 +36,7 @@ class Thread(IRunner):
         self._core = core
         self._native.core = core._core
         lib.mCoreThreadStart(self._native)
-        self._core._wasReset = lib.mCoreThreadHasStarted(self._native)
+        self._core._was_reset = lib.mCoreThreadHasStarted(self._native)
 
     def end(self):
         if not lib.mCoreThreadHasStarted(self._native):
@@ -48,11 +50,13 @@ class Thread(IRunner):
     def unpause(self):
         lib.mCoreThreadUnpause(self._native)
 
-    def isRunning(self):
+    @property
+    def running(self):
         return bool(lib.mCoreThreadIsActive(self._native))
 
-    def isPaused(self):
+    @property
+    def paused(self):
         return bool(lib.mCoreThreadIsPaused(self._native))
 
-    def useCore(self):
+    def use_core(self):
         return ThreadCoreOwner(self)

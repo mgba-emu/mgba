@@ -4,7 +4,7 @@ import mgba.log
 import os.path
 import yaml
 
-mgba.log.installDefault(mgba.log.NullLogger())
+mgba.log.install_default(mgba.log.NullLogger())
 
 def flatten(d):
     l = []
@@ -18,7 +18,7 @@ def flatten(d):
 
 def pytest_generate_tests(metafunc):
     if 'vtest' in metafunc.fixturenames:
-        tests = cinema.test.gatherTests(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'cinema'))
+        tests = cinema.test.gather_tests(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'cinema'))
         testList = flatten(tests)
         params = []
         for test in testList:
@@ -34,9 +34,9 @@ def vtest(request):
     return request.param
 
 def test_video(vtest, pytestconfig):
-    vtest.setUp()
+    vtest.setup()
     if pytestconfig.getoption('--rebaseline'):
-        vtest.generateBaseline()
+        vtest.generate_baseline()
     else:
         try:
             vtest.test()

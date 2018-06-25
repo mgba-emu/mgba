@@ -2,15 +2,16 @@ from PIL.ImageChops import difference
 from PIL.ImageOps import autocontrast
 from PIL.Image import open as PIOpen
 
+
 class VideoFrame(object):
-    def __init__(self, pilImage):
-        self.image = pilImage.convert('RGB')
+    def __init__(self, pil_image):
+        self.image = pil_image.convert('RGB')
 
     @staticmethod
     def diff(a, b):
         diff = difference(a.image, b.image)
-        diffNormalized = autocontrast(diff)
-        return (VideoFrame(diff), VideoFrame(diffNormalized))
+        diff_normalized = autocontrast(diff)
+        return (VideoFrame(diff), VideoFrame(diff_normalized))
 
     @staticmethod
     def load(path):
