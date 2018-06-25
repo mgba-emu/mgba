@@ -147,7 +147,7 @@ void GBVideoReset(struct GBVideo* video) {
 }
 
 void GBVideoDeinit(struct GBVideo* video) {
-	GBVideoAssociateRenderer(video, &dummyRenderer);
+	video->renderer->deinit(video->renderer);
 	mappedMemoryFree(video->vram, GB_SIZE_VRAM);
 	if (video->renderer->sgbCharRam) {
 		mappedMemoryFree(video->renderer->sgbCharRam, SGB_SIZE_CHAR_RAM);

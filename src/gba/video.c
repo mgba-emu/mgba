@@ -103,7 +103,7 @@ void GBAVideoReset(struct GBAVideo* video) {
 }
 
 void GBAVideoDeinit(struct GBAVideo* video) {
-	GBAVideoAssociateRenderer(video, &dummyRenderer);
+	video->renderer->deinit(video->renderer);
 	mappedMemoryFree(video->vram, SIZE_VRAM);
 }
 
