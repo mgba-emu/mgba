@@ -143,22 +143,13 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->capLeft = 0;
 	audio->capRight = 0;
 	audio->clock = 0;
-	audio->volumeRight = 0;
-	audio->volumeLeft = 0;
-	audio->ch1Right = false;
-	audio->ch2Right = false;
-	audio->ch3Right = false;
-	audio->ch4Right = false;
-	audio->ch1Left = false;
-	audio->ch2Left = false;
-	audio->ch3Left = false;
-	audio->ch4Left = false;
 	audio->playingCh1 = false;
 	audio->playingCh2 = false;
 	audio->playingCh3 = false;
 	audio->playingCh4 = false;
-	if (audio->p && (audio->p->model == GB_MODEL_DMG || audio->p->model == GB_MODEL_CGB)) {
+	if (audio->p && audio->p->model != GB_MODEL_SGB) {
 		audio->playingCh1 = true;
+		audio->enable = true;
 		*audio->nr52 |= 0x01;
 	}
 }
