@@ -8,6 +8,7 @@ Bugfixes:
  - Qt: Fix build with Qt 5.11 (fixes mgba.io/i/1094)
  - GBA Serialize: Fix loading channel 3 volume (fixes mgba.io/i/1107)
  - GBA BIOS: Fix BitUnPack final byte
+ - GB I/O: DMA register is R/W
 
 0.6.3: (2017-04-14)
 Bugfixes:
