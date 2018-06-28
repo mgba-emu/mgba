@@ -13,8 +13,6 @@ libdir = os.environ.get("LIBDIR")
 
 cpp = shlex.split(os.environ.get("CPP", "cc -E"))
 cppflags = shlex.split(os.environ.get("CPPFLAGS", ""))
-if __name__ == "__main__":
-    cppflags.extend(sys.argv[1:])
 cppflags.extend(["-I" + incdir, "-I" + srcdir, "-I" + bindir])
 
 ffi.set_source("mgba._pylib", """
