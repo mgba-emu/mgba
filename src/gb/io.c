@@ -104,6 +104,8 @@ static const uint8_t _registerMask[] = {
 	[REG_IE]   = 0xE0,
 };
 
+static uint8_t _readKeys(struct GB* gb);
+
 static void _writeSGBBits(struct GB* gb, int bits) {
 	if (!bits) {
 		gb->sgbBit = -1;
@@ -394,10 +396,12 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		}
 		break;
 	case REG_JOYP:
+		gb->memory.io[REG_JOYP] = value | 0x0F;
+		_readKeys(gb);
 		if (gb->model == GB_MODEL_SGB) {
 			_writeSGBBits(gb, (value >> 4) & 3);
 		}
-		break;
+		return;
 	case REG_TIMA:
 		if (value && mTimingUntil(&gb->timing, &gb->timer.irq) > 1) {
 			mTimingDeschedule(&gb->timing, &gb->timer.irq);
@@ -485,8 +489,10 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 				gb->memory.io[REG_BCPD] = gb->video.palette[gb->video.bcpIndex >> 1] >> (8 * (gb->video.bcpIndex & 1));
 				break;
 			case REG_BCPD:
-				GBVideoProcessDots(&gb->video, 0);
-				GBVideoWritePalette(&gb->video, address, value);
+				if (gb->video.mode != 3) {
+					GBVideoProcessDots(&gb->video, 0);
+					GBVideoWritePalette(&gb->video, address, value);
+				}
 				return;
 			case REG_OCPS:
 				gb->video.ocpIndex = value & 0x3F;
@@ -494,8 +500,10 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 				gb->memory.io[REG_OCPD] = gb->video.palette[8 * 4 + (gb->video.ocpIndex >> 1)] >> (8 * (gb->video.ocpIndex & 1));
 				break;
 			case REG_OCPD:
-				GBVideoProcessDots(&gb->video, 0);
-				GBVideoWritePalette(&gb->video, address, value);
+				if (gb->video.mode != 3) {
+					GBVideoProcessDots(&gb->video, 0);
+					GBVideoWritePalette(&gb->video, address, value);
+				}
 				return;
 			case REG_SVBK:
 				GBMemorySwitchWramBank(&gb->memory, value);
@@ -522,7 +530,8 @@ static uint8_t _readKeys(struct GB* gb) {
 	if (gb->sgbCurrentController != 0) {
 		keys = 0;
 	}
-	switch (gb->memory.io[REG_JOYP] & 0x30) {
+	uint8_t joyp = gb->memory.io[REG_JOYP];
+	switch (joyp & 0x30) {
 	case 0x30:
 		keys = gb->sgbCurrentController;
 		break;
@@ -535,7 +544,12 @@ static uint8_t _readKeys(struct GB* gb) {
 		keys |= keys >> 4;
 		break;
 	}
-	return (0xC0 | (gb->memory.io[REG_JOYP] | 0xF)) ^ (keys & 0xF);
+	gb->memory.io[REG_JOYP] = (0xCF | joyp) ^ (keys & 0xF);
+	if (joyp & ~gb->memory.io[REG_JOYP] & 0xF) {
+		gb->memory.io[REG_IF] |= (1 << GB_IRQ_KEYPAD);
+		GBUpdateIRQs(gb);
+	}
+	return gb->memory.io[REG_JOYP];
 }
 
 uint8_t GBIORead(struct GB* gb, unsigned address) {
@@ -639,10 +653,7 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 }
 
 void GBTestKeypadIRQ(struct GB* gb) {
-	if (_readKeys(gb)) {
-		gb->memory.io[REG_IF] |= (1 << GB_IRQ_KEYPAD);
-		GBUpdateIRQs(gb);
-	}
+	_readKeys(gb);
 }
 
 struct GBSerializedState;

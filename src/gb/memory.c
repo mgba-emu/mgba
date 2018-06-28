@@ -239,7 +239,10 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 		return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
 	case GB_REGION_VRAM:
 	case GB_REGION_VRAM + 1:
-		return gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)];
+		if (gb->video.mode != 3) {
+			return gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)];
+		}
+		return 0xFF;
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
 		if (memory->rtcAccess) {
@@ -309,8 +312,10 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 		return;
 	case GB_REGION_VRAM:
 	case GB_REGION_VRAM + 1:
-		gb->video.renderer->writeVRAM(gb->video.renderer, (address & (GB_SIZE_VRAM_BANK0 - 1)) | (GB_SIZE_VRAM_BANK0 * gb->video.vramCurrentBank));
-		gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)] = value;
+		if (gb->video.mode != 3) {
+			gb->video.renderer->writeVRAM(gb->video.renderer, (address & (GB_SIZE_VRAM_BANK0 - 1)) | (GB_SIZE_VRAM_BANK0 * gb->video.vramCurrentBank));
+			gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)] = value;
+		}
 		return;
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
@@ -490,7 +495,7 @@ uint8_t GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
 	gb->memory.hdmaDest |= 0x8000;
 	bool wasHdma = gb->memory.isHdma;
 	gb->memory.isHdma = value & 0x80;
-	if ((!wasHdma && !gb->memory.isHdma) || gb->video.mode == 0) {
+	if ((!wasHdma && !gb->memory.isHdma) || (GBRegisterLCDCIsEnable(gb->memory.io[REG_LCDC]) && gb->video.mode == 0)) {
 		if (gb->memory.isHdma) {
 			gb->memory.hdmaRemaining = 0x10;
 		} else {

@@ -4,44 +4,38 @@ from . import VideoFrame
 
 Output = namedtuple('Output', ['video'])
 
+
 class Tracer(object):
     def __init__(self, core):
         self.core = core
-        self.fb = Image(*core.desiredVideoDimensions())
-        self.core.setVideoBuffer(self.fb)
-        self._videoFifo = []
+        self.framebuffer = Image(*core.desired_video_dimensions())
+        self.core.set_video_buffer(self.framebuffer)
+        self._video_fifo = []
 
-    def yieldFrames(self, skip=0, limit=None):
+    def yield_frames(self, skip=0, limit=None):
         self.core.reset()
         skip = (skip or 0) + 1
         while skip > 0:
-            frame = self.core.frameCounter
-            self.core.runFrame()
+            frame = self.core.frame_counter
+            self.core.run_frame()
             skip -= 1
-        while frame <= self.core.frameCounter and limit != 0:
-            self._videoFifo.append(VideoFrame(self.fb.toPIL()))
+        while frame <= self.core.frame_counter and limit != 0:
+            self._video_fifo.append(VideoFrame(self.framebuffer.to_pil()))
             yield frame
-            frame = self.core.frameCounter
-            self.core.runFrame()
+            frame = self.core.frame_counter
+            self.core.run_frame()
             if limit is not None:
                 assert limit >= 0
                 limit -= 1
 
     def video(self, generator=None, **kwargs):
         if not generator:
-            generator = self.yieldFrames(**kwargs)
+            generator = self.yield_frames(**kwargs)
         try:
             while True:
-                if self._videoFifo:
-                    result = self._videoFifo[0]
-                    self._videoFifo = self._videoFifo[1:]
-                    yield result
+                if self._video_fifo:
+                    yield self._video_fifo.pop(0)
                 else:
                     next(generator)
         except StopIteration:
             return
-
-    def output(self, **kwargs):
-        generator = self.yieldFrames(**kwargs)
-
-        return mCoreOutput(video=self.video(generator=generator, **kwargs))
