@@ -190,6 +190,7 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, REG_SCY, 0x00);
 	GBIOWrite(gb, REG_SCX, 0x00);
 	GBIOWrite(gb, REG_LYC, 0x00);
+	GBIOWrite(gb, REG_DMA, 0xFF);
 	GBIOWrite(gb, REG_BGP, 0xFC);
 	if (gb->model < GB_MODEL_CGB) {
 		GBIOWrite(gb, REG_OBP0, 0xFF);
@@ -618,6 +619,7 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	case REG_SCX:
 	case REG_LY:
 	case REG_LYC:
+	case REG_DMA:
 	case REG_BGP:
 	case REG_OBP0:
 	case REG_OBP1:
@@ -642,9 +644,6 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 			case REG_SVBK:
 				// Handled transparently by the registers
 				goto success;
-			case REG_DMA:
-				mLOG(GB_IO, STUB, "Reading from unknown register FF%02X", address);
-				return 0;
 			default:
 				break;
 			}
