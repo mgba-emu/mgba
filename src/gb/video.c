@@ -419,6 +419,7 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		video->mode = 2;
 		video->modeEvent.callback = _endMode2;
 		int32_t next = GB_VIDEO_MODE_2_LENGTH - 5; // TODO: Why is this fudge factor needed? Might be related to T-cycles for load/store differing
+		mTimingDeschedule(&video->p->timing, &video->modeEvent);
 		mTimingSchedule(&video->p->timing, &video->modeEvent, next << video->p->doubleSpeed);
 
 		video->ly = 0;
@@ -445,6 +446,7 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		video->renderer->writePalette(video->renderer, 0, video->dmgPalette[0]);
 	
 		mTimingDeschedule(&video->p->timing, &video->modeEvent);
+		mTimingDeschedule(&video->p->timing, &video->frameEvent);
 		mTimingSchedule(&video->p->timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH);
 	}
 	video->p->memory.io[REG_STAT] = video->stat;

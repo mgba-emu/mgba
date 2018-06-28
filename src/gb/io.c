@@ -182,7 +182,11 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, REG_NR43, 0x00);
 	GBIOWrite(gb, REG_NR50, 0x77);
 	GBIOWrite(gb, REG_NR51, 0xF3);
-	GBIOWrite(gb, REG_LCDC, 0x91);
+	if (!gb->biosVf) {
+		GBIOWrite(gb, REG_LCDC, 0x91);
+	} else {
+		GBIOWrite(gb, REG_LCDC, 0x00);
+	}
 	GBIOWrite(gb, REG_SCY, 0x00);
 	GBIOWrite(gb, REG_SCX, 0x00);
 	GBIOWrite(gb, REG_LYC, 0x00);
