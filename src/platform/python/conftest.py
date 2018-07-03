@@ -23,7 +23,7 @@ def pytest_exception_interact(node, call, report):
         if outroot:
             if not vtest:
                 return
-            outdir = os.path.join(outroot, *vtest.fullPath)
+            outdir = os.path.join(outroot, *vtest.full_path)
             try:
                 os.makedirs(outdir)
             except OSError as e:

@@ -224,8 +224,7 @@ void _endMode0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	GBRegisterSTAT oldStat = video->stat;
 	video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->ly);
 	if (video->ly < GB_VIDEO_VERTICAL_PIXELS) {
-		// TODO: Cache SCX & 7 in case it changes during mode 2
-		next = GB_VIDEO_MODE_2_LENGTH + (video->p->memory.io[REG_SCX] & 7);
+		next = GB_VIDEO_MODE_2_LENGTH;
 		video->mode = 2;
 		video->modeEvent.callback = _endMode2;
 	} else {
@@ -262,7 +261,7 @@ void _endMode1(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS + 1) {
 		video->ly = 0;
 		video->p->memory.io[REG_LY] = video->ly;
-		next = GB_VIDEO_MODE_2_LENGTH + (video->p->memory.io[REG_SCX] & 7);
+		next = GB_VIDEO_MODE_2_LENGTH;
 		video->mode = 2;
 		video->modeEvent.callback = _endMode2;
 	} else if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
@@ -290,9 +289,9 @@ void _endMode1(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 void _endMode2(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBVideo* video = context;
 	_cleanOAM(video, video->ly);
-	video->x = 0;
-	video->dotClock = mTimingCurrentTime(timing) - cyclesLate;
-	int32_t next = GB_VIDEO_MODE_3_LENGTH_BASE + video->objMax * 6 - (video->p->memory.io[REG_SCX] & 7);
+	video->x = -(video->p->memory.io[REG_SCX] & 7);
+	video->dotClock = mTimingCurrentTime(timing) - cyclesLate + 5 - (video->x << video->p->doubleSpeed);
+	int32_t next = GB_VIDEO_MODE_3_LENGTH_BASE + video->objMax * 6 - video->x;
 	video->mode = 3;
 	video->modeEvent.callback = _endMode3;
 	GBRegisterSTAT oldStat = video->stat;
@@ -323,7 +322,8 @@ void _endMode3(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		GBUpdateIRQs(video->p);
 	}
 	video->p->memory.io[REG_STAT] = video->stat;
-	int32_t next = GB_VIDEO_MODE_0_LENGTH_BASE - video->objMax * 6;
+	// TODO: Cache SCX & 7 in case it changes
+	int32_t next = GB_VIDEO_MODE_0_LENGTH_BASE - video->objMax * 6 - (video->p->memory.io[REG_SCX] & 7);
 	mTimingSchedule(timing, &video->modeEvent, (next << video->p->doubleSpeed) - cyclesLate);
 }
 
@@ -402,12 +402,14 @@ void GBVideoProcessDots(struct GBVideo* video, uint32_t cyclesLate) {
 		return;
 	}
 	int oldX = video->x;
-	video->x = (mTimingCurrentTime(&video->p->timing) - video->dotClock - cyclesLate) >> video->p->doubleSpeed;
+	video->x = (int32_t) (mTimingCurrentTime(&video->p->timing) - cyclesLate - video->dotClock) >> video->p->doubleSpeed;
 	if (video->x > GB_VIDEO_HORIZONTAL_PIXELS) {
 		video->x = GB_VIDEO_HORIZONTAL_PIXELS;
 	} else if (video->x < 0) {
-		mLOG(GB, FATAL, "Video dot clock went negative!");
-		video->x = oldX;
+		return;
+	}
+	if (oldX < 0) {
+		oldX = 0;
 	}
 	if (video->frameskipCounter <= 0) {
 		video->renderer->drawRange(video->renderer, oldX, video->x, video->ly, video->objThisLine, video->objMax);
@@ -419,6 +421,7 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		video->mode = 2;
 		video->modeEvent.callback = _endMode2;
 		int32_t next = GB_VIDEO_MODE_2_LENGTH - 5; // TODO: Why is this fudge factor needed? Might be related to T-cycles for load/store differing
+		mTimingDeschedule(&video->p->timing, &video->modeEvent);
 		mTimingSchedule(&video->p->timing, &video->modeEvent, next << video->p->doubleSpeed);
 
 		video->ly = 0;
@@ -445,6 +448,7 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		video->renderer->writePalette(video->renderer, 0, video->dmgPalette[0]);
 	
 		mTimingDeschedule(&video->p->timing, &video->modeEvent);
+		mTimingDeschedule(&video->p->timing, &video->frameEvent);
 		mTimingSchedule(&video->p->timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH);
 	}
 	video->p->memory.io[REG_STAT] = video->stat;

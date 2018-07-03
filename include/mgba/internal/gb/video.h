@@ -128,7 +128,7 @@ struct GBVideo {
 	struct mTimingEvent modeEvent;
 	struct mTimingEvent frameEvent;
 
-	uint32_t dotClock;
+	int32_t dotClock;
 
 	uint8_t* vram;
 	uint8_t* vramBank;

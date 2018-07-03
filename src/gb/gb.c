@@ -547,6 +547,8 @@ void GBSkipBIOS(struct GB* gb) {
 	mTimingDeschedule(&gb->timing, &gb->timer.event);
 	mTimingSchedule(&gb->timing, &gb->timer.event, 0);
 
+	GBIOWrite(gb, REG_LCDC, 0x91);
+
 	if (gb->biosVf) {
 		GBUnmapBIOS(gb);
 	}
