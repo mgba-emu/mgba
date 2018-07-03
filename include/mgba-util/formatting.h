@@ -12,8 +12,8 @@ CXX_GUARD_START
 
 #include "locale.h"
 
-#if defined(__APPLE__) || defined(__FreeBSD__)
-#include "xlocale.h"
+#ifdef HAVE_XLOCALE
+#include <xlocale.h>
 #elif !defined(HAVE_LOCALE)
 typedef const char* locale_t;
 #endif
