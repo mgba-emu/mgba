@@ -398,6 +398,7 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 		gba->memory.rom = newRom;
 #endif
 		gba->memory.romSize = SIZE_CART0;
+		gba->memory.romMask = SIZE_CART0 - 1;
 		gba->isPristine = false;
 	}
 	if (gba->cpu && gba->memory.activeRegion >= REGION_CART0) {
