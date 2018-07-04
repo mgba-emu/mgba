@@ -180,7 +180,7 @@ PainterGL::PainterGL(int majorVersion, QGLWidget* parent)
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
 	if (majorVersion >= 2) {
-		gl2Backend = new mGLES2Context;
+		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
 		mGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
 		m_supportsShaders = true;
@@ -189,7 +189,7 @@ PainterGL::PainterGL(int majorVersion, QGLWidget* parent)
 
 #ifdef BUILD_GL
 	 if (!m_backend) {
-		glBackend = new mGLContext;
+		glBackend = static_cast<mGLContext*>(malloc(sizeof(mGLContext)));
 		mGLContextCreate(glBackend);
 		m_backend = &glBackend->d;
 		m_supportsShaders = false;
@@ -239,7 +239,7 @@ PainterGL::~PainterGL() {
 #endif
 	m_backend->deinit(m_backend);
 	m_gl->doneCurrent();
-	delete m_backend;
+	free(m_backend);
 	m_backend = nullptr;
 }
 
