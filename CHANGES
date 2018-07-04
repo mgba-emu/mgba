@@ -66,6 +66,7 @@ Misc:
  - GB Audio: Improved audio quality
  - GB, GBA Audio: Increase max audio volume
  - GB: Fix VRAM/palette locking (fixes mgba.io/i/1109)
+ - GB Video: Darken colors in GBA mode
 
 0.6.3: (2017-04-14)
 Bugfixes:
