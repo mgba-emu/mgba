@@ -29,8 +29,11 @@ using namespace QGBA;
 
 DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	: Display(parent)
-	, m_gl(new EmptyGLWidget(format, this))
+	, m_gl(nullptr)
 {
+	// This can spontaneously re-enter into this->resizeEvent before creation is done, so we
+	// need to make sure it's initialized to nullptr before we assign the new object to it
+	m_gl = new EmptyGLWidget(format, this);
 	m_painter = new PainterGL(format.majorVersion() < 2 ? 1 : m_gl->format().majorVersion(), m_gl);
 	m_gl->setMouseTracking(true);
 	m_gl->setAttribute(Qt::WA_TransparentForMouseEvents); // This doesn't seem to work?
@@ -162,7 +165,9 @@ void DisplayGL::resizeEvent(QResizeEvent* event) {
 }
 
 void DisplayGL::resizePainter() {
-	m_gl->resize(size());
+	if (m_gl) {
+		m_gl->resize(size());
+	}
 	if (m_drawThread) {
 		QMetaObject::invokeMethod(m_painter, "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, size()));
 	}
