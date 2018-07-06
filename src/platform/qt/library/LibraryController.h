@@ -107,8 +107,8 @@ private:
 	LibraryStyle m_currentStyle;
 	AbstractGameList* m_currentList = nullptr;
 
-	LibraryGrid* m_libraryGrid = nullptr;
-	LibraryTree* m_libraryTree = nullptr;
+	std::unique_ptr<LibraryGrid> m_libraryGrid;
+	std::unique_ptr<LibraryTree> m_libraryTree;
 };
 
 }

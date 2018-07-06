@@ -45,10 +45,10 @@ LibraryController::LibraryController(QWidget* parent, const QString& path, Confi
 
 	mLibraryAttachGameDB(m_library.get(), GBAApp::app()->gameDB());
 
-	m_libraryTree = new LibraryTree(this);
+	m_libraryTree = std::make_unique<LibraryTree>(this);
 	addWidget(m_libraryTree->widget());
 
-	m_libraryGrid = new LibraryGrid(this);
+	m_libraryGrid = std::make_unique<LibraryGrid>(this);
 	addWidget(m_libraryGrid->widget());
 
 	setViewStyle(LibraryStyle::STYLE_LIST);
@@ -67,9 +67,9 @@ void LibraryController::setViewStyle(LibraryStyle newStyle) {
 
 	AbstractGameList* newCurrentList = nullptr;
 	if (newStyle == LibraryStyle::STYLE_LIST || newStyle == LibraryStyle::STYLE_TREE) {
-		newCurrentList = m_libraryTree;
+		newCurrentList = m_libraryTree.get();
 	} else {
-		newCurrentList = m_libraryGrid;
+		newCurrentList = m_libraryGrid.get();
 	}
 	newCurrentList->selectEntry(selectedEntry());
 	newCurrentList->setViewStyle(newStyle);
