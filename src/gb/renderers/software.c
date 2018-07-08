@@ -437,10 +437,29 @@ static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer
 			color = softwareRenderer->palette[0];
 		}
 	}
-	softwareRenderer->palette[index] = color;
 	if (renderer->cache) {
 		mCacheSetWritePalette(renderer->cache, index, color);
 	}
+	if (softwareRenderer->model == GB_MODEL_AGB) {
+		unsigned r = M_R5(value);
+		unsigned g = M_G5(value);
+		unsigned b = M_B5(value);
+		r = r * r;
+		g = g * g;
+		b = b * b;
+#ifdef COLOR_16_BIT
+		r /= 31;
+		g /= 31;
+		b /= 31;
+		color = mColorFrom555(r | (g << 5) | (b << 10));
+#else
+		r >>= 2;
+		g >>= 2;
+		b >>= 2;
+		color = r | (g << 8) | (b << 16);
+#endif
+	}
+	softwareRenderer->palette[index] = color;
 
 	if (softwareRenderer->model == GB_MODEL_SGB && !index && GBRegisterLCDCIsEnable(softwareRenderer->lcdc)) {
 		renderer->writePalette(renderer, 0x04, value);

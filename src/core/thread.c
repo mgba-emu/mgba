@@ -271,6 +271,9 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 	core->clearCoreCallbacks(core);
 
+	if (threadContext->logger.d.filter == &filter) {
+		mLogFilterDeinit(&filter);
+	}
 	threadContext->logger.d.filter = NULL;
 
 	return 0;

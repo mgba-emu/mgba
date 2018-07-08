@@ -29,8 +29,11 @@ using namespace QGBA;
 
 DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	: Display(parent)
-	, m_gl(new EmptyGLWidget(format, this))
+	, m_gl(nullptr)
 {
+	// This can spontaneously re-enter into this->resizeEvent before creation is done, so we
+	// need to make sure it's initialized to nullptr before we assign the new object to it
+	m_gl = new EmptyGLWidget(format, this);
 	m_painter = new PainterGL(format.majorVersion() < 2 ? 1 : m_gl->format().majorVersion(), m_gl);
 	m_gl->setMouseTracking(true);
 	m_gl->setAttribute(Qt::WA_TransparentForMouseEvents); // This doesn't seem to work?
@@ -162,7 +165,9 @@ void DisplayGL::resizeEvent(QResizeEvent* event) {
 }
 
 void DisplayGL::resizePainter() {
-	m_gl->resize(size());
+	if (m_gl) {
+		m_gl->resize(size());
+	}
 	if (m_drawThread) {
 		QMetaObject::invokeMethod(m_painter, "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, size()));
 	}
@@ -180,7 +185,7 @@ PainterGL::PainterGL(int majorVersion, QGLWidget* parent)
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
 	if (majorVersion >= 2) {
-		gl2Backend = new mGLES2Context;
+		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
 		mGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
 		m_supportsShaders = true;
@@ -189,7 +194,7 @@ PainterGL::PainterGL(int majorVersion, QGLWidget* parent)
 
 #ifdef BUILD_GL
 	 if (!m_backend) {
-		glBackend = new mGLContext;
+		glBackend = static_cast<mGLContext*>(malloc(sizeof(mGLContext)));
 		mGLContextCreate(glBackend);
 		m_backend = &glBackend->d;
 		m_supportsShaders = false;
@@ -239,7 +244,7 @@ PainterGL::~PainterGL() {
 #endif
 	m_backend->deinit(m_backend);
 	m_gl->doneCurrent();
-	delete m_backend;
+	free(m_backend);
 	m_backend = nullptr;
 }
 

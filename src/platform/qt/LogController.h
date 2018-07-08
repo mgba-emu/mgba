@@ -35,6 +35,7 @@ private:
 
 public:
 	LogController(int levels, QObject* parent = nullptr);
+	~LogController();
 
 	int levels() const { return m_filter.defaultLevels; }
 	mLogFilter* filter() { return &m_filter; }

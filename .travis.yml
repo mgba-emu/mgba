@@ -1,14 +1,30 @@
+if: type = pull_request OR NOT branch =~ /^(master$|optimization)/ OR fork
 language: c
 sudo: required
+services:
+- docker
+os: linux
+env:
+- DOCKER_TAG=ubuntu:xenial
+- DOCKER_TAG=ubuntu:artful
+- DOCKER_TAG=ubuntu:bionic
+- DOCKER_TAG=3ds
+- DOCKER_TAG=wii
+- DOCKER_TAG=vita
+- DOCKER_TAG=windows:w32
+- DOCKER_TAG=windows:w64
+
 matrix:
   include:
-    - os: linux
-      dist: trusty
-      compiler: gcc
-    - os: osx
-      compiler: clang
+  - os: osx
+    compiler: clang
+    env: DOCKER_TAG=
 
 before_install:
-  - source ./.travis-deps.sh
+- '[ -z "$DOCKER_TAG" ] || docker pull mgba/$DOCKER_TAG'
+- '[ "$TRAVIS_OS_NAME" != "osx" ] || . ./.travis-deps.sh'
+- 'mkdir build && chmod 777 build'
 
-script: mkdir build && cd build && cmake -DCMAKE_PREFIX_PATH='/usr/local/opt/qt5;/opt/qt54' .. && make -j2
+script:
+- '[ -z "$DOCKER_TAG" ] || docker run -e BUILD_DIR=build -e MAKEFLAGS=-j2 -v $PWD:/home/mgba/src mgba/$DOCKER_TAG'
+- '[ "$TRAVIS_OS_NAME" != "osx" ] || (cd build && cmake -DCMAKE_PREFIX_PATH="/usr/local/opt/qt5" .. && make -j2)'

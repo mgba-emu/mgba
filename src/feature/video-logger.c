@@ -682,6 +682,18 @@ void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* contex
 	if (context->initialState) {
 		mappedMemoryFree(context->initialState, context->initialStateSize);
 	}
+
+	size_t i;
+	for (i = 0; i < context->nChannels; ++i) {
+		CircleBufferDeinit(&context->channels[i].buffer);
+#ifdef USE_ZLIB
+		if (context->channels[i].inflating) {
+			inflateEnd(&context->channels[i].inflateStream);
+			context->channels[i].inflating = false;
+		}
+#endif
+	}
+
 	free(context);
 }
 

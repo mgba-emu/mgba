@@ -25,6 +25,10 @@ LogController::LogController(int levels, QObject* parent)
 	}
 }
 
+LogController::~LogController() {
+	mLogFilterDeinit(&m_filter);
+}
+
 LogController::Stream LogController::operator()(int category, int level) {
 	return Stream(this, category, level);
 }
