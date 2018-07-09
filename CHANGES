@@ -67,6 +67,7 @@ Misc:
  - GB, GBA Audio: Increase max audio volume
  - GB: Fix VRAM/palette locking (fixes mgba.io/i/1109)
  - GB Video: Darken colors in GBA mode
+ - FFmpeg: Support libswresample (fixes mgba.io/i/1120, mgba.io/b/123)
 
 0.6.3: (2017-04-14)
 Bugfixes:
