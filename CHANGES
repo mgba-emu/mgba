@@ -9,6 +9,8 @@ Bugfixes:
  - GBA Serialize: Fix loading channel 3 volume (fixes mgba.io/i/1107)
  - GBA BIOS: Fix BitUnPack final byte
  - GB I/O: DMA register is R/W
+Misc:
+ - FFmpeg: Support libswresample (fixes mgba.io/i/1120, mgba.io/b/123)
 
 0.6.3: (2017-04-14)
 Bugfixes:

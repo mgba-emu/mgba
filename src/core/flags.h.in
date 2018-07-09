@@ -63,6 +63,14 @@
 #cmakedefine USE_LIBAV
 #endif
 
+#ifndef USE_LIBAVRESAMPLE
+#cmakedefine USE_LIBAVRESAMPLE
+#endif
+
+#ifndef USE_LIBSWRESAMPLE
+#cmakedefine USE_LIBSWRESAMPLE
+#endif
+
 #ifndef USE_LIBZIP
 #cmakedefine USE_LIBZIP
 #endif
