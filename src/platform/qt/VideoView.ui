@@ -256,11 +256,6 @@
            </property>
            <item>
             <property name="text">
-             <string>PNG</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
              <string>h.264</string>
             </property>
            </item>
@@ -352,9 +347,6 @@
            </property>
            <property name="suffix">
             <string/>
-           </property>
-           <property name="minimum">
-            <number>200</number>
            </property>
            <property name="maximum">
             <number>10000</number>
@@ -523,7 +515,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="presets"/>
   <buttongroup name="resolutions"/>
+  <buttongroup name="presets"/>
  </buttongroups>
 </ui>

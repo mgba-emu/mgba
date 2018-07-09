@@ -68,6 +68,7 @@ Misc:
  - GB: Fix VRAM/palette locking (fixes mgba.io/i/1109)
  - GB Video: Darken colors in GBA mode
  - FFmpeg: Support libswresample (fixes mgba.io/i/1120, mgba.io/b/123)
+ - FFmpeg: Support lossless h.264 encoding
 
 0.6.3: (2017-04-14)
 Bugfixes:
