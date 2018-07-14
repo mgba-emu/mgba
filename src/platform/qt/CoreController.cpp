@@ -593,7 +593,7 @@ void CoreController::replaceGame(const QString& path) {
 	QString fname = info.canonicalFilePath();
 	Interrupter interrupter(this);
 	mDirectorySetDetachBase(&m_threadContext.core->dirs);
-	mCoreLoadFile(m_threadContext.core, fname.toLocal8Bit().constData());
+	mCoreLoadFile(m_threadContext.core, fname.toUtf8().constData());
 }
 
 void CoreController::yankPak() {
