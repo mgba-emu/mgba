@@ -206,6 +206,7 @@ private:
 	bool m_autoresume = false;
 	bool m_wasOpened = false;
 	QString m_pendingPatch;
+	QString m_pendingState;
 
 	bool m_hitUnimplementedBiosCall;
 

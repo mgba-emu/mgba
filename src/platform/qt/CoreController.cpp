@@ -465,6 +465,26 @@ void CoreController::loadState(int slot) {
 	});
 }
 
+void CoreController::loadState(const QString& path) {
+	m_statePath = path;
+	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
+		CoreController* controller = static_cast<CoreController*>(context->userData);
+		VFile* vf = VFileDevice::open(controller->m_statePath, O_RDONLY);
+		if (!vf) {
+			return;
+		}
+		if (!controller->m_backupLoadState.isOpen()) {
+			controller->m_backupLoadState = VFileMemChunk(nullptr, 0);
+		}
+		mCoreSaveStateNamed(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
+		if (mCoreLoadStateNamed(context->core, vf, controller->m_loadStateFlags)) {
+			emit controller->frameAvailable();
+			emit controller->stateLoaded();
+		}
+		vf->close(vf);
+	});
+}
+
 void CoreController::saveState(int slot) {
 	if (slot > 0) {
 		m_stateSlot = slot;
@@ -478,6 +498,25 @@ void CoreController::saveState(int slot) {
 			vf->close(vf);
 		}
 		mCoreSaveState(context->core, controller->m_stateSlot, controller->m_saveStateFlags);
+	});
+}
+
+void CoreController::saveState(const QString& path) {
+	m_statePath = path;
+	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
+		CoreController* controller = static_cast<CoreController*>(context->userData);
+		VFile* vf = VFileDevice::open(controller->m_statePath, O_RDONLY);
+		if (vf) {
+			controller->m_backupSaveState.resize(vf->size(vf));
+			vf->read(vf, controller->m_backupSaveState.data(), controller->m_backupSaveState.size());
+			vf->close(vf);
+		}
+		vf = VFileDevice::open(controller->m_statePath, O_WRONLY | O_CREAT | O_TRUNC);
+		if (!vf) {
+			return;
+		}
+		mCoreSaveStateNamed(context->core, vf, controller->m_saveStateFlags);
+		vf->close(vf);
 	});
 }
 

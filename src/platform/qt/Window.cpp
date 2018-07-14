@@ -170,6 +170,14 @@ Window::~Window() {
 void Window::argumentsPassed(mArguments* args) {
 	loadConfig();
 
+	if (args->patch) {
+		m_pendingPatch = args->patch;
+	}
+
+	if (args->savestate) {
+		m_pendingState = args->savestate;
+	}
+
 	if (args->fname) {
 		setController(m_manager->loadGame(args->fname), args->fname);
 	}
@@ -1911,6 +1919,11 @@ void Window::setController(CoreController* controller, const QString& fname) {
 
 	m_controller->loadConfig(m_config);
 	m_controller->start();
+
+	if (!m_pendingState.isEmpty()) {
+		m_controller->loadState(m_pendingState);
+		m_pendingState = QString();
+	}
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

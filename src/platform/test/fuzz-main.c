@@ -26,14 +26,12 @@
 	"  -F FRAMES        Run for the specified number of FRAMES before exiting\n" \
 	"  -N               Disable video rendering entirely\n" \
 	"  -O OFFSET        Offset to apply savestate overlay\n" \
-	"  -S FILE          Load a savestate when starting the test\n" \
 	"  -V FILE          Overlay a second savestate over the loaded savestate\n" \
 
 struct FuzzOpts {
 	bool noVideo;
 	int frames;
 	size_t overlayOffset;
-	char* savestate;
 	char* ssOverlay;
 };
 
@@ -108,9 +106,8 @@ int main(int argc, char** argv) {
 	struct VFile* savestateOverlay = 0;
 	size_t overlayOffset;
 
-	if (fuzzOpts.savestate) {
-		savestate = VFileOpen(fuzzOpts.savestate, O_RDONLY);
-		free(fuzzOpts.savestate);
+	if (args.savestate) {
+		savestate = VFileOpen(args.savestate, O_RDONLY);
 	}
 	if (fuzzOpts.ssOverlay) {
 		overlayOffset = fuzzOpts.overlayOffset;
@@ -200,9 +197,6 @@ static bool _parseFuzzOpts(struct mSubParser* parser, int option, const char* ar
 	case 'O':
 		opts->overlayOffset = strtoul(arg, 0, 10);
 		return !errno;
-	case 'S':
-		opts->savestate = strdup(arg);
-		return true;
 	case 'V':
 		opts->ssOverlay = strdup(arg);
 		return true;
