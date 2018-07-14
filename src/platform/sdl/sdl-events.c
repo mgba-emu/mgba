@@ -410,7 +410,7 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 	if (!event->keysym.mod) {
 		key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.sym);
 	}
-	if (key != -1 && !event->repeat) {
+	if (key != -1) {
 		mCoreThreadInterrupt(context);
 		if (event->type == SDL_KEYDOWN) {
 			context->core->addKeys(context->core, 1 << key);
