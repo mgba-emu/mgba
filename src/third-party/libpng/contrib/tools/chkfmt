@@ -1,4 +1,11 @@
 #!/bin/sh
+
+# chkfmt
+#
+# COPYRIGHT: Written by John Cunningham Bowler, 2010.
+# To the extent possible under law, the author has waived all copyright and
+# related or neighboring rights to this work.  This work is published from:
+# United States.
 #
 # Check the format of the source files in the current directory - checks for a
 # line length of 80 characters max and no tab characters.

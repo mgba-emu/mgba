@@ -18,7 +18,7 @@ exec_prefix=$(prefix)
 # Library name:
 LIBNAME = libpng16
 PNGMAJ = 16
-RELEASE = 17
+RELEASE = 34
 
 # Shared library names:
 LIBSO=$(LIBNAME).dll
