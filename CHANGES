@@ -41,6 +41,7 @@ Bugfixes:
  - GBA BIOS: Fix BitUnPack final byte
  - GB I/O: DMA register is R/W
  - GB Video: Fix SCX timing
+ - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1126)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
