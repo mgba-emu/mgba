@@ -27,6 +27,7 @@ static void _GBMBC3(struct GB*, uint16_t address, uint8_t value);
 static void _GBMBC5(struct GB*, uint16_t address, uint8_t value);
 static void _GBMBC6(struct GB*, uint16_t address, uint8_t value);
 static void _GBMBC7(struct GB*, uint16_t address, uint8_t value);
+static void _GBHuC1(struct GB*, uint16_t address, uint8_t value);
 static void _GBHuC3(struct GB*, uint16_t address, uint8_t value);
 static void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value);
@@ -259,8 +260,7 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcWrite = _GBMBC1;
 		break;
 	case GB_HuC1:
-		mLOG(GB_MBC, WARN, "unimplemented MBC: HuC-1");
-		gb->memory.mbcWrite = _GBMBC1;
+		gb->memory.mbcWrite = _GBHuC1;
 		break;
 	case GB_HuC3:
 		gb->memory.mbcWrite = _GBHuC3;
@@ -819,6 +819,34 @@ static void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t valu
 		value = GBMBC7FieldSetDO(value, GBMBC7FieldGetDO(old));
 	}
 	mbc7->eeprom = value;
+}
+
+void _GBHuC1(struct GB* gb, uint16_t address, uint8_t value) {
+	struct GBMemory* memory = &gb->memory;
+	int bank = value & 0x3F;
+	switch (address >> 13) {
+	case 0x0:
+		switch (value) {
+		case 0xE:
+			memory->sramAccess = false;
+			break;
+		default:
+			memory->sramAccess = true;
+			GBMBCSwitchSramBank(gb, memory->sramCurrentBank);
+			break;
+		}
+		break;
+	case 0x1:
+		GBMBCSwitchBank(gb, bank);
+		break;
+	case 0x2:
+		GBMBCSwitchSramBank(gb, value);
+		break;
+	default:
+		// TODO
+		mLOG(GB_MBC, STUB, "HuC-1 unknown address: %04X:%02X", address, value);
+		break;
+	}
 }
 
 void _GBHuC3(struct GB* gb, uint16_t address, uint8_t value) {

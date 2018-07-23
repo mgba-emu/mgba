@@ -52,14 +52,14 @@ The following mappers are fully supported:
 
 The following mappers are partially supported:
 
+- MBC6
 - Pocket Cam
 - TAMA5
+- HuC-1
 - HuC-3
 
 The following mappers are not currently supported:
 
-- MBC6
-- HuC-1
 - MMM01
 
 ### Planned features
