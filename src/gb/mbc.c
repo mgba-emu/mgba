@@ -446,6 +446,7 @@ void _GBMBC2(struct GB* gb, uint16_t address, uint8_t value) {
 		address &= 0x1FF;
 		memory->sramBank[(address >> 1)] &= 0xF0 >> shift;
 		memory->sramBank[(address >> 1)] |= (value & 0xF) << shift;
+		break;
 	default:
 		// TODO
 		mLOG(GB_MBC, STUB, "MBC2 unknown address: %04X:%02X", address, value);
@@ -640,6 +641,7 @@ void _GBMBC7(struct GB* gb, uint16_t address, uint8_t value) {
 		break;
 	case 0x5:
 		_GBMBC7Write(&gb->memory, address, value);
+		break;
 	default:
 		// TODO
 		mLOG(GB_MBC, STUB, "MBC7 unknown address: %04X:%02X", address, value);
