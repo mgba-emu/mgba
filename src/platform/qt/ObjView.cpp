@@ -22,6 +22,7 @@
 #include <mgba/internal/gb/io.h>
 #endif
 #include <mgba-util/png-io.h>
+#include <mgba-util/vfs.h>
 
 using namespace QGBA;
 
@@ -283,6 +284,7 @@ void ObjView::exportObj() {
 	PNGWritePixels8(png, m_objInfo.width * 8, m_objInfo.height * 8, m_objInfo.width * 8, static_cast<void*>(buffer));
 	PNGWriteClose(png, info);
 	delete[] buffer;
+	vf->close(vf);
 }
 #endif
 
