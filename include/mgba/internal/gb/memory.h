@@ -129,6 +129,11 @@ struct GBMBC7State {
 	GBMBC7Field eeprom;
 };
 
+struct GBMMM01State {
+	bool locked;
+	int currentBank0;
+};
+
 struct GBPocketCamState {
 	bool registersActive;
 	uint8_t registers[0x36];
@@ -143,6 +148,7 @@ union GBMBCState {
 	struct GBMBC1State mbc1;
 	struct GBMBC6State mbc6;
 	struct GBMBC7State mbc7;
+	struct GBMMM01State mmm01;
 	struct GBPocketCamState pocketCam;
 	struct GBTAMA5State tama5;
 };

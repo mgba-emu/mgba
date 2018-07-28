@@ -176,6 +176,8 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.hdmaEvent.priority = 0x41;
 
 	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
+
+	GBMBCInit(gb);
 	switch (gb->memory.mbcType) {
 	case GB_MBC1:
 		gb->memory.mbcState.mbc1.mode = 0;
@@ -187,11 +189,12 @@ void GBMemoryReset(struct GB* gb) {
 		GBMBCSwitchSramHalfBank(gb, 0, 0);
 		GBMBCSwitchSramHalfBank(gb, 0, 1);
 		break;
+	case GB_MMM01:
+		GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);
+		GBMBCSwitchBank(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 1);
 	default:
 		memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
 	}
-
-	GBMBCInit(gb);
 	gb->memory.sramBank = gb->memory.sram;
 
 	if (!gb->memory.wram) {
@@ -688,6 +691,10 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 		STORE_16LE(memory->mbcState.mbc7.sr, 0, &state->memory.mbc7.sr);
 		STORE_32LE(memory->mbcState.mbc7.writable, 0, &state->memory.mbc7.writable);
 		break;
+	case GB_MMM01:
+		state->memory.mmm01.locked = memory->mbcState.mmm01.locked;
+		state->memory.mmm01.bank0 = memory->mbcState.mmm01.currentBank0;
+		break;
 	default:
 		break;
 	}
@@ -754,6 +761,15 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		memory->mbcState.mbc7.srBits = state->memory.mbc7.srBits;
 		LOAD_16LE(memory->mbcState.mbc7.sr, 0, &state->memory.mbc7.sr);
 		LOAD_32LE(memory->mbcState.mbc7.writable, 0, &state->memory.mbc7.writable);
+		break;
+	case GB_MMM01:
+		memory->mbcState.mmm01.locked = state->memory.mmm01.locked;
+		memory->mbcState.mmm01.currentBank0 = state->memory.mmm01.bank0;
+		if (memory->mbcState.mmm01.locked) {
+			GBMBCSwitchBank0(gb, memory->mbcState.mmm01.currentBank0);
+		} else {
+			GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);
+		}
 		break;
 	default:
 		break;
