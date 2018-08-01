@@ -61,7 +61,7 @@ void GBMBCSwitchBank(struct GB* gb, int bank) {
 }
 
 void GBMBCSwitchBank0(struct GB* gb, int bank) {
-	size_t bankStart = bank * GB_SIZE_CART_BANK0 << gb->memory.mbcState.mbc1.multicartStride;
+	size_t bankStart = bank * GB_SIZE_CART_BANK0;
 	if (bankStart + GB_SIZE_CART_BANK0 > gb->memory.romSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
 		bankStart &= (gb->memory.romSize - 1);
@@ -407,7 +407,7 @@ void _GBMBC1(struct GB* gb, uint16_t address, uint8_t value) {
 	case 0x2:
 		bank &= 3;
 		if (memory->mbcState.mbc1.mode) {
-			GBMBCSwitchBank0(gb, bank);
+			GBMBCSwitchBank0(gb, bank << gb->memory.mbcState.mbc1.multicartStride);
 			GBMBCSwitchSramBank(gb, bank);
 		}
 		GBMBCSwitchBank(gb, (bank << memory->mbcState.mbc1.multicartStride) | (memory->currentBank & (stride - 1)));
@@ -415,7 +415,7 @@ void _GBMBC1(struct GB* gb, uint16_t address, uint8_t value) {
 	case 0x3:
 		memory->mbcState.mbc1.mode = value & 1;
 		if (memory->mbcState.mbc1.mode) {
-			GBMBCSwitchBank0(gb, memory->currentBank >> memory->mbcState.mbc1.multicartStride);
+			GBMBCSwitchBank0(gb, memory->currentBank & ~((1 << memory->mbcState.mbc1.multicartStride) - 1));
 		} else {
 			GBMBCSwitchBank0(gb, 0);
 			GBMBCSwitchSramBank(gb, 0);
@@ -844,7 +844,12 @@ void _GBMMM01(struct GB* gb, uint16_t address, uint8_t value) {
 			GBMBCSwitchBank0(gb, memory->mbcState.mmm01.currentBank0);
 			break;
 		case 0x1:
-			memory->mbcState.mmm01.currentBank0 = value & 0x3F;
+			memory->mbcState.mmm01.currentBank0 &= ~0x7F;
+			memory->mbcState.mmm01.currentBank0 |= value & 0x7F;
+			break;
+		case 0x2:
+			memory->mbcState.mmm01.currentBank0 &= ~0x180;
+			memory->mbcState.mmm01.currentBank0 |= (value & 0x30) << 3;
 			break;
 		default:
 			// TODO
