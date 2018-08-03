@@ -74,6 +74,7 @@ Misc:
  - FFmpeg: Support lossless h.264 encoding
  - Feature: Added loading savestates from command line
  - Qt: Allow pausing game at load (fixes mgba.io/i/1129)
+ - Wii: Move audio handling to callbacks (fixes mgba.io/i/803)
 
 0.6.3: (2017-04-14)
 Bugfixes:

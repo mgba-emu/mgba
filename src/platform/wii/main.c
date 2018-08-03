@@ -67,6 +67,7 @@ static enum VideoMode {
 
 static void _retraceCallback(u32 count);
 
+static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right);
 static void _audioDMA(void);
 static void _setRumble(struct mRumble* rumble, int enable);
 static void _sampleRotation(struct mRotationSource* source);
@@ -93,6 +94,7 @@ static s8 WPAD_StickX(u8 chan, u8 right);
 static s8 WPAD_StickY(u8 chan, u8 right);
 
 static void* outputBuffer;
+static struct mAVStream stream;
 static struct mRumble rumble;
 static struct mRotationSource rotation;
 static GXRModeObj* vmode;
@@ -222,7 +224,7 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 		runner->params.width = vmode->fbWidth * guiScale * wAdjust;
 		runner->params.height = vmode->efbHeight * guiScale * hAdjust;
 		if (runner->core) {
-			double ratio = GBAAudioCalculateRatio(1,audioSampleRate, 1);
+			double ratio = GBAAudioCalculateRatio(1, audioSampleRate, 1);
 			blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
 			blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
 
@@ -316,6 +318,11 @@ int main(int argc, char* argv[]) {
 	rotation.readTiltX = _readTiltX;
 	rotation.readTiltY = _readTiltY;
 	rotation.readGyroZ = _readGyroZ;
+
+	stream.videoDimensionsChanged = NULL;
+	stream.postVideoFrame = NULL;
+	stream.postAudioFrame = NULL;
+	stream.postAudioBuffer = _postAudioBuffer;
 
 	struct mGUIRunner runner = {
 		.params = {
@@ -554,6 +561,25 @@ static void _audioDMA(void) {
 	audioBufferSize = 0;
 }
 
+static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
+	UNUSED(stream);
+	int available = blip_samples_avail(left);
+	if (available + audioBufferSize > SAMPLES) {
+		available = SAMPLES - audioBufferSize;
+	}
+	available &= ~((32 / sizeof(struct GBAStereoSample)) - 1); // Force align to 32 bytes
+	if (available > 0) {
+		// These appear to be reversed for AUDIO_InitDMA
+		blip_read_samples(left, &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
+		blip_read_samples(right, &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
+		audioBufferSize += available;
+	}
+	if (audioBufferSize == SAMPLES && !AUDIO_GetDMAEnableFlag()) {
+		_audioDMA();
+		AUDIO_StartDMA();
+	}
+}
+
 static void _drawStart(void) {
 	VIDEO_SetBlack(false);
 
@@ -665,6 +691,7 @@ void _guiPrepare(void) {
 void _setup(struct mGUIRunner* runner) {
 	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation);
 	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble);
+	runner->core->setAVStream(runner->core, &stream);
 
 	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_A, GBA_KEY_A);
 	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_B, GBA_KEY_B);
@@ -783,22 +810,7 @@ void _unpaused(struct mGUIRunner* runner) {
 }
 
 void _drawFrame(struct mGUIRunner* runner, bool faded) {
-	int available = blip_samples_avail(runner->core->getAudioChannel(runner->core, 0));
-	if (available + audioBufferSize > SAMPLES) {
-		available = SAMPLES - audioBufferSize;
-	}
-	available &= ~((32 / sizeof(struct GBAStereoSample)) - 1); // Force align to 32 bytes
-	if (available > 0) {
-		// These appear to be reversed for AUDIO_InitDMA
-		blip_read_samples(runner->core->getAudioChannel(runner->core, 0), &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
-		blip_read_samples(runner->core->getAudioChannel(runner->core, 1), &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
-		audioBufferSize += available;
-	}
-	if (audioBufferSize == SAMPLES && !AUDIO_GetDMAEnableFlag()) {
-		_audioDMA();
-		AUDIO_StartDMA();
-	}
-
+	UNUSED(runner);
 	uint32_t color = 0xFFFFFF3F;
 	if (!faded) {
 		color |= 0xC0;
