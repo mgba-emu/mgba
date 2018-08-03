@@ -647,6 +647,8 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	if ((size_t) blip_samples_avail(audio->left) < audio->samples) {
 		blip_add_delta(audio->left, audio->clock, sampleLeft - audio->lastLeft);
 		blip_add_delta(audio->right, audio->clock, sampleRight - audio->lastRight);
+		audio->lastLeft = sampleLeft;
+		audio->lastRight = sampleRight;
 		audio->clock += audio->sampleInterval;
 		if (audio->clock >= CLOCKS_PER_BLIP_FRAME) {
 			blip_end_frame(audio->left, CLOCKS_PER_BLIP_FRAME);
@@ -654,8 +656,6 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 			audio->clock -= CLOCKS_PER_BLIP_FRAME;
 		}
 	}
-	audio->lastLeft = sampleLeft;
-	audio->lastRight = sampleRight;
 	produced = blip_samples_avail(audio->left);
 	if (audio->p->stream && audio->p->stream->postAudioFrame) {
 		audio->p->stream->postAudioFrame(audio->p->stream, sampleLeft, sampleRight);
