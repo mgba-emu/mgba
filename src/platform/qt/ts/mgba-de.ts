@@ -3781,7 +3781,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../Window.cpp" line="1504"/>
         <source>Open debugger console...</source>
-        <translation>Debugger-Konsole äffnen...</translation>
+        <translation>Debugger-Konsole öffnen...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1510"/>
