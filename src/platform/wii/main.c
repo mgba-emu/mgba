@@ -253,7 +253,8 @@ int main(int argc, char* argv[]) {
 	memset(audioBuffer, 0, sizeof(audioBuffer));
 #ifdef FIXED_ROM_BUFFER
 	romBufferSize = SIZE_CART0;
-	romBuffer = anonymousMemoryMap(romBufferSize);
+	romBuffer = SYS_GetArena2Lo();
+	SYS_SetArena2Lo((void*)((intptr_t) romBuffer + SIZE_CART0));
 #endif
 
 #if !defined(COLOR_16_BIT) && !defined(COLOR_5_6_5)
@@ -529,10 +530,6 @@ int main(int argc, char* argv[]) {
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
 	mGUIDeinit(&runner);
-
-#ifdef FIXED_ROM_BUFFER
-	mappedMemoryFree(romBuffer, romBufferSize);
-#endif
 
 	free(fifo);
 	free(texmem);
