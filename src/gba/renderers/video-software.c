@@ -722,7 +722,7 @@ static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer,
 }
 
 static void _enableBg(struct GBAVideoSoftwareRenderer* renderer, int bg, bool active) {
-	if (renderer->d.disableBG[bg] || !active) {
+	if (!active) {
 		renderer->bg[bg].enabled = 0;
 	} else if (!renderer->bg[bg].enabled && active) {
 		if (renderer->nextY == 0) {
@@ -799,6 +799,7 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 }
 
 #define TEST_LAYER_ENABLED(X) \
+	!renderer->d.disableBG[X] && \
 	(renderer->bg[X].enabled == 4 && \
 	(GBAWindowControlIsBg ## X ## Enable(renderer->currentWindow.packed) || \
 	(GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt) && GBAWindowControlIsBg ## X ## Enable (renderer->objwin.packed))) && \

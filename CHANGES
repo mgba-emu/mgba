@@ -44,6 +44,7 @@ Bugfixes:
  - GB Video: Fix SCX timing
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1126)
  - GB, GBA Savedata: Fix savestate loading overwriting saves on reset
+ - GBA Video: Make layer disabling work consistently
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
