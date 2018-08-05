@@ -471,6 +471,7 @@ void GBADebug(struct GBA* gba, uint16_t flags) {
 		level &= 0x1F;
 		char oolBuf[0x101];
 		strncpy(oolBuf, gba->debugString, sizeof(gba->debugString));
+		memset(gba->debugString, 0, sizeof(gba->debugString));
 		oolBuf[0x100] = '\0';
 		mLog(_mLOG_CAT_GBA_DEBUG(), level, "%s", oolBuf);
 	}
