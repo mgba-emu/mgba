@@ -35,6 +35,8 @@
 #define TEX_W 256
 #define TEX_H 224
 
+#define ANALOG_DEADZONE 0x30
+
 static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, enum GBAKey key) {
 	mInputBindKey(map, binding, __builtin_ctz(nativeKey), key);
 }
@@ -637,16 +639,16 @@ static uint32_t _pollInput(const struct mInputMap* map) {
 	int y = PAD_StickY(0);
 	int w_x = WPAD_StickX(0, 0);
 	int w_y = WPAD_StickY(0, 0);
-	if (x < -0x20 || w_x < -0x20) {
+	if (x < -ANALOG_DEADZONE || w_x < -ANALOG_DEADZONE) {
 		keys |= 1 << GUI_INPUT_LEFT;
 	}
-	if (x > 0x20 || w_x > 0x20) {
+	if (x > ANALOG_DEADZONE || w_x > ANALOG_DEADZONE) {
 		keys |= 1 << GUI_INPUT_RIGHT;
 	}
-	if (y < -0x20 || w_y <- 0x20) {
+	if (y < -ANALOG_DEADZONE || w_y < -ANALOG_DEADZONE) {
 		keys |= 1 << GUI_INPUT_DOWN;
 	}
-	if (y > 0x20 || w_y > 0x20) {
+	if (y > ANALOG_DEADZONE || w_y > ANALOG_DEADZONE) {
 		keys |= 1 << GUI_INPUT_UP;
 	}
 	return keys;
@@ -727,10 +729,10 @@ void _setup(struct mGUIRunner* runner) {
 	_mapKey(&runner->core->inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_FULL_L, GBA_KEY_L);
 	_mapKey(&runner->core->inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_FULL_R, GBA_KEY_R);
 
-	struct mInputAxis desc = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x20, -0x20 };
+	struct mInputAxis desc = { GBA_KEY_RIGHT, GBA_KEY_LEFT, ANALOG_DEADZONE, -ANALOG_DEADZONE };
 	mInputBindAxis(&runner->core->inputMap, GCN1_INPUT, 0, &desc);
 	mInputBindAxis(&runner->core->inputMap, CLASSIC_INPUT, 0, &desc);
-	desc = (struct mInputAxis) { GBA_KEY_UP, GBA_KEY_DOWN, 0x20, -0x20 };
+	desc = (struct mInputAxis) { GBA_KEY_UP, GBA_KEY_DOWN, ANALOG_DEADZONE, -ANALOG_DEADZONE };
 	mInputBindAxis(&runner->core->inputMap, GCN1_INPUT, 1, &desc);
 	mInputBindAxis(&runner->core->inputMap, CLASSIC_INPUT, 1, &desc);
 
