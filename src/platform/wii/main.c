@@ -998,77 +998,65 @@ int32_t _readGyroZ(struct mRotationSource* source) {
 }
 
 static s8 WPAD_StickX(u8 chan, u8 right) {
-	float mag = 0.0;
-	float ang = 0.0;
-	WPADData *data = WPAD_Data(chan);
+	struct expansion_t exp;
+	WPAD_Expansion(chan, &exp);
+	struct joystick_t* js = NULL;
 
-	switch (data->exp.type)	{
+	switch (exp.type)	{
 	case WPAD_EXP_NUNCHUK:
 	case WPAD_EXP_GUITARHERO3:
 		if (right == 0) {
-			mag = data->exp.nunchuk.js.mag;
-			ang = data->exp.nunchuk.js.ang;
+			js = &exp.nunchuk.js;
 		}
 		break;
 	case WPAD_EXP_CLASSIC:
 		if (right == 0) {
-			mag = data->exp.classic.ljs.mag;
-			ang = data->exp.classic.ljs.ang;
+			js = &exp.classic.ljs;
 		} else {
-			mag = data->exp.classic.rjs.mag;
-			ang = data->exp.classic.rjs.ang;
+			js = &exp.classic.rjs;
 		}
 		break;
 	default:
 		break;
 	}
 
-	/* calculate X value (angle need to be converted into radian) */
-	if (mag > 1.0) {
-		mag = 1.0;
-	} else if (mag < -1.0) {
-		mag = -1.0;
+	if (!js) {
+		return 0;
 	}
-	double val = mag * sinf(M_PI * ang / 180.0f);
- 
-	return (s8)(val * 128.0f);
+	int centered = (int) js->pos.x - (int) js->center.x;
+	int range = js->max.x - js->min.x;
+	return (centered * 0xFF) / range;
 }
 
 static s8 WPAD_StickY(u8 chan, u8 right) {
-	float mag = 0.0;
-	float ang = 0.0;
-	WPADData *data = WPAD_Data(chan);
+	struct expansion_t exp;
+	WPAD_Expansion(chan, &exp);
+	struct joystick_t* js = NULL;
 
-	switch (data->exp.type) {
+	switch (exp.type)	{
 	case WPAD_EXP_NUNCHUK:
 	case WPAD_EXP_GUITARHERO3:
 		if (right == 0) {
-			mag = data->exp.nunchuk.js.mag;
-			ang = data->exp.nunchuk.js.ang;
+			js = &exp.nunchuk.js;
 		}
 		break;
 	case WPAD_EXP_CLASSIC:
 		if (right == 0) {
-			mag = data->exp.classic.ljs.mag;
-			ang = data->exp.classic.ljs.ang;
+			js = &exp.classic.ljs;
 		} else {
-			mag = data->exp.classic.rjs.mag;
-			ang = data->exp.classic.rjs.ang;
+			js = &exp.classic.rjs;
 		}
 		break;
 	default:
 		break;
 	}
 
-	/* calculate X value (angle need to be converted into radian) */
-	if (mag > 1.0) { 
-		mag = 1.0;
-	} else if (mag < -1.0) {
-		mag = -1.0;
+	if (!js) {
+		return 0;
 	}
-	double val = mag * cosf(M_PI * ang / 180.0f);
- 
-	return (s8)(val * 128.0f);
+	int centered = (int) js->pos.y - (int) js->center.y;
+	int range = js->max.y - js->min.y;
+	return (centered * 0xFF) / range;
 }
 
 void _retraceCallback(u32 count) {
