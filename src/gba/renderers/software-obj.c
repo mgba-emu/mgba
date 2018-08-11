@@ -345,6 +345,9 @@ void GBAVideoSoftwareRendererPostprocessSprite(struct GBAVideoSoftwareRenderer* 
 	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt);
 	bool objwinDisable = false;
 	bool objwinOnly = false;
+
+	priority <<= OFFSET_PRIORITY;
+
 	if (objwinSlowPath) {
 		objwinDisable = !GBAWindowControlIsObjEnable(renderer->objwin.packed);
 		objwinOnly = !objwinDisable && !GBAWindowControlIsObjEnable(renderer->currentWindow.packed);
@@ -355,8 +358,11 @@ void GBAVideoSoftwareRendererPostprocessSprite(struct GBAVideoSoftwareRenderer* 
 		if (objwinDisable) {
 			for (x = renderer->start; x < renderer->end; ++x, ++pixel) {
 				uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;
+				if (color >= FLAG_UNWRITTEN) {
+					continue;
+				}
 				uint32_t current = *pixel;
-				if ((color & FLAG_UNWRITTEN) != FLAG_UNWRITTEN && !(current & FLAG_OBJWIN) && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority) {
+				if (!(current & FLAG_OBJWIN) && (color & FLAG_PRIORITY) == priority) {
 					_compositeBlendObjwin(renderer, pixel, color | flags, current);
 				}
 			}
@@ -364,8 +370,11 @@ void GBAVideoSoftwareRendererPostprocessSprite(struct GBAVideoSoftwareRenderer* 
 		} else if (objwinOnly) {
 			for (x = renderer->start; x < renderer->end; ++x, ++pixel) {
 				uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;
+				if (color >= FLAG_UNWRITTEN) {
+					continue;
+				}
 				uint32_t current = *pixel;
-				if ((color & FLAG_UNWRITTEN) != FLAG_UNWRITTEN && (current & FLAG_OBJWIN) && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority) {
+				if ((current & FLAG_OBJWIN) && (color & FLAG_PRIORITY) == priority) {
 					_compositeBlendObjwin(renderer, pixel, color | flags, current);
 				}
 			}
@@ -373,8 +382,11 @@ void GBAVideoSoftwareRendererPostprocessSprite(struct GBAVideoSoftwareRenderer* 
 		} else {
 			for (x = renderer->start; x < renderer->end; ++x, ++pixel) {
 				uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;
-				uint32_t current = *pixel;
-				if ((color & FLAG_UNWRITTEN) != FLAG_UNWRITTEN && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority) {
+				if (color >= FLAG_UNWRITTEN) {
+					continue;
+				}
+				if ((color & FLAG_PRIORITY) == priority) {
+					uint32_t current = *pixel;
 					_compositeBlendObjwin(renderer, pixel, color | flags, current);
 				}
 			}
@@ -385,8 +397,11 @@ void GBAVideoSoftwareRendererPostprocessSprite(struct GBAVideoSoftwareRenderer* 
 	}
 	for (x = renderer->start; x < renderer->end; ++x, ++pixel) {
 		uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;
-		uint32_t current = *pixel;
-		if ((color & FLAG_UNWRITTEN) != FLAG_UNWRITTEN && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority) {
+		if (color >= FLAG_UNWRITTEN) {
+			continue;
+		}
+		if ((color & FLAG_PRIORITY) == priority) {
+			uint32_t current = *pixel;
 			_compositeBlendNoObjwin(renderer, pixel, color | flags, current);
 		}
 	}
