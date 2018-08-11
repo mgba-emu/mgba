@@ -74,7 +74,7 @@
 			inX -= disturbX << 3; \
 			localX = tileX * 8 + inX; \
 			BACKGROUND_TEXT_SELECT_CHARACTER; \
-			localY = inY & 0x7; \
+			localY = inY; \
 			if (GBA_TEXT_MAP_VFLIP(mapData)) { \
 				localY = 7 - localY; \
 			} \
@@ -83,7 +83,7 @@
 		} else { \
 			localX = tileX * 8 + inX; \
 			BACKGROUND_TEXT_SELECT_CHARACTER; \
-			localY = inY & 0x7; \
+			localY = inY; \
 			if (GBA_TEXT_MAP_VFLIP(mapData)) { \
 				localY = 7 - localY; \
 			} \
@@ -111,9 +111,9 @@
 	for (; length; ++tileX) { \
 		mapData = background->mapCache[(localX >> 3) & 0x3F]; \
 		localX += 8; \
-		localY = inY & 0x7; \
+		localY = inY; \
 		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
-			localY = 7 - localY; \
+			localY ^= 7; \
 		} \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
 		tileData = carryData; \
@@ -149,9 +149,9 @@
 	for (; tileX < tileEnd; ++tileX) { \
 		mapData = background->mapCache[(localX >> 3) & 0x3F]; \
 		localX += 8; \
-		localY = inY & 0x7; \
+		localY = inY; \
 		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
-			localY = 7 - localY; \
+			localY ^= 7; \
 		} \
 		paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 		palette = &mainPalette[paletteData]; \
@@ -282,9 +282,9 @@
 	for (; tileX < tileEnd; ++tileX) { \
 		mapData = background->mapCache[(localX >> 3) & 0x3F]; \
 		localX += 8; \
-		localY = inY & 0x7; \
+		localY = inY; \
 		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
-			localY = 7 - localY; \
+			localY ^= 7; \
 		} \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 		if (UNLIKELY(charBase >= 0x10000)) { \
@@ -333,9 +333,9 @@
 	for (; tileX < tileEnd; ++tileX) { \
 		mapData = background->mapCache[(localX >> 3) & 0x3F]; \
 		localX += 8; \
-		localY = inY & 0x7; \
+		localY = inY; \
 		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
-			localY = 7 - localY; \
+			localY ^= 7; \
 		} \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 		tileData = carryData; \
@@ -388,9 +388,9 @@
 	if (inX & 0x7) { \
 		localX = tileX * 8 + inX; \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
-		localY = inY & 0x7; \
+		localY = inY; \
 		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
-			localY = 7 - localY; \
+			localY ^= 7; \
 		} \
 		int mod8 = inX & 0x7; \
 		int end = outX + 0x8 - mod8; \
@@ -426,9 +426,9 @@
 	if (length & 0x7) { \
 		localX = tileX * 8 + inX; \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
-		localY = inY & 0x7; \
+		localY = inY; \
 		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
-			localY = 7 - localY; \
+			localY ^= 7; \
 		} \
 		int mod8 = length & 0x7; \
 		if (VIDEO_CHECKS && UNLIKELY(outX + mod8 != renderer->end)) { \
@@ -507,6 +507,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 		background->yCache = inY >> 3;
 	}
 
+	inY &= 7;
 	tileX = 0;
 	if (!objwinSlowPath) {
 		if (!(flags & FLAG_TARGET_2)) {
