@@ -238,6 +238,7 @@ void Window::reloadConfig() {
 			m_audioProcessor->setBufferSamples(opts->audioBuffers);
 			m_audioProcessor->requestSampleRate(opts->sampleRate);
 		}
+		m_display->resizeContext();
 	}
 	m_display->lockAspectRatio(opts->lockAspectRatio);
 	m_display->filter(opts->resampleVideo);
@@ -1808,7 +1809,7 @@ void Window::focusCheck() {
 void Window::updateFrame() {
 	QSize size = m_controller->screenDimensions();
 	QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), size.width(), size.height(),
-	                    size.width() * BYTES_PER_PIXEL, QImage::Format_RGBX8888);
+	                    256 * BYTES_PER_PIXEL, QImage::Format_RGBX8888);
 	QPixmap pixmap;
 	pixmap.convertFromImage(currentImage);
 	m_screenWidget->setPixmap(pixmap);

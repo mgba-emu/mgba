@@ -90,14 +90,8 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 		controller->m_resetActions.clear();
 
-		QSize size = controller->screenDimensions();
-		controller->m_buffers[0].resize(size.width() * size.height() * sizeof(color_t));
-		controller->m_buffers[1].resize(size.width() * size.height() * sizeof(color_t));
-		controller->m_buffers[0].fill(0xFF);
-		controller->m_buffers[1].fill(0xFF);
 		controller->m_activeBuffer = &controller->m_buffers[0];
-
-		context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), size.width());
+		context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), 256);
 
 		controller->finishFrame();
 	};
