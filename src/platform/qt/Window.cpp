@@ -848,6 +848,7 @@ void Window::reloadDisplayDriver() {
 	if (m_controller) {
 		m_display->setMinimumSize(m_controller->screenDimensions());
 		connect(m_controller.get(), &CoreController::stopping, m_display.get(), &Display::stopDrawing);
+		connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::resizeContext);
 		connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::forceDraw);
 		connect(m_controller.get(), &CoreController::rewound, m_display.get(), &Display::forceDraw);
 		connect(m_controller.get(), &CoreController::paused, m_display.get(), &Display::pauseDrawing);
@@ -1871,6 +1872,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	});
 
 	connect(m_controller.get(), &CoreController::stopping, m_display.get(), &Display::stopDrawing);
+	connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::resizeContext);
 	connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::forceDraw);
 	connect(m_controller.get(), &CoreController::rewound, m_display.get(), &Display::forceDraw);
 	connect(m_controller.get(), &CoreController::paused, m_display.get(), &Display::pauseDrawing);

@@ -61,6 +61,7 @@ void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user) {
 			}
 #endif
 		}
+		renderer->core->desiredVideoDimensions(renderer->core, &renderer->width, &renderer->height);
 		if (renderer->width != v->width || renderer->height != v->height) {
 			renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
 			v->setDimensions(v, renderer->width, renderer->height);
