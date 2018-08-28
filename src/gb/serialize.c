@@ -43,7 +43,8 @@ void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	STORE_16LE(gb->cpu->sp, 0, &state->cpu.sp);
 	STORE_16LE(gb->cpu->pc, 0, &state->cpu.pc);
 
-	STORE_32LE(gb->cpu->cycles, 0, &state->cpu.cycles);
+	int32_t cycles = gb->cpu->nextEvent - gb->cpu->cycles;
+	STORE_32LE(cycles, 0, &state->cpu.cycles);
 	STORE_32LE(gb->cpu->nextEvent, 0, &state->cpu.nextEvent);
 
 	STORE_16LE(gb->cpu->index, 0, &state->cpu.index);
@@ -163,8 +164,10 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->doubleSpeed = GBSerializedCpuFlagsGetDoubleSpeed(flags);
 	gb->audio.timingFactor = gb->doubleSpeed + 1;
 
-	LOAD_32LE(gb->cpu->cycles, 0, &state->cpu.cycles);
+	int32_t cycles;
+	LOAD_32LE(cycles, 0, &state->cpu.cycles);
 	LOAD_32LE(gb->cpu->nextEvent, 0, &state->cpu.nextEvent);
+	gb->cpu->cycles = gb->cpu->nextEvent - cycles;
 	gb->timing.root = NULL;
 
 	uint32_t when;

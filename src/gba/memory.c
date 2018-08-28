@@ -1613,7 +1613,7 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	memory->lastPrefetchedPc = cpu->gprs[ARM_PC] + WORD_SIZE_THUMB * (loads + previousLoads - 1);
 
 	// The next |loads|S waitstates disappear entirely, so long as they're all in a row
-	cpu->cycles -= (s - 1) * loads;
+	cpu->cycles += (s - 1) * loads;
 	return wait;
 }
 

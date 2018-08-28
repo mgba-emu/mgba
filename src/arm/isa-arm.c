@@ -288,7 +288,7 @@ ATTRIBUTE_NOINLINE static void _neutralS(struct ARMCore* cpu, int32_t d) {
 	static void _ARMInstruction ## NAME (struct ARMCore* cpu, uint32_t opcode) { \
 		int currentCycles = ARM_PREFETCH_CYCLES; \
 		BODY; \
-		cpu->cycles += currentCycles; \
+		cpu->cycles -= currentCycles; \
 	}
 
 #define DEFINE_ALU_INSTRUCTION_EX_ARM(NAME, S_BODY, SHIFTER, BODY) \

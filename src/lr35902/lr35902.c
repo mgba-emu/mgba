@@ -102,7 +102,7 @@ static void _LR35902InstructionIRQ(struct LR35902Core* cpu) {
 }
 
 static void _LR35902Step(struct LR35902Core* cpu) {
-	++cpu->cycles;
+	--cpu->cycles;
 	enum LR35902ExecutionState state = cpu->executionState;
 	cpu->executionState = LR35902_CORE_IDLE_0;
 	switch (state) {
@@ -137,44 +137,44 @@ static void _LR35902Step(struct LR35902Core* cpu) {
 }
 
 void LR35902Tick(struct LR35902Core* cpu) {
-	while (cpu->cycles >= cpu->nextEvent) {
+	while (cpu->cycles <= 0) {
 		cpu->irqh.processEvents(cpu);
 	}
 	_LR35902Step(cpu);
-	if (cpu->cycles + 2 >= cpu->nextEvent) {
-		int32_t diff = cpu->nextEvent - cpu->cycles;
-		cpu->cycles = cpu->nextEvent;
+	if (cpu->cycles <= 2) {
+		int32_t diff = cpu->cycles;
+		cpu->cycles = 0;
 		cpu->executionState += diff;
 		cpu->irqh.processEvents(cpu);
-		cpu->cycles += LR35902_CORE_EXECUTE - cpu->executionState;
+		cpu->cycles -= LR35902_CORE_EXECUTE - cpu->executionState;
 	} else {
-		cpu->cycles += 2;
+		cpu->cycles -= 2;
 	}
 	cpu->executionState = LR35902_CORE_FETCH;
 	cpu->instruction(cpu);
-	++cpu->cycles;
+	--cpu->cycles;
 }
 
 void LR35902Run(struct LR35902Core* cpu) {
 	bool running = true;
 	while (running || cpu->executionState != LR35902_CORE_FETCH) {
-		if (cpu->cycles >= cpu->nextEvent) {
+		if (cpu->cycles <= 0) {
 			cpu->irqh.processEvents(cpu);
 			break;
 		}
 		_LR35902Step(cpu);
-		if (cpu->cycles + 2 >= cpu->nextEvent) {
-			int32_t diff = cpu->nextEvent - cpu->cycles;
-			cpu->cycles = cpu->nextEvent;
+		if (cpu->cycles <= 2) {
+			int32_t diff = cpu->cycles;
+			cpu->cycles = 0;
 			cpu->executionState += diff;
 			cpu->irqh.processEvents(cpu);
-			cpu->cycles += LR35902_CORE_EXECUTE - cpu->executionState;
+			cpu->cycles -= LR35902_CORE_EXECUTE - cpu->executionState;
 			running = false;
 		} else {
-			cpu->cycles += 2;
+			cpu->cycles -= 2;
 		}
 		cpu->executionState = LR35902_CORE_FETCH;
 		cpu->instruction(cpu);
-		++cpu->cycles;
+		--cpu->cycles;
 	}
 }

@@ -251,23 +251,20 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 	}
 
 	int32_t nextEvent = cpu->nextEvent;
-	while (cpu->cycles >= nextEvent) {
+	while (cpu->cycles <= 0) {
+		int32_t cycles = cpu->nextEvent - cpu->cycles;
 		cpu->nextEvent = INT_MAX;
-		nextEvent = 0;
+		cpu->cycles = INT_MAX;
+		nextEvent = cycles;
 		do {
-			int32_t cycles = cpu->cycles;
-			cpu->cycles = 0;
-#ifndef NDEBUG
-			if (cycles < 0) {
-				mLOG(GBA, FATAL, "Negative cycles passed: %i", cycles);
-			}
-#endif
-			nextEvent = mTimingTick(&gba->timing, nextEvent + cycles);
+			nextEvent = mTimingTick(&gba->timing, nextEvent);
 		} while (gba->cpuBlocked);
 
 		cpu->nextEvent = nextEvent;
+		cpu->cycles = nextEvent;
+
 		if (cpu->halted) {
-			cpu->cycles = nextEvent;
+			cpu->cycles = 0;
 			if (!gba->memory.io[REG_IME >> 1] || !gba->memory.io[REG_IE >> 1]) {
 				break;
 			}
@@ -499,12 +496,13 @@ void GBATestIRQ(struct ARMCore* cpu) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	if (gba->memory.io[REG_IME >> 1] && gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1]) {
 		gba->springIRQ = gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1];
-		gba->cpu->nextEvent = gba->cpu->cycles;
+		gba->cpu->nextEvent -= gba->cpu->cycles;
+		gba->cpu->cycles = 0;
 	}
 }
 
 void GBAHalt(struct GBA* gba) {
-	gba->cpu->nextEvent = gba->cpu->cycles;
+	gba->cpu->cycles = 0;
 	gba->cpu->halted = 1;
 }
 
@@ -516,7 +514,7 @@ void GBAStop(struct GBA* gba) {
 			callbacks->sleep(callbacks->context);
 		}
 	}
-	gba->cpu->nextEvent = gba->cpu->cycles;
+	gba->cpu->cycles = 0;
 }
 
 void GBADebug(struct GBA* gba, uint16_t flags) {

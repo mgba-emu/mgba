@@ -51,7 +51,7 @@
 	static void _ThumbInstruction ## NAME (struct ARMCore* cpu, uint16_t opcode) {  \
 		int currentCycles = THUMB_PREFETCH_CYCLES; \
 		BODY; \
-		cpu->cycles += currentCycles; \
+		cpu->cycles -= currentCycles; \
 	}
 
 #define DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(NAME, BODY) \

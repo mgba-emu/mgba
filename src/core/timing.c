@@ -23,9 +23,10 @@ void mTimingClear(struct mTiming* timing) {
 }
 
 void mTimingSchedule(struct mTiming* timing, struct mTimingEvent* event, int32_t when) {
-	int32_t nextEvent = when + *timing->relativeCycles;
+	int32_t nextEvent = when + *timing->nextEvent - *timing->relativeCycles;
 	event->when = nextEvent + timing->masterCycles;
-	if (nextEvent < *timing->nextEvent) {
+	if (when < *timing->relativeCycles) {
+		*timing->relativeCycles = when;
 		*timing->nextEvent = nextEvent;
 	}
 	struct mTimingEvent** previous = &timing->root;
@@ -91,7 +92,7 @@ int32_t mTimingTick(struct mTiming* timing, int32_t cycles) {
 }
 
 int32_t mTimingCurrentTime(const struct mTiming* timing) {
-	return timing->masterCycles + *timing->relativeCycles;
+	return timing->masterCycles + *timing->nextEvent - *timing->relativeCycles;
 }
 
 int32_t mTimingNextEvent(struct mTiming* timing) {
@@ -99,9 +100,9 @@ int32_t mTimingNextEvent(struct mTiming* timing) {
 	if (!next) {
 		return INT_MAX;
 	}
-	return next->when - timing->masterCycles - *timing->relativeCycles;
+	return next->when - timing->masterCycles - *timing->nextEvent + *timing->relativeCycles;
 }
 
 int32_t mTimingUntil(const struct mTiming* timing, const struct mTimingEvent* event) {
-	return event->when - timing->masterCycles - *timing->relativeCycles;
+	return event->when - timing->masterCycles - *timing->nextEvent + *timing->relativeCycles;
 }

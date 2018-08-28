@@ -139,7 +139,9 @@ void ARMDebuggerDeinit(struct mDebuggerPlatform* platform) {
 static void ARMDebuggerEnter(struct mDebuggerPlatform* platform, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) platform;
 	struct ARMCore* cpu = debugger->cpu;
-	cpu->nextEvent = cpu->cycles;
+	cpu->nextEvent -= cpu->cycles;
+	cpu->cycles = 0;
+
 	if (reason == DEBUGGER_ENTER_BREAKPOINT) {
 		struct ARMDebugBreakpoint* breakpoint = _lookupBreakpoint(&debugger->swBreakpoints, _ARMPCAddress(cpu));
 		if (breakpoint && breakpoint->isSw) {

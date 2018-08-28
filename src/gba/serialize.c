@@ -44,7 +44,9 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	}
 	STORE_32(gba->cpu->cpsr.packed, 0, &state->cpu.cpsr.packed);
 	STORE_32(gba->cpu->spsr.packed, 0, &state->cpu.spsr.packed);
-	STORE_32(gba->cpu->cycles, 0, &state->cpu.cycles);
+
+	int32_t cycles = gba->cpu->nextEvent - gba->cpu->cycles;
+	STORE_32(cycles, 0, &state->cpu.cycles);
 	STORE_32(gba->cpu->nextEvent, 0, &state->cpu.nextEvent);
 	for (i = 0; i < 6; ++i) {
 		int j;
@@ -136,8 +138,12 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	}
 	LOAD_32(gba->cpu->cpsr.packed, 0, &state->cpu.cpsr.packed);
 	LOAD_32(gba->cpu->spsr.packed, 0, &state->cpu.spsr.packed);
-	LOAD_32(gba->cpu->cycles, 0, &state->cpu.cycles);
+
+	int32_t cycles;
+	LOAD_32(cycles, 0, &state->cpu.cycles);
 	LOAD_32(gba->cpu->nextEvent, 0, &state->cpu.nextEvent);
+	gba->cpu->cycles = gba->cpu->nextEvent - cycles;
+
 	for (i = 0; i < 6; ++i) {
 		int j;
 		for (j = 0; j < 7; ++j) {

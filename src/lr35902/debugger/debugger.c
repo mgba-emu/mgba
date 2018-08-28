@@ -123,7 +123,8 @@ static void LR35902DebuggerEnter(struct mDebuggerPlatform* platform, enum mDebug
 	UNUSED(info);
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) platform;
 	struct LR35902Core* cpu = debugger->cpu;
-	cpu->nextEvent = cpu->cycles;
+	cpu->nextEvent -= cpu->cycles;
+	cpu->cycles = 0;
 
 	if (debugger->d.p->entered) {
 		debugger->d.p->entered(debugger->d.p, reason, info);

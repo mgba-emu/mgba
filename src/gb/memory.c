@@ -476,8 +476,9 @@ void GBMemoryDMA(struct GB* gb, uint16_t base) {
 	}
 	mTimingDeschedule(&gb->timing, &gb->memory.dmaEvent);
 	mTimingSchedule(&gb->timing, &gb->memory.dmaEvent, 8);
-	if (gb->cpu->cycles + 8 < gb->cpu->nextEvent) {
-		gb->cpu->nextEvent = gb->cpu->cycles + 8;
+	if (gb->cpu->cycles < 8) {
+		gb->cpu->nextEvent += 8 - gb->cpu->cycles;
+		gb->cpu->cycles = 8;
 	}
 	gb->memory.dmaSource = base;
 	gb->memory.dmaDest = 0;

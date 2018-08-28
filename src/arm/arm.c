@@ -166,7 +166,7 @@ void ARMRaiseIRQ(struct ARMCore* cpu) {
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
-	cpu->cycles += currentCycles;
+	cpu->cycles -= currentCycles;
 }
 
 void ARMRaiseSWI(struct ARMCore* cpu) {
@@ -186,7 +186,7 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
-	cpu->cycles += currentCycles;
+	cpu->cycles -= currentCycles;
 }
 
 void ARMRaiseUndefined(struct ARMCore* cpu) {
@@ -206,7 +206,7 @@ void ARMRaiseUndefined(struct ARMCore* cpu) {
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
-	cpu->cycles += currentCycles;
+	cpu->cycles -= currentCycles;
 }
 
 static inline void ARMStep(struct ARMCore* cpu) {
@@ -265,7 +265,7 @@ static inline void ARMStep(struct ARMCore* cpu) {
 			break;
 		}
 		if (!conditionMet) {
-			cpu->cycles += ARM_PREFETCH_CYCLES;
+			cpu->cycles -= ARM_PREFETCH_CYCLES;
 			return;
 		}
 	}
@@ -288,18 +288,18 @@ void ARMRun(struct ARMCore* cpu) {
 	} else {
 		ARMStep(cpu);
 	}
-	if (cpu->cycles >= cpu->nextEvent) {
+	if (cpu->cycles <= 0) {
 		cpu->irqh.processEvents(cpu);
 	}
 }
 
 void ARMRunLoop(struct ARMCore* cpu) {
 	if (cpu->executionMode == MODE_THUMB) {
-		while (cpu->cycles < cpu->nextEvent) {
+		while (cpu->cycles > 0) {
 			ThumbStep(cpu);
 		}
 	} else {
-		while (cpu->cycles < cpu->nextEvent) {
+		while (cpu->cycles > 0) {
 			ARMStep(cpu);
 		}
 	}

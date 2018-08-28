@@ -639,10 +639,10 @@ void GBUpdateIRQs(struct GB* gb) {
 void GBProcessEvents(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	do {
-		int32_t cycles = cpu->cycles;
+		int32_t cycles = cpu->nextEvent - cpu->cycles;
 		int32_t nextEvent;
 
-		cpu->cycles = 0;
+		cpu->cycles = INT_MAX;
 		cpu->nextEvent = INT_MAX;
 
 		nextEvent = cycles;
@@ -650,9 +650,10 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 			nextEvent = mTimingTick(&gb->timing, nextEvent);
 		} while (gb->cpuBlocked);
 		cpu->nextEvent = nextEvent;
+		cpu->cycles = nextEvent;
 
 		if (cpu->halted) {
-			cpu->cycles = cpu->nextEvent;
+			cpu->cycles = 0;
 			if (!gb->memory.ie || !gb->memory.ime) {
 				break;
 			}
@@ -660,7 +661,7 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 		if (gb->earlyExit) {
 			break;
 		}
-	} while (cpu->cycles >= cpu->nextEvent);
+	} while (cpu->cycles <= 0);
 	gb->earlyExit = false;
 }
 
@@ -713,7 +714,7 @@ static void _enableInterrupts(struct mTiming* timing, void* user, uint32_t cycle
 void GBHalt(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	if (!(gb->memory.ie & gb->memory.io[REG_IF])) {
-		cpu->cycles = cpu->nextEvent;
+		cpu->cycles = 0;
 		cpu->halted = true;
 	} else if (gb->model < GB_MODEL_CGB) {
 		mLOG(GB, STUB, "Unimplemented HALT bug");
