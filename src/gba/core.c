@@ -702,29 +702,38 @@ static void _GBACoreDetachDebugger(struct mCore* core) {
 }
 
 static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
-#ifdef USE_ELF
 	bool closeAfter = false;
 	core->symbolTable = mDebuggerSymbolTableCreate();
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef USE_ELF
 	if (!vf) {
 		closeAfter = true;
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".elf", O_RDONLY);
 	}
 #endif
 	if (!vf) {
+		closeAfter = true;
+		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".sym", O_RDONLY);
+	}
+#endif
+	if (!vf) {
 		return;
 	}
+#ifdef USE_ELF
 	struct ELF* elf = ELFOpen(vf);
 	if (elf) {
 #ifdef USE_DEBUGGERS
 		mCoreLoadELFSymbols(core->symbolTable, elf);
 #endif
 		ELFClose(elf);
+	} else
+#endif
+	{
+		mDebuggerLoadARMIPSSymbols(core->symbolTable, vf);
 	}
 	if (closeAfter) {
 		vf->close(vf);
 	}
-#endif
 }
 
 static bool _GBACoreLookupIdentifier(struct mCore* core, const char* name, int32_t* value, int* segment) {

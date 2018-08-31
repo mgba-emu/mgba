@@ -16,6 +16,7 @@ Features:
  - Optional automatic state saving/loading
  - Access to ur0 and uma0 partitions on the Vita
  - Partial support for MBC6, MMM01, TAMA and HuC-1 GB mappers
+ - GBA: ARMIPS/A22i-style and ELF symbol table support
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
  - GB Serialize: Fix audio state loading
