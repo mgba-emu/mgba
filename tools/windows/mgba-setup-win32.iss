@@ -36,7 +36,7 @@ AlwaysShowDirOnReadyPage=True
 UsePreviousSetupType=True
 UsePreviousTasks=True
 AlwaysShowGroupOnReadyPage=True
-LicenseFile=LICENSE.txt
+LicenseFile=LICENSE
 #if CurrentReleaseVersion == AppVer;
   #define IsRelease = 'yes'
   AppVerName=mGBA {#AppVer}
@@ -49,7 +49,7 @@ LicenseFile=LICENSE.txt
 UsePreviousLanguage=False
 DisableWelcomePage=False
 VersionInfoDescription=mGBA is an open-source Game Boy Advance emulator
-VersionInfoCopyright=© 2013–2017 Jeffrey Pfau
+VersionInfoCopyright=© 2013–2018 Jeffrey Pfau
 VersionInfoProductName=mGBA
 VersionInfoVersion={#AppVer}
 Compression=lzma2/ultra64
@@ -73,53 +73,13 @@ Name: "gbafileassoc"; Description: "{cm:AssocFileExtension,mGBA,Game Boy Advance
 
 [Files]
 Source: "mGBA.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "CHANGES.txt"; DestDir: "{app}\"; Flags: ignoreversion isreadme
-Source: "LICENSE.txt"; DestDir: "{app}\"; Flags: ignoreversion
-Source: "mGBA.exe"; DestDir: "{app}\"; Flags: ignoreversion
+Source: "CHANGES"; DestDir: "{app}\"; Flags: ignoreversion isreadme
+Source: "LICENSE"; DestDir: "{app}\"; Flags: ignoreversion
 Source: "nointro.dat"; DestDir: "{app}\"; Flags: ignoreversion
 Source: "README.html"; DestDir: "{app}\"; Flags: ignoreversion isreadme; Languages: english italian spanish
 Source: "README_DE.html"; DestDir: "{app}\"; DestName: "LIESMICH.html"; Flags: ignoreversion isreadme; Languages: german                        
-Source: "shaders\agb001.shader\agb001.fs"; DestDir: "{app}\shaders\agb001.shader\"; Flags: ignoreversion
-Source: "shaders\agb001.shader\manifest.ini"; DestDir: "{app}\shaders\agb001.shader\"; Flags: ignoreversion
-Source: "shaders\ags001.shader\ags001-light.fs"; DestDir: "{app}\shaders\ags001.shader\"; Flags: ignoreversion
-Source: "shaders\ags001.shader\ags001.fs"; DestDir: "{app}\shaders\ags001.shader\"; Flags: ignoreversion
-Source: "shaders\ags001.shader\manifest.ini"; DestDir: "{app}\shaders\ags001.shader\"; Flags: ignoreversion
-Source: "shaders\fish.shader\fish.fs"; DestDir: "{app}\shaders\fish.shader\"; Flags: ignoreversion
-Source: "shaders\fish.shader\manifest.ini"; DestDir: "{app}\shaders\fish.shader\"; Flags: ignoreversion
-Source: "shaders\gba-color.shader\gba-color.fs"; DestDir: "{app}\shaders\gba-color.shader\"; Flags: ignoreversion
-Source: "shaders\gba-color.shader\manifest.ini"; DestDir: "{app}\shaders\gba-color.shader\"; Flags: ignoreversion
-Source: "shaders\lcd.shader\lcd.fs"; DestDir: "{app}\shaders\lcd.shader\"; Flags: ignoreversion
-Source: "shaders\lcd.shader\manifest.ini"; DestDir: "{app}\shaders\lcd.shader\"; Flags: ignoreversion
-Source: "shaders\motion_blur.shader\manifest.ini"; DestDir: "{app}\shaders\motion_blur.shader\"; Flags: ignoreversion
-Source: "shaders\motion_blur.shader\motion_blur.fs"; DestDir: "{app}\shaders\motion_blur.shader\"; Flags: ignoreversion
-Source: "shaders\pixelate.shader\manifest.ini"; DestDir: "{app}\shaders\pixelate.shader\"; Flags: ignoreversion
-Source: "shaders\scanlines.shader\manifest.ini"; DestDir: "{app}\shaders\scanlines.shader\"; Flags: ignoreversion
-Source: "shaders\scanlines.shader\scanlines.fs"; DestDir: "{app}\shaders\scanlines.shader\"; Flags: ignoreversion
-Source: "shaders\soften.shader\manifest.ini"; DestDir: "{app}\shaders\soften.shader\"; Flags: ignoreversion
-Source: "shaders\soften.shader\soften.fs"; DestDir: "{app}\shaders\soften.shader\"; Flags: ignoreversion
-Source: "shaders\vba_pixelate.shader\manifest.ini"; DestDir: "{app}\shaders\vba_pixelate.shader\"; Flags: ignoreversion
-Source: "shaders\vba_pixelate.shader\vba_pixelate.fs"; DestDir: "{app}\shaders\vba_pixelate.shader\"; Flags: ignoreversion
-Source: "shaders\vignette.shader\manifest.ini"; DestDir: "{app}\shaders\vignette.shader\"; Flags: ignoreversion
-Source: "shaders\vignette.shader\vignette.fs"; DestDir: "{app}\shaders\vignette.shader\"; Flags: ignoreversion
-Source: "shaders\wiiu.shader\manifest.ini"; DestDir: "{app}\shaders\wiiu.shader\"; Flags: ignoreversion
-Source: "shaders\wiiu.shader\wiiu.fs"; DestDir: "{app}\shaders\wiiu.shader\"; Flags: ignoreversion
-Source: "shaders\xbr-lv2.shader\manifest.ini"; DestDir: "{app}\shaders\xbr-lv2.shader\"; Flags: ignoreversion
-Source: "shaders\xbr-lv2.shader\xbr.fs"; DestDir: "{app}\shaders\xbr-lv2.shader\"; Flags: ignoreversion
-Source: "shaders\xbr-lv2.shader\xbr.vs"; DestDir: "{app}\shaders\xbr-lv2.shader\"; Flags: ignoreversion
-Source: "shaders\xbr-lv3.shader\manifest.ini"; DestDir: "{app}\shaders\xbr-lv3.shader\"; Flags: ignoreversion
-Source: "shaders\xbr-lv3.shader\xbr.fs"; DestDir: "{app}\shaders\xbr-lv3.shader\"; Flags: ignoreversion
-Source: "shaders\xbr-lv3.shader\xbr.vs"; DestDir: "{app}\shaders\xbr-lv3.shader\"; Flags: ignoreversion
-Source: "third-party\LICENSE.blip-buf"; DestDir: "{app}\third-party\"; Flags: ignoreversion
-Source: "third-party\LICENSE.ffmpeg"; DestDir: "{app}\third-party\"; Flags: ignoreversion
-Source: "third-party\LICENSE.imagemagick"; DestDir: "{app}\third-party\"; Flags: ignoreversion
-Source: "third-party\LICENSE.inih"; DestDir: "{app}\third-party\"; Flags: ignoreversion
-Source: "third-party\LICENSE.lame"; DestDir: "{app}\third-party\"; Flags: ignoreversion
-Source: "third-party\LICENSE.libvpx"; DestDir: "{app}\third-party\"; Flags: ignoreversion
-Source: "third-party\LICENSE.opus"; DestDir: "{app}\third-party\"; Flags: ignoreversion
-Source: "third-party\LICENSE.qt5"; DestDir: "{app}\third-party\"; Flags: ignoreversion
-Source: "third-party\LICENSE.sdl2"; DestDir: "{app}\third-party\"; Flags: ignoreversion
-Source: "third-party\LICENSE.x264"; DestDir: "{app}\third-party\"; Flags: ignoreversion
-Source: "third-party\LICENSE.xvid"; DestDir: "{app}\third-party\"; Flags: ignoreversion
+Source: "shaders\*"; DestDir: "{app}\shaders\"; Flags: ignoreversion recursesubdirs
+Source: "licenses\*"; DestDir: "{app}\licenses\"; Flags: ignoreversion recursesubdirs
 
 [Icons]
 Name: "{commonstartmenu}\mGBA"; Filename: "{app}\mGBA.exe"
@@ -129,22 +89,7 @@ Name: "{commondesktop}\mGBA"; Filename: "{app}\mGBA.exe"; Tasks: desktopicon
 Filename: "{app}\mGBA.exe"; Description: "{cm:LaunchProgram,mGBA}"; Flags: nowait postinstall skipifsilent
 
 [Dirs]
-Name: "{app}\shaders\"
-Name: "{app}\shaders\agb001.shader\"
-Name: "{app}\shaders\ags001.shader\"
-Name: "{app}\shaders\fish.shader\"
-Name: "{app}\shaders\gba-color.shader\"
-Name: "{app}\shaders\lcd.shader\"
-Name: "{app}\shaders\motion_blur.shader\"
-Name: "{app}\shaders\pixelate.shader\"
-Name: "{app}\shaders\scanlines.shader\"
-Name: "{app}\shaders\soften.shader\"
-Name: "{app}\shaders\vba_pixelate.shader\"
-Name: "{app}\shaders\vignette.shader\"
-Name: "{app}\shaders\wiiu.shader\"
-Name: "{app}\shaders\xbr-lv2.shader\"
-Name: "{app}\shaders\xbr-lv3.shader\"
-Name: "{app}\third-party\"
+Name: "{app}"
 
 [CustomMessages]
 english.FileAssoc=Register file associations
