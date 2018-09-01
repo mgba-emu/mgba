@@ -13,6 +13,10 @@ def install_default(logger):
     Logger.install_default(logger)
 
 
+def silence():
+    Logger.install_default(NullLogger())
+
+
 class Logger(object):
     FATAL = lib.mLOG_FATAL
     DEBUG = lib.mLOG_DEBUG

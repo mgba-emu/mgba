@@ -203,16 +203,19 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		while (impl->state > THREAD_MAX_RUNNING && impl->state < THREAD_EXITING) {
 			deferred = impl->state;
 
-			if (impl->state == THREAD_INTERRUPTING) {
+			switch (deferred) {
+			case THREAD_INTERRUPTING:
 				impl->state = THREAD_INTERRUPTED;
 				ConditionWake(&impl->stateCond);
-			}
-
-			if (impl->state == THREAD_PAUSING) {
+				break;
+			case THREAD_PAUSING:
 				impl->state = THREAD_PAUSED;
-			}
-			if (impl->state == THREAD_RESETING) {
+				break;
+			case THREAD_RESETING:
 				impl->state = THREAD_RUNNING;
+				break;
+			default:
+				break;
 			}
 
 			if (deferred >= THREAD_MIN_DEFERRED && deferred <= THREAD_MAX_DEFERRED) {
@@ -220,6 +223,9 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 			}
 
 			deferred = impl->state;
+			if (deferred == THREAD_INTERRUPTED) {
+				deferred = impl->savedState;
+			}
 			while (impl->state >= THREAD_WAITING && impl->state <= THREAD_MAX_WAITING) {
 				ConditionWait(&impl->stateCond, &impl->stateMutex);
 

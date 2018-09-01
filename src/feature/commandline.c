@@ -39,7 +39,7 @@ static const struct option _options[] = {
 #endif
 	{ "help",      no_argument, 0, 'h' },
 	{ "log-level", required_argument, 0, 'l' },
-	{ "movie",     required_argument, 0, 'v' },
+	{ "savestate", required_argument, 0, 't' },
 	{ "patch",     required_argument, 0, 'p' },
 	{ "version",   no_argument, 0, '\0' },
 	{ 0, 0, 0, 0 }
@@ -68,7 +68,7 @@ static void _tableApply(const char* key, void* value, void* user) {
 bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct mSubParser* subparser) {
 	int ch;
 	char options[64] =
-		"b:c:C:hl:p:s:v:"
+		"b:c:C:hl:p:s:t:"
 #ifdef USE_EDITLINE
 		"d"
 #endif
@@ -132,8 +132,8 @@ bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct
 		case 's':
 			args->frameskip = atoi(optarg);
 			break;
-		case 'v':
-			args->movie = strdup(optarg);
+		case 't':
+			args->savestate = strdup(optarg);
 			break;
 		default:
 			if (subparser) {
@@ -179,8 +179,8 @@ void freeArguments(struct mArguments* args) {
 	free(args->patch);
 	args->patch = 0;
 
-	free(args->movie);
-	args->movie = 0;
+	free(args->savestate);
+	args->savestate = 0;
 
 	free(args->cheatsFile);
 	args->cheatsFile = 0;
@@ -244,7 +244,7 @@ void usage(const char* arg0, const char* extraOptions) {
 	puts("  -g, --gdb                  Start GDB session (default port 2345)");
 #endif
 	puts("  -l, --log-level N          Log level mask");
-	puts("  -v, --movie FILE           Play back a movie of recorded input");
+	puts("  -t, --savestate FILE       Load savestate when starting");
 	puts("  -p, --patch FILE           Apply a specified patch file when running");
 	puts("  -s, --frameskip N          Skip every N frames");
 	puts("  --version                  Print version and exit");

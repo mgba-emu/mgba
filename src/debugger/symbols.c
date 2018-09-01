@@ -5,7 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/debugger/symbols.h>
 
+#include <mgba-util/string.h>
 #include <mgba-util/table.h>
+#include <mgba-util/vfs.h>
 
 struct mDebuggerSymbol {
 	int32_t value;
@@ -46,4 +48,41 @@ void mDebuggerSymbolAdd(struct mDebuggerSymbols* st, const char* name, int32_t v
 
 void mDebuggerSymbolRemove(struct mDebuggerSymbols* st, const char* name) {
 	HashTableRemove(&st->names, name);
+}
+
+void mDebuggerLoadARMIPSSymbols(struct mDebuggerSymbols* st, struct VFile* vf) {
+	char line[512];
+
+	while (true) {
+		ssize_t bytesRead = vf->readline(vf, line, sizeof(line));
+		if (bytesRead <= 0) {
+			break;
+		}
+		if (line[bytesRead - 1] == '\n') {
+			line[bytesRead - 1] = '\0';
+		}
+		uint32_t address = 0;
+		const char* buf = line;
+		buf = hex32(buf, &address);
+		if (!buf) {
+			continue;
+		}
+		bytesRead -= 8;
+
+		while (isspace((int) buf[0]) && bytesRead > 0) {
+			--bytesRead;
+			++buf;
+		}
+
+		if (!bytesRead) {
+			continue;
+		}
+
+		if (buf[0] == '.') {
+			// Directives are not handled yet
+			continue;
+		}
+
+		mDebuggerSymbolAdd(st, buf, address, -1);
+	}
 }

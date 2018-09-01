@@ -374,6 +374,10 @@ struct GBSerializedState {
 				uint32_t writable;
 			} mbc7;
 			struct {
+				uint8_t locked;
+				uint8_t bank0;
+			} mmm01;
+			struct {
 				uint8_t reserved[16];
 			} padding;
 		};

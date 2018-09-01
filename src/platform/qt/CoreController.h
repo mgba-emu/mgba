@@ -103,7 +103,9 @@ public slots:
 	void forceFastForward(bool);
 
 	void loadState(int slot = 0);
+	void loadState(const QString& path);
 	void saveState(int slot = 0);
+	void saveState(const QString& path);
 	void loadBackupState();
 	void saveBackupState();
 
@@ -189,6 +191,7 @@ private:
 	VFileDevice m_backupLoadState;
 	QByteArray m_backupSaveState{nullptr};
 	int m_stateSlot = 1;
+	QString m_statePath;
 	int m_loadStateFlags;
 	int m_saveStateFlags;
 

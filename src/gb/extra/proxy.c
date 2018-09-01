@@ -22,6 +22,7 @@ static void GBVideoProxyRendererWritePalette(struct GBVideoRenderer* renderer, i
 static void GBVideoProxyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
 static void GBVideoProxyRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoProxyRendererFinishFrame(struct GBVideoRenderer* renderer);
+static void GBVideoProxyRendererEnableSGBBorder(struct GBVideoRenderer* renderer, bool enable);
 static void GBVideoProxyRendererGetPixels(struct GBVideoRenderer* renderer, size_t* stride, const void** pixels);
 static void GBVideoProxyRendererPutPixels(struct GBVideoRenderer* renderer, size_t stride, const void* pixels);
 
@@ -39,6 +40,7 @@ void GBVideoProxyRendererCreate(struct GBVideoProxyRenderer* renderer, struct GB
 	renderer->d.drawRange = GBVideoProxyRendererDrawRange;
 	renderer->d.finishScanline = GBVideoProxyRendererFinishScanline;
 	renderer->d.finishFrame = GBVideoProxyRendererFinishFrame;
+	renderer->d.enableSGBBorder = GBVideoProxyRendererEnableSGBBorder;
 	renderer->d.getPixels = GBVideoProxyRendererGetPixels;
 	renderer->d.putPixels = GBVideoProxyRendererPutPixels;
 
@@ -255,6 +257,20 @@ void GBVideoProxyRendererFinishFrame(struct GBVideoRenderer* renderer) {
 	proxyRenderer->backend->finishFrame(proxyRenderer->backend);
 	mVideoLoggerRendererFinishFrame(proxyRenderer->logger);
 	mVideoLoggerRendererFlush(proxyRenderer->logger);
+	if (proxyRenderer->logger->block && proxyRenderer->logger->wait) {
+		proxyRenderer->logger->unlock(proxyRenderer->logger);
+	}
+}
+
+static void GBVideoProxyRendererEnableSGBBorder(struct GBVideoRenderer* renderer, bool enable) {
+	struct GBVideoProxyRenderer* proxyRenderer = (struct GBVideoProxyRenderer*) renderer;
+	if (proxyRenderer->logger->block && proxyRenderer->logger->wait) {
+		proxyRenderer->logger->lock(proxyRenderer->logger);
+		// Insert an extra item into the queue to make sure it gets flushed
+		mVideoLoggerRendererFlush(proxyRenderer->logger);
+		proxyRenderer->logger->wait(proxyRenderer->logger);
+	}
+	proxyRenderer->backend->enableSGBBorder(proxyRenderer->backend, enable);
 	if (proxyRenderer->logger->block && proxyRenderer->logger->wait) {
 		proxyRenderer->logger->unlock(proxyRenderer->logger);
 	}

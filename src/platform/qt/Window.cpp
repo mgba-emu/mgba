@@ -170,6 +170,14 @@ Window::~Window() {
 void Window::argumentsPassed(mArguments* args) {
 	loadConfig();
 
+	if (args->patch) {
+		m_pendingPatch = args->patch;
+	}
+
+	if (args->savestate) {
+		m_pendingState = args->savestate;
+	}
+
 	if (args->fname) {
 		setController(m_manager->loadGame(args->fname), args->fname);
 	}
@@ -230,6 +238,7 @@ void Window::reloadConfig() {
 			m_audioProcessor->setBufferSamples(opts->audioBuffers);
 			m_audioProcessor->requestSampleRate(opts->sampleRate);
 		}
+		m_display->resizeContext();
 	}
 	m_display->lockAspectRatio(opts->lockAspectRatio);
 	m_display->filter(opts->resampleVideo);
@@ -839,6 +848,7 @@ void Window::reloadDisplayDriver() {
 	if (m_controller) {
 		m_display->setMinimumSize(m_controller->screenDimensions());
 		connect(m_controller.get(), &CoreController::stopping, m_display.get(), &Display::stopDrawing);
+		connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::resizeContext);
 		connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::forceDraw);
 		connect(m_controller.get(), &CoreController::rewound, m_display.get(), &Display::forceDraw);
 		connect(m_controller.get(), &CoreController::paused, m_display.get(), &Display::pauseDrawing);
@@ -1190,12 +1200,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 	pause->setCheckable(true);
 	pause->setShortcut(tr("Ctrl+P"));
 	connect(pause, &QAction::triggered, [this](bool paused) {
-		m_controller->setPaused(paused);
+		if (m_controller) {
+			m_controller->setPaused(paused);
+		} else {
+			m_pendingPause = paused;
+		}
 	});
 	connect(this, &Window::paused, [pause](bool paused) {
 		pause->setChecked(paused);
 	});
-	m_gameActions.append(pause);
 	addControlledAction(emulationMenu, pause, "pause");
 
 	QAction* frameAdvance = new QAction(tr("&Next frame"), emulationMenu);
@@ -1797,7 +1810,7 @@ void Window::focusCheck() {
 void Window::updateFrame() {
 	QSize size = m_controller->screenDimensions();
 	QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), size.width(), size.height(),
-	                    size.width() * BYTES_PER_PIXEL, QImage::Format_RGBX8888);
+	                    256 * BYTES_PER_PIXEL, QImage::Format_RGBX8888);
 	QPixmap pixmap;
 	pixmap.convertFromImage(currentImage);
 	m_screenWidget->setPixmap(pixmap);
@@ -1859,6 +1872,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	});
 
 	connect(m_controller.get(), &CoreController::stopping, m_display.get(), &Display::stopDrawing);
+	connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::resizeContext);
 	connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::forceDraw);
 	connect(m_controller.get(), &CoreController::rewound, m_display.get(), &Display::forceDraw);
 	connect(m_controller.get(), &CoreController::paused, m_display.get(), &Display::pauseDrawing);
@@ -1911,6 +1925,16 @@ void Window::setController(CoreController* controller, const QString& fname) {
 
 	m_controller->loadConfig(m_config);
 	m_controller->start();
+
+	if (!m_pendingState.isEmpty()) {
+		m_controller->loadState(m_pendingState);
+		m_pendingState = QString();
+	}
+
+	if (m_pendingPause) {
+		m_controller->setPaused(true);
+		m_pendingPause = false;
+	}
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

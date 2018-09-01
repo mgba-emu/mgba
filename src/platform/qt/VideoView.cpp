@@ -99,7 +99,7 @@ VideoView::VideoView(QWidget* parent)
 
 	setPreset({
 		.container = "MKV",
-		.vcodec = "PNG",
+		.vcodec = "h.264",
 		.acodec = "FLAC",
 		.vbr = 0,
 		.abr = 0,
@@ -179,7 +179,7 @@ void VideoView::updatePresets() {
 	if (m_nativeWidth && m_nativeHeight) {
 		addPreset(m_ui.presetLossless, {
 			.container = "MKV",
-			.vcodec = "PNG",
+			.vcodec = "h.264",
 			.acodec = "FLAC",
 			.vbr = 0,
 			.abr = 0,

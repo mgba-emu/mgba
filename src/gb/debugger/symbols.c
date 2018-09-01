@@ -25,13 +25,14 @@ void GBLoadSymbols(struct mDebuggerSymbols* st, struct VFile* vf) {
 
 		uint8_t byte;
 		const char* buf = line;
-		while (buf) {
+		while (buf && bytesRead >= 2) {
 			buf = hex8(buf, &byte);
 			if (!buf) {
 				break;
 			}
 			address <<= 8;
 			address += byte;
+			bytesRead -= 2;
 
 			if (buf[0] == ':') {
 				segment = address;
@@ -42,12 +43,17 @@ void GBLoadSymbols(struct mDebuggerSymbols* st, struct VFile* vf) {
 				break;
 			}
 		}
-		if (!buf) {
+		if (!buf || bytesRead < 1) {
 			continue;
 		}
 
-		while (isspace((int) buf[0])) {
+		while (isspace((int) buf[0]) && bytesRead > 0) {
+			--bytesRead;
 			++buf;
+		}
+
+		if (!bytesRead) {
+			continue;
 		}
 
 		mDebuggerSymbolAdd(st, buf, address, segment);

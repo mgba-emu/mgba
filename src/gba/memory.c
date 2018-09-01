@@ -121,6 +121,7 @@ void GBAMemoryReset(struct GBA* gba) {
 	}
 
 	memset(gba->memory.io, 0, sizeof(gba->memory.io));
+	GBAAdjustWaitstates(gba, 0);
 
 	gba->memory.agbPrint = 0;
 	memset(&gba->memory.agbPrintCtx, 0, sizeof(gba->memory.agbPrintCtx));

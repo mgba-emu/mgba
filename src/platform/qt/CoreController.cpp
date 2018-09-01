@@ -90,14 +90,8 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 		controller->m_resetActions.clear();
 
-		QSize size = controller->screenDimensions();
-		controller->m_buffers[0].resize(size.width() * size.height() * sizeof(color_t));
-		controller->m_buffers[1].resize(size.width() * size.height() * sizeof(color_t));
-		controller->m_buffers[0].fill(0xFF);
-		controller->m_buffers[1].fill(0xFF);
 		controller->m_activeBuffer = &controller->m_buffers[0];
-
-		context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), size.width());
+		context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), 256);
 
 		controller->finishFrame();
 	};
@@ -465,6 +459,26 @@ void CoreController::loadState(int slot) {
 	});
 }
 
+void CoreController::loadState(const QString& path) {
+	m_statePath = path;
+	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
+		CoreController* controller = static_cast<CoreController*>(context->userData);
+		VFile* vf = VFileDevice::open(controller->m_statePath, O_RDONLY);
+		if (!vf) {
+			return;
+		}
+		if (!controller->m_backupLoadState.isOpen()) {
+			controller->m_backupLoadState = VFileMemChunk(nullptr, 0);
+		}
+		mCoreSaveStateNamed(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
+		if (mCoreLoadStateNamed(context->core, vf, controller->m_loadStateFlags)) {
+			emit controller->frameAvailable();
+			emit controller->stateLoaded();
+		}
+		vf->close(vf);
+	});
+}
+
 void CoreController::saveState(int slot) {
 	if (slot > 0) {
 		m_stateSlot = slot;
@@ -478,6 +492,25 @@ void CoreController::saveState(int slot) {
 			vf->close(vf);
 		}
 		mCoreSaveState(context->core, controller->m_stateSlot, controller->m_saveStateFlags);
+	});
+}
+
+void CoreController::saveState(const QString& path) {
+	m_statePath = path;
+	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
+		CoreController* controller = static_cast<CoreController*>(context->userData);
+		VFile* vf = VFileDevice::open(controller->m_statePath, O_RDONLY);
+		if (vf) {
+			controller->m_backupSaveState.resize(vf->size(vf));
+			vf->read(vf, controller->m_backupSaveState.data(), controller->m_backupSaveState.size());
+			vf->close(vf);
+		}
+		vf = VFileDevice::open(controller->m_statePath, O_WRONLY | O_CREAT | O_TRUNC);
+		if (!vf) {
+			return;
+		}
+		mCoreSaveStateNamed(context->core, vf, controller->m_saveStateFlags);
+		vf->close(vf);
 	});
 }
 
@@ -554,7 +587,7 @@ void CoreController::replaceGame(const QString& path) {
 	QString fname = info.canonicalFilePath();
 	Interrupter interrupter(this);
 	mDirectorySetDetachBase(&m_threadContext.core->dirs);
-	mCoreLoadFile(m_threadContext.core, fname.toLocal8Bit().constData());
+	mCoreLoadFile(m_threadContext.core, fname.toUtf8().constData());
 }
 
 void CoreController::yankPak() {

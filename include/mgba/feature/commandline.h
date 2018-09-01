@@ -18,7 +18,7 @@ struct mArguments {
 	char* fname;
 	char* patch;
 	char* cheatsFile;
-	char* movie;
+	char* savestate;
 	char* bios;
 	int logLevel;
 	int frameskip;

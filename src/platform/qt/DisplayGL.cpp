@@ -159,6 +159,15 @@ void DisplayGL::clearShaders() {
 	QMetaObject::invokeMethod(m_painter, "clearShaders");
 }
 
+
+void DisplayGL::resizeContext() {
+	if (m_drawThread) {
+		m_isDrawing = false;
+		CoreController::Interrupter interrupter(m_context);
+		QMetaObject::invokeMethod(m_painter, "resizeContext", Qt::BlockingQueuedConnection);
+	}
+}
+
 void DisplayGL::resizeEvent(QResizeEvent* event) {
 	Display::resizeEvent(event);
 	resizePainter();
@@ -250,8 +259,11 @@ PainterGL::~PainterGL() {
 
 void PainterGL::setContext(std::shared_ptr<CoreController> context) {
 	m_context = context;
+	resizeContext();
+}
 
-	if (!context) {
+void PainterGL::resizeContext() {
+	if (!m_context) {
 		return;
 	}
 

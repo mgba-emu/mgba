@@ -185,6 +185,7 @@ void GBAReset(struct ARMCore* cpu) {
 
 	struct GBA* gba = (struct GBA*) cpu->master;
 	if (!gba->rr || (!gba->rr->isPlaying(gba->rr) && !gba->rr->isRecording(gba->rr))) {
+		gba->memory.savedata.maskWriteback = false;
 		GBASavedataUnmask(&gba->memory.savedata);
 	}
 
@@ -524,6 +525,7 @@ void GBADebug(struct GBA* gba, uint16_t flags) {
 		level &= 0x1F;
 		char oolBuf[0x101];
 		strncpy(oolBuf, gba->debugString, sizeof(gba->debugString));
+		memset(gba->debugString, 0, sizeof(gba->debugString));
 		oolBuf[0x100] = '\0';
 		mLog(_mLOG_CAT_GBA_DEBUG(), level, "%s", oolBuf);
 	}

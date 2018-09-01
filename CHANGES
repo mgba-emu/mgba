@@ -15,6 +15,8 @@ Features:
  - Ability to select GB/GBC/SGB BIOS on console ports
  - Optional automatic state saving/loading
  - Access to ur0 and uma0 partitions on the Vita
+ - Partial support for MBC6, MMM01, TAMA and HuC-1 GB mappers
+ - GBA: ARMIPS/A22i-style and ELF symbol table support
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
  - GB Serialize: Fix audio state loading
@@ -41,6 +43,13 @@ Bugfixes:
  - GBA BIOS: Fix BitUnPack final byte
  - GB I/O: DMA register is R/W
  - GB Video: Fix SCX timing
+ - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1126)
+ - GB, GBA Savedata: Fix savestate loading overwriting saves on reset
+ - GBA Video: Make layer disabling work consistently
+ - GB: Fix IRQ disabling on the same T-cycle as an assert
+ - Core: Fix ordering events when scheduling during events
+ - GBA: Reset WAITCNT properly
+ - GBA Serialize: Fix loading states in Hblank
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
@@ -67,6 +76,11 @@ Misc:
  - GB, GBA Audio: Increase max audio volume
  - GB: Fix VRAM/palette locking (fixes mgba.io/i/1109)
  - GB Video: Darken colors in GBA mode
+ - FFmpeg: Support libswresample (fixes mgba.io/i/1120, mgba.io/b/123)
+ - FFmpeg: Support lossless h.264 encoding
+ - Feature: Added loading savestates from command line
+ - Qt: Allow pausing game at load (fixes mgba.io/i/1129)
+ - Wii: Move audio handling to callbacks (fixes mgba.io/i/803)
 
 0.6.3: (2017-04-14)
 Bugfixes:

@@ -10,6 +10,7 @@
 #include "LogController.h"
 
 #include <mgba-util/png-io.h>
+#include <mgba-util/vfs.h>
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/memory.h>
 #endif
@@ -184,5 +185,6 @@ void MapView::exportMap() {
 	QImage map = m_rawMap.rgbSwapped();
 	PNGWritePixelsA(png, map.width(), map.height(), map.bytesPerLine() / 4, static_cast<const void*>(map.constBits()));
 	PNGWriteClose(png, info);
+	vf->close(vf);
 }
 #endif

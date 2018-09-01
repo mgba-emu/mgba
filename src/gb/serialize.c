@@ -173,17 +173,12 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		mTimingSchedule(&gb->timing, &gb->eiPending, when);
 	}
 
-	enum GBModel oldModel = gb->model;
 	gb->model = state->model;
 
 	if (gb->model < GB_MODEL_CGB) {
 		gb->audio.style = GB_AUDIO_DMG;
 	} else {
 		gb->audio.style = GB_AUDIO_CGB;
-	}
-
-	if (gb->model != GB_MODEL_SGB || oldModel != GB_MODEL_SGB) {
-		gb->video.sgbBorders = false;
 	}
 
 	GBMemoryDeserialize(gb, state);
@@ -235,6 +230,7 @@ void GBSGBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	if (gb->video.renderer->sgbAttributes) {
 		memcpy(state->sgb.attributes, gb->video.renderer->sgbAttributes, sizeof(state->sgb.attributes));
 	}
+	gb->video.renderer->enableSGBBorder(gb->video.renderer, gb->video.sgbBorders);
 }
 
 void GBSGBDeserialize(struct GB* gb, const struct GBSerializedState* state) {

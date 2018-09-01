@@ -25,7 +25,7 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	m_ui.tile->setController(controller);
 
 	connect(m_ui.tiles, &TilePainter::indexPressed, m_ui.tile, &AssetTile::selectIndex);
-	connect(m_ui.paletteId, &QAbstractSlider::valueChanged, this, &TileView::updatePalette);
+	connect(m_ui.paletteId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &TileView::updatePalette);
 
 	switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
