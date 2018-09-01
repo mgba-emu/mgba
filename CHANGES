@@ -10,6 +10,7 @@ Bugfixes:
  - GBA BIOS: Fix BitUnPack final byte
  - GB I/O: DMA register is R/W
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1126)
+ - GBA: Reset WAITCNT properly
 Misc:
  - FFmpeg: Support libswresample (fixes mgba.io/i/1120, mgba.io/b/123)
 

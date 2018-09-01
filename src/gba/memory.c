@@ -113,6 +113,7 @@ void GBAMemoryReset(struct GBA* gba) {
 	gba->memory.iwram = anonymousMemoryMap(SIZE_WORKING_IRAM);
 
 	memset(gba->memory.io, 0, sizeof(gba->memory.io));
+	GBAAdjustWaitstates(gba, 0);
 
 	gba->memory.prefetch = false;
 	gba->memory.lastPrefetchedPc = 0;
