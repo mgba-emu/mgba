@@ -321,7 +321,7 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 
 	uint32_t when;
 	LOAD_32(when, 0, &state->video.nextEvent);
-	GBARegisterDISPSTAT dispstat = video->p->memory.io[REG_DISPSTAT >> 1];
+	GBARegisterDISPSTAT dispstat = state->io[REG_DISPSTAT >> 1];
 	if (GBARegisterDISPSTATIsInHblank(dispstat)) {
 		video->event.callback = _startHdraw;
 	} else {
