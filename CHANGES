@@ -48,6 +48,7 @@ Bugfixes:
  - GBA Video: Make layer disabling work consistently
  - GB: Fix IRQ disabling on the same T-cycle as an assert
  - Core: Fix ordering events when scheduling during events
+ - GBA: Reset WAITCNT properly
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
