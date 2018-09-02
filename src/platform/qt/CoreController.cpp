@@ -571,8 +571,8 @@ void CoreController::loadPatch(const QString& patchPath) {
 	if (patch) {
 		m_threadContext.core->loadPatch(m_threadContext.core, patch);
 		m_patched = true;
+		patch->close(patch);
 	}
-	patch->close(patch);
 	if (mCoreThreadHasStarted(&m_threadContext)) {
 		reset();
 	}
