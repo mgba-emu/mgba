@@ -327,9 +327,10 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 
 		struct mStateExtdataItem item = {
 			.size = sizeof(creationUsec),
-			.data = &creationUsec,
-			.clean = NULL
+			.data = malloc(sizeof(creationUsec)),
+			.clean = free
 		};
+		*(uint64_t*) item.data = creationUsec;
 		mStateExtdataPut(&extdata, EXTDATA_META_TIME, &item);
 	}
 
