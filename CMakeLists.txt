@@ -1006,18 +1006,19 @@ endif()
 
 if(BUILD_QT)
 	cpack_add_component_group(qt PARENT_GROUP base)
-	cpack_add_component(${BINARY_NAME}-qt GROUP qt DEPENDS base)
+	cpack_add_component(${BINARY_NAME}-qt GROUP qt)
 endif()
 
-if(FOUND_SDL)
+if(SDL_VERSION)
+	message(STATUS Hi)
 	cpack_add_component_group(sdl PARENT_GROUP base)
-	cpack_add_component(${BINARY_NAME}-sdl GROUP sdl DEPENDS base)
+	cpack_add_component(${BINARY_NAME}-sdl GROUP sdl)
 endif()
 
 cpack_add_component_group(test PARENT_GROUP dev)
-cpack_add_component(${BINARY_NAME}-perf GROUP test DEPENDS dev)
-cpack_add_component(${BINARY_NAME}-fuzz GROUP test DEPENDS dev)
-cpack_add_component(tbl-fuzz GROUP test DEPENDS dev)
+cpack_add_component(${BINARY_NAME}-perf GROUP test)
+cpack_add_component(${BINARY_NAME}-fuzz GROUP test)
+cpack_add_component(tbl-fuzz GROUP test)
 
 # Summaries
 set(SUMMARY_GL_LIST)
