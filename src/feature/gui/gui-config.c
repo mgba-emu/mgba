@@ -25,7 +25,7 @@ static bool _biosNamed(const char* name) {
 	char ext[PATH_MAX + 1] = {};
 	separatePath(name, NULL, NULL, ext);
 
-	if (strnstr(name, "bios", PATH_MAX)) {
+	if (strstr(name, "bios")) {
 		return true;
 	}
 	if (!strncmp(ext, "bin", PATH_MAX)) {
