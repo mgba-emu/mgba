@@ -45,9 +45,10 @@ static void GBAHitStub(struct ARMCore* cpu, uint32_t opcode);
 static void GBAIllegal(struct ARMCore* cpu, uint32_t opcode);
 static void GBABreakpoint(struct ARMCore* cpu, int immediate);
 
+#ifdef USE_DEBUGGERS
 static bool _setSoftwareBreakpoint(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
 static bool _clearSoftwareBreakpoint(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
-
+#endif
 
 #ifdef FIXED_ROM_BUFFER
 extern uint32_t* romBuffer;
@@ -706,6 +707,7 @@ void GBAGetGameTitle(const struct GBA* gba, char* out) {
 
 void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
+	UNUSED(gba);
 #ifdef USE_DEBUGGERS
 	if (gba->debugger) {
 		struct mDebuggerEntryInfo info = {
@@ -889,6 +891,7 @@ void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mo
 	}
 }
 
+#ifdef USE_DEBUGGERS
 static bool _setSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
 	GBASetBreakpoint((struct GBA*) debugger->cpu->master, &debugger->d.p->d, address, mode, opcode);
 	return true;
@@ -898,3 +901,4 @@ static bool _clearSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t addr
 	GBAClearBreakpoint((struct GBA*) debugger->cpu->master, address, mode, opcode);
 	return true;
 }
+#endif

@@ -128,7 +128,6 @@ struct GBACore {
 	struct mCoreCallbacks logCallbacks;
 #ifndef DISABLE_THREADING
 	struct mVideoThreadProxy threadProxy;
-	int threadedVideo;
 #endif
 	int keys;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
@@ -168,7 +167,6 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->renderer.outputBuffer = NULL;
 
 #ifndef DISABLE_THREADING
-	gbacore->threadedVideo = false;
 	mVideoThreadProxyCreate(&gbacore->threadProxy);
 #endif
 	gbacore->proxyRenderer.logger = NULL;
@@ -244,7 +242,7 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 	mCoreConfigCopyValue(&core->config, config, "gba.bios");
 
 #ifndef DISABLE_THREADING
-	mCoreConfigGetIntValue(config, "threadedVideo", &gbacore->threadedVideo);
+	mCoreConfigCopyValue(&core->config, config, "threadedVideo");
 #endif
 }
 
@@ -386,7 +384,8 @@ static void _GBACoreReset(struct mCore* core) {
 	if (gbacore->renderer.outputBuffer) {
 		struct GBAVideoRenderer* renderer = &gbacore->renderer.d;
 #ifndef DISABLE_THREADING
-		if (gbacore->threadedVideo) {
+		int fakeBool;
+		if (mCoreConfigGetIntValue(&core->config, "threadedVideo", &fakeBool) && fakeBool) {
 			gbacore->proxyRenderer.logger = &gbacore->threadProxy.d;
 			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
 			renderer = &gbacore->proxyRenderer.d;
@@ -846,6 +845,7 @@ static void _GBACoreEnableAudioChannel(struct mCore* core, size_t id, bool enabl
 		break;
 	case 4:
 		gba->audio.forceDisableChA = !enable;
+		break;
 	case 5:
 		gba->audio.forceDisableChB = !enable;
 		break;

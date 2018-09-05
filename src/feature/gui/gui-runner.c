@@ -89,6 +89,8 @@ static bool _testExtensions(const char* name) {
 	if (!strncmp(ext, "ss", 2)) {
 		return false;
 	}
+
+	return true;
 }
 
 static void _drawBackground(struct GUIBackground* background, void* context) {

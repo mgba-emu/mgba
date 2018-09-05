@@ -20,6 +20,7 @@ static bool _op(int32_t value, int32_t match, enum mCoreMemorySearchOp op) {
 	case mCORE_MEMORY_SEARCH_DELTA:
 		return value == match;
 	}
+	return false;
 }
 
 static size_t _search32(const void* mem, size_t size, const struct mCoreMemoryBlock* block, uint32_t value32, enum mCoreMemorySearchOp op, struct mCoreMemorySearchResults* out, size_t limit) {
@@ -213,6 +214,7 @@ static size_t _search(const void* mem, size_t size, const struct mCoreMemoryBloc
 	case mCORE_MEMORY_SEARCH_GUESS:
 		return _searchGuess(mem, size, block, params, out, limit);
 	}
+	return 0;
 }
 
 void mCoreMemorySearch(struct mCore* core, const struct mCoreMemorySearchParams* params, struct mCoreMemorySearchResults* out, size_t limit) {
