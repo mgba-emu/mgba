@@ -65,6 +65,8 @@ static inline void SocketSubsystemInit() {
 		SOCUBuffer = memalign(SOCU_ALIGN, SOCU_BUFFERSIZE);
 		socInit(SOCUBuffer, SOCU_BUFFERSIZE);
 	}
+#elif defined(SWITCH)
+	socketInitializeDefault();
 #endif
 }
 
@@ -75,6 +77,8 @@ static inline void SocketSubsystemDeinit() {
 	socExit();
 	free(SOCUBuffer);
 	SOCUBuffer = NULL;
+#elif defined(SWITCH)
+	socketExit();
 #endif
 }
 

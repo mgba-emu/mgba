@@ -3,7 +3,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-#if defined(__ARM_NEON) && !defined(PSP2)
+#if defined(__ARM_NEON) && !defined(PSP2) && !defined(SWITCH)
 # r0: Destination
 # r1: Source
 # r2: Width
