@@ -73,6 +73,26 @@ static struct mGUILogger {
 	.logLevel = 0
 };
 
+static bool _testExtensions(const char* name) {
+	char ext[PATH_MAX] = {};
+	separatePath(name, NULL, NULL, ext);
+
+	if (!strncmp(ext, "sav", PATH_MAX)) {
+		return false;
+	}
+	if (!strncmp(ext, "png", PATH_MAX)) {
+		return false;
+	}
+	if (!strncmp(ext, "ini", PATH_MAX)) {
+		return false;
+	}
+	if (!strncmp(ext, "ss", 2)) {
+		return false;
+	}
+
+	return true;
+}
+
 static void _drawBackground(struct GUIBackground* background, void* context) {
 	UNUSED(context);
 	struct mGUIBackground* gbaBackground = (struct mGUIBackground*) background;
@@ -580,7 +600,7 @@ void mGUIRunloop(struct mGUIRunner* runner) {
 	}
 	while (true) {
 		char path[PATH_MAX];
-		if (!GUISelectFile(&runner->params, path, sizeof(path), 0)) {
+		if (!GUISelectFile(&runner->params, path, sizeof(path), _testExtensions, NULL)) {
 			break;
 		}
 		mCoreConfigSetValue(&runner->config, "lastDirectory", runner->params.currentPath);

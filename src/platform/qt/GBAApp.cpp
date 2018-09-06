@@ -64,10 +64,20 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	if (!m_configController->getQtOption("audioDriver").isNull()) {
 		AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController->getQtOption("audioDriver").toInt()));
 	}
+
+	connect(this, &GBAApp::aboutToQuit, this, &GBAApp::cleanup);
 }
 
-GBAApp::~GBAApp() {
+void GBAApp::cleanup() {
 	m_workerThreads.waitForDone();
+
+	while (!m_workerJobs.isEmpty()) {
+		finishJob(m_workerJobs.firstKey());
+	}
+
+	if (m_db) {
+		NoIntroDBDestroy(m_db);
+	}
 }
 
 bool GBAApp::event(QEvent* event) {
@@ -177,7 +187,7 @@ bool GBAApp::reloadGameDB() {
 		NoIntroDBDestroy(m_db);
 	}
 	if (db) {
-		GameDBParser* parser = new GameDBParser(db);
+		std::shared_ptr<GameDBParser> parser = std::make_shared<GameDBParser>(db);
 		submitWorkerJob(std::bind(&GameDBParser::parseNoIntroDB, parser));
 		m_db = db;
 		return true;

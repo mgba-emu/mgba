@@ -180,11 +180,6 @@ static void _map3DSKey(struct mInputMap* map, int ctrKey, enum GBAKey key) {
 static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right);
 
 static void _drawStart(void) {
-	C3D_FrameBufClear(&bottomScreen[doubleBuffer]->frameBuf, C3D_CLEAR_COLOR, 0, 0);
-	C3D_FrameBufClear(&topScreen[doubleBuffer]->frameBuf, C3D_CLEAR_COLOR, 0, 0);
-}
-
-static void _frameStart(void) {
 	if (frameStarted) {
 		return;
 	}
@@ -193,12 +188,14 @@ static void _frameStart(void) {
 	if (!frameLimiter) {
 		if (tickCounter + 4481000 > svcGetSystemTick()) {
 			flags = C3D_FRAME_NONBLOCK;
-		} else {
-			tickCounter = svcGetSystemTick();
 		}
+		tickCounter = svcGetSystemTick();
 	}
 	C3D_FrameBegin(flags);
 	ctrStartFrame();
+
+	C3D_RenderTargetClear(bottomScreen[doubleBuffer], C3D_CLEAR_COLOR, 0, 0);
+	C3D_RenderTargetClear(topScreen[doubleBuffer], C3D_CLEAR_COLOR, 0, 0);
 }
 
 static void _drawEnd(void) {
@@ -208,7 +205,7 @@ static void _drawEnd(void) {
 	ctrEndFrame();
 	C3D_RenderTargetSetOutput(topScreen[doubleBuffer], GFX_TOP, GFX_LEFT, GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
 	C3D_RenderTargetSetOutput(bottomScreen[doubleBuffer], GFX_BOTTOM, GFX_LEFT, GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
-	C3D_FrameEnd(GX_CMDLIST_FLUSH);
+	C3D_FrameEnd(0);
 	frameStarted = false;
 
 	doubleBuffer ^= 1;
@@ -230,7 +227,6 @@ static int _batteryState(void) {
 }
 
 static void _guiPrepare(void) {
-	_frameStart();
 	C3D_FrameDrawOn(bottomScreen[doubleBuffer]);
 	ctrSetViewportSize(320, 240, true);
 }
@@ -254,8 +250,9 @@ static void _resetCamera(struct m3DSImageSource* imageSource) {
 }
 
 static void _setup(struct mGUIRunner* runner) {
-	uint8_t mask;
-	if (R_SUCCEEDED(svcGetProcessAffinityMask(&mask, CUR_PROCESS_HANDLE, 4)) && mask >= 4) {
+	bool n3ds = false;
+	APT_CheckNew3DS(&n3ds);
+	if (n3ds) {
 		mCoreConfigSetDefaultIntValue(&runner->config, "threadedVideo", 1);
 		mCoreLoadForeignConfig(runner->core, &runner->config);
 	}
@@ -401,7 +398,6 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 }
 
 static void _drawTex(struct mCore* core, bool faded) {
-	_frameStart();
 	unsigned screen_w, screen_h;
 	switch (screenMode) {
 	case SM_PA_BOTTOM:
@@ -545,7 +541,6 @@ static void _drawTex(struct mCore* core, bool faded) {
 
 static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	UNUSED(runner);
-
 	C3D_Tex* tex = &outputTexture;
 
 	GSPGPU_FlushDataCache(outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
@@ -565,7 +560,6 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 }
 
 static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
-
 	C3D_Tex* tex = &outputTexture;
 
 	color_t* newPixels = linearMemAlign(256 * height * sizeof(color_t), 0x100);
@@ -602,9 +596,6 @@ static void _incrementScreenMode(struct mGUIRunner* runner) {
 	UNUSED(runner);
 	screenMode = (screenMode + 1) % SM_MAX;
 	mCoreConfigSetUIntValue(&runner->config, "screenMode", screenMode);
-
-	C3D_FrameBufClear(&bottomScreen[doubleBuffer]->frameBuf, C3D_CLEAR_COLOR, 0, 0);
-	C3D_FrameBufClear(&topScreen[doubleBuffer]->frameBuf, C3D_CLEAR_COLOR, 0, 0);
 }
 
 static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {

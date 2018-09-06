@@ -8,6 +8,7 @@ if (SDL_VERSION EQUAL "2")
 		set(SDL_LIBRARY ${SDL2_LIBRARIES})
 		link_directories(${SDL2_LIBDIR})
 		set(SDL_VERSION_DEBIAN "2-2.0-0")
+		set(SDL_FOUND ON PARENT_SCOPE)
 	endif()
 endif()
 

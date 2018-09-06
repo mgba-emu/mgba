@@ -478,6 +478,7 @@ void GBSkipBIOS(struct GB* gb) {
 	switch (gb->model) {
 	case GB_MODEL_AUTODETECT: // Silence warnings
 		gb->model = GB_MODEL_DMG;
+		// Fall through
 	case GB_MODEL_DMG:
 		cpu->a = 1;
 		cpu->f.packed = 0xB0;

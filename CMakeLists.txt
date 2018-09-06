@@ -954,7 +954,7 @@ if(BUILD_EXAMPLE)
 	target_link_libraries(${BINARY_NAME}-example-server ${BINARY_NAME})
 	set_target_properties(${BINARY_NAME}-example-server PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 
-	if(FOUND_SDL)
+	if(SDL_FOUND)
 		add_executable(${BINARY_NAME}-example-client ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/example/client-server/client.c)
 		target_link_libraries(${BINARY_NAME}-example-client ${BINARY_NAME} ${SDL_LIBRARY} ${SDLMAIN_LIBRARY} ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 		set_target_properties(${BINARY_NAME}-example-client PROPERTIES
@@ -1055,18 +1055,18 @@ endif()
 
 if(BUILD_QT)
 	cpack_add_component_group(qt PARENT_GROUP base)
-	cpack_add_component(${BINARY_NAME}-qt GROUP qt DEPENDS base)
+	cpack_add_component(${BINARY_NAME}-qt GROUP qt)
 endif()
 
-if(FOUND_SDL)
+if(SDL_FOUND)
 	cpack_add_component_group(sdl PARENT_GROUP base)
-	cpack_add_component(${BINARY_NAME}-sdl GROUP sdl DEPENDS base)
+	cpack_add_component(${BINARY_NAME}-sdl GROUP sdl)
 endif()
 
 cpack_add_component_group(test PARENT_GROUP dev)
-cpack_add_component(${BINARY_NAME}-perf GROUP test DEPENDS dev)
-cpack_add_component(${BINARY_NAME}-fuzz GROUP test DEPENDS dev)
-cpack_add_component(tbl-fuzz GROUP test DEPENDS dev)
+cpack_add_component(${BINARY_NAME}-perf GROUP test)
+cpack_add_component(${BINARY_NAME}-fuzz GROUP test)
+cpack_add_component(tbl-fuzz GROUP test)
 
 # Summaries
 set(SUMMARY_GL_LIST)

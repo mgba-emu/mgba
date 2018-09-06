@@ -365,6 +365,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 					value <<= 16; \
 					value |= cpu->prefetch[0]; \
 				} \
+				break; \
 			default: \
 				value |= value << 16; \
 			} \

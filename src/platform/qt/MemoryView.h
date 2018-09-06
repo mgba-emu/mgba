@@ -21,7 +21,7 @@ public:
 
 public slots:
 	void update();
-	void jumpToAddress(uint32_t address) { m_ui.hexfield->jumpToAddress(address); }
+	void jumpToAddress(uint32_t address);
 
 private slots:
 	void setIndex(int);
@@ -33,6 +33,7 @@ private:
 	Ui::MemoryView m_ui;
 
 	std::shared_ptr<CoreController> m_controller;
+	QPair<uint32_t, uint32_t> m_region;
 	QPair<uint32_t, uint32_t> m_selection;
 };
 
