@@ -61,6 +61,7 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 
 	GBASerializedMiscFlags miscFlags = 0;
 	miscFlags = GBASerializedMiscFlagsSetHalted(miscFlags, gba->cpu->halted);
+	miscFlags = GBASerializedMiscFlagsSetPOSTFLG(miscFlags, gba->memory.io[REG_POSTFLG >> 1] & 1);
 	STORE_32(miscFlags, 0, &state->miscFlags);
 
 	GBAMemorySerialize(&gba->memory, state);
@@ -175,6 +176,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	GBASerializedMiscFlags miscFlags = 0;
 	LOAD_32(miscFlags, 0, &state->miscFlags);
 	gba->cpu->halted = GBASerializedMiscFlagsGetHalted(miscFlags);
+	gba->memory.io[REG_POSTFLG >> 1] = GBASerializedMiscFlagsGetPOSTFLG(miscFlags);
 
 	GBAVideoDeserialize(&gba->video, state);
 	GBAMemoryDeserialize(&gba->memory, state);
