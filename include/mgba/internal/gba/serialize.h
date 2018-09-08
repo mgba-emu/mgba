@@ -195,6 +195,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x00318 - 0x0031B: Last prefetched program counter
  * 0x0031C - 0x0031F: Miscellaneous flags
  *  | bit 0: Is CPU halted?
+ *  | bit 1: POSTFLG
  * 0x00320 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
@@ -225,6 +226,7 @@ DECL_BIT(GBASerializedSavedataFlags, DustSettling, 5);
 
 DECL_BITFIELD(GBASerializedMiscFlags, uint32_t);
 DECL_BIT(GBASerializedMiscFlags, Halted, 0);
+DECL_BIT(GBASerializedMiscFlags, POSTFLG, 1);
 
 struct GBASerializedState {
 	uint32_t versionMagic;
