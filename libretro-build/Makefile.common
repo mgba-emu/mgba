@@ -19,7 +19,7 @@ RETRODEFS += -DUSE_VFS_FILE
 endif
 
 ifeq  (,$(findstring osx,$(platform)))
-RETRDEFS += -DHAVE_LOCALE
+RETRODEFS += -DHAVE_LOCALE
 endif
 
 ifeq  (,$(findstring win,$(platform)))
