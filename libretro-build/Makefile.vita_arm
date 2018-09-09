@@ -1,6 +1,6 @@
 ##############
-# Works on hosts Windows
-# Install MSYS2
+# Works on hosts Linux
+# Install vitasdk
 
 #########################
 # Check the host platform
@@ -19,33 +19,33 @@ endif
 #########################
 # Set the target platform
 
-TARGET_PLATFORM = mingw_x86
+TARGET_PLATFORM = vita_arm
 
 #################
 # Toolchain setup
 
-CC  = gcc
-CXX = g++
-AS  = as
-AR  = ar
+CC  = $(VITASDK)/bin/arm-vita-eabi-gcc
+CXX = $(VITASDK)/bin/arm-vita-eabi-g++
+AS  = $(VITASDK)/bin/arm-vita-eabi-as
+AR  = $(VITASDK)/bin/arm-vita-eabi-ar
 
 ############
 # Extensions
 
-OBJEXT = .mingw_x86.o
-SOEXT  = .mingw_x86.dll
-LIBEXT = .mingw_x86.a
+OBJEXT = .vita_arm.o
+SOEXT  = .vita_arm.so
+LIBEXT = .vita_arm.a
 
 ################
 # Platform setup
 
-STATIC_LINKING = 0
-platform       = win
-PLATDEFS       = 
-PLATCFLAGS     = -m32 -fpic -fstrict-aliasing
-PLATCXXFLAGS   = -m32 -fpic -fstrict-aliasing
-PLATLDFLAGS    = -m32 -shared -lm
-PLATLDXFLAGS   = -m32 -shared -lm
+STATIC_LINKING = 1
+platform       = vita
+PLATDEFS       = -DVITA
+PLATCFLAGS     = -ftree-vectorize -mfloat-abi=hard -ffast-math -fsingle-precision-constant -funroll-loops -fno-short-enums
+PLATCXXFLAGS   = -ftree-vectorize -mfloat-abi=hard -ffast-math -fsingle-precision-constant -funroll-loops -fno-short-enums
+PLATLDFLAGS    = -shared -lm -mthumb -mcpu=cortex-a9 -mfloat-abi=hard
+PLATLDXFLAGS   = -shared -lm -mthumb -mcpu=cortex-a9 -mfloat-abi=hard
 
 ################
 # libretro setup

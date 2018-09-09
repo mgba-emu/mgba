@@ -2,8 +2,8 @@
 # Works on hosts Linux
 # apt-get install mingw-w64
 
-##########################
-# Checks the host platform
+#########################
+# Check the host platform
 
 HOST_PLATFORM = linux
 ifeq ($(shell uname -a),)
@@ -15,6 +15,11 @@ else ifneq ($(findstring Darwin,$(shell uname -a)),)
 else ifneq ($(findstring win,$(shell uname -a)),)
   HOST_PLATFORM = windows
 endif
+
+#########################
+# Set the target platform
+
+TARGET_PLATFORM = windows_x86_64
 
 #################
 # Toolchain setup
@@ -29,6 +34,7 @@ AR  = x86_64-w64-mingw32-ar
 
 OBJEXT = .windows_x86_64.o
 SOEXT  = .windows_x86_64.dll
+LIBEXT = .windows_x86_64.a
 
 ################
 # Platform setup
@@ -44,7 +50,7 @@ PLATLDXFLAGS   = -shared -lm
 ################
 # libretro setup
 
-#RETRODEFS     = -D__LIBRETRO__
+RETRODEFS     = -D__LIBRETRO__
 RETROCFLAGS   =
 RETROCXXFLAGS =
 RETROLDFLAGS  =

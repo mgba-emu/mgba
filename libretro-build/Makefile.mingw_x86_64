@@ -2,8 +2,8 @@
 # Works on hosts Windows
 # Install MSYS2
 
-##########################
-# Checks the host platform
+#########################
+# Check the host platform
 
 HOST_PLATFORM = linux
 ifeq ($(shell uname -a),)
@@ -15,6 +15,11 @@ else ifneq ($(findstring Darwin,$(shell uname -a)),)
 else ifneq ($(findstring win,$(shell uname -a)),)
   HOST_PLATFORM = windows
 endif
+
+#########################
+# Set the target platform
+
+TARGET_PLATFORM = mingw_x86_64
 
 #################
 # Toolchain setup
@@ -29,6 +34,7 @@ AR  = ar
 
 OBJEXT = .mingw_x86_64.o
 SOEXT  = .mingw_x86_64.dll
+LIBEXT = .mingw_x86_64.a
 
 ################
 # Platform setup
@@ -44,7 +50,7 @@ PLATLDXFLAGS   = -m64 -shared -lm
 ################
 # libretro setup
 
-#RETRODEFS     = -D__LIBRETRO__
+RETRODEFS     = -D__LIBRETRO__
 RETROCFLAGS   =
 RETROCXXFLAGS =
 RETROLDFLAGS  =

@@ -2,8 +2,8 @@
 # Works on hosts Linux
 # apt-get install g++-multilib libc6-dev-i386
 
-##########################
-# Checks the host platform
+#########################
+# Check the host platform
 
 HOST_PLATFORM = linux
 ifeq ($(shell uname -a),)
@@ -15,6 +15,11 @@ else ifneq ($(findstring Darwin,$(shell uname -a)),)
 else ifneq ($(findstring win,$(shell uname -a)),)
   HOST_PLATFORM = windows
 endif
+
+#########################
+# Set the target platform
+
+TARGET_PLATFORM = linux_x86
 
 #################
 # Toolchain setup
@@ -29,6 +34,7 @@ AR  = ar
 
 OBJEXT = .linux_x86.o
 SOEXT  = .linux_x86.so
+LIBEXT = .linux_x86.a
 
 ################
 # Platform setup
@@ -44,7 +50,7 @@ PLATLDXFLAGS   = -m32 -shared -lm -Wl,-version-script=$(BUILD_DIR)/link.T -Wl,-n
 ################
 # libretro setup
 
-#RETRODEFS     = -D__LIBRETRO__
+RETRODEFS     = -D__LIBRETRO__
 RETROCFLAGS   =
 RETROCXXFLAGS =
 RETROLDFLAGS  =
