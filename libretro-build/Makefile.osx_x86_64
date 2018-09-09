@@ -1,6 +1,6 @@
 ##############
-# Works on hosts Windows
-# Install MSYS2
+# Works on hosts Linux
+# Compile and install OSXCROSS: https://github.com/tpoechtrager/osxcross
 
 #########################
 # Check the host platform
@@ -19,33 +19,33 @@ endif
 #########################
 # Set the target platform
 
-TARGET_PLATFORM = mingw_x86
+TARGET_PLATFORM = osx_x86_64
 
 #################
 # Toolchain setup
 
-CC  = gcc
-CXX = g++
-AS  = as
-AR  = ar
+CC  = $(OSXCROSS_ROOT_DIR)/target/bin/x86_64-apple-darwin13-cc
+CXX = $(OSXCROSS_ROOT_DIR)/target/bin/x86_64-apple-darwin13-c++
+AS  = $(OSXCROSS_ROOT_DIR)/target/bin/x86_64-apple-darwin13-as
+AR  = $(OSXCROSS_ROOT_DIR)/target/bin/x86_64-apple-darwin13-ar
 
 ############
 # Extensions
 
-OBJEXT = .mingw_x86.o
-SOEXT  = .mingw_x86.dll
-LIBEXT = .mingw_x86.a
+OBJEXT = .osx_x86_64.o
+SOEXT  = .osx_x86_64.dylib
+LIBEXT = .osx_x86_64.a
 
 ################
 # Platform setup
 
 STATIC_LINKING = 0
-platform       = win
+platform       = osx
 PLATDEFS       = 
-PLATCFLAGS     = -m32 -fpic -fstrict-aliasing
-PLATCXXFLAGS   = -m32 -fpic -fstrict-aliasing
-PLATLDFLAGS    = -m32 -shared -lm
-PLATLDXFLAGS   = -m32 -shared -lm
+PLATCFLAGS     = -fpic -fstrict-aliasing
+PLATCXXFLAGS   = -fpic -fstrict-aliasing
+PLATLDFLAGS    = -shared -lm
+PLATLDXFLAGS   = -shared -lm
 
 ################
 # libretro setup

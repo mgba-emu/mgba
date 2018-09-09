@@ -2,8 +2,8 @@
 # Works on hosts Linux
 # Install devkitppc
 
-##########################
-# Checks the host platform
+#########################
+# Check the host platform
 
 HOST_PLATFORM = linux
 ifeq ($(shell uname -a),)
@@ -15,6 +15,11 @@ else ifneq ($(findstring Darwin,$(shell uname -a)),)
 else ifneq ($(findstring win,$(shell uname -a)),)
   HOST_PLATFORM = windows
 endif
+
+#########################
+# Set the target platform
+
+TARGET_PLATFORM = wii_ppc
 
 #################
 # Toolchain setup
@@ -29,6 +34,7 @@ AR  = $(DEVKITPPC_ROOT_DIR)/bin/powerpc-eabi-ar
 
 OBJEXT = .wii_ppc.o
 SOEXT  = .wii_ppc.so
+LIBEXT = .wii_ppc.a
 
 ################
 # Platform setup
@@ -44,7 +50,7 @@ PLATLDXFLAGS   = -shared -lm
 ################
 # libretro setup
 
-#RETRODEFS     = -D__LIBRETRO__
+RETRODEFS     = -D__LIBRETRO__
 RETROCFLAGS   =
 RETROCXXFLAGS =
 RETROLDFLAGS  =
