@@ -187,8 +187,17 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
 	core->desiredVideoDimensions(core, &width, &height);
 	info->geometry.base_width = width;
 	info->geometry.base_height = height;
-	info->geometry.max_width = width;
-	info->geometry.max_height = height;
+#ifdef M_CORE_GB
+	if (core->platform(core) == PLATFORM_GB) {
+		info->geometry.max_width = 256;
+		info->geometry.max_height = 224;
+	} else
+#endif
+	{
+		info->geometry.max_width = width;
+		info->geometry.max_height = height;
+	}
+
 	info->geometry.aspect_ratio = width / (double) height;
 	info->timing.fps = core->frequency(core) / (float) core->frameCycles(core);
 	info->timing.sample_rate = 32768;
