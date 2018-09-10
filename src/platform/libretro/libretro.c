@@ -15,6 +15,7 @@
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
 #include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/mbc.h>
 #endif
 #ifdef M_CORE_GBA
 #include <mgba/gba/core.h>
@@ -42,6 +43,10 @@ static void _postAudioBuffer(struct mAVStream*, blip_t* left, blip_t* right);
 static void _setRumble(struct mRumble* rumble, int enable);
 static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
+static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned height, size_t pitch);
+static void _startImage(struct mImageSource*, unsigned w, unsigned h, int colorFormats);
+static void _stopImage(struct mImageSource*);
+static void _requestImage(struct mImageSource*, const void** buffer, size_t* stride, enum mColorFormat* colorFormat);
 
 static struct mCore* core;
 static void* outputBuffer;
@@ -55,6 +60,12 @@ static struct mRumble rumble;
 static struct GBALuminanceSource lux;
 static int luxLevel;
 static struct mLogger logger;
+static struct retro_camera_callback cam;
+static struct mImageSource imageSource;
+static uint32_t* camData = NULL;
+static unsigned camWidth;
+static unsigned camHeight;
+static size_t camStride;
 
 static void _reloadSettings(void) {
 	struct mCoreOptions opts = {
@@ -264,6 +275,10 @@ void retro_init(void) {
 	stream.postAudioFrame = 0;
 	stream.postAudioBuffer = _postAudioBuffer;
 	stream.postVideoFrame = 0;
+
+	imageSource.startRequestImage = _startImage;
+	imageSource.stopRequestImage = _stopImage;
+	imageSource.requestImage = _requestImage;
 }
 
 void retro_deinit(void) {
@@ -483,6 +498,14 @@ bool retro_load_game(const struct retro_game_info* game) {
 
 #ifdef M_CORE_GB
 	if (core->platform(core) == PLATFORM_GB) {
+		memset(&cam, 0, sizeof(cam));
+		cam.height = GBCAM_HEIGHT;
+		cam.width = GBCAM_WIDTH;
+		cam.caps = 1 << RETRO_CAMERA_BUFFER_RAW_FRAMEBUFFER;
+		cam.frame_raw_framebuffer = _updateCamera;
+		core->setPeripheral(core, mPERIPH_IMAGE_SOURCE, &imageSource);
+
+		environCallback(RETRO_ENVIRONMENT_GET_CAMERA_INTERFACE, &cam);
 		const char* modelName = mCoreConfigGetValue(&core->config, "gb.model");
 		struct GB* gb = core->board;
 
@@ -504,7 +527,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 		default:
 			biosName = "gb_bios.bin";
 			break;
-		};
+		}
 	}
 #endif
 
@@ -739,4 +762,37 @@ static uint8_t _readLux(struct GBALuminanceSource* lux) {
 		value += GBA_LUX_LEVELS[luxLevel - 1];
 	}
 	return 0xFF - value;
+}
+
+static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned height, size_t pitch) {
+	if (!camData || width != camWidth || height != camHeight) {
+		camData = malloc(sizeof(*buffer) * height * pitch);
+		camWidth = width;
+		camHeight = height;
+		camStride = pitch / sizeof(*buffer);
+	}
+	memcpy(camData, buffer, sizeof(*buffer) * height * pitch);
+}
+
+static void _startImage(struct mImageSource* image, unsigned w, unsigned h, int colorFormats) {
+	UNUSED(image);
+	UNUSED(colorFormats);
+
+	camData = NULL;
+	cam.start();
+}
+
+static void _stopImage(struct mImageSource* image) {
+	UNUSED(image);
+	cam.stop();	
+}
+
+static void _requestImage(struct mImageSource* image, const void** buffer, size_t* stride, enum mColorFormat* colorFormat) {
+	UNUSED(image);
+	if (!camData) {
+		cam.start();
+	}
+	*buffer = camData;
+	*stride = camStride;
+	*colorFormat = mCOLOR_XRGB8;
 }
