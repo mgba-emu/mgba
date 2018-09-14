@@ -19,7 +19,7 @@
 #ifdef _3DS
 #include <3ds.h>
 #endif
-#ifdef SWITCH
+#ifdef __SWITCH__
 #include <switch.h>
 #endif
 
@@ -52,7 +52,7 @@ struct PerfOpts {
 extern bool allocateRomBuffer(void);
 FS_Archive sdmcArchive;
 #endif
-#ifdef SWITCH
+#ifdef __SWITCH__
 TimeType __nx_time_type = TimeType_LocalSystemClock;
 #endif
 
@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
 	if (!allocateRomBuffer()) {
 		return 1;
 	}
-#elif defined(SWITCH)
+#elif defined(__SWITCH__)
 	UNUSED(_mPerfShutdown);
 	gfxInitDefault();
 	consoleInit(NULL);
@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
 #ifdef _3DS
 	gfxExit();
 	acExit();
-#elif defined(SWITCH)
+#elif defined(__SWITCH__)
 	gfxExit();
 #endif
 

@@ -179,7 +179,7 @@ void mCoreConfigMakePortable(const struct mCoreConfig* config) {
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, MAX_PATH, 0, 0);
 	StringCchCatA(out, MAX_PATH, "\\portable.ini");
 	portable = VFileOpen(out, O_WRONLY | O_CREAT);
-#elif defined(PSP2) || defined(_3DS) || defined(GEKKO)
+#elif defined(PSP2) || defined(_3DS) || defined(__SWITCH__) || defined(GEKKO)
 	// Already portable
 #else
 	char out[PATH_MAX];
@@ -219,7 +219,7 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 	UNUSED(portable);
 	snprintf(out, outLength, "ux0:data/%s", projectName);
 	sceIoMkdir(out, 0777);
-#elif defined(GEKKO)
+#elif defined(GEKKO) || defined(__SWITCH__)
 	UNUSED(portable);
 	snprintf(out, outLength, "/%s", projectName);
 	mkdir(out, 0777);

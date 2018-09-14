@@ -10,6 +10,8 @@
 
 #ifdef _3DS
 #include <3ds.h>
+#elif defined(__SWITCH__)
+#include <switch.h>
 #endif
 
 DEFINE_VECTOR(GUIMenuItemList, struct GUIMenuItem);
@@ -29,6 +31,10 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 	while (true) {
 #ifdef _3DS
 		if (!aptMainLoop()) {
+			return GUI_MENU_EXIT_CANCEL;
+		}
+#elif defined(__SWITCH__)
+		if (!appletMainLoop()) {
 			return GUI_MENU_EXIT_CANCEL;
 		}
 #endif
