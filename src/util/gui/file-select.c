@@ -64,6 +64,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			uint32_t input = 0;
 			GUIPollInput(params, &input, 0);
 			if (input & (1 << GUI_INPUT_CANCEL)) {
+				dir->close(dir);
 				return false;
 			}
 
@@ -102,6 +103,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			uint32_t input = 0;
 			GUIPollInput(params, &input, 0);
 			if (input & (1 << GUI_INPUT_CANCEL)) {
+				dir->close(dir);
 				return false;
 			}
 
@@ -168,6 +170,9 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 		}
 		if (reason == GUI_MENU_EXIT_ACCEPT) {
 			if (params->fileIndex == 0) {
+				if (strncmp(params->currentPath, params->basePath, PATH_MAX) == 0) {
+					continue;
+				}
 				_upDirectory(params->currentPath);
 				if (!_refreshDirectory(params, params->currentPath, &menu.items, filterName, filterContents)) {
 					break;

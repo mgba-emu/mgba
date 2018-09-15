@@ -1,8 +1,8 @@
 
 /* pngstruct.h - header file for PNG reference library
  *
- * Last changed in libpng 1.6.1 [March 28, 2013]
- * Copyright (c) 1998-2013 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.32 [August 24, 2017]
+ * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -219,16 +219,18 @@ struct png_struct_def
    png_uint_32 row_number;    /* current row in interlace pass */
    png_uint_32 chunk_name;    /* PNG_CHUNK() id of current chunk */
    png_bytep prev_row;        /* buffer to save previous (unfiltered) row.
-                               * This is a pointer into big_prev_row
+                               * While reading this is a pointer into
+                               * big_prev_row; while writing it is separately
+                               * allocated if needed.
                                */
    png_bytep row_buf;         /* buffer to save current (unfiltered) row.
-                               * This is a pointer into big_row_buf
+                               * While reading, this is a pointer into
+                               * big_row_buf; while writing it is separately
+                               * allocated.
                                */
-#ifdef PNG_WRITE_SUPPORTED
-   png_bytep sub_row;         /* buffer to save "sub" row when filtering */
-   png_bytep up_row;          /* buffer to save "up" row when filtering */
-   png_bytep avg_row;         /* buffer to save "avg" row when filtering */
-   png_bytep paeth_row;       /* buffer to save "Paeth" row when filtering */
+#ifdef PNG_WRITE_FILTER_SUPPORTED
+   png_bytep try_row;    /* buffer to save trial row when filtering */
+   png_bytep tst_row;    /* buffer to save best trial row when filtering */
 #endif
    png_size_t info_rowbytes;  /* Added in 1.5.4: cache of updated row bytes */
 
@@ -247,7 +249,7 @@ struct png_struct_def
    png_byte filter;           /* file filter type (always 0) */
    png_byte interlaced;       /* PNG_INTERLACE_NONE, PNG_INTERLACE_ADAM7 */
    png_byte pass;             /* current interlace pass (0 - 6) */
-   png_byte do_filter;        /* row filter flags (see PNG_FILTER_ below ) */
+   png_byte do_filter;        /* row filter flags (see PNG_FILTER_ in png.h ) */
    png_byte color_type;       /* color type of file */
    png_byte bit_depth;        /* bit depth of file */
    png_byte usr_bit_depth;    /* bit depth of users row: write only */
@@ -261,6 +263,9 @@ struct png_struct_def
                               /* pixel depth used for the row buffers */
    png_byte transformed_pixel_depth;
                               /* pixel depth after read/write transforms */
+#if ZLIB_VERNUM >= 0x1240
+   png_byte zstream_start;    /* at start of an input zlib stream */
+#endif /* Zlib >= 1.2.4 */
 #if defined(PNG_READ_FILLER_SUPPORTED) || defined(PNG_WRITE_FILLER_SUPPORTED)
    png_uint_16 filler;           /* filler bytes for pixel expansion */
 #endif
@@ -346,19 +351,9 @@ struct png_struct_def
    png_bytep quantize_index; /* index translation for palette files */
 #endif
 
-#ifdef PNG_WRITE_WEIGHTED_FILTER_SUPPORTED
-   png_byte heuristic_method;        /* heuristic for row filter selection */
-   png_byte num_prev_filters;        /* number of weights for previous rows */
-   png_bytep prev_filters;           /* filter type(s) of previous row(s) */
-   png_uint_16p filter_weights;      /* weight(s) for previous line(s) */
-   png_uint_16p inv_filter_weights;  /* 1/weight(s) for previous line(s) */
-   png_uint_16p filter_costs;        /* relative filter calculation cost */
-   png_uint_16p inv_filter_costs;    /* 1/relative filter calculation cost */
-#endif
-
-   /* Options */
+/* Options */
 #ifdef PNG_SET_OPTION_SUPPORTED
-   png_byte options;           /* On/off state (up to 4 options) */
+   png_uint_32 options;           /* On/off state (up to 16 options) */
 #endif
 
 #if PNG_LIBPNG_VER < 10700

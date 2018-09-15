@@ -78,6 +78,27 @@
 /* Enable ARM Neon optimizations */
 #undef PNG_ARM_NEON_OPT
 
+/* Enable Intel SSE optimizations */
+#undef PNG_INTEL_SSE_OPT
+
+/* Turn on MIPS MSA optimizations at run-time */
+#undef PNG_MIPS_MSA_API_SUPPORTED
+
+/* Check for MIPS MSA support at run-time */
+#undef PNG_MIPS_MSA_CHECK_SUPPORTED
+
+/* Enable MIPS MSA optimizations */
+#undef PNG_MIPS_MSA_OPT
+
+/* Turn on POWERPC VSX optimizations at run-time */
+#undef PNG_POWERPC_VSX_API_SUPPORTED
+
+/* Check for POWERPC VSX support at run-time */
+#undef PNG_POWERPC_VSX_CHECK_SUPPORTED
+
+/* Enable POWERPC VSX optimizations */
+#undef PNG_POWERPC_VSX_OPT
+
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
