@@ -295,12 +295,22 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 	++enqueuedBuffers;
 }
 
+static int _batteryState(void) {
+	u32 charge;
+	int state = 0;
+	if (R_SUCCEEDED(psmGetBatteryChargePercentage(&charge))) {
+		state = charge / 25;
+	}
+	return state;
+}
+
 int main(int argc, char* argv[]) {
 	socketInitializeDefault();
 	nxlinkStdio();
 	initEgl();
 	romfsInit();
 	audoutInitialize();
+	psmInitialize();
 
 	struct GUIFont* font = GUIFontCreate();
 
@@ -391,7 +401,7 @@ int main(int argc, char* argv[]) {
 			font, "/",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
-			NULL,
+			_batteryState,
 			NULL, NULL,
 		},
 		.keySources = (struct GUIInputKeys[]) {
@@ -458,6 +468,7 @@ int main(int argc, char* argv[]) {
 	audoutStartAudioOut();
 	mGUIRunloop(&runner);
 
+	psmExit();
 	audoutExit();
 	deinitEgl();
 	socketExit();
