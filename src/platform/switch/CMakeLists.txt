@@ -37,7 +37,7 @@ set_target_properties(${BINARY_NAME}.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DE
 target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${M_LIBRARY} ${EGL_LIBRARY} ${OPENGLES2_LIBRARY} ${GLAPI_LIBRARY} ${NOUVEAU_LIBRARY} stdc++ ${OS_LIB})
 
 add_custom_command(OUTPUT control.nacp
-                   COMMAND ${NACPTOOL} --create "${PROJECT_NAME}" "endrift" "${LIB_VERSION_STRING}" control.nacp)
+                   COMMAND ${NACPTOOL} --create "${PROJECT_NAME}" "endrift" "${VERSION_STRING}" control.nacp)
 
 add_custom_command(OUTPUT romfs.bin
                    COMMAND ${CMAKE_COMMAND} -E make_directory romfs
