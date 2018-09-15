@@ -49,3 +49,5 @@ add_custom_command(OUTPUT romfs.bin
 add_custom_target(${BINARY_NAME}.nro ALL
                   ${ELF2NRO} ${BINARY_NAME}.elf ${BINARY_NAME}.nro --romfs=romfs.bin --nacp=control.nacp --icon="${CMAKE_CURRENT_SOURCE_DIR}/icon.jpg"
                   DEPENDS ${BINARY_NAME}.elf control.nacp ${CMAKE_CURRENT_SOURCE_DIR}/icon.jpg romfs.bin)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.nro DESTINATION . COMPONENT ${BINARY_NAME}-switch)
