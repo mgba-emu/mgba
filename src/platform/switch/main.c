@@ -161,6 +161,19 @@ static uint32_t _pollInput(const struct mInputMap* map) {
 	return keys;
 }
 
+static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
+	hidScanInput();
+	if (hidTouchCount() < 1) {
+		return GUI_CURSOR_NOT_PRESENT;
+	}
+	touchPosition touch;
+	hidTouchRead(&touch, 0);
+	*x = touch.px;
+	*y = touch.py;
+	return GUI_CURSOR_DOWN;
+}
+
+
 static void _setup(struct mGUIRunner* runner) {
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_A, GBA_KEY_A);
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_B, GBA_KEY_B);
@@ -377,7 +390,7 @@ int main(int argc, char* argv[]) {
 			width, height,
 			font, "/",
 			_drawStart, _drawEnd,
-			_pollInput, NULL,
+			_pollInput, _pollCursor,
 			NULL,
 			NULL, NULL,
 		},
