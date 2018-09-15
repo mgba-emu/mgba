@@ -51,6 +51,7 @@ Bugfixes:
  - GBA: Reset WAITCNT properly
  - GBA Serialize: Fix loading states in Hblank
  - PSP2: Fix more issues causing poor audio
+ - GBA Memory: Fix Vast Fame support (taizou) (fixes mgba.io/i/1170)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
