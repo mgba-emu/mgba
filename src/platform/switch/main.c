@@ -4,7 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "feature/gui/gui-runner.h"
+#include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
+#include <mgba/internal/gba/audio.h>
 #include <mgba/internal/gba/input.h>
 #include <mgba-util/gui.h>
 #include <mgba-util/gui/font.h>
@@ -14,6 +16,11 @@
 #include <GLES2/gl2.h>
 
 #define AUTO_INPUT 0x4E585031
+#define SAMPLES 0x400
+#define BUFFER_SIZE 0x1000
+#define N_BUFFERS 3
+
+TimeType __nx_time_type = TimeType_UserSystemClock;
 
 static EGLDisplay s_display;
 static EGLContext s_context;
@@ -38,7 +45,7 @@ static const char* const _vertexShader =
 
 	"void main() {\n"
 	"	vec2 ratio = insize / 256.0;\n"
-	"   vec2 scaledOffset = offset * dims;\n"
+	"	vec2 scaledOffset = offset * dims;\n"
 	"	gl_Position = vec4(scaledOffset.x * 2.0 - dims.x, scaledOffset.y * -2.0 + dims.y, 0.0, 1.0);\n"
 	"	texCoord = offset * ratio;\n"
 	"}";
@@ -64,6 +71,13 @@ static GLuint colorLocation;
 static GLuint tex;
 
 static color_t frameBuffer[256 * 256];
+static struct mAVStream stream;
+static int audioBufferActive;
+static struct GBAStereoSample audioBuffer[N_BUFFERS][SAMPLES] __attribute__((__aligned__(0x1000)));
+static AudioOutBuffer audoutBuffer[N_BUFFERS];
+static int enqueuedBuffers;
+static bool frameLimiter = true;
+static int framecount = 0;
 
 static bool initEgl() {
     s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -91,6 +105,10 @@ static bool initEgl() {
         goto _fail1;
     }
 
+	//EGLint contextAttributeList[] = {
+	//	EGL_CONTEXT_CLIENT_VERSION, 2,
+	//	EGL_NONE
+	//};
     s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, NULL);
     if (!s_context) {
         goto _fail2;
@@ -130,7 +148,9 @@ static void _drawStart(void) {
 }
 
 static void _drawEnd(void) {
-	eglSwapBuffers(s_display, s_surface);
+	if (frameLimiter || (framecount & 2) == 0) {
+		eglSwapBuffers(s_display, s_surface);
+	}
 }
 
 static uint32_t _pollInput(const struct mInputMap* map) {
@@ -154,6 +174,15 @@ static void _setup(struct mGUIRunner* runner) {
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_R, GBA_KEY_R);
 
 	runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+	runner->core->setAVStream(runner->core, &stream);
+}
+
+static void _gameLoaded(struct mGUIRunner* runner) {
+	u32 samplerate = audoutGetSampleRate();
+
+	double ratio = GBAAudioCalculateRatio(1, 60.0, 1);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), samplerate * ratio);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), samplerate * ratio);
 }
 
 static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height, bool faded) {
@@ -202,6 +231,8 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	unsigned width, height;
 	runner->core->desiredVideoDimensions(runner->core, &width, &height);
 	_drawTex(runner, width, height, faded);
+
+	++framecount;
 }
 
 static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
@@ -222,11 +253,33 @@ static uint16_t _pollGameInput(struct mGUIRunner* runner) {
 
 static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 	UNUSED(runner);
-}	
+	frameLimiter = limit;
+}
 
 static bool _running(struct mGUIRunner* runner) {
 	UNUSED(runner);
 	return appletMainLoop();
+}
+
+static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
+	UNUSED(stream);
+	static AudioOutBuffer* releasedBuffers;
+	u32 audoutNReleasedBuffers;
+	audoutGetReleasedAudioOutBuffer(&releasedBuffers, &audoutNReleasedBuffers);
+	enqueuedBuffers -= audoutNReleasedBuffers;
+	if (!frameLimiter && enqueuedBuffers == N_BUFFERS) {
+		blip_clear(left);
+		blip_clear(right);
+		return;
+	}
+
+	struct GBAStereoSample* samples = audioBuffer[audioBufferActive];
+	blip_read_samples(left, &samples[0].left, SAMPLES, true);
+	blip_read_samples(right, &samples[0].right, SAMPLES, true);
+	audoutAppendAudioOutBuffer(&audoutBuffer[audioBufferActive]);
+	audioBufferActive += 1;
+	audioBufferActive %= N_BUFFERS;
+	++enqueuedBuffers;
 }
 
 int main(int argc, char* argv[]) {
@@ -234,6 +287,7 @@ int main(int argc, char* argv[]) {
 	nxlinkStdio();
 	initEgl();
 	romfsInit();
+	audoutInitialize();
 
 	struct GUIFont* font = GUIFontCreate();
 
@@ -301,6 +355,23 @@ int main(int argc, char* argv[]) {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(_offsets), _offsets, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	stream.videoDimensionsChanged = NULL;
+	stream.postVideoFrame = NULL;
+	stream.postAudioFrame = NULL;
+	stream.postAudioBuffer = _postAudioBuffer;
+
+	memset(audioBuffer, 0, sizeof(audioBuffer));
+	audioBufferActive = 0;
+	enqueuedBuffers = 0;
+	size_t i;
+	for (i = 0; i < N_BUFFERS; ++i) {
+		audoutBuffer[i].next = NULL;
+		audoutBuffer[i].buffer = audioBuffer[i];
+		audoutBuffer[i].buffer_size = BUFFER_SIZE;
+		audoutBuffer[i].data_size = BUFFER_SIZE;
+		audoutBuffer[i].data_offset = 0;
+	}
+
 	struct mGUIRunner runner = {
 		.params = {
 			width, height,
@@ -310,16 +381,52 @@ int main(int argc, char* argv[]) {
 			NULL,
 			NULL, NULL,
 		},
+		.keySources = (struct GUIInputKeys[]) {
+			{
+				.name = "Controller Input",
+				.id = AUTO_INPUT,
+				.keyNames = (const char*[]) {
+					"A",
+					"B",
+					"X",
+					"Y",
+					"L Stick",
+					"R Stick",
+					"L",
+					"R",
+					"ZL",
+					"ZR",
+					"+",
+					"-",
+					"Left",
+					"Up",
+					"Right",
+					"Down",
+					"L Left",
+					"L Up",
+					"L Right",
+					"L Down",
+					"R Left",
+					"R Up",
+					"R Right",
+					"R Down",
+					"SL",
+					"SR"
+				},
+				.nKeys = 26
+			},
+			{ .id = 0 }
+		},
 		.nConfigExtra = 0,
 		.setup = _setup,
 		.teardown = NULL,
-		.gameLoaded = NULL,
+		.gameLoaded = _gameLoaded,
 		.gameUnloaded = NULL,
 		.prepareForFrame = NULL,
 		.drawFrame = _drawFrame,
 		.drawScreenshot = _drawScreenshot,
 		.paused = NULL,
-		.unpaused = NULL,
+		.unpaused = _gameLoaded,
 		.incrementScreenMode = NULL,
 		.setFrameLimiter = _setFrameLimiter,
 		.pollGameInput = _pollGameInput,
@@ -335,8 +442,10 @@ int main(int argc, char* argv[]) {
 	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DLEFT, GUI_INPUT_LEFT);
 	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DRIGHT, GUI_INPUT_RIGHT);
 
+	audoutStartAudioOut();
 	mGUIRunloop(&runner);
 
+	audoutExit();
 	deinitEgl();
 	socketExit();
 	return 0;

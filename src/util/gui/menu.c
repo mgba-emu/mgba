@@ -176,8 +176,8 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 			GUIFontIconMetrics(params->font, GUI_ICON_SCROLLBAR_BUTTON, &right, 0);
 			GUIFontIconMetrics(params->font, GUI_ICON_SCROLLBAR_TRACK, &w, 0);
 			right = (right - w) / 2;
+			GUIFontDrawIconSize(params->font, params->width - right - 8, top, 0, bottom - top, 0xA0FFFFFF, GUI_ICON_SCROLLBAR_TRACK);
 			GUIFontDrawIcon(params->font, params->width - 8, top, GUI_ALIGN_HCENTER | GUI_ALIGN_BOTTOM, GUI_ORIENT_VMIRROR, 0xFFFFFFFF, GUI_ICON_SCROLLBAR_BUTTON);
-			GUIFontDrawIconSize(params->font, params->width - right - 8, top, 0, bottom - top, 0xFFFFFFFF, GUI_ICON_SCROLLBAR_TRACK);
 			GUIFontDrawIcon(params->font, params->width - 8, bottom, GUI_ALIGN_HCENTER | GUI_ALIGN_TOP, GUI_ORIENT_0, 0xFFFFFFFF, GUI_ICON_SCROLLBAR_BUTTON);
 
 			y = menu->index * (bottom - top - 16) / GUIMenuItemListSize(&menu->items);
