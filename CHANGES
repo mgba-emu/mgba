@@ -84,6 +84,7 @@ Misc:
  - Feature: Added loading savestates from command line
  - Qt: Allow pausing game at load (fixes mgba.io/i/1129)
  - Wii: Move audio handling to callbacks (fixes mgba.io/i/803)
+ - Qt: Clean up FPS target UI (fixes mgba.io/i/436)
 
 0.6.3: (2017-04-14)
 Bugfixes:

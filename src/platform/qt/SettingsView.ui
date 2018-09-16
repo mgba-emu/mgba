@@ -326,6 +326,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
           <widget class="QDoubleSpinBox" name="fpsTarget">
+           <property name="decimals">
+            <number>4</number>
+           </property>
            <property name="minimum">
             <double>0.010000000000000</double>
            </property>
