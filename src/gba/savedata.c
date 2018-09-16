@@ -195,6 +195,9 @@ bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in) {
 }
 
 void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) {
+	if (savedata->type == type) {
+		return;
+	}
 	if (savedata->type != SAVEDATA_AUTODETECT) {
 		struct VFile* vf = savedata->vf;
 		int mapMode = savedata->mapMode;
