@@ -18,7 +18,7 @@
 #define AUTO_INPUT 0x4E585031
 #define SAMPLES 0x400
 #define BUFFER_SIZE 0x1000
-#define N_BUFFERS 3
+#define N_BUFFERS 4
 
 TimeType __nx_time_type = TimeType_UserSystemClock;
 
@@ -266,6 +266,14 @@ static uint16_t _pollGameInput(struct mGUIRunner* runner) {
 
 static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 	UNUSED(runner);
+	if (!frameLimiter && limit) {
+		while (enqueuedBuffers > 1) {
+			AudioOutBuffer* releasedBuffers;
+			u32 audoutNReleasedBuffers;
+			audoutWaitPlayFinish(&releasedBuffers, &audoutNReleasedBuffers, 100000000);
+			enqueuedBuffers -= audoutNReleasedBuffers;
+		}
+	}
 	frameLimiter = limit;
 }
 
@@ -276,14 +284,17 @@ static bool _running(struct mGUIRunner* runner) {
 
 static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
 	UNUSED(stream);
-	static AudioOutBuffer* releasedBuffers;
+	AudioOutBuffer* releasedBuffers;
 	u32 audoutNReleasedBuffers;
 	audoutGetReleasedAudioOutBuffer(&releasedBuffers, &audoutNReleasedBuffers);
 	enqueuedBuffers -= audoutNReleasedBuffers;
-	if (!frameLimiter && enqueuedBuffers == N_BUFFERS) {
+	if (!frameLimiter && enqueuedBuffers >= N_BUFFERS) {
 		blip_clear(left);
 		blip_clear(right);
 		return;
+	}
+	if (enqueuedBuffers >= N_BUFFERS - 1 && R_SUCCEEDED(audoutWaitPlayFinish(&releasedBuffers, &audoutNReleasedBuffers, 10000000))) {
+		enqueuedBuffers -= audoutNReleasedBuffers;
 	}
 
 	struct GBAStereoSample* samples = audioBuffer[audioBufferActive];
