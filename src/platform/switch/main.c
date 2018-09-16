@@ -148,7 +148,7 @@ static void _drawStart(void) {
 }
 
 static void _drawEnd(void) {
-	if (frameLimiter || (framecount & 2) == 0) {
+	if (frameLimiter || (framecount & 3) == 0) {
 		eglSwapBuffers(s_display, s_surface);
 	}
 }
