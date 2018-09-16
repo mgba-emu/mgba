@@ -95,7 +95,7 @@ void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf, bool writeb
 }
 
 void GBASavedataUnmask(struct GBASavedata* savedata) {
-	if (savedata->vf == savedata->realVf) {
+	if (!savedata->realVf || savedata->vf == savedata->realVf) {
 		return;
 	}
 	enum SavedataType type = savedata->type;

@@ -256,7 +256,7 @@ void GBSavedataMask(struct GB* gb, struct VFile* vf, bool writeback) {
 }
 
 void GBSavedataUnmask(struct GB* gb) {
-	if (gb->sramVf == gb->sramRealVf) {
+	if (!gb->sramRealVf || gb->sramVf == gb->sramRealVf) {
 		return;
 	}
 	struct VFile* vf = gb->sramVf;
