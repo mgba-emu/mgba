@@ -47,6 +47,7 @@ void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 	savedata->vf = vf;
 	savedata->realVf = vf;
 	savedata->mapMode = MAP_WRITE;
+	savedata->maskWriteback = false;
 	savedata->dirty = 0;
 	savedata->dirtAge = 0;
 	savedata->dust.name = "GBA Savedata Settling";
@@ -196,8 +197,12 @@ bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in) {
 void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) {
 	if (savedata->type != SAVEDATA_AUTODETECT) {
 		struct VFile* vf = savedata->vf;
+		int mapMode = savedata->mapMode;
+		bool maskWriteback = savedata->maskWriteback;
 		GBASavedataDeinit(savedata);
 		GBASavedataInit(savedata, vf);
+		savedata->mapMode = mapMode;
+		savedata->maskWriteback = maskWriteback;
 	}
 	switch (type) {
 	case SAVEDATA_FLASH512:
