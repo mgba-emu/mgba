@@ -269,6 +269,7 @@ void GBSavedataUnmask(struct GB* gb) {
 		vf->read(vf, gb->memory.sram, gb->sramSize);
 		gb->sramMaskWriteback = false;
 	}
+	GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
 	vf->close(vf);
 }
 
