@@ -14,9 +14,14 @@
 
 @SET_MAKE@
 
-# Makefile.am:
-#   Source file for Makefile.in (and hence Makefile)
+# Makefile.am, the source file for Makefile.in (and hence Makefile), is
 #
+# Copyright (c) 2004-2016 Glenn Randers-Pehrson
+# Last changed in libpng 1.6.25 [September 1, 2016]
+#
+# This code is released under the libpng license.
+# For conditions of distribution and use, see the disclaimer
+# and license in png.h
 
 
 
@@ -96,18 +101,29 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 check_PROGRAMS = pngtest$(EXEEXT) pngunknown$(EXEEXT) \
-	pngstest$(EXEEXT) pngvalid$(EXEEXT) pngimage$(EXEEXT)
+	pngstest$(EXEEXT) pngvalid$(EXEEXT) pngimage$(EXEEXT) \
+	pngcp$(EXEEXT) $(am__EXEEXT_1)
+@HAVE_CLOCK_GETTIME_TRUE@am__append_1 = timepng
 bin_PROGRAMS = pngfix$(EXEEXT) png-fix-itxt$(EXEEXT)
-@PNG_ARM_NEON_TRUE@am__append_1 = arm/arm_init.c\
+@PNG_ARM_NEON_TRUE@am__append_2 = arm/arm_init.c\
 @PNG_ARM_NEON_TRUE@	arm/filter_neon.S arm/filter_neon_intrinsics.c
+
+@PNG_MIPS_MSA_TRUE@am__append_3 = mips/mips_init.c\
+@PNG_MIPS_MSA_TRUE@	mips/filter_msa_intrinsics.c
+
+@PNG_INTEL_SSE_TRUE@am__append_4 = intel/intel_init.c\
+@PNG_INTEL_SSE_TRUE@	intel/filter_sse2_intrinsics.c
+
+@PNG_POWERPC_VSX_TRUE@am__append_5 = powerpc/powerpc_init.c\
+@PNG_POWERPC_VSX_TRUE@        powerpc/filter_vsx_intrinsics.c
 
 
 #   Versioned symbols and restricted exports
-@HAVE_LD_VERSION_SCRIPT_TRUE@@HAVE_SOLARIS_LD_TRUE@am__append_2 = -Wl,-M -Wl,libpng.vers
-@HAVE_LD_VERSION_SCRIPT_TRUE@@HAVE_SOLARIS_LD_FALSE@am__append_3 = -Wl,--version-script=libpng.vers
+@HAVE_LD_VERSION_SCRIPT_TRUE@@HAVE_SOLARIS_LD_TRUE@am__append_6 = -Wl,-M -Wl,libpng.vers
+@HAVE_LD_VERSION_SCRIPT_TRUE@@HAVE_SOLARIS_LD_FALSE@am__append_7 = -Wl,--version-script=libpng.vers
 #   Only restricted exports when possible
-@HAVE_LD_VERSION_SCRIPT_FALSE@am__append_4 = -export-symbols libpng.sym
-@DO_PNG_PREFIX_TRUE@am__append_5 = -DPNG_PREFIX='@PNG_PREFIX@'
+@HAVE_LD_VERSION_SCRIPT_FALSE@am__append_8 = -export-symbols libpng.sym
+@DO_PNG_PREFIX_TRUE@am__append_9 = -DPNG_PREFIX='@PNG_PREFIX@'
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/scripts/libtool.m4 \
@@ -164,14 +180,24 @@ am__libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_SOURCES_DIST = png.c \
 	pngrtran.c pngrutil.c pngset.c pngtrans.c pngwio.c pngwrite.c \
 	pngwtran.c pngwutil.c png.h pngconf.h pngdebug.h pnginfo.h \
 	pngpriv.h pngstruct.h pngusr.dfa arm/arm_init.c \
-	arm/filter_neon.S arm/filter_neon_intrinsics.c
+	arm/filter_neon.S arm/filter_neon_intrinsics.c \
+	mips/mips_init.c mips/filter_msa_intrinsics.c \
+	intel/intel_init.c intel/filter_sse2_intrinsics.c \
+	powerpc/powerpc_init.c powerpc/filter_vsx_intrinsics.c
 am__dirstamp = $(am__leading_dot)dirstamp
 @PNG_ARM_NEON_TRUE@am__objects_1 = arm/arm_init.lo arm/filter_neon.lo \
 @PNG_ARM_NEON_TRUE@	arm/filter_neon_intrinsics.lo
+@PNG_MIPS_MSA_TRUE@am__objects_2 = mips/mips_init.lo \
+@PNG_MIPS_MSA_TRUE@	mips/filter_msa_intrinsics.lo
+@PNG_INTEL_SSE_TRUE@am__objects_3 = intel/intel_init.lo \
+@PNG_INTEL_SSE_TRUE@	intel/filter_sse2_intrinsics.lo
+@PNG_POWERPC_VSX_TRUE@am__objects_4 = powerpc/powerpc_init.lo \
+@PNG_POWERPC_VSX_TRUE@	powerpc/filter_vsx_intrinsics.lo
 am_libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_OBJECTS = png.lo pngerror.lo \
 	pngget.lo pngmem.lo pngpread.lo pngread.lo pngrio.lo \
 	pngrtran.lo pngrutil.lo pngset.lo pngtrans.lo pngwio.lo \
-	pngwrite.lo pngwtran.lo pngwutil.lo $(am__objects_1)
+	pngwrite.lo pngwtran.lo pngwutil.lo $(am__objects_1) \
+	$(am__objects_2) $(am__objects_3) $(am__objects_4)
 nodist_libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_OBJECTS =
 libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_OBJECTS =  \
 	$(am_libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_OBJECTS) \
@@ -185,10 +211,14 @@ libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_LDFLAGS) $(LDFLAGS) -o \
 	$@
+@HAVE_CLOCK_GETTIME_TRUE@am__EXEEXT_1 = timepng$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 am_png_fix_itxt_OBJECTS = contrib/tools/png-fix-itxt.$(OBJEXT)
 png_fix_itxt_OBJECTS = $(am_png_fix_itxt_OBJECTS)
 png_fix_itxt_LDADD = $(LDADD)
+am_pngcp_OBJECTS = contrib/tools/pngcp.$(OBJEXT)
+pngcp_OBJECTS = $(am_pngcp_OBJECTS)
+pngcp_DEPENDENCIES = libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@.la
 am_pngfix_OBJECTS = contrib/tools/pngfix.$(OBJEXT)
 pngfix_OBJECTS = $(am_pngfix_OBJECTS)
 pngfix_DEPENDENCIES = libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@.la
@@ -207,6 +237,9 @@ pngunknown_DEPENDENCIES = libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@.la
 am_pngvalid_OBJECTS = contrib/libtests/pngvalid.$(OBJEXT)
 pngvalid_OBJECTS = $(am_pngvalid_OBJECTS)
 pngvalid_DEPENDENCIES = libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@.la
+am_timepng_OBJECTS = contrib/libtests/timepng.$(OBJEXT)
+timepng_OBJECTS = $(am_timepng_OBJECTS)
+timepng_DEPENDENCIES = libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@.la
 SCRIPTS = $(bin_SCRIPTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -254,14 +287,14 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_SOURCES) \
 	$(nodist_libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_SOURCES) \
-	$(png_fix_itxt_SOURCES) $(pngfix_SOURCES) $(pngimage_SOURCES) \
-	$(pngstest_SOURCES) $(pngtest_SOURCES) $(pngunknown_SOURCES) \
-	$(pngvalid_SOURCES)
+	$(png_fix_itxt_SOURCES) $(pngcp_SOURCES) $(pngfix_SOURCES) \
+	$(pngimage_SOURCES) $(pngstest_SOURCES) $(pngtest_SOURCES) \
+	$(pngunknown_SOURCES) $(pngvalid_SOURCES) $(timepng_SOURCES)
 DIST_SOURCES =  \
 	$(am__libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_SOURCES_DIST) \
-	$(png_fix_itxt_SOURCES) $(pngfix_SOURCES) $(pngimage_SOURCES) \
-	$(pngstest_SOURCES) $(pngtest_SOURCES) $(pngunknown_SOURCES) \
-	$(pngvalid_SOURCES)
+	$(png_fix_itxt_SOURCES) $(pngcp_SOURCES) $(pngfix_SOURCES) \
+	$(pngimage_SOURCES) $(pngstest_SOURCES) $(pngtest_SOURCES) \
+	$(pngunknown_SOURCES) $(pngvalid_SOURCES) $(timepng_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -664,36 +697,35 @@ pngunknown_SOURCES = contrib/libtests/pngunknown.c
 pngunknown_LDADD = libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@.la
 pngimage_SOURCES = contrib/libtests/pngimage.c
 pngimage_LDADD = libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@.la
+timepng_SOURCES = contrib/libtests/timepng.c
+timepng_LDADD = libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@.la
 pngfix_SOURCES = contrib/tools/pngfix.c
 pngfix_LDADD = libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@.la
 png_fix_itxt_SOURCES = contrib/tools/png-fix-itxt.c
+pngcp_SOURCES = contrib/tools/pngcp.c
+pngcp_LDADD = libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@.la
 
 # Generally these are single line shell scripts to run a test with a particular
 # set of parameters:
 TESTS = \
    tests/pngtest\
+   tests/pngtest-badpngs\
    tests/pngvalid-gamma-16-to-8 tests/pngvalid-gamma-alpha-mode\
    tests/pngvalid-gamma-background tests/pngvalid-gamma-expand16-alpha-mode\
    tests/pngvalid-gamma-expand16-background\
    tests/pngvalid-gamma-expand16-transform tests/pngvalid-gamma-sbit\
    tests/pngvalid-gamma-threshold tests/pngvalid-gamma-transform\
-   tests/pngvalid-progressive-interlace-size\
+   tests/pngvalid-progressive-size\
    tests/pngvalid-progressive-interlace-standard\
-   tests/pngvalid-progressive-interlace-transform\
+   tests/pngvalid-transform\
    tests/pngvalid-progressive-standard tests/pngvalid-standard\
-   tests/pngstest-0g01 tests/pngstest-0g02 tests/pngstest-0g04\
-   tests/pngstest-0g08 tests/pngstest-0g16 tests/pngstest-2c08\
-   tests/pngstest-2c16 tests/pngstest-3p01 tests/pngstest-3p02\
-   tests/pngstest-3p04 tests/pngstest-3p08 tests/pngstest-4a08\
-   tests/pngstest-4a16 tests/pngstest-6a08 tests/pngstest-6a16\
-   tests/pngstest-error tests/pngunknown-IDAT\
+   tests/pngstest-1.8 tests/pngstest-1.8-alpha tests/pngstest-linear\
+   tests/pngstest-linear-alpha tests/pngstest-none tests/pngstest-none-alpha\
+   tests/pngstest-sRGB tests/pngstest-sRGB-alpha tests/pngunknown-IDAT\
    tests/pngunknown-discard tests/pngunknown-if-safe tests/pngunknown-sAPI\
    tests/pngunknown-sTER tests/pngunknown-save tests/pngunknown-vpAg\
    tests/pngimage-quick tests/pngimage-full
 
-
-# These tests are expected, and required, to fail:
-XFAIL_TESTS = tests/pngstest-error
 
 # man pages
 dist_man_MANS = libpng.3 libpngpf.3 png.5
@@ -707,12 +739,13 @@ libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_SOURCES = png.c pngerror.c \
 	pngget.c pngmem.c pngpread.c pngread.c pngrio.c pngrtran.c \
 	pngrutil.c pngset.c pngtrans.c pngwio.c pngwrite.c pngwtran.c \
 	pngwutil.c png.h pngconf.h pngdebug.h pnginfo.h pngpriv.h \
-	pngstruct.h pngusr.dfa $(am__append_1)
+	pngstruct.h pngusr.dfa $(am__append_2) $(am__append_3) \
+	$(am__append_4) $(am__append_5)
 nodist_libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_SOURCES = pnglibconf.h
 libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_LDFLAGS = -no-undefined \
 	-export-dynamic -version-number \
 	@PNGLIB_MAJOR@@PNGLIB_MINOR@:@PNGLIB_RELEASE@:0 \
-	$(am__append_2) $(am__append_3) $(am__append_4)
+	$(am__append_6) $(am__append_7) $(am__append_8)
 @HAVE_LD_VERSION_SCRIPT_FALSE@libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_DEPENDENCIES = libpng.sym
 @HAVE_LD_VERSION_SCRIPT_TRUE@libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_DEPENDENCIES = libpng.vers
 pkginclude_HEADERS = png.h pngconf.h
@@ -748,7 +781,7 @@ SUFFIXES = .chk .out
 SYMBOL_CFLAGS = -DPNGLIB_LIBNAME='PNG@PNGLIB_MAJOR@@PNGLIB_MINOR@_0' \
 	-DPNGLIB_VERSION='@PNGLIB_VERSION@' \
 	-DSYMBOL_PREFIX='$(SYMBOL_PREFIX)' -DPNG_NO_USE_READ_MACROS \
-	-DPNG_BUILDING_SYMBOL_TABLE $(am__append_5)
+	-DPNG_BUILDING_SYMBOL_TABLE $(am__append_9)
 
 # EXT_LIST is a list of the possibly library directory extensions, this exists
 # because we can't find a good way of discovering the file extensions that are
@@ -857,6 +890,35 @@ arm/arm_init.lo: arm/$(am__dirstamp) arm/$(DEPDIR)/$(am__dirstamp)
 arm/filter_neon.lo: arm/$(am__dirstamp) arm/$(DEPDIR)/$(am__dirstamp)
 arm/filter_neon_intrinsics.lo: arm/$(am__dirstamp) \
 	arm/$(DEPDIR)/$(am__dirstamp)
+mips/$(am__dirstamp):
+	@$(MKDIR_P) mips
+	@: > mips/$(am__dirstamp)
+mips/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) mips/$(DEPDIR)
+	@: > mips/$(DEPDIR)/$(am__dirstamp)
+mips/mips_init.lo: mips/$(am__dirstamp) mips/$(DEPDIR)/$(am__dirstamp)
+mips/filter_msa_intrinsics.lo: mips/$(am__dirstamp) \
+	mips/$(DEPDIR)/$(am__dirstamp)
+intel/$(am__dirstamp):
+	@$(MKDIR_P) intel
+	@: > intel/$(am__dirstamp)
+intel/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) intel/$(DEPDIR)
+	@: > intel/$(DEPDIR)/$(am__dirstamp)
+intel/intel_init.lo: intel/$(am__dirstamp) \
+	intel/$(DEPDIR)/$(am__dirstamp)
+intel/filter_sse2_intrinsics.lo: intel/$(am__dirstamp) \
+	intel/$(DEPDIR)/$(am__dirstamp)
+powerpc/$(am__dirstamp):
+	@$(MKDIR_P) powerpc
+	@: > powerpc/$(am__dirstamp)
+powerpc/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) powerpc/$(DEPDIR)
+	@: > powerpc/$(DEPDIR)/$(am__dirstamp)
+powerpc/powerpc_init.lo: powerpc/$(am__dirstamp) \
+	powerpc/$(DEPDIR)/$(am__dirstamp)
+powerpc/filter_vsx_intrinsics.lo: powerpc/$(am__dirstamp) \
+	powerpc/$(DEPDIR)/$(am__dirstamp)
 
 libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@.la: $(libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_OBJECTS) $(libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_DEPENDENCIES) $(EXTRA_libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_LINK) -rpath $(libdir) $(libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_OBJECTS) $(libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@_la_LIBADD) $(LIBS)
@@ -930,6 +992,12 @@ contrib/tools/png-fix-itxt.$(OBJEXT): contrib/tools/$(am__dirstamp) \
 png-fix-itxt$(EXEEXT): $(png_fix_itxt_OBJECTS) $(png_fix_itxt_DEPENDENCIES) $(EXTRA_png_fix_itxt_DEPENDENCIES) 
 	@rm -f png-fix-itxt$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(png_fix_itxt_OBJECTS) $(png_fix_itxt_LDADD) $(LIBS)
+contrib/tools/pngcp.$(OBJEXT): contrib/tools/$(am__dirstamp) \
+	contrib/tools/$(DEPDIR)/$(am__dirstamp)
+
+pngcp$(EXEEXT): $(pngcp_OBJECTS) $(pngcp_DEPENDENCIES) $(EXTRA_pngcp_DEPENDENCIES) 
+	@rm -f pngcp$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(pngcp_OBJECTS) $(pngcp_LDADD) $(LIBS)
 contrib/tools/pngfix.$(OBJEXT): contrib/tools/$(am__dirstamp) \
 	contrib/tools/$(DEPDIR)/$(am__dirstamp)
 
@@ -971,6 +1039,12 @@ contrib/libtests/pngvalid.$(OBJEXT): contrib/libtests/$(am__dirstamp) \
 pngvalid$(EXEEXT): $(pngvalid_OBJECTS) $(pngvalid_DEPENDENCIES) $(EXTRA_pngvalid_DEPENDENCIES) 
 	@rm -f pngvalid$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(pngvalid_OBJECTS) $(pngvalid_LDADD) $(LIBS)
+contrib/libtests/timepng.$(OBJEXT): contrib/libtests/$(am__dirstamp) \
+	contrib/libtests/$(DEPDIR)/$(am__dirstamp)
+
+timepng$(EXEEXT): $(timepng_OBJECTS) $(timepng_DEPENDENCIES) $(EXTRA_timepng_DEPENDENCIES) 
+	@rm -f timepng$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(timepng_OBJECTS) $(timepng_LDADD) $(LIBS)
 install-binSCRIPTS: $(bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	@list='$(bin_SCRIPTS)'; test -n "$(bindir)" || list=; \
@@ -1013,6 +1087,12 @@ mostlyclean-compile:
 	-rm -f arm/*.lo
 	-rm -f contrib/libtests/*.$(OBJEXT)
 	-rm -f contrib/tools/*.$(OBJEXT)
+	-rm -f intel/*.$(OBJEXT)
+	-rm -f intel/*.lo
+	-rm -f mips/*.$(OBJEXT)
+	-rm -f mips/*.lo
+	-rm -f powerpc/*.$(OBJEXT)
+	-rm -f powerpc/*.lo
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -1040,8 +1120,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@contrib/libtests/$(DEPDIR)/pngstest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@contrib/libtests/$(DEPDIR)/pngunknown.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@contrib/libtests/$(DEPDIR)/pngvalid.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@contrib/libtests/$(DEPDIR)/timepng.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@contrib/tools/$(DEPDIR)/png-fix-itxt.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@contrib/tools/$(DEPDIR)/pngcp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@contrib/tools/$(DEPDIR)/pngfix.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@intel/$(DEPDIR)/filter_sse2_intrinsics.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@intel/$(DEPDIR)/intel_init.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@mips/$(DEPDIR)/filter_msa_intrinsics.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@mips/$(DEPDIR)/mips_init.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@powerpc/$(DEPDIR)/filter_vsx_intrinsics.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@powerpc/$(DEPDIR)/powerpc_init.Plo@am__quote@
 
 .S.o:
 @am__fastdepCCAS_TRUE@	$(AM_V_CPPAS)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -1097,6 +1185,9 @@ mostlyclean-libtool:
 clean-libtool:
 	-rm -rf .libs _libs
 	-rm -rf arm/.libs arm/_libs
+	-rm -rf intel/.libs intel/_libs
+	-rm -rf mips/.libs mips/_libs
+	-rm -rf powerpc/.libs powerpc/_libs
 
 distclean-libtool:
 	-rm -f libtool config.lt
@@ -1457,6 +1548,13 @@ tests/pngtest.log: tests/pngtest
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+tests/pngtest-badpngs.log: tests/pngtest-badpngs
+	@p='tests/pngtest-badpngs'; \
+	b='tests/pngtest-badpngs'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 tests/pngvalid-gamma-16-to-8.log: tests/pngvalid-gamma-16-to-8
 	@p='tests/pngvalid-gamma-16-to-8'; \
 	b='tests/pngvalid-gamma-16-to-8'; \
@@ -1520,9 +1618,9 @@ tests/pngvalid-gamma-transform.log: tests/pngvalid-gamma-transform
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngvalid-progressive-interlace-size.log: tests/pngvalid-progressive-interlace-size
-	@p='tests/pngvalid-progressive-interlace-size'; \
-	b='tests/pngvalid-progressive-interlace-size'; \
+tests/pngvalid-progressive-size.log: tests/pngvalid-progressive-size
+	@p='tests/pngvalid-progressive-size'; \
+	b='tests/pngvalid-progressive-size'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1534,9 +1632,9 @@ tests/pngvalid-progressive-interlace-standard.log: tests/pngvalid-progressive-in
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngvalid-progressive-interlace-transform.log: tests/pngvalid-progressive-interlace-transform
-	@p='tests/pngvalid-progressive-interlace-transform'; \
-	b='tests/pngvalid-progressive-interlace-transform'; \
+tests/pngvalid-transform.log: tests/pngvalid-transform
+	@p='tests/pngvalid-transform'; \
+	b='tests/pngvalid-transform'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1555,114 +1653,58 @@ tests/pngvalid-standard.log: tests/pngvalid-standard
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-0g01.log: tests/pngstest-0g01
-	@p='tests/pngstest-0g01'; \
-	b='tests/pngstest-0g01'; \
+tests/pngstest-1.8.log: tests/pngstest-1.8
+	@p='tests/pngstest-1.8'; \
+	b='tests/pngstest-1.8'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-0g02.log: tests/pngstest-0g02
-	@p='tests/pngstest-0g02'; \
-	b='tests/pngstest-0g02'; \
+tests/pngstest-1.8-alpha.log: tests/pngstest-1.8-alpha
+	@p='tests/pngstest-1.8-alpha'; \
+	b='tests/pngstest-1.8-alpha'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-0g04.log: tests/pngstest-0g04
-	@p='tests/pngstest-0g04'; \
-	b='tests/pngstest-0g04'; \
+tests/pngstest-linear.log: tests/pngstest-linear
+	@p='tests/pngstest-linear'; \
+	b='tests/pngstest-linear'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-0g08.log: tests/pngstest-0g08
-	@p='tests/pngstest-0g08'; \
-	b='tests/pngstest-0g08'; \
+tests/pngstest-linear-alpha.log: tests/pngstest-linear-alpha
+	@p='tests/pngstest-linear-alpha'; \
+	b='tests/pngstest-linear-alpha'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-0g16.log: tests/pngstest-0g16
-	@p='tests/pngstest-0g16'; \
-	b='tests/pngstest-0g16'; \
+tests/pngstest-none.log: tests/pngstest-none
+	@p='tests/pngstest-none'; \
+	b='tests/pngstest-none'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-2c08.log: tests/pngstest-2c08
-	@p='tests/pngstest-2c08'; \
-	b='tests/pngstest-2c08'; \
+tests/pngstest-none-alpha.log: tests/pngstest-none-alpha
+	@p='tests/pngstest-none-alpha'; \
+	b='tests/pngstest-none-alpha'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-2c16.log: tests/pngstest-2c16
-	@p='tests/pngstest-2c16'; \
-	b='tests/pngstest-2c16'; \
+tests/pngstest-sRGB.log: tests/pngstest-sRGB
+	@p='tests/pngstest-sRGB'; \
+	b='tests/pngstest-sRGB'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-3p01.log: tests/pngstest-3p01
-	@p='tests/pngstest-3p01'; \
-	b='tests/pngstest-3p01'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-3p02.log: tests/pngstest-3p02
-	@p='tests/pngstest-3p02'; \
-	b='tests/pngstest-3p02'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-3p04.log: tests/pngstest-3p04
-	@p='tests/pngstest-3p04'; \
-	b='tests/pngstest-3p04'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-3p08.log: tests/pngstest-3p08
-	@p='tests/pngstest-3p08'; \
-	b='tests/pngstest-3p08'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-4a08.log: tests/pngstest-4a08
-	@p='tests/pngstest-4a08'; \
-	b='tests/pngstest-4a08'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-4a16.log: tests/pngstest-4a16
-	@p='tests/pngstest-4a16'; \
-	b='tests/pngstest-4a16'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-6a08.log: tests/pngstest-6a08
-	@p='tests/pngstest-6a08'; \
-	b='tests/pngstest-6a08'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-6a16.log: tests/pngstest-6a16
-	@p='tests/pngstest-6a16'; \
-	b='tests/pngstest-6a16'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-tests/pngstest-error.log: tests/pngstest-error
-	@p='tests/pngstest-error'; \
-	b='tests/pngstest-error'; \
+tests/pngstest-sRGB-alpha.log: tests/pngstest-sRGB-alpha
+	@p='tests/pngstest-sRGB-alpha'; \
+	b='tests/pngstest-sRGB-alpha'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1960,6 +2002,12 @@ distclean-generic:
 	-rm -f contrib/libtests/$(am__dirstamp)
 	-rm -f contrib/tools/$(DEPDIR)/$(am__dirstamp)
 	-rm -f contrib/tools/$(am__dirstamp)
+	-rm -f intel/$(DEPDIR)/$(am__dirstamp)
+	-rm -f intel/$(am__dirstamp)
+	-rm -f mips/$(DEPDIR)/$(am__dirstamp)
+	-rm -f mips/$(am__dirstamp)
+	-rm -f powerpc/$(DEPDIR)/$(am__dirstamp)
+	-rm -f powerpc/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -1976,7 +2024,7 @@ clean-am: clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) arm/$(DEPDIR) contrib/libtests/$(DEPDIR) contrib/tools/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) arm/$(DEPDIR) contrib/libtests/$(DEPDIR) contrib/tools/$(DEPDIR) intel/$(DEPDIR) mips/$(DEPDIR) powerpc/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-tags
@@ -2028,7 +2076,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) arm/$(DEPDIR) contrib/libtests/$(DEPDIR) contrib/tools/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) arm/$(DEPDIR) contrib/libtests/$(DEPDIR) contrib/tools/$(DEPDIR) intel/$(DEPDIR) mips/$(DEPDIR) powerpc/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -2152,6 +2200,7 @@ contrib/libtests/timepng.o: pnglibconf.h
 
 contrib/tools/makesRGB.o: pnglibconf.h
 contrib/tools/pngfix.o: pnglibconf.h
+contrib/tools/pngcp.o: pnglibconf.h
 
 .c.out:
 	rm -f $@ $*.tf[12]

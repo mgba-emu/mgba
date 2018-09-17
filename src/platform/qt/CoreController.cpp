@@ -91,7 +91,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		controller->m_resetActions.clear();
 
 		controller->m_activeBuffer = &controller->m_buffers[0];
-		context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), 256);
+		context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), controller->screenDimensions().width());
 
 		controller->finishFrame();
 	};
@@ -798,7 +798,7 @@ void CoreController::finishFrame() {
 		m_activeBuffer = &m_buffers[1];
 	}
 	// Copy contents to avoid issues when doing frameskip
-	*m_activeBuffer = *m_completeBuffer;
+	memcpy(m_activeBuffer->data(), m_completeBuffer->data(), m_activeBuffer->size());
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), screenDimensions().width());
 
 	for (auto& action : m_frameActions) {

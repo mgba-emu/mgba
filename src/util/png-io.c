@@ -323,6 +323,81 @@ bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width
 	return true;
 }
 
+bool PNGReadPixelsA(png_structp png, png_infop info, void* pixels, unsigned width, unsigned height, unsigned stride) {
+	if (setjmp(png_jmpbuf(png))) {
+		return false;
+	}
+
+	uint8_t* pixelData = pixels;
+	unsigned pngHeight = png_get_image_height(png, info);
+	if (height < pngHeight) {
+		pngHeight = height;
+	}
+
+	unsigned pngWidth = png_get_image_width(png, info);
+	if (width < pngWidth) {
+		pngWidth = width;
+	}
+
+	unsigned i;
+	png_bytep row = malloc(png_get_rowbytes(png, info));
+	for (i = 0; i < pngHeight; ++i) {
+		png_read_row(png, row, 0);
+		unsigned x;
+		for (x = 0; x < pngWidth; ++x) {
+#ifdef COLOR_16_BIT
+			uint16_t c = row[x * 4 + 2] >> 3;
+#ifdef COLOR_5_6_5
+			c |= (row[x * 4 + 1] << 3) & 0x7E0;
+			c |= (row[x * 4] << 8) & 0xF800;
+#else
+			c |= (row[x * 4 + 1] << 2) & 0x3E0;
+			c |= (row[x * 4] << 7) & 0x7C00;
+#endif
+			((uint16_t*) pixelData)[stride * i + x] = c;
+#else
+#if __BIG_ENDIAN__
+			pixelData[stride * i * 4 + x * 4 + 3] = row[x * 4];
+			pixelData[stride * i * 4 + x * 4 + 2] = row[x * 4 + 1];
+			pixelData[stride * i * 4 + x * 4 + 1] = row[x * 4 + 2];
+			pixelData[stride * i * 4 + x * 4] = row[x * 4 + 3];
+#else
+			pixelData[stride * i * 4 + x * 4] = row[x * 4];
+			pixelData[stride * i * 4 + x * 4 + 1] = row[x * 4 + 1];
+			pixelData[stride * i * 4 + x * 4 + 2] = row[x * 4 + 2];
+			pixelData[stride * i * 4 + x * 4 + 3] = row[x * 4 + 3];
+#endif
+#endif
+		}
+	}
+	free(row);
+	return true;
+}
+
+bool PNGReadPixels8(png_structp png, png_infop info, void* pixels, unsigned width, unsigned height, unsigned stride) {
+	if (setjmp(png_jmpbuf(png))) {
+		return false;
+	}
+
+	uint8_t* pixelData = pixels;
+	unsigned pngHeight = png_get_image_height(png, info);
+	if (height < pngHeight) {
+		pngHeight = height;
+	}
+
+	unsigned pngWidth = png_get_image_width(png, info);
+	if (width < pngWidth) {
+		pngWidth = width;
+	}
+
+	unsigned i;
+	for (i = 0; i < pngHeight; ++i) {
+		png_read_row(png, &pixelData[stride * i], 0);
+	}
+	return true;
+}
+
+
 bool PNGReadFooter(png_structp png, png_infop end) {
 	if (setjmp(png_jmpbuf(png))) {
 		return false;

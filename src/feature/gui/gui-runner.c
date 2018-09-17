@@ -441,10 +441,12 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			if (guiKeys & (1 << mGUI_INPUT_SCREENSHOT)) {
 				mCoreTakeScreenshot(runner->core);
 			}
-			if (heldKeys & (1 << mGUI_INPUT_FAST_FORWARD)) {
-				runner->setFrameLimiter(runner, false);
-			} else {
-				runner->setFrameLimiter(runner, true);
+			if (runner->setFrameLimiter) {
+				if (heldKeys & (1 << mGUI_INPUT_FAST_FORWARD)) {
+					runner->setFrameLimiter(runner, false);
+				} else {
+					runner->setFrameLimiter(runner, true);
+				}
 			}
 			uint16_t keys = runner->pollGameInput(runner);
 			if (runner->prepareForFrame) {
@@ -501,6 +503,10 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		if (runner->paused) {
 			runner->paused(runner);
 		}
+		if (runner->setFrameLimiter) {
+			runner->setFrameLimiter(runner, true);
+		}
+
 		GUIInvalidateKeys(&runner->params);
 		uint32_t keys = 0xFFFFFFFF; // Huge hack to avoid an extra variable!
 		struct GUIMenuItem* item;

@@ -126,7 +126,7 @@ $# to work, download Brian Kernighan's awk (Brian Kernighan is the author of
 $# awk.)  You can find source code and a built executable (called awk95.exe)
 $# here:
 $#
-$#     http://www.cs.princeton.edu/~bwk/btl.mirror/
+$#     https://www.cs.princeton.edu/~bwk/btl.mirror/
 $#
 $# The executable works just fine.
 $#

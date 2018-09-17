@@ -234,8 +234,7 @@ static void _requestImage(struct mImageSource* source, const void** buffer, size
 static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
 	UNUSED(stream);
 	MutexLock(&audioContext.mutex);
-	struct GBAStereoSample* samples = &audioContext.buffer[audioContext.writeOffset];
-	while (audioContext.samples == PSP2_AUDIO_BUFFER_SIZE) {
+	while (audioContext.samples + PSP2_SAMPLES >= PSP2_AUDIO_BUFFER_SIZE) {
 		if (!frameLimiter) {
 			blip_clear(left);
 			blip_clear(right);
@@ -244,6 +243,7 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 		}
 		ConditionWait(&audioContext.cond, &audioContext.mutex);
 	}
+	struct GBAStereoSample* samples = &audioContext.buffer[audioContext.writeOffset];
 	blip_read_samples(left, &samples[0].left, PSP2_SAMPLES, true);
 	blip_read_samples(right, &samples[0].right, PSP2_SAMPLES, true);
 	audioContext.samples += PSP2_SAMPLES;
@@ -403,6 +403,8 @@ void mPSP2UnloadROM(struct mGUIRunner* runner) {
 	default:
 		break;
 	}
+	audioContext.running = false;
+	ThreadJoin(audioThread);
 }
 
 void mPSP2Paused(struct mGUIRunner* runner) {

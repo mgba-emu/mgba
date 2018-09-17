@@ -8,7 +8,7 @@ com pnglibconf.h - library build configuration
 com
 version
 com
-com Copyright (c) 1998-2014 Glenn Randers-Pehrson
+com Copyright (c) 1998-2017 Glenn Randers-Pehrson
 com
 com This code is released under the libpng license.
 com For conditions of distribution and use, see the disclaimer
@@ -222,12 +222,39 @@ option SET_OPTION disabled
 #                 with png_set_option
 # ARM_NEON_CHECK: (PNG_ARM_NEON == 1) compile a run-time check to see if Neon
 #                 extensions are supported. This is poorly supported and
-#                 deprectated - use the png_set_option API.
+#                 deprecated - use the png_set_option API.
 setting ARM_NEON_OPT
 option ARM_NEON_API disabled requires ALIGNED_MEMORY enables SET_OPTION,
    sets ARM_NEON_OPT 1
 option ARM_NEON_CHECK disabled requires ALIGNED_MEMORY,
    sets ARM_NEON_OPT 1
+
+# These options are specific to the PowerPC VSX hardware optimizations.
+#
+# POWERPC_VSX_OPT: unset: check at compile time (__PPC64__,__ALTIVEC__,__VSX__
+#                      must be defined by the compiler, typically as a result
+#                      of specifying
+#                      "-mvsx -maltivec" compiler flags)
+#                   0: disable (even if the CPU supports VSX.)
+#                   1: check at run time (via POWERPC_VSX_{API,CHECK})
+#                   2: switch on unconditionally (inadvisable - instead pass
+#                      -mvsx -maltivec to compiler options)
+#           When building libpng avoid using any setting other than '0'; '1' is
+#           set automatically when either 'API' or 'CHECK' are configured in,
+#           '2' should not be necessary as "-mvsx -maltivec" will achieve the same
+#           effect as well as applying VSX optimizations to the rest of the
+#           libpng code.
+# POWERPC_VSX_API:   (PNG_POWERPC_VSX == 1) allow the optimization to be switched on
+#                 with png_set_option
+# POWERPC_VSX_CHECK: (PNG_POWERPC_VSX == 1) compile a run-time check to see if VSX
+#                 extensions are supported. This is supported not for all OSes
+#                 (see contrib/powerpc/README)
+setting POWERPC_VSX_OPT
+option POWERPC_VSX_API disabled enables SET_OPTION,
+  sets POWERPC_VSX_OPT 1
+option POWERPC_VSX_CHECK disabled,
+  sets POWERPC_VSX_OPT 1
+
 
 # These settings configure the default compression level (0-9) and 'strategy';
 # strategy is as defined by the implementors of zlib. It describes the input
@@ -249,6 +276,17 @@ setting Z_DEFAULT_STRATEGY default @Z_FILTERED
 setting Z_DEFAULT_NOFILTER_STRATEGY default @Z_DEFAULT_STRATEGY
 setting ZLIB_VERNUM default @ZLIB_VERNUM
 
+# Linkage of:
+#
+#  API:      libpng API functions
+#  CALLBACK: internal non-file-local callbacks
+#  FUNCTION: internal non-file-local functions
+#  DATA:     internal non-file-local (const) data
+setting LINKAGE_API default extern
+setting LINKAGE_CALLBACK default extern
+setting LINKAGE_FUNCTION default extern
+setting LINKAGE_DATA default extern
+
 setting TEXT_Z_DEFAULT_COMPRESSION default @Z_DEFAULT_COMPRESSION
 setting TEXT_Z_DEFAULT_STRATEGY default @Z_DEFAULT_STRATEGY
 
@@ -263,12 +301,12 @@ setting DEFAULT_READ_MACROS default 1
 
 option READ_INT_FUNCTIONS requires READ
 
-# The same for write, but these can only be switched off if
-# no writing is required at all - hence the use of an 'enables'
-# not a 'requires' below:
+# The same for write  but these can only be switched off if no writing
+# is required at all - hence the use of a 'disabled', not a 'requires'.
+# If these are needed, they are enabled in the 'WRITE options' section
+# below.
 
 option WRITE_INT_FUNCTIONS disabled
-option WRITE enables WRITE_INT_FUNCTIONS
 
 # Error controls
 #
@@ -479,7 +517,7 @@ option BUILD_GRAYSCALE_PALETTE
 
 # WRITE options
 
-option WRITE
+option WRITE enables WRITE_INT_FUNCTIONS
 
 # Disabling WRITE_16BIT prevents 16-bit PNG files from being
 # generated.
@@ -504,9 +542,7 @@ option WRITE_USER_TRANSFORM requires WRITE_TRANSFORMS
 
 option WRITE_INTERLACING requires WRITE
 
-# The following depends, internally, on WEIGHT_SHIFT and COST_SHIFT
-# where are set below.
-
+# Deprecated, will be removed.
 option WRITE_WEIGHTED_FILTER requires WRITE
 
 option WRITE_FLUSH requires WRITE
@@ -543,6 +579,7 @@ option WRITE_ANCILLARY_CHUNKS requires WRITE
 
 # These options disable *all* the text chunks if turned off
 
+option TEXT disabled
 option READ_TEXT requires READ_ANCILLARY_CHUNKS enables TEXT
 option WRITE_TEXT requires WRITE_ANCILLARY_CHUNKS enables TEXT
 
@@ -657,11 +694,6 @@ setting MAX_GAMMA_8 default 11
 
 setting GAMMA_THRESHOLD_FIXED default 5000
 
-# Scaling factor for filter heuristic weighting calculations
-
-setting WEIGHT_SHIFT default 8
-setting COST_SHIFT default 3
-
 # Precision to use when converting a floating point value to a PNG
 # extension format string in an sCAL chunk (only relevant if the
 # floating point API is enabled)
@@ -709,6 +741,7 @@ setting IDAT_READ_SIZE default PNG_ZBUF_SIZE
 # Ancillary chunks
 chunk bKGD
 chunk cHRM enables COLORSPACE
+chunk eXIf
 chunk gAMA enables GAMMA
 chunk hIST
 chunk iCCP enables COLORSPACE, GAMMA
@@ -869,8 +902,11 @@ option SIMPLIFIED_READ_BGR enables FORMAT_BGR,
 
 # Write:
 option SIMPLIFIED_WRITE,
-   requires WRITE STDIO, SETJMP, WRITE_SWAP, WRITE_PACK,
+   requires WRITE, SETJMP, WRITE_SWAP, WRITE_PACK,
       WRITE_tRNS, WRITE_gAMA, WRITE_sRGB, WRITE_cHRM
+
+# 1.6.22: allow simplified write without stdio support:
+option SIMPLIFIED_WRITE_STDIO requires SIMPLIFIED_WRITE STDIO
 
 option SIMPLIFIED_WRITE_AFIRST enables FORMAT_AFIRST,
    requires SIMPLIFIED_WRITE WRITE_SWAP_ALPHA

@@ -50,6 +50,9 @@ Bugfixes:
  - Core: Fix ordering events when scheduling during events
  - GBA: Reset WAITCNT properly
  - GBA Serialize: Fix loading states in Hblank
+ - PSP2: Fix more issues causing poor audio
+ - GBA Memory: Fix Vast Fame support (taizou) (fixes mgba.io/i/1170)
+ - GB, GBA Savedata: Fix unmasking savedata crash
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
@@ -81,6 +84,7 @@ Misc:
  - Feature: Added loading savestates from command line
  - Qt: Allow pausing game at load (fixes mgba.io/i/1129)
  - Wii: Move audio handling to callbacks (fixes mgba.io/i/803)
+ - Qt: Clean up FPS target UI (fixes mgba.io/i/436)
 
 0.6.3: (2017-04-14)
 Bugfixes:

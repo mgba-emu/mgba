@@ -246,10 +246,8 @@ void GBAVFameSramWrite(struct GBAVFameCart* cart, uint32_t address, uint8_t valu
 	// if mode has been set - the address and value of the SRAM write will be modified
 	address = _modifySramAddress(cart->cartType, address, cart->sramMode);
 	value = _modifySramValue(cart->cartType, value, cart->sramMode);
-	// these writes are mirrored
-	address &= 0x7FFF;
+	address &= (SIZE_CART_SRAM - 1);
 	sramData[address] = value;
-	sramData[address + 0x8000] = value;
 }
 
 static uint32_t _modifySramAddress(enum GBAVFameCartType type, uint32_t address, int mode) {

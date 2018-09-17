@@ -157,6 +157,7 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 	gb->sramRealVf = vf;
 	if (gb->sramSize) {
 		GBResizeSram(gb, gb->sramSize);
+		GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
 	}
 	return vf;
 }
@@ -256,7 +257,7 @@ void GBSavedataMask(struct GB* gb, struct VFile* vf, bool writeback) {
 }
 
 void GBSavedataUnmask(struct GB* gb) {
-	if (gb->sramVf == gb->sramRealVf) {
+	if (!gb->sramRealVf || gb->sramVf == gb->sramRealVf) {
 		return;
 	}
 	struct VFile* vf = gb->sramVf;
@@ -268,6 +269,7 @@ void GBSavedataUnmask(struct GB* gb) {
 		vf->read(vf, gb->memory.sram, gb->sramSize);
 		gb->sramMaskWriteback = false;
 	}
+	GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
 	vf->close(vf);
 }
 
