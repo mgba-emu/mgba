@@ -157,6 +157,7 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 	gb->sramRealVf = vf;
 	if (gb->sramSize) {
 		GBResizeSram(gb, gb->sramSize);
+		GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
 	}
 	return vf;
 }
