@@ -11,6 +11,7 @@
 #include <mgba/core/cheats.h>
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
+#include <mgba/core/serialize.h>
 #include <mgba/core/version.h>
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
@@ -558,23 +559,33 @@ void retro_unload_game(void) {
 }
 
 size_t retro_serialize_size(void) {
-	return core->stateSize(core);
+	struct VFile* vfm = VFileMemChunk(NULL, 0);
+	mCoreSaveStateNamed(core, vfm, SAVESTATE_SAVEDATA | SAVESTATE_RTC);
+	size_t size = vfm->size(vfm);
+	vfm->close(vfm);
+	return size;
 }
 
 bool retro_serialize(void* data, size_t size) {
-	if (size != retro_serialize_size()) {
+	struct VFile* vfm = VFileMemChunk(NULL, 0);
+	mCoreSaveStateNamed(core, vfm, SAVESTATE_SAVEDATA | SAVESTATE_RTC);
+	if ((ssize_t) size > vfm->size(vfm)) {
+		size = vfm->size(vfm);
+	} else if ((ssize_t) size < vfm->size(vfm)) {
+		vfm->close(vfm);
 		return false;
 	}
-	core->saveState(core, data);
+	vfm->seek(vfm, 0, SEEK_SET);
+	vfm->read(vfm, data, size);
+	vfm->close(vfm);
 	return true;
 }
 
 bool retro_unserialize(const void* data, size_t size) {
-	if (size != retro_serialize_size()) {
-		return false;
-	}
-	core->loadState(core, data);
-	return true;
+	struct VFile* vfm = VFileFromConstMemory(data, size);
+	bool success = mCoreLoadStateNamed(core, vfm, SAVESTATE_RTC);
+	vfm->close(vfm);
+	return success;
 }
 
 void retro_cheat_reset(void) {
