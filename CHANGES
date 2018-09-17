@@ -17,6 +17,7 @@ Features:
  - Access to ur0 and uma0 partitions on the Vita
  - Partial support for MBC6, MMM01, TAMA and HuC-1 GB mappers
  - GBA: ARMIPS/A22i-style and ELF symbol table support
+ - Initial Switch port
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
  - GB Serialize: Fix audio state loading
@@ -85,6 +86,7 @@ Misc:
  - Qt: Allow pausing game at load (fixes mgba.io/i/1129)
  - Wii: Move audio handling to callbacks (fixes mgba.io/i/803)
  - Qt: Clean up FPS target UI (fixes mgba.io/i/436)
+ - Core: Remove broken option for whether rewinding restores save games
 
 0.6.3: (2017-04-14)
 Bugfixes:
