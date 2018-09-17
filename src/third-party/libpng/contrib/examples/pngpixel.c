@@ -27,6 +27,8 @@
  */
 #include "../../png.h"
 
+#if defined(PNG_READ_SUPPORTED) && defined(PNG_SEQUENTIAL_READ_SUPPORTED)
+
 /* Return component 'c' of pixel 'x' from the given row. */
 static unsigned int
 component(png_const_bytep row, png_uint_32 x, unsigned int c,
@@ -85,7 +87,7 @@ print_pixel(png_structp png_ptr, png_infop info_ptr, png_const_bytep row,
        */
       case PNG_COLOR_TYPE_PALETTE:
          {
-            PNG_CONST unsigned int index = component(row, x, 0, bit_depth, 1);
+            PNG_CONST int index = component(row, x, 0, bit_depth, 1);
             png_colorp palette = NULL;
             int num_palette = 0;
 
@@ -366,3 +368,4 @@ int main(int argc, const char **argv)
 
    return result;
 }
+#endif /* READ && SEQUENTIAL_READ */

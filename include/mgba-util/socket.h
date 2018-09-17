@@ -55,6 +55,9 @@ struct Address {
 
 extern u32* SOCUBuffer;
 #endif
+#ifdef __SWITCH__
+#include <switch.h>
+#endif
 
 static inline void SocketSubsystemInit() {
 #ifdef _WIN32
@@ -65,6 +68,8 @@ static inline void SocketSubsystemInit() {
 		SOCUBuffer = memalign(SOCU_ALIGN, SOCU_BUFFERSIZE);
 		socInit(SOCUBuffer, SOCU_BUFFERSIZE);
 	}
+#elif defined(__SWITCH__)
+	socketInitializeDefault();
 #endif
 }
 
@@ -75,6 +80,8 @@ static inline void SocketSubsystemDeinit() {
 	socExit();
 	free(SOCUBuffer);
 	SOCUBuffer = NULL;
+#elif defined(__SWITCH__)
+	socketExit();
 #endif
 }
 
@@ -103,7 +110,7 @@ static inline ssize_t SocketSend(Socket socket, const void* buffer, size_t size)
 }
 
 static inline ssize_t SocketRecv(Socket socket, void* buffer, size_t size) {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__SWITCH__)
 	return recv(socket, (char*) buffer, size, 0);
 #else
 	return read(socket, buffer, size);

@@ -22,7 +22,6 @@ struct mCoreRewindContext {
 	struct mCoreRewindPatches patchMemory;
 	size_t current;
 	size_t size;
-	int stateFlags;
 	struct VFile* previousState;
 	struct VFile* currentState;
 

@@ -1409,17 +1409,22 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* target = avMenu->addMenu(tr("FPS target"));
 	ConfigOption* fpsTargetOption = m_config->addOption("fpsTarget");
-	fpsTargetOption->connect([this](const QVariant& value) {
+	QMap<double, QAction*> fpsTargets;
+	for (int fps : {15, 30, 45, 60, 90, 120, 240}) {
+		fpsTargets[fps] = fpsTargetOption->addValue(QString::number(fps), fps, target);
+	}
+	target->addSeparator();
+	double nativeGB = double(GBA_ARM7TDMI_FREQUENCY) / double(VIDEO_TOTAL_LENGTH);
+	fpsTargets[nativeGB] = fpsTargetOption->addValue(tr("Native (59.7275)"), nativeGB, target);
+
+	fpsTargetOption->connect([this, fpsTargets](const QVariant& value) {
 		reloadConfig();
+		for (auto iter = fpsTargets.begin(); iter != fpsTargets.end(); ++iter) {
+			bool enableSignals = iter.value()->blockSignals(true);
+			iter.value()->setChecked(abs(iter.key() - value.toDouble()) < 0.001);
+			iter.value()->blockSignals(enableSignals);
+		}
 	}, this);
-	fpsTargetOption->addValue(tr("15"), 15, target);
-	fpsTargetOption->addValue(tr("30"), 30, target);
-	fpsTargetOption->addValue(tr("45"), 45, target);
-	fpsTargetOption->addValue(tr("Native (59.7)"), float(GBA_ARM7TDMI_FREQUENCY) / float(VIDEO_TOTAL_LENGTH), target);
-	fpsTargetOption->addValue(tr("60"), 60, target);
-	fpsTargetOption->addValue(tr("90"), 90, target);
-	fpsTargetOption->addValue(tr("120"), 120, target);
-	fpsTargetOption->addValue(tr("240"), 240, target);
 	m_config->updateOption("fpsTarget");
 
 	avMenu->addSeparator();
@@ -1611,11 +1616,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, this);
 
 	ConfigOption* rewindBufferCapacity = m_config->addOption("rewindBufferCapacity");
-	rewindBufferCapacity->connect([this](const QVariant& value) {
-		reloadConfig();
-	}, this);
-
-	ConfigOption* rewindSave = m_config->addOption("rewindSave");
 	rewindBufferCapacity->connect([this](const QVariant& value) {
 		reloadConfig();
 	}, this);

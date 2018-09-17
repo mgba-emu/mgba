@@ -11,6 +11,7 @@ env:
 - DOCKER_TAG=3ds
 - DOCKER_TAG=wii
 - DOCKER_TAG=vita
+- DOCKER_TAG=switch
 - DOCKER_TAG=windows:w32
 - DOCKER_TAG=windows:w64
 
