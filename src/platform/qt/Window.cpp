@@ -1620,11 +1620,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		reloadConfig();
 	}, this);
 
-	ConfigOption* rewindSave = m_config->addOption("rewindSave");
-	rewindBufferCapacity->connect([this](const QVariant& value) {
-		reloadConfig();
-	}, this);
-
 	ConfigOption* allowOpposingDirections = m_config->addOption("allowOpposingDirections");
 	allowOpposingDirections->connect([this](const QVariant& value) {
 		reloadConfig();

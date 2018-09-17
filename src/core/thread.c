@@ -594,7 +594,6 @@ void mCoreThreadRewindParamsChanged(struct mCoreThread* threadContext) {
 	struct mCore* core = threadContext->core;
 	if (core->opts.rewindEnable && core->opts.rewindBufferCapacity > 0) {
 		 mCoreRewindContextInit(&threadContext->impl->rewind, core->opts.rewindBufferCapacity, true);
-		 threadContext->impl->rewind.stateFlags = core->opts.rewindSave ? SAVESTATE_SAVEDATA : 0;
 	} else {
 		 mCoreRewindContextDeinit(&threadContext->impl->rewind);
 	}

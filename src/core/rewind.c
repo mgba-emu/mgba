@@ -30,7 +30,6 @@ void mCoreRewindContextInit(struct mCoreRewindContext* context, size_t entries, 
 	context->previousState = VFileMemChunk(0, 0);
 	context->currentState = VFileMemChunk(0, 0);
 	context->size = 0;
-	context->stateFlags = SAVESTATE_SAVEDATA;
 #ifndef DISABLE_THREADING
 	context->onThread = onThread;
 	context->ready = false;
@@ -77,7 +76,7 @@ void mCoreRewindAppend(struct mCoreRewindContext* context, struct mCore* core) {
 	}
 #endif
 	struct VFile* nextState = context->previousState;
-	mCoreSaveStateNamed(core, nextState, context->stateFlags);
+	mCoreSaveStateNamed(core, nextState, SAVESTATE_SAVEDATA | SAVESTATE_RTC);
 	context->previousState = context->currentState;
 	context->currentState = nextState;
 #ifndef DISABLE_THREADING
@@ -131,7 +130,7 @@ bool mCoreRewindRestore(struct mCoreRewindContext* context, struct mCore* core) 
 	}
 	--context->size;
 
-	mCoreLoadStateNamed(core, context->previousState, context->stateFlags);
+	mCoreLoadStateNamed(core, context->previousState, SAVESTATE_SAVEDATA | SAVESTATE_RTC);
 	if (context->current == 0) {
 		context->current = mCoreRewindPatchesSize(&context->patchMemory);
 	}
