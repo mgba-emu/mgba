@@ -192,6 +192,7 @@ else ifeq ($(platform), psp1)
    CFLAGS += -G0 -I$(shell psp-config --pspsdk-path)/include
    STATIC_LINKING = 1
    DEFINES += -std=c99
+	HAVE_VFS_FD = 0
 
 # Vita
 else ifeq ($(platform), vita)
