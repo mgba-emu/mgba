@@ -86,7 +86,7 @@ ifneq (,$(findstring unix,$(platform)))
 	  # Haiku does not handle locales like Linux
       DEFINES += -std=c99 -D_GNU_SOURCE
    else
-      DEFINES += -std=c99 -D_GNU_SOURCE -DHAVE_LOCALE
+      DEFINES += -std=c99 -D_GNU_SOURCE
    endif
 
    # Raspberry Pi 3
@@ -112,7 +112,6 @@ else ifeq ($(platform), osx)
    ifeq ($(arch),ppc)
       DEFINES += -D__POWERPC__ -D__PPC__ -DMSB_FIRST
    endif
-   DEFINES += -DHAVE_LOCALE
    DEFINES += -std=gnu99
 
 # iOS
@@ -135,7 +134,6 @@ else ifneq (,$(findstring ios,$(platform)))
       CC += -miphoneos-version-min=5.0
       PLATFORM_DEFINES := -miphoneos-version-min=5.0
    endif
-   DEFINES += -DHAVE_LOCALE
    DEFINES += -std=c99
 
 # Theos
@@ -147,7 +145,6 @@ else ifeq ($(platform), theos_ios)
    THEOS_BUILD_DIR := objs
    include $(THEOS)/makefiles/common.mk
    LIBRARY_NAME = $(TARGET_NAME)_libretro_ios
-   DEFINES += -DHAVE_LOCALE
    DEFINES += -std=c99
 
 # QNX
@@ -235,7 +232,7 @@ else ifneq (,$(filter $(platform), ngc wii wiiu))
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
-   PLATFORM_DEFINES += -DGEKKO -mcpu=750 -meabi -mhard-float -DHAVE_STRTOF_L -DHAVE_LOCALE
+   PLATFORM_DEFINES += -DGEKKO -mcpu=750 -meabi -mhard-float -DHAVE_STRTOF_L
    PLATFORM_DEFINES += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int -D_GNU_SOURCE
    STATIC_LINKING = 1
    DEFINES += -std=c99
@@ -268,7 +265,6 @@ else ifeq ($(platform), switch)
 else ifeq ($(platform), emscripten)
    TARGET := $(TARGET_NAME)_libretro_$(platform).bc
    DEFINES += -std=gnu99
-   DEFINES += -DHAVE_LOCALE
 
 # Windows
 else
