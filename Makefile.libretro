@@ -88,6 +88,7 @@ ifneq (,$(findstring unix,$(platform)))
    else
       DEFINES += -std=c99 -D_GNU_SOURCE
    endif
+	DEFINES += -DHAVE_LOCALE
 
    # Raspberry Pi 3
    ifneq (,$(findstring rpi3,$(platform)))
@@ -250,6 +251,8 @@ else ifneq (,$(filter $(platform), ngc wii wiiu))
    else ifneq (,$(findstring ngc,$(platform)))
       PLATFORM_DEFINES += -DHW_DOL -mrvl
    endif
+
+	PLATFORM_DEFINES += -DHAVE_LOCALE
 
 # Nintendo Switch (libtransistor)
 else ifeq ($(platform), switch)
