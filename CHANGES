@@ -55,6 +55,7 @@ Bugfixes:
  - GBA Memory: Fix Vast Fame support (taizou) (fixes mgba.io/i/1170)
  - GB, GBA Savedata: Fix unmasking savedata crash
  - GBA DMA: Fix temporal sorting of DMAs of different priorities
+ - FFmpeg: Fix encoding audio/video queue issues
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
