@@ -45,7 +45,7 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/core/sync.c \
 					$(CORE_DIR)/src/core/thread.c \
 					$(CORE_DIR)/src/core/tile-cache.c \
-					$(CORE_DIR)/src/core/serialize.c \
+					$(CORE_DIR)/src/core/core-serialize.c \
 					$(CORE_DIR)/src/core/timing.c \
 					$(CORE_DIR)/src/gb/audio.c \
 					$(CORE_DIR)/src/gb/cheats.c \
