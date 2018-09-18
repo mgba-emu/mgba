@@ -334,6 +334,10 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
 		}
 	}
+	if (strcmp(vcodec->name, "libvpx-vp9") == 0 && encoder->videoBitrate == 0) {
+		av_opt_set(encoder->video->priv_data, "lossless", "1", 0);
+		encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
+	}
 
 	avcodec_open2(encoder->video, vcodec, 0);
 #if LIBAVCODEC_VERSION_MAJOR >= 55

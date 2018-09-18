@@ -89,6 +89,7 @@ Misc:
  - Wii: Move audio handling to callbacks (fixes mgba.io/i/803)
  - Qt: Clean up FPS target UI (fixes mgba.io/i/436)
  - Core: Remove broken option for whether rewinding restores save games
+ - FFmpeg: Support lossless VP9 encoding
 
 0.6.3: (2017-04-14)
 Bugfixes:
