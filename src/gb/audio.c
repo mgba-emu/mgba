@@ -576,46 +576,46 @@ void GBAudioUpdateFrame(struct GBAudio* audio, struct mTiming* timing) {
 
 void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
 	int dcOffset = audio->style == GB_AUDIO_GBA ? 0 : 0x8;
-	int sampleLeft = dcOffset;
-	int sampleRight = dcOffset;
+	int sampleLeft = 0;
+	int sampleRight = 0;
 
 	if (audio->playingCh1 && !audio->forceDisableCh[0]) {
 		if (audio->ch1Left) {
-			sampleLeft -= audio->ch1.sample;
+			sampleLeft += audio->ch1.sample - dcOffset;
 		}
 
 		if (audio->ch1Right) {
-			sampleRight -= audio->ch1.sample;
+			sampleRight += audio->ch1.sample - dcOffset;
 		}
 	}
 
 	if (audio->playingCh2 && !audio->forceDisableCh[1]) {
 		if (audio->ch2Left) {
-			sampleLeft -=  audio->ch2.sample;
+			sampleLeft += audio->ch2.sample - dcOffset;
 		}
 
 		if (audio->ch2Right) {
-			sampleRight -= audio->ch2.sample;
+			sampleRight += audio->ch2.sample - dcOffset;
 		}
 	}
 
 	if (audio->playingCh3 && !audio->forceDisableCh[2]) {
 		if (audio->ch3Left) {
-			sampleLeft -= audio->ch3.sample;
+			sampleLeft += audio->ch3.sample - dcOffset;
 		}
 
 		if (audio->ch3Right) {
-			sampleRight -= audio->ch3.sample;
+			sampleRight += audio->ch3.sample - dcOffset;
 		}
 	}
 
 	if (audio->playingCh4 && !audio->forceDisableCh[3]) {
 		if (audio->ch4Left) {
-			sampleLeft -= audio->ch4.sample;
+			sampleLeft += audio->ch4.sample - dcOffset;
 		}
 
 		if (audio->ch4Right) {
-			sampleRight -= audio->ch4.sample;
+			sampleRight += audio->ch4.sample - dcOffset;
 		}
 	}
 
