@@ -170,8 +170,8 @@ void VideoView::updatePresets() {
 
 	addPreset(m_ui.presetWebM, {
 		.container = "WebM",
-		.vcodec = "VP8",
-		.acodec = "Vorbis",
+		.vcodec = "VP9",
+		.acodec = "Opus",
 		.vbr = 800,
 		.abr = 128
 	});
