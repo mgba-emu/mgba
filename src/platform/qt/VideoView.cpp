@@ -101,7 +101,7 @@ VideoView::VideoView(QWidget* parent)
 		.container = "MKV",
 		.vcodec = "h.264",
 		.acodec = "FLAC",
-		.vbr = 0,
+		.vbr = -1,
 		.abr = 0,
 		.dims = QSize(),
 	});
@@ -181,7 +181,7 @@ void VideoView::updatePresets() {
 			.container = "MKV",
 			.vcodec = "h.264",
 			.acodec = "FLAC",
-			.vbr = 0,
+			.vbr = -1,
 			.abr = 0,
 			.dims = QSize(m_nativeWidth, m_nativeHeight)
 		});
@@ -311,7 +311,7 @@ void VideoView::setAudioBitrate(int br, bool manual) {
 }
 
 void VideoView::setVideoBitrate(int br, bool manual) {
-	m_vbr = br * 1000;
+	m_vbr = br >= 0 ? br * 1000 : 0;
 	FFmpegEncoderSetVideo(&m_encoder, m_videoCodecCstr, m_vbr);
 	validateSettings();
 	if (manual) {
