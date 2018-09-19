@@ -243,7 +243,7 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glUniform1f(font->cutoffLocation, 0.7f);
-	glUniform4f(font->colorLocation, ((color >> 16) & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, (color & 0xFF) / 255.0f, ((color >> 24) & 0xFF) / 255.0f);
+	glUniform4f(font->colorLocation, (color & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, ((color >> 16) & 0xFF) / 255.0f, ((color >> 24) & 0xFF) / 255.0f);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glDisableVertexAttribArray(font->offsetLocation);
@@ -312,7 +312,7 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glUniform1f(font->cutoffLocation, 0.7f);
-	glUniform4f(font->colorLocation, ((color >> 16) & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, (color & 0xFF) / 255.0f, ((color >> 24) & 0xFF) / 255.0f);
+	glUniform4f(font->colorLocation, (color & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, ((color >> 16) & 0xFF) / 255.0f, ((color >> 24) & 0xFF) / 255.0f);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glDisableVertexAttribArray(font->offsetLocation);
