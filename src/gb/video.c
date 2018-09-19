@@ -337,14 +337,6 @@ void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLat
 		return;
 	}
 
-	size_t c;
-	for (c = 0; c < mCoreCallbacksListSize(&video->p->coreCallbacks); ++c) {
-		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&video->p->coreCallbacks, c);
-		if (callbacks->videoFrameEnded) {
-			callbacks->videoFrameEnded(callbacks->context);
-		}
-	}
-
 	GBFrameEnded(video->p);
 	mCoreSyncPostFrame(video->p->sync);
 	--video->frameskipCounter;
@@ -354,24 +346,10 @@ void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLat
 	}
 	++video->frameCounter;
 
-	// TODO: Move to common code
-	if (video->p->stream && video->p->stream->postVideoFrame) {
-		const color_t* pixels;
-		size_t stride;
-		video->renderer->getPixels(video->renderer, &stride, (const void**) &pixels);
-		video->p->stream->postVideoFrame(video->p->stream, pixels, stride);
-	}
-
 	if (!GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC])) {
 		mTimingSchedule(timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH);
 	}
-
-	for (c = 0; c < mCoreCallbacksListSize(&video->p->coreCallbacks); ++c) {
-		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&video->p->coreCallbacks, c);
-		if (callbacks->videoFrameStarted) {
-			callbacks->videoFrameStarted(callbacks->context);
-		}
-	}
+	GBFrameStarted(video->p);
 }
 
 static void _cleanOAM(struct GBVideo* video, int y) {
