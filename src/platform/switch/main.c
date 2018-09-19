@@ -65,13 +65,14 @@ static const char* const _fragmentShader =
 static GLuint program;
 static GLuint vbo;
 static GLuint vao;
+static GLuint pbo;
 static GLuint texLocation;
 static GLuint dimsLocation;
 static GLuint insizeLocation;
 static GLuint colorLocation;
 static GLuint tex;
 
-static color_t frameBuffer[256 * 256];
+static color_t* frameBuffer;
 static struct mAVStream stream;
 static int audioBufferActive;
 static struct GBAStereoSample audioBuffer[N_BUFFERS][SAMPLES] __attribute__((__aligned__(0x1000)));
@@ -237,14 +238,23 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	if (!frameLimiter && (framecount % FRAME_LIMIT) != 0) {
 		return;
 	}
+	unsigned width, height;
+	runner->core->desiredVideoDimensions(runner->core, &width, &height);
+
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, height, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-	unsigned width, height;
-	runner->core->desiredVideoDimensions(runner->core, &width, &height);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, height, GL_RGBA, GL_UNSIGNED_BYTE, frameBuffer);
 	_drawTex(runner, width, height, faded);
+
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+	frameBuffer = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 256 * 256 * 4, GL_MAP_WRITE_BIT);
+	runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
 static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
@@ -342,6 +352,12 @@ int main(int argc, char* argv[]) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	glGenBuffers(1, &pbo);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER, 256 * 256 * 4, NULL, GL_STREAM_DRAW);
+	frameBuffer = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 256 * 256 * 4, GL_MAP_WRITE_BIT);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
 	program = glCreateProgram();
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -486,6 +502,10 @@ int main(int argc, char* argv[]) {
 
 	audoutStartAudioOut();
 	mGUIRunloop(&runner);
+
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+	glDeleteBuffers(1, &pbo);
 
 	glDeleteTextures(1, &tex);
 	glDeleteBuffers(1, &vbo);
