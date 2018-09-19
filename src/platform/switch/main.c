@@ -105,11 +105,11 @@ static bool initEgl() {
         goto _fail1;
     }
 
-	//EGLint contextAttributeList[] = {
-	//	EGL_CONTEXT_CLIENT_VERSION, 2,
-	//	EGL_NONE
-	//};
-    s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, NULL);
+	EGLint contextAttributeList[] = {
+		EGL_CONTEXT_CLIENT_VERSION, 2,
+		EGL_NONE
+	};
+    s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, contextAttributeList);
     if (!s_context) {
         goto _fail2;
     }
