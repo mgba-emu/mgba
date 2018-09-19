@@ -312,6 +312,10 @@ static int _batteryState(void) {
 	if (R_SUCCEEDED(psmGetBatteryChargePercentage(&charge))) {
 		state = charge / 25;
 	}
+	ChargerType type;
+	if (R_SUCCEEDED(psmGetChargerType(&type)) && type) {
+		state |= BATTERY_CHARGING;
+	}
 	return state;
 }
 
