@@ -10,6 +10,7 @@
 #include <mgba/internal/gba/input.h>
 #include <mgba-util/gui.h>
 #include <mgba-util/gui/font.h>
+#include <mgba-util/gui/menu.h>
 
 #include <switch.h>
 #include <EGL/egl.h>
@@ -19,7 +20,6 @@
 #define SAMPLES 0x400
 #define BUFFER_SIZE 0x1000
 #define N_BUFFERS 4
-#define FRAME_LIMIT 10
 
 TimeType __nx_time_type = TimeType_UserSystemClock;
 
@@ -79,7 +79,8 @@ static struct GBAStereoSample audioBuffer[N_BUFFERS][SAMPLES] __attribute__((__a
 static AudioOutBuffer audoutBuffer[N_BUFFERS];
 static int enqueuedBuffers;
 static bool frameLimiter = true;
-static int framecount = 0;
+static unsigned framecount = 0;
+static unsigned framecap = 10;
 
 static bool initEgl() {
     s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -150,8 +151,9 @@ static void _drawStart(void) {
 }
 
 static void _drawEnd(void) {
-	if (frameLimiter || (framecount % FRAME_LIMIT) == 0) {
+	if (frameLimiter || framecount >= framecap) {
 		eglSwapBuffers(s_display, s_surface);
+		framecount = 0;
 	}
 }
 
@@ -198,6 +200,8 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	double ratio = GBAAudioCalculateRatio(1, 60.0, 1);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), samplerate * ratio);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), samplerate * ratio);
+
+	mCoreConfigGetUIntValue(&runner->config, "fastForwardCap", &framecap);
 }
 
 static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height, bool faded) {
@@ -233,11 +237,21 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 	glUseProgram(0);
 }
 
+static void _prepareForFrame(struct mGUIRunner* runner) {
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+	frameBuffer = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 256 * 256 * 4, GL_MAP_WRITE_BIT);
+	if (frameBuffer) {
+		runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+	}
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+}
+
 static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	++framecount;
-	if (!frameLimiter && (framecount % FRAME_LIMIT) != 0) {
+	if (!frameLimiter && framecount < framecap) {
 		return;
 	}
+
 	unsigned width, height;
 	runner->core->desiredVideoDimensions(runner->core, &width, &height);
 
@@ -250,11 +264,6 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
 	_drawTex(runner, width, height, faded);
-
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-	frameBuffer = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 256 * 256 * 4, GL_MAP_WRITE_BIT);
-	runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
 static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
@@ -475,12 +484,26 @@ int main(int argc, char* argv[]) {
 			},
 			{ .id = 0 }
 		},
-		.nConfigExtra = 0,
+		.configExtra = (struct GUIMenuItem[]) {
+			{
+				.title = "Fast forward cap",
+				.data = "fastForwardCap",
+				.submenu = 0,
+				.state = 7,
+				.validStates = (const char*[]) {
+					"3", "4", "5", "6", "7", "8", "9",
+					"10", "11", "12", "13", "14", "15",
+					"20", "30"
+				},
+				.nStates = 15
+			},
+		},
+		.nConfigExtra = 1,
 		.setup = _setup,
 		.teardown = NULL,
 		.gameLoaded = _gameLoaded,
 		.gameUnloaded = NULL,
-		.prepareForFrame = NULL,
+		.prepareForFrame = _prepareForFrame,
 		.drawFrame = _drawFrame,
 		.drawScreenshot = _drawScreenshot,
 		.paused = NULL,
