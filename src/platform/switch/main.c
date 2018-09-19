@@ -13,12 +13,13 @@
 
 #include <switch.h>
 #include <EGL/egl.h>
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 
 #define AUTO_INPUT 0x4E585031
 #define SAMPLES 0x400
 #define BUFFER_SIZE 0x1000
 #define N_BUFFERS 4
+#define FRAME_LIMIT 10
 
 TimeType __nx_time_type = TimeType_UserSystemClock;
 
@@ -63,7 +64,7 @@ static const char* const _fragmentShader =
 
 static GLuint program;
 static GLuint vbo;
-static GLuint offsetLocation;
+static GLuint vao;
 static GLuint texLocation;
 static GLuint dimsLocation;
 static GLuint insizeLocation;
@@ -106,7 +107,7 @@ static bool initEgl() {
     }
 
 	EGLint contextAttributeList[] = {
-		EGL_CONTEXT_CLIENT_VERSION, 2,
+		EGL_CONTEXT_CLIENT_VERSION, 3,
 		EGL_NONE
 	};
     s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, contextAttributeList);
@@ -144,11 +145,11 @@ static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, enum
 }
 
 static void _drawStart(void) {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 static void _drawEnd(void) {
-	if (frameLimiter || (framecount & 3) == 0) {
+	if (frameLimiter || (framecount % FRAME_LIMIT) == 0) {
 		eglSwapBuffers(s_display, s_surface);
 	}
 }
@@ -199,12 +200,11 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 }
 
 static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height, bool faded) {
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUseProgram(program);
+	glBindVertexArray(vao);
 	float aspectX = width / (float) runner->params.width;
 	float aspectY = height / (float) runner->params.height;
 	float max;
@@ -226,26 +226,25 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 		glUniform4f(colorLocation, 0.8f, 0.8f, 0.8f, 0.8f);		
 	}
 
-	glVertexAttribPointer(offsetLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(offsetLocation);
-
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	glDisableVertexAttribArray(offsetLocation);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 	glUseProgram(0);
 }
 
 static void _drawFrame(struct mGUIRunner* runner, bool faded) {
+	++framecount;
+	if (!frameLimiter && (framecount % FRAME_LIMIT) != 0) {
+		return;
+	}
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, frameBuffer);
 
 	unsigned width, height;
 	runner->core->desiredVideoDimensions(runner->core, &width, &height);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, height, GL_RGBA, GL_UNSIGNED_BYTE, frameBuffer);
 	_drawTex(runner, width, height, faded);
-
-	++framecount;
 }
 
 static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
@@ -342,6 +341,7 @@ int main(int argc, char* argv[]) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
 	program = glCreateProgram();
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -386,12 +386,16 @@ int main(int argc, char* argv[]) {
 	colorLocation = glGetUniformLocation(program, "color");
 	dimsLocation = glGetUniformLocation(program, "dims");
 	insizeLocation = glGetUniformLocation(program, "insize");
-	offsetLocation = glGetAttribLocation(program, "offset");
+	GLuint offsetLocation = glGetAttribLocation(program, "offset");
 
 	glGenBuffers(1, &vbo);
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(_offsets), _offsets, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribPointer(offsetLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(offsetLocation);
+	glBindVertexArray(0);
 
 	stream.videoDimensionsChanged = NULL;
 	stream.postVideoFrame = NULL;
@@ -482,6 +486,11 @@ int main(int argc, char* argv[]) {
 
 	audoutStartAudioOut();
 	mGUIRunloop(&runner);
+
+	glDeleteTextures(1, &tex);
+	glDeleteBuffers(1, &vbo);
+	glDeleteProgram(program);
+	glDeleteVertexArrays(1, &vao);
 
 	psmExit();
 	audoutExit();
