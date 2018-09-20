@@ -66,6 +66,8 @@ static struct mImageSource imageSource;
 static uint32_t* camData = NULL;
 static unsigned camWidth;
 static unsigned camHeight;
+static unsigned imcapWidth;
+static unsigned imcapHeight;
 static size_t camStride;
 
 static void _reloadSettings(void) {
@@ -776,20 +778,40 @@ static uint8_t _readLux(struct GBALuminanceSource* lux) {
 }
 
 static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned height, size_t pitch) {
-	if (!camData || width != camWidth || height != camHeight) {
-		camData = malloc(sizeof(*buffer) * height * pitch);
+	if (!camData || width > camWidth || height > camHeight) {
+		if (camData) {
+			free(camData);
+		}
+		unsigned bufPitch = pitch / sizeof(*buffer);
+		unsigned bufHeight = height;
+		if (imcapWidth > bufPitch) {
+			bufPitch = imcapWidth;
+		}
+		if (imcapHeight > bufHeight) {
+			bufHeight = imcapHeight;
+		}
+		camData = malloc(sizeof(*buffer) * bufHeight * bufPitch);
+		memset(camData, 0xFF, sizeof(*buffer) * bufHeight * bufPitch);
 		camWidth = width;
-		camHeight = height;
-		camStride = pitch / sizeof(*buffer);
+		camHeight = bufHeight;
+		camStride = bufPitch;
 	}
-	memcpy(camData, buffer, sizeof(*buffer) * height * pitch);
+	size_t i;
+	for (i = 0; i < height; ++i) {
+		memcpy(&camData[camStride * i], &buffer[pitch * i / sizeof(*buffer)], pitch);
+	}
 }
 
 static void _startImage(struct mImageSource* image, unsigned w, unsigned h, int colorFormats) {
 	UNUSED(image);
 	UNUSED(colorFormats);
 
+	if (camData) {
+		free(camData);
+	}
 	camData = NULL;
+	imcapWidth = w;
+	imcapHeight = h;
 	cam.start();
 }
 
@@ -802,8 +824,18 @@ static void _requestImage(struct mImageSource* image, const void** buffer, size_
 	UNUSED(image);
 	if (!camData) {
 		cam.start();
+		*buffer = NULL;
+		return;
 	}
-	*buffer = camData;
+	size_t offset = 0;
+	if (imcapWidth < camWidth) {
+		offset += (camWidth - imcapWidth) / 2;
+	}
+	if (imcapHeight < camHeight) {
+		offset += (camHeight - imcapHeight) / 2 * camStride;
+	}
+
+	*buffer = &camData[offset];
 	*stride = camStride;
 	*colorFormat = mCOLOR_XRGB8;
 }
