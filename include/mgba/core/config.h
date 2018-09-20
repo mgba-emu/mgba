@@ -33,7 +33,6 @@ struct mCoreOptions {
 	int frameskip;
 	bool rewindEnable;
 	int rewindBufferCapacity;
-	bool rewindSave;
 	float fpsTarget;
 	size_t audioBuffers;
 	unsigned sampleRate;
