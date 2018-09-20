@@ -260,6 +260,9 @@ void GUIDrawBattery(struct GUIParams* params) {
 		return;
 	}
 	int state = params->batteryState();
+	if (state == BATTERY_NOT_PRESENT) {
+		return;
+	}
 	uint32_t color = 0xFF000000;
 	if (state == (BATTERY_CHARGING | BATTERY_FULL)) {
 		color |= 0xFFC060;
