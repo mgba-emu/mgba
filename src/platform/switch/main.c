@@ -20,6 +20,7 @@
 #define SAMPLES 0x400
 #define BUFFER_SIZE 0x1000
 #define N_BUFFERS 4
+#define ANALOG_DEADZONE 0x4000
 
 TimeType __nx_time_type = TimeType_UserSystemClock;
 
@@ -162,6 +163,40 @@ static uint32_t _pollInput(const struct mInputMap* map) {
 	hidScanInput();
 	u32 padkeys = hidKeysHeld(CONTROLLER_P1_AUTO);
 	keys |= mInputMapKeyBits(map, AUTO_INPUT, padkeys, 0);
+
+	JoystickPosition jspos;
+	hidJoystickRead(&jspos, CONTROLLER_P1_AUTO, JOYSTICK_LEFT);
+
+	int l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_LEFT));
+	int r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_RIGHT));
+	int u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_UP));
+	int d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_DOWN));
+
+	if (l == -1) {
+		l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DLEFT));
+	}
+	if (r == -1) {
+		r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DRIGHT));
+	}
+	if (u == -1) {
+		u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DUP));
+	}
+	if (d == -1) {
+		d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DDOWN));
+	}
+
+	if (jspos.dx < -ANALOG_DEADZONE && l != -1) {
+		keys |= 1 << l;
+	}
+	if (jspos.dx > ANALOG_DEADZONE && r != -1) {
+		keys |= 1 << r;
+	}
+	if (jspos.dy < -ANALOG_DEADZONE && d != -1) {
+		keys |= 1 << d;
+	}
+	if (jspos.dy > ANALOG_DEADZONE && u != -1) {
+		keys |= 1 << u;
+	}
 	return keys;
 }
 
@@ -275,11 +310,7 @@ static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, un
 }
 
 static uint16_t _pollGameInput(struct mGUIRunner* runner) {
-	int keys = 0;
-	hidScanInput();
-	u32 padkeys = hidKeysHeld(CONTROLLER_P1_AUTO);
-	keys |= mInputMapKeyBits(&runner->core->inputMap, AUTO_INPUT, padkeys, 0);
-	return keys;
+	return _pollInput(&runner->core->inputMap);
 }
 
 static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
