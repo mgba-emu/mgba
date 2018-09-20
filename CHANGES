@@ -91,6 +91,7 @@ Misc:
  - Qt: Clean up FPS target UI (fixes mgba.io/i/436)
  - Core: Remove broken option for whether rewinding restores save games
  - FFmpeg: Support lossless VP9 encoding
+ - mGUI: Add fast forward toggle
 
 0.6.3: (2017-04-14)
 Bugfixes:
