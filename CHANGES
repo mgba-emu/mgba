@@ -57,6 +57,7 @@ Bugfixes:
  - GBA DMA: Fix temporal sorting of DMAs of different priorities
  - FFmpeg: Fix encoding audio/video queue issues
  - GB Serialize: Fix IRQ pending/EI pending confusion
+ - GB MBC: Improve multicart detection heuristic (fixes mgba.io/i/1177)
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
