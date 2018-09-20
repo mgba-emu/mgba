@@ -5,6 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba-util/gui.h>
 
+#define KEY_DELAY 45
+#define KEY_REPEAT 5
+
 void GUIInit(struct GUIParams* params) {
 	memset(params->inputHistory, 0, sizeof(params->inputHistory));
 	strncpy(params->currentPath, params->basePath, PATH_MAX);
@@ -19,7 +22,7 @@ void GUIPollInput(struct GUIParams* params, uint32_t* newInputOut, uint32_t* hel
 		} else {
 			params->inputHistory[i] = -1;
 		}
-		if (!params->inputHistory[i] || (params->inputHistory[i] >= 30 && !(params->inputHistory[i] % 5))) {
+		if (!params->inputHistory[i] || (params->inputHistory[i] >= KEY_DELAY && !(params->inputHistory[i] % KEY_REPEAT))) {
 			newInput |= (1 << i);
 		}
 	}
