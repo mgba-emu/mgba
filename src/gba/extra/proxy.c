@@ -103,6 +103,7 @@ void GBAVideoProxyRendererInit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
 
 	_init(proxyRenderer);
+	_reset(proxyRenderer);
 
 	proxyRenderer->backend->init(proxyRenderer->backend);
 }
