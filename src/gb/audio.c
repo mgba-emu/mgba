@@ -377,9 +377,9 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 		audio->playingCh4 = _resetEnvelope(&audio->ch4.envelope);
 
 		if (audio->ch4.power) {
-			audio->ch4.lfsr = 0x40;
+			audio->ch4.lfsr = 0x7F;
 		} else {
-			audio->ch4.lfsr = 0x4000;
+			audio->ch4.lfsr = 0x7FFF;
 		}
 		if (!audio->ch4.length) {
 			audio->ch4.length = 64;
