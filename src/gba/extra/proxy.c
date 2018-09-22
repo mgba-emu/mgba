@@ -137,7 +137,7 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		}
 		break;
 	case DIRTY_OAM:
-		if (item->address < SIZE_PALETTE_RAM) {
+		if (item->address < SIZE_OAM) {
 			logger->oam[item->address] = item->value;
 			proxyRenderer->backend->writeOAM(proxyRenderer->backend, item->address);
 		}
@@ -252,7 +252,9 @@ void GBAVideoProxyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 		proxyRenderer->logger->lock(proxyRenderer->logger);
 		proxyRenderer->logger->wait(proxyRenderer->logger);
 	}
-	proxyRenderer->backend->finishFrame(proxyRenderer->backend);
+	if (!proxyRenderer->logger->block) {
+		proxyRenderer->backend->finishFrame(proxyRenderer->backend);
+	}
 	mVideoLoggerRendererFinishFrame(proxyRenderer->logger);
 	mVideoLoggerRendererFlush(proxyRenderer->logger);
 	if (proxyRenderer->logger->block && proxyRenderer->logger->wait) {
