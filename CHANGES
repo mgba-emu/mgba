@@ -61,6 +61,7 @@ Bugfixes:
  - GB Audio: Fix channel 3 reset value
  - GB Audio: Fix channel 4 initial LFSR
  - GB, GBA Video: Don't call finishFrame twice in thread proxy
+ - GB Audio: Fix channel 1, 2 and 4 reset timing
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
