@@ -252,7 +252,6 @@ void GBVideoProxyRendererFinishFrame(struct GBVideoRenderer* renderer) {
 	struct GBVideoProxyRenderer* proxyRenderer = (struct GBVideoProxyRenderer*) renderer;
 	if (proxyRenderer->logger->block && proxyRenderer->logger->wait) {
 		proxyRenderer->logger->lock(proxyRenderer->logger);
-		proxyRenderer->logger->wait(proxyRenderer->logger);
 	}
 	if (!proxyRenderer->logger->block) {
 		proxyRenderer->backend->finishFrame(proxyRenderer->backend);

@@ -20,6 +20,7 @@ struct RingFIFO {
 void RingFIFOInit(struct RingFIFO* buffer, size_t capacity);
 void RingFIFODeinit(struct RingFIFO* buffer);
 size_t RingFIFOCapacity(const struct RingFIFO* buffer);
+size_t RingFIFOSize(const struct RingFIFO* buffer);
 void RingFIFOClear(struct RingFIFO* buffer);
 size_t RingFIFOWrite(struct RingFIFO* buffer, const void* value, size_t length);
 size_t RingFIFORead(struct RingFIFO* buffer, void* output, size_t length);

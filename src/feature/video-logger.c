@@ -258,6 +258,9 @@ void mVideoLoggerRendererFlush(struct mVideoLogger* logger) {
 		0xDEADBEEF,
 	};
 	logger->writeData(logger, &dirty, sizeof(dirty));
+	if (logger->wait) {
+		logger->wait(logger);
+	}
 }
 
 void mVideoLoggerRendererFinishFrame(struct mVideoLogger* logger) {
