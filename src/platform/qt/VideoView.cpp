@@ -51,6 +51,7 @@ VideoView::VideoView(QWidget* parent)
 	if (s_acodecMap.empty()) {
 		s_acodecMap["mp3"] = "libmp3lame";
 		s_acodecMap["opus"] = "libopus";
+		s_acodecMap["vorbis"] = "libvorbis";
 		s_acodecMap["uncompressed"] = "pcm_s16le";
 	}
 	if (s_vcodecMap.empty()) {
