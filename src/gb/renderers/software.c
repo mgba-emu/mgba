@@ -193,7 +193,7 @@ static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum G
 	softwareRenderer->scx = 0;
 	softwareRenderer->wy = 0;
 	softwareRenderer->currentWy = 0;
-	softwareRenderer->lastY = 0;
+	softwareRenderer->lastY = GB_VIDEO_VERTICAL_PIXELS;
 	softwareRenderer->hasWindow = false;
 	softwareRenderer->wx = 0;
 	softwareRenderer->model = model;

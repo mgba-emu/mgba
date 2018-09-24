@@ -17,6 +17,7 @@ Features:
  - Access to ur0 and uma0 partitions on the Vita
  - Partial support for MBC6, MMM01, TAMA and HuC-1 GB mappers
  - GBA: ARMIPS/A22i-style and ELF symbol table support
+ - Initial Switch port
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
  - GB Serialize: Fix audio state loading
@@ -53,6 +54,15 @@ Bugfixes:
  - PSP2: Fix more issues causing poor audio
  - GBA Memory: Fix Vast Fame support (taizou) (fixes mgba.io/i/1170)
  - GB, GBA Savedata: Fix unmasking savedata crash
+ - GBA DMA: Fix temporal sorting of DMAs of different priorities
+ - FFmpeg: Fix encoding audio/video queue issues
+ - GB Serialize: Fix IRQ pending/EI pending confusion
+ - GB MBC: Improve multicart detection heuristic (fixes mgba.io/i/1177)
+ - GB Audio: Fix channel 3 reset value
+ - GB Audio: Fix channel 4 initial LFSR
+ - GB, GBA Video: Don't call finishFrame twice in thread proxy
+ - GB Audio: Fix channel 1, 2 and 4 reset timing
+ - Util: Fix wrapping edge cases in RingFIFO
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
@@ -85,6 +95,9 @@ Misc:
  - Qt: Allow pausing game at load (fixes mgba.io/i/1129)
  - Wii: Move audio handling to callbacks (fixes mgba.io/i/803)
  - Qt: Clean up FPS target UI (fixes mgba.io/i/436)
+ - Core: Remove broken option for whether rewinding restores save games
+ - FFmpeg: Support lossless VP9 encoding
+ - mGUI: Add fast forward toggle
 
 0.6.3: (2017-04-14)
 Bugfixes:

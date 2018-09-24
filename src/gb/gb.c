@@ -816,6 +816,18 @@ void GBGetGameCode(const struct GB* gb, char* out) {
 	}
 }
 
+void GBFrameStarted(struct GB* gb) {
+	GBTestKeypadIRQ(gb);
+
+	size_t c;
+	for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
+		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
+		if (callbacks->videoFrameStarted) {
+			callbacks->videoFrameStarted(callbacks->context);
+		}
+	}
+}
+
 void GBFrameEnded(struct GB* gb) {
 	GBSramClean(gb, gb->video.frameCounter);
 
@@ -828,7 +840,21 @@ void GBFrameEnded(struct GB* gb) {
 		}
 	}
 
-	GBTestKeypadIRQ(gb);
+	// TODO: Move to common code
+	if (gb->stream && gb->stream->postVideoFrame) {
+		const color_t* pixels;
+		size_t stride;
+		gb->video.renderer->getPixels(gb->video.renderer, &stride, (const void**) &pixels);
+		gb->stream->postVideoFrame(gb->stream, pixels, stride);
+	}
+
+	size_t c;
+	for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
+		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
+		if (callbacks->videoFrameEnded) {
+			callbacks->videoFrameEnded(callbacks->context);
+		}
+	}
 }
 
 enum GBModel GBNameToModel(const char* model) {

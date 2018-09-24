@@ -8,7 +8,7 @@ set(OS_DEFINES USE_VFS_FILE IOAPI_NO_64)
 list(APPEND CORE_VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-file.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 list(APPEND GUI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/gui-font.c)
 
-include_directories(AFTER ${OPENGLES2_INCLUDE_DIR} ${OPENGL_EGL_INCLUDE_DIR})
+include_directories(AFTER ${OPENGLES3_INCLUDE_DIR} ${OPENGL_EGL_INCLUDE_DIR})
 
 file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/wii/wii-*.c)
 if(${CMAKE_BUILD_TYPE} STREQUAL Debug OR ${CMAKE_BUILD_TYPE} STREQUAL RelWithDebInfo)
@@ -34,7 +34,7 @@ endif()
 
 add_executable(${BINARY_NAME}.elf ${GUI_SRC} ${PLATFORM_SRC} main.c)
 set_target_properties(${BINARY_NAME}.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
-target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${M_LIBRARY} ${EGL_LIBRARY} ${OPENGLES2_LIBRARY} ${GLAPI_LIBRARY} ${NOUVEAU_LIBRARY} stdc++ ${OS_LIB})
+target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${M_LIBRARY} ${EGL_LIBRARY} ${OPENGLES3_LIBRARY} ${GLAPI_LIBRARY} ${NOUVEAU_LIBRARY} stdc++ ${OS_LIB})
 
 add_custom_command(OUTPUT control.nacp
                    COMMAND ${NACPTOOL} --create "${PROJECT_NAME}" "endrift" "${VERSION_STRING}" control.nacp)

@@ -47,7 +47,8 @@ enum {
 	BATTERY_HIGH = 3,
 	BATTERY_FULL = 4,
 
-	BATTERY_CHARGING = 8
+	BATTERY_CHARGING = 8,
+	BATTERY_NOT_PRESENT = 16
 };
 
 struct GUIBackground {

@@ -9,7 +9,7 @@
 #include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 
 #define GLYPH_HEIGHT 24
 #define CELL_HEIGHT 32
@@ -58,7 +58,7 @@ struct GUIFont {
 	GLuint font;
 	GLuint program;
 	GLuint vbo;
-	GLuint offsetLocation;
+	GLuint vao;
 	GLuint texLocation;
 	GLuint dimsLocation;
 	GLuint transformLocation;
@@ -166,12 +166,16 @@ struct GUIFont* GUIFontCreate(void) {
 	font->originLocation = glGetUniformLocation(font->program, "origin");
 	font->glyphLocation = glGetUniformLocation(font->program, "glyph");
 	font->cutoffLocation = glGetUniformLocation(font->program, "cutoff");
-	font->offsetLocation = glGetAttribLocation(font->program, "offset");
+	GLuint offsetLocation = glGetAttribLocation(font->program, "offset");
 
 	glGenBuffers(1, &font->vbo);
+	glGenVertexArrays(1, &font->vao);
+	glBindVertexArray(font->vao);
 	glBindBuffer(GL_ARRAY_BUFFER, font->vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(_offsets), _offsets, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribPointer(offsetLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(offsetLocation);
+	glBindVertexArray(0);
 
 	return font;
 }
@@ -180,6 +184,7 @@ void GUIFontDestroy(struct GUIFont* font) {
 	glDeleteBuffers(1, &font->vbo);
 	glDeleteProgram(font->program);
 	glDeleteTextures(1, &font->font);
+	glDeleteVertexArrays(1, &font->vao);
 	free(font);
 }
 
@@ -222,9 +227,9 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, 
 	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
 
 	glUseProgram(font->program);
+	glBindVertexArray(font->vao);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, font->font);
-	glBindBuffer(GL_ARRAY_BUFFER, font->vbo);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -235,19 +240,15 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, 
 	glUniform3f(font->originLocation, x, y - GLYPH_HEIGHT + metric.padding.top * 2, 0);
 	glUniformMatrix2fv(font->transformLocation, 1, GL_FALSE, (float[4]) {1.0, 0.0, 0.0, 1.0});
 
-	glVertexAttribPointer(font->offsetLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(font->offsetLocation);
-
 	glUniform1f(font->cutoffLocation, 0.1f);
 	glUniform4f(font->colorLocation, 0.0, 0.0, 0.0, ((color >> 24) & 0xFF) / 128.0f);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glUniform1f(font->cutoffLocation, 0.7f);
-	glUniform4f(font->colorLocation, ((color >> 16) & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, (color & 0xFF) / 255.0f, ((color >> 24) & 0xFF) / 255.0f);
+	glUniform4f(font->colorLocation, (color & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, ((color >> 16) & 0xFF) / 255.0f, ((color >> 24) & 0xFF) / 255.0f);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	glDisableVertexAttribArray(font->offsetLocation);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 	glUseProgram(0);
 }
 
@@ -291,9 +292,9 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 	}
 
 	glUseProgram(font->program);
+	glBindVertexArray(font->vao);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, font->font);
-	glBindBuffer(GL_ARRAY_BUFFER, font->vbo);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -304,19 +305,15 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 	glUniform3f(font->originLocation, x, y, 0);
 	glUniformMatrix2fv(font->transformLocation, 1, GL_FALSE, (float[4]) {hFlip, 0.0, 0.0, vFlip});
 
-	glVertexAttribPointer(font->offsetLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(font->offsetLocation);
-
 	glUniform1f(font->cutoffLocation, 0.1f);
 	glUniform4f(font->colorLocation, 0.0, 0.0, 0.0, ((color >> 24) & 0xFF) / 128.0f);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glUniform1f(font->cutoffLocation, 0.7f);
-	glUniform4f(font->colorLocation, ((color >> 16) & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, (color & 0xFF) / 255.0f, ((color >> 24) & 0xFF) / 255.0f);
+	glUniform4f(font->colorLocation, (color & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, ((color >> 16) & 0xFF) / 255.0f, ((color >> 24) & 0xFF) / 255.0f);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	glDisableVertexAttribArray(font->offsetLocation);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 	glUseProgram(0);
 }
 
@@ -334,9 +331,9 @@ void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h,
 	}
 
 	glUseProgram(font->program);
+	glBindVertexArray(font->vao);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, font->font);
-	glBindBuffer(GL_ARRAY_BUFFER, font->vbo);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -347,9 +344,6 @@ void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h,
 	glUniform3f(font->originLocation, x + w / 2 - metric.width, y + h / 2 - metric.height, 0);
 	glUniformMatrix2fv(font->transformLocation, 1, GL_FALSE, (float[4]) {w * 0.5f / metric.width, 0.0, 0.0, h * 0.5f / metric.height});
 
-	glVertexAttribPointer(font->offsetLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(font->offsetLocation);
-
 	glUniform1f(font->cutoffLocation, 0.1f);
 	glUniform4f(font->colorLocation, 0.0, 0.0, 0.0, ((color >> 24) & 0xFF) / 128.0f);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -358,7 +352,6 @@ void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h,
 	glUniform4f(font->colorLocation, ((color >> 16) & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, (color & 0xFF) / 255.0f, ((color >> 24) & 0xFF) / 255.0f);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	glDisableVertexAttribArray(font->offsetLocation);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 	glUseProgram(0);
 }

@@ -202,13 +202,17 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 void GBADMAUpdate(struct GBA* gba) {
 	int i;
 	struct GBAMemory* memory = &gba->memory;
-	memory->activeDMA = -1;
 	uint32_t currentTime = mTimingCurrentTime(&gba->timing);
+	int32_t leastTime = INT_MAX;
+	memory->activeDMA = -1;
 	for (i = 0; i < 4; ++i) {
 		struct GBADMA* dma = &memory->dma[i];
 		if (GBADMARegisterIsEnable(dma->reg) && dma->nextCount) {
-			memory->activeDMA = i;
-			break;
+			int32_t time = dma->when - currentTime;
+			if (memory->activeDMA == -1 || (dma->count == dma->nextCount && time < leastTime)) {
+				leastTime = time;
+				memory->activeDMA = i;
+			}
 		}
 	}
 

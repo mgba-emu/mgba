@@ -205,7 +205,6 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->currentAudioSample = 0;
 	encoder->currentAudioFrame = 0;
 	encoder->currentVideoFrame = 0;
-	encoder->nextAudioPts = 0;
 
 	AVOutputFormat* oformat = av_guess_format(encoder->containerFormat, 0, 0);
 #ifndef USE_LIBAV
@@ -301,6 +300,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->video->width = encoder->width;
 	encoder->video->height = encoder->height;
 	encoder->video->time_base = (AVRational) { VIDEO_TOTAL_LENGTH, GBA_ARM7TDMI_FREQUENCY };
+	encoder->video->framerate = (AVRational) { GBA_ARM7TDMI_FREQUENCY, VIDEO_TOTAL_LENGTH };
 	encoder->video->pix_fmt = encoder->pixFormat;
 	encoder->video->gop_size = 60;
 	encoder->video->max_b_frames = 3;
@@ -333,6 +333,10 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			av_opt_set(encoder->video->priv_data, "crf", "0", 0);
 			encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
 		}
+	}
+	if (strcmp(vcodec->name, "libvpx-vp9") == 0 && encoder->videoBitrate == 0) {
+		av_opt_set(encoder->video->priv_data, "lossless", "1", 0);
+		encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
 	}
 
 	avcodec_open2(encoder->video, vcodec, 0);
@@ -457,14 +461,13 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 	                          (const uint8_t**) &encoder->audioBuffer, encoder->audioBufferSize / 4);
 #endif
 
-	encoder->audioFrame->pts = av_rescale_q(encoder->currentAudioFrame, encoder->audio->time_base, encoder->audioStream->time_base);
+	encoder->audioFrame->pts = encoder->currentAudioFrame;
 	encoder->currentAudioFrame += samples;
 
 	AVPacket packet;
 	av_init_packet(&packet);
 	packet.data = 0;
 	packet.size = 0;
-	packet.pts = encoder->audioFrame->pts;
 
 	int gotData;
 #ifdef FFMPEG_USE_PACKETS
@@ -474,6 +477,9 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 #else
 	avcodec_encode_audio2(encoder->audio, &packet, encoder->audioFrame, &gotData);
 #endif
+	packet.pts = av_rescale_q(encoder->audioFrame->pts, encoder->audio->time_base, encoder->audioStream->time_base);
+	packet.dts = packet.pts;
+
 	if (gotData) {
 		if (encoder->absf) {
 			AVPacket tempPacket;
@@ -532,7 +538,6 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 	av_frame_make_writable(encoder->videoFrame);
 #endif
 	encoder->videoFrame->pts = av_rescale_q(encoder->currentVideoFrame, encoder->video->time_base, encoder->videoStream->time_base);
-	packet.pts = encoder->videoFrame->pts;
 	++encoder->currentVideoFrame;
 
 	sws_scale(encoder->scaleContext, (const uint8_t* const*) &pixels, (const int*) &stride, 0, encoder->iheight, encoder->videoFrame->data, encoder->videoFrame->linesize);
@@ -544,6 +549,7 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 #else
 	avcodec_encode_video2(encoder->video, &packet, encoder->videoFrame, &gotData);
 #endif
+	packet.pts = encoder->videoFrame->pts;
 	if (gotData) {
 #ifndef FFMPEG_USE_PACKET_UNREF
 		if (encoder->video->coded_frame->key_frame) {
