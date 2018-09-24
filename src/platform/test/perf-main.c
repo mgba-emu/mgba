@@ -29,11 +29,12 @@
 #include <inttypes.h>
 #include <sys/time.h>
 
-#define PERF_OPTIONS "DF:L:NPS:"
+#define PERF_OPTIONS "DF:L:NPS:T"
 #define PERF_USAGE \
 	"\nBenchmark options:\n" \
 	"  -F FRAMES        Run for the specified number of FRAMES before exiting\n" \
 	"  -N               Disable video rendering entirely\n" \
+	"  -T               Use threaded video rendering\n" \
 	"  -P               CSV output, useful for parsing\n" \
 	"  -S SEC           Run for SEC in-game seconds before exiting\n" \
 	"  -L FILE          Load a savestate when starting the test\n" \
@@ -41,6 +42,7 @@
 
 struct PerfOpts {
 	bool noVideo;
+	bool threadedVideo;
 	bool csv;
 	unsigned duration;
 	unsigned frames;
@@ -89,7 +91,7 @@ int main(int argc, char** argv) {
 	struct mLogger logger = { .log = _log };
 	mLogSetDefaultLogger(&logger);
 
-	struct PerfOpts perfOpts = { false, false, 0, 0, 0, false };
+	struct PerfOpts perfOpts = { false, false, false, 0, 0, 0, false };
 	struct mSubParser subparser = {
 		.usage = PERF_USAGE,
 		.parse = _parsePerfOpts,
@@ -162,6 +164,12 @@ bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struc
 	mCoreConfigInit(&core->config, "perf");
 	mCoreConfigLoad(&core->config);
 
+	if (perfOpts->threadedVideo) {
+		mCoreConfigSetOverrideIntValue(&core->config, "threadedVideo", 1);
+	} else {
+		mCoreConfigSetOverrideIntValue(&core->config, "threadedVideo", 0);
+	}
+
 	struct mCoreOptions opts = {};
 	mCoreConfigMap(&core->config, &opts);
 	opts.audioSync = false;
@@ -200,6 +208,8 @@ bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struc
 		const char* rendererName;
 		if (perfOpts->noVideo) {
 			rendererName = "none";
+		} else if (perfOpts->threadedVideo) {
+			rendererName = "threaded-software";
 		} else {
 			rendererName = "software";
 		}
@@ -313,6 +323,9 @@ static bool _parsePerfOpts(struct mSubParser* parser, int option, const char* ar
 	case 'S':
 		opts->duration = strtoul(arg, 0, 10);
 		return !errno;
+	case 'T':
+		opts->threadedVideo = true;
+		return true;
 	case 'L':
 		opts->savestate = strdup(arg);
 		return true;
