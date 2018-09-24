@@ -26,7 +26,7 @@ size_t RingFIFOSize(const struct RingFIFO* buffer) {
 	const void* read;
 	const void* write;
 	ATOMIC_LOAD(read, buffer->readPtr);
-	ATOMIC_LOAD(write, buffer->readPtr);
+	ATOMIC_LOAD(write, buffer->writePtr);
 	if (read <= write) {
 		return (uintptr_t) write - (uintptr_t) read;
 	} else {
