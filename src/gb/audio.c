@@ -95,7 +95,7 @@ void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52, enum GBAu
 	audio->sampleEvent.context = audio;
 	audio->sampleEvent.name = "GB Audio Sample";
 	audio->sampleEvent.callback = _sample;
-	audio->ch1Event.priority = 0x18;
+	audio->sampleEvent.priority = 0x18;
 }
 
 void GBAudioDeinit(struct GBAudio* audio) {
@@ -218,6 +218,7 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 			}
 		}
 		if (audio->playingCh1 && audio->ch1.envelope.dead != 2) {
+			_updateSquareChannel(&audio->ch1);
 			mTimingDeschedule(audio->timing, &audio->ch1Event);
 			mTimingSchedule(audio->timing, &audio->ch1Event, 0);
 		}
@@ -266,6 +267,7 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 			}
 		}
 		if (audio->playingCh2 && audio->ch2.envelope.dead != 2) {
+			_updateSquareChannel(&audio->ch2);
 			mTimingDeschedule(audio->timing, &audio->ch2Event);
 			mTimingSchedule(audio->timing, &audio->ch2Event, 0);
 		}
