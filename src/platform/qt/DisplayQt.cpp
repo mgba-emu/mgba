@@ -51,7 +51,7 @@ void DisplayQt::filter(bool filter) {
 
 void DisplayQt::framePosted() {
 	update();
-	color_t* buffer = m_context->drawContext();
+	const color_t* buffer = m_context->drawContext();
 	if (const_cast<const QImage&>(m_backing).bits() == reinterpret_cast<const uchar*>(buffer)) {
 		return;
 	}

@@ -99,13 +99,16 @@ Misc:
  - FFmpeg: Support lossless VP9 encoding
  - mGUI: Add fast forward toggle
 
-0.6.3: (2017-04-14)
+0.6 beta 1: (2018-09-24)
+- Initial beta for 0.6
+
+0.6.3: (2018-04-14)
 Bugfixes:
  - GB Audio: Revert unsigned audio changes
  - GB Video: Fix bad merge (fixes mgba.io/i/1040)
  - GBA Video: Fix OBJ blending regression (fixes mgba.io/i/1037)
 
-0.6.2: (2017-04-03)
+0.6.2: (2018-04-03)
 Bugfixes:
  - Core: Fix ROM patches not being unloaded when disabled (fixes mgba.io/i/962)
  - 3DS: Fix opening files in directory names with trailing slashes
