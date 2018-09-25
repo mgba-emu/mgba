@@ -280,6 +280,13 @@ uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 
 void mPSP2SetFrameLimiter(struct mGUIRunner* runner, bool limit) {
 	UNUSED(runner);
+	if (!frameLimiter && limit) {
+		MutexLock(&audioContext.mutex);
+		while (audioContext.samples) {
+			ConditionWait(&audioContext.cond, &audioContext.mutex);
+		}
+		MutexUnlock(&audioContext.mutex);
+	}
 	frameLimiter = limit;
 }
 

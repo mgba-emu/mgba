@@ -98,6 +98,9 @@ Misc:
  - Core: Remove broken option for whether rewinding restores save games
  - FFmpeg: Support lossless VP9 encoding
  - mGUI: Add fast forward toggle
+Changes from beta 1:
+Bugfixes:
+ - PSP2: Fix audio crackling after fast forward
 
 0.6 beta 1: (2018-09-24)
 - Initial beta for 0.6
