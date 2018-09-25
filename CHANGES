@@ -99,6 +99,8 @@ Misc:
  - FFmpeg: Support lossless VP9 encoding
  - mGUI: Add fast forward toggle
 Changes from beta 1:
+Features:
+ - Libretro: Add Game Boy cheat support
 Bugfixes:
  - PSP2: Fix audio crackling after fast forward
  - PSP2: Fix audio crackling when buffer is full
