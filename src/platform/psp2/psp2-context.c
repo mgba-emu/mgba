@@ -97,18 +97,23 @@ void mPSP2MapKey(struct mInputMap* map, int pspKey, int key) {
 static THREAD_ENTRY _audioThread(void* context) {
 	struct mPSP2AudioContext* audio = (struct mPSP2AudioContext*) context;
 	uint32_t zeroBuffer[PSP2_SAMPLES] = {0};
+	void* buffer = zeroBuffer;
 	int audioPort = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_MAIN, PSP2_SAMPLES, 48000, SCE_AUDIO_OUT_MODE_STEREO);
 	while (audio->running) {
 		MutexLock(&audio->mutex);
-		void* buffer;
+		if (buffer != zeroBuffer) {
+			// Can only happen in successive iterations
+			audio->samples -= PSP2_SAMPLES;
+			ConditionWake(&audio->cond);
+		}
 		if (audio->samples >= PSP2_SAMPLES) {
 			buffer = &audio->buffer[audio->readOffset];
-			audio->samples -= PSP2_SAMPLES;
 			audio->readOffset += PSP2_SAMPLES;
 			if (audio->readOffset >= PSP2_AUDIO_BUFFER_SIZE) {
 				audio->readOffset = 0;
 			}
-			ConditionWake(&audio->cond);
+			// Don't mark samples as read until the next loop iteration to prevent
+			// writing to the buffer while being read (see above)
 		} else {
 			buffer = zeroBuffer;
 		}
