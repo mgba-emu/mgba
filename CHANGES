@@ -104,6 +104,7 @@ Features:
 Bugfixes:
  - PSP2: Fix audio crackling after fast forward
  - PSP2: Fix audio crackling when buffer is full
+ - 3DS: Fix unused screens not clearing (fixes mgba.io/i/1184)
 
 0.6 beta 1: (2018-09-24)
 - Initial beta for 0.6
