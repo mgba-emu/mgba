@@ -691,24 +691,49 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code) {
 		cheatSet = device->createSet(device, NULL);
 		mCheatAddSet(device, cheatSet);
 	}
-	// Convert the super wonky unportable libretro format to something normal
-	char realCode[] = "XXXXXXXX XXXXXXXX";
-	size_t len = strlen(code) + 1; // Include null terminator
-	size_t i, pos;
-	for (i = 0, pos = 0; i < len; ++i) {
-		if (isspace((int) code[i]) || code[i] == '+') {
-			realCode[pos] = ' ';
-		} else {
-			realCode[pos] = code[i];
+// Convert the super wonky unportable libretro format to something normal
+#ifdef M_CORE_GBA
+	if (core->platform(core) == PLATFORM_GBA) {
+		char realCode[] = "XXXXXXXX XXXXXXXX";
+		size_t len = strlen(code) + 1; // Include null terminator
+		size_t i, pos;
+		for (i = 0, pos = 0; i < len; ++i) {
+			if (isspace((int) code[i]) || code[i] == '+') {
+				realCode[pos] = ' ';
+			} else {
+				realCode[pos] = code[i];
+			}
+			if ((pos == 13 && (realCode[pos] == ' ' || !realCode[pos])) || pos == 17) {
+				realCode[pos] = '\0';
+				mCheatAddLine(cheatSet, realCode, 0);
+				pos = 0;
+				continue;
+			}
+			++pos;
 		}
-		if ((pos == 13 && (realCode[pos] == ' ' || !realCode[pos])) || pos == 17) {
-			realCode[pos] = '\0';
-			mCheatAddLine(cheatSet, realCode, 0);
-			pos = 0;
-			continue;
-		}
-		++pos;
 	}
+#endif
+#ifdef M_CORE_GB
+	if (core->platform(core) == PLATFORM_GB) {
+		char realCode[] = "XXX-XXX-XXX";
+		size_t len = strlen(code) + 1; // Include null terminator
+		size_t i, pos;
+		for (i = 0, pos = 0; i < len; ++i) {
+			if (isspace((int) code[i]) || code[i] == '+') {
+				realCode[pos] = '\0';
+			} else {
+				realCode[pos] = code[i];
+			}
+			if (pos == 11 || !realCode[pos]) {
+				realCode[pos] = '\0';
+				mCheatAddLine(cheatSet, realCode, 0);
+				pos = 0;
+				continue;
+			}
+			++pos;
+		}
+	}
+#endif
 }
 
 unsigned retro_get_region(void) {
