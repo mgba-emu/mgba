@@ -554,6 +554,8 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		return;
 	}
 
+	CLEAN_SCANLINE(softwareRenderer, y);
+
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	if (GBARegisterDISPCNTIsForcedBlank(softwareRenderer->dispcnt)) {
 		int x;
@@ -675,7 +677,6 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 #else
 	memcpy(row, softwareRenderer->row, VIDEO_HORIZONTAL_PIXELS * sizeof(*row));
 #endif
-	CLEAN_SCANLINE(softwareRenderer, y);
 }
 
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer) {
@@ -722,9 +723,10 @@ static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer,
 }
 
 static void _enableBg(struct GBAVideoSoftwareRenderer* renderer, int bg, bool active) {
+	int wasActive = renderer->bg[bg].enabled;
 	if (!active) {
 		renderer->bg[bg].enabled = 0;
-	} else if (!renderer->bg[bg].enabled && active) {
+	} else if (!wasActive && active) {
 		if (renderer->nextY == 0) {
 			renderer->bg[bg].enabled = 4;
 		} else {
@@ -901,15 +903,19 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 
 	if (renderer->bg[0].enabled > 0 && renderer->bg[0].enabled < 4) {
 		++renderer->bg[0].enabled;
+		DIRTY_SCANLINE(renderer, y);
 	}
 	if (renderer->bg[1].enabled > 0 && renderer->bg[1].enabled < 4) {
 		++renderer->bg[1].enabled;
+		DIRTY_SCANLINE(renderer, y);
 	}
 	if (renderer->bg[2].enabled > 0 && renderer->bg[2].enabled < 4) {
 		++renderer->bg[2].enabled;
+		DIRTY_SCANLINE(renderer, y);
 	}
 	if (renderer->bg[3].enabled > 0 && renderer->bg[3].enabled < 4) {
 		++renderer->bg[3].enabled;
+		DIRTY_SCANLINE(renderer, y);
 	}
 }
 
