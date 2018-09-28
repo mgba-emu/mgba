@@ -1610,6 +1610,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 		reloadConfig();
 	}, this);
 
+	ConfigOption* volumeFf = m_config->addOption("fastForwardVolume");
+	volumeFf->connect([this](const QVariant& value) {
+		reloadConfig();
+	}, this);
+
+	ConfigOption* muteFf = m_config->addOption("fastForwardMute");
+	muteFf->connect([this](const QVariant& value) {
+		reloadConfig();
+	}, this);
+
 	ConfigOption* rewindEnable = m_config->addOption("rewindEnable");
 	rewindEnable->connect([this](const QVariant& value) {
 		reloadConfig();
