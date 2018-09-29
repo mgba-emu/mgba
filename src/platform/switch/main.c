@@ -528,6 +528,23 @@ int main(int argc, char* argv[]) {
 					"10", "11", "12", "13", "14", "15",
 					"20", "30"
 				},
+				.stateMappings = (const struct GUIVariant[]) {
+					GUI_V_U(3),
+					GUI_V_U(4),
+					GUI_V_U(5),
+					GUI_V_U(6),
+					GUI_V_U(7),
+					GUI_V_U(8),
+					GUI_V_U(9),
+					GUI_V_U(10),
+					GUI_V_U(11),
+					GUI_V_U(12),
+					GUI_V_U(13),
+					GUI_V_U(14),
+					GUI_V_U(15),
+					GUI_V_U(20),
+					GUI_V_U(30),
+				},
 				.nStates = 15
 			},
 		},

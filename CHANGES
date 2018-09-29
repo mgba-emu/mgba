@@ -108,8 +108,10 @@ Bugfixes:
  - 3DS: Fix unused screens not clearing (fixes mgba.io/i/1184)
  - GBA Video: Fix caching with background toggling (fixes mgba.io/i/1118)
  - Wii: Fix drawing caching regression (fixes mgba.io/i/1185)
+ - Switch: Fix incorrect mapping for fast forward cap
 Misc:
  - mGUI: Add SGB border configuration option
+ - mGUI: Add support for different settings types
 
 0.7 beta 1: (2018-09-24)
 - Initial beta for 0.7
