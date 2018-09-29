@@ -294,7 +294,9 @@ void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config
 	mCoreConfigCopyValue(&core->config, config, "cheatAutosave");
 	mCoreConfigCopyValue(&core->config, config, "cheatAutoload");
 
+#ifndef HAVE_LIBNX // Needed or fatal
 	core->loadConfig(core, config);
+#endif
 }
 
 void mCoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {

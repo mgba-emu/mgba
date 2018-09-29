@@ -4,7 +4,7 @@ OBJCOPY := $(PREFIX)objcopy
 
 all: hle-bios.c
 
-hle-bios.o: hle-bios.s
+hle-bios.o: hle-bios-src.s
 	$(AS) -o $@ $<
 
 hle-bios.bin: hle-bios.o
