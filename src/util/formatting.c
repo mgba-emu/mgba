@@ -59,6 +59,11 @@ int ftostr_u(char* restrict str, size_t size, float f) {
 }
 
 float strtof_u(const char* restrict str, char** restrict end) {
+#ifdef GEKKO
+	// strtof_l appears to have broken in devkitPPC sometime around r28
+	// TODO: Investigate further
+	float res = strtof(str, end);
+#else
 #if HAVE_LOCALE
 	locale_t l = newlocale(LC_NUMERIC_MASK, "C", 0);
 #else
@@ -67,6 +72,7 @@ float strtof_u(const char* restrict str, char** restrict end) {
 	float res = strtof_l(str, end, l);
 #if HAVE_LOCALE
 	freelocale(l);
+#endif
 #endif
 	return res;
 }
