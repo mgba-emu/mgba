@@ -469,9 +469,49 @@ int main(int argc, char* argv[]) {
 					"Bilinear (pixelated)",
 				},
 				.nStates = 3
-			}
+			},
+			{
+				.title = "Horizontal stretch",
+				.data = "stretchWidth",
+				.submenu = 0,
+				.state = 7,
+				.validStates = (const char*[]) {
+					"1/2x", "0.6x", "1/3x", "0.7x", "1/4x", "0.8x", "0.9x", "1.0x"
+				},
+				.stateMappings = (const struct GUIVariant[]) {
+					GUI_V_F(0.5f),
+					GUI_V_F(0.6f),
+					GUI_V_F(1.f / 3.f),
+					GUI_V_F(0.7f),
+					GUI_V_F(0.75f),
+					GUI_V_F(0.8f),
+					GUI_V_F(0.9f),
+					GUI_V_F(1.0f),
+				},
+				.nStates = 8
+			},
+			{
+				.title = "Vertical stretch",
+				.data = "stretchHeight",
+				.submenu = 0,
+				.state = 6,
+				.validStates = (const char*[]) {
+					"1/2x", "0.6x", "1/3x", "0.7x", "1/4x", "0.8x", "0.9x", "1.0x"
+				},
+				.stateMappings = (const struct GUIVariant[]) {
+					GUI_V_F(0.5f),
+					GUI_V_F(0.6f),
+					GUI_V_F(1.f / 3.f),
+					GUI_V_F(0.7f),
+					GUI_V_F(0.75f),
+					GUI_V_F(0.8f),
+					GUI_V_F(0.9f),
+					GUI_V_F(1.0f),
+				},
+				.nStates = 8
+			},
 		},
-		.nConfigExtra = 3,
+		.nConfigExtra = 5,
 		.setup = _setup,
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,
@@ -516,6 +556,15 @@ int main(int argc, char* argv[]) {
 	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_DOWN, GUI_INPUT_DOWN);
 	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_LEFT, GUI_INPUT_LEFT);
 	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_RIGHT, GUI_INPUT_RIGHT);
+
+
+	float stretch = 0;
+	if (mCoreConfigGetFloatValue(&runner.config, "stretchWidth", &stretch)) {
+		wStretch = fminf(1.0f, fmaxf(0.5f, stretch));
+	}
+	if (mCoreConfigGetFloatValue(&runner.config, "stretchHeight", &stretch)) {
+		hStretch = fminf(1.0f, fmaxf(0.5f, stretch));
+	}
 
 	if (argc > 1) {
 		size_t i;

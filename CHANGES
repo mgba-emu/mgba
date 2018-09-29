@@ -113,6 +113,7 @@ Misc:
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types
  - Wii: Disable use of strtof_l (fixes mgba.io/i/1106)
+ - Wii: Expose stretch configuration in settings
 
 0.7 beta 1: (2018-09-24)
 - Initial beta for 0.7
