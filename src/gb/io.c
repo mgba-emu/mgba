@@ -105,6 +105,7 @@ static const uint8_t _registerMask[] = {
 };
 
 static uint8_t _readKeys(struct GB* gb);
+static uint8_t _readKeysFiltered(struct GB* gb);
 
 static void _writeSGBBits(struct GB* gb, int bits) {
 	if (!bits) {
@@ -557,10 +558,26 @@ static uint8_t _readKeys(struct GB* gb) {
 	return gb->memory.io[REG_JOYP];
 }
 
+static uint8_t _readKeysFiltered(struct GB* gb) {
+	uint8_t keys = _readKeys(gb);
+	if (!gb->allowOpposingDirections && (keys & 0x30) == 0x20) {
+		unsigned rl = keys & 0x03;
+		unsigned ud = keys & 0x0C;
+		keys &= 0xF0;
+		if (rl != 0x03) {
+			keys |= rl;
+		}
+		if (ud != 0x0C) {
+			keys |= ud;
+		}
+	}
+	return keys;
+}
+
 uint8_t GBIORead(struct GB* gb, unsigned address) {
 	switch (address) {
 	case REG_JOYP:
-		return _readKeys(gb);
+		return _readKeysFiltered(gb);
 	case REG_IE:
 		return gb->memory.ie;
 	case REG_WAVE_0:

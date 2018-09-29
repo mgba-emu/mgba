@@ -210,8 +210,12 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	mCoreConfigCopyValue(&core->config, config, "gb.model");
 	mCoreConfigCopyValue(&core->config, config, "sgb.model");
 	mCoreConfigCopyValue(&core->config, config, "cgb.model");
+	mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
 
-	int fakeBool;
+	int fakeBool = 0;
+	mCoreConfigGetIntValue(config, "allowOpposingDirections", &fakeBool);
+	gb->allowOpposingDirections = fakeBool;
+
 	if (mCoreConfigGetIntValue(config, "sgb.borders", &fakeBool)) {
 		gb->video.sgbBorders = fakeBool;
 		gb->video.renderer->enableSGBBorder(gb->video.renderer, fakeBool);
