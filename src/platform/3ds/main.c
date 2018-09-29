@@ -194,7 +194,9 @@ static void _drawStart(void) {
 	C3D_FrameBegin(flags);
 	ctrStartFrame();
 
+	C3D_FrameDrawOn(bottomScreen[doubleBuffer]);
 	C3D_RenderTargetClear(bottomScreen[doubleBuffer], C3D_CLEAR_COLOR, 0, 0);
+	C3D_FrameDrawOn(topScreen[doubleBuffer]);
 	C3D_RenderTargetClear(topScreen[doubleBuffer], C3D_CLEAR_COLOR, 0, 0);
 }
 

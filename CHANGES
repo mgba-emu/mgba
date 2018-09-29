@@ -101,11 +101,16 @@ Misc:
 Changes from beta 1:
 Features:
  - Libretro: Add Game Boy cheat support
+ - Qt: Separate fast forward volume control (fixes mgba.io/i/846, mgba.io/i/1143)
 Bugfixes:
  - PSP2: Fix audio crackling after fast forward
  - PSP2: Fix audio crackling when buffer is full
+ - 3DS: Fix unused screens not clearing (fixes mgba.io/i/1184)
+ - GBA Video: Fix caching with background toggling (fixes mgba.io/i/1118)
+Misc:
+ - mGUI: Add SGB border configuration option
 
-0.6 beta 1: (2018-09-24)
+0.7 beta 1: (2018-09-24)
 - Initial beta for 0.6
 
 0.6.3: (2018-04-14)

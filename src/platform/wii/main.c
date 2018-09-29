@@ -229,15 +229,6 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 			double ratio = GBAAudioCalculateRatio(1, audioSampleRate, 1);
 			blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
 			blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
-
-			runner->core->desiredVideoDimensions(runner->core, &corew, &coreh);
-			int hfactor = vmode->fbWidth / (corew * wAdjust);
-			int vfactor = vmode->efbHeight / (coreh * hAdjust);
-			if (hfactor > vfactor) {
-				scaleFactor = vfactor;
-			} else {
-				scaleFactor = hfactor;
-			}
 		}
 	}
 }
@@ -812,7 +803,7 @@ void _unpaused(struct mGUIRunner* runner) {
 }
 
 void _drawFrame(struct mGUIRunner* runner, bool faded) {
-	UNUSED(runner);
+	runner->core->desiredVideoDimensions(runner->core, &corew, &coreh);
 	uint32_t color = 0xFFFFFF3F;
 	if (!faded) {
 		color |= 0xC0;
@@ -838,9 +829,9 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	GX_InvalidateTexAll();
 	GX_LoadTexObj(&tex, GX_TEXMAP0);
 
-	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S16, 0);
-	s16 vertWidth = TEX_W;
-	s16 vertHeight = TEX_H;
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+	s16 vertWidth = corew;
+	s16 vertHeight = coreh;
 
 	if (filterMode == FM_LINEAR_2x) {
 		Mtx44 proj;
@@ -850,25 +841,33 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 		GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
 		GX_Position2s16(0, TEX_H * 2);
 		GX_Color1u32(0xFFFFFFFF);
-		GX_TexCoord2s16(0, 1);
+		GX_TexCoord2f32(0, 1);
 
 		GX_Position2s16(TEX_W * 2, TEX_H * 2);
 		GX_Color1u32(0xFFFFFFFF);
-		GX_TexCoord2s16(1, 1);
+		GX_TexCoord2f32(1, 1);
 
 		GX_Position2s16(TEX_W * 2, 0);
 		GX_Color1u32(0xFFFFFFFF);
-		GX_TexCoord2s16(1, 0);
+		GX_TexCoord2f32(1, 0);
 
 		GX_Position2s16(0, 0);
 		GX_Color1u32(0xFFFFFFFF);
-		GX_TexCoord2s16(0, 0);
+		GX_TexCoord2f32(0, 0);
 		GX_End();
 
 		GX_SetTexCopySrc(0, 0, TEX_W * 2, TEX_H * 2);
 		GX_SetTexCopyDst(TEX_W * 2, TEX_H * 2, GX_TF_RGB565, GX_FALSE);
 		GX_CopyTex(rescaleTexmem, GX_TRUE);
 		GX_LoadTexObj(&rescaleTex, GX_TEXMAP0);
+	}
+
+	int hfactor = vmode->fbWidth / (corew * wAdjust);
+	int vfactor = vmode->efbHeight / (coreh * hAdjust);
+	if (hfactor > vfactor) {
+		scaleFactor = vfactor;
+	} else {
+		scaleFactor = hfactor;
 	}
 
 	if (screenMode == SM_PA) {
@@ -885,19 +884,19 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
 	GX_Position2s16(0, vertHeight);
 	GX_Color1u32(color);
-	GX_TexCoord2s16(0, 1);
+	GX_TexCoord2f32(0, coreh / (float) TEX_H);
 
 	GX_Position2s16(vertWidth, vertHeight);
 	GX_Color1u32(color);
-	GX_TexCoord2s16(1, 1);
+	GX_TexCoord2f32(corew / (float) TEX_W, coreh / (float) TEX_H);
 
 	GX_Position2s16(vertWidth, 0);
 	GX_Color1u32(color);
-	GX_TexCoord2s16(1, 0);
+	GX_TexCoord2f32(corew / (float) TEX_W, 0);
 
 	GX_Position2s16(0, 0);
 	GX_Color1u32(color);
-	GX_TexCoord2s16(0, 0);
+	GX_TexCoord2f32(0, 0);
 	GX_End();
 }
 
