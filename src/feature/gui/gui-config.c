@@ -228,7 +228,7 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 			}
 			for (i = 0; i < GUIMenuItemListSize(&menu.items); ++i) {
 				item = GUIMenuItemListGetPointer(&menu.items, i);
-				if (!item->validStates || !item->data) {
+				if (!item->validStates || !item->data || ((const char*) item->data)[0] == '*') {
 					continue;
 				}
 				if (item->stateMappings) {
