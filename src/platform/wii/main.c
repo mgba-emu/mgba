@@ -911,8 +911,8 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 		GX_LoadTexObj(&rescaleTex, GX_TEXMAP0);
 	}
 
-	int hfactor = vmode->fbWidth / (corew * wAdjust);
-	int vfactor = vmode->efbHeight / (coreh * hAdjust);
+	int hfactor = (vmode->fbWidth * wStretch) / (corew * wAdjust);
+	int vfactor = (vmode->efbHeight * hStretch) / (coreh * hAdjust);
 	if (hfactor > vfactor) {
 		scaleFactor = vfactor;
 	} else {
