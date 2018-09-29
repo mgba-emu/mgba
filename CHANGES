@@ -107,6 +107,7 @@ Bugfixes:
  - PSP2: Fix audio crackling when buffer is full
  - 3DS: Fix unused screens not clearing (fixes mgba.io/i/1184)
  - GBA Video: Fix caching with background toggling (fixes mgba.io/i/1118)
+ - Wii: Fix drawing caching regression (fixes mgba.io/i/1185)
 Misc:
  - mGUI: Add SGB border configuration option
 

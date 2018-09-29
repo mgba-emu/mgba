@@ -195,18 +195,18 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 		break;
 	}
 
-	free(framebuffer[0]);
-	free(framebuffer[1]);
-
 	VIDEO_SetBlack(true);
 	VIDEO_Configure(vmode);
 
+	free(framebuffer[0]);
+	free(framebuffer[1]);
+
 	framebuffer[0] = SYS_AllocateFramebuffer(vmode);
 	framebuffer[1] = SYS_AllocateFramebuffer(vmode);
-	VIDEO_ClearFrameBuffer(vmode, framebuffer[0], COLOR_BLACK);
-	VIDEO_ClearFrameBuffer(vmode, framebuffer[1], COLOR_BLACK);
+	VIDEO_ClearFrameBuffer(vmode, MEM_K0_TO_K1(framebuffer[0]), COLOR_BLACK);
+	VIDEO_ClearFrameBuffer(vmode, MEM_K0_TO_K1(framebuffer[1]), COLOR_BLACK);
 
-	VIDEO_SetNextFramebuffer(framebuffer[whichFb]);
+	VIDEO_SetNextFramebuffer(MEM_K0_TO_K1(framebuffer[whichFb]));
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
 	if (vmode->viTVMode & VI_NON_INTERLACE) {
@@ -595,7 +595,7 @@ static void _drawStart(void) {
 static void _drawEnd(void) {
 	GX_CopyDisp(framebuffer[whichFb], GX_TRUE);
 	GX_DrawDone();
-	VIDEO_SetNextFramebuffer(framebuffer[whichFb]);
+	VIDEO_SetNextFramebuffer(MEM_K0_TO_K1(framebuffer[whichFb]));
 	VIDEO_Flush();
 	whichFb = !whichFb;
 
