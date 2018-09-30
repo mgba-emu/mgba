@@ -81,6 +81,7 @@ static struct mSwitchRumble {
 	int down;
 	HidVibrationValue value;
 } rumble;
+static struct mRotationSource rotation = {0};
 static int audioBufferActive;
 static struct GBAStereoSample audioBuffer[N_BUFFERS][SAMPLES] __attribute__((__aligned__(0x1000)));
 static AudioOutBuffer audoutBuffer[N_BUFFERS];
@@ -235,6 +236,7 @@ static void _setup(struct mGUIRunner* runner) {
 
 	runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
 	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d);
+	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation);
 	runner->core->setAVStream(runner->core, &stream);
 }
 
@@ -403,6 +405,27 @@ void _setRumble(struct mRumble* rumble, int enable) {
 	}
 }
 
+int32_t _readTiltX(struct mRotationSource* source) {
+	UNUSED(source);
+	SixAxisSensorValues sixaxis;
+	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
+	return sixaxis.accelerometer.x * 3e8f;
+}
+
+int32_t _readTiltY(struct mRotationSource* source) {
+	UNUSED(source);
+	SixAxisSensorValues sixaxis;
+	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
+	return sixaxis.accelerometer.y * -3e8f;
+}
+
+int32_t _readGyroZ(struct mRotationSource* source) {
+	UNUSED(source);
+	SixAxisSensorValues sixaxis;
+	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
+	return sixaxis.gyroscope.z * 1.1e9f;
+}
+
 static int _batteryState(void) {
 	u32 charge;
 	int state = 0;
@@ -508,6 +531,18 @@ int main(int argc, char* argv[]) {
 	rumble.value.freq_high = 180.0;
 	hidInitializeVibrationDevices(&vibrationDeviceHandles[0], 2, CONTROLLER_HANDHELD, TYPE_HANDHELD | TYPE_JOYCON_PAIR);
 	hidInitializeVibrationDevices(&vibrationDeviceHandles[2], 2, CONTROLLER_PLAYER_1, TYPE_HANDHELD | TYPE_JOYCON_PAIR);
+
+	u32 handles[4];
+	hidGetSixAxisSensorHandles(&handles[0], 2, CONTROLLER_PLAYER_1, TYPE_JOYCON_PAIR);
+	hidGetSixAxisSensorHandles(&handles[2], 1, CONTROLLER_PLAYER_1, TYPE_PROCONTROLLER);
+	hidGetSixAxisSensorHandles(&handles[3], 1, CONTROLLER_HANDHELD, TYPE_HANDHELD);
+	hidStartSixAxisSensor(handles[0]);
+	hidStartSixAxisSensor(handles[1]);
+	hidStartSixAxisSensor(handles[2]);
+	hidStartSixAxisSensor(handles[3]);
+	rotation.readTiltX = _readTiltX;
+	rotation.readTiltY = _readTiltY;
+	rotation.readGyroZ = _readGyroZ;
 
 	stream.videoDimensionsChanged = NULL;
 	stream.postVideoFrame = NULL;
@@ -647,6 +682,11 @@ int main(int argc, char* argv[]) {
 	glDeleteBuffers(1, &vbo);
 	glDeleteProgram(program);
 	glDeleteVertexArrays(1, &vao);
+
+	hidStopSixAxisSensor(handles[0]);
+	hidStopSixAxisSensor(handles[1]);
+	hidStopSixAxisSensor(handles[2]);
+	hidStopSixAxisSensor(handles[3]);
 
 	psmExit();
 	audoutExit();
