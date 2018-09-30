@@ -102,6 +102,7 @@ Changes from beta 1:
 Features:
  - Libretro: Add Game Boy cheat support
  - Qt: Separate fast forward volume control (fixes mgba.io/i/846, mgba.io/i/1143)
+ - Switch: Rumble support
 Bugfixes:
  - PSP2: Fix audio crackling after fast forward
  - PSP2: Fix audio crackling when buffer is full
