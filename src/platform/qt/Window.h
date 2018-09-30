@@ -7,6 +7,7 @@
 
 #include <QAction>
 #include <QDateTime>
+#include <QElapsedTimer>
 #include <QList>
 #include <QMainWindow>
 #include <QTimer>
@@ -132,7 +133,6 @@ private slots:
 	void mustRestart();
 
 	void recordFrame();
-	void delimitFrames();
 	void showFPS();
 	void focusCheck();
 
@@ -140,8 +140,6 @@ private slots:
 
 private:
 	static const int FPS_TIMER_INTERVAL = 2000;
-	static const int FRAME_LIST_INTERVAL = 100;
-	static const int FRAME_LIST_SIZE = 40;
 
 	void setupMenu(QMenuBar*);
 	void openStateWindow(LoadSave);
@@ -189,10 +187,9 @@ private:
 	QPixmap m_logo{":/res/mgba-1024.png"};
 	ConfigController* m_config;
 	InputController m_inputController;
-	QList<int> m_frameList;
-	int m_frameCounter = 0;
+	QList<qint64> m_frameList;
+	QElapsedTimer m_frameTimer;
 	QTimer m_fpsTimer;
-	QTimer m_frameTimer;
 	QList<QString> m_mruFiles;
 	QMenu* m_mruMenu = nullptr;
 	QMenu* m_videoLayers;
