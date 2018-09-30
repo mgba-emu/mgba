@@ -111,6 +111,7 @@ Bugfixes:
  - Wii: Fix drawing caching regression (fixes mgba.io/i/1185)
  - Switch: Fix incorrect mapping for fast forward cap
  - GB, GBA: Fix broken opposing button filter (fixes mgba.io/i/1191)
+ - Qt: Fix jumbled background when paused
 Misc:
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types

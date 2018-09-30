@@ -1820,7 +1820,7 @@ void Window::focusCheck() {
 void Window::updateFrame() {
 	QSize size = m_controller->screenDimensions();
 	QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), size.width(), size.height(),
-	                    256 * BYTES_PER_PIXEL, QImage::Format_RGBX8888);
+	                    size.width() * BYTES_PER_PIXEL, QImage::Format_RGBX8888);
 	QPixmap pixmap;
 	pixmap.convertFromImage(currentImage);
 	m_screenWidget->setPixmap(pixmap);
