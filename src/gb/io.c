@@ -563,12 +563,11 @@ static uint8_t _readKeysFiltered(struct GB* gb) {
 	if (!gb->allowOpposingDirections && (keys & 0x30) == 0x20) {
 		unsigned rl = keys & 0x03;
 		unsigned ud = keys & 0x0C;
-		keys &= 0xF0;
-		if (rl != 0x03) {
-			keys |= rl;
+		if (!rl) {
+			keys |= 0x03;
 		}
-		if (ud != 0x0C) {
-			keys |= ud;
+		if (!ud) {
+			keys |= 0x0C;
 		}
 	}
 	return keys;
