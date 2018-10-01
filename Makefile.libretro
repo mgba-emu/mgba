@@ -264,9 +264,9 @@ else ifeq ($(platform), libnx)
 	STATIC_LINKING_LINK=1
 	HAVE_VFS_FD = 0
 	CFLAGS += -O3 -fomit-frame-pointer -ffast-math -I$(LIBNX)/include/ -fPIE -Wl,--allow-multiple-definition -specs=$(LIBNX)/switch.specs
-	DEFINES += -std=c99
+	DEFINES += -std=gnu11
 	ASFLAGS += -DHAVE_LIBNX
-	PLATFORM_DEFINES += -D__SWITCH__ -DHAVE_LIBNX
+	PLATFORM_DEFINES += -D__SWITCH__ -DHAVE_LIBNX -DHAVE_LOCALE
 	PLATFORM_DEFINES += -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE -mcpu=cortex-a57+crc+fp+simd -DHAVE_INTTYPES -DLSB_FIRST -DINLINE=inline
 
 # Nintendo Switch (libtransistor)
