@@ -325,10 +325,6 @@ void mCoreConfigCopyValue(struct mCoreConfig* config, const struct mCoreConfig* 
 }
 
 void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts) {
-#ifdef HAVE_LIBNX // Needed or fatal
-    return;
-#endif
-
 	_lookupCharValue(config, "bios", &opts->bios);
 	_lookupCharValue(config, "shader", &opts->shader);
 	_lookupIntValue(config, "logLevel", &opts->logLevel);
