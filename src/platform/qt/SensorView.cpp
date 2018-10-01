@@ -32,7 +32,7 @@ SensorView::SensorView(InputController* input, QWidget* parent)
 		m_ui.time->setDateTime(QDateTime::currentDateTime());
 	});
 
-	m_timer.setInterval(2);
+	m_timer.setInterval(15);
 	connect(&m_timer, &QTimer::timeout, this, &SensorView::updateSensors);
 	if (!m_rotation || !m_rotation->readTiltX || !m_rotation->readTiltY) {
 		m_ui.tilt->hide();
