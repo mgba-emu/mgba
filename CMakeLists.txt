@@ -321,7 +321,7 @@ if(WII)
 	add_definitions(-U__STRICT_ANSI__)
 endif()
 
-if(DEFINED 3DS)
+if(3DS OR WII)
 	add_definitions(-D_GNU_SOURCE)
 endif()
 
