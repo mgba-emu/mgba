@@ -247,6 +247,8 @@ void CoreController::loadConfig(ConfigController* config) {
 	m_autofireThreshold = config->getOption("autofireThreshold", m_autofireThreshold).toInt();
 	m_fastForwardVolume = config->getOption("fastForwardVolume", -1).toInt();
 	m_fastForwardMute = config->getOption("fastForwardMute", -1).toInt();
+	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "volume");
+	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "mute");
 	mCoreLoadForeignConfig(m_threadContext.core, config->config());
 	if (hasStarted()) {
 		updateFastForward();
