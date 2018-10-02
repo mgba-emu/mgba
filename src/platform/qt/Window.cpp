@@ -81,7 +81,6 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	setAcceptDrops(true);
 	setAttribute(Qt::WA_DeleteOnClose);
 	updateTitle();
-	reloadDisplayDriver();
 
 	m_logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
 	m_logo = m_logo; // Free memory left over in old pixmap
@@ -238,8 +237,10 @@ void Window::reloadConfig() {
 		}
 		m_display->resizeContext();
 	}
-	m_display->lockAspectRatio(opts->lockAspectRatio);
-	m_display->filter(opts->resampleVideo);
+	if (m_display) {
+		m_display->lockAspectRatio(opts->lockAspectRatio);
+		m_display->filter(opts->resampleVideo);
+	}
 
 	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);
 }
@@ -600,9 +601,7 @@ void Window::showEvent(QShowEvent* event) {
 		enterFullScreen();
 		m_fullscreenOnStart = false;
 	}
-	if (m_display) {
-		reloadDisplayDriver();
-	}
+	reloadDisplayDriver();
 }
 
 void Window::closeEvent(QCloseEvent* event) {
@@ -701,6 +700,9 @@ void Window::gameStarted() {
 	m_config->updateOption("lockAspectRatio");
 	if (m_savedScale > 0) {
 		resizeFrame(size * m_savedScale);
+	}
+	if (!m_display) {
+		reloadDisplayDriver();
 	}
 	attachWidget(m_display.get());
 	m_display->setMinimumSize(size);
@@ -1382,7 +1384,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	ConfigOption* lockAspectRatio = m_config->addOption("lockAspectRatio");
 	lockAspectRatio->addBoolean(tr("Lock aspect ratio"), avMenu);
 	lockAspectRatio->connect([this](const QVariant& value) {
-		m_display->lockAspectRatio(value.toBool());
+		if (m_display) {
+			m_display->lockAspectRatio(value.toBool());
+		}
 		if (m_controller) {
 			m_screenWidget->setLockAspectRatio(value.toBool());
 		}
@@ -1392,7 +1396,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	ConfigOption* lockIntegerScaling = m_config->addOption("lockIntegerScaling");
 	lockIntegerScaling->addBoolean(tr("Force integer scaling"), avMenu);
 	lockIntegerScaling->connect([this](const QVariant& value) {
-		m_display->lockIntegerScaling(value.toBool());
+		if (m_display) {
+			m_display->lockIntegerScaling(value.toBool());
+		}
 		if (m_controller) {
 			m_screenWidget->setLockIntegerScaling(value.toBool());
 		}
@@ -1402,7 +1408,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	ConfigOption* resampleVideo = m_config->addOption("resampleVideo");
 	resampleVideo->addBoolean(tr("Bilinear filtering"), avMenu);
 	resampleVideo->connect([this](const QVariant& value) {
-		m_display->filter(value.toBool());
+		if (m_display) {
+			m_display->filter(value.toBool());
+		}
 	}, this);
 	m_config->updateOption("resampleVideo");
 
