@@ -613,6 +613,7 @@ void Window::closeEvent(QCloseEvent* event) {
 		m_config->setOption("width", VIDEO_HORIZONTAL_PIXELS * m_savedScale);
 	}
 	saveConfig();
+	m_display.reset();
 	QMainWindow::closeEvent(event);
 }
 
