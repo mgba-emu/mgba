@@ -41,6 +41,7 @@ protected:
 	virtual void closeEvent(QCloseEvent*) override;
 	virtual void showEvent(QShowEvent*) override;
 	virtual void paintEvent(QPaintEvent*) override;
+	virtual void focusInEvent(QFocusEvent*) override;
 
 private:
 	void loadState(int slot);

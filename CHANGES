@@ -116,6 +116,7 @@ Bugfixes:
  - Qt: Fix jumbled background when paused
  - Qt: Fix FPS counter on Windows
  - GB, GBA Savedata: Fix leaks when loading masked save (fixes mgba.io/i/1197)
+ - Qt: Fix focus issues with load/save state overlay
 Misc:
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types
