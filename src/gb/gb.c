@@ -249,7 +249,11 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 }
 
 void GBSavedataMask(struct GB* gb, struct VFile* vf, bool writeback) {
+	struct VFile* oldVf = gb->sramVf;
 	GBSramDeinit(gb);
+	if (oldVf && oldVf != gb->sramRealVf) {
+		oldVf->close(oldVf);
+	}
 	gb->sramVf = vf;
 	gb->sramMaskWriteback = writeback;
 	gb->memory.sram = vf->map(vf, gb->sramSize, MAP_READ);
