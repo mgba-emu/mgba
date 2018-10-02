@@ -362,6 +362,22 @@ void Window::selectSave(bool temporary) {
 	}
 }
 
+void Window::selectState(bool load) {
+	QStringList formats{"*.ss0", "*.ss1", "*.ss2", "*.ss3", "*.ss4", "*.ss5", "*.ss6", "*.ss7", "*.ss8", "*.ss9"};
+	QString filter = tr("mGBA savestate files (%1)").arg(formats.join(QChar(' ')));
+	if (load) {
+		QString filename = GBAApp::app()->getOpenFileName(this, tr("Select savestate"), filter);
+		if (!filename.isEmpty()) {
+			m_controller->loadState(filename);
+		}
+	} else {
+		QString filename = GBAApp::app()->getSaveFileName(this, tr("Select savestate"), filter);
+		if (!filename.isEmpty()) {
+			m_controller->saveState(filename);
+		}
+	}
+}
+
 void Window::multiplayerChanged() {
 	if (!m_controller) {
 		return;
@@ -1046,12 +1062,24 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_nonMpActions.append(loadState);
 	addControlledAction(fileMenu, loadState, "loadState");
 
+	QAction* loadStateFile = new QAction(tr("Load state file..."), fileMenu);
+	connect(loadStateFile, &QAction::triggered, [this]() { this->selectState(true); });
+	m_gameActions.append(loadStateFile);
+	m_nonMpActions.append(loadStateFile);
+	addControlledAction(fileMenu, loadStateFile, "loadStateFile");
+
 	QAction* saveState = new QAction(tr("&Save state"), fileMenu);
 	saveState->setShortcut(tr("Shift+F10"));
 	connect(saveState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::SAVE); });
 	m_gameActions.append(saveState);
 	m_nonMpActions.append(saveState);
 	addControlledAction(fileMenu, saveState, "saveState");
+
+	QAction* saveStateFile = new QAction(tr("Save state file..."), fileMenu);
+	connect(saveStateFile, &QAction::triggered, [this]() { this->selectState(false); });
+	m_gameActions.append(saveStateFile);
+	m_nonMpActions.append(saveStateFile);
+	addControlledAction(fileMenu, saveStateFile, "saveStateFile");
 
 	QMenu* quickLoadMenu = fileMenu->addMenu(tr("Quick load"));
 	QMenu* quickSaveMenu = fileMenu->addMenu(tr("Quick save"));

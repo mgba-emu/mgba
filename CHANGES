@@ -104,6 +104,7 @@ Features:
  - Qt: Separate fast forward volume control (fixes mgba.io/i/846, mgba.io/i/1143)
  - Switch: Rumble support
  - Switch: Rotation support
+ - Qt: State file load/save menu options
 Bugfixes:
  - PSP2: Fix audio crackling after fast forward
  - PSP2: Fix audio crackling when buffer is full

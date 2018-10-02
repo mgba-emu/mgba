@@ -70,6 +70,7 @@ public slots:
 	void addDirToLibrary();
 #endif
 	void selectSave(bool temporary);
+	void selectState(bool load);
 	void selectPatch();
 	void enterFullScreen();
 	void exitFullScreen();
