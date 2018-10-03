@@ -1,5 +1,10 @@
 TARGET_NAME ?= mgba
 
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+   DEFINES += -DGIT_VERSION=\"$(GIT_VERSION)\"
+endif
+
 ifeq ($(STATIC_LINKING), 1)
   TARGET = $(TARGET_NAME)_libretro_$(platform).a
 else
