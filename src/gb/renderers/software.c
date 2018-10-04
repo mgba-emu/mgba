@@ -56,7 +56,7 @@ static void _regenerateSGBBorder(struct GBVideoSoftwareRenderer* renderer) {
 	int x, y;
 	for (y = 0; y < 224; ++y) {
 		for (x = 0; x < 256; x += 8) {
-			if (x >= 48 && x < 208 && y >= 40 && y < 104) {
+			if (x >= 48 && x < 208 && y >= 40 && y < 184) {
 				continue;
 			}
 			uint16_t mapData;
@@ -79,16 +79,13 @@ static void _regenerateSGBBorder(struct GBVideoSoftwareRenderer* renderer) {
 			int paletteBase = SGBBgAttributesGetPalette(mapData) * 0x10;
 			int colorSelector;
 
+			int flip = 0;
 			if (SGBBgAttributesIsXFlip(mapData)) {
-				for (i = 0; i < 8; ++i) {
-					colorSelector = (tileData[0] >> i & 0x1) << 0 | (tileData[1] >> i & 0x1) << 1 | (tileData[2] >> i & 0x1) << 2 | (tileData[3] >> i & 0x1) << 3;
-					renderer->outputBuffer[base + i] = renderer->palette[paletteBase | colorSelector];
-				}
-			} else {
-				for (i = 7; i >= 0; --i) {
-					colorSelector = (tileData[0] >> i & 0x1) << 0 | (tileData[1] >> i & 0x1) << 1 | (tileData[2] >> i & 0x1) << 2 | (tileData[3] >> i & 0x1) << 3;
-					renderer->outputBuffer[base + 7 - i] = renderer->palette[paletteBase | colorSelector];
-				}
+				flip = 7;
+			}
+			for (i = 7; i >= 0; --i) {
+				colorSelector = (tileData[0] >> i & 0x1) << 0 | (tileData[1] >> i & 0x1) << 1 | (tileData[2] >> i & 0x1) << 2 | (tileData[3] >> i & 0x1) << 3;
+				renderer->outputBuffer[(base + 7 - i) ^ flip] = renderer->palette[paletteBase | colorSelector];
 			}
 		}
 	}
@@ -712,6 +709,9 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 static void GBVideoSoftwareRendererEnableSGBBorder(struct GBVideoRenderer* renderer, bool enable) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	if (softwareRenderer->model == GB_MODEL_SGB) {
+		if (enable == softwareRenderer->sgbBorders) {
+			return;
+		}
 		softwareRenderer->sgbBorders = enable;
 		if (softwareRenderer->sgbBorders && !renderer->sgbRenderMode) {
 			_regenerateSGBBorder(softwareRenderer);
