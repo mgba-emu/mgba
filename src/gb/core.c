@@ -1048,6 +1048,7 @@ static bool _GBVLPLoadState(struct mCore* core, const void* buffer) {
 	gb->cpu->pc = GB_BASE_HRAM;
 	gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
 
+	GBVideoReset(&gb->video);
 	GBVideoDeserialize(&gb->video, state);
 	GBIODeserialize(gb, state);
 	GBAudioReset(&gb->audio);
