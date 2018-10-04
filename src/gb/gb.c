@@ -30,6 +30,7 @@ static const uint8_t _knownHeader[4] = { 0xCE, 0xED, 0x66, 0x66};
 #define DMG_2_BIOS_CHECKSUM 0x59C8598E
 #define MGB_BIOS_CHECKSUM 0xE6920754
 #define SGB_BIOS_CHECKSUM 0xEC8A83B9
+#define SGB2_BIOS_CHECKSUM 0X53D0DD63
 #define CGB_BIOS_CHECKSUM 0x41884E46
 
 mLOG_DEFINE_CATEGORY(GB, "GB", "gb");
@@ -400,6 +401,7 @@ bool GBIsBIOS(struct VFile* vf) {
 	case DMG_2_BIOS_CHECKSUM:
 	case MGB_BIOS_CHECKSUM:
 	case SGB_BIOS_CHECKSUM:
+	case SGB2_BIOS_CHECKSUM:
 	case CGB_BIOS_CHECKSUM:
 		return true;
 	default:
@@ -587,6 +589,9 @@ void GBDetectModel(struct GB* gb) {
 			break;
 		case SGB_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_SGB;
+			break;
+		case SGB2_BIOS_CHECKSUM:
+			gb->model = GB_MODEL_SGB2;
 			break;
 		case CGB_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_CGB;

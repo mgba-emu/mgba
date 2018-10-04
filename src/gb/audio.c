@@ -150,7 +150,7 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->playingCh2 = false;
 	audio->playingCh3 = false;
 	audio->playingCh4 = false;
-	if (audio->p && audio->p->model != GB_MODEL_SGB) {
+	if (audio->p && !(audio->p->model & GB_MODEL_SGB)) {
 		audio->playingCh1 = true;
 		audio->enable = true;
 		*audio->nr52 |= 0x01;

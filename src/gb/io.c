@@ -199,7 +199,7 @@ void GBIOReset(struct GB* gb) {
 	}
 	GBIOWrite(gb, REG_WY, 0x00);
 	GBIOWrite(gb, REG_WX, 0x00);
-	if (gb->model >= GB_MODEL_CGB) {
+	if (gb->model & GB_MODEL_CGB) {
 		GBIOWrite(gb, REG_UNK4C, 0);
 		GBIOWrite(gb, REG_JOYP, 0xFF);
 		GBIOWrite(gb, REG_VBK, 0);
@@ -211,7 +211,7 @@ void GBIOReset(struct GB* gb) {
 		GBIOWrite(gb, REG_HDMA3, 0xFF);
 		GBIOWrite(gb, REG_HDMA4, 0xFF);
 		gb->memory.io[REG_HDMA5] = 0xFF;
-	} else if (gb->model == GB_MODEL_SGB) {
+	} else if (gb->model & GB_MODEL_SGB) {
 		GBIOWrite(gb, REG_JOYP, 0xFF);
 	}
 	GBIOWrite(gb, REG_IE, 0x00);
@@ -404,7 +404,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case REG_JOYP:
 		gb->memory.io[REG_JOYP] = value | 0x0F;
 		_readKeys(gb);
-		if (gb->model == GB_MODEL_SGB) {
+		if (gb->model & GB_MODEL_SGB) {
 			_writeSGBBits(gb, (value >> 4) & 3);
 		}
 		return;
@@ -719,7 +719,7 @@ void GBIODeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_SCX, state->io[REG_SCX]);
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_WY, state->io[REG_WY]);
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_WX, state->io[REG_WX]);
-	if (gb->model == GB_MODEL_SGB) {
+	if (gb->model & GB_MODEL_SGB) {
 		gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_BGP, state->io[REG_BGP]);
 		gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_OBP0, state->io[REG_OBP0]);
 		gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_OBP1, state->io[REG_OBP1]);

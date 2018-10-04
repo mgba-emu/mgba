@@ -196,7 +196,7 @@ static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum G
 	softwareRenderer->lastY = GB_VIDEO_VERTICAL_PIXELS;
 	softwareRenderer->hasWindow = false;
 	softwareRenderer->wx = 0;
-	softwareRenderer->model = model;
+	softwareRenderer->model = model & ~GB_MODEL_MGB;
 	softwareRenderer->sgbTransfer = 0;
 	softwareRenderer->sgbCommandHeader = 0;
 	softwareRenderer->sgbBorders = sgbBorders;

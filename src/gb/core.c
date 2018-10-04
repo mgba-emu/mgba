@@ -229,7 +229,7 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 
 static void _GBCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
 	struct GB* gb = core->board;
-	if (gb && (gb->model != GB_MODEL_SGB || !gb->video.sgbBorders)) {
+	if (gb && (!(gb->model & GB_MODEL_SGB) || !gb->video.sgbBorders)) {
 		*width = GB_VIDEO_HORIZONTAL_PIXELS;
 		*height = GB_VIDEO_VERTICAL_PIXELS;
 	} else {
@@ -373,9 +373,9 @@ static void _GBCoreReset(struct mCore* core) {
 		GBDetectModel(gb);
 		if (gb->model == GB_MODEL_DMG && modelGB) {
 			gb->model = GBNameToModel(modelGB);
-		} else if (gb->model == GB_MODEL_CGB && modelCGB) {
+		} else if ((gb->model & GB_MODEL_CGB) && modelCGB) {
 			gb->model = GBNameToModel(modelCGB);
-		} else if (gb->model == GB_MODEL_SGB && modelSGB) {
+		} else if ((gb->model & GB_MODEL_SGB) && modelSGB) {
 			gb->model = GBNameToModel(modelSGB);
 		}
 	}
