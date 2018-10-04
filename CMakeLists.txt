@@ -1055,22 +1055,28 @@ else()
 	add_custom_target(LICENSE ALL DEPENDS LICENSE.txt)
 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CHANGES.txt ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT ${BINARY_NAME})
 	if(DISTBUILD AND WIN32)
-		set(INSTALLER "${PROJECT_NAME}-setup-${CLEAN_VERSION_STRING}-win${WIN_BITS}.exe")
+		if(INSTALLER_NAME)
+			set(INSTALLER_TARGET "${INSTALLER_NAME}.exe")
+			set(ISCC_FLAGS "/F${INSTALLER_NAME}")
+		else()
+			set(INSTALLER_TARGET "${PROJECT_NAME}-setup-${CLEAN_VERSION_STRING}-win${WIN_BITS}.exe")
+		endif()
 		if(CMAKE_CROSSCOMPILING)
 			find_program(WINE NAMES wine wine-stable wine-development)
-			find_file(ISCC ISCC.exe HINTS "$ENV{HOME}/.wine/drive_c/Program Files/")
-			add_custom_command(OUTPUT ${INSTALLER}
-			                   COMMAND "${WINE}" "${ISCC}" setup.iss /Q
+			find_file(ISCC ISCC.exe HINTS "$ENV{HOME}/.wine/drive_c/Program Files/" PATH_SUFFIXES "Inno Setup 5")
+			message(STATUS "${WINE}" "${ISCC}" setup.iss /Q ${ISCC_FLAGS})
+			add_custom_command(OUTPUT ${INSTALLER_TARGET}
+			                   COMMAND "${WINE}" "${ISCC}" setup.iss /Q ${ISCC_FLAGS}
 			                   DEPENDS ${BINARY_NAME}-qt ${BINARY_NAME}-sdl CHANGES LICENSE)
 		else()
-			find_program(ISCC NAMES ISSC ISSC.exe)
-			add_custom_command(OUTPUT ${INSTALLER}
-			                   COMMAND "${ISCC}" setup.iss /Q
+			find_program(ISCC NAMES ISCC ISCC.exe PATH_SUFFIXES "Inno Setup 5")
+			add_custom_command(OUTPUT ${INSTALLER_TARGET}
+			                   COMMAND "${ISCC}" setup.iss /Q ${ISCC_FLAGS}
 			                   DEPENDS ${BINARY_NAME}-qt ${BINARY_NAME}-sdl CHANGES LICENSE)
 		endif()
 		if(ISCC)
-			add_custom_target(installer ALL DEPENDS ${INSTALLER})
-			install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${INSTALLER}" DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT installer)
+			add_custom_target(installer ALL DEPENDS ${INSTALLER_TARGET})
+			install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${INSTALLER_TARGET}" DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT installer)
 		endif()
 	endif()
 endif()
