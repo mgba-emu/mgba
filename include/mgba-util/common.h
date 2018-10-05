@@ -180,7 +180,11 @@ typedef intptr_t ssize_t;
 #define STORE_64LE(SRC, ADDR, ARR) *(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
 #define STORE_32LE(SRC, ADDR, ARR) *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
 #define STORE_16LE(SRC, ADDR, ARR) *(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
+#ifdef _MSC_VER
+#define LOAD_32BE(DEST, ADDR, ARR) DEST = _byteswap_ulong(((uint32_t*) ARR)[(ADDR) >> 2])
+#else
 #define LOAD_32BE(DEST, ADDR, ARR) DEST = __builtin_bswap32(((uint32_t*) ARR)[(ADDR) >> 2])
+#endif
 #endif
 
 #define MAKE_MASK(START, END) (((1 << ((END) - (START))) - 1) << (START))

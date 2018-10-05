@@ -1,0 +1,140 @@
+#define AppName "${PROJECT_NAME}"
+#define AppName2 "${BINARY_NAME}"
+#define VerMajor ${LIB_VERSION_MAJOR}
+#define VerMinor ${LIB_VERSION_MINOR}
+#define VerRev ${LIB_VERSION_PATCH}
+#define VerBuild ${GIT_REV}
+#define Release ${IS_RELEASE}
+#define WinBits "${WIN_BITS}"
+#define VersionString "${VERSION_STRING}"
+#define CleanVersionString "${CLEAN_VERSION_STRING}"
+#define SetupDir "${SETUP_DIR}"
+#define BinDir "${BIN_DIR}"
+#define ResDir "${RES_DIR}"
+
+#define FullVersion ParseVersion('{#AppName}.exe', VerMajor, VerMinor, VerRev, VerBuild)
+#define AppVer Str(VerMajor) + "." + Str(VerMinor) + "." + Str(VerRev)
+
+[Setup]
+SourceDir={#BinDir}
+SetupIconFile={#SetupDir}\setup.ico
+WizardImageFile={#SetupDir}\wizard-image.bmp
+
+AppName={#AppName}
+AppVersion={#AppVer}
+AppPublisher=Jeffrey Pfau
+AppPublisherURL=https://mgba.io
+AppSupportURL=https://mgba.io
+AppUpdatesURL=https://mgba.io
+AppReadmeFile={#BinDir}\README.html
+OutputDir=.\
+DefaultDirName={pf}\{#AppName}
+DefaultGroupName={#AppName}
+AllowNoIcons=yes
+DirExistsWarning=no
+ChangesAssociations=True
+AppendDefaultDirName=False
+UninstallDisplayIcon={app}\{#AppName}.exe
+MinVersion=0,6.0
+AlwaysShowDirOnReadyPage=True
+UsePreviousSetupType=True
+UsePreviousTasks=True
+AlwaysShowGroupOnReadyPage=True
+LicenseFile={#BinDir}\LICENSE.txt
+#if Release
+  #define IsRelease = 'yes'
+  AppVerName={#AppName} {#AppVer}
+#else
+  #define IsRelease = 'no'
+  AppVerName={#AppName} {#VersionString} (Development build)
+#endif
+#if '{#WinBits}' == '64'
+  ArchitecturesInstallIn64BitMode=x64
+  ArchitecturesAllows=x64
+#endif
+OutputBaseFilename={#AppName}-setup-{#CleanVersionString}-win{#WinBits}
+UsePreviousLanguage=False
+DisableWelcomePage=False
+VersionInfoDescription={#AppName} is an open-source Game Boy Advance emulator
+VersionInfoCopyright=© 2013–2018 Jeffrey Pfau
+VersionInfoProductName={#AppName}
+VersionInfoVersion={#AppVer}
+Compression=lzma2/ultra64
+SolidCompression=True
+VersionInfoTextVersion={#AppVer}
+VersionInfoProductVersion={#AppVer}
+VersionInfoProductTextVersion={#AppVer}
+
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "french"; MessagesFile: "compiler:Languages\French.isl"
+Name: "german"; MessagesFile: "compiler:Languages\German.isl"
+Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
+Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
+
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
+Name: "gbfileassoc"; Description: "{cm:AssocFileExtension,{#AppName},Game Boy}"; GroupDescription: "{cm:FileAssoc}"
+Name: "gbcfileassoc"; Description: "{cm:AssocFileExtension,{#AppName},Game Boy Color}"; GroupDescription: "{cm:FileAssoc}"
+Name: "sgbfileassoc"; Description: "{cm:AssocFileExtension,{#AppName},Super Game Boy}"; GroupDescription: "{cm:FileAssoc}"
+Name: "gbafileassoc"; Description: "{cm:AssocFileExtension,{#AppName},Game Boy Advance}"; GroupDescription: "{cm:FileAssoc}"
+
+[Files]
+Source: "{#BinDir}\qt\{#AppName}.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#BinDir}\sdl\{#AppName2}-sdl.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#BinDir}\CHANGES.txt"; DestDir: "{app}\"; Flags: ignoreversion isreadme
+Source: "{#BinDir}\LICENSE.txt"; DestDir: "{app}\"; Flags: ignoreversion
+Source: "{#ResDir}\nointro.dat"; DestDir: "{app}\"; Flags: ignoreversion
+Source: "{#BinDir}\README.html"; DestDir: "{app}\"; Flags: ignoreversion isreadme; Languages: english italian spanish
+Source: "{#BinDir}\README_DE.html"; DestDir: "{app}\"; DestName: "LIESMICH.html"; Flags: ignoreversion isreadme; Languages: german
+Source: "{#ResDir}\shaders\*"; DestDir: "{app}\shaders\"; Flags: ignoreversion recursesubdirs
+Source: "{#ResDir}\licenses\*"; DestDir: "{app}\licenses\"; Flags: ignoreversion recursesubdirs
+
+[Icons]
+Name: "{commonstartmenu}\{#AppName}"; Filename: "{app}\{#AppName}.exe"
+Name: "{commondesktop}\{#AppName}"; Filename: "{app}\{#AppName}.exe"; Tasks: desktopicon
+
+[Run]
+Filename: "{app}\{#AppName}.exe"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent
+
+[Dirs]
+Name: "{app}"
+
+[CustomMessages]
+english.FileAssoc=Register file associations
+french.FileAssoc=Register file associations
+italian.FileAssoc=Register file associations
+spanish.FileAssoc=Register file associations
+german.FileAssoc=Dateierweiterungen registrieren
+
+[Registry]
+Root: HKCR; Subkey: ".gb"; ValueType: string; ValueName: ""; ValueData: "Game Boy ROM"; Flags: uninsdeletevalue; Tasks: gbfileassoc
+Root: HKCR; Subkey: ".gb\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#AppName}.exe,0"; Tasks: gbfileassoc
+Root: HKCR; Subkey: ".gb\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppName}.exe"" ""%1"""; Tasks: gbfileassoc
+Root: HKCR; Subkey: ".gbc"; ValueType: string; ValueName: ""; ValueData: "Game Boy Color ROM"; Flags: uninsdeletevalue; Tasks: gbcfileassoc
+Root: HKCR; Subkey: ".gbc\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#AppName}.exe,0"; Tasks: gbcfileassoc
+Root: HKCR; Subkey: ".gbc\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppName}.exe"" ""%1"""; Tasks: gbcfileassoc
+Root: HKCR; Subkey: ".sgb"; ValueType: string; ValueName: ""; ValueData: "Super Game Boy ROM"; Flags: uninsdeletevalue; Tasks: sgbfileassoc
+Root: HKCR; Subkey: ".sgb\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#AppName}.exe,0"; Tasks: sgbfileassoc
+Root: HKCR; Subkey: ".sgb\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppName}.exe"" ""%1"""; Tasks: sgbfileassoc
+Root: HKCR; Subkey: ".gba"; ValueType: string; ValueName: ""; ValueData: "Game Boy Advance ROM"; Flags: uninsdeletevalue; Tasks: gbafileassoc
+Root: HKCR; Subkey: ".gba\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#AppName}.exe,0"; Tasks: gbafileassoc
+Root: HKCR; Subkey: ".gba\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppName}.exe"" ""%1"""; Tasks: gbafileassoc
+
+[Code]
+var
+  noReleaseWarning: String;
+
+procedure InitializeWizard();
+  begin
+      if ExpandConstant('{#IsRelease}') = 'no' then
+        begin
+        if ExpandConstant('{language}') = 'english' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'french' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'italian' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'spanish' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'german' then noReleaseWarning := 'Sie möchten eine Entwicklerversion von {#AppName} installieren.' + #13#10#13#10 + 'Entwicklerversionen können bislang noch nicht endeckte Fehler beinhalten. Bitte melden Sie alle Fehler, die Sie finden können, auf der GitHub-Projektseite.';
+        MsgBox(noReleaseWarning, mbInformation, MB_OK);
+      end;
+  end;
+end.

@@ -117,6 +117,8 @@ struct GB {
 	bool earlyExit;
 	struct mTimingEvent eiPending;
 	unsigned doubleSpeed;
+
+	bool allowOpposingDirections;
 };
 
 struct GBCartridge {

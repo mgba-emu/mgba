@@ -88,7 +88,11 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 
 void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf, bool writeback) {
 	enum SavedataType type = savedata->type;
+	struct VFile* oldVf = savedata->vf;
 	GBASavedataDeinit(savedata);
+	if (oldVf && oldVf != savedata->realVf) {
+		oldVf->close(oldVf);
+	}
 	savedata->vf = vf;
 	savedata->mapMode = MAP_READ;
 	savedata->maskWriteback = writeback;

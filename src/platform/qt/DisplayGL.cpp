@@ -40,6 +40,7 @@ DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 }
 
 DisplayGL::~DisplayGL() {
+	stopDrawing();
 	delete m_painter;
 }
 

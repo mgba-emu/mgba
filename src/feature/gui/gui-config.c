@@ -162,7 +162,50 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		if (!item->validStates || !item->data) {
 			continue;
 		}
-		mCoreConfigGetUIntValue(&runner->config, item->data, &item->state);
+		if (item->stateMappings) {
+			item->state = 0;
+
+			size_t j;
+			for (j = 0; j < item->nStates; ++j) {
+				const struct GUIVariant* v = &item->stateMappings[j];
+				struct GUIVariant test;
+				switch (v->type) {
+				case GUI_VARIANT_VOID:
+					if (!mCoreConfigGetValue(&runner->config, item->data)) {
+						item->state = j;
+						break;
+					}
+					break;
+				case GUI_VARIANT_UNSIGNED:
+					if (mCoreConfigGetUIntValue(&runner->config, item->data, &test.v.u) && test.v.u == v->v.u) {
+						item->state = j;
+						break;
+					}
+					break;
+				case GUI_VARIANT_INT:
+					if (mCoreConfigGetIntValue(&runner->config, item->data, &test.v.i) && test.v.i == v->v.i) {
+						item->state = j;
+						break;
+					}
+					break;
+				case GUI_VARIANT_FLOAT:
+					if (mCoreConfigGetFloatValue(&runner->config, item->data, &test.v.f) && fabsf(test.v.f - v->v.f) <= 1e-3f) {
+						item->state = j;
+						break;
+					}
+					break;
+				case GUI_VARIANT_STRING:
+					test.v.s = mCoreConfigGetValue(&runner->config, item->data);
+					if (test.v.s && strcmp(test.v.s, v->v.s) == 0) {
+						item->state = j;
+						break;						
+					}
+					break;
+				}
+			}
+		} else {
+			mCoreConfigGetUIntValue(&runner->config, item->data, &item->state);
+		}
 	}
 
 	while (true) {
@@ -185,10 +228,31 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 			}
 			for (i = 0; i < GUIMenuItemListSize(&menu.items); ++i) {
 				item = GUIMenuItemListGetPointer(&menu.items, i);
-				if (!item->validStates || !item->data) {
+				if (!item->validStates || !item->data || ((const char*) item->data)[0] == '*') {
 					continue;
 				}
-				mCoreConfigSetUIntValue(&runner->config, item->data, item->state);
+				if (item->stateMappings) {
+					const struct GUIVariant* v = &item->stateMappings[item->state];
+					switch (v->type) {
+					case GUI_VARIANT_VOID:
+						mCoreConfigSetValue(&runner->config, item->data, NULL);
+						break;
+					case GUI_VARIANT_UNSIGNED:
+						mCoreConfigSetUIntValue(&runner->config, item->data, v->v.u);
+						break;
+					case GUI_VARIANT_INT:
+						mCoreConfigSetUIntValue(&runner->config, item->data, v->v.i);
+						break;
+					case GUI_VARIANT_FLOAT:
+						mCoreConfigSetFloatValue(&runner->config, item->data, v->v.f);
+						break;
+					case GUI_VARIANT_STRING:
+						mCoreConfigSetValue(&runner->config, item->data, v->v.s);
+						break;
+					}
+				} else {
+					mCoreConfigSetUIntValue(&runner->config, item->data, item->state);
+				}
 			}
 			if (runner->keySources) {
 				size_t i;
