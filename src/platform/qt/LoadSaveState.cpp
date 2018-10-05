@@ -27,8 +27,9 @@ LoadSaveState::LoadSaveState(std::shared_ptr<CoreController> controller, QWidget
 	, m_mode(LoadSave::LOAD)
 	, m_currentFocus(controller->stateSlot() - 1)
 {
-	setAttribute(Qt::WA_TranslucentBackground);
 	m_ui.setupUi(this);
+	m_ui.lsLabel->setFocusProxy(this);
+	setFocusPolicy(Qt::ClickFocus);
 
 	m_slots[0] = m_ui.state1;
 	m_slots[1] = m_ui.state2;
@@ -56,6 +57,7 @@ LoadSaveState::LoadSaveState(std::shared_ptr<CoreController> controller, QWidget
 	if (m_currentFocus < 0) {
 		m_currentFocus = 0;
 	}
+	m_slots[m_currentFocus]->setFocus();
 
 	QAction* escape = new QAction(this);
 	connect(escape, &QAction::triggered, this, &QWidget::close);
@@ -240,6 +242,10 @@ void LoadSaveState::closeEvent(QCloseEvent* event) {
 void LoadSaveState::showEvent(QShowEvent* event) {
 	m_slots[m_currentFocus]->setFocus();
 	QWidget::showEvent(event);
+}
+
+void LoadSaveState::focusInEvent(QFocusEvent*) {
+	m_slots[m_currentFocus]->setFocus();
 }
 
 void LoadSaveState::paintEvent(QPaintEvent*) {

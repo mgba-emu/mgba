@@ -107,7 +107,7 @@ void GBVideoReset(struct GBVideo* video) {
 	video->renderer->oam = &video->oam;
 	memset(&video->palette, 0, sizeof(video->palette));
 
-	if (video->p->model == GB_MODEL_SGB) {
+	if (video->p->model & GB_MODEL_SGB) {
 		video->renderer->sgbCharRam = anonymousMemoryMap(SGB_SIZE_CHAR_RAM);
 		video->renderer->sgbMapRam = anonymousMemoryMap(SGB_SIZE_MAP_RAM);
 		video->renderer->sgbPalRam = anonymousMemoryMap(SGB_SIZE_PAL_RAM);
@@ -491,7 +491,7 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 			video->renderer->writePalette(video->renderer, 9 * 4 + 3, video->palette[9 * 4 + 3]);
 			break;
 		}
-	} else if (video->p->model == GB_MODEL_SGB) {
+	} else if (video->p->model & GB_MODEL_SGB) {
 		video->renderer->writeVideoRegister(video->renderer, address, value);
 	} else {
 		switch (address) {
