@@ -167,6 +167,7 @@ void ARMRaiseIRQ(struct ARMCore* cpu) {
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
 	cpu->cycles += currentCycles;
+	cpu->halted = 0;
 }
 
 void ARMRaiseSWI(struct ARMCore* cpu) {

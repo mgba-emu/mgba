@@ -17,14 +17,12 @@ DECL_BITS(GBATimerFlags, PrescaleBits, 0, 4);
 DECL_BIT(GBATimerFlags, CountUp, 4);
 DECL_BIT(GBATimerFlags, DoIrq, 5);
 DECL_BIT(GBATimerFlags, Enable, 6);
-DECL_BIT(GBATimerFlags, IrqPending, 7);
 
 struct GBA;
 struct GBATimer {
 	uint16_t reload;
 	int32_t lastEvent;
 	struct mTimingEvent event;
-	struct mTimingEvent irq;
 	GBATimerFlags flags;
 };
 
