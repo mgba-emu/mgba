@@ -111,6 +111,7 @@ Features:
  - Qt: State file load/save menu options
  - Windows installer
  - Tile viewer now has adjustable width
+ - Python: Experimental audio API
 Bugfixes:
  - PSP2: Fix audio crackling after fast forward
  - PSP2: Fix audio crackling when buffer is full
