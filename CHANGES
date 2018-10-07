@@ -130,6 +130,7 @@ Misc:
  - GB: Improved SGB2 support
  - Libretro: Reduce rumble callbacks
  - Debugger: Minor text fixes
+ - Qt: Debugger console history
 
 0.7 beta 1: (2018-09-24)
 - Initial beta for 0.7

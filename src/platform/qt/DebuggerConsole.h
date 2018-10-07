@@ -21,8 +21,13 @@ private slots:
 	void log(const QString&);
 	void postLine();
 
+protected:
+	bool eventFilter(QObject*, QEvent*) override;
+
 private:
 	Ui::DebuggerConsole m_ui;
+	QStringList m_history;
+	int m_historyOffset;
 
 	DebuggerConsoleController* m_consoleController;
 };
