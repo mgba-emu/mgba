@@ -167,51 +167,65 @@ class Core(object):
     def _load(self):
         self._was_reset = True
 
+    @protected
     def load_file(self, path):
         return bool(lib.mCoreLoadFile(self._core, path.encode('UTF-8')))
 
     def is_rom(self, vfile):
         return bool(self._core.isROM(vfile.handle))
 
+    @protected
     def load_rom(self, vfile):
         return bool(self._core.loadROM(self._core, vfile.handle))
 
+    @protected
     def load_bios(self, vfile, id=0):
         return bool(self._core.loadBIOS(self._core, vfile.handle, id))
 
+    @protected
     def load_save(self, vfile):
         return bool(self._core.loadSave(self._core, vfile.handle))
 
+    @protected
     def load_temporary_save(self, vfile):
         return bool(self._core.loadTemporarySave(self._core, vfile.handle))
 
+    @protected
     def load_patch(self, vfile):
         return bool(self._core.loadPatch(self._core, vfile.handle))
 
+    @protected
     def load_config(self, config):
         lib.mCoreLoadForeignConfig(self._core, config._native)
 
+    @protected
     def autoload_save(self):
         return bool(lib.mCoreAutoloadSave(self._core))
 
+    @protected
     def autoload_patch(self):
         return bool(lib.mCoreAutoloadPatch(self._core))
 
+    @protected
     def autoload_cheats(self):
         return bool(lib.mCoreAutoloadCheats(self._core))
 
+    @property
     def platform(self):
         return self._core.platform(self._core)
 
+    @protected
     def desired_video_dimensions(self):
         width = ffi.new("unsigned*")
         height = ffi.new("unsigned*")
         self._core.desiredVideoDimensions(self._core, width, height)
         return width[0], height[0]
 
+    @protected
     def set_video_buffer(self, image):
         self._core.setVideoBuffer(self._core, image.buffer, image.stride)
 
+    @protected
     def reset(self):
         self._core.reset(self._core)
         self._load()
@@ -227,6 +241,7 @@ class Core(object):
         self._core.runLoop(self._core)
 
     @needs_reset
+    @protected
     def step(self):
         self._core.step(self._core)
 

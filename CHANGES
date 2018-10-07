@@ -132,6 +132,7 @@ Misc:
  - Debugger: Minor text fixes
  - Qt: Debugger console history
  - Qt: Detect presence of GL_ARB_framebuffer_object
+ - Python: Minor API improvements
 
 0.7 beta 1: (2018-09-24)
 - Initial beta for 0.7
