@@ -226,7 +226,7 @@ class Core(object):
         self._core.setVideoBuffer(self._core, image.buffer, image.stride)
 
     @protected
-    def set_audio_buffer_size(self, size)
+    def set_audio_buffer_size(self, size):
         self._core.setAudioBufferSize(self._core, size)
 
     @property
