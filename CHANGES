@@ -121,6 +121,7 @@ Bugfixes:
  - GB, GBA Savedata: Fix leaks when loading masked save (fixes mgba.io/i/1197)
  - Qt: Fix focus issues with load/save state overlay
  - GB Video: Fix SGB border hole size
+ - PSP2: Fix tearing issues (fixes mgba.io/i/1211)
 Misc:
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types
