@@ -675,29 +675,81 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info* i
 }
 
 void* retro_get_memory_data(unsigned id) {
-	if (id != RETRO_MEMORY_SAVE_RAM) {
-		return 0;
-	}
-	return savedata;
-}
-
-size_t retro_get_memory_size(unsigned id) {
-	if (id != RETRO_MEMORY_SAVE_RAM) {
-		return 0;
-	}
 #ifdef M_CORE_GBA
 	if (core->platform(core) == PLATFORM_GBA) {
-		switch (((struct GBA*) core->board)->memory.savedata.type) {
-		case SAVEDATA_AUTODETECT:
-			return SIZE_CART_FLASH1M;
+		struct GBA* gba = core->board;
+		switch(id) 
+		{
+		case RETRO_MEMORY_SAVE_RAM:
+			return savedata;
+		case RETRO_MEMORY_SYSTEM_RAM:
+			return gba->memory.wram;
+		case RETRO_MEMORY_VIDEO_RAM:
+			return gba->video.vram;
 		default:
-			return GBASavedataSize(&((struct GBA*) core->board)->memory.savedata);
+			return 0;
 		}
 	}
 #endif
 #ifdef M_CORE_GB
 	if (core->platform(core) == PLATFORM_GB) {
-		return ((struct GB*) core->board)->sramSize;
+		struct GB* gb = core->board;
+		switch(id) 
+		{
+		case RETRO_MEMORY_SAVE_RAM:
+			return savedata;
+		case RETRO_MEMORY_SYSTEM_RAM:
+			return gb->memory.wram;
+		case RETRO_MEMORY_VIDEO_RAM:
+			return gb->video.vram;
+		default:
+			return 0;
+		}
+	}
+#endif
+	return 0;
+}
+
+size_t retro_get_memory_size(unsigned id) {
+#ifdef M_CORE_GBA
+	if (core->platform(core) == PLATFORM_GBA) {
+		struct GBA* gba = core->board;
+		switch(id) 
+		{
+		case RETRO_MEMORY_SAVE_RAM:
+			if (gba->memory.savedata.type == SAVEDATA_AUTODETECT)
+				return SIZE_CART_FLASH1M;
+			else
+				return GBASavedataSize(&gba->memory.savedata);
+		case RETRO_MEMORY_SYSTEM_RAM:
+			return SIZE_WORKING_RAM;
+		case RETRO_MEMORY_VIDEO_RAM:
+			return SIZE_VRAM;
+		default:
+			return 0;
+		}
+	}
+#endif
+#ifdef M_CORE_GB
+	if (core->platform(core) == PLATFORM_GB) {
+		struct GB* gb = core->board;
+		switch(id) 
+		{
+		case RETRO_MEMORY_SAVE_RAM:
+			return gb->sramSize;
+		case RETRO_MEMORY_SYSTEM_RAM:
+			if (gb->model == GB_MODEL_AGB || gb->model == GB_MODEL_CGB)
+				return GB_SIZE_WORKING_RAM;
+			else
+				return GB_SIZE_WORKING_RAM_BANK0 * 2;
+		case RETRO_MEMORY_VIDEO_RAM:
+			if (gb->model == GB_MODEL_AGB || gb->model == GB_MODEL_CGB)
+				return GB_SIZE_VRAM;
+			else
+				return GB_SIZE_VRAM_BANK0;
+		default:
+			return 0;
+		}
 	}
 #endif
 	return 0;
