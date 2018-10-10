@@ -533,43 +533,46 @@ void retro_reset(void) {
 }
 
 #ifdef GEKKO
-static size_t _readRomFile(const char *path, void **buf)
-{
+static size_t _readRomFile(const char *path, void **buf) {
 	size_t rc;
 	long len;
 	FILE *file = fopen(path, "rb");
 
-	if (!file)
+	if (!file) {
 		goto error;
+	}
 
 	fseek(file, 0, SEEK_END);
 	len = ftell(file);
 	rewind(file);
 	*buf = anonymousMemoryMap(len);
-	if (!*buf)
+	if (!*buf) {
 		goto error;
+	}
 
-	if ((rc = fread(*buf, 1, len, file)) < len)
+	if ((rc = fread(*buf, 1, len, file)) < len) {
 		goto error;
+	}
 
 	fclose(file);
 	return rc;
 
 error:
-	if (file)
+	if (file) {
 		fclose(file);
+	}
 	mappedMemoryFree(*buf, len);
 	*buf = NULL;
 	return -1;
 }
 #endif
 
-bool retro_load_game(const struct retro_game_info* game)
-{
+bool retro_load_game(const struct retro_game_info* game) {
 	struct VFile* rom;
 
-   if (!game)
-      return false;
+	if (!game) {
+		return false;
+	}
 
 	if (game->data) {
 		data = anonymousMemoryMap(game->size);
@@ -578,8 +581,9 @@ bool retro_load_game(const struct retro_game_info* game)
 		rom = VFileFromMemory(data, game->size);
 	} else {
 #ifdef GEKKO
-		if ((dataSize = _readRomFile(game->path, &data)) == -1)
+		if ((dataSize = _readRomFile(game->path, &data)) == -1) {
 			return false;
+		}
 		rom = VFileFromMemory(data, dataSize);
 #else
 		data = 0;
