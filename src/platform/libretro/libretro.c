@@ -203,7 +203,11 @@ void retro_set_input_state(retro_input_state_t input) {
 }
 
 void retro_get_system_info(struct retro_system_info* info) {
-	info->need_fullpath = false;
+#ifdef GEKKO
+   info->need_fullpath = true;
+#else
+   info->need_fullpath = false;
+#endif
 	info->valid_extensions = "gba|gb|gbc";
 #ifndef GIT_VERSION
 #define GIT_VERSION ""
@@ -528,12 +532,47 @@ void retro_reset(void) {
 	rumbleDown = 0;
 }
 
-bool retro_load_game(const struct retro_game_info* game)
-{
+#ifdef GEKKO
+static size_t _readRomFile(const char *path, void **buf) {
+	size_t rc;
+	long len;
+	FILE *file = fopen(path, "rb");
+
+	if (!file) {
+		goto error;
+	}
+
+	fseek(file, 0, SEEK_END);
+	len = ftell(file);
+	rewind(file);
+	*buf = anonymousMemoryMap(len);
+	if (!*buf) {
+		goto error;
+	}
+
+	if ((rc = fread(*buf, 1, len, file)) < len) {
+		goto error;
+	}
+
+	fclose(file);
+	return rc;
+
+error:
+	if (file) {
+		fclose(file);
+	}
+	mappedMemoryFree(*buf, len);
+	*buf = NULL;
+	return -1;
+}
+#endif
+
+bool retro_load_game(const struct retro_game_info* game) {
 	struct VFile* rom;
 
-   if (!game)
-      return false;
+	if (!game) {
+		return false;
+	}
 
 	if (game->data) {
 		data = anonymousMemoryMap(game->size);
@@ -541,8 +580,15 @@ bool retro_load_game(const struct retro_game_info* game)
 		memcpy(data, game->data, game->size);
 		rom = VFileFromMemory(data, game->size);
 	} else {
+#ifdef GEKKO
+		if ((dataSize = _readRomFile(game->path, &data)) == -1) {
+			return false;
+		}
+		rom = VFileFromMemory(data, dataSize);
+#else
 		data = 0;
 		rom = VFileOpen(game->path, O_RDONLY);
+#endif
 	}
 	if (!rom) {
 		return false;
