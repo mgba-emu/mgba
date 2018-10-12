@@ -259,6 +259,9 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 		end = savedata->vf->size(savedata->vf);
 		if (end < flashSize) {
 			savedata->vf->truncate(savedata->vf, flashSize);
+		} else if (end >= SIZE_CART_FLASH1M) {
+			flashSize = SIZE_CART_FLASH1M;
+			savedata->type = SAVEDATA_FLASH1M;
 		}
 		savedata->data = savedata->vf->map(savedata->vf, flashSize, savedata->mapMode);
 	}

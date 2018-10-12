@@ -3,6 +3,7 @@ Bugfixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
 Misc:
  - GBA Savedata: EEPROM performance fixes
+ - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
 
 0.7.0: (Future)
 Features:
