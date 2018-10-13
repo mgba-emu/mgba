@@ -242,8 +242,7 @@ void GBASkipBIOS(struct GBA* gba) {
 		}
 		gba->memory.io[REG_VCOUNT >> 1] = 0x7E;
 		gba->memory.io[REG_POSTFLG >> 1] = 1;
-		int currentCycles = 0;
-		ARM_WRITE_PC;
+		ARMWritePC(cpu);
 	}
 }
 

@@ -135,9 +135,7 @@ void ARMReset(struct ARMCore* cpu) {
 
 	cpu->executionMode = MODE_THUMB;
 	_ARMSetMode(cpu, MODE_ARM);
-
-	int currentCycles = 0;
-	ARM_WRITE_PC;
+	ARMWritePC(cpu);
 
 	cpu->cycles = 0;
 	cpu->nextEvent = 0;
@@ -161,12 +159,10 @@ void ARMRaiseIRQ(struct ARMCore* cpu) {
 	cpu->cpsr.priv = MODE_IRQ;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth + WORD_SIZE_ARM;
 	cpu->gprs[ARM_PC] = BASE_IRQ;
-	int currentCycles = 0;
-	ARM_WRITE_PC;
 	_ARMSetMode(cpu, MODE_ARM);
+	cpu->cycles += ARMWritePC(cpu);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
-	cpu->cycles += currentCycles;
 	cpu->halted = 0;
 }
 
@@ -182,12 +178,10 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 	cpu->cpsr.priv = MODE_SUPERVISOR;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth;
 	cpu->gprs[ARM_PC] = BASE_SWI;
-	int currentCycles = 0;
-	ARM_WRITE_PC;
 	_ARMSetMode(cpu, MODE_ARM);
+	cpu->cycles += ARMWritePC(cpu);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
-	cpu->cycles += currentCycles;
 }
 
 void ARMRaiseUndefined(struct ARMCore* cpu) {
@@ -202,12 +196,10 @@ void ARMRaiseUndefined(struct ARMCore* cpu) {
 	cpu->cpsr.priv = MODE_UNDEFINED;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth;
 	cpu->gprs[ARM_PC] = BASE_UNDEF;
-	int currentCycles = 0;
-	ARM_WRITE_PC;
 	_ARMSetMode(cpu, MODE_ARM);
+	cpu->cycles += ARMWritePC(cpu);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
-	cpu->cycles += currentCycles;
 }
 
 static inline void ARMStep(struct ARMCore* cpu) {
