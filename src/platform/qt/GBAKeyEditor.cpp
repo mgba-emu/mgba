@@ -278,13 +278,13 @@ void GBAKeyEditor::lookupAxes(const mInputMap* map) {
 		if (description->highDirection != GBA_KEY_NONE) {
 			KeyEditor* key = self->keyById(static_cast<enum GBAKey>(description->highDirection));
 			if (key) {
-				key->setValueAxis(axis, description->deadHigh);
+				key->setValueAxis(axis, GamepadAxisEvent::POSITIVE);
 			}
 		}
 		if (description->lowDirection != GBA_KEY_NONE) {
 			KeyEditor* key = self->keyById(static_cast<enum GBAKey>(description->lowDirection));
 			if (key) {
-				key->setValueAxis(axis, description->deadLow);
+				key->setValueAxis(axis, GamepadAxisEvent::NEGATIVE);
 			}
 		}
 	}, this);
@@ -350,14 +350,6 @@ bool GBAKeyEditor::findFocus(KeyEditor* needle) {
 }
 
 #ifdef BUILD_SDL
-void GBAKeyEditor::setAxisValue(int axis, int32_t value) {
-	if (!findFocus()) {
-		return;
-	}
-	KeyEditor* focused = *m_currentKey;
-	focused->setValueAxis(axis, value);
-}
-
 void GBAKeyEditor::selectGamepad(int index) {
 	m_controller->setGamepad(m_type, index);
 	m_profile = m_profileSelect->currentText();

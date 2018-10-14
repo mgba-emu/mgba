@@ -122,6 +122,7 @@ Bugfixes:
  - Qt: Fix focus issues with load/save state overlay
  - GB Video: Fix SGB border hole size
  - PSP2: Fix tearing issues (fixes mgba.io/i/1211)
+ - Qt: Fix mapping analog triggers (fixes mgba.io/i/495)
 Misc:
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types

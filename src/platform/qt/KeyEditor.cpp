@@ -48,10 +48,10 @@ void KeyEditor::setValueButton(int button) {
 	setValue(button);
 }
 
-void KeyEditor::setValueAxis(int axis, int32_t value) {
+void KeyEditor::setValueAxis(int axis, GamepadAxisEvent::Direction direction) {
 	m_button = true;
 	m_axis = axis;
-	m_direction = value < 0 ? GamepadAxisEvent::NEGATIVE : GamepadAxisEvent::POSITIVE;
+	m_direction = direction;
 	updateButtonText();
 	emit axisChanged(axis, m_direction);
 }
