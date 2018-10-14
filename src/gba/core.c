@@ -148,6 +148,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	}
 	core->cpu = cpu;
 	core->board = gba;
+	core->timing = &gba->timing;
 	core->debugger = NULL;
 	core->symbolTable = NULL;
 	gbacore->overrides = NULL;
