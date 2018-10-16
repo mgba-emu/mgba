@@ -707,6 +707,7 @@ void Window::gameStarted() {
 	}
 	attachWidget(m_display.get());
 	m_display->setMinimumSize(size);
+	setFocus();
 
 #ifndef Q_OS_MAC
 	if (isFullScreen()) {
