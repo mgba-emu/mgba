@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>565</width>
-    <height>658</height>
+    <width>822</width>
+    <height>886</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -98,7 +98,7 @@
      <item>
       <widget class="QRadioButton" name="width8">
        <property name="text">
-        <string>1 Byte</string>
+        <string>&amp;1 Byte</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -121,7 +121,7 @@
      <item>
       <widget class="QRadioButton" name="width16">
        <property name="text">
-        <string>2 Bytes</string>
+        <string>&amp;2 Bytes</string>
        </property>
       </widget>
      </item>
@@ -141,7 +141,7 @@
      <item>
       <widget class="QRadioButton" name="width32">
        <property name="text">
-        <string>4 Bytes</string>
+        <string>&amp;4 Bytes</string>
        </property>
       </widget>
      </item>
@@ -168,7 +168,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <zorder></zorder>
     </widget>
    </item>
    <item>
