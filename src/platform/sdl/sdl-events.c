@@ -304,7 +304,7 @@ void mSDLPlayerSaveConfig(const struct mSDLPlayer* context, struct Configuration
 #else
 		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick->joystick));
 #endif
-		char value[12];
+		char value[16];
 		snprintf(value, sizeof(value), "%i", context->rotation.axisX);
 		mInputSetCustomValue(config, "gba", SDL_BINDING_BUTTON, "tiltAxisX", value, name);
 		snprintf(value, sizeof(value), "%i", context->rotation.axisY);
