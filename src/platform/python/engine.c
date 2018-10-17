@@ -65,7 +65,6 @@ bool mPythonScriptEngineInit(struct mScriptEngine* se, struct mScriptBridge* sb)
 }
 
 void mPythonScriptEngineDeinit(struct mScriptEngine* se) {
-	struct mPythonScriptEngine* engine = (struct mPythonScriptEngine*) se;
 	free(se);
 }
 
@@ -76,7 +75,7 @@ bool mPythonScriptEngineIsScript(struct mScriptEngine* se, const char* name, str
 }
 
 bool mPythonScriptEngineLoadScript(struct mScriptEngine* se, const char* name, struct VFile* vf) {
-	struct mPythonScriptEngine* engine = (struct mPythonScriptEngine*) se;
+	UNUSED(se);
 	return mPythonLoadScript(name, vf);
 }
 
@@ -94,7 +93,7 @@ void mPythonScriptEngineRun(struct mScriptEngine* se) {
 }
 
 bool mPythonScriptEngineLookupSymbol(struct mScriptEngine* se, const char* name, int32_t* out) {
-	struct mPythonScriptEngine* engine = (struct mPythonScriptEngine*) se;
+	UNUSED(se);
 	return mPythonLookupSymbol(name, out);
 }
 
