@@ -177,6 +177,7 @@ void GBMemoryReset(struct GB* gb) {
 
 	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
 
+	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
 	GBMBCInit(gb);
 	switch (gb->memory.mbcType) {
 	case GB_MBC1:
@@ -192,8 +193,9 @@ void GBMemoryReset(struct GB* gb) {
 	case GB_MMM01:
 		GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);
 		GBMBCSwitchBank(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 1);
+		break;
 	default:
-		memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
+		break;
 	}
 	gb->memory.sramBank = gb->memory.sram;
 

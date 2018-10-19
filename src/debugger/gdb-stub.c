@@ -305,11 +305,10 @@ static void _writeGPRs(struct GDBStub* stub, const char* message) {
 		cpu->gprs[r] = _hex2int(readAddress, 8);
 		readAddress += 8;
 	}
-	int32_t currentCycles = 0;
 	if (cpu->executionMode == MODE_ARM) {
-		ARM_WRITE_PC;
+		ARMWritePC(cpu);
 	} else {
-		THUMB_WRITE_PC;
+		ThumbWritePC(cpu);
 	}
 
 	strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
@@ -369,11 +368,10 @@ static void _writeRegister(struct GDBStub* stub, const char* message) {
 	if (reg <= ARM_PC) {
 		cpu->gprs[reg] = value;
 		if (reg == ARM_PC) {
-			int32_t currentCycles = 0;
 			if (cpu->executionMode == MODE_ARM) {
-				ARM_WRITE_PC;
+				ARMWritePC(cpu);
 			} else {
-				THUMB_WRITE_PC;
+				ThumbWritePC(cpu);
 			}
 		}
 	} else if (reg == 0x19) {

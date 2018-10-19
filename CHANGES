@@ -1,3 +1,10 @@
+0.8.0: (Future)
+Bugfixes:
+ - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
+Misc:
+ - GBA Savedata: EEPROM performance fixes
+ - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
+
 0.7.0: (Future)
 Features:
  - ELF support
@@ -106,6 +113,8 @@ Features:
  - Switch: Rotation support
  - Qt: State file load/save menu options
  - Windows installer
+ - Tile viewer now has adjustable width
+ - Python: Experimental audio API
 Bugfixes:
  - PSP2: Fix audio crackling after fast forward
  - PSP2: Fix audio crackling when buffer is full
@@ -119,6 +128,9 @@ Bugfixes:
  - GB, GBA Savedata: Fix leaks when loading masked save (fixes mgba.io/i/1197)
  - Qt: Fix focus issues with load/save state overlay
  - GB Video: Fix SGB border hole size
+ - PSP2: Fix tearing issues (fixes mgba.io/i/1211)
+ - Qt: Fix mapping analog triggers (fixes mgba.io/i/495)
+ - Qt: Grab focus when game starts (fixes mgba.io/i/804)
 Misc:
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types
@@ -128,6 +140,11 @@ Misc:
  - Qt: Ensure camera image is valid
  - GB: Improved SGB2 support
  - Libretro: Reduce rumble callbacks
+ - Debugger: Minor text fixes
+ - Qt: Debugger console history
+ - Qt: Detect presence of GL_ARB_framebuffer_object
+ - Python: Minor API improvements
+ - Qt: Minor memory view tweaks
 
 0.7 beta 1: (2018-09-24)
 - Initial beta for 0.7

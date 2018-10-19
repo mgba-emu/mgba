@@ -253,7 +253,7 @@ ATTRIBUTE_NOINLINE static void _neutralS(struct ARMCore* cpu, int32_t d) {
 #define ADDR_MODE_2_WRITEBACK(ADDR) \
 	cpu->gprs[rn] = ADDR; \
 	if (UNLIKELY(rn == ARM_PC)) { \
-		ARM_WRITE_PC; \
+		currentCycles += ARMWritePC(cpu); \
 	}
 
 #define ADDR_MODE_2_LSL (cpu->gprs[rm] << ADDR_MODE_2_I)
@@ -278,7 +278,7 @@ ATTRIBUTE_NOINLINE static void _neutralS(struct ARMCore* cpu, int32_t d) {
 #define ARM_LOAD_POST_BODY \
 	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32; \
 	if (rd == ARM_PC) { \
-		ARM_WRITE_PC; \
+		currentCycles += ARMWritePC(cpu); \
 	}
 
 #define ARM_STORE_POST_BODY \
@@ -301,9 +301,9 @@ ATTRIBUTE_NOINLINE static void _neutralS(struct ARMCore* cpu, int32_t d) {
 		S_BODY; \
 		if (rd == ARM_PC) { \
 			if (cpu->executionMode == MODE_ARM) { \
-				ARM_WRITE_PC; \
+				currentCycles += ARMWritePC(cpu); \
 			} else { \
-				THUMB_WRITE_PC; \
+				currentCycles += ThumbWritePC(cpu); \
 			} \
 		})
 
@@ -594,7 +594,7 @@ DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,
 	load,
 	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32;
 	if (rs & 0x8000) {
-		ARM_WRITE_PC;
+		currentCycles += ARMWritePC(cpu);
 	})
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM,
@@ -625,22 +625,22 @@ DEFINE_INSTRUCTION_ARM(B,
 	int32_t offset = opcode << 8;
 	offset >>= 6;
 	cpu->gprs[ARM_PC] += offset;
-	ARM_WRITE_PC;)
+	currentCycles += ARMWritePC(cpu);)
 
 DEFINE_INSTRUCTION_ARM(BL,
 	int32_t immediate = (opcode & 0x00FFFFFF) << 8;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - WORD_SIZE_ARM;
 	cpu->gprs[ARM_PC] += immediate >> 6;
-	ARM_WRITE_PC;)
+	currentCycles += ARMWritePC(cpu);)
 
 DEFINE_INSTRUCTION_ARM(BX,
 	int rm = opcode & 0x0000000F;
 	_ARMSetMode(cpu, cpu->gprs[rm] & 0x00000001);
 	cpu->gprs[ARM_PC] = cpu->gprs[rm] & 0xFFFFFFFE;
 	if (cpu->executionMode == MODE_THUMB) {
-		THUMB_WRITE_PC;
+		currentCycles += ThumbWritePC(cpu);
 	} else {
-		ARM_WRITE_PC;
+		currentCycles += ARMWritePC(cpu);
 	})
 
 // End branch definitions

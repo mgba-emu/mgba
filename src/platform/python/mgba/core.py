@@ -4,7 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from ._pylib import ffi, lib  # pylint: disable=no-name-in-module
-from . import tile
+from . import tile, audio
 from cached_property import cached_property
 from functools import wraps
 
@@ -167,51 +167,81 @@ class Core(object):
     def _load(self):
         self._was_reset = True
 
+    @protected
     def load_file(self, path):
         return bool(lib.mCoreLoadFile(self._core, path.encode('UTF-8')))
 
     def is_rom(self, vfile):
         return bool(self._core.isROM(vfile.handle))
 
+    @protected
     def load_rom(self, vfile):
         return bool(self._core.loadROM(self._core, vfile.handle))
 
+    @protected
     def load_bios(self, vfile, id=0):
         return bool(self._core.loadBIOS(self._core, vfile.handle, id))
 
+    @protected
     def load_save(self, vfile):
         return bool(self._core.loadSave(self._core, vfile.handle))
 
+    @protected
     def load_temporary_save(self, vfile):
         return bool(self._core.loadTemporarySave(self._core, vfile.handle))
 
+    @protected
     def load_patch(self, vfile):
         return bool(self._core.loadPatch(self._core, vfile.handle))
 
+    @protected
     def load_config(self, config):
         lib.mCoreLoadForeignConfig(self._core, config._native)
 
+    @protected
     def autoload_save(self):
         return bool(lib.mCoreAutoloadSave(self._core))
 
+    @protected
     def autoload_patch(self):
         return bool(lib.mCoreAutoloadPatch(self._core))
 
+    @protected
     def autoload_cheats(self):
         return bool(lib.mCoreAutoloadCheats(self._core))
 
+    @property
     def platform(self):
         return self._core.platform(self._core)
 
+    @protected
     def desired_video_dimensions(self):
         width = ffi.new("unsigned*")
         height = ffi.new("unsigned*")
         self._core.desiredVideoDimensions(self._core, width, height)
         return width[0], height[0]
 
+    @protected
     def set_video_buffer(self, image):
         self._core.setVideoBuffer(self._core, image.buffer, image.stride)
 
+    @protected
+    def set_audio_buffer_size(self, size):
+        self._core.setAudioBufferSize(self._core, size)
+
+    @property
+    def audio_buffer_size(self):
+        return self._core.getAudioBufferSize(self._core)
+
+    @protected
+    def get_audio_channels(self):
+        return audio.StereoBuffer(self.get_audio_channel(0), self.get_audio_channel(1));
+
+    @protected
+    def get_audio_channel(self, channel):
+        return audio.Buffer(self._core.getAudioChannel(self._core, channel), self.frequency)
+
+    @protected
     def reset(self):
         self._core.reset(self._core)
         self._load()
@@ -227,6 +257,7 @@ class Core(object):
         self._core.runLoop(self._core)
 
     @needs_reset
+    @protected
     def step(self):
         self._core.step(self._core)
 

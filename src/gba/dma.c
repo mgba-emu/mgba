@@ -266,11 +266,7 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 		memory->dmaTransferRegister &= 0xFFFF0000;
 		memory->dmaTransferRegister |= memory->dmaTransferRegister >> 16;
 	} else {
-		if (sourceRegion == REGION_CART2_EX && memory->savedata.type == SAVEDATA_EEPROM) {
-			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
-				mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
-				GBASavedataInitEEPROM(&memory->savedata);
-			}
+		if (sourceRegion == REGION_CART2_EX && (memory->savedata.type == SAVEDATA_EEPROM || memory->savedata.type == SAVEDATA_EEPROM512)) {
 			memory->dmaTransferRegister = GBASavedataReadEEPROM(&memory->savedata);
 		} else {
 			if (source) {

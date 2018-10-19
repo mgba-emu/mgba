@@ -347,11 +347,10 @@ bool ARMDebuggerSetRegister(struct mDebuggerPlatform* d, const char* name, int32
 	}
 	if (strcmp(name, "pc") == 0) {
 		cpu->gprs[ARM_PC] = value;
-		int32_t currentCycles = 0;
 		if (cpu->executionMode == MODE_ARM) {
-			ARM_WRITE_PC;
+			ARMWritePC(cpu);
 		} else {
-			THUMB_WRITE_PC;
+			ThumbWritePC(cpu);
 		}
 		return true;
 	}
@@ -363,11 +362,10 @@ bool ARMDebuggerSetRegister(struct mDebuggerPlatform* d, const char* name, int32
 		}
 		cpu->gprs[reg] = value;
 		if (reg == ARM_PC) {
-			int32_t currentCycles = 0;
 			if (cpu->executionMode == MODE_ARM) {
-				ARM_WRITE_PC;
+				ARMWritePC(cpu);
 			} else {
-				THUMB_WRITE_PC;
+				ThumbWritePC(cpu);
 			}
 		}
 		return true;

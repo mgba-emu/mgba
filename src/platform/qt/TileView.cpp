@@ -65,6 +65,21 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this]() {
 		updateTiles(true);
 	});
+
+	connect(m_ui.tilesPerRow, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](int count) {
+		m_ui.tiles->setMinimumSize(m_ui.magnification->value() * 8 * count, m_ui.tiles->minimumSize().height());
+		updateTiles(true);
+	});
+
+	connect(m_ui.tileFit, &QAbstractButton::toggled, [this](bool selected) {
+		if (!selected) {
+			m_ui.tiles->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+			m_ui.tiles->setMinimumSize(m_ui.magnification->value() * 8 * m_ui.tilesPerRow->value(), m_ui.tiles->minimumSize().height());
+		} else {
+			m_ui.tiles->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+		}
+		updateTiles(true);
+	});
 }
 
 #ifdef M_CORE_GBA

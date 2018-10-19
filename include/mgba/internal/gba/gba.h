@@ -82,6 +82,8 @@ struct GBA {
 	struct GBATimer timers[4];
 
 	int springIRQ;
+	struct mTimingEvent irqEvent;
+
 	uint32_t biosChecksum;
 	int* keySource;
 	struct mRotationSource* rotationSource;
@@ -141,8 +143,6 @@ void GBADestroy(struct GBA* gba);
 void GBAReset(struct ARMCore* cpu);
 void GBASkipBIOS(struct GBA* gba);
 
-void GBAWriteIE(struct GBA* gba, uint16_t value);
-void GBAWriteIME(struct GBA* gba, uint16_t value);
 void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq);
 void GBATestIRQ(struct ARMCore* cpu);
 void GBAHalt(struct GBA* gba);

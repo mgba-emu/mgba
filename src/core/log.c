@@ -133,13 +133,13 @@ void mLogFilterSet(struct mLogFilter* filter, const char* category, int levels) 
 
 }
 bool mLogFilterTest(struct mLogFilter* filter, int category, enum mLogLevel level) {
-	int value = (int) TableLookup(&filter->levels, category);
+	int value = (intptr_t) TableLookup(&filter->levels, category);
 	if (value) {
 		return value & level;
 	}
 	const char* cat = mLogCategoryId(category);
 	if (cat) {
-		value = (int) HashTableLookup(&filter->categories, cat);
+		value = (intptr_t) HashTableLookup(&filter->categories, cat);
 		if (value) {
 			TableInsert(&filter->levels, category, (void*)(intptr_t) value);
 			return value & level;
