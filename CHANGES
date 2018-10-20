@@ -124,6 +124,7 @@ Bugfixes:
  - PSP2: Fix tearing issues (fixes mgba.io/i/1211)
  - Qt: Fix mapping analog triggers (fixes mgba.io/i/495)
  - Qt: Grab focus when game starts (fixes mgba.io/i/804)
+ - Core: Remember to deinit proxy ring FIFO
 Misc:
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types
