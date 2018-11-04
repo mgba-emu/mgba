@@ -216,6 +216,20 @@ void GBAReset(struct ARMCore* cpu) {
 
 	GBASIOReset(&gba->sio);
 
+	bool isELF = false;
+#ifdef USE_ELF
+	struct ELF* elf = ELFOpen(gba->romVf);
+	if (elf) {
+		isELF = true;
+		ELFClose(elf);
+	}
+#endif
+
+	if (GBAIsMB(gba->romVf) && !isELF) {
+		gba->romVf->seek(gba->romVf, 0, SEEK_SET);
+		gba->romVf->read(gba->romVf, gba->memory.wram, gba->pristineRomSize);
+	}
+
 	gba->lastJump = 0;
 	gba->haltPending = false;
 	gba->idleDetectionStep = 0;
@@ -343,11 +357,6 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
 	}
 	gba->isPristine = true;
 	memset(gba->memory.wram, 0, SIZE_WORKING_RAM);
-	vf->read(vf, gba->memory.wram, gba->pristineRomSize);
-	if (!gba->memory.wram) {
-		mLOG(GBA, WARN, "Couldn't map ROM");
-		return false;
-	}
 	gba->yankedRomSize = 0;
 	gba->memory.romSize = 0;
 	gba->memory.romMask = 0;

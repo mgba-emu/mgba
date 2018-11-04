@@ -1,6 +1,7 @@
 0.8.0: (Future)
 Bugfixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
+ - GBA: Reset now reloads multiboot ROMs
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
