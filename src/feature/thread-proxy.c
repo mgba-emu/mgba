@@ -78,6 +78,7 @@ void mVideoThreadProxyDeinit(struct mVideoLogger* logger) {
 	if (waiting) {
 		ThreadJoin(proxyRenderer->thread);
 	}
+	RingFIFODeinit(&proxyRenderer->dirtyQueue);
 	ConditionDeinit(&proxyRenderer->fromThreadCond);
 	ConditionDeinit(&proxyRenderer->toThreadCond);
 	MutexDeinit(&proxyRenderer->mutex);
