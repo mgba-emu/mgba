@@ -259,9 +259,6 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 		end = savedata->vf->size(savedata->vf);
 		if (end < flashSize) {
 			savedata->vf->truncate(savedata->vf, flashSize);
-		} else if (end >= SIZE_CART_FLASH1M) {
-			flashSize = SIZE_CART_FLASH1M;
-			savedata->type = SAVEDATA_FLASH1M;
 		}
 		savedata->data = savedata->vf->map(savedata->vf, flashSize, savedata->mapMode);
 	}
@@ -291,9 +288,6 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 		end = savedata->vf->size(savedata->vf);
 		if (end < eepromSize) {
 			savedata->vf->truncate(savedata->vf, eepromSize);
-		} else if (end >= SIZE_CART_EEPROM) {
-			eepromSize = SIZE_CART_EEPROM;
-			savedata->type = SAVEDATA_EEPROM;
 		}
 		savedata->data = savedata->vf->map(savedata->vf, eepromSize, savedata->mapMode);
 	}
@@ -439,13 +433,17 @@ static void _ensureEeprom(struct GBASavedata* savedata, uint32_t size) {
 		return;
 	}
 	savedata->type = SAVEDATA_EEPROM;
-	if (!savedata->vf || savedata->vf->size(savedata->vf) > SIZE_CART_EEPROM512) {
+	if (!savedata->vf) {
 		return;
 	}
 	savedata->vf->unmap(savedata->vf, savedata->data, SIZE_CART_EEPROM512);
-	savedata->vf->truncate(savedata->vf, SIZE_CART_EEPROM);
-	savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_EEPROM, savedata->mapMode);
-	memset(&savedata->data[SIZE_CART_EEPROM512], 0xFF, SIZE_CART_EEPROM - SIZE_CART_EEPROM512);
+	if (savedata->vf->size(savedata->vf) < SIZE_CART_EEPROM) {
+		savedata->vf->truncate(savedata->vf, SIZE_CART_EEPROM);
+		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_EEPROM, savedata->mapMode);
+		memset(&savedata->data[SIZE_CART_EEPROM512], 0xFF, SIZE_CART_EEPROM - SIZE_CART_EEPROM512);
+	} else {
+		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_EEPROM, savedata->mapMode);
+	}
 }
 
 void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32_t writeSize) {
@@ -605,7 +603,7 @@ void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
 		savedata->type = SAVEDATA_FLASH1M;
 		if (savedata->vf) {
 			savedata->vf->unmap(savedata->vf, savedata->data, SIZE_CART_FLASH512);
-			if (savedata->vf->size(savedata->vf) == SIZE_CART_FLASH512) {
+			if (savedata->vf->size(savedata->vf) < SIZE_CART_FLASH1M) {
 				savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
 				savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_FLASH1M, MAP_WRITE);
 				memset(&savedata->data[SIZE_CART_FLASH512], 0xFF, SIZE_CART_FLASH512);
