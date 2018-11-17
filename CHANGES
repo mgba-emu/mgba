@@ -105,6 +105,7 @@ Features:
  - Qt: Separate fast forward volume control (fixes mgba.io/i/846, mgba.io/i/1143)
  - Switch: Rumble support
  - Switch: Rotation support
+ - Switch: Screen stretching options
  - Qt: State file load/save menu options
  - Windows installer
  - Tile viewer now has adjustable width
