@@ -24,10 +24,10 @@ TARGET_PLATFORM = android_x86_64
 #################
 # Toolchain setup
 
-CC  = $(NDK_ROOT_DIR)/toolchains/x86_64-4.9/prebuilt/$(HOST_PLATFORM)-x86_64/bin/x86_64-linux-android-gcc
-CXX = $(NDK_ROOT_DIR)/toolchains/x86_64-4.9/prebuilt/$(HOST_PLATFORM)-x86_64/bin/x86_64-linux-android-g++
-AS  = $(NDK_ROOT_DIR)/toolchains/x86_64-4.9/prebuilt/$(HOST_PLATFORM)-x86_64/bin/x86_64-linux-android-as
-AR  = $(NDK_ROOT_DIR)/toolchains/x86_64-4.9/prebuilt/$(HOST_PLATFORM)-x86_64/bin/x86_64-linux-android-ar
+CC  = $(NDK_ROOT_DIR)/toolchains/x86_64-$(NDK_TOOLCHAIN_VERSION)/prebuilt/$(HOST_PLATFORM)-x86_64/bin/x86_64-linux-android-gcc
+CXX = $(NDK_ROOT_DIR)/toolchains/x86_64-$(NDK_TOOLCHAIN_VERSION)/prebuilt/$(HOST_PLATFORM)-x86_64/bin/x86_64-linux-android-g++
+AS  = $(NDK_ROOT_DIR)/toolchains/x86_64-$(NDK_TOOLCHAIN_VERSION)/prebuilt/$(HOST_PLATFORM)-x86_64/bin/x86_64-linux-android-as
+AR  = $(NDK_ROOT_DIR)/toolchains/x86_64-$(NDK_TOOLCHAIN_VERSION)/prebuilt/$(HOST_PLATFORM)-x86_64/bin/x86_64-linux-android-ar
 
 ############
 # Extensions
@@ -45,7 +45,7 @@ PLATDEFS       = -DANDROID -DINLINE=inline -DHAVE_STDINT_H -DBSPF_UNIX -DHAVE_IN
 PLATCFLAGS     = -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=300 -Wa,--noexecstack -Wformat -Werror=format-security
 PLATCXXFLAGS   = -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=300 -Wa,--noexecstack -Wformat -Werror=format-security -fno-exceptions -fno-rtti
 PLATLDFLAGS    = -shared --sysroot=$(NDK_ROOT_DIR)/platforms/android-21/arch-x86_64 -lgcc -no-canonical-prefixes -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -lc -lm
-PLATLDXFLAGS   = -shared --sysroot=$(NDK_ROOT_DIR)/platforms/android-21/arch-x86_64 -lgcc -no-canonical-prefixes -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -lc -lm $(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.9/libs/x86_64/libgnustl_static.a
+PLATLDXFLAGS   = -shared --sysroot=$(NDK_ROOT_DIR)/platforms/android-21/arch-x86_64 -lgcc -no-canonical-prefixes -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -lc -lm $(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/$(NDK_TOOLCHAIN_VERSION)/libs/x86_64/libgnustl_static.a
 
 ################
 # libretro setup
@@ -86,7 +86,7 @@ endif
 
 CORE_DIR  ?= ..
 BUILD_DIR ?= .
-INCLUDES   = -I$(NDK_ROOT_DIR)/platforms/android-21/arch-x86_64/usr/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.9/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.9/libs/x86_64/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.9/include/backward
+INCLUDES   = -I$(NDK_ROOT_DIR)/platforms/android-21/arch-x86_64/usr/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/$(NDK_TOOLCHAIN_VERSION)/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/$(NDK_TOOLCHAIN_VERSION)/libs/x86_64/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/$(NDK_TOOLCHAIN_VERSION)/include/backward
 
 include $(BUILD_DIR)/Makefile.common
 
