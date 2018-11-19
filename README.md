@@ -157,11 +157,11 @@ To build on Windows for development, using MSYS2 is recommended. Follow the inst
 
 For x86 (32 bit) builds:
 
-	pacman -Sy base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 For x86_64 (64 bit) builds:
 
-	pacman -Sy base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 Check out the source code by running this command:
 

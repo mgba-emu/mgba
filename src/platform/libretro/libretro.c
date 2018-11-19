@@ -621,6 +621,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 	core->setPeripheral(core, mPERIPH_RUMBLE, &rumble);
 
 	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
+	memset(savedata, 0xFF, SIZE_CART_FLASH1M);
 	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
 
 	_reloadSettings();

@@ -227,6 +227,9 @@ bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOver
 			} else if (strcasecmp(savetype, "EEPROM") == 0) {
 				found = true;
 				override->savetype = SAVEDATA_EEPROM;
+			} else if (strcasecmp(savetype, "EEPROM512") == 0) {
+				found = true;
+				override->savetype = SAVEDATA_EEPROM512;
 			} else if (strcasecmp(savetype, "FLASH512") == 0) {
 				found = true;
 				override->savetype = SAVEDATA_FLASH512;
@@ -270,6 +273,9 @@ void GBAOverrideSave(struct Configuration* config, const struct GBACartridgeOver
 		break;
 	case SAVEDATA_EEPROM:
 		savetype = "EEPROM";
+		break;
+	case SAVEDATA_EEPROM512:
+		savetype = "EEPROM512";
 		break;
 	case SAVEDATA_FLASH512:
 		savetype = "FLASH512";

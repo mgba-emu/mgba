@@ -92,6 +92,13 @@ static unsigned framecap = 10;
 static u32 vibrationDeviceHandles[4];
 static HidVibrationValue vibrationStop = { .freq_low = 160.f, .freq_high = 320.f };
 
+static enum ScreenMode {
+	SM_PA,
+	SM_AF,
+	SM_SF,
+	SM_MAX
+} screenMode = SM_PA;
+
 static bool initEgl() {
     s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (!s_display) {
@@ -238,6 +245,11 @@ static void _setup(struct mGUIRunner* runner) {
 	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d);
 	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation);
 	runner->core->setAVStream(runner->core, &stream);
+
+	unsigned mode;
+	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
+		screenMode = mode;
+	}
 }
 
 static void _gameLoaded(struct mGUIRunner* runner) {
@@ -248,6 +260,11 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), samplerate * ratio);
 
 	mCoreConfigGetUIntValue(&runner->config, "fastForwardCap", &framecap);
+
+	unsigned mode;
+	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
+		screenMode = mode;
+	}
 
 	rumble.up = 0;
 	rumble.down = 0;
@@ -270,11 +287,26 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 	glBindVertexArray(vao);
 	float aspectX = width / (float) runner->params.width;
 	float aspectY = height / (float) runner->params.height;
-	float max;
-	if (aspectX > aspectY) {
-		max = floor(1.0 / aspectX);
-	} else {
-		max = floor(1.0 / aspectY);
+	float max = 1.f;
+	switch (screenMode) {
+	case SM_PA:
+		if (aspectX > aspectY) {
+			max = floor(1.0 / aspectX);
+		} else {
+			max = floor(1.0 / aspectY);
+		}
+		break;
+	case SM_AF:
+		if (aspectX > aspectY) {
+			max = 1.0 / aspectX;
+		} else {
+			max = 1.0 / aspectY;
+		}
+		break;
+	case SM_SF:
+		aspectX = 1.0;
+		aspectY = 1.0;
+		break;
 	}
 
 	aspectX *= max;
@@ -352,6 +384,12 @@ static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, un
 
 static uint16_t _pollGameInput(struct mGUIRunner* runner) {
 	return _pollInput(&runner->core->inputMap);
+}
+
+static void _incrementScreenMode(struct mGUIRunner* runner) {
+	UNUSED(runner);
+	screenMode = (screenMode + 1) % SM_MAX;
+	mCoreConfigSetUIntValue(&runner->config, "screenMode", screenMode);
 }
 
 static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
@@ -608,6 +646,18 @@ int main(int argc, char* argv[]) {
 		},
 		.configExtra = (struct GUIMenuItem[]) {
 			{
+				.title = "Screen mode",
+				.data = "screenMode",
+				.submenu = 0,
+				.state = SM_PA,
+				.validStates = (const char*[]) {
+					"Pixel-Accurate",
+					"Aspect-Ratio Fit",
+					"Stretched",
+				},
+				.nStates = 3
+			},
+			{
 				.title = "Fast forward cap",
 				.data = "fastForwardCap",
 				.submenu = 0,
@@ -637,7 +687,7 @@ int main(int argc, char* argv[]) {
 				.nStates = 15
 			},
 		},
-		.nConfigExtra = 1,
+		.nConfigExtra = 2,
 		.setup = _setup,
 		.teardown = NULL,
 		.gameLoaded = _gameLoaded,
@@ -647,7 +697,7 @@ int main(int argc, char* argv[]) {
 		.drawScreenshot = _drawScreenshot,
 		.paused = _gameUnloaded,
 		.unpaused = _gameLoaded,
-		.incrementScreenMode = NULL,
+		.incrementScreenMode = _incrementScreenMode,
 		.setFrameLimiter = _setFrameLimiter,
 		.pollGameInput = _pollGameInput,
 		.running = _running

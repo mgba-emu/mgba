@@ -52,21 +52,18 @@ Die folgenden Mapper werden vollständig unterstützt:
 
 Die folgenden Mapper werden teilweise unterstützt:
 
+- MBC6
+- MMM01
 - Pocket Cam
 - TAMA5
-- HuC-3
-
-Die folgenden Mapper werden derzeit nicht unterstützt:
-
-- MBC6
 - HuC-1
-- MMM01
+- HuC-3
 
 ### Geplante Features
 
 - Unterstützung für Link-Kabel-Multiplayer über ein Netzwerk.
 - Unterstützung für Link-Kabel über Dolphin/JOY-Bus.
-- M4A-Audio-Abmischung für höhere Audio-Qualität.
+- M4A-Audio-Abmischung für höhere Audio-Qualität als echte Hardware.
 - Unterstützung für Tool-Assisted Speedruns.
 - Lua-Unterstützung für Scripting.
 - Eine umfangreiche Debugging-Suite.
@@ -93,7 +90,7 @@ Die Systemvoraussetzungen sind minimal. Jeder Computer, der mit Windows Vista od
 Downloads
 ---------
 
-Download-Links befinden sich in der [Downloads][downloads]-Sektion auf der offizielle Website. Der Quellcode befindet sich auf [GitHub][source].
+Download-Links befinden sich in der [Downloads][downloads]-Sektion auf der offiziellen Website. Der Quellcode befindet sich auf [GitHub][source].
 
 Steuerung
 ---------
@@ -110,7 +107,31 @@ Die Steuerung kann im Einstellungs-Menü konfiguriert werden. Viele Spiele-Contr
 Kompilieren
 -----------
 
-Um mGBA kompilieren zu können, wird CMake 2.8.11 oder neuer benötigt. GCC und Clang sind beide dafür bekannt, mGBA kompilieren zu können. Visual Studio 2013 und älter funktionieren nicht. Unterstützung für Visual Studio 2015 und neuer wird bald hinzugefügt. Um CMake auf einem Unix-basierten System zu verwenden, werden folgende Kommandos empfohlen:
+Um mGBA kompilieren zu können, wird CMake 3.1 oder neuer benötigt. GCC und Clang sind beide dafür bekannt, mGBA kompilieren zu können. Visual Studio 2013 und älter funktionieren nicht. Unterstützung für Visual Studio 2015 und neuer wird bald hinzugefügt.
+
+#### Kompilieren mit Docker
+
+Der empfohlene Weg, um mGBA für die meisten Plattformen zu kompilieren, ist Docker. Mehrere Docker-Images sind verfügbar, welche die benötigte Compiler-Umgebung und alle benötigten Abhängigkeiten beinhaltet, um mGBA für verschiedene Plattformen zu bauen.
+
+Um ein Docker-Image zum Bau von mGBA zu verwenden, führe einfach folgenden Befehl in dem Verzeichnis aus, in welches Du den mGBA-Quellcode ausgecheckt hast:
+
+	docker run --rm -t -v $PWD:/home/mgba/src mgba/windows:w32
+
+Dieser Befehl erzeugt ein Verzeichnis `build-win32` mit den erzeugten Programmdateien. Ersetze `mgba/windows:32` durch ein Docker-Image für eine andere Plattform, wodurch dann das entsprechende Verzeichnis erzeugt wird. Die folgenden Docker-Images sind im Docker Hub verfügbar:
+
+- mgba/3ds
+- mgba/switch
+- mgba/ubuntu:xenial
+- mgba/ubuntu:bionic
+- mgba/ubuntu:cosmic
+- mgba/vita
+- mgba/wii
+- mgba/windows:w32
+- mgba/windows:w64
+
+#### Unter *nix kompilieren
+
+Verwende folgende Befehle, um mGBA mithilfe von CMake auf einem Unix-basierten System zu bauen:
 
 	mkdir build
 	cd build
@@ -118,9 +139,9 @@ Um mGBA kompilieren zu können, wird CMake 2.8.11 oder neuer benötigt. GCC und 
 	make
 	sudo make install
 
-Damit wird mGBA gebaut und in `/usr/bin` und `/usr/lib` installiert. Installierte Abhängigkeiten werden automatisch erkannt. Features, die aufgrund fehlender Abhängigkeiten deaktiviert werden, werden nach dem `cmake`-Kommando aufgelistet.
+Damit wird mGBA gebaut und in `/usr/bin` und `/usr/lib` installiert. Installierte Abhängigkeiten werden automatisch erkannt. Features, die aufgrund fehlender Abhängigkeiten deaktiviert wurden, werden nach dem `cmake`-Kommando angezeigt.
 
-Wenn Du macOS verwendest, sind die einzelnen Schritte etwas anders. Angenommen, dass Du eine Homebrew-Paketverwaltung verwendest, werden folgende Schritte zum installieren der Abhängigkeiten und anschließenden bauen von mGBA empfohlen:
+Wenn Du macOS verwendest, sind die einzelnen Schritte etwas anders. Angenommen, dass Du den Homebrew-Paketmanager verwendest, werden folgende Schritte zum installieren der Abhängigkeiten und anschließenden bauen von mGBA empfohlen:
 
 	brew install cmake ffmpeg imagemagick libzip qt5 sdl2 libedit pkg-config
 	mkdir build
@@ -136,11 +157,11 @@ Um mGBA auf Windows zu kompilieren, wird MSYS2 empfohlen. Befolge die Installati
 
 Für x86 (32 Bit):
 
-	pacman -Sy base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 Für x86_64 (64 Bit):
 
-	pacman -Sy base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 Lade den aktuellen mGBA-Quellcode mithilfe des folgenden Kommandos herunter:
 
@@ -154,7 +175,23 @@ Abschließend wird mGBA über folgende Kommandos kompiliert:
 	cmake .. -G "MSYS Makefiles"
 	make
 
-Bitte beachte, dass mGBA für Windows aufgrund der Vielzahl an benötigten DLLs nicht für die weitere Verteilung geeignet ist, wenn es auf diese Weise gebaut wurde. Es ist jedoch perfekt für Entwickler geeignet. Soll mGBA dennoch weiter verteilt werden (beispielsweise zu Testzwecken auf Systemen, auf denen keine MSYS2-Umgebung installiert ist), kann mithilfe des Befehls 'cpack -G ZIP' ein ZIP-Archiv mit allen benötigten DLLs erstellt werden.
+Bitte beachte, dass mGBA für Windows aufgrund der Vielzahl an benötigten DLLs nicht für die weitere Verteilung geeignet ist, wenn es auf diese Weise gebaut wurde. Es ist jedoch perfekt für Entwickler geeignet. Soll mGBA dennoch weiter verteilt werden (beispielsweise zu Testzwecken auf Systemen, auf denen keine MSYS2-Umgebung installiert ist), kann mithilfe des Befehls `cpack -G ZIP` ein ZIP-Archiv mit allen benötigten DLLs erstellt werden.
+
+#### Kompilieren mithilfe einer Toolchain
+
+Wenn Du devkitARM (für 3DS), devkitPPC (für Wii), devkitA64 (für Switch) oder vitasdk (für PS Vita) installiert hast, kannst Du die folgenden Befehle zum Kompilieren verwenden:
+
+	mkdir build
+	cd build
+	cmake -DCMAKE_TOOLCHAIN_FILE=../src/platform/3ds/CMakeToolchain.txt ..
+	make
+	
+Ersetze den Parameter `-DCMAKE_TOOLCHAIN_FILE` dabei folgendermaßen:
+
+- 3DS: `../src/platform/3ds/CMakeToolchain.txt`
+- Switch: `../src/platform/switch/CMakeToolchain.txt`
+- Vita: `../src/platform/psp2/CMakeToolchain.vitasdk`
+- Wii: `../src/platform/wii/CMakeToolchain.txt`
 
 ### Abhängigkeiten
 
