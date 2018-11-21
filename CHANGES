@@ -152,6 +152,7 @@ Misc:
  - Python: Minor API improvements
  - Qt: Minor memory view tweaks
  - CMake: Fix libswresample version dependencies (fixes mgba.io/i/1229)
+ - Debugger: Readability improvements (fixes mgba.io/i/1238)
 
 0.7 beta 1: (2018-09-24)
 - Initial beta for 0.7

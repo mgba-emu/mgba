@@ -213,10 +213,10 @@ static void LR35902DebuggerTrace(struct mDebuggerPlatform* d, char* out, size_t*
 	disPtr += 2;
 	LR35902Disassemble(&info, disPtr, sizeof(disassembly) - (disPtr - disassembly));
 
-	*length = snprintf(out, *length, "A: %02X F: %02X B: %02X C: %02X D: %02X E: %02X H: %02X L: %02X SP: %04X PC: %04X | %s",
+	*length = snprintf(out, *length, "A: %02X F: %02X B: %02X C: %02X D: %02X E: %02X H: %02X L: %02X SP: %04X PC: %02X:%04X | %s",
 		               cpu->a, cpu->f.packed, cpu->b, cpu->c,
 		               cpu->d, cpu->e, cpu->h, cpu->l,
-		               cpu->sp, cpu->pc, disassembly);
+		               cpu->sp, cpu->memory.currentSegment(cpu, cpu->pc), cpu->pc, disassembly);
 }
 
 bool LR35902DebuggerGetRegister(struct mDebuggerPlatform* d, const char* name, int32_t* value) {

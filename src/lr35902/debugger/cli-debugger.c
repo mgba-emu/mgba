@@ -21,7 +21,7 @@ static struct CLIDebuggerCommandSummary _lr35902Commands[] = {
 };
 
 static inline void _printFlags(struct CLIDebuggerBackend* be, union FlagRegister f) {
-	be->printf(be, "[%c%c%c%c]\n",
+	be->printf(be, "F: [%c%c%c%c]\n",
 	           f.z ? 'Z' : '-',
 	           f.n ? 'N' : '-',
 	           f.h ? 'H' : '-',
@@ -82,16 +82,16 @@ static inline uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address
 static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	struct CLIDebuggerBackend* be = debugger->p->backend;
 	struct LR35902Core* cpu = debugger->p->d.core->cpu;
-	be->printf(be, "A: %02X F: %02X (AF: %04X)\n", cpu->a, cpu->f.packed, cpu->af);
-	be->printf(be, "B: %02X C: %02X (BC: %04X)\n", cpu->b, cpu->c, cpu->bc);
-	be->printf(be, "D: %02X E: %02X (DE: %04X)\n", cpu->d, cpu->e, cpu->de);
-	be->printf(be, "H: %02X L: %02X (HL: %04X)\n", cpu->h, cpu->l, cpu->hl);
-	be->printf(be, "PC: %04X SP: %04X\n", cpu->pc, cpu->sp);
+	be->printf(be, "A: %02X  F: %02X  (AF: %04X)\n", cpu->a, cpu->f.packed, cpu->af);
+	be->printf(be, "B: %02X  C: %02X  (BC: %04X)\n", cpu->b, cpu->c, cpu->bc);
+	be->printf(be, "D: %02X  E: %02X  (DE: %04X)\n", cpu->d, cpu->e, cpu->de);
+	be->printf(be, "H: %02X  L: %02X  (HL: %04X)\n", cpu->h, cpu->l, cpu->hl);
+	be->printf(be, "PC: %04X  SP: %04X\n", cpu->pc, cpu->sp);
 
 	struct LR35902Debugger* platDebugger = (struct LR35902Debugger*) debugger->p->d.platform;
 	size_t i;
 	for (i = 0; platDebugger->segments[i].name; ++i) {
-		be->printf(be, "%s%s: %02X", i ? " " : "", platDebugger->segments[i].name, cpu->memory.currentSegment(cpu, platDebugger->segments[i].start));
+		be->printf(be, "%s%s: %02X", i ? "  " : "", platDebugger->segments[i].name, cpu->memory.currentSegment(cpu, platDebugger->segments[i].start));
 	}
 	if (i) {
 		be->printf(be, "\n");
