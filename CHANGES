@@ -137,6 +137,7 @@ Bugfixes:
  - Qt: Grab focus when game starts (fixes mgba.io/i/804)
  - Core: Remember to deinit proxy ring FIFO
  - GBA Savedata: Fix EEPROM writing codepath when savetype is not EEPROM
+ - Core: Reroot timing list when (de)scheduling
 Misc:
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types
