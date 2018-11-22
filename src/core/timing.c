@@ -28,6 +28,10 @@ void mTimingSchedule(struct mTiming* timing, struct mTimingEvent* event, int32_t
 	if (nextEvent < *timing->nextEvent) {
 		*timing->nextEvent = nextEvent;
 	}
+	if (timing->reroot) {
+		timing->root = timing->reroot;
+		timing->reroot = NULL;
+	}
 	struct mTimingEvent** previous = &timing->root;
 	struct mTimingEvent* next = timing->root;
 	unsigned priority = event->priority;
@@ -44,6 +48,10 @@ void mTimingSchedule(struct mTiming* timing, struct mTimingEvent* event, int32_t
 }
 
 void mTimingDeschedule(struct mTiming* timing, struct mTimingEvent* event) {
+	if (timing->reroot) {
+		timing->root = timing->reroot;
+		timing->reroot = NULL;
+	}
 	struct mTimingEvent** previous = &timing->root;
 	struct mTimingEvent* next = timing->root;
 	while (next) {
