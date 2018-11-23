@@ -449,10 +449,12 @@ void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value) {
 
 void GBVideoWriteLYC(struct GBVideo* video, uint8_t value) {
 	GBRegisterSTAT oldStat = video->stat;
-	video->stat = GBRegisterSTATSetLYC(video->stat, value == video->ly);
-	if (!_statIRQAsserted(video, oldStat) && _statIRQAsserted(video, video->stat)) {
-		video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
-		GBUpdateIRQs(video->p);
+	if (GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC])) {
+		video->stat = GBRegisterSTATSetLYC(video->stat, value == video->ly);
+		if (!_statIRQAsserted(video, oldStat) && _statIRQAsserted(video, video->stat)) {
+			video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+			GBUpdateIRQs(video->p);
+		}
 	}
 	video->p->memory.io[REG_STAT] = video->stat;
 }
