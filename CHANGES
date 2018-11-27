@@ -139,6 +139,7 @@ Bugfixes:
  - GBA Savedata: Fix EEPROM writing codepath when savetype is not EEPROM
  - Core: Reroot timing list when (de)scheduling
  - GB Video: Changing LYC while LCDC off doesn't affect STAT (fixes mgba.io/i/1224)
+ - GBA I/O: SOUNDCNT_HI is readable when sound is off
 Misc:
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types
