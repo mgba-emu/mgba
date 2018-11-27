@@ -838,7 +838,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_SOUND4CNT_LO:
 	case REG_SOUND4CNT_HI:
 	case REG_SOUNDCNT_LO:
-	case REG_SOUNDCNT_HI:
 		if (!GBAudioEnableIsEnable(gba->memory.io[REG_SOUNDCNT_X >> 1])) {
 			// TODO: Is writing allowed when the circuit is disabled?
 			return 0;
@@ -855,6 +854,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_WINOUT:
 	case REG_BLDCNT:
 	case REG_BLDALPHA:
+	case REG_SOUNDCNT_HI:
 	case REG_SOUNDCNT_X:
 	case REG_WAVE_RAM0_LO:
 	case REG_WAVE_RAM0_HI:
