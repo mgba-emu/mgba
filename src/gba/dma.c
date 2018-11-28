@@ -278,7 +278,9 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 				mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
 				GBASavedataInitEEPROM(&memory->savedata);
 			}
-			GBASavedataWriteEEPROM(&memory->savedata, memory->dmaTransferRegister, wordsRemaining);
+			if (memory->savedata.type == SAVEDATA_EEPROM512 || memory->savedata.type == SAVEDATA_EEPROM) {
+				GBASavedataWriteEEPROM(&memory->savedata, memory->dmaTransferRegister, wordsRemaining);
+			}
 		} else {
 			cpu->memory.store16(cpu, dest, memory->dmaTransferRegister, 0);
 
