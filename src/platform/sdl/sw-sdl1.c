@@ -108,11 +108,11 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 void mSDLSWDeinit(struct mSDLRenderer* renderer) {
 	if (renderer->ratio > 1) {
 		free(renderer->outputBuffer);
+#ifdef USE_PIXMAN
+		pixman_image_unref(renderer->pix);
+		pixman_image_unref(renderer->screenpix);
+#endif
 	}
 	SDL_Surface* surface = SDL_GetVideoSurface();
 	SDL_UnlockSurface(surface);
-#ifdef USE_PIXMAN
-	pixman_image_unref(renderer->pix);
-	pixman_image_unref(renderer->screenpix);
-#endif
 }
