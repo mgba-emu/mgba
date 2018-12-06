@@ -6,6 +6,7 @@ Bugfixes:
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
+ - GB Memory: Support running from blocked memory
 
 0.7.0: (Future)
 Features:
