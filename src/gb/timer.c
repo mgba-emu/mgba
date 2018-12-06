@@ -80,7 +80,8 @@ void GBTimerDivReset(struct GBTimer* timer) {
 			mTimingSchedule(&timer->p->timing, &timer->irq, 7 - (timer->p->cpu->executionState & 3));
 		}
 	}
-	if (timer->internalDiv & 0x200) {
+	unsigned timingFactor = 0x400 >> !timer->p->doubleSpeed;
+	if (timer->internalDiv & timingFactor) {
 		GBAudioUpdateFrame(&timer->p->audio, &timer->p->timing);
 	}
 	timer->p->memory.io[REG_DIV] = 0;
