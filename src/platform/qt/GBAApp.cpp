@@ -75,9 +75,11 @@ void GBAApp::cleanup() {
 		finishJob(m_workerJobs.firstKey());
 	}
 
+#ifdef USE_SQLITE3
 	if (m_db) {
 		NoIntroDBDestroy(m_db);
 	}
+#endif
 }
 
 bool GBAApp::event(QEvent* event) {
