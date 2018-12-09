@@ -7,6 +7,7 @@ Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
  - GB Memory: Support running from blocked memory
+ - GB Audio: Skip frame if enabled when clock is high
 
 0.7.0: (Future)
 Features:
