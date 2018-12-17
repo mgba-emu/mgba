@@ -7,6 +7,18 @@
 
 #include <mgba-util/memory.h>
 
+#if defined _MSC_VER
+#undef ATOMIC_STORE
+#undef ATOMIC_LOAD
+
+#define ATOMIC_STORE(DST, SRC) InterlockedExchangePointer(&DST, SRC)
+#define ATOMIC_LOAD(DST, SRC) atomic_load(&DST, &SRC)
+static void atomic_load(const void** DST, void* volatile * SRC) {
+	void* srcVal = *SRC;
+	*DST = InterlockedCompareExchangePointer(SRC, srcVal, srcVal);
+}
+#endif
+
 void RingFIFOInit(struct RingFIFO* buffer, size_t capacity) {
 	buffer->data = anonymousMemoryMap(capacity);
 	buffer->capacity = capacity;

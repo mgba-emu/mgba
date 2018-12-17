@@ -81,6 +81,14 @@ typedef intptr_t ssize_t;
 #define ATOMIC_OR(DST, OP) __atomic_or_fetch(&DST, OP, __ATOMIC_RELEASE)
 #define ATOMIC_AND(DST, OP) __atomic_and_fetch(&DST, OP, __ATOMIC_RELEASE)
 #define ATOMIC_CMPXCHG(DST, EXPECTED, SRC) __atomic_compare_exchange_n(&DST, &EXPECTED, SRC, true,__ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)
+#elif defined _MSC_VER
+#define ATOMIC_STORE(DST, SRC) InterlockedExchange(&DST, SRC)
+#define ATOMIC_LOAD(DST, SRC) DST = InterlockedOrAcquire(&SRC, 0)
+#define ATOMIC_ADD(DST, OP) InterlockedAddRelease(&DST, OP)
+#define ATOMIC_SUB(DST, OP) InterlockedAddRelease(&DST, -OP)
+#define ATOMIC_OR(DST, OP) InterlockedOrRelease(&DST, OP)
+#define ATOMIC_AND(DST, OP) InterlockedAndRelease(&DST, OP)
+#define ATOMIC_CMPXCHG(DST, EXPECTED, SRC) (InterlockedCompareExchange(&DST, SRC, EXPECTED) == EXPECTED)
 #else
 // TODO
 #define ATOMIC_STORE(DST, SRC) DST = SRC
