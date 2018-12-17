@@ -25,8 +25,8 @@ size_t RingFIFOCapacity(const struct RingFIFO* buffer) {
 size_t RingFIFOSize(const struct RingFIFO* buffer) {
 	const void* read;
 	const void* write;
-	ATOMIC_LOAD(read, buffer->readPtr);
-	ATOMIC_LOAD(write, buffer->writePtr);
+	ATOMIC_LOAD_PTR(read, buffer->readPtr);
+	ATOMIC_LOAD_PTR(write, buffer->writePtr);
 	if (read <= write) {
 		return (uintptr_t) write - (uintptr_t) read;
 	} else {
@@ -35,14 +35,14 @@ size_t RingFIFOSize(const struct RingFIFO* buffer) {
 }
 
 void RingFIFOClear(struct RingFIFO* buffer) {
-	ATOMIC_STORE(buffer->readPtr, buffer->data);
-	ATOMIC_STORE(buffer->writePtr, buffer->data);
+	ATOMIC_STORE_PTR(buffer->readPtr, buffer->data);
+	ATOMIC_STORE_PTR(buffer->writePtr, buffer->data);
 }
 
 size_t RingFIFOWrite(struct RingFIFO* buffer, const void* value, size_t length) {
 	void* data = buffer->writePtr;
 	void* end;
-	ATOMIC_LOAD(end, buffer->readPtr);
+	ATOMIC_LOAD_PTR(end, buffer->readPtr);
 
 	// Wrap around if we can't fit enough in here
 	if ((uintptr_t) data - (uintptr_t) buffer->data + length >= buffer->capacity) {
@@ -67,14 +67,14 @@ size_t RingFIFOWrite(struct RingFIFO* buffer, const void* value, size_t length) 
 	if (value) {
 		memcpy(data, value, length);
 	}
-	ATOMIC_STORE(buffer->writePtr, (void*) ((intptr_t) data + length));
+	ATOMIC_STORE_PTR(buffer->writePtr, (void*) ((intptr_t) data + length));
 	return length;
 }
 
 size_t RingFIFORead(struct RingFIFO* buffer, void* output, size_t length) {
 	void* data = buffer->readPtr;
 	void* end;
-	ATOMIC_LOAD(end, buffer->writePtr);
+	ATOMIC_LOAD_PTR(end, buffer->writePtr);
 
 	// Wrap around if we can't fit enough in here
 	if ((uintptr_t) data - (uintptr_t) buffer->data + length >= buffer->capacity) {
@@ -99,6 +99,6 @@ size_t RingFIFORead(struct RingFIFO* buffer, void* output, size_t length) {
 	if (output) {
 		memcpy(output, data, length);
 	}
-	ATOMIC_STORE(buffer->readPtr, (void*) ((uintptr_t) data + length));
+	ATOMIC_STORE_PTR(buffer->readPtr, (void*) ((uintptr_t) data + length));
 	return length;
 }
