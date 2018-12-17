@@ -236,6 +236,8 @@ static uint8_t GBSIOLockstepNodeWriteSC(struct GBSIODriver* driver, uint8_t valu
 			mTimingDeschedule(&driver->p->p->timing, &driver->p->event);
 			mTimingDeschedule(&driver->p->p->timing, &node->event);
 			mTimingSchedule(&driver->p->p->timing, &node->event, 0);
+		} else {
+			mLOG(GB_SIO, FATAL, "GBSIOLockstepNodeWriteSC() failed to write to masterClaimed\n");
 		}
 	}
 	return value;
