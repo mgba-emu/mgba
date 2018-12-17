@@ -11,6 +11,18 @@ void mLockstepInit(struct mLockstep* lockstep) {
 #ifndef NDEBUG
 	lockstep->transferId = 0;
 #endif
+
+#if MGBA_LOCK_STEP_USE_MUTEX
+	MutexInit(&lockstep->mutex);
+	ConditionInit(&lockstep->cond);
+#endif
+}
+
+void mLockstepDeinit(struct mLockstep* lockstep) {
+#if MGBA_LOCK_STEP_USE_MUTEX
+	MutexDeinit(&lockstep->mutex);
+	ConditionDeinit(&lockstep->cond);
+#endif
 }
 
 // TODO: Migrate nodes

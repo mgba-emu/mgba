@@ -16,6 +16,53 @@
 
 using namespace QGBA;
 
+#if MGBA_LOCK_STEP_USE_MUTEX && 0
+#define ACQUIRE_CONTROLLER(controller)
+#define RELEASE_CONTROLLER(controller)
+#define CORE_THREAD_WAIT(player, lockstep) ConditionWait(&player->condWrapper->cond, &lockstep->mutex)
+#define CORE_THREAD_STOP_WAITING(player, lockstep) { \
+	ConditionWake(&player->condWrapper->cond); \
+}
+
+#else // MGBA_LOCK_STEP_USE_MUTEX
+#define ACQUIRE_CONTROLLER(controller) controller->m_lock.lock()
+#define RELEASE_CONTROLLER(controller) controller->m_lock.unlock()
+#define CORE_THREAD_WAIT(player, lockstep) mCoreThreadWaitFromThread(player->controller->thread());
+#define CORE_THREAD_STOP_WAITING(player, lockstep) mCoreThreadStopWaiting(player->controller->thread());
+#endif // MGBA_LOCK_STEP_USE_MUTEX
+
+#if MGBA_LOCK_STEP_USE_MUTEX
+MultiplayerController::Player::CondtionWrapper::CondtionWrapper(){
+	ConditionInit(&this->cond);
+}
+MultiplayerController::Player::CondtionWrapper::~CondtionWrapper() {
+	ConditionDeinit(&this->cond);
+}
+#endif // MGBA_LOCK_STEP_USE_MUTEX
+
+MultiplayerController::Player::Player(
+	CoreController* _controller,
+	GBSIOLockstepNode* _gbNode,
+	GBASIOLockstepNode* _gbaNode,
+	int _awake,
+	int32_t _cyclesPosted,
+	unsigned _waitMask
+)
+	: controller(_controller),
+	gbNode(_gbNode),
+	gbaNode(_gbaNode),
+	awake(_awake),
+	cyclesPosted(_cyclesPosted),
+	waitMask(_waitMask)
+{
+#if MGBA_LOCK_STEP_USE_MUTEX
+	this->condWrapper.reset(new CondtionWrapper());
+#endif
+}
+
+MultiplayerController::Player::~Player() {
+}
+
 MultiplayerController::MultiplayerController() {
 	mLockstepInit(&m_lockstep);
 	m_lockstep.context = this;
@@ -23,28 +70,28 @@ MultiplayerController::MultiplayerController() {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
 		Player* player = &controller->m_players[0];
 		bool woke = false;
-		controller->m_lock.lock();
+		ACQUIRE_CONTROLLER(controller);
 		player->waitMask &= ~mask;
 		if (!player->waitMask && player->awake < 1) {
-			mCoreThreadStopWaiting(player->controller->thread());
+			CORE_THREAD_STOP_WAITING(player, lockstep);
 			player->awake = 1;
 			woke = true;
 		}
-		controller->m_lock.unlock();
+		RELEASE_CONTROLLER(controller);
 		return woke;
 	};
 	m_lockstep.wait = [](mLockstep* lockstep, unsigned mask) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		controller->m_lock.lock();
+		ACQUIRE_CONTROLLER(controller);
 		Player* player = &controller->m_players[0];
 		bool slept = false;
 		player->waitMask |= mask;
 		if (player->awake > 0) {
-			mCoreThreadWaitFromThread(player->controller->thread());
+			CORE_THREAD_WAIT(player, lockstep);
 			player->awake = 0;
 			slept = true;
 		}
-		controller->m_lock.unlock();
+		RELEASE_CONTROLLER(controller);
 		return slept;
 	};
 	m_lockstep.addCycles = [](mLockstep* lockstep, int id, int32_t cycles) {
@@ -52,7 +99,7 @@ MultiplayerController::MultiplayerController() {
 			abort();
 		}
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		controller->m_lock.lock();
+		ACQUIRE_CONTROLLER(controller);
 		if (!id) {
 			for (int i = 1; i < controller->m_players.count(); ++i) {
 				Player* player = &controller->m_players[i];
@@ -77,7 +124,7 @@ MultiplayerController::MultiplayerController() {
 					default:
 						break;
 					}
-					mCoreThreadStopWaiting(player->controller->thread());
+					CORE_THREAD_STOP_WAITING(player, lockstep);
 					player->awake = 1;
 				}
 			}
@@ -85,30 +132,30 @@ MultiplayerController::MultiplayerController() {
 			controller->m_players[id].controller->setSync(true);
 			controller->m_players[id].cyclesPosted += cycles;
 		}
-		controller->m_lock.unlock();
+		RELEASE_CONTROLLER(controller);
 	};
 	m_lockstep.useCycles = [](mLockstep* lockstep, int id, int32_t cycles) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		controller->m_lock.lock();
+		ACQUIRE_CONTROLLER(controller);
 		Player* player = &controller->m_players[id];
 		player->cyclesPosted -= cycles;
 		if (player->cyclesPosted <= 0) {
-			mCoreThreadWaitFromThread(player->controller->thread());
+			CORE_THREAD_WAIT(player, lockstep);
 			player->awake = 0;
 		}
 		cycles = player->cyclesPosted;
-		controller->m_lock.unlock();
+		RELEASE_CONTROLLER(controller);
 		return cycles;
 	};
 	m_lockstep.unload = [](mLockstep* lockstep, int id) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		controller->m_lock.lock();
+		ACQUIRE_CONTROLLER(controller);
 		Player* player = &controller->m_players[id];
 		if (id) {
 			player->controller->setSync(true);
 			player->waitMask &= ~(1 << id);
 			if (!player->waitMask && player->awake < 1) {
-				mCoreThreadStopWaiting(player->controller->thread());
+				CORE_THREAD_STOP_WAITING(player, lockstep);
 				player->awake = 1;
 			}
 		} else {
@@ -144,13 +191,17 @@ MultiplayerController::MultiplayerController() {
 					default:
 						break;
 					}
-					mCoreThreadStopWaiting(player->controller->thread());
+					CORE_THREAD_STOP_WAITING(player, lockstep);
 					player->awake = 1;
 				}
 			}
 		}
-		controller->m_lock.unlock();
+		RELEASE_CONTROLLER(controller);
 	};
+}
+
+MultiplayerController::~MultiplayerController() {
+	mLockstepDeinit(&m_lockstep);
 }
 
 bool MultiplayerController::attachGame(CoreController* controller) {

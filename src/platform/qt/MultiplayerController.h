@@ -17,6 +17,8 @@
 #include <mgba/internal/gb/sio/lockstep.h>
 #endif
 
+#include <memory>
+
 struct GBSIOLockstepNode;
 struct GBASIOLockstepNode;
 
@@ -29,6 +31,7 @@ Q_OBJECT
 
 public:
 	MultiplayerController();
+	~MultiplayerController();
 
 	bool attachGame(CoreController*);
 	void detachGame(CoreController*);
@@ -42,12 +45,33 @@ signals:
 
 private:
 	struct Player {
+		Player(
+			CoreController* _controller,
+			GBSIOLockstepNode* _gbNode,
+			GBASIOLockstepNode* _gbaNode,
+			int _awake,
+			int32_t _cyclesPosted,
+			unsigned _waitMask
+		);
+
+		~Player();
+
 		CoreController* controller;
 		GBSIOLockstepNode* gbNode;
 		GBASIOLockstepNode* gbaNode;
 		int awake;
 		int32_t cyclesPosted;
 		unsigned waitMask;
+
+#if MGBA_LOCK_STEP_USE_MUTEX
+		struct CondtionWrapper {
+			CondtionWrapper();
+			~CondtionWrapper();
+
+			Condition cond;
+		};
+		std::shared_ptr<CondtionWrapper> condWrapper;
+#endif
 	};
 	union {
 		mLockstep m_lockstep;

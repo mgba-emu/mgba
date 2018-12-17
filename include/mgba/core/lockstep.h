@@ -7,6 +7,9 @@
 #define SIO_LOCKSTEP_H
 
 #include <mgba-util/common.h>
+#include <mgba-util/threading.h>
+
+#define MGBA_LOCK_STEP_USE_MUTEX 1
 
 CXX_GUARD_START
 
@@ -19,8 +22,13 @@ enum mLockstepPhase {
 };
 
 struct mLockstep {
+#if MGBA_LOCK_STEP_USE_MUTEX
+	Mutex mutex;
+	Condition cond;
+#endif
+
 	int attached;
-	enum mLockstepPhase transferActive;
+	int32_t transferActive; // must be one of the values in mLockstepPhase
 	int32_t transferCycles;
 
 	bool (*signal)(struct mLockstep*, unsigned mask);
@@ -35,6 +43,7 @@ struct mLockstep {
 };
 
 void mLockstepInit(struct mLockstep*);
+void mLockstepDeinit(struct mLockstep*);
 
 CXX_GUARD_END
 
