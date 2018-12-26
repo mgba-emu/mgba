@@ -143,6 +143,7 @@ Bugfixes:
  - GB Video: Changing LYC while LCDC off doesn't affect STAT (fixes mgba.io/i/1224)
  - GBA I/O: SOUNDCNT_HI is readable when sound is off
  - SDL: Fix handling of invalid gamepads (fixes mgba.io/i/1239)
+ - Libretro: Fix adding codes with hooks
 Misc:
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types

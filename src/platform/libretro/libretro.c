@@ -657,6 +657,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code) {
 		}
 	}
 #endif
+	cheatSet->refresh(cheatSet, device);
 }
 
 unsigned retro_get_region(void) {
