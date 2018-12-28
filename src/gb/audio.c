@@ -470,7 +470,15 @@ void GBAudioWriteNR52(struct GBAudio* audio, uint8_t value) {
 		}
 		*audio->nr52 &= ~0x000F;
 	} else if (!wasEnable) {
+		audio->skipFrame = false;
 		audio->frame = 7;
+
+		if (audio->p) {
+			unsigned timingFactor = 0x400 >> !audio->p->doubleSpeed;
+			if (audio->p->timer.internalDiv & timingFactor) {
+				audio->skipFrame = true;
+			}
+		}
 	}
 }
 
@@ -483,6 +491,13 @@ void _updateFrame(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 }
 
 void GBAudioUpdateFrame(struct GBAudio* audio, struct mTiming* timing) {
+	if (!audio->enable) {
+		return;
+	}
+	if (audio->skipFrame) {
+		audio->skipFrame = false;
+		return;
+	}
 	int frame = (audio->frame + 1) & 7;
 	audio->frame = frame;
 
@@ -929,6 +944,7 @@ void GBAudioPSGSerialize(const struct GBAudio* audio, struct GBSerializedPSGStat
 	uint32_t ch4Flags = 0;
 
 	flags = GBSerializedAudioFlagsSetFrame(flags, audio->frame);
+	flags = GBSerializedAudioFlagsSetSkipFrame(flags, audio->skipFrame);
 	STORE_32LE(audio->frameEvent.when - mTimingCurrentTime(audio->timing), 0, &state->ch1.nextFrame);
 
 	flags = GBSerializedAudioFlagsSetCh1Volume(flags, audio->ch1.envelope.currentVolume);
@@ -987,6 +1003,7 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 
 	LOAD_32LE(flags, 0, flagsIn);
 	audio->frame = GBSerializedAudioFlagsGetFrame(flags);
+	audio->skipFrame = GBSerializedAudioFlagsGetSkipFrame(flags);
 
 	LOAD_32LE(ch1Flags, 0, &state->ch1.envelope);
 	audio->ch1.envelope.currentVolume = GBSerializedAudioFlagsGetCh1Volume(flags);

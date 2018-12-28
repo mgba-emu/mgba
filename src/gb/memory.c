@@ -45,6 +45,8 @@ static const enum GBBus _oamBlockCGB[] = {
 	GB_BUS_CPU // 0xE000
 };
 
+static const uint8_t _blockedRegion[1] = { 0xFF };
+
 static void _pristineCow(struct GB* gba);
 
 static uint8_t GBFastLoad8(struct LR35902Core* cpu, uint16_t address) {
@@ -91,6 +93,15 @@ static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 	default:
 		cpu->memory.cpuLoad8 = GBLoad8;
 		break;
+	}
+	if (gb->memory.dmaRemaining) {
+		const enum GBBus* block = gb->model < GB_MODEL_CGB ? _oamBlockDMG : _oamBlockCGB;
+		enum GBBus dmaBus = block[memory->dmaSource >> 13];
+		enum GBBus accessBus = block[address >> 13];
+		if ((dmaBus != GB_BUS_CPU && dmaBus == accessBus) || (address >= GB_BASE_OAM && address < GB_BASE_UNUSABLE)) {
+			cpu->memory.activeRegion = _blockedRegion;
+			cpu->memory.activeMask = 0;
+		}
 	}
 }
 
