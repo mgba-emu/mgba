@@ -226,6 +226,7 @@ void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) 
 		break;
 	case SAVEDATA_EEPROM:
 	case SAVEDATA_EEPROM512:
+		savedata->type = type;
 		GBASavedataInitEEPROM(savedata);
 		break;
 	case SAVEDATA_SRAM:
