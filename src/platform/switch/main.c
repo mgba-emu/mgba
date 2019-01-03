@@ -120,7 +120,7 @@ static bool initEgl() {
         goto _fail1;
     }
 
-    s_surface = eglCreateWindowSurface(s_display, config, "", NULL);
+    s_surface = eglCreateWindowSurface(s_display, config, nwindowGetDefault(), NULL);
     if (!s_surface) {
         goto _fail1;
     }
@@ -403,6 +403,7 @@ static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 		}
 	}
 	frameLimiter = limit;
+	eglSwapInterval(s_surface, limit);
 }
 
 static bool _running(struct mGUIRunner* runner) {
@@ -663,11 +664,12 @@ int main(int argc, char* argv[]) {
 				.submenu = 0,
 				.state = 7,
 				.validStates = (const char*[]) {
-					"3", "4", "5", "6", "7", "8", "9",
+					"2", "3", "4", "5", "6", "7", "8", "9",
 					"10", "11", "12", "13", "14", "15",
 					"20", "30"
 				},
 				.stateMappings = (const struct GUIVariant[]) {
+					GUI_V_U(2),
 					GUI_V_U(3),
 					GUI_V_U(4),
 					GUI_V_U(5),
@@ -684,7 +686,7 @@ int main(int argc, char* argv[]) {
 					GUI_V_U(20),
 					GUI_V_U(30),
 				},
-				.nStates = 15
+				.nStates = 16
 			},
 		},
 		.nConfigExtra = 2,
