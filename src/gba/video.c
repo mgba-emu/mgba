@@ -215,9 +215,11 @@ static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer) {
 }
 
 static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 3
 	if (renderer->cache) {
 		GBAVideoCacheWriteVideoRegister(renderer->cache, address, value);
 	}
+#endif
 	switch (address) {
 	case REG_DISPCNT:
 		value &= 0xFFF7;
@@ -257,15 +259,19 @@ static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer*
 }
 
 static void GBAVideoDummyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 3
 	if (renderer->cache) {
 		mCacheSetWriteVRAM(renderer->cache, address);
 	}
+#endif
 }
 
 static void GBAVideoDummyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 3
 	if (renderer->cache) {
 		mCacheSetWritePalette(renderer->cache, address >> 1, mColorFrom555(value));
 	}
+#endif
 }
 
 static void GBAVideoDummyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
