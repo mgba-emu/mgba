@@ -7,7 +7,6 @@ Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
  - GB Memory: Support running from blocked memory
- - GB Audio: Skip frame if enabled when clock is high
 
 0.7.0: (Future)
 Features:
@@ -160,6 +159,8 @@ Misc:
  - Qt: Minor memory view tweaks
  - CMake: Fix libswresample version dependencies (fixes mgba.io/i/1229)
  - Debugger: Readability improvements (fixes mgba.io/i/1238)
+ - GB Audio: Skip frame if enabled when clock is high
+ - Res: Improve modeling of AGB/AGS screen in shaders
 
 0.7 beta 1: (2018-09-24)
 - Initial beta for 0.7
