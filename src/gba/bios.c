@@ -820,7 +820,6 @@ static void _unBitPack(struct GBA* gba) {
 		in >>= sourceWidth;
 		if (scaled || bias & 0x80000000) {
 			scaled += bias & 0x7FFFFFFF;
-			scaled &= (1 << destWidth) - 1;
 		}
 		bitsRemaining -= sourceWidth;
 		out |= scaled << bitsEaten;
@@ -832,4 +831,6 @@ static void _unBitPack(struct GBA* gba) {
 			dest += 4;
 		}
 	}
+	cpu->gprs[0] = source;
+	cpu->gprs[1] = dest;
 }
