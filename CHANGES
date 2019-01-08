@@ -74,6 +74,7 @@ Bugfixes:
  - GB Audio: Fix channel 1, 2 and 4 reset timing
  - Util: Fix wrapping edge cases in RingFIFO
  - GBA Hardware: Fix RTC handshake transition (fixes mgba.io/i/1134)
+ - GBA BIOS: Fix BitUnPack narrowing
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
