@@ -539,9 +539,9 @@ void GBAHardwarePlayerUpdate(struct GBA* gba) {
 uint16_t _gbpRead(struct mKeyCallback* callback) {
 	struct GBAGBPKeyCallback* gbpCallback = (struct GBAGBPKeyCallback*) callback;
 	if (gbpCallback->p->gbpInputsPosted == 2) {
-		return 0x30F;
+		return 0xF0;
 	}
-	return 0x3FF;
+	return 0;
 }
 
 uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {

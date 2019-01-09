@@ -144,6 +144,7 @@ Bugfixes:
  - GBA I/O: SOUNDCNT_HI is readable when sound is off
  - SDL: Fix handling of invalid gamepads (fixes mgba.io/i/1239)
  - Libretro: Fix adding codes with hooks
+ - GBA: Fix GB Player features
 Misc:
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types
