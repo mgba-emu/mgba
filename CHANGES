@@ -145,6 +145,7 @@ Bugfixes:
  - SDL: Fix handling of invalid gamepads (fixes mgba.io/i/1239)
  - Libretro: Fix adding codes with hooks
  - GBA: Fix GB Player features
+ - Qt: Ensure FATAL logs reach log view
 Misc:
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types
