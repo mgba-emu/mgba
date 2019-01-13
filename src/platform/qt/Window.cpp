@@ -802,7 +802,6 @@ void Window::gameCrashed(const QString& errorMessage) {
 	                                     QMessageBox::Ok, this, Qt::Sheet);
 	crash->setAttribute(Qt::WA_DeleteOnClose);
 	crash->show();
-	m_controller->stop();
 }
 
 void Window::gameFailed() {
