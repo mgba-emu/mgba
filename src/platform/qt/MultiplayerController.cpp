@@ -16,17 +16,15 @@
 
 using namespace QGBA;
 
-#if MGBA_LOCK_STEP_USE_MUTEX && 0
-#define ACQUIRE_CONTROLLER(controller)
-#define RELEASE_CONTROLLER(controller)
-#define CORE_THREAD_WAIT(player, lockstep) ConditionWait(&player->condWrapper->cond, &lockstep->mutex)
-#define CORE_THREAD_STOP_WAITING(player, lockstep) { \
-	ConditionWake(&player->condWrapper->cond); \
-}
+#if MGBA_LOCK_STEP_USE_MUTEX
+#define ACQUIRE_CONTROLLER(controller, lockstep) MutexLock(&lockstep->mutex);
+#define RELEASE_CONTROLLER(controller, lockstep) MutexUnlock(&lockstep->mutex);
+#define CORE_THREAD_WAIT(player, lockstep) mCoreThreadWaitFromThread(player->controller->thread());
+#define CORE_THREAD_STOP_WAITING(player, lockstep) mCoreThreadStopWaiting(player->controller->thread());
 
 #else // MGBA_LOCK_STEP_USE_MUTEX
-#define ACQUIRE_CONTROLLER(controller) controller->m_lock.lock()
-#define RELEASE_CONTROLLER(controller) controller->m_lock.unlock()
+#define ACQUIRE_CONTROLLER(controller, lockstep) controller->m_lock.lock()
+#define RELEASE_CONTROLLER(controller, lockstep) controller->m_lock.unlock()
 #define CORE_THREAD_WAIT(player, lockstep) mCoreThreadWaitFromThread(player->controller->thread());
 #define CORE_THREAD_STOP_WAITING(player, lockstep) mCoreThreadStopWaiting(player->controller->thread());
 #endif // MGBA_LOCK_STEP_USE_MUTEX
@@ -70,19 +68,19 @@ MultiplayerController::MultiplayerController() {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
 		Player* player = &controller->m_players[0];
 		bool woke = false;
-		ACQUIRE_CONTROLLER(controller);
+		ACQUIRE_CONTROLLER(controller, lockstep);
 		player->waitMask &= ~mask;
 		if (!player->waitMask && player->awake < 1) {
 			CORE_THREAD_STOP_WAITING(player, lockstep);
 			player->awake = 1;
 			woke = true;
 		}
-		RELEASE_CONTROLLER(controller);
+		RELEASE_CONTROLLER(controller, lockstep);
 		return woke;
 	};
 	m_lockstep.wait = [](mLockstep* lockstep, unsigned mask) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		ACQUIRE_CONTROLLER(controller);
+		ACQUIRE_CONTROLLER(controller, lockstep);
 		Player* player = &controller->m_players[0];
 		bool slept = false;
 		player->waitMask |= mask;
@@ -91,7 +89,7 @@ MultiplayerController::MultiplayerController() {
 			player->awake = 0;
 			slept = true;
 		}
-		RELEASE_CONTROLLER(controller);
+		RELEASE_CONTROLLER(controller, lockstep);
 		return slept;
 	};
 	m_lockstep.addCycles = [](mLockstep* lockstep, int id, int32_t cycles) {
@@ -99,7 +97,7 @@ MultiplayerController::MultiplayerController() {
 			abort();
 		}
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		ACQUIRE_CONTROLLER(controller);
+		ACQUIRE_CONTROLLER(controller, lockstep);
 		if (!id) {
 			for (int i = 1; i < controller->m_players.count(); ++i) {
 				Player* player = &controller->m_players[i];
@@ -132,11 +130,11 @@ MultiplayerController::MultiplayerController() {
 			controller->m_players[id].controller->setSync(true);
 			controller->m_players[id].cyclesPosted += cycles;
 		}
-		RELEASE_CONTROLLER(controller);
+		RELEASE_CONTROLLER(controller, lockstep);
 	};
 	m_lockstep.useCycles = [](mLockstep* lockstep, int id, int32_t cycles) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		ACQUIRE_CONTROLLER(controller);
+		ACQUIRE_CONTROLLER(controller, lockstep);
 		Player* player = &controller->m_players[id];
 		player->cyclesPosted -= cycles;
 		if (player->cyclesPosted <= 0) {
@@ -144,12 +142,12 @@ MultiplayerController::MultiplayerController() {
 			player->awake = 0;
 		}
 		cycles = player->cyclesPosted;
-		RELEASE_CONTROLLER(controller);
+		RELEASE_CONTROLLER(controller, lockstep);
 		return cycles;
 	};
 	m_lockstep.unload = [](mLockstep* lockstep, int id) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		ACQUIRE_CONTROLLER(controller);
+		ACQUIRE_CONTROLLER(controller, lockstep);
 		Player* player = &controller->m_players[id];
 		if (id) {
 			player->controller->setSync(true);
@@ -196,7 +194,7 @@ MultiplayerController::MultiplayerController() {
 				}
 			}
 		}
-		RELEASE_CONTROLLER(controller);
+		RELEASE_CONTROLLER(controller, lockstep);
 	};
 }
 
