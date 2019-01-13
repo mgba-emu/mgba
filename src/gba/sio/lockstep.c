@@ -8,7 +8,7 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
 
-#define LOCKSTEP_INCREMENT 3000
+#define LOCKSTEP_INCREMENT 128
 
 #if MGBA_LOCK_STEP_USE_MUTEX
 #	define LOCK_LOCK_STEP(node) MutexLock(&node.mutex)
@@ -280,18 +280,18 @@ static int32_t _masterUpdate(struct GBASIOLockstepNode* node) {
 		node->p->multiRecv[3] = 0xFFFF;
 		needsToWait = true;
 		SAFE_STORE(node->p->d.transferActive, TRANSFER_STARTED);
-		node->nextEvent += 512;
+		node->nextEvent += LOCKSTEP_INCREMENT;
 		break;
 	case TRANSFER_STARTED:
 		// All the other GBAs have caught up and are sleeping, we can all continue now
 		node->p->multiRecv[0] = node->d.p->p->memory.io[REG_SIOMLT_SEND >> 1];
-		node->nextEvent += 512;
+		node->nextEvent += LOCKSTEP_INCREMENT;
 		SAFE_STORE(node->p->d.transferActive, TRANSFER_FINISHING);
 		break;
 	case TRANSFER_FINISHING:
 		// Finish the transfer
 		// We need to make sure the other GBAs catch up so they don't get behind
-		node->nextEvent += node->p->d.transferCycles - 1024; // Split the cycles to avoid waiting too long
+		node->nextEvent += node->p->d.transferCycles - 2 * LOCKSTEP_INCREMENT; // Split the cycles to avoid waiting too long
 #ifndef NDEBUG
 		SAFE_ADD(node->p->d.transferId, 1);
 #endif
@@ -356,6 +356,8 @@ static uint32_t _slaveUpdate(struct GBASIOLockstepNode* node) {
 	case TRANSFER_FINISHING:
 		break;
 	case TRANSFER_STARTED:
+		if (node->p->d.unusedCycles(&node->p->d, node->id) > node->eventDiff)
+			break;
 		node->transferFinished = false;
 		switch (node->mode) {
 		case SIO_MULTI:
@@ -383,6 +385,8 @@ static uint32_t _slaveUpdate(struct GBASIOLockstepNode* node) {
 		signal = true;
 		break;
 	case TRANSFER_FINISHED:
+		if (node->p->d.unusedCycles(&node->p->d, node->id) > node->eventDiff)
+			break;
 		_finishTransfer(node);
 		signal = true;
 		break;

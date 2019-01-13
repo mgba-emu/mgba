@@ -35,6 +35,7 @@ struct mLockstep {
 	bool (*wait)(struct mLockstep*, unsigned mask);
 	void (*addCycles)(struct mLockstep*, int id, int32_t cycles);
 	int32_t (*useCycles)(struct mLockstep*, int id, int32_t cycles);
+	int32_t (*unusedCycles)(struct mLockstep*, int id);
 	void (*unload)(struct mLockstep*, int id);
 	void* context;
 #ifndef NDEBUG

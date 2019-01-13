@@ -145,6 +145,14 @@ MultiplayerController::MultiplayerController() {
 		RELEASE_CONTROLLER(controller, lockstep);
 		return cycles;
 	};
+	m_lockstep.unusedCycles= [](mLockstep* lockstep, int id) {
+		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
+		ACQUIRE_CONTROLLER(controller, lockstep);
+		Player* player = &controller->m_players[id];
+		auto cycles = player->cyclesPosted;
+		RELEASE_CONTROLLER(controller, lockstep);
+		return cycles;
+	};
 	m_lockstep.unload = [](mLockstep* lockstep, int id) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
 		ACQUIRE_CONTROLLER(controller, lockstep);
