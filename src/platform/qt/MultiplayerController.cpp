@@ -29,15 +29,6 @@ using namespace QGBA;
 #define CORE_THREAD_STOP_WAITING(player, lockstep) mCoreThreadStopWaiting(player->controller->thread());
 #endif // MGBA_LOCK_STEP_USE_MUTEX
 
-#if MGBA_LOCK_STEP_USE_MUTEX
-MultiplayerController::Player::CondtionWrapper::CondtionWrapper(){
-	ConditionInit(&this->cond);
-}
-MultiplayerController::Player::CondtionWrapper::~CondtionWrapper() {
-	ConditionDeinit(&this->cond);
-}
-#endif // MGBA_LOCK_STEP_USE_MUTEX
-
 MultiplayerController::Player::Player(
 	CoreController* _controller,
 	GBSIOLockstepNode* _gbNode,
@@ -53,9 +44,6 @@ MultiplayerController::Player::Player(
 	cyclesPosted(_cyclesPosted),
 	waitMask(_waitMask)
 {
-#if MGBA_LOCK_STEP_USE_MUTEX
-	this->condWrapper.reset(new CondtionWrapper());
-#endif
 }
 
 MultiplayerController::Player::~Player() {

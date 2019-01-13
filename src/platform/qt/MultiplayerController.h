@@ -62,16 +62,6 @@ private:
 		int awake;
 		int32_t cyclesPosted;
 		unsigned waitMask;
-
-#if MGBA_LOCK_STEP_USE_MUTEX
-		struct CondtionWrapper {
-			CondtionWrapper();
-			~CondtionWrapper();
-
-			Condition cond;
-		};
-		std::shared_ptr<CondtionWrapper> condWrapper;
-#endif
 	};
 	union {
 		mLockstep m_lockstep;
