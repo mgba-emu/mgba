@@ -17,7 +17,14 @@ static uint8_t GBSIOLockstepNodeWriteSC(struct GBSIODriver* driver, uint8_t valu
 static void _GBSIOLockstepNodeProcessEvents(struct mTiming* timing, void* driver, uint32_t cyclesLate);
 
 void GBSIOLockstepInit(struct GBSIOLockstep* lockstep) {
-	mLockstepInit(&lockstep->d);
+	GBSIOLockstepInit2(lockstep, true);
+}
+
+void GBSIOLockstepInit2(struct GBSIOLockstep* lockstep, bool initBase) {
+	if (initBase) {
+		mLockstepInit(&lockstep->d);
+	}
+
 	lockstep->players[0] = NULL;
 	lockstep->players[1] = NULL;
 	lockstep->pendingSB[0] = 0xFF;

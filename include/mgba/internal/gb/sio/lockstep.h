@@ -38,6 +38,7 @@ struct GBSIOLockstepNode {
 };
 
 void GBSIOLockstepInit(struct GBSIOLockstep*);
+void GBSIOLockstepInit2(struct GBSIOLockstep*, bool initBase);
 
 void GBSIOLockstepNodeCreate(struct GBSIOLockstepNode*);
 

@@ -22,6 +22,9 @@ static inline int MutexInit(Mutex* mutex) {
 	return GetLastError();
 }
 
+// windows critical section is recursive by default
+#define MutexInitRecursive MutexInit
+
 static inline int MutexDeinit(Mutex* mutex) {
 	DeleteCriticalSection(mutex);
 	return GetLastError();

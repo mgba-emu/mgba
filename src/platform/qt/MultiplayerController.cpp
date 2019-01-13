@@ -213,12 +213,12 @@ bool MultiplayerController::attachGame(CoreController* controller) {
 		switch (controller->platform()) {
 #ifdef M_CORE_GBA
 		case PLATFORM_GBA:
-			GBASIOLockstepInit(&m_gbaLockstep);
+			GBASIOLockstepInit2(&m_gbaLockstep, false);
 			break;
 #endif
 #ifdef M_CORE_GB
 		case PLATFORM_GB:
-			GBSIOLockstepInit(&m_gbLockstep);
+			GBSIOLockstepInit2(&m_gbLockstep, false);
 			break;
 #endif
 		default:

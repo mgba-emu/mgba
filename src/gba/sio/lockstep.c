@@ -35,7 +35,14 @@ static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* drive
 static void _GBASIOLockstepNodeProcessEvents(struct mTiming* timing, void* driver, uint32_t cyclesLate);
 
 void GBASIOLockstepInit(struct GBASIOLockstep* lockstep) {
-	mLockstepInit(&lockstep->d);
+	GBASIOLockstepInit2(lockstep, true);
+}
+
+void GBASIOLockstepInit2(struct GBASIOLockstep* lockstep, bool initBase) {
+	if (initBase) {
+		mLockstepInit(&lockstep->d);
+	}
+
 	lockstep->players[0] = 0;
 	lockstep->players[1] = 0;
 	lockstep->players[2] = 0;
