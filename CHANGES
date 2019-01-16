@@ -147,6 +147,7 @@ Bugfixes:
  - Libretro: Fix adding codes with hooks
  - GBA: Fix GB Player features
  - Qt: Ensure FATAL logs reach log view
+ - GB MBC: Fix MBC30 SRAM
 Misc:
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types
