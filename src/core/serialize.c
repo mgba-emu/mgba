@@ -322,6 +322,7 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 		}
 #endif
 		else {
+			free(creationUsec);
 			creationUsec = 0;
 		}
 
