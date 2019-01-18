@@ -325,12 +325,14 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 			creationUsec = 0;
 		}
 
-		struct mStateExtdataItem item = {
-			.size = sizeof(*creationUsec),
-			.data = creationUsec,
-			.clean = free
-		};
-		mStateExtdataPut(&extdata, EXTDATA_META_TIME, &item);
+		if (creationUsec) {
+			struct mStateExtdataItem item = {
+				.size = sizeof(*creationUsec),
+				.data = creationUsec,
+				.clean = free
+			};
+			mStateExtdataPut(&extdata, EXTDATA_META_TIME, &item);
+		}
 	}
 
 	if (flags & SAVESTATE_SAVEDATA) {
