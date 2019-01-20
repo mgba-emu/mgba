@@ -8,6 +8,7 @@ Misc:
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
  - GB Memory: Support running from blocked memory
  - Qt: Don't unload ROM immediately if it crashes
+ - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
 
 0.7.0: (Future)
 Features:
