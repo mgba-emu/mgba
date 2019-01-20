@@ -833,14 +833,13 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 					break;
 				}
 				renderer->currentWindow = renderer->windows[w].control;
+				renderer->start = renderer->end;
+				renderer->end = renderer->windows[w].endX;
 				if (!GBAWindowControlIsObjEnable(renderer->currentWindow.packed) && !GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt)) {
 					continue;
 				}
 
-				int drawn;
-				renderer->start = renderer->end;
-				renderer->end = renderer->windows[w].endX;
-				drawn = GBAVideoSoftwareRendererPreprocessSprite(renderer, &sprite->obj, localY);
+				int drawn = GBAVideoSoftwareRendererPreprocessSprite(renderer, &sprite->obj, localY);
 				spriteLayers |= drawn << GBAObjAttributesCGetPriority(sprite->obj.c);
 			}
 			if (renderer->spriteCyclesRemaining <= 0) {
