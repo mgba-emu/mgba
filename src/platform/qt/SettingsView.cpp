@@ -300,6 +300,13 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	m_ui.loggingView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 	m_ui.loggingView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
+	connect(m_ui.logFileBrowse, &QAbstractButton::pressed, [this] () {
+		QString path = GBAApp::app()->getSaveFileName(this, "Select log file");
+		if (!path.isNull()) {
+			m_ui.logFile->setText(path);
+		}
+	});
+
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setController(shortcutController);
 	shortcutView->setInputController(inputController);
@@ -379,6 +386,9 @@ void SettingsView::updateConfig() {
 	saveSetting("cheatAutosave", m_ui.cheatAutosave);
 	saveSetting("autoload", m_ui.autoload);
 	saveSetting("autosave", m_ui.autosave);
+	saveSetting("logToFile", m_ui.logToFile);
+	saveSetting("logToStdout", m_ui.logToStdout);
+	saveSetting("logFile", m_ui.logFile);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
@@ -438,6 +448,9 @@ void SettingsView::updateConfig() {
 	}
 
 	m_logModel.save(m_controller);
+	m_logModel.logger()->setLogFile(m_ui.logFile->text());
+	m_logModel.logger()->logToFile(m_ui.logToFile->isChecked());
+	m_logModel.logger()->logToStdout(m_ui.logToStdout->isChecked());
 
 #ifdef M_CORE_GB
 	GBModel modelGB = s_gbModelList[m_ui.gbModel->currentIndex()];
@@ -505,6 +518,9 @@ void SettingsView::reloadConfig() {
 	loadSetting("cheatAutosave", m_ui.cheatAutosave, true);
 	loadSetting("autoload", m_ui.autoload, true);
 	loadSetting("autosave", m_ui.autosave, false);
+	loadSetting("logToFile", m_ui.logToFile);
+	loadSetting("logToStdout", m_ui.logToStdout);
+	loadSetting("logFile", m_ui.logFile);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 

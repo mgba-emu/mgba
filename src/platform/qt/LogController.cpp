@@ -41,6 +41,9 @@ LogController::Stream LogController::operator()(int category, int level) {
 
 void LogController::load(const ConfigController* config) {
 	mLogFilterLoad(&m_filter, config->config());
+	setLogFile(config->getOption("logFile"));
+	logToStdout(config->getOption("logToStdout").toInt());
+	logToFile(config->getOption("logToFile").toInt());
 }
 
 void LogController::save(ConfigController* config) const {
@@ -50,6 +53,17 @@ void LogController::save(ConfigController* config) const {
 void LogController::postLog(int level, int category, const QString& string) {
 	if (!mLogFilterTest(&m_filter, category, static_cast<mLogLevel>(level))) {
 		return;
+	}
+	if (m_logToStdout || m_logToFile) {
+		QString line = tr("[%1] %2: %3").arg(LogController::toString(level)).arg(mLogCategoryName(category)).arg(string);
+
+		if (m_logToStdout) {
+			QTextStream out(stdout);
+			out << line << endl;
+		}
+		if (m_logToFile && m_logStream) {
+			*m_logStream << line << endl;
+		}
 	}
 	emit logPosted(level, category, string);
 }
@@ -92,6 +106,21 @@ void LogController::disableLevels(int levels, int category) {
 void LogController::clearLevels(int category) {
 	auto id = mLogCategoryId(category);
 	mLogFilterReset	(&m_filter, id);
+}
+
+void LogController::logToFile(bool log) {
+	m_logToFile = log;
+}
+
+void LogController::logToStdout(bool log) {
+	m_logToStdout = log;
+}
+
+void LogController::setLogFile(const QString& file) {
+	m_logStream.reset();
+	m_logFile = std::make_unique<QFile>(file);
+	m_logFile->open(QIODevice::Append | QIODevice::Text);
+	m_logStream = std::make_unique<QTextStream>(m_logFile.get());
 }
 
 LogController* LogController::global() {

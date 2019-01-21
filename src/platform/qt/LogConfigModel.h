@@ -30,6 +30,8 @@ public:
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
 
+	LogController* logger() { return m_controller; }
+
 public slots:
 	void reset();
 	void save(ConfigController*);

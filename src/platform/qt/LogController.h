@@ -11,6 +11,8 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QTextStream>
+#include <memory>
 
 namespace QGBA {
 
@@ -71,8 +73,16 @@ public slots:
 	void disableLevels(int levels, int category);
 	void clearLevels(int category);
 
+	void logToFile(bool);
+	void logToStdout(bool);
+	void setLogFile(const QString&);
+
 private:
 	mLogFilter m_filter;
+	bool m_logToFile;
+	bool m_logToStdout;
+	std::unique_ptr<QFile> m_logFile;
+	std::unique_ptr<QTextStream> m_logStream;
 
 	static LogController s_global;
 };
