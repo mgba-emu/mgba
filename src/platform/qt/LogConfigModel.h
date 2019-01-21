@@ -43,7 +43,7 @@ private:
 		const char* id;
 		int levels;
 
-		bool operator<(struct ConfigSetting& other) {
+		bool operator<(const ConfigSetting& other) {
 			return name < other.name;
 		}
 	};
