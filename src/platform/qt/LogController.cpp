@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "LogController.h"
 
+#include "ConfigController.h"
+
 using namespace QGBA;
 
 LogController LogController::s_global(mLOG_ALL);
@@ -19,9 +21,9 @@ LogController::LogController(int levels, QObject* parent)
 
 	if (this != &s_global) {
 		connect(&s_global, &LogController::logPosted, this, &LogController::postLog);
-		connect(this, &LogController::levelsSet, &s_global, &LogController::setLevels);
-		connect(this, &LogController::levelsEnabled, &s_global, &LogController::enableLevels);
-		connect(this, &LogController::levelsDisabled, &s_global, &LogController::disableLevels);
+		connect(this, static_cast<void (LogController::*)(int)>(&LogController::levelsSet), &s_global, static_cast<void (LogController::*)(int)>(&LogController::setLevels));
+		connect(this, static_cast<void (LogController::*)(int)>(&LogController::levelsEnabled), &s_global, static_cast<void (LogController::*)(int)>(&LogController::enableLevels));
+		connect(this, static_cast<void (LogController::*)(int)>(&LogController::levelsDisabled), &s_global, static_cast<void (LogController::*)(int)>(&LogController::disableLevels));
 	}
 }
 
@@ -29,8 +31,20 @@ LogController::~LogController() {
 	mLogFilterDeinit(&m_filter);
 }
 
+int LogController::levels(int category) const {
+	return mLogFilterLevels(&m_filter, category);
+}
+
 LogController::Stream LogController::operator()(int category, int level) {
 	return Stream(this, category, level);
+}
+
+void LogController::load(const ConfigController* config) {
+	mLogFilterLoad(&m_filter, config->config());
+}
+
+void LogController::save(ConfigController* config) const {
+	mLogFilterSave(&m_filter, config->config());
 }
 
 void LogController::postLog(int level, int category, const QString& string) {
@@ -53,6 +67,31 @@ void LogController::enableLevels(int levels) {
 void LogController::disableLevels(int levels) {
 	m_filter.defaultLevels &= ~levels;
 	emit levelsDisabled(levels);
+}
+
+void LogController::setLevels(int levels, int category) {
+	auto id = mLogCategoryId(category);
+	mLogFilterSet(&m_filter, id, levels);
+	emit levelsSet(levels, category);
+}
+
+void LogController::enableLevels(int levels, int category) {
+	auto id = mLogCategoryId(category);
+	int newLevels = mLogFilterLevels(&m_filter, category) | levels;
+	mLogFilterSet(&m_filter, id, newLevels);
+	emit levelsEnabled(levels, category);
+}
+
+void LogController::disableLevels(int levels, int category) {
+	auto id = mLogCategoryId(category);
+	int newLevels = mLogFilterLevels(&m_filter, category) & ~levels;
+	mLogFilterSet(&m_filter, id, newLevels);
+	emit levelsDisabled(levels, category);
+}
+
+void LogController::clearLevels(int category) {
+	auto id = mLogCategoryId(category);
+	mLogFilterReset	(&m_filter, id);
 }
 
 LogController* LogController::global() {

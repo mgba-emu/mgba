@@ -11,6 +11,7 @@
 #include "GBAApp.h"
 #include "GBAKeyEditor.h"
 #include "InputController.h"
+#include "RotatedHeaderView.h"
 #include "ShaderSelector.h"
 #include "ShortcutView.h"
 
@@ -24,9 +25,10 @@ using namespace QGBA;
 QList<enum GBModel> SettingsView::s_gbModelList;
 #endif
 
-SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, QWidget* parent)
+SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, LogController* logController, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
+	, m_logModel(logController)
 {
 	m_ui.setupUi(this);
 
@@ -293,6 +295,11 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	}
 
+	m_ui.loggingView->setModel(&m_logModel);
+	m_ui.loggingView->setHorizontalHeader(new RotatedHeaderView(Qt::Horizontal));
+	m_ui.loggingView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+	m_ui.loggingView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setController(shortcutController);
 	shortcutView->setInputController(inputController);
@@ -430,6 +437,8 @@ void SettingsView::updateConfig() {
 		emit languageChanged();
 	}
 
+	m_logModel.save(m_controller);
+
 #ifdef M_CORE_GB
 	GBModel modelGB = s_gbModelList[m_ui.gbModel->currentIndex()];
 	m_controller->setOption("gb.model", GBModelToName(modelGB));
@@ -534,6 +543,8 @@ void SettingsView::reloadConfig() {
 	m_ui.saveStateScreenshot->setChecked(saveState & SAVESTATE_SCREENSHOT);
 	m_ui.saveStateSave->setChecked(saveState & SAVESTATE_SAVEDATA);
 	m_ui.saveStateCheats->setChecked(saveState & SAVESTATE_CHEATS);
+
+	m_logModel.reset();
 
 #ifdef M_CORE_GB
 	QString modelGB = m_controller->getOption("gb.model");

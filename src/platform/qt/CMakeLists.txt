@@ -90,6 +90,7 @@ set(SOURCE_FILES
 	KeyEditor.cpp
 	LoadSaveState.cpp
 	LogController.cpp
+	LogConfigModel.cpp
 	LogView.cpp
 	MapView.cpp
 	MemoryModel.cpp
@@ -104,6 +105,7 @@ set(SOURCE_FILES
 	PrinterView.cpp
 	RegisterView.cpp
 	ROMInfo.cpp
+	RotatedHeaderView.cpp
 	SavestateButton.cpp
 	SensorView.cpp
 	SettingsView.cpp

@@ -141,6 +141,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	connect(&m_inputController, &InputController::profileLoaded, m_shortcutController, &ShortcutController::loadProfile);
 
 	m_log.setLevels(mLOG_WARN | mLOG_ERROR | mLOG_FATAL);
+	m_log.load(m_config);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
 	m_focusCheck.setInterval(200);
 
@@ -432,7 +433,7 @@ void Window::exportSharkport() {
 }
 
 void Window::openSettingsWindow() {
-	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController);
+	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController, &m_log);
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (m_display->supportsShaders()) {
 		settingsWindow->setShaderSelector(m_shaderView.get());

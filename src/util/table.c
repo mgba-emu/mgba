@@ -111,7 +111,9 @@ void TableInsert(struct Table* table, uint32_t key, void* value) {
 	struct TableList* list;
 	TABLE_LOOKUP_START(TABLE_COMPARATOR, list, key) {
 		if (value != lookupResult->value) {
-			table->deinitializer(lookupResult->value);
+			if (table->deinitializer) {
+				table->deinitializer(lookupResult->value);
+			}
 			lookupResult->value = value;
 		}
 		return;

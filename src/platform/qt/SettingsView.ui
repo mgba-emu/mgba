@@ -23,6 +23,13 @@
    <property name="sizeConstraint">
     <enum>QLayout::SetFixedSize</enum>
    </property>
+   <item row="2" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
    <item row="1" column="0">
     <widget class="QListWidget" name="tabs">
      <property name="sizePolicy">
@@ -67,22 +74,20 @@
      </item>
      <item>
       <property name="text">
+       <string>Logging</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>Game Boy</string>
       </property>
      </item>
     </widget>
    </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="1">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>5</number>
      </property>
      <widget class="QWidget" name="av">
       <layout class="QFormLayout" name="formLayout">
@@ -1201,6 +1206,20 @@
          <property name="text">
           <string>Same directory as the ROM</string>
          </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="logging">
+      <layout class="QGridLayout" name="a">
+       <item row="0" column="0">
+        <widget class="QTableView" name="loggingView">
+         <attribute name="horizontalHeaderDefaultSectionSize">
+          <number>0</number>
+         </attribute>
+         <attribute name="horizontalHeaderMinimumSectionSize">
+          <number>0</number>
+         </attribute>
         </widget>
        </item>
       </layout>
