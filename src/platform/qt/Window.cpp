@@ -781,11 +781,13 @@ void Window::gameStopped() {
 	m_screenWidget->setLockAspectRatio(true);
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->unsetCursor();
+	if (m_display) {
 #ifdef M_CORE_GB
-	m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
+		m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 #elif defined(M_CORE_GBA)
-	m_display->setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+		m_display->setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 #endif
+	}
 
 	m_videoLayers->clear();
 	m_audioChannels->clear();
