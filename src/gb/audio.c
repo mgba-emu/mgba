@@ -37,7 +37,7 @@ static bool _updateSweep(struct GBAudioSquareChannel* sweep, bool initial);
 static void _updateSquareSample(struct GBAudioSquareChannel* ch);
 static int32_t _updateSquareChannel(struct GBAudioSquareChannel* ch);
 
-static int8_t _coalesceNoiseChannel(struct GBAudioNoiseChannel* ch);
+static int16_t _coalesceNoiseChannel(struct GBAudioNoiseChannel* ch);
 
 static void _updateFrame(struct mTiming* timing, void* user, uint32_t cyclesLate);
 static void _updateChannel1(struct mTiming* timing, void* user, uint32_t cyclesLate);
@@ -595,6 +595,8 @@ void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
 	int dcOffset = audio->style == GB_AUDIO_GBA ? 0 : -0x8;
 	int sampleLeft = dcOffset;
 	int sampleRight = dcOffset;
+	int sampleLeftUnscaled = 0;
+	int sampleRightUnscaled = 0;
 
 	if (audio->playingCh1 && !audio->forceDisableCh[0]) {
 		if (audio->ch1Left) {
@@ -627,18 +629,21 @@ void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
 	}
 
 	if (audio->playingCh4 && !audio->forceDisableCh[3]) {
-		int8_t sample = _coalesceNoiseChannel(&audio->ch4);
+		int16_t sample = _coalesceNoiseChannel(&audio->ch4);
 		if (audio->ch4Left) {
-			sampleLeft += sample;
+			sampleLeftUnscaled += sample;
 		}
 
 		if (audio->ch4Right) {
-			sampleRight += sample;
+			sampleRightUnscaled += sample;
 		}
 	}
 
 	sampleLeft <<= 3;
 	sampleRight <<= 3;
+
+	sampleLeft += sampleLeftUnscaled;
+	sampleRight += sampleRightUnscaled;
 
 	*left = sampleLeft * (1 + audio->volumeLeft);
 	*right = sampleRight * (1 + audio->volumeRight);
@@ -762,12 +767,12 @@ static int32_t _updateSquareChannel(struct GBAudioSquareChannel* ch) {
 	}
 }
 
-static int8_t _coalesceNoiseChannel(struct GBAudioNoiseChannel* ch) {
+static int16_t _coalesceNoiseChannel(struct GBAudioNoiseChannel* ch) {
 	if (!ch->nSamples) {
-		return ch->sample;
+		return ch->sample * 8;
 	}
 	// TODO keep track of timing
-	int8_t sample = ch->samples / ch->nSamples;
+	int16_t sample = ch->samples * 16 / ch->nSamples;
 	ch->nSamples = 0;
 	ch->samples = 0;
 	return sample;
