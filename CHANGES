@@ -1,3 +1,7 @@
+0.7.1: (Future)
+Misc:
+ - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
+
 0.7.0: (2019-01-26)
 Features:
  - ELF support
