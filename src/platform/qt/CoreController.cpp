@@ -185,12 +185,11 @@ CoreController::CoreController(mCore* core, QObject* parent)
 			message = QString().vsprintf(format, args);
 			QMetaObject::invokeMethod(controller, "statusPosted", Q_ARG(const QString&, message));
 		}
-		if (level == mLOG_FATAL) {
-			mCoreThreadMarkCrashed(controller->thread());
-			QMetaObject::invokeMethod(controller, "crashed", Q_ARG(const QString&, QString().vsprintf(format, args)));
-		}
 		message = QString().vsprintf(format, args);
 		QMetaObject::invokeMethod(controller, "logPosted", Q_ARG(int, level), Q_ARG(int, category), Q_ARG(const QString&, message));
+		if (level == mLOG_FATAL) {
+			QMetaObject::invokeMethod(controller, "crashed", Q_ARG(const QString&, QString().vsprintf(format, args)));
+		}
 	};
 }
 

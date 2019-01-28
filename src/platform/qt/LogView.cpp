@@ -43,19 +43,19 @@ LogView::LogView(LogController* log, QWidget* parent)
 	m_ui.maxLines->setValue(DEFAULT_LINE_LIMIT);
 
 	connect(log, &LogController::logPosted, this, &LogView::postLog);
-	connect(log, &LogController::levelsSet, this, &LogView::setLevels);
-	connect(log, &LogController::levelsEnabled, [this](int level) {
+	connect(log, static_cast<void (LogController::*)(int)>(&LogController::levelsSet), this, &LogView::setLevels);
+	connect(log, static_cast<void (LogController::*)(int)>(&LogController::levelsEnabled), [this](int level) {
 		bool s = blockSignals(true);
 		setLevel(level, true);
 		blockSignals(s);
 	});
-	connect(log, &LogController::levelsDisabled, [this](int level) {
+	connect(log, static_cast<void (LogController::*)(int)>(&LogController::levelsDisabled), [this](int level) {
 		bool s = blockSignals(true);
 		setLevel(level, false);
 		blockSignals(s);
 	});
-	connect(this, &LogView::levelsEnabled, log, &LogController::enableLevels);
-	connect(this, &LogView::levelsDisabled, log, &LogController::disableLevels);
+	connect(this, &LogView::levelsEnabled, log, static_cast<void (LogController::*)(int)>(&LogController::enableLevels));
+	connect(this, &LogView::levelsDisabled, log, static_cast<void (LogController::*)(int)>(&LogController::disableLevels));
 }
 
 void LogView::postLog(int level, int category, const QString& log) {

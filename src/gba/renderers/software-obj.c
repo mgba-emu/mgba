@@ -27,9 +27,6 @@
 		} \
 	} \
 	for (; outX < condition; ++outX, inX += xOffset) { \
-		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
-			continue; \
-		} \
 		int localX = inX - xOffset * (outX % mosaicH); \
 		if (localX < 0 || localX > width - 1) { \
 			continue; \
@@ -43,9 +40,6 @@
 	unsigned widthMask = ~(width - 1); \
 	unsigned heightMask = ~(height - 1); \
 	for (; outX < condition; ++outX, ++inX) { \
-		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
-			continue; \
-		} \
 		renderer->spriteCyclesRemaining -= 2; \
 		xAccum += mat.a; \
 		yAccum += mat.c; \
@@ -149,9 +143,6 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	bool align = GBAObjAttributesAIs256Color(sprite->a) && !GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt);
 	unsigned charBase = (GBAObjAttributesCGetTile(sprite->c) & ~align) * 0x20;
 	if (GBARegisterDISPCNTGetMode(renderer->dispcnt) >= 3 && GBAObjAttributesCGetTile(sprite->c) < 512) {
-		return 0;
-	}
-	if (renderer->spriteCyclesRemaining <= 0) {
 		return 0;
 	}
 

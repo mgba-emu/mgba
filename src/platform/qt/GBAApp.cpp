@@ -10,8 +10,9 @@
 #include "CoreManager.h"
 #include "ConfigController.h"
 #include "Display.h"
-#include "Window.h"
+#include "LogController.h"
 #include "VFileDevice.h"
+#include "Window.h"
 
 #include <QFileInfo>
 #include <QFileOpenEvent>
@@ -64,6 +65,8 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	if (!m_configController->getQtOption("audioDriver").isNull()) {
 		AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController->getQtOption("audioDriver").toInt()));
 	}
+
+	LogController::global()->load(m_configController);
 
 	connect(this, &GBAApp::aboutToQuit, this, &GBAApp::cleanup);
 }

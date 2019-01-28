@@ -141,6 +141,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	connect(&m_inputController, &InputController::profileLoaded, m_shortcutController, &ShortcutController::loadProfile);
 
 	m_log.setLevels(mLOG_WARN | mLOG_ERROR | mLOG_FATAL);
+	m_log.load(m_config);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
 	m_focusCheck.setInterval(200);
 
@@ -432,7 +433,7 @@ void Window::exportSharkport() {
 }
 
 void Window::openSettingsWindow() {
-	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController);
+	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController, &m_log);
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (m_display->supportsShaders()) {
 		settingsWindow->setShaderSelector(m_shaderView.get());
@@ -781,11 +782,13 @@ void Window::gameStopped() {
 	m_screenWidget->setLockAspectRatio(true);
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->unsetCursor();
+	if (m_display) {
 #ifdef M_CORE_GB
-	m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
+		m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 #elif defined(M_CORE_GBA)
-	m_display->setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+		m_display->setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 #endif
+	}
 
 	m_videoLayers->clear();
 	m_audioChannels->clear();
@@ -802,7 +805,6 @@ void Window::gameCrashed(const QString& errorMessage) {
 	                                     QMessageBox::Ok, this, Qt::Sheet);
 	crash->setAttribute(Qt::WA_DeleteOnClose);
 	crash->show();
-	m_controller->stop();
 }
 
 void Window::gameFailed() {
