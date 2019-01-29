@@ -1,4 +1,6 @@
 0.7.1: (Future)
+Bugfixes:
+ - Switch: Fix final cleanup (fixes mgba.io/i/1283)
 Misc:
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
 
