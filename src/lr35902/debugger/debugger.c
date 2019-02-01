@@ -11,27 +11,28 @@
 #include <mgba/internal/lr35902/lr35902.h>
 #include <mgba/internal/lr35902/debugger/memory-debugger.h>
 
-DEFINE_VECTOR(LR35902DebugBreakpointList, struct LR35902DebugBreakpoint);
-DEFINE_VECTOR(LR35902DebugWatchpointList, struct LR35902DebugWatchpoint);
-
-static struct LR35902DebugBreakpoint* _lookupBreakpoint(struct LR35902DebugBreakpointList* breakpoints, uint16_t address) {
+static struct mBreakpoint* _lookupBreakpoint(struct mBreakpointList* breakpoints, struct LR35902Core* cpu) {
 	size_t i;
-	for (i = 0; i < LR35902DebugBreakpointListSize(breakpoints); ++i) {
-		if (LR35902DebugBreakpointListGetPointer(breakpoints, i)->address == address) {
-			return LR35902DebugBreakpointListGetPointer(breakpoints, i);
+	for (i = 0; i < mBreakpointListSize(breakpoints); ++i) {
+		struct mBreakpoint* breakpoint = mBreakpointListGetPointer(breakpoints, i);
+		if (breakpoint->address != cpu->pc) {
+			continue;
+		}
+		if (breakpoint->segment < 0 || breakpoint->segment == cpu->memory.currentSegment(cpu, breakpoint->address)) {
+			return breakpoint;
 		}
 	}
-	return 0;
+	return NULL;
 }
 
-static void _destroyBreakpoint(struct LR35902DebugBreakpoint* breakpoint) {
+static void _destroyBreakpoint(struct mBreakpoint* breakpoint) {
 	if (breakpoint->condition) {
 		parseFree(breakpoint->condition);
 		free(breakpoint->condition);
 	}
 }
 
-static void _destroyWatchpoint(struct LR35902DebugWatchpoint* watchpoint) {
+static void _destroyWatchpoint(struct mWatchpoint* watchpoint) {
 	if (watchpoint->condition) {
 		parseFree(watchpoint->condition);
 		free(watchpoint->condition);
@@ -40,11 +41,8 @@ static void _destroyWatchpoint(struct LR35902DebugWatchpoint* watchpoint) {
 
 static void LR35902DebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
-	struct LR35902DebugBreakpoint* breakpoint = _lookupBreakpoint(&debugger->breakpoints, debugger->cpu->pc);
+	struct mBreakpoint* breakpoint = _lookupBreakpoint(&debugger->breakpoints, debugger->cpu);
 	if (!breakpoint) {
-		return;
-	}
-	if (breakpoint->segment >= 0 && debugger->cpu->memory.currentSegment(debugger->cpu, breakpoint->address) != breakpoint->segment) {
 		return;
 	}
 	if (breakpoint->condition) {
@@ -65,12 +63,11 @@ static void LR35902DebuggerDeinit(struct mDebuggerPlatform* platform);
 
 static void LR35902DebuggerEnter(struct mDebuggerPlatform* d, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info);
 
-static void LR35902DebuggerSetBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
-static void LR35902DebuggerSetConditionalBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment, struct ParseTree* condition);
-static void LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
-static void LR35902DebuggerSetWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type);
-static void LR35902DebuggerSetConditionalWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type, struct ParseTree* condition);
-static void LR35902DebuggerClearWatchpoint(struct mDebuggerPlatform*, uint32_t address, int segment);
+static ssize_t LR35902DebuggerSetBreakpoint(struct mDebuggerPlatform*, const struct mBreakpoint*);
+static void LR35902DebuggerListBreakpoints(struct mDebuggerPlatform*, struct mBreakpointList*);
+static bool LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform*, ssize_t id);
+static ssize_t LR35902DebuggerSetWatchpoint(struct mDebuggerPlatform*, const struct mWatchpoint*);
+static void LR35902DebuggerListWatchpoints(struct mDebuggerPlatform*, struct mWatchpointList*);
 static void LR35902DebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool LR35902DebuggerHasBreakpoints(struct mDebuggerPlatform*);
 static void LR35902DebuggerTrace(struct mDebuggerPlatform*, char* out, size_t* length);
@@ -83,11 +80,10 @@ struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void) {
 	platform->init = LR35902DebuggerInit;
 	platform->deinit = LR35902DebuggerDeinit;
 	platform->setBreakpoint = LR35902DebuggerSetBreakpoint;
-	platform->setConditionalBreakpoint = LR35902DebuggerSetConditionalBreakpoint;
+	platform->listBreakpoints = LR35902DebuggerListBreakpoints;
 	platform->clearBreakpoint = LR35902DebuggerClearBreakpoint;
 	platform->setWatchpoint = LR35902DebuggerSetWatchpoint;
-	platform->setConditionalWatchpoint = LR35902DebuggerSetConditionalWatchpoint;
-	platform->clearWatchpoint = LR35902DebuggerClearWatchpoint;
+	platform->listWatchpoints = LR35902DebuggerListWatchpoints;
 	platform->checkBreakpoints = LR35902DebuggerCheckBreakpoints;
 	platform->hasBreakpoints = LR35902DebuggerHasBreakpoints;
 	platform->trace = LR35902DebuggerTrace;
@@ -100,22 +96,23 @@ void LR35902DebuggerInit(void* cpu, struct mDebuggerPlatform* platform) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) platform;
 	debugger->cpu = cpu;
 	debugger->originalMemory = debugger->cpu->memory;
-	LR35902DebugBreakpointListInit(&debugger->breakpoints, 0);
-	LR35902DebugWatchpointListInit(&debugger->watchpoints, 0);
+	mBreakpointListInit(&debugger->breakpoints, 0);
+	mWatchpointListInit(&debugger->watchpoints, 0);
+	debugger->nextId = 1;
 }
 
 void LR35902DebuggerDeinit(struct mDebuggerPlatform* platform) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) platform;
 	size_t i;
-	for (i = 0; i < LR35902DebugBreakpointListSize(&debugger->breakpoints); ++i) {
-		_destroyBreakpoint(LR35902DebugBreakpointListGetPointer(&debugger->breakpoints, i));
+	for (i = 0; i < mBreakpointListSize(&debugger->breakpoints); ++i) {
+		_destroyBreakpoint(mBreakpointListGetPointer(&debugger->breakpoints, i));
 	}
-	LR35902DebugBreakpointListDeinit(&debugger->breakpoints);
+	mBreakpointListDeinit(&debugger->breakpoints);
 
-	for (i = 0; i < LR35902DebugWatchpointListSize(&debugger->watchpoints); ++i) {
-		_destroyWatchpoint(LR35902DebugWatchpointListGetPointer(&debugger->watchpoints, i));
+	for (i = 0; i < mWatchpointListSize(&debugger->watchpoints); ++i) {
+		_destroyWatchpoint(mWatchpointListGetPointer(&debugger->watchpoints, i));
 	}
-	LR35902DebugWatchpointListDeinit(&debugger->watchpoints);
+	mWatchpointListDeinit(&debugger->watchpoints);
 }
 
 static void LR35902DebuggerEnter(struct mDebuggerPlatform* platform, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
@@ -130,65 +127,72 @@ static void LR35902DebuggerEnter(struct mDebuggerPlatform* platform, enum mDebug
 	}
 }
 
-static void LR35902DebuggerSetBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
-	LR35902DebuggerSetConditionalBreakpoint(d, address, segment, NULL);
+static ssize_t LR35902DebuggerSetBreakpoint(struct mDebuggerPlatform* d, const struct mBreakpoint* info) {
+	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
+	struct mBreakpoint* breakpoint = mBreakpointListAppend(&debugger->breakpoints);
+	*breakpoint = *info;
+	breakpoint->id = debugger->nextId;
+	++debugger->nextId;
+	return breakpoint->id;
+
 }
 
-static void LR35902DebuggerSetConditionalBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, struct ParseTree* condition) {
+static bool LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform* d, ssize_t id) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
-	struct LR35902DebugBreakpoint* breakpoint = LR35902DebugBreakpointListAppend(&debugger->breakpoints);
-	breakpoint->address = address;
-	breakpoint->segment = segment;
-	breakpoint->condition = condition;
-}
-
-static void LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
-	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
-	struct LR35902DebugBreakpointList* breakpoints = &debugger->breakpoints;
 	size_t i;
-	for (i = 0; i < LR35902DebugBreakpointListSize(breakpoints); ++i) {
-		struct LR35902DebugBreakpoint* breakpoint = LR35902DebugBreakpointListGetPointer(breakpoints, i);
-		if (breakpoint->address == address && breakpoint->segment == segment) {
-			_destroyBreakpoint(LR35902DebugBreakpointListGetPointer(breakpoints, i));
-			LR35902DebugBreakpointListShift(breakpoints, i, 1);
+
+	struct mBreakpointList* breakpoints = &debugger->breakpoints;
+	for (i = 0; i < mBreakpointListSize(breakpoints); ++i) {
+		struct mBreakpoint* breakpoint = mBreakpointListGetPointer(breakpoints, i);
+		if (breakpoint->id == id) {
+			_destroyBreakpoint(breakpoint);
+			mBreakpointListShift(breakpoints, i, 1);
+			return true;
 		}
 	}
+
+	struct mWatchpointList* watchpoints = &debugger->watchpoints;
+	for (i = 0; i < mWatchpointListSize(watchpoints); ++i) {
+		struct mWatchpoint* watchpoint = mWatchpointListGetPointer(watchpoints, i);
+		if (watchpoint->id == id) {
+			_destroyWatchpoint(watchpoint);
+			mWatchpointListShift(watchpoints, i, 1);
+			if (!mWatchpointListSize(&debugger->watchpoints)) {
+				LR35902DebuggerRemoveMemoryShim(debugger);
+			}
+			return true;
+		}
+	}
+	return false;
 }
 
 static bool LR35902DebuggerHasBreakpoints(struct mDebuggerPlatform* d) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
-	return LR35902DebugBreakpointListSize(&debugger->breakpoints) || LR35902DebugWatchpointListSize(&debugger->watchpoints);
+	return mBreakpointListSize(&debugger->breakpoints) || mWatchpointListSize(&debugger->watchpoints);
 }
 
-static void LR35902DebuggerSetWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, enum mWatchpointType type) {
-	LR35902DebuggerSetConditionalWatchpoint(d, address, segment, type, NULL);
-}
-
-static void LR35902DebuggerSetConditionalWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment, enum mWatchpointType type, struct ParseTree* condition) {
+static ssize_t LR35902DebuggerSetWatchpoint(struct mDebuggerPlatform* d, const struct mWatchpoint* info) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
-	if (!LR35902DebugWatchpointListSize(&debugger->watchpoints)) {
+	if (!mWatchpointListSize(&debugger->watchpoints)) {
 		LR35902DebuggerInstallMemoryShim(debugger);
 	}
-	struct LR35902DebugWatchpoint* watchpoint = LR35902DebugWatchpointListAppend(&debugger->watchpoints);
-	watchpoint->address = address;
-	watchpoint->type = type;
-	watchpoint->segment = segment;
-	watchpoint->condition = condition;
+	struct mWatchpoint* watchpoint = mWatchpointListAppend(&debugger->watchpoints);
+	*watchpoint = *info;
+	watchpoint->id = debugger->nextId;
+	++debugger->nextId;
+	return watchpoint->id;
 }
 
-static void LR35902DebuggerClearWatchpoint(struct mDebuggerPlatform* d, uint32_t address, int segment) {
+static void LR35902DebuggerListBreakpoints(struct mDebuggerPlatform* d, struct mBreakpointList* list) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
-	struct LR35902DebugWatchpointList* watchpoints = &debugger->watchpoints;
-	size_t i;
-	for (i = 0; i < LR35902DebugWatchpointListSize(watchpoints); ++i) {
-		struct LR35902DebugWatchpoint* watchpoint = LR35902DebugWatchpointListGetPointer(watchpoints, i);
-		if (watchpoint->address == address && watchpoint->segment == segment) {
-			LR35902DebugWatchpointListShift(watchpoints, i, 1);
-		}
-	}
-	if (!LR35902DebugWatchpointListSize(&debugger->watchpoints)) {
-		LR35902DebuggerRemoveMemoryShim(debugger);
-	}
+	mBreakpointListClear(list);
+	mBreakpointListCopy(list, &debugger->breakpoints);
+}
+
+static void LR35902DebuggerListWatchpoints(struct mDebuggerPlatform* d, struct mWatchpointList* list) {
+	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
+	mWatchpointListClear(list);
+	mWatchpointListCopy(list, &debugger->watchpoints);
 }
 
 static void LR35902DebuggerTrace(struct mDebuggerPlatform* d, char* out, size_t* length) {

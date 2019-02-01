@@ -12,6 +12,7 @@ Misc:
  - GB Memory: Support running from blocked memory
  - Qt: Don't unload ROM immediately if it crashes
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
+ - Debugger: Add breakpoint and watchpoint listing
 
 0.7.0: (2019-01-26)
 Features:

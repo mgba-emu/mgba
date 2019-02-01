@@ -62,6 +62,8 @@ static void _gdbStubEntered(struct mDebugger* debugger, enum mDebuggerEntryReaso
 					}
 					return;
 				}
+				// Fall through
+			case WATCHPOINT_WRITE_CHANGE:
 				type = "watch";
 				break;
 			case WATCHPOINT_READ:
@@ -488,21 +490,32 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 	readAddress += i + 1;
 	uint32_t kind = _readHex(readAddress, &i);
 
+	struct mBreakpoint breakpoint = {
+		.address = address,
+		.type = BREAKPOINT_HARDWARE
+	};
+	struct mWatchpoint watchpoint = {
+		.address = address
+	};
+
 	switch (message[0]) {
 	case '0':
 		ARMDebuggerSetSoftwareBreakpoint(stub->d.platform, address, kind == 2 ? MODE_THUMB : MODE_ARM);
 		break;
 	case '1':
-		stub->d.platform->setBreakpoint(stub->d.platform, address, -1);
+		stub->d.platform->setBreakpoint(stub->d.platform, &breakpoint);
 		break;
 	case '2':
-		stub->d.platform->setWatchpoint(stub->d.platform, address, -1, WATCHPOINT_WRITE);
+		watchpoint.type = WATCHPOINT_WRITE_CHANGE;
+		stub->d.platform->setWatchpoint(stub->d.platform, &watchpoint);
 		break;
 	case '3':
-		stub->d.platform->setWatchpoint(stub->d.platform, address, -1, WATCHPOINT_READ);
+		watchpoint.type = WATCHPOINT_READ;
+		stub->d.platform->setWatchpoint(stub->d.platform, &watchpoint);
 		break;
 	case '4':
-		stub->d.platform->setWatchpoint(stub->d.platform, address, -1, WATCHPOINT_RW);
+		watchpoint.type = WATCHPOINT_RW;
+		stub->d.platform->setWatchpoint(stub->d.platform, &watchpoint);
 		break;
 	default:
 		stub->outgoing[0] = '\0';
@@ -517,17 +530,35 @@ static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
 	const char* readAddress = &message[2];
 	unsigned i = 0;
 	uint32_t address = _readHex(readAddress, &i);
+	struct mBreakpointList breakpoints;
+	struct mWatchpointList watchpoints;
+
+	size_t index;
 	switch (message[0]) {
 	case '0':
-		ARMDebuggerClearSoftwareBreakpoint(stub->d.platform, address);
-		break;
 	case '1':
-		stub->d.platform->clearBreakpoint(stub->d.platform, address, -1);
+		mBreakpointListInit(&breakpoints, 0);
+		stub->d.platform->listBreakpoints(stub->d.platform, &breakpoints);
+		for (index = 0; index < mBreakpointListSize(&breakpoints); ++index) {
+			if (mBreakpointListGetPointer(&breakpoints, index)->address != address) {
+				continue;
+			}
+			stub->d.platform->clearBreakpoint(stub->d.platform, mBreakpointListGetPointer(&breakpoints, index)->id);
+		}
+		mBreakpointListDeinit(&breakpoints);
 		break;
 	case '2':
 	case '3':
 	case '4':
-		stub->d.platform->clearWatchpoint(stub->d.platform, address, -1);
+		mWatchpointListInit(&watchpoints, 0);
+		stub->d.platform->listWatchpoints(stub->d.platform, &watchpoints);
+		for (index = 0; index < mWatchpointListSize(&watchpoints); ++index) {
+			if (mWatchpointListGetPointer(&watchpoints, index)->address != address) {
+				continue;
+			}
+			stub->d.platform->clearBreakpoint(stub->d.platform, mWatchpointListGetPointer(&watchpoints, index)->id);
+		}
+		mWatchpointListDeinit(&watchpoints);
 		break;
 	default:
 		break;

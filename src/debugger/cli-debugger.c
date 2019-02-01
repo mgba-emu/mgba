@@ -46,9 +46,12 @@ static void _readHalfword(struct CLIDebugger*, struct CLIDebugVector*);
 static void _readWord(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _clearBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
-static void _setWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _listBreakpoints(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setReadWriteWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setReadWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setWriteWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setWriteChangedWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _listWatchpoints(struct CLIDebugger*, struct CLIDebugVector*);
 static void _trace(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeByte(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeHalfword(struct CLIDebugger*, struct CLIDebugVector*);
@@ -75,6 +78,10 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "help", _printHelp, "S", "Print help" },
 	{ "i", _printStatus, "", "Print the current status" },
 	{ "info", _printStatus, "", "Print the current status" },
+	{ "lb", _listBreakpoints, "", "List breakpoints" },
+	{ "listb", _listBreakpoints, "", "List breakpoints" },
+	{ "lw", _listWatchpoints, "", "List watchpoints" },
+	{ "listw", _listWatchpoints, "", "List watchpoints" },
 	{ "n", _next, "", "Execute next instruction" },
 	{ "next", _next, "", "Execute next instruction" },
 	{ "p", _print, "I", "Print a value" },
@@ -91,12 +98,13 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "r/4", _readWord, "I", "Read a word from a specified offset" },
 	{ "status", _printStatus, "", "Print the current status" },
 	{ "trace", _trace, "I", "Trace a fixed number of instructions" },
-	{ "w", _setWatchpoint, "Is", "Set a watchpoint" },
+	{ "w", _setReadWriteWatchpoint, "Is", "Set a watchpoint" },
 	{ "w/1", _writeByte, "II", "Write a byte at a specified offset" },
 	{ "w/2", _writeHalfword, "II", "Write a halfword at a specified offset" },
 	{ "w/r", _writeRegister, "SI", "Write a register" },
 	{ "w/4", _writeWord, "II", "Write a word at a specified offset" },
-	{ "watch", _setWatchpoint, "Is", "Set a watchpoint" },
+	{ "watch", _setReadWriteWatchpoint, "Is", "Set a watchpoint" },
+	{ "watch/c", _setWriteChangedWatchpoint, "Is", "Set a change watchpoint" },
 	{ "watch/r", _setReadWatchpoint, "Is", "Set a read watchpoint" },
 	{ "watch/w", _setWriteWatchpoint, "Is", "Set a write watchpoint" },
 	{ "x/1", _dumpByte, "Ii", "Examine bytes at a specified offset" },
@@ -488,20 +496,24 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
-	uint32_t address = dv->intValue;
+	struct mBreakpoint breakpoint = {
+		.address = dv->intValue,
+		.segment = dv->segmentValue,
+		.type = BREAKPOINT_HARDWARE
+	};
 	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
 		struct ParseTree* tree = _parseTree(dv->next->charValue);
 		if (tree) {
-			debugger->d.platform->setConditionalBreakpoint(debugger->d.platform, address, dv->segmentValue, tree);
+			breakpoint.condition = tree;
 		} else {
 			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+			return;
 		}
-	} else {
-		debugger->d.platform->setBreakpoint(debugger->d.platform, address, dv->segmentValue);
 	}
+	debugger->d.platform->setBreakpoint(debugger->d.platform, &breakpoint);
 }
 
-static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv, enum mWatchpointType type) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
@@ -510,72 +522,80 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		debugger->backend->printf(debugger->backend, "Watchpoints are not supported by this platform.\n");
 		return;
 	}
-	uint32_t address = dv->intValue;
+	struct mWatchpoint watchpoint = {
+		.address = dv->intValue,
+		.segment = dv->segmentValue,
+		.type = type
+	};
 	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
 		struct ParseTree* tree = _parseTree(dv->next->charValue);
 		if (tree) {
-			debugger->d.platform->setConditionalWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_RW, tree);
+			watchpoint.condition = tree;
 		} else {
 			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+			return;
 		}
-	} else {
-		debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_RW);
 	}
+	debugger->d.platform->setWatchpoint(debugger->d.platform, &watchpoint);
+}
+
+static void _setReadWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	_setWatchpoint(debugger, dv, WATCHPOINT_RW);
 }
 
 static void _setReadWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
-		return;
-	}
-	if (!debugger->d.platform->setWatchpoint) {
-		debugger->backend->printf(debugger->backend, "Watchpoints are not supported by this platform.\n");
-		return;
-	}
-	uint32_t address = dv->intValue;
-	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
-		struct ParseTree* tree = _parseTree(dv->next->charValue);
-		if (tree) {
-			debugger->d.platform->setConditionalWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_READ, tree);
-		} else {
-			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
-		}
-	} else {
-		debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_READ);
-	}
+	_setWatchpoint(debugger, dv, WATCHPOINT_READ);
 }
 
 static void _setWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
-		return;
-	}
-	if (!debugger->d.platform->setWatchpoint) {
-		debugger->backend->printf(debugger->backend, "Watchpoints are not supported by this platform.\n");
-		return;
-	}
-	uint32_t address = dv->intValue;
-	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
-		struct ParseTree* tree = _parseTree(dv->next->charValue);
-		if (tree) {
-			debugger->d.platform->setConditionalWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_WRITE, tree);
-		} else {
-			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
-		}
-	} else {
-		debugger->d.platform->setWatchpoint(debugger->d.platform, address, dv->segmentValue, WATCHPOINT_WRITE);
-	}}
+	_setWatchpoint(debugger, dv, WATCHPOINT_WRITE);
+}
+
+static void _setWriteChangedWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	_setWatchpoint(debugger, dv, WATCHPOINT_WRITE_CHANGE);
+}
 
 static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
-	uint32_t address = dv->intValue;
-	debugger->d.platform->clearBreakpoint(debugger->d.platform, address, dv->segmentValue);
-	if (debugger->d.platform->clearWatchpoint) {
-		debugger->d.platform->clearWatchpoint(debugger->d.platform, address, dv->segmentValue);
+	uint64_t id = dv->intValue;
+	debugger->d.platform->clearBreakpoint(debugger->d.platform, id);
+}
+
+static void _listBreakpoints(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	UNUSED(dv);
+	struct mBreakpointList breakpoints;
+	mBreakpointListInit(&breakpoints, 0);
+	debugger->d.platform->listBreakpoints(debugger->d.platform, &breakpoints);
+	size_t i;
+	for (i = 0; i < mBreakpointListSize(&breakpoints); ++i) {
+		struct mBreakpoint* breakpoint = mBreakpointListGetPointer(&breakpoints, i);
+		if (breakpoint->segment >= 0) {
+			debugger->backend->printf(debugger->backend, "%" PRIz "i: %02X:%X\n", breakpoint->id, breakpoint->segment, breakpoint->address);
+		} else {
+			debugger->backend->printf(debugger->backend, "%" PRIz "i: 0x%X\n", breakpoint->id, breakpoint->address);
+		}
 	}
+	mBreakpointListDeinit(&breakpoints);
+}
+
+static void _listWatchpoints(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	UNUSED(dv);
+	struct mWatchpointList watchpoints;
+	mWatchpointListInit(&watchpoints, 0);
+	debugger->d.platform->listWatchpoints(debugger->d.platform, &watchpoints);
+	size_t i;
+	for (i = 0; i < mWatchpointListSize(&watchpoints); ++i) {
+		struct mWatchpoint* watchpoint = mWatchpointListGetPointer(&watchpoints, i);
+		if (watchpoint->segment >= 0) {
+			debugger->backend->printf(debugger->backend, "%" PRIz "i: %02X:%X\n", watchpoint->id, watchpoint->segment, watchpoint->address);
+		} else {
+			debugger->backend->printf(debugger->backend, "%" PRIz "i: 0x%X\n", watchpoint->id, watchpoint->address);
+		}
+	}
+	mWatchpointListDeinit(&watchpoints);
 }
 
 static void _trace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
