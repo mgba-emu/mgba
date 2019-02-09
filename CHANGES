@@ -6,6 +6,7 @@ Bugfixes:
  - GBA: Reset now reloads multiboot ROMs
  - GBA BIOS: Fix multiboot entry point (fixes Magic Floor)
  - Switch: Fix final cleanup (fixes mgba.io/i/1283)
+ - Qt: Fix tile and sprite views not always displaying at first
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash

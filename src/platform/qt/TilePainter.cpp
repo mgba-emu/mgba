@@ -31,6 +31,7 @@ void TilePainter::resizeEvent(QResizeEvent* event) {
 	if (width() / m_size != m_backing.width() / m_size || m_backing.height() != calculatedHeight) {
 		m_backing = QPixmap(width(), calculatedHeight);
 		m_backing.fill(Qt::transparent);
+		emit needsRedraw();
 	}
 }
 
