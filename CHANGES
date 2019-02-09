@@ -1,6 +1,7 @@
 0.7.1: (Future)
 Bugfixes:
  - Switch: Fix final cleanup (fixes mgba.io/i/1283)
+ - Qt: Fix tile and sprite views not always displaying at first
 Misc:
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
 
