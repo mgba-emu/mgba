@@ -533,6 +533,9 @@ static void _GBACoreSetPeripheral(struct mCore* core, int type, void* periph) {
 	case mPERIPH_GBA_LUMINANCE:
 		gba->luminanceSource = periph;
 		break;
+	case mPERIPH_GBA_BATTLECHIP_GATE:
+		GBASIOSetDriver(&gba->sio, periph, SIO_MULTI);
+		break;
 	default:
 		return;
 	}
