@@ -113,7 +113,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		error = true;
 	}
 	LOAD_16LE(check16, 0, &state->video.x);
-	if (check16 < 0 || check16 > GB_VIDEO_HORIZONTAL_PIXELS) {
+	if (check16 < -7 || check16 > GB_VIDEO_HORIZONTAL_PIXELS) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: video x is out of range");
 		error = true;
 	}
