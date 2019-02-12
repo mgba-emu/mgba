@@ -9,6 +9,7 @@ Bugfixes:
  - Qt: Fix tile and sprite views not always displaying at first
  - GBA Memory: Fix a few AGBPrint crashes
  - GBA Memory: Fix OOB ROM reads showing up as AGBPrint memory
+ - GB Serialize: Fix loading states with negative pixel x (fixes mgba.io/i/1293)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
