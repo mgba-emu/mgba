@@ -7,6 +7,8 @@ Bugfixes:
  - GBA BIOS: Fix multiboot entry point (fixes Magic Floor)
  - Switch: Fix final cleanup (fixes mgba.io/i/1283)
  - Qt: Fix tile and sprite views not always displaying at first
+ - GBA Memory: Fix a few AGBPrint crashes
+ - GBA Memory: Fix OOB ROM reads showing up as AGBPrint memory
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
