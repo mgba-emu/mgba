@@ -2,6 +2,8 @@
 Bugfixes:
  - Switch: Fix final cleanup (fixes mgba.io/i/1283)
  - Qt: Fix tile and sprite views not always displaying at first
+ - GBA Memory: Fix a few AGBPrint crashes
+ - GBA Memory: Fix OOB ROM reads showing up as AGBPrint memory
 Misc:
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
 
