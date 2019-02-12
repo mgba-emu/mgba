@@ -24,6 +24,7 @@ enum {
 	BATTLECHIP_CONTINUE = 0xFFFF,
 };
 
+static bool GBASIOBattlechipGateInit(struct GBASIODriver* driver);
 static bool GBASIOBattlechipGateLoad(struct GBASIODriver* driver);
 static uint16_t GBASIOBattlechipGateWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 
@@ -31,7 +32,7 @@ static void _battlechipTransfer(struct GBASIOBattlechipGate* gate);
 static void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cyclesLate);
 
 void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate* gate) {
-	gate->d.init = NULL;
+	gate->d.init = GBASIOBattlechipGateInit;
 	gate->d.deinit = NULL;
 	gate->d.load = GBASIOBattlechipGateLoad;
 	gate->d.unload = NULL;
@@ -40,6 +41,12 @@ void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate* gate) {
 	gate->event.context = gate;
 	gate->event.callback = _battlechipTransferEvent;
 	gate->event.priority = 0x80;
+}
+
+bool GBASIOBattlechipGateInit(struct GBASIODriver* driver) {
+	struct GBASIOBattlechipGate* gate = (struct GBASIOBattlechipGate*) driver;
+	gate->chipId = 0;
+	return true;
 }
 
 bool GBASIOBattlechipGateLoad(struct GBASIODriver* driver) {

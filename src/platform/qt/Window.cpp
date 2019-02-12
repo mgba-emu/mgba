@@ -21,6 +21,7 @@
 
 #include "AboutScreen.h"
 #include "AudioProcessor.h"
+#include "BattleChipView.h"
 #include "CheatsView.h"
 #include "ConfigController.h"
 #include "CoreController.h"
@@ -1350,6 +1351,31 @@ void Window::setupMenu(QMenuBar* menubar) {
 		addControlledAction(solarMenu, setSolar, QString("luminanceLevel.%1").arg(QString::number(i)));
 	}
 
+#ifdef M_CORE_GB
+	QAction* gbPrint = new QAction(tr("Game Boy Printer..."), emulationMenu);
+	connect(gbPrint, &QAction::triggered, [this]() {
+		PrinterView* view = new PrinterView(m_controller);
+		openView(view);
+		m_controller->attachPrinter();
+
+	});
+	addControlledAction(emulationMenu, gbPrint, "gbPrint");
+	m_gameActions.append(gbPrint);
+#endif
+
+#ifdef M_CORE_GBA
+	QAction* bcGate = new QAction(tr("BattleChip Gate..."), emulationMenu);
+	connect(bcGate, &QAction::triggered, [this]() {
+		BattleChipView* view = new BattleChipView(m_controller);
+		openView(view);
+		m_controller->attachBattleChipGate();
+
+	});
+	addControlledAction(emulationMenu, bcGate, "bcGate");
+	m_gbaActions.append(bcGate);
+	m_gameActions.append(bcGate);
+#endif
+
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
 	m_shortcutController->addMenu(avMenu);
 	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));
@@ -1494,18 +1520,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	});
 	addControlledAction(avMenu, stopVL, "stopVL");
 	m_gameActions.append(stopVL);
-
-#ifdef M_CORE_GB
-	QAction* gbPrint = new QAction(tr("Game Boy Printer..."), avMenu);
-	connect(gbPrint, &QAction::triggered, [this]() {
-		PrinterView* view = new PrinterView(m_controller);
-		openView(view);
-		m_controller->attachPrinter();
-
-	});
-	addControlledAction(avMenu, gbPrint, "gbPrint");
-	m_gameActions.append(gbPrint);
-#endif
 
 	avMenu->addSeparator();
 	m_videoLayers = avMenu->addMenu(tr("Video layers"));

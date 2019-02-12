@@ -102,7 +102,6 @@ set(SOURCE_FILES
 	OverrideView.cpp
 	PaletteView.cpp
 	PlacementControl.cpp
-	PrinterView.cpp
 	RegisterView.cpp
 	ROMInfo.cpp
 	RotatedHeaderView.cpp
@@ -124,6 +123,7 @@ set(UI_FILES
 	AboutScreen.ui
 	ArchiveInspector.ui
 	AssetTile.ui
+	BattleChipView.ui
 	CheatsView.ui
 	DebuggerConsole.ui
 	GIFView.ui
@@ -147,10 +147,12 @@ set(UI_FILES
 	VideoView.ui)
 
 set(GBA_SRC
+	BattleChipView.cpp
 	GBAOverride.cpp)
 
 set(GB_SRC
-	GBOverride.cpp)
+	GBOverride.cpp
+	PrinterView.cpp)
 
 set(QT_LIBRARIES)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5,libqt5opengl5")

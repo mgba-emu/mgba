@@ -672,8 +672,8 @@ void CoreController::exportSharkport(const QString& path) {
 #endif
 }
 
-void CoreController::attachPrinter() {
 #ifdef M_CORE_GB
+void CoreController::attachPrinter() {
 	if (platform() != PLATFORM_GB) {
 		return;
 	}
@@ -703,11 +703,9 @@ void CoreController::attachPrinter() {
 	};
 	Interrupter interrupter(this);
 	GBSIOSetDriver(&gb->sio, &m_printer.d.d);
-#endif
 }
 
 void CoreController::detachPrinter() {
-#ifdef M_CORE_GB
 	if (platform() != PLATFORM_GB) {
 		return;
 	}
@@ -715,18 +713,44 @@ void CoreController::detachPrinter() {
 	GB* gb = static_cast<GB*>(m_threadContext.core->board);
 	GBPrinterDonePrinting(&m_printer.d);
 	GBSIOSetDriver(&gb->sio, nullptr);
-#endif
 }
 
 void CoreController::endPrint() {
-#ifdef M_CORE_GB
 	if (platform() != PLATFORM_GB) {
 		return;
 	}
 	Interrupter interrupter(this);
 	GBPrinterDonePrinting(&m_printer.d);
-#endif
 }
+#endif
+
+#ifdef M_CORE_GBA
+void CoreController::attachBattleChipGate() {
+	if (platform() != PLATFORM_GBA) {
+		return;
+	}
+	Interrupter interrupter(this);
+	clearMultiplayerController();
+	GBASIOBattlechipGateCreate(&m_battlechip);
+	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_BATTLECHIP_GATE, &m_battlechip);
+}
+
+void CoreController::detachBattleChipGate() {
+	if (platform() != PLATFORM_GBA) {
+		return;
+	}
+	Interrupter interrupter(this);
+	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_BATTLECHIP_GATE, nullptr);
+}
+
+void CoreController::setBattleChipId(uint16_t id) {
+	if (platform() != PLATFORM_GBA) {
+		return;
+	}
+	Interrupter interrupter(this);
+	m_battlechip.chipId = id;
+}
+#endif
 
 void CoreController::setAVStream(mAVStream* stream) {
 	Interrupter interrupter(this);
