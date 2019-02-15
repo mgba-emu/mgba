@@ -1072,8 +1072,15 @@ static s8 WPAD_StickX(u8 chan, u8 right) {
 		return 0;
 	}
 	int centered = (int) js->pos.x - (int) js->center.x;
-	int range = js->max.x - js->min.x;
-	return (centered * 0xFF) / range;
+	int range = (int) js->max.x - (int) js->min.x;
+	int value = (centered * 0xFF) / range;
+	if (value > 0x7F) {
+		return 0x7F;
+	}
+	if (value < -0x80) {
+		return -0x80;
+	}
+	return value;
 }
 
 static s8 WPAD_StickY(u8 chan, u8 right) {
@@ -1103,8 +1110,15 @@ static s8 WPAD_StickY(u8 chan, u8 right) {
 		return 0;
 	}
 	int centered = (int) js->pos.y - (int) js->center.y;
-	int range = js->max.y - js->min.y;
-	return (centered * 0xFF) / range;
+	int range = (int) js->max.y - (int) js->min.y;
+	int value = (centered * 0xFF) / range;
+	if (value > 0x7F) {
+		return 0x7F;
+	}
+	if (value < -0x80) {
+		return -0x80;
+	}
+	return value;
 }
 
 void _retraceCallback(u32 count) {
