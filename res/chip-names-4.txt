@@ -305,3 +305,11 @@ MetalMan Navi
 JunkMan Navi
 AquaMan Navi
 WoodMan Navi
+StarMan Navi
+IceMan Navi
+ShadowMan Navi
+ElecMan Navi
+KnightMan Navi
+PlantMan Navi
+NapalmMan Navi
+Bass Navi
