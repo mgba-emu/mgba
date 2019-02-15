@@ -25,9 +25,12 @@ public:
 	~BattleChipView();
 
 public slots:
+	void setFlavor(int);
 	void insertChip(bool);
 
 private:
+	void loadChipNames(int);
+
 	Ui::BattleChipView m_ui;
 
 	std::shared_ptr<CoreController> m_controller;

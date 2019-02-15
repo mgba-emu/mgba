@@ -7,6 +7,9 @@
 
 #include "CoreController.h"
 
+#include <QFile>
+#include <QStringList>
+
 using namespace QGBA;
 
 BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, QWidget* parent)
@@ -16,15 +19,23 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, QWidg
 	m_ui.setupUi(this);
 
 	connect(m_ui.chipId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), m_ui.inserted, [this]() {
-		m_ui.inserted->setChecked(Qt::Checked);
-		insertChip(true);
+		m_ui.inserted->setChecked(Qt::Unchecked);
 	});
+	connect(m_ui.chipId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), m_ui.chipName, &QComboBox::setCurrentIndex);
+	connect(m_ui.chipName, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), m_ui.chipId, &QSpinBox::setValue);
+
 	connect(m_ui.inserted, &QAbstractButton::toggled, this, &BattleChipView::insertChip);
 	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
+
+	setFlavor(4);
 }
 
 BattleChipView::~BattleChipView() {
 	m_controller->detachBattleChipGate();
+}
+
+void BattleChipView::setFlavor(int flavor) {
+	loadChipNames(flavor);
 }
 
 void BattleChipView::insertChip(bool inserted) {
@@ -33,4 +44,22 @@ void BattleChipView::insertChip(bool inserted) {
 	} else {
 		m_controller->setBattleChipId(0);
 	}
+}
+
+void BattleChipView::loadChipNames(int flavor) {
+	QStringList chipNames;
+	chipNames.append(tr("(None)"));
+
+	QFile file(QString(":/res/chip-names-%1.txt").arg(flavor));
+	file.open(QIODevice::ReadOnly | QIODevice::Text);
+	while (true) {
+		QByteArray line = file.readLine();
+		if (line.isEmpty()) {
+			break;
+		}
+		chipNames.append(QString::fromUtf8(line).trimmed());
+	}
+
+	m_ui.chipName->clear();
+	m_ui.chipName->addItems(chipNames);
 }
