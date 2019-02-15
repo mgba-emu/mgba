@@ -13,10 +13,15 @@ mLOG_DECLARE_CATEGORY(GBA_BATTLECHIP);
 mLOG_DEFINE_CATEGORY(GBA_BATTLECHIP, "GBA BattleChip Gate", "gba.battlechip");
 
 enum {
-	BATTLECHIP_INDEX_HANDSHAKE_0 = 0,
-	BATTLECHIP_INDEX_HANDSHAKE_1 = 1,
-	BATTLECHIP_INDEX_ID = 2,
-	BATTLECHIP_INDEX_END = 6
+	BATTLECHIP_STATE_COMMAND = 0,
+	BATTLECHIP_STATE_UNK_0 = 1,
+	BATTLECHIP_STATE_UNK_1 = 2,
+	BATTLECHIP_STATE_DATA_0 = 3,
+	BATTLECHIP_STATE_DATA_1 = 4,
+	BATTLECHIP_STATE_ID = 5,
+	BATTLECHIP_STATE_UNK_2 = 6,
+	BATTLECHIP_STATE_UNK_3 = 7,
+	BATTLECHIP_STATE_END = 8
 };
 
 enum {
@@ -51,7 +56,9 @@ bool GBASIOBattlechipGateInit(struct GBASIODriver* driver) {
 
 bool GBASIOBattlechipGateLoad(struct GBASIODriver* driver) {
 	struct GBASIOBattlechipGate* gate = (struct GBASIOBattlechipGate*) driver;
-	gate->index = BATTLECHIP_INDEX_END;
+	gate->state = BATTLECHIP_STATE_COMMAND;
+	gate->data[0] = 0x00FE;
+	gate->data[1] = 0xFFFE;
 	return true;
 }
 
@@ -91,49 +98,80 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 	gate->d.p->multiplayerControl.busy = 0;
 	gate->d.p->multiplayerControl.id = 0;
 
-	mLOG(GBA_BATTLECHIP, DEBUG, "> %04x", cmd);
+	mLOG(GBA_BATTLECHIP, DEBUG, "> %04X", cmd);
 
-	switch (cmd) {
-	case 0x4000:
-		gate->index = 0;
-	// Fall through
-	case 0:
-		switch (gate->index) {
-		case BATTLECHIP_INDEX_HANDSHAKE_0:
-			reply = 0x00FE;
+	switch (gate->state) {
+	case BATTLECHIP_STATE_COMMAND:
+		mLOG(GBA_BATTLECHIP, DEBUG, "C %04X", cmd);
+		switch (cmd) {
+		case 0x0000:
+		case 0x8FFF:
+		case 0xA380:
+		case 0xA390:
+		case 0xA3A0:
+		case 0xA3B0:
+		case 0xA3C0:
+		case 0xA3D0:
+			gate->state = -1;
+		// Fall through
+		case 0x5379:
+		case 0x537A:
+		case 0x537B:
+		case 0x537C:
+		case 0x537D:
+		case 0x537E:
+		case 0xD979:
+		case 0xD97A:
+		case 0xD97B:
+		case 0xD97C:
+		case 0xD97D:
+		case 0xD97E:
+			reply = BATTLECHIP_OK;
 			break;
-		case BATTLECHIP_INDEX_HANDSHAKE_1:
-			reply = 0xFFFE;
-			break;
-		case BATTLECHIP_INDEX_ID:
-			reply = gate->chipId;
+		case 0x5745:
+		case 0x5746:
+		case 0x5747:
+		case 0x5748:
+		case 0x5749:
+		case 0x574A:
+		case 0xFC00:
+			// Resync
+			gate->state = BATTLECHIP_STATE_UNK_0;
 			break;
 		default:
-			if (gate->index >= BATTLECHIP_INDEX_END) {
-				reply = BATTLECHIP_OK;
-			} else if (gate->index < 0) {
-				reply = BATTLECHIP_CONTINUE;
-			} else {
-				reply = 0;
-			}
+			mLOG(GBA_BATTLECHIP, STUB, "? %04X", cmd);
 			break;
 		}
-		++gate->index;
 		break;
-	case 0x8FFF:
-		gate->index = -2;
-	// Fall through
-	default:
-	case 0xA3D0:
+	case BATTLECHIP_STATE_UNK_0:
+	case BATTLECHIP_STATE_UNK_1:
+		reply = 0xFFFF;
+		break;
+	case BATTLECHIP_STATE_DATA_0:
+		reply = gate->data[0];
+		gate->data[0] += 3;
+		gate->data[0] &= 0xF0FF;
+		break;
+	case BATTLECHIP_STATE_DATA_1:
+		reply = gate->data[1];
+		gate->data[1] -= 3;
+		gate->data[1] |= 0xFE00;
+		break;
+	case BATTLECHIP_STATE_ID:
+		reply = gate->chipId;
+		break;
+	case BATTLECHIP_STATE_UNK_2:
+	case BATTLECHIP_STATE_UNK_3:
+		reply = 0;
+		break;
+	case BATTLECHIP_STATE_END:
 		reply = BATTLECHIP_OK;
-		break;
-	case 0x4234:
-	case 0x574A:
-		reply = BATTLECHIP_CONTINUE;
+		gate->state = -1;
 		break;
 	}
+	++gate->state;
 
-	mLOG(GBA_BATTLECHIP, DEBUG, "< %04x", reply);
+	mLOG(GBA_BATTLECHIP, DEBUG, "< %04X", reply);
 
 	gate->d.p->p->memory.io[REG_SIOMULTI1 >> 1] = reply;
 

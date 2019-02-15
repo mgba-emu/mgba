@@ -64,7 +64,8 @@ struct GBASIOBattlechipGate {
 	struct GBASIODriver d;
 	struct mTimingEvent event;
 	uint16_t chipId;
-	int32_t index;
+	uint16_t data[2];
+	int state;
 };
 
 void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate*);
