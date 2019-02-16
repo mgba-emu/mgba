@@ -39,7 +39,16 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, QWidg
 	});
 	connect(m_ui.gateBeastLink, &QAbstractButton::toggled, this, [this](bool on) {
 		if (on) {
-			setFlavor(6);
+			char title[9];
+			CoreController::Interrupter interrupter(m_controller);
+			mCore* core = m_controller->thread()->core;
+			title[8] = '\0';
+			core->getGameCode(core, title);
+			if (title[7] == 'E' || title[7] == 'P') {
+				setFlavor(7);
+			} else {
+				setFlavor(6);
+			}
 		}
 	});
 
@@ -68,6 +77,10 @@ void BattleChipView::insertChip(bool inserted) {
 void BattleChipView::loadChipNames(int flavor) {
 	QStringList chipNames;
 	chipNames.append(tr("(None)"));
+
+	if (flavor == 7) {
+		flavor = 6;
+	}
 
 	QFile file(QString(":/res/chip-names-%1.txt").arg(flavor));
 	file.open(QIODevice::ReadOnly | QIODevice::Text);

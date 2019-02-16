@@ -77,9 +77,6 @@
    </item>
    <item row="2" column="1">
     <widget class="QRadioButton" name="gateBeastLink">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
      <property name="text">
       <string>Beast &amp;Link Gate</string>
      </property>

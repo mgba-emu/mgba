@@ -535,6 +535,7 @@ static void _GBACoreSetPeripheral(struct mCore* core, int type, void* periph) {
 		break;
 	case mPERIPH_GBA_BATTLECHIP_GATE:
 		GBASIOSetDriver(&gba->sio, periph, SIO_MULTI);
+		GBASIOSetDriver(&gba->sio, periph, SIO_NORMAL_32);
 		break;
 	default:
 		return;
