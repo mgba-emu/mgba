@@ -184,6 +184,110 @@ Woody Nose 3
 
 
 
+Dark Circle
+Dark Sword
+Dark Invis
+Dark Plus
+Dark Lance
+Dark Wide
+Dark Thunder
+Dark Recovery
+Dark Meteor
+Dark Drill
+Dark Tornado
+Dark Sonic
+
+
+Life Aura
+Muramasa
+Guardian
+Anubis
+Attack +30
+Bug Fix
+Double Point
+Sanctuary
+Full Custom
+Meteors
+Number Ball
+Jealousy
+Poltergeist
+Black Wing
+Otenko
+Justice One
+Neo Variable
+Z Saber
+Gun del Sol EX
+Super Vulcan
+Roll
+Roll SP
+Roll DS
+GyroMan
+GyroMan SP
+GyroMan DS
+NapalmMan
+NapalmMan SP
+NapalmMan DS
+SearchMan
+SearchMan SP
+SearchMan DS
+MagnetMan
+MagnetMan SP
+MagnetMan DS
+Meddy
+Meddy SP
+Meddy DS
+ProtoMan
+ProtoMan SP
+ProtoMan DS
+NumberMan
+NumberMan SP
+NumberMan DS
+Colonel
+Colonel SP
+Colonel DS
+ShadowMan
+ShadowMan SP
+ShadowMan DS
+TomahawkMan
+TomahawkMan SP
+TomahawkMan DS
+KnightMan
+KnightMan SP
+KnightMan DS
+ToadMan
+ToadMan SP
+ToadMan DS
+ShadeMan
+ShadeMan SP
+ShadeMan DS
+BlizzardMan
+BlizzardMan SP
+BlizzardMan DS
+CloudMan
+CloudMan SP
+CloudMan DS
+CosmoMan
+CosmoMan SP
+CosmoMan DS
+LarkMan
+LarkMan SP
+LarkMan DS
+GridMan
+GridMan SP
+GridMan DS
+Django
+Django SP
+Django DS
+Cannon Mode
+Cannon Ball
+Sword Mode
+Yo-Yo Mode
+Drill Mode
+L Curse Shield
+L Step Sword
+L Counter
+Elememt Power
+Final Gun
 
 
 
@@ -194,6 +298,18 @@ Woody Nose 3
 
 
 
+Bass
+Delta Ray
+Bug Curse
+Meteor Knuckle
+Omega Racket
+Bass Another
+Holy Dream
+Big Hook
+Cross Divide
+Bug Charge
+Phoenix
+Death Phoenix
 
 
 
@@ -211,127 +327,11 @@ Woody Nose 3
 
 
 
+MegaMan Navi
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+SearchMan Navi
 
 
 ProtoMan Navi
@@ -340,40 +340,12 @@ NumberMan Navi
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ShadowMan Navi
+NapalmMan Navi
+KnightMan Navi
+ToadMan Navi
+MagnetMan Navi
+GyroMan Navi
+Colonel Navi
+Meddy Navi
+TomahawkMan Navi
