@@ -3,181 +3,181 @@ Hi Cannon
 Mega Cannon
 Air Shot
 Air Hockey
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Boomer
+Silence
+Tornado
+Wide Shot 1
+Wide Shot 2
+Wide Shot 3
+Mark Cannon 1
+Mark Cannon 2
+Mark Cannon 3
+Vulcan 1
+Vulcan 2
+Vulcan 3
+Spreader
+Thunder Ball
+Ice Seed
+Pulsar 1
+Pulsar 2
+Pulsar 3
+Space Shake 1
+Space Shake 2
+Space Shake 3
+Static
+Life Sync
+Mini Boomer
+Energy Bomb
+Mega Energy Bomb
+Gun del Sol 1
+Gun del Sol 2
+Gun del Sol 3
+Quake 1
+Quake 2
+Quake 3
+Crack Bomb
+Paralyze Bomb
+Reset Bomb
+Bug Bomb
+Grass Seed
+Lava Seed
+Cannon Ball
+Geyser
+Black Bomb
+Sea Seed
+Sword
+Wide Sword
+Long Sword
+Wide Blade
+Long Blade
+Wind Racket
+Custom Sword
+Variable Sword
+Slasher
+Moon Blade 1
+Moon Blade 2
+Moon Blade 3
+Katana 1
+Katana 2
+Katana 3
+Tank Cannon 1
+Tank Cannon 2
+Tank Cannon 3
+Red Fruit 1
+Red Fruit 2
+Red Fruit 3
+Skully 1
+Skully 2
+Skully 3
+Drill Arm 1
+Drill Arm 2
+Drill Arm 3
+Time Bomb 1
+Time Bomb 2
+Time Bomb3
+Voltz 1
+Voltz 2
+Voltz 3
+Lance
+Yo-Yo
+Wind
+Fan
+Boy's Bomb 1
+Boy's Bomb 2
+Boy's Bomb 3
+Guard 1
+Guard 2
+Guard 3
+Crack Out
+Double Crack
+Triple Crack
+Magnum
+Grab Gel
+Snake
+Circle Gun
+Mine
+Rock Cube
 Fanfare
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Discord
+Timpani
+VDoll
+Asteroid 1
+Asteroid 2
+Asteroid 3
+Recovery 10
+Recovery 30
+Recovery 50
+Recovery 80
+Recovery 120
+Recovery 150
+Recovery 200
+Recovery 300
+Buster Up
+Panel Grab
+Area Grab
+Grab Revenge
+Grab Banish
+Slow Gauge
+Fast Gauge
+Panel Return
+Geddon 1
+Geddon 2
+Geddon 3
+Rainy Day
+Color Point
+Element Rage
+Blinder
+Air Spin 1
+Air Spin 2
+Air Spin 3
+Invisible
+Bubble Wrap
+Barrier
+Barrier 100
+Barrier 200
+North Wind
+Holy Panel
+Anti Fire
+Anti Water
+Anti Electric
+Anti Wood
+Anti Navi
+Anti Damage
+Anti Sword
+Anti Recovery
+Copy Damage
+Attck +10
+Navi +20
+Fire Hit 1
+Fire Hit 2
+Fire Hit 3
+Hot Body 1
+Hot Body 2
+Hot Body 3
+Aqua Whirl 1
+Aqua Whirl 2
+Aqua Whirl 3
+Side Bubble 1
+Side Bubble 2
+Side Bubble 3
+Elec Reel 1
+Elec Reel 2
+Elec Reel 3
+Custom Volt 1
+Custom Volt 2
+Custom Volt 3
+Curse Shield 1
+Curse Shield 2
+Curse Shield 3
+Wave Pit
+Red Wave
+Mud Wave
+Cactus Ball 1
+Cactus Ball 2
+Cactus Ball 3
+Woody Nose 1
+Woody Nose 2
+Woody Nose 3
 
 
 

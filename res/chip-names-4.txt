@@ -54,9 +54,9 @@ Wind Racket
 Custom Sword
 Variable Sword
 Slasher
-Thunderball 1
-Thunderball 2
-Thunderball 3
+Thunder Ball 1
+Thunder Ball 2
+Thunder Ball 3
 Counter 1
 Counter 2
 Counter 3
