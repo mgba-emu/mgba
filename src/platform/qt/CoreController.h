@@ -143,6 +143,7 @@ public slots:
 	void attachBattleChipGate();
 	void detachBattleChipGate();
 	void setBattleChipId(uint16_t id);
+	void setBattleChipFlavor(int flavor);
 #endif
 
 	void setAVStream(mAVStream*);

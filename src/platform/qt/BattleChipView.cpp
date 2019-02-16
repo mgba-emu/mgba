@@ -27,6 +27,24 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, QWidg
 	connect(m_ui.inserted, &QAbstractButton::toggled, this, &BattleChipView::insertChip);
 	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 
+	connect(m_ui.gateBattleChip, &QAbstractButton::toggled, this, [this](bool on) {
+		if (on) {
+			setFlavor(4);
+		}
+	});
+	connect(m_ui.gateProgress, &QAbstractButton::toggled, this, [this](bool on) {
+		if (on) {
+			setFlavor(5);
+		}
+	});
+	connect(m_ui.gateBeastLink, &QAbstractButton::toggled, this, [this](bool on) {
+		if (on) {
+			setFlavor(6);
+		}
+	});
+
+
+	m_controller->attachBattleChipGate();
 	setFlavor(4);
 }
 
@@ -35,6 +53,7 @@ BattleChipView::~BattleChipView() {
 }
 
 void BattleChipView::setFlavor(int flavor) {
+	m_controller->setBattleChipFlavor(flavor);
 	loadChipNames(flavor);
 }
 

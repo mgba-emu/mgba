@@ -26,6 +26,8 @@ enum {
 
 enum {
 	BATTLECHIP_OK = 0xFFC6,
+	PROGRESS_GATE_OK = 0xFFC7,
+	BEAST_LINK_GATE_OK = 0xFFC8,
 	BATTLECHIP_CONTINUE = 0xFFFF,
 };
 
@@ -46,11 +48,13 @@ void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate* gate) {
 	gate->event.context = gate;
 	gate->event.callback = _battlechipTransferEvent;
 	gate->event.priority = 0x80;
+
+	gate->chipId = 0;
+	gate->flavor = GBA_FLAVOR_BATTLECHIP_GATE;
 }
 
 bool GBASIOBattlechipGateInit(struct GBASIODriver* driver) {
 	struct GBASIOBattlechipGate* gate = (struct GBASIOBattlechipGate*) driver;
-	gate->chipId = 0;
 	return true;
 }
 
@@ -100,6 +104,20 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 
 	mLOG(GBA_BATTLECHIP, DEBUG, "> %04X", cmd);
 
+	uint16_t ok;
+	switch (gate->flavor) {
+	case GBA_FLAVOR_BATTLECHIP_GATE:
+	default:
+		ok = BATTLECHIP_OK;
+		break;
+	case GBA_FLAVOR_PROGRESS_GATE:
+		ok = PROGRESS_GATE_OK;
+		break;
+	case GBA_FLAVOR_BEAST_LINK_GATE:
+		ok = BEAST_LINK_GATE_OK;
+		break;
+	}
+
 	switch (gate->state) {
 	case BATTLECHIP_STATE_COMMAND:
 		mLOG(GBA_BATTLECHIP, DEBUG, "C %04X", cmd);
@@ -112,6 +130,7 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 		case 0xA3B0:
 		case 0xA3C0:
 		case 0xA3D0:
+		case 0xA6C0:
 			gate->state = -1;
 		// Fall through
 		case 0x5379:
@@ -120,14 +139,22 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 		case 0x537C:
 		case 0x537D:
 		case 0x537E:
+		case 0xC4D8:
 		case 0xD979:
 		case 0xD97A:
 		case 0xD97B:
 		case 0xD97C:
 		case 0xD97D:
 		case 0xD97E:
-			reply = BATTLECHIP_OK;
+			reply = ok;
 			break;
+		case 0x424A:
+		case 0x424B:
+		case 0x424C:
+		case 0x424D:
+		case 0x424E:
+		case 0x424F:
+		case 0x4250:
 		case 0x5745:
 		case 0x5746:
 		case 0x5747:
@@ -150,12 +177,12 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 	case BATTLECHIP_STATE_DATA_0:
 		reply = gate->data[0];
 		gate->data[0] += 3;
-		gate->data[0] &= 0xF0FF;
+		gate->data[0] &= 0x00FF;
 		break;
 	case BATTLECHIP_STATE_DATA_1:
 		reply = gate->data[1];
 		gate->data[1] -= 3;
-		gate->data[1] |= 0xFE00;
+		gate->data[1] |= 0xFC00;
 		break;
 	case BATTLECHIP_STATE_ID:
 		reply = gate->chipId;
@@ -165,7 +192,7 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 		reply = 0;
 		break;
 	case BATTLECHIP_STATE_END:
-		reply = BATTLECHIP_OK;
+		reply = ok;
 		gate->state = -1;
 		break;
 	}
