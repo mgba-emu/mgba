@@ -795,6 +795,11 @@ void Window::gameStopped() {
 	m_fpsTimer.stop();
 	m_focusCheck.stop();
 
+	if (m_audioProcessor) {
+		m_audioProcessor->stop();
+		m_audioProcessor.reset();
+	}
+
 	emit paused(false);
 }
 
