@@ -33,6 +33,7 @@ private:
 
 	Ui::BattleChipView m_ui;
 
+	QMap<int, int> m_chipIndexToId;
 	std::shared_ptr<CoreController> m_controller;
 };
 

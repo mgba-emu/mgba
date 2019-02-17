@@ -29,8 +29,9 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, QWidg
 	connect(m_ui.chipId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), m_ui.inserted, [this]() {
 		m_ui.inserted->setChecked(Qt::Unchecked);
 	});
-	connect(m_ui.chipId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), m_ui.chipName, &QComboBox::setCurrentIndex);
-	connect(m_ui.chipName, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), m_ui.chipId, &QSpinBox::setValue);
+	connect(m_ui.chipName, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), m_ui.chipId, [this](int id) {
+		m_ui.chipId->setValue(m_chipIndexToId[id]);
+	});
 
 	connect(m_ui.inserted, &QAbstractButton::toggled, this, &BattleChipView::insertChip);
 	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
@@ -87,17 +88,24 @@ void BattleChipView::loadChipNames(int flavor) {
 	QStringList chipNames;
 	chipNames.append(tr("(None)"));
 
+	m_chipIndexToId.clear();
 	if (flavor == GBA_FLAVOR_BEAST_LINK_GATE_US) {
 		flavor = GBA_FLAVOR_BEAST_LINK_GATE;
 	}
 
 	QFile file(QString(":/res/chip-names-%1.txt").arg(flavor));
 	file.open(QIODevice::ReadOnly | QIODevice::Text);
+	int id = 0;
 	while (true) {
 		QByteArray line = file.readLine();
 		if (line.isEmpty()) {
 			break;
 		}
+		++id;
+		if (line.trimmed().isEmpty()) {
+			continue;
+		}
+		m_chipIndexToId[chipNames.length()] = id;
 		chipNames.append(QString::fromUtf8(line).trimmed());
 	}
 
