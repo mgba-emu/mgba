@@ -58,7 +58,7 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, QWidg
 
 	m_controller->attachBattleChipGate();
 	setFlavor(4);
-	if (qtitle.startsWith("AGB-B4B") || qtitle.startsWith("AGB-B4W") || qtitle.startsWith("AGB-BR4")) {
+	if (qtitle.startsWith("AGB-B4B") || qtitle.startsWith("AGB-B4W") || qtitle.startsWith("AGB-BR4") || qtitle.startsWith("AGB-BZ3")) {
 		m_ui.gateBattleChip->setChecked(Qt::Checked);
 	} else if (qtitle.startsWith("AGB-BRB") || qtitle.startsWith("AGB-BRK")) {
 		m_ui.gateProgress->setChecked(Qt::Checked);
