@@ -18,6 +18,14 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, QWidg
 {
 	m_ui.setupUi(this);
 
+	char title[9];
+	CoreController::Interrupter interrupter(m_controller);
+	mCore* core = m_controller->thread()->core;
+	title[8] = '\0';
+	core->getGameCode(core, title);
+	QString qtitle(title);
+
+
 	connect(m_ui.chipId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), m_ui.inserted, [this]() {
 		m_ui.inserted->setChecked(Qt::Unchecked);
 	});
@@ -29,32 +37,33 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, QWidg
 
 	connect(m_ui.gateBattleChip, &QAbstractButton::toggled, this, [this](bool on) {
 		if (on) {
-			setFlavor(4);
+			setFlavor(GBA_FLAVOR_BATTLECHIP_GATE);
 		}
 	});
 	connect(m_ui.gateProgress, &QAbstractButton::toggled, this, [this](bool on) {
 		if (on) {
-			setFlavor(5);
+			setFlavor(GBA_FLAVOR_PROGRESS_GATE);
 		}
 	});
-	connect(m_ui.gateBeastLink, &QAbstractButton::toggled, this, [this](bool on) {
+	connect(m_ui.gateBeastLink, &QAbstractButton::toggled, this, [this, qtitle](bool on) {
 		if (on) {
-			char title[9];
-			CoreController::Interrupter interrupter(m_controller);
-			mCore* core = m_controller->thread()->core;
-			title[8] = '\0';
-			core->getGameCode(core, title);
-			if (title[7] == 'E' || title[7] == 'P') {
-				setFlavor(7);
+			if (qtitle.endsWith('E') || qtitle.endsWith('P')) {
+				setFlavor(GBA_FLAVOR_BEAST_LINK_GATE_US);
 			} else {
-				setFlavor(6);
+				setFlavor(GBA_FLAVOR_BEAST_LINK_GATE);
 			}
 		}
 	});
 
-
 	m_controller->attachBattleChipGate();
 	setFlavor(4);
+	if (qtitle.startsWith("AGB-B4B") || qtitle.startsWith("AGB-B4W") || qtitle.startsWith("AGB-BR4")) {
+		m_ui.gateBattleChip->setChecked(Qt::Checked);
+	} else if (qtitle.startsWith("AGB-BRB") || qtitle.startsWith("AGB-BRK")) {
+		m_ui.gateProgress->setChecked(Qt::Checked);
+	} else if (qtitle.startsWith("AGB-BR5") || qtitle.startsWith("AGB-BR6")) {
+		m_ui.gateBeastLink->setChecked(Qt::Checked);
+	}
 }
 
 BattleChipView::~BattleChipView() {
@@ -78,8 +87,8 @@ void BattleChipView::loadChipNames(int flavor) {
 	QStringList chipNames;
 	chipNames.append(tr("(None)"));
 
-	if (flavor == 7) {
-		flavor = 6;
+	if (flavor == GBA_FLAVOR_BEAST_LINK_GATE_US) {
+		flavor = GBA_FLAVOR_BEAST_LINK_GATE;
 	}
 
 	QFile file(QString(":/res/chip-names-%1.txt").arg(flavor));
