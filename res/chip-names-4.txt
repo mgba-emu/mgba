@@ -87,7 +87,7 @@ Guard1
 Guard2
 Guard3
 Magnum
-GrabGel
+MetaGel
 Snake
 TimeBomb
 Mine
@@ -253,7 +253,7 @@ Bass
 DeltaRay
 BugCurse
 RedSun
-BassAnother
+BassAnomaly
 HolyDream
 BlueMoon
 BugCharge

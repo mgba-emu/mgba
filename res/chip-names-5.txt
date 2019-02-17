@@ -92,7 +92,7 @@ CrackOut
 DoubleCrack
 TripleCrack
 Magnum
-GrabGel
+MetaGel
 Snake
 CircleGun
 Mine
@@ -303,7 +303,7 @@ DeltaRay
 BugCurse
 MeteorKnuckle
 OmegaRacket
-BassAnother
+BassAnomaly
 HolyDream
 BigHook
 CrossDivide
