@@ -26,7 +26,7 @@ ElementFlare
 ElementIce
 Static
 LifeSync
-MiniBoomer
+MiniBomb
 EnergyBomb
 MegaEnergyBomb
 GunDelSol1
@@ -41,8 +41,8 @@ Binder3
 BugBomb
 ElecShock
 WoodPowder
-Cannonball
-Geyser
+CannonBall
+BlackBomb
 Geyser
 SandRing
 Sword

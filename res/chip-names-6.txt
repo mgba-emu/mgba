@@ -80,7 +80,7 @@ BambooSword
 WindRacket
 StepSword
 VariableSword
-NeoVariSword
+NeoVariable
 MoonBlade
 Muramasa
 MachineSword

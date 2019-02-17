@@ -26,7 +26,7 @@ SpaceShake2
 SpaceShake3
 Static
 LifeSync
-MiniBoomer
+MiniBomb
 EnergyBomb
 MegaEnergyBomb
 GunDelSol1
@@ -146,7 +146,7 @@ AntiDamage
 AntiSword
 AntiRecovery
 CopyDamage
-Attck+10
+Attack+10
 Navi+20
 FireHit1
 FireHit2
@@ -234,8 +234,8 @@ MagnetMan
 MagnetManSP
 MagnetManDS
 Meddy
-MeddySP
 MeddyDS
+MeddySP
 ProtoMan
 ProtoManSP
 ProtoManDS
@@ -286,7 +286,7 @@ DrillMode
 LCurseShield
 LStepSword
 LCounter
-ElememtPower
+ElementPower
 FinalGun
 
 
@@ -302,7 +302,7 @@ Bass
 DeltaRay
 BugCurse
 MeteorKnuckle
-OmegaRacket
+OmegaRocket
 BassAnomaly
 HolyDream
 BigHook
