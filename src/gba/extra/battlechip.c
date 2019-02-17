@@ -144,22 +144,27 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 		switch (cmd) {
 		case 0x0000:
 		case 0x8FFF:
+		// EXE 5, 6
 		case 0xA380:
 		case 0xA390:
 		case 0xA3A0:
 		case 0xA3B0:
 		case 0xA3C0:
 		case 0xA3D0:
+		// EXE 4
 		case 0xA6C0:
 			gate->state = -1;
 		// Fall through
+		//
 		case 0x5379:
 		case 0x537A:
 		case 0x537B:
 		case 0x537C:
 		case 0x537D:
 		case 0x537E:
+		//
 		case 0x6E8F:
+		//
 		case 0x87D0:
 		case 0x87D1:
 		case 0x87D2:
@@ -173,6 +178,7 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 		case 0xB7D6:
 		case 0xB7D7:
 		case 0xB7D8:
+		//
 		case 0xC4D3:
 		case 0xC4D4:
 		case 0xC4D5:
@@ -184,23 +190,33 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 		case 0xC4DB:
 		case 0xC4DC:
 		case 0xC4DD:
+		// EXE 4
 		case 0xD979:
 		case 0xD97A:
 		case 0xD97B:
 		case 0xD97C:
 		case 0xD97D:
 		case 0xD97E:
+		case 0xD97F:
+		case 0xD980:
+		case 0xD981:
+		case 0xD982:
+		case 0xD983:
+		case 0xD984:
+		// EXE 5
 		case 0xE49A:
 		case 0xE49B:
 		case 0xE49C:
 			reply = ok;
 			break;
+		//
 		case 0x3545:
 		case 0x3546:
 		case 0x3547:
 		case 0x3548:
 		case 0x3549:
 		case 0x354A:
+		//
 		case 0x424A:
 		case 0x424B:
 		case 0x424C:
@@ -208,6 +224,7 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 		case 0x424E:
 		case 0x424F:
 		case 0x4250:
+		//
 		case 0x5745:
 		case 0x5746:
 		case 0x5747:
