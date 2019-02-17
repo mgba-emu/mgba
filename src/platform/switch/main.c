@@ -463,7 +463,7 @@ int32_t _readGyroZ(struct mRotationSource* source) {
 	UNUSED(source);
 	SixAxisSensorValues sixaxis;
 	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
-	return sixaxis.gyroscope.z * 1.1e9f;
+	return sixaxis.gyroscope.z * -1.1e9f;
 }
 
 static int _batteryState(void) {

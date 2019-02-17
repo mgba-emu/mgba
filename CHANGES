@@ -12,6 +12,7 @@ Bugfixes:
  - GBA Memory: Fix OOB ROM reads showing up as AGBPrint memory
  - GB Serialize: Fix loading states with negative pixel x (fixes mgba.io/i/1293)
  - Qt: Fix audio context holding onto closed game controller
+ - Switch: Fix gyroscope orientation (fixes mgba.io/i/1300)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
