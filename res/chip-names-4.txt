@@ -42,8 +42,8 @@ BugBomb
 ElecShock
 WoodPowder
 CannonBall
-BlackBomb
 Geyser
+BlackBomb
 SandRing
 Sword
 WideSword
