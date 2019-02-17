@@ -177,6 +177,7 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 		case 0xD97C:
 		case 0xD97D:
 		case 0xD97E:
+		case 0xE49A:
 			reply = ok;
 			break;
 		case 0x3545:
@@ -198,12 +199,12 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 		case 0x5748:
 		case 0x5749:
 		case 0x574A:
-		case 0xFC00:
 			// Resync
 			gate->state = BATTLECHIP_STATE_UNK_0;
 			break;
 		default:
 			mLOG(GBA_BATTLECHIP, STUB, "? %04X", cmd);
+			gate->state = -1;
 			break;
 		}
 		break;
