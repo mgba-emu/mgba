@@ -1,7 +1,7 @@
 0.8.0: (Future)
 Features:
  - Improved logging configuration
- - One-Player BattleChip Gate support
+ - One-Player BattleChip/Progress/Beast Link Gate support
 Bugfixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs
