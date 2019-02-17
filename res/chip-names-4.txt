@@ -1,315 +1,315 @@
 Cannon
-Hi Cannon
-Mega Cannon
-Air Shot
+HiCannon
+MegaCannon
+AirShot
 Blizzard
-Heat Breath
+HeatBreath
 Silence
 Tornado
-Wide Shot 1
-Wide Shot 2
-Wide Shot 3
-Flame Line 1
-Flame Line 2
-Flame Line 3
-Vulcan 1
-Vulcan 2
-Vulcan 3
+WideShot1
+WideShot2
+WideShot3
+FlameLine1
+FlameLine2
+FlameLine3
+Vulcan1
+Vulcan2
+Vulcan3
 Spreader
-Heat Shot
-Heat V
-Heat Side
+HeatShot
+HeatV
+HeatSide
 Bubbler
-Bubble V
-Bubble Side
-Element Flare
-Element Ice
+BubbleV
+BubbleSide
+ElementFlare
+ElementIce
 Static
-Life Sync
-Mini Boomer
-Energy Bomb
-Mega Energy Bomb
-Gun del Sol 1
-Gun del Sol 2
-Gun del Sol 3
-Mag Bolt 1
-Mag Bolt 2
-Mag Bolt 3
-Binder 1
-Binder 2
-Binder 3
-Bug Bomb
-Elec Shock
-Wood Powder
+LifeSync
+MiniBoomer
+EnergyBomb
+MegaEnergyBomb
+GunDelSol1
+GunDelSol2
+GunDelSol3
+MagBolt1
+MagBolt2
+MagBolt3
+Binder1
+Binder2
+Binder3
+BugBomb
+ElecShock
+WoodPowder
 Cannonball
 Geyser
 Geyser
-Sand Ring
+SandRing
 Sword
-Wide Sword
-Long Sword
-Wide Blade
-Long Blade
-Wind Racket
-Custom Sword
-Variable Sword
+WideSword
+LongSword
+WideBlade
+LongBlade
+WindRacket
+CustomSword
+VariableSword
 Slasher
-Thunder Ball 1
-Thunder Ball 2
-Thunder Ball 3
-Counter 1
-Counter 2
-Counter 3
-Air Hockey 1
-Air Hockey 2
-Air Hockey 3
-Circle Gun 1
-Circle Gun 2
-Circle Gun 3
-Twin Fang 1
-Twin Fang 2
-Twin Fang 3
-White Web 1
-White Web 2
-White Web 3
-Boomerang 1
-Boomerang 2
-Boomerang 3
-Side Bamboo 1
-Side Bamboo 2
-Side Bamboo 3
+ThunderBall1
+ThunderBall2
+ThunderBall3
+Counter1
+Counter2
+Counter3
+AirHockey1
+AirHockey2
+AirHockey3
+CircleGun1
+CircleGun2
+CircleGun3
+TwinFang1
+TwinFang2
+TwinFang3
+WhiteWeb1
+WhiteWeb2
+WhiteWeb3
+Boomerang1
+Boomerang2
+Boomerang3
+SideBamboo1
+SideBamboo2
+SideBamboo3
 Lance
 Hole
-Boy's Bomb 1
-Boy's Bomb 2
-Boy's Bomb 3
-Guard 1
-Guard 2
-Guard 3
+Boy'sBomb1
+Boy'sBomb2
+Boy'sBomb3
+Guard1
+Guard2
+Guard3
 Magnum
-Grab Gel
+GrabGel
 Snake
-Time Bomb
+TimeBomb
 Mine
-Rock Cube
+RockCube
 Fanfare
 Discord
 Timpani
-VDoll
-Big Hammer 1
-Big Hammer 2
-Big Hammer 3
-Grab Revenge
-Grab Banish
-Geddon 1
-Geddon 2
-Geddon 3
-Element Leaf
-Color Point
-Element Sand
-Moko Rush 1
-Moko Rush 2
-Moko Rush 3
-North Wind
-Anti Fire
-Anti Water
-Anti Electric
-Anti Wood
-Anti Navi
-Anti Damage
-Anti Sword
-Anti Recover
-Copy Damage
-Attack +10
-Navi +20
-Roll Arrow 1
-Roll Arrow 2
-Roll Arrow 3
-Guts Punch 1
-Guts Punch 2
-Guts Punch 3
-Propeller Bomb 1
-Propeller Bomb 2
-Propeller Bomb 3
-Search Bomb 1
-Search Bomb 2
-Search Bomb 3
-Meteors 1
-Meteors 2
-Meteors 3
-Lightning 1
-Lightning 2
-Lightning 3
-Hawk Cut 1
-Hawk Cut 2
-Hawk Cut 3
-Number Ball 1
-Number Ball 2
-Number Ball 3
-Metal Gear 1
-Metal Gear 2
-Metal Gear 3
-Panel Shoot 1
-Panel Shoot 2
-Panel Shoot 3
-Aqua Upper 1
-Aqua Upper 2
-Aqua Upper 3
-Green Wood 1
-Green Wood 2
-Green Wood 3
+Vdoll
+BigHammer1
+BigHammer2
+BigHammer3
+GrabRevenge
+GrabBanish
+Geddon1
+Geddon2
+Geddon3
+ElementLeaf
+ColorPoint
+ElementSand
+MokoRush1
+MokoRush2
+MokoRush3
+NorthWind
+AntiFire
+AntiWater
+AntiElectric
+AntiWood
+AntiNavi
+AntiDamage
+AntiSword
+AntiRecover
+CopyDamage
+Attack+10
+Navi+20
+RollArrow1
+RollArrow2
+RollArrow3
+GutsPunch1
+GutsPunch2
+GutsPunch3
+PropellerBomb1
+PropellerBomb2
+PropellerBomb3
+SearchBomb1
+SearchBomb2
+SearchBomb3
+Meteors1
+Meteors2
+Meteors3
+Lightning1
+Lightning2
+Lightning3
+HawkCut1
+HawkCut2
+HawkCut3
+NumberBall1
+NumberBall2
+NumberBall3
+MetalGear1
+MetalGear2
+MetalGear3
+PanelShoot1
+PanelShoot2
+PanelShoot3
+AquaUpper1
+AquaUpper2
+AquaUpper3
+GreenWood1
+GreenWood2
+GreenWood3
 Muramasa
 Guardian
 Anubis
-Double Point
-Full Custom
-Shooting Star
-Bug Chain
+DoublePoint
+FullCustom
+ShootingStar
+BugChain
 Jealousy
-Element Dark
-Black Wing
-God Hammer
-Dark Line
-Neo Variable
-Z Saber
-Gun del Sol EX
-Super Vulcan
+ElementDark
+BlackWing
+GodHammer
+DarkLine
+NeoVariable
+ZSaber
+GunDelSolEX
+SuperVulcan
 Roll
-Roll SP
-Roll DS
+RollSP
+RollDS
 GutsMan
-GutsMan SP
-GutsMan DS
+GutsManSP
+GutsManDS
 WindMan
-WindMan SP
-WindMan DS
+WindManSP
+WindManDS
 SearchMan
-SearchMan SP
-SearchMan DS
+SearchManSP
+SearchManDS
 FireMan
-FireMan SP
-FireMan DS
+FireManSP
+FireManDS
 ThunderMan
-ThunderMan SP
-ThunderMan DS
+ThunderManSP
+ThunderManDS
 ProtoMan
-ProtoMan SP
-ProtoMan DS
+ProtoManSP
+ProtoManDS
 NumberMan
-NumberMan SP
-NumberMan DS
+NumberManSP
+NumberManDS
 MetalMan
-MetalMan SP
-MetalMan DS
+MetalManSP
+MetalManDS
 JunkMan
-JunkMan SP
-JunkMan DS
+JunkManSP
+JunkManDS
 AquaMan
-AquaMan SP
-AquaMan DS
+AquaManSP
+AquaManDS
 WoodMan
-WoodMan SP
-WoodMan DS
+WoodManSP
+WoodManDS
 TopMan
-TopMan SP
-TopMan DS
+TopManSP
+TopManDS
 ShadeMan
-ShadeMan SP
-ShadeMan DS
+ShadeManSP
+ShadeManDS
 BurnerMan
-BurnerMan SP
-BurnerMan DS
+BurnerManSP
+BurnerManDS
 ColdMan
-ColdMan SP
-ColdMan DS
+ColdManSP
+ColdManDS
 SparkMan
-SparkMan SP
-SparkMan DS
+SparkManSP
+SparkManDS
 LaserMan
-LaserMan SP
-LaserMan DS
+LaserManSP
+LaserManDS
 KendoMan
-KendoMan SP
-KendoMan DS
+KendoManSP
+KendoManDS
 VideoMan
-VideoMan SP
-VideoMan DS
+VideoManSP
+VideoManDS
 Marking
-Cannon Mode
-Cannonball Mode
-Sword Mode
-Fire Plus
-Thunder Plus
-Aqua Power
-Wood Power
-Black Weapon
-Final Gun
+CannonMode
+CannonballMode
+SwordMode
+FirePlus
+ThunderPlus
+AquaPower
+WoodPower
+BlackWeapon
+FinalGun
 
 
 
 
 
 Bass
-Delta Ray
-Bug Curse
-Red Sun
-Bass Another
-Holy Dream
-Blue Moon
-Bug Charge
+DeltaRay
+BugCurse
+RedSun
+BassAnother
+HolyDream
+BlueMoon
+BugCharge
 
 
 Wind
 Fan
-Crack Out
-Double Crack
-Triple Crack
-Recovery 10
-Recovery 30
-Recovery 50
-Recovery 80
-Recovery 120
-Recovery 150
-Recovery 200
-Recovery 300
+CrackOut
+DoubleCrack
+TripleCrack
+Recover10
+Recover30
+Recover50
+Recover80
+Recover120
+Recover150
+Recover200
+Recover300
 Repair
-Panel Grab
-Area Grab
-Slow Gauge
-Fast Gauge
-Panel Return
+PanelGrab
+AreaGrab
+SlowGauge
+FastGauge
+PanelReturn
 Blinder
-Pop Up
+PopUp
 Invisible
 Barrier
-Barrier 100
-Barrier 200
-Holy Panel
+Barrier100
+Barrier200
+HolyPanel
 
-Life Aura
-Attack +30
-Bug Fix
+LifeAura
+Attack+30
+BugFix
 Sanctuary
-Signal Red
-Black Barrier
-MegaMan Navi
-Roll Navi
-GutsMan Navi
-WindMan Navi
-SearchMan Navi
-FireMan Navi
-ThunderMan Navi
-ProtoMan Navi
-NumberMan Navi
-MetalMan Navi
-JunkMan Navi
-AquaMan Navi
-WoodMan Navi
-StarMan Navi
-IceMan Navi
-ShadowMan Navi
-ElecMan Navi
-KnightMan Navi
-PlantMan Navi
-NapalmMan Navi
-Bass Navi
+SignalRed
+BlackBarrier
+MegaManNavi
+RollNavi
+GutsManNavi
+WindManNavi
+SearchManNavi
+FireManNavi
+ThunderManNavi
+ProtoManNavi
+NumberManNavi
+MetalManNavi
+JunkManNavi
+AquaManNavi
+WoodManNavi
+StarManNavi
+IceManNavi
+ShadowManNavi
+ElecManNavi
+KnightManNavi
+PlantManNavi
+NapalmManNavi
+BassNavi

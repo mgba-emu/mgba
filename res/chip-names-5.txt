@@ -1,293 +1,293 @@
 Cannon
-Hi Cannon
-Mega Cannon
-Air Shot
-Air Hockey
+HiCannon
+MegaCannon
+AirShot
+AirHockey
 Boomer
 Silence
 Tornado
-Wide Shot 1
-Wide Shot 2
-Wide Shot 3
-Mark Cannon 1
-Mark Cannon 2
-Mark Cannon 3
-Vulcan 1
-Vulcan 2
-Vulcan 3
+WideShot1
+WideShot2
+WideShot3
+MarkCannon1
+MarkCannon2
+MarkCannon3
+Vulcan1
+Vulcan2
+Vulcan3
 Spreader
-Thunder Ball
-Ice Seed
-Pulsar 1
-Pulsar 2
-Pulsar 3
-Space Shake 1
-Space Shake 2
-Space Shake 3
+ThunderBall
+IceSeed
+Pulsar1
+Pulsar2
+Pulsar3
+SpaceShake1
+SpaceShake2
+SpaceShake3
 Static
-Life Sync
-Mini Boomer
-Energy Bomb
-Mega Energy Bomb
-Gun del Sol 1
-Gun del Sol 2
-Gun del Sol 3
-Quake 1
-Quake 2
-Quake 3
-Crack Bomb
-Paralyze Bomb
-Reset Bomb
-Bug Bomb
-Grass Seed
-Lava Seed
-Cannon Ball
+LifeSync
+MiniBoomer
+EnergyBomb
+MegaEnergyBomb
+GunDelSol1
+GunDelSol2
+GunDelSol3
+Quake1
+Quake2
+Quake3
+CrackBomb
+ParalyzeBomb
+ResetBomb
+BugBomb
+GrassSeed
+LavaSeed
+CannonBall
 Geyser
-Black Bomb
-Sea Seed
+BlackBomb
+SeaSeed
 Sword
-Wide Sword
-Long Sword
-Wide Blade
-Long Blade
-Wind Racket
-Custom Sword
-Variable Sword
+WideSword
+LongSword
+WideBlade
+LongBlade
+WindRacket
+CustomSword
+VariableSword
 Slasher
-Moon Blade 1
-Moon Blade 2
-Moon Blade 3
-Katana 1
-Katana 2
-Katana 3
-Tank Cannon 1
-Tank Cannon 2
-Tank Cannon 3
-Red Fruit 1
-Red Fruit 2
-Red Fruit 3
-Skully 1
-Skully 2
-Skully 3
-Drill Arm 1
-Drill Arm 2
-Drill Arm 3
-Time Bomb 1
-Time Bomb 2
-Time Bomb3
-Voltz 1
-Voltz 2
-Voltz 3
+MoonBlade1
+MoonBlade2
+MoonBlade3
+Katana1
+Katana2
+Katana3
+TankCannon1
+TankCannon2
+TankCannon3
+RedFruit1
+RedFruit2
+RedFruit3
+Skully1
+Skully2
+Skully3
+DrillArm1
+DrillArm2
+DrillArm3
+TimeBomb1
+TimeBomb2
+TimeBomb3
+Voltz1
+Voltz2
+Voltz3
 Lance
 Yo-Yo
 Wind
 Fan
-Boy's Bomb 1
-Boy's Bomb 2
-Boy's Bomb 3
-Guard 1
-Guard 2
-Guard 3
-Crack Out
-Double Crack
-Triple Crack
+Boy'sBomb1
+Boy'sBomb2
+Boy'sBomb3
+Guard1
+Guard2
+Guard3
+CrackOut
+DoubleCrack
+TripleCrack
 Magnum
-Grab Gel
+GrabGel
 Snake
-Circle Gun
+CircleGun
 Mine
-Rock Cube
+RockCube
 Fanfare
 Discord
 Timpani
-VDoll
-Asteroid 1
-Asteroid 2
-Asteroid 3
-Recovery 10
-Recovery 30
-Recovery 50
-Recovery 80
-Recovery 120
-Recovery 150
-Recovery 200
-Recovery 300
-Buster Up
-Panel Grab
-Area Grab
-Grab Revenge
-Grab Banish
-Slow Gauge
-Fast Gauge
-Panel Return
-Geddon 1
-Geddon 2
-Geddon 3
-Rainy Day
-Color Point
-Element Rage
+Vdoll
+Asteroid1
+Asteroid2
+Asteroid3
+Recover10
+Recover30
+Recover50
+Recover80
+Recover120
+Recover150
+Recover200
+Recover300
+BusterUp
+PanelGrab
+AreaGrab
+GrabRevenge
+GrabBanish
+SlowGauge
+FastGauge
+PanelReturn
+Geddon1
+Geddon2
+Geddon3
+RainyDay
+ColorPoint
+ElementRage
 Blinder
-Air Spin 1
-Air Spin 2
-Air Spin 3
+AirSpin1
+AirSpin2
+AirSpin3
 Invisible
-Bubble Wrap
+BubbleWrap
 Barrier
-Barrier 100
-Barrier 200
-North Wind
-Holy Panel
-Anti Fire
-Anti Water
-Anti Electric
-Anti Wood
-Anti Navi
-Anti Damage
-Anti Sword
-Anti Recovery
-Copy Damage
-Attck +10
-Navi +20
-Fire Hit 1
-Fire Hit 2
-Fire Hit 3
-Hot Body 1
-Hot Body 2
-Hot Body 3
-Aqua Whirl 1
-Aqua Whirl 2
-Aqua Whirl 3
-Side Bubble 1
-Side Bubble 2
-Side Bubble 3
-Elec Reel 1
-Elec Reel 2
-Elec Reel 3
-Custom Volt 1
-Custom Volt 2
-Custom Volt 3
-Curse Shield 1
-Curse Shield 2
-Curse Shield 3
-Wave Pit
-Red Wave
-Mud Wave
-Cactus Ball 1
-Cactus Ball 2
-Cactus Ball 3
-Woody Nose 1
-Woody Nose 2
-Woody Nose 3
+Barrier100
+Barrier200
+NorthWind
+HolyPanel
+AntiFire
+AntiWater
+AntiElectric
+AntiWood
+AntiNavi
+AntiDamage
+AntiSword
+AntiRecovery
+CopyDamage
+Attck+10
+Navi+20
+FireHit1
+FireHit2
+FireHit3
+HotBody1
+HotBody2
+HotBody3
+AquaWhirl1
+AquaWhirl2
+AquaWhirl3
+SideBubble1
+SideBubble2
+SideBubble3
+ElecReel1
+ElecReel2
+ElecReel3
+CustomVolt1
+CustomVolt2
+CustomVolt3
+CurseShield1
+CurseShield2
+CurseShield3
+WavePit
+RedWave
+MudWave
+CactusBall1
+CactusBall2
+CactusBall3
+WoodyNose1
+WoodyNose2
+WoodyNose3
 
 
 
 
 
 
-Dark Circle
-Dark Sword
-Dark Invis
-Dark Plus
-Dark Lance
-Dark Wide
-Dark Thunder
-Dark Recovery
-Dark Meteor
-Dark Drill
-Dark Tornado
-Dark Sonic
+DarkCircle
+DarkSword
+DarkInvis
+DarkPlus
+DarkLance
+DarkWide
+DarkThunder
+DarkRecovery
+DarkMeteor
+DarkDrill
+DarkTornado
+DarkSonic
 
 
-Life Aura
+LifeAura
 Muramasa
 Guardian
 Anubis
-Attack +30
-Bug Fix
-Double Point
+Attack+30
+BugFix
+DoublePoint
 Sanctuary
-Full Custom
+FullCustom
 Meteors
-Number Ball
+NumberBall
 Jealousy
 Poltergeist
-Black Wing
+BlackWing
 Otenko
-Justice One
-Neo Variable
-Z Saber
-Gun del Sol EX
-Super Vulcan
+JusticeOne
+NeoVariable
+ZSaber
+GunDelSolEX
+SuperVulcan
 Roll
-Roll SP
-Roll DS
+RollSP
+RollDS
 GyroMan
-GyroMan SP
-GyroMan DS
+GyroManSP
+GyroManDS
 NapalmMan
-NapalmMan SP
-NapalmMan DS
+NapalmManSP
+NapalmManDS
 SearchMan
-SearchMan SP
-SearchMan DS
+SearchManSP
+SearchManDS
 MagnetMan
-MagnetMan SP
-MagnetMan DS
+MagnetManSP
+MagnetManDS
 Meddy
-Meddy SP
-Meddy DS
+MeddySP
+MeddyDS
 ProtoMan
-ProtoMan SP
-ProtoMan DS
+ProtoManSP
+ProtoManDS
 NumberMan
-NumberMan SP
-NumberMan DS
+NumberManSP
+NumberManDS
 Colonel
-Colonel SP
-Colonel DS
+ColonelSP
+ColonelDS
 ShadowMan
-ShadowMan SP
-ShadowMan DS
+ShadowManSP
+ShadowManDS
 TomahawkMan
-TomahawkMan SP
-TomahawkMan DS
+TomahawkManSP
+TomahawkManDS
 KnightMan
-KnightMan SP
-KnightMan DS
+KnightManSP
+KnightManDS
 ToadMan
-ToadMan SP
-ToadMan DS
+ToadManSP
+ToadManDS
 ShadeMan
-ShadeMan SP
-ShadeMan DS
+ShadeManSP
+ShadeManDS
 BlizzardMan
-BlizzardMan SP
-BlizzardMan DS
+BlizzardManSP
+BlizzardManDS
 CloudMan
-CloudMan SP
-CloudMan DS
+CloudManSP
+CloudManDS
 CosmoMan
-CosmoMan SP
-CosmoMan DS
+CosmoManSP
+CosmoManDS
 LarkMan
-LarkMan SP
-LarkMan DS
+LarkManSP
+LarkManDS
 GridMan
-GridMan SP
-GridMan DS
+GridManSP
+GridManDS
 Django
-Django SP
-Django DS
-Cannon Mode
-Cannon Ball
-Sword Mode
-Yo-Yo Mode
-Drill Mode
-L Curse Shield
-L Step Sword
-L Counter
-Elememt Power
-Final Gun
+DjangoSP
+DjangoDS
+CannonMode
+CannonBall
+SwordMode
+Yo-YoMode
+DrillMode
+LCurseShield
+LStepSword
+LCounter
+ElememtPower
+FinalGun
 
 
 
@@ -299,17 +299,17 @@ Final Gun
 
 
 Bass
-Delta Ray
-Bug Curse
-Meteor Knuckle
-Omega Racket
-Bass Another
-Holy Dream
-Big Hook
-Cross Divide
-Bug Charge
+DeltaRay
+BugCurse
+MeteorKnuckle
+OmegaRacket
+BassAnother
+HolyDream
+BigHook
+CrossDivide
+BugCharge
 Phoenix
-Death Phoenix
+DeathPhoenix
 
 
 
@@ -327,25 +327,25 @@ Death Phoenix
 
 
 
-MegaMan Navi
+MegaManNavi
 
 
 
-SearchMan Navi
+SearchManNavi
 
 
-ProtoMan Navi
-NumberMan Navi
+ProtoManNavi
+NumberManNavi
 
 
 
 
-ShadowMan Navi
-NapalmMan Navi
-KnightMan Navi
-ToadMan Navi
-MagnetMan Navi
-GyroMan Navi
-Colonel Navi
-Meddy Navi
-TomahawkMan Navi
+ShadowManNavi
+NapalmManNavi
+KnightManNavi
+ToadManNavi
+MagnetManNavi
+GyroManNavi
+ColonelNavi
+MeddyNavi
+TomahawkManNavi
