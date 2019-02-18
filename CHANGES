@@ -7,6 +7,7 @@ Bugfixes:
  - GB Serialize: Fix loading states with negative pixel x (fixes mgba.io/i/1293)
  - Qt: Fix audio context holding onto closed game controller
  - Switch: Fix gyroscope orientation (fixes mgba.io/i/1300)
+ - GBA SIO: Prevent writing read-only multiplayer bits
 Misc:
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
 
