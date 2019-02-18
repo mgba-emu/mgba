@@ -8,6 +8,7 @@ Bugfixes:
  - Qt: Fix audio context holding onto closed game controller
  - Switch: Fix gyroscope orientation (fixes mgba.io/i/1300)
  - GBA SIO: Prevent writing read-only multiplayer bits
+ - Qt: Fix color picking in sprite view (fixes mgba.io/i/1307)
 Misc:
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
 
