@@ -14,6 +14,7 @@ Bugfixes:
  - Qt: Fix audio context holding onto closed game controller
  - Switch: Fix gyroscope orientation (fixes mgba.io/i/1300)
  - GBA SIO: Prevent writing read-only multiplayer bits
+ - Qt: Fix color picking in sprite view (fixes mgba.io/i/1307)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
