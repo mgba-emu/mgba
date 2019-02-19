@@ -162,6 +162,8 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 		case 0x537C:
 		case 0x537D:
 		case 0x537E:
+		// EXE 6
+		case 0x65AF:
 		//
 		case 0x6E8F:
 		//
