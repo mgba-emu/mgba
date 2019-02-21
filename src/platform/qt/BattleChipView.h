@@ -27,14 +27,27 @@ public:
 public slots:
 	void setFlavor(int);
 	void insertChip(bool);
+	void reinsert();
+
+private slots:
+	void advanceFrameCounter();
+	void addChip();
+	void removeChip();
 
 private:
+	static const int UNINSERTED_TIME = 10;
+
 	void loadChipNames(int);
 
 	Ui::BattleChipView m_ui;
 
 	QMap<int, int> m_chipIndexToId;
+	QMap<int, QString> m_chipIdToName;
 	std::shared_ptr<CoreController> m_controller;
+	int m_flavor;
+
+	int m_frameCounter = -1;
+	bool m_next = false;
 };
 
 }
