@@ -10,6 +10,7 @@ Bugfixes:
  - GBA SIO: Prevent writing read-only multiplayer bits
  - Qt: Fix color picking in sprite view (fixes mgba.io/i/1307)
  - GB: Fix crash when accessing SRAM if no save loaded and cartridge has no SRAM
+ - Python: Fix crash when deleting files owned by library
 Misc:
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
 
