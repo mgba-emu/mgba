@@ -27,6 +27,7 @@ class GB(Core):
         self.sprites = GBObjs(self)
         self.cpu = LR35902Core(self._core.cpu)
         self.memory = None
+        self._link = None
 
     @needs_reset
     def _init_cache(self, cache):
@@ -43,10 +44,13 @@ class GB(Core):
         self.memory = GBMemory(self._core)
 
     def attach_sio(self, link):
+        self._link = link
         lib.GBSIOSetDriver(ffi.addressof(self._native.sio), link._native)
 
     def __del__(self):
-        lib.GBSIOSetDriver(ffi.addressof(self._native.sio), ffi.NULL)
+        if self._link:
+            lib.GBSIOSetDriver(ffi.addressof(self._native.sio), ffi.NULL)
+            self._link = None
 
 
 create_callback("GBSIOPythonDriver", "init")
