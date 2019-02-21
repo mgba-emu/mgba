@@ -17,6 +17,7 @@ Bugfixes:
  - Qt: Fix color picking in sprite view (fixes mgba.io/i/1307)
  - GB: Fix crash when accessing SRAM if no save loaded and cartridge has no SRAM
  - Python: Fix crash when deleting files owned by library
+ - Python: Make sure GB link object isn't GC'd before GB object
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
