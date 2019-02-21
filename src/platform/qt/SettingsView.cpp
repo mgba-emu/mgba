@@ -352,6 +352,7 @@ void SettingsView::updateConfig() {
 	saveSetting("gbc.bios", m_ui.gbcBios);
 	saveSetting("sgb.bios", m_ui.sgbBios);
 	saveSetting("sgb.borders", m_ui.sgbBorders);
+	saveSetting("useCgbColors", m_ui.useCgbColors);
 	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
 	saveSetting("audioBuffers", m_ui.audioBufferSize);
@@ -485,6 +486,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("gbc.bios", m_ui.gbcBios);
 	loadSetting("sgb.bios", m_ui.sgbBios);
 	loadSetting("sgb.borders", m_ui.sgbBorders, true);
+	loadSetting("useCgbColors", m_ui.useCgbColors, true);
 	loadSetting("useBios", m_ui.useBios);
 	loadSetting("skipBios", m_ui.skipBios);
 	loadSetting("audioBuffers", m_ui.audioBufferSize);
