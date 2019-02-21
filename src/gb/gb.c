@@ -202,7 +202,7 @@ void GBResizeSram(struct GB* gb, size_t size) {
 		if (gb->memory.sram == (void*) -1) {
 			gb->memory.sram = NULL;
 		}
-	} else {
+	} else if (size) {
 		uint8_t* newSram = anonymousMemoryMap(size);
 		if (gb->memory.sram) {
 			if (size > gb->sramSize) {
