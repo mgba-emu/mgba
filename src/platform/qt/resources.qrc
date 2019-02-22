@@ -4,8 +4,11 @@
      <file>../../../res/keymap.qpic</file>
      <file>../../../res/patrons.txt</file>
      <file>../../../res/no-cam.png</file>
-     <file>../../../res/chip-names-4.txt</file>
-     <file>../../../res/chip-names-5.txt</file>
-     <file>../../../res/chip-names-6.txt</file>
+     <file>../../../res/exe4/chip-names.txt</file>
+     <file>../../../res/exe4/placeholder.png</file>
+     <file>../../../res/exe5/chip-names.txt</file>
+     <file>../../../res/exe5/placeholder.png</file>
+     <file>../../../res/exe6/chip-names.txt</file>
+     <file>../../../res/exe6/placeholder.png</file>
  </qresource>
  </RCC>

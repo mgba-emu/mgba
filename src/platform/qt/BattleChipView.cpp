@@ -11,6 +11,7 @@
 
 #include <QtAlgorithms>
 #include <QFile>
+#include <QFontMetrics>
 #include <QResource>
 #include <QStringList>
 
@@ -32,6 +33,13 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, QWidg
 	core->getGameCode(core, title);
 	QString qtitle(title);
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+	int size = QFontMetrics(QFont()).height() / ((int) ceil(devicePixelRatioF()) * 16);
+#else
+	int size = QFontMetrics(QFont()).height() / (devicePixelRatio() * 16);
+#endif
+	m_ui.chipList->setGridSize(m_ui.chipList->gridSize() * size);
+	m_ui.chipList->setIconSize(m_ui.chipList->iconSize() * size);
 
 	connect(m_ui.chipId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), m_ui.inserted, [this]() {
 		m_ui.inserted->setChecked(Qt::Unchecked);
@@ -124,7 +132,11 @@ void BattleChipView::addChip() {
 	}
 	QListWidgetItem* add = new QListWidgetItem(m_chipIdToName[insertedChip]);
 	add->setData(Qt::UserRole, insertedChip);
-	add->setIcon(QIcon(QString(":/res/exe%1/%2.png").arg(m_flavor).arg(insertedChip, 3, 10, QLatin1Char('0'))));
+	QString path = QString(":/res/exe%1/%2.png").arg(m_flavor).arg(insertedChip, 3, 10, QLatin1Char('0'));
+	if (!QFile(path).exists()) {
+		path = QString(":/res/exe%1/placeholder.png").arg(m_flavor);
+	}
+	add->setIcon(QIcon(path));
 	m_ui.chipList->addItem(add);
 }
 
@@ -143,7 +155,7 @@ void BattleChipView::loadChipNames(int flavor) {
 	}
 	m_flavor = flavor;
 
-	QFile file(QString(":/res/chip-names-%1.txt").arg(flavor));
+	QFile file(QString(":/res/exe%1/chip-names.txt").arg(flavor));
 	file.open(QIODevice::ReadOnly | QIODevice::Text);
 	int id = 0;
 	while (true) {
