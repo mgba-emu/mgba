@@ -13,6 +13,7 @@
 #include <QFile>
 #include <QFontMetrics>
 #include <QResource>
+#include <QSettings>
 #include <QStringList>
 
 using namespace QGBA;
@@ -53,6 +54,8 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, QWidg
 	connect(m_ui.add, &QAbstractButton::clicked, this, &BattleChipView::addChip);
 	connect(m_ui.remove, &QAbstractButton::clicked, this, &BattleChipView::removeChip);
 	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
+	connect(m_ui.save, &QAbstractButton::clicked, this, &BattleChipView::saveDeck);
+	connect(m_ui.load, &QAbstractButton::clicked, this, &BattleChipView::loadDeck);
 
 	connect(m_ui.gateBattleChip, &QAbstractButton::toggled, this, [this](bool on) {
 		if (on) {
@@ -130,9 +133,13 @@ void BattleChipView::addChip() {
 	if (insertedChip < 1) {
 		return;
 	}
-	QListWidgetItem* add = new QListWidgetItem(m_chipIdToName[insertedChip]);
-	add->setData(Qt::UserRole, insertedChip);
-	QString path = QString(":/res/exe%1/%2.png").arg(m_flavor).arg(insertedChip, 3, 10, QLatin1Char('0'));
+	addChipId(insertedChip);
+}
+
+void BattleChipView::addChipId(int id) {
+	QListWidgetItem* add = new QListWidgetItem(m_chipIdToName[id]);
+	add->setData(Qt::UserRole, id);
+	QString path = QString(":/res/exe%1/%2.png").arg(m_flavor).arg(id, 3, 10, QLatin1Char('0'));
 	if (!QFile(path).exists()) {
 		path = QString(":/res/exe%1/placeholder.png").arg(m_flavor);
 	}
@@ -183,5 +190,50 @@ void BattleChipView::advanceFrameCounter() {
 	}
 	if (m_frameCounter >= 0) {
 		--m_frameCounter;
+	}
+}
+
+void BattleChipView::saveDeck() {
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select deck file"), tr(("BattleChip deck file (*.deck)")));
+	if (filename.isEmpty()) {
+		return;
+	}
+
+	QStringList deck;
+	for (int i = 0; i < m_ui.chipList->count(); ++i) {
+		deck.append(m_ui.chipList->item(i)->data(Qt::UserRole).toString());
+	}
+
+	QSettings ini(filename, QSettings::IniFormat);
+	ini.clear();
+	ini.beginGroup("BattleChipDeck");
+	ini.setValue("version", m_flavor);
+	ini.setValue("deck", deck.join(','));
+	ini.sync();
+}
+
+void BattleChipView::loadDeck() {
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select deck file"), tr(("BattleChip deck file (*.deck)")));
+	if (filename.isEmpty()) {
+		return;
+	}
+
+	QSettings ini(filename, QSettings::IniFormat);
+	ini.beginGroup("BattleChipDeck");
+	int flavor = ini.value("version").toInt();
+	if (flavor != m_flavor) {
+		return;
+	}
+
+	while (m_ui.chipList->count()) {
+		delete m_ui.chipList->takeItem(m_ui.chipList->count() - 1);
+	}
+	QStringList deck = ini.value("deck").toString().split(',');
+	for (const auto& item : deck) {
+		bool ok;
+		int id = item.toInt(&ok);
+		if (ok) {
+			addChipId(id);
+		}
 	}
 }

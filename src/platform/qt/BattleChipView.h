@@ -32,7 +32,11 @@ public slots:
 private slots:
 	void advanceFrameCounter();
 	void addChip();
+	void addChipId(int);
 	void removeChip();
+
+	void saveDeck();
+	void loadDeck();
 
 private:
 	static const int UNINSERTED_TIME = 10;
