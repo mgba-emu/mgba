@@ -138,7 +138,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	if (error) {
 		return false;
 	}
-	gb->timing.root = NULL;
+	mTimingClear(&gb->timing);
 	LOAD_32LE(gb->timing.masterCycles, 0, &state->masterCycles);
 
 	gb->cpu->a = state->cpu.a;
