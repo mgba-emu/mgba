@@ -1108,7 +1108,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(quickLoadMenu, quickLoad, "quickLoad");
 
 	QAction* quickSave = new QAction(tr("Save recent"), quickSaveMenu);
-	connect(quickLoad, &QAction::triggered, [this] {
+	connect(quickSave, &QAction::triggered, [this] {
 		m_controller->saveState();
 	});
 	m_gameActions.append(quickSave);
