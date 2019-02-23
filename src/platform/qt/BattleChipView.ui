@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>BattleChip Gate</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0,0,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0,0,0,0">
    <item>
     <widget class="QListWidget" name="chipList">
      <property name="acceptDrops">
@@ -35,7 +35,7 @@
       </size>
      </property>
      <property name="movement">
-      <enum>QListView::Snap</enum>
+      <enum>QListView::Static</enum>
      </property>
      <property name="isWrapping" stdset="0">
       <bool>true</bool>
@@ -45,12 +45,18 @@
      </property>
      <property name="gridSize">
       <size>
-       <width>80</width>
+       <width>120</width>
        <height>72</height>
       </size>
      </property>
      <property name="viewMode">
       <enum>QListView::IconMode</enum>
+     </property>
+     <property name="uniformItemSizes">
+      <bool>false</bool>
+     </property>
+     <property name="selectionRectVisible">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -174,10 +180,10 @@
       </item>
       <item>
        <layout class="QFormLayout" name="formLayout_5">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_4">
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="inserted">
           <property name="text">
-           <string>Chip ID</string>
+           <string>Inserted</string>
           </property>
          </widget>
         </item>
@@ -188,10 +194,10 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
-         <widget class="QCheckBox" name="inserted">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_4">
           <property name="text">
-           <string>Inserted</string>
+           <string>Chip ID</string>
           </property>
          </widget>
         </item>
@@ -201,18 +207,18 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="showAdvanced">
+     <property name="text">
+      <string>Show advanced</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
-     <item>
-      <widget class="QCheckBox" name="showAdvanced">
-       <property name="text">
-        <string>Show advanced</string>
-       </property>
-      </widget>
-     </item>
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="standardButtons">
-        <set>QDialogButtonBox::Close</set>
+        <set>QDialogButtonBox::Close|QDialogButtonBox::Reset</set>
        </property>
       </widget>
      </item>
@@ -222,6 +228,22 @@
  </widget>
  <resources/>
  <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>BattleChipView</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>416</x>
+     <y>690</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>314</x>
+     <y>360</y>
+    </hint>
+   </hints>
+  </connection>
   <connection>
    <sender>showAdvanced</sender>
    <signal>toggled(bool)</signal>
@@ -239,18 +261,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>BattleChipView</receiver>
-   <slot>reject()</slot>
+   <sender>chipList</sender>
+   <signal>indexesMoved(QModelIndexList)</signal>
+   <receiver>chipList</receiver>
+   <slot>doItemsLayout()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>416</x>
-     <y>690</y>
+     <x>314</x>
+     <y>203</y>
     </hint>
     <hint type="destinationlabel">
      <x>314</x>
-     <y>360</y>
+     <y>203</y>
     </hint>
    </hints>
   </connection>
