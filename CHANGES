@@ -14,6 +14,7 @@ Bugfixes:
  - Python: Make sure GB link object isn't GC'd before GB object
  - GBA DMA: Fix Display Start DMAs
  - GBA DMA: Fix DMA start/end timing
+ - Qt: Fix window icon on X11
 Misc:
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
 

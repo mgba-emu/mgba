@@ -84,6 +84,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 
 	m_logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
 	m_logo = m_logo; // Free memory left over in old pixmap
+	setWindowIcon(m_logo);
 
 #if defined(M_CORE_GBA)
 	float i = 2;
