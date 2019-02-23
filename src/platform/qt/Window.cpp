@@ -1370,7 +1370,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef M_CORE_GBA
 	QAction* bcGate = new QAction(tr("BattleChip Gate..."), emulationMenu);
-	connect(bcGate, &QAction::triggered, openControllerTView<BattleChipView>());
+	connect(bcGate, &QAction::triggered, openControllerTView<BattleChipView>(this));
 	addControlledAction(emulationMenu, bcGate, "bcGate");
 	m_gbaActions.append(bcGate);
 	m_gameActions.append(bcGate);

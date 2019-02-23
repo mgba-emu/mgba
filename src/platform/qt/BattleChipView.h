@@ -16,12 +16,13 @@
 namespace QGBA {
 
 class CoreController;
+class Window;
 
 class BattleChipView : public QDialog {
 Q_OBJECT
 
 public:
-	BattleChipView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
+	BattleChipView(std::shared_ptr<CoreController> controller, Window* window, QWidget* parent = nullptr);
 	~BattleChipView();
 
 public slots:
@@ -52,6 +53,8 @@ private:
 
 	int m_frameCounter = -1;
 	bool m_next = false;
+
+	Window* m_window;
 };
 
 }

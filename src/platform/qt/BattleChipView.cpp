@@ -8,6 +8,8 @@
 #include "ConfigController.h"
 #include "CoreController.h"
 #include "GBAApp.h"
+#include "ShortcutController.h"
+#include "Window.h"
 
 #include <QtAlgorithms>
 #include <QFile>
@@ -18,9 +20,10 @@
 
 using namespace QGBA;
 
-BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, QWidget* parent)
+BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Window* window, QWidget* parent)
 	: QDialog(parent)
 	, m_controller(controller)
+	, m_window(window)
 {
 	QResource::registerResource(GBAApp::dataDir() + "/chips.rcc");
 	QResource::registerResource(ConfigController::configDir() + "/chips.rcc");
@@ -126,6 +129,8 @@ void BattleChipView::reinsert() {
 	} else {
 		insertChip(true);
 	}
+	m_window->setWindowState(m_window->windowState() & ~Qt::WindowActive);
+	m_window->setWindowState(m_window->windowState() | Qt::WindowActive);
 }
 
 void BattleChipView::addChip() {
