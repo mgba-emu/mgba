@@ -22,6 +22,7 @@ Bugfixes:
  - GBA DMA: Fix Display Start DMAs
  - GBA DMA: Fix DMA start/end timing
  - Qt: Fix window icon on X11
+ - GB, GBA Serialize: Fix loading two states in a row
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
