@@ -237,9 +237,6 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 
 	gba->cpuBlocked = true;
 	if (info->count == info->nextCount) {
-		if (sourceRegion < REGION_CART0 || destRegion < REGION_CART0) {
-			cycles += 2;
-		}
 		if (width == 4) {
 			cycles += memory->waitstatesNonseq32[sourceRegion] + memory->waitstatesNonseq32[destRegion];
 		} else {
@@ -302,6 +299,9 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	info->nextDest = dest;
 	if (!wordsRemaining) {
 		info->nextCount |= 0x80000000;
+		if (sourceRegion < REGION_CART0 || destRegion < REGION_CART0) {
+			info->when += 2;
+		}
 	}
 	GBADMAUpdate(gba);
 }
