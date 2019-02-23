@@ -16,6 +16,7 @@ Bugfixes:
  - GBA DMA: Fix DMA start/end timing
  - Qt: Fix window icon on X11
  - GB, GBA Serialize: Fix loading two states in a row
+ - GBA Video: Fix enabling layers in non-tile modes (fixes mgba.io/i/1317)
 Misc:
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
 

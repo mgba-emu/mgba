@@ -727,7 +727,8 @@ static void _enableBg(struct GBAVideoSoftwareRenderer* renderer, int bg, bool ac
 	if (!active) {
 		renderer->bg[bg].enabled = 0;
 	} else if (!wasActive && active) {
-		if (renderer->nextY == 0) {
+		if (renderer->nextY == 0 || GBARegisterDISPCNTGetMode(renderer->dispcnt) > 2) {
+			// TODO: Investigate in more depth how switching background works in different modes
 			renderer->bg[bg].enabled = 4;
 		} else {
 			renderer->bg[bg].enabled = 1;
