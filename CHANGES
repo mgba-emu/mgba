@@ -19,6 +19,7 @@ Bugfixes:
  - GBA Video: Fix enabling layers in non-tile modes (fixes mgba.io/i/1317)
  - Qt: Fix quick load recent accidentally saving (fixes mgba.io/i/1309)
  - GBA: Fix video timing when skipping BIOS (fixes mgba.io/i/1318)
+ - 3DS: Work around menu freezing (fixes mgba.io/i/1294)
 Misc:
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
 
