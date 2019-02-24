@@ -22,6 +22,7 @@ Bugfixes:
  - 3DS: Work around menu freezing (fixes mgba.io/i/1294)
 Misc:
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
+ - Qt: Updated Italian translation (by Vecna)
 
 0.7.0: (2019-01-26)
 Features:
