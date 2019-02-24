@@ -160,7 +160,8 @@ int main() {
 		.unpaused = mPSP2Unpaused,
 		.incrementScreenMode = mPSP2IncrementScreenMode,
 		.setFrameLimiter = mPSP2SetFrameLimiter,
-		.pollGameInput = mPSP2PollInput
+		.pollGameInput = mPSP2PollInput,
+		.running = mPSP2SystemPoll
 	};
 
 	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);

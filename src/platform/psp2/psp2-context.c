@@ -25,6 +25,7 @@
 #include <mgba-util/vfs.h>
 #include <mgba-util/platform/psp2/sce-vfs.h>
 
+#include <psp2/appmgr.h>
 #include <psp2/audioout.h>
 #include <psp2/camera.h>
 #include <psp2/ctrl.h>
@@ -37,6 +38,9 @@
 
 #define RUMBLE_PWM 8
 #define CDRAM_ALIGN 0x40000
+
+mLOG_DECLARE_CATEGORY(GUI_PSP2);
+mLOG_DEFINE_CATEGORY(GUI_PSP2, "Vita", "gui.psp2");
 
 static enum ScreenMode {
 	SM_BACKDROP,
@@ -537,6 +541,18 @@ void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsi
 void mPSP2IncrementScreenMode(struct mGUIRunner* runner) {
 	screenMode = (screenMode + 1) % SM_MAX;
 	mCoreConfigSetUIntValue(&runner->config, "screenMode", screenMode);
+}
+
+bool mPSP2SystemPoll(struct mGUIRunner* runner) {
+	SceAppMgrSystemEvent event;
+	if (sceAppMgrReceiveSystemEvent(&event) < 0) {
+		return true;
+	}
+	if (event.systemEvent == SCE_APPMGR_SYSTEMEVENT_ON_RESUME) {
+		mLOG(GUI_PSP2, INFO, "Suspend detected, reloading save");
+		mCoreAutoloadSave(runner->core);
+	}
+	return true;
 }
 
 __attribute__((noreturn, weak)) void __assert_func(const char* file, int line, const char* func, const char* expr) {
