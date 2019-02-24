@@ -260,8 +260,6 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 		}
 		gba->bus = memory->dmaTransferRegister;
 		cpu->memory.store32(cpu, dest, memory->dmaTransferRegister, 0);
-		memory->dmaTransferRegister &= 0xFFFF0000;
-		memory->dmaTransferRegister |= memory->dmaTransferRegister >> 16;
 	} else {
 		if (sourceRegion == REGION_CART2_EX && memory->savedata.type == SAVEDATA_EEPROM) {
 			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
@@ -269,10 +267,10 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 				GBASavedataInitEEPROM(&memory->savedata);
 			}
 			memory->dmaTransferRegister = GBASavedataReadEEPROM(&memory->savedata);
-		} else {
-			if (source) {
-				memory->dmaTransferRegister = cpu->memory.load16(cpu, source, 0);
-			}
+			memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
+		} else if (source) {
+			memory->dmaTransferRegister = cpu->memory.load16(cpu, source, 0);
+			memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
 		}
 		if (destRegion == REGION_CART2_EX) {
 			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
@@ -286,7 +284,6 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 			cpu->memory.store16(cpu, dest, memory->dmaTransferRegister, 0);
 
 		}
-		memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
 		gba->bus = memory->dmaTransferRegister;
 	}
 	int sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
