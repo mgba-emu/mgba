@@ -34,6 +34,7 @@ Misc:
  - Qt: Don't unload ROM immediately if it crashes
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
  - Debugger: Add breakpoint and watchpoint listing
+ - Qt: Updated Italian translation (by Vecna)
 
 0.7.0: (2019-01-26)
 Features:
