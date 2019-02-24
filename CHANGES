@@ -35,6 +35,7 @@ Misc:
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
  - Debugger: Add breakpoint and watchpoint listing
  - Qt: Updated Italian translation (by Vecna)
+ - GBA: Improve delayed IRQ timing
 
 0.7.0: (2019-01-26)
 Features:

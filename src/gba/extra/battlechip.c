@@ -101,7 +101,7 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 		gate->d.p->p->memory.io[REG_SIODATA32_HI >> 1] = 0;
 		gate->d.p->normalControl.start = 0;
 		if (gate->d.p->normalControl.irq) {
-			GBARaiseIRQ(gate->d.p->p, IRQ_SIO);
+			GBARaiseIRQ(gate->d.p->p, IRQ_SIO, cyclesLate);
 		}
 		return;
 	}
@@ -193,6 +193,6 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 	gate->d.p->p->memory.io[REG_SIOMULTI1 >> 1] = reply;
 
 	if (gate->d.p->multiplayerControl.irq) {
-		GBARaiseIRQ(gate->d.p->p, IRQ_SIO);
+		GBARaiseIRQ(gate->d.p->p, IRQ_SIO, cyclesLate);
 	}
 }

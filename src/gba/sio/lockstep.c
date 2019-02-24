@@ -166,7 +166,7 @@ static void _finishTransfer(struct GBASIOLockstepNode* node) {
 		sio->multiplayerControl.busy = 0;
 		sio->multiplayerControl.id = node->id;
 		if (sio->multiplayerControl.irq) {
-			GBARaiseIRQ(sio->p, IRQ_SIO);
+			GBARaiseIRQ(sio->p, IRQ_SIO, 0);
 		}
 		break;
 	case SIO_NORMAL_8:
@@ -179,7 +179,7 @@ static void _finishTransfer(struct GBASIOLockstepNode* node) {
 			node->d.p->p->memory.io[REG_SIODATA8 >> 1] = 0xFFFF;
 		}
 		if (sio->multiplayerControl.irq) {
-			GBARaiseIRQ(sio->p, IRQ_SIO);
+			GBARaiseIRQ(sio->p, IRQ_SIO, 0);
 		}
 		break;
 	case SIO_NORMAL_32:
@@ -194,7 +194,7 @@ static void _finishTransfer(struct GBASIOLockstepNode* node) {
 			node->d.p->p->memory.io[REG_SIODATA32_HI >> 1] = 0xFFFF;
 		}
 		if (sio->multiplayerControl.irq) {
-			GBARaiseIRQ(sio->p, IRQ_SIO);
+			GBARaiseIRQ(sio->p, IRQ_SIO, 0);
 		}
 		break;
 	default:
