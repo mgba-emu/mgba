@@ -21,6 +21,7 @@ Bugfixes:
  - GBA: Fix video timing when skipping BIOS (fixes mgba.io/i/1318)
  - 3DS: Work around menu freezing (fixes mgba.io/i/1294)
  - GBA DMA: Fix invalid DMA handling (fixes mgba.io/i/1301)
+ - PSP2: Fix file descriptors dying on suspend (fixes mgba.io/i/1123)
 Misc:
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
  - Qt: Updated Italian translation (by Vecna)
