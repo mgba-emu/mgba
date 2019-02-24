@@ -27,6 +27,7 @@ Bugfixes:
  - Qt: Fix quick load recent accidentally saving (fixes mgba.io/i/1309)
  - GBA: Fix video timing when skipping BIOS (fixes mgba.io/i/1318)
  - 3DS: Work around menu freezing (fixes mgba.io/i/1294)
+ - GBA DMA: Fix invalid DMA handling (fixes mgba.io/i/1301)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
