@@ -7,37 +7,40 @@ Bugfixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs
  - GBA BIOS: Fix multiboot entry point (fixes Magic Floor)
- - Switch: Fix final cleanup (fixes mgba.io/i/1283)
- - Qt: Fix tile and sprite views not always displaying at first
- - GBA Memory: Fix a few AGBPrint crashes
- - GBA Memory: Fix OOB ROM reads showing up as AGBPrint memory
- - GB Serialize: Fix loading states with negative pixel x (fixes mgba.io/i/1293)
- - Qt: Fix audio context holding onto closed game controller
- - Switch: Fix gyroscope orientation (fixes mgba.io/i/1300)
- - GBA SIO: Prevent writing read-only multiplayer bits
- - Qt: Fix color picking in sprite view (fixes mgba.io/i/1307)
- - GB: Fix crash when accessing SRAM if no save loaded and cartridge has no SRAM
- - Python: Fix crash when deleting files owned by library
- - Python: Make sure GB link object isn't GC'd before GB object
- - GBA DMA: Fix Display Start DMAs
- - GBA DMA: Fix DMA start/end timing
- - Qt: Fix window icon on X11
- - GB, GBA Serialize: Fix loading two states in a row
- - GBA Video: Fix enabling layers in non-tile modes (fixes mgba.io/i/1317)
- - Qt: Fix quick load recent accidentally saving (fixes mgba.io/i/1309)
- - GBA: Fix video timing when skipping BIOS (fixes mgba.io/i/1318)
- - 3DS: Work around menu freezing (fixes mgba.io/i/1294)
- - GBA DMA: Fix invalid DMA handling (fixes mgba.io/i/1301)
- - PSP2: Fix file descriptors dying on suspend (fixes mgba.io/i/1123)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
  - GB Memory: Support running from blocked memory
  - Qt: Don't unload ROM immediately if it crashes
- - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
  - Debugger: Add breakpoint and watchpoint listing
+
+0.7.1: (2019-02-24)
+Bugfixes:
+ - 3DS: Work around menu freezing (fixes mgba.io/i/1294)
+ - GB: Fix crash when accessing SRAM if no save loaded and cartridge has no SRAM
+ - GB Serialize: Fix loading states with negative pixel x (fixes mgba.io/i/1293)
+ - GB, GBA Serialize: Fix loading two states in a row
+ - GBA: Fix video timing when skipping BIOS (fixes mgba.io/i/1318)
+ - GBA DMA: Fix Display Start DMAs
+ - GBA DMA: Fix DMA start/end timing
+ - GBA DMA: Fix invalid DMA handling (fixes mgba.io/i/1301)
+ - GBA Memory: Fix a few AGBPrint crashes
+ - GBA Memory: Fix OOB ROM reads showing up as AGBPrint memory
+ - GBA SIO: Prevent writing read-only multiplayer bits
+ - GBA Video: Fix enabling layers in non-tile modes (fixes mgba.io/i/1317)
+ - Python: Fix crash when deleting files owned by library
+ - Python: Make sure GB link object isn't GC'd before GB object
+ - PSP2: Fix file descriptors dying on suspend (fixes mgba.io/i/1123)
+ - Qt: Fix tile and sprite views not always displaying at first
+ - Qt: Fix audio context holding onto closed game controller
+ - Qt: Fix color picking in sprite view (fixes mgba.io/i/1307)
+ - Qt: Fix window icon on X11
+ - Qt: Fix quick load recent accidentally saving (fixes mgba.io/i/1309)
+ - Switch: Fix final cleanup (fixes mgba.io/i/1283)
+ - Switch: Fix gyroscope orientation (fixes mgba.io/i/1300)
+Misc:
+ - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
  - Qt: Updated Italian translation (by Vecna)
- - GBA: Improve delayed IRQ timing
 
 0.7.0: (2019-01-26)
 Features:
