@@ -18,7 +18,6 @@
 #include <QFileOpenEvent>
 #include <QIcon>
 
-#include <mgba/core/version.h>
 #include <mgba-util/socket.h>
 #include <mgba-util/vfs.h>
 
@@ -42,16 +41,9 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	SDL_Init(SDL_INIT_NOPARACHUTE);
 #endif
 
-#ifndef Q_OS_MAC
-	setWindowIcon(QIcon(":/res/mgba-512.png"));
-#endif
-
 	SocketSubsystemInit();
 	qRegisterMetaType<const uint32_t*>("const uint32_t*");
 	qRegisterMetaType<mCoreThread*>("mCoreThread*");
-
-	QApplication::setApplicationName(projectName);
-	QApplication::setApplicationVersion(projectVersion);
 
 	if (!m_configController->getQtOption("displayDriver").isNull()) {
 		Display::setDriver(static_cast<Display::Driver>(m_configController->getQtOption("displayDriver").toInt()));
