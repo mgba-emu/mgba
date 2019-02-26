@@ -147,6 +147,7 @@ set(UI_FILES
 	VideoView.ui)
 
 set(GBA_SRC
+	BattleChipModel.cpp
 	BattleChipView.cpp
 	GBAOverride.cpp)
 

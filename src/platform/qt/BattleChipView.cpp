@@ -5,18 +5,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "BattleChipView.h"
 
-#include "ConfigController.h"
 #include "CoreController.h"
-#include "GBAApp.h"
 #include "ShortcutController.h"
 #include "Window.h"
 
 #include <QtAlgorithms>
-#include <QFile>
 #include <QFontMetrics>
 #include <QMessageBox>
 #include <QMultiMap>
-#include <QResource>
 #include <QSettings>
 #include <QStringList>
 
@@ -27,10 +23,8 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 	, m_controller(controller)
 	, m_window(window)
 {
-	QResource::registerResource(GBAApp::dataDir() + "/chips.rcc", "/exe");
-	QResource::registerResource(ConfigController::configDir() + "/chips.rcc", "/exe");
-
 	m_ui.setupUi(this);
+	m_ui.chipList->setModel(&m_model);
 
 	char title[9];
 	CoreController::Interrupter interrupter(m_controller);
@@ -51,7 +45,7 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 		m_ui.inserted->setChecked(Qt::Unchecked);
 	});
 	connect(m_ui.chipName, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), m_ui.chipId, [this](int id) {
-		m_ui.chipId->setValue(m_chipIndexToId[id]);
+		m_ui.chipId->setValue(m_model.chipNames().keys()[id]);
 	});
 
 	connect(m_ui.inserted, &QAbstractButton::toggled, this, &BattleChipView::insertChip);
@@ -61,7 +55,7 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 	connect(m_ui.save, &QAbstractButton::clicked, this, &BattleChipView::saveDeck);
 	connect(m_ui.load, &QAbstractButton::clicked, this, &BattleChipView::loadDeck);
-	connect(m_ui.buttonBox->button(QDialogButtonBox::Reset), &QAbstractButton::clicked, m_ui.chipList, &QListWidget::clear);
+	connect(m_ui.buttonBox->button(QDialogButtonBox::Reset), &QAbstractButton::clicked, &m_model, &BattleChipModel::clear);
 
 	connect(m_ui.gateBattleChip, &QAbstractButton::toggled, this, [this](bool on) {
 		if (on) {
@@ -85,13 +79,14 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 
 	connect(m_controller.get(), &CoreController::frameAvailable, this, &BattleChipView::advanceFrameCounter);
 
-	connect(m_ui.chipList, &QListWidget::itemClicked, this, [this](QListWidgetItem* item) {
-		QVariant chip = item->data(Qt::UserRole);
+	connect(m_ui.chipList, &QAbstractItemView::clicked, this, [this](const QModelIndex& index) {
+		QVariant chip = m_model.data(index, Qt::UserRole);
 		bool blocked = m_ui.chipId->blockSignals(true);
 		m_ui.chipId->setValue(chip.toInt());
 		m_ui.chipId->blockSignals(blocked);
 		reinsert();
 	});
+	connect(m_ui.chipList, &QListView::indexesMoved, this, &BattleChipView::resort);
 
 	m_controller->attachBattleChipGate();
 	setFlavor(4);
@@ -110,7 +105,8 @@ BattleChipView::~BattleChipView() {
 
 void BattleChipView::setFlavor(int flavor) {
 	m_controller->setBattleChipFlavor(flavor);
-	loadChipNames(flavor);
+	m_model.setFlavor(flavor);
+	m_ui.chipName->addItems(m_model.chipNames().values());
 }
 
 void BattleChipView::insertChip(bool inserted) {
@@ -141,55 +137,13 @@ void BattleChipView::addChip() {
 	if (insertedChip < 1) {
 		return;
 	}
-	addChipId(insertedChip);
-}
-
-void BattleChipView::addChipId(int id) {
-	QListWidgetItem* add = new QListWidgetItem(m_chipIdToName[id]);
-	add->setData(Qt::UserRole, id);
-	QString path = QString(":/exe/exe%1/%2.png").arg(m_flavor).arg(id, 3, 10, QLatin1Char('0'));
-	if (!QFile(path).exists()) {
-		path = QString(":/exe/exe%1/placeholder.png").arg(m_flavor);
-	}
-	add->setIcon(QPixmap(path).scaled(m_ui.chipList->iconSize()));
-	m_ui.chipList->addItem(add);
+	m_model.addChip(insertedChip);
 }
 
 void BattleChipView::removeChip() {
-	qDeleteAll(m_ui.chipList->selectedItems());
-}
-
-void BattleChipView::loadChipNames(int flavor) {
-	QStringList chipNames;
-	chipNames.append(tr("(None)"));
-
-	m_chipIndexToId.clear();
-	m_chipIdToName.clear();
-	if (flavor == GBA_FLAVOR_BEAST_LINK_GATE_US) {
-		flavor = GBA_FLAVOR_BEAST_LINK_GATE;
+	for (const auto& index : m_ui.chipList->selectionModel()->selectedIndexes()) {
+		m_model.removeChip(index);
 	}
-	m_flavor = flavor;
-
-	QFile file(QString(":/exe/exe%1/chip-names.txt").arg(flavor));
-	file.open(QIODevice::ReadOnly | QIODevice::Text);
-	int id = 0;
-	while (true) {
-		QByteArray line = file.readLine();
-		if (line.isEmpty()) {
-			break;
-		}
-		++id;
-		if (line.trimmed().isEmpty()) {
-			continue;
-		}
-		QString name = QString::fromUtf8(line).trimmed();
-		m_chipIndexToId[chipNames.length()] = id;
-		m_chipIdToName[id] = name;
-		chipNames.append(name);
-	}
-
-	m_ui.chipName->clear();
-	m_ui.chipName->addItems(chipNames);
 }
 
 void BattleChipView::advanceFrameCounter() {
@@ -208,14 +162,14 @@ void BattleChipView::saveDeck() {
 	}
 
 	QStringList deck;
-	for (int i = 0; i < m_ui.chipList->count(); ++i) {
-		deck.append(m_ui.chipList->item(i)->data(Qt::UserRole).toString());
+	for (int i = 0; i < m_model.rowCount(); ++i) {
+		deck.append(m_model.data(m_model.index(i, 0), Qt::UserRole).toString());
 	}
 
 	QSettings ini(filename, QSettings::IniFormat);
 	ini.clear();
 	ini.beginGroup("BattleChipDeck");
-	ini.setValue("version", m_flavor);
+	ini.setValue("version", m_model.flavor());
 	ini.setValue("deck", deck.join(','));
 	ini.sync();
 }
@@ -229,7 +183,7 @@ void BattleChipView::loadDeck() {
 	QSettings ini(filename, QSettings::IniFormat);
 	ini.beginGroup("BattleChipDeck");
 	int flavor = ini.value("version").toInt();
-	if (flavor != m_flavor) {
+	if (flavor != m_model.flavor()) {
 		QMessageBox* error = new QMessageBox(this);
 		error->setIcon(QMessageBox::Warning);
 		error->setStandardButtons(QMessageBox::Ok);
@@ -240,13 +194,30 @@ void BattleChipView::loadDeck() {
 		return;
 	}
 	
-	m_ui.chipList->clear();
+	QList<int> newDeck;
 	QStringList deck = ini.value("deck").toString().split(',');
 	for (const auto& item : deck) {
 		bool ok;
 		int id = item.toInt(&ok);
 		if (ok) {
-			addChipId(id);
+			newDeck.append(id);
 		}
 	}
+	m_model.setChips(newDeck);
+}
+
+void BattleChipView::resort() {
+	QMap<int, int> chips;
+	for (int i = 0; i < m_model.rowCount(); ++i) {
+		QModelIndex index = m_model.index(i, 0);
+		QRect visualRect = m_ui.chipList->visualRect(index);
+		QSize gridSize = m_ui.chipList->gridSize();
+		int x = visualRect.y() / gridSize.height();
+		x *= m_ui.chipList->viewport()->width();
+		x += visualRect.x();
+		x *= m_model.rowCount();
+		x += index.row();
+		chips[x] = m_model.data(index, Qt::UserRole).toInt();
+	}
+	m_model.setChips(chips.values());
 }

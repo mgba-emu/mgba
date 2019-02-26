@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
+#include "BattleChipModel.h"
+
 #include <QDialog>
 
 #include <memory>
@@ -29,11 +31,11 @@ public slots:
 	void setFlavor(int);
 	void insertChip(bool);
 	void reinsert();
+	void resort();
 
 private slots:
 	void advanceFrameCounter();
 	void addChip();
-	void addChipId(int);
 	void removeChip();
 
 	void saveDeck();
@@ -46,10 +48,8 @@ private:
 
 	Ui::BattleChipView m_ui;
 
-	QMap<int, int> m_chipIndexToId;
-	QMap<int, QString> m_chipIdToName;
+	BattleChipModel m_model;
 	std::shared_ptr<CoreController> m_controller;
-	int m_flavor;
 
 	int m_frameCounter = -1;
 	bool m_next = false;
