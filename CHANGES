@@ -1,3 +1,7 @@
+0.7.2: (Future)
+Bugfixes:
+ - Qt: More app metadata fixes
+
 0.7.1: (2019-02-24)
 Bugfixes:
  - 3DS: Work around menu freezing (fixes mgba.io/i/1294)
