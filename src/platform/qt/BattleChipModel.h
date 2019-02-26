@@ -6,7 +6,7 @@
 #pragma once
 
 #include <QAbstractListModel>
-#include <QIcon>
+#include <QPixmap>
 
 namespace QGBA {
 
@@ -34,18 +34,20 @@ public slots:
 	void removeChip(const QModelIndex&);
 	void setChips(QList<int> ids);
 	void clear();
+	void setScale(int);
 
 private:
 	struct BattleChip {
 		int id;
 		QString name;
-		QIcon icon;
+		QPixmap icon;
 	};
 
 	BattleChip createChip(int id) const;
 
 	QMap<int, QString> m_chipIdToName;
 	int m_flavor;
+	int m_scale = 1;
 
 	QList<BattleChip> m_deck;
 };

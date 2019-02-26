@@ -35,7 +35,7 @@ QVariant BattleChipModel::data(const QModelIndex& index, int role) const {
 	case Qt::DisplayRole:
 		return item.name;
 	case Qt::DecorationRole:
-		return item.icon;
+		return item.icon.scaled(item.icon.size() * m_scale);
 	case Qt::UserRole:
 		return item.id;
 	}
@@ -151,12 +151,16 @@ void BattleChipModel::clear() {
 	endResetModel();
 }
 
+void BattleChipModel::setScale(int scale) {
+	m_scale = scale;
+}
+
 BattleChipModel::BattleChip BattleChipModel::createChip(int id) const {
 	QString path = QString(":/exe/exe%1/%2.png").arg(m_flavor).arg(id, 3, 10, QLatin1Char('0'));
 	if (!QFile(path).exists()) {
 		path = QString(":/exe/exe%1/placeholder.png").arg(m_flavor);
 	}
-	QIcon icon(path);
+	QPixmap icon(path);
 
 	BattleChip chip = {
 		id,

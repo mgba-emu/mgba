@@ -40,6 +40,7 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 #endif
 	m_ui.chipList->setIconSize(m_ui.chipList->iconSize() * size);
 	m_ui.chipList->setGridSize(m_ui.chipList->gridSize() * size);
+	m_model.setScale(size);
 
 	connect(m_ui.chipId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), m_ui.inserted, [this]() {
 		m_ui.inserted->setChecked(Qt::Unchecked);
