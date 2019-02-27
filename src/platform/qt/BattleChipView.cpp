@@ -5,11 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "BattleChipView.h"
 
+#include "BattleChipUpdater.h"
+#include "ConfigController.h"
 #include "CoreController.h"
+#include "GBAApp.h"
 #include "ShortcutController.h"
 #include "Window.h"
 
 #include <QtAlgorithms>
+#include <QFileInfo>
 #include <QFontMetrics>
 #include <QMessageBox>
 #include <QMultiMap>
@@ -59,6 +63,7 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 	connect(m_ui.save, &QAbstractButton::clicked, this, &BattleChipView::saveDeck);
 	connect(m_ui.load, &QAbstractButton::clicked, this, &BattleChipView::loadDeck);
+	connect(m_ui.updateData, &QAbstractButton::clicked, this, &BattleChipView::updateData);
 	connect(m_ui.buttonBox->button(QDialogButtonBox::Reset), &QAbstractButton::clicked, &m_model, &BattleChipModel::clear);
 
 	connect(m_ui.gateBattleChip, &QAbstractButton::toggled, this, [this](bool on) {
@@ -100,6 +105,18 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 		m_ui.gateProgress->setChecked(Qt::Checked);
 	} else if (qtitle.startsWith("AGB-BR5") || qtitle.startsWith("AGB-BR6")) {
 		m_ui.gateBeastLink->setChecked(Qt::Checked);
+	}
+
+	if (!QFileInfo(GBAApp::dataDir() + "/chips.rcc").exists() && !QFileInfo(ConfigController::configDir() + "/chips.rcc").exists()) {
+		QMessageBox* download = new QMessageBox(this);
+		download->setIcon(QMessageBox::Information);
+		download->setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+		download->setWindowTitle(tr("BattleChip data missing"));
+		download->setText(tr("BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?"));
+		download->setAttribute(Qt::WA_DeleteOnClose);
+		download->setWindowModality(Qt::NonModal);
+		connect(download, &QDialog::accepted, this, &BattleChipView::updateData);
+		download->show();
 	}
 }
 
@@ -225,4 +242,21 @@ void BattleChipView::resort() {
 		chips[x] = m_model.data(index, Qt::UserRole).toInt();
 	}
 	m_model.setChips(chips.values());
+}
+
+void BattleChipView::updateData() {
+	if (m_updater) {
+		return;
+	}
+	m_updater = new BattleChipUpdater(this);
+	connect(m_updater, &BattleChipUpdater::updateDone, this, [this](bool success) {
+		if (success) {
+			m_model.reloadAssets();
+			m_ui.chipName->clear();
+			m_ui.chipName->addItems(m_model.chipNames().values());
+		}
+		delete m_updater;
+		m_updater = nullptr;
+	});
+	m_updater->downloadUpdate();
 }

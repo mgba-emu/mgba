@@ -10,6 +10,8 @@
 
 namespace QGBA {
 
+class BattleChipUpdater;
+
 class BattleChipModel : public QAbstractListModel {
 Q_OBJECT
 
@@ -35,6 +37,7 @@ public slots:
 	void setChips(QList<int> ids);
 	void clear();
 	void setScale(int);
+	void reloadAssets();
 
 private:
 	struct BattleChip {

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>630</width>
+    <width>658</width>
     <height>722</height>
    </rect>
   </property>
@@ -192,6 +192,19 @@
          <widget class="QLabel" name="label_4">
           <property name="text">
            <string>Chip ID</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QPushButton" name="updateData">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Update Chip data</string>
           </property>
          </widget>
         </item>

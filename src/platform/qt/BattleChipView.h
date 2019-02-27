@@ -41,6 +41,8 @@ private slots:
 	void saveDeck();
 	void loadDeck();
 
+	void updateData();
+
 private:
 	static const int UNINSERTED_TIME = 10;
 
@@ -55,6 +57,8 @@ private:
 	bool m_next = false;
 
 	Window* m_window;
+
+	BattleChipUpdater* m_updater = nullptr;
 };
 
 }

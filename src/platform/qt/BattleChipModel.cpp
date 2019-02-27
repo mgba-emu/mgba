@@ -155,6 +155,21 @@ void BattleChipModel::setScale(int scale) {
 	m_scale = scale;
 }
 
+void BattleChipModel::reloadAssets() {
+	QResource::unregisterResource(ConfigController::configDir() + "/chips.rcc", "/exe");
+	QResource::unregisterResource(GBAApp::dataDir() + "/chips.rcc", "/exe");
+
+	QResource::registerResource(GBAApp::dataDir() + "/chips.rcc", "/exe");
+	QResource::registerResource(ConfigController::configDir() + "/chips.rcc", "/exe");
+
+	emit layoutAboutToBeChanged();
+	setFlavor(m_flavor);
+	for (int i = 0; i < m_deck.count(); ++i) {
+		m_deck[i] = createChip(m_deck[i].id);
+	}
+	emit layoutChanged();
+}
+
 BattleChipModel::BattleChip BattleChipModel::createChip(int id) const {
 	QString path = QString(":/exe/exe%1/%2.png").arg(m_flavor).arg(id, 3, 10, QLatin1Char('0'));
 	if (!QFile(path).exists()) {
