@@ -1,6 +1,8 @@
 0.7.2: (Future)
 Bugfixes:
  - Qt: More app metadata fixes
+Misc:
+ - Qt: Add missing HEVC NVENC option (fixes mgba.io/i/1323)
 
 0.7.1: (2019-02-24)
 Bugfixes:
