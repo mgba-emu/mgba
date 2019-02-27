@@ -271,6 +271,11 @@
            </item>
            <item>
             <property name="text">
+             <string>HEVC (NVENC)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
              <string>VP8</string>
             </property>
            </item>
