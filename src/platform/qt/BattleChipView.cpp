@@ -46,6 +46,9 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 		m_ui.inserted->setChecked(Qt::Unchecked);
 	});
 	connect(m_ui.chipName, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), m_ui.chipId, [this](int id) {
+		if (id < 0) {
+			return;
+		}
 		m_ui.chipId->setValue(m_model.chipNames().keys()[id]);
 	});
 
@@ -107,6 +110,7 @@ BattleChipView::~BattleChipView() {
 void BattleChipView::setFlavor(int flavor) {
 	m_controller->setBattleChipFlavor(flavor);
 	m_model.setFlavor(flavor);
+	m_ui.chipName->clear();
 	m_ui.chipName->addItems(m_model.chipNames().values());
 }
 
