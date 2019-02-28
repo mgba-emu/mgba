@@ -1189,7 +1189,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	fileMenu->addSeparator();
 #endif
 
-	QAction* about = new QAction(tr("About"), fileMenu);
+	QAction* about = new QAction(tr("About..."), fileMenu);
 	connect(about, &QAction::triggered, openTView<AboutScreen>());
 	fileMenu->addAction(about);
 
