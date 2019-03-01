@@ -1084,7 +1084,7 @@ static int32_t _readGyroZ(struct mRotationSource* source) {
 #ifdef HAVE_LIBNX
 	SixAxisSensorValues sixaxis;
 	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
-	gyroZ = sixaxis.gyroscope.z * 1.1e9f;
+	gyroZ = sixaxis.gyroscope.z * -1.1e9f;
 #endif
 	return gyroZ;
 }
