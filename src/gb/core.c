@@ -99,6 +99,7 @@ static bool _GBCoreInit(struct mCore* core) {
 	}
 	core->cpu = cpu;
 	core->board = gb;
+	core->timing = &gb->timing;
 	gbcore->overrides = NULL;
 	gbcore->debuggerPlatform = NULL;
 	gbcore->cheatDevice = NULL;

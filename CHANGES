@@ -1,4 +1,18 @@
-0.7.0: (Future)
+0.8.0: (Future)
+Features:
+ - Improved logging configuration
+Bugfixes:
+ - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
+ - GBA: Reset now reloads multiboot ROMs
+ - GBA BIOS: Fix multiboot entry point (fixes Magic Floor)
+Misc:
+ - GBA Savedata: EEPROM performance fixes
+ - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
+ - GB Memory: Support running from blocked memory
+ - Qt: Don't unload ROM immediately if it crashes
+ - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
+
+0.7.0: (2019-01-26)
 Features:
  - ELF support
  - Game Boy Camera support
@@ -19,115 +33,142 @@ Features:
  - GBA: ARMIPS/A22i-style and ELF symbol table support
  - Initial Switch port
 Bugfixes:
- - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
- - GB Serialize: Fix audio state loading
- - GB Video: Fix dot clock timing being slightly wrong
- - Qt: Fix GL display when loading a game from CLI (fixes mgba.io/i/843)
  - ARM: Fix MSR when T bit is set
- - GB Serialize: Fix game title check
- - GB: Revamp IRQ handling based on new information
- - GBA Video: Don't mask out high bits of BLDY (fixes mgba.io/i/899)
- - GB Video: Fix loading states while in mode 3
- - GBA DMA: Fix invalid DMA reads (fixes mgba.io/i/142)
- - GBA Video: Add delay when enabling BGs (fixes mgba.io/i/744, mgba.io/i/752)
- - GB Timer: Minor accuracy improvements
- - GB Audio: Clock frame events on DIV
- - GBA Timer: Fix timers sometimes being late (fixes mgba.io/i/1012)
- - GBA Hardware: Fix RTC overriding light sensor (fixes mgba.io/i/1069)
- - GBA Savedata: Fix savedata modified time updating when read-only
- - GB Video: Fix enabling window when LY > WY (fixes mgba.io/i/409)
- - GBA Video: Start timing mid-scanline when skipping BIOS
  - Core: Fix audio sync breaking when interrupted
- - Qt: Improve FPS timer stability
- - GBA Serialize: Fix loading channel 3 volume (fixes mgba.io/i/1107)
- - GBA SIO: Fix unconnected SIOCNT for multi mode (fixes mgba.io/i/1105)
- - GBA BIOS: Fix BitUnPack final byte
- - GB I/O: DMA register is R/W
- - GB Video: Fix SCX timing
- - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1126)
- - GB, GBA Savedata: Fix savestate loading overwriting saves on reset
- - GBA Video: Make layer disabling work consistently
- - GB: Fix IRQ disabling on the same T-cycle as an assert
  - Core: Fix ordering events when scheduling during events
- - GBA: Reset WAITCNT properly
- - GBA Serialize: Fix loading states in Hblank
- - PSP2: Fix more issues causing poor audio
- - GBA Memory: Fix Vast Fame support (taizou) (fixes mgba.io/i/1170)
- - GB, GBA Savedata: Fix unmasking savedata crash
- - GBA DMA: Fix temporal sorting of DMAs of different priorities
  - FFmpeg: Fix encoding audio/video queue issues
- - GB Serialize: Fix IRQ pending/EI pending confusion
- - GB MBC: Improve multicart detection heuristic (fixes mgba.io/i/1177)
+ - GB: Revamp IRQ handling based on new information
+ - GB: Fix IRQ disabling on the same T-cycle as an assert
+ - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
+ - GB Audio: Clock frame events on DIV
  - GB Audio: Fix channel 3 reset value
  - GB Audio: Fix channel 4 initial LFSR
- - GB, GBA Video: Don't call finishFrame twice in thread proxy
  - GB Audio: Fix channel 1, 2 and 4 reset timing
+ - GB I/O: DMA register is R/W
+ - GB MBC: Improve multicart detection heuristic (fixes mgba.io/i/1177)
+ - GB, GBA Savedata: Fix savestate loading overwriting saves on reset
+ - GB, GBA Savedata: Fix unmasking savedata crash
+ - GB Serialize: Fix audio state loading
+ - GB Serialize: Fix game title check
+ - GB Serialize: Fix IRQ pending/EI pending confusion
+ - GB Timer: Minor accuracy improvements
+ - GB Video: Fix dot clock timing being slightly wrong
+ - GB Video: Fix loading states while in mode 3
+ - GB Video: Fix enabling window when LY > WY (fixes mgba.io/i/409)
+ - GB Video: Fix SCX timing
+ - GB, GBA Video: Don't call finishFrame twice in thread proxy
+ - GBA: Reset WAITCNT properly
+ - GBA BIOS: Fix BitUnPack final byte
+ - GBA BIOS: Fix BitUnPack narrowing
+ - GBA DMA: Fix invalid DMA reads (fixes mgba.io/i/142)
+ - GBA DMA: Fix temporal sorting of DMAs of different priorities
+ - GBA Hardware: Fix RTC overriding light sensor (fixes mgba.io/i/1069)
+ - GBA Hardware: Fix RTC handshake transition (fixes mgba.io/i/1134)
+ - GBA Memory: Fix Vast Fame support (taizou) (fixes mgba.io/i/1170)
+ - GBA Savedata: Fix savedata modified time updating when read-only
+ - GBA Serialize: Fix loading channel 3 volume (fixes mgba.io/i/1107)
+ - GBA Serialize: Fix loading states in Hblank
+ - GBA SIO: Fix unconnected SIOCNT for multi mode (fixes mgba.io/i/1105)
+ - GBA Timer: Fix timers sometimes being late (fixes mgba.io/i/1012)
+ - GBA Video: Don't mask out high bits of BLDY (fixes mgba.io/i/899)
+ - GBA Video: Add delay when enabling BGs (fixes mgba.io/i/744, mgba.io/i/752)
+ - GBA Video: Start timing mid-scanline when skipping BIOS
+ - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1126)
+ - GBA Video: Make layer disabling work consistently
+ - PSP2: Fix more issues causing poor audio
+ - Qt: Fix GL display when loading a game from CLI (fixes mgba.io/i/843)
+ - Qt: Improve FPS timer stability
  - Util: Fix wrapping edge cases in RingFIFO
 Misc:
- - GBA Timer: Use global cycles for timers
- - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
- - All: Make FIXED_ROM_BUFFER an option instead of 3DS-only
- - Qt: Redo GameController into multiple classes
- - Test: Restructure test suite into multiple executables
- - Python: Integrate tests from cinema test suite
- - Util: Don't build crc32 if the function already exists
- - GBA: Implement display start DMAs
- - Qt: Prevent window from being created off-screen
- - Qt: Add option to disable FPS display
- - GBA: Improve multiboot image detection
- - GB MBC: Remove erroneous bank 0 wrapping
- - GBA Cheats: Allow multiple ROM patches in the same slot
- - GB: Skip BIOS option now works
- - Libretro: Add frameskip option
- - GBA Memory: 64 MiB GBA Video cartridge support
- - PSP2: Use system enter key by default
  - 3DS: Remove deprecated CSND interface
- - Qt: Options to mess around with layer placement
- - GBA Savedata: Remove ability to disable realistic timing
- - Qt: Add load alternate save option
- - GB Audio: Improved audio quality
- - GB, GBA Audio: Increase max audio volume
- - GB: Fix VRAM/palette locking (fixes mgba.io/i/1109)
- - GB Video: Darken colors in GBA mode
+ - All: Make FIXED_ROM_BUFFER an option instead of 3DS-only
+ - Core: Remove broken option for whether rewinding restores save games
+ - Feature: Added loading savestates from command line
  - FFmpeg: Support libswresample (fixes mgba.io/i/1120, mgba.io/b/123)
  - FFmpeg: Support lossless h.264 encoding
- - Feature: Added loading savestates from command line
- - Qt: Allow pausing game at load (fixes mgba.io/i/1129)
- - Wii: Move audio handling to callbacks (fixes mgba.io/i/803)
- - Qt: Clean up FPS target UI (fixes mgba.io/i/436)
- - Core: Remove broken option for whether rewinding restores save games
  - FFmpeg: Support lossless VP9 encoding
+ - GBA Cheats: Allow multiple ROM patches in the same slot
+ - GB: Skip BIOS option now works
+ - GB: Fix VRAM/palette locking (fixes mgba.io/i/1109)
+ - GB Audio: Improved audio quality
+ - GB, GBA Audio: Increase max audio volume
+ - GB MBC: Remove erroneous bank 0 wrapping
+ - GB Video: Darken colors in GBA mode
+ - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
+ - GBA: Implement display start DMAs
+ - GBA: Improve multiboot image detection
+ - GBA Memory: 64 MiB GBA Video cartridge support
+ - GBA Savedata: Remove ability to disable realistic timing
+ - GBA Timer: Use global cycles for timers
+ - Libretro: Add frameskip option
  - mGUI: Add fast forward toggle
+ - PSP2: Use system enter key by default
+ - Python: Integrate tests from cinema test suite
+ - Qt: Redo GameController into multiple classes
+ - Qt: Prevent window from being created off-screen
+ - Qt: Add option to disable FPS display
+ - Qt: Options to mess around with layer placement
+ - Qt: Add load alternate save option
+ - Qt: Allow pausing game at load (fixes mgba.io/i/1129)
+ - Qt: Clean up FPS target UI (fixes mgba.io/i/436)
+ - Test: Restructure test suite into multiple executables
+ - Util: Don't build crc32 if the function already exists
+ - Wii: Move audio handling to callbacks (fixes mgba.io/i/803)
 Changes from beta 1:
 Features:
  - Libretro: Add Game Boy cheat support
  - Qt: Separate fast forward volume control (fixes mgba.io/i/846, mgba.io/i/1143)
  - Switch: Rumble support
  - Switch: Rotation support
+ - Switch: Screen stretching options
  - Qt: State file load/save menu options
  - Windows installer
+ - Tile viewer now has adjustable width
+ - Python: Experimental audio API
 Bugfixes:
+ - 3DS: Fix unused screens not clearing (fixes mgba.io/i/1184)
+ - Core: Remember to deinit proxy ring FIFO
+ - Core: Reroot timing list when (de)scheduling
+ - GB, GBA: Fix broken opposing button filter (fixes mgba.io/i/1191)
+ - GB MBC: Fix MBC30 SRAM
+ - GB, GBA Savedata: Fix leaks when loading masked save (fixes mgba.io/i/1197)
+ - GB Video: Fix SGB border hole size
+ - GB Video: Changing LYC while LCDC off doesn't affect STAT (fixes mgba.io/i/1224)
+ - GBA: Fix GB Player features
+ - GBA I/O: SOUNDCNT_HI is readable when sound is off
+ - GBA Savedata: Fix EEPROM writing codepath when savetype is not EEPROM
+ - GBA Video: Fix caching with background toggling (fixes mgba.io/i/1118)
+ - Libretro: Fix adding codes with hooks
  - PSP2: Fix audio crackling after fast forward
  - PSP2: Fix audio crackling when buffer is full
- - 3DS: Fix unused screens not clearing (fixes mgba.io/i/1184)
- - GBA Video: Fix caching with background toggling (fixes mgba.io/i/1118)
- - Wii: Fix drawing caching regression (fixes mgba.io/i/1185)
- - Switch: Fix incorrect mapping for fast forward cap
- - GB, GBA: Fix broken opposing button filter (fixes mgba.io/i/1191)
  - Qt: Fix jumbled background when paused
  - Qt: Fix FPS counter on Windows
- - GB, GBA Savedata: Fix leaks when loading masked save (fixes mgba.io/i/1197)
  - Qt: Fix focus issues with load/save state overlay
- - GB Video: Fix SGB border hole size
+ - Switch: Fix incorrect mapping for fast forward cap
+ - Wii: Fix drawing caching regression (fixes mgba.io/i/1185)
+ - PSP2: Fix tearing issues (fixes mgba.io/i/1211)
+ - Qt: Fix mapping analog triggers (fixes mgba.io/i/495)
+ - Qt: Grab focus when game starts (fixes mgba.io/i/804)
+ - Qt: Ensure FATAL logs reach log view
+ - SDL: Fix handling of invalid gamepads (fixes mgba.io/i/1239)
 Misc:
+ - CMake: Fix libswresample version dependencies (fixes mgba.io/i/1229)
+ - Debugger: Minor text fixes
+ - Debugger: Readability improvements (fixes mgba.io/i/1238)
+ - GB: Improved SGB2 support
+ - GB Audio: Skip frame if enabled when clock is high
+ - Libretro: Reduce rumble callbacks
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types
+ - Python: Minor API improvements
+ - Qt: Ensure camera image is valid
+ - Qt: Debugger console history
+ - Qt: Detect presence of GL_ARB_framebuffer_object
+ - Qt: Minor memory view tweaks
+ - Res: Improve modeling of AGB/AGS screen in shaders
  - Wii: Define _GNU_SOURCE (fixes mgba.io/i/1106)
  - Wii: Expose stretch configuration in settings
  - Wii: Stretch now sets pixel-accurate mode size cap
- - Qt: Ensure camera image is valid
- - GB: Improved SGB2 support
- - Libretro: Reduce rumble callbacks
 
 0.7 beta 1: (2018-09-24)
 - Initial beta for 0.7

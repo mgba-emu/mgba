@@ -238,14 +238,14 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(MVN, cpu->gprs[rd] = ~cpu->gprs[rn]; THUMB_
 DEFINE_INSTRUCTION_WITH_HIGH_THUMB(ADD4,
 	cpu->gprs[rd] += cpu->gprs[rm];
 	if (rd == ARM_PC) {
-		THUMB_WRITE_PC;
+		currentCycles += ThumbWritePC(cpu);
 	})
 
 DEFINE_INSTRUCTION_WITH_HIGH_THUMB(CMP3, int32_t aluOut = cpu->gprs[rd] - cpu->gprs[rm]; THUMB_SUBTRACTION_S(cpu->gprs[rd], cpu->gprs[rm], aluOut))
 DEFINE_INSTRUCTION_WITH_HIGH_THUMB(MOV3,
 	cpu->gprs[rd] = cpu->gprs[rm];
 	if (rd == ARM_PC) {
-		THUMB_WRITE_PC;
+		currentCycles += ThumbWritePC(cpu);
 	})
 
 #define DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(NAME, BODY) \
@@ -310,7 +310,7 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA,
 		if (ARM_COND_ ## COND) { \
 			int8_t immediate = opcode; \
 			cpu->gprs[ARM_PC] += (int32_t) immediate << 1; \
-			THUMB_WRITE_PC; \
+			currentCycles += ThumbWritePC(cpu); \
 		})
 
 DEFINE_CONDITIONAL_BRANCH_THUMB(EQ)
@@ -346,7 +346,7 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(POPR,
 	rs |= 1 << ARM_PC,
 	THUMB_LOAD_POST_BODY;
 	cpu->gprs[ARM_SP] = address;
-	THUMB_WRITE_PC;)
+	currentCycles += ThumbWritePC(cpu);)
 
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(PUSH,
 	ARM_SP,
@@ -369,7 +369,7 @@ DEFINE_INSTRUCTION_THUMB(BKPT, cpu->irqh.bkpt16(cpu, opcode & 0xFF);)
 DEFINE_INSTRUCTION_THUMB(B,
 	int16_t immediate = (opcode & 0x07FF) << 5;
 	cpu->gprs[ARM_PC] += (((int32_t) immediate) >> 4);
-	THUMB_WRITE_PC;)
+	currentCycles += ThumbWritePC(cpu);)
 
 DEFINE_INSTRUCTION_THUMB(BL1,
 	int16_t immediate = (opcode & 0x07FF) << 5;
@@ -380,7 +380,7 @@ DEFINE_INSTRUCTION_THUMB(BL2,
 	uint32_t pc = cpu->gprs[ARM_PC];
 	cpu->gprs[ARM_PC] = cpu->gprs[ARM_LR] + immediate;
 	cpu->gprs[ARM_LR] = pc - 1;
-	THUMB_WRITE_PC;)
+	currentCycles += ThumbWritePC(cpu);)
 
 DEFINE_INSTRUCTION_THUMB(BX,
 	int rm = (opcode >> 3) & 0xF;
@@ -391,9 +391,9 @@ DEFINE_INSTRUCTION_THUMB(BX,
 	}
 	cpu->gprs[ARM_PC] = (cpu->gprs[rm] & 0xFFFFFFFE) - misalign;
 	if (cpu->executionMode == MODE_THUMB) {
-		THUMB_WRITE_PC;
+		currentCycles += ThumbWritePC(cpu);
 	} else {
-		ARM_WRITE_PC;
+		currentCycles += ARMWritePC(cpu);
 	})
 
 DEFINE_INSTRUCTION_THUMB(SWI, cpu->irqh.swi16(cpu, opcode & 0xFF))

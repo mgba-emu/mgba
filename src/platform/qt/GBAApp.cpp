@@ -10,8 +10,9 @@
 #include "CoreManager.h"
 #include "ConfigController.h"
 #include "Display.h"
-#include "Window.h"
+#include "LogController.h"
 #include "VFileDevice.h"
+#include "Window.h"
 
 #include <QFileInfo>
 #include <QFileOpenEvent>
@@ -65,6 +66,8 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 		AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController->getQtOption("audioDriver").toInt()));
 	}
 
+	LogController::global()->load(m_configController);
+
 	connect(this, &GBAApp::aboutToQuit, this, &GBAApp::cleanup);
 }
 
@@ -75,9 +78,11 @@ void GBAApp::cleanup() {
 		finishJob(m_workerJobs.firstKey());
 	}
 
+#ifdef USE_SQLITE3
 	if (m_db) {
 		NoIntroDBDestroy(m_db);
 	}
+#endif
 }
 
 bool GBAApp::event(QEvent* event) {

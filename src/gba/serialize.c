@@ -15,7 +15,7 @@
 #include <fcntl.h>
 
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
-const uint32_t GBA_SAVESTATE_VERSION = 0x00000002;
+const uint32_t GBA_SAVESTATE_VERSION = 0x00000003;
 
 mLOG_DEFINE_CATEGORY(GBA_STATE, "GBA Savestate", "gba.serialize");
 
@@ -62,6 +62,10 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBASerializedMiscFlags miscFlags = 0;
 	miscFlags = GBASerializedMiscFlagsSetHalted(miscFlags, gba->cpu->halted);
 	miscFlags = GBASerializedMiscFlagsSetPOSTFLG(miscFlags, gba->memory.io[REG_POSTFLG >> 1] & 1);
+	if (mTimingIsScheduled(&gba->timing, &gba->irqEvent)) {
+		miscFlags = GBASerializedMiscFlagsFillIrqPending(miscFlags);
+		STORE_32(gba->irqEvent.when - mTimingCurrentTime(&gba->timing), 0, &state->nextIrq);
+	}
 	STORE_32(miscFlags, 0, &state->miscFlags);
 
 	GBAMemorySerialize(&gba->memory, state);
@@ -179,6 +183,11 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	LOAD_32(miscFlags, 0, &state->miscFlags);
 	gba->cpu->halted = GBASerializedMiscFlagsGetHalted(miscFlags);
 	gba->memory.io[REG_POSTFLG >> 1] = GBASerializedMiscFlagsGetPOSTFLG(miscFlags);
+	if (GBASerializedMiscFlagsIsIrqPending(miscFlags)) {
+		int32_t when;
+		LOAD_32(when, 0, &state->nextIrq);
+		mTimingSchedule(&gba->timing, &gba->irqEvent, when);		
+	}
 
 	GBAVideoDeserialize(&gba->video, state);
 	GBAMemoryDeserialize(&gba->memory, state);

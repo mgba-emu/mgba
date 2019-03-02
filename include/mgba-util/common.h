@@ -196,13 +196,26 @@ typedef intptr_t ssize_t;
 #define TEST_FILL_BITS(SRC, START, END, TEST) ((TEST) ? (FILL_BITS(SRC, START, END)) : (CLEAR_BITS(SRC, START, END)))
 
 #ifdef _MSC_VER
+#pragma section(".CRT$XCU",read)
 #define ATTRIBUTE_UNUSED
 #define ATTRIBUTE_FORMAT(X, Y, Z)
 #define ATTRIBUTE_NOINLINE
+// Adapted from https://stackoverflow.com/a/2390626
+#define _CONSTRUCTOR(FN, PRE) \
+    static void FN(void); \
+    __declspec(allocate(".CRT$XCU")) void (*_CONSTRUCTOR_ ## FN)(void) = FN; \
+    __pragma(comment(linker,"/include:" PRE "_CONSTRUCTOR_" #FN)) \
+    static void FN(void)
+#ifdef _WIN64
+#define CONSTRUCTOR(FN) _CONSTRUCTOR(FN, "")
+#else
+#define CONSTRUCTOR(FN) _CONSTRUCTOR(FN, "_")
+#endif
 #else
 #define ATTRIBUTE_UNUSED __attribute__((unused))
 #define ATTRIBUTE_FORMAT(X, Y, Z) __attribute__((format(X, Y, Z)))
 #define ATTRIBUTE_NOINLINE __attribute__((noinline))
+#define CONSTRUCTOR(FN) static __attribute__((constructor)) void FN(void)
 #endif
 
 #define DECL_BITFIELD(NAME, TYPE) typedef TYPE NAME

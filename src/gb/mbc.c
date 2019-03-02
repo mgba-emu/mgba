@@ -188,11 +188,6 @@ void GBMBCInit(struct GB* gb) {
 			case 2:
 			case 3:
 				gb->memory.mbcType = GB_MBC1;
-				if (gb->memory.romSize >= GB_SIZE_CART_BANK0 * 0x31 && _isMulticart(gb->memory.rom)) {
-					gb->memory.mbcState.mbc1.multicartStride = 4;
-				} else {
-					gb->memory.mbcState.mbc1.multicartStride = 5;
-				}
 				break;
 			case 5:
 			case 6:
@@ -255,6 +250,11 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_MBC1:
 		gb->memory.mbcWrite = _GBMBC1;
+		if (gb->memory.romSize >= GB_SIZE_CART_BANK0 * 0x31 && _isMulticart(gb->memory.rom)) {
+			gb->memory.mbcState.mbc1.multicartStride = 4;
+		} else {
+			gb->memory.mbcState.mbc1.multicartStride = 5;
+		}
 		break;
 	case GB_MBC2:
 		gb->memory.mbcWrite = _GBMBC2;
@@ -510,10 +510,10 @@ void _GBMBC3(struct GB* gb, uint16_t address, uint8_t value) {
 		GBMBCSwitchBank(gb, bank);
 		break;
 	case 0x2:
-		if (value < 4) {
+		if (value < 8) {
 			GBMBCSwitchSramBank(gb, value);
 			memory->rtcAccess = false;
-		} else if (value >= 8 && value <= 0xC) {
+		} else if (value <= 0xC) {
 			memory->activeRtcReg = value - 8;
 			memory->rtcAccess = true;
 		}

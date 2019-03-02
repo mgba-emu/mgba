@@ -33,7 +33,7 @@ public slots:
 	void setValue(int key);
 	void setValueKey(int key);
 	void setValueButton(int button);
-	void setValueAxis(int axis, int32_t value);
+	void setValueAxis(int axis, GamepadAxisEvent::Direction value);
 	void setValueHat(int hat, GamepadHatEvent::Direction value);
 	void clearButton();
 	void clearAxis();

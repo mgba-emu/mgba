@@ -50,7 +50,7 @@ public slots:
 	virtual void requestSampleRate(unsigned) = 0;
 
 protected:
-	mCoreThread* input() { return m_context->thread(); }
+	mCoreThread* input() { return m_context ? m_context->thread() : nullptr; }
 
 private:
 	std::shared_ptr<CoreController> m_context;

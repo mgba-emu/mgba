@@ -72,6 +72,10 @@ TARGET_NAME := mgba
 
 DEFINES :=
 
+ifeq (,$(findstring msvc,$(platform)))
+LIBS += -lm
+endif
+
 # GIT HASH
 GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
 ifneq ($(GIT_VERSION)," unknown")
@@ -315,6 +319,16 @@ else ifeq ($(platform), switch)
    CFLAGS += -fomit-frame-pointer -ffast-math
    DEFINES += -std=c99
 
+# Genode
+else ifeq ($(platform), genode)
+   TARGET  := $(TARGET_NAME)_libretro.lib.so
+   CC      := $(shell pkg-config genode-base --variable=cc)
+   LD      := $(shell pkg-config genode-base --variable=ld)
+   CFLAGS  += $(shell pkg-config --cflags genode-libc)
+   LDFLAGS += -shared --version-script=link.T
+   LDFLAGS += $(shell pkg-config --libs genode-lib genode-libc)
+   LIBS =
+
 # emscripten
 else ifeq ($(platform), emscripten)
    TARGET := $(TARGET_NAME)_libretro_$(platform).bc
@@ -347,10 +361,6 @@ DEFINES += $(PLATFORM_DEFINES) $(RETRODEFS)
 
 CFLAGS += $(CODE_DEFINES) $(fpic) $(DEFINES)
 
-ifeq (,$(findstring msvc,$(platform)))
-LIBS += -lm
-endif
-
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(INCLUDES)
 %.o: %.S
@@ -365,12 +375,16 @@ include $(THEOS_MAKE_PATH)/library.mk
 else
 all: $(TARGET)
 
+ifneq ($(platform),genode)
+LD = $(CC)
+endif
+
 $(TARGET): $(OBJS)
 	@echo "** BUILDING $(TARGET) FOR PLATFORM $(platform) **"
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJS)
 else
-	$(CC) -o $@ $(SHARED) $(OBJS) $(LDFLAGS) $(LIBS)
+	$(LD) -o $@ $(SHARED) $(OBJS) $(LDFLAGS) $(LIBS)
 endif
 	@echo "** BUILD SUCCESSFUL! GG NO RE **"
 

@@ -55,5 +55,6 @@ void mSDLGLCommonInit(struct mSDLRenderer* renderer) {
 #else
 	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 32, SDL_OPENGL | (SDL_FULLSCREEN * renderer->fullscreen));
 #endif
+	SDL_WM_SetCaption(projectName, "");
 #endif
 }

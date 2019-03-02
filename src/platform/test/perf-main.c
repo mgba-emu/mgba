@@ -81,7 +81,6 @@ int main(int argc, char** argv) {
 	}
 #elif defined(__SWITCH__)
 	UNUSED(_mPerfShutdown);
-	gfxInitDefault();
 	consoleInit(NULL);
 #else
 	signal(SIGINT, _mPerfShutdown);
@@ -123,6 +122,9 @@ int main(int argc, char** argv) {
 	_outputBuffer = malloc(256 * 256 * 4);
 	if (perfOpts.csv) {
 		puts("game_code,frames,duration,renderer");
+#ifdef __SWITCH__
+		consoleUpdate(NULL);
+#endif
 	}
 	if (perfOpts.server) {
 		didFail = !_mPerfRunServer(args.fname, &args, &perfOpts);
@@ -141,7 +143,7 @@ int main(int argc, char** argv) {
 	gfxExit();
 	acExit();
 #elif defined(__SWITCH__)
-	gfxExit();
+	consoleExit(NULL);
 #endif
 
 	return didFail;
@@ -221,6 +223,9 @@ bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struc
 	} else {
 		printf("%u frames in %" PRIu64 " microseconds: %g fps (%gx)\n", frames, duration, scaledFrames / duration, scaledFrames / (duration * 60.f));
 	}
+#ifdef __SWITCH__
+	consoleUpdate(NULL);
+#endif
 
 	return true;
 }
@@ -245,6 +250,9 @@ static void _mPerfRunloop(struct mCore* core, int* frames, bool quiet) {
 			if (timeDiff >= 1000) {
 				printf("\033[2K\rCurrent FPS: %g (%gx)", lastFrames / (timeDiff / 1000.0f), lastFrames / (float) (60 * (timeDiff / 1000.0f)));
 				fflush(stdout);
+#ifdef __SWITCH__
+				consoleUpdate(NULL);
+#endif
 				lastEcho = currentTime;
 				lastFrames = 0;
 			}

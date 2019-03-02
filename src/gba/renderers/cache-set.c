@@ -158,10 +158,10 @@ void GBAVideoCacheWriteVideoRegister(struct mCacheSet* cache, uint32_t address, 
 	switch (address) {
 	case REG_DISPCNT:
 		GBAVideoCacheWriteDISPCNT(cache, value);
-		GBAVideoCacheWriteBGCNT(cache, 0, (uint16_t) mMapCacheSetGetPointer(&cache->maps, 0)->context);
-		GBAVideoCacheWriteBGCNT(cache, 1, (uint16_t) mMapCacheSetGetPointer(&cache->maps, 1)->context);
-		GBAVideoCacheWriteBGCNT(cache, 2, (uint16_t) mMapCacheSetGetPointer(&cache->maps, 2)->context);
-		GBAVideoCacheWriteBGCNT(cache, 3, (uint16_t) mMapCacheSetGetPointer(&cache->maps, 3)->context);
+		GBAVideoCacheWriteBGCNT(cache, 0, (uintptr_t) mMapCacheSetGetPointer(&cache->maps, 0)->context);
+		GBAVideoCacheWriteBGCNT(cache, 1, (uintptr_t) mMapCacheSetGetPointer(&cache->maps, 1)->context);
+		GBAVideoCacheWriteBGCNT(cache, 2, (uintptr_t) mMapCacheSetGetPointer(&cache->maps, 2)->context);
+		GBAVideoCacheWriteBGCNT(cache, 3, (uintptr_t) mMapCacheSetGetPointer(&cache->maps, 3)->context);
 		break;
 	case REG_BG0CNT:
 		GBAVideoCacheWriteBGCNT(cache, 0, value);

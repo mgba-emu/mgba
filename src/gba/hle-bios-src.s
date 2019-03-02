@@ -20,7 +20,7 @@ resetBase:
 mov r0, #0x8000000
 ldrb r1, [r0, #3]
 cmp r1, #0xEA
-movne r0, #0x2000000
+ldrne r0, =0x20000C0
 bx r0
 .word 0
 .word 0xE129F000
@@ -183,3 +183,5 @@ stmltia r1!, {r3-r10}
 blt    0b
 2:
 ldmfd  sp!, {r4-r10, pc}
+
+.ltorg

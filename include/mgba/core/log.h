@@ -47,24 +47,23 @@ struct mCoreConfig;
 void mLogFilterInit(struct mLogFilter*);
 void mLogFilterDeinit(struct mLogFilter*);
 void mLogFilterLoad(struct mLogFilter*, const struct mCoreConfig*);
+void mLogFilterSave(const struct mLogFilter*, struct mCoreConfig*);
 void mLogFilterSet(struct mLogFilter*, const char* category, int levels);
-bool mLogFilterTest(struct mLogFilter*, int category, enum mLogLevel level);
+void mLogFilterReset(struct mLogFilter*, const char* category);
+bool mLogFilterTest(const struct mLogFilter*, int category, enum mLogLevel level);
+int mLogFilterLevels(const struct mLogFilter*, int category);
 
 ATTRIBUTE_FORMAT(printf, 3, 4)
 void mLog(int category, enum mLogLevel level, const char* format, ...);
 
-#define mLOG(CATEGORY, LEVEL, ...) mLog(_mLOG_CAT_ ## CATEGORY (), mLOG_ ## LEVEL, __VA_ARGS__)
+#define mLOG(CATEGORY, LEVEL, ...) mLog(_mLOG_CAT_ ## CATEGORY, mLOG_ ## LEVEL, __VA_ARGS__)
 
-#define mLOG_DECLARE_CATEGORY(CATEGORY) int _mLOG_CAT_ ## CATEGORY (void); extern const char* _mLOG_CAT_ ## CATEGORY ## _ID;
+#define mLOG_DECLARE_CATEGORY(CATEGORY) extern int _mLOG_CAT_ ## CATEGORY;
 #define mLOG_DEFINE_CATEGORY(CATEGORY, NAME, ID) \
-	int _mLOG_CAT_ ## CATEGORY (void) { \
-		static int category = 0; \
-		if (!category) { \
-			category = mLogGenerateCategory(NAME, ID); \
-		} \
-		return category; \
-	} \
-	const char* _mLOG_CAT_ ## CATEGORY ## _ID = ID;
+	int _mLOG_CAT_ ## CATEGORY; \
+	CONSTRUCTOR(_mLOG_CAT_ ## CATEGORY ## _INIT) { \
+		_mLOG_CAT_ ## CATEGORY = mLogGenerateCategory(NAME, ID); \
+	}
 
 mLOG_DECLARE_CATEGORY(STATUS)
 

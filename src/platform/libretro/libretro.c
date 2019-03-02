@@ -35,6 +35,10 @@
 FS_Archive sdmcArchive;
 #endif
 
+#ifdef HAVE_LIBNX
+#include <switch.h>
+#endif
+
 #define SAMPLES 1024
 #define RUMBLE_PWM 35
 
@@ -56,6 +60,9 @@ static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned heigh
 static void _startImage(struct mImageSource*, unsigned w, unsigned h, int colorFormats);
 static void _stopImage(struct mImageSource*);
 static void _requestImage(struct mImageSource*, const void** buffer, size_t* stride, enum mColorFormat* colorFormat);
+static int32_t _readTiltX(struct mRotationSource* source);
+static int32_t _readTiltY(struct mRotationSource* source);
+static int32_t _readGyroZ(struct mRotationSource* source);
 
 static struct mCore* core;
 static void* outputBuffer;
@@ -67,6 +74,7 @@ static int rumbleUp;
 static int rumbleDown;
 static struct mRumble rumble;
 static struct GBALuminanceSource lux;
+static struct mRotationSource rotation;
 static int luxLevel;
 static struct mLogger logger;
 static struct retro_camera_callback cam;
@@ -77,6 +85,10 @@ static unsigned camHeight;
 static unsigned imcapWidth;
 static unsigned imcapHeight;
 static size_t camStride;
+
+#ifdef HAVE_LIBNX
+static u32 hidSixAxisHandles[4];
+#endif
 
 static void _reloadSettings(void) {
 	struct mCoreOptions opts = {
@@ -212,7 +224,7 @@ void retro_get_system_info(struct retro_system_info* info) {
 #ifndef GIT_VERSION
 #define GIT_VERSION ""
 #endif
-	info->library_version = "0.7-b1" GIT_VERSION;
+	info->library_version = "0.7.0" GIT_VERSION;
 	info->library_name = "mGBA";
 	info->block_extract = false;
 }
@@ -284,6 +296,19 @@ void retro_init(void) {
 		rumbleCallback = 0;
 	}
 
+#ifdef HAVE_LIBNX
+	hidGetSixAxisSensorHandles(&hidSixAxisHandles[0], 2, CONTROLLER_PLAYER_1, TYPE_JOYCON_PAIR);
+	hidGetSixAxisSensorHandles(&hidSixAxisHandles[2], 1, CONTROLLER_PLAYER_1, TYPE_PROCONTROLLER);
+	hidGetSixAxisSensorHandles(&hidSixAxisHandles[3], 1, CONTROLLER_HANDHELD, TYPE_HANDHELD);
+	hidStartSixAxisSensor(hidSixAxisHandles[0]);
+	hidStartSixAxisSensor(hidSixAxisHandles[1]);
+	hidStartSixAxisSensor(hidSixAxisHandles[2]);
+	hidStartSixAxisSensor(hidSixAxisHandles[3]);
+#endif
+	rotation.readTiltX = _readTiltX;
+	rotation.readTiltY = _readTiltY;
+	rotation.readGyroZ = _readGyroZ;
+
 	luxLevel = 0;
 	lux.readLuminance = _readLux;
 	lux.sample = _updateLux;
@@ -313,6 +338,12 @@ void retro_deinit(void) {
 	linearFree(outputBuffer);
 #else
 	free(outputBuffer);
+#endif
+#ifdef HAVE_LIBNX
+	hidStopSixAxisSensor(hidSixAxisHandles[0]);
+	hidStopSixAxisSensor(hidSixAxisHandles[1]);
+	hidStopSixAxisSensor(hidSixAxisHandles[2]);
+	hidStopSixAxisSensor(hidSixAxisHandles[3]);
 #endif
 }
 
@@ -619,8 +650,10 @@ bool retro_load_game(const struct retro_game_info* game) {
 	blip_set_rates(core->getAudioChannel(core, 1), core->frequency(core), 32768);
 
 	core->setPeripheral(core, mPERIPH_RUMBLE, &rumble);
+	core->setPeripheral(core, mPERIPH_ROTATION, &rotation);
 
 	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
+	memset(savedata, 0xFF, SIZE_CART_FLASH1M);
 	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
 
 	_reloadSettings();
@@ -788,6 +821,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code) {
 		}
 	}
 #endif
+	cheatSet->refresh(cheatSet, device);
 }
 
 unsigned retro_get_region(void) {
@@ -1020,4 +1054,37 @@ static void _requestImage(struct mImageSource* image, const void** buffer, size_
 	*buffer = &camData[offset];
 	*stride = camStride;
 	*colorFormat = mCOLOR_XRGB8;
+}
+
+static int32_t _readTiltX(struct mRotationSource* source) {
+	UNUSED(source);
+	int32_t tiltX = 0;
+#ifdef HAVE_LIBNX
+	SixAxisSensorValues sixaxis;
+	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
+	tiltX = sixaxis.accelerometer.x * 3e8f;
+#endif
+	return tiltX;
+}
+
+static int32_t _readTiltY(struct mRotationSource* source) {
+	UNUSED(source);
+	int32_t tiltY = 0;
+#ifdef HAVE_LIBNX
+	SixAxisSensorValues sixaxis;
+	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
+	tiltY = sixaxis.accelerometer.y * -3e8f;
+#endif
+	return tiltY;
+}
+
+static int32_t _readGyroZ(struct mRotationSource* source) {
+	UNUSED(source);
+	int32_t gyroZ = 0;
+#ifdef HAVE_LIBNX
+	SixAxisSensorValues sixaxis;
+	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
+	gyroZ = sixaxis.gyroscope.z * -1.1e9f;
+#endif
+	return gyroZ;
 }

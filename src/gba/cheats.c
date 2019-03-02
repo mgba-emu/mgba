@@ -276,6 +276,9 @@ static void GBACheatRefresh(struct mCheatSet* cheats, struct mCheatDevice* devic
 	struct GBACheatSet* gbaset = (struct GBACheatSet*) cheats;
 	if (cheats->enabled) {
 		_patchROM(device, gbaset);
+		if (gbaset->hook && !gbaset->hook->reentries) {
+			_addBreakpoint(device, gbaset);
+		}
 	} else {
 		_unpatchROM(device, gbaset);
 	}

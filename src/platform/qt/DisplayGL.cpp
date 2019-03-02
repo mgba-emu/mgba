@@ -193,8 +193,15 @@ PainterGL::PainterGL(int majorVersion, QGLWidget* parent)
 	mGLES2Context* gl2Backend;
 #endif
 
+	m_gl->makeCurrent();
+#if defined(_WIN32) && defined(USE_EPOXY)
+	epoxy_handle_external_wglMakeCurrent();
+#endif
+
+	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
+
 #if !defined(_WIN32) || defined(USE_EPOXY)
-	if (majorVersion >= 2) {
+	if (extensions.contains("GL_ARB_framebuffer_object") && majorVersion >= 2) {
 		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
 		mGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
@@ -215,10 +222,6 @@ PainterGL::PainterGL(int majorVersion, QGLWidget* parent)
 		painter->m_gl->swapBuffers();
 	};
 
-	m_gl->makeCurrent();
-#if defined(_WIN32) && defined(USE_EPOXY)
-	epoxy_handle_external_wglMakeCurrent();
-#endif
 	m_backend->init(m_backend, reinterpret_cast<WHandle>(m_gl->winId()));
 #if !defined(_WIN32) || defined(USE_EPOXY)
 	if (m_supportsShaders) {

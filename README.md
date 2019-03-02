@@ -107,7 +107,31 @@ Controls are configurable in the settings menu. Many game controllers should be 
 Compiling
 ---------
 
-Compiling requires using CMake 2.8.11 or newer. GCC and Clang are both known to work to compile mGBA, but Visual Studio 2013 and older are known not to work. Support for Visual Studio 2015 and newer is coming soon. To use CMake to build on a Unix-based system, the recommended commands are as follows:
+Compiling requires using CMake 3.1 or newer. GCC and Clang are both known to work to compile mGBA, but Visual Studio 2013 and older are known not to work. Support for Visual Studio 2015 and newer is coming soon.
+
+#### Docker building
+
+The recommended way to build for most platforms is to use Docker. Several Docker images are provided that contain the requisite toolchain and dependencies for building mGBA across several platforms.
+
+To use a Docker image to build mGBA, simply run the following command while in the root of an mGBA checkout:
+
+	docker run --rm -t -v $PWD:/home/mgba/src mgba/windows:w32
+
+This will produce a `build-win32` directory with the build products. Replace `mgba/windows:w32` with another Docker image for other platforms, which will produce a corresponding other directory. The following Docker images available on Docker Hub:
+
+- mgba/3ds
+- mgba/switch
+- mgba/ubuntu:xenial
+- mgba/ubuntu:bionic
+- mgba/ubuntu:cosmic
+- mgba/vita
+- mgba/wii
+- mgba/windows:w32
+- mgba/windows:w64
+
+#### *nix building
+
+To use CMake to build on a Unix-based system, the recommended commands are as follows:
 
 	mkdir build
 	cd build
@@ -133,11 +157,11 @@ To build on Windows for development, using MSYS2 is recommended. Follow the inst
 
 For x86 (32 bit) builds:
 
-	pacman -Sy base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 For x86_64 (64 bit) builds:
 
-	pacman -Sy base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 Check out the source code by running this command:
 
@@ -152,6 +176,22 @@ Then finally build it by running these commands:
 	make
 
 Please note that this build of mGBA for Windows is not suitable for distribution, due to the scattering of DLLs it needs to run, but is perfect for development. However, if distributing such a build is desired (e.g. for testing on machines that don't have the MSYS2 environment installed), running `cpack -G ZIP` will prepare a zip file with all of the necessary DLLs.
+
+#### Toolchain building
+
+If you have devkitARM (for 3DS), devkitPPC (for Wii), devkitA64 (for Switch), or vitasdk (for PS Vita), you can use the following commands for building:
+
+	mkdir build
+	cd build
+	cmake -DCMAKE_TOOLCHAIN_FILE=../src/platform/3ds/CMakeToolchain.txt ..
+	make
+
+Replace the `-DCMAKE_TOOLCHAIN_FILE` parameter for the following platforms:
+
+- 3DS: `../src/platform/3ds/CMakeToolchain.txt`
+- Switch: `../src/platform/switch/CMakeToolchain.txt`
+- Vita: `../src/platform/psp2/CMakeToolchain.vitasdk`
+- Wii: `../src/platform/wii/CMakeToolchain.txt`
 
 ### Dependencies
 
