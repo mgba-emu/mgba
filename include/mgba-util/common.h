@@ -31,7 +31,7 @@ CXX_GUARD_START
 #include <time.h>
 
 #ifdef _WIN32
-// WinSock2 gets very angry if it's included too late
+// WinSock2 gets very angry if it is included too late
 #include <winsock2.h>
 #endif
 #ifdef _MSC_VER
@@ -51,7 +51,7 @@ typedef intptr_t ssize_t;
 #include <sys/time.h>
 typedef intptr_t ssize_t;
 #else
-#ifndef __CELLOS_LV2__
+#if !defined(__CELLOS_LV2__) && !defined(PS2)
 #include <strings.h>
 #endif
 #include <unistd.h>
@@ -83,7 +83,7 @@ typedef intptr_t ssize_t;
 #define ATOMIC_AND(DST, OP) __atomic_and_fetch(&DST, OP, __ATOMIC_RELEASE)
 #define ATOMIC_CMPXCHG(DST, EXPECTED, SRC) __atomic_compare_exchange_n(&DST, &EXPECTED, SRC, true,__ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)
 #else
-// TODO
+/* TODO */
 #define ATOMIC_STORE(DST, SRC) DST = SRC
 #define ATOMIC_LOAD(DST, SRC) DST = SRC
 #define ATOMIC_ADD(DST, OP) DST += OP
@@ -93,7 +93,7 @@ typedef intptr_t ssize_t;
 #endif
 
 #if defined(_3DS) || defined(GEKKO) || defined(PSP2)
-// newlib doesn't support %z properly by default
+// newlib does not support %z properly by default
 #define PRIz ""
 #elif defined(_WIN64)
 #define PRIz "ll"
