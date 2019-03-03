@@ -9,6 +9,7 @@ Bugfixes:
  - GBA BIOS: Fix multiboot entry point (fixes Magic Floor)
  - Qt: More app metadata fixes
  - Qt: Fix load recent from archive (fixes mgba.io/i/1325)
+ - GB Video: Delay LYC STAT check (fixes mgba.io/i/1331)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
