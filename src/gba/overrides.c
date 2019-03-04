@@ -182,6 +182,12 @@ static const struct GBACartridgeOverride _overrides[] = {
 
 	// Aging cartridge
 	{ "TCHK", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	
+	// Touhoumon Marisa's Magic World
+	{ "AIME", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
+
+	// Touhoumon World Link
+	{ "AICE", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6, false },
 
 	{ { 0, 0, 0, 0 }, 0, 0, IDLE_LOOP_NONE, false }
 };
