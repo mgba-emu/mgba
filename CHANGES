@@ -3,6 +3,7 @@ Bugfixes:
  - Qt: More app metadata fixes
  - Qt: Fix load recent from archive (fixes mgba.io/i/1325)
  - GB Video: Delay LYC STAT check (fixes mgba.io/i/1331)
+ - GB Video: Fix window being enabled mid-scanline (fixes mgba.io/i/1328)
 Misc:
  - Qt: Add missing HEVC NVENC option (fixes mgba.io/i/1323)
 

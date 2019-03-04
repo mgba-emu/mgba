@@ -465,7 +465,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		}
 		break;
 	case REG_IE:
-		gb->memory.ie = value;
+		gb->memory.ie = value & 0x1F;
 		GBUpdateIRQs(gb);
 		return;
 	default:
@@ -578,7 +578,7 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	case REG_JOYP:
 		return _readKeysFiltered(gb);
 	case REG_IE:
-		return gb->memory.ie;
+		return gb->memory.ie | 0xE0;
 	case REG_WAVE_0:
 	case REG_WAVE_1:
 	case REG_WAVE_2:
