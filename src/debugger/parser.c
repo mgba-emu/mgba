@@ -92,73 +92,75 @@ static void _lexOperator(struct LexVector* lv, char operator, enum LexState* sta
 		*state = LEX_ERROR;
 	}
 	if (*state == LEX_ROOT || *state == LEX_ERROR) {
-		struct Token* lvNext = LexVectorAppend(lv);
-		lvNext->type = TOKEN_OPERATOR_TYPE;
+		struct Token lvNext;
+		lvNext.type = TOKEN_OPERATOR_TYPE;
 		*state = LEX_ROOT;
 		switch (operator) {
 		case '-':
-			lvNext->operatorValue = OP_NEGATE;
+			lvNext.operatorValue = OP_NEGATE;
 			break;
 		case '~':
-			lvNext->operatorValue = OP_FLIP;
+			lvNext.operatorValue = OP_FLIP;
 			break;
 		case '!':
-			lvNext->operatorValue = OP_NOT;
+			lvNext.operatorValue = OP_NOT;
 			break;
 		case '*':
-			lvNext->operatorValue = OP_DEREFERENCE;
+			lvNext.operatorValue = OP_DEREFERENCE;
 			break;
 		default:
-			lvNext->type = TOKEN_ERROR_TYPE;
+			lvNext.type = TOKEN_ERROR_TYPE;
 			*state = LEX_ERROR;
-			break;
+			return;
 		}
+		*LexVectorAppend(lv) = lvNext;
 		return;
 	}
-	struct Token* lvNext = LexVectorAppend(lv);
-	lvNext->type = TOKEN_OPERATOR_TYPE;
-	*state = LEX_EXPECT_OPERATOR2;
+	struct Token lvNext;
+	lvNext.type = TOKEN_OPERATOR_TYPE;
 	switch (operator) {
 	case '=':
-		lvNext->operatorValue = OP_ASSIGN;
+		lvNext.operatorValue = OP_ASSIGN;
 		break;
 	case '+':
-		lvNext->operatorValue = OP_ADD;
+		lvNext.operatorValue = OP_ADD;
 		break;
 	case '-':
-		lvNext->operatorValue = OP_SUBTRACT;
+		lvNext.operatorValue = OP_SUBTRACT;
 		break;
 	case '*':
-		lvNext->operatorValue = OP_MULTIPLY;
+		lvNext.operatorValue = OP_MULTIPLY;
 		break;
 	case '/':
-		lvNext->operatorValue = OP_DIVIDE;
+		lvNext.operatorValue = OP_DIVIDE;
 		break;
 	case '%':
-		lvNext->operatorValue = OP_MODULO;
+		lvNext.operatorValue = OP_MODULO;
 		break;
 	case '&':
-		lvNext->operatorValue = OP_AND;
+		lvNext.operatorValue = OP_AND;
 		break;
 	case '|':
-		lvNext->operatorValue = OP_OR;
+		lvNext.operatorValue = OP_OR;
 		break;
 	case '^':
-		lvNext->operatorValue = OP_XOR;
+		lvNext.operatorValue = OP_XOR;
 		break;
 	case '<':
-		lvNext->operatorValue = OP_LESS;
+		lvNext.operatorValue = OP_LESS;
 		break;
 	case '>':
-		lvNext->operatorValue = OP_GREATER;
+		lvNext.operatorValue = OP_GREATER;
 		break;
 	case '!':
-		lvNext->operatorValue = OP_NOT;
+		lvNext.operatorValue = OP_NOT;
 		break;
 	default:
-		lvNext->type = TOKEN_ERROR_TYPE;
-		break;
+		*state = LEX_ERROR;
+		return;
 	}
+	*state = LEX_EXPECT_OPERATOR2;
+	*LexVectorAppend(lv) = lvNext;
 }
 
 static void _lexValue(struct LexVector* lv, char token, uint32_t next, enum LexState* state) {
