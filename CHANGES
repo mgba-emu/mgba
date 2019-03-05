@@ -22,6 +22,7 @@ Misc:
  - Qt: Don't unload ROM immediately if it crashes
  - Debugger: Add breakpoint and watchpoint listing
  - Qt: Add missing HEVC NVENC option (fixes mgba.io/i/1323)
+ - LR35902: Support PC-relative opcode decoding
 
 0.7.1: (2019-02-24)
 Bugfixes:

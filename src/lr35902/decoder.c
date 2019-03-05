@@ -199,6 +199,7 @@ DEFINE_DECODER_LR35902(ADDSP, info->mnemonic = LR35902_MN_ADD; \
 	DEFINE_DECODER_LR35902(JR ## CONDITION_NAME, \
 		info->mnemonic = LR35902_MN_JR; \
 		info->condition = CONDITION; \
+		info->op1.flags = LR35902_OP_FLAG_RELATIVE; \
 		return 1;)
 
 #define DEFINE_CALL_INSTRUCTION_LR35902(CONDITION_NAME, CONDITION) \
@@ -497,7 +498,7 @@ static const char* _lr35902MnemonicStrings[] = {
 };
 
 
-static int _decodeOperand(struct LR35902Operand op, char* buffer, int blen) {
+static int _decodeOperand(struct LR35902Operand op, uint16_t pc, char* buffer, int blen) {
 	int total = 0;
 	if (op.flags & LR35902_OP_FLAG_IMPLICIT) {
 		return 0;
@@ -511,7 +512,12 @@ static int _decodeOperand(struct LR35902Operand op, char* buffer, int blen) {
 		int written = snprintf(buffer, blen - 1, "%s", _lr35902Registers[op.reg]);
 		ADVANCE(written);
 	} else {
-		int written = snprintf(buffer, blen - 1, "$%02X", op.immediate);
+		int written;
+		if (op.flags & LR35902_OP_FLAG_RELATIVE) {
+			written = snprintf(buffer, blen - 1, "$%04X", pc + (int8_t) op.immediate);
+		} else {
+			written = snprintf(buffer, blen - 1, "$%02X", op.immediate);
+		}
 		ADVANCE(written);
 		if (op.reg) {
 			strncpy(buffer, "+", blen - 1);
@@ -533,7 +539,7 @@ static int _decodeOperand(struct LR35902Operand op, char* buffer, int blen) {
 	return total;
 }
 
-int LR35902Disassemble(struct LR35902InstructionInfo* info, char* buffer, int blen) {
+int LR35902Disassemble(struct LR35902InstructionInfo* info, uint16_t pc, char* buffer, int blen) {
 	const char* mnemonic = _lr35902MnemonicStrings[info->mnemonic];
 	int written;
 	int total = 0;
@@ -553,7 +559,7 @@ int LR35902Disassemble(struct LR35902InstructionInfo* info, char* buffer, int bl
 	}
 
 	if (info->op1.reg || info->op1.immediate || info->op2.reg || info->op2.immediate) {
-		written = _decodeOperand(info->op1, buffer, blen);
+		written = _decodeOperand(info->op1, pc, buffer, blen);
 		ADVANCE(written);
 	}
 
@@ -562,7 +568,7 @@ int LR35902Disassemble(struct LR35902InstructionInfo* info, char* buffer, int bl
 			strncpy(buffer, ", ", blen - 1);
 			ADVANCE(2);
 		}
-		written = _decodeOperand(info->op2, buffer, blen);
+		written = _decodeOperand(info->op2, pc, buffer, blen);
 		ADVANCE(written);
 	}
 
