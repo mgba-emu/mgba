@@ -747,6 +747,7 @@ if(M_CORE_GB)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/memory-debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/gb/debugger/cli.c
+		${CMAKE_CURRENT_SOURCE_DIR}/src/gb/debugger/debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/gb/debugger/symbols.c)
 	list(APPEND TEST_SRC
 		${LR35902_TEST_SRC}
