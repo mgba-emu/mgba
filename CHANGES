@@ -3,6 +3,7 @@ Features:
  - Improved logging configuration
  - One-Player BattleChip/Progress/Beast Link Gate support
  - Add Game Boy Color palettes for original Game Boy games
+ - Debugger: Add unary operators and memory dereferencing
 Emulation fixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs

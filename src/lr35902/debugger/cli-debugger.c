@@ -74,7 +74,7 @@ static inline uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address
 	};
 	disPtr[0] = '\t';
 	++disPtr;
-	LR35902Disassemble(&info, disPtr, sizeof(disassembly) - (disPtr - disassembly));
+	LR35902Disassemble(&info, address, disPtr, sizeof(disassembly) - (disPtr - disassembly));
 	be->printf(be, "%s\n", disassembly);
 	return address;
 }
