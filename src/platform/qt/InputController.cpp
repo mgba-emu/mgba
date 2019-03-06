@@ -740,7 +740,7 @@ void InputController::setupCam() {
 #ifdef BUILD_QT_MULTIMEDIA
 	if (!m_camera) {
 		m_camera = std::make_unique<QCamera>();
-		connect(m_camera.get(), &QCamera::statusChanged, this, &InputController::prepareCamSettings);
+		connect(m_camera.get(), &QCamera::statusChanged, this, &InputController::prepareCamSettings, Qt::QueuedConnection);
 	}
 	m_camera->setCaptureMode(QCamera::CaptureVideo);
 	m_camera->setViewfinder(&m_videoDumper);
