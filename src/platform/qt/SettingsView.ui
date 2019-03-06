@@ -1210,7 +1210,7 @@
        <item row="0" column="0">
         <widget class="QLabel" name="label_29">
          <property name="text">
-          <string>Game Boy model</string>
+          <string>Game Boy model:</string>
          </property>
         </widget>
        </item>
@@ -1246,7 +1246,7 @@
        <item row="1" column="0">
         <widget class="QLabel" name="label_32">
          <property name="text">
-          <string>Super Game Boy model</string>
+          <string>Super Game Boy model:</string>
          </property>
         </widget>
        </item>
@@ -1282,7 +1282,7 @@
        <item row="2" column="0">
         <widget class="QLabel" name="label_33">
          <property name="text">
-          <string>Game Boy Color model</string>
+          <string>Game Boy Color model:</string>
          </property>
         </widget>
        </item>
@@ -1611,6 +1611,26 @@
         <widget class="QLabel" name="label_70">
          <property name="text">
           <string>Default sprite colors 2:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="0">
+        <widget class="QLabel" name="label_35">
+         <property name="text">
+          <string>Camera:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="1">
+        <widget class="QComboBox" name="camera">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
         </widget>
        </item>
