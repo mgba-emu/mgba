@@ -806,7 +806,7 @@ void InputController::setCamera(const QByteArray& name) {
 		needsRestart = m_camera->state() == QCamera::ActiveState;
 	}
 	m_camera = std::make_unique<QCamera>(name);
-	connect(m_camera.get(), &QCamera::statusChanged, this, &InputController::prepareCamSettings);
+	connect(m_camera.get(), &QCamera::statusChanged, this, &InputController::prepareCamSettings, Qt::QueuedConnection);
 	if (needsRestart) {
 		setupCam();
 	}
