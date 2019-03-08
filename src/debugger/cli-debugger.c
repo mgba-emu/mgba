@@ -28,6 +28,8 @@ const char* ERROR_MISSING_ARGS = "Arguments missing"; // TODO: share
 const char* ERROR_OVERFLOW = "Arguments overflow";
 const char* ERROR_INVALID_ARGS = "Invalid arguments";
 
+static struct ParseTree* _parseTree(const char** string);
+
 #if !defined(NDEBUG) && !defined(_WIN32)
 static void _breakInto(struct CLIDebugger*, struct CLIDebugVector*);
 #endif
@@ -84,12 +86,12 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "listw", _listWatchpoints, "", "List watchpoints" },
 	{ "n", _next, "", "Execute next instruction" },
 	{ "next", _next, "", "Execute next instruction" },
-	{ "p", _print, "I", "Print a value" },
-	{ "p/t", _printBin, "I", "Print a value as binary" },
-	{ "p/x", _printHex, "I", "Print a value as hexadecimal" },
-	{ "print", _print, "I", "Print a value" },
-	{ "print/t", _printBin, "I", "Print a value as binary" },
-	{ "print/x", _printHex, "I", "Print a value as hexadecimal" },
+	{ "p", _print, "S+", "Print a value" },
+	{ "p/t", _printBin, "S+", "Print a value as binary" },
+	{ "p/x", _printHex, "S+", "Print a value as hexadecimal" },
+	{ "print", _print, "S+", "Print a value" },
+	{ "print/t", _printBin, "S+", "Print a value as binary" },
+	{ "print/x", _printHex, "S+", "Print a value as hexadecimal" },
 	{ "q", _quit, "", "Quit the emulator" },
 	{ "quit", _quit, "", "Quit the emulator" },
 	{ "reset", _reset, "", "Reset the emulation" },
@@ -158,33 +160,72 @@ static void _disassemble(struct CLIDebugger* debugger, struct CLIDebugVector* dv
 	debugger->system->disassemble(debugger->system, dv);
 }
 
-static void _print(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	for (; dv; dv = dv->next) {
-		if (dv->segmentValue >= 0) {
-			debugger->backend->printf(debugger->backend, " $%02X:%04X", dv->segmentValue, dv->intValue);
-			continue;
-		}
-		debugger->backend->printf(debugger->backend, " %u", dv->intValue);
+static bool _parseExpression(struct mDebugger* debugger, struct CLIDebugVector* dv, int32_t* intValue, int* segmentValue) {
+	size_t args = 0;
+	struct CLIDebugVector* accum;
+	for (accum = dv; accum; accum = accum->next) {
+		++args;
 	}
-	debugger->backend->printf(debugger->backend, "\n");
+	const char** arglist = malloc(sizeof(const char*) * (args + 1));
+	args = 0;
+	for (accum = dv; accum; accum = accum->next) {
+		arglist[args] = accum->charValue;
+		++args;
+	}
+	arglist[args] = NULL;
+	struct ParseTree* tree = _parseTree(arglist);
+	free(arglist);
+
+	if (!tree) {
+		return false;
+	}
+	if (!mDebuggerEvaluateParseTree(debugger, tree, intValue, segmentValue)) {
+		parseFree(tree);
+		free(tree);
+		return false;
+	}
+	parseFree(tree);
+	free(tree);
+	return true;
+}
+
+static void _print(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	int32_t intValue = 0;
+	int segmentValue = -1;
+	if (!_parseExpression(&debugger->d, dv, &intValue, &segmentValue)) {
+		debugger->backend->printf(debugger->backend, "Parse error\n");
+		return;
+	}
+	if (segmentValue >= 0) {
+		debugger->backend->printf(debugger->backend, " $%02X:%04X\n", segmentValue, intValue);
+	} else {
+		debugger->backend->printf(debugger->backend, " %u\n", intValue);
+	}
 }
 
 static void _printBin(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	for (; dv; dv = dv->next) {
-		debugger->backend->printf(debugger->backend, " 0b");
-		int i = 32;
-		while (i--) {
-			debugger->backend->printf(debugger->backend, "%u", (dv->intValue >> i) & 1);
-		}
+	int32_t intValue = 0;
+	int segmentValue = -1;
+	if (!_parseExpression(&debugger->d, dv, &intValue, &segmentValue)) {
+		debugger->backend->printf(debugger->backend, "Parse error\n");
+		return;
+	}
+	debugger->backend->printf(debugger->backend, " 0b");
+	int i = 32;
+	while (i--) {
+		debugger->backend->printf(debugger->backend, "%u", (intValue >> i) & 1);
 	}
 	debugger->backend->printf(debugger->backend, "\n");
 }
 
 static void _printHex(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	for (; dv; dv = dv->next) {
-		debugger->backend->printf(debugger->backend, " 0x%08X", dv->intValue);
+	int32_t intValue = 0;
+	int segmentValue = -1;
+	if (!_parseExpression(&debugger->d, dv, &intValue, &segmentValue)) {
+		debugger->backend->printf(debugger->backend, "Parse error\n");
+		return;
 	}
-	debugger->backend->printf(debugger->backend, "\n");
+	debugger->backend->printf(debugger->backend, " 0x%08X\n", intValue);
 }
 
 static void _printHelp(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -460,31 +501,31 @@ static void _source(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 }
 #endif
 
-static struct ParseTree* _parseTree(const char* string) {
+static struct ParseTree* _parseTree(const char** string) {
 	struct LexVector lv;
 	bool error = false;
 	LexVectorInit(&lv, 0);
-	size_t length = strlen(string);
-	size_t adjusted = lexExpression(&lv, string, length, NULL);
-	struct ParseTree* tree = malloc(sizeof(*tree));
-	if (!adjusted) {
-		error = true;
-	} else {
-		parseLexedExpression(tree, &lv);
-
-		if (adjusted > length) {
+	size_t i;
+	for (i = 0; string[i]; ++i) {
+		size_t length = strlen(string[i]);
+		size_t adjusted = lexExpression(&lv, string[i], length, NULL);
+		if (!adjusted || adjusted > length) {
 			error = true;
-		} else {
-			length -= adjusted;
-			string += adjusted;
 		}
+	}
+	struct ParseTree* tree = NULL;
+	if (!error) {
+		tree = malloc(sizeof(*tree));
+		parseLexedExpression(tree, &lv);
 	}
 	lexFree(&lv);
 	LexVectorClear(&lv);
 	LexVectorDeinit(&lv);
 	if (error) {
-		parseFree(tree);
-		free(tree);
+		if (tree) {
+			parseFree(tree);
+			free(tree);
+		}
 		return NULL;
 	} else {
 		return tree;
@@ -502,7 +543,7 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		.type = BREAKPOINT_HARDWARE
 	};
 	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
-		struct ParseTree* tree = _parseTree(dv->next->charValue);
+		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->charValue, NULL });
 		if (tree) {
 			breakpoint.condition = tree;
 		} else {
@@ -528,7 +569,7 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		.type = type
 	};
 	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
-		struct ParseTree* tree = _parseTree(dv->next->charValue);
+		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->charValue, NULL });
 		if (tree) {
 			watchpoint.condition = tree;
 		} else {
