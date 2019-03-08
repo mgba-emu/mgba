@@ -725,6 +725,15 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		break;
 
 	case REG_KEYINPUT:
+		{
+			size_t c;
+			for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
+				struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
+				if (callbacks->keysRead) {
+					callbacks->keysRead(callbacks->context);
+				}
+			}
+		}
 		if (gba->rr && gba->rr->isPlaying(gba->rr)) {
 			return 0x3FF ^ gba->rr->queryInput(gba->rr);
 		} else {

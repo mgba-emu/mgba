@@ -86,6 +86,7 @@ struct mCoreCallbacks {
 	void (*videoFrameEnded)(void* context);
 	void (*coreCrashed)(void* context);
 	void (*sleep)(void* context);
+	void (*keysRead)(void* context);
 };
 
 DECLARE_VECTOR(mCoreCallbacksList, struct mCoreCallbacks);

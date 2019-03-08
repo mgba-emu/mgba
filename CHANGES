@@ -26,6 +26,7 @@ Misc:
  - LR35902: Support PC-relative opcode decoding
  - Qt: Improve camera initialization
  - Qt: Support switching webcams
+ - Core: Add keysRead callback
 
 0.7.1: (2019-02-24)
 Bugfixes:
