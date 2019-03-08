@@ -746,10 +746,11 @@ static int _tryCommands(struct CLIDebugger* debugger, struct CLIDebuggerCommandS
 
 					if (commands[i].format[arg] == '+') {
 						dvNext = _parseArg(debugger, args, adjusted, lastArg);
-						--args;
+						--arg;
 					} else {
 						nextArgMandatory = isupper(commands[i].format[arg]) || (commands[i].format[arg] == '*');
 						dvNext = _parseArg(debugger, args, adjusted, commands[i].format[arg]);
+						lastArg = commands[i].format[arg];
 					}
 
 					args += adjusted;
