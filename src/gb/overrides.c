@@ -485,6 +485,8 @@ static const struct GBCartridgeOverride _colorOverrides[] = {
 
 	// Zelda no Densetsu - Yume o Miru Shima (Japan) (Rev A)
 	{ 0x61F269CD, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, PALETTE(4, 21, 28) },
+
+	{ 0, 0, 0, { 0 } }
 };
 
 static const struct GBCartridgeOverride _overrides[] = {
