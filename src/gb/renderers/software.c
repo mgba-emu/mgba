@@ -218,15 +218,15 @@ static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer) {
 	UNUSED(softwareRenderer);
 }
 
-static void GBVideoSoftwareRendererUpdateWindow(struct GBVideoSoftwareRenderer* renderer, bool before, bool after) {
-	if (renderer->lastY >= GB_VIDEO_VERTICAL_PIXELS || after == before) {
+static void GBVideoSoftwareRendererUpdateWindow(struct GBVideoSoftwareRenderer* renderer, bool before, bool after, uint8_t oldWy) {
+	if (renderer->lastY >= GB_VIDEO_VERTICAL_PIXELS || !(after || before)) {
 		return;
 	}
 	if (renderer->lastY >= renderer->wy) {
 		if (!after) {
 			renderer->currentWy -= renderer->lastY;
 			renderer->hasWindow = true;
-		} else {
+		} else if (!before) {
 			if (!renderer->hasWindow) {
 				if (renderer->lastY > renderer->wy) {
 					renderer->currentWy = GB_VIDEO_VERTICAL_PIXELS;
@@ -236,6 +236,8 @@ static void GBVideoSoftwareRendererUpdateWindow(struct GBVideoSoftwareRenderer* 
 			} else {
 				renderer->currentWy += renderer->lastY;
 			}
+		} else if (renderer->wy != oldWy) {
+			renderer->currentWy += oldWy - renderer->wy;
 		}
 	}
 }
@@ -246,10 +248,11 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 		GBVideoCacheWriteVideoRegister(renderer->cache, address, value);
 	}
 	bool wasWindow = _inWindow(softwareRenderer);
+	uint8_t wy = softwareRenderer->wy;
 	switch (address) {
 	case REG_LCDC:
 		softwareRenderer->lcdc = value;
-		GBVideoSoftwareRendererUpdateWindow(softwareRenderer, wasWindow, _inWindow(softwareRenderer));
+		GBVideoSoftwareRendererUpdateWindow(softwareRenderer, wasWindow, _inWindow(softwareRenderer), wy);
 		break;
 	case REG_SCY:
 		softwareRenderer->scy = value;
@@ -259,11 +262,11 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 		break;
 	case REG_WY:
 		softwareRenderer->wy = value;
-		GBVideoSoftwareRendererUpdateWindow(softwareRenderer, wasWindow, _inWindow(softwareRenderer));
+		GBVideoSoftwareRendererUpdateWindow(softwareRenderer, wasWindow, _inWindow(softwareRenderer), wy);
 		break;
 	case REG_WX:
 		softwareRenderer->wx = value;
-		GBVideoSoftwareRendererUpdateWindow(softwareRenderer, wasWindow, _inWindow(softwareRenderer));
+		GBVideoSoftwareRendererUpdateWindow(softwareRenderer, wasWindow, _inWindow(softwareRenderer), wy);
 		break;
 	case REG_BGP:
 		softwareRenderer->lookup[0] = value & 3;
