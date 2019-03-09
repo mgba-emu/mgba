@@ -1,6 +1,7 @@
 0.7.2: (Future)
 Emulation fixes:
  - GBA Video: Fix scanline cache with scale factor change edge cases
+ - GBA DMA: Fix DMA0-2 lengths (fixes mgba.io/i/1344)
 Other fixes:
  - Qt: More app metadata fixes
  - Qt: Fix load recent from archive (fixes mgba.io/i/1325)
