@@ -24,6 +24,13 @@
         <translation>{projectName} möchte den folgenden Unterstützern auf Patreon danken:</translation>
     </message>
     <message>
+        <location filename="../AboutScreen.ui" line="86"/>
+        <source>© 2013 – 2019 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
+Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
+        <translation>© 2013 – 2019 Jeffrey Pfau, lizenziert unter der Mozilla Public License, Version 2.0
+Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</translation>
+    </message>
+    <message>
         <location filename="../AboutScreen.ui" line="190"/>
         <source>{patrons}</source>
         <translation>{patrons}</translation>
@@ -32,13 +39,6 @@
         <location filename="../AboutScreen.ui" line="106"/>
         <source>{projectVersion}</source>
         <translation>{projectVersion}</translation>
-    </message>
-    <message>
-        <location filename="../AboutScreen.ui" line="86"/>
-        <source>© 2013 – 2018 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
-Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation>© 2013 – 2018 Jeffrey Pfau, lizenziert unter der Mozilla Public License, Version 2.0
-Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="155"/>
@@ -133,67 +133,72 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <translation>BattleChip Gate</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.ui" line="73"/>
+        <location filename="../BattleChipView.ui" line="67"/>
         <source>Chip name</source>
         <translation>Chip-Name</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.ui" line="82"/>
+        <location filename="../BattleChipView.ui" line="76"/>
         <source>Insert</source>
         <translation>Einsetzen</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.ui" line="93"/>
+        <location filename="../BattleChipView.ui" line="87"/>
         <source>Save</source>
         <translation>Speichern</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.ui" line="100"/>
+        <location filename="../BattleChipView.ui" line="94"/>
         <source>Load</source>
         <translation>Laden</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.ui" line="120"/>
+        <location filename="../BattleChipView.ui" line="114"/>
         <source>Add</source>
         <translation>Hinzufügen</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.ui" line="127"/>
+        <location filename="../BattleChipView.ui" line="121"/>
         <source>Remove</source>
         <translation>Entfernen</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.ui" line="144"/>
+        <location filename="../BattleChipView.ui" line="138"/>
         <source>Gate type</source>
         <translation>Gate-Typ</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.ui" line="151"/>
+        <location filename="../BattleChipView.ui" line="145"/>
         <source>Ba&amp;ttleChip Gate</source>
         <translation>Ba&amp;ttleChip Gate</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.ui" line="161"/>
+        <location filename="../BattleChipView.ui" line="155"/>
         <source>Progress &amp;Gate</source>
         <translation>Progress &amp;Gate</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.ui" line="168"/>
+        <location filename="../BattleChipView.ui" line="162"/>
         <source>Beast &amp;Link Gate</source>
         <translation>Beast &amp;Link Gate</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.ui" line="186"/>
+        <location filename="../BattleChipView.ui" line="180"/>
         <source>Inserted</source>
         <translation>Eingesetzt</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.ui" line="200"/>
+        <location filename="../BattleChipView.ui" line="194"/>
         <source>Chip ID</source>
         <translation>Chip-ID</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.ui" line="212"/>
+        <location filename="../BattleChipView.ui" line="207"/>
+        <source>Update Chip data</source>
+        <translation>Chip-Daten aktualisieren</translation>
+    </message>
+    <message>
+        <location filename="../BattleChipView.ui" line="219"/>
         <source>Show advanced</source>
         <translation>Erweiterte Optionen anzeigen</translation>
     </message>
@@ -3144,7 +3149,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <name>QGBA::SettingsView</name>
     <message>
         <location filename="../SettingsView.cpp" line="144"/>
-        <location filename="../SettingsView.cpp" line="186"/>
+        <location filename="../SettingsView.cpp" line="187"/>
         <source>Qt Multimedia</source>
         <translation>Qt Multimedia</translation>
     </message>
@@ -3174,28 +3179,28 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <translation>Keiner (Standbild)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="261"/>
+        <location filename="../SettingsView.cpp" line="271"/>
         <source>Keyboard</source>
         <translation>Tastatur</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="270"/>
+        <location filename="../SettingsView.cpp" line="280"/>
         <source>Controllers</source>
         <translation>Gamepads</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="314"/>
+        <location filename="../SettingsView.cpp" line="324"/>
         <source>Shortcuts</source>
         <translation>Tastenkürzel</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="326"/>
         <location filename="../SettingsView.cpp" line="336"/>
+        <location filename="../SettingsView.cpp" line="346"/>
         <source>Shaders</source>
         <translation>Shader</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="343"/>
+        <location filename="../SettingsView.cpp" line="353"/>
         <source>Select BIOS</source>
         <translation>BIOS auswählen</translation>
     </message>
@@ -3272,83 +3277,83 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
 <context>
     <name>QGBA::Window</name>
     <message>
-        <location filename="../Window.cpp" line="277"/>
+        <location filename="../Window.cpp" line="276"/>
         <source>Game Boy Advance ROMs (%1)</source>
         <translation>Game Boy Advance-ROMs (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="294"/>
+        <location filename="../Window.cpp" line="293"/>
         <source>Game Boy ROMs (%1)</source>
         <translation>Game Boy-ROMs (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="298"/>
+        <location filename="../Window.cpp" line="297"/>
         <source>All ROMs (%1)</source>
         <translation>Alle ROMs (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="299"/>
+        <location filename="../Window.cpp" line="298"/>
         <source>%1 Video Logs (*.mvl)</source>
         <translation>%1 Video-Logs (*.mvl)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="314"/>
+        <location filename="../Window.cpp" line="313"/>
         <source>Archives (%1)</source>
         <translation>Archive (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="319"/>
-        <location filename="../Window.cpp" line="327"/>
-        <location filename="../Window.cpp" line="354"/>
+        <location filename="../Window.cpp" line="318"/>
+        <location filename="../Window.cpp" line="326"/>
+        <location filename="../Window.cpp" line="353"/>
         <source>Select ROM</source>
         <translation>ROM auswählen</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="362"/>
+        <location filename="../Window.cpp" line="361"/>
         <source>Game Boy Advance save files (%1)</source>
         <translation>Game Boy Advance-Speicherdateien (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="363"/>
-        <location filename="../Window.cpp" line="424"/>
-        <location filename="../Window.cpp" line="431"/>
+        <location filename="../Window.cpp" line="362"/>
+        <location filename="../Window.cpp" line="423"/>
+        <location filename="../Window.cpp" line="430"/>
         <source>Select save</source>
         <translation>Speicherdatei wählen</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="371"/>
+        <location filename="../Window.cpp" line="370"/>
         <source>mGBA savestate files (%1)</source>
         <translation>mGBA Savestate-Dateien (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="373"/>
-        <location filename="../Window.cpp" line="378"/>
+        <location filename="../Window.cpp" line="372"/>
+        <location filename="../Window.cpp" line="377"/>
         <source>Select savestate</source>
         <translation>Savestate auswählen</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="400"/>
+        <location filename="../Window.cpp" line="399"/>
         <source>Select patch</source>
         <translation>Patch wählen</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="400"/>
+        <location filename="../Window.cpp" line="399"/>
         <source>Patches (*.ips *.ups *.bps)</source>
         <translation>Patches (*.ips *.ups *.bps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="417"/>
+        <location filename="../Window.cpp" line="416"/>
         <source>Select image</source>
         <translation>Bild auswählen</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="417"/>
+        <location filename="../Window.cpp" line="416"/>
         <source>Image file (*.png *.gif *.jpg *.jpeg);;All files (*)</source>
         <translation>Bild-Datei (*.png *.gif *.jpg *.jpeg);;Alle Dateien (*)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="424"/>
-        <location filename="../Window.cpp" line="431"/>
+        <location filename="../Window.cpp" line="423"/>
+        <location filename="../Window.cpp" line="430"/>
         <source>GameShark saves (*.sps *.xps)</source>
         <translation>GameShark-Speicherdaten (*.sps *.xps)</translation>
     </message>
@@ -3596,11 +3601,6 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../Window.cpp" line="1184"/>
         <source>New multiplayer window</source>
         <translation>Neues Multiplayer-Fenster</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1194"/>
-        <source>About</source>
-        <translation>Über</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1199"/>
@@ -3888,7 +3888,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <translation>Einstellungen...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="345"/>
+        <location filename="../Window.cpp" line="344"/>
         <source>Select folder</source>
         <translation>Ordner auswählen</translation>
     </message>
@@ -3896,6 +3896,11 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../Window.cpp" line="1032"/>
         <source>Add folder to library...</source>
         <translation>Ordner zur Bibliothek hinzufügen...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1194"/>
+        <source>About...</source>
+        <translation>Über...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1440"/>
@@ -4417,9 +4422,9 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <translation>Protokoll-Datei auswählen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1264"/>
-        <source>Game Boy model</source>
-        <translation>Game Boy-Modell</translation>
+        <location filename="../SettingsView.ui" line="1678"/>
+        <source>Camera:</source>
+        <translation>Kamera:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1272"/>
@@ -4457,16 +4462,6 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <translation>Game Boy Advance (AGB)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1300"/>
-        <source>Super Game Boy model</source>
-        <translation>Super Game Boy-Modell</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="1336"/>
-        <source>Game Boy Color model</source>
-        <translation>Game Boy Color-Modell</translation>
-    </message>
-    <message>
         <location filename="../SettingsView.ui" line="1379"/>
         <source>Default BG colors:</source>
         <translation>Standard-Hintergrundfarben:</translation>
@@ -4490,6 +4485,21 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../SettingsView.ui" line="1546"/>
         <source>Super Game Boy borders</source>
         <translation>Super Game Boy-Rahmen</translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1264"/>
+        <source>Game Boy model:</source>
+        <translation>Game Boy-Modell:</translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1300"/>
+        <source>Super Game Boy model:</source>
+        <translation>Super Game Boy-Modell:</translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1336"/>
+        <source>Game Boy Color model:</source>
+        <translation>Game Boy Color-Modell:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1560"/>
@@ -4893,86 +4903,91 @@ wenn vorhanden</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="274"/>
+        <source>HEVC (NVENC)</source>
+        <translation>HEVC (NVENC)</translation>
+    </message>
+    <message>
+        <location filename="../VideoView.ui" line="279"/>
         <source>VP8</source>
         <translation>VP8</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="279"/>
+        <location filename="../VideoView.ui" line="284"/>
         <source>VP9</source>
         <translation>VP9</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="284"/>
+        <location filename="../VideoView.ui" line="289"/>
         <source>FFV1</source>
         <translation>FFV1</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="296"/>
+        <location filename="../VideoView.ui" line="301"/>
         <source>FLAC</source>
         <translation>FLAC</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="301"/>
+        <location filename="../VideoView.ui" line="306"/>
         <source>Opus</source>
         <translation>Opus</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="306"/>
+        <location filename="../VideoView.ui" line="311"/>
         <source>Vorbis</source>
         <translation>Vorbis</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="311"/>
+        <location filename="../VideoView.ui" line="316"/>
         <source>MP3</source>
         <translation>MP3</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="316"/>
+        <location filename="../VideoView.ui" line="321"/>
         <source>AAC</source>
         <translation>AAC</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="321"/>
+        <location filename="../VideoView.ui" line="326"/>
         <source>Uncompressed</source>
         <translation>Unkomprimiert</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="332"/>
+        <location filename="../VideoView.ui" line="337"/>
         <source> Bitrate (kbps)</source>
         <translation> Bitrate (kbps)</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="338"/>
+        <location filename="../VideoView.ui" line="343"/>
         <source>VBR </source>
         <translation>VBR </translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="383"/>
+        <location filename="../VideoView.ui" line="388"/>
         <source>ABR</source>
         <translation>ABR</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="399"/>
+        <location filename="../VideoView.ui" line="404"/>
         <source>Dimensions</source>
         <translation>Abmessungen</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="405"/>
+        <location filename="../VideoView.ui" line="410"/>
         <source>:</source>
         <translation>:</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="415"/>
+        <location filename="../VideoView.ui" line="420"/>
         <source>×</source>
         <translation>×</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="465"/>
+        <location filename="../VideoView.ui" line="470"/>
         <source>Lock aspect ratio</source>
         <translation>Seitenverhältnis sperren</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="480"/>
+        <location filename="../VideoView.ui" line="485"/>
         <source>Show advanced</source>
         <translation>Erweiterte Optionen anzeigen</translation>
     </message>
