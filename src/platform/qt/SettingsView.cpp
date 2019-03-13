@@ -400,6 +400,7 @@ void SettingsView::updateConfig() {
 	saveSetting("logToFile", m_ui.logToFile);
 	saveSetting("logToStdout", m_ui.logToStdout);
 	saveSetting("logFile", m_ui.logFile);
+	saveSetting("useDiscordPresence", m_ui.useDiscordPresence);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
@@ -539,6 +540,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("logToFile", m_ui.logToFile);
 	loadSetting("logToStdout", m_ui.logToStdout);
 	loadSetting("logFile", m_ui.logFile);
+	loadSetting("useDiscordPresence", m_ui.useDiscordPresence);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 

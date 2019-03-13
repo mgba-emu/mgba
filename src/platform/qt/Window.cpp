@@ -53,6 +53,10 @@
 #include "TileView.h"
 #include "VideoView.h"
 
+#ifdef USE_DISCORD_RPC
+#include "DiscordCoordinator.h"
+#endif
+
 #include <mgba/core/version.h>
 #include <mgba/core/cheats.h>
 #ifdef M_CORE_GB
@@ -764,6 +768,10 @@ void Window::gameStarted() {
 			m_audioChannels->addAction(action);
 		}
 	}
+
+#ifdef USE_DISCORD_RPC
+	DiscordCoordinator::gameStarted(m_controller);
+#endif
 }
 
 void Window::gameStopped() {
@@ -802,6 +810,10 @@ void Window::gameStopped() {
 		m_audioProcessor->stop();
 		m_audioProcessor.reset();
 	}
+
+#ifdef USE_DISCORD_RPC
+	DiscordCoordinator::gameStopped();
+#endif
 
 	emit paused(false);
 }

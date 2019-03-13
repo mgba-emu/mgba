@@ -36,7 +36,9 @@ QAction* ConfigOption::addValue(const QString& text, const QVariant& value, QMen
 	QObject::connect(parent, &QAction::destroyed, [this, action, value]() {
 		m_actions.removeAll(qMakePair(action, value));
 	});
-	parent->addAction(action);
+	if (parent) {
+		parent->addAction(action);
+	}
 	m_actions.append(qMakePair(action, value));
 	return action;
 }
@@ -54,7 +56,9 @@ QAction* ConfigOption::addBoolean(const QString& text, QMenu* parent) {
 	QObject::connect(parent, &QAction::destroyed, [this, action]() {
 		m_actions.removeAll(qMakePair(action, 1));
 	});
-	parent->addAction(action);
+	if (parent) {
+		parent->addAction(action);
+	}
 	m_actions.append(qMakePair(action, 1));
 	return action;
 }
