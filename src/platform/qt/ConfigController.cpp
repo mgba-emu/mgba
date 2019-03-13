@@ -33,10 +33,10 @@ QAction* ConfigOption::addValue(const QString& text, const QVariant& value, QMen
 	QObject::connect(action, &QAction::triggered, [this, value]() {
 		emit valueChanged(value);
 	});
-	QObject::connect(parent, &QAction::destroyed, [this, action, value]() {
-		m_actions.removeAll(qMakePair(action, value));
-	});
 	if (parent) {
+		QObject::connect(parent, &QAction::destroyed, [this, action, value]() {
+			m_actions.removeAll(qMakePair(action, value));
+		});
 		parent->addAction(action);
 	}
 	m_actions.append(qMakePair(action, value));
@@ -53,10 +53,10 @@ QAction* ConfigOption::addBoolean(const QString& text, QMenu* parent) {
 	QObject::connect(action, &QAction::triggered, [this, action]() {
 		emit valueChanged(action->isChecked());
 	});
-	QObject::connect(parent, &QAction::destroyed, [this, action]() {
-		m_actions.removeAll(qMakePair(action, 1));
-	});
 	if (parent) {
+		QObject::connect(parent, &QAction::destroyed, [this, action]() {
+			m_actions.removeAll(qMakePair(action, 1));
+		});
 		parent->addAction(action);
 	}
 	m_actions.append(qMakePair(action, 1));
