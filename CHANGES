@@ -8,6 +8,7 @@ Other fixes:
  - Qt: More app metadata fixes
  - Qt: Fix load recent from archive (fixes mgba.io/i/1325)
  - LR35902: Fix disassembly of several CB-prefix instructions
+ - Qt: Fix overrides getting discarded (fixes mgba.io/i/1354)
 Misc:
  - Qt: Add missing HEVC NVENC option (fixes mgba.io/i/1323)
  - Qt: Improve camera initialization
