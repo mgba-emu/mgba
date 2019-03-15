@@ -61,6 +61,7 @@ if(UNIX)
 
     if (APPLE)
         add_definitions(-DDISCORD_OSX)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
         set(BASE_RPC_SRC ${BASE_RPC_SRC} discord_register_osx.m)
     else (APPLE)
         add_definitions(-DDISCORD_LINUX)
