@@ -577,9 +577,8 @@ void Window::resizeEvent(QResizeEvent* event) {
 	if (m_screenWidget->width() % size.width() == 0 && m_screenWidget->height() % size.height() == 0 &&
 	    m_screenWidget->width() / size.width() == m_screenWidget->height() / size.height()) {
 		factor = m_screenWidget->width() / size.width();
-	} else {
-		m_savedScale = 0;
 	}
+	m_savedScale = factor;
 	for (QMap<int, QAction*>::iterator iter = m_frameSizes.begin(); iter != m_frameSizes.end(); ++iter) {
 		bool enableSignals = iter.value()->blockSignals(true);
 		iter.value()->setChecked(iter.key() == factor);
