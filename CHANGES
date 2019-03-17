@@ -23,6 +23,7 @@ Other fixes:
  - LR35902: Fix disassembly of several CB-prefix instructions
  - Qt: Fix overrides getting discarded (fixes mgba.io/i/1354)
  - Qt: Fix saved scale not getting set on resize (fixes mgba.io/i/1074)
+ - CMake: Fix .deb imagemagick dependencies
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
