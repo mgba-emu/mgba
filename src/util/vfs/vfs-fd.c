@@ -40,7 +40,7 @@ struct VFile* VFileOpenFD(const char* path, int flags) {
 	flags |= O_BINARY;
 	wchar_t wpath[PATH_MAX];
 	MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, sizeof(wpath) / sizeof(*wpath));
-	int fd = _wopen(wpath, flags, 0666);
+	int fd = _wopen(wpath, flags, _S_IREAD | _S_IWRITE);
 #else
 	int fd = open(path, flags, 0666);
 #endif
