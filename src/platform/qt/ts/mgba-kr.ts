@@ -3971,7 +3971,7 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
     <message>
         <location filename="../Window.cpp" line="1558"/>
         <source>View &amp;map...</source>
-        <translation>지도 &amp;보기...<translation>
+        <translation>지도 &amp;보기...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1563"/>
@@ -4578,7 +4578,7 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
     <message>
         <location filename="../SettingsView.ui" line="391"/>
         <source>Bilinear filtering</source>
-        <translation>이중선형 필터링/translation>
+        <translation>이중선형 필터링</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="398"/>
