@@ -63,17 +63,15 @@ void gameStarted(std::shared_ptr<CoreController> controller) {
 	s_gameRunning = true;
 
 	CoreController::Interrupter interrupter(controller);
+	mCore *core = controller->thread()->core;
+	s_title = core->dirs.baseName;
+
+#ifdef USE_SQLITE3
 	const NoIntroDB* db = GBAApp::app()->gameDB();
 	NoIntroGame game{};
 	uint32_t crc32 = 0;
-	controller->thread()->core->checksum(controller->thread()->core, &crc32, CHECKSUM_CRC32);
+	core->checksum(core, &crc32, CHECKSUM_CRC32);
 
-	char gameTitle[17] = { '\0' };
-	mCore* core = controller->thread()->core;
-	core->getGameTitle(core, gameTitle);
-	s_title = gameTitle;
-
-#ifdef USE_SQLITE3
 	if (db && crc32 && NoIntroDBLookupGameByCRC(db, crc32, &game)) {
 		s_title = QLatin1String(game.name);
 	}
