@@ -324,7 +324,7 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	tex = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 	screenshot = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 
-	outputBuffer = vita2d_texture_get_datap(tex);
+	outputBuffer = anonymousMemoryMap(256 * toPow2(height) * 4);
 	runner->core->setVideoBuffer(runner->core, outputBuffer, 256);
 	runner->core->setAudioBufferSize(runner->core, PSP2_SAMPLES);
 
@@ -458,6 +458,7 @@ void mPSP2Teardown(struct mGUIRunner* runner) {
 	CircleBufferDeinit(&rumble.history);
 	vita2d_free_texture(tex);
 	vita2d_free_texture(screenshot);
+	mappedMemoryFree(outputBuffer, 256 * 256 * 4);
 	frameLimiter = true;
 }
 
@@ -525,6 +526,8 @@ void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded) {
 void mPSP2Draw(struct mGUIRunner* runner, bool faded) {
 	unsigned width, height;
 	runner->core->desiredVideoDimensions(runner->core, &width, &height);
+	void* texpixels = vita2d_texture_get_datap(tex);
+	memcpy(texpixels, outputBuffer, 256 * height * 4);
 	_drawTex(tex, width, height, faded);
 }
 

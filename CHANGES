@@ -16,7 +16,7 @@ Other fixes:
 Misc:
  - Qt: Add missing HEVC NVENC option (fixes mgba.io/i/1323)
  - Qt: Improve camera initialization
- - Qt: Support switching webcams
+ - Vita: Improved frame drawing speed
 
 0.7.1: (2019-02-24)
 Bugfixes:
