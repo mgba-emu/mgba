@@ -39,7 +39,7 @@ FS_Archive sdmcArchive;
 #include <switch.h>
 #endif
 
-#define SAMPLES 1024
+#define SAMPLES 512
 #define RUMBLE_PWM 35
 
 static retro_environment_t environCallback;
