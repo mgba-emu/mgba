@@ -39,7 +39,7 @@ FS_Archive sdmcArchive;
 #include <switch.h>
 #endif
 
-#define SAMPLES 550
+#define SAMPLES 1024
 #define RUMBLE_PWM 35
 
 static retro_environment_t environCallback;
@@ -52,6 +52,7 @@ static retro_set_rumble_state_t rumbleCallback;
 
 static void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
 
+static void _postAudioBuffer(struct mAVStream*, blip_t* left, blip_t* right);
 static void _setRumble(struct mRumble* rumble, int enable);
 static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
@@ -68,6 +69,7 @@ static void* outputBuffer;
 static void* data;
 static size_t dataSize;
 static void* savedata;
+static struct mAVStream stream;
 static int rumbleUp;
 static int rumbleDown;
 static struct mRumble rumble;
@@ -321,6 +323,11 @@ void retro_init(void) {
 	logger.log = GBARetroLog;
 	mLogSetDefaultLogger(&logger);
 
+	stream.videoDimensionsChanged = 0;
+	stream.postAudioFrame = 0;
+	stream.postAudioBuffer = _postAudioBuffer;
+	stream.postVideoFrame = 0;
+
 	imageSource.startRequestImage = _startImage;
 	imageSource.stopRequestImage = _stopImage;
 	imageSource.requestImage = _requestImage;
@@ -443,10 +450,13 @@ void retro_run(void) {
 	core->desiredVideoDimensions(core, &width, &height);
 	videoCallback(outputBuffer, width, height, BYTES_PER_PIXEL * 256);
 
+	// This was from aliaspider patch (4539a0e), game boy audio is buggy with it (adapted for this refactored core)
+/*
 	int16_t samples[SAMPLES * 2];
 	int produced = blip_read_samples(core->getAudioChannel(core, 0), samples, SAMPLES, true);
 	blip_read_samples(core->getAudioChannel(core, 1), samples + 1, SAMPLES, true);
 	audioCallback(samples, produced);
+*/
 
 	if (rumbleCallback) {
 		if (rumbleUp) {
@@ -623,6 +633,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 	}
 	mCoreInitConfig(core, NULL);
 	core->init(core);
+	core->setAVStream(core, &stream);
 
 	size_t size = 256 * 224 * BYTES_PER_PIXEL;
 #ifdef _3DS
@@ -923,6 +934,14 @@ void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel level, con
 	}
 #endif
 	logCallback(retroLevel, "%s: %s\n", mLogCategoryName(category), message);
+}
+
+static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
+	UNUSED(stream);
+	int16_t samples[SAMPLES * 2];
+	blip_read_samples(left, samples, SAMPLES, true);
+	blip_read_samples(right, samples + 1, SAMPLES, true);
+	audioCallback(samples, SAMPLES);
 }
 
 static void _setRumble(struct mRumble* rumble, int enable) {
