@@ -100,32 +100,6 @@ static enum ScreenMode {
 } screenMode = SM_PA;
 
 static bool initEgl() {
-<<<<<<< HEAD
-    s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (!s_display) {
-        goto _fail0;
-    }
-
-    eglInitialize(s_display, NULL, NULL);
-
-    EGLConfig config;
-    EGLint numConfigs;
-    static const EGLint attributeList[] = {
-        EGL_RED_SIZE, 1,
-        EGL_GREEN_SIZE, 1,
-        EGL_BLUE_SIZE, 1,
-        EGL_NONE
-    };
-    eglChooseConfig(s_display, attributeList, &config, 1, &numConfigs);
-    if (!numConfigs) {
-        goto _fail1;
-    }
-
-    s_surface = eglCreateWindowSurface(s_display, config, nwindowGetDefault(), NULL);
-    if (!s_surface) {
-        goto _fail1;
-    }
-=======
 	s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (!s_display) {
 		goto _fail0;
@@ -150,7 +124,6 @@ static bool initEgl() {
 	if (!s_surface) {
 		goto _fail1;
 	}
->>>>>>> d93e042
 
 	EGLint contextAttributeList[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 3,

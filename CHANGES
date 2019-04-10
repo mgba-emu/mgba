@@ -1,18 +1,3 @@
-<<<<<<< HEAD
-0.8.0: (Future)
-Features:
- - Improved logging configuration
-Bugfixes:
- - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
- - GBA: Reset now reloads multiboot ROMs
- - GBA BIOS: Fix multiboot entry point (fixes Magic Floor)
-Misc:
- - GBA Savedata: EEPROM performance fixes
- - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
- - GB Memory: Support running from blocked memory
- - Qt: Don't unload ROM immediately if it crashes
- - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
-=======
 0.7.1: (2019-02-24)
 Bugfixes:
  - 3DS: Work around menu freezing (fixes mgba.io/i/1294)
@@ -40,7 +25,6 @@ Bugfixes:
 Misc:
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
  - Qt: Updated Italian translation (by Vecna)
->>>>>>> d93e042
 
 0.7.0: (2019-01-26)
 Features:

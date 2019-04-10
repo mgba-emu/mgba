@@ -307,17 +307,7 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	if (flags & SAVESTATE_METADATA) {
 		uint64_t* creationUsec = malloc(sizeof(*creationUsec));
 		if (creationUsec) {
-<<<<<<< HEAD:src/core/core-serialize.c
-#if defined(PS2)
-			clock_t currentClock = clock();
-			if (currentClock) {
-				uint64_t usec = currentClock;
-				STORE_64LE(usec, 0, creationUsec);
-			}
-#elif !defined(_MSC_VER)
-=======
 #ifndef _MSC_VER
->>>>>>> d93e042:src/core/serialize.c
 			struct timeval tv;
 			if (!gettimeofday(&tv, 0)) {
 				uint64_t usec = tv.tv_usec;
