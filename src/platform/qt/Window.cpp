@@ -84,6 +84,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 
 	m_logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
 	m_logo = m_logo; // Free memory left over in old pixmap
+	setWindowIcon(m_logo);
 
 #if defined(M_CORE_GBA)
 	float i = 2;
@@ -796,6 +797,11 @@ void Window::gameStopped() {
 	m_fpsTimer.stop();
 	m_focusCheck.stop();
 
+	if (m_audioProcessor) {
+		m_audioProcessor->stop();
+		m_audioProcessor.reset();
+	}
+
 	emit paused(false);
 }
 
@@ -1101,7 +1107,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(quickLoadMenu, quickLoad, "quickLoad");
 
 	QAction* quickSave = new QAction(tr("Save recent"), quickSaveMenu);
-	connect(quickLoad, &QAction::triggered, [this] {
+	connect(quickSave, &QAction::triggered, [this] {
 		m_controller->saveState();
 	});
 	m_gameActions.append(quickSave);

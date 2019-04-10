@@ -25,6 +25,10 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
 	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_DOUBLEBUF | SDL_HWSURFACE | (SDL_FULLSCREEN * renderer->fullscreen));
 #else
 	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 32, SDL_DOUBLEBUF | SDL_HWSURFACE | (SDL_FULLSCREEN * renderer->fullscreen));
+<<<<<<< HEAD:src/platform/sdl/sw-sdl1.c
+=======
+#endif
+>>>>>>> d93e042:src/platform/sdl/sw-sdl.c
 #endif
 	SDL_WM_SetCaption(projectName, "");
 

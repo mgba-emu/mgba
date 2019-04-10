@@ -26,6 +26,7 @@ public slots:
 
 signals:
 	void indexPressed(int index);
+	void needsRedraw();
 
 protected:
 	void paintEvent(QPaintEvent*) override;

@@ -892,7 +892,11 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 			mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
 			GBASavedataInitEEPROM(&memory->savedata);
 		}
+<<<<<<< HEAD
 		if (memory->savedata.type == SAVEDATA_EEPROM512 || memory->savedata.type == SAVEDATA_EEPROM) {
+=======
+		if (memory->savedata.type == SAVEDATA_EEPROM) {
+>>>>>>> d93e042
 			GBASavedataWriteEEPROM(&memory->savedata, value, 1);
 			break;
 		}
@@ -1647,6 +1651,10 @@ void _pristineCow(struct GBA* gba) {
 }
 
 void GBAPrintFlush(struct GBA* gba) {
+	if (!gba->memory.agbPrintBuffer) {
+		return;
+	}
+
 	char oolBuf[0x101];
 	size_t i;
 	for (i = 0; gba->memory.agbPrintCtx.get != gba->memory.agbPrintCtx.put && i < 0x100; ++i) {
@@ -1688,8 +1696,8 @@ static void _agbPrintStore(struct GBA* gba, uint32_t address, int16_t value) {
 
 static int16_t _agbPrintLoad(struct GBA* gba, uint32_t address) {
 	struct GBAMemory* memory = &gba->memory;
-	int16_t value = 0xFFFF;
-	if (address < AGB_PRINT_TOP) {
+	int16_t value = address >> 1;
+	if (address < AGB_PRINT_TOP && memory->agbPrintBuffer) {
 		LOAD_16(value, address & (SIZE_AGB_PRINT - 1), memory->agbPrintBuffer);
 	} else if ((address & 0x00FFFFF8) == (AGB_PRINT_STRUCT & 0x00FFFFF8)) {
 		value = (&memory->agbPrintCtx.request)[(address & 7) >> 1];

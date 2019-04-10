@@ -227,7 +227,7 @@ Fußnoten
 Copyright
 ---------
 
-Copyright für mGBA © 2013 – 2018 Jeffrey Pfau. mGBA wird unter der [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/) veröffentlicht. Eine Kopie der Lizenz ist in der mitgelieferten Datei LICENSE verfügbar.
+Copyright für mGBA © 2013 – 2019 Jeffrey Pfau. mGBA wird unter der [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/) veröffentlicht. Eine Kopie der Lizenz ist in der mitgelieferten Datei LICENSE verfügbar.
 
 mGBA beinhaltet die folgenden Bibliotheken von Drittanbietern:
 
