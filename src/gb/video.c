@@ -224,7 +224,6 @@ void _endMode0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	++video->ly;
 	video->p->memory.io[REG_LY] = video->ly;
 	GBRegisterSTAT oldStat = video->stat;
-	video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->ly);
 	if (video->ly < GB_VIDEO_VERTICAL_PIXELS) {
 		next = GB_VIDEO_MODE_2_LENGTH;
 		video->mode = 2;
@@ -246,6 +245,14 @@ void _endMode0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	if (!_statIRQAsserted(video, oldStat) && _statIRQAsserted(video, video->stat)) {
 		video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 	}
+
+	// LYC stat is delayed 1 T-cycle
+	oldStat = video->stat;
+	video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->ly);
+	if (!_statIRQAsserted(video, oldStat) && _statIRQAsserted(video, video->stat)) {
+		video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+	}
+
 	GBUpdateIRQs(video->p);
 	video->p->memory.io[REG_STAT] = video->stat;
 	mTimingSchedule(timing, &video->modeEvent, (next << video->p->doubleSpeed) - cyclesLate);
