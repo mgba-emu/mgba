@@ -1791,7 +1791,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../IOViewer.cpp" line="254"/>
         <source>Outside window enable BG 1</source>
-        <translation><外部窗口启用背景 1</translation>
+        <translation>外部窗口启用背景 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="255"/>
