@@ -8,6 +8,7 @@
 #include "GamepadButtonEvent.h"
 #include "InputController.h"
 #include "ShortcutController.h"
+#include "ShortcutModel.h"
 
 #include <QKeyEvent>
 
@@ -41,7 +42,9 @@ ShortcutView::~ShortcutView() {
 
 void ShortcutView::setController(ShortcutController* controller) {
 	m_controller = controller;
-	m_ui.shortcutTable->setModel(controller);
+	m_model = new ShortcutModel(this);
+	m_model->setController(controller);
+	m_ui.shortcutTable->setModel(m_model);
 }
 
 void ShortcutView::setInputController(InputController* controller) {
@@ -56,10 +59,12 @@ void ShortcutView::load(const QModelIndex& index) {
 	if (!m_controller) {
 		return;
 	}
-	if (m_controller->isMenuAt(index)) {
+	QString name = m_model->name(index);
+	const Shortcut* item = m_controller->shortcut(name);
+	if (!item->action()) {
 		return;
 	}
-	int shortcut = m_controller->shortcutAt(index);
+	int shortcut = item->shortcut();
 	if (index.column() == 1) {
 		m_ui.keyboardButton->click();
 	} else if (index.column() == 2) {
@@ -80,35 +85,47 @@ void ShortcutView::clear() {
 		return;
 	}
 	QModelIndex index = m_ui.shortcutTable->selectionModel()->currentIndex();
-	if (m_controller->isMenuAt(index)) {
+	QString name = m_model->name(index);
+	const Shortcut* item = m_controller->shortcut(name);
+	if (!item->action()) {
 		return;
 	}
 	if (m_ui.gamepadButton->isChecked()) {
-		m_controller->clearButton(index);
+		m_controller->clearButton(name);
+		m_controller->clearAxis(name);
 		m_ui.keyEdit->setValueButton(-1);
 	} else {
-		m_controller->clearKey(index);
+		m_controller->clearKey(name);
 		m_ui.keyEdit->setValueKey(-1);
 	}
 }
 
 void ShortcutView::updateButton(int button) {
-	if (!m_controller || m_controller->isMenuAt(m_ui.shortcutTable->selectionModel()->currentIndex())) {
+	if (!m_controller) {
+		return;
+	}
+	QString name = m_model->name(m_ui.shortcutTable->selectionModel()->currentIndex());
+	const Shortcut* item = m_controller->shortcut(name);
+	if (!item->action()) {
 		return;
 	}
 	if (m_ui.gamepadButton->isChecked()) {
-		m_controller->updateButton(m_ui.shortcutTable->selectionModel()->currentIndex(), button);
+		m_controller->updateButton(name, button);
 	} else {
-		m_controller->updateKey(m_ui.shortcutTable->selectionModel()->currentIndex(), button);
+		m_controller->updateKey(name, button);
 	}
 }
 
 void ShortcutView::updateAxis(int axis, int direction) {
-	if (!m_controller || m_controller->isMenuAt(m_ui.shortcutTable->selectionModel()->currentIndex())) {
+	if (!m_controller) {
 		return;
 	}
-	m_controller->updateAxis(m_ui.shortcutTable->selectionModel()->currentIndex(), axis,
-	                         static_cast<GamepadAxisEvent::Direction>(direction));
+	QString name = m_model->name(m_ui.shortcutTable->selectionModel()->currentIndex());
+	const Shortcut* item = m_controller->shortcut(name);
+	if (!item->action()) {
+		return;
+	}
+	m_controller->updateAxis(name, axis, static_cast<GamepadAxisEvent::Direction>(direction));
 }
 
 void ShortcutView::closeEvent(QCloseEvent*) {

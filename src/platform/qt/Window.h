@@ -15,8 +15,10 @@
 #include <functional>
 #include <memory>
 
+#include <mgba/core/core.h>
 #include <mgba/core/thread.h>
 
+#include "ActionMapper.h"
 #include "InputController.h"
 #include "LoadSaveState.h"
 #include "LogController.h"
@@ -156,8 +158,9 @@ private:
 	template <typename T, typename... A> std::function<void()> openTView(A... arg);
 	template <typename T, typename... A> std::function<void()> openControllerTView(A... arg);
 
-	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
-	QAction* addHiddenAction(QMenu* menu, QAction* action, const QString& name);
+	Action* addGameAction(const QString& visibleName, const QString& name, Action::Function action, const QString& menu = {}, const QKeySequence& = {});
+	template<typename T, typename V> Action* addGameAction(const QString& visibleName, const QString& name, T* obj, V (T::*action)(), const QString& menu = {}, const QKeySequence& = {});
+	Action* addGameAction(const QString& visibleName, const QString& name, Action::BooleanFunction action, const QString& menu = {}, const QKeySequence& = {});
 
 	void updateTitle(float fps = -1);
 
@@ -170,14 +173,17 @@ private:
 
 	std::unique_ptr<Display> m_display;
 	int m_savedScale;
+
 	// TODO: Move these to a new class
-	QList<QAction*> m_gameActions;
-	QList<QAction*> m_nonMpActions;
+	ActionMapper m_actions;
+	QList<Action*> m_gameActions;
+	QList<Action*> m_nonMpActions;
 #ifdef M_CORE_GBA
-	QList<QAction*> m_gbaActions;
+	QMultiMap<mPlatform, Action*> m_platformActions;
 #endif
-	QAction* m_multiWindow;
-	QMap<int, QAction*> m_frameSizes;
+	Action* m_multiWindow;
+	QMap<int, Action*> m_frameSizes;
+
 	LogController m_log{0};
 	LogView* m_logView;
 #ifdef USE_DEBUGGERS
@@ -192,9 +198,6 @@ private:
 	QElapsedTimer m_frameTimer;
 	QTimer m_fpsTimer;
 	QList<QString> m_mruFiles;
-	QMenu* m_mruMenu = nullptr;
-	QMenu* m_videoLayers;
-	QMenu* m_audioChannels;
 	ShortcutController* m_shortcutController;
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	std::unique_ptr<ShaderSelector> m_shaderView;
