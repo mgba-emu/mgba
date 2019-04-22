@@ -803,10 +803,10 @@ static void _GBCoreEnableVideoLayer(struct mCore* core, size_t id, bool enable) 
 		gb->video.renderer->disableBG = !enable;
 		break;
 	case 1:
-		gb->video.renderer->disableOBJ = !enable;
+		gb->video.renderer->disableWIN = !enable;
 		break;
 	case 2:
-		gb->video.renderer->disableWIN = !enable;
+		gb->video.renderer->disableOBJ = !enable;
 		break;
 	default:
 		break;
