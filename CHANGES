@@ -14,6 +14,7 @@ Other fixes:
  - CMake: Fix .deb imagemagick dependencies
  - Qt: Fix crash in sprite viewer magnification (fixes mgba.io/i/1362)
  - 3DS: Ensure core 2 can be used for threaded renderer (fixes mgba.io/i/1371)
+ - GB Core: Fix toggling WIN and OBJ being swapped
 Misc:
  - Qt: Add missing HEVC NVENC option (fixes mgba.io/i/1323)
  - Qt: Improve camera initialization
