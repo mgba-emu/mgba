@@ -2777,7 +2777,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../LogController.cpp" line="69"/>
         <source>INFO</source>
-        <translation type="unfinished"><INFO/translation>
+        <translation type="unfinished">INFO</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="71"/>
