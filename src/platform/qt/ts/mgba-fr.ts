@@ -3012,7 +3012,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../PaletteView.cpp" line="125"/>
         <location filename="../PaletteView.cpp" line="126"/>
         <source>0x%0 (%1)</source>
-        <translation type="unfinished"><0x%0 (%1)/translation>
+        <translation type="unfinished">0x%0 (%1)</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="138"/>
