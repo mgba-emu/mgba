@@ -27,6 +27,7 @@ M_TEST_SUITE_TEARDOWN(GBMBC) {
 		return 0;
 	}
 	struct mCore* core = *state;
+	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 	return 0;
 }
