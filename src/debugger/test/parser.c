@@ -21,16 +21,16 @@ struct LPTest {
 	struct ParseTree* tree = &lp->tree; \
 	parseLexedExpression(tree, &lp->lv)
 
-M_TEST_SUITE_SETUP(Parser) {
+static int parseSetup(void** state) {
 	struct LPTest* lp = malloc(sizeof(struct LPTest));
 	LexVectorInit(&lp->lv, 0);
 	*state = lp;
 	return 0;
 }
 
-M_TEST_SUITE_TEARDOWN(Parser) {
+static int parseTeardown(void** state) {
 	struct LPTest* lp = *state;
-	parseFree(&lp->tree); \
+	parseFree(&lp->tree);
 	lexFree(&lp->lv);
 	LexVectorDeinit(&lp->lv);
 	free(lp);
@@ -52,6 +52,12 @@ M_TEST_DEFINE(parseInt) {
 
 M_TEST_DEFINE(parseLexError) {
 	PARSE("@");
+
+	assert_int_equal(tree->token.type, TOKEN_ERROR_TYPE);
+}
+
+M_TEST_DEFINE(parseError) {
+	PARSE("1 2");
 
 	assert_int_equal(tree->token.type, TOKEN_ERROR_TYPE);
 }
@@ -108,11 +114,35 @@ M_TEST_DEFINE(parseParentheticalAddMultplyExpression) {
 	assert_int_equal(tree->rhs->token.uintValue, 3);
 }
 
-M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(Parser,
-	cmocka_unit_test(parseEmpty),
-	cmocka_unit_test(parseInt),
-	cmocka_unit_test(parseLexError),
-	cmocka_unit_test(parseSimpleExpression),
-	cmocka_unit_test(parseAddMultplyExpression),
-	cmocka_unit_test(parseParentheticalExpression),
-	cmocka_unit_test(parseParentheticalAddMultplyExpression))
+M_TEST_DEFINE(parseIsolatedOperator) {
+	PARSE("+");
+
+	assert_int_equal(tree->token.type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(tree->lhs->token.type, TOKEN_ERROR_TYPE);
+	assert_int_equal(tree->rhs->token.type, TOKEN_ERROR_TYPE);
+}
+
+M_TEST_DEFINE(parseUnaryChainedOperator) {
+	PARSE("1+*2");
+
+	assert_int_equal(tree->token.type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(tree->token.operatorValue, OP_ADD);
+	assert_int_equal(tree->lhs->token.type, TOKEN_UINT_TYPE);
+	assert_int_equal(tree->lhs->token.uintValue, 1);
+	assert_int_equal(tree->rhs->token.type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(tree->rhs->token.operatorValue, OP_DEREFERENCE);
+	assert_int_equal(tree->rhs->rhs->token.type, TOKEN_UINT_TYPE);
+	assert_int_equal(tree->rhs->rhs->token.uintValue, 2);
+}
+
+M_TEST_SUITE_DEFINE(Parser,
+	cmocka_unit_test_setup_teardown(parseEmpty, parseSetup, parseTeardown),
+	cmocka_unit_test_setup_teardown(parseInt, parseSetup, parseTeardown),
+	cmocka_unit_test_setup_teardown(parseLexError, parseSetup, parseTeardown),
+	cmocka_unit_test_setup_teardown(parseError, parseSetup, parseTeardown),
+	cmocka_unit_test_setup_teardown(parseSimpleExpression, parseSetup, parseTeardown),
+	cmocka_unit_test_setup_teardown(parseAddMultplyExpression, parseSetup, parseTeardown),
+	cmocka_unit_test_setup_teardown(parseParentheticalExpression, parseSetup, parseTeardown),
+	cmocka_unit_test_setup_teardown(parseParentheticalAddMultplyExpression, parseSetup, parseTeardown),
+	cmocka_unit_test_setup_teardown(parseIsolatedOperator, parseSetup, parseTeardown),
+	cmocka_unit_test_setup_teardown(parseUnaryChainedOperator, parseSetup, parseTeardown))

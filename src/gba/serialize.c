@@ -132,7 +132,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	if (error) {
 		return false;
 	}
-	gba->timing.root = NULL;
+	mTimingClear(&gba->timing);
 	LOAD_32(gba->timing.masterCycles, 0, &state->masterCycles);
 
 	size_t i;

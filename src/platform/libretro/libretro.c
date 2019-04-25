@@ -726,6 +726,7 @@ void retro_unload_game(void) {
 	if (!core) {
 		return;
 	}
+	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 	mappedMemoryFree(data, dataSize);
 	data = 0;

@@ -180,12 +180,22 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	m_ui.cameraDriver->addItem(tr("None (Still Image)"), static_cast<int>(InputController::CameraDriver::NONE));
 	if (cameraDriver.isNull() || cameraDriver.toInt() == static_cast<int>(InputController::CameraDriver::NONE)) {
 		m_ui.cameraDriver->setCurrentIndex(m_ui.cameraDriver->count() - 1);
+		m_ui.camera->setEnabled(false);
 	}
 
 #ifdef BUILD_QT_MULTIMEDIA
 	m_ui.cameraDriver->addItem(tr("Qt Multimedia"), static_cast<int>(InputController::CameraDriver::QT_MULTIMEDIA));
 	if (!cameraDriver.isNull() && cameraDriver.toInt() == static_cast<int>(InputController::CameraDriver::QT_MULTIMEDIA)) {
 		m_ui.cameraDriver->setCurrentIndex(m_ui.cameraDriver->count() - 1);
+		m_ui.camera->setEnabled(true);
+	}
+	QList<QPair<QByteArray, QString>> cameras = inputController->listCameras();
+	QByteArray currentCamera = m_controller->getQtOption("camera").toByteArray();
+	for (const auto& camera : cameras) {
+		m_ui.camera->addItem(camera.second, camera.first);
+		if (camera.first == currentCamera) {
+			m_ui.camera->setCurrentIndex(m_ui.camera->count() - 1);
+		}
 	}
 #endif
 
@@ -352,6 +362,7 @@ void SettingsView::updateConfig() {
 	saveSetting("gbc.bios", m_ui.gbcBios);
 	saveSetting("sgb.bios", m_ui.sgbBios);
 	saveSetting("sgb.borders", m_ui.sgbBorders);
+	saveSetting("useCgbColors", m_ui.useCgbColors);
 	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
 	saveSetting("audioBuffers", m_ui.audioBufferSize);
@@ -389,6 +400,7 @@ void SettingsView::updateConfig() {
 	saveSetting("logToFile", m_ui.logToFile);
 	saveSetting("logToStdout", m_ui.logToStdout);
 	saveSetting("logFile", m_ui.logFile);
+	saveSetting("useDiscordPresence", m_ui.useDiscordPresence);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
@@ -441,6 +453,12 @@ void SettingsView::updateConfig() {
 		emit cameraDriverChanged();
 	}
 
+	QVariant camera = m_ui.camera->itemData(m_ui.camera->currentIndex());
+	if (camera != m_controller->getQtOption("camera")) {
+		m_controller->setQtOption("camera", camera);
+		emit cameraChanged(camera.toByteArray());
+	}
+
 	QLocale language = m_ui.languages->itemData(m_ui.languages->currentIndex()).toLocale();
 	if (language != m_controller->getQtOption("language").toLocale() && !(language.bcp47Name() == QLocale::system().bcp47Name() && m_controller->getQtOption("language").isNull())) {
 		m_controller->setQtOption("language", language.bcp47Name());
@@ -485,6 +503,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("gbc.bios", m_ui.gbcBios);
 	loadSetting("sgb.bios", m_ui.sgbBios);
 	loadSetting("sgb.borders", m_ui.sgbBorders, true);
+	loadSetting("useCgbColors", m_ui.useCgbColors, true);
 	loadSetting("useBios", m_ui.useBios);
 	loadSetting("skipBios", m_ui.skipBios);
 	loadSetting("audioBuffers", m_ui.audioBufferSize);
@@ -521,6 +540,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("logToFile", m_ui.logToFile);
 	loadSetting("logToStdout", m_ui.logToStdout);
 	loadSetting("logFile", m_ui.logFile);
+	loadSetting("useDiscordPresence", m_ui.useDiscordPresence);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 

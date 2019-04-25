@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/core/interface.h>
+#include <mgba/core/timing.h>
 
 enum GBASIOMode {
 	SIO_NORMAL_8 = 0,
@@ -36,7 +37,8 @@ struct GBAVideoRenderer;
 extern const int GBA_LUX_LEVELS[10];
 
 enum {
-	mPERIPH_GBA_LUMINANCE = 0x1000
+	mPERIPH_GBA_LUMINANCE = 0x1000,
+	mPERIPH_GBA_BATTLECHIP_GATE,
 };
 
 struct GBALuminanceSource {
@@ -58,6 +60,23 @@ struct GBASIODriver {
 void GBASIOJOYCreate(struct GBASIODriver* sio);
 int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command, uint8_t* data);
 
+enum GBASIOBattleChipGateFlavor {
+	GBA_FLAVOR_BATTLECHIP_GATE = 4,
+	GBA_FLAVOR_PROGRESS_GATE = 5,
+	GBA_FLAVOR_BEAST_LINK_GATE = 6,
+	GBA_FLAVOR_BEAST_LINK_GATE_US = 7,
+};
+
+struct GBASIOBattlechipGate {
+	struct GBASIODriver d;
+	struct mTimingEvent event;
+	uint16_t chipId;
+	uint16_t data[2];
+	int state;
+	int flavor;
+};
+
+void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate*);
 
 CXX_GUARD_END
 

@@ -185,6 +185,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 // Beware pre-processor antics
 
 ATTRIBUTE_NOINLINE static void _additionS(struct ARMCore* cpu, int32_t m, int32_t n, int32_t d) {
+	cpu->cpsr.flags = 0;
 	cpu->cpsr.n = ARM_SIGN(d);
 	cpu->cpsr.z = !d;
 	cpu->cpsr.c = ARM_CARRY_FROM(m, n, d);
@@ -192,6 +193,7 @@ ATTRIBUTE_NOINLINE static void _additionS(struct ARMCore* cpu, int32_t m, int32_
 }
 
 ATTRIBUTE_NOINLINE static void _subtractionS(struct ARMCore* cpu, int32_t m, int32_t n, int32_t d) {
+	cpu->cpsr.flags = 0;
 	cpu->cpsr.n = ARM_SIGN(d);
 	cpu->cpsr.z = !d;
 	cpu->cpsr.c = ARM_BORROW_FROM(m, n, d);

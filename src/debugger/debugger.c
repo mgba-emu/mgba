@@ -22,6 +22,9 @@ const uint32_t DEBUGGER_ID = 0xDEADBEEF;
 
 mLOG_DEFINE_CATEGORY(DEBUGGER, "Debugger", "core.debugger");
 
+DEFINE_VECTOR(mBreakpointList, struct mBreakpoint);
+DEFINE_VECTOR(mWatchpointList, struct mWatchpoint);
+
 static void mDebuggerInit(void* cpu, struct mCPUComponent* component);
 static void mDebuggerDeinit(struct mCPUComponent* component);
 

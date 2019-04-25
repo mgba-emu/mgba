@@ -13,21 +13,6 @@ CXX_GUARD_START
 #include <mgba/debugger/debugger.h>
 
 #include <mgba/internal/lr35902/lr35902.h>
-#include <mgba-util/vector.h>
-
-struct ParseTree;
-struct LR35902DebugBreakpoint {
-	uint16_t address;
-	int segment;
-	struct ParseTree* condition;
-};
-
-struct LR35902DebugWatchpoint {
-	uint16_t address;
-	int segment;
-	enum mWatchpointType type;
-	struct ParseTree* condition;
-};
 
 struct LR35902Segment {
 	uint16_t start;
@@ -35,18 +20,20 @@ struct LR35902Segment {
 	const char* name;
 };
 
-DECLARE_VECTOR(LR35902DebugBreakpointList, struct LR35902DebugBreakpoint);
-DECLARE_VECTOR(LR35902DebugWatchpointList, struct LR35902DebugWatchpoint);
-
+struct CLIDebuggerSystem;
 struct LR35902Debugger {
 	struct mDebuggerPlatform d;
 	struct LR35902Core* cpu;
 
-	struct LR35902DebugBreakpointList breakpoints;
-	struct LR35902DebugWatchpointList watchpoints;
+	struct mBreakpointList breakpoints;
+	struct mWatchpointList watchpoints;
 	struct LR35902Memory originalMemory;
 
+	ssize_t nextId;
+
 	const struct LR35902Segment* segments;
+
+	void (*printStatus)(struct CLIDebuggerSystem*);
 };
 
 struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void);
