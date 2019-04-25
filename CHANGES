@@ -1,5 +1,18 @@
-0.7.2: (Future)
+0.8.0: (Future)
+Features:
+ - Improved logging configuration
+ - One-Player BattleChip/Progress/Beast Link Gate support
+ - Add Game Boy Color palettes for original Game Boy games
+ - Debugger: Add unary operators and memory dereferencing
+ - GB: Expose platform information to CLI debugger
+ - Support Discord Rich Presence
 Emulation fixes:
+ - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
+ - GBA: Reset now reloads multiboot ROMs
+ - GBA BIOS: Fix multiboot entry point (fixes Magic Floor)
+ - GB Video: Delay LYC STAT check (fixes mgba.io/i/1331)
+ - GB Video: Fix window being enabled mid-scanline (fixes mgba.io/i/1328)
+ - GB I/O: Filter IE top bits properly (fixes mgba.io/i/1329)
  - GBA Video: Fix scanline cache with scale factor change edge cases
  - GBA DMA: Fix DMA0-2 lengths (fixes mgba.io/i/1344)
  - GB Video: Fix window y changing mid-window (fixes mgba.io/i/1345)
@@ -14,9 +27,19 @@ Other fixes:
  - CMake: Fix .deb imagemagick dependencies
  - Qt: Fix crash in sprite viewer magnification (fixes mgba.io/i/1362)
  - 3DS: Ensure core 2 can be used for threaded renderer (fixes mgba.io/i/1371)
+ - GB Core: Fix toggling WIN and OBJ being swapped
+ - All: Fix several memory leaks
 Misc:
+ - GBA Savedata: EEPROM performance fixes
+ - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
+ - GB Memory: Support running from blocked memory
+ - Qt: Don't unload ROM immediately if it crashes
+ - Debugger: Add breakpoint and watchpoint listing
  - Qt: Add missing HEVC NVENC option (fixes mgba.io/i/1323)
+ - LR35902: Support PC-relative opcode decoding
  - Qt: Improve camera initialization
+ - Qt: Support switching webcams
+ - Core: Add keysRead callback
  - Vita: Improved frame drawing speed
 
 0.7.1: (2019-02-24)

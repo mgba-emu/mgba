@@ -90,6 +90,7 @@ void mCheatSetDeinit(struct mCheatSet* set) {
 	if (set->name) {
 		free(set->name);
 	}
+	StringListDeinit(&set->lines);
 	set->deinit(set);
 	free(set);
 }

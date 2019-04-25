@@ -190,7 +190,9 @@ static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum G
 	softwareRenderer->scx = 0;
 	softwareRenderer->wy = 0;
 	softwareRenderer->currentWy = 0;
+	softwareRenderer->currentWx = 0;
 	softwareRenderer->lastY = GB_VIDEO_VERTICAL_PIXELS;
+	softwareRenderer->lastX = 0;
 	softwareRenderer->hasWindow = false;
 	softwareRenderer->wx = 0;
 	softwareRenderer->model = model;
@@ -229,6 +231,9 @@ static void GBVideoSoftwareRendererUpdateWindow(struct GBVideoSoftwareRenderer* 
 		} else if (!before) {
 			if (!renderer->hasWindow) {
 				renderer->currentWy = renderer->lastY - renderer->wy;
+				if (renderer->lastY >= renderer->wy && renderer->lastX > renderer->wx) {
+					++renderer->currentWy;
+				}
 			} else {
 				renderer->currentWy += renderer->lastY;
 			}
@@ -489,6 +494,7 @@ static void GBVideoSoftwareRendererWriteOAM(struct GBVideoRenderer* renderer, ui
 static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	softwareRenderer->lastY = y;
+	softwareRenderer->lastX = endX;
 	uint8_t* maps = &softwareRenderer->d.vram[GB_BASE_MAP];
 	if (GBRegisterLCDCIsTileMap(softwareRenderer->lcdc)) {
 		maps += GB_SIZE_MAP;
@@ -498,7 +504,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	}
 	if (GBRegisterLCDCIsBgEnable(softwareRenderer->lcdc) || softwareRenderer->model >= GB_MODEL_CGB) {
 		int wy = softwareRenderer->wy + softwareRenderer->currentWy;
-		int wx = softwareRenderer->wx - 7;
+		int wx = softwareRenderer->wx + softwareRenderer->currentWx - 7;
 		if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && wy == y && wx <= endX) {
 			softwareRenderer->hasWindow = true;
 		}
@@ -512,7 +518,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 				maps += GB_SIZE_MAP;
 			}
 			if (!softwareRenderer->d.disableWIN) {
-				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, softwareRenderer->wx - 7, endX, 7 - softwareRenderer->wx - softwareRenderer->offsetWx, y - wy - softwareRenderer->offsetWy);
+				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, wx, endX, -wx - softwareRenderer->offsetWx, y - wy - softwareRenderer->offsetWy);
 			}
 		} else if (!softwareRenderer->d.disableBG) {
 			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, endX, softwareRenderer->scx - softwareRenderer->offsetScx, softwareRenderer->scy + y - softwareRenderer->offsetScy);
@@ -616,6 +622,9 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* renderer, int y) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 
+	softwareRenderer->lastX = 0;
+	softwareRenderer->currentWx = 0;
+
 	if (softwareRenderer->sgbTransfer == 1) {
 		size_t offset = 2 * ((y & 7) + (y >> 3) * GB_VIDEO_HORIZONTAL_PIXELS);
 		if (offset >= 0x1000) {
@@ -706,7 +715,9 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 		}
 	}
 	softwareRenderer->lastY = GB_VIDEO_VERTICAL_PIXELS;
+	softwareRenderer->lastX = 0;
 	softwareRenderer->currentWy = 0;
+	softwareRenderer->currentWx = 0;
 	softwareRenderer->hasWindow = false;
 }
 

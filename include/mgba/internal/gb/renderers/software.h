@@ -32,7 +32,9 @@ struct GBVideoSoftwareRenderer {
 	uint8_t wy;
 	uint8_t wx;
 	uint8_t currentWy;
+	uint8_t currentWx;
 	int lastY;
+	int lastX;
 	bool hasWindow;
 
 	GBRegisterLCDC lcdc;

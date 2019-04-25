@@ -104,3 +104,21 @@ int main(int argc, char* argv[]) {
 
 	return application.exec();
 }
+
+#ifdef _WIN32
+#include <mgba-util/string.h>
+#include <vector>
+
+extern "C"
+int wmain(int argc, wchar_t* argv[]) {
+	std::vector<char*> argv8;
+	for (int i = 0; i < argc; ++i) {
+		argv8.push_back(utf16to8(reinterpret_cast<uint16_t*>(argv[i]), wcslen(argv[i]) * 2));
+	}
+	int ret = main(argc, argv8.data());
+	for (char* ptr : argv8) {
+		free(ptr);
+	}
+	return ret;
+}
+#endif

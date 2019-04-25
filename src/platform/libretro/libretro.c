@@ -224,7 +224,7 @@ void retro_get_system_info(struct retro_system_info* info) {
 #ifndef GIT_VERSION
 #define GIT_VERSION ""
 #endif
-	info->library_version = "0.7.1" GIT_VERSION;
+	info->library_version = "0.7.0" GIT_VERSION;
 	info->library_name = "mGBA";
 	info->block_extract = false;
 }
@@ -726,6 +726,7 @@ void retro_unload_game(void) {
 	if (!core) {
 		return;
 	}
+	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 	mappedMemoryFree(data, dataSize);
 	data = 0;

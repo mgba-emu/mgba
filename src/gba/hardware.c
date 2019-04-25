@@ -585,7 +585,7 @@ void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLat
 	gbp->p->p->memory.io[REG_SIODATA32_LO >> 1] = tx;
 	gbp->p->p->memory.io[REG_SIODATA32_HI >> 1] = tx >> 16;
 	if (gbp->d.p->normalControl.irq) {
-		GBARaiseIRQ(gbp->p->p, IRQ_SIO);
+		GBARaiseIRQ(gbp->p->p, IRQ_SIO, cyclesLate);
 	}
 	gbp->d.p->normalControl.start = 0;
 	gbp->p->p->memory.io[REG_SIOCNT >> 1] = gbp->d.p->siocnt & ~0x0080;

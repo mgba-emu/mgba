@@ -1,8 +1,17 @@
- <!DOCTYPE RCC><RCC version="1.0">
+<!DOCTYPE RCC>
+<RCC version="1.0">
  <qresource>
-     <file>../../../res/mgba-1024.png</file>
-     <file>../../../res/keymap.qpic</file>
-     <file>../../../res/patrons.txt</file>
-     <file>../../../res/no-cam.png</file>
+  <file>../../../res/mgba-1024.png</file>
+  <file>../../../res/keymap.qpic</file>
+  <file>../../../res/patrons.txt</file>
+  <file>../../../res/no-cam.png</file>
  </qresource>
- </RCC>
+ <qresource prefix="/exe">
+  <file alias="exe4/chip-names.txt">../../../res/exe4/chip-names.txt</file>
+  <file alias="exe4/placeholder.png">../../../res/exe4/placeholder.png</file>
+  <file alias="exe5/chip-names.txt">../../../res/exe5/chip-names.txt</file>
+  <file alias="exe5/placeholder.png">../../../res/exe5/placeholder.png</file>
+  <file alias="exe6/chip-names.txt">../../../res/exe6/chip-names.txt</file>
+  <file alias="exe6/placeholder.png">../../../res/exe6/placeholder.png</file>
+ </qresource>
+</RCC>

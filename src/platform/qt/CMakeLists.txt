@@ -66,6 +66,7 @@ endif()
 
 set(SOURCE_FILES
 	AboutScreen.cpp
+	AbstractUpdater.cpp
 	AssetTile.cpp
 	AssetView.cpp
 	AudioProcessor.cpp
@@ -102,7 +103,6 @@ set(SOURCE_FILES
 	OverrideView.cpp
 	PaletteView.cpp
 	PlacementControl.cpp
-	PrinterView.cpp
 	RegisterView.cpp
 	ROMInfo.cpp
 	RotatedHeaderView.cpp
@@ -124,6 +124,7 @@ set(UI_FILES
 	AboutScreen.ui
 	ArchiveInspector.ui
 	AssetTile.ui
+	BattleChipView.ui
 	CheatsView.ui
 	DebuggerConsole.ui
 	GIFView.ui
@@ -147,10 +148,14 @@ set(UI_FILES
 	VideoView.ui)
 
 set(GBA_SRC
+	BattleChipModel.cpp
+	BattleChipUpdater.cpp
+	BattleChipView.cpp
 	GBAOverride.cpp)
 
 set(GB_SRC
-	GBOverride.cpp)
+	GBOverride.cpp
+	PrinterView.cpp)
 
 set(QT_LIBRARIES)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5,libqt5opengl5")
@@ -209,6 +214,12 @@ if(USE_SQLITE3)
 		library/LibraryTree.cpp)
 endif()
 
+if(USE_DISCORD_RPC)
+	message(STATUS What)
+	list(APPEND QT_LIBRARIES discord-rpc)
+	list(APPEND SOURCE_FILES DiscordCoordinator.cpp)
+endif()
+
 qt5_add_resources(RESOURCES resources.qrc)
 if(APPLE)
 	set(MACOSX_BUNDLE_ICON_FILE mgba.icns)
@@ -257,7 +268,10 @@ if(Qt5LinguistTools_FOUND)
 		foreach(TS ${TS_FILES})
 			get_filename_component(TS ${TS} NAME)
 			string(REGEX REPLACE "${BINARY_NAME}-(.*).ts$" "qtbase_\\1.qm" QT_QM "${TS}")
-			list(APPEND QT_QM_FILES "${QT_QM_LOCATION}/${QT_QM}")
+			set(QT_QM "${QT_QM_LOCATION}/${QT_QM}")
+			if(EXISTS "${QT_QM}")
+				list(APPEND QT_QM_FILES "${QT_QM}")
+			endif()
 		endforeach()
 		list(APPEND TRANSLATION_FILES ${QT_QM_FILES})
 	endif()

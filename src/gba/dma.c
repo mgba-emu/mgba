@@ -193,7 +193,7 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 			dma->nextDest = dma->dest;
 		}
 		if (GBADMARegisterIsDoIRQ(dma->reg)) {
-			GBARaiseIRQ(gba, IRQ_DMA0 + memory->activeDMA);
+			GBARaiseIRQ(gba, IRQ_DMA0 + memory->activeDMA, cyclesLate);
 		}
 		GBADMAUpdate(gba);
 	}
@@ -273,7 +273,7 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 				mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
 				GBASavedataInitEEPROM(&memory->savedata);
 			}
-			if (memory->savedata.type == SAVEDATA_EEPROM) {
+			if (memory->savedata.type == SAVEDATA_EEPROM512 || memory->savedata.type == SAVEDATA_EEPROM) {
 				GBASavedataWriteEEPROM(&memory->savedata, memory->dmaTransferRegister, wordsRemaining);
 			}
 		} else {

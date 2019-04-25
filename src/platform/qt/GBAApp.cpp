@@ -25,6 +25,10 @@
 #include "feature/sqlite3/no-intro.h"
 #endif
 
+#ifdef USE_DISCORD_RPC
+#include "DiscordCoordinator.h"
+#endif
+
 using namespace QGBA;
 
 static GBAApp* g_app = nullptr;
@@ -60,6 +64,19 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 
 	LogController::global()->load(m_configController);
 
+#ifdef USE_DISCORD_RPC
+	ConfigOption* useDiscordPresence = m_configController->addOption("useDiscordPresence");
+	useDiscordPresence->addBoolean(tr("Enable Discord Rich Presence"));
+	useDiscordPresence->connect([](const QVariant& value) {
+		if (value.toBool()) {
+			DiscordCoordinator::init();
+		} else {
+			DiscordCoordinator::deinit();
+		}
+	}, this);
+	m_configController->updateOption("useDiscordPresence");
+#endif
+
 	connect(this, &GBAApp::aboutToQuit, this, &GBAApp::cleanup);
 }
 
@@ -74,6 +91,10 @@ void GBAApp::cleanup() {
 	if (m_db) {
 		NoIntroDBDestroy(m_db);
 	}
+#endif
+
+#ifdef USE_DISCORD_RPC
+	DiscordCoordinator::deinit();
 #endif
 }
 

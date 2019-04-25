@@ -143,6 +143,7 @@ int main(int argc, char** argv) {
 
 	if (!mSDLInit(&renderer)) {
 		freeArguments(&args);
+		mCoreConfigDeinit(&renderer.core->config);
 		renderer.core->deinit(renderer.core);
 		return 1;
 	}
@@ -178,6 +179,24 @@ int main(int argc, char** argv) {
 
 	return ret;
 }
+
+#ifdef _WIN32
+#include <mgba-util/string.h>
+
+int wmain(int argc, wchar_t** argv) {
+	char** argv8 = malloc(sizeof(char*) * argc);
+	int i;
+	for (i = 0; i < argc; ++i) {
+		argv8[i] = utf16to8((uint16_t*) argv[i], wcslen(argv[i]) * 2);
+	}
+	int ret = main(argc, argv8);
+	for (i = 0; i < argc; ++i) {
+		free(argv8[i]);
+	}
+	free(argv8);
+	return ret;
+}
+#endif
 
 int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 	struct mCoreThread thread = {

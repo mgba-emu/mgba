@@ -34,12 +34,16 @@ CXX_GUARD_START
 // WinSock2 gets very angry if it is included too late
 #include <winsock2.h>
 #endif
+
+#if defined(_MSC_VER) || defined(__cplusplus)
+#define restrict __restrict
+#endif
+
 #ifdef _MSC_VER
 #include <Windows.h>
 #include <sys/types.h>
 typedef intptr_t ssize_t;
 #define PATH_MAX MAX_PATH
-#define restrict __restrict
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
 #define ftruncate _chsize

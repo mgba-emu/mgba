@@ -362,6 +362,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		found = mCoreLoadFile(runner->core, path);
 		if (!found) {
 			mLOG(GUI_RUNNER, WARN, "Failed to load %s!", path);
+			mCoreConfigDeinit(&runner->core->config);
 			runner->core->deinit(runner->core);
 		}
 	}
@@ -606,6 +607,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	}
 	mInputMapDeinit(&runner->core->inputMap);
 	mLOG(GUI_RUNNER, DEBUG, "Deinitializing core...");
+	mCoreConfigDeinit(&runner->core->config);
 	runner->core->deinit(runner->core);
 	runner->core = NULL;
 

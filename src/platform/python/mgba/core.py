@@ -79,6 +79,12 @@ def _mCorePythonCallbacksSleep(user):  # pylint: disable=invalid-name
     context._sleep()
 
 
+@ffi.def_extern()
+def _mCorePythonCallbacksKeysRead(user):  # pylint: disable=invalid-name
+    context = ffi.from_handle(user)
+    context._keys_read()
+
+
 class CoreCallbacks(object):
     def __init__(self):
         self._handle = ffi.new_handle(self)
@@ -86,6 +92,7 @@ class CoreCallbacks(object):
         self.video_frame_ended = []
         self.core_crashed = []
         self.sleep = []
+        self.keys_read = []
         self.context = lib.mCorePythonCallbackCreate(self._handle)
 
     def _video_frame_started(self):
@@ -102,6 +109,10 @@ class CoreCallbacks(object):
 
     def _sleep(self):
         for callback in self.sleep:
+            callback()
+
+    def _keys_read(self):
+        for callback in self.keys_read:
             callback()
 
 

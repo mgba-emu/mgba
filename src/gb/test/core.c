@@ -31,6 +31,7 @@ M_TEST_DEFINE(reset) {
 	assert_true(core->init(core));
 	mCoreInitConfig(core, NULL);
 	core->reset(core);
+	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 }
 
@@ -41,6 +42,7 @@ M_TEST_DEFINE(loadNullROM) {
 	mCoreInitConfig(core, NULL);
 	assert_false(core->loadROM(core, NULL));
 	core->reset(core);
+	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 }
 
@@ -51,7 +53,9 @@ M_TEST_DEFINE(isROM) {
 	struct mCore* core = mCoreFindVF(vf);
 	assert_non_null(core);
 	assert_int_equal(core->platform(core), PLATFORM_GB);
+	vf->close(vf);
 	assert_true(core->init(core));
+
 	core->deinit(core);
 }
 

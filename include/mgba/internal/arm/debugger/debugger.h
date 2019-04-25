@@ -17,23 +17,14 @@ CXX_GUARD_START
 
 struct ParseTree;
 struct ARMDebugBreakpoint {
-	uint32_t address;
-	struct ParseTree* condition;
-	bool isSw;
+	struct mBreakpoint d;
 	struct {
 		uint32_t opcode;
 		enum ExecutionMode mode;
 	} sw;
 };
 
-struct ARMDebugWatchpoint {
-	uint32_t address;
-	enum mWatchpointType type;
-	struct ParseTree* condition;
-};
-
 DECLARE_VECTOR(ARMDebugBreakpointList, struct ARMDebugBreakpoint);
-DECLARE_VECTOR(ARMDebugWatchpointList, struct ARMDebugWatchpoint);
 
 struct ARMDebugger {
 	struct mDebuggerPlatform d;
@@ -41,18 +32,19 @@ struct ARMDebugger {
 
 	struct ARMDebugBreakpointList breakpoints;
 	struct ARMDebugBreakpointList swBreakpoints;
-	struct ARMDebugWatchpointList watchpoints;
+	struct mWatchpointList watchpoints;
 	struct ARMMemory originalMemory;
+
+	ssize_t nextId;
 
 	void (*entered)(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 
-	bool (*setSoftwareBreakpoint)(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
-	bool (*clearSoftwareBreakpoint)(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
+	ssize_t (*setSoftwareBreakpoint)(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
+	void (*clearSoftwareBreakpoint)(struct ARMDebugger*, const struct ARMDebugBreakpoint*);
 };
 
 struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void);
-bool ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* debugger, uint32_t address, enum ExecutionMode mode);
-void ARMDebuggerClearSoftwareBreakpoint(struct mDebuggerPlatform* debugger, uint32_t address);
+ssize_t ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* debugger, uint32_t address, enum ExecutionMode mode);
 
 CXX_GUARD_END
 
