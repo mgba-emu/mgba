@@ -442,7 +442,6 @@ void Window::openSettingsWindow() {
 	connect(settingsWindow, &SettingsView::displayDriverChanged, this, &Window::reloadDisplayDriver);
 	connect(settingsWindow, &SettingsView::audioDriverChanged, this, &Window::reloadAudioDriver);
 	connect(settingsWindow, &SettingsView::cameraDriverChanged, this, &Window::mustRestart);
-	connect(settingsWindow, &SettingsView::cameraChanged, &m_inputController, &InputController::setCamera);
 	connect(settingsWindow, &SettingsView::languageChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::pathsChanged, this, &Window::reloadConfig);
 #ifdef USE_SQLITE3
@@ -572,8 +571,9 @@ void Window::resizeEvent(QResizeEvent* event) {
 	if (m_screenWidget->width() % size.width() == 0 && m_screenWidget->height() % size.height() == 0 &&
 	    m_screenWidget->width() / size.width() == m_screenWidget->height() / size.height()) {
 		factor = m_screenWidget->width() / size.width();
+	} else {
+		m_savedScale = 0;
 	}
-	m_savedScale = factor;
 	for (QMap<int, QAction*>::iterator iter = m_frameSizes.begin(); iter != m_frameSizes.end(); ++iter) {
 		bool enableSignals = iter.value()->blockSignals(true);
 		iter.value()->setChecked(iter.key() == factor);
@@ -795,11 +795,6 @@ void Window::gameStopped() {
 
 	m_fpsTimer.stop();
 	m_focusCheck.stop();
-
-	if (m_audioProcessor) {
-		m_audioProcessor->stop();
-		m_audioProcessor.reset();
-	}
 
 	emit paused(false);
 }
@@ -1106,7 +1101,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(quickLoadMenu, quickLoad, "quickLoad");
 
 	QAction* quickSave = new QAction(tr("Save recent"), quickSaveMenu);
-	connect(quickSave, &QAction::triggered, [this] {
+	connect(quickLoad, &QAction::triggered, [this] {
 		m_controller->saveState();
 	});
 	m_gameActions.append(quickSave);
@@ -1189,7 +1184,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	fileMenu->addSeparator();
 #endif
 
-	QAction* about = new QAction(tr("About..."), fileMenu);
+	QAction* about = new QAction(tr("About"), fileMenu);
 	connect(about, &QAction::triggered, openTView<AboutScreen>());
 	fileMenu->addAction(about);
 

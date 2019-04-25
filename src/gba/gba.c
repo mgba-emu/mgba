@@ -254,8 +254,7 @@ void GBASkipBIOS(struct GBA* gba) {
 		} else {
 			cpu->gprs[ARM_PC] = BASE_WORKING_RAM;
 		}
-		gba->video.vcount = 0x7D;
-		gba->memory.io[REG_VCOUNT >> 1] = 0x7D;
+		gba->memory.io[REG_VCOUNT >> 1] = 0x7E;
 		gba->memory.io[REG_POSTFLG >> 1] = 1;
 		ARMWritePC(cpu);
 	}

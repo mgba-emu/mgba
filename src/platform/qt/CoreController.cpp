@@ -834,33 +834,8 @@ void CoreController::updateFastForward() {
 		m_threadContext.impl->sync.fpsTarget = m_fpsTarget;
 		setSync(true);
 	}
-	// XXX: Have a way of just updating volume
-	switch (platform()) {
-#ifdef M_CORE_GBA
-	case PLATFORM_GBA: {
-		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
-		if (m_threadContext.core->opts.mute) {
-			gba->audio.masterVolume = 0;
-		} else {
-			gba->audio.masterVolume = m_threadContext.core->opts.volume;
-		}
-		break;
-	}
-#endif
-#ifdef M_CORE_GB
-	case PLATFORM_GB: {
-		GB* gb = static_cast<GB*>(m_threadContext.core->board);
-		if (m_threadContext.core->opts.mute) {
-			gb->audio.masterVolume = 0;
-		} else {
-			gb->audio.masterVolume = m_threadContext.core->opts.volume;
-		}
-		break;
-	}
-#endif
-	default:
-		break;
-	}
+	// XXX: Have a way of just updating opts
+	m_threadContext.core->loadConfig(m_threadContext.core, &m_threadContext.core->config);
 }
 
 CoreController::Interrupter::Interrupter(CoreController* parent, bool fromThread)

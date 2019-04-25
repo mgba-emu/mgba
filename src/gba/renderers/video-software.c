@@ -539,14 +539,6 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		dirty = true;
 	}
 
-	if (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) != 0) {
-		if (softwareRenderer->cache[y].scale[0][0] != softwareRenderer->bg[2].sx ||
-		    softwareRenderer->cache[y].scale[0][1] != softwareRenderer->bg[2].sy ||
-		    softwareRenderer->cache[y].scale[1][0] != softwareRenderer->bg[3].sx ||
-		    softwareRenderer->cache[y].scale[1][1] != softwareRenderer->bg[3].sy) {
-			dirty = true;
-		}
-	}
 	softwareRenderer->cache[y].scale[0][0] = softwareRenderer->bg[2].sx;
 	softwareRenderer->cache[y].scale[0][1] = softwareRenderer->bg[2].sy;
 	softwareRenderer->cache[y].scale[1][0] = softwareRenderer->bg[3].sx;
@@ -735,8 +727,7 @@ static void _enableBg(struct GBAVideoSoftwareRenderer* renderer, int bg, bool ac
 	if (!active) {
 		renderer->bg[bg].enabled = 0;
 	} else if (!wasActive && active) {
-		if (renderer->nextY == 0 || GBARegisterDISPCNTGetMode(renderer->dispcnt) > 2) {
-			// TODO: Investigate in more depth how switching background works in different modes
+		if (renderer->nextY == 0) {
 			renderer->bg[bg].enabled = 4;
 		} else {
 			renderer->bg[bg].enabled = 1;

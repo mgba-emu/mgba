@@ -202,7 +202,7 @@ void GBResizeSram(struct GB* gb, size_t size) {
 		if (gb->memory.sram == (void*) -1) {
 			gb->memory.sram = NULL;
 		}
-	} else if (size) {
+	} else {
 		uint8_t* newSram = anonymousMemoryMap(size);
 		if (gb->memory.sram) {
 			if (size > gb->sramSize) {
@@ -630,7 +630,7 @@ void GBDetectModel(struct GB* gb) {
 }
 
 void GBUpdateIRQs(struct GB* gb) {
-	int irqs = gb->memory.ie & gb->memory.io[REG_IF] & 0x1F;
+	int irqs = gb->memory.ie & gb->memory.io[REG_IF];
 	if (!irqs) {
 		gb->cpu->irqPending = false;
 		return;

@@ -27,11 +27,12 @@
 
 #ifdef BUILD_QT_MULTIMEDIA
 #include "VideoDumper.h"
-#include <QCamera>
 #endif
 
 struct mRotationSource;
 struct mRumble;
+
+class QCamera;
 
 namespace QGBA {
 
@@ -96,8 +97,6 @@ public:
 	void stealFocus(QWidget* focus);
 	void releaseFocus(QWidget* focus);
 
-	QList<QPair<QByteArray, QString>> listCameras() const;
-
 	mRumble* rumble();
 	mRotationSource* rotationSource();
 	mImageSource* imageSource() { return &m_image; }
@@ -124,12 +123,7 @@ public slots:
 	void loadCamImage(const QString& path);
 	void setCamImage(const QImage& image);
 
-	void setCamera(const QByteArray& id);
-
 private slots:
-#ifdef BUILD_QT_MULTIMEDIA
-	void prepareCamSettings(QCamera::Status);
-#endif
 	void setupCam();
 	void teardownCam();
 

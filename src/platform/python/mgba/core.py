@@ -180,17 +180,11 @@ class Core(object):
 
     @protected
     def load_bios(self, vfile, id=0):
-        res = bool(self._core.loadBIOS(self._core, vfile.handle, id))
-        if res:
-            vfile._claimed = True
-        return res
+        return bool(self._core.loadBIOS(self._core, vfile.handle, id))
 
     @protected
     def load_save(self, vfile):
-        res = bool(self._core.loadSave(self._core, vfile.handle))
-        if res:
-            vfile._claimed = True
-        return res
+        return bool(self._core.loadSave(self._core, vfile.handle))
 
     @protected
     def load_temporary_save(self, vfile):

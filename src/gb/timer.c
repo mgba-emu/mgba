@@ -92,10 +92,6 @@ void GBTimerDivReset(struct GBTimer* timer) {
 
 uint8_t GBTimerUpdateTAC(struct GBTimer* timer, GBRegisterTAC tac) {
 	if (GBRegisterTACIsRun(tac)) {
-		timer->nextDiv -= mTimingUntil(&timer->p->timing, &timer->event);
-		mTimingDeschedule(&timer->p->timing, &timer->event);
-		_GBTimerDivIncrement(timer, (timer->p->cpu->executionState + 2) & 3);
-
 		switch (GBRegisterTACGetClock(tac)) {
 		case 0:
 			timer->timaPeriod = 1024 >> 4;
@@ -111,6 +107,9 @@ uint8_t GBTimerUpdateTAC(struct GBTimer* timer, GBRegisterTAC tac) {
 			break;
 		}
 
+		timer->nextDiv -= mTimingUntil(&timer->p->timing, &timer->event);
+		mTimingDeschedule(&timer->p->timing, &timer->event);
+		_GBTimerDivIncrement(timer, (timer->p->cpu->executionState + 2) & 3);
 		timer->nextDiv += GB_DMG_DIV_PERIOD;
 		mTimingSchedule(&timer->p->timing, &timer->event, timer->nextDiv);
 	} else {

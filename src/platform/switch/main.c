@@ -100,64 +100,63 @@ static enum ScreenMode {
 } screenMode = SM_PA;
 
 static bool initEgl() {
-	s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	if (!s_display) {
-		goto _fail0;
-	}
+    s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (!s_display) {
+        goto _fail0;
+    }
 
-	eglInitialize(s_display, NULL, NULL);
+    eglInitialize(s_display, NULL, NULL);
 
-	EGLConfig config;
-	EGLint numConfigs;
-	static const EGLint attributeList[] = {
-		EGL_RED_SIZE, 1,
-		EGL_GREEN_SIZE, 1,
-		EGL_BLUE_SIZE, 1,
-		EGL_NONE
-	};
-	eglChooseConfig(s_display, attributeList, &config, 1, &numConfigs);
-	if (!numConfigs) {
-		goto _fail1;
-	}
+    EGLConfig config;
+    EGLint numConfigs;
+    static const EGLint attributeList[] = {
+        EGL_RED_SIZE, 1,
+        EGL_GREEN_SIZE, 1,
+        EGL_BLUE_SIZE, 1,
+        EGL_NONE
+    };
+    eglChooseConfig(s_display, attributeList, &config, 1, &numConfigs);
+    if (!numConfigs) {
+        goto _fail1;
+    }
 
-	s_surface = eglCreateWindowSurface(s_display, config, nwindowGetDefault(), NULL);
-	if (!s_surface) {
-		goto _fail1;
-	}
+    s_surface = eglCreateWindowSurface(s_display, config, nwindowGetDefault(), NULL);
+    if (!s_surface) {
+        goto _fail1;
+    }
 
 	EGLint contextAttributeList[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 3,
 		EGL_NONE
 	};
-	s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, contextAttributeList);
-	if (!s_context) {
-		goto _fail2;
-	}
+    s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, contextAttributeList);
+    if (!s_context) {
+        goto _fail2;
+    }
 
-	eglMakeCurrent(s_display, s_surface, s_surface, s_context);
-	return true;
+    eglMakeCurrent(s_display, s_surface, s_surface, s_context);
+    return true;
 
 _fail2:
-	eglDestroySurface(s_display, s_surface);
-	s_surface = NULL;
+    eglDestroySurface(s_display, s_surface);
+    s_surface = NULL;
 _fail1:
-	eglTerminate(s_display);
-	s_display = NULL;
+    eglTerminate(s_display);
+    s_display = NULL;
 _fail0:
-	return false;
+    return false;
 }
 
 static void deinitEgl() {
-	if (s_display) {
-		eglMakeCurrent(s_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-		if (s_context) {
-			eglDestroyContext(s_display, s_context);
-		}
-		if (s_surface) {
-			eglDestroySurface(s_display, s_surface);
-		}
-		eglTerminate(s_display);
-	}
+    if (s_display) {
+        if (s_context) {
+            eglDestroyContext(s_display, s_context);
+        }
+        if (s_surface) {
+            eglDestroySurface(s_display, s_surface);
+        }
+        eglTerminate(s_display);
+    }
 }
 
 static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, enum GBAKey key) {
@@ -463,7 +462,7 @@ int32_t _readGyroZ(struct mRotationSource* source) {
 	UNUSED(source);
 	SixAxisSensorValues sixaxis;
 	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
-	return sixaxis.gyroscope.z * -1.1e9f;
+	return sixaxis.gyroscope.z * 1.1e9f;
 }
 
 static int _batteryState(void) {
@@ -727,14 +726,8 @@ int main(int argc, char* argv[]) {
 		mGUIRunloop(&runner);
 	}
 
-	mGUIDeinit(&runner);
-
-	audoutStopAudioOut();
-	GUIFontDestroy(font);
-
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	glDeleteBuffers(1, &pbo);
 
 	glDeleteTextures(1, &tex);

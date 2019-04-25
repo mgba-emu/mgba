@@ -461,19 +461,19 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			break;
 
 		case REG_DMA0CNT_LO:
-			GBADMAWriteCNT_LO(gba, 0, value & 0x3FFF);
+			GBADMAWriteCNT_LO(gba, 0, value);
 			break;
 		case REG_DMA0CNT_HI:
 			value = GBADMAWriteCNT_HI(gba, 0, value);
 			break;
 		case REG_DMA1CNT_LO:
-			GBADMAWriteCNT_LO(gba, 1, value & 0x3FFF);
+			GBADMAWriteCNT_LO(gba, 1, value);
 			break;
 		case REG_DMA1CNT_HI:
 			value = GBADMAWriteCNT_HI(gba, 1, value);
 			break;
 		case REG_DMA2CNT_LO:
-			GBADMAWriteCNT_LO(gba, 2, value & 0x3FFF);
+			GBADMAWriteCNT_LO(gba, 2, value);
 			break;
 		case REG_DMA2CNT_HI:
 			value = GBADMAWriteCNT_HI(gba, 2, value);

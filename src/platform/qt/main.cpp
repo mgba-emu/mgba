@@ -21,7 +21,6 @@
 #include <QtPlugin>
 #ifdef Q_OS_WIN
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
-Q_IMPORT_PLUGIN(QWindowsVistaStylePlugin);
 #ifdef BUILD_QT_MULTIMEDIA
 Q_IMPORT_PLUGIN(QWindowsAudioPlugin);
 Q_IMPORT_PLUGIN(DSServicePlugin);
@@ -62,14 +61,7 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
-	QApplication::setApplicationName(projectName);
-	QApplication::setApplicationVersion(projectVersion);
-
 	GBAApp application(argc, argv, &configController);
-
-#ifndef Q_OS_MAC
-	QApplication::setWindowIcon(QIcon(":/res/mgba-1024.png"));
-#endif
 
 	QTranslator qtTranslator;
 	qtTranslator.load(locale, "qt", "_", QLibraryInfo::location(QLibraryInfo::TranslationsPath));

@@ -137,7 +137,7 @@ void AssetTile::selectColor(int index) {
 	mTileCache* tileCache = m_tileCaches[m_index >= m_boundary];
 	unsigned bpp = 8 << tileCache->bpp;
 	int paletteId = m_paletteId;
-	data = mTileCacheGetTile(tileCache, m_index >= m_boundary ? m_index - m_boundary : m_index, m_paletteId);
+	data = mTileCacheGetTile(tileCache, m_index, m_paletteId);
 	color_t color = data[index];
 	m_ui.color->setColor(0, color);
 	m_ui.color->update();

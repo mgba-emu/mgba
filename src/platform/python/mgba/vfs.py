@@ -112,16 +112,11 @@ class VFile:
     def __init__(self, vf, _no_gc=None):
         self.handle = vf
         self._no_gc = _no_gc
-        self._claimed = False
 
     def __del__(self):
-        if not self._claimed:
-            self.close()
+        self.close()
 
     def close(self):
-        if self._claimed:
-            return False
-        self._claimed = True
         return bool(self.handle.close(self.handle))
 
     def seek(self, offset, whence):
