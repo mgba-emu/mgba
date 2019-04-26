@@ -41,6 +41,7 @@ Misc:
  - Qt: Support switching webcams
  - Core: Add keysRead callback
  - Vita: Improved frame drawing speed
+ - Qt: Cap window size on start to monitor size
 
 0.7.1: (2019-02-24)
 Bugfixes:
