@@ -42,6 +42,7 @@ Misc:
  - Core: Add keysRead callback
  - Vita: Improved frame drawing speed
  - Qt: Cap window size on start to monitor size
+ - GBA BIOS: Add timings for HLE BIOS math functions (fixes mgba.io/i/1396)
 
 0.7.1: (2019-02-24)
 Bugfixes:
