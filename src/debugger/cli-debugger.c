@@ -11,6 +11,7 @@
 #include <mgba/core/version.h>
 #include <mgba/internal/debugger/parser.h>
 #include <mgba-util/string.h>
+#include <mgba-util/vfs.h>
 
 #if ENABLE_SCRIPTING
 #include <mgba/core/scripting.h>
@@ -100,7 +101,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "r/2", _readHalfword, "I", "Read a halfword from a specified offset" },
 	{ "r/4", _readWord, "I", "Read a word from a specified offset" },
 	{ "status", _printStatus, "", "Print the current status" },
-	{ "trace", _trace, "I", "Trace a fixed number of instructions" },
+	{ "trace", _trace, "Is", "Trace a number of instructions" },
 	{ "w", _setReadWriteWatchpoint, "Is", "Set a watchpoint" },
 	{ "w/1", _writeByte, "II", "Write a byte at a specified offset" },
 	{ "w/2", _writeHalfword, "II", "Write a halfword at a specified offset" },
@@ -647,8 +648,15 @@ static void _trace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	}
 
 	debugger->traceRemaining = dv->intValue;
+	if (debugger->traceVf) {
+		debugger->traceVf->close(debugger->traceVf);
+		debugger->traceVf = NULL;
+	}
 	if (debugger->traceRemaining == 0) {
 		return;
+	}
+	if (dv->next && dv->next->charValue) {
+		debugger->traceVf = VFileOpen(dv->next->charValue, O_CREAT | O_WRONLY | O_APPEND);
 	}
 	if (_doTrace(debugger)) {
 		debugger->d.state = DEBUGGER_CUSTOM;
@@ -661,12 +669,17 @@ static bool _doTrace(struct CLIDebugger* debugger) {
 	char trace[1024];
 	trace[sizeof(trace) - 1] = '\0';
 	debugger->d.core->step(debugger->d.core);
-	size_t traceSize = sizeof(trace) - 1;
+	size_t traceSize = sizeof(trace) - 2;
 	debugger->d.platform->trace(debugger->d.platform, trace, &traceSize);
-	if (traceSize + 1 < sizeof(trace)) {
+	if (traceSize + 1 <= sizeof(trace)) {
+		trace[traceSize] = '\n';
 		trace[traceSize + 1] = '\0';
 	}
-	debugger->backend->printf(debugger->backend, "%s\n", trace);
+	if (debugger->traceVf) {
+		debugger->traceVf->write(debugger->traceVf, trace, traceSize + 1);
+	} else {
+		debugger->backend->printf(debugger->backend, "%s", trace);
+	}
 	if (debugger->traceRemaining > 0) {
 		--debugger->traceRemaining;
 	}
@@ -940,11 +953,17 @@ static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason r
 static void _cliDebuggerInit(struct mDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	cliDebugger->traceRemaining = 0;
+	cliDebugger->traceVf = NULL;
 	cliDebugger->backend->init(cliDebugger->backend);
 }
 
 static void _cliDebuggerDeinit(struct mDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
+	if (cliDebugger->traceVf) {
+		cliDebugger->traceVf->close(cliDebugger->traceVf);
+		cliDebugger->traceVf = NULL;
+	}
+
 	if (cliDebugger->system) {
 		if (cliDebugger->system->deinit) {
 			cliDebugger->system->deinit(cliDebugger->system);

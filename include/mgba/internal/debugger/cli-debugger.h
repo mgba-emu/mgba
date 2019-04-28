@@ -17,6 +17,7 @@ extern const char* ERROR_OVERFLOW;
 extern const char* ERROR_INVALID_ARGS;
 
 struct CLIDebugger;
+struct VFile;
 
 struct CLIDebugVector {
 	struct CLIDebugVector* next;
@@ -76,6 +77,7 @@ struct CLIDebugger {
 	struct CLIDebuggerBackend* backend;
 
 	int traceRemaining;
+	struct VFile* traceVf;
 };
 
 void CLIDebuggerCreate(struct CLIDebugger*);
