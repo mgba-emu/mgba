@@ -45,6 +45,7 @@ Misc:
  - Qt: Cap window size on start to monitor size
  - GBA BIOS: Add timings for HLE BIOS math functions (fixes mgba.io/i/1396)
  - Debugger: Make tracing compatible with breakpoints/watchpoints
+ - Debugger: Print breakpoint/watchpoint number when inserting
 
 0.7.1: (2019-02-24)
 Bugfixes:

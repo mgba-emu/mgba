@@ -28,6 +28,8 @@
 const char* ERROR_MISSING_ARGS = "Arguments missing"; // TODO: share
 const char* ERROR_OVERFLOW = "Arguments overflow";
 const char* ERROR_INVALID_ARGS = "Invalid arguments";
+const char* INFO_BREAKPOINT_ADDED = "Added breakpoint #%" PRIz "i\n";
+const char* INFO_WATCHPOINT_ADDED = "Added watchpoint #%" PRIz "i\n";
 
 static struct ParseTree* _parseTree(const char** string);
 static bool _doTrace(struct CLIDebugger* debugger);
@@ -553,7 +555,10 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 			return;
 		}
 	}
-	debugger->d.platform->setBreakpoint(debugger->d.platform, &breakpoint);
+	ssize_t id = debugger->d.platform->setBreakpoint(debugger->d.platform, &breakpoint);
+	if (id > 0) {
+		debugger->backend->printf(debugger->backend, INFO_BREAKPOINT_ADDED, id);
+	}
 }
 
 static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv, enum mWatchpointType type) {
@@ -579,7 +584,10 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 			return;
 		}
 	}
-	debugger->d.platform->setWatchpoint(debugger->d.platform, &watchpoint);
+	ssize_t id = debugger->d.platform->setWatchpoint(debugger->d.platform, &watchpoint);
+	if (id > 0) {
+		debugger->backend->printf(debugger->backend, INFO_WATCHPOINT_ADDED, id);
+	}
 }
 
 static void _setReadWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {

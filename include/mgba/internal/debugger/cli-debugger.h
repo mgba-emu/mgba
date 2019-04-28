@@ -15,6 +15,8 @@ CXX_GUARD_START
 extern const char* ERROR_MISSING_ARGS;
 extern const char* ERROR_OVERFLOW;
 extern const char* ERROR_INVALID_ARGS;
+extern const char* INFO_BREAKPOINT_ADDED;
+extern const char* INFO_WATCHPOINT_ADDED;
 
 struct CLIDebugger;
 struct VFile;
