@@ -74,6 +74,8 @@ struct CLIDebugger {
 
 	struct CLIDebuggerSystem* system;
 	struct CLIDebuggerBackend* backend;
+
+	int traceRemaining;
 };
 
 void CLIDebuggerCreate(struct CLIDebugger*);

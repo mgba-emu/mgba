@@ -59,7 +59,7 @@ static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 		gbaDebugger->inVblank = GBARegisterDISPSTATGetInVblank(((struct GBA*) gbaDebugger->core->board)->memory.io[REG_DISPSTAT >> 1]);
 		return true;
 	}
-	return false;
+	return true;
 }
 
 static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {

@@ -29,6 +29,7 @@ const char* ERROR_OVERFLOW = "Arguments overflow";
 const char* ERROR_INVALID_ARGS = "Invalid arguments";
 
 static struct ParseTree* _parseTree(const char** string);
+static bool _doTrace(struct CLIDebugger* debugger);
 
 #if !defined(NDEBUG) && !defined(_WIN32)
 static void _breakInto(struct CLIDebugger*, struct CLIDebugVector*);
@@ -147,7 +148,7 @@ static void _breakInto(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 
 static void _continue(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
-	debugger->d.state = DEBUGGER_RUNNING;
+	debugger->d.state = debugger->traceRemaining != 0 ? DEBUGGER_CUSTOM : DEBUGGER_RUNNING;
 }
 
 static void _next(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -645,19 +646,31 @@ static void _trace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		return;
 	}
 
+	debugger->traceRemaining = dv->intValue;
+	if (debugger->traceRemaining == 0) {
+		return;
+	}
+	if (_doTrace(debugger)) {
+		debugger->d.state = DEBUGGER_CUSTOM;
+	} else {
+		debugger->system->printStatus(debugger->system);
+	}
+}
+
+static bool _doTrace(struct CLIDebugger* debugger) {
 	char trace[1024];
 	trace[sizeof(trace) - 1] = '\0';
-
-	int i;
-	for (i = 0; i < dv->intValue; ++i) {
-		debugger->d.core->step(debugger->d.core);
-		size_t traceSize = sizeof(trace) - 1;
-		debugger->d.platform->trace(debugger->d.platform, trace, &traceSize);
-		if (traceSize + 1 < sizeof(trace)) {
-			trace[traceSize + 1] = '\0';
-		}
-		debugger->backend->printf(debugger->backend, "%s\n", trace);
+	debugger->d.core->step(debugger->d.core);
+	size_t traceSize = sizeof(trace) - 1;
+	debugger->d.platform->trace(debugger->d.platform, trace, &traceSize);
+	if (traceSize + 1 < sizeof(trace)) {
+		trace[traceSize + 1] = '\0';
 	}
+	debugger->backend->printf(debugger->backend, "%s\n", trace);
+	if (debugger->traceRemaining > 0) {
+		--debugger->traceRemaining;
+	}
+	return debugger->traceRemaining != 0;
 }
 
 static void _printStatus(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -889,6 +902,9 @@ static void _commandLine(struct mDebugger* debugger) {
 
 static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
+	if (cliDebugger->traceRemaining > 0) {
+		cliDebugger->traceRemaining = 0;
+	}
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
 	case DEBUGGER_ENTER_ATTACHED:
@@ -923,6 +939,7 @@ static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason r
 
 static void _cliDebuggerInit(struct mDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
+	cliDebugger->traceRemaining = 0;
 	cliDebugger->backend->init(cliDebugger->backend);
 }
 
@@ -943,12 +960,17 @@ static void _cliDebuggerDeinit(struct mDebugger* debugger) {
 
 static void _cliDebuggerCustom(struct mDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
-	bool retain = false;
+	bool retain = true;
+	enum mDebuggerState next = DEBUGGER_RUNNING;
+	if (cliDebugger->traceRemaining) {
+		retain = _doTrace(cliDebugger) && retain;
+		next = DEBUGGER_PAUSED;
+	}
 	if (cliDebugger->system) {
-		retain = cliDebugger->system->custom(cliDebugger->system);
+		retain = cliDebugger->system->custom(cliDebugger->system) && retain;
 	}
 	if (!retain && debugger->state == DEBUGGER_CUSTOM) {
-		debugger->state = DEBUGGER_RUNNING;
+		debugger->state = next;
 	}
 }
 
