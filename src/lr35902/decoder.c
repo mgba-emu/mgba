@@ -504,6 +504,9 @@ static int _decodeOperand(struct LR35902Operand op, uint16_t pc, char* buffer, i
 		return 0;
 	}
 
+	strncpy(buffer, " ", blen - 1);
+	ADVANCE(1);
+
 	if (op.flags & LR35902_OP_FLAG_MEMORY) {
 		strncpy(buffer, "[", blen - 1);
 		ADVANCE(1);
@@ -545,16 +548,16 @@ int LR35902Disassemble(struct LR35902InstructionInfo* info, uint16_t pc, char* b
 	int total = 0;
 	const char* cond = _lr35902Conditions[info->condition];
 
-	written = snprintf(buffer, blen - 1, "%s ", mnemonic);
+	written = snprintf(buffer, blen - 1, "%s", mnemonic);
 	ADVANCE(written);
 
 	if (cond) {
-		written = snprintf(buffer, blen - 1, "%s", cond);
+		written = snprintf(buffer, blen - 1, " %s", cond);
 		ADVANCE(written);
 
 		if (info->op1.reg || info->op1.immediate || info->op2.reg || info->op2.immediate) {
-			strncpy(buffer, ", ", blen - 1);
-			ADVANCE(2);
+			strncpy(buffer, ",", blen - 1);
+			ADVANCE(1);
 		}
 	}
 
@@ -565,8 +568,8 @@ int LR35902Disassemble(struct LR35902InstructionInfo* info, uint16_t pc, char* b
 
 	if (info->op2.reg || (!info->op1.immediate && info->opcodeSize > 1 && info->opcode[0] != 0xCB)) {
 		if (written) {
-			strncpy(buffer, ", ", blen - 1);
-			ADVANCE(2);
+			strncpy(buffer, ",", blen - 1);
+			ADVANCE(1);
 		}
 		written = _decodeOperand(info->op2, pc, buffer, blen);
 		ADVANCE(written);
