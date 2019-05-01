@@ -20,6 +20,7 @@ Emulation fixes:
  - GB Video: Fix window y changing mid-window (fixes mgba.io/i/1345)
  - GB Video: Fix more window edge cases (fixes mgba.io/i/1346)
  - GB Timer: Fix timing adjustments when writing to TAC (fixes mgba.io/i/1340)
+ - GBA Memory: Fix writing to OBJ memory in modes 3 and 5
 Other fixes:
  - Qt: More app metadata fixes
  - Qt: Fix load recent from archive (fixes mgba.io/i/1325)
