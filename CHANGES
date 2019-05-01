@@ -7,6 +7,7 @@ Features:
  - GB: Expose platform information to CLI debugger
  - Support Discord Rich Presence
  - Debugger: Add tracing to file
+ - Map viewer supports bitmapped GBA modes
 Emulation fixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs

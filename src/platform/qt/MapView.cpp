@@ -12,7 +12,10 @@
 #include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
 #ifdef M_CORE_GBA
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/memory.h>
+#include <mgba/internal/gba/video.h>
 #endif
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/memory.h>
@@ -139,17 +142,36 @@ bool MapView::eventFilter(QObject* obj, QEvent* event) {
 void MapView::updateTilesGBA(bool force) {
 	{
 		CoreController::Interrupter interrupter(m_controller);
-		mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, m_map);
-		int tilesW = 1 << mMapCacheSystemInfoGetTilesWide(mapCache->sysConfig);
-		int tilesH = 1 << mMapCacheSystemInfoGetTilesHigh(mapCache->sysConfig);
-		m_rawMap = QImage(QSize(tilesW * 8, tilesH * 8), QImage::Format_ARGB32);
-		uchar* bgBits = m_rawMap.bits();
-		for (int j = 0; j < tilesH; ++j) {
-			for (int i = 0; i < tilesW; ++i) {
-				mMapCacheCleanTile(mapCache, m_mapStatus, i, j);
+		int bitmap = -1;
+		if (m_controller->platform() == PLATFORM_GBA) {
+			int mode = GBARegisterDISPCNTGetMode(static_cast<GBA*>(m_controller->thread()->core->board)->memory.io[REG_DISPCNT]);
+			if (m_map == 2 && mode > 2) {
+				bitmap = mode == 4 ? 1 : 0;
 			}
-			for (int i = 0; i < 8; ++i) {
-				memcpy(static_cast<void*>(&bgBits[tilesW * 32 * (i + j * 8)]), mMapCacheGetRow(mapCache, i + j * 8), tilesW * 32);
+		}
+		if (bitmap >= 0) {
+			mBitmapCache* bitmapCache = mBitmapCacheSetGetPointer(&m_cacheSet->bitmaps, bitmap);
+			int width = mBitmapCacheSystemInfoGetWidth(bitmapCache->sysConfig);
+			int height = mBitmapCacheSystemInfoGetHeight(bitmapCache->sysConfig);
+			m_rawMap = QImage(QSize(width, height), QImage::Format_ARGB32);
+			uchar* bgBits = m_rawMap.bits();
+			for (int j = 0; j < height; ++j) {
+				mBitmapCacheCleanRow(bitmapCache, m_bitmapStatus, j);
+				memcpy(static_cast<void*>(&bgBits[width * j * 4]), mBitmapCacheGetRow(bitmapCache, j), width * 4);
+			}
+		} else {
+			mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, m_map);
+			int tilesW = 1 << mMapCacheSystemInfoGetTilesWide(mapCache->sysConfig);
+			int tilesH = 1 << mMapCacheSystemInfoGetTilesHigh(mapCache->sysConfig);
+			m_rawMap = QImage(QSize(tilesW * 8, tilesH * 8), QImage::Format_ARGB32);
+			uchar* bgBits = m_rawMap.bits();
+			for (int j = 0; j < tilesH; ++j) {
+				for (int i = 0; i < tilesW; ++i) {
+					mMapCacheCleanTile(mapCache, m_mapStatus, i, j);
+				}
+				for (int i = 0; i < 8; ++i) {
+					memcpy(static_cast<void*>(&bgBits[tilesW * 32 * (i + j * 8)]), mMapCacheGetRow(mapCache, i + j * 8), tilesW * 32);
+				}
 			}
 		}
 	}
@@ -181,7 +203,6 @@ void MapView::exportMap() {
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = PNGWriteHeaderA(png, m_rawMap.width(), m_rawMap.height());
 
-	mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, m_map);
 	QImage map = m_rawMap.rgbSwapped();
 	PNGWritePixelsA(png, map.width(), map.height(), map.bytesPerLine() / 4, static_cast<const void*>(map.constBits()));
 	PNGWriteClose(png, info);
