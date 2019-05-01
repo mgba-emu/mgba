@@ -33,6 +33,7 @@ Other fixes:
  - GB Core: Fix toggling WIN and OBJ being swapped
  - All: Fix several memory leaks
  - LR35902: Fix trailing whitespace in disassembly
+ - Qt: Fix adjusting magnification in tile viewer when not fitting to window
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash

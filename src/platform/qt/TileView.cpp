@@ -65,7 +65,10 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 		}
 		updateTiles(true);
 	});
-	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this]() {
+	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](int mag) {
+		if (!m_ui.tileFit->isChecked()) {
+			m_ui.tiles->setMinimumSize(mag * 8 * m_ui.tilesPerRow->value(), m_ui.tiles->minimumSize().height());
+		}
 		updateTiles(true);
 	});
 
