@@ -65,8 +65,8 @@
 #include <mgba/internal/gb/video.h>
 #endif
 #ifdef M_CORE_GBA
+#include <mgba/gba/interface.h>
 #include <mgba/internal/gba/gba.h>
-#include <mgba/internal/gba/video.h>
 #endif
 #include <mgba/feature/commandline.h>
 #include "feature/sqlite3/no-intro.h"
@@ -131,7 +131,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	});
 #endif
 #if defined(M_CORE_GBA)
-	resizeFrame(QSize(VIDEO_HORIZONTAL_PIXELS * i, VIDEO_VERTICAL_PIXELS * i));
+	resizeFrame(QSize(GBA_VIDEO_HORIZONTAL_PIXELS * i, GBA_VIDEO_VERTICAL_PIXELS * i));
 #elif defined(M_CORE_GB)
 	resizeFrame(QSize(GB_VIDEO_HORIZONTAL_PIXELS * i, GB_VIDEO_VERTICAL_PIXELS * i));
 #endif
@@ -580,7 +580,7 @@ void Window::resizeEvent(QResizeEvent* event) {
 	}
 
 	int factor = 0;
-	QSize size(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	QSize size(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 	if (m_controller) {
 		size = m_controller->screenDimensions();
 	}
@@ -625,8 +625,8 @@ void Window::closeEvent(QCloseEvent* event) {
 	m_config->setQtOption("windowPos", pos());
 
 	if (m_savedScale > 0) {
-		m_config->setOption("height", VIDEO_VERTICAL_PIXELS * m_savedScale);
-		m_config->setOption("width", VIDEO_HORIZONTAL_PIXELS * m_savedScale);
+		m_config->setOption("height", GBA_VIDEO_VERTICAL_PIXELS * m_savedScale);
+		m_config->setOption("width", GBA_VIDEO_HORIZONTAL_PIXELS * m_savedScale);
 	}
 	saveConfig();
 	m_display.reset();
@@ -805,7 +805,7 @@ void Window::gameStopped() {
 #ifdef M_CORE_GB
 		m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 #elif defined(M_CORE_GBA)
-		m_display->setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+		m_display->setMinimumSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 #endif
 	}
 
@@ -909,7 +909,7 @@ void Window::reloadDisplayDriver() {
 #ifdef M_CORE_GB
 		m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 #elif defined(M_CORE_GBA)
-		m_display->setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+		m_display->setMinimumSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 #endif
 	}
 }
@@ -1410,7 +1410,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		}
 		connect(setSize, &QAction::triggered, [this, i, setSize]() {
 			showNormal();
-			QSize size(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+			QSize size(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 			if (m_controller) {
 				size = m_controller->screenDimensions();
 			}

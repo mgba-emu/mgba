@@ -261,8 +261,8 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 				SPRITE_TRANSFORMED_LOOP(256, NORMAL);
 			}
 		}
-		if (end == VIDEO_HORIZONTAL_PIXELS && x + totalWidth > VIDEO_HORIZONTAL_PIXELS) {
-			renderer->spriteCyclesRemaining -= (x + totalWidth - VIDEO_HORIZONTAL_PIXELS) * 2;
+		if (end == GBA_VIDEO_HORIZONTAL_PIXELS && x + totalWidth > GBA_VIDEO_HORIZONTAL_PIXELS) {
+			renderer->spriteCyclesRemaining -= (x + totalWidth - GBA_VIDEO_HORIZONTAL_PIXELS) * 2;
 		}
 	} else {
 		int outX = x >= start ? x : start;
@@ -321,8 +321,8 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 				SPRITE_NORMAL_LOOP(256, NORMAL);
 			}
 		}
-		if (end == VIDEO_HORIZONTAL_PIXELS && x + width > VIDEO_HORIZONTAL_PIXELS) {
-			renderer->spriteCyclesRemaining -= x + width - VIDEO_HORIZONTAL_PIXELS;
+		if (end == GBA_VIDEO_HORIZONTAL_PIXELS && x + width > GBA_VIDEO_HORIZONTAL_PIXELS) {
+			renderer->spriteCyclesRemaining -= x + width - GBA_VIDEO_HORIZONTAL_PIXELS;
 		}
 	}
 	return 1;

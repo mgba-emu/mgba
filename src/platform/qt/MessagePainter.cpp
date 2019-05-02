@@ -9,7 +9,7 @@
 
 #include <QDebug>
 
-#include <mgba/internal/gba/video.h>
+#include <mgba/gba/interface.h>
 
 using namespace QGBA;
 
@@ -39,9 +39,9 @@ void MessagePainter::resize(const QSize& size, bool lockAspectRatio, qreal scale
 		}
 	}
 	m_world.reset();
-	m_world.scale(qreal(drawW) / VIDEO_HORIZONTAL_PIXELS, qreal(drawH) / VIDEO_VERTICAL_PIXELS);
+	m_world.scale(qreal(drawW) / GBA_VIDEO_HORIZONTAL_PIXELS, qreal(drawH) / GBA_VIDEO_VERTICAL_PIXELS);
 	m_scaleFactor = scaleFactor;
-	m_local = QPoint(1, VIDEO_VERTICAL_PIXELS - m_messageFont.pixelSize() - 1);
+	m_local = QPoint(1, GBA_VIDEO_VERTICAL_PIXELS - m_messageFont.pixelSize() - 1);
 	m_local = m_world.map(m_local);
 	m_local += QPoint((w - drawW) / 2, (h - drawH) / 2);
 	m_pixmapBuffer = QPixmap(drawW * m_scaleFactor,

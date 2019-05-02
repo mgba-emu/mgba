@@ -145,7 +145,7 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	case 0:
 		GBAFrameStarted(video->p);
 		break;
-	case VIDEO_VERTICAL_PIXELS:
+	case GBA_VIDEO_VERTICAL_PIXELS:
 		video->p->memory.io[REG_DISPSTAT >> 1] = GBARegisterDISPSTATFillInVblank(dispstat);
 		if (video->frameskipCounter <= 0) {
 			video->renderer->finishFrame(video->renderer);
@@ -177,14 +177,14 @@ void _startHblank(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 
 	// Begin Hblank
 	dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
-	if (video->vcount < VIDEO_VERTICAL_PIXELS && video->frameskipCounter <= 0) {
+	if (video->vcount < GBA_VIDEO_VERTICAL_PIXELS && video->frameskipCounter <= 0) {
 		video->renderer->drawScanline(video->renderer, video->vcount);
 	}
 
-	if (video->vcount < VIDEO_VERTICAL_PIXELS) {
+	if (video->vcount < GBA_VIDEO_VERTICAL_PIXELS) {
 		GBADMARunHblank(video->p, -cyclesLate);
 	}
-	if (video->vcount >= 2 && video->vcount < VIDEO_VERTICAL_PIXELS + 2) {
+	if (video->vcount >= 2 && video->vcount < GBA_VIDEO_VERTICAL_PIXELS + 2) {
 		GBADMARunDisplayStart(video->p, -cyclesLate);
 	}
 	if (GBARegisterDISPSTATIsHblankIRQ(dispstat)) {

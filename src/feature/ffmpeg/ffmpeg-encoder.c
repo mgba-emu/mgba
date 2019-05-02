@@ -6,7 +6,7 @@
 #include "ffmpeg-encoder.h"
 
 #include <mgba/core/core.h>
-#include <mgba/internal/gba/video.h>
+#include <mgba/gba/interface.h>
 
 #include <libavcodec/version.h>
 #include <libavcodec/avcodec.h>
@@ -48,9 +48,9 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	FFmpegEncoderSetAudio(encoder, "flac", 0);
 	FFmpegEncoderSetVideo(encoder, "png", 0);
 	FFmpegEncoderSetContainer(encoder, "matroska");
-	FFmpegEncoderSetDimensions(encoder, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
-	encoder->iwidth = VIDEO_HORIZONTAL_PIXELS;
-	encoder->iheight = VIDEO_VERTICAL_PIXELS;
+	FFmpegEncoderSetDimensions(encoder, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+	encoder->iwidth = GBA_VIDEO_HORIZONTAL_PIXELS;
+	encoder->iheight = GBA_VIDEO_VERTICAL_PIXELS;
 	encoder->resampleContext = 0;
 	encoder->absf = 0;
 	encoder->context = 0;
@@ -175,8 +175,8 @@ bool FFmpegEncoderSetContainer(struct FFmpegEncoder* encoder, const char* contai
 }
 
 void FFmpegEncoderSetDimensions(struct FFmpegEncoder* encoder, int width, int height) {
-	encoder->width = width > 0 ? width : VIDEO_HORIZONTAL_PIXELS;
-	encoder->height = height > 0 ? height : VIDEO_VERTICAL_PIXELS;
+	encoder->width = width > 0 ? width : GBA_VIDEO_HORIZONTAL_PIXELS;
+	encoder->height = height > 0 ? height : GBA_VIDEO_VERTICAL_PIXELS;
 }
 
 bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder* encoder) {

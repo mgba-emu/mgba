@@ -13,6 +13,11 @@ CXX_GUARD_START
 #include <mgba/core/interface.h>
 #include <mgba/core/timing.h>
 
+enum {
+	GBA_VIDEO_HORIZONTAL_PIXELS = 240,
+	GBA_VIDEO_VERTICAL_PIXELS = 160,
+};
+
 enum GBASIOMode {
 	SIO_NORMAL_8 = 0,
 	SIO_NORMAL_32 = 1,

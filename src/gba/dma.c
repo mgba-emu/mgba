@@ -182,7 +182,7 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		dma->nextCount = 0;
 		bool noRepeat = !GBADMARegisterIsRepeat(dma->reg);
 		noRepeat |= GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_NOW;
-		noRepeat |= memory->activeDMA == 3 && GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_CUSTOM && gba->video.vcount == VIDEO_VERTICAL_PIXELS + 1;
+		noRepeat |= memory->activeDMA == 3 && GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_CUSTOM && gba->video.vcount == GBA_VIDEO_VERTICAL_PIXELS + 1;
 		if (noRepeat) {
 			dma->reg = GBADMARegisterClearEnable(dma->reg);
 

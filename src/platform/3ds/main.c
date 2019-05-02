@@ -8,9 +8,9 @@
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
 #ifdef M_CORE_GBA
+#include <mgba/gba/interface.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
-#include <mgba/internal/gba/video.h>
 #endif
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
@@ -550,9 +550,9 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	UNUSED(runner);
 	C3D_Tex* tex = &outputTexture;
 
-	GSPGPU_FlushDataCache(outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
+	GSPGPU_FlushDataCache(outputBuffer, 256 * GBA_VIDEO_VERTICAL_PIXELS * 2);
 	C3D_SyncDisplayTransfer(
-			(u32*) outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS),
+			(u32*) outputBuffer, GX_BUFFER_DIM(256, GBA_VIDEO_VERTICAL_PIXELS),
 			tex->data, GX_BUFFER_DIM(256, 256),
 			GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB565) |
 				GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB565) |

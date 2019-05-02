@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/core/core.h>
+#include <mgba/gba/interface.h>
 #include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/video.h>
 
@@ -122,8 +123,8 @@ struct GBAVideoSoftwareRenderer {
 
 	GBARegisterDISPCNT dispcnt;
 
-	uint32_t row[VIDEO_HORIZONTAL_PIXELS];
-	uint32_t spriteLayer[VIDEO_HORIZONTAL_PIXELS];
+	uint32_t row[GBA_VIDEO_HORIZONTAL_PIXELS];
+	uint32_t spriteLayer[GBA_VIDEO_HORIZONTAL_PIXELS];
 	int32_t spriteCyclesRemaining;
 
 	// BLDCNT
@@ -169,7 +170,7 @@ struct GBAVideoSoftwareRenderer {
 	struct ScanlineCache {
 		uint16_t io[REG_SOUND1CNT_LO];
 		int32_t scale[2][2];
-	} cache[VIDEO_VERTICAL_PIXELS];
+	} cache[GBA_VIDEO_VERTICAL_PIXELS];
 	int nextY;
 
 	int start;
