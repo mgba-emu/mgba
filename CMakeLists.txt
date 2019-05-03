@@ -360,7 +360,7 @@ endif()
 check_include_files("xlocale.h" HAVE_XLOCALE)
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Generic")
 	check_function_exists(snprintf_l HAVE_SNPRINTF_L)
-	if(ANDROID AND ANDROID_NDK_MAJOR GREATER_EQUAL 14)
+	if(ANDROID AND ANDROID_NDK_MAJOR GREATER 13)
 		set(HAVE_STRTOF_L ON)
 	elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 		# The strtof_l on Linux not actually exposed nor actually strtof_l
