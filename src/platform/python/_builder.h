@@ -33,7 +33,7 @@ void free(void*);
 
 #include <limits.h>
 
-#include "flags.h"
+#include <mgba/flags.h>
 
 #include <mgba/core/blip_buf.h>
 #include <mgba/core/cache-set.h>
