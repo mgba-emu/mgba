@@ -20,6 +20,7 @@ Other fixes:
  - All: Fix several memory leaks
  - LR35902: Fix trailing whitespace in disassembly
  - Qt: Fix adjusting magnification in tile viewer when not fitting to window
+ - FFmpeg: Improve initialization reliability and cleanup
 Misc:
  - Qt: Add missing HEVC NVENC option (fixes mgba.io/i/1323)
  - Qt: Improve camera initialization
