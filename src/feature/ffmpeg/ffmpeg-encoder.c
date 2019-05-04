@@ -42,19 +42,25 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->d.postAudioFrame = _ffmpegPostAudioFrame;
 	encoder->d.postAudioBuffer = 0;
 
-	encoder->audioCodec = 0;
-	encoder->videoCodec = 0;
-	encoder->containerFormat = 0;
+	encoder->audioCodec = NULL;
+	encoder->videoCodec = NULL;
+	encoder->containerFormat = NULL;
 	FFmpegEncoderSetAudio(encoder, "flac", 0);
 	FFmpegEncoderSetVideo(encoder, "png", 0);
 	FFmpegEncoderSetContainer(encoder, "matroska");
 	FFmpegEncoderSetDimensions(encoder, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 	encoder->iwidth = GBA_VIDEO_HORIZONTAL_PIXELS;
 	encoder->iheight = GBA_VIDEO_VERTICAL_PIXELS;
-	encoder->resampleContext = 0;
-	encoder->absf = 0;
-	encoder->context = 0;
+	encoder->resampleContext = NULL;
+	encoder->absf = NULL;
+	encoder->context = NULL;
 	encoder->scaleContext = NULL;
+	encoder->audioStream = NULL;
+	encoder->audioFrame = NULL;
+	encoder->audioBuffer = NULL;
+	encoder->postaudioBuffer = NULL;
+	encoder->videoStream = NULL;
+	encoder->videoFrame = NULL;
 }
 
 bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, unsigned abr) {
@@ -198,7 +204,11 @@ bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder* encoder) {
 bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	AVCodec* acodec = avcodec_find_encoder_by_name(encoder->audioCodec);
 	AVCodec* vcodec = avcodec_find_encoder_by_name(encoder->videoCodec);
-	if ((encoder->audioCodec && !acodec) || !vcodec || !FFmpegEncoderVerifyContainer(encoder)) {
+	if ((encoder->audioCodec && !acodec) || (encoder->videoCodec && !vcodec) || !FFmpegEncoderVerifyContainer(encoder)) {
+		return false;
+	}
+
+	if (encoder->context) {
 		return false;
 	}
 
@@ -238,8 +248,12 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			encoder->audio->flags |= CODEC_FLAG_GLOBAL_HEADER;
 #endif
 		}
-		avcodec_open2(encoder->audio, acodec, &opts);
+		int res = avcodec_open2(encoder->audio, acodec, &opts);
 		av_dict_free(&opts);
+		if (res < 0) {
+			FFmpegEncoderClose(encoder);
+			return false;
+		}
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 		encoder->audioFrame = av_frame_alloc();
 #else
@@ -289,127 +303,151 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 #endif
 	}
 
+	if (vcodec) {
 #ifdef FFMPEG_USE_CODECPAR
-	encoder->videoStream = avformat_new_stream(encoder->context, NULL);
-	encoder->video = avcodec_alloc_context3(vcodec);
+		encoder->videoStream = avformat_new_stream(encoder->context, NULL);
+		encoder->video = avcodec_alloc_context3(vcodec);
 #else
-	encoder->videoStream = avformat_new_stream(encoder->context, vcodec);
-	encoder->video = encoder->videoStream->codec;
+		encoder->videoStream = avformat_new_stream(encoder->context, vcodec);
+		encoder->video = encoder->videoStream->codec;
 #endif
-	encoder->video->bit_rate = encoder->videoBitrate;
-	encoder->video->width = encoder->width;
-	encoder->video->height = encoder->height;
-	encoder->video->time_base = (AVRational) { VIDEO_TOTAL_LENGTH, GBA_ARM7TDMI_FREQUENCY };
-	encoder->video->framerate = (AVRational) { GBA_ARM7TDMI_FREQUENCY, VIDEO_TOTAL_LENGTH };
-	encoder->video->pix_fmt = encoder->pixFormat;
-	encoder->video->gop_size = 60;
-	encoder->video->max_b_frames = 3;
-	if (encoder->context->oformat->flags & AVFMT_GLOBALHEADER) {
+		encoder->video->bit_rate = encoder->videoBitrate;
+		encoder->video->width = encoder->width;
+		encoder->video->height = encoder->height;
+		encoder->video->time_base = (AVRational) { VIDEO_TOTAL_LENGTH, GBA_ARM7TDMI_FREQUENCY };
+		encoder->video->framerate = (AVRational) { GBA_ARM7TDMI_FREQUENCY, VIDEO_TOTAL_LENGTH };
+		encoder->video->pix_fmt = encoder->pixFormat;
+		encoder->video->gop_size = 60;
+		encoder->video->max_b_frames = 3;
+		if (encoder->context->oformat->flags & AVFMT_GLOBALHEADER) {
 #ifdef AV_CODEC_FLAG_GLOBAL_HEADER
-		encoder->video->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+			encoder->video->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 #else
-		encoder->video->flags |= CODEC_FLAG_GLOBAL_HEADER;
+			encoder->video->flags |= CODEC_FLAG_GLOBAL_HEADER;
 #endif
-	}
-
-	if (encoder->video->codec->id == AV_CODEC_ID_H264 &&
-	    (strcasecmp(encoder->containerFormat, "mp4") ||
-	        strcasecmp(encoder->containerFormat, "m4v") ||
-	        strcasecmp(encoder->containerFormat, "mov"))) {
-		// QuickTime and a few other things require YUV420
-		encoder->video->pix_fmt = AV_PIX_FMT_YUV420P;
-	}
-
-	if (strcmp(vcodec->name, "libx264") == 0) {
-		// Try to adaptively figure out when you can use a slower encoder
-		if (encoder->width * encoder->height > 1000000) {
-			av_opt_set(encoder->video->priv_data, "preset", "superfast", 0);
-		} else if (encoder->width * encoder->height > 500000) {
-			av_opt_set(encoder->video->priv_data, "preset", "veryfast", 0);
-		} else {
-			av_opt_set(encoder->video->priv_data, "preset", "faster", 0);
 		}
-		if (encoder->videoBitrate == 0) {
-			av_opt_set(encoder->video->priv_data, "crf", "0", 0);
+
+		if (encoder->video->codec->id == AV_CODEC_ID_H264 &&
+		    (strcasecmp(encoder->containerFormat, "mp4") ||
+		        strcasecmp(encoder->containerFormat, "m4v") ||
+		        strcasecmp(encoder->containerFormat, "mov"))) {
+			// QuickTime and a few other things require YUV420
+			encoder->video->pix_fmt = AV_PIX_FMT_YUV420P;
+		}
+
+		if (strcmp(vcodec->name, "libx264") == 0) {
+			// Try to adaptively figure out when you can use a slower encoder
+			if (encoder->width * encoder->height > 1000000) {
+				av_opt_set(encoder->video->priv_data, "preset", "superfast", 0);
+			} else if (encoder->width * encoder->height > 500000) {
+				av_opt_set(encoder->video->priv_data, "preset", "veryfast", 0);
+			} else {
+				av_opt_set(encoder->video->priv_data, "preset", "faster", 0);
+			}
+			if (encoder->videoBitrate == 0) {
+				av_opt_set(encoder->video->priv_data, "crf", "0", 0);
+				encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
+			}
+		}
+		if (strcmp(vcodec->name, "libvpx-vp9") == 0 && encoder->videoBitrate == 0) {
+			av_opt_set(encoder->video->priv_data, "lossless", "1", 0);
 			encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
 		}
-	}
-	if (strcmp(vcodec->name, "libvpx-vp9") == 0 && encoder->videoBitrate == 0) {
-		av_opt_set(encoder->video->priv_data, "lossless", "1", 0);
-		encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
-	}
 
-	avcodec_open2(encoder->video, vcodec, 0);
+		if (avcodec_open2(encoder->video, vcodec, 0) < 0) {
+			FFmpegEncoderClose(encoder);
+			return false;
+		}
 #if LIBAVCODEC_VERSION_MAJOR >= 55
-	encoder->videoFrame = av_frame_alloc();
+		encoder->videoFrame = av_frame_alloc();
 #else
-	encoder->videoFrame = avcodec_alloc_frame();
+		encoder->videoFrame = avcodec_alloc_frame();
 #endif
-	encoder->videoFrame->format = encoder->video->pix_fmt;
-	encoder->videoFrame->width = encoder->video->width;
-	encoder->videoFrame->height = encoder->video->height;
-	encoder->videoFrame->pts = 0;
-	_ffmpegSetVideoDimensions(&encoder->d, encoder->iwidth, encoder->iheight);
-	av_image_alloc(encoder->videoFrame->data, encoder->videoFrame->linesize, encoder->video->width, encoder->video->height, encoder->video->pix_fmt, 32);
+		encoder->videoFrame->format = encoder->video->pix_fmt;
+		encoder->videoFrame->width = encoder->video->width;
+		encoder->videoFrame->height = encoder->video->height;
+		encoder->videoFrame->pts = 0;
+		_ffmpegSetVideoDimensions(&encoder->d, encoder->iwidth, encoder->iheight);
+		av_image_alloc(encoder->videoFrame->data, encoder->videoFrame->linesize, encoder->video->width, encoder->video->height, encoder->video->pix_fmt, 32);
 #ifdef FFMPEG_USE_CODECPAR
-	avcodec_parameters_from_context(encoder->videoStream->codecpar, encoder->video);
+		avcodec_parameters_from_context(encoder->videoStream->codecpar, encoder->video);
 #endif
+	}
 
-	if (avio_open(&encoder->context->pb, outfile, AVIO_FLAG_WRITE) < 0) {
+	if (avio_open(&encoder->context->pb, outfile, AVIO_FLAG_WRITE) < 0 || avformat_write_header(encoder->context, 0) < 0) {
+		FFmpegEncoderClose(encoder);
 		return false;
 	}
-	return avformat_write_header(encoder->context, 0) >= 0;
+	return true;
 }
 
 void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
-	if (!encoder->context) {
-		return;
+	if (encoder->context && encoder->context->pb) {
+		av_write_trailer(encoder->context);
+		avio_close(encoder->context->pb);
 	}
-	av_write_trailer(encoder->context);
-	avio_close(encoder->context->pb);
 
-	if (encoder->audioCodec) {
+	if (encoder->postaudioBuffer) {
 		av_free(encoder->postaudioBuffer);
-		if (encoder->audioBuffer) {
-			av_free(encoder->audioBuffer);
-		}
+		encoder->postaudioBuffer = NULL;
+	}
+	if (encoder->audioBuffer) {
+		av_free(encoder->audioBuffer);
+		encoder->audioBuffer = NULL;
+	}
+
+	if (encoder->audioFrame) {
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 		av_frame_free(&encoder->audioFrame);
 #else
 		avcodec_free_frame(&encoder->audioFrame);
 #endif
+	}
+	if (encoder->audio) {
 		avcodec_close(encoder->audio);
-
-		if (encoder->resampleContext) {
-#ifdef USE_LIBAVRESAMPLE
-			avresample_close(encoder->resampleContext);
-#else
-			swr_free(&encoder->resampleContext);
-#endif
-		}
-
-		if (encoder->absf) {
-#ifdef FFMPEG_USE_NEW_BSF
-			av_bsf_free(&encoder->absf);
-#else
-			av_bitstream_filter_close(encoder->absf);
-			encoder->absf = 0;
-#endif
-		}
+		encoder->audio = NULL;
 	}
 
-#if LIBAVCODEC_VERSION_MAJOR >= 55
-	av_frame_free(&encoder->videoFrame);
+	if (encoder->resampleContext) {
+#ifdef USE_LIBAVRESAMPLE
+		avresample_close(encoder->resampleContext);
+		encoder->resampleContext = NULL;
 #else
-	avcodec_free_frame(&encoder->videoFrame);
+		swr_free(&encoder->resampleContext);
 #endif
-	avcodec_close(encoder->video);
+	}
 
-	sws_freeContext(encoder->scaleContext);
-	encoder->scaleContext = NULL;
+	if (encoder->absf) {
+#ifdef FFMPEG_USE_NEW_BSF
+		av_bsf_free(&encoder->absf);
+#else
+		av_bitstream_filter_close(encoder->absf);
+		encoder->absf = NULL;
+#endif
+	}
 
-	avformat_free_context(encoder->context);
-	encoder->context = 0;
+	if (encoder->videoFrame) {
+#if LIBAVCODEC_VERSION_MAJOR >= 55
+		av_frame_free(&encoder->videoFrame);
+#else
+		avcodec_free_frame(&encoder->videoFrame);
+#endif
+	}
+
+	if (encoder->video) {
+		avcodec_close(encoder->video);
+		encoder->video = NULL;
+	}
+
+	if (encoder->scaleContext) {
+		sws_freeContext(encoder->scaleContext);
+		encoder->scaleContext = NULL;
+	}
+
+	if (encoder->context) {
+		avformat_free_context(encoder->context);
+		encoder->context = NULL;
+	}
 }
 
 bool FFmpegEncoderIsOpen(struct FFmpegEncoder* encoder) {
