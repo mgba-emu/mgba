@@ -601,6 +601,12 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 	case SDL_WINDOWEVENT:
 		_mSDLHandleWindowEvent(sdlContext, &event->window);
 		break;
+#else
+	case SDL_VIDEORESIZE:
+		sdlContext->newWidth = event->resize.w;
+		sdlContext->newHeight = event->resize.h;
+		sdlContext->windowUpdated = 1;
+		break;
 #endif
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
