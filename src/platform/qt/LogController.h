@@ -85,6 +85,7 @@ private:
 	std::unique_ptr<QTextStream> m_logStream;
 
 	static LogController s_global;
+	static int s_qtCat;
 };
 
 #define LOG(C, L) (*LogController::global())(mLOG_ ## L, _mLOG_CAT_ ## C)
