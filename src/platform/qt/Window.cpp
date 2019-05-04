@@ -1393,17 +1393,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 #ifdef USE_FFMPEG
-	addGameAction(tr("Record output..."), "recordOutput", this, &Window::openVideoWindow, "av");
+	addGameAction(tr("Record A/V..."), "recordOutput", this, &Window::openVideoWindow, "av");
 #endif
 
 #ifdef USE_MAGICK
 	addGameAction(tr("Record GIF..."), "recordGIF", this, &Window::openGIFWindow, "av");
 #endif
-
-	addGameAction(tr("Record video log..."), "recordVL", this, &Window::startVideoLog, "av");
-	addGameAction(tr("Stop video log"), "stopVL", [this]() {
-		m_controller->endVideoLog();
-	}, "av");
 
 	m_actions.addSeparator("av");
 	m_actions.addMenu(tr("Video layers"), "videoLayers", "av");
@@ -1463,6 +1458,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	Action* ioViewer = addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "tools");
 	m_platformActions.insert(PLATFORM_GBA, ioViewer);
 #endif
+
+	m_actions.addSeparator("tools");
+	addGameAction(tr("Record debug video log..."), "recordVL", this, &Window::startVideoLog, "tools");
+	addGameAction(tr("Stop debug video log"), "stopVL", [this]() {
+		m_controller->endVideoLog();
+	}, "tools");
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
 	skipBios->connect([this](const QVariant& value) {
