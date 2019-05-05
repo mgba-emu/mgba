@@ -9,6 +9,7 @@
 #include "GamepadAxisEvent.h"
 
 #include <QHash>
+#include <QMap>
 #include <QObject>
 #include <QString>
 
@@ -116,7 +117,7 @@ private:
 
 	QHash<QString, std::shared_ptr<Shortcut>> m_items;
 	QHash<int, std::shared_ptr<Shortcut>> m_buttons;
-	QHash<std::pair<int, GamepadAxisEvent::Direction>, std::shared_ptr<Shortcut>> m_axes;
+	QMap<std::pair<int, GamepadAxisEvent::Direction>, std::shared_ptr<Shortcut>> m_axes;
 	QHash<int, std::shared_ptr<Shortcut>> m_heldKeys;
 	ActionMapper* m_actions = nullptr;
 	ConfigController* m_config = nullptr;
