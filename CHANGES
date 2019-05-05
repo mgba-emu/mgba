@@ -36,6 +36,7 @@ Other fixes:
  - LR35902: Fix trailing whitespace in disassembly
  - Qt: Fix adjusting magnification in tile viewer when not fitting to window
  - FFmpeg: Improve initialization reliability and cleanup
+ - Wii: Fix aspect ratio (fixes mgba.io/i/500)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
