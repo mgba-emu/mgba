@@ -465,11 +465,9 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 			context->frameCallback = _pauseAfterFrame;
 			mCoreThreadUnpause(context);
 			return;
-#ifdef BUILD_PANDORA
 		case SDLK_ESCAPE:
 			mCoreThreadEnd(context);
 			return;
-#endif
 		default:
 			if ((event->keysym.mod & GUI_MOD) && (event->keysym.mod & GUI_MOD) == event->keysym.mod) {
 				switch (event->keysym.sym) {
