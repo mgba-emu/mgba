@@ -1,14 +1,4 @@
-if(DEFINED ENV{DEVKITPRO})
-	set(DEVKITPRO $ENV{DEVKITPRO})
-else()
-	message(FATAL_ERROR "Could not find DEVKITPRO in environment")
-endif()
-
-if(DEFINED ENV{DEVKITARM})
-	set(DEVKITARM $ENV{DEVKITARM})
-else()
-	set(DEVKITARM ${DEVKITPRO}/devkitARM)
-endif()
+include(${CMAKE_CURRENT_LIST_DIR}/../cmake/devkitPro.cmake)
 
 if(DEFINED ENV{CTRULIB})
 	set(CTRULIB $ENV{CTRULIB})
@@ -16,40 +6,17 @@ else()
 	set(CTRULIB ${DEVKITPRO}/libctru)
 endif()
 
-set(extension)
-if (CMAKE_HOST_WIN32)
-	set(extension .exe)
-endif()
-
-set(CMAKE_PROGRAM_PATH ${DEVKITARM}/bin)
 set(cross_prefix arm-none-eabi-)
 set(arch_flags "-march=armv6k -mtune=mpcore -mfloat-abi=hard -ffunction-sections")
 set(inc_flags "-I${CTRULIB}/include ${arch_flags} -mword-relocations")
 set(link_flags "-L${CTRULIB}/lib -lctru -specs=3dsx.specs ${arch_flags} -Wl,--gc-sections")
 
-set(CMAKE_SYSTEM_NAME Generic CACHE INTERNAL "system name")
 set(CMAKE_SYSTEM_PROCESSOR arm CACHE INTERNAL "processor")
 set(CMAKE_LIBRARY_ARCHITECTURE arm-none-eabi CACHE INTERNAL "abi")
 
-find_program(CMAKE_AR ${cross_prefix}gcc-ar${extension})
-find_program(CMAKE_RANLIB ${cross_prefix}gcc-ranlib${extension})
-find_program(CMAKE_C_COMPILER ${cross_prefix}gcc${extension})
-find_program(CMAKE_CXX_COMPILER ${cross_prefix}g++${extension})
-find_program(CMAKE_ASM_COMPILER ${cross_prefix}gcc${extension})
-find_program(CMAKE_LINKER ${cross_prefix}ld${extension})
-set(CMAKE_C_FLAGS ${inc_flags} CACHE INTERNAL "c compiler flags")
-set(CMAKE_ASM_FLAGS ${inc_flags} CACHE INTERNAL "assembler flags")
-set(CMAKE_CXX_FLAGS ${inc_flags} CACHE INTERNAL "cxx compiler flags")
-
-set(CMAKE_EXE_LINKER_FLAGS ${link_flags} CACHE INTERNAL "exe link flags")
-set(CMAKE_MODULE_LINKER_FLAGS ${link_flags} CACHE INTERNAL "module link flags")
-set(CMAKE_SHARED_LINKER_FLAGS ${link_flags} CACHE INTERNAL "shared link flags")
-
-set(CMAKE_FIND_ROOT_PATH ${DEVKITARM}/arm-none-eabi ${DEVKITPRO}/portlibs/3ds)
-set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER CACHE INTERNAL "")
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY CACHE INTERNAL "")
-set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY CACHE INTERNAL "")
-set(PKG_CONFIG_EXECUTABLE "/dev/null" CACHE INTERNAL "" FORCE)
-
 set(3DS ON)
 add_definitions(-D_3DS -DARM11)
+
+create_devkit(ARM)
+
+set(CMAKE_FIND_ROOT_PATH ${DEVKITARM}/${CMAKE_LIBRARY_ARCHITECTURE} ${DEVKITPRO}/portlibs/3ds)
