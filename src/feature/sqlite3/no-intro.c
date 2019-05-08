@@ -263,6 +263,8 @@ bool NoIntroDBLoadClrMamePro(struct NoIntroDB* db, struct VFile* vf) {
 	free((void*) dbType);
 	free((void*) dbVersion);
 
+	sqlite3_finalize(gamedbTable);
+	sqlite3_finalize(gamedbDrop);
 	sqlite3_finalize(gameTable);
 	sqlite3_finalize(romTable);
 
@@ -275,6 +277,7 @@ bool NoIntroDBLoadClrMamePro(struct NoIntroDB* db, struct VFile* vf) {
 }
 
 void NoIntroDBDestroy(struct NoIntroDB* db) {
+	sqlite3_finalize(db->crc32);
 	sqlite3_close(db->db);
 	free(db);
 }
