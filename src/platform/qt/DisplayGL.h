@@ -32,7 +32,7 @@ public:
 	EmptyGLWidget(const QGLFormat& format, QWidget* parent) : QGLWidget(format, parent) { setAutoBufferSwap(false); }
 
 protected:
-	void paintEvent(QPaintEvent*) override {}
+	void paintEvent(QPaintEvent* event) override { event->ignore(); }
 	void resizeEvent(QResizeEvent*) override {}
 	void mouseMoveEvent(QMouseEvent* event) override { event->ignore(); }
 };

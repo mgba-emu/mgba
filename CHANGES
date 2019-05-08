@@ -37,6 +37,7 @@ Other fixes:
  - Qt: Fix adjusting magnification in tile viewer when not fitting to window
  - FFmpeg: Improve initialization reliability and cleanup
  - Wii: Fix aspect ratio (fixes mgba.io/i/500)
+ - Qt: Fix some Qt display driver race conditions
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
