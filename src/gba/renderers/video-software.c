@@ -787,7 +787,7 @@ static void GBAVideoSoftwareRendererWriteBGY_HI(struct GBAVideoSoftwareBackgroun
 }
 
 static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer* renderer, uint16_t value) {
-	enum BlendEffect oldEffect = renderer->blendEffect;
+	enum GBAVideoBlendEffect oldEffect = renderer->blendEffect;
 
 	renderer->bg[0].target1 = GBARegisterBLDCNTGetTarget1Bg0(value);
 	renderer->bg[1].target1 = GBARegisterBLDCNTGetTarget1Bg1(value);
