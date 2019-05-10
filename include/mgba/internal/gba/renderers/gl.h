@@ -93,6 +93,8 @@ struct GBAVideoGLRenderer {
 	uint16_t bldy;
 
 	GBAMosaicControl mosaic;
+
+	int scale;
 };
 
 void GBAVideoGLRendererCreate(struct GBAVideoGLRenderer* renderer);
