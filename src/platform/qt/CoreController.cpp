@@ -40,7 +40,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 	m_threadContext.core = core;
 	m_threadContext.userData = this;
 
-	QSize size(256, 512);
+	QSize size(1024, 2048);
 	m_buffers[0].resize(size.width() * size.height() * sizeof(color_t));
 	m_buffers[1].resize(size.width() * size.height() * sizeof(color_t));
 	m_buffers[0].fill(0xFF);

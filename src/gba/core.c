@@ -255,12 +255,19 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 	mCoreConfigCopyValue(&core->config, config, "threadedVideo");
 #endif
 	mCoreConfigCopyValue(&core->config, config, "hwaccelVideo");
+	mCoreConfigCopyValue(&core->config, config, "videoScale");
 }
 
 static void _GBACoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
-	UNUSED(core);
-	*width = GBA_VIDEO_HORIZONTAL_PIXELS;
-	*height = GBA_VIDEO_VERTICAL_PIXELS;
+	struct GBACore* gbacore = (struct GBACore*) core;
+	int fakeBool;
+	int scale = 1;
+	if (mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
+		scale = gbacore->glRenderer.scale;
+	}
+
+	*width = GBA_VIDEO_HORIZONTAL_PIXELS * scale;
+	*height = GBA_VIDEO_VERTICAL_PIXELS * scale;
 }
 
 static void _GBACoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t stride) {
@@ -406,6 +413,7 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 		if (mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
 			renderer = &gbacore->glRenderer.d;
+			mCoreConfigGetIntValue(&core->config, "videoScale", &gbacore->glRenderer.scale);
 		}
 		if (core->videoLogger) {
 			gbacore->proxyRenderer.logger = core->videoLogger;
