@@ -32,7 +32,6 @@ CXX_GUARD_START
 struct GBAVideoGLBackground {
 	GLuint fbo;
 	GLuint tex;
-	GLuint program;
 
 	unsigned index;
 	int enabled;
@@ -63,7 +62,7 @@ struct GBAVideoGLRenderer {
 	struct GBAVideoGLBackground bg[4];
 
 	GLuint fbo[2];
-	GLuint layers[2];
+	GLuint layers[4];
 
 	color_t* outputBuffer;
 	int outputBufferStride;
@@ -77,7 +76,7 @@ struct GBAVideoGLRenderer {
 	GLuint vramTex;
 	unsigned vramDirty;
 
-	GLuint bgPrograms[6];
+	GLuint bgProgram[6];
 	GLuint objProgram;
 
 	GLuint compositeProgram;

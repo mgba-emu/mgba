@@ -30,17 +30,25 @@ static void GBAVideoGLRendererWriteBGY_LO(struct GBAVideoGLBackground* bg, uint1
 static void GBAVideoGLRendererWriteBGY_HI(struct GBAVideoGLBackground* bg, uint16_t value);
 static void GBAVideoGLRendererWriteBLDCNT(struct GBAVideoGLRenderer* renderer, uint16_t value);
 
+static void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y);
+static void GBAVideoGLRendererDrawBackgroundMode2(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y);
+static void GBAVideoGLRendererDrawBackgroundMode3(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y);
+static void GBAVideoGLRendererDrawBackgroundMode4(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y);
+static void GBAVideoGLRendererDrawBackgroundMode5(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y);
+
+#define TEST_LAYER_ENABLED(X) !renderer->disableBG[X] && glRenderer->bg[X].enabled == 4 && glRenderer->bg[X].priority == priority
+
 static const GLchar* const _gl3Header =
 	"#version 130\n";
 
 static const char* const _vertexShader =
 	"attribute vec2 position;\n"
-	"uniform int y;\n"
+	"uniform ivec2 loc;\n"
 	"const ivec2 maxPos = ivec2(240, 160);\n"
 	"varying vec2 texCoord;\n"
 
 	"void main() {\n"
-	"	vec2 local = (position + vec2(0, y)) / vec2(1., maxPos.y);\n"
+	"	vec2 local = (position + vec2(0, loc.y)) / vec2(1., maxPos.y);\n"
 	"	gl_Position = vec4(local * 2. - 1., 0., 1.);\n"
 	"	texCoord = local * maxPos;\n"
 	"}";
@@ -49,9 +57,24 @@ static const char* const _renderTile16 =
 	"vec4 renderTile(int tile, int tileBase, int paletteId, ivec2 localCoord) {\n"
 	"	int address = tileBase + tile * 16 + (localCoord.x >> 2) + (localCoord.y << 1);\n"
 	"	vec4 halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0);\n"
-	"	int entry = int(halfrow[3 - (localCoord.x & 3)] * 16.);\n"
+	"	int entry = int(halfrow[3 - (localCoord.x & 3)] * 15.9);\n"
 	"	vec4 color = texelFetch(palette, ivec2(entry, paletteId), 0);\n"
-	"	if (entry > 0) {\n"
+	"	if (entry == 0) {\n"
+	"		color.a = 0;\n"
+	"	} else {\n"
+	"		color.a = 1;\n"
+	"	}\n"
+	"	return color;\n"
+	"}";
+
+static const char* const _renderTile256 =
+	"vec4 renderTile(int tile, int tileBase, int paletteId, ivec2 localCoord) {\n"
+	"	int address = tileBase + tile * 32 + (localCoord.x >> 1) + (localCoord.y << 2);\n"
+	"	vec4 halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0);\n"
+	"	int entry = int(halfrow[3 - 2 * (localCoord.x & 1)] * 15.9);\n"
+	"	int pal2 = int(halfrow[2 - 2 * (localCoord.x & 1)] * 15.9);\n"
+	"	vec4 color = texelFetch(palette, ivec2(entry, pal2 + (paletteId & 16)), 0);\n"
+	"	if (pal2 > 0 || entry > 0) {\n"
 	"		color.a = 1.;\n"
 	"	} else {\n"
 	"		color.a = 0.;\n"
@@ -70,7 +93,7 @@ static const char* const _renderMode0 =
 	"vec4 renderTile(int tile, int tileBase, int paletteId, ivec2 localCoord);\n"
 
 	"void main() {\n"
-	"	ivec2 coord = ivec2(texCoord) + offset;\n"
+	"	ivec2 coord = (ivec2(texCoord) + offset) & 255;\n"
 	"	int mapAddress = screenBase + (coord.x >> 3) + (coord.y >> 3) * 32;\n"
 	"	vec4 map = texelFetch(vram, ivec2(mapAddress & 255, mapAddress >> 8), 0);\n"
 	"	int flags = int(map.g * 15.9);\n"
@@ -82,6 +105,18 @@ static const char* const _renderMode0 =
 	"	}\n"
 	"	int tile = int(map.a * 15.9) + int(map.b * 15.9) * 16 + (flags & 0x3) * 256;\n"
 	"	gl_FragColor = renderTile(tile, charBase, int(map.r * 15.9), coord & 7);\n"
+	"}";
+
+static const char* const _composite =
+	"varying vec2 texCoord;\n"
+	"uniform sampler2D layer;\n"
+
+	"void main() {\n"
+	"	vec4 color = texelFetch(layer, ivec2(texCoord), 0);\n"
+	"	if (color.a == 0) {\n"
+	"		discard;\n"
+	"	}\n"
+	"	gl_FragColor = color;\n"
 	"}";
 
 static const GLint _vertices[] = {
@@ -111,22 +146,114 @@ void GBAVideoGLRendererCreate(struct GBAVideoGLRenderer* renderer) {
 	renderer->d.disableOBJ = false;
 }
 
+void _compileBackground(struct GBAVideoGLRenderer* glRenderer, GLuint program, const char** shaderBuffer, int shaderBufferLines, GLuint vs, char* log) {
+	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+	glAttachShader(program, vs);
+	glAttachShader(program, fs);
+	glShaderSource(fs, shaderBufferLines, shaderBuffer, 0);
+	glCompileShader(fs);
+	glGetShaderInfoLog(fs, 1024, 0, log);
+	if (log[0]) {
+		mLOG(GBA_VIDEO, ERROR, "Fragment shader compilation failure: %s", log);
+	}
+	glLinkProgram(program);
+	glGetProgramInfoLog(program, 1024, 0, log);
+	if (log[0]) {
+		mLOG(GBA_VIDEO, ERROR, "Program link failure: %s", log);
+	}
+	glDeleteShader(fs);
+}
+
 void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 	glGenFramebuffers(2, glRenderer->fbo);
-	glGenTextures(2, glRenderer->layers);
+	glGenTextures(4, glRenderer->layers);
 
 	glGenTextures(1, &glRenderer->paletteTex);
-
 	glBindTexture(GL_TEXTURE_2D, glRenderer->paletteTex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glGenTextures(1, &glRenderer->vramTex);
-
 	glBindTexture(GL_TEXTURE_2D, glRenderer->vramTex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA4, 256, 192, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, 0);
+
+	glGenTextures(1, &glRenderer->oamTex);
+	glBindTexture(GL_TEXTURE_2D, glRenderer->oamTex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[1]);
+	glBindTexture(GL_TEXTURE_2D, glRenderer->layers[2]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glRenderer->layers[2], 0);
+
+	glBindTexture(GL_TEXTURE_2D, glRenderer->layers[3]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, glRenderer->layers[3], 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	int i;
+	for (i = 0; i < 4; ++i) {
+		glRenderer->bg[i].index = i;
+		glGenFramebuffers(1, &glRenderer->bg[i].fbo);
+		glGenTextures(1, &glRenderer->bg[i].tex);
+		glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[i].fbo);
+		glBindTexture(GL_TEXTURE_2D, glRenderer->bg[i].tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glRenderer->bg[i].tex, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	glRenderer->compositeProgram = glCreateProgram();
+	glRenderer->objProgram = glCreateProgram();
+	glRenderer->bgProgram[0] = glCreateProgram();
+	glRenderer->bgProgram[1] = glCreateProgram();
+	glRenderer->bgProgram[2] = glCreateProgram();
+	glRenderer->bgProgram[3] = glCreateProgram();
+	glRenderer->bgProgram[4] = glCreateProgram();
+	glRenderer->bgProgram[5] = glCreateProgram();
+
+	char log[1024];
+	const GLchar* shaderBuffer[8];
+	shaderBuffer[0] = _gl3Header;
+
+	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	shaderBuffer[1] = _vertexShader;
+	glShaderSource(vs, 2, shaderBuffer, 0);
+	glCompileShader(vs);
+	glGetShaderInfoLog(vs, 1024, 0, log);
+	if (log[0]) {
+		mLOG(GBA_VIDEO, ERROR, "Vertex shader compilation failure: %s", log);
+	}
+
+	shaderBuffer[1] = _renderMode0;
+
+	shaderBuffer[2] = _renderTile16;
+	_compileBackground(glRenderer, glRenderer->bgProgram[0], shaderBuffer, 3, vs, log);
+
+	shaderBuffer[2] = _renderTile256;
+	_compileBackground(glRenderer, glRenderer->bgProgram[1], shaderBuffer, 3, vs, log);
+
+	shaderBuffer[1] = _composite;
+	_compileBackground(glRenderer, glRenderer->compositeProgram, shaderBuffer, 2, vs, log);
+
+	glDeleteShader(vs);
 
 	GBAVideoGLRendererReset(renderer);
 }
@@ -134,7 +261,7 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 	glDeleteFramebuffers(2, glRenderer->fbo);
-	glDeleteTextures(2, glRenderer->layers);
+	glDeleteTextures(4, glRenderer->layers);
 	glDeleteTextures(1, &glRenderer->paletteTex);
 	glDeleteTextures(1, &glRenderer->vramTex);
 	glDeleteTextures(1, &glRenderer->oamTex);
@@ -142,56 +269,9 @@ void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 
 void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
-	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[1]);
-	glBindTexture(GL_TEXTURE_2D, glRenderer->layers[1]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glRenderer->layers[1], 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	glRenderer->compositeProgram = glCreateProgram();
-	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-
-	const GLchar* shaderBuffer[3];
-	const GLubyte* version = glGetString(GL_VERSION);
-	shaderBuffer[0] = _gl3Header;
-	shaderBuffer[1] = _vertexShader;
-	glShaderSource(vs, 2, shaderBuffer, 0);
-	shaderBuffer[1] = _renderMode0;
-	shaderBuffer[2] = _renderTile16;
-	glShaderSource(fs, 3, shaderBuffer, 0);
-
-	glAttachShader(glRenderer->compositeProgram, vs);
-	glAttachShader(glRenderer->compositeProgram, fs);
-	char log[1024];
-
-	glCompileShader(fs);
-	glGetShaderInfoLog(fs, 1024, 0, log);
-	if (log[0]) {
-		mLOG(GBA_VIDEO, ERROR, "Fragment shader compilation failure: %s", log);
-	}
-
-	glCompileShader(vs);
-	glGetShaderInfoLog(vs, 1024, 0, log);
-	if (log[0]) {
-		mLOG(GBA_VIDEO, ERROR, "Vertex shader compilation failure: %s", log);
-	}
-
-	glLinkProgram(glRenderer->compositeProgram);
-	glGetProgramInfoLog(glRenderer->compositeProgram, 1024, 0, log);
-	if (log[0]) {
-		mLOG(GBA_VIDEO, ERROR, "Program link failure: %s", log);
-	}
 
 	glRenderer->paletteDirty = true;
 	glRenderer->vramDirty = 0xFFFFFF;
-
-	glBindTexture(GL_TEXTURE_2D, glRenderer->vramTex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA4, 256, 192, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, 0);
 }
 
 void GBAVideoGLRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
@@ -222,27 +302,23 @@ uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer,
 	case REG_DISPCNT:
 		value &= 0xFFF7;
 		glRenderer->dispcnt = value;
-		//GBAVideoGLRendererUpdateDISPCNT(glRenderer);
+		GBAVideoGLRendererUpdateDISPCNT(glRenderer);
 		break;
 	case REG_BG0CNT:
 		value &= 0xDFFF;
 		GBAVideoGLRendererWriteBGCNT(&glRenderer->bg[0], value);
-		//GBAVideoGLRendererUpdateDISPCNT(glRenderer);
 		break;
 	case REG_BG1CNT:
 		value &= 0xDFFF;
 		GBAVideoGLRendererWriteBGCNT(&glRenderer->bg[1], value);
-		//GBAVideoGLRendererUpdateDISPCNT(glRenderer);
 		break;
 	case REG_BG2CNT:
 		value &= 0xFFFF;
 		GBAVideoGLRendererWriteBGCNT(&glRenderer->bg[2], value);
-		//GBAVideoGLRendererUpdateDISPCNT(glRenderer);
 		break;
 	case REG_BG3CNT:
 		value &= 0xFFFF;
 		GBAVideoGLRendererWriteBGCNT(&glRenderer->bg[3], value);
-		//GBAVideoGLRendererUpdateDISPCNT(glRenderer);
 		break;
 	case REG_BG0HOFS:
 		value &= 0x01FF;
@@ -445,24 +521,51 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	}
 	glRenderer->vramDirty = 0;
 
-	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[1]);
-	glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-	glUseProgram(glRenderer->compositeProgram);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, glRenderer->vramTex);
-	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, glRenderer->paletteTex);
-	glUniform1i(0, y);
-	glUniform1i(1, 0);
-	glUniform1i(2, 1);
-	glUniform1i(3, glRenderer->bg[0].screenBase);
-	glUniform1i(4, glRenderer->bg[0].charBase);
-	glUniform2i(5, glRenderer->bg[0].x, glRenderer->bg[0].y);
-	glVertexAttribPointer(0, 2, GL_INT, GL_FALSE, 0, _vertices);
-	glEnableVertexAttribArray(0);
-
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	unsigned priority;
+	for (priority = 0; priority < 4; ++priority) {
+		if (TEST_LAYER_ENABLED(0) && GBARegisterDISPCNTGetMode(glRenderer->dispcnt) < 2) {
+			GBAVideoGLRendererDrawBackgroundMode0(glRenderer, &glRenderer->bg[0], y);
+		}
+		if (TEST_LAYER_ENABLED(1) && GBARegisterDISPCNTGetMode(glRenderer->dispcnt) < 2) {
+			GBAVideoGLRendererDrawBackgroundMode0(glRenderer, &glRenderer->bg[1], y);
+		}
+		if (TEST_LAYER_ENABLED(2)) {
+			switch (GBARegisterDISPCNTGetMode(glRenderer->dispcnt)) {
+			case 0:
+				GBAVideoGLRendererDrawBackgroundMode0(glRenderer, &glRenderer->bg[2], y);
+				break;
+			case 1:
+			case 2:
+				//GBAVideoGLRendererDrawBackgroundMode2(glRenderer, &glRenderer->bg[2], y);
+				break;
+			case 3:
+				//GBAVideoGLRendererDrawBackgroundMode3(glRenderer, &glRenderer->bg[2], y);
+				break;
+			case 4:
+				//GBAVideoGLRendererDrawBackgroundMode4(glRenderer, &glRenderer->bg[2], y);
+				break;
+			case 5:
+				//GBAVideoGLRendererDrawBackgroundMode5(glRenderer, &glRenderer->bg[2], y);
+				break;
+			}
+		}
+		if (TEST_LAYER_ENABLED(3)) {
+			switch (GBARegisterDISPCNTGetMode(glRenderer->dispcnt)) {
+			case 0:
+				GBAVideoGLRendererDrawBackgroundMode0(glRenderer, &glRenderer->bg[3], y);
+				break;
+			case 2:
+				//GBAVideoGLRendererDrawBackgroundMode2(glRenderer, &glRenderer->bg[3], y);
+				break;
+			}
+		}
+	}
+	if (GBARegisterDISPCNTGetMode(glRenderer->dispcnt) != 0) {
+		glRenderer->bg[2].sx += glRenderer->bg[2].dmx;
+		glRenderer->bg[2].sy += glRenderer->bg[2].dmy;
+		glRenderer->bg[3].sx += glRenderer->bg[3].dmx;
+		glRenderer->bg[3].sy += glRenderer->bg[3].dmy;
+	}
 }
 
 void GBAVideoGLRendererFinishFrame(struct GBAVideoRenderer* renderer) {
@@ -471,7 +574,15 @@ void GBAVideoGLRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[1]);
 	glPixelStorei(GL_PACK_ROW_LENGTH, glRenderer->outputBufferStride);
 	glReadPixels(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS, GL_RGBA, GL_UNSIGNED_BYTE, glRenderer->outputBuffer);
-	glClearColor(1.f, 1.f, 0.f, 1.f);
+	glClearColor(1.f, 1.f, 1.f, 0.f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[0].fbo);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[1].fbo);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[2].fbo);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[3].fbo);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -482,6 +593,28 @@ void GBAVideoGLRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stri
 
 void GBAVideoGLRendererPutPixels(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels) {
 
+}
+
+static void _enableBg(struct GBAVideoGLRenderer* renderer, int bg, bool active) {
+	int wasActive = renderer->bg[bg].enabled;
+	if (!active) {
+		renderer->bg[bg].enabled = 0;
+	} else if (!wasActive && active) {
+		/*if (renderer->nextY == 0 || GBARegisterDISPCNTGetMode(renderer->dispcnt) > 2) {
+			// TODO: Investigate in more depth how switching background works in different modes
+			renderer->bg[bg].enabled = 4;
+		} else {
+			renderer->bg[bg].enabled = 1;
+		}*/
+		renderer->bg[bg].enabled = 4;
+	}
+}
+
+static void GBAVideoGLRendererUpdateDISPCNT(struct GBAVideoGLRenderer* renderer) {
+	_enableBg(renderer, 0, GBARegisterDISPCNTGetBg0Enable(renderer->dispcnt));
+	_enableBg(renderer, 1, GBARegisterDISPCNTGetBg1Enable(renderer->dispcnt));
+	_enableBg(renderer, 2, GBARegisterDISPCNTGetBg2Enable(renderer->dispcnt));
+	_enableBg(renderer, 3, GBARegisterDISPCNTGetBg3Enable(renderer->dispcnt));
 }
 
 static void GBAVideoGLRendererWriteBGCNT(struct GBAVideoGLBackground* bg, uint16_t value) {
@@ -533,4 +666,41 @@ static void GBAVideoGLRendererWriteBLDCNT(struct GBAVideoGLRenderer* renderer, u
 	renderer->target1Bd = GBARegisterBLDCNTGetTarget1Bd(value);
 	renderer->target2Obj = GBARegisterBLDCNTGetTarget2Obj(value);
 	renderer->target2Bd = GBARegisterBLDCNTGetTarget2Bd(value);
+}
+
+void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
+	glBindFramebuffer(GL_FRAMEBUFFER, background->fbo);
+	glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+	glScissor(0, 1, GBA_VIDEO_HORIZONTAL_PIXELS, 1);
+	glUseProgram(renderer->bgProgram[background->multipalette ? 1 : 0]);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, renderer->vramTex);
+	glActiveTexture(GL_TEXTURE0 + 1);
+	glBindTexture(GL_TEXTURE_2D, renderer->paletteTex);
+	glUniform2i(0, 0, y);
+	glUniform1i(1, 0);
+	glUniform1i(2, 1);
+	glUniform1i(3, background->screenBase);
+	glUniform1i(4, background->charBase);
+	glUniform2i(5, background->x, background->y);
+	glVertexAttribPointer(0, 2, GL_INT, GL_FALSE, 0, _vertices);
+	glEnableVertexAttribArray(0);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[1]);
+	glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+	glScissor(0, 1, GBA_VIDEO_HORIZONTAL_PIXELS, 1);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_DEPTH_TEST);
+	glUseProgram(renderer->compositeProgram);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, background->tex);
+	glUniform2i(0, (background->priority << 3) + (background->index << 1) + 1, y);
+	glUniform1i(1, 0);
+	glVertexAttribPointer(0, 2, GL_INT, GL_FALSE, 0, _vertices);
+	glEnableVertexAttribArray(0);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	glDisable(GL_DEPTH_TEST);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
