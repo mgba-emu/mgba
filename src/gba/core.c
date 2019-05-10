@@ -151,6 +151,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	core->timing = &gba->timing;
 	core->debugger = NULL;
 	core->symbolTable = NULL;
+	core->videoLogger = NULL;
 	gbacore->overrides = NULL;
 	gbacore->debuggerPlatform = NULL;
 	gbacore->cheatDevice = NULL;
@@ -392,11 +393,16 @@ static void _GBACoreReset(struct mCore* core) {
 #ifndef DISABLE_THREADING
 		int fakeBool;
 		if (mCoreConfigGetIntValue(&core->config, "threadedVideo", &fakeBool) && fakeBool) {
-			gbacore->proxyRenderer.logger = &gbacore->threadProxy.d;
+			if (!core->videoLogger) {
+				core->videoLogger = &gbacore->threadProxy.d;
+			}
+		}
+#endif
+		if (core->videoLogger) {
+			gbacore->proxyRenderer.logger = core->videoLogger;
 			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
 			renderer = &gbacore->proxyRenderer.d;
 		}
-#endif
 		GBAVideoAssociateRenderer(&gba->video, renderer);
 	}
 

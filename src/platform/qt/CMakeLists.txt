@@ -121,6 +121,7 @@ set(SOURCE_FILES
 	utils.cpp
 	Window.cpp
 	VFileDevice.cpp
+	VideoProxy.cpp
 	VideoView.cpp)
 
 set(UI_FILES

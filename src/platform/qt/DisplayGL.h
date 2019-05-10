@@ -23,6 +23,8 @@
 #include <QQueue>
 #include <QThread>
 
+#include "VideoProxy.h"
+
 #include "platform/video-backend.h"
 
 namespace QGBA {
@@ -49,6 +51,7 @@ public:
 	bool isDrawing() const override { return m_isDrawing; }
 	bool supportsShaders() const override;
 	VideoShader* shaders() override;
+	VideoProxy* videoProxy() override;
 
 public slots:
 	void stopDrawing() override;
@@ -75,13 +78,14 @@ private:
 	PainterGL* m_painter;
 	QThread* m_drawThread = nullptr;
 	std::shared_ptr<CoreController> m_context;
+	VideoProxy m_videoProxy;
 };
 
 class PainterGL : public QObject {
 Q_OBJECT
 
 public:
-	PainterGL(int majorVersion, QGLWidget* parent);
+	PainterGL(int majorVersion, VideoProxy* proxy, QGLWidget* parent);
 	~PainterGL();
 
 	void setContext(std::shared_ptr<CoreController>);
@@ -126,6 +130,7 @@ private:
 	QSize m_size;
 	MessagePainter* m_messagePainter = nullptr;
 	QElapsedTimer m_delayTimer;
+	VideoProxy* m_videoProxy;
 };
 
 }

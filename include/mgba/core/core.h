@@ -47,6 +47,7 @@ struct mCore {
 	struct mTiming* timing;
 	struct mDebugger* debugger;
 	struct mDebuggerSymbols* symbolTable;
+	struct mVideoLogger* videoLogger;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct mDirectorySet dirs;

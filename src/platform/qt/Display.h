@@ -19,6 +19,7 @@ struct VideoShader;
 namespace QGBA {
 
 class CoreController;
+class VideoProxy;
 
 class Display : public QWidget {
 Q_OBJECT
@@ -47,6 +48,7 @@ public:
 	virtual bool isDrawing() const = 0;
 	virtual bool supportsShaders() const = 0;
 	virtual VideoShader* shaders() = 0;
+	virtual VideoProxy* videoProxy() { return nullptr; }
 
 signals:
 	void showCursor();

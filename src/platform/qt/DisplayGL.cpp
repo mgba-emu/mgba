@@ -34,10 +34,12 @@ DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	// This can spontaneously re-enter into this->resizeEvent before creation is done, so we
 	// need to make sure it's initialized to nullptr before we assign the new object to it
 	m_gl = new EmptyGLWidget(format, this);
-	m_painter = new PainterGL(format.majorVersion() < 2 ? 1 : m_gl->format().majorVersion(), m_gl);
+	m_painter = new PainterGL(format.majorVersion() < 2 ? 1 : m_gl->format().majorVersion(), &m_videoProxy, m_gl);
 	m_gl->setMouseTracking(true);
 	m_gl->setAttribute(Qt::WA_TransparentForMouseEvents); // This doesn't seem to work?
 	setUpdatesEnabled(false); // Prevent paint events, which can cause race conditions
+
+	connect(&m_videoProxy, &VideoProxy::dataAvailable, &m_videoProxy, &VideoProxy::processData);
 }
 
 DisplayGL::~DisplayGL() {
@@ -74,6 +76,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	m_gl->context()->doneCurrent();
 	m_gl->context()->moveToThread(m_drawThread);
 	m_painter->moveToThread(m_drawThread);
+	m_videoProxy.moveToThread(m_drawThread);
 	connect(m_drawThread, &QThread::started, m_painter, &PainterGL::start);
 	m_drawThread->start();
 
@@ -184,8 +187,16 @@ void DisplayGL::resizePainter() {
 	}
 }
 
-PainterGL::PainterGL(int majorVersion, QGLWidget* parent)
+VideoProxy* DisplayGL::videoProxy() {
+	if (supportsShaders()) {
+		return &m_videoProxy;
+	}
+	return nullptr;
+}
+
+PainterGL::PainterGL(int majorVersion, VideoProxy* proxy, QGLWidget* parent)
 	: m_gl(parent)
+	, m_videoProxy(proxy)
 {
 #ifdef BUILD_GL
 	mGLContext* glBackend;
@@ -347,7 +358,7 @@ void PainterGL::draw() {
 		m_backend->swap(m_backend);
 		if (!m_delayTimer.isValid()) {
 			m_delayTimer.start();
-		} else {
+		} else if (m_gl->format().swapInterval()) {
 			while (m_delayTimer.elapsed() < 15) {
 				QThread::usleep(100);
 			}
@@ -382,6 +393,7 @@ void PainterGL::stop() {
 	m_gl->context()->moveToThread(m_gl->thread());
 	m_context.reset();
 	moveToThread(m_gl->thread());
+	m_videoProxy->moveToThread(m_gl->thread());
 }
 
 void PainterGL::pause() {

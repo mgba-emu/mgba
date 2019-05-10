@@ -52,6 +52,7 @@
 #include "ShaderSelector.h"
 #include "ShortcutController.h"
 #include "TileView.h"
+#include "VideoProxy.h"
 #include "VideoView.h"
 
 #ifdef USE_DISCORD_RPC
@@ -715,9 +716,6 @@ void Window::gameStarted() {
 	m_config->updateOption("lockAspectRatio");
 	if (m_savedScale > 0) {
 		resizeFrame(size * m_savedScale);
-	}
-	if (!m_display) {
-		reloadDisplayDriver();
 	}
 	attachWidget(m_display.get());
 	m_display->setMinimumSize(size);
@@ -1711,6 +1709,14 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	if (!fname.isEmpty()) {
 		setWindowFilePath(fname);
 		appendMRU(fname);
+	}
+
+	if (!m_display) {
+		reloadDisplayDriver();
+	}
+
+	if (m_display->videoProxy()) {
+		m_display->videoProxy()->attach(controller);
 	}
 
 	m_controller = std::shared_ptr<CoreController>(controller);
