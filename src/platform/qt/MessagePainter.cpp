@@ -79,7 +79,9 @@ void MessagePainter::redraw() {
 }
 
 void MessagePainter::paint(QPainter* painter) {
-	painter->drawPixmap(m_local, m_pixmap);
+	if (!m_message.text().isEmpty()) {
+		painter->drawPixmap(m_local, m_pixmap);
+	}
 }
 
 
