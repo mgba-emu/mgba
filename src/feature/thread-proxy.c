@@ -18,6 +18,7 @@ static THREAD_ENTRY _proxyThread(void* renderer);
 
 static bool _writeData(struct mVideoLogger* logger, const void* data, size_t length);
 static bool _readData(struct mVideoLogger* logger, void* data, size_t length, bool block);
+static void _postEvent(struct mVideoLogger* logger, enum mVideoLoggerEvent);
 
 static void _lock(struct mVideoLogger* logger);
 static void _unlock(struct mVideoLogger* logger);
@@ -38,6 +39,7 @@ void mVideoThreadProxyCreate(struct mVideoThreadProxy* renderer) {
 
 	renderer->d.writeData = _writeData;
 	renderer->d.readData = _readData;
+	renderer->d.postEvent = _postEvent;
 }
 
 void mVideoThreadProxyInit(struct mVideoLogger* logger) {
@@ -131,6 +133,14 @@ static bool _readData(struct mVideoLogger* logger, void* data, size_t length, bo
 	return read;
 }
 
+static void _postEvent(struct mVideoLogger* logger, enum mVideoLoggerEvent event) {
+	struct mVideoThreadProxy* proxyRenderer = (struct mVideoThreadProxy*) logger;
+	MutexLock(&proxyRenderer->mutex);
+	proxyRenderer->event = event;
+	ConditionWake(&proxyRenderer->toThreadCond);
+	MutexUnlock(&proxyRenderer->mutex);
+}
+
 static void _lock(struct mVideoLogger* logger) {
 	struct mVideoThreadProxy* proxyRenderer = (struct mVideoThreadProxy*) logger;
 	MutexLock(&proxyRenderer->mutex);
@@ -172,13 +182,18 @@ static THREAD_ENTRY _proxyThread(void* logger) {
 			break;
 		}
 		proxyRenderer->threadState = PROXY_THREAD_BUSY;
-		MutexUnlock(&proxyRenderer->mutex);
-		if (!mVideoLoggerRendererRun(&proxyRenderer->d, false)) {
-			// FIFO was corrupted
-			proxyRenderer->threadState = PROXY_THREAD_STOPPED;
-			mLOG(GBA_VIDEO, ERROR, "Proxy thread queue got corrupted!");
+		if (proxyRenderer->event) {
+			proxyRenderer->d.handleEvent(&proxyRenderer->d, proxyRenderer->event);
+			proxyRenderer->event = 0;
+		} else {
+			MutexUnlock(&proxyRenderer->mutex);
+			if (!mVideoLoggerRendererRun(&proxyRenderer->d, false)) {
+				// FIFO was corrupted
+				proxyRenderer->threadState = PROXY_THREAD_STOPPED;
+				mLOG(GBA_VIDEO, ERROR, "Proxy thread queue got corrupted!");
+			}
+			MutexLock(&proxyRenderer->mutex);
 		}
-		MutexLock(&proxyRenderer->mutex);
 		ConditionWake(&proxyRenderer->fromThreadCond);
 		if (proxyRenderer->threadState != PROXY_THREAD_STOPPED) {
 			proxyRenderer->threadState = PROXY_THREAD_IDLE;

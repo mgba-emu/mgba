@@ -26,9 +26,11 @@ public:
 
 signals:
 	void dataAvailable();
+	void eventPosted(int);
 
 public slots:
 	void processData();
+	void handleEvent(int);
 
 private:
 	void init();
@@ -37,6 +39,7 @@ private:
 
 	bool writeData(const void* data, size_t length);
 	bool readData(void* data, size_t length, bool block);
+	void postEvent(enum mVideoLoggerEvent event);
 
 	void lock();
 	void unlock();

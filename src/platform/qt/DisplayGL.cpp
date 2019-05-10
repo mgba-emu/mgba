@@ -40,6 +40,7 @@ DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	setUpdatesEnabled(false); // Prevent paint events, which can cause race conditions
 
 	connect(&m_videoProxy, &VideoProxy::dataAvailable, &m_videoProxy, &VideoProxy::processData);
+	connect(&m_videoProxy, &VideoProxy::eventPosted, &m_videoProxy, &VideoProxy::handleEvent);
 }
 
 DisplayGL::~DisplayGL() {

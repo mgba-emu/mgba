@@ -27,6 +27,13 @@ enum mVideoLoggerDirtyType {
 	DIRTY_BUFFER,
 };
 
+enum mVideoLoggerEvent {
+	LOGGER_EVENT_NONE = 0,
+	LOGGER_EVENT_INIT,
+	LOGGER_EVENT_DEINIT,
+	LOGGER_EVENT_RESET,
+};
+
 struct mVideoLoggerDirtyInfo {
 	enum mVideoLoggerDirtyType type;
 	uint32_t address;
@@ -38,6 +45,7 @@ struct VFile;
 struct mVideoLogger {
 	bool (*writeData)(struct mVideoLogger* logger, const void* data, size_t length);
 	bool (*readData)(struct mVideoLogger* logger, void* data, size_t length, bool block);
+	void (*postEvent)(struct mVideoLogger* logger, enum mVideoLoggerEvent event);
 	void* dataContext;
 
 	bool block;
@@ -52,6 +60,7 @@ struct mVideoLogger {
 	void* context;
 
 	bool (*parsePacket)(struct mVideoLogger* logger, const struct mVideoLoggerDirtyInfo* packet);
+	void (*handleEvent)(struct mVideoLogger* logger, enum mVideoLoggerEvent event);
 	uint16_t* (*vramBlock)(struct mVideoLogger* logger, uint32_t address);
 
 	size_t vramSize;

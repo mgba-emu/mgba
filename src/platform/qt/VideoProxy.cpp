@@ -23,6 +23,7 @@ VideoProxy::VideoProxy() {
 
 	m_logger.d.writeData = &callback<bool, const void*, size_t>::func<&VideoProxy::writeData>;
 	m_logger.d.readData = &callback<bool, void*, size_t, bool>::func<&VideoProxy::readData>;
+	m_logger.d.postEvent = &callback<void, enum mVideoLoggerEvent>::func<&VideoProxy::postEvent>;
 }
 
 void VideoProxy::attach(CoreController* controller) {
@@ -72,6 +73,14 @@ bool VideoProxy::readData(void* data, size_t length, bool block) {
 		m_mutex.unlock();
 	}
 	return read;
+}
+
+void VideoProxy::postEvent(enum mVideoLoggerEvent event) {
+	emit eventPosted(event);
+}
+
+void VideoProxy::handleEvent(int event) {
+	m_logger.d.handleEvent(&m_logger.d, static_cast<enum mVideoLoggerEvent>(event));
 }
 
 void VideoProxy::lock() {
