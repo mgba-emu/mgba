@@ -287,13 +287,18 @@ void PainterGL::resizeContext() {
 		return;
 	}
 
-	m_gl->makeCurrent();
+	if (!m_active) {
+		m_gl->makeCurrent();
 #if defined(_WIN32) && defined(USE_EPOXY)
-	epoxy_handle_external_wglMakeCurrent();
+		epoxy_handle_external_wglMakeCurrent();
 #endif
+	}
+
 	QSize size = m_context->screenDimensions();
 	m_backend->setDimensions(m_backend, size.width(), size.height());
-	m_gl->doneCurrent();
+	if (!m_active) {
+		m_gl->doneCurrent();
+	}
 }
 
 void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
@@ -340,7 +345,6 @@ void PainterGL::start() {
 	}
 #endif
 
-	m_gl->doneCurrent();
 	m_active = true;
 	m_started = true;
 }
@@ -383,10 +387,6 @@ void PainterGL::forceDraw() {
 void PainterGL::stop() {
 	m_active = false;
 	m_started = false;
-	m_gl->makeCurrent();
-#if defined(_WIN32) && defined(USE_EPOXY)
-	epoxy_handle_external_wglMakeCurrent();
-#endif
 	dequeueAll();
 	m_backend->clear(m_backend);
 	m_backend->swap(m_backend);
@@ -463,11 +463,13 @@ void PainterGL::setShaders(struct VDir* dir) {
 	if (!supportsShaders()) {
 		return;
 	}
+	if (!m_active) {
 #if !defined(_WIN32) || defined(USE_EPOXY)
-	m_gl->makeCurrent();
+		m_gl->makeCurrent();
 #if defined(_WIN32) && defined(USE_EPOXY)
-	epoxy_handle_external_wglMakeCurrent();
+		epoxy_handle_external_wglMakeCurrent();
 #endif
+	}
 	if (m_shader.passes) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
@@ -476,7 +478,9 @@ void PainterGL::setShaders(struct VDir* dir) {
 	if (m_started) {
 		mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
 	}
-	m_gl->doneCurrent();
+	if (!m_active) {
+		m_gl->doneCurrent();
+	}
 #endif
 }
 
@@ -484,16 +488,20 @@ void PainterGL::clearShaders() {
 	if (!supportsShaders()) {
 		return;
 	}
+	if (!m_active) {
 #if !defined(_WIN32) || defined(USE_EPOXY)
-	m_gl->makeCurrent();
+		m_gl->makeCurrent();
 #if defined(_WIN32) && defined(USE_EPOXY)
-	epoxy_handle_external_wglMakeCurrent();
+		epoxy_handle_external_wglMakeCurrent();
 #endif
+	}
 	if (m_shader.passes) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
 	}
-	m_gl->doneCurrent();
+	if (!m_active) {
+		m_gl->doneCurrent();
+	}
 #endif
 }
 

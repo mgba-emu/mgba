@@ -17,6 +17,7 @@
 #ifndef DISABLE_THREADING
 #include <mgba/feature/thread-proxy.h>
 #endif
+#include <mgba/internal/gba/renderers/gl.h>
 #include <mgba/internal/gba/renderers/proxy.h>
 #include <mgba/internal/gba/renderers/video-software.h>
 #include <mgba/internal/gba/savedata.h>
@@ -123,6 +124,7 @@ struct mVideoLogContext;
 struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
+	struct GBAVideoGLRenderer glRenderer;
 	struct GBAVideoProxyRenderer proxyRenderer;
 	struct mVideoLogContext* logContext;
 	struct mCoreCallbacks logCallbacks;
@@ -166,6 +168,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	gba->rtcSource = &core->rtc.d;
 
 	GBAVideoSoftwareRendererCreate(&gbacore->renderer);
+	GBAVideoGLRendererCreate(&gbacore->glRenderer);
 	gbacore->renderer.outputBuffer = NULL;
 
 #ifndef DISABLE_THREADING
@@ -251,6 +254,7 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 #ifndef DISABLE_THREADING
 	mCoreConfigCopyValue(&core->config, config, "threadedVideo");
 #endif
+	mCoreConfigCopyValue(&core->config, config, "hwaccelVideo");
 }
 
 static void _GBACoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
@@ -390,14 +394,17 @@ static void _GBACoreReset(struct mCore* core) {
 	struct GBA* gba = (struct GBA*) core->board;
 	if (gbacore->renderer.outputBuffer) {
 		struct GBAVideoRenderer* renderer = &gbacore->renderer.d;
-#ifndef DISABLE_THREADING
 		int fakeBool;
+#ifndef DISABLE_THREADING
 		if (mCoreConfigGetIntValue(&core->config, "threadedVideo", &fakeBool) && fakeBool) {
 			if (!core->videoLogger) {
 				core->videoLogger = &gbacore->threadProxy.d;
 			}
 		}
 #endif
+		if (mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
+			renderer = &gbacore->glRenderer.d;
+		}
 		if (core->videoLogger) {
 			gbacore->proxyRenderer.logger = core->videoLogger;
 			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
