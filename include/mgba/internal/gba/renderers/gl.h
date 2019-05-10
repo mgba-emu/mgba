@@ -54,6 +54,13 @@ struct GBAVideoGLBackground {
 	int16_t dmy;
 	int32_t sx;
 	int32_t sy;
+
+	int16_t lastDx;
+	int16_t lastDmx;
+	int16_t lastDy;
+	int16_t lastDmy;
+	int32_t lastSx;
+	int32_t lastSy;
 };
 
 struct GBAVideoGLRenderer {

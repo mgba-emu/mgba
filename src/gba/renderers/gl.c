@@ -139,7 +139,9 @@ static const char* const _renderMode2 =
 	"uniform int charBase;\n"
 	"uniform int size;\n"
 	"uniform ivec2 offset;\n"
+	"uniform ivec2 oldOffset;\n"
 	"uniform mat2x2 transform;\n"
+	"uniform mat2x2 oldTransform;\n"
 
 	"vec4 fetchTile(ivec2 coord);\n"
 
@@ -162,8 +164,9 @@ static const char* const _renderMode2 =
 	"}"
 
 	"void main() {\n"
-	"	ivec2 coord = ivec2(transform[0] * texCoord.x) + ivec2(transform[1] * fract(texCoord.y)) + offset;\n"
-	"	gl_FragColor = fetchTile(coord);\n"
+	"	vec2 newCoord = transform[0] * texCoord.x + offset;\n"
+	"	vec2 oldCoord = oldTransform[0] * texCoord.x + oldOffset;\n"
+	"	gl_FragColor = fetchTile(ivec2(newCoord * fract(texCoord.y) + oldCoord * (1. - fract(texCoord.y))));\n"
 	"}";
 
 static const char* const _composite =
@@ -644,8 +647,22 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		}
 	}
 	if (GBARegisterDISPCNTGetMode(glRenderer->dispcnt) != 0) {
+		glRenderer->bg[2].lastDx = glRenderer->bg[2].dx;
+		glRenderer->bg[2].lastDy = glRenderer->bg[2].dy;
+		glRenderer->bg[2].lastDmx = glRenderer->bg[2].dmx;
+		glRenderer->bg[2].lastDmy = glRenderer->bg[2].dmy;
+		glRenderer->bg[2].lastSx = glRenderer->bg[2].sx;
+		glRenderer->bg[2].lastSy = glRenderer->bg[2].sy;
+		glRenderer->bg[2].lastSx = glRenderer->bg[2].sx;
+		glRenderer->bg[2].lastSy = glRenderer->bg[2].sy;
 		glRenderer->bg[2].sx += glRenderer->bg[2].dmx;
 		glRenderer->bg[2].sy += glRenderer->bg[2].dmy;
+		glRenderer->bg[3].lastDx = glRenderer->bg[3].dx;
+		glRenderer->bg[3].lastDy = glRenderer->bg[3].dy;
+		glRenderer->bg[3].lastDmx = glRenderer->bg[3].dmx;
+		glRenderer->bg[3].lastDmy = glRenderer->bg[3].dmy;
+		glRenderer->bg[3].lastSx = glRenderer->bg[3].sx;
+		glRenderer->bg[3].lastSy = glRenderer->bg[3].sy;
 		glRenderer->bg[3].sx += glRenderer->bg[3].dmx;
 		glRenderer->bg[3].sy += glRenderer->bg[3].dmy;
 	}
@@ -806,7 +823,9 @@ void GBAVideoGLRendererDrawBackgroundMode2(struct GBAVideoGLRenderer* renderer, 
 	glUniform1i(4, background->charBase);
 	glUniform1i(5, background->size);
 	glUniform2i(6, background->sx, background->sy);
-	glUniformMatrix2fv(7, 1, GL_FALSE, (GLfloat[]) { background->dx, background->dy, background->dmx, background->dmy });
+	glUniform2i(7, background->lastSx, background->lastSy);
+	glUniformMatrix2fv(8, 1, GL_FALSE, (GLfloat[]) { background->dx, background->dy, background->dmx, background->dmy });
+	glUniformMatrix2fv(9, 1, GL_FALSE, (GLfloat[]) { background->lastDx, background->lastDy, background->lastDmx, background->lastDmy });
 	glVertexAttribPointer(0, 2, GL_INT, GL_FALSE, 0, _vertices);
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
