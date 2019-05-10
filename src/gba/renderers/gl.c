@@ -43,14 +43,14 @@ static const GLchar* const _gl3Header =
 
 static const char* const _vertexShader =
 	"attribute vec2 position;\n"
-	"uniform ivec2 loc;\n"
-	"const ivec2 maxPos = ivec2(240, 160);\n"
+	"uniform ivec3 loc;\n"
+	"const ivec3 maxPos = ivec3(240, 160, 32);\n"
 	"varying vec2 texCoord;\n"
 
 	"void main() {\n"
-	"	vec2 local = (position + vec2(0, loc.y)) / vec2(1., maxPos.y);\n"
-	"	gl_Position = vec4(local * 2. - 1., 0., 1.);\n"
-	"	texCoord = local * maxPos;\n"
+	"	vec2 local = (position * loc.x + vec2(0, loc.y)) / vec2(1., maxPos.y);\n"
+	"	gl_Position = vec4(local * 2. - 1., loc.z / float(maxPos.z), 1.);\n"
+	"	texCoord = local * maxPos.xy;\n"
 	"}";
 
 static const char* const _renderTile16 =
@@ -531,7 +531,12 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[1]);
 	glEnable(GL_SCISSOR_TEST);
 	glScissor(0, y, GBA_VIDEO_HORIZONTAL_PIXELS, 1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glDisable(GL_SCISSOR_TEST);
+	if (y == 0) {
+		glClearDepthf(1);
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	unsigned priority;
@@ -687,7 +692,7 @@ void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, 
 	glBindTexture(GL_TEXTURE_2D, renderer->vramTex);
 	glActiveTexture(GL_TEXTURE0 + 1);
 	glBindTexture(GL_TEXTURE_2D, renderer->paletteTex);
-	glUniform2i(0, 0, y);
+	glUniform3i(0, 1, y, 0);
 	glUniform1i(1, 0);
 	glUniform1i(2, 1);
 	glUniform1i(3, background->screenBase);
@@ -698,20 +703,22 @@ void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, 
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[1]);
-	glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-	glScissor(0, y, GBA_VIDEO_HORIZONTAL_PIXELS, 1);
-	glDepthFunc(GL_LESS);
-	glEnable(GL_DEPTH_TEST);
-	glUseProgram(renderer->compositeProgram);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, background->tex);
-	glUniform2i(0, (background->priority << 3) + (background->index << 1) + 1, y);
-	glUniform1i(1, 0);
-	glVertexAttribPointer(0, 2, GL_INT, GL_FALSE, 0, _vertices);
-	glEnableVertexAttribArray(0);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	glDisable(GL_DEPTH_TEST);
+	if ((y & 0x1F) == 0x1F) {
+		glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[1]);
+		glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+		glScissor(0, y & ~0x1F, GBA_VIDEO_HORIZONTAL_PIXELS, 0x20);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_DEPTH_TEST);
+		glUseProgram(renderer->compositeProgram);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, background->tex);
+		glUniform3i(0, 0x20, y & ~0x1F, (background->priority << 3) + (background->index << 1) + 1);
+		glUniform1i(1, 0);
+		glVertexAttribPointer(0, 2, GL_INT, GL_FALSE, 0, _vertices);
+		glEnableVertexAttribArray(0);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		glDisable(GL_DEPTH_TEST);
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
