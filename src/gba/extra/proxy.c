@@ -182,6 +182,11 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		}
 		break;
 	case DIRTY_SCANLINE:
+		proxyRenderer->backend->disableBG[0] = proxyRenderer->d.disableBG[0];
+		proxyRenderer->backend->disableBG[1] = proxyRenderer->d.disableBG[1];
+		proxyRenderer->backend->disableBG[2] = proxyRenderer->d.disableBG[2];
+		proxyRenderer->backend->disableBG[3] = proxyRenderer->d.disableBG[3];
+		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
 		if (item->address < GBA_VIDEO_VERTICAL_PIXELS) {
 			proxyRenderer->backend->drawScanline(proxyRenderer->backend, item->address);
 		}
