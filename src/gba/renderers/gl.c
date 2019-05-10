@@ -88,12 +88,17 @@ static const char* const _renderMode0 =
 	"uniform sampler2D palette;\n"
 	"uniform int screenBase;\n"
 	"uniform int charBase;\n"
+	"uniform int size;\n"
 	"uniform ivec2 offset;\n"
 
 	"vec4 renderTile(int tile, int tileBase, int paletteId, ivec2 localCoord);\n"
 
 	"void main() {\n"
-	"	ivec2 coord = (ivec2(texCoord) + offset) & 255;\n"
+	"	ivec2 coord = ivec2(texCoord) + offset;\n"
+	"	if ((size & 1) == 1) {\n"
+	"		coord.y += coord.x & 256;\n"
+	"	}\n"
+	"	coord.x &= 255;\n"
 	"	int mapAddress = screenBase + (coord.x >> 3) + (coord.y >> 3) * 32;\n"
 	"	vec4 map = texelFetch(vram, ivec2(mapAddress & 255, mapAddress >> 8), 0);\n"
 	"	int flags = int(map.g * 15.9);\n"
@@ -521,6 +526,14 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	}
 	glRenderer->vramDirty = 0;
 
+	uint32_t backdrop = M_RGB5_TO_RGB8(renderer->palette[0]);
+	glClearColor(((backdrop >> 16) & 0xFF) / 256., ((backdrop >> 8) & 0xFF) / 256., (backdrop & 0xFF) / 256., 0.f);
+	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[1]);
+	glEnable(GL_SCISSOR_TEST);
+	glScissor(0, y, GBA_VIDEO_HORIZONTAL_PIXELS, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	unsigned priority;
 	for (priority = 0; priority < 4; ++priority) {
 		if (TEST_LAYER_ENABLED(0) && GBARegisterDISPCNTGetMode(glRenderer->dispcnt) < 2) {
@@ -574,16 +587,6 @@ void GBAVideoGLRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[1]);
 	glPixelStorei(GL_PACK_ROW_LENGTH, glRenderer->outputBufferStride);
 	glReadPixels(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS, GL_RGBA, GL_UNSIGNED_BYTE, glRenderer->outputBuffer);
-	glClearColor(1.f, 1.f, 1.f, 0.f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[0].fbo);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[1].fbo);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[2].fbo);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[3].fbo);
-	glClear(GL_COLOR_BUFFER_BIT);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -669,9 +672,16 @@ static void GBAVideoGLRendererWriteBLDCNT(struct GBAVideoGLRenderer* renderer, u
 }
 
 void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
+	int inY = y + background->y;
+	int yBase = inY & 0xFF;
+	if (background->size == 2) {
+		yBase += inY & 0x100;
+	} else if (background->size == 3) {
+		yBase += (inY & 0x100) << 1;
+	}
 	glBindFramebuffer(GL_FRAMEBUFFER, background->fbo);
 	glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-	glScissor(0, 1, GBA_VIDEO_HORIZONTAL_PIXELS, 1);
+	glScissor(0, y, GBA_VIDEO_HORIZONTAL_PIXELS, 1);
 	glUseProgram(renderer->bgProgram[background->multipalette ? 1 : 0]);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, renderer->vramTex);
@@ -682,14 +692,15 @@ void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, 
 	glUniform1i(2, 1);
 	glUniform1i(3, background->screenBase);
 	glUniform1i(4, background->charBase);
-	glUniform2i(5, background->x, background->y);
+	glUniform1i(5, background->size);
+	glUniform2i(6, background->x, yBase - y);
 	glVertexAttribPointer(0, 2, GL_INT, GL_FALSE, 0, _vertices);
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[1]);
 	glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-	glScissor(0, 1, GBA_VIDEO_HORIZONTAL_PIXELS, 1);
+	glScissor(0, y, GBA_VIDEO_HORIZONTAL_PIXELS, 1);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_DEPTH_TEST);
 	glUseProgram(renderer->compositeProgram);
