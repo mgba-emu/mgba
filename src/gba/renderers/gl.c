@@ -229,7 +229,7 @@ void _compileBackground(struct GBAVideoGLRenderer* glRenderer, GLuint program, c
 void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 	glGenFramebuffers(2, glRenderer->fbo);
-	glGenTextures(4, glRenderer->layers);
+	glGenTextures(3, glRenderer->layers);
 
 	glGenTextures(1, &glRenderer->paletteTex);
 	glBindTexture(GL_TEXTURE_2D, glRenderer->paletteTex);
@@ -248,21 +248,21 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[1]);
-	glBindTexture(GL_TEXTURE_2D, glRenderer->layers[2]);
+	glBindTexture(GL_TEXTURE_2D, glRenderer->outputTex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, GBA_VIDEO_HORIZONTAL_PIXELS * glRenderer->scale, GBA_VIDEO_VERTICAL_PIXELS * glRenderer->scale, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glRenderer->layers[2], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glRenderer->outputTex, 0);
 
-	glBindTexture(GL_TEXTURE_2D, glRenderer->layers[3]);
+	glBindTexture(GL_TEXTURE_2D, glRenderer->layers[2]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, GBA_VIDEO_HORIZONTAL_PIXELS * glRenderer->scale, GBA_VIDEO_VERTICAL_PIXELS * glRenderer->scale, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, glRenderer->layers[3], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, glRenderer->layers[2], 0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -331,7 +331,7 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 	glDeleteFramebuffers(2, glRenderer->fbo);
-	glDeleteTextures(4, glRenderer->layers);
+	glDeleteTextures(3, glRenderer->layers);
 	glDeleteTextures(1, &glRenderer->paletteTex);
 	glDeleteTextures(1, &glRenderer->vramTex);
 	glDeleteTextures(1, &glRenderer->oamTex);
@@ -652,12 +652,8 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 }
 
 void GBAVideoGLRendererFinishFrame(struct GBAVideoRenderer* renderer) {
-	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
-	glFinish();
-	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[1]);
-	glPixelStorei(GL_PACK_ROW_LENGTH, glRenderer->outputBufferStride);
-	glReadPixels(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS * glRenderer->scale, GBA_VIDEO_VERTICAL_PIXELS * glRenderer->scale, GL_RGBA, GL_UNSIGNED_BYTE, glRenderer->outputBuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	UNUSED(renderer);
+	glFlush();
 }
 
 void GBAVideoGLRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels) {

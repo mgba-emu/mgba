@@ -62,10 +62,9 @@ struct GBAVideoGLRenderer {
 	struct GBAVideoGLBackground bg[4];
 
 	GLuint fbo[2];
-	GLuint layers[4];
+	GLuint layers[3];
 
-	color_t* outputBuffer;
-	int outputBufferStride;
+	GLuint outputTex;
 
 	GLuint paletteTex;
 	bool paletteDirty;

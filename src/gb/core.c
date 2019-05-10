@@ -233,6 +233,11 @@ static void _GBCoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t st
 	gbcore->renderer.outputBufferStride = stride;
 }
 
+static void _GBCoreSetVideoGLTex(struct mCore* core, unsigned texid) {
+	UNUSED(core);
+	UNUSED(texid);
+}
+
 static void _GBCoreGetPixels(struct mCore* core, const void** buffer, size_t* stride) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	gbcore->renderer.d.getPixels(&gbcore->renderer.d, stride, buffer);
@@ -887,6 +892,7 @@ struct mCore* GBCoreCreate(void) {
 	core->loadConfig = _GBCoreLoadConfig;
 	core->desiredVideoDimensions = _GBCoreDesiredVideoDimensions;
 	core->setVideoBuffer = _GBCoreSetVideoBuffer;
+	core->setVideoGLTex = _GBCoreSetVideoGLTex;
 	core->getPixels = _GBCoreGetPixels;
 	core->putPixels = _GBCorePutPixels;
 	core->getAudioChannel = _GBCoreGetAudioChannel;
