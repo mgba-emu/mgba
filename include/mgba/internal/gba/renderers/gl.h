@@ -58,7 +58,7 @@ struct GBAVideoGLBackground {
 	int32_t refx;
 	int32_t refy;
 
-	struct GBAVideoGLAffine affine[2];
+	struct GBAVideoGLAffine affine[4];
 };
 
 struct GBAVideoGLRenderer {
@@ -97,6 +97,8 @@ struct GBAVideoGLRenderer {
 	uint16_t bldy;
 
 	GBAMosaicControl mosaic;
+
+	int firstAffine;
 
 	int scale;
 };

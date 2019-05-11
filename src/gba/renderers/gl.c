@@ -138,11 +138,10 @@ static const char* const _renderMode2 =
 	"uniform int screenBase;\n"
 	"uniform int charBase;\n"
 	"uniform int size;\n"
-	"uniform ivec2 offset;\n"
-	"uniform ivec2 oldOffset;\n"
-	"uniform mat2x2 transform;\n"
-	"uniform mat2x2 oldTransform;\n"
-	"uniform int firstD;\n"
+	"uniform ivec2[4] offset;\n"
+	"uniform ivec2[4] transform;\n"
+	"precision highp float;\n"
+	"precision highp int;\n"
 
 	"vec4 fetchTile(ivec2 coord);\n"
 
@@ -162,13 +161,21 @@ static const char* const _renderMode2 =
 	"		color.a = 0.;\n"
 	"	}\n"
 	"	return color;\n"
-	"}"
+	"}\n"
+
+	"vec2 interpolate(ivec2 arr[4], float x) {\n"
+	"	float x1m = 1. - x;\n"
+	"	return x1m * x1m * x1m * arr[0] +"
+		"  3 * x1m * x1m * x   * arr[1] +"
+		"  3 * x1m * x   * x   * arr[2] +"
+		"      x   * x   * x   * arr[3];\n"
+	"}\n"
 
 	"void main() {\n"
 	"	float y = fract(texCoord.y);\n"
-	"	float lin = y / ceil(y);\n"
-	"	vec2 mixedTransform = mix(oldTransform[0], transform[0], lin);\n"
-	"	vec2 mixedOffset = mix(oldOffset, offset, lin);\n"
+	"	float lin = 0.5 - y / ceil(y) * 0.25;\n"
+	"	vec2 mixedTransform = interpolate(transform, lin);\n"
+	"	vec2 mixedOffset = interpolate(offset, lin);\n"
 	"	gl_FragColor = fetchTile(ivec2(mixedTransform * texCoord.x + mixedOffset));\n"
 	"}";
 
@@ -192,7 +199,7 @@ static const char* const _composite =
 	"	ivec3 outflags = ivec3(0, 0, 0);\n"
 	"	if (inflags.x < oldFlags.x) {\n"
 	"		outflags = inflags;\n"
-	"		if ((inflags.y & 1) == 1 && (oldFlags.y & 2) == 2) {\n"
+	"		if (inflags.z == 1 && (inflags.y & 1) == 1 && (oldFlags.y & 2) == 2) {\n"
 	"			vec4 oldpix = texelFetch(oldLayer, ivec2(texCoord * scale), 0);\n"
 	"			pix *= blend.x;\n"
 	"			pix += oldpix * blend.y;\n"
@@ -369,6 +376,7 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 
 	glRenderer->paletteDirty = true;
 	glRenderer->vramDirty = 0xFFFFFF;
+	glRenderer->firstAffine = -1;
 }
 
 void GBAVideoGLRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
@@ -633,6 +641,23 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	if (GBARegisterDISPCNTGetMode(glRenderer->dispcnt) != 0) {
+		if (glRenderer->firstAffine < 0) {
+			memcpy(&glRenderer->bg[2].affine[3], &glRenderer->bg[2].affine[0], sizeof(struct GBAVideoGLAffine));
+			memcpy(&glRenderer->bg[3].affine[3], &glRenderer->bg[3].affine[0], sizeof(struct GBAVideoGLAffine));
+			memcpy(&glRenderer->bg[2].affine[2], &glRenderer->bg[2].affine[0], sizeof(struct GBAVideoGLAffine));
+			memcpy(&glRenderer->bg[3].affine[2], &glRenderer->bg[3].affine[0], sizeof(struct GBAVideoGLAffine));
+			memcpy(&glRenderer->bg[2].affine[1], &glRenderer->bg[2].affine[0], sizeof(struct GBAVideoGLAffine));
+			memcpy(&glRenderer->bg[3].affine[1], &glRenderer->bg[3].affine[0], sizeof(struct GBAVideoGLAffine));
+			glRenderer->firstAffine = y;
+		} else if (y - glRenderer->firstAffine == 1) {
+			memcpy(&glRenderer->bg[2].affine[1], &glRenderer->bg[2].affine[0], sizeof(struct GBAVideoGLAffine));
+			memcpy(&glRenderer->bg[3].affine[1], &glRenderer->bg[3].affine[0], sizeof(struct GBAVideoGLAffine));			
+		}
+	} else {
+		glRenderer->firstAffine = -1;
+	}
+
 	unsigned priority;
 	for (priority = 4; priority--;) {
 		if (TEST_LAYER_ENABLED(0) && GBARegisterDISPCNTGetMode(glRenderer->dispcnt) < 2) {
@@ -674,6 +699,10 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	}
 
 	if (GBARegisterDISPCNTGetMode(glRenderer->dispcnt) != 0) {
+		memcpy(&glRenderer->bg[2].affine[3], &glRenderer->bg[2].affine[2], sizeof(struct GBAVideoGLAffine));
+		memcpy(&glRenderer->bg[3].affine[3], &glRenderer->bg[3].affine[2], sizeof(struct GBAVideoGLAffine));
+		memcpy(&glRenderer->bg[2].affine[2], &glRenderer->bg[2].affine[1], sizeof(struct GBAVideoGLAffine));
+		memcpy(&glRenderer->bg[3].affine[2], &glRenderer->bg[3].affine[1], sizeof(struct GBAVideoGLAffine));
 		memcpy(&glRenderer->bg[2].affine[1], &glRenderer->bg[2].affine[0], sizeof(struct GBAVideoGLAffine));
 		memcpy(&glRenderer->bg[3].affine[1], &glRenderer->bg[3].affine[0], sizeof(struct GBAVideoGLAffine));
 
@@ -685,7 +714,12 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 }
 
 void GBAVideoGLRendererFinishFrame(struct GBAVideoRenderer* renderer) {
-	UNUSED(renderer);
+	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
+	glRenderer->firstAffine = -1;
+	glRenderer->bg[2].affine[0].sx = glRenderer->bg[2].refx;
+	glRenderer->bg[2].affine[0].sy = glRenderer->bg[2].refy;
+	glRenderer->bg[3].affine[0].sx = glRenderer->bg[3].refx;
+	glRenderer->bg[3].affine[0].sy = glRenderer->bg[3].refy;
 	glFlush();
 }
 
@@ -845,14 +879,32 @@ void GBAVideoGLRendererDrawBackgroundMode2(struct GBAVideoGLRenderer* renderer, 
 	glUniform1i(3, background->screenBase);
 	glUniform1i(4, background->charBase);
 	glUniform1i(5, background->size);
-	glUniform2i(6, background->affine[0].sx, background->affine[0].sy);
-	glUniformMatrix2fv(8, 1, GL_FALSE, (GLfloat[]) { background->affine[0].dx, background->affine[0].dy, background->affine[0].dmx, background->affine[0].dmy });
 	if (renderer->scale > 1) {
-		glUniform2i(7, background->affine[1].sx, background->affine[1].sy);
-		glUniformMatrix2fv(9, 1, GL_FALSE, (GLfloat[]) { background->affine[1].dx, background->affine[1].dy, background->affine[1].dmx, background->affine[1].dmy });
+		glUniform2iv(6, 4, (GLint[]) {
+			background->affine[0].sx, background->affine[0].sy,
+			background->affine[1].sx, background->affine[1].sy,
+			background->affine[2].sx, background->affine[2].sy,
+			background->affine[3].sx, background->affine[3].sy,
+		});
+		glUniform2iv(10, 4, (GLint[]) {
+			background->affine[0].dx, background->affine[0].dy,
+			background->affine[1].dx, background->affine[1].dy,
+			background->affine[2].dx, background->affine[2].dy,
+			background->affine[3].dx, background->affine[3].dy,
+		});
 	} else {
-		glUniform2i(7, background->affine[0].sx, background->affine[0].sy);
-		glUniformMatrix2fv(9, 1, GL_FALSE, (GLfloat[]) { background->affine[0].dx, background->affine[0].dy, background->affine[0].dmx, background->affine[0].dmy });
+		glUniform2iv(6, 4, (GLint[]) {
+			background->affine[0].sx, background->affine[0].sy,
+			background->affine[0].sx, background->affine[0].sy,
+			background->affine[0].sx, background->affine[0].sy,
+			background->affine[0].sx, background->affine[0].sy,
+		});
+		glUniform2iv(10, 4, (GLint[]) {
+			background->affine[0].dx, background->affine[0].dy,
+			background->affine[0].dx, background->affine[0].dy,
+			background->affine[0].dx, background->affine[0].dy,
+			background->affine[0].dx, background->affine[0].dy,
+		});
 	}
 	glVertexAttribPointer(0, 2, GL_INT, GL_FALSE, 0, _vertices);
 	glEnableVertexAttribArray(0);
