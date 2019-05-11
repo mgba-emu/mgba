@@ -29,6 +29,15 @@ CXX_GUARD_START
 #include <GLES2/gl2.h>
 #endif
 
+struct GBAVideoGLAffine {
+	int16_t dx;
+	int16_t dmx;
+	int16_t dy;
+	int16_t dmy;
+	int32_t sx;
+	int32_t sy;
+};
+
 struct GBAVideoGLBackground {
 	GLuint fbo;
 	GLuint tex;
@@ -48,19 +57,8 @@ struct GBAVideoGLBackground {
 	uint16_t y;
 	int32_t refx;
 	int32_t refy;
-	int16_t dx;
-	int16_t dmx;
-	int16_t dy;
-	int16_t dmy;
-	int32_t sx;
-	int32_t sy;
 
-	int16_t lastDx;
-	int16_t lastDmx;
-	int16_t lastDy;
-	int16_t lastDmy;
-	int32_t lastSx;
-	int32_t lastSy;
+	struct GBAVideoGLAffine affine[2];
 };
 
 struct GBAVideoGLRenderer {
