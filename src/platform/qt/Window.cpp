@@ -591,9 +591,7 @@ void Window::resizeEvent(QResizeEvent* event) {
 	}
 	m_savedScale = factor;
 	for (QMap<int, Action*>::iterator iter = m_frameSizes.begin(); iter != m_frameSizes.end(); ++iter) {
-		bool enableSignals = iter.value()->blockSignals(true);
 		iter.value()->setActive(iter.key() == factor);
-		iter.value()->blockSignals(enableSignals);
 	}
 
 	m_config->setOption("fullscreen", isFullScreen());
@@ -1294,9 +1292,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 			m_savedScale = i;
 			m_config->setOption("scaleMultiplier", i); // TODO: Port to other
 			resizeFrame(size);
-			bool enableSignals = setSize->blockSignals(true);
 			setSize->setActive(true);
-			setSize->blockSignals(enableSignals);
 		}, "frame");
 		setSize->setExclusive(true);
 		if (m_savedScale == i) {
