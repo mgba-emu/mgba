@@ -56,6 +56,7 @@ Misc:
  - Debugger: Make tracing compatible with breakpoints/watchpoints
  - Debugger: Print breakpoint/watchpoint number when inserting
  - Qt: Open a message box for Qt frontend errors
+ - GBA Video: Clean up dead code in sprite rendering loop
 
 0.7.1: (2019-02-24)
 Bugfixes:
