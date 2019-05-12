@@ -30,8 +30,11 @@ void ActionMapper::clearMenu(const QString& name) {
 	emit menuCleared(name);
 }
 
-void ActionMapper::rebuildMenu(QMenuBar* menubar, const ShortcutController& shortcuts) {
+void ActionMapper::rebuildMenu(QMenuBar* menubar, QWidget* context, const ShortcutController& shortcuts) {
 	menubar->clear();
+	for (QAction* action : context->actions()) {
+		context->removeAction(action);
+	}
 	for (const QString& m : m_menus[{}]) {
 		if (m_hiddenActions.contains(m)) {
 			continue;
@@ -39,11 +42,11 @@ void ActionMapper::rebuildMenu(QMenuBar* menubar, const ShortcutController& shor
 		QString menu = m.mid(1);
 		QMenu* qmenu = menubar->addMenu(m_menuNames[menu]);
 
-		rebuildMenu(menu, qmenu, shortcuts);
+		rebuildMenu(menu, qmenu, context, shortcuts);
 	}
 }
 
-void ActionMapper::rebuildMenu(const QString& menu, QMenu* qmenu, const ShortcutController& shortcuts) {
+void ActionMapper::rebuildMenu(const QString& menu, QMenu* qmenu, QWidget* context, const ShortcutController& shortcuts) {
 	for (const QString& actionName : m_menus[menu]) {
 		if (actionName.isNull()) {
 			qmenu->addSeparator();
@@ -55,12 +58,13 @@ void ActionMapper::rebuildMenu(const QString& menu, QMenu* qmenu, const Shortcut
 		if (actionName[0] == '.') {
 			QString name = actionName.mid(1);
 			QMenu* newMenu = qmenu->addMenu(m_menuNames[name]);
-			rebuildMenu(name, newMenu, shortcuts);
+			rebuildMenu(name, newMenu, context, shortcuts);
 			continue;
 		}
 		Action* action = &m_actions[actionName];
 		QAction* qaction = qmenu->addAction(action->visibleName());
 		qaction->setEnabled(action->isEnabled());
+		qaction->setShortcutContext(Qt::WidgetShortcut);
 		if (action->isExclusive() || action->booleanAction()) {
 			qaction->setCheckable(true);
 		}
@@ -88,6 +92,7 @@ void ActionMapper::rebuildMenu(const QString& menu, QMenu* qmenu, const Shortcut
 				qaction->setShortcut(QKeySequence(shortcut));
 			});
 		}
+		context->addAction(qaction);
 	}
 }
 

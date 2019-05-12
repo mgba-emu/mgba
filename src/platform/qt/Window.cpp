@@ -617,6 +617,7 @@ void Window::showEvent(QShowEvent* event) {
 		m_fullscreenOnStart = false;
 	}
 	reloadDisplayDriver();
+	setFocus();
 }
 
 void Window::closeEvent(QCloseEvent* event) {
@@ -768,7 +769,7 @@ void Window::gameStarted() {
 			action->setActive(true);
 		}
 	}
-	m_actions.rebuildMenu(menuBar(), *m_shortcutController);
+	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
 
 
 #ifdef USE_DISCORD_RPC
@@ -1603,7 +1604,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 
 	m_shortcutController->rebuildItems();
-	m_actions.rebuildMenu(menubar, *m_shortcutController);
+	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
 }
 
 void Window::attachWidget(QWidget* widget) {
@@ -1640,7 +1641,7 @@ void Window::updateMRU() {
 	}
 	m_config->setMRU(m_mruFiles);
 	m_config->write();
-	m_actions.rebuildMenu(menuBar(), *m_shortcutController);
+	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
 }
 
 Action* Window::addGameAction(const QString& visibleName, const QString& name, Action::Function function, const QString& menu, const QKeySequence& shortcut) {

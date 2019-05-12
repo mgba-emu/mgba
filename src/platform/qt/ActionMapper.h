@@ -29,7 +29,7 @@ public:
 	void addMenu(const QString& visibleName, const QString& name, const QString& parent = {});
 	void addHiddenMenu(const QString& visibleName, const QString& name, const QString& parent = {});
 	void clearMenu(const QString& name);
-	void rebuildMenu(QMenuBar*, const ShortcutController&);
+	void rebuildMenu(QMenuBar*, QWidget* context, const ShortcutController&);
 
 	void addSeparator(const QString& menu);
 
@@ -59,7 +59,7 @@ signals:
 	void menuCleared(const QString& name);
 
 private:
-	void rebuildMenu(const QString& menu, QMenu* qmenu, const ShortcutController&);
+	void rebuildMenu(const QString& menu, QMenu* qmenu, QWidget* context, const ShortcutController&);
 	Action* addAction(const Action& act, const QString& name, const QString& menu, const QKeySequence& shortcut);
 
 	QHash<QString, Action> m_actions;
