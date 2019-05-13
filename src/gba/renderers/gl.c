@@ -370,13 +370,34 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 
 	int i;
 	for (i = 0; i < 4; ++i) {
-		glRenderer->bg[i].index = i;
-		glGenFramebuffers(1, &glRenderer->bg[i].fbo);
-		glGenTextures(1, &glRenderer->bg[i].tex);
-		glGenTextures(1, &glRenderer->bg[i].flags);
-		glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[i].fbo);
-		_initFramebufferTexture(glRenderer->bg[i].tex, GL_RGBA, GL_COLOR_ATTACHMENT0, glRenderer->scale);
-		_initFramebufferTexture(glRenderer->bg[i].flags, GL_RGBA, GL_COLOR_ATTACHMENT1, glRenderer->scale);
+		struct GBAVideoGLBackground* bg = &glRenderer->bg[i];
+		bg->index = i;
+		bg->enabled = 0;
+		bg->priority = 0;
+		bg->charBase = 0;
+		bg->mosaic = 0;
+		bg->multipalette = 0;
+		bg->screenBase = 0;
+		bg->overflow = 0;
+		bg->size = 0;
+		bg->target1 = 0;
+		bg->target2 = 0;
+		bg->x = 0;
+		bg->y = 0;
+		bg->refx = 0;
+		bg->refy = 0;
+		bg->affine[0].dx = 256;
+		bg->affine[0].dmx = 0;
+		bg->affine[0].dy = 0;
+		bg->affine[0].dmy = 256;
+		bg->affine[0].sx = 0;
+		bg->affine[0].sy = 0;
+		glGenFramebuffers(1, &bg->fbo);
+		glGenTextures(1, &bg->tex);
+		glGenTextures(1, &bg->flags);
+		glBindFramebuffer(GL_FRAMEBUFFER, bg->fbo);
+		_initFramebufferTexture(bg->tex, GL_RGBA, GL_COLOR_ATTACHMENT0, glRenderer->scale);
+		_initFramebufferTexture(bg->flags, GL_RGBA, GL_COLOR_ATTACHMENT1, glRenderer->scale);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
