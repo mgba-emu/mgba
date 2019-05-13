@@ -42,6 +42,7 @@ struct GBAVideoGLAffine {
 struct GBAVideoGLBackground {
 	GLuint fbo;
 	GLuint tex;
+	GLuint flags;
 
 	unsigned index;
 	int enabled;
