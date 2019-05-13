@@ -263,10 +263,7 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 static void _GBACoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	int fakeBool;
-	int scale = 1;
-	if (mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
-		scale = gbacore->glRenderer.scale;
-	}
+	int scale = gbacore->glRenderer.scale;
 
 	*width = GBA_VIDEO_HORIZONTAL_PIXELS * scale;
 	*height = GBA_VIDEO_VERTICAL_PIXELS * scale;

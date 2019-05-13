@@ -13,13 +13,8 @@ CXX_GUARD_START
 #include <mgba/core/core.h>
 #include <mgba/gba/interface.h>
 #include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/renderers/common.h>
 #include <mgba/internal/gba/video.h>
-
-struct GBAVideoSoftwareSprite {
-	struct GBAObj obj;
-	int y;
-	int endY;
-};
 
 struct GBAVideoSoftwareBackground {
 	unsigned index;
@@ -140,7 +135,7 @@ struct GBAVideoSoftwareRenderer {
 
 	int oamDirty;
 	int oamMax;
-	struct GBAVideoSoftwareSprite sprites[128];
+	struct GBAVideoRendererSprite sprites[128];
 	int16_t objOffsetX;
 	int16_t objOffsetY;
 

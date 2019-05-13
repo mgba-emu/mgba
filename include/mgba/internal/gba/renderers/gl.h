@@ -13,6 +13,7 @@ CXX_GUARD_START
 #include <mgba/core/core.h>
 #include <mgba/gba/interface.h>
 #include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/renderers/common.h>
 #include <mgba/internal/gba/video.h>
 
 #ifdef USE_EPOXY
@@ -61,10 +62,22 @@ struct GBAVideoGLBackground {
 	struct GBAVideoGLAffine affine[4];
 };
 
+enum {
+	GBA_GL_FBO_OBJ = 0,
+	GBA_GL_FBO_COMPOSITE = 1,
+
+	GBA_GL_TEX_OBJ_COLOR = 0,
+	GBA_GL_TEX_OBJ_FLAGS = 1,
+	GBA_GL_TEX_COMPOSITE_FLAGS = 2,
+};
+
 struct GBAVideoGLRenderer {
 	struct GBAVideoRenderer d;
 
 	struct GBAVideoGLBackground bg[4];
+
+	int oamMax;
+	struct GBAVideoRendererSprite sprites[128];
 
 	GLuint fbo[2];
 	GLuint layers[3];
@@ -81,7 +94,7 @@ struct GBAVideoGLRenderer {
 	unsigned vramDirty;
 
 	GLuint bgProgram[6];
-	GLuint objProgram;
+	GLuint objProgram[4];
 
 	GLuint compositeProgram;
 
