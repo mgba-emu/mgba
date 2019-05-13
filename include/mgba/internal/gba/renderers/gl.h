@@ -95,7 +95,7 @@ struct GBAVideoGLRenderer {
 	unsigned vramDirty;
 
 	GLuint bgProgram[6];
-	GLuint objProgram[4];
+	GLuint objProgram[2];
 
 	GLuint compositeProgram;
 

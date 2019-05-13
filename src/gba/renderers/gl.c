@@ -187,7 +187,7 @@ static const char* const _renderMode2 =
 	"	flags = inflags / flagCoeff;\n"
 	"}";
 
-static const char* const _renderObjNoTransform =
+static const char* const _renderObj =
 	"varying vec2 texCoord;\n"
 	"uniform sampler2D vram;\n"
 	"uniform sampler2D palette;\n"
@@ -195,6 +195,8 @@ static const char* const _renderObjNoTransform =
 	"uniform int stride;\n"
 	"uniform int localPalette;\n"
 	"uniform ivec3 inflags;\n"
+	"uniform mat2x2 transform;\n"
+	"uniform ivec4 dims;\n"
 	"out vec4 color;\n"
 	"out vec3 flags;\n"
 	"const vec3 flagCoeff = vec3(32., 8., 4.);\n"
@@ -202,7 +204,10 @@ static const char* const _renderObjNoTransform =
 	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord);\n"
 
 	"void main() {\n"
-	"	ivec2 coord = ivec2(texCoord);\n"
+	"	ivec2 coord = ivec2(transform * (texCoord - dims.zw / 2) + dims.xy / 2);\n"
+	"	if ((coord & ~(dims.xy - 1)) != ivec2(0, 0)) {\n"
+	"		discard;\n"
+	"	}\n"
 	"	color = renderTile((coord.x >> 3) + (coord.y >> 3) * stride, 16 + localPalette, coord & 7);\n"
 	"	flags = inflags / flagCoeff;\n"
 	"}";
@@ -378,8 +383,6 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	glRenderer->compositeProgram = glCreateProgram();
 	glRenderer->objProgram[0] = glCreateProgram();
 	glRenderer->objProgram[1] = glCreateProgram();
-	glRenderer->objProgram[2] = glCreateProgram();
-	glRenderer->objProgram[3] = glCreateProgram();
 	glRenderer->bgProgram[0] = glCreateProgram();
 	glRenderer->bgProgram[1] = glCreateProgram();
 	glRenderer->bgProgram[2] = glCreateProgram();
@@ -416,13 +419,13 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	shaderBuffer[2] = _fetchTileNoOverflow;
 	_compileShader(glRenderer, glRenderer->bgProgram[3], shaderBuffer, 3, vs, log);
 
-	shaderBuffer[1] = _renderObjNoTransform;
+	shaderBuffer[1] = _renderObj;
 
 	shaderBuffer[2] = _renderTile16;
 	_compileShader(glRenderer, glRenderer->objProgram[0], shaderBuffer, 3, vs, log);
 
 	shaderBuffer[2] = _renderTile256;
-	_compileShader(glRenderer, glRenderer->objProgram[2], shaderBuffer, 3, vs, log);
+	_compileShader(glRenderer, glRenderer->objProgram[1], shaderBuffer, 3, vs, log);
 
 	shaderBuffer[1] = _composite;
 	_compileShader(glRenderer, glRenderer->compositeProgram, shaderBuffer, 2, vs, log);
@@ -449,8 +452,6 @@ void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 	glDeleteProgram(glRenderer->bgProgram[6]);
 	glDeleteProgram(glRenderer->objProgram[0]);
 	glDeleteProgram(glRenderer->objProgram[1]);
-	glDeleteProgram(glRenderer->objProgram[2]);
-	glDeleteProgram(glRenderer->objProgram[3]);
 	glDeleteProgram(glRenderer->compositeProgram);
 }
 
@@ -966,26 +967,45 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		spriteY -= 256;
 	}
 
-	if (GBAObjAttributesBIsVFlip(sprite->b)) {
+	if (!GBAObjAttributesAIsTransformed(sprite->a) && GBAObjAttributesBIsVFlip(sprite->b)) {
 		spriteY = (y - height) + (y - spriteY) + 1;
 	}
 
+	int totalWidth = width;
+	int totalHeight = height;
+	if (GBAObjAttributesAIsTransformed(sprite->a) && GBAObjAttributesAIsDoubleSize(sprite->a)) {
+		totalWidth <<= 1;
+		totalHeight <<= 1;
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[GBA_GL_FBO_OBJ]);
-	glViewport(x * renderer->scale, spriteY * renderer->scale, width * renderer->scale, height * renderer->scale);
-	glScissor(x * renderer->scale, y * renderer->scale, width * renderer->scale, renderer->scale);
-	glUseProgram(renderer->objProgram[GBAObjAttributesAIs256Color(sprite->a) ? 2 : 0]);
+	glViewport(x * renderer->scale, spriteY * renderer->scale, totalWidth * renderer->scale, totalHeight * renderer->scale);
+	glScissor(x * renderer->scale, y * renderer->scale, totalWidth * renderer->scale, renderer->scale);
+	glUseProgram(renderer->objProgram[GBAObjAttributesAGet256Color(sprite->a)]);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, renderer->vramTex);
 	glActiveTexture(GL_TEXTURE0 + 1);
 	glBindTexture(GL_TEXTURE_2D, renderer->paletteTex);
 	glUniform2i(0, 1, y - spriteY);
-	glUniform2i(1, GBAObjAttributesBIsHFlip(sprite->b) ? -width : width, height);
+	glUniform2i(1, (GBAObjAttributesBIsHFlip(sprite->b) && !GBAObjAttributesAIsTransformed(sprite->a)) ? -totalWidth : totalWidth, totalHeight);
 	glUniform1i(2, 0);
 	glUniform1i(3, 1);
 	glUniform1i(4, charBase);
 	glUniform1i(5, stride);
 	glUniform1i(6, GBAObjAttributesCGetPalette(sprite->c));
-	glUniform3i(7, GBAObjAttributesCGetPriority(sprite->c) << 3, (renderer->target1Obj | (renderer->target2Obj * 2)) / 8.f, 0);
+	glUniform3i(7, GBAObjAttributesCGetPriority(sprite->c) << 3, renderer->target1Obj | (renderer->target2Obj * 2), 0);
+	if (GBAObjAttributesAIsTransformed(sprite->a)) {
+		struct GBAOAMMatrix mat;
+		LOAD_16(mat.a, 0, &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)].a);
+		LOAD_16(mat.b, 0, &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)].b);
+		LOAD_16(mat.c, 0, &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)].c);
+		LOAD_16(mat.d, 0, &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)].d);
+
+		glUniformMatrix2fv(8, 1, GL_FALSE, (GLfloat[]) { mat.a / 256.f, mat.c / 256.f, mat.b / 256.f, mat.d / 256.f });
+	} else {
+		glUniformMatrix2fv(8, 1, GL_FALSE, (GLfloat[]) { 1.f, 0, 0, 1.f });		
+	}
+	glUniform4i(9, width, height, totalWidth, totalHeight);
 	glVertexAttribPointer(0, 2, GL_INT, GL_FALSE, 0, _vertices);
 	glEnableVertexAttribArray(0);
 	glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
