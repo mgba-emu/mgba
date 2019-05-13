@@ -240,8 +240,14 @@ static const char* const _composite =
 	"			pix += oldpix * blend.y;\n"
 	"		}\n"
 	"	} else {\n"
-	"		pix = texelFetch(oldLayer, ivec2(texCoord * scale), 0);\n"
 	"		outflags = oflags;\n"
+	"		vec4 oldpix = texelFetch(oldLayer, ivec2(texCoord * scale), 0);\n"
+	"		if (oflags.z == 1 && (oflags.y & 1) == 1 && (inflags.y & 2) == 2) {\n"
+	"			pix *= blend.y;\n"
+	"			pix += oldpix * blend.x;\n"
+	"		} else {\n"
+	"			pix = oldpix;\n"
+	"		}\n"
 	"	}\n"
 	"	color = pix;\n"
 	"	flags = outflags / flagCoeff;\n"
@@ -993,7 +999,7 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	glUniform1i(4, charBase);
 	glUniform1i(5, stride);
 	glUniform1i(6, GBAObjAttributesCGetPalette(sprite->c));
-	glUniform3i(7, GBAObjAttributesCGetPriority(sprite->c) << 3, renderer->target1Obj | (renderer->target2Obj * 2), 0);
+	glUniform3i(7, GBAObjAttributesCGetPriority(sprite->c) << 3, (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2), GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT ? BLEND_ALPHA : renderer->blendEffect);
 	if (GBAObjAttributesAIsTransformed(sprite->a)) {
 		struct GBAOAMMatrix mat;
 		LOAD_16(mat.a, 0, &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)].a);
