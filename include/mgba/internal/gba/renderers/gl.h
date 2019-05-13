@@ -66,10 +66,14 @@ struct GBAVideoGLBackground {
 enum {
 	GBA_GL_FBO_OBJ = 0,
 	GBA_GL_FBO_COMPOSITE = 1,
+	GBA_GL_FBO_OUTPUT = 2,
 
 	GBA_GL_TEX_OBJ_COLOR = 0,
 	GBA_GL_TEX_OBJ_FLAGS = 1,
-	GBA_GL_TEX_COMPOSITE_FLAGS = 2,
+	GBA_GL_TEX_COMPOSITE_COLOR = 2,
+	GBA_GL_TEX_COMPOSITE_FLAGS = 3,
+	GBA_GL_TEX_COMPOSITE_OLD_COLOR = 4,
+	GBA_GL_TEX_COMPOSITE_OLD_FLAGS = 5,
 };
 
 struct GBAVideoGLRenderer {
@@ -78,18 +82,16 @@ struct GBAVideoGLRenderer {
 	struct GBAVideoGLBackground bg[4];
 
 	int oamMax;
+	bool oamDirty;
 	struct GBAVideoRendererSprite sprites[128];
 
-	GLuint fbo[2];
-	GLuint layers[3];
+	GLuint fbo[3];
+	GLuint layers[6];
 
 	GLuint outputTex;
 
 	GLuint paletteTex;
 	bool paletteDirty;
-
-	GLuint oamTex;
-	bool oamDirty;
 
 	GLuint vramTex;
 	unsigned vramDirty;
@@ -98,6 +100,7 @@ struct GBAVideoGLRenderer {
 	GLuint objProgram[2];
 
 	GLuint compositeProgram;
+	GLuint finalizeProgram;
 
 	GBARegisterDISPCNT dispcnt;
 
