@@ -52,10 +52,10 @@ static const GLchar* const _gl3Header =
 	"#version 130\n";
 
 static const char* const _vertexShader =
-	"attribute vec2 position;\n"
+	"in vec2 position;\n"
 	"uniform ivec2 loc;\n"
 	"uniform ivec2 maxPos;\n"
-	"varying vec2 texCoord;\n"
+	"out vec2 texCoord;\n"
 
 	"void main() {\n"
 	"	vec2 local = vec2(position.x, float(position.y * loc.x + loc.y) / abs(maxPos.y));\n"
@@ -104,7 +104,7 @@ const static struct GBAVideoGLUniform _uniformsMode0[] = {
 };
 
 static const char* const _renderMode0 =
-	"varying vec2 texCoord;\n"
+	"in vec2 texCoord;\n"
 	"uniform sampler2D vram;\n"
 	"uniform sampler2D palette;\n"
 	"uniform int screenBase;\n"
@@ -170,7 +170,7 @@ const static struct GBAVideoGLUniform _uniformsMode2[] = {
 };
 
 static const char* const _renderMode2 =
-	"varying vec2 texCoord;\n"
+	"in vec2 texCoord;\n"
 	"uniform sampler2D vram;\n"
 	"uniform sampler2D palette;\n"
 	"uniform int screenBase;\n"
@@ -236,7 +236,7 @@ const static struct GBAVideoGLUniform _uniformsObj[] = {
 };
 
 static const char* const _renderObj =
-	"varying vec2 texCoord;\n"
+	"in vec2 texCoord;\n"
 	"uniform sampler2D vram;\n"
 	"uniform sampler2D palette;\n"
 	"uniform int charBase;\n"
@@ -275,7 +275,7 @@ const static struct GBAVideoGLUniform _uniformsComposite[] = {
 };
 
 static const char* const _composite =
-	"varying vec2 texCoord;\n"
+	"in vec2 texCoord;\n"
 	"uniform int scale;\n"
 	"uniform int layerId\n;"
 	"uniform sampler2D layer;\n"
@@ -333,13 +333,14 @@ const static struct GBAVideoGLUniform _uniformsFinalize[] = {
 };
 
 static const char* const _finalize =
-	"varying vec2 texCoord;\n"
+	"in vec2 texCoord;\n"
 	"uniform int scale;\n"
 	"uniform sampler2D layer;\n"
 	"uniform sampler2D layerFlags;\n"
 	"uniform sampler2D oldLayer;\n"
 	"uniform sampler2D oldFlags;\n"
 	"const vec4 flagCoeff = vec4(32., 32., 16., 16.);\n"
+	"out vec4 color;\n"
 
 	"void main() {\n"
 	"	vec4 pix = texelFetch(layer, ivec2(texCoord * scale), 0);\n"
@@ -356,7 +357,7 @@ static const char* const _finalize =
 	"	} else if ((inflags.y & 13) == 13) {\n"
 	"		pix -= pix * inflags.z / 16.;\n"
 	"	}\n"
-	"	gl_FragColor = pix;\n"
+	"	color = pix;\n"
 	"}";
 
 static const GLint _vertices[] = {
