@@ -401,6 +401,7 @@ void SettingsView::updateConfig() {
 	saveSetting("logToStdout", m_ui.logToStdout);
 	saveSetting("logFile", m_ui.logFile);
 	saveSetting("useDiscordPresence", m_ui.useDiscordPresence);
+	saveSetting("audioHle", m_ui.audioHle);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
@@ -464,6 +465,14 @@ void SettingsView::updateConfig() {
 		m_controller->setQtOption("language", language.bcp47Name());
 		emit languageChanged();
 	}
+
+	int videoScale = m_controller->getOption("videoScale").toInt();
+	int hwaccelVideo = m_controller->getOption("hwaccelVideo").toInt();
+	if (videoScale != m_ui.videoScale->value() || hwaccelVideo != m_ui.hwaccelVideo->currentIndex()) {
+		emit videoRendererChanged();
+	}
+	saveSetting("videoScale", m_ui.videoScale);
+	saveSetting("hwaccelVideo", m_ui.hwaccelVideo->currentIndex());
 
 	m_logModel.save(m_controller);
 	m_logModel.logger()->setLogFile(m_ui.logFile->text());
@@ -541,6 +550,8 @@ void SettingsView::reloadConfig() {
 	loadSetting("logToStdout", m_ui.logToStdout);
 	loadSetting("logFile", m_ui.logFile);
 	loadSetting("useDiscordPresence", m_ui.useDiscordPresence);
+	loadSetting("audioHle", m_ui.audioHle);
+	loadSetting("videoScale", m_ui.videoScale);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 
@@ -604,6 +615,12 @@ void SettingsView::reloadConfig() {
 		m_ui.cgbModel->setCurrentIndex(index >= 0 ? index : 0);
 	}
 #endif
+
+	int hwaccelVideo = m_controller->getOption("hwaccelVideo", 1).toInt();
+	if (hwaccelVideo < 1) {
+		hwaccelVideo = 1;
+	}
+	m_ui.hwaccelVideo->setCurrentIndex(hwaccelVideo);
 }
 
 void SettingsView::saveSetting(const char* key, const QAbstractButton* field) {
