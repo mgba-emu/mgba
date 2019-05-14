@@ -232,6 +232,7 @@ const static struct GBAVideoGLUniform _uniformsObj[] = {
 	{ "inflags", GBA_GL_OBJ_INFLAGS, },
 	{ "transform", GBA_GL_OBJ_TRANSFORM, },
 	{ "dims", GBA_GL_OBJ_DIMS, },
+	{ "objwin", GBA_GL_OBJ_OBJWIN, },
 	{ 0 }
 };
 
@@ -245,8 +246,10 @@ static const char* const _renderObj =
 	"uniform ivec4 inflags;\n"
 	"uniform mat2x2 transform;\n"
 	"uniform ivec4 dims;\n"
+	"uniform vec3 objwin;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
+	"out vec2 window;\n"
 	"const vec4 flagCoeff = vec4(32., 32., 16., 16.);\n"
 
 	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord);\n"
@@ -256,8 +259,13 @@ static const char* const _renderObj =
 	"	if ((coord & ~(dims.xy - 1)) != ivec2(0, 0)) {\n"
 	"		discard;\n"
 	"	}\n"
-	"	color = renderTile((coord.x >> 3) + (coord.y >> 3) * stride, 16 + localPalette, coord & 7);\n"
+	"	vec4 pix = renderTile((coord.x >> 3) + (coord.y >> 3) * stride, 16 + localPalette, coord & 7);\n"
+	"	if (objwin.x > 0) {\n"
+	"		pix.a = 0;\n"
+	"	}\n"
+	"	color = pix;\n"
 	"	flags = inflags / flagCoeff;\n"
+	"	window = objwin.yz;\n"
 	"}";
 
 const static struct GBAVideoGLUniform _uniformsComposite[] = {
@@ -542,10 +550,12 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	shaderBuffer[2] = _renderTile16;
 	_compileShader(glRenderer, glRenderer->objProgram[0], shaderBuffer, 3, vs, log);
 	_lookupUniforms(glRenderer->objProgram[0], glRenderer->objUniforms[0], _uniformsObj);
+	glBindFragDataLocation(glRenderer->objProgram[0], 2, "window");
 
 	shaderBuffer[2] = _renderTile256;
 	_compileShader(glRenderer, glRenderer->objProgram[1], shaderBuffer, 3, vs, log);
 	_lookupUniforms(glRenderer->objProgram[1], glRenderer->objUniforms[1], _uniformsObj);
+	glBindFragDataLocation(glRenderer->objProgram[1], 2, "window");
 
 	shaderBuffer[1] = _composite;
 	_compileShader(glRenderer, glRenderer->compositeProgram, shaderBuffer, 2, vs, log);
@@ -879,7 +889,6 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		glRenderer->firstAffine = -1;
 	}
 
-	int spriteLayers = 0;
 	if (GBARegisterDISPCNTIsObjEnable(glRenderer->dispcnt) && !glRenderer->d.disableOBJ) {
 		if (glRenderer->oamDirty) {
 			glRenderer->oamMax = GBAVideoRendererCleanOAM(glRenderer->d.oam->obj, glRenderer->sprites, 0);
@@ -893,7 +902,6 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 			}
 
 			GBAVideoGLRendererDrawSprite(glRenderer, &sprite->obj, y, sprite->y);
-			spriteLayers |= 1 << GBAObjAttributesCGetPriority(sprite->obj.c);
 		}
 	}
 
@@ -1175,7 +1183,14 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	glUniform4i(uniforms[GBA_GL_OBJ_DIMS], width, height, totalWidth, totalHeight);
 	glVertexAttribPointer(0, 2, GL_INT, GL_FALSE, 0, _vertices);
 	glEnableVertexAttribArray(0);
-	glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
+	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_OBJWIN) {
+		int window = ~renderer->objwin & 0xFF;
+		glUniform3f(uniforms[GBA_GL_OBJ_OBJWIN], 1, (window & 0xF) / 32.f, (window >> 4) / 32.f);
+		glDrawBuffers(3, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 });
+	} else {
+		glUniform3f(uniforms[GBA_GL_OBJ_OBJWIN], 0, 0, 0);
+		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
+	}
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
