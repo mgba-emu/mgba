@@ -70,11 +70,6 @@ enum {
 
 #define IS_WRITABLE(PIXEL) ((PIXEL) & 0xFE000000)
 
-struct WindowRegion {
-	uint8_t end;
-	uint8_t start;
-};
-
 struct WindowControl {
 	GBAWindowControl packed;
 	int8_t priority;
@@ -118,8 +113,8 @@ struct GBAVideoSoftwareRenderer {
 	GBAMosaicControl mosaic;
 
 	struct WindowN {
-		struct WindowRegion h;
-		struct WindowRegion v;
+		struct GBAVideoWindowRegion h;
+		struct GBAVideoWindowRegion v;
 		struct WindowControl control;
 	} winN[2];
 
