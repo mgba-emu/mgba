@@ -49,6 +49,7 @@ public:
 	virtual bool supportsShaders() const = 0;
 	virtual VideoShader* shaders() = 0;
 	virtual VideoProxy* videoProxy() { return nullptr; }
+	virtual int framebufferHandle() { return -1; }
 
 signals:
 	void showCursor();

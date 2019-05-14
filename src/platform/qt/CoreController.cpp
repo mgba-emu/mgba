@@ -40,16 +40,6 @@ CoreController::CoreController(mCore* core, QObject* parent)
 	m_threadContext.core = core;
 	m_threadContext.userData = this;
 
-	QSize size(1024, 2048);
-	m_buffers[0].resize(size.width() * size.height() * sizeof(color_t));
-	m_buffers[1].resize(size.width() * size.height() * sizeof(color_t));
-	m_buffers[0].fill(0xFF);
-	m_buffers[1].fill(0xFF);
-	m_activeBuffer = &m_buffers[0];
-	m_completeBuffer = m_buffers[0];
-
-	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), size.width());
-
 	m_resetActions.append([this]() {
 		if (m_autoload) {
 			mCoreLoadState(m_threadContext.core, 0, m_loadStateFlags);
@@ -91,8 +81,10 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 		controller->m_resetActions.clear();
 
-		controller->m_activeBuffer = &controller->m_buffers[0];
-		context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), controller->screenDimensions().width());
+		if (!controller->m_hwaccel) {
+			controller->m_activeBuffer = &controller->m_buffers[0];
+			context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), controller->screenDimensions().width());
+		}
 
 		controller->finishFrame();
 	};
@@ -211,6 +203,9 @@ CoreController::~CoreController() {
 
 const color_t* CoreController::drawContext() {
 	QMutexLocker locker(&m_mutex);
+	if (m_hwaccel) {
+		return nullptr;
+	}
 	return reinterpret_cast<const color_t*>(m_completeBuffer.constData());
 }
 
@@ -340,6 +335,18 @@ void CoreController::setLogger(LogController* logger) {
 }
 
 void CoreController::start() {
+	if (!m_hwaccel) {
+		QSize size(1024, 2048);
+		m_buffers[0].resize(size.width() * size.height() * sizeof(color_t));
+		m_buffers[1].resize(size.width() * size.height() * sizeof(color_t));
+		m_buffers[0].fill(0xFF);
+		m_buffers[1].fill(0xFF);
+		m_activeBuffer = &m_buffers[0];
+		m_completeBuffer = m_buffers[0];
+
+		m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), size.width());
+	}
+
 	if (!m_patched) {
 		mCoreAutoloadPatch(m_threadContext.core);
 	}
@@ -800,6 +807,16 @@ void CoreController::endVideoLog() {
 	m_vl = nullptr;
 }
 
+void CoreController::setFramebufferHandle(int fb) {
+	Interrupter interrupter(this);
+	if (fb < 0) {
+		m_hwaccel = false;
+	} else {
+		m_threadContext.core->setVideoGLTex(m_threadContext.core, fb);
+		m_hwaccel = true;
+	}
+}
+
 void CoreController::updateKeys() {
 	int activeKeys = m_activeKeys | updateAutofire() | m_inputController->pollEvents();
 	m_threadContext.core->setKeys(m_threadContext.core, activeKeys);
@@ -823,17 +840,18 @@ int CoreController::updateAutofire() {
 
 void CoreController::finishFrame() {
 	QMutexLocker locker(&m_mutex);
-	memcpy(m_completeBuffer.data(), m_activeBuffer->constData(), m_activeBuffer->size());
+	if (!m_hwaccel) {
+			memcpy(m_completeBuffer.data(), m_activeBuffer->constData(), m_activeBuffer->size());
 
-	// TODO: Generalize this to triple buffering?
-	m_activeBuffer = &m_buffers[0];
-	if (m_activeBuffer == m_completeBuffer) {
-		m_activeBuffer = &m_buffers[1];
+		// TODO: Generalize this to triple buffering?
+		m_activeBuffer = &m_buffers[0];
+		if (m_activeBuffer == m_completeBuffer) {
+			m_activeBuffer = &m_buffers[1];
+		}
+		// Copy contents to avoid issues when doing frameskip
+		memcpy(m_activeBuffer->data(), m_completeBuffer.constData(), m_activeBuffer->size());
+		m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), screenDimensions().width());
 	}
-	// Copy contents to avoid issues when doing frameskip
-	memcpy(m_activeBuffer->data(), m_completeBuffer.constData(), m_activeBuffer->size());
-	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), screenDimensions().width());
-
 	for (auto& action : m_frameActions) {
 		action();
 	}

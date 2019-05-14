@@ -52,6 +52,7 @@ public:
 	bool supportsShaders() const override;
 	VideoShader* shaders() override;
 	VideoProxy* videoProxy() override;
+	int framebufferHandle() override;
 
 public slots:
 	void stopDrawing() override;
@@ -110,6 +111,8 @@ public slots:
 	void setShaders(struct VDir*);
 	void clearShaders();
 	VideoShader* shaders();
+
+	int glTex();
 
 private:
 	void performDraw();

@@ -18,7 +18,7 @@
 #ifdef BUILD_GL
 #include "platform/opengl/gl.h"
 #endif
-#if !defined(_WIN32) || defined(USE_EPOXY)
+#ifdef BUILD_GLES2
 #include "platform/opengl/gles2.h"
 #ifdef _WIN32
 #include <epoxy/wgl.h>
@@ -195,6 +195,10 @@ VideoProxy* DisplayGL::videoProxy() {
 	return nullptr;
 }
 
+int DisplayGL::framebufferHandle() {
+	return m_painter->glTex();
+}
+
 PainterGL::PainterGL(int majorVersion, VideoProxy* proxy, QGLWidget* parent)
 	: m_gl(parent)
 	, m_videoProxy(proxy)
@@ -202,7 +206,7 @@ PainterGL::PainterGL(int majorVersion, VideoProxy* proxy, QGLWidget* parent)
 #ifdef BUILD_GL
 	mGLContext* glBackend;
 #endif
-#if !defined(_WIN32) || defined(USE_EPOXY)
+#ifdef BUILD_GLES2
 	mGLES2Context* gl2Backend;
 #endif
 
@@ -213,7 +217,7 @@ PainterGL::PainterGL(int majorVersion, VideoProxy* proxy, QGLWidget* parent)
 
 	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
 
-#if !defined(_WIN32) || defined(USE_EPOXY)
+#ifdef BUILD_GLES2
 	if (extensions.contains("GL_ARB_framebuffer_object") && majorVersion >= 2) {
 		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
 		mGLES2ContextCreate(gl2Backend);
@@ -239,7 +243,7 @@ PainterGL::PainterGL(int majorVersion, VideoProxy* proxy, QGLWidget* parent)
 	};
 
 	m_backend->init(m_backend, reinterpret_cast<WHandle>(m_gl->winId()));
-#if !defined(_WIN32) || defined(USE_EPOXY)
+#ifdef BUILD_GLES2
 	if (m_supportsShaders) {
 		m_shader.preprocessShader = static_cast<void*>(&reinterpret_cast<mGLES2Context*>(m_backend)->initialShader);
 	}
@@ -266,7 +270,7 @@ PainterGL::~PainterGL() {
 #if defined(_WIN32) && defined(USE_EPOXY)
 	epoxy_handle_external_wglMakeCurrent();
 #endif
-#if !defined(_WIN32) || defined(USE_EPOXY)
+#ifdef BUILD_GLES2
 	if (m_shader.passes) {
 		mGLES2ShaderFree(&m_shader);
 	}
@@ -339,7 +343,7 @@ void PainterGL::start() {
 	epoxy_handle_external_wglMakeCurrent();
 #endif
 
-#if !defined(_WIN32) || defined(USE_EPOXY)
+#ifdef BUILD_GLES2
 	if (m_supportsShaders && m_shader.passes) {
 		mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
 	}
@@ -422,14 +426,16 @@ void PainterGL::performDraw() {
 
 void PainterGL::enqueue(const uint32_t* backing) {
 	m_mutex.lock();
-	uint32_t* buffer;
-	if (m_free.isEmpty()) {
-		buffer = m_queue.dequeue();
-	} else {
-		buffer = m_free.takeLast();
+	uint32_t* buffer = nullptr;
+	if (backing) {
+		if (m_free.isEmpty()) {
+			buffer = m_queue.dequeue();
+		} else {
+			buffer = m_free.takeLast();
+		}
+		QSize size = m_context->screenDimensions();
+		memcpy(buffer, backing, size.width() * size.height() * BYTES_PER_PIXEL);
 	}
-	QSize size = m_context->screenDimensions();
-	memcpy(buffer, backing, size.width() * size.height() * BYTES_PER_PIXEL);
 	m_queue.enqueue(buffer);
 	m_mutex.unlock();
 }
@@ -441,8 +447,10 @@ void PainterGL::dequeue() {
 		return;
 	}
 	uint32_t* buffer = m_queue.dequeue();
-	m_backend->postFrame(m_backend, buffer);
-	m_free.append(buffer);
+	if (buffer) {
+		m_backend->postFrame(m_backend, buffer);
+		m_free.append(buffer);
+	}
 	m_mutex.unlock();
 }
 
@@ -451,7 +459,9 @@ void PainterGL::dequeueAll() {
 	m_mutex.lock();
 	while (!m_queue.isEmpty()) {
 		buffer = m_queue.dequeue();
-		m_free.append(buffer);
+		if (buffer) {
+			m_free.append(buffer);
+		}
 	}
 	if (buffer) {
 		m_backend->postFrame(m_backend, buffer);
@@ -464,7 +474,7 @@ void PainterGL::setShaders(struct VDir* dir) {
 		return;
 	}
 	if (!m_active) {
-#if !defined(_WIN32) || defined(USE_EPOXY)
+#ifdef BUILD_GLES2
 		m_gl->makeCurrent();
 #if defined(_WIN32) && defined(USE_EPOXY)
 		epoxy_handle_external_wglMakeCurrent();
@@ -489,7 +499,7 @@ void PainterGL::clearShaders() {
 		return;
 	}
 	if (!m_active) {
-#if !defined(_WIN32) || defined(USE_EPOXY)
+#ifdef BUILD_GLES2
 		m_gl->makeCurrent();
 #if defined(_WIN32) && defined(USE_EPOXY)
 		epoxy_handle_external_wglMakeCurrent();
@@ -507,6 +517,21 @@ void PainterGL::clearShaders() {
 
 VideoShader* PainterGL::shaders() {
 	return &m_shader;
+}
+
+int PainterGL::glTex() {
+#ifdef BUILD_GLES2
+	if (supportsShaders()) {
+		mGLES2Context* gl2Backend = reinterpret_cast<mGLES2Context*>(m_backend);
+		return gl2Backend->tex;
+	}
+#endif
+#ifdef BUILD_GL
+	mGLContext* glBackend = reinterpret_cast<mGLContext*>(m_backend);
+	return glBackend->tex;
+#else
+	return -1;
+#endif
 }
 
 #endif

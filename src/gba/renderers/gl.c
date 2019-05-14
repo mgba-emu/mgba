@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gba/renderers/gl.h>
 
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
+
 #include <mgba/core/cache-set.h>
 #include <mgba/internal/arm/macros.h>
 #include <mgba/internal/gba/io.h>
@@ -90,7 +92,7 @@ static const char* const _renderTile256 =
 	"	return color;\n"
 	"}";
 
-const static struct GBAVideoGLUniform _uniformsMode0[] = {
+static const struct GBAVideoGLUniform _uniformsMode0[] = {
 	{ "loc", GBA_GL_VS_LOC, },
 	{ "maxPos", GBA_GL_VS_MAXPOS, },
 	{ "vram", GBA_GL_BG_VRAM, },
@@ -155,7 +157,7 @@ static const char* const _fetchTileNoOverflow =
 	"	return renderTile(coord);\n"
 	"}";
 
-const static struct GBAVideoGLUniform _uniformsMode2[] = {
+static const struct GBAVideoGLUniform _uniformsMode2[] = {
 	{ "loc", GBA_GL_VS_LOC, },
 	{ "maxPos", GBA_GL_VS_MAXPOS, },
 	{ "vram", GBA_GL_BG_VRAM, },
@@ -221,7 +223,7 @@ static const char* const _renderMode2 =
 	"	flags = inflags / flagCoeff;\n"
 	"}";
 
-const static struct GBAVideoGLUniform _uniformsObj[] = {
+static const struct GBAVideoGLUniform _uniformsObj[] = {
 	{ "loc", GBA_GL_VS_LOC, },
 	{ "maxPos", GBA_GL_VS_MAXPOS, },
 	{ "vram", GBA_GL_OBJ_VRAM, },
@@ -268,7 +270,7 @@ static const char* const _renderObj =
 	"	window = objwin.yz;\n"
 	"}";
 
-const static struct GBAVideoGLUniform _uniformsComposite[] = {
+static const struct GBAVideoGLUniform _uniformsComposite[] = {
 	{ "loc", GBA_GL_VS_LOC, },
 	{ "maxPos", GBA_GL_VS_MAXPOS, },
 	{ "scale", GBA_GL_COMPOSITE_SCALE, },
@@ -329,7 +331,7 @@ static const char* const _composite =
 	"	}\n"
 	"}";
 
-const static struct GBAVideoGLUniform _uniformsFinalize[] = {
+static const struct GBAVideoGLUniform _uniformsFinalize[] = {
 	{ "loc", GBA_GL_VS_LOC, },
 	{ "maxPos", GBA_GL_VS_MAXPOS, },
 	{ "scale", GBA_GL_FINALIZE_SCALE, },
@@ -413,8 +415,10 @@ void _compileShader(struct GBAVideoGLRenderer* glRenderer, GLuint program, const
 		mLOG(GBA_VIDEO, ERROR, "Program link failure: %s", log);
 	}
 	glDeleteShader(fs);
+#ifndef BUILD_GLES3
 	glBindFragDataLocation(program, 0, "color");
 	glBindFragDataLocation(program, 1, "flags");
+#endif
 }
 
 static void _initFramebufferTexture(GLuint tex, GLenum format, GLenum attachment, int scale) {
@@ -550,18 +554,24 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	shaderBuffer[2] = _renderTile16;
 	_compileShader(glRenderer, glRenderer->objProgram[0], shaderBuffer, 3, vs, log);
 	_lookupUniforms(glRenderer->objProgram[0], glRenderer->objUniforms[0], _uniformsObj);
+#ifndef BUILD_GLES3
 	glBindFragDataLocation(glRenderer->objProgram[0], 2, "window");
+#endif
 
 	shaderBuffer[2] = _renderTile256;
 	_compileShader(glRenderer, glRenderer->objProgram[1], shaderBuffer, 3, vs, log);
 	_lookupUniforms(glRenderer->objProgram[1], glRenderer->objUniforms[1], _uniformsObj);
+#ifndef BUILD_GLES3
 	glBindFragDataLocation(glRenderer->objProgram[1], 2, "window");
+#endif
 
 	shaderBuffer[1] = _composite;
 	_compileShader(glRenderer, glRenderer->compositeProgram, shaderBuffer, 2, vs, log);
 	_lookupUniforms(glRenderer->compositeProgram, glRenderer->compositeUniforms, _uniformsComposite);
+#ifndef BUILD_GLES3
 	glBindFragDataLocation(glRenderer->compositeProgram, 2, "oldColor");
 	glBindFragDataLocation(glRenderer->compositeProgram, 3, "oldFlags");
+#endif
 
 	shaderBuffer[1] = _finalize;
 	_compileShader(glRenderer, glRenderer->finalizeProgram, shaderBuffer, 2, vs, log);
@@ -585,7 +595,6 @@ void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 	glDeleteProgram(glRenderer->bgProgram[3]);
 	glDeleteProgram(glRenderer->bgProgram[4]);
 	glDeleteProgram(glRenderer->bgProgram[5]);
-	glDeleteProgram(glRenderer->bgProgram[6]);
 	glDeleteProgram(glRenderer->objProgram[0]);
 	glDeleteProgram(glRenderer->objProgram[1]);
 	glDeleteProgram(glRenderer->compositeProgram);
@@ -611,9 +620,13 @@ void GBAVideoGLRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam)
 }
 
 void GBAVideoGLRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
+	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
+#ifdef BUILD_GLES3
+	glRenderer->shadowPalette[address >> 1] = (value & 0x3F) | ((value & 0x7FE0) << 1);
+#else
 	UNUSED(address);
 	UNUSED(value);
-	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
+#endif
 	glRenderer->paletteDirty = true;
 }
 
@@ -822,7 +835,11 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 	if (glRenderer->paletteDirty) {
 		glBindTexture(GL_TEXTURE_2D, glRenderer->paletteTex);
+#ifdef BUILD_GLES3
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB565, 16, 32, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_6_5, glRenderer->shadowPalette);
+#else
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5_A1, 16, 32, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, glRenderer->d.palette);
+#endif
 		glRenderer->paletteDirty = false;
 	}
 	int i;
@@ -841,33 +858,33 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_COMPOSITE]);
 	glEnable(GL_SCISSOR_TEST);
 	glScissor(0, y * glRenderer->scale, GBA_VIDEO_HORIZONTAL_PIXELS * glRenderer->scale, glRenderer->scale);
-	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 	glClear(GL_COLOR_BUFFER_BIT);
 	if (y == 0) {
 		glDisable(GL_SCISSOR_TEST);
-		glDrawBuffer(GL_COLOR_ATTACHMENT1);
+		glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT1 });
 		glClearColor(1, (glRenderer->target1Bd | (glRenderer->target2Bd * 2) | (glRenderer->blendEffect * 4)) / 32.f,
 		             (glRenderer->blendEffect == BLEND_ALPHA ? glRenderer->blda : glRenderer->bldy) / 16.f, glRenderer->bldb / 16.f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		
 		glClearColor(0, 0, 0, 0);
-		glDrawBuffer(GL_COLOR_ATTACHMENT3);
+		glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT3 });
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OBJ]);
-		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+		glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 		glClear(GL_COLOR_BUFFER_BIT);
-		glDrawBuffer(GL_COLOR_ATTACHMENT1);
+		glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT1 });
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		for (i = 0; i < 4; ++i) {
 			glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[i].fbo);
-			glDrawBuffer(GL_COLOR_ATTACHMENT0);
+			glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 			glClear(GL_COLOR_BUFFER_BIT);
-			glDrawBuffer(GL_COLOR_ATTACHMENT1);
+			glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT1 });
 			glClear(GL_COLOR_BUFFER_BIT);
 		}
-		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+		glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 		glEnable(GL_SCISSOR_TEST);
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1310,3 +1327,5 @@ void GBAVideoGLRendererDrawWindow(struct GBAVideoGLRenderer* renderer, int y) {
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
+#endif

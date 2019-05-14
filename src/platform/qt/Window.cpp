@@ -851,6 +851,10 @@ void Window::unimplementedBiosCall(int call) {
 
 void Window::reloadDisplayDriver() {
 	if (m_controller) {
+		if (m_controller->hardwareAccelerated()) {
+			mustRestart();
+			return;
+		}
 		m_display->stopDrawing();
 		detachWidget(m_display.get());
 	}
@@ -1715,8 +1719,15 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		reloadDisplayDriver();
 	}
 
-	if (m_display->videoProxy()) {
-		m_display->videoProxy()->attach(controller);
+	if (m_config->getOption("hwaccelVideo").toInt() && m_display->supportsShaders() && controller->supportsFeature(CoreController::Feature::OPENGL)) {
+		if (m_display->videoProxy()) {
+			m_display->videoProxy()->attach(controller);
+		}
+
+		int fb = m_display->framebufferHandle();
+		if (fb >= 0) {
+			controller->setFramebufferHandle(fb);
+		}
 	}
 
 	m_controller = std::shared_ptr<CoreController>(controller);

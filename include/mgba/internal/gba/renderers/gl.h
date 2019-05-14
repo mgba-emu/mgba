@@ -16,6 +16,8 @@ CXX_GUARD_START
 #include <mgba/internal/gba/renderers/common.h>
 #include <mgba/internal/gba/video.h>
 
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
+
 #ifdef USE_EPOXY
 #include <epoxy/gl.h>
 #elif defined(BUILD_GL)
@@ -27,7 +29,7 @@ CXX_GUARD_START
 #include <GL/glext.h>
 #endif
 #else
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #endif
 
 struct GBAVideoGLAffine {
@@ -137,6 +139,9 @@ struct GBAVideoGLRenderer {
 
 	GLuint outputTex;
 
+#ifdef BUILD_GLES3
+	uint16_t shadowPalette[512];
+#endif
 	GLuint paletteTex;
 	bool paletteDirty;
 
@@ -181,6 +186,8 @@ struct GBAVideoGLRenderer {
 };
 
 void GBAVideoGLRendererCreate(struct GBAVideoGLRenderer* renderer);
+
+#endif
 
 CXX_GUARD_END
 

@@ -138,6 +138,14 @@ static enum mPlatform _GBCorePlatform(const struct mCore* core) {
 	return PLATFORM_GB;
 }
 
+static bool _GBCoreSupportsFeature(const struct mCore* core, enum mCoreFeature feature) {
+	UNUSED(core);
+	switch (feature) {
+	default:
+		return false;
+	}
+}
+
 static void _GBCoreSetSync(struct mCore* core, struct mCoreSync* sync) {
 	struct GB* gb = core->board;
 	gb->sync = sync;
@@ -888,6 +896,7 @@ struct mCore* GBCoreCreate(void) {
 	core->init = _GBCoreInit;
 	core->deinit = _GBCoreDeinit;
 	core->platform = _GBCorePlatform;
+	core->supportsFeature = _GBCoreSupportsFeature;
 	core->setSync = _GBCoreSetSync;
 	core->loadConfig = _GBCoreLoadConfig;
 	core->desiredVideoDimensions = _GBCoreDesiredVideoDimensions;

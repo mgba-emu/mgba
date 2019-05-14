@@ -64,6 +64,7 @@ struct mCore {
 	void (*deinit)(struct mCore*);
 
 	enum mPlatform (*platform)(const struct mCore*);
+	bool (*supportsFeature)(const struct mCore*, enum mCoreFeature);
 
 	void (*setSync)(struct mCore*, struct mCoreSync*);
 	void (*loadConfig)(struct mCore*, const struct mCoreConfig*);
