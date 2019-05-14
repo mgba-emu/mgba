@@ -55,10 +55,12 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->absf = NULL;
 	encoder->context = NULL;
 	encoder->scaleContext = NULL;
+	encoder->audio = NULL;
 	encoder->audioStream = NULL;
 	encoder->audioFrame = NULL;
 	encoder->audioBuffer = NULL;
 	encoder->postaudioBuffer = NULL;
+	encoder->video = NULL;
 	encoder->videoStream = NULL;
 	encoder->videoFrame = NULL;
 }
@@ -146,6 +148,12 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, un
 		{ AV_PIX_FMT_YUV444P, 5 },
 		{ AV_PIX_FMT_YUV420P, 6 }
 	};
+
+	if (!vcodec) {
+		encoder->videoCodec = 0;
+		return true;
+	}
+
 	AVCodec* codec = avcodec_find_encoder_by_name(vcodec);
 	if (!codec) {
 		return false;
@@ -189,13 +197,13 @@ bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder* encoder) {
 	AVOutputFormat* oformat = av_guess_format(encoder->containerFormat, 0, 0);
 	AVCodec* acodec = avcodec_find_encoder_by_name(encoder->audioCodec);
 	AVCodec* vcodec = avcodec_find_encoder_by_name(encoder->videoCodec);
-	if ((encoder->audioCodec && !acodec) || !vcodec || !oformat) {
+	if ((encoder->audioCodec && !acodec) || (encoder->videoCodec && !vcodec) || !oformat) {
 		return false;
 	}
 	if (encoder->audioCodec && !avformat_query_codec(oformat, acodec->id, FF_COMPLIANCE_EXPERIMENTAL)) {
 		return false;
 	}
-	if (!avformat_query_codec(oformat, vcodec->id, FF_COMPLIANCE_EXPERIMENTAL)) {
+	if (encoder->videoCodec && !avformat_query_codec(oformat, vcodec->id, FF_COMPLIANCE_EXPERIMENTAL)) {
 		return false;
 	}
 	return true;
@@ -562,7 +570,7 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 
 void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size_t stride) {
 	struct FFmpegEncoder* encoder = (struct FFmpegEncoder*) stream;
-	if (!encoder->context) {
+	if (!encoder->context || !encoder->videoCodec) {
 		return;
 	}
 	stride *= BYTES_PER_PIXEL;
@@ -606,6 +614,9 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 
 static void _ffmpegSetVideoDimensions(struct mAVStream* stream, unsigned width, unsigned height) {
 	struct FFmpegEncoder* encoder = (struct FFmpegEncoder*) stream;
+	if (!encoder->context || !encoder->videoCodec) {
+		return;
+	}
 	encoder->iwidth = width;
 	encoder->iheight = height;
 	if (encoder->scaleContext) {
