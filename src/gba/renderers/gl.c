@@ -428,7 +428,6 @@ void _compileShader(struct GBAVideoGLRenderer* glRenderer, struct GBAVideoGLShad
 	glBindBuffer(GL_ARRAY_BUFFER, glRenderer->vbo);
 	GLuint positionLocation = glGetAttribLocation(program, "position");
 	glVertexAttribPointer(positionLocation, 2, GL_INT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(positionLocation);
 
 	size_t i;
 	for (i = 0; uniforms[i].name; ++i) {
@@ -1084,6 +1083,7 @@ static void _compositeLayer(struct GBAVideoGLRenderer* renderer, GLuint tex, GLu
 	glUniform1i(uniforms[GBA_GL_COMPOSITE_OLDOLDFLAGS], 4);
 	glUniform1i(uniforms[GBA_GL_COMPOSITE_WINDOW], 5);
 	glDrawBuffers(4, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 });
+	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
@@ -1113,6 +1113,7 @@ void _finalizeLayers(struct GBAVideoGLRenderer* renderer, int y) {
 	glUniform1i(uniforms[GBA_GL_FINALIZE_LAYERFLAGS], 1);
 	glUniform1i(uniforms[GBA_GL_FINALIZE_OLDLAYER], 2);
 	glUniform1i(uniforms[GBA_GL_FINALIZE_OLDFLAGS], 3);
+	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -1185,6 +1186,7 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		glUniform3f(uniforms[GBA_GL_OBJ_OBJWIN], 0, 0, 0);
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
 	}
+	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
@@ -1221,6 +1223,7 @@ void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, 
 		                                     background->target1 | (background->target2 * 2) | (renderer->blendEffect * 4),
 		                                     renderer->blendEffect == BLEND_ALPHA ? renderer->blda : renderer->bldy, renderer->bldb);
 	glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
+	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 
@@ -1277,6 +1280,7 @@ void GBAVideoGLRendererDrawBackgroundMode2(struct GBAVideoGLRenderer* renderer, 
 		});
 	}
 	glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
+	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 

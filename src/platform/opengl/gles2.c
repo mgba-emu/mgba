@@ -135,6 +135,15 @@ static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	uniforms[3].max.fvec3[2] = 1.0f;
 	mGLES2ShaderInit(&context->initialShader, _vertexShader, _fragmentShader, -1, -1, false, uniforms, 4);
 	mGLES2ShaderInit(&context->finalShader, 0, 0, 0, 0, false, 0, 0);
+
+	glBindVertexArray(context->initialShader.vao);
+	glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
+	glVertexAttribPointer(context->initialShader.positionLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glBindVertexArray(context->finalShader.vao);
+	glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
+	glVertexAttribPointer(context->finalShader.positionLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glBindVertexArray(0);
+
 	glDeleteFramebuffers(1, &context->finalShader.fbo);
 	glDeleteTextures(1, &context->finalShader.tex);
 	context->finalShader.fbo = 0;
@@ -296,6 +305,7 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 			break;
 		}
 	}
+	glEnableVertexAttribArray(shader->positionLocation);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glBindTexture(GL_TEXTURE_2D, shader->tex);
 }
@@ -426,10 +436,6 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 	}
 
 	glGenVertexArrays(1, &shader->vao);
-	glBindVertexArray(shader->vao);
-	glVertexAttribPointer(shader->positionLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(shader->positionLocation);
-	glBindVertexArray(0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -458,6 +464,8 @@ void mGLES2ShaderAttach(struct mGLES2Context* context, struct mGLES2Shader* shad
 
 		glBindVertexArray(context->shaders[i].vao);
 		glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
+		glVertexAttribPointer(context->shaders[i].positionLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+		glEnableVertexAttribArray(context->shaders[i].positionLocation);
 	}
 	glBindVertexArray(0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
