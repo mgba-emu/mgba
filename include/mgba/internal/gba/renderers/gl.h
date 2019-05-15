@@ -125,6 +125,12 @@ enum {
 	GBA_GL_UNIFORM_MAX = 12
 };
 
+struct GBAVideoGLShader {
+	GLuint program;
+	GLuint vao;
+	GLuint uniforms[GBA_GL_UNIFORM_MAX];
+};
+
 struct GBAVideoGLRenderer {
 	struct GBAVideoRenderer d;
 
@@ -136,6 +142,7 @@ struct GBAVideoGLRenderer {
 
 	GLuint fbo[GBA_GL_FBO_MAX];
 	GLuint layers[GBA_GL_TEX_MAX];
+	GLuint vbo;
 
 	GLuint outputTex;
 
@@ -148,15 +155,10 @@ struct GBAVideoGLRenderer {
 	GLuint vramTex;
 	unsigned vramDirty;
 
-	GLuint bgProgram[6];
-	GLuint bgUniforms[6][GBA_GL_UNIFORM_MAX];
-	GLuint objProgram[2];
-	GLuint objUniforms[2][GBA_GL_UNIFORM_MAX];
-
-	GLuint compositeProgram;
-	GLuint compositeUniforms[GBA_GL_UNIFORM_MAX];
-	GLuint finalizeProgram;
-	GLuint finalizeUniforms[GBA_GL_UNIFORM_MAX];
+	struct GBAVideoGLShader bgShader[6];
+	struct GBAVideoGLShader objShader[2];
+	struct GBAVideoGLShader compositeShader;
+	struct GBAVideoGLShader finalizeShader;
 
 	GBARegisterDISPCNT dispcnt;
 

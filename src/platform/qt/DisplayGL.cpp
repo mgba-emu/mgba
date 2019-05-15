@@ -227,7 +227,7 @@ PainterGL::PainterGL(VideoProxy* proxy, QWindow* surface, QOpenGLContext* parent
 	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
 
 #ifdef BUILD_GLES2
-	if (extensions.contains("GL_ARB_framebuffer_object") && majorVersion >= 2) {
+	if ((majorVersion == 2 && extensions.contains("GL_ARB_framebuffer_object")) || majorVersion > 2) {
 		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
 		mGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
@@ -500,8 +500,8 @@ void PainterGL::clearShaders() {
 	if (!supportsShaders()) {
 		return;
 	}
-	if (!m_active) {
 #ifdef BUILD_GLES2
+	if (!m_active) {
 		m_gl->makeCurrent(m_surface);
 #if defined(_WIN32) && defined(USE_EPOXY)
 		epoxy_handle_external_wglMakeCurrent();

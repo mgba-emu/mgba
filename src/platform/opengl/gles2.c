@@ -84,6 +84,10 @@ static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+	glGenBuffers(1, &context->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(_vertices), _vertices, GL_STATIC_DRAW);
+
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 
 	struct mGLES2Uniform* uniforms = malloc(sizeof(struct mGLES2Uniform) * 4);
@@ -159,6 +163,7 @@ static void mGLES2ContextSetDimensions(struct VideoBackend* v, unsigned width, u
 static void mGLES2ContextDeinit(struct VideoBackend* v) {
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	glDeleteTextures(1, &context->tex);
+	glDeleteBuffers(1, &context->vbo);
 	mGLES2ShaderDeinit(&context->initialShader);
 	mGLES2ShaderDeinit(&context->finalShader);
 	free(context->initialShader.uniforms);
@@ -239,8 +244,7 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 	glUseProgram(shader->program);
 	glUniform1i(shader->texLocation, 0);
 	glUniform2f(shader->texSizeLocation, context->d.width - padW, context->d.height - padH);
-	glVertexAttribPointer(shader->positionLocation, 2, GL_FLOAT, GL_FALSE, 0, _vertices);
-	glEnableVertexAttribArray(shader->positionLocation);
+	glBindVertexArray(shader->vao);
 	size_t u;
 	for (u = 0; u < shader->nUniforms; ++u) {
 		struct mGLES2Uniform* uniform = &shader->uniforms[u];
@@ -420,6 +424,13 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 	for (i = 0; i < shader->nUniforms; ++i) {
 		shader->uniforms[i].location = glGetUniformLocation(shader->program, shader->uniforms[i].name);
 	}
+
+	glGenVertexArrays(1, &shader->vao);
+	glBindVertexArray(shader->vao);
+	glVertexAttribPointer(shader->positionLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(shader->positionLocation);
+	glBindVertexArray(0);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -428,6 +439,7 @@ void mGLES2ShaderDeinit(struct mGLES2Shader* shader) {
 	glDeleteShader(shader->fragmentShader);
 	glDeleteProgram(shader->program);
 	glDeleteFramebuffers(1, &shader->fbo);
+	glDeleteVertexArrays(1, &shader->vao);
 }
 
 void mGLES2ShaderAttach(struct mGLES2Context* context, struct mGLES2Shader* shaders, size_t nShaders) {
@@ -443,7 +455,11 @@ void mGLES2ShaderAttach(struct mGLES2Context* context, struct mGLES2Shader* shad
 	for (i = 0; i < nShaders; ++i) {
 		glBindFramebuffer(GL_FRAMEBUFFER, context->shaders[i].fbo);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		glBindVertexArray(context->shaders[i].vao);
+		glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
 	}
+	glBindVertexArray(0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
