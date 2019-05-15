@@ -316,6 +316,12 @@ void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
 
 void PainterGL::resize(const QSize& size) {
 	m_size = size;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+	float r = m_gl->devicePixelRatioF();
+#else
+	float r = m_gl->devicePixelRatio();
+#endif
+	m_backend->resized(m_backend, m_size.width() * r, m_size.height() * r);
 	if (m_started && !m_active) {
 		forceDraw();
 	}
@@ -323,16 +329,12 @@ void PainterGL::resize(const QSize& size) {
 
 void PainterGL::lockAspectRatio(bool lock) {
 	m_backend->lockAspectRatio = lock;
-	if (m_started && !m_active) {
-		forceDraw();
-	}
+	resize(m_size);
 }
 
 void PainterGL::lockIntegerScaling(bool lock) {
 	m_backend->lockIntegerScaling = lock;
-	if (m_started && !m_active) {
-		forceDraw();
-	}
+	resize(m_size);
 }
 
 void PainterGL::filter(bool filter) {
@@ -416,12 +418,6 @@ void PainterGL::unpause() {
 
 void PainterGL::performDraw() {
 	m_painter.beginNativePainting();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
-	float r = m_gl->devicePixelRatioF();
-#else
-	float r = m_gl->devicePixelRatio();
-#endif
-	m_backend->resized(m_backend, m_size.width() * r, m_size.height() * r);
 	m_backend->drawFrame(m_backend);
 	m_painter.endNativePainting();
 	if (m_messagePainter) {
