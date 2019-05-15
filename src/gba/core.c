@@ -164,8 +164,10 @@ static bool _GBACoreInit(struct mCore* core) {
 	mRTCGenericSourceInit(&core->rtc, core);
 	gba->rtcSource = &core->rtc.d;
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 3
 	GBAVideoSoftwareRendererCreate(&gbacore->renderer);
 	gbacore->renderer.outputBuffer = NULL;
+#endif
 
 #ifndef DISABLE_THREADING
 	mVideoThreadProxyCreate(&gbacore->threadProxy);
@@ -387,6 +389,7 @@ static void _GBACoreChecksum(const struct mCore* core, void* data, enum mCoreChe
 static void _GBACoreReset(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = (struct GBA*) core->board;
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 3
 	if (gbacore->renderer.outputBuffer) {
 		struct GBAVideoRenderer* renderer = &gbacore->renderer.d;
 #ifndef DISABLE_THREADING
@@ -399,6 +402,7 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 		GBAVideoAssociateRenderer(&gba->video, renderer);
 	}
+#endif
 
 	GBAOverrideApplyDefaults(gba, gbacore->overrides);
 
