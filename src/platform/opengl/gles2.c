@@ -192,14 +192,13 @@ static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h)
 		drawW -= drawW % v->width;
 		drawH -= drawH % v->height;
 	}
-	glViewport(0, 0, w, h);
-	glClearColor(0.f, 0.f, 0.f, 1.f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
 }
 
 static void mGLES2ContextClear(struct VideoBackend* v) {
 	UNUSED(v);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT);
 }

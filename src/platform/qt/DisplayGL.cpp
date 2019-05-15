@@ -321,8 +321,6 @@ void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
 
 void PainterGL::resize(const QSize& size) {
 	m_size = size;
-	float r = m_surface->devicePixelRatio();
-	m_backend->resized(m_backend, m_size.width() * r, m_size.height() * r);
 	if (m_started && !m_active) {
 		forceDraw();
 	}
@@ -419,6 +417,8 @@ void PainterGL::unpause() {
 
 void PainterGL::performDraw() {
 	m_painter.beginNativePainting();
+	float r = m_surface->devicePixelRatio();
+	m_backend->resized(m_backend, m_size.width() * r, m_size.height() * r);
 	m_backend->drawFrame(m_backend);
 	m_painter.endNativePainting();
 	if (m_messagePainter) {
