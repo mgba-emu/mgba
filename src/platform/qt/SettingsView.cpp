@@ -466,7 +466,7 @@ void SettingsView::updateConfig() {
 		emit languageChanged();
 	}
 
-	int videoScale = m_controller->getOption("videoScale").toInt();
+	int videoScale = m_controller->getOption("videoScale", 1).toInt();
 	int hwaccelVideo = m_controller->getOption("hwaccelVideo").toInt();
 	if (videoScale != m_ui.videoScale->value() || hwaccelVideo != m_ui.hwaccelVideo->currentIndex()) {
 		emit videoRendererChanged();
@@ -551,7 +551,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("logFile", m_ui.logFile);
 	loadSetting("useDiscordPresence", m_ui.useDiscordPresence);
 	loadSetting("audioHle", m_ui.audioHle);
-	loadSetting("videoScale", m_ui.videoScale);
+	loadSetting("videoScale", m_ui.videoScale, 1);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 
@@ -616,10 +616,7 @@ void SettingsView::reloadConfig() {
 	}
 #endif
 
-	int hwaccelVideo = m_controller->getOption("hwaccelVideo", 1).toInt();
-	if (hwaccelVideo < 1) {
-		hwaccelVideo = 1;
-	}
+	int hwaccelVideo = m_controller->getOption("hwaccelVideo", 0).toInt();
 	m_ui.hwaccelVideo->setCurrentIndex(hwaccelVideo);
 }
 
@@ -677,9 +674,9 @@ void SettingsView::loadSetting(const char* key, QSlider* field, int defaultVal) 
 	field->setValue(option.isNull() ? defaultVal : option.toInt());
 }
 
-void SettingsView::loadSetting(const char* key, QSpinBox* field) {
+void SettingsView::loadSetting(const char* key, QSpinBox* field, int defaultVal) {
 	QString option = loadSetting(key);
-	field->setValue(option.toInt());
+	field->setValue(option.isNull() ? defaultVal : option.toInt());
 }
 
 QString SettingsView::loadSetting(const char* key) {

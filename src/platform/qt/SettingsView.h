@@ -77,7 +77,7 @@ private:
 	void loadSetting(const char* key, QDoubleSpinBox*);
 	void loadSetting(const char* key, QLineEdit*);
 	void loadSetting(const char* key, QSlider*, int defaultVal = 0);
-	void loadSetting(const char* key, QSpinBox*);
+	void loadSetting(const char* key, QSpinBox*, int defaultVal = 0);
 	QString loadSetting(const char* key);
 };
 
