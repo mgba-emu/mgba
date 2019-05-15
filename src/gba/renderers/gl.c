@@ -856,16 +856,12 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OBJ]);
-		glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
-		glClear(GL_COLOR_BUFFER_BIT);
-		glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT1 });
+		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		for (i = 0; i < 4; ++i) {
 			glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[i].fbo);
-			glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
-			glClear(GL_COLOR_BUFFER_BIT);
-			glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT1 });
+			glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
 			glClear(GL_COLOR_BUFFER_BIT);
 		}
 		glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
@@ -890,6 +886,7 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		glRenderer->firstAffine = -1;
 	}
 
+	GBAVideoGLRendererDrawWindow(glRenderer, y);
 	if (GBARegisterDISPCNTIsObjEnable(glRenderer->dispcnt) && !glRenderer->d.disableOBJ) {
 		if (glRenderer->oamDirty) {
 			glRenderer->oamMax = GBAVideoRendererCleanOAM(glRenderer->d.oam->obj, glRenderer->sprites, 0);
@@ -906,7 +903,6 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		}
 	}
 
-	GBAVideoGLRendererDrawWindow(glRenderer, y);
 	_compositeLayer(glRenderer, glRenderer->layers[GBA_GL_TEX_OBJ_COLOR], glRenderer->layers[GBA_GL_TEX_OBJ_FLAGS], 4, y);
 	unsigned priority;
 	for (priority = 4; priority--;) {
