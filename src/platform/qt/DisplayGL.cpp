@@ -99,6 +99,11 @@ void DisplayGL::stopDrawing() {
 		QMetaObject::invokeMethod(m_painter, "stop", Qt::BlockingQueuedConnection);
 		m_drawThread->exit();
 		m_drawThread = nullptr;
+
+		m_gl->context()->makeCurrent();
+#if defined(_WIN32) && defined(USE_EPOXY)
+		epoxy_handle_external_wglMakeCurrent();
+#endif
 	}
 	m_context.reset();
 }
