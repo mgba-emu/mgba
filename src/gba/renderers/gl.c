@@ -317,11 +317,6 @@ static const char* const _finalize =
 	"	vec4 bottomPixel = backdrop;\n"
 	"	ivec4 topFlags = ivec4(backdropFlags * flagCoeff);\n"
 	"	ivec4 bottomFlags = ivec4(backdropFlags * flagCoeff);\n"
-	"	if ((layerWindow & 16) == 0) {\n"
-	"		vec4 pix = texelFetch(layers[4], ivec2(texCoord * scale), 0);\n"
-	"		ivec4 inflags = ivec4(texelFetch(flags[4], ivec2(texCoord * scale), 0) * flagCoeff);\n"
-	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
-	"	}\n"
 	"	if ((layerWindow & 1) == 0) {\n"
 	"		vec4 pix = texelFetch(layers[0], ivec2(texCoord * scale), 0);\n"
 	"		ivec4 inflags = ivec4(texelFetch(flags[0], ivec2(texCoord * scale), 0) * flagCoeff);\n"
@@ -343,7 +338,12 @@ static const char* const _finalize =
 	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
 	"	}\n"
 	"	if ((layerWindow & 32) != 0) {\n"
-	"		topFlags.y = 0;\n"
+	"		topFlags.y &= ~1;\n"
+	"	}\n"
+	"	if ((layerWindow & 16) == 0) {\n"
+	"		vec4 pix = texelFetch(layers[4], ivec2(texCoord * scale), 0);\n"
+	"		ivec4 inflags = ivec4(texelFetch(flags[4], ivec2(texCoord * scale), 0) * flagCoeff);\n"
+	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
 	"	}\n"
 	"	if ((topFlags.y & 13) == 5) {\n"
 	"		if ((bottomFlags.y & 2) == 2) {\n"
@@ -827,9 +827,8 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 			glClear(GL_COLOR_BUFFER_BIT);
 		}
 		glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
-		glEnable(GL_SCISSOR_TEST);
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glEnable(GL_SCISSOR_TEST);
 
 	if (GBARegisterDISPCNTGetMode(glRenderer->dispcnt) != 0) {
 		if (glRenderer->firstAffine < 0) {
