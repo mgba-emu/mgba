@@ -88,8 +88,6 @@ static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(_vertices), _vertices, GL_STATIC_DRAW);
 
-	glClearColor(0.f, 0.f, 0.f, 1.f);
-
 	struct mGLES2Uniform* uniforms = malloc(sizeof(struct mGLES2Uniform) * 4);
 	uniforms[0].name = "gamma";
 	uniforms[0].readableName = "Gamma";
@@ -236,6 +234,7 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	} else {
 		glDisable(GL_BLEND);
+		glClearColor(0.f, 0.f, 0.f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
@@ -459,6 +458,7 @@ void mGLES2ShaderAttach(struct mGLES2Context* context, struct mGLES2Shader* shad
 	size_t i;
 	for (i = 0; i < nShaders; ++i) {
 		glBindFramebuffer(GL_FRAMEBUFFER, context->shaders[i].fbo);
+		glClearColor(0.f, 0.f, 0.f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glBindVertexArray(context->shaders[i].vao);
