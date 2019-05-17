@@ -23,6 +23,7 @@ Other fixes:
  - Qt: Fix adjusting magnification in tile viewer when not fitting to window
  - FFmpeg: Improve initialization reliability and cleanup
  - Wii: Fix aspect ratio (fixes mgba.io/i/500)
+ - FFmpeg: Fix audio conversion producing gaps
 Misc:
  - Qt: Add missing HEVC NVENC option (fixes mgba.io/i/1323)
  - Qt: Improve camera initialization
