@@ -39,6 +39,7 @@ Other fixes:
  - FFmpeg: Improve initialization reliability and cleanup
  - Wii: Fix aspect ratio (fixes mgba.io/i/500)
  - Qt: Fix some Qt display driver race conditions
+ - FFmpeg: Fix audio conversion producing gaps
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash

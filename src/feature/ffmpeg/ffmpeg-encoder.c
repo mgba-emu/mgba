@@ -499,7 +499,7 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_make_writable(encoder->audioFrame);
 #endif
-	if (swr_get_out_samples(encoder->resampleContext, encoder->audioBufferSize / 4) < encoder->audioFrame->nb_samples) {
+	if (swr_get_out_samples(encoder->resampleContext, 1) < encoder->audioFrame->nb_samples) {
 		swr_convert(encoder->resampleContext, NULL, 0, (const uint8_t**) &encoder->audioBuffer, encoder->audioBufferSize / 4);
 		return;
 	}
