@@ -152,6 +152,9 @@ static void _handleEvent(struct mVideoLogger* logger, enum mVideoLoggerEvent eve
 	case LOGGER_EVENT_RESET:
 		proxyRenderer->backend->reset(proxyRenderer->backend);
 		break;
+	case LOGGER_EVENT_GET_PIXELS:
+		proxyRenderer->backend->getPixels(proxyRenderer->backend, &logger->pixelStride, &logger->pixelBuffer);
+		break;
 	}
 }
 
@@ -305,10 +308,13 @@ static void GBAVideoProxyRendererGetPixels(struct GBAVideoRenderer* renderer, si
 		proxyRenderer->logger->lock(proxyRenderer->logger);
 		// Insert an extra item into the queue to make sure it gets flushed
 		mVideoLoggerRendererFlush(proxyRenderer->logger);
-	}
-	proxyRenderer->backend->getPixels(proxyRenderer->backend, stride, pixels);
-	if (proxyRenderer->logger->block && proxyRenderer->logger->wait) {
+		proxyRenderer->logger->postEvent(proxyRenderer->logger, LOGGER_EVENT_GET_PIXELS);
+		mVideoLoggerRendererFlush(proxyRenderer->logger);
 		proxyRenderer->logger->unlock(proxyRenderer->logger);
+		*pixels = proxyRenderer->logger->pixelBuffer;
+		*stride = proxyRenderer->logger->pixelStride;
+	} else {
+		proxyRenderer->backend->getPixels(proxyRenderer->backend, stride, pixels);
 	}
 }
 

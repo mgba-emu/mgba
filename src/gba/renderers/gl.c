@@ -11,6 +11,7 @@
 #include <mgba/internal/arm/macros.h>
 #include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/renderers/cache-set.h>
+#include <mgba-util/memory.h>
 
 static void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer);
@@ -435,6 +436,8 @@ static void _initFramebufferTexture(GLuint tex, GLenum format, GLenum attachment
 
 void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
+	glRenderer->temporaryBuffer = NULL;
+
 	glGenFramebuffers(GBA_GL_FBO_MAX, glRenderer->fbo);
 	glGenTextures(GBA_GL_TEX_MAX, glRenderer->layers);
 
@@ -552,6 +555,9 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 
 void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
+	if (glRenderer->temporaryBuffer) {
+		mappedMemoryFree(glRenderer->temporaryBuffer, GBA_VIDEO_HORIZONTAL_PIXELS * GBA_VIDEO_VERTICAL_PIXELS * glRenderer->scale * glRenderer->scale);
+	}
 	glDeleteFramebuffers(GBA_GL_FBO_MAX, glRenderer->fbo);
 	glDeleteTextures(GBA_GL_TEX_MAX, glRenderer->layers);
 	glDeleteTextures(1, &glRenderer->paletteTex);
@@ -928,7 +934,16 @@ void GBAVideoGLRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 }
 
 void GBAVideoGLRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels) {
-
+	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
+	*stride = GBA_VIDEO_HORIZONTAL_PIXELS * glRenderer->scale;
+	if (!glRenderer->temporaryBuffer) {
+		glRenderer->temporaryBuffer = anonymousMemoryMap(GBA_VIDEO_HORIZONTAL_PIXELS * GBA_VIDEO_VERTICAL_PIXELS * glRenderer->scale * glRenderer->scale * BYTES_PER_PIXEL);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OUTPUT]);
+	glPixelStorei(GL_PACK_ROW_LENGTH, GBA_VIDEO_HORIZONTAL_PIXELS * glRenderer->scale);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glReadPixels(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS * glRenderer->scale, GBA_VIDEO_VERTICAL_PIXELS * glRenderer->scale, GL_RGBA, GL_UNSIGNED_BYTE, (void*) glRenderer->temporaryBuffer);
+	*pixels = glRenderer->temporaryBuffer;
 }
 
 void GBAVideoGLRendererPutPixels(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels) {

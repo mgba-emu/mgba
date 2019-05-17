@@ -283,11 +283,13 @@ static void GBVideoProxyRendererGetPixels(struct GBVideoRenderer* renderer, size
 		proxyRenderer->logger->lock(proxyRenderer->logger);
 		// Insert an extra item into the queue to make sure it gets flushed
 		mVideoLoggerRendererFlush(proxyRenderer->logger);
-		proxyRenderer->logger->wait(proxyRenderer->logger);
-	}
-	proxyRenderer->backend->getPixels(proxyRenderer->backend, stride, pixels);
-	if (proxyRenderer->logger->block && proxyRenderer->logger->wait) {
+		proxyRenderer->logger->postEvent(proxyRenderer->logger, LOGGER_EVENT_GET_PIXELS);
+		mVideoLoggerRendererFlush(proxyRenderer->logger);
 		proxyRenderer->logger->unlock(proxyRenderer->logger);
+		*pixels = proxyRenderer->logger->pixelBuffer;
+		*stride = proxyRenderer->logger->pixelStride;
+	} else {
+		proxyRenderer->backend->getPixels(proxyRenderer->backend, stride, pixels);
 	}
 }
 

@@ -121,6 +121,8 @@ struct GBAVideoGLShader {
 struct GBAVideoGLRenderer {
 	struct GBAVideoRenderer d;
 
+	uint32_t* temporaryBuffer;
+
 	struct GBAVideoGLBackground bg[4];
 
 	int oamMax;

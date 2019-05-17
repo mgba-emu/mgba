@@ -310,13 +310,13 @@ static void _GBACoreSetVideoGLTex(struct mCore* core, unsigned texid) {
 }
 
 static void _GBACoreGetPixels(struct mCore* core, const void** buffer, size_t* stride) {
-	struct GBACore* gbacore = (struct GBACore*) core;
-	gbacore->renderer.d.getPixels(&gbacore->renderer.d, stride, buffer);
+	struct GBA* gba = core->board;
+	gba->video.renderer->getPixels(gba->video.renderer, stride, buffer);
 }
 
 static void _GBACorePutPixels(struct mCore* core, const void* buffer, size_t stride) {
-	struct GBACore* gbacore = (struct GBACore*) core;
-	gbacore->renderer.d.putPixels(&gbacore->renderer.d, stride, buffer);
+	struct GBA* gba = core->board;
+	gba->video.renderer->putPixels(gba->video.renderer, stride, buffer);
 }
 
 static struct blip_t* _GBACoreGetAudioChannel(struct mCore* core, int ch) {

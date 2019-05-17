@@ -32,6 +32,7 @@ enum mVideoLoggerEvent {
 	LOGGER_EVENT_INIT,
 	LOGGER_EVENT_DEINIT,
 	LOGGER_EVENT_RESET,
+	LOGGER_EVENT_GET_PIXELS,
 };
 
 struct mVideoLoggerDirtyInfo {
@@ -73,6 +74,9 @@ struct mVideoLogger {
 	uint16_t* vram;
 	uint16_t* oam;
 	uint16_t* palette;
+
+	const void* pixelBuffer;
+	size_t pixelStride;
 };
 
 void mVideoLoggerRendererCreate(struct mVideoLogger* logger, bool readonly);
