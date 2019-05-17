@@ -820,9 +820,6 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	if (y == 0) {
 		glDisable(GL_SCISSOR_TEST);		
 		glClearColor(0, 0, 0, 0);
-		glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT3 });
-		glClear(GL_COLOR_BUFFER_BIT);
-
 		glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OBJ]);
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -939,6 +936,7 @@ void GBAVideoGLRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stri
 	if (!glRenderer->temporaryBuffer) {
 		glRenderer->temporaryBuffer = anonymousMemoryMap(GBA_VIDEO_HORIZONTAL_PIXELS * GBA_VIDEO_VERTICAL_PIXELS * glRenderer->scale * glRenderer->scale * BYTES_PER_PIXEL);
 	}
+	glFinish();
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OUTPUT]);
 	glPixelStorei(GL_PACK_ROW_LENGTH, GBA_VIDEO_HORIZONTAL_PIXELS * glRenderer->scale);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);

@@ -355,7 +355,9 @@ static void _GBACoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 	struct GBA* gba = core->board;
 	gba->stream = stream;
 	if (stream && stream->videoDimensionsChanged) {
-		stream->videoDimensionsChanged(stream, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+		unsigned width, height;
+		core->desiredVideoDimensions(core, &width, &height);
+		stream->videoDimensionsChanged(stream, width, height);
 	}
 }
 
