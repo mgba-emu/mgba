@@ -34,12 +34,29 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 	: Display(parent)
 	, m_gl(nullptr)
 {
+	setAttribute(Qt::WA_NativeWindow);
+
 	// This can spontaneously re-enter into this->resizeEvent before creation is done, so we
 	// need to make sure it's initialized to nullptr before we assign the new object to it
 	m_gl = new QOpenGLContext;
 	m_gl->setFormat(format);
 	m_gl->create();
-	setAttribute(Qt::WA_NativeWindow);
+
+	m_gl->makeCurrent(windowHandle());
+#if defined(_WIN32) && defined(USE_EPOXY)
+	epoxy_handle_external_wglMakeCurrent();
+#endif
+	int majorVersion = m_gl->format().majorVersion();
+	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
+	m_gl->doneCurrent();
+
+	if (majorVersion == 2 && !extensions.contains("GL_ARB_framebuffer_object")) {
+		QSurfaceFormat newFormat(format);
+		newFormat.setVersion(1, 4);
+		m_gl->setFormat(newFormat);
+		m_gl->create();
+	}
+
 	m_painter = new PainterGL(&m_videoProxy, windowHandle(), m_gl);
 	setUpdatesEnabled(false); // Prevent paint events, which can cause race conditions
 
