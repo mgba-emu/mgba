@@ -1284,7 +1284,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addMenu(tr("Audio/&Video"), "av");
 	m_actions.addMenu(tr("Frame size"), "frame", "av");
-	for (int i = 1; i <= 6; ++i) {
+	for (int i = 1; i <= 8; ++i) {
 		Action* setSize = m_actions.addAction(tr("%1×").arg(QString::number(i)), QString("frame.%1x").arg(QString::number(i)), [this, i]() {
 			Action* setSize = m_frameSizes[i];
 			showNormal();
