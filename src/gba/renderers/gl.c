@@ -314,8 +314,8 @@ static const char* const _finalize =
 	"}\n"
 
 	"void main() {\n"
-	"	ivec2 windowFlags = ivec2(texelFetch(window, ivec2(texCoord * scale), 0).xy * 32);\n"
-	"	int layerWindow = windowFlags.x | (windowFlags.y << 4);\n"
+	"	vec4 windowFlags = texelFetch(window, ivec2(texCoord * scale), 0);\n"
+	"	int layerWindow = int(windowFlags.x * 32) | int(windowFlags.y * 512);\n"
 	"	vec4 topPixel = backdrop;\n"
 	"	vec4 bottomPixel = backdrop;\n"
 	"	ivec4 topFlags = ivec4(backdropFlags * flagCoeff);\n"
@@ -354,9 +354,9 @@ static const char* const _finalize =
 	"			topPixel += bottomPixel * bottomFlags.w / 16.;\n"
 	"		}\n"
 	"	} else if ((topFlags.y & 13) == 9) {\n"
-	"		topPixel += (1. - topPixel) * topFlags.z / 16.;\n"
+	"		topPixel += (1. - topPixel) * windowFlags.z;\n"
 	"	} else if ((topFlags.y & 13) == 13) {\n"
-	"		topPixel -= topPixel * topFlags.z / 16.;\n"
+	"		topPixel -= topPixel * windowFlags.z;\n"
 	"	}\n"
 	"	color = topPixel;\n"
 	"}";
@@ -459,7 +459,7 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_OBJ_FLAGS], GL_RGBA, GL_COLOR_ATTACHMENT1, glRenderer->scale);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_WINDOW]);
-	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_WINDOW], GL_RG, GL_COLOR_ATTACHMENT0, glRenderer->scale);
+	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_WINDOW], GL_RGB, GL_COLOR_ATTACHMENT0, glRenderer->scale);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OUTPUT]);
 	_initFramebufferTexture(glRenderer->outputTex, GL_RGB, GL_COLOR_ATTACHMENT0, glRenderer->scale);
@@ -1058,8 +1058,7 @@ void _finalizeLayers(struct GBAVideoGLRenderer* renderer) {
 	glUniform1iv(uniforms[GBA_GL_FINALIZE_FLAGS], 5, (GLint[]) { 4, 6, 8, 10, 2 });
 	glUniform1i(uniforms[GBA_GL_FINALIZE_WINDOW], 0);
 	glUniform4f(uniforms[GBA_GL_FINALIZE_BACKDROP], ((backdrop >> 16) & 0xFF) / 256., ((backdrop >> 8) & 0xFF) / 256., (backdrop & 0xFF) / 256., 0.f);
-	glUniform4f(uniforms[GBA_GL_FINALIZE_BACKDROPFLAGS], 1, (renderer->target1Bd | (renderer->target2Bd * 2) | (renderer->blendEffect * 4)) / 32.f,
-		                                                 (renderer->blendEffect == BLEND_ALPHA ? renderer->blda : renderer->bldy) / 16.f, renderer->bldb / 16.f);
+	glUniform4f(uniforms[GBA_GL_FINALIZE_BACKDROPFLAGS], 1, (renderer->target1Bd | (renderer->target2Bd * 2) | (renderer->blendEffect * 4)) / 32.f, renderer->blda / 16.f, renderer->bldb / 16.f);
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1111,8 +1110,8 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	glUniform1i(uniforms[GBA_GL_OBJ_STRIDE], stride);
 	glUniform1i(uniforms[GBA_GL_OBJ_LOCALPALETTE], GBAObjAttributesCGetPalette(sprite->c));
 	glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c) << 3,
-	               (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2) | (blendEffect * 4),
-	               blendEffect == BLEND_ALPHA ? renderer->blda : renderer->bldy, renderer->bldb);
+	                                          (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2) | (blendEffect * 4),
+	                                          renderer->blda, renderer->bldb);
 	if (GBAObjAttributesAIsTransformed(sprite->a)) {
 		struct GBAOAMMatrix mat;
 		LOAD_16(mat.a, 0, &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)].a);
@@ -1168,7 +1167,7 @@ void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, 
 	glUniform2i(uniforms[GBA_GL_BG_OFFSET], background->x, yBase - y);
 	glUniform4i(uniforms[GBA_GL_BG_INFLAGS], (background->priority << 3) + (background->index << 1) + 1,
 		                                     background->target1 | (background->target2 * 2) | (renderer->blendEffect * 4),
-		                                     renderer->blendEffect == BLEND_ALPHA ? renderer->blda : renderer->bldy, renderer->bldb);
+		                                     renderer->blda, renderer->bldb);
 	glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -1221,8 +1220,8 @@ void GBAVideoGLRendererDrawBackgroundMode2(struct GBAVideoGLRenderer* renderer, 
 	glUniform1i(uniforms[GBA_GL_BG_SIZE], background->size);
 	glUniform2f(uniforms[GBA_GL_BG_RANGE], y, 1);
 	glUniform4i(uniforms[GBA_GL_BG_INFLAGS], (background->priority << 3) + (background->index << 1) + 1,
-		           background->target1 | (background->target2 * 2) | (renderer->blendEffect * 4),
-		           renderer->blendEffect == BLEND_ALPHA ? renderer->blda : renderer->bldy, renderer->bldb);
+		                                     background->target1 | (background->target2 * 2) | (renderer->blendEffect * 4),
+		                                     renderer->blda, renderer->bldb);
 	if (renderer->scale > 1) {
 		glUniform2iv(uniforms[GBA_GL_BG_OFFSET], 4, (GLint[]) {
 			background->affine[0].sx, background->affine[0].sy,
@@ -1256,10 +1255,10 @@ void GBAVideoGLRendererDrawBackgroundMode2(struct GBAVideoGLRenderer* renderer, 
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
 
-static void _clearWindow(GBAWindowControl window, int start, int end, int y, int scale) {
+static void _clearWindow(GBAWindowControl window, int start, int end, int y, int scale, int bldy) {
 	glScissor(start, y, end - start, scale);
 	window = ~window & 0xFF;
-	glClearColor((window & 0xF) / 32.f, (window >> 4) / 32.f, 0, 0);
+	glClearColor((window & 0xF) / 32.f, (window >> 4) / 32.f, bldy / 16.f, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -1267,14 +1266,14 @@ void GBAVideoGLRendererDrawWindow(struct GBAVideoGLRenderer* renderer, int y) {
 	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[GBA_GL_FBO_WINDOW]);
 	int dispcnt = ((renderer->dispcnt >> 8) & 0x1F) | 0x20;
 	if (!(renderer->dispcnt & 0xE000)) {
-		_clearWindow(dispcnt, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, y * renderer->scale, renderer->scale);
+		_clearWindow(dispcnt, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, y * renderer->scale, renderer->scale, renderer->bldy);
 	} else {
-		_clearWindow(renderer->winout & dispcnt, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, y * renderer->scale, renderer->scale);
+		_clearWindow(renderer->winout & dispcnt, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, y * renderer->scale, renderer->scale, renderer->bldy);
 		if (GBARegisterDISPCNTIsWin1Enable(renderer->dispcnt) && y >= renderer->winN[1].v.start && y < renderer->winN[1].v.end) {
-			_clearWindow(renderer->winN[1].control & dispcnt, renderer->winN[1].h.start * renderer->scale, renderer->winN[1].h.end * renderer->scale, y * renderer->scale, renderer->scale);
+			_clearWindow(renderer->winN[1].control & dispcnt, renderer->winN[1].h.start * renderer->scale, renderer->winN[1].h.end * renderer->scale, y * renderer->scale, renderer->scale, renderer->bldy);
 		}
 		if (GBARegisterDISPCNTIsWin0Enable(renderer->dispcnt) && y >= renderer->winN[0].v.start && y < renderer->winN[0].v.end) {
-			_clearWindow(renderer->winN[0].control & dispcnt, renderer->winN[0].h.start * renderer->scale, renderer->winN[0].h.end * renderer->scale, y * renderer->scale, renderer->scale);
+			_clearWindow(renderer->winN[0].control & dispcnt, renderer->winN[0].h.start * renderer->scale, renderer->winN[0].h.end * renderer->scale, y * renderer->scale, renderer->scale, renderer->bldy);
 		}
 	}
 }
