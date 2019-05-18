@@ -8,7 +8,8 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
 
-#define LOCKSTEP_INCREMENT 3000
+#define LOCKSTEP_INCREMENT 2000
+#define LOCKSTEP_TRANSFER 512
 
 static bool GBASIOLockstepNodeInit(struct GBASIODriver* driver);
 static void GBASIOLockstepNodeDeinit(struct GBASIODriver* driver);
@@ -17,9 +18,9 @@ static bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver);
 static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 static void _GBASIOLockstepNodeProcessEvents(struct mTiming* timing, void* driver, uint32_t cyclesLate);
+static void _finishTransfer(struct GBASIOLockstepNode* node);
 
 void GBASIOLockstepInit(struct GBASIOLockstep* lockstep) {
-	mLockstepInit(&lockstep->d);
 	lockstep->players[0] = 0;
 	lockstep->players[1] = 0;
 	lockstep->players[2] = 0;
@@ -88,7 +89,11 @@ bool GBASIOLockstepNodeLoad(struct GBASIODriver* driver) {
 	node->nextEvent = 0;
 	node->eventDiff = 0;
 	mTimingSchedule(&driver->p->p->timing, &node->event, 0);
+
+	mLockstepLock(&node->p->d);
+
 	node->mode = driver->p->mode;
+
 	switch (node->mode) {
 	case SIO_MULTI:
 		node->d.writeRegister = GBASIOLockstepNodeMultiWriteRegister;
@@ -110,11 +115,17 @@ bool GBASIOLockstepNodeLoad(struct GBASIODriver* driver) {
 	node->phase = node->p->d.transferActive;
 	node->transferId = node->p->d.transferId;
 #endif
+
+	mLockstepUnlock(&node->p->d);
+
 	return true;
 }
 
 bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver) {
 	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
+
+	mLockstepLock(&node->p->d);
+
 	node->mode = driver->p->mode;
 	switch (node->mode) {
 	case SIO_MULTI:
@@ -123,13 +134,43 @@ bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver) {
 	default:
 		break;
 	}
+
+	// Flush ongoing transfer
+	if (mTimingIsScheduled(&driver->p->p->timing, &node->event)) {
+		int oldWhen = node->event.when;
+
+		mTimingDeschedule(&driver->p->p->timing, &node->event);
+		mTimingSchedule(&driver->p->p->timing, &node->event, 0);
+		node->eventDiff -= oldWhen - node->event.when;
+		mTimingDeschedule(&driver->p->p->timing, &node->event);
+	}
+
 	node->p->d.unload(&node->p->d, node->id);
-	mTimingDeschedule(&driver->p->p->timing, &node->event);
+
+	node->p->multiRecv[0] = 0xFFFF;
+	node->p->multiRecv[1] = 0xFFFF;
+	node->p->multiRecv[2] = 0xFFFF;
+	node->p->multiRecv[3] = 0xFFFF;
+
+	_finishTransfer(node);
+
+	if (!node->id) {
+		ATOMIC_STORE(node->p->d.transferActive, TRANSFER_IDLE);
+	}
+
+	// Invalidate SIO mode
+	node->mode = SIO_GPIO;
+
+	mLockstepUnlock(&node->p->d);
+
 	return true;
 }
 
 static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {
 	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
+
+	mLockstepLock(&node->p->d);
+
 	if (address == REG_SIOCNT) {
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIOCNT <- %04x", node->id, value);
 
@@ -141,8 +182,16 @@ static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver
 				mLOG(GBA_SIO, DEBUG, "Lockstep %i: Transfer initiated", node->id);
 				ATOMIC_STORE(node->p->d.transferActive, TRANSFER_STARTING);
 				ATOMIC_STORE(node->p->d.transferCycles, GBASIOCyclesPerTransfer[node->d.p->multiplayerControl.baud][node->p->d.attached - 1]);
+
+				bool scheduled = mTimingIsScheduled(&driver->p->p->timing, &node->event);
+				int oldWhen = node->event.when;
+
 				mTimingDeschedule(&driver->p->p->timing, &node->event);
 				mTimingSchedule(&driver->p->p->timing, &node->event, 0);
+
+				if (scheduled) {
+					node->eventDiff -= oldWhen - node->event.when;
+				}
 			} else {
 				value &= ~0x0080;
 			}
@@ -152,6 +201,9 @@ static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver
 	} else if (address == REG_SIOMLT_SEND) {
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIOMLT_SEND <- %04x", node->id, value);
 	}
+
+	mLockstepUnlock(&node->p->d);
+
 	return value;
 }
 
@@ -159,6 +211,7 @@ static void _finishTransfer(struct GBASIOLockstepNode* node) {
 	if (node->transferFinished) {
 		return;
 	}
+
 	struct GBASIO* sio = node->d.p;
 	switch (node->mode) {
 	case SIO_MULTI:
@@ -230,18 +283,21 @@ static int32_t _masterUpdate(struct GBASIOLockstepNode* node) {
 	case TRANSFER_STARTING:
 		// Start the transfer, but wait for the other GBAs to catch up
 		node->transferFinished = false;
-		node->p->multiRecv[0] = 0xFFFF;
+		node->p->multiRecv[0] = node->d.p->p->memory.io[REG_SIOMLT_SEND >> 1];
+		node->d.p->p->memory.io[REG_SIOMULTI0 >> 1] = 0xFFFF;
+		node->d.p->p->memory.io[REG_SIOMULTI1 >> 1] = 0xFFFF;
+		node->d.p->p->memory.io[REG_SIOMULTI2 >> 1] = 0xFFFF;
+		node->d.p->p->memory.io[REG_SIOMULTI3 >> 1] = 0xFFFF;
 		node->p->multiRecv[1] = 0xFFFF;
 		node->p->multiRecv[2] = 0xFFFF;
 		node->p->multiRecv[3] = 0xFFFF;
 		needsToWait = true;
 		ATOMIC_STORE(node->p->d.transferActive, TRANSFER_STARTED);
-		node->nextEvent += 512;
+		node->nextEvent += LOCKSTEP_TRANSFER;
 		break;
 	case TRANSFER_STARTED:
 		// All the other GBAs have caught up and are sleeping, we can all continue now
-		node->p->multiRecv[0] = node->d.p->p->memory.io[REG_SIOMLT_SEND >> 1];
-		node->nextEvent += 512;
+		node->nextEvent += LOCKSTEP_TRANSFER;
 		ATOMIC_STORE(node->p->d.transferActive, TRANSFER_FINISHING);
 		break;
 	case TRANSFER_FINISHING:
@@ -281,6 +337,7 @@ static int32_t _masterUpdate(struct GBASIOLockstepNode* node) {
 #ifndef NDEBUG
 	node->phase = node->p->d.transferActive;
 #endif
+
 	if (needsToWait) {
 		return 0;
 	}
@@ -307,6 +364,9 @@ static uint32_t _slaveUpdate(struct GBASIOLockstepNode* node) {
 	case TRANSFER_FINISHING:
 		break;
 	case TRANSFER_STARTED:
+		if (node->p->d.unusedCycles(&node->p->d, node->id) > node->eventDiff) {
+			break;
+		}
 		node->transferFinished = false;
 		switch (node->mode) {
 		case SIO_MULTI:
@@ -334,6 +394,9 @@ static uint32_t _slaveUpdate(struct GBASIOLockstepNode* node) {
 		signal = true;
 		break;
 	case TRANSFER_FINISHED:
+		if (node->p->d.unusedCycles(&node->p->d, node->id) > node->eventDiff) {
+			break;
+		}
 		_finishTransfer(node);
 		signal = true;
 		break;
@@ -344,16 +407,20 @@ static uint32_t _slaveUpdate(struct GBASIOLockstepNode* node) {
 	if (signal) {
 		node->p->d.signal(&node->p->d, 1 << node->id);
 	}
+
 	return 0;
 }
 
 static void _GBASIOLockstepNodeProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	struct GBASIOLockstepNode* node = user;
+	mLockstepLock(&node->p->d);
 	if (node->p->d.attached < 2) {
+		mLockstepUnlock(&node->p->d);
 		return;
 	}
 	int32_t cycles = 0;
 	node->nextEvent -= cyclesLate;
+	node->eventDiff += cyclesLate;
 	if (node->nextEvent <= 0) {
 		if (!node->id) {
 			cycles = _masterUpdate(node);
@@ -372,12 +439,18 @@ static void _GBASIOLockstepNodeProcessEvents(struct mTiming* timing, void* user,
 		mTimingSchedule(timing, &node->event, cycles);
 	} else {
 		node->d.p->p->earlyExit = true;
-		mTimingSchedule(timing, &node->event, cyclesLate + 1);
+		node->eventDiff += 1;
+		mTimingSchedule(timing, &node->event, 1);
 	}
+
+	mLockstepUnlock(&node->p->d);
 }
 
 static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {
 	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
+
+	mLockstepLock(&node->p->d);
+
 	if (address == REG_SIOCNT) {
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIOCNT <- %04x", node->id, value);
 		value &= 0xFF8B;
@@ -401,5 +474,8 @@ static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* drive
 	} else if (address == REG_SIODATA32_HI) {
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA32_HI <- %04x", node->id, value);
 	}
+
+	mLockstepUnlock(&node->p->d);
+
 	return value;
 }
