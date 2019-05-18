@@ -401,7 +401,7 @@ void SettingsView::updateConfig() {
 	saveSetting("logToStdout", m_ui.logToStdout);
 	saveSetting("logFile", m_ui.logFile);
 	saveSetting("useDiscordPresence", m_ui.useDiscordPresence);
-	saveSetting("audioHle", m_ui.audioHle);
+	saveSetting("gba.audioHle", m_ui.audioHle);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
@@ -550,7 +550,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("logToStdout", m_ui.logToStdout);
 	loadSetting("logFile", m_ui.logFile);
 	loadSetting("useDiscordPresence", m_ui.useDiscordPresence);
-	loadSetting("audioHle", m_ui.audioHle);
+	loadSetting("gba.audioHle", m_ui.audioHle);
 	loadSetting("videoScale", m_ui.videoScale, 1);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());

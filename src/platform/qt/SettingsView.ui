@@ -40,7 +40,7 @@
      </property>
      <property name="maximumSize">
       <size>
-       <width>200</width>
+       <width>180</width>
        <height>16777215</height>
       </size>
      </property>
@@ -903,9 +903,6 @@
        </item>
        <item row="1" column="1">
         <widget class="QCheckBox" name="audioHle">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
          <property name="text">
           <string>XQ GBA audio (experimental)</string>
          </property>
