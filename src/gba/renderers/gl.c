@@ -390,7 +390,7 @@ void GBAVideoGLRendererCreate(struct GBAVideoGLRenderer* renderer) {
 	renderer->scale = 1;
 }
 
-void _compileShader(struct GBAVideoGLRenderer* glRenderer, struct GBAVideoGLShader* shader, const char** shaderBuffer, int shaderBufferLines, GLuint vs, const struct GBAVideoGLUniform* uniforms, char* log) {
+static void _compileShader(struct GBAVideoGLRenderer* glRenderer, struct GBAVideoGLShader* shader, const char** shaderBuffer, int shaderBufferLines, GLuint vs, const struct GBAVideoGLUniform* uniforms, char* log) {
 	GLuint program = glCreateProgram();
 	shader->program = program;
 
@@ -424,6 +424,11 @@ void _compileShader(struct GBAVideoGLRenderer* glRenderer, struct GBAVideoGLShad
 	for (i = 0; uniforms[i].name; ++i) {
 		shader->uniforms[uniforms[i].type] = glGetUniformLocation(program, uniforms[i].name);
 	}
+}
+
+static void _deleteShader(struct GBAVideoGLShader* shader) {
+	glDeleteProgram(shader->program);
+	glDeleteVertexArrays(1, &shader->vao);
 }
 
 static void _initFramebufferTexture(GLuint tex, GLenum format, GLenum attachment, int scale) {
@@ -564,6 +569,22 @@ void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 	glDeleteTextures(GBA_GL_TEX_MAX, glRenderer->layers);
 	glDeleteTextures(1, &glRenderer->paletteTex);
 	glDeleteTextures(1, &glRenderer->vramTex);
+
+	_deleteShader(&glRenderer->bgShader[0]);
+	_deleteShader(&glRenderer->bgShader[1]);
+	_deleteShader(&glRenderer->bgShader[2]);
+	_deleteShader(&glRenderer->bgShader[3]);
+	_deleteShader(&glRenderer->objShader[0]);
+	_deleteShader(&glRenderer->objShader[1]);
+	_deleteShader(&glRenderer->finalizeShader);
+
+	int i;
+	for (i = 0; i < 4; ++i) {
+		struct GBAVideoGLBackground* bg = &glRenderer->bg[i];
+		glDeleteFramebuffers(1, &bg->fbo);
+		glDeleteTextures(1, &bg->tex);
+		glDeleteTextures(1, &bg->flags);
+	}
 }
 
 void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
