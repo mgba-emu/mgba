@@ -404,11 +404,9 @@ static const char* const _finalize =
 	"	if ((layerWindow & 32) != 0) {\n"
 	"		topFlags.y &= ~1;\n"
 	"	}\n"
-	"	if ((topFlags.y & 13) == 5 || topFlags.w > 0) {\n"
-	"		if ((bottomFlags.y & 2) == 2) {\n"
-	"			topPixel *= topFlags.z / 16.;\n"
-	"			topPixel += bottomPixel * windowFlags.y;\n"
-	"		}\n"
+	"	if (((topFlags.y & 13) == 5 || topFlags.w > 0) && (bottomFlags.y & 2) == 2) {\n"
+	"		topPixel *= topFlags.z / 16.;\n"
+	"		topPixel += bottomPixel * windowFlags.y;\n"
 	"	} else if ((topFlags.y & 13) == 9) {\n"
 	"		topPixel += (1. - topPixel) * windowFlags.z;\n"
 	"	} else if ((topFlags.y & 13) == 13) {\n"
@@ -1177,8 +1175,6 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		totalHeight <<= 1;
 	}
 
-	enum GBAVideoBlendEffect blendEffect = GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT ? BLEND_ALPHA : renderer->blendEffect;
-
 	const struct GBAVideoGLShader* shader = &renderer->objShader[GBAObjAttributesAGet256Color(sprite->a)];
 	const GLuint* uniforms = shader->uniforms;
 	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[GBA_GL_FBO_OBJ]);
@@ -1198,7 +1194,7 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	glUniform1i(uniforms[GBA_GL_OBJ_STRIDE], stride);
 	glUniform1i(uniforms[GBA_GL_OBJ_LOCALPALETTE], GBAObjAttributesCGetPalette(sprite->c));
 	glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c) << 3,
-	                                          (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2) | (blendEffect * 4),
+	                                          (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2) | (renderer->blendEffect * 4),
 	                                          renderer->blda, GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
 	if (GBAObjAttributesAIsTransformed(sprite->a)) {
 		struct GBAOAMMatrix mat;
