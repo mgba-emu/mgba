@@ -221,7 +221,7 @@ static const char* const _renderMode2 =
 	"	float lin = 0.5 - y / range.y * 0.25;\n"
 	"	vec2 mixedTransform = interpolate(transform, lin);\n"
 	"	vec2 mixedOffset = interpolate(offset, lin);\n"
-	"	color = fetchTile(ivec2(mixedTransform * texCoord.x + mixedOffset));\n"
+	"	color = fetchTile(ivec2(mixedTransform * (texCoord.x - 1) + mixedOffset));\n"
 	"	flags = inflags / flagCoeff;\n"
 	"}";
 
@@ -1202,29 +1202,32 @@ void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, 
 }
 
 void GBAVideoGLRendererDrawBackgroundMode2(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
-	int reverse;
-	int forward;
-	switch (y - renderer->firstAffine) {
-	case 0:
-	case 1:
-	case 2:
-	case 3:
-		return;
-	case 4:
-		forward = 2;
-		reverse = 4;
-		break;
-	case 5:
-		forward = 2;
-		reverse = 3;
-		break;
-	case 6:
-		forward = 2;
-		reverse = 2;
-		break;
-	default:
-		forward = 1;
-		reverse = 1;
+	int reverse = 0;
+	int forward = 1;
+	if (renderer->scale > 1) {
+		switch (y - renderer->firstAffine) {
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			return;
+		case 4:
+			forward = 2;
+			reverse = 4;
+			break;
+		case 5:
+			forward = 2;
+			reverse = 3;
+			break;
+		case 6:
+			forward = 2;
+			reverse = 2;
+			break;
+		case 7:
+			forward = 2;
+			reverse = 1;
+			break;
+		}
 	}
 
 	const struct GBAVideoGLShader* shader = &renderer->bgShader[background->overflow ? 2 : 3];
