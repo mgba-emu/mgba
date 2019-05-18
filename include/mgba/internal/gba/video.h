@@ -32,16 +32,23 @@ enum {
 	BASE_TILE = 0x00010000
 };
 
-enum ObjMode {
+enum GBAVideoObjMode {
 	OBJ_MODE_NORMAL = 0,
 	OBJ_MODE_SEMITRANSPARENT = 1,
 	OBJ_MODE_OBJWIN = 2
 };
 
-enum ObjShape {
+enum GBAVideoObjShape {
 	OBJ_SHAPE_SQUARE = 0,
 	OBJ_SHAPE_HORIZONTAL = 1,
 	OBJ_SHAPE_VERTICAL = 2
+};
+
+enum GBAVideoBlendEffect {
+	BLEND_NONE = 0,
+	BLEND_ALPHA = 1,
+	BLEND_BRIGHTEN = 2,
+	BLEND_DARKEN = 3
 };
 
 DECL_BITFIELD(GBAObjAttributesA, uint16_t);
@@ -88,6 +95,11 @@ union GBAOAM {
 	} mat[32];
 
 	uint16_t raw[512];
+};
+
+struct GBAVideoWindowRegion {
+	uint8_t end;
+	uint8_t start;
 };
 
 #define GBA_TEXT_MAP_TILE(MAP) ((MAP) & 0x03FF)
@@ -143,6 +155,20 @@ DECL_BIT(GBARegisterBLDCNT, Target2Bg2, 10);
 DECL_BIT(GBARegisterBLDCNT, Target2Bg3, 11);
 DECL_BIT(GBARegisterBLDCNT, Target2Obj, 12);
 DECL_BIT(GBARegisterBLDCNT, Target2Bd, 13);
+
+DECL_BITFIELD(GBAWindowControl, uint8_t);
+DECL_BIT(GBAWindowControl, Bg0Enable, 0);
+DECL_BIT(GBAWindowControl, Bg1Enable, 1);
+DECL_BIT(GBAWindowControl, Bg2Enable, 2);
+DECL_BIT(GBAWindowControl, Bg3Enable, 3);
+DECL_BIT(GBAWindowControl, ObjEnable, 4);
+DECL_BIT(GBAWindowControl, BlendEnable, 5);
+
+DECL_BITFIELD(GBAMosaicControl, uint16_t);
+DECL_BITS(GBAMosaicControl, BgH, 0, 4);
+DECL_BITS(GBAMosaicControl, BgV, 4, 4);
+DECL_BITS(GBAMosaicControl, ObjH, 8, 4);
+DECL_BITS(GBAMosaicControl, ObjV, 12, 4);
 
 struct GBAVideoRenderer {
 	void (*init)(struct GBAVideoRenderer* renderer);

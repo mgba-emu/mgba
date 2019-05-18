@@ -17,6 +17,9 @@
 #ifndef DISABLE_THREADING
 #include <mgba/feature/thread-proxy.h>
 #endif
+#ifdef BUILD_GLES2
+#include <mgba/internal/gba/renderers/gl.h>
+#endif
 #include <mgba/internal/gba/renderers/proxy.h>
 #include <mgba/internal/gba/renderers/video-software.h>
 #include <mgba/internal/gba/savedata.h>
@@ -123,6 +126,9 @@ struct mVideoLogContext;
 struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
+#ifdef BUILD_GLES2
+	struct GBAVideoGLRenderer glRenderer;
+#endif
 	struct GBAVideoProxyRenderer proxyRenderer;
 	struct mVideoLogContext* logContext;
 	struct mCoreCallbacks logCallbacks;
@@ -151,6 +157,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	core->timing = &gba->timing;
 	core->debugger = NULL;
 	core->symbolTable = NULL;
+	core->videoLogger = NULL;
 	gbacore->overrides = NULL;
 	gbacore->debuggerPlatform = NULL;
 	gbacore->cheatDevice = NULL;
@@ -166,6 +173,11 @@ static bool _GBACoreInit(struct mCore* core) {
 
 	GBAVideoSoftwareRendererCreate(&gbacore->renderer);
 	gbacore->renderer.outputBuffer = NULL;
+
+#ifdef BUILD_GLES2
+	GBAVideoGLRendererCreate(&gbacore->glRenderer);
+	gbacore->glRenderer.outputTex = -1;
+#endif
 
 #ifndef DISABLE_THREADING
 	mVideoThreadProxyCreate(&gbacore->threadProxy);
@@ -204,6 +216,20 @@ static void _GBACoreDeinit(struct mCore* core) {
 static enum mPlatform _GBACorePlatform(const struct mCore* core) {
 	UNUSED(core);
 	return PLATFORM_GBA;
+}
+
+static bool _GBACoreSupportsFeature(const struct mCore* core, enum mCoreFeature feature) {
+	UNUSED(core);
+	switch (feature) {
+	case mCORE_FEATURE_OPENGL:
+#ifdef BUILD_GLES2
+		return true;
+#else
+		return false;
+#endif
+	default:
+		return false;
+	}
 }
 
 static void _GBACoreSetSync(struct mCore* core, struct mCoreSync* sync) {
@@ -250,12 +276,20 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 #ifndef DISABLE_THREADING
 	mCoreConfigCopyValue(&core->config, config, "threadedVideo");
 #endif
+	mCoreConfigCopyValue(&core->config, config, "hwaccelVideo");
+	mCoreConfigCopyValue(&core->config, config, "videoScale");
 }
 
 static void _GBACoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
-	UNUSED(core);
-	*width = GBA_VIDEO_HORIZONTAL_PIXELS;
-	*height = GBA_VIDEO_VERTICAL_PIXELS;
+#ifdef BUILD_GLES2
+	struct GBACore* gbacore = (struct GBACore*) core;
+	int scale = gbacore->glRenderer.scale;
+#else
+	int scale = 1;
+#endif
+
+	*width = GBA_VIDEO_HORIZONTAL_PIXELS * scale;
+	*height = GBA_VIDEO_VERTICAL_PIXELS * scale;
 }
 
 static void _GBACoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t stride) {
@@ -265,14 +299,24 @@ static void _GBACoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t s
 	memset(gbacore->renderer.scanlineDirty, 0xFFFFFFFF, sizeof(gbacore->renderer.scanlineDirty));
 }
 
-static void _GBACoreGetPixels(struct mCore* core, const void** buffer, size_t* stride) {
+static void _GBACoreSetVideoGLTex(struct mCore* core, unsigned texid) {
+#ifdef BUILD_GLES2
 	struct GBACore* gbacore = (struct GBACore*) core;
-	gbacore->renderer.d.getPixels(&gbacore->renderer.d, stride, buffer);
+	gbacore->glRenderer.outputTex = texid;
+#else
+	UNUSED(core);
+	UNUSED(texid);
+#endif
+}
+
+static void _GBACoreGetPixels(struct mCore* core, const void** buffer, size_t* stride) {
+	struct GBA* gba = core->board;
+	gba->video.renderer->getPixels(gba->video.renderer, stride, buffer);
 }
 
 static void _GBACorePutPixels(struct mCore* core, const void* buffer, size_t stride) {
-	struct GBACore* gbacore = (struct GBACore*) core;
-	gbacore->renderer.d.putPixels(&gbacore->renderer.d, stride, buffer);
+	struct GBA* gba = core->board;
+	gba->video.renderer->putPixels(gba->video.renderer, stride, buffer);
 }
 
 static struct blip_t* _GBACoreGetAudioChannel(struct mCore* core, int ch) {
@@ -311,7 +355,9 @@ static void _GBACoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 	struct GBA* gba = core->board;
 	gba->stream = stream;
 	if (stream && stream->videoDimensionsChanged) {
-		stream->videoDimensionsChanged(stream, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+		unsigned width, height;
+		core->desiredVideoDimensions(core, &width, &height);
+		stream->videoDimensionsChanged(stream, width, height);
 	}
 }
 
@@ -387,16 +433,34 @@ static void _GBACoreChecksum(const struct mCore* core, void* data, enum mCoreChe
 static void _GBACoreReset(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = (struct GBA*) core->board;
-	if (gbacore->renderer.outputBuffer) {
-		struct GBAVideoRenderer* renderer = &gbacore->renderer.d;
-#ifndef DISABLE_THREADING
+	if (gbacore->renderer.outputBuffer
+#ifdef BUILD_GLES2
+	    || gbacore->glRenderer.outputTex != (unsigned) -1
+#endif
+	) {
+		struct GBAVideoRenderer* renderer;
+		if (gbacore->renderer.outputBuffer) {
+			renderer = &gbacore->renderer.d;
+		}
 		int fakeBool;
+#ifdef BUILD_GLES2
+		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
+			renderer = &gbacore->glRenderer.d;
+			mCoreConfigGetIntValue(&core->config, "videoScale", &gbacore->glRenderer.scale);
+		}
+#endif
+#ifndef DISABLE_THREADING
 		if (mCoreConfigGetIntValue(&core->config, "threadedVideo", &fakeBool) && fakeBool) {
-			gbacore->proxyRenderer.logger = &gbacore->threadProxy.d;
+			if (!core->videoLogger) {
+				core->videoLogger = &gbacore->threadProxy.d;
+			}
+		}
+#endif
+		if (core->videoLogger) {
+			gbacore->proxyRenderer.logger = core->videoLogger;
 			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
 			renderer = &gbacore->proxyRenderer.d;
 		}
-#endif
 		GBAVideoAssociateRenderer(&gba->video, renderer);
 	}
 
@@ -924,10 +988,12 @@ struct mCore* GBACoreCreate(void) {
 	core->init = _GBACoreInit;
 	core->deinit = _GBACoreDeinit;
 	core->platform = _GBACorePlatform;
+	core->supportsFeature = _GBACoreSupportsFeature;
 	core->setSync = _GBACoreSetSync;
 	core->loadConfig = _GBACoreLoadConfig;
 	core->desiredVideoDimensions = _GBACoreDesiredVideoDimensions;
 	core->setVideoBuffer = _GBACoreSetVideoBuffer;
+	core->setVideoGLTex = _GBACoreSetVideoGLTex;
 	core->getPixels = _GBACoreGetPixels;
 	core->putPixels = _GBACorePutPixels;
 	core->getAudioChannel = _GBACoreGetAudioChannel;

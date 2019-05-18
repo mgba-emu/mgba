@@ -13,13 +13,8 @@ CXX_GUARD_START
 #include <mgba/core/core.h>
 #include <mgba/gba/interface.h>
 #include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/renderers/common.h>
 #include <mgba/internal/gba/video.h>
-
-struct GBAVideoSoftwareSprite {
-	struct GBAObj obj;
-	int y;
-	int endY;
-};
 
 struct GBAVideoSoftwareBackground {
 	unsigned index;
@@ -49,13 +44,6 @@ struct GBAVideoSoftwareBackground {
 	int32_t offsetY;
 };
 
-enum BlendEffect {
-	BLEND_NONE = 0,
-	BLEND_ALPHA = 1,
-	BLEND_BRIGHTEN = 2,
-	BLEND_DARKEN = 3
-};
-
 enum {
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
@@ -81,25 +69,6 @@ enum {
 #define FLAG_ORDER_MASK     0xF8000000
 
 #define IS_WRITABLE(PIXEL) ((PIXEL) & 0xFE000000)
-
-struct WindowRegion {
-	uint8_t end;
-	uint8_t start;
-};
-
-DECL_BITFIELD(GBAWindowControl, uint8_t);
-DECL_BIT(GBAWindowControl, Bg0Enable, 0);
-DECL_BIT(GBAWindowControl, Bg1Enable, 1);
-DECL_BIT(GBAWindowControl, Bg2Enable, 2);
-DECL_BIT(GBAWindowControl, Bg3Enable, 3);
-DECL_BIT(GBAWindowControl, ObjEnable, 4);
-DECL_BIT(GBAWindowControl, BlendEnable, 5);
-
-DECL_BITFIELD(GBAMosaicControl, uint16_t);
-DECL_BITS(GBAMosaicControl, BgH, 0, 4);
-DECL_BITS(GBAMosaicControl, BgV, 4, 4);
-DECL_BITS(GBAMosaicControl, ObjH, 8, 4);
-DECL_BITS(GBAMosaicControl, ObjV, 12, 4);
 
 struct WindowControl {
 	GBAWindowControl packed;
@@ -133,7 +102,7 @@ struct GBAVideoSoftwareRenderer {
 	unsigned target2Obj;
 	unsigned target2Bd;
 	bool blendDirty;
-	enum BlendEffect blendEffect;
+	enum GBAVideoBlendEffect blendEffect;
 	color_t normalPalette[512];
 	color_t variantPalette[512];
 
@@ -144,8 +113,8 @@ struct GBAVideoSoftwareRenderer {
 	GBAMosaicControl mosaic;
 
 	struct WindowN {
-		struct WindowRegion h;
-		struct WindowRegion v;
+		struct GBAVideoWindowRegion h;
+		struct GBAVideoWindowRegion v;
 		struct WindowControl control;
 	} winN[2];
 
@@ -161,7 +130,7 @@ struct GBAVideoSoftwareRenderer {
 
 	int oamDirty;
 	int oamMax;
-	struct GBAVideoSoftwareSprite sprites[128];
+	struct GBAVideoRendererSprite sprites[128];
 	int16_t objOffsetX;
 	int16_t objOffsetY;
 

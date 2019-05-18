@@ -52,6 +52,7 @@
 #include "ShaderSelector.h"
 #include "ShortcutController.h"
 #include "TileView.h"
+#include "VideoProxy.h"
 #include "VideoView.h"
 
 #ifdef USE_DISCORD_RPC
@@ -459,6 +460,7 @@ void Window::openSettingsWindow() {
 	connect(settingsWindow, &SettingsView::audioDriverChanged, this, &Window::reloadAudioDriver);
 	connect(settingsWindow, &SettingsView::cameraDriverChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::cameraChanged, &m_inputController, &InputController::setCamera);
+	connect(settingsWindow, &SettingsView::videoRendererChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::languageChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::pathsChanged, this, &Window::reloadConfig);
 #ifdef USE_SQLITE3
@@ -716,9 +718,6 @@ void Window::gameStarted() {
 	if (m_savedScale > 0) {
 		resizeFrame(size * m_savedScale);
 	}
-	if (!m_display) {
-		reloadDisplayDriver();
-	}
 	attachWidget(m_display.get());
 	m_display->setMinimumSize(size);
 	setFocus();
@@ -853,6 +852,10 @@ void Window::unimplementedBiosCall(int call) {
 
 void Window::reloadDisplayDriver() {
 	if (m_controller) {
+		if (m_controller->hardwareAccelerated()) {
+			mustRestart();
+			return;
+		}
 		m_display->stopDrawing();
 		detachWidget(m_display.get());
 	}
@@ -1711,6 +1714,21 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	if (!fname.isEmpty()) {
 		setWindowFilePath(fname);
 		appendMRU(fname);
+	}
+
+	if (!m_display) {
+		reloadDisplayDriver();
+	}
+
+	if (m_config->getOption("hwaccelVideo").toInt() && m_display->supportsShaders() && controller->supportsFeature(CoreController::Feature::OPENGL)) {
+		if (m_display->videoProxy()) {
+			m_display->videoProxy()->attach(controller);
+		}
+
+		int fb = m_display->framebufferHandle();
+		if (fb >= 0) {
+			controller->setFramebufferHandle(fb);
+		}
 	}
 
 	m_controller = std::shared_ptr<CoreController>(controller);

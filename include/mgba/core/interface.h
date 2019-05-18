@@ -80,6 +80,10 @@ enum mColorFormat {
 	mCOLOR_ANY    = -1
 };
 
+enum mCoreFeature {
+	mCORE_FEATURE_OPENGL = 1,
+};
+
 struct mCoreCallbacks {
 	void* context;
 	void (*videoFrameStarted)(void* context);

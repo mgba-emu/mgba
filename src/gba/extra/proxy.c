@@ -21,6 +21,7 @@ static void GBAVideoProxyRendererFinishFrame(struct GBAVideoRenderer* renderer);
 static void GBAVideoProxyRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels);
 static void GBAVideoProxyRendererPutPixels(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels);
 
+static void _handleEvent(struct mVideoLogger* logger, enum mVideoLoggerEvent event);
 static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerDirtyInfo* packet);
 static uint16_t* _vramBlock(struct mVideoLogger* logger, uint32_t address);
 
@@ -45,6 +46,7 @@ void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct 
 
 	renderer->logger->context = renderer;
 	renderer->logger->parsePacket = _parsePacket;
+	renderer->logger->handleEvent = _handleEvent;
 	renderer->logger->vramBlock = _vramBlock;
 	renderer->logger->paletteSize = SIZE_PALETTE_RAM;
 	renderer->logger->vramSize = SIZE_VRAM;
@@ -105,7 +107,11 @@ void GBAVideoProxyRendererInit(struct GBAVideoRenderer* renderer) {
 	_init(proxyRenderer);
 	_reset(proxyRenderer);
 
-	proxyRenderer->backend->init(proxyRenderer->backend);
+	if (!proxyRenderer->logger->block) {
+		proxyRenderer->backend->init(proxyRenderer->backend);
+	} else {
+		proxyRenderer->logger->postEvent(proxyRenderer->logger, LOGGER_EVENT_INIT);
+	}
 }
 
 void GBAVideoProxyRendererReset(struct GBAVideoRenderer* renderer) {
@@ -113,15 +119,43 @@ void GBAVideoProxyRendererReset(struct GBAVideoRenderer* renderer) {
 
 	_reset(proxyRenderer);
 
-	proxyRenderer->backend->reset(proxyRenderer->backend);
+	if (!proxyRenderer->logger->block) {
+		proxyRenderer->backend->reset(proxyRenderer->backend);
+	} else {
+		proxyRenderer->logger->postEvent(proxyRenderer->logger, LOGGER_EVENT_RESET);
+	}
 }
 
 void GBAVideoProxyRendererDeinit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
 
-	proxyRenderer->backend->deinit(proxyRenderer->backend);
+	if (!proxyRenderer->logger->block) {
+		proxyRenderer->backend->deinit(proxyRenderer->backend);
+	} else {
+		proxyRenderer->logger->postEvent(proxyRenderer->logger, LOGGER_EVENT_DEINIT);
+	}
 
 	mVideoLoggerRendererDeinit(proxyRenderer->logger);
+}
+
+static void _handleEvent(struct mVideoLogger* logger, enum mVideoLoggerEvent event) {
+	struct GBAVideoProxyRenderer* proxyRenderer = logger->context;
+	switch (event) {
+	default:
+		break;
+	case LOGGER_EVENT_INIT:
+		proxyRenderer->backend->init(proxyRenderer->backend);
+		break;
+	case LOGGER_EVENT_DEINIT:
+		proxyRenderer->backend->deinit(proxyRenderer->backend);
+		break;
+	case LOGGER_EVENT_RESET:
+		proxyRenderer->backend->reset(proxyRenderer->backend);
+		break;
+	case LOGGER_EVENT_GET_PIXELS:
+		proxyRenderer->backend->getPixels(proxyRenderer->backend, &logger->pixelStride, &logger->pixelBuffer);
+		break;
+	}
 }
 
 static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerDirtyInfo* item) {
@@ -151,6 +185,11 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		}
 		break;
 	case DIRTY_SCANLINE:
+		proxyRenderer->backend->disableBG[0] = proxyRenderer->d.disableBG[0];
+		proxyRenderer->backend->disableBG[1] = proxyRenderer->d.disableBG[1];
+		proxyRenderer->backend->disableBG[2] = proxyRenderer->d.disableBG[2];
+		proxyRenderer->backend->disableBG[3] = proxyRenderer->d.disableBG[3];
+		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
 		if (item->address < GBA_VIDEO_VERTICAL_PIXELS) {
 			proxyRenderer->backend->drawScanline(proxyRenderer->backend, item->address);
 		}
@@ -269,10 +308,13 @@ static void GBAVideoProxyRendererGetPixels(struct GBAVideoRenderer* renderer, si
 		proxyRenderer->logger->lock(proxyRenderer->logger);
 		// Insert an extra item into the queue to make sure it gets flushed
 		mVideoLoggerRendererFlush(proxyRenderer->logger);
-	}
-	proxyRenderer->backend->getPixels(proxyRenderer->backend, stride, pixels);
-	if (proxyRenderer->logger->block && proxyRenderer->logger->wait) {
+		proxyRenderer->logger->postEvent(proxyRenderer->logger, LOGGER_EVENT_GET_PIXELS);
+		mVideoLoggerRendererFlush(proxyRenderer->logger);
 		proxyRenderer->logger->unlock(proxyRenderer->logger);
+		*pixels = proxyRenderer->logger->pixelBuffer;
+		*stride = proxyRenderer->logger->pixelStride;
+	} else {
+		proxyRenderer->backend->getPixels(proxyRenderer->backend, stride, pixels);
 	}
 }
 

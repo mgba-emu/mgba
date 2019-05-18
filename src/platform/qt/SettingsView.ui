@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>588</width>
-    <height>488</height>
+    <width>790</width>
+    <height>686</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -33,14 +33,14 @@
    <item row="1" column="0">
     <widget class="QListWidget" name="tabs">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+      <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
      <property name="maximumSize">
       <size>
-       <width>140</width>
+       <width>200</width>
        <height>16777215</height>
       </size>
      </property>
@@ -60,6 +60,11 @@
      <item>
       <property name="text">
        <string>Emulation</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Enhancements</string>
       </property>
      </item>
      <item>
@@ -844,6 +849,70 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="enhancements">
+      <layout class="QFormLayout" name="formLayout_6">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_36">
+         <property name="text">
+          <string>Video renderer:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="hwaccelVideo">
+         <item>
+          <property name="text">
+           <string>Software</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>OpenGL</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QGroupBox" name="oglEnahance">
+         <property name="title">
+          <string>OpenGL enhancements</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_7">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_37">
+            <property name="text">
+             <string>High-resolution scale:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="videoScale">
+            <property name="suffix">
+             <string>×</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>13</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="audioHle">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>XQ GBA audio (experimental)</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="bios">
       <layout class="QFormLayout" name="formLayout_5">
        <item row="0" column="0">
@@ -1221,11 +1290,11 @@
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="QTableView" name="loggingView">
-         <attribute name="horizontalHeaderDefaultSectionSize">
-          <number>77</number>
-         </attribute>
          <attribute name="horizontalHeaderMinimumSectionSize">
           <number>0</number>
+         </attribute>
+         <attribute name="horizontalHeaderDefaultSectionSize">
+          <number>77</number>
          </attribute>
         </widget>
        </item>

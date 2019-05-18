@@ -46,6 +46,10 @@ public:
 	static const bool VIDEO_SYNC = false;
 	static const bool AUDIO_SYNC = true;
 
+	enum class Feature {
+		OPENGL = mCORE_FEATURE_OPENGL,
+	};
+
 	class Interrupter {
 	public:
 		Interrupter(CoreController*, bool fromThread = false);
@@ -69,6 +73,8 @@ public:
 
 	mPlatform platform() const;
 	QSize screenDimensions() const;
+	bool supportsFeature(Feature feature) const { return m_threadContext.core->supportsFeature(m_threadContext.core, static_cast<mCoreFeature>(feature)); }
+	bool hardwareAccelerated() const { return m_hwaccel; }
 
 	void loadConfig(ConfigController*);
 
@@ -154,6 +160,8 @@ public slots:
 	void startVideoLog(const QString& path);
 	void endVideoLog();
 
+	void setFramebufferHandle(int fb);
+
 signals:
 	void started();
 	void paused();
@@ -188,6 +196,7 @@ private:
 	QByteArray m_buffers[2];
 	QByteArray* m_activeBuffer;
 	QByteArray m_completeBuffer;
+	bool m_hwaccel = false;
 
 	std::unique_ptr<mCacheSet> m_cacheSet;
 	std::unique_ptr<Override> m_override;

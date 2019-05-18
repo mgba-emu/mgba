@@ -17,6 +17,10 @@
 #include <QLibraryInfo>
 #include <QTranslator>
 
+#ifdef BUILD_GLES2
+#include <QSurfaceFormat>
+#endif
+
 #ifdef QT_STATIC
 #include <QtPlugin>
 #ifdef Q_OS_WIN
@@ -64,6 +68,12 @@ int main(int argc, char* argv[]) {
 
 	QApplication::setApplicationName(projectName);
 	QApplication::setApplicationVersion(projectVersion);
+
+#ifdef BUILD_GLES2
+	QSurfaceFormat format;
+	format.setVersion(3, 0);
+	QSurfaceFormat::setDefaultFormat(format);
+#endif
 
 	GBAApp application(argc, argv, &configController);
 
