@@ -13,6 +13,8 @@
 #include <mgba/internal/gba/renderers/cache-set.h>
 #include <mgba-util/memory.h>
 
+#define FLAG_CONST "const vec4 flagCoeff = vec4(64., 32., 16., 16.);\n"
+
 static void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer);
 static void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer);
@@ -116,7 +118,7 @@ static const char* const _renderMode0 =
 	"uniform ivec4 inflags;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
-	"const vec4 flagCoeff = vec4(32., 32., 16., 16.);\n"
+	FLAG_CONST
 
 	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord);\n"
 
@@ -185,7 +187,7 @@ static const char* const _renderMode2 =
 	"uniform vec2 range;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
-	"const vec4 flagCoeff = vec4(32., 32., 16., 16.);\n"
+	FLAG_CONST
 	"precision highp float;\n"
 	"precision highp int;\n"
 
@@ -254,7 +256,7 @@ static const char* const _renderObj =
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
 	"out vec3 window;\n"
-	"const vec4 flagCoeff = vec4(32., 32., 16., 16.);\n"
+	FLAG_CONST
 
 	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord);\n"
 
@@ -292,7 +294,7 @@ static const char* const _finalize =
 	"uniform sampler2D window;\n"
 	"uniform vec4 backdrop;\n"
 	"uniform vec4 backdropFlags;\n"
-	"const vec4 flagCoeff = vec4(32., 32., 16., 16.);\n"
+	FLAG_CONST
 	"out vec4 color;\n"
 
 	"void composite(vec4 pixel, ivec4 flags, inout vec4 topPixel, inout ivec4 topFlags, inout vec4 bottomPixel, inout ivec4 bottomFlags) {\n"
@@ -315,7 +317,7 @@ static const char* const _finalize =
 
 	"void main() {\n"
 	"	vec4 windowFlags = texelFetch(window, ivec2(texCoord * scale), 0);\n"
-	"	int layerWindow = int(windowFlags.x * 32) | int(windowFlags.y * 512);\n"
+	"	int layerWindow = int(windowFlags.x * 128);\n"
 	"	vec4 topPixel = backdrop;\n"
 	"	vec4 bottomPixel = backdrop;\n"
 	"	ivec4 topFlags = ivec4(backdropFlags * flagCoeff);\n"
@@ -1085,7 +1087,7 @@ void _finalizeLayers(struct GBAVideoGLRenderer* renderer) {
 	glUniform1iv(uniforms[GBA_GL_FINALIZE_FLAGS], 5, (GLint[]) { 4, 6, 8, 10, 2 });
 	glUniform1i(uniforms[GBA_GL_FINALIZE_WINDOW], 0);
 	glUniform4f(uniforms[GBA_GL_FINALIZE_BACKDROP], ((backdrop >> 16) & 0xFF) / 256., ((backdrop >> 8) & 0xFF) / 256., (backdrop & 0xFF) / 256., 0.f);
-	glUniform4f(uniforms[GBA_GL_FINALIZE_BACKDROPFLAGS], 1, (renderer->target1Bd | (renderer->target2Bd * 2) | (renderer->blendEffect * 4)) / 32.f, renderer->blda / 16.f, renderer->bldb / 16.f);
+	glUniform4f(uniforms[GBA_GL_FINALIZE_BACKDROPFLAGS], 1, (renderer->target1Bd | (renderer->target2Bd * 2) | (renderer->blendEffect * 4)) / 64.f, renderer->blda / 16.f, renderer->bldb / 16.f);
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1152,8 +1154,8 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	}
 	glUniform4i(uniforms[GBA_GL_OBJ_DIMS], width, height, totalWidth, totalHeight);
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_OBJWIN) {
-		int window = ~renderer->objwin & 0xFF;
-		glUniform4f(uniforms[GBA_GL_OBJ_OBJWIN], 1, (window & 0xF) / 32.f, (window >> 4) / 32.f, renderer->bldy / 16.f);
+		int window = ~renderer->objwin & 0x3F;
+		glUniform4f(uniforms[GBA_GL_OBJ_OBJWIN], 1, window / 128.f, 0, renderer->bldy / 16.f);
 		glDrawBuffers(3, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 });
 	} else {
 		glUniform4f(uniforms[GBA_GL_OBJ_OBJWIN], 0, 0, 0, 0);
@@ -1322,8 +1324,8 @@ static void _scissorWindowN(struct GBAVideoWindowRegion* region, int y, int scal
 }
 
 static void _clearWindow(GBAWindowControl window, int bldy) {
-	window = ~window & 0xFF;
-	glClearColor((window & 0xF) / 32.f, (window >> 4) / 32.f, bldy / 16.f, 0);
+	window = ~window & 0x3F;
+	glClearColor(window / 128.f, 0, bldy / 16.f, 0);
 }
 
 void GBAVideoGLRendererDrawWindow(struct GBAVideoGLRenderer* renderer, int y) {
