@@ -250,10 +250,10 @@ static const char* const _renderObj =
 	"uniform ivec4 inflags;\n"
 	"uniform mat2x2 transform;\n"
 	"uniform ivec4 dims;\n"
-	"uniform vec3 objwin;\n"
+	"uniform vec4 objwin;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
-	"out vec2 window;\n"
+	"out vec3 window;\n"
 	"const vec4 flagCoeff = vec4(32., 32., 16., 16.);\n"
 
 	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord);\n"
@@ -269,7 +269,7 @@ static const char* const _renderObj =
 	"	}\n"
 	"	color = pix;\n"
 	"	flags = inflags / flagCoeff;\n"
-	"	window = objwin.yz;\n"
+	"	window = objwin.yzw;\n"
 	"}";
 
 static const struct GBAVideoGLUniform _uniformsFinalize[] = {
@@ -462,6 +462,7 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OBJ]);
 	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_OBJ_COLOR], GL_RGBA, GL_COLOR_ATTACHMENT0, glRenderer->scale);
 	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_OBJ_FLAGS], GL_RGBA, GL_COLOR_ATTACHMENT1, glRenderer->scale);
+	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_WINDOW], GL_RGBA, GL_COLOR_ATTACHMENT2, glRenderer->scale);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_WINDOW]);
 	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_WINDOW], GL_RGB, GL_COLOR_ATTACHMENT0, glRenderer->scale);
@@ -1152,10 +1153,10 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	glUniform4i(uniforms[GBA_GL_OBJ_DIMS], width, height, totalWidth, totalHeight);
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_OBJWIN) {
 		int window = ~renderer->objwin & 0xFF;
-		glUniform3f(uniforms[GBA_GL_OBJ_OBJWIN], 1, (window & 0xF) / 32.f, (window >> 4) / 32.f);
+		glUniform4f(uniforms[GBA_GL_OBJ_OBJWIN], 1, (window & 0xF) / 32.f, (window >> 4) / 32.f, renderer->bldy / 16.f);
 		glDrawBuffers(3, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 });
 	} else {
-		glUniform3f(uniforms[GBA_GL_OBJ_OBJWIN], 0, 0, 0);
+		glUniform4f(uniforms[GBA_GL_OBJ_OBJWIN], 0, 0, 0, 0);
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
 	}
 	glEnableVertexAttribArray(0);
