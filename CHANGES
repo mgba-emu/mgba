@@ -8,6 +8,7 @@ Features:
  - Support Discord Rich Presence
  - Debugger: Add tracing to file
  - Map viewer supports bitmapped GBA modes
+ - OpenGL renderer with high-resolution upscaling support
 Emulation fixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs
@@ -40,6 +41,7 @@ Other fixes:
  - Wii: Fix aspect ratio (fixes mgba.io/i/500)
  - Qt: Fix some Qt display driver race conditions
  - FFmpeg: Fix audio conversion producing gaps
+ - Core: Improved lockstep driver reliability (Le Hoang Quyen)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
