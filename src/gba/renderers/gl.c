@@ -1256,7 +1256,12 @@ void GBAVideoGLRendererDrawBackgroundMode2(struct GBAVideoGLRenderer* renderer, 
 }
 
 static void _clearWindow(GBAWindowControl window, int start, int end, int y, int scale, int bldy) {
-	glScissor(start, y, end - start, scale);
+	if (start > end) {
+		_clearWindow(window, start, GBA_VIDEO_HORIZONTAL_PIXELS, y, scale, bldy);
+		_clearWindow(window, 0, end, y, scale, bldy);
+		return;
+	}
+	glScissor(start * scale, y, (end - start) * scale, scale);
 	window = ~window & 0xFF;
 	glClearColor((window & 0xF) / 32.f, (window >> 4) / 32.f, bldy / 16.f, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -1266,14 +1271,14 @@ void GBAVideoGLRendererDrawWindow(struct GBAVideoGLRenderer* renderer, int y) {
 	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[GBA_GL_FBO_WINDOW]);
 	int dispcnt = ((renderer->dispcnt >> 8) & 0x1F) | 0x20;
 	if (!(renderer->dispcnt & 0xE000)) {
-		_clearWindow(dispcnt, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, y * renderer->scale, renderer->scale, renderer->bldy);
+		_clearWindow(dispcnt, 0, GBA_VIDEO_HORIZONTAL_PIXELS, y * renderer->scale, renderer->scale, renderer->bldy);
 	} else {
-		_clearWindow(renderer->winout & dispcnt, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, y * renderer->scale, renderer->scale, renderer->bldy);
+		_clearWindow(renderer->winout & dispcnt, 0, GBA_VIDEO_HORIZONTAL_PIXELS, y * renderer->scale, renderer->scale, renderer->bldy);
 		if (GBARegisterDISPCNTIsWin1Enable(renderer->dispcnt) && y >= renderer->winN[1].v.start && y < renderer->winN[1].v.end) {
-			_clearWindow(renderer->winN[1].control & dispcnt, renderer->winN[1].h.start * renderer->scale, renderer->winN[1].h.end * renderer->scale, y * renderer->scale, renderer->scale, renderer->bldy);
+			_clearWindow(renderer->winN[1].control & dispcnt, renderer->winN[1].h.start, renderer->winN[1].h.end, y * renderer->scale, renderer->scale, renderer->bldy);
 		}
 		if (GBARegisterDISPCNTIsWin0Enable(renderer->dispcnt) && y >= renderer->winN[0].v.start && y < renderer->winN[0].v.end) {
-			_clearWindow(renderer->winN[0].control & dispcnt, renderer->winN[0].h.start * renderer->scale, renderer->winN[0].h.end * renderer->scale, y * renderer->scale, renderer->scale, renderer->bldy);
+			_clearWindow(renderer->winN[0].control & dispcnt, renderer->winN[0].h.start, renderer->winN[0].h.end, y * renderer->scale, renderer->scale, renderer->bldy);
 		}
 	}
 }
