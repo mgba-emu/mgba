@@ -13,7 +13,7 @@
 #include <mgba/core/core.h>
 #include <mgba/core/thread.h>
 
-#ifndef __APPLE__
+#ifdef __linux__
 #include <malloc.h>
 #endif
 
@@ -37,7 +37,7 @@ bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
 	size_t size = renderer->width * renderer->height * BYTES_PER_PIXEL;
 #ifdef _WIN32
 	renderer->outputBuffer = _aligned_malloc(size, 16);
-#elif !defined(__APPLE__)
+#elif defined(__linux__)
 	renderer->outputBuffer = memalign(16, size);
 #else
 	posix_memalign((void**) &renderer->outputBuffer, 16, size);
