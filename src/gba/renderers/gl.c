@@ -1146,7 +1146,7 @@ void _finalizeLayers(struct GBAVideoGLRenderer* renderer) {
 	glUniform1iv(uniforms[GBA_GL_FINALIZE_FLAGS], 5, (GLint[]) { 4, 6, 8, 10, 2 });
 	glUniform1i(uniforms[GBA_GL_FINALIZE_WINDOW], 0);
 	glUniform4f(uniforms[GBA_GL_FINALIZE_BACKDROP], ((backdrop >> 16) & 0xFF) / 256., ((backdrop >> 8) & 0xFF) / 256., (backdrop & 0xFF) / 256., 0.f);
-	glUniform4f(uniforms[GBA_GL_FINALIZE_BACKDROPFLAGS], 1, (renderer->target1Bd | (renderer->target2Bd * 2) | (renderer->blendEffect * 4)) / 64.f, renderer->blda / 16.f, 0);
+	glUniform4f(uniforms[GBA_GL_FINALIZE_BACKDROPFLAGS], 1, (renderer->target1Bd | (renderer->target2Bd * 2) | (renderer->blendEffect * 4)) / 32.f, renderer->blda / 16.f, 0);
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
