@@ -163,7 +163,7 @@ struct GBAVideoGLRenderer {
 	GBAMosaicControl mosaic;
 
 	struct GBAVideoGLWindowN {
-		struct GBAVideoWindowRegion h;
+		struct GBAVideoWindowRegion h[2];
 		struct GBAVideoWindowRegion v;
 		GBAWindowControl control;
 	} winN[2];
