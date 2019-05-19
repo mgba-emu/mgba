@@ -27,7 +27,9 @@ M_TEST_DEFINE(reset) {
 	struct mCore* core = GBACoreCreate();
 	assert_non_null(core);
 	assert_true(core->init(core));
+	mCoreInitConfig(core, NULL);
 	core->reset(core);
+	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 }
 
@@ -36,7 +38,9 @@ M_TEST_DEFINE(loadNullROM) {
 	assert_non_null(core);
 	assert_true(core->init(core));
 	assert_false(core->loadROM(core, NULL));
+	mCoreInitConfig(core, NULL);
 	core->reset(core);
+	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 }
 

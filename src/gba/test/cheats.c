@@ -16,6 +16,7 @@
 static int cheatsSetup(void** state) {
 	struct mCore* core = GBACoreCreate();
 	core->init(core);
+	mCoreInitConfig(core, NULL);
 	core->cheatDevice(core);
 	*state = core;
 	return 0;
@@ -26,6 +27,7 @@ static int cheatsTeardown(void** state) {
 		return 0;
 	}
 	struct mCore* core = *state;
+	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 	return 0;
 }
