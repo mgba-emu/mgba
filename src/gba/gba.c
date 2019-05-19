@@ -789,6 +789,10 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 void GBAFrameStarted(struct GBA* gba) {
 	GBATestKeypadIRQ(gba);
 
+	if (gba->audio.mixer) {
+		gba->audio.mixer->vblank(gba->audio.mixer);
+	}
+
 	size_t c;
 	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
 		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
