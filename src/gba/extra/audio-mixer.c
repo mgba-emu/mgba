@@ -237,6 +237,10 @@ static void _mp2kReload(struct GBAAudioMixer* mixer) {
 		} else {
 			memset(&track->track, 0, sizeof(track->track));
 		}
+		if (track->track.runningStatus == 0xCD) {
+			// XCMD isn't supported
+			mixer->p->externalMixing = false;
+		}
 	}
 }
 
@@ -253,9 +257,6 @@ bool _mp2kEngage(struct GBAAudioMixer* mixer, uint32_t address) {
 }
 
 void _mp2kStep(struct GBAAudioMixer* mixer) {
-	if (!mixer->p->externalMixing) {
-		return;
-	}
 	mixer->frame += mixer->p->sampleInterval;
 
 	while (mixer->frame >= VIDEO_TOTAL_LENGTH / mixer->tempo) {
@@ -288,8 +289,10 @@ void _mp2kStep(struct GBAAudioMixer* mixer) {
 			CircleBufferRead16(&mixer->activeTracks[track].buffer, &value);
 			sample.right += value;
 		}
-		blip_add_delta(mixer->p->psg.left, mixer->p->clock + i * interval, sample.left - mixer->last.left);
-		blip_add_delta(mixer->p->psg.right, mixer->p->clock + i * interval, sample.left - mixer->last.left);
+		if (mixer->p->externalMixing) {
+			blip_add_delta(mixer->p->psg.left, mixer->p->clock + i * interval, sample.left - mixer->last.left);
+			blip_add_delta(mixer->p->psg.right, mixer->p->clock + i * interval, sample.left - mixer->last.left);
+		}
 		mixer->last = sample;
 	}
 }
