@@ -241,10 +241,6 @@ void GBAReset(struct ARMCore* cpu) {
 	if (gba->pristineRomSize > SIZE_CART0) {
 		GBAMatrixReset(gba);
 	}
-
-	if (!gba->romVf && gba->memory.rom) {
-		GBASkipBIOS(gba);
-	}
 }
 
 void GBASkipBIOS(struct GBA* gba) {

@@ -528,7 +528,7 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 
 	ARMReset(core->cpu);
-	if (core->opts.skipBios && gba->isPristine) {
+	if (core->opts.skipBios && (gba->romVf || gba->memory.rom)) {
 		GBASkipBIOS(core->board);
 	}
 }
