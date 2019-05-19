@@ -719,7 +719,6 @@ void Window::gameStarted() {
 		resizeFrame(size * m_savedScale);
 	}
 	attachWidget(m_display.get());
-	m_display->setMinimumSize(size);
 	setFocus();
 
 #ifndef Q_OS_MAC
@@ -890,7 +889,6 @@ void Window::reloadDisplayDriver() {
 #endif
 
 	if (m_controller) {
-		m_display->setMinimumSize(m_controller->screenDimensions());
 		connect(m_controller.get(), &CoreController::stopping, m_display.get(), &Display::stopDrawing);
 		connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::resizeContext);
 		connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::forceDraw);
@@ -902,13 +900,12 @@ void Window::reloadDisplayDriver() {
 
 		attachWidget(m_display.get());
 		m_display->startDrawing(m_controller);
-	} else {
-#ifdef M_CORE_GB
-		m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
-#elif defined(M_CORE_GBA)
-		m_display->setMinimumSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-#endif
 	}
+#ifdef M_CORE_GB
+	m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
+#elif defined(M_CORE_GBA)
+	m_display->setMinimumSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+#endif
 }
 
 void Window::reloadAudioDriver() {

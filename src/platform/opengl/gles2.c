@@ -246,7 +246,7 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 		glBindTexture(GL_TEXTURE_2D, oldTex);
 	}
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, shader->filter ? GL_LINEAR : GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shader->filter ? GL_LINEAR : GL_NEAREST);
 	glUseProgram(shader->program);
 	glUniform1i(shader->texLocation, 0);
