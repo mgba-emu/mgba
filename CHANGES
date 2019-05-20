@@ -44,6 +44,7 @@ Other fixes:
  - FFmpeg: Fix audio conversion producing gaps
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
  - GBA: Fix skipping BIOS on irregularly sized ROMs
+ - Qt: Fix bounded fast forward with Qt Multimedia
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
