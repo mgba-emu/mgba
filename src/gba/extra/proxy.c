@@ -133,6 +133,7 @@ void GBAVideoProxyRendererDeinit(struct GBAVideoRenderer* renderer) {
 		proxyRenderer->backend->deinit(proxyRenderer->backend);
 	} else {
 		proxyRenderer->logger->postEvent(proxyRenderer->logger, LOGGER_EVENT_DEINIT);
+		mVideoLoggerRendererFlush(proxyRenderer->logger);
 	}
 
 	mVideoLoggerRendererDeinit(proxyRenderer->logger);

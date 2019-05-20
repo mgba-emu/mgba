@@ -196,9 +196,6 @@ CoreController::~CoreController() {
 		mCacheSetDeinit(m_cacheSet.get());
 		m_cacheSet.reset();
 	}
-
-	mCoreConfigDeinit(&m_threadContext.core->config);
-	m_threadContext.core->deinit(m_threadContext.core);
 }
 
 const color_t* CoreController::drawContext() {

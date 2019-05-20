@@ -209,6 +209,7 @@ private:
 	QString m_pendingPatch;
 	QString m_pendingState;
 	bool m_pendingPause = false;
+	bool m_pendingClose = false;
 
 	bool m_hitUnimplementedBiosCall;
 
