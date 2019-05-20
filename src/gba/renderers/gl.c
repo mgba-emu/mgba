@@ -994,13 +994,17 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		glRenderer->paletteDirty = false;
 	}
 	int i;
-	for (i = 0; i < 24; ++i) {
+	int first = -1;
+	glBindTexture(GL_TEXTURE_2D, glRenderer->vramTex);
+	for (i = 0; i < 25; ++i) {
 		if (!(glRenderer->vramDirty & (1 << i))) {
-			continue;
+			if (first >= 0) {
+				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 8 * first, 256, 8 * (i - first), GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, &glRenderer->d.vram[2048 * first]);
+				first = -1;
+			}
+		} else if (first < 0) {
+			first = i;
 		}
-		// TODO: PBOs
-		glBindTexture(GL_TEXTURE_2D, glRenderer->vramTex);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 8 * i, 256, 8, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, &glRenderer->d.vram[2048 * i]);
 	}
 	glRenderer->vramDirty = 0;
 
