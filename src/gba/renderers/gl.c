@@ -104,6 +104,7 @@ static const struct GBAVideoGLUniform _uniformsMode0[] = {
 	{ "size", GBA_GL_BG_SIZE, },
 	{ "offset", GBA_GL_BG_OFFSET, },
 	{ "inflags", GBA_GL_BG_INFLAGS, },
+	{ "mosaic", GBA_GL_BG_MOSAIC, },
 	{ 0 }
 };
 
@@ -116,6 +117,7 @@ static const char* const _renderMode0 =
 	"uniform int size;\n"
 	"uniform ivec2 offset;\n"
 	"uniform ivec4 inflags;\n"
+	"uniform ivec2 mosaic;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
 	FLAG_CONST
@@ -123,7 +125,14 @@ static const char* const _renderMode0 =
 	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord);\n"
 
 	"void main() {\n"
-	"	ivec2 coord = ivec2(texCoord) + offset;\n"
+	"	ivec2 coord = ivec2(texCoord);\n"
+	"	if (mosaic.x > 1) {\n"
+	"		coord.x -= int(mod(coord.x, mosaic.x));\n"
+	"	}\n"
+	"	if (mosaic.y > 1) {\n"
+	"		coord.y -= int(mod(coord.y, mosaic.y));\n"
+	"	}\n"
+	"	coord += offset;\n"
 	"	if ((size & 1) == 1) {\n"
 	"		coord.y += coord.x & 256;\n"
 	"	}\n"
@@ -171,6 +180,7 @@ static const struct GBAVideoGLUniform _uniformsMode2[] = {
 	{ "offset", GBA_GL_BG_OFFSET, },
 	{ "transform", GBA_GL_BG_TRANSFORM, },
 	{ "range", GBA_GL_BG_RANGE, },
+	{ "mosaic", GBA_GL_BG_MOSAIC, },
 	{ 0 }
 };
 
@@ -194,6 +204,7 @@ static const char* const _renderMode2 =
 	"uniform ivec2[4] offset;\n"
 	"uniform ivec2[4] transform;\n"
 	"uniform vec2 range;\n"
+	"uniform ivec2 mosaic;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
 	FLAG_CONST
@@ -221,11 +232,18 @@ static const char* const _renderMode2 =
 	"}\n"
 
 	"void main() {\n"
-	"	float y = texCoord.y - range.x;\n"
+	"	vec2 coord = texCoord;\n"
+	"	if (mosaic.x > 1) {\n"
+	"		coord.x -= mod(coord.x, mosaic.x);\n"
+	"	}\n"
+	"	if (mosaic.y > 1) {\n"
+	"		coord.y -= mod(coord.y, mosaic.y);\n"
+	"	}\n"
+	"	float y = coord.y - range.x;\n"
 	"	float lin = 0.5 - y / range.y * 0.25;\n"
 	"	vec2 mixedTransform = interpolate(transform, lin);\n"
 	"	vec2 mixedOffset = interpolate(offset, lin);\n"
-	"	color = fetchTile(ivec2(mixedTransform * texCoord.x + mixedOffset));\n"
+	"	color = fetchTile(ivec2(mixedTransform * coord.x + mixedOffset));\n"
 	"	flags = inflags / flagCoeff;\n"
 	"}";
 
@@ -239,6 +257,7 @@ static const struct GBAVideoGLUniform _uniformsMode35[] = {
 	{ "offset", GBA_GL_BG_OFFSET, },
 	{ "transform", GBA_GL_BG_TRANSFORM, },
 	{ "range", GBA_GL_BG_RANGE, },
+	{ "mosaic", GBA_GL_BG_MOSAIC, },
 	{ 0 }
 };
 
@@ -251,6 +270,7 @@ static const char* const _renderMode35 =
 	"uniform ivec2[4] offset;\n"
 	"uniform ivec2[4] transform;\n"
 	"uniform vec2 range;\n"
+	"uniform ivec2 mosaic;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
 	FLAG_CONST
@@ -260,11 +280,18 @@ static const char* const _renderMode35 =
 	"vec2 interpolate(ivec2 arr[4], float x);\n"
 
 	"void main() {\n"
-	"	float y = texCoord.y - range.x;\n"
+	"	vec2 incoord = texCoord;\n"
+	"	if (mosaic.x > 1) {\n"
+	"		incoord.x -= mod(incoord.x, mosaic.x);\n"
+	"	}\n"
+	"	if (mosaic.y > 1) {\n"
+	"		incoord.y -= mod(incoord.y, mosaic.y);\n"
+	"	}\n"
+	"	float y = incoord.y - range.x;\n"
 	"	float lin = 0.5 - y / range.y * 0.25;\n"
 	"	vec2 mixedTransform = interpolate(transform, lin);\n"
 	"	vec2 mixedOffset = interpolate(offset, lin);\n"
-	"	ivec2 coord = ivec2(mixedTransform * texCoord.x + mixedOffset);\n"
+	"	ivec2 coord = ivec2(mixedTransform * incoord.x + mixedOffset);\n"
 	"	if (coord.x < 0 || coord.x >= (size.x << 8)) {\n"
 	"		discard;\n"
 	"	}\n"
@@ -289,6 +316,7 @@ static const struct GBAVideoGLUniform _uniformsMode4[] = {
 	{ "offset", GBA_GL_BG_OFFSET, },
 	{ "transform", GBA_GL_BG_TRANSFORM, },
 	{ "range", GBA_GL_BG_RANGE, },
+	{ "mosaic", GBA_GL_BG_MOSAIC, },
 	{ 0 }
 };
 
@@ -302,6 +330,7 @@ static const char* const _renderMode4 =
 	"uniform ivec2[4] offset;\n"
 	"uniform ivec2[4] transform;\n"
 	"uniform vec2 range;\n"
+	"uniform ivec2 mosaic;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
 	FLAG_CONST
@@ -311,11 +340,18 @@ static const char* const _renderMode4 =
 	"vec2 interpolate(ivec2 arr[4], float x);\n"
 
 	"void main() {\n"
-	"	float y = texCoord.y - range.x;\n"
+	"	vec2 incoord = texCoord;\n"
+	"	if (mosaic.x > 1) {\n"
+	"		incoord.x -= mod(incoord.x, mosaic.x);\n"
+	"	}\n"
+	"	if (mosaic.y > 1) {\n"
+	"		incoord.y -= mod(incoord.y, mosaic.y);\n"
+	"	}\n"
+	"	float y = incoord.y - range.x;\n"
 	"	float lin = 0.5 - y / range.y * 0.25;\n"
 	"	vec2 mixedTransform = interpolate(transform, lin);\n"
 	"	vec2 mixedOffset = interpolate(offset, lin);\n"
-	"	ivec2 coord = ivec2(mixedTransform * texCoord.x + mixedOffset);\n"
+	"	ivec2 coord = ivec2(mixedTransform * incoord.x + mixedOffset);\n"
 	"	if (coord.x < 0 || coord.x >= (size.x << 8)) {\n"
 	"		discard;\n"
 	"	}\n"
@@ -1284,6 +1320,11 @@ void _prepareBackground(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBa
 	glUniform2i(uniforms[GBA_GL_VS_MAXPOS], GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 	glUniform1i(uniforms[GBA_GL_BG_VRAM], 0);
 	glUniform1i(uniforms[GBA_GL_BG_PALETTE], 1);
+	if (background->mosaic) {
+		glUniform2i(uniforms[GBA_GL_BG_MOSAIC], GBAMosaicControlGetBgV(renderer->mosaic), GBAMosaicControlGetBgH(renderer->mosaic));
+	} else {
+		glUniform2i(uniforms[GBA_GL_BG_MOSAIC], 0, 0);
+	}
 	glUniform4i(uniforms[GBA_GL_BG_INFLAGS], (background->priority << 3) + (background->index << 1) + 1,
 		                                     background->target1 | (background->target2 * 2) | (renderer->blendEffect * 4),
 		                                     renderer->blda, 0);
