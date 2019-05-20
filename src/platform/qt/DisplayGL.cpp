@@ -59,9 +59,6 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 
 	m_painter = new PainterGL(&m_videoProxy, windowHandle(), m_gl);
 	setUpdatesEnabled(false); // Prevent paint events, which can cause race conditions
-
-	connect(&m_videoProxy, &VideoProxy::dataAvailable, &m_videoProxy, &VideoProxy::processData);
-	connect(&m_videoProxy, &VideoProxy::eventPosted, &m_videoProxy, &VideoProxy::handleEvent);
 }
 
 DisplayGL::~DisplayGL() {
@@ -417,6 +414,9 @@ void PainterGL::stop() {
 	dequeueAll();
 	m_backend->clear(m_backend);
 	m_backend->swap(m_backend);
+	if (m_videoProxy) {
+		m_videoProxy->reset();
+	}
 	m_gl->doneCurrent();
 	m_gl->moveToThread(m_surface->thread());
 	m_context.reset();

@@ -726,7 +726,6 @@ void Window::gameStarted() {
 		menuBar()->hide();
 	}
 #endif
-	m_display->startDrawing(m_controller);
 
 	reloadAudioDriver();
 	multiplayerChanged();
@@ -1733,6 +1732,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	m_inputController.recalibrateAxes();
 	m_controller->setInputController(&m_inputController);
 	m_controller->setLogger(&m_log);
+	m_display->startDrawing(m_controller);
 
 	connect(this, &Window::shutdown, [this]() {
 		if (!m_controller) {

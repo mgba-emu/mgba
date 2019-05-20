@@ -363,7 +363,6 @@ void CoreController::stop() {
 #endif
 	setPaused(false);
 	mCoreThreadEnd(&m_threadContext);
-	emit stopping();
 }
 
 void CoreController::reset() {
