@@ -378,6 +378,7 @@ static const struct GBAVideoGLUniform _uniformsObj[] = {
 	{ "transform", GBA_GL_OBJ_TRANSFORM, },
 	{ "dims", GBA_GL_OBJ_DIMS, },
 	{ "objwin", GBA_GL_OBJ_OBJWIN, },
+	{ "mosaic", GBA_GL_OBJ_MOSAIC, },
 	{ 0 }
 };
 
@@ -392,6 +393,7 @@ static const char* const _renderObj =
 	"uniform mat2x2 transform;\n"
 	"uniform ivec4 dims;\n"
 	"uniform vec4 objwin;\n"
+	"uniform ivec4 mosaic;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
 	"out vec3 window;\n"
@@ -400,7 +402,14 @@ static const char* const _renderObj =
 	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord);\n"
 
 	"void main() {\n"
-	"	ivec2 coord = ivec2(transform * (texCoord - dims.zw / 2) + dims.xy / 2);\n"
+	"	vec2 incoord = texCoord;\n"
+	"	if (mosaic.x > 1) {\n"
+	"		incoord.x -= mod(mosaic.z + incoord.x, mosaic.x);\n"
+	"	}\n"
+	"	if (mosaic.y > 1) {\n"
+	"		incoord.y -= mod(mosaic.w + incoord.y, mosaic.y);\n"
+	"	}\n"
+	"	ivec2 coord = ivec2(transform * (incoord - dims.zw / 2) + dims.xy / 2);\n"
 	"	if ((coord & ~(dims.xy - 1)) != ivec2(0, 0)) {\n"
 	"		discard;\n"
 	"	}\n"
@@ -1304,6 +1313,11 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	} else {
 		glUniform4f(uniforms[GBA_GL_OBJ_OBJWIN], 0, 0, 0, 0);
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
+	}
+	if (GBAObjAttributesAIsMosaic(sprite->a)) {
+		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], GBAMosaicControlGetObjV(renderer->mosaic), GBAMosaicControlGetObjH(renderer->mosaic), x, spriteY);
+	} else {
+		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], 0, 0, 0, 0);
 	}
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
