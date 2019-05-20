@@ -751,6 +751,8 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	glRenderer->paletteDirty = true;
 	glRenderer->vramDirty = 0xFFFFFF;
 	glRenderer->firstAffine = -1;
+	glRenderer->dispcnt = 0;
+	glRenderer->mosaic = 0;
 }
 
 void GBAVideoGLRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
@@ -1315,7 +1317,7 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
 	}
 	if (GBAObjAttributesAIsMosaic(sprite->a)) {
-		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], GBAMosaicControlGetObjV(renderer->mosaic), GBAMosaicControlGetObjH(renderer->mosaic), x, spriteY);
+		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], GBAMosaicControlGetObjV(renderer->mosaic) + 1, GBAMosaicControlGetObjH(renderer->mosaic) + 1, x, spriteY);
 	} else {
 		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], 0, 0, 0, 0);
 	}
@@ -1335,7 +1337,7 @@ void _prepareBackground(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBa
 	glUniform1i(uniforms[GBA_GL_BG_VRAM], 0);
 	glUniform1i(uniforms[GBA_GL_BG_PALETTE], 1);
 	if (background->mosaic) {
-		glUniform2i(uniforms[GBA_GL_BG_MOSAIC], GBAMosaicControlGetBgV(renderer->mosaic), GBAMosaicControlGetBgH(renderer->mosaic));
+		glUniform2i(uniforms[GBA_GL_BG_MOSAIC], GBAMosaicControlGetBgV(renderer->mosaic) + 1, GBAMosaicControlGetBgH(renderer->mosaic) + 1);
 	} else {
 		glUniform2i(uniforms[GBA_GL_BG_MOSAIC], 0, 0);
 	}
