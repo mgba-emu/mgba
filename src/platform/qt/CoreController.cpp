@@ -434,13 +434,21 @@ void CoreController::rewind(int states) {
 }
 
 void CoreController::setFastForward(bool enable) {
+	if (m_fastForward == enable) {
+		return;
+	}
 	m_fastForward = enable;
 	updateFastForward();
+	emit fastForwardChanged(enable);
 }
 
 void CoreController::forceFastForward(bool enable) {
+	if (m_fastForwardForced == enable) {
+		return;
+	}
 	m_fastForwardForced = enable;
 	updateFastForward();
+	emit fastForwardChanged(enable || m_fastForward);
 }
 
 void CoreController::loadState(int slot) {

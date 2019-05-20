@@ -907,6 +907,7 @@ void Window::reloadAudioDriver() {
 	m_audioProcessor->requestSampleRate(opts->sampleRate);
 	m_audioProcessor->start();
 	connect(m_controller.get(), &CoreController::stopping, m_audioProcessor.get(), &AudioProcessor::stop);
+	connect(m_controller.get(), &CoreController::fastForwardChanged, m_audioProcessor.get(), &AudioProcessor::inputParametersChanged);
 }
 
 void Window::tryMakePortable() {
