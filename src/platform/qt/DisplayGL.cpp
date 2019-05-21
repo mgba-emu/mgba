@@ -315,18 +315,8 @@ void PainterGL::resizeContext() {
 		return;
 	}
 
-	if (!m_active) {
-		m_gl->makeCurrent(m_surface);
-#if defined(_WIN32) && defined(USE_EPOXY)
-		epoxy_handle_external_wglMakeCurrent();
-#endif
-	}
-
 	QSize size = m_context->screenDimensions();
 	m_backend->setDimensions(m_backend, size.width(), size.height());
-	if (!m_active) {
-		m_gl->doneCurrent();
-	}
 }
 
 void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
@@ -493,12 +483,6 @@ void PainterGL::setShaders(struct VDir* dir) {
 		return;
 	}
 #ifdef BUILD_GLES2
-	if (!m_active) {
-		m_gl->makeCurrent(m_surface);
-#if defined(_WIN32) && defined(USE_EPOXY)
-		epoxy_handle_external_wglMakeCurrent();
-#endif
-	}
 	if (m_shader.passes) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
@@ -506,9 +490,6 @@ void PainterGL::setShaders(struct VDir* dir) {
 	mGLES2ShaderLoad(&m_shader, dir);
 	if (m_started) {
 		mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
-	}
-	if (!m_active) {
-		m_gl->doneCurrent();
 	}
 #endif
 }
@@ -518,18 +499,9 @@ void PainterGL::clearShaders() {
 		return;
 	}
 #ifdef BUILD_GLES2
-	if (!m_active) {
-		m_gl->makeCurrent(m_surface);
-#if defined(_WIN32) && defined(USE_EPOXY)
-		epoxy_handle_external_wglMakeCurrent();
-#endif
-	}
 	if (m_shader.passes) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
-	}
-	if (!m_active) {
-		m_gl->doneCurrent();
 	}
 #endif
 }
