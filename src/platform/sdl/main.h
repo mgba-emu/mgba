@@ -54,8 +54,6 @@ struct mSDLRenderer {
 	SDL_Texture* sdlTex;
 	SDL_Renderer* sdlRenderer;
 	SDL_GLContext* glCtx;
-#else
-	bool fullscreen;
 #endif
 
 	unsigned width;
