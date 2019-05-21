@@ -127,6 +127,9 @@ void LogController::logToStdout(bool log) {
 
 void LogController::setLogFile(const QString& file) {
 	m_logStream.reset();
+	if (file.isEmpty()) {
+		return;
+	}
 	m_logFile = std::make_unique<QFile>(file);
 	m_logFile->open(QIODevice::Append | QIODevice::Text);
 	m_logStream = std::make_unique<QTextStream>(m_logFile.get());
