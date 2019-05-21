@@ -404,10 +404,13 @@ static const char* const _renderObj =
 	"void main() {\n"
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
-	"		incoord.x -= mod(mosaic.z + incoord.x, mosaic.x);\n"
+	"		incoord.x = int(clamp(incoord.x - mod(mosaic.z + incoord.x, mosaic.x), 0, dims.z - 1));\n"
+	"	} else if (mosaic.x < -1) {\n"
+	"		incoord.x = dims.z - incoord.x - 1;"
+	"		incoord.x = clamp(dims.z - int(incoord.x - mod(mosaic.z + incoord.x, -mosaic.x)) - 1, 0, dims.z - 1);\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
-	"		incoord.y -= mod(mosaic.w + incoord.y, mosaic.y);\n"
+	"		incoord.y = int(clamp(incoord.y - mod(mosaic.w + incoord.y, mosaic.y), 0, dims.w - 1));\n"
 	"	}\n"
 	"	ivec2 coord = ivec2(transform * (incoord - dims.zw / 2) + dims.xy / 2);\n"
 	"	if ((coord & ~(dims.xy - 1)) != ivec2(0, 0)) {\n"
@@ -1340,7 +1343,11 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
 	}
 	if (GBAObjAttributesAIsMosaic(sprite->a)) {
-		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], GBAMosaicControlGetObjV(renderer->mosaic) + 1, GBAMosaicControlGetObjH(renderer->mosaic) + 1, x, spriteY);
+		int mosaicH = GBAMosaicControlGetObjH(renderer->mosaic) + 1;
+		if (GBAObjAttributesBIsHFlip(sprite->b)) {
+			mosaicH = -mosaicH;
+		}
+		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], mosaicH, GBAMosaicControlGetObjV(renderer->mosaic) + 1, x, spriteY);
 	} else {
 		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], 0, 0, 0, 0);
 	}
