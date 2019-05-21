@@ -215,7 +215,6 @@ Footnotes
 <a name="missing">[1]</a> Currently missing features are
 
 - OBJ window for modes 3, 4 and 5 ([Bug #5](http://mgba.io/b/5))
-- Mosaic for transformed OBJs ([Bug #9](http://mgba.io/b/9))
 
 <a name="flashdetect">[2]</a> Flash memory size detection does not work in some cases. These can be configured at runtime, but filing a bug is recommended if such a case is encountered.
 
