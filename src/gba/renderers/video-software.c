@@ -805,11 +805,17 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			struct GBAVideoRendererSprite* sprite = &renderer->sprites[i];
 			int localY = y;
 			renderer->end = 0;
+			if ((y < sprite->y && (sprite->endY - 256 < 0 || y >= sprite->endY - 256)) || y >= sprite->endY) {
+				continue;
+			}
 			if (GBAObjAttributesAIsMosaic(sprite->obj.a)) {
 				localY = mosaicY;
-			}
-			if ((localY < sprite->y && (sprite->endY - 256 < 0 || localY >= sprite->endY - 256)) || localY >= sprite->endY) {
-				continue;
+				if (localY < sprite->y) {
+					localY = sprite->y;
+				}
+				if (localY >= sprite->endY) {
+					localY = sprite->endY - 1;
+				}
 			}
 			for (w = 0; w < renderer->nWindows; ++w) {
 				if (renderer->spriteCyclesRemaining <= 0) {
