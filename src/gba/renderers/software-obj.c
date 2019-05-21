@@ -17,19 +17,12 @@
 #define SPRITE_MOSAIC_LOOP(DEPTH, TYPE) \
 	SPRITE_YBASE_ ## DEPTH(inY); \
 	unsigned tileData; \
-	if (outX % mosaicH) { \
-		if (!inX && xOffset > 0) { \
-			inX = mosaicH - (outX % mosaicH); \
-			outX += mosaicH - (outX % mosaicH); \
-		} else if (inX == width - xOffset) { \
-			inX = mosaicH + (outX % mosaicH); \
-			outX += mosaicH - (outX % mosaicH); \
-		} \
-	} \
 	for (; outX < condition; ++outX, inX += xOffset) { \
 		int localX = inX - xOffset * (outX % mosaicH); \
-		if (localX < 0 || localX > width - 1) { \
-			continue; \
+		if (localX < 0) { \
+			localX = 0; \
+		} else if (localX > width - 1) {\
+			localX = width - 1; \
 		} \
 		SPRITE_XBASE_ ## DEPTH(localX); \
 		SPRITE_DRAW_PIXEL_ ## DEPTH ## _ ## TYPE(localX); \
