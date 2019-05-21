@@ -86,6 +86,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 			context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), controller->screenDimensions().width());
 		}
 
+		QMetaObject::invokeMethod(controller, "didReset");
 		controller->finishFrame();
 	};
 

@@ -170,6 +170,7 @@ signals:
 	void crashed(const QString& errorMessage);
 	void failed();
 	void frameAvailable();
+	void didReset();
 	void stateLoaded();
 	void rewound();
 
