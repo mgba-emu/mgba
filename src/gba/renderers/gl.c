@@ -1342,7 +1342,7 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		glUniform4f(uniforms[GBA_GL_OBJ_OBJWIN], 0, 0, 0, 0);
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
 	}
-	if (GBAObjAttributesAIsMosaic(sprite->a)) {
+	if (GBAObjAttributesAIsMosaic(sprite->a) && GBAObjAttributesAGetMode(sprite->a) != OBJ_MODE_OBJWIN) {
 		int mosaicH = GBAMosaicControlGetObjH(renderer->mosaic) + 1;
 		if (GBAObjAttributesBIsHFlip(sprite->b)) {
 			mosaicH = -mosaicH;
