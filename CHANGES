@@ -26,6 +26,7 @@ Emulation fixes:
  - GBA: Fix RTC on non-standard sized ROMs (fixes mgba.io/i/1400)
  - GBA Memory: Prevent writing to mirrored BG VRAM (fixes mgba.io/i/743)
  - GBA Video: Fix sprite mosaic clamping (fixes mgba.io/i/1008)
+ - GB: Fix HALT when IE and IF unused bits are set (fixes mgba.io/i/1349)
 Other fixes:
  - Qt: More app metadata fixes
  - Qt: Fix load recent from archive (fixes mgba.io/i/1325)
