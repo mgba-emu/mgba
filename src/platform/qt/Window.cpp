@@ -634,6 +634,8 @@ void Window::closeEvent(QCloseEvent* event) {
 	if (m_controller) {
 		event->ignore();
 		m_pendingClose = true;
+	} else {
+		m_display.reset();
 	}
 }
 
