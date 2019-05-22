@@ -35,6 +35,7 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 	, m_gl(nullptr)
 {
 	setAttribute(Qt::WA_NativeWindow);
+	windowHandle()->create();
 
 	// This can spontaneously re-enter into this->resizeEvent before creation is done, so we
 	// need to make sure it's initialized to nullptr before we assign the new object to it
@@ -263,6 +264,10 @@ PainterGL::PainterGL(VideoProxy* proxy, QWindow* surface, QOpenGLContext* parent
 		if (!painter->m_gl->isValid()) {
 			return;
 		}
+		painter->m_gl->makeCurrent(painter->m_surface);
+#if defined(_WIN32) && defined(USE_EPOXY)
+		epoxy_handle_external_wglMakeCurrent();
+#endif
 		painter->m_gl->swapBuffers(painter->m_gl->surface());
 	};
 
