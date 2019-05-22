@@ -55,6 +55,7 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 	audio->forceDisableChA = false;
 	audio->forceDisableChB = false;
 	audio->masterVolume = GBA_AUDIO_VOLUME_MAX;
+	audio->mixer = NULL;
 }
 
 void GBAAudioReset(struct GBAAudio* audio) {
