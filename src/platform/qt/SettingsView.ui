@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>790</width>
-    <height>686</height>
+    <width>849</width>
+    <height>753</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -399,21 +399,21 @@
          </item>
         </layout>
        </item>
-       <item row="9" column="0" colspan="2">
+       <item row="10" column="0" colspan="2">
         <widget class="Line" name="line_5">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="10" column="0">
+       <item row="11" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
           <string>Sync:</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
+       <item row="11" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_10">
          <item>
           <widget class="QCheckBox" name="videoSync">
@@ -431,24 +431,31 @@
          </item>
         </layout>
        </item>
-       <item row="11" column="1">
+       <item row="12" column="1">
         <widget class="QCheckBox" name="lockAspectRatio">
          <property name="text">
           <string>Lock aspect ratio</string>
          </property>
         </widget>
        </item>
-       <item row="12" column="1">
+       <item row="13" column="1">
         <widget class="QCheckBox" name="lockIntegerScaling">
          <property name="text">
           <string>Force integer scaling</string>
          </property>
         </widget>
        </item>
-       <item row="13" column="1">
+       <item row="14" column="1">
         <widget class="QCheckBox" name="resampleVideo">
          <property name="text">
           <string>Bilinear filtering</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="QPushButton" name="nativeGB">
+         <property name="text">
+          <string>Native (59.7275)</string>
          </property>
         </widget>
        </item>

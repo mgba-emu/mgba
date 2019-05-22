@@ -69,6 +69,7 @@ Misc:
  - GBA Video: Clean up dead code in sprite rendering loop
  - FFmpeg: Support audio-only recording
  - Qt: Increase maximum magnifications and scaling
+ - Qt: Add native FPS button to settings view
 
 0.7.1: (2019-02-24)
 Bugfixes:

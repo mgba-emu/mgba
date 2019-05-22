@@ -57,6 +57,10 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 
+	connect(m_ui.nativeGB, &QAbstractButton::pressed, [this]() {
+		m_ui.fpsTarget->setValue(double(GBA_ARM7TDMI_FREQUENCY) / double(VIDEO_TOTAL_LENGTH));
+	});
+
 	if (m_ui.savegamePath->text().isEmpty()) {
 		m_ui.savegameSameDir->setChecked(true);
 	}
