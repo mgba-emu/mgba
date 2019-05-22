@@ -150,6 +150,9 @@ struct GBAVideoGLRenderer {
 	GLuint vramTex;
 	unsigned vramDirty;
 
+	uint16_t shadowRegs[0x30];
+	uint64_t regsDirty;
+
 	struct GBAVideoGLShader bgShader[6];
 	struct GBAVideoGLShader objShader[2];
 	struct GBAVideoGLShader finalizeShader;
@@ -177,6 +180,7 @@ struct GBAVideoGLRenderer {
 	GBAWindowControl objwin;
 
 	int firstAffine;
+	int firstY;
 
 	int scale;
 };
