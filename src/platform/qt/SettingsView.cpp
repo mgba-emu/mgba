@@ -370,7 +370,6 @@ void SettingsView::updateConfig() {
 	saveSetting("videoSync", m_ui.videoSync);
 	saveSetting("audioSync", m_ui.audioSync);
 	saveSetting("frameskip", m_ui.frameskip);
-	saveSetting("fpsTarget", m_ui.fpsTarget);
 	saveSetting("autofireThreshold", m_ui.autofireThreshold);
 	saveSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	saveSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
@@ -407,6 +406,13 @@ void SettingsView::updateConfig() {
 		saveSetting("fastForwardRatio", "-1");
 	} else {
 		saveSetting("fastForwardRatio", m_ui.fastForwardRatio);
+	}
+
+	double nativeFps = double(GBA_ARM7TDMI_FREQUENCY) / double(VIDEO_TOTAL_LENGTH);
+	if (nativeFps - m_ui.fpsTarget->value() < 0.0001) {
+		m_controller->setOption("fpsTarget", QVariant(nativeFps));
+	} else {
+		saveSetting("fpsTarget", m_ui.fpsTarget);
 	}
 
 	switch (m_ui.idleOptimization->currentIndex() + IDLE_LOOP_IGNORE) {
