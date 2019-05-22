@@ -29,6 +29,7 @@ Other fixes:
  - FFmpeg: Fix audio conversion producing gaps
  - GBA: Fix skipping BIOS on irregularly sized ROMs
  - Qt: Fix bounded fast forward with Qt Multimedia
+ - Qt: Fix saving settings with native FPS target
 Misc:
  - Qt: Add missing HEVC NVENC option (fixes mgba.io/i/1323)
  - Qt: Improve camera initialization
