@@ -571,6 +571,7 @@ static void _compileShader(struct GBAVideoGLRenderer* glRenderer, struct GBAVide
 	glBindVertexArray(shader->vao);
 	glBindBuffer(GL_ARRAY_BUFFER, glRenderer->vbo);
 	GLuint positionLocation = glGetAttribLocation(program, "position");
+	glEnableVertexAttribArray(positionLocation);
 	glVertexAttribPointer(positionLocation, 2, GL_INT, GL_FALSE, 0, NULL);
 
 	size_t i;
@@ -1131,12 +1132,12 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 void GBAVideoGLRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 	_finalizeLayers(glRenderer);
+	glBindVertexArray(0);
 	glRenderer->firstAffine = -1;
 	glRenderer->bg[2].affine[0].sx = glRenderer->bg[2].refx;
 	glRenderer->bg[2].affine[0].sy = glRenderer->bg[2].refy;
 	glRenderer->bg[3].affine[0].sx = glRenderer->bg[3].refx;
 	glRenderer->bg[3].affine[0].sy = glRenderer->bg[3].refy;
-	glFlush();
 }
 
 void GBAVideoGLRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels) {
@@ -1273,7 +1274,6 @@ void _finalizeLayers(struct GBAVideoGLRenderer* renderer) {
 	glUniform1i(uniforms[GBA_GL_FINALIZE_WINDOW], 0);
 	glUniform1i(uniforms[GBA_GL_FINALIZE_BACKDROP], 11);
 	glUniform1i(uniforms[GBA_GL_FINALIZE_BACKDROPFLAGS], 12);
-	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -1353,7 +1353,6 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	} else {
 		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], 0, 0, 0, 0);
 	}
-	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
@@ -1399,7 +1398,6 @@ void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, 
 	glUniform1i(uniforms[GBA_GL_BG_CHARBASE], background->charBase);
 	glUniform1i(uniforms[GBA_GL_BG_SIZE], background->size);
 	glUniform2i(uniforms[GBA_GL_BG_OFFSET], background->x, yBase - y);
-	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
@@ -1475,7 +1473,6 @@ void GBAVideoGLRendererDrawBackgroundMode2(struct GBAVideoGLRenderer* renderer, 
 	glUniform1i(uniforms[GBA_GL_BG_SCREENBASE], background->screenBase);
 	glUniform1i(uniforms[GBA_GL_BG_CHARBASE], background->charBase);
 	glUniform1i(uniforms[GBA_GL_BG_SIZE], background->size);
-	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
@@ -1490,7 +1487,6 @@ void GBAVideoGLRendererDrawBackgroundMode3(struct GBAVideoGLRenderer* renderer, 
 	_prepareTransform(renderer, background, uniforms, y);
 	glUniform1i(uniforms[GBA_GL_BG_CHARBASE], 0);
 	glUniform2i(uniforms[GBA_GL_BG_SIZE], GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
@@ -1505,7 +1501,6 @@ void GBAVideoGLRendererDrawBackgroundMode4(struct GBAVideoGLRenderer* renderer, 
 	_prepareTransform(renderer, background, uniforms, y);
 	glUniform1i(uniforms[GBA_GL_BG_CHARBASE], GBARegisterDISPCNTIsFrameSelect(renderer->dispcnt) ? 0xA000 : 0);
 	glUniform2i(uniforms[GBA_GL_BG_SIZE], GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
@@ -1520,7 +1515,6 @@ void GBAVideoGLRendererDrawBackgroundMode5(struct GBAVideoGLRenderer* renderer, 
 	_prepareTransform(renderer, background, uniforms, y);
 	glUniform1i(uniforms[GBA_GL_BG_CHARBASE], GBARegisterDISPCNTIsFrameSelect(renderer->dispcnt) ? 0x5000 : 0);
 	glUniform2i(uniforms[GBA_GL_BG_SIZE], 160, 128);
-	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
