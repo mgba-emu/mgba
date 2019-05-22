@@ -98,6 +98,9 @@ public:
 	void setInputController(InputController*);
 	void setLogger(LogController*);
 
+	bool audioSync() const { return m_audioSync; }
+	bool videoSync() const { return m_videoSync; }
+
 public slots:
 	void start();
 	void stop();

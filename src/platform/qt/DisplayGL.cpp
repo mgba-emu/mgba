@@ -264,11 +264,12 @@ PainterGL::PainterGL(VideoProxy* proxy, QWindow* surface, QOpenGLContext* parent
 		if (!painter->m_gl->isValid()) {
 			return;
 		}
+		painter->m_gl->doneCurrent();
+		painter->m_gl->swapBuffers(painter->m_surface);
 		painter->m_gl->makeCurrent(painter->m_surface);
 #if defined(_WIN32) && defined(USE_EPOXY)
 		epoxy_handle_external_wglMakeCurrent();
 #endif
-		painter->m_gl->swapBuffers(painter->m_gl->surface());
 	};
 
 	m_backend->init(m_backend, 0);
@@ -383,7 +384,7 @@ void PainterGL::draw() {
 		m_backend->swap(m_backend);
 		if (!m_delayTimer.isValid()) {
 			m_delayTimer.start();
-		} else if (m_gl->format().swapInterval()) {
+		} else if (m_gl->format().swapInterval() && m_context->videoSync()) {
 			while (m_delayTimer.elapsed() < 15) {
 				QThread::usleep(100);
 			}
