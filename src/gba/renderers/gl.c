@@ -55,10 +55,13 @@ struct GBAVideoGLUniform {
 };
 
 static const GLchar* const _gles3Header =
-	"#version 300\n";
+	"#version 300 es\n"
+	"precision highp float;\n"
+	"precision highp int;\n";
 
 static const GLchar* const _gl3Header =
-	"#version 130\n";
+	"#version 130\n"
+	"precision highp float;\n";
 
 static const char* const _vertexShader =
 	"in vec2 position;\n"
@@ -67,9 +70,9 @@ static const char* const _vertexShader =
 	"out vec2 texCoord;\n"
 
 	"void main() {\n"
-	"	vec2 local = vec2(position.x, float(position.y * loc.x + loc.y) / abs(maxPos.y));\n"
-	"	gl_Position = vec4((local * 2. - 1.) * sign(maxPos), 0., 1.);\n"
-	"	texCoord = local * abs(maxPos);\n"
+	"	vec2 local = vec2(position.x, float(position.y * loc.x + loc.y) / float(maxPos.y));\n"
+	"	gl_Position = vec4((local * 2. - 1.) * vec2(sign(maxPos)), 0., 1.);\n"
+	"	texCoord = local * vec2(abs(maxPos));\n"
 	"}";
 
 static const char* const _renderTile16 =
@@ -132,10 +135,10 @@ static const char* const _renderMode0 =
 	"void main() {\n"
 	"	ivec2 coord = ivec2(texCoord);\n"
 	"	if (mosaic.x > 1) {\n"
-	"		coord.x -= int(mod(coord.x, mosaic.x));\n"
+	"		coord.x -= coord.x % mosaic.x;\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
-	"		coord.y -= int(mod(coord.y, mosaic.y));\n"
+	"		coord.y -= coord.y % mosaic.y;\n"
 	"	}\n"
 	"	coord += offset;\n"
 	"	if ((size & 1) == 1) {\n"
@@ -153,7 +156,7 @@ static const char* const _renderMode0 =
 	"	}\n"
 	"	int tile = int(map.a * 15.9) + int(map.b * 15.9) * 16 + (tileFlags & 0x3) * 256;\n"
 	"	color = renderTile(tile, int(map.r * 15.9), coord & 7);\n"
-	"	flags = inflags / flagCoeff;\n"
+	"	flags = vec4(inflags) / flagCoeff;\n"
 	"}";
 
 static const char* const _fetchTileOverflow =
@@ -271,8 +274,6 @@ static const char* const _renderMode2 =
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
 	FLAG_CONST
-	"precision highp float;\n"
-	"precision highp int;\n"
 
 	"vec4 fetchTile(ivec2 coord);\n"
 	"vec2 interpolate(ivec2 arr[4], float x);\n"
@@ -298,20 +299,20 @@ static const char* const _renderMode2 =
 	"void main() {\n"
 	"	ivec2 mat[4];\n"
 	"	ivec2 offset[4];\n"
-	"	loadAffine(int(texCoord.y), mat, offset);\n"
-	"	vec2 coord = texCoord;\n"
+	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
-	"		coord.x -= mod(coord.x, mosaic.x);\n"
+	"		incoord.x = float(int(incoord.x) % mosaic.x);\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
-	"		coord.y -= mod(coord.y, mosaic.y);\n"
+	"		incoord.y = float(int(incoord.y) % mosaic.y);\n"
 	"	}\n"
-	"	float y = fract(coord.y);\n"
+	"	loadAffine(int(incoord.y), mat, offset);\n"
+	"	float y = fract(incoord.y);\n"
 	"	float lin = 0.75 + y * 0.25;\n"
 	"	vec2 mixedTransform = interpolate(mat, lin);\n"
 	"	vec2 mixedOffset = interpolate(offset, lin);\n"
-	"	color = fetchTile(ivec2(mixedTransform * coord.x + mixedOffset));\n"
-	"	flags = inflags / flagCoeff;\n"
+	"	color = fetchTile(ivec2(mixedTransform * incoord.x + mixedOffset));\n"
+	"	flags = vec4(inflags) / flagCoeff;\n"
 	"}";
 
 static const struct GBAVideoGLUniform _uniformsMode35[] = {
@@ -340,8 +341,6 @@ static const char* const _renderMode35 =
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
 	FLAG_CONST
-	"precision highp float;\n"
-	"precision highp int;\n"
 
 	"vec2 interpolate(ivec2 arr[4], float x);\n"
 	"void loadAffine(int y, out ivec2 mat[4], out ivec2 aff[4]);\n"
@@ -349,14 +348,14 @@ static const char* const _renderMode35 =
 	"void main() {\n"
 	"	ivec2 mat[4];\n"
 	"	ivec2 offset[4];\n"
-	"	loadAffine(int(texCoord.y), mat, offset);\n"
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
-	"		incoord.x -= mod(incoord.x, mosaic.x);\n"
+	"		incoord.x = float(int(incoord.x) % mosaic.x);\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
-	"		incoord.y -= mod(incoord.y, mosaic.y);\n"
+	"		incoord.y = float(int(incoord.y) % mosaic.y);\n"
 	"	}\n"
+	"	loadAffine(int(incoord.y), mat, offset);\n"
 	"	float y = fract(incoord.y);\n"
 	"	float lin = 0.75 + y * 0.25;\n"
 	"	vec2 mixedTransform = interpolate(mat, lin);\n"
@@ -372,7 +371,7 @@ static const char* const _renderMode35 =
 	"	ivec4 entry = ivec4(texelFetch(vram, ivec2(address & 255, address >> 8), 0) * 15.9);\n"
 	"	int sixteen = (entry.x << 12) | (entry.y << 8) | (entry.z << 4) | entry.w;\n"
 	"	color = vec4((sixteen & 0x1F) / 31., ((sixteen >> 5) & 0x1F) / 31., ((sixteen >> 10) & 0x1F) / 31., 1.);\n"
-	"	flags = inflags / flagCoeff;\n"
+	"	flags = vec4(inflags) / flagCoeff;\n"
 	"}";
 
 static const struct GBAVideoGLUniform _uniformsMode4[] = {
@@ -403,8 +402,6 @@ static const char* const _renderMode4 =
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
 	FLAG_CONST
-	"precision highp float;\n"
-	"precision highp int;\n"
 
 	"vec2 interpolate(ivec2 arr[4], float x);\n"
 	"void loadAffine(int y, out ivec2 mat[4], out ivec2 aff[4]);\n"
@@ -412,14 +409,14 @@ static const char* const _renderMode4 =
 	"void main() {\n"
 	"	ivec2 mat[4];\n"
 	"	ivec2 offset[4];\n"
-	"	loadAffine(int(texCoord.y), mat, offset);\n"
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
-	"		incoord.x -= mod(incoord.x, mosaic.x);\n"
+	"		incoord.x = float(int(incoord.x) % mosaic.x);\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
-	"		incoord.y -= mod(incoord.y, mosaic.y);\n"
+	"		incoord.y = float(int(incoord.y) % mosaic.y);\n"
 	"	}\n"
+	"	loadAffine(int(incoord.y), mat, offset);\n"
 	"	float y = fract(incoord.y);\n"
 	"	float lin = 0.75 + y * 0.25;\n"
 	"	vec2 mixedTransform = interpolate(mat, lin);\n"
@@ -436,7 +433,7 @@ static const char* const _renderMode4 =
 	"	ivec2 entry = ivec2(twoEntries[3 - 2 * (address & 1)] * 15.9, twoEntries[2 - 2 * (address & 1)] * 15.9);\n"
 	"	color = texelFetch(palette, entry, 0);\n"
 	"	color.a = 1;\n"
-	"	flags = inflags / flagCoeff;\n"
+	"	flags = vec4(inflags) / flagCoeff;\n"
 	"}";
 
 static const struct GBAVideoGLUniform _uniformsObj[] = {
@@ -478,14 +475,14 @@ static const char* const _renderObj =
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
 	"		int x = int(incoord.x);\n"
-	"		incoord.x = clamp(x - int(mod(mosaic.z + x, mosaic.x)), 0, dims.z - 1);\n"
+	"		incoord.x = clamp(x - (mosaic.z + x) % mosaic.x, 0, dims.z - 1);\n"
 	"	} else if (mosaic.x < -1) {\n"
 	"		int x = dims.z - int(incoord.x) - 1;\n"
-	"		incoord.x = clamp(dims.z - x + int(mod(mosaic.z + x, -mosaic.x)) - 1, 0, dims.z - 1);\n"
+	"		incoord.x = clamp(dims.z - x + (mosaic.z + x) % -mosaic.x - 1, 0, dims.z - 1);\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
 	"		int y = int(incoord.y);\n"
-	"		incoord.y = clamp(y - int(mod(mosaic.w + y, mosaic.y)), 0, dims.w - 1);\n"
+	"		incoord.y = clamp(y - (mosaic.w + y) % mosaic.y, 0, dims.w - 1);\n"
 	"	}\n"
 	"	ivec2 coord = ivec2(transform * (incoord - dims.zw / 2) + dims.xy / 2);\n"
 	"	if ((coord & ~(dims.xy - 1)) != ivec2(0, 0)) {\n"
@@ -496,7 +493,7 @@ static const char* const _renderObj =
 	"		pix.a = 0;\n"
 	"	}\n"
 	"	color = pix;\n"
-	"	flags = inflags / flagCoeff;\n"
+	"	flags = vec4(inflags) / flagCoeff;\n"
 	"	window = objwin.yzw;\n"
 	"}";
 
@@ -625,12 +622,12 @@ static void _compileShader(struct GBAVideoGLRenderer* glRenderer, struct GBAVide
 	glAttachShader(program, fs);
 	glShaderSource(fs, shaderBufferLines, shaderBuffer, 0);
 	glCompileShader(fs);
-	glGetShaderInfoLog(fs, 1024, 0, log);
+	glGetShaderInfoLog(fs, 2048, 0, log);
 	if (log[0]) {
 		mLOG(GBA_VIDEO, ERROR, "Fragment shader compilation failure: %s", log);
 	}
 	glLinkProgram(program);
-	glGetProgramInfoLog(program, 1024, 0, log);
+	glGetProgramInfoLog(program, 2048, 0, log);
 	if (log[0]) {
 		mLOG(GBA_VIDEO, ERROR, "Program link failure: %s", log);
 	}
@@ -753,7 +750,7 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	char log[1024];
+	char log[2048];
 	const GLchar* shaderBuffer[4];
 	const GLubyte* version = glGetString(GL_VERSION);
 	if (strncmp((const char*) version, "OpenGL ES ", strlen("OpenGL ES "))) {
@@ -766,7 +763,7 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	shaderBuffer[1] = _vertexShader;
 	glShaderSource(vs, 2, shaderBuffer, 0);
 	glCompileShader(vs);
-	glGetShaderInfoLog(vs, 1024, 0, log);
+	glGetShaderInfoLog(vs, 2048, 0, log);
 	if (log[0]) {
 		mLOG(GBA_VIDEO, ERROR, "Vertex shader compilation failure: %s", log);
 	}
