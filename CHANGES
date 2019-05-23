@@ -70,6 +70,7 @@ Misc:
  - FFmpeg: Support audio-only recording
  - Qt: Increase maximum magnifications and scaling
  - Qt: Add native FPS button to settings view
+ - Qt: Improve sync code
 
 0.7.1: (2019-02-24)
 Bugfixes:

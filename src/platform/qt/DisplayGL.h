@@ -16,13 +16,13 @@
 #endif
 #endif
 
-#include <QElapsedTimer>
 #include <QOpenGLContext>
 #include <QList>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QQueue>
 #include <QThread>
+#include <QTimer>
 
 #include "VideoProxy.h"
 
@@ -105,6 +105,9 @@ public slots:
 
 	int glTex();
 
+private slots:
+	void swap();
+
 private:
 	void performDraw();
 	void dequeue();
@@ -125,7 +128,9 @@ private:
 	VideoBackend* m_backend = nullptr;
 	QSize m_size;
 	MessagePainter* m_messagePainter = nullptr;
-	QElapsedTimer m_delayTimer;
+	QTimer m_swapTimer{this};
+	bool m_needsUnlock = false;
+	bool m_frameReady = false;
 	VideoProxy* m_videoProxy;
 };
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2019 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -261,15 +261,9 @@ PainterGL::PainterGL(VideoProxy* proxy, QWindow* surface, QOpenGLContext* parent
 #endif
 	m_backend->swap = [](VideoBackend* v) {
 		PainterGL* painter = static_cast<PainterGL*>(v->user);
-		if (!painter->m_gl->isValid()) {
-			return;
+		if (!painter->m_swapTimer.isActive()) {
+			QMetaObject::invokeMethod(&painter->m_swapTimer, "start");
 		}
-		painter->m_gl->swapBuffers(painter->m_surface);
-		painter->m_gl->doneCurrent();
-		painter->m_gl->makeCurrent(painter->m_surface);
-#if defined(_WIN32) && defined(USE_EPOXY)
-		epoxy_handle_external_wglMakeCurrent();
-#endif
 	};
 
 	m_backend->init(m_backend, 0);
@@ -287,6 +281,10 @@ PainterGL::PainterGL(VideoProxy* proxy, QWindow* surface, QOpenGLContext* parent
 	for (int i = 0; i < 2; ++i) {
 		m_free.append(new uint32_t[1024 * 2048]);
 	}
+
+	m_swapTimer.setInterval(16);
+	m_swapTimer.setSingleShot(true);
+	connect(&m_swapTimer, &QTimer::timeout, this, &PainterGL::swap);
 }
 
 PainterGL::~PainterGL() {
@@ -375,26 +373,21 @@ void PainterGL::draw() {
 		return;
 	}
 
+	if (m_needsUnlock) {
+		QTimer::singleShot(0, this, &PainterGL::draw);
+		return;
+	}
+
 	if (mCoreSyncWaitFrameStart(&m_context->thread()->impl->sync) || !m_queue.isEmpty()) {
 		dequeue();
-		mCoreSyncWaitFrameEnd(&m_context->thread()->impl->sync);
-		m_painter.begin(m_window);
-		performDraw();
-		m_painter.end();
-		m_backend->swap(m_backend);
-		if (!m_delayTimer.isValid()) {
-			m_delayTimer.start();
-		} else if (m_gl->format().swapInterval() && m_context->videoSync()) {
-			while (m_delayTimer.elapsed() < 15) {
-				QThread::usleep(100);
-			}
-			m_delayTimer.restart();
+		forceDraw();
+		if (m_context->thread()->impl->sync.videoFrameWait) {
+			m_needsUnlock = true;
+		} else {
+			mCoreSyncWaitFrameEnd(&m_context->thread()->impl->sync);
 		}
 	} else {
 		mCoreSyncWaitFrameEnd(&m_context->thread()->impl->sync);
-	}
-	if (!m_queue.isEmpty()) {
-		QMetaObject::invokeMethod(this, "draw", Qt::QueuedConnection);
 	}
 }
 
@@ -437,6 +430,30 @@ void PainterGL::performDraw() {
 	m_painter.endNativePainting();
 	if (m_messagePainter) {
 		m_messagePainter->paint(&m_painter);
+	}
+	m_frameReady = true;
+}
+
+void PainterGL::swap() {
+	if (!m_gl->isValid()) {
+		return;
+	}
+	if (m_frameReady) {
+		m_gl->swapBuffers(m_surface);
+		m_gl->makeCurrent(m_surface);
+#if defined(_WIN32) && defined(USE_EPOXY)
+		epoxy_handle_external_wglMakeCurrent();
+#endif
+		m_frameReady = false;
+	}
+	if (m_needsUnlock) {
+		mCoreSyncWaitFrameEnd(&m_context->thread()->impl->sync);
+		m_needsUnlock = false;
+	}
+	if (!m_queue.isEmpty()) {
+		QMetaObject::invokeMethod(this, "draw", Qt::QueuedConnection);
+	} else {
+		m_swapTimer.start();
 	}
 }
 
