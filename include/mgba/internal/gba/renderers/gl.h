@@ -62,7 +62,7 @@ struct GBAVideoGLBackground {
 	int32_t refx;
 	int32_t refy;
 
-	struct GBAVideoGLAffine affine[4];
+	struct GBAVideoGLAffine affine;
 };
 
 enum {
@@ -79,6 +79,8 @@ enum {
 	GBA_GL_TEX_BACKDROP_COLOR,
 	GBA_GL_TEX_BACKDROP_FLAGS,
 	GBA_GL_TEX_WINDOW,
+	GBA_GL_TEX_AFFINE_2,
+	GBA_GL_TEX_AFFINE_3,
 	GBA_GL_TEX_MAX
 };
 
@@ -94,7 +96,6 @@ enum {
 	GBA_GL_BG_OFFSET,
 	GBA_GL_BG_INFLAGS,
 	GBA_GL_BG_TRANSFORM,
-	GBA_GL_BG_RANGE,
 	GBA_GL_BG_MOSAIC,
 
 	GBA_GL_OBJ_VRAM = 2,
@@ -130,6 +131,7 @@ struct GBAVideoGLRenderer {
 	uint32_t* temporaryBuffer;
 
 	struct GBAVideoGLBackground bg[4];
+	struct GBAVideoGLAffine affine[2][GBA_VIDEO_VERTICAL_PIXELS];
 
 	int oamMax;
 	bool oamDirty;

@@ -181,7 +181,6 @@ static const struct GBAVideoGLUniform _uniformsMode2[] = {
 	{ "inflags", GBA_GL_BG_INFLAGS, },
 	{ "offset", GBA_GL_BG_OFFSET, },
 	{ "transform", GBA_GL_BG_TRANSFORM, },
-	{ "range", GBA_GL_BG_RANGE, },
 	{ "mosaic", GBA_GL_BG_MOSAIC, },
 	{ 0 }
 };
@@ -193,6 +192,25 @@ static const char* const _interpolate =
 		"  3 * x1m * x1m * x   * arr[1] +"
 		"  3 * x1m * x   * x   * arr[2] +"
 		"      x   * x   * x   * arr[3];\n"
+	"}\n"
+
+	"void loadAffine(int y, out ivec2 mat[4], out ivec2 aff[4]) {\n"
+	"	mat[2] = texelFetch(transform, ivec2(0, y), 0).xz;\n"
+	"	ivec4 splitOffset[4];\n"
+	"	splitOffset[2] = texelFetch(transform, ivec2(1, y), 0);\n"
+
+	"	mat[0] = texelFetch(transform, ivec2(0, y - 2), 0).xz;\n"
+	"	mat[1] = texelFetch(transform, ivec2(0, y - 1), 0).xz;\n"
+	"	mat[3] = texelFetch(transform, ivec2(0, y + 1), 0).xz;\n"
+
+	"	splitOffset[0] = texelFetch(transform, ivec2(1, y - 2), 0);\n"
+	"	splitOffset[1] = texelFetch(transform, ivec2(1, y - 1), 0);\n"
+	"	splitOffset[3] = texelFetch(transform, ivec2(1, y + 1), 0);\n"
+
+	"	aff[0] = (splitOffset[0].xz & 0xFFFF) + (splitOffset[0].yw << 16);\n"
+	"	aff[1] = (splitOffset[1].xz & 0xFFFF) + (splitOffset[1].yw << 16);\n"
+	"	aff[2] = (splitOffset[2].xz & 0xFFFF) + (splitOffset[2].yw << 16);\n"
+	"	aff[3] = (splitOffset[3].xz & 0xFFFF) + (splitOffset[3].yw << 16);\n"
 	"}\n";
 
 static const char* const _renderMode2 =
@@ -203,9 +221,7 @@ static const char* const _renderMode2 =
 	"uniform int charBase;\n"
 	"uniform int size;\n"
 	"uniform ivec4 inflags;\n"
-	"uniform ivec2[4] offset;\n"
-	"uniform ivec2[4] transform;\n"
-	"uniform vec2 range;\n"
+	"uniform isampler2D transform;\n"
 	"uniform ivec2 mosaic;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
@@ -215,6 +231,7 @@ static const char* const _renderMode2 =
 
 	"vec4 fetchTile(ivec2 coord);\n"
 	"vec2 interpolate(ivec2 arr[4], float x);\n"
+	"void loadAffine(int y, out ivec2 mat[4], out ivec2 aff[4]);\n"
 
 	"vec4 renderTile(ivec2 coord) {\n"
 	"	int map = (coord.x >> 11) + (((coord.y >> 7) & 0x7F0) << size);\n"
@@ -234,6 +251,9 @@ static const char* const _renderMode2 =
 	"}\n"
 
 	"void main() {\n"
+	"	ivec2 mat[4];\n"
+	"	ivec2 offset[4];\n"
+	"	loadAffine(int(texCoord.y), mat, offset);\n"
 	"	vec2 coord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
 	"		coord.x -= mod(coord.x, mosaic.x);\n"
@@ -241,9 +261,9 @@ static const char* const _renderMode2 =
 	"	if (mosaic.y > 1) {\n"
 	"		coord.y -= mod(coord.y, mosaic.y);\n"
 	"	}\n"
-	"	float y = coord.y - range.x;\n"
-	"	float lin = 0.5 - y / range.y * 0.25;\n"
-	"	vec2 mixedTransform = interpolate(transform, lin);\n"
+	"	float y = fract(coord.y);\n"
+	"	float lin = 0.5 + y * 0.25;\n"
+	"	vec2 mixedTransform = interpolate(mat, lin);\n"
 	"	vec2 mixedOffset = interpolate(offset, lin);\n"
 	"	color = fetchTile(ivec2(mixedTransform * coord.x + mixedOffset));\n"
 	"	flags = inflags / flagCoeff;\n"
@@ -258,7 +278,6 @@ static const struct GBAVideoGLUniform _uniformsMode35[] = {
 	{ "inflags", GBA_GL_BG_INFLAGS, },
 	{ "offset", GBA_GL_BG_OFFSET, },
 	{ "transform", GBA_GL_BG_TRANSFORM, },
-	{ "range", GBA_GL_BG_RANGE, },
 	{ "mosaic", GBA_GL_BG_MOSAIC, },
 	{ 0 }
 };
@@ -269,9 +288,7 @@ static const char* const _renderMode35 =
 	"uniform int charBase;\n"
 	"uniform ivec2 size;\n"
 	"uniform ivec4 inflags;\n"
-	"uniform ivec2[4] offset;\n"
-	"uniform ivec2[4] transform;\n"
-	"uniform vec2 range;\n"
+	"uniform isampler2D transform;\n"
 	"uniform ivec2 mosaic;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
@@ -280,8 +297,12 @@ static const char* const _renderMode35 =
 	"precision highp int;\n"
 
 	"vec2 interpolate(ivec2 arr[4], float x);\n"
+	"void loadAffine(int y, out ivec2 mat[4], out ivec2 aff[4]);\n"
 
 	"void main() {\n"
+	"	ivec2 mat[4];\n"
+	"	ivec2 offset[4];\n"
+	"	loadAffine(int(texCoord.y), mat, offset);\n"
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
 	"		incoord.x -= mod(incoord.x, mosaic.x);\n"
@@ -289,9 +310,9 @@ static const char* const _renderMode35 =
 	"	if (mosaic.y > 1) {\n"
 	"		incoord.y -= mod(incoord.y, mosaic.y);\n"
 	"	}\n"
-	"	float y = incoord.y - range.x;\n"
-	"	float lin = 0.5 - y / range.y * 0.25;\n"
-	"	vec2 mixedTransform = interpolate(transform, lin);\n"
+	"	float y = fract(incoord.y);\n"
+	"	float lin = 0.5 + y * 0.25;\n"
+	"	vec2 mixedTransform = interpolate(mat, lin);\n"
 	"	vec2 mixedOffset = interpolate(offset, lin);\n"
 	"	ivec2 coord = ivec2(mixedTransform * incoord.x + mixedOffset);\n"
 	"	if (coord.x < 0 || coord.x >= (size.x << 8)) {\n"
@@ -317,7 +338,6 @@ static const struct GBAVideoGLUniform _uniformsMode4[] = {
 	{ "inflags", GBA_GL_BG_INFLAGS, },
 	{ "offset", GBA_GL_BG_OFFSET, },
 	{ "transform", GBA_GL_BG_TRANSFORM, },
-	{ "range", GBA_GL_BG_RANGE, },
 	{ "mosaic", GBA_GL_BG_MOSAIC, },
 	{ 0 }
 };
@@ -329,9 +349,7 @@ static const char* const _renderMode4 =
 	"uniform int charBase;\n"
 	"uniform ivec2 size;\n"
 	"uniform ivec4 inflags;\n"
-	"uniform ivec2[4] offset;\n"
-	"uniform ivec2[4] transform;\n"
-	"uniform vec2 range;\n"
+	"uniform isampler2D transform;\n"
 	"uniform ivec2 mosaic;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
@@ -340,8 +358,12 @@ static const char* const _renderMode4 =
 	"precision highp int;\n"
 
 	"vec2 interpolate(ivec2 arr[4], float x);\n"
+	"void loadAffine(int y, out ivec2 mat[4], out ivec2 aff[4]);\n"
 
 	"void main() {\n"
+	"	ivec2 mat[4];\n"
+	"	ivec2 offset[4];\n"
+	"	loadAffine(int(texCoord.y), mat, offset);\n"
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
 	"		incoord.x -= mod(incoord.x, mosaic.x);\n"
@@ -349,9 +371,9 @@ static const char* const _renderMode4 =
 	"	if (mosaic.y > 1) {\n"
 	"		incoord.y -= mod(incoord.y, mosaic.y);\n"
 	"	}\n"
-	"	float y = incoord.y - range.x;\n"
-	"	float lin = 0.5 - y / range.y * 0.25;\n"
-	"	vec2 mixedTransform = interpolate(transform, lin);\n"
+	"	float y = fract(incoord.y);\n"
+	"	float lin = 0.5 + y * 0.25;\n"
+	"	vec2 mixedTransform = interpolate(mat, lin);\n"
 	"	vec2 mixedOffset = interpolate(offset, lin);\n"
 	"	ivec2 coord = ivec2(mixedTransform * incoord.x + mixedOffset);\n"
 	"	if (coord.x < 0 || coord.x >= (size.x << 8)) {\n"
@@ -615,6 +637,19 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA4, 256, 192, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, 0);
 
+	glBindTexture(GL_TEXTURE_2D, glRenderer->layers[GBA_GL_TEX_AFFINE_2]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16I, 2, GBA_VIDEO_VERTICAL_PIXELS, 0, GL_RGBA_INTEGER, GL_SHORT, NULL);
+	glBindTexture(GL_TEXTURE_2D, glRenderer->layers[GBA_GL_TEX_AFFINE_3]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16I, 2, GBA_VIDEO_VERTICAL_PIXELS, 0, GL_RGBA_INTEGER, GL_SHORT, NULL);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OBJ]);
 	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_OBJ_COLOR], GL_RGBA, GL_COLOR_ATTACHMENT0, glRenderer->scale);
 	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_OBJ_FLAGS], GL_RGBA, GL_COLOR_ATTACHMENT1, glRenderer->scale);
@@ -654,12 +689,12 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 		bg->y = 0;
 		bg->refx = 0;
 		bg->refy = 0;
-		bg->affine[0].dx = 256;
-		bg->affine[0].dmx = 0;
-		bg->affine[0].dy = 0;
-		bg->affine[0].dmy = 256;
-		bg->affine[0].sx = 0;
-		bg->affine[0].sy = 0;
+		bg->affine.dx = 256;
+		bg->affine.dmx = 0;
+		bg->affine.dy = 0;
+		bg->affine.dmy = 256;
+		bg->affine.sx = 0;
+		bg->affine.sy = 0;
 		glGenFramebuffers(1, &bg->fbo);
 		glGenTextures(1, &bg->tex);
 		glGenTextures(1, &bg->flags);
@@ -796,7 +831,7 @@ uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer,
 		GBAVideoCacheWriteVideoRegister(renderer->cache, address, value);
 	}
 
-	glRenderer->regsDirty |= 1ULL << (address >> 1);
+	bool dirty = true;
 	switch (address) {
 	case REG_DISPCNT:
 		value &= 0xFFF7;
@@ -814,6 +849,70 @@ uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer,
 	case REG_BG3HOFS:
 	case REG_BG3VOFS:
 		value &= 0x01FF;
+		break;
+	case REG_BG2PA:
+		glRenderer->bg[2].affine.dx = value;
+		dirty = false;
+		break;
+	case REG_BG2PB:
+		glRenderer->bg[2].affine.dmx = value;
+		dirty = false;
+		break;
+	case REG_BG2PC:
+		glRenderer->bg[2].affine.dy = value;
+		dirty = false;
+		break;
+	case REG_BG2PD:
+		glRenderer->bg[2].affine.dmy = value;
+		dirty = false;
+		break;
+	case REG_BG2X_LO:
+		GBAVideoGLRendererWriteBGX_LO(&glRenderer->bg[2], value);
+		dirty = false;
+		break;
+	case REG_BG2X_HI:
+		GBAVideoGLRendererWriteBGX_HI(&glRenderer->bg[2], value);
+		dirty = false;
+		break;
+	case REG_BG2Y_LO:
+		GBAVideoGLRendererWriteBGY_LO(&glRenderer->bg[2], value);
+		dirty = false;
+		break;
+	case REG_BG2Y_HI:
+		GBAVideoGLRendererWriteBGY_HI(&glRenderer->bg[2], value);
+		dirty = false;
+		break;
+	case REG_BG3PA:
+		glRenderer->bg[3].affine.dx = value;
+		dirty = false;
+		break;
+	case REG_BG3PB:
+		glRenderer->bg[3].affine.dmx = value;
+		dirty = false;
+		break;
+	case REG_BG3PC:
+		glRenderer->bg[3].affine.dy = value;
+		dirty = false;
+		break;
+	case REG_BG3PD:
+		glRenderer->bg[3].affine.dmy = value;
+		dirty = false;
+		break;
+	case REG_BG3X_LO:
+		GBAVideoGLRendererWriteBGX_LO(&glRenderer->bg[3], value);
+		dirty = false;
+		break;
+	case REG_BG3X_HI:
+		GBAVideoGLRendererWriteBGX_HI(&glRenderer->bg[3], value);
+		dirty = false;
+		break;
+	case REG_BG3Y_LO:
+		GBAVideoGLRendererWriteBGY_LO(&glRenderer->bg[3], value);
+		dirty = false;
+		break;
+	case REG_BG3Y_HI:
+		GBAVideoGLRendererWriteBGY_HI(&glRenderer->bg[3], value);
+		dirty = false;
 		break;
 	case REG_BLDALPHA:
 		value &= 0x1F1F;
@@ -833,7 +932,14 @@ uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer,
 	default:
 		break;
 	}
-	glRenderer->shadowRegs[address >> 1] = value;
+	if (glRenderer->shadowRegs[address >> 1] == value) {
+		dirty = false;
+	} else {
+		glRenderer->shadowRegs[address >> 1] = value;
+	}
+	if (dirty) {
+		glRenderer->regsDirty |= 1ULL << (address >> 1);
+	}
 	return value;
 }
 
@@ -878,54 +984,6 @@ void _cleanRegister(struct GBAVideoGLRenderer* glRenderer, int address, uint16_t
 		break;
 	case REG_BG3VOFS:
 		glRenderer->bg[3].y = value;
-		break;
-	case REG_BG2PA:
-		glRenderer->bg[2].affine[0].dx = value;
-		break;
-	case REG_BG2PB:
-		glRenderer->bg[2].affine[0].dmx = value;
-		break;
-	case REG_BG2PC:
-		glRenderer->bg[2].affine[0].dy = value;
-		break;
-	case REG_BG2PD:
-		glRenderer->bg[2].affine[0].dmy = value;
-		break;
-	case REG_BG2X_LO:
-		GBAVideoGLRendererWriteBGX_LO(&glRenderer->bg[2], value);
-		break;
-	case REG_BG2X_HI:
-		GBAVideoGLRendererWriteBGX_HI(&glRenderer->bg[2], value);
-		break;
-	case REG_BG2Y_LO:
-		GBAVideoGLRendererWriteBGY_LO(&glRenderer->bg[2], value);
-		break;
-	case REG_BG2Y_HI:
-		GBAVideoGLRendererWriteBGY_HI(&glRenderer->bg[2], value);
-		break;
-	case REG_BG3PA:
-		glRenderer->bg[3].affine[0].dx = value;
-		break;
-	case REG_BG3PB:
-		glRenderer->bg[3].affine[0].dmx = value;
-		break;
-	case REG_BG3PC:
-		glRenderer->bg[3].affine[0].dy = value;
-		break;
-	case REG_BG3PD:
-		glRenderer->bg[3].affine[0].dmy = value;
-		break;
-	case REG_BG3X_LO:
-		GBAVideoGLRendererWriteBGX_LO(&glRenderer->bg[3], value);
-		break;
-	case REG_BG3X_HI:
-		GBAVideoGLRendererWriteBGX_HI(&glRenderer->bg[3], value);
-		break;
-	case REG_BG3Y_LO:
-		GBAVideoGLRendererWriteBGY_LO(&glRenderer->bg[3], value);
-		break;
-	case REG_BG3Y_HI:
-		GBAVideoGLRendererWriteBGY_HI(&glRenderer->bg[3], value);
 		break;
 	case REG_BLDCNT:
 		GBAVideoGLRendererWriteBLDCNT(glRenderer, value);
@@ -1016,14 +1074,10 @@ void _cleanRegister(struct GBAVideoGLRenderer* glRenderer, int address, uint16_t
 void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 
+	memcpy(&glRenderer->affine[0][y], &glRenderer->bg[2].affine, sizeof(struct GBAVideoGLAffine));
+	memcpy(&glRenderer->affine[1][y], &glRenderer->bg[3].affine, sizeof(struct GBAVideoGLAffine));
 	if (GBARegisterDISPCNTGetMode(glRenderer->dispcnt) != 0) {
 		if (glRenderer->firstAffine < 0) {
-			memcpy(&glRenderer->bg[2].affine[3], &glRenderer->bg[2].affine[0], sizeof(struct GBAVideoGLAffine));
-			memcpy(&glRenderer->bg[3].affine[3], &glRenderer->bg[3].affine[0], sizeof(struct GBAVideoGLAffine));
-			memcpy(&glRenderer->bg[2].affine[2], &glRenderer->bg[2].affine[0], sizeof(struct GBAVideoGLAffine));
-			memcpy(&glRenderer->bg[3].affine[2], &glRenderer->bg[3].affine[0], sizeof(struct GBAVideoGLAffine));
-			memcpy(&glRenderer->bg[2].affine[1], &glRenderer->bg[2].affine[0], sizeof(struct GBAVideoGLAffine));
-			memcpy(&glRenderer->bg[3].affine[1], &glRenderer->bg[3].affine[0], sizeof(struct GBAVideoGLAffine));
 			glRenderer->firstAffine = y;
 		}
 	} else {
@@ -1038,6 +1092,9 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	if (glRenderer->firstY < 0) {
 		glRenderer->firstY = y;
 	}
+
+	memcpy(&glRenderer->winN[0].h[1], &glRenderer->winN[0].h[0], sizeof(struct GBAVideoWindowRegion));
+	memcpy(&glRenderer->winN[1].h[1], &glRenderer->winN[1].h[0], sizeof(struct GBAVideoWindowRegion));
 
 	int i;
 	for (i = 0; i < 0x30; ++i) {
@@ -1095,25 +1152,20 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	}
 
 	if (GBARegisterDISPCNTGetMode(glRenderer->dispcnt) != 0) {
-		memcpy(&glRenderer->bg[2].affine[3], &glRenderer->bg[2].affine[2], sizeof(struct GBAVideoGLAffine));
-		memcpy(&glRenderer->bg[3].affine[3], &glRenderer->bg[3].affine[2], sizeof(struct GBAVideoGLAffine));
-		memcpy(&glRenderer->bg[2].affine[2], &glRenderer->bg[2].affine[1], sizeof(struct GBAVideoGLAffine));
-		memcpy(&glRenderer->bg[3].affine[2], &glRenderer->bg[3].affine[1], sizeof(struct GBAVideoGLAffine));
-		memcpy(&glRenderer->bg[2].affine[1], &glRenderer->bg[2].affine[0], sizeof(struct GBAVideoGLAffine));
-		memcpy(&glRenderer->bg[3].affine[1], &glRenderer->bg[3].affine[0], sizeof(struct GBAVideoGLAffine));
-
-		glRenderer->bg[2].affine[0].sx += glRenderer->bg[2].affine[0].dmx;
-		glRenderer->bg[2].affine[0].sy += glRenderer->bg[2].affine[0].dmy;
-		glRenderer->bg[3].affine[0].sx += glRenderer->bg[3].affine[0].dmx;
-		glRenderer->bg[3].affine[0].sy += glRenderer->bg[3].affine[0].dmy;
-		glRenderer->regsDirty |= 1ULL << 0x30;
+		glRenderer->bg[2].affine.sx += glRenderer->bg[2].affine.dmx;
+		glRenderer->bg[2].affine.sy += glRenderer->bg[2].affine.dmy;
+		glRenderer->bg[3].affine.sx += glRenderer->bg[3].affine.dmx;
+		glRenderer->bg[3].affine.sy += glRenderer->bg[3].affine.dmy;
 	}
-
-	memcpy(&glRenderer->winN[0].h[1], &glRenderer->winN[0].h[0], sizeof(struct GBAVideoWindowRegion));
-	memcpy(&glRenderer->winN[1].h[1], &glRenderer->winN[1].h[0], sizeof(struct GBAVideoWindowRegion));
 }
 
 void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
+	if (glRenderer->firstAffine >= 0) {
+		glBindTexture(GL_TEXTURE_2D, glRenderer->layers[GBA_GL_TEX_AFFINE_2]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16I, 2, GBA_VIDEO_VERTICAL_PIXELS, 0, GL_RGBA_INTEGER, GL_SHORT, glRenderer->affine[0]);
+		glBindTexture(GL_TEXTURE_2D, glRenderer->layers[GBA_GL_TEX_AFFINE_3]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16I, 2, GBA_VIDEO_VERTICAL_PIXELS, 0, GL_RGBA_INTEGER, GL_SHORT, glRenderer->affine[1]);
+	}
 	glEnable(GL_SCISSOR_TEST);
 
 	uint32_t backdrop = M_RGB5_TO_RGB8(glRenderer->d.palette[0]);
@@ -1187,10 +1239,10 @@ void GBAVideoGLRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	glBindVertexArray(0);
 	glRenderer->firstAffine = -1;
 	glRenderer->firstY = -1;
-	glRenderer->bg[2].affine[0].sx = glRenderer->bg[2].refx;
-	glRenderer->bg[2].affine[0].sy = glRenderer->bg[2].refy;
-	glRenderer->bg[3].affine[0].sx = glRenderer->bg[3].refx;
-	glRenderer->bg[3].affine[0].sy = glRenderer->bg[3].refy;
+	glRenderer->bg[2].affine.sx = glRenderer->bg[2].refx;
+	glRenderer->bg[2].affine.sy = glRenderer->bg[2].refy;
+	glRenderer->bg[3].affine.sx = glRenderer->bg[3].refx;
+	glRenderer->bg[3].affine.sy = glRenderer->bg[3].refy;
 }
 
 void GBAVideoGLRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels) {
@@ -1245,26 +1297,26 @@ static void GBAVideoGLRendererWriteBGCNT(struct GBAVideoGLBackground* bg, uint16
 
 static void GBAVideoGLRendererWriteBGX_LO(struct GBAVideoGLBackground* bg, uint16_t value) {
 	bg->refx = (bg->refx & 0xFFFF0000) | value;
-	bg->affine[0].sx = bg->refx;
+	bg->affine.sx = bg->refx;
 }
 
 static void GBAVideoGLRendererWriteBGX_HI(struct GBAVideoGLBackground* bg, uint16_t value) {
 	bg->refx = (bg->refx & 0x0000FFFF) | (value << 16);
 	bg->refx <<= 4;
 	bg->refx >>= 4;
-	bg->affine[0].sx = bg->refx;
+	bg->affine.sx = bg->refx;
 }
 
 static void GBAVideoGLRendererWriteBGY_LO(struct GBAVideoGLBackground* bg, uint16_t value) {
 	bg->refy = (bg->refy & 0xFFFF0000) | value;
-	bg->affine[0].sy = bg->refy;
+	bg->affine.sy = bg->refy;
 }
 
 static void GBAVideoGLRendererWriteBGY_HI(struct GBAVideoGLBackground* bg, uint16_t value) {
 	bg->refy = (bg->refy & 0x0000FFFF) | (value << 16);
 	bg->refy <<= 4;
 	bg->refy >>= 4;
-	bg->affine[0].sy = bg->refy;
+	bg->affine.sy = bg->refy;
 }
 
 static void GBAVideoGLRendererWriteBLDCNT(struct GBAVideoGLRenderer* renderer, uint16_t value) {
@@ -1480,64 +1532,12 @@ void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, 
 }
 
 void _prepareTransform(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, const GLuint* uniforms, int y) {
-	int reverse = 0;
-	int forward = 1;
-	if (renderer->scale > 1) {
-		switch (y - renderer->firstAffine) {
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-			return;
-		case 4:
-			forward = 2;
-			reverse = 4;
-			break;
-		case 5:
-			forward = 2;
-			reverse = 3;
-			break;
-		case 6:
-			forward = 2;
-			reverse = 2;
-			break;
-		case 7:
-			forward = 2;
-			reverse = 1;
-			break;
-		}
-	}
+	glScissor(0, renderer->firstY * renderer->scale, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, renderer->scale * (y - renderer->firstY + 1));
+	glUniform2i(uniforms[GBA_GL_VS_LOC], y - renderer->firstY + 1, renderer->firstY);
 
-	glScissor(0, (y - reverse) * renderer->scale, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, renderer->scale * forward);
-	glUniform2i(uniforms[GBA_GL_VS_LOC], forward, y - reverse);
-	glUniform2f(uniforms[GBA_GL_BG_RANGE], y - 1, 1);
-	if (renderer->scale > 1) {
-		glUniform2iv(uniforms[GBA_GL_BG_OFFSET], 4, (GLint[]) {
-			background->affine[0].sx, background->affine[0].sy,
-			background->affine[1].sx, background->affine[1].sy,
-			background->affine[2].sx, background->affine[2].sy,
-			background->affine[3].sx, background->affine[3].sy,
-		});
-		glUniform2iv(uniforms[GBA_GL_BG_TRANSFORM], 4, (GLint[]) {
-			background->affine[0].dx, background->affine[0].dy,
-			background->affine[1].dx, background->affine[1].dy,
-			background->affine[2].dx, background->affine[2].dy,
-			background->affine[3].dx, background->affine[3].dy,
-		});
-	} else {
-		glUniform2iv(uniforms[GBA_GL_BG_OFFSET], 4, (GLint[]) {
-			background->affine[0].sx, background->affine[0].sy,
-			background->affine[0].sx, background->affine[0].sy,
-			background->affine[0].sx, background->affine[0].sy,
-			background->affine[0].sx, background->affine[0].sy,
-		});
-		glUniform2iv(uniforms[GBA_GL_BG_TRANSFORM], 4, (GLint[]) {
-			background->affine[0].dx, background->affine[0].dy,
-			background->affine[0].dx, background->affine[0].dy,
-			background->affine[0].dx, background->affine[0].dy,
-			background->affine[0].dx, background->affine[0].dy,
-		});
-	}
+	glActiveTexture(GL_TEXTURE0 + 2);
+	glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_AFFINE_2 + background->index - 2]);
+	glUniform1i(uniforms[GBA_GL_BG_TRANSFORM], 2);
 	_prepareBackground(renderer, background, uniforms);
 }
 
