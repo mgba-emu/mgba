@@ -264,8 +264,8 @@ PainterGL::PainterGL(VideoProxy* proxy, QWindow* surface, QOpenGLContext* parent
 		if (!painter->m_gl->isValid()) {
 			return;
 		}
-		painter->m_gl->doneCurrent();
 		painter->m_gl->swapBuffers(painter->m_surface);
+		painter->m_gl->doneCurrent();
 		painter->m_gl->makeCurrent(painter->m_surface);
 #if defined(_WIN32) && defined(USE_EPOXY)
 		epoxy_handle_external_wglMakeCurrent();
