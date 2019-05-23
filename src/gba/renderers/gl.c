@@ -181,6 +181,7 @@ static const struct GBAVideoGLUniform _uniformsMode2[] = {
 	{ "inflags", GBA_GL_BG_INFLAGS, },
 	{ "offset", GBA_GL_BG_OFFSET, },
 	{ "transform", GBA_GL_BG_TRANSFORM, },
+	{ "range", GBA_GL_BG_RANGE, },
 	{ "mosaic", GBA_GL_BG_MOSAIC, },
 	{ 0 }
 };
@@ -195,22 +196,62 @@ static const char* const _interpolate =
 	"}\n"
 
 	"void loadAffine(int y, out ivec2 mat[4], out ivec2 aff[4]) {\n"
-	"	mat[2] = texelFetch(transform, ivec2(0, y), 0).xz;\n"
+	"	int start = max(range.x, y - 3);\n"
 	"	ivec4 splitOffset[4];\n"
-	"	splitOffset[2] = texelFetch(transform, ivec2(1, y), 0);\n"
 
-	"	mat[0] = texelFetch(transform, ivec2(0, y - 2), 0).xz;\n"
-	"	mat[1] = texelFetch(transform, ivec2(0, y - 1), 0).xz;\n"
-	"	mat[3] = texelFetch(transform, ivec2(0, y + 1), 0).xz;\n"
+	"	mat[0] = texelFetch(transform, ivec2(0, start), 0).xz;\n"
+	"	mat[1] = texelFetch(transform, ivec2(0, start + 1), 0).xz;\n"
+	"	mat[2] = texelFetch(transform, ivec2(0, start + 2), 0).xz;\n"
+	"	mat[3] = texelFetch(transform, ivec2(0, start + 3), 0).xz;\n"
 
-	"	splitOffset[0] = texelFetch(transform, ivec2(1, y - 2), 0);\n"
-	"	splitOffset[1] = texelFetch(transform, ivec2(1, y - 1), 0);\n"
-	"	splitOffset[3] = texelFetch(transform, ivec2(1, y + 1), 0);\n"
+	"	splitOffset[0] = texelFetch(transform, ivec2(1, start + 0), 0);\n"
+	"	splitOffset[1] = texelFetch(transform, ivec2(1, start + 1), 0);\n"
+	"	splitOffset[2] = texelFetch(transform, ivec2(1, start + 2), 0);\n"
+	"	splitOffset[3] = texelFetch(transform, ivec2(1, start + 3), 0);\n"
 
 	"	aff[0] = (splitOffset[0].xz & 0xFFFF) + (splitOffset[0].yw << 16);\n"
 	"	aff[1] = (splitOffset[1].xz & 0xFFFF) + (splitOffset[1].yw << 16);\n"
 	"	aff[2] = (splitOffset[2].xz & 0xFFFF) + (splitOffset[2].yw << 16);\n"
 	"	aff[3] = (splitOffset[3].xz & 0xFFFF) + (splitOffset[3].yw << 16);\n"
+
+	"	if (y - 3 < range.x) {\n"
+	"		ivec2 tempMat[3];\n"
+	"		ivec2 tempAff[3];\n"
+	"		tempMat[0] = ivec2(interpolate(mat, -0.75));\n"
+	"		tempMat[1] = ivec2(interpolate(mat, -0.5));\n"
+	"		tempMat[2] = ivec2(interpolate(mat, -0.25));\n"
+	"		tempAff[0] = ivec2(interpolate(aff, -0.75));\n"
+	"		tempAff[1] = ivec2(interpolate(aff, -0.5));\n"
+	"		tempAff[2] = ivec2(interpolate(aff, -0.25));\n"
+	"		if (range.x == y) {\n"
+	"			mat[3] = mat[0];\n"
+	"			mat[2] = tempMat[2];\n"
+	"			mat[1] = tempMat[1];\n"
+	"			mat[0] = tempMat[0];\n"
+	"			aff[3] = aff[0];\n"
+	"			aff[2] = tempAff[2];\n"
+	"			aff[1] = tempAff[1];\n"
+	"			aff[0] = tempAff[0];\n"
+	"		} else if (range.x == y - 1) {\n"
+	"			mat[3] = mat[1];\n"
+	"			mat[2] = mat[0];\n"
+	"			mat[1] = tempMat[2];\n"
+	"			mat[0] = tempMat[1];\n"
+	"			aff[3] = aff[1];\n"
+	"			aff[2] = aff[0];\n"
+	"			aff[1] = tempAff[2];\n"
+	"			aff[0] = tempAff[1];\n"
+	"		} else if (range.x == y - 2) {\n"
+	"			mat[3] = mat[2];\n"
+	"			mat[2] = mat[1];\n"
+	"			mat[1] = mat[0];\n"
+	"			mat[0] = tempMat[0];\n"
+	"			aff[3] = aff[2];\n"
+	"			aff[2] = aff[1];\n"
+	"			aff[1] = aff[0];\n"
+	"			aff[0] = tempAff[0];\n"
+	"		}\n"
+	"	}\n"
 	"}\n";
 
 static const char* const _renderMode2 =
@@ -222,6 +263,7 @@ static const char* const _renderMode2 =
 	"uniform int size;\n"
 	"uniform ivec4 inflags;\n"
 	"uniform isampler2D transform;\n"
+	"uniform ivec2 range;\n"
 	"uniform ivec2 mosaic;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
@@ -262,7 +304,7 @@ static const char* const _renderMode2 =
 	"		coord.y -= mod(coord.y, mosaic.y);\n"
 	"	}\n"
 	"	float y = fract(coord.y);\n"
-	"	float lin = 0.5 + y * 0.25;\n"
+	"	float lin = 0.75 + y * 0.25;\n"
 	"	vec2 mixedTransform = interpolate(mat, lin);\n"
 	"	vec2 mixedOffset = interpolate(offset, lin);\n"
 	"	color = fetchTile(ivec2(mixedTransform * coord.x + mixedOffset));\n"
@@ -278,6 +320,7 @@ static const struct GBAVideoGLUniform _uniformsMode35[] = {
 	{ "inflags", GBA_GL_BG_INFLAGS, },
 	{ "offset", GBA_GL_BG_OFFSET, },
 	{ "transform", GBA_GL_BG_TRANSFORM, },
+	{ "range", GBA_GL_BG_RANGE, },
 	{ "mosaic", GBA_GL_BG_MOSAIC, },
 	{ 0 }
 };
@@ -289,6 +332,7 @@ static const char* const _renderMode35 =
 	"uniform ivec2 size;\n"
 	"uniform ivec4 inflags;\n"
 	"uniform isampler2D transform;\n"
+	"uniform ivec2 range;\n"
 	"uniform ivec2 mosaic;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
@@ -311,7 +355,7 @@ static const char* const _renderMode35 =
 	"		incoord.y -= mod(incoord.y, mosaic.y);\n"
 	"	}\n"
 	"	float y = fract(incoord.y);\n"
-	"	float lin = 0.5 + y * 0.25;\n"
+	"	float lin = 0.75 + y * 0.25;\n"
 	"	vec2 mixedTransform = interpolate(mat, lin);\n"
 	"	vec2 mixedOffset = interpolate(offset, lin);\n"
 	"	ivec2 coord = ivec2(mixedTransform * incoord.x + mixedOffset);\n"
@@ -338,6 +382,7 @@ static const struct GBAVideoGLUniform _uniformsMode4[] = {
 	{ "inflags", GBA_GL_BG_INFLAGS, },
 	{ "offset", GBA_GL_BG_OFFSET, },
 	{ "transform", GBA_GL_BG_TRANSFORM, },
+	{ "range", GBA_GL_BG_RANGE, },
 	{ "mosaic", GBA_GL_BG_MOSAIC, },
 	{ 0 }
 };
@@ -350,6 +395,7 @@ static const char* const _renderMode4 =
 	"uniform ivec2 size;\n"
 	"uniform ivec4 inflags;\n"
 	"uniform isampler2D transform;\n"
+	"uniform ivec2 range;\n"
 	"uniform ivec2 mosaic;\n"
 	"out vec4 color;\n"
 	"out vec4 flags;\n"
@@ -372,7 +418,7 @@ static const char* const _renderMode4 =
 	"		incoord.y -= mod(incoord.y, mosaic.y);\n"
 	"	}\n"
 	"	float y = fract(incoord.y);\n"
-	"	float lin = 0.5 + y * 0.25;\n"
+	"	float lin = 0.75 + y * 0.25;\n"
 	"	vec2 mixedTransform = interpolate(mat, lin);\n"
 	"	vec2 mixedOffset = interpolate(offset, lin);\n"
 	"	ivec2 coord = ivec2(mixedTransform * incoord.x + mixedOffset);\n"
@@ -1534,6 +1580,7 @@ void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, 
 void _prepareTransform(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, const GLuint* uniforms, int y) {
 	glScissor(0, renderer->firstY * renderer->scale, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, renderer->scale * (y - renderer->firstY + 1));
 	glUniform2i(uniforms[GBA_GL_VS_LOC], y - renderer->firstY + 1, renderer->firstY);
+	glUniform2i(uniforms[GBA_GL_BG_RANGE], renderer->firstAffine, y);
 
 	glActiveTexture(GL_TEXTURE0 + 2);
 	glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_AFFINE_2 + background->index - 2]);
