@@ -54,6 +54,9 @@ struct GBAVideoGLUniform {
 	int type;
 };
 
+static const GLchar* const _gles3Header =
+	"#version 300\n";
+
 static const GLchar* const _gl3Header =
 	"#version 130\n";
 
@@ -751,8 +754,13 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	}
 
 	char log[1024];
-	const GLchar* shaderBuffer[8];
-	shaderBuffer[0] = _gl3Header;
+	const GLchar* shaderBuffer[4];
+	const GLubyte* version = glGetString(GL_VERSION);
+	if (strncmp((const char*) version, "OpenGL ES ", strlen("OpenGL ES "))) {
+		shaderBuffer[0] = _gl3Header;
+	} else {
+		shaderBuffer[0] = _gles3Header;
+	}
 
 	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
 	shaderBuffer[1] = _vertexShader;
