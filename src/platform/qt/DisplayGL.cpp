@@ -404,6 +404,10 @@ void PainterGL::stop() {
 	dequeueAll();
 	m_backend->clear(m_backend);
 	m_backend->swap(m_backend);
+	if (m_swapTimer.isActive()) {
+		swap();
+		m_swapTimer.stop();
+	}
 	if (m_videoProxy) {
 		m_videoProxy->reset();
 	}
