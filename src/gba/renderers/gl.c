@@ -859,10 +859,10 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	glRenderer->vramDirty = 0xFFFFFF;
 	glRenderer->firstAffine = -1;
 	glRenderer->firstY = -1;
-	glRenderer->dispcnt = 0;
+	glRenderer->dispcnt = 0x0080;
 	glRenderer->mosaic = 0;
 	memset(glRenderer->shadowRegs, 0, sizeof(glRenderer->shadowRegs));
-	glRenderer->regsDirty = 0xFFFFFFFFFFFFULL;
+	glRenderer->regsDirty = 0xFFFFFFFFFFFEULL;
 }
 
 void GBAVideoGLRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
@@ -1508,45 +1508,50 @@ void _finalizeLayers(struct GBAVideoGLRenderer* renderer) {
 	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[GBA_GL_FBO_OUTPUT]);
 	glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, GBA_VIDEO_VERTICAL_PIXELS * renderer->scale);
 	glScissor(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, GBA_VIDEO_VERTICAL_PIXELS * renderer->scale);
-	glUseProgram(renderer->finalizeShader.program);
-	glBindVertexArray(renderer->finalizeShader.vao);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_WINDOW]);
-	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_OBJ_COLOR]);
-	glActiveTexture(GL_TEXTURE0 + 2);
-	glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_OBJ_FLAGS]);
-	glActiveTexture(GL_TEXTURE0 + 3);
-	glBindTexture(GL_TEXTURE_2D, renderer->bg[0].tex);
-	glActiveTexture(GL_TEXTURE0 + 4);
-	glBindTexture(GL_TEXTURE_2D, renderer->bg[0].flags);
-	glActiveTexture(GL_TEXTURE0 + 5);
-	glBindTexture(GL_TEXTURE_2D, renderer->bg[1].tex);
-	glActiveTexture(GL_TEXTURE0 + 6);
-	glBindTexture(GL_TEXTURE_2D, renderer->bg[1].flags);
-	glActiveTexture(GL_TEXTURE0 + 7);
-	glBindTexture(GL_TEXTURE_2D, renderer->bg[2].tex);
-	glActiveTexture(GL_TEXTURE0 + 8);
-	glBindTexture(GL_TEXTURE_2D, renderer->bg[2].flags);
-	glActiveTexture(GL_TEXTURE0 + 9);
-	glBindTexture(GL_TEXTURE_2D, renderer->bg[3].tex);
-	glActiveTexture(GL_TEXTURE0 + 10);
-	glBindTexture(GL_TEXTURE_2D, renderer->bg[3].flags);
-	glActiveTexture(GL_TEXTURE0 + 11);
-	glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_BACKDROP_COLOR]);
-	glActiveTexture(GL_TEXTURE0 + 12);
-	glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_BACKDROP_FLAGS]);
+	if (GBARegisterDISPCNTIsForcedBlank(renderer->dispcnt)) {
+		glClearColor(1.f, 1.f, 1.f, 1.f);
+		glClear(GL_COLOR_BUFFER_BIT);
+	} else {
+		glUseProgram(renderer->finalizeShader.program);
+		glBindVertexArray(renderer->finalizeShader.vao);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_WINDOW]);
+		glActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_OBJ_COLOR]);
+		glActiveTexture(GL_TEXTURE0 + 2);
+		glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_OBJ_FLAGS]);
+		glActiveTexture(GL_TEXTURE0 + 3);
+		glBindTexture(GL_TEXTURE_2D, renderer->bg[0].tex);
+		glActiveTexture(GL_TEXTURE0 + 4);
+		glBindTexture(GL_TEXTURE_2D, renderer->bg[0].flags);
+		glActiveTexture(GL_TEXTURE0 + 5);
+		glBindTexture(GL_TEXTURE_2D, renderer->bg[1].tex);
+		glActiveTexture(GL_TEXTURE0 + 6);
+		glBindTexture(GL_TEXTURE_2D, renderer->bg[1].flags);
+		glActiveTexture(GL_TEXTURE0 + 7);
+		glBindTexture(GL_TEXTURE_2D, renderer->bg[2].tex);
+		glActiveTexture(GL_TEXTURE0 + 8);
+		glBindTexture(GL_TEXTURE_2D, renderer->bg[2].flags);
+		glActiveTexture(GL_TEXTURE0 + 9);
+		glBindTexture(GL_TEXTURE_2D, renderer->bg[3].tex);
+		glActiveTexture(GL_TEXTURE0 + 10);
+		glBindTexture(GL_TEXTURE_2D, renderer->bg[3].flags);
+		glActiveTexture(GL_TEXTURE0 + 11);
+		glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_BACKDROP_COLOR]);
+		glActiveTexture(GL_TEXTURE0 + 12);
+		glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_BACKDROP_FLAGS]);
 
-	glUniform2i(uniforms[GBA_GL_VS_LOC], GBA_VIDEO_VERTICAL_PIXELS, 0);
-	glUniform2i(uniforms[GBA_GL_VS_MAXPOS], GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-	glUniform1i(uniforms[GBA_GL_FINALIZE_SCALE], renderer->scale);
-	glUniform1iv(uniforms[GBA_GL_FINALIZE_LAYERS], 5, (GLint[]) { 3, 5, 7, 9, 1 });
-	glUniform1iv(uniforms[GBA_GL_FINALIZE_FLAGS], 5, (GLint[]) { 4, 6, 8, 10, 2 });
-	glUniform1i(uniforms[GBA_GL_FINALIZE_WINDOW], 0);
-	glUniform1i(uniforms[GBA_GL_FINALIZE_WINDOW], 0);
-	glUniform1i(uniforms[GBA_GL_FINALIZE_BACKDROP], 11);
-	glUniform1i(uniforms[GBA_GL_FINALIZE_BACKDROPFLAGS], 12);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		glUniform2i(uniforms[GBA_GL_VS_LOC], GBA_VIDEO_VERTICAL_PIXELS, 0);
+		glUniform2i(uniforms[GBA_GL_VS_MAXPOS], GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+		glUniform1i(uniforms[GBA_GL_FINALIZE_SCALE], renderer->scale);
+		glUniform1iv(uniforms[GBA_GL_FINALIZE_LAYERS], 5, (GLint[]) { 3, 5, 7, 9, 1 });
+		glUniform1iv(uniforms[GBA_GL_FINALIZE_FLAGS], 5, (GLint[]) { 4, 6, 8, 10, 2 });
+		glUniform1i(uniforms[GBA_GL_FINALIZE_WINDOW], 0);
+		glUniform1i(uniforms[GBA_GL_FINALIZE_WINDOW], 0);
+		glUniform1i(uniforms[GBA_GL_FINALIZE_BACKDROP], 11);
+		glUniform1i(uniforms[GBA_GL_FINALIZE_BACKDROPFLAGS], 12);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
