@@ -1140,6 +1140,7 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	if (glRenderer->paletteDirty || glRenderer->vramDirty || glRenderer->oamDirty || glRenderer->regsDirty) {
 		if (glRenderer->firstY >= 0) {
 			_drawScanlines(glRenderer, y - 1);
+			glBindVertexArray(0);
 		}
 	}
 	if (glRenderer->firstY < 0) {
