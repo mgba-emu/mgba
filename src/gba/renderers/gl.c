@@ -870,7 +870,7 @@ void GBAVideoGLRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam)
 void GBAVideoGLRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 #ifdef BUILD_GLES3
-	glRenderer->shadowPalette[address >> 1] = (value & 0x3F) | ((value & 0x7FE0) << 1);
+	glRenderer->shadowPalette[address >> 1] = ((value & 0x1F) << 11) | ((value & 0x3E0) << 1) | ((value & 0x7C00) >> 10);
 #else
 	UNUSED(address);
 	UNUSED(value);
@@ -1161,7 +1161,7 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	if (glRenderer->paletteDirty) {
 		glBindTexture(GL_TEXTURE_2D, glRenderer->paletteTex);
 #ifdef BUILD_GLES3
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB565, 16, 32, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_6_5, glRenderer->shadowPalette);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB565, 16, 32, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, glRenderer->shadowPalette);
 #else
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5_A1, 16, 32, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, glRenderer->d.palette);
 #endif
