@@ -1133,6 +1133,108 @@ void _cleanRegister(struct GBAVideoGLRenderer* glRenderer, int address, uint16_t
 	}
 }
 
+static bool _dirtyMode0(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
+	UNUSED(y);
+	if (!background->enabled) {
+		return false;
+	}
+	unsigned screenBase = background->screenBase >> 11; // Lops off one extra bit
+	unsigned screenMask = (7 << screenBase) & 0xFFFF; // Technically overzealous
+	if (renderer->vramDirty & screenMask) {
+		return true;
+	}
+	unsigned charBase = background->charBase >> 11;
+	unsigned charMask = (0xFFFF << charBase) & 0xFFFF;
+	if (renderer->vramDirty & charMask) {
+		return true;
+	}
+	return false;
+}
+
+static bool _dirtyMode2(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
+	UNUSED(y);
+	if (!background->enabled) {
+		return false;
+	}
+	unsigned screenBase = background->screenBase >> 11; // Lops off one extra bit
+	unsigned screenMask = (0xF << screenBase) & 0xFFFF;
+	if (renderer->vramDirty & screenMask) {
+		return true;
+	}
+	unsigned charBase = background->charBase >> 11;
+	unsigned charMask = (0x3FFF << charBase) & 0xFFFF;
+	if (renderer->vramDirty & charMask) {
+		return true;
+	}
+	return false;
+}
+
+static bool _dirtyMode3(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
+	UNUSED(y);
+	if (!background->enabled) {
+		return false;
+	}
+	if (renderer->vramDirty & 0xFFFFF) {
+		return true;
+	}
+	return false;
+}
+
+static bool _dirtyMode45(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
+	UNUSED(y);
+	if (!background->enabled) {
+		return false;
+	}
+	int start = GBARegisterDISPCNTIsFrameSelect(renderer->dispcnt) ? 5 : 0;
+	int mask = 0x3FF << start;
+	if (renderer->vramDirty & mask) {
+		return true;
+	}
+	return false;
+}
+
+static bool _needsVramUpload(struct GBAVideoGLRenderer* renderer, int y) {
+	if (!renderer->vramDirty) {
+		return false;
+	}
+	if (y == 0) {
+		return true;
+	}
+
+	if (GBARegisterDISPCNTIsObjEnable(renderer->dispcnt) && renderer->vramDirty & 0xFF0000) {
+		return true;
+	}
+
+	bool dirty = false;
+	switch (GBARegisterDISPCNTGetMode(renderer->dispcnt)) {
+	case 0:
+		dirty = dirty || _dirtyMode0(renderer, &renderer->bg[0], y);
+		dirty = dirty || _dirtyMode0(renderer, &renderer->bg[1], y);
+		dirty = dirty || _dirtyMode0(renderer, &renderer->bg[2], y);
+		dirty = dirty || _dirtyMode0(renderer, &renderer->bg[3], y);
+		break;
+	case 1:
+		dirty = dirty || _dirtyMode0(renderer, &renderer->bg[0], y);
+		dirty = dirty || _dirtyMode0(renderer, &renderer->bg[1], y);
+		dirty = dirty || _dirtyMode2(renderer, &renderer->bg[2], y);
+		break;
+	case 2:
+		dirty = dirty || _dirtyMode2(renderer, &renderer->bg[2], y);
+		dirty = dirty || _dirtyMode2(renderer, &renderer->bg[3], y);
+		break;
+	case 3:
+		dirty = _dirtyMode3(renderer, &renderer->bg[2], y);
+		break;
+	case 4:
+		dirty = _dirtyMode45(renderer, &renderer->bg[2], y);
+		break;
+	case 5:
+		dirty = _dirtyMode45(renderer, &renderer->bg[2], y);
+		break;
+	}
+	return dirty;
+}
+
 void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 
@@ -1146,7 +1248,7 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		glRenderer->firstAffine = -1;
 	}
 
-	if (glRenderer->paletteDirty || glRenderer->vramDirty || glRenderer->oamDirty || glRenderer->regsDirty) {
+	if (glRenderer->paletteDirty || _needsVramUpload(glRenderer, y) || glRenderer->oamDirty || glRenderer->regsDirty) {
 		if (glRenderer->firstY >= 0) {
 			_drawScanlines(glRenderer, y - 1);
 			glBindVertexArray(0);
@@ -1178,19 +1280,21 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		glRenderer->paletteDirty = false;
 	}
 
-	int first = -1;
-	glBindTexture(GL_TEXTURE_2D, glRenderer->vramTex);
-	for (i = 0; i < 25; ++i) {
-		if (!(glRenderer->vramDirty & (1 << i))) {
-			if (first >= 0) {
-				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 8 * first, 256, 8 * (i - first), GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, &glRenderer->d.vram[2048 * first]);
-				first = -1;
+	if (_needsVramUpload(glRenderer, y)) {
+		int first = -1;
+		glBindTexture(GL_TEXTURE_2D, glRenderer->vramTex);
+		for (i = 0; i < 25; ++i) {
+			if (!(glRenderer->vramDirty & (1 << i))) {
+				if (first >= 0) {
+					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 8 * first, 256, 8 * (i - first), GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, &glRenderer->d.vram[2048 * first]);
+					first = -1;
+				}
+			} else if (first < 0) {
+				first = i;
 			}
-		} else if (first < 0) {
-			first = i;
 		}
+		glRenderer->vramDirty = 0;
 	}
-	glRenderer->vramDirty = 0;
 
 	if (glRenderer->oamDirty) {
 		glRenderer->oamMax = GBAVideoRendererCleanOAM(glRenderer->d.oam->obj, glRenderer->sprites, 0);
