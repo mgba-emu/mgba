@@ -848,12 +848,21 @@ void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 
+#ifdef BUILD_GLES3
+	int i;
+	for (i = 0; i < 512; ++i) {
+		renderer->writePalette(renderer, i << 1, renderer->palette[i]);
+	}
+#else
 	glRenderer->paletteDirty = true;
+#endif
 	glRenderer->vramDirty = 0xFFFFFF;
 	glRenderer->firstAffine = -1;
 	glRenderer->firstY = -1;
 	glRenderer->dispcnt = 0;
 	glRenderer->mosaic = 0;
+	memset(glRenderer->shadowRegs, 0, sizeof(glRenderer->shadowRegs));
+	glRenderer->regsDirty = 0xFFFFFFFFFFFFULL;
 }
 
 void GBAVideoGLRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
