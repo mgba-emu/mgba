@@ -47,11 +47,11 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 #if defined(_WIN32) && defined(USE_EPOXY)
 	epoxy_handle_external_wglMakeCurrent();
 #endif
-	int majorVersion = m_gl->format().majorVersion();
+	auto version = m_gl->format().version();
 	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
 	m_gl->doneCurrent();
 
-	if (majorVersion == 2 && !extensions.contains("GL_ARB_framebuffer_object")) {
+	if ((version == qMakePair(2, 1) && !extensions.contains("GL_ARB_framebuffer_object")) || version == qMakePair(2, 0)) {
 		QSurfaceFormat newFormat(format);
 		newFormat.setVersion(1, 4);
 		m_gl->setFormat(newFormat);
@@ -238,12 +238,11 @@ PainterGL::PainterGL(VideoProxy* proxy, QWindow* surface, QOpenGLContext* parent
 #if defined(_WIN32) && defined(USE_EPOXY)
 	epoxy_handle_external_wglMakeCurrent();
 #endif
-	int majorVersion = m_gl->format().majorVersion();
-
-	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
 
 #ifdef BUILD_GLES2
-	if ((majorVersion == 2 && extensions.contains("GL_ARB_framebuffer_object")) || majorVersion > 2) {
+	auto version = m_gl->format().version();
+	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
+	if ((version == qMakePair(2, 1) && extensions.contains("GL_ARB_framebuffer_object")) || version.first > 2) {
 		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
 		mGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
