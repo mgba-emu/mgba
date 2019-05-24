@@ -56,11 +56,13 @@ struct GBAVideoGLUniform {
 
 static const GLchar* const _gles3Header =
 	"#version 300 es\n"
+	"#define OUT(n) layout(location = n)\n"
 	"precision highp float;\n"
 	"precision highp int;\n";
 
 static const GLchar* const _gl3Header =
 	"#version 130\n"
+	"#define OUT(n)\n"
 	"precision highp float;\n";
 
 static const char* const _vertexShader =
@@ -70,7 +72,7 @@ static const char* const _vertexShader =
 	"out vec2 texCoord;\n"
 
 	"void main() {\n"
-	"	vec2 local = vec2(position.x, float(position.y * loc.x + loc.y) / float(maxPos.y));\n"
+	"	vec2 local = vec2(position.x, float(position.y * float(loc.x) + float(loc.y)) / float(maxPos.y));\n"
 	"	gl_Position = vec4((local * 2. - 1.) * vec2(sign(maxPos)), 0., 1.);\n"
 	"	texCoord = local * vec2(abs(maxPos));\n"
 	"}";
@@ -84,7 +86,7 @@ static const char* const _renderTile16 =
 	"	if (entry == 0) {\n"
 	"		discard;\n"
 	"	}\n"
-	"	color.a = 1;\n"
+	"	color.a = 1.;\n"
 	"	return color;\n"
 	"}";
 
@@ -126,8 +128,8 @@ static const char* const _renderMode0 =
 	"uniform ivec2 offset;\n"
 	"uniform ivec4 inflags;\n"
 	"uniform ivec2 mosaic;\n"
-	"out vec4 color;\n"
-	"out vec4 flags;\n"
+	"OUT(0) out vec4 color;\n"
+	"OUT(1) out vec4 flags;\n"
 	FLAG_CONST
 
 	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord);\n"
@@ -195,10 +197,10 @@ static const struct GBAVideoGLUniform _uniformsMode2[] = {
 static const char* const _interpolate =
 	"vec2 interpolate(ivec2 arr[4], float x) {\n"
 	"	float x1m = 1. - x;\n"
-	"	return x1m * x1m * x1m * arr[0] +"
-		"  3 * x1m * x1m * x   * arr[1] +"
-		"  3 * x1m * x   * x   * arr[2] +"
-		"      x   * x   * x   * arr[3];\n"
+	"	return x1m * x1m * x1m * vec2(arr[0]) +"
+		" 3. * x1m * x1m * x   * vec2(arr[1]) +"
+		" 3. * x1m * x   * x   * vec2(arr[2]) +"
+		"      x   * x   * x   * vec2(arr[3]);\n"
 	"}\n"
 
 	"void loadAffine(int y, out ivec2 mat[4], out ivec2 aff[4]) {\n"
@@ -271,8 +273,8 @@ static const char* const _renderMode2 =
 	"uniform isampler2D transform;\n"
 	"uniform ivec2 range;\n"
 	"uniform ivec2 mosaic;\n"
-	"out vec4 color;\n"
-	"out vec4 flags;\n"
+	"OUT(0) out vec4 color;\n"
+	"OUT(1) out vec4 flags;\n"
 	FLAG_CONST
 
 	"vec4 fetchTile(ivec2 coord);\n"
@@ -338,8 +340,8 @@ static const char* const _renderMode35 =
 	"uniform isampler2D transform;\n"
 	"uniform ivec2 range;\n"
 	"uniform ivec2 mosaic;\n"
-	"out vec4 color;\n"
-	"out vec4 flags;\n"
+	"OUT(0) out vec4 color;\n"
+	"OUT(1) out vec4 flags;\n"
 	FLAG_CONST
 
 	"vec2 interpolate(ivec2 arr[4], float x);\n"
@@ -370,7 +372,7 @@ static const char* const _renderMode35 =
 	"	int address = charBase + (coord.x >> 8) + (coord.y >> 8) * size.x;\n"
 	"	ivec4 entry = ivec4(texelFetch(vram, ivec2(address & 255, address >> 8), 0) * 15.9);\n"
 	"	int sixteen = (entry.x << 12) | (entry.y << 8) | (entry.z << 4) | entry.w;\n"
-	"	color = vec4((sixteen & 0x1F) / 31., ((sixteen >> 5) & 0x1F) / 31., ((sixteen >> 10) & 0x1F) / 31., 1.);\n"
+	"	color = vec4(float(sixteen & 0x1F) / 31., float((sixteen >> 5) & 0x1F) / 31., float((sixteen >> 10) & 0x1F) / 31., 1.);\n"
 	"	flags = vec4(inflags) / flagCoeff;\n"
 	"}";
 
@@ -399,8 +401,8 @@ static const char* const _renderMode4 =
 	"uniform isampler2D transform;\n"
 	"uniform ivec2 range;\n"
 	"uniform ivec2 mosaic;\n"
-	"out vec4 color;\n"
-	"out vec4 flags;\n"
+	"OUT(0) out vec4 color;\n"
+	"OUT(1) out vec4 flags;\n"
 	FLAG_CONST
 
 	"vec2 interpolate(ivec2 arr[4], float x);\n"
@@ -432,7 +434,7 @@ static const char* const _renderMode4 =
 	"	vec4 twoEntries = texelFetch(vram, ivec2((address >> 1) & 255, address >> 9), 0);\n"
 	"	ivec2 entry = ivec2(twoEntries[3 - 2 * (address & 1)] * 15.9, twoEntries[2 - 2 * (address & 1)] * 15.9);\n"
 	"	color = texelFetch(palette, entry, 0);\n"
-	"	color.a = 1;\n"
+	"	color.a = 1.;\n"
 	"	flags = vec4(inflags) / flagCoeff;\n"
 	"}";
 
@@ -464,9 +466,9 @@ static const char* const _renderObj =
 	"uniform ivec4 dims;\n"
 	"uniform vec4 objwin;\n"
 	"uniform ivec4 mosaic;\n"
-	"out vec4 color;\n"
-	"out vec4 flags;\n"
-	"out vec3 window;\n"
+	"OUT(0) out vec4 color;\n"
+	"OUT(1) out vec4 flags;\n"
+	"OUT(2) out vec3 window;\n"
 	FLAG_CONST
 
 	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord);\n"
@@ -475,22 +477,22 @@ static const char* const _renderObj =
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
 	"		int x = int(incoord.x);\n"
-	"		incoord.x = clamp(x - (mosaic.z + x) % mosaic.x, 0, dims.z - 1);\n"
+	"		incoord.x = float(clamp(x - (mosaic.z + x) % mosaic.x, 0, dims.z - 1));\n"
 	"	} else if (mosaic.x < -1) {\n"
 	"		int x = dims.z - int(incoord.x) - 1;\n"
-	"		incoord.x = clamp(dims.z - x + (mosaic.z + x) % -mosaic.x - 1, 0, dims.z - 1);\n"
+	"		incoord.x = float(clamp(dims.z - x + (mosaic.z + x) % -mosaic.x - 1, 0, dims.z - 1));\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
 	"		int y = int(incoord.y);\n"
-	"		incoord.y = clamp(y - (mosaic.w + y) % mosaic.y, 0, dims.w - 1);\n"
+	"		incoord.y = float(clamp(y - (mosaic.w + y) % mosaic.y, 0, dims.w - 1));\n"
 	"	}\n"
-	"	ivec2 coord = ivec2(transform * (incoord - dims.zw / 2) + dims.xy / 2);\n"
+	"	ivec2 coord = ivec2(transform * (incoord - vec2(dims.zw) / 2.) + vec2(dims.xy) / 2.);\n"
 	"	if ((coord & ~(dims.xy - 1)) != ivec2(0, 0)) {\n"
 	"		discard;\n"
 	"	}\n"
 	"	vec4 pix = renderTile((coord.x >> 3) + (coord.y >> 3) * stride, 16 + localPalette, coord & 7);\n"
-	"	if (objwin.x > 0) {\n"
-	"		pix.a = 0;\n"
+	"	if (objwin.x > 0.) {\n"
+	"		pix.a = 0.;\n"
 	"	}\n"
 	"	color = pix;\n"
 	"	flags = vec4(inflags) / flagCoeff;\n"
@@ -521,7 +523,7 @@ static const char* const _finalize =
 	"out vec4 color;\n"
 
 	"void composite(vec4 pixel, ivec4 flags, inout vec4 topPixel, inout ivec4 topFlags, inout vec4 bottomPixel, inout ivec4 bottomFlags) {\n"
-	"	if (pixel.a == 0) {\n"
+	"	if (pixel.a == 0.) {\n"
 	"		return;\n"
 	"	}\n"
 	"	if (flags.x >= topFlags.x) {\n"
@@ -543,38 +545,38 @@ static const char* const _finalize =
 	"	vec4 bottomPixel = topPixel;\n"
 	"	ivec4 topFlags = ivec4(texelFetch(backdropFlags, ivec2(0, texCoord.y), 0) * flagCoeff);\n"
 	"	ivec4 bottomFlags = topFlags;\n"
-	"	vec4 windowFlags = texelFetch(window, ivec2(texCoord * scale), 0);\n"
-	"	int layerWindow = int(windowFlags.x * 128);\n"
+	"	vec4 windowFlags = texelFetch(window, ivec2(texCoord * float(scale)), 0);\n"
+	"	int layerWindow = int(windowFlags.x * 128.);\n"
 	"	if ((layerWindow & 1) == 0) {\n"
-	"		vec4 pix = texelFetch(layers[0], ivec2(texCoord * scale), 0);\n"
-	"		ivec4 inflags = ivec4(texelFetch(flags[0], ivec2(texCoord * scale), 0).xyz * flagCoeff.xyz, 0);\n"
+	"		vec4 pix = texelFetch(layers[0], ivec2(texCoord * float(scale)), 0);\n"
+	"		ivec4 inflags = ivec4(texelFetch(flags[0], ivec2(texCoord * float(scale)), 0).xyz * flagCoeff.xyz, 0);\n"
 	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
 	"	}\n"
 	"	if ((layerWindow & 2) == 0) {\n"
-	"		vec4 pix = texelFetch(layers[1], ivec2(texCoord * scale), 0);\n"
-	"		ivec4 inflags = ivec4(texelFetch(flags[1], ivec2(texCoord * scale), 0).xyz * flagCoeff.xyz, 0);\n"
+	"		vec4 pix = texelFetch(layers[1], ivec2(texCoord * float(scale)), 0);\n"
+	"		ivec4 inflags = ivec4(texelFetch(flags[1], ivec2(texCoord * float(scale)), 0).xyz * flagCoeff.xyz, 0);\n"
 	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
 	"	}\n"
 	"	if ((layerWindow & 4) == 0) {\n"
-	"		vec4 pix = texelFetch(layers[2], ivec2(texCoord * scale), 0);\n"
-	"		ivec4 inflags = ivec4(texelFetch(flags[2], ivec2(texCoord * scale), 0).xyz * flagCoeff.xyz, 0);\n"
+	"		vec4 pix = texelFetch(layers[2], ivec2(texCoord * float(scale)), 0);\n"
+	"		ivec4 inflags = ivec4(texelFetch(flags[2], ivec2(texCoord * float(scale)), 0).xyz * flagCoeff.xyz, 0);\n"
 	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
 	"	}\n"
 	"	if ((layerWindow & 8) == 0) {\n"
-	"		vec4 pix = texelFetch(layers[3], ivec2(texCoord * scale), 0);\n"
-	"		ivec4 inflags = ivec4(texelFetch(flags[3], ivec2(texCoord * scale), 0).xyz * flagCoeff.xyz, 0);\n"
+	"		vec4 pix = texelFetch(layers[3], ivec2(texCoord * float(scale)), 0);\n"
+	"		ivec4 inflags = ivec4(texelFetch(flags[3], ivec2(texCoord * float(scale)), 0).xyz * flagCoeff.xyz, 0);\n"
 	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
 	"	}\n"
 	"	if ((layerWindow & 16) == 0) {\n"
-	"		vec4 pix = texelFetch(layers[4], ivec2(texCoord * scale), 0);\n"
-	"		ivec4 inflags = ivec4(texelFetch(flags[4], ivec2(texCoord * scale), 0) * flagCoeff);\n"
+	"		vec4 pix = texelFetch(layers[4], ivec2(texCoord * float(scale)), 0);\n"
+	"		ivec4 inflags = ivec4(texelFetch(flags[4], ivec2(texCoord * float(scale)), 0) * flagCoeff);\n"
 	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
 	"	}\n"
 	"	if ((layerWindow & 32) != 0) {\n"
 	"		topFlags.y &= ~1;\n"
 	"	}\n"
 	"	if (((topFlags.y & 13) == 5 || topFlags.w > 0) && (bottomFlags.y & 2) == 2) {\n"
-	"		topPixel *= topFlags.z / 16.;\n"
+	"		topPixel *= float(topFlags.z) / 16.;\n"
 	"		topPixel += bottomPixel * windowFlags.y;\n"
 	"	} else if ((topFlags.y & 13) == 9) {\n"
 	"		topPixel += (1. - topPixel) * windowFlags.z;\n"
