@@ -17,50 +17,18 @@ Emulation fixes:
  - GB Video: Delay LYC STAT check (fixes mgba.io/i/1331)
  - GB Video: Fix window being enabled mid-scanline (fixes mgba.io/i/1328)
  - GB I/O: Filter IE top bits properly (fixes mgba.io/i/1329)
- - GBA Video: Fix scanline cache with scale factor change edge cases
- - GBA DMA: Fix DMA0-2 lengths (fixes mgba.io/i/1344)
- - GB Video: Fix window y changing mid-window (fixes mgba.io/i/1345)
- - GB Video: Fix more window edge cases (fixes mgba.io/i/1346)
- - GB Timer: Fix timing adjustments when writing to TAC (fixes mgba.io/i/1340)
- - GBA Memory: Fix writing to OBJ memory in modes 3 and 5
- - GBA: Fix RTC on non-standard sized ROMs (fixes mgba.io/i/1400)
- - GBA Memory: Prevent writing to mirrored BG VRAM (fixes mgba.io/i/743)
- - GBA Video: Fix sprite mosaic clamping (fixes mgba.io/i/1008)
- - GB: Fix HALT when IE and IF unused bits are set (fixes mgba.io/i/1349)
- - GBA Video: Implement mosaic on transformed sprites (fixes mgba.io/b/9)
 Other fixes:
- - Qt: More app metadata fixes
- - Qt: Fix load recent from archive (fixes mgba.io/i/1325)
- - LR35902: Fix disassembly of several CB-prefix instructions
- - Qt: Fix overrides getting discarded (fixes mgba.io/i/1354)
- - Qt: Fix saved scale not getting set on resize (fixes mgba.io/i/1074)
- - CMake: Fix .deb imagemagick dependencies
- - Qt: Fix crash in sprite viewer magnification (fixes mgba.io/i/1362)
- - 3DS: Ensure core 2 can be used for threaded renderer (fixes mgba.io/i/1371)
- - GB Core: Fix toggling WIN and OBJ being swapped
- - All: Fix several memory leaks
- - LR35902: Fix trailing whitespace in disassembly
- - Qt: Fix adjusting magnification in tile viewer when not fitting to window
- - FFmpeg: Improve initialization reliability and cleanup
- - Wii: Fix aspect ratio (fixes mgba.io/i/500)
  - Qt: Fix some Qt display driver race conditions
- - FFmpeg: Fix audio conversion producing gaps
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
- - GBA: Fix skipping BIOS on irregularly sized ROMs
- - Qt: Fix bounded fast forward with Qt Multimedia
- - Qt: Fix saving settings with native FPS target
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
  - GB Memory: Support running from blocked memory
  - Qt: Don't unload ROM immediately if it crashes
  - Debugger: Add breakpoint and watchpoint listing
- - Qt: Add missing HEVC NVENC option (fixes mgba.io/i/1323)
  - LR35902: Support PC-relative opcode decoding
- - Qt: Improve camera initialization
  - Qt: Support switching webcams
  - Core: Add keysRead callback
- - Vita: Improved frame drawing speed
  - Qt: Cap window size on start to monitor size
  - GBA BIOS: Add timings for HLE BIOS math functions (fixes mgba.io/i/1396)
  - Debugger: Make tracing compatible with breakpoints/watchpoints
@@ -71,6 +39,43 @@ Misc:
  - Qt: Increase maximum magnifications and scaling
  - Qt: Add native FPS button to settings view
  - Qt: Improve sync code
+
+0.7.2: (2019-05-25)
+Emulation fixes:
+ - GB: Fix HALT when IE and IF unused bits are set (fixes mgba.io/i/1349)
+ - GB Timer: Fix timing adjustments when writing to TAC (fixes mgba.io/i/1340)
+ - GB Video: Fix window y changing mid-window (fixes mgba.io/i/1345)
+ - GB Video: Fix more window edge cases (fixes mgba.io/i/1346)
+ - GBA: Fix RTC on non-standard sized ROMs (fixes mgba.io/i/1400)
+ - GBA DMA: Fix DMA0-2 lengths (fixes mgba.io/i/1344)
+ - GBA Memory: Fix writing to OBJ memory in modes 3 and 5
+ - GBA Memory: Prevent writing to mirrored BG VRAM (fixes mgba.io/i/743)
+ - GBA Video: Fix scanline cache with scale factor change edge cases
+ - GBA Video: Fix sprite mosaic clamping (fixes mgba.io/i/1008)
+ - GBA Video: Implement mosaic on transformed sprites (fixes mgba.io/b/9)
+Other fixes:
+ - 3DS: Ensure core 2 can be used for threaded renderer (fixes mgba.io/i/1371)
+ - All: Fix several memory leaks
+ - GB Core: Fix toggling WIN and OBJ being swapped
+ - GBA: Fix skipping BIOS on irregularly sized ROMs
+ - CMake: Fix .deb imagemagick dependencies
+ - FFmpeg: Improve initialization reliability and cleanup
+ - FFmpeg: Fix audio conversion producing gaps
+ - LR35902: Fix disassembly of several CB-prefix instructions
+ - LR35902: Fix trailing whitespace in disassembly
+ - Qt: More app metadata fixes
+ - Qt: Fix load recent from archive (fixes mgba.io/i/1325)
+ - Qt: Fix overrides getting discarded (fixes mgba.io/i/1354)
+ - Qt: Fix saved scale not getting set on resize (fixes mgba.io/i/1074)
+ - Qt: Fix crash in sprite viewer magnification (fixes mgba.io/i/1362)
+ - Qt: Fix adjusting magnification in tile viewer when not fitting to window
+ - Qt: Fix bounded fast forward with Qt Multimedia
+ - Qt: Fix saving settings with native FPS target
+ - Wii: Fix aspect ratio (fixes mgba.io/i/500)
+Misc:
+ - Qt: Add missing HEVC NVENC option (fixes mgba.io/i/1323)
+ - Qt: Improve camera initialization
+ - Vita: Improved frame drawing speed
 
 0.7.1: (2019-02-24)
 Bugfixes:
