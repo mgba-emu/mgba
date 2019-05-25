@@ -446,7 +446,7 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 	}
 
 	const GLubyte* extensions = glGetString(GL_EXTENSIONS);
-	if (shaderBuffer[0] == _gles2Header || version[0] == '3' || strstr((const char*) extensions, "_vertex_array_object") != NULL) {
+	if (shaderBuffer[0] == _gles2Header || version[0] >= '3' || (extensions && strstr((const char*) extensions, "_vertex_array_object") != NULL)) {
 		glGenVertexArrays(1, &shader->vao);
 	} else {
 		shader->vao = -1;
