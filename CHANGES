@@ -34,7 +34,6 @@ Misc:
  - Qt: Add missing HEVC NVENC option (fixes mgba.io/i/1323)
  - Qt: Improve camera initialization
  - Vita: Improved frame drawing speed
- - GBA Video: Clean up dead code in sprite rendering loop
 
 0.7.1: (2019-02-24)
 Bugfixes:
