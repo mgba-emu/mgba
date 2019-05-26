@@ -20,6 +20,7 @@ Emulation fixes:
 Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
+ - Switch: Fix threading-related crash on second launch
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash

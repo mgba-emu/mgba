@@ -80,8 +80,8 @@ static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context)
 	return pthread_create(thread, 0, entry, context);
 }
 
-static inline int ThreadJoin(Thread thread) {
-	return pthread_join(thread, 0);
+static inline int ThreadJoin(Thread* thread) {
+	return pthread_join(*thread, 0);
 }
 
 static inline int ThreadSetName(const char* name) {

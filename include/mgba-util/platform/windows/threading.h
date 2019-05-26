@@ -75,8 +75,8 @@ static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context)
 	return GetLastError();
 }
 
-static inline int ThreadJoin(Thread thread) {
-	DWORD error = WaitForSingleObject(thread, INFINITE);
+static inline int ThreadJoin(Thread* thread) {
+	DWORD error = WaitForSingleObject(*thread, INFINITE);
 	if (error == WAIT_FAILED) {
 		return GetLastError();
 	}

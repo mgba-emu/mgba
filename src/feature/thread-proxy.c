@@ -78,7 +78,7 @@ void mVideoThreadProxyDeinit(struct mVideoLogger* logger) {
 	}
 	MutexUnlock(&proxyRenderer->mutex);
 	if (waiting) {
-		ThreadJoin(proxyRenderer->thread);
+		ThreadJoin(&proxyRenderer->thread);
 	}
 	RingFIFODeinit(&proxyRenderer->dirtyQueue);
 	ConditionDeinit(&proxyRenderer->fromThreadCond);
@@ -94,7 +94,7 @@ void _proxyThreadRecover(struct mVideoThreadProxy* proxyRenderer) {
 	}
 	RingFIFOClear(&proxyRenderer->dirtyQueue);
 	MutexUnlock(&proxyRenderer->mutex);
-	ThreadJoin(proxyRenderer->thread);
+	ThreadJoin(&proxyRenderer->thread);
 	proxyRenderer->threadState = PROXY_THREAD_IDLE;
 	ThreadCreate(&proxyRenderer->thread, _proxyThread, proxyRenderer);
 }
