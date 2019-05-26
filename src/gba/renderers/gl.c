@@ -834,6 +834,7 @@ void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 	glDeleteTextures(GBA_GL_TEX_MAX, glRenderer->layers);
 	glDeleteTextures(1, &glRenderer->paletteTex);
 	glDeleteTextures(1, &glRenderer->vramTex);
+	glDeleteBuffers(1, &glRenderer->vbo);
 
 	_deleteShader(&glRenderer->bgShader[0]);
 	_deleteShader(&glRenderer->bgShader[1]);
