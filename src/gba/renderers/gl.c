@@ -58,7 +58,8 @@ static const GLchar* const _gles3Header =
 	"#version 300 es\n"
 	"#define OUT(n) layout(location = n)\n"
 	"precision highp float;\n"
-	"precision highp int;\n";
+	"precision highp int;\n"
+	"precision highp isampler2D;\n";
 
 static const GLchar* const _gl3Header =
 	"#version 130\n"
@@ -496,6 +497,7 @@ static const char* const _renderObj =
 	"	}\n"
 	"	color = pix;\n"
 	"	flags = vec4(inflags) / flagCoeff;\n"
+	"	gl_FragDepth = flags.x;\n"
 	"	window = objwin.yzw;\n"
 	"}";
 
@@ -657,14 +659,18 @@ static void _deleteShader(struct GBAVideoGLShader* shader) {
 	glDeleteVertexArrays(1, &shader->vao);
 }
 
-static void _initFramebufferTexture(GLuint tex, GLenum format, GLenum attachment, int scale) {
+static void _initFramebufferTextureEx(GLuint tex, GLenum internalFormat, GLenum format, GLenum type, GLenum attachment, int scale) {
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, format, scale > 0 ? GBA_VIDEO_HORIZONTAL_PIXELS * scale : 1, GBA_VIDEO_VERTICAL_PIXELS * (scale > 0 ? scale : 1), 0, format, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, scale > 0 ? GBA_VIDEO_HORIZONTAL_PIXELS * scale : 1, GBA_VIDEO_VERTICAL_PIXELS * (scale > 0 ? scale : 1), 0, format, type, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, tex, 0);	
+}
+
+static void _initFramebufferTexture(GLuint tex, GLenum format, GLenum attachment, int scale) {
+	_initFramebufferTextureEx(tex, format, format, GL_UNSIGNED_BYTE, attachment, scale);
 }
 
 void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
@@ -702,6 +708,7 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_OBJ_COLOR], GL_RGBA, GL_COLOR_ATTACHMENT0, glRenderer->scale);
 	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_OBJ_FLAGS], GL_RGBA, GL_COLOR_ATTACHMENT1, glRenderer->scale);
 	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_WINDOW], GL_RGBA, GL_COLOR_ATTACHMENT2, glRenderer->scale);
+	_initFramebufferTextureEx(glRenderer->layers[GBA_GL_TEX_OBJ_DEPTH], GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_ATTACHMENT, glRenderer->scale);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_BACKDROP]);
 	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_BACKDROP_COLOR], GL_RGB, GL_COLOR_ATTACHMENT0, 0);
@@ -1305,11 +1312,16 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		memcpy(&glRenderer->winN[0].h[1], &glRenderer->winN[0].h[0], sizeof(struct GBAVideoWindowRegion));
 		memcpy(&glRenderer->winN[1].h[1], &glRenderer->winN[1].h[0], sizeof(struct GBAVideoWindowRegion));
 
-		glDisable(GL_SCISSOR_TEST);		
+		glDisable(GL_SCISSOR_TEST);
 		glClearColor(0, 0, 0, 0);
+#ifdef BUILD_GLES3
+		glClearDepthf(1.f);
+#else
+		glClearDepth(1);
+#endif
 		glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OBJ]);
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		for (i = 0; i < 4; ++i) {
 			glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[i].fbo);
@@ -1339,18 +1351,17 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 	glViewport(0, 0, 1, GBA_VIDEO_VERTICAL_PIXELS);
 	glScissor(0, glRenderer->firstY, 1, y - glRenderer->firstY + 1);
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_BACKDROP]);
-	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
-	glClearColor(((backdrop >> 16) & 0xFF) / 256., ((backdrop >> 8) & 0xFF) / 256., (backdrop & 0xFF) / 256., 0.f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT1 });
-	glClearColor(1, (glRenderer->target1Bd | (glRenderer->target2Bd * 2) | (glRenderer->blendEffect * 4)) / 32.f, glRenderer->blda / 16.f, 0);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
+	glClearBufferfv(GL_COLOR, 0, (GLfloat[]) { ((backdrop >> 16) & 0xFF) / 256., ((backdrop >> 8) & 0xFF) / 256., (backdrop & 0xFF) / 256., 0.f });
+	glClearBufferfv(GL_COLOR, 1, (GLfloat[]) { 1.f, (glRenderer->target1Bd | (glRenderer->target2Bd * 2) | (glRenderer->blendEffect * 4)) / 32.f, glRenderer->blda / 16.f, 0.f });
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 
 	GBAVideoGLRendererDrawWindow(glRenderer, y);
 	if (GBARegisterDISPCNTIsObjEnable(glRenderer->dispcnt) && !glRenderer->d.disableOBJ) {
 		int i;
-		for (i = glRenderer->oamMax; i--;) {
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		for (i = 0; i < glRenderer->oamMax; ++i) {
 			struct GBAVideoRendererSprite* sprite = &glRenderer->sprites[i];
 			if ((y < sprite->y && (sprite->endY - 256 < 0 || glRenderer->firstY >= sprite->endY - 256)) || glRenderer->firstY >= sprite->endY) {
 				continue;
@@ -1358,6 +1369,7 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 
 			GBAVideoGLRendererDrawSprite(glRenderer, &sprite->obj, y, sprite->y);
 		}
+		glDisable(GL_DEPTH_TEST);
 	}
 
 	if (TEST_LAYER_ENABLED(0) && GBARegisterDISPCNTGetMode(glRenderer->dispcnt) < 2) {
@@ -1403,6 +1415,7 @@ void GBAVideoGLRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 	_drawScanlines(glRenderer, GBA_VIDEO_VERTICAL_PIXELS - 1);
 	_finalizeLayers(glRenderer);
+	glDisable(GL_SCISSOR_TEST);
 	glBindVertexArray(0);
 	glRenderer->firstAffine = -1;
 	glRenderer->firstY = -1;
