@@ -1,3 +1,7 @@
+0.7.3: (Future)
+Other fixes:
+ - Switch: Fix threading-related crash on second launch
+
 0.7.2: (2019-05-25)
 Emulation fixes:
  - GB: Fix HALT when IE and IF unused bits are set (fixes mgba.io/i/1349)
