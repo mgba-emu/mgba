@@ -780,11 +780,6 @@ void Window::gameStarted() {
 
 void Window::gameStopped() {
 	m_controller.reset();
-	m_display->stopDrawing();
-	if (m_pendingClose) {
-		m_display.reset();
-		close();
-	}
 #ifdef M_CORE_GBA
 	for (Action* action : m_platformActions) {
 		action->setEnabled(true);
@@ -818,6 +813,11 @@ void Window::gameStopped() {
 	if (m_audioProcessor) {
 		m_audioProcessor->stop();
 		m_audioProcessor.reset();
+	}
+	m_display->stopDrawing();
+	if (m_pendingClose) {
+		m_display.reset();
+		close();
 	}
 
 #ifdef USE_DISCORD_RPC
