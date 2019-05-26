@@ -7,7 +7,7 @@ else()
 endif()
 
 set(cross_prefix aarch64-none-elf-)
-set(arch_flags "-mtune=cortex-a57 -ffunction-sections -march=armv8-a -mtp=soft -fPIC -ftls-model=local-exec")
+set(arch_flags "-mtune=cortex-a57 -ffunction-sections -march=armv8-a+crc+crypto -mtp=soft -fPIE")
 set(inc_flags "-I${LIBNX}/include ${arch_flags}")
 set(link_flags "-L${LIBNX}/lib -lnx -specs=${LIBNX}/switch.specs ${arch_flags}")
 
