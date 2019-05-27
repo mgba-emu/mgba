@@ -92,6 +92,9 @@ static unsigned framecap = 10;
 static u32 vibrationDeviceHandles[4];
 static HidVibrationValue vibrationStop = { .freq_low = 160.f, .freq_high = 320.f };
 static bool usePbo = true;
+static u8 vmode;
+static u32 vwidth;
+static u32 vheight;
 
 static enum ScreenMode {
 	SM_PA,
@@ -291,15 +294,14 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 }
 
 static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height, bool faded) {
-	glViewport(0, 0, 1280, 720);
-
+	glViewport(0, 1080 - vheight, vwidth, vheight);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUseProgram(program);
 	glBindVertexArray(vao);
-	float aspectX = width / (float) runner->params.width;
-	float aspectY = height / (float) runner->params.height;
+	float aspectX = width / (float) vwidth;
+	float aspectY = height / (float) vheight;
 	float max = 1.f;
 	switch (screenMode) {
 	case SM_PA:
@@ -343,6 +345,7 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 	glBindVertexArray(0);
 	glUseProgram(0);
 	glDisable(GL_BLEND);
+	glViewport(0, 1080 - runner->params.height, runner->params.width, runner->params.height);
 }
 
 static void _prepareForFrame(struct mGUIRunner* runner) {
@@ -432,6 +435,19 @@ static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 
 static bool _running(struct mGUIRunner* runner) {
 	UNUSED(runner);
+	u8 newMode = appletGetOperationMode();
+	if (newMode != vmode) {
+		if (newMode == AppletOperationMode_Docked) {
+			vwidth = 1920;
+			vheight = 1080;
+		} else {
+			vwidth = 1280;
+			vheight = 720;
+		}
+		nwindowSetCrop(nwindowGetDefault(), 0, 0, vwidth, vheight);
+		vmode = newMode;
+	}
+
 	return appletMainLoop();
 }
 
@@ -504,7 +520,14 @@ static int _batteryState(void) {
 	return state;
 }
 
+static void _guiPrepare(void) {
+	glViewport(0, 1080 - vheight, vwidth, vheight);
+}
+
 int main(int argc, char* argv[]) {
+	NWindow* window = nwindowGetDefault();
+	nwindowSetDimensions(window, 1920, 1080);
+
 	socketInitializeDefault();
 	nxlinkStdio();
 	initEgl();
@@ -514,10 +537,17 @@ int main(int argc, char* argv[]) {
 
 	struct GUIFont* font = GUIFontCreate();
 
-	u32 width = 1280;
-	u32 height = 720;
+	vmode = appletGetOperationMode();
+	if (vmode == AppletOperationMode_Docked) {
+		vwidth = 1920;
+		vheight = 1080;
+	} else {
+		vwidth = 1280;
+		vheight = 720;
+	}
+	nwindowSetCrop(window, 0, 0, vwidth, vheight);
 
-	glViewport(0, 0, width, height);
+	glViewport(0, 1080 - vheight, vwidth, vheight);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 
 	glGenTextures(1, &tex);
@@ -626,12 +656,12 @@ int main(int argc, char* argv[]) {
 
 	struct mGUIRunner runner = {
 		.params = {
-			width, height,
+			1280, 720,
 			font, "/",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
 			_batteryState,
-			NULL, NULL,
+			_guiPrepare, NULL,
 		},
 		.keySources = (struct GUIInputKeys[]) {
 			{
