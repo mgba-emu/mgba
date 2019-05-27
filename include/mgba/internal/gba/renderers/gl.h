@@ -45,6 +45,7 @@ struct GBAVideoGLBackground {
 	GLuint fbo;
 	GLuint tex;
 	GLuint flags;
+	GLuint scanlineTex;
 
 	unsigned index;
 	int enabled;

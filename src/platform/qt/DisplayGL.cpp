@@ -49,7 +49,6 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 #endif
 	auto version = m_gl->format().version();
 	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
-	m_gl->doneCurrent();
 
 	if ((version == qMakePair(2, 1) && !extensions.contains("GL_ARB_framebuffer_object")) || version == qMakePair(2, 0)) {
 		QSurfaceFormat newFormat(format);
@@ -279,7 +278,6 @@ PainterGL::PainterGL(VideoProxy* proxy, QWindow* surface, QOpenGLContext* parent
 		m_shader.preprocessShader = static_cast<void*>(&reinterpret_cast<mGLES2Context*>(m_backend)->initialShader);
 	}
 #endif
-	m_gl->doneCurrent();
 
 	m_backend->user = this;
 	m_backend->filter = false;
