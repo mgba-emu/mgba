@@ -102,6 +102,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 
 	lockAspectRatio(isAspectRatioLocked());
 	lockIntegerScaling(isIntegerScalingLocked());
+	interframeBlending(hasInterframeBlending());
 	filter(isFiltered());
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatioF());
@@ -161,6 +162,13 @@ void DisplayGL::lockIntegerScaling(bool lock) {
 	Display::lockIntegerScaling(lock);
 	if (m_drawThread) {
 		QMetaObject::invokeMethod(m_painter, "lockIntegerScaling", Q_ARG(bool, lock));
+	}
+}
+
+void DisplayGL::interframeBlending(bool enable) {
+	Display::interframeBlending(enable);
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "interframeBlending", Q_ARG(bool, enable));
 	}
 }
 
@@ -276,6 +284,7 @@ PainterGL::PainterGL(VideoProxy* proxy, QWindow* surface, QOpenGLContext* parent
 	m_backend->user = this;
 	m_backend->filter = false;
 	m_backend->lockAspectRatio = false;
+	m_backend->interframeBlending = false;
 
 	for (int i = 0; i < 2; ++i) {
 		m_free.append(new uint32_t[1024 * 2048]);
@@ -342,6 +351,10 @@ void PainterGL::lockAspectRatio(bool lock) {
 void PainterGL::lockIntegerScaling(bool lock) {
 	m_backend->lockIntegerScaling = lock;
 	resize(m_size);
+}
+
+void PainterGL::interframeBlending(bool enable) {
+	m_backend->interframeBlending = enable;
 }
 
 void PainterGL::filter(bool filter) {
@@ -546,7 +559,7 @@ int PainterGL::glTex() {
 #endif
 #ifdef BUILD_GL
 	mGLContext* glBackend = reinterpret_cast<mGLContext*>(m_backend);
-	return glBackend->tex;
+	return glBackend->tex[0];
 #else
 	return -1;
 #endif

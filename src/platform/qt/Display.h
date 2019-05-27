@@ -42,6 +42,7 @@ public:
 
 	bool isAspectRatioLocked() const { return m_lockAspectRatio; }
 	bool isIntegerScalingLocked() const { return m_lockIntegerScaling; }
+	bool hasInterframeBlending() const { return m_interframeBlending; }
 	bool isFiltered() const { return m_filter; }
 
 	virtual void startDrawing(std::shared_ptr<CoreController>) = 0;
@@ -62,6 +63,7 @@ public slots:
 	virtual void forceDraw() = 0;
 	virtual void lockAspectRatio(bool lock);
 	virtual void lockIntegerScaling(bool lock);
+	virtual void interframeBlending(bool enable);
 	virtual void filter(bool filter);
 	virtual void framePosted() = 0;
 	virtual void setShaders(struct VDir*) = 0;
@@ -83,6 +85,7 @@ private:
 	MessagePainter m_messagePainter;
 	bool m_lockAspectRatio = false;
 	bool m_lockIntegerScaling = false;
+	bool m_interframeBlending = false;
 	bool m_filter = false;
 	QTimer m_mouseTimer;
 };

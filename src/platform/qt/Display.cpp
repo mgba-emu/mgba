@@ -70,6 +70,10 @@ void Display::lockIntegerScaling(bool lock) {
 	m_lockIntegerScaling = lock;
 }
 
+void Display::interframeBlending(bool lock) {
+	m_interframeBlending = lock;
+}
+
 void Display::filter(bool filter) {
 	m_filter = filter;
 }

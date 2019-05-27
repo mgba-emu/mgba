@@ -35,6 +35,7 @@ bool mSDLGLInit(struct mSDLRenderer* renderer) {
 	renderer->gl.d.user = renderer;
 	renderer->gl.d.lockAspectRatio = renderer->lockAspectRatio;
 	renderer->gl.d.lockIntegerScaling = renderer->lockIntegerScaling;
+	renderer->gl.d.interframeBlending = renderer->interframeBlending;
 	renderer->gl.d.filter = renderer->filter;
 	renderer->gl.d.swap = mSDLGLCommonSwap;
 	renderer->gl.d.init(&renderer->gl.d, 0);

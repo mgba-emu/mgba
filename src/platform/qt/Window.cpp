@@ -719,6 +719,7 @@ void Window::gameStarted() {
 	m_screenWidget->setDimensions(size.width(), size.height());
 	m_config->updateOption("lockIntegerScaling");
 	m_config->updateOption("lockAspectRatio");
+	m_config->updateOption("interframeBlending");
 	if (m_savedScale > 0) {
 		resizeFrame(size * m_savedScale);
 	}
@@ -883,6 +884,7 @@ void Window::reloadDisplayDriver() {
 
 	const mCoreOptions* opts = m_config->options();
 	m_display->lockAspectRatio(opts->lockAspectRatio);
+	m_display->interframeBlending(opts->interframeBlending);
 	m_display->filter(opts->resampleVideo);
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (opts->shader) {
@@ -1339,6 +1341,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 		}
 	}, this);
 	m_config->updateOption("lockIntegerScaling");
+
+	ConfigOption* interframeBlending = m_config->addOption("interframeBlending");
+	interframeBlending->addBoolean(tr("Interframe blending"), &m_actions, "av");
+	interframeBlending->connect([this](const QVariant& value) {
+		if (m_display) {
+			m_display->interframeBlending(value.toBool());
+		}
+	}, this);
+	m_config->updateOption("interframeBlending");
 
 	ConfigOption* resampleVideo = m_config->addOption("resampleVideo");
 	resampleVideo->addBoolean(tr("Bilinear filtering"), &m_actions, "av");

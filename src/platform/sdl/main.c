@@ -136,6 +136,7 @@ int main(int argc, char** argv) {
 
 	renderer.lockAspectRatio = renderer.core->opts.lockAspectRatio;
 	renderer.lockIntegerScaling = renderer.core->opts.lockIntegerScaling;
+	renderer.interframeBlending = renderer.core->opts.interframeBlending;
 	renderer.filter = renderer.core->opts.resampleVideo;
 
 	if (!mSDLInit(&renderer)) {

@@ -52,6 +52,7 @@ public slots:
 	void forceDraw() override;
 	void lockAspectRatio(bool lock) override;
 	void lockIntegerScaling(bool lock) override;
+	void interframeBlending(bool enable) override;
 	void filter(bool filter) override;
 	void framePosted() override;
 	void setShaders(struct VDir*) override;
@@ -96,6 +97,7 @@ public slots:
 	void resize(const QSize& size);
 	void lockAspectRatio(bool lock);
 	void lockIntegerScaling(bool lock);
+	void interframeBlending(bool enable);
 	void filter(bool filter);
 	void resizeContext();
 

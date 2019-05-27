@@ -26,7 +26,8 @@ CXX_GUARD_START
 struct mGLContext {
 	struct VideoBackend d;
 
-	GLuint tex;
+	GLuint tex[2];
+	int activeTex;
 };
 
 void mGLContextCreate(struct mGLContext*);
