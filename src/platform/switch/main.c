@@ -806,6 +806,7 @@ int main(int argc, char* argv[]) {
 
 	psmExit();
 	audoutExit();
+	romfsExit();
 	deinitEgl();
 	socketExit();
 	return 0;
