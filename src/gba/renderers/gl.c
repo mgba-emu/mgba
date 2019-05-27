@@ -568,12 +568,12 @@ static const char* const _finalize =
 	"		topFlags.y &= ~1;\n"
 	"	}\n"
 	"	if (((topFlags.y & 13) == 5 || topFlags.w > 0) && (bottomFlags.y & 2) == 2) {\n"
-	"		topPixel *= float(topFlags.z) / 16.;\n"
-	"		topPixel += bottomPixel * float(windowFlags.y) / 16.;\n"
+	"		topPixel.rgb *= float(topFlags.z) / 16.;\n"
+	"		topPixel.rgb += bottomPixel.rgb * float(windowFlags.y) / 16.;\n"
 	"	} else if ((topFlags.y & 13) == 9) {\n"
-	"		topPixel += (1. - topPixel) * float(windowFlags.z) / 16.;\n"
+	"		topPixel.rgb += (1. - topPixel.rgb) * float(windowFlags.z) / 16.;\n"
 	"	} else if ((topFlags.y & 13) == 13) {\n"
-	"		topPixel -= topPixel * float(windowFlags.z) / 16.;\n"
+	"		topPixel.rgb -= topPixel.rgb * float(windowFlags.z) / 16.;\n"
 	"	}\n"
 	"	color = topPixel;\n"
 	"}";
@@ -1343,7 +1343,7 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 	glScissor(0, glRenderer->firstY, 1, y - glRenderer->firstY + 1);
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_BACKDROP]);
 	glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
-	glClearBufferfv(GL_COLOR, 0, (GLfloat[]) { ((backdrop >> 16) & 0xFF) / 256., ((backdrop >> 8) & 0xFF) / 256., (backdrop & 0xFF) / 256., 0.f });
+	glClearBufferfv(GL_COLOR, 0, (GLfloat[]) { ((backdrop >> 16) & 0xFF) / 256., ((backdrop >> 8) & 0xFF) / 256., (backdrop & 0xFF) / 256., 1.f });
 	glClearBufferiv(GL_COLOR, 1, (GLint[]) { 32, glRenderer->target1Bd | (glRenderer->target2Bd * 2) | (glRenderer->blendEffect * 4), glRenderer->blda, 0 });
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 
