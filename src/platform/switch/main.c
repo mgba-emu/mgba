@@ -15,6 +15,7 @@
 #include <switch.h>
 #include <EGL/egl.h>
 #include <GLES3/gl3.h>
+#include <GLES3/gl31.h>
 
 #define AUTO_INPUT 0x4E585031
 #define SAMPLES 0x400
@@ -67,11 +68,13 @@ static GLuint program;
 static GLuint vbo;
 static GLuint vao;
 static GLuint pbo;
+static GLuint copyFbo;
 static GLuint texLocation;
 static GLuint dimsLocation;
 static GLuint insizeLocation;
 static GLuint colorLocation;
 static GLuint tex;
+static GLuint oldTex;
 
 static color_t* frameBuffer;
 static struct mAVStream stream;
@@ -95,6 +98,7 @@ static bool usePbo = true;
 static u8 vmode;
 static u32 vwidth;
 static u32 vheight;
+static bool interframeBlending = false;
 
 static enum ScreenMode {
 	SM_PA,
@@ -130,7 +134,8 @@ static bool initEgl() {
 	}
 
 	EGLint contextAttributeList[] = {
-		EGL_CONTEXT_CLIENT_VERSION, 3,
+		EGL_CONTEXT_MAJOR_VERSION, 3,
+		EGL_CONTEXT_MINOR_VERSION, 1,
 		EGL_NONE
 	};
 	s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, contextAttributeList);
@@ -283,6 +288,10 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 		screenMode = mode;
 	}
 
+	int fakeBool;
+	mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool);
+	interframeBlending = fakeBool;
+
 	rumble.up = 0;
 	rumble.down = 0;
 }
@@ -296,7 +305,7 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 	hidSendVibrationValues(vibrationDeviceHandles, values, 4);
 }
 
-static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height, bool faded) {
+static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height, bool faded, bool blendTop) {
 	glViewport(0, 1080 - vheight, vwidth, vheight);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -341,9 +350,9 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 		glUniform2f(insizeLocation, 1, 1);
 	}
 	if (!faded) {
-		glUniform4f(colorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
+		glUniform4f(colorLocation, 1.0f, 1.0f, 1.0f, blendTop ? 0.5f : 1.0f);
 	} else {
-		glUniform4f(colorLocation, 0.8f, 0.8f, 0.8f, 0.8f);
+		glUniform4f(colorLocation, 0.8f, 0.8f, 0.8f, blendTop ? 0.4f : 0.8f);
 	}
 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -355,6 +364,20 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 }
 
 static void _prepareForFrame(struct mGUIRunner* runner) {
+	if (interframeBlending) {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, copyFbo);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		int width, height;
+		int format;
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &format);
+		glBindTexture(GL_TEXTURE_2D, oldTex);
+		glCopyTexImage2D(GL_TEXTURE_2D, 0, format, 0, 0, width, height, 0);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	}
+
 	if (usePbo) {
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
 		frameBuffer = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 256 * 256 * 4, GL_MAP_WRITE_BIT);
@@ -382,11 +405,19 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 		glBindTexture(GL_TEXTURE_2D, tex);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, height, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-	} else {
+	} else if (!interframeBlending) {
 		glBindTexture(GL_TEXTURE_2D, tex);
 	}
 
-	_drawTex(runner, width, height, faded);
+	if (interframeBlending) {
+		glBindTexture(GL_TEXTURE_2D, oldTex);
+		_drawTex(runner, width, height, faded, false);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		_drawTex(runner, width, height, faded, true);
+	} else {
+		_drawTex(runner, width, height, faded, false);
+	}
+
 
 	HidVibrationValue values[4];
 	if (rumble.up) {
@@ -412,7 +443,7 @@ static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, un
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-	_drawTex(runner, width, height, faded);
+	_drawTex(runner, width, height, faded, false);
 }
 
 static uint16_t _pollGameInput(struct mGUIRunner* runner) {
@@ -556,9 +587,16 @@ int main(int argc, char* argv[]) {
 	glViewport(0, 1080 - vheight, vwidth, vheight);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 
-	glGenTextures(1, &tex);
 	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &tex);
 	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glGenTextures(1, &oldTex);
+	glBindTexture(GL_TEXTURE_2D, oldTex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -569,6 +607,15 @@ int main(int argc, char* argv[]) {
 	glBufferData(GL_PIXEL_UNPACK_BUFFER, 256 * 256 * 4, NULL, GL_STREAM_DRAW);
 	frameBuffer = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 256 * 256 * 4, GL_MAP_WRITE_BIT);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+	glGenFramebuffers(1, &copyFbo);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glBindTexture(GL_TEXTURE_2D, oldTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, copyFbo);
+	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
 	program = glCreateProgram();
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -829,7 +876,9 @@ int main(int argc, char* argv[]) {
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	glDeleteBuffers(1, &pbo);
 
+	glDeleteFramebuffers(1, &copyFbo);
 	glDeleteTextures(1, &tex);
+	glDeleteTextures(1, &oldTex);
 	glDeleteBuffers(1, &vbo);
 	glDeleteProgram(program);
 	glDeleteVertexArrays(1, &vao);
