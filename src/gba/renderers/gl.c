@@ -486,9 +486,6 @@ static const char* const _renderObj =
 	"		discard;\n"
 	"	}\n"
 	"	vec4 pix = renderTile((coord.x >> 3) + (coord.y >> 3) * stride, 16 + localPalette, coord & 7);\n"
-	"	if (objwin.x > 0) {\n"
-	"		pix.a = 0.;\n"
-	"	}\n"
 	"	color = pix;\n"
 	"	flags = inflags;\n"
 	"	gl_FragDepth = float(flags.x) / 16.;\n"
@@ -1353,7 +1350,6 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 	GBAVideoGLRendererDrawWindow(glRenderer, y);
 	if (GBARegisterDISPCNTIsObjEnable(glRenderer->dispcnt) && !glRenderer->d.disableOBJ) {
 		int i;
-		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		for (i = 0; i < glRenderer->oamMax; ++i) {
 			struct GBAVideoRendererSprite* sprite = &glRenderer->sprites[i];
@@ -1625,10 +1621,12 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	}
 	glUniform4i(uniforms[GBA_GL_OBJ_DIMS], width, height, totalWidth, totalHeight);
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_OBJWIN) {
+		glDisable(GL_DEPTH_TEST);
 		int window = renderer->objwin & 0x3F;
 		glUniform4i(uniforms[GBA_GL_OBJ_OBJWIN], 1, window, renderer->bldb, renderer->bldy);
-		glDrawBuffers(3, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 });
+		glDrawBuffers(3, (GLenum[]) { GL_NONE, GL_NONE, GL_COLOR_ATTACHMENT2 });
 	} else {
+		glEnable(GL_DEPTH_TEST);
 		glUniform4i(uniforms[GBA_GL_OBJ_OBJWIN], 0, 0, 0, 0);
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
 	}
