@@ -18,7 +18,7 @@
 #ifndef DISABLE_THREADING
 #include <mgba/feature/thread-proxy.h>
 #endif
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 #include <mgba/internal/gba/renderers/gl.h>
 #endif
 #include <mgba/internal/gba/renderers/proxy.h>
@@ -130,7 +130,7 @@ struct mVideoLogContext;
 struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	struct GBAVideoGLRenderer glRenderer;
 #endif
 	struct GBAVideoProxyRenderer proxyRenderer;
@@ -180,7 +180,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	GBAVideoSoftwareRendererCreate(&gbacore->renderer);
 	gbacore->renderer.outputBuffer = NULL;
 
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	GBAVideoGLRendererCreate(&gbacore->glRenderer);
 	gbacore->glRenderer.outputTex = -1;
 #endif
@@ -229,7 +229,7 @@ static bool _GBACoreSupportsFeature(const struct mCore* core, enum mCoreFeature 
 	UNUSED(core);
 	switch (feature) {
 	case mCORE_FEATURE_OPENGL:
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 		return true;
 #else
 		return false;
@@ -289,7 +289,7 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 }
 
 static void _GBACoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	struct GBACore* gbacore = (struct GBACore*) core;
 	int scale = gbacore->glRenderer.scale;
 #else
@@ -308,7 +308,7 @@ static void _GBACoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t s
 }
 
 static void _GBACoreSetVideoGLTex(struct mCore* core, unsigned texid) {
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->glRenderer.outputTex = texid;
 #else
@@ -442,7 +442,7 @@ static void _GBACoreReset(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = (struct GBA*) core->board;
 	if (gbacore->renderer.outputBuffer
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	    || gbacore->glRenderer.outputTex != (unsigned) -1
 #endif
 	) {
@@ -451,7 +451,7 @@ static void _GBACoreReset(struct mCore* core) {
 			renderer = &gbacore->renderer.d;
 		}
 		int fakeBool;
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
 			renderer = &gbacore->glRenderer.d;
 			mCoreConfigGetIntValue(&core->config, "videoScale", &gbacore->glRenderer.scale);

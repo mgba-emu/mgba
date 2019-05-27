@@ -46,7 +46,7 @@ static const char* const _vertexShader =
 	"varying vec2 texCoord;\n"
 
 	"void main() {\n"
-	"	vec2 ratio = insize / 256.0;\n"
+	"	vec2 ratio = insize;\n"
 	"	vec2 scaledOffset = offset * dims;\n"
 	"	gl_Position = vec4(scaledOffset.x * 2.0 - dims.x, scaledOffset.y * -2.0 + dims.y, 0.0, 1.0);\n"
 	"	texCoord = offset * ratio;\n"
@@ -91,6 +91,7 @@ static unsigned framecount = 0;
 static unsigned framecap = 10;
 static u32 vibrationDeviceHandles[4];
 static HidVibrationValue vibrationStop = { .freq_low = 160.f, .freq_high = 320.f };
+static bool usePbo = true;
 
 static enum ScreenMode {
 	SM_PA,
@@ -110,9 +111,9 @@ static bool initEgl() {
 	EGLConfig config;
 	EGLint numConfigs;
 	static const EGLint attributeList[] = {
-		EGL_RED_SIZE, 1,
-		EGL_GREEN_SIZE, 1,
-		EGL_BLUE_SIZE, 1,
+		EGL_RED_SIZE, 8,
+		EGL_GREEN_SIZE, 8,
+		EGL_BLUE_SIZE, 8,
 		EGL_NONE
 	};
 	eglChooseConfig(s_display, attributeList, &config, 1, &numConfigs);
@@ -165,6 +166,7 @@ static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, enum
 }
 
 static void _drawStart(void) {
+	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -242,7 +244,15 @@ static void _setup(struct mGUIRunner* runner) {
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_L, GBA_KEY_L);
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_R, GBA_KEY_R);
 
-	runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+	int fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "hwaccelVideo", &fakeBool) && fakeBool && runner->core->supportsFeature(runner->core, mCORE_FEATURE_OPENGL)) {
+		runner->core->setVideoGLTex(runner->core, tex);
+		usePbo = false;
+	} else {
+		runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+		usePbo = true;
+	}
+
 	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d);
 	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation);
 	runner->core->setAVStream(runner->core, &stream);
@@ -281,6 +291,8 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 }
 
 static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height, bool faded) {
+	glViewport(0, 0, 1280, 720);
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -315,26 +327,33 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 
 	glUniform1i(texLocation, 0);
 	glUniform2f(dimsLocation, aspectX, aspectY);
-	glUniform2f(insizeLocation, width, height);
+	if (usePbo) {
+		glUniform2f(insizeLocation, width / 256.f, height / 256.f);
+	} else {
+		glUniform2f(insizeLocation, 1, 1);
+	}
 	if (!faded) {
 		glUniform4f(colorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
 	} else {
-		glUniform4f(colorLocation, 0.8f, 0.8f, 0.8f, 0.8f);		
+		glUniform4f(colorLocation, 0.8f, 0.8f, 0.8f, 0.8f);
 	}
 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glBindVertexArray(0);
 	glUseProgram(0);
+	glDisable(GL_BLEND);
 }
 
 static void _prepareForFrame(struct mGUIRunner* runner) {
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-	frameBuffer = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 256 * 256 * 4, GL_MAP_WRITE_BIT);
-	if (frameBuffer) {
-		runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+	if (usePbo) {
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+		frameBuffer = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 256 * 256 * 4, GL_MAP_WRITE_BIT);
+		if (frameBuffer) {
+			runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+		}
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	}
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
 static void _drawFrame(struct mGUIRunner* runner, bool faded) {
@@ -346,13 +365,17 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	unsigned width, height;
 	runner->core->desiredVideoDimensions(runner->core, &width, &height);
 
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, height, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	if (usePbo) {
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, height, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	} else {
+		glBindTexture(GL_TEXTURE_2D, tex);
+	}
 
 	_drawTex(runner, width, height, faded);
 
@@ -689,8 +712,42 @@ int main(int argc, char* argv[]) {
 				},
 				.nStates = 16
 			},
+			{
+				.title = "GPU-accelerated renderer (experimental, requires game reload)",
+				.data = "hwaccelVideo",
+				.submenu = 0,
+				.state = 0,
+				.validStates = (const char*[]) {
+					"Off",
+					"On",
+				},
+				.nStates = 2
+			},
+			{
+				.title = "Hi-res scaling (requires GPU rendering)",
+				.data = "videoScale",
+				.submenu = 0,
+				.state = 0,
+				.validStates = (const char*[]) {
+					"1x",
+					"2x",
+					"3x",
+					"4x",
+					"5x",
+					"6x",
+				},
+				.stateMappings = (const struct GUIVariant[]) {
+					GUI_V_U(1),
+					GUI_V_U(2),
+					GUI_V_U(3),
+					GUI_V_U(4),
+					GUI_V_U(5),
+					GUI_V_U(6),
+				},
+				.nStates = 6
+			},
 		},
-		.nConfigExtra = 2,
+		.nConfigExtra = 4,
 		.setup = _setup,
 		.teardown = NULL,
 		.gameLoaded = _gameLoaded,
