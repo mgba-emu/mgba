@@ -146,10 +146,7 @@ struct GBAVideoGLRenderer {
 
 	GLuint outputTex;
 
-#ifdef BUILD_GLES3
-	uint16_t shadowPalette[512];
-#endif
-	GLuint paletteTex;
+	GLint shadowPalette[512];
 	bool paletteDirty;
 
 	GLuint vramTex;

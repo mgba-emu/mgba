@@ -52,9 +52,12 @@ struct GBAVideoGLUniform {
 	int type;
 };
 
+#define PALETTE_ENTRY "#define PALETTE_ENTRY(x) (vec3((ivec3(0x1F, 0x3E0, 0x7C00) & (x)) >> ivec3(0, 5, 10)) / 31.)\n"
+
 static const GLchar* const _gles3Header =
 	"#version 300 es\n"
 	"#define OUT(n) layout(location = n)\n"
+	PALETTE_ENTRY
 	"precision highp float;\n"
 	"precision highp int;\n"
 	"precision highp sampler2D;\n"
@@ -63,6 +66,7 @@ static const GLchar* const _gles3Header =
 static const GLchar* const _gl3Header =
 	"#version 130\n"
 	"#define OUT(n)\n"
+	PALETTE_ENTRY
 	"precision highp float;\n";
 
 static const char* const _vertexShader =
@@ -82,11 +86,11 @@ static const char* const _renderTile16 =
 	"	int address = charBase + tile * 16 + (localCoord.x >> 2) + (localCoord.y << 1);\n"
 	"	vec4 halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0);\n"
 	"	int entry = int(halfrow[3 - (localCoord.x & 3)] * 15.9);\n"
-	"	vec4 color = texelFetch(palette, ivec2(entry, paletteId), 0);\n"
 	"	if (entry == 0) {\n"
 	"		discard;\n"
 	"	}\n"
-	"	color.a = 1.;\n"
+	"	int paletteEntry = palette[paletteId * 16 + entry];\n"
+	"	vec4 color = vec4(PALETTE_ENTRY(paletteEntry), 1.);\n"
 	"	return color;\n"
 	"}";
 
@@ -96,11 +100,11 @@ static const char* const _renderTile256 =
 	"	vec4 halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0);\n"
 	"	int entry = int(halfrow[3 - 2 * (localCoord.x & 1)] * 15.9);\n"
 	"	int pal2 = int(halfrow[2 - 2 * (localCoord.x & 1)] * 15.9);\n"
-	"	vec4 color = texelFetch(palette, ivec2(entry, pal2 + (paletteId & 16)), 0);\n"
 	"	if ((pal2 | entry) == 0) {\n"
 	"		discard;\n"
 	"	}\n"
-	"	color.a = 1.;\n"
+	"	int paletteEntry = palette[pal2 * 16 + entry];\n"
+	"	vec4 color = vec4(PALETTE_ENTRY(paletteEntry), 1.);\n"
 	"	return color;\n"
 	"}";
 
@@ -121,7 +125,7 @@ static const struct GBAVideoGLUniform _uniformsMode0[] = {
 static const char* const _renderMode0 =
 	"in vec2 texCoord;\n"
 	"uniform sampler2D vram;\n"
-	"uniform sampler2D palette;\n"
+	"uniform int palette[256];\n"
 	"uniform int screenBase;\n"
 	"uniform int charBase;\n"
 	"uniform int size;\n"
@@ -264,7 +268,7 @@ static const char* const _interpolate =
 static const char* const _renderMode2 =
 	"in vec2 texCoord;\n"
 	"uniform sampler2D vram;\n"
-	"uniform sampler2D palette;\n"
+	"uniform int palette[256];\n"
 	"uniform int screenBase;\n"
 	"uniform int charBase;\n"
 	"uniform int size;\n"
@@ -288,11 +292,11 @@ static const char* const _renderMode2 =
 	"	vec4 halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0);\n"
 	"	int entry = int(halfrow[3 - ((coord.x >> 7) & 2)] * 15.9);\n"
 	"	int pal2 = int(halfrow[2 - ((coord.x >> 7) & 2)] * 15.9);\n"
-	"	vec4 color = texelFetch(palette, ivec2(entry, pal2), 0);\n"
 	"	if ((pal2 | entry) == 0) {\n"
 	"		discard;\n"
 	"	}\n"
-	"	color.a = 1.;\n"
+	"	int paletteEntry = palette[pal2 * 16 + entry];\n"
+	"	vec4 color = vec4(PALETTE_ENTRY(paletteEntry), 1.);\n"
 	"	return color;\n"
 	"}\n"
 
@@ -391,7 +395,7 @@ static const struct GBAVideoGLUniform _uniformsMode4[] = {
 static const char* const _renderMode4 =
 	"in vec2 texCoord;\n"
 	"uniform sampler2D vram;\n"
-	"uniform sampler2D palette;\n"
+	"uniform int palette[256];\n"
 	"uniform int charBase;\n"
 	"uniform ivec2 size;\n"
 	"uniform ivec4 inflags;\n"
@@ -429,8 +433,8 @@ static const char* const _renderMode4 =
 	"	int address = charBase + (coord.x >> 8) + (coord.y >> 8) * size.x;\n"
 	"	vec4 twoEntries = texelFetch(vram, ivec2((address >> 1) & 255, address >> 9), 0);\n"
 	"	ivec2 entry = ivec2(twoEntries[3 - 2 * (address & 1)] * 15.9, twoEntries[2 - 2 * (address & 1)] * 15.9);\n"
-	"	color = texelFetch(palette, entry, 0);\n"
-	"	color.a = 1.;\n"
+	"	int paletteEntry = palette[entry.y * 16 + entry.x];\n"
+	"	color = vec4(PALETTE_ENTRY(paletteEntry), 1.);\n"
 	"	flags = inflags;\n"
 	"}";
 
@@ -453,7 +457,7 @@ static const struct GBAVideoGLUniform _uniformsObj[] = {
 static const char* const _renderObj =
 	"in vec2 texCoord;\n"
 	"uniform sampler2D vram;\n"
-	"uniform sampler2D palette;\n"
+	"uniform int palette[256];\n"
 	"uniform int charBase;\n"
 	"uniform int stride;\n"
 	"uniform int localPalette;\n"
@@ -485,7 +489,7 @@ static const char* const _renderObj =
 	"	if ((coord & ~(dims.xy - 1)) != ivec2(0, 0)) {\n"
 	"		discard;\n"
 	"	}\n"
-	"	vec4 pix = renderTile((coord.x >> 3) + (coord.y >> 3) * stride, 16 + localPalette, coord & 7);\n"
+	"	vec4 pix = renderTile((coord.x >> 3) + (coord.y >> 3) * stride, localPalette, coord & 7);\n"
 	"	color = pix;\n"
 	"	flags = inflags;\n"
 	"	gl_FragDepth = float(flags.x) / 16.;\n"
@@ -670,11 +674,6 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	glGenFramebuffers(GBA_GL_FBO_MAX, glRenderer->fbo);
 	glGenTextures(GBA_GL_TEX_MAX, glRenderer->layers);
 
-	glGenTextures(1, &glRenderer->paletteTex);
-	glBindTexture(GL_TEXTURE_2D, glRenderer->paletteTex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
 	glGenTextures(1, &glRenderer->vramTex);
 	glBindTexture(GL_TEXTURE_2D, glRenderer->vramTex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -822,7 +821,6 @@ void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 	}
 	glDeleteFramebuffers(GBA_GL_FBO_MAX, glRenderer->fbo);
 	glDeleteTextures(GBA_GL_TEX_MAX, glRenderer->layers);
-	glDeleteTextures(1, &glRenderer->paletteTex);
 	glDeleteTextures(1, &glRenderer->vramTex);
 	glDeleteBuffers(1, &glRenderer->vbo);
 
@@ -846,14 +844,7 @@ void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 
-#ifdef BUILD_GLES3
-	int i;
-	for (i = 0; i < 512; ++i) {
-		renderer->writePalette(renderer, i << 1, renderer->palette[i]);
-	}
-#else
 	glRenderer->paletteDirty = true;
-#endif
 	glRenderer->vramDirty = 0xFFFFFF;
 	glRenderer->firstAffine = -1;
 	glRenderer->firstY = -1;
@@ -876,12 +867,8 @@ void GBAVideoGLRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam)
 
 void GBAVideoGLRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
-#ifdef BUILD_GLES3
-	glRenderer->shadowPalette[address >> 1] = ((value & 0x1F) << 11) | ((value & 0x3E0) << 1) | ((value & 0x7C00) >> 10);
-#else
 	UNUSED(address);
 	UNUSED(value);
-#endif
 	glRenderer->paletteDirty = true;
 }
 
@@ -1269,12 +1256,9 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	glRenderer->regsDirty = 0;
 
 	if (glRenderer->paletteDirty) {
-		glBindTexture(GL_TEXTURE_2D, glRenderer->paletteTex);
-#ifdef BUILD_GLES3
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB565, 16, 32, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, glRenderer->shadowPalette);
-#else
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5_A1, 16, 32, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, glRenderer->d.palette);
-#endif
+		for (i = 0; i < 512; ++i) {
+			glRenderer->shadowPalette[i] = glRenderer->d.palette[i];
+		}
 		glRenderer->paletteDirty = false;
 	}
 
@@ -1588,12 +1572,10 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	glBindVertexArray(shader->vao);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, renderer->vramTex);
-	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, renderer->paletteTex);
 	glUniform2i(uniforms[GBA_GL_VS_LOC], totalHeight, 0);
 	glUniform2i(uniforms[GBA_GL_VS_MAXPOS], totalWidth, totalHeight);
 	glUniform1i(uniforms[GBA_GL_OBJ_VRAM], 0);
-	glUniform1i(uniforms[GBA_GL_OBJ_PALETTE], 1);
+	glUniform1iv(uniforms[GBA_GL_OBJ_PALETTE], 256, &renderer->shadowPalette[256]);
 	glUniform1i(uniforms[GBA_GL_OBJ_CHARBASE], charBase);
 	glUniform1i(uniforms[GBA_GL_OBJ_STRIDE], stride);
 	glUniform1i(uniforms[GBA_GL_OBJ_LOCALPALETTE], GBAObjAttributesCGetPalette(sprite->c));
@@ -1648,11 +1630,9 @@ void _prepareBackground(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBa
 	glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, GBA_VIDEO_VERTICAL_PIXELS * renderer->scale);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, renderer->vramTex);
-	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, renderer->paletteTex);
 	glUniform2i(uniforms[GBA_GL_VS_MAXPOS], GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 	glUniform1i(uniforms[GBA_GL_BG_VRAM], 0);
-	glUniform1i(uniforms[GBA_GL_BG_PALETTE], 1);
+	glUniform1iv(uniforms[GBA_GL_OBJ_PALETTE], 256, renderer->shadowPalette);
 	if (background->mosaic) {
 		glUniform2i(uniforms[GBA_GL_BG_MOSAIC], GBAMosaicControlGetBgV(renderer->mosaic) + 1, GBAMosaicControlGetBgH(renderer->mosaic) + 1);
 	} else {
