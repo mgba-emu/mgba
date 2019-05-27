@@ -389,7 +389,7 @@ void SettingsView::updateConfig() {
 	}
 
 	double nativeFps = double(GBA_ARM7TDMI_FREQUENCY) / double(VIDEO_TOTAL_LENGTH);
-	if (nativeFps - m_ui.fpsTarget->value() < 0.0001) {
+	if (fabs(nativeFps - m_ui.fpsTarget->value()) < 0.0001) {
 		m_controller->setOption("fpsTarget", QVariant(nativeFps));
 	} else {
 		saveSetting("fpsTarget", m_ui.fpsTarget);
