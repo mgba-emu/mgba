@@ -313,7 +313,10 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 		} else {
 			max = floor(1.0 / aspectY);
 		}
-		break;
+		if (max >= 1.0) {
+			break;
+		}
+		// Fall through
 	case SM_AF:
 		if (aspectX > aspectY) {
 			max = 1.0 / aspectX;
