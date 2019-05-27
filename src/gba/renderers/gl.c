@@ -13,7 +13,7 @@
 #include <mgba/internal/gba/renderers/cache-set.h>
 #include <mgba-util/memory.h>
 
-#define FLAG_CONST "const vec4 flagCoeff = vec4(64., 32., 16., 1.);\n"
+#define FLAG_CONST "const vec4 flagCoeff = vec4(32., 32., 16., 1.);\n"
 
 static void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer);
@@ -549,6 +549,11 @@ static const char* const _finalize =
 	"	ivec4 bottomFlags = topFlags;\n"
 	"	vec4 windowFlags = texelFetch(window, ivec2(texCoord * float(scale)), 0);\n"
 	"	int layerWindow = int(windowFlags.x * 128.);\n"
+	"	if ((layerWindow & 16) == 0) {\n"
+	"		vec4 pix = texelFetch(layers[4], ivec2(texCoord * float(scale)), 0);\n"
+	"		ivec4 inflags = ivec4(texelFetch(flags[4], ivec2(texCoord * float(scale)), 0) * flagCoeff);\n"
+	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
+	"	}\n"
 	"	if ((layerWindow & 1) == 0) {\n"
 	"		vec4 pix = texelFetch(layers[0], ivec2(texCoord * float(scale)), 0);\n"
 	"		ivec4 inflags = ivec4(texelFetch(flags[0], ivec2(texCoord * float(scale)), 0).xyz * flagCoeff.xyz, 0);\n"
@@ -567,11 +572,6 @@ static const char* const _finalize =
 	"	if ((layerWindow & 8) == 0) {\n"
 	"		vec4 pix = texelFetch(layers[3], ivec2(texCoord * float(scale)), 0);\n"
 	"		ivec4 inflags = ivec4(texelFetch(flags[3], ivec2(texCoord * float(scale)), 0).xyz * flagCoeff.xyz, 0);\n"
-	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
-	"	}\n"
-	"	if ((layerWindow & 16) == 0) {\n"
-	"		vec4 pix = texelFetch(layers[4], ivec2(texCoord * float(scale)), 0);\n"
-	"		ivec4 inflags = ivec4(texelFetch(flags[4], ivec2(texCoord * float(scale)), 0) * flagCoeff);\n"
 	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
 	"	}\n"
 	"	if ((layerWindow & 32) != 0) {\n"
@@ -1608,7 +1608,7 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	glUniform1i(uniforms[GBA_GL_OBJ_CHARBASE], charBase);
 	glUniform1i(uniforms[GBA_GL_OBJ_STRIDE], stride);
 	glUniform1i(uniforms[GBA_GL_OBJ_LOCALPALETTE], GBAObjAttributesCGetPalette(sprite->c));
-	glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c) << 3,
+	glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c),
 	                                          (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2) | (renderer->blendEffect * 4),
 	                                          renderer->blda, GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
 	if (GBAObjAttributesAIsTransformed(sprite->a)) {
@@ -1667,7 +1667,7 @@ void _prepareBackground(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBa
 	} else {
 		glUniform2i(uniforms[GBA_GL_BG_MOSAIC], 0, 0);
 	}
-	glUniform4i(uniforms[GBA_GL_BG_INFLAGS], (background->priority << 3) + (background->index << 1) + 1,
+	glUniform4i(uniforms[GBA_GL_BG_INFLAGS], background->priority,
 		                                     background->target1 | (background->target2 * 2) | (renderer->blendEffect * 4),
 		                                     renderer->blda, 0);
 	glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
