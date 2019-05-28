@@ -1389,7 +1389,7 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 	}
 	glEnable(GL_SCISSOR_TEST);
 
-	uint32_t backdrop = M_RGB5_TO_RGB8(glRenderer->d.palette[0]);
+	uint32_t backdrop = M_RGB5_TO_RGB8(glRenderer->shadowPalette[0]);
 	glViewport(0, 0, 1, GBA_VIDEO_VERTICAL_PIXELS);
 	glScissor(0, glRenderer->firstY, 1, y - glRenderer->firstY + 1);
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_BACKDROP]);
