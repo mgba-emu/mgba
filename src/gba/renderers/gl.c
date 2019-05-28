@@ -496,6 +496,75 @@ static const char* const _renderObj =
 	"	window = objwin.yzw;\n"
 	"}";
 
+static const struct GBAVideoGLUniform _uniformsWindow[] = {
+	{ "loc", GBA_GL_VS_LOC, },
+	{ "maxPos", GBA_GL_VS_MAXPOS, },
+	{ "dispcnt", GBA_GL_WIN_DISPCNT, },
+	{ "blend", GBA_GL_WIN_BLEND, },
+	{ "flags", GBA_GL_WIN_FLAGS, },
+	{ "win0", GBA_GL_WIN_WIN0, },
+	{ "win1", GBA_GL_WIN_WIN1, },
+	{ 0 }
+};
+
+static const char* const _renderWindow =
+	"in vec2 texCoord;\n"
+	"uniform int dispcnt;\n"
+	"uniform ivec2 blend;\n"
+	"uniform ivec3 flags;\n"
+	"uniform ivec4 win0[160];\n"
+	"uniform ivec4 win1[160];\n"
+	"OUT(0) out ivec3 window;\n"
+
+	"void crop(vec4 windowParams, int flags, inout ivec3 windowFlags) {\n"
+	"	bvec4 compare = lessThan(texCoord.xxyy, windowParams);\n"
+	"	compare = equal(compare, bvec4(true, false, true, false));\n"
+	"	if (any(compare)) {\n"
+	"		vec2 h = windowParams.xy;\n"
+	"		vec2 v = windowParams.zw;\n"
+	"		if (v.x > v.y) {\n"
+	"			if (compare.z && compare.w) {\n"
+	"				return;\n"
+	"			}\n"
+	"		} else if (compare.z || compare.w) {\n"
+	"			return;\n"
+	"		}\n"
+	"		if (h.x > h.y) {\n"
+	"			if (compare.x && compare.y) {\n"
+	"				return;\n"
+	"			}\n"
+	"		} else if (compare.x || compare.y) {\n"
+	"			return;\n"
+	"		}\n"
+	"	}\n"
+	"	windowFlags.x = flags;\n"
+	"}\n"
+
+	"vec4 interpolate(ivec4 win[160]) {\n"
+	"	vec4 bottom = vec4(win[int(texCoord.y) - 1]);\n"
+	"	vec4 top = vec4(win[int(texCoord.y)]);\n"
+	"	if (distance(top, bottom) > 40.) {\n"
+	"		return top;\n"
+	"	}\n"
+	"	return vec4(mix(bottom.xy, top.xy, fract(texCoord.y)), top.zw);\n"
+	"}\n"
+
+	"void main() {\n"
+	"	int dispflags = (dispcnt & 0x1F) | 0x20;\n"
+	"	if ((dispcnt & 0xE0) == 0) {\n"
+	"		window = ivec3(dispflags, blend);\n"
+	"	} else {\n"
+	"		ivec3 windowFlags = ivec3(flags.z, blend);\n"
+	"		if ((dispcnt & 0x40) != 0) { \n"
+	"			crop(interpolate(win1), flags.y, windowFlags);\n"
+	"		}\n"
+	"		if ((dispcnt & 0x20) != 0) { \n"
+	"			crop(interpolate(win0), flags.x, windowFlags);\n"
+	"		}\n"
+	"		window = windowFlags;\n"
+	"	}\n"
+	"}\n";
+
 static const struct GBAVideoGLUniform _uniformsFinalize[] = {
 	{ "loc", GBA_GL_VS_LOC, },
 	{ "maxPos", GBA_GL_VS_MAXPOS, },
@@ -805,6 +874,12 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	glBindFragDataLocation(glRenderer->objShader[1].program, 2, "window");
 #endif
 
+	shaderBuffer[1] = _renderWindow;
+	_compileShader(glRenderer, &glRenderer->windowShader, shaderBuffer, 2, vs, _uniformsWindow, log);
+#ifndef BUILD_GLES3
+	glBindFragDataLocation(glRenderer->windowShader.program, 0, "window");
+#endif
+
 	shaderBuffer[1] = _finalize;
 	_compileShader(glRenderer, &glRenderer->finalizeShader, shaderBuffer, 2, vs, _uniformsFinalize, log);
 
@@ -878,14 +953,16 @@ uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer,
 		GBAVideoCacheWriteVideoRegister(renderer->cache, address, value);
 	}
 
-	bool dirty = true;
+	bool dirty = false;
 	switch (address) {
 	case REG_DISPCNT:
 		value &= 0xFFF7;
+		dirty = true;
 		break;
 	case REG_BG0CNT:
 	case REG_BG1CNT:
 		value &= 0xDFFF;
+		dirty = true;
 		break;
 	case REG_BG0HOFS:
 	case REG_BG0VOFS:
@@ -896,87 +973,126 @@ uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer,
 	case REG_BG3HOFS:
 	case REG_BG3VOFS:
 		value &= 0x01FF;
+		dirty = true;
 		break;
 	case REG_BG2PA:
 		glRenderer->bg[2].affine.dx = value;
-		dirty = false;
 		break;
 	case REG_BG2PB:
 		glRenderer->bg[2].affine.dmx = value;
-		dirty = false;
 		break;
 	case REG_BG2PC:
 		glRenderer->bg[2].affine.dy = value;
-		dirty = false;
 		break;
 	case REG_BG2PD:
 		glRenderer->bg[2].affine.dmy = value;
-		dirty = false;
 		break;
 	case REG_BG2X_LO:
 		GBAVideoGLRendererWriteBGX_LO(&glRenderer->bg[2], value);
-		dirty = false;
 		break;
 	case REG_BG2X_HI:
 		GBAVideoGLRendererWriteBGX_HI(&glRenderer->bg[2], value);
-		dirty = false;
 		break;
 	case REG_BG2Y_LO:
 		GBAVideoGLRendererWriteBGY_LO(&glRenderer->bg[2], value);
-		dirty = false;
 		break;
 	case REG_BG2Y_HI:
 		GBAVideoGLRendererWriteBGY_HI(&glRenderer->bg[2], value);
-		dirty = false;
 		break;
 	case REG_BG3PA:
 		glRenderer->bg[3].affine.dx = value;
-		dirty = false;
 		break;
 	case REG_BG3PB:
 		glRenderer->bg[3].affine.dmx = value;
-		dirty = false;
 		break;
 	case REG_BG3PC:
 		glRenderer->bg[3].affine.dy = value;
-		dirty = false;
 		break;
 	case REG_BG3PD:
 		glRenderer->bg[3].affine.dmy = value;
-		dirty = false;
 		break;
 	case REG_BG3X_LO:
 		GBAVideoGLRendererWriteBGX_LO(&glRenderer->bg[3], value);
-		dirty = false;
 		break;
 	case REG_BG3X_HI:
 		GBAVideoGLRendererWriteBGX_HI(&glRenderer->bg[3], value);
-		dirty = false;
 		break;
 	case REG_BG3Y_LO:
 		GBAVideoGLRendererWriteBGY_LO(&glRenderer->bg[3], value);
-		dirty = false;
 		break;
 	case REG_BG3Y_HI:
 		GBAVideoGLRendererWriteBGY_HI(&glRenderer->bg[3], value);
-		dirty = false;
 		break;
 	case REG_BLDALPHA:
 		value &= 0x1F1F;
+		dirty = true;
 		break;
 	case REG_BLDY:
 		value &= 0x1F;
 		if (value > 0x10) {
 			value = 0x10;
 		}
+		dirty = true;
+		break;
+			case REG_WIN0H:
+		glRenderer->winN[0].h.end = value;
+		glRenderer->winN[0].h.start = value >> 8;
+		if (glRenderer->winN[0].h.start > GBA_VIDEO_HORIZONTAL_PIXELS && glRenderer->winN[0].h.start > glRenderer->winN[0].h.end) {
+			glRenderer->winN[0].h.start = 0;
+		}
+		if (glRenderer->winN[0].h.end > GBA_VIDEO_HORIZONTAL_PIXELS) {
+			glRenderer->winN[0].h.end = GBA_VIDEO_HORIZONTAL_PIXELS;
+			if (glRenderer->winN[0].h.start > GBA_VIDEO_HORIZONTAL_PIXELS) {
+				glRenderer->winN[0].h.start = GBA_VIDEO_HORIZONTAL_PIXELS;
+			}
+		}
+		break;
+	case REG_WIN1H:
+		glRenderer->winN[1].h.end = value;
+		glRenderer->winN[1].h.start = value >> 8;
+		if (glRenderer->winN[1].h.start > GBA_VIDEO_HORIZONTAL_PIXELS && glRenderer->winN[1].h.start > glRenderer->winN[1].h.end) {
+			glRenderer->winN[1].h.start = 0;
+		}
+		if (glRenderer->winN[1].h.end > GBA_VIDEO_HORIZONTAL_PIXELS) {
+			glRenderer->winN[1].h.end = GBA_VIDEO_HORIZONTAL_PIXELS;
+			if (glRenderer->winN[1].h.start > GBA_VIDEO_HORIZONTAL_PIXELS) {
+				glRenderer->winN[1].h.start = GBA_VIDEO_HORIZONTAL_PIXELS;
+			}
+		}
+		break;
+	case REG_WIN0V:
+		glRenderer->winN[0].v.end = value;
+		glRenderer->winN[0].v.start = value >> 8;
+		if (glRenderer->winN[0].v.start > GBA_VIDEO_VERTICAL_PIXELS && glRenderer->winN[0].v.start > glRenderer->winN[0].v.end) {
+			glRenderer->winN[0].v.start = 0;
+		}
+		if (glRenderer->winN[0].v.end > GBA_VIDEO_VERTICAL_PIXELS) {
+			glRenderer->winN[0].v.end = GBA_VIDEO_VERTICAL_PIXELS;
+			if (glRenderer->winN[0].v.start > GBA_VIDEO_VERTICAL_PIXELS) {
+				glRenderer->winN[0].v.start = GBA_VIDEO_VERTICAL_PIXELS;
+			}
+		}
+		break;
+	case REG_WIN1V:
+		glRenderer->winN[1].v.end = value;
+		glRenderer->winN[1].v.start = value >> 8;
+		if (glRenderer->winN[1].v.start > GBA_VIDEO_VERTICAL_PIXELS && glRenderer->winN[1].v.start > glRenderer->winN[1].v.end) {
+			glRenderer->winN[1].v.start = 0;
+		}
+		if (glRenderer->winN[1].v.end > GBA_VIDEO_VERTICAL_PIXELS) {
+			glRenderer->winN[1].v.end = GBA_VIDEO_VERTICAL_PIXELS;
+			if (glRenderer->winN[1].v.start > GBA_VIDEO_VERTICAL_PIXELS) {
+				glRenderer->winN[1].v.start = GBA_VIDEO_VERTICAL_PIXELS;
+			}
+		}
 		break;
 	case REG_WININ:
-		value &= 0x3F3F;
-		break;
 	case REG_WINOUT:
 		value &= 0x3F3F;
+		dirty = true;
 		break;
 	default:
+		dirty = true;
 		break;
 	}
 	if (glRenderer->shadowRegs[address >> 1] == value) {
@@ -1049,58 +1165,6 @@ void _cleanRegister(struct GBAVideoGLRenderer* glRenderer, int address, uint16_t
 		break;
 	case REG_BLDY:
 		glRenderer->bldy = value;
-		break;
-	case REG_WIN0H:
-		glRenderer->winN[0].h[0].end = value;
-		glRenderer->winN[0].h[0].start = value >> 8;
-		if (glRenderer->winN[0].h[0].start > GBA_VIDEO_HORIZONTAL_PIXELS && glRenderer->winN[0].h[0].start > glRenderer->winN[0].h[0].end) {
-			glRenderer->winN[0].h[0].start = 0;
-		}
-		if (glRenderer->winN[0].h[0].end > GBA_VIDEO_HORIZONTAL_PIXELS) {
-			glRenderer->winN[0].h[0].end = GBA_VIDEO_HORIZONTAL_PIXELS;
-			if (glRenderer->winN[0].h[0].start > GBA_VIDEO_HORIZONTAL_PIXELS) {
-				glRenderer->winN[0].h[0].start = GBA_VIDEO_HORIZONTAL_PIXELS;
-			}
-		}
-		break;
-	case REG_WIN1H:
-		glRenderer->winN[1].h[0].end = value;
-		glRenderer->winN[1].h[0].start = value >> 8;
-		if (glRenderer->winN[1].h[0].start > GBA_VIDEO_HORIZONTAL_PIXELS && glRenderer->winN[1].h[0].start > glRenderer->winN[1].h[0].end) {
-			glRenderer->winN[1].h[0].start = 0;
-		}
-		if (glRenderer->winN[1].h[0].end > GBA_VIDEO_HORIZONTAL_PIXELS) {
-			glRenderer->winN[1].h[0].end = GBA_VIDEO_HORIZONTAL_PIXELS;
-			if (glRenderer->winN[1].h[0].start > GBA_VIDEO_HORIZONTAL_PIXELS) {
-				glRenderer->winN[1].h[0].start = GBA_VIDEO_HORIZONTAL_PIXELS;
-			}
-		}
-		break;
-	case REG_WIN0V:
-		glRenderer->winN[0].v.end = value;
-		glRenderer->winN[0].v.start = value >> 8;
-		if (glRenderer->winN[0].v.start > GBA_VIDEO_VERTICAL_PIXELS && glRenderer->winN[0].v.start > glRenderer->winN[0].v.end) {
-			glRenderer->winN[0].v.start = 0;
-		}
-		if (glRenderer->winN[0].v.end > GBA_VIDEO_VERTICAL_PIXELS) {
-			glRenderer->winN[0].v.end = GBA_VIDEO_VERTICAL_PIXELS;
-			if (glRenderer->winN[0].v.start > GBA_VIDEO_VERTICAL_PIXELS) {
-				glRenderer->winN[0].v.start = GBA_VIDEO_VERTICAL_PIXELS;
-			}
-		}
-		break;
-	case REG_WIN1V:
-		glRenderer->winN[1].v.end = value;
-		glRenderer->winN[1].v.start = value >> 8;
-		if (glRenderer->winN[1].v.start > GBA_VIDEO_VERTICAL_PIXELS && glRenderer->winN[1].v.start > glRenderer->winN[1].v.end) {
-			glRenderer->winN[1].v.start = 0;
-		}
-		if (glRenderer->winN[1].v.end > GBA_VIDEO_VERTICAL_PIXELS) {
-			glRenderer->winN[1].v.end = GBA_VIDEO_VERTICAL_PIXELS;
-			if (glRenderer->winN[1].v.start > GBA_VIDEO_VERTICAL_PIXELS) {
-				glRenderer->winN[1].v.start = GBA_VIDEO_VERTICAL_PIXELS;
-			}
-		}
 		break;
 	case REG_WININ:
 		glRenderer->winN[0].control = value;
@@ -1223,8 +1287,6 @@ static bool _needsVramUpload(struct GBAVideoGLRenderer* renderer, int y) {
 void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 
-	memcpy(&glRenderer->affine[0][y], &glRenderer->bg[2].affine, sizeof(struct GBAVideoGLAffine));
-	memcpy(&glRenderer->affine[1][y], &glRenderer->bg[3].affine, sizeof(struct GBAVideoGLAffine));
 	if (GBARegisterDISPCNTGetMode(glRenderer->dispcnt) != 0) {
 		if (glRenderer->firstAffine < 0) {
 			glRenderer->firstAffine = y;
@@ -1243,9 +1305,6 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		glRenderer->firstY = y;
 	}
 
-	memcpy(&glRenderer->winN[0].h[1], &glRenderer->winN[0].h[0], sizeof(struct GBAVideoWindowRegion));
-	memcpy(&glRenderer->winN[1].h[1], &glRenderer->winN[1].h[0], sizeof(struct GBAVideoWindowRegion));
-
 	int i;
 	for (i = 0; i < 0x30; ++i) {
 		if (!(glRenderer->regsDirty & (1ULL << i))) {
@@ -1254,6 +1313,17 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		_cleanRegister(glRenderer, i << 1, glRenderer->shadowRegs[i]);
 	}
 	glRenderer->regsDirty = 0;
+
+	memcpy(&glRenderer->affine[0][y], &glRenderer->bg[2].affine, sizeof(struct GBAVideoGLAffine));
+	memcpy(&glRenderer->affine[1][y], &glRenderer->bg[3].affine, sizeof(struct GBAVideoGLAffine));
+	glRenderer->winNHistory[0][y * 4 + 0] = glRenderer->winN[0].h.start;
+	glRenderer->winNHistory[0][y * 4 + 1] = glRenderer->winN[0].h.end;
+	glRenderer->winNHistory[0][y * 4 + 2] = glRenderer->winN[0].v.start;
+	glRenderer->winNHistory[0][y * 4 + 3] = glRenderer->winN[0].v.end;
+	glRenderer->winNHistory[1][y * 4 + 0] = glRenderer->winN[1].h.start;
+	glRenderer->winNHistory[1][y * 4 + 1] = glRenderer->winN[1].h.end;
+	glRenderer->winNHistory[1][y * 4 + 2] = glRenderer->winN[1].v.start;
+	glRenderer->winNHistory[1][y * 4 + 3] = glRenderer->winN[1].v.end;
 
 	if (glRenderer->paletteDirty) {
 		for (i = 0; i < 512; ++i) {
@@ -1284,9 +1354,6 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	}
 
 	if (y == 0) {
-		memcpy(&glRenderer->winN[0].h[1], &glRenderer->winN[0].h[0], sizeof(struct GBAVideoWindowRegion));
-		memcpy(&glRenderer->winN[1].h[1], &glRenderer->winN[1].h[0], sizeof(struct GBAVideoWindowRegion));
-
 		glDisable(GL_SCISSOR_TEST);
 		glClearColor(0, 0, 0, 0);
 #ifdef BUILD_GLES3
@@ -1758,68 +1825,23 @@ void GBAVideoGLRendererDrawBackgroundMode5(struct GBAVideoGLRenderer* renderer, 
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
 
-static void _scissorWindow(struct GBAVideoGLRenderer* renderer, int window, int start, int end, int y, int lines) {
-	if (start > end) {
-		_scissorWindow(renderer, window, start, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, y, lines);
-		_scissorWindow(renderer, window, 0, end, y, lines);
-		return;
-	}
-	glScissor(start, y, end - start, lines);
-	glClearBufferiv(GL_COLOR, 0, (GLint[]) { window, renderer->bldb, renderer->bldy, 0 });
-}
-
-static void _scissorWindowN(struct GBAVideoGLRenderer* renderer, const struct GBAVideoGLWindowN* window, const struct GBAVideoWindowRegion* y, int dispcnt) {
-	int sdelta = window->h[0].start - window->h[1].start;
-	int edelta = window->h[0].end - window->h[1].end;
-	int maxDelta = 0;
-	if (sdelta > maxDelta) {
-		maxDelta = sdelta;
-	} else if (-sdelta > maxDelta) {
-		maxDelta = -sdelta;
-	}
-	if (edelta > maxDelta) {
-		maxDelta = edelta;
-	} else if (-edelta > maxDelta) {
-		maxDelta = -edelta;
-	}
-	int startY = y->start;
-	int endY = y->end;
-	if (startY < window->v.start) {
-		startY = window->v.start;
-	}
-	if (endY >= window->v.end) {
-		endY = window->v.end - 1;
-	}
-	if (!(sdelta | edelta) || maxDelta >= GBA_VIDEO_VERTICAL_PIXELS / 2) {
-		_scissorWindow(renderer, window->control & dispcnt, window->h[0].start * renderer->scale, window->h[0].end * renderer->scale, startY * renderer->scale, (endY - startY + 1) * renderer->scale);
-	} else {
-		int i;
-		for (i = 0; i < renderer->scale * (endY - startY + 1); ++i) {
-			int start = window->h[1].start * renderer->scale + sdelta * i;
-			int end = window->h[1].end * renderer->scale + edelta * i;
-			_scissorWindow(renderer, window->control & dispcnt, start, end, startY * renderer->scale + i, 1);
-		}
-	}
-}
-
 void GBAVideoGLRendererDrawWindow(struct GBAVideoGLRenderer* renderer, int y) {
+	const struct GBAVideoGLShader* shader = &renderer->windowShader;
+	const GLuint* uniforms = shader->uniforms;
 	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[GBA_GL_FBO_WINDOW]);
-	int dispcnt = ((renderer->dispcnt >> 8) & 0x1F) | 0x20;
-	if (!(renderer->dispcnt & 0xE000)) {
-		_scissorWindow(renderer, dispcnt, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, renderer->firstY * renderer->scale, (y - renderer->firstY + 1) * renderer->scale);
-	} else {
-		_scissorWindow(renderer, renderer->winout & dispcnt, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, renderer->firstY * renderer->scale, (y - renderer->firstY + 1) * renderer->scale);
-		struct GBAVideoWindowRegion yRegion = {
-			y,
-			renderer->firstY
-		};
-		if (GBARegisterDISPCNTIsWin1Enable(renderer->dispcnt) && y >= renderer->winN[1].v.start && renderer->firstY < renderer->winN[1].v.end) {
-			_scissorWindowN(renderer, &renderer->winN[1], &yRegion, dispcnt);
-		}
-		if (GBARegisterDISPCNTIsWin0Enable(renderer->dispcnt) && y >= renderer->winN[0].v.start && renderer->firstY < renderer->winN[0].v.end) {
-			_scissorWindowN(renderer, &renderer->winN[0], &yRegion, dispcnt);
-		}
-	}
+	glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, GBA_VIDEO_VERTICAL_PIXELS * renderer->scale);
+	glScissor(0, renderer->firstY * renderer->scale, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, renderer->scale * (y - renderer->firstY + 1));
+	glUseProgram(shader->program);
+	glBindVertexArray(shader->vao);
+	glUniform2i(uniforms[GBA_GL_VS_LOC], y - renderer->firstY + 1, renderer->firstY);
+	glUniform2i(uniforms[GBA_GL_VS_MAXPOS], GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+	glUniform1i(uniforms[GBA_GL_WIN_DISPCNT], renderer->dispcnt >> 8);
+	glUniform2i(uniforms[GBA_GL_WIN_BLEND], renderer->bldb, renderer->bldy);
+	glUniform3i(uniforms[GBA_GL_WIN_FLAGS], renderer->winN[0].control, renderer->winN[1].control, renderer->winout);
+	glUniform4iv(uniforms[GBA_GL_WIN_WIN0], GBA_VIDEO_VERTICAL_PIXELS, renderer->winNHistory[0]);
+	glUniform4iv(uniforms[GBA_GL_WIN_WIN1], GBA_VIDEO_VERTICAL_PIXELS, renderer->winNHistory[1]);
+	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 #endif

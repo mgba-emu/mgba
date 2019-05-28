@@ -112,6 +112,12 @@ enum {
 	GBA_GL_OBJ_OBJWIN,
 	GBA_GL_OBJ_MOSAIC,
 
+	GBA_GL_WIN_DISPCNT = 2,
+	GBA_GL_WIN_BLEND,
+	GBA_GL_WIN_FLAGS,
+	GBA_GL_WIN_WIN0,
+	GBA_GL_WIN_WIN1,
+
 	GBA_GL_FINALIZE_SCALE = 2,
 	GBA_GL_FINALIZE_LAYERS,
 	GBA_GL_FINALIZE_FLAGS,
@@ -157,6 +163,7 @@ struct GBAVideoGLRenderer {
 
 	struct GBAVideoGLShader bgShader[6];
 	struct GBAVideoGLShader objShader[2];
+	struct GBAVideoGLShader windowShader;
 	struct GBAVideoGLShader finalizeShader;
 
 	GBARegisterDISPCNT dispcnt;
@@ -173,10 +180,12 @@ struct GBAVideoGLRenderer {
 	GBAMosaicControl mosaic;
 
 	struct GBAVideoGLWindowN {
-		struct GBAVideoWindowRegion h[2];
+		struct GBAVideoWindowRegion h;
 		struct GBAVideoWindowRegion v;
 		GBAWindowControl control;
 	} winN[2];
+
+	GLint winNHistory[2][GBA_VIDEO_VERTICAL_PIXELS * 4];
 
 	GBAWindowControl winout;
 	GBAWindowControl objwin;
