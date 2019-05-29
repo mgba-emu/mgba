@@ -394,8 +394,9 @@ void mPSP2LoadROM(struct mGUIRunner* runner) {
 	}
 
 	int fakeBool;
-	mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool);
-	interframeBlending = fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
+		interframeBlending = fakeBool;
+	}
 
 	MutexInit(&audioContext.mutex);
 	ConditionInit(&audioContext.cond);

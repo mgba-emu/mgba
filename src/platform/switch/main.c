@@ -289,8 +289,9 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	}
 
 	int fakeBool;
-	mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool);
-	interframeBlending = fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
+		interframeBlending = fakeBool;
+	}
 
 	rumble.up = 0;
 	rumble.down = 0;

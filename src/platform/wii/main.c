@@ -859,8 +859,9 @@ void _unpaused(struct mGUIRunner* runner) {
 		}
 	}
 	int fakeBool;
-	mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool);
-	interframeBlending = fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
+		interframeBlending = fakeBool;
+	}
 
 	float stretch;
 	if (mCoreConfigGetFloatValue(&runner->config, "stretchWidth", &stretch)) {
