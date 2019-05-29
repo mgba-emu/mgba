@@ -87,6 +87,7 @@ static void _setup(struct mGUIRunner* runner);
 static void _gameLoaded(struct mGUIRunner* runner);
 static void _gameUnloaded(struct mGUIRunner* runner);
 static void _unpaused(struct mGUIRunner* runner);
+static void _prepareForFrame(struct mGUIRunner* runner);
 static void _drawFrame(struct mGUIRunner* runner, bool faded);
 static uint16_t _pollGameInput(struct mGUIRunner* runner);
 static void _setFrameLimiter(struct mGUIRunner* runner, bool limit);
@@ -110,6 +111,8 @@ static uint16_t* texmem;
 static GXTexObj tex;
 static uint16_t* rescaleTexmem;
 static GXTexObj rescaleTex;
+static uint16_t* interframeTexmem;
+static GXTexObj interframeTex;
 static int32_t tiltX;
 static int32_t tiltY;
 static int32_t gyroZ;
@@ -118,6 +121,7 @@ static uint32_t referenceRetraceCount;
 static bool frameLimiter = true;
 static int scaleFactor;
 static unsigned corew, coreh;
+static bool interframeBlending = true;
 
 uint32_t* romBuffer;
 size_t romBufferSize;
@@ -277,10 +281,16 @@ int main(int argc, char* argv[]) {
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S16, 0);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
 
+	GX_SetNumTevStages(1);
 	GX_SetNumChans(1);
 	GX_SetNumTexGens(1);
 	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+	GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
 	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+	GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_DIVIDE_2, GX_TRUE, GX_TEVPREV);
+	GX_SetTevAlphaOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_TEXC, GX_CC_ONE, GX_CC_CPREV);
+	GX_SetTevAlphaIn(GX_TEVSTAGE1, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
 
 	GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
 	GX_InvVtxCache();
@@ -298,6 +308,8 @@ int main(int argc, char* argv[]) {
 
 	texmem = memalign(32, TEX_W * TEX_H * BYTES_PER_PIXEL);
 	GX_InitTexObj(&tex, texmem, TEX_W, TEX_H, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	interframeTexmem = memalign(32, TEX_W * TEX_H * BYTES_PER_PIXEL);
+	GX_InitTexObj(&interframeTex, interframeTexmem, TEX_W, TEX_H, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	rescaleTexmem = memalign(32, TEX_W * TEX_H * 4 * BYTES_PER_PIXEL);
 	GX_InitTexObj(&rescaleTex, rescaleTexmem, TEX_W * 2, TEX_H * 2, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	GX_InitTexObjFilterMode(&rescaleTex, GX_LINEAR, GX_LINEAR);
@@ -519,7 +531,7 @@ int main(int argc, char* argv[]) {
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,
 		.gameUnloaded = _gameUnloaded,
-		.prepareForFrame = 0,
+		.prepareForFrame = _prepareForFrame,
 		.drawFrame = _drawFrame,
 		.paused = _gameUnloaded,
 		.unpaused = _unpaused,
@@ -584,6 +596,7 @@ int main(int argc, char* argv[]) {
 	free(fifo);
 	free(texmem);
 	free(rescaleTexmem);
+	free(interframeTexmem);
 
 	free(outputBuffer);
 	GUIFontDestroy(font);
@@ -728,6 +741,7 @@ void _reproj2(int w, int h) {
 }
 
 void _guiPrepare(void) {
+	GX_SetNumTevStages(1);
 	_reproj2(vmode->fbWidth * guiScale * wAdjust, vmode->efbHeight * guiScale * hAdjust);
 }
 
@@ -811,6 +825,7 @@ void _gameLoaded(struct mGUIRunner* runner) {
 		}
 	}
 	memset(texmem, 0, TEX_W * TEX_H * BYTES_PER_PIXEL);
+	memset(interframeTexmem, 0, TEX_W * TEX_H * BYTES_PER_PIXEL);
 	_unpaused(runner);
 }
 
@@ -843,12 +858,22 @@ void _unpaused(struct mGUIRunner* runner) {
 			break;
 		}
 	}
+	int fakeBool;
+	mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool);
+	interframeBlending = fakeBool;
+
 	float stretch;
 	if (mCoreConfigGetFloatValue(&runner->config, "stretchWidth", &stretch)) {
 		wStretch = fminf(1.0f, fmaxf(0.5f, stretch));
 	}
 	if (mCoreConfigGetFloatValue(&runner->config, "stretchHeight", &stretch)) {
 		hStretch = fminf(1.0f, fmaxf(0.5f, stretch));
+	}
+}
+
+void _prepareForFrame(struct mGUIRunner* runner) {
+	if (interframeBlending) {
+		memcpy(interframeTexmem, texmem, TEX_W * TEX_H * BYTES_PER_PIXEL);
 	}
 }
 
@@ -870,14 +895,24 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 		}
 	}
 	DCFlushRange(texdest, TEX_W * TEX_H * BYTES_PER_PIXEL);
+	if (interframeBlending) {
+		DCFlushRange(interframeTexmem, TEX_W * TEX_H * BYTES_PER_PIXEL);
+	}
 
-	if (faded) {
+	if (faded || interframeBlending) {
 		GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
 	} else {
 		GX_SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_NOOP);
 	}
 	GX_InvalidateTexAll();
-	GX_LoadTexObj(&tex, GX_TEXMAP0);
+	if (interframeBlending) {
+		GX_LoadTexObj(&interframeTex, GX_TEXMAP0);
+		GX_LoadTexObj(&tex, GX_TEXMAP1);
+		GX_SetNumTevStages(2);
+	} else {
+		GX_LoadTexObj(&tex, GX_TEXMAP0);
+		GX_SetNumTevStages(1);
+	}
 
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 	s16 vertWidth = corew;
@@ -910,6 +945,10 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 		GX_SetTexCopyDst(TEX_W * 2, TEX_H * 2, GX_TF_RGB565, GX_FALSE);
 		GX_CopyTex(rescaleTexmem, GX_TRUE);
 		GX_LoadTexObj(&rescaleTex, GX_TEXMAP0);
+		GX_SetNumTevStages(1);
+		if (!faded) {
+			GX_SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_NOOP);
+		}
 	}
 
 	int hfactor = (vmode->fbWidth * wStretch) / (corew * wAdjust);
