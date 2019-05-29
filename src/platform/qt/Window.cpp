@@ -773,18 +773,15 @@ void Window::gameStarted() {
 	}
 	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
 
-
 #ifdef USE_DISCORD_RPC
 	DiscordCoordinator::gameStarted(m_controller);
 #endif
 }
 
 void Window::gameStopped() {
-#ifdef M_CORE_GBA
 	for (Action* action : m_platformActions) {
 		action->setEnabled(true);
 	}
-#endif
 	for (Action* action : m_gameActions) {
 		action->setEnabled(false);
 	}

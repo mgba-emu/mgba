@@ -109,7 +109,6 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 		ds.setWidth(ds.width() - ds.width() % m_width);
 		ds.setHeight(ds.height() - ds.height() % m_height);
 	}
-#warning TODO: Add interframeBlending
 	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
 	QRect full(origin, ds);
 
