@@ -1375,6 +1375,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	ConfigOption* mute = m_config->addOption("mute");
 	mute->addBoolean(tr("Mute"), &m_actions, "av");
 	mute->connect([this](const QVariant& value) {
+		m_config->setOption("fastForwardMute", static_cast<bool>(value.toInt()));
 		reloadConfig();
 	}, this);
 	m_config->updateOption("mute");

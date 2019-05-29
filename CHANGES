@@ -43,6 +43,7 @@ Misc:
  - Qt: Add native FPS button to settings view
  - Qt: Improve sync code
  - Switch: Dynamic display resizing
+ - Qt: Make mute menu option also toggle fast-forward mute (fixes mgba.io/i/1424)
 
 0.7.2: (2019-05-25)
 Emulation fixes:
