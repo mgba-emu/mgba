@@ -49,9 +49,11 @@ public:
 	virtual bool isDrawing() const = 0;
 	virtual bool supportsShaders() const = 0;
 	virtual VideoShader* shaders() = 0;
-	virtual VideoProxy* videoProxy() { return nullptr; }
 	virtual int framebufferHandle() { return -1; }
 
+	virtual void setVideoProxy(std::shared_ptr<VideoProxy> proxy) { m_videoProxy = proxy; }
+	std::shared_ptr<VideoProxy> videoProxy() { return m_videoProxy; }
+	
 signals:
 	void showCursor();
 	void hideCursor();
@@ -88,6 +90,7 @@ private:
 	bool m_interframeBlending = false;
 	bool m_filter = false;
 	QTimer m_mouseTimer;
+	std::shared_ptr<VideoProxy> m_videoProxy;
 };
 
 }

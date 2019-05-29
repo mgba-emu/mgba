@@ -780,7 +780,6 @@ void Window::gameStarted() {
 }
 
 void Window::gameStopped() {
-	m_controller.reset();
 #ifdef M_CORE_GBA
 	for (Action* action : m_platformActions) {
 		action->setEnabled(true);
@@ -816,6 +815,10 @@ void Window::gameStopped() {
 		m_audioProcessor.reset();
 	}
 	m_display->stopDrawing();
+
+	m_controller.reset();
+
+	m_display->setVideoProxy({});
 	if (m_pendingClose) {
 		m_display.reset();
 		close();
@@ -1739,9 +1742,9 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	}
 
 	if (m_config->getOption("hwaccelVideo").toInt() && m_display->supportsShaders() && controller->supportsFeature(CoreController::Feature::OPENGL)) {
-		if (m_display->videoProxy()) {
-			m_display->videoProxy()->attach(controller);
-		}
+		std::shared_ptr<VideoProxy> proxy = std::make_shared<VideoProxy>();
+		m_display->setVideoProxy(proxy);
+		proxy->attach(controller);
 
 		int fb = m_display->framebufferHandle();
 		if (fb >= 0) {

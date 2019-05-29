@@ -57,7 +57,7 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 		m_gl->create();
 	}
 
-	m_painter = new PainterGL(&m_videoProxy, windowHandle(), m_gl);
+	m_painter = new PainterGL(windowHandle(), m_gl);
 	setUpdatesEnabled(false); // Prevent paint events, which can cause race conditions
 }
 
@@ -95,7 +95,9 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	m_gl->doneCurrent();
 	m_gl->moveToThread(m_drawThread);
 	m_painter->moveToThread(m_drawThread);
-	m_videoProxy.moveToThread(m_drawThread);
+	if (videoProxy()) {
+		videoProxy()->moveToThread(m_drawThread);
+	}
 	connect(m_drawThread, &QThread::started, m_painter, &PainterGL::start);
 	m_drawThread->start();
 
@@ -217,21 +219,21 @@ void DisplayGL::resizePainter() {
 	}
 }
 
-VideoProxy* DisplayGL::videoProxy() {
-	if (supportsShaders()) {
-		return &m_videoProxy;
+void DisplayGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
+	Display::setVideoProxy(proxy);
+	if (m_drawThread && proxy) {
+		proxy->moveToThread(m_drawThread);
 	}
-	return nullptr;
+	m_painter->setVideoProxy(proxy);
 }
 
 int DisplayGL::framebufferHandle() {
 	return m_painter->glTex();
 }
 
-PainterGL::PainterGL(VideoProxy* proxy, QWindow* surface, QOpenGLContext* parent)
+PainterGL::PainterGL(QWindow* surface, QOpenGLContext* parent)
 	: m_gl(parent)
 	, m_surface(surface)
-	, m_videoProxy(proxy)
 {
 #ifdef BUILD_GL
 	mGLContext* glBackend;
@@ -425,7 +427,9 @@ void PainterGL::stop() {
 	m_gl->moveToThread(m_surface->thread());
 	m_context.reset();
 	moveToThread(m_gl->thread());
-	m_videoProxy->moveToThread(m_gl->thread());
+	if (m_videoProxy) {
+		m_videoProxy->moveToThread(m_gl->thread());
+	}
 }
 
 void PainterGL::pause() {
@@ -514,6 +518,10 @@ void PainterGL::dequeueAll() {
 		m_backend->postFrame(m_backend, buffer);
 	}
 	m_mutex.unlock();
+}
+
+void PainterGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
+	m_videoProxy = proxy;
 }
 
 void PainterGL::setShaders(struct VDir* dir) {
