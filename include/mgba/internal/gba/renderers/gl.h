@@ -45,7 +45,6 @@ struct GBAVideoGLBackground {
 	GLuint fbo;
 	GLuint tex;
 	GLuint flags;
-	GLuint scanlineTex;
 
 	unsigned index;
 	int enabled;
@@ -64,6 +63,9 @@ struct GBAVideoGLBackground {
 	int32_t refy;
 
 	struct GBAVideoGLAffine affine;
+
+	GLint scanlineAffine[GBA_VIDEO_VERTICAL_PIXELS * 4];
+	GLint scanlineOffset[GBA_VIDEO_VERTICAL_PIXELS];
 };
 
 enum {
@@ -81,8 +83,6 @@ enum {
 	GBA_GL_TEX_BACKDROP_COLOR,
 	GBA_GL_TEX_BACKDROP_FLAGS,
 	GBA_GL_TEX_WINDOW,
-	GBA_GL_TEX_AFFINE_2,
-	GBA_GL_TEX_AFFINE_3,
 	GBA_GL_TEX_MAX
 };
 
@@ -140,7 +140,6 @@ struct GBAVideoGLRenderer {
 	uint32_t* temporaryBuffer;
 
 	struct GBAVideoGLBackground bg[4];
-	struct GBAVideoGLAffine affine[2][GBA_VIDEO_VERTICAL_PIXELS];
 
 	int oamMax;
 	bool oamDirty;
