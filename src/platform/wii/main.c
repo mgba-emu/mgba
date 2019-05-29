@@ -479,7 +479,7 @@ int main(int argc, char* argv[]) {
 				.submenu = 0,
 				.state = 7,
 				.validStates = (const char*[]) {
-					"1/2x", "0.6x", "1/3x", "0.7x", "1/4x", "0.8x", "0.9x", "1.0x"
+					"1/2x", "0.6x", "2/3x", "0.7x", "3/4x", "0.8x", "0.9x", "1.0x"
 				},
 				.stateMappings = (const struct GUIVariant[]) {
 					GUI_V_F(0.5f),
