@@ -1,6 +1,7 @@
 0.7.3: (Future)
 Emulation fixes:
  - GBA Video: Fix wrapped sprite mosaic clamping (fixes mgba.io/i/1432)
+ - GBA Memory: Fix STM to VRAM (fixes mgba.io/i/1430)
 Other fixes:
  - Switch: Fix threading-related crash on second launch
  - Qt: Fix FPS target maxing out at 59.727 (fixes mgba.io/i/1421)
