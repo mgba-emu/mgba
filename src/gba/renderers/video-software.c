@@ -836,7 +836,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			}
 			if (GBAObjAttributesAIsMosaic(sprite->obj.a) && mosaicV > 1) {
 				localY = mosaicY;
-				if (localY < sprite->y && sprite->y < GBA_VIDEO_VERTICAL_PIXELS) {
+				if (localY < sprite->y && sprite->y < VIDEO_VERTICAL_PIXELS) {
 					localY = sprite->y;
 				}
 				if (localY >= (sprite->endY & 0xFF)) {
