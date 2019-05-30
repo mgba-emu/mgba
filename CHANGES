@@ -18,6 +18,7 @@ Emulation fixes:
  - GB Video: Delay LYC STAT check (fixes mgba.io/i/1331)
  - GB Video: Fix window being enabled mid-scanline (fixes mgba.io/i/1328)
  - GB I/O: Filter IE top bits properly (fixes mgba.io/i/1329)
+ - GBA Video: Fix wrapped sprite mosaic clamping (fixes mgba.io/i/1432)
 Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
