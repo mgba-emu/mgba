@@ -49,7 +49,7 @@ CoreController* CoreManager::loadGame(const QString& path) {
 				vf = vfclone;
 			}
 			dir->close(dir);
-			loadGame(vf, fname, base);
+			return loadGame(vf, fname, base);
 		} else {
 			LOG(QT, ERROR) << tr("Failed to open game file: %1").arg(path);
 		}

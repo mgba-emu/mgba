@@ -8,6 +8,7 @@
 #include <mgba/core/core.h>
 #include <mgba/internal/debugger/symbols.h>
 #include <mgba/internal/gb/cheats.h>
+#include <mgba/internal/gb/debugger/debugger.h>
 #include <mgba/internal/gb/debugger/symbols.h>
 #include <mgba/internal/gb/extra/cli.h>
 #include <mgba/internal/gb/io.h>
@@ -35,20 +36,6 @@ static const struct mCoreChannelInfo _GBAudioChannels[] = {
 	{ 1, "ch2", "Channel 2", "Square" },
 	{ 2, "ch3", "Channel 3", "PCM" },
 	{ 3, "ch4", "Channel 4", "Noise" },
-};
-
-static const struct LR35902Segment _GBSegments[] = {
-	{ .name = "ROM", .start = GB_BASE_CART_BANK1, .end = GB_BASE_VRAM },
-	{ .name = "RAM", .start = GB_BASE_EXTERNAL_RAM, .end = GB_BASE_WORKING_RAM_BANK0 },
-	{ 0 }
-};
-
-static const struct LR35902Segment _GBCSegments[] = {
-	{ .name = "ROM", .start = GB_BASE_CART_BANK1, .end = GB_BASE_VRAM },
-	{ .name = "RAM", .start = GB_BASE_EXTERNAL_RAM, .end = GB_BASE_WORKING_RAM_BANK0 },
-	{ .name = "WRAM", .start = GB_BASE_WORKING_RAM_BANK1, .end = 0xE000 },
-	{ .name = "VRAM", .start = GB_BASE_VRAM, .end = GB_BASE_EXTERNAL_RAM },
-	{ 0 }
 };
 
 static const struct mCoreMemoryBlock _GBMemoryBlocks[] = {
@@ -211,6 +198,7 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	mCoreConfigCopyValue(&core->config, config, "gb.model");
 	mCoreConfigCopyValue(&core->config, config, "sgb.model");
 	mCoreConfigCopyValue(&core->config, config, "cgb.model");
+	mCoreConfigCopyValue(&core->config, config, "useCgbColors");
 	mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
 
 	int fakeBool = 0;
@@ -359,10 +347,13 @@ static void _GBCoreReset(struct mCore* core) {
 	}
 
 	if (gb->memory.rom) {
+		int doColorOverride = 0;
+		mCoreConfigGetIntValue(&core->config, "useCgbColors", &doColorOverride);
+
 		struct GBCartridgeOverride override;
 		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 		override.headerCrc32 = doCrc32(cart, sizeof(*cart));
-		if (GBOverrideFind(gbcore->overrides, &override)) {
+		if (GBOverrideFind(gbcore->overrides, &override) || (doColorOverride && GBOverrideColorFind(&override))) {
 			GBOverrideApply(gb, &override);
 		}
 	}
@@ -688,12 +679,7 @@ static struct mDebuggerPlatform* _GBCoreDebuggerPlatform(struct mCore* core) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	struct GB* gb = core->board;
 	if (!gbcore->debuggerPlatform) {
-		struct LR35902Debugger* platform = (struct LR35902Debugger*) LR35902DebuggerPlatformCreate();
-		if (gb->model >= GB_MODEL_CGB) {
-			platform->segments = _GBCSegments;
-		} else {
-			platform->segments = _GBSegments;
-		}
+		struct LR35902Debugger* platform = (struct LR35902Debugger*) GBDebuggerCreate(gb);
 		gbcore->debuggerPlatform = &platform->d;
 	}
 	return gbcore->debuggerPlatform;
@@ -817,10 +803,10 @@ static void _GBCoreEnableVideoLayer(struct mCore* core, size_t id, bool enable) 
 		gb->video.renderer->disableBG = !enable;
 		break;
 	case 1:
-		gb->video.renderer->disableOBJ = !enable;
+		gb->video.renderer->disableWIN = !enable;
 		break;
 	case 2:
-		gb->video.renderer->disableWIN = !enable;
+		gb->video.renderer->disableOBJ = !enable;
 		break;
 	default:
 		break;

@@ -249,6 +249,17 @@ else ifneq (,$(filter $(platform), ps3 sncps3 psl1ght))
       AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
    endif
 
+# PS2
+else ifeq ($(platform), ps2)
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
+   CC = ee-gcc$(EXE_EXT)
+   AR = ee-ar$(EXE_EXT)
+   PLATFORM_DEFINES := -DPS2 -DCC_RESAMPLER
+   CFLAGS += -G0 -Ips2/ -I$(PS2SDK)/ee/include -I$(PS2SDK)/common/include
+   STATIC_LINKING = 1
+   DEFINES += -std=c99
+	HAVE_VFS_FD = 0
+
 # PSP
 else ifeq ($(platform), psp1)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a

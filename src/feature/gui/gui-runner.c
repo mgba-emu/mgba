@@ -271,7 +271,17 @@ static void _log(struct mLogger* logger, int category, enum mLogLevel level, con
 	if (len >= sizeof(log2)) {
 		len = sizeof(log2) - 1;
 	}
-	guiLogger->vf->write(guiLogger->vf, log2, len);
+	if (guiLogger->vf->write(guiLogger->vf, log2, len) < 0) {
+		char path[PATH_MAX];
+		mCoreConfigDirectory(path, PATH_MAX);
+		strncat(path, PATH_SEP "log", PATH_MAX - strlen(path));
+		guiLogger->vf->close(guiLogger->vf);
+		guiLogger->vf = VFileOpen(path, O_CREAT | O_WRONLY | O_APPEND);
+		if (guiLogger->vf->write(guiLogger->vf, log2, len) < 0) {
+			guiLogger->vf->close(guiLogger->vf);
+			guiLogger->vf = NULL;
+		}
+	}
 }
 
 void mGUIRun(struct mGUIRunner* runner, const char* path) {
@@ -352,6 +362,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		found = mCoreLoadFile(runner->core, path);
 		if (!found) {
 			mLOG(GUI_RUNNER, WARN, "Failed to load %s!", path);
+			mCoreConfigDeinit(&runner->core->config);
 			runner->core->deinit(runner->core);
 		}
 	}
@@ -548,6 +559,10 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			runner->params.drawStart();
 			runner->drawFrame(runner, true);
 			runner->params.drawEnd();
+#ifdef _3DS
+			// XXX: Why does this fix #1294?
+			usleep(1000);
+#endif
 			GUIPollInput(&runner->params, 0, &keys);
 		}
 		if (runner->unpaused) {
@@ -592,6 +607,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	}
 	mInputMapDeinit(&runner->core->inputMap);
 	mLOG(GUI_RUNNER, DEBUG, "Deinitializing core...");
+	mCoreConfigDeinit(&runner->core->config);
 	runner->core->deinit(runner->core);
 	runner->core = NULL;
 

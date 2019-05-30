@@ -59,14 +59,6 @@ M_TEST_DEFINE(lexBinary) {
 	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 2);
 }
 
-M_TEST_DEFINE(lexSigilBinary) {
-	LEX("%10");
-
-	assert_int_equal(LexVectorSize(lv), 1);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_UINT_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 2);
-}
-
 M_TEST_DEFINE(lexHex) {
 	LEX("0x10");
 
@@ -106,13 +98,6 @@ M_TEST_DEFINE(lexInvalidHex) {
 
 M_TEST_DEFINE(lexTruncatedBinary) {
 	LEX("0b");
-
-	assert_int_equal(LexVectorSize(lv), 1);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_ERROR_TYPE);
-}
-
-M_TEST_DEFINE(lexTruncatedSigilBinary) {
-	LEX("%");
 
 	assert_int_equal(LexVectorSize(lv), 1);
 	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_ERROR_TYPE);
@@ -350,6 +335,38 @@ M_TEST_DEFINE(lexIdentifierGreaterOperator) {
 	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_GREATER);
 }
 
+M_TEST_DEFINE(lexNotOperator) {
+	LEX("!1");
+
+	assert_int_equal(LexVectorSize(lv), 2);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->operatorValue, OP_NOT);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->uintValue, 1);
+}
+
+M_TEST_DEFINE(lexNotNotOperator) {
+	LEX("!!1");
+
+	assert_int_equal(LexVectorSize(lv), 3);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->operatorValue, OP_NOT);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_NOT);
+	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 2)->uintValue, 1);
+}
+
+M_TEST_DEFINE(lexFlipOperator) {
+	LEX("~1");
+
+	assert_int_equal(LexVectorSize(lv), 2);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 0)->operatorValue, OP_FLIP);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_UINT_TYPE);
+	assert_int_equal(LexVectorGetPointer(lv, 1)->uintValue, 1);
+}
+
 M_TEST_DEFINE(lexEqualsOperator) {
 	LEX("1==");
 
@@ -510,138 +527,6 @@ M_TEST_DEFINE(lexIdentifierShiftROperator) {
 	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_SHIFT_R);
 }
 
-M_TEST_DEFINE(lexEqualsInvalidOperator) {
-	LEX("1=|");
-
-	assert_int_equal(LexVectorSize(lv), 3);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_UINT_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 1);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_ASSIGN);
-	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_ERROR_TYPE);
-}
-
-M_TEST_DEFINE(lexIdentifierEqualsInvalidOperator) {
-	LEX("x=|");
-
-	assert_int_equal(LexVectorSize(lv), 3);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_IDENTIFIER_TYPE);
-	assert_string_equal(LexVectorGetPointer(lv, 0)->identifierValue, "x");
-	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_ASSIGN);
-	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_ERROR_TYPE);
-}
-
-M_TEST_DEFINE(lexNotInvalidOperator) {
-	LEX("1!|");
-
-	assert_int_equal(LexVectorSize(lv), 3);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_UINT_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 1);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_NOT);
-	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_ERROR_TYPE);
-}
-
-M_TEST_DEFINE(lexIdentifierNotInvalidOperator) {
-	LEX("x!|");
-
-	assert_int_equal(LexVectorSize(lv), 3);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_IDENTIFIER_TYPE);
-	assert_string_equal(LexVectorGetPointer(lv, 0)->identifierValue, "x");
-	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_NOT);
-	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_ERROR_TYPE);
-}
-
-M_TEST_DEFINE(lexLessInvalidOperator) {
-	LEX("1<|");
-
-	assert_int_equal(LexVectorSize(lv), 3);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_UINT_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 1);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_LESS);
-	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_ERROR_TYPE);
-}
-
-M_TEST_DEFINE(lexIdentifierLessInvalidOperator) {
-	LEX("x<|");
-
-	assert_int_equal(LexVectorSize(lv), 3);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_IDENTIFIER_TYPE);
-	assert_string_equal(LexVectorGetPointer(lv, 0)->identifierValue, "x");
-	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_LESS);
-	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_ERROR_TYPE);
-}
-
-M_TEST_DEFINE(lexGreaterInvalidOperator) {
-	LEX("1>|");
-
-	assert_int_equal(LexVectorSize(lv), 3);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_UINT_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 1);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_GREATER);
-	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_ERROR_TYPE);
-}
-
-M_TEST_DEFINE(lexIdentifierGreaterInvalidOperator) {
-	LEX("x>|");
-
-	assert_int_equal(LexVectorSize(lv), 3);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_IDENTIFIER_TYPE);
-	assert_string_equal(LexVectorGetPointer(lv, 0)->identifierValue, "x");
-	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_GREATER);
-	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_ERROR_TYPE);
-}
-
-M_TEST_DEFINE(lexAndInvalidOperator) {
-	LEX("1&|");
-
-	assert_int_equal(LexVectorSize(lv), 3);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_UINT_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 1);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_AND);
-	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_ERROR_TYPE);
-}
-
-M_TEST_DEFINE(lexIdentifierAndInvalidOperator) {
-	LEX("x&|");
-
-	assert_int_equal(LexVectorSize(lv), 3);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_IDENTIFIER_TYPE);
-	assert_string_equal(LexVectorGetPointer(lv, 0)->identifierValue, "x");
-	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_AND);
-	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_ERROR_TYPE);
-}
-
-M_TEST_DEFINE(lexOrInvalidOperator) {
-	LEX("1|>");
-
-	assert_int_equal(LexVectorSize(lv), 3);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_UINT_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->uintValue, 1);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_OR);
-	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_ERROR_TYPE);
-}
-
-M_TEST_DEFINE(lexIdentifierOrInvalidOperator) {
-	LEX("x|>");
-
-	assert_int_equal(LexVectorSize(lv), 3);
-	assert_int_equal(LexVectorGetPointer(lv, 0)->type, TOKEN_IDENTIFIER_TYPE);
-	assert_string_equal(LexVectorGetPointer(lv, 0)->identifierValue, "x");
-	assert_int_equal(LexVectorGetPointer(lv, 1)->type, TOKEN_OPERATOR_TYPE);
-	assert_int_equal(LexVectorGetPointer(lv, 1)->operatorValue, OP_OR);
-	assert_int_equal(LexVectorGetPointer(lv, 2)->type, TOKEN_ERROR_TYPE);
-}
-
 M_TEST_DEFINE(lexSimpleExpression) {
 	LEX("1+1");
 
@@ -782,7 +667,6 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(Lexer,
 	cmocka_unit_test(lexInt),
 	cmocka_unit_test(lexDecimal),
 	cmocka_unit_test(lexBinary),
-	cmocka_unit_test(lexSigilBinary),
 	cmocka_unit_test(lexHex),
 	cmocka_unit_test(lexSigilHex),
 	cmocka_unit_test(lexSigilSegmentHex),
@@ -792,7 +676,6 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(Lexer,
 	cmocka_unit_test(lexTruncatedHex),
 	cmocka_unit_test(lexTruncatedSigilHex),
 	cmocka_unit_test(lexTruncatedBinary),
-	cmocka_unit_test(lexTruncatedSigilBinary),
 	cmocka_unit_test(lexIdentifier),
 	cmocka_unit_test(lexAddOperator),
 	cmocka_unit_test(lexIdentifierAddOperator),
@@ -814,6 +697,9 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(Lexer,
 	cmocka_unit_test(lexIdentifierLessOperator),
 	cmocka_unit_test(lexGreaterOperator),
 	cmocka_unit_test(lexIdentifierGreaterOperator),
+	cmocka_unit_test(lexNotOperator),
+	cmocka_unit_test(lexNotNotOperator),
+	cmocka_unit_test(lexFlipOperator),
 	cmocka_unit_test(lexEqualsOperator),
 	cmocka_unit_test(lexIdentifierEqualsOperator),
 	cmocka_unit_test(lexNotEqualsOperator),
@@ -830,18 +716,6 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(Lexer,
 	cmocka_unit_test(lexIdentifierShiftLOperator),
 	cmocka_unit_test(lexShiftROperator),
 	cmocka_unit_test(lexIdentifierShiftROperator),
-	cmocka_unit_test(lexEqualsInvalidOperator),
-	cmocka_unit_test(lexIdentifierEqualsInvalidOperator),
-	cmocka_unit_test(lexNotInvalidOperator),
-	cmocka_unit_test(lexIdentifierNotInvalidOperator),
-	cmocka_unit_test(lexLessInvalidOperator),
-	cmocka_unit_test(lexIdentifierLessInvalidOperator),
-	cmocka_unit_test(lexGreaterInvalidOperator),
-	cmocka_unit_test(lexIdentifierGreaterInvalidOperator),
-	cmocka_unit_test(lexAndInvalidOperator),
-	cmocka_unit_test(lexIdentifierAndInvalidOperator),
-	cmocka_unit_test(lexOrInvalidOperator),
-	cmocka_unit_test(lexIdentifierOrInvalidOperator),
 	cmocka_unit_test(lexSimpleExpression),
 	cmocka_unit_test(lexOpenParen),
 	cmocka_unit_test(lexCloseParen),

@@ -33,10 +33,12 @@ QAction* ConfigOption::addValue(const QString& text, const QVariant& value, QMen
 	QObject::connect(action, &QAction::triggered, [this, value]() {
 		emit valueChanged(value);
 	});
-	QObject::connect(parent, &QAction::destroyed, [this, action, value]() {
-		m_actions.removeAll(qMakePair(action, value));
-	});
-	parent->addAction(action);
+	if (parent) {
+		QObject::connect(parent, &QAction::destroyed, [this, action, value]() {
+			m_actions.removeAll(qMakePair(action, value));
+		});
+		parent->addAction(action);
+	}
 	m_actions.append(qMakePair(action, value));
 	return action;
 }
@@ -51,10 +53,12 @@ QAction* ConfigOption::addBoolean(const QString& text, QMenu* parent) {
 	QObject::connect(action, &QAction::triggered, [this, action]() {
 		emit valueChanged(action->isChecked());
 	});
-	QObject::connect(parent, &QAction::destroyed, [this, action]() {
-		m_actions.removeAll(qMakePair(action, 1));
-	});
-	parent->addAction(action);
+	if (parent) {
+		QObject::connect(parent, &QAction::destroyed, [this, action]() {
+			m_actions.removeAll(qMakePair(action, 1));
+		});
+		parent->addAction(action);
+	}
 	m_actions.append(qMakePair(action, 1));
 	return action;
 }
@@ -112,6 +116,8 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.lockAspectRatio = true;
 	mCoreConfigLoad(&m_config);
 	mCoreConfigLoadDefaults(&m_config, &m_opts);
+	mCoreConfigSetDefaultIntValue(&m_config, "sgb.borders", 1);
+	mCoreConfigSetDefaultIntValue(&m_config, "useCgbColors", 1);
 	mCoreConfigMap(&m_config, &m_opts);
 }
 

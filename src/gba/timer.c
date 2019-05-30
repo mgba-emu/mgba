@@ -22,7 +22,7 @@ static void GBATimerUpdate(struct GBA* gba, int timerId, uint32_t cyclesLate) {
 	}
 
 	if (GBATimerFlagsIsDoIrq(timer->flags)) {
-		GBARaiseIRQ(gba, IRQ_TIMER0 + timerId);
+		GBARaiseIRQ(gba, IRQ_TIMER0 + timerId, cyclesLate);
 	}
 
 	if (gba->audio.enable && timerId < 2) {

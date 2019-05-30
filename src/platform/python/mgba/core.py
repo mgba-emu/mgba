@@ -79,6 +79,12 @@ def _mCorePythonCallbacksSleep(user):  # pylint: disable=invalid-name
     context._sleep()
 
 
+@ffi.def_extern()
+def _mCorePythonCallbacksKeysRead(user):  # pylint: disable=invalid-name
+    context = ffi.from_handle(user)
+    context._keys_read()
+
+
 class CoreCallbacks(object):
     def __init__(self):
         self._handle = ffi.new_handle(self)
@@ -86,6 +92,7 @@ class CoreCallbacks(object):
         self.video_frame_ended = []
         self.core_crashed = []
         self.sleep = []
+        self.keys_read = []
         self.context = lib.mCorePythonCallbackCreate(self._handle)
 
     def _video_frame_started(self):
@@ -102,6 +109,10 @@ class CoreCallbacks(object):
 
     def _sleep(self):
         for callback in self.sleep:
+            callback()
+
+    def _keys_read(self):
+        for callback in self.keys_read:
             callback()
 
 
@@ -180,11 +191,17 @@ class Core(object):
 
     @protected
     def load_bios(self, vfile, id=0):
-        return bool(self._core.loadBIOS(self._core, vfile.handle, id))
+        res = bool(self._core.loadBIOS(self._core, vfile.handle, id))
+        if res:
+            vfile._claimed = True
+        return res
 
     @protected
     def load_save(self, vfile):
-        return bool(self._core.loadSave(self._core, vfile.handle))
+        res = bool(self._core.loadSave(self._core, vfile.handle))
+        if res:
+            vfile._claimed = True
+        return res
 
     @protected
     def load_temporary_save(self, vfile):

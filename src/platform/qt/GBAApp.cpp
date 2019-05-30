@@ -18,12 +18,15 @@
 #include <QFileOpenEvent>
 #include <QIcon>
 
-#include <mgba/core/version.h>
 #include <mgba-util/socket.h>
 #include <mgba-util/vfs.h>
 
 #ifdef USE_SQLITE3
 #include "feature/sqlite3/no-intro.h"
+#endif
+
+#ifdef USE_DISCORD_RPC
+#include "DiscordCoordinator.h"
 #endif
 
 using namespace QGBA;
@@ -42,16 +45,9 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	SDL_Init(SDL_INIT_NOPARACHUTE);
 #endif
 
-#ifndef Q_OS_MAC
-	setWindowIcon(QIcon(":/res/mgba-512.png"));
-#endif
-
 	SocketSubsystemInit();
 	qRegisterMetaType<const uint32_t*>("const uint32_t*");
 	qRegisterMetaType<mCoreThread*>("mCoreThread*");
-
-	QApplication::setApplicationName(projectName);
-	QApplication::setApplicationVersion(projectVersion);
 
 	if (!m_configController->getQtOption("displayDriver").isNull()) {
 		Display::setDriver(static_cast<Display::Driver>(m_configController->getQtOption("displayDriver").toInt()));
@@ -68,6 +64,19 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 
 	LogController::global()->load(m_configController);
 
+#ifdef USE_DISCORD_RPC
+	ConfigOption* useDiscordPresence = m_configController->addOption("useDiscordPresence");
+	useDiscordPresence->addBoolean(tr("Enable Discord Rich Presence"));
+	useDiscordPresence->connect([](const QVariant& value) {
+		if (value.toBool()) {
+			DiscordCoordinator::init();
+		} else {
+			DiscordCoordinator::deinit();
+		}
+	}, this);
+	m_configController->updateOption("useDiscordPresence");
+#endif
+
 	connect(this, &GBAApp::aboutToQuit, this, &GBAApp::cleanup);
 }
 
@@ -82,6 +91,10 @@ void GBAApp::cleanup() {
 	if (m_db) {
 		NoIntroDBDestroy(m_db);
 	}
+#endif
+
+#ifdef USE_DISCORD_RPC
+	DiscordCoordinator::deinit();
 #endif
 }
 

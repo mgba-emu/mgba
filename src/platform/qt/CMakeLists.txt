@@ -66,6 +66,7 @@ endif()
 
 set(SOURCE_FILES
 	AboutScreen.cpp
+	AbstractUpdater.cpp
 	AssetTile.cpp
 	AssetView.cpp
 	AudioProcessor.cpp
@@ -102,7 +103,6 @@ set(SOURCE_FILES
 	OverrideView.cpp
 	PaletteView.cpp
 	PlacementControl.cpp
-	PrinterView.cpp
 	RegisterView.cpp
 	ROMInfo.cpp
 	RotatedHeaderView.cpp
@@ -124,6 +124,7 @@ set(UI_FILES
 	AboutScreen.ui
 	ArchiveInspector.ui
 	AssetTile.ui
+	BattleChipView.ui
 	CheatsView.ui
 	DebuggerConsole.ui
 	GIFView.ui
@@ -147,10 +148,14 @@ set(UI_FILES
 	VideoView.ui)
 
 set(GBA_SRC
+	BattleChipModel.cpp
+	BattleChipUpdater.cpp
+	BattleChipView.cpp
 	GBAOverride.cpp)
 
 set(GB_SRC
-	GBOverride.cpp)
+	GBOverride.cpp
+	PrinterView.cpp)
 
 set(QT_LIBRARIES)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5,libqt5opengl5")
@@ -176,7 +181,7 @@ if(Qt5Multimedia_FOUND)
 	list(APPEND SOURCE_FILES
 		VideoDumper.cpp)
 	if (WIN32 AND QT_STATIC)
-		list(APPEND QT_LIBRARIES Qt5::QWindowsAudioPlugin Qt5::DSServicePlugin
+		list(APPEND QT_LIBRARIES Qt5::QWindowsAudioPlugin Qt5::DSServicePlugin Qt5::QWindowsVistaStylePlugin
                                  strmiids mfuuid mfplat mf ksguid dxva2 evr d3d9)
 	endif()
 	list(APPEND QT_LIBRARIES Qt5::Multimedia)
@@ -207,6 +212,12 @@ if(USE_SQLITE3)
 		library/LibraryController.cpp
 		library/LibraryGrid.cpp
 		library/LibraryTree.cpp)
+endif()
+
+if(USE_DISCORD_RPC)
+	message(STATUS What)
+	list(APPEND QT_LIBRARIES discord-rpc)
+	list(APPEND SOURCE_FILES DiscordCoordinator.cpp)
 endif()
 
 qt5_add_resources(RESOURCES resources.qrc)
@@ -257,7 +268,10 @@ if(Qt5LinguistTools_FOUND)
 		foreach(TS ${TS_FILES})
 			get_filename_component(TS ${TS} NAME)
 			string(REGEX REPLACE "${BINARY_NAME}-(.*).ts$" "qtbase_\\1.qm" QT_QM "${TS}")
-			list(APPEND QT_QM_FILES "${QT_QM_LOCATION}/${QT_QM}")
+			set(QT_QM "${QT_QM_LOCATION}/${QT_QM}")
+			if(EXISTS "${QT_QM}")
+				list(APPEND QT_QM_FILES "${QT_QM}")
+			endif()
 		endforeach()
 		list(APPEND TRANSLATION_FILES ${QT_QM_FILES})
 	endif()
@@ -280,15 +294,15 @@ endif()
 if(QT_STATIC)
 	find_library(QTPCRE NAMES qtpcre2 qtpcre)
 	if(WIN32)
-		list(APPEND QT_LIBRARIES qwindows dwmapi imm32 uxtheme Qt5EventDispatcherSupport Qt5FontDatabaseSupport Qt5ThemeSupport)
-		set_target_properties(Qt5::Core PROPERTIES INTERFACE_LINK_LIBRARIES "${QTPCRE};version;winmm;ws2_32")
+		list(APPEND QT_LIBRARIES qwindows dwmapi imm32 uxtheme Qt5EventDispatcherSupport Qt5FontDatabaseSupport Qt5ThemeSupport Qt5WindowsUIAutomationSupport)
+		set_target_properties(Qt5::Core PROPERTIES INTERFACE_LINK_LIBRARIES "${QTPCRE};version;winmm;ssl;crypto;ws2_32;iphlpapi;crypt32;userenv;netapi32;wtsapi32")
 	elseif(APPLE)
 		find_package(Cups)
 		find_package(Qt5PrintSupport)
 		find_library(QTFREETYPE NAMES qtfreetype)
 		find_library(QTHARFBUZZ NAMES qtharfbuzzng qtharfbuzz)
 		find_library(QTPLATFORMSUPPORT NAMES Qt5PlatformSupport)
-		list(APPEND QT_LIBRARIES Cups Qt5::PrintSupport Qt5::QCocoaIntegrationPlugin Qt5::CoreAudioPlugin Qt5::AVFServicePlugin Qt5::QCocoaPrinterSupportPlugin ${QTPLATFORMSUPPORT} "-framework AVFoundation" "-framework CoreMedia")
+		list(APPEND QT_LIBRARIES Cups Qt5::PrintSupport Qt5::QCocoaIntegrationPlugin Qt5::CoreAudioPlugin Qt5::AVFServicePlugin Qt5::QCocoaPrinterSupportPlugin ${QTPLATFORMSUPPORT} "-framework AVFoundation" "-framework CoreMedia" "-framework SystemConfiguration" "-framework Security")
 		set_target_properties(Qt5::Core PROPERTIES INTERFACE_LINK_LIBRARIES "${QTPCRE};${QTHARFBUZZ};${QTFREETYPE}")
 		link_directories()
 	endif()

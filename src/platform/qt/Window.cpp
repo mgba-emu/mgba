@@ -21,6 +21,7 @@
 
 #include "AboutScreen.h"
 #include "AudioProcessor.h"
+#include "BattleChipView.h"
 #include "CheatsView.h"
 #include "ConfigController.h"
 #include "CoreController.h"
@@ -51,6 +52,10 @@
 #include "ShortcutController.h"
 #include "TileView.h"
 #include "VideoView.h"
+
+#ifdef USE_DISCORD_RPC
+#include "DiscordCoordinator.h"
+#endif
 
 #include <mgba/core/version.h>
 #include <mgba/core/cheats.h>
@@ -442,6 +447,7 @@ void Window::openSettingsWindow() {
 	connect(settingsWindow, &SettingsView::displayDriverChanged, this, &Window::reloadDisplayDriver);
 	connect(settingsWindow, &SettingsView::audioDriverChanged, this, &Window::reloadAudioDriver);
 	connect(settingsWindow, &SettingsView::cameraDriverChanged, this, &Window::mustRestart);
+	connect(settingsWindow, &SettingsView::cameraChanged, &m_inputController, &InputController::setCamera);
 	connect(settingsWindow, &SettingsView::languageChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::pathsChanged, this, &Window::reloadConfig);
 #ifdef USE_SQLITE3
@@ -571,9 +577,8 @@ void Window::resizeEvent(QResizeEvent* event) {
 	if (m_screenWidget->width() % size.width() == 0 && m_screenWidget->height() % size.height() == 0 &&
 	    m_screenWidget->width() / size.width() == m_screenWidget->height() / size.height()) {
 		factor = m_screenWidget->width() / size.width();
-	} else {
-		m_savedScale = 0;
 	}
+	m_savedScale = factor;
 	for (QMap<int, QAction*>::iterator iter = m_frameSizes.begin(); iter != m_frameSizes.end(); ++iter) {
 		bool enableSignals = iter.value()->blockSignals(true);
 		iter.value()->setChecked(iter.key() == factor);
@@ -762,6 +767,10 @@ void Window::gameStarted() {
 			m_audioChannels->addAction(action);
 		}
 	}
+
+#ifdef USE_DISCORD_RPC
+	DiscordCoordinator::gameStarted(m_controller);
+#endif
 }
 
 void Window::gameStopped() {
@@ -795,6 +804,15 @@ void Window::gameStopped() {
 
 	m_fpsTimer.stop();
 	m_focusCheck.stop();
+
+	if (m_audioProcessor) {
+		m_audioProcessor->stop();
+		m_audioProcessor.reset();
+	}
+
+#ifdef USE_DISCORD_RPC
+	DiscordCoordinator::gameStopped();
+#endif
 
 	emit paused(false);
 }
@@ -1101,7 +1119,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(quickLoadMenu, quickLoad, "quickLoad");
 
 	QAction* quickSave = new QAction(tr("Save recent"), quickSaveMenu);
-	connect(quickLoad, &QAction::triggered, [this] {
+	connect(quickSave, &QAction::triggered, [this] {
 		m_controller->saveState();
 	});
 	m_gameActions.append(quickSave);
@@ -1184,7 +1202,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	fileMenu->addSeparator();
 #endif
 
-	QAction* about = new QAction(tr("About"), fileMenu);
+	QAction* about = new QAction(tr("About..."), fileMenu);
 	connect(about, &QAction::triggered, openTView<AboutScreen>());
 	fileMenu->addAction(about);
 
@@ -1350,6 +1368,26 @@ void Window::setupMenu(QMenuBar* menubar) {
 		addControlledAction(solarMenu, setSolar, QString("luminanceLevel.%1").arg(QString::number(i)));
 	}
 
+#ifdef M_CORE_GB
+	QAction* gbPrint = new QAction(tr("Game Boy Printer..."), emulationMenu);
+	connect(gbPrint, &QAction::triggered, [this]() {
+		PrinterView* view = new PrinterView(m_controller);
+		openView(view);
+		m_controller->attachPrinter();
+
+	});
+	addControlledAction(emulationMenu, gbPrint, "gbPrint");
+	m_gameActions.append(gbPrint);
+#endif
+
+#ifdef M_CORE_GBA
+	QAction* bcGate = new QAction(tr("BattleChip Gate..."), emulationMenu);
+	connect(bcGate, &QAction::triggered, openControllerTView<BattleChipView>(this));
+	addControlledAction(emulationMenu, bcGate, "bcGate");
+	m_gbaActions.append(bcGate);
+	m_gameActions.append(bcGate);
+#endif
+
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
 	m_shortcutController->addMenu(avMenu);
 	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));
@@ -1494,18 +1532,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	});
 	addControlledAction(avMenu, stopVL, "stopVL");
 	m_gameActions.append(stopVL);
-
-#ifdef M_CORE_GB
-	QAction* gbPrint = new QAction(tr("Game Boy Printer..."), avMenu);
-	connect(gbPrint, &QAction::triggered, [this]() {
-		PrinterView* view = new PrinterView(m_controller);
-		openView(view);
-		m_controller->attachPrinter();
-
-	});
-	addControlledAction(avMenu, gbPrint, "gbPrint");
-	m_gameActions.append(gbPrint);
-#endif
 
 	avMenu->addSeparator();
 	m_videoLayers = avMenu->addMenu(tr("Video layers"));

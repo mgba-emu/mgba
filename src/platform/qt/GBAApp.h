@@ -29,7 +29,7 @@ mLOG_DECLARE_CATEGORY(QT);
 namespace QGBA {
 
 class ConfigController;
-class GameController;
+class CoreController;
 class Window;
 
 #ifdef USE_SQLITE3

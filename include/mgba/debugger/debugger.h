@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2017 Jeffrey Pfau
+/* Copyright (c) 2013-2019 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@ CXX_GUARD_START
 
 #include <mgba/core/cpu.h>
 #include <mgba/core/log.h>
+#include <mgba-util/vector.h>
 
 mLOG_DECLARE_CATEGORY(DEBUGGER);
 
@@ -36,7 +37,8 @@ enum mDebuggerState {
 enum mWatchpointType {
 	WATCHPOINT_WRITE = 1,
 	WATCHPOINT_READ = 2,
-	WATCHPOINT_RW = 3
+	WATCHPOINT_RW = 3,
+	WATCHPOINT_WRITE_CHANGE = 4,
 };
 
 enum mBreakpointType {
@@ -69,6 +71,25 @@ struct mDebuggerEntryInfo {
 	} type;
 };
 
+struct mBreakpoint {
+	ssize_t id;
+	uint32_t address;
+	int segment;
+	enum mBreakpointType type;
+	struct ParseTree* condition;
+};
+
+struct mWatchpoint {
+	ssize_t id;
+	uint32_t address;
+	int segment;
+	enum mWatchpointType type;
+	struct ParseTree* condition;
+};
+
+DECLARE_VECTOR(mBreakpointList, struct mBreakpoint);
+DECLARE_VECTOR(mWatchpointList, struct mWatchpoint);
+
 struct mDebugger;
 struct ParseTree;
 struct mDebuggerPlatform {
@@ -79,13 +100,15 @@ struct mDebuggerPlatform {
 	void (*entered)(struct mDebuggerPlatform*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 
 	bool (*hasBreakpoints)(struct mDebuggerPlatform*);
-	void (*setBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
-	void (*setConditionalBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment, struct ParseTree* condition);
-	void (*clearBreakpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
-	void (*setWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type);
-	void (*setConditionalWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment, enum mWatchpointType type, struct ParseTree* condition);
-	void (*clearWatchpoint)(struct mDebuggerPlatform*, uint32_t address, int segment);
 	void (*checkBreakpoints)(struct mDebuggerPlatform*);
+	bool (*clearBreakpoint)(struct mDebuggerPlatform*, ssize_t id);
+
+	ssize_t (*setBreakpoint)(struct mDebuggerPlatform*, const struct mBreakpoint*);
+	void (*listBreakpoints)(struct mDebuggerPlatform*, struct mBreakpointList*);
+
+	ssize_t (*setWatchpoint)(struct mDebuggerPlatform*, const struct mWatchpoint*);
+	void (*listWatchpoints)(struct mDebuggerPlatform*, struct mWatchpointList*);
+
 	void (*trace)(struct mDebuggerPlatform*, char* out, size_t* length);
 
 	bool (*getRegister)(struct mDebuggerPlatform*, const char* name, int32_t* value);

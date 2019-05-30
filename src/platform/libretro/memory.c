@@ -8,7 +8,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
-#elif defined(GEKKO) || defined(__CELLOS_LV2__) || defined(_3DS) || defined(__SWITCH__) || defined(PSP)
+#elif defined(GEKKO) || defined(__CELLOS_LV2__) || defined(_3DS) || defined(__SWITCH__) || defined(PSP) || defined(PS2)
 /* stub */
 #elif defined(VITA)
 #include <psp2/kernel/sysmem.h>
@@ -33,7 +33,7 @@ static bool listInit = false;
 void* anonymousMemoryMap(size_t size) {
 #ifdef _WIN32
 	return VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-#elif defined(__CELLOS_LV2__) || defined(GEKKO) || defined(_3DS) || defined(__SWITCH__) || defined(PSP)
+#elif defined(__CELLOS_LV2__) || defined(GEKKO) || defined(_3DS) || defined(__SWITCH__) || defined(PSP) || defined(PS2)
    return (void*)malloc(size);
 #elif defined(VITA)
 	if (!listInit)
@@ -61,7 +61,7 @@ void mappedMemoryFree(void* memory, size_t size) {
 #ifdef _WIN32
 	// size is not useful here because we're freeing the memory, not decommitting it
 	VirtualFree(memory, 0, MEM_RELEASE);
-#elif defined(__CELLOS_LV2__) || defined(GEKKO) || defined(_3DS) || defined(__SWITCH__) || defined(PSP)
+#elif defined(__CELLOS_LV2__) || defined(GEKKO) || defined(_3DS) || defined(__SWITCH__) || defined(PSP) || defined(PS2)
    free(memory);
 #elif defined(VITA)
 	UNUSED(size);
