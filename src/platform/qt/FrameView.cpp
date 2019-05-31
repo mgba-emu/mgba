@@ -10,6 +10,7 @@
 #include <QPalette>
 
 #include <array>
+#include <cmath>
 
 #include "CoreController.h"
 
@@ -135,10 +136,10 @@ void FrameView::updateTilesGBA(bool force) {
 		int mode = GBARegisterDISPCNTGetMode(io[REG_DISPCNT >> 1]);
 
 		std::array<bool, 4> enabled{
-			GBARegisterDISPCNTIsBg0Enable(io[REG_DISPCNT >> 1]),
-			GBARegisterDISPCNTIsBg1Enable(io[REG_DISPCNT >> 1]),
-			GBARegisterDISPCNTIsBg2Enable(io[REG_DISPCNT >> 1]),
-			GBARegisterDISPCNTIsBg3Enable(io[REG_DISPCNT >> 1]),
+			bool(GBARegisterDISPCNTIsBg0Enable(io[REG_DISPCNT >> 1])),
+			bool(GBARegisterDISPCNTIsBg1Enable(io[REG_DISPCNT >> 1])),
+			bool(GBARegisterDISPCNTIsBg2Enable(io[REG_DISPCNT >> 1])),
+			bool(GBARegisterDISPCNTIsBg3Enable(io[REG_DISPCNT >> 1])),
 		};
 
 		for (int priority = 0; priority < 4; ++priority) {
