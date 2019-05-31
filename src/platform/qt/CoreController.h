@@ -67,6 +67,7 @@ public:
 	mCoreThread* thread() { return &m_threadContext; }
 
 	const color_t* drawContext();
+	QImage getPixels();
 
 	bool isPaused();
 	bool hasStarted();

@@ -210,6 +210,26 @@ const color_t* CoreController::drawContext() {
 	return reinterpret_cast<const color_t*>(m_completeBuffer.constData());
 }
 
+QImage CoreController::getPixels() {
+	QByteArray buffer;
+	QSize size = screenDimensions();
+	size_t stride = size.width() * BYTES_PER_PIXEL;
+
+	if (!m_hwaccel) {
+		buffer = m_completeBuffer;
+	} else {
+		Interrupter interrupter(this);
+		const void* pixels;
+		m_threadContext.core->getPixels(m_threadContext.core, &pixels, &stride);
+		stride *= BYTES_PER_PIXEL;
+		buffer.resize(stride * size.height());
+		memcpy(buffer.data(), pixels, buffer.size());
+	}
+
+	return QImage(reinterpret_cast<const uchar*>(buffer.constData()),
+	              size.width(), size.height(), stride, QImage::Format_RGBX8888);
+}
+
 bool CoreController::isPaused() {
 	return mCoreThreadIsPaused(&m_threadContext);
 }
