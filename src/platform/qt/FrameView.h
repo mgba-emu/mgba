@@ -30,6 +30,7 @@ public:
 
 public slots:
 	void selectLayer(const QPointF& coord);
+	void disableLayer(const QPointF& coord);
 
 protected:
 #ifdef M_CORE_GBA
@@ -41,13 +42,18 @@ protected:
 
 	bool eventFilter(QObject* obj, QEvent* event) override;
 
+private slots:
+	void invalidateQueue(const QSize& dims = QSize());
+	void updateRendered();
+
 private:
 	struct LayerId {
 		enum {
 			NONE = 0,
 			BACKGROUND,
 			WINDOW,
-			SPRITE
+			SPRITE,
+			BACKDROP
 		} type = NONE;
 		int index = -1;
 
@@ -65,8 +71,7 @@ private:
 		bool repeats;
 	};
 
-	void invalidateQueue(const QSize& dims = QSize());
-	void updateRendered();
+	bool lookupLayer(const QPointF& coord, Layer*&);
 
 	Ui::FrameView m_ui;
 
@@ -75,6 +80,7 @@ private:
 	int m_glowFrame;
 	QTimer m_glowTimer;
 
+	QSize m_dims;
 	QList<Layer> m_queue;
 	QSet<LayerId> m_disabled;
 	QPixmap m_composited;

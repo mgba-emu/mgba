@@ -38,6 +38,7 @@ FrameView::FrameView(std::shared_ptr<CoreController> controller, QWidget* parent
 	});
 	m_glowTimer.start();
 
+	m_ui.renderedView->installEventFilter(this);
 	m_ui.compositedView->installEventFilter(this);
 
 	connect(m_ui.queue, &QListWidget::itemChanged, this, [this](QListWidgetItem* item) {
@@ -58,10 +59,19 @@ FrameView::FrameView(std::shared_ptr<CoreController> controller, QWidget* parent
 		}
 		invalidateQueue();
 	});
+	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, [this]() {
+		invalidateQueue();
+
+		QPixmap rendered = m_rendered.scaledToHeight(m_rendered.height() * m_ui.magnification->value());
+		m_ui.renderedView->setPixmap(rendered);
+	});
 }
 
-void FrameView::selectLayer(const QPointF& coord) {
-	for (const Layer& layer : m_queue) {
+bool FrameView::lookupLayer(const QPointF& coord, Layer*& out) {
+	for (Layer& layer : m_queue) {
+		if (!layer.enabled || m_disabled.contains(layer.id)) {
+			continue;
+		}
 		QPointF location = layer.location;
 		QSizeF layerDims(layer.image.width(), layer.image.height());
 		QRegion region;
@@ -82,11 +92,33 @@ void FrameView::selectLayer(const QPointF& coord) {
 		}
 
 		if (region.contains(QPoint(coord.x(), coord.y()))) {
-			m_active = layer.id;
-			m_glowFrame = 0;
-			break;
+			out = &layer;
+			return true;
 		}
 	}
+	return false;
+}
+
+void FrameView::selectLayer(const QPointF& coord) {
+	Layer* layer;
+	if (!lookupLayer(coord, layer)) {
+		return;
+	}
+	if (layer->id == m_active) {
+		m_active = {};
+	} else {
+		m_active = layer->id;
+	}
+	m_glowFrame = 0;
+}
+
+void FrameView::disableLayer(const QPointF& coord) {
+	Layer* layer;
+	if (!lookupLayer(coord, layer)) {
+		return;
+	}
+	layer->enabled = false;
+	m_disabled.insert(layer->id);
 }
 
 void FrameView::updateTilesGBA(bool force) {
@@ -99,6 +131,7 @@ void FrameView::updateTilesGBA(bool force) {
 		updateRendered();
 
 		uint16_t* io = static_cast<GBA*>(m_controller->thread()->core->board)->memory.io;
+		QRgb backdrop = M_RGB5_TO_RGB8(static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[0]);
 		int mode = GBARegisterDISPCNTGetMode(io[REG_DISPCNT >> 1]);
 
 		std::array<bool, 4> enabled{
@@ -124,7 +157,7 @@ void FrameView::updateTilesGBA(bool force) {
 				}
 				m_queue.append({
 					{ LayerId::SPRITE, sprite },
-					!m_disabled.contains({ LayerId::SPRITE, sprite}),
+					!m_disabled.contains({ LayerId::SPRITE, sprite }),
 					QPixmap::fromImage(obj),
 					{}, offset, false
 				});
@@ -150,7 +183,7 @@ void FrameView::updateTilesGBA(bool force) {
 				};
 				m_queue.append({
 					{ LayerId::BACKGROUND, bg },
-					!m_disabled.contains({ LayerId::BACKGROUND, bg}),
+					!m_disabled.contains({ LayerId::BACKGROUND, bg }),
 					QPixmap::fromImage(compositeMap(bg, m_mapStatus[bg])),
 					{}, offset, true
 				});
@@ -161,6 +194,15 @@ void FrameView::updateTilesGBA(bool force) {
 				}
 			}
 		}
+		QImage backdropImage(QSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS), QImage::Format_Mono);
+		backdropImage.fill(1);
+		backdropImage.setColorTable({backdrop, backdrop | 0xFF000000 });
+		m_queue.append({
+			{ LayerId::BACKDROP },
+			!m_disabled.contains({ LayerId::BACKDROP }),
+			QPixmap::fromImage(backdropImage),
+			{}, {0, 0}, false
+		});
 	}
 	invalidateQueue(QSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS));
 }
@@ -178,19 +220,18 @@ void FrameView::updateTilesGB(bool force) {
 }
 
 void FrameView::invalidateQueue(const QSize& dims) {
-	QSize realDims = dims;
-	if (!dims.isValid()) {
-		realDims = m_composited.size() / m_ui.magnification->value();
+	if (dims.isValid()) {
+		m_dims = dims;
 	}
 	bool blockSignals = m_ui.queue->blockSignals(true);
-	QPixmap composited(realDims);
+	QPixmap composited(m_dims);
 
 	QPainter painter(&composited);
 	QPalette palette;
 	QColor activeColor = palette.color(QPalette::HighlightedText);
 	activeColor.setAlpha(sin(m_glowFrame * M_PI / 60) * 16 + 96);
 
-	QRectF rect(0, 0, realDims.width(), realDims.height());
+	QRectF rect(0, 0, m_dims.width(), m_dims.height());
 	painter.setCompositionMode(QPainter::CompositionMode_Source);
 	painter.fillRect(rect, QColor(0, 0, 0, 0));
 
@@ -264,7 +305,7 @@ void FrameView::invalidateQueue(const QSize& dims) {
 	}
 	m_ui.queue->blockSignals(blockSignals);
 
-	m_composited = composited.scaled(realDims * m_ui.magnification->value());
+	m_composited = composited.scaled(m_dims * m_ui.magnification->value());
 	m_ui.compositedView->setPixmap(m_composited);
 }
 
@@ -273,18 +314,25 @@ void FrameView::updateRendered() {
 		return;
 	}
 	m_rendered.convertFromImage(m_controller->getPixels());
-	m_rendered = m_rendered.scaledToHeight(m_rendered.height() * m_ui.magnification->value());
-	m_ui.renderedView->setPixmap(m_rendered);
+	QPixmap rendered = m_rendered.scaledToHeight(m_rendered.height() * m_ui.magnification->value());
+	m_ui.renderedView->setPixmap(rendered);
 }
 
 bool FrameView::eventFilter(QObject* obj, QEvent* event) {
-	if (event->type() != QEvent::MouseButtonPress) {
-		return false;
+	QPointF pos;
+	switch (event->type()) {
+	case QEvent::MouseButtonPress:
+		pos = static_cast<QMouseEvent*>(event)->localPos();
+		pos /= m_ui.magnification->value();
+		selectLayer(pos);
+		return true;
+	case QEvent::MouseButtonDblClick:
+		pos = static_cast<QMouseEvent*>(event)->localPos();
+		pos /= m_ui.magnification->value();
+		disableLayer(pos);
+		return true;
 	}
-	QPointF pos = static_cast<QMouseEvent*>(event)->localPos();
-	pos /= m_ui.magnification->value();
-	selectLayer(pos);
-	return true;
+	return false;
 }
 
 QString FrameView::LayerId::readable() const {
@@ -300,6 +348,9 @@ QString FrameView::LayerId::readable() const {
 		break;
 	case SPRITE:
 		typeStr = tr("Sprite");
+		break;
+	case BACKDROP:
+		typeStr = tr("Backdrop");
 		break;
 	}
 	if (index < 0) {

@@ -204,8 +204,8 @@ bool AssetView::lookupObjGBA(int id, struct ObjInfo* info) {
 		GBAObjAttributesCGetPriority(obj->c),
 		GBAObjAttributesBGetX(obj->b),
 		GBAObjAttributesAGetY(obj->a),
-		GBAObjAttributesBIsHFlip(obj->b),
-		GBAObjAttributesBIsVFlip(obj->b),
+		bool(GBAObjAttributesBIsHFlip(obj->b)),
+		bool(GBAObjAttributesBIsVFlip(obj->b)),
 	};
 	GBARegisterDISPCNT dispcnt = gba->memory.io[0]; // FIXME: Register name can't be imported due to namespacing issues
 	if (!GBARegisterDISPCNTIsObjCharacterMapping(dispcnt)) {
@@ -255,8 +255,8 @@ bool AssetView::lookupObjGB(int id, struct ObjInfo* info) {
 		GBObjAttributesGetPriority(obj->attr),
 		obj->x,
 		obj->y,
-		GBObjAttributesIsXFlip(obj->attr),
-		GBObjAttributesIsYFlip(obj->attr),
+		bool(GBObjAttributesIsXFlip(obj->attr)),
+		bool(GBObjAttributesIsYFlip(obj->attr)),
 	};
 	*info = newInfo;
 	return true;
