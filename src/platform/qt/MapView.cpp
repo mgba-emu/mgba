@@ -18,6 +18,7 @@
 #include <mgba/internal/gba/video.h>
 #endif
 #ifdef M_CORE_GB
+#include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/memory.h>
 #endif
 
@@ -42,6 +43,12 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 		m_boundary = 2048;
 		m_addressBase = BASE_VRAM;
 		m_addressWidth = 8;
+		m_ui.bgInfo->addCustomProperty("priority", tr("Priority"));
+		m_ui.bgInfo->addCustomProperty("screenBase", tr("Map base"));
+		m_ui.bgInfo->addCustomProperty("charBase", tr("Tile base"));
+		m_ui.bgInfo->addCustomProperty("size", tr("Size"));
+		m_ui.bgInfo->addCustomProperty("offset", tr("Offset"));
+		m_ui.bgInfo->addCustomProperty("transform", tr("Xform"));
 		break;
 #endif
 #ifdef M_CORE_GB
@@ -49,6 +56,9 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 		m_boundary = 1024;
 		m_addressBase = GB_BASE_VRAM;
 		m_addressWidth = 4;
+		m_ui.bgInfo->addCustomProperty("screenBase", tr("Map base"));
+		m_ui.bgInfo->addCustomProperty("charBase", tr("Tile base"));
+		m_ui.bgInfo->addCustomProperty("offset", tr("Offset"));
 		break;
 #endif
 	default:
@@ -143,16 +153,58 @@ void MapView::updateTilesGBA(bool force) {
 	{
 		CoreController::Interrupter interrupter(m_controller);
 		int bitmap = -1;
+		int priority = -1;
+		int frame = 0;
+		QString offset(tr("N/A"));
+		QString transform(tr("N/A"));
 		if (m_controller->platform() == PLATFORM_GBA) {
-			int mode = GBARegisterDISPCNTGetMode(static_cast<GBA*>(m_controller->thread()->core->board)->memory.io[REG_DISPCNT]);
+			uint16_t* io = static_cast<GBA*>(m_controller->thread()->core->board)->memory.io;
+			int mode = GBARegisterDISPCNTGetMode(io[REG_DISPCNT >> 1]);
 			if (m_map == 2 && mode > 2) {
 				bitmap = mode == 4 ? 1 : 0;
+				if (mode != 3) {
+					frame = GBARegisterDISPCNTGetFrameSelect(io[REG_DISPCNT >> 1]);
+				}
 			}
+			priority = GBARegisterBGCNTGetPriority(io[(REG_BG0CNT >> 1) + m_map]);
+			if (mode == 0 || (mode == 1 && m_map != 2)) {
+				offset = QString("%1, %2")
+					.arg(io[(REG_BG0HOFS >> 1) + (m_map << 1)])
+					.arg(io[(REG_BG0VOFS >> 1) + (m_map << 1)]);
+			} else if ((mode > 0 && m_map == 2) || (mode == 2 && m_map == 3)) {
+				int32_t refX = io[(REG_BG2X_LO >> 1) + ((m_map - 2) << 2)];
+				refX |= io[(REG_BG2X_HI >> 1) + ((m_map - 2) << 2)] << 16;
+				int32_t refY = io[(REG_BG2Y_LO >> 1) + ((m_map - 2) << 2)];
+				refY |= io[(REG_BG2Y_HI >> 1) + ((m_map - 2) << 2)] << 16;
+				refX <<= 4;
+				refY <<= 4;
+				refX >>= 4;
+				refY >>= 4;
+				offset = QString("%1\n%2").arg(refX / 65536., 0, 'f', 3).arg(refY / 65536., 0, 'f', 3);
+				transform = QString("%1 %2\n%3 %4")
+					.arg(io[(REG_BG2PA >> 1) + ((m_map - 2) << 2)] / 256., 3, 'f', 2)
+					.arg(io[(REG_BG2PB >> 1) + ((m_map - 2) << 2)] / 256., 3, 'f', 2)
+					.arg(io[(REG_BG2PC >> 1) + ((m_map - 2) << 2)] / 256., 3, 'f', 2)
+					.arg(io[(REG_BG2PD >> 1) + ((m_map - 2) << 2)] / 256., 3, 'f', 2);
+
+			}
+		}
+		if (m_controller->platform() == PLATFORM_GB) {
+			uint8_t* io = static_cast<GB*>(m_controller->thread()->core->board)->memory.io;
+			int x = io[m_map == 0 ? 0x42 : 0x4A];
+			int y = io[m_map == 0 ? 0x43 : 0x4B];
+			offset = QString("%1, %2").arg(x).arg(y);
 		}
 		if (bitmap >= 0) {
 			mBitmapCache* bitmapCache = mBitmapCacheSetGetPointer(&m_cacheSet->bitmaps, bitmap);
 			int width = mBitmapCacheSystemInfoGetWidth(bitmapCache->sysConfig);
 			int height = mBitmapCacheSystemInfoGetHeight(bitmapCache->sysConfig);
+			m_ui.bgInfo->setCustomProperty("screenBase", QString("0x%1").arg(m_addressBase + bitmapCache->bitsStart[frame], 8, 16, QChar('0')));
+			m_ui.bgInfo->setCustomProperty("charBase", tr("N/A"));
+			m_ui.bgInfo->setCustomProperty("size", QString("%1×%2").arg(width).arg(height));
+			m_ui.bgInfo->setCustomProperty("priority", priority);
+			m_ui.bgInfo->setCustomProperty("offset", offset);
+			m_ui.bgInfo->setCustomProperty("transform", transform);
 			m_rawMap = QImage(QSize(width, height), QImage::Format_ARGB32);
 			uchar* bgBits = m_rawMap.bits();
 			for (int j = 0; j < height; ++j) {
@@ -163,6 +215,16 @@ void MapView::updateTilesGBA(bool force) {
 			mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, m_map);
 			int tilesW = 1 << mMapCacheSystemInfoGetTilesWide(mapCache->sysConfig);
 			int tilesH = 1 << mMapCacheSystemInfoGetTilesHigh(mapCache->sysConfig);
+			m_ui.bgInfo->setCustomProperty("screenBase", QString("%0%1")
+					.arg(m_addressWidth == 8 ? "0x" : "")
+					.arg(m_addressBase + mapCache->mapStart, m_addressWidth, 16, QChar('0')));
+			m_ui.bgInfo->setCustomProperty("charBase", QString("%0%1")
+					.arg(m_addressWidth == 8 ? "0x" : "")
+					.arg(m_addressBase + mapCache->tileCache->tileBase, m_addressWidth, 16, QChar('0')));
+			m_ui.bgInfo->setCustomProperty("size", QString("%1×%2").arg(tilesW * 8).arg(tilesH * 8));
+			m_ui.bgInfo->setCustomProperty("priority", priority);
+			m_ui.bgInfo->setCustomProperty("offset", offset);
+			m_ui.bgInfo->setCustomProperty("transform", transform);
 			m_rawMap = QImage(QSize(tilesW * 8, tilesH * 8), QImage::Format_ARGB32);
 			uchar* bgBits = m_rawMap.bits();
 			for (int j = 0; j < tilesH; ++j) {

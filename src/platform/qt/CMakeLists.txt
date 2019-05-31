@@ -59,6 +59,7 @@ set(SOURCE_FILES
 	AbstractUpdater.cpp
 	Action.cpp
 	ActionMapper.cpp
+	AssetInfo.cpp
 	AssetTile.cpp
 	AssetView.cpp
 	AudioProcessor.cpp

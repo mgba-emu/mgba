@@ -7,7 +7,7 @@ Features:
  - GB: Expose platform information to CLI debugger
  - Support Discord Rich Presence
  - Debugger: Add tracing to file
- - Map viewer supports bitmapped GBA modes
+ - Enhanced map viewer, supporting bitmapped GBA modes and more displayed info
  - OpenGL renderer with high-resolution upscaling support
  - Experimental high level "XQ" audio for most GBA games
  - Interframe blending for games that use flicker effects

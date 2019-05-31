@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>AssetTile</class>
- <widget class="QGroupBox" name="AssetTile">
+ <widget class="QGBA::AssetInfo" name="AssetTile">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>171</width>
-    <height>355</height>
+    <width>241</width>
+    <height>406</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -185,6 +185,12 @@
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>QGBA::AssetInfo</class>
+   <extends>QGroupBox</extends>
+   <header>AssetInfo.h</header>
+   <container>1</container>
+  </customwidget>
   <customwidget>
    <class>QGBA::Swatch</class>
    <extends>QWidget</extends>
