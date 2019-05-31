@@ -30,6 +30,7 @@
 #include "DebuggerConsoleController.h"
 #include "Display.h"
 #include "CoreController.h"
+#include "FrameView.h"
 #include "GBAApp.h"
 #include "GDBController.h"
 #include "GDBWindow.h"
@@ -1437,7 +1438,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_overrideView->recheck();
 	}, "tools");
 
-	m_actions.addAction(tr("Game &Pak sensors..."), "sensorWindow", [this]() {
+	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow", [this]() {
 		if (!m_sensorView) {
 			m_sensorView = std::move(std::make_unique<SensorView>(&m_inputController));
 			if (m_controller) {
@@ -1467,6 +1468,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("View &sprites..."), "spriteWindow", openControllerTView<ObjView>(), "tools");
 	addGameAction(tr("View &tiles..."), "tileWindow", openControllerTView<TileView>(), "tools");
 	addGameAction(tr("View &map..."), "mapWindow", openControllerTView<MapView>(), "tools");
+
+#ifdef M_CORE_GBA
+	Action* frameWindow = addGameAction(tr("&Frame inspector..."), "frameWindow", openControllerTView<FrameView>(), "tools");
+	m_platformActions.insert(PLATFORM_GBA, frameWindow);
+#endif
+
 	addGameAction(tr("View memory..."), "memoryView", openControllerTView<MemoryView>(), "tools");
 	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "tools");
 

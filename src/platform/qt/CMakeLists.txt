@@ -72,6 +72,7 @@ set(SOURCE_FILES
 	Display.cpp
 	DisplayGL.cpp
 	DisplayQt.cpp
+	FrameView.cpp
 	GBAApp.cpp
 	GBAKeyEditor.cpp
 	GIFView.cpp
@@ -122,6 +123,7 @@ set(UI_FILES
 	BattleChipView.ui
 	CheatsView.ui
 	DebuggerConsole.ui
+	FrameView.ui
 	GIFView.ui
 	IOViewer.ui
 	LoadSaveState.ui

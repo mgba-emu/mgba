@@ -11,6 +11,7 @@ Features:
  - OpenGL renderer with high-resolution upscaling support
  - Experimental high level "XQ" audio for most GBA games
  - Interframe blending for games that use flicker effects
+ - Frame inspector for dissecting and debugging rendering
 Emulation fixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs

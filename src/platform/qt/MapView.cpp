@@ -211,6 +211,7 @@ void MapView::updateTilesGBA(bool force) {
 				mBitmapCacheCleanRow(bitmapCache, m_bitmapStatus, j);
 				memcpy(static_cast<void*>(&bgBits[width * j * 4]), mBitmapCacheGetRow(bitmapCache, j), width * 4);
 			}
+			m_rawMap = m_rawMap.rgbSwapped();
 		} else {
 			mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, m_map);
 			int tilesW = 1 << mMapCacheSystemInfoGetTilesWide(mapCache->sysConfig);
@@ -225,19 +226,9 @@ void MapView::updateTilesGBA(bool force) {
 			m_ui.bgInfo->setCustomProperty("priority", priority);
 			m_ui.bgInfo->setCustomProperty("offset", offset);
 			m_ui.bgInfo->setCustomProperty("transform", transform);
-			m_rawMap = QImage(QSize(tilesW * 8, tilesH * 8), QImage::Format_ARGB32);
-			uchar* bgBits = m_rawMap.bits();
-			for (int j = 0; j < tilesH; ++j) {
-				for (int i = 0; i < tilesW; ++i) {
-					mMapCacheCleanTile(mapCache, m_mapStatus, i, j);
-				}
-				for (int i = 0; i < 8; ++i) {
-					memcpy(static_cast<void*>(&bgBits[tilesW * 32 * (i + j * 8)]), mMapCacheGetRow(mapCache, i + j * 8), tilesW * 32);
-				}
-			}
+			m_rawMap = compositeMap(m_map, m_mapStatus);
 		}
 	}
-	m_rawMap = m_rawMap.rgbSwapped();
 	QPixmap map = QPixmap::fromImage(m_rawMap.convertToFormat(QImage::Format_RGB32));
 	if (m_ui.magnification->value() > 1) {
 		map = map.scaled(map.size() * m_ui.magnification->value());
