@@ -41,7 +41,6 @@ FrameView::FrameView(std::shared_ptr<CoreController> controller, QWidget* parent
 		invalidateQueue();
 	});
 
-	m_ui.renderedView->installEventFilter(this);
 	m_ui.compositedView->installEventFilter(this);
 
 	connect(m_ui.queue, &QListWidget::itemChanged, this, [this](QListWidgetItem* item) {
@@ -50,7 +49,7 @@ FrameView::FrameView(std::shared_ptr<CoreController> controller, QWidget* parent
 		if (layer.enabled) {
 			m_disabled.remove(layer.id);
 		} else {
-			m_disabled.insert(layer.id);			
+			m_disabled.insert(layer.id);
 		}
 		invalidateQueue();
 	});
@@ -64,12 +63,20 @@ FrameView::FrameView(std::shared_ptr<CoreController> controller, QWidget* parent
 	});
 	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, [this]() {
 		invalidateQueue();
-
-		QPixmap rendered = m_rendered.scaledToHeight(m_rendered.height() * m_ui.magnification->value());
-		m_ui.renderedView->setPixmap(rendered);
 	});
 	connect(m_ui.exportButton, &QAbstractButton::pressed, this, &FrameView::exportFrame);
+
+	m_backdropPicker = ColorPicker(m_ui.backdrop, QColor(0, 0, 0, 0));
+	connect(&m_backdropPicker, &ColorPicker::colorChanged, this, [this](const QColor& color) {
+		m_overrideBackdrop = color;
+	});
 	m_controller->addFrameAction(std::bind(&FrameView::frameCallback, this, m_callbackLocker));
+
+	{
+		CoreController::Interrupter interrupter(m_controller);
+		refreshVl();
+	}
+	m_controller->frameAdvance();
 }
 
 FrameView::~FrameView() {
@@ -237,7 +244,12 @@ void FrameView::injectGBA() {
 	QPalette palette;
 	gba->video.renderer->highlightColor = palette.color(QPalette::HighlightedText).rgb();
 	gba->video.renderer->highlightAmount = sin(m_glowFrame * M_PI / 30) * 64 + 64;
+	if (!m_overrideBackdrop.isValid()) {
+		QRgb backdrop = M_RGB5_TO_RGB8(gba->video.palette[0]) | 0xFF000000;
+		m_backdropPicker.setColor(backdrop);
+	}
 
+	m_vl->reset(m_vl);
 	for (const Layer& layer : m_queue) {
 		switch (layer.id.type) {
 		case LayerId::SPRITE:
@@ -256,10 +268,13 @@ void FrameView::injectGBA() {
 			break;
 		}
 	}
+	if (m_overrideBackdrop.isValid()) {
+		mVideoLoggerInjectPalette(logger, 0, M_RGB8_TO_RGB5(m_overrideBackdrop.rgb()));
+	}
 	if (m_ui.disableScanline->checkState() == Qt::Checked) {
 		mVideoLoggerIgnoreAfterInjection(logger, (1 << DIRTY_PALETTE) | (1 << DIRTY_OAM) | (1 << DIRTY_REGISTER));
 	} else {
-		mVideoLoggerIgnoreAfterInjection(logger, 0);		
+		mVideoLoggerIgnoreAfterInjection(logger, 0);
 	}
 }
 #endif
@@ -290,7 +305,6 @@ void FrameView::invalidateQueue(const QSize& dims) {
 	bool blockSignals = m_ui.queue->blockSignals(true);
 	QMutexLocker locker(&m_mutex);
 	if (m_vl) {
-		m_vl->reset(m_vl);
 		switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
 		case PLATFORM_GBA:
@@ -342,8 +356,6 @@ void FrameView::updateRendered() {
 		return;
 	}
 	m_rendered.convertFromImage(m_controller->getPixels());
-	QPixmap rendered = m_rendered.scaledToHeight(m_rendered.height() * m_ui.magnification->value());
-	m_ui.renderedView->setPixmap(rendered);
 }
 
 bool FrameView::eventFilter(QObject* obj, QEvent* event) {

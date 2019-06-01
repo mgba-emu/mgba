@@ -16,6 +16,7 @@
 #include <QTimer>
 
 #include "AssetView.h"
+#include "ColorPicker.h"
 
 #include <mgba-util/vfs.h>
 
@@ -105,6 +106,8 @@ private:
 	QPixmap m_composited;
 	QPixmap m_rendered;
 	mMapCacheEntry m_mapStatus[4][128 * 128] = {}; // TODO: Correct size
+	ColorPicker m_backdropPicker;
+	QColor m_overrideBackdrop;
 
 #ifdef M_CORE_GBA
 	uint16_t m_gbaDispcnt;

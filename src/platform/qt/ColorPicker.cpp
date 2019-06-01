@@ -34,6 +34,14 @@ ColorPicker& ColorPicker::operator=(const ColorPicker& other) {
 	return *this;
 }
 
+void ColorPicker::setColor(const QColor& color) {
+	m_defaultColor = color;
+
+	QPalette palette = m_parent->palette();
+	palette.setColor(m_parent->backgroundRole(), color);
+	m_parent->setPalette(palette);
+}
+
 bool ColorPicker::eventFilter(QObject* obj, QEvent* event) {
 	if (event->type() != QEvent::MouseButtonRelease) {
 		return false;

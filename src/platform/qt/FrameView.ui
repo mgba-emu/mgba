@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Inspect frame</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,1,1,0" columnstretch="0,1">
+  <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0,1,0" columnstretch="0,1">
    <item row="0" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
@@ -51,7 +51,63 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="1" rowspan="2">
+   <item row="3" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QFrame" name="backdrop">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Backdrop color</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="2" column="0">
+    <widget class="QCheckBox" name="disableScanline">
+     <property name="text">
+      <string>Disable scanline effects</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0" rowspan="2">
+    <widget class="QListWidget" name="queue"/>
+   </item>
+   <item row="6" column="0">
+    <widget class="QPushButton" name="exportButton">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Export</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" rowspan="7">
     <widget class="QScrollArea" name="compositedArea">
      <property name="widgetResizable">
       <bool>true</bool>
@@ -88,65 +144,6 @@
        </item>
       </layout>
      </widget>
-    </widget>
-   </item>
-   <item row="0" column="1" rowspan="5">
-    <widget class="QScrollArea" name="renderedArea">
-     <property name="widgetResizable">
-      <bool>true</bool>
-     </property>
-     <widget class="QWidget" name="scrollAreaWidgetContents">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>567</width>
-        <height>467</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QLabel" name="renderedView">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-   </item>
-   <item row="3" column="0" rowspan="3">
-    <widget class="QListWidget" name="queue"/>
-   </item>
-   <item row="6" column="0">
-    <widget class="QPushButton" name="exportButton">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Export</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QCheckBox" name="disableScanline">
-     <property name="text">
-      <string>Disable scanline effects</string>
-     </property>
     </widget>
    </item>
   </layout>
