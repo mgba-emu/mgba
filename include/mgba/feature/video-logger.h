@@ -104,6 +104,7 @@ void mVideoLoggerAttachChannel(struct mVideoLogger* logger, struct mVideoLogCont
 struct mCore;
 struct mVideoLogContext* mVideoLogContextCreate(struct mCore* core);
 
+void mVideoLogContextSetCompression(struct mVideoLogContext*, bool enable);
 void mVideoLogContextSetOutput(struct mVideoLogContext*, struct VFile*);
 void mVideoLogContextWriteHeader(struct mVideoLogContext*, struct mCore* core);
 

@@ -94,6 +94,7 @@ struct mVideoLogContext {
 	struct mVideoLogChannel channels[mVL_MAX_CHANNELS];
 
 	bool write;
+	bool compression;
 	uint32_t activeChannel;
 	struct VFile* backing;
 };
@@ -465,6 +466,12 @@ struct mVideoLogContext* mVideoLogContextCreate(struct mCore* core) {
 	context->initialStateSize = 0;
 	context->initialState = NULL;
 
+#ifdef USE_ZLIB
+	context->compression = true;
+#else
+	context->compression = false;
+#endif
+
 	if (core) {
 		context->initialStateSize = core->stateSize(core);
 		context->initialState = anonymousMemoryMap(context->initialStateSize);
@@ -480,6 +487,10 @@ void mVideoLogContextSetOutput(struct mVideoLogContext* context, struct VFile* v
 	context->backing = vf;
 	vf->truncate(vf, 0);
 	vf->seek(vf, 0, SEEK_SET);
+}
+
+void mVideoLogContextSetCompression(struct mVideoLogContext* context, bool compression) {
+	context->compression = compression;
 }
 
 void mVideoLogContextWriteHeader(struct mVideoLogContext* context, struct mCore* core) {
@@ -499,21 +510,24 @@ void mVideoLogContextWriteHeader(struct mVideoLogContext* context, struct mCore*
 		struct mVLBlockHeader chheader = { 0 };
 		STORE_32LE(mVL_BLOCK_INITIAL_STATE, 0, &chheader.blockType);
 #ifdef USE_ZLIB
-		STORE_32LE(mVL_FLAG_BLOCK_COMPRESSED, 0, &chheader.flags);
+		if (context->compression) {
+			STORE_32LE(mVL_FLAG_BLOCK_COMPRESSED, 0, &chheader.flags);
 
-		struct VFile* vfm = VFileMemChunk(NULL, 0);
-		struct VFile* src = VFileFromConstMemory(context->initialState, context->initialStateSize);
-		_compress(vfm, src);
-		src->close(src);
-		STORE_32LE(vfm->size(vfm), 0, &chheader.length);
-		context->backing->write(context->backing, &chheader, sizeof(chheader));
-		_copyVf(context->backing, vfm);
-		vfm->close(vfm);
-#else
-		STORE_32LE(context->initialStateSize, 0, &chheader.length);
-		context->backing->write(context->backing, &chheader, sizeof(chheader));
-		context->backing->write(context->backing, context->initialState, context->initialStateSize);
+			struct VFile* vfm = VFileMemChunk(NULL, 0);
+			struct VFile* src = VFileFromConstMemory(context->initialState, context->initialStateSize);
+			_compress(vfm, src);
+			src->close(src);
+			STORE_32LE(vfm->size(vfm), 0, &chheader.length);
+			context->backing->write(context->backing, &chheader, sizeof(chheader));
+			_copyVf(context->backing, vfm);
+			vfm->close(vfm);
+		} else
 #endif
+		{
+			STORE_32LE(context->initialStateSize, 0, &chheader.length);
+			context->backing->write(context->backing, &chheader, sizeof(chheader));
+			context->backing->write(context->backing, context->initialState, context->initialStateSize);
+		}
 	}
 
  	size_t i;
@@ -647,9 +661,10 @@ static void _flushBufferCompressed(struct mVideoLogContext* context) {
 
 static void _flushBuffer(struct mVideoLogContext* context) {
 #ifdef USE_ZLIB
-	// TODO: Make optional
-	_flushBufferCompressed(context);
-	return;
+	if (context->compression) {
+		_flushBufferCompressed(context);
+		return;
+	}
 #endif
 
 	struct CircleBuffer* buffer = &context->channels[context->activeChannel].buffer;

@@ -809,26 +809,39 @@ void CoreController::clearOverride() {
 	m_override.reset();
 }
 
-void CoreController::startVideoLog(const QString& path) {
+void CoreController::startVideoLog(const QString& path, bool compression) {
 	if (m_vl) {
+		return;
+	}
+
+	VFile* vf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
+	if (!vf) {
+		return;
+	}
+	startVideoLog(vf);
+}
+
+void CoreController::startVideoLog(VFile* vf, bool compression) {
+	if (m_vl || !vf) {
 		return;
 	}
 
 	Interrupter interrupter(this);
 	m_vl = mVideoLogContextCreate(m_threadContext.core);
-	m_vlVf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
+	m_vlVf = vf;
 	mVideoLogContextSetOutput(m_vl, m_vlVf);
+	mVideoLogContextSetCompression(m_vl, compression);
 	mVideoLogContextWriteHeader(m_vl, m_threadContext.core);
 }
 
-void CoreController::endVideoLog() {
+void CoreController::endVideoLog(bool closeVf) {
 	if (!m_vl) {
 		return;
 	}
 
 	Interrupter interrupter(this);
 	mVideoLogContextDestroy(m_threadContext.core, m_vl);
-	if (m_vlVf) {
+	if (m_vlVf && closeVf) {
 		m_vlVf->close(m_vlVf);
 		m_vlVf = nullptr;
 	}

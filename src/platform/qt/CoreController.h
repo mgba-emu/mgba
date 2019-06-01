@@ -161,8 +161,9 @@ public slots:
 
 	void clearOverride();
 
-	void startVideoLog(const QString& path);
-	void endVideoLog();
+	void startVideoLog(const QString& path, bool compression = true);
+	void startVideoLog(VFile* vf, bool compression = true);
+	void endVideoLog(bool closeVf = true);
 
 	void setFramebufferHandle(int fb);
 

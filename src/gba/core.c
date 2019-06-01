@@ -990,9 +990,11 @@ static void _GBACoreStartVideoLog(struct mCore* core, struct mVideoLogContext* c
 static void _GBACoreEndVideoLog(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = core->board;
-	GBAVideoProxyRendererUnshim(&gba->video, &gbacore->proxyRenderer);
-	free(gbacore->proxyRenderer.logger);
-	gbacore->proxyRenderer.logger = NULL;
+	if (gbacore->proxyRenderer.logger) {
+		GBAVideoProxyRendererUnshim(&gba->video, &gbacore->proxyRenderer);
+		free(gbacore->proxyRenderer.logger);
+		gbacore->proxyRenderer.logger = NULL;
+	}
 }
 #endif
 

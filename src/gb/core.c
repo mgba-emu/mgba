@@ -879,9 +879,11 @@ static void _GBCoreStartVideoLog(struct mCore* core, struct mVideoLogContext* co
 static void _GBCoreEndVideoLog(struct mCore* core) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	struct GB* gb = core->board;
-	GBVideoProxyRendererUnshim(&gb->video, &gbcore->proxyRenderer);
-	free(gbcore->proxyRenderer.logger);
-	gbcore->proxyRenderer.logger = NULL;
+	if (gbcore->proxyRenderer.logger) {
+		GBVideoProxyRendererUnshim(&gb->video, &gbcore->proxyRenderer);
+		free(gbcore->proxyRenderer.logger);
+		gbcore->proxyRenderer.logger = NULL;
+	}
 }
 #endif
 
