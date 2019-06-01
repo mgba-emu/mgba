@@ -102,6 +102,8 @@ public:
 	bool audioSync() const { return m_audioSync; }
 	bool videoSync() const { return m_videoSync; }
 
+	void addFrameAction(std::function<void ()> callback);
+
 public slots:
 	void start();
 	void stop();
@@ -209,7 +211,8 @@ private:
 
 	QList<std::function<void()>> m_resetActions;
 	QList<std::function<void()>> m_frameActions;
-	QMutex m_mutex;
+	QMutex m_actionMutex{QMutex::Recursive};
+	QMutex m_bufferMutex;
 
 	int m_activeKeys = 0;
 	bool m_autofire[32] = {};

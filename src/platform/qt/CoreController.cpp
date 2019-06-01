@@ -203,10 +203,10 @@ CoreController::~CoreController() {
 }
 
 const color_t* CoreController::drawContext() {
-	QMutexLocker locker(&m_mutex);
 	if (m_hwaccel) {
 		return nullptr;
 	}
+	QMutexLocker locker(&m_bufferMutex);
 	return reinterpret_cast<const color_t*>(m_completeBuffer.constData());
 }
 
@@ -401,8 +401,7 @@ void CoreController::setPaused(bool paused) {
 		return;
 	}
 	if (paused) {
-		QMutexLocker locker(&m_mutex);
-		m_frameActions.append([this]() {
+		addFrameAction([this]() {
 			mCoreThreadPauseFromThread(&m_threadContext);
 		});
 	} else {
@@ -411,11 +410,15 @@ void CoreController::setPaused(bool paused) {
 }
 
 void CoreController::frameAdvance() {
-	QMutexLocker locker(&m_mutex);
-	m_frameActions.append([this]() {
+	addFrameAction([this]() {
 		mCoreThreadPauseFromThread(&m_threadContext);
 	});
 	setPaused(false);
+}
+
+void CoreController::addFrameAction(std::function<void ()> action) {
+	QMutexLocker locker(&m_actionMutex);
+	m_frameActions.append(action);
 }
 
 void CoreController::setSync(bool sync) {
@@ -880,9 +883,9 @@ int CoreController::updateAutofire() {
 }
 
 void CoreController::finishFrame() {
-	QMutexLocker locker(&m_mutex);
 	if (!m_hwaccel) {
-			memcpy(m_completeBuffer.data(), m_activeBuffer->constData(), m_activeBuffer->size());
+		QMutexLocker locker(&m_bufferMutex);
+		memcpy(m_completeBuffer.data(), m_activeBuffer->constData(), m_activeBuffer->size());
 
 		// TODO: Generalize this to triple buffering?
 		m_activeBuffer = &m_buffers[0];
@@ -893,10 +896,13 @@ void CoreController::finishFrame() {
 		memcpy(m_activeBuffer->data(), m_completeBuffer.constData(), m_activeBuffer->size());
 		m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), screenDimensions().width());
 	}
-	for (auto& action : m_frameActions) {
+
+	QMutexLocker locker(&m_actionMutex);
+	QList<std::function<void ()>> frameActions(m_frameActions);
+	m_frameActions.clear();
+	for (auto& action : frameActions) {
 		action();
 	}
-	m_frameActions.clear();
 	updateKeys();
 
 	QMetaObject::invokeMethod(this, "frameAvailable");
