@@ -13,6 +13,7 @@
 #include <cmath>
 
 #include "CoreController.h"
+#include "GBAApp.h"
 
 #include <mgba/core/core.h>
 #include <mgba/feature/video-logger.h>
@@ -67,6 +68,7 @@ FrameView::FrameView(std::shared_ptr<CoreController> controller, QWidget* parent
 		QPixmap rendered = m_rendered.scaledToHeight(m_rendered.height() * m_ui.magnification->value());
 		m_ui.renderedView->setPixmap(rendered);
 	});
+	connect(m_ui.exportButton, &QAbstractButton::pressed, this, &FrameView::exportFrame);
 	m_controller->addFrameAction(std::bind(&FrameView::frameCallback, this, m_callbackLocker));
 }
 
@@ -328,6 +330,7 @@ void FrameView::invalidateQueue(const QSize& dims) {
 		updateRendered();
 		composited = m_rendered;
 	} else {
+		m_ui.exportButton->setEnabled(true);
 		composited.convertFromImage(m_framebuffer);
 	}
 	m_composited = composited.scaled(m_dims * m_ui.magnification->value());
@@ -406,6 +409,12 @@ void FrameView::frameCallback(FrameView* viewer, std::shared_ptr<bool> lock) {
 	viewer->m_controller->addFrameAction(std::bind(&FrameView::frameCallback, viewer, lock));
 }
 
+void FrameView::exportFrame() {
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export frame"),
+	                                                  tr("Portable Network Graphics (*.png)"));
+	CoreController::Interrupter interrupter(m_controller);
+	m_framebuffer.save(filename, "PNG");
+}
 
 QString FrameView::LayerId::readable() const {
 	QString typeStr;

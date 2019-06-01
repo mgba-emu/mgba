@@ -37,6 +37,7 @@ public:
 public slots:
 	void selectLayer(const QPointF& coord);
 	void disableLayer(const QPointF& coord);
+	void exportFrame();
 
 protected:
 #ifdef M_CORE_GBA
