@@ -62,6 +62,17 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.disableBG[3] = false;
 	renderer->d.disableOBJ = false;
 
+	renderer->d.highlightBG[0] = false;
+	renderer->d.highlightBG[1] = false;
+	renderer->d.highlightBG[2] = false;
+	renderer->d.highlightBG[3] = false;
+	int i;
+	for (i = 0; i < 128; ++i) {
+		renderer->d.highlightOBJ[i] = false;
+	}
+	renderer->d.highlightColor = GBA_COLOR_WHITE;
+	renderer->d.highlightAmount = 0;
+
 	renderer->temporaryBuffer = 0;
 }
 
@@ -568,6 +579,13 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		softwareRenderer->windows[0].control.packed = 0xFF;
 	}
 
+	if (softwareRenderer->lastHighlightAmount != softwareRenderer->d.highlightAmount) {
+		softwareRenderer->lastHighlightAmount = softwareRenderer->d.highlightAmount;
+		if (softwareRenderer->lastHighlightAmount) {
+			softwareRenderer->blendDirty = true;
+		}
+	}
+
 	if (softwareRenderer->blendDirty) {
 		_updatePalettes(softwareRenderer);
 		softwareRenderer->blendDirty = false;
@@ -594,6 +612,11 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			softwareRenderer->row[x] = backdrop;
 		}
 	}
+
+	softwareRenderer->bg[0].highlight = softwareRenderer->d.highlightBG[0];
+	softwareRenderer->bg[1].highlight = softwareRenderer->d.highlightBG[1];
+	softwareRenderer->bg[2].highlight = softwareRenderer->d.highlightBG[2];
+	softwareRenderer->bg[3].highlight = softwareRenderer->d.highlightBG[3];
 
 	_drawScanline(softwareRenderer, y);
 
@@ -828,7 +851,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 					continue;
 				}
 
-				int drawn = GBAVideoSoftwareRendererPreprocessSprite(renderer, &sprite->obj, localY);
+				int drawn = GBAVideoSoftwareRendererPreprocessSprite(renderer, &sprite->obj, sprite->index, localY);
 				spriteLayers |= drawn << GBAObjAttributesCGetPriority(sprite->obj.c);
 			}
 			if (renderer->spriteCyclesRemaining <= 0) {
@@ -923,6 +946,14 @@ static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer) {
 	} else {
 		for (i = 0; i < 512; ++i) {
 			renderer->variantPalette[i] = renderer->normalPalette[i];
+		}
+	}
+	unsigned highlightAmount = renderer->d.highlightAmount >> 4;
+
+	if (highlightAmount) {
+		for (i = 0; i < 512; ++i) {
+			renderer->highlightPalette[i] = _mix(0x10 - highlightAmount, renderer->normalPalette[i], highlightAmount, renderer->d.highlightColor);
+			renderer->highlightVariantPalette[i] = _mix(0x10 - highlightAmount, renderer->variantPalette[i], highlightAmount, renderer->d.highlightColor);
 		}
 	}
 }

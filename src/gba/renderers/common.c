@@ -25,6 +25,7 @@ int GBAVideoRendererCleanOAM(struct GBAObj* oam, struct GBAVideoRendererSprite* 
 				sprites[oamMax].y = y;
 				sprites[oamMax].endY = y + height;
 				sprites[oamMax].obj = obj;
+				sprites[oamMax].index = i;
 				++oamMax;
 			}
 		}

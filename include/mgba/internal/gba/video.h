@@ -12,6 +12,7 @@ CXX_GUARD_START
 
 #include <mgba/core/log.h>
 #include <mgba/core/timing.h>
+#include <mgba/gba/interface.h>
 
 mLOG_DECLARE_CATEGORY(GBA_VIDEO);
 
@@ -192,6 +193,11 @@ struct GBAVideoRenderer {
 
 	bool disableBG[4];
 	bool disableOBJ;
+
+	bool highlightBG[4];
+	bool highlightOBJ[128];
+	color_t highlightColor;
+	uint8_t highlightAmount;
 };
 
 struct GBAVideo {

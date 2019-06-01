@@ -191,6 +191,12 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		proxyRenderer->backend->disableBG[2] = proxyRenderer->d.disableBG[2];
 		proxyRenderer->backend->disableBG[3] = proxyRenderer->d.disableBG[3];
 		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
+		proxyRenderer->backend->highlightBG[0] = proxyRenderer->d.highlightBG[0];
+		proxyRenderer->backend->highlightBG[1] = proxyRenderer->d.highlightBG[1];
+		proxyRenderer->backend->highlightBG[2] = proxyRenderer->d.highlightBG[2];
+		proxyRenderer->backend->highlightBG[3] = proxyRenderer->d.highlightBG[3];
+		memcpy(proxyRenderer->backend->highlightOBJ, proxyRenderer->d.highlightOBJ, sizeof(proxyRenderer->backend->highlightOBJ));
+		proxyRenderer->backend->highlightAmount = proxyRenderer->d.highlightAmount;
 		if (item->address < GBA_VIDEO_VERTICAL_PIXELS) {
 			proxyRenderer->backend->drawScanline(proxyRenderer->backend, item->address);
 		}

@@ -16,6 +16,7 @@ struct GBAVideoRendererSprite {
 	struct GBAObj obj;
 	int16_t y;
 	int16_t endY;
+	int8_t index;
 };
 
 int GBAVideoRendererCleanOAM(struct GBAObj* oam, struct GBAVideoRendererSprite* sprites, int offsetY);
