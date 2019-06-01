@@ -10,13 +10,18 @@
 #include <QBitmap>
 #include <QImage>
 #include <QList>
+#include <QMutex>
 #include <QPixmap>
 #include <QSet>
 #include <QTimer>
 
 #include "AssetView.h"
 
+#include <mgba-util/vfs.h>
+
 #include <memory>
+
+struct VFile;
 
 namespace QGBA {
 
@@ -27,6 +32,7 @@ Q_OBJECT
 
 public:
 	FrameView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
+	~FrameView();
 
 public slots:
 	void selectLayer(const QPointF& coord);
@@ -35,16 +41,20 @@ public slots:
 protected:
 #ifdef M_CORE_GBA
 	void updateTilesGBA(bool force) override;
+	void injectGBA();
 #endif
 #ifdef M_CORE_GB
 	void updateTilesGB(bool force) override;
+	void injectGB();
 #endif
 
 	bool eventFilter(QObject* obj, QEvent* event) override;
 
 private slots:
-	void invalidateQueue(const QSize& dims = QSize());
+	void invalidateQueue(const QSize& = {});
 	void updateRendered();
+	void refreshVl();
+	void newVl();
 
 private:
 	struct LayerId {
@@ -57,7 +67,7 @@ private:
 		} type = NONE;
 		int index = -1;
 
-		bool operator==(const LayerId& other) const { return other.type == type && other.index == index; }
+		bool operator!=(const LayerId& other) const { return other.type != type || other.index != index; }
 		operator uint() const { return (type << 8) | index; }
 		QString readable() const;
 	};
@@ -73,6 +83,8 @@ private:
 
 	bool lookupLayer(const QPointF& coord, Layer*&);
 
+	static void frameCallback(FrameView*, std::shared_ptr<bool>);
+
 	Ui::FrameView m_ui;
 
 	LayerId m_active{};
@@ -80,12 +92,24 @@ private:
 	int m_glowFrame;
 	QTimer m_glowTimer;
 
+	QMutex m_mutex{QMutex::Recursive};
+	VFile* m_currentFrame = nullptr;
+	VFile* m_nextFrame = nullptr;
+	mCore* m_vl = nullptr;
+	QImage m_framebuffer;
+
 	QSize m_dims;
 	QList<Layer> m_queue;
 	QSet<LayerId> m_disabled;
 	QPixmap m_composited;
 	QPixmap m_rendered;
 	mMapCacheEntry m_mapStatus[4][128 * 128] = {}; // TODO: Correct size
+
+#ifdef M_CORE_GBA
+	uint16_t m_gbaDispcnt;
+#endif
+
+	std::shared_ptr<bool> m_callbackLocker{std::make_shared<bool>(true)};
 };
 
 }
