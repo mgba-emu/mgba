@@ -1094,6 +1094,7 @@ static void _GBAVLPStartFrameCallback(void *context) {
 		GBAVideoProxyRendererUnshim(&gba->video, &gbacore->proxyRenderer);
 		mVideoLogContextRewind(gbacore->logContext, core);
 		GBAVideoProxyRendererShim(&gba->video, &gbacore->proxyRenderer);
+		gba->earlyExit = true;
 	}
 }
 
@@ -1109,6 +1110,7 @@ static bool _GBAVLPInit(struct mCore* core) {
 	gbacore->logCallbacks.videoFrameStarted = _GBAVLPStartFrameCallback;
 	gbacore->logCallbacks.context = core;
 	core->addCoreCallbacks(core, &gbacore->logCallbacks);
+	core->videoLogger = gbacore->proxyRenderer.logger;
 	return true;
 }
 
