@@ -26,6 +26,7 @@ Other fixes:
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
  - Switch: Fix threading-related crash on second launch
  - Qt: Fix FPS target maxing out at 59.727 (fixes mgba.io/i/1421)
+ - Core: Fix crashes if core directories aren't set
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
