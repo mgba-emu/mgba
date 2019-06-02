@@ -64,6 +64,7 @@ FrameView::FrameView(std::shared_ptr<CoreController> controller, QWidget* parent
 		invalidateQueue();
 	});
 	connect(m_ui.exportButton, &QAbstractButton::pressed, this, &FrameView::exportFrame);
+	connect(m_ui.reset, &QAbstractButton::pressed, this, &FrameView::reset);
 
 	m_backdropPicker = ColorPicker(m_ui.backdrop, QColor(0, 0, 0, 0));
 	connect(&m_backdropPicker, &ColorPicker::colorChanged, this, [this](const QColor& color) {
@@ -430,6 +431,15 @@ void FrameView::exportFrame() {
 	                                                  tr("Portable Network Graphics (*.png)"));
 	CoreController::Interrupter interrupter(m_controller);
 	m_framebuffer.save(filename, "PNG");
+}
+
+void FrameView::reset() {
+	m_disabled.clear();
+	for (Layer& layer : m_queue) {
+		layer.enabled = true;
+	}
+	m_overrideBackdrop = QColor();
+	invalidateQueue();
 }
 
 QString FrameView::LayerId::readable() const {
