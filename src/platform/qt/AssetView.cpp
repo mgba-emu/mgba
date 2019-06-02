@@ -204,9 +204,18 @@ bool AssetView::lookupObjGBA(int id, struct ObjInfo* info) {
 		GBAObjAttributesCGetPriority(obj->c),
 		GBAObjAttributesBGetX(obj->b),
 		GBAObjAttributesAGetY(obj->a),
-		bool(GBAObjAttributesBIsHFlip(obj->b)),
-		bool(GBAObjAttributesBIsVFlip(obj->b)),
+		false,
+		false,
 	};
+	if (GBAObjAttributesAIsTransformed(obj->a)) {
+		int matIndex = GBAObjAttributesBGetMatIndex(obj->b);
+		const GBAOAMMatrix* mat = &gba->video.oam.mat[matIndex];
+		QTransform invXform(mat->a / 256., mat->c / 256., mat->b / 256., mat->d / 256., 0, 0);
+		newInfo.xform = invXform.inverted();
+	} else {
+		newInfo.hflip = bool(GBAObjAttributesBIsHFlip(obj->b));
+		newInfo.vflip = bool(GBAObjAttributesBIsVFlip(obj->b));
+	}
 	GBARegisterDISPCNT dispcnt = gba->memory.io[0]; // FIXME: Register name can't be imported due to namespacing issues
 	if (!GBARegisterDISPCNTIsObjCharacterMapping(dispcnt)) {
 		newInfo.stride = 0x20 >> (GBAObjAttributesAGet256Color(obj->a));

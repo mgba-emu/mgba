@@ -6,6 +6,7 @@
 #pragma once
 
 #include <QTimer>
+#include <QTransform>
 #include <QWidget>
 
 #include <mgba/core/cache-set.h>
@@ -58,6 +59,7 @@ protected:
 		unsigned y : 9;
 		bool hflip : 1;
 		bool vflip : 1;
+		QTransform xform;
 
 		bool operator!=(const ObjInfo&) const;
 	};

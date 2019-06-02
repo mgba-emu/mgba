@@ -6,7 +6,6 @@
 #include "FrameView.h"
 
 #include <QMouseEvent>
-#include <QPainter>
 #include <QPalette>
 
 #include <array>
@@ -177,6 +176,11 @@ void FrameView::updateTilesGBA(bool force) {
 				if (info.hflip || info.vflip) {
 					obj = obj.mirrored(info.hflip, info.vflip);
 				}
+				if (!info.xform.isIdentity()) {
+					offset += QPointF(obj.width(), obj.height()) / 2;
+					obj = obj.transformed(info.xform);
+					offset -= QPointF(obj.width() / 2, obj.height() / 2);
+				}
 				m_queue.append({
 					{ LayerId::SPRITE, sprite },
 					!m_disabled.contains({ LayerId::SPRITE, sprite }),
@@ -243,7 +247,7 @@ void FrameView::injectGBA() {
 	}
 	QPalette palette;
 	gba->video.renderer->highlightColor = palette.color(QPalette::HighlightedText).rgb();
-	gba->video.renderer->highlightAmount = sin(m_glowFrame * M_PI / 30) * 64 + 64;
+	gba->video.renderer->highlightAmount = sin(m_glowFrame * M_PI / 30) * 48 + 64;
 	if (!m_overrideBackdrop.isValid()) {
 		QRgb backdrop = M_RGB5_TO_RGB8(gba->video.palette[0]) | 0xFF000000;
 		m_backdropPicker.setColor(backdrop);
