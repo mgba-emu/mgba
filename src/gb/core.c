@@ -984,6 +984,7 @@ static void _GBVLPStartFrameCallback(void *context) {
 		GBVideoProxyRendererUnshim(&gb->video, &gbcore->proxyRenderer);
 		mVideoLogContextRewind(gbcore->logContext, core);
 		GBVideoProxyRendererShim(&gb->video, &gbcore->proxyRenderer);
+		gb->earlyExit = true;
 	}
 }
 
@@ -999,6 +1000,7 @@ static bool _GBVLPInit(struct mCore* core) {
 	gbcore->logCallbacks.videoFrameStarted = _GBVLPStartFrameCallback;
 	gbcore->logCallbacks.context = core;
 	core->addCoreCallbacks(core, &gbcore->logCallbacks);
+	core->videoLogger = gbcore->proxyRenderer.logger;
 	return true;
 }
 
