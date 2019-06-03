@@ -293,7 +293,7 @@ void mVideoLoggerWriteBuffer(struct mVideoLogger* logger, uint32_t bufferId, uin
 bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block) {
 	struct mVideoLogChannel* channel = logger->dataContext;
 	uint32_t ignorePackets = 0;
-	if (channel->injectionPoint == LOGGER_INJECTION_IMMEDIATE && !channel->injecting) {
+	if (channel && channel->injectionPoint == LOGGER_INJECTION_IMMEDIATE && !channel->injecting) {
 		mVideoLoggerRendererRunInjected(logger);
 		ignorePackets = channel->ignorePackets;
 	}
@@ -304,7 +304,7 @@ bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block) {
 		}
 		switch (item.type) {
 		case DIRTY_SCANLINE:
-			if (channel->injectionPoint == LOGGER_INJECTION_FIRST_SCANLINE && !channel->injecting && item.address == 0) {
+			if (channel && channel->injectionPoint == LOGGER_INJECTION_FIRST_SCANLINE && !channel->injecting && item.address == 0) {
 				mVideoLoggerRendererRunInjected(logger);
 				ignorePackets = channel->ignorePackets;
 			}
