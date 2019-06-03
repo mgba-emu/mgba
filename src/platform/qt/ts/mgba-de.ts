@@ -282,14 +282,19 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <translation>Hintergrundfarbe</translation>
     </message>
     <message>
-        <location filename="../FrameView.ui" line="93"/>
+        <location filename="../FrameView.ui" line="132"/>
         <source>Disable scanline effects</source>
         <translation>Scanline-Effekte deaktivieren</translation>
     </message>
     <message>
-        <location filename="../FrameView.ui" line="106"/>
+        <location filename="../FrameView.ui" line="145"/>
         <source>Export</source>
         <translation>Exportieren</translation>
+    </message>
+    <message>
+        <location filename="../FrameView.ui" line="152"/>
+        <source>Reset</source>
+        <translation>Zurücksetzen</translation>
     </message>
 </context>
 <context>
@@ -1358,42 +1363,42 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
 <context>
     <name>QGBA::FrameView</name>
     <message>
-        <location filename="../FrameView.cpp" line="429"/>
+        <location filename="../FrameView.cpp" line="430"/>
         <source>Export frame</source>
         <translation>Bild exportieren</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="430"/>
+        <location filename="../FrameView.cpp" line="431"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="439"/>
+        <location filename="../FrameView.cpp" line="449"/>
         <source>None</source>
         <translation>Keine</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="441"/>
+        <location filename="../FrameView.cpp" line="451"/>
         <source>Background</source>
         <translation>Hintergrund</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="444"/>
+        <location filename="../FrameView.cpp" line="454"/>
         <source>Window</source>
         <translation>Fenster</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="447"/>
+        <location filename="../FrameView.cpp" line="457"/>
         <source>Sprite</source>
         <translation>Sprite</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="450"/>
+        <location filename="../FrameView.cpp" line="460"/>
         <source>Backdrop</source>
         <translation>Hintergrund</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="456"/>
+        <location filename="../FrameView.cpp" line="466"/>
         <source>%1 %2</source>
         <translation>%1 %2</translation>
     </message>
