@@ -260,10 +260,10 @@ bool AssetView::lookupObjGB(int id, struct ObjInfo* info) {
 		palette,
 		0,
 		2,
-		obj->y != 0 && obj->y < 160,
+		obj->y != 0 && obj->y < 160 && obj->x != 0 && obj->x < 168,
 		GBObjAttributesGetPriority(obj->attr),
-		obj->x,
-		obj->y,
+		obj->x - 8,
+		obj->y - 16,
 		bool(GBObjAttributesIsXFlip(obj->attr)),
 		bool(GBObjAttributesIsYFlip(obj->attr)),
 	};

@@ -55,8 +55,8 @@ protected:
 
 		bool enabled : 1;
 		unsigned priority : 2;
-		unsigned x : 9;
-		unsigned y : 9;
+		int x : 10;
+		int y : 10;
 		bool hflip : 1;
 		bool vflip : 1;
 		QTransform xform;
