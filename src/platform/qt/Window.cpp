@@ -1470,7 +1470,21 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("View &map..."), "mapWindow", openControllerTView<MapView>(), "tools");
 
 #ifdef M_CORE_GBA
-	Action* frameWindow = addGameAction(tr("&Frame inspector..."), "frameWindow", openControllerTView<FrameView>(), "tools");
+	Action* frameWindow = addGameAction(tr("&Frame inspector..."), "frameWindow", [this]() {
+		if (!m_frameView) {
+			m_frameView = new FrameView(m_controller);
+			connect(this, &Window::shutdown, this, [this]() {
+				if (m_frameView) {
+					m_frameView->close();
+				}
+			});
+			connect(m_frameView, &QObject::destroyed, this, [this]() {
+				m_frameView = nullptr;
+			});
+			m_frameView->setAttribute(Qt::WA_DeleteOnClose);
+		}
+		m_frameView->show();
+	}, "tools");
 	m_platformActions.insert(PLATFORM_GBA, frameWindow);
 #endif
 
