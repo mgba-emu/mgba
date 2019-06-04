@@ -350,7 +350,6 @@ void SettingsView::updateConfig() {
 	saveSetting("sgb.borders", m_ui.sgbBorders);
 	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
-	saveSetting("audioBuffers", m_ui.audioBufferSize);
 	saveSetting("sampleRate", m_ui.sampleRate);
 	saveSetting("videoSync", m_ui.videoSync);
 	saveSetting("audioSync", m_ui.audioSync);
@@ -381,6 +380,11 @@ void SettingsView::updateConfig() {
 	saveSetting("cheatAutosave", m_ui.cheatAutosave);
 	saveSetting("autoload", m_ui.autoload);
 	saveSetting("autosave", m_ui.autosave);
+
+	if (m_ui.audioBufferSize->currentText().toInt() > 8192) {
+		m_ui.audioBufferSize->setCurrentText("8192");
+	}
+	saveSetting("audioBuffers", m_ui.audioBufferSize);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
