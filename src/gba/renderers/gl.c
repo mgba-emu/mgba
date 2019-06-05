@@ -442,7 +442,7 @@ static const char* const _renderObj =
 	"uniform ivec4 mosaic;\n"
 	"OUT(0) out vec4 color;\n"
 	"OUT(1) out ivec4 flags;\n"
-	"OUT(2) out ivec3 window;\n"
+	"OUT(2) out ivec4 window;\n"
 
 	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord);\n"
 
@@ -467,7 +467,7 @@ static const char* const _renderObj =
 	"	color = pix;\n"
 	"	flags = inflags;\n"
 	"	gl_FragDepth = float(flags.x) / 16.;\n"
-	"	window = objwin.yzw;\n"
+	"	window = ivec4(objwin.yzw, 0);\n"
 	"}";
 
 static const struct GBAVideoGLUniform _uniformsWindow[] = {
@@ -488,7 +488,7 @@ static const char* const _renderWindow =
 	"uniform ivec3 flags;\n"
 	"uniform ivec4 win0[160];\n"
 	"uniform ivec4 win1[160];\n"
-	"OUT(0) out ivec3 window;\n"
+	"OUT(0) out ivec4 window;\n"
 
 	"void crop(vec4 windowParams, int flags, inout ivec3 windowFlags) {\n"
 	"	bvec4 compare = lessThan(texCoord.xxyy, windowParams);\n"
@@ -526,7 +526,7 @@ static const char* const _renderWindow =
 	"void main() {\n"
 	"	int dispflags = (dispcnt & 0x1F) | 0x20;\n"
 	"	if ((dispcnt & 0xE0) == 0) {\n"
-	"		window = ivec3(dispflags, blend);\n"
+	"		window = ivec4(dispflags, blend, 0);\n"
 	"	} else {\n"
 	"		ivec3 windowFlags = ivec3(flags.z, blend);\n"
 	"		if ((dispcnt & 0x40) != 0) { \n"
@@ -535,7 +535,7 @@ static const char* const _renderWindow =
 	"		if ((dispcnt & 0x20) != 0) { \n"
 	"			crop(interpolate(win0), flags.x, windowFlags);\n"
 	"		}\n"
-	"		window = windowFlags;\n"
+	"		window = ivec4(windowFlags, 0);\n"
 	"	}\n"
 	"}\n";
 
