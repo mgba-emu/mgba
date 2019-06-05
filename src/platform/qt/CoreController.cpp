@@ -82,8 +82,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		controller->m_resetActions.clear();
 
 		if (!controller->m_hwaccel) {
-			controller->m_activeBuffer = &controller->m_buffers[0];
-			context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), controller->screenDimensions().width());
+			context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer.data()), controller->screenDimensions().width());
 		}
 
 		QMetaObject::invokeMethod(controller, "didReset");
@@ -357,15 +356,12 @@ void CoreController::setLogger(LogController* logger) {
 
 void CoreController::start() {
 	if (!m_hwaccel) {
-		QSize size(1024, 2048);
-		m_buffers[0].resize(size.width() * size.height() * sizeof(color_t));
-		m_buffers[1].resize(size.width() * size.height() * sizeof(color_t));
-		m_buffers[0].fill(0xFF);
-		m_buffers[1].fill(0xFF);
-		m_activeBuffer = &m_buffers[0];
-		m_completeBuffer = m_buffers[0];
+		QSize size(256, 224);
+		m_activeBuffer.resize(size.width() * size.height() * sizeof(color_t));
+		m_activeBuffer.fill(0xFF);
+		m_completeBuffer = m_activeBuffer;
 
-		m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), size.width());
+		m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), size.width());
 	}
 
 	if (!m_patched) {
@@ -884,17 +880,11 @@ int CoreController::updateAutofire() {
 
 void CoreController::finishFrame() {
 	if (!m_hwaccel) {
-		QMutexLocker locker(&m_bufferMutex);
-		memcpy(m_completeBuffer.data(), m_activeBuffer->constData(), m_activeBuffer->size());
+		unsigned width, height;
+		m_threadContext.core->desiredVideoDimensions(m_threadContext.core, &width, &height);
 
-		// TODO: Generalize this to triple buffering?
-		m_activeBuffer = &m_buffers[0];
-		if (m_activeBuffer == m_completeBuffer) {
-			m_activeBuffer = &m_buffers[1];
-		}
-		// Copy contents to avoid issues when doing frameskip
-		memcpy(m_activeBuffer->data(), m_completeBuffer.constData(), m_activeBuffer->size());
-		m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), screenDimensions().width());
+		QMutexLocker locker(&m_bufferMutex);
+		memcpy(m_completeBuffer.data(), m_activeBuffer.constData(), 256 * height * BYTES_PER_PIXEL);
 	}
 
 	QMutexLocker locker(&m_actionMutex);

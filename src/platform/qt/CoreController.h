@@ -201,8 +201,7 @@ private:
 
 	bool m_patched = false;
 
-	QByteArray m_buffers[2];
-	QByteArray* m_activeBuffer;
+	QByteArray m_activeBuffer;
 	QByteArray m_completeBuffer;
 	bool m_hwaccel = false;
 
