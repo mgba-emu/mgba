@@ -13,6 +13,7 @@ Features:
  - Interframe blending for games that use flicker effects
  - Frame inspector for dissecting and debugging rendering
  - Switch: Option to use built-in brightness sensor for Boktai
+ - Ports: Ability to enable or disable all SGB features (closes mgba.io/i/1205)
 Emulation fixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs

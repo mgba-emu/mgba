@@ -119,6 +119,20 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		.nStates = 2
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Enable SGB features",
+		.data = "sgb.model",
+		.submenu = 0,
+		.state = true,
+		.validStates = (const char*[]) {
+			"Off", "On"
+		},
+		.stateMappings = (const struct GUIVariant[]) {
+			GUI_V_S("DMG"),
+			GUI_V_S("SGB"),
+		},
+		.nStates = 2
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Enable SGB borders",
 		.data = "sgb.borders",
 		.submenu = 0,
@@ -173,8 +187,6 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 			continue;
 		}
 		if (item->stateMappings) {
-			item->state = 0;
-
 			size_t j;
 			for (j = 0; j < item->nStates; ++j) {
 				const struct GUIVariant* v = &item->stateMappings[j];
