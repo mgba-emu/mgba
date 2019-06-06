@@ -41,7 +41,7 @@ static void _drawEnd(void) {
 
 static uint32_t _pollInput(const struct mInputMap* map) {
 	SceCtrlData pad;
-	sceCtrlPeekBufferPositive(0, &pad, 1);
+	sceCtrlPeekBufferPositiveExt2(0, &pad, 1);
 	int input = mInputMapKeyBits(map, PSP2_INPUT, pad.buttons, 0);
 
 	if (pad.buttons & SCE_CTRL_UP || pad.ly < 64) {
@@ -127,17 +127,17 @@ int main() {
 				.id = PSP2_INPUT,
 				.keyNames = (const char*[]) {
 					"Select",
-					0,
-					0,
+					"L3",
+					"R3",
 					"Start",
 					"Up",
 					"Right",
 					"Down",
 					"Left",
-					"L",
-					"R",
-					0, // L2?
-					0, // R2?
+					"L2",
+					"R2",
+					"L1",
+					"R1",
 					"\1\xC",
 					"\1\xA",
 					"\1\xB",

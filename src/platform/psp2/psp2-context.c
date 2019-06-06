@@ -267,7 +267,7 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 
 uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 	SceCtrlData pad;
-	sceCtrlPeekBufferPositive(0, &pad, 1);
+	sceCtrlPeekBufferPositiveExt2(0, &pad, 1);
 
 	int activeKeys = mInputMapKeyBits(&runner->core->inputMap, PSP2_INPUT, pad.buttons, 0);
 	int angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 0, pad.ly);
@@ -313,8 +313,8 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_DOWN, GBA_KEY_DOWN);
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_LEFT, GBA_KEY_LEFT);
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_RIGHT, GBA_KEY_RIGHT);
-	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_LTRIGGER, GBA_KEY_L);
-	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_RTRIGGER, GBA_KEY_R);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_L1, GBA_KEY_L);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_R1, GBA_KEY_R);
 
 	struct mInputAxis desc = { GBA_KEY_DOWN, GBA_KEY_UP, 192, 64 };
 	mInputBindAxis(&runner->core->inputMap, PSP2_INPUT, 0, &desc);
@@ -396,6 +396,18 @@ void mPSP2LoadROM(struct mGUIRunner* runner) {
 	int fakeBool;
 	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
 		interframeBlending = fakeBool;
+	}
+
+	// Backcompat: Old versions of mGBA use an older binding system that has different mappings for L/R
+	if (!sceKernelIsPSVitaTV()) {
+		int key = mInputMapKey(&runner->core->inputMap, PSP2_INPUT, __builtin_ctz(SCE_CTRL_L2));
+		if (key >= 0) {
+			mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_L1, key);
+		}
+		key = mInputMapKey(&runner->core->inputMap, PSP2_INPUT, __builtin_ctz(SCE_CTRL_R2));
+		if (key >= 0) {
+			mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_R1, key);
+		}
 	}
 
 	MutexInit(&audioContext.mutex);
