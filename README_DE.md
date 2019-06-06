@@ -124,6 +124,7 @@ Dieser Befehl erzeugt ein Verzeichnis `build-win32` mit den erzeugten Programmda
 - mgba/ubuntu:xenial
 - mgba/ubuntu:bionic
 - mgba/ubuntu:cosmic
+- mgba/ubuntu:disco
 - mgba/vita
 - mgba/wii
 - mgba/windows:w32
