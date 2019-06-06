@@ -133,9 +133,11 @@ struct GBACore {
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	struct GBAVideoGLRenderer glRenderer;
 #endif
+#ifndef MINIMAL_CORE
 	struct GBAVideoProxyRenderer vlProxy;
 	struct GBAVideoProxyRenderer proxyRenderer;
 	struct mVideoLogContext* logContext;
+#endif
 	struct mCoreCallbacks logCallbacks;
 #ifndef DISABLE_THREADING
 	struct mVideoThreadProxy threadProxy;
@@ -167,7 +169,9 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->overrides = NULL;
 	gbacore->debuggerPlatform = NULL;
 	gbacore->cheatDevice = NULL;
+#ifndef MINIMAL_CORE
 	gbacore->logContext = NULL;
+#endif
 	gbacore->audioMixer = NULL;
 
 	GBACreate(gba);
@@ -189,8 +193,10 @@ static bool _GBACoreInit(struct mCore* core) {
 #ifndef DISABLE_THREADING
 	mVideoThreadProxyCreate(&gbacore->threadProxy);
 #endif
+#ifndef MINIMAL_CORE
 	gbacore->vlProxy.logger = NULL;
 	gbacore->proxyRenderer.logger = NULL;
+#endif
 
 	gbacore->keys = 0;
 	gba->keySource = &gbacore->keys;
@@ -466,11 +472,13 @@ static void _GBACoreReset(struct mCore* core) {
 			}
 		}
 #endif
+#ifndef MINIMAL_CORE
 		if (core->videoLogger) {
 			gbacore->proxyRenderer.logger = core->videoLogger;
 			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
 			renderer = &gbacore->proxyRenderer.d;
 		}
+#endif
 		GBAVideoAssociateRenderer(&gba->video, renderer);
 	}
 
