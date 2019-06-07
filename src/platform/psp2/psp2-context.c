@@ -56,6 +56,7 @@ static vita2d_texture* oldTex;
 static vita2d_texture* screenshot;
 static Thread audioThread;
 static bool interframeBlending = false;
+static bool sgbCrop = false;
 
 static struct mSceRotationSource {
 	struct mRotationSource d;
@@ -365,6 +366,10 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	if (mCoreConfigGetUIntValue(&runner->config, "camera", &mode)) {
 		camera.cam = mode;
 	}
+	int fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
+		sgbCrop = fakeBool;
+	}
 }
 
 void mPSP2LoadROM(struct mGUIRunner* runner) {
@@ -473,8 +478,13 @@ void mPSP2Unpaused(struct mGUIRunner* runner) {
 	}
 
 	int fakeBool;
-	mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool);
-	interframeBlending = fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
+		interframeBlending = fakeBool;
+	}
+
+	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
+		sgbCrop = fakeBool;
+	}
 }
 
 void mPSP2Teardown(struct mGUIRunner* runner) {
@@ -519,6 +529,13 @@ void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded, bo
 		vita2d_draw_texture_tint(backdrop, 0, 0, tint);
 		// Fall through
 	case SM_PLAIN:
+		if (sgbCrop && width == 256 && height == 224) {
+			w = 768;
+			h = 672;
+			scalex = 3;
+			scaley = 3;
+			break;
+		}
 		w = 960 / width;
 		h = 544 / height;
 		if (w * height > 544) {
@@ -533,6 +550,13 @@ void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded, bo
 		scaley = scalex;
 		break;
 	case SM_ASPECT:
+		if (sgbCrop && width == 256 && height == 224) {
+			w = 967;
+			h = 846;
+			scalex = 34.0f / 9.0f;
+			scaley = scalex;
+			break;
+		}
 		w = 960 / aspectw;
 		h = 544 / aspecth;
 		if (w * aspecth > 544) {
