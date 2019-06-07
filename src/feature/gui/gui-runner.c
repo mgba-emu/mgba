@@ -628,10 +628,18 @@ void mGUIRunloop(struct mGUIRunner* runner) {
 	}
 	while (true) {
 		char path[PATH_MAX];
-		if (!GUISelectFile(&runner->params, path, sizeof(path), _testExtensions, NULL)) {
+		const char* preselect = mCoreConfigGetValue(&runner->config, "lastGame");
+		if (preselect) {
+			preselect = strrchr(preselect, '/');
+		}
+		if (preselect) {
+			++preselect;
+		}
+		if (!GUISelectFile(&runner->params, path, sizeof(path), _testExtensions, NULL, preselect)) {
 			break;
 		}
 		mCoreConfigSetValue(&runner->config, "lastDirectory", runner->params.currentPath);
+		mCoreConfigSetValue(&runner->config, "lastGame", path);
 		mCoreConfigSave(&runner->config);
 		mGUIRun(runner, path);
 	}

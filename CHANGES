@@ -54,6 +54,7 @@ Misc:
  - Switch: Dynamic display resizing
  - Qt: Make mute menu option also toggle fast-forward mute (fixes mgba.io/i/1424)
  - Vita: L2/R2 and L3/R3 can now be mapped on PSTV (fixes mgba.io/i/1292)
+ - mGUI: Remember name and position of last loaded game
 
 0.7.2: (2019-05-25)
 Emulation fixes:

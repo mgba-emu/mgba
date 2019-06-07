@@ -303,7 +303,7 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		}
 		if (!strcmp(item->data, "gba.bios")) {
 			// TODO: show box if failed
-			if (!GUISelectFile(&runner->params, gbaBiosPath, sizeof(gbaBiosPath), _biosNamed, GBAIsBIOS)) {
+			if (!GUISelectFile(&runner->params, gbaBiosPath, sizeof(gbaBiosPath), _biosNamed, GBAIsBIOS, NULL)) {
 				gbaBiosPath[0] = '\0';
 			}
 			continue;
@@ -311,21 +311,21 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 #ifdef M_CORE_GB
 		if (!strcmp(item->data, "gb.bios")) {
 			// TODO: show box if failed
-			if (!GUISelectFile(&runner->params, gbBiosPath, sizeof(gbBiosPath), _biosNamed, GBIsBIOS)) {
+			if (!GUISelectFile(&runner->params, gbBiosPath, sizeof(gbBiosPath), _biosNamed, GBIsBIOS, NULL)) {
 				gbBiosPath[0] = '\0';
 			}
 			continue;
 		}
 		if (!strcmp(item->data, "gbc.bios")) {
 			// TODO: show box if failed
-			if (!GUISelectFile(&runner->params, gbcBiosPath, sizeof(gbcBiosPath), _biosNamed, GBIsBIOS)) {
+			if (!GUISelectFile(&runner->params, gbcBiosPath, sizeof(gbcBiosPath), _biosNamed, GBIsBIOS, NULL)) {
 				gbcBiosPath[0] = '\0';
 			}
 			continue;
 		}
 		if (!strcmp(item->data, "sgb.bios")) {
 			// TODO: show box if failed
-			if (!GUISelectFile(&runner->params, sgbBiosPath, sizeof(sgbBiosPath), _biosNamed, GBIsBIOS)) {
+			if (!GUISelectFile(&runner->params, sgbBiosPath, sizeof(sgbBiosPath), _biosNamed, GBIsBIOS, NULL)) {
 				sgbBiosPath[0] = '\0';
 			}
 			continue;
