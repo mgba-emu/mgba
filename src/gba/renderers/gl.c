@@ -155,7 +155,7 @@ static const char* const _renderMode0 =
 	"	if ((size & 1) == 1) {\n"
 	"		coord.y += coord.x & 256;\n"
 	"	}\n"
-	"	coord &= ivec2(255, 511);\n"
+	"	coord &= ivec2(255, 1023);\n"
 	"	int mapAddress = screenBase + (coord.x >> 3) + (coord.y >> 3) * 32;\n"
 	"	vec4 map = texelFetch(vram, ivec2(mapAddress & 255, mapAddress >> 8), 0);\n"
 	"	int tileFlags = int(map.g * 15.9);\n"
