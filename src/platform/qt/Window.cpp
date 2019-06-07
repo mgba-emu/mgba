@@ -906,6 +906,7 @@ void Window::reloadDisplayDriver() {
 		connect(m_controller.get(), &CoreController::unpaused, m_display.get(), &Display::unpauseDrawing);
 		connect(m_controller.get(), &CoreController::frameAvailable, m_display.get(), &Display::framePosted);
 		connect(m_controller.get(), &CoreController::statusPosted, m_display.get(), &Display::showMessage);
+		connect(m_controller.get(), &CoreController::didReset, m_display.get(), &Display::resizeContext);
 
 		attachWidget(m_display.get());
 		m_display->startDrawing(m_controller);
@@ -1814,6 +1815,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	connect(m_controller.get(), &CoreController::unpaused, m_display.get(), &Display::unpauseDrawing);
 	connect(m_controller.get(), &CoreController::frameAvailable, m_display.get(), &Display::framePosted);
 	connect(m_controller.get(), &CoreController::statusPosted, m_display.get(), &Display::showMessage);
+	connect(m_controller.get(), &CoreController::didReset, m_display.get(), &Display::resizeContext);
 
 	connect(m_controller.get(), &CoreController::unpaused, &m_inputController, &InputController::suspendScreensaver);
 	connect(m_controller.get(), &CoreController::frameAvailable, this, &Window::recordFrame);

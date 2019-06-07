@@ -111,7 +111,6 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatio());
 #endif
 	resizePainter();
-	connect(m_context.get(), &CoreController::didReset, this, &DisplayGL::resizeContext);
 }
 
 void DisplayGL::stopDrawing() {
