@@ -6,6 +6,7 @@
 #include "feature/gui/gui-runner.h"
 #include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
+#include <mgba/internal/gb/video.h>
 #include <mgba/internal/gba/audio.h>
 #include <mgba/internal/gba/input.h>
 #include <mgba-util/gui.h>
@@ -99,6 +100,7 @@ static u8 vmode;
 static u32 vwidth;
 static u32 vheight;
 static bool interframeBlending = false;
+static bool sgbCrop = false;
 static bool useLightSensor = true;
 static struct mGUIRunnerLux lightSensor;
 
@@ -298,6 +300,9 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
 		interframeBlending = fakeBool;
 	}
+	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
+		sgbCrop = fakeBool;
+	}
 	if (mCoreConfigGetIntValue(&runner->config, "useLightSensor", &fakeBool)) {
 		if (useLightSensor != fakeBool) {
 			useLightSensor = fakeBool;
@@ -332,8 +337,14 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 
 	glUseProgram(program);
 	glBindVertexArray(vao);
-	float aspectX = width / (float) vwidth;
-	float aspectY = height / (float) vheight;
+	float inwidth = width;
+	float inheight = height;
+	if (sgbCrop && width == 256 && height == 224) {
+		inwidth = GB_VIDEO_HORIZONTAL_PIXELS;
+		inheight = GB_VIDEO_VERTICAL_PIXELS;
+	}
+	float aspectX = inwidth / vwidth;
+	float aspectY = inheight / vheight;
 	float max = 1.f;
 	switch (screenMode) {
 	case SM_PA:
@@ -357,6 +368,11 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 		aspectX = 1.0;
 		aspectY = 1.0;
 		break;
+	}
+
+	if (screenMode != SM_SF) {
+		aspectX = width / (float) vwidth;
+		aspectY = height / (float) vheight;
 	}
 
 	aspectX *= max;
