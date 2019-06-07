@@ -142,6 +142,16 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		},
 		.nStates = 2
 	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Crop SGB borders",
+		.data = "sgb.borderCrop",
+		.submenu = 0,
+		.state = false,
+		.validStates = (const char*[]) {
+			"Off", "On"
+		},
+		.nStates = 2
+	};
 #endif
 	size_t i;
 	const char* mapNames[GUI_MAX_INPUTS + 1];

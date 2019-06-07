@@ -14,6 +14,7 @@ Features:
  - Frame inspector for dissecting and debugging rendering
  - Switch: Option to use built-in brightness sensor for Boktai
  - Ports: Ability to enable or disable all SGB features (closes mgba.io/i/1205)
+ - Ports: Ability to crop SGB borders off screen (closes mgba.io/i/1204)
 Emulation fixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs
