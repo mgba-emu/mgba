@@ -17,6 +17,7 @@
 #include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
 #include "feature/gui/gui-runner.h"
+#include <mgba/internal/gb/video.h>
 #include <mgba/internal/gba/audio.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
@@ -113,6 +114,7 @@ static uint16_t* rescaleTexmem;
 static GXTexObj rescaleTex;
 static uint16_t* interframeTexmem;
 static GXTexObj interframeTex;
+static bool sgbCrop = false;
 static int32_t tiltX;
 static int32_t tiltY;
 static int32_t gyroZ;
@@ -862,6 +864,9 @@ void _unpaused(struct mGUIRunner* runner) {
 	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
 		interframeBlending = fakeBool;
 	}
+	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
+		sgbCrop = fakeBool;
+	}
 
 	float stretch;
 	if (mCoreConfigGetFloatValue(&runner->config, "stretchWidth", &stretch)) {
@@ -952,20 +957,25 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 		}
 	}
 
-	int hfactor = (vmode->fbWidth * wStretch) / (corew * wAdjust);
-	int vfactor = (vmode->efbHeight * hStretch) / (coreh * hAdjust);
-	if (hfactor > vfactor) {
-		scaleFactor = vfactor;
-	} else {
-		scaleFactor = hfactor;
-	}
-
 	if (screenMode == SM_PA) {
+		unsigned factorWidth = corew;
+		unsigned factorHeight = coreh;
+		if (sgbCrop && factorWidth == 256 && factorHeight == 224) {
+			factorWidth = GB_VIDEO_HORIZONTAL_PIXELS;
+			factorHeight = GB_VIDEO_VERTICAL_PIXELS;
+		}
+
+		int hfactor = (vmode->fbWidth * wStretch) / (factorWidth * wAdjust);
+		int vfactor = (vmode->efbHeight * hStretch) / (factorHeight * hAdjust);
+		if (hfactor > vfactor) {
+			scaleFactor = vfactor;
+		} else {
+			scaleFactor = hfactor;
+		}
+
 		vertWidth *= scaleFactor;
 		vertHeight *= scaleFactor;
-	}
 
-	if (screenMode == SM_PA) {
 		_reproj(corew * scaleFactor, coreh * scaleFactor);
 	} else {
 		_reproj2(corew, coreh);
