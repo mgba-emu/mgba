@@ -142,7 +142,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 			error = true;
 		} else {
 			// TODO: Make it work correctly
-			mLOG(GB_STATE, WARN, "ILoading savestate in BIOS. This may not work correctly");
+			mLOG(GB_STATE, WARN, "Loading savestate in BIOS. This may not work correctly");
 		}
 	}
 	if (error) {
