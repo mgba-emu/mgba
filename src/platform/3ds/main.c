@@ -104,6 +104,7 @@ static bool frameStarted = false;
 static C3D_RenderTarget* upscaleBuffer;
 static C3D_Tex upscaleBufferTex;
 static bool interframeBlending = false;
+static bool sgbCrop = false;
 
 static aptHookCookie cookie;
 static bool core2;
@@ -382,6 +383,10 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
 		interframeBlending = fakeBool;
 	}
+
+	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
+		sgbCrop = fakeBool;
+	}
 }
 
 static void _gameUnloaded(struct mGUIRunner* runner) {
@@ -437,6 +442,12 @@ static void _drawTex(struct mCore* core, bool faded, bool both) {
 
 	int w = corew;
 	int h = coreh;
+	if (sgbCrop && w == 256 && h == 224) {
+		w = GB_VIDEO_HORIZONTAL_PIXELS;
+		h = GB_VIDEO_VERTICAL_PIXELS;
+	}
+	int innerw = w;
+	int innerh = h;
 	// Get greatest common divisor
 	while (w != 0) {
 		int temp = h % w;
@@ -444,8 +455,8 @@ static void _drawTex(struct mCore* core, bool faded, bool both) {
 		w = temp;
 	}
 	int gcd = h;
-	unsigned aspectw = corew / gcd;
-	unsigned aspecth = coreh / gcd;
+	unsigned aspectw = innerw / gcd;
+	unsigned aspecth = innerh / gcd;
 	int x = 0;
 	int y = 0;
 
@@ -517,6 +528,8 @@ static void _drawTex(struct mCore* core, bool faded, bool both) {
 	}
 	ctrFlushBatch();
 
+	innerw = corew;
+	innerh = coreh;
 	corew = w;
 	coreh = h;
 	screen_h = 240;
@@ -529,19 +542,20 @@ static void _drawTex(struct mCore* core, bool faded, bool both) {
 	}
 	ctrSetViewportSize(screen_w, screen_h, true);
 
+	float afw, afh;
 	switch (screenMode) {
 	default:
 		return;
 	case SM_AF_TOP:
 	case SM_AF_BOTTOM:
-		w = screen_w / aspectw;
-		h = screen_h / aspecth;
-		if (w * aspecth > screen_h) {
-			w = aspectw * h;
-			h = aspecth * h;
+		afw = screen_w / (float) aspectw;
+		afh = screen_h / (float) aspecth;
+		if (afw * aspecth > screen_h) {
+			w = innerw * afh / gcd;
+			h = innerh * afh / gcd;
 		} else {
-			h = aspecth * w;
-			w = aspectw * w;
+			h = innerh * afw / gcd;
+			w = innerw * afw / gcd;
 		}
 		break;
 	case SM_SF_TOP:
