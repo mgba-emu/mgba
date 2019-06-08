@@ -68,6 +68,7 @@ int main(int argc, char* argv[]) {
 
 	QApplication::setApplicationName(projectName);
 	QApplication::setApplicationVersion(projectVersion);
+	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
 
 #ifdef BUILD_GLES2
 	QSurfaceFormat format;
