@@ -821,6 +821,9 @@ void Window::gameStopped() {
 		m_display.reset();
 		close();
 	}
+#ifndef Q_OS_MAC
+	menuBar()->show();
+#endif
 
 #ifdef USE_DISCORD_RPC
 	DiscordCoordinator::gameStopped();
@@ -1042,6 +1045,9 @@ void Window::openStateWindow(LoadSave ls) {
 	m_stateWindow->setAttribute(Qt::WA_DeleteOnClose);
 	m_stateWindow->setMode(ls);
 	updateFrame();
+#ifndef Q_OS_MAC
+	menuBar()->show();
+#endif
 	attachWidget(m_stateWindow);
 }
 
