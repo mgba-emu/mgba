@@ -45,7 +45,6 @@ Misc:
  - Debugger: Make tracing compatible with breakpoints/watchpoints
  - Debugger: Print breakpoint/watchpoint number when inserting
  - Qt: Open a message box for Qt frontend errors
- - GBA Video: Clean up dead code in sprite rendering loop
  - FFmpeg: Support audio-only recording
  - Qt: Increase maximum magnifications and scaling
  - Qt: Add native FPS button to settings view
