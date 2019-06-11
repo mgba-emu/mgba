@@ -474,6 +474,25 @@ static const char* const _renderObj =
 	"	window = ivec4(objwin.yzw, 0);\n"
 	"}";
 
+static const struct GBAVideoGLUniform _uniformsObjPriority[] = {
+	{ "loc", GBA_GL_VS_LOC, },
+	{ "maxPos", GBA_GL_VS_MAXPOS, },
+	{ "inflags", GBA_GL_OBJ_INFLAGS, },
+	{ 0 }
+};
+
+static const char* const _renderObjPriority =
+	"in vec2 texCoord;\n"
+	"uniform ivec4 inflags;\n"
+	"OUT(0) out vec4 color;\n"
+	"OUT(1) out ivec4 flags;\n"
+
+	"void main() {\n"
+	"	flags = inflags;\n"
+	"	gl_FragDepth = float(flags.x) / 16.;\n"
+	"	color = vec4(0., 0., 0., 0.);"
+	"}";
+
 static const struct GBAVideoGLUniform _uniformsWindow[] = {
 	{ "loc", GBA_GL_VS_LOC, },
 	{ "maxPos", GBA_GL_VS_MAXPOS, },
@@ -742,7 +761,7 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_OBJ_COLOR], GL_RGBA, GL_COLOR_ATTACHMENT0, glRenderer->scale);
 	_initFramebufferTextureEx(glRenderer->layers[GBA_GL_TEX_OBJ_FLAGS], GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE, GL_COLOR_ATTACHMENT1, glRenderer->scale);
 	_initFramebufferTextureEx(glRenderer->layers[GBA_GL_TEX_WINDOW], GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE, GL_COLOR_ATTACHMENT2, glRenderer->scale);
-	_initFramebufferTextureEx(glRenderer->layers[GBA_GL_TEX_OBJ_DEPTH], GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_ATTACHMENT, glRenderer->scale);
+	_initFramebufferTextureEx(glRenderer->layers[GBA_GL_TEX_OBJ_DEPTH], GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, GL_DEPTH_STENCIL_ATTACHMENT, glRenderer->scale);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_BACKDROP]);
 	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_BACKDROP_COLOR], GL_RGB, GL_COLOR_ATTACHMENT0, 0);
@@ -849,6 +868,9 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 #ifndef BUILD_GLES3
 	glBindFragDataLocation(glRenderer->objShader[1].program, 2, "window");
 #endif
+
+	shaderBuffer[1] = _renderObjPriority;
+	_compileShader(glRenderer, &glRenderer->objShader[2], shaderBuffer, 2, vs, _uniformsObjPriority, log);
 
 	shaderBuffer[1] = _renderWindow;
 	_compileShader(glRenderer, &glRenderer->windowShader, shaderBuffer, 2, vs, _uniformsWindow, log);
@@ -1357,9 +1379,10 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 #else
 		glClearDepth(1);
 #endif
+		glClearStencil(0);
 		glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OBJ]);
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		for (i = 0; i < 4; ++i) {
 			glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[i].fbo);
@@ -1391,6 +1414,8 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 	GBAVideoGLRendererDrawWindow(glRenderer, y);
 	if (GBARegisterDISPCNTIsObjEnable(glRenderer->dispcnt) && !glRenderer->d.disableOBJ) {
 		int i;
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		glEnable(GL_STENCIL_TEST);
 		glDepthFunc(GL_LESS);
 		for (i = 0; i < glRenderer->oamMax; ++i) {
 			struct GBAVideoRendererSprite* sprite = &glRenderer->sprites[i];
@@ -1401,6 +1426,7 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 			GBAVideoGLRendererDrawSprite(glRenderer, &sprite->obj, y, sprite->y);
 		}
 		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_STENCIL_TEST);
 	}
 
 	if (TEST_LAYER_ENABLED(0) && GBARegisterDISPCNTGetMode(glRenderer->dispcnt) < 2) {
@@ -1678,7 +1704,22 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	} else {
 		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], 0, 0, 0, 0);
 	}
+	glStencilFunc(GL_ALWAYS, 1, 1);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	shader = &renderer->objShader[2];
+	uniforms = shader->uniforms;
+	glStencilFunc(GL_EQUAL, 1, 1);
+	glUseProgram(shader->program);
+	glDrawBuffers(2, (GLenum[]) { GL_NONE, GL_COLOR_ATTACHMENT1 });
+	glColorMask(GL_TRUE, GL_FALSE, GL_FALSE, GL_FALSE);
+	glBindVertexArray(shader->vao);
+	glUniform2i(uniforms[GBA_GL_VS_LOC], totalHeight, 0);
+	glUniform2i(uniforms[GBA_GL_VS_MAXPOS], totalWidth, totalHeight);
+	glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c), 0, 0, 0);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
 
