@@ -65,7 +65,7 @@ static int32_t _readTiltY(struct mRotationSource* source);
 static int32_t _readGyroZ(struct mRotationSource* source);
 
 static struct mCore* core;
-static void* outputBuffer;
+static color_t* outputBuffer = NULL;
 static void* data;
 static size_t dataSize;
 static void* savedata;
@@ -88,6 +88,227 @@ static size_t camStride;
 
 #ifdef HAVE_LIBNX
 static u32 hidSixAxisHandles[4];
+#endif
+
+/* Colour correction */
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+
+#define GBC_CC_R          0.87f
+#define GBC_CC_G          0.66f
+#define GBC_CC_B          0.79f
+#define GBC_CC_RG         0.115f
+#define GBC_CC_RB         0.14f
+#define GBC_CC_GR         0.18f
+#define GBC_CC_GB         0.07f
+#define GBC_CC_BR        -0.05f
+#define GBC_CC_BG         0.225f
+#define GBC_CC_GAMMA_ADJ -0.5f
+
+#define GBA_CC_R          0.86f
+#define GBA_CC_G          0.66f
+#define GBA_CC_B          0.81f
+#define GBA_CC_RG         0.11f
+#define GBA_CC_RB         0.1325f
+#define GBA_CC_GR         0.19f
+#define GBA_CC_GB         0.0575f
+#define GBA_CC_BR        -0.05f
+#define GBA_CC_BG         0.23f
+#define GBA_CC_GAMMA_ADJ  0.45f
+
+static color_t* ccOutputBuffer     = NULL;
+static color_t* ccLUT              = NULL;
+static unsigned ccType             = 0;
+static bool colorCorrectionEnabled = false;
+
+static void _initColorCorrection(void) {
+
+	/* Constants */
+	static const float targetGamma = 2.2f;
+	static const float displayGammaInv = 1.0f / targetGamma;
+	static const float rgbMax = 31.0f;
+	static const float rgbMaxInv = 1.0f / rgbMax;
+
+	/* Variables */
+	enum GBModel model = GB_MODEL_AUTODETECT;
+	float ccR;
+	float ccG;
+	float ccB;
+	float ccRG;
+	float ccRB;
+	float ccGR;
+	float ccGB;
+	float ccBR;
+	float ccBG;
+	float adjustedGamma;
+	size_t color;
+
+	/* Set colour correction parameters */
+	colorCorrectionEnabled = false;
+	switch (ccType) {
+		case 1:
+			model = GB_MODEL_AGB;
+			break;
+		case 2:
+			model = GB_MODEL_CGB;
+			break;
+		case 3:
+			{
+				/* Autodetect
+				 * (Note: This is somewhat clumsy due to the
+				 *  M_CORE_GBA & M_CORE_GB defines... */
+#ifdef M_CORE_GBA
+				if (core->platform(core) == PLATFORM_GBA) {
+					model = GB_MODEL_AGB;
+				}
+#endif
+
+#ifdef M_CORE_GB
+				if (model != GB_MODEL_AGB) {
+					if (core->platform(core) == PLATFORM_GB) {
+
+						const char* modelName = mCoreConfigGetValue(&core->config, "gb.model");
+						struct GB* gb = core->board;
+
+						if (modelName) {
+							gb->model = GBNameToModel(modelName);
+						} else {
+							GBDetectModel(gb);
+						}
+
+						if (gb->model == GB_MODEL_CGB) {
+							model = GB_MODEL_CGB;
+						}
+					}
+				}
+#endif
+			}
+			break;
+		default:
+			return;
+	}
+
+	switch (model) {
+		case GB_MODEL_AGB:
+			ccR  = GBA_CC_R;
+			ccG  = GBA_CC_G;
+			ccB  = GBA_CC_B;
+			ccRG = GBA_CC_RG;
+			ccRB = GBA_CC_RB;
+			ccGR = GBA_CC_GR;
+			ccGB = GBA_CC_GB;
+			ccBR = GBA_CC_BR;
+			ccBG = GBA_CC_BG;
+			adjustedGamma = targetGamma + GBA_CC_GAMMA_ADJ;
+			break;
+		case GB_MODEL_CGB:
+			ccR  = GBC_CC_R;
+			ccG  = GBC_CC_G;
+			ccB  = GBC_CC_B;
+			ccRG = GBC_CC_RG;
+			ccRB = GBC_CC_RB;
+			ccGR = GBC_CC_GR;
+			ccGB = GBC_CC_GB;
+			ccBR = GBC_CC_BR;
+			ccBG = GBC_CC_BG;
+			adjustedGamma = targetGamma + GBC_CC_GAMMA_ADJ;
+			break;
+		default:
+			return;
+	}
+
+	/* Allocate buffers, if required */
+	if (!ccLUT) {
+		size_t lutSize = 65536 * sizeof(color_t);
+		ccLUT = malloc(lutSize);
+		if (!ccLUT) {
+			return;
+		}
+		memset(ccLUT, 0xFF, lutSize);
+	}
+
+	if (!ccOutputBuffer) {
+		size_t bufSize = 256 * 224 * sizeof(color_t);
+#ifdef _3DS
+		ccOutputBuffer = linearMemAlign(bufSize, 0x80);
+#else
+		ccOutputBuffer = malloc(bufSize);
+#endif
+		if (!ccOutputBuffer) {
+			return;
+		}
+		memset(ccOutputBuffer, 0xFF, bufSize);
+	}
+
+	/* If we get this far, then colour correction is enabled... */
+	colorCorrectionEnabled = true;
+
+	/* Populate colour correction look-up table
+	 * Note: This is somewhat slow (~100 ms on desktop),
+	 * but using precompiled look-up tables would double
+	 * the memory requirements, and make updating colour
+	 * correction parameters an absolute nightmare...) */
+	for (color = 0; color < 65536; color++) {
+		unsigned rFinal = 0;
+		unsigned gFinal = 0;
+		unsigned bFinal = 0;
+		/* Extract values from RGB565 input */
+		const unsigned r = color >> 11 & 0x1F;
+		const unsigned g = color >>  6 & 0x1F;
+		const unsigned b = color       & 0x1F;
+		/* Perform gamma expansion */
+		float rFloat = pow((float)r * rgbMaxInv, adjustedGamma);
+		float gFloat = pow((float)g * rgbMaxInv, adjustedGamma);
+		float bFloat = pow((float)b * rgbMaxInv, adjustedGamma);
+		/* Perform colour mangling */
+		float rCorrect = (ccR  * rFloat) + (ccGR * gFloat) + (ccBR * bFloat);
+		float gCorrect = (ccRG * rFloat) + (ccG  * gFloat) + (ccBG * bFloat);
+		float bCorrect = (ccRB * rFloat) + (ccGB * gFloat) + (ccB  * bFloat);
+		/* Range check... */
+		rCorrect = rCorrect > 0.0f ? rCorrect : 0.0f;
+		gCorrect = gCorrect > 0.0f ? gCorrect : 0.0f;
+		bCorrect = bCorrect > 0.0f ? bCorrect : 0.0f;
+		/* Perform gamma compression */
+		rCorrect = pow(rCorrect, displayGammaInv);
+		gCorrect = pow(gCorrect, displayGammaInv);
+		bCorrect = pow(bCorrect, displayGammaInv);
+		/* Range check... */
+		rCorrect = rCorrect > 1.0f ? 1.0f : rCorrect;
+		gCorrect = gCorrect > 1.0f ? 1.0f : gCorrect;
+		bCorrect = bCorrect > 1.0f ? 1.0f : bCorrect;
+		/* Convert back to RGB565 */
+		rFinal = (unsigned)((rCorrect * rgbMax) + 0.5f) & 0x1F;
+		gFinal = (unsigned)((gCorrect * rgbMax) + 0.5f) & 0x1F;
+		bFinal = (unsigned)((bCorrect * rgbMax) + 0.5f) & 0x1F;
+		ccLUT[color] = rFinal << 11 | gFinal << 6 | bFinal;
+	}
+}
+
+static void _loadColorCorrectionSettings(void) {
+
+	struct retro_variable var;
+	unsigned oldCcType = ccType;
+	ccType = 0;
+
+	var.key = "mgba_color_correction";
+	var.value = 0;
+
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		if (strcmp(var.value, "GBA") == 0) {
+			ccType = 1;
+		} else if (strcmp(var.value, "GBC") == 0) {
+			ccType = 2;
+		} else if (strcmp(var.value, "Auto") == 0) {
+			ccType = 3;
+		}
+	}
+
+	if (ccType == 0) {
+		colorCorrectionEnabled = false;
+	} else if (ccType != oldCcType) {
+		_initColorCorrection();
+	}
+}
+
 #endif
 
 static void _reloadSettings(void) {
@@ -161,13 +382,6 @@ static void _reloadSettings(void) {
 		}
 	}
 
-	var.key = "mgba_frameskip";
-	var.value = 0;
-	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-		opts.frameskip = strtol(var.value, NULL, 10);
-
-	}
-
 	mCoreConfigLoadDefaults(&core->config, &opts);
 	mCoreLoadConfig(core);
 }
@@ -188,6 +402,9 @@ void retro_set_environment(retro_environment_t env) {
 		{ "mgba_sgb_borders", "Use Super Game Boy borders (requires restart); ON|OFF" },
 		{ "mgba_idle_optimization", "Idle loop removal; Remove Known|Detect and Remove|Don't Remove" },
 		{ "mgba_frameskip", "Frameskip; 0|1|2|3|4|5|6|7|8|9|10" },
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+		{ "mgba_color_correction", "Color Correction; OFF|GBA|GBC|Auto" },
+#endif
 		{ 0, 0 }
 	};
 
@@ -336,8 +553,28 @@ void retro_init(void) {
 void retro_deinit(void) {
 #ifdef _3DS
 	linearFree(outputBuffer);
+	outputBuffer = NULL;
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+	if (ccOutputBuffer) {
+		linearFree(ccOutputBuffer);
+		ccOutputBuffer = NULL;
+	}
+#endif
 #else
 	free(outputBuffer);
+	outputBuffer = NULL;
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+	if (ccOutputBuffer) {
+		free(ccOutputBuffer);
+		ccOutputBuffer = NULL;
+	}
+#endif
+#endif
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+	if (ccLUT) {
+		free(ccLUT);
+		ccLUT = NULL;
+	}
 #endif
 #ifdef HAVE_LIBNX
 	hidStopSixAxisSensor(hidSixAxisHandles[0]);
@@ -399,13 +636,10 @@ void retro_run(void) {
 			mCoreConfigSetUIntValue(&core->config, "frameskip", strtol(var.value, NULL, 10));
 			mCoreLoadConfig(core);
 		}
-		
-		var.key = "mgba_frameskip";
-		var.value = 0;
-		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-			mCoreConfigSetUIntValue(&core->config, "frameskip", strtol(var.value, NULL, 10));
-			mCoreLoadConfig(core);
-	 	}
+
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+		_loadColorCorrectionSettings();
+#endif
 	}
 
 	keys = 0;
@@ -448,7 +682,23 @@ void retro_run(void) {
 	core->runFrame(core);
 	unsigned width, height;
 	core->desiredVideoDimensions(core, &width, &height);
-	videoCallback(outputBuffer, width, height, BYTES_PER_PIXEL * 256);
+
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+	if (colorCorrectionEnabled) {
+		color_t *src = outputBuffer;
+		color_t *dst = ccOutputBuffer;
+		size_t x, y;
+		for (y = 0; y < height; y++) {
+			for (x = 0; x < width; x++) {
+				*(dst + x) = *(ccLUT + *(src + x));
+			}
+			src += 256;
+			dst += 256;
+		}
+		videoCallback(ccOutputBuffer, width, height, 256 * sizeof(color_t));
+	} else
+#endif
+		videoCallback(outputBuffer, width, height, 256 * sizeof(color_t));
 
 	// This was from aliaspider patch (4539a0e), game boy audio is buggy with it (adapted for this refactored core)
 /*
@@ -635,7 +885,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 	core->init(core);
 	core->setAVStream(core, &stream);
 
-	size_t size = 256 * 224 * BYTES_PER_PIXEL;
+	size_t size = 256 * 224 * sizeof(color_t);
 #ifdef _3DS
 	outputBuffer = linearMemAlign(size, 0x80);
 #else
@@ -669,7 +919,6 @@ bool retro_load_game(const struct retro_game_info* game) {
 	if (core->platform(core) == PLATFORM_GBA) {
 		core->setPeripheral(core, mPERIPH_GBA_LUMINANCE, &lux);
 		biosName = "gba_bios.bin";
-
 	}
 #endif
 
@@ -718,6 +967,10 @@ bool retro_load_game(const struct retro_game_info* game) {
 
 	core->reset(core);
 	_setupMaps(core);
+
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+	_loadColorCorrectionSettings();
+#endif
 
 	return true;
 }
@@ -998,6 +1251,7 @@ static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned heigh
 	if (!camData || width > camWidth || height > camHeight) {
 		if (camData) {
 			free(camData);
+			camData = NULL;
 		}
 		unsigned bufPitch = pitch / sizeof(*buffer);
 		unsigned bufHeight = height;
