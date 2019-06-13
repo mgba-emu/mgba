@@ -136,6 +136,32 @@ else ifeq ($(platform), classic_armv7_a7)
 	    LDFLAGS += -static-libgcc -static-libstdc++
 	  endif
 	endif
+	
+# (armv8 a35, hard point, neon based) ###
+# Playstation Classic
+else ifeq ($(platform), classic_armv8_a35)
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+	SHARED := -shared -Wl,--version-script=link.T -Wl,--no-undefined
+	CFLAGS += -Ofast \
+	-flto=4 -fwhole-program -fuse-linker-plugin \
+	-fdata-sections -ffunction-sections -Wl,--gc-sections \
+	-fno-stack-protector -fno-ident -fomit-frame-pointer \
+	-falign-functions=1 -falign-jumps=1 -falign-loops=1 \
+	-fno-unwind-tables -fno-asynchronous-unwind-tables -fno-unroll-loops \
+	-fmerge-all-constants -fno-math-errno \
+	-marm -mtune=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard
+	CXXFLAGS += $(CFLAGS)
+	CPPFLAGS += $(CFLAGS)
+	ASFLAGS += $(CFLAGS)
+	HAVE_NEON = 1
+	ARCH = arm
+	BUILTIN_GPU = neon
+	HAVE_VFS_FD = 0
+    DEFINES += -std=c99 -D_GNU_SOURCE
+    DEFINES += -DHAVE_LOCALE
+    	CFLAGS += -march=armv8-a
+	LDFLAGS += -static-libgcc -static-libstdc++
 #######################################
 
 # OS X
@@ -391,13 +417,11 @@ LD = $(CC)
 endif
 
 $(TARGET): $(OBJS)
-	@echo "** BUILDING $(TARGET) FOR PLATFORM $(platform) **"
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJS)
 else
 	$(LD) -o $@ $(SHARED) $(OBJS) $(LDFLAGS) $(LIBS)
 endif
-	@echo "** BUILD SUCCESSFUL! GG NO RE **"
 
 clean-objs:
 	rm -f $(OBJS)
