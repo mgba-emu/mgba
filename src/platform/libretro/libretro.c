@@ -93,6 +93,9 @@ static u32 hidSixAxisHandles[4];
 /* Colour correction */
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
 
+#define CC_TARGET_GAMMA   2.2f
+#define CC_RGB_MAX        31.0f
+
 #define GBC_CC_R          0.87f
 #define GBC_CC_G          0.66f
 #define GBC_CC_B          0.79f
@@ -123,10 +126,8 @@ static bool colorCorrectionEnabled = false;
 static void _initColorCorrection(void) {
 
 	/* Constants */
-	static const float targetGamma = 2.2f;
-	static const float displayGammaInv = 1.0f / targetGamma;
-	static const float rgbMax = 31.0f;
-	static const float rgbMaxInv = 1.0f / rgbMax;
+	static const float displayGammaInv = 1.0f / CC_TARGET_GAMMA;
+	static const float rgbMaxInv = 1.0f / CC_RGB_MAX;
 
 	/* Variables */
 	enum GBModel model = GB_MODEL_AUTODETECT;
@@ -198,7 +199,7 @@ static void _initColorCorrection(void) {
 			ccGB = GBA_CC_GB;
 			ccBR = GBA_CC_BR;
 			ccBG = GBA_CC_BG;
-			adjustedGamma = targetGamma + GBA_CC_GAMMA_ADJ;
+			adjustedGamma = CC_TARGET_GAMMA + GBA_CC_GAMMA_ADJ;
 			break;
 		case GB_MODEL_CGB:
 			ccR  = GBC_CC_R;
@@ -210,7 +211,7 @@ static void _initColorCorrection(void) {
 			ccGB = GBC_CC_GB;
 			ccBR = GBC_CC_BR;
 			ccBG = GBC_CC_BG;
-			adjustedGamma = targetGamma + GBC_CC_GAMMA_ADJ;
+			adjustedGamma = CC_TARGET_GAMMA + GBC_CC_GAMMA_ADJ;
 			break;
 		default:
 			return;
@@ -276,9 +277,9 @@ static void _initColorCorrection(void) {
 		gCorrect = gCorrect > 1.0f ? 1.0f : gCorrect;
 		bCorrect = bCorrect > 1.0f ? 1.0f : bCorrect;
 		/* Convert back to RGB565 */
-		rFinal = (unsigned)((rCorrect * rgbMax) + 0.5f) & 0x1F;
-		gFinal = (unsigned)((gCorrect * rgbMax) + 0.5f) & 0x1F;
-		bFinal = (unsigned)((bCorrect * rgbMax) + 0.5f) & 0x1F;
+		rFinal = (unsigned)((rCorrect * CC_RGB_MAX) + 0.5f) & 0x1F;
+		gFinal = (unsigned)((gCorrect * CC_RGB_MAX) + 0.5f) & 0x1F;
+		bFinal = (unsigned)((bCorrect * CC_RGB_MAX) + 0.5f) & 0x1F;
 		ccLUT[color] = rFinal << 11 | gFinal << 6 | bFinal;
 	}
 }
