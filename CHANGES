@@ -31,6 +31,7 @@ Other fixes:
  - Qt: Fix FPS target maxing out at 59.727 (fixes mgba.io/i/1421)
  - Core: Fix crashes if core directories aren't set
  - Qt: Fix menu bar staying hidden in full screen (fixes mgba.io/i/317)
+ - GB SIO: Fix lockstep failing games aren't reloaded
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash

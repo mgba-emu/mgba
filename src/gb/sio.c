@@ -31,6 +31,7 @@ void GBSIOInit(struct GBSIO* sio) {
 void GBSIOReset(struct GBSIO* sio) {
 	sio->nextEvent = INT_MAX;
 	sio->remainingBits = 0;
+	GBSIOSetDriver(sio, sio->driver);
 }
 
 void GBSIODeinit(struct GBSIO* sio) {
