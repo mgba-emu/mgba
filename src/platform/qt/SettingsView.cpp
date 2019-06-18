@@ -387,6 +387,7 @@ void SettingsView::updateConfig() {
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
 	saveSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
+	saveSetting("pauseOnMinimize", m_ui.pauseOnMinimize);
 	saveSetting("savegamePath", m_ui.savegamePath);
 	saveSetting("savestatePath", m_ui.savestatePath);
 	saveSetting("screenshotPath", m_ui.screenshotPath);
@@ -550,6 +551,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
 	loadSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
+	loadSetting("pauseOnMinimize", m_ui.pauseOnMinimize);
 	loadSetting("savegamePath", m_ui.savegamePath);
 	loadSetting("savestatePath", m_ui.savestatePath);
 	loadSetting("screenshotPath", m_ui.screenshotPath);

@@ -562,7 +562,7 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
+       <item row="10" column="1">
         <widget class="QCheckBox" name="showFps">
          <property name="text">
           <string>Show FPS in title bar</string>
@@ -572,21 +572,21 @@
          </property>
         </widget>
        </item>
-       <item row="11" column="0" colspan="2">
+       <item row="12" column="0" colspan="2">
         <widget class="Line" name="line_13">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="14" column="0" colspan="2">
+       <item row="15" column="0" colspan="2">
         <widget class="Line" name="line_16">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="15" column="1">
+       <item row="16" column="1">
         <widget class="QCheckBox" name="cheatAutosave">
          <property name="text">
           <string>Automatically save cheats</string>
@@ -596,7 +596,7 @@
          </property>
         </widget>
        </item>
-       <item row="16" column="1">
+       <item row="17" column="1">
         <widget class="QCheckBox" name="cheatAutoload">
          <property name="text">
           <string>Automatically load cheats</string>
@@ -606,7 +606,7 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="1">
+       <item row="13" column="1">
         <widget class="QCheckBox" name="autosave">
          <property name="text">
           <string>Automatically save state</string>
@@ -616,7 +616,7 @@
          </property>
         </widget>
        </item>
-       <item row="13" column="1">
+       <item row="14" column="1">
         <widget class="QCheckBox" name="autoload">
          <property name="text">
           <string>Automatically load state</string>
@@ -626,10 +626,17 @@
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
+       <item row="11" column="1">
         <widget class="QCheckBox" name="useDiscordPresence">
          <property name="text">
           <string>Enable Discord Rich Presence</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="QCheckBox" name="pauseOnMinimize">
+         <property name="text">
+          <string>Pause when minimized</string>
          </property>
         </widget>
        </item>

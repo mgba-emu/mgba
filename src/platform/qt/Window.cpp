@@ -602,6 +602,13 @@ void Window::resizeEvent(QResizeEvent* event) {
 
 void Window::showEvent(QShowEvent* event) {
 	if (m_wasOpened) {
+		if (event->spontaneous() && m_config->getOption("pauseOnMinimize").toInt() && m_controller) {
+			focusCheck();
+			if (m_autoresume) {
+				m_controller->setPaused(false);
+				m_autoresume = false;
+			}
+		}
 		return;
 	}
 	m_wasOpened = true;
@@ -621,6 +628,19 @@ void Window::showEvent(QShowEvent* event) {
 	}
 	reloadDisplayDriver();
 	setFocus();
+}
+
+void Window::hideEvent(QHideEvent* event) {
+	if (!event->spontaneous()) {
+		return;
+	}
+	if (!m_config->getOption("pauseOnMinimize").toInt() || !m_controller) {
+		return;
+	}
+	if (!m_controller->isPaused()) {
+		m_autoresume = true;
+		m_controller->setPaused(true);
+	}
 }
 
 void Window::closeEvent(QCloseEvent* event) {

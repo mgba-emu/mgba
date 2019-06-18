@@ -55,6 +55,7 @@ Misc:
  - Vita: L2/R2 and L3/R3 can now be mapped on PSTV (fixes mgba.io/i/1292)
  - mGUI: Remember name and position of last loaded game
  - Core: Create game-related paths if they don't exist (fixes mgba.io/i/1446)
+ - Qt: Add option to pause on minimizing window (closes mgba.io/i/1379)
 
 0.7.2: (2019-05-25)
 Emulation fixes:
