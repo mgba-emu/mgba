@@ -10,13 +10,15 @@
 extern "C" {
 #endif
 
-extern const char* const gitCommit;
-extern const char* const gitCommitShort;
-extern const char* const gitBranch;
-extern const int gitRevision;
-extern const char* const binaryName;
-extern const char* const projectName;
-extern const char* const projectVersion;
+#include <mgba-util/dllexports.h>
+
+extern MGBA_EXPORT const char* const gitCommit;
+extern MGBA_EXPORT const char* const gitCommitShort;
+extern MGBA_EXPORT const char* const gitBranch;
+extern MGBA_EXPORT const int gitRevision;
+extern MGBA_EXPORT const char* const binaryName;
+extern MGBA_EXPORT const char* const projectName;
+extern MGBA_EXPORT const char* const projectVersion;
 
 #ifdef __cplusplus
 }

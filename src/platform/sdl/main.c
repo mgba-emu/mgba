@@ -178,7 +178,7 @@ int main(int argc, char** argv) {
 	return ret;
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_UNICODE)
 #include <mgba-util/string.h>
 
 int wmain(int argc, wchar_t** argv) {
