@@ -9,7 +9,8 @@
 #include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
-#define MAX_LINE_LENGTH 128
+#define MAX_LINE_LENGTH 512
+#define MAX_CHEATS 1000
 
 const uint32_t M_CHEAT_DEVICE_ID = 0xABADC0DE;
 
@@ -191,6 +192,12 @@ bool mCheatParseFile(struct mCheatDevice* device, struct VFile* vf) {
 			break;
 		default:
 			if (!set) {
+				if (strncmp(cheat, "cheats = ", 9) == 0) {
+					// This is in libretro format, switch over to that parser
+					vf->seek(vf, 0, SEEK_SET);
+					StringListDeinit(&directives);
+					return mCheatParseLibretroFile(device, vf);
+				}
 				set = device->createSet(device, NULL);
 				set->enabled = !nextDisabled;
 				nextDisabled = false;
@@ -208,6 +215,112 @@ bool mCheatParseFile(struct mCheatDevice* device, struct VFile* vf) {
 	}
 	StringListClear(&directives);
 	StringListDeinit(&directives);
+	return true;
+}
+
+bool mCheatParseLibretroFile(struct mCheatDevice* device, struct VFile* vf) {
+	char cheat[MAX_LINE_LENGTH];
+	char parsed[MAX_LINE_LENGTH];
+	struct mCheatSet* set = NULL;
+	unsigned long i = 0;
+	bool startFound = false;
+
+	while (true) {
+		ssize_t bytesRead = vf->readline(vf, cheat, sizeof(cheat));
+		if (bytesRead == 0) {
+			break;
+		}
+		if (bytesRead < 0) {
+			return false;
+		}
+		if (cheat[0] == '\n') {
+			continue;
+		}
+		if (strncmp(cheat, "cheat", 5) != 0) {
+			return false;
+		}
+		char* underscore = strchr(&cheat[5], '_');
+		if (!underscore) {
+			if (!startFound && cheat[5] == 's') {
+				startFound = true;
+				char* eq = strchr(&cheat[6], '=');
+				if (!eq) {
+					return false;
+				}
+				++eq;
+				while (isspace((int) eq[0])) {
+					if (eq[0] == '\0') {
+						return false;
+					}
+					++eq;
+				}
+
+				char* end;
+				unsigned long nCheats = strtoul(eq, &end, 10);
+				if (end[0] != '\0' && !isspace(end[0])) {
+					return false;
+				}
+
+				if (nCheats > MAX_CHEATS) {
+					return false;
+				}
+
+				while (nCheats > mCheatSetsSize(&device->cheats)) {
+					struct mCheatSet* newSet = device->createSet(device, NULL);
+					if (!newSet) {
+						return false;
+					}
+					mCheatAddSet(device, newSet);
+				}
+				continue;
+			}
+			return false;
+		}
+		char* underscore2;
+		i = strtoul(&cheat[5], &underscore2, 10);
+		if (underscore2 != underscore) {
+			return false;
+		}
+		++underscore;
+		char* eq = strchr(underscore, '=');
+		if (!eq) {
+			return false;
+		}
+		++eq;
+		while (isspace((int) eq[0])) {
+			if (eq[0] == '\0') {
+				return false;
+			}
+			++eq;
+		}
+
+		if (i >= mCheatSetsSize(&device->cheats)) {
+			return false;
+		}
+		set = *mCheatSetsGetPointer(&device->cheats, i);
+
+		if (strncmp(underscore, "desc", 4) == 0) {
+			parseQuotedString(eq, strlen(eq), parsed, sizeof(parsed));
+			mCheatSetRename(set, parsed);
+		} else if (strncmp(underscore, "enable", 6) == 0) {
+			set->enabled = strncmp(eq, "true\n", 5) == 0;
+		} else if (strncmp(underscore, "code", 4) == 0) {
+			parseQuotedString(eq, strlen(eq), parsed, sizeof(parsed));
+			char* cur = parsed;
+			char* next;
+			while ((next = strchr(cur, '+'))) {
+				next[0] = '\0';
+				mCheatAddLine(set, cur, 0);
+				cur = &next[1];
+			}
+			mCheatAddLine(set, cur, 0);
+
+			for (++i; i < mCheatSetsSize(&device->cheats); ++i) {
+				struct mCheatSet* newSet = *mCheatSetsGetPointer(&device->cheats, i);
+				newSet->copyProperties(newSet, set);
+			}
+		}
+	}
 	return true;
 }
 

@@ -39,6 +39,8 @@ const char* hex4(const char* line, uint8_t* out);
 
 void rtrim(char* string);
 
+ssize_t parseQuotedString(const char* unparsed, ssize_t unparsedLen, char* parsed, ssize_t parsedLen);
+
 CXX_GUARD_END
 
 #endif
