@@ -222,7 +222,6 @@ typedef intptr_t ssize_t;
 #define _CONSTRUCTOR(FN, PRE) \
     static void FN(void); \
     __declspec(allocate(".CRT$XCU")) void (*_CONSTRUCTOR_ ## FN)(void) = FN; \
-    __pragma(comment(linker,"/include:" PRE "_CONSTRUCTOR_" #FN)) \
     static void FN(void)
 #ifdef _WIN64
 #define CONSTRUCTOR(FN) _CONSTRUCTOR(FN, "")
