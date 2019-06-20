@@ -1,0 +1,7 @@
+macro(export_directory PREFIX FILES)
+	set(${PREFIX}_SRC)
+	foreach(SRCFILE IN LISTS ${FILES})
+		list(APPEND ${PREFIX}_SRC "${CMAKE_CURRENT_SOURCE_DIR}/${SRCFILE}")
+	endforeach()
+	set(${PREFIX}_SRC ${${PREFIX}_SRC} PARENT_SCOPE)
+endmacro()
