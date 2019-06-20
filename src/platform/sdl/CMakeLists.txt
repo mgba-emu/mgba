@@ -13,6 +13,12 @@ if (SDL_VERSION EQUAL "2")
 		link_directories(${SDL2_LIBDIR})
 		set(SDL_VERSION_DEBIAN "2-2.0-0")
 		set(SDL_FOUND ON PARENT_SCOPE)
+
+		if (NOT SDL2MAIN_LIBRARY)
+			set(SDL2MAIN_LIBRARY "")
+		endif()
+
+		set(SDLMAIN_LIBRARY ${SDL2MAIN_LIBRARY})
 	endif()
 endif()
 
