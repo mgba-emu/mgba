@@ -8,7 +8,3 @@ endif()
 if(EPOXY_LIBRARIES AND EPOXY_INCLUDE_DIRS)
     set(epoxy_FOUND TRUE)
 endif()
-
-if (WIN32 AND NOT epoxy_FOUND)
-    message(FATAL_ERROR "Windows requires epoxy module!")
-endif()

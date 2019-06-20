@@ -785,6 +785,10 @@ elseif(BUILD_GLES2)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libgles2")
 endif()
 
+if (WIN32 AND NOT USE_EPOXY)
+    message(FATAL_ERROR "Windows requires epoxy module!")
+endif()
+
 if(USE_SQLITE3)
 	list(APPEND FEATURES SQLITE3)
 	include_directories(AFTER ${SQLITE3_INCLUDE_DIRS})

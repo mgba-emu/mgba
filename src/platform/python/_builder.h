@@ -5,6 +5,7 @@
 #define _SYS_TIME_H_
 #define _TIME_H
 #define _TIME_H_
+#define MGBA_EXPORT
 
 #define ATTRIBUTE_FORMAT(X, Y, Z)
 #define DECL_BITFIELD(newtype, oldtype) typedef oldtype newtype
