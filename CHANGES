@@ -34,6 +34,7 @@ Other fixes:
  - Qt: Fix menu bar staying hidden in full screen (fixes mgba.io/i/317)
  - GB SIO: Fix lockstep failing games aren't reloaded
  - Core: Fix crash when exiting game with cheats loaded
+ - GBA Cheats: Fix PARv3 Thumb hooks
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
