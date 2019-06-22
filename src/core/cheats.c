@@ -83,11 +83,11 @@ void mCheatSetInit(struct mCheatSet* set, const char* name) {
 }
 
 void mCheatSetDeinit(struct mCheatSet* set) {
-	mCheatListDeinit(&set->list);
 	size_t i;
 	for (i = 0; i < StringListSize(&set->lines); ++i) {
 		free(*StringListGetPointer(&set->lines, i));
 	}
+	mCheatListDeinit(&set->list);
 	if (set->name) {
 		free(set->name);
 	}

@@ -33,6 +33,7 @@ Other fixes:
  - Core: Fix crashes if core directories aren't set
  - Qt: Fix menu bar staying hidden in full screen (fixes mgba.io/i/317)
  - GB SIO: Fix lockstep failing games aren't reloaded
+ - Core: Fix crash when exiting game with cheats loaded
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
