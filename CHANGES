@@ -7,6 +7,7 @@ Other fixes:
  - Qt: Fix FPS target maxing out at 59.727 (fixes mgba.io/i/1421)
  - Core: Fix crashes if core directories aren't set
  - Qt: Cap audio buffer size to 8192 (fixes mgba.io/i/1433)
+ - Core: Fix crash when exiting game with cheats loaded
 Misc:
  - Qt: Make mute menu option also toggle fast-forward mute (fixes mgba.io/i/1424)
 
