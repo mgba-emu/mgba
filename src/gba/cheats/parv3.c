@@ -284,7 +284,7 @@ bool GBACheatAddProActionReplayRaw(struct GBACheatSet* cheats, uint32_t op1, uin
 			return false;
 		}
 		cheats->hook = malloc(sizeof(*cheats->hook));
-		cheats->hook->address = BASE_CART0 | (op1 & (SIZE_CART0 - 1));
+		cheats->hook->address = BASE_CART0 | (op1 & (SIZE_CART0 - 2));
 		cheats->hook->mode = MODE_THUMB;
 		cheats->hook->refs = 1;
 		cheats->hook->reentries = 0;
