@@ -598,7 +598,7 @@ void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
 	int sampleLeft = dcOffset;
 	int sampleRight = dcOffset;
 
-	if (audio->playingCh1 && !audio->forceDisableCh[0]) {
+	if (!audio->forceDisableCh[0]) {
 		if (audio->ch1Left) {
 			sampleLeft += audio->ch1.sample;
 		}
@@ -608,7 +608,7 @@ void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
 		}
 	}
 
-	if (audio->playingCh2 && !audio->forceDisableCh[1]) {
+	if (!audio->forceDisableCh[1]) {
 		if (audio->ch2Left) {
 			sampleLeft +=  audio->ch2.sample;
 		}
@@ -618,7 +618,7 @@ void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
 		}
 	}
 
-	if (audio->playingCh3 && !audio->forceDisableCh[2]) {
+	if (!audio->forceDisableCh[2]) {
 		if (audio->ch3Left) {
 			sampleLeft += audio->ch3.sample;
 		}
@@ -628,7 +628,7 @@ void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
 		}
 	}
 
-	if (audio->playingCh4 && !audio->forceDisableCh[3]) {
+	if (!audio->forceDisableCh[3]) {
 		int8_t sample = _coalesceNoiseChannel(&audio->ch4);
 		if (audio->ch4Left) {
 			sampleLeft += sample;
