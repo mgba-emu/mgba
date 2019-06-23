@@ -25,6 +25,7 @@ Emulation fixes:
  - GB I/O: Filter IE top bits properly (fixes mgba.io/i/1329)
  - GBA Video: Fix wrapped sprite mosaic clamping (fixes mgba.io/i/1432)
  - GBA Memory: Fix STM to VRAM (fixes mgba.io/i/1430)
+ - GB Audio: Only reset channel 3 sample in DMG mode
 Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)

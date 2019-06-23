@@ -329,7 +329,9 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 			}
 		}
 		audio->ch3.window = 0;
-		audio->ch3.sample = 0;
+		if (audio->style == GB_AUDIO_DMG) {
+			audio->ch3.sample = 0;
+		}
 	}
 	mTimingDeschedule(audio->timing, &audio->ch3Fade);
 	mTimingDeschedule(audio->timing, &audio->ch3Event);
