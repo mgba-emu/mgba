@@ -703,7 +703,7 @@ elseif(BUILD_GLES2)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libgles2")
 endif()
 
-if (WIN32 AND NOT USE_EPOXY)
+if(WIN32 AND NOT SKIP_LIBRARY AND NOT USE_EPOXY)
     message(FATAL_ERROR "Windows requires epoxy module!")
 endif()
 
