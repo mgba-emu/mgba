@@ -787,7 +787,7 @@ void Window::gameStarted() {
 	if (nAudio) {
 		for (size_t i = 0; i < nAudio; ++i) {
 			Action* action = m_actions.addBooleanAction(audioChannels[i].visibleName, QString("audioChannel.%1").arg(audioChannels[i].internalName), [this, audioChannels, i](bool enable) {
-				m_controller->thread()->core->enableVideoLayer(m_controller->thread()->core, audioChannels[i].id, enable);
+				m_controller->thread()->core->enableAudioChannel(m_controller->thread()->core, audioChannels[i].id, enable);
 			}, "audioChannels");
 			action->setActive(true);
 		}
