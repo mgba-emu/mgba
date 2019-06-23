@@ -7,6 +7,7 @@
 #define M_LOG_H
 
 #include <mgba-util/common.h>
+#include <mgba-util/dllexports.h>
 
 CXX_GUARD_START
 
@@ -65,7 +66,7 @@ void mLog(int category, enum mLogLevel level, const char* format, ...);
 		_mLOG_CAT_ ## CATEGORY = mLogGenerateCategory(NAME, ID); \
 	}
 
-mLOG_DECLARE_CATEGORY(STATUS)
+MGBA_EXPORT mLOG_DECLARE_CATEGORY(STATUS)
 
 CXX_GUARD_END
 

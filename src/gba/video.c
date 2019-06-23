@@ -33,7 +33,7 @@ static void GBAVideoDummyRendererPutPixels(struct GBAVideoRenderer* renderer, si
 static void _startHblank(struct mTiming*, void* context, uint32_t cyclesLate);
 static void _startHdraw(struct mTiming*, void* context, uint32_t cyclesLate);
 
-const int GBAVideoObjSizes[16][2] = {
+MGBA_EXPORT const int GBAVideoObjSizes[16][2] = {
 	{ 8, 8 },
 	{ 16, 16 },
 	{ 32, 32 },
