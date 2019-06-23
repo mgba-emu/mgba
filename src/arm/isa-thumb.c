@@ -400,6 +400,6 @@ DEFINE_INSTRUCTION_THUMB(BX,
 
 DEFINE_INSTRUCTION_THUMB(SWI, cpu->irqh.swi16(cpu, opcode & 0xFF))
 
-const ThumbInstruction _thumbTable[0x400] = {
+ATTRIBUTE_ALIGN(4096) const ThumbInstruction _thumbTable[0x400] = {
 	DECLARE_THUMB_EMITTER_BLOCK(_ThumbInstruction)
 };

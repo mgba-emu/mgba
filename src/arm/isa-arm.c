@@ -738,6 +738,6 @@ DEFINE_INSTRUCTION_ARM(MSRRI,
 
 DEFINE_INSTRUCTION_ARM(SWI, cpu->irqh.swi32(cpu, opcode & 0xFFFFFF))
 
-const ARMInstruction _armTable[0x1000] = {
+ATTRIBUTE_ALIGN(4096) const ARMInstruction _armTable[0x1000] = {
 	DECLARE_ARM_EMITTER_BLOCK(_ARMInstruction)
 };
