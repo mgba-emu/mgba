@@ -7,6 +7,7 @@
 #define GB_IO_H
 
 #include <mgba-util/common.h>
+#include <mgba-util/dllexports.h>
 
 CXX_GUARD_START
 
@@ -108,7 +109,7 @@ enum GBIORegisters {
 	REG_MAX = 0x100
 };
 
-extern const char* const GBIORegisterNames[];
+extern MGBA_EXPORT const char* const GBIORegisterNames[];
 
 struct GB;
 void GBIOInit(struct GB* gb);

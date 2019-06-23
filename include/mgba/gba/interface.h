@@ -7,6 +7,7 @@
 #define GBA_INTERFACE_H
 
 #include <mgba-util/common.h>
+#include <mgba-util/dllexports.h>
 
 CXX_GUARD_START
 
@@ -39,7 +40,7 @@ struct GBAAudio;
 struct GBASIO;
 struct GBAVideoRenderer;
 
-extern const int GBA_LUX_LEVELS[10];
+extern MGBA_EXPORT const int GBA_LUX_LEVELS[10];
 
 enum {
 	mPERIPH_GBA_LUMINANCE = 0x1000,

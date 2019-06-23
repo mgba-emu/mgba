@@ -11,7 +11,7 @@
 
 mLOG_DEFINE_CATEGORY(GB_IO, "GB I/O", "gb.io");
 
-const char* const GBIORegisterNames[] = {
+MGBA_EXPORT const char* const GBIORegisterNames[] = {
 	[REG_JOYP] = "JOYP",
 	[REG_SB] = "SB",
 	[REG_SC] = "SC",
