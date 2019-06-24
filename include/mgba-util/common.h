@@ -102,8 +102,8 @@ typedef intptr_t ssize_t;
 #define ATOMIC_OR(DST, OP) InterlockedOrRelease(&DST, OP)
 #define ATOMIC_AND(DST, OP) InterlockedAndRelease(&DST, OP)
 #define ATOMIC_CMPXCHG(DST, EXPECTED, SRC) (InterlockedCompareExchange(&DST, SRC, EXPECTED) == EXPECTED)
-#define ATOMIC_STORE_PTR(DST, SRC) InterlockedExchangePointer(DST, SRC)
-#define ATOMIC_LOAD_PTR(DST, SRC) DST = InterlockedCompareExchangePointer(SRC, 0, 0)
+#define ATOMIC_STORE_PTR(DST, SRC) InterlockedExchangePointer(&DST, SRC)
+#define ATOMIC_LOAD_PTR(DST, SRC) DST = InterlockedCompareExchangePointer(&SRC, 0, 0)
 #else
 // TODO
 #define ATOMIC_STORE(DST, SRC) DST = SRC
