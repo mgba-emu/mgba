@@ -279,6 +279,7 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 void GBAudioWriteNR30(struct GBAudio* audio, uint8_t value) {
 	audio->ch3.enable = GBAudioRegisterBankGetEnable(value);
 	if (!audio->ch3.enable) {
+		mTimingDeschedule(audio->timing, &audio->ch3Event);
 		audio->playingCh3 = false;
 		*audio->nr52 &= ~0x0004;
 	}
