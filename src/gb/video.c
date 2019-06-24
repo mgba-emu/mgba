@@ -505,14 +505,16 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 	} else {
 		switch (address) {
 		case REG_BCPD:
-			if (video->bcpIndex & 1) {
-				video->palette[video->bcpIndex >> 1] &= 0x00FF;
-				video->palette[video->bcpIndex >> 1] |= value << 8;
-			} else {
-				video->palette[video->bcpIndex >> 1] &= 0xFF00;
-				video->palette[video->bcpIndex >> 1] |= value;
+			if (video->mode != 3) {
+				if (video->bcpIndex & 1) {
+					video->palette[video->bcpIndex >> 1] &= 0x00FF;
+					video->palette[video->bcpIndex >> 1] |= value << 8;
+				} else {
+					video->palette[video->bcpIndex >> 1] &= 0xFF00;
+					video->palette[video->bcpIndex >> 1] |= value;
+				}
+				video->renderer->writePalette(video->renderer, video->bcpIndex >> 1, video->palette[video->bcpIndex >> 1]);
 			}
-			video->renderer->writePalette(video->renderer, video->bcpIndex >> 1, video->palette[video->bcpIndex >> 1]);
 			if (video->bcpIncrement) {
 				++video->bcpIndex;
 				video->bcpIndex &= 0x3F;
@@ -522,14 +524,16 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 			video->p->memory.io[REG_BCPD] = video->palette[video->bcpIndex >> 1] >> (8 * (video->bcpIndex & 1));
 			break;
 		case REG_OCPD:
-			if (video->ocpIndex & 1) {
-				video->palette[8 * 4 + (video->ocpIndex >> 1)] &= 0x00FF;
-				video->palette[8 * 4 + (video->ocpIndex >> 1)] |= value << 8;
-			} else {
-				video->palette[8 * 4 + (video->ocpIndex >> 1)] &= 0xFF00;
-				video->palette[8 * 4 + (video->ocpIndex >> 1)] |= value;
+			if (video->mode != 3) {
+				if (video->ocpIndex & 1) {
+					video->palette[8 * 4 + (video->ocpIndex >> 1)] &= 0x00FF;
+					video->palette[8 * 4 + (video->ocpIndex >> 1)] |= value << 8;
+				} else {
+					video->palette[8 * 4 + (video->ocpIndex >> 1)] &= 0xFF00;
+					video->palette[8 * 4 + (video->ocpIndex >> 1)] |= value;
+				}
+				video->renderer->writePalette(video->renderer, 8 * 4 + (video->ocpIndex >> 1), video->palette[8 * 4 + (video->ocpIndex >> 1)]);
 			}
-			video->renderer->writePalette(video->renderer, 8 * 4 + (video->ocpIndex >> 1), video->palette[8 * 4 + (video->ocpIndex >> 1)]);
 			if (video->ocpIncrement) {
 				++video->ocpIndex;
 				video->ocpIndex &= 0x3F;
