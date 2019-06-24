@@ -7,7 +7,6 @@
 #define GB_IO_H
 
 #include <mgba-util/common.h>
-#include <mgba-util/dllexports.h>
 
 CXX_GUARD_START
 
