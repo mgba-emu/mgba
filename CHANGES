@@ -39,6 +39,7 @@ Other fixes:
  - GB SIO: Fix lockstep failing games aren't reloaded
  - Core: Fix crash when exiting game with cheats loaded
  - GBA Cheats: Fix PARv3 Thumb hooks
+ - mGUI: Fix crash if last loaded ROM directory disappears (fixes mgba.io/i/1466)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
