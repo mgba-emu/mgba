@@ -3,6 +3,7 @@ Emulation fixes:
  - GBA Video: Fix wrapped sprite mosaic clamping (fixes mgba.io/i/1432)
  - GBA Memory: Fix STM to VRAM (fixes mgba.io/i/1430)
  - GB Video: Increment BCPS/OCPS even in mode 3 (fixes mgba.io/i/1462)
+ - GB Audio: Deschedule channel 3 when disabled (fixes mgba.io/i/1463)
 Other fixes:
  - Switch: Fix threading-related crash on second launch
  - Qt: Fix FPS target maxing out at 59.727 (fixes mgba.io/i/1421)
