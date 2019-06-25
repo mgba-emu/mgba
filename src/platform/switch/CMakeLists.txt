@@ -42,9 +42,10 @@ add_custom_command(OUTPUT control.nacp
 add_custom_command(OUTPUT romfs.bin
                    COMMAND ${CMAKE_COMMAND} -E make_directory romfs
                    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/res/font-new.png" romfs/
+                   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/fileassoc.cfg.in" romfs/
                    COMMAND ${BUILD_ROMFS} romfs romfs.bin
                    COMMAND ${CMAKE_COMMAND} -E remove_directory romfs
-               DEPENDS "${CMAKE_SOURCE_DIR}/res/font-new.png")
+               DEPENDS "${CMAKE_SOURCE_DIR}/res/font-new.png" "${CMAKE_CURRENT_SOURCE_DIR}/fileassoc.cfg.in")
 
 add_custom_target(${BINARY_NAME}.nro ALL
                   ${ELF2NRO} ${BINARY_NAME}.elf ${BINARY_NAME}.nro --romfs=romfs.bin --nacp=control.nacp --icon="${CMAKE_CURRENT_SOURCE_DIR}/icon.jpg"

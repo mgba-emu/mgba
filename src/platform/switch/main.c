@@ -12,6 +12,7 @@
 #include <mgba-util/gui.h>
 #include <mgba-util/gui/font.h>
 #include <mgba-util/gui/menu.h>
+#include <mgba-util/vfs.h>
 
 #include <switch.h>
 #include <EGL/egl.h>
@@ -920,6 +921,29 @@ int main(int argc, char* argv[]) {
 	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DRIGHT, GUI_INPUT_RIGHT);
 
 	audoutStartAudioOut();
+
+	if (argc > 0) {
+		struct VFile* vf = VFileOpen("romfs:/fileassoc.cfg.in", O_RDONLY);
+		if (vf) {
+			size_t size = vf->size(vf);
+			const char* arg0 = strchr(argv[0], '/');
+			char* buffer[2] = {
+				calloc(size + 1, 1),
+				malloc(size + strlen(arg0) + 1)
+			};
+			vf->read(vf, buffer[0], vf->size(vf));
+			vf->close(vf);
+			snprintf(buffer[1], size + strlen(arg0), buffer[0], arg0);
+			mkdir("sdmc:/config/nx-hbmenu/fileassoc", 0755);
+			vf = VFileOpen("sdmc:/config/nx-hbmenu/fileassoc/mgba.cfg", O_CREAT | O_TRUNC | O_WRONLY);
+			if (vf) {
+				vf->write(vf, buffer[1], strlen(buffer[1]));
+				vf->close(vf);
+			}
+			free(buffer[0]);
+			free(buffer[1]);
+		}
+	}
 
 	if (argc > 1) {
 		size_t i;

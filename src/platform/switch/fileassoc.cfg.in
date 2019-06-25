@@ -1,0 +1,18 @@
+fileassoc={
+  app_path="%s";
+
+  targets=(
+    {
+      file_extension=".gba";
+    },
+    {
+      file_extension=".gb";
+    },
+    {
+      file_extension=".gbc";
+    },
+    {
+      file_extension=".sgb";
+    }
+  );
+};
