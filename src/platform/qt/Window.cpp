@@ -1866,6 +1866,7 @@ void Window::updateFrame() {
 
 void Window::setController(CoreController* controller, const QString& fname) {
 	if (!controller) {
+		gameFailed();
 		return;
 	}
 
