@@ -511,6 +511,9 @@ void GBAudioUpdateFrame(struct GBAudio* audio, struct mTiming* timing) {
 				audio->playingCh1 = _updateSweep(&audio->ch1, false);
 				*audio->nr52 &= ~0x0001;
 				*audio->nr52 |= audio->playingCh1;
+				if (!audio->playingCh1) {
+					mTimingDeschedule(audio->timing, &audio->ch1Event);
+				}
 			}
 		}
 		// Fall through

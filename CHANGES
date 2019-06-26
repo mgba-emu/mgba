@@ -4,6 +4,7 @@ Emulation fixes:
  - GBA Memory: Fix STM to VRAM (fixes mgba.io/i/1430)
  - GB Video: Increment BCPS/OCPS even in mode 3 (fixes mgba.io/i/1462)
  - GB Audio: Deschedule channel 3 when disabled (fixes mgba.io/i/1463)
+ - GB Audio: Deschedule channel 1 when disabled by sweep (fixes mgba.io/i/1467)
 Other fixes:
  - Switch: Fix threading-related crash on second launch
  - Qt: Fix FPS target maxing out at 59.727 (fixes mgba.io/i/1421)
