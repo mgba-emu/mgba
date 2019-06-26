@@ -29,6 +29,7 @@ Emulation fixes:
  - GB Audio: Sample inactive channels (fixes mgba.io/i/1455, mgba.io/i/1456)
  - GB Video: Increment BCPS/OCPS even in mode 3 (fixes mgba.io/i/1462)
  - GB Audio: Deschedule channel 3 when disabled (fixes mgba.io/i/1463)
+ - GB Audio: Deschedule channel 1 when disabled by sweep (fixes mgba.io/i/1467)
 Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
