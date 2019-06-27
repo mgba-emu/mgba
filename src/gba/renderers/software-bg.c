@@ -98,10 +98,10 @@ void GBAVideoSoftwareRendererDrawBackgroundMode3(struct GBAVideoSoftwareRenderer
 	int outX;
 	uint32_t* pixel;
 	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
-		BACKGROUND_BITMAP_ITERATE(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+		BACKGROUND_BITMAP_ITERATE(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 
 		if (!mosaicWait) {
-			LOAD_16(color, ((localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS) << 1, renderer->d.vram);
+			LOAD_16(color, ((localX >> 8) + (localY >> 8) * GBA_VIDEO_HORIZONTAL_PIXELS) << 1, renderer->d.vram);
 			color = mColorFrom555(color);
 			mosaicWait = mosaicH;
 		} else {
@@ -137,10 +137,10 @@ void GBAVideoSoftwareRendererDrawBackgroundMode4(struct GBAVideoSoftwareRenderer
 	int outX;
 	uint32_t* pixel;
 	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
-		BACKGROUND_BITMAP_ITERATE(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+		BACKGROUND_BITMAP_ITERATE(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 
 		if (!mosaicWait) {
-			color = ((uint8_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
+			color = ((uint8_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * GBA_VIDEO_HORIZONTAL_PIXELS];
 
 			mosaicWait = mosaicH;
 		} else {

@@ -46,6 +46,7 @@ static void GBAProcessEvents(struct ARMCore* cpu);
 static void GBAHitStub(struct ARMCore* cpu, uint32_t opcode);
 static void GBAIllegal(struct ARMCore* cpu, uint32_t opcode);
 static void GBABreakpoint(struct ARMCore* cpu, int immediate);
+static void GBATestIRQNoDelay(struct ARMCore* cpu);
 
 static void _triggerIRQ(struct mTiming*, void* user, uint32_t cyclesLate);
 
@@ -180,7 +181,7 @@ void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 	irqh->swi16 = GBASwi16;
 	irqh->swi32 = GBASwi32;
 	irqh->hitIllegal = GBAIllegal;
-	irqh->readCPSR = GBATestIRQ;
+	irqh->readCPSR = GBATestIRQNoDelay;
 	irqh->hitStub = GBAHitStub;
 	irqh->bkpt16 = GBABreakpoint;
 	irqh->bkpt32 = GBABreakpoint;
@@ -240,10 +241,6 @@ void GBAReset(struct ARMCore* cpu) {
 	if (gba->pristineRomSize > SIZE_CART0) {
 		GBAMatrixReset(gba);
 	}
-
-	if (!gba->romVf && gba->memory.rom) {
-		GBASkipBIOS(gba);
-	}
 }
 
 void GBASkipBIOS(struct GBA* gba) {
@@ -254,7 +251,8 @@ void GBASkipBIOS(struct GBA* gba) {
 		} else {
 			cpu->gprs[ARM_PC] = BASE_WORKING_RAM;
 		}
-		gba->memory.io[REG_VCOUNT >> 1] = 0x7E;
+		gba->video.vcount = 0x7D;
+		gba->memory.io[REG_VCOUNT >> 1] = 0x7D;
 		gba->memory.io[REG_POSTFLG >> 1] = 1;
 		ARMWritePC(cpu);
 	}
@@ -403,8 +401,6 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 	gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
 	gba->memory.mirroring = false;
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
-	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
-	GBAVFameDetect(&gba->memory.vfame, gba->memory.rom, gba->memory.romSize);
 	if (popcount32(gba->memory.romSize) != 1) {
 		// This ROM is either a bad dump or homebrew. Emulate flash cart behavior.
 #ifndef FIXED_ROM_BUFFER
@@ -419,6 +415,8 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 	if (gba->cpu && gba->memory.activeRegion >= REGION_CART0) {
 		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
+	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
+	GBAVFameDetect(&gba->memory.vfame, gba->memory.rom, gba->memory.romSize);
 	// TODO: error check
 	return true;
 }
@@ -432,7 +430,7 @@ void GBAYankROM(struct GBA* gba) {
 	gba->yankedRomSize = gba->memory.romSize;
 	gba->memory.romSize = 0;
 	gba->memory.romMask = 0;
-	GBARaiseIRQ(gba, IRQ_GAMEPAK);
+	GBARaiseIRQ(gba, IRQ_GAMEPAK, 0);
 }
 
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
@@ -485,16 +483,20 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
 }
 
-void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq) {
+void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq, uint32_t cyclesLate) {
 	gba->memory.io[REG_IF >> 1] |= 1 << irq;
-	GBATestIRQ(gba->cpu);
+	GBATestIRQ(gba, cyclesLate);
 }
 
-void GBATestIRQ(struct ARMCore* cpu) {
+void GBATestIRQNoDelay(struct ARMCore* cpu) {
 	struct GBA* gba = (struct GBA*) cpu->master;
+	GBATestIRQ(gba, 0);
+}
+
+void GBATestIRQ(struct GBA* gba, uint32_t cyclesLate) {
 	if (gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1]) {
 		if (!mTimingIsScheduled(&gba->timing, &gba->irqEvent)) {
-			mTimingSchedule(&gba->timing, &gba->irqEvent, GBA_IRQ_DELAY);
+			mTimingSchedule(&gba->timing, &gba->irqEvent, GBA_IRQ_DELAY - cyclesLate);
 		}
 	}
 }
@@ -783,6 +785,10 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 void GBAFrameStarted(struct GBA* gba) {
 	GBATestKeypadIRQ(gba);
 
+	if (gba->audio.mixer) {
+		gba->audio.mixer->vblank(gba->audio.mixer);
+	}
+
 	size_t c;
 	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
 		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
@@ -845,9 +851,9 @@ void GBATestKeypadIRQ(struct GBA* gba) {
 	uint16_t keyInput = *gba->keySource & keycnt;
 
 	if (isAnd && keycnt == keyInput) {
-		GBARaiseIRQ(gba, IRQ_KEYPAD);
+		GBARaiseIRQ(gba, IRQ_KEYPAD, 0);
 	} else if (!isAnd && keyInput) {
-		GBARaiseIRQ(gba, IRQ_KEYPAD);
+		GBARaiseIRQ(gba, IRQ_KEYPAD, 0);
 	}
 }
 

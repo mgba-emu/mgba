@@ -65,6 +65,7 @@ LoadSaveState::LoadSaveState(std::shared_ptr<CoreController> controller, QWidget
 	escape->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 	addAction(escape);
 
+	connect(m_ui.cancel, &QAbstractButton::clicked, this, &QWidget::close);
 	connect(m_controller.get(), &CoreController::stopping, this, &QWidget::close);
 }
 

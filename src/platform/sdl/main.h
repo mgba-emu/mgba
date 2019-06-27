@@ -54,8 +54,6 @@ struct mSDLRenderer {
 	SDL_Texture* sdlTex;
 	SDL_Renderer* sdlRenderer;
 	SDL_GLContext* glCtx;
-#else
-	bool fullscreen;
 #endif
 
 	unsigned width;
@@ -66,6 +64,7 @@ struct mSDLRenderer {
 
 	bool lockAspectRatio;
 	bool lockIntegerScaling;
+	bool interframeBlending;
 	bool filter;
 
 #ifdef BUILD_GL
@@ -81,10 +80,10 @@ struct mSDLRenderer {
 #endif
 
 #ifdef BUILD_RASPI
-	EGLDisplay display;
-	EGLSurface surface;
-	EGLContext context;
-	EGL_DISPMANX_WINDOW_T window;
+	EGLDisplay eglDisplay;
+	EGLSurface eglSurface;
+	EGLContext eglContext;
+	EGL_DISPMANX_WINDOW_T eglWindow;
 #endif
 
 #ifdef BUILD_PANDORA

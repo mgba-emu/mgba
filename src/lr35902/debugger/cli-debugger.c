@@ -74,7 +74,7 @@ static inline uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address
 	};
 	disPtr[0] = '\t';
 	++disPtr;
-	LR35902Disassemble(&info, disPtr, sizeof(disassembly) - (disPtr - disassembly));
+	LR35902Disassemble(&info, address, disPtr, sizeof(disassembly) - (disPtr - disassembly));
 	be->printf(be, "%s\n", disassembly);
 	return address;
 }
@@ -87,6 +87,7 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	be->printf(be, "D: %02X  E: %02X  (DE: %04X)\n", cpu->d, cpu->e, cpu->de);
 	be->printf(be, "H: %02X  L: %02X  (HL: %04X)\n", cpu->h, cpu->l, cpu->hl);
 	be->printf(be, "PC: %04X  SP: %04X\n", cpu->pc, cpu->sp);
+	_printFlags(be, cpu->f);
 
 	struct LR35902Debugger* platDebugger = (struct LR35902Debugger*) debugger->p->d.platform;
 	size_t i;
@@ -96,7 +97,9 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	if (i) {
 		be->printf(be, "\n");
 	}
-	_printFlags(be, cpu->f);
+	if (platDebugger->printStatus) {
+		platDebugger->printStatus(debugger);
+	}
 	_printLine(debugger->p, cpu->pc, cpu->memory.currentSegment(cpu, cpu->pc));
 }
 

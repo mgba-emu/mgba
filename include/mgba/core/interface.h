@@ -32,6 +32,7 @@ typedef uint32_t color_t;
 #define M_B8(X) (((((X) >> 7) & 0xF8) * 0x21) >> 5)
 
 #define M_RGB5_TO_BGR8(X) ((M_R5(X) << 3) | (M_G5(X) << 11) | (M_B5(X) << 19))
+#define M_RGB5_TO_RGB8(X) ((M_R5(X) << 19) | (M_G5(X) << 11) | (M_B5(X) << 3))
 #define M_RGB8_TO_BGR5(X) ((((X) & 0xF8) >> 3) | (((X) & 0xF800) >> 6) | (((X) & 0xF80000) >> 9))
 #define M_RGB8_TO_RGB5(X) ((((X) & 0xF8) << 7) | (((X) & 0xF800) >> 6) | (((X) & 0xF80000) >> 19))
 
@@ -79,12 +80,17 @@ enum mColorFormat {
 	mCOLOR_ANY    = -1
 };
 
+enum mCoreFeature {
+	mCORE_FEATURE_OPENGL = 1,
+};
+
 struct mCoreCallbacks {
 	void* context;
 	void (*videoFrameStarted)(void* context);
 	void (*videoFrameEnded)(void* context);
 	void (*coreCrashed)(void* context);
 	void (*sleep)(void* context);
+	void (*keysRead)(void* context);
 };
 
 DECLARE_VECTOR(mCoreCallbacksList, struct mCoreCallbacks);

@@ -18,7 +18,7 @@
 #define M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(NAME, ...) M_TEST_SUITE_DEFINE_EX(NAME, _testSuite_setup_ ## NAME, _testSuite_teardown_ ## NAME, __VA_ARGS__)
 #define M_TEST_SUITE_DEFINE_EX(NAME, SETUP, TEARDOWN, ...) \
 	int main(void) { \
-		const static struct CMUnitTest tests[] = { \
+		static const struct CMUnitTest tests[] = { \
 			__VA_ARGS__ \
 		}; \
 		return cmocka_run_group_tests_name(# NAME, tests, SETUP, TEARDOWN); \

@@ -17,6 +17,7 @@
 #include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
 #include "feature/gui/gui-runner.h"
+#include <mgba/internal/gb/video.h>
 #include <mgba/internal/gba/audio.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
@@ -87,6 +88,7 @@ static void _setup(struct mGUIRunner* runner);
 static void _gameLoaded(struct mGUIRunner* runner);
 static void _gameUnloaded(struct mGUIRunner* runner);
 static void _unpaused(struct mGUIRunner* runner);
+static void _prepareForFrame(struct mGUIRunner* runner);
 static void _drawFrame(struct mGUIRunner* runner, bool faded);
 static uint16_t _pollGameInput(struct mGUIRunner* runner);
 static void _setFrameLimiter(struct mGUIRunner* runner, bool limit);
@@ -102,7 +104,7 @@ static struct mRotationSource rotation;
 static GXRModeObj* vmode;
 static float wAdjust;
 static float hAdjust;
-static float wStretch = 1.0f;
+static float wStretch = 0.9f;
 static float hStretch = 0.9f;
 static float guiScale = GUI_SCALE;
 static Mtx model, view, modelview;
@@ -110,6 +112,9 @@ static uint16_t* texmem;
 static GXTexObj tex;
 static uint16_t* rescaleTexmem;
 static GXTexObj rescaleTex;
+static uint16_t* interframeTexmem;
+static GXTexObj interframeTex;
+static bool sgbCrop = false;
 static int32_t tiltX;
 static int32_t tiltY;
 static int32_t gyroZ;
@@ -118,6 +123,7 @@ static uint32_t referenceRetraceCount;
 static bool frameLimiter = true;
 static int scaleFactor;
 static unsigned corew, coreh;
+static bool interframeBlending = true;
 
 uint32_t* romBuffer;
 size_t romBufferSize;
@@ -194,6 +200,9 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 		guiScale = GUI_SCALE_240p;
 		break;
 	}
+
+	vmode->viWidth = 704;
+	vmode->viXOrigin = 8;
 
 	VIDEO_SetBlack(true);
 	VIDEO_Configure(vmode);
@@ -274,10 +283,16 @@ int main(int argc, char* argv[]) {
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S16, 0);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
 
+	GX_SetNumTevStages(1);
 	GX_SetNumChans(1);
 	GX_SetNumTexGens(1);
 	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+	GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
 	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+	GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_DIVIDE_2, GX_TRUE, GX_TEVPREV);
+	GX_SetTevAlphaOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_TEXC, GX_CC_ONE, GX_CC_CPREV);
+	GX_SetTevAlphaIn(GX_TEVSTAGE1, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
 
 	GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
 	GX_InvVtxCache();
@@ -295,6 +310,8 @@ int main(int argc, char* argv[]) {
 
 	texmem = memalign(32, TEX_W * TEX_H * BYTES_PER_PIXEL);
 	GX_InitTexObj(&tex, texmem, TEX_W, TEX_H, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	interframeTexmem = memalign(32, TEX_W * TEX_H * BYTES_PER_PIXEL);
+	GX_InitTexObj(&interframeTex, interframeTexmem, TEX_W, TEX_H, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	rescaleTexmem = memalign(32, TEX_W * TEX_H * 4 * BYTES_PER_PIXEL);
 	GX_InitTexObj(&rescaleTex, rescaleTexmem, TEX_W * 2, TEX_H * 2, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	GX_InitTexObjFilterMode(&rescaleTex, GX_LINEAR, GX_LINEAR);
@@ -319,7 +336,7 @@ int main(int argc, char* argv[]) {
 
 	struct mGUIRunner runner = {
 		.params = {
-			720, 480,
+			640, 480,
 			font, "",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
@@ -476,12 +493,12 @@ int main(int argc, char* argv[]) {
 				.submenu = 0,
 				.state = 7,
 				.validStates = (const char*[]) {
-					"1/2x", "0.6x", "1/3x", "0.7x", "1/4x", "0.8x", "0.9x", "1.0x"
+					"1/2x", "0.6x", "2/3x", "0.7x", "3/4x", "0.8x", "0.9x", "1.0x"
 				},
 				.stateMappings = (const struct GUIVariant[]) {
 					GUI_V_F(0.5f),
 					GUI_V_F(0.6f),
-					GUI_V_F(1.f / 3.f),
+					GUI_V_F(2.f / 3.f),
 					GUI_V_F(0.7f),
 					GUI_V_F(0.75f),
 					GUI_V_F(0.8f),
@@ -496,12 +513,12 @@ int main(int argc, char* argv[]) {
 				.submenu = 0,
 				.state = 6,
 				.validStates = (const char*[]) {
-					"1/2x", "0.6x", "1/3x", "0.7x", "1/4x", "0.8x", "0.9x", "1.0x"
+					"1/2x", "0.6x", "2/3x", "0.7x", "3/4x", "0.8x", "0.9x", "1.0x"
 				},
 				.stateMappings = (const struct GUIVariant[]) {
 					GUI_V_F(0.5f),
 					GUI_V_F(0.6f),
-					GUI_V_F(1.f / 3.f),
+					GUI_V_F(2.f / 3.f),
 					GUI_V_F(0.7f),
 					GUI_V_F(0.75f),
 					GUI_V_F(0.8f),
@@ -516,7 +533,7 @@ int main(int argc, char* argv[]) {
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,
 		.gameUnloaded = _gameUnloaded,
-		.prepareForFrame = 0,
+		.prepareForFrame = _prepareForFrame,
 		.drawFrame = _drawFrame,
 		.paused = _gameUnloaded,
 		.unpaused = _unpaused,
@@ -548,9 +565,7 @@ int main(int argc, char* argv[]) {
 	_mapKey(&runner.params.keyMap, WIIMOTE_INPUT, WPAD_BUTTON_DOWN, GUI_INPUT_RIGHT);
 
 	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_A, GUI_INPUT_SELECT);
-	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_Y, GUI_INPUT_SELECT);
 	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_B, GUI_INPUT_BACK);
-	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_X, GUI_INPUT_BACK);
 	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_HOME, GUI_INPUT_CANCEL);
 	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_UP, GUI_INPUT_UP);
 	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_DOWN, GUI_INPUT_DOWN);
@@ -583,6 +598,7 @@ int main(int argc, char* argv[]) {
 	free(fifo);
 	free(texmem);
 	free(rescaleTexmem);
+	free(interframeTexmem);
 
 	free(outputBuffer);
 	GUIFontDestroy(font);
@@ -727,6 +743,7 @@ void _reproj2(int w, int h) {
 }
 
 void _guiPrepare(void) {
+	GX_SetNumTevStages(1);
 	_reproj2(vmode->fbWidth * guiScale * wAdjust, vmode->efbHeight * guiScale * hAdjust);
 }
 
@@ -810,6 +827,7 @@ void _gameLoaded(struct mGUIRunner* runner) {
 		}
 	}
 	memset(texmem, 0, TEX_W * TEX_H * BYTES_PER_PIXEL);
+	memset(interframeTexmem, 0, TEX_W * TEX_H * BYTES_PER_PIXEL);
 	_unpaused(runner);
 }
 
@@ -842,12 +860,26 @@ void _unpaused(struct mGUIRunner* runner) {
 			break;
 		}
 	}
+	int fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
+		interframeBlending = fakeBool;
+	}
+	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
+		sgbCrop = fakeBool;
+	}
+
 	float stretch;
 	if (mCoreConfigGetFloatValue(&runner->config, "stretchWidth", &stretch)) {
 		wStretch = fminf(1.0f, fmaxf(0.5f, stretch));
 	}
 	if (mCoreConfigGetFloatValue(&runner->config, "stretchHeight", &stretch)) {
 		hStretch = fminf(1.0f, fmaxf(0.5f, stretch));
+	}
+}
+
+void _prepareForFrame(struct mGUIRunner* runner) {
+	if (interframeBlending) {
+		memcpy(interframeTexmem, texmem, TEX_W * TEX_H * BYTES_PER_PIXEL);
 	}
 }
 
@@ -869,14 +901,24 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 		}
 	}
 	DCFlushRange(texdest, TEX_W * TEX_H * BYTES_PER_PIXEL);
+	if (interframeBlending) {
+		DCFlushRange(interframeTexmem, TEX_W * TEX_H * BYTES_PER_PIXEL);
+	}
 
-	if (faded) {
+	if (faded || interframeBlending) {
 		GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
 	} else {
 		GX_SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_NOOP);
 	}
 	GX_InvalidateTexAll();
-	GX_LoadTexObj(&tex, GX_TEXMAP0);
+	if (interframeBlending) {
+		GX_LoadTexObj(&interframeTex, GX_TEXMAP0);
+		GX_LoadTexObj(&tex, GX_TEXMAP1);
+		GX_SetNumTevStages(2);
+	} else {
+		GX_LoadTexObj(&tex, GX_TEXMAP0);
+		GX_SetNumTevStages(1);
+	}
 
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 	s16 vertWidth = corew;
@@ -909,22 +951,31 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 		GX_SetTexCopyDst(TEX_W * 2, TEX_H * 2, GX_TF_RGB565, GX_FALSE);
 		GX_CopyTex(rescaleTexmem, GX_TRUE);
 		GX_LoadTexObj(&rescaleTex, GX_TEXMAP0);
-	}
-
-	int hfactor = (vmode->fbWidth * wStretch) / (corew * wAdjust);
-	int vfactor = (vmode->efbHeight * hStretch) / (coreh * hAdjust);
-	if (hfactor > vfactor) {
-		scaleFactor = vfactor;
-	} else {
-		scaleFactor = hfactor;
+		GX_SetNumTevStages(1);
+		if (!faded) {
+			GX_SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_NOOP);
+		}
 	}
 
 	if (screenMode == SM_PA) {
+		unsigned factorWidth = corew;
+		unsigned factorHeight = coreh;
+		if (sgbCrop && factorWidth == 256 && factorHeight == 224) {
+			factorWidth = GB_VIDEO_HORIZONTAL_PIXELS;
+			factorHeight = GB_VIDEO_VERTICAL_PIXELS;
+		}
+
+		int hfactor = (vmode->fbWidth * wStretch) / (factorWidth * wAdjust);
+		int vfactor = (vmode->efbHeight * hStretch) / (factorHeight * hAdjust);
+		if (hfactor > vfactor) {
+			scaleFactor = vfactor;
+		} else {
+			scaleFactor = hfactor;
+		}
+
 		vertWidth *= scaleFactor;
 		vertHeight *= scaleFactor;
-	}
 
-	if (screenMode == SM_PA) {
 		_reproj(corew * scaleFactor, coreh * scaleFactor);
 	} else {
 		_reproj2(corew, coreh);
@@ -1074,8 +1125,15 @@ static s8 WPAD_StickX(u8 chan, u8 right) {
 		return 0;
 	}
 	int centered = (int) js->pos.x - (int) js->center.x;
-	int range = js->max.x - js->min.x;
-	return (centered * 0xFF) / range;
+	int range = (int) js->max.x - (int) js->min.x;
+	int value = (centered * 0xFF) / range;
+	if (value > 0x7F) {
+		return 0x7F;
+	}
+	if (value < -0x80) {
+		return -0x80;
+	}
+	return value;
 }
 
 static s8 WPAD_StickY(u8 chan, u8 right) {
@@ -1105,8 +1163,15 @@ static s8 WPAD_StickY(u8 chan, u8 right) {
 		return 0;
 	}
 	int centered = (int) js->pos.y - (int) js->center.y;
-	int range = js->max.y - js->min.y;
-	return (centered * 0xFF) / range;
+	int range = (int) js->max.y - (int) js->min.y;
+	int value = (centered * 0xFF) / range;
+	if (value > 0x7F) {
+		return 0x7F;
+	}
+	if (value < -0x80) {
+		return -0x80;
+	}
+	return value;
 }
 
 void _retraceCallback(u32 count) {

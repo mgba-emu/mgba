@@ -25,6 +25,7 @@
 #include <mgba-util/vfs.h>
 #include <mgba-util/platform/psp2/sce-vfs.h>
 
+#include <psp2/appmgr.h>
 #include <psp2/audioout.h>
 #include <psp2/camera.h>
 #include <psp2/ctrl.h>
@@ -38,6 +39,9 @@
 #define RUMBLE_PWM 8
 #define CDRAM_ALIGN 0x40000
 
+mLOG_DECLARE_CATEGORY(GUI_PSP2);
+mLOG_DEFINE_CATEGORY(GUI_PSP2, "Vita", "gui.psp2");
+
 static enum ScreenMode {
 	SM_BACKDROP,
 	SM_PLAIN,
@@ -48,8 +52,11 @@ static enum ScreenMode {
 
 static void* outputBuffer;
 static vita2d_texture* tex;
+static vita2d_texture* oldTex;
 static vita2d_texture* screenshot;
 static Thread audioThread;
+static bool interframeBlending = false;
+static bool sgbCrop = false;
 
 static struct mSceRotationSource {
 	struct mRotationSource d;
@@ -261,7 +268,7 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 
 uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 	SceCtrlData pad;
-	sceCtrlPeekBufferPositive(0, &pad, 1);
+	sceCtrlPeekBufferPositiveExt2(0, &pad, 1);
 
 	int activeKeys = mInputMapKeyBits(&runner->core->inputMap, PSP2_INPUT, pad.buttons, 0);
 	int angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 0, pad.ly);
@@ -307,8 +314,8 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_DOWN, GBA_KEY_DOWN);
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_LEFT, GBA_KEY_LEFT);
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_RIGHT, GBA_KEY_RIGHT);
-	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_LTRIGGER, GBA_KEY_L);
-	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_RTRIGGER, GBA_KEY_R);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_L1, GBA_KEY_L);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_R1, GBA_KEY_R);
 
 	struct mInputAxis desc = { GBA_KEY_DOWN, GBA_KEY_UP, 192, 64 };
 	mInputBindAxis(&runner->core->inputMap, PSP2_INPUT, 0, &desc);
@@ -318,9 +325,10 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	unsigned width, height;
 	runner->core->desiredVideoDimensions(runner->core, &width, &height);
 	tex = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
+	oldTex = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 	screenshot = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 
-	outputBuffer = vita2d_texture_get_datap(tex);
+	outputBuffer = anonymousMemoryMap(256 * toPow2(height) * 4);
 	runner->core->setVideoBuffer(runner->core, outputBuffer, 256);
 	runner->core->setAudioBufferSize(runner->core, PSP2_SAMPLES);
 
@@ -358,6 +366,10 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	if (mCoreConfigGetUIntValue(&runner->config, "camera", &mode)) {
 		camera.cam = mode;
 	}
+	int fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
+		sgbCrop = fakeBool;
+	}
 }
 
 void mPSP2LoadROM(struct mGUIRunner* runner) {
@@ -384,6 +396,23 @@ void mPSP2LoadROM(struct mGUIRunner* runner) {
 #endif
 	default:
 		break;
+	}
+
+	int fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
+		interframeBlending = fakeBool;
+	}
+
+	// Backcompat: Old versions of mGBA use an older binding system that has different mappings for L/R
+	if (!sceKernelIsPSVitaTV()) {
+		int key = mInputMapKey(&runner->core->inputMap, PSP2_INPUT, __builtin_ctz(SCE_CTRL_L2));
+		if (key >= 0) {
+			mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_L1, key);
+		}
+		key = mInputMapKey(&runner->core->inputMap, PSP2_INPUT, __builtin_ctz(SCE_CTRL_R2));
+		if (key >= 0) {
+			mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_R1, key);
+		}
 	}
 
 	MutexInit(&audioContext.mutex);
@@ -416,7 +445,7 @@ void mPSP2UnloadROM(struct mGUIRunner* runner) {
 		break;
 	}
 	audioContext.running = false;
-	ThreadJoin(audioThread);
+	ThreadJoin(&audioThread);
 }
 
 void mPSP2Paused(struct mGUIRunner* runner) {
@@ -447,17 +476,28 @@ void mPSP2Unpaused(struct mGUIRunner* runner) {
 			}
 		}
 	}
+
+	int fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
+		interframeBlending = fakeBool;
+	}
+
+	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
+		sgbCrop = fakeBool;
+	}
 }
 
 void mPSP2Teardown(struct mGUIRunner* runner) {
 	UNUSED(runner);
 	CircleBufferDeinit(&rumble.history);
 	vita2d_free_texture(tex);
+	vita2d_free_texture(oldTex);
 	vita2d_free_texture(screenshot);
+	mappedMemoryFree(outputBuffer, 256 * 256 * 4);
 	frameLimiter = true;
 }
 
-void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded) {
+void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded, bool interframe) {
 	unsigned w = width;
 	unsigned h = height;
 	// Get greatest common divisor
@@ -472,12 +512,30 @@ void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded) {
 	float scalex;
 	float scaley;
 
+	unsigned tint = 0x1FFFFFFF;
+	if (!faded) {
+		if (interframe) {
+			tint |= 0x60000000;
+		} else {
+			tint |= 0xE0000000;
+		}
+	} else if (!interframe) {
+		tint |= 0x20000000;
+	}
+
 	switch (screenMode) {
 	case SM_BACKDROP:
 	default:
-		vita2d_draw_texture_tint(backdrop, 0, 0, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+		vita2d_draw_texture_tint(backdrop, 0, 0, tint);
 		// Fall through
 	case SM_PLAIN:
+		if (sgbCrop && width == 256 && height == 224) {
+			w = 768;
+			h = 672;
+			scalex = 3;
+			scaley = 3;
+			break;
+		}
 		w = 960 / width;
 		h = 544 / height;
 		if (w * height > 544) {
@@ -492,6 +550,13 @@ void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded) {
 		scaley = scalex;
 		break;
 	case SM_ASPECT:
+		if (sgbCrop && width == 256 && height == 224) {
+			w = 967;
+			h = 846;
+			scalex = 34.0f / 9.0f;
+			scaley = scalex;
+			break;
+		}
 		w = 960 / aspectw;
 		h = 544 / aspecth;
 		if (w * aspecth > 544) {
@@ -515,13 +580,20 @@ void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded) {
 	                                    (960.0f - w) / 2.0f, (544.0f - h) / 2.0f,
 	                                    0, 0, width, height,
 	                                    scalex, scaley,
-	                                    (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+	                                    tint);
 }
 
 void mPSP2Draw(struct mGUIRunner* runner, bool faded) {
 	unsigned width, height;
 	runner->core->desiredVideoDimensions(runner->core, &width, &height);
-	_drawTex(tex, width, height, faded);
+	void* texpixels = vita2d_texture_get_datap(tex);
+	if (interframeBlending) {
+		void* oldTexpixels = vita2d_texture_get_datap(oldTex);
+		memcpy(oldTexpixels, texpixels, 256 * height * 4);
+		_drawTex(oldTex, width, height, faded, false);
+	}
+	memcpy(texpixels, outputBuffer, 256 * height * 4);
+	_drawTex(tex, width, height, faded, interframeBlending);
 }
 
 void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsigned width, unsigned height, bool faded) {
@@ -531,12 +603,24 @@ void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsi
 	for (y = 0; y < height; ++y) {
 		memcpy(&texpixels[256 * y], &pixels[width * y], width * 4);
 	}
-	_drawTex(screenshot, width, height, faded);
+	_drawTex(screenshot, width, height, faded, false);
 }
 
 void mPSP2IncrementScreenMode(struct mGUIRunner* runner) {
 	screenMode = (screenMode + 1) % SM_MAX;
 	mCoreConfigSetUIntValue(&runner->config, "screenMode", screenMode);
+}
+
+bool mPSP2SystemPoll(struct mGUIRunner* runner) {
+	SceAppMgrSystemEvent event;
+	if (sceAppMgrReceiveSystemEvent(&event) < 0) {
+		return true;
+	}
+	if (event.systemEvent == SCE_APPMGR_SYSTEMEVENT_ON_RESUME) {
+		mLOG(GUI_PSP2, INFO, "Suspend detected, reloading save");
+		mCoreAutoloadSave(runner->core);
+	}
+	return true;
 }
 
 __attribute__((noreturn, weak)) void __assert_func(const char* file, int line, const char* func, const char* expr) {

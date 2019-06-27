@@ -43,10 +43,10 @@ CREATE_WATCHPOINT_SHIM(load8, READ, 0, uint8_t, (struct LR35902Core* cpu, uint16
 CREATE_WATCHPOINT_SHIM(store8, WRITE, value, void, (struct LR35902Core* cpu, uint16_t address, int8_t value), address, value)
 
 static bool _checkWatchpoints(struct LR35902Debugger* debugger, uint16_t address, struct mDebuggerEntryInfo* info, enum mWatchpointType type, uint8_t newValue) {
-	struct LR35902DebugWatchpoint* watchpoint;
+	struct mWatchpoint* watchpoint;
 	size_t i;
-	for (i = 0; i < LR35902DebugWatchpointListSize(&debugger->watchpoints); ++i) {
-		watchpoint = LR35902DebugWatchpointListGetPointer(&debugger->watchpoints, i);
+	for (i = 0; i < mWatchpointListSize(&debugger->watchpoints); ++i) {
+		watchpoint = mWatchpointListGetPointer(&debugger->watchpoints, i);
 		if (watchpoint->address == address && (watchpoint->segment < 0 || watchpoint->segment == debugger->originalMemory.currentSegment(debugger->cpu, address)) && watchpoint->type & type) {
 			if (watchpoint->condition) {
 				int32_t value;

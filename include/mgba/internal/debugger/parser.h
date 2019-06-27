@@ -38,6 +38,7 @@ enum Operation {
 	OP_NOT,
 	OP_SHIFT_L,
 	OP_SHIFT_R,
+	OP_DEREFERENCE,
 };
 
 struct Token {

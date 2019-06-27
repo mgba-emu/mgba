@@ -150,6 +150,7 @@ void GBDestroy(struct GB* gb);
 
 void GBReset(struct LR35902Core* cpu);
 void GBSkipBIOS(struct GB* gb);
+void GBMapBIOS(struct GB* gb);
 void GBUnmapBIOS(struct GB* gb);
 void GBDetectModel(struct GB* gb);
 

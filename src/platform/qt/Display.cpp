@@ -18,13 +18,15 @@ Display::Driver Display::s_driver = Display::Driver::QT;
 
 Display* Display::create(QWidget* parent) {
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
-	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
+	QSurfaceFormat format;
 	format.setSwapInterval(1);
+	format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
 #endif
 
 	switch (s_driver) {
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 	case Driver::OPENGL:
+		format.setVersion(3, 0);
 		return new DisplayGL(format, parent);
 #endif
 #ifdef BUILD_GL
@@ -66,6 +68,10 @@ void Display::lockAspectRatio(bool lock) {
 
 void Display::lockIntegerScaling(bool lock) {
 	m_lockIntegerScaling = lock;
+}
+
+void Display::interframeBlending(bool lock) {
+	m_interframeBlending = lock;
 }
 
 void Display::filter(bool filter) {

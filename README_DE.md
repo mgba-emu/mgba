@@ -124,6 +124,7 @@ Dieser Befehl erzeugt ein Verzeichnis `build-win32` mit den erzeugten Programmda
 - mgba/ubuntu:xenial
 - mgba/ubuntu:bionic
 - mgba/ubuntu:cosmic
+- mgba/ubuntu:disco
 - mgba/vita
 - mgba/wii
 - mgba/windows:w32
@@ -215,7 +216,6 @@ Fußnoten
 <a name="missing">[1]</a> Zurzeit fehlende Features sind
 
 - OBJ-Fenster für die Modi 3, 4 und 5 ([Bug #5](http://mgba.io/b/5))
-- Mosaik-Effekt für umgewandelte OBJs ([Bug #9](http://mgba.io/b/9))
 
 <a name="flashdetect">[2]</a> In manchen Fällen ist es nicht möglich, die Größe des Flash-Speichers automatisch zu ermitteln. Diese kann dann zur Laufzeit konfiguriert werden, es wird jedoch empfohlen, den Fehler zu melden.
 

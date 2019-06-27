@@ -224,7 +224,6 @@ void _endMode0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	++video->ly;
 	video->p->memory.io[REG_LY] = video->ly;
 	GBRegisterSTAT oldStat = video->stat;
-	video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->ly);
 	if (video->ly < GB_VIDEO_VERTICAL_PIXELS) {
 		next = GB_VIDEO_MODE_2_LENGTH;
 		video->mode = 2;
@@ -246,6 +245,14 @@ void _endMode0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	if (!_statIRQAsserted(video, oldStat) && _statIRQAsserted(video, video->stat)) {
 		video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 	}
+
+	// LYC stat is delayed 1 T-cycle
+	oldStat = video->stat;
+	video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->ly);
+	if (!_statIRQAsserted(video, oldStat) && _statIRQAsserted(video, video->stat)) {
+		video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+	}
+
 	GBUpdateIRQs(video->p);
 	video->p->memory.io[REG_STAT] = video->stat;
 	mTimingSchedule(timing, &video->modeEvent, (next << video->p->doubleSpeed) - cyclesLate);
@@ -336,19 +343,19 @@ void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLat
 		mTimingSchedule(timing, &video->frameEvent, 4 - ((video->p->cpu->executionState + 1) & 3));
 		return;
 	}
+	if (!GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC])) {
+		mTimingSchedule(timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH);
+	}
 
-	GBFrameEnded(video->p);
-	mCoreSyncPostFrame(video->p->sync);
 	--video->frameskipCounter;
 	if (video->frameskipCounter < 0) {
 		video->renderer->finishFrame(video->renderer);
 		video->frameskipCounter = video->frameskip;
 	}
+	GBFrameEnded(video->p);
+	mCoreSyncPostFrame(video->p->sync);
 	++video->frameCounter;
 
-	if (!GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC])) {
-		mTimingSchedule(timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH);
-	}
 	GBFrameStarted(video->p);
 }
 
@@ -498,14 +505,16 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 	} else {
 		switch (address) {
 		case REG_BCPD:
-			if (video->bcpIndex & 1) {
-				video->palette[video->bcpIndex >> 1] &= 0x00FF;
-				video->palette[video->bcpIndex >> 1] |= value << 8;
-			} else {
-				video->palette[video->bcpIndex >> 1] &= 0xFF00;
-				video->palette[video->bcpIndex >> 1] |= value;
+			if (video->mode != 3) {
+				if (video->bcpIndex & 1) {
+					video->palette[video->bcpIndex >> 1] &= 0x00FF;
+					video->palette[video->bcpIndex >> 1] |= value << 8;
+				} else {
+					video->palette[video->bcpIndex >> 1] &= 0xFF00;
+					video->palette[video->bcpIndex >> 1] |= value;
+				}
+				video->renderer->writePalette(video->renderer, video->bcpIndex >> 1, video->palette[video->bcpIndex >> 1]);
 			}
-			video->renderer->writePalette(video->renderer, video->bcpIndex >> 1, video->palette[video->bcpIndex >> 1]);
 			if (video->bcpIncrement) {
 				++video->bcpIndex;
 				video->bcpIndex &= 0x3F;
@@ -515,14 +524,16 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 			video->p->memory.io[REG_BCPD] = video->palette[video->bcpIndex >> 1] >> (8 * (video->bcpIndex & 1));
 			break;
 		case REG_OCPD:
-			if (video->ocpIndex & 1) {
-				video->palette[8 * 4 + (video->ocpIndex >> 1)] &= 0x00FF;
-				video->palette[8 * 4 + (video->ocpIndex >> 1)] |= value << 8;
-			} else {
-				video->palette[8 * 4 + (video->ocpIndex >> 1)] &= 0xFF00;
-				video->palette[8 * 4 + (video->ocpIndex >> 1)] |= value;
+			if (video->mode != 3) {
+				if (video->ocpIndex & 1) {
+					video->palette[8 * 4 + (video->ocpIndex >> 1)] &= 0x00FF;
+					video->palette[8 * 4 + (video->ocpIndex >> 1)] |= value << 8;
+				} else {
+					video->palette[8 * 4 + (video->ocpIndex >> 1)] &= 0xFF00;
+					video->palette[8 * 4 + (video->ocpIndex >> 1)] |= value;
+				}
+				video->renderer->writePalette(video->renderer, 8 * 4 + (video->ocpIndex >> 1), video->palette[8 * 4 + (video->ocpIndex >> 1)]);
 			}
-			video->renderer->writePalette(video->renderer, 8 * 4 + (video->ocpIndex >> 1), video->palette[8 * 4 + (video->ocpIndex >> 1)]);
 			if (video->ocpIncrement) {
 				++video->ocpIndex;
 				video->ocpIndex &= 0x3F;

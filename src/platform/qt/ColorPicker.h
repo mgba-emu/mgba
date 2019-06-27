@@ -24,6 +24,9 @@ public:
 signals:
 	void colorChanged(const QColor&);
 
+public slots:
+	void setColor(const QColor&);
+
 protected:
 	bool eventFilter(QObject* obj, QEvent* event) override;
 

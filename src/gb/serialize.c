@@ -113,7 +113,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		error = true;
 	}
 	LOAD_16LE(check16, 0, &state->video.x);
-	if (check16 < 0 || check16 > GB_VIDEO_HORIZONTAL_PIXELS) {
+	if (check16 < -7 || check16 > GB_VIDEO_HORIZONTAL_PIXELS) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: video x is out of range");
 		error = true;
 	}
@@ -135,10 +135,20 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	if (ucheck16 >= 0x40) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: OCPS is out of range");
 	}
+	bool differentBios = !gb->biosVf || gb->model != state->model;
+	if (state->io[0x50] == 0xFF) {
+		if (differentBios) {
+			mLOG(GB_STATE, WARN, "Incompatible savestate, please restart with correct BIOS in %s mode", GBModelToName(state->model));
+			error = true;
+		} else {
+			// TODO: Make it work correctly
+			mLOG(GB_STATE, WARN, "Loading savestate in BIOS. This may not work correctly");
+		}
+	}
 	if (error) {
 		return false;
 	}
-	gb->timing.root = NULL;
+	mTimingClear(&gb->timing);
 	LOAD_32LE(gb->timing.masterCycles, 0, &state->masterCycles);
 
 	gb->cpu->a = state->cpu.a;
@@ -186,6 +196,12 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	GBIODeserialize(gb, state);
 	GBTimerDeserialize(&gb->timer, state);
 	GBAudioDeserialize(&gb->audio, state);
+
+	if (gb->memory.io[0x50] == 0xFF) {
+		GBMapBIOS(gb);
+	} else {
+		GBUnmapBIOS(gb);
+	}
 
 	if (gb->model & GB_MODEL_SGB && canSgb) {
 		GBSGBDeserialize(gb, state);

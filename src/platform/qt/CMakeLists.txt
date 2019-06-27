@@ -22,9 +22,7 @@ endif()
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5Multimedia)
-find_package(Qt5OpenGL)
-find_package(Qt5Widgets)
+find_package(Qt5 COMPONENTS Core Widgets OpenGL Network Multimedia)
 
 if(NOT BUILD_GL AND NOT BUILD_GLES2)
 	message(WARNING "OpenGL is recommended to build the Qt port")
@@ -47,17 +45,6 @@ if(APPLE)
 	endif()
 endif()
 
-if(BUILD_GL)
-	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gl.c)
-	if(NOT WIN32 OR USE_EPOXY)
-		list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c)
-	endif()
-endif()
-
-if(BUILD_GLES2)
-	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c)
-endif()
-
 get_target_property(QT_TYPE Qt5::Core TYPE)
 if(QT_TYPE STREQUAL STATIC_LIBRARY)
 	set(QT_STATIC ON)
@@ -66,6 +53,10 @@ endif()
 
 set(SOURCE_FILES
 	AboutScreen.cpp
+	AbstractUpdater.cpp
+	Action.cpp
+	ActionMapper.cpp
+	AssetInfo.cpp
 	AssetTile.cpp
 	AssetView.cpp
 	AudioProcessor.cpp
@@ -78,6 +69,7 @@ set(SOURCE_FILES
 	Display.cpp
 	DisplayGL.cpp
 	DisplayQt.cpp
+	FrameView.cpp
 	GBAApp.cpp
 	GBAKeyEditor.cpp
 	GIFView.cpp
@@ -102,7 +94,6 @@ set(SOURCE_FILES
 	OverrideView.cpp
 	PaletteView.cpp
 	PlacementControl.cpp
-	PrinterView.cpp
 	RegisterView.cpp
 	ROMInfo.cpp
 	RotatedHeaderView.cpp
@@ -111,6 +102,7 @@ set(SOURCE_FILES
 	SettingsView.cpp
 	ShaderSelector.cpp
 	ShortcutController.cpp
+	ShortcutModel.cpp
 	ShortcutView.cpp
 	Swatch.cpp
 	TilePainter.cpp
@@ -118,14 +110,17 @@ set(SOURCE_FILES
 	utils.cpp
 	Window.cpp
 	VFileDevice.cpp
+	VideoProxy.cpp
 	VideoView.cpp)
 
 set(UI_FILES
 	AboutScreen.ui
 	ArchiveInspector.ui
 	AssetTile.ui
+	BattleChipView.ui
 	CheatsView.ui
 	DebuggerConsole.ui
+	FrameView.ui
 	GIFView.ui
 	IOViewer.ui
 	LoadSaveState.ui
@@ -147,10 +142,14 @@ set(UI_FILES
 	VideoView.ui)
 
 set(GBA_SRC
+	BattleChipModel.cpp
+	BattleChipUpdater.cpp
+	BattleChipView.cpp
 	GBAOverride.cpp)
 
 set(GB_SRC
-	GBOverride.cpp)
+	GBOverride.cpp
+	PrinterView.cpp)
 
 set(QT_LIBRARIES)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5,libqt5opengl5")
@@ -176,7 +175,7 @@ if(Qt5Multimedia_FOUND)
 	list(APPEND SOURCE_FILES
 		VideoDumper.cpp)
 	if (WIN32 AND QT_STATIC)
-		list(APPEND QT_LIBRARIES Qt5::QWindowsAudioPlugin Qt5::DSServicePlugin
+		list(APPEND QT_LIBRARIES Qt5::QWindowsAudioPlugin Qt5::DSServicePlugin Qt5::QWindowsVistaStylePlugin
                                  strmiids mfuuid mfplat mf ksguid dxva2 evr d3d9)
 	endif()
 	list(APPEND QT_LIBRARIES Qt5::Multimedia)
@@ -209,6 +208,11 @@ if(USE_SQLITE3)
 		library/LibraryTree.cpp)
 endif()
 
+if(USE_DISCORD_RPC)
+	list(APPEND QT_LIBRARIES discord-rpc)
+	list(APPEND SOURCE_FILES DiscordCoordinator.cpp)
+endif()
+
 qt5_add_resources(RESOURCES resources.qrc)
 if(APPLE)
 	set(MACOSX_BUNDLE_ICON_FILE mgba.icns)
@@ -231,7 +235,7 @@ if(NOT DEFINED DATADIR)
 		set(DATADIR ${CMAKE_INSTALL_DATADIR}/${BINARY_NAME})
 	endif()
 endif()
-if(BUILD_GL OR BUILD_GLES2)
+if(BUILD_GL OR BUILD_GLES2 OR BUILD_EPOXY)
 	install(DIRECTORY ${CMAKE_SOURCE_DIR}/res/shaders DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
 endif()
 install(FILES ${CMAKE_SOURCE_DIR}/res/nointro.dat DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
@@ -257,7 +261,10 @@ if(Qt5LinguistTools_FOUND)
 		foreach(TS ${TS_FILES})
 			get_filename_component(TS ${TS} NAME)
 			string(REGEX REPLACE "${BINARY_NAME}-(.*).ts$" "qtbase_\\1.qm" QT_QM "${TS}")
-			list(APPEND QT_QM_FILES "${QT_QM_LOCATION}/${QT_QM}")
+			set(QT_QM "${QT_QM_LOCATION}/${QT_QM}")
+			if(EXISTS "${QT_QM}")
+				list(APPEND QT_QM_FILES "${QT_QM}")
+			endif()
 		endforeach()
 		list(APPEND TRANSLATION_FILES ${QT_QM_FILES})
 	endif()
@@ -273,22 +280,23 @@ qt5_wrap_ui(UI_SRC ${UI_FILES})
 add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_SRC} ${AUDIO_SRC} ${RESOURCES})
 set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in COMPILE_DEFINITIONS "${FEATURE_DEFINES};${FUNCTION_DEFINES};${OS_DEFINES};${QT_DEFINES}" COMPILE_OPTIONS "${FEATURE_FLAGS}")
 
-list(APPEND QT_LIBRARIES Qt5::Widgets)
-if(BUILD_GL OR BUILD_GLES2)
+list(APPEND QT_LIBRARIES Qt5::Widgets Qt5::Network)
+if(BUILD_GL OR BUILD_GLES2 OR BUILD_EPOXY)
 	list(APPEND QT_LIBRARIES Qt5::OpenGL ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 endif()
 if(QT_STATIC)
 	find_library(QTPCRE NAMES qtpcre2 qtpcre)
 	if(WIN32)
-		list(APPEND QT_LIBRARIES qwindows dwmapi imm32 uxtheme Qt5EventDispatcherSupport Qt5FontDatabaseSupport Qt5ThemeSupport)
-		set_target_properties(Qt5::Core PROPERTIES INTERFACE_LINK_LIBRARIES "${QTPCRE};version;winmm;ws2_32")
+		list(APPEND QT_LIBRARIES qwindows dwmapi imm32 uxtheme Qt5EventDispatcherSupport Qt5FontDatabaseSupport Qt5ThemeSupport Qt5WindowsUIAutomationSupport)
+		set_target_properties(Qt5::Core PROPERTIES INTERFACE_LINK_LIBRARIES "${QTPCRE};version;winmm;ssl;crypto;ws2_32;iphlpapi;crypt32;userenv;netapi32;wtsapi32")
+		set_target_properties(Qt5::Gui PROPERTIES INTERFACE_LINK_LIBRARIES ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 	elseif(APPLE)
 		find_package(Cups)
 		find_package(Qt5PrintSupport)
 		find_library(QTFREETYPE NAMES qtfreetype)
 		find_library(QTHARFBUZZ NAMES qtharfbuzzng qtharfbuzz)
 		find_library(QTPLATFORMSUPPORT NAMES Qt5PlatformSupport)
-		list(APPEND QT_LIBRARIES Cups Qt5::PrintSupport Qt5::QCocoaIntegrationPlugin Qt5::CoreAudioPlugin Qt5::AVFServicePlugin Qt5::QCocoaPrinterSupportPlugin ${QTPLATFORMSUPPORT} "-framework AVFoundation" "-framework CoreMedia")
+		list(APPEND QT_LIBRARIES Cups Qt5::PrintSupport Qt5::QCocoaIntegrationPlugin Qt5::CoreAudioPlugin Qt5::AVFServicePlugin Qt5::QCocoaPrinterSupportPlugin ${QTPLATFORMSUPPORT} "-framework AVFoundation" "-framework CoreMedia" "-framework SystemConfiguration" "-framework Security")
 		set_target_properties(Qt5::Core PROPERTIES INTERFACE_LINK_LIBRARIES "${QTPCRE};${QTHARFBUZZ};${QTFREETYPE}")
 		link_directories()
 	endif()

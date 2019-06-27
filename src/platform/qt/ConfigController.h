@@ -18,7 +18,6 @@
 #include <mgba-util/configuration.h>
 #include <mgba/feature/commandline.h>
 
-class QAction;
 class QMenu;
 
 struct mArguments;
@@ -26,17 +25,22 @@ struct GBACartridgeOverride;
 
 namespace QGBA {
 
+class Action;
+class ActionMapper;
+
 class ConfigOption : public QObject {
 Q_OBJECT
 
 public:
-	ConfigOption(QObject* parent = nullptr);
+	ConfigOption(const QString& name, QObject* parent = nullptr);
 
 	void connect(std::function<void(const QVariant&)>, QObject* parent = nullptr);
 
-	QAction* addValue(const QString& text, const QVariant& value, QMenu* parent = nullptr);
-	QAction* addValue(const QString& text, const char* value, QMenu* parent = nullptr);
-	QAction* addBoolean(const QString& text, QMenu* parent = nullptr);
+	Action* addValue(const QString& text, const QVariant& value, ActionMapper* actions = nullptr, const QString& menu = {});
+	Action* addValue(const QString& text, const char* value, ActionMapper* actions = nullptr, const QString& menu = {});
+	Action* addBoolean(const QString& text, ActionMapper* actions = nullptr, const QString& menu = {});
+
+	QString name() const { return m_name; }
 
 public slots:
 	void setValue(bool value);
@@ -50,7 +54,8 @@ signals:
 
 private:
 	QMap<QObject*, std::function<void(const QVariant&)>> m_slots;
-	QList<QPair<QAction*, QVariant>> m_actions;
+	QList<std::pair<Action*, QVariant>> m_actions;
+	QString m_name;
 };
 
 class ConfigController : public QObject {

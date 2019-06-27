@@ -5,9 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ConfigController.h"
 
+#include "ActionMapper.h"
 #include "CoreController.h"
 
-#include <QAction>
 #include <QDir>
 #include <QMenu>
 
@@ -15,47 +15,58 @@
 
 using namespace QGBA;
 
-ConfigOption::ConfigOption(QObject* parent)
+ConfigOption::ConfigOption(const QString& name, QObject* parent)
 	: QObject(parent)
+	, m_name(name)
 {
 }
 
 void ConfigOption::connect(std::function<void(const QVariant&)> slot, QObject* parent) {
 	m_slots[parent] = slot;
-	QObject::connect(parent, &QAction::destroyed, [this, slot, parent]() {
+	QObject::connect(parent, &QObject::destroyed, [this, slot, parent]() {
 		m_slots.remove(parent);
 	});
 }
 
-QAction* ConfigOption::addValue(const QString& text, const QVariant& value, QMenu* parent) {
-	QAction* action = new QAction(text, parent);
-	action->setCheckable(true);
-	QObject::connect(action, &QAction::triggered, [this, value]() {
+Action* ConfigOption::addValue(const QString& text, const QVariant& value, ActionMapper* actions, const QString& menu) {
+	Action* action;
+	auto function = [this, value]() {
 		emit valueChanged(value);
+	};
+	QString name = QString("%1.%2").arg(m_name).arg(value.toString());
+	if (actions) {
+		action = actions->addAction(text, name, function, menu);
+	} else {
+		action = new Action(function, name, text);
+	}
+	action->setExclusive();
+	QObject::connect(action, &QObject::destroyed, [this, action, value]() {
+		m_actions.removeAll(std::make_pair(action, value));
 	});
-	QObject::connect(parent, &QAction::destroyed, [this, action, value]() {
-		m_actions.removeAll(qMakePair(action, value));
-	});
-	parent->addAction(action);
-	m_actions.append(qMakePair(action, value));
+	m_actions.append(std::make_pair(action, value));
 	return action;
 }
 
-QAction* ConfigOption::addValue(const QString& text, const char* value, QMenu* parent) {
-	return addValue(text, QString(value), parent);
+Action* ConfigOption::addValue(const QString& text, const char* value, ActionMapper* actions, const QString& menu) {
+	return addValue(text, QString(value), actions, menu);
 }
 
-QAction* ConfigOption::addBoolean(const QString& text, QMenu* parent) {
-	QAction* action = new QAction(text, parent);
-	action->setCheckable(true);
-	QObject::connect(action, &QAction::triggered, [this, action]() {
-		emit valueChanged(action->isChecked());
+Action* ConfigOption::addBoolean(const QString& text, ActionMapper* actions, const QString& menu) {
+	Action* action;
+	auto function = [this](bool value) {
+		emit valueChanged(value);
+	};
+	if (actions) {
+		action = actions->addBooleanAction(text, m_name, function, menu);
+	} else {
+		action = new Action(function, m_name, text);
+	}
+
+	QObject::connect(action, &QObject::destroyed, [this, action]() {
+		m_actions.removeAll(std::make_pair(action, 1));
 	});
-	QObject::connect(parent, &QAction::destroyed, [this, action]() {
-		m_actions.removeAll(qMakePair(action, 1));
-	});
-	parent->addAction(action);
-	m_actions.append(qMakePair(action, 1));
+	m_actions.append(std::make_pair(action, 1));
+
 	return action;
 }
 
@@ -76,10 +87,8 @@ void ConfigOption::setValue(const char* value) {
 }
 
 void ConfigOption::setValue(const QVariant& value) {
-	for (QPair<QAction*, QVariant>& action : m_actions) {
-		bool signalsEnabled = action.first->blockSignals(true);
-		action.first->setChecked(value == action.second);
-		action.first->blockSignals(signalsEnabled);
+	for (std::pair<Action*, QVariant>& action : m_actions) {
+		action.first->setActive(value == action.second);
 	}
 	for (std::function<void(const QVariant&)>& slot : m_slots.values()) {
 		slot(value);
@@ -110,8 +119,11 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.useBios = true;
 	m_opts.suspendScreensaver = true;
 	m_opts.lockAspectRatio = true;
+	m_opts.interframeBlending = false;
 	mCoreConfigLoad(&m_config);
 	mCoreConfigLoadDefaults(&m_config, &m_opts);
+	mCoreConfigSetDefaultIntValue(&m_config, "sgb.borders", 1);
+	mCoreConfigSetDefaultIntValue(&m_config, "useCgbColors", 1);
 	mCoreConfigMap(&m_config, &m_opts);
 }
 
@@ -136,7 +148,7 @@ ConfigOption* ConfigController::addOption(const char* key) {
 	if (m_optionSet.contains(optionName)) {
 		return m_optionSet[optionName];
 	}
-	ConfigOption* newOption = new ConfigOption(this);
+	ConfigOption* newOption = new ConfigOption(optionName, this);
 	m_optionSet[optionName] = newOption;
 	connect(newOption, &ConfigOption::valueChanged, [this, key](const QVariant& value) {
 		setOption(key, value);

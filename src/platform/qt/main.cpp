@@ -12,15 +12,20 @@
 #include "Window.h"
 
 #include <mgba/core/version.h>
-#include <mgba/internal/gba/video.h>
+#include <mgba/gba/interface.h>
 
 #include <QLibraryInfo>
 #include <QTranslator>
+
+#ifdef BUILD_GLES2
+#include <QSurfaceFormat>
+#endif
 
 #ifdef QT_STATIC
 #include <QtPlugin>
 #ifdef Q_OS_WIN
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
+Q_IMPORT_PLUGIN(QWindowsVistaStylePlugin);
 #ifdef BUILD_QT_MULTIMEDIA
 Q_IMPORT_PLUGIN(QWindowsAudioPlugin);
 Q_IMPORT_PLUGIN(DSServicePlugin);
@@ -61,7 +66,21 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
+	QApplication::setApplicationName(projectName);
+	QApplication::setApplicationVersion(projectVersion);
+	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+
+#ifdef BUILD_GLES2
+	QSurfaceFormat format;
+	format.setVersion(3, 0);
+	QSurfaceFormat::setDefaultFormat(format);
+#endif
+
 	GBAApp application(argc, argv, &configController);
+
+#ifndef Q_OS_MAC
+	QApplication::setWindowIcon(QIcon(":/res/mgba-1024.png"));
+#endif
 
 	QTranslator qtTranslator;
 	qtTranslator.load(locale, "qt", "_", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
@@ -86,7 +105,7 @@ int main(int argc, char* argv[]) {
 	freeArguments(&args);
 
 	if (graphicsOpts.multiplier) {
-		w->resizeFrame(QSize(VIDEO_HORIZONTAL_PIXELS * graphicsOpts.multiplier, VIDEO_VERTICAL_PIXELS * graphicsOpts.multiplier));
+		w->resizeFrame(QSize(GBA_VIDEO_HORIZONTAL_PIXELS * graphicsOpts.multiplier, GBA_VIDEO_VERTICAL_PIXELS * graphicsOpts.multiplier));
 	}
 	if (graphicsOpts.fullscreen) {
 		w->enterFullScreen();
@@ -96,3 +115,21 @@ int main(int argc, char* argv[]) {
 
 	return application.exec();
 }
+
+#ifdef _WIN32
+#include <mgba-util/string.h>
+#include <vector>
+
+extern "C"
+int wmain(int argc, wchar_t* argv[]) {
+	std::vector<char*> argv8;
+	for (int i = 0; i < argc; ++i) {
+		argv8.push_back(utf16to8(reinterpret_cast<uint16_t*>(argv[i]), wcslen(argv[i]) * 2));
+	}
+	int ret = main(argc, argv8.data());
+	for (char* ptr : argv8) {
+		free(ptr);
+	}
+	return ret;
+}
+#endif

@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2019 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -372,4 +372,65 @@ void rtrim(char* string) {
 		*end = '\0';
 		--end;
 	}
+}
+
+ssize_t parseQuotedString(const char* unparsed, ssize_t unparsedLen, char* parsed, ssize_t parsedLen) {
+	memset(parsed, 0, parsedLen);
+	bool escaped = false;
+	char start = '\0';
+	ssize_t len = 0;
+	ssize_t i;
+	for (i = 0; i < unparsedLen && len < parsedLen; ++i) {
+		if (i == 0) {
+			switch (unparsed[0]) {
+			case '"':
+			case '\'':
+				start = unparsed[0];
+				break;
+			default:
+				return -1;
+			}
+			continue;
+		}
+		if (escaped) {
+			switch (unparsed[i]) {
+			case 'n':
+				parsed[len] = '\n';
+				break;
+			case 'r':
+				parsed[len] = '\r';
+				break;
+			case '\\':
+				parsed[len] = '\\';
+				break;
+			case '\'':
+				parsed[len] = '\'';
+				break;
+			case '"':
+				parsed[len] = '"';
+				break;
+			default:
+				return -1;
+			}
+			escaped = false;
+			++len;
+			continue;
+		}
+		if (unparsed[i] == start) {
+			return len;
+		}
+		switch (unparsed[i]) {
+		case '\\':
+			escaped = true;
+			break;
+		case '\n':
+		case '\r':
+			return len;
+		default:
+			parsed[len] = unparsed[i];
+			++len;
+			break;
+		}
+	}
+	return -1;
 }

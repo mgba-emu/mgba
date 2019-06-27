@@ -27,6 +27,19 @@ enum mVideoLoggerDirtyType {
 	DIRTY_BUFFER,
 };
 
+enum mVideoLoggerEvent {
+	LOGGER_EVENT_NONE = 0,
+	LOGGER_EVENT_INIT,
+	LOGGER_EVENT_DEINIT,
+	LOGGER_EVENT_RESET,
+	LOGGER_EVENT_GET_PIXELS,
+};
+
+enum mVideoLoggerInjectionPoint {
+	LOGGER_INJECTION_IMMEDIATE = 0,
+	LOGGER_INJECTION_FIRST_SCANLINE,
+};
+
 struct mVideoLoggerDirtyInfo {
 	enum mVideoLoggerDirtyType type;
 	uint32_t address;
@@ -38,6 +51,7 @@ struct VFile;
 struct mVideoLogger {
 	bool (*writeData)(struct mVideoLogger* logger, const void* data, size_t length);
 	bool (*readData)(struct mVideoLogger* logger, void* data, size_t length, bool block);
+	void (*postEvent)(struct mVideoLogger* logger, enum mVideoLoggerEvent event);
 	void* dataContext;
 
 	bool block;
@@ -52,6 +66,7 @@ struct mVideoLogger {
 	void* context;
 
 	bool (*parsePacket)(struct mVideoLogger* logger, const struct mVideoLoggerDirtyInfo* packet);
+	void (*handleEvent)(struct mVideoLogger* logger, enum mVideoLoggerEvent event);
 	uint16_t* (*vramBlock)(struct mVideoLogger* logger, uint32_t address);
 
 	size_t vramSize;
@@ -64,6 +79,9 @@ struct mVideoLogger {
 	uint16_t* vram;
 	uint16_t* oam;
 	uint16_t* palette;
+
+	const void* pixelBuffer;
+	size_t pixelStride;
 };
 
 void mVideoLoggerRendererCreate(struct mVideoLogger* logger, bool readonly);
@@ -84,6 +102,7 @@ void mVideoLoggerRendererFlush(struct mVideoLogger* logger);
 void mVideoLoggerRendererFinishFrame(struct mVideoLogger* logger);
 
 bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block);
+bool mVideoLoggerRendererRunInjected(struct mVideoLogger* logger);
 
 struct mVideoLogContext;
 void mVideoLoggerAttachChannel(struct mVideoLogger* logger, struct mVideoLogContext* context, size_t channelId);
@@ -91,6 +110,7 @@ void mVideoLoggerAttachChannel(struct mVideoLogger* logger, struct mVideoLogCont
 struct mCore;
 struct mVideoLogContext* mVideoLogContextCreate(struct mCore* core);
 
+void mVideoLogContextSetCompression(struct mVideoLogContext*, bool enable);
 void mVideoLogContextSetOutput(struct mVideoLogContext*, struct VFile*);
 void mVideoLogContextWriteHeader(struct mVideoLogContext*, struct mCore* core);
 
@@ -101,6 +121,12 @@ void mVideoLogContextRewind(struct mVideoLogContext*, struct mCore*);
 void* mVideoLogContextInitialState(struct mVideoLogContext*, size_t* size);
 
 int mVideoLoggerAddChannel(struct mVideoLogContext*);
+
+void mVideoLoggerInjectionPoint(struct mVideoLogger* logger, enum mVideoLoggerInjectionPoint);
+void mVideoLoggerIgnoreAfterInjection(struct mVideoLogger* logger, uint32_t mask);
+void mVideoLoggerInjectVideoRegister(struct mVideoLogger* logger, uint32_t address, uint16_t value);
+void mVideoLoggerInjectPalette(struct mVideoLogger* logger, uint32_t address, uint16_t value);
+void mVideoLoggerInjectOAM(struct mVideoLogger* logger, uint32_t address, uint16_t value);
 
 struct mCore* mVideoLogCoreFind(struct VFile*);
 

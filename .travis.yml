@@ -8,6 +8,7 @@ env:
 - DOCKER_TAG=ubuntu:xenial
 - DOCKER_TAG=ubuntu:bionic
 - DOCKER_TAG=ubuntu:cosmic
+- DOCKER_TAG=ubuntu:disco
 - DOCKER_TAG=3ds
 - DOCKER_TAG=wii
 - DOCKER_TAG=vita

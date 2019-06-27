@@ -56,7 +56,7 @@ struct LR35902Memory {
 
 	int (*currentSegment)(struct LR35902Core*, uint16_t address);
 
-	uint8_t* activeRegion;
+	const uint8_t* activeRegion;
 	uint16_t activeMask;
 	uint16_t activeRegionEnd;
 	void (*setActiveRegion)(struct LR35902Core*, uint16_t address);

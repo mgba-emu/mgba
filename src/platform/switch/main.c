@@ -6,15 +6,18 @@
 #include "feature/gui/gui-runner.h"
 #include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
+#include <mgba/internal/gb/video.h>
 #include <mgba/internal/gba/audio.h>
 #include <mgba/internal/gba/input.h>
 #include <mgba-util/gui.h>
 #include <mgba-util/gui/font.h>
 #include <mgba-util/gui/menu.h>
+#include <mgba-util/vfs.h>
 
 #include <switch.h>
 #include <EGL/egl.h>
 #include <GLES3/gl3.h>
+#include <GLES3/gl31.h>
 
 #define AUTO_INPUT 0x4E585031
 #define SAMPLES 0x400
@@ -46,7 +49,7 @@ static const char* const _vertexShader =
 	"varying vec2 texCoord;\n"
 
 	"void main() {\n"
-	"	vec2 ratio = insize / 256.0;\n"
+	"	vec2 ratio = insize;\n"
 	"	vec2 scaledOffset = offset * dims;\n"
 	"	gl_Position = vec4(scaledOffset.x * 2.0 - dims.x, scaledOffset.y * -2.0 + dims.y, 0.0, 1.0);\n"
 	"	texCoord = offset * ratio;\n"
@@ -67,11 +70,13 @@ static GLuint program;
 static GLuint vbo;
 static GLuint vao;
 static GLuint pbo;
+static GLuint copyFbo;
 static GLuint texLocation;
 static GLuint dimsLocation;
 static GLuint insizeLocation;
 static GLuint colorLocation;
 static GLuint tex;
+static GLuint oldTex;
 
 static color_t* frameBuffer;
 static struct mAVStream stream;
@@ -91,6 +96,14 @@ static unsigned framecount = 0;
 static unsigned framecap = 10;
 static u32 vibrationDeviceHandles[4];
 static HidVibrationValue vibrationStop = { .freq_low = 160.f, .freq_high = 320.f };
+static bool usePbo = true;
+static u8 vmode;
+static u32 vwidth;
+static u32 vheight;
+static bool interframeBlending = false;
+static bool sgbCrop = false;
+static bool useLightSensor = true;
+static struct mGUIRunnerLux lightSensor;
 
 static enum ScreenMode {
 	SM_PA,
@@ -100,63 +113,65 @@ static enum ScreenMode {
 } screenMode = SM_PA;
 
 static bool initEgl() {
-    s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (!s_display) {
-        goto _fail0;
-    }
+	s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	if (!s_display) {
+		goto _fail0;
+	}
 
-    eglInitialize(s_display, NULL, NULL);
+	eglInitialize(s_display, NULL, NULL);
 
-    EGLConfig config;
-    EGLint numConfigs;
-    static const EGLint attributeList[] = {
-        EGL_RED_SIZE, 1,
-        EGL_GREEN_SIZE, 1,
-        EGL_BLUE_SIZE, 1,
-        EGL_NONE
-    };
-    eglChooseConfig(s_display, attributeList, &config, 1, &numConfigs);
-    if (!numConfigs) {
-        goto _fail1;
-    }
-
-    s_surface = eglCreateWindowSurface(s_display, config, nwindowGetDefault(), NULL);
-    if (!s_surface) {
-        goto _fail1;
-    }
-
-	EGLint contextAttributeList[] = {
-		EGL_CONTEXT_CLIENT_VERSION, 3,
+	EGLConfig config;
+	EGLint numConfigs;
+	static const EGLint attributeList[] = {
+		EGL_RED_SIZE, 8,
+		EGL_GREEN_SIZE, 8,
+		EGL_BLUE_SIZE, 8,
 		EGL_NONE
 	};
-    s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, contextAttributeList);
-    if (!s_context) {
-        goto _fail2;
-    }
+	eglChooseConfig(s_display, attributeList, &config, 1, &numConfigs);
+	if (!numConfigs) {
+		goto _fail1;
+	}
 
-    eglMakeCurrent(s_display, s_surface, s_surface, s_context);
-    return true;
+	s_surface = eglCreateWindowSurface(s_display, config, nwindowGetDefault(), NULL);
+	if (!s_surface) {
+		goto _fail1;
+	}
+
+	EGLint contextAttributeList[] = {
+		EGL_CONTEXT_MAJOR_VERSION, 3,
+		EGL_CONTEXT_MINOR_VERSION, 1,
+		EGL_NONE
+	};
+	s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, contextAttributeList);
+	if (!s_context) {
+		goto _fail2;
+	}
+
+	eglMakeCurrent(s_display, s_surface, s_surface, s_context);
+	return true;
 
 _fail2:
-    eglDestroySurface(s_display, s_surface);
-    s_surface = NULL;
+	eglDestroySurface(s_display, s_surface);
+	s_surface = NULL;
 _fail1:
-    eglTerminate(s_display);
-    s_display = NULL;
+	eglTerminate(s_display);
+	s_display = NULL;
 _fail0:
-    return false;
+	return false;
 }
 
 static void deinitEgl() {
-    if (s_display) {
-        if (s_context) {
-            eglDestroyContext(s_display, s_context);
-        }
-        if (s_surface) {
-            eglDestroySurface(s_display, s_surface);
-        }
-        eglTerminate(s_display);
-    }
+	if (s_display) {
+		eglMakeCurrent(s_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+		if (s_context) {
+			eglDestroyContext(s_display, s_context);
+		}
+		if (s_surface) {
+			eglDestroySurface(s_display, s_surface);
+		}
+		eglTerminate(s_display);
+	}
 }
 
 static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, enum GBAKey key) {
@@ -164,6 +179,7 @@ static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, enum
 }
 
 static void _drawStart(void) {
+	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -241,10 +257,25 @@ static void _setup(struct mGUIRunner* runner) {
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_L, GBA_KEY_L);
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_R, GBA_KEY_R);
 
-	runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+	int fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "hwaccelVideo", &fakeBool) && fakeBool && runner->core->supportsFeature(runner->core, mCORE_FEATURE_OPENGL)) {
+		runner->core->setVideoGLTex(runner->core, tex);
+		usePbo = false;
+	} else {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+		usePbo = true;
+	}
+
 	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d);
 	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation);
 	runner->core->setAVStream(runner->core, &stream);
+
+	if (runner->core->platform(runner->core) == PLATFORM_GBA && useLightSensor) {
+		runner->core->setPeripheral(runner->core, mPERIPH_GBA_LUMINANCE, &lightSensor.d);
+	}
 
 	unsigned mode;
 	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
@@ -266,6 +297,27 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 		screenMode = mode;
 	}
 
+	int fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
+		interframeBlending = fakeBool;
+	}
+	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
+		sgbCrop = fakeBool;
+	}
+	if (mCoreConfigGetIntValue(&runner->config, "useLightSensor", &fakeBool)) {
+		if (useLightSensor != fakeBool) {
+			useLightSensor = fakeBool;
+
+			if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+				if (useLightSensor) {
+					runner->core->setPeripheral(runner->core, mPERIPH_GBA_LUMINANCE, &lightSensor.d);
+				} else {
+					runner->core->setPeripheral(runner->core, mPERIPH_GBA_LUMINANCE, &runner->luminanceSource.d);
+				}
+			}
+		}
+	}
+
 	rumble.up = 0;
 	rumble.down = 0;
 }
@@ -279,14 +331,21 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 	hidSendVibrationValues(vibrationDeviceHandles, values, 4);
 }
 
-static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height, bool faded) {
+static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height, bool faded, bool blendTop) {
+	glViewport(0, 1080 - vheight, vwidth, vheight);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUseProgram(program);
 	glBindVertexArray(vao);
-	float aspectX = width / (float) runner->params.width;
-	float aspectY = height / (float) runner->params.height;
+	float inwidth = width;
+	float inheight = height;
+	if (sgbCrop && width == 256 && height == 224) {
+		inwidth = GB_VIDEO_HORIZONTAL_PIXELS;
+		inheight = GB_VIDEO_VERTICAL_PIXELS;
+	}
+	float aspectX = inwidth / vwidth;
+	float aspectY = inheight / vheight;
 	float max = 1.f;
 	switch (screenMode) {
 	case SM_PA:
@@ -295,7 +354,10 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 		} else {
 			max = floor(1.0 / aspectY);
 		}
-		break;
+		if (max >= 1.0) {
+			break;
+		}
+		// Fall through
 	case SM_AF:
 		if (aspectX > aspectY) {
 			max = 1.0 / aspectX;
@@ -309,31 +371,58 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 		break;
 	}
 
+	if (screenMode != SM_SF) {
+		aspectX = width / (float) vwidth;
+		aspectY = height / (float) vheight;
+	}
+
 	aspectX *= max;
 	aspectY *= max;
 
 	glUniform1i(texLocation, 0);
 	glUniform2f(dimsLocation, aspectX, aspectY);
-	glUniform2f(insizeLocation, width, height);
-	if (!faded) {
-		glUniform4f(colorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
+	if (usePbo) {
+		glUniform2f(insizeLocation, width / 256.f, height / 256.f);
 	} else {
-		glUniform4f(colorLocation, 0.8f, 0.8f, 0.8f, 0.8f);		
+		glUniform2f(insizeLocation, 1, 1);
+	}
+	if (!faded) {
+		glUniform4f(colorLocation, 1.0f, 1.0f, 1.0f, blendTop ? 0.5f : 1.0f);
+	} else {
+		glUniform4f(colorLocation, 0.8f, 0.8f, 0.8f, blendTop ? 0.4f : 0.8f);
 	}
 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glBindVertexArray(0);
 	glUseProgram(0);
+	glDisable(GL_BLEND);
+	glViewport(0, 1080 - runner->params.height, runner->params.width, runner->params.height);
 }
 
 static void _prepareForFrame(struct mGUIRunner* runner) {
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-	frameBuffer = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 256 * 256 * 4, GL_MAP_WRITE_BIT);
-	if (frameBuffer) {
-		runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+	if (interframeBlending) {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, copyFbo);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		int width, height;
+		int format;
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &format);
+		glBindTexture(GL_TEXTURE_2D, oldTex);
+		glCopyTexImage2D(GL_TEXTURE_2D, 0, format, 0, 0, width, height, 0);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	}
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+	if (usePbo) {
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+		frameBuffer = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 256 * 256 * 4, GL_MAP_WRITE_BIT);
+		if (frameBuffer) {
+			runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+		}
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	}
 }
 
 static void _drawFrame(struct mGUIRunner* runner, bool faded) {
@@ -345,15 +434,27 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	unsigned width, height;
 	runner->core->desiredVideoDimensions(runner->core, &width, &height);
 
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, height, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	if (usePbo) {
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 
-	_drawTex(runner, width, height, faded);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, height, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	} else if (!interframeBlending) {
+		glBindTexture(GL_TEXTURE_2D, tex);
+	}
+
+	if (interframeBlending) {
+		glBindTexture(GL_TEXTURE_2D, oldTex);
+		_drawTex(runner, width, height, faded, false);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		_drawTex(runner, width, height, faded, true);
+	} else {
+		_drawTex(runner, width, height, faded, false);
+	}
+
 
 	HidVibrationValue values[4];
 	if (rumble.up) {
@@ -379,7 +480,7 @@ static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, un
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-	_drawTex(runner, width, height, faded);
+	_drawTex(runner, width, height, faded, false);
 }
 
 static uint16_t _pollGameInput(struct mGUIRunner* runner) {
@@ -408,6 +509,19 @@ static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 
 static bool _running(struct mGUIRunner* runner) {
 	UNUSED(runner);
+	u8 newMode = appletGetOperationMode();
+	if (newMode != vmode) {
+		if (newMode == AppletOperationMode_Docked) {
+			vwidth = 1920;
+			vheight = 1080;
+		} else {
+			vwidth = 1280;
+			vheight = 720;
+		}
+		nwindowSetCrop(nwindowGetDefault(), 0, 0, vwidth, vheight);
+		vmode = newMode;
+	}
+
 	return appletMainLoop();
 }
 
@@ -462,7 +576,19 @@ int32_t _readGyroZ(struct mRotationSource* source) {
 	UNUSED(source);
 	SixAxisSensorValues sixaxis;
 	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
-	return sixaxis.gyroscope.z * 1.1e9f;
+	return sixaxis.gyroscope.z * -1.1e9f;
+}
+
+static void _lightSensorSample(struct GBALuminanceSource* lux) {
+	struct mGUIRunnerLux* runnerLux = (struct mGUIRunnerLux*) lux;
+	float luxLevel = 0;
+	appletGetCurrentIlluminance(&luxLevel);
+	runnerLux->luxLevel = cbrtf(luxLevel) * 8;
+}
+
+static uint8_t _lightSensorRead(struct GBALuminanceSource* lux) {
+	struct mGUIRunnerLux* runnerLux = (struct mGUIRunnerLux*) lux;
+	return 0xFF - runnerLux->luxLevel;
 }
 
 static int _batteryState(void) {
@@ -480,7 +606,14 @@ static int _batteryState(void) {
 	return state;
 }
 
+static void _guiPrepare(void) {
+	glViewport(0, 1080 - vheight, vwidth, vheight);
+}
+
 int main(int argc, char* argv[]) {
+	NWindow* window = nwindowGetDefault();
+	nwindowSetDimensions(window, 1920, 1080);
+
 	socketInitializeDefault();
 	nxlinkStdio();
 	initEgl();
@@ -490,26 +623,48 @@ int main(int argc, char* argv[]) {
 
 	struct GUIFont* font = GUIFontCreate();
 
-	u32 width = 1280;
-	u32 height = 720;
+	vmode = appletGetOperationMode();
+	if (vmode == AppletOperationMode_Docked) {
+		vwidth = 1920;
+		vheight = 1080;
+	} else {
+		vwidth = 1280;
+		vheight = 720;
+	}
+	nwindowSetCrop(window, 0, 0, vwidth, vheight);
 
-	glViewport(0, 0, width, height);
+	glViewport(0, 1080 - vheight, vwidth, vheight);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 
-	glGenTextures(1, &tex);
 	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &tex);
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	glGenTextures(1, &oldTex);
+	glBindTexture(GL_TEXTURE_2D, oldTex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glGenBuffers(1, &pbo);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
 	glBufferData(GL_PIXEL_UNPACK_BUFFER, 256 * 256 * 4, NULL, GL_STREAM_DRAW);
 	frameBuffer = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 256 * 256 * 4, GL_MAP_WRITE_BIT);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+	glGenFramebuffers(1, &copyFbo);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glBindTexture(GL_TEXTURE_2D, oldTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, copyFbo);
+	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
 	program = glCreateProgram();
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -583,6 +738,9 @@ int main(int argc, char* argv[]) {
 	rotation.readTiltY = _readTiltY;
 	rotation.readGyroZ = _readGyroZ;
 
+	lightSensor.d.readLuminance = _lightSensorRead;
+	lightSensor.d.sample = _lightSensorSample;
+
 	stream.videoDimensionsChanged = NULL;
 	stream.postVideoFrame = NULL;
 	stream.postAudioFrame = NULL;
@@ -600,14 +758,17 @@ int main(int argc, char* argv[]) {
 		audoutBuffer[i].data_offset = 0;
 	}
 
+	bool illuminanceAvailable = false;
+	appletIsIlluminanceAvailable(&illuminanceAvailable);
+
 	struct mGUIRunner runner = {
 		.params = {
-			width, height,
+			1280, 720,
 			font, "/",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
 			_batteryState,
-			NULL, NULL,
+			_guiPrepare, NULL,
 		},
 		.keySources = (struct GUIInputKeys[]) {
 			{
@@ -688,8 +849,53 @@ int main(int argc, char* argv[]) {
 				},
 				.nStates = 16
 			},
+			{
+				.title = "GPU-accelerated renderer (experimental, requires game reload)",
+				.data = "hwaccelVideo",
+				.submenu = 0,
+				.state = 0,
+				.validStates = (const char*[]) {
+					"Off",
+					"On",
+				},
+				.nStates = 2
+			},
+			{
+				.title = "Hi-res scaling (requires GPU rendering)",
+				.data = "videoScale",
+				.submenu = 0,
+				.state = 0,
+				.validStates = (const char*[]) {
+					"1x",
+					"2x",
+					"3x",
+					"4x",
+					"5x",
+					"6x",
+				},
+				.stateMappings = (const struct GUIVariant[]) {
+					GUI_V_U(1),
+					GUI_V_U(2),
+					GUI_V_U(3),
+					GUI_V_U(4),
+					GUI_V_U(5),
+					GUI_V_U(6),
+				},
+				.nStates = 6
+			},
+			{
+				.title = "Use built-in brightness sensor for Boktai",
+				.data = "useLightSensor",
+				.submenu = 0,
+				.state = illuminanceAvailable,
+				.validStates = (const char*[]) {
+					"Off",
+					"On",
+				},
+				.nStates = 2
+			},
 		},
-		.nConfigExtra = 2,
+		.nConfigExtra = 5,
 		.setup = _setup,
 		.teardown = NULL,
 		.gameLoaded = _gameLoaded,
@@ -716,6 +922,29 @@ int main(int argc, char* argv[]) {
 
 	audoutStartAudioOut();
 
+	if (argc > 0) {
+		struct VFile* vf = VFileOpen("romfs:/fileassoc.cfg.in", O_RDONLY);
+		if (vf) {
+			size_t size = vf->size(vf);
+			const char* arg0 = strchr(argv[0], '/');
+			char* buffer[2] = {
+				calloc(size + 1, 1),
+				malloc(size + strlen(arg0) + 1)
+			};
+			vf->read(vf, buffer[0], vf->size(vf));
+			vf->close(vf);
+			snprintf(buffer[1], size + strlen(arg0), buffer[0], arg0);
+			mkdir("sdmc:/config/nx-hbmenu/fileassoc", 0755);
+			vf = VFileOpen("sdmc:/config/nx-hbmenu/fileassoc/mgba.cfg", O_CREAT | O_TRUNC | O_WRONLY);
+			if (vf) {
+				vf->write(vf, buffer[1], strlen(buffer[1]));
+				vf->close(vf);
+			}
+			free(buffer[0]);
+			free(buffer[1]);
+		}
+	}
+
 	if (argc > 1) {
 		size_t i;
 		for (i = 0; runner.keySources[i].id; ++i) {
@@ -726,11 +955,19 @@ int main(int argc, char* argv[]) {
 		mGUIRunloop(&runner);
 	}
 
+	mGUIDeinit(&runner);
+
+	audoutStopAudioOut();
+	GUIFontDestroy(font);
+
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	glDeleteBuffers(1, &pbo);
 
+	glDeleteFramebuffers(1, &copyFbo);
 	glDeleteTextures(1, &tex);
+	glDeleteTextures(1, &oldTex);
 	glDeleteBuffers(1, &vbo);
 	glDeleteProgram(program);
 	glDeleteVertexArrays(1, &vao);
@@ -742,6 +979,7 @@ int main(int argc, char* argv[]) {
 
 	psmExit();
 	audoutExit();
+	romfsExit();
 	deinitEgl();
 	socketExit();
 	return 0;

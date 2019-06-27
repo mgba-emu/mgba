@@ -1,4 +1,4 @@
-#include "flags.h"
+#include <mgba/flags.h>
 
 struct VFile;
 

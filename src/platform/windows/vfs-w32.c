@@ -114,7 +114,7 @@ struct VFile* _vdwOpenFile(struct VDir* vd, const char* path, int mode) {
 	const char* dir = vdw->path;
 	size_t size = sizeof(char) * (strlen(path) + strlen(dir) + 2);
 	char* combined = malloc(size);
-	StringCbPrintf(combined, size, "%s\\%s", dir, path);
+	StringCbPrintfA(combined, size, "%s\\%s", dir, path);
 
 	struct VFile* file = VFileOpen(combined, mode);
 	free(combined);
@@ -129,7 +129,7 @@ struct VDir* _vdwOpenDir(struct VDir* vd, const char* path) {
 	const char* dir = vdw->path;
 	size_t size = sizeof(char) * (strlen(path) + strlen(dir) + 2);
 	char* combined = malloc(size);
-	StringCbPrintf(combined, size, "%s\\%s", dir, path);
+	StringCbPrintfA(combined, size, "%s\\%s", dir, path);
 
 	struct VDir* vd2 = VDirOpen(combined);
 	if (!vd2) {
@@ -144,14 +144,14 @@ bool _vdwDeleteFile(struct VDir* vd, const char* path) {
 	if (!path) {
 		return 0;
 	}
-	const char* dir = vdw->path;
-	size_t size = sizeof(char) * (strlen(path) + strlen(dir) + 2);
-	char* combined = malloc(size);
-	StringCbPrintf(combined, size, "%s\\%s", dir, path);
+	wchar_t dir[MAX_PATH + 1];
+	wchar_t pathw[MAX_PATH + 1];
+	wchar_t combined[MAX_PATH + 1];
+	MultiByteToWideChar(CP_UTF8, 0, vdw->path, -1, dir, MAX_PATH);
+	MultiByteToWideChar(CP_UTF8, 0, path, -1, pathw, MAX_PATH);
+	StringCchPrintfW(combined, MAX_PATH, L"%ws\\%ws", dir, pathw);
 
-	bool ret = DeleteFile(combined);
-	free(combined);
-	return ret;
+	return DeleteFileW(combined);
 }
 
 const char* _vdweName(struct VDirEntry* vde) {
@@ -171,4 +171,16 @@ static enum VFSType _vdweType(struct VDirEntry* vde) {
 		return VFS_DIRECTORY;
 	}
 	return VFS_FILE;
+}
+
+bool VDirCreate(const char* path) {
+	wchar_t wpath[MAX_PATH];
+	MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, MAX_PATH);
+	if (CreateDirectoryW(wpath, NULL)) {
+		return true;
+	}
+	if (GetLastError() == ERROR_ALREADY_EXISTS) {
+		return true;
+	}
+	return false;
 }

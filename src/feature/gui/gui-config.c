@@ -109,10 +109,44 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		.data = "sgb.bios",
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Interframe blending",
+		.data = "interframeBlending",
+		.submenu = 0,
+		.state = false,
+		.validStates = (const char*[]) {
+			"Off", "On"
+		},
+		.nStates = 2
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Enable SGB features",
+		.data = "sgb.model",
+		.submenu = 0,
+		.state = true,
+		.validStates = (const char*[]) {
+			"Off", "On"
+		},
+		.stateMappings = (const struct GUIVariant[]) {
+			GUI_V_S("DMG"),
+			GUI_V_S("SGB"),
+		},
+		.nStates = 2
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Enable SGB borders",
 		.data = "sgb.borders",
 		.submenu = 0,
 		.state = true,
+		.validStates = (const char*[]) {
+			"Off", "On"
+		},
+		.nStates = 2
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Crop SGB borders",
+		.data = "sgb.borderCrop",
+		.submenu = 0,
+		.state = false,
 		.validStates = (const char*[]) {
 			"Off", "On"
 		},
@@ -163,8 +197,6 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 			continue;
 		}
 		if (item->stateMappings) {
-			item->state = 0;
-
 			size_t j;
 			for (j = 0; j < item->nStates; ++j) {
 				const struct GUIVariant* v = &item->stateMappings[j];
@@ -271,7 +303,7 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		}
 		if (!strcmp(item->data, "gba.bios")) {
 			// TODO: show box if failed
-			if (!GUISelectFile(&runner->params, gbaBiosPath, sizeof(gbaBiosPath), _biosNamed, GBAIsBIOS)) {
+			if (!GUISelectFile(&runner->params, gbaBiosPath, sizeof(gbaBiosPath), _biosNamed, GBAIsBIOS, NULL)) {
 				gbaBiosPath[0] = '\0';
 			}
 			continue;
@@ -279,21 +311,21 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 #ifdef M_CORE_GB
 		if (!strcmp(item->data, "gb.bios")) {
 			// TODO: show box if failed
-			if (!GUISelectFile(&runner->params, gbBiosPath, sizeof(gbBiosPath), _biosNamed, GBIsBIOS)) {
+			if (!GUISelectFile(&runner->params, gbBiosPath, sizeof(gbBiosPath), _biosNamed, GBIsBIOS, NULL)) {
 				gbBiosPath[0] = '\0';
 			}
 			continue;
 		}
 		if (!strcmp(item->data, "gbc.bios")) {
 			// TODO: show box if failed
-			if (!GUISelectFile(&runner->params, gbcBiosPath, sizeof(gbcBiosPath), _biosNamed, GBIsBIOS)) {
+			if (!GUISelectFile(&runner->params, gbcBiosPath, sizeof(gbcBiosPath), _biosNamed, GBIsBIOS, NULL)) {
 				gbcBiosPath[0] = '\0';
 			}
 			continue;
 		}
 		if (!strcmp(item->data, "sgb.bios")) {
 			// TODO: show box if failed
-			if (!GUISelectFile(&runner->params, sgbBiosPath, sizeof(sgbBiosPath), _biosNamed, GBIsBIOS)) {
+			if (!GUISelectFile(&runner->params, sgbBiosPath, sizeof(sgbBiosPath), _biosNamed, GBIsBIOS, NULL)) {
 				sgbBiosPath[0] = '\0';
 			}
 			continue;

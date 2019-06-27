@@ -212,13 +212,18 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 
 	const char* lastPath = mCoreConfigGetValue(&runner->config, "lastDirectory");
 	if (lastPath) {
-		strncpy(runner->params.currentPath, lastPath, PATH_MAX - 1);
-		runner->params.currentPath[PATH_MAX - 1] = '\0';
+		struct VDir* dir = VDirOpen(lastPath);
+		if (dir) {
+			dir->close(dir);
+			strncpy(runner->params.currentPath, lastPath, PATH_MAX - 1);
+			runner->params.currentPath[PATH_MAX - 1] = '\0';
+		}
 	}
 
 #ifndef DISABLE_THREADING
 	if (!runner->autosave.running) {
 		runner->autosave.running = true;
+		runner->autosave.core = NULL;
 		MutexInit(&runner->autosave.mutex);
 		ConditionInit(&runner->autosave.cond);
 		ThreadCreate(&runner->autosave.thread, mGUIAutosaveThread, &runner->autosave);
@@ -233,7 +238,7 @@ void mGUIDeinit(struct mGUIRunner* runner) {
 	ConditionWake(&runner->autosave.cond);
 	MutexUnlock(&runner->autosave.mutex);
 
-	ThreadJoin(runner->autosave.thread);
+	ThreadJoin(&runner->autosave.thread);
 
 	ConditionDeinit(&runner->autosave.cond);
 	MutexDeinit(&runner->autosave.mutex);
@@ -271,7 +276,17 @@ static void _log(struct mLogger* logger, int category, enum mLogLevel level, con
 	if (len >= sizeof(log2)) {
 		len = sizeof(log2) - 1;
 	}
-	guiLogger->vf->write(guiLogger->vf, log2, len);
+	if (guiLogger->vf->write(guiLogger->vf, log2, len) < 0) {
+		char path[PATH_MAX];
+		mCoreConfigDirectory(path, PATH_MAX);
+		strncat(path, PATH_SEP "log", PATH_MAX - strlen(path));
+		guiLogger->vf->close(guiLogger->vf);
+		guiLogger->vf = VFileOpen(path, O_CREAT | O_WRONLY | O_APPEND);
+		if (guiLogger->vf->write(guiLogger->vf, log2, len) < 0) {
+			guiLogger->vf->close(guiLogger->vf);
+			guiLogger->vf = NULL;
+		}
+	}
 }
 
 void mGUIRun(struct mGUIRunner* runner, const char* path) {
@@ -352,6 +367,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		found = mCoreLoadFile(runner->core, path);
 		if (!found) {
 			mLOG(GUI_RUNNER, WARN, "Failed to load %s!", path);
+			mCoreConfigDeinit(&runner->core->config);
 			runner->core->deinit(runner->core);
 		}
 	}
@@ -548,6 +564,10 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			runner->params.drawStart();
 			runner->drawFrame(runner, true);
 			runner->params.drawEnd();
+#ifdef _3DS
+			// XXX: Why does this fix #1294?
+			usleep(1000);
+#endif
 			GUIPollInput(&runner->params, 0, &keys);
 		}
 		if (runner->unpaused) {
@@ -592,6 +612,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	}
 	mInputMapDeinit(&runner->core->inputMap);
 	mLOG(GUI_RUNNER, DEBUG, "Deinitializing core...");
+	mCoreConfigDeinit(&runner->core->config);
 	runner->core->deinit(runner->core);
 	runner->core = NULL;
 
@@ -611,10 +632,18 @@ void mGUIRunloop(struct mGUIRunner* runner) {
 	}
 	while (true) {
 		char path[PATH_MAX];
-		if (!GUISelectFile(&runner->params, path, sizeof(path), _testExtensions, NULL)) {
+		const char* preselect = mCoreConfigGetValue(&runner->config, "lastGame");
+		if (preselect) {
+			preselect = strrchr(preselect, '/');
+		}
+		if (preselect) {
+			++preselect;
+		}
+		if (!GUISelectFile(&runner->params, path, sizeof(path), _testExtensions, NULL, preselect)) {
 			break;
 		}
 		mCoreConfigSetValue(&runner->config, "lastDirectory", runner->params.currentPath);
+		mCoreConfigSetValue(&runner->config, "lastGame", path);
 		mCoreConfigSave(&runner->config);
 		mGUIRun(runner, path);
 	}

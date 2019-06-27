@@ -25,6 +25,9 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	m_ui.tile->setController(controller);
 
 	connect(m_ui.tiles, &TilePainter::indexPressed, m_ui.tile, &AssetTile::selectIndex);
+	connect(m_ui.tiles, &TilePainter::needsRedraw, this, [this]() {
+		updateTiles(true);
+	});
 	connect(m_ui.paletteId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &TileView::updatePalette);
 
 	switch (m_controller->platform()) {
@@ -62,7 +65,10 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 		}
 		updateTiles(true);
 	});
-	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this]() {
+	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](int mag) {
+		if (!m_ui.tileFit->isChecked()) {
+			m_ui.tiles->setMinimumSize(mag * 8 * m_ui.tilesPerRow->value(), m_ui.tiles->minimumSize().height());
+		}
 		updateTiles(true);
 	});
 

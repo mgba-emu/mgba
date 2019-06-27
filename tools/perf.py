@@ -96,12 +96,15 @@ class PerfServer(object):
         subprocess.check_call(server_command)
         time.sleep(4)
         self.socket = socket.create_connection(self.address, timeout=1000)
-        self.reader = csv.DictReader(self.socket.makefile())
+        kwargs = {}
+        if sys.version_info[0] >= 3:
+            kwargs["encoding"] = "utf-8"
+        self.reader = csv.DictReader(self.socket.makefile(**kwargs))
 
     def run(self, test):
         if not self.socket:
             self._start(test)
-        self.socket.send(os.path.join("/perfroms", test.rom))
+        self.socket.send(os.path.join("/perfroms", test.rom).encode("utf-8"))
         self.results.append(next(self.reader))
         self.iterations -= 1
         if self.iterations == 0:
@@ -109,7 +112,7 @@ class PerfServer(object):
             self.iterations = self.ITERATIONS_PER_INSTANCE
 
     def finish(self):
-        self.socket.send("\n");
+        self.socket.send(b"\n");
         self.reader = None
         self.socket.close()
         time.sleep(5)

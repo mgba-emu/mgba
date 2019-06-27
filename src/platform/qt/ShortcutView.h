@@ -15,6 +15,7 @@ namespace QGBA {
 
 class InputController;
 class ShortcutController;
+class ShortcutModel;
 
 class ShortcutView : public QWidget {
 Q_OBJECT
@@ -40,6 +41,7 @@ private:
 	Ui::ShortcutView m_ui;
 
 	ShortcutController* m_controller = nullptr;
+	ShortcutModel* m_model = nullptr;
 	InputController* m_input = nullptr;
 };
 

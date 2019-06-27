@@ -12,7 +12,7 @@ CXX_GUARD_START
 
 #include <mgba/core/input.h>
 
-extern const struct mInputPlatformInfo GBAInputInfo;
+extern MGBA_EXPORT const struct mInputPlatformInfo GBAInputInfo;
 
 enum GBAKey {
 	GBA_KEY_A = 0,

@@ -17,7 +17,7 @@ adddep() {
 while [ $# -gt 0 ]; do
     DEB=$1
     dpkg-deb -R $DEB deb-temp
-    PKG=`head -n1 deb-temp/DEBIAN/control | cut -f2 -d ' '`
+    PKG=`grep Package deb-temp/DEBIAN/control | cut -f2 -d ' '`
     echo Found package $PKG
 
     case $PKG in
@@ -30,9 +30,13 @@ while [ $# -gt 0 ]; do
         PKG=$BINARY-qt
         rmdep libav
         rmdep libedit
+        rmdep libelf
+        rmdep libgl
         rmdep libpng
         rmdep libzip
         rmdep libmagickwand
+        rmdep libsqlite3
+        rmdep libswresample
         rmdep libswscale
         rmdep zlib
         adddep lib$BINARY
@@ -41,10 +45,14 @@ while [ $# -gt 0 ]; do
         PKG=$BINARY-sdl
         rmdep libav
         rmdep libedit
+        rmdep libelf
+        rmdep libgl
         rmdep libpng
         rmdep qt
         rmdep libzip
         rmdep libmagickwand
+        rmdep libsqlite3
+        rmdep libswresample
         rmdep libswscale
         rmdep zlib
         adddep lib$BINARY

@@ -8,9 +8,9 @@
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
 #ifdef M_CORE_GBA
+#include <mgba/gba/interface.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
-#include <mgba/internal/gba/video.h>
 #endif
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
@@ -89,7 +89,8 @@ static color_t* screenshotBuffer = NULL;
 static struct mAVStream stream;
 static int16_t* audioLeft = 0;
 static size_t audioPos = 0;
-static C3D_Tex outputTexture;
+static C3D_Tex outputTexture[2];
+static int activeOutputTexture = 0;
 static ndspWaveBuf dspBuffer[DSP_BUFFERS];
 static int bufferId = 0;
 static bool frameLimiter = true;
@@ -102,8 +103,11 @@ static bool frameStarted = false;
 
 static C3D_RenderTarget* upscaleBuffer;
 static C3D_Tex upscaleBufferTex;
+static bool interframeBlending = false;
+static bool sgbCrop = false;
 
 static aptHookCookie cookie;
+static bool core2;
 
 extern bool allocateRomBuffer(void);
 
@@ -149,7 +153,8 @@ static void _cleanup(void) {
 	C3D_RenderTargetDelete(bottomScreen[1]);
 	C3D_RenderTargetDelete(upscaleBuffer);
 	C3D_TexDelete(&upscaleBufferTex);
-	C3D_TexDelete(&outputTexture);
+	C3D_TexDelete(&outputTexture[0]);
+	C3D_TexDelete(&outputTexture[1]);
 	C3D_Fini();
 
 	gfxExit();
@@ -258,9 +263,7 @@ static void _resetCamera(struct m3DSImageSource* imageSource) {
 }
 
 static void _setup(struct mGUIRunner* runner) {
-	bool n3ds = false;
-	APT_CheckNew3DS(&n3ds);
-	if (n3ds) {
+	if (core2) {
 		mCoreConfigSetDefaultIntValue(&runner->config, "threadedVideo", 1);
 		mCoreLoadForeignConfig(runner->core, &runner->config);
 	}
@@ -375,6 +378,15 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 			}
 		}
 	}
+
+	int fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
+		interframeBlending = fakeBool;
+	}
+
+	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
+		sgbCrop = fakeBool;
+	}
 }
 
 static void _gameUnloaded(struct mGUIRunner* runner) {
@@ -405,7 +417,7 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 	}
 }
 
-static void _drawTex(struct mCore* core, bool faded) {
+static void _drawTex(struct mCore* core, bool faded, bool both) {
 	unsigned screen_w, screen_h;
 	switch (screenMode) {
 	case SM_PA_BOTTOM:
@@ -430,6 +442,12 @@ static void _drawTex(struct mCore* core, bool faded) {
 
 	int w = corew;
 	int h = coreh;
+	if (sgbCrop && w == 256 && h == 224) {
+		w = GB_VIDEO_HORIZONTAL_PIXELS;
+		h = GB_VIDEO_VERTICAL_PIXELS;
+	}
+	int innerw = w;
+	int innerh = h;
 	// Get greatest common divisor
 	while (w != 0) {
 		int temp = h % w;
@@ -437,8 +455,8 @@ static void _drawTex(struct mCore* core, bool faded) {
 		w = temp;
 	}
 	int gcd = h;
-	unsigned aspectw = corew / gcd;
-	unsigned aspecth = coreh / gcd;
+	unsigned aspectw = innerw / gcd;
+	unsigned aspecth = innerh / gcd;
 	int x = 0;
 	int y = 0;
 
@@ -467,7 +485,6 @@ static void _drawTex(struct mCore* core, bool faded) {
 		break;
 	}
 
-	ctrActivateTexture(&outputTexture);
 	u32 color;
 	if (!faded) {
 		color = 0xFFFFFFFF;
@@ -503,9 +520,16 @@ static void _drawTex(struct mCore* core, bool faded) {
 		}
 
 	}
+	ctrActivateTexture(&outputTexture[activeOutputTexture]);
 	ctrAddRectEx(color, x, y, w, h, 0, 0, corew, coreh, 0);
+	if (both) {
+		ctrActivateTexture(&outputTexture[activeOutputTexture ^ 1]);
+		ctrAddRectEx(color & 0x7FFFFFFF, x, y, w, h, 0, 0, corew, coreh, 0);
+	}
 	ctrFlushBatch();
 
+	innerw = corew;
+	innerh = coreh;
 	corew = w;
 	coreh = h;
 	screen_h = 240;
@@ -518,19 +542,20 @@ static void _drawTex(struct mCore* core, bool faded) {
 	}
 	ctrSetViewportSize(screen_w, screen_h, true);
 
+	float afw, afh;
 	switch (screenMode) {
 	default:
 		return;
 	case SM_AF_TOP:
 	case SM_AF_BOTTOM:
-		w = screen_w / aspectw;
-		h = screen_h / aspecth;
-		if (w * aspecth > screen_h) {
-			w = aspectw * h;
-			h = aspecth * h;
+		afw = screen_w / (float) aspectw;
+		afh = screen_h / (float) aspecth;
+		if (afw * aspecth > screen_h) {
+			w = innerw * afh / gcd;
+			h = innerh * afh / gcd;
 		} else {
-			h = aspecth * w;
-			w = aspectw * w;
+			h = innerh * afw / gcd;
+			w = innerw * afw / gcd;
 		}
 		break;
 	case SM_SF_TOP:
@@ -547,13 +572,18 @@ static void _drawTex(struct mCore* core, bool faded) {
 	ctrFlushBatch();
 }
 
+static void _prepareForFrame(struct mGUIRunner* runner) {
+	UNUSED(runner);
+	activeOutputTexture ^= 1;
+}
+
 static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	UNUSED(runner);
-	C3D_Tex* tex = &outputTexture;
+	C3D_Tex* tex = &outputTexture[activeOutputTexture];
 
-	GSPGPU_FlushDataCache(outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
+	GSPGPU_FlushDataCache(outputBuffer, 256 * GBA_VIDEO_VERTICAL_PIXELS * 2);
 	C3D_SyncDisplayTransfer(
-			(u32*) outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS),
+			(u32*) outputBuffer, GX_BUFFER_DIM(256, GBA_VIDEO_VERTICAL_PIXELS),
 			tex->data, GX_BUFFER_DIM(256, 256),
 			GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB565) |
 				GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB565) |
@@ -564,11 +594,11 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 		blip_clear(runner->core->getAudioChannel(runner->core, 1));
 	}
 
-	_drawTex(runner->core, faded);
+	_drawTex(runner->core, faded, interframeBlending);
 }
 
 static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
-	C3D_Tex* tex = &outputTexture;
+	C3D_Tex* tex = &outputTexture[activeOutputTexture];
 
 	if (!screenshotBuffer) {
 		screenshotBuffer = linearMemAlign(256 * 224 * sizeof(color_t), 0x80);
@@ -587,7 +617,7 @@ static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, un
 				GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB565) |
 				GX_TRANSFER_OUT_TILED(1) | GX_TRANSFER_FLIP_VERT(1));
 
-	_drawTex(runner->core, faded);
+	_drawTex(runner->core, faded, false);
 }
 
 static uint16_t _pollGameInput(struct mGUIRunner* runner) {
@@ -752,6 +782,10 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 	}
 }
 
+THREAD_ENTRY _core2Test(void* context) {
+	UNUSED(context);
+}
+
 int main() {
 	rotation.d.sample = _sampleRotation;
 	rotation.d.readTiltX = _readTiltX;
@@ -801,25 +835,29 @@ int main() {
 	gfxInit(GSP_BGR8_OES, GSP_BGR8_OES, true);
 
 	if (!_initGpu()) {
-		outputTexture.data = 0;
+		outputTexture[0].data = 0;
 		_cleanup();
 		return 1;
 	}
 
-	if (!C3D_TexInitVRAM(&outputTexture, 256, 256, GPU_RGB565)) {
-		_cleanup();
-		return 1;
-	}
-	C3D_TexSetWrap(&outputTexture, GPU_CLAMP_TO_EDGE, GPU_CLAMP_TO_EDGE);
-	C3D_TexSetFilter(&outputTexture, GPU_NEAREST, GPU_NEAREST);
 	C3D_TexSetFilter(&upscaleBufferTex, GPU_LINEAR, GPU_LINEAR);
-	void* outputTextureEnd = (u8*)outputTexture.data + 256 * 256 * 2;
 
-	// Zero texture data to make sure no garbage around the border interferes with filtering
-	GX_MemoryFill(
-			outputTexture.data, 0x0000, outputTextureEnd, GX_FILL_16BIT_DEPTH | GX_FILL_TRIGGER,
-			NULL, 0, NULL, 0);
-	gspWaitForPSC0();
+	int i;
+	for (i = 0; i < 2; ++i) {
+		if (!C3D_TexInitVRAM(&outputTexture[i], 256, 256, GPU_RGB565)) {
+			_cleanup();
+			return 1;
+		}
+		C3D_TexSetWrap(&outputTexture[i], GPU_CLAMP_TO_EDGE, GPU_CLAMP_TO_EDGE);
+		C3D_TexSetFilter(&outputTexture[i], GPU_NEAREST, GPU_NEAREST);
+		void* outputTextureEnd = (u8*)outputTexture[i].data + 256 * 256 * 2;
+
+		// Zero texture data to make sure no garbage around the border interferes with filtering
+		GX_MemoryFill(
+				outputTexture[i].data, 0x0000, outputTextureEnd, GX_FILL_16BIT_DEPTH | GX_FILL_TRIGGER,
+				NULL, 0, NULL, 0);
+		gspWaitForPSC0();
+	}
 
 	struct GUIFont* font = GUIFontCreate();
 
@@ -934,7 +972,7 @@ int main() {
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,
 		.gameUnloaded = _gameUnloaded,
-		.prepareForFrame = 0,
+		.prepareForFrame = _prepareForFrame,
 		.drawFrame = _drawFrame,
 		.drawScreenshot = _drawScreenshot,
 		.paused = _gameUnloaded,
@@ -951,6 +989,12 @@ int main() {
 
 	APT_SetAppCpuTimeLimit(20);
 	runner.autosave.thread = threadCreate(mGUIAutosaveThread, &runner.autosave, 0x4000, 0x1F, 1, true);
+
+	Thread thread2;
+	if (ThreadCreate(&thread2, _core2Test, NULL) == 0) {
+		core2 = true;
+		ThreadJoin(&thread2);
+	}
 
 	mGUIInit(&runner, "3ds");
 

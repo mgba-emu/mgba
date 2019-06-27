@@ -98,8 +98,8 @@ static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context)
 	return !*thread;
 }
 
-static inline int ThreadJoin(Thread thread) {
-	return threadJoin(thread, U64_MAX);
+static inline int ThreadJoin(Thread* thread) {
+	return threadJoin(*thread, U64_MAX);
 }
 
 static inline void ThreadSetName(const char* name) {

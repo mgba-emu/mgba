@@ -8,6 +8,7 @@
 #include <mgba-util/string.h>
 
 #include <dirent.h>
+#include <errno.h>
 #include <sys/stat.h>
 
 static bool _vdClose(struct VDir* vd);
@@ -165,4 +166,8 @@ static enum VFSType _vdeType(struct VDirEntry* vde) {
 	}
 	return VFS_FILE;
 #endif
+}
+
+bool VDirCreate(const char* path) {
+	return mkdir(path, 0777) == 0 || errno == EEXIST;
 }

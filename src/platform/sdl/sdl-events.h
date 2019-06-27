@@ -63,10 +63,10 @@ struct mSDLPlayer {
 	size_t playerId;
 	struct mInputMap* bindings;
 	struct SDL_JoystickCombo* joystick;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	SDL_Window* window;
 	int fullscreen;
 	int windowUpdated;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_Window* window;
 
 	struct mSDLRumble {
 		struct mRumble d;
@@ -76,6 +76,9 @@ struct mSDLPlayer {
 		float activeLevel;
 		struct CircleBuffer history;
 	} rumble;
+#else
+	int newWidth;
+	int newHeight;
 #endif
 
 	struct mSDLRotation {

@@ -297,7 +297,18 @@ void retro_run(void) {
 			.value = 0
 		};
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-			((struct GBA*) core->board)->allowOpposingDirections = strcmp(var.value, "yes") == 0;
+			struct GBA* gba = core->board;
+			struct GB* gb = core->board;
+			switch (core->platform(core)) {
+			case PLATFORM_GBA:
+				gba->allowOpposingDirections = strcmp(var.value, "yes") == 0;
+				break;
+			case PLATFORM_GB:
+				gb->allowOpposingDirections = strcmp(var.value, "yes") == 0;
+				break;
+			default:
+				break;
+			}
 		}
 
 		var.key = "mgba_frameskip";
@@ -562,6 +573,7 @@ void retro_unload_game(void) {
 	if (!core) {
 		return;
 	}
+	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 	mappedMemoryFree(data, dataSize);
 	data = 0;

@@ -36,13 +36,12 @@ static void _drawStart(void) {
 
 static void _drawEnd(void) {
 	vita2d_end_drawing();
-	vita2d_wait_rendering_done();
 	vita2d_swap_buffers();
 }
 
 static uint32_t _pollInput(const struct mInputMap* map) {
 	SceCtrlData pad;
-	sceCtrlPeekBufferPositive(0, &pad, 1);
+	sceCtrlPeekBufferPositiveExt2(0, &pad, 1);
 	int input = mInputMapKeyBits(map, PSP2_INPUT, pad.buttons, 0);
 
 	if (pad.buttons & SCE_CTRL_UP || pad.ly < 64) {
@@ -128,17 +127,17 @@ int main() {
 				.id = PSP2_INPUT,
 				.keyNames = (const char*[]) {
 					"Select",
-					0,
-					0,
+					"L3",
+					"R3",
 					"Start",
 					"Up",
 					"Right",
 					"Down",
 					"Left",
-					"L",
-					"R",
-					0, // L2?
-					0, // R2?
+					"L2",
+					"R2",
+					"L1",
+					"R1",
 					"\1\xC",
 					"\1\xA",
 					"\1\xB",
@@ -160,7 +159,8 @@ int main() {
 		.unpaused = mPSP2Unpaused,
 		.incrementScreenMode = mPSP2IncrementScreenMode,
 		.setFrameLimiter = mPSP2SetFrameLimiter,
-		.pollGameInput = mPSP2PollInput
+		.pollGameInput = mPSP2PollInput,
+		.running = mPSP2SystemPoll
 	};
 
 	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);

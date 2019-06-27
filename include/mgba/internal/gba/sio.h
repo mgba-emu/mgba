@@ -33,6 +33,23 @@ enum {
 	JOYSTAT_RECV_BIT = 2,
 };
 
+DECL_BITFIELD(GBASIONormal, uint16_t);
+DECL_BIT(GBASIONormal, Sc, 0);
+DECL_BIT(GBASIONormal, InternalSc, 1);
+DECL_BIT(GBASIONormal, Si, 2);
+DECL_BIT(GBASIONormal, IdleSo, 3);
+DECL_BIT(GBASIONormal, Start, 7);
+DECL_BIT(GBASIONormal, Length, 12);
+DECL_BIT(GBASIONormal, Irq, 14);
+DECL_BITFIELD(GBASIOMultiplayer, uint16_t);
+DECL_BITS(GBASIOMultiplayer, Baud, 0, 2);
+DECL_BIT(GBASIOMultiplayer, Slave, 2);
+DECL_BIT(GBASIOMultiplayer, Ready, 3);
+DECL_BITS(GBASIOMultiplayer, Id, 4, 2);
+DECL_BIT(GBASIOMultiplayer, Error, 6);
+DECL_BIT(GBASIOMultiplayer, Busy, 8);
+DECL_BIT(GBASIOMultiplayer, Irq, 14);
+
 struct GBASIODriverSet {
 	struct GBASIODriver* normal;
 	struct GBASIODriver* multiplayer;
@@ -47,36 +64,7 @@ struct GBASIO {
 	struct GBASIODriver* activeDriver;
 
 	uint16_t rcnt;
-	// TODO: Convert to bitfields
-	union {
-		struct {
-			unsigned sc : 1;
-			unsigned internalSc : 1;
-			unsigned si : 1;
-			unsigned idleSo : 1;
-			unsigned : 3;
-			unsigned start : 1;
-			unsigned : 4;
-			unsigned length : 1;
-			unsigned : 1;
-			unsigned irq : 1;
-			unsigned : 1;
-		} normalControl;
-
-		struct {
-			unsigned baud : 2;
-			unsigned slave : 1;
-			unsigned ready : 1;
-			unsigned id : 2;
-			unsigned error : 1;
-			unsigned busy : 1;
-			unsigned : 6;
-			unsigned irq : 1;
-			unsigned : 1;
-		} multiplayerControl;
-
-		uint16_t siocnt;
-	};
+	uint16_t siocnt;
 };
 
 void GBASIOInit(struct GBASIO* sio);

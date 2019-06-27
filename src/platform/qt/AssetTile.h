@@ -15,13 +15,12 @@ namespace QGBA {
 
 class CoreController;
 
-class AssetTile : public QGroupBox {
+class AssetTile : public AssetInfo {
 Q_OBJECT
 
 public:
 	AssetTile(QWidget* parent = nullptr);
 	void setController(std::shared_ptr<CoreController>);
-	void addCustomProperty(const QString& id, const QString& visibleName);
 
 public slots:
 	void setPalette(int);
@@ -29,7 +28,9 @@ public slots:
 	void selectIndex(int);
 	void setFlip(bool h, bool v);
 	void selectColor(int);
-	void setCustomProperty(const QString& id, const QVariant& value);
+
+protected:
+	int customLocation(const QString& id = {}) override;
 
 private:
 	Ui::AssetTile m_ui;

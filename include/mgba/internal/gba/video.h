@@ -12,17 +12,16 @@ CXX_GUARD_START
 
 #include <mgba/core/log.h>
 #include <mgba/core/timing.h>
+#include <mgba/gba/interface.h>
 
 mLOG_DECLARE_CATEGORY(GBA_VIDEO);
 
 enum {
-	VIDEO_HORIZONTAL_PIXELS = 240,
 	VIDEO_HBLANK_PIXELS = 68,
 	VIDEO_HDRAW_LENGTH = 1006,
 	VIDEO_HBLANK_LENGTH = 226,
 	VIDEO_HORIZONTAL_LENGTH = 1232,
 
-	VIDEO_VERTICAL_PIXELS = 160,
 	VIDEO_VBLANK_PIXELS = 68,
 	VIDEO_VERTICAL_TOTAL_PIXELS = 228,
 
@@ -34,16 +33,23 @@ enum {
 	BASE_TILE = 0x00010000
 };
 
-enum ObjMode {
+enum GBAVideoObjMode {
 	OBJ_MODE_NORMAL = 0,
 	OBJ_MODE_SEMITRANSPARENT = 1,
 	OBJ_MODE_OBJWIN = 2
 };
 
-enum ObjShape {
+enum GBAVideoObjShape {
 	OBJ_SHAPE_SQUARE = 0,
 	OBJ_SHAPE_HORIZONTAL = 1,
 	OBJ_SHAPE_VERTICAL = 2
+};
+
+enum GBAVideoBlendEffect {
+	BLEND_NONE = 0,
+	BLEND_ALPHA = 1,
+	BLEND_BRIGHTEN = 2,
+	BLEND_DARKEN = 3
 };
 
 DECL_BITFIELD(GBAObjAttributesA, uint16_t);
@@ -75,21 +81,26 @@ struct GBAObj {
 	uint16_t d;
 };
 
+struct GBAOAMMatrix {
+	int16_t padding0[3];
+	int16_t a;
+	int16_t padding1[3];
+	int16_t b;
+	int16_t padding2[3];
+	int16_t c;
+	int16_t padding3[3];
+	int16_t d;
+};
+
 union GBAOAM {
 	struct GBAObj obj[128];
-
-	struct GBAOAMMatrix {
-		int16_t padding0[3];
-		int16_t a;
-		int16_t padding1[3];
-		int16_t b;
-		int16_t padding2[3];
-		int16_t c;
-		int16_t padding3[3];
-		int16_t d;
-	} mat[32];
-
+	struct GBAOAMMatrix mat[32];
 	uint16_t raw[512];
+};
+
+struct GBAVideoWindowRegion {
+	uint8_t end;
+	uint8_t start;
 };
 
 #define GBA_TEXT_MAP_TILE(MAP) ((MAP) & 0x03FF)
@@ -146,6 +157,20 @@ DECL_BIT(GBARegisterBLDCNT, Target2Bg3, 11);
 DECL_BIT(GBARegisterBLDCNT, Target2Obj, 12);
 DECL_BIT(GBARegisterBLDCNT, Target2Bd, 13);
 
+DECL_BITFIELD(GBAWindowControl, uint8_t);
+DECL_BIT(GBAWindowControl, Bg0Enable, 0);
+DECL_BIT(GBAWindowControl, Bg1Enable, 1);
+DECL_BIT(GBAWindowControl, Bg2Enable, 2);
+DECL_BIT(GBAWindowControl, Bg3Enable, 3);
+DECL_BIT(GBAWindowControl, ObjEnable, 4);
+DECL_BIT(GBAWindowControl, BlendEnable, 5);
+
+DECL_BITFIELD(GBAMosaicControl, uint16_t);
+DECL_BITS(GBAMosaicControl, BgH, 0, 4);
+DECL_BITS(GBAMosaicControl, BgV, 4, 4);
+DECL_BITS(GBAMosaicControl, ObjH, 8, 4);
+DECL_BITS(GBAMosaicControl, ObjV, 12, 4);
+
 struct GBAVideoRenderer {
 	void (*init)(struct GBAVideoRenderer* renderer);
 	void (*reset)(struct GBAVideoRenderer* renderer);
@@ -168,6 +193,11 @@ struct GBAVideoRenderer {
 
 	bool disableBG[4];
 	bool disableOBJ;
+
+	bool highlightBG[4];
+	bool highlightOBJ[128];
+	color_t highlightColor;
+	uint8_t highlightAmount;
 };
 
 struct GBAVideo {
@@ -198,7 +228,7 @@ struct GBASerializedState;
 void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* state);
 void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state);
 
-extern const int GBAVideoObjSizes[16][2];
+extern MGBA_EXPORT const int GBAVideoObjSizes[16][2];
 
 CXX_GUARD_END
 

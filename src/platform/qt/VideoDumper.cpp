@@ -23,14 +23,18 @@ bool VideoDumper::present(const QVideoFrame& frame) {
 	QImage::Format format = QVideoFrame::imageFormatFromPixelFormat(vFormat);
 	bool swap = false;
 	if (format == QImage::Format_Invalid) {
-		vFormat = static_cast<QVideoFrame::PixelFormat>(vFormat - QVideoFrame::Format_BGRA32 + QVideoFrame::Format_ARGB32);
-		format = QVideoFrame::imageFormatFromPixelFormat(vFormat);
-		if (format == QImage::Format_ARGB32) {
-			format = QImage::Format_RGBA8888;
-		} else if (format == QImage::Format_ARGB32_Premultiplied) {
-			format = QImage::Format_RGBA8888_Premultiplied;
+		if (vFormat < QVideoFrame::Format_BGRA5658_Premultiplied) {
+			vFormat = static_cast<QVideoFrame::PixelFormat>(vFormat - QVideoFrame::Format_BGRA32 + QVideoFrame::Format_ARGB32);
+			format = QVideoFrame::imageFormatFromPixelFormat(vFormat);
+			if (format == QImage::Format_ARGB32) {
+				format = QImage::Format_RGBA8888;
+			} else if (format == QImage::Format_ARGB32_Premultiplied) {
+				format = QImage::Format_RGBA8888_Premultiplied;
+			}
+			swap = true;
+		} else {
+			return false;
 		}
-		swap = true;
 	}
 	uchar* bits = mappedFrame.bits();
 	QImage image(bits, mappedFrame.width(), mappedFrame.height(), mappedFrame.bytesPerLine(), format);

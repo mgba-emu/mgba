@@ -16,39 +16,34 @@
 #endif
 #endif
 
-#include <QElapsedTimer>
-#include <QGLWidget>
+#include <QOpenGLContext>
 #include <QList>
 #include <QMouseEvent>
+#include <QPainter>
 #include <QQueue>
 #include <QThread>
+#include <QTimer>
+
+#include "VideoProxy.h"
 
 #include "platform/video-backend.h"
 
 namespace QGBA {
-
-class EmptyGLWidget : public QGLWidget {
-public:
-	EmptyGLWidget(const QGLFormat& format, QWidget* parent) : QGLWidget(format, parent) { setAutoBufferSwap(false); }
-
-protected:
-	void paintEvent(QPaintEvent*) override {}
-	void resizeEvent(QResizeEvent*) override {}
-	void mouseMoveEvent(QMouseEvent* event) override { event->ignore(); }
-};
 
 class PainterGL;
 class DisplayGL : public Display {
 Q_OBJECT
 
 public:
-	DisplayGL(const QGLFormat& format, QWidget* parent = nullptr);
+	DisplayGL(const QSurfaceFormat& format, QWidget* parent = nullptr);
 	~DisplayGL();
 
 	void startDrawing(std::shared_ptr<CoreController>) override;
 	bool isDrawing() const override { return m_isDrawing; }
 	bool supportsShaders() const override;
 	VideoShader* shaders() override;
+	void setVideoProxy(std::shared_ptr<VideoProxy>) override;
+	int framebufferHandle() override;
 
 public slots:
 	void stopDrawing() override;
@@ -57,6 +52,7 @@ public slots:
 	void forceDraw() override;
 	void lockAspectRatio(bool lock) override;
 	void lockIntegerScaling(bool lock) override;
+	void interframeBlending(bool enable) override;
 	void filter(bool filter) override;
 	void framePosted() override;
 	void setShaders(struct VDir*) override;
@@ -71,7 +67,7 @@ private:
 	void resizePainter();
 
 	bool m_isDrawing = false;
-	QGLWidget* m_gl;
+	QOpenGLContext* m_gl;
 	PainterGL* m_painter;
 	QThread* m_drawThread = nullptr;
 	std::shared_ptr<CoreController> m_context;
@@ -81,7 +77,7 @@ class PainterGL : public QObject {
 Q_OBJECT
 
 public:
-	PainterGL(int majorVersion, QGLWidget* parent);
+	PainterGL(QWindow* surface, QOpenGLContext* parent);
 	~PainterGL();
 
 	void setContext(std::shared_ptr<CoreController>);
@@ -89,6 +85,8 @@ public:
 	void enqueue(const uint32_t* backing);
 
 	bool supportsShaders() const { return m_supportsShaders; }
+
+	void setVideoProxy(std::shared_ptr<VideoProxy>);
 
 public slots:
 	void forceDraw();
@@ -100,12 +98,18 @@ public slots:
 	void resize(const QSize& size);
 	void lockAspectRatio(bool lock);
 	void lockIntegerScaling(bool lock);
+	void interframeBlending(bool enable);
 	void filter(bool filter);
 	void resizeContext();
 
 	void setShaders(struct VDir*);
 	void clearShaders();
 	VideoShader* shaders();
+
+	int glTex();
+
+private slots:
+	void swap();
 
 private:
 	void performDraw();
@@ -116,7 +120,9 @@ private:
 	QQueue<uint32_t*> m_queue;
 	QPainter m_painter;
 	QMutex m_mutex;
-	QGLWidget* m_gl;
+	QWindow* m_surface;
+	QPaintDevice* m_window;
+	QOpenGLContext* m_gl;
 	bool m_active = false;
 	bool m_started = false;
 	std::shared_ptr<CoreController> m_context = nullptr;
@@ -125,7 +131,10 @@ private:
 	VideoBackend* m_backend = nullptr;
 	QSize m_size;
 	MessagePainter* m_messagePainter = nullptr;
-	QElapsedTimer m_delayTimer;
+	QTimer m_swapTimer{this};
+	bool m_needsUnlock = false;
+	bool m_frameReady = false;
+	std::shared_ptr<VideoProxy> m_videoProxy;
 };
 
 }
