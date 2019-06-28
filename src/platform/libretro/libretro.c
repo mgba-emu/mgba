@@ -23,7 +23,6 @@
 #include <mgba/gba/interface.h>
 #include <mgba/internal/gba/gba.h>
 #endif
-#include <mgba-util/circle-buffer.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
 
@@ -55,8 +54,8 @@ static void* data;
 static size_t dataSize;
 static void* savedata;
 static struct mAVStream stream;
-static int rumbleLevel;
-static struct CircleBuffer rumbleHistory;
+static int rumbleUp;
+static int rumbleDown;
 static struct mRumble rumble;
 static struct GBALuminanceSource lux;
 static int luxLevel;
@@ -254,7 +253,6 @@ void retro_init(void) {
 	struct retro_rumble_interface rumbleInterface;
 	if (environCallback(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &rumbleInterface)) {
 		rumbleCallback = rumbleInterface.set_rumble_state;
-		CircleBufferInit(&rumbleHistory, RUMBLE_PWM);
 		rumble.setRumble = _setRumble;
 	} else {
 		rumbleCallback = 0;
@@ -348,6 +346,18 @@ void retro_run(void) {
 	unsigned width, height;
 	core->desiredVideoDimensions(core, &width, &height);
 	videoCallback(outputBuffer, width, height, BYTES_PER_PIXEL * 256);
+
+	if (rumbleCallback) {
+		if (rumbleUp) {
+			rumbleCallback(0, RETRO_RUMBLE_STRONG, rumbleUp * 0xFFFF / (rumbleUp + rumbleDown));
+			rumbleCallback(0, RETRO_RUMBLE_WEAK, rumbleUp * 0xFFFF / (rumbleUp + rumbleDown));
+		} else {
+			rumbleCallback(0, RETRO_RUMBLE_STRONG, 0);
+			rumbleCallback(0, RETRO_RUMBLE_WEAK, 0);
+		}
+		rumbleUp = 0;
+		rumbleDown = 0;
+	}
 }
 
 static void _setupMaps(struct mCore* core) {
@@ -438,9 +448,8 @@ void retro_reset(void) {
 	core->reset(core);
 	_setupMaps(core);
 
-	if (rumbleCallback) {
-		CircleBufferClear(&rumbleHistory);
-	}
+	rumbleUp = 0;
+	rumbleDown = 0;
 }
 
 bool retro_load_game(const struct retro_game_info* game) {
@@ -558,7 +567,6 @@ void retro_unload_game(void) {
 	data = 0;
 	mappedMemoryFree(savedata, SIZE_CART_FLASH1M);
 	savedata = 0;
-	CircleBufferDeinit(&rumbleHistory);
 }
 
 size_t retro_serialize_size(void) {
@@ -755,15 +763,11 @@ static void _setRumble(struct mRumble* rumble, int enable) {
 	if (!rumbleCallback) {
 		return;
 	}
-	rumbleLevel += enable;
-	if (CircleBufferSize(&rumbleHistory) == RUMBLE_PWM) {
-		int8_t oldLevel;
-		CircleBufferRead8(&rumbleHistory, &oldLevel);
-		rumbleLevel -= oldLevel;
+	if (enable) {
+		++rumbleUp;
+	} else {
+		++rumbleDown;
 	}
-	CircleBufferWrite8(&rumbleHistory, enable);
-	rumbleCallback(0, RETRO_RUMBLE_STRONG, rumbleLevel * 0xFFFF / RUMBLE_PWM);
-	rumbleCallback(0, RETRO_RUMBLE_WEAK, rumbleLevel * 0xFFFF / RUMBLE_PWM);
 }
 
 static void _updateLux(struct GBALuminanceSource* lux) {

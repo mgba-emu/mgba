@@ -99,13 +99,6 @@ void GBAMemoryDeinit(struct GBA* gba) {
 	if (gba->memory.rom) {
 		mappedMemoryFree(gba->memory.rom, gba->memory.romSize);
 	}
-	gba->memory.savedata.maskWriteback = false;
-	GBASavedataUnmask(&gba->memory.savedata);
-	GBASavedataDeinit(&gba->memory.savedata);
-	if (gba->memory.savedata.realVf) {
-		gba->memory.savedata.realVf->close(gba->memory.savedata.realVf);
-	}
-
 	if (gba->memory.agbPrintBuffer) {
 		mappedMemoryFree(gba->memory.agbPrintBuffer, SIZE_AGB_PRINT);
 	}

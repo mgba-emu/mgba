@@ -547,15 +547,18 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			GBAAdjustWaitstates(gba, value);
 			break;
 		case REG_IE:
-			GBAWriteIE(gba, value);
-			break;
+			gba->memory.io[REG_IE >> 1] = value;
+			GBATestIRQ(gba->cpu);
+			return;
 		case REG_IF:
-			gba->springIRQ &= ~value;
 			value = gba->memory.io[REG_IF >> 1] & ~value;
-			break;
+			gba->memory.io[REG_IF >> 1] = value;
+			GBATestIRQ(gba->cpu);
+			return;
 		case REG_IME:
-			GBAWriteIME(gba, value);
-			break;
+			gba->memory.io[REG_IME >> 1] = value;
+			GBATestIRQ(gba->cpu);
+			return;
 		case REG_MAX:
 			// Some bad interrupt libraries will write to this
 			break;
@@ -931,7 +934,6 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 		STORE_16(gba->timers[i].reload, 0, &state->timers[i].reload);
 		STORE_32(gba->timers[i].lastEvent - mTimingCurrentTime(&gba->timing), 0, &state->timers[i].lastEvent);
 		STORE_32(gba->timers[i].event.when - mTimingCurrentTime(&gba->timing), 0, &state->timers[i].nextEvent);
-		STORE_32(gba->timers[i].irq.when - mTimingCurrentTime(&gba->timing), 0, &state->timers[i].nextIrq);
 		STORE_32(gba->timers[i].flags, 0, &state->timers[i].flags);
 		STORE_32(gba->memory.dma[i].nextSource, 0, &state->dma[i].nextSource);
 		STORE_32(gba->memory.dma[i].nextDest, 0, &state->dma[i].nextDest);
@@ -970,10 +972,6 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		LOAD_32(when, 0, &state->timers[i].nextEvent);
 		if (GBATimerFlagsIsEnable(gba->timers[i].flags)) {
 			mTimingSchedule(&gba->timing, &gba->timers[i].event, when);
-		}
-		LOAD_32(when, 0, &state->timers[i].nextIrq);
-		if (GBATimerFlagsIsIrqPending(gba->timers[i].flags)) {
-			mTimingSchedule(&gba->timing, &gba->timers[i].irq, when);
 		}
 
 		LOAD_16(gba->memory.dma[i].reg, (REG_DMA0CNT_HI + i * 12), state->io);

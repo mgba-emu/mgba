@@ -17,13 +17,11 @@ DECL_BITS(GBATimerFlags, PrescaleBits, 0, 4);
 DECL_BIT(GBATimerFlags, CountUp, 4);
 DECL_BIT(GBATimerFlags, DoIrq, 5);
 DECL_BIT(GBATimerFlags, Enable, 6);
-DECL_BIT(GBATimerFlags, IrqPending, 7);
 
 struct GBATimer {
 	uint16_t reload;
 	int32_t lastEvent;
 	struct mTimingEvent event;
-	struct mTimingEvent irq;
 	GBATimerFlags flags;
 	int forcedPrescale;
 };
@@ -33,7 +31,7 @@ struct GBA;
 void GBATimerInit(struct GBA* gba);
 
 void GBATimerUpdate(struct mTiming* timing, struct GBATimer* timer, uint16_t* io, uint32_t cyclesLate);
-void GBATimerUpdateCountUp(struct mTiming* timing, struct GBATimer* nextTimer, uint16_t* io, uint32_t cyclesLate);
+bool GBATimerUpdateCountUp(struct mTiming* timing, struct GBATimer* nextTimer, uint16_t* io, uint32_t cyclesLate);
 void GBATimerUpdateRegister(struct GBA* gba, int timer, int32_t cyclesLate);
 void GBATimerUpdateRegisterInternal(struct GBATimer* timer, struct mTiming* timing, uint16_t* io, int32_t skew);
 void GBATimerWriteTMCNT_LO(struct GBATimer* timer, uint16_t reload);

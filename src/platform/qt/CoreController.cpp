@@ -249,6 +249,10 @@ void CoreController::loadConfig(ConfigController* config) {
 	m_autosave = config->getOption("autosave", false).toInt();
 	m_autoload = config->getOption("autoload", true).toInt();
 	m_autofireThreshold = config->getOption("autofireThreshold", m_autofireThreshold).toInt();
+	m_fastForwardVolume = config->getOption("fastForwardVolume", -1).toInt();
+	m_fastForwardMute = config->getOption("fastForwardMute", -1).toInt();
+	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "volume");
+	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "mute");
 	mCoreLoadForeignConfig(m_threadContext.core, config->config());
 	if (hasStarted()) {
 		updateFastForward();
@@ -782,15 +786,29 @@ void CoreController::finishFrame() {
 
 void CoreController::updateFastForward() {
 	if (m_fastForward || m_fastForwardForced) {
+		if (m_fastForwardVolume >= 0) {
+			m_threadContext.core->opts.volume = m_fastForwardVolume;
+		}
+		if (m_fastForwardMute >= 0) {
+			m_threadContext.core->opts.mute = m_fastForwardMute;
+		}
 		if (m_fastForwardRatio > 0) {
 			m_threadContext.impl->sync.fpsTarget = m_fpsTarget * m_fastForwardRatio;
 		} else {
 			setSync(false);
 		}
 	} else {
+		if (!mCoreConfigGetIntValue(&m_threadContext.core->config, "volume", &m_threadContext.core->opts.volume)) {
+			m_threadContext.core->opts.volume = 0x100;
+		}
+		int fakeBool = 0;
+		mCoreConfigGetIntValue(&m_threadContext.core->config, "mute", &fakeBool);
+		m_threadContext.core->opts.mute = fakeBool;
 		m_threadContext.impl->sync.fpsTarget = m_fpsTarget;
 		setSync(true);
 	}
+	// XXX: Have a way of just updating opts
+	m_threadContext.core->loadConfig(m_threadContext.core, &m_threadContext.core->config);
 }
 
 CoreController::Interrupter::Interrupter(CoreController* parent, bool fromThread)

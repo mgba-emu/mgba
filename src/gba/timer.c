@@ -8,7 +8,6 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
 
-#define TIMER_IRQ_DELAY 7
 #define TIMER_RELOAD_DELAY 0
 #define TIMER_STARTUP_DELAY 2
 
@@ -16,34 +15,9 @@
 
 static void GBATimerIrq(struct GBA* gba, int timerId) {
 	struct GBATimer* timer = &gba->timers[timerId];
-	if (GBATimerFlagsIsIrqPending(timer->flags)) {
-		timer->flags = GBATimerFlagsClearIrqPending(timer->flags);
+	if (GBATimerFlagsIsDoIrq(timer->flags)) {
 		GBARaiseIRQ(gba, IRQ_TIMER0 + timerId);
 	}
-}
-
-static void GBATimerIrq0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
-	UNUSED(timing);
-	UNUSED(cyclesLate);
-	GBATimerIrq(context, 0);
-}
-
-static void GBATimerIrq1(struct mTiming* timing, void* context, uint32_t cyclesLate) {
-	UNUSED(timing);
-	UNUSED(cyclesLate);
-	GBATimerIrq(context, 1);
-}
-
-static void GBATimerIrq2(struct mTiming* timing, void* context, uint32_t cyclesLate) {
-	UNUSED(timing);
-	UNUSED(cyclesLate);
-	GBATimerIrq(context, 2);
-}
-
-static void GBATimerIrq3(struct mTiming* timing, void* context, uint32_t cyclesLate) {
-	UNUSED(timing);
-	UNUSED(cyclesLate);
-	GBATimerIrq(context, 3);
 }
 
 void GBATimerUpdate(struct mTiming* timing, struct GBATimer* timer, uint16_t* io, uint32_t cyclesLate) {
@@ -51,13 +25,6 @@ void GBATimerUpdate(struct mTiming* timing, struct GBATimer* timer, uint16_t* io
 		*io = timer->reload;
 	} else {
 		GBATimerUpdateRegisterInternal(timer, timing, io, TIMER_RELOAD_DELAY + cyclesLate);
-	}
-
-	if (GBATimerFlagsIsDoIrq(timer->flags)) {
-		timer->flags = GBATimerFlagsFillIrqPending(timer->flags);
-		if (!mTimingIsScheduled(timing, &timer->irq)) {
-			mTimingSchedule(timing, &timer->irq, TIMER_IRQ_DELAY - cyclesLate);
-		}
 	}
 }
 
@@ -74,38 +41,50 @@ static void GBATimerUpdateAudio(struct GBA* gba, int timerId, uint32_t cyclesLat
 	}
 }
 
-void GBATimerUpdateCountUp(struct mTiming* timing, struct GBATimer* nextTimer, uint16_t* io, uint32_t cyclesLate) {
+bool GBATimerUpdateCountUp(struct mTiming* timing, struct GBATimer* nextTimer, uint16_t* io, uint32_t cyclesLate) {
 	if (GBATimerFlagsIsCountUp(nextTimer->flags)) { // TODO: Does this increment while disabled?
 		++*io;
 		if (!*io && GBATimerFlagsIsEnable(nextTimer->flags)) {
 			GBATimerUpdate(timing, nextTimer, io, cyclesLate);
+			return true;
 		}
 	}
+	return false;
 }
 
 static void GBATimerUpdate0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBA* gba = context;
 	GBATimerUpdateAudio(gba, 0, cyclesLate);
 	GBATimerUpdate(timing, &gba->timers[0], &gba->memory.io[REG_TM0CNT_LO >> 1], cyclesLate);
-	GBATimerUpdateCountUp(timing, &gba->timers[1], &gba->memory.io[REG_TM1CNT_LO >> 1], cyclesLate);
+	GBATimerIrq(gba, 0);
+	if (GBATimerUpdateCountUp(timing, &gba->timers[1], &gba->memory.io[REG_TM1CNT_LO >> 1], cyclesLate)) {
+		GBATimerIrq(gba, 1);
+	}
 }
 
 static void GBATimerUpdate1(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBA* gba = context;
 	GBATimerUpdateAudio(gba, 1, cyclesLate);
 	GBATimerUpdate(timing, &gba->timers[1], &gba->memory.io[REG_TM1CNT_LO >> 1], cyclesLate);
-	GBATimerUpdateCountUp(timing, &gba->timers[2], &gba->memory.io[REG_TM2CNT_LO >> 1], cyclesLate);
+	GBATimerIrq(gba, 1);
+	if (GBATimerUpdateCountUp(timing, &gba->timers[2], &gba->memory.io[REG_TM2CNT_LO >> 1], cyclesLate)) {
+		GBATimerIrq(gba, 2);
+	}
 }
 
 static void GBATimerUpdate2(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBA* gba = context;
 	GBATimerUpdate(timing, &gba->timers[2], &gba->memory.io[REG_TM2CNT_LO >> 1], cyclesLate);
-	GBATimerUpdateCountUp(timing, &gba->timers[3], &gba->memory.io[REG_TM3CNT_LO >> 1], cyclesLate);
+	GBATimerIrq(gba, 2);
+	if (GBATimerUpdateCountUp(timing, &gba->timers[3], &gba->memory.io[REG_TM3CNT_LO >> 1], cyclesLate)) {
+		GBATimerIrq(gba, 3);
+	}
 }
 
 static void GBATimerUpdate3(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBA* gba = context;
 	GBATimerUpdate(timing, &gba->timers[3], &gba->memory.io[REG_TM3CNT_LO >> 1], cyclesLate);
+	GBATimerIrq(gba, 3);
 }
 
 void GBATimerInit(struct GBA* gba) {
@@ -126,22 +105,6 @@ void GBATimerInit(struct GBA* gba) {
 	gba->timers[3].event.callback = GBATimerUpdate3;
 	gba->timers[3].event.context = gba;
 	gba->timers[3].event.priority = 0x23;
-	gba->timers[0].irq.name = "GBA Timer 0 IRQ";
-	gba->timers[0].irq.callback = GBATimerIrq0;
-	gba->timers[0].irq.context = gba;
-	gba->timers[0].irq.priority = 0x28;
-	gba->timers[1].irq.name = "GBA Timer 1 IRQ";
-	gba->timers[1].irq.callback = GBATimerIrq1;
-	gba->timers[1].irq.context = gba;
-	gba->timers[1].irq.priority = 0x29;
-	gba->timers[2].irq.name = "GBA Timer 2 IRQ";
-	gba->timers[2].irq.callback = GBATimerIrq2;
-	gba->timers[2].irq.context = gba;
-	gba->timers[2].irq.priority = 0x2A;
-	gba->timers[3].irq.name = "GBA Timer 3 IRQ";
-	gba->timers[3].irq.callback = GBATimerIrq3;
-	gba->timers[3].irq.context = gba;
-	gba->timers[3].irq.priority = 0x2B;
 }
 
 void GBATimerUpdateRegister(struct GBA* gba, int timer, int32_t cyclesLate) {

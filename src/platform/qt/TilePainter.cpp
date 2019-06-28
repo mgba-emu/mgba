@@ -59,8 +59,12 @@ void TilePainter::setTileCount(int tiles) {
 		int w = width() / m_size;
 		int h = (tiles + w - 1) * m_size / w;
 		setMinimumSize(m_size, h - (h % m_size));
-		resizeEvent(nullptr);
+	} else {		
+		int w = minimumSize().width() / m_size;
+		int h = (tiles + w - 1) * m_size / w;
+		setMinimumSize(minimumSize().width(), h - (h % m_size));
 	}
+	resizeEvent(nullptr);
 }
 
 void TilePainter::setTileMagnification(int mag) {

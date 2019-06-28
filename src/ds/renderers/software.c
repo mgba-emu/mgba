@@ -489,6 +489,19 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 		}
 	}
 
+	if (softwareRenderer->bg[0].enabled > 0 && softwareRenderer->bg[0].enabled < 4) {
+		++softwareRenderer->bg[0].enabled;
+	}
+	if (softwareRenderer->bg[1].enabled > 0 && softwareRenderer->bg[1].enabled < 4) {
+		++softwareRenderer->bg[1].enabled;
+	}
+	if (softwareRenderer->bg[2].enabled > 0 && softwareRenderer->bg[2].enabled < 4) {
+		++softwareRenderer->bg[2].enabled;
+	}
+	if (softwareRenderer->bg[3].enabled > 0 && softwareRenderer->bg[3].enabled < 4) {
+		++softwareRenderer->bg[3].enabled;
+	}
+
 	GBAVideoSoftwareRendererPostprocessBuffer(softwareRenderer);
 }
 

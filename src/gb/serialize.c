@@ -64,7 +64,7 @@ void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	GBTimerSerialize(&gb->timer, state);
 	GBAudioSerialize(&gb->audio, state);
 
-	if (gb->model == GB_MODEL_SGB) {
+	if (gb->model & GB_MODEL_SGB) {
 		GBSGBSerialize(gb, state);
 	}
 }
@@ -187,7 +187,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	GBTimerDeserialize(&gb->timer, state);
 	GBAudioDeserialize(&gb->audio, state);
 
-	if (gb->model == GB_MODEL_SGB && canSgb) {
+	if (gb->model & GB_MODEL_SGB && canSgb) {
 		GBSGBDeserialize(gb, state);
 	}
 

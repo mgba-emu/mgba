@@ -61,4 +61,5 @@ vita_create_vpk(${BINARY_NAME}.vpk MGBA00001 ${BINARY_NAME}.self
                 FILE ${CMAKE_CURRENT_SOURCE_DIR}/startup.png sce_sys/livearea/contents/startup.png
                 FILE ${CMAKE_CURRENT_BINARY_DIR}/template.xml sce_sys/livearea/contents/template.xml)
 
+install(TARGETS ${BINARY_NAME}.elf DESTINATION . COMPONENT ${BINARY_NAME}-dbg)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.vpk DESTINATION . COMPONENT ${BINARY_NAME}-psp2)

@@ -43,6 +43,18 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 	reloadConfig();
 
+	connect(m_ui.volume, static_cast<void (QSlider::*)(int)>(&QSlider::valueChanged), [this](int v) {
+		if (v < m_ui.volumeFf->value()) {
+			m_ui.volumeFf->setValue(v);
+		}
+	});
+
+	connect(m_ui.mute, &QAbstractButton::toggled, [this](bool e) {
+		if (e) {
+			m_ui.muteFf->setChecked(e);
+		}
+	});
+
 	if (m_ui.savegamePath->text().isEmpty()) {
 		m_ui.savegameSameDir->setChecked(true);
 	}
@@ -344,6 +356,8 @@ void SettingsView::updateConfig() {
 	saveSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
 	saveSetting("volume", m_ui.volume);
 	saveSetting("mute", m_ui.mute);
+	saveSetting("fastForwardVolume", m_ui.volumeFf);
+	saveSetting("fastForwardMute", m_ui.muteFf);
 	saveSetting("rewindEnable", m_ui.rewind);
 	saveSetting("rewindBufferCapacity", m_ui.rewindCapacity);
 	saveSetting("resampleVideo", m_ui.resampleVideo);
@@ -472,8 +486,10 @@ void SettingsView::reloadConfig() {
 	loadSetting("autofireThreshold", m_ui.autofireThreshold);
 	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	loadSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
-	loadSetting("volume", m_ui.volume);
-	loadSetting("mute", m_ui.mute);
+	loadSetting("volume", m_ui.volume, 0x100);
+	loadSetting("mute", m_ui.mute, false);
+	loadSetting("fastForwardVolume", m_ui.volumeFf, m_ui.volume->value());
+	loadSetting("fastForwardMute", m_ui.muteFf, m_ui.mute->isChecked());
 	loadSetting("rewindEnable", m_ui.rewind);
 	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
 	loadSetting("resampleVideo", m_ui.resampleVideo);
@@ -604,9 +620,9 @@ void SettingsView::loadSetting(const char* key, QLineEdit* field) {
 	field->setText(option);
 }
 
-void SettingsView::loadSetting(const char* key, QSlider* field) {
+void SettingsView::loadSetting(const char* key, QSlider* field, int defaultVal) {
 	QString option = loadSetting(key);
-	field->setValue(option.toInt());
+	field->setValue(option.isNull() ? defaultVal : option.toInt());
 }
 
 void SettingsView::loadSetting(const char* key, QSpinBox* field) {

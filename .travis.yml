@@ -6,8 +6,8 @@ services:
 os: linux
 env:
 - DOCKER_TAG=ubuntu:xenial
-- DOCKER_TAG=ubuntu:artful
 - DOCKER_TAG=ubuntu:bionic
+- DOCKER_TAG=ubuntu:cosmic
 - DOCKER_TAG=3ds
 - DOCKER_TAG=wii
 - DOCKER_TAG=vita

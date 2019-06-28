@@ -75,6 +75,13 @@ static GLuint tex;
 
 static color_t* frameBuffer;
 static struct mAVStream stream;
+static struct mSwitchRumble {
+	struct mRumble d;
+	int up;
+	int down;
+	HidVibrationValue value;
+} rumble;
+static struct mRotationSource rotation = {0};
 static int audioBufferActive;
 static struct GBAStereoSample audioBuffer[N_BUFFERS][SAMPLES] __attribute__((__aligned__(0x1000)));
 static AudioOutBuffer audoutBuffer[N_BUFFERS];
@@ -82,6 +89,8 @@ static int enqueuedBuffers;
 static bool frameLimiter = true;
 static unsigned framecount = 0;
 static unsigned framecap = 10;
+static u32 vibrationDeviceHandles[4];
+static HidVibrationValue vibrationStop = { .freq_low = 160.f, .freq_high = 320.f };
 
 static bool initEgl() {
     s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -226,6 +235,8 @@ static void _setup(struct mGUIRunner* runner) {
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_R, GBA_KEY_R);
 
 	runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d);
+	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation);
 	runner->core->setAVStream(runner->core, &stream);
 }
 
@@ -237,6 +248,18 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), samplerate * ratio);
 
 	mCoreConfigGetUIntValue(&runner->config, "fastForwardCap", &framecap);
+
+	rumble.up = 0;
+	rumble.down = 0;
+}
+
+static void _gameUnloaded(struct mGUIRunner* runner) {
+	HidVibrationValue values[4];
+	memcpy(&values[0], &vibrationStop, sizeof(rumble.value));
+	memcpy(&values[1], &vibrationStop, sizeof(rumble.value));
+	memcpy(&values[2], &vibrationStop, sizeof(rumble.value));
+	memcpy(&values[3], &vibrationStop, sizeof(rumble.value));
+	hidSendVibrationValues(vibrationDeviceHandles, values, 4);
 }
 
 static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height, bool faded) {
@@ -299,6 +322,24 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
 	_drawTex(runner, width, height, faded);
+
+	HidVibrationValue values[4];
+	if (rumble.up) {
+		rumble.value.amp_low = rumble.up / (float) (rumble.up + rumble.down);
+		rumble.value.amp_high = rumble.up / (float) (rumble.up + rumble.down);
+		memcpy(&values[0], &rumble.value, sizeof(rumble.value));
+		memcpy(&values[1], &rumble.value, sizeof(rumble.value));
+		memcpy(&values[2], &rumble.value, sizeof(rumble.value));
+		memcpy(&values[3], &rumble.value, sizeof(rumble.value));
+	} else {
+		memcpy(&values[0], &vibrationStop, sizeof(rumble.value));
+		memcpy(&values[1], &vibrationStop, sizeof(rumble.value));
+		memcpy(&values[2], &vibrationStop, sizeof(rumble.value));
+		memcpy(&values[3], &vibrationStop, sizeof(rumble.value));
+	}
+	hidSendVibrationValues(vibrationDeviceHandles, values, 4);
+	rumble.up = 0;
+	rumble.down = 0;
 }
 
 static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
@@ -353,6 +394,36 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 	audioBufferActive += 1;
 	audioBufferActive %= N_BUFFERS;
 	++enqueuedBuffers;
+}
+
+void _setRumble(struct mRumble* rumble, int enable) {
+	struct mSwitchRumble* sr = (struct mSwitchRumble*) rumble;
+	if (enable) {
+		++sr->up;
+	} else {
+		++sr->down;
+	}
+}
+
+int32_t _readTiltX(struct mRotationSource* source) {
+	UNUSED(source);
+	SixAxisSensorValues sixaxis;
+	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
+	return sixaxis.accelerometer.x * 3e8f;
+}
+
+int32_t _readTiltY(struct mRotationSource* source) {
+	UNUSED(source);
+	SixAxisSensorValues sixaxis;
+	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
+	return sixaxis.accelerometer.y * -3e8f;
+}
+
+int32_t _readGyroZ(struct mRotationSource* source) {
+	UNUSED(source);
+	SixAxisSensorValues sixaxis;
+	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
+	return sixaxis.gyroscope.z * 1.1e9f;
 }
 
 static int _batteryState(void) {
@@ -455,6 +526,24 @@ int main(int argc, char* argv[]) {
 	glEnableVertexAttribArray(offsetLocation);
 	glBindVertexArray(0);
 
+	rumble.d.setRumble = _setRumble;
+	rumble.value.freq_low = 120.0;
+	rumble.value.freq_high = 180.0;
+	hidInitializeVibrationDevices(&vibrationDeviceHandles[0], 2, CONTROLLER_HANDHELD, TYPE_HANDHELD | TYPE_JOYCON_PAIR);
+	hidInitializeVibrationDevices(&vibrationDeviceHandles[2], 2, CONTROLLER_PLAYER_1, TYPE_HANDHELD | TYPE_JOYCON_PAIR);
+
+	u32 handles[4];
+	hidGetSixAxisSensorHandles(&handles[0], 2, CONTROLLER_PLAYER_1, TYPE_JOYCON_PAIR);
+	hidGetSixAxisSensorHandles(&handles[2], 1, CONTROLLER_PLAYER_1, TYPE_PROCONTROLLER);
+	hidGetSixAxisSensorHandles(&handles[3], 1, CONTROLLER_HANDHELD, TYPE_HANDHELD);
+	hidStartSixAxisSensor(handles[0]);
+	hidStartSixAxisSensor(handles[1]);
+	hidStartSixAxisSensor(handles[2]);
+	hidStartSixAxisSensor(handles[3]);
+	rotation.readTiltX = _readTiltX;
+	rotation.readTiltY = _readTiltY;
+	rotation.readGyroZ = _readGyroZ;
+
 	stream.videoDimensionsChanged = NULL;
 	stream.postVideoFrame = NULL;
 	stream.postAudioFrame = NULL;
@@ -528,6 +617,23 @@ int main(int argc, char* argv[]) {
 					"10", "11", "12", "13", "14", "15",
 					"20", "30"
 				},
+				.stateMappings = (const struct GUIVariant[]) {
+					GUI_V_U(3),
+					GUI_V_U(4),
+					GUI_V_U(5),
+					GUI_V_U(6),
+					GUI_V_U(7),
+					GUI_V_U(8),
+					GUI_V_U(9),
+					GUI_V_U(10),
+					GUI_V_U(11),
+					GUI_V_U(12),
+					GUI_V_U(13),
+					GUI_V_U(14),
+					GUI_V_U(15),
+					GUI_V_U(20),
+					GUI_V_U(30),
+				},
 				.nStates = 15
 			},
 		},
@@ -535,11 +641,11 @@ int main(int argc, char* argv[]) {
 		.setup = _setup,
 		.teardown = NULL,
 		.gameLoaded = _gameLoaded,
-		.gameUnloaded = NULL,
+		.gameUnloaded = _gameUnloaded,
 		.prepareForFrame = _prepareForFrame,
 		.drawFrame = _drawFrame,
 		.drawScreenshot = _drawScreenshot,
-		.paused = NULL,
+		.paused = _gameUnloaded,
 		.unpaused = _gameLoaded,
 		.incrementScreenMode = NULL,
 		.setFrameLimiter = _setFrameLimiter,
@@ -576,6 +682,11 @@ int main(int argc, char* argv[]) {
 	glDeleteBuffers(1, &vbo);
 	glDeleteProgram(program);
 	glDeleteVertexArrays(1, &vao);
+
+	hidStopSixAxisSensor(handles[0]);
+	hidStopSixAxisSensor(handles[1]);
+	hidStopSixAxisSensor(handles[2]);
+	hidStopSixAxisSensor(handles[3]);
 
 	psmExit();
 	audoutExit();

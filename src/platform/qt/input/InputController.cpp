@@ -947,13 +947,13 @@ void InputController::rebindKey(const QString& key) {
 }
 
 void InputController::loadCamImage(const QString& path) {
-	QMutexLocker locker(&m_image.mutex);
-	m_image.image.load(path);
-	m_image.resizedImage = QImage();
-	m_image.outOfDate = true;
+	setCamImage(QImage(path));
 }
 
 void InputController::setCamImage(const QImage& image) {
+	if (image.isNull()) {
+		return;
+	}
 	QMutexLocker locker(&m_image.mutex);
 	m_image.image = image;
 	m_image.resizedImage = QImage();

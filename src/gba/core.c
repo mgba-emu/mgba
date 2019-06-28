@@ -247,6 +247,11 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 		}
 	}
 
+	int fakeBool = 0;
+	mCoreConfigGetIntValue(config, "allowOpposingDirections", &fakeBool);
+	gba->allowOpposingDirections = fakeBool;
+
+	mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
 	mCoreConfigCopyValue(&core->config, config, "gba.bios");
 
 #ifndef DISABLE_THREADING
