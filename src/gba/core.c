@@ -817,13 +817,17 @@ static bool _GBACoreSavedataRestore(struct mCore* core, const void* sram, size_t
 
 static size_t _GBACoreListVideoLayers(const struct mCore* core, const struct mCoreChannelInfo** info) {
 	UNUSED(core);
-	*info = _GBAVideoLayers;
+	if (info) {
+		*info = _GBAVideoLayers;
+	}
 	return sizeof(_GBAVideoLayers) / sizeof(*_GBAVideoLayers);
 }
 
 static size_t _GBACoreListAudioChannels(const struct mCore* core, const struct mCoreChannelInfo** info) {
 	UNUSED(core);
-	*info = _GBAAudioChannels;
+	if (info) {
+		*info = _GBAAudioChannels;
+	}
 	return sizeof(_GBAAudioChannels) / sizeof(*_GBAAudioChannels);
 }
 
@@ -861,6 +865,27 @@ static void _GBACoreEnableAudioChannel(struct mCore* core, size_t id, bool enabl
 	default:
 		break;
 	}
+}
+
+static void _GBACoreAdjustVideoLayer(struct mCore* core, size_t id, int32_t x, int32_t y) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	switch (id) {
+	case 0:
+	case 1:
+	case 2:
+	case 3:
+		gbacore->renderer.bg[id].offsetX = x;
+		gbacore->renderer.bg[id].offsetY = y;
+		break;
+	case 4:
+		gbacore->renderer.objOffsetX = x;
+		gbacore->renderer.objOffsetY = y;
+		gbacore->renderer.oamDirty = 1;
+		break;
+	default:
+		return;
+	}
+	memset(gbacore->renderer.scanlineDirty, 0xFFFFFFFF, sizeof(gbacore->renderer.scanlineDirty));
 }
 
 #ifndef MINIMAL_CORE
@@ -970,6 +995,7 @@ struct mCore* GBACoreCreate(void) {
 	core->listAudioChannels = _GBACoreListAudioChannels;
 	core->enableVideoLayer = _GBACoreEnableVideoLayer;
 	core->enableAudioChannel = _GBACoreEnableAudioChannel;
+	core->adjustVideoLayer = _GBACoreAdjustVideoLayer;
 #ifndef MINIMAL_CORE
 	core->startVideoLog = _GBACoreStartVideoLog;
 	core->endVideoLog = _GBACoreEndVideoLog;

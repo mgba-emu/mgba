@@ -29,8 +29,8 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 
 static void _clearScreen(struct GBVideoSoftwareRenderer* renderer) {
 	size_t sgbOffset = 0;
-	if (renderer->model == GB_MODEL_SGB && renderer->sgbBorders) {
-		sgbOffset = renderer->outputBufferStride * 40 + 48;
+	if (renderer->model == GB_MODEL_SGB) {
+		return;
 	}
 	int y;
 	for (y = 0; y < GB_VIDEO_VERTICAL_PIXELS; ++y) {
@@ -135,6 +135,30 @@ static void _parseAttrBlock(struct GBVideoSoftwareRenderer* renderer, int start)
 	}
 }
 
+static void _parseAttrLine(struct GBVideoSoftwareRenderer* renderer, int start) {
+	uint8_t byte = renderer->sgbPacket[start];
+	unsigned line = byte & 0x1F;
+	int pal = (byte >> 5) & 3;
+
+	if (byte & 0x80) {
+		if (line > GB_VIDEO_VERTICAL_PIXELS / 8) {
+			return;
+		}
+		int x;
+		for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS / 8; ++x) {
+			_setAttribute(renderer->d.sgbAttributes, x, line, pal);
+		}
+	} else {
+		if (line > GB_VIDEO_HORIZONTAL_PIXELS / 8) {
+			return;
+		}
+		int y;
+		for (y = 0; y < GB_VIDEO_VERTICAL_PIXELS / 8; ++y) {
+			_setAttribute(renderer->d.sgbAttributes, line, y, pal);
+		}
+	}
+}
+
 static bool _inWindow(struct GBVideoSoftwareRenderer* renderer) {
 	return GBRegisterLCDCIsWindow(renderer->lcdc) && GB_VIDEO_HORIZONTAL_PIXELS + 7 > renderer->wx;
 }
@@ -174,6 +198,13 @@ static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum G
 	softwareRenderer->sgbTransfer = 0;
 	softwareRenderer->sgbCommandHeader = 0;
 	softwareRenderer->sgbBorders = sgbBorders;
+	softwareRenderer->objOffsetX = 0;
+	softwareRenderer->objOffsetY = 0;
+	softwareRenderer->offsetScx = 0;
+	softwareRenderer->offsetScy = 0;
+	softwareRenderer->offsetWx = 0;
+	softwareRenderer->offsetWy = 0;
+
 	int i;
 	for (i = 0; i < 64; ++i) {
 		softwareRenderer->lookup[i] = i;
@@ -285,6 +316,13 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 		i = 2;
 		for (; i < (softwareRenderer->sgbCommandHeader & 7) << 4 && sets; i += 6, --sets) {
 			_parseAttrBlock(softwareRenderer, i);
+		}
+		break;
+	case SGB_ATTR_LIN:
+		sets = softwareRenderer->sgbPacket[1];
+		i = 2;
+		for (; i < (softwareRenderer->sgbCommandHeader & 7) << 4 && sets; ++i, --sets) {
+			_parseAttrLine(softwareRenderer, i);
 		}
 		break;
 	case SGB_ATTR_DIV:
@@ -440,7 +478,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 		int wy = softwareRenderer->wy + softwareRenderer->currentWy;
 		if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && wy <= y && endX >= softwareRenderer->wx - 7) {
 			if (softwareRenderer->wx - 7 > 0 && !softwareRenderer->d.disableBG) {
-				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, softwareRenderer->wx - 7, softwareRenderer->scx, softwareRenderer->scy + y);
+				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, softwareRenderer->wx - 7, softwareRenderer->scx - softwareRenderer->offsetScx, softwareRenderer->scy + y - softwareRenderer->offsetScy);
 			}
 
 			maps = &softwareRenderer->d.vram[GB_BASE_MAP];
@@ -448,10 +486,10 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 				maps += GB_SIZE_MAP;
 			}
 			if (!softwareRenderer->d.disableWIN) {
-				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, softwareRenderer->wx - 7, endX, 7 - softwareRenderer->wx, y - wy);
+				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, softwareRenderer->wx - 7, endX, 7 - softwareRenderer->wx - softwareRenderer->offsetWx, y - wy - softwareRenderer->offsetWy);
 			}
 		} else if (!softwareRenderer->d.disableBG) {
-			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, endX, softwareRenderer->scx, softwareRenderer->scy + y);
+			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, endX, softwareRenderer->scx - softwareRenderer->offsetScx, softwareRenderer->scy + y - softwareRenderer->offsetScy);
 		}
 	} else if (!softwareRenderer->d.disableBG) {
 		memset(&softwareRenderer->row[startX], 0, endX - startX);
@@ -747,15 +785,16 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 }
 
 static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* renderer, struct GBObj* obj, int startX, int endX, int y) {
-	int ix = obj->x - 8;
+	int objX = obj->x + renderer->objOffsetX;
+	int ix = objX - 8;
 	if (endX < ix || startX >= ix + 8) {
 		return;
 	}
-	if (obj->x < endX) {
-		endX = obj->x;
+	if (objX < endX) {
+		endX = objX;
 	}
-	if (obj->x - 8 > startX) {
-		startX = obj->x - 8;
+	if (objX - 8 > startX) {
+		startX = objX - 8;
 	}
 	if (startX < 0) {
 		startX = 0;
@@ -763,14 +802,15 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 	uint8_t* data = renderer->d.vram;
 	int tileOffset = 0;
 	int bottomY;
+	int objY = obj->y + renderer->objOffsetY;
 	if (GBObjAttributesIsYFlip(obj->attr)) {
-		bottomY = 7 - ((y - obj->y - 16) & 7);
-		if (GBRegisterLCDCIsObjSize(renderer->lcdc) && y - obj->y < -8) {
+		bottomY = 7 - ((y - objY - 16) & 7);
+		if (GBRegisterLCDCIsObjSize(renderer->lcdc) && y - objY < -8) {
 			++tileOffset;
 		}
 	} else {
-		bottomY = (y - obj->y - 16) & 7;
-		if (GBRegisterLCDCIsObjSize(renderer->lcdc) && y - obj->y >= -8) {
+		bottomY = (y - objY - 16) & 7;
+		if (GBRegisterLCDCIsObjSize(renderer->lcdc) && y - objY >= -8) {
 			++tileOffset;
 		}
 	}
@@ -794,12 +834,12 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 	}
 	int bottomX;
 	int x = startX;
-	if ((x - obj->x) & 7) {
+	if ((x - objX) & 7) {
 		for (; x < endX; ++x) {
 			if (GBObjAttributesIsXFlip(obj->attr)) {
-				bottomX = (x - obj->x) & 7;
+				bottomX = (x - objX) & 7;
 			} else {
-				bottomX = 7 - ((x - obj->x) & 7);
+				bottomX = 7 - ((x - objX) & 7);
 			}
 			int objTile = obj->tile + tileOffset;
 			uint8_t tileDataLower = data[(objTile * 8 + bottomY) * 2];

@@ -578,13 +578,13 @@
 	}
 
 void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y) {
-	int inX = (renderer->start + background->x) & 0x1FF;
+	int inX = (renderer->start + background->x - background->offsetX) & 0x1FF;
 	int length = renderer->end - renderer->start;
 	if (background->mosaic) {
 		int mosaicV = GBAMosaicControlGetBgV(renderer->mosaic) + 1;
 		y -= y % mosaicV;
 	}
-	int inY = y + background->y;
+	int inY = y + background->y - background->offsetY;
 	uint16_t mapData;
 
 	unsigned yBase = inY & 0xF8;

@@ -117,10 +117,14 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->winN[1] = (struct WindowN) { .control = { .priority = 1 } };
 	softwareRenderer->objwin = (struct WindowControl) { .priority = 2 };
 	softwareRenderer->winout = (struct WindowControl) { .priority = 3 };
+	softwareRenderer->oamDirty = 1;
 	softwareRenderer->oamMax = 0;
 
 	softwareRenderer->mosaic = 0;
 	softwareRenderer->nextY = 0;
+
+	softwareRenderer->objOffsetX = 0;
+	softwareRenderer->objOffsetY = 0;
 
 	memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 	memset(softwareRenderer->cache, 0, sizeof(softwareRenderer->cache));
@@ -152,6 +156,8 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 		bg->yCache = -1;
 		bg->extPalette = NULL;
 		bg->variantPalette = NULL;
+		bg->offsetX = 0;
+		bg->offsetY = 0;
 	}
 }
 
@@ -533,8 +539,9 @@ static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
 					height <<= GBAObjAttributesAGetDoubleSize(obj.a);
 				}
 				if (GBAObjAttributesAGetY(obj.a) < renderer->masterHeight || GBAObjAttributesAGetY(obj.a) + height >= 256) {
-					renderer->sprites[oamMax].y = GBAObjAttributesAGetY(obj.a);
-					renderer->sprites[oamMax].endY = GBAObjAttributesAGetY(obj.a) + height;
+					int y = GBAObjAttributesAGetY(obj.a) + renderer->objOffsetY;
+					renderer->sprites[oamMax].y = y;
+					renderer->sprites[oamMax].endY = y + height;
 					renderer->sprites[oamMax].obj = obj;
 					++oamMax;
 				}

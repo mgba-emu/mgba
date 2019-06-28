@@ -69,6 +69,7 @@ Misc:
  - GBA Memory: 64 MiB GBA Video cartridge support
  - PSP2: Use system enter key by default
  - 3DS: Remove deprecated CSND interface
+ - Qt: Options to mess around with layer placement
 
 0.6.3: (2017-04-14)
 Bugfixes:

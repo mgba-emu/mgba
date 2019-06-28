@@ -105,7 +105,10 @@ static void _magickVideoDimensionsChanged(struct mAVStream* stream, unsigned wid
 	if (encoder->iwidth == width && encoder->iheight == height) {
 		return;
 	}
-	free(encoder->frame);
+	if (width * height > encoder->iwidth * encoder->iheight) {
+		free(encoder->frame);
+		encoder->frame = malloc(width * height * 4);
+	}
 	encoder->iwidth = width;
 	encoder->iheight = height;
 	encoder->frame = malloc(encoder->iwidth * encoder->iheight * 4);

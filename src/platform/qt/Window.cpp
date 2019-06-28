@@ -43,6 +43,7 @@
 #include "OverrideView.h"
 #include "ObjView.h"
 #include "PaletteView.h"
+#include "PlacementControl.h"
 #include "PrinterView.h"
 #include "ROMInfo.h"
 #include "SensorView.h"
@@ -205,6 +206,9 @@ void Window::argumentsPassed(mArguments* args) {
 	if (args->debuggerType == DEBUGGER_GDB) {
 		if (!m_gdbController) {
 			m_gdbController = new GDBController(this);
+			if (m_controller) {
+				m_gdbController->setController(m_controller);
+			}
 			m_gdbController->listen();
 		}
 	}
@@ -1499,6 +1503,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	avMenu->addSeparator();
 	m_videoLayers = avMenu->addMenu(tr("Video layers"));
 	m_audioChannels = avMenu->addMenu(tr("Audio channels"));
+
+	QAction* placementControl = new QAction(tr("Adjust layer placement..."), avMenu);
+	connect(placementControl, &QAction::triggered, openControllerTView<PlacementControl>());
+	m_gameActions.append(placementControl);
+	addControlledAction(avMenu, placementControl, "placementControl");
 
 	QMenu* toolsMenu = menubar->addMenu(tr("&Tools"));
 	QAction* viewLogs = new QAction(tr("View &logs..."), toolsMenu);

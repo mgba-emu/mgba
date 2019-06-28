@@ -160,6 +160,7 @@ struct mCore {
 	size_t (*listAudioChannels)(const struct mCore*, const struct mCoreChannelInfo**);
 	void (*enableVideoLayer)(struct mCore*, size_t id, bool enable);
 	void (*enableAudioChannel)(struct mCore*, size_t id, bool enable);
+	void (*adjustVideoLayer)(struct mCore*, size_t id, int32_t x, int32_t y);
 
 #ifndef MINIMAL_CORE
 	void (*startVideoLog)(struct mCore*, struct mVideoLogContext*);

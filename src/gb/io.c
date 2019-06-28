@@ -113,8 +113,21 @@ static void _writeSGBBits(struct GB* gb, int bits) {
 		return;
 	}
 	gb->currentSgbBits = bits;
-	if (bits == 3) {
-		gb->sgbCurrentController = (gb->sgbCurrentController + 1) & gb->sgbControllers;
+	if (gb->sgbBit > 128) {
+		switch (bits) {
+		case 1:
+			gb->sgbBit |= 2;
+			break;
+		case 2:
+			gb->sgbBit |= 4;
+			break;
+		case 3:
+			if (gb->sgbBit == 135) {
+				gb->sgbBit &= ~6;
+				gb->sgbCurrentController = (gb->sgbCurrentController + 1) & gb->sgbControllers;
+			}
+			break;
+		}
 	}
 	if (gb->sgbBit == 128 && bits == 2) {
 		GBVideoWriteSGBPacket(&gb->video, gb->sgbPacket);
@@ -511,8 +524,7 @@ static uint8_t _readKeys(struct GB* gb) {
 	}
 	switch (gb->memory.io[REG_JOYP] & 0x30) {
 	case 0x30:
-	// TODO: Increment
-		keys = (gb->video.sgbCommandHeader >> 3) == SGB_MLT_REQ ? 0xF - gb->sgbCurrentController : 0;
+		keys = gb->sgbCurrentController;
 		break;
 	case 0x20:
 		keys >>= 4;
