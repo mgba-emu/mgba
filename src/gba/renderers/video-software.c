@@ -648,7 +648,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 	if (softwareRenderer->target1Obj && (softwareRenderer->blendEffect == BLEND_DARKEN || softwareRenderer->blendEffect == BLEND_BRIGHTEN)) {
 		int x = 0;
-		uint32_t mask = 0xFF000000 & ~FLAG_OBJWIN;
+		uint32_t mask = FLAG_REBLEND | FLAG_TARGET_1 | FLAG_IS_BACKGROUND;
 		uint32_t match = FLAG_REBLEND;
 		if (GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt)) {
 			mask |= FLAG_OBJWIN;
