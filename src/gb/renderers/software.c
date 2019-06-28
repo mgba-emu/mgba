@@ -81,18 +81,12 @@ static void _regenerateSGBBorder(struct GBVideoSoftwareRenderer* renderer) {
 			if (SGBBgAttributesIsXFlip(mapData)) {
 				for (i = 0; i < 8; ++i) {
 					colorSelector = (tileData[0] >> i & 0x1) << 0 | (tileData[1] >> i & 0x1) << 1 | (tileData[2] >> i & 0x1) << 2 | (tileData[3] >> i & 0x1) << 3;
-					// The first color of every palette is transparent
-					if (colorSelector) {
-						renderer->outputBuffer[base + i] = renderer->palette[paletteBase | colorSelector];
-					}
+					renderer->outputBuffer[base + i] = renderer->palette[paletteBase | colorSelector];
 				}
 			} else {
 				for (i = 7; i >= 0; --i) {
 					colorSelector = (tileData[0] >> i & 0x1) << 0 | (tileData[1] >> i & 0x1) << 1 | (tileData[2] >> i & 0x1) << 2 | (tileData[3] >> i & 0x1) << 3;
-
-					if (colorSelector) {
-						renderer->outputBuffer[base + 7 - i] = renderer->palette[paletteBase | colorSelector];
-					}
+					renderer->outputBuffer[base + 7 - i] = renderer->palette[paletteBase | colorSelector];
 				}
 			}
 		}
@@ -108,12 +102,7 @@ static inline void _setAttribute(uint8_t* sgbAttributes, unsigned x, unsigned y,
 
 static void _parseAttrBlock(struct GBVideoSoftwareRenderer* renderer, int start) {
 	uint8_t block[6];
-	if (start < 0) {
-		memcpy(block, renderer->sgbPartialDataSet, -start);
-		memcpy(&block[-start], renderer->sgbPacket, 6 + start);
-	} else {
-		memcpy(block, &renderer->sgbPacket[start], 6);
-	}
+	memcpy(block, &renderer->sgbPacket[start], 6);
 	unsigned x0 = block[2];
 	unsigned x1 = block[4];
 	unsigned y0 = block[3];
@@ -268,14 +257,16 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	memcpy(softwareRenderer->sgbPacket, data, sizeof(softwareRenderer->sgbPacket));
 	int i;
-	if (!(softwareRenderer->sgbCommandHeader & 7)) {
-		softwareRenderer->sgbCommandHeader = data[0];
-		softwareRenderer->sgbPacketId = 0;
-		softwareRenderer->sgbTransfer = 0;
-	}
-	--softwareRenderer->sgbCommandHeader;
-	++softwareRenderer->sgbPacketId;
+	softwareRenderer->sgbCommandHeader = data[0];
+	softwareRenderer->sgbTransfer = 0;
 	int set;
+	int sets;
+	int attrX;
+	int attrY;
+	int attrDirection;
+	int pBefore;
+	int pAfter;
+	int pDiv;
 	switch (softwareRenderer->sgbCommandHeader >> 3) {
 	case SGB_PAL_SET:
 		softwareRenderer->sgbPacket[1] = data[9];
@@ -290,58 +281,96 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 		}
 		break;
 	case SGB_ATTR_BLK:
-		if (softwareRenderer->sgbPacketId == 1) {
-			softwareRenderer->sgbDataSets = softwareRenderer->sgbPacket[1];
-			i = 2;
-		} else {
-			i = (9 - softwareRenderer->sgbPacketId) % 3 * -2;
-		}
-		for (; i <= 10 && softwareRenderer->sgbDataSets; i += 6, --softwareRenderer->sgbDataSets) {
+		sets = softwareRenderer->sgbPacket[1];
+		i = 2;
+		for (; i < (softwareRenderer->sgbCommandHeader & 7) << 4 && sets; i += 6, --sets) {
 			_parseAttrBlock(softwareRenderer, i);
 		}
-		if (i < 16 && softwareRenderer->sgbDataSets) {
-			memcpy(softwareRenderer->sgbPartialDataSet, &softwareRenderer->sgbPacket[i], 16 - i);
+		break;
+	case SGB_ATTR_DIV:
+		pAfter = softwareRenderer->sgbPacket[1] & 3;
+		pBefore = (softwareRenderer->sgbPacket[1] >> 2) & 3;
+		pDiv = (softwareRenderer->sgbPacket[1] >> 4) & 3;
+		attrX = softwareRenderer->sgbPacket[2];
+		if (softwareRenderer->sgbPacket[1] & 0x40) {
+			if (attrX > GB_VIDEO_VERTICAL_PIXELS / 8) {
+				attrX = GB_VIDEO_VERTICAL_PIXELS / 8;
+			}
+			int j;
+			for (j = 0; j < attrX; ++j) {
+				for (i = 0; i < GB_VIDEO_HORIZONTAL_PIXELS / 8; ++i) {
+					_setAttribute(renderer->sgbAttributes, i, j, pBefore);
+				}
+			}
+			if (attrX < GB_VIDEO_VERTICAL_PIXELS / 8) {
+				for (i = 0; i < GB_VIDEO_HORIZONTAL_PIXELS / 8; ++i) {
+					_setAttribute(renderer->sgbAttributes, i, attrX, pDiv);
+				}
+
+			}
+			for (; j < GB_VIDEO_VERTICAL_PIXELS / 8; ++j) {
+				for (i = 0; i < GB_VIDEO_HORIZONTAL_PIXELS / 8; ++i) {
+					_setAttribute(renderer->sgbAttributes, i, j, pAfter);
+				}
+			}
+		} else {
+			if (attrX > GB_VIDEO_HORIZONTAL_PIXELS / 8) {
+				attrX = GB_VIDEO_HORIZONTAL_PIXELS / 8;
+			}
+			int j;
+			for (j = 0; j < attrX; ++j) {
+				for (i = 0; i < GB_VIDEO_HORIZONTAL_PIXELS / 8; ++i) {
+					_setAttribute(renderer->sgbAttributes, j, i, pBefore);
+				}
+			}
+			if (attrX < GB_VIDEO_HORIZONTAL_PIXELS / 8) {
+				for (i = 0; i < GB_VIDEO_VERTICAL_PIXELS / 8; ++i) {
+					_setAttribute(renderer->sgbAttributes, attrX, i, pDiv);
+				}
+
+			}
+			for (; j < GB_VIDEO_HORIZONTAL_PIXELS / 8; ++j) {
+				for (i = 0; i < GB_VIDEO_VERTICAL_PIXELS / 8; ++i) {
+					_setAttribute(renderer->sgbAttributes, j, i, pAfter);
+				}
+			}
 		}
 		break;
 	case SGB_ATTR_CHR:
-		if (softwareRenderer->sgbPacketId == 1) {
-			softwareRenderer->sgbAttrX = softwareRenderer->sgbPacket[1];
-			softwareRenderer->sgbAttrY = softwareRenderer->sgbPacket[2];
-			if (softwareRenderer->sgbAttrX >= GB_VIDEO_HORIZONTAL_PIXELS / 8) {
-				softwareRenderer->sgbAttrX = 0;
-			}
-			if (softwareRenderer->sgbAttrY >= GB_VIDEO_VERTICAL_PIXELS / 8) {
-				softwareRenderer->sgbAttrY = 0;
-			}
-			softwareRenderer->sgbDataSets = softwareRenderer->sgbPacket[3];
-			softwareRenderer->sgbDataSets |= softwareRenderer->sgbPacket[4] << 8;
-			softwareRenderer->sgbAttrDirection = softwareRenderer->sgbPacket[5];
-			i = 6;
-		} else {
-			i = 0;
+		attrX = softwareRenderer->sgbPacket[1];
+		attrY = softwareRenderer->sgbPacket[2];
+		if (attrX >= GB_VIDEO_HORIZONTAL_PIXELS / 8) {
+			attrX = 0;
 		}
-		for (; i < 16 && softwareRenderer->sgbDataSets; ++i) {
+		if (attrY >= GB_VIDEO_VERTICAL_PIXELS / 8) {
+			attrY = 0;
+		}
+		sets = softwareRenderer->sgbPacket[3];
+		sets |= softwareRenderer->sgbPacket[4] << 8;
+		attrDirection = softwareRenderer->sgbPacket[5];
+		i = 6;
+		for (; i < (softwareRenderer->sgbCommandHeader & 7) << 4 && sets; ++i) {
 			int j;
-			for (j = 0; j < 4 && softwareRenderer->sgbDataSets; ++j, --softwareRenderer->sgbDataSets) {
+			for (j = 0; j < 4 && sets; ++j, --sets) {
 				uint8_t p = softwareRenderer->sgbPacket[i] >> (6 - j * 2);
-				_setAttribute(renderer->sgbAttributes, softwareRenderer->sgbAttrX, softwareRenderer->sgbAttrY, p & 3);
-				if (softwareRenderer->sgbAttrDirection) {
-					++softwareRenderer->sgbAttrY;
-					if (softwareRenderer->sgbAttrY >= GB_VIDEO_VERTICAL_PIXELS / 8) {
-						softwareRenderer->sgbAttrY = 0;
-						++softwareRenderer->sgbAttrX;
+				_setAttribute(renderer->sgbAttributes, attrX, attrY, p & 3);
+				if (attrDirection) {
+					++attrY;
+					if (attrY >= GB_VIDEO_VERTICAL_PIXELS / 8) {
+						attrY = 0;
+						++attrX;
 					}
-					if (softwareRenderer->sgbAttrX >= GB_VIDEO_HORIZONTAL_PIXELS / 8) {
-						softwareRenderer->sgbAttrX = 0;
+					if (attrX >= GB_VIDEO_HORIZONTAL_PIXELS / 8) {
+						attrX = 0;
 					}
 				} else {
-					++softwareRenderer->sgbAttrX;
-					if (softwareRenderer->sgbAttrX >= GB_VIDEO_HORIZONTAL_PIXELS / 8) {
-						softwareRenderer->sgbAttrX = 0;
-						++softwareRenderer->sgbAttrY;
+					++attrX;
+					if (attrX >= GB_VIDEO_HORIZONTAL_PIXELS / 8) {
+						attrX = 0;
+						++attrY;
 					}
-					if (softwareRenderer->sgbAttrY >= GB_VIDEO_VERTICAL_PIXELS / 8) {
-						softwareRenderer->sgbAttrY = 0;
+					if (attrY >= GB_VIDEO_VERTICAL_PIXELS / 8) {
+						attrY = 0;
 					}
 				}
 			}
@@ -349,22 +378,39 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 
 		break;
 	case SGB_ATRC_EN:
-		if (softwareRenderer->sgbBorders) {
+	case SGB_MASK_EN:
+		if (softwareRenderer->sgbBorders && !renderer->sgbRenderMode) {
 			_regenerateSGBBorder(softwareRenderer);
 		}
-		break;
 	}
 }
 
 static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	color_t color = mColorFrom555(value);
-	if (softwareRenderer->model == GB_MODEL_SGB && index < 0x10 && index && !(index & 3)) {
-		color = softwareRenderer->palette[0];
+	if (softwareRenderer->model == GB_MODEL_SGB) {
+		if (index < 0x10 && index && !(index & 3)) {
+			color = softwareRenderer->palette[0];
+		} else if (index >= 0x40 && !(index & 0xF)) {
+			color = softwareRenderer->palette[0];
+		}
 	}
 	softwareRenderer->palette[index] = color;
 	if (renderer->cache) {
 		mCacheSetWritePalette(renderer->cache, index, color);
+	}
+
+	if (softwareRenderer->model == GB_MODEL_SGB && !index && GBRegisterLCDCIsEnable(softwareRenderer->lcdc)) {
+		renderer->writePalette(renderer, 0x04, value);
+		renderer->writePalette(renderer, 0x08, value);
+		renderer->writePalette(renderer, 0x0C, value);
+		renderer->writePalette(renderer, 0x40, value);
+		renderer->writePalette(renderer, 0x50, value);
+		renderer->writePalette(renderer, 0x60, value);
+		renderer->writePalette(renderer, 0x70, value);
+		if (softwareRenderer->sgbBorders && !renderer->sgbRenderMode) {
+			_regenerateSGBBorder(softwareRenderer);
+		}
 	}
 }
 
@@ -580,7 +626,7 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 		case SGB_PAL_TRN:
 		case SGB_CHR_TRN:
 		case SGB_PCT_TRN:
-			if (softwareRenderer->sgbTransfer > 0 && softwareRenderer->sgbBorders) {
+			if (softwareRenderer->sgbTransfer > 0 && softwareRenderer->sgbBorders && !renderer->sgbRenderMode) {
 				// Make sure every buffer sees this if we're multibuffering
 				_regenerateSGBBorder(softwareRenderer);
 			}

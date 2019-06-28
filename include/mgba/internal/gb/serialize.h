@@ -258,6 +258,9 @@ DECL_BITS(GBSerializedMemoryFlags, ActiveRtcReg, 5, 3);
 DECL_BITFIELD(GBSerializedSGBFlags, uint32_t);
 DECL_BITS(GBSerializedSGBFlags, P1Bits, 0, 2);
 DECL_BITS(GBSerializedSGBFlags, RenderMode, 2, 2);
+DECL_BITS(GBSerializedSGBFlags, BufferIndex, 4, 3);
+DECL_BITS(GBSerializedSGBFlags, CurrentController, 7, 2);
+DECL_BITS(GBSerializedSGBFlags, ReqControllers, 9, 2);
 
 #pragma pack(push, 1)
 struct GBSerializedState {
@@ -388,15 +391,15 @@ struct GBSerializedState {
 	uint8_t vram[GB_SIZE_VRAM];
 	uint8_t wram[GB_SIZE_WORKING_RAM];
 
-	uint32_t reserved2[0xE0];
+	uint32_t reserved2[0xC4];
 
 	struct {
 		uint8_t attributes[90];
 		uint8_t command;
 		uint8_t bits;
 		GBSerializedSGBFlags flags;
-		uint8_t packet[16];
-		uint32_t reserved[4];
+		uint8_t inProgressPacket[16];
+		uint8_t packet[128];
 		uint8_t charRam[SGB_SIZE_CHAR_RAM];
 		uint8_t mapRam[SGB_SIZE_MAP_RAM];
 		uint8_t palRam[SGB_SIZE_PAL_RAM];

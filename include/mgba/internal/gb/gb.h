@@ -62,7 +62,7 @@ enum GBSGBCommand {
 	SGB_PICON_EN,
 	SGB_DATA_SND,
 	SGB_DATA_TRN,
-	SGB_MLT_REG,
+	SGB_MLT_REQ,
 	SGB_JUMP,
 	SGB_CHR_TRN,
 	SGB_PCT_TRN,
@@ -107,6 +107,8 @@ struct GB {
 	int sgbBit;
 	int currentSgbBits;
 	uint8_t sgbPacket[16];
+	uint8_t sgbControllers;
+	uint8_t sgbCurrentController;
 
 	struct mCoreCallbacksList coreCallbacks;
 	struct mAVStream* stream;

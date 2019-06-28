@@ -113,6 +113,9 @@ static void _writeSGBBits(struct GB* gb, int bits) {
 		return;
 	}
 	gb->currentSgbBits = bits;
+	if (bits == 3) {
+		gb->sgbCurrentController = (gb->sgbCurrentController + 1) & gb->sgbControllers;
+	}
 	if (gb->sgbBit == 128 && bits == 2) {
 		GBVideoWriteSGBPacket(&gb->video, gb->sgbPacket);
 		++gb->sgbBit;
@@ -503,10 +506,13 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 
 static uint8_t _readKeys(struct GB* gb) {
 	uint8_t keys = *gb->keySource;
+	if (gb->sgbCurrentController != 0) {
+		keys = 0;
+	}
 	switch (gb->memory.io[REG_JOYP] & 0x30) {
 	case 0x30:
 	// TODO: Increment
-		keys = (gb->video.sgbCommandHeader >> 3) == SGB_MLT_REG ? 0xF : 0;
+		keys = (gb->video.sgbCommandHeader >> 3) == SGB_MLT_REQ ? 0xF - gb->sgbCurrentController : 0;
 		break;
 	case 0x20:
 		keys >>= 4;

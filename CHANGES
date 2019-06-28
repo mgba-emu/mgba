@@ -70,6 +70,12 @@ Misc:
  - PSP2: Use system enter key by default
  - 3DS: Remove deprecated CSND interface
 
+0.6.3: (2017-04-14)
+Bugfixes:
+ - GB Audio: Revert unsigned audio changes
+ - GB Video: Fix bad merge (fixes mgba.io/i/1040)
+ - GBA Video: Fix OBJ blending regression (fixes mgba.io/i/1037)
+
 0.6.2: (2017-04-03)
 Bugfixes:
  - Core: Fix ROM patches not being unloaded when disabled (fixes mgba.io/i/962)

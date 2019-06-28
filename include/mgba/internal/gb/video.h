@@ -143,6 +143,8 @@ struct GBVideo {
 	int ocpIndex;
 	bool ocpIncrement;
 	uint8_t sgbCommandHeader;
+	int sgbBufferIndex;
+	uint8_t sgbPacketBuffer[128];
 
 	uint16_t dmgPalette[12];
 	uint16_t palette[64];
