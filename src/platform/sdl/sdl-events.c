@@ -404,7 +404,7 @@ static void _pauseAfterFrame(struct mCoreThread* context) {
 
 static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_KeyboardEvent* event) {
 	int key = -1;
-	if (!event->keysym.mod) {
+	if (!(event->keysym.mod & ~(KMOD_NUM | KMOD_CAPS))) {
 		key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.sym);
 	}
 	if (key != -1) {

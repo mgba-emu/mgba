@@ -64,6 +64,8 @@ Bugfixes:
  - GB Video: Fix SCX timing
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1126)
  - GB, GBA Savedata: Fix savestate loading overwriting saves on reset
+ - GBA Video: Make layer disabling work consistently
+ - GB: Fix IRQ disabling on the same T-cycle as an assert
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
@@ -94,6 +96,7 @@ Misc:
  - FFmpeg: Support lossless h.264 encoding
  - Feature: Added loading savestates from command line
  - Qt: Allow pausing game at load (fixes mgba.io/i/1129)
+ - Wii: Move audio handling to callbacks (fixes mgba.io/i/803)
 
 0.6.3: (2017-04-14)
 Bugfixes:

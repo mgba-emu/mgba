@@ -141,7 +141,7 @@ void GBMBCInit(struct GB* gb) {
 	if (gb->memory.rom) {
 		if (gb->memory.romSize >= 0x8000) {
 			const struct GBCartridge* cartFooter = (const struct GBCartridge*) &gb->memory.rom[gb->memory.romSize - 0x7F00];
-			if (doCrc32(cartFooter->logo, sizeof(cartFooter->logo)) == GB_LOGO_HASH) {
+			if (doCrc32(cartFooter->logo, sizeof(cartFooter->logo)) == GB_LOGO_HASH && cartFooter->type >= 0x0B && cartFooter->type <= 0x0D) {
 				cart = cartFooter;
 			}
 		}

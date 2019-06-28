@@ -765,7 +765,7 @@ static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer,
 }
 
 static void _enableBg(struct GBAVideoSoftwareRenderer* renderer, int bg, bool active) {
-	if (renderer->d.disableBG[bg] || !active) {
+	if (!active) {
 		renderer->bg[bg].enabled = 0;
 	} else if (!renderer->bg[bg].enabled && active) {
 		if (renderer->nextY == 0) {

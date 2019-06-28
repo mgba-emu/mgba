@@ -9,9 +9,6 @@
 	SPRITE_YBASE_ ## DEPTH(inY); \
 	unsigned tileData; \
 	for (; outX < condition; ++outX, inX += xOffset) { \
-		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
-			continue; \
-		} \
 		renderer->spriteCyclesRemaining -= 1; \
 		SPRITE_XBASE_ ## DEPTH(inX); \
 		SPRITE_DRAW_PIXEL_ ## DEPTH ## _ ## TYPE(inX); \

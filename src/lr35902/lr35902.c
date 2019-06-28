@@ -137,7 +137,7 @@ static void _LR35902Step(struct LR35902Core* cpu) {
 }
 
 void LR35902Tick(struct LR35902Core* cpu) {
-	if (cpu->cycles >= cpu->nextEvent) {
+	while (cpu->cycles >= cpu->nextEvent) {
 		cpu->irqh.processEvents(cpu);
 	}
 	_LR35902Step(cpu);

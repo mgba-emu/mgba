@@ -625,7 +625,11 @@ void GBUpdateIRQs(struct GB* gb) {
 	}
 	gb->cpu->halted = false;
 
-	if (!gb->memory.ime || gb->cpu->irqPending) {
+	if (!gb->memory.ime) {
+		gb->cpu->irqPending = false;
+		return;
+	}
+	if (gb->cpu->irqPending) {
 		return;
 	}
 	LR35902RaiseIRQ(gb->cpu);
@@ -661,12 +665,11 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 
 void GBSetInterrupts(struct LR35902Core* cpu, bool enable) {
 	struct GB* gb = (struct GB*) cpu->master;
+	mTimingDeschedule(&gb->timing, &gb->eiPending);
 	if (!enable) {
-		gb->memory.ime = enable;
-		mTimingDeschedule(&gb->timing, &gb->eiPending);
+		gb->memory.ime = false;
 		GBUpdateIRQs(gb);
 	} else {
-		mTimingDeschedule(&gb->timing, &gb->eiPending);
 		mTimingSchedule(&gb->timing, &gb->eiPending, 4);
 	}
 }
