@@ -17,6 +17,7 @@
 .Op Fl l Ar loglevel
 .Op Fl p Ar patchfile
 .Op Fl s Ar n
+.Op Fl t Ar statefile
 .Ar file
 .Sh DESCRIPTION
 .Nm
@@ -71,13 +72,7 @@ is a bitmask defining which types of messages to log:
 .It
 32 \(en stub messages for unimplemented features
 .It
-256 \(en in\(hygame errors
-.It
-512 \(en software interrupts
-.It
-1024 \(en emulator status messages
-.It
-2048 \(en serial I/O messages
+64 \(en in\(hygame errors
 .El
 The default is to log warnings, errors, fatal errors, and status messages.
 .It Fl p Ar patchfile , Fl -patch Ar patchfile
@@ -86,6 +81,9 @@ Specify a patch file in BPS, IPS, or UPS format.
 Skip every
 .Ar n
 frames.
+.It Fl t Ar statefile , Fl -savestate Ar statefile
+Load initial game state from
+.Ar statefile .
 .El
 .Sh CONTROLS
 The default controls are as follows:

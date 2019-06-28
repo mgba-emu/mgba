@@ -137,6 +137,9 @@ struct GBAudioNoiseChannel {
 	int length;
 
 	uint32_t lfsr;
+	int nSamples;
+	int samples;
+
 	int8_t sample;
 };
 

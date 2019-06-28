@@ -47,7 +47,7 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * | 0x00040 - 0x00043: Reserved (DI pending cycles)
  * | 0x00044 - 0x00047: Flags
  *   | bit 0: Is condition met?
- *   | bit 1: Is condition IRQ pending?
+ *   | bit 1: Is IRQ pending?
  *   | bit 2: Double speed
  *   | bit 3: Is EI pending?
  *   | bits 4 - 31: Reserved
@@ -232,7 +232,7 @@ DECL_BITFIELD(GBSerializedCpuFlags, uint32_t);
 DECL_BIT(GBSerializedCpuFlags, Condition, 0);
 DECL_BIT(GBSerializedCpuFlags, IrqPending, 1);
 DECL_BIT(GBSerializedCpuFlags, DoubleSpeed, 2);
-DECL_BIT(GBSerializedCpuFlags, EiPending, 1);
+DECL_BIT(GBSerializedCpuFlags, EiPending, 3);
 
 DECL_BITFIELD(GBSerializedTimerFlags, uint8_t);
 DECL_BIT(GBSerializedTimerFlags, IrqPending, 0);

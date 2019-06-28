@@ -10,15 +10,17 @@
 #include <mgba/internal/gba/input.h>
 #include <mgba-util/gui.h>
 #include <mgba-util/gui/font.h>
+#include <mgba-util/gui/menu.h>
 
 #include <switch.h>
 #include <EGL/egl.h>
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 
 #define AUTO_INPUT 0x4E585031
 #define SAMPLES 0x400
 #define BUFFER_SIZE 0x1000
 #define N_BUFFERS 4
+#define ANALOG_DEADZONE 0x4000
 
 TimeType __nx_time_type = TimeType_UserSystemClock;
 
@@ -63,21 +65,23 @@ static const char* const _fragmentShader =
 
 static GLuint program;
 static GLuint vbo;
-static GLuint offsetLocation;
+static GLuint vao;
+static GLuint pbo;
 static GLuint texLocation;
 static GLuint dimsLocation;
 static GLuint insizeLocation;
 static GLuint colorLocation;
 static GLuint tex;
 
-static color_t frameBuffer[256 * 256];
+static color_t* frameBuffer;
 static struct mAVStream stream;
 static int audioBufferActive;
 static struct GBAStereoSample audioBuffer[N_BUFFERS][SAMPLES] __attribute__((__aligned__(0x1000)));
 static AudioOutBuffer audoutBuffer[N_BUFFERS];
 static int enqueuedBuffers;
 static bool frameLimiter = true;
-static int framecount = 0;
+static unsigned framecount = 0;
+static unsigned framecap = 10;
 
 static bool initEgl() {
     s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -105,11 +109,11 @@ static bool initEgl() {
         goto _fail1;
     }
 
-	//EGLint contextAttributeList[] = {
-	//	EGL_CONTEXT_CLIENT_VERSION, 2,
-	//	EGL_NONE
-	//};
-    s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, NULL);
+	EGLint contextAttributeList[] = {
+		EGL_CONTEXT_CLIENT_VERSION, 3,
+		EGL_NONE
+	};
+    s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, contextAttributeList);
     if (!s_context) {
         goto _fail2;
     }
@@ -144,12 +148,13 @@ static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, enum
 }
 
 static void _drawStart(void) {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 static void _drawEnd(void) {
-	if (frameLimiter || (framecount & 3) == 0) {
+	if (frameLimiter || framecount >= framecap) {
 		eglSwapBuffers(s_display, s_surface);
+		framecount = 0;
 	}
 }
 
@@ -158,6 +163,40 @@ static uint32_t _pollInput(const struct mInputMap* map) {
 	hidScanInput();
 	u32 padkeys = hidKeysHeld(CONTROLLER_P1_AUTO);
 	keys |= mInputMapKeyBits(map, AUTO_INPUT, padkeys, 0);
+
+	JoystickPosition jspos;
+	hidJoystickRead(&jspos, CONTROLLER_P1_AUTO, JOYSTICK_LEFT);
+
+	int l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_LEFT));
+	int r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_RIGHT));
+	int u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_UP));
+	int d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_DOWN));
+
+	if (l == -1) {
+		l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DLEFT));
+	}
+	if (r == -1) {
+		r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DRIGHT));
+	}
+	if (u == -1) {
+		u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DUP));
+	}
+	if (d == -1) {
+		d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DDOWN));
+	}
+
+	if (jspos.dx < -ANALOG_DEADZONE && l != -1) {
+		keys |= 1 << l;
+	}
+	if (jspos.dx > ANALOG_DEADZONE && r != -1) {
+		keys |= 1 << r;
+	}
+	if (jspos.dy < -ANALOG_DEADZONE && d != -1) {
+		keys |= 1 << d;
+	}
+	if (jspos.dy > ANALOG_DEADZONE && u != -1) {
+		keys |= 1 << u;
+	}
 	return keys;
 }
 
@@ -196,15 +235,16 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	double ratio = GBAAudioCalculateRatio(1, 60.0, 1);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), samplerate * ratio);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), samplerate * ratio);
+
+	mCoreConfigGetUIntValue(&runner->config, "fastForwardCap", &framecap);
 }
 
 static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height, bool faded) {
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUseProgram(program);
+	glBindVertexArray(vao);
 	float aspectX = width / (float) runner->params.width;
 	float aspectY = height / (float) runner->params.height;
 	float max;
@@ -226,26 +266,39 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 		glUniform4f(colorLocation, 0.8f, 0.8f, 0.8f, 0.8f);		
 	}
 
-	glVertexAttribPointer(offsetLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(offsetLocation);
-
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	glDisableVertexAttribArray(offsetLocation);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 	glUseProgram(0);
 }
 
+static void _prepareForFrame(struct mGUIRunner* runner) {
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+	frameBuffer = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 256 * 256 * 4, GL_MAP_WRITE_BIT);
+	if (frameBuffer) {
+		runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+	}
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+}
+
 static void _drawFrame(struct mGUIRunner* runner, bool faded) {
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, frameBuffer);
+	++framecount;
+	if (!frameLimiter && framecount < framecap) {
+		return;
+	}
 
 	unsigned width, height;
 	runner->core->desiredVideoDimensions(runner->core, &width, &height);
-	_drawTex(runner, width, height, faded);
 
-	++framecount;
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, height, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+	_drawTex(runner, width, height, faded);
 }
 
 static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
@@ -257,11 +310,7 @@ static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, un
 }
 
 static uint16_t _pollGameInput(struct mGUIRunner* runner) {
-	int keys = 0;
-	hidScanInput();
-	u32 padkeys = hidKeysHeld(CONTROLLER_P1_AUTO);
-	keys |= mInputMapKeyBits(&runner->core->inputMap, AUTO_INPUT, padkeys, 0);
-	return keys;
+	return _pollInput(&runner->core->inputMap);
 }
 
 static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
@@ -310,7 +359,13 @@ static int _batteryState(void) {
 	u32 charge;
 	int state = 0;
 	if (R_SUCCEEDED(psmGetBatteryChargePercentage(&charge))) {
-		state = charge / 25;
+		state = (charge + 12) / 25;
+	} else {
+		return BATTERY_NOT_PRESENT;
+	}
+	ChargerType type;
+	if (R_SUCCEEDED(psmGetChargerType(&type)) && type) {
+		state |= BATTERY_CHARGING;
 	}
 	return state;
 }
@@ -338,6 +393,13 @@ int main(int argc, char* argv[]) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	glGenBuffers(1, &pbo);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER, 256 * 256 * 4, NULL, GL_STREAM_DRAW);
+	frameBuffer = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 256 * 256 * 4, GL_MAP_WRITE_BIT);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
 	program = glCreateProgram();
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -382,12 +444,16 @@ int main(int argc, char* argv[]) {
 	colorLocation = glGetUniformLocation(program, "color");
 	dimsLocation = glGetUniformLocation(program, "dims");
 	insizeLocation = glGetUniformLocation(program, "insize");
-	offsetLocation = glGetAttribLocation(program, "offset");
+	GLuint offsetLocation = glGetAttribLocation(program, "offset");
 
 	glGenBuffers(1, &vbo);
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(_offsets), _offsets, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribPointer(offsetLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(offsetLocation);
+	glBindVertexArray(0);
 
 	stream.videoDimensionsChanged = NULL;
 	stream.postVideoFrame = NULL;
@@ -451,12 +517,26 @@ int main(int argc, char* argv[]) {
 			},
 			{ .id = 0 }
 		},
-		.nConfigExtra = 0,
+		.configExtra = (struct GUIMenuItem[]) {
+			{
+				.title = "Fast forward cap",
+				.data = "fastForwardCap",
+				.submenu = 0,
+				.state = 7,
+				.validStates = (const char*[]) {
+					"3", "4", "5", "6", "7", "8", "9",
+					"10", "11", "12", "13", "14", "15",
+					"20", "30"
+				},
+				.nStates = 15
+			},
+		},
+		.nConfigExtra = 1,
 		.setup = _setup,
 		.teardown = NULL,
 		.gameLoaded = _gameLoaded,
 		.gameUnloaded = NULL,
-		.prepareForFrame = NULL,
+		.prepareForFrame = _prepareForFrame,
 		.drawFrame = _drawFrame,
 		.drawScreenshot = _drawScreenshot,
 		.paused = NULL,
@@ -477,7 +557,25 @@ int main(int argc, char* argv[]) {
 	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DRIGHT, GUI_INPUT_RIGHT);
 
 	audoutStartAudioOut();
-	mGUIRunloop(&runner);
+
+	if (argc > 1) {
+		size_t i;
+		for (i = 0; runner.keySources[i].id; ++i) {
+			mInputMapLoad(&runner.params.keyMap, runner.keySources[i].id, mCoreConfigGetInput(&runner.config));
+		}
+		mGUIRun(&runner, argv[1]);
+	} else {
+		mGUIRunloop(&runner);
+	}
+
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+	glDeleteBuffers(1, &pbo);
+
+	glDeleteTextures(1, &tex);
+	glDeleteBuffers(1, &vbo);
+	glDeleteProgram(program);
+	glDeleteVertexArrays(1, &vao);
 
 	psmExit();
 	audoutExit();

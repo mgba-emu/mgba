@@ -95,17 +95,27 @@ void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank) {
 }
 
 static bool _isMulticart(const uint8_t* mem) {
-	bool success = true;
+	bool success;
 	struct VFile* vf;
 
 	vf = VFileFromConstMemory(&mem[GB_SIZE_CART_BANK0 * 0x10], 1024);
-	success = success && GBIsROM(vf);
+	success = GBIsROM(vf);
 	vf->close(vf);
+
+	if (!success) {
+		return false;
+	}
 
 	vf = VFileFromConstMemory(&mem[GB_SIZE_CART_BANK0 * 0x20], 1024);
-	success = success && GBIsROM(vf);
+	success = GBIsROM(vf);
 	vf->close(vf);
 
+	if (!success) {
+		vf = VFileFromConstMemory(&mem[GB_SIZE_CART_BANK0 * 0x30], 1024);
+		success = GBIsROM(vf);
+		vf->close(vf);
+	}
+	
 	return success;
 }
 

@@ -54,7 +54,8 @@ static const struct mInputPlatformInfo _mGUIKeyInfo = {
 		[mGUI_INPUT_DECREASE_BRIGHTNESS] = "Decrease solar brightness",
 		[mGUI_INPUT_SCREEN_MODE] = "Screen mode",
 		[mGUI_INPUT_SCREENSHOT] = "Take screenshot",
-		[mGUI_INPUT_FAST_FORWARD] = "Fast forward",
+		[mGUI_INPUT_FAST_FORWARD_HELD] = "Fast forward (held)",
+		[mGUI_INPUT_FAST_FORWARD_TOGGLE] = "Fast forward (toggle)",
 	},
 	.nKeys = GUI_INPUT_MAX
 };
@@ -412,6 +413,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		runner->lastFpsCheck = 1000000LL * tv.tv_sec + tv.tv_usec;
 
 		int frame = 0;
+		bool fastForward = false;
 		while (running) {
 			if (runner->running) {
 				running = runner->running(runner);
@@ -442,7 +444,10 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				mCoreTakeScreenshot(runner->core);
 			}
 			if (runner->setFrameLimiter) {
-				if (heldKeys & (1 << mGUI_INPUT_FAST_FORWARD)) {
+				if (guiKeys & (1 << mGUI_INPUT_FAST_FORWARD_TOGGLE)) {
+					fastForward = !fastForward;
+				}
+				if (fastForward || (heldKeys & (1 << mGUI_INPUT_FAST_FORWARD_HELD))) {
 					runner->setFrameLimiter(runner, false);
 				} else {
 					runner->setFrameLimiter(runner, true);

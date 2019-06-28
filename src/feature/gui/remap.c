@@ -69,13 +69,13 @@ void mGUIRemapKeys(struct GUIParams* params, struct mInputMap* map, const struct
 		if (item->data == (void*) (GUI_INPUT_MAX + map->info->nKeys + 2)) {
 			for (i = 0; i < GUIMenuItemListSize(&menu.items); ++i) {
 				item = GUIMenuItemListGetPointer(&menu.items, i);
-				if ((uint32_t) item->data < 1) {
+				if ((uintptr_t) item->data < 1) {
 					continue;
 				}
-				if ((uint32_t) item->data < GUI_INPUT_MAX + 1) {
-					mInputBindKey(&params->keyMap, keys->id, item->state - 1, (uint32_t) item->data - 1);
-				} else if ((uint32_t) item->data < GUI_INPUT_MAX + map->info->nKeys + 1) {
-					mInputBindKey(map, keys->id, item->state - 1, (uint32_t) item->data - GUI_INPUT_MAX - 1);
+				if ((uintptr_t) item->data < GUI_INPUT_MAX + 1) {
+					mInputBindKey(&params->keyMap, keys->id, item->state - 1, (uintptr_t) item->data - 1);
+				} else if ((uintptr_t) item->data < GUI_INPUT_MAX + map->info->nKeys + 1) {
+					mInputBindKey(map, keys->id, item->state - 1, (uintptr_t) item->data - GUI_INPUT_MAX - 1);
 				}
 			}
 			break;

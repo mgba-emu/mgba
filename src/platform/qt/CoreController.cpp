@@ -46,6 +46,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 	m_buffers[0].fill(0xFF);
 	m_buffers[1].fill(0xFF);
 	m_activeBuffer = &m_buffers[0];
+	m_completeBuffer = m_buffers[0];
 
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), size.width());
 
@@ -209,12 +210,9 @@ CoreController::~CoreController() {
 	m_threadContext.core->deinit(m_threadContext.core);
 }
 
-color_t* CoreController::drawContext() {
+const color_t* CoreController::drawContext() {
 	QMutexLocker locker(&m_mutex);
-	if (!m_completeBuffer) {
-		return nullptr;
-	}
-	return reinterpret_cast<color_t*>(m_completeBuffer->data());
+	return reinterpret_cast<const color_t*>(m_completeBuffer.constData());
 }
 
 bool CoreController::isPaused() {
@@ -762,7 +760,7 @@ void CoreController::updateKeys() {
 
 void CoreController::finishFrame() {
 	QMutexLocker locker(&m_mutex);
-	m_completeBuffer = m_activeBuffer;
+	memcpy(m_completeBuffer.data(), m_activeBuffer->constData(), m_activeBuffer->size());
 
 	// TODO: Generalize this to triple buffering?
 	m_activeBuffer = &m_buffers[0];
@@ -770,7 +768,7 @@ void CoreController::finishFrame() {
 		m_activeBuffer = &m_buffers[1];
 	}
 	// Copy contents to avoid issues when doing frameskip
-	memcpy(m_activeBuffer->data(), m_completeBuffer->data(), m_activeBuffer->size());
+	memcpy(m_activeBuffer->data(), m_completeBuffer.constData(), m_activeBuffer->size());
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), screenDimensions().width());
 
 	for (auto& action : m_frameActions) {

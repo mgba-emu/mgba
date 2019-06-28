@@ -56,7 +56,6 @@ struct FFmpegEncoder {
 	AVFrame* audioFrame;
 	size_t currentAudioSample;
 	int64_t currentAudioFrame;
-	int64_t nextAudioPts; // TODO (0.6): Remove
 #ifdef USE_LIBAVRESAMPLE
 	struct AVAudioResampleContext* resampleContext;
 #else

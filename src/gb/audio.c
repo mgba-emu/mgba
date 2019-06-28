@@ -37,6 +37,8 @@ static bool _updateSweep(struct GBAudioSquareChannel* sweep, bool initial);
 static void _updateSquareSample(struct GBAudioSquareChannel* ch);
 static int32_t _updateSquareChannel(struct GBAudioSquareChannel* ch);
 
+static int8_t _coalesceNoiseChannel(struct GBAudioNoiseChannel* ch);
+
 static void _updateFrame(struct mTiming* timing, void* user, uint32_t cyclesLate);
 static void _updateChannel1(struct mTiming* timing, void* user, uint32_t cyclesLate);
 static void _updateChannel2(struct mTiming* timing, void* user, uint32_t cyclesLate);
@@ -93,7 +95,7 @@ void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52, enum GBAu
 	audio->sampleEvent.context = audio;
 	audio->sampleEvent.name = "GB Audio Sample";
 	audio->sampleEvent.callback = _sample;
-	audio->ch1Event.priority = 0x18;
+	audio->sampleEvent.priority = 0x18;
 }
 
 void GBAudioDeinit(struct GBAudio* audio) {
@@ -118,6 +120,7 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->ch1 = (struct GBAudioSquareChannel) { .envelope = { .dead = 2 } };
 	audio->ch2 = (struct GBAudioSquareChannel) { .envelope = { .dead = 2 } };
 	audio->ch3 = (struct GBAudioWaveChannel) { .bank = 0 };
+	audio->ch4 = (struct GBAudioNoiseChannel) { .nSamples = 0 };
 	// TODO: DMG randomness
 	audio->ch3.wavedata8[0] = 0x00;
 	audio->ch3.wavedata8[1] = 0xFF;
@@ -203,11 +206,6 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 	}
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh1 = _resetEnvelope(&audio->ch1.envelope);
-
-		if (audio->playingCh1) {
-			_updateSquareSample(&audio->ch1);
-		}
-
 		audio->ch1.sweep.realFrequency = audio->ch1.control.frequency;
 		_resetSweep(&audio->ch1.sweep);
 		if (audio->playingCh1 && audio->ch1.sweep.shift) {
@@ -219,7 +217,9 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 				--audio->ch1.control.length;
 			}
 		}
-		if (audio->playingCh1 && audio->ch1.envelope.dead != 2 && !mTimingIsScheduled(audio->timing, &audio->ch1Event)) {
+		if (audio->playingCh1 && audio->ch1.envelope.dead != 2) {
+			_updateSquareChannel(&audio->ch1);
+			mTimingDeschedule(audio->timing, &audio->ch1Event);
 			mTimingSchedule(audio->timing, &audio->ch1Event, 0);
 		}
 	}
@@ -260,17 +260,15 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh2 = _resetEnvelope(&audio->ch2.envelope);
 
-		if (audio->playingCh2) {
-			_updateSquareSample(&audio->ch2);
-		}
-
 		if (!audio->ch2.control.length) {
 			audio->ch2.control.length = 64;
 			if (audio->ch2.control.stop && !(audio->frame & 1)) {
 				--audio->ch2.control.length;
 			}
 		}
-		if (audio->playingCh2 && audio->ch2.envelope.dead != 2 && !mTimingIsScheduled(audio->timing, &audio->ch2Event)) {
+		if (audio->playingCh2 && audio->ch2.envelope.dead != 2) {
+			_updateSquareChannel(&audio->ch2);
+			mTimingDeschedule(audio->timing, &audio->ch2Event);
 			mTimingSchedule(audio->timing, &audio->ch2Event, 0);
 		}
 	}
@@ -331,6 +329,7 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 			}
 		}
 		audio->ch3.window = 0;
+		audio->ch3.sample = 0;
 	}
 	mTimingDeschedule(audio->timing, &audio->ch3Fade);
 	mTimingDeschedule(audio->timing, &audio->ch3Event);
@@ -376,9 +375,9 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 		audio->playingCh4 = _resetEnvelope(&audio->ch4.envelope);
 
 		if (audio->ch4.power) {
-			audio->ch4.lfsr = 0x40;
+			audio->ch4.lfsr = 0x7F;
 		} else {
-			audio->ch4.lfsr = 0x4000;
+			audio->ch4.lfsr = 0x7FFF;
 		}
 		if (!audio->ch4.length) {
 			audio->ch4.length = 64;
@@ -386,7 +385,8 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 				--audio->ch4.length;
 			}
 		}
-		if (audio->playingCh4 && audio->ch4.envelope.dead != 2 && !mTimingIsScheduled(audio->timing, &audio->ch4Event)) {
+		if (audio->playingCh4 && audio->ch4.envelope.dead != 2) {
+			mTimingDeschedule(audio->timing, &audio->ch4Event);
 			mTimingSchedule(audio->timing, &audio->ch4Event, 0);
 		}
 	}
@@ -563,11 +563,13 @@ void GBAudioUpdateFrame(struct GBAudio* audio, struct mTiming* timing) {
 			--audio->ch4.envelope.nextStep;
 			if (audio->ch4.envelope.nextStep == 0) {
 				int8_t sample = audio->ch4.sample > 0;
+				audio->ch4.samples -= audio->ch4.sample;
 				_updateEnvelope(&audio->ch4.envelope);
 				if (audio->ch4.envelope.dead == 2) {
 					mTimingDeschedule(timing, &audio->ch4Event);
 				}
 				audio->ch4.sample = sample * audio->ch4.envelope.currentVolume;
+				audio->ch4.samples += audio->ch4.sample;
 			}
 		}
 		break;
@@ -575,47 +577,48 @@ void GBAudioUpdateFrame(struct GBAudio* audio, struct mTiming* timing) {
 }
 
 void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
-	int dcOffset = audio->style == GB_AUDIO_GBA ? 0 : 0x8;
+	int dcOffset = audio->style == GB_AUDIO_GBA ? 0 : -0x8;
 	int sampleLeft = dcOffset;
 	int sampleRight = dcOffset;
 
 	if (audio->playingCh1 && !audio->forceDisableCh[0]) {
 		if (audio->ch1Left) {
-			sampleLeft -= audio->ch1.sample;
+			sampleLeft += audio->ch1.sample;
 		}
 
 		if (audio->ch1Right) {
-			sampleRight -= audio->ch1.sample;
+			sampleRight += audio->ch1.sample;
 		}
 	}
 
 	if (audio->playingCh2 && !audio->forceDisableCh[1]) {
 		if (audio->ch2Left) {
-			sampleLeft -=  audio->ch2.sample;
+			sampleLeft +=  audio->ch2.sample;
 		}
 
 		if (audio->ch2Right) {
-			sampleRight -= audio->ch2.sample;
+			sampleRight += audio->ch2.sample;
 		}
 	}
 
 	if (audio->playingCh3 && !audio->forceDisableCh[2]) {
 		if (audio->ch3Left) {
-			sampleLeft -= audio->ch3.sample;
+			sampleLeft += audio->ch3.sample;
 		}
 
 		if (audio->ch3Right) {
-			sampleRight -= audio->ch3.sample;
+			sampleRight += audio->ch3.sample;
 		}
 	}
 
 	if (audio->playingCh4 && !audio->forceDisableCh[3]) {
+		int8_t sample = _coalesceNoiseChannel(&audio->ch4);
 		if (audio->ch4Left) {
-			sampleLeft -= audio->ch4.sample;
+			sampleLeft += sample;
 		}
 
 		if (audio->ch4Right) {
-			sampleRight -= audio->ch4.sample;
+			sampleRight += sample;
 		}
 	}
 
@@ -631,8 +634,8 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	int16_t sampleLeft = 0;
 	int16_t sampleRight = 0;
 	GBAudioSamplePSG(audio, &sampleLeft, &sampleRight);
-	sampleLeft = (sampleLeft * audio->masterVolume * 9) >> 7;
-	sampleRight = (sampleRight * audio->masterVolume * 9) >> 7;
+	sampleLeft = (sampleLeft * audio->masterVolume * 6) >> 7;
+	sampleRight = (sampleRight * audio->masterVolume * 6) >> 7;
 
 	mCoreSyncLockAudio(audio->p->sync);
 	unsigned produced;
@@ -742,6 +745,17 @@ static int32_t _updateSquareChannel(struct GBAudioSquareChannel* ch) {
 		// This should never be hit
 		return period * 4;
 	}
+}
+
+static int8_t _coalesceNoiseChannel(struct GBAudioNoiseChannel* ch) {
+	if (!ch->nSamples) {
+		return ch->sample;
+	}
+	// TODO keep track of timing
+	int8_t sample = ch->samples / ch->nSamples;
+	ch->nSamples = 0;
+	ch->samples = 0;
+	return sample;
 }
 
 static void _updateEnvelope(struct GBAudioEnvelope* envelope) {
@@ -894,18 +908,17 @@ static void _updateChannel4(struct mTiming* timing, void* user, uint32_t cyclesL
 	struct GBAudio* audio = user;
 	struct GBAudioNoiseChannel* ch = &audio->ch4;
 
-	int32_t baseCycles = ch->ratio ? 2 * ch->ratio : 1;
-	baseCycles <<= ch->frequency;
-	baseCycles *= 8 * audio->timingFactor;
-	int32_t cycles = 0;
+	int32_t cycles = ch->ratio ? 2 * ch->ratio : 1;
+	cycles <<= ch->frequency;
+	cycles *= 8 * audio->timingFactor;
 
-	do {
-		int lsb = ch->lfsr & 1;
-		ch->sample = lsb * ch->envelope.currentVolume;
-		ch->lfsr >>= 1;
-		ch->lfsr ^= (lsb * 0x60) << (ch->power ? 0 : 8);
-		cycles += baseCycles;
-	} while (cycles + baseCycles < audio->sampleInterval);
+	int lsb = ch->lfsr & 1;
+	ch->sample = lsb * ch->envelope.currentVolume;
+	++ch->nSamples;
+	ch->samples += ch->sample;
+	ch->lfsr >>= 1;
+	ch->lfsr ^= (lsb * 0x60) << (ch->power ? 0 : 8);
+
 	mTimingSchedule(timing, &audio->ch4Event, cycles - cyclesLate);
 }
 

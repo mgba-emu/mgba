@@ -108,6 +108,16 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		.title = "Select SGB BIOS path",
 		.data = "sgb.bios",
 	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Enable SGB borders",
+		.data = "sgb.borders",
+		.submenu = 0,
+		.state = true,
+		.validStates = (const char*[]) {
+			"Off", "On"
+		},
+		.nStates = 2
+	};
 #endif
 	size_t i;
 	const char* mapNames[GUI_MAX_INPUTS + 1];

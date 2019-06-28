@@ -58,7 +58,7 @@ public:
 
 	mCoreThread* thread() { return &m_threadContext; }
 
-	color_t* drawContext();
+	const color_t* drawContext();
 
 	bool isPaused();
 	bool hasStarted();
@@ -170,7 +170,7 @@ private:
 
 	QByteArray m_buffers[2];
 	QByteArray* m_activeBuffer;
-	QByteArray* m_completeBuffer = nullptr;
+	QByteArray m_completeBuffer;
 
 	std::unique_ptr<mCacheSet> m_cacheSet;
 	std::unique_ptr<Override> m_override;

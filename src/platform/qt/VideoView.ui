@@ -106,7 +106,7 @@
         <item>
          <widget class="QRadioButton" name="presetHQ">
           <property name="text">
-           <string>High Quality</string>
+           <string>High &amp;Quality</string>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">presets</string>
@@ -116,7 +116,7 @@
         <item>
          <widget class="QRadioButton" name="presetYoutube">
           <property name="text">
-           <string>YouTube</string>
+           <string>&amp;YouTube</string>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">presets</string>
@@ -136,7 +136,7 @@
         <item>
          <widget class="QRadioButton" name="presetLossless">
           <property name="text">
-           <string>Lossless</string>
+           <string>&amp;Lossless</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -153,7 +153,7 @@
         <item>
          <widget class="QRadioButton" name="preset1080">
           <property name="text">
-           <string>1080p</string>
+           <string>&amp;1080p</string>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">resolutions</string>
@@ -163,7 +163,7 @@
         <item>
          <widget class="QRadioButton" name="preset720">
           <property name="text">
-           <string>720p</string>
+           <string>&amp;720p</string>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">resolutions</string>
@@ -173,7 +173,7 @@
         <item>
          <widget class="QRadioButton" name="preset480">
           <property name="text">
-           <string>480p</string>
+           <string>&amp;480p</string>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">resolutions</string>
@@ -186,7 +186,7 @@
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>Native</string>
+           <string>&amp;Native</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -272,6 +272,11 @@
            <item>
             <property name="text">
              <string>VP8</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>VP9</string>
             </property>
            </item>
            <item>
