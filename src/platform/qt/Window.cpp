@@ -200,6 +200,14 @@ Window::~Window() {
 void Window::argumentsPassed(mArguments* args) {
 	loadConfig();
 
+	if (args->patch) {
+		m_pendingPatch = args->patch;
+	}
+
+	if (args->savestate) {
+		m_pendingState = args->savestate;
+	}
+
 	if (args->fname) {
 		setController(m_manager->loadGame(args->fname), args->fname);
 	}
@@ -1252,12 +1260,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 	pause->setCheckable(true);
 	pause->setShortcut(tr("Ctrl+P"));
 	connect(pause, &QAction::triggered, [this](bool paused) {
-		m_controller->setPaused(paused);
+		if (m_controller) {
+			m_controller->setPaused(paused);
+		} else {
+			m_pendingPause = paused;
+		}
 	});
 	connect(this, &Window::paused, [pause](bool paused) {
 		pause->setChecked(paused);
 	});
-	m_gameActions.append(pause);
 	addControlledAction(emulationMenu, pause, "pause");
 
 	QAction* frameAdvance = new QAction(tr("&Next frame"), emulationMenu);
@@ -1911,6 +1922,16 @@ void Window::setController(CoreController* controller, const QString& fname) {
 
 	m_controller->loadConfig(m_config);
 	m_controller->start();
+
+	if (!m_pendingState.isEmpty()) {
+		m_controller->loadState(m_pendingState);
+		m_pendingState = QString();
+	}
+
+	if (m_pendingPause) {
+		m_controller->setPaused(true);
+		m_pendingPause = false;
+	}
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

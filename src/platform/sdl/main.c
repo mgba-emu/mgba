@@ -25,6 +25,7 @@
 #include <mgba/core/core.h>
 #include <mgba/core/config.h>
 #include <mgba/core/input.h>
+#include <mgba/core/serialize.h>
 #include <mgba/core/thread.h>
 #include <mgba/internal/gba/input.h>
 
@@ -42,6 +43,12 @@ static bool mSDLInit(struct mSDLRenderer* renderer);
 static void mSDLDeinit(struct mSDLRenderer* renderer);
 
 static int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args);
+
+static struct VFile* _state = NULL;
+
+static void _loadState(struct mCoreThread* thread) {
+	mCoreLoadStateNamed(thread->core, _state, SAVESTATE_RTC);
+}
 
 int main(int argc, char** argv) {
 	struct mSDLRenderer renderer = {0};
@@ -232,6 +239,15 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		mSDLSuspendScreensaver(&renderer->events);
 #endif
 		if (mSDLInitAudio(&renderer->audio, &thread)) {
+			if (args->savestate) {
+				struct VFile* state = VFileOpen(args->savestate, O_RDONLY);
+				if (state) {
+					_state = state;
+					mCoreThreadRunFunction(&thread, _loadState);
+					_state = NULL;
+					state->close(state);
+				}
+			}
 			renderer->runloop(renderer, &thread);
 			mSDLPauseAudio(&renderer->audio);
 			if (mCoreThreadHasCrashed(&thread)) {
