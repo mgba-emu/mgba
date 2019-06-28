@@ -185,6 +185,7 @@ void GBAReset(struct ARMCore* cpu) {
 
 	struct GBA* gba = (struct GBA*) cpu->master;
 	if (!gba->rr || (!gba->rr->isPlaying(gba->rr) && !gba->rr->isRecording(gba->rr))) {
+		gba->memory.savedata.maskWriteback = false;
 		GBASavedataUnmask(&gba->memory.savedata);
 	}
 

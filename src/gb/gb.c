@@ -295,7 +295,6 @@ void GBUnloadROM(struct GB* gb) {
 	gb->isPristine = false;
 
 	gb->sramMaskWriteback = false;
-	GBSavedataUnmask(gb);
 	GBSramDeinit(gb);
 	if (gb->sramRealVf) {
 		gb->sramRealVf->close(gb->sramRealVf);
@@ -468,6 +467,7 @@ void GBReset(struct LR35902Core* cpu) {
 
 	cpu->memory.setActiveRegion(cpu, cpu->pc);
 
+	gb->sramMaskWriteback = false;
 	GBSavedataUnmask(gb);
 }
 

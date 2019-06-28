@@ -35,6 +35,7 @@ Features:
  - Ability to select GB/GBC/SGB BIOS on console ports
  - Optional automatic state saving/loading
  - Access to ur0 and uma0 partitions on the Vita
+ - Partial support for MBC6, MMM01, TAMA and HuC-1 GB mappers
 Bugfixes:
  - GB Audio: Make audio unsigned with bias (fixes mgba.io/i/749)
  - GB Serialize: Fix audio state loading
@@ -62,6 +63,7 @@ Bugfixes:
  - GB I/O: DMA register is R/W
  - GB Video: Fix SCX timing
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1126)
+ - GB, GBA Savedata: Fix savestate loading overwriting saves on reset
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)

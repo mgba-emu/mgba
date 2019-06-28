@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>498</width>
+    <width>501</width>
     <height>335</height>
    </rect>
   </property>
@@ -14,49 +14,10 @@
    <string>Tiles</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
-    <widget class="QCheckBox" name="palette256">
-     <property name="text">
-      <string>256 colors</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QSlider" name="paletteId">
-     <property name="maximumSize">
-      <size>
-       <width>170</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="maximum">
-      <number>15</number>
-     </property>
-     <property name="pageStep">
-      <number>1</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="tickPosition">
-      <enum>QSlider::TicksBelow</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
    <item row="2" column="0">
+    <widget class="QGBA::AssetTile" name="tile"/>
+   </item>
+   <item row="1" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QSpinBox" name="magnification">
@@ -105,7 +66,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>286</width>
+        <width>256</width>
         <height>768</height>
        </rect>
       </property>
@@ -151,8 +112,36 @@
      </widget>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QGBA::AssetTile" name="tile"/>
+   <item row="4" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QSpinBox" name="paletteId">
+       <property name="maximum">
+        <number>15</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="palette256">
+       <property name="text">
+        <string>256 colors</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
@@ -176,22 +165,6 @@
  <resources/>
  <connections>
   <connection>
-   <sender>palette256</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>paletteId</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>100</x>
-     <y>54</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>96</x>
-     <y>22</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>magnification</sender>
    <signal>valueChanged(int)</signal>
    <receiver>tiles</receiver>
@@ -204,6 +177,22 @@
     <hint type="destinationlabel">
      <x>339</x>
      <y>396</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>palette256</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>paletteId</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>158</x>
+     <y>29</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>44</x>
+     <y>29</y>
     </hint>
    </hints>
   </connection>
