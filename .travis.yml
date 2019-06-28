@@ -11,4 +11,4 @@ matrix:
 before_install:
   - source ./.travis-deps.sh
 
-script: mkdir build && cd build && cmake -DCMAKE_PREFIX_PATH=/usr/local/opt/qt5 .. && make -j2
+script: mkdir build && cd build && cmake -DCMAKE_PREFIX_PATH='/usr/local/opt/qt5;/opt/qt54' .. && make -j2

@@ -155,6 +155,7 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->type = CHEAT_ASSIGN;
 		cheat->width = 1;
+		cheat->repeat = 1;
 		cheat->address = _parAddr(op2);
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
@@ -166,6 +167,7 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->type = CHEAT_ASSIGN;
 		cheat->width = 2;
+		cheat->repeat = 1;
 		cheat->address = _parAddr(op2);
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
@@ -177,6 +179,7 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->type = CHEAT_ASSIGN;
 		cheat->width = 4;
+		cheat->repeat = 1;
 		cheat->address = _parAddr(op2);
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
