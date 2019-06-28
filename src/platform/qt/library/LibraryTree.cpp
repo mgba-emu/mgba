@@ -62,6 +62,12 @@ LibraryTree::LibraryTree(LibraryController* parent)
 	});
 }
 
+LibraryTree::~LibraryTree() {
+	for (QTreeWidgetItem* i : m_items.values()) {
+		delete i;
+	}
+}
+
 void LibraryTree::resizeAllCols() {
 	for (int i = 0; i < m_widget->columnCount(); i++) {
 		m_widget->resizeColumnToContents(i);

@@ -251,7 +251,7 @@ static void _MidiKey2Freq(struct GBA* gba) {
 	uint32_t key = cpu->memory.load32(cpu, cpu->gprs[0] + 4, 0);
 	gba->memory.activeRegion = oldRegion;
 
-	cpu->gprs[0] = key / powf(2, (180.f - cpu->gprs[1] - cpu->gprs[2] / 256.f) / 12.f);
+	cpu->gprs[0] = key / exp2f((180.f - cpu->gprs[1] - cpu->gprs[2] / 256.f) / 12.f);
 }
 
 static void _Div(struct GBA* gba, int32_t num, int32_t denom) {
