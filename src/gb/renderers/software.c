@@ -209,7 +209,7 @@ static void GBVideoSoftwareRendererUpdateWindow(struct GBVideoSoftwareRenderer* 
 			renderer->hasWindow = true;
 		} else {
 			if (!renderer->hasWindow) {
-				renderer->currentWy = renderer->lastY + 1 - renderer->wy;
+				renderer->currentWy = renderer->lastY - renderer->wy;
 			} else {
 				renderer->currentWy += renderer->lastY;
 			}
@@ -359,6 +359,9 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	color_t color = mColorFrom555(value);
+	if (softwareRenderer->model == GB_MODEL_SGB && index < 0x10 && index && !(index & 3)) {
+		color = softwareRenderer->palette[0];
+	}
 	softwareRenderer->palette[index] = color;
 	if (renderer->cache) {
 		mCacheSetWritePalette(renderer->cache, index, color);

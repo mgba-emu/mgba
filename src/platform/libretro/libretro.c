@@ -66,7 +66,7 @@ static void _reloadSettings(void) {
 	enum GBModel model;
 	const char* modelName;
 
-	var.key = "mgba_model";
+	var.key = "mgba_gb_model";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		if (strcmp(var.value, "Game Boy") == 0) {
@@ -75,6 +75,8 @@ static void _reloadSettings(void) {
 			model = GB_MODEL_SGB;
 		} else if (strcmp(var.value, "Game Boy Color") == 0) {
 			model = GB_MODEL_CGB;
+		} else if (strcmp(var.value, "Game Boy Advance") == 0) {
+			model = GB_MODEL_AGB;
 		} else {
 			model = GB_MODEL_AUTODETECT;
 		}
@@ -140,7 +142,7 @@ void retro_set_environment(retro_environment_t env) {
 	struct retro_variable vars[] = {
 		{ "mgba_solar_sensor_level", "Solar sensor level; 0|1|2|3|4|5|6|7|8|9|10" },
 		{ "mgba_allow_opposing_directions", "Allow opposing directional input; OFF|ON" },
-		{ "mgba_model", "Game Boy model (requires restart); Autodetect|Game Boy|Super Game Boy|Game Boy Color" },
+		{ "mgba_gb_model", "Game Boy model (requires restart); Autodetect|Game Boy|Super Game Boy|Game Boy Color|Game Boy Advance" },
 		{ "mgba_use_bios", "Use BIOS file if found (requires restart); ON|OFF" },
 		{ "mgba_skip_bios", "Skip BIOS intro (requires restart); OFF|ON" },
 		{ "mgba_sgb_borders", "Use Super Game Boy borders (requires restart); ON|OFF" },
@@ -483,6 +485,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 		}
 
 		switch (gb->model) {
+		case GB_MODEL_AGB:
 		case GB_MODEL_CGB:
 			biosName = "gbc_bios.bin";
 			break;
