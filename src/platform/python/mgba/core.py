@@ -236,6 +236,21 @@ class Core(object):
     def step(self):
         self._core.step(self._core)
 
+    @needs_reset
+    @protected
+    def load_raw_state(self, state):
+        if len(state) < self._core.stateSize(self._core):
+            return False
+        return self._core.loadState(self._core, state)
+
+    @needs_reset
+    @protected
+    def save_raw_state(self):
+        state = ffi.new('unsigned char[%i]' % self._core.stateSize(self._core))
+        if self._core.saveState(self._core, state):
+            return state
+        return None
+
     @staticmethod
     def _keys_to_int(*args, **kwargs):
         keys = 0

@@ -68,6 +68,18 @@ void DisplayQt::framePosted() {
 #endif
 }
 
+void DisplayQt::resizeContext() {
+	if (!m_context) {
+		return;
+	}
+	QSize size = m_context->screenDimensions();
+	if (m_width != size.width() || m_height != size.height()) {
+		m_width = size.width();
+		m_height = size.height();
+		m_backing = std::move(QImage());
+	}
+}
+
 void DisplayQt::paintEvent(QPaintEvent*) {
 	QPainter painter(this);
 	painter.fillRect(QRect(QPoint(), size()), Qt::black);

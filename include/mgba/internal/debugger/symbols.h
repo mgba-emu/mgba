@@ -20,6 +20,9 @@ bool mDebuggerSymbolLookup(const struct mDebuggerSymbols*, const char* name, int
 void mDebuggerSymbolAdd(struct mDebuggerSymbols*, const char* name, int32_t value, int segment);
 void mDebuggerSymbolRemove(struct mDebuggerSymbols*, const char* name);
 
+struct VFile;
+void mDebuggerLoadARMIPSSymbols(struct mDebuggerSymbols*, struct VFile* vf);
+
 CXX_GUARD_END
 
 #endif

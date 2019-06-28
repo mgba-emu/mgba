@@ -77,6 +77,7 @@ struct GBVideoRenderer {
 	void (*drawRange)(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* objOnLine, size_t nObj);
 	void (*finishScanline)(struct GBVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct GBVideoRenderer* renderer);
+	void (*enableSGBBorder)(struct GBVideoRenderer* renderer, bool enable);
 
 	void (*getPixels)(struct GBVideoRenderer* renderer, size_t* stride, const void** pixels);
 	void (*putPixels)(struct GBVideoRenderer* renderer, size_t stride, const void* pixels);

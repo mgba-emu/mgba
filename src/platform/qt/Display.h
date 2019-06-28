@@ -65,6 +65,7 @@ public slots:
 	virtual void framePosted() = 0;
 	virtual void setShaders(struct VDir*) = 0;
 	virtual void clearShaders() = 0;
+	virtual void resizeContext() = 0;
 
 	void showMessage(const QString& message);
 

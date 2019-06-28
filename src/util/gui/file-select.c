@@ -47,7 +47,7 @@ static int _strpcmp(const void* a, const void* b) {
 	return strcasecmp(((const struct GUIMenuItem*) a)->title, ((const struct GUIMenuItem*) b)->title);
 }
 
-static bool _refreshDirectory(struct GUIParams* params, const char* currentPath, struct GUIMenuItemList* currentFiles, bool (*filter)(struct VFile*)) {
+static bool _refreshDirectory(struct GUIParams* params, const char* currentPath, struct GUIMenuItemList* currentFiles, bool (*filterName)(const char* name), bool (*filterContents)(struct VFile*)) {
 	_cleanFiles(currentFiles);
 
 	struct VDir* dir = VDirOpen(currentPath);
@@ -64,6 +64,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			uint32_t input = 0;
 			GUIPollInput(params, &input, 0);
 			if (input & (1 << GUI_INPUT_CANCEL)) {
+				dir->close(dir);
 				return false;
 			}
 
@@ -90,7 +91,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 		} else {
 			name = strdup(name);
 		}
-		*GUIMenuItemListAppend(currentFiles) = (struct GUIMenuItem) { .title = name };
+		*GUIMenuItemListAppend(currentFiles) = (struct GUIMenuItem) { .title = name, .data = (void*) de->type(de) };
 		++items;
 	}
 	qsort(GUIMenuItemListGetPointer(currentFiles, 1), GUIMenuItemListSize(currentFiles) - 1, sizeof(struct GUIMenuItem), _strpcmp);
@@ -102,6 +103,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			uint32_t input = 0;
 			GUIPollInput(params, &input, 0);
 			if (input & (1 << GUI_INPUT_CANCEL)) {
+				dir->close(dir);
 				return false;
 			}
 
@@ -116,42 +118,48 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			}
 			params->drawEnd();
 		}
-		if (!filter) {
+		struct GUIMenuItem* testItem = GUIMenuItemListGetPointer(currentFiles, item);
+		if (testItem->data != (void*) VFS_FILE) {
 			++item;
 			continue;
 		}
-		struct VDir* vd = dir->openDir(dir, GUIMenuItemListGetPointer(currentFiles, item)->title);
-		if (vd) {
-			vd->close(vd);
-			++item;
-			continue;
+		bool failed = false;
+		if (filterName && !filterName(testItem->title)) {
+			failed = true;
 		}
-		struct VFile* vf = dir->openFile(dir, GUIMenuItemListGetPointer(currentFiles, item)->title, O_RDONLY);
-		if (vf) {
-			if (filter(vf)) {
-				++item;
+
+		if (!failed && filterContents) {
+			struct VFile* vf = dir->openFile(dir, testItem->title, O_RDONLY);
+			if (!vf) {
+				failed = true;
 			} else {
-				free((char*) GUIMenuItemListGetPointer(currentFiles, item)->title);
-				GUIMenuItemListShift(currentFiles, item, 1);
+				if (!filterContents(vf)) {
+					failed = true;
+				}
+				vf->close(vf);
 			}
-			vf->close(vf);
-			continue;
 		}
-		++item;
+
+		if (failed) {
+			free((char*) testItem->title);
+			GUIMenuItemListShift(currentFiles, item, 1);
+		} else {
+			++item;
+		}
 	}
 	dir->close(dir);
 
 	return true;
 }
 
-bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool (*filter)(struct VFile*)) {
+bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool (*filterName)(const char* name), bool (*filterContents)(struct VFile*)) {
 	struct GUIMenu menu = {
 		.title = "Select file",
 		.subtitle = params->currentPath,
 		.index = params->fileIndex,
 	};
 	GUIMenuItemListInit(&menu.items, 0);
-	_refreshDirectory(params, params->currentPath, &menu.items, filter);
+	_refreshDirectory(params, params->currentPath, &menu.items, filterName, filterContents);
 
 	while (true) {
 		struct GUIMenuItem* item;
@@ -162,8 +170,11 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 		}
 		if (reason == GUI_MENU_EXIT_ACCEPT) {
 			if (params->fileIndex == 0) {
+				if (strncmp(params->currentPath, params->basePath, PATH_MAX) == 0) {
+					continue;
+				}
 				_upDirectory(params->currentPath);
-				if (!_refreshDirectory(params, params->currentPath, &menu.items, filter)) {
+				if (!_refreshDirectory(params, params->currentPath, &menu.items, filterName, filterContents)) {
 					break;
 				}
 			} else {
@@ -176,7 +187,7 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 
 				struct GUIMenuItemList newFiles;
 				GUIMenuItemListInit(&newFiles, 0);
-				if (!_refreshDirectory(params, outPath, &newFiles, filter)) {
+				if (!_refreshDirectory(params, outPath, &newFiles, filterName, filterContents)) {
 					_cleanFiles(&newFiles);
 					GUIMenuItemListDeinit(&newFiles);
 					_cleanFiles(&menu.items);
@@ -197,7 +208,7 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 				break;
 			}
 			_upDirectory(params->currentPath);
-			if (!_refreshDirectory(params, params->currentPath, &menu.items, filter)) {
+			if (!_refreshDirectory(params, params->currentPath, &menu.items, filterName, filterContents)) {
 				break;
 			}
 			params->fileIndex = 0;

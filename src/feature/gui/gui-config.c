@@ -15,10 +15,24 @@
 #endif
 #include <mgba-util/gui/file-select.h>
 #include <mgba-util/gui/menu.h>
+#include <mgba-util/vfs.h>
 
 #ifndef GUI_MAX_INPUTS
 #define GUI_MAX_INPUTS 7
 #endif
+
+static bool _biosNamed(const char* name) {
+	char ext[PATH_MAX + 1] = {};
+	separatePath(name, NULL, NULL, ext);
+
+	if (strstr(name, "bios")) {
+		return true;
+	}
+	if (!strncmp(ext, "bin", PATH_MAX)) {
+		return true;
+	}
+	return false;
+}
 
 void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t nExtra) {
 	struct GUIMenu menu = {
@@ -183,7 +197,7 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		}
 		if (!strcmp(item->data, "gba.bios")) {
 			// TODO: show box if failed
-			if (!GUISelectFile(&runner->params, gbaBiosPath, sizeof(gbaBiosPath), GBAIsBIOS)) {
+			if (!GUISelectFile(&runner->params, gbaBiosPath, sizeof(gbaBiosPath), _biosNamed, GBAIsBIOS)) {
 				gbaBiosPath[0] = '\0';
 			}
 			continue;
@@ -191,21 +205,21 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 #ifdef M_CORE_GB
 		if (!strcmp(item->data, "gb.bios")) {
 			// TODO: show box if failed
-			if (!GUISelectFile(&runner->params, gbBiosPath, sizeof(gbBiosPath), GBIsBIOS)) {
+			if (!GUISelectFile(&runner->params, gbBiosPath, sizeof(gbBiosPath), _biosNamed, GBIsBIOS)) {
 				gbBiosPath[0] = '\0';
 			}
 			continue;
 		}
 		if (!strcmp(item->data, "gbc.bios")) {
 			// TODO: show box if failed
-			if (!GUISelectFile(&runner->params, gbcBiosPath, sizeof(gbcBiosPath), GBIsBIOS)) {
+			if (!GUISelectFile(&runner->params, gbcBiosPath, sizeof(gbcBiosPath), _biosNamed, GBIsBIOS)) {
 				gbcBiosPath[0] = '\0';
 			}
 			continue;
 		}
 		if (!strcmp(item->data, "sgb.bios")) {
 			// TODO: show box if failed
-			if (!GUISelectFile(&runner->params, sgbBiosPath, sizeof(sgbBiosPath), GBIsBIOS)) {
+			if (!GUISelectFile(&runner->params, sgbBiosPath, sizeof(sgbBiosPath), _biosNamed, GBIsBIOS)) {
 				sgbBiosPath[0] = '\0';
 			}
 			continue;

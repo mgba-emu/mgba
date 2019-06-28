@@ -11,10 +11,12 @@
 #include <mgba/core/cheats.h>
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
+#include <mgba/core/serialize.h>
 #include <mgba/core/version.h>
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
 #include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/mbc.h>
 #endif
 #ifdef M_CORE_GBA
 #include <mgba/gba/core.h>
@@ -42,6 +44,10 @@ static void _postAudioBuffer(struct mAVStream*, blip_t* left, blip_t* right);
 static void _setRumble(struct mRumble* rumble, int enable);
 static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
+static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned height, size_t pitch);
+static void _startImage(struct mImageSource*, unsigned w, unsigned h, int colorFormats);
+static void _stopImage(struct mImageSource*);
+static void _requestImage(struct mImageSource*, const void** buffer, size_t* stride, enum mColorFormat* colorFormat);
 
 static struct mCore* core;
 static void* outputBuffer;
@@ -55,6 +61,12 @@ static struct mRumble rumble;
 static struct GBALuminanceSource lux;
 static int luxLevel;
 static struct mLogger logger;
+static struct retro_camera_callback cam;
+static struct mImageSource imageSource;
+static uint32_t* camData = NULL;
+static unsigned camWidth;
+static unsigned camHeight;
+static size_t camStride;
 
 static void _reloadSettings(void) {
 	struct mCoreOptions opts = {
@@ -187,8 +199,17 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
 	core->desiredVideoDimensions(core, &width, &height);
 	info->geometry.base_width = width;
 	info->geometry.base_height = height;
-	info->geometry.max_width = width;
-	info->geometry.max_height = height;
+#ifdef M_CORE_GB
+	if (core->platform(core) == PLATFORM_GB) {
+		info->geometry.max_width = 256;
+		info->geometry.max_height = 224;
+	} else
+#endif
+	{
+		info->geometry.max_width = width;
+		info->geometry.max_height = height;
+	}
+
 	info->geometry.aspect_ratio = width / (double) height;
 	info->timing.fps = core->frequency(core) / (float) core->frameCycles(core);
 	info->timing.sample_rate = 32768;
@@ -256,6 +277,10 @@ void retro_init(void) {
 	stream.postAudioBuffer = _postAudioBuffer;
 	stream.postVideoFrame = 0;
 	stream.videoFrameRateChanged = 0;
+
+	imageSource.startRequestImage = _startImage;
+	imageSource.stopRequestImage = _stopImage;
+	imageSource.requestImage = _requestImage;
 }
 
 void retro_deinit(void) {
@@ -475,6 +500,14 @@ bool retro_load_game(const struct retro_game_info* game) {
 
 #ifdef M_CORE_GB
 	if (core->platform(core) == PLATFORM_GB) {
+		memset(&cam, 0, sizeof(cam));
+		cam.height = GBCAM_HEIGHT;
+		cam.width = GBCAM_WIDTH;
+		cam.caps = 1 << RETRO_CAMERA_BUFFER_RAW_FRAMEBUFFER;
+		cam.frame_raw_framebuffer = _updateCamera;
+		core->setPeripheral(core, mPERIPH_IMAGE_SOURCE, &imageSource);
+
+		environCallback(RETRO_ENVIRONMENT_GET_CAMERA_INTERFACE, &cam);
 		const char* modelName = mCoreConfigGetValue(&core->config, "gb.model");
 		struct GB* gb = core->board;
 
@@ -496,7 +529,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 		default:
 			biosName = "gb_bios.bin";
 			break;
-		};
+		}
 	}
 #endif
 
@@ -527,23 +560,33 @@ void retro_unload_game(void) {
 }
 
 size_t retro_serialize_size(void) {
-	return core->stateSize(core);
+	struct VFile* vfm = VFileMemChunk(NULL, 0);
+	mCoreSaveStateNamed(core, vfm, SAVESTATE_SAVEDATA | SAVESTATE_RTC);
+	size_t size = vfm->size(vfm);
+	vfm->close(vfm);
+	return size;
 }
 
 bool retro_serialize(void* data, size_t size) {
-	if (size != retro_serialize_size()) {
+	struct VFile* vfm = VFileMemChunk(NULL, 0);
+	mCoreSaveStateNamed(core, vfm, SAVESTATE_SAVEDATA | SAVESTATE_RTC);
+	if ((ssize_t) size > vfm->size(vfm)) {
+		size = vfm->size(vfm);
+	} else if ((ssize_t) size < vfm->size(vfm)) {
+		vfm->close(vfm);
 		return false;
 	}
-	core->saveState(core, data);
+	vfm->seek(vfm, 0, SEEK_SET);
+	vfm->read(vfm, data, size);
+	vfm->close(vfm);
 	return true;
 }
 
 bool retro_unserialize(const void* data, size_t size) {
-	if (size != retro_serialize_size()) {
-		return false;
-	}
-	core->loadState(core, data);
-	return true;
+	struct VFile* vfm = VFileFromConstMemory(data, size);
+	bool success = mCoreLoadStateNamed(core, vfm, SAVESTATE_RTC);
+	vfm->close(vfm);
+	return success;
 }
 
 void retro_cheat_reset(void) {
@@ -731,4 +774,37 @@ static uint8_t _readLux(struct GBALuminanceSource* lux) {
 		value += GBA_LUX_LEVELS[luxLevel - 1];
 	}
 	return 0xFF - value;
+}
+
+static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned height, size_t pitch) {
+	if (!camData || width != camWidth || height != camHeight) {
+		camData = malloc(sizeof(*buffer) * height * pitch);
+		camWidth = width;
+		camHeight = height;
+		camStride = pitch / sizeof(*buffer);
+	}
+	memcpy(camData, buffer, sizeof(*buffer) * height * pitch);
+}
+
+static void _startImage(struct mImageSource* image, unsigned w, unsigned h, int colorFormats) {
+	UNUSED(image);
+	UNUSED(colorFormats);
+
+	camData = NULL;
+	cam.start();
+}
+
+static void _stopImage(struct mImageSource* image) {
+	UNUSED(image);
+	cam.stop();	
+}
+
+static void _requestImage(struct mImageSource* image, const void** buffer, size_t* stride, enum mColorFormat* colorFormat) {
+	UNUSED(image);
+	if (!camData) {
+		cam.start();
+	}
+	*buffer = camData;
+	*stride = camStride;
+	*colorFormat = mCOLOR_XRGB8;
 }

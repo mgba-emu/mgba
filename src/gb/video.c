@@ -26,6 +26,7 @@ static void GBVideoDummyRendererWriteOAM(struct GBVideoRenderer* renderer, uint1
 static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
 static void GBVideoDummyRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoDummyRendererFinishFrame(struct GBVideoRenderer* renderer);
+static void GBVideoDummyRendererEnableSGBBorder(struct GBVideoRenderer* renderer, bool enable);
 static void GBVideoDummyRendererGetPixels(struct GBVideoRenderer* renderer, size_t* stride, const void** pixels);
 static void GBVideoDummyRendererPutPixels(struct GBVideoRenderer* renderer, size_t stride, const void* pixels);
 
@@ -48,6 +49,7 @@ static struct GBVideoRenderer dummyRenderer = {
 	.drawRange = GBVideoDummyRendererDrawRange,
 	.finishScanline = GBVideoDummyRendererFinishScanline,
 	.finishFrame = GBVideoDummyRendererFinishFrame,
+	.enableSGBBorder = GBVideoDummyRendererEnableSGBBorder,
 	.getPixels = GBVideoDummyRendererGetPixels,
 	.putPixels = GBVideoDummyRendererPutPixels,
 };
@@ -781,6 +783,12 @@ static void GBVideoDummyRendererFinishScanline(struct GBVideoRenderer* renderer,
 
 static void GBVideoDummyRendererFinishFrame(struct GBVideoRenderer* renderer) {
 	UNUSED(renderer);
+	// Nothing to do
+}
+
+static void GBVideoDummyRendererEnableSGBBorder(struct GBVideoRenderer* renderer, bool enable) {
+	UNUSED(renderer);
+	UNUSED(enable);
 	// Nothing to do
 }
 

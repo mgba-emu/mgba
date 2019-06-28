@@ -121,6 +121,7 @@ void GBAMemoryReset(struct GBA* gba) {
 	}
 
 	memset(gba->memory.io, 0, sizeof(gba->memory.io));
+	GBAAdjustWaitstates(gba, 0);
 
 	gba->memory.agbPrint = 0;
 	memset(&gba->memory.agbPrintCtx, 0, sizeof(gba->memory.agbPrintCtx));
@@ -364,6 +365,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 					value <<= 16; \
 					value |= cpu->prefetch[0]; \
 				} \
+				break; \
 			default: \
 				value |= value << 16; \
 			} \

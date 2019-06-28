@@ -7,7 +7,6 @@
 
 #include <mgba/core/tile-cache.h>
 #include <mgba/internal/gba/gba.h>
-#include <mgba/internal/gba/io.h>
 
 #ifndef DISABLE_THREADING
 

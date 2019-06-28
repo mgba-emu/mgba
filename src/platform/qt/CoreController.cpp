@@ -90,14 +90,8 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 		controller->m_resetActions.clear();
 
-		QSize size = controller->screenDimensions();
-		controller->m_buffers[0].resize(size.width() * size.height() * sizeof(color_t));
-		controller->m_buffers[1].resize(size.width() * size.height() * sizeof(color_t));
-		controller->m_buffers[0].fill(0xFF);
-		controller->m_buffers[1].fill(0xFF);
 		controller->m_activeBuffer = &controller->m_buffers[0];
-
-		context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), size.width());
+		context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), controller->screenDimensions().width());
 
 		controller->finishFrame();
 	};
@@ -582,8 +576,8 @@ void CoreController::loadPatch(const QString& patchPath) {
 	if (patch) {
 		m_threadContext.core->loadPatch(m_threadContext.core, patch);
 		m_patched = true;
+		patch->close(patch);
 	}
-	patch->close(patch);
 	if (mCoreThreadHasStarted(&m_threadContext)) {
 		reset();
 	}
@@ -776,7 +770,7 @@ void CoreController::finishFrame() {
 		m_activeBuffer = &m_buffers[1];
 	}
 	// Copy contents to avoid issues when doing frameskip
-	*m_activeBuffer = *m_completeBuffer;
+	memcpy(m_activeBuffer->data(), m_completeBuffer->data(), m_activeBuffer->size());
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), screenDimensions().width());
 
 	for (auto& action : m_frameActions) {

@@ -13,12 +13,14 @@ CXX_GUARD_START
 #ifndef DISABLE_THREADING
 #ifdef USE_PTHREADS
 #include <mgba-util/platform/posix/threading.h>
-#elif _WIN32
+#elif defined(_WIN32)
 #include <mgba-util/platform/windows/threading.h>
-#elif PSP2
+#elif defined(PSP2)
 #include <mgba-util/platform/psp2/threading.h>
-#elif _3DS
+#elif defined(_3DS)
 #include <mgba-util/platform/3ds/threading.h>
+#elif defined(__SWITCH__)
+#include <mgba-util/platform/switch/threading.h>
 #else
 #define DISABLE_THREADING
 #endif

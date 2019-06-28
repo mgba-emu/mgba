@@ -34,6 +34,7 @@ public slots:
 	void framePosted() override;
 	void setShaders(struct VDir*) override {}
 	void clearShaders() override {}
+	void resizeContext() override;
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override;

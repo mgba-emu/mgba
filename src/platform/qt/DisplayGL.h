@@ -61,6 +61,7 @@ public slots:
 	void framePosted() override;
 	void setShaders(struct VDir*) override;
 	void clearShaders() override;
+	void resizeContext() override;
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override {}
@@ -100,6 +101,7 @@ public slots:
 	void lockAspectRatio(bool lock);
 	void lockIntegerScaling(bool lock);
 	void filter(bool filter);
+	void resizeContext();
 
 	void setShaders(struct VDir*);
 	void clearShaders();

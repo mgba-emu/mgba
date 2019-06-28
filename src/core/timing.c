@@ -33,7 +33,7 @@ void mTimingSchedule(struct mTiming* timing, struct mTimingEvent* event, int32_t
 	unsigned priority = event->priority;
 	while (next) {
 		int32_t nextWhen = next->when - timing->masterCycles;
-		if (nextWhen > when || (nextWhen == when && next->priority > priority)) {
+		if (nextWhen > nextEvent || (nextWhen == nextEvent && next->priority > priority)) {
 			break;
 		}
 		previous = &next->next;
@@ -58,6 +58,9 @@ void mTimingDeschedule(struct mTiming* timing, struct mTimingEvent* event) {
 
 bool mTimingIsScheduled(const struct mTiming* timing, const struct mTimingEvent* event) {
 	const struct mTimingEvent* next = timing->root;
+	if (!next) {
+		next = timing->reroot;
+	}
 	while (next) {
 		if (next == event) {
 			return true;

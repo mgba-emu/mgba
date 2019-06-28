@@ -21,6 +21,7 @@ static void GBVideoSoftwareRendererWriteOAM(struct GBVideoRenderer* renderer, ui
 static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
 static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer);
+static void GBVideoSoftwareRendererEnableSGBBorder(struct GBVideoRenderer* renderer, bool enable);
 static void GBVideoSoftwareRendererGetPixels(struct GBVideoRenderer* renderer, size_t* stride, const void** pixels);
 static void GBVideoSoftwareRendererPutPixels(struct GBVideoRenderer* renderer, size_t stride, const void* pixels);
 
@@ -174,6 +175,7 @@ void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
 	renderer->d.drawRange = GBVideoSoftwareRendererDrawRange;
 	renderer->d.finishScanline = GBVideoSoftwareRendererFinishScanline;
 	renderer->d.finishFrame = GBVideoSoftwareRendererFinishFrame;
+	renderer->d.enableSGBBorder = GBVideoSoftwareRendererEnableSGBBorder;
 	renderer->d.getPixels = GBVideoSoftwareRendererGetPixels;
 	renderer->d.putPixels = GBVideoSoftwareRendererPutPixels;
 
@@ -705,6 +707,16 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 	softwareRenderer->lastY = GB_VIDEO_VERTICAL_PIXELS;
 	softwareRenderer->currentWy = 0;
 	softwareRenderer->hasWindow = false;
+}
+
+static void GBVideoSoftwareRendererEnableSGBBorder(struct GBVideoRenderer* renderer, bool enable) {
+	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
+	if (softwareRenderer->model == GB_MODEL_SGB) {
+		softwareRenderer->sgbBorders = enable;
+		if (softwareRenderer->sgbBorders && !renderer->sgbRenderMode) {
+			_regenerateSGBBorder(softwareRenderer);
+		}
+	}
 }
 
 static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, uint8_t* maps, int startX, int endX, int sx, int sy) {

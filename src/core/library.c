@@ -209,6 +209,7 @@ void mLibraryDestroy(struct mLibrary* library) {
 	sqlite3_finalize(library->select);
 	sqlite3_finalize(library->count);
 	sqlite3_close(library->db);
+	free(library);
 }
 
 void mLibraryLoadDirectory(struct mLibrary* library, const char* base) {

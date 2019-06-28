@@ -60,6 +60,11 @@ static void _waitUntilNotState(struct mCoreThreadInternal* threadContext, enum m
 	threadContext->sync.videoFrameWait = false;
 	MutexUnlock(&threadContext->sync.videoFrameMutex);
 
+	MutexLock(&threadContext->sync.audioBufferMutex);
+	bool audioWait = threadContext->sync.audioWait;
+	threadContext->sync.audioWait = false;
+	MutexUnlock(&threadContext->sync.audioBufferMutex);
+
 	while (threadContext->state == oldState) {
 		MutexUnlock(&threadContext->stateMutex);
 
@@ -76,6 +81,10 @@ static void _waitUntilNotState(struct mCoreThreadInternal* threadContext, enum m
 		MutexLock(&threadContext->stateMutex);
 		ConditionWake(&threadContext->stateCond);
 	}
+
+	MutexLock(&threadContext->sync.audioBufferMutex);
+	threadContext->sync.audioWait = audioWait;
+	MutexUnlock(&threadContext->sync.audioBufferMutex);
 
 	MutexLock(&threadContext->sync.videoFrameMutex);
 	threadContext->sync.videoFrameWait = videoFrameWait;
@@ -228,8 +237,10 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 				ConditionWait(&impl->stateCond, &impl->stateMutex);
 
 				if (impl->sync.audioWait) {
+					MutexUnlock(&impl->stateMutex);
 					mCoreSyncLockAudio(&impl->sync);
 					mCoreSyncProduceAudio(&impl->sync, core->getAudioChannel(core, 0), core->getAudioBufferSize(core));
+					MutexLock(&impl->stateMutex);
 				}
 			}
 		}
@@ -583,7 +594,6 @@ void mCoreThreadRewindParamsChanged(struct mCoreThread* threadContext) {
 	struct mCore* core = threadContext->core;
 	if (core->opts.rewindEnable && core->opts.rewindBufferCapacity > 0) {
 		 mCoreRewindContextInit(&threadContext->impl->rewind, core->opts.rewindBufferCapacity, true);
-		 threadContext->impl->rewind.stateFlags = core->opts.rewindSave ? SAVESTATE_SAVEDATA : 0;
 	} else {
 		 mCoreRewindContextDeinit(&threadContext->impl->rewind);
 	}

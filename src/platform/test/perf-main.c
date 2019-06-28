@@ -19,6 +19,9 @@
 #ifdef _3DS
 #include <3ds.h>
 #endif
+#ifdef __SWITCH__
+#include <switch.h>
+#endif
 
 #include <errno.h>
 #include <fcntl.h>
@@ -49,6 +52,9 @@ struct PerfOpts {
 extern bool allocateRomBuffer(void);
 FS_Archive sdmcArchive;
 #endif
+#ifdef __SWITCH__
+TimeType __nx_time_type = TimeType_LocalSystemClock;
+#endif
 
 static void _mPerfRunloop(struct mCore* context, int* frames, bool quiet);
 static void _mPerfShutdown(int signal);
@@ -71,6 +77,10 @@ int main(int argc, char** argv) {
 	if (!allocateRomBuffer()) {
 		return 1;
 	}
+#elif defined(__SWITCH__)
+	UNUSED(_mPerfShutdown);
+	gfxInitDefault();
+	consoleInit(NULL);
 #else
 	signal(SIGINT, _mPerfShutdown);
 #endif
@@ -128,6 +138,8 @@ int main(int argc, char** argv) {
 #ifdef _3DS
 	gfxExit();
 	acExit();
+#elif defined(__SWITCH__)
+	gfxExit();
 #endif
 
 	return didFail;
@@ -254,7 +266,10 @@ static bool _mPerfRunServer(const char* listen, const struct mArguments* args, c
 		SocketSend(_socket, header, strlen(header));
 	}
 	char path[PATH_MAX];
-	while (SocketRecv(_socket, path, sizeof(path)) > 0) {
+	memset(path, 0, sizeof(path));
+	ssize_t i;
+	while ((i = SocketRecv(_socket, path, sizeof(path) - 1)) > 0) {
+		path[i] = '\0';
 		char* nl = strchr(path, '\n');
 		if (nl == path) {
 			break;
@@ -265,6 +280,7 @@ static bool _mPerfRunServer(const char* listen, const struct mArguments* args, c
 		if (!_mPerfRunCore(path, args, perfOpts)) {
 			break;
 		}
+		memset(path, 0, sizeof(path));
 	}
 	SocketClose(_socket);
 	SocketClose(server);
