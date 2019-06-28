@@ -261,6 +261,7 @@ void CoreController::setDebugger(mDebugger* debugger) {
 	Interrupter interrupter(this);
 	if (debugger) {
 		mDebuggerAttach(debugger, m_threadContext.core);
+		mDebuggerEnter(debugger, DEBUGGER_ENTER_ATTACHED, 0);
 	} else {
 		m_threadContext.core->detachDebugger(m_threadContext.core);
 	}

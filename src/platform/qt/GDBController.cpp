@@ -34,10 +34,10 @@ void GDBController::setBindAddress(uint32_t bindAddress) {
 }
 
 void GDBController::listen() {
-	if (!isAttached()) {
-		attach();
-	}
 	if (GDBStubListen(&m_gdbStub, m_port, &m_bindAddress)) {
+		if (!isAttached()) {
+			attach();
+		}
 		emit listening();
 	} else {
 		detach();
