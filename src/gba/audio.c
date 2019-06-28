@@ -307,7 +307,10 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 		audio->p->stream->postAudioFrame(audio->p->stream, sampleLeft, sampleRight);
 	}
 	bool wait = produced >= audio->samples;
-	mCoreSyncProduceAudio(audio->p->sync, wait);
+	if (!mCoreSyncProduceAudio(audio->p->sync, audio->psg.left, audio->samples)) {
+		// Interrupted
+		audio->p->earlyExit = true;
+	}
 
 	if (wait && audio->p->stream && audio->p->stream->postAudioBuffer) {
 		audio->p->stream->postAudioBuffer(audio->p->stream, audio->psg.left, audio->psg.right);

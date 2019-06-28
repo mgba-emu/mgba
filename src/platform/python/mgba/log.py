@@ -3,17 +3,15 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-from ._pylib import ffi, lib
-from . import createCallback
+from ._pylib import ffi, lib  # pylint: disable=no-name-in-module
+from . import create_callback
 
-createCallback("mLoggerPy", "log", "_pyLog")
+create_callback("mLoggerPy", "log", "_pyLog")
 
-defaultLogger = None
 
-def installDefault(logger):
-    global defaultLogger
-    defaultLogger = logger
-    lib.mLogSetDefaultLogger(logger._native)
+def install_default(logger):
+    Logger.install_default(logger)
+
 
 class Logger(object):
     FATAL = lib.mLOG_FATAL
@@ -24,16 +22,24 @@ class Logger(object):
     STUB = lib.mLOG_STUB
     GAME_ERROR = lib.mLOG_GAME_ERROR
 
+    _DEFAULT_LOGGER = None
+
     def __init__(self):
         self._handle = ffi.new_handle(self)
         self._native = ffi.gc(lib.mLoggerPythonCreate(self._handle), lib.free)
 
     @staticmethod
-    def categoryName(category):
+    def category_name(category):
         return ffi.string(lib.mLogCategoryName(category)).decode('UTF-8')
 
+    @classmethod
+    def install_default(cls, logger):
+        cls._DEFAULT_LOGGER = logger
+        lib.mLogSetDefaultLogger(logger._native)
+
     def log(self, category, level, message):
-        print("{}: {}".format(self.categoryName(category), message))
+        print("{}: {}".format(self.category_name(category), message))
+
 
 class NullLogger(Logger):
     def log(self, category, level, message):

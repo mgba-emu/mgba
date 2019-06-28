@@ -80,10 +80,6 @@ ffi.embedding_api('\n'.join(lines))
 
 ffi.embedding_init_code("""
     import os, os.path
-    venv = os.getenv('VIRTUAL_ENV')
-    if venv:
-        activate = os.path.join(venv, 'bin', 'activate_this.py')
-        exec(compile(open(activate, "rb").read(), activate, 'exec'), dict(__file__=activate))
     from mgba._pylib import ffi, lib
     symbols = {}
     globalSyms = {
@@ -111,7 +107,7 @@ ffi.embedding_init_code("""
         from mgba.vfs import VFile
         vf = VFile(vf)
         name = ffi.string(name)
-        source = vf.readAll().decode('utf-8')
+        source = vf.read_all().decode('utf-8')
         try:
             code = compile(source, name, 'exec')
             pendingCode.append(code)

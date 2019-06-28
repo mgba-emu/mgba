@@ -160,10 +160,12 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 
 	connect(this, &Window::shutdown, m_logView, &QWidget::hide);
 	connect(&m_fpsTimer, &QTimer::timeout, this, &Window::showFPS);
+	connect(&m_frameTimer, &QTimer::timeout, this, &Window::delimitFrames);
 	connect(&m_focusCheck, &QTimer::timeout, this, &Window::focusCheck);
 
 	m_log.setLevels(mLOG_WARN | mLOG_ERROR | mLOG_FATAL);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
+	m_frameTimer.setInterval(FRAME_LIST_INTERVAL);
 	m_focusCheck.setInterval(200);
 
 	setupMenu(menuBar());
@@ -314,6 +316,7 @@ QString Window::getFilters() const {
 	QStringList gbFormats{
 		"*.gb",
 		"*.gbc",
+		"*.sgb",
 #if defined(USE_LIBZIP) || defined(USE_ZLIB)
 		"*.zip",
 #endif
@@ -726,8 +729,6 @@ void Window::gameStarted() {
 		return;
 	}
 #endif
-	multiplayerChanged();
-	updateTitle();
 	QSize size = m_controller->screenDimensions();
 	m_screenWidget->setDimensions(size.width(), size.height());
 	m_config->updateOption("lockIntegerScaling");
@@ -744,10 +745,16 @@ void Window::gameStarted() {
 		menuBar()->hide();
 	}
 #endif
+	m_display->startDrawing(m_controller);
+
+	reloadAudioDriver();
+	multiplayerChanged();
+	updateTitle();
 
 	m_hitUnimplementedBiosCall = false;
 	if (m_config->getOption("showFps", "1").toInt()) {
 		m_fpsTimer.start();
+		m_frameTimer.start();
 	}
 	m_focusCheck.start();
 	if (m_display->underMouse()) {
@@ -785,12 +792,10 @@ void Window::gameStarted() {
 			m_audioChannels->addAction(action);
 		}
 	}
-	m_display->startDrawing(m_controller);
-
-	reloadAudioDriver();
 }
 
 void Window::gameStopped() {
+	m_controller.reset();
 	for (QPair<QAction*, int> action : m_platformActions) {
 		action.first->setDisabled(false);
 	}
@@ -816,6 +821,7 @@ void Window::gameStopped() {
 	m_audioChannels->clear();
 
 	m_fpsTimer.stop();
+	m_frameTimer.stop();
 	m_focusCheck.stop();
 
 	emit paused(false);
@@ -944,10 +950,19 @@ void Window::mustRestart() {
 }
 
 void Window::recordFrame() {
-	m_frameList.append(QDateTime::currentDateTime());
-	while (m_frameList.count() > FRAME_LIST_SIZE) {
-		m_frameList.removeFirst();
+	if (m_frameList.isEmpty()) {
+		m_frameList.append(1);
+	} else {
+		++m_frameList.back();
 	}
+}
+
+void Window::delimitFrames() {
+	if (m_frameList.size() >= FRAME_LIST_SIZE) {
+		m_frameCounter -= m_frameList.takeAt(0);
+	}
+	m_frameCounter += m_frameList.back();
+	m_frameList.append(0);
 }
 
 void Window::showFPS() {
@@ -955,8 +970,7 @@ void Window::showFPS() {
 		updateTitle();
 		return;
 	}
-	qint64 interval = m_frameList.first().msecsTo(m_frameList.last());
-	float fps = (m_frameList.count() - 1) * 10000.f / interval;
+	float fps = m_frameCounter * 10000.f / (FRAME_LIST_INTERVAL * (m_frameList.size() - 1));
 	fps = round(fps) / 10.f;
 	updateTitle(fps);
 }
@@ -1679,9 +1693,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	showFps->connect([this](const QVariant& value) {
 		if (!value.toInt()) {
 			m_fpsTimer.stop();
+			m_frameTimer.stop();
 			updateTitle();
 		} else if (m_controller) {
 			m_fpsTimer.start();
+			m_frameTimer.start();
 		}
 	}, this);
 
@@ -1792,15 +1808,17 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	if (!controller) {
 		return;
 	}
+
+	if (m_controller) {
+		m_controller->stop();
+		QTimer::singleShot(0, this, [this, controller, fname]() {
+			setController(controller, fname);
+		});
+		return;
+	}
 	if (!fname.isEmpty()) {
 		setWindowFilePath(fname);
 		appendMRU(fname);
-	}
-
-	if (m_controller) {
-		m_controller->disconnect(this);
-		m_controller->stop();
-		m_controller.reset();
 	}
 
 	m_controller = std::shared_ptr<CoreController>(controller);

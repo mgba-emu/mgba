@@ -37,8 +37,10 @@ Q_IMPORT_PLUGIN(AVFServicePlugin);
 using namespace QGBA;
 
 int main(int argc, char* argv[]) {
-#if defined(BUILD_SDL) && SDL_VERSION_ATLEAST(2, 0, 0)
+#ifdef BUILD_SDL
+#if SDL_VERSION_ATLEAST(2, 0, 0) // CPP does not shortcut function lookup
 	SDL_SetMainReady();
+#endif
 #endif
 
 	ConfigController configController;

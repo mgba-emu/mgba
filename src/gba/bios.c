@@ -809,7 +809,7 @@ static void _unBitPack(struct GBA* gba) {
 	uint32_t out = 0;
 	int bitsRemaining = 0;
 	int bitsEaten = 0;
-	while (sourceLen > 0) {
+	while (sourceLen > 0 || bitsRemaining) {
 		if (!bitsRemaining) {
 			in = cpu->memory.load8(cpu, source, 0);
 			bitsRemaining = 8;

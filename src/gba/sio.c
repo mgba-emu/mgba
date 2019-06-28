@@ -163,6 +163,9 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 				value &= ~0x0080;
 			}
 			break;
+		case SIO_MULTI:
+			value |= 0xC;
+			break;
 		default:
 			// TODO
 			break;

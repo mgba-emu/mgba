@@ -264,11 +264,6 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		} while (gba->cpuBlocked);
 
 		cpu->nextEvent = nextEvent;
-
-		if (gba->earlyExit) {
-			gba->earlyExit = false;
-			break;
-		}
 		if (cpu->halted) {
 			cpu->cycles = nextEvent;
 			if (!gba->memory.io[REG_IME >> 1] || !gba->memory.io[REG_IE >> 1]) {
@@ -280,7 +275,11 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 			mLOG(GBA, FATAL, "Negative cycles will pass: %i", nextEvent);
 		}
 #endif
+		if (gba->earlyExit) {
+			break;
+		}
 	}
+	gba->earlyExit = false;
 #ifndef NDEBUG
 	if (gba->cpuBlocked) {
 		mLOG(GBA, FATAL, "CPU is blocked!");

@@ -15,7 +15,7 @@
 #cmakedefine BUILD_GLES2
 #endif
 
-// COLOR flags
+// Miscellaneous flags
 
 #ifndef COLOR_16_BIT
 #cmakedefine COLOR_16_BIT
@@ -23,6 +23,14 @@
 
 #ifndef COLOR_5_6_5
 #cmakedefine COLOR_5_6_5
+#endif
+
+#ifndef DISABLE_THREADING
+#cmakedefine DISABLE_THREADING
+#endif
+
+#ifndef FIXED_ROM_BUFFER
+#cmakedefine FIXED_ROM_BUFFER
 #endif
 
 // M_CORE flags
@@ -39,9 +47,13 @@
 #cmakedefine M_CORE_DS
 #endif
 
-// USE flags
+// ENABLE flags
 
-#ifndef MINIMAL_CORE
+#ifndef ENABLE_SCRIPTING
+#cmakedefine ENABLE_SCRIPTING
+#endif
+
+// USE flags
 
 #ifndef USE_DEBUGGERS
 #cmakedefine USE_DEBUGGERS
@@ -49,6 +61,10 @@
 
 #ifndef USE_EDITLINE
 #cmakedefine USE_EDITLINE
+#endif
+
+#ifndef USE_ELF
+#cmakedefine USE_ELF
 #endif
 
 #ifndef USE_EPOXY
@@ -97,8 +113,6 @@
 
 #ifndef USE_ZLIB
 #cmakedefine USE_ZLIB
-#endif
-
 #endif
 
 #endif

@@ -147,7 +147,7 @@ void GBVideoReset(struct GBVideo* video) {
 }
 
 void GBVideoDeinit(struct GBVideo* video) {
-	GBVideoAssociateRenderer(video, &dummyRenderer);
+	video->renderer->deinit(video->renderer);
 	mappedMemoryFree(video->vram, GB_SIZE_VRAM);
 	if (video->renderer->sgbCharRam) {
 		mappedMemoryFree(video->renderer->sgbCharRam, SGB_SIZE_CHAR_RAM);
@@ -437,6 +437,7 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 	}
 	if (GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC]) && !GBRegisterLCDCIsEnable(value)) {
 		// TODO: Fix serialization; this gets internal and visible modes out of sync
+		video->mode = 0;
 		video->stat = GBRegisterSTATSetMode(video->stat, 0);
 		video->p->memory.io[REG_STAT] = video->stat;
 		video->ly = 0;

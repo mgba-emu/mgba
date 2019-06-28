@@ -3,14 +3,15 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-from ._pylib import ffi, lib
+from ._pylib import ffi, lib  # pylint: disable=no-name-in-module
 from . import image
+
 
 class Tile:
     def __init__(self, data):
         self.buffer = data
 
-    def toImage(self):
+    def to_image(self):
         i = image.Image(8, 8)
         self.composite(i, 0, 0)
         return i
@@ -19,18 +20,21 @@ class Tile:
         for iy in range(8):
             ffi.memmove(ffi.addressof(i.buffer, x + (iy + y) * i.stride), ffi.addressof(self.buffer, iy * 8), 8 * ffi.sizeof("color_t"))
 
+
 class CacheSet:
     def __init__(self, core):
         self.core = core
-        self.cache = ffi.gc(ffi.new("struct mCacheSet*"), core._deinitCache)
-        core._initCache(self.cache)
+        self.cache = ffi.gc(ffi.new("struct mCacheSet*"), core._deinit_cache)
+        core._init_cache(self.cache)
+
 
 class TileView:
     def __init__(self, cache):
         self.cache = cache
 
-    def getTile(self, tile, palette):
+    def get_tile(self, tile, palette):
         return Tile(lib.mTileCacheGetTile(self.cache, tile, palette))
+
 
 class MapView:
     def __init__(self, cache):
@@ -53,6 +57,7 @@ class MapView:
             row = lib.mMapCacheGetRow(self.cache, y)
             ffi.memmove(ffi.addressof(i.buffer, i.stride * y), row, self.width * 8 * ffi.sizeof("color_t"))
         return i
+
 
 class Sprite(object):
     def constitute(self, tileView, tilePitch):

@@ -3,7 +3,8 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-from ._pylib import ffi, lib
+from ._pylib import ffi, lib  # pylint: disable=no-name-in-module
+
 
 class MemoryView(object):
     def __init__(self, core, width, size, base=0, sign="u"):
@@ -11,11 +12,11 @@ class MemoryView(object):
         self._width = width
         self._size = size
         self._base = base
-        self._busRead = getattr(self._core, "busRead" + str(width * 8))
-        self._busWrite = getattr(self._core, "busWrite" + str(width * 8))
-        self._rawRead = getattr(self._core, "rawRead" + str(width * 8))
-        self._rawWrite = getattr(self._core, "rawWrite" + str(width * 8))
-        self._mask = (1 << (width * 8)) - 1 # Used to force values to fit within range so that negative values work
+        self._bus_read = getattr(self._core, "busRead" + str(width * 8))
+        self._bus_write = getattr(self._core, "busWrite" + str(width * 8))
+        self._raw_read = getattr(self._core, "rawRead" + str(width * 8))
+        self._raw_write = getattr(self._core, "rawWrite" + str(width * 8))
+        self._mask = (1 << (width * 8)) - 1  # Used to force values to fit within range so that negative values work
         if sign == "u" or sign == "unsigned":
             self._type = "uint{}_t".format(width * 8)
         elif sign == "i" or sign == "s" or sign == "signed":
@@ -23,7 +24,7 @@ class MemoryView(object):
         else:
             raise ValueError("Invalid sign type: '{}'".format(sign))
 
-    def _addrCheck(self, address):
+    def _addr_check(self, address):
         if isinstance(address, slice):
             start = address.start or 0
             stop = self._size - self._width if address.stop is None else address.stop
@@ -39,33 +40,32 @@ class MemoryView(object):
         return self._size
 
     def __getitem__(self, address):
-        self._addrCheck(address)
+        self._addr_check(address)
         if isinstance(address, slice):
             start = address.start or 0
             stop = self._size - self._width if address.stop is None else address.stop
             step = address.step or self._width
-            return [int(ffi.cast(self._type, self._busRead(self._core, self._base + a))) for a in range(start, stop, step)]
-        else:
-            return int(ffi.cast(self._type, self._busRead(self._core, self._base + address)))
+            return [int(ffi.cast(self._type, self._bus_read(self._core, self._base + a))) for a in range(start, stop, step)]
+        return int(ffi.cast(self._type, self._bus_read(self._core, self._base + address)))
 
     def __setitem__(self, address, value):
-        self._addrCheck(address)
+        self._addr_check(address)
         if isinstance(address, slice):
             start = address.start or 0
             stop = self._size - self._width if address.stop is None else address.stop
             step = address.step or self._width
-            for a in range(start, stop, step):
-                self._busWrite(self._core, self._base + a, value[a] & self._mask)
+            for addr in range(start, stop, step):
+                self._bus_write(self._core, self._base + addr, value[addr] & self._mask)
         else:
-            self._busWrite(self._core, self._base + address, value & self._mask)
+            self._bus_write(self._core, self._base + address, value & self._mask)
 
-    def rawRead(self, address, segment=-1):
-        self._addrCheck(address)
-        return int(ffi.cast(self._type, self._rawRead(self._core, self._base + address, segment)))
+    def raw_read(self, address, segment=-1):
+        self._addr_check(address)
+        return int(ffi.cast(self._type, self._raw_read(self._core, self._base + address, segment)))
 
-    def rawWrite(self, address, value, segment=-1):
-        self._addrCheck(address)
-        self._rawWrite(self._core, self._base + address, segment, value & self._mask)
+    def raw_write(self, address, value, segment=-1):
+        self._addr_check(address)
+        self._raw_write(self._core, self._base + address, segment, value & self._mask)
 
 
 class MemorySearchResult(object):
@@ -75,12 +75,13 @@ class MemorySearchResult(object):
         self.guessDivisor = result.guessDivisor
         self.type = result.type
 
-        if result.type == Memory.SEARCH_8:
-            self._memory = memory.u8
-        elif result.type == Memory.SEARCH_16:
-            self._memory = memory.u16
-        elif result.type == Memory.SEARCH_32:
-            self._memory = memory.u32
+        if result.type == Memory.SEARCH_INT:
+            if result.width == 1:
+                self._memory = memory.u8
+            elif result.width == 2:
+                self._memory = memory.u16
+            elif result.width == 4:
+                self._memory = memory.u32
         elif result.type == Memory.SEARCH_STRING:
             self._memory = memory.u8
         else:
@@ -123,7 +124,7 @@ class Memory(object):
         self.s32 = MemoryView(core, 4, size, base, "s")
 
     def __len__(self):
-        return self._size
+        return self.size
 
     def search(self, value, type=SEARCH_GUESS, flags=RW, limit=10000, old_results=[]):
         results = ffi.new("struct mCoreMemorySearchResults*")
@@ -138,11 +139,11 @@ class Memory(object):
             params.valueStr = ffi.new("char[]", str(value).encode("ascii"))
 
         for result in old_results:
-            r = lib.mCoreMemorySearchResultsAppend(results)
-            r.address = result.address
-            r.segment = result.segment
-            r.guessDivisor = result.guessDivisor
-            r.type = result.type
+            native_result = lib.mCoreMemorySearchResultsAppend(results)
+            native_result.address = result.address
+            native_result.segment = result.segment
+            native_result.guessDivisor = result.guessDivisor
+            native_result.type = result.type
         if old_results:
             lib.mCoreMemorySearchRepeat(self._core, params, results)
         else:
@@ -154,5 +155,4 @@ class Memory(object):
     def __getitem__(self, address):
         if isinstance(address, slice):
             return bytearray(self.u8[address])
-        else:
-            return self.u8[address]
+        return self.u8[address]

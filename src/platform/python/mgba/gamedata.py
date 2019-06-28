@@ -8,6 +8,7 @@ try:
 except ImportError:
     pass
 
+
 def search(core):
     crc32 = None
     if hasattr(core, 'PLATFORM_GBA') and core.platform() == core.PLATFORM_GBA:

@@ -3,13 +3,14 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-from ._pylib import ffi, lib
+from ._pylib import ffi  # pylint: disable=no-name-in-module
 from . import png
 
 try:
     import PIL.Image as PImage
 except ImportError:
     pass
+
 
 class Image:
     def __init__(self, width, height, stride=0, alpha=False):
@@ -24,58 +25,63 @@ class Image:
             self.stride = self.width
         self.buffer = ffi.new("color_t[{}]".format(self.stride * self.height))
 
-    def savePNG(self, f):
-        p = png.PNG(f, mode=png.MODE_RGBA if self.alpha else png.MODE_RGB)
-        success = p.writeHeader(self)
-        success = success and p.writePixels(self)
-        p.writeClose()
+    def save_png(self, fileobj):
+        png_file = png.PNG(fileobj, mode=png.MODE_RGBA if self.alpha else png.MODE_RGB)
+        success = png_file.write_header(self)
+        success = success and png_file.write_pixels(self)
+        png_file.write_close()
         return success
 
     if 'PImage' in globals():
-        def toPIL(self):
-            type = "RGBA" if self.alpha else "RGBX"
-            return PImage.frombytes(type, (self.width, self.height), ffi.buffer(self.buffer), "raw",
-                                    type, self.stride * 4)
+        def to_pil(self):
+            colorspace = "RGBA" if self.alpha else "RGBX"
+            return PImage.frombytes(colorspace, (self.width, self.height), ffi.buffer(self.buffer), "raw",
+                                    colorspace, self.stride * 4)
 
-def u16ToU32(c):
-    r = c & 0x1F
-    g = (c >> 5) & 0x1F
-    b = (c >> 10) & 0x1F
-    a = (c >> 15) & 1
+
+def u16_to_u32(color):
+    # pylint: disable=invalid-name
+    r = color & 0x1F
+    g = (color >> 5) & 0x1F
+    b = (color >> 10) & 0x1F
+    a = (color >> 15) & 1
     abgr = r << 3
     abgr |= g << 11
     abgr |= b << 19
     abgr |= (a * 0xFF) << 24
     return abgr
 
-def u32ToU16(c):
-    r = (c >> 3) & 0x1F
-    g = (c >> 11) & 0x1F
-    b = (c >> 19) & 0x1F
-    a = c >> 31
+
+def u32_to_u16(color):
+    # pylint: disable=invalid-name
+    r = (color >> 3) & 0x1F
+    g = (color >> 11) & 0x1F
+    b = (color >> 19) & 0x1F
+    a = color >> 31
     abgr = r
     abgr |= g << 5
     abgr |= b << 10
     abgr |= a << 15
     return abgr
 
+
 if ffi.sizeof("color_t") == 2:
-    def colorToU16(c):
-        return c
+    def color_to_u16(color):
+        return color
 
-    colorToU32 = u16ToU32
+    color_to_u32 = u16_to_u32  # pylint: disable=invalid-name
 
-    def u16ToColor(c):
-        return c
+    def u16_to_color(color):
+        return color
 
-    u32ToColor = u32ToU16
+    u32_to_color = u32_to_u16  # pylint: disable=invalid-name
 else:
-    def colorToU32(c):
-        return c
+    def color_to_u32(color):
+        return color
 
-    colorToU16 = u32ToU16
+    color_to_u16 = u32_to_u16  # pylint: disable=invalid-name
 
-    def u32ToColor(c):
-        return c
+    def u32_to_color(color):
+        return color
 
-    u16ToColor = u16ToU32
+    u16_to_color = u16_to_u32  # pylint: disable=invalid-name

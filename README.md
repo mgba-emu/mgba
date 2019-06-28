@@ -140,7 +140,7 @@ This will build and install medusa into `/usr/bin` and `/usr/lib`. Dependencies 
 
 If you are on macOS, the steps are a little different. Assuming you are using the homebrew package manager, the recommended commands to obtain the dependencies and build are:
 
-	brew install cmake ffmpeg imagemagick libzip qt5 sdl2 libedit
+	brew install cmake ffmpeg imagemagick libzip qt5 sdl2 libedit pkg-config
 	mkdir build
 	cd build
 	cmake -DCMAKE_PREFIX_PATH=`brew --prefix qt5` ..
