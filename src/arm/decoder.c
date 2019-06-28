@@ -8,7 +8,7 @@
 #include <mgba/internal/arm/decoder-inlines.h>
 
 #define ADVANCE(AMOUNT) \
-	if (AMOUNT > blen) { \
+	if (AMOUNT >= blen) { \
 		buffer[blen - 1] = '\0'; \
 		return total; \
 	} \

@@ -296,7 +296,7 @@ void GBAOverrideSave(struct Configuration* config, const struct GBACartridgeOver
 
 void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* override) {
 	if (override->savetype != SAVEDATA_AUTODETECT) {
-		GBASavedataForceType(&gba->memory.savedata, override->savetype, gba->realisticTiming);
+		GBASavedataForceType(&gba->memory.savedata, override->savetype);
 	}
 
 	if (override->hardware != HW_NO_OVERRIDE) {

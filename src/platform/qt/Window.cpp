@@ -1046,6 +1046,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	                    "addDirToLibrary");
 #endif
 
+	QAction* loadAlternateSave = new QAction(tr("Load alternate save..."), fileMenu);
+	connect(loadAlternateSave, &QAction::triggered, [this]() { this->selectSave(false); });
+	m_gameActions.append(loadAlternateSave);
+	addControlledAction(fileMenu, loadAlternateSave, "loadAlternateSave");
+
 	QAction* loadTemporarySave = new QAction(tr("Load temporary save..."), fileMenu);
 	connect(loadTemporarySave, &QAction::triggered, [this]() { this->selectSave(true); });
 	m_gameActions.append(loadTemporarySave);

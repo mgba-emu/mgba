@@ -895,7 +895,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	case REGION_CART2_EX:
 		if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 			mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
-			GBASavedataInitEEPROM(&memory->savedata, gba->realisticTiming);
+			GBASavedataInitEEPROM(&memory->savedata);
 		}
 		GBASavedataWriteEEPROM(&memory->savedata, value, 1);
 		break;
@@ -961,7 +961,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 			if (address == SAVEDATA_FLASH_BASE) {
 				mLOG(GBA_MEM, INFO, "Detected Flash savegame");
-				GBASavedataInitFlash(&memory->savedata, gba->realisticTiming);
+				GBASavedataInitFlash(&memory->savedata);
 			} else {
 				mLOG(GBA_MEM, INFO, "Detected SRAM savegame");
 				GBASavedataInitSRAM(&memory->savedata);

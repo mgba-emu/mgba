@@ -117,7 +117,7 @@ bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChec
 	switch (gba->memory.savedata.type) {
 	case SAVEDATA_FLASH512:
 		if (copySize > SIZE_CART_FLASH512) {
-			GBASavedataForceType(&gba->memory.savedata, SAVEDATA_FLASH1M, gba->memory.savedata.realisticTiming);
+			GBASavedataForceType(&gba->memory.savedata, SAVEDATA_FLASH1M);
 		}
 	// Fall through
 	default:

@@ -185,15 +185,32 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 // Instruction definitions
 // Beware pre-processor antics
 
+ATTRIBUTE_NOINLINE static void _additionS(struct ARMCore* cpu, int32_t m, int32_t n, int32_t d) {
+	cpu->cpsr.n = ARM_SIGN(d);
+	cpu->cpsr.z = !d;
+	cpu->cpsr.c = ARM_CARRY_FROM(m, n, d);
+	cpu->cpsr.v = ARM_V_ADDITION(m, n, d);
+}
+
+ATTRIBUTE_NOINLINE static void _subtractionS(struct ARMCore* cpu, int32_t m, int32_t n, int32_t d) {
+	cpu->cpsr.n = ARM_SIGN(d);
+	cpu->cpsr.z = !d;
+	cpu->cpsr.c = ARM_BORROW_FROM(m, n, d);
+	cpu->cpsr.v = ARM_V_SUBTRACTION(m, n, d);
+}
+
+ATTRIBUTE_NOINLINE static void _neutralS(struct ARMCore* cpu, int32_t d) {
+	cpu->cpsr.n = ARM_SIGN(d);
+	cpu->cpsr.z = !d; \
+	cpu->cpsr.c = cpu->shifterCarryOut; \
+}
+
 #define ARM_ADDITION_S(M, N, D) \
 	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.priv)) { \
 		cpu->cpsr = cpu->spsr; \
 		_ARMReadCPSR(cpu); \
 	} else { \
-		cpu->cpsr.n = ARM_SIGN(D); \
-		cpu->cpsr.z = !(D); \
-		cpu->cpsr.c = ARM_CARRY_FROM(M, N, D); \
-		cpu->cpsr.v = ARM_V_ADDITION(M, N, D); \
+		_additionS(cpu, M, N, D); \
 	}
 
 #define ARM_SUBTRACTION_S(M, N, D) \
@@ -201,10 +218,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		cpu->cpsr = cpu->spsr; \
 		_ARMReadCPSR(cpu); \
 	} else { \
-		cpu->cpsr.n = ARM_SIGN(D); \
-		cpu->cpsr.z = !(D); \
-		cpu->cpsr.c = ARM_BORROW_FROM(M, N, D); \
-		cpu->cpsr.v = ARM_V_SUBTRACTION(M, N, D); \
+		_subtractionS(cpu, M, N, D); \
 	}
 
 #define ARM_SUBTRACTION_CARRY_S(M, N, D, C) \
@@ -223,9 +237,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		cpu->cpsr = cpu->spsr; \
 		_ARMReadCPSR(cpu); \
 	} else { \
-		cpu->cpsr.n = ARM_SIGN(D); \
-		cpu->cpsr.z = !(D); \
-		cpu->cpsr.c = cpu->shifterCarryOut; \
+		_neutralS(cpu, D); \
 	}
 
 #define ARM_NEUTRAL_HI_S(DLO, DHI) \

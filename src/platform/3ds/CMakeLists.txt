@@ -109,7 +109,7 @@ if(BUILD_PERF)
 	                  DEPENDS ${BINARY_NAME}-perf ${BINARY_NAME}.smdh)
 	install(FILES
 		    ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}-perf.3dsx
-		    DESTINATION . COMPONENT ${BINARY_NAME}-3ds)
+		    DESTINATION . COMPONENT ${BINARY_NAME}-perf)
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cia.rsf.in ${CMAKE_CURRENT_BINARY_DIR}/cia.rsf)
