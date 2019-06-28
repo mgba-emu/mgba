@@ -76,6 +76,16 @@ static void _reloadSettings(void) {
 		opts.skipBios = strcmp(var.value, "ON") == 0;
 	}
 
+	var.key = "mgba_sgb_borders";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		if (strcmp(var.value, "ON") == 0) {
+			mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", true);
+		} else {
+			mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", false);
+		}
+	}
+
 	var.key = "mgba_idle_optimization";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
@@ -111,6 +121,7 @@ void retro_set_environment(retro_environment_t env) {
 		{ "mgba_allow_opposing_directions", "Allow opposing directional input; OFF|ON" },
 		{ "mgba_use_bios", "Use BIOS file if found (requires restart); ON|OFF" },
 		{ "mgba_skip_bios", "Skip BIOS intro (requires restart); OFF|ON" },
+		{ "mgba_sgb_borders", "Use Super Game Boy borders (requires restart); ON|OFF" },
 		{ "mgba_idle_optimization", "Idle loop removal; Remove Known|Detect and Remove|Don't Remove" },
 		{ "mgba_frameskip", "Frameskip; 0|1|2|3|4|5|6|7|8|9|10" },
 		{ 0, 0 }

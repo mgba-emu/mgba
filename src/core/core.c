@@ -357,6 +357,7 @@ bool mCoreLoadELF(struct mCore* core, struct ELF* elf) {
 	return true;
 }
 
+#ifdef USE_DEBUGGERS
 void mCoreLoadELFSymbols(struct mDebuggerSymbols* symbols, struct ELF* elf) {
 	size_t symIndex = ELFFindSection(elf, ".symtab");
 	size_t names = ELFFindSection(elf, ".strtab");
@@ -376,5 +377,5 @@ void mCoreLoadELFSymbols(struct mDebuggerSymbols* symbols, struct ELF* elf) {
 		mDebuggerSymbolAdd(symbols, name, syms[i].st_value, -1);
 	}
 }
-
+#endif
 #endif

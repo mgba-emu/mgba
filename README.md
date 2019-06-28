@@ -10,7 +10,7 @@ Up-to-date news and downloads can be found at [mgba.io](https://mgba.io/).
 Features
 --------
 
-- Near full Game Boy Advance hardware support[<sup>[1]</sup>](#missing).
+- Highly accurate Game Boy Advance hardware support[<sup>[1]</sup>](#missing).
 - Partial DS hardware support[<sup>[1]</sup>](#missing).
 - Game Boy/Game Boy Color hardware support.
 - Fast emulation for Game Boy and Game Boy Advance. Known to run at full speed even on low end hardware, such as netbooks[<sup>[2]</sup>](#dscaveat).
@@ -19,6 +19,7 @@ Features
 - Save type detection, even for flash memory size[<sup>[3]</sup>](#flashdetect).
 - Support for cartridges with motion sensors and rumble (only usable with game controllers)[<sup>[2]</sup>](#dscaveat).
 - Real-time clock support, even without configuration.
+- Solar sensor support for Boktai games.
 - Game Boy Camera and Game Boy Printer support.
 - A built-in GBA BIOS implementation, and ability to load external BIOS files. DS currently requires BIOS and firmware dumps[<sup>[2]</sup>](#dscaveat).
 - Turbo/fast-forward support by holding Tab.
@@ -36,6 +37,31 @@ Features
 - Support for loading and exporting GameShark and Action Replay snapshots.
 - Cores available for RetroArch/Libretro and OpenEmu.
 - Many, many smaller things.
+
+#### Game Boy mappers
+
+The following mappers are fully supported:
+
+- MBC1
+- MBC1M
+- MBC2
+- MBC3
+- MBC3+RTC
+- MBC5
+- MBC5+Rumble
+- MBC7
+
+The following mappers are partially supported:
+
+- Pocket Cam
+- TAMA5
+- HuC-3
+
+The following mappers are not currently supported:
+
+- MBC6
+- HuC-1
+- MMM01
 
 ### Planned features
 
@@ -128,11 +154,11 @@ To build on Windows for development, using MSYS2 is recommended. Follow the inst
 
 For x86 (32 bit) builds:
 
-	pacman -Sy mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 For x86_64 (64 bit) builds:
 
-	pacman -Sy mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 Check out the source code by running this command:
 
