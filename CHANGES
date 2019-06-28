@@ -42,6 +42,7 @@ Other fixes:
  - GBA Cheats: Fix PARv3 Thumb hooks
  - mGUI: Fix crash if last loaded ROM directory disappears (fixes mgba.io/i/1466)
  - Libretro: Fix crash changing allowing opposing directions (hhromic)
+ - Qt: Fix race conditions initializing GDB stub
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash

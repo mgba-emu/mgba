@@ -46,7 +46,6 @@ void DebuggerController::attach() {
 	if (m_gameController) {
 		attachInternal();
 		m_gameController->setDebugger(m_debugger);
-		mDebuggerEnter(m_debugger, DEBUGGER_ENTER_ATTACHED, 0);
 	} else {
 		m_autoattach = true;
 	}
