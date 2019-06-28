@@ -291,13 +291,13 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 }
 
 SettingsView::~SettingsView() {
-#if defined(BUILD_GL) || defined(BUILD_GLES)
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
 	setShaderSelector(nullptr);
 #endif
 }
 
 void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
-#if defined(BUILD_GL) || defined(BUILD_GLES)
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (m_shader) {
 		auto items = m_ui.tabs->findItems(tr("Shaders"), Qt::MatchFixedString);
 		for (const auto& item : items) {

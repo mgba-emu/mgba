@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#if defined(BUILD_GL) || defined(BUILD_GLES)
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
 
 #include "Display.h"
 

@@ -852,7 +852,7 @@ void Window::reloadDisplayDriver() {
 		detachWidget(m_display.get());
 	}
 	m_display = std::move(std::unique_ptr<Display>(Display::create(this)));
-#if defined(BUILD_GL) || defined(BUILD_GLES)
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
 	m_shaderView.reset();
 	m_shaderView = std::make_unique<ShaderSelector>(m_display.get(), m_config);
 #endif
@@ -871,7 +871,7 @@ void Window::reloadDisplayDriver() {
 	const mCoreOptions* opts = m_config->options();
 	m_display->lockAspectRatio(opts->lockAspectRatio);
 	m_display->filter(opts->resampleVideo);
-#if defined(BUILD_GL) || defined(BUILD_GLES)
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (opts->shader) {
 		struct VDir* shader = VDirOpen(opts->shader);
 		if (shader && m_display->supportsShaders()) {

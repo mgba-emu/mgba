@@ -63,7 +63,7 @@ void GBAHardwareInit(struct GBACartridgeHardware* hw, uint16_t* base) {
 
 void GBAHardwareClear(struct GBACartridgeHardware* hw) {
 	hw->devices = HW_NONE | (hw->devices & HW_GB_PLAYER_DETECTION);
-	hw->direction = GPIO_WRITE_ONLY;
+	hw->readWrite = GPIO_WRITE_ONLY;
 	hw->pinState = 0;
 	hw->direction = 0;
 
@@ -79,7 +79,7 @@ void GBAHardwareGPIOWrite(struct GBACartridgeHardware* hw, uint32_t address, uin
 	switch (address) {
 	case GPIO_REG_DATA:
 		hw->pinState &= ~hw->direction;
-		hw->pinState |= value;
+		hw->pinState |= value & hw->direction;
 		_readPins(hw);
 		break;
 	case GPIO_REG_DIRECTION:
@@ -92,13 +92,13 @@ void GBAHardwareGPIOWrite(struct GBACartridgeHardware* hw, uint32_t address, uin
 		mLOG(GBA_HW, WARN, "Invalid GPIO address");
 	}
 	if (hw->readWrite) {
-		uint16_t old;
-		LOAD_16(old, 0, hw->gpioBase);
-		old &= ~hw->direction;
-		old |= hw->pinState;
-		STORE_16(old, 0, hw->gpioBase);
+		STORE_16(hw->pinState, 0, hw->gpioBase);
+		STORE_16(hw->direction, 2, hw->gpioBase);
+		STORE_16(hw->readWrite, 4, hw->gpioBase);
 	} else {
 		hw->gpioBase[0] = 0;
+		hw->gpioBase[1] = 0;
+		hw->gpioBase[2] = 0;
 	}
 }
 
@@ -165,11 +165,15 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 		if ((hw->pinState & 5) == 1) {
 			hw->rtc.transferStep = 1;
 		}
+		_outputPins(hw, 1);
 		break;
 	case 1:
 		if ((hw->pinState & 5) == 5) {
 			hw->rtc.transferStep = 2;
+		} else {
+			hw->rtc.transferStep = 0;
 		}
+		_outputPins(hw, 5);
 		break;
 	case 2:
 		if (!(hw->pinState & 1)) {
@@ -177,11 +181,7 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 			hw->rtc.bits |= ((hw->pinState & 2) >> 1) << hw->rtc.bitsRead;
 		} else {
 			if (hw->pinState & 4) {
-				// GPIO direction should always != reading
-				if (hw->direction & 2) {
-					if (RTCCommandDataIsReading(hw->rtc.command)) {
-						mLOG(GBA_HW, GAME_ERROR, "Attempting to write to RTC while in read mode");
-					}
+				if (!RTCCommandDataIsReading(hw->rtc.command)) {
 					++hw->rtc.bitsRead;
 					if (hw->rtc.bitsRead == 8) {
 						GBARTCProcessByte(&hw->rtc, hw->p->rtcSource);
@@ -193,7 +193,7 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 						--hw->rtc.bytesRemaining;
 						if (hw->rtc.bytesRemaining <= 0) {
 							hw->rtc.commandActive = 0;
-							hw->rtc.command = RTCCommandDataClearReading(hw->rtc.command);
+							hw->rtc.command = 0;
 						}
 						hw->rtc.bitsRead = 0;
 					}
@@ -202,8 +202,9 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 				hw->rtc.bitsRead = 0;
 				hw->rtc.bytesRemaining = 0;
 				hw->rtc.commandActive = 0;
-				hw->rtc.command = RTCCommandDataClearReading(hw->rtc.command);
-				hw->rtc.transferStep = 0;
+				hw->rtc.command = 0;
+				hw->rtc.transferStep = hw->pinState & 1;
+				_outputPins(hw, 1);
 			}
 		}
 		break;
@@ -269,6 +270,10 @@ void GBARTCProcessByte(struct GBARTC* rtc, struct mRTCSource* source) {
 
 unsigned GBARTCOutput(struct GBARTC* rtc) {
 	uint8_t outputByte = 0;
+	if (!rtc->commandActive) {
+		mLOG(GBA_HW, GAME_ERROR, "Attempting to use RTC without an active command");
+		return 0;
+	}
 	switch (RTCCommandDataGetCommand(rtc->command)) {
 	case RTC_STATUS1:
 		outputByte = rtc->control;

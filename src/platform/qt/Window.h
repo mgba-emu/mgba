@@ -187,7 +187,7 @@ private:
 	QMenu* m_mruMenu = nullptr;
 	QMenu* m_videoLayers;
 	QMenu* m_audioChannels;
-#if defined(BUILD_GL) || defined(BUILD_GLES)
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
 	std::unique_ptr<ShaderSelector> m_shaderView;
 #endif
 	bool m_fullscreenOnStart = false;
