@@ -13,10 +13,10 @@
 
 #define REG_TMCNT_LO(X) (REG_TM0CNT_LO + ((X) << 2))
 
-static void GBATimerIrq(struct GBA* gba, int timerId) {
+static void GBATimerIrq(struct GBA* gba, int timerId, uint32_t cyclesLate) {
 	struct GBATimer* timer = &gba->timers[timerId];
 	if (GBATimerFlagsIsDoIrq(timer->flags)) {
-		GBARaiseIRQ(gba, IRQ_TIMER0 + timerId);
+		GBARaiseIRQ(gba, IRQ_TIMER0 + timerId, cyclesLate);
 	}
 }
 
@@ -56,9 +56,9 @@ static void GBATimerUpdate0(struct mTiming* timing, void* context, uint32_t cycl
 	struct GBA* gba = context;
 	GBATimerUpdateAudio(gba, 0, cyclesLate);
 	GBATimerUpdate(timing, &gba->timers[0], &gba->memory.io[REG_TM0CNT_LO >> 1], cyclesLate);
-	GBATimerIrq(gba, 0);
+	GBATimerIrq(gba, 0, cyclesLate);
 	if (GBATimerUpdateCountUp(timing, &gba->timers[1], &gba->memory.io[REG_TM1CNT_LO >> 1], cyclesLate)) {
-		GBATimerIrq(gba, 1);
+		GBATimerIrq(gba, 1, cyclesLate);
 	}
 }
 
@@ -66,25 +66,25 @@ static void GBATimerUpdate1(struct mTiming* timing, void* context, uint32_t cycl
 	struct GBA* gba = context;
 	GBATimerUpdateAudio(gba, 1, cyclesLate);
 	GBATimerUpdate(timing, &gba->timers[1], &gba->memory.io[REG_TM1CNT_LO >> 1], cyclesLate);
-	GBATimerIrq(gba, 1);
+	GBATimerIrq(gba, 1, cyclesLate);
 	if (GBATimerUpdateCountUp(timing, &gba->timers[2], &gba->memory.io[REG_TM2CNT_LO >> 1], cyclesLate)) {
-		GBATimerIrq(gba, 2);
+		GBATimerIrq(gba, 2, cyclesLate);
 	}
 }
 
 static void GBATimerUpdate2(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBA* gba = context;
 	GBATimerUpdate(timing, &gba->timers[2], &gba->memory.io[REG_TM2CNT_LO >> 1], cyclesLate);
-	GBATimerIrq(gba, 2);
+	GBATimerIrq(gba, 2, cyclesLate);
 	if (GBATimerUpdateCountUp(timing, &gba->timers[3], &gba->memory.io[REG_TM3CNT_LO >> 1], cyclesLate)) {
-		GBATimerIrq(gba, 3);
+		GBATimerIrq(gba, 3, cyclesLate);
 	}
 }
 
 static void GBATimerUpdate3(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBA* gba = context;
 	GBATimerUpdate(timing, &gba->timers[3], &gba->memory.io[REG_TM3CNT_LO >> 1], cyclesLate);
-	GBATimerIrq(gba, 3);
+	GBATimerIrq(gba, 3, cyclesLate);
 }
 
 void GBATimerInit(struct GBA* gba) {

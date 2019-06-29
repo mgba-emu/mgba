@@ -67,6 +67,7 @@ endif()
 
 set(SOURCE_FILES
 	AboutScreen.cpp
+	AbstractUpdater.cpp
 	AssetTile.cpp
 	AssetView.cpp
 	AudioProcessor.cpp
@@ -149,6 +150,8 @@ set(UI_FILES
 	VideoView.ui)
 
 set(GBA_SRC
+	BattleChipModel.cpp
+	BattleChipUpdater.cpp
 	BattleChipView.cpp
 	GBAOverride.cpp)
 

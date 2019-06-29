@@ -154,7 +154,7 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	if (video->vcount == GBARegisterDISPSTATGetVcountSetting(dispstat)) {
 		dispstat = GBARegisterDISPSTATFillVcounter(dispstat);
 		if (GBARegisterDISPSTATIsVcounterIRQ(dispstat)) {
-			GBARaiseIRQ(video->p, IRQ_VCOUNTER);
+			GBARaiseIRQ(video->p, IRQ_VCOUNTER, cyclesLate);
 		}
 	} else {
 		dispstat = GBARegisterDISPSTATClearVcounter(dispstat);
@@ -173,7 +173,7 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		}
 		GBADMARunVblank(video->p, -cyclesLate);
 		if (GBARegisterDISPSTATIsVblankIRQ(dispstat)) {
-			GBARaiseIRQ(video->p, IRQ_VBLANK);
+			GBARaiseIRQ(video->p, IRQ_VBLANK, cyclesLate);
 		}
 		GBAFrameEnded(video->p);
 		mCoreSyncPostFrame(video->p->sync);
@@ -209,7 +209,7 @@ void _startHblank(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		GBADMARunDisplayStart(video->p, -cyclesLate);
 	}
 	if (GBARegisterDISPSTATIsHblankIRQ(dispstat)) {
-		GBARaiseIRQ(video->p, IRQ_HBLANK);
+		GBARaiseIRQ(video->p, IRQ_HBLANK, cyclesLate);
 	}
 	video->p->memory.io[REG_DISPSTAT >> 1] = dispstat;
 }

@@ -143,8 +143,8 @@ void GBADestroy(struct GBA* gba);
 void GBAReset(struct ARMCore* cpu);
 void GBASkipBIOS(struct GBA* gba);
 
-void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq);
-void GBATestIRQ(struct ARMCore* cpu);
+void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq, uint32_t cyclesLate);
+void GBATestIRQ(struct GBA* gba, uint32_t cyclesLate);
 void GBAHalt(struct GBA* gba);
 void GBAStop(struct GBA* gba);
 void GBADebug(struct GBA* gba, uint16_t value);

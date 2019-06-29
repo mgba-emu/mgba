@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>630</width>
+    <width>658</width>
     <height>722</height>
    </rect>
   </property>
@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0,0,0,0">
    <item>
-    <widget class="QListWidget" name="chipList">
+    <widget class="QListView" name="chipList">
      <property name="acceptDrops">
       <bool>true</bool>
      </property>
@@ -35,7 +35,7 @@
       </size>
      </property>
      <property name="movement">
-      <enum>QListView::Static</enum>
+      <enum>QListView::Free</enum>
      </property>
      <property name="isWrapping" stdset="0">
       <bool>true</bool>
@@ -51,12 +51,6 @@
      </property>
      <property name="viewMode">
       <enum>QListView::IconMode</enum>
-     </property>
-     <property name="uniformItemSizes">
-      <bool>false</bool>
-     </property>
-     <property name="selectionRectVisible">
-      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -132,9 +126,9 @@
    </item>
    <item>
     <widget class="QWidget" name="advanced" native="true">
-	 <property name="visible">
-	  <bool>false</bool>
-	 </property>
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
        <layout class="QFormLayout" name="formLayout_2">
@@ -201,6 +195,19 @@
           </property>
          </widget>
         </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QPushButton" name="updateData">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Update Chip data</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>
@@ -257,22 +264,6 @@
     <hint type="destinationlabel">
      <x>396</x>
      <y>654</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>chipList</sender>
-   <signal>indexesMoved(QModelIndexList)</signal>
-   <receiver>chipList</receiver>
-   <slot>doItemsLayout()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>314</x>
-     <y>203</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>314</x>
-     <y>203</y>
     </hint>
    </hints>
   </connection>
