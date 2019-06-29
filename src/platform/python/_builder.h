@@ -36,6 +36,7 @@ void free(void*);
 
 #include "flags.h"
 
+#include <mgba/core/blip_buf.h>
 #include <mgba/core/cache-set.h>
 #include <mgba/core/core.h>
 #include <mgba/core/map-cache.h>

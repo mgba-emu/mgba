@@ -195,6 +195,7 @@ DECL_BITS(GBSerializedAudioFlags, Frame, 22, 3);
 DECL_BIT(GBSerializedAudioFlags, Ch1SweepEnabled, 25);
 DECL_BIT(GBSerializedAudioFlags, Ch1SweepOccurred, 26);
 DECL_BIT(GBSerializedAudioFlags, Ch3Readable, 27);
+DECL_BIT(GBSerializedAudioFlags, SkipFrame, 28);
 
 DECL_BITFIELD(GBSerializedAudioEnvelope, uint32_t);
 DECL_BITS(GBSerializedAudioEnvelope, Length, 0, 7);

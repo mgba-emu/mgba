@@ -21,35 +21,15 @@ void mSDLSWCreate(struct mSDLRenderer* renderer) {
 }
 
 bool mSDLSWInit(struct mSDLRenderer* renderer) {
-#if !SDL_VERSION_ATLEAST(2, 0, 0)
 #ifdef COLOR_16_BIT
-	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_DOUBLEBUF | SDL_HWSURFACE);
+	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_DOUBLEBUF | SDL_HWSURFACE | (SDL_FULLSCREEN * renderer->fullscreen));
 #else
-	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 32, SDL_DOUBLEBUF | SDL_HWSURFACE);
+	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 32, SDL_DOUBLEBUF | SDL_HWSURFACE | (SDL_FULLSCREEN * renderer->fullscreen));
 #endif
-#endif
+	SDL_WM_SetCaption(projectName, "");
 
 	unsigned width, height;
 	renderer->core->desiredVideoDimensions(renderer->core, &width, &height);
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	renderer->window = SDL_CreateWindow(projectName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer->player.fullscreen));
-	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
-	renderer->player.window = renderer->window;
-	renderer->sdlRenderer = SDL_CreateRenderer(renderer->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
-	renderer->sdlTex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, width, height);
-#else
-	renderer->sdlTex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_ABGR1555, SDL_TEXTUREACCESS_STREAMING, width, height);
-#endif
-#else
-	renderer->sdlTex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, width, height);
-#endif
-
-	int stride;
-	SDL_LockTexture(renderer->sdlTex, 0, (void**) &renderer->outputBuffer, &stride);
-	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, stride / BYTES_PER_PIXEL);
-#else
 	SDL_Surface* surface = SDL_GetVideoSurface();
 	SDL_LockSurface(surface);
 
@@ -81,7 +61,6 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
 		return false;
 #endif
 	}
-#endif
 
 	return true;
 }
@@ -89,9 +68,7 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
 void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 	struct mCoreThread* context = user;
 	SDL_Event event;
-#if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Surface* surface = SDL_GetVideoSurface();
-#endif
 
 	while (mCoreThreadIsActive(context)) {
 		while (SDL_PollEvent(&event)) {
@@ -99,14 +76,6 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 		}
 
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-			SDL_UnlockTexture(renderer->sdlTex);
-			SDL_RenderCopy(renderer->sdlRenderer, renderer->sdlTex, 0, 0);
-			SDL_RenderPresent(renderer->sdlRenderer);
-			int stride;
-			SDL_LockTexture(renderer->sdlTex, 0, (void**) &renderer->outputBuffer, &stride);
-			renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, stride / BYTES_PER_PIXEL);
-#else
 #ifdef USE_PIXMAN
 			if (renderer->ratio > 1) {
 				pixman_image_composite32(PIXMAN_OP_SRC, renderer->pix, 0, renderer->screenpix,
@@ -132,7 +101,6 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 			SDL_UnlockSurface(surface);
 			SDL_Flip(surface);
 			SDL_LockSurface(surface);
-#endif
 		}
 		mCoreSyncWaitFrameEnd(&context->impl->sync);
 	}
@@ -141,13 +109,11 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 void mSDLSWDeinit(struct mSDLRenderer* renderer) {
 	if (renderer->ratio > 1) {
 		free(renderer->outputBuffer);
+#ifdef USE_PIXMAN
+		pixman_image_unref(renderer->pix);
+		pixman_image_unref(renderer->screenpix);
+#endif
 	}
-#if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Surface* surface = SDL_GetVideoSurface();
 	SDL_UnlockSurface(surface);
-#ifdef USE_PIXMAN
-	pixman_image_unref(renderer->pix);
-	pixman_image_unref(renderer->screenpix);
-#endif
-#endif
 }

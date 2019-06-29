@@ -47,6 +47,7 @@ struct mVideoLogContext;
 struct mCore {
 	void* cpu;
 	void* board;
+	struct mTiming* timing;
 	struct mDebugger* debugger;
 	struct mDebuggerSymbols* symbolTable;
 

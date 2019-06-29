@@ -45,6 +45,8 @@ static const enum GBBus _oamBlockCGB[] = {
 	GB_BUS_CPU // 0xE000
 };
 
+static const uint8_t _blockedRegion[1] = { 0xFF };
+
 static void _pristineCow(struct GB* gba);
 
 static uint8_t GBFastLoad8(struct LR35902Core* cpu, uint16_t address) {
@@ -91,6 +93,15 @@ static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 	default:
 		cpu->memory.cpuLoad8 = GBLoad8;
 		break;
+	}
+	if (gb->memory.dmaRemaining) {
+		const enum GBBus* block = gb->model < GB_MODEL_CGB ? _oamBlockDMG : _oamBlockCGB;
+		enum GBBus dmaBus = block[memory->dmaSource >> 13];
+		enum GBBus accessBus = block[address >> 13];
+		if ((dmaBus != GB_BUS_CPU && dmaBus == accessBus) || (address >= GB_BASE_OAM && address < GB_BASE_UNUSABLE)) {
+			cpu->memory.activeRegion = _blockedRegion;
+			cpu->memory.activeMask = 0;
+		}
 	}
 }
 
@@ -177,6 +188,7 @@ void GBMemoryReset(struct GB* gb) {
 
 	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
 
+	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
 	GBMBCInit(gb);
 	switch (gb->memory.mbcType) {
 	case GB_MBC1:
@@ -192,8 +204,9 @@ void GBMemoryReset(struct GB* gb) {
 	case GB_MMM01:
 		GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);
 		GBMBCSwitchBank(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 1);
+		break;
 	default:
-		memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
+		break;
 	}
 	gb->memory.sramBank = gb->memory.sram;
 

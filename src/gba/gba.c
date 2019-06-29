@@ -216,6 +216,20 @@ void GBAReset(struct ARMCore* cpu) {
 
 	GBASIOReset(&gba->sio);
 
+	bool isELF = false;
+#ifdef USE_ELF
+	struct ELF* elf = ELFOpen(gba->romVf);
+	if (elf) {
+		isELF = true;
+		ELFClose(elf);
+	}
+#endif
+
+	if (GBAIsMB(gba->romVf) && !isELF) {
+		gba->romVf->seek(gba->romVf, 0, SEEK_SET);
+		gba->romVf->read(gba->romVf, gba->memory.wram, gba->pristineRomSize);
+	}
+
 	gba->lastJump = 0;
 	gba->haltPending = false;
 	gba->idleDetectionStep = 0;
@@ -242,8 +256,7 @@ void GBASkipBIOS(struct GBA* gba) {
 		}
 		gba->memory.io[REG_VCOUNT >> 1] = 0x7E;
 		gba->memory.io[REG_POSTFLG >> 1] = 1;
-		int currentCycles = 0;
-		ARM_WRITE_PC;
+		ARMWritePC(cpu);
 	}
 }
 
@@ -344,11 +357,6 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
 	}
 	gba->isPristine = true;
 	memset(gba->memory.wram, 0, SIZE_WORKING_RAM);
-	vf->read(vf, gba->memory.wram, gba->pristineRomSize);
-	if (!gba->memory.wram) {
-		mLOG(GBA, WARN, "Couldn't map ROM");
-		return false;
-	}
 	gba->yankedRomSize = 0;
 	gba->memory.romSize = 0;
 	gba->memory.romMask = 0;
@@ -512,7 +520,7 @@ void GBADebug(struct GBA* gba, uint16_t flags) {
 		int level = 1 << GBADebugFlagsGetLevel(gba->debugFlags);
 		level &= 0x1F;
 		char oolBuf[0x101];
-		strncpy(oolBuf, gba->debugString, sizeof(gba->debugString));
+		strncpy(oolBuf, gba->debugString, sizeof(oolBuf) - 1);
 		memset(gba->debugString, 0, sizeof(gba->debugString));
 		oolBuf[0x100] = '\0';
 		mLog(_mLOG_CAT_GBA_DEBUG(), level, "%s", oolBuf);

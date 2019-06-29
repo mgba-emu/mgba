@@ -728,7 +728,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		if (gba->rr && gba->rr->isPlaying(gba->rr)) {
 			return 0x3FF ^ gba->rr->queryInput(gba->rr);
 		} else {
-			uint16_t input = 0x3FF;
+			uint16_t input = 0;
 			if (gba->keyCallback) {
 				input = gba->keyCallback->readKeys(gba->keyCallback);
 				if (gba->keySource) {
@@ -736,16 +736,16 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 				}
 			} else if (gba->keySource) {
 				input = *gba->keySource;
-			}
-			if (!gba->allowOpposingDirections) {
-				unsigned rl = input & 0x030;
-				unsigned ud = input & 0x0C0;
-				input &= 0x30F;
-				if (rl != 0x030) {
-					input |= rl;
-				}
-				if (ud != 0x0C0) {
-					input |= ud;
+				if (!gba->allowOpposingDirections) {
+					unsigned rl = input & 0x030;
+					unsigned ud = input & 0x0C0;
+					input &= 0x30F;
+					if (rl != 0x030) {
+						input |= rl;
+					}
+					if (ud != 0x0C0) {
+						input |= ud;
+					}
 				}
 			}
 			if (gba->rr && gba->rr->isRecording(gba->rr)) {
@@ -841,7 +841,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_SOUND4CNT_LO:
 	case REG_SOUND4CNT_HI:
 	case REG_SOUNDCNT_LO:
-	case REG_SOUNDCNT_HI:
 		if (!GBAudioEnableIsEnable(gba->memory.io[REG_SOUNDCNT_X >> 1])) {
 			// TODO: Is writing allowed when the circuit is disabled?
 			return 0;
@@ -858,6 +857,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_WINOUT:
 	case REG_BLDCNT:
 	case REG_BLDALPHA:
+	case REG_SOUNDCNT_HI:
 	case REG_SOUNDCNT_X:
 	case REG_WAVE_RAM0_LO:
 	case REG_WAVE_RAM0_HI:

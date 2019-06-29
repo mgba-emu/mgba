@@ -23,7 +23,8 @@ enum SavedataType {
 	SAVEDATA_SRAM = 1,
 	SAVEDATA_FLASH512 = 2,
 	SAVEDATA_FLASH1M = 3,
-	SAVEDATA_EEPROM = 4
+	SAVEDATA_EEPROM = 4,
+	SAVEDATA_EEPROM512 = 5
 };
 
 enum SavedataCommand {

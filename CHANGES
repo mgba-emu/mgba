@@ -21,6 +21,12 @@ Misc:
 0.8.0: (Future)
 Bugfixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
+ - GBA: Reset now reloads multiboot ROMs
+ - GBA BIOS: Fix multiboot entry point (fixes Magic Floor)
+Misc:
+ - GBA Savedata: EEPROM performance fixes
+ - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
+ - GB Memory: Support running from blocked memory
 
 0.7.0: (Future)
 Features:
@@ -87,6 +93,8 @@ Bugfixes:
  - GB, GBA Video: Don't call finishFrame twice in thread proxy
  - GB Audio: Fix channel 1, 2 and 4 reset timing
  - Util: Fix wrapping edge cases in RingFIFO
+ - GBA Hardware: Fix RTC handshake transition (fixes mgba.io/i/1134)
+ - GBA BIOS: Fix BitUnPack narrowing
 Misc:
  - GBA Timer: Use global cycles for timers
  - GBA: Extend oddly-sized ROMs to full address space (fixes mgba.io/i/722)
@@ -128,9 +136,11 @@ Features:
  - Qt: Separate fast forward volume control (fixes mgba.io/i/846, mgba.io/i/1143)
  - Switch: Rumble support
  - Switch: Rotation support
+ - Switch: Screen stretching options
  - Qt: State file load/save menu options
  - Windows installer
  - Tile viewer now has adjustable width
+ - Python: Experimental audio API
 Bugfixes:
  - PSP2: Fix audio crackling after fast forward
  - PSP2: Fix audio crackling when buffer is full
@@ -144,6 +154,18 @@ Bugfixes:
  - GB, GBA Savedata: Fix leaks when loading masked save (fixes mgba.io/i/1197)
  - Qt: Fix focus issues with load/save state overlay
  - GB Video: Fix SGB border hole size
+ - PSP2: Fix tearing issues (fixes mgba.io/i/1211)
+ - Qt: Fix mapping analog triggers (fixes mgba.io/i/495)
+ - Qt: Grab focus when game starts (fixes mgba.io/i/804)
+ - Core: Remember to deinit proxy ring FIFO
+ - GBA Savedata: Fix EEPROM writing codepath when savetype is not EEPROM
+ - Core: Reroot timing list when (de)scheduling
+ - GB Video: Changing LYC while LCDC off doesn't affect STAT (fixes mgba.io/i/1224)
+ - GBA I/O: SOUNDCNT_HI is readable when sound is off
+ - SDL: Fix handling of invalid gamepads (fixes mgba.io/i/1239)
+ - Libretro: Fix adding codes with hooks
+ - GBA: Fix GB Player features
+ - Qt: Ensure FATAL logs reach log view
 Misc:
  - mGUI: Add SGB border configuration option
  - mGUI: Add support for different settings types
@@ -156,6 +178,12 @@ Misc:
  - Debugger: Minor text fixes
  - Qt: Debugger console history
  - Qt: Detect presence of GL_ARB_framebuffer_object
+ - Python: Minor API improvements
+ - Qt: Minor memory view tweaks
+ - CMake: Fix libswresample version dependencies (fixes mgba.io/i/1229)
+ - Debugger: Readability improvements (fixes mgba.io/i/1238)
+ - GB Audio: Skip frame if enabled when clock is high
+ - Res: Improve modeling of AGB/AGS screen in shaders
 
 0.7 beta 1: (2018-09-24)
 - Initial beta for 0.7

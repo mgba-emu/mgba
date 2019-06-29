@@ -140,9 +140,7 @@ void ARMReset(struct ARMCore* cpu) {
 
 	cpu->executionMode = MODE_THUMB;
 	_ARMSetMode(cpu, MODE_ARM);
-
-	int currentCycles = 0;
-	ARM_WRITE_PC;
+	ARMWritePC(cpu);
 
 	cpu->cycles = 0;
 	cpu->nextEvent = 0;
@@ -169,12 +167,10 @@ void ARMRaiseIRQ(struct ARMCore* cpu) {
 	if (ARMControlRegIsVE(cpu->cp15.r1.c0)) {
 		cpu->gprs[ARM_PC] |= 0xFFFF0000;
 	}
-	int currentCycles = 0;
-	ARM_WRITE_PC;
 	_ARMSetMode(cpu, MODE_ARM);
+	cpu->cycles += ARMWritePC(cpu);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
-	cpu->cycles += currentCycles;
 	cpu->halted = 0;
 }
 
@@ -193,12 +189,10 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 	if (ARMControlRegIsVE(cpu->cp15.r1.c0)) {
 		cpu->gprs[ARM_PC] |= 0xFFFF0000;
 	}
-	int currentCycles = 0;
-	ARM_WRITE_PC;
 	_ARMSetMode(cpu, MODE_ARM);
+	cpu->cycles += ARMWritePC(cpu);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
-	cpu->cycles += currentCycles;
 }
 
 void ARMRaiseUndefined(struct ARMCore* cpu) {
@@ -216,12 +210,10 @@ void ARMRaiseUndefined(struct ARMCore* cpu) {
 	if (ARMControlRegIsVE(cpu->cp15.r1.c0)) {
 		cpu->gprs[ARM_PC] |= 0xFFFF0000;
 	}
-	int currentCycles = 0;
-	ARM_WRITE_PC;
 	_ARMSetMode(cpu, MODE_ARM);
+	cpu->cycles += ARMWritePC(cpu);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
-	cpu->cycles += currentCycles;
 }
 
 void ARMHalt(struct ARMCore* cpu) {

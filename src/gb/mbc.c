@@ -188,11 +188,6 @@ void GBMBCInit(struct GB* gb) {
 			case 2:
 			case 3:
 				gb->memory.mbcType = GB_MBC1;
-				if (gb->memory.romSize >= GB_SIZE_CART_BANK0 * 0x31 && _isMulticart(gb->memory.rom)) {
-					gb->memory.mbcState.mbc1.multicartStride = 4;
-				} else {
-					gb->memory.mbcState.mbc1.multicartStride = 5;
-				}
 				break;
 			case 5:
 			case 6:
@@ -255,6 +250,11 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_MBC1:
 		gb->memory.mbcWrite = _GBMBC1;
+		if (gb->memory.romSize >= GB_SIZE_CART_BANK0 * 0x31 && _isMulticart(gb->memory.rom)) {
+			gb->memory.mbcState.mbc1.multicartStride = 4;
+		} else {
+			gb->memory.mbcState.mbc1.multicartStride = 5;
+		}
 		break;
 	case GB_MBC2:
 		gb->memory.mbcWrite = _GBMBC2;

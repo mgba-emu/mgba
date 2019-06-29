@@ -329,8 +329,7 @@ void DS7Reset(struct ARMCore* cpu) {
 		cpu->gprs[12] = header->arm7Entry;
 		cpu->gprs[ARM_LR] = header->arm7Entry;
 		cpu->gprs[ARM_PC] = header->arm7Entry;
-		int currentCycles = 0;
-		ARM_WRITE_PC;
+		ARMWritePC(cpu);
 
 		ds->romVf->unmap(ds->romVf, header, sizeof(*header));
 	}
@@ -369,8 +368,7 @@ void DS9Reset(struct ARMCore* cpu) {
 		cpu->gprs[12] = header->arm9Entry;
 		cpu->gprs[ARM_LR] = header->arm9Entry;
 		cpu->gprs[ARM_PC] = header->arm9Entry;
-		int currentCycles = 0;
-		ARM_WRITE_PC;
+		ARMWritePC(cpu);
 
 		ds->romVf->unmap(ds->romVf, header, sizeof(*header));
 	}
@@ -632,10 +630,10 @@ void DSIllegal(struct ARMCore* cpu, uint32_t opcode) {
 		int currentCycles = 0;
 		if (cpu->executionMode == MODE_THUMB) {
 			cpu->gprs[ARM_PC] -= WORD_SIZE_THUMB * 2;
-			THUMB_WRITE_PC;
+			ThumbWritePC(cpu);
 		} else {
 			cpu->gprs[ARM_PC] -= WORD_SIZE_ARM * 2;
-			ARM_WRITE_PC;
+			ARMWritePC(cpu);
 		}
 #ifdef USE_DEBUGGERS
 	} else if (ds->debugger) {

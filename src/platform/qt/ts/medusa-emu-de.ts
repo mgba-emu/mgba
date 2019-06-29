@@ -4687,19 +4687,29 @@ wenn vorhanden</translation>
         <translation>Tiles</translation>
     </message>
     <message>
-        <location filename="../TileView.ui" line="140"/>
+        <location filename="../TileView.ui" line="110"/>
         <source>256 colors</source>
         <translation>256 Farben</translation>
     </message>
     <message>
-        <location filename="../TileView.ui" line="31"/>
+        <location filename="../TileView.ui" line="123"/>
         <source>×</source>
         <translation>×</translation>
     </message>
     <message>
-        <location filename="../TileView.ui" line="44"/>
+        <location filename="../TileView.ui" line="136"/>
         <source>Magnification</source>
         <translation>Vergrößerung</translation>
+    </message>
+    <message>
+        <location filename="../TileView.ui" line="159"/>
+        <source>Tiles per row</source>
+        <translation>Tiles pro Zeile</translation>
+    </message>
+    <message>
+        <location filename="../TileView.ui" line="166"/>
+        <source>Fit to window</source>
+        <translation>An Fenster anpassen</translation>
     </message>
 </context>
 <context>
