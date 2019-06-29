@@ -10,6 +10,7 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/memory.h>
+#include <mgba-util/math.h>
 
 const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
 const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
@@ -21,6 +22,18 @@ static void _unHuffman(struct GBA* gba);
 static void _unRl(struct GBA* gba, int width);
 static void _unFilter(struct GBA* gba, int inwidth, int outwidth);
 static void _unBitPack(struct GBA* gba);
+
+static int _mulWait(int32_t r) {
+	if ((r & 0xFFFFFF00) == 0xFFFFFF00 || !(r & 0xFFFFFF00)) {
+		return 1;
+	} else if ((r & 0xFFFF0000) == 0xFFFF0000 || !(r & 0xFFFF0000)) {
+		return 2;
+	} else if ((r & 0xFF000000) == 0xFF000000 || !(r & 0xFF000000)) {
+		return 3;
+	} else {
+		return 4;
+	}
+}
 
 static void _SoftReset(struct GBA* gba) {
 	struct ARMCore* cpu = gba->cpu;
@@ -273,16 +286,30 @@ static void _Div(struct GBA* gba, int32_t num, int32_t denom) {
 		cpu->gprs[1] = 0;
 		cpu->gprs[3] = INT32_MIN;
 	}
+	int loops = clz32(denom) - clz32(num);
+	if (loops < 1) {
+		loops = 1;
+	}
+	cpu->cycles += 4 /* prologue */ + 13 * loops + 7 /* epilogue */;
 }
 
-static int16_t _ArcTan(int32_t i, int32_t* r1, int32_t* r3) {
+static int16_t _ArcTan(int32_t i, int32_t* r1, int32_t* r3, int32_t* cycles) {
+	int currentCycles = 37;
+	currentCycles += _mulWait(i * i);
 	int32_t a = -((i * i) >> 14);
+	currentCycles += _mulWait(0xA9 * a);
 	int32_t b = ((0xA9 * a) >> 14) + 0x390;
+	currentCycles += _mulWait(b * a);
 	b = ((b * a) >> 14) + 0x91C;
+	currentCycles += _mulWait(b * a);
 	b = ((b * a) >> 14) + 0xFB6;
+	currentCycles += _mulWait(b * a);
 	b = ((b * a) >> 14) + 0x16AA;
+	currentCycles += _mulWait(b * a);
 	b = ((b * a) >> 14) + 0x2081;
+	currentCycles += _mulWait(b * a);
 	b = ((b * a) >> 14) + 0x3651;
+	currentCycles += _mulWait(b * a);
 	b = ((b * a) >> 14) + 0xA2F9;
 	if (r1) {
 		*r1 = a;
@@ -290,10 +317,11 @@ static int16_t _ArcTan(int32_t i, int32_t* r1, int32_t* r3) {
 	if (r3) {
 		*r3 = b;
 	}
+	*cycles += currentCycles;
 	return (i * b) >> 16;
 }
 
-static int16_t _ArcTan2(int32_t x, int32_t y, int32_t* r1) {
+static int16_t _ArcTan2(int32_t x, int32_t y, int32_t* r1, int32_t* cycles) {
 	if (!y) {
 		if (x >= 0) {
 			return 0;
@@ -309,22 +337,75 @@ static int16_t _ArcTan2(int32_t x, int32_t y, int32_t* r1) {
 	if (y >= 0) {
 		if (x >= 0) {
 			if (x >= y) {
-				return _ArcTan((y << 14) / x, r1, NULL);
+				return _ArcTan((y << 14) / x, r1, NULL, cycles);
 			}
 		} else if (-x >= y) {
-			return _ArcTan((y << 14) / x, r1, NULL) + 0x8000;
+			return _ArcTan((y << 14) / x, r1, NULL, cycles) + 0x8000;
 		}
-		return 0x4000 - _ArcTan((x << 14) / y, r1, NULL);
+		return 0x4000 - _ArcTan((x << 14) / y, r1, NULL, cycles);
 	} else {
 		if (x <= 0) {
 			if (-x > -y) {
-				return _ArcTan((y << 14) / x, r1, NULL) + 0x8000;
+				return _ArcTan((y << 14) / x, r1, NULL, cycles) + 0x8000;
 			}
 		} else if (x >= -y) {
-			return _ArcTan((y << 14) / x, r1, NULL) + 0x10000;
+			return _ArcTan((y << 14) / x, r1, NULL, cycles) + 0x10000;
 		}
-		return 0xC000 - _ArcTan((x << 14) / y, r1, NULL);
+		return 0xC000 - _ArcTan((x << 14) / y, r1, NULL, cycles);
 	}
+}
+
+static int32_t _Sqrt(uint32_t x, int32_t* cycles) {
+	if (!x) {
+		*cycles += 53;
+		return 0;
+	}
+	int32_t currentCycles = 15;
+	uint32_t lower;
+	uint32_t upper = x;
+	uint32_t bound = 1;
+	while (bound < upper) {
+		upper >>= 1;
+		bound <<= 1;
+		currentCycles += 6;
+	}
+	while (true) {
+		currentCycles += 6;
+		upper = x;
+		uint32_t accum = 0;
+		lower = bound;
+		while (true) {
+			currentCycles += 5;
+			uint32_t oldLower = lower;
+			if (lower <= upper >> 1) {
+				lower <<= 1;
+			}
+			if (oldLower >= upper >> 1) {
+				break;
+			}
+		}
+		while (true) {
+			currentCycles += 8;
+			accum <<= 1;
+			if (upper >= lower) {
+				++accum;
+				upper -= lower;
+			}
+			if (lower == bound) {
+				break;
+			}
+			lower >>= 1;
+		}
+		uint32_t oldBound = bound;
+		bound += accum;
+		bound >>= 1;
+		if (bound >= oldBound) {
+			bound = oldBound;
+			break;
+		}
+	}
+	*cycles += currentCycles;
+	return bound;
 }
 
 void GBASwi16(struct ARMCore* cpu, int immediate) {
@@ -369,13 +450,13 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		_Div(gba, cpu->gprs[1], cpu->gprs[0]);
 		break;
 	case 0x8:
-		cpu->gprs[0] = sqrt((uint32_t) cpu->gprs[0]);
+		cpu->gprs[0] = _Sqrt(cpu->gprs[0], &cpu->cycles);
 		break;
 	case 0x9:
-		cpu->gprs[0] = _ArcTan(cpu->gprs[0], &cpu->gprs[1], &cpu->gprs[3]);
+		cpu->gprs[0] = _ArcTan(cpu->gprs[0], &cpu->gprs[1], &cpu->gprs[3], &cpu->cycles);
 		break;
 	case 0xA:
-		cpu->gprs[0] = (uint16_t) _ArcTan2(cpu->gprs[0], cpu->gprs[1], &cpu->gprs[1]);
+		cpu->gprs[0] = (uint16_t) _ArcTan2(cpu->gprs[0], cpu->gprs[1], &cpu->gprs[1], &cpu->cycles);
 		cpu->gprs[3] = 0x170;
 		break;
 	case 0xB:
@@ -496,6 +577,13 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		break;
 	default:
 		mLOG(GBA_BIOS, STUB, "Stub software interrupt: %02X", immediate);
+	}
+	gba->cpu->cycles += 45 + cpu->memory.activeNonseqCycles16 /* 8 bit load for SWI # */;
+	// Return cycles
+	if (gba->cpu->executionMode == MODE_ARM) {
+		gba->cpu->cycles += cpu->memory.activeNonseqCycles32 + cpu->memory.activeSeqCycles32;
+	} else {
+		gba->cpu->cycles += cpu->memory.activeNonseqCycles16 + cpu->memory.activeSeqCycles16;
 	}
 	gba->memory.biosPrefetch = 0xE3A02004;
 }

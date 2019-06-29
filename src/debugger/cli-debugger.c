@@ -11,6 +11,7 @@
 #include <mgba/core/version.h>
 #include <mgba/internal/debugger/parser.h>
 #include <mgba-util/string.h>
+#include <mgba-util/vfs.h>
 
 #if ENABLE_SCRIPTING
 #include <mgba/core/scripting.h>
@@ -27,8 +28,11 @@
 const char* ERROR_MISSING_ARGS = "Arguments missing"; // TODO: share
 const char* ERROR_OVERFLOW = "Arguments overflow";
 const char* ERROR_INVALID_ARGS = "Invalid arguments";
+const char* INFO_BREAKPOINT_ADDED = "Added breakpoint #%" PRIz "i\n";
+const char* INFO_WATCHPOINT_ADDED = "Added watchpoint #%" PRIz "i\n";
 
 static struct ParseTree* _parseTree(const char** string);
+static bool _doTrace(struct CLIDebugger* debugger);
 
 #if !defined(NDEBUG) && !defined(_WIN32)
 static void _breakInto(struct CLIDebugger*, struct CLIDebugVector*);
@@ -99,7 +103,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "r/2", _readHalfword, "I", "Read a halfword from a specified offset" },
 	{ "r/4", _readWord, "I", "Read a word from a specified offset" },
 	{ "status", _printStatus, "", "Print the current status" },
-	{ "trace", _trace, "I", "Trace a fixed number of instructions" },
+	{ "trace", _trace, "Is", "Trace a number of instructions" },
 	{ "w", _setReadWriteWatchpoint, "Is", "Set a watchpoint" },
 	{ "w/1", _writeByte, "II", "Write a byte at a specified offset" },
 	{ "w/2", _writeHalfword, "II", "Write a halfword at a specified offset" },
@@ -147,7 +151,7 @@ static void _breakInto(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 
 static void _continue(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
-	debugger->d.state = DEBUGGER_RUNNING;
+	debugger->d.state = debugger->traceRemaining != 0 ? DEBUGGER_CUSTOM : DEBUGGER_RUNNING;
 }
 
 static void _next(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -551,7 +555,10 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 			return;
 		}
 	}
-	debugger->d.platform->setBreakpoint(debugger->d.platform, &breakpoint);
+	ssize_t id = debugger->d.platform->setBreakpoint(debugger->d.platform, &breakpoint);
+	if (id > 0) {
+		debugger->backend->printf(debugger->backend, INFO_BREAKPOINT_ADDED, id);
+	}
 }
 
 static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv, enum mWatchpointType type) {
@@ -577,7 +584,10 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 			return;
 		}
 	}
-	debugger->d.platform->setWatchpoint(debugger->d.platform, &watchpoint);
+	ssize_t id = debugger->d.platform->setWatchpoint(debugger->d.platform, &watchpoint);
+	if (id > 0) {
+		debugger->backend->printf(debugger->backend, INFO_WATCHPOINT_ADDED, id);
+	}
 }
 
 static void _setReadWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -645,19 +655,43 @@ static void _trace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		return;
 	}
 
+	debugger->traceRemaining = dv->intValue;
+	if (debugger->traceVf) {
+		debugger->traceVf->close(debugger->traceVf);
+		debugger->traceVf = NULL;
+	}
+	if (debugger->traceRemaining == 0) {
+		return;
+	}
+	if (dv->next && dv->next->charValue) {
+		debugger->traceVf = VFileOpen(dv->next->charValue, O_CREAT | O_WRONLY | O_APPEND);
+	}
+	if (_doTrace(debugger)) {
+		debugger->d.state = DEBUGGER_CUSTOM;
+	} else {
+		debugger->system->printStatus(debugger->system);
+	}
+}
+
+static bool _doTrace(struct CLIDebugger* debugger) {
 	char trace[1024];
 	trace[sizeof(trace) - 1] = '\0';
-
-	int i;
-	for (i = 0; i < dv->intValue; ++i) {
-		debugger->d.core->step(debugger->d.core);
-		size_t traceSize = sizeof(trace) - 1;
-		debugger->d.platform->trace(debugger->d.platform, trace, &traceSize);
-		if (traceSize + 1 < sizeof(trace)) {
-			trace[traceSize + 1] = '\0';
-		}
-		debugger->backend->printf(debugger->backend, "%s\n", trace);
+	debugger->d.core->step(debugger->d.core);
+	size_t traceSize = sizeof(trace) - 2;
+	debugger->d.platform->trace(debugger->d.platform, trace, &traceSize);
+	if (traceSize + 1 <= sizeof(trace)) {
+		trace[traceSize] = '\n';
+		trace[traceSize + 1] = '\0';
 	}
+	if (debugger->traceVf) {
+		debugger->traceVf->write(debugger->traceVf, trace, traceSize + 1);
+	} else {
+		debugger->backend->printf(debugger->backend, "%s", trace);
+	}
+	if (debugger->traceRemaining > 0) {
+		--debugger->traceRemaining;
+	}
+	return debugger->traceRemaining != 0;
 }
 
 static void _printStatus(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -889,6 +923,9 @@ static void _commandLine(struct mDebugger* debugger) {
 
 static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
+	if (cliDebugger->traceRemaining > 0) {
+		cliDebugger->traceRemaining = 0;
+	}
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
 	case DEBUGGER_ENTER_ATTACHED:
@@ -923,11 +960,18 @@ static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason r
 
 static void _cliDebuggerInit(struct mDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
+	cliDebugger->traceRemaining = 0;
+	cliDebugger->traceVf = NULL;
 	cliDebugger->backend->init(cliDebugger->backend);
 }
 
 static void _cliDebuggerDeinit(struct mDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
+	if (cliDebugger->traceVf) {
+		cliDebugger->traceVf->close(cliDebugger->traceVf);
+		cliDebugger->traceVf = NULL;
+	}
+
 	if (cliDebugger->system) {
 		if (cliDebugger->system->deinit) {
 			cliDebugger->system->deinit(cliDebugger->system);
@@ -943,12 +987,17 @@ static void _cliDebuggerDeinit(struct mDebugger* debugger) {
 
 static void _cliDebuggerCustom(struct mDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
-	bool retain = false;
+	bool retain = true;
+	enum mDebuggerState next = DEBUGGER_RUNNING;
+	if (cliDebugger->traceRemaining) {
+		retain = _doTrace(cliDebugger) && retain;
+		next = DEBUGGER_PAUSED;
+	}
 	if (cliDebugger->system) {
-		retain = cliDebugger->system->custom(cliDebugger->system);
+		retain = cliDebugger->system->custom(cliDebugger->system) && retain;
 	}
 	if (!retain && debugger->state == DEBUGGER_CUSTOM) {
-		debugger->state = DEBUGGER_RUNNING;
+		debugger->state = next;
 	}
 }
 

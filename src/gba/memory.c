@@ -938,7 +938,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		GBAStore16(cpu, address & ~1, ((uint8_t) value) | ((uint8_t) value << 8), cycleCounter);
 		break;
 	case REGION_VRAM:
-		if ((address & 0x0001FFFF) >= ((GBARegisterDISPCNTGetMode(gba->memory.io[REG_DISPCNT >> 1]) == 4) ? 0x00014000 : 0x00010000)) {
+		if ((address & 0x0001FFFF) >= ((GBARegisterDISPCNTGetMode(gba->memory.io[REG_DISPCNT >> 1]) >= 3) ? 0x00014000 : 0x00010000)) {
 			// TODO: check BG mode
 			mLOG(GBA_MEM, GAME_ERROR, "Cannot Store8 to OBJ: 0x%08X", address);
 			break;

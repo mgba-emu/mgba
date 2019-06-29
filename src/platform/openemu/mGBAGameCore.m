@@ -76,6 +76,7 @@
 
 - (void)dealloc
 {
+	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 	[cheatSets release];
 	free(outputBuffer);

@@ -165,6 +165,7 @@ loadError:
 	if (outputBuffer) {
 		free(outputBuffer);
 	}
+	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 
 	return !cleanExit;

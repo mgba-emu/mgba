@@ -15,8 +15,11 @@ CXX_GUARD_START
 extern const char* ERROR_MISSING_ARGS;
 extern const char* ERROR_OVERFLOW;
 extern const char* ERROR_INVALID_ARGS;
+extern const char* INFO_BREAKPOINT_ADDED;
+extern const char* INFO_WATCHPOINT_ADDED;
 
 struct CLIDebugger;
+struct VFile;
 
 struct CLIDebugVector {
 	struct CLIDebugVector* next;
@@ -74,6 +77,9 @@ struct CLIDebugger {
 
 	struct CLIDebuggerSystem* system;
 	struct CLIDebuggerBackend* backend;
+
+	int traceRemaining;
+	struct VFile* traceVf;
 };
 
 void CLIDebuggerCreate(struct CLIDebugger*);

@@ -5,14 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "Window.h"
 
-#include <QDesktopWidget>
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QPainter>
+#include <QScreen>
 #include <QStackedLayout>
+#include <QWindow>
 
 #ifdef USE_SQLITE3
 #include "ArchiveInspector.h"
@@ -230,6 +231,15 @@ void Window::argumentsPassed(mArguments* args) {
 
 void Window::resizeFrame(const QSize& size) {
 	QSize newSize(size);
+	if (windowHandle()) {
+		QRect geom = windowHandle()->screen()->availableGeometry();
+		if (newSize.width() > geom.width()) {
+			newSize.setWidth(geom.width());
+		}
+		if (newSize.height() > geom.height()) {
+			newSize.setHeight(geom.height());
+		}
+	}
 	m_screenWidget->setSizeHint(newSize);
 	newSize -= m_screenWidget->size();
 	newSize += this->size();
@@ -609,7 +619,7 @@ void Window::showEvent(QShowEvent* event) {
 	m_wasOpened = true;
 	resizeFrame(m_screenWidget->sizeHint());
 	QVariant windowPos = m_config->getQtOption("windowPos");
-	QRect geom = QApplication::desktop()->availableGeometry(this);
+	QRect geom = windowHandle()->screen()->availableGeometry();
 	if (!windowPos.isNull() && geom.contains(windowPos.toPoint())) {
 		move(windowPos.toPoint());
 	} else {

@@ -69,6 +69,7 @@ M_TEST_SUITE_TEARDOWN(GBRTC) {
 		return 0;
 	}
 	struct GBRTCTest* test = *state;
+	mCoreConfigDeinit(&test->core->config);
 	test->core->deinit(test->core);
 	free(test);
 	return 0;

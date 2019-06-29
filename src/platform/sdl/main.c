@@ -143,6 +143,7 @@ int main(int argc, char** argv) {
 
 	if (!mSDLInit(&renderer)) {
 		freeArguments(&args);
+		mCoreConfigDeinit(&renderer.core->config);
 		renderer.core->deinit(renderer.core);
 		return 1;
 	}
