@@ -20,6 +20,7 @@ struct LR35902Segment {
 	const char* name;
 };
 
+struct CLIDebuggerSystem;
 struct LR35902Debugger {
 	struct mDebuggerPlatform d;
 	struct LR35902Core* cpu;
@@ -31,6 +32,8 @@ struct LR35902Debugger {
 	ssize_t nextId;
 
 	const struct LR35902Segment* segments;
+
+	void (*printStatus)(struct CLIDebuggerSystem*);
 };
 
 struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void);

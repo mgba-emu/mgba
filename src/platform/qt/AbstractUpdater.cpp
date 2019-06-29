@@ -85,5 +85,7 @@ void AbstractUpdater::updateDownloaded(QNetworkReply* reply) {
 		}
 		f.write(bytes);
 	}
+	f.flush();
+	f.close();
 	emit updateDone(true);
 }

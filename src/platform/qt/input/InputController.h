@@ -30,6 +30,7 @@
 
 #ifdef BUILD_QT_MULTIMEDIA
 #include "VideoDumper.h"
+#include <QCamera>
 #endif
 
 struct mRotationSource;
@@ -144,6 +145,9 @@ protected:
 	bool eventFilter(QObject*, QEvent*) override;
 
 private slots:
+#ifdef BUILD_QT_MULTIMEDIA
+	void prepareCamSettings(QCamera::Status);
+#endif
 	void setupCam();
 	void teardownCam();
 

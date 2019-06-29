@@ -548,16 +548,16 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			break;
 		case REG_IE:
 			gba->memory.io[REG_IE >> 1] = value;
-			GBATestIRQ(gba->cpu, 1);
+			GBATestIRQ(gba, 1);
 			return;
 		case REG_IF:
 			value = gba->memory.io[REG_IF >> 1] & ~value;
 			gba->memory.io[REG_IF >> 1] = value;
-			GBATestIRQ(gba->cpu, 1);
+			GBATestIRQ(gba, 1);
 			return;
 		case REG_IME:
 			gba->memory.io[REG_IME >> 1] = value;
-			GBATestIRQ(gba->cpu, 1);
+			GBATestIRQ(gba, 1);
 			return;
 		case REG_MAX:
 			// Some bad interrupt libraries will write to this

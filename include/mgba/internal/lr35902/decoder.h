@@ -86,6 +86,7 @@ enum {
 	LR35902_OP_FLAG_MEMORY = 2,
 	LR35902_OP_FLAG_INCREMENT = 4,
 	LR35902_OP_FLAG_DECREMENT = 8,
+	LR35902_OP_FLAG_RELATIVE = 16,
 };
 
 struct LR35902Operand {
@@ -104,7 +105,7 @@ struct LR35902InstructionInfo {
 };
 
 size_t LR35902Decode(uint8_t opcode, struct LR35902InstructionInfo* info);
-int LR35902Disassemble(struct LR35902InstructionInfo* info, char* buffer, int blen);
+int LR35902Disassemble(struct LR35902InstructionInfo* info, uint16_t pc, char* buffer, int blen);
 
 CXX_GUARD_END
 

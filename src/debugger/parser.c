@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/debugger/parser.h>
 
+#include <mgba/core/core.h>
 #include <mgba/debugger/debugger.h>
 #include <mgba-util/string.h>
 
@@ -89,52 +90,77 @@ static void _lexOperator(struct LexVector* lv, char operator, enum LexState* sta
 			break;
 		}
 		*state = LEX_ERROR;
+	}
+	if (*state == LEX_ROOT || *state == LEX_ERROR) {
+		struct Token lvNext;
+		lvNext.type = TOKEN_OPERATOR_TYPE;
+		*state = LEX_ROOT;
+		switch (operator) {
+		case '-':
+			lvNext.operatorValue = OP_NEGATE;
+			break;
+		case '~':
+			lvNext.operatorValue = OP_FLIP;
+			break;
+		case '!':
+			lvNext.operatorValue = OP_NOT;
+			break;
+		case '*':
+			lvNext.operatorValue = OP_DEREFERENCE;
+			break;
+		default:
+			lvNext.type = TOKEN_ERROR_TYPE;
+			*state = LEX_ERROR;
+			return;
+		}
+		*LexVectorAppend(lv) = lvNext;
 		return;
 	}
-	struct Token* lvNext = LexVectorAppend(lv);
-	lvNext->type = TOKEN_OPERATOR_TYPE;
-	*state = LEX_EXPECT_OPERATOR2;
+	struct Token lvNext;
+	lvNext.type = TOKEN_OPERATOR_TYPE;
 	switch (operator) {
 	case '=':
-		lvNext->operatorValue = OP_ASSIGN;
+		lvNext.operatorValue = OP_ASSIGN;
 		break;
 	case '+':
-		lvNext->operatorValue = OP_ADD;
+		lvNext.operatorValue = OP_ADD;
 		break;
 	case '-':
-		lvNext->operatorValue = OP_SUBTRACT;
+		lvNext.operatorValue = OP_SUBTRACT;
 		break;
 	case '*':
-		lvNext->operatorValue = OP_MULTIPLY;
+		lvNext.operatorValue = OP_MULTIPLY;
 		break;
 	case '/':
-		lvNext->operatorValue = OP_DIVIDE;
+		lvNext.operatorValue = OP_DIVIDE;
 		break;
 	case '%':
-		lvNext->operatorValue = OP_MODULO;
+		lvNext.operatorValue = OP_MODULO;
 		break;
 	case '&':
-		lvNext->operatorValue = OP_AND;
+		lvNext.operatorValue = OP_AND;
 		break;
 	case '|':
-		lvNext->operatorValue = OP_OR;
+		lvNext.operatorValue = OP_OR;
 		break;
 	case '^':
-		lvNext->operatorValue = OP_XOR;
+		lvNext.operatorValue = OP_XOR;
 		break;
 	case '<':
-		lvNext->operatorValue = OP_LESS;
+		lvNext.operatorValue = OP_LESS;
 		break;
 	case '>':
-		lvNext->operatorValue = OP_GREATER;
+		lvNext.operatorValue = OP_GREATER;
 		break;
 	case '!':
-		lvNext->operatorValue = OP_NOT;
+		lvNext.operatorValue = OP_NOT;
 		break;
 	default:
-		lvNext->type = TOKEN_ERROR_TYPE;
-		break;
+		*state = LEX_ERROR;
+		return;
 	}
+	*state = LEX_EXPECT_OPERATOR2;
+	*LexVectorAppend(lv) = lvNext;
 }
 
 static void _lexValue(struct LexVector* lv, char token, uint32_t next, enum LexState* state) {
@@ -246,6 +272,12 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length, co
 				state = LEX_ROOT;
 				lvNext = LexVectorAppend(lv);
 				lvNext->type = TOKEN_OPEN_PAREN_TYPE;
+				break;
+			case '!':
+			case '-':
+			case '~':
+			case '*':
+				_lexOperator(lv, token, &state);
 				break;
 			case ' ':
 			case '\t':
@@ -499,6 +531,7 @@ static const int _operatorPrecedence[] = {
 	[OP_NOT] = 2,
 	[OP_SHIFT_L] = 5,
 	[OP_SHIFT_R] = 5,
+	[OP_DEREFERENCE] = 2,
 };
 
 static struct ParseTree* _parseTreeCreate() {
@@ -622,7 +655,7 @@ void parseFree(struct ParseTree* tree) {
 	}
 }
 
-static bool _performOperation(enum Operation operation, int32_t current, int32_t next, int32_t* value) {
+static bool _performOperation(struct mDebugger* debugger, enum Operation operation, int32_t current, int32_t next, int32_t* value, int* segment) {
 	switch (operation) {
 	case OP_ASSIGN:
 		current = next;
@@ -683,11 +716,28 @@ static bool _performOperation(enum Operation operation, int32_t current, int32_t
 	case OP_GE:
 		current = current >= next;
 		break;
+	case OP_NEGATE:
+		current = -next;
+		break;
+	case OP_FLIP:
+		current = ~next;
+		break;
+	case OP_NOT:
+		current = !next;
+		break;
 	case OP_SHIFT_L:
 		current <<= next;
 		break;
 	case OP_SHIFT_R:
 		current >>= next;
+		break;
+	case OP_DEREFERENCE:
+		if (*segment < 0) {
+			current = debugger->core->busRead8(debugger->core, next);
+		} else {
+			current = debugger->core->rawRead8(debugger->core, next, *segment);
+		}
+		*segment = -1;
 		break;
 	default:
 		return false;
@@ -714,13 +764,37 @@ bool mDebuggerEvaluateParseTree(struct mDebugger* debugger, struct ParseTree* tr
 		}
 		return mDebuggerEvaluateParseTree(debugger, tree->lhs, segment, NULL);
 	case TOKEN_OPERATOR_TYPE:
-		if (!mDebuggerEvaluateParseTree(debugger, tree->lhs, &lhs, segment)) {
-			return false;
+		switch (tree->token.operatorValue) {
+		case OP_ASSIGN:
+		case OP_ADD:
+		case OP_SUBTRACT:
+		case OP_MULTIPLY:
+		case OP_DIVIDE:
+		case OP_MODULO:
+		case OP_AND:
+		case OP_OR:
+		case OP_XOR:
+		case OP_LESS:
+		case OP_GREATER:
+		case OP_EQUAL:
+		case OP_NOT_EQUAL:
+		case OP_LOGICAL_AND:
+		case OP_LOGICAL_OR:
+		case OP_LE:
+		case OP_GE:
+		case OP_SHIFT_L:
+		case OP_SHIFT_R:
+			if (!mDebuggerEvaluateParseTree(debugger, tree->lhs, &lhs, segment)) {
+				return false;
+			}
+			// Fall through
+		default:
+			if (!mDebuggerEvaluateParseTree(debugger, tree->rhs, &rhs, segment)) {
+				return false;
+			}
+			break;
 		}
-		if (!mDebuggerEvaluateParseTree(debugger, tree->rhs, &rhs, segment)) {
-			return false;
-		}
-		return _performOperation(tree->token.operatorValue, lhs, rhs, value);
+		return _performOperation(debugger, tree->token.operatorValue, lhs, rhs, value, segment);
 	case TOKEN_IDENTIFIER_TYPE:
 		return mDebuggerLookupIdentifier(debugger, tree->token.identifierValue, value, segment);
 	case TOKEN_ERROR_TYPE:

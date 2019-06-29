@@ -630,7 +630,7 @@ void GBDetectModel(struct GB* gb) {
 }
 
 void GBUpdateIRQs(struct GB* gb) {
-	int irqs = gb->memory.ie & gb->memory.io[REG_IF];
+	int irqs = gb->memory.ie & gb->memory.io[REG_IF] & 0x1F;
 	if (!irqs) {
 		gb->cpu->irqPending = false;
 		return;

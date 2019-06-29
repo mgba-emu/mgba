@@ -8,6 +8,7 @@
 #include <mgba/core/core.h>
 #include <mgba/internal/debugger/symbols.h>
 #include <mgba/internal/gb/cheats.h>
+#include <mgba/internal/gb/debugger/debugger.h>
 #include <mgba/internal/gb/debugger/symbols.h>
 #include <mgba/internal/gb/extra/cli.h>
 #include <mgba/internal/gb/io.h>
@@ -40,20 +41,6 @@ static const struct mCoreChannelInfo _GBAudioChannels[] = {
 	{ 1, "ch2", "Channel 2", "Square" },
 	{ 2, "ch3", "Channel 3", "PCM" },
 	{ 3, "ch4", "Channel 4", "Noise" },
-};
-
-static const struct LR35902Segment _GBSegments[] = {
-	{ .name = "ROM", .start = GB_BASE_CART_BANK1, .end = GB_BASE_VRAM },
-	{ .name = "RAM", .start = GB_BASE_EXTERNAL_RAM, .end = GB_BASE_WORKING_RAM_BANK0 },
-	{ 0 }
-};
-
-static const struct LR35902Segment _GBCSegments[] = {
-	{ .name = "ROM", .start = GB_BASE_CART_BANK1, .end = GB_BASE_VRAM },
-	{ .name = "RAM", .start = GB_BASE_EXTERNAL_RAM, .end = GB_BASE_WORKING_RAM_BANK0 },
-	{ .name = "WRAM", .start = GB_BASE_WORKING_RAM_BANK1, .end = 0xE000 },
-	{ .name = "VRAM", .start = GB_BASE_VRAM, .end = GB_BASE_EXTERNAL_RAM },
-	{ 0 }
 };
 
 static const struct mCoreMemoryBlock _GBMemoryBlocks[] = {
@@ -715,12 +702,7 @@ static struct mDebuggerPlatform* _GBCoreDebuggerPlatform(struct mCore* core) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	struct GB* gb = core->board;
 	if (!gbcore->debuggerPlatform) {
-		struct LR35902Debugger* platform = (struct LR35902Debugger*) LR35902DebuggerPlatformCreate();
-		if (gb->model >= GB_MODEL_CGB) {
-			platform->segments = _GBCSegments;
-		} else {
-			platform->segments = _GBSegments;
-		}
+		struct LR35902Debugger* platform = (struct LR35902Debugger*) GBDebuggerCreate(gb);
 		gbcore->debuggerPlatform = &platform->d;
 	}
 	return gbcore->debuggerPlatform;

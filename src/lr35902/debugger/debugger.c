@@ -75,21 +75,22 @@ static bool LR35902DebuggerGetRegister(struct mDebuggerPlatform*, const char* na
 static bool LR35902DebuggerSetRegister(struct mDebuggerPlatform*, const char* name, int32_t value);
 
 struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void) {
-	struct mDebuggerPlatform* platform = (struct mDebuggerPlatform*) malloc(sizeof(struct LR35902Debugger));
-	platform->entered = LR35902DebuggerEnter;
-	platform->init = LR35902DebuggerInit;
-	platform->deinit = LR35902DebuggerDeinit;
-	platform->setBreakpoint = LR35902DebuggerSetBreakpoint;
-	platform->listBreakpoints = LR35902DebuggerListBreakpoints;
-	platform->clearBreakpoint = LR35902DebuggerClearBreakpoint;
-	platform->setWatchpoint = LR35902DebuggerSetWatchpoint;
-	platform->listWatchpoints = LR35902DebuggerListWatchpoints;
-	platform->checkBreakpoints = LR35902DebuggerCheckBreakpoints;
-	platform->hasBreakpoints = LR35902DebuggerHasBreakpoints;
-	platform->trace = LR35902DebuggerTrace;
-	platform->getRegister = LR35902DebuggerGetRegister;
-	platform->setRegister = LR35902DebuggerSetRegister;
-	return platform;
+	struct LR35902Debugger* platform = malloc(sizeof(struct LR35902Debugger));
+	platform->d.entered = LR35902DebuggerEnter;
+	platform->d.init = LR35902DebuggerInit;
+	platform->d.deinit = LR35902DebuggerDeinit;
+	platform->d.setBreakpoint = LR35902DebuggerSetBreakpoint;
+	platform->d.listBreakpoints = LR35902DebuggerListBreakpoints;
+	platform->d.clearBreakpoint = LR35902DebuggerClearBreakpoint;
+	platform->d.setWatchpoint = LR35902DebuggerSetWatchpoint;
+	platform->d.listWatchpoints = LR35902DebuggerListWatchpoints;
+	platform->d.checkBreakpoints = LR35902DebuggerCheckBreakpoints;
+	platform->d.hasBreakpoints = LR35902DebuggerHasBreakpoints;
+	platform->d.trace = LR35902DebuggerTrace;
+	platform->d.getRegister = LR35902DebuggerGetRegister;
+	platform->d.setRegister = LR35902DebuggerSetRegister;
+	platform->printStatus = NULL;
+	return &platform->d;
 }
 
 void LR35902DebuggerInit(void* cpu, struct mDebuggerPlatform* platform) {
@@ -215,7 +216,7 @@ static void LR35902DebuggerTrace(struct mDebuggerPlatform* d, char* out, size_t*
 	disPtr[0] = ':';
 	disPtr[1] = ' ';
 	disPtr += 2;
-	LR35902Disassemble(&info, disPtr, sizeof(disassembly) - (disPtr - disassembly));
+	LR35902Disassemble(&info, address, disPtr, sizeof(disassembly) - (disPtr - disassembly));
 
 	*length = snprintf(out, *length, "A: %02X F: %02X B: %02X C: %02X D: %02X E: %02X H: %02X L: %02X SP: %04X PC: %02X:%04X | %s",
 		               cpu->a, cpu->f.packed, cpu->b, cpu->c,
