@@ -12,12 +12,14 @@
 // Beware pre-processor insanity
 
 #define THUMB_ADDITION_S(M, N, D) \
+	cpu->cpsr.flags = 0; \
 	cpu->cpsr.n = ARM_SIGN(D); \
 	cpu->cpsr.z = !(D); \
 	cpu->cpsr.c = ARM_CARRY_FROM(M, N, D); \
 	cpu->cpsr.v = ARM_V_ADDITION(M, N, D);
 
 #define THUMB_SUBTRACTION_S(M, N, D) \
+	cpu->cpsr.flags = 0; \
 	cpu->cpsr.n = ARM_SIGN(D); \
 	cpu->cpsr.z = !(D); \
 	cpu->cpsr.c = ARM_BORROW_FROM(M, N, D); \

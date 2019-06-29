@@ -95,6 +95,20 @@ union PSR {
 #endif
 	};
 
+	struct {
+#if defined(__BIG_ENDIAN__)
+		uint8_t flags;
+		uint8_t status;
+		uint8_t extension;
+		uint8_t control;
+#else
+		uint8_t control;
+		uint8_t extension;
+		uint8_t status;
+		uint8_t flags;
+#endif
+	};
+
 	int32_t packed;
 };
 
