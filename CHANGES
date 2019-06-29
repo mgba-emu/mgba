@@ -22,6 +22,7 @@ Misc:
 Features:
  - Improved logging configuration
  - One-Player BattleChip/Progress/Beast Link Gate support
+ - Add Game Boy Color palettes for original Game Boy games
 Bugfixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs
@@ -35,6 +36,17 @@ Bugfixes:
  - Switch: Fix gyroscope orientation (fixes mgba.io/i/1300)
  - GBA SIO: Prevent writing read-only multiplayer bits
  - Qt: Fix color picking in sprite view (fixes mgba.io/i/1307)
+ - GB: Fix crash when accessing SRAM if no save loaded and cartridge has no SRAM
+ - Python: Fix crash when deleting files owned by library
+ - Python: Make sure GB link object isn't GC'd before GB object
+ - GBA DMA: Fix Display Start DMAs
+ - GBA DMA: Fix DMA start/end timing
+ - Qt: Fix window icon on X11
+ - GB, GBA Serialize: Fix loading two states in a row
+ - GBA Video: Fix enabling layers in non-tile modes (fixes mgba.io/i/1317)
+ - Qt: Fix quick load recent accidentally saving (fixes mgba.io/i/1309)
+ - GBA: Fix video timing when skipping BIOS (fixes mgba.io/i/1318)
+ - 3DS: Work around menu freezing (fixes mgba.io/i/1294)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
@@ -42,6 +54,7 @@ Misc:
  - Qt: Don't unload ROM immediately if it crashes
  - GBA Video: Improve sprite cycle counting (fixes mgba.io/i/1274)
  - Debugger: Add breakpoint and watchpoint listing
+ - Qt: Updated Italian translation (by Vecna)
 
 0.7.0: (2019-01-26)
 Features:

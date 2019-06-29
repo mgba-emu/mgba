@@ -22,6 +22,7 @@ struct GBCartridgeOverride {
 
 struct Configuration;
 bool GBOverrideFind(const struct Configuration*, struct GBCartridgeOverride* override);
+bool GBOverrideColorFind(struct GBCartridgeOverride* override);
 void GBOverrideSave(struct Configuration*, const struct GBCartridgeOverride* override);
 
 struct GB;

@@ -107,6 +107,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 
 	m_logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
 	m_logo = m_logo; // Free memory left over in old pixmap
+	setWindowIcon(m_logo);
 
 #if defined(M_CORE_GBA)
 	float i = 2;
@@ -1165,7 +1166,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(quickLoadMenu, quickLoad, "quickLoad");
 
 	QAction* quickSave = new QAction(tr("Save recent"), quickSaveMenu);
-	connect(quickLoad, &QAction::triggered, [this] {
+	connect(quickSave, &QAction::triggered, [this] {
 		m_controller->saveState();
 	});
 	m_gameActions.append(quickSave);
@@ -1433,7 +1434,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef M_CORE_GBA
 	QAction* bcGate = new QAction(tr("BattleChip Gate..."), emulationMenu);
-	connect(bcGate, &QAction::triggered, openControllerTView<BattleChipView>());
+	connect(bcGate, &QAction::triggered, openControllerTView<BattleChipView>(this));
 	addControlledAction(emulationMenu, bcGate, "bcGate");
 	m_platformActions.append(qMakePair(bcGate, SUPPORT_GBA));
 	m_gameActions.append(bcGate);

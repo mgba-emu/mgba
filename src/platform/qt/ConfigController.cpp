@@ -112,6 +112,8 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.lockAspectRatio = true;
 	mCoreConfigLoad(&m_config);
 	mCoreConfigLoadDefaults(&m_config, &m_opts);
+	mCoreConfigSetDefaultIntValue(&m_config, "sgb.borders", 1);
+	mCoreConfigSetDefaultIntValue(&m_config, "useCgbColors", 1);
 	mCoreConfigMap(&m_config, &m_opts);
 }
 

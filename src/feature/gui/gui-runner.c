@@ -548,6 +548,10 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			runner->params.drawStart();
 			runner->drawFrame(runner, true);
 			runner->params.drawEnd();
+#ifdef _3DS
+			// XXX: Why does this fix #1294?
+			usleep(1000);
+#endif
 			GUIPollInput(&runner->params, 0, &keys);
 		}
 		if (runner->unpaused) {
