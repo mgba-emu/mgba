@@ -180,12 +180,22 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	m_ui.cameraDriver->addItem(tr("None (Still Image)"), static_cast<int>(InputController::CameraDriver::NONE));
 	if (cameraDriver.isNull() || cameraDriver.toInt() == static_cast<int>(InputController::CameraDriver::NONE)) {
 		m_ui.cameraDriver->setCurrentIndex(m_ui.cameraDriver->count() - 1);
+		m_ui.camera->setEnabled(false);
 	}
 
 #ifdef BUILD_QT_MULTIMEDIA
 	m_ui.cameraDriver->addItem(tr("Qt Multimedia"), static_cast<int>(InputController::CameraDriver::QT_MULTIMEDIA));
 	if (!cameraDriver.isNull() && cameraDriver.toInt() == static_cast<int>(InputController::CameraDriver::QT_MULTIMEDIA)) {
 		m_ui.cameraDriver->setCurrentIndex(m_ui.cameraDriver->count() - 1);
+		m_ui.camera->setEnabled(true);
+	}
+	QList<QPair<QByteArray, QString>> cameras = inputController->listCameras();
+	QByteArray currentCamera = m_controller->getQtOption("camera").toByteArray();
+	for (const auto& camera : cameras) {
+		m_ui.camera->addItem(camera.second, camera.first);
+		if (camera.first == currentCamera) {
+			m_ui.camera->setCurrentIndex(m_ui.camera->count() - 1);
+		}
 	}
 #endif
 
@@ -445,6 +455,12 @@ void SettingsView::updateConfig() {
 	if (cameraDriver != m_controller->getQtOption("cameraDriver")) {
 		m_controller->setQtOption("cameraDriver", cameraDriver);
 		emit cameraDriverChanged();
+	}
+
+	QVariant camera = m_ui.camera->itemData(m_ui.camera->currentIndex());
+	if (camera != m_controller->getQtOption("camera")) {
+		m_controller->setQtOption("camera", camera);
+		emit cameraChanged(camera.toByteArray());
 	}
 
 	QLocale language = m_ui.languages->itemData(m_ui.languages->currentIndex()).toLocale();

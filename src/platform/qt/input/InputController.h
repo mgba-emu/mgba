@@ -112,6 +112,8 @@ public:
 	void stealFocus(QWidget* focus);
 	void releaseFocus(QWidget* focus);
 
+	QList<QPair<QByteArray, QString>> listCameras() const;
+
 	mRumble* rumble();
 	mRotationSource* rotationSource();
 	mImageSource* imageSource() { return &m_image; }
@@ -140,6 +142,8 @@ public slots:
 
 	void loadCamImage(const QString& path);
 	void setCamImage(const QImage& image);
+
+	void setCamera(const QByteArray& id);
 
 protected:
 	bool eventFilter(QObject*, QEvent*) override;

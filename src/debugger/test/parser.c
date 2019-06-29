@@ -56,6 +56,12 @@ M_TEST_DEFINE(parseLexError) {
 	assert_int_equal(tree->token.type, TOKEN_ERROR_TYPE);
 }
 
+M_TEST_DEFINE(parseError) {
+	PARSE("1 2");
+
+	assert_int_equal(tree->token.type, TOKEN_ERROR_TYPE);
+}
+
 M_TEST_DEFINE(parseSimpleExpression) {
 	PARSE("1+2");
 
@@ -108,11 +114,35 @@ M_TEST_DEFINE(parseParentheticalAddMultplyExpression) {
 	assert_int_equal(tree->rhs->token.uintValue, 3);
 }
 
+M_TEST_DEFINE(parseIsolatedOperator) {
+	PARSE("+");
+
+	assert_int_equal(tree->token.type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(tree->lhs->token.type, TOKEN_ERROR_TYPE);
+	assert_int_equal(tree->rhs->token.type, TOKEN_ERROR_TYPE);
+}
+
+M_TEST_DEFINE(parseUnaryChainedOperator) {
+	PARSE("1+*2");
+
+	assert_int_equal(tree->token.type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(tree->token.operatorValue, OP_ADD);
+	assert_int_equal(tree->lhs->token.type, TOKEN_UINT_TYPE);
+	assert_int_equal(tree->lhs->token.uintValue, 1);
+	assert_int_equal(tree->rhs->token.type, TOKEN_OPERATOR_TYPE);
+	assert_int_equal(tree->rhs->token.operatorValue, OP_DEREFERENCE);
+	assert_int_equal(tree->rhs->rhs->token.type, TOKEN_UINT_TYPE);
+	assert_int_equal(tree->rhs->rhs->token.uintValue, 2);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(Parser,
 	cmocka_unit_test(parseEmpty),
 	cmocka_unit_test(parseInt),
 	cmocka_unit_test(parseLexError),
+	cmocka_unit_test(parseError),
 	cmocka_unit_test(parseSimpleExpression),
 	cmocka_unit_test(parseAddMultplyExpression),
 	cmocka_unit_test(parseParentheticalExpression),
-	cmocka_unit_test(parseParentheticalAddMultplyExpression))
+	cmocka_unit_test(parseParentheticalAddMultplyExpression),
+	cmocka_unit_test(parseIsolatedOperator),
+	cmocka_unit_test(parseUnaryChainedOperator))

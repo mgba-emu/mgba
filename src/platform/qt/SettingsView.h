@@ -40,6 +40,7 @@ signals:
 	void audioDriverChanged();
 	void displayDriverChanged();
 	void cameraDriverChanged();
+	void cameraChanged(const QByteArray&);
 	void pathsChanged();
 	void languageChanged();
 	void libraryCleared();
