@@ -305,31 +305,36 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 
 	if (flags & SAVESTATE_METADATA) {
 		uint64_t* creationUsec = malloc(sizeof(*creationUsec));
+		if (creationUsec) {
 #ifndef _MSC_VER
-		struct timeval tv;
-		if (!gettimeofday(&tv, 0)) {
-			uint64_t usec = tv.tv_usec;
-			usec += tv.tv_sec * 1000000LL;
-			STORE_64LE(usec, 0, creationUsec);
-		}
+			struct timeval tv;
+			if (!gettimeofday(&tv, 0)) {
+				uint64_t usec = tv.tv_usec;
+				usec += tv.tv_sec * 1000000LL;
+				STORE_64LE(usec, 0, creationUsec);
+			}
 #else
-		struct timespec ts;
-		if (timespec_get(&ts, TIME_UTC)) {
-			uint64_t usec = ts.tv_nsec / 1000;
-			usec += ts.tv_sec * 1000000LL;
-			STORE_64LE(usec, 0, creationUsec);
-		}
+			struct timespec ts;
+			if (timespec_get(&ts, TIME_UTC)) {
+				uint64_t usec = ts.tv_nsec / 1000;
+				usec += ts.tv_sec * 1000000LL;
+				STORE_64LE(usec, 0, creationUsec);
+			}
 #endif
-		else {
-			creationUsec = 0;
+			else {
+				free(creationUsec);
+				creationUsec = 0;
+			}
 		}
 
-		struct mStateExtdataItem item = {
-			.size = sizeof(*creationUsec),
-			.data = creationUsec,
-			.clean = free
-		};
-		mStateExtdataPut(&extdata, EXTDATA_META_TIME, &item);
+		if (creationUsec) {
+			struct mStateExtdataItem item = {
+				.size = sizeof(*creationUsec),
+				.data = creationUsec,
+				.clean = free
+			};
+			mStateExtdataPut(&extdata, EXTDATA_META_TIME, &item);
+		}
 	}
 
 	if (flags & SAVESTATE_SAVEDATA) {

@@ -955,7 +955,6 @@ void GBAVideoSoftwareRendererPostprocessBuffer(struct GBAVideoSoftwareRenderer* 
 
 int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRenderer* renderer, int y) {
 	int w;
-	renderer->end = 0;
 	int spriteLayers = 0;
 	if (GBARegisterDISPCNTIsObjEnable(renderer->dispcnt) && !renderer->d.disableOBJ) {
 		if (renderer->oamDirty) {
@@ -964,30 +963,33 @@ int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRendere
 		renderer->spriteCyclesRemaining = GBARegisterDISPCNTIsHblankIntervalFree(renderer->dispcnt) ? OBJ_HBLANK_FREE_LENGTH : OBJ_LENGTH;
 		int mosaicV = GBAMosaicControlGetObjV(renderer->mosaic) + 1;
 		int mosaicY = y - (y % mosaicV);
-		for (w = 0; w < renderer->nWindows; ++w) {
-			renderer->start = renderer->end;
-			renderer->end = renderer->windows[w].endX;
-			renderer->currentWindow = renderer->windows[w].control;
-			if (!GBAWindowControlIsObjEnable(renderer->currentWindow.packed) && !GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt)) {
+		int i;
+		for (i = 0; i < renderer->oamMax; ++i) {
+			struct GBAVideoSoftwareSprite* sprite = &renderer->sprites[i];
+			int localY = y;
+			renderer->end = 0;
+			if (GBAObjAttributesAIsMosaic(sprite->obj.a)) {
+				localY = mosaicY;
+			}
+			if ((localY < sprite->y && (sprite->endY - 256 < 0 || localY >= sprite->endY - 256)) || localY >= sprite->endY) {
 				continue;
 			}
-			int i;
-			int drawn;
-
-			for (i = 0; i < renderer->oamMax; ++i) {
-				int localY = y;
+			for (w = 0; w < renderer->nWindows; ++w) {
 				if (renderer->spriteCyclesRemaining <= 0) {
 					break;
 				}
-				struct GBAVideoSoftwareSprite* sprite = &renderer->sprites[i];
-				if (GBAObjAttributesAIsMosaic(sprite->obj.a)) {
-					localY = mosaicY;
-				}
-				if ((localY < sprite->y && (sprite->endY - 256 < 0 || localY >= sprite->endY - 256)) || localY >= sprite->endY) {
+				renderer->currentWindow = renderer->windows[w].control;
+				renderer->start = renderer->end;
+				renderer->end = renderer->windows[w].endX;
+				if (!GBAWindowControlIsObjEnable(renderer->currentWindow.packed) && !GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt)) {
 					continue;
 				}
-				drawn = GBAVideoSoftwareRendererPreprocessSprite(renderer, &sprite->obj, localY);
+
+				int drawn = GBAVideoSoftwareRendererPreprocessSprite(renderer, &sprite->obj, localY);
 				spriteLayers |= drawn << GBAObjAttributesCGetPriority(sprite->obj.c);
+			}
+			if (renderer->spriteCyclesRemaining <= 0) {
+				break;
 			}
 		}
 	}

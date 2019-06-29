@@ -10,6 +10,7 @@
 #include "Display.h"
 #include "GBAApp.h"
 #include "InputController.h"
+#include "RotatedHeaderView.h"
 #include "ShaderSelector.h"
 #include "ShortcutView.h"
 
@@ -23,10 +24,11 @@ using namespace QGBA;
 QList<enum GBModel> SettingsView::s_gbModelList;
 #endif
 
-SettingsView::SettingsView(ConfigController* controller, InputController* inputController, QWidget* parent)
+SettingsView::SettingsView(ConfigController* controller, InputController* inputController, LogController* logController, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
 	, m_input(inputController)
+	, m_logModel(logController)
 {
 	m_ui.setupUi(this);
 
@@ -290,6 +292,18 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	}
 
+	m_ui.loggingView->setModel(&m_logModel);
+	m_ui.loggingView->setHorizontalHeader(new RotatedHeaderView(Qt::Horizontal));
+	m_ui.loggingView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+	m_ui.loggingView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+	connect(m_ui.logFileBrowse, &QAbstractButton::pressed, [this] () {
+		QString path = GBAApp::app()->getSaveFileName(this, "Select log file");
+		if (!path.isNull()) {
+			m_ui.logFile->setText(path);
+		}
+	});
+
 	m_keyView = new ShortcutView();
 	m_keyView->setModel(inputController->keyIndex());
 	m_keyView->setInputController(inputController);
@@ -377,6 +391,9 @@ void SettingsView::updateConfig() {
 	saveSetting("cheatAutosave", m_ui.cheatAutosave);
 	saveSetting("autoload", m_ui.autoload);
 	saveSetting("autosave", m_ui.autosave);
+	saveSetting("logToFile", m_ui.logToFile);
+	saveSetting("logToStdout", m_ui.logToStdout);
+	saveSetting("logFile", m_ui.logFile);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
@@ -434,6 +451,11 @@ void SettingsView::updateConfig() {
 		m_controller->setQtOption("language", language.bcp47Name());
 		emit languageChanged();
 	}
+
+	m_logModel.save(m_controller);
+	m_logModel.logger()->setLogFile(m_ui.logFile->text());
+	m_logModel.logger()->logToFile(m_ui.logToFile->isChecked());
+	m_logModel.logger()->logToStdout(m_ui.logToStdout->isChecked());
 
 #ifdef M_CORE_GB
 	GBModel modelGB = s_gbModelList[m_ui.gbModel->currentIndex()];
@@ -508,6 +530,9 @@ void SettingsView::reloadConfig() {
 	loadSetting("cheatAutosave", m_ui.cheatAutosave, true);
 	loadSetting("autoload", m_ui.autoload, true);
 	loadSetting("autosave", m_ui.autosave, false);
+	loadSetting("logToFile", m_ui.logToFile);
+	loadSetting("logToStdout", m_ui.logToStdout);
+	loadSetting("logFile", m_ui.logFile);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 
@@ -546,6 +571,8 @@ void SettingsView::reloadConfig() {
 	m_ui.saveStateScreenshot->setChecked(saveState & SAVESTATE_SCREENSHOT);
 	m_ui.saveStateSave->setChecked(saveState & SAVESTATE_SAVEDATA);
 	m_ui.saveStateCheats->setChecked(saveState & SAVESTATE_CHEATS);
+
+	m_logModel.reset();
 
 #ifdef M_CORE_GB
 	QString modelGB = m_controller->getOption("gb.model");

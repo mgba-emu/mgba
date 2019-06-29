@@ -8,6 +8,7 @@
 #include <QDialog>
 
 #include "ColorPicker.h"
+#include "LogConfigModel.h"
 
 #include <mgba/core/core.h>
 
@@ -29,7 +30,7 @@ class SettingsView : public QDialog {
 Q_OBJECT
 
 public:
-	SettingsView(ConfigController* controller, InputController* inputController, QWidget* parent = nullptr);
+	SettingsView(ConfigController* controller, InputController* inputController, LogController* logController, QWidget* parent = nullptr);
 	~SettingsView();
 
 	void setShaderSelector(ShaderSelector* shaderSelector);
@@ -56,6 +57,7 @@ private:
 	ShortcutView* m_shortcutView;
 	ShortcutView* m_keyView;
 	ShaderSelector* m_shader = nullptr;
+	LogConfigModel m_logModel;
 
 #ifdef M_CORE_GB
 	uint32_t m_gbColors[12]{};

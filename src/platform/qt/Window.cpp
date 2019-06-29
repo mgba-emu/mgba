@@ -21,6 +21,7 @@
 
 #include "AboutScreen.h"
 #include "AudioProcessor.h"
+#include "BattleChipView.h"
 #include "CheatsView.h"
 #include "ConfigController.h"
 #include "CoreController.h"
@@ -162,6 +163,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	connect(&m_focusCheck, &QTimer::timeout, this, &Window::focusCheck);
 
 	m_log.setLevels(mLOG_WARN | mLOG_ERROR | mLOG_FATAL);
+	m_log.load(m_config);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
 	m_focusCheck.setInterval(200);
 
@@ -478,8 +480,8 @@ void Window::exportSharkport() {
 }
 
 void Window::openSettingsWindow() {
-	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController);
-#if defined(BUILD_GL) || defined(BUILD_GLES)
+	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, &m_log);
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (m_display->supportsShaders()) {
 		settingsWindow->setShaderSelector(m_shaderView.get());
 	}
@@ -837,11 +839,13 @@ void Window::gameStopped() {
 	m_screenWidget->setLockIntegerScaling(false);
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->unsetCursor();
+	if (m_display) {
 #ifdef M_CORE_GB
-	m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
+		m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 #elif defined(M_CORE_GBA)
-	m_display->setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+		m_display->setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 #endif
+	}
 
 	setMouseTracking(false);
 	m_videoLayers->clear();
@@ -859,7 +863,6 @@ void Window::gameCrashed(const QString& errorMessage) {
 	                                     QMessageBox::Ok, this, Qt::Sheet);
 	crash->setAttribute(Qt::WA_DeleteOnClose);
 	crash->show();
-	m_controller->stop();
 }
 
 void Window::gameFailed() {
@@ -1411,6 +1414,31 @@ void Window::setupMenu(QMenuBar* menubar) {
 		addControlledAction(solarMenu, setSolar, QString("luminanceLevel.%1").arg(QString::number(i)));
 	}
 
+#ifdef M_CORE_GB
+	QAction* gbPrint = new QAction(tr("Game Boy Printer..."), emulationMenu);
+	connect(gbPrint, &QAction::triggered, [this]() {
+		PrinterView* view = new PrinterView(m_controller);
+		openView(view);
+		m_controller->attachPrinter();
+
+	});
+	addControlledAction(emulationMenu, gbPrint, "gbPrint");
+	m_gameActions.append(gbPrint);
+#endif
+
+#ifdef M_CORE_GBA
+	QAction* bcGate = new QAction(tr("BattleChip Gate..."), emulationMenu);
+	connect(bcGate, &QAction::triggered, [this]() {
+		BattleChipView* view = new BattleChipView(m_controller);
+		openView(view);
+		m_controller->attachBattleChipGate();
+
+	});
+	addControlledAction(emulationMenu, bcGate, "bcGate");
+	m_platformActions.append(qMakePair(bcGate, SUPPORT_GBA));
+	m_gameActions.append(bcGate);
+#endif
+
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
 	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));
 	for (int i = 1; i <= 6; ++i) {
@@ -1553,18 +1581,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	});
 	addControlledAction(avMenu, stopVL, "stopVL");
 	m_gameActions.append(stopVL);
-
-#ifdef M_CORE_GB
-	QAction* gbPrint = new QAction(tr("Game Boy Printer..."), avMenu);
-	connect(gbPrint, &QAction::triggered, [this]() {
-		PrinterView* view = new PrinterView(m_controller);
-		openView(view);
-		m_controller->attachPrinter();
-
-	});
-	addControlledAction(avMenu, gbPrint, "gbPrint");
-	m_gameActions.append(gbPrint);
-#endif
 
 	avMenu->addSeparator();
 	m_videoLayers = avMenu->addMenu(tr("Video layers"));

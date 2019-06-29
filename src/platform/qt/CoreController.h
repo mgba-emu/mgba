@@ -25,6 +25,10 @@
 #include <mgba/internal/gb/sio/printer.h>
 #endif
 
+#ifdef M_CORE_GBA
+#include <mgba/gba/interface.h>
+#endif
+
 struct mCore;
 
 namespace QGBA {
@@ -126,9 +130,17 @@ public slots:
 	void importSharkport(const QString& path);
 	void exportSharkport(const QString& path);
 
+#ifdef M_CORE_GB
 	void attachPrinter();
 	void detachPrinter();
 	void endPrint();
+#endif
+
+#ifdef M_CORE_GBA
+	void attachBattleChipGate();
+	void detachBattleChipGate();
+	void setBattleChipId(uint16_t id);
+#endif
 
 	void setAVStream(mAVStream*);
 	void clearAVStream();
@@ -217,6 +229,10 @@ private:
 		GBPrinter d;
 		CoreController* parent;
 	} m_printer;
+#endif
+
+#ifdef M_CORE_GBA
+	GBASIOBattlechipGate m_battlechip;
 #endif
 };
 

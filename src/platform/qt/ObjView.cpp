@@ -46,6 +46,9 @@ ObjView::ObjView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	m_ui.mode->setFont(font);
 
 	connect(m_ui.tiles, &TilePainter::indexPressed, this, &ObjView::translateIndex);
+	connect(m_ui.tiles, &TilePainter::needsRedraw, this, [this]() {
+		updateTiles(true);
+	});
 	connect(m_ui.objId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &ObjView::selectObj);
 	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this]() {
 		updateTiles(true);

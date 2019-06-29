@@ -74,6 +74,11 @@
      </item>
      <item>
       <property name="text">
+       <string>Logging</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>Game Boy</string>
       </property>
      </item>
@@ -82,7 +87,7 @@
    <item row="1" column="1">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>5</number>
      </property>
      <widget class="QWidget" name="av">
       <layout class="QFormLayout" name="formLayout">
@@ -1282,6 +1287,52 @@
           <string>Same directory as the ROM</string>
          </property>
         </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="logging">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QTableView" name="loggingView">
+         <attribute name="horizontalHeaderDefaultSectionSize">
+          <number>0</number>
+         </attribute>
+         <attribute name="horizontalHeaderMinimumSectionSize">
+          <number>0</number>
+         </attribute>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_19">
+         <item>
+          <widget class="QCheckBox" name="logToFile">
+           <property name="text">
+            <string>Log to file</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="logToStdout">
+           <property name="text">
+            <string>Log to console</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_20">
+         <item>
+          <widget class="QLineEdit" name="logFile"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="logFileBrowse">
+           <property name="text">
+            <string>Select Log File</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>

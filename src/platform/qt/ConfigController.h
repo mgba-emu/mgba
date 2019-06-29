@@ -82,7 +82,8 @@ public:
 
 	Configuration* input() { return mCoreConfigGetInput(&m_config); }
 
-	const mCoreConfig* config() { return &m_config; }
+	const mCoreConfig* config() const { return &m_config; }
+	mCoreConfig* config() { return &m_config; }
 
 	static const QString& configDir();
 
