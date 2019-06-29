@@ -93,7 +93,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode3(struct GBAVideoSoftwareRenderer
 
 	int outX;
 	for (outX = renderer->start; outX < renderer->end; ++outX) {
-		BACKGROUND_BITMAP_ITERATE(renderer->masterEnd, VIDEO_VERTICAL_PIXELS);
+		BACKGROUND_BITMAP_ITERATE(renderer->masterEnd, GBA_VIDEO_VERTICAL_PIXELS);
 
 		if (!mosaicWait) {
 			LOAD_16(color, ((localX >> 8) + (localY >> 8) * renderer->masterEnd) << 1, renderer->d.vramBG[0]);
@@ -131,7 +131,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode4(struct GBAVideoSoftwareRenderer
 
 	int outX;
 	for (outX = renderer->start; outX < renderer->end; ++outX) {
-		BACKGROUND_BITMAP_ITERATE(renderer->masterEnd, VIDEO_VERTICAL_PIXELS);
+		BACKGROUND_BITMAP_ITERATE(renderer->masterEnd, GBA_VIDEO_VERTICAL_PIXELS);
 
 		if (!mosaicWait) {
 			color = ((uint8_t*)renderer->d.vramBG[0])[offset + (localX >> 8) + (localY >> 8) * renderer->masterEnd];

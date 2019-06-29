@@ -64,8 +64,8 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->tileStride = 0x20;
 	renderer->bitmapStride = 0;
 	renderer->combinedObjSort = false;
-	renderer->masterEnd = VIDEO_HORIZONTAL_PIXELS;
-	renderer->masterHeight = VIDEO_VERTICAL_PIXELS;
+	renderer->masterEnd = GBA_VIDEO_HORIZONTAL_PIXELS;
+	renderer->masterHeight = GBA_VIDEO_VERTICAL_PIXELS;
 	renderer->masterScanlines = VIDEO_VERTICAL_TOTAL_PIXELS;
 
 	renderer->temporaryBuffer = 0;
@@ -555,7 +555,7 @@ static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
-	if (y == VIDEO_VERTICAL_PIXELS - 1) {
+	if (y == GBA_VIDEO_VERTICAL_PIXELS - 1) {
 		softwareRenderer->nextY = 0;
 	} else {
 		softwareRenderer->nextY = y + 1;

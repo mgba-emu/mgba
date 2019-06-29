@@ -217,7 +217,6 @@ if(USE_SQLITE3)
 endif()
 
 if(USE_DISCORD_RPC)
-	message(STATUS What)
 	list(APPEND QT_LIBRARIES discord-rpc)
 	list(APPEND SOURCE_FILES DiscordCoordinator.cpp)
 endif()

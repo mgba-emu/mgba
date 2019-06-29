@@ -55,7 +55,7 @@ bool mSDLInit(struct SDLSoftwareRenderer* renderer) {
 		ioctl(renderer->fb, OMAPFB_SETUP_PLANE, &plane);
 	}
 
-	mem.size = VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4;
+	mem.size = GBA_VIDEO_HORIZONTAL_PIXELS * GBA_VIDEO_VERTICAL_PIXELS * 4;
 	ioctl(renderer->fb, OMAPFB_SETUP_MEM, &mem);
 
 	plane.enabled = 1;
@@ -67,19 +67,19 @@ bool mSDLInit(struct SDLSoftwareRenderer* renderer) {
 
 	struct fb_var_screeninfo info;
 	ioctl(renderer->fb, FBIOGET_VSCREENINFO, &info);
-	info.xres = VIDEO_HORIZONTAL_PIXELS;
-	info.yres = VIDEO_VERTICAL_PIXELS;
-	info.xres_virtual = VIDEO_HORIZONTAL_PIXELS;
-	info.yres_virtual = VIDEO_VERTICAL_PIXELS * 2;
+	info.xres = GBA_VIDEO_HORIZONTAL_PIXELS;
+	info.yres = GBA_VIDEO_VERTICAL_PIXELS;
+	info.xres_virtual = GBA_VIDEO_HORIZONTAL_PIXELS;
+	info.yres_virtual = GBA_VIDEO_VERTICAL_PIXELS * 2;
 	info.bits_per_pixel = 16;
 	ioctl(renderer->fb, FBIOPUT_VSCREENINFO, &info);
 
 	renderer->odd = 0;
-	renderer->base[0] = mmap(0, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4, PROT_READ | PROT_WRITE, MAP_SHARED, renderer->fb, 0);
-	renderer->base[1] = (uint16_t*) renderer->base[0] + VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS;
+	renderer->base[0] = mmap(0, GBA_VIDEO_HORIZONTAL_PIXELS * GBA_VIDEO_VERTICAL_PIXELS * 4, PROT_READ | PROT_WRITE, MAP_SHARED, renderer->fb, 0);
+	renderer->base[1] = (uint16_t*) renderer->base[0] + GBA_VIDEO_HORIZONTAL_PIXELS * GBA_VIDEO_VERTICAL_PIXELS;
 
 	renderer->d.outputBuffer = renderer->base[0];
-	renderer->d.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
+	renderer->d.outputBufferStride = GBA_VIDEO_HORIZONTAL_PIXELS;
 	return true;
 }
 
@@ -94,7 +94,7 @@ void mSDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer
 		if (mCoreSyncWaitFrameStart(&context->sync)) {
 			struct fb_var_screeninfo info;
 			ioctl(renderer->fb, FBIOGET_VSCREENINFO, &info);
-			info.yoffset = VIDEO_VERTICAL_PIXELS * renderer->odd;
+			info.yoffset = GBA_VIDEO_VERTICAL_PIXELS * renderer->odd;
 			ioctl(renderer->fb, FBIOPAN_DISPLAY, &info);
 
 			int arg = 0;
@@ -108,7 +108,7 @@ void mSDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer
 }
 
 void mSDLDeinit(struct SDLSoftwareRenderer* renderer) {
-	munmap(renderer->base[0], VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+	munmap(renderer->base[0], GBA_VIDEO_HORIZONTAL_PIXELS * GBA_VIDEO_VERTICAL_PIXELS * 4);
 
 	struct omapfb_plane_info plane;
 	struct omapfb_mem_info mem;

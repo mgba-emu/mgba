@@ -6,7 +6,7 @@
 #include "imagemagick-gif-encoder.h"
 
 #include <mgba/internal/gba/gba.h>
-#include <mgba/internal/gba/video.h>
+#include <mgba/gba/interface.h>
 #include <mgba-util/string.h>
 
 static void _magickPostVideoFrame(struct mAVStream*, const color_t* pixels, size_t stride);
@@ -25,8 +25,8 @@ void ImageMagickGIFEncoderInit(struct ImageMagickGIFEncoder* encoder) {
 	encoder->frameskip = 2;
 	encoder->delayMs = -1;
 
-	encoder->iwidth = VIDEO_HORIZONTAL_PIXELS;
-	encoder->iheight = VIDEO_VERTICAL_PIXELS;
+	encoder->iwidth = GBA_VIDEO_HORIZONTAL_PIXELS;
+	encoder->iheight = GBA_VIDEO_VERTICAL_PIXELS;
 	encoder->numerator = VIDEO_TOTAL_LENGTH;
 	encoder->denominator = GBA_ARM7TDMI_FREQUENCY;
 }

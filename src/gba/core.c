@@ -262,8 +262,8 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 
 static void _GBACoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
 	UNUSED(core);
-	*width = VIDEO_HORIZONTAL_PIXELS;
-	*height = VIDEO_VERTICAL_PIXELS;
+	*width = GBA_VIDEO_HORIZONTAL_PIXELS;
+	*height = GBA_VIDEO_VERTICAL_PIXELS;
 }
 
 static void _GBACoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t stride) {
@@ -319,7 +319,7 @@ static void _GBACoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 	struct GBA* gba = core->board;
 	gba->stream = stream;
 	if (stream && stream->videoDimensionsChanged) {
-		stream->videoDimensionsChanged(stream, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+		stream->videoDimensionsChanged(stream, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 	}
 	if (stream && stream->videoFrameRateChanged) {
 		stream->videoFrameRateChanged(stream, core->frameCycles(core), core->frequency(core));
