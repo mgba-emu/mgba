@@ -13,6 +13,7 @@ struct mCoreCallbacks* mCorePythonCallbackCreate(void* pyobj) {
 	callbacks->videoFrameEnded = _mCorePythonCallbacksVideoFrameEnded;
 	callbacks->coreCrashed = _mCorePythonCallbacksCoreCrashed;
 	callbacks->sleep = _mCorePythonCallbacksSleep;
+	callbacks->keysRead = _mCorePythonCallbacksKeysRead;
 
 	callbacks->context = pyobj;
 	return callbacks;

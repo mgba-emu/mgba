@@ -216,6 +216,12 @@ if(USE_SQLITE3)
 		library/LibraryTree.cpp)
 endif()
 
+if(USE_DISCORD_RPC)
+	message(STATUS What)
+	list(APPEND QT_LIBRARIES discord-rpc)
+	list(APPEND SOURCE_FILES DiscordCoordinator.cpp)
+endif()
+
 qt5_add_resources(RESOURCES resources.qrc)
 if(APPLE)
 	set(MACOSX_BUNDLE_ICON_FILE ${BINARY_NAME}.icns)

@@ -25,6 +25,7 @@ Features:
  - Add Game Boy Color palettes for original Game Boy games
  - Debugger: Add unary operators and memory dereferencing
  - GB: Expose platform information to CLI debugger
+ - Support Discord Rich Presence
 Emulation fixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs
@@ -34,10 +35,13 @@ Emulation fixes:
  - GB I/O: Filter IE top bits properly (fixes mgba.io/i/1329)
  - GBA Video: Fix scanline cache with scale factor change edge cases
  - GBA DMA: Fix DMA0-2 lengths (fixes mgba.io/i/1344)
+ - GB Video: Fix window y changing mid-window (fixes mgba.io/i/1345)
+ - GB Video: Fix more window edge cases (fixes mgba.io/i/1346)
 Other fixes:
  - Qt: More app metadata fixes
  - Qt: Fix load recent from archive (fixes mgba.io/i/1325)
  - LR35902: Fix disassembly of several CB-prefix instructions
+ - Qt: Fix overrides getting discarded (fixes mgba.io/i/1354)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
