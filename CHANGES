@@ -37,6 +37,7 @@ Emulation fixes:
  - GBA DMA: Fix DMA0-2 lengths (fixes mgba.io/i/1344)
  - GB Video: Fix window y changing mid-window (fixes mgba.io/i/1345)
  - GB Video: Fix more window edge cases (fixes mgba.io/i/1346)
+ - GB Timer: Fix timing adjustments when writing to TAC (fixes mgba.io/i/1340)
 Other fixes:
  - Qt: More app metadata fixes
  - Qt: Fix load recent from archive (fixes mgba.io/i/1325)
@@ -56,6 +57,7 @@ Misc:
  - Qt: Improve camera initialization
  - Qt: Support switching webcams
  - Core: Add keysRead callback
+ - Vita: Improved frame drawing speed
 
 0.7.1: (2019-02-24)
 Bugfixes:

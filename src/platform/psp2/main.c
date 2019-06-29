@@ -36,7 +36,6 @@ static void _drawStart(void) {
 
 static void _drawEnd(void) {
 	vita2d_end_drawing();
-	vita2d_wait_rendering_done();
 	vita2d_swap_buffers();
 }
 
