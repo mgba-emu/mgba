@@ -854,6 +854,11 @@ void Window::gameStopped() {
 	m_fpsTimer.stop();
 	m_focusCheck.stop();
 
+	if (m_audioProcessor) {
+		m_audioProcessor->stop();
+		m_audioProcessor.reset();
+	}
+
 	emit paused(false);
 }
 
@@ -1428,12 +1433,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef M_CORE_GBA
 	QAction* bcGate = new QAction(tr("BattleChip Gate..."), emulationMenu);
-	connect(bcGate, &QAction::triggered, [this]() {
-		BattleChipView* view = new BattleChipView(m_controller);
-		openView(view);
-		m_controller->attachBattleChipGate();
-
-	});
+	connect(bcGate, &QAction::triggered, openControllerTView<BattleChipView>());
 	addControlledAction(emulationMenu, bcGate, "bcGate");
 	m_platformActions.append(qMakePair(bcGate, SUPPORT_GBA));
 	m_gameActions.append(bcGate);

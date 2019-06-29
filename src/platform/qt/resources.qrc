@@ -4,5 +4,8 @@
      <file>../../../res/patrons.txt</file>
      <file>../../../res/no-cam.png</file>
      <file>input/default-profiles.ini</file>
+     <file>../../../res/chip-names-4.txt</file>
+     <file>../../../res/chip-names-5.txt</file>
+     <file>../../../res/chip-names-6.txt</file>
  </qresource>
  </RCC>

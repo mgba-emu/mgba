@@ -60,11 +60,20 @@ struct GBASIODriver {
 void GBASIOJOYCreate(struct GBASIODriver* sio);
 int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command, uint8_t* data);
 
+enum GBASIOBattleChipGateFlavor {
+	GBA_FLAVOR_BATTLECHIP_GATE = 4,
+	GBA_FLAVOR_PROGRESS_GATE = 5,
+	GBA_FLAVOR_BEAST_LINK_GATE = 6,
+	GBA_FLAVOR_BEAST_LINK_GATE_US = 7,
+};
+
 struct GBASIOBattlechipGate {
 	struct GBASIODriver d;
 	struct mTimingEvent event;
 	uint16_t chipId;
-	int32_t index;
+	uint16_t data[2];
+	int state;
+	int flavor;
 };
 
 void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate*);

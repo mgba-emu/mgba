@@ -738,6 +738,14 @@ void CoreController::setBattleChipId(uint16_t id) {
 	Interrupter interrupter(this);
 	m_battlechip.chipId = id;
 }
+
+void CoreController::setBattleChipFlavor(int flavor) {
+	if (platform() != PLATFORM_GBA) {
+		return;
+	}
+	Interrupter interrupter(this);
+	m_battlechip.flavor = flavor;
+}
 #endif
 
 void CoreController::setAVStream(mAVStream* stream) {
