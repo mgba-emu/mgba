@@ -17,12 +17,11 @@
 
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
-// TODO: Fix layering violation
-#include <mgba/internal/gb/gb.h>
+#include <mgba/gb/interface.h>
 #endif
 #ifdef M_CORE_GBA
 #include <mgba/gba/core.h>
-#include <mgba/internal/gba/gba.h>
+#include <mgba/gba/interface.h>
 #endif
 #ifndef MINIMAL_CORE
 #include <mgba/feature/video-logger.h>
