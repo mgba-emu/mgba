@@ -6,6 +6,7 @@ set(SOURCE_FILES
 	elf-read.c
 	export.c
 	formatting.c
+	gbk-table.c
 	hash.c
 	patch.c
 	patch-fast.c

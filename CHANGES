@@ -16,6 +16,7 @@ Features:
  - Ports: Ability to enable or disable all SGB features (closes mgba.io/i/1205)
  - Ports: Ability to crop SGB borders off screen (closes mgba.io/i/1204)
  - Cheats: Add support for loading Libretro-style cht files
+ - GBA Cheats: Add support for loading EZ Flash-style cht files
 Emulation fixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs

@@ -231,6 +231,75 @@ char* utf16to8(const uint16_t* utf16, size_t length) {
 	return newUTF8;
 }
 
+extern const uint16_t gbkUnicodeTable[];
+
+char* gbkToUtf8(const char* gbk, size_t length) {
+	char* utf8 = 0;
+	char* utf8Offset;
+	size_t offset;
+	uint8_t gbk1 = 0;
+	char buffer[4];
+	size_t utf8TotalBytes = 0;
+	size_t utf8Length = 0;
+	for (offset = 0; offset < length; ++offset) {
+		if (length == 0) {
+			break;
+		}
+		unsigned unichar = 0xFFFD;
+		if (!gbk1 && !(gbk[offset] & 0x80)) {
+			unichar = gbk[offset];
+		} else if (gbk1) {
+			uint8_t gbk2 = gbk[offset];
+			if (gbk2 >= 0x40 && gbk2 != 0xFF) {
+				// TODO: GB-18030 support?
+				unichar = gbkUnicodeTable[gbk1 * 0xBF + gbk2 - 0x40];
+			}
+			gbk1 = 0;
+		} else if (((uint8_t*) gbk)[offset] == 0xFF) {
+			unichar = 0xFFFD;
+		} else if (((uint8_t*) gbk)[offset] == 0x80) {
+			unichar = 0x20AC; // Euro
+		} else {
+			gbk1 = ((uint8_t*) gbk)[offset] - 0x81;
+			continue;
+		}
+
+		size_t bytes = toUtf8(unichar, buffer);
+		utf8Length += bytes;
+		if (utf8Length < utf8TotalBytes) {
+			memcpy(utf8Offset, buffer, bytes);
+			utf8Offset += bytes;
+		} else if (!utf8) {
+			utf8 = malloc(length);
+			if (!utf8) {
+				return 0;
+			}
+			utf8TotalBytes = length;
+			memcpy(utf8, buffer, bytes);
+			utf8Offset = utf8 + bytes;
+		} else if (utf8Length >= utf8TotalBytes) {
+			ptrdiff_t o = utf8Offset - utf8;
+			char* newUTF8 = realloc(utf8, utf8TotalBytes * 2);
+			utf8Offset = o + newUTF8;
+			if (!newUTF8) {
+				free(utf8);
+				return 0;
+			}
+			utf8 = newUTF8;
+			memcpy(utf8Offset, buffer, bytes);
+			utf8Offset += bytes;
+		}
+	}
+
+	char* newUTF8 = realloc(utf8, utf8Length + 1);
+	if (!newUTF8) {
+		free(utf8);
+		return 0;
+	}
+	newUTF8[utf8Length] = '\0';
+	return newUTF8;
+}
+
 int hexDigit(char digit) {
 	switch (digit) {
 	case '0':
@@ -353,7 +422,6 @@ const char* hex4(const char* line, uint8_t* out) {
 	uint8_t value = 0;
 	*out = 0;
 	char digit = *line;
-	value <<= 4;
 	int nybble = hexDigit(digit);
 	if (nybble < 0) {
 		return 0;

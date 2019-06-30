@@ -198,6 +198,12 @@ bool mCheatParseFile(struct mCheatDevice* device, struct VFile* vf) {
 					StringListDeinit(&directives);
 					return mCheatParseLibretroFile(device, vf);
 				}
+				if (cheat[0] == '[') {
+					// This is in EZ Flash CHT format, switch over to that parser
+					vf->seek(vf, 0, SEEK_SET);
+					StringListDeinit(&directives);
+					return mCheatParseEZFChtFile(device, vf);
+				}
 				set = device->createSet(device, NULL);
 				set->enabled = !nextDisabled;
 				nextDisabled = false;
@@ -319,6 +325,119 @@ bool mCheatParseLibretroFile(struct mCheatDevice* device, struct VFile* vf) {
 				struct mCheatSet* newSet = *mCheatSetsGetPointer(&device->cheats, i);
 				newSet->copyProperties(newSet, set);
 			}
+		}
+	}
+	return true;
+}
+
+bool mCheatParseEZFChtFile(struct mCheatDevice* device, struct VFile* vf) {
+	char cheat[MAX_LINE_LENGTH];
+	char cheatName[MAX_LINE_LENGTH];
+	char miniline[32];
+	size_t cheatNameLength;
+	struct mCheatSet* set = NULL;
+
+	cheatName[MAX_LINE_LENGTH - 1] = '\0';
+	while (true) {
+		ssize_t bytesRead = vf->readline(vf, cheat, sizeof(cheat));
+		if (bytesRead == 0) {
+			break;
+		}
+		if (bytesRead < 0) {
+			return false;
+		}
+		if (cheat[0] == '\n' || (bytesRead >= 2 && cheat[0] == '\r' && cheat[1] == '\n')) {
+			continue;
+		}
+
+		if (cheat[0] == '[') {
+			if (strncmp(cheat, "[GameInfo]", 10) == 0) {
+				break;
+			}
+			char* end = strchr(cheat, ']');
+			if (!end) {
+				return false;
+			}
+			char* name = gbkToUtf8(&cheat[1], end - cheat - 1);
+			strncpy(cheatName, name, sizeof(cheatName) - 1);
+			free(name);
+			cheatNameLength = strlen(cheatName);
+			continue;
+		}
+
+		char* eq = strchr(cheat, '=');
+		if (!eq) {
+			continue;
+		}
+		if (strncmp(cheat, "ON", eq - cheat) != 0) {
+			char* subname = gbkToUtf8(cheat, eq - cheat);
+			snprintf(&cheatName[cheatNameLength], sizeof(cheatName) - cheatNameLength - 1, ": %s", subname);
+		}
+		set = device->createSet(device, cheatName);
+		set->enabled = false;
+		mCheatAddSet(device, set);
+		cheatName[cheatNameLength] = '\0';
+		++eq;
+
+		uint32_t gameptr = 0;
+		uint32_t hexval = 0;
+		int digit;
+		while (eq[0] != '\r' && eq[1] != '\n') {
+			if (cheat + bytesRead == eq || eq[0] == '\0') {
+				bytesRead = vf->readline(vf, cheat, sizeof(cheat));
+				eq = cheat;
+				if (bytesRead == 0) {
+					break;
+				}
+				if (bytesRead < 0) {
+					return false;
+				}
+			}
+			switch (eq[0]) {
+			case ',':
+				if (!gameptr) {
+					gameptr = hexval;
+					if (hexval < 0x40000) {
+						gameptr += 0x02000000;
+					} else {
+						gameptr += 0x03000000 - 0x40000;
+					}
+				} else {
+					if (hexval > 0xFF) {
+						return false;
+					}
+					snprintf(miniline, sizeof(miniline) - 1, "%08X:%02X", gameptr, hexval);
+					mCheatAddLine(set, miniline, 0);
+					++gameptr;
+				}
+				hexval = 0;
+				break;
+			case ';':
+				if (hexval > 0xFF) {
+					return false;
+				}
+				snprintf(miniline, sizeof(miniline) - 1, "%08X:%02X", gameptr, hexval);
+				mCheatAddLine(set, miniline, 0);
+				hexval = 0;
+				gameptr = 0;
+				break;
+			default:
+				digit = hexDigit(eq[0]);
+				if (digit < 0) {
+					return false;
+				}
+				hexval <<= 4;
+				hexval |= digit;
+				break;
+			}
+			++eq;
+		}
+		if (gameptr) {
+			if (hexval > 0xFF) {
+				return false;
+			}
+			snprintf(miniline, sizeof(miniline) - 1, "%08X:%02X", gameptr, hexval);
+			mCheatAddLine(set, miniline, 0);
 		}
 	}
 	return true;
