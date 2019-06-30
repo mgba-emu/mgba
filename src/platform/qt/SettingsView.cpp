@@ -569,7 +569,6 @@ void SettingsView::reloadConfig() {
 	loadSetting("logFile", m_ui.logFile);
 	loadSetting("useDiscordPresence", m_ui.useDiscordPresence);
 	loadSetting("gba.audioHle", m_ui.audioHle);
-	loadSetting("videoScale", m_ui.videoScale, 1);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 
@@ -636,6 +635,11 @@ void SettingsView::reloadConfig() {
 
 	int hwaccelVideo = m_controller->getOption("hwaccelVideo", 0).toInt();
 	m_ui.hwaccelVideo->setCurrentIndex(hwaccelVideo);
+
+	connect(m_ui.videoScale, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](int value) {
+		m_ui.videoScaleSize->setText(tr("(%1×%2)").arg(GBA_VIDEO_HORIZONTAL_PIXELS * value).arg(GBA_VIDEO_VERTICAL_PIXELS * value));
+	});
+	loadSetting("videoScale", m_ui.videoScale, 1);
 }
 
 void SettingsView::saveSetting(const char* key, const QAbstractButton* field) {
