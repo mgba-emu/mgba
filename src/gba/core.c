@@ -296,6 +296,59 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 	mCoreConfigCopyValue(&core->config, config, "videoScale");
 }
 
+static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, const struct mCoreConfig* config) {
+	struct GBA* gba = core->board;
+	if (!config) {
+		config = &core->config;
+	}
+
+	if (!option) {
+		// Reload options from opts
+		if (core->opts.mute) {
+			gba->audio.masterVolume = 0;
+		} else {
+			gba->audio.masterVolume = core->opts.volume;
+		}
+		gba->video.frameskip = core->opts.frameskip;
+		return;
+	}
+
+	int fakeBool;
+	if (strcmp("mute", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "mute", &fakeBool)) {
+			core->opts.mute = fakeBool;
+
+			if (core->opts.mute) {
+				gba->audio.masterVolume = 0;
+			} else {
+				gba->audio.masterVolume = core->opts.volume;
+			}
+		}
+		return;
+	}
+	if (strcmp("volume", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "volume", &core->opts.volume) && !core->opts.mute) {
+			gba->audio.masterVolume = core->opts.volume;
+		}
+		return;
+	}
+	if (strcmp("frameskip", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "frameskip", &core->opts.frameskip)) {
+			gba->video.frameskip = core->opts.frameskip;
+		}
+		return;
+	}
+	if (strcmp("allowOpposingDirections", option) == 0) {
+		if (config != &core->config) {
+			mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
+		}
+		if (mCoreConfigGetIntValue(config, "allowOpposingDirections", &fakeBool)) {
+			gba->allowOpposingDirections = fakeBool;
+		}
+		return;
+	}
+}
+
 static void _GBACoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	struct GBACore* gbacore = (struct GBACore*) core;
@@ -1021,6 +1074,7 @@ struct mCore* GBACoreCreate(void) {
 	core->supportsFeature = _GBACoreSupportsFeature;
 	core->setSync = _GBACoreSetSync;
 	core->loadConfig = _GBACoreLoadConfig;
+	core->reloadConfigOption = _GBACoreReloadConfigOption;
 	core->desiredVideoDimensions = _GBACoreDesiredVideoDimensions;
 	core->setVideoBuffer = _GBACoreSetVideoBuffer;
 	core->setVideoGLTex = _GBACoreSetVideoGLTex;

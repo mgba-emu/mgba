@@ -224,6 +224,59 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 #endif
 }
 
+static void _GBCoreReloadConfigOption(struct mCore* core, const char* option, const struct mCoreConfig* config) {
+	struct GB* gb = core->board;
+	if (!config) {
+		config = &core->config;
+	}
+
+	if (!option) {
+		// Reload options from opts
+		if (core->opts.mute) {
+			gb->audio.masterVolume = 0;
+		} else {
+			gb->audio.masterVolume = core->opts.volume;
+		}
+		gb->video.frameskip = core->opts.frameskip;
+		return;
+	}
+
+	int fakeBool;
+	if (strcmp("mute", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "mute", &fakeBool)) {
+			core->opts.mute = fakeBool;
+
+			if (core->opts.mute) {
+				gb->audio.masterVolume = 0;
+			} else {
+				gb->audio.masterVolume = core->opts.volume;
+			}
+		}
+		return;
+	}
+	if (strcmp("volume", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "volume", &core->opts.volume) && !core->opts.mute) {
+			gb->audio.masterVolume = core->opts.volume;
+		}
+		return;
+	}
+	if (strcmp("frameskip", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "frameskip", &core->opts.frameskip)) {
+			gb->video.frameskip = core->opts.frameskip;
+		}
+		return;
+	}
+	if (strcmp("allowOpposingDirections", option) == 0) {
+		if (config != &core->config) {
+			mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
+		}
+		if (mCoreConfigGetIntValue(config, "allowOpposingDirections", &fakeBool)) {
+			gb->allowOpposingDirections = fakeBool;
+		}
+		return;
+	}
+}
+
 static void _GBCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
 	struct GB* gb = core->board;
 	if (gb && (!(gb->model & GB_MODEL_SGB) || !gb->video.sgbBorders)) {
@@ -901,6 +954,7 @@ struct mCore* GBCoreCreate(void) {
 	core->supportsFeature = _GBCoreSupportsFeature;
 	core->setSync = _GBCoreSetSync;
 	core->loadConfig = _GBCoreLoadConfig;
+	core->reloadConfigOption = _GBCoreReloadConfigOption;
 	core->desiredVideoDimensions = _GBCoreDesiredVideoDimensions;
 	core->setVideoBuffer = _GBCoreSetVideoBuffer;
 	core->setVideoGLTex = _GBCoreSetVideoGLTex;
