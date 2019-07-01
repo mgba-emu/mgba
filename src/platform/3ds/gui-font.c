@@ -14,6 +14,7 @@
 #define FONT_SIZE 15.6f
 
 struct GUIFont {
+	CFNT_s* font;
 	C3D_Tex* sheets;
 	C3D_Tex icons;
 	float size;
@@ -27,14 +28,15 @@ struct GUIFont* GUIFontCreate(void) {
 	}
 	C3D_Tex* tex;
 
-	TGLP_s* glyphInfo = fontGetGlyphInfo();
+	guiFont->font = fontGetSystemFont();
+	TGLP_s* glyphInfo = fontGetGlyphInfo(guiFont->font);
 	guiFont->size = FONT_SIZE / glyphInfo->cellHeight;
 	guiFont->sheets = malloc(sizeof(*guiFont->sheets) * glyphInfo->nSheets);
 
 	int i;
 	for (i = 0; i < glyphInfo->nSheets; ++i) {
 		tex = &guiFont->sheets[i];
-		tex->data = fontGetGlyphSheetTex(i);
+		tex->data = fontGetGlyphSheetTex(guiFont->font, i);
 		tex->fmt = glyphInfo->sheetFmt;
 		tex->size = glyphInfo->sheetSize;
 		tex->width = glyphInfo->sheetWidth;
@@ -59,12 +61,12 @@ void GUIFontDestroy(struct GUIFont* font) {
 }
 
 unsigned GUIFontHeight(const struct GUIFont* font) {
-	return fontGetInfo()->lineFeed * font->size;
+	return fontGetInfo(font->font)->lineFeed * font->size;
 }
 
 unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
-	int index = fontGlyphIndexFromCodePoint(glyph);
-	charWidthInfo_s* info = fontGetCharWidthInfo(index);
+	int index = fontGlyphIndexFromCodePoint(font->font, glyph);
+	charWidthInfo_s* info = fontGetCharWidthInfo(font->font, index);
 	if (info) {
 		return info->charWidth * font->size;
 	}
@@ -91,9 +93,9 @@ void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned*
 }
 
 void GUIFontDrawGlyph(const struct GUIFont* font, int glyph_x, int glyph_y, uint32_t color, uint32_t glyph) {
-	int index = fontGlyphIndexFromCodePoint(glyph);
+	int index = fontGlyphIndexFromCodePoint(font->font, glyph);
 	fontGlyphPos_s data;
-	fontCalcGlyphPos(&data, index, 0, 1.0, 1.0);
+	fontCalcGlyphPos(&data, font->font, index, 0, 1.0, 1.0);
 
 	C3D_Tex* tex = &font->sheets[data.sheetIndex];
 	ctrActivateTexture(tex);
