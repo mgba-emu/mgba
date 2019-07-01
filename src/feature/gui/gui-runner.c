@@ -289,6 +289,23 @@ static void _log(struct mLogger* logger, int category, enum mLogLevel level, con
 	}
 }
 
+static void _updateLoading(size_t read, size_t size, void* context) {
+	struct mGUIRunner* runner = context;
+	if (read & 0x3FFFF) {
+		return;
+	}
+
+	runner->params.drawStart();
+	if (runner->params.guiPrepare) {
+		runner->params.guiPrepare();
+	}
+	GUIFontPrintf(runner->params.font, runner->params.width / 2, (GUIFontHeight(runner->params.font) + runner->params.height) / 2, GUI_ALIGN_HCENTER, 0xFFFFFFFF, "Loading...%i%%", 100 * read / size);
+	if (runner->params.guiFinish) {
+		runner->params.guiFinish();
+	}
+	runner->params.drawEnd();
+}
+
 void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	struct mGUIBackground drawState = {
 		.d = {
@@ -364,7 +381,8 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		runner->core->init(runner->core);
 		mCoreInitConfig(runner->core, runner->port);
 		mInputMapInit(&runner->core->inputMap, &GBAInputInfo);
-		found = mCoreLoadFile(runner->core, path);
+
+		found = mCorePreloadFileCB(runner->core, path, _updateLoading, runner);
 		if (!found) {
 			mLOG(GUI_RUNNER, WARN, "Failed to load %s!", path);
 			mCoreConfigDeinit(&runner->core->config);

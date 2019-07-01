@@ -46,11 +46,6 @@ static void GBStop(struct LR35902Core* cpu);
 
 static void _enableInterrupts(struct mTiming* timing, void* user, uint32_t cyclesLate);
 
-#ifdef FIXED_ROM_BUFFER
-extern uint32_t* romBuffer;
-extern size_t romBufferSize;
-#endif
-
 void GBCreate(struct GB* gb) {
 	gb->d.id = GB_COMPONENT_MAGIC;
 	gb->d.init = GBInit;
@@ -113,14 +108,7 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	gb->pristineRomSize = vf->size(vf);
 	vf->seek(vf, 0, SEEK_SET);
 	gb->isPristine = true;
-#ifdef FIXED_ROM_BUFFER
-	if (gb->pristineRomSize <= romBufferSize) {
-		gb->memory.rom = romBuffer;
-		vf->read(vf, romBuffer, gb->pristineRomSize);
-	}
-#else
 	gb->memory.rom = vf->map(vf, gb->pristineRomSize, MAP_READ);
-#endif
 	if (!gb->memory.rom) {
 		return false;
 	}
