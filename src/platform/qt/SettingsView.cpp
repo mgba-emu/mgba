@@ -425,6 +425,12 @@ void SettingsView::updateConfig() {
 		saveSetting("fpsTarget", m_ui.fpsTarget);
 	}
 
+	if (m_ui.fastForwardHeldUnbounded->isChecked()) {
+		saveSetting("fastForwardHeldRatio", "-1");
+	} else {
+		saveSetting("fastForwardHeldRatio", m_ui.fastForwardHeldRatio);
+	}
+
 	switch (m_ui.idleOptimization->currentIndex() + IDLE_LOOP_IGNORE) {
 	case IDLE_LOOP_IGNORE:
 		saveSetting("idleOptimization", "ignore");
@@ -580,6 +586,16 @@ void SettingsView::reloadConfig() {
 		m_ui.fastForwardUnbounded->setChecked(false);
 		m_ui.fastForwardRatio->setEnabled(true);
 		m_ui.fastForwardRatio->setValue(fastForwardRatio);
+	}
+
+	double fastForwardHeldRatio = loadSetting("fastForwardHeldRatio").toDouble();
+	if (fastForwardHeldRatio <= 0) {
+		m_ui.fastForwardHeldUnbounded->setChecked(true);
+		m_ui.fastForwardHeldRatio->setEnabled(false);
+	} else {
+		m_ui.fastForwardHeldUnbounded->setChecked(false);
+		m_ui.fastForwardHeldRatio->setEnabled(true);
+		m_ui.fastForwardHeldRatio->setValue(fastForwardHeldRatio);
 	}
 
 	QString idleOptimization = loadSetting("idleOptimization");

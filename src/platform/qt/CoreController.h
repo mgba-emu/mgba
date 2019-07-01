@@ -237,6 +237,7 @@ private:
 	int m_fastForwardVolume = -1;
 	int m_fastForwardMute = -1;
 	float m_fastForwardRatio = -1.f;
+	float m_fastForwardHeldRatio = -1.f;
 	float m_fpsTarget;
 
 	InputController* m_inputController = nullptr;
