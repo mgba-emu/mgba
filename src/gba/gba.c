@@ -342,6 +342,7 @@ bool GBALoadNull(struct GBA* gba) {
 	if (gba->cpu) {
 		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
+	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
 	return true;
 }
 
