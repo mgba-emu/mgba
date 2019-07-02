@@ -15,6 +15,7 @@ Other fixes:
  - mGUI: Fix crash if last loaded ROM directory disappears (fixes mgba.io/i/1466)
  - Libretro: Fix crash changing allowing opposing directions (hhromic)
  - Qt: Fix race conditions initializing GDB stub
+ - GBA: Set up GPIO mapping on null and ELF ROM regions (fixes mgba.io/i/1481)
 Misc:
  - Qt: Make mute menu option also toggle fast-forward mute (fixes mgba.io/i/1424)
  - Qt: Show error message if file failed to load
