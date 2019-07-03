@@ -394,9 +394,9 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		if ((address & (SIZE_VRAM | 0x00014000)) == SIZE_VRAM && (GBARegisterDISPCNTGetMode(gba->memory.io[REG_DISPCNT >> 1]) >= 3)) { \
 			mLOG(GBA_MEM, GAME_ERROR, "Bad VRAM Load32: 0x%08X", address); \
 			value = 0; \
-			break; \
+		} else { \
+			LOAD_32(value, address & 0x00017FFC, gba->video.vram); \
 		} \
-		LOAD_32(value, address & 0x00017FFC, gba->video.vram); \
 	} else { \
 		LOAD_32(value, address & 0x0001FFFC, gba->video.vram); \
 	} \
@@ -735,13 +735,13 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	if ((address & 0x0001FFFF) >= SIZE_VRAM) { \
 		if ((address & (SIZE_VRAM | 0x00014000)) == SIZE_VRAM && (GBARegisterDISPCNTGetMode(gba->memory.io[REG_DISPCNT >> 1]) >= 3)) { \
 			mLOG(GBA_MEM, GAME_ERROR, "Bad VRAM Store32: 0x%08X", address); \
-			break; \
-		} \
-		LOAD_32(oldValue, address & 0x00017FFC, gba->video.vram); \
-		if (oldValue != value) { \
-			STORE_32(value, address & 0x00017FFC, gba->video.vram); \
-			gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x00017FFC) + 2); \
-			gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x00017FFC)); \
+		} else { \
+			LOAD_32(oldValue, address & 0x00017FFC, gba->video.vram); \
+			if (oldValue != value) { \
+				STORE_32(value, address & 0x00017FFC, gba->video.vram); \
+				gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x00017FFC) + 2); \
+				gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x00017FFC)); \
+			} \
 		} \
 	} else { \
 		LOAD_32(oldValue, address & 0x0001FFFC, gba->video.vram); \
