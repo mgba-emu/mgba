@@ -186,7 +186,7 @@ void GBResizeSram(struct GB* gb, size_t size) {
 					vf->write(vf, extdataBuffer, vfSize & 0xFF);
 				}
 				gb->memory.sram = vf->map(vf, size, MAP_WRITE);
-				memset(&gb->memory.sram[gb->sramSize], 0xFF, size - gb->sramSize);
+				memset(&gb->memory.sram[vfSize], 0xFF, size - vfSize);
 			} else if (size > gb->sramSize || !gb->memory.sram) {
 				if (gb->memory.sram) {
 					vf->unmap(vf, gb->memory.sram, gb->sramSize);
