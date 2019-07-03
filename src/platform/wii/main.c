@@ -102,7 +102,7 @@ static struct mRotationSource rotation;
 static GXRModeObj* vmode;
 static float wAdjust;
 static float hAdjust;
-static float wStretch = 1.0f;
+static float wStretch = 0.9f;
 static float hStretch = 0.9f;
 static float guiScale = GUI_SCALE;
 static Mtx model, view, modelview;
@@ -194,6 +194,9 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 		guiScale = GUI_SCALE_240p;
 		break;
 	}
+
+	vmode->viWidth = 704;
+	vmode->viXOrigin = 8;
 
 	VIDEO_SetBlack(true);
 	VIDEO_Configure(vmode);
@@ -319,7 +322,7 @@ int main(int argc, char* argv[]) {
 
 	struct mGUIRunner runner = {
 		.params = {
-			720, 480,
+			640, 480,
 			font, "",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
