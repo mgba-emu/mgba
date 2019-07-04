@@ -60,7 +60,7 @@ public slots:
 	void resizeContext() override;
 
 protected:
-	virtual void paintEvent(QPaintEvent*) override {}
+	virtual void paintEvent(QPaintEvent*) override { forceDraw(); }
 	virtual void resizeEvent(QResizeEvent*) override;
 
 private:
