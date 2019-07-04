@@ -114,6 +114,9 @@ struct mCore* mCoreFind(const char* path) {
 }
 
 bool mCoreLoadFile(struct mCore* core, const char* path) {
+#ifdef FIXED_ROM_BUFFER
+	return mCorePreloadFile(core, path);
+#else
 	struct VFile* rom = mDirectorySetOpenPath(&core->dirs, path, core->isROM);
 	if (!rom) {
 		return false;
@@ -124,43 +127,15 @@ bool mCoreLoadFile(struct mCore* core, const char* path) {
 		rom->close(rom);
 	}
 	return ret;
+#endif
 }
 
 bool mCorePreloadVF(struct mCore* core, struct VFile* vf) {
-	struct VFile* vfm;
-#ifdef FIXED_ROM_BUFFER
-	extern uint32_t* romBuffer;
-	extern size_t romBufferSize;
-	vfm = VFileFromMemory(romBuffer, romBufferSize);
-#else
-	vfm = VFileMemChunk(NULL, vf->size(vf));
-#endif
-
-	uint8_t buffer[2048];
-	ssize_t read;
-	vf->seek(vf, 0, SEEK_SET);
-	while ((read = vf->read(vf, buffer, sizeof(buffer))) > 0) {
-		vfm->write(vfm, buffer, read);
-	}
-	vf->close(vf);
-	bool ret = core->loadROM(core, vfm);
-	if (!ret) {
-		vfm->close(vfm);
-	}
-	return ret;
+	return mCorePreloadVFCB(core, vf, NULL, NULL);
 }
 
 bool mCorePreloadFile(struct mCore* core, const char* path) {
-	struct VFile* rom = mDirectorySetOpenPath(&core->dirs, path, core->isROM);
-	if (!rom) {
-		return false;
-	}
-
-	bool ret = mCorePreloadVF(core, rom);
-	if (!ret) {
-		rom->close(rom);
-	}
-	return ret;
+	return mCorePreloadFileCB(core, path, NULL, NULL);
 }
 
 bool mCorePreloadVFCB(struct mCore* core, struct VFile* vf, void (cb)(size_t, size_t, void*), void* context) {
@@ -182,7 +157,9 @@ bool mCorePreloadVFCB(struct mCore* core, struct VFile* vf, void (cb)(size_t, si
 	while ((read = vf->read(vf, buffer, sizeof(buffer))) > 0) {
 		vfm->write(vfm, buffer, read);
 		total += read;
-		cb(total, size, context);
+		if (cb) {
+			cb(total, size, context);
+		}
 	}
 	vf->close(vf);
 	bool ret = core->loadROM(core, vfm);
