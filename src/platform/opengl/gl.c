@@ -117,7 +117,6 @@ void mGLContextDrawFrame(struct VideoBackend* v) {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	if (v->interframeBlending) {
-		glEnable(GL_BLEND);
 		glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
 		glBlendColor(1, 1, 1, 0.5);
 		glBindTexture(GL_TEXTURE_2D, context->tex[context->activeTex ^ 1]);
@@ -129,6 +128,7 @@ void mGLContextDrawFrame(struct VideoBackend* v) {
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		}
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		glEnable(GL_BLEND);
 	}
 	glBindTexture(GL_TEXTURE_2D, context->tex[context->activeTex]);
 	if (v->filter) {
