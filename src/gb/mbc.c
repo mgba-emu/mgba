@@ -35,6 +35,7 @@ static void _GBHuC1(struct GB*, uint16_t address, uint8_t value);
 static void _GBHuC3(struct GB*, uint16_t address, uint8_t value);
 static void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value);
+static void _GBWisdomTree(struct GB* gb, uint16_t address, uint8_t value);
 
 static uint8_t _GBMBC2Read(struct GBMemory*, uint16_t address);
 static uint8_t _GBMBC6Read(struct GBMemory*, uint16_t address);
@@ -119,6 +120,24 @@ static bool _isMulticart(const uint8_t* mem) {
 	return success;
 }
 
+static bool _isWisdomTree(const uint8_t* mem) {
+	int i;
+	for (i = 0x134; i < 0x14C; i += 4) {
+		if (*(uint32_t*) &mem[i] != 0) {
+			return false;
+		}
+	}
+	for (i = 0xF0; i < 0x100; i += 4) {
+		if (*(uint32_t*) &mem[i] != 0) {
+			return false;
+		}
+	}
+	if (mem[0x14D] != 0xE7) {
+		return false;
+	}
+	return true;
+}
+
 void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_EXTERNAL_RAM;
 	if (bankStart + GB_SIZE_EXTERNAL_RAM > gb->sramSize) {
@@ -180,6 +199,11 @@ void GBMBCInit(struct GB* gb) {
 		if (gb->memory.mbcType == GB_MBC_AUTODETECT) {
 			switch (cart->type) {
 			case 0:
+				if (_isWisdomTree(gb->memory.rom)) {
+					gb->memory.mbcType = GB_UNL_WISDOM_TREE;
+					break;
+				}
+				// Fall through
 			case 8:
 			case 9:
 				gb->memory.mbcType = GB_MBC_NONE;
@@ -309,6 +333,9 @@ void GBMBCInit(struct GB* gb) {
 		if (gb->memory.cam && gb->memory.cam->startRequestImage) {
 			gb->memory.cam->startRequestImage(gb->memory.cam, GBCAM_WIDTH, GBCAM_HEIGHT, mCOLOR_ANY);
 		}
+		break;
+	case GB_UNL_WISDOM_TREE:
+		gb->memory.mbcWrite = _GBWisdomTree;
 		break;
 	}
 
@@ -1164,6 +1191,21 @@ uint8_t _GBTAMA5Read(struct GBMemory* memory, uint16_t address) {
 			mLOG(GB_MBC, STUB, "TAMA5 unknown read: %02X", tama5->reg);
 			return 0xF1;
 		}
+	}
+}
+
+void _GBWisdomTree(struct GB* gb, uint16_t address, uint8_t value) {
+	UNUSED(value);
+	int bank = address & 0x3F;
+	switch (address >> 14) {
+	case 0x0:
+		GBMBCSwitchBank0(gb, bank * 2);
+		GBMBCSwitchBank(gb, bank * 2 + 1);
+		break;
+	default:
+		// TODO
+		mLOG(GB_MBC, STUB, "Wisdom Tree unknown address: %04X:%02X", address, value);
+		break;
 	}
 }
 
