@@ -1,0 +1,3 @@
+config:
+  gb.model: AGB
+fail: true
