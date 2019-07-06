@@ -234,7 +234,7 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 		if (dmaBus != GB_BUS_CPU && dmaBus == accessBus) {
 			return 0xFF;
 		}
-		if (address >= GB_BASE_OAM && address < GB_BASE_UNUSABLE) {
+		if (address >= GB_BASE_OAM && address < GB_BASE_IO) {
 			return 0xFF;
 		}
 	}
@@ -471,6 +471,17 @@ uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment) {
 		}
 		if (address < GB_BASE_IO) {
 			mLOG(GB_MEM, GAME_ERROR, "Attempt to read from unusable memory: %04X", address);
+			if (gb->video.mode < 2) {
+				switch (gb->model) {
+				case GB_MODEL_AGB:
+					return (address & 0xF0) | ((address >> 4) & 0xF);
+				case GB_MODEL_CGB:
+					// TODO: R/W behavior
+					return 0x00;
+				default:
+					return 0x00;
+				}
+			}
 			return 0xFF;
 		}
 		if (address < GB_BASE_HRAM) {
