@@ -120,8 +120,8 @@ static bool _isMulticart(const uint8_t* mem) {
 	return success;
 }
 
-static bool _isWisdomTree(const uint8_t* mem) {
-	int i;
+static bool _isWisdomTree(const uint8_t* mem, size_t size) {
+	size_t i;
 	for (i = 0x134; i < 0x14C; i += 4) {
 		if (*(uint32_t*) &mem[i] != 0) {
 			return false;
@@ -135,7 +135,12 @@ static bool _isWisdomTree(const uint8_t* mem) {
 	if (mem[0x14D] != 0xE7) {
 		return false;
 	}
-	return true;
+	for (i = 0x300; i < size - 11; ++i) {
+		if (memcmp(&mem[i], "WISDOM", 6) == 0 && memcmp(&mem[i + 7], "TREE", 4) == 0) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void GBMBCSwitchSramBank(struct GB* gb, int bank) {
@@ -199,7 +204,7 @@ void GBMBCInit(struct GB* gb) {
 		if (gb->memory.mbcType == GB_MBC_AUTODETECT) {
 			switch (cart->type) {
 			case 0:
-				if (_isWisdomTree(gb->memory.rom)) {
+				if (_isWisdomTree(gb->memory.rom, gb->memory.romSize)) {
 					gb->memory.mbcType = GB_UNL_WISDOM_TREE;
 					break;
 				}
