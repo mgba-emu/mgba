@@ -49,6 +49,7 @@ Die folgenden Mapper werden vollständig unterstützt:
 - MBC5
 - MBC5+Rumble (MBC5+Rüttel-Modul)
 - MBC7
+- Wisdom Tree (nicht lizenziert)
 
 Die folgenden Mapper werden teilweise unterstützt:
 
@@ -85,7 +86,7 @@ Andere Unix-ähnliche Plattformen wie OpenBSD sind ebenfalls dafür bekannt, mit
 
 ### Systemvoraussetzungen
 
-Die Systemvoraussetzungen sind minimal. Jeder Computer, der mit Windows Vista oder neuer läuft, sollte in der Lage sein, die Emulation zu bewältigen. Unterstützung für OpenGL 1.1 oder neuer ist ebenfalls voraussgesetzt.
+Die Systemvoraussetzungen sind minimal. Jeder Computer, der mit Windows Vista oder neuer läuft, sollte in der Lage sein, die Emulation zu bewältigen. Unterstützung für OpenGL 1.1 oder neuer ist ebenfalls voraussgesetzt. OpenGL 3.0 oder neuer wird für Shader und erweiterte Funktionen benötigt.
 
 Downloads
 ---------
