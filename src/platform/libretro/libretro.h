@@ -1169,8 +1169,6 @@ enum retro_mod
                                             * i.e. it should be feasible to cycle through options
                                             * without a keyboard.
                                             *
-                                            * First entry should be treated as a default.
-                                            *
                                             * Example entry:
                                             * {
                                             *     "foo_option",
@@ -2503,9 +2501,7 @@ struct retro_core_option_display
    bool visible;
 };
 
-/* Maximum number of values permitted for a core option
- * NOTE: This may be increased on a core-by-core basis
- * if required (doing so has no effect on the frontend) */
+/* Maximum number of values permitted for a core option */
 #define RETRO_NUM_CORE_OPTION_VALUES_MAX 128
 
 struct retro_core_option_value
