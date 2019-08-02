@@ -35,6 +35,7 @@ Emulation fixes:
  - GBA Memory: Fix STM/LDM to invalid VRAM
  - GB: Fix savedata initialization (fixes mgba.io/i/1473, mgba.io/i/1478)
  - GB Memory: Better emulate 0xFEA0 region on DMG, MGB and AGB
+ - GB Printer: Reset printer buffer index after printing
 Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
