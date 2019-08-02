@@ -7,6 +7,7 @@ Emulation fixes:
  - GB Audio: Deschedule channel 1 when disabled by sweep (fixes mgba.io/i/1467)
  - GBA Memory: Fix STM/LDM to invalid VRAM
  - GB: Fix savedata initialization (fixes mgba.io/i/1473, mgba.io/i/1478)
+ - GB Printer: Reset printer buffer index after printing
 Other fixes:
  - Switch: Fix threading-related crash on second launch
  - Qt: Fix FPS target maxing out at 59.727 (fixes mgba.io/i/1421)
