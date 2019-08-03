@@ -50,6 +50,7 @@ Other fixes:
  - Libretro: Fix crash changing allowing opposing directions (hhromic)
  - Qt: Fix race conditions initializing GDB stub
  - GBA: Set up GPIO mapping on null and ELF ROM regions (fixes mgba.io/i/1481)
+ - GBA Cheats: Fix value incrementing in CB slide codes (fixes mgba.io/i/1501)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
