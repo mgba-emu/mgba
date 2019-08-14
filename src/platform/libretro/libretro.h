@@ -1117,7 +1117,7 @@ enum retro_mod
                                             * This may be still be done regardless of the core options
                                             * interface version.
                                             *
-                                            * If version is 1 however, core options may instead be set by
+                                            * If version is >= 1 however, core options may instead be set by
                                             * passing an array of retro_core_option_definition structs to
                                             * RETRO_ENVIRONMENT_SET_CORE_OPTIONS, or a 2D array of
                                             * retro_core_option_definition structs to RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL.
@@ -1132,8 +1132,8 @@ enum retro_mod
                                             * GET_VARIABLE.
                                             * This allows the frontend to present these variables to
                                             * a user dynamically.
-                                            * This should only be called if RETRO_ENVIRONMENT_GET_ENHANCED_CORE_OPTIONS
-                                            * returns an API version of 1.
+                                            * This should only be called if RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION
+                                            * returns an API version of >= 1.
                                             * This should be called instead of RETRO_ENVIRONMENT_SET_VARIABLES.
                                             * This should be called the first time as early as
                                             * possible (ideally in retro_set_environment).
@@ -1194,8 +1194,8 @@ enum retro_mod
                                             * GET_VARIABLE.
                                             * This allows the frontend to present these variables to
                                             * a user dynamically.
-                                            * This should only be called if RETRO_ENVIRONMENT_GET_ENHANCED_CORE_OPTIONS
-                                            * returns an API version of 1.
+                                            * This should only be called if RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION
+                                            * returns an API version of >= 1.
                                             * This should be called instead of RETRO_ENVIRONMENT_SET_VARIABLES.
                                             * This should be called the first time as early as
                                             * possible (ideally in retro_set_environment).
@@ -2501,7 +2501,21 @@ struct retro_core_option_display
    bool visible;
 };
 
-/* Maximum number of values permitted for a core option */
+/* Maximum number of values permitted for a core option
+ * > Note: We have to set a maximum value due the limitations
+ *   of the C language - i.e. it is not possible to create an
+ *   array of structs each containing a variable sized array,
+ *   so the retro_core_option_definition values array must
+ *   have a fixed size. The size limit of 128 is a balancing
+ *   act - it needs to be large enough to support all 'sane'
+ *   core options, but setting it too large may impact low memory
+ *   platforms. In practise, if a core option has more than
+ *   128 values then the implementation is likely flawed.
+ *   To quote the above API reference:
+ *      "The number of possible options should be very limited
+ *       i.e. it should be feasible to cycle through options
+ *       without a keyboard."
+ */
 #define RETRO_NUM_CORE_OPTION_VALUES_MAX 128
 
 struct retro_core_option_value
