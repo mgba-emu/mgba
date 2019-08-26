@@ -52,6 +52,7 @@ Other fixes:
  - Qt: Fix race conditions initializing GDB stub
  - GBA: Set up GPIO mapping on null and ELF ROM regions (fixes mgba.io/i/1481)
  - GBA Cheats: Fix value incrementing in CB slide codes (fixes mgba.io/i/1501)
+ - Qt: Only show emulator restart warning once per settings saving
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
