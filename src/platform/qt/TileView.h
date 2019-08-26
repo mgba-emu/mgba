@@ -23,6 +23,7 @@ public:
 
 public slots:
 	void updatePalette(int);
+	void exportTiles();
 
 private:
 #ifdef M_CORE_GBA
