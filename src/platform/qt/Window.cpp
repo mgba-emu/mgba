@@ -1702,6 +1702,11 @@ void Window::appendMRU(const QString& fname) {
 	updateMRU();
 }
 
+void Window::clearMRU() {
+	m_mruFiles.clear();
+	updateMRU();
+}
+
 void Window::updateMRU() {
 	m_actions.clearMenu("mru");
 	int i = 0;
@@ -1714,6 +1719,9 @@ void Window::updateMRU() {
 	}
 	m_config->setMRU(m_mruFiles);
 	m_config->write();
+	m_actions.addSeparator("mru");
+	m_actions.addAction(tr("Clear"), "resetMru", this, &Window::clearMRU, "mru");
+
 	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
 }
 

@@ -154,6 +154,7 @@ private:
 	void detachWidget(QWidget* widget);
 
 	void appendMRU(const QString& fname);
+	void clearMRU();
 	void updateMRU();
 
 	void openView(QWidget* widget);
