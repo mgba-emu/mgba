@@ -81,6 +81,7 @@ Misc:
  - Qt: Add option to pause on minimizing window (closes mgba.io/i/1379)
  - Switch: Support file associations
  - Qt: Show error message if file failed to load
+ - Qt: Scale pixel color values to full range (fixes mgba.io/i/1511)
 
 0.7.2: (2019-05-25)
 Emulation fixes:
