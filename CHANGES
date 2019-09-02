@@ -55,6 +55,7 @@ Other fixes:
  - GBA Cheats: Fix value incrementing in CB slide codes (fixes mgba.io/i/1501)
  - Qt: Only show emulator restart warning once per settings saving
  - Qt: Improve cheat view UX
+ - GB: Fix SGB controller selection initialization (fixes mgba.io/i/1104)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash

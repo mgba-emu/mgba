@@ -535,13 +535,13 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 
 static uint8_t _readKeys(struct GB* gb) {
 	uint8_t keys = *gb->keySource;
-	if (gb->sgbCurrentController != 0) {
+	if (gb->sgbCurrentController & gb->sgbControllers) {
 		keys = 0;
 	}
 	uint8_t joyp = gb->memory.io[REG_JOYP];
 	switch (joyp & 0x30) {
 	case 0x30:
-		keys = gb->sgbCurrentController;
+		keys = gb->sgbCurrentController & gb->sgbControllers;
 		break;
 	case 0x20:
 		keys >>= 4;
