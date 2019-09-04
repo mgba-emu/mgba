@@ -109,6 +109,7 @@ struct GB {
 	uint8_t sgbPacket[16];
 	uint8_t sgbControllers;
 	uint8_t sgbCurrentController;
+	bool sgbIncrement;
 
 	struct mCoreCallbacksList coreCallbacks;
 	struct mAVStream* stream;

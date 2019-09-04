@@ -437,6 +437,7 @@ void GBReset(struct LR35902Core* cpu) {
 	gb->sgbControllers = 0;
 	gb->sgbCurrentController = 0;
 	gb->currentSgbBits = 0;
+	gb->sgbIncrement = false;
 	memset(gb->sgbPacket, 0, sizeof(gb->sgbPacket));
 
 	mTimingClear(&gb->timing);

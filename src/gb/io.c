@@ -116,18 +116,16 @@ static void _writeSGBBits(struct GB* gb, int bits) {
 		return;
 	}
 	gb->currentSgbBits = bits;
-	if (gb->sgbBit > 128) {
-		switch (bits) {
-		case 1:
-			gb->sgbBit ^= 2;
-			break;
-		case 3:
-			if (gb->sgbBit == 131) {
-				gb->sgbBit &= ~2;
-				gb->sgbCurrentController = (gb->sgbCurrentController + 1) & gb->sgbControllers;
-			}
-			break;
+	switch (bits) {
+	case 1:
+		gb->sgbIncrement = !gb->sgbIncrement;
+		break;
+	case 3:
+		if (gb->sgbIncrement) {
+			gb->sgbIncrement = false;
+			gb->sgbCurrentController = (gb->sgbCurrentController + 1) & gb->sgbControllers;
 		}
+		break;
 	}
 	if (gb->sgbBit == 128 && bits == 2) {
 		GBVideoWriteSGBPacket(&gb->video, gb->sgbPacket);
