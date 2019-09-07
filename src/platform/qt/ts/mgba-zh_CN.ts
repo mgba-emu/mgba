@@ -1473,7 +1473,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../FrameView.cpp" line="466"/>
         <source>%1 %2</source>
-        <translation%1 %2</translation>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
