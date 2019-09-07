@@ -3617,8 +3617,12 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     </message>
     <message>
         <location filename="../Window.cpp" line="859"/>
-        <source>The game has crashed with the following error:\n\n%1</source>
-        <translation>游戏因以下错误而崩溃:\n\n%1</translation>
+        <source>The game has crashed with the following error:
+
+%1</source>
+        <translation>游戏因以下错误而崩溃:
+
+%1</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="866"/>
