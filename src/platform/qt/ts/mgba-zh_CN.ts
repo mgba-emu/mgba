@@ -3268,7 +3268,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>OBJWIN</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="144/>
+        <location filename="../ObjView.cpp" line="144"/>
         <source>Invalid</source>
         <translation>无效</translation>
     </message>
