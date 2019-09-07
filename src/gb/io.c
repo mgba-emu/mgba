@@ -115,10 +115,12 @@ static void _writeSGBBits(struct GB* gb, int bits) {
 	if (bits == gb->currentSgbBits) {
 		return;
 	}
-	gb->currentSgbBits = bits;
 	switch (bits) {
+	case 0:
 	case 1:
-		gb->sgbIncrement = !gb->sgbIncrement;
+		if (gb->currentSgbBits & 2) {
+			gb->sgbIncrement = !gb->sgbIncrement;
+		}
 		break;
 	case 3:
 		if (gb->sgbIncrement) {
@@ -127,6 +129,7 @@ static void _writeSGBBits(struct GB* gb, int bits) {
 		}
 		break;
 	}
+	gb->currentSgbBits = bits;
 	if (gb->sgbBit == 128 && bits == 2) {
 		GBVideoWriteSGBPacket(&gb->video, gb->sgbPacket);
 		++gb->sgbBit;
