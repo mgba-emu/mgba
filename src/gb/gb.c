@@ -127,6 +127,19 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	return true;
 }
 
+void GBYankROM(struct GB* gb) {
+	gb->yankedRomSize = gb->memory.romSize;
+	gb->yankedMbc = gb->memory.mbcType;
+	gb->memory.romSize = 0;
+	gb->memory.mbcType = GB_MBC_NONE;
+	gb->memory.sramAccess = false;
+
+	if (gb->cpu) {
+		struct LR35902Core* cpu = gb->cpu;
+		cpu->memory.setActiveRegion(cpu, cpu->pc);
+	}
+}
+
 static void GBSramDeinit(struct GB* gb) {
 	if (gb->sramVf) {
 		gb->sramVf->unmap(gb->sramVf, gb->memory.sram, gb->sramSize);
@@ -430,6 +443,7 @@ void GBReset(struct LR35902Core* cpu) {
 
 	if (gb->yankedRomSize) {
 		gb->memory.romSize = gb->yankedRomSize;
+		gb->memory.mbcType = gb->yankedMbc;
 		gb->yankedRomSize = 0;
 	}
 

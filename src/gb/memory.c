@@ -16,6 +16,8 @@
 
 mLOG_DEFINE_CATEGORY(GB_MEM, "GB Memory", "gb.memory");
 
+static const uint8_t _yankBuffer[] = { 0xFF };
+
 enum GBBus {
 	GB_BUS_CPU,
 	GB_BUS_MAIN,
@@ -69,6 +71,14 @@ static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 		cpu->memory.activeRegion = memory->romBase;
 		cpu->memory.activeRegionEnd = GB_BASE_CART_BANK1;
 		cpu->memory.activeMask = GB_SIZE_CART_BANK0 - 1;
+		if (gb->memory.romSize < GB_SIZE_CART_BANK0) {
+			if (address >= gb->memory.romSize) {
+				cpu->memory.activeRegion = _yankBuffer;
+				cpu->memory.activeMask = 0;
+			} else {
+				cpu->memory.activeRegionEnd = gb->memory.romSize;
+			}
+		}
 		break;
 	case GB_REGION_CART_BANK1:
 	case GB_REGION_CART_BANK1 + 1:
@@ -87,6 +97,14 @@ static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 			} else {
 				cpu->memory.activeRegion = memory->romBank;
 				cpu->memory.activeRegionEnd = GB_BASE_CART_BANK1 + 0x2000;
+			}
+		}
+		if (gb->memory.romSize < GB_SIZE_CART_BANK0 * 2) {
+			if (address >= gb->memory.romSize) {
+				cpu->memory.activeRegion = _yankBuffer;
+				cpu->memory.activeMask = 0;
+			} else {
+				cpu->memory.activeRegionEnd = gb->memory.romSize;
 			}
 		}
 		break;
@@ -243,6 +261,9 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK0 + 1:
 	case GB_REGION_CART_BANK0 + 2:
 	case GB_REGION_CART_BANK0 + 3:
+		if (address >= memory->romSize) {
+			return 0xFF;
+		}
 		return memory->romBase[address & (GB_SIZE_CART_BANK0 - 1)];
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
@@ -252,6 +273,9 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 		// Fall through
 	case GB_REGION_CART_BANK1:
 	case GB_REGION_CART_BANK1 + 1:
+		if (address >= memory->romSize) {
+			return 0xFF;
+		}
 		return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
 	case GB_REGION_VRAM:
 	case GB_REGION_VRAM + 1:

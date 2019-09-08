@@ -458,6 +458,9 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		value = gb->video.stat;
 		break;
 	case 0x50:
+		if (gb->memory.io[0x50] != 0xFF) {
+			break;
+		}
 		GBUnmapBIOS(gb);
 		if (gb->model >= GB_MODEL_CGB && gb->memory.io[REG_UNK4C] < 0x80) {
 			gb->model = GB_MODEL_DMG;

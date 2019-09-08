@@ -20,6 +20,7 @@ Features:
  - Support for unlicensed Wisdom Tree Game Boy mapper
  - Qt: Add export button for tile view (closes mgba.io/i/1507)
  - Qt: Add recent game list clearing (closes mgba.io/i/1380)
+ - GB: Yanking gamepak now supported
 Emulation fixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs

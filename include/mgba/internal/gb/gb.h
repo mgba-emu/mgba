@@ -94,6 +94,7 @@ struct GB {
 	bool isPristine;
 	size_t pristineRomSize;
 	size_t yankedRomSize;
+	enum GBMemoryBankControllerType yankedMbc;
 	uint32_t romCrc32;
 	struct VFile* romVf;
 	struct VFile* biosVf;
@@ -163,6 +164,7 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf);
 bool GBLoadSave(struct GB* gb, struct VFile* vf);
 void GBUnloadROM(struct GB* gb);
 void GBSynthesizeROM(struct VFile* vf);
+void GBYankROM(struct GB* gb);
 
 void GBLoadBIOS(struct GB* gb, struct VFile* vf);
 

@@ -1212,12 +1212,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->stop();
 	}, "emu");
 
-#ifdef M_CORE_GBA
 	Action* yank = addGameAction(tr("Yank game pak"), "yank", [this]() {
 		m_controller->yankPak();
 	}, "emu");
-	m_platformActions.insert(PLATFORM_GBA, yank);
-#endif
+
 	m_actions.addSeparator("emu");
 
 	Action* pause = m_actions.addBooleanAction(tr("&Pause"), "pause", [this](bool paused) {
