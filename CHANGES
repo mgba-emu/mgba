@@ -39,6 +39,7 @@ Emulation fixes:
  - GB: Fix savedata initialization (fixes mgba.io/i/1473, mgba.io/i/1478)
  - GB Memory: Better emulate 0xFEA0 region on DMG, MGB and AGB
  - GB Printer: Reset printer buffer index after printing
+ - GB Video: Fix mode 0 window edge case (fixes mgba.io/i/1519)
 Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
