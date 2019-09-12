@@ -203,6 +203,18 @@ else ifneq (,$(findstring ios,$(platform)))
    endif
    DEFINES += -std=c99
 
+# tvOS
+else ifeq ($(platform), tvos-arm64)
+   TARGET := $(TARGET_NAME)_libretro_tvos.dylib
+   fpic := -fPIC
+   SHARED := -dynamiclib
+   CFLAGS := -DIOS
+   DEFINES += -std=c99
+
+ifeq ($(IOSSDK),)
+   IOSSDK := $(shell xcodebuild -version -sdk appletvos Path)
+endif
+
 # Theos
 else ifeq ($(platform), theos_ios)
    DEPLOYMENT_IOSVERSION = 5.0
