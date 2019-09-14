@@ -8,6 +8,8 @@ Emulation fixes:
  - GBA Memory: Fix STM/LDM to invalid VRAM
  - GB: Fix savedata initialization (fixes mgba.io/i/1473, mgba.io/i/1478)
  - GB Printer: Reset printer buffer index after printing
+ - GBA Audio: Fix channel 4 aliasing (fixes mgba.io/i/1265)
+ - GB Audio: Improve channel 4 supersampling
 Other fixes:
  - Switch: Fix threading-related crash on second launch
  - Qt: Fix FPS target maxing out at 59.727 (fixes mgba.io/i/1421)
