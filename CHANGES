@@ -40,6 +40,8 @@ Emulation fixes:
  - GB Memory: Better emulate 0xFEA0 region on DMG, MGB and AGB
  - GB Printer: Reset printer buffer index after printing
  - GB Video: Fix mode 0 window edge case (fixes mgba.io/i/1519)
+ - GBA Audio: Fix channel 4 aliasing (fixes mgba.io/i/1265)
+ - GB Audio: Improve channel 4 supersampling
 Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
