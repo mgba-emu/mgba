@@ -1,29 +1,29 @@
-0.7.3: (Future)
+0.7.3: (2019-09-15)
 Emulation fixes:
- - GBA Video: Fix wrapped sprite mosaic clamping (fixes mgba.io/i/1432)
- - GBA Memory: Fix STM to VRAM (fixes mgba.io/i/1430)
- - GB Video: Increment BCPS/OCPS even in mode 3 (fixes mgba.io/i/1462)
+ - GB: Fix savedata initialization (fixes mgba.io/i/1473, mgba.io/i/1478)
+ - GB: Fix SGB controller incrementing (fixes mgba.io/i/1104)
+ - GB Audio: Improve channel 4 supersampling
+ - GB Printer: Reset printer buffer index after printing
  - GB Audio: Deschedule channel 3 when disabled (fixes mgba.io/i/1463)
  - GB Audio: Deschedule channel 1 when disabled by sweep (fixes mgba.io/i/1467)
+ - GB Video: Increment BCPS/OCPS even in mode 3 (fixes mgba.io/i/1462)
+ - GBA Memory: Fix STM to VRAM (fixes mgba.io/i/1430)
  - GBA Memory: Fix STM/LDM to invalid VRAM
- - GB: Fix savedata initialization (fixes mgba.io/i/1473, mgba.io/i/1478)
- - GB Printer: Reset printer buffer index after printing
+ - GBA Video: Fix wrapped sprite mosaic clamping (fixes mgba.io/i/1432)
  - GBA Audio: Fix channel 4 aliasing (fixes mgba.io/i/1265)
- - GB Audio: Improve channel 4 supersampling
 Other fixes:
- - Switch: Fix threading-related crash on second launch
- - Qt: Fix FPS target maxing out at 59.727 (fixes mgba.io/i/1421)
  - Core: Fix crashes if core directories aren't set
- - Qt: Cap audio buffer size to 8192 (fixes mgba.io/i/1433)
  - Core: Fix crash when exiting game with cheats loaded
- - GBA Cheats: Fix PARv3 Thumb hooks
- - mGUI: Fix crash if last loaded ROM directory disappears (fixes mgba.io/i/1466)
- - Libretro: Fix crash changing allowing opposing directions (hhromic)
- - Qt: Fix race conditions initializing GDB stub
  - GBA: Set up GPIO mapping on null and ELF ROM regions (fixes mgba.io/i/1481)
+ - GBA Cheats: Fix PARv3 Thumb hooks
  - GBA Cheats: Fix value incrementing in CB slide codes (fixes mgba.io/i/1501)
+ - Qt: Fix FPS target maxing out at 59.727 (fixes mgba.io/i/1421)
+ - Qt: Cap audio buffer size to 8192 (fixes mgba.io/i/1433)
+ - Qt: Fix race conditions initializing GDB stub
  - Qt: Improve cheat view UX
- - GB: Fix SGB controller incrementing (fixes mgba.io/i/1104)
+ - Libretro: Fix crash changing allowing opposing directions (hhromic)
+ - mGUI: Fix crash if last loaded ROM directory disappears (fixes mgba.io/i/1466)
+ - Switch: Fix threading-related crash on second launch
 Misc:
  - Qt: Make mute menu option also toggle fast-forward mute (fixes mgba.io/i/1424)
  - Qt: Show error message if file failed to load
