@@ -116,6 +116,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatio());
 #endif
 	resizePainter();
+	setUpdatesEnabled(false);
 }
 
 void DisplayGL::stopDrawing() {
@@ -124,12 +125,14 @@ void DisplayGL::stopDrawing() {
 		CoreController::Interrupter interrupter(m_context);
 		QMetaObject::invokeMethod(m_painter, "stop", Qt::BlockingQueuedConnection);
 		m_drawThread->exit();
+		m_drawThread->wait();
 		m_drawThread = nullptr;
 
 		m_gl->makeCurrent(windowHandle());
 #if defined(_WIN32) && defined(USE_EPOXY)
 		epoxy_handle_external_wglMakeCurrent();
 #endif
+		setUpdatesEnabled(true);
 	}
 	m_context.reset();
 }
@@ -139,6 +142,7 @@ void DisplayGL::pauseDrawing() {
 		m_isDrawing = false;
 		CoreController::Interrupter interrupter(m_context);
 		QMetaObject::invokeMethod(m_painter, "pause", Qt::BlockingQueuedConnection);
+		setUpdatesEnabled(true);
 	}
 }
 
@@ -147,6 +151,7 @@ void DisplayGL::unpauseDrawing() {
 		m_isDrawing = true;
 		CoreController::Interrupter interrupter(m_context);
 		QMetaObject::invokeMethod(m_painter, "unpause", Qt::BlockingQueuedConnection);
+		setUpdatesEnabled(false);
 	}
 }
 
