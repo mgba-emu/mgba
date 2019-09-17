@@ -16,6 +16,7 @@
 #endif
 #endif
 
+#include <QElapsedTimer>
 #include <QOpenGLContext>
 #include <QList>
 #include <QMouseEvent>
@@ -108,9 +109,6 @@ public slots:
 
 	int glTex();
 
-private slots:
-	void swap();
-
 private:
 	void performDraw();
 	void dequeue();
@@ -131,9 +129,7 @@ private:
 	VideoBackend* m_backend = nullptr;
 	QSize m_size;
 	MessagePainter* m_messagePainter = nullptr;
-	QTimer m_swapTimer{this};
-	bool m_needsUnlock = false;
-	bool m_frameReady = false;
+	QElapsedTimer m_delayTimer;
 	std::shared_ptr<VideoProxy> m_videoProxy;
 };
 
