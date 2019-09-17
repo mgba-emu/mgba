@@ -106,8 +106,12 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 		}
 	}
 	if (isIntegerScalingLocked()) {
-		ds.setWidth(ds.width() - ds.width() % m_width);
-		ds.setHeight(ds.height() - ds.height() % m_height);
+		if (ds.width() >= m_width) {
+			ds.setWidth(ds.width() - ds.width() % m_width);
+		}
+		if (ds.height() >= m_height) {
+			ds.setHeight(ds.height() - ds.height() % m_height);
+		}
 	}
 	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
 	QRect full(origin, ds);

@@ -87,6 +87,7 @@ Misc:
  - Switch: Support file associations
  - Qt: Show error message if file failed to load
  - Qt: Scale pixel color values to full range (fixes mgba.io/i/1511)
+ - Qt, OpenGL: Disable integer scaling for dimensions that don't fit
 
 0.7.2: (2019-05-25)
 Emulation fixes:

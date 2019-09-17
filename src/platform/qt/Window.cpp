@@ -1962,8 +1962,12 @@ void WindowBackground::paintEvent(QPaintEvent* event) {
 		}
 	}
 	if (m_lockIntegerScaling) {
-		ds.setWidth(ds.width() - ds.width() % m_aspectWidth);
-		ds.setHeight(ds.height() - ds.height() % m_aspectHeight);
+		if (ds.width() >= m_aspectWidth) {
+			ds.setWidth(ds.width() - ds.width() % m_aspectWidth);
+		}
+		if (ds.height() >= m_aspectHeight) {
+			ds.setHeight(ds.height() - ds.height() % m_aspectHeight);
+		}
 	}
 	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
 	QRect full(origin, ds);
