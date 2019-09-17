@@ -30,6 +30,9 @@ static void _ffmpegPostVideoFrame(struct mAVStream*, const color_t* pixels, size
 static void _ffmpegPostAudioFrame(struct mAVStream*, int16_t left, int16_t right);
 static void _ffmpegSetVideoDimensions(struct mAVStream*, unsigned width, unsigned height);
 
+static bool _ffmpegWriteAudioFrame(struct FFmpegEncoder* encoder, struct AVFrame* audioFrame);
+static bool _ffmpegWriteVideoFrame(struct FFmpegEncoder* encoder, struct AVFrame* videoFrame);
+
 enum {
 	PREFERRED_SAMPLE_RATE = 0x8000
 };
@@ -390,6 +393,21 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 }
 
 void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
+	if (encoder->audio) {
+		while (true) {
+			if (!_ffmpegWriteAudioFrame(encoder, NULL)) {
+				break;
+			}
+		}
+	}
+	if (encoder->video) {
+		while (true) {
+			if (!_ffmpegWriteVideoFrame(encoder, NULL)) {
+				break;
+			}
+		}
+	}
+
 	if (encoder->context && encoder->context->pb) {
 		av_write_trailer(encoder->context);
 		avio_close(encoder->context->pb);
@@ -510,6 +528,10 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 	encoder->audioFrame->pts = encoder->currentAudioFrame;
 	encoder->currentAudioFrame += samples;
 
+	_ffmpegWriteAudioFrame(encoder, encoder->audioFrame);
+}
+
+bool _ffmpegWriteAudioFrame(struct FFmpegEncoder* encoder, struct AVFrame* audioFrame) {
 	AVPacket packet;
 	av_init_packet(&packet);
 	packet.data = 0;
@@ -517,13 +539,13 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 
 	int gotData;
 #ifdef FFMPEG_USE_PACKETS
-	avcodec_send_frame(encoder->audio, encoder->audioFrame);
+	avcodec_send_frame(encoder->audio, audioFrame);
 	gotData = avcodec_receive_packet(encoder->audio, &packet);
 	gotData = (gotData == 0) && packet.size;
 #else
-	avcodec_encode_audio2(encoder->audio, &packet, encoder->audioFrame, &gotData);
+	avcodec_encode_audio2(encoder->audio, &packet, audioFrame, &gotData);
 #endif
-	packet.pts = av_rescale_q(encoder->audioFrame->pts, encoder->audio->time_base, encoder->audioStream->time_base);
+	packet.pts = av_rescale_q(packet.pts, encoder->audio->time_base, encoder->audioStream->time_base);
 	packet.dts = packet.pts;
 
 	if (gotData) {
@@ -566,6 +588,7 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 #else
 	av_free_packet(&packet);
 #endif
+	return gotData;
 }
 
 void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size_t stride) {
@@ -575,11 +598,6 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 	}
 	stride *= BYTES_PER_PIXEL;
 
-	AVPacket packet;
-
-	av_init_packet(&packet);
-	packet.data = 0;
-	packet.size = 0;
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_make_writable(encoder->videoFrame);
 #endif
@@ -588,14 +606,23 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 
 	sws_scale(encoder->scaleContext, (const uint8_t* const*) &pixels, (const int*) &stride, 0, encoder->iheight, encoder->videoFrame->data, encoder->videoFrame->linesize);
 
+	_ffmpegWriteVideoFrame(encoder, encoder->videoFrame);
+}
+
+bool _ffmpegWriteVideoFrame(struct FFmpegEncoder* encoder, struct AVFrame* videoFrame) {
+	AVPacket packet;
+
+	av_init_packet(&packet);
+	packet.data = 0;
+	packet.size = 0;
+
 	int gotData;
 #ifdef FFMPEG_USE_PACKETS
-	avcodec_send_frame(encoder->video, encoder->videoFrame);
+	avcodec_send_frame(encoder->video, videoFrame);
 	gotData = avcodec_receive_packet(encoder->video, &packet) == 0;
 #else
-	avcodec_encode_video2(encoder->video, &packet, encoder->videoFrame, &gotData);
+	avcodec_encode_video2(encoder->video, &packet, videoFrame, &gotData);
 #endif
-	packet.pts = encoder->videoFrame->pts;
 	if (gotData) {
 #ifndef FFMPEG_USE_PACKET_UNREF
 		if (encoder->video->coded_frame->key_frame) {
@@ -610,6 +637,8 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 #else
 	av_free_packet(&packet);
 #endif
+
+	return gotData;
 }
 
 static void _ffmpegSetVideoDimensions(struct mAVStream* stream, unsigned width, unsigned height) {

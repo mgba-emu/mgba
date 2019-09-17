@@ -60,6 +60,7 @@ Other fixes:
  - Qt: Only show emulator restart warning once per settings saving
  - Qt: Improve cheat view UX
  - GB: Fix SGB controller incrementing (fixes mgba.io/i/1104)
+ - FFmpeg: Drain recording buffers
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
