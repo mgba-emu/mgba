@@ -11,6 +11,9 @@
 #include <libavcodec/version.h>
 #include <libavcodec/avcodec.h>
 
+#include <libavfilter/buffersink.h>
+#include <libavfilter/buffersrc.h>
+
 #include <libavutil/version.h>
 #if LIBAVUTIL_VERSION_MAJOR >= 53
 #include <libavutil/buffer.h>
@@ -38,7 +41,9 @@ enum {
 };
 
 void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58, 9, 100)
 	av_register_all();
+#endif
 
 	encoder->d.videoDimensionsChanged = _ffmpegSetVideoDimensions;
 	encoder->d.postVideoFrame = _ffmpegPostVideoFrame;
@@ -49,11 +54,27 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->videoCodec = NULL;
 	encoder->containerFormat = NULL;
 	FFmpegEncoderSetAudio(encoder, "flac", 0);
-	FFmpegEncoderSetVideo(encoder, "png", 0);
+	FFmpegEncoderSetVideo(encoder, "libx264", 0, 0);
 	FFmpegEncoderSetContainer(encoder, "matroska");
 	FFmpegEncoderSetDimensions(encoder, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 	encoder->iwidth = GBA_VIDEO_HORIZONTAL_PIXELS;
 	encoder->iheight = GBA_VIDEO_VERTICAL_PIXELS;
+	encoder->frameskip = 1;
+	encoder->skipResidue = 0;
+	encoder->ipixFormat =
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	    AV_PIX_FMT_RGB565;
+#else
+	    AV_PIX_FMT_BGR555;
+#endif
+#else
+#ifndef USE_LIBAV
+	    AV_PIX_FMT_0BGR32;
+#else
+	    AV_PIX_FMT_BGR32;
+#endif
+#endif
 	encoder->resampleContext = NULL;
 	encoder->absf = NULL;
 	encoder->context = NULL;
@@ -66,6 +87,15 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->video = NULL;
 	encoder->videoStream = NULL;
 	encoder->videoFrame = NULL;
+	encoder->graph = NULL;
+	encoder->source = NULL;
+	encoder->sink = NULL;
+	encoder->sinkFrame = NULL;
+
+	int i;
+	for (i = 0; i < FFMPEG_FILTERS_MAX; ++i) {
+		encoder->filters[i] = NULL;
+	}
 }
 
 bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, unsigned abr) {
@@ -130,7 +160,7 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, un
 	return true;
 }
 
-bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, unsigned vbr) {
+bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, unsigned vbr, int frameskip) {
 	static const struct {
 		enum AVPixelFormat format;
 		int priority;
@@ -149,7 +179,8 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, un
 #endif
 		{ AV_PIX_FMT_YUV422P, 4 },
 		{ AV_PIX_FMT_YUV444P, 5 },
-		{ AV_PIX_FMT_YUV420P, 6 }
+		{ AV_PIX_FMT_YUV420P, 6 },
+		{ AV_PIX_FMT_PAL8, 7 },
 	};
 
 	if (!vcodec) {
@@ -179,6 +210,7 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, un
 	}
 	encoder->videoCodec = vcodec;
 	encoder->videoBitrate = vbr;
+	encoder->frameskip = frameskip + 1;
 	return true;
 }
 
@@ -226,6 +258,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->currentAudioSample = 0;
 	encoder->currentAudioFrame = 0;
 	encoder->currentVideoFrame = 0;
+	encoder->skipResidue = 0;
 
 	AVOutputFormat* oformat = av_guess_format(encoder->containerFormat, 0, 0);
 #ifndef USE_LIBAV
@@ -325,8 +358,8 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		encoder->video->bit_rate = encoder->videoBitrate;
 		encoder->video->width = encoder->width;
 		encoder->video->height = encoder->height;
-		encoder->video->time_base = (AVRational) { VIDEO_TOTAL_LENGTH, GBA_ARM7TDMI_FREQUENCY };
-		encoder->video->framerate = (AVRational) { GBA_ARM7TDMI_FREQUENCY, VIDEO_TOTAL_LENGTH };
+		encoder->video->time_base = (AVRational) { VIDEO_TOTAL_LENGTH * encoder->frameskip, GBA_ARM7TDMI_FREQUENCY };
+		encoder->video->framerate = (AVRational) { GBA_ARM7TDMI_FREQUENCY, VIDEO_TOTAL_LENGTH * encoder->frameskip };
 		encoder->video->pix_fmt = encoder->pixFormat;
 		encoder->video->gop_size = 60;
 		encoder->video->max_b_frames = 3;
@@ -365,6 +398,54 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
 		}
 
+		if (encoder->pixFormat == AV_PIX_FMT_PAL8) {
+			encoder->graph = avfilter_graph_alloc();
+
+			const struct AVFilter* source = avfilter_get_by_name("buffer");
+			const struct AVFilter* sink = avfilter_get_by_name("buffersink");
+			const struct AVFilter* split = avfilter_get_by_name("split");
+			const struct AVFilter* palettegen = avfilter_get_by_name("palettegen");
+			const struct AVFilter* paletteuse = avfilter_get_by_name("paletteuse");
+
+			if (!source || !sink || !split || !palettegen || !paletteuse || !encoder->graph) {
+				FFmpegEncoderClose(encoder);
+				return false;
+			}
+
+			char args[256];
+			snprintf(args, sizeof(args), "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d",
+			         encoder->video->width, encoder->video->height, encoder->ipixFormat,
+			         encoder->video->time_base.num, encoder->video->time_base.den);
+
+			int res = 0;
+			res |= avfilter_graph_create_filter(&encoder->source, source, NULL, args, NULL, encoder->graph);
+			res |= avfilter_graph_create_filter(&encoder->sink, sink, NULL, NULL, NULL, encoder->graph);
+			res |= avfilter_graph_create_filter(&encoder->filters[0], split, NULL, NULL, NULL, encoder->graph);
+			res |= avfilter_graph_create_filter(&encoder->filters[1], palettegen, NULL, "reserve_transparent=off", NULL, encoder->graph);
+			res |= avfilter_graph_create_filter(&encoder->filters[2], paletteuse, NULL, "dither=none", NULL, encoder->graph);
+			if (res < 0) {
+				FFmpegEncoderClose(encoder);
+				return false;
+			}
+
+			res = 0;
+			res |= avfilter_link(encoder->source, 0, encoder->filters[0], 0);
+			res |= avfilter_link(encoder->filters[0], 0, encoder->filters[1], 0);
+			res |= avfilter_link(encoder->filters[0], 1, encoder->filters[2], 0);
+			res |= avfilter_link(encoder->filters[1], 0, encoder->filters[2], 1);
+			res |= avfilter_link(encoder->filters[2], 0, encoder->sink, 0);
+			if (res < 0 || avfilter_graph_config(encoder->graph, NULL) < 0) {
+				FFmpegEncoderClose(encoder);
+				return false;
+			}
+
+#if LIBAVCODEC_VERSION_MAJOR >= 55
+			encoder->sinkFrame = av_frame_alloc();
+#else
+			encoder->sinkFrame = avcodec_alloc_frame();
+#endif
+		}
+
 		if (avcodec_open2(encoder->video, vcodec, 0) < 0) {
 			FFmpegEncoderClose(encoder);
 			return false;
@@ -374,12 +455,12 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 #else
 		encoder->videoFrame = avcodec_alloc_frame();
 #endif
-		encoder->videoFrame->format = encoder->video->pix_fmt;
+		encoder->videoFrame->format = encoder->video->pix_fmt != AV_PIX_FMT_PAL8 ? encoder->video->pix_fmt : encoder->ipixFormat;
 		encoder->videoFrame->width = encoder->video->width;
 		encoder->videoFrame->height = encoder->video->height;
 		encoder->videoFrame->pts = 0;
 		_ffmpegSetVideoDimensions(&encoder->d, encoder->iwidth, encoder->iheight);
-		av_image_alloc(encoder->videoFrame->data, encoder->videoFrame->linesize, encoder->video->width, encoder->video->height, encoder->video->pix_fmt, 32);
+		av_image_alloc(encoder->videoFrame->data, encoder->videoFrame->linesize, encoder->videoFrame->width, encoder->videoFrame->height, encoder->videoFrame->format, 32);
 #ifdef FFMPEG_USE_CODECPAR
 		avcodec_parameters_from_context(encoder->videoStream->codecpar, encoder->video);
 #endif
@@ -401,6 +482,18 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 		}
 	}
 	if (encoder->video) {
+		if (encoder->graph) {
+			if (av_buffersrc_add_frame(encoder->source, NULL) >= 0) {
+				while (true) {
+					int res = av_buffersink_get_frame(encoder->sink, encoder->sinkFrame);
+					if (res < 0) {
+						break;
+					}
+					_ffmpegWriteVideoFrame(encoder, encoder->sinkFrame);
+					av_frame_unref(encoder->sinkFrame);
+				}
+			}
+		}
 		while (true) {
 			if (!_ffmpegWriteVideoFrame(encoder, NULL)) {
 				break;
@@ -460,6 +553,15 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 #endif
 	}
 
+	if (encoder->sinkFrame) {
+#if LIBAVCODEC_VERSION_MAJOR >= 55
+		av_frame_free(&encoder->sinkFrame);
+#else
+		avcodec_free_frame(&encoder->sinkFrame);
+#endif
+		encoder->sinkFrame = NULL;
+	}
+
 	if (encoder->video) {
 		avcodec_close(encoder->video);
 		encoder->video = NULL;
@@ -468,6 +570,18 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 	if (encoder->scaleContext) {
 		sws_freeContext(encoder->scaleContext);
 		encoder->scaleContext = NULL;
+	}
+
+	if (encoder->graph) {
+		avfilter_graph_free(&encoder->graph);
+		encoder->graph = NULL;
+		encoder->source = NULL;
+		encoder->sink = NULL;
+
+		int i;
+		for (i = 0; i < FFMPEG_FILTERS_MAX; ++i) {
+			encoder->filters[i] = NULL;
+		}
 	}
 
 	if (encoder->context) {
@@ -596,6 +710,10 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 	if (!encoder->context || !encoder->videoCodec) {
 		return;
 	}
+	encoder->skipResidue = (encoder->skipResidue + 1) % encoder->frameskip;
+	if (encoder->skipResidue) {
+		return;
+	}
 	stride *= BYTES_PER_PIXEL;
 
 #if LIBAVCODEC_VERSION_MAJOR >= 55
@@ -606,7 +724,21 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 
 	sws_scale(encoder->scaleContext, (const uint8_t* const*) &pixels, (const int*) &stride, 0, encoder->iheight, encoder->videoFrame->data, encoder->videoFrame->linesize);
 
-	_ffmpegWriteVideoFrame(encoder, encoder->videoFrame);
+	if (encoder->graph) {
+		if (av_buffersrc_add_frame(encoder->source, encoder->videoFrame) < 0) {
+			return;
+		}
+		while (true) {
+			int res = av_buffersink_get_frame(encoder->sink, encoder->sinkFrame);
+			if (res < 0) {
+				break;
+			}
+			_ffmpegWriteVideoFrame(encoder, encoder->sinkFrame);
+			av_frame_unref(encoder->sinkFrame);
+		}
+	} else {
+		_ffmpegWriteVideoFrame(encoder, encoder->videoFrame);
+	}
 }
 
 bool _ffmpegWriteVideoFrame(struct FFmpegEncoder* encoder, struct AVFrame* videoFrame) {
@@ -651,20 +783,7 @@ static void _ffmpegSetVideoDimensions(struct mAVStream* stream, unsigned width, 
 	if (encoder->scaleContext) {
 		sws_freeContext(encoder->scaleContext);
 	}
-	encoder->scaleContext = sws_getContext(encoder->iwidth, encoder->iheight,
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
-	    AV_PIX_FMT_RGB565,
-#else
-	    AV_PIX_FMT_BGR555,
-#endif
-#else
-#ifndef USE_LIBAV
-	    AV_PIX_FMT_0BGR32,
-#else
-	    AV_PIX_FMT_BGR32,
-#endif
-#endif
-	    encoder->videoFrame->width, encoder->videoFrame->height, encoder->video->pix_fmt,
+	encoder->scaleContext = sws_getContext(encoder->iwidth, encoder->iheight, encoder->ipixFormat,
+	    encoder->videoFrame->width, encoder->videoFrame->height, encoder->videoFrame->format,
 	    SWS_POINT, 0, 0, 0);
 }

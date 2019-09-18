@@ -165,9 +165,6 @@ Window::~Window() {
 
 #ifdef USE_FFMPEG
 	delete m_videoView;
-#endif
-
-#ifdef USE_MAGICK
 	delete m_gifView;
 #endif
 
@@ -507,9 +504,7 @@ void Window::openVideoWindow() {
 	}
 	m_videoView->show();
 }
-#endif
 
-#ifdef USE_MAGICK
 void Window::openGIFWindow() {
 	if (!m_gifView) {
 		m_gifView = new GIFView();
@@ -1442,9 +1437,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef USE_FFMPEG
 	addGameAction(tr("Record A/V..."), "recordOutput", this, &Window::openVideoWindow, "av");
-#endif
-
-#ifdef USE_MAGICK
 	addGameAction(tr("Record GIF..."), "recordGIF", this, &Window::openGIFWindow, "av");
 #endif
 
@@ -1874,13 +1866,11 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	}
 #endif
 
-#ifdef USE_MAGICK
+#ifdef USE_FFMPEG
 	if (m_gifView) {
 		m_gifView->setController(m_controller);
 	}
-#endif
 
-#ifdef USE_FFMPEG
 	if (m_videoView) {
 		m_videoView->setController(m_controller);
 	}

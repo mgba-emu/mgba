@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#ifdef USE_MAGICK
+#ifdef USE_FFMPEG
 
 #include <QWidget>
 
@@ -13,7 +13,7 @@
 
 #include "ui_GIFView.h"
 
-#include "feature/imagemagick/imagemagick-gif-encoder.h"
+#include "feature/ffmpeg/ffmpeg-encoder.h"
 
 namespace QGBA {
 
@@ -41,12 +41,11 @@ signals:
 private slots:
 	void selectFile();
 	void setFilename(const QString&);
-	void updateDelay();
 
 private:
 	Ui::GIFView m_ui;
 
-	ImageMagickGIFEncoder m_encoder;
+	FFmpegEncoder m_encoder;
 
 	QString m_filename;
 };

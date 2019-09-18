@@ -145,7 +145,7 @@ This will build and install mGBA into `/usr/bin` and `/usr/lib`. Dependencies th
 
 If you are on macOS, the steps are a little different. Assuming you are using the homebrew package manager, the recommended commands to obtain the dependencies and build are:
 
-	brew install cmake ffmpeg imagemagick libzip qt5 sdl2 libedit pkg-config
+	brew install cmake ffmpeg libzip qt5 sdl2 libedit pkg-config
 	mkdir build
 	cd build
 	cmake -DCMAKE_PREFIX_PATH=`brew --prefix qt5` ..
@@ -159,11 +159,11 @@ To build on Windows for development, using MSYS2 is recommended. Follow the inst
 
 For x86 (32 bit) builds:
 
-	pacman -Sy --needed base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 For x86_64 (64 bit) builds:
 
-	pacman -Sy --needed base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 Check out the source code by running this command:
 

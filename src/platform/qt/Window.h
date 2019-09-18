@@ -101,9 +101,6 @@ public slots:
 
 #ifdef USE_FFMPEG
 	void openVideoWindow();
-#endif
-
-#ifdef USE_MAGICK
 	void openGIFWindow();
 #endif
 
@@ -224,9 +221,6 @@ private:
 
 #ifdef USE_FFMPEG
 	VideoView* m_videoView = nullptr;
-#endif
-
-#ifdef USE_MAGICK
 	GIFView* m_gifView = nullptr;
 #endif
 
