@@ -32,6 +32,7 @@ Emulation fixes:
  - GB Audio: Sample inactive channels (fixes mgba.io/i/1455, mgba.io/i/1456)
  - GB Memory: Better emulate 0xFEA0 region on DMG, MGB and AGB
  - GB Video: Fix mode 0 window edge case (fixes mgba.io/i/1519)
+ - GB Audio: Fix channel 4 volume (fixes mgba.io/i/1529)
 Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
