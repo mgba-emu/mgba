@@ -70,6 +70,7 @@ Misc:
  - Qt: Scale pixel color values to full range (fixes mgba.io/i/1511)
  - Qt, OpenGL: Disable integer scaling for dimensions that don't fit
  - Feature: Switch from ImageMagick to FFmpeg for GIF generation
+ - OpenGL: Only resize textures when needed
 
 0.7.3: (2019-09-15)
 Emulation fixes:

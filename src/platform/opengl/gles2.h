@@ -60,6 +60,7 @@ struct mGLES2Shader {
 	bool integerScaling;
 	bool filter;
 	bool blend;
+	bool dirty;
 	GLuint tex;
 	GLuint fbo;
 	GLuint vao;
