@@ -65,7 +65,7 @@ swiTable:
 .word ArcTan2
 .word CpuSet
 .word CpuFastSet
-# ... The rest of this table isn't needed if the rest aren't implemented
+@ ... The rest of this table isn't needed if the rest aren't implemented
 
 irqBase:
 stmfd  sp!, {r0-r3, r12, lr}
@@ -83,7 +83,7 @@ mov    r1, #1
 IntrWait:
 stmfd  sp!, {r2-r3, lr}
 mov    r12, #0x04000000
-# See if we want to return immediately
+@ See if we want to return immediately
 cmp    r0, #0
 mov    r0, #0
 mov    r2, #1
@@ -91,11 +91,11 @@ beq    1f
 ldrh   r3, [r12, #-8]
 bic    r3, r1
 strh   r3, [r12, #-8]
-# Halt
+@ Halt
 0:
 strb   r0, [r12, #0x301]
 1:
-# Check which interrupts were acknowledged
+@ Check which interrupts were acknowledged
 strb   r0, [r12, #0x208]
 ldrh   r3, [r12, #-8]
 ands   r3, r1
@@ -164,7 +164,7 @@ tst    r2, #0x01000000
 mov    r3, r2, lsl #12
 add    r2, r1, r3, lsr #10
 beq    0f
-# Fill
+@ Fill
 ldr    r3, [r0]
 mov    r4, r3
 mov    r5, r3
@@ -178,7 +178,7 @@ cmp    r1, r2
 stmltia r1!, {r3-r10}
 blt    1b
 b      2f
-# Copy
+@ Copy
 0:
 cmp    r1, r2
 ldmltia r0!, {r3-r10}
