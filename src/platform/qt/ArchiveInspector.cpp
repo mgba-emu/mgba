@@ -10,7 +10,7 @@
 using namespace QGBA;
 
 ArchiveInspector::ArchiveInspector(const QString& filename, QWidget* parent)
-	: QDialog(parent)
+	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
 	m_ui.setupUi(this);
 	connect(m_ui.archiveView, &LibraryController::doneLoading, [this]() {
