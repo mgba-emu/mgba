@@ -71,6 +71,7 @@ Misc:
  - Qt, OpenGL: Disable integer scaling for dimensions that don't fit
  - Feature: Switch from ImageMagick to FFmpeg for GIF generation
  - OpenGL: Only resize textures when needed
+ - GBA BIOS: Fix clobbered registers in CpuSet (fixes mgba.io/i/1531)
 
 0.7.3: (2019-09-15)
 Emulation fixes:

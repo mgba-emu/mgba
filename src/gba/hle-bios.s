@@ -106,54 +106,57 @@ beq    0b
 ldmfd  sp!, {r2-r3, pc}
 
 CpuSet:
-stmfd  sp!, {lr}
-mov    r3, r2, lsl #12
+stmfd  sp!, {r4, r5, lr}
+mov    r4, r2, lsl #12
+mov    r12, r0
+mov    r5, r1
 tst    r2, #0x01000000
 beq    0f
-# Fill
+@ Fill
 tst    r2, #0x04000000
 beq    1f
-# Word
-add    r3, r1, r3, lsr #10
-ldmia  r0!, {r2}
+@ Word
+add    r4, r5, r4, lsr #10
+ldmia  r12!, {r3}
 2:
-cmp    r1, r3
-stmltia  r1!, {r2}
+cmp    r5, r4
+stmltia  r5!, {r3}
 blt    2b
 b      3f
-# Halfword
+@ Halfword
 1:
-bic    r0, #1
-bic    r1, #1
-add    r3, r1, r3, lsr #11
-ldrh   r2, [r0]
+bic    r12, #1
+bic    r5, #1
+add    r4, r5, r4, lsr #11
+ldrh   r3, [r12]
 2:
-cmp    r1, r3
-strlth r2, [r1], #2
+cmp    r5, r4
+strlth r3, [r5], #2
 blt    2b
 b      3f
-# Copy
+@ Copy
 0:
 tst    r2, #0x04000000
 beq    1f
-# Word
-add    r3, r1, r3, lsr #10
+@ Word
+add    r4, r5, r4, lsr #10
 2:
-cmp    r1, r3
-ldmltia r0!, {r2}
-stmltia r1!, {r2}
+cmp    r5, r4
+ldmltia r12!, {r3}
+stmltia r5!, {r3}
 blt    2b
 b      3f
-# Halfword
+@ Halfword
 1:
-add    r3, r1, r3, lsr #11
+add    r4, r5, r4, lsr #11
 2:
-cmp    r1, r3
-ldrlth r2, [r0], #2
-strlth r2, [r1], #2
+cmp    r5, r4
+ldrlth r3, [r12], #2
+strlth r3, [r5], #2
 blt    2b
 3:
-ldmfd  sp!, {pc}
+mov    r3, #0x170  @ Match official BIOS's clobbered r3
+ldmfd  sp!, {r4, r5, pc}
 
 CpuFastSet:
 stmfd  sp!, {r4-r10, lr}
