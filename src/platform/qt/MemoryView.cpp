@@ -7,6 +7,7 @@
 #include "MemoryView.h"
 
 #include "CoreController.h"
+#include "MemoryDump.h"
 
 #include <mgba/core/core.h>
 
@@ -44,6 +45,7 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 	connect(m_ui.setAddress, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
 	        this, static_cast<void (MemoryView::*)(uint32_t)>(&MemoryView::jumpToAddress));
 	connect(m_ui.hexfield, &MemoryModel::selectionChanged, this, &MemoryView::updateSelection);
+	connect(m_ui.saveRange, &QAbstractButton::clicked, this, &MemoryView::saveRange);
 
 	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 
@@ -69,6 +71,7 @@ void MemoryView::setIndex(int index) {
 	m_region = qMakePair(info.start, info.end);
 	m_ui.segments->setValue(-1);
 	m_ui.segments->setVisible(info.maxSegment > 0);
+	m_ui.segmentColon->setVisible(info.maxSegment > 0);
 	m_ui.segments->setMaximum(info.maxSegment);
 	m_ui.hexfield->setRegion(info.start, info.end - info.start, info.shortName);
 }
@@ -141,4 +144,13 @@ void MemoryView::updateStatus() {
 		m_ui.uintVal->setText(QString::number(value.u32));
 		break;
 	}
+}
+
+void MemoryView::saveRange() {
+	MemoryDump* memdump = new MemoryDump(m_controller);
+	memdump->setAttribute(Qt::WA_DeleteOnClose);
+	memdump->setAddress(m_selection.first);
+	memdump->setSegment(m_ui.segments->value());
+	memdump->setByteCount(m_selection.second - m_selection.first);
+	memdump->show();
 }
