@@ -164,10 +164,16 @@ bool mCorePreloadFile(struct mCore* core, const char* path) {
 }
 
 bool mCoreAutoloadSave(struct mCore* core) {
+	if (!core->dirs.save) {
+		return false;
+	}
 	return core->loadSave(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.save, ".sav", O_CREAT | O_RDWR));
 }
 
 bool mCoreAutoloadPatch(struct mCore* core) {
+	if (!core->dirs.patch) {
+		return false;
+	}
 	return core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".ups", O_RDONLY)) ||
 	       core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".ips", O_RDONLY)) ||
 	       core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".bps", O_RDONLY));
@@ -230,6 +236,9 @@ bool mCoreLoadState(struct mCore* core, int slot, int flags) {
 }
 
 struct VFile* mCoreGetState(struct mCore* core, int slot, bool write) {
+	if (!core->dirs.state) {
+		return NULL;
+	}
 	char name[PATH_MAX + 14]; // Quash warning
 	snprintf(name, sizeof(name), "%s.ss%i", core->dirs.baseName, slot);
 	return core->dirs.state->openFile(core->dirs.state, name, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);

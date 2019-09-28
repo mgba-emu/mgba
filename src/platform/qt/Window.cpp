@@ -30,6 +30,7 @@
 #include "DebuggerConsoleController.h"
 #include "Display.h"
 #include "CoreController.h"
+#include "FrameView.h"
 #include "GBAApp.h"
 #include "GDBController.h"
 #include "GDBWindow.h"
@@ -971,6 +972,7 @@ void Window::reloadDisplayDriver() {
 		connect(m_controller.get(), &CoreController::unpaused, m_display.get(), &Display::unpauseDrawing);
 		connect(m_controller.get(), &CoreController::frameAvailable, m_display.get(), &Display::framePosted);
 		connect(m_controller.get(), &CoreController::statusPosted, m_display.get(), &Display::showMessage);
+		connect(m_controller.get(), &CoreController::didReset, m_display.get(), &Display::resizeContext);
 
 		attachWidget(m_display.get());
 		m_display->startDrawing(m_controller);
@@ -1527,7 +1529,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_overrideView->recheck();
 	}, "tools");
 
-	m_actions.addAction(tr("Game &Pak sensors..."), "sensorWindow", [this]() {
+	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow", [this]() {
 		if (!m_sensorView) {
 			m_sensorView = std::move(std::make_unique<SensorView>(&m_inputController));
 			if (m_controller) {
@@ -1557,6 +1559,26 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("View &sprites..."), "spriteWindow", openControllerTView<ObjView>(), "tools");
 	addGameAction(tr("View &tiles..."), "tileWindow", openControllerTView<TileView>(), "tools");
 	addGameAction(tr("View &map..."), "mapWindow", openControllerTView<MapView>(), "tools");
+
+#ifdef M_CORE_GBA
+	Action* frameWindow = addGameAction(tr("&Frame inspector..."), "frameWindow", [this]() {
+		if (!m_frameView) {
+			m_frameView = new FrameView(m_controller);
+			connect(this, &Window::shutdown, this, [this]() {
+				if (m_frameView) {
+					m_frameView->close();
+				}
+			});
+			connect(m_frameView, &QObject::destroyed, this, [this]() {
+				m_frameView = nullptr;
+			});
+			m_frameView->setAttribute(Qt::WA_DeleteOnClose);
+		}
+		m_frameView->show();
+	}, "tools");
+	m_platformActions.insert(PLATFORM_GBA, frameWindow);
+#endif
+
 	addGameAction(tr("View memory..."), "memoryView", openControllerTView<MemoryView>(), "tools");
 	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "tools");
 
@@ -1744,11 +1766,8 @@ void Window::focusCheck() {
 }
 
 void Window::updateFrame() {
-	QSize size = m_controller->screenDimensions();
-	QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), size.width(), size.height(),
-	                    size.width() * BYTES_PER_PIXEL, QImage::Format_RGBX8888);
 	QPixmap pixmap;
-	pixmap.convertFromImage(currentImage);
+	pixmap.convertFromImage(m_controller->getPixels());
 	m_screenWidget->setPixmap(pixmap);
 	emit paused(true);
 }
@@ -1834,6 +1853,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	connect(m_controller.get(), &CoreController::unpaused, m_display.get(), &Display::unpauseDrawing);
 	connect(m_controller.get(), &CoreController::frameAvailable, m_display.get(), &Display::framePosted);
 	connect(m_controller.get(), &CoreController::statusPosted, m_display.get(), &Display::showMessage);
+	connect(m_controller.get(), &CoreController::didReset, m_display.get(), &Display::resizeContext);
 
 	connect(m_controller.get(), &CoreController::unpaused, &m_inputController, &InputController::suspendScreensaver);
 	connect(m_controller.get(), &CoreController::frameAvailable, this, &Window::recordFrame);

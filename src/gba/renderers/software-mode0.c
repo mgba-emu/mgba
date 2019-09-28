@@ -613,16 +613,21 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 	uint32_t screenBase;
 	uint32_t charBase;
 	int variant = background->target1 && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
-	color_t* mainPalette;
+	color_t* mainPalette = renderer->normalPalette;
 	if (background->multipalette && background->extPalette) {
 		mainPalette = background->extPalette;
 		if (variant) {
 			mainPalette = background->variantPalette;
 		}
 	} else {
-		mainPalette = renderer->normalPalette;
+		if (renderer->d.highlightAmount && background->highlight) {
+			mainPalette = renderer->highlightPalette;
+		}
 		if (variant) {
 			mainPalette = renderer->variantPalette;
+			if (renderer->d.highlightAmount && background->highlight) {
+				mainPalette = renderer->highlightVariantPalette;
+			}
 		}
 	}
 	color_t* palette = mainPalette;

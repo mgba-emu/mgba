@@ -212,7 +212,7 @@
 		renderer->row[outX] |= FLAG_OBJWIN; \
 	}
 
-int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y) {
+int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int index, int y) {
 	int width = GBAVideoObjSizes[GBAObjAttributesAGetShape(sprite->a) * 4 + GBAObjAttributesBGetSize(sprite->b)][0];
 	int height = GBAVideoObjSizes[GBAObjAttributesAGetShape(sprite->a) * 4 + GBAObjAttributesBGetSize(sprite->b)][1];
 	int start = renderer->start;
@@ -255,6 +255,9 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	}
 
 	color_t* palette = &renderer->normalPalette[0x100];
+	if (renderer->d.highlightAmount && renderer->d.highlightOBJ[index]) {
+		palette = &renderer->highlightPalette[0x100];
+	}
 	color_t* objwinPalette = palette;
 
 	if (GBAObjAttributesAIs256Color(sprite->a) && renderer->objExtPalette) {
@@ -269,6 +272,9 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 		}
 	} else if (variant) {
 		palette = &renderer->variantPalette[0x100];
+		if (renderer->d.highlightAmount && renderer->d.highlightOBJ[index]) {
+			palette = &renderer->highlightVariantPalette[0x100];
+		}
 		if (GBAWindowControlIsBlendEnable(renderer->objwin.packed)) {
 			objwinPalette = palette;
 		}

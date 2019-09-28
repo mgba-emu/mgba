@@ -67,6 +67,7 @@ public:
 	mCoreThread* thread() { return &m_threadContext; }
 
 	const color_t* drawContext();
+	QImage getPixels();
 
 	bool isPaused();
 	bool hasStarted();
@@ -101,6 +102,8 @@ public:
 
 	bool audioSync() const { return m_audioSync; }
 	bool videoSync() const { return m_videoSync; }
+
+	void addFrameAction(std::function<void ()> callback);
 
 public slots:
 	void start();
@@ -157,8 +160,9 @@ public slots:
 
 	void clearOverride();
 
-	void startVideoLog(const QString& path);
-	void endVideoLog();
+	void startVideoLog(const QString& path, bool compression = true);
+	void startVideoLog(VFile* vf, bool compression = true);
+	void endVideoLog(bool closeVf = true);
 
 	void setFramebufferHandle(int fb);
 
@@ -193,8 +197,7 @@ private:
 
 	bool m_patched = false;
 
-	QByteArray m_buffers[2];
-	QByteArray* m_activeBuffer;
+	QByteArray m_activeBuffer;
 	QByteArray m_completeBuffer;
 	bool m_hwaccel = false;
 
@@ -203,7 +206,8 @@ private:
 
 	QList<std::function<void()>> m_resetActions;
 	QList<std::function<void()>> m_frameActions;
-	QMutex m_mutex;
+	QMutex m_actionMutex{QMutex::Recursive};
+	QMutex m_bufferMutex;
 
 	int m_activeKeys = 0;
 	bool m_autofire[32] = {};

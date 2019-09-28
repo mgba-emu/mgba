@@ -82,8 +82,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		controller->m_resetActions.clear();
 
 		if (!controller->m_hwaccel) {
-			controller->m_activeBuffer = &controller->m_buffers[0];
-			context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), controller->screenDimensions().width());
+			context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer.data()), controller->screenDimensions().width());
 		}
 
 		QMetaObject::invokeMethod(controller, "didReset");
@@ -203,11 +202,31 @@ CoreController::~CoreController() {
 }
 
 const color_t* CoreController::drawContext() {
-	QMutexLocker locker(&m_mutex);
 	if (m_hwaccel) {
 		return nullptr;
 	}
+	QMutexLocker locker(&m_bufferMutex);
 	return reinterpret_cast<const color_t*>(m_completeBuffer.constData());
+}
+
+QImage CoreController::getPixels() {
+	QByteArray buffer;
+	QSize size = screenDimensions();
+	size_t stride = size.width() * BYTES_PER_PIXEL;
+
+	if (!m_hwaccel) {
+		buffer = m_completeBuffer;
+	} else {
+		Interrupter interrupter(this);
+		const void* pixels;
+		m_threadContext.core->getPixels(m_threadContext.core, &pixels, &stride);
+		stride *= BYTES_PER_PIXEL;
+		buffer.resize(stride * size.height());
+		memcpy(buffer.data(), pixels, buffer.size());
+	}
+
+	return QImage(reinterpret_cast<const uchar*>(buffer.constData()),
+	              size.width(), size.height(), stride, QImage::Format_RGBX8888);
 }
 
 bool CoreController::isPaused() {
@@ -342,15 +361,12 @@ void CoreController::setLogger(LogController* logger) {
 
 void CoreController::start() {
 	if (!m_hwaccel) {
-		QSize size(1024, 2048);
-		m_buffers[0].resize(size.width() * size.height() * sizeof(color_t));
-		m_buffers[1].resize(size.width() * size.height() * sizeof(color_t));
-		m_buffers[0].fill(0xFF);
-		m_buffers[1].fill(0xFF);
-		m_activeBuffer = &m_buffers[0];
-		m_completeBuffer = m_buffers[0];
+		QSize size(256, 384);
+		m_activeBuffer.resize(size.width() * size.height() * sizeof(color_t));
+		m_activeBuffer.fill(0xFF);
+		m_completeBuffer = m_activeBuffer;
 
-		m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), size.width());
+		m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), size.width());
 	}
 
 	if (!m_patched) {
@@ -386,8 +402,7 @@ void CoreController::setPaused(bool paused) {
 		return;
 	}
 	if (paused) {
-		QMutexLocker locker(&m_mutex);
-		m_frameActions.append([this]() {
+		addFrameAction([this]() {
 			mCoreThreadPauseFromThread(&m_threadContext);
 		});
 	} else {
@@ -396,11 +411,15 @@ void CoreController::setPaused(bool paused) {
 }
 
 void CoreController::frameAdvance() {
-	QMutexLocker locker(&m_mutex);
-	m_frameActions.append([this]() {
+	addFrameAction([this]() {
 		mCoreThreadPauseFromThread(&m_threadContext);
 	});
 	setPaused(false);
+}
+
+void CoreController::addFrameAction(std::function<void ()> action) {
+	QMutexLocker locker(&m_actionMutex);
+	m_frameActions.append(action);
 }
 
 void CoreController::setSync(bool sync) {
@@ -777,26 +796,39 @@ void CoreController::clearOverride() {
 	m_override.reset();
 }
 
-void CoreController::startVideoLog(const QString& path) {
+void CoreController::startVideoLog(const QString& path, bool compression) {
 	if (m_vl) {
+		return;
+	}
+
+	VFile* vf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
+	if (!vf) {
+		return;
+	}
+	startVideoLog(vf);
+}
+
+void CoreController::startVideoLog(VFile* vf, bool compression) {
+	if (m_vl || !vf) {
 		return;
 	}
 
 	Interrupter interrupter(this);
 	m_vl = mVideoLogContextCreate(m_threadContext.core);
-	m_vlVf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
+	m_vlVf = vf;
 	mVideoLogContextSetOutput(m_vl, m_vlVf);
+	mVideoLogContextSetCompression(m_vl, compression);
 	mVideoLogContextWriteHeader(m_vl, m_threadContext.core);
 }
 
-void CoreController::endVideoLog() {
+void CoreController::endVideoLog(bool closeVf) {
 	if (!m_vl) {
 		return;
 	}
 
 	Interrupter interrupter(this);
 	mVideoLogContextDestroy(m_threadContext.core, m_vl);
-	if (m_vlVf) {
+	if (m_vlVf && closeVf) {
 		m_vlVf->close(m_vlVf);
 		m_vlVf = nullptr;
 	}
@@ -819,23 +851,20 @@ void CoreController::updateKeys() {
 }
 
 void CoreController::finishFrame() {
-	QMutexLocker locker(&m_mutex);
 	if (!m_hwaccel) {
-			memcpy(m_completeBuffer.data(), m_activeBuffer->constData(), m_activeBuffer->size());
+		unsigned width, height;
+		m_threadContext.core->desiredVideoDimensions(m_threadContext.core, &width, &height);
 
-		// TODO: Generalize this to triple buffering?
-		m_activeBuffer = &m_buffers[0];
-		if (m_activeBuffer == m_completeBuffer) {
-			m_activeBuffer = &m_buffers[1];
-		}
-		// Copy contents to avoid issues when doing frameskip
-		memcpy(m_activeBuffer->data(), m_completeBuffer.constData(), m_activeBuffer->size());
-		m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer->data()), screenDimensions().width());
+		QMutexLocker locker(&m_bufferMutex);
+		memcpy(m_completeBuffer.data(), m_activeBuffer.constData(), 256 * height * BYTES_PER_PIXEL);
 	}
-	for (auto& action : m_frameActions) {
+
+	QMutexLocker locker(&m_actionMutex);
+	QList<std::function<void ()>> frameActions(m_frameActions);
+	m_frameActions.clear();
+	for (auto& action : frameActions) {
 		action();
 	}
-	m_frameActions.clear();
 	updateKeys();
 
 	QMetaObject::invokeMethod(this, "frameAvailable");

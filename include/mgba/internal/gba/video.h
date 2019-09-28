@@ -12,6 +12,7 @@ CXX_GUARD_START
 
 #include <mgba/core/log.h>
 #include <mgba/core/timing.h>
+#include <mgba/gba/interface.h>
 
 mLOG_DECLARE_CATEGORY(GBA_VIDEO);
 
@@ -84,20 +85,20 @@ struct GBAObj {
 	uint16_t d;
 };
 
+struct GBAOAMMatrix {
+	int16_t padding0[3];
+	int16_t a;
+	int16_t padding1[3];
+	int16_t b;
+	int16_t padding2[3];
+	int16_t c;
+	int16_t padding3[3];
+	int16_t d;
+};
+
 union GBAOAM {
 	struct GBAObj obj[128];
-
-	struct GBAOAMMatrix {
-		int16_t padding0[3];
-		int16_t a;
-		int16_t padding1[3];
-		int16_t b;
-		int16_t padding2[3];
-		int16_t c;
-		int16_t padding3[3];
-		int16_t d;
-	} mat[32];
-
+	struct GBAOAMMatrix mat[32];
 	uint16_t raw[512];
 };
 
@@ -197,6 +198,11 @@ struct GBAVideoRenderer {
 
 	bool disableBG[4];
 	bool disableOBJ;
+
+	bool highlightBG[4];
+	bool highlightOBJ[128];
+	color_t highlightColor;
+	uint8_t highlightAmount;
 };
 
 struct GBAVideo {

@@ -22,7 +22,7 @@
 using namespace QGBA;
 
 AssetTile::AssetTile(QWidget* parent)
-	: QGroupBox(parent)
+	: AssetInfo(parent)
 {
 	m_ui.setupUi(this);
 
@@ -42,16 +42,8 @@ AssetTile::AssetTile(QWidget* parent)
 	m_ui.b->setFont(font);
 }
 
-void AssetTile::addCustomProperty(const QString& id, const QString& visibleName) {
-	QHBoxLayout* newLayout = new QHBoxLayout;
-	newLayout->addWidget(new QLabel(visibleName));
-	QLabel* value = new QLabel;
-	value->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-	value->setAlignment(Qt::AlignRight);
-	newLayout->addWidget(value);
-	m_customProperties[id] = value;
-	int index = layout()->indexOf(m_ui.line);
-	static_cast<QBoxLayout*>(layout())->insertLayout(index, newLayout);
+int AssetTile::customLocation(const QString&) {
+	return layout()->indexOf(m_ui.line);
 }
 
 void AssetTile::setController(std::shared_ptr<CoreController> controller) {
@@ -148,12 +140,4 @@ void AssetTile::selectColor(int index) {
 	m_ui.r->setText(tr("0x%0 (%1)").arg(r, 2, 16, QChar('0')).arg(r, 2, 10, QChar('0')));
 	m_ui.g->setText(tr("0x%0 (%1)").arg(g, 2, 16, QChar('0')).arg(g, 2, 10, QChar('0')));
 	m_ui.b->setText(tr("0x%0 (%1)").arg(b, 2, 16, QChar('0')).arg(b, 2, 10, QChar('0')));
-}
-
-void AssetTile::setCustomProperty(const QString& id, const QVariant& value) {
-	QLabel* label = m_customProperties[id];
-	if (!label) {
-		return;
-	}
-	label->setText(value.toString());
 }

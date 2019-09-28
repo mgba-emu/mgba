@@ -74,6 +74,7 @@ DECL_BITFIELD(RTCStatus2, uint8_t);
 DECL_BITS(RTCStatus2, INT1, 0, 4);
 DECL_BIT(RTCStatus2, INT2, 6);
 
+#ifndef PYCPARSE
 #pragma pack(push, 1)
 struct GBARTC {
 	int32_t bytesRemaining;
@@ -90,6 +91,9 @@ struct GBARTC {
 	uint8_t time[7];
 };
 #pragma pack(pop)
+#else
+struct GBATRC;
+#endif
 
 struct GBAGBPKeyCallback {
 	struct mKeyCallback d;

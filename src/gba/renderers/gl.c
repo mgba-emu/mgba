@@ -155,7 +155,7 @@ static const char* const _renderMode0 =
 	"	if ((size & 1) == 1) {\n"
 	"		coord.y += coord.x & 256;\n"
 	"	}\n"
-	"	coord &= ivec2(255, 511);\n"
+	"	coord &= ivec2(255, 1023);\n"
 	"	int mapAddress = screenBase + (coord.x >> 3) + (coord.y >> 3) * 32;\n"
 	"	vec4 map = texelFetch(vram, ivec2(mapAddress & 255, mapAddress >> 8), 0);\n"
 	"	int tileFlags = int(map.g * 15.9);\n"
@@ -442,7 +442,7 @@ static const char* const _renderObj =
 	"uniform ivec4 mosaic;\n"
 	"OUT(0) out vec4 color;\n"
 	"OUT(1) out ivec4 flags;\n"
-	"OUT(2) out ivec3 window;\n"
+	"OUT(2) out ivec4 window;\n"
 
 	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord);\n"
 
@@ -467,7 +467,7 @@ static const char* const _renderObj =
 	"	color = pix;\n"
 	"	flags = inflags;\n"
 	"	gl_FragDepth = float(flags.x) / 16.;\n"
-	"	window = objwin.yzw;\n"
+	"	window = ivec4(objwin.yzw, 0);\n"
 	"}";
 
 static const struct GBAVideoGLUniform _uniformsWindow[] = {
@@ -488,7 +488,7 @@ static const char* const _renderWindow =
 	"uniform ivec3 flags;\n"
 	"uniform ivec4 win0[160];\n"
 	"uniform ivec4 win1[160];\n"
-	"OUT(0) out ivec3 window;\n"
+	"OUT(0) out ivec4 window;\n"
 
 	"void crop(vec4 windowParams, int flags, inout ivec3 windowFlags) {\n"
 	"	bvec4 compare = lessThan(texCoord.xxyy, windowParams);\n"
@@ -526,7 +526,7 @@ static const char* const _renderWindow =
 	"void main() {\n"
 	"	int dispflags = (dispcnt & 0x1F) | 0x20;\n"
 	"	if ((dispcnt & 0xE0) == 0) {\n"
-	"		window = ivec3(dispflags, blend);\n"
+	"		window = ivec4(dispflags, blend, 0);\n"
 	"	} else {\n"
 	"		ivec3 windowFlags = ivec3(flags.z, blend);\n"
 	"		if ((dispcnt & 0x40) != 0) { \n"
@@ -535,7 +535,7 @@ static const char* const _renderWindow =
 	"		if ((dispcnt & 0x20) != 0) { \n"
 	"			crop(interpolate(win0), flags.x, windowFlags);\n"
 	"		}\n"
-	"		window = windowFlags;\n"
+	"		window = ivec4(windowFlags, 0);\n"
 	"	}\n"
 	"}\n";
 
@@ -650,6 +650,17 @@ void GBAVideoGLRendererCreate(struct GBAVideoGLRenderer* renderer) {
 	renderer->d.disableBG[2] = false;
 	renderer->d.disableBG[3] = false;
 	renderer->d.disableOBJ = false;
+
+	renderer->d.highlightBG[0] = false;
+	renderer->d.highlightBG[1] = false;
+	renderer->d.highlightBG[2] = false;
+	renderer->d.highlightBG[3] = false;
+	int i;
+	for (i = 0; i < 128; ++i) {
+		renderer->d.highlightOBJ[i] = false;
+	}
+	renderer->d.highlightColor = 0xFFFFFF;
+	renderer->d.highlightAmount = 0;
 
 	renderer->scale = 1;
 }
@@ -1369,7 +1380,7 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 	glScissor(0, glRenderer->firstY, 1, y - glRenderer->firstY + 1);
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_BACKDROP]);
 	glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
-	glClearBufferfv(GL_COLOR, 0, (GLfloat[]) { ((backdrop >> 16) & 0xFF) / 256., ((backdrop >> 8) & 0xFF) / 256., (backdrop & 0xFF) / 256., 1.f });
+	glClearBufferfv(GL_COLOR, 0, (GLfloat[]) { ((backdrop >> 16) & 0xF8) / 248., ((backdrop >> 8) & 0xF8) / 248., (backdrop & 0xF8) / 248., 1.f });
 	glClearBufferiv(GL_COLOR, 1, (GLint[]) { 32, glRenderer->target1Bd | (glRenderer->target2Bd * 2) | (glRenderer->blendEffect * 4), glRenderer->blda, 0 });
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 

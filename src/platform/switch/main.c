@@ -6,6 +6,7 @@
 #include "feature/gui/gui-runner.h"
 #include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
+#include <mgba/internal/gb/video.h>
 #include <mgba/internal/gba/audio.h>
 #include <mgba/internal/gba/input.h>
 #include <mgba-util/gui.h>
@@ -99,6 +100,9 @@ static u8 vmode;
 static u32 vwidth;
 static u32 vheight;
 static bool interframeBlending = false;
+static bool sgbCrop = false;
+static bool useLightSensor = true;
+static struct mGUIRunnerLux lightSensor;
 
 static enum ScreenMode {
 	SM_PA,
@@ -268,6 +272,10 @@ static void _setup(struct mGUIRunner* runner) {
 	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation);
 	runner->core->setAVStream(runner->core, &stream);
 
+	if (runner->core->platform(runner->core) == PLATFORM_GBA && useLightSensor) {
+		runner->core->setPeripheral(runner->core, mPERIPH_GBA_LUMINANCE, &lightSensor.d);
+	}
+
 	unsigned mode;
 	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
@@ -292,6 +300,22 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
 		interframeBlending = fakeBool;
 	}
+	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
+		sgbCrop = fakeBool;
+	}
+	if (mCoreConfigGetIntValue(&runner->config, "useLightSensor", &fakeBool)) {
+		if (useLightSensor != fakeBool) {
+			useLightSensor = fakeBool;
+
+			if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+				if (useLightSensor) {
+					runner->core->setPeripheral(runner->core, mPERIPH_GBA_LUMINANCE, &lightSensor.d);
+				} else {
+					runner->core->setPeripheral(runner->core, mPERIPH_GBA_LUMINANCE, &runner->luminanceSource.d);
+				}
+			}
+		}
+	}
 
 	rumble.up = 0;
 	rumble.down = 0;
@@ -313,8 +337,14 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 
 	glUseProgram(program);
 	glBindVertexArray(vao);
-	float aspectX = width / (float) vwidth;
-	float aspectY = height / (float) vheight;
+	float inwidth = width;
+	float inheight = height;
+	if (sgbCrop && width == 256 && height == 224) {
+		inwidth = GB_VIDEO_HORIZONTAL_PIXELS;
+		inheight = GB_VIDEO_VERTICAL_PIXELS;
+	}
+	float aspectX = inwidth / vwidth;
+	float aspectY = inheight / vheight;
 	float max = 1.f;
 	switch (screenMode) {
 	case SM_PA:
@@ -338,6 +368,11 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 		aspectX = 1.0;
 		aspectY = 1.0;
 		break;
+	}
+
+	if (screenMode != SM_SF) {
+		aspectX = width / (float) vwidth;
+		aspectY = height / (float) vheight;
 	}
 
 	aspectX *= max;
@@ -543,6 +578,18 @@ int32_t _readGyroZ(struct mRotationSource* source) {
 	return sixaxis.gyroscope.z * -1.1e9f;
 }
 
+static void _lightSensorSample(struct GBALuminanceSource* lux) {
+	struct mGUIRunnerLux* runnerLux = (struct mGUIRunnerLux*) lux;
+	float luxLevel = 0;
+	appletGetCurrentIlluminance(&luxLevel);
+	runnerLux->luxLevel = cbrtf(luxLevel) * 8;
+}
+
+static uint8_t _lightSensorRead(struct GBALuminanceSource* lux) {
+	struct mGUIRunnerLux* runnerLux = (struct mGUIRunnerLux*) lux;
+	return 0xFF - runnerLux->luxLevel;
+}
+
 static int _batteryState(void) {
 	u32 charge;
 	int state = 0;
@@ -690,6 +737,9 @@ int main(int argc, char* argv[]) {
 	rotation.readTiltY = _readTiltY;
 	rotation.readGyroZ = _readGyroZ;
 
+	lightSensor.d.readLuminance = _lightSensorRead;
+	lightSensor.d.sample = _lightSensorSample;
+
 	stream.videoDimensionsChanged = NULL;
 	stream.postVideoFrame = NULL;
 	stream.postAudioFrame = NULL;
@@ -706,6 +756,9 @@ int main(int argc, char* argv[]) {
 		audoutBuffer[i].data_size = BUFFER_SIZE;
 		audoutBuffer[i].data_offset = 0;
 	}
+
+	bool illuminanceAvailable = false;
+	appletIsIlluminanceAvailable(&illuminanceAvailable);
 
 	struct mGUIRunner runner = {
 		.params = {
@@ -829,8 +882,19 @@ int main(int argc, char* argv[]) {
 				},
 				.nStates = 6
 			},
+			{
+				.title = "Use built-in brightness sensor for Boktai",
+				.data = "useLightSensor",
+				.submenu = 0,
+				.state = illuminanceAvailable,
+				.validStates = (const char*[]) {
+					"Off",
+					"On",
+				},
+				.nStates = 2
+			},
 		},
-		.nConfigExtra = 4,
+		.nConfigExtra = 5,
 		.setup = _setup,
 		.teardown = NULL,
 		.gameLoaded = _gameLoaded,

@@ -60,6 +60,7 @@ set(SOURCE_FILES
 	AbstractUpdater.cpp
 	Action.cpp
 	ActionMapper.cpp
+	AssetInfo.cpp
 	AssetTile.cpp
 	AssetView.cpp
 	AudioProcessor.cpp
@@ -72,6 +73,7 @@ set(SOURCE_FILES
 	Display.cpp
 	DisplayGL.cpp
 	DisplayQt.cpp
+	FrameView.cpp
 	GBAApp.cpp
 	GIFView.cpp
 	GamepadAxisEvent.cpp
@@ -124,6 +126,7 @@ set(UI_FILES
 	BattleChipView.ui
 	CheatsView.ui
 	DebuggerConsole.ui
+	FrameView.ui
 	GIFView.ui
 	IOViewer.ui
 	LoadSaveState.ui

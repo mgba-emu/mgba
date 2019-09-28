@@ -56,6 +56,7 @@ static vita2d_texture* oldTex;
 static vita2d_texture* screenshot;
 static Thread audioThread;
 static bool interframeBlending = false;
+static bool sgbCrop = false;
 
 static struct mSceRotationSource {
 	struct mRotationSource d;
@@ -267,7 +268,7 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 
 uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 	SceCtrlData pad;
-	sceCtrlPeekBufferPositive(0, &pad, 1);
+	sceCtrlPeekBufferPositiveExt2(0, &pad, 1);
 
 	int activeKeys = mInputMapKeyBits(&runner->core->inputMap, PSP2_INPUT, pad.buttons, 0);
 	int angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 0, pad.ly);
@@ -313,8 +314,8 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_DOWN, GBA_KEY_DOWN);
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_LEFT, GBA_KEY_LEFT);
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_RIGHT, GBA_KEY_RIGHT);
-	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_LTRIGGER, GBA_KEY_L);
-	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_RTRIGGER, GBA_KEY_R);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_L1, GBA_KEY_L);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_R1, GBA_KEY_R);
 
 	struct mInputAxis desc = { GBA_KEY_DOWN, GBA_KEY_UP, 192, 64 };
 	mInputBindAxis(&runner->core->inputMap, PSP2_INPUT, 0, &desc);
@@ -365,6 +366,10 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	if (mCoreConfigGetUIntValue(&runner->config, "camera", &mode)) {
 		camera.cam = mode;
 	}
+	int fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
+		sgbCrop = fakeBool;
+	}
 }
 
 void mPSP2LoadROM(struct mGUIRunner* runner) {
@@ -396,6 +401,18 @@ void mPSP2LoadROM(struct mGUIRunner* runner) {
 	int fakeBool;
 	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
 		interframeBlending = fakeBool;
+	}
+
+	// Backcompat: Old versions of mGBA use an older binding system that has different mappings for L/R
+	if (!sceKernelIsPSVitaTV()) {
+		int key = mInputMapKey(&runner->core->inputMap, PSP2_INPUT, __builtin_ctz(SCE_CTRL_L2));
+		if (key >= 0) {
+			mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_L1, key);
+		}
+		key = mInputMapKey(&runner->core->inputMap, PSP2_INPUT, __builtin_ctz(SCE_CTRL_R2));
+		if (key >= 0) {
+			mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_R1, key);
+		}
 	}
 
 	MutexInit(&audioContext.mutex);
@@ -461,8 +478,13 @@ void mPSP2Unpaused(struct mGUIRunner* runner) {
 	}
 
 	int fakeBool;
-	mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool);
-	interframeBlending = fakeBool;
+	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
+		interframeBlending = fakeBool;
+	}
+
+	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
+		sgbCrop = fakeBool;
+	}
 }
 
 void mPSP2Teardown(struct mGUIRunner* runner) {
@@ -507,6 +529,13 @@ void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded, bo
 		vita2d_draw_texture_tint(backdrop, 0, 0, tint);
 		// Fall through
 	case SM_PLAIN:
+		if (sgbCrop && width == 256 && height == 224) {
+			w = 768;
+			h = 672;
+			scalex = 3;
+			scaley = 3;
+			break;
+		}
 		w = 960 / width;
 		h = 544 / height;
 		if (w * height > 544) {
@@ -521,6 +550,13 @@ void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded, bo
 		scaley = scalex;
 		break;
 	case SM_ASPECT:
+		if (sgbCrop && width == 256 && height == 224) {
+			w = 967;
+			h = 846;
+			scalex = 34.0f / 9.0f;
+			scaley = scalex;
+			break;
+		}
 		w = 960 / aspectw;
 		h = 544 / aspecth;
 		if (w * aspecth > 544) {

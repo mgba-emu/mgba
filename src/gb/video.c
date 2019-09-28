@@ -343,19 +343,19 @@ void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLat
 		mTimingSchedule(timing, &video->frameEvent, 4 - ((video->p->cpu->executionState + 1) & 3));
 		return;
 	}
+	if (!GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC])) {
+		mTimingSchedule(timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH);
+	}
 
-	GBFrameEnded(video->p);
-	mCoreSyncPostFrame(video->p->sync);
 	--video->frameskipCounter;
 	if (video->frameskipCounter < 0) {
 		video->renderer->finishFrame(video->renderer);
 		video->frameskipCounter = video->frameskip;
 	}
+	GBFrameEnded(video->p);
+	mCoreSyncPostFrame(video->p->sync);
 	++video->frameCounter;
 
-	if (!GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC])) {
-		mTimingSchedule(timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH);
-	}
 	GBFrameStarted(video->p);
 }
 

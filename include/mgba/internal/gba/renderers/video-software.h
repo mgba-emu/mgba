@@ -45,6 +45,7 @@ struct GBAVideoSoftwareBackground {
 	color_t* variantPalette;
 	int32_t offsetX;
 	int32_t offsetY;
+	bool highlight;
 };
 
 enum {
@@ -117,6 +118,8 @@ struct GBAVideoSoftwareRenderer {
 	color_t variantPalette[512];
 	color_t* objExtPalette;
 	color_t* objExtVariantPalette;
+	color_t highlightPalette[512];
+	color_t highlightVariantPalette[512];
 
 	uint16_t blda;
 	uint16_t bldb;
@@ -165,6 +168,8 @@ struct GBAVideoSoftwareRenderer {
 
 	int masterBright;
 	int masterBrightY;
+
+	uint8_t lastHighlightAmount;
 };
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer);

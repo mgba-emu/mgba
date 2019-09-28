@@ -67,6 +67,18 @@ for line in preprocessed.splitlines():
     lines.append(line)
 ffi.cdef('\n'.join(lines))
 
+ffi.cdef("""
+struct GBARTC {
+    int32_t bytesRemaining;
+    int32_t transferStep;
+    int32_t bitsRead;
+    int32_t bits;
+    int32_t commandActive;
+    RTCCommandData command;
+    RTCControl control;
+    uint8_t time[7];
+};""", packed=True)
+
 preprocessed = subprocess.check_output(cpp + ["-fno-inline", "-P"] + cppflags + [os.path.join(pydir, "lib.h")], universal_newlines=True)
 
 lines = []

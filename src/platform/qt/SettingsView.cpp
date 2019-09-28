@@ -363,7 +363,6 @@ void SettingsView::updateConfig() {
 	saveSetting("useCgbColors", m_ui.useCgbColors);
 	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
-	saveSetting("audioBuffers", m_ui.audioBufferSize);
 	saveSetting("sampleRate", m_ui.sampleRate);
 	saveSetting("videoSync", m_ui.videoSync);
 	saveSetting("audioSync", m_ui.audioSync);
@@ -400,6 +399,11 @@ void SettingsView::updateConfig() {
 	saveSetting("logFile", m_ui.logFile);
 	saveSetting("useDiscordPresence", m_ui.useDiscordPresence);
 	saveSetting("gba.audioHle", m_ui.audioHle);
+
+	if (m_ui.audioBufferSize->currentText().toInt() > 8192) {
+		m_ui.audioBufferSize->setCurrentText("8192");
+	}
+	saveSetting("audioBuffers", m_ui.audioBufferSize);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");

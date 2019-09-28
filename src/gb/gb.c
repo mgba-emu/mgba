@@ -419,14 +419,7 @@ void GBReset(struct LR35902Core* cpu) {
 			gb->biosVf->close(gb->biosVf);
 			gb->biosVf = NULL;
 		} else {
-			gb->biosVf->seek(gb->biosVf, 0, SEEK_SET);
-			gb->memory.romBase = malloc(GB_SIZE_CART_BANK0);
-			ssize_t size = gb->biosVf->read(gb->biosVf, gb->memory.romBase, GB_SIZE_CART_BANK0);
-			memcpy(&gb->memory.romBase[size], &gb->memory.rom[size], GB_SIZE_CART_BANK0 - size);
-			if (size > 0x100) {
-				memcpy(&gb->memory.romBase[0x100], &gb->memory.rom[0x100], sizeof(struct GBCartridge));
-			}
-
+			GBMapBIOS(gb);
 			cpu->a = 0;
 			cpu->f.packed = 0;
 			cpu->c = 0;
@@ -560,6 +553,16 @@ void GBSkipBIOS(struct GB* gb) {
 
 	if (gb->biosVf) {
 		GBUnmapBIOS(gb);
+	}
+}
+
+void GBMapBIOS(struct GB* gb) {
+	gb->biosVf->seek(gb->biosVf, 0, SEEK_SET);
+	gb->memory.romBase = malloc(GB_SIZE_CART_BANK0);
+	ssize_t size = gb->biosVf->read(gb->biosVf, gb->memory.romBase, GB_SIZE_CART_BANK0);
+	memcpy(&gb->memory.romBase[size], &gb->memory.rom[size], GB_SIZE_CART_BANK0 - size);
+	if (size > 0x100) {
+		memcpy(&gb->memory.romBase[0x100], &gb->memory.rom[0x100], sizeof(struct GBCartridge));
 	}
 }
 

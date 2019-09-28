@@ -6,11 +6,14 @@
 #pragma once
 
 #include <QTimer>
+#include <QTransform>
 #include <QWidget>
 
 #include <mgba/core/cache-set.h>
 
 #include <memory>
+
+struct mMapCacheEntry;
 
 namespace QGBA {
 
@@ -21,8 +24,6 @@ Q_OBJECT
 
 public:
 	AssetView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
-
-	static void compositeTile(const void* tile, void* image, size_t stride, size_t x, size_t y, int depth = 8);
 
 protected slots:
 	void updateTiles();
@@ -40,9 +41,43 @@ protected:
 	void showEvent(QShowEvent*) override;
 
 	mCacheSet* const m_cacheSet;
+	std::shared_ptr<CoreController> m_controller;
+
+protected:
+	struct ObjInfo {
+		unsigned tile;
+		unsigned width;
+		unsigned height;
+		unsigned stride;
+		unsigned paletteId;
+		unsigned paletteSet;
+		unsigned bits;
+
+		bool enabled : 1;
+		unsigned priority : 2;
+		int x : 10;
+		int y : 10;
+		bool hflip : 1;
+		bool vflip : 1;
+		QTransform xform;
+
+		bool operator!=(const ObjInfo&) const;
+	};
+
+	static void compositeTile(const void* tile, void* image, size_t stride, size_t x, size_t y, int depth = 8);
+	QImage compositeMap(int map, mMapCacheEntry*);
+	QImage compositeObj(const ObjInfo&);
+
+	bool lookupObj(int id, struct ObjInfo*);
 
 private:
-	std::shared_ptr<CoreController> m_controller;
+#ifdef M_CORE_GBA
+	bool lookupObjGBA(int id, struct ObjInfo*);
+#endif
+#ifdef M_CORE_GB
+	bool lookupObjGB(int id, struct ObjInfo*);
+#endif
+
 	QTimer m_updateTimer;
 };
 
