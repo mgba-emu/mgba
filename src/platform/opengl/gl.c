@@ -90,8 +90,12 @@ static void mGLContextResized(struct VideoBackend* v, unsigned w, unsigned h) {
 		}
 	}
 	if (v->lockIntegerScaling) {
-		drawW -= drawW % v->width;
-		drawH -= drawH % v->height;
+		if (drawW >= v->width) {
+			drawW -= drawW % v->width;
+		}
+		if (drawH >= v->height) {
+			drawH -= drawH % v->height;
+		}
 	}
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();

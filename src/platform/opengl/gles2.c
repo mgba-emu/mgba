@@ -201,8 +201,12 @@ static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h)
 		}
 	}
 	if (v->lockIntegerScaling) {
-		drawW -= drawW % v->width;
-		drawH -= drawH % v->height;
+		if (drawW >= v->width) {
+			drawW -= drawW % v->width;
+		}
+		if (drawH >= v->height) {
+			drawH -= drawH % v->height;
+		}
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);

@@ -221,12 +221,13 @@ QImage CoreController::getPixels() {
 		const void* pixels;
 		m_threadContext.core->getPixels(m_threadContext.core, &pixels, &stride);
 		stride *= BYTES_PER_PIXEL;
-		buffer.resize(stride * size.height());
-		memcpy(buffer.data(), pixels, buffer.size());
+		buffer = QByteArray::fromRawData(static_cast<const char*>(pixels), stride * size.height());
 	}
 
-	return QImage(reinterpret_cast<const uchar*>(buffer.constData()),
-	              size.width(), size.height(), stride, QImage::Format_RGBX8888);
+	QImage image(reinterpret_cast<const uchar*>(buffer.constData()),
+	             size.width(), size.height(), stride, QImage::Format_RGBX8888);
+	image.bits(); // Cause QImage to detach
+	return image;
 }
 
 bool CoreController::isPaused() {

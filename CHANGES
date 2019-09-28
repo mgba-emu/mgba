@@ -60,6 +60,8 @@ Emulation fixes:
  - GB Memory: Better emulate 0xFEA0 region on DMG, MGB and AGB
  - GB Printer: Reset printer buffer index after printing
  - GB Video: Fix mode 0 window edge case (fixes mgba.io/i/1519)
+ - GBA Audio: Fix channel 4 aliasing (fixes mgba.io/i/1265)
+ - GB Audio: Improve channel 4 supersampling
 Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
@@ -78,6 +80,7 @@ Other fixes:
  - Qt: Only show emulator restart warning once per settings saving
  - Qt: Improve cheat view UX
  - GB: Fix SGB controller incrementing (fixes mgba.io/i/1104)
+ - FFmpeg: Drain recording buffers
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
@@ -105,6 +108,8 @@ Misc:
  - Switch: Support file associations
  - Qt: Show error message if file failed to load
  - Qt: Scale pixel color values to full range (fixes mgba.io/i/1511)
+ - Qt, OpenGL: Disable integer scaling for dimensions that don't fit
+ - Feature: Switch from ImageMagick to FFmpeg for GIF generation
 
 0.7.2: (2019-05-25)
 Emulation fixes:
