@@ -35,6 +35,8 @@ Features:
  - Switch: Option to use built-in brightness sensor for Boktai
  - Ports: Ability to enable or disable all SGB features (closes mgba.io/i/1205)
  - Ports: Ability to crop SGB borders off screen (closes mgba.io/i/1204)
+ - Cheats: Add support for loading Libretro-style cht files
+ - GBA Cheats: Add support for loading EZ Flash-style cht files
 Emulation fixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs
@@ -44,14 +46,27 @@ Emulation fixes:
  - GB I/O: Filter IE top bits properly (fixes mgba.io/i/1329)
  - GBA Video: Fix wrapped sprite mosaic clamping (fixes mgba.io/i/1432)
  - GBA Memory: Fix STM to VRAM (fixes mgba.io/i/1430)
+ - GB Audio: Only reset channel 3 sample in DMG mode
+ - GB Audio: Sample inactive channels (fixes mgba.io/i/1455, mgba.io/i/1456)
+ - GB Video: Increment BCPS/OCPS even in mode 3 (fixes mgba.io/i/1462)
+ - GB Audio: Deschedule channel 3 when disabled (fixes mgba.io/i/1463)
+ - GB Audio: Deschedule channel 1 when disabled by sweep (fixes mgba.io/i/1467)
+ - GBA Memory: Fix STM/LDM to invalid VRAM
+ - GB: Fix savedata initialization (fixes mgba.io/i/1473, mgba.io/i/1478)
 Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
  - Switch: Fix threading-related crash on second launch
  - Qt: Fix FPS target maxing out at 59.727 (fixes mgba.io/i/1421)
  - Core: Fix crashes if core directories aren't set
- - Qt: Cap audio buffer size to 8192 (fixes mgba.io/i/1433)
- - GB Serialize: Fix loading non-BIOS state from BIOS (fixes mgba.io/i/1280)
+ - Qt: Fix menu bar staying hidden in full screen (fixes mgba.io/i/317)
+ - GB SIO: Fix lockstep failing games aren't reloaded
+ - Core: Fix crash when exiting game with cheats loaded
+ - GBA Cheats: Fix PARv3 Thumb hooks
+ - mGUI: Fix crash if last loaded ROM directory disappears (fixes mgba.io/i/1466)
+ - Libretro: Fix crash changing allowing opposing directions (hhromic)
+ - Qt: Fix race conditions initializing GDB stub
+ - GBA: Set up GPIO mapping on null and ELF ROM regions (fixes mgba.io/i/1481)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
@@ -66,7 +81,6 @@ Misc:
  - Debugger: Make tracing compatible with breakpoints/watchpoints
  - Debugger: Print breakpoint/watchpoint number when inserting
  - Qt: Open a message box for Qt frontend errors
- - GBA Video: Clean up dead code in sprite rendering loop
  - FFmpeg: Support audio-only recording
  - Qt: Increase maximum magnifications and scaling
  - Qt: Add native FPS button to settings view
@@ -75,6 +89,10 @@ Misc:
  - Qt: Make mute menu option also toggle fast-forward mute (fixes mgba.io/i/1424)
  - Vita: L2/R2 and L3/R3 can now be mapped on PSTV (fixes mgba.io/i/1292)
  - mGUI: Remember name and position of last loaded game
+ - Core: Create game-related paths if they don't exist (fixes mgba.io/i/1446)
+ - Qt: Add option to pause on minimizing window (closes mgba.io/i/1379)
+ - Switch: Support file associations
+ - Qt: Show error message if file failed to load
 
 0.7.2: (2019-05-25)
 Emulation fixes:

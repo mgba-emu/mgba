@@ -50,14 +50,20 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 	auto version = m_gl->format().version();
 	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
 
+	int forceVersion = 0;
+	if (format.majorVersion() < 2) {
+		forceVersion = 1;
+	}
+
 	if ((version == qMakePair(2, 1) && !extensions.contains("GL_ARB_framebuffer_object")) || version == qMakePair(2, 0)) {
 		QSurfaceFormat newFormat(format);
 		newFormat.setVersion(1, 4);
+		forceVersion = 1;
 		m_gl->setFormat(newFormat);
 		m_gl->create();
 	}
 
-	m_painter = new PainterGL(windowHandle(), m_gl);
+	m_painter = new PainterGL(windowHandle(), m_gl, forceVersion);
 	setUpdatesEnabled(false); // Prevent paint events, which can cause race conditions
 }
 
@@ -233,7 +239,7 @@ int DisplayGL::framebufferHandle() {
 	return m_painter->glTex();
 }
 
-PainterGL::PainterGL(QWindow* surface, QOpenGLContext* parent)
+PainterGL::PainterGL(QWindow* surface, QOpenGLContext* parent, int forceVersion)
 	: m_gl(parent)
 	, m_surface(surface)
 {
@@ -253,7 +259,7 @@ PainterGL::PainterGL(QWindow* surface, QOpenGLContext* parent)
 #ifdef BUILD_GLES2
 	auto version = m_gl->format().version();
 	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
-	if ((version == qMakePair(2, 1) && extensions.contains("GL_ARB_framebuffer_object")) || version.first > 2) {
+	if (forceVersion != 1 && ((version == qMakePair(2, 1) && extensions.contains("GL_ARB_framebuffer_object")) || version.first > 2)) {
 		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
 		mGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;

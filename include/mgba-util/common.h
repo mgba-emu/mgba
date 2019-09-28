@@ -65,6 +65,13 @@ typedef intptr_t ssize_t;
 #include <sys/syslimits.h>
 #endif
 
+#ifndef MGBA_STANDALONE
+#include <mgba-util/dllexports.h>
+#else
+#define MGBA_EXPORT
+#define MGBA_NO_EXPORT
+#endif
+
 #ifndef SSIZE_MAX
 #define SSIZE_MAX ((ssize_t) (SIZE_MAX >> 1))
 #endif
@@ -95,8 +102,8 @@ typedef intptr_t ssize_t;
 #define ATOMIC_OR(DST, OP) InterlockedOrRelease(&DST, OP)
 #define ATOMIC_AND(DST, OP) InterlockedAndRelease(&DST, OP)
 #define ATOMIC_CMPXCHG(DST, EXPECTED, SRC) (InterlockedCompareExchange(&DST, SRC, EXPECTED) == EXPECTED)
-#define ATOMIC_STORE_PTR(DST, SRC) InterlockedExchangePointer(DST, SRC)
-#define ATOMIC_LOAD_PTR(DST, SRC) DST = InterlockedCompareExchangePointer(SRC, 0, 0)
+#define ATOMIC_STORE_PTR(DST, SRC) InterlockedExchangePointer(&DST, SRC)
+#define ATOMIC_LOAD_PTR(DST, SRC) DST = InterlockedCompareExchangePointer(&SRC, 0, 0)
 #else
 // TODO
 #define ATOMIC_STORE(DST, SRC) DST = SRC
@@ -223,7 +230,6 @@ typedef intptr_t ssize_t;
 #define _CONSTRUCTOR(FN, PRE) \
     static void FN(void); \
     __declspec(allocate(".CRT$XCU")) void (*_CONSTRUCTOR_ ## FN)(void) = FN; \
-    __pragma(comment(linker,"/include:" PRE "_CONSTRUCTOR_" #FN)) \
     static void FN(void)
 #ifdef _WIN64
 #define CONSTRUCTOR(FN) _CONSTRUCTOR(FN, "")

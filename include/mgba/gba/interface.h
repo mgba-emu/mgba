@@ -38,13 +38,18 @@ struct GBA;
 struct GBAAudio;
 struct GBASIO;
 struct GBAVideoRenderer;
+struct VFile;
 
-extern const int GBA_LUX_LEVELS[10];
+extern MGBA_EXPORT const int GBA_LUX_LEVELS[10];
 
 enum {
 	mPERIPH_GBA_LUMINANCE = 0x1000,
 	mPERIPH_GBA_BATTLECHIP_GATE,
 };
+
+bool GBAIsROM(struct VFile* vf);
+bool GBAIsMB(struct VFile* vf);
+bool GBAIsBIOS(struct VFile* vf);
 
 struct GBALuminanceSource {
 	void (*sample)(struct GBALuminanceSource*);

@@ -342,6 +342,7 @@ bool GBALoadNull(struct GBA* gba) {
 	if (gba->cpu) {
 		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
+	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
 	return true;
 }
 
@@ -383,14 +384,7 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 #endif
 	} else {
 		gba->isPristine = true;
-#ifdef FIXED_ROM_BUFFER
-		if (gba->pristineRomSize <= romBufferSize) {
-			gba->memory.rom = romBuffer;
-			vf->read(vf, romBuffer, gba->pristineRomSize);
-		}
-#else
 		gba->memory.rom = vf->map(vf, gba->pristineRomSize, MAP_READ);
-#endif
 		gba->memory.romSize = gba->pristineRomSize;
 	}
 	if (!gba->memory.rom) {

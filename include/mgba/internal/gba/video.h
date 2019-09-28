@@ -233,7 +233,7 @@ struct GBASerializedState;
 void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* state);
 void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state);
 
-extern const int GBAVideoObjSizes[16][2];
+extern MGBA_EXPORT const int GBAVideoObjSizes[16][2];
 
 CXX_GUARD_END
 

@@ -77,7 +77,7 @@ class PainterGL : public QObject {
 Q_OBJECT
 
 public:
-	PainterGL(QWindow* surface, QOpenGLContext* parent);
+	PainterGL(QWindow* surface, QOpenGLContext* parent, int forceVersion = 0);
 	~PainterGL();
 
 	void setContext(std::shared_ptr<CoreController>);

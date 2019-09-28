@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/src/platform/cmake/")
+
 if(POLICY CMP0025)
 	cmake_policy(SET CMP0025 NEW)
 endif()
@@ -80,41 +82,12 @@ else()
 	endif()
 endif()
 
-file(GLOB ARM_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/arm/*.c)
-file(GLOB ARM_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/arm/test/*.c)
-file(GLOB LR35902_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/*.c)
-file(GLOB LR35902_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/test/*.c)
-file(GLOB GBA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/*.c)
-file(GLOB GBA_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/test/*.c)
-file(GLOB GB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/*.c)
-file(GLOB GB_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/test/*.c)
 file(GLOB DS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/ds/*.c)
-file(GLOB GBA_CHEATS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/cheats/*.c)
-file(GLOB GBA_EXTRA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/extra/audio-mixer.c)
-file(GLOB GBA_RR_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/rr/*.c)
-file(GLOB CORE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/core/*.c)
-file(GLOB CORE_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/core/test/*.c)
-file(GLOB UTIL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/*.c)
-file(GLOB UTIL_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/test/*.c)
-file(GLOB GUI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/gui/*.c ${CMAKE_CURRENT_SOURCE_DIR}/src/feature/gui/*.c)
-file(GLOB GBA_RENDERER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/renderers/*.c)
-file(GLOB GBA_SIO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/sio/*.c)
-file(GLOB GBA_EXTRA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/extra/*.c)
-file(GLOB GB_SIO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/sio/*.c)
-file(GLOB GB_RENDERER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/renderers/*.c)
-file(GLOB GB_EXTRA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/extra/*.c)
 file(GLOB DS_RENDERER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/ds/renderers/*.c ${CMAKE_CURRENT_SOURCE_DIR}/src/ds/gx/*.c)
 file(GLOB THIRD_PARTY_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/inih/*.c)
-file(GLOB EXTRA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/feature/*.c)
 set(CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-mem.c ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-fifo.c)
 set(VFS_SRC)
-source_group("ARM core" FILES ${ARM_SRC})
-source_group("LR35902 core" FILES ${LR35902_SRC})
-source_group("GBA board" FILES ${GBA_SRC} ${GBA_RENDERER_SRC} ${GBA_SIO_SRC})
-source_group("GBA extra" FILES ${GBA_CHEATS_SRC} ${GBA_RR_SRC})
-source_group("GB board" FILES ${GB_SRC} ${GB_SIO_SRC})
 source_group("DS board" FILES ${DS_SRC})
-source_group("Utilities" FILES ${UTIL_SRC})
 include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -157,54 +130,7 @@ if (NOT DEFINED MANDIR)
 	set(MANDIR ${CMAKE_INSTALL_MANDIR})
 endif()
 
-# Function definitions
-include(FindPkgConfig)
-function(find_feature FEATURE_NAME FEATURE_REQUIRES)
-	if (NOT ${FEATURE_NAME})
-		return()
-	endif()
-	if (DISABLE_DEPS)
-		set(${FEATURE_NAME} OFF PARENT_SCOPE)
-		return()
-	endif()
-	foreach(REQUIRE ${FEATURE_REQUIRES})
-		if(NOT ${REQUIRE}_FOUND)
-			find_package(${REQUIRE} QUIET)
-			if(NOT ${REQUIRE}_FOUND)
-				pkg_search_module(${REQUIRE} ${REQUIRE})
-				if (NOT ${REQUIRE}_FOUND)
-					message(WARNING "Requested module ${REQUIRE} missing for feature ${FEATURE_NAME}. Feature disabled.")
-					set(${FEATURE_NAME} OFF PARENT_SCOPE)
-					return()
-				endif()
-			endif()
-		endif()
-		string(TOUPPER ${REQUIRE} UREQUIRE)
-		set(${UREQUIRE}_CFLAGS_OTHER ${${REQUIRE}_CFLAGS_OTHER} PARENT_SCOPE)
-		set(${UREQUIRE}_FOUND ${${REQUIRE}_FOUND} PARENT_SCOPE)
-		set(${UREQUIRE}_INCLUDE_DIRS ${${REQUIRE}_INCLUDE_DIRS} PARENT_SCOPE)
-		set(${UREQUIRE}_VERSION_STRING ${${REQUIRE}_VERSION_STRING} PARENT_SCOPE)
-		if (APPLE)
-			set(IS_FRAMEWORK OFF)
-			set(LIBS)
-			foreach(LIB IN LISTS ${REQUIRE}_LIBRARIES)
-				if(LIB STREQUAL "-framework")
-					set(IS_FRAMEWORK ON)
-				elseif(IS_FRAMEWORK)
-					list(APPEND LIBS "-framework ${LIB}")
-					set(IS_FRAMEWORK OFF)
-				else()
-					list(APPEND LIBS ${LIB})
-				endif()
-			endforeach()
-			set(${UREQUIRE}_LIBRARIES ${LIBS} PARENT_SCOPE)
-		else()
-			set(${UREQUIRE}_LIBRARIES ${${REQUIRE}_LIBRARIES} PARENT_SCOPE)
-		endif()
-		set(${UREQUIRE}_LIBRARY_DIRS ${${REQUIRE}_LIBRARY_DIRS} PARENT_SCOPE)
-		set(${UREQUIRE}_LDFLAGS_OTHER ${${REQUIRE}_LDFLAGS_OTHER} PARENT_SCOPE)
-	endforeach()
-endfunction()
+include(FindFeature)
 
 # Version information
 add_custom_target(version-info ALL
@@ -218,7 +144,6 @@ add_custom_target(version-info ALL
 include(${CMAKE_CURRENT_SOURCE_DIR}/version.cmake)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/core/version.c.in ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 
-list(APPEND UTIL_SRC ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 source_group("Generated sources" FILES ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 
 # Advanced settings
@@ -250,16 +175,18 @@ endif()
 if(WIN32)
 	set(WIN32_VERSION "${LIB_VERSION_MAJOR},${LIB_VERSION_MINOR},${LIB_VERSION_PATCH}")
 	add_definitions(-D_WIN32_WINNT=0x0600)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -municode")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -municode")
+	if(MSVC)
+		add_definitions(-DNOMINMAX -DWIN32_LEAN_AND_MEAN)
+		set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+		add_definitions(-D_UNICODE -DUNICODE)
+	else()
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -municode")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -municode")
+	endif()
 	list(APPEND OS_LIB ws2_32 shlwapi)
 	list(APPEND CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/windows/vfs-w32.c)
 	file(GLOB OS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/windows/*.c)
 	source_group("Windows-specific code" FILES ${OS_SRC})
-	if(MSVC)
-		add_definitions(-DNOMINMAX -DWIN32_LEAN_AND_MEAN)
-		set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
-	endif()
 elseif(UNIX)
 	set(USE_PTHREADS ON)
 
@@ -560,13 +487,8 @@ if(USE_FFMPEG)
 endif()
 
 # Features
-set(DEBUGGER_SRC
-	${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/debugger.c
-	${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/parser.c
-	${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/symbols.c
-	${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/cli-debugger.c)
-
-file(GLOB DEBUGGER_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/test/*.c)
+add_subdirectory(src/debugger)
+add_subdirectory(src/feature)
 
 set(FEATURE_SRC)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6")
@@ -799,6 +721,10 @@ elseif(BUILD_GLES2)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libgles2")
 endif()
 
+if(WIN32 AND NOT SKIP_LIBRARY AND NOT USE_EPOXY)
+    message(FATAL_ERROR "Windows requires epoxy module!")
+endif()
+
 if(USE_SQLITE3)
 	list(APPEND FEATURES SQLITE3)
 	include_directories(AFTER ${SQLITE3_INCLUDE_DIRS})
@@ -833,51 +759,34 @@ if(ENABLE_SCRIPTING)
 	endif()
 endif()
 
+add_subdirectory(src/arm)
+add_subdirectory(src/core)
+add_subdirectory(src/gb)
+add_subdirectory(src/gba)
+add_subdirectory(src/lr35902)
+add_subdirectory(src/util)
+
+list(APPEND GUI_SRC ${EXTRA_GUI_SRC})
+list(APPEND UTIL_SRC ${CMAKE_CURRENT_BINARY_DIR}/version.c)
+
 set(TEST_SRC ${CORE_TEST_SRC})
 if(M_CORE_GB)
 	add_definitions(-DM_CORE_GB)
-	list(APPEND CORE_SRC
-		${LR35902_SRC}
-		${GB_SRC}
-		${GB_RENDERER_SRC})
-	list(APPEND DEBUGGER_SRC
-		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/cli-debugger.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/debugger.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/memory-debugger.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/gb/debugger/cli.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/gb/debugger/debugger.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/gb/debugger/symbols.c)
-	list(APPEND TEST_SRC
-		${LR35902_TEST_SRC}
-		${GB_TEST_SRC})
+	list(APPEND CORE_SRC ${LR35902_SRC} ${GB_SRC})
+	list(APPEND DEBUGGER_SRC ${LR35902_DEBUGGER_SRC} ${GB_DEBUGGER_SRC})
+	list(APPEND TEST_SRC ${LR35902_TEST_SRC} ${GB_TEST_SRC})
 endif()
 
 if(M_CORE_GBA)
 	add_definitions(-DM_CORE_GBA)
-	list(APPEND CORE_SRC
-		${ARM_SRC}
-		${GBA_SRC}
-		${GBA_CHEATS_SRC}
-		${GBA_RENDERER_SRC})
-	list(APPEND DEBUGGER_SRC
-		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/cli-debugger.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/debugger.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/memory-debugger.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/gba/debugger/cli.c)
-	list(APPEND TEST_SRC
-		${ARM_TEST_SRC}
-		${GBA_TEST_SRC})
-	if(NOT M_CORE_GB)
-		list(APPEND CORE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/audio.c)
-	endif()
+	list(APPEND CORE_SRC ${ARM_SRC} ${GBA_SRC})
+	list(APPEND DEBUGGER_SRC ${ARM_DEBUGGER_SRC} ${GBA_DEBUGGER_SRC})
+	list(APPEND TEST_SRC ${ARM_TEST_SRC} ${GBA_TEST_SRC})
 endif()
 
 if(M_CORE_DS)
 	add_definitions(-DM_CORE_DS)
-	list(APPEND CORE_SRC 
-		${ARM_SRC}
-		${DS_SRC}
-		${DS_RENDERER_SRC})
+	list(APPEND CORE_SRC ${ARM_SRC} ${DS_SRC} ${DS_RENDERER_SRC})
 	list(APPEND DEBUGGER_SRC
 		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/cli-debugger.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/debugger.c
@@ -904,6 +813,7 @@ source_group("Extra features" FILES ${FEATURE_SRC})
 source_group("Third-party code" FILES ${THIRD_PARTY_SRC})
 
 # Platform binaries
+set(OS_DEFINES)
 if(DEFINED 3DS)
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/platform/3ds ${CMAKE_CURRENT_BINARY_DIR}/3ds)
 endif()
@@ -932,29 +842,22 @@ set(SRC ${CORE_SRC} ${VFS_SRC})
 if(NOT MINIMAL_CORE)
 	set(ENABLE_EXTRA ON)
 	if(M_CORE_GBA)
-		list(APPEND SRC
-			${GBA_SIO_SRC})
+		list(APPEND SRC ${GBA_SIO_SRC})
 	endif()
 	if(M_CORE_GB)
-		list(APPEND SRC
-			${GB_SIO_SRC})
+		list(APPEND SRC ${GB_SIO_SRC})
 	endif()
-	list(APPEND SRC
-		${FEATURE_SRC})
+	list(APPEND SRC ${FEATURE_SRC})
 endif()
 
 if(ENABLE_EXTRA)
 	if(M_CORE_GBA)
-		list(APPEND SRC
-			${GBA_RR_SRC}
-			${GBA_EXTRA_SRC})
+		list(APPEND SRC ${GBA_EXTRA_SRC})
 	endif()
 	if(M_CORE_GB)
-		list(APPEND SRC
-			${GB_EXTRA_SRC})
+		list(APPEND SRC ${GB_EXTRA_SRC})
 	endif()
-	list(APPEND SRC
-		${EXTRA_SRC})
+	list(APPEND SRC ${EXTRA_SRC})
 endif()
 
 if(NOT SKIP_LIBRARY)
@@ -967,17 +870,22 @@ if(NOT SKIP_LIBRARY)
 		if(BUILD_STATIC)
 			add_library(${BINARY_NAME}-static STATIC ${SRC})
 			target_include_directories(${BINARY_NAME}-static BEFORE PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include)
-			set_target_properties(${BINARY_NAME}-static PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}" COMPILE_OPTIONS "${FEATURE_FLAGS}")
+			set_target_properties(${BINARY_NAME}-static PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES};BUILD_STATIC" COMPILE_OPTIONS "${FEATURE_FLAGS}")
 			install(TARGETS ${BINARY_NAME}-static DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME})
 			add_dependencies(${BINARY_NAME}-static version-info)
 		endif()
 	else()
 		add_library(${BINARY_NAME} STATIC ${SRC})
+		list(APPEND OS_DEFINES BUILD_STATIC)
 	endif()
 
 	target_include_directories(${BINARY_NAME} BEFORE PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include)
 	set_target_properties(${BINARY_NAME} PROPERTIES VERSION ${LIB_VERSION_STRING} SOVERSION ${LIB_VERSION_ABI} COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}" COMPILE_OPTIONS "${FEATURE_FLAGS}")
 	add_dependencies(${BINARY_NAME} version-info)
+
+	include(GenerateExportHeader)
+	file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/mgba-util)
+	generate_export_header(${BINARY_NAME} BASE_NAME MGBA STATIC_DEFINE BUILD_STATIC EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/include/mgba-util/dllexports.h)
 
 	target_link_libraries(${BINARY_NAME} ${DEBUGGER_LIB} ${DEPENDENCY_LIB} ${OS_LIB})
 	install(TARGETS ${BINARY_NAME} LIBRARY DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME} NAMELINK_SKIP ARCHIVE DESTINATION ${LIBDIR} RUNTIME DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME})
@@ -1030,7 +938,7 @@ if(BUILD_LIBRETRO)
 	file(GLOB RETRO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/libretro/*.c)
 	add_library(${BINARY_NAME}_libretro SHARED ${CORE_SRC} ${RETRO_SRC})
 	add_dependencies(${BINARY_NAME}_libretro version-info)
-	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" COMPILE_DEFINITIONS "__LIBRETRO__;COLOR_16_BIT;COLOR_5_6_5;DISABLE_THREADING;${OS_DEFINES};${FUNCTION_DEFINES};MINIMAL_CORE=2")
+	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" COMPILE_DEFINITIONS "__LIBRETRO__;COLOR_16_BIT;COLOR_5_6_5;DISABLE_THREADING;MGBA_STANDALONE;${OS_DEFINES};${FUNCTION_DEFINES};MINIMAL_CORE=2")
 	target_link_libraries(${BINARY_NAME}_libretro ${OS_LIB})
 	if(MSVC)
 		install(TARGETS ${BINARY_NAME}_libretro RUNTIME DESTINATION ${LIBRETRO_LIBDIR} COMPONENT ${BINARY_NAME}_libretro)
@@ -1049,7 +957,7 @@ if(BUILD_OPENEMU)
 		BUNDLE TRUE
 		BUNDLE_EXTENSION oecoreplugin
 		OUTPUT_NAME ${PROJECT_NAME}
-		COMPILE_DEFINITIONS "DISABLE_THREADING;${OS_DEFINES};${FUNCTION_DEFINES};MINIMAL_CORE=1")
+		COMPILE_DEFINITIONS "DISABLE_THREADING;MGBA_STANDALONE;${OS_DEFINES};${FUNCTION_DEFINES};MINIMAL_CORE=1")
 	target_link_libraries(${BINARY_NAME}-openemu ${OS_LIB} ${FOUNDATION} ${OPENEMUBASE})
 	install(TARGETS ${BINARY_NAME}-openemu LIBRARY DESTINATION ${OE_LIBDIR} COMPONENT ${BINARY_NAME}.oecoreplugin NAMELINK_SKIP)
 endif()

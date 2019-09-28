@@ -381,6 +381,7 @@ void SettingsView::updateConfig() {
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
 	saveSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
+	saveSetting("pauseOnMinimize", m_ui.pauseOnMinimize);
 	saveSetting("savegamePath", m_ui.savegamePath);
 	saveSetting("savestatePath", m_ui.savestatePath);
 	saveSetting("screenshotPath", m_ui.screenshotPath);
@@ -416,6 +417,12 @@ void SettingsView::updateConfig() {
 		m_controller->setOption("fpsTarget", QVariant(nativeFps));
 	} else {
 		saveSetting("fpsTarget", m_ui.fpsTarget);
+	}
+
+	if (m_ui.fastForwardHeldUnbounded->isChecked()) {
+		saveSetting("fastForwardHeldRatio", "-1");
+	} else {
+		saveSetting("fastForwardHeldRatio", m_ui.fastForwardHeldRatio);
 	}
 
 	switch (m_ui.idleOptimization->currentIndex() + IDLE_LOOP_IGNORE) {
@@ -549,6 +556,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
 	loadSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
+	loadSetting("pauseOnMinimize", m_ui.pauseOnMinimize);
 	loadSetting("savegamePath", m_ui.savegamePath);
 	loadSetting("savestatePath", m_ui.savestatePath);
 	loadSetting("screenshotPath", m_ui.screenshotPath);
@@ -566,7 +574,6 @@ void SettingsView::reloadConfig() {
 	loadSetting("logFile", m_ui.logFile);
 	loadSetting("useDiscordPresence", m_ui.useDiscordPresence);
 	loadSetting("gba.audioHle", m_ui.audioHle);
-	loadSetting("videoScale", m_ui.videoScale, 1);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 
@@ -578,6 +585,16 @@ void SettingsView::reloadConfig() {
 		m_ui.fastForwardUnbounded->setChecked(false);
 		m_ui.fastForwardRatio->setEnabled(true);
 		m_ui.fastForwardRatio->setValue(fastForwardRatio);
+	}
+
+	double fastForwardHeldRatio = loadSetting("fastForwardHeldRatio").toDouble();
+	if (fastForwardHeldRatio <= 0) {
+		m_ui.fastForwardHeldUnbounded->setChecked(true);
+		m_ui.fastForwardHeldRatio->setEnabled(false);
+	} else {
+		m_ui.fastForwardHeldUnbounded->setChecked(false);
+		m_ui.fastForwardHeldRatio->setEnabled(true);
+		m_ui.fastForwardHeldRatio->setValue(fastForwardHeldRatio);
 	}
 
 	QString idleOptimization = loadSetting("idleOptimization");
@@ -633,6 +650,11 @@ void SettingsView::reloadConfig() {
 
 	int hwaccelVideo = m_controller->getOption("hwaccelVideo", 0).toInt();
 	m_ui.hwaccelVideo->setCurrentIndex(hwaccelVideo);
+
+	connect(m_ui.videoScale, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](int value) {
+		m_ui.videoScaleSize->setText(tr("(%1×%2)").arg(GBA_VIDEO_HORIZONTAL_PIXELS * value).arg(GBA_VIDEO_VERTICAL_PIXELS * value));
+	});
+	loadSetting("videoScale", m_ui.videoScale, 1);
 }
 
 void SettingsView::saveSetting(const char* key, const QAbstractButton* field) {

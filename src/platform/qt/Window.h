@@ -114,6 +114,7 @@ public slots:
 protected:
 	virtual void resizeEvent(QResizeEvent*) override;
 	virtual void showEvent(QShowEvent*) override;
+	virtual void hideEvent(QHideEvent*) override;
 	virtual void closeEvent(QCloseEvent*) override;
 	virtual void focusInEvent(QFocusEvent*) override;
 	virtual void focusOutEvent(QFocusEvent*) override;

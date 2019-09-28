@@ -167,6 +167,51 @@ static void _DSCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	mCoreConfigCopyValue(&core->config, config, "ds.firmware");
 }
 
+
+static void _DSCoreReloadConfigOption(struct mCore* core, const char* option, const struct mCoreConfig* config) {
+	struct DS* ds = core->board;
+	if (!config) {
+		config = &core->config;
+	}
+
+	if (!option) {
+		// Reload options from opts
+		if (core->opts.mute) {
+			ds->audio.masterVolume = 0;
+		} else {
+			ds->audio.masterVolume = core->opts.volume;
+		}
+		ds->video.frameskip = core->opts.frameskip;
+		return;
+	}
+
+	int fakeBool;
+	if (strcmp("mute", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "mute", &fakeBool)) {
+			core->opts.mute = fakeBool;
+
+			if (core->opts.mute) {
+				ds->audio.masterVolume = 0;
+			} else {
+				ds->audio.masterVolume = core->opts.volume;
+			}
+		}
+		return;
+	}
+	if (strcmp("volume", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "volume", &core->opts.volume) && !core->opts.mute) {
+			ds->audio.masterVolume = core->opts.volume;
+		}
+		return;
+	}
+	if (strcmp("frameskip", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "frameskip", &core->opts.frameskip)) {
+			ds->video.frameskip = core->opts.frameskip;
+		}
+		return;
+	}
+}
+
 static void _DSCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
 	UNUSED(core);
 	*width = DS_VIDEO_HORIZONTAL_PIXELS;
@@ -641,6 +686,7 @@ struct mCore* DSCoreCreate(void) {
 	core->supportsFeature = _DSCoreSupportsFeature;
 	core->setSync = _DSCoreSetSync;
 	core->loadConfig = _DSCoreLoadConfig;
+	core->reloadConfigOption = _DSCoreReloadConfigOption;
 	core->desiredVideoDimensions = _DSCoreDesiredVideoDimensions;
 	core->setVideoBuffer = _DSCoreSetVideoBuffer;
 	core->getPixels = _DSCoreGetPixels;

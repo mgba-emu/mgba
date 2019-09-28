@@ -47,6 +47,11 @@ struct GBSIODriver {
 	uint8_t (*writeSC)(struct GBSIODriver* driver, uint8_t value);
 };
 
+struct VFile;
+
+bool GBIsROM(struct VFile* vf);
+bool GBIsBIOS(struct VFile* vf);
+
 enum GBModel GBNameToModel(const char*);
 const char* GBModelToName(enum GBModel);
 

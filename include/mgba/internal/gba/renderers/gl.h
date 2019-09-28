@@ -161,7 +161,7 @@ struct GBAVideoGLRenderer {
 	uint64_t regsDirty;
 
 	struct GBAVideoGLShader bgShader[6];
-	struct GBAVideoGLShader objShader[2];
+	struct GBAVideoGLShader objShader[3];
 	struct GBAVideoGLShader windowShader;
 	struct GBAVideoGLShader finalizeShader;
 

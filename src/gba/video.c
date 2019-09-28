@@ -35,7 +35,7 @@ static void _startHdraw(struct mTiming*, void* context, uint32_t cyclesLate);
 
 static uint16_t _zeroes[0x2000] = {};
 
-const int GBAVideoObjSizes[16][2] = {
+MGBA_EXPORT const int GBAVideoObjSizes[16][2] = {
 	{ 8, 8 },
 	{ 16, 16 },
 	{ 32, 32 },

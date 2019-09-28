@@ -619,6 +619,13 @@ void Window::resizeEvent(QResizeEvent* event) {
 
 void Window::showEvent(QShowEvent* event) {
 	if (m_wasOpened) {
+		if (event->spontaneous() && m_config->getOption("pauseOnMinimize").toInt() && m_controller) {
+			focusCheck();
+			if (m_autoresume) {
+				m_controller->setPaused(false);
+				m_autoresume = false;
+			}
+		}
 		return;
 	}
 	m_wasOpened = true;
@@ -638,6 +645,19 @@ void Window::showEvent(QShowEvent* event) {
 	}
 	reloadDisplayDriver();
 	setFocus();
+}
+
+void Window::hideEvent(QHideEvent* event) {
+	if (!event->spontaneous()) {
+		return;
+	}
+	if (!m_config->getOption("pauseOnMinimize").toInt() || !m_controller) {
+		return;
+	}
+	if (!m_controller->isPaused()) {
+		m_autoresume = true;
+		m_controller->setPaused(true);
+	}
 }
 
 void Window::closeEvent(QCloseEvent* event) {
@@ -832,7 +852,7 @@ void Window::gameStarted() {
 	if (nAudio) {
 		for (size_t i = 0; i < nAudio; ++i) {
 			Action* action = m_actions.addBooleanAction(audioChannels[i].visibleName, QString("audioChannel.%1").arg(audioChannels[i].internalName), [this, audioChannels, i](bool enable) {
-				m_controller->thread()->core->enableVideoLayer(m_controller->thread()->core, audioChannels[i].id, enable);
+				m_controller->thread()->core->enableAudioChannel(m_controller->thread()->core, audioChannels[i].id, enable);
 			}, "audioChannels");
 			action->setActive(true);
 		}
@@ -887,6 +907,9 @@ void Window::gameStopped() {
 		m_display.reset();
 		close();
 	}
+#ifndef Q_OS_MAC
+	menuBar()->show();
+#endif
 
 #ifdef USE_DISCORD_RPC
 	DiscordCoordinator::gameStopped();
@@ -1108,6 +1131,9 @@ void Window::openStateWindow(LoadSave ls) {
 	m_stateWindow->setAttribute(Qt::WA_DeleteOnClose);
 	m_stateWindow->setMode(ls);
 	updateFrame();
+#ifndef Q_OS_MAC
+	menuBar()->show();
+#endif
 	attachWidget(m_stateWindow);
 }
 
@@ -1774,6 +1800,7 @@ void Window::updateFrame() {
 
 void Window::setController(CoreController* controller, const QString& fname) {
 	if (!controller) {
+		gameFailed();
 		return;
 	}
 	if (m_pendingClose) {

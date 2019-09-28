@@ -11,7 +11,7 @@
 
 mLOG_DEFINE_CATEGORY(GB_IO, "GB I/O", "gb.io");
 
-const char* const GBIORegisterNames[] = {
+MGBA_EXPORT const char* const GBIORegisterNames[] = {
 	[REG_JOYP] = "JOYP",
 	[REG_SB] = "SB",
 	[REG_SC] = "SC",
@@ -499,8 +499,8 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			case REG_BCPD:
 				if (gb->video.mode != 3) {
 					GBVideoProcessDots(&gb->video, 0);
-					GBVideoWritePalette(&gb->video, address, value);
 				}
+				GBVideoWritePalette(&gb->video, address, value);
 				return;
 			case REG_OCPS:
 				gb->video.ocpIndex = value & 0x3F;
@@ -510,8 +510,8 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			case REG_OCPD:
 				if (gb->video.mode != 3) {
 					GBVideoProcessDots(&gb->video, 0);
-					GBVideoWritePalette(&gb->video, address, value);
 				}
+				GBVideoWritePalette(&gb->video, address, value);
 				return;
 			case REG_SVBK:
 				GBMemorySwitchWramBank(&gb->memory, value);

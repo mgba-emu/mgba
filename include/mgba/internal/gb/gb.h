@@ -163,7 +163,6 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf);
 void GBUnloadROM(struct GB* gb);
 void GBSynthesizeROM(struct VFile* vf);
 
-bool GBIsBIOS(struct VFile* vf);
 void GBLoadBIOS(struct GB* gb, struct VFile* vf);
 
 void GBSramClean(struct GB* gb, uint32_t frameCount);
@@ -174,7 +173,6 @@ void GBSavedataUnmask(struct GB* gb);
 struct Patch;
 void GBApplyPatch(struct GB* gb, struct Patch* patch);
 
-bool GBIsROM(struct VFile* vf);
 void GBGetGameTitle(const struct GB* gba, char* out);
 void GBGetGameCode(const struct GB* gba, char* out);
 

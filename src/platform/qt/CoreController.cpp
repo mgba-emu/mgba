@@ -257,6 +257,7 @@ void CoreController::loadConfig(ConfigController* config) {
 	m_loadStateFlags = config->getOption("loadStateExtdata", m_loadStateFlags).toInt();
 	m_saveStateFlags = config->getOption("saveStateExtdata", m_saveStateFlags).toInt();
 	m_fastForwardRatio = config->getOption("fastForwardRatio", m_fastForwardRatio).toFloat();
+	m_fastForwardHeldRatio = config->getOption("fastForwardHeldRatio", m_fastForwardRatio).toFloat();
 	m_videoSync = config->getOption("videoSync", m_videoSync).toInt();
 	m_audioSync = config->getOption("audioSync", m_audioSync).toInt();
 	m_fpsTarget = config->getOption("fpsTarget").toFloat();
@@ -279,6 +280,7 @@ void CoreController::setDebugger(mDebugger* debugger) {
 	Interrupter interrupter(this);
 	if (debugger) {
 		mDebuggerAttach(debugger, m_threadContext.core);
+		mDebuggerEnter(debugger, DEBUGGER_ENTER_ATTACHED, 0);
 	} else {
 		m_threadContext.core->detachDebugger(m_threadContext.core);
 	}
@@ -871,6 +873,8 @@ void CoreController::finishFrame() {
 }
 
 void CoreController::updateFastForward() {
+	// If we have "Fast forward" checked in the menu (m_fastForwardForced)
+	// or are holding the fast forward button (m_fastForward):
 	if (m_fastForward || m_fastForwardForced) {
 		if (m_fastForwardVolume >= 0) {
 			m_threadContext.core->opts.volume = m_fastForwardVolume;
@@ -878,10 +882,25 @@ void CoreController::updateFastForward() {
 		if (m_fastForwardMute >= 0) {
 			m_threadContext.core->opts.mute = m_fastForwardMute;
 		}
-		if (m_fastForwardRatio > 0) {
-			m_threadContext.impl->sync.fpsTarget = m_fpsTarget * m_fastForwardRatio;
+
+		// If we aren't holding the fast forward button
+		// then use the non "(held)" ratio
+		if(!m_fastForward) {
+			if (m_fastForwardRatio > 0) {
+				m_threadContext.impl->sync.fpsTarget = m_fpsTarget * m_fastForwardRatio;
+				setSync(true);
+			}	else {
+				setSync(false);
+			}
 		} else {
-			setSync(false);
+			// If we are holding the fast forward button,
+			// then use the held ratio
+			if (m_fastForwardHeldRatio > 0) {
+				m_threadContext.impl->sync.fpsTarget = m_fpsTarget * m_fastForwardHeldRatio;
+				setSync(true);
+			} else {
+				setSync(false);
+			}
 		}
 	} else {
 		if (!mCoreConfigGetIntValue(&m_threadContext.core->config, "volume", &m_threadContext.core->opts.volume)) {
@@ -893,33 +912,8 @@ void CoreController::updateFastForward() {
 		m_threadContext.impl->sync.fpsTarget = m_fpsTarget;
 		setSync(true);
 	}
-	// XXX: Have a way of just updating volume
-	switch (platform()) {
-#ifdef M_CORE_GBA
-	case PLATFORM_GBA: {
-		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
-		if (m_threadContext.core->opts.mute) {
-			gba->audio.masterVolume = 0;
-		} else {
-			gba->audio.masterVolume = m_threadContext.core->opts.volume;
-		}
-		break;
-	}
-#endif
-#ifdef M_CORE_GB
-	case PLATFORM_GB: {
-		GB* gb = static_cast<GB*>(m_threadContext.core->board);
-		if (m_threadContext.core->opts.mute) {
-			gb->audio.masterVolume = 0;
-		} else {
-			gb->audio.masterVolume = m_threadContext.core->opts.volume;
-		}
-		break;
-	}
-#endif
-	default:
-		break;
-	}
+
+	m_threadContext.core->reloadConfigOption(m_threadContext.core, NULL, NULL);
 }
 
 CoreController::Interrupter::Interrupter(CoreController* parent, bool fromThread)

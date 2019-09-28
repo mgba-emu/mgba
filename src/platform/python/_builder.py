@@ -18,6 +18,7 @@ cppflags.extend(["-I" + incdir, "-I" + srcdir, "-I" + bindir])
 ffi.set_source("mgba._pylib", """
 #define static
 #define inline
+#define MGBA_EXPORT
 #include <mgba/flags.h>
 #define OPAQUE_THREADING
 #include <mgba/core/blip_buf.h>

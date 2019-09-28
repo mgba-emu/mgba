@@ -23,10 +23,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/input)
 
-find_package(Qt5Multimedia)
-find_package(Qt5Network)
-find_package(Qt5OpenGL)
-find_package(Qt5Widgets)
+find_package(Qt5 COMPONENTS Core Widgets OpenGL Network Multimedia)
 
 if(NOT BUILD_GL AND NOT BUILD_GLES2)
 	message(WARNING "OpenGL is recommended to build the Qt port")
