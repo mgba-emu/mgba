@@ -13,7 +13,7 @@
 using namespace QGBA;
 
 PrinterView::PrinterView(std::shared_ptr<CoreController> controller, QWidget* parent)
-	: QDialog(parent)
+	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
 {
 	m_ui.setupUi(this);

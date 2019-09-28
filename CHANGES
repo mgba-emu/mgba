@@ -41,6 +41,7 @@ Features:
  - Qt: Add export button for tile view (closes mgba.io/i/1507)
  - Qt: Add recent game list clearing (closes mgba.io/i/1380)
  - GB: Yanking gamepak now supported
+ - Qt: Memory range dumping (closes mgba.io/i/1298)
 Emulation fixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs
@@ -48,39 +49,21 @@ Emulation fixes:
  - GB Video: Delay LYC STAT check (fixes mgba.io/i/1331)
  - GB Video: Fix window being enabled mid-scanline (fixes mgba.io/i/1328)
  - GB I/O: Filter IE top bits properly (fixes mgba.io/i/1329)
- - GBA Video: Fix wrapped sprite mosaic clamping (fixes mgba.io/i/1432)
- - GBA Memory: Fix STM to VRAM (fixes mgba.io/i/1430)
  - GB Audio: Only reset channel 3 sample in DMG mode
  - GB Audio: Sample inactive channels (fixes mgba.io/i/1455, mgba.io/i/1456)
- - GB Video: Increment BCPS/OCPS even in mode 3 (fixes mgba.io/i/1462)
- - GB Audio: Deschedule channel 3 when disabled (fixes mgba.io/i/1463)
- - GB Audio: Deschedule channel 1 when disabled by sweep (fixes mgba.io/i/1467)
- - GBA Memory: Fix STM/LDM to invalid VRAM
- - GB: Fix savedata initialization (fixes mgba.io/i/1473, mgba.io/i/1478)
  - GB Memory: Better emulate 0xFEA0 region on DMG, MGB and AGB
- - GB Printer: Reset printer buffer index after printing
  - GB Video: Fix mode 0 window edge case (fixes mgba.io/i/1519)
- - GBA Audio: Fix channel 4 aliasing (fixes mgba.io/i/1265)
- - GB Audio: Improve channel 4 supersampling
+ - GB Audio: Fix channel 4 volume (fixes mgba.io/i/1529)
 Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
- - Switch: Fix threading-related crash on second launch
- - Qt: Fix FPS target maxing out at 59.727 (fixes mgba.io/i/1421)
- - Core: Fix crashes if core directories aren't set
  - Qt: Fix menu bar staying hidden in full screen (fixes mgba.io/i/317)
  - GB SIO: Fix lockstep failing games aren't reloaded
- - Core: Fix crash when exiting game with cheats loaded
- - GBA Cheats: Fix PARv3 Thumb hooks
- - mGUI: Fix crash if last loaded ROM directory disappears (fixes mgba.io/i/1466)
  - Libretro: Fix crash changing allowing opposing directions (hhromic)
- - Qt: Fix race conditions initializing GDB stub
- - GBA: Set up GPIO mapping on null and ELF ROM regions (fixes mgba.io/i/1481)
  - GBA Cheats: Fix value incrementing in CB slide codes (fixes mgba.io/i/1501)
  - Qt: Only show emulator restart warning once per settings saving
- - Qt: Improve cheat view UX
- - GB: Fix SGB controller incrementing (fixes mgba.io/i/1104)
  - FFmpeg: Drain recording buffers
+ - Shaders: Fix gba-color shader resolution (fixes mgba.io/i/1435)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
@@ -100,16 +83,47 @@ Misc:
  - Qt: Add native FPS button to settings view
  - Qt: Improve sync code
  - Switch: Dynamic display resizing
- - Qt: Make mute menu option also toggle fast-forward mute (fixes mgba.io/i/1424)
  - Vita: L2/R2 and L3/R3 can now be mapped on PSTV (fixes mgba.io/i/1292)
  - mGUI: Remember name and position of last loaded game
  - Core: Create game-related paths if they don't exist (fixes mgba.io/i/1446)
  - Qt: Add option to pause on minimizing window (closes mgba.io/i/1379)
  - Switch: Support file associations
- - Qt: Show error message if file failed to load
  - Qt: Scale pixel color values to full range (fixes mgba.io/i/1511)
  - Qt, OpenGL: Disable integer scaling for dimensions that don't fit
  - Feature: Switch from ImageMagick to FFmpeg for GIF generation
+ - OpenGL: Only resize textures when needed
+ - GBA BIOS: Fix clobbered registers in CpuSet (fixes mgba.io/i/1531)
+ - Qt: Remove What's This icon from dialogs
+
+0.7.3: (2019-09-15)
+Emulation fixes:
+ - GB: Fix savedata initialization (fixes mgba.io/i/1473, mgba.io/i/1478)
+ - GB: Fix SGB controller incrementing (fixes mgba.io/i/1104)
+ - GB Audio: Improve channel 4 supersampling
+ - GB Printer: Reset printer buffer index after printing
+ - GB Audio: Deschedule channel 3 when disabled (fixes mgba.io/i/1463)
+ - GB Audio: Deschedule channel 1 when disabled by sweep (fixes mgba.io/i/1467)
+ - GB Video: Increment BCPS/OCPS even in mode 3 (fixes mgba.io/i/1462)
+ - GBA Memory: Fix STM to VRAM (fixes mgba.io/i/1430)
+ - GBA Memory: Fix STM/LDM to invalid VRAM
+ - GBA Video: Fix wrapped sprite mosaic clamping (fixes mgba.io/i/1432)
+ - GBA Audio: Fix channel 4 aliasing (fixes mgba.io/i/1265)
+Other fixes:
+ - Core: Fix crashes if core directories aren't set
+ - Core: Fix crash when exiting game with cheats loaded
+ - GBA: Set up GPIO mapping on null and ELF ROM regions (fixes mgba.io/i/1481)
+ - GBA Cheats: Fix PARv3 Thumb hooks
+ - GBA Cheats: Fix value incrementing in CB slide codes (fixes mgba.io/i/1501)
+ - Qt: Fix FPS target maxing out at 59.727 (fixes mgba.io/i/1421)
+ - Qt: Cap audio buffer size to 8192 (fixes mgba.io/i/1433)
+ - Qt: Fix race conditions initializing GDB stub
+ - Qt: Improve cheat view UX
+ - Libretro: Fix crash changing allowing opposing directions (hhromic)
+ - mGUI: Fix crash if last loaded ROM directory disappears (fixes mgba.io/i/1466)
+ - Switch: Fix threading-related crash on second launch
+Misc:
+ - Qt: Make mute menu option also toggle fast-forward mute (fixes mgba.io/i/1424)
+ - Qt: Show error message if file failed to load
 
 0.7.2: (2019-05-25)
 Emulation fixes:

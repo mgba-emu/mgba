@@ -770,7 +770,7 @@ static int32_t _updateSquareChannel(struct GBAudioSquareChannel* ch) {
 
 static int16_t _coalesceNoiseChannel(struct GBAudioNoiseChannel* ch) {
 	if (!ch->nSamples) {
-		return ch->sample;
+		return ch->sample << 3;
 	}
 	// TODO keep track of timing
 	int16_t sample = (ch->samples << 3) / ch->nSamples;

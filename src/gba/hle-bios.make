@@ -15,4 +15,4 @@ hle-bios.c: hle-bios.bin
 	echo >> $@
 	echo '#include <mgba/internal/gba/memory.h>' >> $@
 	echo >> $@
-	xxd -i $< | sed -e 's/unsigned char hle_bios_bin\[\]/const uint8_t hleBios[SIZE_BIOS]/' | grep -v hle_bios_bin_len >> $@
+	xxd -i $< | sed -e 's/unsigned char hle_bios_bin\[\]/const uint8_t hleBios[SIZE_BIOS]/' -e 's/^ \+/\t/' | grep -v hle_bios_bin_len >> $@
