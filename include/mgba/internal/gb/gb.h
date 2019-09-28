@@ -94,6 +94,7 @@ struct GB {
 	bool isPristine;
 	size_t pristineRomSize;
 	size_t yankedRomSize;
+	enum GBMemoryBankControllerType yankedMbc;
 	uint32_t romCrc32;
 	struct VFile* romVf;
 	struct VFile* biosVf;
@@ -109,6 +110,7 @@ struct GB {
 	uint8_t sgbPacket[16];
 	uint8_t sgbControllers;
 	uint8_t sgbCurrentController;
+	bool sgbIncrement;
 
 	struct mCoreCallbacksList coreCallbacks;
 	struct mAVStream* stream;
@@ -162,6 +164,7 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf);
 bool GBLoadSave(struct GB* gb, struct VFile* vf);
 void GBUnloadROM(struct GB* gb);
 void GBSynthesizeROM(struct VFile* vf);
+void GBYankROM(struct GB* gb);
 
 void GBLoadBIOS(struct GB* gb, struct VFile* vf);
 

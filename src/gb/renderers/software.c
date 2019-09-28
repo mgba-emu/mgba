@@ -224,6 +224,9 @@ static void GBVideoSoftwareRendererUpdateWindow(struct GBVideoSoftwareRenderer* 
 	if (renderer->lastY >= GB_VIDEO_VERTICAL_PIXELS || !(after || before)) {
 		return;
 	}
+	if (!renderer->hasWindow && renderer->lastX == GB_VIDEO_HORIZONTAL_PIXELS) {
+		return;
+	}
 	if (renderer->lastY >= oldWy) {
 		if (!after) {
 			renderer->currentWy -= renderer->lastY;

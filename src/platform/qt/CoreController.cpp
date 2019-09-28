@@ -633,13 +633,16 @@ void CoreController::replaceGame(const QString& path) {
 }
 
 void CoreController::yankPak() {
-#ifdef M_CORE_GBA
-	if (platform() != PLATFORM_GBA) {
-		return;
-	}
 	Interrupter interrupter(this);
-	GBAYankROM(static_cast<GBA*>(m_threadContext.core->board));
-#endif
+
+	switch (platform()) {
+	case PLATFORM_GBA:
+		GBAYankROM(static_cast<GBA*>(m_threadContext.core->board));
+		break;
+	case PLATFORM_GB:
+		GBYankROM(static_cast<GB*>(m_threadContext.core->board));
+		break;
+	}
 }
 
 #ifdef USE_PNG

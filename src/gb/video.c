@@ -701,6 +701,9 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 	case SGB_ATTR_SET:
 		break;
 	case SGB_MLT_REQ:
+		if ((video->sgbPacketBuffer[1] & 0x3) == 2) { // XXX: This unmasked increment appears to be an SGB hardware bug
+			++video->p->sgbCurrentController;
+		}
 		video->p->sgbControllers = video->sgbPacketBuffer[1] & 0x3;
 		video->p->sgbCurrentController &= video->p->sgbControllers;
 		return;

@@ -225,6 +225,7 @@ void GBSGBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	flags = GBSerializedSGBFlagsSetRenderMode(flags, gb->video.renderer->sgbRenderMode);
 	flags = GBSerializedSGBFlagsSetBufferIndex(flags, gb->video.sgbBufferIndex);
 	flags = GBSerializedSGBFlagsSetReqControllers(flags, gb->sgbControllers);
+	flags = GBSerializedSGBFlagsSetIncrement(flags, gb->sgbIncrement);
 	flags = GBSerializedSGBFlagsSetCurrentController(flags, gb->sgbCurrentController);
 	STORE_32LE(flags, 0, &state->sgb.flags);
 
@@ -260,6 +261,12 @@ void GBSGBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->video.sgbBufferIndex = GBSerializedSGBFlagsGetBufferIndex(flags);
 	gb->sgbControllers = GBSerializedSGBFlagsGetReqControllers(flags);
 	gb->sgbCurrentController = GBSerializedSGBFlagsGetCurrentController(flags);
+	gb->sgbIncrement = GBSerializedSGBFlagsGetIncrement(flags);
+
+	// Old versions of mGBA stored the increment bits here
+	if (gb->sgbBit > 129 && gb->sgbBit & 2) {
+		gb->sgbIncrement = true;
+	}
 
 	memcpy(gb->video.sgbPacketBuffer, state->sgb.packet, sizeof(state->sgb.packet));
 	memcpy(gb->sgbPacket, state->sgb.inProgressPacket, sizeof(state->sgb.inProgressPacket));

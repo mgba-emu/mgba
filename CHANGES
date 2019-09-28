@@ -40,6 +40,7 @@ Features:
  - Support for unlicensed Wisdom Tree Game Boy mapper
  - Qt: Add export button for tile view (closes mgba.io/i/1507)
  - Qt: Add recent game list clearing (closes mgba.io/i/1380)
+ - GB: Yanking gamepak now supported
 Emulation fixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs
@@ -58,6 +59,7 @@ Emulation fixes:
  - GB: Fix savedata initialization (fixes mgba.io/i/1473, mgba.io/i/1478)
  - GB Memory: Better emulate 0xFEA0 region on DMG, MGB and AGB
  - GB Printer: Reset printer buffer index after printing
+ - GB Video: Fix mode 0 window edge case (fixes mgba.io/i/1519)
 Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
@@ -75,7 +77,7 @@ Other fixes:
  - GBA Cheats: Fix value incrementing in CB slide codes (fixes mgba.io/i/1501)
  - Qt: Only show emulator restart warning once per settings saving
  - Qt: Improve cheat view UX
- - GB: Fix SGB controller selection initialization (fixes mgba.io/i/1104)
+ - GB: Fix SGB controller incrementing (fixes mgba.io/i/1104)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
