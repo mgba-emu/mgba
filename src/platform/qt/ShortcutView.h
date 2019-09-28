@@ -16,6 +16,8 @@
 namespace QGBA {
 
 class InputController;
+class ShortcutController;
+class ShortcutModel;
 
 class ShortcutView : public QWidget {
 Q_OBJECT
@@ -24,10 +26,8 @@ public:
 	ShortcutView(QWidget* parent = nullptr);
 	~ShortcutView();
 
-	void setModel(InputIndex* model);
+	void setController(ShortcutController* controller);
 	void setInputController(InputController* input);
-
-	const InputIndex* root() { return m_model.inputIndex(); }
 
 protected:
 	virtual bool event(QEvent*) override;
@@ -38,12 +38,12 @@ private slots:
 	void clear();
 	void updateButton(int button);
 	void updateAxis(int axis, int direction);
-	void updateGamepads();
 
 private:
 	Ui::ShortcutView m_ui;
 
-	InputModel m_model;
+	ShortcutController* m_controller = nullptr;
+	ShortcutModel* m_model = nullptr;
 	InputController* m_input = nullptr;
 };
 

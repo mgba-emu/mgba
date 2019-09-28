@@ -68,6 +68,8 @@ endif()
 set(SOURCE_FILES
 	AboutScreen.cpp
 	AbstractUpdater.cpp
+	Action.cpp
+	ActionMapper.cpp
 	AssetTile.cpp
 	AssetView.cpp
 	AudioProcessor.cpp
@@ -108,6 +110,8 @@ set(SOURCE_FILES
 	SensorView.cpp
 	SettingsView.cpp
 	ShaderSelector.cpp
+	ShortcutController.cpp
+	ShortcutModel.cpp
 	ShortcutView.cpp
 	Swatch.cpp
 	TilePainter.cpp

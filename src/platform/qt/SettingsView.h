@@ -23,7 +23,6 @@ namespace QGBA {
 class ConfigController;
 class InputController;
 class InputIndex;
-class ShortcutView;
 class ShaderSelector;
 
 class SettingsView : public QDialog {
@@ -55,8 +54,6 @@ private:
 
 	ConfigController* m_controller;
 	InputController* m_input;
-	ShortcutView* m_shortcutView;
-	ShortcutView* m_keyView;
 	ShaderSelector* m_shader = nullptr;
 	LogConfigModel m_logModel;
 
