@@ -1356,7 +1356,13 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		for (i = 0; i < 25; ++i) {
 			if (!(glRenderer->vramDirty & (1 << i))) {
 				if (first >= 0) {
-					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 8 * first, 256, 8 * (i - first), GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, &glRenderer->d.vramBG[2048 * first]);
+					uint16_t* vram;
+					if (first < 16) {
+						vram = &glRenderer->d.vramBG[first >> 2][2048 * (first & 3)];
+					} else {
+						vram = &glRenderer->d.vramOBJ[(first - 16) >> 2][2048 * (first & 3)];
+					}
+					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 8 * first, 256, 8 * (i - first), GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, vram);
 					first = -1;
 				}
 			} else if (first < 0) {
