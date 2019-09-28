@@ -983,7 +983,7 @@
                <bool>false</bool>
               </property>
               <property name="text">
-               <string>{size}</string>
+               <string>(240×160)</string>
               </property>
              </widget>
             </item>

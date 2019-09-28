@@ -1,0 +1,57 @@
+; this file was created with wlalink by ville helin <vhelin@iki.fi>.
+; wla symbolic information for "/home/vicki/Scratch/mooneye-gb/tests/build/acceptance/boot_hwio-dmgABCmgb.gb".
+
+[labels]
+01:48bb clear_vram
+01:487a disable_lcd_safe
+01:4880 disable_lcd_safe@wait_ly_0
+01:48cf memcpy
+01:48d8 memset
+01:4898 print_hex4
+01:48c5 print_hex8
+01:48e8 print_inline_string
+01:48a4 print_load_font
+01:48b0 print_newline
+01:48e1 print_string
+01:47f0 quit
+01:4805 quit@cb_return
+01:480a quit@wait_ly_1
+01:4810 quit@wait_ly_2
+01:4816 quit@wait_ly_3
+01:481c quit@wait_ly_4
+01:4826 quit@success
+01:484d quit@failure
+01:4862 quit@halt
+01:4863 quit@halt_execution_0
+01:4866 reset_screen
+01:4889 serial_send_byte
+01:4000 font
+00:0150 main
+00:01d9 main@quit_inline_1
+00:01ea mismatch
+00:0200 mismatch@quit_inline_2
+00:024f hwio_data
+00:ff80 mismatch_addr
+00:ff82 mismatch_data
+00:ff83 mismatch_mem
+
+[definitions]
+0000000a _sizeof_clear_vram
+0000000f _sizeof_disable_lcd_safe
+00000009 _sizeof_memcpy
+00000009 _sizeof_memset
+0000000c _sizeof_print_hex4
+0000000a _sizeof_print_hex8
+00000006 _sizeof_print_inline_string
+0000000c _sizeof_print_load_font
+0000000b _sizeof_print_newline
+00000007 _sizeof_print_string
+00000076 _sizeof_quit
+00000014 _sizeof_reset_screen
+0000000f _sizeof_serial_send_byte
+000007f0 _sizeof_font
+00000002 _sizeof_mismatch_addr
+00000001 _sizeof_mismatch_data
+00000001 _sizeof_mismatch_mem
+0000009a _sizeof_main
+00000065 _sizeof_mismatch

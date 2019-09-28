@@ -86,6 +86,8 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 		}
 		updateTiles(true);
 	});
+
+	connect(m_ui.exportButton, &QAbstractButton::clicked, this, &TileView::exportTiles);
 }
 
 #ifdef M_CORE_GBA
@@ -155,4 +157,13 @@ void TileView::updatePalette(int palette) {
 	m_paletteId = palette;
 	m_ui.tile->setPalette(palette);
 	updateTiles(true);
+}
+
+void TileView::exportTiles() {
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export tiles"),
+	                                                  tr("Portable Network Graphics (*.png)"));
+	CoreController::Interrupter interrupter(m_controller);
+	updateTiles(false);
+	QPixmap pixmap(m_ui.tiles->backing());
+	pixmap.save(filename, "PNG");
 }

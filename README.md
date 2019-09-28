@@ -50,6 +50,7 @@ The following mappers are fully supported:
 - MBC5
 - MBC5+Rumble
 - MBC7
+- Wisdom Tree (unlicensed)
 
 The following mappers are partially supported:
 

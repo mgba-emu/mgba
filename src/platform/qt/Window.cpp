@@ -175,6 +175,8 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	m_log.load(m_config);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
 	m_focusCheck.setInterval(200);
+	m_mustRestart.setInterval(MUST_RESTART_TIMEOUT);
+	m_mustRestart.setSingleShot(true);
 
 	m_shortcutController->setConfigController(m_config);
 	m_shortcutController->setActionMapper(&m_actions);
@@ -1036,6 +1038,10 @@ void Window::tryMakePortable() {
 }
 
 void Window::mustRestart() {
+	if (m_mustRestart.isActive()) {
+		return;
+	}
+	m_mustRestart.start();
 	QMessageBox* dialog = new QMessageBox(QMessageBox::Warning, tr("Restart needed"),
 	                                      tr("Some changes will not take effect until the emulator is restarted."),
 	                                      QMessageBox::Ok, this, Qt::Sheet);
@@ -1734,6 +1740,11 @@ void Window::appendMRU(const QString& fname) {
 	updateMRU();
 }
 
+void Window::clearMRU() {
+	m_mruFiles.clear();
+	updateMRU();
+}
+
 void Window::updateMRU() {
 	m_actions.clearMenu("mru");
 	int i = 0;
@@ -1746,6 +1757,9 @@ void Window::updateMRU() {
 	}
 	m_config->setMRU(m_mruFiles);
 	m_config->write();
+	m_actions.addSeparator("mru");
+	m_actions.addAction(tr("Clear"), "resetMru", this, &Window::clearMRU, "mru");
+
 	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
 }
 

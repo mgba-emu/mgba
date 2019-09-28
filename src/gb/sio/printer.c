@@ -222,6 +222,7 @@ static uint8_t GBPrinterWriteSC(struct GBSIODriver* driver, uint8_t value) {
 				printer->print(printer, printer->currentIndex * 4 / GB_VIDEO_HORIZONTAL_PIXELS, printer->buffer);
 			}
 			printer->printWait = -1;
+			printer->currentIndex = 0;
 		} else if (printer->printWait > 0) {
 			--printer->printWait;
 		}

@@ -145,6 +145,7 @@ private slots:
 
 private:
 	static const int FPS_TIMER_INTERVAL = 2000;
+	static const int MUST_RESTART_TIMEOUT = 10000;
 
 	void setupMenu(QMenuBar*);
 	void openStateWindow(LoadSave);
@@ -153,6 +154,7 @@ private:
 	void detachWidget(QWidget* widget);
 
 	void appendMRU(const QString& fname);
+	void clearMRU();
 	void updateMRU();
 
 	void openView(QWidget* widget);
@@ -197,6 +199,7 @@ private:
 	QList<qint64> m_frameList;
 	QElapsedTimer m_frameTimer;
 	QTimer m_fpsTimer;
+	QTimer m_mustRestart;
 	QList<QString> m_mruFiles;
 	ShortcutController* m_shortcutController;
 #if defined(BUILD_GL) || defined(BUILD_GLES2)

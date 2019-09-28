@@ -1,1 +1,2 @@
-config: {gb.model: AGB}
+config:
+  gb.model: AGB

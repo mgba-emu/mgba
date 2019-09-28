@@ -64,7 +64,6 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 	}
 
 	m_painter = new PainterGL(windowHandle(), m_gl, forceVersion);
-	setUpdatesEnabled(false); // Prevent paint events, which can cause race conditions
 }
 
 DisplayGL::~DisplayGL() {
@@ -478,8 +477,6 @@ void PainterGL::swap() {
 	}
 	if (!m_queue.isEmpty()) {
 		QMetaObject::invokeMethod(this, "draw", Qt::QueuedConnection);
-	} else {
-		m_swapTimer.start();
 	}
 }
 
