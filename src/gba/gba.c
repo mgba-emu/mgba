@@ -241,10 +241,6 @@ void GBAReset(struct ARMCore* cpu) {
 	if (gba->pristineRomSize > SIZE_CART0) {
 		GBAMatrixReset(gba);
 	}
-
-	if (!gba->romVf && gba->memory.rom) {
-		GBASkipBIOS(gba);
-	}
 }
 
 void GBASkipBIOS(struct GBA* gba) {
@@ -787,6 +783,10 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 
 void GBAFrameStarted(struct GBA* gba) {
 	GBATestKeypadIRQ(gba);
+
+	if (gba->audio.mixer) {
+		gba->audio.mixer->vblank(gba->audio.mixer);
+	}
 
 	size_t c;
 	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {

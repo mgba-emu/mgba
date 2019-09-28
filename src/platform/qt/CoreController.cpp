@@ -86,6 +86,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 			context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer->data()), controller->screenDimensions().width());
 		}
 
+		QMetaObject::invokeMethod(controller, "didReset");
 		controller->finishFrame();
 	};
 
@@ -196,9 +197,6 @@ CoreController::~CoreController() {
 		mCacheSetDeinit(m_cacheSet.get());
 		m_cacheSet.reset();
 	}
-
-	mCoreConfigDeinit(&m_threadContext.core->config);
-	m_threadContext.core->deinit(m_threadContext.core);
 }
 
 const color_t* CoreController::drawContext() {
@@ -368,7 +366,6 @@ void CoreController::stop() {
 #endif
 	setPaused(false);
 	mCoreThreadEnd(&m_threadContext);
-	emit stopping();
 }
 
 void CoreController::reset() {
@@ -445,13 +442,21 @@ void CoreController::rewind(int states) {
 }
 
 void CoreController::setFastForward(bool enable) {
+	if (m_fastForward == enable) {
+		return;
+	}
 	m_fastForward = enable;
 	updateFastForward();
+	emit fastForwardChanged(enable);
 }
 
 void CoreController::forceFastForward(bool enable) {
+	if (m_fastForwardForced == enable) {
+		return;
+	}
 	m_fastForwardForced = enable;
 	updateFastForward();
+	emit fastForwardChanged(enable || m_fastForward);
 }
 
 void CoreController::loadState(int slot) {

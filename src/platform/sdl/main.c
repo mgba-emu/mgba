@@ -131,12 +131,8 @@ int main(int argc, char** argv) {
 
 	renderer.viewportWidth = renderer.core->opts.width;
 	renderer.viewportHeight = renderer.core->opts.height;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
 	renderer.player.fullscreen = renderer.core->opts.fullscreen;
 	renderer.player.windowUpdated = 0;
-#else
-	renderer.fullscreen = renderer.core->opts.fullscreen;
-#endif
 
 	renderer.lockAspectRatio = renderer.core->opts.lockAspectRatio;
 	renderer.lockIntegerScaling = renderer.core->opts.lockIntegerScaling;

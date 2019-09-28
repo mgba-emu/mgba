@@ -110,8 +110,7 @@ void GBAVideoReset(struct GBAVideo* video) {
 	memset(video->palette, 0, sizeof(video->palette));
 	memset(video->oam.raw, 0, sizeof(video->oam.raw));
 
-	video->renderer->deinit(video->renderer);
-	video->renderer->init(video->renderer);
+	video->renderer->reset(video->renderer);
 }
 
 void GBAVideoDeinit(struct GBAVideo* video) {

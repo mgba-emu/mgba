@@ -20,7 +20,7 @@ Display* Display::create(QWidget* parent) {
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 	QSurfaceFormat format;
 	format.setSwapInterval(1);
-	format.setSwapBehavior(QSurfaceFormat::TripleBuffer);
+	format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
 #endif
 
 	switch (s_driver) {

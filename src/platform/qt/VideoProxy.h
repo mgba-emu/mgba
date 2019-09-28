@@ -30,11 +30,11 @@ signals:
 
 public slots:
 	void processData();
+	void reset();
 	void handleEvent(int);
 
 private:
 	void init();
-	void reset();
 	void deinit();
 
 	bool writeData(const void* data, size_t length);

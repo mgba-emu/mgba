@@ -24,6 +24,9 @@ VideoProxy::VideoProxy() {
 	m_logger.d.writeData = &callback<bool, const void*, size_t>::func<&VideoProxy::writeData>;
 	m_logger.d.readData = &callback<bool, void*, size_t, bool>::func<&VideoProxy::readData>;
 	m_logger.d.postEvent = &callback<void, enum mVideoLoggerEvent>::func<&VideoProxy::postEvent>;
+
+	connect(this, &VideoProxy::dataAvailable, this, &VideoProxy::processData);
+	connect(this, &VideoProxy::eventPosted, this, &VideoProxy::handleEvent);
 }
 
 void VideoProxy::attach(CoreController* controller) {
@@ -41,7 +44,10 @@ void VideoProxy::init() {
 }
 
 void VideoProxy::reset() {
+	m_mutex.lock();
 	RingFIFOClear(&m_dirtyQueue);
+	m_toThreadCond.wakeAll();
+	m_mutex.unlock();
 }
 
 void VideoProxy::deinit() {
@@ -92,11 +98,13 @@ void VideoProxy::unlock() {
 }
 
 void VideoProxy::wait() {
+	m_mutex.lock();
 	while (RingFIFOSize(&m_dirtyQueue)) {
 		emit dataAvailable();
 		m_toThreadCond.wakeAll();
 		m_fromThreadCond.wait(&m_mutex, 1);
 	}
+	m_mutex.unlock();
 }
 
 void VideoProxy::wake(int y) {

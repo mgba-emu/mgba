@@ -648,8 +648,12 @@ void Window::closeEvent(QCloseEvent* event) {
 		m_config->setOption("width", GBA_VIDEO_HORIZONTAL_PIXELS * m_savedScale);
 	}
 	saveConfig();
-	m_display.reset();
-	QMainWindow::closeEvent(event);
+	if (m_controller) {
+		event->ignore();
+		m_pendingClose = true;
+	} else {
+		m_display.reset();
+	}
 }
 
 void Window::focusInEvent(QFocusEvent*) {
@@ -784,7 +788,6 @@ void Window::gameStarted() {
 	}
 	attachWidget(m_display.get());
 	setMouseTracking(true);
-	m_display->setMinimumSize(size);
 	setFocus();
 
 #ifndef Q_OS_MAC
@@ -792,7 +795,6 @@ void Window::gameStarted() {
 		menuBar()->hide();
 	}
 #endif
-	m_display->startDrawing(m_controller);
 
 	reloadAudioDriver();
 	multiplayerChanged();
@@ -843,6 +845,11 @@ void Window::gameStarted() {
 
 void Window::gameStopped() {
 	m_controller.reset();
+	m_display->stopDrawing();
+	if (m_pendingClose) {
+		m_display.reset();
+		close();
+	}
 	for (Action* action : m_platformActions) {
 		action->setEnabled(true);
 	}
@@ -929,7 +936,6 @@ void Window::reloadDisplayDriver() {
 	m_shaderView = std::make_unique<ShaderSelector>(m_display.get(), m_config);
 #endif
 
-	connect(this, &Window::shutdown, m_display.get(), &Display::stopDrawing);
 	connect(m_display.get(), &Display::hideCursor, [this]() {
 		if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() == m_display.get()) {
 			m_screenWidget->setCursor(Qt::BlankCursor);
@@ -954,8 +960,6 @@ void Window::reloadDisplayDriver() {
 #endif
 
 	if (m_controller) {
-		m_display->setMinimumSize(m_controller->screenDimensions());
-		connect(m_controller.get(), &CoreController::stopping, m_display.get(), &Display::stopDrawing);
 		connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::resizeContext);
 		connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::forceDraw);
 		connect(m_controller.get(), &CoreController::rewound, m_display.get(), &Display::forceDraw);
@@ -966,13 +970,12 @@ void Window::reloadDisplayDriver() {
 
 		attachWidget(m_display.get());
 		m_display->startDrawing(m_controller);
-	} else {
-#ifdef M_CORE_GB
-		m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
-#elif defined(M_CORE_GBA)
-		m_display->setMinimumSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-#endif
 	}
+#ifdef M_CORE_GB
+	m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
+#elif defined(M_CORE_GBA)
+	m_display->setMinimumSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+#endif
 }
 
 void Window::reloadAudioDriver() {
@@ -991,6 +994,7 @@ void Window::reloadAudioDriver() {
 	m_audioProcessor->requestSampleRate(opts->sampleRate);
 	m_audioProcessor->start();
 	connect(m_controller.get(), &CoreController::stopping, m_audioProcessor.get(), &AudioProcessor::stop);
+	connect(m_controller.get(), &CoreController::fastForwardChanged, m_audioProcessor.get(), &AudioProcessor::inputParametersChanged);
 }
 
 void Window::tryMakePortable() {
@@ -1372,7 +1376,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addMenu(tr("Audio/&Video"), "av");
 	m_actions.addMenu(tr("Frame size"), "frame", "av");
-	for (int i = 1; i <= 6; ++i) {
+	for (int i = 1; i <= 8; ++i) {
 		Action* setSize = m_actions.addAction(tr("%1×").arg(QString::number(i)), QString("frame.%1x").arg(QString::number(i)), [this, i]() {
 			Action* setSize = m_frameSizes[i];
 			showNormal();
@@ -1739,6 +1743,9 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	if (!controller) {
 		return;
 	}
+	if (m_pendingClose) {
+		return;
+	}
 
 	if (m_controller) {
 		m_controller->stop();
@@ -1771,12 +1778,14 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	m_inputController.recalibrateAxes();
 	m_controller->setInputController(&m_inputController);
 	m_controller->setLogger(&m_log);
+	m_display->startDrawing(m_controller);
 
 	connect(this, &Window::shutdown, [this]() {
 		if (!m_controller) {
 			return;
 		}
 		m_controller->stop();
+		disconnect(m_controller.get(), &CoreController::started, this, &Window::gameStarted);
 	});
 
 	connect(m_controller.get(), &CoreController::started, this, &Window::gameStarted);
@@ -1804,7 +1813,6 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		emit paused(false);
 	});
 
-	connect(m_controller.get(), &CoreController::stopping, m_display.get(), &Display::stopDrawing);
 	connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::resizeContext);
 	connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::forceDraw);
 	connect(m_controller.get(), &CoreController::rewound, m_display.get(), &Display::forceDraw);

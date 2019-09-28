@@ -57,6 +57,10 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 
+	connect(m_ui.nativeGB, &QAbstractButton::pressed, [this]() {
+		m_ui.fpsTarget->setValue(double(GBA_ARM7TDMI_FREQUENCY) / double(VIDEO_TOTAL_LENGTH));
+	});
+
 	if (m_ui.savegamePath->text().isEmpty()) {
 		m_ui.savegameSameDir->setChecked(true);
 	}
@@ -364,7 +368,6 @@ void SettingsView::updateConfig() {
 	saveSetting("videoSync", m_ui.videoSync);
 	saveSetting("audioSync", m_ui.audioSync);
 	saveSetting("frameskip", m_ui.frameskip);
-	saveSetting("fpsTarget", m_ui.fpsTarget);
 	saveSetting("autofireThreshold", m_ui.autofireThreshold);
 	saveSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	saveSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
@@ -395,12 +398,19 @@ void SettingsView::updateConfig() {
 	saveSetting("logToStdout", m_ui.logToStdout);
 	saveSetting("logFile", m_ui.logFile);
 	saveSetting("useDiscordPresence", m_ui.useDiscordPresence);
-	saveSetting("audioHle", m_ui.audioHle);
+	saveSetting("gba.audioHle", m_ui.audioHle);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
 	} else {
 		saveSetting("fastForwardRatio", m_ui.fastForwardRatio);
+	}
+
+	double nativeFps = double(GBA_ARM7TDMI_FREQUENCY) / double(VIDEO_TOTAL_LENGTH);
+	if (nativeFps - m_ui.fpsTarget->value() < 0.0001) {
+		m_controller->setOption("fpsTarget", QVariant(nativeFps));
+	} else {
+		saveSetting("fpsTarget", m_ui.fpsTarget);
 	}
 
 	switch (m_ui.idleOptimization->currentIndex() + IDLE_LOOP_IGNORE) {
@@ -549,7 +559,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("logToStdout", m_ui.logToStdout);
 	loadSetting("logFile", m_ui.logFile);
 	loadSetting("useDiscordPresence", m_ui.useDiscordPresence);
-	loadSetting("audioHle", m_ui.audioHle);
+	loadSetting("gba.audioHle", m_ui.audioHle);
 	loadSetting("videoScale", m_ui.videoScale, 1);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());

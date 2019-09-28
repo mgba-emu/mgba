@@ -12,6 +12,7 @@
 #include <mgba/internal/gba/cheats.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/extra/audio-mixer.h>
 #include <mgba/internal/gba/extra/cli.h>
 #include <mgba/internal/gba/overrides.h>
 #ifndef DISABLE_THREADING
@@ -127,6 +128,9 @@ static const struct mCoreMemoryBlock _GBAMemoryBlocksEEPROM[] = {
 };
 
 struct mVideoLogContext;
+
+#define CPU_COMPONENT_AUDIO_MIXER CPU_COMPONENT_MISC_1
+
 struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
@@ -144,6 +148,7 @@ struct GBACore {
 	const struct Configuration* overrides;
 	struct mDebuggerPlatform* debuggerPlatform;
 	struct mCheatDevice* cheatDevice;
+	struct GBAAudioMixer* audioMixer;
 };
 
 static bool _GBACoreInit(struct mCore* core) {
@@ -166,6 +171,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->debuggerPlatform = NULL;
 	gbacore->cheatDevice = NULL;
 	gbacore->logContext = NULL;
+	gbacore->audioMixer = NULL;
 
 	GBACreate(gba);
 	// TODO: Restore cheats
@@ -217,6 +223,7 @@ static void _GBACoreDeinit(struct mCore* core) {
 		mCheatDeviceDestroy(gbacore->cheatDevice);
 	}
 	free(gbacore->cheatDevice);
+	free(gbacore->audioMixer);
 	mCoreConfigFreeOpts(&core->opts);
 	free(core);
 }
@@ -280,6 +287,7 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 
 	mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
 	mCoreConfigCopyValue(&core->config, config, "gba.bios");
+	mCoreConfigCopyValue(&core->config, config, "gba.audioHle");
 
 #ifndef DISABLE_THREADING
 	mCoreConfigCopyValue(&core->config, config, "threadedVideo");
@@ -475,6 +483,16 @@ static void _GBACoreReset(struct mCore* core) {
 		GBAVideoAssociateRenderer(&gba->video, renderer);
 	}
 
+#ifndef MINIMAL_CORE
+	int useAudioMixer;
+	if (!gbacore->audioMixer && mCoreConfigGetIntValue(&core->config, "gba.audioHle", &useAudioMixer) && useAudioMixer) {
+		gbacore->audioMixer = malloc(sizeof(*gbacore->audioMixer));
+		GBAAudioMixerCreate(gbacore->audioMixer);
+		((struct ARMCore*) core->cpu)->components[CPU_COMPONENT_AUDIO_MIXER] = &gbacore->audioMixer->d;
+		ARMHotplugAttach(core->cpu, CPU_COMPONENT_AUDIO_MIXER);
+	}
+#endif
+
 	GBAOverrideApplyDefaults(gba, gbacore->overrides);
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
@@ -521,7 +539,7 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 
 	ARMReset(core->cpu);
-	if (core->opts.skipBios && gba->isPristine) {
+	if (core->opts.skipBios && (gba->romVf || gba->memory.rom)) {
 		GBASkipBIOS(core->board);
 	}
 }

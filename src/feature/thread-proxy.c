@@ -153,10 +153,12 @@ static void _wait(struct mVideoLogger* logger) {
 		_proxyThreadRecover(proxyRenderer);
 		return;
 	}
+	MutexLock(&proxyRenderer->mutex);
 	while (RingFIFOSize(&proxyRenderer->dirtyQueue)) {
 		ConditionWake(&proxyRenderer->toThreadCond);
 		ConditionWait(&proxyRenderer->fromThreadCond, &proxyRenderer->mutex);
 	}
+	MutexUnlock(&proxyRenderer->mutex);
 }
 
 static void _unlock(struct mVideoLogger* logger) {

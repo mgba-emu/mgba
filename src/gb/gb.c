@@ -723,7 +723,7 @@ static void _enableInterrupts(struct mTiming* timing, void* user, uint32_t cycle
 
 void GBHalt(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-	if (!(gb->memory.ie & gb->memory.io[REG_IF])) {
+	if (!(gb->memory.ie & gb->memory.io[REG_IF] & 0x1F)) {
 		cpu->cycles = cpu->nextEvent;
 		cpu->halted = true;
 	} else if (gb->model < GB_MODEL_CGB) {

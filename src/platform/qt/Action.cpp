@@ -67,6 +67,10 @@ void Action::trigger(bool active) {
 		return;
 	}
 
+	if (m_exclusive && !m_booleanFunction) {
+		active = true;
+	}
+
 	if (m_function && active) {
 		m_function();
 	}

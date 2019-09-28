@@ -99,6 +99,9 @@ public:
 	void setInputController(InputController*);
 	void setLogger(LogController*);
 
+	bool audioSync() const { return m_audioSync; }
+	bool videoSync() const { return m_videoSync; }
+
 public slots:
 	void start();
 	void stop();
@@ -167,6 +170,7 @@ signals:
 	void crashed(const QString& errorMessage);
 	void failed();
 	void frameAvailable();
+	void didReset();
 	void stateLoaded();
 	void rewound();
 

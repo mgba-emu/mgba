@@ -17,19 +17,12 @@
 #define SPRITE_MOSAIC_LOOP(DEPTH, TYPE) \
 	SPRITE_YBASE_ ## DEPTH(inY); \
 	unsigned tileData; \
-	if (outX % mosaicH) { \
-		if (!inX && xOffset > 0) { \
-			inX = mosaicH - (outX % mosaicH); \
-			outX += mosaicH - (outX % mosaicH); \
-		} else if (inX == width - xOffset) { \
-			inX = mosaicH + (outX % mosaicH); \
-			outX += mosaicH - (outX % mosaicH); \
-		} \
-	} \
 	for (; outX < condition; ++outX, inX += xOffset) { \
 		int localX = inX - xOffset * (outX % mosaicH); \
-		if (localX < 0 || localX > width - 1) { \
-			continue; \
+		if (localX < 0) { \
+			localX = 0; \
+		} else if (localX > width - 1) {\
+			localX = width - 1; \
 		} \
 		SPRITE_XBASE_ ## DEPTH(localX); \
 		SPRITE_DRAW_PIXEL_ ## DEPTH ## _ ## TYPE(localX); \
@@ -48,6 +41,31 @@
 		\
 		if (localX & widthMask || localY & heightMask) { \
 			break; \
+		} \
+		\
+		SPRITE_YBASE_ ## DEPTH(localY); \
+		SPRITE_XBASE_ ## DEPTH(localX); \
+		SPRITE_DRAW_PIXEL_ ## DEPTH ## _ ## TYPE(localX); \
+	}
+
+#define SPRITE_TRANSFORMED_MOSAIC_LOOP(DEPTH, TYPE) \
+	unsigned tileData; \
+	unsigned widthMask = ~(width - 1); \
+	unsigned heightMask = ~(height - 1); \
+	int localX = xAccum >> 8; \
+	int localY = yAccum >> 8; \
+	for (; outX < condition; ++outX, ++inX) { \
+		renderer->spriteCyclesRemaining -= 2; \
+		xAccum += mat.a; \
+		yAccum += mat.c; \
+		\
+		if (outX % mosaicH == 0) { \
+			localX = xAccum >> 8; \
+			localY = yAccum >> 8; \
+		} \
+		\
+		if (localX & widthMask || localY & heightMask) { \
+			continue; \
 		} \
 		\
 		SPRITE_YBASE_ ## DEPTH(localY); \
@@ -281,6 +299,13 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 		if (end < condition) {
 			condition = end;
 		}
+		int mosaicH = 1;
+		if (GBAObjAttributesAIsMosaic(sprite->a)) {
+			mosaicH = GBAMosaicControlGetObjH(renderer->mosaic) + 1;
+			if (condition % mosaicH) {
+				condition += mosaicH - (condition % mosaicH);
+			}
+		}
 
 		int xAccum = mat.a * (inX - 1 - (totalWidth >> 1)) + mat.b * (inY - (totalHeight >> 1)) + (width << 7);
 		int yAccum = mat.c * (inX - 1 - (totalWidth >> 1)) + mat.d * (inY - (totalHeight >> 1)) + (height << 7);
@@ -340,6 +365,13 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			palette = &palette[GBAObjAttributesCGetPalette(sprite->c) << 4];
 			if (flags & FLAG_OBJWIN) {
 				SPRITE_TRANSFORMED_LOOP(16, OBJWIN);
+			} else if (mosaicH > 1) {
+				if (objwinSlowPath) {
+					objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 4];
+					SPRITE_TRANSFORMED_MOSAIC_LOOP(16, NORMAL_OBJWIN);
+				} else {
+					SPRITE_TRANSFORMED_MOSAIC_LOOP(16, NORMAL);
+				}
 			} else if (objwinSlowPath) {
 				objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 4];
 				SPRITE_TRANSFORMED_LOOP(16, NORMAL_OBJWIN);
@@ -358,6 +390,12 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			palette = &palette[GBAObjAttributesCGetPalette(sprite->c) << 8];
 			if (flags & FLAG_OBJWIN) {
 				SPRITE_TRANSFORMED_LOOP(256, OBJWIN);
+			} else if (mosaicH > 1) {
+				if (objwinSlowPath) {
+					SPRITE_TRANSFORMED_MOSAIC_LOOP(256, NORMAL_OBJWIN);
+				} else {
+					SPRITE_TRANSFORMED_MOSAIC_LOOP(256, NORMAL);
+				}
 			} else if (objwinSlowPath) {
 				objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 8];
 				SPRITE_TRANSFORMED_LOOP(256, NORMAL_OBJWIN);
