@@ -883,6 +883,11 @@ void Window::gameStopped() {
 		m_audioProcessor->stop();
 		m_audioProcessor.reset();
 	}
+	m_display->stopDrawing();
+	if (m_pendingClose) {
+		m_display.reset();
+		close();
+	}
 
 #ifdef USE_DISCORD_RPC
 	DiscordCoordinator::gameStopped();

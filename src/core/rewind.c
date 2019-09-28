@@ -53,7 +53,7 @@ void mCoreRewindContextDeinit(struct mCoreRewindContext* context) {
 		context->onThread = false;
 		MutexUnlock(&context->mutex);
 		ConditionWake(&context->cond);
-		ThreadJoin(context->thread);
+		ThreadJoin(&context->thread);
 		MutexDeinit(&context->mutex);
 		ConditionDeinit(&context->cond);
 	}

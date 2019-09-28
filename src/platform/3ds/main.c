@@ -959,7 +959,7 @@ int main() {
 	Thread thread2;
 	if (ThreadCreate(&thread2, _core2Test, NULL) == 0) {
 		core2 = true;
-		ThreadJoin(thread2);
+		ThreadJoin(&thread2);
 	}
 
 	mGUIInit(&runner, "3ds");

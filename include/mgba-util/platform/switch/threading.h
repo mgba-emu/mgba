@@ -71,12 +71,12 @@ static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context)
 	return threadStart(thread);
 }
 
-static inline int ThreadJoin(Thread thread) {
-	int res = threadWaitForExit(&thread);
+static inline int ThreadJoin(Thread* thread) {
+	int res = threadWaitForExit(thread);
 	if(R_FAILED(res)) {
 		return res;
 	}
-	return threadClose(&thread);
+	return threadClose(thread);
 }
 
 static inline void ThreadSetName(const char* name) {

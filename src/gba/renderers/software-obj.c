@@ -85,7 +85,7 @@
 	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	current = renderer->spriteLayer[outX]; \
-	if ((current & FLAG_UNWRITTEN) == FLAG_UNWRITTEN && tileData) { \
+	if ((current & FLAG_ORDER_MASK) > flags && tileData) { \
 		renderer->spriteLayer[outX] = palette[tileData] | flags; \
 	}
 
@@ -98,7 +98,7 @@
 	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	current = renderer->spriteLayer[outX]; \
-	if ((current & FLAG_UNWRITTEN) == FLAG_UNWRITTEN && tileData) { \
+	if ((current & FLAG_ORDER_MASK) > flags && tileData) { \
 		unsigned color = (renderer->row[outX] & FLAG_OBJWIN) ? objwinPalette[tileData] : palette[tileData]; \
 		renderer->spriteLayer[outX] = color | flags; \
 	}
@@ -127,7 +127,7 @@
 	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	current = renderer->spriteLayer[outX]; \
-	if ((current & FLAG_UNWRITTEN) == FLAG_UNWRITTEN && tileData) { \
+	if ((current & FLAG_ORDER_MASK) > flags && tileData) { \
 		renderer->spriteLayer[outX] = palette[tileData] | flags; \
 	}
 
@@ -140,7 +140,7 @@
 	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	current = renderer->spriteLayer[outX]; \
-	if ((current & FLAG_UNWRITTEN) == FLAG_UNWRITTEN && tileData) { \
+	if ((current & FLAG_ORDER_MASK) > flags && tileData) { \
 		unsigned color = (renderer->row[outX] & FLAG_OBJWIN) ? objwinPalette[tileData] : palette[tileData]; \
 		renderer->spriteLayer[outX] = color | flags; \
 	}

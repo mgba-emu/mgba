@@ -420,7 +420,7 @@ void mPSP2UnloadROM(struct mGUIRunner* runner) {
 		break;
 	}
 	audioContext.running = false;
-	ThreadJoin(audioThread);
+	ThreadJoin(&audioThread);
 }
 
 void mPSP2Paused(struct mGUIRunner* runner) {

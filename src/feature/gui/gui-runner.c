@@ -233,7 +233,7 @@ void mGUIDeinit(struct mGUIRunner* runner) {
 	ConditionWake(&runner->autosave.cond);
 	MutexUnlock(&runner->autosave.mutex);
 
-	ThreadJoin(runner->autosave.thread);
+	ThreadJoin(&runner->autosave.thread);
 
 	ConditionDeinit(&runner->autosave.cond);
 	MutexDeinit(&runner->autosave.mutex);
