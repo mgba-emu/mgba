@@ -81,17 +81,33 @@ typedef intptr_t ssize_t;
 #define ATOMIC_STORE(DST, SRC) __atomic_store_n(&DST, SRC, __ATOMIC_RELEASE)
 #define ATOMIC_LOAD(DST, SRC) DST = __atomic_load_n(&SRC, __ATOMIC_ACQUIRE)
 #define ATOMIC_ADD(DST, OP) __atomic_add_fetch(&DST, OP, __ATOMIC_RELEASE)
+#define ATOMIC_SUB(DST, OP) __atomic_sub_fetch(&DST, OP, __ATOMIC_RELEASE)
 #define ATOMIC_OR(DST, OP) __atomic_or_fetch(&DST, OP, __ATOMIC_RELEASE)
 #define ATOMIC_AND(DST, OP) __atomic_and_fetch(&DST, OP, __ATOMIC_RELEASE)
 #define ATOMIC_CMPXCHG(DST, EXPECTED, SRC) __atomic_compare_exchange_n(&DST, &EXPECTED, SRC, true,__ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)
+#define ATOMIC_STORE_PTR(DST, SRC) ATOMIC_STORE(DST, SRC)
+#define ATOMIC_LOAD_PTR(DST, SRC) ATOMIC_LOAD(DST, SRC)
+#elif defined _MSC_VER
+#define ATOMIC_STORE(DST, SRC) InterlockedExchange(&DST, SRC)
+#define ATOMIC_LOAD(DST, SRC) DST = InterlockedOrAcquire(&SRC, 0)
+#define ATOMIC_ADD(DST, OP) InterlockedAddRelease(&DST, OP)
+#define ATOMIC_SUB(DST, OP) InterlockedAddRelease(&DST, -OP)
+#define ATOMIC_OR(DST, OP) InterlockedOrRelease(&DST, OP)
+#define ATOMIC_AND(DST, OP) InterlockedAndRelease(&DST, OP)
+#define ATOMIC_CMPXCHG(DST, EXPECTED, SRC) (InterlockedCompareExchange(&DST, SRC, EXPECTED) == EXPECTED)
+#define ATOMIC_STORE_PTR(DST, SRC) InterlockedExchangePointer(DST, SRC)
+#define ATOMIC_LOAD_PTR(DST, SRC) DST = InterlockedCompareExchangePointer(SRC, 0, 0)
 #else
 // TODO
 #define ATOMIC_STORE(DST, SRC) DST = SRC
 #define ATOMIC_LOAD(DST, SRC) DST = SRC
 #define ATOMIC_ADD(DST, OP) DST += OP
+#define ATOMIC_SUB(DST, OP) DST -= OP
 #define ATOMIC_OR(DST, OP) DST |= OP
 #define ATOMIC_AND(DST, OP) DST &= OP
 #define ATOMIC_CMPXCHG(DST, EXPECTED, OP) ((DST == EXPECTED) ? ((DST = OP), true) : false)
+#define ATOMIC_STORE_PTR(DST, SRC) ATOMIC_STORE(DST, SRC)
+#define ATOMIC_LOAD_PTR(DST, SRC) ATOMIC_LOAD(DST, SRC)
 #endif
 
 #if defined(_3DS) || defined(GEKKO) || defined(PSP2)

@@ -94,6 +94,7 @@ void _battlechipTransfer(struct GBASIOBattlechipGate* gate) {
 }
 
 void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cyclesLate) {
+	UNUSED(timing);
 	struct GBASIOBattlechipGate* gate = user;
 
 	if (gate->d.p->mode == SIO_NORMAL_32) {

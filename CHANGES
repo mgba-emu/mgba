@@ -42,6 +42,7 @@ Emulation fixes:
  - GB Timer: Fix timing adjustments when writing to TAC (fixes mgba.io/i/1340)
  - GBA Memory: Fix writing to OBJ memory in modes 3 and 5
  - GBA: Fix RTC on non-standard sized ROMs (fixes mgba.io/i/1400)
+ - GBA Memory: Prevent writing to mirrored BG VRAM (fixes mgba.io/i/743)
 Other fixes:
  - Qt: More app metadata fixes
  - Qt: Fix load recent from archive (fixes mgba.io/i/1325)
@@ -57,6 +58,8 @@ Other fixes:
  - Qt: Fix adjusting magnification in tile viewer when not fitting to window
  - FFmpeg: Improve initialization reliability and cleanup
  - Wii: Fix aspect ratio (fixes mgba.io/i/500)
+ - Qt: Fix some Qt display driver race conditions
+ - FFmpeg: Fix audio conversion producing gaps
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
@@ -74,6 +77,8 @@ Misc:
  - Debugger: Make tracing compatible with breakpoints/watchpoints
  - Debugger: Print breakpoint/watchpoint number when inserting
  - Qt: Open a message box for Qt frontend errors
+ - GBA Video: Clean up dead code in sprite rendering loop
+ - FFmpeg: Support audio-only recording
 
 0.7.1: (2019-02-24)
 Bugfixes:

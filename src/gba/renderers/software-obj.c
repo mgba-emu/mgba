@@ -67,12 +67,8 @@
 	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	current = renderer->spriteLayer[outX]; \
-	if ((current & FLAG_ORDER_MASK) > flags) { \
-		if (tileData) { \
-			renderer->spriteLayer[outX] = palette[tileData] | flags; \
-		} else if (current != FLAG_UNWRITTEN) { \
-			renderer->spriteLayer[outX] = (current & ~FLAG_ORDER_MASK) | GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY; \
-		} \
+	if ((current & FLAG_UNWRITTEN) == FLAG_UNWRITTEN && tileData) { \
+		renderer->spriteLayer[outX] = palette[tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_16_NORMAL_OBJWIN(localX) \
@@ -84,13 +80,9 @@
 	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	current = renderer->spriteLayer[outX]; \
-	if ((current & FLAG_ORDER_MASK) > flags) { \
-		if (tileData) { \
-			unsigned color = (renderer->row[outX] & FLAG_OBJWIN) ? objwinPalette[tileData] : palette[tileData]; \
-			renderer->spriteLayer[outX] = color | flags; \
-		} else if (current != FLAG_UNWRITTEN) { \
-			renderer->spriteLayer[outX] = (current & ~FLAG_ORDER_MASK) | GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY; \
-		} \
+	if ((current & FLAG_UNWRITTEN) == FLAG_UNWRITTEN && tileData) { \
+		unsigned color = (renderer->row[outX] & FLAG_OBJWIN) ? objwinPalette[tileData] : palette[tileData]; \
+		renderer->spriteLayer[outX] = color | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_16_OBJWIN(localX) \
@@ -117,12 +109,8 @@
 	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	current = renderer->spriteLayer[outX]; \
-	if ((current & FLAG_ORDER_MASK) > flags) { \
-		if (tileData) { \
-			renderer->spriteLayer[outX] = palette[tileData] | flags; \
-		} else if (current != FLAG_UNWRITTEN) { \
-			renderer->spriteLayer[outX] = (current & ~FLAG_ORDER_MASK) | GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY; \
-		} \
+	if ((current & FLAG_UNWRITTEN) == FLAG_UNWRITTEN && tileData) { \
+		renderer->spriteLayer[outX] = palette[tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_256_NORMAL_OBJWIN(localX) \
@@ -134,13 +122,9 @@
 	LOAD_16(tileData, spriteBase & VRAM_BLOCK_MASK, vramBase); \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	current = renderer->spriteLayer[outX]; \
-	if ((current & FLAG_ORDER_MASK) > flags) { \
-		if (tileData) { \
-			unsigned color = (renderer->row[outX] & FLAG_OBJWIN) ? objwinPalette[tileData] : palette[tileData]; \
-			renderer->spriteLayer[outX] = color | flags; \
-		} else if (current != FLAG_UNWRITTEN) { \
-			renderer->spriteLayer[outX] = (current & ~FLAG_ORDER_MASK) | GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY; \
-		} \
+	if ((current & FLAG_UNWRITTEN) == FLAG_UNWRITTEN && tileData) { \
+		unsigned color = (renderer->row[outX] & FLAG_OBJWIN) ? objwinPalette[tileData] : palette[tileData]; \
+		renderer->spriteLayer[outX] = color | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_256_OBJWIN(localX) \

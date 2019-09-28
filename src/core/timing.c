@@ -14,6 +14,7 @@ void mTimingInit(struct mTiming* timing, int32_t* relativeCycles, int32_t* nextE
 }
 
 void mTimingDeinit(struct mTiming* timing) {
+	UNUSED(timing);
 }
 
 void mTimingClear(struct mTiming* timing) {

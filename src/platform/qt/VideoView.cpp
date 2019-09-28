@@ -279,7 +279,11 @@ void VideoView::setAudioCodec(const QString& codec, bool manual) {
 void VideoView::setVideoCodec(const QString& codec, bool manual) {
 	free(m_videoCodecCstr);
 	m_videoCodec = sanitizeCodec(codec, s_vcodecMap);
-	m_videoCodecCstr = strdup(m_videoCodec.toUtf8().constData());
+	if (m_videoCodec == "none") {
+		m_videoCodecCstr = nullptr;
+	} else {
+		m_videoCodecCstr = strdup(m_videoCodec.toUtf8().constData());
+	}
 	if (!FFmpegEncoderSetVideo(&m_encoder, m_videoCodecCstr, m_vbr)) {
 		free(m_videoCodecCstr);
 		m_videoCodecCstr = nullptr;

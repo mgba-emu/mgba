@@ -17,7 +17,6 @@ static uint8_t GBSIOLockstepNodeWriteSC(struct GBSIODriver* driver, uint8_t valu
 static void _GBSIOLockstepNodeProcessEvents(struct mTiming* timing, void* driver, uint32_t cyclesLate);
 
 void GBSIOLockstepInit(struct GBSIOLockstep* lockstep) {
-	mLockstepInit(&lockstep->d);
 	lockstep->players[0] = NULL;
 	lockstep->players[1] = NULL;
 	lockstep->pendingSB[0] = 0xFF;
@@ -236,6 +235,8 @@ static uint8_t GBSIOLockstepNodeWriteSC(struct GBSIODriver* driver, uint8_t valu
 			mTimingDeschedule(&driver->p->p->timing, &driver->p->event);
 			mTimingDeschedule(&driver->p->p->timing, &node->event);
 			mTimingSchedule(&driver->p->p->timing, &node->event, 0);
+		} else {
+			mLOG(GB_SIO, FATAL, "GBSIOLockstepNodeWriteSC() failed to write to masterClaimed\n");
 		}
 	}
 	return value;

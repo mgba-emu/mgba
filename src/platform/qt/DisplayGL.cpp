@@ -37,6 +37,7 @@ DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	m_painter = new PainterGL(format.majorVersion() < 2 ? 1 : m_gl->format().majorVersion(), m_gl);
 	m_gl->setMouseTracking(true);
 	m_gl->setAttribute(Qt::WA_TransparentForMouseEvents); // This doesn't seem to work?
+	setUpdatesEnabled(false); // Prevent paint events, which can cause race conditions
 }
 
 DisplayGL::~DisplayGL() {
@@ -223,6 +224,9 @@ PainterGL::PainterGL(int majorVersion, QGLWidget* parent)
 #endif
 	m_backend->swap = [](VideoBackend* v) {
 		PainterGL* painter = static_cast<PainterGL*>(v->user);
+		if (!painter->m_gl->isVisible()) {
+			return;
+		}
 		painter->m_gl->swapBuffers();
 	};
 

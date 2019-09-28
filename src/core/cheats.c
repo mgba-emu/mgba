@@ -230,7 +230,7 @@ bool mCheatSaveFile(struct mCheatDevice* device, struct VFile* vf) {
 			char directive[64];
 			ssize_t len = snprintf(directive, sizeof(directive) - 1, "!%s\n", *StringListGetPointer(&directives, d));
 			if (len > 1) {
-				vf->write(vf, directive, (size_t) len > sizeof(directive) ? sizeof(directive) : len);
+				vf->write(vf, directive, (size_t) len > sizeof(directive) ? sizeof(directive) : (size_t) len);
 			}
 		}
 

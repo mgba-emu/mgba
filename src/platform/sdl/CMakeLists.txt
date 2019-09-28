@@ -60,7 +60,7 @@ set(MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/main.c)
 
 if(BUILD_RASPI)
 	add_definitions(-DBUILD_RASPI)
-	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c ${CMAKE_SOURCE_DIR}/src/platform/sdl/gl-common.c)
+	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c ${CMAKE_SOURCE_DIR}/src/platform/sdl/gl-common.c ${CMAKE_SOURCE_DIR}/src/platform/sdl/rpi-common.c)
 	list(APPEND MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/gles2-sdl.c)
 	set(OPENGLES2_LIBRARY "-lEGL -lGLESv2 -lbcm_host")
 	set(BUILD_GLES2 ON CACHE BOOL "Using OpenGL|ES 2" FORCE)

@@ -608,9 +608,7 @@ void Window::resizeEvent(QResizeEvent* event) {
 	}
 	m_savedScale = factor;
 	for (QMap<int, Action*>::iterator iter = m_frameSizes.begin(); iter != m_frameSizes.end(); ++iter) {
-		bool enableSignals = iter.value()->blockSignals(true);
 		iter.value()->setActive(iter.key() == factor);
-		iter.value()->blockSignals(enableSignals);
 	}
 
 	m_config->setOption("fullscreen", isFullScreen());
@@ -636,6 +634,7 @@ void Window::showEvent(QShowEvent* event) {
 		m_fullscreenOnStart = false;
 	}
 	reloadDisplayDriver();
+	setFocus();
 }
 
 void Window::closeEvent(QCloseEvent* event) {
@@ -835,7 +834,7 @@ void Window::gameStarted() {
 			action->setActive(true);
 		}
 	}
-	m_actions.rebuildMenu(menuBar(), *m_shortcutController);
+	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
 
 
 #ifdef USE_DISCORD_RPC
@@ -1382,9 +1381,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 			m_savedScale = i;
 			m_config->setOption("scaleMultiplier", i); // TODO: Port to other
 			resizeFrame(size);
-			bool enableSignals = setSize->blockSignals(true);
 			setSize->setActive(true);
-			setSize->blockSignals(enableSignals);
 		}, "frame");
 		setSize->setExclusive(true);
 		if (m_savedScale == i) {
@@ -1481,17 +1478,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 #ifdef USE_FFMPEG
-	addGameAction(tr("Record output..."), "recordOutput", this, &Window::openVideoWindow, "av");
+	addGameAction(tr("Record A/V..."), "recordOutput", this, &Window::openVideoWindow, "av");
 #endif
 
 #ifdef USE_MAGICK
 	addGameAction(tr("Record GIF..."), "recordGIF", this, &Window::openGIFWindow, "av");
 #endif
-
-	addGameAction(tr("Record video log..."), "recordVL", this, &Window::startVideoLog, "av");
-	addGameAction(tr("Stop video log"), "stopVL", [this]() {
-		m_controller->endVideoLog();
-	}, "av");
 
 	m_actions.addSeparator("av");
 	m_actions.addMenu(tr("Video layers"), "videoLayers", "av");
@@ -1551,6 +1543,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	Action* ioViewer = addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "tools");
 	m_platformActions.insert(PLATFORM_GBA, ioViewer);
 #endif
+
+	m_actions.addSeparator("tools");
+	addGameAction(tr("Record debug video log..."), "recordVL", this, &Window::startVideoLog, "tools");
+	addGameAction(tr("Stop debug video log"), "stopVL", [this]() {
+		m_controller->endVideoLog();
+	}, "tools");
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
 	skipBios->connect([this](const QVariant& value) {
@@ -1642,7 +1640,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 
 	m_shortcutController->rebuildItems();
-	m_actions.rebuildMenu(menubar, *m_shortcutController);
+	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
 }
 
 void Window::attachWidget(QWidget* widget) {
@@ -1679,7 +1677,7 @@ void Window::updateMRU() {
 	}
 	m_config->setMRU(m_mruFiles);
 	m_config->write();
-	m_actions.rebuildMenu(menuBar(), *m_shortcutController);
+	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
 }
 
 Action* Window::addGameAction(const QString& visibleName, const QString& name, Action::Function function, const QString& menu, const QKeySequence& shortcut) {
