@@ -143,6 +143,16 @@ static enum mPlatform _DSCorePlatform(const struct mCore* core) {
 	return PLATFORM_DS;
 }
 
+static bool _DSCoreSupportsFeature(const struct mCore* core, enum mCoreFeature feature) {
+	UNUSED(core);
+	switch (feature) {
+	case mCORE_FEATURE_OPENGL:
+		return false;
+	default:
+		return false;
+	}
+}
+
 static void _DSCoreSetSync(struct mCore* core, struct mCoreSync* sync) {
 	struct DS* ds = core->board;
 	ds->sync = sync;
@@ -628,6 +638,7 @@ struct mCore* DSCoreCreate(void) {
 	core->init = _DSCoreInit;
 	core->deinit = _DSCoreDeinit;
 	core->platform = _DSCorePlatform;
+	core->supportsFeature = _DSCoreSupportsFeature;
 	core->setSync = _DSCoreSetSync;
 	core->loadConfig = _DSCoreLoadConfig;
 	core->desiredVideoDimensions = _DSCoreDesiredVideoDimensions;

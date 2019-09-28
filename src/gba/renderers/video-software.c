@@ -36,7 +36,7 @@ static void GBAVideoSoftwareRendererWriteBGY_LO(struct GBAVideoSoftwareBackgroun
 static void GBAVideoSoftwareRendererWriteBGY_HI(struct GBAVideoSoftwareBackground* bg, uint16_t value);
 static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer* renderer, uint16_t value);
 
-static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer);
+static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y);
 
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer);
 
@@ -516,42 +516,6 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 #endif
 }
 
-static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
-	int i;
-	int p;
-	int oamMax = 0;
-	int maxP = 1;
-	if (renderer->combinedObjSort) {
-		maxP = 4;
-	}
-	for (p = 0; p < maxP; ++p) {
-		for (i = 0; i < 128; ++i) {
-			struct GBAObj obj;
-			LOAD_16(obj.a, 0, &renderer->d.oam->obj[i].a);
-			LOAD_16(obj.b, 0, &renderer->d.oam->obj[i].b);
-			LOAD_16(obj.c, 0, &renderer->d.oam->obj[i].c);
-			if (renderer->combinedObjSort && GBAObjAttributesCGetPriority(obj.c) != p) {
-				continue;
-			}
-			if (GBAObjAttributesAIsTransformed(obj.a) || !GBAObjAttributesAIsDisable(obj.a)) {
-				int height = GBAVideoObjSizes[GBAObjAttributesAGetShape(obj.a) * 4 + GBAObjAttributesBGetSize(obj.b)][1];
-				if (GBAObjAttributesAIsTransformed(obj.a)) {
-					height <<= GBAObjAttributesAGetDoubleSize(obj.a);
-				}
-				if (GBAObjAttributesAGetY(obj.a) < renderer->masterHeight || GBAObjAttributesAGetY(obj.a) + height >= 256) {
-					int y = GBAObjAttributesAGetY(obj.a) + renderer->objOffsetY;
-					renderer->sprites[oamMax].y = y;
-					renderer->sprites[oamMax].endY = y + height;
-					renderer->sprites[oamMax].obj = obj;
-					++oamMax;
-				}
-			}
-		}
-	}
-	renderer->oamMax = oamMax;
-	renderer->oamDirty = 0;
-}
-
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
@@ -837,7 +801,7 @@ static void GBAVideoSoftwareRendererWriteBGY_HI(struct GBAVideoSoftwareBackgroun
 }
 
 static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer* renderer, uint16_t value) {
-	enum BlendEffect oldEffect = renderer->blendEffect;
+	enum GBAVideoBlendEffect oldEffect = renderer->blendEffect;
 
 	renderer->bg[0].target1 = GBARegisterBLDCNTGetTarget1Bg0(value);
 	renderer->bg[1].target1 = GBARegisterBLDCNTGetTarget1Bg1(value);
@@ -967,14 +931,15 @@ int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRendere
 	int spriteLayers = 0;
 	if (GBARegisterDISPCNTIsObjEnable(renderer->dispcnt) && !renderer->d.disableOBJ) {
 		if (renderer->oamDirty) {
-			_cleanOAM(renderer);
+			renderer->oamMax = GBAVideoRendererCleanOAM(renderer->d.oam->obj, renderer->sprites, renderer->objOffsetY, renderer->masterHeight, renderer->combinedObjSort);
+			renderer->oamDirty = false;
 		}
 		renderer->spriteCyclesRemaining = GBARegisterDISPCNTIsHblankIntervalFree(renderer->dispcnt) ? OBJ_HBLANK_FREE_LENGTH : OBJ_LENGTH;
 		int mosaicV = GBAMosaicControlGetObjV(renderer->mosaic) + 1;
 		int mosaicY = y - (y % mosaicV);
 		int i;
 		for (i = 0; i < renderer->oamMax; ++i) {
-			struct GBAVideoSoftwareSprite* sprite = &renderer->sprites[i];
+			struct GBAVideoRendererSprite* sprite = &renderer->sprites[i];
 			int localY = y;
 			renderer->end = 0;
 			if (GBAObjAttributesAIsMosaic(sprite->obj.a)) {

@@ -35,7 +35,9 @@ bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
 #endif
 
 	size_t size = renderer->width * renderer->height * BYTES_PER_PIXEL;
-#ifndef __APPLE__
+#ifdef _WIN32
+	renderer->outputBuffer = _aligned_malloc(size, 16);
+#elif !defined(__APPLE__)
 	renderer->outputBuffer = memalign(16, size);
 #else
 	posix_memalign((void**) &renderer->outputBuffer, 16, size);

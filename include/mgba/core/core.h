@@ -50,6 +50,7 @@ struct mCore {
 	struct mTiming* timing;
 	struct mDebugger* debugger;
 	struct mDebuggerSymbols* symbolTable;
+	struct mVideoLogger* videoLogger;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct mDirectorySet dirs;
@@ -67,12 +68,14 @@ struct mCore {
 	void (*deinit)(struct mCore*);
 
 	enum mPlatform (*platform)(const struct mCore*);
+	bool (*supportsFeature)(const struct mCore*, enum mCoreFeature);
 
 	void (*setSync)(struct mCore*, struct mCoreSync*);
 	void (*loadConfig)(struct mCore*, const struct mCoreConfig*);
 
 	void (*desiredVideoDimensions)(struct mCore*, unsigned* width, unsigned* height);
 	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);
+	void (*setVideoGLTex)(struct mCore*, unsigned texid);
 
 	void (*getPixels)(struct mCore*, const void** buffer, size_t* stride);
 	void (*putPixels)(struct mCore*, const void* buffer, size_t stride);

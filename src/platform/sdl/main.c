@@ -90,6 +90,12 @@ int main(int argc, char** argv) {
 		freeArguments(&args);
 		return 1;
 	}
+
+	if (!renderer.core->init(renderer.core)) {
+		freeArguments(&args);
+		return 1;
+	}
+
 	renderer.core->desiredVideoDimensions(renderer.core, &renderer.width, &renderer.height);
 #ifdef BUILD_GL
 	mSDLGLCreate(&renderer);
@@ -105,11 +111,6 @@ int main(int argc, char** argv) {
 	}
 	opts.width = renderer.width * renderer.ratio;
 	opts.height = renderer.height * renderer.ratio;
-
-	if (!renderer.core->init(renderer.core)) {
-		freeArguments(&args);
-		return 1;
-	}
 
 	struct mCheatDevice* device = NULL;
 	if (args.cheatsFile && (device = renderer.core->cheatDevice(renderer.core))) {

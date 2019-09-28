@@ -17,38 +17,33 @@
 #endif
 
 #include <QElapsedTimer>
-#include <QGLWidget>
+#include <QOpenGLContext>
 #include <QList>
 #include <QMouseEvent>
+#include <QPainter>
 #include <QQueue>
 #include <QThread>
+
+#include "VideoProxy.h"
 
 #include "platform/video-backend.h"
 
 namespace QGBA {
-
-class EmptyGLWidget : public QGLWidget {
-public:
-	EmptyGLWidget(const QGLFormat& format, QWidget* parent) : QGLWidget(format, parent) { setAutoBufferSwap(false); }
-
-protected:
-	void paintEvent(QPaintEvent* event) override { event->ignore(); }
-	void resizeEvent(QResizeEvent*) override {}
-	void mouseMoveEvent(QMouseEvent* event) override { event->ignore(); }
-};
 
 class PainterGL;
 class DisplayGL : public Display {
 Q_OBJECT
 
 public:
-	DisplayGL(const QGLFormat& format, QWidget* parent = nullptr);
+	DisplayGL(const QSurfaceFormat& format, QWidget* parent = nullptr);
 	~DisplayGL();
 
 	void startDrawing(std::shared_ptr<CoreController>) override;
 	bool isDrawing() const override { return m_isDrawing; }
 	bool supportsShaders() const override;
 	VideoShader* shaders() override;
+	VideoProxy* videoProxy() override;
+	int framebufferHandle() override;
 
 public slots:
 	void stopDrawing() override;
@@ -71,17 +66,18 @@ private:
 	void resizePainter();
 
 	bool m_isDrawing = false;
-	QGLWidget* m_gl;
+	QOpenGLContext* m_gl;
 	PainterGL* m_painter;
 	QThread* m_drawThread = nullptr;
 	std::shared_ptr<CoreController> m_context;
+	VideoProxy m_videoProxy;
 };
 
 class PainterGL : public QObject {
 Q_OBJECT
 
 public:
-	PainterGL(int majorVersion, QGLWidget* parent);
+	PainterGL(VideoProxy* proxy, QWindow* surface, QOpenGLContext* parent);
 	~PainterGL();
 
 	void setContext(std::shared_ptr<CoreController>);
@@ -107,6 +103,8 @@ public slots:
 	void clearShaders();
 	VideoShader* shaders();
 
+	int glTex();
+
 private:
 	void performDraw();
 	void dequeue();
@@ -116,7 +114,9 @@ private:
 	QQueue<uint32_t*> m_queue;
 	QPainter m_painter;
 	QMutex m_mutex;
-	QGLWidget* m_gl;
+	QWindow* m_surface;
+	QPaintDevice* m_window;
+	QOpenGLContext* m_gl;
 	bool m_active = false;
 	bool m_started = false;
 	std::shared_ptr<CoreController> m_context = nullptr;
@@ -126,6 +126,7 @@ private:
 	QSize m_size;
 	MessagePainter* m_messagePainter = nullptr;
 	QElapsedTimer m_delayTimer;
+	VideoProxy* m_videoProxy;
 };
 
 }
