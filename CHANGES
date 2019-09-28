@@ -30,6 +30,7 @@ Features:
  - Map viewer supports bitmapped GBA modes
  - OpenGL renderer with high-resolution upscaling support
  - Experimental high level "XQ" audio for most GBA games
+ - Interframe blending for games that use flicker effects
 Emulation fixes:
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs
@@ -41,6 +42,7 @@ Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
  - Switch: Fix threading-related crash on second launch
+ - Qt: Fix FPS target maxing out at 59.727 (fixes mgba.io/i/1421)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
@@ -60,6 +62,8 @@ Misc:
  - Qt: Increase maximum magnifications and scaling
  - Qt: Add native FPS button to settings view
  - Qt: Improve sync code
+ - Switch: Dynamic display resizing
+ - Qt: Make mute menu option also toggle fast-forward mute (fixes mgba.io/i/1424)
 
 0.7.2: (2019-05-25)
 Emulation fixes:
@@ -73,7 +77,7 @@ Emulation fixes:
  - GBA Memory: Prevent writing to mirrored BG VRAM (fixes mgba.io/i/743)
  - GBA Video: Fix scanline cache with scale factor change edge cases
  - GBA Video: Fix sprite mosaic clamping (fixes mgba.io/i/1008)
- - GBA Video: Implement mosaic on transformed sprites (fixes mgba.io/b/9)
+ - GBA Video: Implement mosaic on transformed sprites (fixes mgba.io/b/5)
 Other fixes:
  - 3DS: Ensure core 2 can be used for threaded renderer (fixes mgba.io/i/1371)
  - All: Fix several memory leaks

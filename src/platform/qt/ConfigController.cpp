@@ -119,6 +119,7 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.useBios = true;
 	m_opts.suspendScreensaver = true;
 	m_opts.lockAspectRatio = true;
+	m_opts.interframeBlending = false;
 	mCoreConfigLoad(&m_config);
 	mCoreConfigLoadDefaults(&m_config, &m_opts);
 	mCoreConfigSetDefaultIntValue(&m_config, "sgb.borders", 1);

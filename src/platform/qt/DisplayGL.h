@@ -42,7 +42,7 @@ public:
 	bool isDrawing() const override { return m_isDrawing; }
 	bool supportsShaders() const override;
 	VideoShader* shaders() override;
-	VideoProxy* videoProxy() override;
+	void setVideoProxy(std::shared_ptr<VideoProxy>) override;
 	int framebufferHandle() override;
 
 public slots:
@@ -52,6 +52,7 @@ public slots:
 	void forceDraw() override;
 	void lockAspectRatio(bool lock) override;
 	void lockIntegerScaling(bool lock) override;
+	void interframeBlending(bool enable) override;
 	void filter(bool filter) override;
 	void framePosted() override;
 	void setShaders(struct VDir*) override;
@@ -70,14 +71,13 @@ private:
 	PainterGL* m_painter;
 	QThread* m_drawThread = nullptr;
 	std::shared_ptr<CoreController> m_context;
-	VideoProxy m_videoProxy;
 };
 
 class PainterGL : public QObject {
 Q_OBJECT
 
 public:
-	PainterGL(VideoProxy* proxy, QWindow* surface, QOpenGLContext* parent);
+	PainterGL(QWindow* surface, QOpenGLContext* parent);
 	~PainterGL();
 
 	void setContext(std::shared_ptr<CoreController>);
@@ -85,6 +85,8 @@ public:
 	void enqueue(const uint32_t* backing);
 
 	bool supportsShaders() const { return m_supportsShaders; }
+
+	void setVideoProxy(std::shared_ptr<VideoProxy>);
 
 public slots:
 	void forceDraw();
@@ -96,6 +98,7 @@ public slots:
 	void resize(const QSize& size);
 	void lockAspectRatio(bool lock);
 	void lockIntegerScaling(bool lock);
+	void interframeBlending(bool enable);
 	void filter(bool filter);
 	void resizeContext();
 
@@ -131,7 +134,7 @@ private:
 	QTimer m_swapTimer{this};
 	bool m_needsUnlock = false;
 	bool m_frameReady = false;
-	VideoProxy* m_videoProxy;
+	std::shared_ptr<VideoProxy> m_videoProxy;
 };
 
 }

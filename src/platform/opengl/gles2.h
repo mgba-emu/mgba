@@ -82,6 +82,7 @@ struct mGLES2Context {
 
 	struct mGLES2Shader initialShader;
 	struct mGLES2Shader finalShader;
+	struct mGLES2Shader interframeShader;
 
 	struct mGLES2Shader* shaders;
 	size_t nShaders;

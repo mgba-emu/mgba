@@ -109,6 +109,16 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		.data = "sgb.bios",
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Interframe blending",
+		.data = "interframeBlending",
+		.submenu = 0,
+		.state = false,
+		.validStates = (const char*[]) {
+			"Off", "On"
+		},
+		.nStates = 2
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Enable SGB borders",
 		.data = "sgb.borders",
 		.submenu = 0,

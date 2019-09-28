@@ -371,6 +371,7 @@ void SettingsView::updateConfig() {
 	saveSetting("autofireThreshold", m_ui.autofireThreshold);
 	saveSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	saveSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
+	saveSetting("interframeBlending", m_ui.interframeBlending);
 	saveSetting("volume", m_ui.volume);
 	saveSetting("mute", m_ui.mute);
 	saveSetting("fastForwardVolume", m_ui.volumeFf);
@@ -407,7 +408,7 @@ void SettingsView::updateConfig() {
 	}
 
 	double nativeFps = double(GBA_ARM7TDMI_FREQUENCY) / double(VIDEO_TOTAL_LENGTH);
-	if (nativeFps - m_ui.fpsTarget->value() < 0.0001) {
+	if (fabs(nativeFps - m_ui.fpsTarget->value()) < 0.0001) {
 		m_controller->setOption("fpsTarget", QVariant(nativeFps));
 	} else {
 		saveSetting("fpsTarget", m_ui.fpsTarget);
@@ -533,6 +534,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("autofireThreshold", m_ui.autofireThreshold);
 	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	loadSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
+	loadSetting("interframeBlending", m_ui.interframeBlending);
 	loadSetting("volume", m_ui.volume, 0x100);
 	loadSetting("mute", m_ui.mute, false);
 	loadSetting("fastForwardVolume", m_ui.volumeFf, m_ui.volume->value());

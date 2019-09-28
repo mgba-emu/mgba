@@ -62,7 +62,6 @@ bool VideoProxy::writeData(const void* data, size_t length) {
 		m_fromThreadCond.wait(&m_mutex);
 		m_mutex.unlock();
 	}
-	emit dataAvailable();
 	return true;
 }
 
@@ -109,6 +108,7 @@ void VideoProxy::wait() {
 
 void VideoProxy::wake(int y) {
 	if ((y & 15) == 15) {
+		emit dataAvailable();
 		m_toThreadCond.wakeAll();
 	}
 }

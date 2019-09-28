@@ -219,6 +219,7 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 #ifndef DISABLE_THREADING
 	if (!runner->autosave.running) {
 		runner->autosave.running = true;
+		runner->autosave.core = NULL;
 		MutexInit(&runner->autosave.mutex);
 		ConditionInit(&runner->autosave.cond);
 		ThreadCreate(&runner->autosave.thread, mGUIAutosaveThread, &runner->autosave);

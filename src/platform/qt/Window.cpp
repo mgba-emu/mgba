@@ -783,6 +783,7 @@ void Window::gameStarted() {
 	m_screenWidget->setDimensions(size.width(), size.height());
 	m_config->updateOption("lockIntegerScaling");
 	m_config->updateOption("lockAspectRatio");
+	m_config->updateOption("interframeBlending");
 	if (m_savedScale > 0) {
 		resizeFrame(size * m_savedScale);
 	}
@@ -837,19 +838,12 @@ void Window::gameStarted() {
 	}
 	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
 
-
 #ifdef USE_DISCORD_RPC
 	DiscordCoordinator::gameStarted(m_controller);
 #endif
 }
 
 void Window::gameStopped() {
-	m_controller.reset();
-	m_display->stopDrawing();
-	if (m_pendingClose) {
-		m_display.reset();
-		close();
-	}
 	for (Action* action : m_platformActions) {
 		action->setEnabled(true);
 	}
@@ -884,6 +878,10 @@ void Window::gameStopped() {
 		m_audioProcessor.reset();
 	}
 	m_display->stopDrawing();
+
+	m_controller.reset();
+
+	m_display->setVideoProxy({});
 	if (m_pendingClose) {
 		m_display.reset();
 		close();
@@ -952,6 +950,7 @@ void Window::reloadDisplayDriver() {
 
 	const mCoreOptions* opts = m_config->options();
 	m_display->lockAspectRatio(opts->lockAspectRatio);
+	m_display->interframeBlending(opts->interframeBlending);
 	m_display->filter(opts->resampleVideo);
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (opts->shader) {
@@ -1433,6 +1432,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, this);
 	m_config->updateOption("lockIntegerScaling");
 
+	ConfigOption* interframeBlending = m_config->addOption("interframeBlending");
+	interframeBlending->addBoolean(tr("Interframe blending"), &m_actions, "av");
+	interframeBlending->connect([this](const QVariant& value) {
+		if (m_display) {
+			m_display->interframeBlending(value.toBool());
+		}
+	}, this);
+	m_config->updateOption("interframeBlending");
+
 	ConfigOption* resampleVideo = m_config->addOption("resampleVideo");
 	resampleVideo->addBoolean(tr("Bilinear filtering"), &m_actions, "av");
 	resampleVideo->connect([this](const QVariant& value) {
@@ -1457,6 +1465,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	ConfigOption* mute = m_config->addOption("mute");
 	mute->addBoolean(tr("Mute"), &m_actions, "av");
 	mute->connect([this](const QVariant& value) {
+		m_config->setOption("fastForwardMute", static_cast<bool>(value.toInt()));
 		reloadConfig();
 	}, this);
 	m_config->updateOption("mute");
@@ -1769,9 +1778,9 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	}
 
 	if (m_config->getOption("hwaccelVideo").toInt() && m_display->supportsShaders() && controller->supportsFeature(CoreController::Feature::OPENGL)) {
-		if (m_display->videoProxy()) {
-			m_display->videoProxy()->attach(controller);
-		}
+		std::shared_ptr<VideoProxy> proxy = std::make_shared<VideoProxy>();
+		m_display->setVideoProxy(proxy);
+		proxy->attach(controller);
 
 		int fb = m_display->framebufferHandle();
 		if (fb >= 0) {

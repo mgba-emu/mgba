@@ -17,13 +17,20 @@ static const GLint _glTexCoords[] = {
 static void mGLContextInit(struct VideoBackend* v, WHandle handle) {
 	UNUSED(handle);
 	struct mGLContext* context = (struct mGLContext*) v;
-	glGenTextures(1, &context->tex);
-	glBindTexture(GL_TEXTURE_2D, context->tex);
+	glGenTextures(2, context->tex);
+	glBindTexture(GL_TEXTURE_2D, context->tex[0]);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 #ifndef _WIN32
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 #endif
+	glBindTexture(GL_TEXTURE_2D, context->tex[1]);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+#ifndef _WIN32
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#endif
+	context->activeTex = 0;
 }
 
 static void mGLContextSetDimensions(struct VideoBackend* v, unsigned width, unsigned height) {
@@ -31,7 +38,20 @@ static void mGLContextSetDimensions(struct VideoBackend* v, unsigned width, unsi
 	v->width = width;
 	v->height = height;
 
-	glBindTexture(GL_TEXTURE_2D, context->tex);
+	glBindTexture(GL_TEXTURE_2D, context->tex[0]);
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(width), toPow2(height), 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
+#else
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(width), toPow2(height), 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
+#endif
+#elif defined(__BIG_ENDIAN__)
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(width), toPow2(height), 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, 0);
+#else
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(width), toPow2(height), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+#endif
+
+	glBindTexture(GL_TEXTURE_2D, context->tex[1]);
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(width), toPow2(height), 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
@@ -56,7 +76,7 @@ static void mGLContextSetDimensions(struct VideoBackend* v, unsigned width, unsi
 
 static void mGLContextDeinit(struct VideoBackend* v) {
 	struct mGLContext* context = (struct mGLContext*) v;
-	glDeleteTextures(1, &context->tex);
+	glDeleteTextures(2, context->tex);
 }
 
 static void mGLContextResized(struct VideoBackend* v, unsigned w, unsigned h) {
@@ -98,7 +118,21 @@ void mGLContextDrawFrame(struct VideoBackend* v) {
 	glOrtho(0, v->width, v->height, 0, 0, 1);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glBindTexture(GL_TEXTURE_2D, context->tex);
+	if (v->interframeBlending) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
+		glBlendColor(1, 1, 1, 0.5);
+		glBindTexture(GL_TEXTURE_2D, context->tex[context->activeTex ^ 1]);
+		if (v->filter) {
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		} else {
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		}
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	}
+	glBindTexture(GL_TEXTURE_2D, context->tex[context->activeTex]);
 	if (v->filter) {
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -107,11 +141,13 @@ void mGLContextDrawFrame(struct VideoBackend* v) {
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	glDisable(GL_BLEND);
 }
 
 void mGLContextPostFrame(struct VideoBackend* v, const void* frame) {
 	struct mGLContext* context = (struct mGLContext*) v;
-	glBindTexture(GL_TEXTURE_2D, context->tex);
+	context->activeTex ^= 1;
+	glBindTexture(GL_TEXTURE_2D, context->tex[context->activeTex]);
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, v->width, v->height, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, frame);

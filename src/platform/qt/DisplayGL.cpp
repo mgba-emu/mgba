@@ -49,7 +49,6 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 #endif
 	auto version = m_gl->format().version();
 	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
-	m_gl->doneCurrent();
 
 	if ((version == qMakePair(2, 1) && !extensions.contains("GL_ARB_framebuffer_object")) || version == qMakePair(2, 0)) {
 		QSurfaceFormat newFormat(format);
@@ -58,7 +57,7 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 		m_gl->create();
 	}
 
-	m_painter = new PainterGL(&m_videoProxy, windowHandle(), m_gl);
+	m_painter = new PainterGL(windowHandle(), m_gl);
 	setUpdatesEnabled(false); // Prevent paint events, which can cause race conditions
 }
 
@@ -99,13 +98,15 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	m_gl->doneCurrent();
 	m_gl->moveToThread(m_drawThread);
 	m_painter->moveToThread(m_drawThread);
-	m_videoProxy.moveToThread(m_drawThread);
+	if (videoProxy()) {
+		videoProxy()->moveToThread(m_drawThread);
+	}
 	connect(m_drawThread, &QThread::started, m_painter, &PainterGL::start);
 	m_drawThread->start();
 
 	lockAspectRatio(isAspectRatioLocked());
 	lockIntegerScaling(isIntegerScalingLocked());
-
+	interframeBlending(hasInterframeBlending());
 	filter(isFiltered());
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatioF());
@@ -168,6 +169,13 @@ void DisplayGL::lockIntegerScaling(bool lock) {
 	}
 }
 
+void DisplayGL::interframeBlending(bool enable) {
+	Display::interframeBlending(enable);
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "interframeBlending", Q_ARG(bool, enable));
+	}
+}
+
 void DisplayGL::filter(bool filter) {
 	Display::filter(filter);
 	if (m_drawThread) {
@@ -214,21 +222,21 @@ void DisplayGL::resizePainter() {
 	}
 }
 
-VideoProxy* DisplayGL::videoProxy() {
-	if (supportsShaders()) {
-		return &m_videoProxy;
+void DisplayGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
+	Display::setVideoProxy(proxy);
+	if (m_drawThread && proxy) {
+		proxy->moveToThread(m_drawThread);
 	}
-	return nullptr;
+	m_painter->setVideoProxy(proxy);
 }
 
 int DisplayGL::framebufferHandle() {
 	return m_painter->glTex();
 }
 
-PainterGL::PainterGL(VideoProxy* proxy, QWindow* surface, QOpenGLContext* parent)
+PainterGL::PainterGL(QWindow* surface, QOpenGLContext* parent)
 	: m_gl(parent)
 	, m_surface(surface)
-	, m_videoProxy(proxy)
 {
 #ifdef BUILD_GL
 	mGLContext* glBackend;
@@ -275,11 +283,11 @@ PainterGL::PainterGL(VideoProxy* proxy, QWindow* surface, QOpenGLContext* parent
 		m_shader.preprocessShader = static_cast<void*>(&reinterpret_cast<mGLES2Context*>(m_backend)->initialShader);
 	}
 #endif
-	m_gl->doneCurrent();
 
 	m_backend->user = this;
 	m_backend->filter = false;
 	m_backend->lockAspectRatio = false;
+	m_backend->interframeBlending = false;
 
 	for (int i = 0; i < 2; ++i) {
 		m_free.append(new uint32_t[256 * 512]);
@@ -346,6 +354,10 @@ void PainterGL::lockAspectRatio(bool lock) {
 void PainterGL::lockIntegerScaling(bool lock) {
 	m_backend->lockIntegerScaling = lock;
 	resize(m_size);
+}
+
+void PainterGL::interframeBlending(bool enable) {
+	m_backend->interframeBlending = enable;
 }
 
 void PainterGL::filter(bool filter) {
@@ -418,7 +430,9 @@ void PainterGL::stop() {
 	m_gl->moveToThread(m_surface->thread());
 	m_context.reset();
 	moveToThread(m_gl->thread());
-	m_videoProxy->moveToThread(m_gl->thread());
+	if (m_videoProxy) {
+		m_videoProxy->moveToThread(m_gl->thread());
+	}
 }
 
 void PainterGL::pause() {
@@ -509,6 +523,10 @@ void PainterGL::dequeueAll() {
 	m_mutex.unlock();
 }
 
+void PainterGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
+	m_videoProxy = proxy;
+}
+
 void PainterGL::setShaders(struct VDir* dir) {
 	if (!supportsShaders()) {
 		return;
@@ -550,7 +568,7 @@ int PainterGL::glTex() {
 #endif
 #ifdef BUILD_GL
 	mGLContext* glBackend = reinterpret_cast<mGLContext*>(m_backend);
-	return glBackend->tex;
+	return glBackend->tex[0];
 #else
 	return -1;
 #endif

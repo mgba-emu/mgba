@@ -63,6 +63,9 @@ struct GBAVideoGLBackground {
 	int32_t refy;
 
 	struct GBAVideoGLAffine affine;
+
+	GLint scanlineAffine[GBA_VIDEO_VERTICAL_PIXELS * 4];
+	GLint scanlineOffset[GBA_VIDEO_VERTICAL_PIXELS];
 };
 
 enum {
@@ -80,8 +83,6 @@ enum {
 	GBA_GL_TEX_BACKDROP_COLOR,
 	GBA_GL_TEX_BACKDROP_FLAGS,
 	GBA_GL_TEX_WINDOW,
-	GBA_GL_TEX_AFFINE_2,
-	GBA_GL_TEX_AFFINE_3,
 	GBA_GL_TEX_MAX
 };
 
@@ -111,6 +112,12 @@ enum {
 	GBA_GL_OBJ_OBJWIN,
 	GBA_GL_OBJ_MOSAIC,
 
+	GBA_GL_WIN_DISPCNT = 2,
+	GBA_GL_WIN_BLEND,
+	GBA_GL_WIN_FLAGS,
+	GBA_GL_WIN_WIN0,
+	GBA_GL_WIN_WIN1,
+
 	GBA_GL_FINALIZE_SCALE = 2,
 	GBA_GL_FINALIZE_LAYERS,
 	GBA_GL_FINALIZE_FLAGS,
@@ -133,7 +140,6 @@ struct GBAVideoGLRenderer {
 	uint32_t* temporaryBuffer;
 
 	struct GBAVideoGLBackground bg[4];
-	struct GBAVideoGLAffine affine[2][GBA_VIDEO_VERTICAL_PIXELS];
 
 	int oamMax;
 	bool oamDirty;
@@ -145,10 +151,7 @@ struct GBAVideoGLRenderer {
 
 	GLuint outputTex;
 
-#ifdef BUILD_GLES3
-	uint16_t shadowPalette[512];
-#endif
-	GLuint paletteTex;
+	GLint shadowPalette[512];
 	bool paletteDirty;
 
 	GLuint vramTex;
@@ -159,6 +162,7 @@ struct GBAVideoGLRenderer {
 
 	struct GBAVideoGLShader bgShader[6];
 	struct GBAVideoGLShader objShader[2];
+	struct GBAVideoGLShader windowShader;
 	struct GBAVideoGLShader finalizeShader;
 
 	GBARegisterDISPCNT dispcnt;
@@ -175,10 +179,12 @@ struct GBAVideoGLRenderer {
 	GBAMosaicControl mosaic;
 
 	struct GBAVideoGLWindowN {
-		struct GBAVideoWindowRegion h[2];
+		struct GBAVideoWindowRegion h;
 		struct GBAVideoWindowRegion v;
 		GBAWindowControl control;
 	} winN[2];
+
+	GLint winNHistory[2][GBA_VIDEO_VERTICAL_PIXELS * 4];
 
 	GBAWindowControl winout;
 	GBAWindowControl objwin;
