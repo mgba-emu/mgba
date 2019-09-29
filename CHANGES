@@ -45,6 +45,7 @@ Other fixes:
  - FFmpeg: Drain recording buffers
  - Shaders: Fix gba-color shader resolution (fixes mgba.io/i/1435)
  - Qt: Fix LibraryController initialization (fixes mgba.io/i/1324)
+ - Switch: Fix audio when video rate desyncs (fixes mgba.io/i/1532)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
