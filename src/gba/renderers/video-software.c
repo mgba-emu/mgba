@@ -131,6 +131,8 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 	memset(softwareRenderer->cache, 0, sizeof(softwareRenderer->cache));
 	memset(softwareRenderer->nextIo, 0, sizeof(softwareRenderer->nextIo));
 
+	softwareRenderer->lastHighlightAmount = 0;
+
 	for (i = 0; i < 4; ++i) {
 		struct GBAVideoSoftwareBackground* bg = &softwareRenderer->bg[i];
 		bg->index = i;
