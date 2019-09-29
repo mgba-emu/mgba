@@ -44,6 +44,7 @@ Other fixes:
  - Qt: Only show emulator restart warning once per settings saving
  - FFmpeg: Drain recording buffers
  - Shaders: Fix gba-color shader resolution (fixes mgba.io/i/1435)
+ - Qt: Fix LibraryController initialization (fixes mgba.io/i/1324)
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
