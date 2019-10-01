@@ -20,7 +20,7 @@
 #include <GLES3/gl31.h>
 
 #define AUTO_INPUT 0x4E585031
-#define SAMPLES 0x400
+#define SAMPLES 0x200
 #define BUFFER_SIZE 0x1000
 #define N_BUFFERS 4
 #define ANALOG_DEADZONE 0x4000
@@ -281,6 +281,8 @@ static void _setup(struct mGUIRunner* runner) {
 	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
 	}
+
+	runner->core->setAudioBufferSize(runner->core, SAMPLES);
 }
 
 static void _gameLoaded(struct mGUIRunner* runner) {
@@ -539,6 +541,11 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 	if (enqueuedBuffers >= N_BUFFERS - 1 && R_SUCCEEDED(audoutWaitPlayFinish(&releasedBuffers, &audoutNReleasedBuffers, 10000000))) {
 		enqueuedBuffers -= audoutNReleasedBuffers;
 	}
+	if (enqueuedBuffers >= N_BUFFERS) {
+		blip_clear(left);
+		blip_clear(right);
+		return;
+	}
 
 	struct GBAStereoSample* samples = audioBuffer[audioBufferActive];
 	blip_read_samples(left, &samples[0].left, SAMPLES, true);
@@ -754,7 +761,7 @@ int main(int argc, char* argv[]) {
 		audoutBuffer[i].next = NULL;
 		audoutBuffer[i].buffer = audioBuffer[i];
 		audoutBuffer[i].buffer_size = BUFFER_SIZE;
-		audoutBuffer[i].data_size = BUFFER_SIZE;
+		audoutBuffer[i].data_size = SAMPLES * 4;
 		audoutBuffer[i].data_offset = 0;
 	}
 
