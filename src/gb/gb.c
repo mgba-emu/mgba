@@ -573,6 +573,7 @@ void GBUnmapBIOS(struct GB* gb) {
 	if (gb->memory.romBase < gb->memory.rom || gb->memory.romBase > &gb->memory.rom[gb->memory.romSize - 1]) {
 		free(gb->memory.romBase);
 		gb->memory.romBase = gb->memory.rom;
+		gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
 	}
 	// XXX: Force AGB registers for AGB-mode
 	if (gb->model == GB_MODEL_AGB && gb->cpu->pc == 0x100) {
