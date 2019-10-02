@@ -22,7 +22,9 @@
 #include <mgba/internal/gb/memory.h>
 #endif
 
+#include <QAction>
 #include <QButtonGroup>
+#include <QClipboard>
 #include <QFontDatabase>
 #include <QMouseEvent>
 #include <QRadioButton>
@@ -88,11 +90,19 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 		});
 		group->addButton(button);
 	}
-#ifdef USE_PNG
 	connect(m_ui.exportButton, &QAbstractButton::clicked, this, &MapView::exportMap);
-#else
-	m_ui.exportButton->setVisible(false);
-#endif
+	connect(m_ui.copyButton, &QAbstractButton::clicked, this, &MapView::copyMap);
+
+	QAction* exportAction = new QAction(this);
+	exportAction->setShortcut(QKeySequence::Save);
+	connect(exportAction, &QAction::triggered, this, &MapView::exportMap);
+	addAction(exportAction);
+
+	QAction* copyAction = new QAction(this);
+	copyAction->setShortcut(QKeySequence::Copy);
+	connect(copyAction, &QAction::triggered, this, &MapView::copyMap);
+	addAction(copyAction);
+
 	m_ui.map->installEventFilter(this);
 	m_ui.tile->addCustomProperty("mapAddr", tr("Map Addr."));
 	m_ui.tile->addCustomProperty("flip", tr("Mirror"));
@@ -211,7 +221,7 @@ void MapView::updateTilesGBA(bool force) {
 				mBitmapCacheCleanRow(bitmapCache, m_bitmapStatus, j);
 				memcpy(static_cast<void*>(&bgBits[width * j * 4]), mBitmapCacheGetRow(bitmapCache, j), width * 4);
 			}
-			m_rawMap = m_rawMap.rgbSwapped();
+			m_rawMap = m_rawMap.convertToFormat(QImage::Format_RGB32).rgbSwapped();
 		} else {
 			mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, m_map);
 			int tilesW = 1 << mMapCacheSystemInfoGetTilesWide(mapCache->sysConfig);
@@ -242,23 +252,18 @@ void MapView::updateTilesGB(bool force) {
 }
 #endif
 
-#ifdef USE_PNG
 void MapView::exportMap() {
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export map"),
 	                                                  tr("Portable Network Graphics (*.png)"));
-	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
-	if (!vf) {
-		LOG(QT, ERROR) << tr("Failed to open output PNG file: %1").arg(filename);
+	if (filename.isNull()) {
 		return;
 	}
 
 	CoreController::Interrupter interrupter(m_controller);
-	png_structp png = PNGWriteOpen(vf);
-	png_infop info = PNGWriteHeaderA(png, m_rawMap.width(), m_rawMap.height());
-
-	QImage map = m_rawMap.rgbSwapped();
-	PNGWritePixelsA(png, map.width(), map.height(), map.bytesPerLine() / 4, static_cast<const void*>(map.constBits()));
-	PNGWriteClose(png, info);
-	vf->close(vf);
+	m_rawMap.save(filename, "PNG");
 }
-#endif
+
+void MapView::copyMap() {
+	CoreController::Interrupter interrupter(m_controller);
+	GBAApp::app()->clipboard()->setImage(m_rawMap);
+}

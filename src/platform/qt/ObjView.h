@@ -23,6 +23,7 @@ public:
 
 public slots:
 	void exportObj();
+	void copyObj();
 
 private slots:
 	void selectObj(int);

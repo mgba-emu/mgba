@@ -36,6 +36,11 @@ PrinterView::PrinterView(std::shared_ptr<CoreController> controller, QWidget* pa
 		m_ui.image->setFixedHeight(m_ui.image->size().height() / oldMag * mag);
 	});
 
+	QAction* save = new QAction(this);
+	save->setShortcut(QKeySequence::Save);
+	connect(save, &QAction::triggered, this, &MapView::save);
+	addAction(save);
+
 	clear();
 }
 

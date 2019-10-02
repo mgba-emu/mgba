@@ -21,10 +21,9 @@ Q_OBJECT
 public:
 	MapView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
-#ifdef USE_PNG
 public slots:
 	void exportMap();
-#endif
+	void copyMap();
 
 private slots:
 	void selectMap(int);

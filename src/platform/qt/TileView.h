@@ -24,6 +24,9 @@ public:
 public slots:
 	void updatePalette(int);
 	void exportTiles();
+	void exportTile();
+	void copyTiles();
+	void copyTile();
 
 private:
 #ifdef M_CORE_GBA

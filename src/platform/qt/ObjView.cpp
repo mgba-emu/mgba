@@ -8,6 +8,8 @@
 #include "CoreController.h"
 #include "GBAApp.h"
 
+#include <QAction>
+#include <QClipboard>
 #include <QFontDatabase>
 #include <QTimer>
 
@@ -52,6 +54,17 @@ ObjView::ObjView(std::shared_ptr<CoreController> controller, QWidget* parent)
 		updateTiles(true);
 	});
 	connect(m_ui.exportButton, &QAbstractButton::clicked, this, &ObjView::exportObj);
+	connect(m_ui.copyButton, &QAbstractButton::clicked, this, &ObjView::copyObj);
+
+	QAction* exportAction = new QAction(this);
+	exportAction->setShortcut(QKeySequence::Save);
+	connect(exportAction, &QAction::triggered, this, &ObjView::exportObj);
+	addAction(exportAction);
+
+	QAction* copyAction = new QAction(this);
+	copyAction->setShortcut(QKeySequence::Copy);
+	connect(copyAction, &QAction::triggered, this, &ObjView::copyObj);
+	addAction(copyAction);
 }
 
 void ObjView::selectObj(int obj) {
@@ -203,7 +216,15 @@ void ObjView::updateTilesGB(bool force) {
 void ObjView::exportObj() {
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export sprite"),
 	                                                  tr("Portable Network Graphics (*.png)"));
+	if (filename.isNull()) {
+		return;
+	}
 	CoreController::Interrupter interrupter(m_controller);
 	QImage obj = compositeObj(m_objInfo);
 	obj.save(filename, "PNG");
+}
+
+void ObjView::copyObj() {
+	CoreController::Interrupter interrupter(m_controller);
+	GBAApp::app()->clipboard()->setImage(compositeObj(m_objInfo));
 }

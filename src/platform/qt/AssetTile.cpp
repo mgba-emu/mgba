@@ -116,6 +116,9 @@ void AssetTile::selectIndex(int index) {
 		m_ui.preview->setColor(i ^ flip, data[i]);
 	}
 	m_ui.preview->update();
+
+	QImage tile(reinterpret_cast<const uchar*>(data), 8, 8, QImage::Format_ARGB32);
+	m_activeTile = tile.rgbSwapped();
 }
 
 void AssetTile::setFlip(bool h, bool v) {
