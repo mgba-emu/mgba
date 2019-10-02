@@ -77,6 +77,7 @@ Misc:
  - GBA BIOS: Fix clobbered registers in CpuSet (fixes mgba.io/i/1531)
  - Qt: Remove What's This icon from dialogs
  - CMake: Don't use libzip on embedded platforms (fixes mgba.io/i/1527)
+ - Qt: Printer quality of life improvements (fixes mgba.io/i/1540)
 
 0.7.3: (2019-09-15)
 Emulation fixes:
