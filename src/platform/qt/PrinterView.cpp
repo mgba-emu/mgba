@@ -38,7 +38,7 @@ PrinterView::PrinterView(std::shared_ptr<CoreController> controller, QWidget* pa
 
 	QAction* save = new QAction(this);
 	save->setShortcut(QKeySequence::Save);
-	connect(save, &QAction::triggered, this, &MapView::save);
+	connect(save, &QAction::triggered, this, &PrinterView::save);
 	addAction(save);
 
 	clear();
