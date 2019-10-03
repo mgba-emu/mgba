@@ -35,6 +35,7 @@ Emulation fixes:
  - GB Video: Fix mode 0 window edge case (fixes mgba.io/i/1519)
  - GB Audio: Fix channel 4 volume (fixes mgba.io/i/1529)
  - GB Video: Fix color scaling in AGB mode
+ - GB: Fix using boot ROM with MMM01 games
 Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
