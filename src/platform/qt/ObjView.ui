@@ -610,9 +610,6 @@
      <property name="uniformItemSizes">
       <bool>true</bool>
      </property>
-     <property name="itemAlignment">
-      <set>Qt::AlignBottom|Qt::AlignHCenter</set>
-     </property>
     </widget>
    </item>
   </layout>
