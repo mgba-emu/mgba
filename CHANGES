@@ -82,6 +82,7 @@ Misc:
  - CMake: Don't use libzip on embedded platforms (fixes mgba.io/i/1527)
  - Qt: Printer quality of life improvements (fixes mgba.io/i/1540)
  - Qt: Add copy and QoL improvements to graphic views (closes mgba.io/i/1541)
+ - Qt: Show list of all sprites in sprite view
 
 0.7.3: (2019-09-15)
 Emulation fixes:

@@ -9,7 +9,11 @@
 
 #include "ui_ObjView.h"
 
+#include <QList>
+
 #include <mgba/core/tile-cache.h>
+
+class QListWidgetItem;
 
 namespace QGBA {
 
@@ -37,12 +41,16 @@ private:
 	void updateTilesGB(bool force) override;
 #endif
 
+	void updateObjList(int maxObj);
+
 	Ui::ObjView m_ui;
 
 	std::shared_ptr<CoreController> m_controller;
 	mTileCacheEntry m_tileStatus[1024 * 32] = {}; // TODO: Correct size
 	int m_objId = 0;
 	ObjInfo m_objInfo = {};
+
+	QList<QListWidgetItem*> m_objs;
 
 	int m_tileOffset;
 	int m_boundary;

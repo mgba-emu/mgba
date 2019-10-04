@@ -11,6 +11,7 @@
 #include <QAction>
 #include <QClipboard>
 #include <QFontDatabase>
+#include <QListWidgetItem>
 #include <QTimer>
 
 #include "LogController.h"
@@ -56,6 +57,13 @@ ObjView::ObjView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	connect(m_ui.exportButton, &QAbstractButton::clicked, this, &ObjView::exportObj);
 	connect(m_ui.copyButton, &QAbstractButton::clicked, this, &ObjView::copyObj);
 
+	connect(m_ui.objList, &QListWidget::currentItemChanged, [this]() {
+		QListWidgetItem* item = m_ui.objList->currentItem();
+		if (item) {
+			selectObj(item->data(Qt::UserRole).toInt());
+		}
+	});
+
 	QAction* exportAction = new QAction(this);
 	exportAction->setShortcut(QKeySequence::Save);
 	connect(exportAction, &QAction::triggered, this, &ObjView::exportObj);
@@ -69,6 +77,14 @@ ObjView::ObjView(std::shared_ptr<CoreController> controller, QWidget* parent)
 
 void ObjView::selectObj(int obj) {
 	m_objId = obj;
+	bool blocked = m_ui.objId->blockSignals(true);
+	m_ui.objId->setValue(m_objId);
+	m_ui.objId->blockSignals(blocked);
+	if (m_objs.size() > obj) {
+		blocked = m_ui.objList->blockSignals(true);
+		m_ui.objList->setCurrentItem(m_objs[obj]);
+		m_ui.objList->blockSignals(blocked);
+	}
 	updateTiles(true);
 }
 
@@ -83,6 +99,8 @@ void ObjView::updateTilesGBA(bool force) {
 	m_ui.objId->setMaximum(127);
 	const GBA* gba = static_cast<const GBA*>(m_controller->thread()->core->board);
 	const GBAObj* obj = &gba->video.oam.obj[m_objId];
+
+	updateObjList(128);
 
 	ObjInfo newInfo;
 	lookupObj(m_objId, &newInfo);
@@ -166,6 +184,8 @@ void ObjView::updateTilesGB(bool force) {
 	const GB* gb = static_cast<const GB*>(m_controller->thread()->core->board);
 	const GBObj* obj = &gb->video.oam.obj[m_objId];
 
+	updateObjList(40);
+
 	ObjInfo newInfo;
 	lookupObj(m_objId, &newInfo);
 
@@ -212,6 +232,26 @@ void ObjView::updateTilesGB(bool force) {
 	m_ui.mode->setText(tr("N/A"));
 }
 #endif
+
+void ObjView::updateObjList(int maxObj) {
+	for (int i = 0; i < maxObj; ++i) {
+		if (m_objs.size() <= i) {
+			QListWidgetItem* item = new QListWidgetItem;
+			item->setText(QString::number(i));
+			item->setData(Qt::UserRole, i);
+			item->setSizeHint(QSize(64, 96));
+			if (m_objId == i) {
+				item->setSelected(true);
+			}
+			m_objs.append(item);
+			m_ui.objList->addItem(item);
+		}
+		QListWidgetItem* item = m_objs[i];
+		ObjInfo info;
+		lookupObj(i, &info);
+		item->setIcon(QPixmap::fromImage(std::move(compositeObj(info))));
+	}
+}
 
 void ObjView::exportObj() {
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export sprite"),
