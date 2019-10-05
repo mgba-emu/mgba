@@ -86,7 +86,7 @@ Other Unix-like platforms, such as OpenBSD, are known to work as well, but are u
 
 ### System requirements
 
-Requirements are minimal. Any computer that can run Windows Vista or newer should be able to handle emulation. Support for OpenGL 1.1 or newer is also required, with OpenGL 3.0 or newer for shaders and advanced features.
+Requirements are minimal. Any computer that can run Windows Vista or newer should be able to handle emulation. Support for OpenGL 1.1 or newer is also required, with OpenGL 3.2 or newer for shaders and advanced features.
 
 Downloads
 ---------
