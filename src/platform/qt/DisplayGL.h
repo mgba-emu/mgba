@@ -29,6 +29,8 @@
 
 #include "platform/video-backend.h"
 
+class QOpenGLPaintDevice;
+
 namespace QGBA {
 
 class PainterGL;
@@ -119,7 +121,7 @@ private:
 	QPainter m_painter;
 	QMutex m_mutex;
 	QWindow* m_surface;
-	QPaintDevice* m_window;
+	QOpenGLPaintDevice* m_window;
 	QOpenGLContext* m_gl;
 	bool m_active = false;
 	bool m_started = false;

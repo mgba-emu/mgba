@@ -350,6 +350,7 @@ void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
 
 void PainterGL::resize(const QSize& size) {
 	m_size = size;
+	m_window->setSize(m_size);
 	if (m_started && !m_active) {
 		forceDraw();
 	}
