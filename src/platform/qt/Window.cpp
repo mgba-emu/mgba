@@ -905,6 +905,7 @@ void Window::reloadDisplayDriver() {
 
 	const mCoreOptions* opts = m_config->options();
 	m_display->lockAspectRatio(opts->lockAspectRatio);
+	m_display->lockIntegerScaling(opts->lockIntegerScaling);
 	m_display->interframeBlending(opts->interframeBlending);
 	m_display->filter(opts->resampleVideo);
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
