@@ -101,7 +101,7 @@ struct mDebuggerPlatform {
 
 	bool (*hasBreakpoints)(struct mDebuggerPlatform*);
 	void (*checkBreakpoints)(struct mDebuggerPlatform*);
-	bool (*clearBreakpoint)(struct mDebuggerPlatform*, ssize_t id);
+	bool (*clearBreakpoint)(struct mDebuggerPlatform*, uint32_t addr);
 
 	ssize_t (*setBreakpoint)(struct mDebuggerPlatform*, const struct mBreakpoint*);
 	void (*listBreakpoints)(struct mDebuggerPlatform*, struct mBreakpointList*);

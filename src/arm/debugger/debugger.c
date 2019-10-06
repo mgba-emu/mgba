@@ -71,7 +71,7 @@ static void ARMDebuggerDeinit(struct mDebuggerPlatform* platform);
 static void ARMDebuggerEnter(struct mDebuggerPlatform* d, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info);
 
 static ssize_t ARMDebuggerSetBreakpoint(struct mDebuggerPlatform*, const struct mBreakpoint*);
-static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform*, ssize_t id);
+static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform*, uint32_t addr);
 static void ARMDebuggerListBreakpoints(struct mDebuggerPlatform*, struct mBreakpointList*);
 static ssize_t ARMDebuggerSetWatchpoint(struct mDebuggerPlatform*, const struct mWatchpoint*);
 static void ARMDebuggerListWatchpoints(struct mDebuggerPlatform*, struct mWatchpointList*);
@@ -193,13 +193,13 @@ static ssize_t ARMDebuggerSetBreakpoint(struct mDebuggerPlatform* d, const struc
 	return id;
 }
 
-static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform* d, ssize_t id) {
+static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform* d, uint32_t addr) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	size_t i;
 
 	struct ARMDebugBreakpointList* breakpoints = &debugger->breakpoints;
 	for (i = 0; i < ARMDebugBreakpointListSize(breakpoints); ++i) {
-		if (ARMDebugBreakpointListGetPointer(breakpoints, i)->d.id == id) {
+		if (ARMDebugBreakpointListGetPointer(breakpoints, i)->d.address == addr) {
 			_destroyBreakpoint(ARMDebugBreakpointListGetPointer(breakpoints, i));
 			ARMDebugBreakpointListShift(breakpoints, i, 1);
 			return true;
@@ -209,7 +209,7 @@ static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform* d, ssize_t id) 
 	struct ARMDebugBreakpointList* swBreakpoints = &debugger->swBreakpoints;
 	if (debugger->clearSoftwareBreakpoint) {
 		for (i = 0; i < ARMDebugBreakpointListSize(swBreakpoints); ++i) {
-			if (ARMDebugBreakpointListGetPointer(swBreakpoints, i)->d.id == id) {
+			if (ARMDebugBreakpointListGetPointer(swBreakpoints, i)->d.address == addr) {
 				debugger->clearSoftwareBreakpoint(debugger, ARMDebugBreakpointListGetPointer(swBreakpoints, i));
 				ARMDebugBreakpointListShift(swBreakpoints, i, 1);
 				return true;
@@ -219,7 +219,7 @@ static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform* d, ssize_t id) 
 
 	struct mWatchpointList* watchpoints = &debugger->watchpoints;
 	for (i = 0; i < mWatchpointListSize(watchpoints); ++i) {
-		if (mWatchpointListGetPointer(watchpoints, i)->id == id) {
+		if (mWatchpointListGetPointer(watchpoints, i)->address == addr) {
 			_destroyWatchpoint(mWatchpointListGetPointer(watchpoints, i));
 			mWatchpointListShift(watchpoints, i, 1);
 			if (!mWatchpointListSize(&debugger->watchpoints)) {

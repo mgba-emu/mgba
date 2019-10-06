@@ -611,8 +611,8 @@ static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
-	uint64_t id = dv->intValue;
-	debugger->d.platform->clearBreakpoint(debugger->d.platform, id);
+	uint32_t addr = dv->intValue;
+	debugger->d.platform->clearBreakpoint(debugger->d.platform, addr);
 }
 
 static void _listBreakpoints(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {

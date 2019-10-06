@@ -65,7 +65,7 @@ static void LR35902DebuggerEnter(struct mDebuggerPlatform* d, enum mDebuggerEntr
 
 static ssize_t LR35902DebuggerSetBreakpoint(struct mDebuggerPlatform*, const struct mBreakpoint*);
 static void LR35902DebuggerListBreakpoints(struct mDebuggerPlatform*, struct mBreakpointList*);
-static bool LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform*, ssize_t id);
+static bool LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform*, uint32_t addr);
 static ssize_t LR35902DebuggerSetWatchpoint(struct mDebuggerPlatform*, const struct mWatchpoint*);
 static void LR35902DebuggerListWatchpoints(struct mDebuggerPlatform*, struct mWatchpointList*);
 static void LR35902DebuggerCheckBreakpoints(struct mDebuggerPlatform*);
@@ -138,14 +138,14 @@ static ssize_t LR35902DebuggerSetBreakpoint(struct mDebuggerPlatform* d, const s
 
 }
 
-static bool LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform* d, ssize_t id) {
+static bool LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform* d, uint32_t addr) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
 	size_t i;
 
 	struct mBreakpointList* breakpoints = &debugger->breakpoints;
 	for (i = 0; i < mBreakpointListSize(breakpoints); ++i) {
 		struct mBreakpoint* breakpoint = mBreakpointListGetPointer(breakpoints, i);
-		if (breakpoint->id == id) {
+		if (breakpoint->address == addr) {
 			_destroyBreakpoint(breakpoint);
 			mBreakpointListShift(breakpoints, i, 1);
 			return true;
@@ -155,7 +155,7 @@ static bool LR35902DebuggerClearBreakpoint(struct mDebuggerPlatform* d, ssize_t 
 	struct mWatchpointList* watchpoints = &debugger->watchpoints;
 	for (i = 0; i < mWatchpointListSize(watchpoints); ++i) {
 		struct mWatchpoint* watchpoint = mWatchpointListGetPointer(watchpoints, i);
-		if (watchpoint->id == id) {
+		if (watchpoint->address == addr) {
 			_destroyWatchpoint(watchpoint);
 			mWatchpointListShift(watchpoints, i, 1);
 			if (!mWatchpointListSize(&debugger->watchpoints)) {
