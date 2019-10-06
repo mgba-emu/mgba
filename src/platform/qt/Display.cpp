@@ -75,6 +75,10 @@ void Display::interframeBlending(bool lock) {
 	m_interframeBlending = lock;
 }
 
+void Display::showOSDMessages(bool enable) {
+	m_showOSD = enable;
+}
+
 void Display::filter(bool filter) {
 	m_filter = filter;
 }

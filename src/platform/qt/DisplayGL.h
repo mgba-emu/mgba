@@ -56,6 +56,7 @@ public slots:
 	void lockAspectRatio(bool lock) override;
 	void lockIntegerScaling(bool lock) override;
 	void interframeBlending(bool enable) override;
+	void showOSDMessages(bool enable) override;
 	void filter(bool filter) override;
 	void framePosted() override;
 	void setShaders(struct VDir*) override;
@@ -102,6 +103,7 @@ public slots:
 	void lockAspectRatio(bool lock);
 	void lockIntegerScaling(bool lock);
 	void interframeBlending(bool enable);
+	void showOSD(bool enable);
 	void filter(bool filter);
 	void resizeContext();
 
@@ -127,6 +129,7 @@ private:
 	bool m_started = false;
 	std::shared_ptr<CoreController> m_context = nullptr;
 	bool m_supportsShaders;
+	bool m_showOSD;
 	VideoShader m_shader{};
 	VideoBackend* m_backend = nullptr;
 	QSize m_size;

@@ -377,6 +377,7 @@ void SettingsView::updateConfig() {
 	saveSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	saveSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
 	saveSetting("interframeBlending", m_ui.interframeBlending);
+	saveSetting("showOSD", m_ui.showOSD);
 	saveSetting("volume", m_ui.volume);
 	saveSetting("mute", m_ui.mute);
 	saveSetting("fastForwardVolume", m_ui.volumeFf);
@@ -547,6 +548,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	loadSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
 	loadSetting("interframeBlending", m_ui.interframeBlending);
+	loadSetting("showOSD", m_ui.showOSD, true);
 	loadSetting("volume", m_ui.volume, 0x100);
 	loadSetting("mute", m_ui.mute, false);
 	loadSetting("fastForwardVolume", m_ui.volumeFf, m_ui.volume->value());

@@ -738,6 +738,7 @@ void Window::gameStarted() {
 	m_config->updateOption("lockIntegerScaling");
 	m_config->updateOption("lockAspectRatio");
 	m_config->updateOption("interframeBlending");
+	m_config->updateOption("showOSD");
 	if (m_savedScale > 0) {
 		resizeFrame(size * m_savedScale);
 	}
@@ -908,6 +909,7 @@ void Window::reloadDisplayDriver() {
 	m_display->lockIntegerScaling(opts->lockIntegerScaling);
 	m_display->interframeBlending(opts->interframeBlending);
 	m_display->filter(opts->resampleVideo);
+	m_config->updateOption("showOSD");
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (opts->shader) {
 		struct VDir* shader = VDirOpen(opts->shader);
@@ -1600,6 +1602,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 		} else if (m_controller) {
 			m_fpsTimer.start();
 			m_frameTimer.start();
+		}
+	}, this);
+
+	ConfigOption* showOSD = m_config->addOption("showOSD");
+	showOSD->connect([this](const QVariant& value) {
+		if (m_display) {
+			m_display->showOSDMessages(value.toBool());
 		}
 	}, this);
 
