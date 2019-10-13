@@ -6,14 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>540</width>
-    <height>491</height>
+    <width>725</width>
+    <height>813</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
     <width>540</width>
-    <height>241</height>
+    <height>400</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -99,21 +105,21 @@
        </attribute>
       </widget>
      </item>
-     <item row="3" column="0" colspan="2">
+     <item row="4" column="0" colspan="2">
       <widget class="Line" name="line">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
+     <item row="5" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Width</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
+     <item row="5" column="1">
       <widget class="QRadioButton" name="bitsGuess">
        <property name="text">
         <string>Guess</string>
@@ -126,7 +132,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="5" column="1">
+     <item row="6" column="1">
       <widget class="QRadioButton" name="bits8">
        <property name="text">
         <string>1 Byte (8-bit)</string>
@@ -136,7 +142,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="6" column="1">
+     <item row="7" column="1">
       <widget class="QRadioButton" name="bits16">
        <property name="text">
         <string>2 Bytes (16-bit)</string>
@@ -146,7 +152,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="7" column="1">
+     <item row="8" column="1">
       <widget class="QRadioButton" name="bits32">
        <property name="text">
         <string>4 Bytes (32-bit)</string>
@@ -159,21 +165,21 @@
        </attribute>
       </widget>
      </item>
-     <item row="8" column="0" colspan="2">
+     <item row="9" column="0" colspan="2">
       <widget class="Line" name="line_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
-     <item row="9" column="0">
+     <item row="10" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
         <string>Number type</string>
        </property>
       </widget>
      </item>
-     <item row="9" column="1">
+     <item row="10" column="1">
       <widget class="QRadioButton" name="numGuess">
        <property name="text">
         <string>Guess</string>
@@ -183,38 +189,38 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="1">
+     <item row="11" column="1">
       <widget class="QRadioButton" name="numDec">
        <property name="text">
         <string>Decimal</string>
        </property>
       </widget>
      </item>
-     <item row="11" column="1">
+     <item row="12" column="1">
       <widget class="QRadioButton" name="numHex">
        <property name="text">
         <string>Hexadecimal</string>
        </property>
       </widget>
      </item>
-     <item row="12" column="0" colspan="2">
+     <item row="13" column="0" colspan="2">
       <widget class="Line" name="line_3">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
-     <item row="13" column="0">
+     <item row="14" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Compare</string>
+        <string>Search type</string>
        </property>
       </widget>
      </item>
-     <item row="13" column="1">
+     <item row="14" column="1">
       <widget class="QRadioButton" name="opEqual">
        <property name="text">
-        <string>Equal</string>
+        <string>Equal to value</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -224,20 +230,10 @@
        </attribute>
       </widget>
      </item>
-     <item row="14" column="1">
+     <item row="15" column="1">
       <widget class="QRadioButton" name="opGreater">
        <property name="text">
-        <string>Greater</string>
-       </property>
-       <attribute name="buttonGroup">
-        <string notr="true">op</string>
-       </attribute>
-      </widget>
-     </item>
-     <item row="15" column="1">
-      <widget class="QRadioButton" name="opLess">
-       <property name="text">
-        <string>Less</string>
+        <string>Greater than value</string>
        </property>
        <attribute name="buttonGroup">
         <string notr="true">op</string>
@@ -245,16 +241,82 @@
       </widget>
      </item>
      <item row="16" column="1">
+      <widget class="QRadioButton" name="opLess">
+       <property name="text">
+        <string>Less than value</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">op</string>
+       </attribute>
+      </widget>
+     </item>
+     <item row="17" column="1">
+      <widget class="QRadioButton" name="opUnknown">
+       <property name="text">
+        <string>Unknown/changed</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">op</string>
+       </attribute>
+      </widget>
+     </item>
+     <item row="18" column="1">
       <widget class="QRadioButton" name="opDelta">
        <property name="enabled">
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>Delta</string>
+        <string>Changed by value</string>
        </property>
        <attribute name="buttonGroup">
         <string notr="true">op</string>
        </attribute>
+      </widget>
+     </item>
+     <item row="21" column="1">
+      <widget class="QRadioButton" name="opDelta0">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Unchanged</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">op</string>
+       </attribute>
+      </widget>
+     </item>
+     <item row="19" column="1">
+      <widget class="QRadioButton" name="opDeltaPositive">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Increased</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">op</string>
+       </attribute>
+      </widget>
+     </item>
+     <item row="20" column="1">
+      <widget class="QRadioButton" name="opDeltaNegative">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Decreased</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">op</string>
+       </attribute>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QCheckBox" name="searchROM">
+       <property name="text">
+        <string>Search ROM</string>
+       </property>
       </widget>
      </item>
     </layout>
@@ -271,7 +333,7 @@
      <item>
       <widget class="QPushButton" name="search">
        <property name="text">
-        <string>Search</string>
+        <string>New Search</string>
        </property>
       </widget>
      </item>
@@ -318,10 +380,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>opDelta0</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>value</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>231</x>
+     <y>768</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>272</x>
+     <y>26</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="width"/>
   <buttongroup name="type"/>
   <buttongroup name="op"/>
+  <buttongroup name="width"/>
  </buttongroups>
 </ui>

@@ -84,6 +84,7 @@ Misc:
  - Qt: Add copy and QoL improvements to graphic views (closes mgba.io/i/1541)
  - Qt: Show list of all sprites in sprite view
  - Qt: Add option for disabling OSD messages
+ - Core: Add more memory search ops (closes mgba.io/i/1510)
 
 0.7.3: (2019-09-15)
 Emulation fixes:
