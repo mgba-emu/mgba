@@ -646,124 +646,149 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
 <context>
     <name>MemorySearch</name>
     <message>
-        <location filename="../MemorySearch.ui" line="20"/>
+        <location filename="../MemorySearch.ui" line="26"/>
         <source>Memory Search</source>
         <translation>Speicher durchsuchen</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="45"/>
+        <location filename="../MemorySearch.ui" line="51"/>
         <source>Address</source>
         <translation>Adresse</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="50"/>
+        <location filename="../MemorySearch.ui" line="56"/>
         <source>Current Value</source>
         <translation>Aktueller Wert</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="55"/>
-        <location filename="../MemorySearch.ui" line="75"/>
+        <location filename="../MemorySearch.ui" line="61"/>
+        <location filename="../MemorySearch.ui" line="81"/>
         <source>Type</source>
         <translation>Typ</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="65"/>
+        <location filename="../MemorySearch.ui" line="71"/>
         <source>Value</source>
         <translation>Wert</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="82"/>
+        <location filename="../MemorySearch.ui" line="88"/>
         <source>Numeric</source>
         <translation>Numerisch</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="95"/>
+        <location filename="../MemorySearch.ui" line="101"/>
         <source>Text</source>
         <translation>Text</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="112"/>
+        <location filename="../MemorySearch.ui" line="118"/>
         <source>Width</source>
         <translation>Breite</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="132"/>
+        <location filename="../MemorySearch.ui" line="138"/>
         <source>1 Byte (8-bit)</source>
         <translation>1 Byte (8-bit)</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="142"/>
+        <location filename="../MemorySearch.ui" line="148"/>
         <source>2 Bytes (16-bit)</source>
         <translation>2 Bytes (16-bit)</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="152"/>
+        <location filename="../MemorySearch.ui" line="158"/>
         <source>4 Bytes (32-bit)</source>
         <translation>4 Bytes (32-bit)</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="172"/>
+        <location filename="../MemorySearch.ui" line="178"/>
         <source>Number type</source>
         <translation>Zahlensystem</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="196"/>
+        <location filename="../MemorySearch.ui" line="202"/>
         <source>Hexadecimal</source>
         <translation>Hexadezimal</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="189"/>
+        <location filename="../MemorySearch.ui" line="216"/>
+        <source>Search type</source>
+        <translation>Suche nach</translation>
+    </message>
+    <message>
+        <location filename="../MemorySearch.ui" line="223"/>
+        <source>Equal to value</source>
+        <translation>Entspricht dem Wert</translation>
+    </message>
+    <message>
+        <location filename="../MemorySearch.ui" line="236"/>
+        <source>Greater than value</source>
+        <translation>Größer als der Wert</translation>
+    </message>
+    <message>
+        <location filename="../MemorySearch.ui" line="246"/>
+        <source>Less than value</source>
+        <translation>Kleiner als der Wert</translation>
+    </message>
+    <message>
+        <location filename="../MemorySearch.ui" line="256"/>
+        <source>Unknown/changed</source>
+        <translation>Unbekannt/geändert</translation>
+    </message>
+    <message>
+        <location filename="../MemorySearch.ui" line="269"/>
+        <source>Changed by value</source>
+        <translation>Geändert durch Wert</translation>
+    </message>
+    <message>
+        <location filename="../MemorySearch.ui" line="282"/>
+        <source>Unchanged</source>
+        <translation>Unverändert</translation>
+    </message>
+    <message>
+        <location filename="../MemorySearch.ui" line="295"/>
+        <source>Increased</source>
+        <translation>Erhöht</translation>
+    </message>
+    <message>
+        <location filename="../MemorySearch.ui" line="308"/>
+        <source>Decreased</source>
+        <translation>Verringert</translation>
+    </message>
+    <message>
+        <location filename="../MemorySearch.ui" line="318"/>
+        <source>Search ROM</source>
+        <translation>ROM durchsuchen</translation>
+    </message>
+    <message>
+        <location filename="../MemorySearch.ui" line="336"/>
+        <source>New Search</source>
+        <translation>Neue Suche</translation>
+    </message>
+    <message>
+        <location filename="../MemorySearch.ui" line="195"/>
         <source>Decimal</source>
         <translation>Dezimal</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="119"/>
-        <location filename="../MemorySearch.ui" line="179"/>
+        <location filename="../MemorySearch.ui" line="125"/>
+        <location filename="../MemorySearch.ui" line="185"/>
         <source>Guess</source>
         <translation>automatisch</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="210"/>
-        <source>Compare</source>
-        <translation>Vergleichen</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="217"/>
-        <source>Equal</source>
-        <translation>Gleichwertig</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="230"/>
-        <source>Greater</source>
-        <translation>Größer</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="240"/>
-        <source>Less</source>
-        <translation>Kleiner</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="253"/>
-        <source>Delta</source>
-        <translation>Differenz</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="274"/>
-        <source>Search</source>
-        <translation>Suchen</translation>
-    </message>
-    <message>
-        <location filename="../MemorySearch.ui" line="281"/>
+        <location filename="../MemorySearch.ui" line="343"/>
         <source>Search Within</source>
         <translation>Suchen innerhalb</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="288"/>
+        <location filename="../MemorySearch.ui" line="350"/>
         <source>Open in Memory Viewer</source>
         <translation>Im Speicher-Monitor öffnen</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line="295"/>
+        <location filename="../MemorySearch.ui" line="357"/>
         <source>Refresh</source>
         <translation>Aktualisieren</translation>
     </message>
@@ -3233,22 +3258,22 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
 <context>
     <name>QGBA::MemorySearch</name>
     <message>
-        <location filename="../MemorySearch.cpp" line="200"/>
+        <location filename="../MemorySearch.cpp" line="221"/>
         <source> (%0/%1×)</source>
         <translation> (%0/%1×)</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.cpp" line="202"/>
+        <location filename="../MemorySearch.cpp" line="223"/>
         <source> (⅟%0×)</source>
         <translation> (⅟%0×)</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.cpp" line="205"/>
+        <location filename="../MemorySearch.cpp" line="226"/>
         <source> (%0×)</source>
         <translation> (%0×)</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.cpp" line="209"/>
+        <location filename="../MemorySearch.cpp" line="230"/>
         <source>%1 byte%2</source>
         <translation>%1 byte%2</translation>
     </message>
