@@ -24,7 +24,7 @@ matrix:
 
 before_install:
 - '[ -z "$DOCKER_TAG" ] || docker pull mgba/$DOCKER_TAG'
-- '[ "$TRAVIS_OS_NAME" != "osx" ] || . ./.travis-deps.sh'
+- '. ./.travis-deps.sh'
 - 'mkdir build && chmod 777 build'
 
 script:
