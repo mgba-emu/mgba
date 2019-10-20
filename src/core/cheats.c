@@ -334,7 +334,7 @@ bool mCheatParseEZFChtFile(struct mCheatDevice* device, struct VFile* vf) {
 	char cheat[MAX_LINE_LENGTH];
 	char cheatName[MAX_LINE_LENGTH];
 	char miniline[32];
-	size_t cheatNameLength;
+	size_t cheatNameLength = 0;
 	struct mCheatSet* set = NULL;
 
 	cheatName[MAX_LINE_LENGTH - 1] = '\0';
