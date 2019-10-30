@@ -87,6 +87,7 @@ Misc:
  - Vita: L2/R2 and L3/R3 can now be mapped on PSTV (fixes mgba.io/i/1292)
 Changes from beta 1:
 Other fixes:
+ - 3DS: Fix screen darkening (fixes mgba.io/i/1562)
  - Vita: Fix analog controls (fixes mgba.io/i/1554)
 
 0.8 beta 1: (2019-10-20)

@@ -417,6 +417,46 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 	}
 }
 
+static u32 _setupTex(int out, bool faded) {
+	ctrActivateTexture(&outputTexture[out]);
+	u32 color;
+	if (!faded) {
+		color = 0xFFFFFFFF;
+		switch (darkenMode) {
+		case DM_NATIVE:
+		case DM_MAX:
+			break;
+		case DM_MULT_SCALE_BIAS:
+			ctrTextureBias(0x070707);
+			// Fall through
+		case DM_MULT_SCALE:
+			color = 0xFF707070;
+			// Fall through
+		case DM_MULT:
+			ctrTextureMultiply();
+			break;
+		}
+	} else {
+		color = 0xFF484848;
+		switch (darkenMode) {
+		case DM_NATIVE:
+		case DM_MAX:
+			break;
+		case DM_MULT_SCALE_BIAS:
+			ctrTextureBias(0x030303);
+			// Fall through
+		case DM_MULT_SCALE:
+			color = 0xFF303030;
+			// Fall through
+		case DM_MULT:
+			ctrTextureMultiply();
+			break;
+		}
+
+	}
+	return color;
+}
+
 static void _drawTex(struct mCore* core, bool faded, bool both) {
 	unsigned screen_w, screen_h;
 	switch (screenMode) {
@@ -485,45 +525,10 @@ static void _drawTex(struct mCore* core, bool faded, bool both) {
 		break;
 	}
 
-	u32 color;
-	if (!faded) {
-		color = 0xFFFFFFFF;
-		switch (darkenMode) {
-		case DM_NATIVE:
-		case DM_MAX:
-			break;
-		case DM_MULT_SCALE_BIAS:
-			ctrTextureBias(0x070707);
-			// Fall through
-		case DM_MULT_SCALE:
-			color = 0xFF707070;
-			// Fall through
-		case DM_MULT:
-			ctrTextureMultiply();
-			break;
-		}
-	} else {
-		color = 0xFF484848;
-		switch (darkenMode) {
-		case DM_NATIVE:
-		case DM_MAX:
-			break;
-		case DM_MULT_SCALE_BIAS:
-			ctrTextureBias(0x030303);
-			// Fall through
-		case DM_MULT_SCALE:
-			color = 0xFF303030;
-			// Fall through
-		case DM_MULT:
-			ctrTextureMultiply();
-			break;
-		}
-
-	}
-	ctrActivateTexture(&outputTexture[activeOutputTexture]);
+	uint32_t color = _setupTex(activeOutputTexture, faded);
 	ctrAddRectEx(color, x, y, w, h, 0, 0, corew, coreh, 0);
 	if (both) {
-		ctrActivateTexture(&outputTexture[activeOutputTexture ^ 1]);
+		color = _setupTex(activeOutputTexture ^ 1, faded);
 		ctrAddRectEx(color & 0x7FFFFFFF, x, y, w, h, 0, 0, corew, coreh, 0);
 	}
 	ctrFlushBatch();
