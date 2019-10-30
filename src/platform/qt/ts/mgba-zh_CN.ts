@@ -652,7 +652,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>内存查找</translation>
     </message>
     <message>
-        <location filename="../MemorySearch.ui" line=“51"/>
+        <location filename="../MemorySearch.ui" line="51"/>
         <source>Address</source>
         <translation>地址</translation>
     </message>
