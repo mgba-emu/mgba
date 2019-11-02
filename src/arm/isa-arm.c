@@ -601,7 +601,7 @@ DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRT, STORE,
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,
 	load,
 	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32;
-	if (rs & 0x8000) {
+	if ((rs & 0x8000) || !rs) {
 		currentCycles += ARMWritePC(cpu);
 	})
 
