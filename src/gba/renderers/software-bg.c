@@ -36,14 +36,16 @@
 	pixelData = charBase[(mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)];
 
 #define MODE_2_LOOP(MOSAIC, COORD, BLEND, OBJWIN) \
-	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) { \
+	int condition = renderer->end - renderer->start; \
+	pixel = &renderer->row[renderer->start]; \
+	for (outX = 0; outX < condition; ++outX) { \
 		x += background->dx; \
 		y += background->dy; \
 		\
-		uint32_t current = *pixel; \
 		MOSAIC(COORD) \
 		if (pixelData) { \
-			COMPOSITE_256_ ## OBJWIN (BLEND, 0); \
+			uint32_t current = pixel[outX]; \
+			COMPOSITE_256_ ## OBJWIN (BLEND, outX); \
 		} \
 	}
 
