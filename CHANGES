@@ -94,6 +94,7 @@ Emulation fixes:
 Other fixes:
  - 3DS: Fix screen darkening (fixes mgba.io/i/1562)
  - Vita: Fix analog controls (fixes mgba.io/i/1554)
+ - Qt: Fix fast forward mute being reset (fixes mgba.io/i/1574)
 
 0.8 beta 1: (2019-10-20)
 - Initial beta for 0.8
