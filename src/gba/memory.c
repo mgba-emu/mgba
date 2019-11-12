@@ -353,10 +353,10 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 			case REGION_WORKING_IRAM: \
 				/* This doesn't handle prefetch clobbering */ \
 				if (cpu->gprs[ARM_PC] & 2) { \
-					value |= cpu->prefetch[0] << 16; \
-				} else { \
 					value <<= 16; \
 					value |= cpu->prefetch[0]; \
+				} else { \
+					value |= cpu->prefetch[0] << 16; \
 				} \
 				break; \
 			default: \
