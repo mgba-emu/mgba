@@ -230,7 +230,7 @@ private:
 
 	bool m_autosave;
 	bool m_autoload;
-	int m_autosaveCounter;
+	int m_autosaveCounter = 0;
 
 	int m_fastForward = false;
 	int m_fastForwardForced = false;
