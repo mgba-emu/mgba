@@ -11,6 +11,7 @@ void mBitmapCacheInit(struct mBitmapCache* cache) {
 	// TODO: Reconfigurable cache for space savings
 	cache->cache = NULL;
 	cache->config = mBitmapCacheConfigurationFillShouldStore(0);
+	cache->sysConfig = 0;
 	cache->status = NULL;
 	cache->palette = NULL;
 	cache->buffer = 0;
@@ -18,14 +19,18 @@ void mBitmapCacheInit(struct mBitmapCache* cache) {
 
 static void _freeCache(struct mBitmapCache* cache) {
 	size_t size = mBitmapCacheSystemInfoGetHeight(cache->sysConfig) * mBitmapCacheSystemInfoGetBuffers(cache->sysConfig);
-	mappedMemoryFree(cache->cache, mBitmapCacheSystemInfoGetWidth(cache->sysConfig) * size * sizeof(color_t));
-	mappedMemoryFree(cache->status, size * sizeof(*cache->status));
+	if (cache->cache) {
+		mappedMemoryFree(cache->cache, mBitmapCacheSystemInfoGetWidth(cache->sysConfig) * size * sizeof(color_t));
+		cache->cache = NULL;
+	}
+	if (cache->status) {
+		mappedMemoryFree(cache->status, size * sizeof(*cache->status));
+		cache->status = NULL;
+	}
 	if (cache->palette) {
 		free(cache->palette);
+		cache->palette = NULL;
 	}
-	cache->cache = NULL;
-	cache->status = NULL;
-	cache->palette = NULL;
 }
 
 static void _redoCacheSize(struct mBitmapCache* cache) {

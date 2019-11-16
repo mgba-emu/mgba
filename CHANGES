@@ -94,6 +94,7 @@ Emulation fixes:
  - GBA Memory: Fix open bus from IWRAM (fixes mgba.io/i/1575)
 Other fixes:
  - 3DS: Fix screen darkening (fixes mgba.io/i/1562)
+ - Core: Fix uninitialized memory issues with graphics caches
  - Vita: Fix analog controls (fixes mgba.io/i/1554)
  - Qt: Fix fast forward mute being reset (fixes mgba.io/i/1574)
 

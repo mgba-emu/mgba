@@ -51,6 +51,9 @@ static void _redoCacheSize(struct mTileCache* cache) {
 }
 
 void mTileCacheConfigure(struct mTileCache* cache, mTileCacheConfiguration config) {
+	if (cache->config == config) {
+		return;
+	}
 	_freeCache(cache);
 	cache->config = config;
 	_redoCacheSize(cache);
