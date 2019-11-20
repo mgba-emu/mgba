@@ -167,6 +167,7 @@ void MapView::updateTilesGBA(bool force) {
 		int frame = 0;
 		QString offset(tr("N/A"));
 		QString transform(tr("N/A"));
+#ifdef M_CORE_GBA
 		if (m_controller->platform() == PLATFORM_GBA) {
 			uint16_t* io = static_cast<GBA*>(m_controller->thread()->core->board)->memory.io;
 			int mode = GBARegisterDISPCNTGetMode(io[REG_DISPCNT >> 1]);
@@ -199,12 +200,15 @@ void MapView::updateTilesGBA(bool force) {
 
 			}
 		}
+#endif
+#ifdef M_CORE_GB
 		if (m_controller->platform() == PLATFORM_GB) {
 			uint8_t* io = static_cast<GB*>(m_controller->thread()->core->board)->memory.io;
 			int x = io[m_map == 0 ? 0x42 : 0x4A];
 			int y = io[m_map == 0 ? 0x43 : 0x4B];
 			offset = QString("%1, %2").arg(x).arg(y);
 		}
+#endif
 		if (bitmap >= 0) {
 			mBitmapCache* bitmapCache = mBitmapCacheSetGetPointer(&m_cacheSet->bitmaps, bitmap);
 			int width = mBitmapCacheSystemInfoGetWidth(bitmapCache->sysConfig);
