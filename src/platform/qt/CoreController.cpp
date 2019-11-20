@@ -632,12 +632,16 @@ void CoreController::yankPak() {
 	Interrupter interrupter(this);
 
 	switch (platform()) {
+#ifdef M_CORE_GBA
 	case PLATFORM_GBA:
 		GBAYankROM(static_cast<GBA*>(m_threadContext.core->board));
 		break;
+#endif
+#ifdef M_CORE_GB
 	case PLATFORM_GB:
 		GBYankROM(static_cast<GB*>(m_threadContext.core->board));
 		break;
+#endif
 	}
 }
 
