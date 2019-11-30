@@ -97,6 +97,8 @@ Other fixes:
  - Core: Fix uninitialized memory issues with graphics caches
  - Vita: Fix analog controls (fixes mgba.io/i/1554)
  - Qt: Fix fast forward mute being reset (fixes mgba.io/i/1574)
+Misc:
+ - GB Memory: Support manual SRAM editing (fixes mgba.io/i/1580)
 
 0.8 beta 1: (2019-10-20)
 - Initial beta for 0.8

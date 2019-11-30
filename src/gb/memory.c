@@ -649,7 +649,15 @@ void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* o
 		break;
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
-		mLOG(GB_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
+		if (memory->rtcAccess) {
+			memory->rtcRegs[memory->activeRtcReg] = value;
+		} else if (memory->sramAccess && memory->sram && memory->mbcType != GB_MBC2) {
+			// TODO: Remove sramAccess check?
+			memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
+		} else {
+			memory->mbcWrite(gb, address, value);
+		}
+		gb->sramDirty |= GB_SRAM_DIRT_NEW;
 		return;
 	case GB_REGION_WORKING_RAM_BANK0:
 	case GB_REGION_WORKING_RAM_BANK0 + 2:
