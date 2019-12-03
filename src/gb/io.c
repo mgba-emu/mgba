@@ -672,6 +672,13 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 			case REG_SVBK:
 				// Handled transparently by the registers
 				goto success;
+
+			case REG_PCM12:				
+				return (gb->audio.playingCh2 ? (gb->audio.ch2.sample << 4) : 0) | (gb->audio.playingCh1 ? (gb->audio.ch1.sample) : 0);
+
+			case REG_PCM34:				
+				return (gb->audio.playingCh4 ? (gb->audio.ch4.sample << 4) : 0) | (gb->audio.playingCh3 ? (gb->audio.ch3.sample) : 0);
+
 			default:
 				break;
 			}
