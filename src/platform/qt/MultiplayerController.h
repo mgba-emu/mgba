@@ -45,8 +45,12 @@ signals:
 
 private:
 	struct Player {
+#ifdef M_CORE_GB
 		Player(CoreController* controller, GBSIOLockstepNode* node);
+#endif
+#ifdef M_CORE_GBA
 		Player(CoreController* controller, GBASIOLockstepNode* node);
+#endif
 
 		CoreController* controller;
 		GBSIOLockstepNode* gbNode = nullptr;
