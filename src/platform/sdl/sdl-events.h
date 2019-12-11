@@ -112,7 +112,15 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration*)
 void mSDLPlayerLoadConfig(struct mSDLPlayer*, const struct Configuration*);
 void mSDLPlayerSaveConfig(const struct mSDLPlayer*, struct Configuration*);
 
+#define MAX_KEY_LENGTH 11
+
+typedef struct keymapping {
+	char str[MAX_KEY_LENGTH];
+	int key;
+} keymapping;
+
 void mSDLInitBindingsGBA(struct mInputMap* inputMap);
+int getSDLKey(FILE*, const keymapping*);
 
 struct mCoreThread;
 void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const union SDL_Event* event);

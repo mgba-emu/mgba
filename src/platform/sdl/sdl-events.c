@@ -14,6 +14,10 @@
 #include <mgba-util/configuration.h>
 #include <mgba-util/formatting.h>
 #include <mgba-util/vfs.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+extern char **environ;
 
 #if SDL_VERSION_ATLEAST(2, 0, 0) && defined(__APPLE__)
 #define GUI_MOD KMOD_GUI
@@ -24,6 +28,65 @@
 #define GYRO_STEPS 100
 #define RUMBLE_PWM 16
 #define RUMBLE_STEPS 2
+
+#define KEYMAP_LENGTH 75
+#define NUM_KEYS 10
+#define NUM_SAVESTATE_KEYS 9
+
+static int ssKeysArray[NUM_SAVESTATE_KEYS] = {
+	SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, 
+	SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9
+};
+
+
+// Default file layout for keyboard config.
+static const char* DEFAULT_CONFIG = \
+"# ~mGBA keyboard shortcut configuration file~\n\
+# All entries are of the following form\n\
+#	GBA_BUTTON=keyboard key\n\
+#\n\
+# ~Rules~\n\
+# All entries must be in this listed order\n\
+# All entries must be present\n\
+# All keys must be in lowercase\n\
+#\n\
+# Keyboard keys that are printable are written as that symbol\n\
+# example: GBA_KEY_A=;\n\
+# non-printable keyboard keys are written as the name of the key\n\
+# example: GBA_KEY_A=backspace\n\
+#\n\
+# ~Supported keys~\n\
+# a-z, 0-9, f1-f9\n\
+# special characters like ;,.'/\\[]=-\n\
+# keypad keys 0-9, written in the form \"keypad 0\"\n\
+# arrow keys written as up, down, left, right\n\
+# tab, backspace, return, space\n\
+#\n\
+# ~Button mappings~\n\
+#\n\
+GBA_KEY_A=x\n\
+GBA_KEY_B=z\n\
+GBA_KEY_L=a\n\
+GBA_KEY_R=s\n\
+GBA_KEY_START=return\n\
+GBA_KEY_SELECT=backspace\n\
+GBA_KEY_UP=up\n\
+GBA_KEY_DOWN=down\n\
+GBA_KEY_LEFT=left\n\
+GBA_KEY_RIGHT=right\n\
+#\n\
+# ~Save state mappings~\n\
+#\n\
+GBA_SAVE_1=f1\n\
+GBA_SAVE_2=f2\n\
+GBA_SAVE_3=f3\n\
+GBA_SAVE_4=f4\n\
+GBA_SAVE_5=f5\n\
+GBA_SAVE_6=f6\n\
+GBA_SAVE_7=f7\n\
+GBA_SAVE_8=f8\n\
+GBA_SAVE_9=f9\n\
+# Leave this line here!";
 
 mLOG_DEFINE_CATEGORY(SDL_EVENTS, "SDL Events", "platform.sdl.events");
 
@@ -129,16 +192,100 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_LEFT, GBA_KEY_LEFT);
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
 #else
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_x, GBA_KEY_A);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_z, GBA_KEY_B);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_a, GBA_KEY_L);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_s, GBA_KEY_R);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RETURN, GBA_KEY_START);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_BACKSPACE, GBA_KEY_SELECT);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_UP, GBA_KEY_UP);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_DOWN, GBA_KEY_DOWN);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_LEFT, GBA_KEY_LEFT);
-	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
+
+	// Key mappings for the config file, ASCII Order
+	const keymapping keymap[KEYMAP_LENGTH] = 
+	{	
+		{"'\n", SDLK_QUOTE},		{"+\n", SDLK_PLUS},			{",\n", SDLK_COMMA},		{"-\n", SDLK_MINUS},
+		{".\n", SDLK_PERIOD}, 		{"/\n", SDLK_SLASH}, 		{"0\n", SDLK_0}, 			{"1\n", SDLK_1},
+		{"2\n", SDLK_2}, 			{"3\n", SDLK_3}, 			{"4\n", SDLK_4}, 			{"5\n", SDLK_5},
+		{"6\n", SDLK_6}, 			{"7\n", SDLK_7}, 			{"8\n", SDLK_8}, 			{"9\n", SDLK_9}, 
+		{";\n", SDLK_SEMICOLON}, 	{"=\n", SDLK_EQUALS}, 		{"[\n", SDLK_LEFTBRACKET}, 	{"\\\n", SDLK_BACKSLASH},
+		{"]\n", SDLK_RIGHTBRACKET}, {"`\n", SDLK_BACKQUOTE}, 	{"a\n", SDLK_a},			{"b\n", SDLK_b},
+		{"backspace\n", SDLK_SPACE},{"c\n", SDLK_c},			{"d\n", SDLK_d},			{"down\n", SDLK_DOWN},
+		{"e\n", SDLK_e},			{"f\n", SDLK_f}, 			{"f1\n", SDLK_F1}, 			{"f2\n", SDLK_F2},
+		{"f3\n", SDLK_F3},			{"f4\n", SDLK_F4},			{"f5\n", SDLK_F5},			{"f6\n", SDLK_F6},
+		{"f7\n", SDLK_F7},			{"f8\n", SDLK_F8},			{"f9\n", SDLK_F9},			{"g\n", SDLK_g},
+		{"h\n", SDLK_h},			{"i\n", SDLK_i},			{"j\n", SDLK_j},			{"k\n", SDLK_k},
+		{"keypad 0\n", SDLK_KP_0},	{"keypad 1\n", SDLK_KP_1},	{"keypad 2\n", SDLK_KP_2},	{"keypad 3\n", SDLK_KP_3},
+		{"keypad 4\n", SDLK_KP_4},	{"keypad 5\n", SDLK_KP_5},	{"keypad 6\n", SDLK_KP_6},	{"keypad 7\n", SDLK_KP_7},
+		{"keypad 8\n", SDLK_KP_8},	{"keypad 9\n", SDLK_KP_9},	{"l\n", SDLK_l},			{"left\n", SDLK_LEFT},
+		{"m\n", SDLK_m},			{"n\n", SDLK_n},			{"o\n", SDLK_o},			{"p\n", SDLK_p},
+		{"q\n", SDLK_q},			{"r\n", SDLK_r},			{"return\n", SDLK_RETURN},	{"right\n", SDLK_RIGHT},
+		{"s\n", SDLK_s},			{"space\n", SDLK_SPACE},	{"t\n", SDLK_t},			{"tab\n", SDLK_TAB},
+		{"u\n", SDLK_u},			{"up\n", SDLK_UP},			{"v\n", SDLK_v},			{"w\n", SDLK_w},
+		{"x\n", SDLK_x},			{"y\n", SDLK_y},			{"z\n", SDLK_z}
+	};
+
+	// Get the path
+	char* home = getenv("HOME");
+	char* f = "/.mGBA_key_config";
+	char* path = calloc(sizeof(char), strlen(home) + strlen(f));
+	if (path != NULL) {
+
+		// cat two strings together to make full path
+		strcat(path, home);
+		strcat(path, f);
+
+		// Open file read only incase user already has config
+		FILE* fp = fopen(path, "r");
+
+		// Write the default layout to the file.
+		if(fp == NULL) {
+			fp = fopen(path, "w");
+			fprintf(fp, "%s", DEFAULT_CONFIG);
+			fclose(fp);
+			fp = fopen(path, "r");
+			if(fp == NULL)
+				printf("ERROR, CAN'T OPEN KEYBOARD CONFIG AT ~/.mGBA_key_config\n");
+		}
+
+		// Set keys from config file.
+		int gba_keys[NUM_KEYS] = { 
+			GBA_KEY_A, GBA_KEY_B, GBA_KEY_L, GBA_KEY_R,
+			GBA_KEY_START, GBA_KEY_SELECT,
+			GBA_KEY_UP, GBA_KEY_DOWN, GBA_KEY_LEFT, GBA_KEY_RIGHT 
+		};
+
+		int sdl_keys[NUM_KEYS] = {
+			SDLK_x, SDLK_z, SDLK_a, SDLK_s,
+			SDLK_RETURN, SDLK_BACKSPACE,
+			SDLK_UP, SDLK_DOWN, SDLK_LEFT, SDLK_RIGHT
+		};
+
+		int i;
+		int sdl_key = -1;
+		for(i = 0; i < NUM_KEYS; i++)
+		{
+			sdl_key = getSDLKey(fp, keymap);
+		    if(sdl_key == -1)
+		    	sdl_key = sdl_keys[i];
+		    mInputBindKey(inputMap, SDL_BINDING_KEY, sdl_key, gba_keys[i]);
+		}
+
+		sdl_key = -1;
+		for(i = 0; i < NUM_SAVESTATE_KEYS; i++)
+		{
+			sdl_key = getSDLKey(fp, keymap);
+		    if(sdl_key != -1)
+		    	ssKeysArray[i] = sdl_key;
+		}
+	}
+	else
+	{
+		// Set up default values, incase we can't open a file at all.
+		mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_x, GBA_KEY_A);
+		mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_z, GBA_KEY_B);
+		mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_a, GBA_KEY_L);
+		mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_s, GBA_KEY_R);
+		mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RETURN, GBA_KEY_START);
+		mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_BACKSPACE, GBA_KEY_SELECT);
+		mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_UP, GBA_KEY_UP);
+		mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_DOWN, GBA_KEY_DOWN);
+		mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_LEFT, GBA_KEY_LEFT);
+		mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
+	}
+
 #endif
 
 	struct mInputAxis description = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x4000, -0x4000 };
@@ -147,6 +294,44 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 	mInputBindAxis(inputMap, SDL_BINDING_BUTTON, 1, &description);
 
 	mInputBindHat(inputMap, SDL_BINDING_BUTTON, 0, &GBAInputInfo.hat);
+}
+
+int getSDLKey(FILE* fp, const keymapping* keymap) {
+
+	// Variables for reading file
+	char* line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+    // Skip over comments!
+    do {
+    	read = getline(&line, &len, fp);
+
+    	// Error check
+    	if(read == -1) {
+    		printf("ERROR, EOF REACHED EARLY\n");
+    	}
+
+	} while (*line == '#');
+
+	// Get SDL_key from current line
+    char* key = strchr(line, '=');
+
+    // Line does not have a mapping, set to default.
+    if(key == NULL) {
+    	return -1;
+    }
+	key++;
+
+	// Get string key to int SDLKey
+	int i;
+    for(i = 0; i < KEYMAP_LENGTH; i++) {
+    	if(strcmp(key, keymap[i].str) == 0) {
+    		return keymap[i].key;
+    	}
+    }
+
+    return -1;
 }
 
 bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
@@ -495,41 +680,26 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 					break;
 				}
 			}
+
+			int i;
 			if (event->keysym.mod & KMOD_SHIFT) {
-				switch (event->keysym.sym) {
-				case SDLK_F1:
-				case SDLK_F2:
-				case SDLK_F3:
-				case SDLK_F4:
-				case SDLK_F5:
-				case SDLK_F6:
-				case SDLK_F7:
-				case SDLK_F8:
-				case SDLK_F9:
-					mCoreThreadInterrupt(context);
-					mCoreSaveState(context->core, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SAVEDATA | SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
-					mCoreThreadContinue(context);
-					break;
-				default:
-					break;
+				for(i = 0; i < NUM_SAVESTATE_KEYS; i++) {
+					if(event->keysym.sym == ssKeysArray[i]) {
+						mCoreThreadInterrupt(context);
+						mCoreSaveState(context->core, i + 1, SAVESTATE_SAVEDATA | SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
+						mCoreThreadContinue(context);
+						break;
+					}
 				}
+
 			} else {
-				switch (event->keysym.sym) {
-				case SDLK_F1:
-				case SDLK_F2:
-				case SDLK_F3:
-				case SDLK_F4:
-				case SDLK_F5:
-				case SDLK_F6:
-				case SDLK_F7:
-				case SDLK_F8:
-				case SDLK_F9:
-					mCoreThreadInterrupt(context);
-					mCoreLoadState(context->core, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
-					mCoreThreadContinue(context);
-					break;
-				default:
-					break;
+				for(i = 0; i < NUM_SAVESTATE_KEYS; i++) {
+					if(event->keysym.sym == ssKeysArray[i]) {
+						mCoreThreadInterrupt(context);
+						mCoreLoadState(context->core, i + 1, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
+						mCoreThreadContinue(context);
+						break;
+					}
 				}
 			}
 			return;
