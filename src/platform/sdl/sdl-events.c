@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "sdl-events.h"
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <mgba/core/core.h>
 #include <mgba/core/input.h>
 #include <mgba/core/serialize.h>
@@ -14,8 +16,6 @@
 #include <mgba-util/configuration.h>
 #include <mgba-util/formatting.h>
 #include <mgba-util/vfs.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 extern char **environ;
 
@@ -34,7 +34,7 @@ extern char **environ;
 #define NUM_SAVESTATE_KEYS 9
 
 static int ssKeysArray[NUM_SAVESTATE_KEYS] = {
-	SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, 
+	SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5,
 	SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9
 };
 
@@ -194,27 +194,27 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 #else
 
 	// Key mappings for the config file, ASCII Order
-	const keymapping keymap[KEYMAP_LENGTH] = 
-	{	
-		{"'\n", SDLK_QUOTE},		{"+\n", SDLK_PLUS},			{",\n", SDLK_COMMA},		{"-\n", SDLK_MINUS},
-		{".\n", SDLK_PERIOD}, 		{"/\n", SDLK_SLASH}, 		{"0\n", SDLK_0}, 			{"1\n", SDLK_1},
-		{"2\n", SDLK_2}, 			{"3\n", SDLK_3}, 			{"4\n", SDLK_4}, 			{"5\n", SDLK_5},
-		{"6\n", SDLK_6}, 			{"7\n", SDLK_7}, 			{"8\n", SDLK_8}, 			{"9\n", SDLK_9}, 
+	const keymapping keymap[KEYMAP_LENGTH] =
+	{
+		{"'\n", SDLK_QUOTE},		{"+\n", SDLK_PLUS},		{",\n", SDLK_COMMA},		{"-\n", SDLK_MINUS},
+		{".\n", SDLK_PERIOD}, 		{"/\n", SDLK_SLASH}, 		{"0\n", SDLK_0}, 		{"1\n", SDLK_1},
+		{"2\n", SDLK_2}, 		{"3\n", SDLK_3}, 		{"4\n", SDLK_4}, 		{"5\n", SDLK_5},
+		{"6\n", SDLK_6}, 		{"7\n", SDLK_7}, 		{"8\n", SDLK_8}, 		{"9\n", SDLK_9},
 		{";\n", SDLK_SEMICOLON}, 	{"=\n", SDLK_EQUALS}, 		{"[\n", SDLK_LEFTBRACKET}, 	{"\\\n", SDLK_BACKSLASH},
-		{"]\n", SDLK_RIGHTBRACKET}, {"`\n", SDLK_BACKQUOTE}, 	{"a\n", SDLK_a},			{"b\n", SDLK_b},
-		{"backspace\n", SDLK_SPACE},{"c\n", SDLK_c},			{"d\n", SDLK_d},			{"down\n", SDLK_DOWN},
-		{"e\n", SDLK_e},			{"f\n", SDLK_f}, 			{"f1\n", SDLK_F1}, 			{"f2\n", SDLK_F2},
-		{"f3\n", SDLK_F3},			{"f4\n", SDLK_F4},			{"f5\n", SDLK_F5},			{"f6\n", SDLK_F6},
-		{"f7\n", SDLK_F7},			{"f8\n", SDLK_F8},			{"f9\n", SDLK_F9},			{"g\n", SDLK_g},
-		{"h\n", SDLK_h},			{"i\n", SDLK_i},			{"j\n", SDLK_j},			{"k\n", SDLK_k},
+		{"]\n", SDLK_RIGHTBRACKET}, 	{"`\n", SDLK_BACKQUOTE}, 	{"a\n", SDLK_a},		{"b\n", SDLK_b},
+		{"backspace\n", SDLK_SPACE},	{"c\n", SDLK_c},		{"d\n", SDLK_d},		{"down\n", SDLK_DOWN},
+		{"e\n", SDLK_e},		{"f\n", SDLK_f}, 		{"f1\n", SDLK_F1}, 		{"f2\n", SDLK_F2},
+		{"f3\n", SDLK_F3},		{"f4\n", SDLK_F4},		{"f5\n", SDLK_F5},		{"f6\n", SDLK_F6},
+		{"f7\n", SDLK_F7},		{"f8\n", SDLK_F8},		{"f9\n", SDLK_F9},		{"g\n", SDLK_g},
+		{"h\n", SDLK_h},		{"i\n", SDLK_i},		{"j\n", SDLK_j},		{"k\n", SDLK_k},
 		{"keypad 0\n", SDLK_KP_0},	{"keypad 1\n", SDLK_KP_1},	{"keypad 2\n", SDLK_KP_2},	{"keypad 3\n", SDLK_KP_3},
 		{"keypad 4\n", SDLK_KP_4},	{"keypad 5\n", SDLK_KP_5},	{"keypad 6\n", SDLK_KP_6},	{"keypad 7\n", SDLK_KP_7},
-		{"keypad 8\n", SDLK_KP_8},	{"keypad 9\n", SDLK_KP_9},	{"l\n", SDLK_l},			{"left\n", SDLK_LEFT},
-		{"m\n", SDLK_m},			{"n\n", SDLK_n},			{"o\n", SDLK_o},			{"p\n", SDLK_p},
-		{"q\n", SDLK_q},			{"r\n", SDLK_r},			{"return\n", SDLK_RETURN},	{"right\n", SDLK_RIGHT},
-		{"s\n", SDLK_s},			{"space\n", SDLK_SPACE},	{"t\n", SDLK_t},			{"tab\n", SDLK_TAB},
-		{"u\n", SDLK_u},			{"up\n", SDLK_UP},			{"v\n", SDLK_v},			{"w\n", SDLK_w},
-		{"x\n", SDLK_x},			{"y\n", SDLK_y},			{"z\n", SDLK_z}
+		{"keypad 8\n", SDLK_KP_8},	{"keypad 9\n", SDLK_KP_9},	{"l\n", SDLK_l},		{"left\n", SDLK_LEFT},
+		{"m\n", SDLK_m},		{"n\n", SDLK_n},		{"o\n", SDLK_o},		{"p\n", SDLK_p},
+		{"q\n", SDLK_q},		{"r\n", SDLK_r},		{"return\n", SDLK_RETURN},	{"right\n", SDLK_RIGHT},
+		{"s\n", SDLK_s},		{"space\n", SDLK_SPACE},	{"t\n", SDLK_t},		{"tab\n", SDLK_TAB},
+		{"u\n", SDLK_u},		{"up\n", SDLK_UP},		{"v\n", SDLK_v},		{"w\n", SDLK_w},
+		{"x\n", SDLK_x},		{"y\n", SDLK_y},		{"z\n", SDLK_z}
 	};
 
 	// Get the path
@@ -236,15 +236,16 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 			fprintf(fp, "%s", DEFAULT_CONFIG);
 			fclose(fp);
 			fp = fopen(path, "r");
-			if(fp == NULL)
+			if(fp == NULL) {
 				printf("ERROR, CAN'T OPEN KEYBOARD CONFIG AT ~/.mGBA_key_config\n");
+			}
 		}
 
 		// Set keys from config file.
-		int gba_keys[NUM_KEYS] = { 
+		int gba_keys[NUM_KEYS] = {
 			GBA_KEY_A, GBA_KEY_B, GBA_KEY_L, GBA_KEY_R,
 			GBA_KEY_START, GBA_KEY_SELECT,
-			GBA_KEY_UP, GBA_KEY_DOWN, GBA_KEY_LEFT, GBA_KEY_RIGHT 
+			GBA_KEY_UP, GBA_KEY_DOWN, GBA_KEY_LEFT, GBA_KEY_RIGHT
 		};
 
 		int sdl_keys[NUM_KEYS] = {
@@ -255,20 +256,20 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 
 		int i;
 		int sdl_key = -1;
-		for(i = 0; i < NUM_KEYS; i++)
-		{
+		for(i = 0; i < NUM_KEYS; i++) {
 			sdl_key = getSDLKey(fp, keymap);
-		    if(sdl_key == -1)
-		    	sdl_key = sdl_keys[i];
+		    if(sdl_key == -1) {
+				sdl_key = sdl_keys[i];
+			}
 		    mInputBindKey(inputMap, SDL_BINDING_KEY, sdl_key, gba_keys[i]);
 		}
 
 		sdl_key = -1;
-		for(i = 0; i < NUM_SAVESTATE_KEYS; i++)
-		{
+		for(i = 0; i < NUM_SAVESTATE_KEYS; i++) {
 			sdl_key = getSDLKey(fp, keymap);
-		    if(sdl_key != -1)
-		    	ssKeysArray[i] = sdl_key;
+		    if(sdl_key != -1) {
+				ssKeysArray[i] = sdl_key;
+			}
 		}
 	}
 	else
@@ -297,20 +298,19 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 }
 
 int getSDLKey(FILE* fp, const keymapping* keymap) {
-
 	// Variables for reading file
 	char* line = NULL;
     size_t len = 0;
     ssize_t read;
 
-    // Skip over comments!
-    do {
-    	read = getline(&line, &len, fp);
+	// Skip over comments!
+	do {
+		read = getline(&line, &len, fp);
 
-    	// Error check
-    	if(read == -1) {
-    		printf("ERROR, EOF REACHED EARLY\n");
-    	}
+		// Error check
+		if(read == -1) {
+			printf("ERROR, EOF REACHED EARLY\n");
+		}
 
 	} while (*line == '#');
 
@@ -319,16 +319,16 @@ int getSDLKey(FILE* fp, const keymapping* keymap) {
 
     // Line does not have a mapping, set to default.
     if(key == NULL) {
-    	return -1;
+		return -1;
     }
 	key++;
 
 	// Get string key to int SDLKey
 	int i;
     for(i = 0; i < KEYMAP_LENGTH; i++) {
-    	if(strcmp(key, keymap[i].str) == 0) {
-    		return keymap[i].key;
-    	}
+		if(strcmp(key, keymap[i].str) == 0) {
+			return keymap[i].key;
+		}
     }
 
     return -1;
@@ -682,6 +682,11 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 			}
 
 			int i;
+
+			/*
+			 * Save state keys, will find the correct one and save, or load the save.
+			 *
+			 */
 			if (event->keysym.mod & KMOD_SHIFT) {
 				for(i = 0; i < NUM_SAVESTATE_KEYS; i++) {
 					if(event->keysym.sym == ssKeysArray[i]) {
