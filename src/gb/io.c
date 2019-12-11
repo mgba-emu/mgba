@@ -673,10 +673,20 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 				// Handled transparently by the registers
 				goto success;
 
-			case REG_PCM12:				
+				/*
+				 * Undocumented PCM12, PCM34 register functionality.
+				 *
+				 * Some information provided at...
+				 * Author: https://github.com/LIJI32
+				 * Github repo: https://github.com/LIJI32/GBVisualizer
+				 *
+				 */
+
+				// Return the current PCM amplitude of the 4 different APU channels.
+			case REG_PCM12:
 				return (gb->audio.playingCh2 ? (gb->audio.ch2.sample << 4) : 0) | (gb->audio.playingCh1 ? (gb->audio.ch1.sample) : 0);
 
-			case REG_PCM34:				
+			case REG_PCM34:
 				return (gb->audio.playingCh4 ? (gb->audio.ch4.sample << 4) : 0) | (gb->audio.playingCh3 ? (gb->audio.ch3.sample) : 0);
 
 			default:
