@@ -106,7 +106,7 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 void LR35902CLIDebuggerCreate(struct CLIDebuggerSystem* debugger) {
 	debugger->printStatus = _printStatus;
 	debugger->disassemble = _disassemble;
-	debugger->platformName = "GB-Z80";
+	debugger->platformName = "SM83";
 	debugger->platformCommands = _lr35902Commands;
 	debugger->platformCommandAliases = NULL;
 }
