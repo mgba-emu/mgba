@@ -102,6 +102,7 @@ Other fixes:
  - Qt: Fix scrollbar arrows in memory view (fixes mgba.io/i/1558)
  - Qt: Fix several cases where shader selections don't get saved
  - Qt: Fix division by zero error in invalid TilePainter state
+ - Qt: Fix "restart needed" dialog after first config (fixes mgba.io/i/1601)
 Misc:
  - GB Memory: Support manual SRAM editing (fixes mgba.io/i/1580)
  - SDL: Use controller GUID instead of name
