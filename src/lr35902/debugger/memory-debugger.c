@@ -60,6 +60,7 @@ static bool _checkWatchpoints(struct LR35902Debugger* debugger, uint16_t address
 			info->address = address;
 			info->type.wp.watchType = watchpoint->type;
 			info->type.wp.accessType = type;
+			info->pointId = watchpoint->id;
 			return true;
 		}
 	}

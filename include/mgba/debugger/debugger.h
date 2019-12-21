@@ -69,6 +69,7 @@ struct mDebuggerEntryInfo {
 			enum mBreakpointType breakType;
 		} bp;
 	} type;
+	ssize_t pointId;
 };
 
 struct mBreakpoint {

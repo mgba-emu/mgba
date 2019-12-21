@@ -53,7 +53,8 @@ static void LR35902DebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 		}
 	}
 	struct mDebuggerEntryInfo info = {
-		.address = breakpoint->address
+		.address = breakpoint->address,
+		.pointId = breakpoint->id
 	};
 	mDebuggerEnter(d->p, DEBUGGER_ENTER_BREAKPOINT, &info);
 }
