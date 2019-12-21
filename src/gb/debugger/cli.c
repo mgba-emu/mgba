@@ -36,6 +36,7 @@ struct CLIDebuggerSystem* GBCLIDebuggerCreate(struct mCore* core) {
 
 	debugger->d.name = "Game Boy";
 	debugger->d.commands = _GBCLIDebuggerCommands;
+	debugger->d.commandAliases = NULL;
 
 	debugger->core = core;
 

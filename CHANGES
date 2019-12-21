@@ -108,6 +108,7 @@ Other fixes:
 Misc:
  - GB Memory: Support manual SRAM editing (fixes mgba.io/i/1580)
  - SDL: Use controller GUID instead of name
+ - Debugger: Separate aliases from main commands
 
 0.8 beta 1: (2019-10-20)
 - Initial beta for 0.8

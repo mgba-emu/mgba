@@ -35,6 +35,7 @@ struct GBACLIDebugger* GBACLIDebuggerCreate(struct mCore* core) {
 
 	debugger->d.name = "Game Boy Advance";
 	debugger->d.commands = _GBACLIDebuggerCommands;
+	debugger->d.commandAliases = NULL;
 
 	debugger->core = core;
 

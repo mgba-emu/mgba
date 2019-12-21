@@ -71,32 +71,17 @@ static void _source(struct CLIDebugger*, struct CLIDebugVector*);
 #endif
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
-	{ "b", _setBreakpoint, "Is", "Set a breakpoint" },
 	{ "break", _setBreakpoint, "Is", "Set a breakpoint" },
-	{ "c", _continue, "", "Continue execution" },
 	{ "continue", _continue, "", "Continue execution" },
-	{ "d", _clearBreakpoint, "I", "Delete a breakpoint or watchpoint" },
 	{ "delete", _clearBreakpoint, "I", "Delete a breakpoint or watchpoint" },
-	{ "dis", _disassemble, "Ii", "Disassemble instructions" },
-	{ "disasm", _disassemble, "Ii", "Disassemble instructions" },
 	{ "disassemble", _disassemble, "Ii", "Disassemble instructions" },
-	{ "h", _printHelp, "S", "Print help" },
 	{ "help", _printHelp, "S", "Print help" },
-	{ "i", _printStatus, "", "Print the current status" },
-	{ "info", _printStatus, "", "Print the current status" },
-	{ "lb", _listBreakpoints, "", "List breakpoints" },
 	{ "listb", _listBreakpoints, "", "List breakpoints" },
-	{ "lw", _listWatchpoints, "", "List watchpoints" },
 	{ "listw", _listWatchpoints, "", "List watchpoints" },
-	{ "n", _next, "", "Execute next instruction" },
 	{ "next", _next, "", "Execute next instruction" },
-	{ "p", _print, "S+", "Print a value" },
-	{ "p/t", _printBin, "S+", "Print a value as binary" },
-	{ "p/x", _printHex, "S+", "Print a value as hexadecimal" },
 	{ "print", _print, "S+", "Print a value" },
 	{ "print/t", _printBin, "S+", "Print a value as binary" },
 	{ "print/x", _printHex, "S+", "Print a value as hexadecimal" },
-	{ "q", _quit, "", "Quit the emulator" },
 	{ "quit", _quit, "", "Quit the emulator" },
 	{ "reset", _reset, "", "Reset the emulation" },
 	{ "r/1", _readByte, "I", "Read a byte from a specified offset" },
@@ -104,7 +89,6 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "r/4", _readWord, "I", "Read a word from a specified offset" },
 	{ "status", _printStatus, "", "Print the current status" },
 	{ "trace", _trace, "Is", "Trace a number of instructions" },
-	{ "w", _setReadWriteWatchpoint, "Is", "Set a watchpoint" },
 	{ "w/1", _writeByte, "II", "Write a byte at a specified offset" },
 	{ "w/2", _writeHalfword, "II", "Write a halfword at a specified offset" },
 	{ "w/r", _writeRegister, "SI", "Write a register" },
@@ -123,6 +107,26 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "!", _breakInto, "", "Break into attached debugger (for developers)" },
 #endif
 	{ 0, 0, 0, 0 }
+};
+
+static struct CLIDebuggerCommandAlias _debuggerCommandAliases[] = {
+	{ "b", "break" },
+	{ "c", "continue" },
+	{ "d", "delete" },
+	{ "dis", "disassemble" },
+	{ "disasm", "disassemble" },
+	{ "h", "help" },
+	{ "i", "status" },
+	{ "info", "status" },
+	{ "lb", "listb" },
+	{ "lw", "listw" },
+	{ "n", "next" },
+	{ "p", "print" },
+	{ "p/t", "print/t" },
+	{ "p/x", "print/x" },
+	{ "q", "quit" },
+	{ "w", "watch" },
+	{ 0, 0 }
 };
 
 #if !defined(NDEBUG) && !defined(_WIN32)
@@ -232,42 +236,71 @@ static void _printHex(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	debugger->backend->printf(debugger->backend, " 0x%08X\n", intValue);
 }
 
+static void _printCommands(struct CLIDebugger* debugger, struct CLIDebuggerCommandSummary* commands, struct CLIDebuggerCommandAlias* aliases) {
+	int i;
+	for (i = 0; commands[i].name; ++i) {
+		debugger->backend->printf(debugger->backend, "%-15s  %s\n", commands[i].name, commands[i].summary);
+		if (aliases) {
+			bool printedAlias = false;
+			int j;
+			for (j = 0; aliases[j].name; ++j) {
+				if (strcmp(aliases[j].original, commands[i].name) == 0) {
+					if (!printedAlias) {
+						debugger->backend->printf(debugger->backend, "                 Aliases:");
+						printedAlias = true;
+					}
+					debugger->backend->printf(debugger->backend, " %s", aliases[j].name);
+				}
+			}
+			if (printedAlias) {
+				debugger->backend->printf(debugger->backend, "\n");
+			}
+		}
+	}
+}
+
+static void _printCommandSummary(struct CLIDebugger* debugger, const char* name, struct CLIDebuggerCommandSummary* commands, struct CLIDebuggerCommandAlias* aliases) {
+	int i;
+	for (i = 0; commands[i].name; ++i) {
+		if (strcmp(commands[i].name, name) == 0) {
+			debugger->backend->printf(debugger->backend, " %s\n", commands[i].summary);
+			if (aliases) {
+				bool printedAlias = false;
+				int j;
+				for (j = 0; aliases[j].name; ++j) {
+					if (strcmp(aliases[j].original, commands[i].name) == 0) {
+						if (!printedAlias) {
+							debugger->backend->printf(debugger->backend, " Aliases:");
+							printedAlias = true;
+						}
+						debugger->backend->printf(debugger->backend, " %s", aliases[j].name);
+					}
+				}
+				if (printedAlias) {
+					debugger->backend->printf(debugger->backend, "\n");
+				}
+			}
+			return;
+		}
+	}
+}
+
 static void _printHelp(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
 	if (!dv) {
 		debugger->backend->printf(debugger->backend, "Generic commands:\n");
-		int i;
-		for (i = 0; _debuggerCommands[i].name; ++i) {
-			debugger->backend->printf(debugger->backend, "%-10s %s\n", _debuggerCommands[i].name, _debuggerCommands[i].summary);
-		}
+		_printCommands(debugger, _debuggerCommands, _debuggerCommandAliases);
 		if (debugger->system) {
-			debugger->backend->printf(debugger->backend, "%s commands:\n", debugger->system->platformName);
-			for (i = 0; debugger->system->platformCommands[i].name; ++i) {
-				debugger->backend->printf(debugger->backend, "%-10s %s\n", debugger->system->platformCommands[i].name, debugger->system->platformCommands[i].summary);
-			}
-			debugger->backend->printf(debugger->backend, "%s commands:\n", debugger->system->name);
-			for (i = 0; debugger->system->commands[i].name; ++i) {
-				debugger->backend->printf(debugger->backend, "%-10s %s\n", debugger->system->commands[i].name, debugger->system->commands[i].summary);
-			}
+			debugger->backend->printf(debugger->backend, "\n%s commands:\n", debugger->system->platformName);
+			_printCommands(debugger, debugger->system->platformCommands, debugger->system->platformCommandAliases);
+			debugger->backend->printf(debugger->backend, "\n%s commands:\n", debugger->system->name);
+			_printCommands(debugger, debugger->system->commands, debugger->system->commandAliases);
 		}
 	} else {
-		int i;
-		for (i = 0; _debuggerCommands[i].name; ++i) {
-			if (strcmp(_debuggerCommands[i].name, dv->charValue) == 0) {
-				debugger->backend->printf(debugger->backend, " %s\n", _debuggerCommands[i].summary);
-			}
-		}
+		_printCommandSummary(debugger, dv->charValue, _debuggerCommands, _debuggerCommandAliases);
 		if (debugger->system) {
-			for (i = 0; debugger->system->platformCommands[i].name; ++i) {
-				if (strcmp(debugger->system->platformCommands[i].name, dv->charValue) == 0) {
-					debugger->backend->printf(debugger->backend, " %s\n", debugger->system->platformCommands[i].summary);
-				}
-			}
-			for (i = 0; debugger->system->commands[i].name; ++i) {
-				if (strcmp(debugger->system->commands[i].name, dv->charValue) == 0) {
-					debugger->backend->printf(debugger->backend, " %s\n", debugger->system->commands[i].summary);
-				}
-			}
+			_printCommandSummary(debugger, dv->charValue, debugger->system->platformCommands, debugger->system->platformCommandAliases);
+			_printCommandSummary(debugger, dv->charValue, debugger->system->commands, debugger->system->commandAliases);
 		}
 	}
 }
@@ -784,11 +817,22 @@ static struct CLIDebugVector* _parseArg(struct CLIDebugger* debugger, const char
 	return dv;
 }
 
-static int _tryCommands(struct CLIDebugger* debugger, struct CLIDebuggerCommandSummary* commands, const char* command, size_t commandLen, const char* args, size_t argsLen) {
+static int _tryCommands(struct CLIDebugger* debugger, struct CLIDebuggerCommandSummary* commands, struct CLIDebuggerCommandAlias* aliases, const char* command, size_t commandLen, const char* args, size_t argsLen) {
 	struct CLIDebugVector* dv = NULL;
 	struct CLIDebugVector* dvLast = NULL;
 	int i;
 	const char* name;
+	if (aliases) {
+		for (i = 0; (name = aliases[i].name); ++i) {
+			if (strlen(name) != commandLen) {
+				continue;
+			}
+			if (strncasecmp(name, command, commandLen) == 0) {
+				command = aliases[i].original;
+				commandLen = strlen(aliases[i].original);
+			}
+		}
+	}
 	for (i = 0; (name = commands[i].name); ++i) {
 		if (strlen(name) != commandLen) {
 			continue;
@@ -885,11 +929,11 @@ static bool _parse(struct CLIDebugger* debugger, const char* line, size_t count)
 	if (firstSpace) {
 		args = firstSpace + 1;
 	}
-	int result = _tryCommands(debugger, _debuggerCommands, line, cmdLength, args, count - cmdLength - 1);
+	int result = _tryCommands(debugger, _debuggerCommands, _debuggerCommandAliases, line, cmdLength, args, count - cmdLength - 1);
 	if (result < 0 && debugger->system) {
-		result = _tryCommands(debugger, debugger->system->commands, line, cmdLength, args, count - cmdLength - 1);
+		result = _tryCommands(debugger, debugger->system->commands, debugger->system->commandAliases, line, cmdLength, args, count - cmdLength - 1);
 		if (result < 0) {
-			result = _tryCommands(debugger, debugger->system->platformCommands, line, cmdLength, args, count - cmdLength - 1);
+			result = _tryCommands(debugger, debugger->system->platformCommands, debugger->system->platformCommandAliases, line, cmdLength, args, count - cmdLength - 1);
 		}
 	}
 	if (result < 0) {
