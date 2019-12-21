@@ -103,6 +103,7 @@ Other fixes:
  - Qt: Fix several cases where shader selections don't get saved
  - Qt: Fix division by zero error in invalid TilePainter state
  - Qt: Fix "restart needed" dialog after first config (fixes mgba.io/i/1601)
+ - Qt: Fix undesired screen filtering when paused (fixes mgba.io/i/1602)
 Misc:
  - GB Memory: Support manual SRAM editing (fixes mgba.io/i/1580)
  - SDL: Use controller GUID instead of name
