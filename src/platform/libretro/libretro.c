@@ -26,7 +26,22 @@
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
 
-#define SAMPLES 1024
+#ifndef __LIBRETRO__
+#error "Can't compile the libretro core as anything other than libretro."
+#endif
+
+#ifdef _3DS
+#include <3ds.h>
+FS_Archive sdmcArchive;
+#endif
+
+#ifdef HAVE_LIBNX
+#include <switch.h>
+#endif
+
+#include "libretro_core_options.h"
+
+#define SAMPLES 512
 #define RUMBLE_PWM 35
 
 static retro_environment_t environCallback;
@@ -47,9 +62,12 @@ static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned heigh
 static void _startImage(struct mImageSource*, unsigned w, unsigned h, int colorFormats);
 static void _stopImage(struct mImageSource*);
 static void _requestImage(struct mImageSource*, const void** buffer, size_t* stride, enum mColorFormat* colorFormat);
+static int32_t _readTiltX(struct mRotationSource* source);
+static int32_t _readTiltY(struct mRotationSource* source);
+static int32_t _readGyroZ(struct mRotationSource* source);
 
 static struct mCore* core;
-static void* outputBuffer;
+static color_t* outputBuffer = NULL;
 static void* data;
 static size_t dataSize;
 static void* savedata;
@@ -58,6 +76,7 @@ static int rumbleUp;
 static int rumbleDown;
 static struct mRumble rumble;
 static struct GBALuminanceSource lux;
+static struct mRotationSource rotation;
 static int luxLevel;
 static struct mLogger logger;
 static struct retro_camera_callback cam;
@@ -68,6 +87,232 @@ static unsigned camHeight;
 static unsigned imcapWidth;
 static unsigned imcapHeight;
 static size_t camStride;
+
+#ifdef HAVE_LIBNX
+static u32 hidSixAxisHandles[4];
+#endif
+
+/* Colour correction */
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+
+#define CC_TARGET_GAMMA   2.2f
+#define CC_RGB_MAX        31.0f
+
+#define GBC_CC_R          0.87f
+#define GBC_CC_G          0.66f
+#define GBC_CC_B          0.79f
+#define GBC_CC_RG         0.115f
+#define GBC_CC_RB         0.14f
+#define GBC_CC_GR         0.18f
+#define GBC_CC_GB         0.07f
+#define GBC_CC_BR        -0.05f
+#define GBC_CC_BG         0.225f
+#define GBC_CC_GAMMA_ADJ -0.5f
+
+#define GBA_CC_R          0.86f
+#define GBA_CC_G          0.66f
+#define GBA_CC_B          0.81f
+#define GBA_CC_RG         0.11f
+#define GBA_CC_RB         0.1325f
+#define GBA_CC_GR         0.19f
+#define GBA_CC_GB         0.0575f
+#define GBA_CC_BR        -0.05f
+#define GBA_CC_BG         0.23f
+#define GBA_CC_GAMMA_ADJ  0.45f
+
+static color_t* ccOutputBuffer     = NULL;
+static color_t* ccLUT              = NULL;
+static unsigned ccType             = 0;
+static bool colorCorrectionEnabled = false;
+
+static void _initColorCorrection(void) {
+
+	/* Constants */
+	static const float displayGammaInv = 1.0f / CC_TARGET_GAMMA;
+	static const float rgbMaxInv = 1.0f / CC_RGB_MAX;
+
+	/* Variables */
+	enum GBModel model = GB_MODEL_AUTODETECT;
+	float ccR;
+	float ccG;
+	float ccB;
+	float ccRG;
+	float ccRB;
+	float ccGR;
+	float ccGB;
+	float ccBR;
+	float ccBG;
+	float adjustedGamma;
+	size_t color;
+
+	/* Set colour correction parameters */
+	colorCorrectionEnabled = false;
+	switch (ccType) {
+		case 1:
+			model = GB_MODEL_AGB;
+			break;
+		case 2:
+			model = GB_MODEL_CGB;
+			break;
+		case 3:
+			{
+				/* Autodetect
+				 * (Note: This is somewhat clumsy due to the
+				 *  M_CORE_GBA & M_CORE_GB defines... */
+#ifdef M_CORE_GBA
+				if (core->platform(core) == PLATFORM_GBA) {
+					model = GB_MODEL_AGB;
+				}
+#endif
+
+#ifdef M_CORE_GB
+				if (model != GB_MODEL_AGB) {
+					if (core->platform(core) == PLATFORM_GB) {
+
+						const char* modelName = mCoreConfigGetValue(&core->config, "gb.model");
+						struct GB* gb = core->board;
+
+						if (modelName) {
+							gb->model = GBNameToModel(modelName);
+						} else {
+							GBDetectModel(gb);
+						}
+
+						if (gb->model == GB_MODEL_CGB) {
+							model = GB_MODEL_CGB;
+						}
+					}
+				}
+#endif
+			}
+			break;
+		default:
+			return;
+	}
+
+	switch (model) {
+		case GB_MODEL_AGB:
+			ccR  = GBA_CC_R;
+			ccG  = GBA_CC_G;
+			ccB  = GBA_CC_B;
+			ccRG = GBA_CC_RG;
+			ccRB = GBA_CC_RB;
+			ccGR = GBA_CC_GR;
+			ccGB = GBA_CC_GB;
+			ccBR = GBA_CC_BR;
+			ccBG = GBA_CC_BG;
+			adjustedGamma = CC_TARGET_GAMMA + GBA_CC_GAMMA_ADJ;
+			break;
+		case GB_MODEL_CGB:
+			ccR  = GBC_CC_R;
+			ccG  = GBC_CC_G;
+			ccB  = GBC_CC_B;
+			ccRG = GBC_CC_RG;
+			ccRB = GBC_CC_RB;
+			ccGR = GBC_CC_GR;
+			ccGB = GBC_CC_GB;
+			ccBR = GBC_CC_BR;
+			ccBG = GBC_CC_BG;
+			adjustedGamma = CC_TARGET_GAMMA + GBC_CC_GAMMA_ADJ;
+			break;
+		default:
+			return;
+	}
+
+	/* Allocate buffers, if required */
+	if (!ccLUT) {
+		size_t lutSize = 65536 * sizeof(color_t);
+		ccLUT = malloc(lutSize);
+		if (!ccLUT) {
+			return;
+		}
+		memset(ccLUT, 0xFF, lutSize);
+	}
+
+	if (!ccOutputBuffer) {
+		size_t bufSize = 256 * 224 * sizeof(color_t);
+#ifdef _3DS
+		ccOutputBuffer = linearMemAlign(bufSize, 0x80);
+#else
+		ccOutputBuffer = malloc(bufSize);
+#endif
+		if (!ccOutputBuffer) {
+			return;
+		}
+		memset(ccOutputBuffer, 0xFF, bufSize);
+	}
+
+	/* If we get this far, then colour correction is enabled... */
+	colorCorrectionEnabled = true;
+
+	/* Populate colour correction look-up table
+	 * Note: This is somewhat slow (~100 ms on desktop),
+	 * but using precompiled look-up tables would double
+	 * the memory requirements, and make updating colour
+	 * correction parameters an absolute nightmare...) */
+	for (color = 0; color < 65536; color++) {
+		unsigned rFinal = 0;
+		unsigned gFinal = 0;
+		unsigned bFinal = 0;
+		/* Extract values from RGB565 input */
+		const unsigned r = color >> 11 & 0x1F;
+		const unsigned g = color >>  6 & 0x1F;
+		const unsigned b = color       & 0x1F;
+		/* Perform gamma expansion */
+		float rFloat = pow((float)r * rgbMaxInv, adjustedGamma);
+		float gFloat = pow((float)g * rgbMaxInv, adjustedGamma);
+		float bFloat = pow((float)b * rgbMaxInv, adjustedGamma);
+		/* Perform colour mangling */
+		float rCorrect = (ccR  * rFloat) + (ccGR * gFloat) + (ccBR * bFloat);
+		float gCorrect = (ccRG * rFloat) + (ccG  * gFloat) + (ccBG * bFloat);
+		float bCorrect = (ccRB * rFloat) + (ccGB * gFloat) + (ccB  * bFloat);
+		/* Range check... */
+		rCorrect = rCorrect > 0.0f ? rCorrect : 0.0f;
+		gCorrect = gCorrect > 0.0f ? gCorrect : 0.0f;
+		bCorrect = bCorrect > 0.0f ? bCorrect : 0.0f;
+		/* Perform gamma compression */
+		rCorrect = pow(rCorrect, displayGammaInv);
+		gCorrect = pow(gCorrect, displayGammaInv);
+		bCorrect = pow(bCorrect, displayGammaInv);
+		/* Range check... */
+		rCorrect = rCorrect > 1.0f ? 1.0f : rCorrect;
+		gCorrect = gCorrect > 1.0f ? 1.0f : gCorrect;
+		bCorrect = bCorrect > 1.0f ? 1.0f : bCorrect;
+		/* Convert back to RGB565 */
+		rFinal = (unsigned)((rCorrect * CC_RGB_MAX) + 0.5f) & 0x1F;
+		gFinal = (unsigned)((gCorrect * CC_RGB_MAX) + 0.5f) & 0x1F;
+		bFinal = (unsigned)((bCorrect * CC_RGB_MAX) + 0.5f) & 0x1F;
+		ccLUT[color] = rFinal << 11 | gFinal << 6 | bFinal;
+	}
+}
+
+static void _loadColorCorrectionSettings(void) {
+
+	struct retro_variable var;
+	unsigned oldCcType = ccType;
+	ccType = 0;
+
+	var.key = "mgba_color_correction";
+	var.value = 0;
+
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		if (strcmp(var.value, "GBA") == 0) {
+			ccType = 1;
+		} else if (strcmp(var.value, "GBC") == 0) {
+			ccType = 2;
+		} else if (strcmp(var.value, "Auto") == 0) {
+			ccType = 3;
+		}
+	}
+
+	if (ccType == 0) {
+		colorCorrectionEnabled = false;
+	} else if (ccType != oldCcType) {
+		_initColorCorrection();
+	}
+}
+
+#endif
 
 static void _reloadSettings(void) {
 	struct mCoreOptions opts = {
@@ -121,6 +366,12 @@ static void _reloadSettings(void) {
 			mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", false);
 		}
 	}
+	
+	var.key = "mgba_frameskip";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		opts.frameskip = strtol(var.value, NULL, 10);
+	}
 
 	var.key = "mgba_idle_optimization";
 	var.value = 0;
@@ -134,13 +385,6 @@ static void _reloadSettings(void) {
 		}
 	}
 
-	var.key = "mgba_frameskip";
-	var.value = 0;
-	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-		opts.frameskip = strtol(var.value, NULL, 10);
-
-	}
-
 	mCoreConfigLoadDefaults(&core->config, &opts);
 	mCoreLoadConfig(core);
 }
@@ -149,22 +393,11 @@ unsigned retro_api_version(void) {
 	return RETRO_API_VERSION;
 }
 
-void retro_set_environment(retro_environment_t env) {
+void retro_set_environment(retro_environment_t env)
+{
 	environCallback = env;
 
-	struct retro_variable vars[] = {
-		{ "mgba_solar_sensor_level", "Solar sensor level; 0|1|2|3|4|5|6|7|8|9|10" },
-		{ "mgba_allow_opposing_directions", "Allow opposing directional input; OFF|ON" },
-		{ "mgba_gb_model", "Game Boy model (requires restart); Autodetect|Game Boy|Super Game Boy|Game Boy Color|Game Boy Advance" },
-		{ "mgba_use_bios", "Use BIOS file if found (requires restart); ON|OFF" },
-		{ "mgba_skip_bios", "Skip BIOS intro (requires restart); OFF|ON" },
-		{ "mgba_sgb_borders", "Use Super Game Boy borders (requires restart); ON|OFF" },
-		{ "mgba_idle_optimization", "Idle loop removal; Remove Known|Detect and Remove|Don't Remove" },
-		{ "mgba_frameskip", "Frameskip; 0|1|2|3|4|5|6|7|8|9|10" },
-		{ 0, 0 }
-	};
-
-	environCallback(RETRO_ENVIRONMENT_SET_VARIABLES, vars);
+   libretro_set_core_options(environCallback);
 }
 
 void retro_set_video_refresh(retro_video_refresh_t video) {
@@ -188,10 +421,17 @@ void retro_set_input_state(retro_input_state_t input) {
 }
 
 void retro_get_system_info(struct retro_system_info* info) {
-	info->need_fullpath = false;
+#ifdef GEKKO
+   info->need_fullpath = true;
+#else
+   info->need_fullpath = false;
+#endif
 	info->valid_extensions = "gba|gb|gbc";
-	info->library_version = projectVersion;
-	info->library_name = projectName;
+#ifndef GIT_VERSION
+#define GIT_VERSION ""
+#endif
+	info->library_version = "0.8" GIT_VERSION;
+	info->library_name = "mGBA";
 	info->block_extract = false;
 }
 
@@ -234,6 +474,8 @@ void retro_init(void) {
 	struct retro_input_descriptor inputDescriptors[] = {
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "B" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Turbo A" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Turbo B" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
@@ -242,6 +484,8 @@ void retro_init(void) {
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "Down" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "R" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "L" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "Turbo R" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "Turbo L" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "Brighten Solar Sensor" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "Darken Solar Sensor" },
 		{ 0 }
@@ -257,6 +501,19 @@ void retro_init(void) {
 	} else {
 		rumbleCallback = 0;
 	}
+
+#ifdef HAVE_LIBNX
+	hidGetSixAxisSensorHandles(&hidSixAxisHandles[0], 2, CONTROLLER_PLAYER_1, TYPE_JOYCON_PAIR);
+	hidGetSixAxisSensorHandles(&hidSixAxisHandles[2], 1, CONTROLLER_PLAYER_1, TYPE_PROCONTROLLER);
+	hidGetSixAxisSensorHandles(&hidSixAxisHandles[3], 1, CONTROLLER_HANDHELD, TYPE_HANDHELD);
+	hidStartSixAxisSensor(hidSixAxisHandles[0]);
+	hidStartSixAxisSensor(hidSixAxisHandles[1]);
+	hidStartSixAxisSensor(hidSixAxisHandles[2]);
+	hidStartSixAxisSensor(hidSixAxisHandles[3]);
+#endif
+	rotation.readTiltX = _readTiltX;
+	rotation.readTiltY = _readTiltY;
+	rotation.readGyroZ = _readGyroZ;
 
 	luxLevel = 0;
 	lux.readLuminance = _readLux;
@@ -283,8 +540,70 @@ void retro_init(void) {
 }
 
 void retro_deinit(void) {
+#ifdef _3DS
+	linearFree(outputBuffer);
+	outputBuffer = NULL;
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+	if (ccOutputBuffer) {
+		linearFree(ccOutputBuffer);
+		ccOutputBuffer = NULL;
+	}
+#endif
+#else
 	free(outputBuffer);
+	outputBuffer = NULL;
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+	if (ccOutputBuffer) {
+		free(ccOutputBuffer);
+		ccOutputBuffer = NULL;
+	}
+#endif
+#endif
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+	if (ccLUT) {
+		free(ccLUT);
+		ccLUT = NULL;
+	}
+#endif
+#ifdef HAVE_LIBNX
+	hidStopSixAxisSensor(hidSixAxisHandles[0]);
+	hidStopSixAxisSensor(hidSixAxisHandles[1]);
+	hidStopSixAxisSensor(hidSixAxisHandles[2]);
+	hidStopSixAxisSensor(hidSixAxisHandles[3]);
+#endif
 }
+
+#define RDKEYP1(key) inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_##key)
+static int turboclock = 0;
+static bool indownstate = true;
+
+int16_t cycleturbo(bool x/*turbo A*/, bool y/*turbo B*/, bool l2/*turbo L*/, bool r2/*turbo R*/) {
+   int16_t buttons = 0;
+   turboclock++;
+   if (turboclock >= 2) {
+      turboclock = 0;
+      indownstate = !indownstate;
+   }
+   
+   if (x) {
+      buttons |= indownstate << 0;
+   }
+   
+   if (y) {
+      buttons |= indownstate << 1;
+   }
+   
+   if (l2) {
+      buttons |= indownstate << 9;
+   }
+   
+   if (r2) {
+      buttons |= indownstate << 8;
+   }
+   
+   return buttons;
+}
+
 
 void retro_run(void) {
 	uint16_t keys;
@@ -299,16 +618,10 @@ void retro_run(void) {
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 			struct GBA* gba = core->board;
 			struct GB* gb = core->board;
-			switch (core->platform(core)) {
-			case PLATFORM_GBA:
+			if (core->platform(core) == PLATFORM_GBA)
 				gba->allowOpposingDirections = strcmp(var.value, "yes") == 0;
-				break;
-			case PLATFORM_GB:
+			if (core->platform(core) == PLATFORM_GB)
 				gb->allowOpposingDirections = strcmp(var.value, "yes") == 0;
-				break;
-			default:
-				break;
-			}
 		}
 
 		var.key = "mgba_frameskip";
@@ -317,6 +630,10 @@ void retro_run(void) {
 			mCoreConfigSetUIntValue(&core->config, "frameskip", strtol(var.value, NULL, 10));
 			mCoreLoadConfig(core);
 		}
+
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+		_loadColorCorrectionSettings();
+#endif
 	}
 
 	keys = 0;
@@ -330,6 +647,10 @@ void retro_run(void) {
 	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)) << 7;
 	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)) << 8;
 	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)) << 9;
+   
+   //turbo keys
+   keys |= cycleturbo(RDKEYP1(X),RDKEYP1(Y),RDKEYP1(L2),RDKEYP1(R2));
+   
 	core->setKeys(core, keys);
 
 	static bool wasAdjustingLux = false;
@@ -355,7 +676,31 @@ void retro_run(void) {
 	core->runFrame(core);
 	unsigned width, height;
 	core->desiredVideoDimensions(core, &width, &height);
-	videoCallback(outputBuffer, width, height, BYTES_PER_PIXEL * 256);
+
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+	if (colorCorrectionEnabled) {
+		color_t *src = outputBuffer;
+		color_t *dst = ccOutputBuffer;
+		size_t x, y;
+		for (y = 0; y < height; y++) {
+			for (x = 0; x < width; x++) {
+				*(dst + x) = *(ccLUT + *(src + x));
+			}
+			src += 256;
+			dst += 256;
+		}
+		videoCallback(ccOutputBuffer, width, height, 256 * sizeof(color_t));
+	} else
+#endif
+		videoCallback(outputBuffer, width, height, 256 * sizeof(color_t));
+
+	// This was from aliaspider patch (4539a0e), game boy audio is buggy with it (adapted for this refactored core)
+/*
+	int16_t samples[SAMPLES * 2];
+	int produced = blip_read_samples(core->getAudioChannel(core, 0), samples, SAMPLES, true);
+	blip_read_samples(core->getAudioChannel(core, 1), samples + 1, SAMPLES, true);
+	audioCallback(samples, produced);
+*/
 
 	if (rumbleCallback) {
 		if (rumbleUp) {
@@ -462,16 +807,63 @@ void retro_reset(void) {
 	rumbleDown = 0;
 }
 
+#ifdef GEKKO
+static size_t _readRomFile(const char *path, void **buf) {
+	size_t rc;
+	long len;
+	FILE *file = fopen(path, "rb");
+
+	if (!file) {
+		goto error;
+	}
+
+	fseek(file, 0, SEEK_END);
+	len = ftell(file);
+	rewind(file);
+	*buf = anonymousMemoryMap(len);
+	if (!*buf) {
+		goto error;
+	}
+
+	if ((rc = fread(*buf, 1, len, file)) < len) {
+		goto error;
+	}
+
+	fclose(file);
+	return rc;
+
+error:
+	if (file) {
+		fclose(file);
+	}
+	mappedMemoryFree(*buf, len);
+	*buf = NULL;
+	return -1;
+}
+#endif
+
 bool retro_load_game(const struct retro_game_info* game) {
 	struct VFile* rom;
+
+	if (!game) {
+		return false;
+	}
+
 	if (game->data) {
 		data = anonymousMemoryMap(game->size);
 		dataSize = game->size;
 		memcpy(data, game->data, game->size);
 		rom = VFileFromMemory(data, game->size);
 	} else {
+#ifdef GEKKO
+		if ((dataSize = _readRomFile(game->path, &data)) == -1) {
+			return false;
+		}
+		rom = VFileFromMemory(data, dataSize);
+#else
 		data = 0;
 		rom = VFileOpen(game->path, O_RDONLY);
+#endif
 	}
 	if (!rom) {
 		return false;
@@ -487,8 +879,12 @@ bool retro_load_game(const struct retro_game_info* game) {
 	core->init(core);
 	core->setAVStream(core, &stream);
 
-	size_t size = 256 * 224 * BYTES_PER_PIXEL;
+	size_t size = 256 * 224 * sizeof(color_t);
+#ifdef _3DS
+	outputBuffer = linearMemAlign(size, 0x80);
+#else
 	outputBuffer = malloc(size);
+#endif
 	memset(outputBuffer, 0xFF, size);
 	core->setVideoBuffer(core, outputBuffer, 256);
 
@@ -498,6 +894,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 	blip_set_rates(core->getAudioChannel(core, 1), core->frequency(core), 32768);
 
 	core->setPeripheral(core, mPERIPH_RUMBLE, &rumble);
+	core->setPeripheral(core, mPERIPH_ROTATION, &rotation);
 
 	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	memset(savedata, 0xFF, SIZE_CART_FLASH1M);
@@ -516,7 +913,6 @@ bool retro_load_game(const struct retro_game_info* game) {
 	if (core->platform(core) == PLATFORM_GBA) {
 		core->setPeripheral(core, mPERIPH_GBA_LUMINANCE, &lux);
 		biosName = "gba_bios.bin";
-
 	}
 #endif
 
@@ -565,6 +961,10 @@ bool retro_load_game(const struct retro_game_info* game) {
 
 	core->reset(core);
 	_setupMaps(core);
+
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+	_loadColorCorrectionSettings();
+#endif
 
 	return true;
 }
@@ -689,31 +1089,52 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info* i
 }
 
 void* retro_get_memory_data(unsigned id) {
-	if (id != RETRO_MEMORY_SAVE_RAM) {
-		return 0;
+	struct GBA* gba = core->board;
+	struct GB* gb = core->board;
+
+	if (id == RETRO_MEMORY_SAVE_RAM) {
+		return savedata;
 	}
-	return savedata;
+	if (id == RETRO_MEMORY_SYSTEM_RAM) {
+		if (core->platform(core) == PLATFORM_GBA)
+			return gba->memory.wram;
+		if (core->platform(core) == PLATFORM_GB)
+			return gb->memory.wram;
+	}
+	if (id == RETRO_MEMORY_VIDEO_RAM) {
+		if (core->platform(core) == PLATFORM_GBA)
+			return gba->video.renderer->vram;
+		if (core->platform(core) == PLATFORM_GB)
+			return gb->video.renderer->vram;
+	}
+
+	return 0;
 }
 
 size_t retro_get_memory_size(unsigned id) {
-	if (id != RETRO_MEMORY_SAVE_RAM) {
-		return 0;
-	}
+	if (id == RETRO_MEMORY_SAVE_RAM) {
 #ifdef M_CORE_GBA
-	if (core->platform(core) == PLATFORM_GBA) {
-		switch (((struct GBA*) core->board)->memory.savedata.type) {
-		case SAVEDATA_AUTODETECT:
-			return SIZE_CART_FLASH1M;
-		default:
-			return GBASavedataSize(&((struct GBA*) core->board)->memory.savedata);
+		if (core->platform(core) == PLATFORM_GBA) {
+			switch (((struct GBA*) core->board)->memory.savedata.type) {
+			case SAVEDATA_AUTODETECT:
+				return SIZE_CART_FLASH1M;
+			default:
+				return GBASavedataSize(&((struct GBA*) core->board)->memory.savedata);
+			}
 		}
-	}
 #endif
 #ifdef M_CORE_GB
-	if (core->platform(core) == PLATFORM_GB) {
-		return ((struct GB*) core->board)->sramSize;
-	}
+		if (core->platform(core) == PLATFORM_GB) {
+			return ((struct GB*) core->board)->sramSize;
+		}
 #endif
+	}
+	if (id == RETRO_MEMORY_SYSTEM_RAM) {
+		return SIZE_WORKING_RAM;
+	}
+	if (id == RETRO_MEMORY_VIDEO_RAM) {
+		return SIZE_VRAM;
+	}
 	return 0;
 }
 
@@ -824,6 +1245,7 @@ static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned heigh
 	if (!camData || width > camWidth || height > camHeight) {
 		if (camData) {
 			free(camData);
+			camData = NULL;
 		}
 		unsigned bufPitch = pitch / sizeof(*buffer);
 		unsigned bufHeight = height;
@@ -881,4 +1303,37 @@ static void _requestImage(struct mImageSource* image, const void** buffer, size_
 	*buffer = &camData[offset];
 	*stride = camStride;
 	*colorFormat = mCOLOR_XRGB8;
+}
+
+static int32_t _readTiltX(struct mRotationSource* source) {
+	UNUSED(source);
+	int32_t tiltX = 0;
+#ifdef HAVE_LIBNX
+	SixAxisSensorValues sixaxis;
+	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
+	tiltX = sixaxis.accelerometer.x * 3e8f;
+#endif
+	return tiltX;
+}
+
+static int32_t _readTiltY(struct mRotationSource* source) {
+	UNUSED(source);
+	int32_t tiltY = 0;
+#ifdef HAVE_LIBNX
+	SixAxisSensorValues sixaxis;
+	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
+	tiltY = sixaxis.accelerometer.y * -3e8f;
+#endif
+	return tiltY;
+}
+
+static int32_t _readGyroZ(struct mRotationSource* source) {
+	UNUSED(source);
+	int32_t gyroZ = 0;
+#ifdef HAVE_LIBNX
+	SixAxisSensorValues sixaxis;
+	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
+	gyroZ = sixaxis.gyroscope.z * -1.1e9f;
+#endif
+	return gyroZ;
 }
