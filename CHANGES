@@ -107,6 +107,7 @@ Other fixes:
  - Qt: Fix sprite view using wrong base address (fixes mgba.io/i/1603)
 Misc:
  - GB Memory: Support manual SRAM editing (fixes mgba.io/i/1580)
+ - GBA I/O: Stop logging several harmless invalid register reads
  - Debugger: Separate aliases from main commands
  - Debugger: Print break-/watchpoint ID when breaking in CLI
  - SDL: Use controller GUID instead of name
