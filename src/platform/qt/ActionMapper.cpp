@@ -72,8 +72,10 @@ void ActionMapper::rebuildMenu(const QString& menu, QMenu* qmenu, QWidget* conte
 			qaction->setChecked(true);
 		}
 		const Shortcut* shortcut = shortcuts.shortcut(actionName);
-		if (shortcut && shortcut->shortcut() > 0) {
-			qaction->setShortcut(QKeySequence(shortcut->shortcut()));
+		if (shortcut) {
+			if (shortcut->shortcut() > 0) {
+				qaction->setShortcut(QKeySequence(shortcut->shortcut()));
+			}
 		} else if (!m_defaultShortcuts[actionName].isEmpty()) {
 			qaction->setShortcut(m_defaultShortcuts[actionName][0]);
 		}

@@ -105,6 +105,7 @@ Other fixes:
  - Qt: Fix "restart needed" dialog after first config (fixes mgba.io/i/1601)
  - Qt: Fix undesired screen filtering when paused (fixes mgba.io/i/1602)
  - Qt: Fix sprite view using wrong base address (fixes mgba.io/i/1603)
+ - Qt: Fix inability to clear default keybindings
 Misc:
  - GB Memory: Support manual SRAM editing (fixes mgba.io/i/1580)
  - GBA I/O: Stop logging several harmless invalid register reads
