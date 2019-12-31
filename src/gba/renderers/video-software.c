@@ -592,6 +592,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		_updatePalettes(softwareRenderer);
 		softwareRenderer->blendDirty = false;
 	}
+	softwareRenderer->forceTarget1 = false;
 
 	int w;
 	x = 0;
@@ -622,7 +623,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 
 	_drawScanline(softwareRenderer, y);
 
-	if (softwareRenderer->target2Bd) {
+	if (softwareRenderer->forceTarget1 && softwareRenderer->target2Bd) {
 		x = 0;
 		for (w = 0; w < softwareRenderer->nWindows; ++w) {
 			uint32_t backdrop = 0;
@@ -640,9 +641,9 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			}
 		}
 	}
-	if (softwareRenderer->target1Obj && (softwareRenderer->blendEffect == BLEND_DARKEN || softwareRenderer->blendEffect == BLEND_BRIGHTEN)) {
+	if (softwareRenderer->forceTarget1 && (softwareRenderer->blendEffect == BLEND_DARKEN || softwareRenderer->blendEffect == BLEND_BRIGHTEN)) {
 		x = 0;
-		uint32_t mask = FLAG_REBLEND | FLAG_TARGET_1 | FLAG_IS_BACKGROUND;
+		uint32_t mask = FLAG_REBLEND | FLAG_IS_BACKGROUND;
 		uint32_t match = FLAG_REBLEND;
 		if (GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt)) {
 			mask |= FLAG_OBJWIN;
