@@ -652,10 +652,11 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			}
 		}
 		for (w = 0; w < softwareRenderer->nWindows; ++w) {
+			int end = softwareRenderer->windows[w].endX;
 			if (!GBAWindowControlIsBlendEnable(softwareRenderer->windows[w].control.packed)) {
+				x = end;
 				continue;
 			}
-			int end = softwareRenderer->windows[w].endX;
 			if (softwareRenderer->blendEffect == BLEND_DARKEN) {
 				for (; x < end; ++x) {
 					uint32_t color = softwareRenderer->row[x];

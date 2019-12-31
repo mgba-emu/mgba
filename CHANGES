@@ -94,6 +94,7 @@ Emulation fixes:
  - GBA Memory: Fix open bus from IWRAM (fixes mgba.io/i/1575)
  - GBA Video: Fix OpenGL renderer 512x512 backgrounds (fixes mgba.io/i/1572)
  - GBA Video: Fix BLDY for semitransparent sprite on non-target-2 backgrounds
+ - GBA Video: Fix effects blending improperly in some non-last windows
 Other fixes:
  - 3DS: Fix screen darkening (fixes mgba.io/i/1562)
  - Core: Fix uninitialized memory issues with graphics caches
