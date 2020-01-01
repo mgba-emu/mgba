@@ -16,9 +16,9 @@
 #define blip_add_delta blip_add_delta_fast
 #endif
 
-#define FRAME_CYCLES (DMG_LR35902_FREQUENCY >> 9)
+#define FRAME_CYCLES (DMG_SM83_FREQUENCY >> 9)
 
-const uint32_t DMG_LR35902_FREQUENCY = 0x400000;
+const uint32_t DMG_SM83_FREQUENCY = 0x400000;
 static const int CLOCKS_PER_BLIP_FRAME = 0x1000;
 static const unsigned BLIP_BUFFER_SIZE = 0x4000;
 const int GB_AUDIO_VOLUME_MAX = 0x100;
@@ -51,10 +51,10 @@ void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52, enum GBAu
 	audio->samples = samples;
 	audio->left = blip_new(BLIP_BUFFER_SIZE);
 	audio->right = blip_new(BLIP_BUFFER_SIZE);
-	audio->clockRate = DMG_LR35902_FREQUENCY;
+	audio->clockRate = DMG_SM83_FREQUENCY;
 	// Guess too large; we hang producing extra samples if we guess too low
-	blip_set_rates(audio->left, DMG_LR35902_FREQUENCY, 96000);
-	blip_set_rates(audio->right, DMG_LR35902_FREQUENCY, 96000);
+	blip_set_rates(audio->left, DMG_SM83_FREQUENCY, 96000);
+	blip_set_rates(audio->right, DMG_SM83_FREQUENCY, 96000);
 	audio->forceDisableCh[0] = false;
 	audio->forceDisableCh[1] = false;
 	audio->forceDisableCh[2] = false;

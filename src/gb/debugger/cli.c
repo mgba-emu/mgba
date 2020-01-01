@@ -10,7 +10,7 @@
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/video.h>
-#include <mgba/internal/lr35902/debugger/cli-debugger.h>
+#include <mgba/internal/sm83/debugger/cli-debugger.h>
 
 static void _GBCLIDebuggerInit(struct CLIDebuggerSystem*);
 static bool _GBCLIDebuggerCustom(struct CLIDebuggerSystem*);
@@ -29,7 +29,7 @@ struct CLIDebuggerCommandSummary _GBCLIDebuggerCommands[] = {
 struct CLIDebuggerSystem* GBCLIDebuggerCreate(struct mCore* core) {
 	UNUSED(core);
 	struct GBCLIDebugger* debugger = malloc(sizeof(struct GBCLIDebugger));
-	LR35902CLIDebuggerCreate(&debugger->d);
+	SM83CLIDebuggerCreate(&debugger->d);
 	debugger->d.init = _GBCLIDebuggerInit;
 	debugger->d.deinit = NULL;
 	debugger->d.custom = _GBCLIDebuggerCustom;

@@ -21,9 +21,9 @@ CXX_GUARD_START
 #include <mgba/internal/gb/timer.h>
 #include <mgba/internal/gb/video.h>
 
-extern const uint32_t DMG_LR35902_FREQUENCY;
-extern const uint32_t CGB_LR35902_FREQUENCY;
-extern const uint32_t SGB_LR35902_FREQUENCY;
+extern const uint32_t DMG_SM83_FREQUENCY;
+extern const uint32_t CGB_SM83_FREQUENCY;
+extern const uint32_t SGB_SM83_FREQUENCY;
 
 mLOG_DECLARE_CATEGORY(GB);
 
@@ -72,13 +72,13 @@ enum GBSGBCommand {
 	SGB_OBJ_TRN
 };
 
-struct LR35902Core;
+struct SM83Core;
 struct mCoreSync;
 struct mAVStream;
 struct GB {
 	struct mCPUComponent d;
 
-	struct LR35902Core* cpu;
+	struct SM83Core* cpu;
 	struct GBMemory memory;
 	struct GBVideo video;
 	struct GBTimer timer;
@@ -150,14 +150,14 @@ struct GBCartridge {
 void GBCreate(struct GB* gb);
 void GBDestroy(struct GB* gb);
 
-void GBReset(struct LR35902Core* cpu);
+void GBReset(struct SM83Core* cpu);
 void GBSkipBIOS(struct GB* gb);
 void GBMapBIOS(struct GB* gb);
 void GBUnmapBIOS(struct GB* gb);
 void GBDetectModel(struct GB* gb);
 
 void GBUpdateIRQs(struct GB* gb);
-void GBHalt(struct LR35902Core* cpu);
+void GBHalt(struct SM83Core* cpu);
 
 struct VFile;
 bool GBLoadROM(struct GB* gb, struct VFile* vf);

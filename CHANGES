@@ -64,7 +64,6 @@ Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
  - Debugger: Add breakpoint and watchpoint listing
- - LR35902: Support PC-relative opcode decoding
  - mGUI: Remember name and position of last loaded game
  - OpenGL: Only resize textures when needed
  - Qt: Don't unload ROM immediately if it crashes
@@ -82,6 +81,7 @@ Misc:
  - Qt: Show list of all sprites in sprite view
  - Qt: Add option for disabling OSD messages
  - Qt, OpenGL: Disable integer scaling for dimensions that don't fit
+ - SM83: Support PC-relative opcode decoding
  - Switch: Dynamic display resizing
  - Switch: Support file associations
  - Vita: L2/R2 and L3/R3 can now be mapped on PSTV (fixes mgba.io/i/1292)
@@ -114,6 +114,7 @@ Misc:
  - Debugger: Separate aliases from main commands
  - Debugger: Print break-/watchpoint ID when breaking in CLI
  - SDL: Use controller GUID instead of name
+ - SM83: Rename LR35902 to SM83
 
 0.8 beta 1: (2019-10-20)
 - Initial beta for 0.8

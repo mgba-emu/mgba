@@ -10,7 +10,7 @@
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/mbc.h>
 #include <mgba/internal/gb/serialize.h>
-#include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/sm83/sm83.h>
 
 #include <mgba-util/memory.h>
 
@@ -51,7 +51,7 @@ static const uint8_t _blockedRegion[1] = { 0xFF };
 
 static void _pristineCow(struct GB* gba);
 
-static uint8_t GBFastLoad8(struct LR35902Core* cpu, uint16_t address) {
+static uint8_t GBFastLoad8(struct SM83Core* cpu, uint16_t address) {
 	if (UNLIKELY(address >= cpu->memory.activeRegionEnd)) {
 		cpu->memory.setActiveRegion(cpu, address);
 		return cpu->memory.cpuLoad8(cpu, address);
@@ -59,7 +59,7 @@ static uint8_t GBFastLoad8(struct LR35902Core* cpu, uint16_t address) {
 	return cpu->memory.activeRegion[address & cpu->memory.activeMask];
 }
 
-static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
+static void GBSetActiveRegion(struct SM83Core* cpu, uint16_t address) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
 	switch (address >> 12) {
@@ -127,7 +127,7 @@ static void _GBMemoryDMAService(struct mTiming* timing, void* context, uint32_t 
 static void _GBMemoryHDMAService(struct mTiming* timing, void* context, uint32_t cyclesLate);
 
 void GBMemoryInit(struct GB* gb) {
-	struct LR35902Core* cpu = gb->cpu;
+	struct SM83Core* cpu = gb->cpu;
 	cpu->memory.cpuLoad8 = GBLoad8;
 	cpu->memory.load8 = GBLoad8;
 	cpu->memory.store8 = GBStore8;
@@ -242,7 +242,7 @@ void GBMemorySwitchWramBank(struct GBMemory* memory, int bank) {
 	memory->wramCurrentBank = bank;
 }
 
-uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
+uint8_t GBLoad8(struct SM83Core* cpu, uint16_t address) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
 	if (gb->memory.dmaRemaining) {
@@ -324,7 +324,7 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	}
 }
 
-void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
+void GBStore8(struct SM83Core* cpu, uint16_t address, int8_t value) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
 	if (gb->memory.dmaRemaining) {
@@ -395,7 +395,7 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	}
 }
 
-int GBCurrentSegment(struct LR35902Core* cpu, uint16_t address) {
+int GBCurrentSegment(struct SM83Core* cpu, uint16_t address) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
 	switch (address >> 12) {
@@ -425,7 +425,7 @@ int GBCurrentSegment(struct LR35902Core* cpu, uint16_t address) {
 	}
 }
 
-uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment) {
+uint8_t GBView8(struct SM83Core* cpu, uint16_t address, int segment) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
 	switch (address >> 12) {
@@ -604,7 +604,7 @@ void _GBMemoryHDMAService(struct mTiming* timing, void* context, uint32_t cycles
 	}
 }
 
-void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old, int segment) {
+void GBPatch8(struct SM83Core* cpu, uint16_t address, int8_t value, int8_t* old, int segment) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
 	int8_t oldValue = -1;

@@ -7,7 +7,7 @@
 
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/timer.h>
-#include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/sm83/sm83.h>
 
 #include <mgba-util/memory.h>
 
@@ -104,11 +104,11 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: CPU cycles are negative");
 		error = true;
 	}
-	if (state->cpu.executionState != LR35902_CORE_FETCH) {
+	if (state->cpu.executionState != SM83_CORE_FETCH) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: Execution state is not FETCH");
 		error = true;
 	}
-	if (check >= (int32_t) DMG_LR35902_FREQUENCY) {
+	if (check >= (int32_t) DMG_SM83_FREQUENCY) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: CPU cycles are too high");
 		error = true;
 	}
