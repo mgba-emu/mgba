@@ -110,6 +110,7 @@ Other fixes:
  - Qt: Fix inability to clear default keybindings
 Misc:
  - GB Memory: Support manual SRAM editing (fixes mgba.io/i/1580)
+ - GBA Audio: Redo channel 4 batching for GBA only
  - GBA I/O: Stop logging several harmless invalid register reads
  - Debugger: Separate aliases from main commands
  - Debugger: Print break-/watchpoint ID when breaking in CLI
