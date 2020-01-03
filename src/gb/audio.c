@@ -944,8 +944,10 @@ static void _updateChannel4(struct mTiming* timing, void* user, uint32_t cyclesL
 		ch->lastEvent = now;
 		now -= last;
 		last = 0;
-		// TODO: Make batching work when descheduled
-		next = audio->sampleInterval;
+		if (audio->sampleInterval > next) {
+			// TODO: Make batching work when descheduled
+			next = audio->sampleInterval;
+		}
 	}
 
 	for (; last < now; last += cycles) {
