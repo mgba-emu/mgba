@@ -24,6 +24,8 @@ static const GLint _glTexCoords[] = {
 static void mGLContextInit(struct VideoBackend* v, WHandle handle) {
 	UNUSED(handle);
 	struct mGLContext* context = (struct mGLContext*) v;
+	v->width = 1;
+	v->height = 1;
 	glGenTextures(2, context->tex);
 	glBindTexture(GL_TEXTURE_2D, context->tex[0]);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -42,6 +44,9 @@ static void mGLContextInit(struct VideoBackend* v, WHandle handle) {
 
 static void mGLContextSetDimensions(struct VideoBackend* v, unsigned width, unsigned height) {
 	struct mGLContext* context = (struct mGLContext*) v;
+	if (width == v->width && height == v->height) {
+		return;
+	}
 	v->width = width;
 	v->height = height;
 

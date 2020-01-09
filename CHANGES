@@ -99,7 +99,7 @@ Other fixes:
  - 3DS: Fix screen darkening (fixes mgba.io/i/1562)
  - Core: Fix uninitialized memory issues with graphics caches
  - Core: Return null for out of bounds cached tile VRAM querying
- - Vita: Fix analog controls (fixes mgba.io/i/1554)
+ - OpenGL: Only invalidate texture if dimensions change (fixes mgba.io/i/1612)
  - Qt: Fix fast forward mute being reset (fixes mgba.io/i/1574)
  - Qt: Fix scrollbar arrows in memory view (fixes mgba.io/i/1558)
  - Qt: Fix several cases where shader selections don't get saved
@@ -108,6 +108,7 @@ Other fixes:
  - Qt: Fix undesired screen filtering when paused (fixes mgba.io/i/1602)
  - Qt: Fix sprite view using wrong base address (fixes mgba.io/i/1603)
  - Qt: Fix inability to clear default keybindings
+ - Vita: Fix analog controls (fixes mgba.io/i/1554)
 Misc:
  - GB Memory: Support manual SRAM editing (fixes mgba.io/i/1580)
  - GBA Audio: Redo channel 4 batching for GBA only
