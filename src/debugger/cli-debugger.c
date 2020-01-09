@@ -709,7 +709,6 @@ static void _trace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 static bool _doTrace(struct CLIDebugger* debugger) {
 	char trace[1024];
 	trace[sizeof(trace) - 1] = '\0';
-	debugger->d.core->step(debugger->d.core);
 	size_t traceSize = sizeof(trace) - 2;
 	debugger->d.platform->trace(debugger->d.platform, trace, &traceSize);
 	if (traceSize + 1 <= sizeof(trace)) {

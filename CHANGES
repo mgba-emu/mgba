@@ -99,6 +99,7 @@ Other fixes:
  - 3DS: Fix screen darkening (fixes mgba.io/i/1562)
  - Core: Fix uninitialized memory issues with graphics caches
  - Core: Return null for out of bounds cached tile VRAM querying
+ - Debugger: Fix tracing skipping instructions (fixes mgba.io/i/1614)
  - OpenGL: Only invalidate texture if dimensions change (fixes mgba.io/i/1612)
  - Qt: Fix fast forward mute being reset (fixes mgba.io/i/1574)
  - Qt: Fix scrollbar arrows in memory view (fixes mgba.io/i/1558)
