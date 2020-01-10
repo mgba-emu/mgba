@@ -90,7 +90,7 @@ class PerfServer(object):
             server_command = list(self.command)
         else:
             server_command = [os.path.join(os.getcwd(), PerfTest.EXECUTABLE)]
-        server_command.extend(['--', '-PD', '0'])
+        server_command.extend(['--', '-PD'])
         if hasattr(test, "frames"):
             server_command.extend(['-F', str(test.frames)])
         if not test.renderer:

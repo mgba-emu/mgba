@@ -119,6 +119,7 @@ Misc:
  - SDL: Use controller GUID instead of name
  - SM83: Rename LR35902 to SM83
  - Tools: Allow using threaded renderer in perf.py
+ - Tools: Clean up unused argument in mgba-perf
 
 0.8 beta 1: (2019-10-20)
 - Initial beta for 0.8
