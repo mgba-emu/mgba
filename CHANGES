@@ -116,6 +116,7 @@ Misc:
  - GBA I/O: Stop logging several harmless invalid register reads
  - Debugger: Separate aliases from main commands
  - Debugger: Print break-/watchpoint ID when breaking in CLI
+ - Debugger: Minor interface cleanup
  - SDL: Use controller GUID instead of name
  - SM83: Rename LR35902 to SM83
  - Tools: Allow using threaded renderer in perf.py

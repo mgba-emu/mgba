@@ -819,12 +819,10 @@ void* _GBAGetMemoryBlock(struct mCore* core, size_t id, size_t* sizeOut) {
 static bool _GBACoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
 	UNUSED(core);
 	switch (type) {
+	case DEBUGGER_CUSTOM:
 	case DEBUGGER_CLI:
-		return true;
-#ifdef USE_GDB_STUB
 	case DEBUGGER_GDB:
 		return true;
-#endif
 	default:
 		return false;
 	}

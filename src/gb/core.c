@@ -734,6 +734,7 @@ void* _GBGetMemoryBlock(struct mCore* core, size_t id, size_t* sizeOut) {
 static bool _GBCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
 	UNUSED(core);
 	switch (type) {
+	case DEBUGGER_CUSTOM:
 	case DEBUGGER_CLI:
 		return true;
 	default:

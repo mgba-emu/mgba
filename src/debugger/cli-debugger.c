@@ -155,7 +155,7 @@ static void _breakInto(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 
 static void _continue(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
-	debugger->d.state = debugger->traceRemaining != 0 ? DEBUGGER_CUSTOM : DEBUGGER_RUNNING;
+	debugger->d.state = debugger->traceRemaining != 0 ? DEBUGGER_CALLBACK : DEBUGGER_RUNNING;
 }
 
 static void _next(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -700,7 +700,7 @@ static void _trace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		debugger->traceVf = VFileOpen(dv->next->charValue, O_CREAT | O_WRONLY | O_APPEND);
 	}
 	if (_doTrace(debugger)) {
-		debugger->d.state = DEBUGGER_CUSTOM;
+		debugger->d.state = DEBUGGER_CALLBACK;
 	} else {
 		debugger->system->printStatus(debugger->system);
 	}
@@ -1043,7 +1043,7 @@ static void _cliDebuggerCustom(struct mDebugger* debugger) {
 	if (cliDebugger->system) {
 		retain = cliDebugger->system->custom(cliDebugger->system) && retain;
 	}
-	if (!retain && debugger->state == DEBUGGER_CUSTOM) {
+	if (!retain && debugger->state == DEBUGGER_CALLBACK) {
 		debugger->state = next;
 	}
 }
