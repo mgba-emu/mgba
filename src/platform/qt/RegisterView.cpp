@@ -11,7 +11,7 @@
 #include <mgba/internal/arm/arm.h>
 #endif
 #ifdef M_CORE_GB
-#include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/sm83/sm83.h>
 #endif
 
 #include <QFontDatabase>
@@ -94,7 +94,7 @@ void RegisterView::updateRegisters() {
 #endif
 #ifdef M_CORE_GB
 	case PLATFORM_GB:
-		updateRegistersLR35902();
+		updateRegistersSM83();
 		break;
 #endif
 	default:
@@ -127,9 +127,9 @@ void RegisterView::updateRegistersARM() {
 #endif
 
 #ifdef M_CORE_GB
-void RegisterView::updateRegistersLR35902() {
+void RegisterView::updateRegistersSM83() {
 	CoreController::Interrupter interrupter(m_controller);
-	struct LR35902Core* core = static_cast<LR35902Core*>(m_controller->thread()->core->cpu);
+	struct SM83Core* core = static_cast<SM83Core*>(m_controller->thread()->core->cpu);
 	m_registers["a"]->setText(QString("%1").arg((uint8_t) core->a, 2, 16, QChar('0')).toUpper());
 	m_registers["f"]->setText(QString("%1").arg((uint8_t) core->f.packed, 2, 16, QChar('0')).toUpper());
 	m_registers["b"]->setText(QString("%1").arg((uint8_t) core->b, 2, 16, QChar('0')).toUpper());

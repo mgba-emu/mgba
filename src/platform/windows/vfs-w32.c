@@ -172,3 +172,15 @@ static enum VFSType _vdweType(struct VDirEntry* vde) {
 	}
 	return VFS_FILE;
 }
+
+bool VDirCreate(const char* path) {
+	wchar_t wpath[MAX_PATH];
+	MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, MAX_PATH);
+	if (CreateDirectoryW(wpath, NULL)) {
+		return true;
+	}
+	if (GetLastError() == ERROR_ALREADY_EXISTS) {
+		return true;
+	}
+	return false;
+}

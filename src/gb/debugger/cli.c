@@ -10,7 +10,7 @@
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/video.h>
-#include <mgba/internal/lr35902/debugger/cli-debugger.h>
+#include <mgba/internal/sm83/debugger/cli-debugger.h>
 
 static void _GBCLIDebuggerInit(struct CLIDebuggerSystem*);
 static bool _GBCLIDebuggerCustom(struct CLIDebuggerSystem*);
@@ -29,13 +29,14 @@ struct CLIDebuggerCommandSummary _GBCLIDebuggerCommands[] = {
 struct CLIDebuggerSystem* GBCLIDebuggerCreate(struct mCore* core) {
 	UNUSED(core);
 	struct GBCLIDebugger* debugger = malloc(sizeof(struct GBCLIDebugger));
-	LR35902CLIDebuggerCreate(&debugger->d);
+	SM83CLIDebuggerCreate(&debugger->d);
 	debugger->d.init = _GBCLIDebuggerInit;
 	debugger->d.deinit = NULL;
 	debugger->d.custom = _GBCLIDebuggerCustom;
 
 	debugger->d.name = "Game Boy";
 	debugger->d.commands = _GBCLIDebuggerCommands;
+	debugger->d.commandAliases = NULL;
 
 	debugger->core = core;
 
@@ -60,12 +61,12 @@ static bool _GBCLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 		gbDebugger->inVblank = GBRegisterSTATGetMode(((struct GB*) gbDebugger->core->board)->memory.io[REG_STAT]) == 1;
 		return true;
 	}
-	return false;
+	return true;
 }
 
 static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
-	debugger->d.state = DEBUGGER_CUSTOM;
+	debugger->d.state = DEBUGGER_CALLBACK;
 
 	struct GBCLIDebugger* gbDebugger = (struct GBCLIDebugger*) debugger->system;
 	gbDebugger->frameAdvance = true;

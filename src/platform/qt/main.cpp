@@ -12,10 +12,14 @@
 #include "Window.h"
 
 #include <mgba/core/version.h>
-#include <mgba/internal/gba/video.h>
+#include <mgba/gba/interface.h>
 
 #include <QLibraryInfo>
 #include <QTranslator>
+
+#ifdef BUILD_GLES2
+#include <QSurfaceFormat>
+#endif
 
 #ifdef QT_STATIC
 #include <QtPlugin>
@@ -64,6 +68,13 @@ int main(int argc, char* argv[]) {
 
 	QApplication::setApplicationName(projectName);
 	QApplication::setApplicationVersion(projectVersion);
+	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+
+#ifdef BUILD_GLES2
+	QSurfaceFormat format;
+	format.setVersion(3, 0);
+	QSurfaceFormat::setDefaultFormat(format);
+#endif
 
 	GBAApp application(argc, argv, &configController);
 
@@ -94,7 +105,7 @@ int main(int argc, char* argv[]) {
 	freeArguments(&args);
 
 	if (graphicsOpts.multiplier) {
-		w->resizeFrame(QSize(VIDEO_HORIZONTAL_PIXELS * graphicsOpts.multiplier, VIDEO_VERTICAL_PIXELS * graphicsOpts.multiplier));
+		w->resizeFrame(QSize(GBA_VIDEO_HORIZONTAL_PIXELS * graphicsOpts.multiplier, GBA_VIDEO_VERTICAL_PIXELS * graphicsOpts.multiplier));
 	}
 	if (graphicsOpts.fullscreen) {
 		w->enterFullScreen();

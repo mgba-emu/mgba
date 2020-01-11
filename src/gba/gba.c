@@ -241,10 +241,6 @@ void GBAReset(struct ARMCore* cpu) {
 	if (gba->pristineRomSize > SIZE_CART0) {
 		GBAMatrixReset(gba);
 	}
-
-	if (!gba->romVf && gba->memory.rom) {
-		GBASkipBIOS(gba);
-	}
 }
 
 void GBASkipBIOS(struct GBA* gba) {
@@ -346,6 +342,7 @@ bool GBALoadNull(struct GBA* gba) {
 	if (gba->cpu) {
 		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
+	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
 	return true;
 }
 
@@ -387,14 +384,7 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 #endif
 	} else {
 		gba->isPristine = true;
-#ifdef FIXED_ROM_BUFFER
-		if (gba->pristineRomSize <= romBufferSize) {
-			gba->memory.rom = romBuffer;
-			vf->read(vf, romBuffer, gba->pristineRomSize);
-		}
-#else
 		gba->memory.rom = vf->map(vf, gba->pristineRomSize, MAP_READ);
-#endif
 		gba->memory.romSize = gba->pristineRomSize;
 	}
 	if (!gba->memory.rom) {
@@ -405,8 +395,6 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 	gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
 	gba->memory.mirroring = false;
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
-	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
-	GBAVFameDetect(&gba->memory.vfame, gba->memory.rom, gba->memory.romSize);
 	if (popcount32(gba->memory.romSize) != 1) {
 		// This ROM is either a bad dump or homebrew. Emulate flash cart behavior.
 #ifndef FIXED_ROM_BUFFER
@@ -421,6 +409,8 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 	if (gba->cpu && gba->memory.activeRegion >= REGION_CART0) {
 		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
+	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
+	GBAVFameDetect(&gba->memory.vfame, gba->memory.rom, gba->memory.romSize);
 	// TODO: error check
 	return true;
 }
@@ -758,7 +748,8 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 		if (gba->debugger) {
 			struct mDebuggerEntryInfo info = {
 				.address = _ARMPCAddress(cpu),
-				.type.bp.breakType = BREAKPOINT_SOFTWARE
+				.type.bp.breakType = BREAKPOINT_SOFTWARE,
+				.pointId = -1
 			};
 			mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_BREAKPOINT, &info);
 		}
@@ -788,6 +779,10 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 
 void GBAFrameStarted(struct GBA* gba) {
 	GBATestKeypadIRQ(gba);
+
+	if (gba->audio.mixer) {
+		gba->audio.mixer->vblank(gba->audio.mixer);
+	}
 
 	size_t c;
 	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {

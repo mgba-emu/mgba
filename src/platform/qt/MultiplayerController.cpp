@@ -16,26 +16,45 @@
 
 using namespace QGBA;
 
+MultiplayerController::Player::Player(CoreController* coreController, GBSIOLockstepNode* node)
+	: controller(coreController)
+	, gbNode(node)
+{
+}
+
+#ifdef M_CORE_GBA
+MultiplayerController::Player::Player(CoreController* coreController, GBASIOLockstepNode* node)
+	: controller(coreController)
+	, gbaNode(node)
+{
+}
+#endif
+
 MultiplayerController::MultiplayerController() {
 	mLockstepInit(&m_lockstep);
 	m_lockstep.context = this;
+	m_lockstep.lock = [](mLockstep* lockstep) {
+		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
+		controller->m_lock.lock();
+	};
+	m_lockstep.unlock = [](mLockstep* lockstep) {
+		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
+		controller->m_lock.unlock();
+	};
 	m_lockstep.signal = [](mLockstep* lockstep, unsigned mask) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
 		Player* player = &controller->m_players[0];
 		bool woke = false;
-		controller->m_lock.lock();
 		player->waitMask &= ~mask;
 		if (!player->waitMask && player->awake < 1) {
 			mCoreThreadStopWaiting(player->controller->thread());
 			player->awake = 1;
 			woke = true;
 		}
-		controller->m_lock.unlock();
 		return woke;
 	};
 	m_lockstep.wait = [](mLockstep* lockstep, unsigned mask) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		controller->m_lock.lock();
 		Player* player = &controller->m_players[0];
 		bool slept = false;
 		player->waitMask |= mask;
@@ -44,7 +63,6 @@ MultiplayerController::MultiplayerController() {
 			player->awake = 0;
 			slept = true;
 		}
-		controller->m_lock.unlock();
 		return slept;
 	};
 	m_lockstep.addCycles = [](mLockstep* lockstep, int id, int32_t cycles) {
@@ -52,14 +70,15 @@ MultiplayerController::MultiplayerController() {
 			abort();
 		}
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		controller->m_lock.lock();
 		if (!id) {
 			for (int i = 1; i < controller->m_players.count(); ++i) {
 				Player* player = &controller->m_players[i];
+#ifdef M_CORE_GBA
 				if (player->controller->platform() == PLATFORM_GBA && player->gbaNode->d.p->mode != controller->m_players[0].gbaNode->d.p->mode) {
 					player->controller->setSync(true);
 					continue;
 				}
+#endif
 				player->controller->setSync(false);
 				player->cyclesPosted += cycles;
 				if (player->awake < 1) {
@@ -85,11 +104,9 @@ MultiplayerController::MultiplayerController() {
 			controller->m_players[id].controller->setSync(true);
 			controller->m_players[id].cyclesPosted += cycles;
 		}
-		controller->m_lock.unlock();
 	};
 	m_lockstep.useCycles = [](mLockstep* lockstep, int id, int32_t cycles) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		controller->m_lock.lock();
 		Player* player = &controller->m_players[id];
 		player->cyclesPosted -= cycles;
 		if (player->cyclesPosted <= 0) {
@@ -97,15 +114,23 @@ MultiplayerController::MultiplayerController() {
 			player->awake = 0;
 		}
 		cycles = player->cyclesPosted;
-		controller->m_lock.unlock();
+		return cycles;
+	};
+	m_lockstep.unusedCycles= [](mLockstep* lockstep, int id) {
+		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
+		Player* player = &controller->m_players[id];
+		auto cycles = player->cyclesPosted;
 		return cycles;
 	};
 	m_lockstep.unload = [](mLockstep* lockstep, int id) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		controller->m_lock.lock();
-		Player* player = &controller->m_players[id];
 		if (id) {
+			Player* player = &controller->m_players[id];
 			player->controller->setSync(true);
+			player->cyclesPosted = 0;
+
+			// release master GBA if it is waiting for this GBA
+			player = &controller->m_players[0];
 			player->waitMask &= ~(1 << id);
 			if (!player->waitMask && player->awake < 1) {
 				mCoreThreadStopWaiting(player->controller->thread());
@@ -149,8 +174,11 @@ MultiplayerController::MultiplayerController() {
 				}
 			}
 		}
-		controller->m_lock.unlock();
 	};
+}
+
+MultiplayerController::~MultiplayerController() {
+	mLockstepDeinit(&m_lockstep);
 }
 
 bool MultiplayerController::attachGame(CoreController* controller) {
@@ -188,14 +216,7 @@ bool MultiplayerController::attachGame(CoreController* controller) {
 		GBASIOLockstepNode* node = new GBASIOLockstepNode;
 		GBASIOLockstepNodeCreate(node);
 		GBASIOLockstepAttachNode(&m_gbaLockstep, node);
-		m_players.append({
-			controller,
-			nullptr,
-			node,
-			1,
-			0,
-			0
-		});
+		m_players.append({controller, node});
 
 		GBASIOSetDriver(&gba->sio, &node->d, SIO_MULTI);
 
@@ -210,14 +231,7 @@ bool MultiplayerController::attachGame(CoreController* controller) {
 		GBSIOLockstepNode* node = new GBSIOLockstepNode;
 		GBSIOLockstepNodeCreate(node);
 		GBSIOLockstepAttachNode(&m_gbLockstep, node);
-		m_players.append({
-			controller,
-			node,
-			nullptr,
-			1,
-			0,
-			0
-		});
+		m_players.append({controller, node});
 
 		GBSIOSetDriver(&gb->sio, &node->d);
 

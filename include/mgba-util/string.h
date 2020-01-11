@@ -28,6 +28,7 @@ int utfcmp(const uint16_t* utf16, const char* utf8, size_t utf16Length, size_t u
 char* utf16to8(const uint16_t* utf16, size_t length);
 uint32_t utf8Char(const char** unicode, size_t* length);
 uint32_t utf16Char(const uint16_t** unicode, size_t* length);
+char* gbkToUtf8(const char* gbk, size_t length);
 
 int hexDigit(char digit);
 const char* hex32(const char* line, uint32_t* out);
@@ -38,6 +39,8 @@ const char* hex8(const char* line, uint8_t* out);
 const char* hex4(const char* line, uint8_t* out);
 
 void rtrim(char* string);
+
+ssize_t parseQuotedString(const char* unparsed, ssize_t unparsedLen, char* parsed, ssize_t parsedLen);
 
 CXX_GUARD_END
 

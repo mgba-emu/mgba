@@ -60,7 +60,8 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	}
 	struct mDebuggerEntryInfo info = {
 		.address = breakpoint->d.address,
-		.type.bp.breakType = BREAKPOINT_HARDWARE
+		.type.bp.breakType = BREAKPOINT_HARDWARE,
+		.pointId = breakpoint->d.id
 	};
 	mDebuggerEnter(d->p, DEBUGGER_ENTER_BREAKPOINT, &info);
 }
@@ -142,6 +143,7 @@ static void ARMDebuggerEnter(struct mDebuggerPlatform* platform, enum mDebuggerE
 		struct ARMDebugBreakpoint* breakpoint = _lookupBreakpoint(&debugger->swBreakpoints, _ARMPCAddress(cpu));
 		if (breakpoint && breakpoint->d.type == BREAKPOINT_SOFTWARE) {
 			info->address = breakpoint->d.address;
+			info->pointId = breakpoint->d.id;
 			if (debugger->clearSoftwareBreakpoint) {
 				debugger->clearSoftwareBreakpoint(debugger, breakpoint);
 			}

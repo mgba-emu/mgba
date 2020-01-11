@@ -275,8 +275,12 @@ void VideoView::setAudioCodec(const QString& codec, bool manual) {
 void VideoView::setVideoCodec(const QString& codec, bool manual) {
 	free(m_videoCodecCstr);
 	m_videoCodec = sanitizeCodec(codec, s_vcodecMap);
-	m_videoCodecCstr = strdup(m_videoCodec.toUtf8().constData());
-	if (!FFmpegEncoderSetVideo(&m_encoder, m_videoCodecCstr, m_vbr)) {
+	if (m_videoCodec == "none") {
+		m_videoCodecCstr = nullptr;
+	} else {
+		m_videoCodecCstr = strdup(m_videoCodec.toUtf8().constData());
+	}
+	if (!FFmpegEncoderSetVideo(&m_encoder, m_videoCodecCstr, m_vbr, 0)) {
 		free(m_videoCodecCstr);
 		m_videoCodecCstr = nullptr;
 		m_videoCodec = QString();
@@ -313,7 +317,7 @@ void VideoView::setAudioBitrate(int br, bool manual) {
 
 void VideoView::setVideoBitrate(int br, bool manual) {
 	m_vbr = br >= 0 ? br * 1000 : 0;
-	FFmpegEncoderSetVideo(&m_encoder, m_videoCodecCstr, m_vbr);
+	FFmpegEncoderSetVideo(&m_encoder, m_videoCodecCstr, m_vbr, 0);
 	validateSettings();
 	if (manual) {
 		uncheckIncompatible();

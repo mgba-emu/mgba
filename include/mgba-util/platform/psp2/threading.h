@@ -131,12 +131,12 @@ static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context)
 	return 0;
 }
 
-static inline int ThreadJoin(Thread thread) {
-	int res = sceKernelWaitThreadEnd(thread, 0, 0);
+static inline int ThreadJoin(Thread* thread) {
+	int res = sceKernelWaitThreadEnd(*thread, 0, 0);
 	if (res < 0) {
 		return res;
 	}
-	return sceKernelDeleteThread(thread);
+	return sceKernelDeleteThread(*thread);
 }
 
 static inline int ThreadSetName(const char* name) {

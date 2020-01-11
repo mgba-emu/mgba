@@ -201,7 +201,7 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 		struct mCheat* incompleteCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat);
 		incompleteCheat->repeat = op1 & 0xFFFF;
 		incompleteCheat->addressOffset = op2;
-		incompleteCheat->operandOffset = 0;
+		incompleteCheat->operandOffset = op1 >> 16;
 		cheats->incompleteCheat = COMPLETE;
 		return true;
 	}

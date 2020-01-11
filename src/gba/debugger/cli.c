@@ -35,6 +35,7 @@ struct GBACLIDebugger* GBACLIDebuggerCreate(struct mCore* core) {
 
 	debugger->d.name = "Game Boy Advance";
 	debugger->d.commands = _GBACLIDebuggerCommands;
+	debugger->d.commandAliases = NULL;
 
 	debugger->core = core;
 
@@ -59,12 +60,12 @@ static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 		gbaDebugger->inVblank = GBARegisterDISPSTATGetInVblank(((struct GBA*) gbaDebugger->core->board)->memory.io[REG_DISPSTAT >> 1]);
 		return true;
 	}
-	return false;
+	return true;
 }
 
 static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
-	debugger->d.state = DEBUGGER_CUSTOM;
+	debugger->d.state = DEBUGGER_CALLBACK;
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 	gbaDebugger->frameAdvance = true;

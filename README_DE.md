@@ -49,6 +49,7 @@ Die folgenden Mapper werden vollständig unterstützt:
 - MBC5
 - MBC5+Rumble (MBC5+Rüttel-Modul)
 - MBC7
+- Wisdom Tree (nicht lizenziert)
 
 Die folgenden Mapper werden teilweise unterstützt:
 
@@ -85,7 +86,7 @@ Andere Unix-ähnliche Plattformen wie OpenBSD sind ebenfalls dafür bekannt, mit
 
 ### Systemvoraussetzungen
 
-Die Systemvoraussetzungen sind minimal. Jeder Computer, der mit Windows Vista oder neuer läuft, sollte in der Lage sein, die Emulation zu bewältigen. Unterstützung für OpenGL 1.1 oder neuer ist ebenfalls voraussgesetzt.
+Die Systemvoraussetzungen sind minimal. Jeder Computer, der mit Windows Vista oder neuer läuft, sollte in der Lage sein, die Emulation zu bewältigen. Unterstützung für OpenGL 1.1 oder neuer ist ebenfalls voraussgesetzt. OpenGL 3.2 oder neuer wird für Shader und erweiterte Funktionen benötigt.
 
 Downloads
 ---------
@@ -124,6 +125,7 @@ Dieser Befehl erzeugt ein Verzeichnis `build-win32` mit den erzeugten Programmda
 - mgba/ubuntu:xenial
 - mgba/ubuntu:bionic
 - mgba/ubuntu:cosmic
+- mgba/ubuntu:disco
 - mgba/vita
 - mgba/wii
 - mgba/windows:w32
@@ -143,7 +145,7 @@ Damit wird mGBA gebaut und in `/usr/bin` und `/usr/lib` installiert. Installiert
 
 Wenn Du macOS verwendest, sind die einzelnen Schritte etwas anders. Angenommen, dass Du den Homebrew-Paketmanager verwendest, werden folgende Schritte zum installieren der Abhängigkeiten und anschließenden bauen von mGBA empfohlen:
 
-	brew install cmake ffmpeg imagemagick libzip qt5 sdl2 libedit pkg-config
+	brew install cmake ffmpeg libzip qt5 sdl2 libedit pkg-config
 	mkdir build
 	cd build
 	cmake -DCMAKE_PREFIX_PATH='brew --prefix qt5' ..
@@ -157,11 +159,11 @@ Um mGBA auf Windows zu kompilieren, wird MSYS2 empfohlen. Befolge die Installati
 
 Für x86 (32 Bit):
 
-	pacman -Sy --needed base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 Für x86_64 (64 Bit):
 
-	pacman -Sy --needed base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,imagemagick,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
 
 Lade den aktuellen mGBA-Quellcode mithilfe des folgenden Kommandos herunter:
 
@@ -215,7 +217,6 @@ Fußnoten
 <a name="missing">[1]</a> Zurzeit fehlende Features sind
 
 - OBJ-Fenster für die Modi 3, 4 und 5 ([Bug #5](http://mgba.io/b/5))
-- Mosaik-Effekt für umgewandelte OBJs ([Bug #9](http://mgba.io/b/9))
 
 <a name="flashdetect">[2]</a> In manchen Fällen ist es nicht möglich, die Größe des Flash-Speichers automatisch zu ermitteln. Diese kann dann zur Laufzeit konfiguriert werden, es wird jedoch empfohlen, den Fehler zu melden.
 
@@ -227,7 +228,7 @@ Fußnoten
 Copyright
 ---------
 
-Copyright für mGBA © 2013 – 2018 Jeffrey Pfau. mGBA wird unter der [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/) veröffentlicht. Eine Kopie der Lizenz ist in der mitgelieferten Datei LICENSE verfügbar.
+Copyright für mGBA © 2013 – 2020 Jeffrey Pfau. mGBA wird unter der [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/) veröffentlicht. Eine Kopie der Lizenz ist in der mitgelieferten Datei LICENSE verfügbar.
 
 mGBA beinhaltet die folgenden Bibliotheken von Drittanbietern:
 

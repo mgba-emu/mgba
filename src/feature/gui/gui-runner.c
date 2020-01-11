@@ -212,13 +212,18 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 
 	const char* lastPath = mCoreConfigGetValue(&runner->config, "lastDirectory");
 	if (lastPath) {
-		strncpy(runner->params.currentPath, lastPath, PATH_MAX - 1);
-		runner->params.currentPath[PATH_MAX - 1] = '\0';
+		struct VDir* dir = VDirOpen(lastPath);
+		if (dir) {
+			dir->close(dir);
+			strncpy(runner->params.currentPath, lastPath, PATH_MAX - 1);
+			runner->params.currentPath[PATH_MAX - 1] = '\0';
+		}
 	}
 
 #ifndef DISABLE_THREADING
 	if (!runner->autosave.running) {
 		runner->autosave.running = true;
+		runner->autosave.core = NULL;
 		MutexInit(&runner->autosave.mutex);
 		ConditionInit(&runner->autosave.cond);
 		ThreadCreate(&runner->autosave.thread, mGUIAutosaveThread, &runner->autosave);
@@ -233,7 +238,7 @@ void mGUIDeinit(struct mGUIRunner* runner) {
 	ConditionWake(&runner->autosave.cond);
 	MutexUnlock(&runner->autosave.mutex);
 
-	ThreadJoin(runner->autosave.thread);
+	ThreadJoin(&runner->autosave.thread);
 
 	ConditionDeinit(&runner->autosave.cond);
 	MutexDeinit(&runner->autosave.mutex);
@@ -282,6 +287,23 @@ static void _log(struct mLogger* logger, int category, enum mLogLevel level, con
 			guiLogger->vf = NULL;
 		}
 	}
+}
+
+static void _updateLoading(size_t read, size_t size, void* context) {
+	struct mGUIRunner* runner = context;
+	if (read & 0x3FFFF) {
+		return;
+	}
+
+	runner->params.drawStart();
+	if (runner->params.guiPrepare) {
+		runner->params.guiPrepare();
+	}
+	GUIFontPrintf(runner->params.font, runner->params.width / 2, (GUIFontHeight(runner->params.font) + runner->params.height) / 2, GUI_ALIGN_HCENTER, 0xFFFFFFFF, "Loading...%i%%", 100 * read / size);
+	if (runner->params.guiFinish) {
+		runner->params.guiFinish();
+	}
+	runner->params.drawEnd();
 }
 
 void mGUIRun(struct mGUIRunner* runner, const char* path) {
@@ -359,7 +381,8 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		runner->core->init(runner->core);
 		mCoreInitConfig(runner->core, runner->port);
 		mInputMapInit(&runner->core->inputMap, &GBAInputInfo);
-		found = mCoreLoadFile(runner->core, path);
+
+		found = mCorePreloadFileCB(runner->core, path, _updateLoading, runner);
 		if (!found) {
 			mLOG(GUI_RUNNER, WARN, "Failed to load %s!", path);
 			mCoreConfigDeinit(&runner->core->config);
@@ -627,10 +650,18 @@ void mGUIRunloop(struct mGUIRunner* runner) {
 	}
 	while (true) {
 		char path[PATH_MAX];
-		if (!GUISelectFile(&runner->params, path, sizeof(path), _testExtensions, NULL)) {
+		const char* preselect = mCoreConfigGetValue(&runner->config, "lastGame");
+		if (preselect) {
+			preselect = strrchr(preselect, '/');
+		}
+		if (preselect) {
+			++preselect;
+		}
+		if (!GUISelectFile(&runner->params, path, sizeof(path), _testExtensions, NULL, preselect)) {
 			break;
 		}
 		mCoreConfigSetValue(&runner->config, "lastDirectory", runner->params.currentPath);
+		mCoreConfigSetValue(&runner->config, "lastGame", path);
 		mCoreConfigSave(&runner->config);
 		mGUIRun(runner, path);
 	}

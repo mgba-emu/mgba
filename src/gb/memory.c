@@ -10,11 +10,13 @@
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/mbc.h>
 #include <mgba/internal/gb/serialize.h>
-#include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/sm83/sm83.h>
 
 #include <mgba-util/memory.h>
 
 mLOG_DEFINE_CATEGORY(GB_MEM, "GB Memory", "gb.memory");
+
+static const uint8_t _yankBuffer[] = { 0xFF };
 
 enum GBBus {
 	GB_BUS_CPU,
@@ -49,7 +51,7 @@ static const uint8_t _blockedRegion[1] = { 0xFF };
 
 static void _pristineCow(struct GB* gba);
 
-static uint8_t GBFastLoad8(struct LR35902Core* cpu, uint16_t address) {
+static uint8_t GBFastLoad8(struct SM83Core* cpu, uint16_t address) {
 	if (UNLIKELY(address >= cpu->memory.activeRegionEnd)) {
 		cpu->memory.setActiveRegion(cpu, address);
 		return cpu->memory.cpuLoad8(cpu, address);
@@ -57,7 +59,7 @@ static uint8_t GBFastLoad8(struct LR35902Core* cpu, uint16_t address) {
 	return cpu->memory.activeRegion[address & cpu->memory.activeMask];
 }
 
-static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
+static void GBSetActiveRegion(struct SM83Core* cpu, uint16_t address) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
 	switch (address >> 12) {
@@ -69,6 +71,14 @@ static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 		cpu->memory.activeRegion = memory->romBase;
 		cpu->memory.activeRegionEnd = GB_BASE_CART_BANK1;
 		cpu->memory.activeMask = GB_SIZE_CART_BANK0 - 1;
+		if (gb->memory.romSize < GB_SIZE_CART_BANK0) {
+			if (address >= gb->memory.romSize) {
+				cpu->memory.activeRegion = _yankBuffer;
+				cpu->memory.activeMask = 0;
+			} else {
+				cpu->memory.activeRegionEnd = gb->memory.romSize;
+			}
+		}
 		break;
 	case GB_REGION_CART_BANK1:
 	case GB_REGION_CART_BANK1 + 1:
@@ -87,6 +97,14 @@ static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 			} else {
 				cpu->memory.activeRegion = memory->romBank;
 				cpu->memory.activeRegionEnd = GB_BASE_CART_BANK1 + 0x2000;
+			}
+		}
+		if (gb->memory.romSize < GB_SIZE_CART_BANK0 * 2) {
+			if (address >= gb->memory.romSize) {
+				cpu->memory.activeRegion = _yankBuffer;
+				cpu->memory.activeMask = 0;
+			} else {
+				cpu->memory.activeRegionEnd = gb->memory.romSize;
 			}
 		}
 		break;
@@ -109,7 +127,7 @@ static void _GBMemoryDMAService(struct mTiming* timing, void* context, uint32_t 
 static void _GBMemoryHDMAService(struct mTiming* timing, void* context, uint32_t cyclesLate);
 
 void GBMemoryInit(struct GB* gb) {
-	struct LR35902Core* cpu = gb->cpu;
+	struct SM83Core* cpu = gb->cpu;
 	cpu->memory.cpuLoad8 = GBLoad8;
 	cpu->memory.load8 = GBLoad8;
 	cpu->memory.store8 = GBStore8;
@@ -224,7 +242,7 @@ void GBMemorySwitchWramBank(struct GBMemory* memory, int bank) {
 	memory->wramCurrentBank = bank;
 }
 
-uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
+uint8_t GBLoad8(struct SM83Core* cpu, uint16_t address) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
 	if (gb->memory.dmaRemaining) {
@@ -234,7 +252,7 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 		if (dmaBus != GB_BUS_CPU && dmaBus == accessBus) {
 			return 0xFF;
 		}
-		if (address >= GB_BASE_OAM && address < GB_BASE_UNUSABLE) {
+		if (address >= GB_BASE_OAM && address < GB_BASE_IO) {
 			return 0xFF;
 		}
 	}
@@ -243,6 +261,9 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK0 + 1:
 	case GB_REGION_CART_BANK0 + 2:
 	case GB_REGION_CART_BANK0 + 3:
+		if (address >= memory->romSize) {
+			return 0xFF;
+		}
 		return memory->romBase[address & (GB_SIZE_CART_BANK0 - 1)];
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
@@ -252,6 +273,9 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 		// Fall through
 	case GB_REGION_CART_BANK1:
 	case GB_REGION_CART_BANK1 + 1:
+		if (address >= memory->romSize) {
+			return 0xFF;
+		}
 		return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
 	case GB_REGION_VRAM:
 	case GB_REGION_VRAM + 1:
@@ -300,7 +324,7 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	}
 }
 
-void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
+void GBStore8(struct SM83Core* cpu, uint16_t address, int8_t value) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
 	if (gb->memory.dmaRemaining) {
@@ -371,7 +395,7 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	}
 }
 
-int GBCurrentSegment(struct LR35902Core* cpu, uint16_t address) {
+int GBCurrentSegment(struct SM83Core* cpu, uint16_t address) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
 	switch (address >> 12) {
@@ -401,7 +425,7 @@ int GBCurrentSegment(struct LR35902Core* cpu, uint16_t address) {
 	}
 }
 
-uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment) {
+uint8_t GBView8(struct SM83Core* cpu, uint16_t address, int segment) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
 	switch (address >> 12) {
@@ -471,6 +495,17 @@ uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment) {
 		}
 		if (address < GB_BASE_IO) {
 			mLOG(GB_MEM, GAME_ERROR, "Attempt to read from unusable memory: %04X", address);
+			if (gb->video.mode < 2) {
+				switch (gb->model) {
+				case GB_MODEL_AGB:
+					return (address & 0xF0) | ((address >> 4) & 0xF);
+				case GB_MODEL_CGB:
+					// TODO: R/W behavior
+					return 0x00;
+				default:
+					return 0x00;
+				}
+			}
 			return 0xFF;
 		}
 		if (address < GB_BASE_HRAM) {
@@ -569,7 +604,7 @@ void _GBMemoryHDMAService(struct mTiming* timing, void* context, uint32_t cycles
 	}
 }
 
-void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old, int segment) {
+void GBPatch8(struct SM83Core* cpu, uint16_t address, int8_t value, int8_t* old, int segment) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
 	int8_t oldValue = -1;
@@ -614,7 +649,15 @@ void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* o
 		break;
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
-		mLOG(GB_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
+		if (memory->rtcAccess) {
+			memory->rtcRegs[memory->activeRtcReg] = value;
+		} else if (memory->sramAccess && memory->sram && memory->mbcType != GB_MBC2) {
+			// TODO: Remove sramAccess check?
+			memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
+		} else {
+			memory->mbcWrite(gb, address, value);
+		}
+		gb->sramDirty |= GB_SRAM_DIRT_NEW;
 		return;
 	case GB_REGION_WORKING_RAM_BANK0:
 	case GB_REGION_WORKING_RAM_BANK0 + 2:

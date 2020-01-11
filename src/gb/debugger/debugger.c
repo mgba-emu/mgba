@@ -10,15 +10,15 @@
  #include <mgba/internal/gb/gb.h>
  #include <mgba/internal/gb/io.h>
  #include <mgba/internal/gb/memory.h>
- #include <mgba/internal/lr35902/debugger/debugger.h>
+ #include <mgba/internal/sm83/debugger/debugger.h>
 
-static const struct LR35902Segment _GBSegments[] = {
+static const struct SM83Segment _GBSegments[] = {
 	{ .name = "ROM", .start = GB_BASE_CART_BANK1, .end = GB_BASE_VRAM },
 	{ .name = "RAM", .start = GB_BASE_EXTERNAL_RAM, .end = GB_BASE_WORKING_RAM_BANK0 },
 	{ 0 }
 };
 
-static const struct LR35902Segment _GBCSegments[] = {
+static const struct SM83Segment _GBCSegments[] = {
 	{ .name = "ROM", .start = GB_BASE_CART_BANK1, .end = GB_BASE_VRAM },
 	{ .name = "RAM", .start = GB_BASE_EXTERNAL_RAM, .end = GB_BASE_WORKING_RAM_BANK0 },
 	{ .name = "WRAM", .start = GB_BASE_WORKING_RAM_BANK1, .end = 0xE000 },
@@ -35,7 +35,7 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 }
 
 struct mDebuggerPlatform* GBDebuggerCreate(struct GB* gb) {
-	struct LR35902Debugger* platform = (struct LR35902Debugger*) LR35902DebuggerPlatformCreate();
+	struct SM83Debugger* platform = (struct SM83Debugger*) SM83DebuggerPlatformCreate();
 	if (gb->model >= GB_MODEL_CGB) {
 		platform->segments = _GBCSegments;
 	} else {

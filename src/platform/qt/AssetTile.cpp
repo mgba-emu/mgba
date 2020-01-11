@@ -22,7 +22,7 @@
 using namespace QGBA;
 
 AssetTile::AssetTile(QWidget* parent)
-	: QGroupBox(parent)
+	: AssetInfo(parent)
 {
 	m_ui.setupUi(this);
 
@@ -42,16 +42,8 @@ AssetTile::AssetTile(QWidget* parent)
 	m_ui.b->setFont(font);
 }
 
-void AssetTile::addCustomProperty(const QString& id, const QString& visibleName) {
-	QHBoxLayout* newLayout = new QHBoxLayout;
-	newLayout->addWidget(new QLabel(visibleName));
-	QLabel* value = new QLabel;
-	value->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-	value->setAlignment(Qt::AlignRight);
-	newLayout->addWidget(value);
-	m_customProperties[id] = value;
-	int index = layout()->indexOf(m_ui.line);
-	static_cast<QBoxLayout*>(layout())->insertLayout(index, newLayout);
+int AssetTile::customLocation(const QString&) {
+	return layout()->indexOf(m_ui.line);
 }
 
 void AssetTile::setController(std::shared_ptr<CoreController> controller) {
@@ -124,6 +116,9 @@ void AssetTile::selectIndex(int index) {
 		m_ui.preview->setColor(i ^ flip, data[i]);
 	}
 	m_ui.preview->update();
+
+	QImage tile(reinterpret_cast<const uchar*>(data), 8, 8, QImage::Format_ARGB32);
+	m_activeTile = tile.rgbSwapped();
 }
 
 void AssetTile::setFlip(bool h, bool v) {
@@ -142,18 +137,10 @@ void AssetTile::selectColor(int index) {
 	m_ui.color->setColor(0, color);
 	m_ui.color->update();
 
-	uint32_t r = color & 0xF8;
-	uint32_t g = (color >> 8) & 0xF8;
-	uint32_t b = (color >> 16) & 0xF8;
+	uint32_t r = M_R8(color);
+	uint32_t g = M_G8(color);
+	uint32_t b = M_B8(color);
 	m_ui.r->setText(tr("0x%0 (%1)").arg(r, 2, 16, QChar('0')).arg(r, 2, 10, QChar('0')));
 	m_ui.g->setText(tr("0x%0 (%1)").arg(g, 2, 16, QChar('0')).arg(g, 2, 10, QChar('0')));
 	m_ui.b->setText(tr("0x%0 (%1)").arg(b, 2, 16, QChar('0')).arg(b, 2, 10, QChar('0')));
-}
-
-void AssetTile::setCustomProperty(const QString& id, const QVariant& value) {
-	QLabel* label = m_customProperties[id];
-	if (!label) {
-		return;
-	}
-	label->setText(value.toString());
 }

@@ -31,7 +31,7 @@ private:
 	void updateRegistersARM();
 #endif
 #ifdef M_CORE_GB
-	void updateRegistersLR35902();
+	void updateRegistersSM83();
 #endif
 
 	QMap<QString, QLabel*> m_registers;

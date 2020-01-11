@@ -42,6 +42,7 @@ struct mCoreOptions {
 	int height;
 	bool lockAspectRatio;
 	bool lockIntegerScaling;
+	bool interframeBlending;
 	bool resampleVideo;
 	bool suspendScreensaver;
 	char* shader;

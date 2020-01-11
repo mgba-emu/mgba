@@ -95,6 +95,8 @@ uint16_t GBADMAWriteCNT_HI(struct GBA* gba, int dma, uint16_t control) {
 		if (currentDma->nextDest & (width - 1)) {
 			mLOG(GBA_MEM, GAME_ERROR, "Misaligned DMA destination address: 0x%08X", currentDma->nextDest);
 		}
+		currentDma->nextSource &= -width;
+		currentDma->nextDest &= -width;
 
 		GBADMASchedule(gba, dma, currentDma);
 	}
@@ -182,7 +184,7 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		dma->nextCount = 0;
 		bool noRepeat = !GBADMARegisterIsRepeat(dma->reg);
 		noRepeat |= GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_NOW;
-		noRepeat |= memory->activeDMA == 3 && GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_CUSTOM && gba->video.vcount == VIDEO_VERTICAL_PIXELS + 1;
+		noRepeat |= memory->activeDMA == 3 && GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_CUSTOM && gba->video.vcount == GBA_VIDEO_VERTICAL_PIXELS + 1;
 		if (noRepeat) {
 			dma->reg = GBADMARegisterClearEnable(dma->reg);
 
@@ -242,8 +244,6 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 		} else {
 			cycles += memory->waitstatesNonseq16[sourceRegion] + memory->waitstatesNonseq16[destRegion];
 		}
-		source &= -width;
-		dest &= -width;
 	} else {
 		if (width == 4) {
 			cycles += memory->waitstatesSeq32[sourceRegion] + memory->waitstatesSeq32[destRegion];

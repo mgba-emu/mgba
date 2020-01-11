@@ -1,0 +1,59 @@
+; this file was created with wlalink by ville helin <vhelin@iki.fi>.
+; wla symbolic information for "/home/vicki/Scratch/mooneye-gb/tests/build/acceptance/instr/daa.gb".
+
+[labels]
+01:68ee clear_vram
+01:68ad disable_lcd_safe
+01:68b3 disable_lcd_safe@wait_ly_0
+01:6902 memcpy
+01:690b memset
+01:6866 print_bin4
+01:68cb print_hex4
+01:68f8 print_hex8
+01:691b print_inline_string
+01:68d7 print_load_font
+01:68e3 print_newline
+01:6914 print_string
+01:67f0 quit
+01:6805 quit@cb_return
+01:680a quit@wait_ly_1
+01:6810 quit@wait_ly_2
+01:6816 quit@wait_ly_3
+01:681c quit@wait_ly_4
+01:6826 quit@success
+01:684d quit@failure
+01:6862 quit@halt
+01:6863 quit@halt_execution_0
+01:6899 reset_screen
+01:68bc serial_send_byte
+01:6000 font
+00:0150 main
+00:0163 main@quit_inline_1
+00:0174 run_tests
+00:01a9 fail
+00:0274 fail@wait_ly_5
+00:027a fail@wait_ly_6
+00:0281 fail@halt_execution_1
+00:0284 testcases1
+01:4000 testcases2
+
+[definitions]
+0000000a _sizeof_clear_vram
+0000000f _sizeof_disable_lcd_safe
+00000009 _sizeof_memcpy
+00000009 _sizeof_memset
+00000033 _sizeof_print_bin4
+0000000c _sizeof_print_hex4
+0000000a _sizeof_print_hex8
+00000006 _sizeof_print_inline_string
+0000000c _sizeof_print_load_font
+0000000b _sizeof_print_newline
+00000007 _sizeof_print_string
+00000076 _sizeof_quit
+00000014 _sizeof_reset_screen
+0000000f _sizeof_serial_send_byte
+000007f0 _sizeof_font
+00002000 _sizeof_testcases1
+00002000 _sizeof_testcases2
+00000024 _sizeof_main
+00000035 _sizeof_run_tests

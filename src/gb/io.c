@@ -11,7 +11,7 @@
 
 mLOG_DEFINE_CATEGORY(GB_IO, "GB I/O", "gb.io");
 
-const char* const GBIORegisterNames[] = {
+MGBA_EXPORT const char* const GBIORegisterNames[] = {
 	[REG_JOYP] = "JOYP",
 	[REG_SB] = "SB",
 	[REG_SC] = "SC",
@@ -115,23 +115,21 @@ static void _writeSGBBits(struct GB* gb, int bits) {
 	if (bits == gb->currentSgbBits) {
 		return;
 	}
-	gb->currentSgbBits = bits;
-	if (gb->sgbBit > 128) {
-		switch (bits) {
-		case 1:
-			gb->sgbBit |= 2;
-			break;
-		case 2:
-			gb->sgbBit |= 4;
-			break;
-		case 3:
-			if (gb->sgbBit == 135) {
-				gb->sgbBit &= ~6;
-				gb->sgbCurrentController = (gb->sgbCurrentController + 1) & gb->sgbControllers;
-			}
-			break;
+	switch (bits) {
+	case 0:
+	case 1:
+		if (gb->currentSgbBits & 2) {
+			gb->sgbIncrement = !gb->sgbIncrement;
 		}
+		break;
+	case 3:
+		if (gb->sgbIncrement) {
+			gb->sgbIncrement = false;
+			gb->sgbCurrentController = (gb->sgbCurrentController + 1) & gb->sgbControllers;
+		}
+		break;
 	}
+	gb->currentSgbBits = bits;
 	if (gb->sgbBit == 128 && bits == 2) {
 		GBVideoWriteSGBPacket(&gb->video, gb->sgbPacket);
 		++gb->sgbBit;
@@ -185,8 +183,10 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, REG_NR51, 0xF3);
 	if (!gb->biosVf) {
 		GBIOWrite(gb, REG_LCDC, 0x91);
+		gb->memory.io[0x50] = 1;
 	} else {
 		GBIOWrite(gb, REG_LCDC, 0x00);
+		gb->memory.io[0x50] = 0xFF;
 	}
 	GBIOWrite(gb, REG_SCY, 0x00);
 	GBIOWrite(gb, REG_SCX, 0x00);
@@ -458,6 +458,9 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		value = gb->video.stat;
 		break;
 	case 0x50:
+		if (gb->memory.io[0x50] != 0xFF) {
+			break;
+		}
 		GBUnmapBIOS(gb);
 		if (gb->model >= GB_MODEL_CGB && gb->memory.io[REG_UNK4C] < 0x80) {
 			gb->model = GB_MODEL_DMG;
@@ -497,8 +500,8 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			case REG_BCPD:
 				if (gb->video.mode != 3) {
 					GBVideoProcessDots(&gb->video, 0);
-					GBVideoWritePalette(&gb->video, address, value);
 				}
+				GBVideoWritePalette(&gb->video, address, value);
 				return;
 			case REG_OCPS:
 				gb->video.ocpIndex = value & 0x3F;
@@ -508,8 +511,8 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			case REG_OCPD:
 				if (gb->video.mode != 3) {
 					GBVideoProcessDots(&gb->video, 0);
-					GBVideoWritePalette(&gb->video, address, value);
 				}
+				GBVideoWritePalette(&gb->video, address, value);
 				return;
 			case REG_SVBK:
 				GBMemorySwitchWramBank(&gb->memory, value);

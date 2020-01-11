@@ -56,7 +56,7 @@ class NativeDebugger(IRunner):
 
     @property
     def paused(self):
-        return self._native.state in (lib.DEBUGGER_PAUSED, lib.DEBUGGER_CUSTOM)
+        return self._native.state in (lib.DEBUGGER_PAUSED, lib.DEBUGGER_CALLBACK)
 
     def use_core(self):
         return DebuggerCoreOwner(self)

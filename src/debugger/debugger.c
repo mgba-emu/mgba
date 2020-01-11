@@ -50,13 +50,14 @@ struct mDebugger* mDebuggerCreate(enum mDebuggerType type, struct mCore* core) {
 		struct CLIDebuggerSystem* sys = core->cliDebuggerSystem(core);
 		CLIDebuggerAttachSystem(&debugger->cli, sys);
 		break;
-#ifdef USE_GDB_STUB
 	case DEBUGGER_GDB:
+#ifdef USE_GDB_STUB
 		GDBStubCreate(&debugger->gdb);
 		GDBStubListen(&debugger->gdb, 2345, 0);
 		break;
 #endif
 	case DEBUGGER_NONE:
+	case DEBUGGER_CUSTOM:
 	case DEBUGGER_MAX:
 		free(debugger);
 		return 0;
@@ -89,7 +90,7 @@ void mDebuggerRun(struct mDebugger* debugger) {
 			debugger->platform->checkBreakpoints(debugger->platform);
 		}
 		break;
-	case DEBUGGER_CUSTOM:
+	case DEBUGGER_CALLBACK:
 		debugger->core->step(debugger->core);
 		debugger->platform->checkBreakpoints(debugger->platform);
 		debugger->custom(debugger);

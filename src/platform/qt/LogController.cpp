@@ -5,11 +5,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "LogController.h"
 
+#include <QMessageBox>
+
 #include "ConfigController.h"
 
 using namespace QGBA;
 
 LogController LogController::s_global(mLOG_ALL);
+int LogController::s_qtCat{-1};
 
 LogController::LogController(int levels, QObject* parent)
 	: QObject(parent)
@@ -18,6 +21,7 @@ LogController::LogController(int levels, QObject* parent)
 	mLogFilterSet(&m_filter, "gba.bios", mLOG_STUB | mLOG_FATAL);
 	mLogFilterSet(&m_filter, "core.status", mLOG_ALL & ~mLOG_DEBUG);
 	m_filter.defaultLevels = levels;
+	s_qtCat = mLogCategoryById("platform.qt");
 
 	if (this != &s_global) {
 		connect(&s_global, &LogController::logPosted, this, &LogController::postLog);
@@ -64,6 +68,11 @@ void LogController::postLog(int level, int category, const QString& string) {
 		if (m_logToFile && m_logStream) {
 			*m_logStream << line << endl;
 		}
+	}
+	if (category == s_qtCat && level == mLOG_ERROR && this == &s_global) {
+		QMessageBox* dialog = new QMessageBox(QMessageBox::Critical, tr("An error occurred"), string, QMessageBox::Ok);
+		dialog->setAttribute(Qt::WA_DeleteOnClose);
+		dialog->show();
 	}
 	emit logPosted(level, category, string);
 }
@@ -118,6 +127,9 @@ void LogController::logToStdout(bool log) {
 
 void LogController::setLogFile(const QString& file) {
 	m_logStream.reset();
+	if (file.isEmpty()) {
+		return;
+	}
 	m_logFile = std::make_unique<QFile>(file);
 	m_logFile->open(QIODevice::Append | QIODevice::Text);
 	m_logStream = std::make_unique<QTextStream>(m_logFile.get());

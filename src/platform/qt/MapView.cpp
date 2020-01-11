@@ -12,13 +12,19 @@
 #include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
 #ifdef M_CORE_GBA
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/memory.h>
+#include <mgba/internal/gba/video.h>
 #endif
 #ifdef M_CORE_GB
+#include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/memory.h>
 #endif
 
+#include <QAction>
 #include <QButtonGroup>
+#include <QClipboard>
 #include <QFontDatabase>
 #include <QMouseEvent>
 #include <QRadioButton>
@@ -39,6 +45,12 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 		m_boundary = 2048;
 		m_addressBase = BASE_VRAM;
 		m_addressWidth = 8;
+		m_ui.bgInfo->addCustomProperty("priority", tr("Priority"));
+		m_ui.bgInfo->addCustomProperty("screenBase", tr("Map base"));
+		m_ui.bgInfo->addCustomProperty("charBase", tr("Tile base"));
+		m_ui.bgInfo->addCustomProperty("size", tr("Size"));
+		m_ui.bgInfo->addCustomProperty("offset", tr("Offset"));
+		m_ui.bgInfo->addCustomProperty("transform", tr("Xform"));
 		break;
 #endif
 #ifdef M_CORE_GB
@@ -46,6 +58,9 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 		m_boundary = 1024;
 		m_addressBase = GB_BASE_VRAM;
 		m_addressWidth = 4;
+		m_ui.bgInfo->addCustomProperty("screenBase", tr("Map base"));
+		m_ui.bgInfo->addCustomProperty("charBase", tr("Tile base"));
+		m_ui.bgInfo->addCustomProperty("offset", tr("Offset"));
 		break;
 #endif
 	default:
@@ -75,11 +90,19 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 		});
 		group->addButton(button);
 	}
-#ifdef USE_PNG
 	connect(m_ui.exportButton, &QAbstractButton::clicked, this, &MapView::exportMap);
-#else
-	m_ui.exportButton->setVisible(false);
-#endif
+	connect(m_ui.copyButton, &QAbstractButton::clicked, this, &MapView::copyMap);
+
+	QAction* exportAction = new QAction(this);
+	exportAction->setShortcut(QKeySequence::Save);
+	connect(exportAction, &QAction::triggered, this, &MapView::exportMap);
+	addAction(exportAction);
+
+	QAction* copyAction = new QAction(this);
+	copyAction->setShortcut(QKeySequence::Copy);
+	connect(copyAction, &QAction::triggered, this, &MapView::copyMap);
+	addAction(copyAction);
+
 	m_ui.map->installEventFilter(this);
 	m_ui.tile->addCustomProperty("mapAddr", tr("Map Addr."));
 	m_ui.tile->addCustomProperty("flip", tr("Mirror"));
@@ -139,21 +162,87 @@ bool MapView::eventFilter(QObject* obj, QEvent* event) {
 void MapView::updateTilesGBA(bool force) {
 	{
 		CoreController::Interrupter interrupter(m_controller);
-		mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, m_map);
-		int tilesW = 1 << mMapCacheSystemInfoGetTilesWide(mapCache->sysConfig);
-		int tilesH = 1 << mMapCacheSystemInfoGetTilesHigh(mapCache->sysConfig);
-		m_rawMap = QImage(QSize(tilesW * 8, tilesH * 8), QImage::Format_ARGB32);
-		uchar* bgBits = m_rawMap.bits();
-		for (int j = 0; j < tilesH; ++j) {
-			for (int i = 0; i < tilesW; ++i) {
-				mMapCacheCleanTile(mapCache, m_mapStatus, i, j);
+		int bitmap = -1;
+		int priority = -1;
+		int frame = 0;
+		QString offset(tr("N/A"));
+		QString transform(tr("N/A"));
+#ifdef M_CORE_GBA
+		if (m_controller->platform() == PLATFORM_GBA) {
+			uint16_t* io = static_cast<GBA*>(m_controller->thread()->core->board)->memory.io;
+			int mode = GBARegisterDISPCNTGetMode(io[REG_DISPCNT >> 1]);
+			if (m_map == 2 && mode > 2) {
+				bitmap = mode == 4 ? 1 : 0;
+				if (mode != 3) {
+					frame = GBARegisterDISPCNTGetFrameSelect(io[REG_DISPCNT >> 1]);
+				}
 			}
-			for (int i = 0; i < 8; ++i) {
-				memcpy(static_cast<void*>(&bgBits[tilesW * 32 * (i + j * 8)]), mMapCacheGetRow(mapCache, i + j * 8), tilesW * 32);
+			priority = GBARegisterBGCNTGetPriority(io[(REG_BG0CNT >> 1) + m_map]);
+			if (mode == 0 || (mode == 1 && m_map != 2)) {
+				offset = QString("%1, %2")
+					.arg(io[(REG_BG0HOFS >> 1) + (m_map << 1)])
+					.arg(io[(REG_BG0VOFS >> 1) + (m_map << 1)]);
+			} else if ((mode > 0 && m_map == 2) || (mode == 2 && m_map == 3)) {
+				int32_t refX = io[(REG_BG2X_LO >> 1) + ((m_map - 2) << 2)];
+				refX |= io[(REG_BG2X_HI >> 1) + ((m_map - 2) << 2)] << 16;
+				int32_t refY = io[(REG_BG2Y_LO >> 1) + ((m_map - 2) << 2)];
+				refY |= io[(REG_BG2Y_HI >> 1) + ((m_map - 2) << 2)] << 16;
+				refX <<= 4;
+				refY <<= 4;
+				refX >>= 4;
+				refY >>= 4;
+				offset = QString("%1\n%2").arg(refX / 65536., 0, 'f', 3).arg(refY / 65536., 0, 'f', 3);
+				transform = QString("%1 %2\n%3 %4")
+					.arg(io[(REG_BG2PA >> 1) + ((m_map - 2) << 2)] / 256., 3, 'f', 2)
+					.arg(io[(REG_BG2PB >> 1) + ((m_map - 2) << 2)] / 256., 3, 'f', 2)
+					.arg(io[(REG_BG2PC >> 1) + ((m_map - 2) << 2)] / 256., 3, 'f', 2)
+					.arg(io[(REG_BG2PD >> 1) + ((m_map - 2) << 2)] / 256., 3, 'f', 2);
+
 			}
 		}
+#endif
+#ifdef M_CORE_GB
+		if (m_controller->platform() == PLATFORM_GB) {
+			uint8_t* io = static_cast<GB*>(m_controller->thread()->core->board)->memory.io;
+			int x = io[m_map == 0 ? 0x42 : 0x4A];
+			int y = io[m_map == 0 ? 0x43 : 0x4B];
+			offset = QString("%1, %2").arg(x).arg(y);
+		}
+#endif
+		if (bitmap >= 0) {
+			mBitmapCache* bitmapCache = mBitmapCacheSetGetPointer(&m_cacheSet->bitmaps, bitmap);
+			int width = mBitmapCacheSystemInfoGetWidth(bitmapCache->sysConfig);
+			int height = mBitmapCacheSystemInfoGetHeight(bitmapCache->sysConfig);
+			m_ui.bgInfo->setCustomProperty("screenBase", QString("0x%1").arg(m_addressBase + bitmapCache->bitsStart[frame], 8, 16, QChar('0')));
+			m_ui.bgInfo->setCustomProperty("charBase", tr("N/A"));
+			m_ui.bgInfo->setCustomProperty("size", QString("%1×%2").arg(width).arg(height));
+			m_ui.bgInfo->setCustomProperty("priority", priority);
+			m_ui.bgInfo->setCustomProperty("offset", offset);
+			m_ui.bgInfo->setCustomProperty("transform", transform);
+			m_rawMap = QImage(QSize(width, height), QImage::Format_ARGB32);
+			uchar* bgBits = m_rawMap.bits();
+			for (int j = 0; j < height; ++j) {
+				mBitmapCacheCleanRow(bitmapCache, m_bitmapStatus, j);
+				memcpy(static_cast<void*>(&bgBits[width * j * 4]), mBitmapCacheGetRow(bitmapCache, j), width * 4);
+			}
+			m_rawMap = m_rawMap.convertToFormat(QImage::Format_RGB32).rgbSwapped();
+		} else {
+			mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, m_map);
+			int tilesW = 1 << mMapCacheSystemInfoGetTilesWide(mapCache->sysConfig);
+			int tilesH = 1 << mMapCacheSystemInfoGetTilesHigh(mapCache->sysConfig);
+			m_ui.bgInfo->setCustomProperty("screenBase", QString("%0%1")
+					.arg(m_addressWidth == 8 ? "0x" : "")
+					.arg(m_addressBase + mapCache->mapStart, m_addressWidth, 16, QChar('0')));
+			m_ui.bgInfo->setCustomProperty("charBase", QString("%0%1")
+					.arg(m_addressWidth == 8 ? "0x" : "")
+					.arg(m_addressBase + mapCache->tileCache->tileBase, m_addressWidth, 16, QChar('0')));
+			m_ui.bgInfo->setCustomProperty("size", QString("%1×%2").arg(tilesW * 8).arg(tilesH * 8));
+			m_ui.bgInfo->setCustomProperty("priority", priority);
+			m_ui.bgInfo->setCustomProperty("offset", offset);
+			m_ui.bgInfo->setCustomProperty("transform", transform);
+			m_rawMap = compositeMap(m_map, m_mapStatus);
+		}
 	}
-	m_rawMap = m_rawMap.rgbSwapped();
 	QPixmap map = QPixmap::fromImage(m_rawMap.convertToFormat(QImage::Format_RGB32));
 	if (m_ui.magnification->value() > 1) {
 		map = map.scaled(map.size() * m_ui.magnification->value());
@@ -167,24 +256,18 @@ void MapView::updateTilesGB(bool force) {
 }
 #endif
 
-#ifdef USE_PNG
 void MapView::exportMap() {
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export map"),
 	                                                  tr("Portable Network Graphics (*.png)"));
-	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
-	if (!vf) {
-		LOG(QT, ERROR) << tr("Failed to open output PNG file: %1").arg(filename);
+	if (filename.isNull()) {
 		return;
 	}
 
 	CoreController::Interrupter interrupter(m_controller);
-	png_structp png = PNGWriteOpen(vf);
-	png_infop info = PNGWriteHeaderA(png, m_rawMap.width(), m_rawMap.height());
-
-	mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, m_map);
-	QImage map = m_rawMap.rgbSwapped();
-	PNGWritePixelsA(png, map.width(), map.height(), map.bytesPerLine() / 4, static_cast<const void*>(map.constBits()));
-	PNGWriteClose(png, info);
-	vf->close(vf);
+	m_rawMap.save(filename, "PNG");
 }
-#endif
+
+void MapView::copyMap() {
+	CoreController::Interrupter interrupter(m_controller);
+	GBAApp::app()->clipboard()->setImage(m_rawMap);
+}

@@ -618,10 +618,16 @@ void retro_run(void) {
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 			struct GBA* gba = core->board;
 			struct GB* gb = core->board;
-			if (core->platform(core) == PLATFORM_GBA)
+			switch (core->platform(core)) {
+			case PLATFORM_GBA:
 				gba->allowOpposingDirections = strcmp(var.value, "yes") == 0;
-			if (core->platform(core) == PLATFORM_GB)
+				break;
+			case PLATFORM_GB:
 				gb->allowOpposingDirections = strcmp(var.value, "yes") == 0;
+				break;
+			default:
+				break;
+			}
 		}
 
 		var.key = "mgba_frameskip";

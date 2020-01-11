@@ -29,6 +29,7 @@ struct mVideoThreadProxy {
 	Condition toThreadCond;
 	Mutex mutex;
 	enum mVideoThreadProxyState threadState;
+	enum mVideoLoggerEvent event;
 
 	struct RingFIFO dirtyQueue;
 };

@@ -11,14 +11,10 @@
 CXX_GUARD_START
 
 #include <mgba/core/core.h>
+#include <mgba/gba/interface.h>
 #include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/renderers/common.h>
 #include <mgba/internal/gba/video.h>
-
-struct GBAVideoSoftwareSprite {
-	struct GBAObj obj;
-	int y;
-	int endY;
-};
 
 struct GBAVideoSoftwareBackground {
 	unsigned index;
@@ -46,13 +42,7 @@ struct GBAVideoSoftwareBackground {
 	uint16_t mapCache[64];
 	int32_t offsetX;
 	int32_t offsetY;
-};
-
-enum BlendEffect {
-	BLEND_NONE = 0,
-	BLEND_ALPHA = 1,
-	BLEND_BRIGHTEN = 2,
-	BLEND_DARKEN = 3
+	bool highlight;
 };
 
 enum {
@@ -81,25 +71,6 @@ enum {
 
 #define IS_WRITABLE(PIXEL) ((PIXEL) & 0xFE000000)
 
-struct WindowRegion {
-	uint8_t end;
-	uint8_t start;
-};
-
-DECL_BITFIELD(GBAWindowControl, uint8_t);
-DECL_BIT(GBAWindowControl, Bg0Enable, 0);
-DECL_BIT(GBAWindowControl, Bg1Enable, 1);
-DECL_BIT(GBAWindowControl, Bg2Enable, 2);
-DECL_BIT(GBAWindowControl, Bg3Enable, 3);
-DECL_BIT(GBAWindowControl, ObjEnable, 4);
-DECL_BIT(GBAWindowControl, BlendEnable, 5);
-
-DECL_BITFIELD(GBAMosaicControl, uint16_t);
-DECL_BITS(GBAMosaicControl, BgH, 0, 4);
-DECL_BITS(GBAMosaicControl, BgV, 4, 4);
-DECL_BITS(GBAMosaicControl, ObjH, 8, 4);
-DECL_BITS(GBAMosaicControl, ObjV, 12, 4);
-
 struct WindowControl {
 	GBAWindowControl packed;
 	int8_t priority;
@@ -122,8 +93,8 @@ struct GBAVideoSoftwareRenderer {
 
 	GBARegisterDISPCNT dispcnt;
 
-	uint32_t row[VIDEO_HORIZONTAL_PIXELS];
-	uint32_t spriteLayer[VIDEO_HORIZONTAL_PIXELS];
+	uint32_t row[GBA_VIDEO_HORIZONTAL_PIXELS];
+	uint32_t spriteLayer[GBA_VIDEO_HORIZONTAL_PIXELS];
 	int32_t spriteCyclesRemaining;
 
 	// BLDCNT
@@ -132,9 +103,11 @@ struct GBAVideoSoftwareRenderer {
 	unsigned target2Obj;
 	unsigned target2Bd;
 	bool blendDirty;
-	enum BlendEffect blendEffect;
+	enum GBAVideoBlendEffect blendEffect;
 	color_t normalPalette[512];
 	color_t variantPalette[512];
+	color_t highlightPalette[512];
+	color_t highlightVariantPalette[512];
 
 	uint16_t blda;
 	uint16_t bldb;
@@ -143,8 +116,8 @@ struct GBAVideoSoftwareRenderer {
 	GBAMosaicControl mosaic;
 
 	struct WindowN {
-		struct WindowRegion h;
-		struct WindowRegion v;
+		struct GBAVideoWindowRegion h;
+		struct GBAVideoWindowRegion v;
 		struct WindowControl control;
 	} winN[2];
 
@@ -158,9 +131,10 @@ struct GBAVideoSoftwareRenderer {
 
 	struct GBAVideoSoftwareBackground bg[4];
 
-	int oamDirty;
+	bool forceTarget1;
+	bool oamDirty;
 	int oamMax;
-	struct GBAVideoSoftwareSprite sprites[128];
+	struct GBAVideoRendererSprite sprites[128];
 	int16_t objOffsetX;
 	int16_t objOffsetY;
 
@@ -169,11 +143,13 @@ struct GBAVideoSoftwareRenderer {
 	struct ScanlineCache {
 		uint16_t io[REG_SOUND1CNT_LO];
 		int32_t scale[2][2];
-	} cache[VIDEO_VERTICAL_PIXELS];
+	} cache[GBA_VIDEO_VERTICAL_PIXELS];
 	int nextY;
 
 	int start;
 	int end;
+
+	uint8_t lastHighlightAmount;
 };
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer);

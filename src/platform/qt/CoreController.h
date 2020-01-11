@@ -46,6 +46,10 @@ public:
 	static const bool VIDEO_SYNC = false;
 	static const bool AUDIO_SYNC = true;
 
+	enum class Feature {
+		OPENGL = mCORE_FEATURE_OPENGL,
+	};
+
 	class Interrupter {
 	public:
 		Interrupter(CoreController*, bool fromThread = false);
@@ -63,12 +67,15 @@ public:
 	mCoreThread* thread() { return &m_threadContext; }
 
 	const color_t* drawContext();
+	QImage getPixels();
 
 	bool isPaused();
 	bool hasStarted();
 
 	mPlatform platform() const;
 	QSize screenDimensions() const;
+	bool supportsFeature(Feature feature) const { return m_threadContext.core->supportsFeature(m_threadContext.core, static_cast<mCoreFeature>(feature)); }
+	bool hardwareAccelerated() const { return m_hwaccel; }
 
 	void loadConfig(ConfigController*);
 
@@ -91,6 +98,11 @@ public:
 
 	void setInputController(InputController*);
 	void setLogger(LogController*);
+
+	bool audioSync() const { return m_audioSync; }
+	bool videoSync() const { return m_videoSync; }
+
+	void addFrameAction(std::function<void ()> callback);
 
 public slots:
 	void start();
@@ -151,8 +163,11 @@ public slots:
 
 	void clearOverride();
 
-	void startVideoLog(const QString& path);
-	void endVideoLog();
+	void startVideoLog(const QString& path, bool compression = true);
+	void startVideoLog(VFile* vf, bool compression = true);
+	void endVideoLog(bool closeVf = true);
+
+	void setFramebufferHandle(int fb);
 
 signals:
 	void started();
@@ -162,6 +177,7 @@ signals:
 	void crashed(const QString& errorMessage);
 	void failed();
 	void frameAvailable();
+	void didReset();
 	void stateLoaded();
 	void rewound();
 
@@ -185,16 +201,17 @@ private:
 
 	bool m_patched = false;
 
-	QByteArray m_buffers[2];
-	QByteArray* m_activeBuffer;
+	QByteArray m_activeBuffer;
 	QByteArray m_completeBuffer;
+	bool m_hwaccel = false;
 
 	std::unique_ptr<mCacheSet> m_cacheSet;
 	std::unique_ptr<Override> m_override;
 
 	QList<std::function<void()>> m_resetActions;
 	QList<std::function<void()>> m_frameActions;
-	QMutex m_mutex;
+	QMutex m_actionMutex{QMutex::Recursive};
+	QMutex m_bufferMutex;
 
 	int m_activeKeys = 0;
 	bool m_autofire[32] = {};
@@ -213,13 +230,14 @@ private:
 
 	bool m_autosave;
 	bool m_autoload;
-	int m_autosaveCounter;
+	int m_autosaveCounter = 0;
 
 	int m_fastForward = false;
 	int m_fastForwardForced = false;
 	int m_fastForwardVolume = -1;
 	int m_fastForwardMute = -1;
 	float m_fastForwardRatio = -1.f;
+	float m_fastForwardHeldRatio = -1.f;
 	float m_fpsTarget;
 
 	InputController* m_inputController = nullptr;

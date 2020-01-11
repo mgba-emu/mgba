@@ -7,7 +7,7 @@
 
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/timer.h>
-#include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/sm83/sm83.h>
 
 #include <mgba-util/memory.h>
 
@@ -104,11 +104,11 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: CPU cycles are negative");
 		error = true;
 	}
-	if (state->cpu.executionState != LR35902_CORE_FETCH) {
+	if (state->cpu.executionState != SM83_CORE_FETCH) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: Execution state is not FETCH");
 		error = true;
 	}
-	if (check >= (int32_t) DMG_LR35902_FREQUENCY) {
+	if (check >= (int32_t) DMG_SM83_FREQUENCY) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: CPU cycles are too high");
 		error = true;
 	}
@@ -134,6 +134,16 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	LOAD_16LE(ucheck16, 0, &state->video.ocpIndex);
 	if (ucheck16 >= 0x40) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: OCPS is out of range");
+	}
+	bool differentBios = !gb->biosVf || gb->model != state->model;
+	if (state->io[0x50] == 0xFF) {
+		if (differentBios) {
+			mLOG(GB_STATE, WARN, "Incompatible savestate, please restart with correct BIOS in %s mode", GBModelToName(state->model));
+			error = true;
+		} else {
+			// TODO: Make it work correctly
+			mLOG(GB_STATE, WARN, "Loading savestate in BIOS. This may not work correctly");
+		}
 	}
 	if (error) {
 		return false;
@@ -187,6 +197,12 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	GBTimerDeserialize(&gb->timer, state);
 	GBAudioDeserialize(&gb->audio, state);
 
+	if (gb->memory.io[0x50] == 0xFF) {
+		GBMapBIOS(gb);
+	} else {
+		GBUnmapBIOS(gb);
+	}
+
 	if (gb->model & GB_MODEL_SGB && canSgb) {
 		GBSGBDeserialize(gb, state);
 	}
@@ -209,6 +225,7 @@ void GBSGBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	flags = GBSerializedSGBFlagsSetRenderMode(flags, gb->video.renderer->sgbRenderMode);
 	flags = GBSerializedSGBFlagsSetBufferIndex(flags, gb->video.sgbBufferIndex);
 	flags = GBSerializedSGBFlagsSetReqControllers(flags, gb->sgbControllers);
+	flags = GBSerializedSGBFlagsSetIncrement(flags, gb->sgbIncrement);
 	flags = GBSerializedSGBFlagsSetCurrentController(flags, gb->sgbCurrentController);
 	STORE_32LE(flags, 0, &state->sgb.flags);
 
@@ -244,6 +261,12 @@ void GBSGBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->video.sgbBufferIndex = GBSerializedSGBFlagsGetBufferIndex(flags);
 	gb->sgbControllers = GBSerializedSGBFlagsGetReqControllers(flags);
 	gb->sgbCurrentController = GBSerializedSGBFlagsGetCurrentController(flags);
+	gb->sgbIncrement = GBSerializedSGBFlagsGetIncrement(flags);
+
+	// Old versions of mGBA stored the increment bits here
+	if (gb->sgbBit > 129 && gb->sgbBit & 2) {
+		gb->sgbIncrement = true;
+	}
 
 	memcpy(gb->video.sgbPacketBuffer, state->sgb.packet, sizeof(state->sgb.packet));
 	memcpy(gb->sgbPacket, state->sgb.inProgressPacket, sizeof(state->sgb.inProgressPacket));

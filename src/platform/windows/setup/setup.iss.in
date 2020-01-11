@@ -48,15 +48,11 @@ LicenseFile={#BinDir}\LICENSE.txt
   #define IsRelease = 'no'
   AppVerName={#AppName} {#VersionString} (Development build)
 #endif
-#if '{#WinBits}' == '64'
-  ArchitecturesInstallIn64BitMode=x64
-  ArchitecturesAllows=x64
-#endif
 OutputBaseFilename={#AppName}-setup-{#CleanVersionString}-win{#WinBits}
 UsePreviousLanguage=False
 DisableWelcomePage=False
 VersionInfoDescription={#AppName} is an open-source Game Boy Advance emulator
-VersionInfoCopyright=© 2013–2018 Jeffrey Pfau
+VersionInfoCopyright=© 2013–2019 Jeffrey Pfau
 VersionInfoProductName={#AppName}
 VersionInfoVersion={#AppVer}
 Compression=lzma2/ultra64
@@ -64,6 +60,8 @@ SolidCompression=True
 VersionInfoTextVersion={#AppVer}
 VersionInfoProductVersion={#AppVer}
 VersionInfoProductTextVersion={#AppVer}
+ArchitecturesInstallIn64BitMode=x64
+ArchitecturesAllowed=x86 x64
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

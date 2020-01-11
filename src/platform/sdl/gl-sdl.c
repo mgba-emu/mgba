@@ -35,6 +35,7 @@ bool mSDLGLInit(struct mSDLRenderer* renderer) {
 	renderer->gl.d.user = renderer;
 	renderer->gl.d.lockAspectRatio = renderer->lockAspectRatio;
 	renderer->gl.d.lockIntegerScaling = renderer->lockIntegerScaling;
+	renderer->gl.d.interframeBlending = renderer->interframeBlending;
 	renderer->gl.d.filter = renderer->filter;
 	renderer->gl.d.swap = mSDLGLCommonSwap;
 	renderer->gl.d.init(&renderer->gl.d, 0);
@@ -52,14 +53,18 @@ void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user) {
 	while (mCoreThreadIsActive(context)) {
 		while (SDL_PollEvent(&event)) {
 			mSDLHandleEvent(context, &renderer->player, &event);
-#if SDL_VERSION_ATLEAST(2, 0, 0)
 			// Event handling can change the size of the screen
 			if (renderer->player.windowUpdated) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
 				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
+#else
+				renderer->viewportWidth = renderer->player.newWidth;
+				renderer->viewportHeight = renderer->player.newHeight;
+				mSDLGLCommonInit(renderer);
+#endif
 				mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, v);
 				renderer->player.windowUpdated = 0;
 			}
-#endif
 		}
 		renderer->core->desiredVideoDimensions(renderer->core, &renderer->width, &renderer->height);
 		if (renderer->width != v->width || renderer->height != v->height) {

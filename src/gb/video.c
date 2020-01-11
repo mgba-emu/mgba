@@ -12,7 +12,7 @@
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/renderers/cache-set.h>
 #include <mgba/internal/gb/serialize.h>
-#include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/sm83/sm83.h>
 
 #include <mgba-util/memory.h>
 
@@ -339,23 +339,23 @@ void _endMode3(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	UNUSED(cyclesLate);
 	struct GBVideo* video = context;
-	if (video->p->cpu->executionState != LR35902_CORE_FETCH) {
+	if (video->p->cpu->executionState != SM83_CORE_FETCH) {
 		mTimingSchedule(timing, &video->frameEvent, 4 - ((video->p->cpu->executionState + 1) & 3));
 		return;
 	}
+	if (!GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC])) {
+		mTimingSchedule(timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH);
+	}
 
-	GBFrameEnded(video->p);
-	mCoreSyncPostFrame(video->p->sync);
 	--video->frameskipCounter;
 	if (video->frameskipCounter < 0) {
 		video->renderer->finishFrame(video->renderer);
 		video->frameskipCounter = video->frameskip;
 	}
+	GBFrameEnded(video->p);
+	mCoreSyncPostFrame(video->p->sync);
 	++video->frameCounter;
 
-	if (!GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC])) {
-		mTimingSchedule(timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH);
-	}
 	GBFrameStarted(video->p);
 }
 
@@ -505,14 +505,16 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 	} else {
 		switch (address) {
 		case REG_BCPD:
-			if (video->bcpIndex & 1) {
-				video->palette[video->bcpIndex >> 1] &= 0x00FF;
-				video->palette[video->bcpIndex >> 1] |= value << 8;
-			} else {
-				video->palette[video->bcpIndex >> 1] &= 0xFF00;
-				video->palette[video->bcpIndex >> 1] |= value;
+			if (video->mode != 3) {
+				if (video->bcpIndex & 1) {
+					video->palette[video->bcpIndex >> 1] &= 0x00FF;
+					video->palette[video->bcpIndex >> 1] |= value << 8;
+				} else {
+					video->palette[video->bcpIndex >> 1] &= 0xFF00;
+					video->palette[video->bcpIndex >> 1] |= value;
+				}
+				video->renderer->writePalette(video->renderer, video->bcpIndex >> 1, video->palette[video->bcpIndex >> 1]);
 			}
-			video->renderer->writePalette(video->renderer, video->bcpIndex >> 1, video->palette[video->bcpIndex >> 1]);
 			if (video->bcpIncrement) {
 				++video->bcpIndex;
 				video->bcpIndex &= 0x3F;
@@ -522,14 +524,16 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 			video->p->memory.io[REG_BCPD] = video->palette[video->bcpIndex >> 1] >> (8 * (video->bcpIndex & 1));
 			break;
 		case REG_OCPD:
-			if (video->ocpIndex & 1) {
-				video->palette[8 * 4 + (video->ocpIndex >> 1)] &= 0x00FF;
-				video->palette[8 * 4 + (video->ocpIndex >> 1)] |= value << 8;
-			} else {
-				video->palette[8 * 4 + (video->ocpIndex >> 1)] &= 0xFF00;
-				video->palette[8 * 4 + (video->ocpIndex >> 1)] |= value;
+			if (video->mode != 3) {
+				if (video->ocpIndex & 1) {
+					video->palette[8 * 4 + (video->ocpIndex >> 1)] &= 0x00FF;
+					video->palette[8 * 4 + (video->ocpIndex >> 1)] |= value << 8;
+				} else {
+					video->palette[8 * 4 + (video->ocpIndex >> 1)] &= 0xFF00;
+					video->palette[8 * 4 + (video->ocpIndex >> 1)] |= value;
+				}
+				video->renderer->writePalette(video->renderer, 8 * 4 + (video->ocpIndex >> 1), video->palette[8 * 4 + (video->ocpIndex >> 1)]);
 			}
-			video->renderer->writePalette(video->renderer, 8 * 4 + (video->ocpIndex >> 1), video->palette[8 * 4 + (video->ocpIndex >> 1)]);
 			if (video->ocpIncrement) {
 				++video->ocpIndex;
 				video->ocpIndex &= 0x3F;
@@ -697,8 +701,11 @@ void GBVideoWriteSGBPacket(struct GBVideo* video, uint8_t* data) {
 	case SGB_ATTR_SET:
 		break;
 	case SGB_MLT_REQ:
+		if ((video->sgbPacketBuffer[1] & 0x3) == 2) { // XXX: This unmasked increment appears to be an SGB hardware bug
+			++video->p->sgbCurrentController;
+		}
 		video->p->sgbControllers = video->sgbPacketBuffer[1] & 0x3;
-		video->p->sgbCurrentController = 0;
+		video->p->sgbCurrentController &= video->p->sgbControllers;
 		return;
 	case SGB_MASK_EN:
 		video->renderer->sgbRenderMode = video->sgbPacketBuffer[1] & 0x3;

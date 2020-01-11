@@ -3,7 +3,7 @@ import os
 import os.path
 import shutil
 import yaml
-from cinema.util import dictMerge
+from cinema.util import dict_merge
 
 suffixes = {
     'C': 'CGB',
@@ -43,7 +43,7 @@ def ingestDirectory(path, dest):
                             manifest = yaml.safe_load(f) or {}
                     except IOError:
                         pass
-                    dictMerge(manifest, {
+                    dict_merge(manifest, {
                         'config': {
                             'gb.model': model
                         }

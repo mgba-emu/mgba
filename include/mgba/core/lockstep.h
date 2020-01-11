@@ -23,10 +23,14 @@ struct mLockstep {
 	enum mLockstepPhase transferActive;
 	int32_t transferCycles;
 
+	void (*lock)(struct mLockstep*);
+	void (*unlock)(struct mLockstep*);
+
 	bool (*signal)(struct mLockstep*, unsigned mask);
 	bool (*wait)(struct mLockstep*, unsigned mask);
 	void (*addCycles)(struct mLockstep*, int id, int32_t cycles);
 	int32_t (*useCycles)(struct mLockstep*, int id, int32_t cycles);
+	int32_t (*unusedCycles)(struct mLockstep*, int id);
 	void (*unload)(struct mLockstep*, int id);
 	void* context;
 #ifndef NDEBUG
@@ -35,6 +39,19 @@ struct mLockstep {
 };
 
 void mLockstepInit(struct mLockstep*);
+void mLockstepDeinit(struct mLockstep*);
+
+static inline void mLockstepLock(struct mLockstep* lockstep) {
+	if (lockstep->lock) {
+		lockstep->lock(lockstep);
+	}
+}
+
+static inline void mLockstepUnlock(struct mLockstep* lockstep) {
+	if (lockstep->unlock) {
+		lockstep->unlock(lockstep);
+	}
+}
 
 CXX_GUARD_END
 

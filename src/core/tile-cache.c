@@ -51,6 +51,9 @@ static void _redoCacheSize(struct mTileCache* cache) {
 }
 
 void mTileCacheConfigure(struct mTileCache* cache, mTileCacheConfiguration config) {
+	if (cache->config == config) {
+		return;
+	}
 	_freeCache(cache);
 	cache->config = config;
 	_redoCacheSize(cache);
@@ -278,5 +281,9 @@ const color_t* mTileCacheGetPalette(struct mTileCache* cache, unsigned paletteId
 }
 
 const uint16_t* mTileCacheGetVRAM(struct mTileCache* cache, unsigned tileId) {
+	unsigned tiles = mTileCacheSystemInfoGetMaxTiles(cache->sysConfig);
+	if (tileId >= tiles) {
+		return NULL;
+	}
 	return &cache->vram[tileId << (cache->bpp + 2)];
 }

@@ -15,8 +15,11 @@ CXX_GUARD_START
 extern const char* ERROR_MISSING_ARGS;
 extern const char* ERROR_OVERFLOW;
 extern const char* ERROR_INVALID_ARGS;
+extern const char* INFO_BREAKPOINT_ADDED;
+extern const char* INFO_WATCHPOINT_ADDED;
 
 struct CLIDebugger;
+struct VFile;
 
 struct CLIDebugVector {
 	struct CLIDebugVector* next;
@@ -39,6 +42,11 @@ struct CLIDebuggerCommandSummary {
 	const char* summary;
 };
 
+struct CLIDebuggerCommandAlias {
+	const char* name;
+	const char* original;
+};
+
 struct CLIDebuggerSystem {
 	struct CLIDebugger* p;
 
@@ -50,8 +58,10 @@ struct CLIDebuggerSystem {
 	void (*printStatus)(struct CLIDebuggerSystem*);
 
 	struct CLIDebuggerCommandSummary* commands;
+	struct CLIDebuggerCommandAlias* commandAliases;
 	const char* name;
 	struct CLIDebuggerCommandSummary* platformCommands;
+	struct CLIDebuggerCommandAlias* platformCommandAliases;
 	const char* platformName;
 };
 
@@ -74,6 +84,9 @@ struct CLIDebugger {
 
 	struct CLIDebuggerSystem* system;
 	struct CLIDebuggerBackend* backend;
+
+	int traceRemaining;
+	struct VFile* traceVf;
 };
 
 void CLIDebuggerCreate(struct CLIDebugger*);
