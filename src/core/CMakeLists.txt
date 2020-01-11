@@ -5,6 +5,7 @@ set(SOURCE_FILES
 	cheats.c
 	config.c
 	core.c
+	core-serialize.c
 	directories.c
 	input.c
 	interface.c
@@ -15,7 +16,6 @@ set(SOURCE_FILES
 	mem-search.c
 	rewind.c
 	scripting.c
-	serialize.c
 	sync.c
 	thread.c
 	tile-cache.c

@@ -37,6 +37,7 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/arm/decoder-thumb.c \
 					$(CORE_DIR)/src/arm/isa-thumb.c \
 					$(CORE_DIR)/src/arm/isa-arm.c \
+					$(CORE_DIR)/src/core/bitmap-cache.c \
 					$(CORE_DIR)/src/core/cache-set.c \
 					$(CORE_DIR)/src/core/cheats.c \
 					$(CORE_DIR)/src/core/config.c \
@@ -81,6 +82,7 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/gba/memory.c \
 					$(CORE_DIR)/src/gba/overrides.c \
 					$(CORE_DIR)/src/gba/renderers/cache-set.c \
+					$(CORE_DIR)/src/gba/renderers/common.c \
 					$(CORE_DIR)/src/gba/renderers/software-mode0.c \
 					$(CORE_DIR)/src/gba/renderers/software-obj.c \
 					$(CORE_DIR)/src/gba/renderers/software-bg.c \
@@ -91,15 +93,16 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/gba/timer.c \
 					$(CORE_DIR)/src/gba/vfame.c \
 					$(CORE_DIR)/src/gba/video.c \
-					$(CORE_DIR)/src/lr35902/isa-lr35902.c \
-					$(CORE_DIR)/src/lr35902/lr35902.c \
 					$(CORE_DIR)/src/platform/libretro/memory.c \
 					$(CORE_DIR)/src/platform/libretro/libretro.c \
+					$(CORE_DIR)/src/sm83/isa-sm83.c \
+					$(CORE_DIR)/src/sm83/sm83.c \
 					$(CORE_DIR)/src/third-party/blip_buf/blip_buf.c \
 					$(CORE_DIR)/src/third-party/inih/ini.c \
 					$(CORE_DIR)/src/util/circle-buffer.c \
 					$(CORE_DIR)/src/util/configuration.c \
 					$(CORE_DIR)/src/util/formatting.c \
+					$(CORE_DIR)/src/util/gbk-table.c \
 					$(CORE_DIR)/src/util/hash.c \
 					$(CORE_DIR)/src/util/patch.c \
 					$(CORE_DIR)/src/util/patch-ips.c \
