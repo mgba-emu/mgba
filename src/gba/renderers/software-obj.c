@@ -84,7 +84,7 @@
 		if (tileData) { \
 			renderer->spriteLayer[outX] = palette[tileData] | flags; \
 		} else if (current != FLAG_UNWRITTEN) { \
-			renderer->spriteLayer[outX] = (current & ~FLAG_ORDER_MASK) | GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY; \
+			renderer->spriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
 		} \
 	}
 
@@ -97,7 +97,7 @@
 			unsigned color = (renderer->row[outX] & FLAG_OBJWIN) ? objwinPalette[tileData] : palette[tileData]; \
 			renderer->spriteLayer[outX] = color | flags; \
 		} else if (current != FLAG_UNWRITTEN) { \
-			renderer->spriteLayer[outX] = (current & ~FLAG_ORDER_MASK) | GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY; \
+			renderer->spriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
 		} \
 	}
 
@@ -119,7 +119,7 @@
 		if (tileData) { \
 			renderer->spriteLayer[outX] = palette[tileData] | flags; \
 		} else if (current != FLAG_UNWRITTEN) { \
-			renderer->spriteLayer[outX] = (current & ~FLAG_ORDER_MASK) | GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY; \
+			renderer->spriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
 		} \
 	}
 
@@ -132,7 +132,7 @@
 			unsigned color = (renderer->row[outX] & FLAG_OBJWIN) ? objwinPalette[tileData] : palette[tileData]; \
 			renderer->spriteLayer[outX] = color | flags; \
 		} else if (current != FLAG_UNWRITTEN) { \
-			renderer->spriteLayer[outX] = (current & ~FLAG_ORDER_MASK) | GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY; \
+			renderer->spriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
 		} \
 	}
 
