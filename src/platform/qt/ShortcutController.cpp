@@ -45,8 +45,11 @@ void ShortcutController::updateKey(const QString& name, int keySequence) {
 
 void ShortcutController::updateKey(std::shared_ptr<Shortcut> item, int keySequence) {
 	int oldShortcut = item->shortcut();
-	if (m_actions->isHeld(item->name())) {
+	if (oldShortcut != keySequence && m_actions->isHeld(item->name())) {
 		if (oldShortcut > 0) {
+			if (item->action() && item->action()->booleanAction()) {
+				item->action()->booleanAction()(false);
+			}
 			m_heldKeys.take(oldShortcut);
 		}
 		if (keySequence > 0) {
