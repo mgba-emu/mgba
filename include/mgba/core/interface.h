@@ -39,7 +39,7 @@ typedef uint32_t color_t;
 #ifndef PYCPARSE
 static inline color_t mColorFrom555(uint16_t value) {
 #ifdef COLOR_16_BIT
-#if defined(COLOR_5_6_5) && !defined(PS2)
+#ifdef COLOR_5_6_5
 	color_t color = 0;
 	color |= (value & 0x001F) << 11;
 	color |= (value & 0x03E0) << 1;

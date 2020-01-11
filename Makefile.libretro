@@ -266,7 +266,7 @@ else ifeq ($(platform), ps2)
    CC = ee-gcc$(EXE_EXT)
    AR = ee-ar$(EXE_EXT)
    PLATFORM_DEFINES := -DPS2 -DCC_RESAMPLER
-   CFLAGS += -G0 -Ips2/ -I$(PS2SDK)/ee/include -I$(PS2SDK)/common/include
+   CFLAGS += -G0 -Isrc/platform/ps2/ -I$(PS2SDK)/ee/include -I$(PS2SDK)/common/include
    STATIC_LINKING = 1
    DEFINES += -std=c99
 	HAVE_VFS_FD = 0

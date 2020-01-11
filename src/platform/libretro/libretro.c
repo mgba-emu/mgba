@@ -459,7 +459,7 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
 void retro_init(void) {
 	enum retro_pixel_format fmt;
 #ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
+#if defined(COLOR_5_6_5) || defined(PS2)
 	fmt = RETRO_PIXEL_FORMAT_RGB565;
 #else
 #warning This pixel format is unsupported. Please use -DCOLOR_16-BIT -DCOLOR_5_6_5
