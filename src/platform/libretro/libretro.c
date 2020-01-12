@@ -26,6 +26,8 @@
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
 
+#include "libretro_core_options.h"
+
 #define SAMPLES 1024
 #define RUMBLE_PWM 35
 
@@ -49,7 +51,7 @@ static void _stopImage(struct mImageSource*);
 static void _requestImage(struct mImageSource*, const void** buffer, size_t* stride, enum mColorFormat* colorFormat);
 
 static struct mCore* core;
-static void* outputBuffer;
+static color_t* outputBuffer = NULL;
 static void* data;
 static size_t dataSize;
 static void* savedata;
@@ -122,6 +124,13 @@ static void _reloadSettings(void) {
 		}
 	}
 
+	var.key = "mgba_frameskip";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		opts.frameskip = strtol(var.value, NULL, 10);
+
+	}
+
 	var.key = "mgba_idle_optimization";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
@@ -132,13 +141,6 @@ static void _reloadSettings(void) {
 		} else if (strcmp(var.value, "Detect and Remove") == 0) {
 			mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "detect");
 		}
-	}
-
-	var.key = "mgba_frameskip";
-	var.value = 0;
-	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-		opts.frameskip = strtol(var.value, NULL, 10);
-
 	}
 
 	mCoreConfigLoadDefaults(&core->config, &opts);
@@ -152,19 +154,7 @@ unsigned retro_api_version(void) {
 void retro_set_environment(retro_environment_t env) {
 	environCallback = env;
 
-	struct retro_variable vars[] = {
-		{ "mgba_solar_sensor_level", "Solar sensor level; 0|1|2|3|4|5|6|7|8|9|10" },
-		{ "mgba_allow_opposing_directions", "Allow opposing directional input; OFF|ON" },
-		{ "mgba_gb_model", "Game Boy model (requires restart); Autodetect|Game Boy|Super Game Boy|Game Boy Color|Game Boy Advance" },
-		{ "mgba_use_bios", "Use BIOS file if found (requires restart); ON|OFF" },
-		{ "mgba_skip_bios", "Skip BIOS intro (requires restart); OFF|ON" },
-		{ "mgba_sgb_borders", "Use Super Game Boy borders (requires restart); ON|OFF" },
-		{ "mgba_idle_optimization", "Idle loop removal; Remove Known|Detect and Remove|Don't Remove" },
-		{ "mgba_frameskip", "Frameskip; 0|1|2|3|4|5|6|7|8|9|10" },
-		{ 0, 0 }
-	};
-
-	environCallback(RETRO_ENVIRONMENT_SET_VARIABLES, vars);
+	libretro_set_core_options(environCallback);
 }
 
 void retro_set_video_refresh(retro_video_refresh_t video) {
@@ -824,6 +814,7 @@ static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned heigh
 	if (!camData || width > camWidth || height > camHeight) {
 		if (camData) {
 			free(camData);
+			camData = NULL;
 		}
 		unsigned bufPitch = pitch / sizeof(*buffer);
 		unsigned bufHeight = height;
