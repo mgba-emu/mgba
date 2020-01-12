@@ -366,7 +366,7 @@ static void _reloadSettings(void) {
 			mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", false);
 		}
 	}
-	
+
 	var.key = "mgba_frameskip";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
@@ -397,7 +397,7 @@ void retro_set_environment(retro_environment_t env)
 {
 	environCallback = env;
 
-   libretro_set_core_options(environCallback);
+	libretro_set_core_options(environCallback);
 }
 
 void retro_set_video_refresh(retro_video_refresh_t video) {
