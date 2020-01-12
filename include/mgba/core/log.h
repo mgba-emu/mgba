@@ -65,7 +65,7 @@ void mLog(int category, enum mLogLevel level, const char* format, ...);
 		_mLOG_CAT_ ## CATEGORY = mLogGenerateCategory(NAME, ID); \
 	}
 
-mLOG_DECLARE_CATEGORY(STATUS)
+MGBA_EXPORT mLOG_DECLARE_CATEGORY(STATUS)
 
 CXX_GUARD_END
 

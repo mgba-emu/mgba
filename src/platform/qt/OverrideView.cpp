@@ -42,9 +42,12 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 		s_mbcList.append(GB_MBC3_RTC);
 		s_mbcList.append(GB_MBC5);
 		s_mbcList.append(GB_MBC5_RUMBLE);
+		s_mbcList.append(GB_MBC6);
 		s_mbcList.append(GB_MBC7);
+		s_mbcList.append(GB_MMM01);
 		s_mbcList.append(GB_POCKETCAM);
 		s_mbcList.append(GB_TAMA5);
+		s_mbcList.append(GB_HuC1);
 		s_mbcList.append(GB_HuC3);
 	}
 	if (s_gbModelList.isEmpty()) {
@@ -66,6 +69,7 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 		m_ui.hwRumble->setEnabled(!enabled);
 	});
 
+#ifdef M_CORE_GB
 	m_colorPickers[0] = ColorPicker(m_ui.color0, QColor(0xF8, 0xF8, 0xF8));
 	m_colorPickers[1] = ColorPicker(m_ui.color1, QColor(0xA8, 0xA8, 0xA8));
 	m_colorPickers[2] = ColorPicker(m_ui.color2, QColor(0x50, 0x50, 0x50));
@@ -83,6 +87,7 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 			m_gbColors[colorId] = color.rgb() | 0xFF000000;
 		});
 	}
+#endif
 
 #ifndef M_CORE_GBA
 	m_ui.tabWidget->removeTab(m_ui.tabWidget->indexOf(m_ui.tabGBA));

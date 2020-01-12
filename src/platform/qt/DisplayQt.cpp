@@ -25,6 +25,7 @@ void DisplayQt::startDrawing(std::shared_ptr<CoreController> controller) {
 	m_width = size.width();
 	m_height = size.height();
 	m_backing = std::move(QImage());
+	m_oldBacking = std::move(QImage());
 	m_isDrawing = true;
 	m_context = controller;
 }
@@ -44,6 +45,11 @@ void DisplayQt::lockIntegerScaling(bool lock) {
 	update();
 }
 
+void DisplayQt::interframeBlending(bool lock) {
+	Display::interframeBlending(lock);
+	update();
+}
+
 void DisplayQt::filter(bool filter) {
 	Display::filter(filter);
 	update();
@@ -55,6 +61,7 @@ void DisplayQt::framePosted() {
 	if (const_cast<const QImage&>(m_backing).bits() == reinterpret_cast<const uchar*>(buffer)) {
 		return;
 	}
+	m_oldBacking = m_backing;
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
 	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), m_width, m_height, QImage::Format_RGB16);
@@ -64,6 +71,9 @@ void DisplayQt::framePosted() {
 #else
 	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), m_width, m_height, QImage::Format_ARGB32);
 	m_backing = m_backing.convertToFormat(QImage::Format_RGB32);
+#endif
+#ifndef COLOR_5_6_5
+	m_backing = m_backing.rgbSwapped();
 #endif
 }
 
@@ -75,6 +85,7 @@ void DisplayQt::resizeContext() {
 	if (m_width != size.width() || m_height != size.height()) {
 		m_width = size.width();
 		m_height = size.height();
+		m_oldBacking = std::move(QImage());
 		m_backing = std::move(QImage());
 	}
 }
@@ -95,16 +106,23 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 		}
 	}
 	if (isIntegerScalingLocked()) {
-		ds.setWidth(ds.width() - ds.width() % m_width);
-		ds.setHeight(ds.height() - ds.height() % m_height);
+		if (ds.width() >= m_width) {
+			ds.setWidth(ds.width() - ds.width() % m_width);
+		}
+		if (ds.height() >= m_height) {
+			ds.setHeight(ds.height() - ds.height() % m_height);
+		}
 	}
 	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
 	QRect full(origin, ds);
 
-#ifdef COLOR_5_6_5
+	if (hasInterframeBlending()) {
+		painter.drawImage(full, m_oldBacking, QRect(0, 0, m_width, m_height));
+		painter.setOpacity(0.5);
+	}
 	painter.drawImage(full, m_backing, QRect(0, 0, m_width, m_height));
-#else
-	painter.drawImage(full, m_backing.rgbSwapped(), QRect(0, 0, m_width, m_height));
-#endif
-	messagePainter()->paint(&painter);
+	painter.setOpacity(1);
+	if (isShowOSD()) {
+		messagePainter()->paint(&painter);
+	}
 }

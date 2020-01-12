@@ -35,19 +35,28 @@ MemorySearch::~MemorySearch() {
 }
 
 bool MemorySearch::createParams(mCoreMemorySearchParams* params) {
-	params->memoryFlags = mCORE_MEMORY_RW;
+	params->memoryFlags = mCORE_MEMORY_WRITE;
+	if (m_ui.searchROM->isChecked()) {
+		params->memoryFlags |= mCORE_MEMORY_READ;
+	}
 	mCore* core = m_controller->thread()->core;
 
 	QByteArray string;
 	bool ok = false;
 	if (m_ui.typeNum->isChecked()) {
 		params->type = mCORE_MEMORY_SEARCH_INT;
-		if (m_ui.opDelta->isChecked()) {
+		if (m_ui.opDelta->isChecked() || m_ui.opDelta0->isChecked()) {
 			params->op = mCORE_MEMORY_SEARCH_DELTA;
 		} else if (m_ui.opGreater->isChecked()) {
 			params->op = mCORE_MEMORY_SEARCH_GREATER;
 		} else if (m_ui.opLess->isChecked()) {
 			params->op = mCORE_MEMORY_SEARCH_LESS;
+		} else if (m_ui.opUnknown->isChecked()) {
+			params->op = mCORE_MEMORY_SEARCH_ANY;
+		} else if (m_ui.opDeltaPositive->isChecked()) {
+			params->op = mCORE_MEMORY_SEARCH_DELTA_POSITIVE;
+		} else if (m_ui.opDeltaNegative->isChecked()) {
+			params->op = mCORE_MEMORY_SEARCH_DELTA_NEGATIVE;
 		} else {
 			params->op = mCORE_MEMORY_SEARCH_EQUAL;
 		}
@@ -103,9 +112,15 @@ bool MemorySearch::createParams(mCoreMemorySearchParams* params) {
 		}
 		if (m_ui.numGuess->isChecked()) {
 			params->type = mCORE_MEMORY_SEARCH_GUESS;
-			m_string = m_ui.value->text().toLocal8Bit();
+			if (m_ui.opDelta0->isChecked()) {
+				m_string = QString("0").toLocal8Bit();
+			} else {
+				m_string = m_ui.value->text().toLocal8Bit();
+			}
 			params->valueStr = m_string.constData();
 			ok = true;
+		} else if (m_ui.opDelta0->isChecked()) {
+			params->valueInt = 0;
 		}
 	}
 	if (m_ui.typeStr->isChecked()) {
@@ -140,6 +155,9 @@ void MemorySearch::searchWithin() {
 	mCore* core = m_controller->thread()->core;
 
 	if (createParams(&params)) {
+		if (m_ui.opUnknown->isChecked()) {
+			params.op = mCORE_MEMORY_SEARCH_DELTA_ANY;
+		}
 		mCoreMemorySearchRepeat(core, &params, &m_results);
 	}
 
@@ -153,6 +171,9 @@ void MemorySearch::refresh() {
 	m_ui.results->clearContents();
 	m_ui.results->setRowCount(mCoreMemorySearchResultsSize(&m_results));
 	m_ui.opDelta->setEnabled(false);
+	m_ui.opDelta0->setEnabled(false);
+	m_ui.opDeltaPositive->setEnabled(false);
+	m_ui.opDeltaNegative->setEnabled(false);
 	for (size_t i = 0; i < mCoreMemorySearchResultsSize(&m_results); ++i) {
 		mCoreMemorySearchResult* result = mCoreMemorySearchResultsGetPointer(&m_results, i);
 		QTableWidgetItem* item = new QTableWidgetItem(QString("%1").arg(result->address, 8, 16, QChar('0')));
@@ -214,8 +235,17 @@ void MemorySearch::refresh() {
 		m_ui.results->setItem(i, 1, item);
 		m_ui.results->setItem(i, 2, type);
 		m_ui.opDelta->setEnabled(true);
+		m_ui.opDelta0->setEnabled(true);
+		m_ui.opDeltaPositive->setEnabled(true);
+		m_ui.opDeltaNegative->setEnabled(true);
 	}
 	if (m_ui.opDelta->isChecked() && !m_ui.opDelta->isEnabled()) {
+		m_ui.opEqual->setChecked(true);
+	} else if (m_ui.opDelta0->isChecked() && !m_ui.opDelta0->isEnabled()) {
+		m_ui.opEqual->setChecked(true);
+	} else if (m_ui.opDeltaPositive->isChecked() && !m_ui.opDeltaPositive->isEnabled()) {
+		m_ui.opEqual->setChecked(true);
+	} else if (m_ui.opDeltaNegative->isChecked() && !m_ui.opDeltaNegative->isEnabled()) {
 		m_ui.opEqual->setChecked(true);
 	}
 	m_ui.results->sortItems(0);

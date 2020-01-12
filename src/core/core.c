@@ -17,12 +17,11 @@
 
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
-// TODO: Fix layering violation
-#include <mgba/internal/gb/gb.h>
+#include <mgba/gb/interface.h>
 #endif
 #ifdef M_CORE_GBA
 #include <mgba/gba/core.h>
-#include <mgba/internal/gba/gba.h>
+#include <mgba/gba/interface.h>
 #endif
 #ifndef MINIMAL_CORE
 #include <mgba/feature/video-logger.h>
@@ -115,6 +114,9 @@ struct mCore* mCoreFind(const char* path) {
 }
 
 bool mCoreLoadFile(struct mCore* core, const char* path) {
+#ifdef FIXED_ROM_BUFFER
+	return mCorePreloadFile(core, path);
+#else
 	struct VFile* rom = mDirectorySetOpenPath(&core->dirs, path, core->isROM);
 	if (!rom) {
 		return false;
@@ -125,15 +127,39 @@ bool mCoreLoadFile(struct mCore* core, const char* path) {
 		rom->close(rom);
 	}
 	return ret;
+#endif
 }
 
 bool mCorePreloadVF(struct mCore* core, struct VFile* vf) {
-	struct VFile* vfm = VFileMemChunk(NULL, vf->size(vf));
+	return mCorePreloadVFCB(core, vf, NULL, NULL);
+}
+
+bool mCorePreloadFile(struct mCore* core, const char* path) {
+	return mCorePreloadFileCB(core, path, NULL, NULL);
+}
+
+bool mCorePreloadVFCB(struct mCore* core, struct VFile* vf, void (cb)(size_t, size_t, void*), void* context) {
+	struct VFile* vfm;
+	size_t size = vf->size(vf);
+
+#ifdef FIXED_ROM_BUFFER
+	extern uint32_t* romBuffer;
+	extern size_t romBufferSize;
+	vfm = VFileFromMemory(romBuffer, romBufferSize);
+#else
+	vfm = VFileMemChunk(NULL, size);
+#endif
+
 	uint8_t buffer[2048];
 	ssize_t read;
+	size_t total = 0;
 	vf->seek(vf, 0, SEEK_SET);
 	while ((read = vf->read(vf, buffer, sizeof(buffer))) > 0) {
 		vfm->write(vfm, buffer, read);
+		total += read;
+		if (cb) {
+			cb(total, size, context);
+		}
 	}
 	vf->close(vf);
 	bool ret = core->loadROM(core, vfm);
@@ -143,13 +169,13 @@ bool mCorePreloadVF(struct mCore* core, struct VFile* vf) {
 	return ret;
 }
 
-bool mCorePreloadFile(struct mCore* core, const char* path) {
+bool mCorePreloadFileCB(struct mCore* core, const char* path, void (cb)(size_t, size_t, void*), void* context) {
 	struct VFile* rom = mDirectorySetOpenPath(&core->dirs, path, core->isROM);
 	if (!rom) {
 		return false;
 	}
 
-	bool ret = mCorePreloadVF(core, rom);
+	bool ret = mCorePreloadVFCB(core, rom, cb, context);
 	if (!ret) {
 		rom->close(rom);
 	}
@@ -157,10 +183,16 @@ bool mCorePreloadFile(struct mCore* core, const char* path) {
 }
 
 bool mCoreAutoloadSave(struct mCore* core) {
+	if (!core->dirs.save) {
+		return false;
+	}
 	return core->loadSave(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.save, ".sav", O_CREAT | O_RDWR));
 }
 
 bool mCoreAutoloadPatch(struct mCore* core) {
+	if (!core->dirs.patch) {
+		return false;
+	}
 	return core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".ups", O_RDONLY)) ||
 	       core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".ips", O_RDONLY)) ||
 	       core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".bps", O_RDONLY));
@@ -217,13 +249,16 @@ bool mCoreLoadState(struct mCore* core, int slot, int flags) {
 }
 
 struct VFile* mCoreGetState(struct mCore* core, int slot, bool write) {
-	char name[PATH_MAX];
+	if (!core->dirs.state) {
+		return NULL;
+	}
+	char name[PATH_MAX + 14]; // Quash warning
 	snprintf(name, sizeof(name), "%s.ss%i", core->dirs.baseName, slot);
 	return core->dirs.state->openFile(core->dirs.state, name, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
 }
 
 void mCoreDeleteState(struct mCore* core, int slot) {
-	char name[PATH_MAX];
+	char name[PATH_MAX + 14]; // Quash warning
 	snprintf(name, sizeof(name), "%s.ss%i", core->dirs.baseName, slot);
 	core->dirs.state->deleteFile(core->dirs.state, name);
 }

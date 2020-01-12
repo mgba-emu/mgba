@@ -415,7 +415,7 @@ void mCoreThreadJoin(struct mCoreThread* threadContext) {
 	if (!threadContext->impl) {
 		return;
 	}
-	ThreadJoin(threadContext->impl->thread);
+	ThreadJoin(&threadContext->impl->thread);
 
 	MutexDeinit(&threadContext->impl->stateMutex);
 	ConditionDeinit(&threadContext->impl->stateCond);

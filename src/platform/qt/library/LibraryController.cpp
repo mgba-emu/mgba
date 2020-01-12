@@ -51,6 +51,7 @@ LibraryController::LibraryController(QWidget* parent, const QString& path, Confi
 	m_libraryGrid = std::make_unique<LibraryGrid>(this);
 	addWidget(m_libraryGrid->widget());
 
+	m_currentStyle = LibraryStyle::STYLE_TREE; // Make sure setViewStyle does something
 	setViewStyle(LibraryStyle::STYLE_LIST);
 	refresh();
 }

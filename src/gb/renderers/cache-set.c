@@ -11,16 +11,15 @@
 #include <mgba/internal/gb/video.h>
 
 void GBVideoCacheInit(struct mCacheSet* cache) {
-	mCacheSetInit(cache, 2, 1);
-	mTileCacheConfiguration config = 0;
-	config = mTileCacheSystemInfoSetPaletteBPP(config, 1); // 2^(2^1) = 4 entries
-	config = mTileCacheSystemInfoSetPaletteCount(config, 4); // 16 palettes
-	config = mTileCacheSystemInfoSetMaxTiles(config, 1024);
-	mTileCacheInit(mTileCacheSetGetPointer(&cache->tiles, 0));
-	mTileCacheConfigureSystem(mTileCacheSetGetPointer(&cache->tiles, 0), config, 0, 0);
+	mCacheSetInit(cache, 2, 0, 1);
+	mTileCacheSystemInfo sysconfig = 0;
+	mTileCacheConfiguration config = mTileCacheConfigurationFillShouldStore(0);
+	sysconfig = mTileCacheSystemInfoSetPaletteBPP(sysconfig, 1); // 2^(2^1) = 4 entries
+	sysconfig = mTileCacheSystemInfoSetPaletteCount(sysconfig, 4); // 16 palettes
+	sysconfig = mTileCacheSystemInfoSetMaxTiles(sysconfig, 1024);
+	mTileCacheConfigureSystem(mTileCacheSetGetPointer(&cache->tiles, 0), sysconfig, 0, 0);
+	mTileCacheConfigure(mTileCacheSetGetPointer(&cache->tiles, 0), config);
 
-	mMapCacheInit(mMapCacheSetGetPointer(&cache->maps, 0));
-	mMapCacheInit(mMapCacheSetGetPointer(&cache->maps, 1));
 	mMapCacheSetGetPointer(&cache->maps, 0)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 0);
 	mMapCacheSetGetPointer(&cache->maps, 1)->tileCache = mTileCacheSetGetPointer(&cache->tiles, 0);
 }

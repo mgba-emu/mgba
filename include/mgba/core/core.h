@@ -47,6 +47,7 @@ struct mCore {
 	struct mTiming* timing;
 	struct mDebugger* debugger;
 	struct mDebuggerSymbols* symbolTable;
+	struct mVideoLogger* videoLogger;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct mDirectorySet dirs;
@@ -63,12 +64,15 @@ struct mCore {
 	void (*deinit)(struct mCore*);
 
 	enum mPlatform (*platform)(const struct mCore*);
+	bool (*supportsFeature)(const struct mCore*, enum mCoreFeature);
 
 	void (*setSync)(struct mCore*, struct mCoreSync*);
 	void (*loadConfig)(struct mCore*, const struct mCoreConfig*);
+	void (*reloadConfigOption)(struct mCore*, const char* option, const struct mCoreConfig*);
 
 	void (*desiredVideoDimensions)(struct mCore*, unsigned* width, unsigned* height);
 	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);
+	void (*setVideoGLTex)(struct mCore*, unsigned texid);
 
 	void (*getPixels)(struct mCore*, const void** buffer, size_t* stride);
 	void (*putPixels)(struct mCore*, const void* buffer, size_t stride);
@@ -168,6 +172,9 @@ bool mCoreLoadFile(struct mCore* core, const char* path);
 
 bool mCorePreloadVF(struct mCore* core, struct VFile* vf);
 bool mCorePreloadFile(struct mCore* core, const char* path);
+
+bool mCorePreloadVFCB(struct mCore* core, struct VFile* vf, void (cb)(size_t, size_t, void*), void* context);
+bool mCorePreloadFileCB(struct mCore* core, const char* path, void (cb)(size_t, size_t, void*), void* context);
 
 bool mCoreAutoloadSave(struct mCore* core);
 bool mCoreAutoloadPatch(struct mCore* core);

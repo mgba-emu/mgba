@@ -14,7 +14,7 @@ CXX_GUARD_START
 
 struct VFile;
 
-bool GUISelectFile(struct GUIParams*, char* outPath, size_t outLen, bool (*filterName)(const char* name), bool (*filterContents)(struct VFile*));
+bool GUISelectFile(struct GUIParams*, char* outPath, size_t outLen, bool (*filterName)(const char* name), bool (*filterContents)(struct VFile*), const char* preselect);
 
 CXX_GUARD_END
 

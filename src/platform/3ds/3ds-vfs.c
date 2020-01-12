@@ -310,4 +310,9 @@ static enum VFSType _vd3deType(struct VDirEntry* vde) {
 	}
 	return VFS_FILE;
 }
+
+bool VDirCreate(const char* path) {
+	Result rc = FSUSER_CreateDirectory(sdmcArchive, fsMakePath(PATH_ASCII, path), 0);
+	return R_SUCCEEDED(rc) || rc == 0xC82044BE;
+}
 #endif

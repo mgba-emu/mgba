@@ -204,24 +204,24 @@ struct GBMemory {
 	struct mImageSource* cam;
 };
 
-struct LR35902Core;
+struct SM83Core;
 void GBMemoryInit(struct GB* gb);
 void GBMemoryDeinit(struct GB* gb);
 
 void GBMemoryReset(struct GB* gb);
 void GBMemorySwitchWramBank(struct GBMemory* memory, int bank);
 
-uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address);
-void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);
+uint8_t GBLoad8(struct SM83Core* cpu, uint16_t address);
+void GBStore8(struct SM83Core* cpu, uint16_t address, int8_t value);
 
-int GBCurrentSegment(struct LR35902Core* cpu, uint16_t address);
+int GBCurrentSegment(struct SM83Core* cpu, uint16_t address);
 
-uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment);
+uint8_t GBView8(struct SM83Core* cpu, uint16_t address, int segment);
 
 void GBMemoryDMA(struct GB* gb, uint16_t base);
 uint8_t GBMemoryWriteHDMA5(struct GB* gb, uint8_t value);
 
-void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old, int segment);
+void GBPatch8(struct SM83Core* cpu, uint16_t address, int8_t value, int8_t* old, int segment);
 
 struct GBSerializedState;
 void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state);

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>588</width>
-    <height>488</height>
+    <width>885</width>
+    <height>797</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -33,14 +33,14 @@
    <item row="1" column="0">
     <widget class="QListWidget" name="tabs">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+      <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
      <property name="maximumSize">
       <size>
-       <width>140</width>
+       <width>180</width>
        <height>16777215</height>
       </size>
      </property>
@@ -60,6 +60,11 @@
      <item>
       <property name="text">
        <string>Emulation</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Enhancements</string>
       </property>
      </item>
      <item>
@@ -394,21 +399,21 @@
          </item>
         </layout>
        </item>
-       <item row="9" column="0" colspan="2">
+       <item row="10" column="0" colspan="2">
         <widget class="Line" name="line_5">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="10" column="0">
+       <item row="11" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
           <string>Sync:</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
+       <item row="11" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_10">
          <item>
           <widget class="QCheckBox" name="videoSync">
@@ -426,24 +431,38 @@
          </item>
         </layout>
        </item>
-       <item row="11" column="1">
+       <item row="12" column="1">
         <widget class="QCheckBox" name="lockAspectRatio">
          <property name="text">
           <string>Lock aspect ratio</string>
          </property>
         </widget>
        </item>
-       <item row="12" column="1">
+       <item row="13" column="1">
         <widget class="QCheckBox" name="lockIntegerScaling">
          <property name="text">
           <string>Force integer scaling</string>
          </property>
         </widget>
        </item>
-       <item row="13" column="1">
+       <item row="15" column="1">
         <widget class="QCheckBox" name="resampleVideo">
          <property name="text">
           <string>Bilinear filtering</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="QPushButton" name="nativeGB">
+         <property name="text">
+          <string>Native (59.7275)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="1">
+        <widget class="QCheckBox" name="interframeBlending">
+         <property name="text">
+          <string>Interframe blending</string>
          </property>
         </widget>
        </item>
@@ -544,6 +563,20 @@
         </widget>
        </item>
        <item row="9" column="1">
+        <widget class="QCheckBox" name="pauseOnMinimize">
+         <property name="text">
+          <string>Pause when minimized</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="0" colspan="2">
+        <widget class="Line" name="line_17">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="1">
         <widget class="QCheckBox" name="showFps">
          <property name="text">
           <string>Show FPS in title bar</string>
@@ -553,21 +586,48 @@
          </property>
         </widget>
        </item>
-       <item row="11" column="0" colspan="2">
+       <item row="13" column="1">
+        <widget class="QCheckBox" name="useDiscordPresence">
+         <property name="text">
+          <string>Enable Discord Rich Presence</string>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="0" colspan="2">
         <widget class="Line" name="line_13">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="14" column="0" colspan="2">
+       <item row="15" column="1">
+        <widget class="QCheckBox" name="autosave">
+         <property name="text">
+          <string>Automatically save state</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="16" column="1">
+        <widget class="QCheckBox" name="autoload">
+         <property name="text">
+          <string>Automatically load state</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="17" column="0" colspan="2">
         <widget class="Line" name="line_16">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="15" column="1">
+       <item row="18" column="1">
         <widget class="QCheckBox" name="cheatAutosave">
          <property name="text">
           <string>Automatically save cheats</string>
@@ -577,7 +637,7 @@
          </property>
         </widget>
        </item>
-       <item row="16" column="1">
+       <item row="19" column="1">
         <widget class="QCheckBox" name="cheatAutoload">
          <property name="text">
           <string>Automatically load cheats</string>
@@ -588,29 +648,12 @@
         </widget>
        </item>
        <item row="12" column="1">
-        <widget class="QCheckBox" name="autosave">
+        <widget class="QCheckBox" name="showOSD">
          <property name="text">
-          <string>Automatically save state</string>
+          <string>Show OSD messages</string>
          </property>
          <property name="checked">
           <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="1">
-        <widget class="QCheckBox" name="autoload">
-         <property name="text">
-          <string>Automatically load state</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="1">
-        <widget class="QCheckBox" name="useDiscordPresence">
-         <property name="text">
-          <string>Enable Discord Rich Presence</string>
          </property>
         </widget>
        </item>
@@ -665,13 +708,56 @@
         </layout>
        </item>
        <item row="1" column="0">
+        <widget class="QLabel" name="label_181">
+         <property name="text">
+          <string>Fast forward (held) speed:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_51">
+         <item>
+          <widget class="QDoubleSpinBox" name="fastForwardHeldRatio">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="suffix">
+            <string>×</string>
+           </property>
+           <property name="minimum">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>20.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.500000000000000</double>
+           </property>
+           <property name="value">
+            <double>5.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="fastForwardHeldUnbounded">
+           <property name="text">
+            <string>Unbounded</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
         <widget class="QLabel" name="label_31">
          <property name="text">
           <string>Autofire interval:</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="2" column="1">
         <widget class="QSpinBox" name="autofireThreshold">
          <property name="minimum">
           <number>1</number>
@@ -681,28 +767,28 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0" colspan="2">
+       <item row="3" column="0" colspan="2">
         <widget class="Line" name="line">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="4" column="1">
         <widget class="QCheckBox" name="rewind">
          <property name="text">
           <string>Enable rewind</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="label_8">
          <property name="text">
           <string>Rewind history:</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="5" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_13">
          <item>
           <widget class="QSpinBox" name="rewindCapacity">
@@ -720,21 +806,21 @@
          </item>
         </layout>
        </item>
-       <item row="5" column="0" colspan="2">
+       <item row="6" column="0" colspan="2">
         <widget class="Line" name="line_3">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="label_15">
          <property name="text">
           <string>Idle loops:</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="7" column="1">
         <widget class="QComboBox" name="idleOptimization">
          <item>
           <property name="text">
@@ -753,28 +839,28 @@
          </item>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="8" column="1">
         <widget class="QCheckBox" name="preload">
          <property name="text">
           <string>Preload entire ROM into memory</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="0" colspan="2">
+       <item row="9" column="0" colspan="2">
         <widget class="Line" name="line_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="9" column="0">
+       <item row="10" column="0">
         <widget class="QLabel" name="label_24">
          <property name="text">
           <string>Savestate extra data:</string>
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
+       <item row="10" column="1">
         <widget class="QCheckBox" name="saveStateScreenshot">
          <property name="text">
           <string>Screenshot</string>
@@ -784,7 +870,7 @@
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
+       <item row="11" column="1">
         <widget class="QCheckBox" name="saveStateSave">
          <property name="text">
           <string>Save data</string>
@@ -794,7 +880,7 @@
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
+       <item row="12" column="1">
         <widget class="QCheckBox" name="saveStateCheats">
          <property name="text">
           <string>Cheat codes</string>
@@ -804,21 +890,21 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="0" colspan="2">
+       <item row="13" column="0" colspan="2">
         <widget class="Line" name="line_9">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="13" column="0">
+       <item row="14" column="0">
         <widget class="QLabel" name="label_25">
          <property name="text">
           <string>Load extra data:</string>
          </property>
         </widget>
        </item>
-       <item row="13" column="1">
+       <item row="14" column="1">
         <widget class="QCheckBox" name="loadStateScreenshot">
          <property name="text">
           <string>Screenshot</string>
@@ -828,17 +914,118 @@
          </property>
         </widget>
        </item>
-       <item row="14" column="1">
+       <item row="15" column="1">
         <widget class="QCheckBox" name="loadStateSave">
          <property name="text">
           <string>Save data</string>
          </property>
         </widget>
        </item>
-       <item row="15" column="1">
+       <item row="16" column="1">
         <widget class="QCheckBox" name="loadStateCheats">
          <property name="text">
           <string>Cheat codes</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="enhancements">
+      <layout class="QFormLayout" name="formLayout_6">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_36">
+         <property name="text">
+          <string>Video renderer:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="hwaccelVideo">
+         <item>
+          <property name="text">
+           <string>Software</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>OpenGL</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QGroupBox" name="oglEnahance">
+         <property name="title">
+          <string>OpenGL enhancements</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_7">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_37">
+            <property name="text">
+             <string>High-resolution scale:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_18">
+            <item>
+             <widget class="QSpinBox" name="videoScale">
+              <property name="suffix">
+               <string>×</string>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>16</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="videoScaleSize">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>(240×160)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="audioHle">
+         <property name="text">
+          <string>XQ GBA audio (experimental)</string>
          </property>
         </widget>
        </item>
@@ -1221,11 +1408,11 @@
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="QTableView" name="loggingView">
-         <attribute name="horizontalHeaderDefaultSectionSize">
-          <number>77</number>
-         </attribute>
          <attribute name="horizontalHeaderMinimumSectionSize">
           <number>0</number>
+         </attribute>
+         <attribute name="horizontalHeaderDefaultSectionSize">
+          <number>77</number>
          </attribute>
         </widget>
        </item>
@@ -1848,6 +2035,22 @@
     <hint type="destinationlabel">
      <x>349</x>
      <y>38</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fastForwardHeldUnbounded</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>fastForwardHeldRatio</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
     </hint>
    </hints>
   </connection>

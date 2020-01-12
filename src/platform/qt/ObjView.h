@@ -9,7 +9,11 @@
 
 #include "ui_ObjView.h"
 
+#include <QList>
+
 #include <mgba/core/tile-cache.h>
+
+class QListWidgetItem;
 
 namespace QGBA {
 
@@ -21,10 +25,9 @@ Q_OBJECT
 public:
 	ObjView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
-#ifdef USE_PNG
 public slots:
 	void exportObj();
-#endif
+	void copyObj();
 
 private slots:
 	void selectObj(int);
@@ -38,22 +41,16 @@ private:
 	void updateTilesGB(bool force) override;
 #endif
 
+	void updateObjList(int maxObj);
+
 	Ui::ObjView m_ui;
 
 	std::shared_ptr<CoreController> m_controller;
 	mTileCacheEntry m_tileStatus[1024 * 32] = {}; // TODO: Correct size
 	int m_objId = 0;
-	struct ObjInfo {
-		unsigned tile;
-		unsigned width;
-		unsigned height;
-		unsigned stride;
-		unsigned paletteId;
-		unsigned paletteSet;
-		unsigned bits;
+	ObjInfo m_objInfo = {};
 
-		bool operator!=(const ObjInfo&);
-	} m_objInfo = {};
+	QList<QListWidgetItem*> m_objs;
 
 	int m_tileOffset;
 	int m_boundary;

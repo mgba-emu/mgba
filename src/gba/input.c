@@ -7,7 +7,7 @@
 
 #include <mgba/gba/interface.h>
 
-const struct mInputPlatformInfo GBAInputInfo = {
+MGBA_EXPORT const struct mInputPlatformInfo GBAInputInfo = {
 	.platformName = "gba",
 	.keyId = (const char*[]) {
 		"A",

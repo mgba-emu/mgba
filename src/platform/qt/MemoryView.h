@@ -28,6 +28,7 @@ private slots:
 	void setSegment(int);
 	void updateSelection(uint32_t start, uint32_t end);
 	void updateStatus();
+	void saveRange();
 
 private:
 	Ui::MemoryView m_ui;

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>822</width>
-    <height>886</height>
+    <width>874</width>
+    <height>900</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -49,6 +49,13 @@
        </property>
        <property name="displayIntegerBase">
         <number>16</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="segmentColon">
+       <property name="text">
+        <string>:</string>
        </property>
       </widget>
      </item>
@@ -268,6 +275,13 @@
       <widget class="QPushButton" name="save">
        <property name="text">
         <string>Save Selection</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveRange">
+       <property name="text">
+        <string>Save Range</string>
        </property>
       </widget>
      </item>

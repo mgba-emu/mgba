@@ -84,6 +84,11 @@ struct mVideoLogChannel {
 	z_stream inflateStream;
 #endif
 
+	bool injecting;
+	enum mVideoLoggerInjectionPoint injectionPoint;
+	uint32_t ignorePackets;
+
+	struct CircleBuffer injectedBuffer;
 	struct CircleBuffer buffer;
 };
 
@@ -94,6 +99,7 @@ struct mVideoLogContext {
 	struct mVideoLogChannel channels[mVL_MAX_CHANNELS];
 
 	bool write;
+	bool compression;
 	uint32_t activeChannel;
 	struct VFile* backing;
 };
@@ -285,14 +291,28 @@ void mVideoLoggerWriteBuffer(struct mVideoLogger* logger, uint32_t bufferId, uin
 }
 
 bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block) {
+	struct mVideoLogChannel* channel = logger->dataContext;
+	uint32_t ignorePackets = 0;
+	if (channel && channel->injectionPoint == LOGGER_INJECTION_IMMEDIATE && !channel->injecting) {
+		mVideoLoggerRendererRunInjected(logger);
+		ignorePackets = channel->ignorePackets;
+	}
 	struct mVideoLoggerDirtyInfo item = {0};
 	while (logger->readData(logger, &item, sizeof(item), block)) {
+		if (ignorePackets & (1 << item.type)) {
+			continue;
+		}
 		switch (item.type) {
+		case DIRTY_SCANLINE:
+			if (channel && channel->injectionPoint == LOGGER_INJECTION_FIRST_SCANLINE && !channel->injecting && item.address == 0) {
+				mVideoLoggerRendererRunInjected(logger);
+				ignorePackets = channel->ignorePackets;
+			}
+			// Fall through
 		case DIRTY_REGISTER:
 		case DIRTY_PALETTE:
 		case DIRTY_OAM:
 		case DIRTY_VRAM:
-		case DIRTY_SCANLINE:
 		case DIRTY_FLUSH:
 		case DIRTY_FRAME:
 		case DIRTY_RANGE:
@@ -308,15 +328,34 @@ bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block) {
 	return !block;
 }
 
+bool mVideoLoggerRendererRunInjected(struct mVideoLogger* logger) {
+	struct mVideoLogChannel* channel = logger->dataContext;
+	channel->injecting = true;
+	bool res = mVideoLoggerRendererRun(logger, false);
+	channel->injecting = false;
+	return res;	
+}
+
+void mVideoLoggerInjectionPoint(struct mVideoLogger* logger, enum mVideoLoggerInjectionPoint injectionPoint) {
+	struct mVideoLogChannel* channel = logger->dataContext;
+	channel->injectionPoint = injectionPoint;	
+}
+
+void mVideoLoggerIgnoreAfterInjection(struct mVideoLogger* logger, uint32_t mask) {
+	struct mVideoLogChannel* channel = logger->dataContext;
+	channel->ignorePackets = mask;	
+}
+
 static bool _writeData(struct mVideoLogger* logger, const void* data, size_t length) {
 	struct mVideoLogChannel* channel = logger->dataContext;
 	return mVideoLoggerWriteChannel(channel, data, length) == (ssize_t) length;
 }
 
 static bool _writeNull(struct mVideoLogger* logger, const void* data, size_t length) {
-	UNUSED(logger);
-	UNUSED(data);
-	UNUSED(length);
+	struct mVideoLogChannel* channel = logger->dataContext;
+	if (channel->injecting) {
+		return mVideoLoggerWriteChannel(channel, data, length) == (ssize_t) length;
+	}
 	return false;
 }
 
@@ -465,6 +504,12 @@ struct mVideoLogContext* mVideoLogContextCreate(struct mCore* core) {
 	context->initialStateSize = 0;
 	context->initialState = NULL;
 
+#ifdef USE_ZLIB
+	context->compression = true;
+#else
+	context->compression = false;
+#endif
+
 	if (core) {
 		context->initialStateSize = core->stateSize(core);
 		context->initialState = anonymousMemoryMap(context->initialStateSize);
@@ -480,6 +525,10 @@ void mVideoLogContextSetOutput(struct mVideoLogContext* context, struct VFile* v
 	context->backing = vf;
 	vf->truncate(vf, 0);
 	vf->seek(vf, 0, SEEK_SET);
+}
+
+void mVideoLogContextSetCompression(struct mVideoLogContext* context, bool compression) {
+	context->compression = compression;
 }
 
 void mVideoLogContextWriteHeader(struct mVideoLogContext* context, struct mCore* core) {
@@ -499,21 +548,24 @@ void mVideoLogContextWriteHeader(struct mVideoLogContext* context, struct mCore*
 		struct mVLBlockHeader chheader = { 0 };
 		STORE_32LE(mVL_BLOCK_INITIAL_STATE, 0, &chheader.blockType);
 #ifdef USE_ZLIB
-		STORE_32LE(mVL_FLAG_BLOCK_COMPRESSED, 0, &chheader.flags);
+		if (context->compression) {
+			STORE_32LE(mVL_FLAG_BLOCK_COMPRESSED, 0, &chheader.flags);
 
-		struct VFile* vfm = VFileMemChunk(NULL, 0);
-		struct VFile* src = VFileFromConstMemory(context->initialState, context->initialStateSize);
-		_compress(vfm, src);
-		src->close(src);
-		STORE_32LE(vfm->size(vfm), 0, &chheader.length);
-		context->backing->write(context->backing, &chheader, sizeof(chheader));
-		_copyVf(context->backing, vfm);
-		vfm->close(vfm);
-#else
-		STORE_32LE(context->initialStateSize, 0, &chheader.length);
-		context->backing->write(context->backing, &chheader, sizeof(chheader));
-		context->backing->write(context->backing, context->initialState, context->initialStateSize);
+			struct VFile* vfm = VFileMemChunk(NULL, 0);
+			struct VFile* src = VFileFromConstMemory(context->initialState, context->initialStateSize);
+			_compress(vfm, src);
+			src->close(src);
+			STORE_32LE(vfm->size(vfm), 0, &chheader.length);
+			context->backing->write(context->backing, &chheader, sizeof(chheader));
+			_copyVf(context->backing, vfm);
+			vfm->close(vfm);
+		} else
 #endif
+		{
+			STORE_32LE(context->initialStateSize, 0, &chheader.length);
+			context->backing->write(context->backing, &chheader, sizeof(chheader));
+			context->backing->write(context->backing, context->initialState, context->initialStateSize);
+		}
 	}
 
  	size_t i;
@@ -609,6 +661,7 @@ bool mVideoLogContextLoad(struct mVideoLogContext* context, struct VFile* vf) {
 
 	size_t i;
 	for (i = 0; i < context->nChannels; ++i) {
+		CircleBufferInit(&context->channels[i].injectedBuffer, BUFFER_BASE_SIZE);
 		CircleBufferInit(&context->channels[i].buffer, BUFFER_BASE_SIZE);
 		context->channels[i].bufferRemaining = 0;
 		context->channels[i].currentPointer = pointer;
@@ -647,9 +700,10 @@ static void _flushBufferCompressed(struct mVideoLogContext* context) {
 
 static void _flushBuffer(struct mVideoLogContext* context) {
 #ifdef USE_ZLIB
-	// TODO: Make optional
-	_flushBufferCompressed(context);
-	return;
+	if (context->compression) {
+		_flushBufferCompressed(context);
+		return;
+	}
 #endif
 
 	struct CircleBuffer* buffer = &context->channels[context->activeChannel].buffer;
@@ -688,6 +742,7 @@ void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* contex
 
 	size_t i;
 	for (i = 0; i < context->nChannels; ++i) {
+		CircleBufferDeinit(&context->channels[i].injectedBuffer);
 		CircleBufferDeinit(&context->channels[i].buffer);
 #ifdef USE_ZLIB
 		if (context->channels[i].inflating) {
@@ -718,6 +773,7 @@ void mVideoLogContextRewind(struct mVideoLogContext* context, struct mCore* core
 
 	size_t i;
 	for (i = 0; i < context->nChannels; ++i) {
+		CircleBufferClear(&context->channels[i].injectedBuffer);
 		CircleBufferClear(&context->channels[i].buffer);
 		context->channels[i].bufferRemaining = 0;
 		context->channels[i].currentPointer = pointer;
@@ -744,8 +800,33 @@ int mVideoLoggerAddChannel(struct mVideoLogContext* context) {
 	int chid = context->nChannels;
 	++context->nChannels;
 	context->channels[chid].p = context;
+	CircleBufferInit(&context->channels[chid].injectedBuffer, BUFFER_BASE_SIZE);
 	CircleBufferInit(&context->channels[chid].buffer, BUFFER_BASE_SIZE);
+	context->channels[chid].injecting = false;
+	context->channels[chid].injectionPoint = LOGGER_INJECTION_IMMEDIATE;
+	context->channels[chid].ignorePackets = 0;
 	return chid;
+}
+
+void mVideoLoggerInjectVideoRegister(struct mVideoLogger* logger, uint32_t address, uint16_t value) {
+	struct mVideoLogChannel* channel = logger->dataContext;
+	channel->injecting = true;
+	mVideoLoggerRendererWriteVideoRegister(logger, address, value);
+	channel->injecting = false;
+}
+
+void mVideoLoggerInjectPalette(struct mVideoLogger* logger, uint32_t address, uint16_t value) {
+	struct mVideoLogChannel* channel = logger->dataContext;
+	channel->injecting = true;
+	mVideoLoggerRendererWritePalette(logger, address, value);
+	channel->injecting = false;
+}
+
+void mVideoLoggerInjectOAM(struct mVideoLogger* logger, uint32_t address, uint16_t value) {
+	struct mVideoLogChannel* channel = logger->dataContext;
+	channel->injecting = true;
+	mVideoLoggerRendererWriteOAM(logger, address, value);
+	channel->injecting = false;
 }
 
 #ifdef USE_ZLIB
@@ -900,12 +981,16 @@ static ssize_t mVideoLoggerReadChannel(struct mVideoLogChannel* channel, void* d
 	if (channelId >= mVL_MAX_CHANNELS) {
 		return 0;
 	}
-	if (CircleBufferSize(&channel->buffer) >= length) {
-		return CircleBufferRead(&channel->buffer, data, length);
+	struct CircleBuffer* buffer = &channel->buffer;
+	if (channel->injecting) {
+		buffer = &channel->injectedBuffer;
+	}
+	if (CircleBufferSize(buffer) >= length) {
+		return CircleBufferRead(buffer, data, length);
 	}
 	ssize_t size = 0;
-	if (CircleBufferSize(&channel->buffer)) {
-		size = CircleBufferRead(&channel->buffer, data, CircleBufferSize(&channel->buffer));
+	if (CircleBufferSize(buffer)) {
+		size = CircleBufferRead(buffer, data, CircleBufferSize(buffer));
 		if (size <= 0) {
 			return size;
 		}
@@ -915,7 +1000,7 @@ static ssize_t mVideoLoggerReadChannel(struct mVideoLogChannel* channel, void* d
 	if (!_fillBuffer(context, channelId, BUFFER_BASE_SIZE)) {
 		return size;
 	}
-	size += CircleBufferRead(&channel->buffer, data, length);
+	size += CircleBufferRead(buffer, data, length);
 	return size;
 }
 
@@ -929,16 +1014,20 @@ static ssize_t mVideoLoggerWriteChannel(struct mVideoLogChannel* channel, const 
 		_flushBuffer(context);
 		context->activeChannel = channelId;
 	}
-	if (CircleBufferCapacity(&channel->buffer) - CircleBufferSize(&channel->buffer) < length) {
+	struct CircleBuffer* buffer = &channel->buffer;
+	if (channel->injecting) {
+		buffer = &channel->injectedBuffer;
+	}
+	if (CircleBufferCapacity(buffer) - CircleBufferSize(buffer) < length) {
 		_flushBuffer(context);
-		if (CircleBufferCapacity(&channel->buffer) < length) {
-			CircleBufferDeinit(&channel->buffer);
-			CircleBufferInit(&channel->buffer, toPow2(length << 1));
+		if (CircleBufferCapacity(buffer) < length) {
+			CircleBufferDeinit(buffer);
+			CircleBufferInit(buffer, toPow2(length << 1));
 		}
 	}
 
-	ssize_t read = CircleBufferWrite(&channel->buffer, data, length);
-	if (CircleBufferCapacity(&channel->buffer) == CircleBufferSize(&channel->buffer)) {
+	ssize_t read = CircleBufferWrite(buffer, data, length);
+	if (CircleBufferCapacity(buffer) == CircleBufferSize(buffer)) {
 		_flushBuffer(context);
 	}
 	return read;

@@ -201,15 +201,15 @@ bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 			firstUnclaimed = i;
 		}
 
-		const char* joystickName;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		joystickName = SDL_JoystickName(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick);
+		char joystickName[34] = {0};
+		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick), joystickName, sizeof(joystickName));
 #else
-		joystickName = SDL_JoystickName(SDL_JoystickIndex(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick));
-#endif
+		const char* joystickName = SDL_JoystickName(SDL_JoystickIndex(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick));
 		if (!joystickName) {
 			continue;
 		}
+#endif
 		if (events->preferredJoysticks[player->playerId] && strcmp(events->preferredJoysticks[player->playerId], joystickName) == 0) {
 			index = i;
 			break;
@@ -256,13 +256,14 @@ void mSDLPlayerLoadConfig(struct mSDLPlayer* context, const struct Configuration
 	if (context->joystick) {
 		mInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		const char* name = SDL_JoystickName(context->joystick->joystick);
+		char name[34] = {0};
+		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(context->joystick->joystick), name, sizeof(name));
 #else
 		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick->joystick));
-#endif
 		if (!name) {
 			return;
 		}
+#endif
 		mInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, name);
 
 		const char* value;
@@ -310,13 +311,14 @@ void mSDLPlayerLoadConfig(struct mSDLPlayer* context, const struct Configuration
 void mSDLPlayerSaveConfig(const struct mSDLPlayer* context, struct Configuration* config) {
 	if (context->joystick) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		const char* name = SDL_JoystickName(context->joystick->joystick);
+		char name[34] = {0};
+		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(context->joystick->joystick), name, sizeof(name));
 #else
 		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick->joystick));
-#endif
 		if (!name) {
 			return;
 		}
+#endif
 		char value[16];
 		snprintf(value, sizeof(value), "%i", context->rotation.axisX);
 		mInputSetCustomValue(config, "gba", SDL_BINDING_BUTTON, "tiltAxisX", value, name);
@@ -357,14 +359,15 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 			joystick->haptic = SDL_HapticOpenFromJoystick(joystick->joystick);
 #endif
 
-			const char* joystickName;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-			joystickName = SDL_JoystickName(joystick->joystick);
-#else
-			joystickName = SDL_JoystickName(SDL_JoystickIndex(joystick->joystick));
-#endif
 			size_t i;
-			if (joystickName) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+			char joystickName[34] = {0};
+			SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick->joystick), joystickName, sizeof(joystickName));
+#else
+			const char* joystickName = SDL_JoystickName(SDL_JoystickIndex(joystick->joystick));
+			if (joystickName)
+#endif
+			{
 				for (i = 0; (int) i < events->playersAttached; ++i) {
 					if (events->players[i]->joystick) {
 						continue;
@@ -600,6 +603,12 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	case SDL_WINDOWEVENT:
 		_mSDLHandleWindowEvent(sdlContext, &event->window);
+		break;
+#else
+	case SDL_VIDEORESIZE:
+		sdlContext->newWidth = event->resize.w;
+		sdlContext->newHeight = event->resize.h;
+		sdlContext->windowUpdated = 1;
 		break;
 #endif
 	case SDL_KEYDOWN:

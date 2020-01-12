@@ -12,7 +12,7 @@ CXX_GUARD_START
 
 #include <pthread.h>
 #include <sys/time.h>
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
+#ifdef HAVE_PTHREAD_NP_H
 #include <pthread_np.h>
 #elif defined(__HAIKU__)
 #include <OS.h>
@@ -80,25 +80,20 @@ static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context)
 	return pthread_create(thread, 0, entry, context);
 }
 
-static inline int ThreadJoin(Thread thread) {
-	return pthread_join(thread, 0);
+static inline int ThreadJoin(Thread* thread) {
+	return pthread_join(*thread, 0);
 }
 
 static inline int ThreadSetName(const char* name) {
-#ifdef __APPLE__
-#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1060
+#if defined(__APPLE__) && defined(HAVE_PTHREAD_SETNAME_NP)
 	return pthread_setname_np(name);
-#else
-	UNUSED(name);
-	return 0;
-#endif
-#elif defined(__FreeBSD__) || defined(__OpenBSD__)
+#elif defined(HAVE_PTHREAD_SET_NAME_NP)
 	pthread_set_name_np(pthread_self(), name);
 	return 0;
 #elif defined(__HAIKU__)
 	rename_thread(find_thread(NULL), name);
 	return 0;
-#elif !defined(BUILD_PANDORA) // Pandora's glibc is too old
+#elif defined(HAVE_PTHREAD_SETNAME_NP)
 	return pthread_setname_np(pthread_self(), name);
 #else
 	UNUSED(name);

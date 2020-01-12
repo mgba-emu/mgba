@@ -4,7 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from ._pylib import ffi, lib  # pylint: disable=no-name-in-module
-from .lr35902 import LR35902Core
+from .sm83 import SM83Core
 from .core import Core, needs_reset
 from .memory import Memory
 from .tile import Sprite
@@ -25,7 +25,7 @@ class GB(Core):
         super(GB, self).__init__(native)
         self._native = ffi.cast("struct GB*", native.board)
         self.sprites = GBObjs(self)
-        self.cpu = LR35902Core(self._core.cpu)
+        self.cpu = SM83Core(self._core.cpu)
         self.memory = None
         self._link = None
 

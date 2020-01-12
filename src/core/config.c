@@ -354,6 +354,9 @@ void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts)
 	if (_lookupIntValue(config, "lockIntegerScaling", &fakeBool)) {
 		opts->lockIntegerScaling = fakeBool;
 	}
+	if (_lookupIntValue(config, "interframeBlending", &fakeBool)) {
+		opts->interframeBlending = fakeBool;
+	}
 	if (_lookupIntValue(config, "resampleVideo", &fakeBool)) {
 		opts->resampleVideo = fakeBool;
 	}

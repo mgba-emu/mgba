@@ -224,6 +224,9 @@ static void GBVideoSoftwareRendererUpdateWindow(struct GBVideoSoftwareRenderer* 
 	if (renderer->lastY >= GB_VIDEO_VERTICAL_PIXELS || !(after || before)) {
 		return;
 	}
+	if (!renderer->hasWindow && renderer->lastX == GB_VIDEO_HORIZONTAL_PIXELS) {
+		return;
+	}
 	if (renderer->lastY >= oldWy) {
 		if (!after) {
 			renderer->currentWy -= renderer->lastY;
@@ -458,8 +461,11 @@ static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer
 		color = mColorFrom555(r | (g << 5) | (b << 10));
 #else
 		r >>= 2;
+		r += r >> 4;
 		g >>= 2;
+		g += g >> 4;
 		b >>= 2;
+		b += b >> 4;
 		color = r | (g << 8) | (b << 16);
 #endif
 	}
@@ -508,7 +514,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 		if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && wy == y && wx <= endX) {
 			softwareRenderer->hasWindow = true;
 		}
-		if (softwareRenderer->hasWindow && wx <= endX) {
+		if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->hasWindow && wx <= endX) {
 			if (wx > 0 && !softwareRenderer->d.disableBG) {
 				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, wx, softwareRenderer->scx - softwareRenderer->offsetScx, softwareRenderer->scy + y - softwareRenderer->offsetScy);
 			}

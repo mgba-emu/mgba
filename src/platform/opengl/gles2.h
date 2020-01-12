@@ -60,8 +60,10 @@ struct mGLES2Shader {
 	bool integerScaling;
 	bool filter;
 	bool blend;
+	bool dirty;
 	GLuint tex;
 	GLuint fbo;
+	GLuint vao;
 	GLuint fragmentShader;
 	GLuint vertexShader;
 	GLuint program;
@@ -77,11 +79,11 @@ struct mGLES2Context {
 	struct VideoBackend d;
 
 	GLuint tex;
-	GLuint texLocation;
-	GLuint positionLocation;
+	GLuint vbo;
 
 	struct mGLES2Shader initialShader;
 	struct mGLES2Shader finalShader;
+	struct mGLES2Shader interframeShader;
 
 	struct mGLES2Shader* shaders;
 	size_t nShaders;

@@ -26,7 +26,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode4(struct GBAVideoSoftwareRenderer
 void GBAVideoSoftwareRendererDrawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer,
                                                  struct GBAVideoSoftwareBackground* background, int y);
 
-int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y);
+int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int index, int y);
 void GBAVideoSoftwareRendererPostprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsigned priority);
 
 static inline unsigned _brighten(unsigned color, int y);
@@ -141,11 +141,17 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	int objwinForceEnable = 0;                                                                    \
 	UNUSED(objwinForceEnable);                                                                    \
 	color_t* objwinPalette = renderer->normalPalette;                                             \
+	if (renderer->d.highlightAmount && background->highlight) {                                   \
+		objwinPalette = renderer->highlightPalette;                                               \
+	}                                                                                             \
 	UNUSED(objwinPalette);                                                                        \
 	if (objwinSlowPath) {                                                                         \
 		if (background->target1 && GBAWindowControlIsBlendEnable(renderer->objwin.packed) &&      \
 		    (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN)) { \
 			objwinPalette = renderer->variantPalette;                                             \
+			if (renderer->d.highlightAmount && background->highlight) {                           \
+				palette = renderer->highlightVariantPalette;                                      \
+			}                                                                                     \
 		}                                                                                         \
 		switch (background->index) {                                                              \
 		case 0:                                                                                   \
@@ -200,8 +206,14 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	int variant = background->target1 && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) &&             \
 	    (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);                           \
 	color_t* palette = renderer->normalPalette;                                                                       \
+	if (renderer->d.highlightAmount && background->highlight) {                                                       \
+		palette = renderer->highlightPalette;                                                                         \
+	}                                                                                                                 \
 	if (variant) {                                                                                                    \
 		palette = renderer->variantPalette;                                                                           \
+		if (renderer->d.highlightAmount && background->highlight) {                                                   \
+			palette = renderer->highlightVariantPalette;                                                              \
+		}                                                                                                             \
 	}                                                                                                                 \
 	UNUSED(palette);                                                                                                  \
 	PREPARE_OBJWIN;

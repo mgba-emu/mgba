@@ -1,5 +1,8 @@
-find_package(PythonLibs ${USE_PYTHON_VERSION})
+if(DEFINED ENV{VIRTUAL_ENV})
+      find_program(PYTHON_EXECUTABLE NAMES python PATHS "$ENV{VIRTUAL_ENV}/bin")
+endif()
 find_package(PythonInterp ${USE_PYTHON_VERSION})
+find_package(PythonLibs ${USE_PYTHON_VERSION})
 list(APPEND DEPENDENCY_LIB ${PYTHON_LIBRARIES})
 include_directories(AFTER ${PYTHON_INCLUDE_DIRS})
 

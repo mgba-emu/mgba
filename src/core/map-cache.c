@@ -11,15 +11,20 @@ void mMapCacheInit(struct mMapCache* cache) {
 	// TODO: Reconfigurable cache for space savings
 	cache->cache = NULL;
 	cache->config = mMapCacheConfigurationFillShouldStore(0);
+	cache->sysConfig = 0;
 	cache->status = NULL;
 }
 
 static void _freeCache(struct mMapCache* cache) {
 	size_t tiles = (1 << mMapCacheSystemInfoGetTilesWide(cache->sysConfig)) * (1 << mMapCacheSystemInfoGetTilesHigh(cache->sysConfig));
-	mappedMemoryFree(cache->cache, 8 * 8 * sizeof(color_t) * tiles);
-	mappedMemoryFree(cache->status, tiles * sizeof(*cache->status));
-	cache->cache = NULL;
-	cache->status = NULL;
+	if (cache->cache) {
+		mappedMemoryFree(cache->cache, 8 * 8 * sizeof(color_t) * tiles);
+		cache->cache = NULL;
+	}
+	if (cache->status) {
+		mappedMemoryFree(cache->status, tiles * sizeof(*cache->status));
+		cache->status = NULL;
+	}
 }
 
 static void _redoCacheSize(struct mMapCache* cache) {

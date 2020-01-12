@@ -20,17 +20,16 @@ extern const uint32_t DEBUGGER_ID;
 
 enum mDebuggerType {
 	DEBUGGER_NONE = 0,
+	DEBUGGER_CUSTOM,
 	DEBUGGER_CLI,
-#ifdef USE_GDB_STUB
 	DEBUGGER_GDB,
-#endif
 	DEBUGGER_MAX
 };
 
 enum mDebuggerState {
 	DEBUGGER_PAUSED,
 	DEBUGGER_RUNNING,
-	DEBUGGER_CUSTOM,
+	DEBUGGER_CALLBACK,
 	DEBUGGER_SHUTDOWN
 };
 
@@ -69,6 +68,7 @@ struct mDebuggerEntryInfo {
 			enum mBreakpointType breakType;
 		} bp;
 	} type;
+	ssize_t pointId;
 };
 
 struct mBreakpoint {

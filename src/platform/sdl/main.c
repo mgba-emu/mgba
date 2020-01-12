@@ -90,6 +90,12 @@ int main(int argc, char** argv) {
 		freeArguments(&args);
 		return 1;
 	}
+
+	if (!renderer.core->init(renderer.core)) {
+		freeArguments(&args);
+		return 1;
+	}
+
 	renderer.core->desiredVideoDimensions(renderer.core, &renderer.width, &renderer.height);
 #ifdef BUILD_GL
 	mSDLGLCreate(&renderer);
@@ -105,11 +111,6 @@ int main(int argc, char** argv) {
 	}
 	opts.width = renderer.width * renderer.ratio;
 	opts.height = renderer.height * renderer.ratio;
-
-	if (!renderer.core->init(renderer.core)) {
-		freeArguments(&args);
-		return 1;
-	}
 
 	struct mCheatDevice* device = NULL;
 	if (args.cheatsFile && (device = renderer.core->cheatDevice(renderer.core))) {
@@ -130,15 +131,12 @@ int main(int argc, char** argv) {
 
 	renderer.viewportWidth = renderer.core->opts.width;
 	renderer.viewportHeight = renderer.core->opts.height;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
 	renderer.player.fullscreen = renderer.core->opts.fullscreen;
 	renderer.player.windowUpdated = 0;
-#else
-	renderer.fullscreen = renderer.core->opts.fullscreen;
-#endif
 
 	renderer.lockAspectRatio = renderer.core->opts.lockAspectRatio;
 	renderer.lockIntegerScaling = renderer.core->opts.lockIntegerScaling;
+	renderer.interframeBlending = renderer.core->opts.interframeBlending;
 	renderer.filter = renderer.core->opts.resampleVideo;
 
 	if (!mSDLInit(&renderer)) {
@@ -180,7 +178,7 @@ int main(int argc, char** argv) {
 	return ret;
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_UNICODE)
 #include <mgba-util/string.h>
 
 int wmain(int argc, wchar_t** argv) {

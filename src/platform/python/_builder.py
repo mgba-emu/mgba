@@ -18,7 +18,8 @@ cppflags.extend(["-I" + incdir, "-I" + srcdir, "-I" + bindir])
 ffi.set_source("mgba._pylib", """
 #define static
 #define inline
-#include "flags.h"
+#define MGBA_EXPORT
+#include <mgba/flags.h>
 #define OPAQUE_THREADING
 #include <mgba/core/blip_buf.h>
 #include <mgba/core/cache-set.h>
@@ -36,7 +37,7 @@ ffi.set_source("mgba._pylib", """
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
 #include <mgba/internal/gba/renderers/cache-set.h>
-#include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/sm83/sm83.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/renderers/cache-set.h>
 #include <mgba-util/png-io.h>
@@ -64,6 +65,18 @@ for line in preprocessed.splitlines():
         continue
     lines.append(line)
 ffi.cdef('\n'.join(lines))
+
+ffi.cdef("""
+struct GBARTC {
+    int32_t bytesRemaining;
+    int32_t transferStep;
+    int32_t bitsRead;
+    int32_t bits;
+    int32_t commandActive;
+    RTCCommandData command;
+    RTCControl control;
+    uint8_t time[7];
+};""", packed=True)
 
 preprocessed = subprocess.check_output(cpp + ["-fno-inline", "-P"] + cppflags + [os.path.join(pydir, "lib.h")], universal_newlines=True)
 

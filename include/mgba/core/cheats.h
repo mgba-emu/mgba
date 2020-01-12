@@ -100,6 +100,9 @@ void mCheatRemoveSet(struct mCheatDevice*, struct mCheatSet*);
 bool mCheatParseFile(struct mCheatDevice*, struct VFile*);
 bool mCheatSaveFile(struct mCheatDevice*, struct VFile*);
 
+bool mCheatParseLibretroFile(struct mCheatDevice*, struct VFile*);
+bool mCheatParseEZFChtFile(struct mCheatDevice*, struct VFile*);
+
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 void mCheatAutosave(struct mCheatDevice*);
 #endif

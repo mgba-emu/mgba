@@ -357,3 +357,9 @@ static enum VFSType _vdlesceType(struct VDirEntry* vde) {
 	UNUSED(vde);
 	return VFS_DIRECTORY;
 }
+
+bool VDirCreate(const char* path) {
+	// TODO: Verify vitasdk explanation of return values
+	sceIoMkdir(path, 0777);
+	return true;
+}

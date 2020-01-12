@@ -61,7 +61,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 0 - 2: Remaining length
  *   | bits 3 - 5: Next step
  *   | bits 6 - 31: Reserved
- * | 0x00184 - 0x00187: Reserved
+ * | 0x00184 - 0x00187: Last event
  * | 0x00188 - 0x0018B: Next event
  * 0x0018C - 0x001AB: Audio FIFO 1
  * 0x001AC - 0x001CB: Audio FIFO 2

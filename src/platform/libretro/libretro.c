@@ -366,7 +366,7 @@ static void _reloadSettings(void) {
 			mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", false);
 		}
 	}
-	
+
 	var.key = "mgba_frameskip";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
@@ -397,7 +397,7 @@ void retro_set_environment(retro_environment_t env)
 {
 	environCallback = env;
 
-   libretro_set_core_options(environCallback);
+	libretro_set_core_options(environCallback);
 }
 
 void retro_set_video_refresh(retro_video_refresh_t video) {
@@ -459,7 +459,7 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
 void retro_init(void) {
 	enum retro_pixel_format fmt;
 #ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
+#if defined(COLOR_5_6_5) || defined(PS2)
 	fmt = RETRO_PIXEL_FORMAT_RGB565;
 #else
 #warning This pixel format is unsupported. Please use -DCOLOR_16-BIT -DCOLOR_5_6_5
@@ -618,10 +618,16 @@ void retro_run(void) {
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 			struct GBA* gba = core->board;
 			struct GB* gb = core->board;
-			if (core->platform(core) == PLATFORM_GBA)
+			switch (core->platform(core)) {
+			case PLATFORM_GBA:
 				gba->allowOpposingDirections = strcmp(var.value, "yes") == 0;
-			if (core->platform(core) == PLATFORM_GB)
+				break;
+			case PLATFORM_GB:
 				gb->allowOpposingDirections = strcmp(var.value, "yes") == 0;
+				break;
+			default:
+				break;
+			}
 		}
 
 		var.key = "mgba_frameskip";

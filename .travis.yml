@@ -7,8 +7,8 @@ os: linux
 env:
 - DOCKER_TAG=ubuntu:xenial
 - DOCKER_TAG=ubuntu:bionic
-- DOCKER_TAG=ubuntu:cosmic
 - DOCKER_TAG=ubuntu:disco
+- DOCKER_TAG=ubuntu:eoan
 - DOCKER_TAG=3ds
 - DOCKER_TAG=wii
 - DOCKER_TAG=vita
@@ -24,7 +24,7 @@ matrix:
 
 before_install:
 - '[ -z "$DOCKER_TAG" ] || docker pull mgba/$DOCKER_TAG'
-- '[ "$TRAVIS_OS_NAME" != "osx" ] || . ./.travis-deps.sh'
+- '. ./.travis-deps.sh'
 - 'mkdir build && chmod 777 build'
 
 script:

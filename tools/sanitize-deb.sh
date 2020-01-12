@@ -31,6 +31,7 @@ while [ $# -gt 0 ]; do
         rmdep libav
         rmdep libedit
         rmdep libelf
+        rmdep libgl
         rmdep libpng
         rmdep libzip
         rmdep libmagickwand
@@ -45,6 +46,7 @@ while [ $# -gt 0 ]; do
         rmdep libav
         rmdep libedit
         rmdep libelf
+        rmdep libgl
         rmdep libpng
         rmdep qt
         rmdep libzip

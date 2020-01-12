@@ -109,14 +109,14 @@ bool CheatsView::eventFilter(QObject* object, QEvent* event) {
 }
 
 void CheatsView::load() {
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select cheats file"), tr(("Cheats file (*.cheats *.cht *.clt)")));
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select cheats file"), tr(("Cheats file (*.cheats *.cht)")));
 	if (!filename.isEmpty()) {
 		m_model.loadFile(filename);
 	}
 }
 
 void CheatsView::save() {
-	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select cheats file"), tr(("Cheats file (*.cheats *.cht *.clt)")));
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select cheats file"), tr(("Cheats file (*.cheats)")));
 	if (!filename.isEmpty()) {
 		m_model.saveFile(filename);
 	}
@@ -129,7 +129,6 @@ void CheatsView::addSet() {
 }
 
 void CheatsView::removeSet() {
-	GBACheatSet* set;
 	QModelIndexList selection = m_ui.cheatList->selectionModel()->selectedIndexes();
 	if (selection.count() < 1) {
 		return;

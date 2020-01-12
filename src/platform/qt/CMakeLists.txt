@@ -22,9 +22,7 @@ endif()
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5Multimedia)
-find_package(Qt5OpenGL)
-find_package(Qt5Widgets)
+find_package(Qt5 COMPONENTS Core Widgets OpenGL Network Multimedia)
 
 if(NOT BUILD_GL AND NOT BUILD_GLES2)
 	message(WARNING "OpenGL is recommended to build the Qt port")
@@ -47,17 +45,6 @@ if(APPLE)
 	endif()
 endif()
 
-if(BUILD_GL)
-	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gl.c)
-	if(NOT WIN32 OR USE_EPOXY)
-		list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c)
-	endif()
-endif()
-
-if(BUILD_GLES2)
-	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c)
-endif()
-
 get_target_property(QT_TYPE Qt5::Core TYPE)
 if(QT_TYPE STREQUAL STATIC_LIBRARY)
 	set(QT_STATIC ON)
@@ -67,6 +54,9 @@ endif()
 set(SOURCE_FILES
 	AboutScreen.cpp
 	AbstractUpdater.cpp
+	Action.cpp
+	ActionMapper.cpp
+	AssetInfo.cpp
 	AssetTile.cpp
 	AssetView.cpp
 	AudioProcessor.cpp
@@ -79,6 +69,7 @@ set(SOURCE_FILES
 	Display.cpp
 	DisplayGL.cpp
 	DisplayQt.cpp
+	FrameView.cpp
 	GBAApp.cpp
 	GBAKeyEditor.cpp
 	GIFView.cpp
@@ -94,6 +85,7 @@ set(SOURCE_FILES
 	LogConfigModel.cpp
 	LogView.cpp
 	MapView.cpp
+	MemoryDump.cpp
 	MemoryModel.cpp
 	MemorySearch.cpp
 	MemoryView.cpp
@@ -111,6 +103,7 @@ set(SOURCE_FILES
 	SettingsView.cpp
 	ShaderSelector.cpp
 	ShortcutController.cpp
+	ShortcutModel.cpp
 	ShortcutView.cpp
 	Swatch.cpp
 	TilePainter.cpp
@@ -118,6 +111,7 @@ set(SOURCE_FILES
 	utils.cpp
 	Window.cpp
 	VFileDevice.cpp
+	VideoProxy.cpp
 	VideoView.cpp)
 
 set(UI_FILES
@@ -127,11 +121,13 @@ set(UI_FILES
 	BattleChipView.ui
 	CheatsView.ui
 	DebuggerConsole.ui
+	FrameView.ui
 	GIFView.ui
 	IOViewer.ui
 	LoadSaveState.ui
 	LogView.ui
 	MapView.ui
+	MemoryDump.ui
 	MemorySearch.ui
 	MemoryView.ui
 	ObjView.ui
@@ -215,7 +211,6 @@ if(USE_SQLITE3)
 endif()
 
 if(USE_DISCORD_RPC)
-	message(STATUS What)
 	list(APPEND QT_LIBRARIES discord-rpc)
 	list(APPEND SOURCE_FILES DiscordCoordinator.cpp)
 endif()
@@ -242,7 +237,7 @@ if(NOT DEFINED DATADIR)
 		set(DATADIR ${CMAKE_INSTALL_DATADIR}/${BINARY_NAME})
 	endif()
 endif()
-if(BUILD_GL OR BUILD_GLES2)
+if(BUILD_GL OR BUILD_GLES2 OR BUILD_EPOXY)
 	install(DIRECTORY ${CMAKE_SOURCE_DIR}/res/shaders DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
 endif()
 install(FILES ${CMAKE_SOURCE_DIR}/res/nointro.dat DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
@@ -287,8 +282,8 @@ qt5_wrap_ui(UI_SRC ${UI_FILES})
 add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_SRC} ${AUDIO_SRC} ${RESOURCES})
 set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in COMPILE_DEFINITIONS "${FEATURE_DEFINES};${FUNCTION_DEFINES};${OS_DEFINES};${QT_DEFINES}" COMPILE_OPTIONS "${FEATURE_FLAGS}")
 
-list(APPEND QT_LIBRARIES Qt5::Widgets)
-if(BUILD_GL OR BUILD_GLES2)
+list(APPEND QT_LIBRARIES Qt5::Widgets Qt5::Network)
+if(BUILD_GL OR BUILD_GLES2 OR BUILD_EPOXY)
 	list(APPEND QT_LIBRARIES Qt5::OpenGL ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 endif()
 if(QT_STATIC)
@@ -296,6 +291,7 @@ if(QT_STATIC)
 	if(WIN32)
 		list(APPEND QT_LIBRARIES qwindows dwmapi imm32 uxtheme Qt5EventDispatcherSupport Qt5FontDatabaseSupport Qt5ThemeSupport Qt5WindowsUIAutomationSupport)
 		set_target_properties(Qt5::Core PROPERTIES INTERFACE_LINK_LIBRARIES "${QTPCRE};version;winmm;ssl;crypto;ws2_32;iphlpapi;crypt32;userenv;netapi32;wtsapi32")
+		set_target_properties(Qt5::Gui PROPERTIES INTERFACE_LINK_LIBRARIES ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 	elseif(APPLE)
 		find_package(Cups)
 		find_package(Qt5PrintSupport)
@@ -371,8 +367,9 @@ endif()
 
 if(DISTBUILD AND CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
 	if(NOT APPLE)
-		add_custom_command(TARGET ${BINARY_NAME}-qt POST_BUILD COMMAND "${OBJCOPY}" --only-keep-debug "$<TARGET_FILE:${BINARY_NAME}-qt>" "$<TARGET_FILE:${BINARY_NAME}-qt>.dSYM")
-		add_custom_command(TARGET ${BINARY_NAME}-qt POST_BUILD COMMAND "${STRIP}" -S "$<TARGET_FILE:${BINARY_NAME}-qt>")
-		install(FILES "$<TARGET_FILE:${BINARY_NAME}-qt>.dSYM" DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${BINARY_NAME}-qt-dbg)
+		add_custom_command(TARGET ${BINARY_NAME}-qt POST_BUILD COMMAND "${OBJCOPY}" --only-keep-debug "$<TARGET_FILE:${BINARY_NAME}-qt>" "$<TARGET_FILE:${BINARY_NAME}-qt>.debug")
+		add_custom_command(TARGET ${BINARY_NAME}-qt POST_BUILD COMMAND "${STRIP}" "$<TARGET_FILE:${BINARY_NAME}-qt>")
+		add_custom_command(TARGET ${BINARY_NAME}-qt POST_BUILD COMMAND "${OBJCOPY}" --add-gnu-debuglink "$<TARGET_FILE:${BINARY_NAME}-qt>.debug" "$<TARGET_FILE:${BINARY_NAME}-qt>")
+		install(FILES "$<TARGET_FILE:${BINARY_NAME}-qt>.debug" DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${BINARY_NAME}-qt-dbg)
 	endif()
 endif()

@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>422</width>
-    <height>389</height>
+    <width>629</width>
+    <height>428</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Cheats</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="gridLayout" columnstretch="3,0,0,0">
    <item row="2" column="2" colspan="2">
     <widget class="QPushButton" name="remove">
      <property name="text">
@@ -39,27 +39,6 @@
     <widget class="QPushButton" name="load">
      <property name="text">
       <string>Load</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="2" rowspan="2" colspan="2">
-    <widget class="QPlainTextEdit" name="codeEntry">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>180</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="font">
-      <font>
-       <family>Courier New</family>
-      </font>
      </property>
     </widget>
    </item>
@@ -93,6 +72,27 @@
      </property>
      <property name="headerHidden">
       <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="2" rowspan="2" colspan="2">
+    <widget class="QPlainTextEdit" name="codeEntry">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+       <horstretch>1</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="font">
+      <font>
+       <family>Courier New</family>
+      </font>
+     </property>
+     <property name="lineWrapMode">
+      <enum>QPlainTextEdit::NoWrap</enum>
+     </property>
+     <property name="placeholderText">
+      <string>Enter codes here...</string>
      </property>
     </widget>
    </item>

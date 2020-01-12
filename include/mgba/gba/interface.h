@@ -13,6 +13,11 @@ CXX_GUARD_START
 #include <mgba/core/interface.h>
 #include <mgba/core/timing.h>
 
+enum {
+	GBA_VIDEO_HORIZONTAL_PIXELS = 240,
+	GBA_VIDEO_VERTICAL_PIXELS = 160,
+};
+
 enum GBASIOMode {
 	SIO_NORMAL_8 = 0,
 	SIO_NORMAL_32 = 1,
@@ -33,13 +38,18 @@ struct GBA;
 struct GBAAudio;
 struct GBASIO;
 struct GBAVideoRenderer;
+struct VFile;
 
-extern const int GBA_LUX_LEVELS[10];
+extern MGBA_EXPORT const int GBA_LUX_LEVELS[10];
 
 enum {
 	mPERIPH_GBA_LUMINANCE = 0x1000,
 	mPERIPH_GBA_BATTLECHIP_GATE,
 };
+
+bool GBAIsROM(struct VFile* vf);
+bool GBAIsMB(struct VFile* vf);
+bool GBAIsBIOS(struct VFile* vf);
 
 struct GBALuminanceSource {
 	void (*sample)(struct GBALuminanceSource*);

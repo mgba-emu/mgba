@@ -11,6 +11,12 @@ void mLockstepInit(struct mLockstep* lockstep) {
 #ifndef NDEBUG
 	lockstep->transferId = 0;
 #endif
+	lockstep->lock = NULL;
+	lockstep->unlock = NULL;
+}
+
+void mLockstepDeinit(struct mLockstep* lockstep) {
+	UNUSED(lockstep);
 }
 
 // TODO: Migrate nodes

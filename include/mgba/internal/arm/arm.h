@@ -124,7 +124,7 @@ struct ARMMemory {
 	uint32_t (*storeMultiple)(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction,
 	                          int* cycleCounter);
 
-	uint32_t* activeRegion;
+	const uint32_t* activeRegion;
 	uint32_t activeMask;
 	uint32_t activeSeqCycles32;
 	uint32_t activeSeqCycles16;
