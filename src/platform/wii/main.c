@@ -648,6 +648,8 @@ static void _drawStart(void) {
 			VIDEO_WaitVSync();
 		}
 		referenceRetraceCount = retraceCount;
+	} else if (frameLimiter && referenceRetraceCount < retraceCount - 1) {
+		referenceRetraceCount = retraceCount - 1;
 	}
 	_CPU_ISR_Restore(level);
 
