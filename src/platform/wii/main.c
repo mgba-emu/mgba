@@ -64,7 +64,8 @@ static enum VideoMode {
 	VM_MAX
 } videoMode = VM_AUTODETECT;
 
-#define SAMPLES 1024
+#define SAMPLES 512
+#define BUFFERS 8
 #define GUI_SCALE 1.35f
 #define GUI_SCALE_240p 2.0f
 
@@ -131,9 +132,12 @@ size_t romBufferSize;
 static void* framebuffer[2] = { 0, 0 };
 static int whichFb = 0;
 
-static struct GBAStereoSample audioBuffer[3][SAMPLES] __attribute__((__aligned__(32)));
-static volatile size_t audioBufferSize = 0;
+static struct AudioBuffer {
+	struct GBAStereoSample samples[SAMPLES] __attribute__((__aligned__(32)));
+	volatile size_t size;
+} audioBuffer[BUFFERS] = {0};
 static volatile int currentAudioBuffer = 0;
+static volatile int nextAudioBuffer = 0;
 static double audioSampleRate = 60.0 / 1.001;
 
 static struct GUIFont* font;
@@ -610,32 +614,43 @@ int main(int argc, char* argv[]) {
 }
 
 static void _audioDMA(void) {
-	if (!audioBufferSize) {
+	struct AudioBuffer* buffer = &audioBuffer[currentAudioBuffer];
+	if (buffer->size != SAMPLES) {
 		return;
 	}
-	DCFlushRange(audioBuffer[currentAudioBuffer], audioBufferSize * sizeof(struct GBAStereoSample));
-	AUDIO_InitDMA((u32) audioBuffer[currentAudioBuffer], audioBufferSize * sizeof(struct GBAStereoSample));
-	currentAudioBuffer = (currentAudioBuffer + 1) % 3;
-	audioBufferSize = 0;
+	DCFlushRange(buffer->samples, SAMPLES * sizeof(struct GBAStereoSample));
+	AUDIO_InitDMA((u32) buffer->samples, SAMPLES * sizeof(struct GBAStereoSample));
+	buffer->size = 0;
+	currentAudioBuffer = (currentAudioBuffer + 1) % BUFFERS;
 }
 
 static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
 	UNUSED(stream);
+
+	u32 level = 0;
+	_CPU_ISR_Disable(level);
+	struct AudioBuffer* buffer = &audioBuffer[nextAudioBuffer];
 	int available = blip_samples_avail(left);
-	if (available + audioBufferSize > SAMPLES) {
-		available = SAMPLES - audioBufferSize;
+	if (available + buffer->size > SAMPLES) {
+		available = SAMPLES - buffer->size;
 	}
-	available &= ~((32 / sizeof(struct GBAStereoSample)) - 1); // Force align to 32 bytes
 	if (available > 0) {
 		// These appear to be reversed for AUDIO_InitDMA
-		blip_read_samples(left, &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
-		blip_read_samples(right, &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
-		audioBufferSize += available;
+		blip_read_samples(left, &buffer->samples[buffer->size].right, available, true);
+		blip_read_samples(right, &buffer->samples[buffer->size].left, available, true);
+		buffer->size += available;
 	}
-	if (audioBufferSize == SAMPLES && !AUDIO_GetDMAEnableFlag()) {
-		_audioDMA();
-		AUDIO_StartDMA();
+	if (buffer->size == SAMPLES) {
+		int next = (nextAudioBuffer + 1) % BUFFERS;
+		if ((currentAudioBuffer + BUFFERS - next) % BUFFERS != 1) {
+			nextAudioBuffer = next;
+		}
+		if (!AUDIO_GetDMAEnableFlag()) {
+			_audioDMA();
+			AUDIO_StartDMA();
+		}
 	}
+	_CPU_ISR_Restore(level);
 }
 
 static void _drawStart(void) {
@@ -798,6 +813,12 @@ void _setup(struct mGUIRunner* runner) {
 	outputBuffer = memalign(32, TEX_W * TEX_H * BYTES_PER_PIXEL);
 	runner->core->setVideoBuffer(runner->core, outputBuffer, TEX_W);
 
+	nextAudioBuffer = 0;
+	currentAudioBuffer = 0;
+	int i;
+	for (i = 0; i < BUFFERS; ++i) {
+		audioBuffer[i].size = 0;
+	}
 	runner->core->setAudioBufferSize(runner->core, SAMPLES);
 
 	double ratio = GBAAudioCalculateRatio(1, audioSampleRate, 1);
