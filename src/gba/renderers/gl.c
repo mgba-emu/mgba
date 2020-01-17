@@ -1161,7 +1161,6 @@ void _cleanRegister(struct GBAVideoGLRenderer* glRenderer, int address, uint16_t
 		break;
 	case REG_BLDCNT:
 		GBAVideoGLRendererWriteBLDCNT(glRenderer, value);
-		value &= 0x3FFF;
 		break;
 	case REG_BLDALPHA:
 		glRenderer->blda = value & 0x1F;
@@ -1172,7 +1171,6 @@ void _cleanRegister(struct GBAVideoGLRenderer* glRenderer, int address, uint16_t
 		if (glRenderer->bldb > 0x10) {
 			glRenderer->bldb = 0x10;
 		}
-		value &= 0x1F1F;
 		break;
 	case REG_BLDY:
 		glRenderer->bldy = value;
@@ -1505,7 +1503,10 @@ void GBAVideoGLRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stri
 }
 
 void GBAVideoGLRendererPutPixels(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels) {
-
+	// TODO
+	UNUSED(renderer);
+	UNUSED(stride);
+	UNUSED(pixels);
 }
 
 static void _enableBg(struct GBAVideoGLRenderer* renderer, int bg, bool active) {

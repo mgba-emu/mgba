@@ -883,6 +883,7 @@ static int _tryCommands(struct CLIDebugger* debugger, struct CLIDebuggerCommandS
 					if (dvNext->type == CLIDV_ERROR_TYPE) {
 						debugger->backend->printf(debugger->backend, "Parse error\n");
 						_DVFree(dv);
+						_DVFree(dvNext);
 						return 0;
 					}
 

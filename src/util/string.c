@@ -234,8 +234,8 @@ char* utf16to8(const uint16_t* utf16, size_t length) {
 extern const uint16_t gbkUnicodeTable[];
 
 char* gbkToUtf8(const char* gbk, size_t length) {
-	char* utf8 = 0;
-	char* utf8Offset;
+	char* utf8 = NULL;
+	char* utf8Offset = NULL;
 	size_t offset;
 	uint8_t gbk1 = 0;
 	char buffer[4];
@@ -266,17 +266,17 @@ char* gbkToUtf8(const char* gbk, size_t length) {
 
 		size_t bytes = toUtf8(unichar, buffer);
 		utf8Length += bytes;
-		if (utf8Length < utf8TotalBytes) {
-			memcpy(utf8Offset, buffer, bytes);
-			utf8Offset += bytes;
-		} else if (!utf8) {
+		if (!utf8) {
 			utf8 = malloc(length);
 			if (!utf8) {
-				return 0;
+				return NULL;
 			}
 			utf8TotalBytes = length;
 			memcpy(utf8, buffer, bytes);
 			utf8Offset = utf8 + bytes;
+		} else if (utf8Length < utf8TotalBytes) {
+			memcpy(utf8Offset, buffer, bytes);
+			utf8Offset += bytes;
 		} else if (utf8Length >= utf8TotalBytes) {
 			ptrdiff_t o = utf8Offset - utf8;
 			char* newUTF8 = realloc(utf8, utf8TotalBytes * 2);
