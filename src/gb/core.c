@@ -508,7 +508,7 @@ static void _GBCoreReset(struct mCore* core) {
 				bios = NULL;
 			}
 		}
-		if (bios) {
+		if (found && bios) {
 			GBLoadBIOS(gb, bios);
 		}
 	}
