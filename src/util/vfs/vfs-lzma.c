@@ -128,6 +128,7 @@ struct VDir* VDirOpen7z(const char* path, int flags) {
 bool _vf7zClose(struct VFile* vf) {
 	struct VFile7z* vf7z = (struct VFile7z*) vf;
 	IAlloc_Free(&vf7z->vd->allocImp, vf7z->outBuffer);
+	free(vf7z);
 	return true;
 }
 
