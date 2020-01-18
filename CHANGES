@@ -118,6 +118,7 @@ Other fixes:
  - Wii: Improve audio buffering (fixes mgba.io/i/1617)
 Misc:
  - GB Memory: Support manual SRAM editing (fixes mgba.io/i/1580)
+ - GBA: Trim non-movie ROMs to 32 MiB if applicable
  - GBA Audio: Redo channel 4 batching for GBA only
  - GBA I/O: Stop logging several harmless invalid register reads
  - Debugger: Separate aliases from main commands
