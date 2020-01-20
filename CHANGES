@@ -121,6 +121,7 @@ Misc:
  - GBA: Trim non-movie ROMs to 32 MiB if applicable
  - GBA Audio: Redo channel 4 batching for GBA only
  - GBA I/O: Stop logging several harmless invalid register reads
+ - GBA Video: Changing OpenGL scaling no longer requires restart
  - Debugger: Separate aliases from main commands
  - Debugger: Print break-/watchpoint ID when breaking in CLI
  - Debugger: Minor interface cleanup

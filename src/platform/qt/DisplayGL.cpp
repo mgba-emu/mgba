@@ -218,11 +218,19 @@ void DisplayGL::clearShaders() {
 	QMetaObject::invokeMethod(m_painter, "clearShaders");
 }
 
-
 void DisplayGL::resizeContext() {
 	if (m_drawThread) {
 		m_isDrawing = false;
 		CoreController::Interrupter interrupter(m_context);
+		QMetaObject::invokeMethod(m_painter, "resizeContext", Qt::BlockingQueuedConnection);
+	}
+}
+
+void DisplayGL::setVideoScale(int scale) {
+	if (m_drawThread) {
+		m_isDrawing = false;
+		CoreController::Interrupter interrupter(m_context);
+		mCoreConfigSetIntValue(&m_context->thread()->core->config, "videoScale", scale);
 		QMetaObject::invokeMethod(m_painter, "resizeContext", Qt::BlockingQueuedConnection);
 	}
 }
@@ -347,6 +355,9 @@ void PainterGL::resizeContext() {
 	if (!m_context) {
 		return;
 	}
+
+	mCore* core = m_context->thread()->core;
+	core->reloadConfigOption(core, "videoScale", NULL);
 
 	QSize size = m_context->screenDimensions();
 	m_backend->setDimensions(m_backend, size.width(), size.height());

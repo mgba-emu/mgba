@@ -755,19 +755,7 @@ static void _initFramebufferTexture(GLuint tex, GLenum format, GLenum attachment
 	_initFramebufferTextureEx(tex, format, format, GL_UNSIGNED_BYTE, attachment, scale);
 }
 
-void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
-	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
-	glRenderer->temporaryBuffer = NULL;
-
-	glGenFramebuffers(GBA_GL_FBO_MAX, glRenderer->fbo);
-	glGenTextures(GBA_GL_TEX_MAX, glRenderer->layers);
-
-	glGenTextures(1, &glRenderer->vramTex);
-	glBindTexture(GL_TEXTURE_2D, glRenderer->vramTex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA4, 256, 192, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, 0);
-
+static void _initFramebuffers(struct GBAVideoGLRenderer* glRenderer) {
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OBJ]);
 	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_OBJ_COLOR], GL_RGBA, GL_COLOR_ATTACHMENT0, glRenderer->scale);
 	_initFramebufferTextureEx(glRenderer->layers[GBA_GL_TEX_OBJ_FLAGS], GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE, GL_COLOR_ATTACHMENT1, glRenderer->scale);
@@ -784,7 +772,28 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OUTPUT]);
 	_initFramebufferTexture(glRenderer->outputTex, GL_RGB, GL_COLOR_ATTACHMENT0, glRenderer->scale);
 
+	int i;
+	for (i = 0; i < 4; ++i) {
+		struct GBAVideoGLBackground* bg = &glRenderer->bg[i];
+		glBindFramebuffer(GL_FRAMEBUFFER, bg->fbo);
+		_initFramebufferTexture(bg->tex, GL_RGBA, GL_COLOR_ATTACHMENT0, glRenderer->scale);
+		_initFramebufferTextureEx(bg->flags, GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE, GL_COLOR_ATTACHMENT1, glRenderer->scale);
+	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
+	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
+	glRenderer->temporaryBuffer = NULL;
+
+	glGenFramebuffers(GBA_GL_FBO_MAX, glRenderer->fbo);
+	glGenTextures(GBA_GL_TEX_MAX, glRenderer->layers);
+
+	glGenTextures(1, &glRenderer->vramTex);
+	glBindTexture(GL_TEXTURE_2D, glRenderer->vramTex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA4, 256, 192, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, 0);
 
 	glGenBuffers(1, &glRenderer->vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, glRenderer->vbo);
@@ -817,11 +826,9 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 		glGenFramebuffers(1, &bg->fbo);
 		glGenTextures(1, &bg->tex);
 		glGenTextures(1, &bg->flags);
-		glBindFramebuffer(GL_FRAMEBUFFER, bg->fbo);
-		_initFramebufferTexture(bg->tex, GL_RGBA, GL_COLOR_ATTACHMENT0, glRenderer->scale);
-		_initFramebufferTextureEx(bg->flags, GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE, GL_COLOR_ATTACHMENT1, glRenderer->scale);
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	_initFramebuffers(glRenderer);
 
 	char log[2048];
 	const GLchar* shaderBuffer[4];
@@ -1849,6 +1856,19 @@ void GBAVideoGLRendererDrawWindow(struct GBAVideoGLRenderer* renderer, int y) {
 	glUniform4iv(uniforms[GBA_GL_WIN_WIN1], GBA_VIDEO_VERTICAL_PIXELS, renderer->winNHistory[1]);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
+void GBAVideoGLRendererSetScale(struct GBAVideoGLRenderer* renderer, int scale) {
+	if (scale == renderer->scale) {
+		return;
+	}
+	if (renderer->temporaryBuffer) {
+		mappedMemoryFree(renderer->temporaryBuffer, GBA_VIDEO_HORIZONTAL_PIXELS * GBA_VIDEO_VERTICAL_PIXELS * renderer->scale * renderer->scale * BYTES_PER_PIXEL);
+		renderer->temporaryBuffer = NULL;
+	}
+	renderer->scale = scale;
+	_initFramebuffers(renderer);
+	renderer->paletteDirty = true;
 }
 
 #endif

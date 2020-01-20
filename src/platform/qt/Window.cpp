@@ -1617,6 +1617,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 		}
 	}, this);
 
+	ConfigOption* videoScale = m_config->addOption("videoScale");
+	videoScale->connect([this](const QVariant& value) {
+		if (m_display) {
+			m_display->setVideoScale(value.toInt());
+		}
+	}, this);
+
 	m_actions.addHiddenAction(tr("Exit fullscreen"), "exitFullScreen", this, &Window::exitFullScreen, "frame", QKeySequence("Esc"));
 
 	m_actions.addHeldAction(tr("GameShark Button (held)"), "holdGSButton", [this](bool held) {

@@ -51,6 +51,7 @@ public:
 	virtual bool supportsShaders() const = 0;
 	virtual VideoShader* shaders() = 0;
 	virtual int framebufferHandle() { return -1; }
+	virtual void setVideoScale(int scale) {}
 
 	virtual void setVideoProxy(std::shared_ptr<VideoProxy> proxy) { m_videoProxy = proxy; }
 	std::shared_ptr<VideoProxy> videoProxy() { return m_videoProxy; }
