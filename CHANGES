@@ -102,6 +102,7 @@ Other fixes:
  - Core: Fix uninitialized memory issues with graphics caches
  - Core: Return null for out of bounds cached tile VRAM querying
  - GBA Video: Fix OpenGL fragment data binding
+ - GBA Video: Fix mosaic in modes 1-5 in OpenGL (fixes mgba.io/i/1620)
  - Debugger: Fix tracing skipping instructions (fixes mgba.io/i/1614)
  - OpenGL: Only invalidate texture if dimensions change (fixes mgba.io/i/1612)
  - Qt: Fix fast forward mute being reset (fixes mgba.io/i/1574)
