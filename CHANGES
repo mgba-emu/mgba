@@ -114,6 +114,7 @@ Other fixes:
  - Qt: Fix sprite view using wrong base address (fixes mgba.io/i/1603)
  - Qt: Fix inability to clear default keybindings
  - Qt: Release held actions if they get rebound
+ - Qt: Fix crash double-clicking menus in shortcut settings (fixes mgba.io/i/1627)
  - Vita: Fix analog controls (fixes mgba.io/i/1554)
  - Wii: Fix game fast-forwarding after slowing down
  - Wii: Improve audio buffering (fixes mgba.io/i/1617)
