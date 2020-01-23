@@ -356,8 +356,10 @@ void PainterGL::resizeContext() {
 		return;
 	}
 
-	mCore* core = m_context->thread()->core;
-	core->reloadConfigOption(core, "videoScale", NULL);
+	if (m_started) {
+		mCore* core = m_context->thread()->core;
+		core->reloadConfigOption(core, "videoScale", NULL);
+	}
 
 	QSize size = m_context->screenDimensions();
 	m_backend->setDimensions(m_backend, size.width(), size.height());
