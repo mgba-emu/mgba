@@ -1,3 +1,7 @@
+0.8.1: (Future)
+Other fixes:
+ - Qt: Only dynamically reset video scale if a game is running
+
 0.8.0: (2020-01-21)
 Features:
  - Improved logging configuration
