@@ -1,5 +1,6 @@
 0.9.0: (Future)
 Emulation fixes:
+ - ARM: Fix ALU reading PC after shifting
  - GBA Memory: Misaligned SRAM writes are ignored
 Other fixes:
  - Qt: Only dynamically reset video scale if a game is running
