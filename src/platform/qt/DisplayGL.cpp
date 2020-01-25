@@ -271,6 +271,15 @@ PainterGL::PainterGL(QWindow* surface, QOpenGLContext* parent, int forceVersion)
 
 	m_gl->makeCurrent(m_surface);
 	m_window = new QOpenGLPaintDevice;
+	{
+		// XXX: Qt creates TLS for OpenGL objects in the local thread
+		// We need to prevent that thread from being the painter thread
+		// Qt also caches the engine object on the device if a different
+		// engine is active, so let's make a temporary one
+		QOpenGLPaintDevice* fakeDevice = new QOpenGLPaintDevice;
+		QPainter fakePainter(fakeDevice);
+		m_window->paintEngine();
+	}
 #if defined(_WIN32) && defined(USE_EPOXY)
 	epoxy_handle_external_wglMakeCurrent();
 #endif
