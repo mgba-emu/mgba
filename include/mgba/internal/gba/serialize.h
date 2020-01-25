@@ -300,8 +300,9 @@ struct GBASerializedState {
 	} hw;
 
 	uint32_t dmaTransferRegister;
+	uint32_t dmaBlockPC;
 
-	uint32_t reservedHardware[5];
+	uint32_t reservedHardware[4];
 
 	struct {
 		uint8_t type;

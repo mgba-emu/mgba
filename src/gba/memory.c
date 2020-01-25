@@ -337,7 +337,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 }
 
 #define LOAD_BAD \
-	if (gba->performingDMA) { \
+	if (gba->performingDMA || cpu->gprs[ARM_PC] - gba->dmaPC == (gba->cpu->executionMode == MODE_THUMB ? WORD_SIZE_THUMB : WORD_SIZE_ARM)) { \
 		value = gba->bus; \
 	} else { \
 		value = cpu->prefetch[1]; \
