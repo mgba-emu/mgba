@@ -348,7 +348,9 @@ void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* 
 	CircleBufferDump(&audio->chA.fifo, state->audio.fifoA, sizeof(state->audio.fifoA));
 	CircleBufferDump(&audio->chB.fifo, state->audio.fifoB, sizeof(state->audio.fifoB));
 	uint32_t fifoSize = CircleBufferSize(&audio->chA.fifo);
-	STORE_32(fifoSize, 0, &state->audio.fifoSize);
+	STORE_32(fifoSize, 0, &state->audio.fifoSizeA);
+	fifoSize = CircleBufferSize(&audio->chB.fifo);
+	STORE_32(fifoSize, 0, &state->audio.fifoSizeB);
 	STORE_32(audio->sampleEvent.when - mTimingCurrentTime(&audio->p->timing), 0, &state->audio.nextSample);
 }
 
@@ -358,13 +360,20 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 	CircleBufferClear(&audio->chA.fifo);
 	CircleBufferClear(&audio->chB.fifo);
 	uint32_t fifoSize;
-	LOAD_32(fifoSize, 0, &state->audio.fifoSize);
-	if (state->audio.fifoSize > CircleBufferCapacity(&audio->chA.fifo)) {
+	LOAD_32(fifoSize, 0, &state->audio.fifoSizeA);
+	if (fifoSize > CircleBufferCapacity(&audio->chA.fifo)) {
 		fifoSize = CircleBufferCapacity(&audio->chA.fifo);
 	}
 	size_t i;
 	for (i = 0; i < fifoSize; ++i) {
 		CircleBufferWrite8(&audio->chA.fifo, state->audio.fifoA[i]);
+	}
+
+	LOAD_32(fifoSize, 0, &state->audio.fifoSizeB);
+	if (fifoSize > CircleBufferCapacity(&audio->chB.fifo)) {
+		fifoSize = CircleBufferCapacity(&audio->chB.fifo);
+	}
+	for (i = 0; i < fifoSize; ++i) {
 		CircleBufferWrite8(&audio->chB.fifo, state->audio.fifoB[i]);
 	}
 

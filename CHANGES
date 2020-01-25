@@ -5,6 +5,7 @@ Emulation fixes:
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA Memory: Misaligned SRAM writes are ignored
  - GBA Serialize: Fix serializing DMA transfer register
+ - GBA Serialize: Fix audio serialization for desynced FIFOs
 Other fixes:
  - Qt: Only dynamically reset video scale if a game is running
  - Qt: Fix race condition with proxied video events
