@@ -931,6 +931,7 @@ void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 
+	glRenderer->oamDirty = true;
 	glRenderer->paletteDirty = true;
 	glRenderer->vramDirty = 0xFFFFFF;
 	glRenderer->firstAffine = -1;
