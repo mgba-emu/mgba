@@ -1181,10 +1181,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef M_CORE_GBA
 	m_actions.addSeparator("file");
-	Action* importShark = addGameAction(tr("Import GameShark Save"), "importShark", this, &Window::importSharkport, "file");
+	Action* importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "file");
 	m_platformActions.insert(PLATFORM_GBA, importShark);
 
-	Action* exportShark = addGameAction(tr("Export GameShark Save"), "exportShark", this, &Window::exportSharkport, "file");
+	Action* exportShark = addGameAction(tr("Export GameShark Save..."), "exportShark", this, &Window::exportSharkport, "file");
 	m_platformActions.insert(PLATFORM_GBA, exportShark);
 #endif
 
