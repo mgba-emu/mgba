@@ -12,6 +12,7 @@ Other fixes:
  - Qt: Only dynamically reset video scale if a game is running
  - Qt: Fix race condition with proxied video events
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
+ - Qt: Fix color selection in asset view (fixes mgba.io/i/1648)
 
 0.8.0: (2020-01-21)
 Features:
