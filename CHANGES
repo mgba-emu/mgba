@@ -9,6 +9,7 @@ Emulation fixes:
  - GBA Serialize: Fix audio DMA timing deserialization
  - GBA Video: Fix OAM not invalidating after reset (fixes mgba.io/i/1630)
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
+ - GBA Video: Fix Hblank timing
 Other fixes:
  - Qt: Only dynamically reset video scale if a game is running
  - Qt: Fix race condition with proxied video events

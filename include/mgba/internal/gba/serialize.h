@@ -92,7 +92,8 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 6 - 7: Reserved
  * 0x001E0 - 0x001FF: Video miscellaneous state
  * | 0x001E0 - 0x001E3: Next event
- * | 0x001E4 - 0x001FB: Reserved
+ * | 0x001E4 - 0x001F7: Reserved
+ * | 0x001F8 - 0x001FB: Miscellaneous flags
  * | 0x001FC - 0x001FF: Frame counter
  * 0x00200 - 0x00213: Timer 0
  * | 0x00200 - 0x00201: Reload value
@@ -210,6 +211,9 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * Total size: 0x61000 (397,312) bytes
  */
 
+DECL_BITFIELD(GBASerializedVideoFlags, uint32_t);
+DECL_BITS(GBASerializedVideoFlags, Mode, 0, 2);
+
 DECL_BITFIELD(GBASerializedHWFlags1, uint16_t);
 DECL_BIT(GBASerializedHWFlags1, ReadWrite, 0);
 DECL_BIT(GBASerializedHWFlags1, GyroEdge, 1);
@@ -267,7 +271,8 @@ struct GBASerializedState {
 
 	struct {
 		int32_t nextEvent;
-		int32_t reserved[6];
+		int32_t reserved[5];
+		GBASerializedVideoFlags flags;
 		int32_t frameCounter;
 	} video;
 

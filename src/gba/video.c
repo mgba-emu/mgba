@@ -31,6 +31,7 @@ static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, si
 static void GBAVideoDummyRendererPutPixels(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels);
 
 static void _startHblank(struct mTiming*, void* context, uint32_t cyclesLate);
+static void _midHblank(struct mTiming*, void* context, uint32_t cyclesLate);
 static void _startHdraw(struct mTiming*, void* context, uint32_t cyclesLate);
 
 MGBA_EXPORT const int GBAVideoObjSizes[16][2] = {
@@ -116,10 +117,17 @@ void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* 
 	video->renderer->init(video->renderer);
 }
 
-void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+void _midHblank(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBAVideo* video = context;
 	GBARegisterDISPSTAT dispstat = video->p->memory.io[REG_DISPSTAT >> 1];
 	dispstat = GBARegisterDISPSTATClearInHblank(dispstat);
+	video->p->memory.io[REG_DISPSTAT >> 1] = dispstat;
+	video->event.callback = _startHdraw;
+	mTimingSchedule(timing, &video->event, VIDEO_HBLANK_FLIP - cyclesLate);
+}
+
+void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+	struct GBAVideo* video = context;
 	video->event.callback = _startHblank;
 	mTimingSchedule(timing, &video->event, VIDEO_HDRAW_LENGTH - cyclesLate);
 
@@ -133,6 +141,7 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		video->renderer->drawScanline(video->renderer, video->vcount);
 	}
 
+	GBARegisterDISPSTAT dispstat = video->p->memory.io[REG_DISPSTAT >> 1];
 	if (video->vcount == GBARegisterDISPSTATGetVcountSetting(dispstat)) {
 		dispstat = GBARegisterDISPSTATFillVcounter(dispstat);
 		if (GBARegisterDISPSTATIsVcounterIRQ(dispstat)) {
@@ -173,12 +182,11 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 
 void _startHblank(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBAVideo* video = context;
-	GBARegisterDISPSTAT dispstat = video->p->memory.io[REG_DISPSTAT >> 1];
-	dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
-	video->event.callback = _startHdraw;
-	mTimingSchedule(timing, &video->event, VIDEO_HBLANK_LENGTH - cyclesLate);
+	video->event.callback = _midHblank;
+	mTimingSchedule(timing, &video->event, VIDEO_HBLANK_LENGTH - VIDEO_HBLANK_FLIP - cyclesLate);
 
 	// Begin Hblank
+	GBARegisterDISPSTAT dispstat = video->p->memory.io[REG_DISPSTAT >> 1];
 	dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
 
 	if (video->vcount < GBA_VIDEO_VERTICAL_PIXELS) {
@@ -304,6 +312,15 @@ void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* 
 	memcpy(state->oam, video->oam.raw, SIZE_OAM);
 	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
 	STORE_32(video->event.when - mTimingCurrentTime(&video->p->timing), 0, &state->video.nextEvent);
+	int32_t flags = 0;
+	if (video->event.callback == _startHdraw) {
+		flags = GBASerializedVideoFlagsSetMode(flags, 1);
+	} else if (video->event.callback == _startHblank) {
+		flags = GBASerializedVideoFlagsSetMode(flags, 2);
+	} else if (video->event.callback == _midHblank) {
+		flags = GBASerializedVideoFlagsSetMode(flags, 3);
+	}
+	STORE_32(flags, 0, &state->video.flags);
 	STORE_32(video->frameCounter, 0, &state->video.frameCounter);
 }
 
@@ -321,14 +338,28 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 	}
 	LOAD_32(video->frameCounter, 0, &state->video.frameCounter);
 
+	int32_t flags;
+	LOAD_32(flags, 0, &state->video.flags);
+	GBARegisterDISPSTAT dispstat = state->io[REG_DISPSTAT >> 1];
+	switch (GBASerializedVideoFlagsGetMode(flags)) {
+	case 0:
+		if (GBARegisterDISPSTATIsInHblank(dispstat)) {
+			video->event.callback = _startHdraw;
+		} else {
+			video->event.callback = _startHblank;
+		}
+	case 1:
+		video->event.callback = _startHdraw;
+		break;
+	case 2:
+		video->event.callback = _startHblank;
+		break;
+	case 3:
+		video->event.callback = _midHblank;
+		break;
+	}
 	uint32_t when;
 	LOAD_32(when, 0, &state->video.nextEvent);
-	GBARegisterDISPSTAT dispstat = state->io[REG_DISPSTAT >> 1];
-	if (GBARegisterDISPSTATIsInHblank(dispstat)) {
-		video->event.callback = _startHdraw;
-	} else {
-		video->event.callback = _startHblank;
-	}
 	mTimingSchedule(&video->p->timing, &video->event, when);
 
 	LOAD_16(video->vcount, REG_VCOUNT, state->io);
