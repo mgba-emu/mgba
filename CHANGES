@@ -9,6 +9,7 @@ Other fixes:
  - Qt: Fix race condition with proxied video events
  - Qt: Fix color selection in asset view (fixes mgba.io/i/1648)
  - Qt: Fix missing OSD messages
+ - Qt: Fix crash unloading shaders
 
 0.8.0: (2020-01-21)
 Features:
