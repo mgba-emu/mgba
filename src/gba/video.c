@@ -129,6 +129,10 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	}
 	video->p->memory.io[REG_VCOUNT >> 1] = video->vcount;
 
+	if (video->vcount < GBA_VIDEO_VERTICAL_PIXELS && video->frameskipCounter <= 0) {
+		video->renderer->drawScanline(video->renderer, video->vcount);
+	}
+
 	if (video->vcount == GBARegisterDISPSTATGetVcountSetting(dispstat)) {
 		dispstat = GBARegisterDISPSTATFillVcounter(dispstat);
 		if (GBARegisterDISPSTATIsVcounterIRQ(dispstat)) {
@@ -176,9 +180,6 @@ void _startHblank(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 
 	// Begin Hblank
 	dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
-	if (video->vcount < GBA_VIDEO_VERTICAL_PIXELS && video->frameskipCounter <= 0) {
-		video->renderer->drawScanline(video->renderer, video->vcount);
-	}
 
 	if (video->vcount < GBA_VIDEO_VERTICAL_PIXELS) {
 		GBADMARunHblank(video->p, -cyclesLate);

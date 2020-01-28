@@ -701,16 +701,16 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 	softwareRenderer->bg[3].sy = softwareRenderer->bg[3].refy;
 
 	if (softwareRenderer->bg[0].enabled > 0) {
-		softwareRenderer->bg[0].enabled = 4;
+		softwareRenderer->bg[0].enabled = 3;
 	}
 	if (softwareRenderer->bg[1].enabled > 0) {
-		softwareRenderer->bg[1].enabled = 4;
+		softwareRenderer->bg[1].enabled = 3;
 	}
 	if (softwareRenderer->bg[2].enabled > 0) {
-		softwareRenderer->bg[2].enabled = 4;
+		softwareRenderer->bg[2].enabled = 3;
 	}
 	if (softwareRenderer->bg[3].enabled > 0) {
-		softwareRenderer->bg[3].enabled = 4;
+		softwareRenderer->bg[3].enabled = 3;
 	}
 }
 
@@ -737,7 +737,7 @@ static void _enableBg(struct GBAVideoSoftwareRenderer* renderer, int bg, bool ac
 	} else if (!wasActive && active) {
 		if (renderer->nextY == 0 || GBARegisterDISPCNTGetMode(renderer->dispcnt) > 2) {
 			// TODO: Investigate in more depth how switching background works in different modes
-			renderer->bg[bg].enabled = 4;
+			renderer->bg[bg].enabled = 3;
 		} else {
 			renderer->bg[bg].enabled = 1;
 		}
@@ -811,7 +811,7 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 
 #define TEST_LAYER_ENABLED(X) \
 	!renderer->d.disableBG[X] && \
-	(renderer->bg[X].enabled == 4 && \
+	(renderer->bg[X].enabled == 3 && \
 	(GBAWindowControlIsBg ## X ## Enable(renderer->currentWindow.packed) || \
 	(GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt) && GBAWindowControlIsBg ## X ## Enable (renderer->objwin.packed))) && \
 	renderer->bg[X].priority == priority)
@@ -919,19 +919,19 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 		renderer->bg[3].sy += renderer->bg[3].dmy;
 	}
 
-	if (renderer->bg[0].enabled > 0 && renderer->bg[0].enabled < 4) {
+	if (renderer->bg[0].enabled > 0 && renderer->bg[0].enabled < 3) {
 		++renderer->bg[0].enabled;
 		DIRTY_SCANLINE(renderer, y);
 	}
-	if (renderer->bg[1].enabled > 0 && renderer->bg[1].enabled < 4) {
+	if (renderer->bg[1].enabled > 0 && renderer->bg[1].enabled < 3) {
 		++renderer->bg[1].enabled;
 		DIRTY_SCANLINE(renderer, y);
 	}
-	if (renderer->bg[2].enabled > 0 && renderer->bg[2].enabled < 4) {
+	if (renderer->bg[2].enabled > 0 && renderer->bg[2].enabled < 3) {
 		++renderer->bg[2].enabled;
 		DIRTY_SCANLINE(renderer, y);
 	}
-	if (renderer->bg[3].enabled > 0 && renderer->bg[3].enabled < 4) {
+	if (renderer->bg[3].enabled > 0 && renderer->bg[3].enabled < 3) {
 		++renderer->bg[3].enabled;
 		DIRTY_SCANLINE(renderer, y);
 	}
