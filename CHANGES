@@ -18,6 +18,7 @@ Other fixes:
  - Qt: Fix color selection in asset view (fixes mgba.io/i/1648)
  - Qt: Fix missing OSD messages
  - Qt: Fix crash unloading shaders
+ - Qt: Fix toggled actions on gamepads (fixes mgba.io/i/1650)
 
 0.8.0: (2020-01-21)
 Features:
