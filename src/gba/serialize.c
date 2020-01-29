@@ -7,7 +7,6 @@
 
 #include <mgba/internal/arm/macros.h>
 #include <mgba/internal/gba/io.h>
-#include <mgba/internal/gba/rr/rr.h>
 
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
@@ -73,11 +72,6 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAVideoSerialize(&gba->video, state);
 	GBAAudioSerialize(&gba->audio, state);
 	GBASavedataSerialize(&gba->memory.savedata, state);
-
-	state->associatedStreamId = 0;
-	if (gba->rr) {
-		gba->rr->stateSaved(gba->rr, state);
-	}
 }
 
 bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
@@ -194,10 +188,6 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	GBAIODeserialize(gba, state);
 	GBAAudioDeserialize(&gba->audio, state);
 	GBASavedataDeserialize(&gba->memory.savedata, state);
-
-	if (gba->rr) {
-		gba->rr->stateLoaded(gba->rr, state);
-	}
 
 	gba->timing.reroot = gba->timing.root;
 	gba->timing.root = NULL;
