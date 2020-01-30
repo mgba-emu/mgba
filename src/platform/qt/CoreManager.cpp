@@ -83,6 +83,7 @@ CoreController* CoreManager::loadGame(VFile* vf, const QString& path, const QStr
 
 	mCore* core = mCoreFindVF(vf);
 	if (!core) {
+		LOG(QT, ERROR) << tr("Could not load game. Are you sure it's in the correct format?");
 		return nullptr;
 	}
 

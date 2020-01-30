@@ -860,8 +860,8 @@ void Window::gameCrashed(const QString& errorMessage) {
 }
 
 void Window::gameFailed() {
-	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Couldn't Load"),
-	                                    tr("Could not load game. Are you sure it's in the correct format?"),
+	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Couldn't Start"),
+	                                    tr("Could not start game."),
 	                                    QMessageBox::Ok, this, Qt::Sheet);
 	fail->setAttribute(Qt::WA_DeleteOnClose);
 	fail->show();
@@ -1788,7 +1788,6 @@ void Window::updateFrame() {
 
 void Window::setController(CoreController* controller, const QString& fname) {
 	if (!controller) {
-		gameFailed();
 		return;
 	}
 	if (m_pendingClose) {
