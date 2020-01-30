@@ -21,6 +21,7 @@ Other fixes:
  - Qt: Fix missing OSD messages
  - Qt: Fix crash unloading shaders
  - Qt: Fix toggled actions on gamepads (fixes mgba.io/i/1650)
+ - Qt: Fix extraneous dialog (fixes mgba.io/i/1654)
 
 0.8.0: (2020-01-21)
 Features:
