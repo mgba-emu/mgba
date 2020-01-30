@@ -1711,13 +1711,13 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	glStencilFunc(GL_EQUAL, 1, 1);
 	glUseProgram(shader->program);
 	glDrawBuffers(2, (GLenum[]) { GL_NONE, GL_COLOR_ATTACHMENT1 });
-	glColorMask(GL_TRUE, GL_FALSE, GL_FALSE, GL_FALSE);
 	glBindVertexArray(shader->vao);
 	glUniform2i(uniforms[GBA_GL_VS_LOC], totalHeight, 0);
 	glUniform2i(uniforms[GBA_GL_VS_MAXPOS], totalWidth, totalHeight);
-	glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c), 0, 0, 0);
+	glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c),
+	                                          (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2) | (renderer->blendEffect * 4),
+	                                          renderer->blda, GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
