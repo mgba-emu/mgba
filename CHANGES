@@ -22,6 +22,8 @@ Other fixes:
  - Qt: Fix crash unloading shaders
  - Qt: Fix toggled actions on gamepads (fixes mgba.io/i/1650)
  - Qt: Fix extraneous dialog (fixes mgba.io/i/1654)
+Misc:
+ - Qt: Renderer can be changed while a game is running
 
 0.8.0: (2020-01-21)
 Features:

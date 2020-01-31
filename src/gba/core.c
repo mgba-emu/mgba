@@ -347,8 +347,9 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 		}
 		return;
 	}
-#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
+
 	struct GBACore* gbacore = (struct GBACore*) core;
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (strcmp("videoScale", option) == 0) {
 		if (config != &core->config) {
 			mCoreConfigCopyValue(&core->config, config, "videoScale");
@@ -361,6 +362,31 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 		return;
 	}
 #endif
+	if (strcmp("hwaccelVideo", option) == 0) {
+		struct GBAVideoRenderer* renderer = NULL;
+		if (gbacore->renderer.outputBuffer) {
+			renderer = &gbacore->renderer.d;
+		}
+		int fakeBool;
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
+		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
+			mCoreConfigGetIntValue(&core->config, "videoScale", &gbacore->glRenderer.scale);
+			renderer = &gbacore->glRenderer.d;
+		} else {
+			gbacore->glRenderer.scale = 1;
+		}
+#endif
+#ifndef MINIMAL_CORE
+		if (renderer && core->videoLogger) {
+			gbacore->proxyRenderer.logger = core->videoLogger;
+			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
+			renderer = &gbacore->proxyRenderer.d;
+		}
+#endif
+		if (renderer) {
+			GBAVideoAssociateRenderer(&gba->video, renderer);
+		}
+	}
 }
 
 static void _GBACoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
@@ -529,8 +555,10 @@ static void _GBACoreReset(struct mCore* core) {
 		int fakeBool;
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
-			renderer = &gbacore->glRenderer.d;
 			mCoreConfigGetIntValue(&core->config, "videoScale", &gbacore->glRenderer.scale);
+			renderer = &gbacore->glRenderer.d;
+		} else {
+			gbacore->glRenderer.scale = 1;
 		}
 #endif
 #ifndef DISABLE_THREADING

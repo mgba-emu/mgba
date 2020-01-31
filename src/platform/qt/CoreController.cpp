@@ -81,9 +81,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 		controller->m_resetActions.clear();
 
-		if (!controller->m_hwaccel) {
-			context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer.data()), controller->screenDimensions().width());
-		}
+		context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer.data()), controller->screenDimensions().width());
 
 		QMetaObject::invokeMethod(controller, "didReset");
 		controller->finishFrame();
@@ -358,14 +356,12 @@ void CoreController::setLogger(LogController* logger) {
 }
 
 void CoreController::start() {
-	if (!m_hwaccel) {
-		QSize size(256, 224);
-		m_activeBuffer.resize(size.width() * size.height() * sizeof(color_t));
-		m_activeBuffer.fill(0xFF);
-		m_completeBuffer = m_activeBuffer;
+	QSize size(256, 224);
+	m_activeBuffer.resize(size.width() * size.height() * sizeof(color_t));
+	m_activeBuffer.fill(0xFF);
+	m_completeBuffer = m_activeBuffer;
 
-		m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), size.width());
-	}
+	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), size.width());
 
 	if (!m_patched) {
 		mCoreAutoloadPatch(m_threadContext.core);
@@ -860,10 +856,22 @@ void CoreController::endVideoLog(bool closeVf) {
 void CoreController::setFramebufferHandle(int fb) {
 	Interrupter interrupter(this);
 	if (fb < 0) {
+		if (!m_hwaccel) {
+			return;
+		}
+		mCoreConfigSetIntValue(&m_threadContext.core->config, "hwaccelVideo", 0);
+		m_threadContext.core->setVideoGLTex(m_threadContext.core, -1);
 		m_hwaccel = false;
 	} else {
+		mCoreConfigSetIntValue(&m_threadContext.core->config, "hwaccelVideo", 1);
 		m_threadContext.core->setVideoGLTex(m_threadContext.core, fb);
+		if (m_hwaccel) {
+			return;
+		}
 		m_hwaccel = true;
+	}
+	if (hasStarted()) {
+		m_threadContext.core->reloadConfigOption(m_threadContext.core, "hwaccelVideo", NULL);
 	}
 }
 

@@ -493,12 +493,13 @@ void SettingsView::updateConfig() {
 	}
 
 	int videoScale = m_controller->getOption("videoScale", 1).toInt();
+	saveSetting("videoScale", m_ui.videoScale);
+
 	int hwaccelVideo = m_controller->getOption("hwaccelVideo").toInt();
+	saveSetting("hwaccelVideo", m_ui.hwaccelVideo->currentIndex());
 	if (hwaccelVideo != m_ui.hwaccelVideo->currentIndex()) {
 		emit videoRendererChanged();
 	}
-	saveSetting("videoScale", m_ui.videoScale);
-	saveSetting("hwaccelVideo", m_ui.hwaccelVideo->currentIndex());
 
 	m_logModel.save(m_controller);
 	m_logModel.logger()->setLogFile(m_ui.logFile->text());
