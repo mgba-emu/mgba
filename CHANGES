@@ -26,6 +26,7 @@ Other fixes:
  - Util: Fix crash reading invalid ELFs
 Misc:
  - Qt: Renderer can be changed while a game is running
+ - Switch: Make OpenGL scale adjustable while running
 
 0.8.0: (2020-01-21)
 Features:
