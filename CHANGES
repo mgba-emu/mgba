@@ -14,6 +14,7 @@ Emulation fixes:
  - GBA Video: Fix backdrop blending on lines without sprites (fixes mgba.io/i/1647)
  - GBA Video: Fix OpenGL sprite flag priority
 Other fixes:
+ - Core: Fix race condition initializing thread proxy
  - Qt: Only dynamically reset video scale if a game is running
  - Qt: Fix race condition with proxied video events
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)

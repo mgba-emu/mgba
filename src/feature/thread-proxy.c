@@ -137,8 +137,10 @@ static void _postEvent(struct mVideoLogger* logger, enum mVideoLoggerEvent event
 	struct mVideoThreadProxy* proxyRenderer = (struct mVideoThreadProxy*) logger;
 	MutexLock(&proxyRenderer->mutex);
 	proxyRenderer->event = event;
-	ConditionWake(&proxyRenderer->toThreadCond);
-	ConditionWait(&proxyRenderer->fromThreadCond, &proxyRenderer->mutex);
+	while (proxyRenderer->event) {
+		ConditionWake(&proxyRenderer->toThreadCond);
+		ConditionWait(&proxyRenderer->fromThreadCond, &proxyRenderer->mutex);
+	}
 	MutexUnlock(&proxyRenderer->mutex);
 }
 
@@ -179,6 +181,7 @@ static THREAD_ENTRY _proxyThread(void* logger) {
 	ThreadSetName("Proxy Renderer Thread");
 
 	MutexLock(&proxyRenderer->mutex);
+	ConditionWake(&proxyRenderer->fromThreadCond);
 	while (proxyRenderer->threadState != PROXY_THREAD_STOPPED) {
 		ConditionWait(&proxyRenderer->toThreadCond, &proxyRenderer->mutex);
 		if (proxyRenderer->threadState == PROXY_THREAD_STOPPED) {
