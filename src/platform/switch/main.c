@@ -320,6 +320,11 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 		}
 	}
 
+	int scale;
+	if (mCoreConfigGetUIntValue(&runner->config, "videoScale", &scale)) {
+		runner->core->reloadConfigOption(runner->core, "videoScale", &runner->config);
+	}
+
 	rumble.up = 0;
 	rumble.down = 0;
 }
@@ -857,7 +862,7 @@ int main(int argc, char* argv[]) {
 				.nStates = 16
 			},
 			{
-				.title = "GPU-accelerated renderer (experimental, requires game reload)",
+				.title = "GPU-accelerated renderer (requires game reload)",
 				.data = "hwaccelVideo",
 				.submenu = 0,
 				.state = 0,

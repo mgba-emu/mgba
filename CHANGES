@@ -16,6 +16,8 @@ Other fixes:
  - Qt: Fix toggled actions on gamepads (fixes mgba.io/i/1650)
  - Qt: Fix extraneous dialog (fixes mgba.io/i/1654)
  - Util: Fix crash reading invalid ELFs
+Misc:
+ - Switch: Make OpenGL scale adjustable while running
 
 0.8.0: (2020-01-21)
 Features:
