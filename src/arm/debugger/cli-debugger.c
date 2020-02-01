@@ -86,7 +86,7 @@ static void _disassembleMode(struct CLIDebugger* debugger, struct CLIDebugVector
 		size = 1;
 	} else {
 		size = dv->intValue;
-		dv = dv->next; // TODO: Check for excess args
+		// TODO: Check for excess args
 	}
 
 	int i;

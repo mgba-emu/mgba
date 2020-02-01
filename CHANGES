@@ -1,4 +1,27 @@
-0.8.0: (Future)
+0.8.1: (Future)
+Emulation fixes:
+ - GB Serialize: Fix timing bug loading channel 4 timing
+ - GBA Memory: Misaligned SRAM writes are ignored
+ - GBA Serialize: Fix serializing DMA transfer register
+ - GBA Serialize: Fix audio DMA timing deserialization
+ - GBA Video: Fix OAM not invalidating after reset (fixes mgba.io/i/1630)
+ - GBA Video: Fix backdrop blending on lines without sprites (fixes mgba.io/i/1647)
+ - GBA Video: Fix OpenGL sprite flag priority
+Other fixes:
+ - Core: Fix race condition initializing thread proxy
+ - Qt: Only dynamically reset video scale if a game is running
+ - Qt: Fix race condition with proxied video events
+ - Qt: Fix color selection in asset view (fixes mgba.io/i/1648)
+ - Qt: Fix missing OSD messages
+ - Qt: Fix crash unloading shaders
+ - Qt: Fix toggled actions on gamepads (fixes mgba.io/i/1650)
+ - Qt: Fix extraneous dialog (fixes mgba.io/i/1654)
+ - Util: Fix crash reading invalid ELFs
+Misc:
+ - Qt: Fix non-SDL build (fixes mgba.io/i/1656)
+ - Switch: Make OpenGL scale adjustable while running
+
+0.8.0: (2020-01-21)
 Features:
  - Improved logging configuration
  - One-Player BattleChip/Progress/Beast Link Gate support
@@ -92,6 +115,7 @@ Emulation fixes:
  - ARM: Fix stepping when events are pending
  - GBA DMA: Fix case where DMAs could get misaligned (fixes mgba.io/i/1092)
  - GBA Memory: Fix open bus from IWRAM (fixes mgba.io/i/1575)
+ - GBA Timers: Improve timer startup emulation
  - GBA Video: Fix OpenGL renderer 512x512 backgrounds (fixes mgba.io/i/1572)
  - GBA Video: Fix BLDY for semitransparent sprite on non-target-2 backgrounds
  - GBA Video: Fix effects blending improperly in some non-last windows
@@ -100,6 +124,8 @@ Other fixes:
  - 3DS: Fix screen darkening (fixes mgba.io/i/1562)
  - Core: Fix uninitialized memory issues with graphics caches
  - Core: Return null for out of bounds cached tile VRAM querying
+ - GBA Video: Fix OpenGL fragment data binding
+ - GBA Video: Fix mosaic in modes 1-5 in OpenGL (fixes mgba.io/i/1620)
  - Debugger: Fix tracing skipping instructions (fixes mgba.io/i/1614)
  - OpenGL: Only invalidate texture if dimensions change (fixes mgba.io/i/1612)
  - Qt: Fix fast forward mute being reset (fixes mgba.io/i/1574)
@@ -111,11 +137,17 @@ Other fixes:
  - Qt: Fix sprite view using wrong base address (fixes mgba.io/i/1603)
  - Qt: Fix inability to clear default keybindings
  - Qt: Release held actions if they get rebound
+ - Qt: Fix crash double-clicking menus in shortcut settings (fixes mgba.io/i/1627)
+ - Qt: Fix record A/V window not updating resolution (fixes mgba.io/i/1626)
  - Vita: Fix analog controls (fixes mgba.io/i/1554)
+ - Wii: Fix game fast-forwarding after slowing down
+ - Wii: Improve audio buffering (fixes mgba.io/i/1617)
 Misc:
  - GB Memory: Support manual SRAM editing (fixes mgba.io/i/1580)
+ - GBA: Trim non-movie ROMs to 32 MiB if applicable
  - GBA Audio: Redo channel 4 batching for GBA only
  - GBA I/O: Stop logging several harmless invalid register reads
+ - GBA Video: Changing OpenGL scaling no longer requires restart
  - Debugger: Separate aliases from main commands
  - Debugger: Print break-/watchpoint ID when breaking in CLI
  - Debugger: Minor interface cleanup

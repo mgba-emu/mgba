@@ -1,4 +1,5 @@
 PROG = 7zS2.sfx
+MY_FIXED = 1
 
 C_OBJS = \
   $O\7zAlloc.obj \
@@ -16,6 +17,7 @@ C_OBJS = \
   $O\BraIA64.obj \
   $O\CpuArch.obj \
   $O\Delta.obj \
+  $O\DllSecur.obj \
   $O\Lzma2Dec.obj \
   $O\LzmaDec.obj \
 

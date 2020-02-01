@@ -936,7 +936,7 @@ static void _updateChannel4(struct mTiming* timing, void* user, uint32_t cyclesL
 
 	uint32_t last = 0;
 	uint32_t now = cycles;
-	uint32_t next = cycles - cyclesLate;
+	int32_t next = cycles - cyclesLate;
 
 	if (audio->style == GB_AUDIO_GBA) {
 		last = ch->lastEvent;
@@ -1078,9 +1078,13 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	LOAD_32LE(audio->ch4.lastEvent, 0, &state->ch4.lastEvent);
 	LOAD_32LE(when, 0, &state->ch4.nextEvent);
 	if (audio->ch4.envelope.dead < 2 && audio->playingCh4) {
-		if (when - audio->ch4.lastEvent > (uint32_t) audio->sampleInterval) {
+		if (!audio->ch4.lastEvent) {
 			// Back-compat: fake this value
-			audio->ch4.lastEvent = when - audio->sampleInterval;
+			uint32_t currentTime = mTimingCurrentTime(audio->timing);
+			int32_t cycles = audio->ch4.ratio ? 2 * audio->ch4.ratio : 1;
+			cycles <<= audio->ch4.frequency;
+			cycles *= 8 * audio->timingFactor;
+			audio->ch4.lastEvent = currentTime + (when & (cycles - 1)) - cycles;
 		}
 		mTimingSchedule(audio->timing, &audio->ch4Event, when);
 	}

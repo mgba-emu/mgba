@@ -24,9 +24,9 @@
         <translation>{projectName} desidera ringraziare i seguenti sponsor di Patreon:</translation>
     </message>
     <message>
-        <source>© 2013 – 2016 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
+        <source>© 2013 – 2020 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation>© 2013 - 2016 Jeffrey Pfau, sotto licenza Mozilla Public License, versione 2.0
+        <translation>© 2013 - 2020 Jeffrey Pfau, sotto licenza Mozilla Public License, versione 2.0
 Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     </message>
     <message>

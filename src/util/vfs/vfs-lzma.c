@@ -16,6 +16,8 @@
 #include "third-party/lzma/7zFile.h"
 #include "third-party/lzma/7zVersion.h"
 
+#define BUFFER_SIZE 0x2000
+
 struct VDirEntry7z {
 	struct VDirEntry d;
 
@@ -30,7 +32,7 @@ struct VDir7z {
 
 	// What is all this garbage?
 	CFileInStream archiveStream;
-	CLookToRead lookStream;
+	CLookToRead2 lookStream;
 	CSzArEx db;
 	ISzAlloc allocImp;
 	ISzAlloc allocTempImp;
@@ -88,15 +90,18 @@ struct VDir* VDirOpen7z(const char* path, int flags) {
 	vd->allocTempImp.Free = SzFreeTemp;
 
 	FileInStream_CreateVTable(&vd->archiveStream);
-	LookToRead_CreateVTable(&vd->lookStream, False);
+	LookToRead2_CreateVTable(&vd->lookStream, False);
 
-	vd->lookStream.realStream = &vd->archiveStream.s;
-	LookToRead_Init(&vd->lookStream);
+	vd->lookStream.realStream = &vd->archiveStream.vt;
+	vd->lookStream.buf = malloc(BUFFER_SIZE);
+	vd->lookStream.bufSize = BUFFER_SIZE;
+
+	LookToRead2_Init(&vd->lookStream);
 
 	CrcGenerateTable();
 
 	SzArEx_Init(&vd->db);
-	SRes res = SzArEx_Open(&vd->db, &vd->lookStream.s, &vd->allocImp, &vd->allocTempImp);
+	SRes res = SzArEx_Open(&vd->db, &vd->lookStream.vt, &vd->allocImp, &vd->allocTempImp);
 	if (res != SZ_OK) {
 		SzArEx_Free(&vd->db, &vd->allocImp);
 		File_Close(&vd->archiveStream.file);
@@ -123,6 +128,7 @@ struct VDir* VDirOpen7z(const char* path, int flags) {
 bool _vf7zClose(struct VFile* vf) {
 	struct VFile7z* vf7z = (struct VFile7z*) vf;
 	IAlloc_Free(&vf7z->vd->allocImp, vf7z->outBuffer);
+	free(vf7z);
 	return true;
 }
 
@@ -211,6 +217,7 @@ bool _vd7zClose(struct VDir* vd) {
 	SzArEx_Free(&vd7z->db, &vd7z->allocImp);
 	File_Close(&vd7z->archiveStream.file);
 
+	free(vd7z->lookStream.buf);
 	free(vd7z->dirent.utf8);
 	vd7z->dirent.utf8 = 0;
 
@@ -281,7 +288,7 @@ struct VFile* _vd7zOpenFile(struct VDir* vd, const char* path, int mode) {
 	UInt32 blockIndex;
 
 	vf->outBuffer = 0;
-	SRes res = SzArEx_Extract(&vd7z->db, &vd7z->lookStream.s, i, &blockIndex,
+	SRes res = SzArEx_Extract(&vd7z->db, &vd7z->lookStream.vt, i, &blockIndex,
 		&vf->outBuffer, &outBufferSize,
 		&vf->bufferOffset, &vf->size,
 		&vd7z->allocImp, &vd7z->allocTempImp);

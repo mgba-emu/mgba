@@ -16,7 +16,8 @@ void GUIInit(struct GUIParams* params) {
 void GUIPollInput(struct GUIParams* params, uint32_t* newInputOut, uint32_t* heldInput) {
 	uint32_t input = params->pollInput(&params->keyMap);
 	uint32_t newInput = 0;
-	for (int i = 0; i < GUI_INPUT_MAX; ++i) {
+	int i;
+	for (i = 0; i < GUI_INPUT_MAX; ++i) {
 		if (input & (1 << i)) {
 			++params->inputHistory[i];
 		} else {
@@ -66,7 +67,8 @@ enum GUICursorState GUIPollCursor(struct GUIParams* params, unsigned* x, unsigne
 }
 
 void GUIInvalidateKeys(struct GUIParams* params) {
-	for (int i = 0; i < GUI_INPUT_MAX; ++i) {
+	int i;
+	for (i = 0; i < GUI_INPUT_MAX; ++i) {
 		params->inputHistory[i] = 0;
 	}
 }
