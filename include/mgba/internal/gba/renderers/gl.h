@@ -196,6 +196,7 @@ struct GBAVideoGLRenderer {
 };
 
 void GBAVideoGLRendererCreate(struct GBAVideoGLRenderer* renderer);
+void GBAVideoGLRendererSetScale(struct GBAVideoGLRenderer* renderer, int scale);
 
 #endif
 

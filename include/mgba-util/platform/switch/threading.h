@@ -64,7 +64,7 @@ static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context)
 	if (!entry || !thread) {
 		return 1;
 	}
-	int res = threadCreate(thread, entry, context, 0x8000, 0x3B, 1);
+	int res = threadCreate(thread, entry, context, NULL, 0x8000, 0x3B, 1);
 	if(R_FAILED(res)) {
 		return res;
 	}

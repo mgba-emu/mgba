@@ -46,7 +46,7 @@ static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVect
 		size = 1;
 	} else {
 		size = dv->intValue;
-		dv = dv->next; // TODO: Check for excess args
+		// TODO: Check for excess args
 	}
 
 	size_t i;
@@ -57,7 +57,7 @@ static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVect
 
 static inline uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address, int segment) {
 	struct CLIDebuggerBackend* be = debugger->backend;
-	struct SM83InstructionInfo info = {0};
+	struct SM83InstructionInfo info = {{0}, 0};
 	char disassembly[48];
 	char* disPtr = disassembly;
 	if (segment >= 0) {

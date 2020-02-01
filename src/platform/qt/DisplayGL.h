@@ -62,6 +62,7 @@ public slots:
 	void setShaders(struct VDir*) override;
 	void clearShaders() override;
 	void resizeContext() override;
+	void setVideoScale(int scale) override;
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override { forceDraw(); }

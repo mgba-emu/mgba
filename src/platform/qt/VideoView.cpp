@@ -197,11 +197,15 @@ VideoView::~VideoView() {
 }
 
 void VideoView::setController(std::shared_ptr<CoreController> controller) {
-	connect(controller.get(), &CoreController::stopping, this, &VideoView::stopRecording);
-	connect(this, &VideoView::recordingStarted, controller.get(), &CoreController::setAVStream);
-	connect(this, &VideoView::recordingStopped, controller.get(), &CoreController::clearAVStream, Qt::DirectConnection);
+	CoreController* controllerPtr = controller.get();
+	connect(controllerPtr, &CoreController::frameAvailable, this, [this, controllerPtr]() {
+		setNativeResolution(controllerPtr->screenDimensions());
+	});
+	connect(controllerPtr, &CoreController::stopping, this, &VideoView::stopRecording);
+	connect(this, &VideoView::recordingStarted, controllerPtr, &CoreController::setAVStream);
+	connect(this, &VideoView::recordingStopped, controllerPtr, &CoreController::clearAVStream, Qt::DirectConnection);
 
-	setNativeResolution(controller->screenDimensions());
+	setNativeResolution(controllerPtr->screenDimensions());
 }
 
 void VideoView::startRecording() {
@@ -225,6 +229,9 @@ void VideoView::stopRecording() {
 }
 
 void VideoView::setNativeResolution(const QSize& dims) {
+	if (dims.width() == m_nativeWidth && dims.height() == m_nativeHeight) {
+		return;
+	}
 	m_nativeWidth = dims.width();
 	m_nativeHeight = dims.height();
 	m_ui.presetNative->setText(tr("Native (%0x%1)").arg(m_nativeWidth).arg(m_nativeHeight));

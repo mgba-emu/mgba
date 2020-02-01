@@ -860,8 +860,8 @@ void Window::gameCrashed(const QString& errorMessage) {
 }
 
 void Window::gameFailed() {
-	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Couldn't Load"),
-	                                    tr("Could not load game. Are you sure it's in the correct format?"),
+	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Couldn't Start"),
+	                                    tr("Could not start game."),
 	                                    QMessageBox::Ok, this, Qt::Sheet);
 	fail->setAttribute(Qt::WA_DeleteOnClose);
 	fail->show();
@@ -1617,6 +1617,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 		}
 	}, this);
 
+	ConfigOption* videoScale = m_config->addOption("videoScale");
+	videoScale->connect([this](const QVariant& value) {
+		if (m_display) {
+			m_display->setVideoScale(value.toInt());
+		}
+	}, this);
+
 	m_actions.addHiddenAction(tr("Exit fullscreen"), "exitFullScreen", this, &Window::exitFullScreen, "frame", QKeySequence("Esc"));
 
 	m_actions.addHeldAction(tr("GameShark Button (held)"), "holdGSButton", [this](bool held) {
@@ -1781,7 +1788,6 @@ void Window::updateFrame() {
 
 void Window::setController(CoreController* controller, const QString& fname) {
 	if (!controller) {
-		gameFailed();
 		return;
 	}
 	if (m_pendingClose) {

@@ -7,6 +7,8 @@
 
 #include "CoreController.h"
 
+#include <QThread>
+
 using namespace QGBA;
 
 VideoProxy::VideoProxy() {
@@ -81,11 +83,22 @@ bool VideoProxy::readData(void* data, size_t length, bool block) {
 }
 
 void VideoProxy::postEvent(enum mVideoLoggerEvent event) {
-	emit eventPosted(event);
+	if (QThread::currentThread() == thread()) {
+		// We're on the main thread
+		emit eventPosted(event);
+	} else {
+		m_mutex.lock();
+		emit eventPosted(event);
+		m_fromThreadCond.wait(&m_mutex, 1);
+		m_mutex.unlock();
+	}
 }
 
 void VideoProxy::handleEvent(int event) {
+	m_mutex.lock();
 	m_logger.d.handleEvent(&m_logger.d, static_cast<enum mVideoLoggerEvent>(event));
+	m_fromThreadCond.wakeAll();
+	m_mutex.unlock();
 }
 
 void VideoProxy::lock() {

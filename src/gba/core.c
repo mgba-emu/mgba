@@ -347,6 +347,20 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 		}
 		return;
 	}
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
+	struct GBACore* gbacore = (struct GBACore*) core;
+	if (strcmp("videoScale", option) == 0) {
+		if (config != &core->config) {
+			mCoreConfigCopyValue(&core->config, config, "videoScale");
+		}
+		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
+			int scale;
+			mCoreConfigGetIntValue(config, "videoScale", &scale);
+			GBAVideoGLRendererSetScale(&gbacore->glRenderer, scale);
+		}
+		return;
+	}
+#endif
 }
 
 static void _GBACoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
@@ -354,6 +368,7 @@ static void _GBACoreDesiredVideoDimensions(struct mCore* core, unsigned* width, 
 	struct GBACore* gbacore = (struct GBACore*) core;
 	int scale = gbacore->glRenderer.scale;
 #else
+	UNUSED(core);
 	int scale = 1;
 #endif
 
@@ -507,7 +522,7 @@ static void _GBACoreReset(struct mCore* core) {
 	    || gbacore->glRenderer.outputTex != (unsigned) -1
 #endif
 	) {
-		struct GBAVideoRenderer* renderer;
+		struct GBAVideoRenderer* renderer = NULL;
 		if (gbacore->renderer.outputBuffer) {
 			renderer = &gbacore->renderer.d;
 		}
@@ -526,13 +541,15 @@ static void _GBACoreReset(struct mCore* core) {
 		}
 #endif
 #ifndef MINIMAL_CORE
-		if (core->videoLogger) {
+		if (renderer && core->videoLogger) {
 			gbacore->proxyRenderer.logger = core->videoLogger;
 			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
 			renderer = &gbacore->proxyRenderer.d;
 		}
 #endif
-		GBAVideoAssociateRenderer(&gba->video, renderer);
+		if (renderer) {
+			GBAVideoAssociateRenderer(&gba->video, renderer);
+		}
 	}
 
 #ifndef MINIMAL_CORE
@@ -584,7 +601,7 @@ static void _GBACoreReset(struct mCore* core) {
 				bios = NULL;
 			}
 		}
-		if (bios) {
+		if (found && bios) {
 			GBALoadBIOS(gba, bios);
 		}
 	}
