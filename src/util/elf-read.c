@@ -84,6 +84,9 @@ void ELFGetProgramHeaders(struct ELF* elf, struct ELFProgramHeaders* ph) {
 	ELFProgramHeadersClear(ph);
 	Elf32_Ehdr* hdr = elf32_getehdr(elf->e);
 	Elf32_Phdr* phdr = elf32_getphdr(elf->e);
+	if (!hdr || !phdr) {
+		return;
+	}
 	ELFProgramHeadersResize(ph, hdr->e_phnum);
 	memcpy(ELFProgramHeadersGetPointer(ph, 0), phdr, sizeof(*phdr) * hdr->e_phnum);
 }

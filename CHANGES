@@ -15,6 +15,7 @@ Other fixes:
  - Qt: Fix crash unloading shaders
  - Qt: Fix toggled actions on gamepads (fixes mgba.io/i/1650)
  - Qt: Fix extraneous dialog (fixes mgba.io/i/1654)
+ - Util: Fix crash reading invalid ELFs
 
 0.8.0: (2020-01-21)
 Features:
