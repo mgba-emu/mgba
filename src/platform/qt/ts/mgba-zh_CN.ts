@@ -1484,6 +1484,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../CheatsView.cpp" line="74"/>
         <source>Add GameShark</source>
         <translation>添加 GameShark</translation>
+    </message>
     <message>
         <location filename="../CheatsView.cpp" line="80"/>
         <source>Add GameGenie</source>
