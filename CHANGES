@@ -26,6 +26,7 @@ Other fixes:
  - Qt: Fix crash unloading shaders
  - Qt: Fix toggled actions on gamepads (fixes mgba.io/i/1650)
  - Qt: Fix extraneous dialog (fixes mgba.io/i/1654)
+ - Qt: Fix window title not updating after shutting down game
  - Util: Fix crash reading invalid ELFs
 Misc:
  - Qt: Renderer can be changed while a game is running

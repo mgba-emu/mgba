@@ -806,7 +806,6 @@ void Window::gameStopped() {
 		action->setEnabled(false);
 	}
 	setWindowFilePath(QString());
-	updateTitle();
 	detachWidget(m_display.get());
 	m_screenWidget->setDimensions(m_logo.width(), m_logo.height());
 	m_screenWidget->setLockIntegerScaling(false);
@@ -834,6 +833,7 @@ void Window::gameStopped() {
 	m_display->stopDrawing();
 
 	m_controller.reset();
+	updateTitle();
 
 	m_display->setVideoProxy({});
 	if (m_pendingClose) {
