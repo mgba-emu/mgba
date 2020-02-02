@@ -377,7 +377,7 @@ bool mCoreLoadELF(struct mCore* core, struct ELF* elf) {
 		Elf32_Phdr* phdr = ELFProgramHeadersGetPointer(&ph, i);
 		void* block = mCoreGetMemoryBlockMasked(core, phdr->p_paddr, &bsize, mCORE_MEMORY_WRITE | mCORE_MEMORY_WORM);
 		char* bytes = ELFBytes(elf, &esize);
-		if (block && bsize >= phdr->p_filesz && esize >= phdr->p_filesz + phdr->p_offset) {
+		if (block && bsize >= phdr->p_filesz && bsize > phdr->p_offset && esize >= phdr->p_filesz + phdr->p_offset) {
 			memcpy(block, &bytes[phdr->p_offset], phdr->p_filesz);
 		} else {
 			return false;
