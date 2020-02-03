@@ -32,6 +32,7 @@ Other fixes:
  - Qt: Fix GIF view not allowing manual filename entry
  - Util: Fix crash reading invalid ELFs
 Misc:
+ - FFmpeg: Add more presets
  - Qt: Renderer can be changed while a game is running
  - Qt: Fix non-SDL build (fixes mgba.io/i/1656)
  - Switch: Make OpenGL scale adjustable while running
