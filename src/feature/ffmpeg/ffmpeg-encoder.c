@@ -232,7 +232,7 @@ bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder* encoder) {
 	AVOutputFormat* oformat = av_guess_format(encoder->containerFormat, 0, 0);
 	AVCodec* acodec = avcodec_find_encoder_by_name(encoder->audioCodec);
 	AVCodec* vcodec = avcodec_find_encoder_by_name(encoder->videoCodec);
-	if ((encoder->audioCodec && !acodec) || (encoder->videoCodec && !vcodec) || !oformat) {
+	if ((encoder->audioCodec && !acodec) || (encoder->videoCodec && !vcodec) || !oformat || (!acodec && !vcodec)) {
 		return false;
 	}
 	if (encoder->audioCodec && !avformat_query_codec(oformat, acodec->id, FF_COMPLIANCE_EXPERIMENTAL)) {
