@@ -47,6 +47,135 @@ extern "C" {
 
 /* RETRO_LANGUAGE_ITALIAN */
 
+struct retro_core_option_definition option_defs_it[] = {
+   {
+      "mgba_solar_sensor_level",
+      "Livello Sensore Solare",
+      "Imposta l'intensità solare dell'ambiente. Può essere usato dai giochi che includono un sensore solare nelle loro cartucce, es.: la serie Boktai.",
+      {
+         { "0",  NULL },
+         { "1",  NULL },
+         { "2",  NULL },
+         { "3",  NULL },
+         { "4",  NULL },
+         { "5",  NULL },
+         { "6",  NULL },
+         { "7",  NULL },
+         { "8",  NULL },
+         { "9",  NULL },
+         { "10", NULL },
+         { NULL, NULL },
+      },
+      "0"
+   },
+   {
+      "mgba_allow_opposing_directions",
+      "Permetti Input Direzionali Opposti",
+      "Attivando questa funzionalità ti permette di premere / alternare velocemente / tenere premuti entrambe le direzioni destra e sinistra (oppure su e giù) allo stesso momento. Potrebbe causare dei glitch di movimento.",
+      {
+         { "no",  "Disabilitato" },
+         { "yes", "Abilitato" },
+         { NULL, NULL },
+      },
+      "no"
+   },
+   {
+      "mgba_gb_model",
+      "Modello Game Boy (richiede riavvio)",
+      "Esegue il contenuto caricato con un modello specifico di Game Boy. 'Rivela Automaticamente' selezionerà il modello più appropriato per il gioco attuale.",
+      {
+         { "Autodetect",       "Rivela Automaticamente" },
+         { "Game Boy",         NULL },
+         { "Super Game Boy",   NULL },
+         { "Game Boy Color",   NULL },
+         { "Game Boy Advance", NULL },
+         { NULL, NULL },
+      },
+      "Autodetect"
+   },
+   {
+      "mgba_use_bios",
+      "Usa il File BIOS se Presente (richiede riavvio)",
+      "Usa il BIOS/bootloader ufficiale per hardware emulato, se presente nella cartella di sistema di RetroArch.",
+      {
+         { "ON",  NULL },
+         { "OFF", NULL },
+         { NULL, NULL },
+      },
+      "ON"
+   },
+   {
+      "mgba_skip_bios",
+      "Salta Intro BIOS (richiede riavvio)",
+      "Salta il filmato del logo di avvio se si usa un BIOS/bootloader ufficiale. Questa impostazione è ignorata se 'Usa il file BIOS se presente' è disabilitato.",
+      {
+         { "OFF", NULL },
+         { "ON",  NULL },
+         { NULL, NULL },
+      },
+      "OFF"
+   },
+   {
+      "mgba_sgb_borders",
+      "Utilizza i Bordi Super Game Boy (richiede riavvio)",
+      "Visualizza i bordi del Super Game Boy quando apri un gioco potenziato dal Super Game Boy.",
+      {
+         { "ON",  NULL },
+         { "OFF", NULL },
+         { NULL, NULL },
+      },
+      "ON"
+   },
+   {
+      "mgba_idle_optimization",
+      "Rimozione Idle Loop",
+      "Riduce il carico del sistema ottimizzando gli 'idle-loops' - sezione del codice dove non accade nulla, ma la CPU lavora a velocità massima. Migliora le prestazioni, è consigliato abilitarlo su hardware di bassa fascia.",
+      {
+         { "Remove Known",      "Rimuovi Conosciuti" },
+         { "Detect and Remove", "Rileva e Rimuovi" },
+         { "Don't Remove",      "Non Rimuovere" },
+         { NULL, NULL },
+      },
+      "Remove Known"
+   },
+   {
+      "mgba_frameskip",
+      "Salta Frame",
+      "Salta dei frame per migliorare le prestazioni a costo della fluidità dell'immagine. Il valore impostato qui è il numero dei frame rimosso dopo che un frame sia stato renderizzato - ovvero '0' = 60fps, '1' = 30fps, '2' = 15fps, ecc.",
+      {
+         { "0",  NULL },
+         { "1",  NULL },
+         { "2",  NULL },
+         { "3",  NULL },
+         { "4",  NULL },
+         { "5",  NULL },
+         { "6",  NULL },
+         { "7",  NULL },
+         { "8",  NULL },
+         { "9",  NULL },
+         { "10", NULL },
+         { NULL, NULL },
+      },
+      "0"
+   },
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+   {
+      "mgba_color_correction",
+      "Correzione Colore",
+      "Regola i colori per corrispondere lo schermo di GBA/GBC reali.",
+      {
+         { "OFF",  NULL },
+         { "GBA",  "Game Boy Advance" },
+         { "GBC",  "Game Boy Color" },
+         { "Auto", NULL },
+         { NULL, NULL },
+      },
+      "OFF"
+   },
+#endif
+   { NULL, NULL, NULL, {{0}}, NULL },
+};
+
 /* RETRO_LANGUAGE_DUTCH */
 
 /* RETRO_LANGUAGE_PORTUGUESE_BRAZIL */
