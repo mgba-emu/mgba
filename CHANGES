@@ -18,6 +18,7 @@ Other fixes:
  - Qt: Fix toggled actions on gamepads (fixes mgba.io/i/1650)
  - Qt: Fix extraneous dialog (fixes mgba.io/i/1654)
  - Qt: Fix window title not updating after shutting down game
+ - Qt: Fix GIF view not allowing manual filename entry
  - Util: Fix crash reading invalid ELFs
 Misc:
  - Qt: Fix non-SDL build (fixes mgba.io/i/1656)
