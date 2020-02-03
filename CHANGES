@@ -10,6 +10,7 @@ Emulation fixes:
 Other fixes:
  - Core: Fix race condition initializing thread proxy
  - Core: Fix integer overflow in ELF loading
+ - FFmpeg: Fix crash when -strict -2 is needed for vcodec or container
  - Qt: Only dynamically reset video scale if a game is running
  - Qt: Fix race condition with proxied video events
  - Qt: Fix color selection in asset view (fixes mgba.io/i/1648)
