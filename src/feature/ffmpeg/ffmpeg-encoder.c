@@ -445,8 +445,11 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			encoder->sinkFrame = avcodec_alloc_frame();
 #endif
 		}
-
-		if (avcodec_open2(encoder->video, vcodec, 0) < 0) {
+		AVDictionary* opts = 0;
+		av_dict_set(&opts, "strict", "-2", 0);
+		int res = avcodec_open2(encoder->video, vcodec, &opts);
+		av_dict_free(&opts);
+		if (res < 0) {
 			FFmpegEncoderClose(encoder);
 			return false;
 		}
@@ -466,7 +469,11 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 #endif
 	}
 
-	if (avio_open(&encoder->context->pb, outfile, AVIO_FLAG_WRITE) < 0 || avformat_write_header(encoder->context, 0) < 0) {
+	AVDictionary* opts = 0;
+	av_dict_set(&opts, "strict", "-2", 0);
+	bool res = avio_open(&encoder->context->pb, outfile, AVIO_FLAG_WRITE) < 0 || avformat_write_header(encoder->context, &opts) < 0;
+	av_dict_free(&opts);
+	if (res) {
 		FFmpegEncoderClose(encoder);
 		return false;
 	}
