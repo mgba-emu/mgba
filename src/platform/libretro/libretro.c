@@ -44,6 +44,10 @@ FS_Archive sdmcArchive;
 #define SAMPLES 512
 #define RUMBLE_PWM 35
 
+#define VIDEO_WIDTH_MAX  256
+#define VIDEO_HEIGHT_MAX 224
+#define VIDEO_BUFF_SIZE  (VIDEO_WIDTH_MAX * VIDEO_HEIGHT_MAX * sizeof(color_t))
+
 static retro_environment_t environCallback;
 static retro_video_refresh_t videoCallback;
 static retro_audio_sample_batch_t audioCallback;
@@ -92,9 +96,10 @@ static size_t camStride;
 static u32 hidSixAxisHandles[4];
 #endif
 
-/* Colour correction */
+/* Video post processing */
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
 
+/* Colour correction */
 #define CC_TARGET_GAMMA   2.2f
 #define CC_RGB_MAX        31.0f
 
@@ -120,7 +125,6 @@ static u32 hidSixAxisHandles[4];
 #define GBA_CC_BG         0.23f
 #define GBA_CC_GAMMA_ADJ  0.45f
 
-static color_t* ccOutputBuffer     = NULL;
 static color_t* ccLUT              = NULL;
 static unsigned ccType             = 0;
 static bool colorCorrectionEnabled = false;
@@ -219,7 +223,7 @@ static void _initColorCorrection(void) {
 			return;
 	}
 
-	/* Allocate buffers, if required */
+	/* Allocate look-up table buffer, if required */
 	if (!ccLUT) {
 		size_t lutSize = 65536 * sizeof(color_t);
 		ccLUT = malloc(lutSize);
@@ -227,19 +231,6 @@ static void _initColorCorrection(void) {
 			return;
 		}
 		memset(ccLUT, 0xFF, lutSize);
-	}
-
-	if (!ccOutputBuffer) {
-		size_t bufSize = 256 * 224 * sizeof(color_t);
-#ifdef _3DS
-		ccOutputBuffer = linearMemAlign(bufSize, 0x80);
-#else
-		ccOutputBuffer = malloc(bufSize);
-#endif
-		if (!ccOutputBuffer) {
-			return;
-		}
-		memset(ccOutputBuffer, 0xFF, bufSize);
 	}
 
 	/* If we get this far, then colour correction is enabled... */
@@ -309,6 +300,448 @@ static void _loadColorCorrectionSettings(void) {
 		colorCorrectionEnabled = false;
 	} else if (ccType != oldCcType) {
 		_initColorCorrection();
+	}
+}
+
+/* Interframe blending */
+#define LCD_RESPONSE_TIME 0.333f
+
+static unsigned frameBlendType     = 0;
+static bool frameBlendEnabled      = false;
+static color_t* outputBufferPrev1  = NULL;
+static color_t* outputBufferPrev2  = NULL;
+static color_t* outputBufferPrev3  = NULL;
+static color_t* outputBufferPrev4  = NULL;
+static float frameBlendResponse[4] = {0.0f};
+static bool frameBlendResponseSet  = false;
+
+static void _initFrameBlend(void) {
+
+	frameBlendEnabled = false;
+
+	/* Allocate interframe blending buffers, as required
+	 * NOTE: In all cases, any used buffers are 'reset'
+	 * (filled with 0xFF) to avoid drawing garbage on
+	 * the next frame */
+
+	/* > Simple 50:50 blending requires a single buffer */
+	if (frameBlendType > 0) {
+
+		if (!outputBufferPrev1) {
+			outputBufferPrev1 = malloc(VIDEO_BUFF_SIZE);
+			if (!outputBufferPrev1) {
+				return;
+			}
+		}
+		memset(outputBufferPrev1, 0xFF, VIDEO_BUFF_SIZE);
+	}
+
+	/* > Smart 50:50 blending requires three buffers */
+	if (frameBlendType > 1) {
+
+		if (!outputBufferPrev2) {
+			outputBufferPrev2 = malloc(VIDEO_BUFF_SIZE);
+			if (!outputBufferPrev2) {
+				return;
+			}
+		}
+		memset(outputBufferPrev2, 0xFF, VIDEO_BUFF_SIZE);
+
+		if (!outputBufferPrev3) {
+			outputBufferPrev3 = malloc(VIDEO_BUFF_SIZE);
+			if (!outputBufferPrev3) {
+				return;
+			}
+		}
+		memset(outputBufferPrev3, 0xFF, VIDEO_BUFF_SIZE);
+	}
+
+	/* > LCD ghosting requires four buffers */
+	if (frameBlendType > 2) {
+
+		if (!outputBufferPrev4) {
+			outputBufferPrev4 = malloc(VIDEO_BUFF_SIZE);
+			if (!outputBufferPrev4) {
+				return;
+			}
+		}
+		memset(outputBufferPrev4, 0xFF, VIDEO_BUFF_SIZE);
+	}
+
+	/* Set LCD ghosting response time factors,
+	 * if required */
+	if ((frameBlendType == 3) && !frameBlendResponseSet) {
+
+		/* For the default response time of 0.333,
+		 * only four previous samples are required
+		 * since the response factor for the fifth
+		 * is:
+		 *    pow(LCD_RESPONSE_TIME, 5.0f) -> 0.00409
+		 * ...which is less than half a percent, and
+		 * therefore irrelevant.
+		 * If the response time were significantly
+		 * increased, we may need to rethink this
+		 * (but more samples == greater performance
+		 * overheads) */
+		frameBlendResponse[0] = LCD_RESPONSE_TIME;
+		frameBlendResponse[1] = pow(LCD_RESPONSE_TIME, 2.0f);
+		frameBlendResponse[2] = pow(LCD_RESPONSE_TIME, 3.0f);
+		frameBlendResponse[3] = pow(LCD_RESPONSE_TIME, 4.0f);
+
+		frameBlendResponseSet = true;
+	}
+
+	/* If we get this far, then interframe blending is enabled... */
+	frameBlendEnabled = true;
+}
+
+static void _loadFrameBlendSettings(void) {
+
+	struct retro_variable var;
+	unsigned oldFrameBlendType = frameBlendType;
+	frameBlendType = 0;
+
+	var.key = "mgba_interframe_blending";
+	var.value = 0;
+
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		if (strcmp(var.value, "mix") == 0) {
+			frameBlendType = 1;
+		} else if (strcmp(var.value, "mix_smart") == 0) {
+			frameBlendType = 2;
+		} else if (strcmp(var.value, "lcd_ghosting") == 0) {
+			frameBlendType = 3;
+		}
+	}
+
+	if (frameBlendType == 0) {
+		frameBlendEnabled = false;
+	} else if (frameBlendType != oldFrameBlendType) {
+		_initFrameBlend();
+	}
+}
+
+/* General post processing buffers/functions */
+static color_t* ppOutputBuffer = NULL;
+
+static void (*videoPostProcess)(unsigned width, unsigned height) = NULL;
+
+/* > Note: The individual post processing functions
+ *   are somewhat WET (Write Everything Twice), in that
+ *   we duplicate the entire nested for loop.
+ *   This code is performance-critical, so we want to
+ *   minimise logic in the inner loops where possible  */
+static void videoPostProcessCc(unsigned width, unsigned height) {
+
+	color_t *src = outputBuffer;
+	color_t *dst = ppOutputBuffer;
+	size_t x, y;
+
+	for (y = 0; y < height; y++) {
+		for (x = 0; x < width; x++) {
+			*(dst + x) = *(ccLUT + *(src + x));
+		}
+		src += VIDEO_WIDTH_MAX;
+		dst += VIDEO_WIDTH_MAX;
+	}
+}
+
+static void videoPostProcessMix(unsigned width, unsigned height) {
+
+	color_t *srcCurr = outputBuffer;
+	color_t *srcPrev = outputBufferPrev1;
+	color_t *dst     = ppOutputBuffer;
+	size_t x, y;
+
+	for (y = 0; y < height; y++) {
+		for (x = 0; x < width; x++) {
+
+			/* Get colours from current + previous frames */
+			color_t rgbCurr = *(srcCurr + x);
+			color_t rgbPrev = *(srcPrev + x);
+
+			/* Store colours for next frame */
+			*(srcPrev + x) = rgbCurr;
+
+			/* Unpack colours and convert to float
+			 * > Note that we can do this far more efficiently
+			 *   via bit twiddling, but this mangles the colours.
+			 *   Given the baseline CPU requirements of mGBA,
+			 *   performing an 'accurate' mix does not significantly
+			 *   increase performance overheads */
+			float rCurr = (float)(rgbCurr >> 11 & 0x1F);
+			float gCurr = (float)(rgbCurr >>  6 & 0x1F);
+			float bCurr = (float)(rgbCurr       & 0x1F);
+
+			float rPrev = (float)(rgbPrev >> 11 & 0x1F);
+			float gPrev = (float)(rgbPrev >>  6 & 0x1F);
+			float bPrev = (float)(rgbPrev       & 0x1F);
+
+         /* Mix colours for current frame and convert back to color_t */
+         color_t rMix = (color_t)(((rCurr * 0.5f) + (rPrev * 0.5f)) + 0.5f) & 0x1F;
+         color_t gMix = (color_t)(((gCurr * 0.5f) + (gPrev * 0.5f)) + 0.5f) & 0x1F;
+         color_t bMix = (color_t)(((bCurr * 0.5f) + (bPrev * 0.5f)) + 0.5f) & 0x1F;
+
+			/* Repack colours for current frame */
+			*(dst + x) = colorCorrectionEnabled ?
+					*(ccLUT + (rMix << 11 | gMix << 6 | bMix)) :
+							rMix << 11 | gMix << 6 | bMix;
+		}
+		srcCurr += VIDEO_WIDTH_MAX;
+		srcPrev += VIDEO_WIDTH_MAX;
+		dst     += VIDEO_WIDTH_MAX;
+	}
+}
+
+static void videoPostProcessMixSmart(unsigned width, unsigned height) {
+
+	color_t *srcCurr  = outputBuffer;
+	color_t *srcPrev1 = outputBufferPrev1;
+	color_t *srcPrev2 = outputBufferPrev2;
+	color_t *srcPrev3 = outputBufferPrev3;
+	color_t *dst      = ppOutputBuffer;
+	size_t x, y;
+
+	for (y = 0; y < height; y++) {
+		for (x = 0; x < width; x++) {
+
+			/* Get colours from current + previous frames */
+			color_t rgbCurr  = *(srcCurr + x);
+			color_t rgbPrev1 = *(srcPrev1 + x);
+			color_t rgbPrev2 = *(srcPrev2 + x);
+			color_t rgbPrev3 = *(srcPrev3 + x);
+
+			/* Store colours for next frame */
+			*(srcPrev1 + x) = rgbCurr;
+			*(srcPrev2 + x) = rgbPrev1;
+			*(srcPrev3 + x) = rgbPrev2;
+
+			/* Determine whether mixing is required
+			 * i.e. whether alternate frames have the same pixel colour,
+			 * but adjacent frames do not */
+			if (((rgbCurr == rgbPrev2) || (rgbPrev1 == rgbPrev3)) &&
+				 (rgbCurr != rgbPrev1) &&
+			    (rgbCurr != rgbPrev3) &&
+			    (rgbPrev1 != rgbPrev2)) {
+
+				/* Unpack colours and convert to float */
+				float rCurr = (float)(rgbCurr >> 11 & 0x1F);
+				float gCurr = (float)(rgbCurr >>  6 & 0x1F);
+				float bCurr = (float)(rgbCurr       & 0x1F);
+
+				float rPrev1 = (float)(rgbPrev1 >> 11 & 0x1F);
+				float gPrev1 = (float)(rgbPrev1 >>  6 & 0x1F);
+				float bPrev1 = (float)(rgbPrev1       & 0x1F);
+
+				/* Mix colours for current frame and convert back to color_t */
+				color_t rMix = (color_t)(((rCurr * 0.5f) + (rPrev1 * 0.5f)) + 0.5f) & 0x1F;
+				color_t gMix = (color_t)(((gCurr * 0.5f) + (gPrev1 * 0.5f)) + 0.5f) & 0x1F;
+				color_t bMix = (color_t)(((bCurr * 0.5f) + (bPrev1 * 0.5f)) + 0.5f) & 0x1F;
+
+				/* Repack colours for current frame */
+				*(dst + x) = colorCorrectionEnabled ?
+						*(ccLUT + (rMix << 11 | gMix << 6 | bMix)) :
+								rMix << 11 | gMix << 6 | bMix;
+
+			} else {
+				/* Just use colours for current frame */
+				*(dst + x) = colorCorrectionEnabled ?
+						*(ccLUT + rgbCurr) :	rgbCurr;
+			}
+		}
+		srcCurr  += VIDEO_WIDTH_MAX;
+		srcPrev1 += VIDEO_WIDTH_MAX;
+		srcPrev2 += VIDEO_WIDTH_MAX;
+		srcPrev3 += VIDEO_WIDTH_MAX;
+		dst      += VIDEO_WIDTH_MAX;
+	}
+}
+
+static void videoPostProcessLcdGhost(unsigned width, unsigned height) {
+
+	color_t *srcCurr  = outputBuffer;
+	color_t *srcPrev1 = outputBufferPrev1;
+	color_t *srcPrev2 = outputBufferPrev2;
+	color_t *srcPrev3 = outputBufferPrev3;
+	color_t *srcPrev4 = outputBufferPrev4;
+	color_t *dst      = ppOutputBuffer;
+	float *response   = frameBlendResponse;
+	size_t x, y;
+
+	for (y = 0; y < height; y++) {
+		for (x = 0; x < width; x++) {
+
+			/* Get colours from current + previous frames */
+			color_t rgbCurr  = *(srcCurr + x);
+			color_t rgbPrev1 = *(srcPrev1 + x);
+			color_t rgbPrev2 = *(srcPrev2 + x);
+			color_t rgbPrev3 = *(srcPrev3 + x);
+			color_t rgbPrev4 = *(srcPrev4 + x);
+
+			/* Store colours for next frame */
+			*(srcPrev1 + x) = rgbCurr;
+			*(srcPrev2 + x) = rgbPrev1;
+			*(srcPrev3 + x) = rgbPrev2;
+			*(srcPrev4 + x) = rgbPrev3;
+
+			/* Unpack colours and convert to float */
+			float rCurr = (float)(rgbCurr >> 11 & 0x1F);
+			float gCurr = (float)(rgbCurr >>  6 & 0x1F);
+			float bCurr = (float)(rgbCurr       & 0x1F);
+
+			float rPrev1 = (float)(rgbPrev1 >> 11 & 0x1F);
+			float gPrev1 = (float)(rgbPrev1 >>  6 & 0x1F);
+			float bPrev1 = (float)(rgbPrev1       & 0x1F);
+
+			float rPrev2 = (float)(rgbPrev2 >> 11 & 0x1F);
+			float gPrev2 = (float)(rgbPrev2 >>  6 & 0x1F);
+			float bPrev2 = (float)(rgbPrev2       & 0x1F);
+
+			float rPrev3 = (float)(rgbPrev3 >> 11 & 0x1F);
+			float gPrev3 = (float)(rgbPrev3 >>  6 & 0x1F);
+			float bPrev3 = (float)(rgbPrev3       & 0x1F);
+
+			float rPrev4 = (float)(rgbPrev4 >> 11 & 0x1F);
+			float gPrev4 = (float)(rgbPrev4 >>  6 & 0x1F);
+			float bPrev4 = (float)(rgbPrev4       & 0x1F);
+
+			/* Mix colours for current frame and convert back to color_t
+			 * > Response time effect implemented via an exponential
+			 *   drop-off algorithm, taken from the 'Gameboy Classic Shader'
+			 *   by Harlequin:
+			 *      https://github.com/libretro/glsl-shaders/blob/master/handheld/shaders/gameboy/shader-files/gb-pass0.glsl */
+			rCurr += (rPrev1 - rCurr) * *response;
+			rCurr += (rPrev2 - rCurr) * *(response + 1);
+			rCurr += (rPrev3 - rCurr) * *(response + 2);
+			rCurr += (rPrev4 - rCurr) * *(response + 3);
+			color_t rMix = (color_t)(rCurr + 0.5f) & 0x1F;
+
+			gCurr += (gPrev1 - gCurr) * *response;
+			gCurr += (gPrev2 - gCurr) * *(response + 1);
+			gCurr += (gPrev3 - gCurr) * *(response + 2);
+			gCurr += (gPrev4 - gCurr) * *(response + 3);
+			color_t gMix = (color_t)(gCurr + 0.5f) & 0x1F;
+
+			bCurr += (bPrev1 - bCurr) * *response;
+			bCurr += (bPrev2 - bCurr) * *(response + 1);
+			bCurr += (bPrev3 - bCurr) * *(response + 2);
+			bCurr += (bPrev4 - bCurr) * *(response + 3);
+			color_t bMix = (color_t)(bCurr + 0.5f) & 0x1F;
+
+			/* Repack colours for current frame */
+			*(dst + x) = colorCorrectionEnabled ?
+					*(ccLUT + (rMix << 11 | gMix << 6 | bMix)) :
+							rMix << 11 | gMix << 6 | bMix;
+		}
+		srcCurr  += VIDEO_WIDTH_MAX;
+		srcPrev1 += VIDEO_WIDTH_MAX;
+		srcPrev2 += VIDEO_WIDTH_MAX;
+		srcPrev3 += VIDEO_WIDTH_MAX;
+		srcPrev4 += VIDEO_WIDTH_MAX;
+		dst      += VIDEO_WIDTH_MAX;
+	}
+}
+
+static void _initPostProcessing(void) {
+
+	/* Early return if all post processing elements
+	 * are disabled */
+	videoPostProcess = NULL;
+	if (!colorCorrectionEnabled && !frameBlendEnabled) {
+		return;
+	}
+
+	/* Allocate output buffer, if required */
+	if (!ppOutputBuffer) {
+#ifdef _3DS
+		ppOutputBuffer = linearMemAlign(VIDEO_BUFF_SIZE, 0x80);
+#else
+		ppOutputBuffer = malloc(VIDEO_BUFF_SIZE);
+#endif
+		if (!ppOutputBuffer) {
+			return;
+		}
+		memset(ppOutputBuffer, 0xFF, VIDEO_BUFF_SIZE);
+	}
+
+	/* Assign post processing function */
+	if (frameBlendEnabled) {
+		switch (frameBlendType) {
+			case 1:
+				videoPostProcess = videoPostProcessMix;
+				return;
+			case 2:
+				videoPostProcess = videoPostProcessMixSmart;
+				return;
+			case 3:
+				videoPostProcess = videoPostProcessLcdGhost;
+				return;
+			default:
+				/* Cannot happen */
+				videoPostProcess = colorCorrectionEnabled ?
+						videoPostProcessCc : NULL;
+				return;
+		}
+	} else if (colorCorrectionEnabled) {
+		videoPostProcess = videoPostProcessCc;
+	}
+}
+
+static void _loadPostProcessingSettings(void) {
+
+	/* Load settings and initialise individual
+	 * post processing elements */
+	_loadColorCorrectionSettings();
+	_loadFrameBlendSettings();
+
+	/* Initialise post processing buffers/functions
+	 * based on configured options */
+	_initPostProcessing();
+}
+
+static void _deinitPostProcessing(void) {
+
+	ccType                 = 0;
+	frameBlendType         = 0;
+	colorCorrectionEnabled = false;
+	frameBlendEnabled      = false;
+	videoPostProcess       = NULL;
+
+	/* Free all allocated buffers */
+	if (ppOutputBuffer) {
+#ifdef _3DS
+		linearFree(ppOutputBuffer);
+#else
+		free(ppOutputBuffer);
+#endif
+		ppOutputBuffer = NULL;
+	}
+
+	/* > Colour correction */
+	if (ccLUT) {
+		free(ccLUT);
+		ccLUT = NULL;
+	}
+
+	/* > Interframe blending */
+	if (outputBufferPrev1) {
+		free(outputBufferPrev1);
+		outputBufferPrev1 = NULL;
+	}
+
+	if (outputBufferPrev2) {
+		free(outputBufferPrev2);
+		outputBufferPrev2 = NULL;
+	}
+
+	if (outputBufferPrev3) {
+		free(outputBufferPrev3);
+		outputBufferPrev3 = NULL;
+	}
+
+	if (outputBufferPrev4) {
+		free(outputBufferPrev4);
+		outputBufferPrev4 = NULL;
 	}
 }
 
@@ -442,8 +875,8 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
 	info->geometry.base_height = height;
 #ifdef M_CORE_GB
 	if (core->platform(core) == PLATFORM_GB) {
-		info->geometry.max_width = 256;
-		info->geometry.max_height = 224;
+		info->geometry.max_width = VIDEO_WIDTH_MAX;
+		info->geometry.max_height = VIDEO_HEIGHT_MAX;
 	} else
 #endif
 	{
@@ -540,30 +973,16 @@ void retro_init(void) {
 }
 
 void retro_deinit(void) {
+	if (outputBuffer) {
 #ifdef _3DS
-	linearFree(outputBuffer);
-	outputBuffer = NULL;
-#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
-	if (ccOutputBuffer) {
-		linearFree(ccOutputBuffer);
-		ccOutputBuffer = NULL;
-	}
-#endif
+		linearFree(outputBuffer);
 #else
-	free(outputBuffer);
-	outputBuffer = NULL;
-#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
-	if (ccOutputBuffer) {
-		free(ccOutputBuffer);
-		ccOutputBuffer = NULL;
-	}
+		free(outputBuffer);
 #endif
-#endif
-#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
-	if (ccLUT) {
-		free(ccLUT);
-		ccLUT = NULL;
+		outputBuffer = NULL;
 	}
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+	_deinitPostProcessing();
 #endif
 #ifdef HAVE_LIBNX
 	hidStopSixAxisSensor(hidSixAxisHandles[0]);
@@ -638,7 +1057,7 @@ void retro_run(void) {
 		}
 
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
-		_loadColorCorrectionSettings();
+		_loadPostProcessingSettings();
 #endif
 	}
 
@@ -684,21 +1103,12 @@ void retro_run(void) {
 	core->desiredVideoDimensions(core, &width, &height);
 
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
-	if (colorCorrectionEnabled) {
-		color_t *src = outputBuffer;
-		color_t *dst = ccOutputBuffer;
-		size_t x, y;
-		for (y = 0; y < height; y++) {
-			for (x = 0; x < width; x++) {
-				*(dst + x) = *(ccLUT + *(src + x));
-			}
-			src += 256;
-			dst += 256;
-		}
-		videoCallback(ccOutputBuffer, width, height, 256 * sizeof(color_t));
+	if (videoPostProcess) {
+		videoPostProcess(width, height);
+		videoCallback(ppOutputBuffer, width, height, VIDEO_WIDTH_MAX * sizeof(color_t));
 	} else
 #endif
-		videoCallback(outputBuffer, width, height, 256 * sizeof(color_t));
+		videoCallback(outputBuffer, width, height, VIDEO_WIDTH_MAX * sizeof(color_t));
 
 	// This was from aliaspider patch (4539a0e), game boy audio is buggy with it (adapted for this refactored core)
 /*
@@ -885,14 +1295,13 @@ bool retro_load_game(const struct retro_game_info* game) {
 	core->init(core);
 	core->setAVStream(core, &stream);
 
-	size_t size = 256 * 224 * sizeof(color_t);
 #ifdef _3DS
-	outputBuffer = linearMemAlign(size, 0x80);
+	outputBuffer = linearMemAlign(VIDEO_BUFF_SIZE, 0x80);
 #else
-	outputBuffer = malloc(size);
+	outputBuffer = malloc(VIDEO_BUFF_SIZE);
 #endif
-	memset(outputBuffer, 0xFF, size);
-	core->setVideoBuffer(core, outputBuffer, 256);
+	memset(outputBuffer, 0xFF, VIDEO_BUFF_SIZE);
+	core->setVideoBuffer(core, outputBuffer, VIDEO_WIDTH_MAX);
 
 	core->setAudioBufferSize(core, SAMPLES);
 
@@ -969,7 +1378,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 	_setupMaps(core);
 
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
-	_loadColorCorrectionSettings();
+	_loadPostProcessingSettings();
 #endif
 
 	return true;
