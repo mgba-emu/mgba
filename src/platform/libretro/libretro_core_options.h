@@ -178,10 +178,13 @@ struct retro_core_option_definition option_defs_us[] = {
       "Interframe Blending",
       "Simulates LCD ghosting effects. 'Simple' performs a 50:50 mix of the current and previous frames. 'Smart' attempts to detect screen flickering, and only performs a 50:50 mix on affected pixels. 'LCD Ghosting' mimics natural LCD response times by combining multiple buffered frames. 'Simple' or 'Smart' blending is required when playing games that aggressively exploit LCD ghosting for transparency effects (Wave Race, Chikyuu Kaihou Gun ZAS, F-Zero, the Boktai series...).",
       {
-         { "OFF",          NULL },
-         { "mix",          "Simple" },
-         { "mix_smart",    "Smart" },
-         { "lcd_ghosting", "LCD Ghosting" },
+         { "OFF",               NULL },
+         { "mix",               "Simple (Accurate)" },
+         { "mix_fast",          "Simple (Fast)" },
+         { "mix_smart",         "Smart (Accurate)" },
+         { "mix_smart_fast",    "Smart (Fast)" },
+         { "lcd_ghosting",      "LCD Ghosting (Accurate)" },
+         { "lcd_ghosting_fast", "LCD Ghosting (Fast)" },
          { NULL, NULL },
       },
       "OFF"
