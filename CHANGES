@@ -22,6 +22,7 @@ Other fixes:
  - Qt: Fix window title not updating after shutting down game
  - Qt: Fix GIF view not allowing manual filename entry
  - Util: Fix crash reading invalid ELFs
+ - VFS: Fix handle leak when double-mapping (fixes mgba.io/i/1659)
 Misc:
  - FFmpeg: Add more presets
  - Qt: Fix non-SDL build (fixes mgba.io/i/1656)
