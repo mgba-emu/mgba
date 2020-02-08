@@ -593,7 +593,7 @@ static void _GBACoreReset(struct mCore* core) {
 	GBAOverrideApplyDefaults(gba, gbacore->overrides);
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	if (!gba->biosVf && core->opts.useBios) {
+	if (!gba->biosVf && core->opts.useBios && !GBAIsMB(gba->romVf)) {
 		struct VFile* bios = NULL;
 		bool found = false;
 		if (core->opts.bios) {
@@ -636,7 +636,7 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 
 	ARMReset(core->cpu);
-	if (core->opts.skipBios && (gba->romVf || gba->memory.rom)) {
+	if (core->opts.skipBios && (gba->romVf || gba->memory.rom) && !GBAIsMB(gba->romVf)) {
 		GBASkipBIOS(core->board);
 	}
 }
