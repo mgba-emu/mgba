@@ -170,12 +170,12 @@ static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
 	size_t i;
 	for (i = 0; i < HandleMappingListSize(&vfd->handles); ++i) {
 		if (HandleMappingListGetPointer(&vfd->handles, i)->mapping == memory) {
+			UnmapViewOfFile(memory);
 			CloseHandle(HandleMappingListGetPointer(&vfd->handles, i)->handle);
 			HandleMappingListShift(&vfd->handles, i, 1);
 			break;
 		}
 	}
-	UnmapViewOfFile(memory);
 }
 #endif
 
