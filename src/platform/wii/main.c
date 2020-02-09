@@ -262,7 +262,7 @@ int main(int argc, char* argv[]) {
 #ifdef FIXED_ROM_BUFFER
 	romBufferSize = SIZE_CART0;
 	romBuffer = SYS_GetArena2Lo();
-	SYS_SetArena2Lo((void*)((intptr_t) romBuffer + SIZE_CART0));
+	SYS_SetArena2Lo((void*)((intptr_t) romBuffer + romBufferSize));
 #endif
 
 #if !defined(COLOR_16_BIT) && !defined(COLOR_5_6_5)

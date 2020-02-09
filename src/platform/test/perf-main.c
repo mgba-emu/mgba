@@ -22,6 +22,14 @@
 #ifdef __SWITCH__
 #include <switch.h>
 #endif
+#ifdef GEKKO
+#include <fat.h>
+#include <gccore.h>
+#ifdef FIXED_ROM_BUFFER
+uint32_t* romBuffer;
+size_t romBufferSize;
+#endif
+#endif
 
 #include <errno.h>
 #include <fcntl.h>
@@ -83,6 +91,29 @@ int main(int argc, char** argv) {
 #elif defined(__SWITCH__)
 	UNUSED(_mPerfShutdown);
 	consoleInit(NULL);
+#elif defined(GEKKO)
+	VIDEO_Init();
+	VIDEO_SetBlack(true);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+
+	GXRModeObj* vmode = VIDEO_GetPreferredMode(0);
+	void* xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(vmode));
+	console_init(xfb, 20, 20, vmode->fbWidth, vmode->xfbHeight, vmode->fbWidth * VI_DISPLAY_PIX_SZ);
+
+	VIDEO_Configure(vmode);
+	VIDEO_SetNextFramebuffer(xfb);
+	VIDEO_SetBlack(false);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	VIDEO_WaitVSync();
+	fatInitDefault();
+
+#ifdef FIXED_ROM_BUFFER
+	romBufferSize = 0x02000000;
+	romBuffer = SYS_GetArena2Lo();
+	SYS_SetArena2Lo((void*)((intptr_t) romBuffer + romBufferSize));
+#endif
 #else
 	signal(SIGINT, _mPerfShutdown);
 #endif
@@ -125,6 +156,8 @@ int main(int argc, char** argv) {
 		puts("game_code,frames,duration,renderer");
 #ifdef __SWITCH__
 		consoleUpdate(NULL);
+#elif defined(GEKKO)
+		VIDEO_WaitVSync();
 #endif
 	}
 	if (perfOpts.server) {
@@ -145,6 +178,11 @@ int main(int argc, char** argv) {
 	acExit();
 #elif defined(__SWITCH__)
 	consoleExit(NULL);
+#elif defined(GEKKO)
+	VIDEO_SetBlack(true);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	VIDEO_WaitVSync();
 #endif
 
 	return didFail;

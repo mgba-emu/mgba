@@ -11,6 +11,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/wii/wii-*.c)
 list(APPEND OS_LIB wiiuse bte fat ogc)
 set(OS_SRC ${OS_SRC} PARENT_SCOPE)
+set(OS_LIB ${OS_LIB} PARENT_SCOPE)
 source_group("Wii-specific code" FILES ${OS_SRC})
 set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)
 set(OS_DEFINES ${OS_DEFINES} PARENT_SCOPE)
@@ -38,6 +39,16 @@ add_custom_target(${BINARY_NAME}.dol ALL
 
 add_custom_target(run ${WIILOAD} ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.dol
                   DEPENDS ${BINARY_NAME}.dol)
+
+if(BUILD_PERF)
+	add_custom_target(${BINARY_NAME}-perf.dol ALL
+	                  ${ELF2DOL} ../${BINARY_NAME}-perf ${BINARY_NAME}-perf.dol
+	                  DEPENDS ${BINARY_NAME}-perf)
+
+	install(FILES
+		    ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}-perf.dol
+		    DESTINATION . COMPONENT ${BINARY_NAME}-perf)
+endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/meta.xml.in ${CMAKE_CURRENT_BINARY_DIR}/meta.xml)
 
