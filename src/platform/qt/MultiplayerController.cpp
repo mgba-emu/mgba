@@ -16,11 +16,13 @@
 
 using namespace QGBA;
 
+#ifdef M_CORE_GB
 MultiplayerController::Player::Player(CoreController* coreController, GBSIOLockstepNode* node)
 	: controller(coreController)
 	, gbNode(node)
 {
 }
+#endif
 
 #ifdef M_CORE_GBA
 MultiplayerController::Player::Player(CoreController* coreController, GBASIOLockstepNode* node)
