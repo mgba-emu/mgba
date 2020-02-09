@@ -61,6 +61,7 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->iheight = GBA_VIDEO_VERTICAL_PIXELS;
 	encoder->frameskip = 1;
 	encoder->skipResidue = 0;
+	encoder->loop = false;
 	encoder->ipixFormat =
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
@@ -226,6 +227,10 @@ bool FFmpegEncoderSetContainer(struct FFmpegEncoder* encoder, const char* contai
 void FFmpegEncoderSetDimensions(struct FFmpegEncoder* encoder, int width, int height) {
 	encoder->width = width > 0 ? width : GBA_VIDEO_HORIZONTAL_PIXELS;
 	encoder->height = height > 0 ? height : GBA_VIDEO_VERTICAL_PIXELS;
+}
+
+void FFmpegEncoderSetLooping(struct FFmpegEncoder* encoder, bool loop) {
+	encoder->loop = loop;
 }
 
 bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder* encoder) {
@@ -467,6 +472,12 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 #ifdef FFMPEG_USE_CODECPAR
 		avcodec_parameters_from_context(encoder->videoStream->codecpar, encoder->video);
 #endif
+	}
+
+	if (strcmp(encoder->containerFormat, "gif") == 0) {
+		av_opt_set(encoder->context->priv_data, "loop", encoder->loop ? "0" : "-1", 0);
+	} else if (strcmp(encoder->containerFormat, "apng") == 0) {
+		av_opt_set(encoder->context->priv_data, "plays", encoder->loop ? "0" : "1", 0);
 	}
 
 	AVDictionary* opts = 0;

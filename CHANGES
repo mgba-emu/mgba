@@ -1,4 +1,6 @@
 0.9.0: (Future)
+Features:
+ - Add APNG recording
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
@@ -34,6 +36,7 @@ Other fixes:
  - VFS: Fix handle leak when double-mapping (fixes mgba.io/i/1659)
 Misc:
  - FFmpeg: Add more presets
+ - FFmpeg: Add looping option for GIF/APNG
  - Qt: Renderer can be changed while a game is running
  - Qt: Fix non-SDL build (fixes mgba.io/i/1656)
  - Switch: Make OpenGL scale adjustable while running

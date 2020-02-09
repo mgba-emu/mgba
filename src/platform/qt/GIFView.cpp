@@ -28,7 +28,6 @@ GIFView::GIFView(QWidget* parent)
 
 	FFmpegEncoderInit(&m_encoder);
 	FFmpegEncoderSetAudio(&m_encoder, nullptr, 0);
-	FFmpegEncoderSetContainer(&m_encoder, "gif");
 }
 
 GIFView::~GIFView() {
@@ -44,9 +43,16 @@ void GIFView::setController(std::shared_ptr<CoreController> controller) {
 }
 
 void GIFView::startRecording() {
-	FFmpegEncoderSetVideo(&m_encoder, "gif", 0, m_ui.frameskip->value());
+	if (m_ui.fmtApng->isChecked()) {
+		FFmpegEncoderSetContainer(&m_encoder, "apng");
+		FFmpegEncoderSetVideo(&m_encoder, "apng", 0, m_ui.frameskip->value());
+	} else {
+		FFmpegEncoderSetContainer(&m_encoder, "gif");
+		FFmpegEncoderSetVideo(&m_encoder, "gif", 0, m_ui.frameskip->value());
+	}
+	FFmpegEncoderSetLooping(&m_encoder, m_ui.loop->isChecked());
 	if (!FFmpegEncoderOpen(&m_encoder, m_filename.toUtf8().constData())) {
-		LOG(QT, ERROR) << tr("Failed to open output GIF file: %1").arg(m_filename);
+		LOG(QT, ERROR) << tr("Failed to open output GIF or APNG file: %1").arg(m_filename);
 		return;
 	}
 	m_ui.start->setEnabled(false);
@@ -64,7 +70,7 @@ void GIFView::stopRecording() {
 }
 
 void GIFView::selectFile() {
-	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select output file"), tr("Graphics Interchange Format (*.gif)"));
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select output file"), tr("Graphics Interchange Format (*.gif);;Animated Portable Network Graphics (*.png *.apng)"));
 	m_ui.filename->setText(filename);
 }
 

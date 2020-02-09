@@ -80,6 +80,7 @@ struct FFmpegEncoder {
 	int iheight;
 	int frameskip;
 	int skipResidue;
+	bool loop;
 	int64_t currentVideoFrame;
 	struct SwsContext* scaleContext;
 	struct AVStream* videoStream;
@@ -96,6 +97,7 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder*, const char* acodec, unsigned a
 bool FFmpegEncoderSetVideo(struct FFmpegEncoder*, const char* vcodec, unsigned vbr, int frameskip);
 bool FFmpegEncoderSetContainer(struct FFmpegEncoder*, const char* container);
 void FFmpegEncoderSetDimensions(struct FFmpegEncoder*, int width, int height);
+void FFmpegEncoderSetLooping(struct FFmpegEncoder*, bool loop);
 bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder*);
 bool FFmpegEncoderOpen(struct FFmpegEncoder*, const char* outfile);
 void FFmpegEncoderClose(struct FFmpegEncoder*);

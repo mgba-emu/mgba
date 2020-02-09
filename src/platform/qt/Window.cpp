@@ -1455,7 +1455,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef USE_FFMPEG
 	addGameAction(tr("Record A/V..."), "recordOutput", this, &Window::openVideoWindow, "av");
-	addGameAction(tr("Record GIF..."), "recordGIF", this, &Window::openGIFWindow, "av");
+	addGameAction(tr("Record GIF/APNG..."), "recordGIF", this, &Window::openGIFWindow, "av");
 #endif
 
 	m_actions.addSeparator("av");
