@@ -58,6 +58,9 @@ void GIFView::startRecording() {
 	m_ui.start->setEnabled(false);
 	m_ui.stop->setEnabled(true);
 	m_ui.frameskip->setEnabled(false);
+	m_ui.loop->setEnabled(false);
+	m_ui.fmtApng->setEnabled(false);
+	m_ui.fmtGif->setEnabled(false);
 	emit recordingStarted(&m_encoder.d);
 }
 
@@ -67,6 +70,9 @@ void GIFView::stopRecording() {
 	m_ui.stop->setEnabled(false);
 	m_ui.start->setEnabled(!m_filename.isEmpty());
 	m_ui.frameskip->setEnabled(true);
+	m_ui.loop->setEnabled(true);
+	m_ui.fmtApng->setEnabled(true);
+	m_ui.fmtGif->setEnabled(true);
 }
 
 void GIFView::selectFile() {
