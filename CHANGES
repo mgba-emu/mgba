@@ -30,6 +30,7 @@ Other fixes:
 Misc:
  - FFmpeg: Add more presets
  - Qt: Fix non-SDL build (fixes mgba.io/i/1656)
+ - SDL: Use DirectSound audio driver by default on Windows
  - Switch: Make OpenGL scale adjustable while running
 
 0.8.0: (2020-01-21)
