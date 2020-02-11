@@ -5,6 +5,7 @@ Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
  - GB Serialize: Fix timing bug loading channel 4 timing
+ - GBA: Fix multiboot entry point while skipping BIOS
  - GBA BIOS: Fix undefined instruction HLE behavior
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA Memory: Misaligned SRAM writes are ignored

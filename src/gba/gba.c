@@ -253,7 +253,7 @@ void GBASkipBIOS(struct GBA* gba) {
 		if (gba->memory.rom) {
 			cpu->gprs[ARM_PC] = BASE_CART0;
 		} else {
-			cpu->gprs[ARM_PC] = BASE_WORKING_RAM;
+			cpu->gprs[ARM_PC] = BASE_WORKING_RAM + 0xC0;
 		}
 		gba->video.vcount = 0x7D;
 		gba->memory.io[REG_VCOUNT >> 1] = 0x7D;
