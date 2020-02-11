@@ -84,6 +84,11 @@ void GIFView::setFilename(const QString& filename) {
 	m_filename = filename;
 	if (!FFmpegEncoderIsOpen(&m_encoder)) {
 		m_ui.start->setEnabled(!filename.isEmpty());
+		if (filename.endsWith(".gif")) {
+			m_ui.fmtGif->setChecked(Qt::Checked);
+		} else if (filename.endsWith(".png") || filename.endsWith(".apng")) {
+			m_ui.fmtApng->setChecked(Qt::Checked);
+		}
 	}
 }
 
