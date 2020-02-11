@@ -636,7 +636,7 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 
 	ARMReset(core->cpu);
-	if (core->opts.skipBios && (gba->romVf || gba->memory.rom)) {
+	if ((core->opts.skipBios && (gba->romVf || gba->memory.rom)) || (gba->romVf && GBAIsMB(gba->romVf))) {
 		GBASkipBIOS(core->board);
 	}
 }

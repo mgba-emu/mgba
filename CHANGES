@@ -25,6 +25,7 @@ Other fixes:
  - Debugger: Don't skip undefined instructions when debugger attached
  - FFmpeg: Fix crash when -strict -2 is needed for vcodec or container
  - FFmpeg: Disallow recording video with no audio nor video
+ - GBA: Automatically skip BIOS for multiboot ROMs
  - Qt: Only dynamically reset video scale if a game is running
  - Qt: Fix race condition with proxied video events
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
