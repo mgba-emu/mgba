@@ -742,11 +742,9 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 			.type.bp.opcode = opcode
 		};
 		mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_ILLEGAL_OP, &info);
-	} else
-#endif
-	{
-		ARMRaiseUndefined(cpu);
 	}
+#endif
+	ARMRaiseUndefined(cpu);
 }
 
 void GBABreakpoint(struct ARMCore* cpu, int immediate) {

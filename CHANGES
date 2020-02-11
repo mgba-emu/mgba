@@ -21,6 +21,7 @@ Other fixes:
  - Core: Fix race condition initializing thread proxy
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix integer overflow in ELF loading
+ - Debugger: Don't skip undefined instructions when debugger attached
  - FFmpeg: Fix crash when -strict -2 is needed for vcodec or container
  - FFmpeg: Disallow recording video with no audio nor video
  - Qt: Only dynamically reset video scale if a game is running
