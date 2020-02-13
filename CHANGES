@@ -8,6 +8,7 @@ Emulation fixes:
  - GBA: Fix multiboot entry point while skipping BIOS
  - GBA BIOS: Fix undefined instruction HLE behavior
  - GBA BIOS: Implement dummy sound driver calls
+ - GBA BIOS: Improve HLE BIOS timing
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA Memory: Misaligned SRAM writes are ignored
  - GBA Memory: Improve gamepak prefetch timing

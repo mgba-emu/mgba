@@ -40,8 +40,22 @@ and    r12, #0x80
 orr    r12, #0x1F
 msr    cpsr, r12
 stmfd  sp!, {lr}
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
 mov    lr, pc
 bxne   r11
+nop
+nop
+nop
+nop
 ldmfd  sp!, {lr}
 msr    cpsr, #0x93
 ldmfd  sp!, {r12}
@@ -116,7 +130,6 @@ subs   pc, lr, #4
 @ Unimplemented
 SoftReset:
 RegisterRamReset:
-Halt:
 Stop:
 Div:
 DivArm:
@@ -155,6 +168,12 @@ SoundDriverVsyncOn:
 
 NopCall:
 bx lr
+
+Halt:
+mov    r2, #0
+mov    r12, #0x04000000
+strb   r2, [r12, #0x301]
+bx     lr
 
 VBlankIntrWait:
 mov    r0, #1

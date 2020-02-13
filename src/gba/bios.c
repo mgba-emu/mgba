@@ -431,8 +431,8 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		_RegisterRamReset(gba);
 		break;
 	case GBA_SWI_HALT:
-		GBAHalt(gba);
-		break;
+		ARMRaiseSWI(cpu);
+		return;
 	case GBA_SWI_STOP:
 		GBAStop(gba);
 		break;
@@ -442,7 +442,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case GBA_SWI_INTR_WAIT:
 		// IntrWait
 		ARMRaiseSWI(cpu);
-		break;
+		return;
 	case GBA_SWI_DIV:
 		_Div(gba, cpu->gprs[0], cpu->gprs[1]);
 		break;
@@ -472,7 +472,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Misaligned CpuSet destination");
 		}
 		ARMRaiseSWI(cpu);
-		break;
+		return;
 	case GBA_SWI_GET_BIOS_CHECKSUM:
 		cpu->gprs[0] = GBA_BIOS_CHECKSUM;
 		cpu->gprs[1] = 1;
@@ -577,7 +577,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		break;
 	case GBA_SWI_SOUND_DRIVER_GET_JUMP_LIST:
 		ARMRaiseSWI(cpu);
-		break;
+		return;
 	default:
 		mLOG(GBA_BIOS, STUB, "Stub software interrupt: %02X", immediate);
 	}
