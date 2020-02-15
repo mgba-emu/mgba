@@ -40,6 +40,7 @@ Other fixes:
  - Qt: Fix GIF view not allowing manual filename entry
  - Qt: Fix non-GB build (fixes mgba.io/i/1664)
  - Qt: Fix pausing Qt Multimedia audio (fixes mgba.io/i/1643)
+ - Qt: Fix invalid names for modifier keys (fixes mgba.io/i/525)
  - Util: Fix crash reading invalid ELFs
  - VFS: Fix handle leak when double-mapping (fixes mgba.io/i/1659)
 Misc:
