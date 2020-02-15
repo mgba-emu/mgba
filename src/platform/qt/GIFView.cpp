@@ -25,6 +25,8 @@ GIFView::GIFView(QWidget* parent)
 
 	connect(m_ui.selectFile, &QAbstractButton::clicked, this, &GIFView::selectFile);
 	connect(m_ui.filename, &QLineEdit::textChanged, this, &GIFView::setFilename);
+	connect(m_ui.fmtGif, &QAbstractButton::clicked, this, &GIFView::changeExtension);
+	connect(m_ui.fmtApng, &QAbstractButton::clicked, this, &GIFView::changeExtension);
 
 	FFmpegEncoderInit(&m_encoder);
 	FFmpegEncoderSetAudio(&m_encoder, nullptr, 0);
@@ -90,6 +92,23 @@ void GIFView::setFilename(const QString& filename) {
 			m_ui.fmtApng->setChecked(Qt::Checked);
 		}
 	}
+}
+
+void GIFView::changeExtension() {
+	if (m_filename.isEmpty()) {
+		return;
+	}
+	QString filename = m_filename;
+	int index = m_filename.lastIndexOf(".");
+	if (index >= 0) {
+		filename.truncate(index);
+	}
+	if (m_ui.fmtGif->isChecked()) {
+		filename += ".gif";
+	} else if (m_ui.fmtApng->isChecked()) {
+		filename += ".png";
+	}
+	m_ui.filename->setText(filename);
 }
 
 #endif
