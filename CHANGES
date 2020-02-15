@@ -10,6 +10,7 @@ Emulation fixes:
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
+ - GBA DMA: Fix invalid audio DMA parameters
  - GBA Memory: Misaligned SRAM writes are ignored
  - GBA Memory: Improve gamepak prefetch timing
  - GBA Serialize: Fix serializing DMA transfer register
