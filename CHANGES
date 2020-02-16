@@ -1,4 +1,4 @@
-0.8.1: (Future)
+0.8.1: (2020-02-16)
 Emulation fixes:
  - GB Serialize: Fix timing bug loading channel 4 timing
  - GBA: Fix multiboot entry point while skipping BIOS
