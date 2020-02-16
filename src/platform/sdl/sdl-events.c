@@ -351,6 +351,13 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 			if (!sdlJoystick) {
 				continue;
 			}
+			ssize_t joysticks[MAX_PLAYERS];
+			size_t i;
+			// Pointers can get invalidated, so we'll need to refresh them
+			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
+				joysticks[i] = events->players[i]->joystick ? SDL_JoystickListIndex(&events->joysticks, events->players[i]->joystick) : SIZE_MAX;
+				events->players[i]->joystick = NULL;
+			}
 			struct SDL_JoystickCombo* joystick = SDL_JoystickListAppend(&events->joysticks);
 			joystick->joystick = sdlJoystick;
 			joystick->id = SDL_JoystickInstanceID(joystick->joystick);
@@ -358,8 +365,12 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			joystick->haptic = SDL_HapticOpenFromJoystick(joystick->joystick);
 #endif
+			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
+				if (joysticks[i] != SIZE_MAX) {
+					events->players[i]->joystick = SDL_JoystickListGetPointer(&events->joysticks, joysticks[i]);
+				}
+			}
 
-			size_t i;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			char joystickName[34] = {0};
 			SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick->joystick), joystickName, sizeof(joystickName));
