@@ -18,6 +18,7 @@ Other fixes:
 Misc:
  - FFmpeg: Add looping option for GIF/APNG
  - Qt: Renderer can be changed while a game is running
+ - Qt: Add hex index to palette view
 
 0.8.1: (2020-02-16)
 Emulation fixes:
