@@ -44,6 +44,10 @@ ObjView::ObjView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	m_ui.priority->setFont(font);
 	m_ui.palette->setFont(font);
 	m_ui.transform->setFont(font);
+	m_ui.xformPA->setFont(font);
+	m_ui.xformPB->setFont(font);
+	m_ui.xformPC->setFont(font);
+	m_ui.xformPD->setFont(font);
 	m_ui.mode->setFont(font);
 
 	connect(m_ui.tiles, &TilePainter::indexPressed, this, &ObjView::translateIndex);
@@ -157,9 +161,23 @@ void ObjView::updateTilesGBA(bool force) {
 	m_ui.mosaic->setChecked(GBAObjAttributesAIsMosaic(obj->a));
 
 	if (GBAObjAttributesAIsTransformed(obj->a)) {
-		m_ui.transform->setText(QString::number(GBAObjAttributesBGetMatIndex(obj->b)));
+		int mtxId = GBAObjAttributesBGetMatIndex(obj->b);
+		struct GBAOAMMatrix mat;
+		LOAD_16LE(mat.a, 0, &gba->video.oam.mat[mtxId].a);
+		LOAD_16LE(mat.b, 0, &gba->video.oam.mat[mtxId].b);
+		LOAD_16LE(mat.c, 0, &gba->video.oam.mat[mtxId].c);
+		LOAD_16LE(mat.d, 0, &gba->video.oam.mat[mtxId].d);
+		m_ui.transform->setText(QString::number(mtxId));
+		m_ui.xformPA->setText(QString("%0").arg(mat.a / 256., 5, 'f', 2));
+		m_ui.xformPB->setText(QString("%0").arg(mat.b / 256., 5, 'f', 2));
+		m_ui.xformPC->setText(QString("%0").arg(mat.c / 256., 5, 'f', 2));
+		m_ui.xformPD->setText(QString("%0").arg(mat.d / 256., 5, 'f', 2));
 	} else {
 		m_ui.transform->setText(tr("Off"));
+		m_ui.xformPA->setText(tr("---"));
+		m_ui.xformPB->setText(tr("---"));
+		m_ui.xformPC->setText(tr("---"));
+		m_ui.xformPD->setText(tr("---"));
 	}
 
 	switch (GBAObjAttributesAGetMode(obj->a)) {
@@ -230,6 +248,10 @@ void ObjView::updateTilesGB(bool force) {
 	m_ui.doubleSize->setChecked(false);
 	m_ui.mosaic->setChecked(false);
 	m_ui.transform->setText(tr("N/A"));
+	m_ui.xformPA->setText(tr("---"));
+	m_ui.xformPB->setText(tr("---"));
+	m_ui.xformPC->setText(tr("---"));
+	m_ui.xformPD->setText(tr("---"));
 	m_ui.mode->setText(tr("N/A"));
 }
 #endif
