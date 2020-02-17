@@ -59,22 +59,20 @@ void GIFView::stopRecording() {
 	emit recordingStopped();
 	FFmpegEncoderClose(&m_encoder);
 	m_ui.stop->setEnabled(false);
-	m_ui.start->setEnabled(true);
+	m_ui.start->setEnabled(!m_filename.isEmpty());
 	m_ui.frameskip->setEnabled(true);
 }
 
 void GIFView::selectFile() {
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select output file"), tr("Graphics Interchange Format (*.gif)"));
-	if (!filename.isEmpty()) {
-		m_ui.filename->setText(filename);
-		if (!FFmpegEncoderIsOpen(&m_encoder)) {
-			m_ui.start->setEnabled(true);
-		}
-	}
+	m_ui.filename->setText(filename);
 }
 
-void GIFView::setFilename(const QString& fname) {
-	m_filename = fname;
+void GIFView::setFilename(const QString& filename) {
+	m_filename = filename;
+	if (!FFmpegEncoderIsOpen(&m_encoder)) {
+		m_ui.start->setEnabled(!filename.isEmpty());
+	}
 }
 
 #endif

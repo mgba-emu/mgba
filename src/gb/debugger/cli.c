@@ -16,13 +16,17 @@ static void _GBCLIDebuggerInit(struct CLIDebuggerSystem*);
 static bool _GBCLIDebuggerCustom(struct CLIDebuggerSystem*);
 
 static void _frame(struct CLIDebugger*, struct CLIDebugVector*);
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 static void _load(struct CLIDebugger*, struct CLIDebugVector*);
 static void _save(struct CLIDebugger*, struct CLIDebugVector*);
+#endif
 
 struct CLIDebuggerCommandSummary _GBCLIDebuggerCommands[] = {
 	{ "frame", _frame, "", "Frame advance" },
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	{ "load", _load, "*", "Load a savestate" },
 	{ "save", _save, "*", "Save a savestate" },
+#endif
 	{ 0, 0, 0, 0 }
 };
 
@@ -73,6 +77,7 @@ static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	gbDebugger->inVblank = GBRegisterSTATGetMode(((struct GB*) gbDebugger->core->board)->memory.io[REG_STAT]) == 1;
 }
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 static void _load(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	struct CLIDebuggerBackend* be = debugger->backend;
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
@@ -106,3 +111,4 @@ static void _save(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	mCoreSaveState(gbDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT | SAVESTATE_RTC | SAVESTATE_METADATA);
 }
+#endif

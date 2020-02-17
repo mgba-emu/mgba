@@ -806,7 +806,6 @@ void Window::gameStopped() {
 		action->setEnabled(false);
 	}
 	setWindowFilePath(QString());
-	updateTitle();
 	detachWidget(m_display.get());
 	m_screenWidget->setDimensions(m_logo.width(), m_logo.height());
 	m_screenWidget->setLockIntegerScaling(false);
@@ -834,6 +833,7 @@ void Window::gameStopped() {
 	m_display->stopDrawing();
 
 	m_controller.reset();
+	updateTitle();
 
 	m_display->setVideoProxy({});
 	if (m_pendingClose) {
@@ -960,6 +960,8 @@ void Window::reloadAudioDriver() {
 	m_audioProcessor->start();
 	connect(m_controller.get(), &CoreController::stopping, m_audioProcessor.get(), &AudioProcessor::stop);
 	connect(m_controller.get(), &CoreController::fastForwardChanged, m_audioProcessor.get(), &AudioProcessor::inputParametersChanged);
+	connect(m_controller.get(), &CoreController::paused, m_audioProcessor.get(), &AudioProcessor::pause);
+	connect(m_controller.get(), &CoreController::unpaused, m_audioProcessor.get(), &AudioProcessor::start);
 }
 
 void Window::tryMakePortable() {
