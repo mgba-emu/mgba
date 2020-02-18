@@ -152,7 +152,7 @@ int main() {
 		.teardown = mPSP2Teardown,
 		.gameLoaded = mPSP2LoadROM,
 		.gameUnloaded = mPSP2UnloadROM,
-		.prepareForFrame = NULL,
+		.prepareForFrame = mPSP2Swap,
 		.drawFrame = mPSP2Draw,
 		.drawScreenshot = mPSP2DrawScreenshot,
 		.paused = mPSP2Paused,

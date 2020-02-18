@@ -66,9 +66,10 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x0018C - 0x001AB: Audio FIFO 1
  * 0x001AC - 0x001CB: Audio FIFO 2
  * 0x001CC - 0x001DF: Audio miscellaneous state
- * | 0x001CC - 0x001D3: Reserved
+ * | 0x001CC - 0x001CF: FIFO 1 size
+ * | 0x001D0 - 0x001D3: Reserved
  * | 0x001D4 - 0x001D7: Next sample
- * | 0x001D8 - 0x001DB: FIFO size
+ * | 0x001D8 - 0x001DB: FIFO 2 size
  * | TODO: Fix this, they're in big-endian order, but field is little-endian
  * | 0x001DC - 0x001DC: Channel 1 envelope state
  *   | bits 0 - 3: Current volume
@@ -170,7 +171,8 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 9 - 23: Reserved
  * 0x002C4 - 0x002C7: Game Boy Player next event
  * 0x002C8 - 0x002CB: Current DMA transfer word
- * 0x002CC - 0x002DF: Reserved (leave zero)
+ * 0x002CC - 0x002CF: Last DMA transfer PC
+ * 0x002D0 - 0x002DF: Reserved (leave zero)
  * 0x002E0 - 0x002EF: Savedata state
  * | 0x002E0 - 0x002E0: Savedata type
  * | 0x002E1 - 0x002E1: Savedata command (see savedata.h)
@@ -256,9 +258,10 @@ struct GBASerializedState {
 		struct GBSerializedPSGState psg;
 		uint8_t fifoA[32];
 		uint8_t fifoB[32];
-		int32_t reserved[2];
+		uint32_t fifoSizeA;
+		int32_t reserved;
 		int32_t nextSample;
-		uint32_t fifoSize;
+		uint32_t fifoSizeB;
 		GBSerializedAudioFlags flags;
 	} audio;
 
@@ -300,8 +303,9 @@ struct GBASerializedState {
 	} hw;
 
 	uint32_t dmaTransferRegister;
+	uint32_t dmaBlockPC;
 
-	uint32_t reservedHardware[5];
+	uint32_t reservedHardware[4];
 
 	struct {
 		uint8_t type;

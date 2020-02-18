@@ -219,6 +219,7 @@ void GBADMAUpdate(struct GBA* gba) {
 	}
 
 	if (memory->activeDMA >= 0) {
+		gba->dmaPC = gba->cpu->gprs[ARM_PC];
 		mTimingDeschedule(&gba->timing, &memory->dmaEvent);
 		mTimingSchedule(&gba->timing, &memory->dmaEvent, memory->dma[memory->activeDMA].when - currentTime);
 	} else {

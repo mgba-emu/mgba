@@ -61,7 +61,7 @@ void ShortcutView::load(const QModelIndex& index) {
 	}
 	QString name = m_model->name(index);
 	const Shortcut* item = m_controller->shortcut(name);
-	if (!item->action()) {
+	if (!item || !item->action()) {
 		return;
 	}
 	int shortcut = item->shortcut();

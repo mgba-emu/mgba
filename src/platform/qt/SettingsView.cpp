@@ -488,7 +488,7 @@ void SettingsView::updateConfig() {
 
 	int videoScale = m_controller->getOption("videoScale", 1).toInt();
 	int hwaccelVideo = m_controller->getOption("hwaccelVideo").toInt();
-	if (videoScale != m_ui.videoScale->value() || hwaccelVideo != m_ui.hwaccelVideo->currentIndex()) {
+	if (hwaccelVideo != m_ui.hwaccelVideo->currentIndex()) {
 		emit videoRendererChanged();
 	}
 	saveSetting("videoScale", m_ui.videoScale);

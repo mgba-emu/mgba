@@ -221,11 +221,19 @@ void DisplayGL::clearShaders() {
 	QMetaObject::invokeMethod(m_painter, "clearShaders");
 }
 
-
 void DisplayGL::resizeContext() {
 	if (m_drawThread) {
 		m_isDrawing = false;
 		CoreController::Interrupter interrupter(m_context);
+		QMetaObject::invokeMethod(m_painter, "resizeContext", Qt::BlockingQueuedConnection);
+	}
+}
+
+void DisplayGL::setVideoScale(int scale) {
+	if (m_drawThread) {
+		m_isDrawing = false;
+		CoreController::Interrupter interrupter(m_context);
+		mCoreConfigSetIntValue(&m_context->thread()->core->config, "videoScale", scale);
 		QMetaObject::invokeMethod(m_painter, "resizeContext", Qt::BlockingQueuedConnection);
 	}
 }
@@ -266,6 +274,15 @@ PainterGL::PainterGL(QWindow* surface, QOpenGLContext* parent, int forceVersion)
 
 	m_gl->makeCurrent(m_surface);
 	m_window = new QOpenGLPaintDevice;
+	{
+		// XXX: Qt creates TLS for OpenGL objects in the local thread
+		// We need to prevent that thread from being the painter thread
+		// Qt also caches the engine object on the device if a different
+		// engine is active, so let's make a temporary one
+		QOpenGLPaintDevice* fakeDevice = new QOpenGLPaintDevice;
+		QPainter fakePainter(fakeDevice);
+		m_window->paintEngine();
+	}
 #if defined(_WIN32) && defined(USE_EPOXY)
 	epoxy_handle_external_wglMakeCurrent();
 #endif
@@ -349,6 +366,11 @@ void PainterGL::setContext(std::shared_ptr<CoreController> context) {
 void PainterGL::resizeContext() {
 	if (!m_context) {
 		return;
+	}
+
+	if (m_started) {
+		mCore* core = m_context->thread()->core;
+		core->reloadConfigOption(core, "videoScale", NULL);
 	}
 
 	QSize size = m_context->screenDimensions();

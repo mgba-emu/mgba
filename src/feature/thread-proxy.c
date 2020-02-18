@@ -138,6 +138,7 @@ static void _postEvent(struct mVideoLogger* logger, enum mVideoLoggerEvent event
 	MutexLock(&proxyRenderer->mutex);
 	proxyRenderer->event = event;
 	ConditionWake(&proxyRenderer->toThreadCond);
+	ConditionWait(&proxyRenderer->fromThreadCond, &proxyRenderer->mutex);
 	MutexUnlock(&proxyRenderer->mutex);
 }
 

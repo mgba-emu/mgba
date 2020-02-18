@@ -51,6 +51,7 @@ public:
 	virtual bool supportsShaders() const = 0;
 	virtual VideoShader* shaders() = 0;
 	virtual int framebufferHandle() { return -1; }
+	virtual void setVideoScale(int scale) {}
 
 	QSize viewportSize();
 

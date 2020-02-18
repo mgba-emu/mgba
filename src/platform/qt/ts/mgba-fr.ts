@@ -30,9 +30,9 @@
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="86"/>
-        <source>© 2013 – 2018 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
+        <source>© 2013 – 2020 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation type="unfinished">© 2013 – 2018 Jeffrey Pfau, est autorisé sous la license Publique de Mozilla, version 2.0
+        <translation type="unfinished">© 2013 – 2020 Jeffrey Pfau, est autorisé sous la license Publique de Mozilla, version 2.0
 Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</translation>
     </message>
     <message>

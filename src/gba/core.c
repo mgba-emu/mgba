@@ -355,6 +355,20 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 		}
 		return;
 	}
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
+	struct GBACore* gbacore = (struct GBACore*) core;
+	if (strcmp("videoScale", option) == 0) {
+		if (config != &core->config) {
+			mCoreConfigCopyValue(&core->config, config, "videoScale");
+		}
+		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
+			int scale;
+			mCoreConfigGetIntValue(config, "videoScale", &scale);
+			GBAVideoGLRendererSetScale(&gbacore->glRenderer, scale);
+		}
+		return;
+	}
+#endif
 }
 
 static void _GBACoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {

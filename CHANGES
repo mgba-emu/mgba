@@ -18,7 +18,22 @@ Misc:
  - DS Core: Add symbol loading
  - DS Video: Simplify VRAM mapping
 
-0.8.0: (Future)
+0.9.0: (Future)
+Emulation fixes:
+ - ARM: Fix ALU reading PC after shifting
+ - ARM: Fix STR storing PC after address calculation
+ - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
+ - GBA Memory: Misaligned SRAM writes are ignored
+ - GBA Serialize: Fix serializing DMA transfer register
+ - GBA Serialize: Fix audio serialization for desynced FIFOs
+ - GBA Serialize: Fix audio DMA timing deserialization
+ - GBA Video: Fix OAM not invalidating after reset (fixes mgba.io/i/1630)
+Other fixes:
+ - Qt: Only dynamically reset video scale if a game is running
+ - Qt: Fix race condition with proxied video events
+ - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
+
+0.8.0: (2020-01-21)
 Features:
  - Improved logging configuration
  - One-Player BattleChip/Progress/Beast Link Gate support
@@ -121,6 +136,8 @@ Other fixes:
  - 3DS: Fix screen darkening (fixes mgba.io/i/1562)
  - Core: Fix uninitialized memory issues with graphics caches
  - Core: Return null for out of bounds cached tile VRAM querying
+ - GBA Video: Fix OpenGL fragment data binding
+ - GBA Video: Fix mosaic in modes 1-5 in OpenGL (fixes mgba.io/i/1620)
  - Debugger: Fix tracing skipping instructions (fixes mgba.io/i/1614)
  - OpenGL: Only invalidate texture if dimensions change (fixes mgba.io/i/1612)
  - Qt: Fix fast forward mute being reset (fixes mgba.io/i/1574)
@@ -132,6 +149,8 @@ Other fixes:
  - Qt: Fix sprite view using wrong base address (fixes mgba.io/i/1603)
  - Qt: Fix inability to clear default keybindings
  - Qt: Release held actions if they get rebound
+ - Qt: Fix crash double-clicking menus in shortcut settings (fixes mgba.io/i/1627)
+ - Qt: Fix record A/V window not updating resolution (fixes mgba.io/i/1626)
  - Vita: Fix analog controls (fixes mgba.io/i/1554)
  - Wii: Fix game fast-forwarding after slowing down
  - Wii: Improve audio buffering (fixes mgba.io/i/1617)
@@ -140,6 +159,7 @@ Misc:
  - GBA: Trim non-movie ROMs to 32 MiB if applicable
  - GBA Audio: Redo channel 4 batching for GBA only
  - GBA I/O: Stop logging several harmless invalid register reads
+ - GBA Video: Changing OpenGL scaling no longer requires restart
  - Debugger: Separate aliases from main commands
  - Debugger: Print break-/watchpoint ID when breaking in CLI
  - Debugger: Minor interface cleanup

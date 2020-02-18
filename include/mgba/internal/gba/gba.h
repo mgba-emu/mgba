@@ -109,6 +109,7 @@ struct GBA {
 	bool haltPending;
 	bool cpuBlocked;
 	bool earlyExit;
+	uint32_t dmaPC;
 	int idleDetectionStep;
 	int idleDetectionFailures;
 	int32_t cachedRegisters[16];
