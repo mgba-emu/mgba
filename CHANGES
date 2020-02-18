@@ -1,6 +1,7 @@
 0.8.2: (Future)
 Other fixes:
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
+ - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
 
 0.8.1: (2020-02-16)
 Emulation fixes:
