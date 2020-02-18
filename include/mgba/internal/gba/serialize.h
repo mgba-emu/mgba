@@ -92,7 +92,8 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 6 - 7: Reserved
  * 0x001E0 - 0x001FF: Video miscellaneous state
  * | 0x001E0 - 0x001E3: Next event
- * | 0x001E4 - 0x001FB: Reserved
+ * | 0x001E4 - 0x001F7: Reserved
+ * | 0x001F8 - 0x001FB: Miscellaneous flags
  * | 0x001FC - 0x001FF: Frame counter
  * 0x00200 - 0x00213: Timer 0
  * | 0x00200 - 0x00201: Reload value
@@ -192,8 +193,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * | 0x002F4 - 0x002F7: GBA BIOS bus prefetch
  * | 0x002F8 - 0x002FB: CPU prefecth (decode slot)
  * | 0x002FC - 0x002FF: CPU prefetch (fetch slot)
- * 0x00300 - 0x00303: Associated movie stream ID for record/replay (or 0 if no stream)
- * 0x00304 - 0x00317: Savestate creation time (usec since 1970)
+ * 0x00300 - 0x00317: Reserved (leave zero)
  * 0x00318 - 0x0031B: Last prefetched program counter
  * 0x0031C - 0x0031F: Miscellaneous flags
  *  | bit 0: Is CPU halted?
@@ -209,6 +209,9 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x21000 - 0x60FFF: WRAM
  * Total size: 0x61000 (397,312) bytes
  */
+
+DECL_BITFIELD(GBASerializedVideoFlags, uint32_t);
+DECL_BITS(GBASerializedVideoFlags, Mode, 0, 2);
 
 DECL_BITFIELD(GBASerializedHWFlags1, uint16_t);
 DECL_BIT(GBASerializedHWFlags1, ReadWrite, 0);
@@ -267,7 +270,8 @@ struct GBASerializedState {
 
 	struct {
 		int32_t nextEvent;
-		int32_t reserved[6];
+		int32_t reserved[5];
+		GBASerializedVideoFlags flags;
 		int32_t frameCounter;
 	} video;
 
@@ -322,8 +326,7 @@ struct GBASerializedState {
 	uint32_t biosPrefetch;
 	uint32_t cpuPrefetch[2];
 
-	uint32_t associatedStreamId;
-	uint32_t reservedRr[5];
+	uint32_t reservedCpu[6];
 
 	uint32_t lastPrefetchedPc;
 	GBASerializedMiscFlags miscFlags;

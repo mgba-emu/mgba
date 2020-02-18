@@ -45,6 +45,12 @@ LogController::Stream LogController::operator()(int category, int level) {
 
 void LogController::load(const ConfigController* config) {
 	mLogFilterLoad(&m_filter, config->config());
+	if (!levels(mLogCategoryById("gba.bios"))) {
+		mLogFilterSet(&m_filter, "gba.bios", mLOG_STUB | mLOG_FATAL);
+	}
+	if (!levels(mLogCategoryById("core.status"))) {
+		mLogFilterSet(&m_filter, "core.status", mLOG_ALL & ~mLOG_DEBUG);
+	}
 	setLogFile(config->getOption("logFile"));
 	logToStdout(config->getOption("logToStdout").toInt());
 	logToFile(config->getOption("logToFile").toInt());
@@ -114,7 +120,7 @@ void LogController::disableLevels(int levels, int category) {
 
 void LogController::clearLevels(int category) {
 	auto id = mLogCategoryId(category);
-	mLogFilterReset	(&m_filter, id);
+	mLogFilterReset(&m_filter, id);
 }
 
 void LogController::logToFile(bool log) {

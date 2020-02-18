@@ -234,7 +234,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	}
 
 #define TEST_LAYER_ENABLED(X) \
-	(softwareRenderer->bg[X].enabled == 4 && \
+	(softwareRenderer->bg[X].enabled == 3 && \
 	(GBAWindowControlIsBg ## X ## Enable(softwareRenderer->currentWindow.packed) || \
 	(GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt) && GBAWindowControlIsBg ## X ## Enable (softwareRenderer->objwin.packed))) && \
 	softwareRenderer->bg[X].priority == priority)

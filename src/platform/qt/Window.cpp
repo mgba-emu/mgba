@@ -510,7 +510,7 @@ void Window::openSettingsWindow() {
 	connect(settingsWindow, &SettingsView::audioDriverChanged, this, &Window::reloadAudioDriver);
 	connect(settingsWindow, &SettingsView::cameraDriverChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::cameraChanged, &m_inputController, &InputController::setCamera);
-	connect(settingsWindow, &SettingsView::videoRendererChanged, this, &Window::mustRestart);
+	connect(settingsWindow, &SettingsView::videoRendererChanged, this, &Window::changeRenderer);
 	connect(settingsWindow, &SettingsView::languageChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::pathsChanged, this, &Window::reloadConfig);
 #ifdef USE_SQLITE3
@@ -926,8 +926,8 @@ void Window::gameCrashed(const QString& errorMessage) {
 }
 
 void Window::gameFailed() {
-	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Couldn't Load"),
-	                                    tr("Could not load game. Are you sure it's in the correct format?"),
+	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Couldn't Start"),
+	                                    tr("Could not start game."),
 	                                    QMessageBox::Ok, this, Qt::Sheet);
 	fail->setAttribute(Qt::WA_DeleteOnClose);
 	fail->show();
@@ -949,10 +949,6 @@ void Window::unimplementedBiosCall(int call) {
 
 void Window::reloadDisplayDriver() {
 	if (m_controller) {
-		if (m_controller->hardwareAccelerated()) {
-			mustRestart();
-			return;
-		}
 		m_display->stopDrawing();
 		detachWidget(m_display.get());
 	}
@@ -990,14 +986,7 @@ void Window::reloadDisplayDriver() {
 #endif
 
 	if (m_controller) {
-		connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::resizeContext);
-		connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::forceDraw);
-		connect(m_controller.get(), &CoreController::rewound, m_display.get(), &Display::forceDraw);
-		connect(m_controller.get(), &CoreController::paused, m_display.get(), &Display::pauseDrawing);
-		connect(m_controller.get(), &CoreController::unpaused, m_display.get(), &Display::unpauseDrawing);
-		connect(m_controller.get(), &CoreController::frameAvailable, m_display.get(), &Display::framePosted);
-		connect(m_controller.get(), &CoreController::statusPosted, m_display.get(), &Display::showMessage);
-		connect(m_controller.get(), &CoreController::didReset, m_display.get(), &Display::resizeContext);
+		attachDisplay();
 
 		attachWidget(m_display.get());
 		m_display->startDrawing(m_controller);
@@ -1026,6 +1015,27 @@ void Window::reloadAudioDriver() {
 	m_audioProcessor->start();
 	connect(m_controller.get(), &CoreController::stopping, m_audioProcessor.get(), &AudioProcessor::stop);
 	connect(m_controller.get(), &CoreController::fastForwardChanged, m_audioProcessor.get(), &AudioProcessor::inputParametersChanged);
+}
+
+void Window::changeRenderer() {
+	if (!m_controller) {
+		return;
+	}
+	if (m_config->getOption("hwaccelVideo").toInt() && m_display->supportsShaders() && m_controller->supportsFeature(CoreController::Feature::OPENGL)) {
+		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
+		if (!proxy) {
+			proxy = std::make_shared<VideoProxy>();
+		}
+		m_display->setVideoProxy(proxy);
+		proxy->attach(m_controller.get());
+
+		int fb = m_display->framebufferHandle();
+		if (fb >= 0) {
+			m_controller->setFramebufferHandle(fb);
+		}
+	} else {
+		m_controller->setFramebufferHandle(-1);
+	}
 }
 
 void Window::tryMakePortable() {
@@ -1267,10 +1277,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef M_CORE_GBA
 	m_actions.addSeparator("file");
-	Action* importShark = addGameAction(tr("Import GameShark Save"), "importShark", this, &Window::importSharkport, "file");
+	Action* importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "file");
 	m_platformActions.insert(PLATFORM_GBA, importShark);
 
-	Action* exportShark = addGameAction(tr("Export GameShark Save"), "exportShark", this, &Window::exportSharkport, "file");
+	Action* exportShark = addGameAction(tr("Export GameShark Save..."), "exportShark", this, &Window::exportSharkport, "file");
 	m_platformActions.insert(PLATFORM_GBA, exportShark);
 #endif
 
@@ -1828,7 +1838,6 @@ void Window::updateFrame() {
 
 void Window::setController(CoreController* controller, const QString& fname) {
 	if (!controller) {
-		gameFailed();
 		return;
 	}
 	if (m_pendingClose) {
@@ -1849,17 +1858,6 @@ void Window::setController(CoreController* controller, const QString& fname) {
 
 	if (!m_display) {
 		reloadDisplayDriver();
-	}
-
-	if (m_config->getOption("hwaccelVideo").toInt() && m_display->supportsShaders() && controller->supportsFeature(CoreController::Feature::OPENGL)) {
-		std::shared_ptr<VideoProxy> proxy = std::make_shared<VideoProxy>();
-		m_display->setVideoProxy(proxy);
-		proxy->attach(controller);
-
-		int fb = m_display->framebufferHandle();
-		if (fb >= 0) {
-			controller->setFramebufferHandle(fb);
-		}
 	}
 
 	m_controller = std::shared_ptr<CoreController>(controller);
@@ -1901,14 +1899,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		emit paused(false);
 	});
 
-	connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::resizeContext);
-	connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::forceDraw);
-	connect(m_controller.get(), &CoreController::rewound, m_display.get(), &Display::forceDraw);
-	connect(m_controller.get(), &CoreController::paused, m_display.get(), &Display::pauseDrawing);
-	connect(m_controller.get(), &CoreController::unpaused, m_display.get(), &Display::unpauseDrawing);
-	connect(m_controller.get(), &CoreController::frameAvailable, m_display.get(), &Display::framePosted);
-	connect(m_controller.get(), &CoreController::statusPosted, m_display.get(), &Display::showMessage);
-	connect(m_controller.get(), &CoreController::didReset, m_display.get(), &Display::resizeContext);
+	attachDisplay();
 
 	connect(m_controller.get(), &CoreController::unpaused, &m_inputController, &InputController::suspendScreensaver);
 	connect(m_controller.get(), &CoreController::frameAvailable, this, &Window::recordFrame);
@@ -1963,6 +1954,18 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		m_controller->setPaused(true);
 		m_pendingPause = false;
 	}
+}
+
+void Window::attachDisplay() {
+	connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::resizeContext);
+	connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::forceDraw);
+	connect(m_controller.get(), &CoreController::rewound, m_display.get(), &Display::forceDraw);
+	connect(m_controller.get(), &CoreController::paused, m_display.get(), &Display::pauseDrawing);
+	connect(m_controller.get(), &CoreController::unpaused, m_display.get(), &Display::unpauseDrawing);
+	connect(m_controller.get(), &CoreController::frameAvailable, m_display.get(), &Display::framePosted);
+	connect(m_controller.get(), &CoreController::statusPosted, m_display.get(), &Display::showMessage);
+	connect(m_controller.get(), &CoreController::didReset, m_display.get(), &Display::resizeContext);
+	changeRenderer();
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

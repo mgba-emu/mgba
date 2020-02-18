@@ -24,14 +24,30 @@ Emulation fixes:
  - ARM: Fix STR storing PC after address calculation
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA Memory: Misaligned SRAM writes are ignored
+ - GBA Memory: Improve gamepak prefetch timing
  - GBA Serialize: Fix serializing DMA transfer register
  - GBA Serialize: Fix audio serialization for desynced FIFOs
  - GBA Serialize: Fix audio DMA timing deserialization
  - GBA Video: Fix OAM not invalidating after reset (fixes mgba.io/i/1630)
+ - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
+ - GBA Video: Fix Hblank timing
+ - GBA Video: Fix backdrop blending on lines without sprites (fixes mgba.io/i/1647)
+ - GBA Video: Fix OpenGL sprite flag priority
 Other fixes:
+ - Core: Fix race condition initializing thread proxy
  - Qt: Only dynamically reset video scale if a game is running
  - Qt: Fix race condition with proxied video events
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
+ - Qt: Fix color selection in asset view (fixes mgba.io/i/1648)
+ - Qt: Fix missing OSD messages
+ - Qt: Fix crash unloading shaders
+ - Qt: Fix toggled actions on gamepads (fixes mgba.io/i/1650)
+ - Qt: Fix extraneous dialog (fixes mgba.io/i/1654)
+ - Util: Fix crash reading invalid ELFs
+Misc:
+ - Qt: Renderer can be changed while a game is running
+ - Qt: Fix non-SDL build (fixes mgba.io/i/1656)
+ - Switch: Make OpenGL scale adjustable while running
 
 0.8.0: (2020-01-21)
 Features:

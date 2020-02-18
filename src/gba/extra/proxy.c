@@ -157,8 +157,8 @@ void GBAVideoProxyRendererDeinit(struct GBAVideoRenderer* renderer) {
 	if (!proxyRenderer->logger->block) {
 		proxyRenderer->backend->deinit(proxyRenderer->backend);
 	} else {
-		proxyRenderer->logger->postEvent(proxyRenderer->logger, LOGGER_EVENT_DEINIT);
 		mVideoLoggerRendererFlush(proxyRenderer->logger);
+		proxyRenderer->logger->postEvent(proxyRenderer->logger, LOGGER_EVENT_DEINIT);
 	}
 
 	mVideoLoggerRendererDeinit(proxyRenderer->logger);

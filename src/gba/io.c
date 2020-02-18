@@ -8,7 +8,6 @@
 #include <mgba/internal/arm/macros.h>
 #include <mgba/internal/gba/dma.h>
 #include <mgba/internal/gba/gba.h>
-#include <mgba/internal/gba/rr/rr.h>
 #include <mgba/internal/gba/serialize.h>
 
 mLOG_DEFINE_CATEGORY(GBA_IO, "GBA I/O", "gba.io");
@@ -734,31 +733,24 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 				}
 			}
 		}
-		if (gba->rr && gba->rr->isPlaying(gba->rr)) {
-			return 0x3FF ^ gba->rr->queryInput(gba->rr);
-		} else {
-			uint16_t input = 0;
-			if (gba->keyCallback) {
-				input = gba->keyCallback->readKeys(gba->keyCallback);
-				if (gba->keySource) {
-					*gba->keySource = input;
-				}
-			} else if (gba->keySource) {
-				input = *gba->keySource;
-				if (!gba->allowOpposingDirections) {
-					unsigned rl = input & 0x030;
-					unsigned ud = input & 0x0C0;
-					input &= 0x30F;
-					if (rl != 0x030) {
-						input |= rl;
-					}
-					if (ud != 0x0C0) {
-						input |= ud;
-					}
-				}
+		uint16_t input = 0;
+		if (gba->keyCallback) {
+			input = gba->keyCallback->readKeys(gba->keyCallback);
+			if (gba->keySource) {
+				*gba->keySource = input;
 			}
-			if (gba->rr && gba->rr->isRecording(gba->rr)) {
-				gba->rr->logInput(gba->rr, input);
+		} else if (gba->keySource) {
+			input = *gba->keySource;
+			if (!gba->allowOpposingDirections) {
+				unsigned rl = input & 0x030;
+				unsigned ud = input & 0x0C0;
+				input &= 0x30F;
+				if (rl != 0x030) {
+					input |= rl;
+				}
+				if (ud != 0x0C0) {
+					input |= ud;
+				}
 			}
 			return 0x3FF ^ input;
 		}

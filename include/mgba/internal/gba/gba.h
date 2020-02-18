@@ -91,7 +91,6 @@ struct GBA {
 	struct mRTCSource* rtcSource;
 	struct mRumble* rumble;
 
-	struct GBARRContext* rr;
 	bool isPristine;
 	size_t pristineRomSize;
 	size_t yankedRomSize;

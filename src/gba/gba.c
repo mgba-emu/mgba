@@ -13,7 +13,6 @@
 #include <mgba/internal/gba/cheats.h>
 #include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/overrides.h>
-#include <mgba/internal/gba/rr/rr.h>
 
 #include <mgba-util/patch.h>
 #include <mgba-util/crc32.h>
@@ -96,7 +95,6 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->luminanceSource = 0;
 	gba->rtcSource = 0;
 	gba->rumble = 0;
-	gba->rr = 0;
 
 	gba->romVf = 0;
 	gba->biosVf = 0;
@@ -170,7 +168,6 @@ void GBADestroy(struct GBA* gba) {
 	GBAVideoDeinit(&gba->video);
 	GBAAudioDeinit(&gba->audio);
 	GBASIODeinit(&gba->sio);
-	gba->rr = 0;
 	mTimingDeinit(&gba->timing);
 	mCoreCallbacksListDeinit(&gba->coreCallbacks);
 }
@@ -196,10 +193,8 @@ void GBAReset(struct ARMCore* cpu) {
 	cpu->gprs[ARM_SP] = SP_BASE_SYSTEM;
 
 	struct GBA* gba = (struct GBA*) cpu->master;
-	if (!gba->rr || (!gba->rr->isPlaying(gba->rr) && !gba->rr->isRecording(gba->rr))) {
-		gba->memory.savedata.maskWriteback = false;
-		GBASavedataUnmask(&gba->memory.savedata);
-	}
+	gba->memory.savedata.maskWriteback = false;
+	GBASavedataUnmask(&gba->memory.savedata);
 
 	gba->cpuBlocked = false;
 	gba->earlyExit = false;
@@ -811,10 +806,6 @@ void GBAFrameStarted(struct GBA* gba) {
 
 void GBAFrameEnded(struct GBA* gba) {
 	GBASavedataClean(&gba->memory.savedata, gba->video.frameCounter);
-
-	if (gba->rr) {
-		gba->rr->nextFrame(gba->rr);
-	}
 
 	if (gba->cpu->components && gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
 		struct mCheatDevice* device = (struct mCheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];

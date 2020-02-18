@@ -578,9 +578,18 @@ void PainterGL::clearShaders() {
 		return;
 	}
 #ifdef BUILD_GLES2
+	if (!m_started) {
+		m_gl->makeCurrent(m_surface);
+#if defined(_WIN32) && defined(USE_EPOXY)
+		epoxy_handle_external_wglMakeCurrent();
+#endif
+	}
 	if (m_shader.passes) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
+	}
+	if (!m_started) {
+		m_gl->doneCurrent();
 	}
 #endif
 }

@@ -44,7 +44,6 @@ struct GBAVideoGLAffine {
 struct GBAVideoGLBackground {
 	GLuint fbo;
 	GLuint tex;
-	GLuint flags;
 
 	unsigned index;
 	int enabled;
@@ -96,7 +95,6 @@ enum {
 	GBA_GL_BG_CHARBASE,
 	GBA_GL_BG_SIZE,
 	GBA_GL_BG_OFFSET,
-	GBA_GL_BG_INFLAGS,
 	GBA_GL_BG_TRANSFORM,
 	GBA_GL_BG_RANGE,
 	GBA_GL_BG_MOSAIC,
