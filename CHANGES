@@ -13,6 +13,7 @@ Emulation fixes:
 Other fixes:
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
+ - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
  - Debugger: Don't skip undefined instructions when debugger attached
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
 Misc:
