@@ -232,7 +232,7 @@ void GBAKeyEditor::save() {
 
 #ifdef BUILD_SDL
 	if (m_profileSelect) {
-		m_controller->setPreferredGamepad(m_type, m_profileSelect->currentText());
+		m_controller->setPreferredGamepad(m_type, m_profileSelect->currentIndex());
 	}
 #endif
 

@@ -47,6 +47,7 @@ bool GBASIOLockstepAttachNode(struct GBASIOLockstep* lockstep, struct GBASIOLock
 	lockstep->players[lockstep->d.attached] = node;
 	node->p = lockstep;
 	node->id = lockstep->d.attached;
+	node->transferFinished = true;
 	++lockstep->d.attached;
 	return true;
 }

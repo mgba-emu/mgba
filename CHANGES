@@ -43,68 +43,91 @@ Features:
  - GB: Yanking gamepak now supported
  - Qt: Memory range dumping (closes mgba.io/i/1298)
 Emulation fixes:
+ - GB: Fix using boot ROM with MMM01 games
+ - GB Audio: Only reset channel 3 sample in DMG mode
+ - GB Audio: Sample inactive channels (fixes mgba.io/i/1455, mgba.io/i/1456)
+ - GB Audio: Fix channel 4 volume (fixes mgba.io/i/1529)
+ - GB I/O: Filter IE top bits properly (fixes mgba.io/i/1329)
+ - GB Memory: Better emulate 0xFEA0 region on DMG, MGB and AGB
+ - GB Video: Delay LYC STAT check (fixes mgba.io/i/1331)
+ - GB Video: Fix window being enabled mid-scanline (fixes mgba.io/i/1328)
+ - GB Video: Fix mode 0 window edge case (fixes mgba.io/i/1519)
+ - GB Video: Fix color scaling in AGB mode
  - GBA: All IRQs have 7 cycle delay (fixes mgba.io/i/539, mgba.io/i/1208)
  - GBA: Reset now reloads multiboot ROMs
  - GBA BIOS: Fix multiboot entry point (fixes Magic Floor)
- - GB Video: Delay LYC STAT check (fixes mgba.io/i/1331)
- - GB Video: Fix window being enabled mid-scanline (fixes mgba.io/i/1328)
- - GB I/O: Filter IE top bits properly (fixes mgba.io/i/1329)
- - GB Audio: Only reset channel 3 sample in DMG mode
- - GB Audio: Sample inactive channels (fixes mgba.io/i/1455, mgba.io/i/1456)
- - GB Memory: Better emulate 0xFEA0 region on DMG, MGB and AGB
- - GB Video: Fix mode 0 window edge case (fixes mgba.io/i/1519)
- - GB Audio: Fix channel 4 volume (fixes mgba.io/i/1529)
- - GB Video: Fix color scaling in AGB mode
- - GB: Fix using boot ROM with MMM01 games
 Other fixes:
- - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
- - Qt: Fix menu bar staying hidden in full screen (fixes mgba.io/i/317)
- - GB SIO: Fix lockstep failing games aren't reloaded
- - Libretro: Fix crash changing allowing opposing directions (hhromic)
- - GBA Cheats: Fix value incrementing in CB slide codes (fixes mgba.io/i/1501)
- - Qt: Only show emulator restart warning once per settings saving
  - FFmpeg: Drain recording buffers
- - Shaders: Fix gba-color shader resolution (fixes mgba.io/i/1435)
- - Qt: Fix LibraryController initialization (fixes mgba.io/i/1324)
- - Switch: Fix audio when video rate desyncs (fixes mgba.io/i/1532)
  - GB: Fix reading ROM immediately after unmapping BIOS
+ - GB SIO: Fix lockstep failing games aren't reloaded
+ - GBA Cheats: Fix value incrementing in CB slide codes (fixes mgba.io/i/1501)
+ - Libretro: Fix crash changing allowing opposing directions (hhromic)
+ - Qt: Fix some Qt display driver race conditions
+ - Qt: Fix menu bar staying hidden in full screen (fixes mgba.io/i/317)
+ - Qt: Only show emulator restart warning once per settings saving
+ - Qt: Fix LibraryController initialization (fixes mgba.io/i/1324)
+ - Shaders: Fix gba-color shader resolution (fixes mgba.io/i/1435)
+ - Switch: Fix audio when video rate desyncs (fixes mgba.io/i/1532)
 Misc:
- - GBA Savedata: EEPROM performance fixes
- - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
- - GB Memory: Support running from blocked memory
- - Qt: Don't unload ROM immediately if it crashes
- - Debugger: Add breakpoint and watchpoint listing
- - LR35902: Support PC-relative opcode decoding
- - Qt: Support switching webcams
+ - CMake: Don't use libzip on embedded platforms (fixes mgba.io/i/1527)
  - Core: Add keysRead callback
- - Qt: Cap window size on start to monitor size
- - GBA BIOS: Add timings for HLE BIOS math functions (fixes mgba.io/i/1396)
+ - Core: Create game-related paths if they don't exist (fixes mgba.io/i/1446)
+ - Core: Add more memory search ops (closes mgba.io/i/1510)
  - Debugger: Make tracing compatible with breakpoints/watchpoints
  - Debugger: Print breakpoint/watchpoint number when inserting
- - Qt: Open a message box for Qt frontend errors
+ - Feature: Switch from ImageMagick to FFmpeg for GIF generation
  - FFmpeg: Support audio-only recording
+ - GB Memory: Support running from blocked memory
+ - GBA BIOS: Add timings for HLE BIOS math functions (fixes mgba.io/i/1396)
+ - GBA BIOS: Fix clobbered registers in CpuSet (fixes mgba.io/i/1531)
+ - GBA Savedata: EEPROM performance fixes
+ - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
+ - Debugger: Add breakpoint and watchpoint listing
+ - LR35902: Support PC-relative opcode decoding
+ - mGUI: Remember name and position of last loaded game
+ - OpenGL: Only resize textures when needed
+ - Qt: Don't unload ROM immediately if it crashes
+ - Qt: Support switching webcams
+ - Qt: Cap window size on start to monitor size
+ - Qt: Open a message box for Qt frontend errors
  - Qt: Increase maximum magnifications and scaling
  - Qt: Add native FPS button to settings view
  - Qt: Improve sync code
- - Switch: Dynamic display resizing
- - Vita: L2/R2 and L3/R3 can now be mapped on PSTV (fixes mgba.io/i/1292)
- - mGUI: Remember name and position of last loaded game
- - Core: Create game-related paths if they don't exist (fixes mgba.io/i/1446)
  - Qt: Add option to pause on minimizing window (closes mgba.io/i/1379)
- - Switch: Support file associations
  - Qt: Scale pixel color values to full range (fixes mgba.io/i/1511)
- - Qt, OpenGL: Disable integer scaling for dimensions that don't fit
- - Feature: Switch from ImageMagick to FFmpeg for GIF generation
- - OpenGL: Only resize textures when needed
- - GBA BIOS: Fix clobbered registers in CpuSet (fixes mgba.io/i/1531)
  - Qt: Remove What's This icon from dialogs
- - CMake: Don't use libzip on embedded platforms (fixes mgba.io/i/1527)
  - Qt: Printer quality of life improvements (fixes mgba.io/i/1540)
  - Qt: Add copy and QoL improvements to graphic views (closes mgba.io/i/1541)
  - Qt: Show list of all sprites in sprite view
  - Qt: Add option for disabling OSD messages
- - Core: Add more memory search ops (closes mgba.io/i/1510)
+ - Qt, OpenGL: Disable integer scaling for dimensions that don't fit
+ - Switch: Dynamic display resizing
+ - Switch: Support file associations
+ - Vita: L2/R2 and L3/R3 can now be mapped on PSTV (fixes mgba.io/i/1292)
+Changes from beta 1:
+Emulation fixes:
+ - ARM: Fix STR writeback pipeline stage
+ - ARM: Partially fix LDM/STM writeback with empty register list
+ - ARM: Fix stepping when events are pending
+ - GBA DMA: Fix case where DMAs could get misaligned (fixes mgba.io/i/1092)
+ - GBA Video: Fix OpenGL renderer 512x512 backgrounds (fixes mgba.io/i/1572)
+ - GBA Memory: Fix open bus from IWRAM (fixes mgba.io/i/1575)
+Other fixes:
+ - 3DS: Fix screen darkening (fixes mgba.io/i/1562)
+ - Core: Fix uninitialized memory issues with graphics caches
+ - Core: Return null for out of bounds cached tile VRAM querying
+ - Vita: Fix analog controls (fixes mgba.io/i/1554)
+ - Qt: Fix fast forward mute being reset (fixes mgba.io/i/1574)
+ - Qt: Fix scrollbar arrows in memory view (fixes mgba.io/i/1558)
+ - Qt: Fix several cases where shader selections don't get saved
+ - Qt: Fix division by zero error in invalid TilePainter state
+Misc:
+ - GB Memory: Support manual SRAM editing (fixes mgba.io/i/1580)
+ - SDL: Use controller GUID instead of name
+
+0.8 beta 1: (2019-10-20)
+- Initial beta for 0.8
 
 0.7.3: (2019-09-15)
 Emulation fixes:

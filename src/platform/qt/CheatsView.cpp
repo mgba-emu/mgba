@@ -129,7 +129,6 @@ void CheatsView::addSet() {
 }
 
 void CheatsView::removeSet() {
-	GBACheatSet* set;
 	QModelIndexList selection = m_ui.cheatList->selectionModel()->selectedIndexes();
 	if (selection.count() < 1) {
 		return;

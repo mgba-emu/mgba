@@ -295,6 +295,9 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(LDMIA,
 	IA,
 	,
 	THUMB_LOAD_POST_BODY;
+	if (!rs) {
+		currentCycles += ThumbWritePC(cpu);
+	}
 	if (!((1 << rn) & rs)) {
 		cpu->gprs[rn] = address;
 	})

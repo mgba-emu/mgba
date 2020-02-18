@@ -3820,7 +3820,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../Window.cpp" line="1121"/>
         <source>Load state file...</source>
-        <translation>Ssavestate-Datei laden...</translation>
+        <translation>Savestate-Datei laden...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1126"/>

@@ -353,10 +353,10 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 			case REGION_WORKING_IRAM: \
 				/* This doesn't handle prefetch clobbering */ \
 				if (cpu->gprs[ARM_PC] & 2) { \
-					value |= cpu->prefetch[0] << 16; \
-				} else { \
 					value <<= 16; \
 					value |= cpu->prefetch[0]; \
+				} else { \
+					value |= cpu->prefetch[0] << 16; \
 				} \
 				break; \
 			default: \
@@ -1326,6 +1326,12 @@ void GBAPatch8(struct ARMCore* cpu, uint32_t address, int8_t value, int8_t* old)
 }
 
 #define LDM_LOOP(LDM) \
+	if (UNLIKELY(!mask)) { \
+		LDM; \
+		cpu->gprs[ARM_PC] = value; \
+		wait += 16; \
+		address += 64; \
+	} \
 	for (i = 0; i < 16; i += 4) { \
 		if (UNLIKELY(mask & (1 << i))) { \
 			LDM; \
@@ -1438,6 +1444,12 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 }
 
 #define STM_LOOP(STM) \
+	if (UNLIKELY(!mask)) { \
+		value = cpu->gprs[ARM_PC] + (cpu->executionMode == MODE_ARM ? WORD_SIZE_ARM : WORD_SIZE_THUMB); \
+		STM; \
+		wait += 16; \
+		address += 64; \
+	} \
 	for (i = 0; i < 16; i += 4) { \
 		if (UNLIKELY(mask & (1 << i))) { \
 			value = cpu->gprs[i]; \

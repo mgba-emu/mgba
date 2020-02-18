@@ -95,6 +95,8 @@ uint16_t GBADMAWriteCNT_HI(struct GBA* gba, int dma, uint16_t control) {
 		if (currentDma->nextDest & (width - 1)) {
 			mLOG(GBA_MEM, GAME_ERROR, "Misaligned DMA destination address: 0x%08X", currentDma->nextDest);
 		}
+		currentDma->nextSource &= -width;
+		currentDma->nextDest &= -width;
 
 		GBADMASchedule(gba, dma, currentDma);
 	}
@@ -242,8 +244,6 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 		} else {
 			cycles += memory->waitstatesNonseq16[sourceRegion] + memory->waitstatesNonseq16[destRegion];
 		}
-		source &= -width;
-		dest &= -width;
 	} else {
 		if (width == 4) {
 			cycles += memory->waitstatesSeq32[sourceRegion] + memory->waitstatesSeq32[destRegion];

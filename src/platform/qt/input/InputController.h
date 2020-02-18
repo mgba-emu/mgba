@@ -99,7 +99,7 @@ public:
 	QStringList connectedGamepads(uint32_t type) const;
 	int gamepad(uint32_t type) const;
 	void setGamepad(uint32_t type, int index);
-	void setPreferredGamepad(uint32_t type, const QString& device);
+	void setPreferredGamepad(uint32_t type, int index);
 
 	void registerTiltAxisX(int axis);
 	void registerTiltAxisY(int axis);

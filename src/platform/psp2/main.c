@@ -165,6 +165,7 @@ int main() {
 
 	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
+	sceCtrlSetSamplingModeExt(SCE_CTRL_MODE_ANALOG_WIDE);
 	sceSysmoduleLoadModule(SCE_SYSMODULE_PHOTO_EXPORT);
 	sceSysmoduleLoadModule(SCE_SYSMODULE_APPUTIL);
 

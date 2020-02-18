@@ -22,11 +22,13 @@ MultiplayerController::Player::Player(CoreController* coreController, GBSIOLocks
 {
 }
 
+#ifdef M_CORE_GBA
 MultiplayerController::Player::Player(CoreController* coreController, GBASIOLockstepNode* node)
 	: controller(coreController)
 	, gbaNode(node)
 {
 }
+#endif
 
 MultiplayerController::MultiplayerController() {
 	mLockstepInit(&m_lockstep);
@@ -71,10 +73,12 @@ MultiplayerController::MultiplayerController() {
 		if (!id) {
 			for (int i = 1; i < controller->m_players.count(); ++i) {
 				Player* player = &controller->m_players[i];
+#ifdef M_CORE_GBA
 				if (player->controller->platform() == PLATFORM_GBA && player->gbaNode->d.p->mode != controller->m_players[0].gbaNode->d.p->mode) {
 					player->controller->setSync(true);
 					continue;
 				}
+#endif
 				player->controller->setSync(false);
 				player->cyclesPosted += cycles;
 				if (player->awake < 1) {

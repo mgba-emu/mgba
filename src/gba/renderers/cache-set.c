@@ -17,20 +17,20 @@ void GBAVideoCacheInit(struct mCacheSet* cache) {
 	sysconfig = mTileCacheSystemInfoSetPaletteBPP(sysconfig, 2); // 2^(2^2) = 16 entries
 	sysconfig = mTileCacheSystemInfoSetPaletteCount(sysconfig, 4); // 16 palettes
 	sysconfig = mTileCacheSystemInfoSetMaxTiles(sysconfig, 2048);
-	mTileCacheConfigure(mTileCacheSetGetPointer(&cache->tiles, 0), config);
 	mTileCacheConfigureSystem(mTileCacheSetGetPointer(&cache->tiles, 0), sysconfig, 0, 0);
+	mTileCacheConfigure(mTileCacheSetGetPointer(&cache->tiles, 0), config);
 	sysconfig = mTileCacheSystemInfoSetMaxTiles(sysconfig, 1024);
-	mTileCacheConfigure(mTileCacheSetGetPointer(&cache->tiles, 2), config);
 	mTileCacheConfigureSystem(mTileCacheSetGetPointer(&cache->tiles, 2), sysconfig, 0x10000, 0x100);
+	mTileCacheConfigure(mTileCacheSetGetPointer(&cache->tiles, 2), config);
 
 	sysconfig = mTileCacheSystemInfoSetPaletteBPP(sysconfig, 3); // 2^(2^3) = 256 entries
 	sysconfig = mTileCacheSystemInfoSetPaletteCount(sysconfig, 0); // 1 palettes
 	sysconfig = mTileCacheSystemInfoSetMaxTiles(sysconfig, 2048);
-	mTileCacheConfigure(mTileCacheSetGetPointer(&cache->tiles, 1), config);
 	mTileCacheConfigureSystem(mTileCacheSetGetPointer(&cache->tiles, 1), sysconfig, 0, 0);
+	mTileCacheConfigure(mTileCacheSetGetPointer(&cache->tiles, 1), config);
 	sysconfig = mTileCacheSystemInfoSetMaxTiles(sysconfig, 1024);
-	mTileCacheConfigure(mTileCacheSetGetPointer(&cache->tiles, 3), config);
 	mTileCacheConfigureSystem(mTileCacheSetGetPointer(&cache->tiles, 3), sysconfig, 0x10000, 0x100);
+	mTileCacheConfigure(mTileCacheSetGetPointer(&cache->tiles, 3), config);
 
 	mBitmapCacheSystemInfo bitConfig;
 	bitConfig = mBitmapCacheSystemInfoSetEntryBPP(0, 4);
@@ -50,6 +50,11 @@ void GBAVideoCacheInit(struct mCacheSet* cache) {
 	mBitmapCacheConfigureSystem(mBitmapCacheSetGetPointer(&cache->bitmaps, 1), bitConfig);
 	mBitmapCacheSetGetPointer(&cache->bitmaps, 1)->bitsStart[0] = 0;
 	mBitmapCacheSetGetPointer(&cache->bitmaps, 1)->bitsStart[1] = 0xA000;
+
+	mMapCacheSetGetPointer(&cache->maps, 0)->context = NULL;
+	mMapCacheSetGetPointer(&cache->maps, 1)->context = NULL;
+	mMapCacheSetGetPointer(&cache->maps, 2)->context = NULL;
+	mMapCacheSetGetPointer(&cache->maps, 3)->context = NULL;
 }
 
 void GBAVideoCacheAssociate(struct mCacheSet* cache, struct GBAVideo* video) {
