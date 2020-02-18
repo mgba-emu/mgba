@@ -199,7 +199,7 @@ void separatePath(const char* path, char* dirname, char* basename, char* extensi
 			if (PATH_MAX <= len) {
 				len = PATH_MAX - 1;
 			}
-			strncpy(extension, dotPoint, len);
+			strncpy(extension, dotPoint, PATH_MAX - 1);
 			extension[len] = '\0';
 		} else {
 			extension[0] = '\0';

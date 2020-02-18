@@ -205,7 +205,7 @@ static void _writeHostInfo(struct GDBStub* stub) {
 }
 
 static void _continue(struct GDBStub* stub, const char* message) {
-	stub->d.state = DEBUGGER_CUSTOM;
+	stub->d.state = DEBUGGER_CALLBACK;
 	stub->untilPoll = GDB_STUB_INTERVAL;
 	// TODO: parse message
 	UNUSED(message);

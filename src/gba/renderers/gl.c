@@ -585,9 +585,6 @@ static const char* const _finalize =
 	"out vec4 color;\n"
 
 	"void composite(vec4 pixel, ivec4 flags, inout vec4 topPixel, inout ivec4 topFlags, inout vec4 bottomPixel, inout ivec4 bottomFlags) {\n"
-	"	if (pixel.a == 0.) {\n"
-	"		return;\n"
-	"	}\n"
 	"	if (flags.x >= topFlags.x) {\n"
 	"		if (flags.x >= bottomFlags.x) {\n"
 	"			return;\n"
@@ -607,32 +604,43 @@ static const char* const _finalize =
 	"	vec4 bottomPixel = topPixel;\n"
 	"	ivec4 topFlags = ivec4(texelFetch(backdropFlags, ivec2(0, texCoord.y), 0));\n"
 	"	ivec4 bottomFlags = topFlags;\n"
-	"	ivec4 windowFlags = texelFetch(window, ivec2(texCoord * float(scale)), 0);\n"
+	"	ivec2 coord = ivec2(texCoord * float(scale));\n"
+	"	ivec4 windowFlags = texelFetch(window, coord, 0);\n"
 	"	int layerWindow = windowFlags.x;\n"
 	"	if ((layerWindow & 16) != 0) {\n"
-	"		vec4 pix = texelFetch(layers[4], ivec2(texCoord * float(scale)), 0);\n"
-	"		ivec4 inflags = ivec4(texelFetch(flags[4], ivec2(texCoord * float(scale)), 0));\n"
-	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
+	"		vec4 pix = texelFetch(layers[4], coord, 0);\n"
+	"		if (pix.a != 0.) {\n"
+	"			ivec4 inflags = ivec4(texelFetch(flags[4], coord, 0));\n"
+	"			composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
+	"		}\n"
 	"	}\n"
 	"	if ((layerWindow & 1) != 0) {\n"
-	"		vec4 pix = texelFetch(layers[0], ivec2(texCoord * float(scale)), 0);\n"
-	"		ivec4 inflags = ivec4(texelFetch(flags[0], ivec2(texCoord * float(scale)), 0).xyz, 0);\n"
-	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
+	"		vec4 pix = texelFetch(layers[0], coord, 0);\n"
+	"		if (pix.a != 0.) {\n"
+	"			ivec4 inflags = ivec4(texelFetch(flags[0], coord, 0).xyz, 0);\n"
+	"			composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
+	"		}\n"
 	"	}\n"
 	"	if ((layerWindow & 2) != 0) {\n"
-	"		vec4 pix = texelFetch(layers[1], ivec2(texCoord * float(scale)), 0);\n"
-	"		ivec4 inflags = ivec4(texelFetch(flags[1], ivec2(texCoord * float(scale)), 0).xyz, 0);\n"
-	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
+	"		vec4 pix = texelFetch(layers[1], coord, 0);\n"
+	"		if (pix.a != 0.) {\n"
+	"			ivec4 inflags = ivec4(texelFetch(flags[1], coord, 0).xyz, 0);\n"
+	"			composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
+	"		}\n"
 	"	}\n"
 	"	if ((layerWindow & 4) != 0) {\n"
-	"		vec4 pix = texelFetch(layers[2], ivec2(texCoord * float(scale)), 0);\n"
-	"		ivec4 inflags = ivec4(texelFetch(flags[2], ivec2(texCoord * float(scale)), 0).xyz.xyz, 0);\n"
-	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
+	"		vec4 pix = texelFetch(layers[2], coord, 0);\n"
+	"		if (pix.a != 0.) {\n"
+	"			ivec4 inflags = ivec4(texelFetch(flags[2], coord, 0).xyz, 0);\n"
+	"			composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
+	"		}\n"
 	"	}\n"
 	"	if ((layerWindow & 8) != 0) {\n"
-	"		vec4 pix = texelFetch(layers[3], ivec2(texCoord * float(scale)), 0);\n"
-	"		ivec4 inflags = ivec4(texelFetch(flags[3], ivec2(texCoord * float(scale)), 0).xyz, 0);\n"
-	"		composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
+	"		vec4 pix = texelFetch(layers[3], coord, 0);\n"
+	"		if (pix.a != 0.) {\n"
+	"			ivec4 inflags = ivec4(texelFetch(flags[3], coord, 0).xyz, 0);\n"
+	"			composite(pix, inflags, topPixel, topFlags, bottomPixel, bottomFlags);\n"
+	"		}\n"
 	"	}\n"
 	"	if ((layerWindow & 32) == 0) {\n"
 	"		topFlags.y &= ~1;\n"
@@ -1153,7 +1161,6 @@ void _cleanRegister(struct GBAVideoGLRenderer* glRenderer, int address, uint16_t
 		break;
 	case REG_BLDCNT:
 		GBAVideoGLRendererWriteBLDCNT(glRenderer, value);
-		value &= 0x3FFF;
 		break;
 	case REG_BLDALPHA:
 		glRenderer->blda = value & 0x1F;
@@ -1164,7 +1171,6 @@ void _cleanRegister(struct GBAVideoGLRenderer* glRenderer, int address, uint16_t
 		if (glRenderer->bldb > 0x10) {
 			glRenderer->bldb = 0x10;
 		}
-		value &= 0x1F1F;
 		break;
 	case REG_BLDY:
 		glRenderer->bldy = value;
@@ -1503,7 +1509,10 @@ void GBAVideoGLRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stri
 }
 
 void GBAVideoGLRendererPutPixels(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels) {
-
+	// TODO
+	UNUSED(renderer);
+	UNUSED(stride);
+	UNUSED(pixels);
 }
 
 static void _enableBg(struct GBAVideoGLRenderer* renderer, int bg, bool active) {

@@ -8,9 +8,6 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
 
-#define TIMER_RELOAD_DELAY 0
-#define TIMER_STARTUP_DELAY 2
-
 #define REG_TMCNT_LO(X) (REG_TM0CNT_LO + ((X) << 2))
 
 static void GBATimerIrq(struct GBA* gba, int timerId, uint32_t cyclesLate) {
@@ -24,7 +21,7 @@ void GBATimerUpdate(struct mTiming* timing, struct GBATimer* timer, uint16_t* io
 	if (GBATimerFlagsIsCountUp(timer->flags)) {
 		*io = timer->reload;
 	} else {
-		GBATimerUpdateRegisterInternal(timer, timing, io, TIMER_RELOAD_DELAY + cyclesLate);
+		GBATimerUpdateRegisterInternal(timer, timing, io, cyclesLate);
 	}
 }
 
@@ -182,14 +179,14 @@ void GBATimerWriteTMCNT_HI(struct GBATimer* timer, struct mTiming* timing, uint1
 		mTimingDeschedule(timing, &timer->event);
 		*io = timer->reload;
 		int32_t tickMask = (1 << prescaleBits) - 1;
-		timer->lastEvent = (mTimingCurrentTime(timing) - TIMER_STARTUP_DELAY) & ~tickMask;
-		GBATimerUpdateRegisterInternal(timer, timing, io, TIMER_STARTUP_DELAY);
+		timer->lastEvent = mTimingCurrentTime(timing) & ~tickMask;
+		GBATimerUpdateRegisterInternal(timer, timing, io, 0);
 	} else if (wasEnabled && !GBATimerFlagsIsEnable(timer->flags)) {
 		mTimingDeschedule(timing, &timer->event);
 	} else if (GBATimerFlagsIsEnable(timer->flags) && GBATimerFlagsGetPrescaleBits(timer->flags) != oldPrescale && !GBATimerFlagsIsCountUp(timer->flags)) {
 		mTimingDeschedule(timing, &timer->event);
 		int32_t tickMask = (1 << prescaleBits) - 1;
-		timer->lastEvent = (mTimingCurrentTime(timing) - TIMER_STARTUP_DELAY) & ~tickMask;
-		GBATimerUpdateRegisterInternal(timer, timing, io, TIMER_STARTUP_DELAY);
+		timer->lastEvent = mTimingCurrentTime(timing) & ~tickMask;
+		GBATimerUpdateRegisterInternal(timer, timing, io, 0);
 	}
 }

@@ -155,7 +155,7 @@ static void _breakInto(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 
 static void _continue(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
-	debugger->d.state = debugger->traceRemaining != 0 ? DEBUGGER_CUSTOM : DEBUGGER_RUNNING;
+	debugger->d.state = debugger->traceRemaining != 0 ? DEBUGGER_CALLBACK : DEBUGGER_RUNNING;
 }
 
 static void _next(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -700,7 +700,7 @@ static void _trace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		debugger->traceVf = VFileOpen(dv->next->charValue, O_CREAT | O_WRONLY | O_APPEND);
 	}
 	if (_doTrace(debugger)) {
-		debugger->d.state = DEBUGGER_CUSTOM;
+		debugger->d.state = DEBUGGER_CALLBACK;
 	} else {
 		debugger->system->printStatus(debugger->system);
 	}
@@ -709,7 +709,6 @@ static void _trace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 static bool _doTrace(struct CLIDebugger* debugger) {
 	char trace[1024];
 	trace[sizeof(trace) - 1] = '\0';
-	debugger->d.core->step(debugger->d.core);
 	size_t traceSize = sizeof(trace) - 2;
 	debugger->d.platform->trace(debugger->d.platform, trace, &traceSize);
 	if (traceSize + 1 <= sizeof(trace)) {
@@ -884,6 +883,7 @@ static int _tryCommands(struct CLIDebugger* debugger, struct CLIDebuggerCommandS
 					if (dvNext->type == CLIDV_ERROR_TYPE) {
 						debugger->backend->printf(debugger->backend, "Parse error\n");
 						_DVFree(dv);
+						_DVFree(dvNext);
 						return 0;
 					}
 
@@ -1044,7 +1044,7 @@ static void _cliDebuggerCustom(struct mDebugger* debugger) {
 	if (cliDebugger->system) {
 		retain = cliDebugger->system->custom(cliDebugger->system) && retain;
 	}
-	if (!retain && debugger->state == DEBUGGER_CUSTOM) {
+	if (!retain && debugger->state == DEBUGGER_CALLBACK) {
 		debugger->state = next;
 	}
 }

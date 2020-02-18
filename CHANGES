@@ -112,13 +112,16 @@ Emulation fixes:
  - ARM: Fix stepping when events are pending
  - GBA DMA: Fix case where DMAs could get misaligned (fixes mgba.io/i/1092)
  - GBA Memory: Fix open bus from IWRAM (fixes mgba.io/i/1575)
+ - GBA Timers: Improve timer startup emulation
  - GBA Video: Fix OpenGL renderer 512x512 backgrounds (fixes mgba.io/i/1572)
  - GBA Video: Fix BLDY for semitransparent sprite on non-target-2 backgrounds
  - GBA Video: Fix effects blending improperly in some non-last windows
+ - GBA Video: Copy higher priority target 1 flag
 Other fixes:
  - 3DS: Fix screen darkening (fixes mgba.io/i/1562)
  - Core: Fix uninitialized memory issues with graphics caches
  - Core: Return null for out of bounds cached tile VRAM querying
+ - Debugger: Fix tracing skipping instructions (fixes mgba.io/i/1614)
  - OpenGL: Only invalidate texture if dimensions change (fixes mgba.io/i/1612)
  - Qt: Fix fast forward mute being reset (fixes mgba.io/i/1574)
  - Qt: Fix scrollbar arrows in memory view (fixes mgba.io/i/1558)
@@ -128,16 +131,22 @@ Other fixes:
  - Qt: Fix undesired screen filtering when paused (fixes mgba.io/i/1602)
  - Qt: Fix sprite view using wrong base address (fixes mgba.io/i/1603)
  - Qt: Fix inability to clear default keybindings
+ - Qt: Release held actions if they get rebound
  - Vita: Fix analog controls (fixes mgba.io/i/1554)
+ - Wii: Fix game fast-forwarding after slowing down
+ - Wii: Improve audio buffering (fixes mgba.io/i/1617)
 Misc:
  - GB Memory: Support manual SRAM editing (fixes mgba.io/i/1580)
+ - GBA: Trim non-movie ROMs to 32 MiB if applicable
  - GBA Audio: Redo channel 4 batching for GBA only
  - GBA I/O: Stop logging several harmless invalid register reads
  - Debugger: Separate aliases from main commands
  - Debugger: Print break-/watchpoint ID when breaking in CLI
+ - Debugger: Minor interface cleanup
  - SDL: Use controller GUID instead of name
  - SM83: Rename LR35902 to SM83
  - Tools: Allow using threaded renderer in perf.py
+ - Tools: Clean up unused argument in mgba-perf
 
 0.8 beta 1: (2019-10-20)
 - Initial beta for 0.8

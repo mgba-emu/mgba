@@ -64,7 +64,7 @@ static void _init(struct GBVideoProxyRenderer* proxyRenderer) {
 	}
 }
 
-static void _reset(struct GBVideoProxyRenderer* proxyRenderer, enum GBModel model) {
+static void _reset(struct GBVideoProxyRenderer* proxyRenderer) {
 	memcpy(proxyRenderer->logger->oam, &proxyRenderer->d.oam->raw, GB_SIZE_OAM);
 	memcpy(proxyRenderer->logger->vram, proxyRenderer->d.vram, GB_SIZE_VRAM);
 
@@ -83,7 +83,7 @@ void GBVideoProxyRendererShim(struct GBVideo* video, struct GBVideoProxyRenderer
 	renderer->d.vram = video->vram;
 	renderer->d.oam = &video->oam;
 	_init(renderer);
-	_reset(renderer, video->p->model);
+	_reset(renderer);
 }
 
 void GBVideoProxyRendererUnshim(struct GBVideo* video, struct GBVideoProxyRenderer* renderer) {

@@ -184,7 +184,7 @@ QString CheatsModel::toString(const QModelIndexList& indices) const {
 	std::sort(order.begin(), order.end());
 	for (int i : order) {
 		mCheatSet* set = setOrder[i];
-		QList<size_t> indexOrdex = setIndices[set].toList();
+		QList<size_t> indexOrdex = setIndices[set].values();
 		std::sort(indexOrdex.begin(), indexOrdex.end());
 		for (size_t j : indexOrdex) {
 			strings.append(*StringListGetPointer(&set->lines, j));

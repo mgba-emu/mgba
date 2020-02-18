@@ -936,7 +936,7 @@ static void _updateChannel4(struct mTiming* timing, void* user, uint32_t cyclesL
 
 	uint32_t last = 0;
 	uint32_t now = cycles;
-	uint32_t next = cycles - cyclesLate;
+	int32_t next = cycles - cyclesLate;
 
 	if (audio->style == GB_AUDIO_GBA) {
 		last = ch->lastEvent;

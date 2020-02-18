@@ -66,7 +66,7 @@ static bool _GBCLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 
 static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
-	debugger->d.state = DEBUGGER_CUSTOM;
+	debugger->d.state = DEBUGGER_CALLBACK;
 
 	struct GBCLIDebugger* gbDebugger = (struct GBCLIDebugger*) debugger->system;
 	gbDebugger->frameAdvance = true;
