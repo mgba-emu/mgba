@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gb/timer.h>
 
-#include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/sm83/sm83.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/serialize.h>

@@ -120,6 +120,7 @@ void ObjView::updateTilesGBA(bool force) {
 		m_ui.palette->setText(QString::number(newInfo.paletteId));
 		m_ui.tile->setBoundary(2048, 0, 2);
 		m_ui.tile->setPalette(newInfo.paletteId);
+		m_boundary = 2048;
 	}
 	if (newInfo != m_objInfo) {
 		force = true;

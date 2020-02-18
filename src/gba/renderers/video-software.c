@@ -36,8 +36,6 @@ static void GBAVideoSoftwareRendererWriteBGY_LO(struct GBAVideoSoftwareBackgroun
 static void GBAVideoSoftwareRendererWriteBGY_HI(struct GBAVideoSoftwareBackground* bg, uint16_t value);
 static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer* renderer, uint16_t value);
 
-static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y);
-
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer);
 
 static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win, int y);
@@ -597,6 +595,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		_updatePalettes(softwareRenderer);
 		softwareRenderer->blendDirty = false;
 	}
+	softwareRenderer->forceTarget1 = false;
 
 	softwareRenderer->bg[0].highlight = softwareRenderer->d.highlightBG[0];
 	softwareRenderer->bg[1].highlight = softwareRenderer->d.highlightBG[1];
@@ -652,9 +651,8 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			}
 		}
 	}
-	if (softwareRenderer->target1Obj && (softwareRenderer->blendEffect == BLEND_DARKEN || softwareRenderer->blendEffect == BLEND_BRIGHTEN)) {
-		int x = 0;
-		uint32_t mask = FLAG_REBLEND | FLAG_TARGET_1 | FLAG_IS_BACKGROUND;
+	if (softwareRenderer->forceTarget1 && (softwareRenderer->blendEffect == BLEND_DARKEN || softwareRenderer->blendEffect == BLEND_BRIGHTEN)) {
+		uint32_t mask = FLAG_REBLEND | FLAG_IS_BACKGROUND;
 		uint32_t match = FLAG_REBLEND;
 		if (GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt)) {
 			mask |= FLAG_OBJWIN;
@@ -662,11 +660,13 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 				match |= FLAG_OBJWIN;
 			}
 		}
+		int x = 0;
 		for (w = 0; w < softwareRenderer->nWindows; ++w) {
+			int end = softwareRenderer->windows[w].endX;
 			if (!GBAWindowControlIsBlendEnable(softwareRenderer->windows[w].control.packed)) {
+				x = end;
 				continue;
 			}
-			int end = softwareRenderer->windows[w].endX;
 			if (softwareRenderer->blendEffect == BLEND_DARKEN) {
 				for (; x < end; ++x) {
 					uint32_t color = softwareRenderer->row[x];

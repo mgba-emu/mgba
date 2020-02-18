@@ -826,8 +826,10 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_DMA1CNT_LO:
 	case REG_DMA2CNT_LO:
 	case REG_DMA3CNT_LO:
-		// Write-only register
-		mLOG(GBA_IO, GAME_ERROR, "Read from write-only I/O register: %03X", address);
+		// Many, many things read from the DMA register
+	case REG_MAX:
+		// Some bad interrupt libraries will read from this
+		// (Silent) write-only register
 		return 0;
 
 	case REG_JOY_RECV_LO:
@@ -900,8 +902,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_IME:
 		// Handled transparently by registers
 		break;
-	case REG_MAX:
-		// Some bad interrupt libraries will read from this
 	case 0x066:
 	case 0x06E:
 	case 0x076:

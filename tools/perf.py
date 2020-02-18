@@ -28,8 +28,10 @@ class PerfTest(object):
     def run(self, cwd):
         args = [os.path.join(os.getcwd(), self.EXECUTABLE), '-P']
         args.extend(self.get_args())
-        if self.renderer != 'software':
+        if not self.renderer:
             args.append('-N')
+        elif self.renderer == 'threaded-software':
+            args.append('-T')
         args.append(self.rom)
         env = {}
         if 'LD_LIBRARY_PATH' in os.environ:
@@ -91,8 +93,10 @@ class PerfServer(object):
         server_command.extend(['--', '-PD', '0'])
         if hasattr(test, "frames"):
             server_command.extend(['-F', str(test.frames)])
-        if test.renderer != "software":
+        if not test.renderer:
             server_command.append('-N')
+        elif test.renderer == 'threaded-software':
+            server_command.append('-T')
         subprocess.check_call(server_command)
         time.sleep(4)
         self.socket = socket.create_connection(self.address, timeout=1000)
@@ -170,13 +174,19 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--wall-time', type=float, default=0, metavar='TIME', help='wall-clock time')
     parser.add_argument('-g', '--game-frames', type=int, default=0, metavar='FRAMES', help='game-clock frames')
     parser.add_argument('-N', '--disable-renderer', action='store_const', const=True, help='disable video rendering')
+    parser.add_argument('-T', '--threaded-renderer', action='store_const', const=True, help='threaded video rendering')
     parser.add_argument('-s', '--server', metavar='ADDRESS', help='run on server')
     parser.add_argument('-S', '--server-command', metavar='COMMAND', help='command to launch server')
     parser.add_argument('-o', '--out', metavar='FILE', help='output file path')
     parser.add_argument('directory', help='directory containing ROM files')
     args = parser.parse_args()
 
-    s = Suite(args.directory, wall=args.wall_time, game=args.game_frames, renderer=None if args.disable_renderer else 'software')
+    renderer = 'software'
+    if args.disable_renderer:
+        renderer = None
+    elif args.threaded_renderer:
+        renderer = 'threaded-software'
+    s = Suite(args.directory, wall=args.wall_time, game=args.game_frames, renderer=renderer)
     if args.server:
         if args.server_command:
             server = PerfServer(args.server, args.server_command)

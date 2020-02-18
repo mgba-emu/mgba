@@ -6,7 +6,7 @@
 #include <mgba/internal/gb/mbc.h>
 
 #include <mgba/core/interface.h>
-#include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/sm83/sm83.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/memory.h>
 #include <mgba-util/crc32.h>

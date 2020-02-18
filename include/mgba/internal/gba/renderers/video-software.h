@@ -143,7 +143,8 @@ struct GBAVideoSoftwareRenderer {
 
 	struct GBAVideoSoftwareBackground bg[4];
 
-	int oamDirty;
+	bool forceTarget1;
+	bool oamDirty;
 	int oamMax;
 	struct GBAVideoRendererSprite sprites[128];
 	int tileStride;

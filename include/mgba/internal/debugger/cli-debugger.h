@@ -42,6 +42,11 @@ struct CLIDebuggerCommandSummary {
 	const char* summary;
 };
 
+struct CLIDebuggerCommandAlias {
+	const char* name;
+	const char* original;
+};
+
 struct CLIDebuggerSystem {
 	struct CLIDebugger* p;
 
@@ -53,8 +58,10 @@ struct CLIDebuggerSystem {
 	void (*printStatus)(struct CLIDebuggerSystem*);
 
 	struct CLIDebuggerCommandSummary* commands;
+	struct CLIDebuggerCommandAlias* commandAliases;
 	const char* name;
 	struct CLIDebuggerCommandSummary* platformCommands;
+	struct CLIDebuggerCommandAlias* platformCommandAliases;
 	const char* platformName;
 };
 

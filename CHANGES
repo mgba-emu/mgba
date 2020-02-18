@@ -84,7 +84,6 @@ Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
  - Debugger: Add breakpoint and watchpoint listing
- - LR35902: Support PC-relative opcode decoding
  - mGUI: Remember name and position of last loaded game
  - OpenGL: Only resize textures when needed
  - Qt: Don't unload ROM immediately if it crashes
@@ -102,6 +101,7 @@ Misc:
  - Qt: Show list of all sprites in sprite view
  - Qt: Add option for disabling OSD messages
  - Qt, OpenGL: Disable integer scaling for dimensions that don't fit
+ - SM83: Support PC-relative opcode decoding
  - Switch: Dynamic display resizing
  - Switch: Support file associations
  - Vita: L2/R2 and L3/R3 can now be mapped on PSTV (fixes mgba.io/i/1292)
@@ -111,20 +111,33 @@ Emulation fixes:
  - ARM: Partially fix LDM/STM writeback with empty register list
  - ARM: Fix stepping when events are pending
  - GBA DMA: Fix case where DMAs could get misaligned (fixes mgba.io/i/1092)
- - GBA Video: Fix OpenGL renderer 512x512 backgrounds (fixes mgba.io/i/1572)
  - GBA Memory: Fix open bus from IWRAM (fixes mgba.io/i/1575)
+ - GBA Video: Fix OpenGL renderer 512x512 backgrounds (fixes mgba.io/i/1572)
+ - GBA Video: Fix BLDY for semitransparent sprite on non-target-2 backgrounds
+ - GBA Video: Fix effects blending improperly in some non-last windows
 Other fixes:
  - 3DS: Fix screen darkening (fixes mgba.io/i/1562)
  - Core: Fix uninitialized memory issues with graphics caches
  - Core: Return null for out of bounds cached tile VRAM querying
- - Vita: Fix analog controls (fixes mgba.io/i/1554)
+ - OpenGL: Only invalidate texture if dimensions change (fixes mgba.io/i/1612)
  - Qt: Fix fast forward mute being reset (fixes mgba.io/i/1574)
  - Qt: Fix scrollbar arrows in memory view (fixes mgba.io/i/1558)
  - Qt: Fix several cases where shader selections don't get saved
  - Qt: Fix division by zero error in invalid TilePainter state
+ - Qt: Fix "restart needed" dialog after first config (fixes mgba.io/i/1601)
+ - Qt: Fix undesired screen filtering when paused (fixes mgba.io/i/1602)
+ - Qt: Fix sprite view using wrong base address (fixes mgba.io/i/1603)
+ - Qt: Fix inability to clear default keybindings
+ - Vita: Fix analog controls (fixes mgba.io/i/1554)
 Misc:
  - GB Memory: Support manual SRAM editing (fixes mgba.io/i/1580)
+ - GBA Audio: Redo channel 4 batching for GBA only
+ - GBA I/O: Stop logging several harmless invalid register reads
+ - Debugger: Separate aliases from main commands
+ - Debugger: Print break-/watchpoint ID when breaking in CLI
  - SDL: Use controller GUID instead of name
+ - SM83: Rename LR35902 to SM83
+ - Tools: Allow using threaded renderer in perf.py
 
 0.8 beta 1: (2019-10-20)
 - Initial beta for 0.8

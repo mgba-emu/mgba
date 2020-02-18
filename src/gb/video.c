@@ -12,7 +12,7 @@
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/renderers/cache-set.h>
 #include <mgba/internal/gb/serialize.h>
-#include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/sm83/sm83.h>
 
 #include <mgba-util/memory.h>
 
@@ -339,7 +339,7 @@ void _endMode3(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	UNUSED(cyclesLate);
 	struct GBVideo* video = context;
-	if (video->p->cpu->executionState != LR35902_CORE_FETCH) {
+	if (video->p->cpu->executionState != SM83_CORE_FETCH) {
 		mTimingSchedule(timing, &video->frameEvent, 4 - ((video->p->cpu->executionState + 1) & 3));
 		return;
 	}

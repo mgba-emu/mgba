@@ -292,6 +292,7 @@ void Window::reloadConfig() {
 		m_display->lockAspectRatio(opts->lockAspectRatio);
 		m_display->filter(opts->resampleVideo);
 	}
+	m_screenWidget->filter(opts->resampleVideo);
 
 	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);
 }
@@ -975,6 +976,7 @@ void Window::reloadDisplayDriver() {
 	m_display->lockIntegerScaling(opts->lockIntegerScaling);
 	m_display->interframeBlending(opts->interframeBlending);
 	m_display->filter(opts->resampleVideo);
+	m_screenWidget->filter(opts->resampleVideo);
 	m_config->updateOption("showOSD");
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (opts->shader) {
@@ -1479,6 +1481,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		if (m_display) {
 			m_display->filter(value.toBool());
 		}
+		m_screenWidget->filter(value.toBool());
 	}, this);
 	m_config->updateOption("resampleVideo");
 
@@ -1995,11 +1998,15 @@ void WindowBackground::setLockAspectRatio(bool lock) {
 	m_lockAspectRatio = lock;
 }
 
+void WindowBackground::filter(bool filter) {
+	m_filter = filter;
+}
+
 void WindowBackground::paintEvent(QPaintEvent* event) {
 	QWidget::paintEvent(event);
 	const QPixmap& logo = pixmap();
 	QPainter painter(this);
-	painter.setRenderHint(QPainter::SmoothPixmapTransform);
+	painter.setRenderHint(QPainter::SmoothPixmapTransform, m_filter);
 	painter.fillRect(QRect(QPoint(), size()), Qt::black);
 	QSize s = size();
 	QSize ds = s;

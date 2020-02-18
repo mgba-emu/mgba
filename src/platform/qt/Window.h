@@ -244,6 +244,7 @@ public:
 	void setCenteredAspectRatio(int width, int height);
 	void setLockIntegerScaling(bool lock);
 	void setLockAspectRatio(bool lock);
+	void filter(bool filter);
 
 	const QPixmap& pixmap() const { return m_pixmap; }
 
@@ -258,6 +259,7 @@ private:
 	int m_aspectHeight;
 	bool m_lockAspectRatio;
 	bool m_lockIntegerScaling;
+	bool m_filter;
 };
 
 }

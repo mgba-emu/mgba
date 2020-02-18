@@ -22,17 +22,21 @@ static void _disassembleMode(struct CLIDebugger*, struct CLIDebugVector*, enum E
 static uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode);
 
 static struct CLIDebuggerCommandSummary _armCommands[] = {
-	{ "b/a", _setBreakpointARM, "I", "Set a software breakpoint as ARM" },
-	{ "b/t", _setBreakpointThumb, "I", "Set a software breakpoint as Thumb" },
 	{ "break/a", _setBreakpointARM, "I", "Set a software breakpoint as ARM" },
 	{ "break/t", _setBreakpointThumb, "I", "Set a software breakpoint as Thumb" },
-	{ "dis/a", _disassembleArm, "Ii", "Disassemble instructions as ARM" },
-	{ "dis/t", _disassembleThumb, "Ii", "Disassemble instructions as Thumb" },
-	{ "disasm/a", _disassembleArm, "Ii", "Disassemble instructions as ARM" },
-	{ "disasm/t", _disassembleThumb, "Ii", "Disassemble instructions as Thumb" },
 	{ "disassemble/a", _disassembleArm, "Ii", "Disassemble instructions as ARM" },
 	{ "disassemble/t", _disassembleThumb, "Ii", "Disassemble instructions as Thumb" },
 	{ 0, 0, 0, 0 }
+};
+
+static struct CLIDebuggerCommandAlias _armCommandAliases[] = {
+	{ "b/a", "break/a" },
+	{ "b/t", "break/t" },
+	{ "dis/a", "disassemble/a" },
+	{ "dis/t", "disassemble/t" },
+	{ "disasm/a",  "disassemble/a" },
+	{ "disasm/t",  "disassemble/t" },
+	{ 0, 0 }
 };
 
 static inline void _printPSR(struct CLIDebuggerBackend* be, union PSR psr) {
@@ -175,4 +179,5 @@ void ARMCLIDebuggerCreate(struct CLIDebuggerSystem* debugger) {
 	debugger->disassemble = _disassemble;
 	debugger->platformName = "ARM";
 	debugger->platformCommands = _armCommands;
+	debugger->platformCommandAliases = _armCommandAliases;
 }

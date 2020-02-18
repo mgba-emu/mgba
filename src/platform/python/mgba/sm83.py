@@ -6,10 +6,10 @@
 from ._pylib import ffi  # pylint: disable=no-name-in-module
 
 
-class LR35902Core:
+class SM83Core:
     # pylint: disable=invalid-name
     def __init__(self, native):
-        self._native = ffi.cast("struct LR35902Core*", native)
+        self._native = ffi.cast("struct SM83Core*", native)
 
     @property
     def a(self):

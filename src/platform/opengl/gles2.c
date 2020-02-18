@@ -98,6 +98,8 @@ static const GLfloat _vertices[] = {
 static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	UNUSED(handle);
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
+	v->width = 1;
+	v->height = 1;
 	glGenTextures(1, &context->tex);
 	glBindTexture(GL_TEXTURE_2D, context->tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -172,6 +174,9 @@ static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 
 static void mGLES2ContextSetDimensions(struct VideoBackend* v, unsigned width, unsigned height) {
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
+	if (width == v->width && height == v->height) {
+		return;
+	}
 	v->width = width;
 	v->height = height;
 

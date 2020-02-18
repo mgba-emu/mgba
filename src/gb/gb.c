@@ -7,7 +7,7 @@
 
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/mbc.h>
-#include <mgba/internal/lr35902/lr35902.h>
+#include <mgba/internal/sm83/sm83.h>
 
 #include <mgba/core/core.h>
 #include <mgba/core/cheats.h>
@@ -19,8 +19,8 @@
 
 #define CLEANUP_THRESHOLD 15
 
-const uint32_t CGB_LR35902_FREQUENCY = 0x800000;
-const uint32_t SGB_LR35902_FREQUENCY = 0x418B1E;
+const uint32_t CGB_SM83_FREQUENCY = 0x800000;
+const uint32_t SGB_SM83_FREQUENCY = 0x418B1E;
 
 const uint32_t GB_COMPONENT_MAGIC = 0x400000;
 
@@ -37,12 +37,12 @@ mLOG_DEFINE_CATEGORY(GB, "GB", "gb");
 
 static void GBInit(void* cpu, struct mCPUComponent* component);
 static void GBDeinit(struct mCPUComponent* component);
-static void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh);
-static void GBProcessEvents(struct LR35902Core* cpu);
-static void GBSetInterrupts(struct LR35902Core* cpu, bool enable);
-static uint16_t GBIRQVector(struct LR35902Core* cpu);
-static void GBIllegal(struct LR35902Core* cpu);
-static void GBStop(struct LR35902Core* cpu);
+static void GBInterruptHandlerInit(struct SM83InterruptHandler* irqh);
+static void GBProcessEvents(struct SM83Core* cpu);
+static void GBSetInterrupts(struct SM83Core* cpu, bool enable);
+static uint16_t GBIRQVector(struct SM83Core* cpu);
+static void GBIllegal(struct SM83Core* cpu);
+static void GBStop(struct SM83Core* cpu);
 
 static void _enableInterrupts(struct mTiming* timing, void* user, uint32_t cyclesLate);
 
@@ -119,7 +119,7 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	GBMBCInit(gb);
 
 	if (gb->cpu) {
-		struct LR35902Core* cpu = gb->cpu;
+		struct SM83Core* cpu = gb->cpu;
 		cpu->memory.setActiveRegion(cpu, cpu->pc);
 	}
 
@@ -135,7 +135,7 @@ void GBYankROM(struct GB* gb) {
 	gb->memory.sramAccess = false;
 
 	if (gb->cpu) {
-		struct LR35902Core* cpu = gb->cpu;
+		struct SM83Core* cpu = gb->cpu;
 		cpu->memory.setActiveRegion(cpu, cpu->pc);
 	}
 }
@@ -375,7 +375,7 @@ void GBDestroy(struct GB* gb) {
 	mCoreCallbacksListDeinit(&gb->coreCallbacks);
 }
 
-void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh) {
+void GBInterruptHandlerInit(struct SM83InterruptHandler* irqh) {
 	irqh->reset = GBReset;
 	irqh->processEvents = GBProcessEvents;
 	irqh->setInterrupts = GBSetInterrupts;
@@ -410,7 +410,7 @@ bool GBIsBIOS(struct VFile* vf) {
 	}
 }
 
-void GBReset(struct LR35902Core* cpu) {
+void GBReset(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	gb->memory.romBase = gb->memory.rom;
 	GBDetectModel(gb);
@@ -477,7 +477,7 @@ void GBReset(struct LR35902Core* cpu) {
 }
 
 void GBSkipBIOS(struct GB* gb) {
-	struct LR35902Core* cpu = gb->cpu;
+	struct SM83Core* cpu = gb->cpu;
 	int nextDiv = 0;
 
 	switch (gb->model) {
@@ -656,10 +656,10 @@ void GBUpdateIRQs(struct GB* gb) {
 	if (gb->cpu->irqPending) {
 		return;
 	}
-	LR35902RaiseIRQ(gb->cpu);
+	SM83RaiseIRQ(gb->cpu);
 }
 
-void GBProcessEvents(struct LR35902Core* cpu) {
+void GBProcessEvents(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	do {
 		int32_t cycles = cpu->cycles;
@@ -687,7 +687,7 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 	gb->earlyExit = false;
 }
 
-void GBSetInterrupts(struct LR35902Core* cpu, bool enable) {
+void GBSetInterrupts(struct SM83Core* cpu, bool enable) {
 	struct GB* gb = (struct GB*) cpu->master;
 	mTimingDeschedule(&gb->timing, &gb->eiPending);
 	if (!enable) {
@@ -698,7 +698,7 @@ void GBSetInterrupts(struct LR35902Core* cpu, bool enable) {
 	}
 }
 
-uint16_t GBIRQVector(struct LR35902Core* cpu) {
+uint16_t GBIRQVector(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	int irqs = gb->memory.ie & gb->memory.io[REG_IF];
 
@@ -733,7 +733,7 @@ static void _enableInterrupts(struct mTiming* timing, void* user, uint32_t cycle
 	GBUpdateIRQs(gb);
 }
 
-void GBHalt(struct LR35902Core* cpu) {
+void GBHalt(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	if (!(gb->memory.ie & gb->memory.io[REG_IF] & 0x1F)) {
 		cpu->cycles = cpu->nextEvent;
@@ -743,7 +743,7 @@ void GBHalt(struct LR35902Core* cpu) {
 	}
 }
 
-void GBStop(struct LR35902Core* cpu) {
+void GBStop(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	if (cpu->bus) {
 		mLOG(GB, GAME_ERROR, "Hit illegal stop at address %04X:%02X", cpu->pc, cpu->bus);
@@ -758,7 +758,7 @@ void GBStop(struct LR35902Core* cpu) {
 		if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
 			struct mDebuggerEntryInfo info = {
 				.address = cpu->pc - 1,
-				.type.bp.opcode = 0x1000 | cpu->bus
+				.type.bp.opcode = 0x1000 | cpu->bus,
 			};
 			mDebuggerEnter((struct mDebugger*) cpu->components[CPU_COMPONENT_DEBUGGER], DEBUGGER_ENTER_ILLEGAL_OP, &info);
 		}
@@ -770,7 +770,7 @@ void GBStop(struct LR35902Core* cpu) {
 	// TODO: Actually stop
 }
 
-void GBIllegal(struct LR35902Core* cpu) {
+void GBIllegal(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	mLOG(GB, GAME_ERROR, "Hit illegal opcode at address %04X:%02X", cpu->pc, cpu->bus);
 #ifdef USE_DEBUGGERS
