@@ -74,9 +74,13 @@ struct GBARTC {
     int32_t transferStep;
     int32_t bitsRead;
     int32_t bits;
-    int32_t commandActive;
+    uint8_t commandActive;
+    uint8_t alarm1[3];
     RTCCommandData command;
+    RTCStatus2 status2;
+    uint8_t freeReg;
     RTCControl control;
+    uint8_t alarm2[3];
     uint8_t time[7];
 };""", packed=True)
 
