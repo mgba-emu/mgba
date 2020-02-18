@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>849</width>
+    <width>885</width>
     <height>797</height>
    </rect>
   </property>
@@ -562,7 +562,21 @@
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
+       <item row="9" column="1">
+        <widget class="QCheckBox" name="pauseOnMinimize">
+         <property name="text">
+          <string>Pause when minimized</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="0" colspan="2">
+        <widget class="Line" name="line_17">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="1">
         <widget class="QCheckBox" name="showFps">
          <property name="text">
           <string>Show FPS in title bar</string>
@@ -572,41 +586,21 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="0" colspan="2">
+       <item row="13" column="1">
+        <widget class="QCheckBox" name="useDiscordPresence">
+         <property name="text">
+          <string>Enable Discord Rich Presence</string>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="0" colspan="2">
         <widget class="Line" name="line_13">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="15" column="0" colspan="2">
-        <widget class="Line" name="line_16">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="1">
-        <widget class="QCheckBox" name="cheatAutosave">
-         <property name="text">
-          <string>Automatically save cheats</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="17" column="1">
-        <widget class="QCheckBox" name="cheatAutoload">
-         <property name="text">
-          <string>Automatically load cheats</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="1">
+       <item row="15" column="1">
         <widget class="QCheckBox" name="autosave">
          <property name="text">
           <string>Automatically save state</string>
@@ -616,7 +610,7 @@
          </property>
         </widget>
        </item>
-       <item row="14" column="1">
+       <item row="16" column="1">
         <widget class="QCheckBox" name="autoload">
          <property name="text">
           <string>Automatically load state</string>
@@ -626,17 +620,40 @@
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
-        <widget class="QCheckBox" name="useDiscordPresence">
-         <property name="text">
-          <string>Enable Discord Rich Presence</string>
+       <item row="17" column="0" colspan="2">
+        <widget class="Line" name="line_16">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
-        <widget class="QCheckBox" name="pauseOnMinimize">
+       <item row="18" column="1">
+        <widget class="QCheckBox" name="cheatAutosave">
          <property name="text">
-          <string>Pause when minimized</string>
+          <string>Automatically save cheats</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="19" column="1">
+        <widget class="QCheckBox" name="cheatAutoload">
+         <property name="text">
+          <string>Automatically load cheats</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="1">
+        <widget class="QCheckBox" name="showOSD">
+         <property name="text">
+          <string>Show OSD messages</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -2106,6 +2123,16 @@
    <signal>toggled(bool)</signal>
    <receiver>fastForwardHeldRatio</receiver>
    <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
   </connection>
  </connections>
 </ui>

@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>241</width>
-    <height>311</height>
+    <width>246</width>
+    <height>425</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Game Boy Printer</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item alignment="Qt::AlignHCenter">
+   <item>
     <widget class="QScrollArea" name="scrollArea">
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
@@ -23,10 +23,15 @@
       <bool>true</bool>
      </property>
      <widget class="QWidget" name="scrollAreaWidgetContents">
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <property name="spacing">
-        <number>0</number>
-       </property>
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>234</width>
+        <height>249</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout" rowstretch="1,0,1" columnminimumwidth="0,160,0">
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -39,14 +44,36 @@
        <property name="bottomMargin">
         <number>0</number>
        </property>
-       <item>
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item row="0" column="1">
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
         </spacer>
        </item>
-       <item>
+       <item row="0" column="0">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="1">
         <widget class="QLabel" name="image">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -60,18 +87,12 @@
            <height>1</height>
           </size>
          </property>
-         <property name="maximumSize">
-          <size>
-           <width>160</width>
-           <height>16777215</height>
-          </size>
-         </property>
          <property name="alignment">
           <set>Qt::AlignHCenter|Qt::AlignTop</set>
          </property>
         </widget>
        </item>
-       <item>
+       <item row="2" column="1">
         <widget class="Line" name="line">
          <property name="frameShadow">
           <enum>QFrame::Plain</enum>
@@ -80,6 +101,19 @@
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
+       </item>
+       <item row="0" column="2">
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
@@ -103,6 +137,62 @@
         <string>Tear off</string>
        </property>
       </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="magnification">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="suffix">
+        <string>×</string>
+       </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>8</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Magnification</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>

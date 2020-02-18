@@ -64,7 +64,7 @@ static const GLchar* const _gles3Header =
 	"precision highp isampler2D;\n";
 
 static const GLchar* const _gl3Header =
-	"#version 130\n"
+	"#version 150 core\n"
 	"#define OUT(n)\n"
 	PALETTE_ENTRY
 	"precision highp float;\n";

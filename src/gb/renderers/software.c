@@ -461,8 +461,11 @@ static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer
 		color = mColorFrom555(r | (g << 5) | (b << 10));
 #else
 		r >>= 2;
+		r += r >> 4;
 		g >>= 2;
+		g += g >> 4;
 		b >>= 2;
+		b += b >> 4;
 		color = r | (g << 8) | (b << 16);
 #endif
 	}

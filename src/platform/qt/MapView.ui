@@ -13,38 +13,7 @@
   <property name="windowTitle">
    <string>Maps</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0,0">
-   <item row="3" column="0">
-    <widget class="QGBA::AssetTile" name="tile"/>
-   </item>
-   <item row="2" column="0">
-    <widget class="QGBA::AssetInfo" name="bgInfo">
-     <property name="title">
-      <string/>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2"/>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QPushButton" name="exportButton">
-     <property name="text">
-      <string>Export</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
+  <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0,0,0">
    <item row="1" column="0">
     <layout class="QVBoxLayout" name="bgLayout">
      <item>
@@ -79,7 +48,7 @@
      </item>
     </layout>
    </item>
-   <item row="1" column="1" rowspan="5" colspan="2">
+   <item row="1" column="1" rowspan="6" colspan="2">
     <widget class="QScrollArea" name="scrollArea">
      <property name="widgetResizable">
       <bool>true</bool>
@@ -133,19 +102,57 @@
      </widget>
     </widget>
    </item>
+   <item row="3" column="0">
+    <widget class="QGBA::AssetTile" name="tile"/>
+   </item>
+   <item row="4" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="6" column="0">
+    <widget class="QPushButton" name="exportButton">
+     <property name="text">
+      <string>Export</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QGBA::AssetInfo" name="bgInfo">
+     <property name="title">
+      <string/>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2"/>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QPushButton" name="copyButton">
+     <property name="text">
+      <string>Copy</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QGBA::AssetInfo</class>
-   <extends>QGroupBox</extends>
-   <header>AssetInfo.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>QGBA::AssetTile</class>
    <extends>QGroupBox</extends>
    <header>AssetTile.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QGBA::AssetInfo</class>
+   <extends>QGroupBox</extends>
+   <header>AssetInfo.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

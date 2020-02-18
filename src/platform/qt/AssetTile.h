@@ -21,6 +21,7 @@ Q_OBJECT
 public:
 	AssetTile(QWidget* parent = nullptr);
 	void setController(std::shared_ptr<CoreController>);
+	QImage activeTile() const { return m_activeTile; }
 
 public slots:
 	void setPalette(int);
@@ -48,6 +49,7 @@ private:
 	bool m_flipV = false;
 
 	QMap<QString, QLabel*> m_customProperties;
+	QImage m_activeTile;
 };
 
 }

@@ -54,6 +54,8 @@ Emulation fixes:
  - GB Memory: Better emulate 0xFEA0 region on DMG, MGB and AGB
  - GB Video: Fix mode 0 window edge case (fixes mgba.io/i/1519)
  - GB Audio: Fix channel 4 volume (fixes mgba.io/i/1529)
+ - GB Video: Fix color scaling in AGB mode
+ - GB: Fix using boot ROM with MMM01 games
 Other fixes:
  - Qt: Fix some Qt display driver race conditions
  - Core: Improved lockstep driver reliability (Le Hoang Quyen)
@@ -64,6 +66,9 @@ Other fixes:
  - Qt: Only show emulator restart warning once per settings saving
  - FFmpeg: Drain recording buffers
  - Shaders: Fix gba-color shader resolution (fixes mgba.io/i/1435)
+ - Qt: Fix LibraryController initialization (fixes mgba.io/i/1324)
+ - Switch: Fix audio when video rate desyncs (fixes mgba.io/i/1532)
+ - GB: Fix reading ROM immediately after unmapping BIOS
 Misc:
  - GBA Savedata: EEPROM performance fixes
  - GBA Savedata: Automatically map 1Mbit Flash files as 1Mbit Flash
@@ -94,6 +99,12 @@ Misc:
  - OpenGL: Only resize textures when needed
  - GBA BIOS: Fix clobbered registers in CpuSet (fixes mgba.io/i/1531)
  - Qt: Remove What's This icon from dialogs
+ - CMake: Don't use libzip on embedded platforms (fixes mgba.io/i/1527)
+ - Qt: Printer quality of life improvements (fixes mgba.io/i/1540)
+ - Qt: Add copy and QoL improvements to graphic views (closes mgba.io/i/1541)
+ - Qt: Show list of all sprites in sprite view
+ - Qt: Add option for disabling OSD messages
+ - Core: Add more memory search ops (closes mgba.io/i/1510)
 
 0.7.3: (2019-09-15)
 Emulation fixes:

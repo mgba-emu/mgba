@@ -6,14 +6,28 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>693</width>
-    <height>467</height>
+    <width>748</width>
+    <height>823</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Tiles</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
+  <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,1,0,0,0,0" columnstretch="0,1">
+   <item row="5" column="0">
+    <widget class="QPushButton" name="exportOne">
+     <property name="text">
+      <string>Export Selected</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QPushButton" name="exportAll">
+     <property name="text">
+      <string>Export All</string>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
     <layout class="QFormLayout" name="formLayout">
      <item row="0" column="0">
@@ -104,17 +118,7 @@
      </property>
     </spacer>
    </item>
-   <item row="1" column="0">
-    <widget class="QGBA::AssetTile" name="tile"/>
-   </item>
-   <item row="4" column="0">
-    <widget class="QPushButton" name="exportButton">
-     <property name="text">
-      <string>Export</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1" rowspan="5">
+   <item row="0" column="1" rowspan="8">
     <widget class="QScrollArea" name="scrollArea">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
@@ -133,7 +137,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>405</width>
+        <width>480</width>
         <height>768</height>
        </rect>
       </property>
@@ -177,6 +181,23 @@
        </item>
       </layout>
      </widget>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QGBA::AssetTile" name="tile"/>
+   </item>
+   <item row="4" column="0">
+    <widget class="QPushButton" name="copyOne">
+     <property name="text">
+      <string>Copy Selected</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QPushButton" name="copyAll">
+     <property name="text">
+      <string>Copy All</string>
+     </property>
     </widget>
    </item>
   </layout>

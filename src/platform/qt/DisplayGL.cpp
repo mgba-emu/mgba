@@ -114,6 +114,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	lockAspectRatio(isAspectRatioLocked());
 	lockIntegerScaling(isIntegerScalingLocked());
 	interframeBlending(hasInterframeBlending());
+	showOSDMessages(isShowOSD());
 	filter(isFiltered());
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatioF());
@@ -184,6 +185,13 @@ void DisplayGL::interframeBlending(bool enable) {
 	Display::interframeBlending(enable);
 	if (m_drawThread) {
 		QMetaObject::invokeMethod(m_painter, "interframeBlending", Q_ARG(bool, enable));
+	}
+}
+
+void DisplayGL::showOSDMessages(bool enable) {
+	Display::showOSDMessages(enable);
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "showOSD", Q_ARG(bool, enable));
 	}
 }
 
@@ -353,6 +361,7 @@ void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
 
 void PainterGL::resize(const QSize& size) {
 	m_size = size;
+	m_window->setSize(m_size);
 	if (m_started && !m_active) {
 		forceDraw();
 	}
@@ -370,6 +379,10 @@ void PainterGL::lockIntegerScaling(bool lock) {
 
 void PainterGL::interframeBlending(bool enable) {
 	m_backend->interframeBlending = enable;
+}
+
+void PainterGL::showOSD(bool enable) {
+	m_showOSD = enable;
 }
 
 void PainterGL::filter(bool filter) {
@@ -460,7 +473,7 @@ void PainterGL::performDraw() {
 	m_backend->resized(m_backend, m_size.width() * r, m_size.height() * r);
 	m_backend->drawFrame(m_backend);
 	m_painter.endNativePainting();
-	if (m_messagePainter) {
+	if (m_showOSD && m_messagePainter) {
 		m_messagePainter->paint(&m_painter);
 	}
 }

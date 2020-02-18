@@ -415,23 +415,6 @@ void GBReset(struct LR35902Core* cpu) {
 	gb->memory.romBase = gb->memory.rom;
 	GBDetectModel(gb);
 
-	if (gb->biosVf) {
-		if (!GBIsBIOS(gb->biosVf)) {
-			gb->biosVf->close(gb->biosVf);
-			gb->biosVf = NULL;
-		} else {
-			GBMapBIOS(gb);
-			cpu->a = 0;
-			cpu->f.packed = 0;
-			cpu->c = 0;
-			cpu->e = 0;
-			cpu->h = 0;
-			cpu->l = 0;
-			cpu->sp = 0;
-			cpu->pc = 0;
-		}
-	}
-
 	cpu->b = 0;
 	cpu->d = 0;
 
@@ -457,6 +440,24 @@ void GBReset(struct LR35902Core* cpu) {
 	mTimingClear(&gb->timing);
 
 	GBMemoryReset(gb);
+
+	if (gb->biosVf) {
+		if (!GBIsBIOS(gb->biosVf)) {
+			gb->biosVf->close(gb->biosVf);
+			gb->biosVf = NULL;
+		} else {
+			GBMapBIOS(gb);
+			cpu->a = 0;
+			cpu->f.packed = 0;
+			cpu->c = 0;
+			cpu->e = 0;
+			cpu->h = 0;
+			cpu->l = 0;
+			cpu->sp = 0;
+			cpu->pc = 0;
+		}
+	}
+
 	GBVideoReset(&gb->video);
 	GBTimerReset(&gb->timer);
 	if (!gb->biosVf) {
@@ -561,18 +562,23 @@ void GBSkipBIOS(struct GB* gb) {
 
 void GBMapBIOS(struct GB* gb) {
 	gb->biosVf->seek(gb->biosVf, 0, SEEK_SET);
+	uint8_t* oldRomBase = gb->memory.romBase;
 	gb->memory.romBase = malloc(GB_SIZE_CART_BANK0);
 	ssize_t size = gb->biosVf->read(gb->biosVf, gb->memory.romBase, GB_SIZE_CART_BANK0);
-	memcpy(&gb->memory.romBase[size], &gb->memory.rom[size], GB_SIZE_CART_BANK0 - size);
+	memcpy(&gb->memory.romBase[size], &oldRomBase[size], GB_SIZE_CART_BANK0 - size);
 	if (size > 0x100) {
-		memcpy(&gb->memory.romBase[0x100], &gb->memory.rom[0x100], sizeof(struct GBCartridge));
+		memcpy(&gb->memory.romBase[0x100], &oldRomBase[0x100], sizeof(struct GBCartridge));
 	}
 }
 
 void GBUnmapBIOS(struct GB* gb) {
 	if (gb->memory.romBase < gb->memory.rom || gb->memory.romBase > &gb->memory.rom[gb->memory.romSize - 1]) {
 		free(gb->memory.romBase);
-		gb->memory.romBase = gb->memory.rom;
+		if (gb->memory.mbcType == GB_MMM01) {
+			GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);
+		} else {
+			GBMBCSwitchBank0(gb, 0);
+		}
 	}
 	// XXX: Force AGB registers for AGB-mode
 	if (gb->model == GB_MODEL_AGB && gb->cpu->pc == 0x100) {
