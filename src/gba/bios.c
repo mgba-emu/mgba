@@ -424,43 +424,43 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		return;
 	}
 	switch (immediate) {
-	case 0x0:
+	case GBA_SWI_SOFT_RESET:
 		_SoftReset(gba);
 		break;
-	case 0x1:
+	case GBA_SWI_REGISTER_RAM_RESET:
 		_RegisterRamReset(gba);
 		break;
-	case 0x2:
-		GBAHalt(gba);
-		break;
-	case 0x3:
+	case GBA_SWI_HALT:
+		ARMRaiseSWI(cpu);
+		return;
+	case GBA_SWI_STOP:
 		GBAStop(gba);
 		break;
-	case 0x05:
+	case GBA_SWI_VBLANK_INTR_WAIT:
 	// VBlankIntrWait
 	// Fall through:
-	case 0x04:
+	case GBA_SWI_INTR_WAIT:
 		// IntrWait
 		ARMRaiseSWI(cpu);
-		break;
-	case 0x6:
+		return;
+	case GBA_SWI_DIV:
 		_Div(gba, cpu->gprs[0], cpu->gprs[1]);
 		break;
-	case 0x7:
+	case GBA_SWI_DIV_ARM:
 		_Div(gba, cpu->gprs[1], cpu->gprs[0]);
 		break;
-	case 0x8:
+	case GBA_SWI_SQRT:
 		cpu->gprs[0] = _Sqrt(cpu->gprs[0], &cpu->cycles);
 		break;
-	case 0x9:
+	case GBA_SWI_ARCTAN:
 		cpu->gprs[0] = _ArcTan(cpu->gprs[0], &cpu->gprs[1], &cpu->gprs[3], &cpu->cycles);
 		break;
-	case 0xA:
+	case GBA_SWI_ARCTAN2:
 		cpu->gprs[0] = (uint16_t) _ArcTan2(cpu->gprs[0], cpu->gprs[1], &cpu->gprs[1], &cpu->cycles);
 		cpu->gprs[3] = 0x170;
 		break;
-	case 0xB:
-	case 0xC:
+	case GBA_SWI_CPU_SET:
+	case GBA_SWI_CPU_FAST_SET:
 		if (cpu->gprs[0] >> BASE_OFFSET < REGION_WORKING_RAM) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Cannot CpuSet from BIOS");
 			break;
@@ -472,19 +472,19 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Misaligned CpuSet destination");
 		}
 		ARMRaiseSWI(cpu);
-		break;
-	case 0xD:
+		return;
+	case GBA_SWI_GET_BIOS_CHECKSUM:
 		cpu->gprs[0] = GBA_BIOS_CHECKSUM;
 		cpu->gprs[1] = 1;
 		cpu->gprs[3] = SIZE_BIOS;
 		break;
-	case 0xE:
+	case GBA_SWI_BG_AFFINE_SET:
 		_BgAffineSet(gba);
 		break;
-	case 0xF:
+	case GBA_SWI_OBJ_AFFINE_SET:
 		_ObjAffineSet(gba);
 		break;
-	case 0x10:
+	case GBA_SWI_BIT_UNPACK:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Bad BitUnPack source");
 			break;
@@ -500,8 +500,8 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 			break;
 		}
 		break;
-	case 0x11:
-	case 0x12:
+	case GBA_SWI_LZ77_UNCOMP_WRAM:
+	case GBA_SWI_LZ77_UNCOMP_VRAM:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Bad LZ77 source");
 			break;
@@ -513,11 +513,11 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		case REGION_WORKING_RAM:
 		case REGION_WORKING_IRAM:
 		case REGION_VRAM:
-			_unLz77(gba, immediate == 0x11 ? 1 : 2);
+			_unLz77(gba, immediate == GBA_SWI_LZ77_UNCOMP_WRAM ? 1 : 2);
 			break;
 		}
 		break;
-	case 0x13:
+	case GBA_SWI_HUFFMAN_UNCOMP:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Bad Huffman source");
 			break;
@@ -533,8 +533,8 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 			break;
 		}
 		break;
-	case 0x14:
-	case 0x15:
+	case GBA_SWI_RL_UNCOMP_WRAM:
+	case GBA_SWI_RL_UNCOMP_VRAM:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Bad RL source");
 			break;
@@ -546,13 +546,13 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		case REGION_WORKING_RAM:
 		case REGION_WORKING_IRAM:
 		case REGION_VRAM:
-			_unRl(gba, immediate == 0x14 ? 1 : 2);
+			_unRl(gba, immediate == GBA_SWI_RL_UNCOMP_WRAM ? 1 : 2);
 			break;
 		}
 		break;
-	case 0x16:
-	case 0x17:
-	case 0x18:
+	case GBA_SWI_DIFF_8BIT_UNFILTER_WRAM:
+	case GBA_SWI_DIFF_8BIT_UNFILTER_VRAM:
+	case GBA_SWI_DIFF_16BIT_UNFILTER:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Bad UnFilter source");
 			break;
@@ -564,17 +564,20 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		case REGION_WORKING_RAM:
 		case REGION_WORKING_IRAM:
 		case REGION_VRAM:
-			_unFilter(gba, immediate == 0x18 ? 2 : 1, immediate == 0x16 ? 1 : 2);
+			_unFilter(gba, immediate == GBA_SWI_DIFF_16BIT_UNFILTER ? 2 : 1, immediate == GBA_SWI_DIFF_8BIT_UNFILTER_WRAM ? 1 : 2);
 			break;
 		}
 		break;
-	case 0x19:
+	case GBA_SWI_SOUND_BIAS:
 		// SoundBias is mostly meaningless here
 		mLOG(GBA_BIOS, STUB, "Stub software interrupt: SoundBias (19)");
 		break;
-	case 0x1F:
+	case GBA_SWI_MIDI_KEY_2_FREQ:
 		_MidiKey2Freq(gba);
 		break;
+	case GBA_SWI_SOUND_DRIVER_GET_JUMP_LIST:
+		ARMRaiseSWI(cpu);
+		return;
 	default:
 		mLOG(GBA_BIOS, STUB, "Stub software interrupt: %02X", immediate);
 	}

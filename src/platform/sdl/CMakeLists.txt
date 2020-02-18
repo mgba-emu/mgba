@@ -46,7 +46,7 @@ if(USE_PIXMAN)
 endif()
 
 if(WIN32)
-	list(APPEND SDL_LIBRARY imm32 version winmm)
+	list(APPEND SDL_LIBRARY imm32 setupapi version winmm)
 elseif(APPLE)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework AppKit -framework AudioUnit -framework Carbon -framework CoreAudio -framework AudioToolbox -framework ForceFeedback -framework IOKit")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}" PARENT_SCOPE)

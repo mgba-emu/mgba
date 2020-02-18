@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2017 Jeffrey Pfau
+/* Copyright (c) 2013-2019 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,7 +24,6 @@ enum GBKey {
 	GB_KEY_UP = 6,
 	GB_KEY_DOWN = 7,
 	GB_KEY_MAX,
-	GB_KEY_NONE = -1
 };
 
 CXX_GUARD_END

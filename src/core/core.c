@@ -351,11 +351,18 @@ void mCoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
 }
 
 void* mCoreGetMemoryBlock(struct mCore* core, uint32_t start, size_t* size) {
+	return mCoreGetMemoryBlockMasked(core, start, size, mCORE_MEMORY_MAPPED);
+}
+
+void* mCoreGetMemoryBlockMasked(struct mCore* core, uint32_t start, size_t* size, uint32_t mask) {
 	const struct mCoreMemoryBlock* blocks;
 	size_t nBlocks = core->listMemoryBlocks(core, &blocks);
 	size_t i;
 	for (i = 0; i < nBlocks; ++i) {
 		if (!(blocks[i].flags & mCORE_MEMORY_MAPPED)) {
+			continue;
+		}
+		if (!(blocks[i].flags & mask)) {
 			continue;
 		}
 		if (start < blocks[i].start) {
@@ -381,9 +388,9 @@ bool mCoreLoadELF(struct mCore* core, struct ELF* elf) {
 	for (i = 0; i < ELFProgramHeadersSize(&ph); ++i) {
 		size_t bsize, esize;
 		Elf32_Phdr* phdr = ELFProgramHeadersGetPointer(&ph, i);
-		void* block = mCoreGetMemoryBlock(core, phdr->p_paddr, &bsize);
+		void* block = mCoreGetMemoryBlockMasked(core, phdr->p_paddr, &bsize, mCORE_MEMORY_WRITE | mCORE_MEMORY_WORM);
 		char* bytes = ELFBytes(elf, &esize);
-		if (block && bsize >= phdr->p_filesz && esize >= phdr->p_filesz + phdr->p_offset) {
+		if (block && bsize >= phdr->p_filesz && esize > phdr->p_offset && esize >= phdr->p_filesz + phdr->p_offset) {
 			memcpy(block, &bytes[phdr->p_offset], phdr->p_filesz);
 		} else {
 			return false;

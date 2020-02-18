@@ -19,6 +19,11 @@ mLOG_DEFINE_CATEGORY(SDL_AUDIO, "SDL Audio", "platform.sdl.audio");
 static void _mSDLAudioCallback(void* context, Uint8* data, int len);
 
 bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext) {
+#if defined(_WIN32) && SDL_VERSION_ATLEAST(2, 0, 8)
+	if (!getenv("SDL_AUDIODRIVER")) {
+		_putenv_s("SDL_AUDIODRIVER", "directsound");
+	}
+#endif
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
 		mLOG(SDL_AUDIO, ERROR, "Could not initialize SDL sound system: %s", SDL_GetError());
 		return false;

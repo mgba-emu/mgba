@@ -112,6 +112,15 @@ VideoView::VideoView(QWidget* parent)
 void VideoView::updatePresets() {
 	m_presets.clear();
 
+	addPreset(m_ui.preset4K, {
+		.container = QString(),
+		.vcodec = QString(),
+		.acodec = QString(),
+		.vbr = 0,
+		.abr = 0,
+		.dims = maintainAspect(QSize(3840, 2160))
+	});
+
 	addPreset(m_ui.preset1080, {
 		.container = QString(),
 		.vcodec = QString(),
@@ -173,6 +182,14 @@ void VideoView::updatePresets() {
 		.container = "WebM",
 		.vcodec = "VP9",
 		.acodec = "Opus",
+		.vbr = 800,
+		.abr = 128
+	});
+
+	addPreset(m_ui.presetMP4, {
+		.container = "MP4",
+		.vcodec = "h.264",
+		.acodec = "AAC",
 		.vbr = 800,
 		.abr = 128
 	});

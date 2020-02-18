@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2020 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,11 +14,23 @@
 #include <windows.h>
 #endif
 
+#include <mgba-util/vector.h>
+
+#ifdef _WIN32
+struct HandleMappingTuple {
+	HANDLE handle;
+	void* mapping;
+};
+
+DECLARE_VECTOR(HandleMappingList, struct HandleMappingTuple);
+DEFINE_VECTOR(HandleMappingList, struct HandleMappingTuple);
+#endif
+
 struct VFileFD {
 	struct VFile d;
 	int fd;
 #ifdef _WIN32
-	HANDLE hMap;
+	struct HandleMappingList handles;
 #endif
 };
 
@@ -74,12 +86,23 @@ struct VFile* VFileFromFD(int fd) {
 	vfd->d.truncate = _vfdTruncate;
 	vfd->d.size = _vfdSize;
 	vfd->d.sync = _vfdSync;
+#ifdef _WIN32
+	HandleMappingListInit(&vfd->handles, 4);
+#endif
 
 	return &vfd->d;
 }
 
 bool _vfdClose(struct VFile* vf) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
+#ifdef _WIN32
+	size_t i;
+	for (i = 0; i < HandleMappingListSize(&vfd->handles); ++i) {
+		UnmapViewOfFile(HandleMappingListGetPointer(&vfd->handles, i)->mapping);
+		CloseHandle(HandleMappingListGetPointer(&vfd->handles, i)->handle);
+	}
+	HandleMappingListDeinit(&vfd->handles);
+#endif
 	if (close(vfd->fd) < 0) {
 		return false;
 	}
@@ -134,16 +157,25 @@ static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
 	if (size > fileSize) {
 		size = fileSize;
 	}
-	vfd->hMap = CreateFileMapping((HANDLE) _get_osfhandle(vfd->fd), 0, createFlags, 0, size & 0xFFFFFFFF, 0);
-	return MapViewOfFile(vfd->hMap, mapFiles, 0, 0, size);
+	struct HandleMappingTuple tuple = {0};
+	tuple.handle = CreateFileMapping((HANDLE) _get_osfhandle(vfd->fd), 0, createFlags, 0, size & 0xFFFFFFFF, 0);
+	tuple.mapping = MapViewOfFile(tuple.handle, mapFiles, 0, 0, size);
+	*HandleMappingListAppend(&vfd->handles) = tuple;
+	return tuple.mapping;
 }
 
 static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
 	UNUSED(size);
 	struct VFileFD* vfd = (struct VFileFD*) vf;
-	UnmapViewOfFile(memory);
-	CloseHandle(vfd->hMap);
-	vfd->hMap = 0;
+	size_t i;
+	for (i = 0; i < HandleMappingListSize(&vfd->handles); ++i) {
+		if (HandleMappingListGetPointer(&vfd->handles, i)->mapping == memory) {
+			UnmapViewOfFile(memory);
+			CloseHandle(HandleMappingListGetPointer(&vfd->handles, i)->handle);
+			HandleMappingListShift(&vfd->handles, i, 1);
+			break;
+		}
+	}
 }
 #endif
 

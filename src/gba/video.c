@@ -369,6 +369,7 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 		} else {
 			video->event.callback = _startHblank;
 		}
+		break;
 	case 1:
 		video->event.callback = _startHdraw;
 		break;

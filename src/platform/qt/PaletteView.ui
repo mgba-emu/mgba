@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>443</width>
+    <width>500</width>
     <height>397</height>
    </rect>
   </property>
@@ -289,7 +289,7 @@
         <item>
          <widget class="QLabel" name="index">
           <property name="text">
-           <string>000</string>
+           <string>0x000 (000)</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

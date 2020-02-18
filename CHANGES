@@ -19,34 +19,65 @@ Misc:
  - DS Video: Simplify VRAM mapping
 
 0.9.0: (Future)
+Features:
+ - Add APNG recording
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
+ - GBA BIOS: Implement dummy sound driver calls
+ - GBA BIOS: Improve HLE BIOS timing
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
- - GBA Memory: Misaligned SRAM writes are ignored
  - GBA Memory: Improve gamepak prefetch timing
- - GBA Serialize: Fix serializing DMA transfer register
- - GBA Serialize: Fix audio serialization for desynced FIFOs
- - GBA Serialize: Fix audio DMA timing deserialization
- - GBA Video: Fix OAM not invalidating after reset (fixes mgba.io/i/1630)
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
+Other fixes:
+ - Core: Ensure ELF regions can be written before trying
+ - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
+ - Debugger: Don't skip undefined instructions when debugger attached
+ - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
+Misc:
+ - FFmpeg: Add looping option for GIF/APNG
+ - Qt: Renderer can be changed while a game is running
+ - Qt: Add hex index to palette view
+ - Qt: Add transformation matrix info to sprite view
+
+0.8.1: (2020-02-16)
+Emulation fixes:
+ - GB Serialize: Fix timing bug loading channel 4 timing
+ - GBA: Fix multiboot entry point while skipping BIOS
+ - GBA BIOS: Fix undefined instruction HLE behavior
+ - GBA DMA: Fix invalid audio DMA parameters
+ - GBA Memory: Misaligned SRAM writes are ignored
+ - GBA Serialize: Fix serializing DMA transfer register
+ - GBA Serialize: Fix audio DMA timing deserialization
+ - GBA Video: Fix OAM not invalidating after reset (fixes mgba.io/i/1630)
  - GBA Video: Fix backdrop blending on lines without sprites (fixes mgba.io/i/1647)
  - GBA Video: Fix OpenGL sprite flag priority
 Other fixes:
  - Core: Fix race condition initializing thread proxy
+ - Core: Fix integer overflow in ELF loading
+ - FFmpeg: Fix crash when -strict -2 is needed for vcodec or container
+ - FFmpeg: Disallow recording video with no audio nor video
+ - GBA: Automatically skip BIOS for multiboot ROMs
  - Qt: Only dynamically reset video scale if a game is running
  - Qt: Fix race condition with proxied video events
- - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix color selection in asset view (fixes mgba.io/i/1648)
  - Qt: Fix missing OSD messages
  - Qt: Fix crash unloading shaders
  - Qt: Fix toggled actions on gamepads (fixes mgba.io/i/1650)
  - Qt: Fix extraneous dialog (fixes mgba.io/i/1654)
+ - Qt: Fix window title not updating after shutting down game
+ - Qt: Fix GIF view not allowing manual filename entry
+ - Qt: Fix non-GB build (fixes mgba.io/i/1664)
+ - Qt: Fix pausing Qt Multimedia audio (fixes mgba.io/i/1643)
+ - Qt: Fix invalid names for modifier keys (fixes mgba.io/i/525)
+ - SDL: Refresh stale pointers after adding a joystick (fixes mgba.io/i/1622)
  - Util: Fix crash reading invalid ELFs
+ - VFS: Fix handle leak when double-mapping (fixes mgba.io/i/1659)
 Misc:
- - Qt: Renderer can be changed while a game is running
+ - FFmpeg: Add more presets
  - Qt: Fix non-SDL build (fixes mgba.io/i/1656)
+ - SDL: Use DirectSound audio driver by default on Windows
  - Switch: Make OpenGL scale adjustable while running
 
 0.8.0: (2020-01-21)

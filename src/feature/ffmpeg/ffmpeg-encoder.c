@@ -65,6 +65,7 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->cycles = GBA_ARM7TDMI_FREQUENCY;
 	encoder->frameskip = 1;
 	encoder->skipResidue = 0;
+	encoder->loop = false;
 	encoder->ipixFormat =
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
@@ -232,11 +233,15 @@ void FFmpegEncoderSetDimensions(struct FFmpegEncoder* encoder, int width, int he
 	encoder->height = height > 0 ? height : GBA_VIDEO_VERTICAL_PIXELS;
 }
 
+void FFmpegEncoderSetLooping(struct FFmpegEncoder* encoder, bool loop) {
+	encoder->loop = loop;
+}
+
 bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder* encoder) {
 	AVOutputFormat* oformat = av_guess_format(encoder->containerFormat, 0, 0);
 	AVCodec* acodec = avcodec_find_encoder_by_name(encoder->audioCodec);
 	AVCodec* vcodec = avcodec_find_encoder_by_name(encoder->videoCodec);
-	if ((encoder->audioCodec && !acodec) || (encoder->videoCodec && !vcodec) || !oformat) {
+	if ((encoder->audioCodec && !acodec) || (encoder->videoCodec && !vcodec) || !oformat || (!acodec && !vcodec)) {
 		return false;
 	}
 	if (encoder->audioCodec && !avformat_query_codec(oformat, acodec->id, FF_COMPLIANCE_EXPERIMENTAL)) {
@@ -449,8 +454,11 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			encoder->sinkFrame = avcodec_alloc_frame();
 #endif
 		}
-
-		if (avcodec_open2(encoder->video, vcodec, 0) < 0) {
+		AVDictionary* opts = 0;
+		av_dict_set(&opts, "strict", "-2", 0);
+		int res = avcodec_open2(encoder->video, vcodec, &opts);
+		av_dict_free(&opts);
+		if (res < 0) {
 			FFmpegEncoderClose(encoder);
 			return false;
 		}
@@ -470,7 +478,17 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 #endif
 	}
 
-	if (avio_open(&encoder->context->pb, outfile, AVIO_FLAG_WRITE) < 0 || avformat_write_header(encoder->context, 0) < 0) {
+	if (strcmp(encoder->containerFormat, "gif") == 0) {
+		av_opt_set(encoder->context->priv_data, "loop", encoder->loop ? "0" : "-1", 0);
+	} else if (strcmp(encoder->containerFormat, "apng") == 0) {
+		av_opt_set(encoder->context->priv_data, "plays", encoder->loop ? "0" : "1", 0);
+	}
+
+	AVDictionary* opts = 0;
+	av_dict_set(&opts, "strict", "-2", 0);
+	bool res = avio_open(&encoder->context->pb, outfile, AVIO_FLAG_WRITE) < 0 || avformat_write_header(encoder->context, &opts) < 0;
+	av_dict_free(&opts);
+	if (res) {
 		FFmpegEncoderClose(encoder);
 		return false;
 	}
