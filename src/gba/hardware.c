@@ -682,7 +682,7 @@ void _eReaderReset(struct GBACartridgeHardware* hw) {
 	hw->eReaderRegisterControl0 = 0;
 	hw->eReaderRegisterControl1 = 0x80;
 	hw->eReaderRegisterLed = 0;
-	hw->eReaderState = false;
+	hw->eReaderState = 0;
 	hw->eReaderActiveRegister = 0;
 }
 
@@ -738,7 +738,7 @@ void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value) {
 					++hw->eReaderActiveRegister;
 					break;
 				default:
-					mLOG(GBA_HW, ERROR, "Hit undefined state in e-Reader state machine");
+					mLOG(GBA_HW, ERROR, "Hit undefined state %02X in e-Reader state machine", hw->eReaderCommand);
 					break;
 				}
 				hw->eReaderState = EREADER_SERIAL_BIT_0;
@@ -761,6 +761,8 @@ void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value) {
 	hw->eReaderRegisterControl0 = control;
 	if (!EReaderControl0IsScan(oldControl) && EReaderControl0IsScan(control)) {
 		_eReaderReadData(hw);
+	} else if (EReaderControl0IsLedEnable(control) && EReaderControl1IsScanline(hw->eReaderRegisterControl1)) {
+		GBARaiseIRQ(hw->p, IRQ_GAMEPAK, 0);
 	}
 	mLOG(GBA_HW, STUB, "Unimplemented e-Reader Control0 write: %02X", value);
 }
@@ -775,15 +777,13 @@ void _eReaderWriteControl1(struct GBACartridgeHardware* hw, uint8_t value) {
 }
 
 void _eReaderReadData(struct GBACartridgeHardware* hw) {
-	if (!hw->eReaderSource) {
-		return;
+	memset(hw->eReaderData, 0xFF, EREADER_BLOCK_SIZE);
+	if (hw->eReaderSource) {
+		hw->eReaderSource->readBlock(hw->eReaderSource, hw->eReaderData);
 	}
-	memset(hw->eReaderData, 0, EREADER_BLOCK_SIZE);
-	if (hw->eReaderSource->readBlock(hw->eReaderSource, hw->eReaderData)) {
-		hw->eReaderRegisterControl1 = EReaderControl1FillScanline(hw->eReaderRegisterControl1);
-		if (EReaderControl0IsLedEnable(hw->eReaderRegisterControl0)) {
-			GBARaiseIRQ(hw->p, IRQ_GAMEPAK, 0);
-		}
+	hw->eReaderRegisterControl1 = EReaderControl1FillScanline(hw->eReaderRegisterControl1);
+	if (EReaderControl0IsLedEnable(hw->eReaderRegisterControl0)) {
+		GBARaiseIRQ(hw->p, IRQ_GAMEPAK, -2754);
 	}
 }
 
