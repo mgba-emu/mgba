@@ -258,10 +258,7 @@ private:
 
 #ifdef M_CORE_GBA
 	GBASIOBattlechipGate m_battlechip;
-	struct GameControllerEReader : GBAEReaderDataSource {
-		CoreController* p;
-		QFile file;
-	} m_eReader;
+	QByteArray m_eReaderData;
 #endif
 };
 

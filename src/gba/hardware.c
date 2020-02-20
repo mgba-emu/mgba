@@ -10,10 +10,90 @@
 #include <mgba/internal/gba/serialize.h>
 #include <mgba-util/formatting.h>
 #include <mgba-util/hash.h>
+#include <mgba-util/memory.h>
+
+#define EREADER_BLOCK_SIZE 40
+#define EREADER_DOTCODE_STRIDE 1200
+#define EREADER_DOTCODE_SIZE (EREADER_DOTCODE_STRIDE * 40 + 200)
 
 mLOG_DEFINE_CATEGORY(GBA_HW, "GBA Pak Hardware", "gba.hardware");
 
 MGBA_EXPORT const int GBA_LUX_LEVELS[10] = { 5, 11, 18, 27, 42, 62, 84, 109, 139, 183 };
+const uint16_t EREADER_ADDRESS_CODES[] = {
+	1023,
+	1174,
+	2628,
+	3373,
+	4233,
+	6112,
+	6450,
+	7771,
+	8826,
+	9491,
+	11201,
+	11432,
+	12556,
+	13925,
+	14519,
+	16350,
+	16629,
+	18332,
+	18766,
+	20007,
+	21379,
+	21738,
+	23096,
+	23889,
+	24944,
+	26137,
+	26827,
+	28578,
+	29190,
+	30063,
+	31677,
+	31956,
+	33410,
+	34283,
+	35641,
+	35920,
+	37364,
+	38557,
+	38991,
+	40742,
+	41735,
+	42094,
+	43708,
+	44501,
+	45169,
+	46872,
+	47562,
+	48803,
+	49544,
+	50913,
+	51251,
+	53082,
+	54014,
+	54679
+};
+
+const int EREADER_NYBBLE_5BIT[16][5] = {
+	{ 0, 0, 0, 0, 0 },
+	{ 0, 0, 0, 0, 1 },
+	{ 0, 0, 0, 1, 0 },
+	{ 1, 0, 0, 1, 0 },
+	{ 0, 0, 1, 0, 0 },
+	{ 0, 0, 1, 0, 1 },
+	{ 0, 0, 1, 1, 0 },
+	{ 1, 0, 1, 1, 0 },
+	{ 0, 1, 0, 0, 0 },
+	{ 0, 1, 0, 0, 1 },
+	{ 0, 1, 0, 1, 0 },
+	{ 1, 0, 1, 0, 0 },
+	{ 0, 1, 1, 0, 0 },
+	{ 0, 1, 1, 0, 1 },
+	{ 1, 0, 0, 0, 1 },
+	{ 1, 0, 0, 0, 0 }
+};
 
 static void _readPins(struct GBACartridgeHardware* hw);
 static void _outputPins(struct GBACartridgeHardware* hw, unsigned pins);
@@ -54,6 +134,7 @@ static const int RTC_BYTES[8] = {
 
 void GBAHardwareInit(struct GBACartridgeHardware* hw, uint16_t* base) {
 	hw->gpioBase = base;
+	hw->eReaderDots = NULL;
 	GBAHardwareClear(hw);
 
 	hw->gbpCallback.d.readKeys = _gbpRead;
@@ -75,6 +156,10 @@ void GBAHardwareClear(struct GBACartridgeHardware* hw) {
 	hw->readWrite = GPIO_WRITE_ONLY;
 	hw->pinState = 0;
 	hw->direction = 0;
+
+	if (hw->eReaderDots) {
+		mappedMemoryFree(hw->eReaderDots, EREADER_DOTCODE_SIZE);
+	}
 
 	if (hw->p->sio.drivers.normal == &hw->gbpDriver.d) {
 		GBASIOSetDriver(&hw->p->sio, 0, SIO_NORMAL_32);
@@ -667,12 +752,118 @@ uint8_t GBAHardwareEReaderReadFlash(struct GBACartridgeHardware* hw, uint32_t ad
 	}
 }
 
-void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, struct GBAEReaderDataSource* source) {
-	if (!EReaderControl0IsScan(hw->eReaderRegisterControl0)) {
+static void _eReaderAnchor(uint8_t* origin) {
+	origin[EREADER_DOTCODE_STRIDE * 0 + 1] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 0 + 2] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 0 + 3] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 1 + 0] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 1 + 1] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 1 + 2] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 1 + 3] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 1 + 4] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 2 + 0] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 2 + 1] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 2 + 2] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 2 + 3] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 2 + 4] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 3 + 0] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 3 + 1] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 3 + 2] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 3 + 3] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 3 + 4] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 4 + 1] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 4 + 2] = 1;
+	origin[EREADER_DOTCODE_STRIDE * 4 + 3] = 1;
+}
+
+static void _eReaderAlignment(uint8_t* origin) {
+	origin[8] = 1;
+	origin[10] = 1;
+	origin[12] = 1;
+	origin[14] = 1;
+	origin[16] = 1;
+	origin[18] = 1;
+	origin[21] = 1;
+	origin[23] = 1;
+	origin[25] = 1;
+	origin[27] = 1;
+	origin[29] = 1;
+	origin[31] = 1;
+}
+
+static void _eReaderAddress(uint8_t* origin, int a) {
+	origin[EREADER_DOTCODE_STRIDE * 7 + 2] = 1;
+	uint16_t addr = EREADER_ADDRESS_CODES[a];
+	int i;
+	for (i = 0; i < 16; ++i) {
+		origin[EREADER_DOTCODE_STRIDE * (16 + i) + 2] = (addr >> (15 - i)) & 1;
+	}
+}
+
+void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, size_t size) {
+	if (!hw->eReaderDots) {
+		hw->eReaderDots = anonymousMemoryMap(EREADER_DOTCODE_SIZE);
+	}
+	memset(hw->eReaderDots, 0, EREADER_DOTCODE_SIZE);
+
+	int base;
+	switch (size) {
+	case 2912:
+		base = 25;
+		break;
+	case 1872:
+		base = 1;
+		break;
+	default:
 		return;
 	}
-	hw->eReaderSource = source;
-	_eReaderReadData(hw);
+
+	size_t i;
+	for (i = 0; i < (size / 104) + 1; ++i) {
+		uint8_t* origin = &hw->eReaderDots[35 * i + 200];
+		_eReaderAnchor(&origin[EREADER_DOTCODE_STRIDE * 0]);
+		_eReaderAnchor(&origin[EREADER_DOTCODE_STRIDE * 35]);
+		_eReaderAddress(origin, base + i);
+	}
+	for (i = 0; i < size / 104; ++i) {
+		uint8_t block[1040];
+		uint8_t* origin = &hw->eReaderDots[35 * i + 200];
+		_eReaderAlignment(&origin[EREADER_DOTCODE_STRIDE * 2]);
+		_eReaderAlignment(&origin[EREADER_DOTCODE_STRIDE * 37]);
+
+		int b;
+		for (b = 0; b < 104; ++b) {
+			const int* nybble5;
+			nybble5 = EREADER_NYBBLE_5BIT[((const uint8_t*) data)[i * 104 + b] >> 4];
+			block[b * 10 + 0] = nybble5[0];
+			block[b * 10 + 1] = nybble5[1];
+			block[b * 10 + 2] = nybble5[2];
+			block[b * 10 + 3] = nybble5[3];
+			block[b * 10 + 4] = nybble5[4];
+			nybble5 = EREADER_NYBBLE_5BIT[((const uint8_t*) data)[i * 104 + b] & 0xF];
+			block[b * 10 + 5] = nybble5[0];
+			block[b * 10 + 6] = nybble5[1];
+			block[b * 10 + 7] = nybble5[2];
+			block[b * 10 + 8] = nybble5[3];
+			block[b * 10 + 9] = nybble5[4];
+		}
+
+		b = 0;
+		int y;
+		for (y = 0; y < 3; ++y) {
+			memcpy(&origin[EREADER_DOTCODE_STRIDE * (4 + y) + 7], &block[b], 26);
+			b += 26;
+		}
+		for (y = 0; y < 26; ++y) {
+			memcpy(&origin[EREADER_DOTCODE_STRIDE * (7 + y) + 3], &block[b], 34);
+			b += 34;
+		}
+		for (y = 0; y < 3; ++y) {
+			memcpy(&origin[EREADER_DOTCODE_STRIDE * (33 + y) + 7], &block[b], 26);
+			b += 26;
+		}
+	}
+	hw->eReaderX = -24;
 }
 
 void _eReaderReset(struct GBACartridgeHardware* hw) {
@@ -753,13 +944,14 @@ void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value) {
 				mLOG(GBA_HW, DEBUG, "[e-Reader] Read serial byte: %02x", hw->eReaderSerial[hw->eReaderActiveRegister & 0x7F]);
 			}
 		}
-		hw->eReaderDelay = 0;
 	} else if (!EReaderControl0IsDirection(control)) {
 		// Clear the error bit
 		control = EReaderControl0ClearData(control);
 	}
 	hw->eReaderRegisterControl0 = control;
 	if (!EReaderControl0IsScan(oldControl) && EReaderControl0IsScan(control)) {
+		hw->eReaderX = 0;
+		hw->eReaderY = 0;
 		_eReaderReadData(hw);
 	} else if (EReaderControl0IsLedEnable(control) && EReaderControl1IsScanline(hw->eReaderRegisterControl1)) {
 		GBARaiseIRQ(hw->p, IRQ_GAMEPAK, 0);
@@ -771,15 +963,47 @@ void _eReaderWriteControl1(struct GBACartridgeHardware* hw, uint8_t value) {
 	EReaderControl1 control = (value & 0x32) | 0x80;
 	hw->eReaderRegisterControl1 = control;
 	if (EReaderControl0IsScan(hw->eReaderRegisterControl0) && !EReaderControl1IsScanline(control)) {
+		++hw->eReaderY;
+		if (hw->eReaderY == (hw->eReaderSerial[0x15] | (hw->eReaderSerial[0x14] << 8))) {
+			hw->eReaderY = 0;
+			hw->eReaderX += 36;
+		}
 		_eReaderReadData(hw);
 	}
 	mLOG(GBA_HW, STUB, "Unimplemented e-Reader Control1 write: %02X", value);
 }
 
 void _eReaderReadData(struct GBACartridgeHardware* hw) {
-	memset(hw->eReaderData, 0xFF, EREADER_BLOCK_SIZE);
-	if (hw->eReaderSource) {
-		hw->eReaderSource->readBlock(hw->eReaderSource, hw->eReaderData);
+	memset(hw->eReaderData, 0, EREADER_BLOCK_SIZE);
+	if (hw->eReaderDots) {
+		int y = hw->eReaderY - 10;
+		if (y < 0 || y >= 120) {
+			memset(hw->eReaderData, 0, EREADER_BLOCK_SIZE);
+		} else {
+			int i;
+			uint8_t* origin = &hw->eReaderDots[EREADER_DOTCODE_STRIDE * (y / 3) + 16];
+			for (i = 0; i < 20; ++i) {
+				uint16_t word = 0;
+				int x = hw->eReaderX + i * 16;
+				word |= origin[(x +  0) / 3] << 8;
+				word |= origin[(x +  1) / 3] << 9;
+				word |= origin[(x +  2) / 3] << 10;
+				word |= origin[(x +  3) / 3] << 11;
+				word |= origin[(x +  4) / 3] << 12;
+				word |= origin[(x +  5) / 3] << 13;
+				word |= origin[(x +  6) / 3] << 14;
+				word |= origin[(x +  7) / 3] << 15;
+				word |= origin[(x +  8) / 3];
+				word |= origin[(x +  9) / 3] << 1;
+				word |= origin[(x + 10) / 3] << 2;
+				word |= origin[(x + 11) / 3] << 3;
+				word |= origin[(x + 12) / 3] << 4;
+				word |= origin[(x + 13) / 3] << 5;
+				word |= origin[(x + 14) / 3] << 6;
+				word |= origin[(x + 15) / 3] << 7;
+				hw->eReaderData[19 - i] = word;
+			}
+		}
 	}
 	hw->eReaderRegisterControl1 = EReaderControl1FillScanline(hw->eReaderRegisterControl1);
 	if (EReaderControl0IsLedEnable(hw->eReaderRegisterControl0)) {
