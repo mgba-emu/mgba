@@ -1107,7 +1107,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, "file");
 #endif
 
-	m_actions.addAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "file");
+	addGameAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "file");
 
 	Action* romInfo = addGameAction(tr("ROM &info..."), "romInfo", openControllerTView<ROMInfo>(), "file");
 
