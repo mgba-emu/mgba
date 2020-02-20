@@ -1,5 +1,6 @@
 0.9.0: (Future)
 Features:
+ - e-Reader card scanning
  - Add APNG recording
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
