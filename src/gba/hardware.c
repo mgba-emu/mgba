@@ -735,6 +735,14 @@ void GBAHardwareEReaderWriteFlash(struct GBACartridgeHardware* hw, uint32_t addr
 	case 0xFFB1:
 		_eReaderWriteControl1(hw, value);
 		break;
+	case 0xFFB2:
+		hw->eReaderRegisterLed &= 0xFF00;
+		hw->eReaderRegisterLed |= value;
+		break;
+	case 0xFFB3:
+		hw->eReaderRegisterLed &= 0x00FF;
+		hw->eReaderRegisterLed |= value << 8;
+		break;
 	default:
 		mLOG(GBA_HW, STUB, "Unimplemented e-Reader write to flash: %04X:%02X", address, value);
 	}
@@ -742,6 +750,7 @@ void GBAHardwareEReaderWriteFlash(struct GBACartridgeHardware* hw, uint32_t addr
 
 uint16_t GBAHardwareEReaderRead(struct GBACartridgeHardware* hw, uint32_t address) {
 	address &= 0x700FF;
+	uint16_t value;
 	switch (address >> 17) {
 	case 0:
 		return hw->eReaderRegisterUnk;
@@ -751,7 +760,8 @@ uint16_t GBAHardwareEReaderRead(struct GBACartridgeHardware* hw, uint32_t addres
 		if (address > 0x40088) {
 			return 0;
 		}
-		return hw->eReaderData[(address & 0xFE) >> 1];
+		LOAD_16(value, address & 0xFE, hw->eReaderData);
+		return value;
 	}
 	mLOG(GBA_HW, STUB, "Unimplemented e-Reader read: %05X", address);
 	return 0;
@@ -984,7 +994,9 @@ void _eReaderWriteControl1(struct GBACartridgeHardware* hw, uint8_t value) {
 		++hw->eReaderY;
 		if (hw->eReaderY == (hw->eReaderSerial[0x15] | (hw->eReaderSerial[0x14] << 8))) {
 			hw->eReaderY = 0;
-			hw->eReaderX += 36;
+			if (hw->eReaderX < 3400) {
+				hw->eReaderX += 225;
+			}
 		}
 		_eReaderReadData(hw);
 	}
@@ -1019,13 +1031,14 @@ void _eReaderReadData(struct GBACartridgeHardware* hw) {
 				word |= origin[(x + 13) / 3] << 5;
 				word |= origin[(x + 14) / 3] << 6;
 				word |= origin[(x + 15) / 3] << 7;
-				hw->eReaderData[19 - i] = word;
+				STORE_16(word, (19 - i) << 1, hw->eReaderData);
 			}
 		}
 	}
 	hw->eReaderRegisterControl1 = EReaderControl1FillScanline(hw->eReaderRegisterControl1);
 	if (EReaderControl0IsLedEnable(hw->eReaderRegisterControl0)) {
-		GBARaiseIRQ(hw->p, IRQ_GAMEPAK, -2754);
+		uint16_t led = 2754; // TODO: Figure out why this breaks if using the LED register
+		GBARaiseIRQ(hw->p, IRQ_GAMEPAK, -led);
 	}
 }
 

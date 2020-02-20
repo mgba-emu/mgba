@@ -1125,7 +1125,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	m_actions.addAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "file");
-	m_actions.addAction(tr("Scan e-Reader dotcode..."), "scanCard", this, &Window::scanCard, "file");
+#ifdef M_CORE_GBA
+	Action* scanCard = addGameAction(tr("Scan e-Reader dotcode..."), "scanCard", this, &Window::scanCard, "file");
+	m_platformActions.insert(PLATFORM_GBA, scanCard);
+#endif
 
 	Action* romInfo = addGameAction(tr("ROM &info..."), "romInfo", openControllerTView<ROMInfo>(), "file");
 
