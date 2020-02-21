@@ -1,4 +1,5 @@
 /* Copyright (c) 2014-2017 waddlesplash
+ * Copyright (c) 2014-2020 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -97,6 +98,7 @@ private slots:
 
 private:
 	void loadDirectory(const QString&); // Called on separate thread
+	void freeLibrary();
 
 	ConfigController* m_config = nullptr;
 	std::shared_ptr<mLibrary> m_library;
