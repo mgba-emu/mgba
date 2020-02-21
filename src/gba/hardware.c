@@ -168,6 +168,7 @@ void GBAHardwareClear(struct GBACartridgeHardware* hw) {
 
 	if (hw->eReaderDots) {
 		mappedMemoryFree(hw->eReaderDots, EREADER_DOTCODE_SIZE);
+		hw->eReaderDots = NULL;
 	}
 
 	if (hw->p->sio.drivers.normal == &hw->gbpDriver.d) {
