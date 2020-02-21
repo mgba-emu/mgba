@@ -981,9 +981,8 @@ void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value) {
 	if (!EReaderControl0IsScan(oldControl) && EReaderControl0IsScan(control)) {
 		hw->eReaderX = 0;
 		hw->eReaderY = 0;
+	} else if (EReaderControl0IsLedEnable(control) && EReaderControl0IsScan(control) && !EReaderControl1IsScanline(hw->eReaderRegisterControl1)) {
 		_eReaderReadData(hw);
-	} else if (EReaderControl0IsLedEnable(control) && EReaderControl1IsScanline(hw->eReaderRegisterControl1)) {
-		GBARaiseIRQ(hw->p, IRQ_GAMEPAK, 0);
 	}
 	mLOG(GBA_HW, STUB, "Unimplemented e-Reader Control0 write: %02X", value);
 }
@@ -996,7 +995,7 @@ void _eReaderWriteControl1(struct GBACartridgeHardware* hw, uint8_t value) {
 		if (hw->eReaderY == (hw->eReaderSerial[0x15] | (hw->eReaderSerial[0x14] << 8))) {
 			hw->eReaderY = 0;
 			if (hw->eReaderX < 3400) {
-				hw->eReaderX += 225;
+				hw->eReaderX += 220;
 			}
 		}
 		_eReaderReadData(hw);
