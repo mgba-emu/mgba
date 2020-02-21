@@ -445,6 +445,10 @@ void GBAYankROM(struct GBA* gba) {
 
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 	gba->biosVf = vf;
+	if (vf->size(vf) != SIZE_BIOS) {
+		mLOG(GBA, WARN, "Incorrect BIOS size");
+		return;
+	}
 	uint32_t* bios = vf->map(vf, SIZE_BIOS, MAP_READ);
 	if (!bios) {
 		mLOG(GBA, WARN, "Couldn't map BIOS");
