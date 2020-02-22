@@ -4,6 +4,7 @@ Other fixes:
  - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
 Misc:
  - Qt: Disable Replace ROM option when no game loaded
+ - Qt: Defer texture updates until frame is drawn (fixes mgba.io/i/1590)
 
 0.8.1: (2020-02-16)
 Emulation fixes:
