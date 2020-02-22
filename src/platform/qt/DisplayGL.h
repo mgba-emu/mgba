@@ -121,6 +121,7 @@ private:
 
 	QList<uint32_t*> m_free;
 	QQueue<uint32_t*> m_queue;
+	uint32_t* m_buffer;
 	QPainter m_painter;
 	QMutex m_mutex;
 	QWindow* m_surface;
