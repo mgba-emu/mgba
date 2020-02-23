@@ -25,6 +25,7 @@ Misc:
  - Qt: Add transformation matrix info to sprite view
  - Qt: Disable Replace ROM option when no game loaded
  - Qt: Defer texture updates until frame is drawn (fixes mgba.io/i/1590)
+ - Qt: Set icon for Discord Rich Presence
 
 0.8.1: (2020-02-16)
 Emulation fixes:
