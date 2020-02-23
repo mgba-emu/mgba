@@ -9,6 +9,7 @@ set(SOURCE_FILES
 	cheats/parv3.c
 	core.c
 	dma.c
+	ereader.c
 	gba.c
 	hardware.c
 	hle-bios.c
