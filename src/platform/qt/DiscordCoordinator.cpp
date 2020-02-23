@@ -30,6 +30,7 @@ static void updatePresence() {
 		DiscordRichPresence discordPresence{};
 		discordPresence.details = s_title.toUtf8().constData();
 		discordPresence.instance = 1;
+		discordPresence.largeImageKey = "mgba";
 		Discord_UpdatePresence(&discordPresence);
 	} else {
 		Discord_ClearPresence();
