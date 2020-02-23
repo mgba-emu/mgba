@@ -424,7 +424,7 @@ void Window::selectPatch() {
 }
 
 void Window::scanCard() {
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select e-Reader dotcode"));
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select e-Reader dotcode"), tr("e-Reader card (*.raw *.bin)"));
 	if (!filename.isEmpty()) {
 		m_controller->scanCard(filename);
 	}
