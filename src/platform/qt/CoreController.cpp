@@ -689,6 +689,12 @@ void CoreController::scanCard(const QString& path) {
 		m_eReaderData = file.read(2912);
 	} else if (image.size() == QSize(989, 44)) {
 		const uchar* bits = image.constBits();
+		size_t size;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+		size = image.sizeInBytes();
+#else
+		size = image.byteCount();
+#endif
 		m_eReaderData.setRawData(reinterpret_cast<const char*>(bits), image.sizeInBytes());
 	}
 
