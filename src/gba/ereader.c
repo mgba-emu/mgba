@@ -572,7 +572,7 @@ void _eReaderWriteControl1(struct GBACartridgeHardware* hw, uint8_t value) {
 		if (hw->eReaderY == (hw->eReaderSerial[0x15] | (hw->eReaderSerial[0x14] << 8))) {
 			hw->eReaderY = 0;
 			if (hw->eReaderX < 3400) {
-				hw->eReaderX += 220;
+				hw->eReaderX += 210;
 			}
 		}
 		_eReaderReadData(hw);
