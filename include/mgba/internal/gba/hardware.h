@@ -18,6 +18,7 @@ mLOG_DECLARE_CATEGORY(GBA_HW);
 
 #define EREADER_DOTCODE_STRIDE 1200
 #define EREADER_DOTCODE_SIZE (EREADER_DOTCODE_STRIDE * 40 + 200)
+#define EREADER_CARDS_MAX 16
 
 #define IS_GPIO_REGISTER(reg) ((reg) == GPIO_REG_DATA || (reg) == GPIO_REG_DIRECTION || (reg) == GPIO_REG_CONTROL)
 
@@ -133,6 +134,11 @@ enum EReaderCommand {
 	EREADER_COMMAND_READ_DATA = 0x23,
 };
 
+struct EReaderCard {
+	void* data;
+	size_t size;
+};
+
 struct GBACartridgeHardware {
 	struct GBA* p;
 	uint32_t devices;
@@ -177,6 +183,7 @@ struct GBACartridgeHardware {
 	int eReaderX;
 	int eReaderY;
 	uint8_t* eReaderDots;
+	struct EReaderCard eReaderCards[EREADER_CARDS_MAX];
 };
 
 void GBAHardwareInit(struct GBACartridgeHardware* gpio, uint16_t* gpioBase);

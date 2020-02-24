@@ -514,6 +514,19 @@ void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value) {
 	}
 	hw->eReaderRegisterControl0 = control;
 	if (!EReaderControl0IsScan(oldControl) && EReaderControl0IsScan(control)) {
+		if (hw->eReaderX > 1000) {
+			int i;
+			for (i = 0; i < EREADER_CARDS_MAX; ++i) {
+				if (!hw->eReaderCards[i].data) {
+					continue;
+				}
+				GBAHardwareEReaderScan(hw, hw->eReaderCards[i].data, hw->eReaderCards[i].size);
+				free(hw->eReaderCards[i].data);
+				hw->eReaderCards[i].data = NULL;
+				hw->eReaderCards[i].size = 0;
+				break;
+			}
+		}
 		hw->eReaderX = 0;
 		hw->eReaderY = 0;
 	} else if (EReaderControl0IsLedEnable(control) && EReaderControl0IsScan(control) && !EReaderControl1IsScanline(hw->eReaderRegisterControl1)) {
@@ -540,6 +553,19 @@ void _eReaderWriteControl1(struct GBACartridgeHardware* hw, uint8_t value) {
 
 void _eReaderReadData(struct GBACartridgeHardware* hw) {
 	memset(hw->eReaderData, 0, EREADER_BLOCK_SIZE);
+	if (!hw->eReaderDots) {
+		int i;
+		for (i = 0; i < EREADER_CARDS_MAX; ++i) {
+			if (!hw->eReaderCards[i].data) {
+				continue;
+			}
+			GBAHardwareEReaderScan(hw, hw->eReaderCards[i].data, hw->eReaderCards[i].size);
+			free(hw->eReaderCards[i].data);
+			hw->eReaderCards[i].data = NULL;
+			hw->eReaderCards[i].size = 0;
+			break;
+		}
+	}
 	if (hw->eReaderDots) {
 		int y = hw->eReaderY - 10;
 		if (y < 0 || y >= 120) {
@@ -577,5 +603,18 @@ void _eReaderReadData(struct GBACartridgeHardware* hw) {
 			led = 0x4000;
 		}
 		GBARaiseIRQ(hw->p, IRQ_GAMEPAK, -led);
+	}
+}
+
+void GBAEReaderQueueCard(struct GBA* gba, const void* data, size_t size) {	
+	int i;
+	for (i = 0; i < EREADER_CARDS_MAX; ++i) {
+		if (gba->memory.hw.eReaderCards[i].data) {
+			continue;
+		}
+		gba->memory.hw.eReaderCards[i].data = malloc(size);
+		memcpy(gba->memory.hw.eReaderCards[i].data, data, size);
+		gba->memory.hw.eReaderCards[i].size = size;
+		return;
 	}
 }

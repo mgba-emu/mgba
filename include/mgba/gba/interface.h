@@ -88,6 +88,8 @@ struct GBASIOBattlechipGate {
 
 void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate*);
 
+void GBAEReaderQueueCard(struct GBA* gba, const void* data, size_t size);
+
 CXX_GUARD_END
 
 #endif

@@ -163,6 +163,17 @@ QString GBAApp::getOpenFileName(QWidget* owner, const QString& title, const QStr
 	return filename;
 }
 
+QStringList GBAApp::getOpenFileNames(QWidget* owner, const QString& title, const QString& filter) {
+	QList<Window*> paused;
+	pauseAll(&paused);
+	QStringList filenames = QFileDialog::getOpenFileNames(owner, title, m_configController->getOption("lastDirectory"), filter);
+	continueAll(paused);
+	if (!filenames.isEmpty()) {
+		m_configController->setOption("lastDirectory", QFileInfo(filenames.at(0)).dir().canonicalPath());
+	}
+	return filenames;
+}
+
 QString GBAApp::getSaveFileName(QWidget* owner, const QString& title, const QString& filter) {
 	QList<Window*> paused;
 	pauseAll(&paused);
