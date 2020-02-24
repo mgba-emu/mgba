@@ -424,7 +424,7 @@ void Window::selectPatch() {
 }
 
 void Window::scanCard() {
-	QStringList filenames = GBAApp::app()->getOpenFileNames(this, tr("Select e-Reader dotcode"), tr("e-Reader card (*.raw *.bin)"));
+	QStringList filenames = GBAApp::app()->getOpenFileNames(this, tr("Select e-Reader dotcode"), tr("e-Reader card (*.raw *.bin *.bmp)"));
 	for (QString& filename : filenames) {
 		m_controller->scanCard(filename);
 	}

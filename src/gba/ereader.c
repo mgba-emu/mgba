@@ -323,13 +323,16 @@ void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, s
 	if (!hw->eReaderDots) {
 		hw->eReaderDots = anonymousMemoryMap(EREADER_DOTCODE_SIZE);
 	}
+	hw->eReaderX = -24;
 	memset(hw->eReaderDots, 0, EREADER_DOTCODE_SIZE);
 
 	uint8_t blockRS[44][0x10];
 	bool parsed = false;
+	bool bitmap = false;
 	size_t blocks;
 	int base;
 	switch (size) {
+	// Raw sizes
 	case 2112:
 		parsed = true;
 		// Fallthrough
@@ -344,11 +347,38 @@ void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, s
 		base = 1;
 		blocks = 18;
 		break;
+	// Bitmap sizes
+	case 5456:
+		bitmap = true;
+		break;
 	default:
 		return;
 	}
 
 	size_t i;
+	if (bitmap) {
+		size_t x;
+		for (i = 0; i < 40; ++i) {
+			const uint8_t* line = &((const uint8_t*) data)[(i + 2) * 124];
+			uint8_t* origin = &hw->eReaderDots[EREADER_DOTCODE_STRIDE * i + 200];
+			for (x = 0; x < 124; ++x) {
+				uint8_t byte = line[x];
+				if (x == 123) {
+					byte &= 0xE0;
+				}
+				origin[x * 8 + 0] = (byte >> 7) & 1;
+				origin[x * 8 + 1] = (byte >> 6) & 1;
+				origin[x * 8 + 2] = (byte >> 5) & 1;
+				origin[x * 8 + 3] = (byte >> 4) & 1;
+				origin[x * 8 + 4] = (byte >> 3) & 1;
+				origin[x * 8 + 5] = (byte >> 2) & 1;
+				origin[x * 8 + 6] = (byte >> 1) & 1;
+				origin[x * 8 + 7] = byte & 1;
+			}
+		}		
+		return;
+	}
+
 	for (i = 0; i < blocks + 1; ++i) {
 		uint8_t* origin = &hw->eReaderDots[35 * i + 200];
 		_eReaderAnchor(&origin[EREADER_DOTCODE_STRIDE * 0]);
@@ -427,7 +457,6 @@ void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, s
 			b += 26;
 		}
 	}
-	hw->eReaderX = -24;
 }
 
 void _eReaderReset(struct GBACartridgeHardware* hw) {
