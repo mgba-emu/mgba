@@ -695,7 +695,7 @@ void CoreController::scanCard(const QString& path) {
 #else
 		size = image.byteCount();
 #endif
-		m_eReaderData.setRawData(reinterpret_cast<const char*>(bits), image.sizeInBytes());
+		m_eReaderData.setRawData(reinterpret_cast<const char*>(bits), size);
 	}
 
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* thread) {
