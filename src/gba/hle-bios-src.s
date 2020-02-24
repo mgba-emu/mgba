@@ -187,4 +187,9 @@ blt    0b
 2:
 ldmfd  sp!, {r4-r10, pc}
 
+undefBase:
+subs   pc, lr, #4
+.word 0
+.word 0x03A0E004
+
 .ltorg

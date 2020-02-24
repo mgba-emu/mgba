@@ -134,6 +134,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QRadioButton" name="presetMP4">
+          <property name="text">
+           <string>MP4</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QRadioButton" name="presetLossless">
           <property name="text">
            <string>&amp;Lossless</string>
@@ -150,6 +157,13 @@
       </item>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QRadioButton" name="preset4K">
+          <property name="text">
+           <string>4K</string>
+          </property>
+         </widget>
+        </item>
         <item>
          <widget class="QRadioButton" name="preset1080">
           <property name="text">
@@ -289,6 +303,11 @@
              <string>FFV1</string>
             </property>
            </item>
+           <item>
+            <property name="text">
+             <string>None</string>
+            </property>
+           </item>
           </widget>
          </item>
          <item>
@@ -324,6 +343,11 @@
            <item>
             <property name="text">
              <string>Uncompressed</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>None</string>
             </property>
            </item>
           </widget>

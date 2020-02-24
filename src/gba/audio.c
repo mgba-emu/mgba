@@ -104,6 +104,8 @@ void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
 }
 
 void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* info) {
+	info->reg = GBADMARegisterSetDestControl(info->reg, GBA_DMA_FIXED);
+	info->reg = GBADMARegisterSetWidth(info->reg, 1);
 	switch (info->dest) {
 	case BASE_IO | REG_FIFO_A_LO:
 		audio->chA.dmaSource = number;
@@ -129,8 +131,6 @@ void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* 
 			audio->externalMixing = false;
 		}
 	}
-	info->reg = GBADMARegisterSetDestControl(info->reg, GBA_DMA_FIXED);
-	info->reg = GBADMARegisterSetWidth(info->reg, 1);
 }
 
 void GBAAudioWriteSOUND1CNT_LO(struct GBAAudio* audio, uint16_t value) {
