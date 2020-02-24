@@ -572,7 +572,10 @@ void _eReaderReadData(struct GBACartridgeHardware* hw) {
 	}
 	hw->eReaderRegisterControl1 = EReaderControl1FillScanline(hw->eReaderRegisterControl1);
 	if (EReaderControl0IsLedEnable(hw->eReaderRegisterControl0)) {
-		uint16_t led = 2754; // TODO: Figure out why this breaks if using the LED register
+		uint16_t led = hw->eReaderRegisterLed * 2;
+		if (led > 0x4000) {
+			led = 0x4000;
+		}
 		GBARaiseIRQ(hw->p, IRQ_GAMEPAK, -led);
 	}
 }
