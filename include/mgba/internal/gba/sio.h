@@ -47,7 +47,7 @@ DECL_BIT(GBASIOMultiplayer, Slave, 2);
 DECL_BIT(GBASIOMultiplayer, Ready, 3);
 DECL_BITS(GBASIOMultiplayer, Id, 4, 2);
 DECL_BIT(GBASIOMultiplayer, Error, 6);
-DECL_BIT(GBASIOMultiplayer, Busy, 8);
+DECL_BIT(GBASIOMultiplayer, Busy, 7);
 DECL_BIT(GBASIOMultiplayer, Irq, 14);
 
 struct GBASIODriverSet {

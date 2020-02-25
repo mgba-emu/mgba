@@ -1,4 +1,6 @@
 0.8.2: (Future)
+Emulation fixes:
+ - GBA SIO: Fix Multiplayer busy bit
 Other fixes:
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
  - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
