@@ -75,10 +75,13 @@ void GBASIODeinit(struct GBASIO* sio) {
 }
 
 void GBASIOReset(struct GBASIO* sio) {
-	GBASIODeinit(sio);
+	if (sio->activeDriver && sio->activeDriver->unload) {
+		sio->activeDriver->unload(sio->activeDriver);
+	}
 	sio->rcnt = RCNT_INITIAL;
 	sio->siocnt = 0;
 	sio->mode = -1;
+	sio->activeDriver = NULL;
 	_switchMode(sio);
 }
 
