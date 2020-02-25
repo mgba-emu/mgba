@@ -279,19 +279,39 @@ static int32_t _masterUpdate(struct GBASIOLockstepNode* node) {
 	case TRANSFER_IDLE:
 		// If the master hasn't initiated a transfer, it can keep going.
 		node->nextEvent += LOCKSTEP_INCREMENT;
-		node->d.p->siocnt = GBASIOMultiplayerSetReady(node->d.p->siocnt, attachedMulti == attached);
+		if (node->mode == SIO_MULTI) {
+			node->d.p->siocnt = GBASIOMultiplayerSetReady(node->d.p->siocnt, attachedMulti == attached);
+		}
 		break;
 	case TRANSFER_STARTING:
 		// Start the transfer, but wait for the other GBAs to catch up
 		node->transferFinished = false;
-		node->p->multiRecv[0] = node->d.p->p->memory.io[REG_SIOMLT_SEND >> 1];
-		node->d.p->p->memory.io[REG_SIOMULTI0 >> 1] = 0xFFFF;
-		node->d.p->p->memory.io[REG_SIOMULTI1 >> 1] = 0xFFFF;
-		node->d.p->p->memory.io[REG_SIOMULTI2 >> 1] = 0xFFFF;
-		node->d.p->p->memory.io[REG_SIOMULTI3 >> 1] = 0xFFFF;
-		node->p->multiRecv[1] = 0xFFFF;
-		node->p->multiRecv[2] = 0xFFFF;
-		node->p->multiRecv[3] = 0xFFFF;
+		switch (node->mode) {
+		case SIO_MULTI:
+			node->p->multiRecv[0] = node->d.p->p->memory.io[REG_SIOMLT_SEND >> 1];
+			node->d.p->p->memory.io[REG_SIOMULTI0 >> 1] = 0xFFFF;
+			node->d.p->p->memory.io[REG_SIOMULTI1 >> 1] = 0xFFFF;
+			node->d.p->p->memory.io[REG_SIOMULTI2 >> 1] = 0xFFFF;
+			node->d.p->p->memory.io[REG_SIOMULTI3 >> 1] = 0xFFFF;
+			node->p->multiRecv[1] = 0xFFFF;
+			node->p->multiRecv[2] = 0xFFFF;
+			node->p->multiRecv[3] = 0xFFFF;
+			break;
+		case SIO_NORMAL_8:
+			node->p->multiRecv[0] = 0xFFFF;
+			node->p->normalRecv[0] = node->d.p->p->memory.io[REG_SIODATA8 >> 1] & 0xFF;
+			break;
+		case SIO_NORMAL_32:
+			node->p->multiRecv[0] = 0xFFFF;
+			mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA32_LO <- %04x", node->id, node->d.p->p->memory.io[REG_SIODATA32_LO >> 1]);
+			mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA32_HI <- %04x", node->id, node->d.p->p->memory.io[REG_SIODATA32_HI >> 1]);
+			node->p->normalRecv[0] = node->d.p->p->memory.io[REG_SIODATA32_LO >> 1];
+			node->p->normalRecv[0] |= node->d.p->p->memory.io[REG_SIODATA32_HI >> 1] << 16;
+			break;
+		default:
+			node->p->multiRecv[0] = 0xFFFF;
+			break;
+		}
 		needsToWait = true;
 		ATOMIC_STORE(node->p->d.transferActive, TRANSFER_STARTED);
 		node->nextEvent += LOCKSTEP_TRANSFER;
@@ -456,7 +476,7 @@ static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* drive
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIOCNT <- %04x", node->id, value);
 		value &= 0xFF8B;
 		if (!node->id) {
-			driver->p->siocnt = GBASIONormalFillSi(driver->p->siocnt);
+			value = GBASIONormalFillSi(value);
 		}
 		if (value & 0x0080 && !node->id) {
 			// Internal shift clock
