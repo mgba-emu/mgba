@@ -9,6 +9,7 @@ Emulation fixes:
  - GBA BIOS: Improve HLE BIOS timing
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA Memory: Improve gamepak prefetch timing
+ - GBA SIO: Fix Multiplayer busy bit
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
 Other fixes:
