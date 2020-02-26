@@ -723,8 +723,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		GBATimerUpdateRegister(gba, 3, 2);
 		break;
 
-	case REG_KEYINPUT:
-		{
+	case REG_KEYINPUT: {
 			size_t c;
 			for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
 				struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
@@ -732,29 +731,28 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 					callbacks->keysRead(callbacks->context);
 				}
 			}
-		}
-		uint16_t input = 0;
-		if (gba->keyCallback) {
-			input = gba->keyCallback->readKeys(gba->keyCallback);
-			if (gba->keySource) {
-				*gba->keySource = input;
-			}
-		} else if (gba->keySource) {
-			input = *gba->keySource;
-			if (!gba->allowOpposingDirections) {
-				unsigned rl = input & 0x030;
-				unsigned ud = input & 0x0C0;
-				input &= 0x30F;
-				if (rl != 0x030) {
-					input |= rl;
+			uint16_t input = 0;
+			if (gba->keyCallback) {
+				input = gba->keyCallback->readKeys(gba->keyCallback);
+				if (gba->keySource) {
+					*gba->keySource = input;
 				}
-				if (ud != 0x0C0) {
-					input |= ud;
+			} else if (gba->keySource) {
+				input = *gba->keySource;
+				if (!gba->allowOpposingDirections) {
+					unsigned rl = input & 0x030;
+					unsigned ud = input & 0x0C0;
+					input &= 0x30F;
+					if (rl != 0x030) {
+						input |= rl;
+					}
+					if (ud != 0x0C0) {
+						input |= ud;
+					}
 				}
 			}
 			return 0x3FF ^ input;
 		}
-
 	case REG_SIOCNT:
 		return gba->sio.siocnt;
 	case REG_RCNT:
