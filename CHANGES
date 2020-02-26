@@ -12,6 +12,7 @@ Emulation fixes:
  - GBA SIO: Fix Multiplayer busy bit
  - GBA SIO: Fix double-unloading active driver
  - GBA SIO: Fix copying Normal mode transfer values
+ - GBA Timers: Fix deserializing count-up timers
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
 Other fixes:
