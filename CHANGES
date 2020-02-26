@@ -2,6 +2,7 @@
 Emulation fixes:
  - GBA SIO: Fix Multiplayer busy bit
  - GBA SIO: Fix double-unloading active driver
+ - GBA Timers: Fix deserializing count-up timers
 Other fixes:
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
  - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)

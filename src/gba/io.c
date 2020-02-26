@@ -971,16 +971,13 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	for (i = 0; i < 4; ++i) {
 		LOAD_16(gba->timers[i].reload, 0, &state->timers[i].reload);
 		LOAD_32(gba->timers[i].flags, 0, &state->timers[i].flags);
-		if (i > 0 && GBATimerFlagsIsCountUp(gba->timers[i].flags)) {
-			// Overwrite invalid values in savestate
-			gba->timers[i].lastEvent = 0;
-		} else {
-			LOAD_32(when, 0, &state->timers[i].lastEvent);
-			gba->timers[i].lastEvent = when + mTimingCurrentTime(&gba->timing);
-		}
+		LOAD_32(when, 0, &state->timers[i].lastEvent);
+		gba->timers[i].lastEvent = when + mTimingCurrentTime(&gba->timing);
 		LOAD_32(when, 0, &state->timers[i].nextEvent);
-		if (GBATimerFlagsIsEnable(gba->timers[i].flags)) {
+		if ((i < 1 || !GBATimerFlagsIsCountUp(gba->timers[i].flags)) && GBATimerFlagsIsEnable(gba->timers[i].flags)) {
 			mTimingSchedule(&gba->timing, &gba->timers[i].event, when);
+		} else {
+			gba->timers[i].event.when = when + mTimingCurrentTime(&gba->timing);
 		}
 
 		LOAD_16(gba->memory.dma[i].reg, (REG_DMA0CNT_HI + i * 12), state->io);
