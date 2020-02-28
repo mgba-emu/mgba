@@ -367,7 +367,6 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 		if (gbacore->renderer.outputBuffer) {
 			renderer = &gbacore->renderer.d;
 		}
-		int fakeBool;
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
 			mCoreConfigGetIntValue(&core->config, "videoScale", &gbacore->glRenderer.scale);
@@ -552,7 +551,7 @@ static void _GBACoreReset(struct mCore* core) {
 		if (gbacore->renderer.outputBuffer) {
 			renderer = &gbacore->renderer.d;
 		}
-		int fakeBool;
+		int fakeBool ATTRIBUTE_UNUSED;
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
 			mCoreConfigGetIntValue(&core->config, "videoScale", &gbacore->glRenderer.scale);

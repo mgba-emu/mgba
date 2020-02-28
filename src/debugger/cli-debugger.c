@@ -977,7 +977,7 @@ static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason r
 	case DEBUGGER_ENTER_BREAKPOINT:
 		if (info) {
 			if (info->pointId > 0) {
-				cliDebugger->backend->printf(cliDebugger->backend, "Hit breakpoint %zi at 0x%08X\n", info->pointId, info->address);
+				cliDebugger->backend->printf(cliDebugger->backend, "Hit breakpoint %" PRIz "i at 0x%08X\n", info->pointId, info->address);
 			} else {
 				cliDebugger->backend->printf(cliDebugger->backend, "Hit unknown breakpoint at 0x%08X\n", info->address);				
 			}
@@ -988,9 +988,9 @@ static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason r
 	case DEBUGGER_ENTER_WATCHPOINT:
 		if (info) {
 			if (info->type.wp.accessType & WATCHPOINT_WRITE) {
-				cliDebugger->backend->printf(cliDebugger->backend, "Hit watchpoint %zi at 0x%08X: (new value = 0x%08X, old value = 0x%08X)\n", info->pointId, info->address, info->type.wp.newValue, info->type.wp.oldValue);
+				cliDebugger->backend->printf(cliDebugger->backend, "Hit watchpoint %" PRIz "i at 0x%08X: (new value = 0x%08X, old value = 0x%08X)\n", info->pointId, info->address, info->type.wp.newValue, info->type.wp.oldValue);
 			} else {
-				cliDebugger->backend->printf(cliDebugger->backend, "Hit watchpoint %zi at 0x%08X: (value = 0x%08X)\n", info->pointId, info->address, info->type.wp.oldValue);
+				cliDebugger->backend->printf(cliDebugger->backend, "Hit watchpoint %" PRIz "i at 0x%08X: (value = 0x%08X)\n", info->pointId, info->address, info->type.wp.oldValue);
 			}
 		} else {
 			cliDebugger->backend->printf(cliDebugger->backend, "Hit watchpoint\n");
