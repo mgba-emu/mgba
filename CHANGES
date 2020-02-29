@@ -6,6 +6,7 @@ Emulation fixes:
 Other fixes:
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
  - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
+ - Qt: Fix OpenGL 2.1 support (fixes mgba.io/i/1678)
 Misc:
  - Qt: Disable Replace ROM option when no game loaded
  - Qt: Defer texture updates until frame is drawn (fixes mgba.io/i/1590)
