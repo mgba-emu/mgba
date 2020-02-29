@@ -22,6 +22,7 @@ Other fixes:
  - GBA: Reject incorrectly sized BIOSes
  - Debugger: Don't skip undefined instructions when debugger attached
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
+ - Qt: Fix OpenGL 2.1 support (fixes mgba.io/i/1678)
 Misc:
  - FFmpeg: Add looping option for GIF/APNG
  - Qt: Renderer can be changed while a game is running
