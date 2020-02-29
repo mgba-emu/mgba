@@ -121,10 +121,6 @@ ifeq ($(STATIC_LINKING), 1)
 RETRODEFS += -DHAVE_CRC32
 endif
 
-ifeq ($(platform), ctr)
-SOURCES_C += $(CORE_DIR)/src/platform/3ds/ctru-heap.c
-endif
-
 ifeq ($(HAVE_NEON),1)
 SOURCES_ASM += $(CORE_DIR)/src/util/arm-algo.S
 endif

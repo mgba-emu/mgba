@@ -297,6 +297,7 @@ else ifeq ($(platform), ctr)
    CC = $(DEVKITARM)/bin/arm-none-eabi-gcc$(EXE_EXT)
    AR = $(DEVKITARM)/bin/arm-none-eabi-ar$(EXE_EXT)
    PLATFORM_DEFINES := -DARM11 -D_3DS
+	 PLATFORM_DEFINES += -DHAVE_STRTOF_L -DHAVE_LOCALE -D_GNU_SOURCE
 
    CFLAGS += -march=armv6k -mtune=mpcore -mfloat-abi=hard
    CFLAGS += -Wall -mword-relocations
