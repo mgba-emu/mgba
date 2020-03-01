@@ -19,6 +19,7 @@ Other fixes:
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
  - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
+ - GB Video: Fix some cases where SGB border doesn't draw to mutli-buffers
  - GBA: Reject incorrectly sized BIOSes
  - Debugger: Don't skip undefined instructions when debugger attached
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
