@@ -6,6 +6,7 @@ Emulation fixes:
 Other fixes:
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
  - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
+ - GB Video: Fix some cases where SGB border doesn't draw to mutli-buffers
  - GBA: Reject incorrectly sized BIOSes
  - Qt: Fix OpenGL 2.1 support (fixes mgba.io/i/1678)
 Misc:
