@@ -232,7 +232,15 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 	snprintf(out, outLength, "/%s", projectName);
 	FSUSER_CreateDirectory(sdmcArchive, fsMakePath(PATH_ASCII, out), 0);
 #elif defined(__HAIKU__)
-	UNUSED(portable);
+	getcwd(out, outLength);
+	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out));
+	portable = VFileOpen(out, O_RDONLY);
+	if (portable) {
+		getcwd(out, outLength);
+		portable->close(portable);
+		return;
+	}
+
 	char path[B_PATH_NAME_LENGTH];
 	find_directory(B_USER_SETTINGS_DIRECTORY, 0, false, path, B_PATH_NAME_LENGTH);
 	snprintf(out, outLength, "%s/%s", path, binaryName);
