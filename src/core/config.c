@@ -27,6 +27,10 @@
 #include <mgba-util/platform/3ds/3ds-vfs.h>
 #endif
 
+#ifdef __HAIKU__
+#include <FindDirectory.h>
+#endif
+
 #define SECTION_NAME_MAX 128
 
 struct mCoreConfigEnumerateData {
@@ -227,6 +231,12 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 	UNUSED(portable);
 	snprintf(out, outLength, "/%s", projectName);
 	FSUSER_CreateDirectory(sdmcArchive, fsMakePath(PATH_ASCII, out), 0);
+#elif defined(__HAIKU__)
+	UNUSED(portable);
+	char path[B_PATH_NAME_LENGTH];
+	find_directory(B_USER_SETTINGS_DIRECTORY, 0, false, path, B_PATH_NAME_LENGTH);
+	snprintf(out, outLength, "%s/%s", path, binaryName);
+	mkdir(out, 0755);
 #else
 	getcwd(out, outLength);
 	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out));
