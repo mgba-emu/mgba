@@ -21,6 +21,7 @@ MemorySearch::MemorySearch(std::shared_ptr<CoreController> controller, QWidget* 
 
 	mCoreMemorySearchResultsInit(&m_results, 0);
 	connect(m_ui.search, &QPushButton::clicked, this, &MemorySearch::search);
+	connect(m_ui.value, &QLineEdit::returnPressed, this, &MemorySearch::search); 
 	connect(m_ui.searchWithin, &QPushButton::clicked, this, &MemorySearch::searchWithin);
 	connect(m_ui.refresh, &QPushButton::clicked, this, &MemorySearch::refresh);
 	connect(m_ui.numHex, &QPushButton::clicked, this, &MemorySearch::refresh);
