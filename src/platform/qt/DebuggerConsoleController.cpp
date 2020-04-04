@@ -23,6 +23,7 @@ DebuggerConsoleController::DebuggerConsoleController(QObject* parent)
 	m_backend.d.lineAppend = lineAppend;
 	m_backend.d.historyLast = historyLast;
 	m_backend.d.historyAppend = historyAppend;
+    m_backend.d.html = html;
 	m_backend.self = this;
 
 	CLIDebuggerCreate(&m_cliDebugger);
@@ -118,4 +119,10 @@ void DebuggerConsoleController::historyAppend(struct CLIDebuggerBackend* be, con
 	CoreController::Interrupter interrupter(self->m_gameController, true);
 	QMutexLocker lock(&self->m_mutex);
 	self->m_history.append(QString::fromUtf8(line));
+}
+
+void DebuggerConsoleController::html(struct CLIDebuggerBackend* be) {
+    Backend* consoleBe = reinterpret_cast<Backend*>(be);
+	DebuggerConsoleController* self = consoleBe->self;
+	self->m_html = true;
 }

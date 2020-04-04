@@ -42,6 +42,7 @@ private:
 	static void lineAppend(struct CLIDebuggerBackend* be, const char* line);
 	static const char* historyLast(struct CLIDebuggerBackend* be, size_t* len);
 	static void historyAppend(struct CLIDebuggerBackend* be, const char* line);
+	static void html(struct CLIDebuggerBackend* be);
 
 	CLIDebugger m_cliDebugger{};
 
@@ -50,6 +51,7 @@ private:
 	QStringList m_history;
 	QStringList m_lines;
 	QByteArray m_last;
+	bool m_html;
 
 	struct Backend {
 		CLIDebuggerBackend d;

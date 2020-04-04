@@ -75,6 +75,7 @@ struct CLIDebuggerBackend {
 	void (*printf)(struct CLIDebuggerBackend*, const char* fmt, ...);
 	const char* (*readline)(struct CLIDebuggerBackend*, size_t* len);
 	void (*lineAppend)(struct CLIDebuggerBackend*, const char* line);
+	void (*html)(struct CLIDebuggerBackend*);
 	const char* (*historyLast)(struct CLIDebuggerBackend*, size_t* len);
 	void (*historyAppend)(struct CLIDebuggerBackend*, const char* line);
 };

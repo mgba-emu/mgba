@@ -288,7 +288,11 @@ static void _printCommandSummary(struct CLIDebugger* debugger, const char* name,
 static void _printHelp(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
 	if (!dv) {
-		debugger->backend->printf(debugger->backend, "Generic commands:\n");
+        if(debugger->backend->html) {
+            debugger->backend->printf(debugger->backend, "<font style='font-weight:bold;color:blue;'>Generic commands:</font>\n");
+        } else {
+            debugger->backend->printf(debugger->backend, "Generic commands:\n");
+        }
 		_printCommands(debugger, _debuggerCommands, _debuggerCommandAliases);
 		if (debugger->system) {
 			debugger->backend->printf(debugger->backend, "\n%s commands:\n", debugger->system->platformName);
