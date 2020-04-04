@@ -285,16 +285,24 @@ static void _printCommandSummary(struct CLIDebugger* debugger, const char* name,
 	}
 }
 
+static void _printHTMLorText(struct CLIDebugger* debugger, char* text, char* color, bool bold) {
+    if(debugger->backend->html) {
+        char* proprierties = "";
+        if(bold) {
+            proprierties = "font-weight:bold;";
+        }
+        sprintf(text, "<font style='color:%s;%s'>%s:</font>", color, proprierties, text);
+    } 
+    debugger->backend->printf(debugger->backend, "%s", text);
+}
+
 static void _printHelp(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
 	if (!dv) {
-        if(debugger->backend->html) {
-            debugger->backend->printf(debugger->backend, "<font style='font-weight:bold;color:blue;'>Generic commands:</font>\n");
-        } else {
-            debugger->backend->printf(debugger->backend, "Generic commands:\n");
-        }
+        _printHTMLorText(debugger, "Generic commands:\n", "blue", true);
 		_printCommands(debugger, _debuggerCommands, _debuggerCommandAliases);
 		if (debugger->system) {
+            
 			debugger->backend->printf(debugger->backend, "\n%s commands:\n", debugger->system->platformName);
 			_printCommands(debugger, debugger->system->platformCommands, debugger->system->platformCommandAliases);
 			debugger->backend->printf(debugger->backend, "\n%s commands:\n", debugger->system->name);
