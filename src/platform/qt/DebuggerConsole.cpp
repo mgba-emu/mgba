@@ -25,15 +25,9 @@ DebuggerConsole::DebuggerConsole(DebuggerConsoleController* controller, QWidget*
 	connect(m_ui.breakpoint, &QAbstractButton::clicked, controller, &DebuggerController::breakInto);
 }
 
-void DebuggerConsole::log_html(const QString& line) {
-	m_ui.log->moveCursor(QTextCursor::End);
-    m_ui.log->appendHtml(line);
-	m_ui.log->verticalScrollBar()->setValue(m_ui.log->verticalScrollBar()->maximum());
-}
-
 void DebuggerConsole::log(const QString& line) {
 	m_ui.log->moveCursor(QTextCursor::End);
-    m_ui.log->insertPlainText(line);
+    m_ui.log->appendHtml(QString(line).replace("  ", "&nbsp;&nbsp;"));
 	m_ui.log->verticalScrollBar()->setValue(m_ui.log->verticalScrollBar()->maximum());
 }
 
@@ -46,7 +40,7 @@ void DebuggerConsole::postLine() {
 	} else {
 		m_history.append(line);
 		m_historyOffset = 0;
-		log_html(QString("<font style='font-weight:bold'>> %1</font><br>").arg(line));
+		log(QString("<font style='font-weight:bold'>> %1</font><br>").arg(line));
 		m_consoleController->enterLine(line);
 	}
 }

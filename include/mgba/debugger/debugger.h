@@ -99,6 +99,7 @@ struct mDebuggerPlatform {
 	void (*deinit)(struct mDebuggerPlatform*);
 	void (*entered)(struct mDebuggerPlatform*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 
+	bool (*supportHTML)(struct mDebuggerPlatform*);
 	bool (*hasBreakpoints)(struct mDebuggerPlatform*);
 	void (*checkBreakpoints)(struct mDebuggerPlatform*);
 	bool (*clearBreakpoint)(struct mDebuggerPlatform*, ssize_t id);
