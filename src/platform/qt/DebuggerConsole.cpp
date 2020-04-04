@@ -8,6 +8,7 @@
 #include "DebuggerConsoleController.h"
 
 #include <QScrollBar>
+#include <QRegularExpression>
 
 using namespace QGBA;
 
@@ -27,7 +28,7 @@ DebuggerConsole::DebuggerConsole(DebuggerConsoleController* controller, QWidget*
 
 void DebuggerConsole::log(const QString& line) {
 	m_ui.log->moveCursor(QTextCursor::End);
-    m_ui.log->appendHtml(line);
+    m_ui.log->appendHtml(QString(line).replace(QRegularExpression(" (?![^<]*>)"),"&nbsp;"));
 	m_ui.log->verticalScrollBar()->setValue(m_ui.log->verticalScrollBar()->maximum());
 }
 
