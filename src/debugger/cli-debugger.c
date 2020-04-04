@@ -286,14 +286,15 @@ static void _printCommandSummary(struct CLIDebugger* debugger, const char* name,
 }
 
 static void _printHTMLorText(struct CLIDebugger* debugger, char* text, char* color, bool bold) {
+    char* printme = text;
     if(debugger->backend->html) {
         char* proprierties = "";
         if(bold) {
             proprierties = "font-weight:bold;";
         }
-        sprintf(text, "<font style='color:%s;%s'>%s:</font>", color, proprierties, text);
+        sprintf(printme, "<font style='color:%s;%s'>%s</font>", color, proprierties, text);
     } 
-    debugger->backend->printf(debugger->backend, "%s", text);
+    debugger->backend->printf(debugger->backend, "%s", printme);
 }
 
 static void _printHelp(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
