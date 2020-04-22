@@ -1452,6 +1452,102 @@ static void _setupMaps(struct mCore* core) {
 		environCallback(RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS, &yes);
 	}
 #endif
+#ifdef M_CORE_GB
+	if (core->platform(core) == PLATFORM_GB) {
+		struct GB* gb = core->board;
+		struct retro_memory_descriptor descs[11];
+		struct retro_memory_map mmaps;
+
+		memset(descs, 0, sizeof(descs));
+		size_t savedataSize = retro_get_memory_size(RETRO_MEMORY_SAVE_RAM);
+
+		unsigned i = 0;
+
+		/* Map ROM */
+		descs[i].ptr    = gb->memory.rom;
+		descs[i].start  = GB_BASE_CART_BANK0;
+		descs[i].len    = GB_SIZE_CART_BANK0;
+		descs[i].flags  = RETRO_MEMDESC_CONST;
+		i++;
+
+		descs[i].ptr    = gb->memory.rom;
+		descs[i].offset = GB_SIZE_CART_BANK0;
+		descs[i].start  = GB_BASE_CART_BANK1;
+		descs[i].len    = GB_SIZE_CART_BANK0;
+		descs[i].flags  = RETRO_MEMDESC_CONST;
+		i++;
+
+		/* Map VRAM */
+		descs[i].ptr    = gb->video.vram;
+		descs[i].start  = GB_BASE_VRAM;
+		descs[i].len    = GB_SIZE_VRAM;
+		i++;
+
+		/* Map working RAM */
+		descs[i].ptr    = gb->memory.wram;
+		descs[i].start  = GB_BASE_WORKING_RAM_BANK0;
+		descs[i].len    = GB_SIZE_WORKING_RAM_BANK0;
+		i++;
+
+		descs[i].ptr    = gb->memory.wram;
+		descs[i].offset = GB_SIZE_WORKING_RAM_BANK0;
+		descs[i].start  = GB_BASE_WORKING_RAM_BANK1;
+		descs[i].len    = GB_SIZE_WORKING_RAM_BANK0;
+		i++;
+
+		/* Map OAM */
+		descs[i].ptr    = &gb->video.oam; /* video.oam is a structure */
+		descs[i].start  = GB_BASE_OAM;
+		descs[i].len    = GB_SIZE_OAM;
+		descs[i].select = 0xFFFFFF60;
+		i++;
+
+		/* Map mmapped I/O */
+		descs[i].ptr    = gb->memory.io;
+		descs[i].start  = GB_BASE_IO;
+		descs[i].len    = GB_SIZE_IO;
+		i++;
+
+		/* Map High RAM */
+		descs[i].ptr    = gb->memory.hram;
+		descs[i].start  = GB_BASE_HRAM;
+		descs[i].len    = GB_SIZE_HRAM;
+		descs[i].select = 0xFFFFFF80;
+		i++;
+
+		/* Map IE Register */
+		descs[i].ptr    = &gb->memory.ie;
+		descs[i].start  = GB_BASE_IE;
+		descs[i].len    = 1;
+		i++;
+
+		/* Map External RAM */
+		if (savedataSize) {
+			descs[i].ptr    = savedata;
+			descs[i].start  = GB_BASE_EXTERNAL_RAM;
+			descs[i].len    = savedataSize;
+			i++;
+		}
+
+		if (gb->model >= GB_MODEL_CGB) {
+			/* Map working RAM */
+			/* banks 2-7 of wram mapped in virtual address so it can be
+			 * accessed without bank switching, GBC only */
+			descs[i].ptr    = gb->memory.wram + 0x2000;
+			descs[i].start  = 0x10000;
+			descs[i].len    = GB_SIZE_WORKING_RAM - 0x2000;
+			descs[i].select = 0xFFFFA000;
+			i++;
+		}
+
+		mmaps.descriptors = descs;
+		mmaps.num_descriptors = i;
+
+		bool yes = true;
+		environCallback(RETRO_ENVIRONMENT_SET_MEMORY_MAPS, &mmaps);
+		environCallback(RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS, &yes);
+	}
+#endif
 }
 
 void retro_reset(void) {
