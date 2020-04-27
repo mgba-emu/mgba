@@ -3796,7 +3796,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../Window.cpp" line="986"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
-        <translation>进行此操作后，模拟器将从其可执行文件所在相同目录中载入模拟器配置。您想继续吗？</translation>
+        <translation>进行此操作后，模拟器将从其可执行文件所在目录中载入模拟器配置。您想继续吗？</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="998"/>
@@ -4993,7 +4993,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../SettingsView.ui" line="1353"/>
         <location filename="../SettingsView.ui" line="1401"/>
         <source>Same directory as the ROM</source>
-        <translation>与 ROM 所在相同目录</translation>
+        <translation>与 ROM 所在目录相同</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1223"/>
