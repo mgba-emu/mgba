@@ -1,5 +1,6 @@
 0.8.2: (Future)
 Emulation fixes:
+ - GBA: Add missing RTC overrides for Legendz games
  - GBA SIO: Fix Multiplayer busy bit
  - GBA SIO: Fix double-unloading active driver
  - GBA Timers: Fix deserializing count-up timers
