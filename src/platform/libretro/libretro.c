@@ -1480,7 +1480,7 @@ static void _setupMaps(struct mCore* core) {
 		/* Map VRAM */
 		descs[i].ptr    = gb->video.vram;
 		descs[i].start  = GB_BASE_VRAM;
-		descs[i].len    = GB_SIZE_VRAM;
+		descs[i].len    = GB_SIZE_VRAM_BANK0;
 		i++;
 
 		/* Map working RAM */
@@ -1522,8 +1522,8 @@ static void _setupMaps(struct mCore* core) {
 		i++;
 
 		/* Map External RAM */
-		if (savedataSize) {
-			descs[i].ptr    = savedata;
+		if (gb->memory.sram) {
+			descs[i].ptr    = gb->memory.sram;
 			descs[i].start  = GB_BASE_EXTERNAL_RAM;
 			descs[i].len    = savedataSize;
 			i++;
