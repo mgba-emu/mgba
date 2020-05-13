@@ -6,6 +6,7 @@ Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
  - GB: Fix GBC game registers after skipping BIOS
+ - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
  - GBA: Add missing RTC overrides for Legendz games
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing

@@ -460,13 +460,13 @@ void GBReset(struct SM83Core* cpu) {
 
 	GBVideoReset(&gb->video);
 	GBTimerReset(&gb->timer);
+	GBIOReset(gb);
 	if (!gb->biosVf) {
 		GBSkipBIOS(gb);
 	} else {
 		mTimingSchedule(&gb->timing, &gb->timer.event, 0);
 	}
 
-	GBIOReset(gb);
 	GBAudioReset(&gb->audio);
 	GBSIOReset(&gb->sio);
 
@@ -561,6 +561,7 @@ void GBSkipBIOS(struct GB* gb) {
 	mTimingSchedule(&gb->timing, &gb->timer.event, 0);
 
 	GBIOWrite(gb, REG_LCDC, 0x91);
+	GBVideoSkipBIOS(&gb->video);
 
 	if (gb->biosVf) {
 		GBUnmapBIOS(gb);

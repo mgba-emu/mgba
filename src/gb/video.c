@@ -214,6 +214,24 @@ static bool _statIRQAsserted(GBRegisterSTAT stat) {
 	return false;
 }
 
+void GBVideoSkipBIOS(struct GBVideo* video) {
+	video->mode = 1;
+	video->modeEvent.callback = _endMode1;
+
+	if (video->p->model == GB_MODEL_CGB) {
+		video->ly = GB_VIDEO_VERTICAL_PIXELS;
+		video->p->memory.io[REG_LY] = video->ly;
+		video->stat = GBRegisterSTATClearLYC(video->stat);
+	}
+	video->stat = GBRegisterSTATSetMode(video->stat, video->mode);
+
+	video->p->memory.io[REG_IF] |= (1 << GB_IRQ_VBLANK);
+	GBUpdateIRQs(video->p);
+	video->p->memory.io[REG_STAT] = video->stat;
+	mTimingDeschedule(&video->p->timing, &video->modeEvent);
+	mTimingSchedule(&video->p->timing, &video->modeEvent, GB_VIDEO_HORIZONTAL_LENGTH << video->p->doubleSpeed);
+}
+
 void _endMode0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBVideo* video = context;
 	if (video->frameskipCounter <= 0) {
