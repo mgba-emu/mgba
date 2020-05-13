@@ -1,5 +1,5 @@
 0.8.2: (Future)
-Emulation fixes:
+ - GB: Fix GBC game registers after skipping BIOS
  - GBA: Add missing RTC overrides for Legendz games
  - GBA SIO: Fix Multiplayer busy bit
  - GBA SIO: Fix double-unloading active driver
