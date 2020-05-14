@@ -6,6 +6,7 @@
  - GBA SIO: Fix Multiplayer busy bit
  - GBA SIO: Fix double-unloading active driver
  - GBA Timers: Fix deserializing count-up timers
+ - GBA Video: Fix mosaic objects drawing past the end (fixes mgba.io/i/1702)
 Other fixes:
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
  - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
