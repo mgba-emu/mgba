@@ -1,5 +1,6 @@
 0.8.2: (Future)
  - GB: Fix GBC game registers after skipping BIOS
+ - GB MBC: Support 4MB MBC30 ROMs (fixes mgba.io/i/1713)
  - GB Video: Fix BGPS value after skipping BIOS (fixes mgba.io/i/1717)
  - GBA: Add missing RTC overrides for Legendz games
  - GBA SIO: Fix Multiplayer busy bit
