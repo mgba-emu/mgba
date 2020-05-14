@@ -203,7 +203,7 @@ void GBIOReset(struct GB* gb) {
 		GBIOWrite(gb, REG_UNK4C, 0);
 		GBIOWrite(gb, REG_JOYP, 0xFF);
 		GBIOWrite(gb, REG_VBK, 0);
-		GBIOWrite(gb, REG_BCPS, 0);
+		GBIOWrite(gb, REG_BCPS, 0x80);
 		GBIOWrite(gb, REG_OCPS, 0);
 		GBIOWrite(gb, REG_SVBK, 1);
 		GBIOWrite(gb, REG_HDMA1, 0xFF);
