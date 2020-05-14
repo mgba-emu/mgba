@@ -224,7 +224,7 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 		int mosaicH = 1;
 		if (GBAObjAttributesAIsMosaic(sprite->a)) {
 			mosaicH = GBAMosaicControlGetObjH(renderer->mosaic) + 1;
-			if (condition % mosaicH) {
+			if (condition != end && condition % mosaicH) {
 				condition += mosaicH - (condition % mosaicH);
 			}
 		}

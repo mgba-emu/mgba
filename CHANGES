@@ -20,6 +20,7 @@ Emulation fixes:
  - GBA Timers: Fix deserializing count-up timers
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
+ - GBA Video: Fix mosaic objects drawing past the end (fixes mgba.io/i/1702)
 Other fixes:
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
