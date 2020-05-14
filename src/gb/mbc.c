@@ -518,7 +518,7 @@ static uint8_t _GBMBC2Read(struct GBMemory* memory, uint16_t address) {
 
 void _GBMBC3(struct GB* gb, uint16_t address, uint8_t value) {
 	struct GBMemory* memory = &gb->memory;
-	int bank = value & 0x7F;
+	int bank = value;
 	switch (address >> 13) {
 	case 0x0:
 		switch (value) {
@@ -536,6 +536,9 @@ void _GBMBC3(struct GB* gb, uint16_t address, uint8_t value) {
 		}
 		break;
 	case 0x1:
+		if (gb->memory.romSize < GB_SIZE_CART_BANK0 * 0x80) {
+			bank &= 0x7F;
+		}
 		if (!bank) {
 			++bank;
 		}
