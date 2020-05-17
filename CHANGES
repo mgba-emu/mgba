@@ -8,6 +8,7 @@
  - GBA Timers: Fix deserializing count-up timers
  - GBA Video: Fix mosaic objects drawing past the end (fixes mgba.io/i/1702)
 Other fixes:
+ - CMake: Always use devkitPro toolchain when applicable (fixes mgba.io/i/1755)
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
  - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
  - GB Video: Fix some cases where SGB border doesn't draw to mutli-buffers
