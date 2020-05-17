@@ -22,6 +22,7 @@ Emulation fixes:
  - GBA Video: Fix Hblank timing
  - GBA Video: Fix mosaic objects drawing past the end (fixes mgba.io/i/1702)
 Other fixes:
+ - CMake: Always use devkitPro toolchain when applicable (fixes mgba.io/i/1755)
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
  - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
