@@ -12,6 +12,7 @@ Emulation fixes:
  - GBA: Add missing RTC overrides for Legendz games
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing
+ - GBA BIOS: Reset renderer when RegisterRamReset called (fixes mgba.io/i/1756)
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA Memory: Improve gamepak prefetch timing
  - GBA SIO: Fix Multiplayer busy bit
