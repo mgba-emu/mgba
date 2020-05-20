@@ -13,9 +13,6 @@
 #ifdef _3DS
 #include <mgba-util/platform/3ds/3ds-vfs.h>
 #endif
-#if defined(PS2)
-#define O_ACCMODE O_RDWR
-#endif
 
 struct VFile* VFileOpen(const char* path, int flags) {
 #ifdef USE_VFS_FILE

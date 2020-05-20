@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  repository_dispatch:
+    types: [run_build]
+
+jobs:
+  build-ps2:
+    runs-on: ubuntu-latest
+    container: ps2dev/ps2dev:latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        apk add build-base
+
+    - name: Get Information Variables
+      id: core
+      run: |
+        echo "::set-output name=info::$(echo mgba)"
+        echo "::set-output name=platform::$(echo ps2)"
+        echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+
+    - name: Compile project
+      run: |
+        make platform=${{ steps.core.outputs.platform }} clean all
+
+    - name: Upload artifacts
+      if: ${{ success() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ steps.core.outputs.info }}_libretro_${{ steps.core.outputs.platform }}-${{ steps.core.outputs.sha8 }}
+        path: ${{ steps.core.outputs.info }}_libretro_${{ steps.core.outputs.platform }}.a
