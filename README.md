@@ -1,3 +1,5 @@
+This fork is meant to post the changes of the Dutch translation, If this is finished, then I intend to add a pull-request to the main repo.
+----
 mGBA
 ====
 
