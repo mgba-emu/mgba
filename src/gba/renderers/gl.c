@@ -1704,7 +1704,9 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], 0, 0, 0, 0);
 	}
 	glStencilFunc(GL_ALWAYS, 1, 1);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	if (GBAObjAttributesAGetMode(sprite->a) != OBJ_MODE_OBJWIN || GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt)) {
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	}
 
 	shader = &renderer->objShader[2];
 	uniforms = shader->uniforms;
