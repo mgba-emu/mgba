@@ -26,6 +26,7 @@ Emulation fixes:
  - GBA Video: Fix disabling OBJWIN in GL renderer (fixes mgba.io/i/1759)
 Other fixes:
  - All: Improve export headers (fixes mgba.io/i/1738)
+ - ARM Debugger: Clear low bit on breakpoint addresses (fixes mgba.io/i/1764)
  - CMake: Always use devkitPro toolchain when applicable (fixes mgba.io/i/1755)
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
