@@ -171,7 +171,7 @@ ssize_t ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* d, uint32_t a
 	ssize_t id = debugger->nextId;
 	++debugger->nextId;
 	breakpoint->d.id = id;
-	breakpoint->d.address = address;
+	breakpoint->d.address = address & ~1; // Clear Thumb bit since it's not part of a valid address
 	breakpoint->d.segment = -1;
 	breakpoint->d.condition = NULL;
 	breakpoint->d.type = BREAKPOINT_SOFTWARE;
@@ -187,6 +187,7 @@ static ssize_t ARMDebuggerSetBreakpoint(struct mDebuggerPlatform* d, const struc
 	ssize_t id = debugger->nextId;
 	++debugger->nextId;
 	breakpoint->d = *info;
+	breakpoint->d.address &= ~1; // Clear Thumb bit since it's not part of a valid address
 	breakpoint->d.id = id;
 	if (info->type == BREAKPOINT_SOFTWARE) {
 		// TODO

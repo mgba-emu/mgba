@@ -12,6 +12,7 @@ Emulation fixes:
  - GBA Video: Fix mosaic objects drawing past the end (fixes mgba.io/i/1702)
  - GBA Video: Fix disabling OBJWIN in GL renderer (fixes mgba.io/i/1759)
 Other fixes:
+ - ARM Debugger: Clear low bit on breakpoint addresses (fixes mgba.io/i/1764)
  - CMake: Always use devkitPro toolchain when applicable (fixes mgba.io/i/1755)
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
  - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
