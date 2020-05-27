@@ -1634,15 +1634,15 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	unsigned charBase = (BASE_TILE >> 1) + (GBAObjAttributesCGetTile(sprite->c) & ~align) * 0x10;
 	int stride = GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? (width >> 3) : (0x20 >> GBAObjAttributesAGet256Color(sprite->a));
 
-	if (spriteY + height >= 256) {
-		spriteY -= 256;
-	}
-
 	int totalWidth = width;
 	int totalHeight = height;
 	if (GBAObjAttributesAIsTransformed(sprite->a) && GBAObjAttributesAIsDoubleSize(sprite->a)) {
 		totalWidth <<= 1;
 		totalHeight <<= 1;
+	}
+
+	if (spriteY + totalHeight >= 256) {
+		spriteY -= 256;
 	}
 
 	const struct GBAVideoGLShader* shader = &renderer->objShader[GBAObjAttributesAGet256Color(sprite->a)];
