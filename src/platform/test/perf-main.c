@@ -60,7 +60,6 @@ struct PerfOpts {
 
 #ifdef _3DS
 extern bool allocateRomBuffer(void);
-FS_Archive sdmcArchive;
 #endif
 #ifdef __SWITCH__
 TimeType __nx_time_type = TimeType_LocalSystemClock;
