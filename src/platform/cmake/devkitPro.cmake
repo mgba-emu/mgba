@@ -8,12 +8,13 @@ set(CMAKE_SYSTEM_NAME Generic CACHE INTERNAL "system name")
 
 function(create_devkit DEVKIT)
 	if(DEFINED ENV{DEVKIT${DEVKIT}})
-	        set(DEVKIT${DEVKIT} $ENV{DEVKIT${DEVKIT}} PARENT_SCOPE)
+	        set(DEVKIT${DEVKIT} $ENV{DEVKIT${DEVKIT}})
 	else()
-	        set(DEVKIT${DEVKIT} ${DEVKITPRO}/devkit${DEVKIT} PARENT_SCOPE)
+	        set(DEVKIT${DEVKIT} ${DEVKITPRO}/devkit${DEVKIT})
 	endif()
+	set(DEVKIT${DEVKIT} "${DEVKIT${DEVKIT}}" PARENT_SCOPE)
 
-	set(CMAKE_PROGRAM_PATH ${DEVKIT${DEVKIT}}/bin CACHE INTERNAL "program path")
+	set(CMAKE_PROGRAM_PATH "${DEVKIT${DEVKIT}}/bin" CACHE INTERNAL "program path")
 	set(cross_prefix_path "${CMAKE_PROGRAM_PATH}/${cross_prefix}")
 	set(cross_prefix_path "${cross_prefix_path}" PARENT_SCOPE)
 
