@@ -155,7 +155,8 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  *   | bit 4: Is HDMA active?
  *   | bits 5 - 7:  Active RTC register
  * | 0x00196 - 0x00197: Reserved (leave zero)
- * 0x00198 - 0x0025F: Reserved (leave zero)
+ * 0x00198 - 0x0019F: Global cycle counter
+ * 0x001A0 - 0x0025F: Reserved (leave zero)
  * 0x00260 - 0x002FF: OAM
  * 0x00300 - 0x0037F: I/O memory
  * 0x00380 - 0x003FE: HRAM
@@ -388,7 +389,9 @@ struct GBSerializedState {
 		uint16_t reserved;
 	} memory;
 
-	uint32_t reserved[50];
+	uint64_t globalCycles;
+
+	uint32_t reserved[48];
 
 	uint8_t oam[GB_SIZE_OAM];
 

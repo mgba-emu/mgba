@@ -674,6 +674,9 @@ void GBProcessEvents(struct SM83Core* cpu) {
 		int32_t nextEvent;
 
 		cpu->cycles = 0;
+#ifdef USE_DEBUGGERS
+		gb->timing.globalCycles += cycles;
+#endif
 		cpu->nextEvent = INT_MAX;
 
 		nextEvent = cycles;

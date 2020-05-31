@@ -277,6 +277,9 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		do {
 			int32_t cycles = cpu->cycles;
 			cpu->cycles = 0;
+#ifdef USE_DEBUGGERS
+			gba->timing.globalCycles += cycles;
+#endif
 #ifndef NDEBUG
 			if (cycles < 0) {
 				mLOG(GBA, FATAL, "Negative cycles passed: %i", cycles);

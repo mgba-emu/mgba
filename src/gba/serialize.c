@@ -28,6 +28,7 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	STORE_32(gba->biosChecksum, 0, &state->biosChecksum);
 	STORE_32(gba->romCrc32, 0, &state->romCrc32);
 	STORE_32(gba->timing.masterCycles, 0, &state->masterCycles);
+	STORE_64LE(gba->timing.globalCycles, 0, &state->globalCycles);
 
 	if (gba->memory.rom) {
 		state->id = ((struct GBACartridge*) gba->memory.rom)->id;
@@ -128,6 +129,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	}
 	mTimingClear(&gba->timing);
 	LOAD_32(gba->timing.masterCycles, 0, &state->masterCycles);
+	LOAD_64LE(gba->timing.globalCycles, 0, &state->globalCycles);
 
 	size_t i;
 	for (i = 0; i < 16; ++i) {
