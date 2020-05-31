@@ -6,6 +6,7 @@
 #include <mgba/internal/gba/serialize.h>
 
 #include <mgba/internal/arm/macros.h>
+#include <mgba/internal/gba/bios.h>
 #include <mgba/internal/gba/io.h>
 
 #include <mgba-util/memory.h>
@@ -94,7 +95,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		mLOG(GBA_STATE, WARN, "Savestate created using a different version of the BIOS: expected %08X, got %08X", gba->biosChecksum, ucheck);
 		uint32_t pc;
 		LOAD_32(pc, ARM_PC * sizeof(state->cpu.gprs[0]), state->cpu.gprs);
-		if (pc < SIZE_BIOS && pc >= 0x20) {
+		if ((ucheck == GBA_BIOS_CHECKSUM || gba->biosChecksum == GBA_BIOS_CHECKSUM) && pc < SIZE_BIOS && pc >= 0x20) {
 			error = true;
 		}
 	}
