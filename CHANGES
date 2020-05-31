@@ -11,6 +11,7 @@ Emulation fixes:
  - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
  - GB Video: Fix BGPS value after skipping BIOS (fixes mgba.io/i/1717)
  - GBA: Add missing RTC overrides for Legendz games
+ - GBA: Fix timing advancing too quickly in rare cases
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing
  - GBA BIOS: Reset renderer when RegisterRamReset called (fixes mgba.io/i/1756)

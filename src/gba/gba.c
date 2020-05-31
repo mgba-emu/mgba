@@ -282,7 +282,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 				mLOG(GBA, FATAL, "Negative cycles passed: %i", cycles);
 			}
 #endif
-			nextEvent = mTimingTick(&gba->timing, nextEvent + cycles);
+			nextEvent = mTimingTick(&gba->timing, cycles < nextEvent ? nextEvent : cycles);
 		} while (gba->cpuBlocked);
 
 		cpu->nextEvent = nextEvent;
