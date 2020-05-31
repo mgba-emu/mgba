@@ -22,6 +22,7 @@ Other fixes:
  - GBA: Reject incorrectly sized BIOSes
  - Qt: Fix OpenGL 2.1 support (fixes mgba.io/i/1678)
 Misc:
+ - 3DS: Clean up legacy initialization (fixes mgba.io/i/1768)
  - GBA Serialize: Only flunk BIOS check if official BIOS was expected
  - Qt: Disable Replace ROM option when no game loaded
  - Qt: Defer texture updates until frame is drawn (fixes mgba.io/i/1590)

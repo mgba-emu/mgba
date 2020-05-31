@@ -109,8 +109,6 @@ static bool sgbCrop = false;
 static aptHookCookie cookie;
 static bool core2;
 
-extern bool allocateRomBuffer(void);
-
 static bool _initGpu(void) {
 	if (!C3D_Init(C3D_DEFAULT_CMDBUF_SIZE)) {
 		return false;
@@ -808,10 +806,6 @@ int main() {
 	camera.buffer = NULL;
 	camera.bufferSize = 0;
 	camera.cam = SELECT_IN1;
-
-	if (!allocateRomBuffer()) {
-		return 1;
-	}
 
 	aptHook(&cookie, _aptHook, 0);
 

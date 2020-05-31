@@ -50,9 +50,6 @@ struct PerfOpts {
 	bool server;
 };
 
-#ifdef _3DS
-extern bool allocateRomBuffer(void);
-#endif
 #ifdef __SWITCH__
 TimeType __nx_time_type = TimeType_LocalSystemClock;
 #endif
@@ -76,9 +73,6 @@ int main(int argc, char** argv) {
     gfxInitDefault();
     osSetSpeedupEnable(true);
 	consoleInit(GFX_BOTTOM, NULL);
-	if (!allocateRomBuffer()) {
-		return 1;
-	}
 #elif defined(__SWITCH__)
 	UNUSED(_mPerfShutdown);
 	consoleInit(NULL);
