@@ -122,7 +122,7 @@ static bool _initGpu(void) {
 		return false;
 	}
 
-	if (!C3D_TexInitVRAM(&upscaleBufferTex, 512, 512, GPU_RB_RGB8)) {
+	if (!C3D_TexInitVRAM(&upscaleBufferTex, 512, 512, GPU_RGB8)) {
 		return false;
 	}
 	upscaleBuffer = C3D_RenderTargetCreateFromTex(&upscaleBufferTex, GPU_TEXFACE_2D, 0, 0);
