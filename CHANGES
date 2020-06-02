@@ -28,6 +28,7 @@ Emulation fixes:
  - GBA Video: Add missing parts of 256-color mode 0 mosaic (fixes mgba.io/1701)
  - GBA Video: Fix double-size OBJ wrapping in GL renderer (fixes mgba.io/1712)
 Other fixes:
+ - 3DS: Fix framelimiter on newer citro3d (fixes mgba.io/i/1771)
  - All: Improve export headers (fixes mgba.io/i/1738)
  - ARM Debugger: Clear low bit on breakpoint addresses (fixes mgba.io/i/1764)
  - CMake: Always use devkitPro toolchain when applicable (fixes mgba.io/i/1755)
