@@ -749,8 +749,9 @@ void GBHalt(struct SM83Core* cpu) {
 	if (!(gb->memory.ie & gb->memory.io[REG_IF] & 0x1F)) {
 		cpu->cycles = cpu->nextEvent;
 		cpu->halted = true;
-	} else if (gb->model < GB_MODEL_CGB) {
-		mLOG(GB, STUB, "Unimplemented HALT bug");
+	} else {
+		mLOG(GB, GAME_ERROR, "HALT bug");
+		cpu->executionState = SM83_CORE_HALT_BUG;
 	}
 }
 

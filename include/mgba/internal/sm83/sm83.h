@@ -47,7 +47,8 @@ enum SM83ExecutionState {
 	SM83_CORE_MEMORY_STORE = 11,
 	SM83_CORE_READ_PC = 15,
 	SM83_CORE_STALL = 19,
-	SM83_CORE_OP2 = 23
+	SM83_CORE_OP2 = 23,
+	SM83_CORE_HALT_BUG = 27,
 };
 struct SM83Memory {
 	uint8_t (*cpuLoad8)(struct SM83Core*, uint16_t address);
