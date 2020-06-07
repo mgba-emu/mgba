@@ -109,7 +109,9 @@ CoreController* CoreManager::loadGame(VFile* vf, const QString& path, const QStr
 	}
 	bytes = info.dir().canonicalPath().toUtf8();
 	mDirectorySetAttachBase(&core->dirs, VDirOpen(bytes.constData()));
-	mCoreAutoloadSave(core);
+	if (!mCoreAutoloadSave(core)) {
+		LOG(QT, ERROR) << tr("Failed to open save file. Is the save directory writable?");
+	}
 	mCoreAutoloadCheats(core);
 
 	CoreController* cc = new CoreController(core);

@@ -433,7 +433,7 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 
 bool GBALoadSave(struct GBA* gba, struct VFile* sav) {
 	GBASavedataInit(&gba->memory.savedata, sav);
-	return true;
+	return sav;
 }
 
 void GBAYankROM(struct GBA* gba) {
