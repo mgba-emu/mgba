@@ -20,6 +20,7 @@ Other fixes:
  - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
  - GB Video: Fix some cases where SGB border doesn't draw to mutli-buffers
  - GBA: Reject incorrectly sized BIOSes
+ - GBA: Break infinite loop for 0-frame mVLs (fixes mgba.io/i/1723)
  - Qt: Fix OpenGL 2.1 support (fixes mgba.io/i/1678)
  - Qt: Fix unmapping zipped ROM (fixes mgba.io/i/1777)
 Misc:
