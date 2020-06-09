@@ -11,9 +11,10 @@ Emulation fixes:
  - GBA Timers: Fix deserializing count-up timers
  - GBA Video: Fix mosaic objects drawing past the end (fixes mgba.io/i/1702)
  - GBA Video: Fix disabling OBJWIN in GL renderer (fixes mgba.io/i/1759)
- - GBA Video: Add missing parts of 256-color mode 0 mosaic (fixes mgba.io/1701)
- - GBA Video: Fix double-size OBJ wrapping in GL renderer (fixes mgba.io/1712)
+ - GBA Video: Add missing parts of 256-color mode 0 mosaic (fixes mgba.io/i/1701)
+ - GBA Video: Fix double-size OBJ wrapping in GL renderer (fixes mgba.io/i/1712)
 Other fixes:
+ - ARM: Fix disassembling of several S-type instructions (fixes mgba.io/i/1778)
  - ARM Debugger: Clear low bit on breakpoint addresses (fixes mgba.io/i/1764)
  - CMake: Always use devkitPro toolchain when applicable (fixes mgba.io/i/1755)
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
