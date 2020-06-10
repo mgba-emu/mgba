@@ -16,6 +16,7 @@ struct GBAVideoRendererSprite {
 	struct GBAObj obj;
 	int16_t y;
 	int16_t endY;
+	int16_t cycles;
 	int8_t index;
 };
 
