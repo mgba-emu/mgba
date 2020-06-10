@@ -1418,6 +1418,7 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 
 	GBAVideoGLRendererDrawWindow(glRenderer, y);
 	if (GBARegisterDISPCNTIsObjEnable(glRenderer->dispcnt) && !glRenderer->d.disableOBJ) {
+		int spriteCyclesRemaining = GBARegisterDISPCNTIsHblankIntervalFree(glRenderer->dispcnt) ? OBJ_HBLANK_FREE_LENGTH : OBJ_LENGTH;
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 		glEnable(GL_STENCIL_TEST);
 		glDepthFunc(GL_LESS);
@@ -1428,6 +1429,10 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 			}
 
 			GBAVideoGLRendererDrawSprite(glRenderer, &sprite->obj, y, sprite->y);
+			spriteCyclesRemaining -= sprite->cycles;
+			if (spriteCyclesRemaining <= 0) {
+				break;
+			}
 		}
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_STENCIL_TEST);
