@@ -845,12 +845,10 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 				}
 			}
 			for (w = 0; w < renderer->nWindows; ++w) {
-				if (renderer->spriteCyclesRemaining <= 0) {
-					break;
-				}
 				renderer->currentWindow = renderer->windows[w].control;
 				renderer->start = renderer->end;
 				renderer->end = renderer->windows[w].endX;
+				// TODO: partial sprite drawing
 				if (!GBAWindowControlIsObjEnable(renderer->currentWindow.packed) && !GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt)) {
 					continue;
 				}
@@ -858,6 +856,12 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 				int drawn = GBAVideoSoftwareRendererPreprocessSprite(renderer, &sprite->obj, sprite->index, localY);
 				spriteLayers |= drawn << GBAObjAttributesCGetPriority(sprite->obj.c);
 			}
+			int cycles = GBAVideoObjSizes[GBAObjAttributesAGetShape(sprite->obj.a) * 4 + GBAObjAttributesBGetSize(sprite->obj.b)][0];
+			if (GBAObjAttributesAIsTransformed(sprite->obj.a)) {
+				cycles <<= GBAObjAttributesAGetDoubleSize(sprite->obj.a) + 1;
+				cycles += 10;
+			}
+			renderer->spriteCyclesRemaining -= cycles;
 			if (renderer->spriteCyclesRemaining <= 0) {
 				break;
 			}

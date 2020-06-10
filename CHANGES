@@ -13,6 +13,7 @@ Emulation fixes:
  - GBA Video: Fix disabling OBJWIN in GL renderer (fixes mgba.io/i/1759)
  - GBA Video: Add missing parts of 256-color mode 0 mosaic (fixes mgba.io/i/1701)
  - GBA Video: Fix double-size OBJ wrapping in GL renderer (fixes mgba.io/i/1712)
+ - GBA Video: Simplify sprite cycle counting (fixes mgba.io/i/1279)
 Other fixes:
  - ARM: Fix disassembling of several S-type instructions (fixes mgba.io/i/1778)
  - ARM Debugger: Clear low bit on breakpoint addresses (fixes mgba.io/i/1764)
