@@ -29,6 +29,7 @@ Emulation fixes:
  - GBA Video: Fix double-size OBJ wrapping in GL renderer (fixes mgba.io/i/1712)
  - GBA Video: Simplify sprite cycle counting (fixes mgba.io/i/1279)
  - GBA Video: Add sprite cycle counting to GL (fixes mgba.io/i/1635)
+ - GBA Video: Fix sprite/backdrop blending regression
  - SM83: Emulate HALT bug
 Other fixes:
  - 3DS: Fix framelimiter on newer citro3d (fixes mgba.io/i/1771)
