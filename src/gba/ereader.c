@@ -288,7 +288,7 @@ static void _eReaderAddress(uint8_t* origin, int a) {
 }
 
 static void _eReaderReedSolomon(const uint8_t* input, uint8_t* output) {
-	uint8_t rsBuffer[64] = {};
+	uint8_t rsBuffer[64] = { 0 };
 	int i;
 	for (i = 0; i < 48; ++i) {
 		rsBuffer[63 - i] = input[i];
