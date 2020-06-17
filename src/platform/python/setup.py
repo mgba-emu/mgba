@@ -23,7 +23,7 @@ setup(
     packages=["mgba"],
     setup_requires=['cffi>=1.6', 'pytest-runner'],
     install_requires=['cffi>=1.6', 'cached-property'],
-    extras_require={'pil': ['Pillow>=2.3'], 'cinema': ['pyyaml', 'pytest']},
+    extras_require={'pil': ['Pillow>=2.3'], 'cinema': ['pytest']},
     tests_require=['pytest'],
     cffi_modules=["_builder.py:ffi"],
     license="MPL 2.0",
