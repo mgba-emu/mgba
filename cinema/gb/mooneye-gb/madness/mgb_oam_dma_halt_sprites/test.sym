@@ -12,15 +12,15 @@
 01:47f0 reset_screen
 01:4000 font
 00:0150 main
-00:0199 main@wait_ly_5
-00:019f main@wait_ly_6
-00:01b4 hiram_test
-00:01b9 hiram_test@wait_ly_7
-00:01bf hiram_test@wait_ly_8
-00:01cc vram_checkerboard
-00:05cc vram_checkerboard_end
-00:05cc initial_data
-00:05d4 initial_data_end
+00:019b main@wait_ly_5
+00:01a1 main@wait_ly_6
+00:01b6 hiram_test
+00:01bb hiram_test@wait_ly_7
+00:01c1 hiram_test@wait_ly_8
+00:01ce vram_checkerboard
+00:05ce vram_checkerboard_end
+00:05ce initial_data
+00:05d6 initial_data_end
 
 [definitions]
 0000000a _sizeof_clear_oam
@@ -31,7 +31,7 @@
 0000000c _sizeof_print_load_font
 00000014 _sizeof_reset_screen
 000007f0 _sizeof_font
-00000064 _sizeof_main
+00000066 _sizeof_main
 00000018 _sizeof_hiram_test
 00000400 _sizeof_vram_checkerboard
 00000000 _sizeof_vram_checkerboard_end
