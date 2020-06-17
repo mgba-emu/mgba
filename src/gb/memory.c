@@ -519,8 +519,8 @@ uint8_t GBView8(struct SM83Core* cpu, uint16_t address, int segment) {
 }
 
 void GBMemoryDMA(struct GB* gb, uint16_t base) {
-	if (base > 0xF100) {
-		return;
+	if (base >= 0xE000) {
+		base &= 0xDFFF;
 	}
 	mTimingDeschedule(&gb->timing, &gb->memory.dmaEvent);
 	mTimingSchedule(&gb->timing, &gb->memory.dmaEvent, 8);

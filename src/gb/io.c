@@ -191,7 +191,7 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, REG_SCY, 0x00);
 	GBIOWrite(gb, REG_SCX, 0x00);
 	GBIOWrite(gb, REG_LYC, 0x00);
-	GBIOWrite(gb, REG_DMA, 0xFF);
+	gb->memory.io[REG_DMA] = 0xFF;
 	GBIOWrite(gb, REG_BGP, 0xFC);
 	if (gb->model < GB_MODEL_CGB) {
 		GBIOWrite(gb, REG_OBP0, 0xFF);
