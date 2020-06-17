@@ -419,10 +419,27 @@ static void _latchRtc(struct mRTCSource* rtc, uint8_t* rtcRegs, time_t* rtcLastL
 	}
 }
 
+static void _GBMBC1Update(struct GB* gb) {
+	struct GBMBC1State* state = &gb->memory.mbcState.mbc1;
+	int bank = state->bankLo;
+	bank &= (1 << state->multicartStride) - 1;
+	bank |= state->bankHi << state->multicartStride;
+	if (state->mode) {
+		GBMBCSwitchBank0(gb, state->bankHi << state->multicartStride);
+		GBMBCSwitchSramBank(gb, state->bankHi & 3);
+	} else {
+		GBMBCSwitchBank0(gb, 0);
+		GBMBCSwitchSramBank(gb, 0);
+	}
+	if (!(state->bankLo & 0x1F)) {
+		++bank;
+	}
+	GBMBCSwitchBank(gb, bank);
+}
+
 void _GBMBC1(struct GB* gb, uint16_t address, uint8_t value) {
 	struct GBMemory* memory = &gb->memory;
 	int bank = value & 0x1F;
-	int stride = 1 << memory->mbcState.mbc1.multicartStride;
 	switch (address >> 13) {
 	case 0x0:
 		switch (value) {
@@ -440,28 +457,17 @@ void _GBMBC1(struct GB* gb, uint16_t address, uint8_t value) {
 		}
 		break;
 	case 0x1:
-		if (!bank) {
-			++bank;
-		}
-		bank &= stride - 1;
-		GBMBCSwitchBank(gb, bank | (memory->currentBank & (3 * stride)));
+		memory->mbcState.mbc1.bankLo = bank;
+		_GBMBC1Update(gb);
 		break;
 	case 0x2:
 		bank &= 3;
-		if (memory->mbcState.mbc1.mode) {
-			GBMBCSwitchBank0(gb, bank << gb->memory.mbcState.mbc1.multicartStride);
-			GBMBCSwitchSramBank(gb, bank);
-		}
-		GBMBCSwitchBank(gb, (bank << memory->mbcState.mbc1.multicartStride) | (memory->currentBank & (stride - 1)));
+		memory->mbcState.mbc1.bankHi = bank;
+		_GBMBC1Update(gb);
 		break;
 	case 0x3:
 		memory->mbcState.mbc1.mode = value & 1;
-		if (memory->mbcState.mbc1.mode) {
-			GBMBCSwitchBank0(gb, memory->currentBank & ~((1 << memory->mbcState.mbc1.multicartStride) - 1));
-		} else {
-			GBMBCSwitchBank0(gb, 0);
-			GBMBCSwitchSramBank(gb, 0);
-		}
+		_GBMBC1Update(gb);
 		break;
 	default:
 		// TODO

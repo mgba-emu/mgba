@@ -362,6 +362,8 @@ struct GBSerializedState {
 			struct {
 				uint8_t mode;
 				uint8_t multicartStride;
+				uint8_t bankLo;
+				uint8_t bankHi;
 			} mbc1;
 			struct {
 				uint64_t lastLatch;
