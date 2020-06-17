@@ -425,7 +425,7 @@ void _GBMBC1(struct GB* gb, uint16_t address, uint8_t value) {
 	int stride = 1 << memory->mbcState.mbc1.multicartStride;
 	switch (address >> 13) {
 	case 0x0:
-		switch (value) {
+		switch (value & 0xF) {
 		case 0:
 			memory->sramAccess = false;
 			break;

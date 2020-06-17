@@ -1,3 +1,7 @@
+0.8.3: (Future)
+Emulation fixes:
+ - GB MBC: Fix MBC1 RAM enable bit selection
+
 0.8.2: (2020-06-14)
 Emulation fixes:
  - ARM: Fix timing on Thumb shift instructions
