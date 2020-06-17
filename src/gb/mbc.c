@@ -442,7 +442,7 @@ void _GBMBC1(struct GB* gb, uint16_t address, uint8_t value) {
 	int bank = value & 0x1F;
 	switch (address >> 13) {
 	case 0x0:
-		switch (value) {
+		switch (value & 0xF) {
 		case 0:
 			memory->sramAccess = false;
 			break;
