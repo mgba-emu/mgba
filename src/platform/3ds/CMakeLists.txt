@@ -7,7 +7,7 @@ find_program(BANNERTOOL bannertool)
 find_program(MAKEROM makerom)
 find_program(PICASSO picasso)
 find_program(RAW2C raw2c)
-find_program(STRIP ${cross_prefix}strip)
+set(STRIP "${cross_prefix_path}strip" CACHE INTERNAL "symbol stripper")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format" PARENT_SCOPE)
 set(OS_DEFINES COLOR_16_BIT COLOR_5_6_5 IOAPI_NO_64)

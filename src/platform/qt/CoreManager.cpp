@@ -65,7 +65,7 @@ CoreController* CoreManager::loadGame(const QString& path) {
 		if (vfOriginal && (size = vfOriginal->size(vfOriginal)) > 0) {
 			void* mem = vfOriginal->map(vfOriginal, size, MAP_READ);
 			vf = VFileMemChunk(mem, size);
-			vfOriginal->unmap(vfOriginal, mem, (size_t) read);
+			vfOriginal->unmap(vfOriginal, mem, size);
 			vfOriginal->close(vfOriginal);
 		}
 	}
@@ -109,7 +109,9 @@ CoreController* CoreManager::loadGame(VFile* vf, const QString& path, const QStr
 	}
 	bytes = info.dir().canonicalPath().toUtf8();
 	mDirectorySetAttachBase(&core->dirs, VDirOpen(bytes.constData()));
-	mCoreAutoloadSave(core);
+	if (!mCoreAutoloadSave(core)) {
+		LOG(QT, ERROR) << tr("Failed to open save file. Is the save directory writable?");
+	}
 	mCoreAutoloadCheats(core);
 
 	CoreController* cc = new CoreController(core);

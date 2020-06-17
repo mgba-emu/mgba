@@ -343,15 +343,25 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 	case ARM_MN_ADD:
 	case ARM_MN_ADC:
 	case ARM_MN_AND:
+	case ARM_MN_ASR:
 	case ARM_MN_BIC:
 	case ARM_MN_EOR:
+	case ARM_MN_LSL:
+	case ARM_MN_LSR:
+	case ARM_MN_MLA:
 	case ARM_MN_MOV:
+	case ARM_MN_MUL:
 	case ARM_MN_MVN:
 	case ARM_MN_ORR:
+	case ARM_MN_ROR:
 	case ARM_MN_RSB:
 	case ARM_MN_RSC:
 	case ARM_MN_SBC:
+	case ARM_MN_SMLAL:
+	case ARM_MN_SMULL:
 	case ARM_MN_SUB:
+	case ARM_MN_UMLAL:
+	case ARM_MN_UMULL:
 		if (info->affectsCPSR && info->execMode == MODE_ARM) {
 			flags = "s";
 		}

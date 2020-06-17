@@ -478,6 +478,7 @@ void GBReset(struct SM83Core* cpu) {
 
 void GBSkipBIOS(struct GB* gb) {
 	struct SM83Core* cpu = gb->cpu;
+	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	int nextDiv = 0;
 
 	switch (gb->model) {
@@ -539,9 +540,15 @@ void GBSkipBIOS(struct GB* gb) {
 		cpu->a = 0x11;
 		cpu->f.packed = 0x80;
 		cpu->c = 0;
-		cpu->e = 0x08;
 		cpu->h = 0;
-		cpu->l = 0x7C;
+		if (cart->cgb & 0x80) {
+			cpu->d = 0xFF;
+			cpu->e = 0x56;
+			cpu->l = 0x0D;
+		} else {
+			cpu->e = 0x08;
+			cpu->l = 0x7C;
+		}
 		gb->timer.internalDiv = 0x1EA;
 		nextDiv = 0xC;
 		break;

@@ -187,7 +187,9 @@ void HashTableInsert(struct Table* table, const char* key, void* value) {
 	struct TableList* list;
 	TABLE_LOOKUP_START(HASH_TABLE_COMPARATOR, list, hash) {
 		if (value != lookupResult->value) {
-			table->deinitializer(lookupResult->value);
+			if (table->deinitializer) {
+				table->deinitializer(lookupResult->value);
+			}
 			lookupResult->value = value;
 		}
 		return;

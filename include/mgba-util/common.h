@@ -123,7 +123,7 @@ typedef intptr_t ssize_t;
 // newlib does not support %z properly by default
 #define PRIz ""
 #elif defined(_WIN64)
-#define PRIz "ll"
+#define PRIz "I64"
 #elif defined(_WIN32)
 #define PRIz ""
 #else

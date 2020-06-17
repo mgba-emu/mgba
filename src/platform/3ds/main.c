@@ -109,8 +109,6 @@ static bool sgbCrop = false;
 static aptHookCookie cookie;
 static bool core2;
 
-extern bool allocateRomBuffer(void);
-
 static bool _initGpu(void) {
 	if (!C3D_Init(C3D_DEFAULT_CMDBUF_SIZE)) {
 		return false;
@@ -124,7 +122,7 @@ static bool _initGpu(void) {
 		return false;
 	}
 
-	if (!C3D_TexInitVRAM(&upscaleBufferTex, 512, 512, GPU_RB_RGB8)) {
+	if (!C3D_TexInitVRAM(&upscaleBufferTex, 512, 512, GPU_RGB8)) {
 		return false;
 	}
 	upscaleBuffer = C3D_RenderTargetCreateFromTex(&upscaleBufferTex, GPU_TEXFACE_2D, 0, 0);
@@ -195,14 +193,13 @@ static void _drawStart(void) {
 		return;
 	}
 	frameStarted = true;
-	u8 flags = 0;
-	if (!frameLimiter) {
+	if (frameLimiter) {
 		if (tickCounter + 4481000 > svcGetSystemTick()) {
-			flags = C3D_FRAME_NONBLOCK;
+			C3D_FrameSync();
 		}
 		tickCounter = svcGetSystemTick();
 	}
-	C3D_FrameBegin(flags);
+	C3D_FrameBegin(0);
 	ctrStartFrame();
 
 	C3D_FrameDrawOn(bottomScreen[doubleBuffer]);
@@ -808,10 +805,6 @@ int main() {
 	camera.buffer = NULL;
 	camera.bufferSize = 0;
 	camera.cam = SELECT_IN1;
-
-	if (!allocateRomBuffer()) {
-		return 1;
-	}
 
 	aptHook(&cookie, _aptHook, 0);
 

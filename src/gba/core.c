@@ -526,7 +526,7 @@ static void _GBACoreReset(struct mCore* core) {
 		if (gbacore->renderer.outputBuffer) {
 			renderer = &gbacore->renderer.d;
 		}
-		int fakeBool;
+		int fakeBool ATTRIBUTE_UNUSED;
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
 			renderer = &gbacore->glRenderer.d;
@@ -616,7 +616,8 @@ static void _GBACoreReset(struct mCore* core) {
 static void _GBACoreRunFrame(struct mCore* core) {
 	struct GBA* gba = core->board;
 	int32_t frameCounter = gba->video.frameCounter;
-	while (gba->video.frameCounter == frameCounter) {
+	uint32_t startCycle = mTimingCurrentTime(&gba->timing);
+	while (gba->video.frameCounter == frameCounter && mTimingCurrentTime(&gba->timing) - startCycle < VIDEO_TOTAL_LENGTH + VIDEO_HORIZONTAL_LENGTH) {
 		ARMRunLoop(core->cpu);
 	}
 }

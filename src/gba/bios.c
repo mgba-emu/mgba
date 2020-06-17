@@ -177,6 +177,9 @@ static void _RegisterRamReset(struct GBA* gba) {
 		cpu->memory.store16(cpu, BASE_IO | 0x204, 0, 0);
 		cpu->memory.store16(cpu, BASE_IO | 0x208, 0, 0);
 	}
+	if (registers & 0x9C) {
+		gba->video.renderer->reset(gba->video.renderer);
+	}
 }
 
 static void _BgAffineSet(struct GBA* gba) {

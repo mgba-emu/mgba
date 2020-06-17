@@ -105,6 +105,7 @@ struct VDir* VDirOpen7z(const char* path, int flags) {
 	if (res != SZ_OK) {
 		SzArEx_Free(&vd->db, &vd->allocImp);
 		File_Close(&vd->archiveStream.file);
+		free(vd->lookStream.buf);
 		free(vd);
 		return 0;
 	}

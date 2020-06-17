@@ -191,7 +191,7 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, REG_SCY, 0x00);
 	GBIOWrite(gb, REG_SCX, 0x00);
 	GBIOWrite(gb, REG_LYC, 0x00);
-	GBIOWrite(gb, REG_DMA, 0xFF);
+	gb->memory.io[REG_DMA] = 0xFF;
 	GBIOWrite(gb, REG_BGP, 0xFC);
 	if (gb->model < GB_MODEL_CGB) {
 		GBIOWrite(gb, REG_OBP0, 0xFF);
@@ -203,7 +203,7 @@ void GBIOReset(struct GB* gb) {
 		GBIOWrite(gb, REG_UNK4C, 0);
 		GBIOWrite(gb, REG_JOYP, 0xFF);
 		GBIOWrite(gb, REG_VBK, 0);
-		GBIOWrite(gb, REG_BCPS, 0);
+		GBIOWrite(gb, REG_BCPS, 0x80);
 		GBIOWrite(gb, REG_OCPS, 0);
 		GBIOWrite(gb, REG_SVBK, 1);
 		GBIOWrite(gb, REG_HDMA1, 0xFF);
