@@ -5,6 +5,7 @@ Emulation fixes:
  - GB MBC: Fix MBC2 bit selection
 Other fixes:
  - GB Core: Fix extracting SRAM when none is present
+ - GBA Savedata: Fix extracting save when not yet configured in-game
 
 0.8.2: (2020-06-14)
 Emulation fixes:
