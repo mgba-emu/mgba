@@ -450,7 +450,9 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	if (mStateExtdataGet(&extdata, EXTDATA_SAVEDATA, &item)) {
 		mLOG(SAVESTATE, INFO, "Loading savedata");
 		if (item.data) {
-			core->savedataRestore(core, item.data, item.size, flags & SAVESTATE_SAVEDATA);
+			if (!core->savedataRestore(core, item.data, item.size, flags & SAVESTATE_SAVEDATA)) {
+				mLOG(SAVESTATE, WARN, "Failed to load savedata from savestate");
+			}
 		}
 	}
 	struct mCheatDevice* device;
