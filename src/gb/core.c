@@ -822,9 +822,13 @@ static size_t _GBCoreSavedataClone(struct mCore* core, void** sram) {
 		vf->seek(vf, 0, SEEK_SET);
 		return vf->read(vf, *sram, vf->size(vf));
 	}
-	*sram = malloc(gb->sramSize);
-	memcpy(*sram, gb->memory.sram, gb->sramSize);
-	return gb->sramSize;
+	if (gb->sramSize) {
+		*sram = malloc(gb->sramSize);
+		memcpy(*sram, gb->memory.sram, gb->sramSize);
+		return gb->sramSize;
+	}
+	*sram = NULL;
+	return 0;
 }
 
 static bool _GBCoreSavedataRestore(struct mCore* core, const void* sram, size_t size, bool writeback) {
