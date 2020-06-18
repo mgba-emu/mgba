@@ -81,6 +81,7 @@ static bool _DSCoreInit(struct mCore* core) {
 	}
 	core->cpu = arm9;
 	core->board = ds;
+	core->timing = &ds->ds9.timing;
 	core->debugger = NULL;
 	dscore->arm7 = arm7;
 	dscore->arm9 = arm9;
@@ -617,6 +618,12 @@ static void _DSCoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	}
 #endif
 }
+
+static bool _DSCoreLookupIdentifier(struct mCore* core, const char* name, int32_t* value, int* segment) {
+	UNUSED(core);
+	// TODO
+	return false;
+}
 #endif
 
 static struct mCheatDevice* _DSCoreCheatDevice(struct mCore* core) {
@@ -741,6 +748,7 @@ struct mCore* DSCoreCreate(void) {
 	core->attachDebugger = _DSCoreAttachDebugger;
 	core->detachDebugger = _DSCoreDetachDebugger;
 	core->loadSymbols = _DSCoreLoadSymbols;
+	core->lookupIdentifier = _DSCoreLookupIdentifier;
 #endif
 	core->cheatDevice = _DSCoreCheatDevice;
 	core->savedataClone = _DSCoreSavedataClone;

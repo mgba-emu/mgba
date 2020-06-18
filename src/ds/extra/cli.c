@@ -31,6 +31,7 @@ struct DSCLIDebugger* DSCLIDebuggerCreate(struct mCore* core) {
 
 	debugger->d.name = "DS";
 	debugger->d.commands = _DSCLIDebuggerCommands;
+	debugger->d.commandAliases = NULL;
 
 	debugger->core = core;
 
@@ -63,8 +64,10 @@ static void _switchCpu(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 	debugger->d.platform->deinit(debugger->d.platform);
 	if (core->cpu == ds->ds9.cpu) {
 		core->cpu = ds->ds7.cpu;
+		core->timing = &ds->ds7.timing;
 	} else {
 		core->cpu = ds->ds9.cpu;
+		core->timing = &ds->ds9.timing;
 	}
 	debugger->d.platform->init(core->cpu, debugger->d.platform);
 	debugger->system->printStatus(debugger->system);
