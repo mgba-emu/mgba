@@ -25,8 +25,16 @@ Features:
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
+ - ARM: Fix timing on Thumb shift instructions
+ - GB: Fix GBC game registers after skipping BIOS
+ - GB MBC: Support 4MB MBC30 ROMs (fixes mgba.io/i/1713)
+ - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
+ - GB Video: Fix BGPS value after skipping BIOS (fixes mgba.io/i/1717)
+ - GBA: Add missing RTC overrides for Legendz games
+ - GBA: Fix timing advancing too quickly in rare cases
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing
+ - GBA BIOS: Reset renderer when RegisterRamReset called (fixes mgba.io/i/1756)
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA Memory: Improve gamepak prefetch timing
  - GBA SIO: Fix Multiplayer busy bit
@@ -35,7 +43,14 @@ Emulation fixes:
  - GBA Timers: Fix deserializing count-up timers
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
+ - GBA Video: Fix mosaic objects drawing past the end (fixes mgba.io/i/1702)
+ - GBA Video: Fix disabling OBJWIN in GL renderer (fixes mgba.io/i/1759)
+ - GBA Video: Add missing parts of 256-color mode 0 mosaic (fixes mgba.io/1701)
+ - GBA Video: Fix double-size OBJ wrapping in GL renderer (fixes mgba.io/1712)
 Other fixes:
+ - All: Improve export headers (fixes mgba.io/i/1738)
+ - ARM Debugger: Clear low bit on breakpoint addresses (fixes mgba.io/i/1764)
+ - CMake: Always use devkitPro toolchain when applicable (fixes mgba.io/i/1755)
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
  - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
@@ -44,8 +59,12 @@ Other fixes:
  - Debugger: Don't skip undefined instructions when debugger attached
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix OpenGL 2.1 support (fixes mgba.io/i/1678)
+ - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
 Misc:
+ - 3DS: Clean up legacy initialization (fixes mgba.io/i/1768)
+ - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
+ - GBA Serialize: Only flunk BIOS check if official BIOS was expected
  - Qt: Renderer can be changed while a game is running
  - Qt: Add hex index to palette view
  - Qt: Add transformation matrix info to sprite view

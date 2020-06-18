@@ -6,6 +6,7 @@
 #include <mgba/internal/arm/debugger/cli-debugger.h>
 
 #include <mgba/core/core.h>
+#include <mgba/core/timing.h>
 #include <mgba/internal/arm/debugger/debugger.h>
 #include <mgba/internal/arm/debugger/memory-debugger.h>
 #include <mgba/internal/arm/decoder.h>
@@ -138,6 +139,7 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	}
 	be->printf(be, "cpsr: ");
 	_printPSR(be, cpu->cpsr);
+	be->printf(be, "Cycle: %" PRIu64 "\n", mTimingGlobalTime(debugger->p->d.core->timing));
 	int instructionLength;
 	enum ExecutionMode mode = cpu->cpsr.t;
 	if (mode == MODE_ARM) {

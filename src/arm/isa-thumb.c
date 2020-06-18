@@ -157,6 +157,7 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSL2,
 			cpu->gprs[rd] = 0;
 		}
 	}
+	++currentCycles;
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSR2,
@@ -174,6 +175,7 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSR2,
 			cpu->gprs[rd] = 0;
 		}
 	}
+	++currentCycles;
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ASR2,
@@ -191,6 +193,7 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ASR2,
 			}
 		}
 	}
+	++currentCycles;
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ADC,
@@ -215,6 +218,7 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ROR,
 			cpu->cpsr.c = ARM_SIGN(cpu->gprs[rd]);
 		}
 	}
+	++currentCycles;
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(TST, int32_t aluOut = cpu->gprs[rd] & cpu->gprs[rn]; THUMB_NEUTRAL_S(cpu->gprs[rd], cpu->gprs[rn], aluOut))
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(NEG, THUMB_SUBTRACTION(cpu->gprs[rd], 0, cpu->gprs[rn]))

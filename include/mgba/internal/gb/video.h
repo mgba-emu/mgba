@@ -161,6 +161,7 @@ void GBVideoInit(struct GBVideo* video);
 void GBVideoReset(struct GBVideo* video);
 void GBVideoDeinit(struct GBVideo* video);
 void GBVideoAssociateRenderer(struct GBVideo* video, struct GBVideoRenderer* renderer);
+void GBVideoSkipBIOS(struct GBVideo* video);
 void GBVideoProcessDots(struct GBVideo* video, uint32_t cyclesLate);
 
 void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value);

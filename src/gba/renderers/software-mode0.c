@@ -473,8 +473,57 @@
 	}
 
 #define DRAW_BACKGROUND_MODE_0_MOSAIC_256EXT(BLEND, OBJWIN) \
+	x = inX & 7; \
+	if (mosaicWait) { \
+		int baseX = x - (mosaicH - mosaicWait); \
+		if (baseX < 0) { \
+			int disturbX = (16 + baseX) >> 3; \
+			inX -= disturbX << 3; \
+			localX = tileX * 8 + inX; \
+			BACKGROUND_TEXT_SELECT_CHARACTER; \
+			localY = inY & 0x7; \
+			if (GBA_TEXT_MAP_VFLIP(mapData)) { \
+				localY = 7 - localY; \
+			} \
+			baseX -= disturbX << 3; \
+			inX += disturbX << 3; \
+		} else { \
+			localX = tileX * 8 + inX; \
+			BACKGROUND_TEXT_SELECT_CHARACTER; \
+			localY = inY & 0x7; \
+			if (GBA_TEXT_MAP_VFLIP(mapData)) { \
+				localY = 7 - localY; \
+			} \
+		} \
+		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
+		if (UNLIKELY(charBase >= 0x10000)) { \
+			carryData = 0; \
+		} else { \
+			vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
+			LOAD_32(tileData, charBase, vram); \
+			if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+				if (x >= 4) { \
+					LOAD_32(tileData, charBase + 4, vram); \
+					tileData >>= (x - 4) * 8; \
+				} else { \
+					LOAD_32(tileData, charBase, vram); \
+					tileData >>= x * 8; \
+				} \
+			} else { \
+				if (x >= 4) { \
+					LOAD_32(tileData, charBase, vram); \
+					tileData >>= (7 - x) * 8; \
+				} else { \
+					LOAD_32(tileData, charBase + 4, vram); \
+					tileData >>= (3 - x) * 8; \
+				} \
+			} \
+			tileData &= 0xFF; \
+			carryData = tileData; \
+		} \
+	} \
 	localX = tileX * 8 + inX; \
-	for (; tileX < tileEnd; ++tileX) { \
+	for (; length; ++tileX) { \
 		mapData = background->mapCache[(localX >> 3) & 0x3F]; \
 		localX += 8; \
 		localY = inY & 0x7; \
@@ -484,7 +533,7 @@
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 		tileData = carryData; \
-		for (x = 0; x < 8; ++x) { \
+		for (x = 0; x < 8 && length; ++x, --length) { \
 			if (!mosaicWait) { \
 				paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
 				palette = &mainPalette[paletteData]; \

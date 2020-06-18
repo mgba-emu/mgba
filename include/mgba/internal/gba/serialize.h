@@ -193,7 +193,8 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * | 0x002F4 - 0x002F7: GBA BIOS bus prefetch
  * | 0x002F8 - 0x002FB: CPU prefecth (decode slot)
  * | 0x002FC - 0x002FF: CPU prefetch (fetch slot)
- * 0x00300 - 0x00317: Reserved (leave zero)
+ * 0x00300 - 0x0030F: Reserved (leave zero)
+ * 0x00310 - 0x00317: Global cycle counter
  * 0x00318 - 0x0031B: Last prefetched program counter
  * 0x0031C - 0x0031F: Miscellaneous flags
  *  | bit 0: Is CPU halted?
@@ -326,8 +327,9 @@ struct GBASerializedState {
 	uint32_t biosPrefetch;
 	uint32_t cpuPrefetch[2];
 
-	uint32_t reservedCpu[6];
+	uint32_t reservedCpu[4];
 
+	uint64_t globalCycles;
 	uint32_t lastPrefetchedPc;
 	GBASerializedMiscFlags miscFlags;
 	uint32_t nextIrq;

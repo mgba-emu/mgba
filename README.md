@@ -144,6 +144,8 @@ This will produce a `build-win32` directory with the build products. Replace `mg
 - mgba/ubuntu:bionic
 - mgba/ubuntu:cosmic
 - mgba/ubuntu:disco
+- mgba/ubuntu:eoan
+- mgba/ubuntu:focal
 - mgba/vita
 - mgba/wii
 - mgba/windows:w32

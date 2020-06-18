@@ -23,6 +23,7 @@ void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	STORE_32LE(GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, 0, &state->versionMagic);
 	STORE_32LE(gb->romCrc32, 0, &state->romCrc32);
 	STORE_32LE(gb->timing.masterCycles, 0, &state->masterCycles);
+	STORE_64LE(gb->timing.globalCycles, 0, &state->globalCycles);
 
 	if (gb->memory.rom) {
 		memcpy(state->title, ((struct GBCartridge*) &gb->memory.rom[0x100])->titleLong, sizeof(state->title));
@@ -150,6 +151,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	}
 	mTimingClear(&gb->timing);
 	LOAD_32LE(gb->timing.masterCycles, 0, &state->masterCycles);
+	LOAD_64LE(gb->timing.globalCycles, 0, &state->globalCycles);
 
 	gb->cpu->a = state->cpu.a;
 	gb->cpu->f.packed = state->cpu.f;

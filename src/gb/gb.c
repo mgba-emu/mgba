@@ -460,13 +460,13 @@ void GBReset(struct SM83Core* cpu) {
 
 	GBVideoReset(&gb->video);
 	GBTimerReset(&gb->timer);
+	GBIOReset(gb);
 	if (!gb->biosVf) {
 		GBSkipBIOS(gb);
 	} else {
 		mTimingSchedule(&gb->timing, &gb->timer.event, 0);
 	}
 
-	GBIOReset(gb);
 	GBAudioReset(&gb->audio);
 	GBSIOReset(&gb->sio);
 
@@ -478,6 +478,7 @@ void GBReset(struct SM83Core* cpu) {
 
 void GBSkipBIOS(struct GB* gb) {
 	struct SM83Core* cpu = gb->cpu;
+	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	int nextDiv = 0;
 
 	switch (gb->model) {
@@ -539,9 +540,15 @@ void GBSkipBIOS(struct GB* gb) {
 		cpu->a = 0x11;
 		cpu->f.packed = 0x80;
 		cpu->c = 0;
-		cpu->e = 0x08;
 		cpu->h = 0;
-		cpu->l = 0x7C;
+		if (cart->cgb & 0x80) {
+			cpu->d = 0xFF;
+			cpu->e = 0x56;
+			cpu->l = 0x0D;
+		} else {
+			cpu->e = 0x08;
+			cpu->l = 0x7C;
+		}
 		gb->timer.internalDiv = 0x1EA;
 		nextDiv = 0xC;
 		break;
@@ -554,6 +561,7 @@ void GBSkipBIOS(struct GB* gb) {
 	mTimingSchedule(&gb->timing, &gb->timer.event, 0);
 
 	GBIOWrite(gb, REG_LCDC, 0x91);
+	GBVideoSkipBIOS(&gb->video);
 
 	if (gb->biosVf) {
 		GBUnmapBIOS(gb);
@@ -666,6 +674,9 @@ void GBProcessEvents(struct SM83Core* cpu) {
 		int32_t nextEvent;
 
 		cpu->cycles = 0;
+#ifdef USE_DEBUGGERS
+		gb->timing.globalCycles += cycles;
+#endif
 		cpu->nextEvent = INT_MAX;
 
 		nextEvent = cycles;
