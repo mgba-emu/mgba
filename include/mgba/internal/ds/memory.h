@@ -18,7 +18,7 @@ CXX_GUARD_START
 #include <mgba/internal/ds/slot1.h>
 #include <mgba/internal/ds/spi.h>
 
-const uint32_t redzoneInstruction;
+extern const uint32_t redzoneInstruction;
 
 enum DSMemoryRegion {
 	DS7_REGION_BIOS = 0x0,
