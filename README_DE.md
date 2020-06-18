@@ -28,6 +28,7 @@ Features
 - Unterstützung für Cheat-Codes.
 - 9 Speicherstände für Savestates/Spielzustände. Savestates können auch als Screenshots dargestellt werden.
 - Video- und GIF-Aufzeichnung.
+- e-Reader-Unterstützung.
 - Frei wählbare Tastenbelegungen für Tastaturen und Controller.
 - Unterstützung für ZIP- und 7z-Archive.
 - Unterstützung für Patches im IPS-, UPS- und BPS-Format.
@@ -68,7 +69,6 @@ Die folgenden Mapper werden teilweise unterstützt:
 - Unterstützung für Tool-Assisted Speedruns.
 - Lua-Unterstützung für Scripting.
 - Eine umfangreiche Debugging-Suite.
-- e-Reader-Unterstützung.
 - Unterstützung für Drahtlosadapter.
 
 Unterstützte Plattformen

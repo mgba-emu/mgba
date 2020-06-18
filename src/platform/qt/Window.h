@@ -75,6 +75,7 @@ public slots:
 	void selectSave(bool temporary);
 	void selectState(bool load);
 	void selectPatch();
+	void scanCard();
 	void enterFullScreen();
 	void exitFullScreen();
 	void toggleFullScreen();

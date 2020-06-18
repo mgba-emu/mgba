@@ -472,6 +472,13 @@ void Window::selectPatch() {
 	}
 }
 
+void Window::scanCard() {
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select e-Reader dotcode"));
+	if (!filename.isEmpty()) {
+		m_controller->scanCard(filename);
+	}
+}
+
 void Window::openView(QWidget* widget) {
 	connect(this, &Window::shutdown, widget, &QWidget::close);
 	widget->setAttribute(Qt::WA_DeleteOnClose);
@@ -1183,7 +1190,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, "file");
 #endif
 
-	m_actions.addAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "file");
+	addGameAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "file");
+#ifdef M_CORE_GBA
+	Action* scanCard = addGameAction(tr("Scan e-Reader dotcode..."), "scanCard", this, &Window::scanCard, "file");
+	m_platformActions.insert(PLATFORM_GBA, scanCard);
+#endif
 
 	Action* romInfo = addGameAction(tr("ROM &info..."), "romInfo", openControllerTView<ROMInfo>(), "file");
 

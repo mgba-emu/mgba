@@ -28,7 +28,8 @@ Features
 - Screenshot support.
 - Cheat code support[<sup>[2]</sup>](#dscaveat).
 - 9 savestate slots. Savestates are also viewable as screenshots[<sup>[2]</sup>](#dscaveat).
-- Video and GIF recording.
+- Video, GIF and APNG recording.
+- e-Reader support.
 - Remappable controls for both keyboards and gamepads.
 - Loading from ZIP and 7z files.
 - IPS, UPS and BPS patch support.
@@ -69,7 +70,6 @@ The following mappers are partially supported:
 - Re-recording support for tool-assist runs.
 - Lua support for scripting.
 - A comprehensive debug suite.
-- e-Reader support.
 - Wireless adapter support.
 - OpenGL renderer.
 - HLE support for DS BIOS and DS ARM7 processor.

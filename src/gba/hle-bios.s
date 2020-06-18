@@ -170,9 +170,9 @@ NopCall:
 bx lr
 
 Halt:
-mov    r2, #0
+mov    r11, #0
 mov    r12, #0x04000000
-strb   r2, [r12, #0x301]
+strb   r11, [r12, #0x301]
 bx     lr
 
 VBlankIntrWait:

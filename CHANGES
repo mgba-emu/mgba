@@ -20,6 +20,7 @@ Misc:
 
 0.9.0: (Future)
 Features:
+ - e-Reader card scanning
  - Add APNG recording
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
@@ -33,6 +34,8 @@ Emulation fixes:
 Other fixes:
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
+ - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
+ - GBA: Reject incorrectly sized BIOSes
  - Debugger: Don't skip undefined instructions when debugger attached
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
 Misc:
@@ -40,6 +43,7 @@ Misc:
  - Qt: Renderer can be changed while a game is running
  - Qt: Add hex index to palette view
  - Qt: Add transformation matrix info to sprite view
+ - Qt: Disable Replace ROM option when no game loaded
 
 0.8.1: (2020-02-16)
 Emulation fixes:
