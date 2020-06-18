@@ -3,6 +3,8 @@ Emulation fixes:
  - GB Memory: Fix OAM DMA from top 8 kB
  - GB MBC: Fix MBC1 RAM enable bit selection
  - GB MBC: Fix MBC2 bit selection
+Other fixes:
+ - GB Core: Fix extracting SRAM when none is present
 
 0.8.2: (2020-06-14)
 Emulation fixes:
