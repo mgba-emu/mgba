@@ -59,6 +59,7 @@ public:
 	Window* newWindow();
 
 	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = QString());
+	QStringList getOpenFileNames(QWidget* owner, const QString& title, const QString& filter = QString());
 	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = QString());
 	QString getOpenDirectoryName(QWidget* owner, const QString& title);
 

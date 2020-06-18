@@ -670,13 +670,25 @@ void CoreController::setFakeEpoch(const QDateTime& time) {
 
 void CoreController::scanCard(const QString& path) {
 #ifdef M_CORE_GBA
-	QFile file(path);
-	file.open(QIODevice::ReadOnly);
-	m_eReaderData = file.read(2912);
+	QImage image(path);
+	if (image.isNull()) {
+		QFile file(path);
+		file.open(QIODevice::ReadOnly);
+		m_eReaderData = file.read(2912);
+	} else if (image.size() == QSize(989, 44)) {
+		const uchar* bits = image.constBits();
+		size_t size;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+		size = image.sizeInBytes();
+#else
+		size = image.byteCount();
+#endif
+		m_eReaderData.setRawData(reinterpret_cast<const char*>(bits), image.sizeInBytes());
+	}
 
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* thread) {
 		CoreController* controller = static_cast<CoreController*>(thread->userData);
-		GBAHardwareEReaderScan(&static_cast<GBA*>(thread->core->board)->memory.hw, controller->m_eReaderData.constData(), controller->m_eReaderData.size());
+		GBAEReaderQueueCard(static_cast<GBA*>(thread->core->board), controller->m_eReaderData.constData(), controller->m_eReaderData.size());
 	});
 #endif
 }
