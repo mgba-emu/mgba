@@ -519,8 +519,8 @@ uint8_t GBView8(struct SM83Core* cpu, uint16_t address, int segment) {
 }
 
 void GBMemoryDMA(struct GB* gb, uint16_t base) {
-	if (base > 0xF100) {
-		return;
+	if (base >= 0xE000) {
+		base &= 0xDFFF;
 	}
 	mTimingDeschedule(&gb->timing, &gb->memory.dmaEvent);
 	mTimingSchedule(&gb->timing, &gb->memory.dmaEvent, 8);
@@ -733,6 +733,8 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 	case GB_MBC1:
 		state->memory.mbc1.mode = memory->mbcState.mbc1.mode;
 		state->memory.mbc1.multicartStride = memory->mbcState.mbc1.multicartStride;
+		state->memory.mbc1.bankLo = memory->mbcState.mbc1.bankLo;
+		state->memory.mbc1.bankHi = memory->mbcState.mbc1.bankHi;
 		break;
 	case GB_MBC3_RTC:
 		STORE_64LE(gb->memory.rtcLastLatch, 0, &state->memory.rtc.lastLatch);
@@ -801,8 +803,15 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	case GB_MBC1:
 		memory->mbcState.mbc1.mode = state->memory.mbc1.mode;
 		memory->mbcState.mbc1.multicartStride = state->memory.mbc1.multicartStride;
+		memory->mbcState.mbc1.bankLo = state->memory.mbc1.bankLo;
+		memory->mbcState.mbc1.bankHi = state->memory.mbc1.bankHi;
+		if (!(memory->mbcState.mbc1.bankLo || memory->mbcState.mbc1.bankHi)) {
+			// Backwards compat
+			memory->mbcState.mbc1.bankLo = memory->currentBank & ((1 << memory->mbcState.mbc1.multicartStride) - 1);
+			memory->mbcState.mbc1.bankHi = memory->currentBank >> memory->mbcState.mbc1.multicartStride;
+		}
 		if (memory->mbcState.mbc1.mode) {
-			GBMBCSwitchBank0(gb, memory->currentBank >> memory->mbcState.mbc1.multicartStride);
+			GBMBCSwitchBank0(gb, memory->mbcState.mbc1.bankHi);
 		}
 		break;
 	case GB_MBC3_RTC:

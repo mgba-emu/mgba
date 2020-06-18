@@ -193,14 +193,13 @@ static void _drawStart(void) {
 		return;
 	}
 	frameStarted = true;
-	u8 flags = 0;
-	if (!frameLimiter) {
+	if (frameLimiter) {
 		if (tickCounter + 4481000 > svcGetSystemTick()) {
-			flags = C3D_FRAME_NONBLOCK;
+			C3D_FrameSync();
 		}
 		tickCounter = svcGetSystemTick();
 	}
-	C3D_FrameBegin(flags);
+	C3D_FrameBegin(0);
 	ctrStartFrame();
 
 	C3D_FrameDrawOn(bottomScreen[doubleBuffer]);

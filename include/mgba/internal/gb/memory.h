@@ -108,6 +108,8 @@ enum GBTAMA5Register {
 struct GBMBC1State {
 	int mode;
 	int multicartStride;
+	uint8_t bankLo;
+	uint8_t bankHi;
 };
 
 struct GBMBC6State {

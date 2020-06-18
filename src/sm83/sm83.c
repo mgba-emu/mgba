@@ -131,6 +131,17 @@ static void _SM83Step(struct SM83Core* cpu) {
 	case SM83_CORE_STALL:
 		cpu->instruction = _sm83InstructionTable[0]; // NOP
 		break;
+	case SM83_CORE_HALT_BUG:
+		if (cpu->irqPending) {
+			cpu->index = cpu->sp;
+			cpu->irqPending = false;
+			cpu->instruction = _SM83InstructionIRQ;
+			cpu->irqh.setInterrupts(cpu, false);
+			break;
+		}
+		cpu->bus = cpu->memory.cpuLoad8(cpu, cpu->pc);
+		cpu->instruction = _sm83InstructionTable[cpu->bus];
+		break;
 	default:
 		break;
 	}

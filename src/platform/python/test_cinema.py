@@ -24,7 +24,7 @@ def pytest_generate_tests(metafunc):
         for test in testList:
             marks = []
             xfail = test.settings.get('fail')
-            if xfail:
+            if xfail and bool(xfail):
                 marks = pytest.mark.xfail(reason=xfail if isinstance(xfail, str) else None)
             params.append(pytest.param(test, id=test.name, marks=marks))
         metafunc.parametrize('vtest', params, indirect=True)

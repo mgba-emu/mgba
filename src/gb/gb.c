@@ -502,8 +502,8 @@ void GBSkipBIOS(struct GB* gb) {
 		cpu->e = 0x00;
 		cpu->h = 0xC0;
 		cpu->l = 0x60;
-		gb->timer.internalDiv = 0xABC;
-		nextDiv = 4;
+		gb->timer.internalDiv = 0xD85;
+		nextDiv = 8;
 		break;
 	case GB_MODEL_MGB:
 		cpu->a = 0xFF;
@@ -522,34 +522,31 @@ void GBSkipBIOS(struct GB* gb) {
 		cpu->e = 0x00;
 		cpu->h = 0xC0;
 		cpu->l = 0x60;
-		gb->timer.internalDiv = 0xABC;
-		nextDiv = 4;
+		gb->timer.internalDiv = 0xD84;
+		nextDiv = 8;
 		break;
 	case GB_MODEL_AGB:
-		cpu->a = 0x11;
 		cpu->b = 1;
-		cpu->f.packed = 0x00;
-		cpu->c = 0;
-		cpu->e = 0x08;
-		cpu->h = 0;
-		cpu->l = 0x7C;
-		gb->timer.internalDiv = 0x1EA;
-		nextDiv = 0xC;
-		break;
+		// Fall through
 	case GB_MODEL_CGB:
 		cpu->a = 0x11;
-		cpu->f.packed = 0x80;
+		if (gb->model == GB_MODEL_AGB) {
+			cpu->f.packed = 0x00;
+		} else {
+			cpu->f.packed = 0x80;
+		}
 		cpu->c = 0;
 		cpu->h = 0;
 		if (cart->cgb & 0x80) {
 			cpu->d = 0xFF;
 			cpu->e = 0x56;
 			cpu->l = 0x0D;
+			gb->timer.internalDiv = 0x2F0;
 		} else {
 			cpu->e = 0x08;
 			cpu->l = 0x7C;
+			gb->timer.internalDiv = 0x260;
 		}
-		gb->timer.internalDiv = 0x1EA;
 		nextDiv = 0xC;
 		break;
 	}
@@ -557,8 +554,10 @@ void GBSkipBIOS(struct GB* gb) {
 	cpu->sp = 0xFFFE;
 	cpu->pc = 0x100;
 
+	gb->timer.nextDiv = GB_DMG_DIV_PERIOD * (16 - nextDiv);
+
 	mTimingDeschedule(&gb->timing, &gb->timer.event);
-	mTimingSchedule(&gb->timing, &gb->timer.event, 0);
+	mTimingSchedule(&gb->timing, &gb->timer.event, gb->timer.nextDiv);
 
 	GBIOWrite(gb, REG_LCDC, 0x91);
 	GBVideoSkipBIOS(&gb->video);
@@ -749,8 +748,9 @@ void GBHalt(struct SM83Core* cpu) {
 	if (!(gb->memory.ie & gb->memory.io[REG_IF] & 0x1F)) {
 		cpu->cycles = cpu->nextEvent;
 		cpu->halted = true;
-	} else if (gb->model < GB_MODEL_CGB) {
-		mLOG(GB, STUB, "Unimplemented HALT bug");
+	} else if (!gb->memory.ime) {
+		mLOG(GB, GAME_ERROR, "HALT bug");
+		cpu->executionState = SM83_CORE_HALT_BUG;
 	}
 }
 

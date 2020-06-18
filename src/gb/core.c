@@ -1107,9 +1107,9 @@ static void _GBVLPReset(struct mCore* core) {
 	GBVideoProxyRendererShim(&gb->video, &gbcore->proxyRenderer);
 
 	// Make sure CPU loop never spins
-	GBHalt(gb->cpu);
 	gb->memory.ie = 0;
 	gb->memory.ime = false;
+	GBHalt(gb->cpu);
 }
 
 static bool _GBVLPLoadROM(struct mCore* core, struct VFile* vf) {
@@ -1140,9 +1140,9 @@ static bool _GBVLPLoadState(struct mCore* core, const void* buffer) {
 	GBAudioReset(&gb->audio);
 
 	// Make sure CPU loop never spins
-	GBHalt(gb->cpu);
 	gb->memory.ie = 0;
 	gb->memory.ime = false;
+	GBHalt(gb->cpu);
 
 	return true;
 }

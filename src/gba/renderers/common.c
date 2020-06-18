@@ -25,14 +25,19 @@ int GBAVideoRendererCleanOAM(struct GBAObj* oam, struct GBAVideoRendererSprite* 
 				continue;
 			}
 			if (GBAObjAttributesAIsTransformed(obj.a) || !GBAObjAttributesAIsDisable(obj.a)) {
+				int width = GBAVideoObjSizes[GBAObjAttributesAGetShape(obj.a) * 4 + GBAObjAttributesBGetSize(obj.b)][0];
 				int height = GBAVideoObjSizes[GBAObjAttributesAGetShape(obj.a) * 4 + GBAObjAttributesBGetSize(obj.b)][1];
+				int cycles = width;
 				if (GBAObjAttributesAIsTransformed(obj.a)) {
 					height <<= GBAObjAttributesAGetDoubleSize(obj.a);
+					width <<= GBAObjAttributesAGetDoubleSize(obj.a);
+					cycles = 10 + width * 2;
 				}
 				if (GBAObjAttributesAGetY(obj.a) < masterHeight || GBAObjAttributesAGetY(obj.a) + height >= 256) {
 					int y = GBAObjAttributesAGetY(obj.a) + offsetY;
 					sprites[oamMax].y = y;
 					sprites[oamMax].endY = y + height;
+					sprites[oamMax].cycles = cycles;
 					sprites[oamMax].obj = obj;
 					sprites[oamMax].index = i;
 					++oamMax;
