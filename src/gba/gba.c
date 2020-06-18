@@ -51,7 +51,7 @@ static void _triggerIRQ(struct mTiming*, void* user, uint32_t cyclesLate);
 
 #ifdef USE_DEBUGGERS
 static bool _setSoftwareBreakpoint(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
-static bool _clearSoftwareBreakpoint(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
+static void _clearSoftwareBreakpoint(struct ARMDebugger*, const struct ARMDebugBreakpoint*);
 #endif
 
 #ifdef FIXED_ROM_BUFFER
@@ -917,8 +917,7 @@ static bool _setSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t addres
 	return true;
 }
 
-static bool _clearSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t opcode) {
-	GBAClearBreakpoint((struct GBA*) debugger->cpu->master, address, mode, opcode);
-	return true;
+static void _clearSoftwareBreakpoint(struct ARMDebugger* debugger, const struct ARMDebugBreakpoint* breakpoint) {
+	GBAClearBreakpoint((struct GBA*) debugger->cpu->master, breakpoint->d.address, breakpoint->sw.mode, breakpoint->sw.opcode);
 }
 #endif

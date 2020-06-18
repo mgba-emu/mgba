@@ -242,7 +242,8 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	int32_t x = (uint32_t) GBAObjAttributesBGetX(sprite->b) << 23;
 	x >>= 23;
 	x += renderer->objOffsetX;
-	unsigned charBase = GBAObjAttributesCGetTile(sprite->c);
+	unsigned align = GBAObjAttributesAIs256Color(sprite->a) && !GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt);
+	unsigned charBase = GBAObjAttributesCGetTile(sprite->c) & ~align;
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_BITMAP && renderer->bitmapStride) {
 		charBase = (charBase & (renderer->bitmapStride - 1)) * 0x10 + (charBase & ~(renderer->bitmapStride - 1)) * 0x80;
 	} else {

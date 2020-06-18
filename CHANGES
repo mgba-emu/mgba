@@ -29,15 +29,21 @@ Emulation fixes:
  - GBA BIOS: Improve HLE BIOS timing
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA Memory: Improve gamepak prefetch timing
+ - GBA SIO: Fix Multiplayer busy bit
+ - GBA SIO: Fix double-unloading active driver
+ - GBA SIO: Fix copying Normal mode transfer values
+ - GBA Timers: Fix deserializing count-up timers
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
 Other fixes:
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
  - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
+ - GB Video: Fix some cases where SGB border doesn't draw to mutli-buffers
  - GBA: Reject incorrectly sized BIOSes
  - Debugger: Don't skip undefined instructions when debugger attached
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
+ - Qt: Fix OpenGL 2.1 support (fixes mgba.io/i/1678)
 Misc:
  - FFmpeg: Add looping option for GIF/APNG
  - Qt: Renderer can be changed while a game is running

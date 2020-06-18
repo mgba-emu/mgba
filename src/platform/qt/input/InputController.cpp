@@ -388,8 +388,8 @@ void InputController::setPreferredGamepad(uint32_t type, int index) {
 		return;
 	}
 #ifdef BUILD_SDL
-	char name[34] = {0};
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+	char name[34] = {0};
 	SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, index)->joystick), name, sizeof(name));
 #else
 	const char* name = SDL_JoystickName(SDL_JoystickIndex(SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, index)->joystick));

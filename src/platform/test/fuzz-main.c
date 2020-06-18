@@ -44,7 +44,7 @@ static bool _dispatchExiting = false;
 int main(int argc, char** argv) {
 	signal(SIGINT, _fuzzShutdown);
 
-	struct FuzzOpts fuzzOpts = { false, 0, 0, 0, 0 };
+	struct FuzzOpts fuzzOpts = { false, 0, 0, 0 };
 	struct mSubParser subparser = {
 		.usage = FUZZ_USAGE,
 		.parse = _parseFuzzOpts,
