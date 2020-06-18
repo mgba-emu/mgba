@@ -139,6 +139,7 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 	} else if (savedata->vf) {
 		off_t read = 0;
 		uint8_t buffer[2048];
+		savedata->vf->seek(savedata->vf, 0, SEEK_SET);
 		do {
 			read = savedata->vf->read(savedata->vf, buffer, sizeof(buffer));
 			out->write(out, buffer, read);
