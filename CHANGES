@@ -1,3 +1,46 @@
+0.8.3: (Future)
+Emulation fixes:
+ - GB Memory: Fix OAM DMA from top 8 kB
+ - GB MBC: Fix MBC1 RAM enable bit selection
+ - GB MBC: Fix MBC2 bit selection
+
+0.8.2: (2020-06-14)
+Emulation fixes:
+ - ARM: Fix timing on Thumb shift instructions
+ - GB: Fix GBC game registers after skipping BIOS
+ - GB MBC: Support 4MB MBC30 ROMs (fixes mgba.io/i/1713)
+ - GB Video: Fix BGPS value after skipping BIOS (fixes mgba.io/i/1717)
+ - GBA: Add missing RTC overrides for Legendz games
+ - GBA BIOS: Reset renderer when RegisterRamReset called (fixes mgba.io/i/1756)
+ - GBA SIO: Fix Multiplayer busy bit
+ - GBA SIO: Fix double-unloading active driver
+ - GBA Timers: Fix deserializing count-up timers
+ - GBA Video: Fix mosaic objects drawing past the end (fixes mgba.io/i/1702)
+ - GBA Video: Fix disabling OBJWIN in GL renderer (fixes mgba.io/i/1759)
+ - GBA Video: Add missing parts of 256-color mode 0 mosaic (fixes mgba.io/i/1701)
+ - GBA Video: Fix double-size OBJ wrapping in GL renderer (fixes mgba.io/i/1712)
+ - GBA Video: Simplify sprite cycle counting (fixes mgba.io/i/1279)
+ - GBA Video: Fix sprite/backdrop blending regression
+Other fixes:
+ - 3DS: Fix framelimiter on newer citro3d (fixes mgba.io/i/1771)
+ - ARM: Fix disassembling of several S-type instructions (fixes mgba.io/i/1778)
+ - ARM Debugger: Clear low bit on breakpoint addresses (fixes mgba.io/i/1764)
+ - CMake: Always use devkitPro toolchain when applicable (fixes mgba.io/i/1755)
+ - Core: Fix ELF loading regression (fixes mgba.io/i/1669)
+ - Core: Fix crash modifying hash table entry (fixes mgba.io/i/1673)
+ - GB Video: Fix some cases where SGB border doesn't draw to multi-buffers
+ - GBA: Reject incorrectly sized BIOSes
+ - GBA: Break infinite loop for 0-frame mVLs (fixes mgba.io/i/1723)
+ - Qt: Fix OpenGL 2.1 support (fixes mgba.io/i/1678)
+ - Qt: Fix unmapping zipped ROM (fixes mgba.io/i/1777)
+Misc:
+ - 3DS: Clean up legacy initialization (fixes mgba.io/i/1768)
+ - GBA Serialize: Only flunk BIOS check if official BIOS was expected
+ - Qt: Disable Replace ROM option when no game loaded
+ - Qt: Defer texture updates until frame is drawn (fixes mgba.io/i/1590)
+ - Qt: Set icon for Discord Rich Presence
+ - Qt: Show a warning when save file can't be opened
+
 0.8.1: (2020-02-16)
 Emulation fixes:
  - GB Serialize: Fix timing bug loading channel 4 timing

@@ -9,7 +9,6 @@
 	SPRITE_YBASE_ ## DEPTH(inY); \
 	unsigned tileData; \
 	for (; outX < condition; ++outX, inX += xOffset) { \
-		renderer->spriteCyclesRemaining -= 1; \
 		SPRITE_XBASE_ ## DEPTH(inX); \
 		SPRITE_DRAW_PIXEL_ ## DEPTH ## _ ## TYPE(inX); \
 	}
@@ -33,7 +32,6 @@
 	unsigned widthMask = ~(width - 1); \
 	unsigned heightMask = ~(height - 1); \
 	for (; outX < condition; ++outX, ++inX) { \
-		renderer->spriteCyclesRemaining -= 2; \
 		xAccum += mat.a; \
 		yAccum += mat.c; \
 		int localX = xAccum >> 8; \
@@ -55,7 +53,6 @@
 	int localX = xAccum >> 8; \
 	int localY = yAccum >> 8; \
 	for (; outX < condition; ++outX, ++inX) { \
-		renderer->spriteCyclesRemaining -= 2; \
 		xAccum += mat.a; \
 		yAccum += mat.c; \
 		\
@@ -168,7 +165,7 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	int variant = (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) &&
 	              GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) &&
 	              (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
-	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT || objwinSlowPath) {
+	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT || (renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || objwinSlowPath) {
 		int target2 = renderer->target2Bd;
 		target2 |= renderer->bg[0].target2;
 		target2 |= renderer->bg[1].target2;
@@ -224,7 +221,7 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 		int mosaicH = 1;
 		if (GBAObjAttributesAIsMosaic(sprite->a)) {
 			mosaicH = GBAMosaicControlGetObjH(renderer->mosaic) + 1;
-			if (condition % mosaicH) {
+			if (condition != end && condition % mosaicH) {
 				condition += mosaicH - (condition % mosaicH);
 			}
 		}
@@ -272,7 +269,6 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 		if (outX < start || outX >= condition) {
 			return 0;
 		}
-		renderer->spriteCyclesRemaining -= 10;
 
 		if (!GBAObjAttributesAIs256Color(sprite->a)) {
 			palette = &palette[GBAObjAttributesCGetPalette(sprite->c) << 4];
@@ -305,9 +301,6 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			} else {
 				SPRITE_TRANSFORMED_LOOP(256, NORMAL);
 			}
-		}
-		if (end == GBA_VIDEO_HORIZONTAL_PIXELS && x + totalWidth > GBA_VIDEO_HORIZONTAL_PIXELS) {
-			renderer->spriteCyclesRemaining -= (x + totalWidth - GBA_VIDEO_HORIZONTAL_PIXELS) * 2;
 		}
 	} else {
 		int outX = x >= start ? x : start;
@@ -365,9 +358,6 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			} else {
 				SPRITE_NORMAL_LOOP(256, NORMAL);
 			}
-		}
-		if (end == GBA_VIDEO_HORIZONTAL_PIXELS && x + width > GBA_VIDEO_HORIZONTAL_PIXELS) {
-			renderer->spriteCyclesRemaining -= x + width - GBA_VIDEO_HORIZONTAL_PIXELS;
 		}
 	}
 	return 1;

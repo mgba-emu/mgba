@@ -318,7 +318,7 @@ PainterGL::PainterGL(QWindow* surface, QOpenGLContext* parent, int forceVersion)
 	m_backend->lockAspectRatio = false;
 	m_backend->interframeBlending = false;
 
-	for (int i = 0; i < 2; ++i) {
+	for (int i = 0; i < 3; ++i) {
 		m_free.append(new uint32_t[1024 * 2048]);
 	}
 }
@@ -414,6 +414,7 @@ void PainterGL::start() {
 	}
 #endif
 
+	m_buffer = nullptr;
 	m_active = true;
 	m_started = true;
 }
@@ -481,6 +482,11 @@ void PainterGL::performDraw() {
 	m_painter.beginNativePainting();
 	float r = m_surface->devicePixelRatio();
 	m_backend->resized(m_backend, m_size.width() * r, m_size.height() * r);
+	if (m_buffer) {
+		m_backend->postFrame(m_backend, m_buffer);
+		m_free.append(m_buffer);
+		m_buffer = nullptr;
+	}
 	m_backend->drawFrame(m_backend);
 	m_painter.endNativePainting();
 	if (m_showOSD && m_messagePainter) {
@@ -511,9 +517,12 @@ void PainterGL::dequeue() {
 		return;
 	}
 	uint32_t* buffer = m_queue.dequeue();
+	if (m_buffer) {
+		m_free.append(m_buffer);
+		m_buffer = nullptr;
+	}
 	if (buffer) {
-		m_backend->postFrame(m_backend, buffer);
-		m_free.append(buffer);
+		m_buffer = buffer;
 	}
 	m_mutex.unlock();
 }
@@ -529,6 +538,10 @@ void PainterGL::dequeueAll() {
 	}
 	if (buffer) {
 		m_backend->postFrame(m_backend, buffer);
+	}
+	if (m_buffer) {
+		m_free.append(m_buffer);
+		m_buffer = nullptr;
 	}
 	m_mutex.unlock();
 }

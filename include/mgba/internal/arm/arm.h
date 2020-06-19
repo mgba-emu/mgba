@@ -70,7 +70,7 @@ struct ARMCore;
 
 union PSR {
 	struct {
-#if defined(__POWERPC__) || defined(__PPC__)
+#if defined(__BIG_ENDIAN__)
 		unsigned n : 1;
 		unsigned z : 1;
 		unsigned c : 1;

@@ -249,6 +249,9 @@ void mSDLDetachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 	}
 	--events->playersAttached;
 	CircleBufferDeinit(&player->rotation.zHistory);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	CircleBufferDeinit(&player->rumble.history);
+#endif
 }
 
 void mSDLPlayerLoadConfig(struct mSDLPlayer* context, const struct Configuration* config) {
@@ -352,10 +355,10 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 				continue;
 			}
 			ssize_t joysticks[MAX_PLAYERS];
-			size_t i;
+			ssize_t i;
 			// Pointers can get invalidated, so we'll need to refresh them
 			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
-				joysticks[i] = events->players[i]->joystick ? SDL_JoystickListIndex(&events->joysticks, events->players[i]->joystick) : SIZE_MAX;
+				joysticks[i] = events->players[i]->joystick ? (ssize_t) SDL_JoystickListIndex(&events->joysticks, events->players[i]->joystick) : -1;
 				events->players[i]->joystick = NULL;
 			}
 			struct SDL_JoystickCombo* joystick = SDL_JoystickListAppend(&events->joysticks);
@@ -366,7 +369,7 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 			joystick->haptic = SDL_HapticOpenFromJoystick(joystick->joystick);
 #endif
 			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
-				if (joysticks[i] != SIZE_MAX) {
+				if (joysticks[i] != -1) {
 					events->players[i]->joystick = SDL_JoystickListGetPointer(&events->joysticks, joysticks[i]);
 				}
 			}
@@ -397,7 +400,11 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 					continue;
 				}
 				events->players[i]->joystick = joystick;
-				if (config && joystickName) {
+				if (config
+#if !SDL_VERSION_ATLEAST(2, 0, 0)
+					&& joystickName
+#endif
+					) {
 					mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_BUTTON, config, joystickName);
 				}
 				break;

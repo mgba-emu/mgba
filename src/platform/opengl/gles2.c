@@ -21,6 +21,9 @@ static const GLchar* const _gles2Header =
 	"#version 100\n"
 	"precision mediump float;\n";
 
+static const GLchar* const _gl2Header =
+	"#version 120\n";
+
 static const GLchar* const _gl32VHeader =
 	"#version 150 core\n"
 	"#define attribute in\n"
@@ -462,10 +465,12 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 	shader->fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	const GLchar* shaderBuffer[2];
 	const GLubyte* version = glGetString(GL_VERSION);
-	if (strncmp((const char*) version, "OpenGL ES ", strlen("OpenGL ES "))) {
-		shaderBuffer[0] = _gl32VHeader;
-	} else {
+	if (strncmp((const char*) version, "OpenGL ES ", strlen("OpenGL ES ")) == 0) {
 		shaderBuffer[0] = _gles2Header;
+	} else if (version[0] == '2') {
+		shaderBuffer[0] = _gl2Header;
+	} else {
+		shaderBuffer[0] = _gl32VHeader;
 	}
 	if (vs) {
 		shaderBuffer[1] = vs;
@@ -474,7 +479,7 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 	}
 	glShaderSource(shader->vertexShader, 2, shaderBuffer, 0);
 
-	if (strncmp((const char*) version, "OpenGL ES ", strlen("OpenGL ES "))) {
+	if (shaderBuffer[0] == _gl32VHeader) {
 		shaderBuffer[0] = _gl32FHeader;
 	}
 	if (fs) {
