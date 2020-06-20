@@ -34,6 +34,7 @@ Misc:
  - Qt: Renderer can be changed while a game is running
  - Qt: Add hex index to palette view
  - Qt: Add transformation matrix info to sprite view
+ - Qt: Add per-page scrolling to memory view (fixes mgba.io/i/1795)
 
 0.8.2: (2020-06-14)
 Emulation fixes:
