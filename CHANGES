@@ -4,6 +4,7 @@ Emulation fixes:
  - GB MBC: Fix MBC1 RAM enable bit selection
  - GB MBC: Fix MBC2 bit selection
 Other fixes:
+ - All: Correct format strings for some numbers on Windows (fixes mgba.io/i/1794)
  - GB Core: Fix extracting SRAM when none is present
  - GBA Savedata: Fix extracting save when not yet configured in-game
 Misc:
