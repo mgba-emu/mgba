@@ -22,6 +22,7 @@ Emulation fixes:
  - SM83: Emulate HALT bug
 Other fixes:
  - All: Improve export headers (fixes mgba.io/i/1738)
+ - All: Correct format strings for some numbers on Windows (fixes mgba.io/i/1794)
  - Core: Ensure ELF regions can be written before trying
  - Debugger: Don't skip undefined instructions when debugger attached
  - GB Core: Fix extracting SRAM when none is present

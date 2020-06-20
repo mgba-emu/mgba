@@ -115,10 +115,8 @@ typedef intptr_t ssize_t;
 #if defined(_3DS) || defined(GEKKO) || defined(PSP2)
 // newlib doesn't support %z properly by default
 #define PRIz ""
-#elif defined(_WIN64)
-#define PRIz "I64"
-#elif defined(_WIN32)
-#define PRIz ""
+#elif defined(_MSC_VER)
+#define PRIz "I"
 #else
 #define PRIz "z"
 #endif
