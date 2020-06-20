@@ -6,6 +6,8 @@ Emulation fixes:
 Other fixes:
  - GB Core: Fix extracting SRAM when none is present
  - GBA Savedata: Fix extracting save when not yet configured in-game
+Misc:
+ - Qt: Add per-page scrolling to memory view (fixes mgba.io/i/1795)
 
 0.8.2: (2020-06-14)
 Emulation fixes:
