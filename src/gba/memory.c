@@ -337,33 +337,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 }
 
 #define LOAD_BAD \
-	if (gba->performingDMA || cpu->gprs[ARM_PC] - gba->dmaPC == (gba->cpu->executionMode == MODE_THUMB ? WORD_SIZE_THUMB : WORD_SIZE_ARM)) { \
-		value = gba->bus; \
-	} else { \
-		value = cpu->prefetch[1]; \
-		if (cpu->executionMode == MODE_THUMB) { \
-			/* http://ngemu.com/threads/gba-open-bus.170809/ */ \
-			switch (cpu->gprs[ARM_PC] >> BASE_OFFSET) { \
-			case REGION_BIOS: \
-			case REGION_OAM: \
-				/* This isn't right half the time, but we don't have $+6 handy */ \
-				value <<= 16; \
-				value |= cpu->prefetch[0]; \
-				break; \
-			case REGION_WORKING_IRAM: \
-				/* This doesn't handle prefetch clobbering */ \
-				if (cpu->gprs[ARM_PC] & 2) { \
-					value <<= 16; \
-					value |= cpu->prefetch[0]; \
-				} else { \
-					value |= cpu->prefetch[0] << 16; \
-				} \
-				break; \
-			default: \
-				value |= value << 16; \
-			} \
-		} \
-	}
+	value = GBALoadBad(cpu);
 
 #define LOAD_BIOS \
 	if (address < SIZE_BIOS) { \
@@ -375,7 +349,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		} \
 	} else { \
 		mLOG(GBA_MEM, GAME_ERROR, "Bad memory Load32: 0x%08X", address); \
-		LOAD_BAD; \
+		value = GBALoadBad(cpu); \
 	}
 
 #define LOAD_WORKING_RAM \
@@ -427,7 +401,33 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 uint32_t GBALoadBad(struct ARMCore* cpu) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	uint32_t value = 0;
-	LOAD_BAD;
+	if (gba->performingDMA || cpu->gprs[ARM_PC] - gba->dmaPC == (gba->cpu->executionMode == MODE_THUMB ? WORD_SIZE_THUMB : WORD_SIZE_ARM)) {
+		value = gba->bus;
+	} else {
+		value = cpu->prefetch[1];
+		if (cpu->executionMode == MODE_THUMB) {
+			/* http://ngemu.com/threads/gba-open-bus.170809/ */
+			switch (cpu->gprs[ARM_PC] >> BASE_OFFSET) {
+			case REGION_BIOS:
+			case REGION_OAM:
+				/* This isn't right half the time, but we don't have $+6 handy */
+				value <<= 16;
+				value |= cpu->prefetch[0];
+				break;
+			case REGION_WORKING_IRAM:
+				/* This doesn't handle prefetch clobbering */
+				if (cpu->gprs[ARM_PC] & 2) {
+					value <<= 16;
+					value |= cpu->prefetch[0];
+				} else {
+					value |= cpu->prefetch[0] << 16;
+				}
+				break;
+			default:
+				value |= value << 16;
+			}
+		}
+	}
 	return value;
 }
 
@@ -507,8 +507,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			}
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Bad memory Load16: 0x%08X", address);
-			LOAD_BAD;
-			value = (value >> ((address & 2) * 8)) & 0xFFFF;
+			value = (GBALoadBad(cpu) >> ((address & 2) * 8)) & 0xFFFF;
 		}
 		break;
 	case REGION_WORKING_RAM:
@@ -591,8 +590,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		break;
 	default:
 		mLOG(GBA_MEM, GAME_ERROR, "Bad memory Load16: 0x%08X", address);
-		LOAD_BAD;
-		value = (value >> ((address & 2) * 8)) & 0xFFFF;
+		value = (GBALoadBad(cpu) >> ((address & 2) * 8)) & 0xFFFF;
 		break;
 	}
 
@@ -625,8 +623,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			}
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Bad memory Load8: 0x%08x", address);
-			LOAD_BAD;
-			value = (value >> ((address & 3) * 8)) & 0xFF;
+			value = (GBALoadBad(cpu) >> ((address & 3) * 8)) & 0xFF;
 		}
 		break;
 	case REGION_WORKING_RAM:
@@ -701,8 +698,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		break;
 	default:
 		mLOG(GBA_MEM, GAME_ERROR, "Bad memory Load8: 0x%08x", address);
-		LOAD_BAD;
-		value = (value >> ((address & 3) * 8)) & 0xFF;
+		value = (GBALoadBad(cpu) >> ((address & 3) * 8)) & 0xFF;
 		break;
 	}
 
