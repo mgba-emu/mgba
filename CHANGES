@@ -30,6 +30,7 @@ Other fixes:
  - GBA Savedata: Fix extracting save when not yet configured in-game
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
+ - Qt: Fix file handle leak on opening an invalid ROM
 Misc:
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
