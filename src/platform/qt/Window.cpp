@@ -1031,27 +1031,23 @@ void Window::updateTitle(float fps) {
 		NoIntroGame game{};
 		uint32_t crc32 = 0;
 		m_controller->thread()->core->checksum(m_controller->thread()->core, &crc32, CHECKSUM_CRC32);
-
-		char* gameTitle;
+		
 		mCore* core = m_controller->thread()->core;
-		int showFilename = 0;
-
-		if (mCoreConfigGetIntValue(&core->config, "showFilename", &showFilename) && showFilename) {
-			gameTitle = new char[PATH_MAX];
-			strcpy(gameTitle, core->dirs.baseName);
+		
+		if (m_config->getOption("showFilename").toInt()) {
+			title = core->dirs.baseName;
 		} else {
-			gameTitle = new char[17] { '\0' };
+			char gameTitle[17] = { '\0' };
 			core->getGameTitle(core, gameTitle);
-		}
-
-		title = gameTitle;
-		delete[] gameTitle;
+			title = gameTitle;
 
 #ifdef USE_SQLITE3
-		if (db && crc32 && NoIntroDBLookupGameByCRC(db, crc32, &game) && !showFilename) {
-			title = QLatin1String(game.name);
-		}
+			if (db && crc32 && NoIntroDBLookupGameByCRC(db, crc32, &game)) {
+				title = QLatin1String(game.name);
+			}
 #endif
+		}
+		
 		MultiplayerController* multiplayer = m_controller->multiplayerController();
 		if (multiplayer && multiplayer->attached() > 1) {
 			title += tr(" -  Player %1 of %2").arg(multiplayer->playerId(m_controller.get()) + 1).arg(multiplayer->attached());
