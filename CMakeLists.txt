@@ -1177,8 +1177,7 @@ endif()
 
 cpack_add_component_group(test PARENT_GROUP dev)
 cpack_add_component(${BINARY_NAME}-perf GROUP test)
-cpack_add_component(${BINARY_NAME}-fuzz GROUP test)
-cpack_add_component(tbl-fuzz GROUP test)
+cpack_add_component(${BINARY_NAME}-test GROUP test)
 
 # Summaries
 set(SUMMARY_GL_LIST)
