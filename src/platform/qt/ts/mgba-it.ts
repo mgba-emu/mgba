@@ -4495,7 +4495,7 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../SensorView.ui" line="97"/>
         <source>MM/dd/yy hh:mm:ss AP</source>
-        <translation>gg/MM/aa OO:mm:ss</translation>
+        <translation>dd/MM/yy hh:mm:ss</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="107"/>
