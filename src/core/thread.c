@@ -636,12 +636,6 @@ struct mCoreThread* mCoreThreadGet(void) {
 }
 #endif
 
-#else
-struct mCoreThread* mCoreThreadGet(void) {
-	return NULL;
-}
-#endif
-
 static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
 	UNUSED(logger);
 	UNUSED(level);
@@ -650,11 +644,14 @@ static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level
 	printf("\n");
 	struct mCoreThread* thread = mCoreThreadGet();
 	if (thread && level == mLOG_FATAL) {
-#ifndef DISABLE_THREADING
 		mCoreThreadMarkCrashed(thread);
-#endif
 	}
 }
+#else
+struct mCoreThread* mCoreThreadGet(void) {
+	return NULL;
+}
+#endif
 
 struct mLogger* mCoreThreadLogger(void) {
 	struct mCoreThread* thread = mCoreThreadGet();
