@@ -1032,13 +1032,23 @@ void Window::updateTitle(float fps) {
 		uint32_t crc32 = 0;
 		m_controller->thread()->core->checksum(m_controller->thread()->core, &crc32, CHECKSUM_CRC32);
 
-		char gameTitle[17] = { '\0' };
+		char* gameTitle;
 		mCore* core = m_controller->thread()->core;
-		core->getGameTitle(core, gameTitle);
+		int showFilename = 0;
+
+		if (mCoreConfigGetIntValue(&core->config, "showFilename", &showFilename) && showFilename) {
+			gameTitle = new char[PATH_MAX];
+			strcpy(gameTitle, core->dirs.baseName);
+		} else {
+			gameTitle = new char[17] { '\0' };
+			core->getGameTitle(core, gameTitle);
+		}
+
 		title = gameTitle;
+		delete[] gameTitle;
 
 #ifdef USE_SQLITE3
-		if (db && crc32 && NoIntroDBLookupGameByCRC(db, crc32, &game)) {
+		if (db && crc32 && NoIntroDBLookupGameByCRC(db, crc32, &game) && !showFilename) {
 			title = QLatin1String(game.name);
 		}
 #endif

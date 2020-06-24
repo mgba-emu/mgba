@@ -657,6 +657,23 @@
          </property>
         </widget>
        </item>
+       <item row="20" column="0" colspan="2">
+        <widget class="Line" name="line_16">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="21" column="1">
+        <widget class="QCheckBox" name="showFilename">
+         <property name="text">
+          <string>Show filename instead of ROM name in title bar</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="emulation">

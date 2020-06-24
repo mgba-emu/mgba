@@ -328,7 +328,8 @@ void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config
 
 	mCoreConfigCopyValue(&core->config, config, "cheatAutosave");
 	mCoreConfigCopyValue(&core->config, config, "cheatAutoload");
-
+	mCoreConfigCopyValue(&core->config, config, "showFilename");
+	
 	core->loadConfig(core, config);
 }
 
