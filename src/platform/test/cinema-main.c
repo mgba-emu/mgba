@@ -10,6 +10,7 @@
 #include <mgba/feature/commandline.h>
 #include <mgba/feature/video-logger.h>
 
+#include <mgba-util/png-io.h>
 #include <mgba-util/vector.h>
 #include <mgba-util/vfs.h>
 
@@ -40,6 +41,7 @@ enum CInemaStatus {
 	CI_FAIL,
 	CI_XPASS,
 	CI_XFAIL,
+	CI_ERROR,
 	CI_SKIP
 };
 
@@ -47,7 +49,6 @@ struct CInemaTest {
 	char directory[MAX_TEST];
 	char filename[MAX_TEST];
 	char name[MAX_TEST];
-	struct mCoreConfig config;
 	enum CInemaStatus status;
 	int failedFrames;
 };
@@ -55,11 +56,19 @@ struct CInemaTest {
 DECLARE_VECTOR(CInemaTestList, struct CInemaTest)
 DEFINE_VECTOR(CInemaTestList, struct CInemaTest)
 
+DECLARE_VECTOR(ImageList, void*)
+DEFINE_VECTOR(ImageList, void*)
+
 static bool showVersion = false;
 static bool showUsage = false;
 static char base[PATH_MAX] = {0};
 static bool dryRun = false;
 static int verbosity = 0;
+
+bool CInemaTestInit(struct CInemaTest*, const char* directory, const char* filename);
+void CInemaTestRun(struct CInemaTest*);
+
+static void _log(struct mLogger* log, int category, enum mLogLevel level, const char* format, va_list args);
 
 ATTRIBUTE_FORMAT(printf, 2, 3) void CIlog(int minlevel, const char* format, ...) {
 	if (verbosity < minlevel) {
@@ -80,9 +89,6 @@ ATTRIBUTE_FORMAT(printf, 2, 3) void CIerr(int minlevel, const char* format, ...)
 	vfprintf(stderr, format, args);
 	va_end(args);
 }
-
-bool CInemaTestInit(struct CInemaTest*, const char* directory, const char* filename);
-void CInemaTestDeinit(struct CInemaTest*);
 
 static bool parseCInemaArgs(int argc, char* const* argv) {
 	int ch;
@@ -139,7 +145,7 @@ static bool determineBase(int argc, char* const* argv) {
 }
 
 static bool collectTests(struct CInemaTestList* tests, const char* path) {
-	CIerr(1, "Considering path %s\n", path);
+	CIerr(2, "Considering path %s\n", path);
 	struct VDir* dir = VDirOpen(path);
 	if (!dir) {
 		return false;
@@ -197,7 +203,6 @@ static void reduceTestList(struct CInemaTestList* tests) {
 			++i;
 			continue;
 		}
-		CInemaTestDeinit(cur);
 		CInemaTestListShift(tests, i, 1);
 	}
 }
@@ -218,7 +223,134 @@ bool CInemaTestInit(struct CInemaTest* test, const char* directory, const char* 
 	return true;
 }
 
-void CInemaTestDeinit(struct CInemaTest* test) {
+void CInemaTestRun(struct CInemaTest* test) {
+	struct VDir* dir = VDirOpen(test->directory);
+	if (!dir) {
+		CIerr(0, "Failed to open test directory\n");
+		test->status = CI_ERROR;
+		return;
+	}
+	struct VFile* rom = dir->openFile(dir, test->filename, O_RDONLY);
+	if (!rom) {
+		CIerr(0, "Failed to open test\n");
+		test->status = CI_ERROR;
+		return;
+	}
+	struct mCore* core = mCoreFindVF(rom);
+	if (!core) {
+		CIerr(0, "Failed to load test\n");
+		test->status = CI_ERROR;
+		rom->close(rom);
+		return;
+	}
+	if (!core->init(core)) {
+		CIerr(0, "Failed to init test\n");
+		test->status = CI_ERROR;
+		core->deinit(core);
+		return;
+	}
+	unsigned width, height;
+	core->desiredVideoDimensions(core, &width, &height);
+	ssize_t bufferSize = width * height * BYTES_PER_PIXEL;
+	void* buffer = malloc(bufferSize);
+	if (!buffer) {
+		CIerr(0, "Failed to allocate video buffer\n");
+		test->status = CI_ERROR;
+		core->deinit(core);
+	}
+	core->setVideoBuffer(core, buffer, width);
+	mCoreConfigInit(&core->config, "cinema");
+
+	core->loadROM(core, rom);
+	core->reset(core);
+
+	test->status = CI_PASS;
+
+	unsigned minFrame = core->frameCounter(core);
+	unsigned limit = 9999;
+	size_t frame;
+	for (frame = 0; limit; ++frame, --limit) {
+		char baselineName[32];
+		snprintf(baselineName, sizeof(baselineName), "baseline_%04" PRIz "u.png", frame);
+		core->runFrame(core);
+		unsigned frameCounter = core->frameCounter(core);
+		if (frameCounter <= minFrame) {
+			break;
+		}
+		CIerr(2, "Test frame: %u\n", frameCounter);
+
+		struct VFile* baselineVF = dir->openFile(dir, baselineName, O_RDONLY);
+		if (!baselineVF) {
+			test->status = CI_FAIL;
+		} else {
+			png_structp png = PNGReadOpen(baselineVF, 0);
+			png_infop info = png_create_info_struct(png);
+			png_infop end = png_create_info_struct(png);
+			if (!png || !info || !end || !PNGReadHeader(png, info)) {
+				PNGReadClose(png, info, end);
+				CIerr(1, "Failed to load %s\n", baselineName);
+				test->status = CI_ERROR;
+			} else {
+				unsigned pwidth = png_get_image_width(png, info);
+				unsigned pheight = png_get_image_height(png, info);
+				unsigned twidth, theight;
+				core->desiredVideoDimensions(core, &twidth, &theight);
+				if (pheight != theight || pwidth != twidth) {
+					PNGReadClose(png, info, end);
+					CIerr(1, "Size mismatch for %s, expected %ux%u, got %ux%u\n", baselineName, pwidth, pheight, twidth, theight);
+					test->status = CI_FAIL;
+				} else {
+					uint8_t* pixels = malloc(pwidth * pheight * BYTES_PER_PIXEL);
+					if (!pixels) {
+						CIerr(1, "Failed to allocate baseline buffer\n");
+						test->status = CI_ERROR;
+					} else {
+						if (!PNGReadPixels(png, info, pixels, pwidth, pheight, pwidth) || !PNGReadFooter(png, end)) {
+							CIerr(1, "Failed to read %s\n", baselineName);
+							test->status = CI_ERROR;
+						} else {
+							uint8_t* testPixels = buffer;
+							size_t x;
+							size_t y;
+							for (y = 0; y < theight; ++y) {
+								for (x = 0; x < twidth; ++x) {
+									size_t pix = pwidth * y + x;
+									size_t tpix = width * y + x;
+									int testR = testPixels[tpix * 4 + 0];
+									int testG = testPixels[tpix * 4 + 1];
+									int testB = testPixels[tpix * 4 + 2];
+									int expectR = pixels[pix * 4 + 0];
+									int expectG = pixels[pix * 4 + 1];
+									int expectB = pixels[pix * 4 + 2];
+									int r = expectR - testR;
+									int g = expectG - testG;
+									int b = expectB - testB;
+									if (r | g | b) {
+										CIerr(2, "Frame %u failed at pixel %" PRIz "ux%" PRIz "u with diff %i,%i,%i (expected %02x%02x%02x, got %02x%02x%02x)\n",
+										    frameCounter, x, y, r, g, b,
+										    expectR, expectG, expectB,
+										    testR, testG, testB);
+										test->status = CI_FAIL;
+										++test->failedFrames;
+									}
+								}
+							}
+						}
+					}
+					PNGReadClose(png, info, end);
+					free(pixels);
+				}
+			}
+			baselineVF->close(baselineVF);
+		}
+	}
+
+	free(buffer);
+	core->deinit(core);
+	dir->close(dir);
+}
+
+void _log(struct mLogger* log, int category, enum mLogLevel level, const char* format, va_list args) {
 	// TODO: Write
 }
 
@@ -255,6 +387,9 @@ int main(int argc, char** argv) {
 
 	struct CInemaTestList tests;
 	CInemaTestListInit(&tests, 0);
+
+	struct mLogger logger = { .log = _log };
+	mLogSetDefaultLogger(&logger);
 
 	if (argc > 0) {
 		size_t i;
@@ -298,20 +433,38 @@ int main(int argc, char** argv) {
 		reduceTestList(&tests);
 	}
 
-	if (dryRun) {
-		size_t i;
-		for (i = 0; i < CInemaTestListSize(&tests); ++i) {
-			struct CInemaTest* test = CInemaTestListGetPointer(&tests, i);
-			CIlog(-1, "%s\n", test->name);
-		}
-	} else {
-		// TODO: Write
-	}
-
 	size_t i;
 	for (i = 0; i < CInemaTestListSize(&tests); ++i) {
 		struct CInemaTest* test = CInemaTestListGetPointer(&tests, i);
-		CInemaTestDeinit(test);
+		if (dryRun) {
+			CIlog(-1, "%s\n", test->name);
+		} else {
+			CIerr(1, "%s: ", test->name);
+			CInemaTestRun(test);
+			switch (test->status) {
+			case CI_PASS:
+				CIerr(1, "pass");
+				break;
+			case CI_FAIL:
+				status = 1;
+				CIerr(1, "fail");
+				break;
+			case CI_XPASS:
+				CIerr(1, "xpass");
+				break;
+			case CI_XFAIL:
+				CIerr(1, "xfail");
+				break;
+			case CI_SKIP:
+				CIerr(1, "skip");
+				break;
+			case CI_ERROR:
+				status = 1;
+				CIerr(1, "error");
+				break;
+			}
+			CIerr(1, "\n");
+		}
 	}
 
 	CInemaTestListDeinit(&tests);
