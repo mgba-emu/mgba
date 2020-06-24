@@ -2,7 +2,6 @@
 Features:
  - e-Reader card scanning
  - Add APNG recording
- - Setting to display the file name of the currently loaded ROM instead of the game name in the title bar (closes mgba.io/i/1784)
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
@@ -37,6 +36,7 @@ Misc:
  - Qt: Add hex index to palette view
  - Qt: Add transformation matrix info to sprite view
  - Qt: Add per-page scrolling to memory view (fixes mgba.io/i/1795)
+ - Qt: Setting to display the file name of the currently loaded ROM instead of the game name in the title bar (closes mgba.io/i/1784)
 
 0.8.2: (2020-06-14)
 Emulation fixes:

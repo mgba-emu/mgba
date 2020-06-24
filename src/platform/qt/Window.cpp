@@ -1030,12 +1030,13 @@ void Window::updateTitle(float fps) {
 		const NoIntroDB* db = GBAApp::app()->gameDB();
 		NoIntroGame game{};
 		uint32_t crc32 = 0;
-		m_controller->thread()->core->checksum(m_controller->thread()->core, &crc32, CHECKSUM_CRC32);
-		
 		mCore* core = m_controller->thread()->core;
-		
-		if (m_config->getOption("showFilename").toInt()) {
-			title = core->dirs.baseName;
+		core->checksum(m_controller->thread()->core, &crc32, CHECKSUM_CRC32);
+		QString filePath = windowFilePath();
+
+		if (m_config->getOption("showFilename").toInt() && !filePath.isNull()) {
+			QFileInfo fileInfo(filePath);
+			title = fileInfo.fileName();
 		} else {
 			char gameTitle[17] = { '\0' };
 			core->getGameTitle(core, gameTitle);
