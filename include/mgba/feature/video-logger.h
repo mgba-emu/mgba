@@ -10,6 +10,8 @@
 
 CXX_GUARD_START
 
+#include <mgba/core/core.h>
+
 #include <mgba-util/circle-buffer.h>
 
 #define mVL_MAX_CHANNELS 32
@@ -128,6 +130,7 @@ void mVideoLoggerInjectVideoRegister(struct mVideoLogger* logger, uint32_t addre
 void mVideoLoggerInjectPalette(struct mVideoLogger* logger, uint32_t address, uint16_t value);
 void mVideoLoggerInjectOAM(struct mVideoLogger* logger, uint32_t address, uint16_t value);
 
+enum mPlatform mVideoLogIsCompatible(struct VFile*);
 struct mCore* mVideoLogCoreFind(struct VFile*);
 
 CXX_GUARD_END
