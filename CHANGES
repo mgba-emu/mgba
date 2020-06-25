@@ -3,6 +3,7 @@ Emulation fixes:
  - GB Memory: Fix OAM DMA from top 8 kB
  - GB MBC: Fix MBC1 RAM enable bit selection
  - GB MBC: Fix MBC2 bit selection
+ - GBA BIOS: Fix reloading video registers after reset (fixes mgba.io/i/1808)
 Other fixes:
  - All: Correct format strings for some numbers on Windows (fixes mgba.io/i/1794)
  - GB Core: Fix extracting SRAM when none is present
