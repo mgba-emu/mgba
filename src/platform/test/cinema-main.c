@@ -303,7 +303,36 @@ bool CInemaConfigGetUInt(struct Table* configTree, const char* testName, const c
 
 void CInemaConfigLoad(struct Table* configTree, const char* testName, struct mCore* core) {
 	_loadConfigTree(configTree, testName);
-	// TODO: Write
+
+	char testKey[MAX_TEST] = {0};
+	char* keyEnd = testKey;
+	const char* pos;
+	while (true) {
+		pos = strchr(testName, '.');
+		size_t maxlen = sizeof(testKey) - (keyEnd - testKey) - 1;
+		size_t len;
+		if (pos) {
+			len = pos - testName;
+		} else {
+			len = strlen(testName);
+		}
+		if (len > maxlen) {
+			len = maxlen;
+		}
+		strncpy(keyEnd, testName, len);
+		keyEnd += len;
+
+		struct mCoreConfig* config = HashTableLookup(configTree, testKey);
+		if (config) {
+			core->loadConfig(core, config);
+		}
+		if (!pos) {
+			break;
+		}
+		testName = pos + 1;
+		keyEnd[0] = '.';
+		++keyEnd;
+	}
 }
 
 bool CInemaTestInit(struct CInemaTest* test, const char* directory, const char* filename) {
