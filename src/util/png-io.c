@@ -273,6 +273,10 @@ bool PNGIgnorePixels(png_structp png, png_infop info) {
 }
 
 bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width, unsigned height, unsigned stride) {
+	if (png_get_channels(png, info) != 3) {
+		return false;
+	}
+
 	if (setjmp(png_jmpbuf(png))) {
 		return false;
 	}
@@ -324,6 +328,10 @@ bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width
 }
 
 bool PNGReadPixelsA(png_structp png, png_infop info, void* pixels, unsigned width, unsigned height, unsigned stride) {
+	if (png_get_channels(png, info) != 4) {
+		return false;
+	}
+
 	if (setjmp(png_jmpbuf(png))) {
 		return false;
 	}
@@ -375,6 +383,10 @@ bool PNGReadPixelsA(png_structp png, png_infop info, void* pixels, unsigned widt
 }
 
 bool PNGReadPixels8(png_structp png, png_infop info, void* pixels, unsigned width, unsigned height, unsigned stride) {
+	if (png_get_channels(png, info) != 1) {
+		return false;
+	}
+
 	if (setjmp(png_jmpbuf(png))) {
 		return false;
 	}
