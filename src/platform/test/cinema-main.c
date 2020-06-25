@@ -51,7 +51,11 @@ struct CInemaTest {
 	char filename[MAX_TEST];
 	char name[MAX_TEST];
 	enum CInemaStatus status;
-	int failedFrames;
+	unsigned failedFrames;
+	uint64_t failedPixels;
+	unsigned totalFrames;
+	uint64_t totalDistance;
+	uint64_t totalPixels;
 };
 
 DECLARE_VECTOR(CInemaTestList, struct CInemaTest)
@@ -164,23 +168,23 @@ static bool collectTests(struct CInemaTestList* tests, const char* path) {
 				return false;
 			}
 		} else if (entry->type(entry) == VFS_FILE && strncmp(entry->name(entry), "test.", 5) == 0) {
-			CIerr(2, "Found potential test %s\n", subpath);
+			CIerr(3, "Found potential test %s\n", subpath);
 			struct VFile* vf = dir->openFile(dir, entry->name(entry), O_RDONLY);
 			if (vf) {
 				if (mCoreIsCompatible(vf) != PLATFORM_NONE || mVideoLogIsCompatible(vf) != PLATFORM_NONE) {
 					struct CInemaTest* test = CInemaTestListAppend(tests);
 					if (!CInemaTestInit(test, path, entry->name(entry))) {
-						CIerr(2, "Failed to create test\n");
+						CIerr(3, "Failed to create test\n");
 						CInemaTestListResize(tests, -1);
 					} else {
-						CIerr(1, "Found test %s\n", test->name);
+						CIerr(2, "Found test %s\n", test->name);
 					}
 				} else {
-					CIerr(2, "Not a compatible file\n");
+					CIerr(3, "Not a compatible file\n");
 				}
 				vf->close(vf);
 			} else {
-				CIerr(2, "Failed to open file\n");
+				CIerr(3, "Failed to open file\n");
 			}
 		}
 		entry = dir->listNext(dir);
@@ -236,11 +240,11 @@ static void testToPath(const char* testName, char* path) {
 
 static void _loadConfigTree(struct Table* configTree, const char* testName) {
 	char key[MAX_TEST];
-	strncpy(key, testName, sizeof(key));
+	strncpy(key, testName, sizeof(key) - 1);
 
 	struct mCoreConfig* config;
 	while (!(config = HashTableLookup(configTree, key))) {
-		char path[PATH_MAX - 1];
+		char path[PATH_MAX];
 		config = malloc(sizeof(*config));
 		mCoreConfigInit(config, "cinema");
 		testToPath(key, path);
@@ -266,7 +270,7 @@ static const char* _lookupValue(struct Table* configTree, const char* testName, 
 	_loadConfigTree(configTree, testName);
 
 	char testKey[MAX_TEST];
-	strncpy(testKey, testName, sizeof(testKey));
+	strncpy(testKey, testName, sizeof(testKey) - 1);
 
 	struct mCoreConfig* config;
 	while (true) {
@@ -339,10 +343,11 @@ bool CInemaTestInit(struct CInemaTest* test, const char* directory, const char* 
 	if (strncmp(base, directory, strlen(base)) != 0) {
 		return false;
 	}
-	strncpy(test->directory, directory, sizeof(test->directory));
-	strncpy(test->filename, filename, sizeof(test->filename));
+	memset(test, 0, sizeof(*test));
+	strncpy(test->directory, directory, sizeof(test->directory) - 1);
+	strncpy(test->filename, filename, sizeof(test->filename) - 1);
 	directory += strlen(base) + 1;
-	strncpy(test->name, directory, sizeof(test->name));
+	strncpy(test->name, directory, sizeof(test->name) - 1);
 	char* str = strstr(test->name, PATH_SEP);
 	while (str) {
 		str[0] = '.';
@@ -352,6 +357,13 @@ bool CInemaTestInit(struct CInemaTest* test, const char* directory, const char* 
 }
 
 void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
+	unsigned ignore = 0;
+	CInemaConfigGetUInt(configTree, test->name, "ignore", &ignore);
+	if (ignore) {
+		test->status = CI_SKIP;
+		return;
+	}
+
 	struct VDir* dir = VDirOpen(test->directory);
 	if (!dir) {
 		CIerr(0, "Failed to open test directory\n");
@@ -412,11 +424,12 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 		char baselineName[32];
 		snprintf(baselineName, sizeof(baselineName), "baseline_%04" PRIz "u.png", frame);
 		core->runFrame(core);
+		++test->totalFrames;
 		unsigned frameCounter = core->frameCounter(core);
 		if (frameCounter <= minFrame) {
 			break;
 		}
-		CIerr(2, "Test frame: %u\n", frameCounter);
+		CIerr(3, "Test frame: %u\n", frameCounter);
 
 		struct VFile* baselineVF = dir->openFile(dir, baselineName, O_RDONLY);
 		if (!baselineVF) {
@@ -443,38 +456,57 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 					if (!pixels) {
 						CIerr(1, "Failed to allocate baseline buffer\n");
 						test->status = CI_ERROR;
+					} else if (!PNGReadPixels(png, info, pixels, pwidth, pheight, pwidth) || !PNGReadFooter(png, end)) {
+						CIerr(1, "Failed to read %s\n", baselineName);
+						test->status = CI_ERROR;
 					} else {
-						if (!PNGReadPixels(png, info, pixels, pwidth, pheight, pwidth) || !PNGReadFooter(png, end)) {
-							CIerr(1, "Failed to read %s\n", baselineName);
-							test->status = CI_ERROR;
-						} else {
-							uint8_t* testPixels = buffer;
-							size_t x;
-							size_t y;
-							for (y = 0; y < theight; ++y) {
-								for (x = 0; x < twidth; ++x) {
-									size_t pix = pwidth * y + x;
-									size_t tpix = width * y + x;
-									int testR = testPixels[tpix * 4 + 0];
-									int testG = testPixels[tpix * 4 + 1];
-									int testB = testPixels[tpix * 4 + 2];
-									int expectR = pixels[pix * 4 + 0];
-									int expectG = pixels[pix * 4 + 1];
-									int expectB = pixels[pix * 4 + 2];
-									int r = expectR - testR;
-									int g = expectG - testG;
-									int b = expectB - testB;
-									if (r | g | b) {
-										CIerr(2, "Frame %u failed at pixel %" PRIz "ux%" PRIz "u with diff %i,%i,%i (expected %02x%02x%02x, got %02x%02x%02x)\n",
-										    frameCounter, x, y, r, g, b,
-										    expectR, expectG, expectB,
-										    testR, testG, testB);
-										test->status = CI_FAIL;
-										++test->failedFrames;
+						uint8_t* testPixels = buffer;
+						size_t x;
+						size_t y;
+						bool failed = false;
+						for (y = 0; y < theight; ++y) {
+							for (x = 0; x < twidth; ++x) {
+								size_t pix = pwidth * y + x;
+								size_t tpix = width * y + x;
+								int testR = testPixels[tpix * 4 + 0];
+								int testG = testPixels[tpix * 4 + 1];
+								int testB = testPixels[tpix * 4 + 2];
+								int expectR = pixels[pix * 4 + 0];
+								int expectG = pixels[pix * 4 + 1];
+								int expectB = pixels[pix * 4 + 2];
+								int r = expectR - testR;
+								int g = expectG - testG;
+								int b = expectB - testB;
+								if (r | g | b) {
+									failed = true;
+									CIerr(3, "Frame %u failed at pixel %" PRIz "ux%" PRIz "u with diff %i,%i,%i (expected %02x%02x%02x, got %02x%02x%02x)\n",
+									    frameCounter, x, y, r, g, b,
+									    expectR, expectG, expectB,
+									    testR, testG, testB);
+									test->status = CI_FAIL;
+									if (r < 0) {
+										test->totalDistance -= r;
+									} else {
+										test->totalDistance += r;
 									}
+									if (g < 0) {
+										test->totalDistance -= g;
+									} else {
+										test->totalDistance += g;
+									}
+									if (b < 0) {
+										test->totalDistance -= b;
+									} else {
+										test->totalDistance += b;
+									}
+									++test->failedPixels;
 								}
 							}
 						}
+						if (failed) {
+							++test->failedFrames;
+						}
+						test->totalPixels += theight * twidth;
 					}
 					PNGReadClose(png, info, end);
 					free(pixels);
@@ -594,6 +626,12 @@ int main(int argc, char** argv) {
 				CIerr(1, "error");
 				break;
 			}
+			if (test->failedFrames) {
+				CIerr(2, "\n\tfailed frames: %u/%u (%1.3g%%)", test->failedFrames, test->totalFrames, test->failedFrames / (test->totalFrames * 0.01));
+				CIerr(2, "\n\tfailed pixels: %" PRIu64 "/%" PRIu64 " (%1.3g%%)", test->failedPixels, test->totalPixels, test->failedPixels / (test->totalPixels * 0.01));
+				CIerr(2, "\n\tdistance: %" PRIu64 "/%" PRIu64 " (%1.3g%%)", test->totalDistance, test->totalPixels * 765, test->totalDistance / (test->totalPixels * 7.65));
+			}
+
 			CIerr(1, "\n");
 		}
 	}
