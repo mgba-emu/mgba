@@ -11,6 +11,7 @@
 #include <mgba/feature/video-logger.h>
 
 #include <mgba-util/png-io.h>
+#include <mgba-util/table.h>
 #include <mgba-util/vector.h>
 #include <mgba-util/vfs.h>
 
@@ -66,7 +67,10 @@ static bool dryRun = false;
 static int verbosity = 0;
 
 bool CInemaTestInit(struct CInemaTest*, const char* directory, const char* filename);
-void CInemaTestRun(struct CInemaTest*);
+void CInemaTestRun(struct CInemaTest*, struct Table* configTree);
+
+bool CInemaConfigGetUInt(struct Table* configTree, const char* testName, const char* key, unsigned* value);
+void CInemaConfigLoad(struct Table* configTree, const char* testName, struct mCore* core);
 
 static void _log(struct mLogger* log, int category, enum mLogLevel level, const char* format, va_list args);
 
@@ -207,6 +211,101 @@ static void reduceTestList(struct CInemaTestList* tests) {
 	}
 }
 
+static void testToPath(const char* testName, char* path) {
+	strncpy(path, base, PATH_MAX);
+
+	bool dotSeen = true;
+	size_t i;
+	for (i = strlen(path); testName[0] && i < PATH_MAX; ++testName) {
+		if (testName[0] == '.') {
+			dotSeen = true;
+		} else {
+			if (dotSeen) {
+				strncpy(&path[i], PATH_SEP, PATH_MAX - i);
+				i += strlen(PATH_SEP);
+				dotSeen = false;
+				if (!i) {
+					break;
+				}
+			}
+			path[i] = testName[0];
+			++i;
+		}
+	}
+}
+
+static void _loadConfigTree(struct Table* configTree, const char* testName) {
+	char key[MAX_TEST];
+	strncpy(key, testName, sizeof(key));
+
+	struct mCoreConfig* config;
+	while (!(config = HashTableLookup(configTree, key))) {
+		char path[PATH_MAX - 1];
+		config = malloc(sizeof(*config));
+		mCoreConfigInit(config, "cinema");
+		testToPath(key, path);
+		strncat(path, PATH_SEP, sizeof(path) - 1);
+		strncat(path, "config.ini", sizeof(path) - 1);
+		mCoreConfigLoadPath(config, path);
+		HashTableInsert(configTree, key, config);
+		char* pos = strrchr(key, '.');
+		if (!pos) {
+			break;
+		}
+		pos[0] = '\0';
+	}
+}
+
+static void _unloadConfigTree(const char* key, void* value, void* user) {
+	UNUSED(key);
+	UNUSED(user);
+	mCoreConfigDeinit(value);
+}
+
+static const char* _lookupValue(struct Table* configTree, const char* testName, const char* key) {
+	_loadConfigTree(configTree, testName);
+
+	char testKey[MAX_TEST];
+	strncpy(testKey, testName, sizeof(testKey));
+
+	struct mCoreConfig* config;
+	while (true) {
+		config = HashTableLookup(configTree, testKey);
+		if (!config) {
+			continue;
+		}
+		const char* str = ConfigurationGetValue(&config->configTable, "testinfo", key);
+		if (str) {
+			return str;
+		}
+		char* pos = strrchr(testKey, '.');
+		if (!pos) {
+			break;
+		}
+		pos[0] = '\0';
+	}
+	return NULL;
+}
+
+bool CInemaConfigGetUInt(struct Table* configTree, const char* testName, const char* key, unsigned* out) {
+	const char* charValue = _lookupValue(configTree, testName, key);
+	if (!charValue) {
+		return false;
+	}
+	char* end;
+	unsigned long value = strtoul(charValue, &end, 10);
+	if (*end) {
+		return false;
+	}
+	*out = value;
+	return true;
+}
+
+void CInemaConfigLoad(struct Table* configTree, const char* testName, struct mCore* core) {
+	_loadConfigTree(configTree, testName);
+	// TODO: Write
+}
+
 bool CInemaTestInit(struct CInemaTest* test, const char* directory, const char* filename) {
 	if (strncmp(base, directory, strlen(base)) != 0) {
 		return false;
@@ -223,7 +322,7 @@ bool CInemaTestInit(struct CInemaTest* test, const char* directory, const char* 
 	return true;
 }
 
-void CInemaTestRun(struct CInemaTest* test) {
+void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 	struct VDir* dir = VDirOpen(test->directory);
 	if (!dir) {
 		CIerr(0, "Failed to open test directory\n");
@@ -261,14 +360,25 @@ void CInemaTestRun(struct CInemaTest* test) {
 	core->setVideoBuffer(core, buffer, width);
 	mCoreConfigInit(&core->config, "cinema");
 
+	unsigned limit = 9999;
+	unsigned skip = 0;
+	unsigned fail = 0;
+
+	CInemaConfigGetUInt(configTree, test->name, "frames", &limit);
+	CInemaConfigGetUInt(configTree, test->name, "skip", &skip);
+	CInemaConfigGetUInt(configTree, test->name, "fail", &fail);
+	CInemaConfigLoad(configTree, test->name, core);
+
 	core->loadROM(core, rom);
 	core->reset(core);
 
 	test->status = CI_PASS;
 
 	unsigned minFrame = core->frameCounter(core);
-	unsigned limit = 9999;
 	size_t frame;
+	for (frame = 0; frame < skip; ++frame) {
+		core->runFrame(core);
+	}
 	for (frame = 0; limit; ++frame, --limit) {
 		char baselineName[32];
 		snprintf(baselineName, sizeof(baselineName), "baseline_%04" PRIz "u.png", frame);
@@ -345,7 +455,16 @@ void CInemaTestRun(struct CInemaTest* test) {
 		}
 	}
 
+	if (fail) {
+		if (test->status == CI_FAIL) {
+			test->status = CI_XFAIL;
+		} else if (test->status == CI_PASS) {
+			test->status = CI_XPASS;
+		}
+	}
+
 	free(buffer);
+	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 	dir->close(dir);
 }
@@ -395,27 +514,7 @@ int main(int argc, char** argv) {
 		size_t i;
 		for (i = 0; i < (size_t) argc; ++i) {
 			char path[PATH_MAX + 1] = {0};
-			char* arg = argv[i];
-			strncpy(path, base, sizeof(path));
-
-			bool dotSeen = true;
-			size_t j;
-			for (arg = argv[i], j = strlen(path); arg[0] && j < sizeof(path); ++arg) {
-				if (arg[0] == '.') {
-					dotSeen = true;
-				} else {
-					if (dotSeen) {
-						strncpy(&path[j], PATH_SEP, sizeof(path) - j);
-						j += strlen(PATH_SEP);
-						dotSeen = false;
-						if (!j) {
-							break;
-						}
-					}
-					path[j] = arg[0];
-					++j;
-				}
-			}
+			testToPath(argv[i], path);
 
 			if (!collectTests(&tests, path)) {
 				status = 1;
@@ -433,6 +532,9 @@ int main(int argc, char** argv) {
 		reduceTestList(&tests);
 	}
 
+	struct Table configTree;
+	HashTableInit(&configTree, 0, free);
+
 	size_t i;
 	for (i = 0; i < CInemaTestListSize(&tests); ++i) {
 		struct CInemaTest* test = CInemaTestListGetPointer(&tests, i);
@@ -440,7 +542,7 @@ int main(int argc, char** argv) {
 			CIlog(-1, "%s\n", test->name);
 		} else {
 			CIerr(1, "%s: ", test->name);
-			CInemaTestRun(test);
+			CInemaTestRun(test, &configTree);
 			switch (test->status) {
 			case CI_PASS:
 				CIerr(1, "pass");
@@ -467,6 +569,8 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	HashTableEnumerate(&configTree, _unloadConfigTree, NULL);
+	HashTableDeinit(&configTree);
 	CInemaTestListDeinit(&tests);
 
 cleanup:
