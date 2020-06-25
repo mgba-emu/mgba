@@ -14,6 +14,7 @@ Emulation fixes:
  - GBA: Fix timing advancing too quickly in rare cases
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing
+ - GBA BIOS: Fix reloading video registers after reset (fixes mgba.io/i/1808)
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA Memory: Improve gamepak prefetch timing
  - GBA SIO: Fix copying Normal mode transfer values
