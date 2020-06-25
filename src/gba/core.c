@@ -1224,7 +1224,7 @@ static bool _GBAVLPInit(struct mCore* core) {
 static void _GBAVLPDeinit(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	if (gbacore->logContext) {
-		mVideoLogContextDestroy(core, gbacore->logContext);
+		mVideoLogContextDestroy(core, gbacore->logContext, true);
 	}
 	_GBACoreDeinit(core);
 }
@@ -1253,7 +1253,7 @@ static bool _GBAVLPLoadROM(struct mCore* core, struct VFile* vf) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->logContext = mVideoLogContextCreate(NULL);
 	if (!mVideoLogContextLoad(gbacore->logContext, vf)) {
-		mVideoLogContextDestroy(core, gbacore->logContext);
+		mVideoLogContextDestroy(core, gbacore->logContext, false);
 		gbacore->logContext = NULL;
 		return false;
 	}

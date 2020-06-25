@@ -871,9 +871,8 @@ void CoreController::endVideoLog(bool closeVf) {
 	}
 
 	Interrupter interrupter(this);
-	mVideoLogContextDestroy(m_threadContext.core, m_vl);
-	if (m_vlVf && closeVf) {
-		m_vlVf->close(m_vlVf);
+	mVideoLogContextDestroy(m_threadContext.core, m_vl, closeVf);
+	if (closeVf) {
 		m_vlVf = nullptr;
 	}
 	m_vl = nullptr;

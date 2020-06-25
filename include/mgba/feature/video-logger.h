@@ -117,7 +117,7 @@ void mVideoLogContextSetOutput(struct mVideoLogContext*, struct VFile*);
 void mVideoLogContextWriteHeader(struct mVideoLogContext*, struct mCore* core);
 
 bool mVideoLogContextLoad(struct mVideoLogContext*, struct VFile*);
-void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext*);
+void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext*, bool closeVF);
 
 void mVideoLogContextRewind(struct mVideoLogContext*, struct mCore*);
 void* mVideoLogContextInitialState(struct mVideoLogContext*, size_t* size);

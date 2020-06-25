@@ -723,7 +723,7 @@ static void _flushBuffer(struct mVideoLogContext* context) {
 	}
 }
 
-void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* context) {
+void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* context, bool closeVF) {
 	if (context->write) {
 		_flushBuffer(context);
 
@@ -749,6 +749,10 @@ void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* contex
 			context->channels[i].inflating = false;
 		}
 #endif
+	}
+
+	if (closeVF && context->backing) {
+		context->backing->close(context->backing);
 	}
 
 	free(context);
