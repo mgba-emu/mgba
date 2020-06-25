@@ -11,6 +11,7 @@ Other fixes:
  - GB Core: Fix extracting SRAM when none is present
  - GBA Savedata: Fix extracting save when not yet configured in-game
  - Qt: Fix file handle leak on opening an invalid ROM
+ - Qt: Fix Italian RTC translation (fixes mgba.io/i/1798)
 Misc:
  - Qt: Add per-page scrolling to memory view (fixes mgba.io/i/1795)
  - Qt: Add setting to display ROM filename in title (closes mgba.io/i/1784)
