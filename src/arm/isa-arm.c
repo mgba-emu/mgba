@@ -446,9 +446,9 @@ ATTRIBUTE_NOINLINE static void _neutralS(struct ARMCore* cpu, int32_t d) {
 		uint32_t address = cpu->gprs[rn]; \
 		S_PRE; \
 		address = cpu->memory. LS ## Multiple(cpu, address, rs, LSM_ ## DIRECTION, &currentCycles); \
+		WRITEBACK; \
 		S_POST; \
-		POST_BODY; \
-		WRITEBACK;)
+		POST_BODY;)
 
 
 #define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(NAME, LS, POST_BODY) \
