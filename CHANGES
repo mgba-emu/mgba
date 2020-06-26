@@ -1,5 +1,6 @@
 0.8.3: (Future)
 Emulation fixes:
+ - ARM: Fix LDM^ writeback to user-mode register
  - GB Memory: Fix OAM DMA from top 8 kB
  - GB MBC: Fix MBC1 RAM enable bit selection
  - GB MBC: Fix MBC2 bit selection
