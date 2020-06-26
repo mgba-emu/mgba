@@ -356,6 +356,57 @@ bool CInemaTestInit(struct CInemaTest* test, const char* directory, const char* 
 	return true;
 }
 
+static void* _loadBaseline(struct VDir* dir, const struct mCore* core, size_t frame, enum CInemaStatus* status) {
+	char baselineName[32];
+	snprintf(baselineName, sizeof(baselineName), "baseline_%04" PRIz "u.png", frame);
+	struct VFile* baselineVF = dir->openFile(dir, baselineName, O_RDONLY);
+	if (!baselineVF) {
+		*status = CI_FAIL;
+		return NULL;
+	}
+
+	png_structp png = PNGReadOpen(baselineVF, 0);
+	png_infop info = png_create_info_struct(png);
+	png_infop end = png_create_info_struct(png);
+	if (!png || !info || !end || !PNGReadHeader(png, info)) {
+		PNGReadClose(png, info, end);
+		baselineVF->close(baselineVF);
+		CIerr(1, "Failed to load %s\n", baselineName);
+		*status = CI_ERROR;
+		return NULL;
+	}
+
+	unsigned pwidth = png_get_image_width(png, info);
+	unsigned pheight = png_get_image_height(png, info);
+	unsigned width, height;
+	core->desiredVideoDimensions(core, &width, &height);
+	if (pheight != height || pwidth != width) {
+		PNGReadClose(png, info, end);
+		baselineVF->close(baselineVF);
+		CIerr(1, "Size mismatch for %s, expected %ux%u, got %ux%u\n", baselineName, pwidth, pheight, width, height);
+		*status = CI_FAIL;
+		return NULL;
+	}
+
+	uint8_t* pixels = malloc(pwidth * pheight * BYTES_PER_PIXEL);
+	if (!pixels) {
+		CIerr(1, "Failed to allocate baseline buffer\n");
+		*status = CI_ERROR;
+		PNGReadClose(png, info, end);
+		baselineVF->close(baselineVF);
+		return NULL;
+	}
+	if (!PNGReadPixels(png, info, pixels, pwidth, pheight, pwidth) || !PNGReadFooter(png, end)) {
+		CIerr(1, "Failed to read %s\n", baselineName);
+		*status = CI_ERROR;
+		free(pixels);
+		pixels = NULL;
+	}
+	PNGReadClose(png, info, end);
+	baselineVF->close(baselineVF);
+	return pixels;
+}
+
 void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 	unsigned ignore = 0;
 	CInemaConfigGetUInt(configTree, test->name, "ignore", &ignore);
@@ -421,8 +472,6 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 		core->runFrame(core);
 	}
 	for (frame = 0; limit; ++frame, --limit) {
-		char baselineName[32];
-		snprintf(baselineName, sizeof(baselineName), "baseline_%04" PRIz "u.png", frame);
 		core->runFrame(core);
 		++test->totalFrames;
 		unsigned frameCounter = core->frameCounter(core);
@@ -430,89 +479,58 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 			break;
 		}
 		CIerr(3, "Test frame: %u\n", frameCounter);
-
-		struct VFile* baselineVF = dir->openFile(dir, baselineName, O_RDONLY);
-		if (!baselineVF) {
-			test->status = CI_FAIL;
-		} else {
-			png_structp png = PNGReadOpen(baselineVF, 0);
-			png_infop info = png_create_info_struct(png);
-			png_infop end = png_create_info_struct(png);
-			if (!png || !info || !end || !PNGReadHeader(png, info)) {
-				PNGReadClose(png, info, end);
-				CIerr(1, "Failed to load %s\n", baselineName);
-				test->status = CI_ERROR;
-			} else {
-				unsigned pwidth = png_get_image_width(png, info);
-				unsigned pheight = png_get_image_height(png, info);
-				unsigned twidth, theight;
-				core->desiredVideoDimensions(core, &twidth, &theight);
-				if (pheight != theight || pwidth != twidth) {
-					PNGReadClose(png, info, end);
-					CIerr(1, "Size mismatch for %s, expected %ux%u, got %ux%u\n", baselineName, pwidth, pheight, twidth, theight);
-					test->status = CI_FAIL;
-				} else {
-					uint8_t* pixels = malloc(pwidth * pheight * BYTES_PER_PIXEL);
-					if (!pixels) {
-						CIerr(1, "Failed to allocate baseline buffer\n");
-						test->status = CI_ERROR;
-					} else if (!PNGReadPixels(png, info, pixels, pwidth, pheight, pwidth) || !PNGReadFooter(png, end)) {
-						CIerr(1, "Failed to read %s\n", baselineName);
-						test->status = CI_ERROR;
-					} else {
-						uint8_t* testPixels = buffer;
-						size_t x;
-						size_t y;
-						bool failed = false;
-						for (y = 0; y < theight; ++y) {
-							for (x = 0; x < twidth; ++x) {
-								size_t pix = pwidth * y + x;
-								size_t tpix = width * y + x;
-								int testR = testPixels[tpix * 4 + 0];
-								int testG = testPixels[tpix * 4 + 1];
-								int testB = testPixels[tpix * 4 + 2];
-								int expectR = pixels[pix * 4 + 0];
-								int expectG = pixels[pix * 4 + 1];
-								int expectB = pixels[pix * 4 + 2];
-								int r = expectR - testR;
-								int g = expectG - testG;
-								int b = expectB - testB;
-								if (r | g | b) {
-									failed = true;
-									CIerr(3, "Frame %u failed at pixel %" PRIz "ux%" PRIz "u with diff %i,%i,%i (expected %02x%02x%02x, got %02x%02x%02x)\n",
-									    frameCounter, x, y, r, g, b,
-									    expectR, expectG, expectB,
-									    testR, testG, testB);
-									test->status = CI_FAIL;
-									if (r < 0) {
-										test->totalDistance -= r;
-									} else {
-										test->totalDistance += r;
-									}
-									if (g < 0) {
-										test->totalDistance -= g;
-									} else {
-										test->totalDistance += g;
-									}
-									if (b < 0) {
-										test->totalDistance -= b;
-									} else {
-										test->totalDistance += b;
-									}
-									++test->failedPixels;
-								}
-							}
+		uint8_t* pixels = _loadBaseline(dir, core, frame, &test->status);
+		if (pixels) {
+			unsigned twidth, theight;
+			core->desiredVideoDimensions(core, &twidth, &theight);
+			uint8_t* testPixels = buffer;
+			size_t x;
+			size_t y;
+			bool failed = false;
+			for (y = 0; y < theight; ++y) {
+				for (x = 0; x < twidth; ++x) {
+					size_t pix = twidth * y + x;
+					size_t tpix = width * y + x;
+					int testR = testPixels[tpix * 4 + 0];
+					int testG = testPixels[tpix * 4 + 1];
+					int testB = testPixels[tpix * 4 + 2];
+					int expectR = pixels[pix * 4 + 0];
+					int expectG = pixels[pix * 4 + 1];
+					int expectB = pixels[pix * 4 + 2];
+					int r = expectR - testR;
+					int g = expectG - testG;
+					int b = expectB - testB;
+					if (r | g | b) {
+						failed = true;
+						CIerr(3, "Frame %u failed at pixel %" PRIz "ux%" PRIz "u with diff %i,%i,%i (expected %02x%02x%02x, got %02x%02x%02x)\n",
+						    frameCounter, x, y, r, g, b,
+						    expectR, expectG, expectB,
+						    testR, testG, testB);
+						test->status = CI_FAIL;
+						if (r < 0) {
+							test->totalDistance -= r;
+						} else {
+							test->totalDistance += r;
 						}
-						if (failed) {
-							++test->failedFrames;
+						if (g < 0) {
+							test->totalDistance -= g;
+						} else {
+							test->totalDistance += g;
 						}
-						test->totalPixels += theight * twidth;
+						if (b < 0) {
+							test->totalDistance -= b;
+						} else {
+							test->totalDistance += b;
+						}
+						++test->failedPixels;
 					}
-					PNGReadClose(png, info, end);
-					free(pixels);
 				}
 			}
-			baselineVF->close(baselineVF);
+			if (failed) {
+				++test->failedFrames;
+			}
+			test->totalPixels += theight * twidth;
+			free(pixels);
 		}
 	}
 
