@@ -34,6 +34,7 @@ Other fixes:
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
  - Qt: Fix file handle leak on opening an invalid ROM
  - Qt: Fix a race condition in the frame inspector
+ - Qt: Fix Italian RTC translation (fixes mgba.io/i/1798)
 Misc:
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
