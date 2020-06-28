@@ -281,10 +281,13 @@ static void _loadConfigTree(struct Table* configTree, const char* testName) {
 		mCoreConfigLoadPath(config, path);
 		HashTableInsert(configTree, key, config);
 		char* pos = strrchr(key, '.');
-		if (!pos) {
+		if (pos) {
+			pos[0] = '\0';
+		} else if (key[0]) {
+			key[0] = '\0';
+		} else {
 			break;
 		}
-		pos[0] = '\0';
 	}
 }
 
@@ -311,10 +314,13 @@ static const char* _lookupValue(struct Table* configTree, const char* testName, 
 			return str;
 		}
 		char* pos = strrchr(testKey, '.');
-		if (!pos) {
+		if (pos) {
+			pos[0] = '\0';
+		} else if (testKey[0]) {
+			testKey[0] = '\0';
+		} else {
 			break;
 		}
-		pos[0] = '\0';
 	}
 	return NULL;
 }
