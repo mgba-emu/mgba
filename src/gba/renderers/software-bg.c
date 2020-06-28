@@ -128,7 +128,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode3(struct GBAVideoSoftwareRenderer
 void GBAVideoSoftwareRendererDrawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY) {
 	BACKGROUND_BITMAP_INIT;
 
-	uint16_t color = renderer->normalPalette[0];
+	uint16_t color = 0;
 	uint32_t offset = 0;
 	if (GBARegisterDISPCNTIsFrameSelect(renderer->dispcnt)) {
 		offset = 0xA000;
