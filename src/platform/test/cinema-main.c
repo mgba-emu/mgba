@@ -28,18 +28,19 @@
 #define MAX_TEST 200
 
 static const struct option longOpts[] = {
-	{ "base",      required_argument, 0, 'b' },
-	{ "diffs",     no_argument, 0, 'd' },
-	{ "help",      no_argument, 0, 'h' },
-	{ "quiet",     no_argument, 0, 'q' },
-	{ "dry-run",   no_argument, 0, 'n' },
-	{ "outdir",    required_argument, 0, 'o' },
-	{ "verbose",   no_argument, 0, 'v' },
-	{ "version",   no_argument, 0, '\0' },
+	{ "base",       required_argument, 0, 'b' },
+	{ "diffs",      no_argument, 0, 'd' },
+	{ "help",       no_argument, 0, 'h' },
+	{ "dry-run",    no_argument, 0, 'n' },
+	{ "outdir",     required_argument, 0, 'o' },
+	{ "quiet",      no_argument, 0, 'q' },
+	{ "rebaseline", no_argument, 0, 'r' },
+	{ "verbose",    no_argument, 0, 'v' },
+	{ "version",    no_argument, 0, '\0' },
 	{ 0, 0, 0, 0 }
 };
 
-static const char shortOpts[] = "b:dhno:qv";
+static const char shortOpts[] = "b:dhno:qrv";
 
 enum CInemaStatus {
 	CI_PASS,
@@ -81,6 +82,7 @@ static char base[PATH_MAX] = {0};
 static char outdir[PATH_MAX] = {'.'};
 static bool dryRun = false;
 static bool diffs = false;
+static bool rebaseline = false;
 static int verbosity = 0;
 
 bool CInemaTestInit(struct CInemaTest*, const char* directory, const char* filename);
@@ -144,6 +146,9 @@ static bool parseCInemaArgs(int argc, char* const* argv) {
 		case 'q':
 			--verbosity;
 			break;
+		case 'r':
+			rebaseline = true;
+			break;
 		case 'v':
 			++verbosity;
 			break;
@@ -163,6 +168,7 @@ static void usageCInema(const char* arg0) {
 	puts("  -n, --dry-run              List all collected tests instead of running them");
 	puts("  -o, --output [DIR]         Path to output applicable results");
 	puts("  -q, --quiet                Decrease log verbosity (can be repeated)");
+	puts("  -r, --rebaseline           Rewrite the baseline for failing tests");
 	puts("  -v, --verbose              Increase log verbosity (can be repeated)");
 	puts("  --version                  Print version and exit");
 }
@@ -383,7 +389,9 @@ static bool _loadBaseline(struct VDir* dir, struct CInemaImage* image, size_t fr
 	snprintf(baselineName, sizeof(baselineName), "baseline_%04" PRIz "u.png", frame);
 	struct VFile* baselineVF = dir->openFile(dir, baselineName, O_RDONLY);
 	if (!baselineVF) {
-		*status = CI_FAIL;
+		if (*status == CI_PASS) {
+			*status = CI_FAIL;
+		}
 		return false;
 	}
 
@@ -404,7 +412,9 @@ static bool _loadBaseline(struct VDir* dir, struct CInemaImage* image, size_t fr
 		PNGReadClose(png, info, end);
 		baselineVF->close(baselineVF);
 		CIerr(1, "Size mismatch for %s, expected %ux%u, got %ux%u\n", baselineName, pwidth, pheight, image->width, image->height);
-		*status = CI_FAIL;
+		if (*status == CI_PASS) {
+			*status = CI_FAIL;
+		}
 		return false;
 	}
 
@@ -460,7 +470,18 @@ static struct VDir* _makeOutDir(const char* testName) {
 	return VDirOpen(path);
 }
 
-static void _writeDiff(const char* testName, struct CInemaImage* image, size_t frame, const char* type) {
+static void _writeImage(struct VFile* vf, const struct CInemaImage* image) {
+	png_structp png = PNGWriteOpen(vf);
+	png_infop info = PNGWriteHeader(png, image->width, image->height);
+	if (!PNGWritePixels(png, image->width, image->height, image->stride, image->data)) {
+		CIerr(0, "Could not write output image\n");
+	}
+	PNGWriteClose(png, info);
+
+	vf->close(vf);
+}
+
+static void _writeDiff(const char* testName, const struct CInemaImage* image, size_t frame, const char* type) {
 	struct VDir* dir = _makeOutDir(testName);
 	if (!dir) {
 		CIerr(0, "Could not open directory for %s\n", testName);
@@ -471,18 +492,22 @@ static void _writeDiff(const char* testName, struct CInemaImage* image, size_t f
 	struct VFile* vf = dir->openFile(dir, name, O_CREAT | O_TRUNC | O_WRONLY);
 	if (!vf) {
 		CIerr(0, "Could not open output file %s\n", name);
+		dir->close(dir);
 		return;
 	}
+	_writeImage(vf, image);
+	dir->close(dir);
+}
 
-	png_structp png = PNGWriteOpen(vf);
-	png_infop info = PNGWriteHeader(png, image->width, image->height);
-	if (!PNGWritePixels(png, image->width, image->height, image->stride, image->data)) {
-		CIerr(0, "Could not write output image %s\n", name);
+static void _writeBaseline(struct VDir* dir, const struct CInemaImage* image, size_t frame) {
+	char baselineName[32];
+	snprintf(baselineName, sizeof(baselineName), "baseline_%04" PRIz "u.png", frame);
+	struct VFile* baselineVF = dir->openFile(dir, baselineName, O_CREAT | O_TRUNC | O_WRONLY);
+	if (baselineVF) {
+		_writeImage(baselineVF, image);
+	} else {
+		CIerr(0, "Could not open output file %s\n", baselineName);
 	}
-	PNGWriteClose(png, info);
-
-	vf->close(vf);
-	return;
 }
 
 void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
@@ -630,6 +655,9 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 				++test->failedFrames;
 			}
 			test->totalPixels += image.height * image.width;
+			if (rebaseline && failed) {
+				_writeBaseline(dir, &image, frame);
+			}
 			if (diff) {
 				if (failed) {
 					struct CInemaImage outdiff = {
@@ -656,6 +684,10 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 				free(diff);
 			}
 			free(expected.data);
+		} else if (test->status == CI_ERROR) {
+			break;
+		} else if (rebaseline) {
+			_writeBaseline(dir, &image, frame);
 		}
 	}
 
