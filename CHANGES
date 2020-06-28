@@ -35,6 +35,7 @@ Other fixes:
  - Qt: Fix file handle leak on opening an invalid ROM
  - Qt: Fix a race condition in the frame inspector
  - Qt: Fix Italian RTC translation (fixes mgba.io/i/1798)
+ - Util: Fix crash if PNG header fails to write
 Misc:
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
