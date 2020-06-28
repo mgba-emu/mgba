@@ -54,9 +54,8 @@ add_custom_target(${BINARY_NAME}-py-bdist
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                   DEPENDS ${BINARY_NAME}-py)
 
-file(GLOB BASE_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/test_*.py)
-file(GLOB SUBTESTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/*/test_*.py)
-foreach(TEST IN LISTS BASE_TESTS SUBTESTS)
+file(GLOB TESTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/*/test_*.py)
+foreach(TEST IN LISTS TESTS)
 	if(APPLE)
 		set(PATH DYLD_LIBRARY_PATH)
 	elseif(WIN32)
@@ -64,7 +63,7 @@ foreach(TEST IN LISTS BASE_TESTS SUBTESTS)
 	else()
 		set(PATH LD_LIBRARY_PATH)
 	endif()
-	string(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/(tests/.*/)?test_" "" TEST_NAME "${TEST}")
+	string(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/tests/(.*/)?test_" "" TEST_NAME "${TEST}")
 	string(REPLACE ".py" "" TEST_NAME "${TEST_NAME}")
 	add_test(NAME python-${TEST_NAME}
                COMMAND ${PYTHON_EXECUTABLE} setup.py build -b ${CMAKE_CURRENT_BINARY_DIR} pytest --extras --addopts ${TEST}
