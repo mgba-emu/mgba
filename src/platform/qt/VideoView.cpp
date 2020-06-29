@@ -112,96 +112,58 @@ VideoView::VideoView(QWidget* parent)
 void VideoView::updatePresets() {
 	m_presets.clear();
 
-	addPreset(m_ui.preset4K, {
-		.container = QString(),
-		.vcodec = QString(),
-		.acodec = QString(),
-		.vbr = 0,
-		.abr = 0,
-		.dims = maintainAspect(QSize(3840, 2160))
-	});
-
-	addPreset(m_ui.preset1080, {
-		.container = QString(),
-		.vcodec = QString(),
-		.acodec = QString(),
-		.vbr = 0,
-		.abr = 0,
-		.dims = maintainAspect(QSize(1920, 1080))
-	});
-
-	addPreset(m_ui.preset720, {
-		.container = QString(),
-		.vcodec = QString(),
-		.acodec = QString(),
-		.vbr = 0,
-		.abr = 0,
-		.dims = maintainAspect(QSize(1280, 720))
-	});
-
-	addPreset(m_ui.preset480, {
-		.container = QString(),
-		.vcodec = QString(),
-		.acodec = QString(),
-		.vbr = 0,
-		.abr = 0,
-		.dims = maintainAspect(QSize(720, 480))
-	});
+	addPreset(m_ui.preset4K, { maintainAspect(QSize(3840, 2160)) });
+	addPreset(m_ui.preset1080, { maintainAspect(QSize(1920, 1080)) });
+	addPreset(m_ui.preset720, { maintainAspect(QSize(1280, 720)) });
+	addPreset(m_ui.preset480, { maintainAspect(QSize(720, 480)) });
 
 	if (m_nativeWidth && m_nativeHeight) {
-		addPreset(m_ui.presetNative, {
-			.container = QString(),
-			.vcodec = QString(),
-			.acodec = QString(),
-			.vbr = 0,
-			.abr = 0,
-			.dims = QSize(m_nativeWidth, m_nativeHeight)
-		});
+		addPreset(m_ui.presetNative, { QSize(m_nativeWidth, m_nativeHeight) });
 		m_ui.presetNative->setEnabled(true);
 	}
 
 	addPreset(m_ui.presetHQ, {
-		.container = "MP4",
-		.vcodec = "h.264",
-		.acodec = "AAC",
-		.vbr = 8000,
-		.abr = 384,
-		.dims = maintainAspect(QSize(1920, 1080))
+		"MP4",
+		"h.264",
+		"AAC",
+		8000,
+		384,
+		maintainAspect({ 1920, 1080 })
 	});
 
 	addPreset(m_ui.presetYoutube, {
-		.container = "MP4",
-		.vcodec = "h.264",
-		.acodec = "AAC",
-		.vbr = 5000,
-		.abr = 256,
-		.dims = maintainAspect(QSize(1280, 720))
+		"MP4",
+		"h.264",
+		"AAC",
+		5000,
+		256,
+		maintainAspect({ 1280, 720 })
 	});
 
 	addPreset(m_ui.presetWebM, {
-		.container = "WebM",
-		.vcodec = "VP9",
-		.acodec = "Opus",
-		.vbr = 800,
-		.abr = 128
+		"WebM",
+		"VP9",
+		"Opus",
+		800,
+		128
 	});
 
 	addPreset(m_ui.presetMP4, {
-		.container = "MP4",
-		.vcodec = "h.264",
-		.acodec = "AAC",
-		.vbr = 800,
-		.abr = 128
+		"MP4",
+		"h.264",
+		"AAC",
+		800,
+		128
 	});
 
 	if (m_nativeWidth && m_nativeHeight) {
 		addPreset(m_ui.presetLossless, {
-			.container = "MKV",
-			.vcodec = "h.264",
-			.acodec = "FLAC",
-			.vbr = -1,
-			.abr = 0,
-			.dims = QSize(m_nativeWidth, m_nativeHeight)
+			"MKV",
+			"h.264",
+			"FLAC",
+			-1,
+			0,
+			{ m_nativeWidth, m_nativeHeight }
 		});
 	}
 }
