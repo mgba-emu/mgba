@@ -10,29 +10,9 @@
 
 CXX_GUARD_START
 
-#include <mgba/internal/gba/gba.h>
+#include <mgba/core/interface.h>
 
-#include <libavformat/avformat.h>
-#include <libavcodec/version.h>
-
-// Version 57.16 in FFmpeg
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 37, 100)
-#define FFMPEG_USE_PACKETS
-#endif
-
-// Version 57.15 in libav
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 35, 0)
-#define FFMPEG_USE_NEW_BSF
-#endif
-
-// Version 57.14 in libav
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 48, 0)
-#define FFMPEG_USE_CODECPAR
-#endif
-
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 8, 0)
-#define FFMPEG_USE_PACKET_UNREF
-#endif
+#include "feature/ffmpeg/ffmpeg-common.h"
 
 #define FFMPEG_FILTERS_MAX 4
 
@@ -73,7 +53,7 @@ struct FFmpegEncoder {
 	struct AVCodecContext* video;
 	enum AVPixelFormat pixFormat;
 	enum AVPixelFormat ipixFormat;
-	struct AVFrame* videoFrame;
+	AVFrame* videoFrame;
 	int width;
 	int height;
 	int iwidth;

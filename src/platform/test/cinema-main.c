@@ -16,6 +16,10 @@
 #include <mgba-util/vector.h>
 #include <mgba-util/vfs.h>
 
+#ifdef USE_FFMPEG
+#include "feature/ffmpeg/ffmpeg-decoder.h"
+#endif
+
 #ifdef _MSC_VER
 #include <mgba-util/platform/windows/getopt.h>
 #else
@@ -566,10 +570,12 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 	unsigned limit = 9999;
 	unsigned skip = 0;
 	unsigned fail = 0;
+	unsigned video = 0;
 
 	CInemaConfigGetUInt(configTree, test->name, "frames", &limit);
 	CInemaConfigGetUInt(configTree, test->name, "skip", &skip);
 	CInemaConfigGetUInt(configTree, test->name, "fail", &fail);
+	CInemaConfigGetUInt(configTree, test->name, "video", &video);
 	CInemaConfigLoad(configTree, test->name, core);
 
 	core->loadROM(core, rom);
@@ -600,7 +606,13 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 			.height = image.height,
 			.stride = image.width,
 		};
-		if (_loadBaseline(dir, &expected, frame, &test->status)) {
+		bool baselineFound = false;
+		if (video) {
+			baselineFound = false;
+		} else {
+			baselineFound = _loadBaseline(dir, &expected, frame, &test->status);
+		}
+		if (baselineFound) {
 			uint8_t* testPixels = image.data;
 			uint8_t* expectPixels = expected.data;
 			size_t x;

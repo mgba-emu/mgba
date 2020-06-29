@@ -7,6 +7,7 @@
 
 #include <mgba/core/core.h>
 #include <mgba/gba/interface.h>
+#include <mgba/internal/gba/gba.h>
 #include <mgba-util/math.h>
 
 #include <libavcodec/version.h>
