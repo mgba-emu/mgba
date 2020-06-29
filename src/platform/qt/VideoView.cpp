@@ -99,12 +99,11 @@ VideoView::VideoView(QWidget* parent)
 	updatePresets();
 
 	setPreset({
-		.container = "MKV",
-		.vcodec = "h.264",
-		.acodec = "FLAC",
-		.vbr = -1,
-		.abr = 0,
-		.dims = QSize(),
+		"MKV",
+		"h.264",
+		"FLAC",
+		-1,
+		0,
 	});
 	showAdvanced(false);
 }
@@ -413,12 +412,12 @@ void VideoView::updateAspectRatio(int width, int height, bool force) {
 
 void VideoView::uncheckIncompatible() {
 	Preset current = {
-		.container = m_container,
-		.vcodec = m_videoCodec,
-		.acodec = m_audioCodec,
-		.vbr = m_vbr / 1000,
-		.abr = m_abr / 1000,
-		.dims = QSize(m_width, m_height)
+		m_container,
+		m_videoCodec,
+		m_audioCodec,
+		m_vbr / 1000,
+		m_abr / 1000,
+		{ m_width, m_height }
 	};
 
 	m_ui.presets->setExclusive(false);
