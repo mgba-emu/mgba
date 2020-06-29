@@ -70,6 +70,15 @@ private:
 		int abr;
 		QSize dims;
 
+		Preset() {}
+		Preset(QString container, QString vcodec, QString acodec, int vbr, int abr, QSize dims = QSize())
+		    : container(container)
+		    , vcodec(vcodec)
+		    , acodec(acodec)
+		    , vbr(vbr)
+		    , abr(abr)
+		    , dims(dims) {}
+		Preset(QSize dims) : dims(dims) {}
 		bool compatible(const Preset&) const;
 	};
 
