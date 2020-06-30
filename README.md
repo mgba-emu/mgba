@@ -205,9 +205,8 @@ mGBA has no hard dependencies, however, the following optional dependencies are 
 - SDL: for a more basic frontend and gamepad support in the Qt frontend. SDL 2 is recommended, but 1.2 is supported.
 - zlib and libpng: for screenshot support and savestate-in-PNG support.
 - libedit: for command-line debugger support.
-- ffmpeg or libav: for video recording.
+- ffmpeg or libav: for video and GIF recording.
 - libzip or zlib: for loading ROMs stored in zip files.
-- ImageMagick: for GIF recording.
 - SQLite3: for game databases.
 - libelf: for ELF loading.
 
