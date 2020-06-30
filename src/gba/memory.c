@@ -29,6 +29,7 @@ static uint8_t _agbPrintFunc[4] = { 0xFA, 0xDF /* swi 0xFF */, 0x70, 0x47 /* bx 
 
 static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait);
+static int32_t GBAMemoryStallVRAM(struct GBA* gba, int32_t wait, int extra);
 
 static const char GBA_BASE_WAITSTATES[16] = { 0, 0, 2, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4 };
 static const char GBA_BASE_WAITSTATES_32[16] = { 0, 0, 5, 0, 0, 1, 1, 0, 7, 7, 9, 9, 13, 13, 9 };
@@ -374,7 +375,10 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	} else { \
 		LOAD_32(value, address & 0x0001FFFC, gba->video.vram); \
 	} \
-	wait += waitstatesRegion[REGION_VRAM];
+	++wait; \
+	if (gba->video.shouldStall) { \
+		wait += GBAMemoryStallVRAM(gba, wait, 1); \
+	}
 
 #define LOAD_OAM LOAD_32(value, address & (SIZE_OAM - 4), gba->video.oam.raw);
 
@@ -534,6 +538,9 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		} else {
 			LOAD_16(value, address & 0x0001FFFE, gba->video.vram);
 		}
+		if (gba->video.shouldStall) {
+			wait += GBAMemoryStallVRAM(gba, wait, 0);
+		}
 		break;
 	case REGION_OAM:
 		LOAD_16(value, address & (SIZE_OAM - 2), gba->video.oam.raw);
@@ -650,6 +657,9 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		} else {
 			value = ((uint8_t*) gba->video.vram)[address & 0x0001FFFF];
 		}
+		if (gba->video.shouldStall) {
+			wait += GBAMemoryStallVRAM(gba, wait, 0);
+		}
 		break;
 	case REGION_OAM:
 		value = ((uint8_t*) gba->video.oam.raw)[address & (SIZE_OAM - 1)];
@@ -751,7 +761,10 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x0001FFFC)); \
 		} \
 	} \
-	wait += waitstatesRegion[REGION_VRAM];
+	++wait; \
+	if (gba->video.shouldStall) { \
+		wait += GBAMemoryStallVRAM(gba, wait, 1); \
+	}
 
 #define STORE_OAM \
 	LOAD_32(oldValue, address & (SIZE_OAM - 4), gba->video.oam.raw); \
@@ -876,6 +889,9 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 				gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x0001FFFE);
 			}
 		}
+		if (gba->video.shouldStall) {
+			wait += GBAMemoryStallVRAM(gba, wait, 0);
+		}
 		break;
 	case REGION_OAM:
 		LOAD_16(oldValue, address & (SIZE_OAM - 2), gba->video.oam.raw);
@@ -976,6 +992,9 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		if (oldValue != (((uint8_t) value) | (value << 8))) {
 			gba->video.renderer->vram[(address & 0x1FFFE) >> 1] = ((uint8_t) value) | (value << 8);
 			gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x0001FFFE);
+		}
+		if (gba->video.shouldStall) {
+			wait += GBAMemoryStallVRAM(gba, wait, 0);
 		}
 		break;
 	case REGION_OAM:
@@ -1656,6 +1675,28 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	wait -= stall - 1;
 
 	return wait;
+}
+
+int32_t GBAMemoryStallVRAM(struct GBA* gba, int32_t wait, int extra) {
+	UNUSED(extra);
+	// TODO
+	uint16_t dispcnt = gba->memory.io[REG_DISPCNT >> 1];
+	int32_t stall = 0;
+	switch (GBARegisterDISPCNTGetMode(dispcnt)) {
+	case 2:
+		if (GBARegisterDISPCNTIsBg2Enable(dispcnt) && GBARegisterDISPCNTIsBg3Enable(dispcnt)) {
+			// If both backgrounds are enabled, VRAM access is entirely blocked during hdraw
+			stall = mTimingUntil(&gba->timing, &gba->video.event);
+		}
+		break;
+	default:
+		return 0;
+	}
+	stall -= wait;
+	if (stall < 0) {
+		return 0;
+	}
+	return stall;
 }
 
 void GBAMemorySerialize(const struct GBAMemory* memory, struct GBASerializedState* state) {

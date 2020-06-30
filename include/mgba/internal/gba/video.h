@@ -206,8 +206,8 @@ struct GBAVideo {
 	struct GBAVideoRenderer* renderer;
 	struct mTimingEvent event;
 
-	// VCOUNT
 	int vcount;
+	int shouldStall;
 
 	uint16_t palette[512];
 	uint16_t* vram;
