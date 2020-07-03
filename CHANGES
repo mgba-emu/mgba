@@ -15,6 +15,7 @@ Other fixes:
  - Qt: Fix Italian RTC translation (fixes mgba.io/i/1798)
  - Util: Fix crash if PNG header fails to write
 Misc:
+ - FFmpeg: Use range coder for FFV1 to reduce output size
  - Qt: Add per-page scrolling to memory view (fixes mgba.io/i/1795)
  - Qt: Add setting to display ROM filename in title (closes mgba.io/i/1784)
 

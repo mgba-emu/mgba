@@ -378,6 +378,11 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			// QuickTime and a few other things require YUV420
 			encoder->video->pix_fmt = AV_PIX_FMT_YUV420P;
 		}
+#if LIBAVCODEC_VERSION_MAJOR >= 57
+		if (encoder->video->codec->id == AV_CODEC_ID_FFV1) {
+			av_opt_set(encoder->video->priv_data, "coder", "range_tab", 0);
+		}
+#endif
 
 		if (strcmp(vcodec->name, "libx264") == 0) {
 			// Try to adaptively figure out when you can use a slower encoder
