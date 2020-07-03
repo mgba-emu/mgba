@@ -41,6 +41,7 @@ Other fixes:
 Misc:
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
+ - FFmpeg: Use range coder for FFV1 to reduce output size
  - Qt: Renderer can be changed while a game is running
  - Qt: Add hex index to palette view
  - Qt: Add transformation matrix info to sprite view
