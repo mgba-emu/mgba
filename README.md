@@ -249,7 +249,7 @@ mGBA is Copyright © 2013 – 2020 Jeffrey Pfau. It is distributed under the [Mo
 
 mGBA contains the following third-party libraries:
 
-- [inih](https://github.com/benhoyt/inih), which is copyright © 2009 Ben Hoyt and used under a BSD 3-clause license.
+- [inih](https://github.com/benhoyt/inih), which is copyright © 2009 – 2020 Ben Hoyt and used under a BSD 3-clause license.
 - [blip-buf](https://code.google.com/archive/p/blip-buf), which is copyright © 2003 – 2009 Shay Green and used under a Lesser GNU Public License.
 - [LZMA SDK](http://www.7-zip.org/sdk.html), which is public domain.
 - [MurmurHash3](https://github.com/aappleby/smhasher) implementation by Austin Appleby, which is public domain.
