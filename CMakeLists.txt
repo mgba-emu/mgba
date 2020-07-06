@@ -281,6 +281,7 @@ include(CheckFunctionExists)
 include(CheckIncludeFiles)
 check_function_exists(strdup HAVE_STRDUP)
 check_function_exists(strndup HAVE_STRNDUP)
+check_function_exists(strlcpy HAVE_STRLCPY)
 if(NOT DEFINED PSP2)
 	check_function_exists(localtime_r HAVE_LOCALTIME_R)
 endif()
@@ -357,6 +358,10 @@ endif()
 
 if(HAVE_STRNDUP)
 	list(APPEND FUNCTION_DEFINES HAVE_STRNDUP)
+endif()
+
+if(HAVE_STRLCPY)
+	list(APPEND FUNCTION_DEFINES HAVE_STRLCPY)
 endif()
 
 if(HAVE_LOCALTIME_R)

@@ -6,6 +6,7 @@
 #include <mgba/internal/arm/decoder.h>
 
 #include <mgba/internal/arm/decoder-inlines.h>
+#include <mgba-util/string.h>
 
 #define ADVANCE(AMOUNT) \
 	if (AMOUNT >= blen) { \
@@ -45,22 +46,22 @@ static const char* _armConditions[] = {
 static int _decodeRegister(int reg, char* buffer, int blen) {
 	switch (reg) {
 	case ARM_SP:
-		strncpy(buffer, "sp", blen - 1);
+		strlcpy(buffer, "sp", blen);
 		return 2;
 	case ARM_LR:
-		strncpy(buffer, "lr", blen - 1);
+		strlcpy(buffer, "lr", blen);
 		return 2;
 	case ARM_PC:
-		strncpy(buffer, "pc", blen - 1);
+		strlcpy(buffer, "pc", blen);
 		return 2;
 	case ARM_CPSR:
-		strncpy(buffer, "cpsr", blen - 1);
+		strlcpy(buffer, "cpsr", blen);
 		return 4;
 	case ARM_SPSR:
-		strncpy(buffer, "spsr", blen - 1);
+		strlcpy(buffer, "spsr", blen);
 		return 4;
 	default:
-		return snprintf(buffer, blen - 1, "r%i", reg);
+		return snprintf(buffer, blen, "r%i", reg);
 	}
 }
 
@@ -69,7 +70,7 @@ static int _decodeRegisterList(int list, char* buffer, int blen) {
 		return 0;
 	}
 	int total = 0;
-	strncpy(buffer, "{", blen - 1);
+	strlcpy(buffer, "{", blen);
 	ADVANCE(1);
 	int i;
 	int start = -1;
@@ -86,12 +87,12 @@ static int _decodeRegisterList(int list, char* buffer, int blen) {
 				if (end > start) {
 					written = _decodeRegister(start, buffer, blen);
 					ADVANCE(written);
-					strncpy(buffer, "-", blen - 1);
+					strlcpy(buffer, "-", blen);
 					ADVANCE(1);
 				}
 				written = _decodeRegister(end, buffer, blen);
 				ADVANCE(written);
-				strncpy(buffer, ",", blen - 1);
+				strlcpy(buffer, ",", blen);
 				ADVANCE(1);
 				start = i;
 				end = i;
@@ -103,13 +104,13 @@ static int _decodeRegisterList(int list, char* buffer, int blen) {
 		if (end > start) {
 			written = _decodeRegister(start, buffer, blen);
 			ADVANCE(written);
-			strncpy(buffer, "-", blen - 1);
+			strlcpy(buffer, "-", blen);
 			ADVANCE(1);
 		}
 		written = _decodeRegister(end, buffer, blen);
 		ADVANCE(written);
 	}
-	strncpy(buffer, "}", blen - 1);
+	strlcpy(buffer, "}", blen);
 	ADVANCE(1);
 	return total;
 }
@@ -119,29 +120,29 @@ static int _decodePSR(int psrBits, char* buffer, int blen) {
 		return 0;
 	}
 	int total = 0;
-	strncpy(buffer, "_", blen - 1);
+	strlcpy(buffer, "_", blen);
 	ADVANCE(1);
 	if (psrBits & ARM_PSR_C) {
-		strncpy(buffer, "c", blen - 1);
+		strlcpy(buffer, "c", blen);
 		ADVANCE(1);
 	}
 	if (psrBits & ARM_PSR_X) {
-		strncpy(buffer, "x", blen - 1);
+		strlcpy(buffer, "x", blen);
 		ADVANCE(1);
 	}
 	if (psrBits & ARM_PSR_S) {
-		strncpy(buffer, "s", blen - 1);
+		strlcpy(buffer, "s", blen);
 		ADVANCE(1);
 	}
 	if (psrBits & ARM_PSR_F) {
-		strncpy(buffer, "f", blen - 1);
+		strlcpy(buffer, "f", blen);
 		ADVANCE(1);
 	}
 	return total;
 }
 
 static int _decodePCRelative(uint32_t address, uint32_t pc, char* buffer, int blen) {
-	return snprintf(buffer, blen - 1, "$%08X", address + pc);
+	return snprintf(buffer, blen, "$%08X", address + pc);
 }
 
 static int _decodeMemory(struct ARMMemoryAccess memory, int pc, char* buffer, int blen) {
@@ -149,7 +150,7 @@ static int _decodeMemory(struct ARMMemoryAccess memory, int pc, char* buffer, in
 		return 0;
 	}
 	int total = 0;
-	strncpy(buffer, "[", blen - 1);
+	strlcpy(buffer, "[", blen);
 	ADVANCE(1);
 	int written;
 	if (memory.format & ARM_MEMORY_REGISTER_BASE) {
@@ -160,26 +161,26 @@ static int _decodeMemory(struct ARMMemoryAccess memory, int pc, char* buffer, in
 			written = _decodeRegister(memory.baseReg, buffer, blen);
 			ADVANCE(written);
 			if (memory.format & (ARM_MEMORY_REGISTER_OFFSET | ARM_MEMORY_IMMEDIATE_OFFSET) && !(memory.format & ARM_MEMORY_POST_INCREMENT)) {
-				strncpy(buffer, ", ", blen - 1);
+				strlcpy(buffer, ", ", blen);
 				ADVANCE(2);
 			}
 		}
 	}
 	if (memory.format & ARM_MEMORY_POST_INCREMENT) {
-		strncpy(buffer, "], ", blen - 1);
+		strlcpy(buffer, "], ", blen);
 		ADVANCE(3);
 	}
 	if (memory.format & ARM_MEMORY_IMMEDIATE_OFFSET && memory.baseReg != ARM_PC) {
 		if (memory.format & ARM_MEMORY_OFFSET_SUBTRACT) {
-			written = snprintf(buffer, blen - 1, "#-%i", memory.offset.immediate);
+			written = snprintf(buffer, blen, "#-%i", memory.offset.immediate);
 			ADVANCE(written);
 		} else {
-			written = snprintf(buffer, blen - 1, "#%i", memory.offset.immediate);
+			written = snprintf(buffer, blen, "#%i", memory.offset.immediate);
 			ADVANCE(written);
 		}
 	} else if (memory.format & ARM_MEMORY_REGISTER_OFFSET) {
 		if (memory.format & ARM_MEMORY_OFFSET_SUBTRACT) {
-			strncpy(buffer, "-", blen - 1);
+			strlcpy(buffer, "-", blen);
 			ADVANCE(1);
 		}
 		written = _decodeRegister(memory.offset.reg, buffer, blen);
@@ -191,11 +192,11 @@ static int _decodeMemory(struct ARMMemoryAccess memory, int pc, char* buffer, in
 	}
 
 	if (!(memory.format & ARM_MEMORY_POST_INCREMENT)) {
-		strncpy(buffer, "]", blen - 1);
+		strlcpy(buffer, "]", blen);
 		ADVANCE(1);
 	}
 	if ((memory.format & (ARM_MEMORY_PRE_INCREMENT | ARM_MEMORY_WRITEBACK)) == (ARM_MEMORY_PRE_INCREMENT | ARM_MEMORY_WRITEBACK)) {
-		strncpy(buffer, "!", blen - 1);
+		strlcpy(buffer, "!", blen);
 		ADVANCE(1);
 	}
 	return total;
@@ -206,33 +207,33 @@ static int _decodeShift(union ARMOperand op, bool reg, char* buffer, int blen) {
 		return 0;
 	}
 	int total = 0;
-	strncpy(buffer, ", ", blen - 1);
+	strlcpy(buffer, ", ", blen);
 	ADVANCE(2);
 	int written;
 	switch (op.shifterOp) {
 	case ARM_SHIFT_LSL:
-		strncpy(buffer, "lsl ", blen - 1);
+		strlcpy(buffer, "lsl ", blen);
 		ADVANCE(4);
 		break;
 	case ARM_SHIFT_LSR:
-		strncpy(buffer, "lsr ", blen - 1);
+		strlcpy(buffer, "lsr ", blen);
 		ADVANCE(4);
 		break;
 	case ARM_SHIFT_ASR:
-		strncpy(buffer, "asr ", blen - 1);
+		strlcpy(buffer, "asr ", blen);
 		ADVANCE(4);
 		break;
 	case ARM_SHIFT_ROR:
-		strncpy(buffer, "ror ", blen - 1);
+		strlcpy(buffer, "ror ", blen);
 		ADVANCE(4);
 		break;
 	case ARM_SHIFT_RRX:
-		strncpy(buffer, "rrx", blen - 1);
+		strlcpy(buffer, "rrx", blen);
 		ADVANCE(3);
 		return total;
 	}
 	if (!reg) {
-		written = snprintf(buffer, blen - 1, "#%i", op.shifterImm);
+		written = snprintf(buffer, blen, "#%i", op.shifterImm);
 	} else {
 		written = _decodeRegister(op.shifterReg, buffer, blen);
 	}
@@ -369,7 +370,7 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 	default:
 		break;
 	}
-	written = snprintf(buffer, blen - 1, "%s%s%s ", mnemonic, cond, flags);
+	written = snprintf(buffer, blen, "%s%s%s ", mnemonic, cond, flags);
 	ADVANCE(written);
 
 	switch (info->mnemonic) {
@@ -378,15 +379,15 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 		written = _decodeRegister(info->memory.baseReg, buffer, blen);
 		ADVANCE(written);
 		if (info->memory.format & ARM_MEMORY_WRITEBACK) {
-			strncpy(buffer, "!", blen - 1);
+			strlcpy(buffer, "!", blen);
 			ADVANCE(1);
 		}
-		strncpy(buffer, ", ", blen - 1);
+		strlcpy(buffer, ", ", blen);
 		ADVANCE(2);
 		written = _decodeRegisterList(info->op1.immediate, buffer, blen);
 		ADVANCE(written);
 		if (info->memory.format & ARM_MEMORY_SPSR_SWAP) {
-			strncpy(buffer, "^", blen - 1);
+			strlcpy(buffer, "^", blen);
 			ADVANCE(1);
 		}
 		break;
@@ -399,7 +400,7 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 		break;
 	default:
 		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_1) {
-			written = snprintf(buffer, blen - 1, "#%i", info->op1.immediate);
+			written = snprintf(buffer, blen, "#%i", info->op1.immediate);
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_MEMORY_1) {
 			written = _decodeMemory(info->memory, pc, buffer, blen);
@@ -420,11 +421,11 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 			ADVANCE(written);
 		}
 		if (info->operandFormat & ARM_OPERAND_2) {
-			strncpy(buffer, ", ", blen);
+			strlcpy(buffer, ", ", blen);
 			ADVANCE(2);
 		}
 		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_2) {
-			written = snprintf(buffer, blen - 1, "#%i", info->op2.immediate);
+			written = snprintf(buffer, blen, "#%i", info->op2.immediate);
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_MEMORY_2) {
 			written = _decodeMemory(info->memory, pc, buffer, blen);
@@ -441,11 +442,11 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 			ADVANCE(written);
 		}
 		if (info->operandFormat & ARM_OPERAND_3) {
-			strncpy(buffer, ", ", blen - 1);
+			strlcpy(buffer, ", ", blen);
 			ADVANCE(2);
 		}
 		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_3) {
-			written = snprintf(buffer, blen - 1, "#%i", info->op3.immediate);
+			written = snprintf(buffer, blen, "#%i", info->op3.immediate);
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_MEMORY_3) {
 			written = _decodeMemory(info->memory, pc, buffer, blen);
@@ -462,11 +463,11 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 			ADVANCE(written);
 		}
 		if (info->operandFormat & ARM_OPERAND_4) {
-			strncpy(buffer, ", ", blen - 1);
+			strlcpy(buffer, ", ", blen);
 			ADVANCE(2);
 		}
 		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_4) {
-			written = snprintf(buffer, blen - 1, "#%i", info->op4.immediate);
+			written = snprintf(buffer, blen, "#%i", info->op4.immediate);
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_MEMORY_4) {
 			written = _decodeMemory(info->memory, pc, buffer, blen);
