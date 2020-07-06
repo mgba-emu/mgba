@@ -10,6 +10,8 @@ install:
 - git -C C:\Tools\vcpkg pull --quiet
 - C:\Tools\vcpkg\bootstrap-vcpkg
 - vcpkg --triplet x64-windows install ffmpeg libepoxy libpng libzip sdl2 sqlite3
+- vcpkg --no-dry-run upgrade
+- rd /Q /S C:\Tools\vcpkg\buildtrees
 before_build:
 - cmake . -DCMAKE_PREFIX_PATH=C:\Qt\5.12\msvc2017_64 -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake
 build:
