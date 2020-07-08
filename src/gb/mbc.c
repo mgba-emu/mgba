@@ -36,6 +36,7 @@ static void _GBHuC3(struct GB*, uint16_t address, uint8_t value);
 static void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBWisdomTree(struct GB* gb, uint16_t address, uint8_t value);
+static void _GBPKJD(struct GB* gb, uint16_t address, uint8_t value);
 
 static uint8_t _GBMBC2Read(struct GBMemory*, uint16_t address);
 static uint8_t _GBMBC6Read(struct GBMemory*, uint16_t address);
@@ -43,6 +44,7 @@ static uint8_t _GBMBC7Read(struct GBMemory*, uint16_t address);
 static void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value);
 
 static uint8_t _GBTAMA5Read(struct GBMemory*, uint16_t address);
+static uint8_t _GBPKJDRead(struct GBMemory*, uint16_t address);
 
 static uint8_t _GBPocketCamRead(struct GBMemory*, uint16_t address);
 static void _GBPocketCamCapture(struct GBMemory*);
@@ -273,6 +275,7 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcType = GB_MBC_NONE;
 	}
 	gb->memory.mbcRead = NULL;
+	gb->memory.directSramAccess = true;
 	switch (gb->memory.mbcType) {
 	case GB_MBC_NONE:
 		gb->memory.mbcWrite = _GBMBCNone;
@@ -288,6 +291,7 @@ void GBMBCInit(struct GB* gb) {
 	case GB_MBC2:
 		gb->memory.mbcWrite = _GBMBC2;
 		gb->memory.mbcRead = _GBMBC2Read;
+		gb->memory.directSramAccess = false;
 		gb->sramSize = 0x100;
 		break;
 	case GB_MBC3:
@@ -300,9 +304,9 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcWrite = _GBMBC5;
 		break;
 	case GB_MBC6:
-		mLOG(GB_MBC, WARN, "unimplemented MBC: MBC6");
 		gb->memory.mbcWrite = _GBMBC6;
 		gb->memory.mbcRead = _GBMBC6Read;
+		gb->memory.directSramAccess = false;
 		break;
 	case GB_MBC7:
 		gb->memory.mbcWrite = _GBMBC7;
@@ -341,6 +345,10 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_UNL_WISDOM_TREE:
 		gb->memory.mbcWrite = _GBWisdomTree;
+		break;
+	case GB_UNL_PKJD:
+		gb->memory.mbcWrite = _GBPKJD;
+		gb->memory.mbcRead = _GBPKJDRead;
 		break;
 	}
 
@@ -626,10 +634,10 @@ void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 	case 0:
 		switch (value) {
 		case 0:
-			memory->mbcState.mbc6.sramAccess = false;
+			memory->sramAccess = false;
 			break;
 		case 0xA:
-			memory->mbcState.mbc6.sramAccess = true;
+			memory->sramAccess = true;
 			break;
 		default:
 			// TODO
@@ -655,7 +663,7 @@ void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 	case 0x29:
 	case 0x2A:
 	case 0x2B:
-		if (memory->mbcState.mbc6.sramAccess) {
+		if (memory->sramAccess) {
 			memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)] = value;
 		}
 		break;
@@ -663,7 +671,7 @@ void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 	case 0x2D:
 	case 0x2E:
 	case 0x2F:
-		if (memory->mbcState.mbc6.sramAccess) {
+		if (memory->sramAccess) {
 			memory->mbcState.mbc6.sramBank1[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)] = value;
 		}
 		break;
@@ -674,7 +682,7 @@ void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 }
 
 uint8_t _GBMBC6Read(struct GBMemory* memory, uint16_t address) {
-	if (!memory->mbcState.mbc6.sramAccess) {
+	if (!memory->sramAccess) {
 		return 0xFF;
 	}
 	switch (address >> 12) {
@@ -1226,6 +1234,74 @@ void _GBWisdomTree(struct GB* gb, uint16_t address, uint8_t value) {
 		// TODO
 		mLOG(GB_MBC, STUB, "Wisdom Tree unknown address: %04X:%02X", address, value);
 		break;
+	}
+}
+
+void _GBPKJD(struct GB* gb, uint16_t address, uint8_t value) {
+	struct GBMemory* memory = &gb->memory;
+	switch (address >> 13) {
+	case 0x2:
+		if (value < 8) {
+			memory->directSramAccess = true;
+			memory->activeRtcReg = 0;
+		} else if (value >= 0xD && value <= 0xF) {
+			memory->directSramAccess = false;
+			memory->rtcAccess = false;
+			memory->activeRtcReg = value - 8;
+		}
+		break;
+	case 0x5:
+		if (!memory->sramAccess) {
+			return;
+		}
+		switch (memory->activeRtcReg) {
+		case 0:
+			memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
+			break;
+		case 5:
+		case 6:
+			memory->mbcState.pkjd.reg[memory->activeRtcReg - 5] = value;
+			break;
+		case 7:
+			switch (value) {
+			case 0x11:
+				memory->mbcState.pkjd.reg[0]--;
+				break;
+			case 0x12:
+				memory->mbcState.pkjd.reg[1]--;
+				break;
+			case 0x41:
+				memory->mbcState.pkjd.reg[0] += memory->mbcState.pkjd.reg[1];
+				break;
+			case 0x42:
+				memory->mbcState.pkjd.reg[1] += memory->mbcState.pkjd.reg[0];
+				break;
+			case 0x51:
+				memory->mbcState.pkjd.reg[0]++;
+				break;
+			case 0x52:
+				memory->mbcState.pkjd.reg[1]--;
+				break;
+			}
+			break;
+		}
+		return;
+	}
+	_GBMBC3(gb, address, value);
+}
+
+static uint8_t _GBPKJDRead(struct GBMemory* memory, uint16_t address) {
+	if (!memory->sramAccess) {
+		return 0xFF;
+	}
+	switch (memory->activeRtcReg) {
+	case 0:
+		return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
+	case 5:
+	case 6:
+		return memory->mbcState.pkjd.reg[memory->activeRtcReg - 5];
+	default:
+		return 0;
 	}
 }
 

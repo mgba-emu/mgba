@@ -162,6 +162,10 @@ bool mCorePreloadVFCB(struct mCore* core, struct VFile* vf, void (cb)(size_t, si
 		}
 	}
 	vf->close(vf);
+	if (read < 0) {
+		vfm->close(vfm);
+		return false;
+	}
 	bool ret = core->loadROM(core, vfm);
 	if (!ret) {
 		vfm->close(vfm);

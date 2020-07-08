@@ -2,6 +2,7 @@
 Features:
  - e-Reader card scanning
  - Add APNG recording
+ - Support for unlicensed Pokemon Jade/Diamond Game Boy mapper
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
