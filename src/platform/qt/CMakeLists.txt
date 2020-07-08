@@ -45,6 +45,10 @@ if(APPLE)
 	endif()
 endif()
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
+endif()
+
 get_target_property(QT_TYPE Qt5::Core TYPE)
 if(QT_TYPE STREQUAL STATIC_LIBRARY)
 	set(QT_STATIC ON)
