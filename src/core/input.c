@@ -88,7 +88,7 @@ static struct mInputMapImpl* _guaranteeMap(struct mInputMap* map, uint32_t type)
 		map->numMaps = 1;
 		impl = &map->maps[0];
 		impl->type = type;
-		impl->map = malloc(map->info->nKeys * sizeof(int));
+		impl->map = calloc(map->info->nKeys, sizeof(int));
 		size_t i;
 		for (i = 0; i < map->info->nKeys; ++i) {
 			impl->map[i] = -1;
@@ -108,7 +108,7 @@ static struct mInputMapImpl* _guaranteeMap(struct mInputMap* map, uint32_t type)
 		}
 		if (impl) {
 			impl->type = type;
-			impl->map = malloc(map->info->nKeys * sizeof(int));
+			impl->map = calloc(map->info->nKeys, sizeof(int));
 			size_t i;
 			for (i = 0; i < map->info->nKeys; ++i) {
 				impl->map[i] = -1;
@@ -122,7 +122,7 @@ static struct mInputMapImpl* _guaranteeMap(struct mInputMap* map, uint32_t type)
 			map->numMaps *= 2;
 			impl = &map->maps[m];
 			impl->type = type;
-			impl->map = malloc(map->info->nKeys * sizeof(int));
+			impl->map = calloc(map->info->nKeys, sizeof(int));
 			size_t i;
 			for (i = 0; i < map->info->nKeys; ++i) {
 				impl->map[i] = -1;

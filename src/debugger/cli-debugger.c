@@ -174,7 +174,7 @@ static bool _parseExpression(struct mDebugger* debugger, struct CLIDebugVector* 
 	for (accum = dv; accum; accum = accum->next) {
 		++args;
 	}
-	const char** arglist = malloc(sizeof(const char*) * (args + 1));
+	const char** arglist = calloc(args + 1, sizeof(const char*));
 	args = 0;
 	for (accum = dv; accum; accum = accum->next) {
 		arglist[args] = accum->charValue;
