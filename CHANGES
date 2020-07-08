@@ -13,6 +13,7 @@ Other fixes:
  - GBA Savedata: Fix extracting save when not yet configured in-game
  - Qt: Fix file handle leak on opening an invalid ROM
  - Qt: Fix Italian RTC translation (fixes mgba.io/i/1798)
+ - Qt: Add missing option for Wisdom Tree in overrides list
  - Util: Fix crash if PNG header fails to write
 Misc:
  - FFmpeg: Use range coder for FFV1 to reduce output size

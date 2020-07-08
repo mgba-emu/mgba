@@ -354,6 +354,11 @@
            <string>HuC-3</string>
           </property>
          </item>
+         <item>
+          <property name="text">
+           <string>Wisdom Tree (Unlicensed)</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item row="2" column="0">
