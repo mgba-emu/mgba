@@ -8,6 +8,58 @@
 #include <mgba/core/interface.h>
 #include <mgba/internal/gba/gba.h>
 
+#define BACKGROUND_BITMAP_INIT                                                                                        \
+	int32_t x = background->sx + (renderer->start - 1) * background->dx;                                              \
+	int32_t y = background->sy + (renderer->start - 1) * background->dy;                                              \
+	int mosaicH = 0;                                                                                                  \
+	int mosaicWait = 0;                                                                                               \
+	if (background->mosaic) {                                                                                         \
+		int mosaicV = GBAMosaicControlGetBgV(renderer->mosaic) + 1;                                                   \
+		y -= (inY % mosaicV) * background->dmy;                                                                       \
+		x -= (inY % mosaicV) * background->dmx;                                                                       \
+		mosaicH = GBAMosaicControlGetBgH(renderer->mosaic);                                                           \
+		mosaicWait = renderer->start % (mosaicH + 1);                                                                 \
+	}                                                                                                                 \
+	int32_t localX;                                                                                                   \
+	int32_t localY;                                                                                                   \
+                                                                                                                      \
+	uint32_t flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND; \
+	flags |= FLAG_TARGET_2 * background->target2;                                                                     \
+	int objwinFlags = FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA &&                 \
+	                                   GBAWindowControlIsBlendEnable(renderer->objwin.packed));                       \
+	objwinFlags |= flags;                                                                                             \
+	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA &&                          \
+	                          GBAWindowControlIsBlendEnable(renderer->currentWindow.packed));                         \
+	if (renderer->blendEffect == BLEND_ALPHA && renderer->blda == 0x10 && renderer->bldb == 0) {                      \
+		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);                                                                    \
+		objwinFlags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);                                                              \
+	}                                                                                                                 \
+	int variant = background->target1 && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) &&             \
+	    (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);                           \
+	color_t* palette = renderer->normalPalette;                                                                       \
+	if (renderer->d.highlightAmount && background->highlight) {                                                       \
+		palette = renderer->highlightPalette;                                                                         \
+	}                                                                                                                 \
+	if (variant) {                                                                                                    \
+		palette = renderer->variantPalette;                                                                           \
+		if (renderer->d.highlightAmount && background->highlight) {                                                   \
+			palette = renderer->highlightVariantPalette;                                                              \
+		}                                                                                                             \
+	}                                                                                                                 \
+	UNUSED(palette);                                                                                                  \
+	PREPARE_OBJWIN;
+
+#define BACKGROUND_BITMAP_ITERATE(W, H)                     \
+	x += background->dx;                                    \
+	y += background->dy;                                    \
+                                                            \
+	if (x < 0 || y < 0 || (x >> 8) >= W || (y >> 8) >= H) { \
+		continue;                                           \
+	} else {                                                \
+		localX = x;                                         \
+		localY = y;                                         \
+	}
+
 #define MODE_2_COORD_OVERFLOW \
 	localX = x & (sizeAdjusted - 1); \
 	localY = y & (sizeAdjusted - 1); \
