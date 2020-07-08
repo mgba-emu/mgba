@@ -49,6 +49,7 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 		s_mbcList.append(GB_TAMA5);
 		s_mbcList.append(GB_HuC1);
 		s_mbcList.append(GB_HuC3);
+		s_mbcList.append(GB_UNL_WISDOM_TREE);
 	}
 	if (s_gbModelList.isEmpty()) {
 		// NB: Keep in sync with OverrideView.ui
