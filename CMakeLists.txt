@@ -468,6 +468,10 @@ if(DISABLE_DEPS)
 	set(USE_ZLIB OFF)
 endif()
 
+if(USE_PLEDGE)
+	set(USE_EPOXY OFF)
+endif()
+
 set(WANT_ZLIB ${USE_ZLIB})
 set(WANT_PNG ${USE_PNG})
 set(WANT_SQLITE3 ${USE_SQLITE3})
