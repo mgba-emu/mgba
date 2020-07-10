@@ -158,7 +158,12 @@ int main(int argc, char** argv) {
 #ifdef USE_PLEDGE
 	if (!mPledgeBroad(&args)) {
 		freeArguments(&args);
-		fprintf(stderr, "pledge\n");
+		mCoreConfigDeinit(&renderer.core->config);
+		mInputMapDeinit(&renderer.core->inputMap);
+		renderer.core->deinit(renderer.core);
+		mSDLDeinitEvents(&renderer.events);
+		mSDLDeinit(&renderer);
+		fputs("Broad pledge() failed\n", stderr);
 		return 1;
 	}
 #endif
@@ -279,10 +284,10 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 				}
 			}
 #ifdef USE_PLEDGE
-		if (!mPledgeNarrow(args)) {
-			didFail = true;
-			fprintf(stderr, "pledge\n");
-		}
+			if (!mPledgeNarrow(args)) {
+				didFail = true;
+				fputs("Narrow pledge() failed\n", stderr);
+			}
 #endif
 			renderer->runloop(renderer, &thread);
 			mSDLPauseAudio(&renderer->audio);
