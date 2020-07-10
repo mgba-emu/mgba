@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ffmpeg-decoder.h"
 
+#include <libswscale/swscale.h>
+
 void FFmpegDecoderInit(struct FFmpegDecoder* decoder) {
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58, 9, 100)
 	av_register_all();
@@ -79,14 +81,15 @@ bool FFmpegDecoderOpen(struct FFmpegDecoder* decoder, const char* infile) {
 			decoder->videoStream = i;
 			decoder->width = context->coded_width;
 			decoder->height = context->coded_height;
-			if (decoder->d.videoDimensionsChanged) {
-				decoder->d.videoDimensionsChanged(&decoder->d, decoder->width, decoder->height);
+			if (decoder->out->videoDimensionsChanged) {
+				decoder->out->videoDimensionsChanged(decoder->out, decoder->width, decoder->height);
 			}
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 			decoder->videoFrame = av_frame_alloc();
 #else
 			decoder->videoFrame = avcodec_alloc_frame();
 #endif
+			decoder->pixels = malloc(decoder->width * decoder->height * BYTES_PER_PIXEL);
 		}
 
 		if (type == AVMEDIA_TYPE_AUDIO) {
@@ -111,8 +114,17 @@ void FFmpegDecoderClose(struct FFmpegDecoder* decoder) {
 	}
 
 	if (decoder->audio) {
+#ifdef FFMPEG_USE_CODECPAR
+		avcodec_free_context(&decoder->audio);
+#else
 		avcodec_close(decoder->audio);
 		decoder->audio = NULL;
+#endif
+	}
+
+	if (decoder->scaleContext) {
+		sws_freeContext(decoder->scaleContext);
+		decoder->scaleContext = NULL;
 	}
 
 	if (decoder->videoFrame) {
@@ -123,9 +135,18 @@ void FFmpegDecoderClose(struct FFmpegDecoder* decoder) {
 #endif
 	}
 
+	if (decoder->pixels) {
+		free(decoder->pixels);
+		decoder->pixels = NULL;
+	}
+
 	if (decoder->video) {
+#ifdef FFMPEG_USE_CODECPAR
+		avcodec_free_context(&decoder->video);
+#else
 		avcodec_close(decoder->video);
 		decoder->video = NULL;
+#endif
 	}
 
 	if (decoder->context) {
@@ -138,28 +159,40 @@ bool FFmpegDecoderIsOpen(struct FFmpegDecoder* decoder) {
 }
 
 bool FFmpegDecoderRead(struct FFmpegDecoder* decoder) {
-	while (true) {
+	bool readPacket = false;
+	while (!readPacket) {
 		AVPacket packet;
 		if (av_read_frame(decoder->context, &packet) < 0) {
-			return false;
+			break;
 		}
 
+		readPacket = true;
 		if (packet.stream_index == decoder->audioStream) {
-
+			// TODO
 		} else if (packet.stream_index == decoder->videoStream) {
 #ifdef FFMPEG_USE_CODECPAR
 			if (avcodec_send_packet(decoder->video, &packet) < 0) {
-
+				// TODO
 			}
 			if (avcodec_receive_frame(decoder->video, decoder->videoFrame) < 0) {
-
+				readPacket = false;
 			}
 #else
 			int gotData;
 			if (avcodec_decode_video2(decoder->video, decoder->videoFrame, &gotData, &packet) < 0 || !gotData) {
-
+				readPacket = false;
 			}
 #endif
+			if (readPacket && decoder->out->postVideoFrame) {
+				if (!decoder->scaleContext) {
+					decoder->scaleContext = sws_getContext(decoder->width, decoder->height, decoder->videoFrame->format,
+					    decoder->width, decoder->height, AV_PIX_FMT_BGR32,
+					    SWS_POINT, 0, 0, 0);
+				}
+				int stride = decoder->width * BYTES_PER_PIXEL;
+				sws_scale(decoder->scaleContext, (const uint8_t* const*) decoder->videoFrame->data, decoder->videoFrame->linesize, 0, decoder->videoFrame->height, &decoder->pixels, &stride);
+				decoder->out->postVideoFrame(decoder->out, (const color_t*) decoder->pixels, decoder->width);
+			}
 		}
 #ifdef FFMPEG_USE_PACKET_UNREF
 		av_packet_unref(&packet);
@@ -167,4 +200,5 @@ bool FFmpegDecoderRead(struct FFmpegDecoder* decoder) {
 		av_free_packet(&packet);
 #endif
 	}
+	return readPacket;
 }

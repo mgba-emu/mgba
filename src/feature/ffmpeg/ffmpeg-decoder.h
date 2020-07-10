@@ -17,7 +17,7 @@ CXX_GUARD_START
 #define FFMPEG_DECODER_BUFSIZE 4096
 
 struct FFmpegDecoder {
-	struct mAVStream d;
+	struct mAVStream* out;
 	struct AVFormatContext* context;
 
 	int audioStream;
@@ -27,9 +27,11 @@ struct FFmpegDecoder {
 	int videoStream;
 	AVFrame* videoFrame;
 	struct AVCodecContext* video;
+	struct SwsContext* scaleContext;
 
 	int width;
 	int height;
+	uint8_t* pixels;
 };
 
 void FFmpegDecoderInit(struct FFmpegDecoder*);
