@@ -18,6 +18,7 @@
 
 #ifdef USE_FFMPEG
 #include "feature/ffmpeg/ffmpeg-decoder.h"
+#include "feature/ffmpeg/ffmpeg-encoder.h"
 #endif
 
 #ifdef _MSC_VER
@@ -395,7 +396,7 @@ bool CInemaTestInit(struct CInemaTest* test, const char* directory, const char* 
 	return true;
 }
 
-static bool _loadBaseline(struct VDir* dir, struct CInemaImage* image, size_t frame, enum CInemaStatus* status) {
+static bool _loadBaselinePNG(struct VDir* dir, struct CInemaImage* image, size_t frame, enum CInemaStatus* status) {
 	char baselineName[32];
 	snprintf(baselineName, sizeof(baselineName), "baseline_%04" PRIz "u.png", frame);
 	struct VFile* baselineVF = dir->openFile(dir, baselineName, O_RDONLY);
@@ -448,6 +449,32 @@ static bool _loadBaseline(struct VDir* dir, struct CInemaImage* image, size_t fr
 	image->stride = pwidth;
 	return true;
 }
+
+#ifdef USE_FFMPEG
+struct CInemaStream {
+	struct mAVStream d;
+	struct CInemaImage* image;
+	enum CInemaStatus* status;
+};
+
+static void _cinemaDimensionsChanged(struct mAVStream* stream, unsigned width, unsigned height) {
+	struct CInemaStream* cistream = (struct CInemaStream*) stream;
+	if (height != cistream->image->height || width != cistream->image->width) {
+		CIerr(1, "Size mismatch for video, expected %ux%u, got %ux%u\n", width, height, cistream->image->width, cistream->image->height);
+		if (*cistream->status == CI_PASS) {
+			*cistream->status = CI_FAIL;
+		}
+	}
+}
+
+static void _cinemaVideoFrame(struct mAVStream* stream, const color_t* pixels, size_t stride) {
+	struct CInemaStream* cistream = (struct CInemaStream*) stream;
+	cistream->image->stride = stride;
+	size_t bufferSize = cistream->image->stride * cistream->image->height * BYTES_PER_PIXEL;
+	cistream->image->data = malloc(bufferSize);
+	memcpy(cistream->image->data, pixels, bufferSize);
+}
+#endif
 
 static struct VDir* _makeOutDir(const char* testName) {
 	char path[PATH_MAX] = {0};
@@ -590,6 +617,45 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 	for (frame = 0; frame < skip; ++frame) {
 		core->runFrame(core);
 	}
+
+#ifdef USE_FFMPEG
+	struct FFmpegDecoder decoder;
+	struct FFmpegEncoder encoder;
+	struct CInemaStream stream = {0};
+	if (video) {
+		char fname[PATH_MAX];
+		snprintf(fname, sizeof(fname), "%s" PATH_SEP "baseline.mkv", test->directory);
+		if (rebaseline) {
+			FFmpegEncoderInit(&encoder);
+			FFmpegEncoderSetAudio(&encoder, NULL, 0);
+			FFmpegEncoderSetVideo(&encoder, "png", 0, 0);
+			FFmpegEncoderSetContainer(&encoder, "mkv");
+			FFmpegEncoderSetDimensions(&encoder, image.width, image.height);
+			if (!FFmpegEncoderOpen(&encoder, fname)) {
+				CIerr(1, "Failed to save baseline video\n");
+			} else {
+				core->setAVStream(core, &encoder.d);
+			}
+		} else {
+			FFmpegDecoderInit(&decoder);
+			stream.d.postVideoFrame = _cinemaVideoFrame;
+			stream.d.videoDimensionsChanged = _cinemaDimensionsChanged;
+			stream.status = &test->status;
+			decoder.out = &stream.d;
+			stream.image = &image;
+
+			if (!FFmpegDecoderOpen(&decoder, fname)) {
+				CIerr(1, "Failed to load baseline video\n");
+			}
+		}
+	}
+#else
+	if (video) {
+		CIerr(0, "Failed to run video test without ffmpeg linked in\n");
+		test->status = CI_ERROR;
+	}
+#endif
+
 	for (frame = 0; limit; ++frame, --limit) {
 		core->runFrame(core);
 		++test->totalFrames;
@@ -606,11 +672,24 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 			.height = image.height,
 			.stride = image.width,
 		};
-		bool baselineFound = false;
+		bool baselineFound;
 		if (video) {
 			baselineFound = false;
+#ifdef USE_FFMPEG
+			if (!rebaseline && FFmpegDecoderIsOpen(&decoder)) {
+				stream.image = &expected;
+				while (!expected.data) {
+					if (!FFmpegDecoderRead(&decoder)) {
+						CIerr(1, "Failed to read more frames. EOF?\n");
+						test->status = CI_FAIL;
+						break;
+					}
+				}
+				baselineFound = expected.data;
+			}
+#endif
 		} else {
-			baselineFound = _loadBaseline(dir, &expected, frame, &test->status);
+			baselineFound = _loadBaselinePNG(dir, &expected, frame, &test->status);
 		}
 		if (baselineFound) {
 			uint8_t* testPixels = image.data;
@@ -707,8 +786,10 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 			free(expected.data);
 		} else if (test->status == CI_ERROR) {
 			break;
-		} else if (rebaseline) {
+		} else if (rebaseline && !video) {
 			_writeBaseline(dir, &image, frame);
+		} else if (!rebaseline) {
+			test->status = CI_FAIL;
 		}
 	}
 
@@ -719,6 +800,16 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 			test->status = CI_XPASS;
 		}
 	}
+
+#ifdef USE_FFMPEG
+	if (video) {
+		if (rebaseline) {
+			FFmpegEncoderClose(&encoder);
+		} else {
+			FFmpegDecoderClose(&decoder);
+		}
+	}
+#endif
 
 	free(image.data);
 	mCoreConfigDeinit(&core->config);
@@ -791,6 +882,11 @@ int main(int argc, char** argv) {
 
 	struct mLogger logger = { .log = _log };
 	mLogSetDefaultLogger(&logger);
+#ifdef USE_FFMPEG
+	if (verbosity < 2) {
+		av_log_set_level(AV_LOG_ERROR);
+	}
+#endif
 
 	if (argc > 0) {
 		size_t i;
