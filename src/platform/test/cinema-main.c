@@ -715,7 +715,7 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 					if (r | g | b) {
 						failed = true;
 						if (diffs && !diff) {
-							diff = calloc(expected.width * expected.height, BYTES_PER_PIXEL);
+							diff = calloc(expected.stride * expected.height, BYTES_PER_PIXEL);
 						}
 						CIlog(3, "Frame %u failed at pixel %" PRIz "ux%" PRIz "u with diff %i,%i,%i (expected %02x%02x%02x, got %02x%02x%02x)\n",
 						    frameCounter, x, y, r, g, b,
@@ -763,9 +763,9 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 				if (failed) {
 					struct CInemaImage outdiff = {
 						.data = diff,
-						.width = image.width,
-						.height = image.height,
-						.stride = image.width,
+						.width = expected.width,
+						.height = expected.height,
+						.stride = expected.stride,
 					};
 
 					_writeDiff(test->name, &image, frame, "result");
