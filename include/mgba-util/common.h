@@ -14,6 +14,10 @@
 #define CXX_GUARD_END
 #endif
 
+#ifdef __MINGW32__
+#define __USE_MINGW_ANSI_STDIO 1
+#endif
+
 CXX_GUARD_START
 
 #include <ctype.h>
