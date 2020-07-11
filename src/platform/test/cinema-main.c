@@ -617,6 +617,7 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 	for (frame = 0; frame < skip; ++frame) {
 		core->runFrame(core);
 	}
+	core->desiredVideoDimensions(core, &image.width, &image.height);
 
 #ifdef USE_FFMPEG
 	struct FFmpegDecoder decoder;
