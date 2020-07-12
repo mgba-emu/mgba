@@ -8,6 +8,7 @@ Emulation fixes:
  - ARM: Fix STR storing PC after address calculation
  - ARM: Fix LDM^ writeback to user-mode register
  - ARM: Fix LDM^ {pc} differences (fixes mgba.io/i/1698)
+ - ARM: Fix edge case with Thumb SBC flags (fixes mgba.io/i/1818)
  - GB: Partially fix timing for skipped BIOS
  - GB Memory: Fix OAM DMA from top 8 kB
  - GB MBC: Fix MBC1 mode changing behavior
