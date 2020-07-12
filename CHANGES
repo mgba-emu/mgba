@@ -10,6 +10,7 @@ Emulation fixes:
 Other fixes:
  - All: Correct format strings for some numbers on Windows (fixes mgba.io/i/1794)
  - All: Correct more format strings on Windows (fixes mgba.io/i/1817)
+ - CMake: Fix build with libzip 1.7
  - GB Core: Fix extracting SRAM when none is present
  - GBA Savedata: Fix extracting save when not yet configured in-game
  - Qt: Fix file handle leak on opening an invalid ROM
