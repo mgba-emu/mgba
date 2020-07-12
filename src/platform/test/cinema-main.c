@@ -460,7 +460,7 @@ struct CInemaStream {
 static void _cinemaDimensionsChanged(struct mAVStream* stream, unsigned width, unsigned height) {
 	struct CInemaStream* cistream = (struct CInemaStream*) stream;
 	if (height != cistream->image->height || width != cistream->image->width) {
-		CIerr(1, "Size mismatch for video, expected %ux%u, got %ux%u\n", width, height, cistream->image->width, cistream->image->height);
+		CIlog(1, "Size mismatch for video, expected %ux%u, got %ux%u\n", width, height, cistream->image->width, cistream->image->height);
 		if (*cistream->status == CI_PASS) {
 			*cistream->status = CI_FAIL;
 		}
@@ -681,7 +681,7 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 				stream.image = &expected;
 				while (!expected.data) {
 					if (!FFmpegDecoderRead(&decoder)) {
-						CIerr(1, "Failed to read more frames. EOF?\n");
+						CIlog(1, "Failed to read more frames. EOF?\n");
 						test->status = CI_FAIL;
 						break;
 					}
