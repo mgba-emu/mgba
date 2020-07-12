@@ -417,7 +417,7 @@ static bool _loadBaseline(struct VDir* dir, struct CInemaImage* image, size_t fr
 	if (pheight != image->height || pwidth != image->width) {
 		PNGReadClose(png, info, end);
 		baselineVF->close(baselineVF);
-		CIerr(1, "Size mismatch for %s, expected %ux%u, got %ux%u\n", baselineName, pwidth, pheight, image->width, image->height);
+		CIlog(1, "Size mismatch for %s, expected %ux%u, got %ux%u\n", baselineName, pwidth, pheight, image->width, image->height);
 		if (*status == CI_PASS) {
 			*status = CI_FAIL;
 		}
@@ -590,7 +590,7 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 		if (frameCounter <= minFrame) {
 			break;
 		}
-		CIerr(3, "Test frame: %u\n", frameCounter);
+		CIlog(3, "Test frame: %u\n", frameCounter);
 		core->desiredVideoDimensions(core, &image.width, &image.height);
 		uint8_t* diff = NULL;
 		struct CInemaImage expected = {
@@ -624,7 +624,7 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 						if (diffs && !diff) {
 							diff = calloc(expected.width * expected.height, BYTES_PER_PIXEL);
 						}
-						CIerr(3, "Frame %u failed at pixel %" PRIz "ux%" PRIz "u with diff %i,%i,%i (expected %02x%02x%02x, got %02x%02x%02x)\n",
+						CIlog(3, "Frame %u failed at pixel %" PRIz "ux%" PRIz "u with diff %i,%i,%i (expected %02x%02x%02x, got %02x%02x%02x)\n",
 						    frameCounter, x, y, r, g, b,
 						    expectR, expectG, expectB,
 						    testR, testG, testB);
@@ -738,7 +738,7 @@ int main(int argc, char** argv) {
 	argv += optind;
 
 	if (!base[0] && !determineBase(argc, argv)) {
-		CIerr(0, "Could not determine CInema test base. Please specify manually.");
+		CIlog(0, "Could not determine CInema test base. Please specify manually.");
 		status = 1;
 		goto cleanup;
 	}
@@ -770,7 +770,7 @@ int main(int argc, char** argv) {
 	}
 
 	if (CInemaTestListSize(&tests) == 0) {
-		CIerr(1, "No tests found.");
+		CIlog(1, "No tests found.");
 		status = 1;
 	} else {
 		reduceTestList(&tests);
@@ -785,37 +785,36 @@ int main(int argc, char** argv) {
 		if (dryRun) {
 			CIlog(-1, "%s\n", test->name);
 		} else {
-			CIerr(1, "%s: ", test->name);
+			CIlog(1, "%s: ", test->name);
+			fflush(stdout);
 			CInemaTestRun(test, &configTree);
 			switch (test->status) {
 			case CI_PASS:
-				CIerr(1, "pass");
+				CIlog(1, "pass\n");
 				break;
 			case CI_FAIL:
 				status = 1;
-				CIerr(1, "fail");
+				CIlog(1, "fail\n");
 				break;
 			case CI_XPASS:
-				CIerr(1, "xpass");
+				CIlog(1, "xpass\n");
 				break;
 			case CI_XFAIL:
-				CIerr(1, "xfail");
+				CIlog(1, "xfail\n");
 				break;
 			case CI_SKIP:
-				CIerr(1, "skip");
+				CIlog(1, "skip\n");
 				break;
 			case CI_ERROR:
 				status = 1;
-				CIerr(1, "error");
+				CIlog(1, "error");
 				break;
 			}
 			if (test->failedFrames) {
-				CIerr(2, "\n\tfailed frames: %u/%u (%1.3g%%)", test->failedFrames, test->totalFrames, test->failedFrames / (test->totalFrames * 0.01));
-				CIerr(2, "\n\tfailed pixels: %" PRIu64 "/%" PRIu64 " (%1.3g%%)", test->failedPixels, test->totalPixels, test->failedPixels / (test->totalPixels * 0.01));
-				CIerr(2, "\n\tdistance: %" PRIu64 "/%" PRIu64 " (%1.3g%%)", test->totalDistance, test->totalPixels * 765, test->totalDistance / (test->totalPixels * 7.65));
+				CIlog(2, "\tfailed frames: %u/%u (%1.3g%%)\n", test->failedFrames, test->totalFrames, test->failedFrames / (test->totalFrames * 0.01));
+				CIlog(2, "\tfailed pixels: %" PRIu64 "/%" PRIu64 " (%1.3g%%)\n", test->failedPixels, test->totalPixels, test->failedPixels / (test->totalPixels * 0.01));
+				CIlog(2, "\tdistance: %" PRIu64 "/%" PRIu64 " (%1.3g%%)\n", test->totalDistance, test->totalPixels * 765, test->totalDistance / (test->totalPixels * 7.65));
 			}
-
-			CIerr(1, "\n");
 		}
 	}
 
