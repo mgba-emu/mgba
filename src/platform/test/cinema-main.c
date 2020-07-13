@@ -85,6 +85,11 @@ DEFINE_VECTOR(CInemaTestList, struct CInemaTest)
 DECLARE_VECTOR(ImageList, void*)
 DEFINE_VECTOR(ImageList, void*)
 
+struct StringBuilder {
+	struct StringList out;
+	struct StringList err;
+};
+
 static bool showVersion = false;
 static bool showUsage = false;
 static char base[PATH_MAX] = {0};
@@ -102,6 +107,7 @@ static size_t jobIndex = 0;
 static Mutex jobMutex;
 static Thread jobThreads[MAX_JOBS];
 static int jobStatus;
+static ThreadLocal stringBuilder;
 
 bool CInemaTestInit(struct CInemaTest*, const char* directory, const char* filename);
 void CInemaTestRun(struct CInemaTest*);
@@ -117,7 +123,16 @@ ATTRIBUTE_FORMAT(printf, 2, 3) void CIlog(int minlevel, const char* format, ...)
 	}
 	va_list args;
 	va_start(args, format);
+#ifdef HAVE_VASPRINTF
+	struct StringBuilder* builder = ThreadLocalGetValue(stringBuilder);
+	if (!builder) {
+		vprintf(format, args);
+	} else {
+		vasprintf(StringListAppend(&builder->out), format, args);
+	}
+#else
 	vprintf(format, args);
+#endif
 	va_end(args);
 }
 
@@ -127,8 +142,37 @@ ATTRIBUTE_FORMAT(printf, 2, 3) void CIerr(int minlevel, const char* format, ...)
 	}
 	va_list args;
 	va_start(args, format);
+#ifdef HAVE_VASPRINTF
+	struct StringBuilder* builder = ThreadLocalGetValue(stringBuilder);
+	if (!builder) {
+		vfprintf(stderr, format, args);
+	} else {
+		vasprintf(StringListAppend(&builder->err), format, args);
+	}
+#else
 	vfprintf(stderr, format, args);
+#endif
 	va_end(args);
+}
+
+void CIflush(struct StringList* list, FILE* out) {
+	size_t len = 0;
+	size_t i;
+	for (i = 0; i < StringListSize(list); ++i) {
+		len += strlen(*StringListGetPointer(list, i));
+	}
+	char* string = calloc(len + 1, sizeof(char));
+	char* cur = string;
+	for (i = 0; i < StringListSize(list); ++i) {
+		char* brick = *StringListGetPointer(list, i);
+		size_t portion = strlen(brick);
+		memcpy(cur, brick, portion);
+		free(brick);
+		cur += portion;
+	}
+	fputs(string, out);
+	free(string);
+	StringListClear(list);
 }
 
 static bool parseCInemaArgs(int argc, char* const* argv) {
@@ -886,6 +930,11 @@ static bool CInemaTask(struct CInemaTestList* tests, size_t i) {
 
 static THREAD_ENTRY CInemaJob(void* context) {
 	struct CInemaTestList* tests = context;
+	struct StringBuilder builder;
+	StringListInit(&builder.out, 0);
+	StringListInit(&builder.err, 0);
+	ThreadLocalSetKey(stringBuilder, &builder);
+
 	bool success = true;
 	while (true) {
 		size_t i;
@@ -899,12 +948,20 @@ static THREAD_ENTRY CInemaJob(void* context) {
 		if (!CInemaTask(tests, i)) {
 			success = false;
 		}
+		CIflush(&builder.out, stdout);
+		CIflush(&builder.err, stderr);
 	}
 	MutexLock(&jobMutex);
 	if (!success) {
 		jobStatus = 1;
 	}
 	MutexUnlock(&jobMutex);
+
+	CIflush(&builder.out, stdout);
+	StringListDeinit(&builder.out);
+
+	CIflush(&builder.err, stderr);
+	StringListDeinit(&builder.err);
 }
 
 void _log(struct mLogger* log, int category, enum mLogLevel level, const char* format, va_list args) {
@@ -935,6 +992,9 @@ void _log(struct mLogger* log, int category, enum mLogLevel level, const char* f
 }
 
 int main(int argc, char** argv) {
+	ThreadLocalInitKey(&stringBuilder);
+	ThreadLocalSetKey(stringBuilder, NULL);
+
 	int status = 0;
 	if (!parseCInemaArgs(argc, argv)) {
 		status = 1;

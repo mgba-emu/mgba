@@ -292,6 +292,7 @@ include(CheckIncludeFiles)
 check_function_exists(strdup HAVE_STRDUP)
 check_function_exists(strndup HAVE_STRNDUP)
 check_function_exists(strlcpy HAVE_STRLCPY)
+check_function_exists(vasprintf HAVE_VASPRINTF)
 if(NOT DEFINED PSP2)
 	check_function_exists(localtime_r HAVE_LOCALTIME_R)
 endif()
@@ -372,6 +373,10 @@ endif()
 
 if(HAVE_STRLCPY)
 	list(APPEND FUNCTION_DEFINES HAVE_STRLCPY)
+endif()
+
+if(HAVE_VASPRINTF)
+	list(APPEND FUNCTION_DEFINES HAVE_VASPRINTF)
 endif()
 
 if(HAVE_LOCALTIME_R)
