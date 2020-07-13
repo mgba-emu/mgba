@@ -13,6 +13,7 @@
 #include <mgba-util/png-io.h>
 #include <mgba-util/string.h>
 #include <mgba-util/table.h>
+#include <mgba-util/threading.h>
 #include <mgba-util/vector.h>
 #include <mgba-util/vfs.h>
 
@@ -32,11 +33,13 @@
 #include <sys/types.h>
 
 #define MAX_TEST 200
+#define MAX_JOBS 128
 
 static const struct option longOpts[] = {
 	{ "base",       required_argument, 0, 'b' },
 	{ "diffs",      no_argument, 0, 'd' },
 	{ "help",       no_argument, 0, 'h' },
+	{ "jobs",       required_argument, 0, 'j' },
 	{ "dry-run",    no_argument, 0, 'n' },
 	{ "outdir",     required_argument, 0, 'o' },
 	{ "quiet",      no_argument, 0, 'q' },
@@ -46,7 +49,7 @@ static const struct option longOpts[] = {
 	{ 0, 0, 0, 0 }
 };
 
-static const char shortOpts[] = "b:dhno:qrv";
+static const char shortOpts[] = "b:dhj:no:qrv";
 
 enum CInemaStatus {
 	CI_PASS,
@@ -91,8 +94,17 @@ static bool diffs = false;
 static bool rebaseline = false;
 static int verbosity = 0;
 
+static struct Table configTree;
+static Mutex configMutex;
+
+static int jobs = 1;
+static size_t jobIndex = 0;
+static Mutex jobMutex;
+static Thread jobThreads[MAX_JOBS];
+static int jobStatus;
+
 bool CInemaTestInit(struct CInemaTest*, const char* directory, const char* filename);
-void CInemaTestRun(struct CInemaTest*, struct Table* configTree);
+void CInemaTestRun(struct CInemaTest*);
 
 bool CInemaConfigGetUInt(struct Table* configTree, const char* testName, const char* key, unsigned* value);
 void CInemaConfigLoad(struct Table* configTree, const char* testName, struct mCore* core);
@@ -141,6 +153,9 @@ static bool parseCInemaArgs(int argc, char* const* argv) {
 			break;
 		case 'h':
 			showUsage = true;
+			break;
+		case 'j':
+			jobs = atoi(optarg);
 			break;
 		case 'n':
 			dryRun = true;
@@ -552,9 +567,11 @@ static void _writeBaseline(struct VDir* dir, const struct CInemaImage* image, si
 	}
 }
 
-void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
+void CInemaTestRun(struct CInemaTest* test) {
 	unsigned ignore = 0;
-	CInemaConfigGetUInt(configTree, test->name, "ignore", &ignore);
+	MutexLock(&configMutex);
+	CInemaConfigGetUInt(&configTree, test->name, "ignore", &ignore);
+	MutexUnlock(&configMutex);
 	if (ignore) {
 		test->status = CI_SKIP;
 		return;
@@ -603,11 +620,13 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 	unsigned fail = 0;
 	unsigned video = 0;
 
-	CInemaConfigGetUInt(configTree, test->name, "frames", &limit);
-	CInemaConfigGetUInt(configTree, test->name, "skip", &skip);
-	CInemaConfigGetUInt(configTree, test->name, "fail", &fail);
-	CInemaConfigGetUInt(configTree, test->name, "video", &video);
-	CInemaConfigLoad(configTree, test->name, core);
+	MutexLock(&configMutex);
+	CInemaConfigGetUInt(&configTree, test->name, "frames", &limit);
+	CInemaConfigGetUInt(&configTree, test->name, "skip", &skip);
+	CInemaConfigGetUInt(&configTree, test->name, "fail", &fail);
+	CInemaConfigGetUInt(&configTree, test->name, "video", &video);
+	CInemaConfigLoad(&configTree, test->name, core);
+	MutexUnlock(&configMutex);
 
 	struct VFile* save = VFileMemChunk(NULL, 0);
 	core->loadROM(core, rom);
@@ -825,6 +844,69 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 	dir->close(dir);
 }
 
+static bool CInemaTask(struct CInemaTestList* tests, size_t i) {
+	bool success = true;
+	struct CInemaTest* test = CInemaTestListGetPointer(tests, i);
+	if (dryRun) {
+		CIlog(-1, "%s\n", test->name);
+	} else {
+		CIlog(1, "%s: ", test->name);
+		fflush(stdout);
+		CInemaTestRun(test);
+		switch (test->status) {
+		case CI_PASS:
+			CIlog(1, "pass\n");
+			break;
+		case CI_FAIL:
+			success = false;
+			CIlog(1, "fail\n");
+			break;
+		case CI_XPASS:
+			CIlog(1, "xpass\n");
+			break;
+		case CI_XFAIL:
+			CIlog(1, "xfail\n");
+			break;
+		case CI_SKIP:
+			CIlog(1, "skip\n");
+			break;
+		case CI_ERROR:
+			success = false;
+			CIlog(1, "error\n");
+			break;
+		}
+		if (test->failedFrames) {
+			CIlog(2, "\tfailed frames: %u/%u (%1.3g%%)\n", test->failedFrames, test->totalFrames, test->failedFrames / (test->totalFrames * 0.01));
+			CIlog(2, "\tfailed pixels: %" PRIu64 "/%" PRIu64 " (%1.3g%%)\n", test->failedPixels, test->totalPixels, test->failedPixels / (test->totalPixels * 0.01));
+			CIlog(2, "\tdistance: %" PRIu64 "/%" PRIu64 " (%1.3g%%)\n", test->totalDistance, test->totalPixels * 765, test->totalDistance / (test->totalPixels * 7.65));
+		}
+	}
+	return success;
+}
+
+static THREAD_ENTRY CInemaJob(void* context) {
+	struct CInemaTestList* tests = context;
+	bool success = true;
+	while (true) {
+		size_t i;
+		MutexLock(&jobMutex);
+		i = jobIndex;
+		++jobIndex;
+		MutexUnlock(&jobMutex);
+		if (i >= CInemaTestListSize(tests)) {
+			break;
+		}
+		if (!CInemaTask(tests, i)) {
+			success = false;
+		}
+	}
+	MutexLock(&jobMutex);
+	if (!success) {
+		jobStatus = 1;
+	}
+	MutexUnlock(&jobMutex);
+}
+
 void _log(struct mLogger* log, int category, enum mLogLevel level, const char* format, va_list args) {
 	UNUSED(log);
 	if (verbosity < 0) {
@@ -918,48 +1000,31 @@ int main(int argc, char** argv) {
 		reduceTestList(&tests);
 	}
 
-	struct Table configTree;
 	HashTableInit(&configTree, 0, free);
+	MutexInit(&configMutex);
 
-	size_t i;
-	for (i = 0; i < CInemaTestListSize(&tests); ++i) {
-		struct CInemaTest* test = CInemaTestListGetPointer(&tests, i);
-		if (dryRun) {
-			CIlog(-1, "%s\n", test->name);
-		} else {
-			CIlog(1, "%s: ", test->name);
-			fflush(stdout);
-			CInemaTestRun(test, &configTree);
-			switch (test->status) {
-			case CI_PASS:
-				CIlog(1, "pass\n");
-				break;
-			case CI_FAIL:
+	if (jobs == 1) {
+		size_t i;
+		for (i = 0; i < CInemaTestListSize(&tests); ++i) {
+			bool success = CInemaTask(&tests, i);
+			if (!success) {
 				status = 1;
-				CIlog(1, "fail\n");
-				break;
-			case CI_XPASS:
-				CIlog(1, "xpass\n");
-				break;
-			case CI_XFAIL:
-				CIlog(1, "xfail\n");
-				break;
-			case CI_SKIP:
-				CIlog(1, "skip\n");
-				break;
-			case CI_ERROR:
-				status = 1;
-				CIlog(1, "error\n");
-				break;
-			}
-			if (test->failedFrames) {
-				CIlog(2, "\tfailed frames: %u/%u (%1.3g%%)\n", test->failedFrames, test->totalFrames, test->failedFrames / (test->totalFrames * 0.01));
-				CIlog(2, "\tfailed pixels: %" PRIu64 "/%" PRIu64 " (%1.3g%%)\n", test->failedPixels, test->totalPixels, test->failedPixels / (test->totalPixels * 0.01));
-				CIlog(2, "\tdistance: %" PRIu64 "/%" PRIu64 " (%1.3g%%)\n", test->totalDistance, test->totalPixels * 765, test->totalDistance / (test->totalPixels * 7.65));
 			}
 		}
+	} else {
+		MutexInit(&jobMutex);
+		int i;
+		for (i = 0; i < jobs; ++i) {
+			ThreadCreate(&jobThreads[i], CInemaJob, &tests);
+		}
+		for (i = 0; i < jobs; ++i) {
+			ThreadJoin(&jobThreads[i]);
+		}
+		MutexDeinit(&jobMutex);
+		status = jobStatus;
 	}
 
+	MutexDeinit(&configMutex);
 	HashTableEnumerate(&configTree, _unloadConfigTree, NULL);
 	HashTableDeinit(&configTree);
 	CInemaTestListDeinit(&tests);
