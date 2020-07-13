@@ -572,6 +572,8 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 	CInemaConfigLoad(configTree, test->name, core);
 
 	core->loadROM(core, rom);
+	core->rtc.override = RTC_FAKE_EPOCH;
+	core->rtc.value = 1200000000;
 	core->reset(core);
 
 	test->status = CI_PASS;
