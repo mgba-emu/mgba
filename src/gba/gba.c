@@ -286,7 +286,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 			}
 #endif
 			nextEvent = mTimingTick(&gba->timing, cycles < nextEvent ? nextEvent : cycles);
-		} while (gba->cpuBlocked);
+		} while (gba->cpuBlocked && !gba->earlyExit);
 
 		cpu->nextEvent = nextEvent;
 		if (cpu->halted) {
@@ -305,11 +305,9 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		}
 	}
 	gba->earlyExit = false;
-#ifndef NDEBUG
 	if (gba->cpuBlocked) {
-		mLOG(GBA, FATAL, "CPU is blocked!");
+		cpu->cycles = cpu->nextEvent;
 	}
-#endif
 }
 
 #ifdef USE_DEBUGGERS
