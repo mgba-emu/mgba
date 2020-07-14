@@ -7,6 +7,7 @@
 
 #include <mgba-util/gui/font.h>
 #include <mgba-util/gui/menu.h>
+#include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
 #include <stdlib.h>
@@ -200,7 +201,7 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 					_cleanFiles(&menu.items);
 					GUIMenuItemListDeinit(&menu.items);
 					menu.items = newFiles;
-					strncpy(params->currentPath, outPath, PATH_MAX);
+					strlcpy(params->currentPath, outPath, PATH_MAX);
 				}
 			}
 			params->fileIndex = 0;

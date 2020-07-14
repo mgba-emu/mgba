@@ -80,7 +80,7 @@ QModelIndex ShortcutModel::index(int row, int column, const QModelIndex& parent)
 		pmenu = static_cast<Item*>(parent.internalPointer())->name;
 	}
 	QString name = m_controller->name(row, pmenu);
-	Item* item = &(*const_cast<QHash<QString, Item>*>(&m_cache))[name];
+	Item* item = &m_cache[name];
 	item->name = name;
 	item->shortcut = m_controller->shortcut(name);
 	return createIndex(row, column, item);
@@ -95,7 +95,7 @@ QModelIndex ShortcutModel::parent(const QModelIndex& index) const {
 	if (parent.isNull()) {
 		return QModelIndex();
 	}
-	Item* pitem = &(*const_cast<QHash<QString, Item>*>(&m_cache))[parent];
+	Item* pitem = &m_cache[parent];
 	pitem->name = parent;
 	pitem->shortcut = m_controller->shortcut(parent);
 	return createIndex(m_controller->indexIn(parent), 0, pitem);

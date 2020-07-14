@@ -396,9 +396,9 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 	}
 }
 
-static void _GBACoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
+static void _GBACoreDesiredVideoDimensions(const struct mCore* core, unsigned* width, unsigned* height) {
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
-	struct GBACore* gbacore = (struct GBACore*) core;
+	const struct GBACore* gbacore = (const struct GBACore*) core;
 	int scale = gbacore->glRenderer.scale;
 #else
 	UNUSED(core);

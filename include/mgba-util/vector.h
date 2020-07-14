@@ -41,7 +41,7 @@ CXX_GUARD_START
 			capacity = 4; \
 		} \
 		vector->capacity = capacity; \
-		vector->vector = malloc(sizeof(TYPE) * capacity); \
+		vector->vector = calloc(capacity, sizeof(TYPE)); \
 	} \
 	void NAME ## Deinit(struct NAME* vector) { \
 		free(vector->vector); \

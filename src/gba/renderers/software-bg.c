@@ -8,6 +8,17 @@
 #include <mgba/core/interface.h>
 #include <mgba/internal/gba/gba.h>
 
+#define BACKGROUND_BITMAP_ITERATE(W, H)                     \
+	x += background->dx;                                    \
+	y += background->dy;                                    \
+                                                            \
+	if (x < 0 || y < 0 || (x >> 8) >= W || (y >> 8) >= H) { \
+		continue;                                           \
+	} else {                                                \
+		localX = x;                                         \
+		localY = y;                                         \
+	}
+
 #define MODE_2_COORD_OVERFLOW \
 	localX = x & (sizeAdjusted - 1); \
 	localY = y & (sizeAdjusted - 1); \
@@ -123,7 +134,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode3(struct GBAVideoSoftwareRenderer
 void GBAVideoSoftwareRendererDrawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY) {
 	BACKGROUND_BITMAP_INIT;
 
-	uint16_t color = renderer->normalPalette[0];
+	uint16_t color = 0;
 	uint32_t offset = 0;
 	if (GBARegisterDISPCNTIsFrameSelect(renderer->dispcnt)) {
 		offset = 0xA000;

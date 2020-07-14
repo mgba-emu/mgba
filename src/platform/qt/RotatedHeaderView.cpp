@@ -12,6 +12,8 @@ using namespace QGBA;
 RotatedHeaderView::RotatedHeaderView(Qt::Orientation orientation, QWidget* parent)
 	: QHeaderView(orientation, parent)
 {
+	int margin = 2 * style()->pixelMetric(QStyle::PM_HeaderMargin, 0, this);
+	setMinimumSectionSize(fontMetrics().height() + margin);
 }
 
 void RotatedHeaderView::paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const {

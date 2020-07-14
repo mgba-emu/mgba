@@ -386,12 +386,6 @@ void FrameView::refreshVl() {
 	m_nextFrame = VFileMemChunk(nullptr, 0);
 	if (m_currentFrame) {
 		m_controller->endVideoLog(false);
-		VFile* currentFrame = VFileMemChunk(nullptr, m_currentFrame->size(m_currentFrame));
-		void* buffer = currentFrame->map(currentFrame, m_currentFrame->size(m_currentFrame), MAP_WRITE);
-		m_currentFrame->seek(m_currentFrame, 0, SEEK_SET);
-		m_currentFrame->read(m_currentFrame, buffer, m_currentFrame->size(m_currentFrame));
-		currentFrame->unmap(currentFrame, buffer, m_currentFrame->size(m_currentFrame));
-		m_currentFrame = currentFrame;
 		QMetaObject::invokeMethod(this, "newVl");
 	}
 	m_controller->endVideoLog();
@@ -403,12 +397,16 @@ void FrameView::newVl() {
 		m_glowTimer.start();
 	}
 	QMutexLocker locker(&m_mutex);
+	if (!m_currentFrame) {
+		return;
+	}
 	if (m_vl) {
 		m_vl->deinit(m_vl);
 	}
 	m_vl = mCoreFindVF(m_currentFrame);
 	m_vl->init(m_vl);
 	m_vl->loadROM(m_vl, m_currentFrame);
+	m_currentFrame = nullptr;
 	mCoreInitConfig(m_vl, nullptr);
 	unsigned width, height;
 	m_vl->desiredVideoDimensions(m_vl, &width, &height);

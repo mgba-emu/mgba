@@ -31,6 +31,23 @@ char* strdup(const char* str) {
 }
 #endif
 
+#ifndef HAVE_STRLCPY
+size_t strlcpy(char* restrict dst, const char* restrict src, size_t dstsize) {
+	size_t i = 0;
+	for (; src[i] && dstsize > 1; ++i) {
+		dst[i] = src[i];
+		--dstsize;
+	}
+	if (dstsize) {
+		dst[i] = '\0';
+	}
+	while (src[i]) {
+		++i;
+	}
+	return i;
+}
+#endif
+
 char* strnrstr(const char* restrict haystack, const char* restrict needle, size_t len) {
 	char* last = 0;
 	const char* next = haystack;

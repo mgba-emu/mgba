@@ -22,9 +22,13 @@ Misc:
 Features:
  - e-Reader card scanning
  - Add APNG recording
+ - Support for unlicensed Pokemon Jade/Diamond Game Boy mapper
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
+ - ARM: Fix LDM^ writeback to user-mode register
+ - ARM: Fix LDM^ {pc} differences (fixes mgba.io/i/1698)
+ - ARM: Fix edge case with Thumb SBC flags (fixes mgba.io/i/1818)
  - GB: Partially fix timing for skipped BIOS
  - GB Memory: Fix OAM DMA from top 8 kB
  - GB MBC: Fix MBC1 mode changing behavior
@@ -34,24 +38,41 @@ Emulation fixes:
  - GBA: Fix timing advancing too quickly in rare cases
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing
+ - GBA BIOS: Fix reloading video registers after reset (fixes mgba.io/i/1808)
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA Memory: Improve gamepak prefetch timing
+ - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
  - GBA SIO: Fix copying Normal mode transfer values
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
+ - GBA Video: Fix invalid read in mode 4 mosaic
  - SM83: Emulate HALT bug
 Other fixes:
  - All: Improve export headers (fixes mgba.io/i/1738)
+ - All: Correct format strings for some numbers on Windows (fixes mgba.io/i/1794)
+ - All: Correct more format strings on Windows (fixes mgba.io/i/1817)
+ - CMake: Fix build with libzip 1.7
  - Core: Ensure ELF regions can be written before trying
  - Debugger: Don't skip undefined instructions when debugger attached
+ - FFmpeg: Fix some small memory leaks
+ - GB Core: Fix extracting SRAM when none is present
+ - GBA Savedata: Fix extracting save when not yet configured in-game
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
+ - Qt: Fix file handle leak on opening an invalid ROM
+ - Qt: Fix a race condition in the frame inspector
+ - Qt: Fix Italian RTC translation (fixes mgba.io/i/1798)
+ - Qt: Add missing option for Wisdom Tree in overrides list
+ - Util: Fix crash if PNG header fails to write
 Misc:
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
+ - FFmpeg: Use range coder for FFV1 to reduce output size
  - Qt: Renderer can be changed while a game is running
  - Qt: Add hex index to palette view
  - Qt: Add transformation matrix info to sprite view
+ - Qt: Add per-page scrolling to memory view (fixes mgba.io/i/1795)
+ - Qt: Add setting to display ROM filename in title (closes mgba.io/i/1784)
 
 0.8.2: (2020-06-14)
 Emulation fixes:

@@ -387,6 +387,11 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			// QuickTime and a few other things require YUV420
 			encoder->video->pix_fmt = AV_PIX_FMT_YUV420P;
 		}
+#if LIBAVCODEC_VERSION_MAJOR >= 57
+		if (encoder->video->codec->id == AV_CODEC_ID_FFV1) {
+			av_opt_set(encoder->video->priv_data, "coder", "range_tab", 0);
+		}
+#endif
 
 		if (strcmp(vcodec->name, "libx264") == 0) {
 			// Try to adaptively figure out when you can use a slower encoder
@@ -545,8 +550,12 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 #endif
 	}
 	if (encoder->audio) {
+#ifdef FFMPEG_USE_CODECPAR
+		avcodec_free_context(&encoder->audio);
+#else
 		avcodec_close(encoder->audio);
 		encoder->audio = NULL;
+#endif
 	}
 
 	if (encoder->resampleContext) {
@@ -568,6 +577,7 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 	}
 
 	if (encoder->videoFrame) {
+		av_freep(encoder->videoFrame->data);
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 		av_frame_free(&encoder->videoFrame);
 #else
@@ -585,8 +595,12 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 	}
 
 	if (encoder->video) {
+#ifdef FFMPEG_USE_CODECPAR
+		avcodec_free_context(&encoder->video);
+#else
 		avcodec_close(encoder->video);
 		encoder->video = NULL;
+#endif
 	}
 
 	if (encoder->scaleContext) {

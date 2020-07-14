@@ -69,7 +69,7 @@ struct mCore* mCoreFindVF(struct VFile* vf) {
 
 enum mPlatform mCoreIsCompatible(struct VFile* vf) {
 	if (!vf) {
-		return false;
+		return PLATFORM_NONE;
 	}
 	const struct mCoreFilter* filter;
 	for (filter = &_filters[0]; filter->filter; ++filter) {
@@ -169,6 +169,10 @@ bool mCorePreloadVFCB(struct mCore* core, struct VFile* vf, void (cb)(size_t, si
 		}
 	}
 	vf->close(vf);
+	if (read < 0) {
+		vfm->close(vfm);
+		return false;
+	}
 	bool ret = core->loadROM(core, vfm);
 	if (!ret) {
 		vfm->close(vfm);

@@ -31,7 +31,7 @@ struct GUIFont* GUIFontCreate(void) {
 	guiFont->font = fontGetSystemFont();
 	TGLP_s* glyphInfo = fontGetGlyphInfo(guiFont->font);
 	guiFont->size = FONT_SIZE / glyphInfo->cellHeight;
-	guiFont->sheets = malloc(sizeof(*guiFont->sheets) * glyphInfo->nSheets);
+	guiFont->sheets = calloc(glyphInfo->nSheets, sizeof(*guiFont->sheets));
 
 	int i;
 	for (i = 0; i < glyphInfo->nSheets; ++i) {

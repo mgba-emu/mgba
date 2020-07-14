@@ -146,6 +146,10 @@ struct GBTAMA5State {
 	uint8_t registers[GBTAMA5_MAX];
 };
 
+struct GBPKJDState {
+	uint8_t reg[2];
+};
+
 union GBMBCState {
 	struct GBMBC1State mbc1;
 	struct GBMBC6State mbc6;
@@ -153,6 +157,7 @@ union GBMBCState {
 	struct GBMMM01State mmm01;
 	struct GBPocketCamState pocketCam;
 	struct GBTAMA5State tama5;
+	struct GBPKJDState pkjd;
 };
 
 struct mRotationSource;
@@ -171,6 +176,7 @@ struct GBMemory {
 	int wramCurrentBank;
 
 	bool sramAccess;
+	bool directSramAccess;
 	uint8_t* sram;
 	uint8_t* sramBank;
 	int sramCurrentBank;

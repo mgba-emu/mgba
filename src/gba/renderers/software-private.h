@@ -222,17 +222,6 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	UNUSED(palette);                                                                                                  \
 	PREPARE_OBJWIN;
 
-#define BACKGROUND_BITMAP_ITERATE(W, H)                     \
-	x += background->dx;                                    \
-	y += background->dy;                                    \
-                                                            \
-	if (x < 0 || y < 0 || (x >> 8) >= W || (y >> 8) >= H) { \
-		continue;                                           \
-	} else {                                                \
-		localX = x;                                         \
-		localY = y;                                         \
-	}
-
 #define TEST_LAYER_ENABLED(X) \
 	(softwareRenderer->bg[X].enabled == 3 && \
 	(GBAWindowControlIsBg ## X ## Enable(softwareRenderer->currentWindow.packed) || \

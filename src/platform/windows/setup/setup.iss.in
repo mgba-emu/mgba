@@ -78,8 +78,8 @@ Name: "sgbfileassoc"; Description: "{cm:AssocFileExtension,{#AppName},Super Game
 Name: "gbafileassoc"; Description: "{cm:AssocFileExtension,{#AppName},Game Boy Advance}"; GroupDescription: "{cm:FileAssoc}"
 
 [Files]
-Source: "{#BinDir}\qt\{#AppName}.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#BinDir}\sdl\{#AppName2}-sdl.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#BinDir}\{#AppName}.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#BinDir}\{#AppName2}-sdl.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BinDir}\CHANGES.txt"; DestDir: "{app}\"; Flags: ignoreversion isreadme
 Source: "{#BinDir}\LICENSE.txt"; DestDir: "{app}\"; Flags: ignoreversion
 Source: "{#ResDir}\nointro.dat"; DestDir: "{app}\"; Flags: ignoreversion

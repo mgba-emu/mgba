@@ -42,7 +42,7 @@ static void _redoCacheSize(struct mBitmapCache* cache) {
 	cache->cache = anonymousMemoryMap(mBitmapCacheSystemInfoGetWidth(cache->sysConfig) * size * sizeof(color_t));
 	cache->status = anonymousMemoryMap(size * sizeof(*cache->status));
 	if (mBitmapCacheSystemInfoIsUsesPalette(cache->sysConfig)) {
-		cache->palette = malloc((1 << (1 << mBitmapCacheSystemInfoGetEntryBPP(cache->sysConfig))) * sizeof(color_t));
+		cache->palette = calloc((1 << (1 << mBitmapCacheSystemInfoGetEntryBPP(cache->sysConfig))), sizeof(color_t));
 	} else {
 		cache->palette = NULL;
 	}

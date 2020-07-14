@@ -7,6 +7,7 @@
 
 #include <mgba/internal/sm83/emitter-sm83.h>
 #include <mgba/internal/sm83/sm83.h>
+#include <mgba-util/string.h>
 
 typedef size_t (*SM83Decoder)(uint8_t opcode, struct SM83InstructionInfo* info);
 
@@ -504,39 +505,39 @@ static int _decodeOperand(struct SM83Operand op, uint16_t pc, char* buffer, int 
 		return 0;
 	}
 
-	strncpy(buffer, " ", blen - 1);
+	strlcpy(buffer, " ", blen);
 	ADVANCE(1);
 
 	if (op.flags & SM83_OP_FLAG_MEMORY) {
-		strncpy(buffer, "[", blen - 1);
+		strlcpy(buffer, "[", blen);
 		ADVANCE(1);
 	}
 	if (op.reg) {
-		int written = snprintf(buffer, blen - 1, "%s", _sm83Registers[op.reg]);
+		int written = snprintf(buffer, blen, "%s", _sm83Registers[op.reg]);
 		ADVANCE(written);
 	} else {
 		int written;
 		if (op.flags & SM83_OP_FLAG_RELATIVE) {
-			written = snprintf(buffer, blen - 1, "$%04X", pc + (int8_t) op.immediate);
+			written = snprintf(buffer, blen, "$%04X", pc + (int8_t) op.immediate);
 		} else {
-			written = snprintf(buffer, blen - 1, "$%02X", op.immediate);
+			written = snprintf(buffer, blen, "$%02X", op.immediate);
 		}
 		ADVANCE(written);
 		if (op.reg) {
-			strncpy(buffer, "+", blen - 1);
+			strlcpy(buffer, "+", blen);
 			ADVANCE(1);
 		}
 	}
 	if (op.flags & SM83_OP_FLAG_INCREMENT) {
-		strncpy(buffer, "+", blen - 1);
+		strlcpy(buffer, "+", blen);
 		ADVANCE(1);
 	}
 	if (op.flags & SM83_OP_FLAG_DECREMENT) {
-		strncpy(buffer, "-", blen - 1);
+		strlcpy(buffer, "-", blen);
 		ADVANCE(1);
 	}
 	if (op.flags & SM83_OP_FLAG_MEMORY) {
-		strncpy(buffer, "]", blen - 1);
+		strlcpy(buffer, "]", blen);
 		ADVANCE(1);
 	}
 	return total;
@@ -548,15 +549,15 @@ int SM83Disassemble(struct SM83InstructionInfo* info, uint16_t pc, char* buffer,
 	int total = 0;
 	const char* cond = _sm83Conditions[info->condition];
 
-	written = snprintf(buffer, blen - 1, "%s", mnemonic);
+	written = snprintf(buffer, blen, "%s", mnemonic);
 	ADVANCE(written);
 
 	if (cond) {
-		written = snprintf(buffer, blen - 1, " %s", cond);
+		written = snprintf(buffer, blen, " %s", cond);
 		ADVANCE(written);
 
 		if (info->op1.reg || info->op1.immediate || info->op2.reg || info->op2.immediate) {
-			strncpy(buffer, ",", blen - 1);
+			strlcpy(buffer, ",", blen);
 			ADVANCE(1);
 		}
 	}
@@ -568,7 +569,7 @@ int SM83Disassemble(struct SM83InstructionInfo* info, uint16_t pc, char* buffer,
 
 	if (info->op2.reg || (!info->op1.immediate && info->opcodeSize > 1 && info->opcode[0] != 0xCB)) {
 		if (written) {
-			strncpy(buffer, ",", blen - 1);
+			strlcpy(buffer, ",", blen);
 			ADVANCE(1);
 		}
 		written = _decodeOperand(info->op2, pc, buffer, blen);
