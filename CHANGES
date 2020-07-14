@@ -9,6 +9,7 @@ Emulation fixes:
  - GB Video: Always initialize palette
  - GBA BIOS: Fix reloading video registers after reset (fixes mgba.io/i/1808)
  - GBA Video: Fix invalid read in mode 4 mosaic
+ - GBA Video: Fix color of disabled screen
 Other fixes:
  - All: Correct format strings for some numbers on Windows (fixes mgba.io/i/1794)
  - All: Correct more format strings on Windows (fixes mgba.io/i/1817)
