@@ -16,4 +16,4 @@ before_build:
 - cmake . -DCMAKE_PREFIX_PATH=C:\Qt\5.12\msvc2017_64 -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake
 build:
   parallel: true
-  project: mGBA.sln
+  project: medusa.sln
