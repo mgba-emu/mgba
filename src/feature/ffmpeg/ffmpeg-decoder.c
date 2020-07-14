@@ -79,17 +79,13 @@ bool FFmpegDecoderOpen(struct FFmpegDecoder* decoder, const char* infile) {
 
 		if (type == AVMEDIA_TYPE_VIDEO) {
 			decoder->videoStream = i;
-			decoder->width = context->coded_width;
-			decoder->height = context->coded_height;
-			if (decoder->out->videoDimensionsChanged) {
-				decoder->out->videoDimensionsChanged(decoder->out, decoder->width, decoder->height);
-			}
+			decoder->width = -1;
+			decoder->height = -1;
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 			decoder->videoFrame = av_frame_alloc();
 #else
 			decoder->videoFrame = avcodec_alloc_frame();
 #endif
-			decoder->pixels = malloc(decoder->width * decoder->height * BYTES_PER_PIXEL);
 		}
 
 		if (type == AVMEDIA_TYPE_AUDIO) {
@@ -161,7 +157,9 @@ bool FFmpegDecoderIsOpen(struct FFmpegDecoder* decoder) {
 bool FFmpegDecoderRead(struct FFmpegDecoder* decoder) {
 	bool readPacket = false;
 	while (!readPacket) {
-		AVPacket packet;
+		AVPacket packet = {
+			.stream_index = -2
+		};
 		if (av_read_frame(decoder->context, &packet) < 0) {
 			break;
 		}
@@ -183,15 +181,32 @@ bool FFmpegDecoderRead(struct FFmpegDecoder* decoder) {
 				readPacket = false;
 			}
 #endif
-			if (readPacket && decoder->out->postVideoFrame) {
-				if (!decoder->scaleContext) {
-					decoder->scaleContext = sws_getContext(decoder->width, decoder->height, decoder->videoFrame->format,
-					    decoder->width, decoder->height, AV_PIX_FMT_BGR32,
-					    SWS_POINT, 0, 0, 0);
+			if (readPacket) {
+				if (decoder->width != decoder->videoFrame->width || decoder->height != decoder->videoFrame->height) {
+					decoder->width = decoder->videoFrame->width;
+					decoder->height = decoder->videoFrame->height;
+					if (decoder->out->videoDimensionsChanged) {
+						decoder->out->videoDimensionsChanged(decoder->out, decoder->width, decoder->height);
+					}
+					if (decoder->pixels) {
+						free(decoder->pixels);
+					}
+					decoder->pixels = calloc(decoder->width * decoder->height, BYTES_PER_PIXEL);
+					if (decoder->scaleContext) {
+						sws_freeContext(decoder->scaleContext);
+						decoder->scaleContext = NULL;
+					}
 				}
-				int stride = decoder->width * BYTES_PER_PIXEL;
-				sws_scale(decoder->scaleContext, (const uint8_t* const*) decoder->videoFrame->data, decoder->videoFrame->linesize, 0, decoder->videoFrame->height, &decoder->pixels, &stride);
-				decoder->out->postVideoFrame(decoder->out, (const color_t*) decoder->pixels, decoder->width);
+				if (decoder->out->postVideoFrame) {
+					if (!decoder->scaleContext) {
+						decoder->scaleContext = sws_getContext(decoder->width, decoder->height, decoder->videoFrame->format,
+						    decoder->width, decoder->height, AV_PIX_FMT_BGR32,
+						    SWS_POINT, 0, 0, 0);
+					}
+					int stride = decoder->width * BYTES_PER_PIXEL;
+					sws_scale(decoder->scaleContext, (const uint8_t* const*) decoder->videoFrame->data, decoder->videoFrame->linesize, 0, decoder->videoFrame->height, &decoder->pixels, &stride);
+					decoder->out->postVideoFrame(decoder->out, (const color_t*) decoder->pixels, decoder->width);
+				}
 			}
 		}
 #ifdef FFMPEG_USE_PACKET_UNREF

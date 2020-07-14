@@ -643,7 +643,6 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 			stream.d.videoDimensionsChanged = _cinemaDimensionsChanged;
 			stream.status = &test->status;
 			decoder.out = &stream.d;
-			stream.image = &image;
 
 			if (!FFmpegDecoderOpen(&decoder, fname)) {
 				CIerr(1, "Failed to load baseline video\n");
