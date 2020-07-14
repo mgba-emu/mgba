@@ -27,6 +27,7 @@ Emulation fixes:
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
  - GBA Video: Fix invalid read in mode 4 mosaic
+ - GBA Video: Fix color of disabled screen
  - SM83: Emulate HALT bug
 Other fixes:
  - All: Improve export headers (fixes mgba.io/i/1738)
