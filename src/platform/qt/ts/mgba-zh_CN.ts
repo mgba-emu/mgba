@@ -126,7 +126,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     </message>
 </context>
 <context>
-       <name>BattleChipView</name>
+    <name>BattleChipView</name>
     <message>
         <location filename="../BattleChipView.ui" line="14"/>
         <source>BattleChip Gate</source>
@@ -531,7 +531,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../LoadSaveState.ui" line="248"/>
         <source>2</source>
         <translation>2</translation>
-    </message>    
+    </message>
     <message>
         <location filename="../LoadSaveState.ui" line="261"/>
         <source>Cancel</source>
@@ -904,7 +904,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <source>Address</source>
         <translation>地址</translation>
     </message>
-        <message>
+    <message>
         <location filename="../ObjView.ui" line="79"/>
         <source>0x07000000</source>
         <translation>0x07000000</translation>
@@ -1513,11 +1513,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>添加 CodeBreaker</translation>
     </message>
     <message>
-        <location filename="../CheatsView.cpp" line="74"/>
-        <source>Add GameShark</source>
-        <translation>添加 GameShark</translation>
-    </message>
-    <message>
         <location filename="../CheatsView.cpp" line="80"/>
         <source>Add GameGenie</source>
         <translation>添加 GameGenie</translation>
@@ -1562,7 +1557,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../CoreManager.cpp" line="86"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
-        <translation>无法载入游戏。请确认游戏格式是否无误。</translation>
+        <translation>无法载入游戏。是否确认游戏格式无误？</translation>
     </message>
 </context>
 <context>
@@ -1696,8 +1691,8 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     </message>
     <message>
         <location filename="../GIFView.cpp" line="81"/>
-        <source>Graphics Interchange Format (*.gif);;Animated Portable Network Graphics (*.png *.apng)"</source>
-        <translation>图形交换格式 (*.gif);;动画便携式网络图形 (*.png *.apng)"</translation>
+        <source>Graphics Interchange Format (*.gif);;Animated Portable Network Graphics (*.png *.apng)&quot;</source>
+        <translation>图形交换格式 (*.gif);;动画便携式网络图形 (*.png *.apng)&quot;</translation>
     </message>
 </context>
 <context>
@@ -3821,7 +3816,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../Window.cpp" line="1060"/>
         <source>%1 - %2 - %3</source>
-        <translation>%1 - %2 - %3</translation>      	
+        <translation>%1 - %2 - %3</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1062"/>
@@ -3947,7 +3942,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../Window.cpp" line="1191"/>
         <location filename="../Window.cpp" line="1196"/>
         <source>State &amp;%1</source>
-        <translation>即时存档 1(&amp;1)</translation>
+        <translation>即时存档 (&amp;%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1203"/>
@@ -4098,7 +4093,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../Window.cpp" line="1342"/>
         <source>BattleChip Gate...</source>
         <translation>BattleChip Gate...</translation>
-    </message>    
+    </message>
     <message>
         <location filename="../Window.cpp" line="1346"/>
         <source>Audio/&amp;Video</source>
@@ -5319,19 +5314,9 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>MKV</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="251"/>
-        <source>WebM</source>
-        <translation>WebM</translation>
-    </message>
-    <message>
         <location filename="../VideoView.ui" line="256"/>
         <source>AVI</source>
         <translation>AVI</translation>
-    </message>
-    <message>
-        <location filename="../VideoView.ui" line="21"/>
-        <source>MP4</source>
-        <translation>MP4</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="273"/>
@@ -5407,7 +5392,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../VideoView.ui" line="361"/>
         <source> Bitrate (kbps)</source>
-        <translation>比特率 (kbps)</translation>
+        <translation> 比特率 (kbps)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="367"/>
