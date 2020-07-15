@@ -365,6 +365,8 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		encoder->video->height = encoder->height;
 		encoder->video->time_base = (AVRational) { VIDEO_TOTAL_LENGTH * encoder->frameskip, GBA_ARM7TDMI_FREQUENCY };
 		encoder->video->framerate = (AVRational) { GBA_ARM7TDMI_FREQUENCY, VIDEO_TOTAL_LENGTH * encoder->frameskip };
+		encoder->videoStream->time_base = encoder->video->time_base;
+		encoder->videoStream->avg_frame_rate = encoder->video->framerate;
 		encoder->video->pix_fmt = encoder->pixFormat;
 		encoder->video->gop_size = 60;
 		encoder->video->max_b_frames = 3;

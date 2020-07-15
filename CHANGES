@@ -37,6 +37,7 @@ Other fixes:
  - Core: Ensure ELF regions can be written before trying
  - Debugger: Don't skip undefined instructions when debugger attached
  - FFmpeg: Fix some small memory leaks
+ - FFmpeg: Fix encoding of time base
  - GB Core: Fix extracting SRAM when none is present
  - GBA Savedata: Fix extracting save when not yet configured in-game
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
