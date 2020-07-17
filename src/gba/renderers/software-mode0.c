@@ -14,7 +14,11 @@
 	} \
 	screenBase = background->screenBase + yBase + (xBase >> 2); \
 	uint16_t* screenBlock = renderer->d.vramBG[screenBase >> VRAM_BLOCK_OFFSET]; \
-	LOAD_16(mapData, screenBase & VRAM_BLOCK_MASK, screenBlock); \
+	if (LIKELY(screenBlock)) { \
+		LOAD_16(mapData, screenBase & VRAM_BLOCK_MASK, screenBlock); \
+	} else { \
+		mapData = 0; \
+	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_16(BLEND, OBJWIN) \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
