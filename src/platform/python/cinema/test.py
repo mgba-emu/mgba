@@ -3,7 +3,6 @@ import os.path
 import mgba.core
 import mgba.image
 import cinema.movie
-import itertools
 import glob
 import re
 from copy import deepcopy
@@ -73,7 +72,7 @@ class VideoTest(CinemaTest):
         self.tracer = cinema.movie.Tracer(self.core)
 
     def generate_frames(self):
-        for i, frame in zip(itertools.count(), self.tracer.video(**self.output_settings())):
+        for i, frame in enumerate(self.tracer.video(**self.output_settings())):
             try:
                 baseline = VideoFrame.load(os.path.join(self.path, self.BASELINE % i))
                 yield baseline, frame, VideoFrame.diff(baseline, frame)
@@ -85,7 +84,7 @@ class VideoTest(CinemaTest):
         assert not any(any(diffs[0].image.convert("L").point(bool).getdata()) for diffs in self.diffs)
 
     def generate_baseline(self):
-        for i, frame in zip(itertools.count(), self.tracer.video(**self.output_settings())):
+        for i, frame in enumerate(self.tracer.video(**self.output_settings())):
             frame.save(os.path.join(self.path, self.BASELINE % i))
 
 

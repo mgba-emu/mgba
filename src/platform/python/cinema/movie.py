@@ -8,15 +8,17 @@ Output = namedtuple('Output', ['video'])
 class Tracer(object):
     def __init__(self, core):
         self.core = core
-        self.framebuffer = Image(*core.desired_video_dimensions())
-        self.core.set_video_buffer(self.framebuffer)
         self._video_fifo = []
 
     def yield_frames(self, skip=0, limit=None):
+        self.framebuffer = Image(*self.core.desired_video_dimensions())
+        self.core.set_video_buffer(self.framebuffer)
         self.core.reset()
         skip = (skip or 0) + 1
         while skip > 0:
             frame = self.core.frame_counter
+            self.framebuffer = Image(*self.core.desired_video_dimensions())
+            self.core.set_video_buffer(self.framebuffer)
             self.core.run_frame()
             skip -= 1
         while frame <= self.core.frame_counter and limit != 0:

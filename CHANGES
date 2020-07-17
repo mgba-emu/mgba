@@ -35,6 +35,7 @@ Emulation fixes:
  - GB MBC: Fix MBC1 RAM enable bit selection
  - GB MBC: Fix MBC2 bit selection
  - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
+ - GB Video: Always initialize palette
  - GBA: Fix timing advancing too quickly in rare cases
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing
@@ -46,6 +47,7 @@ Emulation fixes:
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
  - GBA Video: Fix invalid read in mode 4 mosaic
+ - GBA Video: Fix color of disabled screen
  - SM83: Emulate HALT bug
 Other fixes:
  - All: Improve export headers (fixes mgba.io/i/1738)
@@ -55,6 +57,7 @@ Other fixes:
  - Core: Ensure ELF regions can be written before trying
  - Debugger: Don't skip undefined instructions when debugger attached
  - FFmpeg: Fix some small memory leaks
+ - FFmpeg: Fix encoding of time base
  - GB Core: Fix extracting SRAM when none is present
  - GBA Savedata: Fix extracting save when not yet configured in-game
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)

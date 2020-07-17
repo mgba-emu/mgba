@@ -5,7 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/feature/video-logger.h>
 
-#include <mgba/core/core.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
 #include <mgba-util/math.h>
@@ -724,7 +723,7 @@ static void _flushBuffer(struct mVideoLogContext* context) {
 	}
 }
 
-void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* context) {
+void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* context, bool closeVF) {
 	if (context->write) {
 		_flushBuffer(context);
 
@@ -750,6 +749,10 @@ void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* contex
 			context->channels[i].inflating = false;
 		}
 #endif
+	}
+
+	if (closeVF && context->backing) {
+		context->backing->close(context->backing);
 	}
 
 	free(context);
@@ -1033,7 +1036,7 @@ static ssize_t mVideoLoggerWriteChannel(struct mVideoLogChannel* channel, const 
 	return read;
 }
 
-struct mCore* mVideoLogCoreFind(struct VFile* vf) {
+static const struct mVLDescriptor* _mVideoLogDescriptor(struct VFile* vf) {
 	if (!vf) {
 		return NULL;
 	}
@@ -1054,6 +1057,25 @@ struct mCore* mVideoLogCoreFind(struct VFile* vf) {
 		if (platform == descriptor->platform) {
 			break;
 		}
+	}
+	if (descriptor->platform == PLATFORM_NONE) {
+		return NULL;
+	}
+	return descriptor;
+}
+
+enum mPlatform mVideoLogIsCompatible(struct VFile* vf) {
+	const struct mVLDescriptor* descriptor = _mVideoLogDescriptor(vf);
+	if (descriptor) {
+		return descriptor->platform;
+	}
+	return PLATFORM_NONE;
+}
+
+struct mCore* mVideoLogCoreFind(struct VFile* vf) {
+	const struct mVLDescriptor* descriptor = _mVideoLogDescriptor(vf);
+	if (!descriptor) {
+		return NULL;
 	}
 	struct mCore* core = NULL;
 	if (descriptor->open) {

@@ -1091,7 +1091,7 @@ static bool _GBVLPInit(struct mCore* core) {
 static void _GBVLPDeinit(struct mCore* core) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	if (gbcore->logContext) {
-		mVideoLogContextDestroy(core, gbcore->logContext);
+		mVideoLogContextDestroy(core, gbcore->logContext, true);
 	}
 	_GBCoreDeinit(core);
 }
@@ -1120,7 +1120,7 @@ static bool _GBVLPLoadROM(struct mCore* core, struct VFile* vf) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	gbcore->logContext = mVideoLogContextCreate(NULL);
 	if (!mVideoLogContextLoad(gbcore->logContext, vf)) {
-		mVideoLogContextDestroy(core, gbcore->logContext);
+		mVideoLogContextDestroy(core, gbcore->logContext, false);
 		gbcore->logContext = NULL;
 		return false;
 	}
