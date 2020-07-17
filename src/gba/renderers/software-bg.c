@@ -33,7 +33,12 @@
 #define MODE_2_NO_MOSAIC(COORD) \
 	COORD \
 	uint32_t screenBase = background->screenBase + (localX >> 11) + (((localY >> 7) & 0x7F0) << background->size); \
-	mapData = ((uint8_t*) renderer->d.vramBG[screenBase >> VRAM_BLOCK_OFFSET])[screenBase & VRAM_BLOCK_MASK]; \
+	uint8_t* screenBlock = (uint8_t*) renderer->d.vramBG[screenBase >> VRAM_BLOCK_OFFSET]; \
+	if (UNLIKELY(!screenBlock)) { \
+		mapData = 0; \
+	} else { \
+		mapData = screenBlock[screenBase & VRAM_BLOCK_MASK]; \
+	} \
 	uint32_t charBase = background->charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8); \
 	pixelData = ((uint8_t*) renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET])[charBase & VRAM_BLOCK_MASK]; \
 
