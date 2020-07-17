@@ -830,7 +830,7 @@ int main(int argc, char** argv) {
 				break;
 			case CI_ERROR:
 				status = 1;
-				CIlog(1, "error");
+				CIlog(1, "error\n");
 				break;
 			}
 			if (test->failedFrames) {
