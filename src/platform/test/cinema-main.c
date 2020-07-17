@@ -714,7 +714,30 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 }
 
 void _log(struct mLogger* log, int category, enum mLogLevel level, const char* format, va_list args) {
-	// TODO: Write
+	UNUSED(log);
+	if (verbosity < 0) {
+		return;
+	}
+	int mask = mLOG_FATAL;
+	if (verbosity >= 1) {
+		mask |= mLOG_ERROR;
+	}
+	if (verbosity >= 2) {
+		mask |= mLOG_WARN;
+	}
+	if (verbosity >= 4) {
+		mask |= mLOG_INFO;
+	}
+	if (verbosity >= 5) {
+		mask |= mLOG_ALL;
+	}
+	if (!(mask & level)) {
+		return;
+	}
+
+	char buffer[256];
+	vsnprintf(buffer, sizeof(buffer), format, args);
+	CIerr(0, "[%s] %s\n", mLogCategoryName(category), buffer);
 }
 
 int main(int argc, char** argv) {
