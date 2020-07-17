@@ -109,6 +109,7 @@ static Mutex jobMutex;
 static Thread jobThreads[MAX_JOBS];
 static int jobStatus;
 static ThreadLocal stringBuilder;
+static ThreadLocal currentTest;
 
 bool CInemaTestInit(struct CInemaTest*, const char* directory, const char* filename);
 void CInemaTestRun(struct CInemaTest*);
@@ -771,6 +772,9 @@ void CInemaTestRun(struct CInemaTest* test) {
 		} else {
 			baselineFound = _loadBaselinePNG(dir, &expected, frame, &test->status);
 		}
+		if (test->status == CI_ERROR) {
+			break;
+		}
 		if (baselineFound) {
 			uint8_t* testPixels = image.data;
 			uint8_t* expectPixels = expected.data;
@@ -864,8 +868,6 @@ void CInemaTestRun(struct CInemaTest* test) {
 				free(diff);
 			}
 			free(expected.data);
-		} else if (test->status == CI_ERROR) {
-			break;
 		} else if (rebaseline && !video) {
 			_writeBaseline(dir, &image, frame);
 		} else if (!rebaseline) {
@@ -905,7 +907,10 @@ static bool CInemaTask(struct CInemaTestList* tests, size_t i) {
 	} else {
 		CIlog(1, "%s: ", test->name);
 		fflush(stdout);
+		ThreadLocalSetKey(currentTest, test);
 		CInemaTestRun(test);
+		ThreadLocalSetKey(currentTest, NULL);
+
 		switch (test->status) {
 		case CI_PASS:
 			CIlog(1, "pass\n");
@@ -975,6 +980,10 @@ static THREAD_ENTRY CInemaJob(void* context) {
 
 void _log(struct mLogger* log, int category, enum mLogLevel level, const char* format, va_list args) {
 	UNUSED(log);
+	if (level == mLOG_FATAL) {
+		struct CInemaTest* test = ThreadLocalGetValue(currentTest);
+		test->status = CI_ERROR;
+	}
 	if (verbosity < 0) {
 		return;
 	}
@@ -1071,6 +1080,8 @@ int main(int argc, char** argv) {
 
 	HashTableInit(&configTree, 0, free);
 	MutexInit(&configMutex);
+	ThreadLocalInitKey(&currentTest);
+	ThreadLocalSetKey(currentTest, NULL);
 
 	if (jobs == 1) {
 		size_t i;
