@@ -734,13 +734,13 @@ void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 
 void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
+	if (cpu->executionMode == MODE_THUMB && (opcode & 0xFFC0) == 0xE800) {
+		mLOG(GBA, INFO, "Hit Wii U VC opcode: %08x", opcode);
+		return;
+	}
 	if (!gba->yankedRomSize) {
 		// TODO: More sensible category?
 		mLOG(GBA, WARN, "Illegal opcode: %08x", opcode);
-	}
-	if (cpu->executionMode == MODE_THUMB && (opcode & 0xFFC0) == 0xE800) {
-		mLOG(GBA, DEBUG, "Hit Wii U VC opcode: %08x", opcode);
-		return;
 	}
 #ifdef USE_DEBUGGERS
 	if (gba->debugger) {
