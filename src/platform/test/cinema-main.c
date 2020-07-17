@@ -210,6 +210,12 @@ static bool parseCInemaArgs(int argc, char* const* argv) {
 			break;
 		case 'j':
 			jobs = atoi(optarg);
+			if (jobs > MAX_JOBS) {
+				jobs = MAX_JOBS;
+			}
+			if (jobs < 1) {
+				jobs = 1;
+			}
 			break;
 		case 'n':
 			dryRun = true;
