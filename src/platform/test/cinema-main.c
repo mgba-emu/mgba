@@ -578,6 +578,7 @@ void CInemaConfigLoad(struct Table* configTree, const char* testName, struct mCo
 		struct mCoreConfig* config = HashTableLookup(configTree, testKey);
 		if (config) {
 			core->loadConfig(core, config);
+			mCoreConfigMap(config, &core->opts);
 		}
 		if (!pos) {
 			break;
