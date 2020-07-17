@@ -42,6 +42,9 @@
 #define DRAW_BACKGROUND_MODE_0_TILE_PREFIX_16(BLEND, OBJWIN) \
 	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
 	vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
+	if (UNLIKELY(!vram)) { \
+		return; \
+	} \
 	LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 	palette = &mainPalette[paletteData]; \
@@ -389,25 +392,29 @@
 		tileData = carryData; \
 		for (x = 0; x < 8; ++x) { \
 			if (!mosaicWait) { \
-				if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-					if (x >= 4) { \
-						LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
-						tileData >>= (x - 4) * 8; \
-					} else { \
-						LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
-						tileData >>= x * 8; \
-					} \
+				if (UNLIKELY(!vram)) { \
+					carryData = 0; \
 				} else { \
-					if (x >= 4) { \
-						LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
-						tileData >>= (7 - x) * 8; \
+					if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+						if (x >= 4) { \
+							LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
+							tileData >>= (x - 4) * 8; \
+						} else { \
+							LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
+							tileData >>= x * 8; \
+						} \
 					} else { \
-						LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
-						tileData >>= (3 - x) * 8; \
+						if (x >= 4) { \
+							LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
+							tileData >>= (7 - x) * 8; \
+						} else { \
+							LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
+							tileData >>= (3 - x) * 8; \
+						} \
 					} \
+					tileData &= 0xFF; \
+					carryData = tileData; \
 				} \
-				tileData &= 0xFF; \
-				carryData = tileData; \
 				mosaicWait = mosaicH; \
 			} \
 			tileData |= tileData << 8; \
@@ -622,25 +629,29 @@
 			if (!mosaicWait) { \
 				paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
 				palette = &mainPalette[paletteData]; \
-				if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-					if (x >= 4) { \
-						LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
-						tileData >>= (x - 4) * 8; \
-					} else { \
-						LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
-						tileData >>= x * 8; \
-					} \
+				if (UNLIKELY(!vram)) { \
+					carryData = 0; \
 				} else { \
-					if (x >= 4) { \
-						LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
-						tileData >>= (7 - x) * 8; \
+					if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+						if (x >= 4) { \
+							LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
+							tileData >>= (x - 4) * 8; \
+						} else { \
+							LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
+							tileData >>= x * 8; \
+						} \
 					} else { \
-						LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
-						tileData >>= (3 - x) * 8; \
+						if (x >= 4) { \
+							LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
+							tileData >>= (7 - x) * 8; \
+						} else { \
+							LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
+							tileData >>= (3 - x) * 8; \
+						} \
 					} \
+					tileData &= 0xFF; \
+					carryData = tileData; \
 				} \
-				tileData &= 0xFF; \
-				carryData = tileData; \
 				mosaicWait = mosaicH; \
 			} \
 			tileData |= tileData << 8; \
