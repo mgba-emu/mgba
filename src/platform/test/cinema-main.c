@@ -34,6 +34,7 @@
 
 #define MAX_TEST 200
 #define MAX_JOBS 128
+#define LOG_THRESHOLD 1000000
 
 static const struct option longOpts[] = {
 	{ "base",       required_argument, 0, 'b' },
@@ -117,6 +118,8 @@ void CInemaConfigLoad(struct Table* configTree, const char* testName, struct mCo
 
 static void _log(struct mLogger* log, int category, enum mLogLevel level, const char* format, va_list args);
 
+void CIflush(struct StringList* list, FILE* out);
+
 ATTRIBUTE_FORMAT(printf, 2, 3) void CIlog(int minlevel, const char* format, ...) {
 	if (verbosity < minlevel) {
 		return;
@@ -128,6 +131,9 @@ ATTRIBUTE_FORMAT(printf, 2, 3) void CIlog(int minlevel, const char* format, ...)
 	if (!builder) {
 		vprintf(format, args);
 	} else {
+		if (StringListSize(&builder->out) > LOG_THRESHOLD) {
+			CIflush(&builder->out, stdout);
+		}
 		vasprintf(StringListAppend(&builder->out), format, args);
 	}
 #else
@@ -147,6 +153,9 @@ ATTRIBUTE_FORMAT(printf, 2, 3) void CIerr(int minlevel, const char* format, ...)
 	if (!builder) {
 		vfprintf(stderr, format, args);
 	} else {
+		if (StringListSize(&builder->err) > LOG_THRESHOLD) {
+			CIflush(&builder->err, stderr);
+		}
 		vasprintf(StringListAppend(&builder->err), format, args);
 	}
 #else
