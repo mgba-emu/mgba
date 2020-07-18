@@ -45,12 +45,13 @@ static const struct option longOpts[] = {
 	{ "outdir",     required_argument, 0, 'o' },
 	{ "quiet",      no_argument, 0, 'q' },
 	{ "rebaseline", no_argument, 0, 'r' },
+	{ "rebaseline-missing", no_argument, 0, 'R' },
 	{ "verbose",    no_argument, 0, 'v' },
 	{ "version",    no_argument, 0, '\0' },
 	{ 0, 0, 0, 0 }
 };
 
-static const char shortOpts[] = "b:dhj:no:qrv";
+static const char shortOpts[] = "b:dhj:no:qRrv";
 
 enum CInemaStatus {
 	CI_PASS,
@@ -59,6 +60,12 @@ enum CInemaStatus {
 	CI_XFAIL,
 	CI_ERROR,
 	CI_SKIP
+};
+
+enum CInemaRebaseline {
+	CI_R_NONE = 0,
+	CI_R_FAILING,
+	CI_R_MISSING,
 };
 
 struct CInemaTest {
@@ -97,7 +104,7 @@ static char base[PATH_MAX] = {0};
 static char outdir[PATH_MAX] = {'.'};
 static bool dryRun = false;
 static bool diffs = false;
-static bool rebaseline = false;
+static enum CInemaRebaseline rebaseline = CI_R_NONE;
 static int verbosity = 0;
 
 static struct Table configTree;
@@ -228,7 +235,10 @@ static bool parseCInemaArgs(int argc, char* const* argv) {
 			--verbosity;
 			break;
 		case 'r':
-			rebaseline = true;
+			rebaseline = CI_R_FAILING;
+			break;
+		case 'R':
+			rebaseline = CI_R_MISSING;
 			break;
 		case 'v':
 			++verbosity;
@@ -250,6 +260,7 @@ static void usageCInema(const char* arg0) {
 	puts("  -o, --output [DIR]         Path to output applicable results");
 	puts("  -q, --quiet                Decrease log verbosity (can be repeated)");
 	puts("  -r, --rebaseline           Rewrite the baseline for failing tests");
+	puts("  -R, --rebaseline-missing   Write missing baselines tests only");
 	puts("  -v, --verbose              Increase log verbosity (can be repeated)");
 	puts("  --version                  Print version and exit");
 }
@@ -710,30 +721,46 @@ void CInemaTestRun(struct CInemaTest* test) {
 	struct FFmpegDecoder decoder;
 	struct FFmpegEncoder encoder;
 	struct CInemaStream stream = {0};
+
+	char baselineName[PATH_MAX];
+	snprintf(baselineName, sizeof(baselineName), "%s" PATH_SEP "baseline.mkv", test->directory);
+	bool exists = access(baselineName, 0) == 0;
+
+	char tmpBaselineName[PATH_MAX];
+	snprintf(tmpBaselineName, sizeof(tmpBaselineName), "%s" PATH_SEP ".baseline.mkv", test->directory);
+
 	if (video) {
-		char fname[PATH_MAX];
-		snprintf(fname, sizeof(fname), "%s" PATH_SEP "baseline.mkv", test->directory);
-		if (rebaseline) {
-			FFmpegEncoderInit(&encoder);
+		FFmpegEncoderInit(&encoder);
+		FFmpegDecoderInit(&decoder);
+
+		if (rebaseline == CI_R_FAILING || (rebaseline == CI_R_MISSING && !exists)) {
 			FFmpegEncoderSetAudio(&encoder, NULL, 0);
 			FFmpegEncoderSetVideo(&encoder, "png", 0, 0);
 			FFmpegEncoderSetContainer(&encoder, "mkv");
 			FFmpegEncoderSetDimensions(&encoder, image.width, image.height);
-			if (!FFmpegEncoderOpen(&encoder, fname)) {
+
+			const char* usedFname = baselineName;
+			if (exists) {
+				usedFname = tmpBaselineName;
+			}
+			if (!FFmpegEncoderOpen(&encoder, usedFname)) {
 				CIerr(1, "Failed to save baseline video\n");
 			} else {
 				core->setAVStream(core, &encoder.d);
 			}
-		} else {
-			FFmpegDecoderInit(&decoder);
+		}
+
+		if (exists) {
 			stream.d.postVideoFrame = _cinemaVideoFrame;
 			stream.d.videoDimensionsChanged = _cinemaDimensionsChanged;
 			stream.status = &test->status;
 			decoder.out = &stream.d;
 
-			if (!FFmpegDecoderOpen(&decoder, fname)) {
+			if (!FFmpegDecoderOpen(&decoder, baselineName)) {
 				CIerr(1, "Failed to load baseline video\n");
 			}
+		} else if (!rebaseline) {
+			test->status = CI_FAIL;
 		}
 	}
 #else
@@ -763,7 +790,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 		if (video) {
 			baselineFound = false;
 #ifdef USE_FFMPEG
-			if (!rebaseline && FFmpegDecoderIsOpen(&decoder)) {
+			if (FFmpegDecoderIsOpen(&decoder)) {
 				stream.image = &expected;
 				while (!expected.data) {
 					if (!FFmpegDecoderRead(&decoder)) {
@@ -845,7 +872,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 				++test->failedFrames;
 			}
 			test->totalPixels += image.height * image.width;
-			if (rebaseline && failed) {
+			if (rebaseline == CI_R_FAILING && !video && failed) {
 				_writeBaseline(dir, &image, frame);
 			}
 			if (diff) {
@@ -881,6 +908,28 @@ void CInemaTestRun(struct CInemaTest* test) {
 		}
 	}
 
+#ifdef USE_FFMPEG
+	if (video) {
+		if (FFmpegEncoderIsOpen(&encoder)) {
+			FFmpegEncoderClose(&encoder);
+			if (exists) {
+				if (test->status == CI_FAIL) {
+#ifdef _WIN32
+					MoveFileEx(tmpBaselineName, baselineName, MOVEFILE_REPLACE_EXISTING);
+#else
+					rename(tmpBaselineName, baselineName);
+#endif
+				} else {
+					remove(tmpBaselineName);
+				}
+			}
+		}
+		if (FFmpegDecoderIsOpen(&decoder)) {
+			FFmpegDecoderClose(&decoder);
+		}
+	}
+#endif
+
 	if (fail) {
 		if (test->status == CI_FAIL) {
 			test->status = CI_XFAIL;
@@ -888,16 +937,6 @@ void CInemaTestRun(struct CInemaTest* test) {
 			test->status = CI_XPASS;
 		}
 	}
-
-#ifdef USE_FFMPEG
-	if (video) {
-		if (rebaseline) {
-			FFmpegEncoderClose(&encoder);
-		} else {
-			FFmpegDecoderClose(&decoder);
-		}
-	}
-#endif
 
 	free(image.data);
 	mCoreConfigDeinit(&core->config);
