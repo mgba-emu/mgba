@@ -9,7 +9,6 @@ Bugfixes:
  - DS Video: Fix display capture blending value 16 (fixes mgba.io/i/757)
  - DS GX: Properly center cross product in polygon normal calculations
  - DS Video: Fix affine parameter advancing (fixes mgba.io/i/802)
- - DS GX: Fix incorrect W values
  - DS Video: Fix 2D/3D blending alpha values
  - DS I/O: Enable POWCNT1 bit 1 at boot (fixes mgba.io/i/616)
  - DS Slot-1: Reply to IR 0x08 command properly (fixes mgba.io/i/666)
