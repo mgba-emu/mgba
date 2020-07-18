@@ -8,8 +8,6 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
 
-#define REG_TMCNT_LO(X) (REG_TM0CNT_LO + ((X) << 2))
-
 static void GBATimerIrq(struct GBA* gba, int timerId, uint32_t cyclesLate) {
 	struct GBATimer* timer = &gba->timers[timerId];
 	if (GBATimerFlagsIsDoIrq(timer->flags)) {
@@ -131,7 +129,6 @@ void GBATimerUpdateRegisterInternal(struct GBATimer* timer, struct mTiming* timi
 	timer->lastEvent = currentTime;
 	tickIncrement >>= prescaleBits;
 	tickIncrement += *io;
-	*io = tickIncrement;
 	while (tickIncrement >= 0x10000) {
 		tickIncrement -= 0x10000 - timer->reload;
 	}
@@ -171,7 +168,7 @@ void GBATimerWriteTMCNT_HI(struct GBATimer* timer, struct mTiming* timing, uint1
 	}
 	prescaleBits += timer->forcedPrescale;
 	timer->flags = GBATimerFlagsSetPrescaleBits(timer->flags, prescaleBits);
-	timer->flags = GBATimerFlagsTestFillCountUp(timer->flags, timer > 0 && (control & 0x0004));
+	timer->flags = GBATimerFlagsTestFillCountUp(timer->flags, timer > 0 && (control & 0x0004)); // TODO: Need timer ID
 	timer->flags = GBATimerFlagsTestFillDoIrq(timer->flags, control & 0x0040);
 	bool wasEnabled = GBATimerFlagsIsEnable(timer->flags);
 	timer->flags = GBATimerFlagsTestFillEnable(timer->flags, control & 0x0080);
