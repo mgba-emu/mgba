@@ -105,11 +105,7 @@ void GBATimerInit(struct GBA* gba) {
 void GBATimerUpdateRegister(struct GBA* gba, int timer, int32_t cyclesLate) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	if (GBATimerFlagsIsEnable(currentTimer->flags) && !GBATimerFlagsIsCountUp(currentTimer->flags)) {
-		int32_t prefetchSkew = cyclesLate;
-		if (gba->memory.lastPrefetchedPc > (uint32_t) gba->cpu->gprs[ARM_PC]) {
-			prefetchSkew += ((gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) * gba->cpu->memory.activeSeqCycles16) / WORD_SIZE_THUMB;
-		}
-		GBATimerUpdateRegisterInternal(currentTimer, &gba->timing, &gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1], prefetchSkew);
+		GBATimerUpdateRegisterInternal(currentTimer, &gba->timing, &gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1], cyclesLate);
 	}
 }
 
