@@ -874,6 +874,11 @@ void GBAVideoSoftwareRendererPreprocessBuffer(struct GBAVideoSoftwareRenderer* s
 
 	GBAVideoSoftwareRendererUpdateDISPCNT(softwareRenderer);
 
+	if (softwareRenderer->blendDirty) {
+		_updatePalettes(softwareRenderer);
+		softwareRenderer->blendDirty = false;
+	}
+
 	int w;
 	x = 0;
 	for (w = 0; w < softwareRenderer->nWindows; ++w) {
@@ -897,11 +902,6 @@ void GBAVideoSoftwareRendererPreprocessBuffer(struct GBAVideoSoftwareRenderer* s
 		for (; x < end; ++x) {
 			softwareRenderer->row[x] = backdrop;
 		}
-	}
-
-	if (softwareRenderer->blendDirty) {
-		_updatePalettes(softwareRenderer);
-		softwareRenderer->blendDirty = false;
 	}
 }
 
