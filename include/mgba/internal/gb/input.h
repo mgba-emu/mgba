@@ -12,6 +12,8 @@ CXX_GUARD_START
 
 #include <mgba/core/input.h>
 
+extern MGBA_EXPORT const struct mInputPlatformInfo GBInputInfo;
+
 enum GBKey {
 	GB_KEY_A = 0,
 	GB_KEY_B = 1,
