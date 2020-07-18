@@ -418,25 +418,21 @@ static void DSProcessEvents(struct DSCommon* dscore) {
 
 	int32_t nextEvent = cpu->nextEvent;
 	while (cpu->cycles >= nextEvent) {
-		int32_t cycles = cpu->cycles;
-
-		cpu->cycles = 0;
-		cpu->nextEvent = 0;
-
-#ifndef NDEBUG
-		if (cycles < 0) {
-			mLOG(DS, FATAL, "Negative cycles passed: %i", cycles);
-		}
-#endif
-		nextEvent = cycles;
+		cpu->nextEvent = INT_MAX;
+		nextEvent = 0;
 		do {
-			nextEvent = mTimingTick(&dscore->timing, nextEvent);
+			int32_t cycles = cpu->cycles;
+			cpu->cycles = 0;
+#ifdef USE_DEBUGGERS
+			dscore->timing.globalCycles += cycles;
+#endif
+#ifndef NDEBUG
+			if (cycles < 0) {
+				mLOG(DS, FATAL, "Negative cycles passed: %i", cycles);
+			}
+#endif
+			nextEvent = mTimingTick(&dscore->timing, cycles < nextEvent ? nextEvent : cycles);
 		} while (ds->cpuBlocked && !ds->earlyExit);
-
-		if (ds->earlyExit) {
-			ds->earlyExit = false;
-			break;
-		}
 
 		cpu->nextEvent = nextEvent;
 		if (cpu->halted) {
@@ -447,6 +443,13 @@ static void DSProcessEvents(struct DSCommon* dscore) {
 			mLOG(DS, FATAL, "Negative cycles will pass: %i", nextEvent);
 		}
 #endif
+		if (ds->earlyExit) {
+			break;
+		}
+	}
+	ds->earlyExit = false;
+	if (ds->cpuBlocked) {
+		cpu->cycles = cpu->nextEvent;
 	}
 }
 
