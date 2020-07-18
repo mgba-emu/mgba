@@ -12,7 +12,7 @@ CXX_GUARD_START
 
 #include <mgba/core/input.h>
 
-extern const struct mInputPlatformInfo DSInputInfo;
+extern MGBA_EXPORT const struct mInputPlatformInfo DSInputInfo;
 
 enum DSKey {
 	DS_KEY_A = 0,
