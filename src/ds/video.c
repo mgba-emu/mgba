@@ -455,6 +455,7 @@ void _startHdraw9(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 			video->frameskipCounter = video->frameskip;
 		}
 		++video->frameCounter;
+		video->p->earlyExit = true;
 		break;
 	case DS_VIDEO_VERTICAL_TOTAL_PIXELS - 1:
 		video->p->ds9.memory.io[DS_REG_DISPSTAT >> 1] = GBARegisterDISPSTATClearInVblank(dispstat);
