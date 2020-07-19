@@ -335,6 +335,10 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 	for (plane = 5; plane >= 0; --plane) {
 		newV = 0;
 		for (v = 0; v < poly->verts; ++v) {
+			if (newV >= 10) {
+				mLOG(DS_GX, ERROR, "Polygon clipping invariant failed");
+				return false;
+			}
 			if (!(offscreenVerts[v] & (1 << plane))) {
 				outList[newV] = inList[v];
 				outOffscreenVerts[newV] = offscreenVerts[v];
