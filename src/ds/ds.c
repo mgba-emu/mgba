@@ -238,6 +238,25 @@ void DSUnloadROM(struct DS* ds) {
 }
 
 void DSDestroy(struct DS* ds) {
+	if (ds->bios7Vf) {
+		ds->bios7Vf->unmap(ds->bios7Vf, ds->memory.bios7, DS7_SIZE_BIOS);
+		ds->bios7Vf->close(ds->bios7Vf);
+		ds->bios7Vf = NULL;
+	}
+	if (ds->bios9Vf) {
+		if (ds->bios9Vf->size(ds->bios9Vf) == 0x1000) {
+			free(ds->memory.bios9);
+		} else {
+			ds->bios9Vf->unmap(ds->bios9Vf, ds->memory.bios9, DS9_SIZE_BIOS);
+		}
+		ds->bios9Vf->close(ds->bios9Vf);
+		ds->bios9Vf = NULL;
+	}
+	if (ds->firmwareVf) {
+		ds->firmwareVf->close(ds->firmwareVf);
+		ds->firmwareVf = NULL;
+	}
+
 	CircleBufferDeinit(&ds->ds7.fifo);
 	CircleBufferDeinit(&ds->ds9.fifo);
 	DSUnloadROM(ds);
@@ -557,10 +576,22 @@ bool DSLoadBIOS(struct DS* ds, struct VFile* vf) {
 	}
 	crc = doCrc32(data, size);
 	if (crc == DS7_BIOS_CHECKSUM) {
+		if (ds->bios7Vf) {
+			ds->bios7Vf->unmap(ds->bios7Vf, ds->memory.bios7, DS7_SIZE_BIOS);
+			ds->bios7Vf->close(ds->bios7Vf);
+		}
 		ds->bios7Vf = vf;
 		ds->memory.bios7 = data;
 		mLOG(DS, INFO, "Official DS ARM7 BIOS detected");
 	} else if (crc == DS9_BIOS_CHECKSUM) {
+		if (ds->bios9Vf) {
+			if (ds->bios9Vf->size(ds->bios9Vf) == 0x1000) {
+				free(ds->memory.bios9);
+			} else {
+				ds->bios9Vf->unmap(ds->bios9Vf, ds->memory.bios9, DS9_SIZE_BIOS);
+			}
+			ds->bios9Vf->close(ds->bios9Vf);
+		}
 		ds->bios9Vf = vf;
 		ds->memory.bios9 = data;
 		mLOG(DS, INFO, "Official DS ARM9 BIOS detected");
@@ -581,6 +612,9 @@ bool DSLoadFirmware(struct DS* ds, struct VFile* vf) {
 		return false;
 	}
 	mLOG(DS, INFO, "Found DS firmware");
+	if (ds->firmwareVf) {
+		ds->firmwareVf->close(ds->firmwareVf);
+	}
 	ds->firmwareVf = vf;
 	return true;
 }
