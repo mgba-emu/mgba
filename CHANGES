@@ -15,6 +15,7 @@ Other fixes:
  - All: Correct more format strings on Windows (fixes mgba.io/i/1817)
  - CMake: Fix build with libzip 1.7
  - GB Core: Fix extracting SRAM when none is present
+ - GBA: Fix leak if attempting to load BIOS multiple times
  - GBA Savedata: Fix extracting save when not yet configured in-game
  - Qt: Fix file handle leak on opening an invalid ROM
  - Qt: Fix Italian RTC translation (fixes mgba.io/i/1798)
