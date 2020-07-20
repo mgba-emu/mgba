@@ -319,9 +319,9 @@ static void _DSCoreReset(struct mCore* core) {
 	struct VFile* bios9 = NULL;
 	struct VFile* firm = NULL;
 	if (core->opts.useBios) {
-		bool found7 = false;
-		bool found9 = false;
-		bool foundFirm = false;
+		bool found7 = !!ds->bios7Vf;
+		bool found9 = !!ds->bios9Vf;
+		bool foundFirm = !!ds->firmwareVf;
 
 		if (!found7) {
 			const char* configPath = mCoreConfigGetValue(&core->config, "ds.bios7");
