@@ -444,6 +444,7 @@ static void DSGXSoftwareRendererReset(struct DSGXRenderer* renderer) {
 	softwareRenderer->clearColor = 0;
 	softwareRenderer->clearStencil = 0;
 	softwareRenderer->clearDepth = 0xFFFFFF;
+	softwareRenderer->flushPending = false;
 }
 
 static void DSGXSoftwareRendererDeinit(struct DSGXRenderer* renderer) {
