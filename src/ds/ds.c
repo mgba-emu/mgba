@@ -287,7 +287,7 @@ void DS7Reset(struct ARMCore* cpu) {
 
 	struct DS* ds = (struct DS*) cpu->master;
 	mTimingClear(&ds->ds7.timing);
-	CircleBufferInit(&ds->ds7.fifo, 64);
+	CircleBufferClear(&ds->ds7.fifo);
 	DSMemoryReset(ds);
 	DSDMAReset(&ds->ds7);
 	DSAudioReset(&ds->audio);
@@ -345,7 +345,7 @@ void DS9Reset(struct ARMCore* cpu) {
 
 	struct DS* ds = (struct DS*) cpu->master;
 	mTimingClear(&ds->ds9.timing);
-	CircleBufferInit(&ds->ds9.fifo, 64);
+	CircleBufferClear(&ds->ds9.fifo);
 	DSVideoReset(&ds->video);
 	DSGXReset(&ds->gx);
 	DSDMAReset(&ds->ds9);
