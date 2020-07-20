@@ -52,7 +52,7 @@ static enum ScreenMode {
 
 static void* outputBuffer;
 static int currentTex;
-static vita2d_texture* tex[4];
+static vita2d_texture* tex[2];
 static vita2d_texture* screenshot;
 static Thread audioThread;
 static bool interframeBlending = false;
@@ -326,8 +326,6 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	runner->core->desiredVideoDimensions(runner->core, &width, &height);
 	tex[0] = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 	tex[1] = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
-	tex[2] = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
-	tex[3] = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 	currentTex = 0;
 	screenshot = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 
@@ -494,8 +492,6 @@ void mPSP2Teardown(struct mGUIRunner* runner) {
 	CircleBufferDeinit(&rumble.history);
 	vita2d_free_texture(tex[0]);
 	vita2d_free_texture(tex[1]);
-	vita2d_free_texture(tex[2]);
-	vita2d_free_texture(tex[3]);
 	vita2d_free_texture(screenshot);
 	mappedMemoryFree(outputBuffer, 256 * 256 * 4);
 	frameLimiter = true;
@@ -588,15 +584,27 @@ void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded, bo
 }
 
 void mPSP2Swap(struct mGUIRunner* runner) {
-	currentTex = (currentTex + 1) & 3;
-	runner->core->setVideoBuffer(runner->core, vita2d_texture_get_datap(tex[currentTex]), 256);
+	bool frameAvailable;
+	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+		struct GBA* gba = runner->core->board;
+		frameAvailable = gba->video.frameskipCounter <= 0;
+	} else if (runner->core->platform(runner->core) == PLATFORM_GB) {
+		struct GB* gb = runner->core->board;
+		frameAvailable = gb->video.frameskipCounter <= 0;
+	} else {
+		frameAvailable = false;
+	}
+	if (frameAvailable) {
+		currentTex = !currentTex;
+		runner->core->setVideoBuffer(runner->core, vita2d_texture_get_datap(tex[currentTex]), 256);
+	}
 }
 
 void mPSP2Draw(struct mGUIRunner* runner, bool faded) {
 	unsigned width, height;
 	runner->core->desiredVideoDimensions(runner->core, &width, &height);
 	if (interframeBlending) {
-		_drawTex(tex[(currentTex - 1) & 3], width, height, faded, false);
+		_drawTex(tex[!currentTex], width, height, faded, false);
 	}
 	_drawTex(tex[currentTex], width, height, faded, interframeBlending);
 }
