@@ -14,6 +14,7 @@ Bugfixes:
  - DS Slot-1: Reply to IR 0x08 command properly (fixes mgba.io/i/666)
  - GBA Video: Fix mode 2 out-of-bounds VRAM crash
  - GBA Video: Fix regression adjusting brightness of backdrop
+ - DS GX: Properly reject invalid commands
 Misc:
  - DS GX: Clean up and unify texture mapping
  - DS Core: Add symbol loading

@@ -1437,6 +1437,10 @@ static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
 			gx->outstandingCommand[3] = 0;
 		}
 	} else {
+		if (entry.command >= DS_GX_CMD_MAX) {
+			mLOG(DS_GX, GAME_ERROR, "Wrote invalid command %02x to GX FIFO", entry.command);
+			return;
+		}
 		gx->outstandingParams[0] = _gxCommandParams[entry.command];
 		if (gx->outstandingParams[0]) {
 			--gx->outstandingParams[0];
@@ -1447,6 +1451,7 @@ static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
 	}
 	uint32_t cycles = _gxCommandCycleBase[entry.command];
 	if (!cycles) {
+		mLOG(DS_GX, GAME_ERROR, "Wrote invalid command %02x to GX FIFO", entry.command);
 		return;
 	}
 	if (CircleBufferSize(&gx->fifo) == 0 && CircleBufferSize(&gx->pipe) < (DS_GX_PIPE_SIZE * sizeof(entry))) {
