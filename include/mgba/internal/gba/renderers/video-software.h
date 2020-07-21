@@ -15,6 +15,9 @@ CXX_GUARD_START
 #include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/renderers/common.h>
 #include <mgba/internal/gba/video.h>
+#ifdef M_CORE_DS
+#include <mgba/internal/ds/video.h>
+#endif
 
 struct GBAVideoSoftwareBackground {
 	unsigned index;
@@ -158,7 +161,11 @@ struct GBAVideoSoftwareRenderer {
 	struct ScanlineCache {
 		uint16_t io[REG_SOUND1CNT_LO >> 1];
 		int32_t scale[2][2];
+#ifdef M_CORE_DS
+	} cache[DS_VIDEO_VERTICAL_PIXELS];
+#else
 	} cache[GBA_VIDEO_VERTICAL_PIXELS];
+#endif
 	int nextY;
 
 	int start;

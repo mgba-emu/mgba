@@ -378,6 +378,18 @@ static void DSVideoSoftwareRendererInvalidateExtPal(struct DSVideoRenderer* rend
 static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* renderer, struct DSGX* gx, int y) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
+	if (y == DS_VIDEO_VERTICAL_PIXELS - 1) {
+		softwareRenderer->nextY = 0;
+	} else {
+		softwareRenderer->nextY = y + 1;
+	}
+
+	bool dirty = softwareRenderer->scanlineDirty[y >> 5] & (1 << (y & 0x1F));
+	if (memcmp(softwareRenderer->nextIo, softwareRenderer->cache[y].io, sizeof(softwareRenderer->nextIo))) {
+		memcpy(softwareRenderer->cache[y].io, softwareRenderer->nextIo, sizeof(softwareRenderer->nextIo));
+		dirty = true;
+	}
+
 	int x;
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	if (GBARegisterDISPCNTIsForcedBlank(softwareRenderer->dispcnt)) {
