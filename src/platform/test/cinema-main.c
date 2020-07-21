@@ -767,8 +767,10 @@ int main(int argc, char** argv) {
 	}
 #ifndef _WIN32
 	char* rbase = realpath(base, NULL);
-	strncpy(base, rbase, PATH_MAX);
-	free(rbase);
+	if (rbase) {
+		strncpy(base, rbase, PATH_MAX);
+		free(rbase);
+	}
 #endif
 
 	struct CInemaTestList tests;
