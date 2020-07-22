@@ -18,6 +18,7 @@ Bugfixes:
  - DS: Fix leaking BIOS and firmware filehandles
  - DS: Fix freeing memory for partial BIOS on load failure
  - DS Video: Properly deinitialize
+ - DS GX: Mask off invalid bits of the palette base
 Misc:
  - DS GX: Clean up and unify texture mapping
  - DS Core: Add symbol loading

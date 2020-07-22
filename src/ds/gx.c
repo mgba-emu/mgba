@@ -1206,8 +1206,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 		case DS_GX_CMD_PLTT_BASE:
 			gx->nextPoly.palBase = entry.params[0];
 			gx->nextPoly.palBase |= entry.params[1] << 8;
-			gx->nextPoly.palBase |= entry.params[2] << 16;
-			gx->nextPoly.palBase |= entry.params[3] << 24;
+			gx->nextPoly.palBase &= 0x00001FFF;
 			gx->currentPoly.palBase = gx->nextPoly.palBase;
 			break;
 		case DS_GX_CMD_BEGIN_VTXS:
