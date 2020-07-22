@@ -94,8 +94,15 @@ DECLARE_VECTOR(ImageList, void*)
 DEFINE_VECTOR(ImageList, void*)
 
 struct StringBuilder {
-	struct StringList out;
-	struct StringList err;
+	struct StringList lines;
+	struct StringList partial;
+	unsigned repeat;
+
+};
+
+struct CInemaLogStream {
+	struct StringBuilder err;
+	struct StringBuilder out;
 };
 
 static bool showVersion = false;
@@ -115,7 +122,7 @@ static size_t jobIndex = 0;
 static Mutex jobMutex;
 static Thread jobThreads[MAX_JOBS];
 static int jobStatus;
-static ThreadLocal stringBuilder;
+static ThreadLocal logStream;
 static ThreadLocal currentTest;
 
 bool CInemaTestInit(struct CInemaTest*, const char* directory, const char* filename);
@@ -126,53 +133,9 @@ void CInemaConfigLoad(struct Table* configTree, const char* testName, struct mCo
 
 static void _log(struct mLogger* log, int category, enum mLogLevel level, const char* format, va_list args);
 
-void CIflush(struct StringList* list, FILE* out);
+void CIflush(struct StringBuilder* list, FILE* file);
 
-ATTRIBUTE_FORMAT(printf, 2, 3) void CIlog(int minlevel, const char* format, ...) {
-	if (verbosity < minlevel) {
-		return;
-	}
-	va_list args;
-	va_start(args, format);
-#ifdef HAVE_VASPRINTF
-	struct StringBuilder* builder = ThreadLocalGetValue(stringBuilder);
-	if (!builder) {
-		vprintf(format, args);
-	} else {
-		if (StringListSize(&builder->out) > LOG_THRESHOLD) {
-			CIflush(&builder->out, stdout);
-		}
-		vasprintf(StringListAppend(&builder->out), format, args);
-	}
-#else
-	vprintf(format, args);
-#endif
-	va_end(args);
-}
-
-ATTRIBUTE_FORMAT(printf, 2, 3) void CIerr(int minlevel, const char* format, ...) {
-	if (verbosity < minlevel) {
-		return;
-	}
-	va_list args;
-	va_start(args, format);
-#ifdef HAVE_VASPRINTF
-	struct StringBuilder* builder = ThreadLocalGetValue(stringBuilder);
-	if (!builder) {
-		vfprintf(stderr, format, args);
-	} else {
-		if (StringListSize(&builder->err) > LOG_THRESHOLD) {
-			CIflush(&builder->err, stderr);
-		}
-		vasprintf(StringListAppend(&builder->err), format, args);
-	}
-#else
-	vfprintf(stderr, format, args);
-#endif
-	va_end(args);
-}
-
-void CIflush(struct StringList* list, FILE* out) {
+static char* _compileStringList(struct StringList* list) {
 	size_t len = 0;
 	size_t i;
 	for (i = 0; i < StringListSize(list); ++i) {
@@ -187,9 +150,80 @@ void CIflush(struct StringList* list, FILE* out) {
 		free(brick);
 		cur += portion;
 	}
+	StringListClear(list);
+	return string;
+}
+
+static void _logToStream(FILE* file, const char* format, va_list args) {
+#ifdef HAVE_VASPRINTF
+	struct CInemaLogStream* stream = ThreadLocalGetValue(logStream);
+	if (!stream) {
+		vfprintf(file, format, args);
+	} else {
+		struct StringBuilder* builder = &stream->out;
+		if (file == stderr) {
+			builder = &stream->err;
+		}
+		if (StringListSize(&builder->lines) > LOG_THRESHOLD) {
+			CIflush(builder, file);
+		}
+		char** line = StringListAppend(&builder->partial);
+		vasprintf(line, format, args);
+		size_t len = strlen(*line);
+		if (len && (*line)[len - 1] == '\n') {
+			char* string = _compileStringList(&builder->partial);
+			size_t linecount = StringListSize(&builder->lines);
+			if (linecount && strcmp(string, *StringListGetPointer(&builder->lines, linecount - 1)) == 0) {
+				++builder->repeat;
+				free(string);
+			} else {
+				if (builder->repeat > 1) {
+					asprintf(StringListAppend(&builder->lines), "The previous message was repeated %u times.\n", builder->repeat);
+				}
+				*StringListAppend(&builder->lines) = string;
+				builder->repeat = 1;
+			}
+		}
+	}
+#else
+	vfprintf(file, format, args);
+#endif
+}
+
+ATTRIBUTE_FORMAT(printf, 2, 3) void CIlog(int minlevel, const char* format, ...) {
+	if (verbosity < minlevel) {
+		return;
+	}
+	va_list args;
+	va_start(args, format);
+	_logToStream(stdout, format, args);
+	va_end(args);
+}
+
+ATTRIBUTE_FORMAT(printf, 2, 3) void CIerr(int minlevel, const char* format, ...) {
+	if (verbosity < minlevel) {
+		return;
+	}
+	va_list args;
+	va_start(args, format);
+	_logToStream(stderr, format, args);
+	va_end(args);
+}
+
+void CIflush(struct StringBuilder* builder, FILE* out) {
+	if (StringListSize(&builder->partial)) {
+		*StringListAppend(&builder->lines) = _compileStringList(&builder->partial);
+	}
+#ifdef HAVE_VASPRINTF
+	if (builder->repeat > 1) {
+		asprintf(StringListAppend(&builder->lines), "The previous message was repeated %u times.\n", builder->repeat);
+	}
+#endif
+
+	char* string = _compileStringList(&builder->lines);
+	builder->repeat = 0;
 	fputs(string, out);
 	free(string);
-	StringListClear(list);
 }
 
 static bool parseCInemaArgs(int argc, char* const* argv) {
@@ -989,10 +1023,14 @@ static bool CInemaTask(struct CInemaTestList* tests, size_t i) {
 
 static THREAD_ENTRY CInemaJob(void* context) {
 	struct CInemaTestList* tests = context;
-	struct StringBuilder builder;
-	StringListInit(&builder.out, 0);
-	StringListInit(&builder.err, 0);
-	ThreadLocalSetKey(stringBuilder, &builder);
+	struct CInemaLogStream stream;
+	StringListInit(&stream.out.lines, 0);
+	StringListInit(&stream.out.partial, 0);
+	stream.out.repeat = 0;
+	StringListInit(&stream.err.lines, 0);
+	StringListInit(&stream.err.partial, 0);
+	stream.err.repeat = 0;
+	ThreadLocalSetKey(logStream, &stream);
 
 	bool success = true;
 	while (true) {
@@ -1007,8 +1045,8 @@ static THREAD_ENTRY CInemaJob(void* context) {
 		if (!CInemaTask(tests, i)) {
 			success = false;
 		}
-		CIflush(&builder.out, stdout);
-		CIflush(&builder.err, stderr);
+		CIflush(&stream.out, stdout);
+		CIflush(&stream.err, stderr);
 	}
 	MutexLock(&jobMutex);
 	if (!success) {
@@ -1016,11 +1054,13 @@ static THREAD_ENTRY CInemaJob(void* context) {
 	}
 	MutexUnlock(&jobMutex);
 
-	CIflush(&builder.out, stdout);
-	StringListDeinit(&builder.out);
+	CIflush(&stream.out, stdout);
+	StringListDeinit(&stream.out.lines);
+	StringListDeinit(&stream.out.partial);
 
-	CIflush(&builder.err, stderr);
-	StringListDeinit(&builder.err);
+	CIflush(&stream.err, stderr);
+	StringListDeinit(&stream.err.lines);
+	StringListDeinit(&stream.err.partial);
 }
 
 void _log(struct mLogger* log, int category, enum mLogLevel level, const char* format, va_list args) {
@@ -1055,8 +1095,8 @@ void _log(struct mLogger* log, int category, enum mLogLevel level, const char* f
 }
 
 int main(int argc, char** argv) {
-	ThreadLocalInitKey(&stringBuilder);
-	ThreadLocalSetKey(stringBuilder, NULL);
+	ThreadLocalInitKey(&logStream);
+	ThreadLocalSetKey(logStream, NULL);
 
 	int status = 0;
 	if (!parseCInemaArgs(argc, argv)) {
