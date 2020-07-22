@@ -443,7 +443,6 @@ void GBAYankROM(struct GBA* gba) {
 }
 
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
-	gba->biosVf = vf;
 	if (vf->size(vf) != SIZE_BIOS) {
 		mLOG(GBA, WARN, "Incorrect BIOS size");
 		return;
@@ -453,6 +452,11 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 		mLOG(GBA, WARN, "Couldn't map BIOS");
 		return;
 	}
+	if (gba->biosVf) {
+		gba->biosVf->unmap(gba->biosVf, gba->memory.bios, SIZE_BIOS);
+		gba->biosVf->close(gba->biosVf);
+	}
+	gba->biosVf = vf;
 	gba->memory.bios = bios;
 	gba->memory.fullBios = 1;
 	uint32_t checksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
@@ -733,13 +737,13 @@ void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 
 void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
+	if (cpu->executionMode == MODE_THUMB && (opcode & 0xFFC0) == 0xE800) {
+		mLOG(GBA, INFO, "Hit Wii U VC opcode: %08x", opcode);
+		return;
+	}
 	if (!gba->yankedRomSize) {
 		// TODO: More sensible category?
 		mLOG(GBA, WARN, "Illegal opcode: %08x", opcode);
-	}
-	if (cpu->executionMode == MODE_THUMB && (opcode & 0xFFC0) == 0xE800) {
-		mLOG(GBA, DEBUG, "Hit Wii U VC opcode: %08x", opcode);
-		return;
 	}
 #ifdef USE_DEBUGGERS
 	if (gba->debugger) {

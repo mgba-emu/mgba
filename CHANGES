@@ -65,6 +65,7 @@ Other fixes:
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
  - GB Core: Fix extracting SRAM when none is present
+ - GBA: Fix leak if attempting to load BIOS multiple times
  - GBA Savedata: Fix extracting save when not yet configured in-game
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
