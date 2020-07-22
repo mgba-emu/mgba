@@ -262,6 +262,7 @@ void DSDestroy(struct DS* ds) {
 	DSUnloadROM(ds);
 	DSMemoryDeinit(ds);
 	DSGXDeinit(&ds->gx);
+	DSVideoDeinit(&ds->video);
 	DSAudioDeinit(&ds->audio);
 	mTimingDeinit(&ds->ds7.timing);
 	mTimingDeinit(&ds->ds9.timing);
