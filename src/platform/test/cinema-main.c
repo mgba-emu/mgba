@@ -427,7 +427,7 @@ static void _unloadConfigTree(const char* key, void* value, void* user) {
 	mCoreConfigDeinit(value);
 }
 
-static const char* _lookupValue(struct Table* configTree, const char* testName, const char* key) {
+static const char* CInemaConfigGet(struct Table* configTree, const char* testName, const char* key) {
 	_loadConfigTree(configTree, testName);
 
 	char testKey[MAX_TEST];
@@ -456,7 +456,7 @@ static const char* _lookupValue(struct Table* configTree, const char* testName, 
 }
 
 bool CInemaConfigGetUInt(struct Table* configTree, const char* testName, const char* key, unsigned* out) {
-	const char* charValue = _lookupValue(configTree, testName, key);
+	const char* charValue = CInemaConfigGet(configTree, testName, key);
 	if (!charValue) {
 		return false;
 	}
@@ -672,6 +672,29 @@ static void _writeBaseline(struct VDir* dir, const struct CInemaImage* image, si
 	}
 }
 
+static bool _updateInput(struct mCore* core, size_t frame, const char** input) {
+	if (!*input || !*input[0]) {
+		return false;
+	}
+	char* end;
+	uint32_t start = strtoul(*input, &end, 10);
+	if (end[0] != ':') {
+		return false;
+	}
+	if (start != frame) {
+		return true;
+	}
+	++end;
+	*input = end;
+	uint32_t keys = strtoul(*input, &end, 16);
+	if (end[0] == ',') {
+		++end;
+	}
+	*input = end;
+	core->setKeys(core, keys);
+	return true;
+}
+
 void CInemaTestRun(struct CInemaTest* test) {
 	unsigned ignore = 0;
 	MutexLock(&configMutex);
@@ -724,12 +747,14 @@ void CInemaTestRun(struct CInemaTest* test) {
 	unsigned skip = 0;
 	unsigned fail = 0;
 	unsigned video = 0;
+	const char* input = NULL;
 
 	MutexLock(&configMutex);
 	CInemaConfigGetUInt(&configTree, test->name, "frames", &limit);
 	CInemaConfigGetUInt(&configTree, test->name, "skip", &skip);
 	CInemaConfigGetUInt(&configTree, test->name, "fail", &fail);
 	CInemaConfigGetUInt(&configTree, test->name, "video", &video);
+	input = CInemaConfigGet(&configTree, test->name, "input");
 	CInemaConfigLoad(&configTree, test->name, core);
 	MutexUnlock(&configMutex);
 
@@ -805,6 +830,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 #endif
 
 	for (frame = 0; limit; ++frame, --limit) {
+		_updateInput(core, frame, &input);
 		core->runFrame(core);
 		++test->totalFrames;
 		unsigned frameCounter = core->frameCounter(core);
