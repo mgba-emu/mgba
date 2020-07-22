@@ -16,6 +16,7 @@ Bugfixes:
  - GBA Video: Fix regression adjusting brightness of backdrop
  - DS GX: Properly reject invalid commands
  - DS: Fix leaking BIOS and firmware filehandles
+ - DS: Fix freeing memory for partial BIOS on load failure
 Misc:
  - DS GX: Clean up and unify texture mapping
  - DS Core: Add symbol loading

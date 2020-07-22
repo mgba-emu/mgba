@@ -597,7 +597,11 @@ bool DSLoadBIOS(struct DS* ds, struct VFile* vf) {
 		mLOG(DS, INFO, "Official DS ARM9 BIOS detected");
 	} else {
 		mLOG(DS, WARN, "BIOS checksum incorrect");
-		vf->unmap(vf, data, size);
+		if (size == 0x1000) {
+			free(data);
+		} else {
+			vf->unmap(vf, data, size);
+		}
 		return false;
 	}
 	return true;
