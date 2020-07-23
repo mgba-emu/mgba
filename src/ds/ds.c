@@ -235,6 +235,10 @@ void DSUnloadROM(struct DS* ds) {
 		ds->romVf->close(ds->romVf);
 		ds->romVf = NULL;
 	}
+	if (ds->memory.slot1.spiRealVf) {
+		ds->memory.slot1.spiRealVf->close(ds->memory.slot1.spiRealVf);
+		ds->memory.slot1.spiRealVf = NULL;
+	}
 }
 
 void DSDestroy(struct DS* ds) {
