@@ -605,7 +605,11 @@ void CInemaTestRun(struct CInemaTest* test, struct Table* configTree) {
 	CInemaConfigGetUInt(configTree, test->name, "video", &video);
 	CInemaConfigLoad(configTree, test->name, core);
 
+	struct VFile* save = VFileMemChunk(NULL, 0);
 	core->loadROM(core, rom);
+	if (!core->loadSave(core, save)) {
+		save->close(save);
+	}
 	core->rtc.override = RTC_FAKE_EPOCH;
 	core->rtc.value = 1200000000;
 	core->reset(core);
