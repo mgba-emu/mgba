@@ -505,7 +505,7 @@ bool DSLoadROM(struct DS* ds, struct VFile* vf) {
 
 bool DSLoadSave(struct DS* ds, struct VFile* sav) {
 	DSSlot1SPIInit(ds, sav);
-	return true;
+	return sav;
 }
 
 bool DSIsROM(struct VFile* vf) {
