@@ -782,11 +782,11 @@ void CInemaTestRun(struct CInemaTest* test) {
 	struct CInemaStream stream = {0};
 
 	char baselineName[PATH_MAX];
-	snprintf(baselineName, sizeof(baselineName), "%s" PATH_SEP "baseline.mkv", test->directory);
+	snprintf(baselineName, sizeof(baselineName), "%s" PATH_SEP "baseline.avi", test->directory);
 	bool exists = access(baselineName, 0) == 0;
 
 	char tmpBaselineName[PATH_MAX];
-	snprintf(tmpBaselineName, sizeof(tmpBaselineName), "%s" PATH_SEP ".baseline.mkv", test->directory);
+	snprintf(tmpBaselineName, sizeof(tmpBaselineName), "%s" PATH_SEP ".baseline.avi", test->directory);
 
 	if (video) {
 		FFmpegEncoderInit(&encoder);
@@ -794,8 +794,8 @@ void CInemaTestRun(struct CInemaTest* test) {
 
 		if (rebaseline == CI_R_FAILING || (rebaseline == CI_R_MISSING && !exists)) {
 			FFmpegEncoderSetAudio(&encoder, NULL, 0);
-			FFmpegEncoderSetVideo(&encoder, "png", 0, 0);
-			FFmpegEncoderSetContainer(&encoder, "mkv");
+			FFmpegEncoderSetVideo(&encoder, "zmbv", 0, 0);
+			FFmpegEncoderSetContainer(&encoder, "avi");
 			FFmpegEncoderSetDimensions(&encoder, image.width, image.height);
 
 			const char* usedFname = baselineName;
