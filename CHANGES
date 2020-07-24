@@ -29,7 +29,7 @@ Misc:
 0.9.0: (Future)
 Features:
  - e-Reader card scanning
- - Add APNG recording
+ - Add WebP and APNG recording
  - Support for unlicensed Pokemon Jade/Diamond Game Boy mapper
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting

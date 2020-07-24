@@ -7,6 +7,7 @@
 
 #include <mgba/core/core.h>
 #include <mgba/gba/interface.h>
+#include <mgba-util/math.h>
 
 #include <libavcodec/version.h>
 #include <libavcodec/avcodec.h>
@@ -96,6 +97,7 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->source = NULL;
 	encoder->sink = NULL;
 	encoder->sinkFrame = NULL;
+	FFmpegEncoderSetInputFrameRate(encoder, VIDEO_TOTAL_LENGTH, GBA_ARM7TDMI_FREQUENCY);
 
 	int i;
 	for (i = 0; i < FFMPEG_FILTERS_MAX; ++i) {
@@ -182,10 +184,12 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, un
 		{ AV_PIX_FMT_0BGR, 3 },
 		{ AV_PIX_FMT_0RGB, 3 },
 #endif
-		{ AV_PIX_FMT_YUV422P, 4 },
+		{ AV_PIX_FMT_RGB32, 4},
+		{ AV_PIX_FMT_BGR32, 4},
 		{ AV_PIX_FMT_YUV444P, 5 },
-		{ AV_PIX_FMT_YUV420P, 6 },
-		{ AV_PIX_FMT_PAL8, 7 },
+		{ AV_PIX_FMT_YUV422P, 6 },
+		{ AV_PIX_FMT_YUV420P, 7 },
+		{ AV_PIX_FMT_PAL8, 8 },
 	};
 
 	if (!vcodec) {
@@ -413,6 +417,10 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			av_opt_set(encoder->video->priv_data, "lossless", "1", 0);
 			encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
 		}
+		if (strcmp(vcodec->name, "libwebp_anim") == 0 && encoder->videoBitrate == 0) {
+			av_opt_set(encoder->video->priv_data, "lossless", "1", 0);
+			encoder->video->pix_fmt = AV_PIX_FMT_RGB32;
+		}
 
 		if (encoder->pixFormat == AV_PIX_FMT_PAL8) {
 			encoder->graph = avfilter_graph_alloc();
@@ -489,6 +497,8 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		av_opt_set(encoder->context->priv_data, "loop", encoder->loop ? "0" : "-1", 0);
 	} else if (strcmp(encoder->containerFormat, "apng") == 0) {
 		av_opt_set(encoder->context->priv_data, "plays", encoder->loop ? "0" : "1", 0);
+	} else if (strcmp(encoder->containerFormat, "webp") == 0) {
+		av_opt_set(encoder->context->priv_data, "loop", encoder->loop ? "0" : "1", 0);
 	}
 
 	AVDictionary* opts = 0;
@@ -757,7 +767,12 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_make_writable(encoder->videoFrame);
 #endif
-	encoder->videoFrame->pts = av_rescale_q(encoder->currentVideoFrame, encoder->video->time_base, encoder->videoStream->time_base);
+	if (encoder->video->codec->id == AV_CODEC_ID_WEBP) {
+		// TODO: Figure out why WebP is rescaling internally (should video frames not be rescaled externally?)
+		encoder->videoFrame->pts = encoder->currentVideoFrame;
+	} else {
+		encoder->videoFrame->pts = av_rescale_q(encoder->currentVideoFrame, encoder->video->time_base, encoder->videoStream->time_base);
+	}
 	++encoder->currentVideoFrame;
 
 	sws_scale(encoder->scaleContext, (const uint8_t* const*) &pixels, (const int*) &stride, 0, encoder->iheight, encoder->videoFrame->data, encoder->videoFrame->linesize);
@@ -831,10 +846,11 @@ static void _ffmpegSetVideoFrameRate(struct mAVStream* stream, unsigned numerato
 	FFmpegEncoderSetInputFrameRate(encoder, numerator, denominator);
 }
 
-void FFmpegEncoderSetInputFrameRate(struct FFmpegEncoder* encoder, unsigned numerator, unsigned denominator) {
+void FFmpegEncoderSetInputFrameRate(struct FFmpegEncoder* encoder, int numerator, int denominator) {
+	reduceFraction(&numerator, &denominator);
 	encoder->frameCycles = numerator;
 	encoder->cycles = denominator;
 	if (encoder->video) {
-		encoder->video->time_base = (AVRational) { numerator, denominator };
+		encoder->video->framerate = (AVRational) { denominator, numerator * encoder->frameskip };
 	}
 }

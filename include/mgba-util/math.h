@@ -106,6 +106,19 @@ static inline uint32_t toPow2(uint32_t bits) {
 	return 1 << (32 - lz);
 }
 
+static inline int reduceFraction(int* num, int* den) {
+	int n = *num;
+	int d = *den;
+	while (d != 0) {
+		int temp = n % d;
+		n = d;
+		d = temp;
+	}
+	*num /= n;
+	*den /= n;
+	return n;
+}
+
 CXX_GUARD_END
 
 #endif

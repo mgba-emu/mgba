@@ -78,8 +78,8 @@ struct FFmpegEncoder {
 	int height;
 	int iwidth;
 	int iheight;
-	unsigned frameCycles;
-	unsigned cycles;
+	int frameCycles;
+	int cycles;
 	int frameskip;
 	int skipResidue;
 	bool loop;
@@ -99,13 +99,12 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder*, const char* acodec, unsigned a
 bool FFmpegEncoderSetVideo(struct FFmpegEncoder*, const char* vcodec, unsigned vbr, int frameskip);
 bool FFmpegEncoderSetContainer(struct FFmpegEncoder*, const char* container);
 void FFmpegEncoderSetDimensions(struct FFmpegEncoder*, int width, int height);
+void FFmpegEncoderSetInputFrameRate(struct FFmpegEncoder*, int numerator, int denominator);
 void FFmpegEncoderSetLooping(struct FFmpegEncoder*, bool loop);
 bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder*);
 bool FFmpegEncoderOpen(struct FFmpegEncoder*, const char* outfile);
 void FFmpegEncoderClose(struct FFmpegEncoder*);
 bool FFmpegEncoderIsOpen(struct FFmpegEncoder*);
-
-void FFmpegEncoderSetInputFrameRate(struct FFmpegEncoder*, unsigned numerator, unsigned denominator);
 
 CXX_GUARD_END
 
