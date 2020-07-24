@@ -10,6 +10,8 @@
 #include "GBAApp.h"
 #include "LogController.h"
 
+#include <mgba-util/math.h>
+
 #include <QMap>
 
 using namespace QGBA;
@@ -396,15 +398,7 @@ void VideoView::updateAspectRatio(int width, int height, bool force) {
 	} else {
 		int w = m_width;
 		int h = m_height;
-		// Get greatest common divisor
-		while (w != 0) {
-			int temp = h % w;
-			h = w;
-			w = temp;
-		}
-		int gcd = h;
-		w = m_width / gcd;
-		h = m_height / gcd;
+		reduceFraction(&h, &w);
 		safelySet(m_ui.wratio, w);
 		safelySet(m_ui.hratio, h);
 	}
