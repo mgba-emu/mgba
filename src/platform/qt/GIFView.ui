@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>392</width>
-    <height>262</height>
+    <height>225</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,29 +17,20 @@
    <property name="sizeConstraint">
     <enum>QLayout::SetFixedSize</enum>
    </property>
-   <item row="2" column="0">
-    <widget class="QRadioButton" name="fmtApng">
-     <property name="text">
-      <string>APNG</string>
+   <item row="4" column="0" colspan="3">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Close</set>
      </property>
-     <attribute name="buttonGroup">
-      <string notr="true">format</string>
-     </attribute>
     </widget>
    </item>
-   <item row="2" column="2">
-    <widget class="QSpinBox" name="frameskip">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+   <item row="1" column="1" colspan="2">
+    <widget class="QCheckBox" name="loop">
+     <property name="text">
+      <string>Loop</string>
      </property>
-     <property name="maximum">
-      <number>9</number>
-     </property>
-     <property name="value">
-      <number>2</number>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -115,18 +106,14 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="1">
-    <widget class="QLabel" name="label">
+   <item row="3" column="0">
+    <widget class="QRadioButton" name="fmtApng">
      <property name="text">
-      <string>Frameskip</string>
+      <string>APNG</string>
      </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="3">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Close</set>
-     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">format</string>
+     </attribute>
     </widget>
    </item>
    <item row="1" column="0">
@@ -142,13 +129,36 @@
      </attribute>
     </widget>
    </item>
-   <item row="1" column="1" colspan="2">
-    <widget class="QCheckBox" name="loop">
+   <item row="2" column="0">
+    <widget class="QRadioButton" name="fmtWebP">
      <property name="text">
-      <string>Loop</string>
+      <string>WebP</string>
      </property>
-     <property name="checked">
-      <bool>true</bool>
+     <attribute name="buttonGroup">
+      <string notr="true">format</string>
+     </attribute>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Frameskip</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QSpinBox" name="frameskip">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximum">
+      <number>9</number>
+     </property>
+     <property name="value">
+      <number>2</number>
      </property>
     </widget>
    </item>
@@ -160,6 +170,7 @@
   <tabstop>stop</tabstop>
   <tabstop>selectFile</tabstop>
   <tabstop>fmtGif</tabstop>
+  <tabstop>fmtWebP</tabstop>
   <tabstop>fmtApng</tabstop>
   <tabstop>loop</tabstop>
   <tabstop>frameskip</tabstop>
