@@ -7,6 +7,7 @@
 
 #include <mgba/core/core.h>
 #include <mgba/gba/interface.h>
+#include <mgba-util/math.h>
 
 #include <libavcodec/version.h>
 #include <libavcodec/avcodec.h>
@@ -92,6 +93,7 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->source = NULL;
 	encoder->sink = NULL;
 	encoder->sinkFrame = NULL;
+	FFmpegEncoderSetInputFrameRate(encoder, VIDEO_TOTAL_LENGTH, GBA_ARM7TDMI_FREQUENCY);
 
 	int i;
 	for (i = 0; i < FFMPEG_FILTERS_MAX; ++i) {
@@ -363,8 +365,8 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		encoder->video->bit_rate = encoder->videoBitrate;
 		encoder->video->width = encoder->width;
 		encoder->video->height = encoder->height;
-		encoder->video->time_base = (AVRational) { VIDEO_TOTAL_LENGTH * encoder->frameskip, GBA_ARM7TDMI_FREQUENCY };
-		encoder->video->framerate = (AVRational) { GBA_ARM7TDMI_FREQUENCY, VIDEO_TOTAL_LENGTH * encoder->frameskip };
+		encoder->video->time_base = (AVRational) { encoder->frameCycles * encoder->frameskip, encoder->cycles };
+		encoder->video->framerate = (AVRational) { encoder->cycles, encoder->frameCycles * encoder->frameskip };
 		encoder->videoStream->time_base = encoder->video->time_base;
 		encoder->videoStream->avg_frame_rate = encoder->video->framerate;
 		encoder->video->pix_fmt = encoder->pixFormat;
@@ -820,4 +822,13 @@ static void _ffmpegSetVideoDimensions(struct mAVStream* stream, unsigned width, 
 	encoder->scaleContext = sws_getContext(encoder->iwidth, encoder->iheight, encoder->ipixFormat,
 	    encoder->videoFrame->width, encoder->videoFrame->height, encoder->videoFrame->format,
 	    SWS_POINT, 0, 0, 0);
+}
+
+void FFmpegEncoderSetInputFrameRate(struct FFmpegEncoder* encoder, int numerator, int denominator) {
+	reduceFraction(&numerator, &denominator);
+	encoder->frameCycles = numerator;
+	encoder->cycles = denominator;
+	if (encoder->video) {
+		encoder->video->framerate = (AVRational) { denominator, numerator * encoder->frameskip };
+	}
 }
