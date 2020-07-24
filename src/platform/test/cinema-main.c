@@ -1025,6 +1025,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 		FFmpegEncoderSetVideo(&encoder, "zmbv", 0, 0);
 		FFmpegEncoderSetContainer(&encoder, "avi");
 		FFmpegEncoderSetDimensions(&encoder, image.width, image.height);
+		FFmpegEncoderSetInputFrameRate(&encoder, core->frameCycles(core), core->frequency(core));
 
 		if (rebaseline && !exists) {
 			if (!FFmpegEncoderOpen(&encoder, baselineName)) {
