@@ -402,6 +402,12 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		if (encoder->video->codec->id == AV_CODEC_ID_PNG) {
 			encoder->video->compression_level = 8;
 		}
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(58, 48, 100)
+		if (encoder->video->codec->id == AV_CODEC_ID_ZMBV) {
+			encoder->video->compression_level = 5;
+			encoder->video->pix_fmt = AV_PIX_FMT_BGR0;
+		}
+#endif
 		if (strcmp(vcodec->name, "libx264") == 0) {
 			// Try to adaptively figure out when you can use a slower encoder
 			if (encoder->width * encoder->height > 1000000) {
