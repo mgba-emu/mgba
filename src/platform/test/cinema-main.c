@@ -696,6 +696,68 @@ static bool _updateInput(struct mCore* core, size_t frame, const char** input) {
 	return true;
 }
 
+static bool _compareImages(struct CInemaTest* restrict test, const struct CInemaImage* restrict image, const struct CInemaImage* restrict expected, int* restrict max, uint8_t** restrict outdiff) {
+	const uint8_t* testPixels = image->data;
+	const uint8_t* expectPixels = expected->data;
+	uint8_t* diff = NULL;
+	size_t x;
+	size_t y;
+	bool failed = false;
+	for (y = 0; y < image->height; ++y) {
+		for (x = 0; x < image->width; ++x) {
+			size_t pix = expected->stride * y + x;
+			size_t tpix = image->stride * y + x;
+			int testR = testPixels[tpix * 4 + 0];
+			int testG = testPixels[tpix * 4 + 1];
+			int testB = testPixels[tpix * 4 + 2];
+			int expectR = expectPixels[pix * 4 + 0];
+			int expectG = expectPixels[pix * 4 + 1];
+			int expectB = expectPixels[pix * 4 + 2];
+			int r = expectR - testR;
+			int g = expectG - testG;
+			int b = expectB - testB;
+			if (r | g | b) {
+				failed = true;
+				if (outdiff && !diff) {
+					diff = calloc(expected->stride * expected->height, BYTES_PER_PIXEL);
+					*outdiff = diff;
+				}
+				test->status = CI_FAIL;
+				if (r < 0) {
+					r = -r;
+				}
+				if (g < 0) {
+					g = -g;
+				}
+				if (b < 0) {
+					b = -b;
+				}
+
+				if (diff) {
+					if (r > *max) {
+						*max = r;
+					}
+					if (g > *max) {
+						*max = g;
+					}
+					if (b > *max) {
+						*max = b;
+					}
+					diff[pix * 4 + 0] = r;
+					diff[pix * 4 + 1] = g;
+					diff[pix * 4 + 2] = b;
+				}
+
+				if (test) {
+					test->totalDistance += r + g + b;
+					++test->failedPixels;
+				}
+			}
+		}
+	}
+	return !failed;
+}
+
 void CInemaTestRun(struct CInemaTest* test) {
 	unsigned ignore = 0;
 	MutexLock(&configMutex);
@@ -870,65 +932,8 @@ void CInemaTestRun(struct CInemaTest* test) {
 			break;
 		}
 		if (baselineFound) {
-			uint8_t* testPixels = image.data;
-			uint8_t* expectPixels = expected.data;
-			size_t x;
-			size_t y;
 			int max = 0;
-			bool failed = false;
-			for (y = 0; y < image.height; ++y) {
-				for (x = 0; x < image.width; ++x) {
-					size_t pix = expected.stride * y + x;
-					size_t tpix = image.stride * y + x;
-					int testR = testPixels[tpix * 4 + 0];
-					int testG = testPixels[tpix * 4 + 1];
-					int testB = testPixels[tpix * 4 + 2];
-					int expectR = expectPixels[pix * 4 + 0];
-					int expectG = expectPixels[pix * 4 + 1];
-					int expectB = expectPixels[pix * 4 + 2];
-					int r = expectR - testR;
-					int g = expectG - testG;
-					int b = expectB - testB;
-					if (r | g | b) {
-						failed = true;
-						if (diffs && !diff) {
-							diff = calloc(expected.stride * expected.height, BYTES_PER_PIXEL);
-						}
-						CIlog(3, "Frame %u failed at pixel %" PRIz "ux%" PRIz "u with diff %i,%i,%i (expected %02x%02x%02x, got %02x%02x%02x)\n",
-						    frameCounter, x, y, r, g, b,
-						    expectR, expectG, expectB,
-						    testR, testG, testB);
-						test->status = CI_FAIL;
-						if (r < 0) {
-							r = -r;
-						}
-						if (g < 0) {
-							g = -g;
-						}
-						if (b < 0) {
-							b = -b;
-						}
-
-						if (diff) {
-							if (r > max) {
-								max = r;
-							}
-							if (g > max) {
-								max = g;
-							}
-							if (b > max) {
-								max = b;
-							}
-							diff[pix * 4 + 0] = r;
-							diff[pix * 4 + 1] = g;
-							diff[pix * 4 + 2] = b;
-						}
-
-						test->totalDistance += r + g + b;
-						++test->failedPixels;
-					}
-				}
-			}
+			bool failed = _compareImages(test, &image, &expected, &max, diffs ? &diff : NULL);
 			if (failed) {
 				++test->failedFrames;
 			}
@@ -949,6 +954,8 @@ void CInemaTestRun(struct CInemaTest* test) {
 					_writeDiff(test->name, &expected, frame, "expected");
 					_writeDiff(test->name, &outdiff, frame, "diff");
 
+					size_t x;
+					size_t y;
 					for (y = 0; y < outdiff.height; ++y) {
 						for (x = 0; x < outdiff.width; ++x) {
 							size_t pix = outdiff.stride * y + x;
