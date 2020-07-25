@@ -521,9 +521,9 @@ bool CInemaTestInit(struct CInemaTest* test, const char* directory, const char* 
 	return true;
 }
 
-static bool _loadBaselinePNG(struct VDir* dir, struct CInemaImage* image, size_t frame, enum CInemaStatus* status) {
+static bool _loadBaselinePNG(struct VDir* dir, const char* type, struct CInemaImage* image, size_t frame, enum CInemaStatus* status) {
 	char baselineName[32];
-	snprintf(baselineName, sizeof(baselineName), "baseline_%04" PRIz "u.png", frame);
+	snprintf(baselineName, sizeof(baselineName), "%s_%04" PRIz "u.png", type, frame);
 	struct VFile* baselineVF = dir->openFile(dir, baselineName, O_RDONLY);
 	if (!baselineVF) {
 		if (*status == CI_PASS) {
@@ -758,6 +758,37 @@ static bool _compareImages(struct CInemaTest* restrict test, const struct CInema
 	return !failed;
 }
 
+void _writeDiffSet(struct CInemaImage* expected, const char* name, uint8_t* diff, int frame, int max, bool xfail) {
+	struct CInemaImage outdiff = {
+		.data = diff,
+		.width = expected->width,
+		.height = expected->height,
+		.stride = expected->stride,
+	};
+
+	if (xfail) {
+		_writeDiff(name, expected, frame, "xexpected");
+		_writeDiff(name, &outdiff, frame, "xdiff");
+	} else {
+		_writeDiff(name, expected, frame, "expected");
+		_writeDiff(name, &outdiff, frame, "diff");
+	}
+
+	size_t x;
+	size_t y;
+	for (y = 0; y < outdiff.height; ++y) {
+		for (x = 0; x < outdiff.width; ++x) {
+			size_t pix = outdiff.stride * y + x;
+			diff[pix * 4 + 0] = diff[pix * 4 + 0] * 255 / max;
+			diff[pix * 4 + 1] = diff[pix * 4 + 1] * 255 / max;
+			diff[pix * 4 + 2] = diff[pix * 4 + 2] * 255 / max;
+		}
+	}
+	if (xfail) {
+		_writeDiff(name, &outdiff, frame, "xnormalized");
+	}
+}
+
 void CInemaTestRun(struct CInemaTest* test) {
 	unsigned ignore = 0;
 	MutexLock(&configMutex);
@@ -892,12 +923,16 @@ void CInemaTestRun(struct CInemaTest* test) {
 	}
 #endif
 
+	bool xdiff = false;
 	for (frame = 0; limit; ++frame, --limit) {
 		_updateInput(core, frame, &input);
 		core->runFrame(core);
 		++test->totalFrames;
 		unsigned frameCounter = core->frameCounter(core);
 		if (frameCounter <= minFrame) {
+			break;
+		}
+		if (test->status == CI_ERROR) {
 			break;
 		}
 		CIlog(3, "Test frame: %u\n", frameCounter);
@@ -926,14 +961,15 @@ void CInemaTestRun(struct CInemaTest* test) {
 			}
 #endif
 		} else {
-			baselineFound = _loadBaselinePNG(dir, &expected, frame, &test->status);
+			baselineFound = _loadBaselinePNG(dir, "baseline", &expected, frame, &test->status);
 		}
 		if (test->status == CI_ERROR) {
 			break;
 		}
+		bool failed = false;
 		if (baselineFound) {
 			int max = 0;
-			bool failed = _compareImages(test, &image, &expected, &max, diffs ? &diff : NULL);
+			failed = !_compareImages(test, &image, &expected, &max, diffs ? &diff : NULL);
 			if (failed) {
 				++test->failedFrames;
 			}
@@ -943,28 +979,8 @@ void CInemaTestRun(struct CInemaTest* test) {
 			}
 			if (diff) {
 				if (failed) {
-					struct CInemaImage outdiff = {
-						.data = diff,
-						.width = expected.width,
-						.height = expected.height,
-						.stride = expected.stride,
-					};
-
 					_writeDiff(test->name, &image, frame, "result");
-					_writeDiff(test->name, &expected, frame, "expected");
-					_writeDiff(test->name, &outdiff, frame, "diff");
-
-					size_t x;
-					size_t y;
-					for (y = 0; y < outdiff.height; ++y) {
-						for (x = 0; x < outdiff.width; ++x) {
-							size_t pix = outdiff.stride * y + x;
-							diff[pix * 4 + 0] = diff[pix * 4 + 0] * 255 / max;
-							diff[pix * 4 + 1] = diff[pix * 4 + 1] * 255 / max;
-							diff[pix * 4 + 2] = diff[pix * 4 + 2] * 255 / max;
-						}
-					}
-					_writeDiff(test->name, &outdiff, frame, "normalized");
+					_writeDiffSet(&expected, test->name, diff, frame, max, false);
 				}
 				free(diff);
 			}
@@ -973,6 +989,30 @@ void CInemaTestRun(struct CInemaTest* test) {
 			_writeBaseline(dir, &image, frame);
 		} else if (!rebaseline) {
 			test->status = CI_FAIL;
+		}
+
+		if (fail && failed) {
+			if (video) {
+				// TODO
+				baselineFound = false;
+			} else {
+				baselineFound = _loadBaselinePNG(dir, "xbaseline", &expected, frame, &test->status);
+			}
+
+			if (baselineFound) {
+				int max = 0;
+				failed = !_compareImages(test, &image, &expected, &max, diffs ? &diff : NULL);
+				if (diff) {
+					if (failed) {
+						_writeDiffSet(&expected, test->name, diff, frame, max, true);
+					}
+					free(diff);
+				}
+				if (failed) {
+					xdiff = true;
+				}
+				free(expected.data);
+			}
 		}
 	}
 
@@ -999,7 +1039,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 #endif
 
 	if (fail) {
-		if (test->status == CI_FAIL) {
+		if (test->status == CI_FAIL && !xdiff) {
 			test->status = CI_XFAIL;
 		} else if (test->status == CI_PASS) {
 			test->status = CI_XPASS;
