@@ -286,12 +286,13 @@ static bool parseCInemaArgs(int argc, char* const* argv) {
 }
 
 static void usageCInema(const char* arg0) {
-	printf("usage: %s [-dhnqv] [-b BASE] [-o DIR] [--version] [test...]\n", arg0);
-	puts("  -b, --base [BASE]          Path to the CInema base directory");
+	printf("usage: %s [-dhnqrRv] [-j JOBS] [-b BASE] [-o DIR] [--version] [test...]\n", arg0);
+	puts("  -b, --base BASE            Path to the CInema base directory");
 	puts("  -d, --diffs                Output image diffs from failures");
 	puts("  -h, --help                 Print this usage and exit");
+	puts("  -j, --jobs JOBS            Run a number of jobs in parallel");
 	puts("  -n, --dry-run              List all collected tests instead of running them");
-	puts("  -o, --output [DIR]         Path to output applicable results");
+	puts("  -o, --output DIR           Path to output applicable results");
 	puts("  -q, --quiet                Decrease log verbosity (can be repeated)");
 	puts("  -r, --rebaseline           Rewrite the baseline for failing tests");
 	puts("  -R, --rebaseline-missing   Write missing baselines tests only");
