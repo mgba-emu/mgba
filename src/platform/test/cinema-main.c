@@ -47,11 +47,12 @@ static const struct option longOpts[] = {
 	{ "rebaseline", no_argument, 0, 'r' },
 	{ "rebaseline-missing", no_argument, 0, 'R' },
 	{ "verbose",    no_argument, 0, 'v' },
+	{ "xbaseline",  no_argument, 0, 'x' },
 	{ "version",    no_argument, 0, '\0' },
 	{ 0, 0, 0, 0 }
 };
 
-static const char shortOpts[] = "b:dhj:no:qRrv";
+static const char shortOpts[] = "b:dhj:no:qRrvx";
 
 enum CInemaStatus {
 	CI_PASS,
@@ -112,6 +113,7 @@ static char outdir[PATH_MAX] = {'.'};
 static bool dryRun = false;
 static bool diffs = false;
 static enum CInemaRebaseline rebaseline = CI_R_NONE;
+static enum CInemaRebaseline xbaseline = CI_R_NONE;
 static int verbosity = 0;
 
 static struct Table configTree;
@@ -277,6 +279,9 @@ static bool parseCInemaArgs(int argc, char* const* argv) {
 		case 'v':
 			++verbosity;
 			break;
+		case 'x':
+			xbaseline = CI_R_FAILING;
+			break;
 		default:
 			return false;
 		}
@@ -297,6 +302,7 @@ static void usageCInema(const char* arg0) {
 	puts("  -r, --rebaseline           Rewrite the baseline for failing tests");
 	puts("  -R, --rebaseline-missing   Write missing baselines tests only");
 	puts("  -v, --verbose              Increase log verbosity (can be repeated)");
+	puts("  -x, --xbaseline            Rewrite the xfail baselines for failing tests");
 	puts("  --version                  Print version and exit");
 }
 
@@ -662,9 +668,9 @@ static void _writeDiff(const char* testName, const struct CInemaImage* image, si
 	dir->close(dir);
 }
 
-static void _writeBaseline(struct VDir* dir, const struct CInemaImage* image, size_t frame) {
+static void _writeBaseline(struct VDir* dir, const char* type, const struct CInemaImage* image, size_t frame) {
 	char baselineName[32];
-	snprintf(baselineName, sizeof(baselineName), "baseline_%04" PRIz "u.png", frame);
+	snprintf(baselineName, sizeof(baselineName), "%s_%04" PRIz "u.png", type, frame);
 	struct VFile* baselineVF = dir->openFile(dir, baselineName, O_CREAT | O_TRUNC | O_WRONLY);
 	if (baselineVF) {
 		_writeImage(baselineVF, image);
@@ -975,7 +981,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 			}
 			test->totalPixels += image.height * image.width;
 			if (rebaseline == CI_R_FAILING && !video && failed) {
-				_writeBaseline(dir, &image, frame);
+				_writeBaseline(dir, "baseline", &image, frame);
 			}
 			if (diff) {
 				if (failed) {
@@ -983,10 +989,11 @@ void CInemaTestRun(struct CInemaTest* test) {
 					_writeDiffSet(&expected, test->name, diff, frame, max, false);
 				}
 				free(diff);
+				diff = NULL;
 			}
 			free(expected.data);
 		} else if (rebaseline && !video) {
-			_writeBaseline(dir, &image, frame);
+			_writeBaseline(dir, "baseline", &image, frame);
 		} else if (!rebaseline) {
 			test->status = CI_FAIL;
 		}
@@ -1007,11 +1014,17 @@ void CInemaTestRun(struct CInemaTest* test) {
 						_writeDiffSet(&expected, test->name, diff, frame, max, true);
 					}
 					free(diff);
+					diff = NULL;
 				}
 				if (failed) {
+					if (xbaseline == CI_R_FAILING && !video) {
+						_writeBaseline(dir, "xbaseline", &image, frame);
+					}
 					xdiff = true;
 				}
 				free(expected.data);
+			} else if (xbaseline && !video) {
+				_writeBaseline(dir, "xbaseline", &image, frame);
 			}
 		}
 	}
