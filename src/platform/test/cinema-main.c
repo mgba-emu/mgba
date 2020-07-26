@@ -795,6 +795,59 @@ void _writeDiffSet(struct CInemaImage* expected, const char* name, uint8_t* diff
 	}
 }
 
+#ifdef USE_FFMPEG
+static void _replayBaseline(struct CInemaTest* test, struct FFmpegEncoder* encoder, const struct CInemaImage* image, int frame) {
+	char baselineName[PATH_MAX];
+	snprintf(baselineName, sizeof(baselineName), "%s" PATH_SEP ".baseline.avi", test->directory);
+
+	if (!FFmpegEncoderOpen(encoder, baselineName)) {
+		CIerr(1, "Failed to save baseline video\n");
+		test->status = CI_ERROR;
+		return;
+	}
+
+	snprintf(baselineName, sizeof(baselineName), "%s" PATH_SEP "baseline.avi", test->directory);
+
+
+	struct CInemaImage buffer = {
+		.data = NULL,
+		.width = image->width,
+		.height = image->height,
+		.stride = image->width,
+	};
+	struct FFmpegDecoder decoder;
+	struct CInemaStream stream = {0};
+	stream.d.postVideoFrame = _cinemaVideoFrame;
+	stream.d.videoDimensionsChanged = _cinemaDimensionsChanged;
+	stream.status = &test->status;
+	stream.image = &buffer;
+
+	FFmpegDecoderInit(&decoder);
+	decoder.out = &stream.d;
+
+	if (!FFmpegDecoderOpen(&decoder, baselineName)) {
+		CIerr(1, "Failed to load baseline video\n");
+		test->status = CI_ERROR;
+		return;
+	}
+
+	int i;
+	for (i = 0; i < frame; ++i) {
+		while (!buffer.data) {
+			if (!FFmpegDecoderRead(&decoder)) {
+				CIlog(1, "Failed to read more frames. EOF?\n");
+				test->status = CI_FAIL;
+				break;
+			}
+		}
+		encoder->d.postVideoFrame(&encoder->d, buffer.data, buffer.stride);
+		free(buffer.data);
+		buffer.data = NULL;
+	}
+	FFmpegDecoderClose(&decoder);
+}
+#endif
+
 void CInemaTestRun(struct CInemaTest* test) {
 	unsigned ignore = 0;
 	MutexLock(&configMutex);
@@ -885,24 +938,17 @@ void CInemaTestRun(struct CInemaTest* test) {
 	snprintf(baselineName, sizeof(baselineName), "%s" PATH_SEP "baseline.avi", test->directory);
 	bool exists = access(baselineName, 0) == 0;
 
-	char tmpBaselineName[PATH_MAX];
-	snprintf(tmpBaselineName, sizeof(tmpBaselineName), "%s" PATH_SEP ".baseline.avi", test->directory);
-
 	if (video) {
 		FFmpegEncoderInit(&encoder);
 		FFmpegDecoderInit(&decoder);
 
-		if (rebaseline == CI_R_FAILING || (rebaseline == CI_R_MISSING && !exists)) {
-			FFmpegEncoderSetAudio(&encoder, NULL, 0);
-			FFmpegEncoderSetVideo(&encoder, "zmbv", 0, 0);
-			FFmpegEncoderSetContainer(&encoder, "avi");
-			FFmpegEncoderSetDimensions(&encoder, image.width, image.height);
+		FFmpegEncoderSetAudio(&encoder, NULL, 0);
+		FFmpegEncoderSetVideo(&encoder, "zmbv", 0, 0);
+		FFmpegEncoderSetContainer(&encoder, "avi");
+		FFmpegEncoderSetDimensions(&encoder, image.width, image.height);
 
-			const char* usedFname = baselineName;
-			if (exists) {
-				usedFname = tmpBaselineName;
-			}
-			if (!FFmpegEncoderOpen(&encoder, usedFname)) {
+		if (rebaseline && !exists) {
+			if (!FFmpegEncoderOpen(&encoder, baselineName)) {
 				CIerr(1, "Failed to save baseline video\n");
 			} else {
 				core->setAVStream(core, &encoder.d);
@@ -978,6 +1024,16 @@ void CInemaTestRun(struct CInemaTest* test) {
 			failed = !_compareImages(test, &image, &expected, &max, diffs ? &diff : NULL);
 			if (failed) {
 				++test->failedFrames;
+#ifdef USE_FFMPEG
+				if (video && exists && rebaseline && !FFmpegEncoderIsOpen(&encoder)) {
+					_replayBaseline(test, &encoder, &image, frame);
+					if (test->status == CI_ERROR) {
+						break;
+					}
+					encoder.d.postVideoFrame(&encoder.d, image.data, image.stride);
+					core->setAVStream(core, &encoder.d);
+				}
+#endif
 			}
 			test->totalPixels += image.height * image.width;
 			if (rebaseline == CI_R_FAILING && !video && failed) {
@@ -1033,16 +1089,14 @@ void CInemaTestRun(struct CInemaTest* test) {
 	if (video) {
 		if (FFmpegEncoderIsOpen(&encoder)) {
 			FFmpegEncoderClose(&encoder);
-			if (exists) {
-				if (test->status == CI_FAIL) {
+			if (exists && rebaseline) {
+				char tmpBaselineName[PATH_MAX];
+				snprintf(tmpBaselineName, sizeof(tmpBaselineName), "%s" PATH_SEP ".baseline.avi", test->directory);
 #ifdef _WIN32
-					MoveFileEx(tmpBaselineName, baselineName, MOVEFILE_REPLACE_EXISTING);
+				MoveFileEx(tmpBaselineName, baselineName, MOVEFILE_REPLACE_EXISTING);
 #else
-					rename(tmpBaselineName, baselineName);
+				rename(tmpBaselineName, baselineName);
 #endif
-				} else {
-					remove(tmpBaselineName);
-				}
 			}
 		}
 		if (FFmpegDecoderIsOpen(&decoder)) {
