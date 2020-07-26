@@ -147,10 +147,21 @@ struct ARMInterruptHandler {
 	void (*hitStub)(struct ARMCore* cpu, uint32_t opcode);
 };
 
+#define ARM_REGISTER_FILE struct { \
+	int32_t gprs[16]; \
+	union PSR cpsr; \
+	union PSR spsr; \
+}
+
+struct ARMRegisterFile {
+	ARM_REGISTER_FILE;
+};
+
 struct ARMCore {
-	int32_t gprs[16];
-	union PSR cpsr;
-	union PSR spsr;
+	union {
+		struct ARMRegisterFile regs;
+		ARM_REGISTER_FILE;
+	};
 
 	int32_t cycles;
 	int32_t nextEvent;
@@ -174,6 +185,7 @@ struct ARMCore {
 	size_t numComponents;
 	struct mCPUComponent** components;
 };
+#undef ARM_REGISTER_FILE
 
 void ARMInit(struct ARMCore* cpu);
 void ARMDeinit(struct ARMCore* cpu);
