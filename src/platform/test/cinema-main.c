@@ -11,6 +11,7 @@
 #include <mgba/feature/video-logger.h>
 
 #include <mgba-util/png-io.h>
+#include <mgba-util/string.h>
 #include <mgba-util/table.h>
 #include <mgba-util/vector.h>
 #include <mgba-util/vfs.h>
@@ -127,7 +128,7 @@ static bool parseCInemaArgs(int argc, char* const* argv) {
 			}
 			break;
 		case 'b':
-			strncpy(base, optarg, sizeof(base));
+			strlcpy(base, optarg, sizeof(base));
 			// TODO: Verify path exists
 			break;
 		case 'd':
@@ -140,7 +141,7 @@ static bool parseCInemaArgs(int argc, char* const* argv) {
 			dryRun = true;
 			break;
 		case 'o':
-			strncpy(outdir, optarg, sizeof(outdir));
+			strlcpy(outdir, optarg, sizeof(outdir));
 			// TODO: Make directory
 			break;
 		case 'q':
@@ -244,7 +245,7 @@ static void reduceTestList(struct CInemaTestList* tests) {
 }
 
 static void testToPath(const char* testName, char* path) {
-	strncpy(path, base, PATH_MAX);
+	strlcpy(path, base, PATH_MAX);
 
 	bool dotSeen = true;
 	size_t i;
@@ -253,7 +254,7 @@ static void testToPath(const char* testName, char* path) {
 			dotSeen = true;
 		} else {
 			if (dotSeen) {
-				strncpy(&path[i], PATH_SEP, PATH_MAX - i);
+				strlcpy(&path[i], PATH_SEP, PATH_MAX - i);
 				i += strlen(PATH_SEP);
 				dotSeen = false;
 				if (!i) {
@@ -268,7 +269,7 @@ static void testToPath(const char* testName, char* path) {
 
 static void _loadConfigTree(struct Table* configTree, const char* testName) {
 	char key[MAX_TEST];
-	strncpy(key, testName, sizeof(key) - 1);
+	strlcpy(key, testName, sizeof(key));
 
 	struct mCoreConfig* config;
 	while (!(config = HashTableLookup(configTree, key))) {
@@ -301,7 +302,7 @@ static const char* _lookupValue(struct Table* configTree, const char* testName, 
 	_loadConfigTree(configTree, testName);
 
 	char testKey[MAX_TEST];
-	strncpy(testKey, testName, sizeof(testKey) - 1);
+	strlcpy(testKey, testName, sizeof(testKey));
 
 	struct mCoreConfig* config;
 	while (true) {
@@ -378,10 +379,10 @@ bool CInemaTestInit(struct CInemaTest* test, const char* directory, const char* 
 		return false;
 	}
 	memset(test, 0, sizeof(*test));
-	strncpy(test->directory, directory, sizeof(test->directory) - 1);
-	strncpy(test->filename, filename, sizeof(test->filename) - 1);
+	strlcpy(test->directory, directory, sizeof(test->directory));
+	strlcpy(test->filename, filename, sizeof(test->filename));
 	directory += strlen(base) + 1;
-	strncpy(test->name, directory, sizeof(test->name) - 1);
+	strlcpy(test->name, directory, sizeof(test->name));
 	char* str = strstr(test->name, PATH_SEP);
 	while (str) {
 		str[0] = '.';
@@ -446,7 +447,7 @@ static bool _loadBaseline(struct VDir* dir, struct CInemaImage* image, size_t fr
 
 static struct VDir* _makeOutDir(const char* testName) {
 	char path[PATH_MAX] = {0};
-	strncpy(path, outdir, sizeof(path) - 1);
+	strlcpy(path, outdir, sizeof(path));
 	char* pathEnd = path + strlen(path);
 	const char* pos;
 	while (true) {
@@ -768,7 +769,7 @@ int main(int argc, char** argv) {
 #ifndef _WIN32
 	char* rbase = realpath(base, NULL);
 	if (rbase) {
-		strncpy(base, rbase, PATH_MAX);
+		strlcpy(base, rbase, sizeof(base));
 		free(rbase);
 	}
 #endif
