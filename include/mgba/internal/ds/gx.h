@@ -145,8 +145,8 @@ struct DSGXRenderer {
 	void (*getScanline)(struct DSGXRenderer* renderer, int y, const color_t** output);
 	void (*writeRegister)(struct DSGXRenderer* renderer, uint32_t address, uint16_t value);
 
-	uint16_t* tex[4];
-	uint16_t* texPal[6];
+	const uint16_t* tex[4];
+	const uint16_t* texPal[6];
 
 	uint16_t* toonTable;
 };
@@ -187,8 +187,8 @@ struct DSGX {
 	int pendingVertexIds[8];
 	bool reverseWinding;
 
-	uint16_t* tex[4];
-	uint16_t* texPal[6];
+	const uint16_t* tex[4];
+	const uint16_t* texPal[6];
 
 	int mtxMode;
 	int pvMatrixPointer;

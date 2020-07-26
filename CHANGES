@@ -20,6 +20,7 @@ Bugfixes:
  - DS Video: Properly deinitialize
  - DS GX: Mask off invalid bits of the palette base
  - DS: Properly close save file on close
+ - DS Video: Fix size of VRAM zeroes buffer
 Misc:
  - DS GX: Clean up and unify texture mapping
  - DS Core: Add symbol loading

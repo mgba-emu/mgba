@@ -45,7 +45,7 @@ static const uint32_t _vramSize[9] = {
 	0x04000
 };
 
-static uint16_t _zeroes[0x2000] = {0};
+static const uint16_t _zeroes[0x10000] = {0};
 
 enum DSVRAMBankMode {
 	MODE_A_BG = 0,

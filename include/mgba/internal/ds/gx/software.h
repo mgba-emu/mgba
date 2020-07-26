@@ -20,8 +20,8 @@ struct DSGXSoftwarePolygon {
 	unsigned polyId;
 	DSGXPolygonAttrs polyParams;
 	DSGXTexParams texParams;
-	uint16_t* texBase;
-	uint16_t* palBase;
+	const uint16_t* texBase;
+	const uint16_t* palBase;
 	int texFormat;
 	int blendFormat;
 	int texW;
