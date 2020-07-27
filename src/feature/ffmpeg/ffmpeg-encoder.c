@@ -7,6 +7,7 @@
 
 #include <mgba/core/core.h>
 #include <mgba/gba/interface.h>
+#include <mgba/internal/gba/gba.h>
 #include <mgba-util/math.h>
 
 #include <libavcodec/version.h>
@@ -393,12 +394,24 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			// QuickTime and a few other things require YUV420
 			encoder->video->pix_fmt = AV_PIX_FMT_YUV420P;
 		}
-#if LIBAVCODEC_VERSION_MAJOR >= 57
 		if (encoder->video->codec->id == AV_CODEC_ID_FFV1) {
+#if LIBAVCODEC_VERSION_MAJOR >= 57
 			av_opt_set(encoder->video->priv_data, "coder", "range_tab", 0);
+			av_opt_set_int(encoder->video->priv_data, "context", 1, 0);
+#endif
+			encoder->video->gop_size = 128;
+			encoder->video->level = 3;
+		}
+
+		if (encoder->video->codec->id == AV_CODEC_ID_PNG) {
+			encoder->video->compression_level = 8;
+		}
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(58, 48, 100)
+		if (encoder->video->codec->id == AV_CODEC_ID_ZMBV) {
+			encoder->video->compression_level = 5;
+			encoder->video->pix_fmt = AV_PIX_FMT_BGR0;
 		}
 #endif
-
 		if (strcmp(vcodec->name, "libx264") == 0) {
 			// Try to adaptively figure out when you can use a slower encoder
 			if (encoder->width * encoder->height > 1000000) {
@@ -409,13 +422,15 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 				av_opt_set(encoder->video->priv_data, "preset", "faster", 0);
 			}
 			if (encoder->videoBitrate == 0) {
-				av_opt_set(encoder->video->priv_data, "crf", "0", 0);
+				av_opt_set(encoder->video->priv_data, "qp", "0", 0);
 				encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
 			}
 		}
 		if (strcmp(vcodec->name, "libvpx-vp9") == 0 && encoder->videoBitrate == 0) {
-			av_opt_set(encoder->video->priv_data, "lossless", "1", 0);
-			encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
+			av_opt_set_int(encoder->video->priv_data, "lossless", 1, 0);
+			av_opt_set_int(encoder->video->priv_data, "crf", 0, 0);
+			encoder->video->gop_size = 120;
+			encoder->video->pix_fmt = AV_PIX_FMT_GBRP;
 		}
 		if (strcmp(vcodec->name, "libwebp_anim") == 0 && encoder->videoBitrate == 0) {
 			av_opt_set(encoder->video->priv_data, "lossless", "1", 0);
