@@ -8,6 +8,7 @@ Emulation fixes:
  - GB MBC: Fix MBC2 bit selection
  - GB Video: Always initialize palette
  - GBA BIOS: Fix reloading video registers after reset (fixes mgba.io/i/1808)
+ - GBA Savedata: Fix potential corruption when loading a 1Mbit flash save
  - GBA Video: Fix invalid read in mode 4 mosaic
  - GBA Video: Fix color of disabled screen
  - SM83: Fix flags on little endian PowerPC
