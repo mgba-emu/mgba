@@ -403,6 +403,84 @@ static void testToPath(const char* testName, char* path) {
 	path[i] = '\0';
 }
 
+static bool globTests(struct CInemaTestList* tests, const char* glob, const char* ancestors) {
+	bool success = true;
+	const char* next = strpbrk(glob, "*.");
+
+	char path[PATH_MAX];
+	if (!next) {
+		testToPath(glob, path);
+		return collectTests(tests, path);
+	} else if (next[0] == '.') {
+		char subtest[MAX_TEST];
+		if (!ancestors) {
+			strncpy(subtest, glob, next - glob);
+		} else {
+			size_t len = strlen(ancestors) + (next - glob) + 2;
+			if (len > sizeof(subtest)) {
+				len = sizeof(subtest);
+			}
+			snprintf(subtest, len, "%s.%s", ancestors, glob);
+		}
+		return globTests(tests, next + 1, subtest);
+	} else if (next[0] == '*') {
+		char globBuffer[MAX_TEST];
+		const char* subglob;
+
+		next = strchr(next, '.');
+		if (!next) {
+			subglob = glob;
+		} else {
+			size_t len = next - glob + 1;
+			if (len > sizeof(globBuffer)) {
+				len = sizeof(globBuffer);
+			}
+			strncpy(globBuffer, glob, len - 1);
+			subglob = globBuffer;
+		}
+		bool hasMoreGlobs = next && strchr(next, '*');
+
+		struct VDir* dir;
+		if (ancestors) {
+			testToPath(ancestors, path);
+			dir = VDirOpen(path);
+		} else {
+			dir = VDirOpen(base);
+		}
+		if (!dir) {
+			return false;
+		}
+
+		struct VDirEntry* dirent = dir->listNext(dir);
+		while (dirent) {
+			const char* name = dirent->name(dirent);
+			if (dirent->type(dirent) != VFS_DIRECTORY || strncmp(name, ".", 2) == 0 || strncmp(name, "..", 3) == 0) {
+				dirent = dir->listNext(dir);
+				continue;
+			}
+			if (wildcard(subglob, name)) {
+				char newgen[MAX_TEST];
+				if (ancestors) {
+					snprintf(newgen, sizeof(newgen), "%s.%s", ancestors, name);
+				} else {
+					strlcpy(newgen, name, sizeof(newgen));
+				}
+				if (next && hasMoreGlobs) {
+					globTests(tests, next + 1, newgen);
+				} else {
+					testToPath(newgen, path);
+					collectTests(tests, path);
+				}
+			}
+			dirent = dir->listNext(dir);
+		}
+
+		return true;
+	} else {
+		abort();
+	}
+}
+
 static void _loadConfigTree(struct Table* configTree, const char* testName) {
 	char key[MAX_TEST];
 	strlcpy(key, testName, sizeof(key));
@@ -1285,6 +1363,13 @@ int main(int argc, char** argv) {
 	if (argc > 0) {
 		size_t i;
 		for (i = 0; i < (size_t) argc; ++i) {
+			if (strchr(argv[i], '*')) {
+				if (!globTests(&tests, argv[i], NULL)) {
+					status = 1;
+					break;
+				}
+				continue;
+			}
 			char path[PATH_MAX + 1] = {0};
 			testToPath(argv[i], path);
 
