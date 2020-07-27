@@ -18,7 +18,7 @@ struct SM83Core;
 #pragma pack(push, 1)
 union FlagRegister {
 	struct {
-#if defined(__POWERPC__) || defined(__PPC__)
+#ifdef __BIG_ENDIAN__
 		unsigned z : 1;
 		unsigned n : 1;
 		unsigned h : 1;
