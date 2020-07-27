@@ -11,8 +11,68 @@
 #include <mgba/internal/arm/isa-inlines.h>
 #include <mgba/internal/arm/debugger/memory-debugger.h>
 #include <mgba/internal/debugger/parser.h>
+#include <mgba/internal/debugger/stack-trace.h>
 
 DEFINE_VECTOR(ARMDebugBreakpointList, struct ARMDebugBreakpoint);
+
+static bool _updateStackTrace(struct mDebuggerPlatform* d, uint32_t pc) {
+	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
+	struct ARMCore* cpu = debugger->cpu;
+	struct mStackTrace* stack = &d->p->stackTrace;
+	struct ARMInstructionInfo info;
+	uint32_t instruction = cpu->prefetch[0];
+	ARMDecodeARM(instruction, &info);
+	struct mStackFrame* frame = mStackTraceGetFrame(stack, 0);
+	bool isCall = (info.branchType & ARM_BRANCH_LINKED);
+	uint32_t destAddress;
+
+	if (frame && frame->finished) {
+		mStackTracePop(stack);
+		frame = NULL;
+	}
+
+	if (info.operandFormat & ARM_OPERAND_IMMEDIATE_1) {
+		if (!isCall) {
+			return false;
+		}
+		destAddress = info.op1.immediate + cpu->gprs[ARM_PC];
+	} else if (info.operandFormat & ARM_OPERAND_REGISTER_1) {
+		if (!isCall && info.op1.reg != ARM_LR) {
+			return false;
+		}
+		destAddress = cpu->gprs[info.op1.reg];
+	} else {
+		abort(); // Should be unreachable
+	}
+
+	if (info.branchType & ARM_BRANCH_INDIRECT) {
+		destAddress = cpu->memory.load32(cpu, destAddress, 0);
+	}
+
+	if (isCall) {
+		frame = mStackTracePush(stack, instruction, pc, destAddress, cpu->gprs[ARM_SP], &cpu->regs);
+		if (!(debugger->stackTraceMode & STACK_TRACE_BREAK_ON_CALL)) {
+			return false;
+		}
+	} else {
+		frame = mStackTraceGetFrame(stack, 0);
+		if (!frame) {
+			return false;
+		}
+		if (!frame->breakWhenFinished && !(debugger->stackTraceMode & STACK_TRACE_BREAK_ON_RETURN)) {
+			mStackTracePop(stack);
+			return false;
+		}
+		frame->finished = true;
+	}
+	struct mDebuggerEntryInfo debuggerInfo = {
+		.address = pc,
+		.type.st.traceType = isCall ? STACK_TRACE_BREAK_ON_CALL : STACK_TRACE_BREAK_ON_RETURN,
+		.pointId = 0
+	};
+	mDebuggerEnter(d->p, DEBUGGER_ENTER_STACK, &debuggerInfo);
+	return true;
+}
 
 static struct ARMDebugBreakpoint* _lookupBreakpoint(struct ARMDebugBreakpointList* breakpoints, uint32_t address) {
 	size_t i;
@@ -46,6 +106,9 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 		instructionLength = WORD_SIZE_ARM;
 	} else {
 		instructionLength = WORD_SIZE_THUMB;
+	}
+	if (_updateStackTrace(d, debugger->cpu->gprs[ARM_PC] - instructionLength)) {
+		return;
 	}
 	struct ARMDebugBreakpoint* breakpoint = _lookupBreakpoint(&debugger->breakpoints, debugger->cpu->gprs[ARM_PC] - instructionLength);
 	if (!breakpoint) {
@@ -81,6 +144,8 @@ static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform*);
 static void ARMDebuggerTrace(struct mDebuggerPlatform*, char* out, size_t* length);
 static bool ARMDebuggerGetRegister(struct mDebuggerPlatform*, const char* name, int32_t* value);
 static bool ARMDebuggerSetRegister(struct mDebuggerPlatform*, const char* name, int32_t value);
+static uint32_t ARMDebuggerGetStackTraceMode(struct mDebuggerPlatform*);
+static void ARMDebuggerSetStackTraceMode(struct mDebuggerPlatform*, uint32_t);
 
 struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	struct mDebuggerPlatform* platform = (struct mDebuggerPlatform*) malloc(sizeof(struct ARMDebugger));
@@ -97,6 +162,8 @@ struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	platform->trace = ARMDebuggerTrace;
 	platform->getRegister = ARMDebuggerGetRegister;
 	platform->setRegister = ARMDebuggerSetRegister;
+	platform->getStackTraceMode = ARMDebuggerGetStackTraceMode;
+	platform->setStackTraceMode = ARMDebuggerSetStackTraceMode;
 	return platform;
 }
 
@@ -108,6 +175,10 @@ void ARMDebuggerInit(void* cpu, struct mDebuggerPlatform* platform) {
 	ARMDebugBreakpointListInit(&debugger->breakpoints, 0);
 	ARMDebugBreakpointListInit(&debugger->swBreakpoints, 0);
 	mWatchpointListInit(&debugger->watchpoints, 0);
+	struct mStackTrace* stack = &platform->p->stackTrace;
+	mStackTraceInit(stack, sizeof(struct ARMRegisterFile));
+	// TODO
+	stack->formatRegisters = NULL;
 }
 
 void ARMDebuggerDeinit(struct mDebuggerPlatform* platform) {
@@ -133,6 +204,8 @@ void ARMDebuggerDeinit(struct mDebuggerPlatform* platform) {
 	}
 	ARMDebugBreakpointListDeinit(&debugger->swBreakpoints);
 	mWatchpointListDeinit(&debugger->watchpoints);
+
+	mStackTraceDeinit(&platform->p->stackTrace);
 }
 
 static void ARMDebuggerEnter(struct mDebuggerPlatform* platform, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
@@ -261,7 +334,7 @@ static void ARMDebuggerListBreakpoints(struct mDebuggerPlatform* d, struct mBrea
 			++i;
 		} else if (sw) {
 			*b = sw->d;
-			++s;		
+			++s;
 		} else {
 			abort(); // Should be unreachable
 		}
@@ -270,7 +343,7 @@ static void ARMDebuggerListBreakpoints(struct mDebuggerPlatform* d, struct mBrea
 
 static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform* d) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
-	return ARMDebugBreakpointListSize(&debugger->breakpoints) || mWatchpointListSize(&debugger->watchpoints);
+	return ARMDebugBreakpointListSize(&debugger->breakpoints) || mWatchpointListSize(&debugger->watchpoints) || debugger->stackTraceMode != STACK_TRACE_DISABLED;
 }
 
 static ssize_t ARMDebuggerSetWatchpoint(struct mDebuggerPlatform* d, const struct mWatchpoint* info) {
@@ -402,4 +475,18 @@ bool ARMDebuggerSetRegister(struct mDebuggerPlatform* d, const char* name, int32
 		return true;
 	}
 	return false;
+}
+
+static uint32_t ARMDebuggerGetStackTraceMode(struct mDebuggerPlatform* d) {
+	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
+	return debugger->stackTraceMode;
+}
+
+static void ARMDebuggerSetStackTraceMode(struct mDebuggerPlatform* d, uint32_t mode) {
+	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
+	struct mStackTrace* stack = &d->p->stackTrace;
+	if (mode == STACK_TRACE_DISABLED && debugger->stackTraceMode != STACK_TRACE_DISABLED) {
+		mStackTraceClear(stack);
+	}
+	debugger->stackTraceMode = mode;
 }

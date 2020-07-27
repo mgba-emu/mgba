@@ -36,6 +36,7 @@ struct ARMDebugger {
 	struct ARMMemory originalMemory;
 
 	ssize_t nextId;
+	enum mStackTraceMode stackTraceMode;
 
 	void (*entered)(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 

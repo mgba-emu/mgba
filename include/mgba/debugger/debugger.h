@@ -13,6 +13,7 @@ CXX_GUARD_START
 #include <mgba/core/cpu.h>
 #include <mgba/core/log.h>
 #include <mgba-util/vector.h>
+#include <mgba/internal/debugger/stack-trace.h>
 
 mLOG_DECLARE_CATEGORY(DEBUGGER);
 
@@ -50,7 +51,8 @@ enum mDebuggerEntryReason {
 	DEBUGGER_ENTER_ATTACHED,
 	DEBUGGER_ENTER_BREAKPOINT,
 	DEBUGGER_ENTER_WATCHPOINT,
-	DEBUGGER_ENTER_ILLEGAL_OP
+	DEBUGGER_ENTER_ILLEGAL_OP,
+	DEBUGGER_ENTER_STACK
 };
 
 struct mDebuggerEntryInfo {
@@ -67,6 +69,10 @@ struct mDebuggerEntryInfo {
 			uint32_t opcode;
 			enum mBreakpointType breakType;
 		} bp;
+
+		struct {
+			enum mStackTraceMode traceType;
+		} st;
 	} type;
 	ssize_t pointId;
 };
@@ -114,6 +120,9 @@ struct mDebuggerPlatform {
 	bool (*getRegister)(struct mDebuggerPlatform*, const char* name, int32_t* value);
 	bool (*setRegister)(struct mDebuggerPlatform*, const char* name, int32_t value);
 	bool (*lookupIdentifier)(struct mDebuggerPlatform*, const char* name, int32_t* value, int* segment);
+
+	uint32_t (*getStackTraceMode)(struct mDebuggerPlatform*);
+	void (*setStackTraceMode)(struct mDebuggerPlatform*, uint32_t mode);
 };
 
 struct mDebugger {
@@ -123,6 +132,7 @@ struct mDebugger {
 	enum mDebuggerType type;
 	struct mCore* core;
 	struct mScriptBridge* bridge;
+	struct mStackTrace stackTrace;
 
 	void (*init)(struct mDebugger*);
 	void (*deinit)(struct mDebugger*);
