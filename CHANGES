@@ -23,6 +23,7 @@ Emulation fixes:
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA Memory: Improve gamepak prefetch timing
  - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
+ - GBA Savedata: Fix potential corruption when loading a 1Mbit flash save
  - GBA SIO: Fix copying Normal mode transfer values
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
