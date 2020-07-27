@@ -12,16 +12,21 @@
 #include <mgba/internal/arm/debugger/memory-debugger.h>
 #include <mgba/internal/debugger/parser.h>
 #include <mgba/internal/debugger/stack-trace.h>
+#include <stdint.h>
 
 DEFINE_VECTOR(ARMDebugBreakpointList, struct ARMDebugBreakpoint);
 
 static bool _updateStackTrace(struct mDebuggerPlatform* d, uint32_t pc) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	struct ARMCore* cpu = debugger->cpu;
-	struct mStackTrace* stack = &d->p->stackTrace;
 	struct ARMInstructionInfo info;
 	uint32_t instruction = cpu->prefetch[0];
 	ARMDecodeARM(instruction, &info);
+	if (info.branchType == ARM_BRANCH_NONE) {
+		return false;
+	}
+
+	struct mStackTrace* stack = &d->p->stackTrace;
 	struct mStackFrame* frame = mStackTraceGetFrame(stack, 0);
 	bool isCall = (info.branchType & ARM_BRANCH_LINKED);
 	uint32_t destAddress;
@@ -31,7 +36,24 @@ static bool _updateStackTrace(struct mDebuggerPlatform* d, uint32_t pc) {
 		frame = NULL;
 	}
 
-	if (info.operandFormat & ARM_OPERAND_IMMEDIATE_1) {
+	if (info.operandFormat & ARM_OPERAND_MEMORY_1) {
+		if (!isCall) {
+			return false;
+		}
+		// count number of set bits, gcc/clang will convert to intrinsics
+		int regCount = 0;
+		uint32_t reglist = info.op1.immediate & 0xf;
+		printf("%d\n", reglist);
+		fflush(NULL);
+		while (reglist != 0) {
+			reglist &= reglist - 1;
+			regCount++;
+		}
+		printf("->%d\n", regCount);
+		fflush(NULL);
+		uint32_t baseAddress = cpu->gprs[info.memory.baseReg] + ((regCount - 1) << 2);
+		destAddress = cpu->memory.load32(cpu, baseAddress, NULL);
+	} else if (info.operandFormat & ARM_OPERAND_IMMEDIATE_1) {
 		if (!isCall) {
 			return false;
 		}
@@ -46,11 +68,11 @@ static bool _updateStackTrace(struct mDebuggerPlatform* d, uint32_t pc) {
 	}
 
 	if (info.branchType & ARM_BRANCH_INDIRECT) {
-		destAddress = cpu->memory.load32(cpu, destAddress, 0);
+		destAddress = cpu->memory.load32(cpu, destAddress, NULL);
 	}
 
 	if (isCall) {
-		frame = mStackTracePush(stack, instruction, pc, destAddress, cpu->gprs[ARM_SP], &cpu->regs);
+		frame = mStackTracePush(stack, pc, destAddress, cpu->gprs[ARM_SP], &cpu->regs);
 		if (!(debugger->stackTraceMode & STACK_TRACE_BREAK_ON_CALL)) {
 			return false;
 		}
@@ -107,10 +129,11 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	} else {
 		instructionLength = WORD_SIZE_THUMB;
 	}
-	if (_updateStackTrace(d, debugger->cpu->gprs[ARM_PC] - instructionLength)) {
+	uint32_t pc = debugger->cpu->gprs[ARM_PC] - instructionLength;
+	if (debugger->stackTraceMode != STACK_TRACE_DISABLED && _updateStackTrace(d, pc)) {
 		return;
 	}
-	struct ARMDebugBreakpoint* breakpoint = _lookupBreakpoint(&debugger->breakpoints, debugger->cpu->gprs[ARM_PC] - instructionLength);
+	struct ARMDebugBreakpoint* breakpoint = _lookupBreakpoint(&debugger->breakpoints, pc);
 	if (!breakpoint) {
 		return;
 	}
@@ -142,6 +165,8 @@ static void ARMDebuggerListWatchpoints(struct mDebuggerPlatform*, struct mWatchp
 static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform*);
 static void ARMDebuggerTrace(struct mDebuggerPlatform*, char* out, size_t* length);
+static void ARMDebuggerFormatRegisters(struct ARMRegisterFile* regs, char* delimiter, char* disassembly, char* out, size_t* length);
+static void ARMDebuggerFrameFormatRegisters(struct mStackFrame* frame, char* out, size_t* length);
 static bool ARMDebuggerGetRegister(struct mDebuggerPlatform*, const char* name, int32_t* value);
 static bool ARMDebuggerSetRegister(struct mDebuggerPlatform*, const char* name, int32_t value);
 static uint32_t ARMDebuggerGetStackTraceMode(struct mDebuggerPlatform*);
@@ -172,13 +197,13 @@ void ARMDebuggerInit(void* cpu, struct mDebuggerPlatform* platform) {
 	debugger->cpu = cpu;
 	debugger->originalMemory = debugger->cpu->memory;
 	debugger->nextId = 1;
+	debugger->stackTraceMode = STACK_TRACE_DISABLED;
 	ARMDebugBreakpointListInit(&debugger->breakpoints, 0);
 	ARMDebugBreakpointListInit(&debugger->swBreakpoints, 0);
 	mWatchpointListInit(&debugger->watchpoints, 0);
 	struct mStackTrace* stack = &platform->p->stackTrace;
 	mStackTraceInit(stack, sizeof(struct ARMRegisterFile));
-	// TODO
-	stack->formatRegisters = NULL;
+	stack->formatRegisters = ARMDebuggerFrameFormatRegisters;
 }
 
 void ARMDebuggerDeinit(struct mDebuggerPlatform* platform) {
@@ -393,12 +418,20 @@ static void ARMDebuggerTrace(struct mDebuggerPlatform* d, char* out, size_t* len
 		}
 	}
 
-	*length = snprintf(out, *length, "%08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X cpsr: %08X | %s",
-		               cpu->gprs[0],  cpu->gprs[1],  cpu->gprs[2],  cpu->gprs[3],
-		               cpu->gprs[4],  cpu->gprs[5],  cpu->gprs[6],  cpu->gprs[7],
-		               cpu->gprs[8],  cpu->gprs[9],  cpu->gprs[10], cpu->gprs[11],
-		               cpu->gprs[12], cpu->gprs[13], cpu->gprs[14], cpu->gprs[15],
-		               cpu->cpsr.packed, disassembly);
+	ARMDebuggerFormatRegisters(&cpu->regs, " | ", disassembly, out, length);
+}
+
+static void ARMDebuggerFormatRegisters(struct ARMRegisterFile* regs, char* delimiter, char* disassembly, char* out, size_t* length) {
+	*length = snprintf(out, *length, "%08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X %08X cpsr: %08X%s%s",
+		               regs->gprs[0],  regs->gprs[1],  regs->gprs[2],  regs->gprs[3],
+		               regs->gprs[4],  regs->gprs[5],  regs->gprs[6],  regs->gprs[7],
+		               regs->gprs[8],  regs->gprs[9],  regs->gprs[10], regs->gprs[11],
+		               regs->gprs[12], regs->gprs[13], regs->gprs[14], regs->gprs[15],
+		               regs->cpsr.packed, delimiter, disassembly);
+}
+
+static void ARMDebuggerFrameFormatRegisters(struct mStackFrame* frame, char* out, size_t* length) {
+	ARMDebuggerFormatRegisters((struct ARMRegisterFile*)&frame->regs, "", "", out, length);
 }
 
 bool ARMDebuggerGetRegister(struct mDebuggerPlatform* d, const char* name, int32_t* value) {
@@ -489,4 +522,5 @@ static void ARMDebuggerSetStackTraceMode(struct mDebuggerPlatform* d, uint32_t m
 		mStackTraceClear(stack);
 	}
 	debugger->stackTraceMode = mode;
+	printf("SetStackTraceMode %d\n", mode);
 }

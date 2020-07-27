@@ -24,7 +24,6 @@ enum mStackTraceMode {
 };
 
 struct mStackFrame {
-	uint32_t instruction;
 	uint32_t callAddress;
 	uint32_t entryAddress;
 	uint32_t frameBaseAddress;
@@ -47,8 +46,9 @@ void mStackTraceDeinit(struct mStackTrace* stack);
 
 void mStackTraceClear(struct mStackTrace* stack);
 size_t mStackTraceGetDepth(struct mStackTrace* stack);
-struct mStackFrame* mStackTracePush(struct mStackTrace* stack, uint32_t instruction, uint32_t pc, uint32_t destAddress, uint32_t sp, void* regs);
-struct mStackFrame* mStackTraceGetFrame(struct mStackTrace* stack, size_t frame);
+struct mStackFrame* mStackTracePush(struct mStackTrace* stack, uint32_t pc, uint32_t destAddress, uint32_t sp, void* regs);
+struct mStackFrame* mStackTraceGetFrame(struct mStackTrace* stack, uint32_t frame);
+void mStackTraceFormatFrame(struct mStackTrace* stack, uint32_t frame, char* out, size_t* length);
 void mStackTracePop(struct mStackTrace* stack);
 
 CXX_GUARD_END

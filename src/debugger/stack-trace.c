@@ -7,10 +7,17 @@
 
 #include <mgba/core/core.h>
 
+#define CHECK_LENGTH() \
+	if (written >= *length) { \
+		*length = written; \
+		return; \
+	}
+
 DEFINE_VECTOR(mStackFrames, struct mStackFrame);
 
 void mStackTraceInit(struct mStackTrace* stack, size_t registersSize) {
 	mStackFramesInit(&stack->stack, 0);
+	stack->registersSize = registersSize;
 }
 
 void mStackTraceDeinit(struct mStackTrace* stack) {
@@ -24,15 +31,15 @@ void mStackTraceClear(struct mStackTrace* stack) {
 		free(mStackTraceGetFrame(stack, i)->regs);
 		--i;
 	}
+	mStackFramesClear(&stack->stack);
 }
 
 size_t mStackTraceGetDepth(struct mStackTrace* stack) {
 	return mStackFramesSize(&stack->stack);
 }
 
-struct mStackFrame* mStackTracePush(struct mStackTrace* stack, uint32_t instruction, uint32_t pc, uint32_t destAddress, uint32_t sp, void* regs) {
+struct mStackFrame* mStackTracePush(struct mStackTrace* stack, uint32_t pc, uint32_t destAddress, uint32_t sp, void* regs) {
 	struct mStackFrame* frame = mStackFramesAppend(&stack->stack);
-	frame->instruction = instruction;
 	frame->callAddress = pc;
 	frame->entryAddress = destAddress;
 	frame->frameBaseAddress = sp;
@@ -43,7 +50,7 @@ struct mStackFrame* mStackTracePush(struct mStackTrace* stack, uint32_t instruct
 	return frame;
 }
 
-struct mStackFrame* mStackTraceGetFrame(struct mStackTrace* stack, size_t frame) {
+struct mStackFrame* mStackTraceGetFrame(struct mStackTrace* stack, uint32_t frame) {
 	size_t depth = mStackTraceGetDepth(stack);
 	if (frame >= depth) {
 		return NULL;
@@ -51,12 +58,44 @@ struct mStackFrame* mStackTraceGetFrame(struct mStackTrace* stack, size_t frame)
 	return mStackFramesGetPointer(&stack->stack, depth - frame - 1);
 }
 
+void mStackTraceFormatFrame(struct mStackTrace* stack, uint32_t frame, char* out, size_t* length) {
+	struct mStackFrame* stackFrame = mStackTraceGetFrame(stack, frame);
+	struct mStackFrame* prevFrame = mStackTraceGetFrame(stack, frame + 1);
+	size_t written = snprintf(out, *length, "#%d  ", frame);
+	CHECK_LENGTH();
+	if (prevFrame) {
+		written += snprintf(out + written, *length - written, "%08X ", prevFrame->entryAddress);
+		CHECK_LENGTH();
+	}
+	if (!stackFrame) {
+		written += snprintf(out + written, *length - written, "no stack frame available)\n");
+		*length = written;
+		return;
+	} else if (stack->formatRegisters) {
+		written += snprintf(out + written, *length - written, "(");
+		CHECK_LENGTH();
+		size_t formattedSize = *length - written;
+		stack->formatRegisters(stackFrame, out + written, &formattedSize);
+		written += formattedSize;
+		CHECK_LENGTH();
+		written += snprintf(out + written, *length - written, ")\n    ");
+		CHECK_LENGTH();
+	}
+	if (prevFrame) {
+		int32_t offset = stackFrame->callAddress - prevFrame->entryAddress;
+		written += snprintf(out + written, *length - written, "at %08X [%08X+%d]\n", stackFrame->callAddress, prevFrame->entryAddress, offset);
+	} else {
+		written += snprintf(out + written, *length - written, "at %08X\n", stackFrame->callAddress);
+	}
+	*length = written;
+}
+
 void mStackTracePop(struct mStackTrace* stack) {
 	size_t depth = mStackTraceGetDepth(stack);
-	if (depth == 0) {
+	if (depth < 1) {
 		return;
 	}
 	struct mStackFrame* frame = mStackFramesGetPointer(&stack->stack, depth - 1);
 	free(frame->regs);
-	mStackFramesResize(&stack->stack, depth - 1);
+	mStackFramesResize(&stack->stack, -1);
 }

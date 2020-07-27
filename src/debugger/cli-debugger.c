@@ -69,12 +69,17 @@ static void _dumpWord(struct CLIDebugger*, struct CLIDebugVector*);
 #ifdef ENABLE_SCRIPTING
 static void _source(struct CLIDebugger*, struct CLIDebugVector*);
 #endif
+static void _backtrace(struct CLIDebugger*, struct CLIDebugVector*);
+static void _finish(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setStackTraceMode(struct CLIDebugger*, struct CLIDebugVector*);
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
+	{ "backtrace", _backtrace, "i", "Print backtrace of all or specified frames" },
 	{ "break", _setBreakpoint, "Is", "Set a breakpoint" },
 	{ "continue", _continue, "", "Continue execution" },
 	{ "delete", _clearBreakpoint, "I", "Delete a breakpoint or watchpoint" },
 	{ "disassemble", _disassemble, "Ii", "Disassemble instructions" },
+	{ "finish", _finish, "", "Execute until current stack frame returns" },
 	{ "help", _printHelp, "S", "Print help" },
 	{ "listb", _listBreakpoints, "", "List breakpoints" },
 	{ "listw", _listWatchpoints, "", "List watchpoints" },
@@ -87,6 +92,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "r/1", _readByte, "I", "Read a byte from a specified offset" },
 	{ "r/2", _readHalfword, "I", "Read a halfword from a specified offset" },
 	{ "r/4", _readWord, "I", "Read a word from a specified offset" },
+	{ "stackmode", _setStackTraceMode, "S", "Changes the stack tracing mode" },
 	{ "status", _printStatus, "", "Print the current status" },
 	{ "trace", _trace, "Is", "Trace a number of instructions" },
 	{ "w/1", _writeByte, "II", "Write a byte at a specified offset" },
@@ -111,6 +117,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 
 static struct CLIDebuggerCommandAlias _debuggerCommandAliases[] = {
 	{ "b", "break" },
+	{ "bt", "backtrace" },
 	{ "c", "continue" },
 	{ "d", "delete" },
 	{ "dis", "disassemble" },
@@ -979,7 +986,7 @@ static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason r
 			if (info->pointId > 0) {
 				cliDebugger->backend->printf(cliDebugger->backend, "Hit breakpoint %" PRIz "i at 0x%08X\n", info->pointId, info->address);
 			} else {
-				cliDebugger->backend->printf(cliDebugger->backend, "Hit unknown breakpoint at 0x%08X\n", info->address);				
+				cliDebugger->backend->printf(cliDebugger->backend, "Hit unknown breakpoint at 0x%08X\n", info->address);
 			}
 		} else {
 			cliDebugger->backend->printf(cliDebugger->backend, "Hit breakpoint\n");
@@ -1130,4 +1137,40 @@ bool CLIDebuggerTabComplete(struct CLIDebugger* debugger, const char* token, boo
 	debugger->backend->lineAppend(debugger->backend, name);
 	debugger->backend->lineAppend(debugger->backend, " ");
 	return true;
+}
+
+static void _backtrace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	struct mDebuggerPlatform* platform = debugger->d.platform;
+	if (!platform->getStackTraceMode) {
+		debugger->backend->printf(debugger->backend, "Stack tracing is not supported by this platform.\n");
+		return;
+	} else if (platform->getStackTraceMode(platform) == STACK_TRACE_DISABLED) {
+		debugger->backend->printf(debugger->backend, "Stack tracing is not enabled.\n");
+		return;
+	}
+	struct mStackTrace* stack = &debugger->d.stackTrace;
+	size_t frames = mStackTraceGetDepth(stack);
+	if (dv && dv->type == CLIDV_INT_TYPE && dv->intValue < frames) {
+		frames = dv->intValue;
+	}
+	size_t i;
+	for (i = 0; i < frames; ++i) {
+		char trace[1024];
+		size_t traceSize = sizeof(trace) - 2;
+		mStackTraceFormatFrame(stack, i, trace, &traceSize);
+		debugger->backend->printf(debugger->backend, "%s", trace);
+	}
+}
+
+static void _finish(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+}
+
+static void _setStackTraceMode(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	printf("setStackTraceMode\n");
+	struct mDebuggerPlatform* platform = debugger->d.platform;
+	if (!platform->setStackTraceMode) {
+		debugger->backend->printf(debugger->backend, "Stack tracing is not supported by this platform.\n");
+		return;
+	}
+	platform->setStackTraceMode(platform, STACK_TRACE_ENABLED);
 }
