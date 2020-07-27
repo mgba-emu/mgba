@@ -74,37 +74,42 @@ struct SM83InterruptHandler {
 	void (*hitIllegal)(struct SM83Core* cpu);
 };
 
+#ifdef __BIG_ENDIAN__
+#define SM83_REGISTER_PAIR(HIGH, LOW) union { \
+		struct { \
+			uint8_t HIGH; \
+			uint8_t LOW; \
+		}; \
+		uint16_t HIGH ## LOW; \
+	}
+#else
+#define SM83_REGISTER_PAIR(HIGH, LOW) union { \
+		struct { \
+			uint8_t LOW; \
+			uint8_t HIGH; \
+		}; \
+		uint16_t HIGH ## LOW; \
+	}
+#endif
+
 struct SM83Core {
 #pragma pack(push, 1)
 	union {
 		struct {
+#ifdef __BIG_ENDIAN__
+			uint8_t a;
+			union FlagRegister f;
+#else
 			union FlagRegister f;
 			uint8_t a;
+#endif
 		};
 		uint16_t af;
 	};
 #pragma pack(pop)
-	union {
-		struct {
-			uint8_t c;
-			uint8_t b;
-		};
-		uint16_t bc;
-	};
-	union {
-		struct {
-			uint8_t e;
-			uint8_t d;
-		};
-		uint16_t de;
-	};
-	union {
-		struct {
-			uint8_t l;
-			uint8_t h;
-		};
-		uint16_t hl;
-	};
+	SM83_REGISTER_PAIR(b, c);
+	SM83_REGISTER_PAIR(d, e);
+	SM83_REGISTER_PAIR(h, l);
 	uint16_t sp;
 	uint16_t pc;
 
