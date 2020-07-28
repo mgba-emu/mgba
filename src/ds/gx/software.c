@@ -398,8 +398,10 @@ static void _stepEndpoint(struct DSGXSoftwareSpan* span) {
 	int32_t nextX = (span->ep[0].coord[0] & ~0xFFF) + 0x1000;
 	span->ep[0].coord[0] = nextX;
 
-	span->ep[0].wRecip += span->step.stepW;
-	span->ep[0].coord[3] = (0x7FFFFFFFFFFFFFFF / span->ep[0].wRecip) + 1;
+	if (span->step.stepW) {
+		span->ep[0].wRecip += span->step.stepW;
+		span->ep[0].coord[3] = (0x7FFFFFFFFFFFFFFF / span->ep[0].wRecip) + 1;
+	}
 
 	span->ep[0].stepZ += span->step.stepZ;
 	span->ep[0].coord[2] = _divideBy(span->ep[0].stepZ, span->ep[0].coord[3]);
