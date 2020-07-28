@@ -478,7 +478,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 		poly->texBase = &renderer->tex[DSGXTexParamsGetVRAMBase(poly->poly->texParams) >> VRAM_BLOCK_OFFSET][(DSGXTexParamsGetVRAMBase(poly->poly->texParams) << 2) & 0xFFFF];
 		switch (poly->texFormat) {
 		case 0:
-		poly->texBase = NULL;
+			poly->texBase = NULL;
 			break;
 		case 2:
 			if (renderer->texPal[poly->poly->palBase >> 11]) {
@@ -648,7 +648,7 @@ static void _drawSpan(struct DSGXSoftwareRenderer* softwareRenderer, struct DSGX
 		stencilValue |= S_BIT_SHADOW;
 	}
 	for (; x < (span->ep[1].coord[0] >> 12) && x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
-		if (span->ep[0].coord[softwareRenderer->sort] < depth[x]) {
+		if ((span->ep[0].coord[softwareRenderer->sort] >> 4) < depth[x]) {
 			_resolveEndpoint(span);
 			color_t color = _lookupColor(softwareRenderer, &span->ep[0], span->poly);
 			unsigned a = color >> 27;
@@ -661,7 +661,7 @@ static void _drawSpan(struct DSGXSoftwareRenderer* softwareRenderer, struct DSGX
 			}
 			if (a == 0x1F) {
 				// Opaque blending
-				depth[x] = span->ep[0].coord[softwareRenderer->sort];
+				depth[x] = span->ep[0].coord[softwareRenderer->sort] >> 4;
 				scanline[x] = color;
 				stencil[x] &= S_BIT_POLY_ID;
 				stencil[x] |= s & S_BIT_POLY_SHADOW_ID;
@@ -675,7 +675,7 @@ static void _drawSpan(struct DSGXSoftwareRenderer* softwareRenderer, struct DSGX
 				if ((stencil[x] ^ s) & S_BIT_POLY_ID) {
 					if (!(s & S_BIT_SHADOW) || (((stencil[x] ^ s) & S_BIT_POLY_SHADOW_ID) && s & S_BIT_POLY_SHADOW_ID && stencil[x] & S_BIT_SHADOW)) {
 						if (DSGXPolygonAttrsIsUpdateDepth(span->poly->poly->polyParams)) {
-							depth[x] = span->ep[0].coord[softwareRenderer->sort];
+							depth[x] = span->ep[0].coord[softwareRenderer->sort] >> 4;
 						}
 						scanline[x] = color;
 						stencil[x] &= S_BIT_POLY_SHADOW_ID;
