@@ -92,7 +92,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "r/1", _readByte, "I", "Read a byte from a specified offset" },
 	{ "r/2", _readHalfword, "I", "Read a halfword from a specified offset" },
 	{ "r/4", _readWord, "I", "Read a word from a specified offset" },
-	{ "stackmode", _setStackTraceMode, "S", "Changes the stack tracing mode" },
+	{ "stack", _setStackTraceMode, "S", "Changes the stack tracing mode" },
 	{ "status", _printStatus, "", "Print the current status" },
 	{ "trace", _trace, "Is", "Trace a number of instructions" },
 	{ "w/1", _writeByte, "II", "Write a byte at a specified offset" },
@@ -1172,13 +1172,12 @@ static void _backtrace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 	if (!CLIDebuggerCheckTraceMode(debugger, true)) {
 		return;
 	}
-	struct mDebuggerPlatform* platform = debugger->d.platform;
 	struct mStackTrace* stack = &debugger->d.stackTrace;
-	size_t frames = mStackTraceGetDepth(stack);
+	ssize_t frames = mStackTraceGetDepth(stack);
 	if (dv && dv->type == CLIDV_INT_TYPE && dv->intValue < frames) {
 		frames = dv->intValue;
 	}
-	size_t i;
+	ssize_t i;
 	for (i = 0; i < frames; ++i) {
 		char trace[1024];
 		size_t traceSize = sizeof(trace) - 2;
@@ -1206,7 +1205,30 @@ static void _setStackTraceMode(struct CLIDebugger* debugger, struct CLIDebugVect
 	if (!CLIDebuggerCheckTraceMode(debugger, false)) {
 		return;
 	}
+	if (!dv) {
+		debugger->backend->printf(debugger->backend, "off           disable stack tracing (default)\n");
+		debugger->backend->printf(debugger->backend, "trace-only    enable stack tracing\n");
+		debugger->backend->printf(debugger->backend, "break-call    break on function calls\n");
+		debugger->backend->printf(debugger->backend, "break-return  break on function returns\n");
+		debugger->backend->printf(debugger->backend, "break-all     break on function calls and returns\n");
+		return;
+	}
+	if (dv->type != CLIDV_CHAR_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+		return;
+	}
 	struct mDebuggerPlatform* platform = debugger->d.platform;
-	// TODO: get mode from vector
-	platform->setStackTraceMode(platform, STACK_TRACE_ENABLED);
+	if (strcmp(dv->charValue, "off") == 0) {
+		platform->setStackTraceMode(platform, STACK_TRACE_DISABLED);
+	} else if (strcmp(dv->charValue, "trace-only") == 0) {
+		platform->setStackTraceMode(platform, STACK_TRACE_ENABLED);
+	} else if (strcmp(dv->charValue, "break-call") == 0) {
+		platform->setStackTraceMode(platform, STACK_TRACE_BREAK_ON_CALL);
+	} else if (strcmp(dv->charValue, "break-return") == 0) {
+		platform->setStackTraceMode(platform, STACK_TRACE_BREAK_ON_RETURN);
+	} else if (strcmp(dv->charValue, "break-all") == 0) {
+		platform->setStackTraceMode(platform, STACK_TRACE_BREAK_ON_BOTH);
+	} else {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+	}
 }
