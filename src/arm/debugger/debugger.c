@@ -39,13 +39,6 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 			irqFrame->interrupt = true;
 			interrupt = true;
 		}
-		char buffer[2048];
-		size_t len = sizeof(buffer) - 2;
-		d->trace(d, buffer, &len);
-	}
-
-	if (info.memory.format & ARM_MEMORY_WRITEBACK && info.memory.baseReg == ARM_SP) {
-		// Stack manipulation: see if it twiddles lr
 	}
 
 	if (info.branchType == ARM_BRANCH_NONE && !interrupt) {
