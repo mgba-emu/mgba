@@ -82,6 +82,7 @@ Other fixes:
  - Qt: Add missing option for Wisdom Tree in overrides list
  - Util: Fix crash if PNG header fails to write
  - SM83: Simplify register pair access on big endian
+ - Wii: Fix pixelated filtering on interframe blending (fixes mgba.io/i/1830)
 Misc:
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG

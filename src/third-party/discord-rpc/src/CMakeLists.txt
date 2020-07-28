@@ -70,6 +70,7 @@ if(UNIX)
 
     add_library(discord-rpc STATIC ${BASE_RPC_SRC})
     target_link_libraries(discord-rpc PUBLIC pthread)
+    target_compile_options(discord-rpc PRIVATE -Wno-unknown-pragmas)
 
     if (${WARNINGS_AS_ERRORS})
       target_compile_options(discord-rpc PRIVATE -Werror)

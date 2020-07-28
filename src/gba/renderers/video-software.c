@@ -13,8 +13,8 @@
 #include <mgba-util/arm-algo.h>
 #include <mgba-util/memory.h>
 
-#define DIRTY_SCANLINE(R, Y) R->scanlineDirty[Y >> 5] |= (1 << (Y & 0x1F))
-#define CLEAN_SCANLINE(R, Y) R->scanlineDirty[Y >> 5] &= ~(1 << (Y & 0x1F))
+#define DIRTY_SCANLINE(R, Y) R->scanlineDirty[Y >> 5] |= (1U << (Y & 0x1F))
+#define CLEAN_SCANLINE(R, Y) R->scanlineDirty[Y >> 5] &= ~(1U << (Y & 0x1F))
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer);
@@ -536,7 +536,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		softwareRenderer->nextY = y + 1;
 	}
 
-	bool dirty = softwareRenderer->scanlineDirty[y >> 5] & (1 << (y & 0x1F));
+	bool dirty = softwareRenderer->scanlineDirty[y >> 5] & (1U << (y & 0x1F));
 	if (memcmp(softwareRenderer->nextIo, softwareRenderer->cache[y].io, sizeof(softwareRenderer->nextIo))) {
 		memcpy(softwareRenderer->cache[y].io, softwareRenderer->nextIo, sizeof(softwareRenderer->nextIo));
 		dirty = true;
