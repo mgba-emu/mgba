@@ -142,6 +142,18 @@ static void _handleDeath(int sig) {
 	printf("No debugger attached!\n");
 }
 
+static bool CLIDebuggerCheckTraceMode(struct CLIDebugger* debugger, bool requireEnabled) {
+	struct mDebuggerPlatform* platform = debugger->d.platform;
+	if (!platform->getStackTraceMode) {
+		debugger->backend->printf(debugger->backend, "Stack tracing is not supported by this platform.\n");
+		return false;
+	} else if (requireEnabled && platform->getStackTraceMode(platform) == STACK_TRACE_DISABLED) {
+		debugger->backend->printf(debugger->backend, "Stack tracing is not enabled.\n");
+		return false;
+	}
+	return true;
+}
+
 static void _breakInto(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(debugger);
 	UNUSED(dv);
@@ -166,8 +178,12 @@ static void _continue(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 }
 
 static void _next(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	struct mDebuggerPlatform* platform = debugger->d.platform;
 	UNUSED(dv);
 	debugger->d.core->step(debugger->d.core);
+	if (platform->getStackTraceMode && platform->getStackTraceMode(platform) != STACK_TRACE_DISABLED) {
+		platform->updateStackTrace(platform);
+	}
 	_printStatus(debugger, 0);
 }
 
@@ -334,6 +350,7 @@ static void _readByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 static void _reset(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
+	mStackTraceClear(&debugger->d.stackTrace);
 	debugger->d.core->reset(debugger->d.core);
 	_printStatus(debugger, 0);
 }
@@ -1010,6 +1027,18 @@ static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason r
 			cliDebugger->backend->printf(cliDebugger->backend, "Hit illegal opcode\n");
 		}
 		break;
+	case DEBUGGER_ENTER_STACK:
+		if (info) {
+			if (info->type.st.traceType == STACK_TRACE_BREAK_ON_CALL) {
+				cliDebugger->backend->printf(cliDebugger->backend, "Hit function call at at 0x%08X\n", info->address);
+			} else {
+				cliDebugger->backend->printf(cliDebugger->backend, "Hit function return at at 0x%08X\n", info->address);
+			}
+		} else {
+			cliDebugger->backend->printf(cliDebugger->backend, "Hit function call or return\n");
+		}
+		_backtrace(cliDebugger, NULL);
+		break;
 	}
 }
 
@@ -1140,14 +1169,10 @@ bool CLIDebuggerTabComplete(struct CLIDebugger* debugger, const char* token, boo
 }
 
 static void _backtrace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	struct mDebuggerPlatform* platform = debugger->d.platform;
-	if (!platform->getStackTraceMode) {
-		debugger->backend->printf(debugger->backend, "Stack tracing is not supported by this platform.\n");
-		return;
-	} else if (platform->getStackTraceMode(platform) == STACK_TRACE_DISABLED) {
-		debugger->backend->printf(debugger->backend, "Stack tracing is not enabled.\n");
+	if (!CLIDebuggerCheckTraceMode(debugger, true)) {
 		return;
 	}
+	struct mDebuggerPlatform* platform = debugger->d.platform;
 	struct mStackTrace* stack = &debugger->d.stackTrace;
 	size_t frames = mStackTraceGetDepth(stack);
 	if (dv && dv->type == CLIDV_INT_TYPE && dv->intValue < frames) {
@@ -1163,14 +1188,25 @@ static void _backtrace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 }
 
 static void _finish(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	UNUSED(dv);
+	if (!CLIDebuggerCheckTraceMode(debugger, true)) {
+		return;
+	}
+	struct mStackTrace* stack = &debugger->d.stackTrace;
+	struct mStackFrame* frame = mStackTraceGetFrame(stack, 0);
+	if (!frame) {
+		debugger->backend->printf(debugger->backend, "No current stack frame.\n");
+		return;
+	}
+	frame->breakWhenFinished = true;
+	_continue(debugger, dv);
 }
 
 static void _setStackTraceMode(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	printf("setStackTraceMode\n");
-	struct mDebuggerPlatform* platform = debugger->d.platform;
-	if (!platform->setStackTraceMode) {
-		debugger->backend->printf(debugger->backend, "Stack tracing is not supported by this platform.\n");
+	if (!CLIDebuggerCheckTraceMode(debugger, false)) {
 		return;
 	}
+	struct mDebuggerPlatform* platform = debugger->d.platform;
+	// TODO: get mode from vector
 	platform->setStackTraceMode(platform, STACK_TRACE_ENABLED);
 }

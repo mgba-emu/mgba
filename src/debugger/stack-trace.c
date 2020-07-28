@@ -46,6 +46,7 @@ struct mStackFrame* mStackTracePush(struct mStackTrace* stack, uint32_t pc, uint
 	frame->regs = malloc(stack->registersSize);
 	frame->finished = false;
 	frame->breakWhenFinished = false;
+	frame->interrupt = false;
 	memcpy(frame->regs, regs, stack->registersSize);
 	return frame;
 }
@@ -74,11 +75,10 @@ void mStackTraceFormatFrame(struct mStackTrace* stack, uint32_t frame, char* out
 	} else if (stack->formatRegisters) {
 		written += snprintf(out + written, *length - written, "(");
 		CHECK_LENGTH();
-		size_t formattedSize = *length - written;
-		stack->formatRegisters(stackFrame, out + written, &formattedSize);
-		written += formattedSize;
-		CHECK_LENGTH();
-		written += snprintf(out + written, *length - written, ")\n    ");
+		char buffer[1024];
+		size_t formattedSize = sizeof(buffer) - 2;
+		stack->formatRegisters(stackFrame, buffer, &formattedSize);
+		written += snprintf(out + written, *length - written, "%s)\n    ", buffer);
 		CHECK_LENGTH();
 	}
 	if (prevFrame) {
@@ -92,10 +92,9 @@ void mStackTraceFormatFrame(struct mStackTrace* stack, uint32_t frame, char* out
 
 void mStackTracePop(struct mStackTrace* stack) {
 	size_t depth = mStackTraceGetDepth(stack);
-	if (depth < 1) {
-		return;
+	if (depth > 0) {
+		struct mStackFrame* frame = mStackFramesGetPointer(&stack->stack, depth - 1);
+		free(frame->regs);
+		mStackFramesResize(&stack->stack, -1);
 	}
-	struct mStackFrame* frame = mStackFramesGetPointer(&stack->stack, depth - 1);
-	free(frame->regs);
-	mStackFramesResize(&stack->stack, -1);
 }

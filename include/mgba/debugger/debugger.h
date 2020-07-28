@@ -123,6 +123,7 @@ struct mDebuggerPlatform {
 
 	uint32_t (*getStackTraceMode)(struct mDebuggerPlatform*);
 	void (*setStackTraceMode)(struct mDebuggerPlatform*, uint32_t mode);
+	bool (*updateStackTrace)(struct mDebuggerPlatform* d);
 };
 
 struct mDebugger {

@@ -30,6 +30,7 @@ struct mStackFrame {
 	void* regs;
 	bool finished;
 	bool breakWhenFinished;
+	bool interrupt;
 };
 
 DECLARE_VECTOR(mStackFrames, struct mStackFrame);
