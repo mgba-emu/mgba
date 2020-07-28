@@ -12,6 +12,7 @@
 #include <mgba/internal/arm/debugger/memory-debugger.h>
 #include <mgba/internal/debugger/parser.h>
 #include <mgba/internal/debugger/stack-trace.h>
+#include <mgba-util/math.h>
 #include <stdint.h>
 
 DEFINE_VECTOR(ARMDebugBreakpointList, struct ARMDebugBreakpoint);
@@ -63,14 +64,8 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 		// need ANOTHER stack frame, so only skip if it's not.
 	} else if (info.operandFormat & ARM_OPERAND_MEMORY_1) {
 		// This is most likely ldmia ..., {..., pc}, which is a function return.
-		// To find which stack slot holds the return address, count number of set bits.
-		// (gcc/clang will convert the loop to intrinsics if available)
-		int regCount = 0;
-		uint32_t reglist = info.op1.immediate;
-		while (reglist != 0) {
-			reglist &= reglist - 1;
-			regCount++;
-		}
+		// To find which stack slot holds the return address, count the number of set bits.
+		int regCount = popcount32(info.op1.immediate);
 		uint32_t baseAddress = cpu->gprs[info.memory.baseReg] + ((regCount - 1) << 2);
 		destAddress = cpu->memory.load32(cpu, baseAddress, NULL);
 	} else if (info.operandFormat & ARM_OPERAND_IMMEDIATE_1) {
