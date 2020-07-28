@@ -182,7 +182,7 @@ void mVideoLoggerRendererWriteVideoRegister(struct mVideoLogger* logger, uint32_
 }
 
 void mVideoLoggerRendererWriteVRAM(struct mVideoLogger* logger, uint32_t address) {
-	int bit = 1 << (address >> 12);
+	int bit = 1U << (address >> 12);
 	if (logger->vramDirtyBitmap[address >> 17] & bit) {
 		return;
 	}
