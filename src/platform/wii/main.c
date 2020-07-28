@@ -877,9 +877,11 @@ void _unpaused(struct mGUIRunner* runner) {
 		case FM_LINEAR_2x:
 		default:
 			GX_InitTexObjFilterMode(&tex, GX_NEAR, GX_NEAR);
+			GX_InitTexObjFilterMode(&interframeTex, GX_NEAR, GX_NEAR);
 			break;
 		case FM_LINEAR_1x:
 			GX_InitTexObjFilterMode(&tex, GX_LINEAR, GX_LINEAR);
+			GX_InitTexObjFilterMode(&interframeTex, GX_LINEAR, GX_LINEAR);
 			break;
 		}
 	}
@@ -1071,9 +1073,11 @@ void _incrementScreenMode(struct mGUIRunner* runner) {
 	case FM_LINEAR_2x:
 	default:
 		GX_InitTexObjFilterMode(&tex, GX_NEAR, GX_NEAR);
+		GX_InitTexObjFilterMode(&interframeTex, GX_NEAR, GX_NEAR);
 		break;
 	case FM_LINEAR_1x:
 		GX_InitTexObjFilterMode(&tex, GX_LINEAR, GX_LINEAR);
+		GX_InitTexObjFilterMode(&interframeTex, GX_LINEAR, GX_LINEAR);
 		break;
 	}
 }
