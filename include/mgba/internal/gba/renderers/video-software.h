@@ -156,7 +156,7 @@ struct GBAVideoSoftwareRenderer {
 	int16_t objOffsetX;
 	int16_t objOffsetY;
 
-	uint32_t scanlineDirty[5];
+	uint32_t scanlineDirty[6];
 	uint16_t nextIo[REG_SOUND1CNT_LO >> 1];
 	struct ScanlineCache {
 		uint16_t io[REG_SOUND1CNT_LO >> 1];
