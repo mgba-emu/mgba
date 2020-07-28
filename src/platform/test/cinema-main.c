@@ -270,6 +270,10 @@ static void testToPath(const char* testName, char* path) {
 			++i;
 		}
 	}
+	if (i == PATH_MAX) {
+		--i;
+	}
+	path[i] = '\0';
 }
 
 static void _loadConfigTree(struct Table* configTree, const char* testName) {
