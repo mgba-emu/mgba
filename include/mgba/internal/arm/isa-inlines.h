@@ -99,15 +99,12 @@ static inline void _ARMReadCPSR(struct ARMCore* cpu) {
 	cpu->irqh.readCPSR(cpu);
 }
 
+static inline uint32_t _ARMInstructionLength(struct ARMCore* cpu) {
+	return cpu->cpsr.t == MODE_ARM ? WORD_SIZE_ARM : WORD_SIZE_THUMB;
+}
+
 static inline uint32_t _ARMPCAddress(struct ARMCore* cpu) {
-	int instructionLength;
-	enum ExecutionMode mode = cpu->cpsr.t;
-	if (mode == MODE_ARM) {
-		instructionLength = WORD_SIZE_ARM;
-	} else {
-		instructionLength = WORD_SIZE_THUMB;
-	}
-	return cpu->gprs[ARM_PC] - instructionLength * 2;
+	return cpu->gprs[ARM_PC] - _ARMInstructionLength(cpu) * 2;
 }
 
 #endif

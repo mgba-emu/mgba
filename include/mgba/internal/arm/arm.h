@@ -70,7 +70,7 @@ struct ARMCore;
 
 union PSR {
 	struct {
-#if defined(__BIG_ENDIAN__)
+#ifdef __BIG_ENDIAN__
 		unsigned n : 1;
 		unsigned z : 1;
 		unsigned c : 1;
@@ -96,7 +96,7 @@ union PSR {
 	};
 
 	struct {
-#if defined(__BIG_ENDIAN__)
+#ifdef __BIG_ENDIAN__
 		uint8_t flags;
 		uint8_t status;
 		uint8_t extension;
@@ -231,10 +231,21 @@ struct ARMCP15 {
 	} r9;
 };
 
+#define ARM_REGISTER_FILE struct { \
+	int32_t gprs[16]; \
+	union PSR cpsr; \
+	union PSR spsr; \
+}
+
+struct ARMRegisterFile {
+	ARM_REGISTER_FILE;
+};
+
 struct ARMCore {
-	int32_t gprs[16];
-	union PSR cpsr;
-	union PSR spsr;
+	union {
+		struct ARMRegisterFile regs;
+		ARM_REGISTER_FILE;
+	};
 
 	int32_t cycles;
 	int32_t nextEvent;
@@ -259,6 +270,7 @@ struct ARMCore {
 	size_t numComponents;
 	struct mCPUComponent** components;
 };
+#undef ARM_REGISTER_FILE
 
 void ARMInit(struct ARMCore* cpu);
 void ARMDeinit(struct ARMCore* cpu);

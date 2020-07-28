@@ -26,7 +26,6 @@
 	cpu->cpsr.v = ARM_V_SUBTRACTION(M, N, D);
 
 #define THUMB_SUBTRACTION_CARRY_S(M, N, D, C) \
-	cpu->cpsr.flags = 0; \
 	cpu->cpsr.n = ARM_SIGN(D); \
 	cpu->cpsr.z = !(D); \
 	cpu->cpsr.c = ARM_BORROW_FROM_CARRY(M, N, D, C); \

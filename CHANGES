@@ -32,6 +32,7 @@ Features:
  - e-Reader card scanning
  - Add WebP and APNG recording
  - Support for unlicensed Pokemon Jade/Diamond Game Boy mapper
+ - Stack tracing tools in ARM debugger (by ahigerd)
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
@@ -52,12 +53,14 @@ Emulation fixes:
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA Memory: Improve gamepak prefetch timing
  - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
+ - GBA Savedata: Fix potential corruption when loading a 1Mbit flash save
  - GBA SIO: Fix copying Normal mode transfer values
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
  - GBA Video: Fix invalid read in mode 4 mosaic
  - GBA Video: Fix color of disabled screen
  - SM83: Emulate HALT bug
+ - SM83: Fix flags on little endian PowerPC
 Other fixes:
  - All: Improve export headers (fixes mgba.io/i/1738)
  - All: Correct format strings for some numbers on Windows (fixes mgba.io/i/1794)
@@ -77,6 +80,7 @@ Other fixes:
  - Qt: Fix Italian RTC translation (fixes mgba.io/i/1798)
  - Qt: Add missing option for Wisdom Tree in overrides list
  - Util: Fix crash if PNG header fails to write
+ - SM83: Simplify register pair access on big endian
 Misc:
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
