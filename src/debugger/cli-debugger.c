@@ -142,18 +142,6 @@ static void _handleDeath(int sig) {
 	printf("No debugger attached!\n");
 }
 
-static bool CLIDebuggerCheckTraceMode(struct CLIDebugger* debugger, bool requireEnabled) {
-	struct mDebuggerPlatform* platform = debugger->d.platform;
-	if (!platform->getStackTraceMode) {
-		debugger->backend->printf(debugger->backend, "Stack tracing is not supported by this platform.\n");
-		return false;
-	} else if (requireEnabled && platform->getStackTraceMode(platform) == STACK_TRACE_DISABLED) {
-		debugger->backend->printf(debugger->backend, "Stack tracing is not enabled.\n");
-		return false;
-	}
-	return true;
-}
-
 static void _breakInto(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(debugger);
 	UNUSED(dv);
@@ -171,6 +159,18 @@ static void _breakInto(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 	sigaction(SIGTRAP, &osa, 0);
 }
 #endif
+
+static bool CLIDebuggerCheckTraceMode(struct CLIDebugger* debugger, bool requireEnabled) {
+	struct mDebuggerPlatform* platform = debugger->d.platform;
+	if (!platform->getStackTraceMode) {
+		debugger->backend->printf(debugger->backend, "Stack tracing is not supported by this platform.\n");
+		return false;
+	} else if (requireEnabled && platform->getStackTraceMode(platform) == STACK_TRACE_DISABLED) {
+		debugger->backend->printf(debugger->backend, "Stack tracing is not enabled.\n");
+		return false;
+	}
+	return true;
+}
 
 static void _continue(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
