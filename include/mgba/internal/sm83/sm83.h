@@ -74,7 +74,7 @@ struct SM83InterruptHandler {
 	void (*hitIllegal)(struct SM83Core* cpu);
 };
 
-#if defined(__BIG_ENDIAN__)
+#ifdef __BIG_ENDIAN__
 #define SM83_REGISTER_PAIR(HIGH, LOW) union { \
 		struct { \
 			uint8_t HIGH; \

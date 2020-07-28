@@ -70,7 +70,7 @@ struct ARMCore;
 
 union PSR {
 	struct {
-#if defined(__BIG_ENDIAN__)
+#ifdef __BIG_ENDIAN__
 		unsigned n : 1;
 		unsigned z : 1;
 		unsigned c : 1;
@@ -94,7 +94,7 @@ union PSR {
 	};
 
 	struct {
-#if defined(__BIG_ENDIAN__)
+#ifdef __BIG_ENDIAN__
 		uint8_t flags;
 		uint8_t status;
 		uint8_t extension;

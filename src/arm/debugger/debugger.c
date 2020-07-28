@@ -13,13 +13,8 @@
 #include <mgba/internal/debugger/parser.h>
 #include <mgba/internal/debugger/stack-trace.h>
 #include <mgba-util/math.h>
-#include <stdint.h>
 
 DEFINE_VECTOR(ARMDebugBreakpointList, struct ARMDebugBreakpoint);
-
-static inline uint32_t ARMDebuggerGetInstructionLength(struct ARMCore* cpu) {
-	return cpu->cpsr.t == MODE_ARM ? WORD_SIZE_ARM : WORD_SIZE_THUMB;
-}
 
 static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uint32_t pc) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
@@ -34,7 +29,7 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 		struct mStackFrame* irqFrame = mStackTraceGetFrame(stack, 0);
 		// TODO: uint32_t ivtBase = ARMControlRegIsVE(cpu->cp15.r1.c0) ? 0xFFFF0000 : 0x00000000;
 		uint32_t ivtBase = 0x00000000;
-		if (ivtBase <= pc && pc < ivtBase + 0x20 && !(irqFrame && _ARMModeHasSPSR(((struct ARMRegisterFile*)irqFrame->regs)->cpsr.priv))) {
+		if (ivtBase <= pc && pc < ivtBase + 0x20 && !(irqFrame && _ARMModeHasSPSR(((struct ARMRegisterFile*) irqFrame->regs)->cpsr.priv))) {
 			// TODO: Potential enhancement opportunity: add break-on-exception mode
 			irqFrame = mStackTracePush(stack, pc, pc, cpu->gprs[ARM_SP], &cpu->regs);
 			irqFrame->interrupt = true;
@@ -79,7 +74,8 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 		}
 		destAddress = cpu->gprs[info.op1.reg];
 	} else {
-		abort(); // Should be unreachable
+		mLOG(DEBUGGER, ERROR, "Unknown branch operand in stack trace");
+		return false;
 	}
 
 	if (info.branchType & ARM_BRANCH_INDIRECT) {
@@ -87,7 +83,7 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 	}
 
 	if (isCall) {
-		int instructionLength = ARMDebuggerGetInstructionLength(debugger->cpu);
+		int instructionLength = _ARMInstructionLength(debugger->cpu);
 		frame = mStackTracePush(stack, pc, destAddress + instructionLength, cpu->gprs[ARM_SP], &cpu->regs);
 		if (!(debugger->stackTraceMode & STACK_TRACE_BREAK_ON_CALL)) {
 			return false;
@@ -138,7 +134,7 @@ static void _destroyWatchpoint(struct mWatchpoint* watchpoint) {
 
 static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
-	int instructionLength = ARMDebuggerGetInstructionLength(debugger->cpu);
+	int instructionLength = _ARMInstructionLength(debugger->cpu);
 	uint32_t pc = debugger->cpu->gprs[ARM_PC] - instructionLength;
 	if (debugger->stackTraceMode != STACK_TRACE_DISABLED && ARMDebuggerUpdateStackTraceInternal(d, pc)) {
 		return;
@@ -241,7 +237,6 @@ void ARMDebuggerDeinit(struct mDebuggerPlatform* platform) {
 	}
 	ARMDebugBreakpointListDeinit(&debugger->swBreakpoints);
 	mWatchpointListDeinit(&debugger->watchpoints);
-
 	mStackTraceDeinit(&platform->p->stackTrace);
 }
 
@@ -432,7 +427,8 @@ static void ARMDebuggerTrace(struct mDebuggerPlatform* d, char* out, size_t* len
 
 	size_t regStringLen = *length;
 	ARMDebuggerFormatRegisters(&cpu->regs, out, &regStringLen);
-	*length = regStringLen + snprintf(out + regStringLen, *length - regStringLen, " | %s", disassembly);
+	regStringLen += snprintf(out + regStringLen, *length - regStringLen, " | %s", disassembly);
+	*length = regStringLen;
 }
 
 static void ARMDebuggerFormatRegisters(struct ARMRegisterFile* regs, char* out, size_t* length) {
@@ -445,7 +441,7 @@ static void ARMDebuggerFormatRegisters(struct ARMRegisterFile* regs, char* out, 
 }
 
 static void ARMDebuggerFrameFormatRegisters(struct mStackFrame* frame, char* out, size_t* length) {
-	ARMDebuggerFormatRegisters((struct ARMRegisterFile*)frame->regs, out, length);
+	ARMDebuggerFormatRegisters(frame->regs, out, length);
 }
 
 bool ARMDebuggerGetRegister(struct mDebuggerPlatform* d, const char* name, int32_t* value) {
@@ -540,7 +536,7 @@ static void ARMDebuggerSetStackTraceMode(struct mDebuggerPlatform* d, uint32_t m
 
 static bool ARMDebuggerUpdateStackTrace(struct mDebuggerPlatform* d) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
-	int instructionLength = ARMDebuggerGetInstructionLength(debugger->cpu);
+	int instructionLength = _ARMInstructionLength(debugger->cpu);
 	uint32_t pc = debugger->cpu->gprs[ARM_PC] - instructionLength;
 	if (debugger->stackTraceMode != STACK_TRACE_DISABLED) {
 		return ARMDebuggerUpdateStackTraceInternal(d, pc);

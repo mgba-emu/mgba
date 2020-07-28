@@ -178,8 +178,8 @@ static void _continue(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 }
 
 static void _next(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	struct mDebuggerPlatform* platform = debugger->d.platform;
 	UNUSED(dv);
+	struct mDebuggerPlatform* platform = debugger->d.platform;
 	debugger->d.core->step(debugger->d.core);
 	if (platform->getStackTraceMode && platform->getStackTraceMode(platform) != STACK_TRACE_DISABLED) {
 		platform->updateStackTrace(platform);
