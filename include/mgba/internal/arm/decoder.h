@@ -14,7 +14,7 @@ CXX_GUARD_START
 
 // Bit 0: a register is involved with this operand
 // Bit 1: an immediate is invovled with this operand
-// Bit 2: a memory access is invovled with this operand
+// Bit 2: a memory access is involved with this operand
 // Bit 3: the destination of this operand is affected by this opcode
 // Bit 4: this operand is shifted by a register
 // Bit 5: this operand is shifted by an immediate

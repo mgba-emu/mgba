@@ -3,7 +3,8 @@ set(SOURCE_FILES
 	cli-debugger.c
 	debugger.c
 	parser.c
-	symbols.c)
+	symbols.c
+	stack-trace.c)
 
 set(TEST_FILES
 	test/lexer.c

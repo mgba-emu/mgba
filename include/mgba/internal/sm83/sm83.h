@@ -82,6 +82,14 @@ struct SM83InterruptHandler {
 		}; \
 		uint16_t HIGH ## LOW; \
 	}
+
+#define SM83_AF_REGISTER union { \
+		struct { \
+			uint8_t a; \
+			union FlagRegister f; \
+		}; \
+		uint16_t af; \
+	}
 #else
 #define SM83_REGISTER_PAIR(HIGH, LOW) union { \
 		struct { \
@@ -90,28 +98,38 @@ struct SM83InterruptHandler {
 		}; \
 		uint16_t HIGH ## LOW; \
 	}
+
+#define SM83_AF_REGISTER union { \
+		struct { \
+			union FlagRegister f; \
+			uint8_t a; \
+		}; \
+		uint16_t af; \
+	}
 #endif
+
+#define SM83_REGISTER_FILE struct { \
+	SM83_AF_REGISTER; \
+	SM83_REGISTER_PAIR(b, c); \
+	SM83_REGISTER_PAIR(d, e); \
+	SM83_REGISTER_PAIR(h, l); \
+	uint16_t sp; \
+	uint16_t pc; \
+}
+
+struct SM83RegisterFile {
+#pragma pack(push, 1)
+	SM83_REGISTER_FILE;
+#pragma pack(pop)
+};
 
 struct SM83Core {
 #pragma pack(push, 1)
 	union {
-		struct {
-#ifdef __BIG_ENDIAN__
-			uint8_t a;
-			union FlagRegister f;
-#else
-			union FlagRegister f;
-			uint8_t a;
-#endif
-		};
-		uint16_t af;
+		struct SM83RegisterFile regs;
+		SM83_REGISTER_FILE;
 	};
 #pragma pack(pop)
-	SM83_REGISTER_PAIR(b, c);
-	SM83_REGISTER_PAIR(d, e);
-	SM83_REGISTER_PAIR(h, l);
-	uint16_t sp;
-	uint16_t pc;
 
 	uint16_t index;
 
@@ -134,6 +152,7 @@ struct SM83Core {
 	size_t numComponents;
 	struct mCPUComponent** components;
 };
+#undef SM83_REGISTER_FILE
 
 void SM83Init(struct SM83Core* cpu);
 void SM83Deinit(struct SM83Core* cpu);

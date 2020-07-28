@@ -3,6 +3,7 @@ Features:
  - e-Reader card scanning
  - Add WebP and APNG recording
  - Support for unlicensed Pokemon Jade/Diamond Game Boy mapper
+ - Stack tracing tools in ARM debugger (by ahigerd)
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
