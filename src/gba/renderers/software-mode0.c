@@ -357,21 +357,21 @@
 		if (UNLIKELY(!vram)) { \
 			carryData = 0; \
 		} else { \
-			LOAD_32(tileData, charBase, vram); \
+			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 			if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 				if (x >= 4) { \
-					LOAD_32(tileData, charBase + 4, vram); \
+					LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 					tileData >>= (x - 4) * 8; \
 				} else { \
-					LOAD_32(tileData, charBase, vram); \
+					LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 					tileData >>= x * 8; \
 				} \
 			} else { \
 				if (x >= 4) { \
-					LOAD_32(tileData, charBase, vram); \
+					LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 					tileData >>= (7 - x) * 8; \
 				} else { \
-					LOAD_32(tileData, charBase + 4, vram); \
+					LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 					tileData >>= (3 - x) * 8; \
 				} \
 			} \
@@ -592,21 +592,21 @@
 		if (UNLIKELY(!vram)) { \
 			carryData = 0; \
 		} else { \
-			LOAD_32(tileData, charBase, vram); \
+			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 			if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 				if (x >= 4) { \
-					LOAD_32(tileData, charBase + 4, vram); \
+					LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 					tileData >>= (x - 4) * 8; \
 				} else { \
-					LOAD_32(tileData, charBase, vram); \
+					LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 					tileData >>= x * 8; \
 				} \
 			} else { \
 				if (x >= 4) { \
-					LOAD_32(tileData, charBase, vram); \
+					LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 					tileData >>= (7 - x) * 8; \
 				} else { \
-					LOAD_32(tileData, charBase + 4, vram); \
+					LOAD_32(tileData, (charBase + 4) & VRAM_BLOCK_MASK, vram); \
 					tileData >>= (3 - x) * 8; \
 				} \
 			} \
