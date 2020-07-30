@@ -454,10 +454,10 @@ DEFINE_INSTRUCTION_THUMB(BLX2,
 
 DEFINE_INSTRUCTION_THUMB(SWI, cpu->irqh.swi16(cpu, opcode & 0xFF))
 
-const ThumbInstruction _thumbv4Table[0x400] = {
+const ThumbInstruction Thumbv4InstructionTable[0x400] = {
 	DECLARE_THUMB_EMITTER_BLOCK(_ThumbInstruction, 4)
 };
 
-const ThumbInstruction _thumbv5Table[0x400] = {
+const ThumbInstruction Thumbv5InstructionTable[0x400] = {
 	DECLARE_THUMB_EMITTER_BLOCK(_ThumbInstruction, 5)
 };

@@ -13,8 +13,8 @@ CXX_GUARD_START
 struct ARMCore;
 
 typedef void (*ThumbInstruction)(struct ARMCore*, uint16_t opcode);
-extern const ThumbInstruction _thumbv4Table[0x400];
-extern const ThumbInstruction _thumbv5Table[0x400];
+extern const ThumbInstruction Thumbv4InstructionTable[0x400];
+extern const ThumbInstruction Thumbv5InstructionTable[0x400];
 
 CXX_GUARD_END
 

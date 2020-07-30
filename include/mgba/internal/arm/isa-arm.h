@@ -15,10 +15,10 @@ CXX_GUARD_START
 struct ARMCore;
 
 typedef void (*ARMInstruction)(struct ARMCore*, uint32_t opcode);
-extern const ARMInstruction _armv4Table[0x1000];
-extern const ARMInstruction _armv5Table[0x1000];
-extern const ARMInstruction _armv4FTable[0x1000];
-extern const ARMInstruction _armv5FTable[0x1000];
+extern const ARMInstruction ARMv4InstructionTable[0x1000];
+extern const ARMInstruction ARMv5InstructionTable[0x1000];
+extern const ARMInstruction ARMv4FInstructionTable[0x1000];
+extern const ARMInstruction ARMv5FInstructionTable[0x1000];
 
 CXX_GUARD_END
 

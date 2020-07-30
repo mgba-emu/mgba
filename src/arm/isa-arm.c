@@ -917,18 +917,14 @@ DEFINE_INSTRUCTION_ARM(MSRRI,
 
 DEFINE_INSTRUCTION_ARM(SWI, cpu->irqh.swi32(cpu, opcode & 0xFFFFFF))
 
-const ARMInstruction _armv4Table[0x1000] = {
+const ARMInstruction ARMv4InstructionTable[0x1000] = {
 	DECLARE_ARM_EMITTER_BLOCK(_ARMInstruction, 4)
 };
 
-const ARMInstruction _armv5Table[0x1000] = {
+const ARMInstruction ARMv5InstructionTable[0x1000] = {
 	DECLARE_ARM_EMITTER_BLOCK(_ARMInstruction, 5)
 };
 
-const ARMInstruction _armv4FTable[0x1000] = {
-	DECLARE_ARM_F_EMITTER_BLOCK(_ARMInstruction, 4)
-};
-
-const ARMInstruction _armv5FTable[0x1000] = {
+const ARMInstruction ARMv5FInstructionTable[0x1000] = {
 	DECLARE_ARM_F_EMITTER_BLOCK(_ARMInstruction, 5)
 };
