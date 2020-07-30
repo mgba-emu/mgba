@@ -24,6 +24,7 @@ Bugfixes:
  - DS GX: Fix depth test scaling
  - DS GX: Fix overflow causing a division crash
 Misc:
+ - ARM: Add F-block instruction decoding
  - DS GX: Clean up and unify texture mapping
  - DS Core: Add symbol loading
  - DS Video: Simplify VRAM mapping

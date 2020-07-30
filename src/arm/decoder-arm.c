@@ -372,6 +372,12 @@ DEFINE_DECODER_ARM(BX, BX,
 	info->operandFormat = ARM_OPERAND_REGISTER_1;
 	info->branchType = ARM_BRANCH_INDIRECT;)
 
+DEFINE_DECODER_ARM(BLX, BLX,
+	int32_t offset = opcode << 8;
+	info->op1.immediate = offset >> 6;
+	info->operandFormat = ARM_OPERAND_IMMEDIATE_1;
+	info->branchType = ARM_BRANCH_LINKED;)
+
 DEFINE_DECODER_ARM(BLX2, BLX,
 	info->op1.reg = opcode & 0x0000000F;
 	info->operandFormat = ARM_OPERAND_REGISTER_1;
@@ -482,6 +488,10 @@ static const ARMDecoder _armDecoderTable[0x1000] = {
 	DECLARE_ARM_EMITTER_BLOCK(_ARMDecode, 5)
 };
 
+static const ARMDecoder _armDecoderFTable[0x1000] = {
+	DECLARE_ARM_F_EMITTER_BLOCK(_ARMDecode, 5)
+};
+
 void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info) {
 	memset(info, 0, sizeof(*info));
 	info->execMode = MODE_ARM;
@@ -489,6 +499,12 @@ void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info) {
 	info->branchType = ARM_BRANCH_NONE;
 	info->condition = opcode >> 28;
 	info->sInstructionCycles = 1;
-	ARMDecoder decoder = _armDecoderTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
+	ARMDecoder decoder;
+	if (info->condition == ARM_CONDITION_NV) {
+		decoder = _armDecoderFTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
+		info->condition = ARM_CONDITION_AL;
+	} else {
+		decoder = _armDecoderTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
+	}
 	decoder(opcode, info);
 }
