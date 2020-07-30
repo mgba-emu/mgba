@@ -500,7 +500,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 	struct DSGXVertex* v1;
 
 	int32_t v0w = v0->viewCoord[3];
-	if (!v0w) {
+	if (!v0w || v0w == INT32_MIN) {
 		v0w = 1;
 	}
 
@@ -518,7 +518,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 		v1 = &verts[poly->poly->vertIds[v]];
 
 		int32_t v1w = v1->viewCoord[3];
-		if (!v1w) {
+		if (!v1w || v1w == INT32_MIN) {
 			v1w = 1;
 		}
 		int32_t v1x = (v1->viewCoord[0] + v1w) * (int64_t) (v1->viewportWidth << 12) / (v1w * 2) + (v1->viewportX << 12);
@@ -577,7 +577,7 @@ static void _preparePoly(struct DSGXRenderer* renderer, struct DSGXVertex* verts
 	v1 = &verts[poly->poly->vertIds[0]];
 
 	int32_t v1w = v1->viewCoord[3];
-	if (!v1w) {
+	if (!v1w || v1w == INT32_MIN) {
 		v1w = 1;
 	}
 	int32_t v1x = (v1->viewCoord[0] + v1w) * (int64_t) (v1->viewportWidth << 12) / (v1w * 2) + (v1->viewportX << 12);
