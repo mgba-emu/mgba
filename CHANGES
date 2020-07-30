@@ -15,6 +15,7 @@ Emulation fixes:
 Other fixes:
  - All: Correct format strings for some numbers on Windows (fixes mgba.io/i/1794)
  - All: Correct more format strings on Windows (fixes mgba.io/i/1817)
+ - ARM: Fix decoder detection of branches with ALU and LDR instrctions
  - CMake: Fix build with libzip 1.7
  - CMake: Add missing dllexports.h file to dev installation
  - GB Core: Fix extracting SRAM when none is present
