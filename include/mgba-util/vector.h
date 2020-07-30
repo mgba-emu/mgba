@@ -47,6 +47,7 @@ CXX_GUARD_START
 		free(vector->vector); \
 		vector->vector = 0; \
 		vector->capacity = 0; \
+		vector->size = 0; \
 	} \
 	TYPE* NAME ## GetPointer(struct NAME* vector, size_t location) { \
 		return &vector->vector[location]; \
