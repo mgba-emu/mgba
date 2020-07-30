@@ -322,6 +322,7 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 		return true;
 	}
 
+	// Clip planes
 	struct DSGXVertex inList[10];
 	struct DSGXVertex outList[10];
 	int outOffscreenVerts[10] = { 0, 0, 0, 0 };
@@ -340,6 +341,7 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 				return false;
 			}
 			if (!(offscreenVerts[v] & (1 << plane))) {
+				// This vertex doesn't need clipping
 				outList[newV] = inList[v];
 				outOffscreenVerts[newV] = offscreenVerts[v];
 				++newV;
@@ -369,6 +371,10 @@ static bool _clipPolygon(struct DSGX* gx, struct DSGXPolygon* poly) {
 					iv = 0;
 				}
 				if (!(offscreenVerts[iv] & (1 << plane))) {
+					if (newV >= 10) {
+						mLOG(DS_GX, ERROR, "Polygon clipping invariant failed");
+						return false;
+					}
 					in2 = &inList[iv];
 					out = &outList[newV];
 					if (_lerpVertexP(in, in2, out, plane >> 1, -1 + (plane & 1) * 2)) {
