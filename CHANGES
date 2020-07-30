@@ -63,6 +63,7 @@ Misc:
  - Qt: Add transformation matrix info to sprite view
  - Qt: Add per-page scrolling to memory view (fixes mgba.io/i/1795)
  - Qt: Add setting to display ROM filename in title (closes mgba.io/i/1784)
+ - Util: Reset vector size on deinit
 
 0.8.2: (2020-06-14)
 Emulation fixes:
