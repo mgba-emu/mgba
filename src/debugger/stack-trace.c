@@ -65,7 +65,7 @@ void mStackTraceFormatFrame(struct mStackTrace* stack, uint32_t frame, char* out
 	size_t written = snprintf(out, *length, "#%d  ", frame);
 	CHECK_LENGTH();
 	if (prevFrame) {
-		written += snprintf(out + written, *length - written, "%08X ", prevFrame->entryAddress);
+		written += snprintf(out + written, *length - written, "0x%08X ", prevFrame->entryAddress);
 		CHECK_LENGTH();
 	}
 	if (!stackFrame) {
@@ -83,9 +83,13 @@ void mStackTraceFormatFrame(struct mStackTrace* stack, uint32_t frame, char* out
 	}
 	if (prevFrame) {
 		int32_t offset = stackFrame->callAddress - prevFrame->entryAddress;
-		written += snprintf(out + written, *length - written, "at %08X [%08X+%d]\n", stackFrame->callAddress, prevFrame->entryAddress, offset);
+		if (offset >= 0) {
+			written += snprintf(out + written, *length - written, "at 0x%08X [0x%08X+%d]\n", stackFrame->callAddress, prevFrame->entryAddress, offset);
+		} else {
+			written += snprintf(out + written, *length - written, "at 0x%08X\n", stackFrame->callAddress);
+		}
 	} else {
-		written += snprintf(out + written, *length - written, "at %08X\n", stackFrame->callAddress);
+		written += snprintf(out + written, *length - written, "at 0x%08X\n", stackFrame->callAddress);
 	}
 	*length = written;
 }
