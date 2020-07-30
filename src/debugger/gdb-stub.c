@@ -82,6 +82,7 @@ static void _gdbStubEntered(struct mDebugger* debugger, enum mDebuggerEntryReaso
 		snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGILL);
 		break;
 	case DEBUGGER_ENTER_ATTACHED:
+	case DEBUGGER_ENTER_STACK:
 		return;
 	}
 	_sendMessage(stub);
