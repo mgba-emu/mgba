@@ -161,7 +161,7 @@ bool mCoreRewindRestore(struct mCoreRewindContext* context, struct mCore* core) 
 #ifndef DISABLE_THREADING
 THREAD_ENTRY _rewindThread(void* context) {
 	struct mCoreRewindContext* rewindContext = context;
-	ThreadSetName("Rewind Diff Thread");
+	ThreadSetName("Rewind Diffing");
 	MutexLock(&rewindContext->mutex);
 	while (rewindContext->onThread) {
 		while (!rewindContext->ready && rewindContext->onThread) {
