@@ -25,6 +25,8 @@
 #include <QThread>
 #include <QTimer>
 
+#include <array>
+
 #include "VideoProxy.h"
 
 #include "platform/video-backend.h"
@@ -119,6 +121,7 @@ private:
 	void dequeue();
 	void dequeueAll();
 
+	std::array<std::array<uint32_t, 0x100000>, 3> m_buffers;
 	QList<uint32_t*> m_free;
 	QQueue<uint32_t*> m_queue;
 	uint32_t* m_buffer;

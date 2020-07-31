@@ -327,18 +327,12 @@ PainterGL::PainterGL(QWindow* surface, QOpenGLContext* parent, int forceVersion)
 	m_backend->lockAspectRatio = false;
 	m_backend->interframeBlending = false;
 
-	for (int i = 0; i < 3; ++i) {
-		m_free.append(new uint32_t[1024 * 2048]);
+	for (auto& buf : m_buffers) {
+		m_free.append(&buf.front());
 	}
 }
 
 PainterGL::~PainterGL() {
-	while (!m_queue.isEmpty()) {
-		delete[] m_queue.dequeue();
-	}
-	for (auto item : m_free) {
-		delete[] item;
-	}
 	m_gl->makeCurrent(m_surface);
 #if defined(_WIN32) && defined(USE_EPOXY)
 	epoxy_handle_external_wglMakeCurrent();
