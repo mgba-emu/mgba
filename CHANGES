@@ -16,6 +16,7 @@ Other fixes:
  - All: Correct format strings for some numbers on Windows (fixes mgba.io/i/1794)
  - All: Correct more format strings on Windows (fixes mgba.io/i/1817)
  - CMake: Fix build with libzip 1.7
+ - CMake: Add missing dllexports.h file to dev installation
  - GB Core: Fix extracting SRAM when none is present
  - GBA: Fix leak if attempting to load BIOS multiple times
  - GBA Savedata: Fix extracting save when not yet configured in-game
