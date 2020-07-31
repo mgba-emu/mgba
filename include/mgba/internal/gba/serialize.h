@@ -236,6 +236,7 @@ DECL_BITFIELD(GBASerializedMiscFlags, uint32_t);
 DECL_BIT(GBASerializedMiscFlags, Halted, 0);
 DECL_BIT(GBASerializedMiscFlags, POSTFLG, 1);
 DECL_BIT(GBASerializedMiscFlags, IrqPending, 2);
+DECL_BIT(GBASerializedMiscFlags, Blocked, 3);
 
 struct GBASerializedState {
 	uint32_t versionMagic;

@@ -235,6 +235,8 @@ DECL_BIT(GBSerializedCpuFlags, Condition, 0);
 DECL_BIT(GBSerializedCpuFlags, IrqPending, 1);
 DECL_BIT(GBSerializedCpuFlags, DoubleSpeed, 2);
 DECL_BIT(GBSerializedCpuFlags, EiPending, 3);
+DECL_BIT(GBSerializedCpuFlags, Halted, 4);
+DECL_BIT(GBSerializedCpuFlags, Blocked, 5);
 
 DECL_BITFIELD(GBSerializedTimerFlags, uint8_t);
 DECL_BIT(GBSerializedTimerFlags, IrqPending, 0);

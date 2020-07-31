@@ -681,7 +681,7 @@ void GBProcessEvents(struct SM83Core* cpu) {
 		nextEvent = cycles;
 		do {
 			nextEvent = mTimingTick(&gb->timing, nextEvent);
-		} while (gb->cpuBlocked);
+		} while (gb->cpuBlocked && !gb->earlyExit);
 		cpu->nextEvent = nextEvent;
 
 		if (cpu->halted) {
@@ -695,6 +695,9 @@ void GBProcessEvents(struct SM83Core* cpu) {
 		}
 	} while (cpu->cycles >= cpu->nextEvent);
 	gb->earlyExit = false;
+	if (gb->cpuBlocked) {
+		cpu->cycles = cpu->nextEvent;
+	}
 }
 
 void GBSetInterrupts(struct SM83Core* cpu, bool enable) {

@@ -67,6 +67,7 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 		miscFlags = GBASerializedMiscFlagsFillIrqPending(miscFlags);
 		STORE_32(gba->irqEvent.when - mTimingCurrentTime(&gba->timing), 0, &state->nextIrq);
 	}
+	miscFlags = GBASerializedMiscFlagsSetBlocked(miscFlags, gba->cpuBlocked);
 	STORE_32(miscFlags, 0, &state->miscFlags);
 
 	GBAMemorySerialize(&gba->memory, state);
@@ -185,6 +186,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		LOAD_32(when, 0, &state->nextIrq);
 		mTimingSchedule(&gba->timing, &gba->irqEvent, when);		
 	}
+	gba->cpuBlocked = GBASerializedMiscFlagsGetBlocked(miscFlags);
 
 	GBAVideoDeserialize(&gba->video, state);
 	GBAMemoryDeserialize(&gba->memory, state);

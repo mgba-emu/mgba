@@ -56,6 +56,8 @@ void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	flags = GBSerializedCpuFlagsSetIrqPending(flags, gb->cpu->irqPending);
 	flags = GBSerializedCpuFlagsSetDoubleSpeed(flags, gb->doubleSpeed);
 	flags = GBSerializedCpuFlagsSetEiPending(flags, mTimingIsScheduled(&gb->timing, &gb->eiPending));
+	flags = GBSerializedCpuFlagsSetHalted(flags, gb->cpu->halted);
+	flags = GBSerializedCpuFlagsSetBlocked(flags, gb->cpuBlocked);
 	STORE_32LE(flags, 0, &state->cpu.flags);
 	STORE_32LE(gb->eiPending.when - mTimingCurrentTime(&gb->timing), 0, &state->cpu.eiPending);
 
@@ -173,6 +175,9 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->cpu->condition = GBSerializedCpuFlagsGetCondition(flags);
 	gb->cpu->irqPending = GBSerializedCpuFlagsGetIrqPending(flags);
 	gb->doubleSpeed = GBSerializedCpuFlagsGetDoubleSpeed(flags);
+	gb->cpu->halted = GBSerializedCpuFlagsGetHalted(flags);
+	gb->cpuBlocked = GBSerializedCpuFlagsGetBlocked(flags);
+
 	gb->audio.timingFactor = gb->doubleSpeed + 1;
 
 	LOAD_32LE(gb->cpu->cycles, 0, &state->cpu.cycles);

@@ -196,6 +196,7 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 			video->frameskipCounter = video->frameskip;
 		}
 		++video->frameCounter;
+		video->p->earlyExit = true;
 		break;
 	case VIDEO_VERTICAL_TOTAL_PIXELS - 1:
 		video->p->memory.io[REG_DISPSTAT >> 1] = GBARegisterDISPSTATClearInVblank(dispstat);
