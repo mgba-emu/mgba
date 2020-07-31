@@ -6,6 +6,10 @@ set(SOURCE_FILES
 	symbols.c
 	stack-trace.c)
 
+if(ENABLE_SCRIPTING)
+	list(APPEND SOURCE_FILES cli-debugger-scripting.c)
+endif()
+
 set(TEST_FILES
 	test/lexer.c
 	test/parser.c)

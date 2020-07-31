@@ -137,6 +137,7 @@ static struct CLIDebuggerCommandAlias _debuggerCommandAliases[] = {
 	{ "p/x", "print/x" },
 	{ "q", "quit" },
 	{ "w", "watch" },
+	{ ".", "source" },
 	{ 0, 0 }
 };
 
@@ -944,7 +945,7 @@ static int _tryCommands(struct CLIDebugger* debugger, struct CLIDebuggerCommandS
 	return -1;
 }
 
-static bool _parse(struct CLIDebugger* debugger, const char* line, size_t count) {
+bool CLIDebuggerRunCommand(struct CLIDebugger* debugger, const char* line, size_t count) {
 	const char* firstSpace = strchr(line, ' ');
 	size_t cmdLength;
 	if (firstSpace) {
@@ -984,10 +985,10 @@ static void _commandLine(struct mDebugger* debugger) {
 		if (line[0] == '\n') {
 			line = cliDebugger->backend->historyLast(cliDebugger->backend, &len);
 			if (line && len) {
-				_parse(cliDebugger, line, len);
+				CLIDebuggerRunCommand(cliDebugger, line, len);
 			}
 		} else {
-			_parse(cliDebugger, line, len);
+			CLIDebuggerRunCommand(cliDebugger, line, len);
 			cliDebugger->backend->historyAppend(cliDebugger->backend, line);
 		}
 	}
