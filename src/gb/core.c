@@ -64,8 +64,10 @@ struct mVideoLogContext;
 struct GBCore {
 	struct mCore d;
 	struct GBVideoSoftwareRenderer renderer;
+#ifndef MINIMAL_CORE
 	struct GBVideoProxyRenderer proxyRenderer;
 	struct mVideoLogContext* logContext;
+#endif
 	struct mCoreCallbacks logCallbacks;
 	uint8_t keys;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
@@ -90,6 +92,9 @@ static bool _GBCoreInit(struct mCore* core) {
 	gbcore->overrides = NULL;
 	gbcore->debuggerPlatform = NULL;
 	gbcore->cheatDevice = NULL;
+#ifndef MINIMAL_CORE
+	gbcore->logContext = NULL;
+#endif
 
 	GBCreate(gb);
 	memset(gbcore->components, 0, sizeof(gbcore->components));
@@ -100,6 +105,10 @@ static bool _GBCoreInit(struct mCore* core) {
 
 	GBVideoSoftwareRendererCreate(&gbcore->renderer);
 	gbcore->renderer.outputBuffer = NULL;
+
+#ifndef MINIMAL_CORE
+	gbcore->proxyRenderer.logger = NULL;
+#endif
 
 	gbcore->keys = 0;
 	gb->keySource = &gbcore->keys;
