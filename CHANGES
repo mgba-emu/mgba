@@ -13,6 +13,7 @@ Emulation fixes:
  - GBA Video: Fix color of disabled screen
  - SM83: Fix flags on little endian PowerPC
 Other fixes:
+ - 3DS: Fix garbage on borders of scaled screens
  - All: Correct format strings for some numbers on Windows (fixes mgba.io/i/1794)
  - All: Correct more format strings on Windows (fixes mgba.io/i/1817)
  - ARM: Fix decoder detection of branches with ALU and LDR instrctions
