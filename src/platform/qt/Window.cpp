@@ -1182,14 +1182,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addSeparator("quickLoad");
 	m_actions.addSeparator("quickSave");
 
-	Action* undoLoadState = addGameAction(tr("Undo load state"), "undoLoadState", [this]() {
-		m_controller->loadBackupState();
-	}, "quickLoad", QKeySequence("F11"));
+	Action* undoLoadState = addGameAction(tr("Undo load state"), "undoLoadState", &CoreController::loadBackupState, "quickLoad", QKeySequence("F11"));
 	m_nonMpActions.append(undoLoadState);
 
-	Action* undoSaveState = addGameAction(tr("Undo save state"), "undoSaveState", [this]() {
-		m_controller->saveBackupState();
-	}, "quickSave", QKeySequence("Shift+F11"));
+	Action* undoSaveState = addGameAction(tr("Undo save state"), "undoSaveState", &CoreController::saveBackupState, "quickSave", QKeySequence("Shift+F11"));
 	m_nonMpActions.append(undoSaveState);
 
 	m_actions.addSeparator("quickLoad");
@@ -1235,17 +1231,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	m_actions.addMenu(tr("&Emulation"), "emu");
-	addGameAction(tr("&Reset"), "reset", [this]() {
-		m_controller->reset();
-	}, "emu", QKeySequence("Ctrl+R"));
-
-	addGameAction(tr("Sh&utdown"), "shutdown", [this]() {
-		m_controller->stop();
-	}, "emu");
-
-	addGameAction(tr("Yank game pak"), "yank", [this]() {
-		m_controller->yankPak();
-	}, "emu");
+	addGameAction(tr("&Reset"), "reset", &CoreController::reset, "emu", QKeySequence("Ctrl+R"));
+	addGameAction(tr("Sh&utdown"), "shutdown", &CoreController::stop, "emu");
+	addGameAction(tr("Yank game pak"), "yank", &CoreController::yankPak, "emu");
 
 	m_actions.addSeparator("emu");
 
@@ -1258,9 +1246,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, "emu", QKeySequence("Ctrl+P"));
 	connect(this, &Window::paused, pause, &Action::setActive);
 
-	addGameAction(tr("&Next frame"), "frameAdvance", [this]() {
-		m_controller->frameAdvance();
-	}, "emu", QKeySequence("Ctrl+N"));
+	addGameAction(tr("&Next frame"), "frameAdvance", &CoreController::frameAdvance, "emu", QKeySequence("Ctrl+N"));
 
 	m_actions.addSeparator("emu");
 
@@ -1781,9 +1767,14 @@ Action* Window::addGameAction(const QString& visibleName, const QString& name, A
 template<typename T, typename V>
 Action* Window::addGameAction(const QString& visibleName, const QString& name, T* obj, V (T::*method)(), const QString& menu, const QKeySequence& shortcut) {
 	return addGameAction(visibleName, name, [this, obj, method]() {
-		if (m_controller) {
-			(obj->*method)();
-		}
+		(obj->*method)();
+	}, menu, shortcut);
+}
+
+template<typename V>
+Action* Window::addGameAction(const QString& visibleName, const QString& name, V (CoreController::*method)(), const QString& menu, const QKeySequence& shortcut) {
+	return addGameAction(visibleName, name, [this, method]() {
+		(m_controller.get()->*method)();
 	}, menu, shortcut);
 }
 
