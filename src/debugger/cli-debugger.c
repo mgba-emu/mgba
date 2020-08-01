@@ -13,7 +13,7 @@
 #include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
-#if ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING
 #include <mgba/core/scripting.h>
 #endif
 

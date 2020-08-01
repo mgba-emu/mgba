@@ -96,7 +96,7 @@ void CLIDebuggerAttachBackend(struct CLIDebugger*, struct CLIDebuggerBackend*);
 bool CLIDebuggerTabComplete(struct CLIDebugger*, const char* token, bool initial, size_t len);
 
 bool CLIDebuggerRunCommand(struct CLIDebugger* debugger, const char* line, size_t count);
-#if ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING
 void CLIDebuggerScriptEngineInstall(struct mScriptBridge* sb);
 #endif
 
