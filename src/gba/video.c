@@ -53,23 +53,8 @@ MGBA_EXPORT const int GBAVideoObjSizes[16][2] = {
 	{ 0, 0 },
 };
 
-static struct GBAVideoRenderer dummyRenderer = {
-	.init = GBAVideoDummyRendererInit,
-	.reset = GBAVideoDummyRendererReset,
-	.deinit = GBAVideoDummyRendererDeinit,
-	.writeVideoRegister = GBAVideoDummyRendererWriteVideoRegister,
-	.writeVRAM = GBAVideoDummyRendererWriteVRAM,
-	.writePalette = GBAVideoDummyRendererWritePalette,
-	.writeOAM = GBAVideoDummyRendererWriteOAM,
-	.drawScanline = GBAVideoDummyRendererDrawScanline,
-	.finishFrame = GBAVideoDummyRendererFinishFrame,
-	.getPixels = GBAVideoDummyRendererGetPixels,
-	.putPixels = GBAVideoDummyRendererPutPixels,
-};
-
 void GBAVideoInit(struct GBAVideo* video) {
-	video->renderer = &dummyRenderer;
-	video->renderer->cache = NULL;
+	video->renderer = NULL;
 	video->vram = anonymousMemoryMap(SIZE_VRAM);
 	video->frameskip = 0;
 	video->event.name = "GBA Video";
@@ -94,12 +79,16 @@ void GBAVideoReset(struct GBAVideo* video) {
 
 	video->frameCounter = 0;
 	video->frameskipCounter = 0;
-	video->renderer->vram = video->vram;
 	video->shouldStall = 0;
 
 	memset(video->palette, 0, sizeof(video->palette));
 	memset(video->oam.raw, 0, sizeof(video->oam.raw));
 
+	if (!video->renderer) {
+		mLOG(GBA_VIDEO, FATAL, "No renderer associated");
+		return;
+	}
+	video->renderer->vram = video->vram;
 	video->renderer->reset(video->renderer);
 }
 
@@ -108,9 +97,30 @@ void GBAVideoDeinit(struct GBAVideo* video) {
 	mappedMemoryFree(video->vram, SIZE_VRAM);
 }
 
+void GBAVideoDummyRendererCreate(struct GBAVideoRenderer* renderer) {
+	static const struct GBAVideoRenderer dummyRenderer = {
+		.init = GBAVideoDummyRendererInit,
+		.reset = GBAVideoDummyRendererReset,
+		.deinit = GBAVideoDummyRendererDeinit,
+		.writeVideoRegister = GBAVideoDummyRendererWriteVideoRegister,
+		.writeVRAM = GBAVideoDummyRendererWriteVRAM,
+		.writePalette = GBAVideoDummyRendererWritePalette,
+		.writeOAM = GBAVideoDummyRendererWriteOAM,
+		.drawScanline = GBAVideoDummyRendererDrawScanline,
+		.finishFrame = GBAVideoDummyRendererFinishFrame,
+		.getPixels = GBAVideoDummyRendererGetPixels,
+		.putPixels = GBAVideoDummyRendererPutPixels,
+	};
+	memcpy(renderer, &dummyRenderer, sizeof(*renderer));
+}
+
 void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* renderer) {
-	video->renderer->deinit(video->renderer);
-	renderer->cache = video->renderer->cache;
+	if (video->renderer) {
+		video->renderer->deinit(video->renderer);
+		renderer->cache = video->renderer->cache;
+	} else {
+		renderer->cache = NULL;
+	}
 	video->renderer = renderer;
 	renderer->palette = video->palette;
 	renderer->vram = video->vram;

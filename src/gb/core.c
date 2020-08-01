@@ -64,6 +64,7 @@ struct mVideoLogContext;
 struct GBCore {
 	struct mCore d;
 	struct GBVideoSoftwareRenderer renderer;
+	struct GBVideoRenderer dummyRenderer;
 #ifndef MINIMAL_CORE
 	struct GBVideoProxyRenderer proxyRenderer;
 	struct mVideoLogContext* logContext;
@@ -419,6 +420,9 @@ static void _GBCoreReset(struct mCore* core) {
 	struct GB* gb = (struct GB*) core->board;
 	if (gbcore->renderer.outputBuffer) {
 		GBVideoAssociateRenderer(&gb->video, &gbcore->renderer.d);
+	} else {
+		GBVideoDummyRendererCreate(&gbcore->dummyRenderer);
+		GBVideoAssociateRenderer(&gb->video, &gbcore->dummyRenderer);
 	}
 
 	if (gb->memory.rom) {

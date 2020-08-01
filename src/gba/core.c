@@ -130,6 +130,7 @@ struct mVideoLogContext;
 struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
+	struct GBAVideoRenderer dummyRenderer;
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	struct GBAVideoGLRenderer glRenderer;
 #endif
@@ -382,9 +383,11 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 			renderer = &gbacore->proxyRenderer.d;
 		}
 #endif
-		if (renderer) {
-			GBAVideoAssociateRenderer(&gba->video, renderer);
+		if (!renderer) {
+			renderer = &gbacore->dummyRenderer;
+			GBAVideoDummyRendererCreate(renderer);
 		}
+		GBAVideoAssociateRenderer(&gba->video, renderer);
 	}
 }
 
@@ -542,42 +545,39 @@ static void _GBACoreChecksum(const struct mCore* core, void* data, enum mCoreChe
 static void _GBACoreReset(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = (struct GBA*) core->board;
-	if (gbacore->renderer.outputBuffer
+	struct GBAVideoRenderer* renderer = NULL;
+	if (gbacore->renderer.outputBuffer) {
+		renderer = &gbacore->renderer.d;
+	}
+	int fakeBool ATTRIBUTE_UNUSED;
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
-	    || gbacore->glRenderer.outputTex != (unsigned) -1
-#endif
-	) {
-		struct GBAVideoRenderer* renderer = NULL;
-		if (gbacore->renderer.outputBuffer) {
-			renderer = &gbacore->renderer.d;
-		}
-		int fakeBool ATTRIBUTE_UNUSED;
-#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
-		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
-			mCoreConfigGetIntValue(&core->config, "videoScale", &gbacore->glRenderer.scale);
-			renderer = &gbacore->glRenderer.d;
-		} else {
-			gbacore->glRenderer.scale = 1;
-		}
+	if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
+		mCoreConfigGetIntValue(&core->config, "videoScale", &gbacore->glRenderer.scale);
+		renderer = &gbacore->glRenderer.d;
+	} else {
+		gbacore->glRenderer.scale = 1;
+	}
 #endif
 #ifndef DISABLE_THREADING
-		if (mCoreConfigGetIntValue(&core->config, "threadedVideo", &fakeBool) && fakeBool) {
-			if (!core->videoLogger) {
-				core->videoLogger = &gbacore->threadProxy.d;
-			}
-		}
-#endif
-#ifndef MINIMAL_CORE
-		if (renderer && core->videoLogger) {
-			gbacore->proxyRenderer.logger = core->videoLogger;
-			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
-			renderer = &gbacore->proxyRenderer.d;
-		}
-#endif
-		if (renderer) {
-			GBAVideoAssociateRenderer(&gba->video, renderer);
+	if (mCoreConfigGetIntValue(&core->config, "threadedVideo", &fakeBool) && fakeBool) {
+		if (!core->videoLogger) {
+			core->videoLogger = &gbacore->threadProxy.d;
 		}
 	}
+#endif
+#ifndef MINIMAL_CORE
+	if (renderer && core->videoLogger) {
+		gbacore->proxyRenderer.logger = core->videoLogger;
+		GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
+		renderer = &gbacore->proxyRenderer.d;
+	}
+#endif
+	if (!renderer) {
+		renderer = &gbacore->dummyRenderer;
+		GBAVideoDummyRendererCreate(renderer);
+	}
+
+	GBAVideoAssociateRenderer(&gba->video, renderer);
 
 #ifndef MINIMAL_CORE
 	int useAudioMixer;
