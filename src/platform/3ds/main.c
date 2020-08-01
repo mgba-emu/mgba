@@ -859,6 +859,7 @@ int main() {
 		return 1;
 	}
 
+	C3D_TexSetWrap(&upscaleBufferTex, GPU_CLAMP_TO_EDGE, GPU_CLAMP_TO_EDGE);
 	C3D_TexSetFilter(&upscaleBufferTex, GPU_LINEAR, GPU_LINEAR);
 
 	int i;
