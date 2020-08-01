@@ -122,6 +122,15 @@ static bool _initGpu(void) {
 		return false;
 	}
 
+	C3D_FrameBegin(0);
+	C3D_FrameDrawOn(bottomScreen[0]);
+	C3D_RenderTargetClear(bottomScreen[0], C3D_CLEAR_COLOR, 0, 0);
+	C3D_FrameDrawOn(topScreen[0]);
+	C3D_RenderTargetClear(topScreen[0], C3D_CLEAR_COLOR, 0, 0);
+	C3D_RenderTargetSetOutput(topScreen[0], GFX_TOP, GFX_LEFT, GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
+	C3D_RenderTargetSetOutput(bottomScreen[0], GFX_BOTTOM, GFX_LEFT, GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
+	C3D_FrameEnd(0);
+
 	if (!C3D_TexInitVRAM(&upscaleBufferTex, 512, 512, GPU_RGB8)) {
 		return false;
 	}
@@ -129,6 +138,11 @@ static bool _initGpu(void) {
 	if (!upscaleBuffer) {
 		return false;
 	}
+
+	C3D_FrameBegin(0);
+	C3D_FrameDrawOn(upscaleBuffer);
+	C3D_RenderTargetClear(upscaleBuffer, C3D_CLEAR_COLOR, 0, 0);
+	C3D_FrameEnd(0);
 
 	return ctrInitGpu();
 }
