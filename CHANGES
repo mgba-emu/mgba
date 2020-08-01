@@ -56,6 +56,7 @@ Other fixes:
  - SM83: Simplify register pair access on big endian
  - Wii: Fix pixelated filtering on interframe blending (fixes mgba.io/i/1830)
 Misc:
+ - 3DS: Use "wide mode" where applicable for slightly better filtering
  - GB: Allow pausing event loop while CPU is blocked
  - GBA: Allow pausing event loop while CPU is blocked
  - Debugger: Keep track of global cycle count
