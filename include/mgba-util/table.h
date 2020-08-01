@@ -35,12 +35,19 @@ void HashTableInit(struct Table* table, size_t initialSize, void (deinitializer(
 void HashTableDeinit(struct Table* table);
 
 void* HashTableLookup(const struct Table*, const char* key);
+void* HashTableLookupBinary(const struct Table*, const void* key, size_t keylen);
 void HashTableInsert(struct Table*, const char* key, void* value);
+void HashTableInsertBinary(struct Table*, const void* key, size_t keylen, void* value);
 
 void HashTableRemove(struct Table*, const char* key);
+void HashTableRemoveBinary(struct Table*, const void* key, size_t keylen);
 void HashTableClear(struct Table*);
 
 void HashTableEnumerate(const struct Table*, void (handler(const char* key, void* value, void* user)), void* user);
+const char* HashTableSearch(const struct Table* table, bool (predicate(const char* key, const void* value, const void* user)), const void* user);
+const char* HashTableSearchPointer(const struct Table* table, const void* value);
+const char* HashTableSearchData(const struct Table* table, const void* value, size_t bytes);
+const char* HashTableSearchString(const struct Table* table, const char* value);
 size_t HashTableSize(const struct Table*);
 
 CXX_GUARD_END
