@@ -15,11 +15,7 @@
 typedef ThreadFunc ThreadEntry;
 
 typedef LightLock Mutex;
-typedef struct {
-	Mutex mutex;
-	Handle semaphore;
-	u32 waiting;
-} Condition;
+typedef CondVar Condition;
 
 static inline int MutexInit(Mutex* mutex) {
 	LightLock_Init(mutex);
@@ -46,47 +42,26 @@ static inline int MutexUnlock(Mutex* mutex) {
 }
 
 static inline int ConditionInit(Condition* cond) {
-	Result res = MutexInit(&cond->mutex);
-	if (res) {
-		return res;
-	}
-	res = svcCreateSemaphore(&cond->semaphore, 0, 1);
-	cond->waiting = 0;
-	return res;
+	CondVar_Init(cond);
+	return 0;
 }
 
 static inline int ConditionDeinit(Condition* cond) {
-	return svcCloseHandle(cond->semaphore);
+	UNUSED(cond);
+	return 0;
 }
 
 static inline int ConditionWait(Condition* cond, Mutex* mutex) {
-	MutexLock(&cond->mutex);
-	++cond->waiting;
-	MutexUnlock(mutex);
-	MutexUnlock(&cond->mutex);
-	svcWaitSynchronization(cond->semaphore, U64_MAX);
-	MutexLock(mutex);
+	CondVar_Wait(cond, mutex);
 	return 0;
 }
 
 static inline int ConditionWaitTimed(Condition* cond, Mutex* mutex, int32_t timeoutMs) {
-	MutexLock(&cond->mutex);
-	++cond->waiting;
-	MutexUnlock(mutex);
-	MutexUnlock(&cond->mutex);
-	svcWaitSynchronization(cond->semaphore, timeoutMs * 10000000LL);
-	MutexLock(mutex);
-	return 0;
+	return CondVar_WaitTimeout(cond, mutex, timeoutMs * 10000000LL);
 }
 
 static inline int ConditionWake(Condition* cond) {
-	MutexLock(&cond->mutex);
-	if (cond->waiting) {
-		--cond->waiting;
-		s32 count = 0;
-		svcReleaseSemaphore(&count, cond->semaphore, 1);
-	}
-	MutexUnlock(&cond->mutex);
+	CondVar_Signal(cond);
 	return 0;
 }
 
