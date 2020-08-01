@@ -7,6 +7,7 @@
 
 #include <mgba-util/string.h>
 #include <mgba-util/table.h>
+#include <mgba-util/hash.h>
 #include <mgba-util/vfs.h>
 
 struct mDebuggerSymbol {
@@ -16,16 +17,19 @@ struct mDebuggerSymbol {
 
 struct mDebuggerSymbols {
 	struct Table names;
+	struct Table reverse;
 };
 
 struct mDebuggerSymbols* mDebuggerSymbolTableCreate(void) {
 	struct mDebuggerSymbols* st = malloc(sizeof(*st));
 	HashTableInit(&st->names, 0, free);
+	HashTableInit(&st->reverse, 0, free);
 	return st;
 }
 
 void mDebuggerSymbolTableDestroy(struct mDebuggerSymbols* st) {
 	HashTableDeinit(&st->names);
+	HashTableDeinit(&st->reverse);
 	free(st);
 }
 
@@ -39,15 +43,25 @@ bool mDebuggerSymbolLookup(const struct mDebuggerSymbols* st, const char* name, 
 	return true;
 }
 
+const char* mDebuggerSymbolReverseLookup(const struct mDebuggerSymbols* st, int32_t value, int segment) {
+	struct mDebuggerSymbol sym = { value, segment };
+	return HashTableLookupBinary(&st->reverse, &sym, sizeof(sym));
+}
+
 void mDebuggerSymbolAdd(struct mDebuggerSymbols* st, const char* name, int32_t value, int segment) {
 	struct mDebuggerSymbol* sym = malloc(sizeof(*sym));
 	sym->value = value;
 	sym->segment = segment;
 	HashTableInsert(&st->names, name, sym);
+	HashTableInsertBinary(&st->reverse, sym, sizeof(*sym), strdup(name));
 }
 
 void mDebuggerSymbolRemove(struct mDebuggerSymbols* st, const char* name) {
-	HashTableRemove(&st->names, name);
+	struct mDebuggerSymbol* sym = HashTableLookup(&st->names, name);
+	if (sym) {
+		HashTableRemoveBinary(&st->reverse, sym, sizeof(*sym));
+		HashTableRemove(&st->names, name);
+	}
 }
 
 void mDebuggerLoadARMIPSSymbols(struct mDebuggerSymbols* st, struct VFile* vf) {
