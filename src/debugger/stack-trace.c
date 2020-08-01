@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/debugger/stack-trace.h>
+#include <mgba/internal/debugger/symbols.h>
 
 #include <mgba/core/core.h>
 
@@ -40,14 +41,25 @@ size_t mStackTraceGetDepth(struct mStackTrace* stack) {
 
 struct mStackFrame* mStackTracePush(struct mStackTrace* stack, uint32_t pc, uint32_t destAddress, uint32_t sp, void* regs) {
 	struct mStackFrame* frame = mStackFramesAppend(&stack->stack);
+	frame->callSegment = -1;
 	frame->callAddress = pc;
+	frame->entrySegment = -1;
 	frame->entryAddress = destAddress;
+	frame->frameBaseSegment = -1;
 	frame->frameBaseAddress = sp;
 	frame->regs = malloc(stack->registersSize);
 	frame->finished = false;
 	frame->breakWhenFinished = false;
 	frame->interrupt = false;
 	memcpy(frame->regs, regs, stack->registersSize);
+	return frame;
+}
+
+struct mStackFrame* mStackTracePushSegmented(struct mStackTrace* stack, int pcSegment, uint32_t pc, int destSegment, uint32_t destAddress, int spSegment, uint32_t sp, void* regs) {
+	struct mStackFrame* frame = mStackTracePush(stack, pc, destAddress, sp, regs);
+	frame->callSegment = pcSegment;
+	frame->entrySegment = destSegment;
+	frame->frameBaseSegment = spSegment;
 	return frame;
 }
 
@@ -59,20 +71,26 @@ struct mStackFrame* mStackTraceGetFrame(struct mStackTrace* stack, uint32_t fram
 	return mStackFramesGetPointer(&stack->stack, depth - frame - 1);
 }
 
-void mStackTraceFormatFrame(struct mStackTrace* stack, uint32_t frame, char* out, size_t* length) {
+void mStackTraceFormatFrame(struct mStackTrace* stack, struct mDebuggerSymbols* st, uint32_t frame, char* out, size_t* length) {
 	struct mStackFrame* stackFrame = mStackTraceGetFrame(stack, frame);
 	struct mStackFrame* prevFrame = mStackTraceGetFrame(stack, frame + 1);
 	size_t written = snprintf(out, *length, "#%d  ", frame);
 	CHECK_LENGTH();
-	if (prevFrame) {
-		written += snprintf(out + written, *length - written, "0x%08X ", prevFrame->entryAddress);
-		CHECK_LENGTH();
-	}
 	if (!stackFrame) {
-		written += snprintf(out + written, *length - written, "no stack frame available)\n");
+		written += snprintf(out + written, *length - written, "(no stack frame available)\n");
 		*length = written;
 		return;
-	} else if (stack->formatRegisters) {
+	}
+	const char* functionName = mDebuggerSymbolReverseLookup(st, stackFrame->entryAddress, stackFrame->entrySegment);
+	if (functionName) {
+		written += snprintf(out + written, *length - written, "%s ", functionName);
+	} else if (prevFrame->entrySegment >= 0) {
+		written += snprintf(out + written, *length - written, "0x%02X:%08X ", stackFrame->entrySegment, stackFrame->entryAddress);
+	} else {
+		written += snprintf(out + written, *length - written, "0x%08X ", stackFrame->entryAddress);
+	}
+	CHECK_LENGTH();
+	if (stack->formatRegisters) {
 		written += snprintf(out + written, *length - written, "(");
 		CHECK_LENGTH();
 		char buffer[1024];
@@ -81,16 +99,27 @@ void mStackTraceFormatFrame(struct mStackTrace* stack, uint32_t frame, char* out
 		written += snprintf(out + written, *length - written, "%s)\n    ", buffer);
 		CHECK_LENGTH();
 	}
+	if (stackFrame->callSegment >= 0) {
+		written += snprintf(out + written, *length - written, "at 0x%02X:%08X", stackFrame->callSegment, stackFrame->callAddress);
+	} else {
+		written += snprintf(out + written, *length - written, "at 0x%08X", stackFrame->callAddress);
+	}
+	CHECK_LENGTH();
 	if (prevFrame) {
 		int32_t offset = stackFrame->callAddress - prevFrame->entryAddress;
 		if (offset >= 0) {
-			written += snprintf(out + written, *length - written, "at 0x%08X [0x%08X+%d]\n", stackFrame->callAddress, prevFrame->entryAddress, offset);
-		} else {
-			written += snprintf(out + written, *length - written, "at 0x%08X\n", stackFrame->callAddress);
+			functionName = mDebuggerSymbolReverseLookup(st, prevFrame->entryAddress, prevFrame->entrySegment);
+			if (functionName) {
+				written += snprintf(out + written, *length - written, " [%s+%d]", functionName, offset);
+			} else if (stackFrame->entrySegment >= 0) {
+				written += snprintf(out + written, *length - written, " [0x%02X:%08X+%d]", prevFrame->entrySegment, prevFrame->entryAddress, offset);
+			} else {
+				written += snprintf(out + written, *length - written, " [0x%08X+%d]", prevFrame->entryAddress, offset);
+			}
 		}
-	} else {
-		written += snprintf(out + written, *length - written, "at 0x%08X\n", stackFrame->callAddress);
 	}
+	CHECK_LENGTH();
+	written += snprintf(out + written, *length - written, "\n");
 	*length = written;
 }
 
