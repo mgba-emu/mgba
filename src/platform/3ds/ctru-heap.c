@@ -15,7 +15,7 @@ size_t romBufferSize;
 
 FS_Archive sdmcArchive;
 
-__attribute__((constructor)) static void init(void) {
+void userAppInit(void) {
 	FSUSER_OpenArchive(&sdmcArchive, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
 
 	romBuffer = malloc(0x02000000);
