@@ -63,8 +63,8 @@ static const struct mCoreMemoryBlock _GBCMemoryBlocks[] = {
 struct mVideoLogContext;
 struct GBCore {
 	struct mCore d;
-	struct GBVideoSoftwareRenderer renderer;
 	struct GBVideoRenderer dummyRenderer;
+	struct GBVideoSoftwareRenderer renderer;
 #ifndef MINIMAL_CORE
 	struct GBVideoProxyRenderer proxyRenderer;
 	struct mVideoLogContext* logContext;
@@ -103,6 +103,9 @@ static bool _GBCoreInit(struct mCore* core) {
 	SM83Init(cpu);
 	mRTCGenericSourceInit(&core->rtc, core);
 	gb->memory.rtc = &core->rtc.d;
+
+	GBVideoDummyRendererCreate(&gbcore->dummyRenderer);
+	GBVideoAssociateRenderer(&gb->video, &gbcore->dummyRenderer);
 
 	GBVideoSoftwareRendererCreate(&gbcore->renderer);
 	gbcore->renderer.outputBuffer = NULL;
@@ -420,9 +423,6 @@ static void _GBCoreReset(struct mCore* core) {
 	struct GB* gb = (struct GB*) core->board;
 	if (gbcore->renderer.outputBuffer) {
 		GBVideoAssociateRenderer(&gb->video, &gbcore->renderer.d);
-	} else {
-		GBVideoDummyRendererCreate(&gbcore->dummyRenderer);
-		GBVideoAssociateRenderer(&gb->video, &gbcore->dummyRenderer);
 	}
 
 	if (gb->memory.rom) {
