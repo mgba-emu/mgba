@@ -27,6 +27,7 @@ Other fixes:
  - Qt: Add missing option for Wisdom Tree in overrides list
  - Qt: Fix stability regression on AMD drivers (fixes mgba.io/i/1791)
  - Util: Fix crash if PNG header fails to write
+ - Vita: Fix flickering when using frameskip (fixes mgba.io/i/1822)
  - Wii: Fix pixelated filtering on interframe blending (fixes mgba.io/i/1830)
 Misc:
  - FFmpeg: Use range coder for FFV1 to reduce output size
