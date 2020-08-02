@@ -27,7 +27,6 @@ QVariant ShortcutModel::data(const QModelIndex& index, int role) const {
 	if (role != Qt::DisplayRole || !index.isValid()) {
 		return QVariant();
 	}
-	int row = index.row();
 	const Item* item = static_cast<Item*>(index.internalPointer());
 	const Shortcut* shortcut = item->shortcut;
 	switch (index.column()) {
@@ -101,7 +100,7 @@ QModelIndex ShortcutModel::parent(const QModelIndex& index) const {
 	return createIndex(m_controller->indexIn(parent), 0, pitem);
 }
 
-int ShortcutModel::columnCount(const QModelIndex& index) const {
+int ShortcutModel::columnCount(const QModelIndex&) const {
 	return 3;
 }
 
@@ -131,7 +130,7 @@ void ShortcutModel::addRowNamed(const QString& name) {
 	endInsertRows();
 }
 
-void ShortcutModel::clearMenu(const QString& name) {
+void ShortcutModel::clearMenu(const QString&) {
 	// TODO
 	beginResetModel();
 	endResetModel();

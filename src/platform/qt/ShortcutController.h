@@ -30,7 +30,7 @@ public:
 
 	Action* action() { return m_action; }
 	const Action* action() const { return m_action; }
-	const int shortcut() const { return m_shortcut; }
+	int shortcut() const { return m_shortcut; }
 	QString visibleName() const { return m_action ? m_action->visibleName() : QString(); }
 	QString name() const { return m_action ? m_action->name() : QString(); }
 	int button() const { return m_button; }

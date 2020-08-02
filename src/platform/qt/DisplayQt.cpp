@@ -96,6 +96,7 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 	if (isFiltered()) {
 		painter.setRenderHint(QPainter::SmoothPixmapTransform);
 	}
+	// TODO: Refactor this code out (since it's copied in like 3 places)
 	QSize s = size();
 	QSize ds = s;
 	if (isAspectRatioLocked()) {

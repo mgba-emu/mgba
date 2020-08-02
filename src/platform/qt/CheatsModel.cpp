@@ -42,11 +42,10 @@ QVariant CheatsModel::data(const QModelIndex& index, int role) const {
 		}
 	}
 
-	if (index.row() >= mCheatSetsSize(&m_device->cheats)) {
+	if ((size_t) index.row() >= mCheatSetsSize(&m_device->cheats)) {
 		return QVariant();
 	}
 
-	int row = index.row();
 	const mCheatSet* cheats = *mCheatSetsGetPointer(&m_device->cheats, index.row());
 	switch (role) {
 	case Qt::DisplayRole:
@@ -60,11 +59,10 @@ QVariant CheatsModel::data(const QModelIndex& index, int role) const {
 }
 
 bool CheatsModel::setData(const QModelIndex& index, const QVariant& value, int role) {
-	if (!index.isValid() || index.parent().isValid() || index.row() > mCheatSetsSize(&m_device->cheats)) {
+	if (!index.isValid() || index.parent().isValid() || (size_t) index.row() > mCheatSetsSize(&m_device->cheats)) {
 		return false;
 	}
 
-	int row = index.row();
 	mCheatSet* cheats = *mCheatSetsGetPointer(&m_device->cheats, index.row());
 	switch (role) {
 	case Qt::DisplayRole:
@@ -119,7 +117,7 @@ Qt::ItemFlags CheatsModel::flags(const QModelIndex& index) const {
 	return Qt::ItemIsUserCheckable | Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
-int CheatsModel::columnCount(const QModelIndex& parent) const {
+int CheatsModel::columnCount(const QModelIndex&) const {
 	return 1;
 }
 
@@ -141,14 +139,14 @@ mCheatSet* CheatsModel::itemAt(const QModelIndex& index) {
 	if (index.parent().isValid()) {
 		return static_cast<mCheatSet*>(index.internalPointer());
 	}
-	if (index.row() >= mCheatSetsSize(&m_device->cheats)) {
+	if ((size_t) index.row() >= mCheatSetsSize(&m_device->cheats)) {
 		return nullptr;
 	}
 	return *mCheatSetsGetPointer(&m_device->cheats, index.row());
 }
 
 void CheatsModel::removeAt(const QModelIndex& index) {
-	if (!index.isValid() || index.parent().isValid() || index.row() >= mCheatSetsSize(&m_device->cheats)) {
+	if (!index.isValid() || index.parent().isValid() || (size_t) index.row() >= mCheatSetsSize(&m_device->cheats)) {
 		return;
 	}
 	int row = index.row();
