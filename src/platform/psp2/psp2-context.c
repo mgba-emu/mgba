@@ -584,15 +584,13 @@ void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded, bo
 }
 
 void mPSP2Swap(struct mGUIRunner* runner) {
-	bool frameAvailable;
+	bool frameAvailable = true;
 	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
 		struct GBA* gba = runner->core->board;
 		frameAvailable = gba->video.frameskipCounter <= 0;
 	} else if (runner->core->platform(runner->core) == PLATFORM_GB) {
 		struct GB* gb = runner->core->board;
 		frameAvailable = gb->video.frameskipCounter <= 0;
-	} else {
-		frameAvailable = false;
 	}
 	if (frameAvailable) {
 		currentTex = !currentTex;
