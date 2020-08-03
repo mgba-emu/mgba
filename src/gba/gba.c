@@ -130,7 +130,9 @@ void GBAUnloadROM(struct GBA* gba) {
 		if (gba->yankedRomSize) {
 			gba->yankedRomSize = 0;
 		}
+#if !defined(FIXED_ROM_BUFFER) && !defined(__wii__)
 		mappedMemoryFree(gba->memory.rom, SIZE_CART0);
+#endif
 	}
 
 	if (gba->romVf) {
