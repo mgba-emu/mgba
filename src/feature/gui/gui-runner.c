@@ -287,6 +287,9 @@ static void _log(struct mLogger* logger, int category, enum mLogLevel level, con
 			guiLogger->vf = NULL;
 		}
 	}
+#ifdef GEKKO
+	puts(log2);
+#endif
 }
 
 static void _updateLoading(size_t read, size_t size, void* context) {
