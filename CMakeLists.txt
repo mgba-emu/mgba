@@ -261,10 +261,6 @@ if(DEFINED 3DS OR DEFINED PSP2 OR DEFINED WII OR DEFINED SWITCH)
 	set(USE_LIBZIP OFF CACHE BOOL "")
 endif()
 
-if(DEFINED 3DS)
-	add_definitions(-DFIXED_ROM_BUFFER)
-endif()
-
 if(DEFINED SWITCH)
 	set(BUILD_GLES3 ON CACHE BOOL "Build with OpenGL|ES 3" FORCE)
 endif()
@@ -280,10 +276,6 @@ endif()
 
 if(WII)
 	add_definitions(-U__STRICT_ANSI__)
-endif()
-
-if(3DS OR WII)
-	add_definitions(-D_GNU_SOURCE)
 endif()
 
 include(CheckCCompilerFlag)
