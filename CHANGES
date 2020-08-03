@@ -7,7 +7,6 @@ Emulation fixes:
  - GB MBC: Fix MBC1 RAM enable bit selection
  - GB MBC: Fix MBC2 bit selection
  - GB Video: Always initialize palette
- - GBA BIOS: Fix reloading video registers after reset (fixes mgba.io/i/1808)
  - GBA Savedata: Fix potential corruption when loading a 1Mbit flash save
  - GBA Video: Fix invalid read in mode 4 mosaic
  - GBA Video: Fix color of disabled screen
@@ -21,6 +20,7 @@ Other fixes:
  - CMake: Add missing dllexports.h file to dev installation
  - GB Core: Fix extracting SRAM when none is present
  - GBA: Fix leak if attempting to load BIOS multiple times
+ - GBA Memory: Fix instability on Wii when using AGBPrint
  - GBA Savedata: Fix extracting save when not yet configured in-game
  - Qt: Fix file handle leak on opening an invalid ROM
  - Qt: Fix Italian RTC translation (fixes mgba.io/i/1798)
