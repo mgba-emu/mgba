@@ -27,6 +27,7 @@ Emulation fixes:
  - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
  - GBA Savedata: Fix potential corruption when loading a 1Mbit flash save
  - GBA SIO: Fix copying Normal mode transfer values
+ - GBA SIO: Fix Normal mode being totally broken (fixes mgba.io/i/1800)
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
  - GBA Video: Fix invalid read in mode 4 mosaic
