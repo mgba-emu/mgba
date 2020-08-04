@@ -84,7 +84,7 @@ void mStackTraceFormatFrame(struct mStackTrace* stack, struct mDebuggerSymbols* 
 	const char* functionName = mDebuggerSymbolReverseLookup(st, stackFrame->entryAddress, stackFrame->entrySegment);
 	if (functionName) {
 		written += snprintf(out + written, *length - written, "%s ", functionName);
-	} else if (prevFrame->entrySegment >= 0) {
+	} else if (stackFrame->entrySegment >= 0) {
 		written += snprintf(out + written, *length - written, "0x%02X:%08X ", stackFrame->entrySegment, stackFrame->entryAddress);
 	} else {
 		written += snprintf(out + written, *length - written, "0x%08X ", stackFrame->entryAddress);
@@ -111,7 +111,7 @@ void mStackTraceFormatFrame(struct mStackTrace* stack, struct mDebuggerSymbols* 
 			functionName = mDebuggerSymbolReverseLookup(st, prevFrame->entryAddress, prevFrame->entrySegment);
 			if (functionName) {
 				written += snprintf(out + written, *length - written, " [%s+%d]", functionName, offset);
-			} else if (stackFrame->entrySegment >= 0) {
+			} else if (prevFrame->entrySegment >= 0) {
 				written += snprintf(out + written, *length - written, " [0x%02X:%08X+%d]", prevFrame->entrySegment, prevFrame->entryAddress, offset);
 			} else {
 				written += snprintf(out + written, *length - written, " [0x%08X+%d]", prevFrame->entryAddress, offset);
