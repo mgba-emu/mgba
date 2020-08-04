@@ -8,16 +8,9 @@ Features:
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
- - ARM: Fix LDM^ writeback to user-mode register
- - ARM: Fix LDM^ {pc} differences (fixes mgba.io/i/1698)
- - ARM: Fix edge case with Thumb SBC flags (fixes mgba.io/i/1818)
  - GB: Partially fix timing for skipped BIOS
- - GB Memory: Fix OAM DMA from top 8 kB
  - GB MBC: Fix MBC1 mode changing behavior
- - GB MBC: Fix MBC1 RAM enable bit selection
- - GB MBC: Fix MBC2 bit selection
  - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
- - GB Video: Always initialize palette
  - GBA: Fix timing advancing too quickly in rare cases
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing
@@ -25,53 +18,67 @@ Emulation fixes:
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA Memory: Improve gamepak prefetch timing
  - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
- - GBA Savedata: Fix potential corruption when loading a 1Mbit flash save
  - GBA SIO: Fix copying Normal mode transfer values
  - GBA SIO: Fix Normal mode being totally broken (fixes mgba.io/i/1800)
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
- - GBA Video: Fix invalid read in mode 4 mosaic
- - GBA Video: Fix color of disabled screen
  - SM83: Emulate HALT bug
- - SM83: Fix flags on little endian PowerPC
 Other fixes:
- - 3DS: Fix garbage on borders of scaled screens
  - All: Improve export headers (fixes mgba.io/i/1738)
- - All: Correct format strings for some numbers on Windows (fixes mgba.io/i/1794)
- - All: Correct more format strings on Windows (fixes mgba.io/i/1817)
- - ARM: Fix decoder detection of branches with ALU and LDR instrctions
- - CMake: Fix build with libzip 1.7
  - Core: Ensure ELF regions can be written before trying
  - Debugger: Don't skip undefined instructions when debugger attached
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
- - GB Core: Fix extracting SRAM when none is present
- - GBA: Fix leak if attempting to load BIOS multiple times
- - GBA Memory: Fix instability on Wii when using AGBPrint
- - GBA Savedata: Fix extracting save when not yet configured in-game
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
- - Qt: Fix file handle leak on opening an invalid ROM
  - Qt: Fix a race condition in the frame inspector
- - Qt: Fix Italian RTC translation (fixes mgba.io/i/1798)
- - Qt: Add missing option for Wisdom Tree in overrides list
- - Util: Fix crash if PNG header fails to write
  - SM83: Simplify register pair access on big endian
- - Vita: Fix flickering when using frameskip (fixes mgba.io/i/1822)
- - Wii: Fix pixelated filtering on interframe blending (fixes mgba.io/i/1830)
 Misc:
  - 3DS: Use "wide mode" where applicable for slightly better filtering
  - GB: Allow pausing event loop while CPU is blocked
  - GBA: Allow pausing event loop while CPU is blocked
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
- - FFmpeg: Use range coder for FFV1 to reduce output size
  - Qt: Renderer can be changed while a game is running
  - Qt: Add hex index to palette view
  - Qt: Add transformation matrix info to sprite view
+ - Util: Reset vector size on deinit
+
+0.8.3: (2020-08-03)
+Emulation fixes:
+ - ARM: Fix LDM^ writeback to user-mode register
+ - ARM: Fix LDM^ {pc} differences (fixes mgba.io/i/1698)
+ - ARM: Fix edge case with Thumb SBC flags (fixes mgba.io/i/1818)
+ - GB MBC: Fix MBC1 RAM enable bit selection
+ - GB MBC: Fix MBC2 bit selection
+ - GB Memory: Fix OAM DMA from top 8 kB
+ - GB Video: Always initialize palette
+ - GBA Savedata: Fix potential corruption when loading a 1Mbit flash save
+ - GBA Video: Fix invalid read in mode 4 mosaic
+ - GBA Video: Fix color of disabled screen
+ - SM83: Fix flags on little endian PowerPC
+Other fixes:
+ - 3DS: Fix garbage on borders of scaled screens
+ - All: Correct format strings for some numbers on Windows (fixes mgba.io/i/1794)
+ - All: Correct more format strings on Windows (fixes mgba.io/i/1817)
+ - ARM: Fix decoder detection of branches with ALU and LDR instrctions
+ - CMake: Fix build with libzip 1.7
+ - CMake: Add missing dllexports.h file to dev installation
+ - GB Core: Fix extracting SRAM when none is present
+ - GBA: Fix leak if attempting to load BIOS multiple times
+ - GBA Memory: Fix instability on Wii when using AGBPrint
+ - GBA Savedata: Fix extracting save when not yet configured in-game
+ - Qt: Fix file handle leak on opening an invalid ROM
+ - Qt: Fix Italian RTC translation (fixes mgba.io/i/1798)
+ - Qt: Add missing option for Wisdom Tree in overrides list
+ - Qt: Fix stability regression on AMD drivers (fixes mgba.io/i/1791)
+ - Util: Fix crash if PNG header fails to write
+ - Vita: Fix flickering when using frameskip (fixes mgba.io/i/1822)
+ - Wii: Fix pixelated filtering on interframe blending (fixes mgba.io/i/1830)
+Misc:
+ - FFmpeg: Use range coder for FFV1 to reduce output size
  - Qt: Add per-page scrolling to memory view (fixes mgba.io/i/1795)
  - Qt: Add setting to display ROM filename in title (closes mgba.io/i/1784)
- - Util: Reset vector size on deinit
 
 0.8.2: (2020-06-14)
 Emulation fixes:
