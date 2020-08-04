@@ -1,11 +1,11 @@
-0.8.3: (Future)
+0.8.3: (2020-08-03)
 Emulation fixes:
  - ARM: Fix LDM^ writeback to user-mode register
  - ARM: Fix LDM^ {pc} differences (fixes mgba.io/i/1698)
  - ARM: Fix edge case with Thumb SBC flags (fixes mgba.io/i/1818)
- - GB Memory: Fix OAM DMA from top 8 kB
  - GB MBC: Fix MBC1 RAM enable bit selection
  - GB MBC: Fix MBC2 bit selection
+ - GB Memory: Fix OAM DMA from top 8 kB
  - GB Video: Always initialize palette
  - GBA Savedata: Fix potential corruption when loading a 1Mbit flash save
  - GBA Video: Fix invalid read in mode 4 mosaic
