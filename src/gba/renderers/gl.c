@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gba/renderers/gl.h>
 
-#ifdef BUILD_GLES3
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 
 #include <mgba/core/cache-set.h>
 #include <mgba/internal/arm/macros.h>
