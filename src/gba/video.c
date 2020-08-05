@@ -55,23 +55,8 @@ MGBA_EXPORT const int GBAVideoObjSizes[16][2] = {
 	{ 0, 0 },
 };
 
-static struct GBAVideoRenderer dummyRenderer = {
-	.init = GBAVideoDummyRendererInit,
-	.reset = GBAVideoDummyRendererReset,
-	.deinit = GBAVideoDummyRendererDeinit,
-	.writeVideoRegister = GBAVideoDummyRendererWriteVideoRegister,
-	.writeVRAM = GBAVideoDummyRendererWriteVRAM,
-	.writePalette = GBAVideoDummyRendererWritePalette,
-	.writeOAM = GBAVideoDummyRendererWriteOAM,
-	.drawScanline = GBAVideoDummyRendererDrawScanline,
-	.finishFrame = GBAVideoDummyRendererFinishFrame,
-	.getPixels = GBAVideoDummyRendererGetPixels,
-	.putPixels = GBAVideoDummyRendererPutPixels,
-};
-
 void GBAVideoInit(struct GBAVideo* video) {
-	video->renderer = &dummyRenderer;
-	video->renderer->cache = NULL;
+	video->renderer = NULL;
 	video->vram = anonymousMemoryMap(SIZE_VRAM);
 	video->frameskip = 0;
 	video->event.name = "GBA Video";
@@ -97,6 +82,16 @@ void GBAVideoReset(struct GBAVideo* video) {
 	video->frameCounter = 0;
 	video->frameskipCounter = 0;
 
+	video->shouldStall = 0;
+
+	memset(video->palette, 0, sizeof(video->palette));
+	memset(video->oam.raw, 0, sizeof(video->oam.raw));
+
+	if (!video->renderer) {
+		mLOG(GBA_VIDEO, FATAL, "No renderer associated");
+		return;
+	}
+
 	memset(video->renderer->vramBG, 0, sizeof(video->renderer->vramBG));
 	video->renderer->vramBG[0] = &video->vram[0x0000];
 	video->renderer->vramBG[1] = &video->vram[0x2000];
@@ -107,10 +102,6 @@ void GBAVideoReset(struct GBAVideo* video) {
 	video->renderer->vramOBJ[1] = &video->vram[0xA000];
 	video->renderer->vramOBJ[2] = _zeroes;
 	video->renderer->vramOBJ[3] = _zeroes;
-	video->shouldStall = 0;
-
-	memset(video->palette, 0, sizeof(video->palette));
-	memset(video->oam.raw, 0, sizeof(video->oam.raw));
 
 	video->renderer->reset(video->renderer);
 }
@@ -120,9 +111,30 @@ void GBAVideoDeinit(struct GBAVideo* video) {
 	mappedMemoryFree(video->vram, SIZE_VRAM);
 }
 
+void GBAVideoDummyRendererCreate(struct GBAVideoRenderer* renderer) {
+	static const struct GBAVideoRenderer dummyRenderer = {
+		.init = GBAVideoDummyRendererInit,
+		.reset = GBAVideoDummyRendererReset,
+		.deinit = GBAVideoDummyRendererDeinit,
+		.writeVideoRegister = GBAVideoDummyRendererWriteVideoRegister,
+		.writeVRAM = GBAVideoDummyRendererWriteVRAM,
+		.writePalette = GBAVideoDummyRendererWritePalette,
+		.writeOAM = GBAVideoDummyRendererWriteOAM,
+		.drawScanline = GBAVideoDummyRendererDrawScanline,
+		.finishFrame = GBAVideoDummyRendererFinishFrame,
+		.getPixels = GBAVideoDummyRendererGetPixels,
+		.putPixels = GBAVideoDummyRendererPutPixels,
+	};
+	memcpy(renderer, &dummyRenderer, sizeof(*renderer));
+}
+
 void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* renderer) {
-	video->renderer->deinit(video->renderer);
-	renderer->cache = video->renderer->cache;
+	if (video->renderer) {
+		video->renderer->deinit(video->renderer);
+		renderer->cache = video->renderer->cache;
+	} else {
+		renderer->cache = NULL;
+	}
 	video->renderer = renderer;
 	renderer->palette = video->palette;
 	memset(renderer->vramBG, 0, sizeof(renderer->vramBG));
@@ -159,8 +171,10 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	}
 	video->p->memory.io[REG_VCOUNT >> 1] = video->vcount;
 
-	if (video->vcount < GBA_VIDEO_VERTICAL_PIXELS && video->frameskipCounter <= 0) {
-		video->renderer->drawScanline(video->renderer, video->vcount);
+	if (video->vcount < GBA_VIDEO_VERTICAL_PIXELS) {
+		if (video->frameskipCounter <= 0) {
+			video->renderer->drawScanline(video->renderer, video->vcount);
+		}
 		video->shouldStall = 1;
 	}
 

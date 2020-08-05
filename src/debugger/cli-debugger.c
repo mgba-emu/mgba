@@ -13,7 +13,7 @@
 #include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
-#if ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING
 #include <mgba/core/scripting.h>
 #endif
 
@@ -72,6 +72,8 @@ static void _source(struct CLIDebugger*, struct CLIDebugVector*);
 static void _backtrace(struct CLIDebugger*, struct CLIDebugVector*);
 static void _finish(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setStackTraceMode(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setSymbol(struct CLIDebugger*, struct CLIDebugVector*);
+static void _findSymbol(struct CLIDebugger*, struct CLIDebugVector*);
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "backtrace", _backtrace, "i", "Print backtrace of all or specified frames" },
@@ -92,8 +94,10 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "r/1", _readByte, "I", "Read a byte from a specified offset" },
 	{ "r/2", _readHalfword, "I", "Read a halfword from a specified offset" },
 	{ "r/4", _readWord, "I", "Read a word from a specified offset" },
-	{ "stack", _setStackTraceMode, "S", "Changes the stack tracing mode" },
+	{ "set", _setSymbol, "SI", "Assign a symbol to an address" },
+	{ "stack", _setStackTraceMode, "S", "Change the stack tracing mode" },
 	{ "status", _printStatus, "", "Print the current status" },
+	{ "symbol", _findSymbol, "I", "Find the symbol name for an address" },
 	{ "trace", _trace, "Is", "Trace a number of instructions" },
 	{ "w/1", _writeByte, "II", "Write a byte at a specified offset" },
 	{ "w/2", _writeHalfword, "II", "Write a halfword at a specified offset" },
@@ -133,6 +137,7 @@ static struct CLIDebuggerCommandAlias _debuggerCommandAliases[] = {
 	{ "p/x", "print/x" },
 	{ "q", "quit" },
 	{ "w", "watch" },
+	{ ".", "source" },
 	{ 0, 0 }
 };
 
@@ -940,7 +945,7 @@ static int _tryCommands(struct CLIDebugger* debugger, struct CLIDebuggerCommandS
 	return -1;
 }
 
-static bool _parse(struct CLIDebugger* debugger, const char* line, size_t count) {
+bool CLIDebuggerRunCommand(struct CLIDebugger* debugger, const char* line, size_t count) {
 	const char* firstSpace = strchr(line, ' ');
 	size_t cmdLength;
 	if (firstSpace) {
@@ -980,10 +985,10 @@ static void _commandLine(struct mDebugger* debugger) {
 		if (line[0] == '\n') {
 			line = cliDebugger->backend->historyLast(cliDebugger->backend, &len);
 			if (line && len) {
-				_parse(cliDebugger, line, len);
+				CLIDebuggerRunCommand(cliDebugger, line, len);
 			}
 		} else {
-			_parse(cliDebugger, line, len);
+			CLIDebuggerRunCommand(cliDebugger, line, len);
 			cliDebugger->backend->historyAppend(cliDebugger->backend, line);
 		}
 	}
@@ -1178,10 +1183,11 @@ static void _backtrace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 		frames = dv->intValue;
 	}
 	ssize_t i;
+	struct mDebuggerSymbols* symbolTable = debugger->d.core->symbolTable;
 	for (i = 0; i < frames; ++i) {
 		char trace[1024];
 		size_t traceSize = sizeof(trace) - 2;
-		mStackTraceFormatFrame(stack, i, trace, &traceSize);
+		mStackTraceFormatFrame(stack, symbolTable, i, trace, &traceSize);
 		debugger->backend->printf(debugger->backend, "%s", trace);
 	}
 }
@@ -1230,5 +1236,48 @@ static void _setStackTraceMode(struct CLIDebugger* debugger, struct CLIDebugVect
 		platform->setStackTraceMode(platform, STACK_TRACE_BREAK_ON_BOTH);
 	} else {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+	}
+}
+
+static void _setSymbol(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	struct mDebuggerSymbols* symbolTable = debugger->d.core->symbolTable;
+	if (!symbolTable) {
+		debugger->backend->printf(debugger->backend, "No symbol table available.\n");
+		return;
+	}
+	if (!dv || !dv->next) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (dv->type != CLIDV_CHAR_TYPE || dv->next->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+		return;
+	}
+	mDebuggerSymbolAdd(symbolTable, dv->charValue, dv->next->intValue, dv->next->segmentValue);
+}
+
+static void _findSymbol(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	struct mDebuggerSymbols* symbolTable = debugger->d.core->symbolTable;
+	if (!symbolTable) {
+		debugger->backend->printf(debugger->backend, "No symbol table available.\n");
+		return;
+	}
+	if (!dv) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (dv->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+		return;
+	}
+	const char* name = mDebuggerSymbolReverseLookup(symbolTable, dv->intValue, dv->segmentValue);
+	if (name) {
+		if (dv->segmentValue >= 0) {
+			debugger->backend->printf(debugger->backend, " 0x%02X:%08X = %s\n", dv->segmentValue, dv->intValue, name);
+		} else {
+			debugger->backend->printf(debugger->backend, " 0x%08X = %s\n", dv->intValue, name);
+		}
+	} else {
+		debugger->backend->printf(debugger->backend, "Not found.\n");
 	}
 }

@@ -70,7 +70,7 @@ enum CInemaRebaseline {
 };
 
 struct CInemaTest {
-	char directory[MAX_TEST];
+	char directory[PATH_MAX];
 	char filename[MAX_TEST];
 	char name[MAX_TEST];
 	enum CInemaStatus status;

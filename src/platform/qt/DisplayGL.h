@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#if defined(BUILD_GL) || defined(BUILD_GLES2)
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3)
 
 #include "Display.h"
 
@@ -24,6 +24,8 @@
 #include <QQueue>
 #include <QThread>
 #include <QTimer>
+
+#include <array>
 
 #include "VideoProxy.h"
 
@@ -119,6 +121,7 @@ private:
 	void dequeue();
 	void dequeueAll();
 
+	std::array<std::array<uint32_t, 0x100000>, 3> m_buffers;
 	QList<uint32_t*> m_free;
 	QQueue<uint32_t*> m_queue;
 	uint32_t* m_buffer;

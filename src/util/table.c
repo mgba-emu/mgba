@@ -12,7 +12,8 @@
 #define TABLE_INITIAL_SIZE 8
 
 #define TABLE_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == key
-#define HASH_TABLE_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == hash && strncmp(LIST->list[(INDEX)].stringKey, key, LIST->list[(INDEX)].keylen) == 0
+#define HASH_TABLE_STRNCMP_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == hash && strncmp(LIST->list[(INDEX)].stringKey, key, LIST->list[(INDEX)].keylen) == 0
+#define HASH_TABLE_MEMCMP_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == hash && memcmp(LIST->list[(INDEX)].stringKey, key, LIST->list[(INDEX)].keylen) == 0
 
 #define TABLE_LOOKUP_START(COMPARATOR, LIST, KEY) \
 	uint32_t entry = (KEY) & (table->tableSize - 1); \
@@ -176,7 +177,16 @@ void HashTableDeinit(struct Table* table) {
 void* HashTableLookup(const struct Table* table, const char* key) {
 	uint32_t hash = hash32(key, strlen(key), 0);
 	const struct TableList* list;
-	TABLE_LOOKUP_START(HASH_TABLE_COMPARATOR, list, hash) {
+	TABLE_LOOKUP_START(HASH_TABLE_STRNCMP_COMPARATOR, list, hash) {
+		return lookupResult->value;
+	} TABLE_LOOKUP_END;
+	return 0;
+}
+
+void* HashTableLookupBinary(const struct Table* table, const void* key, size_t keylen) {
+	uint32_t hash = hash32(key, keylen, 0);
+	const struct TableList* list;
+	TABLE_LOOKUP_START(HASH_TABLE_MEMCMP_COMPARATOR, list, hash) {
 		return lookupResult->value;
 	} TABLE_LOOKUP_END;
 	return 0;
@@ -185,7 +195,7 @@ void* HashTableLookup(const struct Table* table, const char* key) {
 void HashTableInsert(struct Table* table, const char* key, void* value) {
 	uint32_t hash = hash32(key, strlen(key), 0);
 	struct TableList* list;
-	TABLE_LOOKUP_START(HASH_TABLE_COMPARATOR, list, hash) {
+	TABLE_LOOKUP_START(HASH_TABLE_STRNCMP_COMPARATOR, list, hash) {
 		if (value != lookupResult->value) {
 			if (table->deinitializer) {
 				table->deinitializer(lookupResult->value);
@@ -203,10 +213,40 @@ void HashTableInsert(struct Table* table, const char* key, void* value) {
 	++table->size;
 }
 
+void HashTableInsertBinary(struct Table* table, const void* key, size_t keylen, void* value) {
+	uint32_t hash = hash32(key, keylen, 0);
+	struct TableList* list;
+	TABLE_LOOKUP_START(HASH_TABLE_MEMCMP_COMPARATOR, list, hash) {
+		if (value != lookupResult->value) {
+			if (table->deinitializer) {
+				table->deinitializer(lookupResult->value);
+			}
+			lookupResult->value = value;
+		}
+		return;
+	} TABLE_LOOKUP_END;
+	list = _resizeAsNeeded(table, list, hash);
+	list->list[list->nEntries].key = hash;
+	list->list[list->nEntries].stringKey = malloc(keylen);
+	memcpy(list->list[list->nEntries].stringKey, key, keylen);
+	list->list[list->nEntries].keylen = keylen;
+	list->list[list->nEntries].value = value;
+	++list->nEntries;
+	++table->size;
+}
+
 void HashTableRemove(struct Table* table, const char* key) {
 	uint32_t hash = hash32(key, strlen(key), 0);
 	struct TableList* list;
-	TABLE_LOOKUP_START(HASH_TABLE_COMPARATOR, list, hash) {
+	TABLE_LOOKUP_START(HASH_TABLE_STRNCMP_COMPARATOR, list, hash) {
+		_removeItemFromList(table, list, i); // TODO: Move i out of the macro
+	} TABLE_LOOKUP_END;
+}
+
+void HashTableRemoveBinary(struct Table* table, const void* key, size_t keylen) {
+	uint32_t hash = hash32(key, keylen, 0);
+	struct TableList* list;
+	TABLE_LOOKUP_START(HASH_TABLE_MEMCMP_COMPARATOR, list, hash) {
 		_removeItemFromList(table, list, i); // TODO: Move i out of the macro
 	} TABLE_LOOKUP_END;
 }
@@ -238,6 +278,55 @@ void HashTableEnumerate(const struct Table* table, void (handler(const char* key
 			handler(list->list[j].stringKey, list->list[j].value, user);
 		}
 	}
+}
+
+const char* HashTableSearch(const struct Table* table, bool (predicate(const char* key, const void* value, const void* user)), const void* user) {
+	size_t i;
+	const char* result = NULL;
+	for (i = 0; i < table->tableSize; ++i) {
+		const struct TableList* list = &table->table[i];
+		size_t j;
+		for (j = 0; j < list->nEntries; ++j) {
+			if (predicate(list->list[j].stringKey, list->list[j].value, user)) {
+				return list->list[j].stringKey;
+			}
+		}
+	}
+	return result;
+}
+
+static bool HashTableRefEqual(const char* key, const void* value, const void* user) {
+	UNUSED(key);
+	return value == user;
+}
+
+const char* HashTableSearchPointer(const struct Table* table, const void* value) {
+	return HashTableSearch(table, HashTableRefEqual, value);
+}
+
+struct HashTableSearchParam {
+	const void* value;
+	size_t bytes;
+};
+
+static bool HashTableMemcmp(const char* key, const void* value, const void* user) {
+	UNUSED(key);
+	const struct HashTableSearchParam* ref = user;
+	return memcmp(value, ref->value, ref->bytes) == 0;
+}
+
+const char* HashTableSearchData(const struct Table* table, const void* value, const size_t bytes) {
+	struct HashTableSearchParam ref = { value, bytes };
+	return HashTableSearch(table, HashTableMemcmp, &ref);
+}
+
+static bool HashTableStrcmp(const char* key, const void* value, const void* user) {
+	UNUSED(key);
+	return strcmp(value, user) == 0;
+}
+
+const char* HashTableSearchString(const struct Table* table, const char* value) {
+	return HashTableSearch(table, HashTableStrcmp, value);
 }
 
 size_t HashTableSize(const struct Table* table) {

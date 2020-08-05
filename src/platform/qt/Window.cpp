@@ -599,7 +599,7 @@ void Window::consoleOpen() {
 }
 #endif
 
-void Window::resizeEvent(QResizeEvent* event) {
+void Window::resizeEvent(QResizeEvent*) {
 	if (!isFullScreen()) {
 		m_config->setOption("height", m_screenWidget->height());
 		m_config->setOption("width", m_screenWidget->width());
@@ -940,7 +940,8 @@ void Window::gameFailed() {
 	fail->show();
 }
 
-void Window::unimplementedBiosCall(int call) {
+void Window::unimplementedBiosCall(int) {
+	// TODO: Mention which call?
 	if (m_hitUnimplementedBiosCall) {
 		return;
 	}
@@ -1192,7 +1193,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Load &patch..."), "loadPatch", this, &Window::selectPatch, "file");
 
 #ifdef M_CORE_GBA
-	Action* bootBIOS = m_actions.addAction(tr("Boot BIOS"), "bootBIOS", [this]() {
+	m_actions.addAction(tr("Boot BIOS"), "bootBIOS", [this]() {
 		setController(m_manager->loadBIOS(PLATFORM_GBA, m_config->getOption("gba.bios")), QString());
 	}, "file");
 #endif
@@ -1203,7 +1204,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_platformActions.insert(PLATFORM_GBA, scanCard);
 #endif
 
-	Action* romInfo = addGameAction(tr("ROM &info..."), "romInfo", openControllerTView<ROMInfo>(), "file");
+	addGameAction(tr("ROM &info..."), "romInfo", openControllerTView<ROMInfo>(), "file");
 
 	m_actions.addMenu(tr("Recent"), "mru", "file");
 	m_actions.addSeparator("file");
@@ -1259,16 +1260,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addSeparator("quickLoad");
 	m_actions.addSeparator("quickSave");
 
-	Action* undoLoadState = addGameAction(tr("Undo load state"), "undoLoadState", [this]() {
-		m_controller->loadBackupState();
-	}, "quickLoad", QKeySequence("F11"));
+	Action* undoLoadState = addGameAction(tr("Undo load state"), "undoLoadState", &CoreController::loadBackupState, "quickLoad", QKeySequence("F11"));
 	m_nonMpActions.append(undoLoadState);
 	m_platformActions.insert(PLATFORM_GBA, undoLoadState);
 	m_platformActions.insert(PLATFORM_GB, undoLoadState);
 
-	Action* undoSaveState = addGameAction(tr("Undo save state"), "undoSaveState", [this]() {
-		m_controller->saveBackupState();
-	}, "quickSave", QKeySequence("Shift+F11"));
+	Action* undoSaveState = addGameAction(tr("Undo save state"), "undoSaveState", &CoreController::saveBackupState, "quickSave", QKeySequence("Shift+F11"));
 	m_nonMpActions.append(undoSaveState);
 	m_platformActions.insert(PLATFORM_GBA, undoSaveState);
 	m_platformActions.insert(PLATFORM_GB, undoSaveState);
@@ -1320,17 +1317,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	m_actions.addMenu(tr("&Emulation"), "emu");
-	addGameAction(tr("&Reset"), "reset", [this]() {
-		m_controller->reset();
-	}, "emu", QKeySequence("Ctrl+R"));
 
-	addGameAction(tr("Sh&utdown"), "shutdown", [this]() {
-		m_controller->stop();
-	}, "emu");
-
-	Action* yank = addGameAction(tr("Yank game pak"), "yank", [this]() {
-		m_controller->yankPak();
-	}, "emu");
+	addGameAction(tr("&Reset"), "reset", &CoreController::reset, "emu", QKeySequence("Ctrl+R"));
+	addGameAction(tr("Sh&utdown"), "shutdown", &CoreController::stop, "emu");
+	Action* yank = addGameAction(tr("Yank game pak"), "yank", &CoreController::yankPak, "emu");
 	m_platformActions.insert(PLATFORM_GBA, yank);
 	m_platformActions.insert(PLATFORM_GB, yank);
 
@@ -1345,9 +1335,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, "emu", QKeySequence("Ctrl+P"));
 	connect(this, &Window::paused, pause, &Action::setActive);
 
-	addGameAction(tr("&Next frame"), "frameAdvance", [this]() {
-		m_controller->frameAdvance();
-	}, "emu", QKeySequence("Ctrl+N"));
+	addGameAction(tr("&Next frame"), "frameAdvance", &CoreController::frameAdvance, "emu", QKeySequence("Ctrl+N"));
 
 	m_actions.addSeparator("emu");
 
@@ -1363,7 +1351,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addMenu(tr("Fast forward speed"), "fastForwardSpeed", "emu");
 	ConfigOption* ffspeed = m_config->addOption("fastForwardRatio");
-	ffspeed->connect([this](const QVariant& value) {
+	ffspeed->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 	ffspeed->addValue(tr("Unbounded"), -1.0f, &m_actions, "fastForwardSpeed");
@@ -1397,14 +1385,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	ConfigOption* videoSync = m_config->addOption("videoSync");
 	videoSync->addBoolean(tr("Sync to &video"), &m_actions, "emu");
-	videoSync->connect([this](const QVariant& value) {
+	videoSync->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 	m_config->updateOption("videoSync");
 
 	ConfigOption* audioSync = m_config->addOption("audioSync");
 	audioSync->addBoolean(tr("Sync to &audio"), &m_actions, "emu");
-	audioSync->connect([this](const QVariant& value) {
+	audioSync->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 	m_config->updateOption("audioSync");
@@ -1517,7 +1505,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addMenu(tr("Frame&skip"),"skip", "av");
 	ConfigOption* skip = m_config->addOption("frameskip");
-	skip->connect([this](const QVariant& value) {
+	skip->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 	for (int i = 0; i <= 10; ++i) {
@@ -1656,62 +1644,62 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, "tools");
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
-	skipBios->connect([this](const QVariant& value) {
+	skipBios->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 
 	ConfigOption* useBios = m_config->addOption("useBios");
-	useBios->connect([this](const QVariant& value) {
+	useBios->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 
 	ConfigOption* buffers = m_config->addOption("audioBuffers");
-	buffers->connect([this](const QVariant& value) {
+	buffers->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 
 	ConfigOption* sampleRate = m_config->addOption("sampleRate");
-	sampleRate->connect([this](const QVariant& value) {
+	sampleRate->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 
 	ConfigOption* volume = m_config->addOption("volume");
-	volume->connect([this](const QVariant& value) {
+	volume->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 
 	ConfigOption* volumeFf = m_config->addOption("fastForwardVolume");
-	volumeFf->connect([this](const QVariant& value) {
+	volumeFf->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 
 	ConfigOption* muteFf = m_config->addOption("fastForwardMute");
-	muteFf->connect([this](const QVariant& value) {
+	muteFf->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 
 	ConfigOption* rewindEnable = m_config->addOption("rewindEnable");
-	rewindEnable->connect([this](const QVariant& value) {
+	rewindEnable->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 
 	ConfigOption* rewindBufferCapacity = m_config->addOption("rewindBufferCapacity");
-	rewindBufferCapacity->connect([this](const QVariant& value) {
+	rewindBufferCapacity->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 
 	ConfigOption* allowOpposingDirections = m_config->addOption("allowOpposingDirections");
-	allowOpposingDirections->connect([this](const QVariant& value) {
+	allowOpposingDirections->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 
 	ConfigOption* saveStateExtdata = m_config->addOption("saveStateExtdata");
-	saveStateExtdata->connect([this](const QVariant& value) {
+	saveStateExtdata->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 
 	ConfigOption* loadStateExtdata = m_config->addOption("loadStateExtdata");
-	loadStateExtdata->connect([this](const QVariant& value) {
+	loadStateExtdata->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 
@@ -1820,9 +1808,14 @@ Action* Window::addGameAction(const QString& visibleName, const QString& name, A
 template<typename T, typename V>
 Action* Window::addGameAction(const QString& visibleName, const QString& name, T* obj, V (T::*method)(), const QString& menu, const QKeySequence& shortcut) {
 	return addGameAction(visibleName, name, [this, obj, method]() {
-		if (m_controller) {
-			(obj->*method)();
-		}
+		(obj->*method)();
+	}, menu, shortcut);
+}
+
+template<typename V>
+Action* Window::addGameAction(const QString& visibleName, const QString& name, V (CoreController::*method)(), const QString& menu, const QKeySequence& shortcut) {
+	return addGameAction(visibleName, name, [this, method]() {
+		(m_controller.get()->*method)();
 	}, menu, shortcut);
 }
 

@@ -46,7 +46,6 @@ bool ColorPicker::eventFilter(QObject* obj, QEvent* event) {
 	if (event->type() != QEvent::MouseButtonRelease) {
 		return false;
 	}
-	int colorId;
 	if (obj != m_parent) {
 		return false;
 	}

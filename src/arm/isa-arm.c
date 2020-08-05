@@ -513,12 +513,12 @@ ATTRIBUTE_NOINLINE static void _neutralS(struct ARMCore* cpu, int32_t d) {
 #define ARM_MS_POST_store ARMSetPrivilegeMode(cpu, privilegeMode);
 
 #define ARM_MS_POST_load \
-	if ((rs & 0x8000) && _ARMModeHasSPSR(cpu->cpsr.priv)) { \
+	if (!(rs & 0x8000)) { \
+		ARMSetPrivilegeMode(cpu, privilegeMode); \
+	} else if (_ARMModeHasSPSR(cpu->cpsr.priv)) { \
 		cpu->cpsr = cpu->spsr; \
 		_ARMReadCPSR(cpu); \
-	} else { \
-		ARMSetPrivilegeMode(cpu, privilegeMode); \
-	} \
+	}
 
 #define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME, LS, WRITEBACK, S_PRE, S_POST, DIRECTION, POST_BODY) \
 	DEFINE_INSTRUCTION_ARM(NAME, \

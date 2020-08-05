@@ -7,7 +7,7 @@ else()
 endif()
 
 set(cross_prefix arm-none-eabi-)
-set(arch_flags "-march=armv6k -mtune=mpcore -mfloat-abi=hard -ffunction-sections")
+set(arch_flags "-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft -ffunction-sections")
 set(inc_flags "-I${CTRULIB}/include ${arch_flags} -mword-relocations")
 set(link_flags "-L${CTRULIB}/lib -lctru -specs=3dsx.specs ${arch_flags} -Wl,--gc-sections")
 

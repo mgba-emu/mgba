@@ -23,6 +23,7 @@
 #include <switch.h>
 #endif
 #ifdef GEKKO
+#define asm __asm__
 #include <fat.h>
 #include <gccore.h>
 #ifdef FIXED_ROM_BUFFER

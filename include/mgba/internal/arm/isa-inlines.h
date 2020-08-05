@@ -107,4 +107,39 @@ static inline uint32_t _ARMPCAddress(struct ARMCore* cpu) {
 	return cpu->gprs[ARM_PC] - _ARMInstructionLength(cpu) * 2;
 }
 
+static inline bool ARMTestCondition(struct ARMCore* cpu, unsigned condition) {
+	switch (condition) {
+		case 0x0:
+			return ARM_COND_EQ;
+		case 0x1:
+			return ARM_COND_NE;
+		case 0x2:
+			return ARM_COND_CS;
+		case 0x3:
+			return ARM_COND_CC;
+		case 0x4:
+			return ARM_COND_MI;
+		case 0x5:
+			return ARM_COND_PL;
+		case 0x6:
+			return ARM_COND_VS;
+		case 0x7:
+			return ARM_COND_VC;
+		case 0x8:
+			return ARM_COND_HI;
+		case 0x9:
+			return ARM_COND_LS;
+		case 0xA:
+			return ARM_COND_GE;
+		case 0xB:
+			return ARM_COND_LT;
+		case 0xC:
+			return ARM_COND_GT;
+		case 0xD:
+			return ARM_COND_LE;
+		default:
+			return true;
+	}
+}
+
 #endif

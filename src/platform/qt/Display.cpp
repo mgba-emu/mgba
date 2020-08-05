@@ -10,21 +10,21 @@
 
 using namespace QGBA;
 
-#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 Display::Driver Display::s_driver = Display::Driver::OPENGL;
 #else
 Display::Driver Display::s_driver = Display::Driver::QT;
 #endif
 
 Display* Display::create(QWidget* parent) {
-#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 	QSurfaceFormat format;
 	format.setSwapInterval(1);
 	format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
 #endif
 
 	switch (s_driver) {
-#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 	case Driver::OPENGL:
 		if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) {
 			format.setVersion(3, 0);
@@ -44,7 +44,7 @@ Display* Display::create(QWidget* parent) {
 		return new DisplayQt(parent);
 
 	default:
-#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 		return new DisplayGL(format, parent);
 #else
 		return new DisplayQt(parent);
