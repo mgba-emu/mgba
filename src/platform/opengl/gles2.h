@@ -22,6 +22,9 @@ CXX_GUARD_START
 #endif
 #else
 #include <GLES2/gl2.h>
+#ifdef BUILD_GLES3
+#include <GLES3/gl3.h>
+#endif
 #endif
 
 #include "platform/video-backend.h"
