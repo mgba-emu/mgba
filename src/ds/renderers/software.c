@@ -400,6 +400,7 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 	}
 
 	GBAVideoSoftwareRendererPreprocessBuffer(softwareRenderer, y);
+	softwareRenderer->spriteCyclesRemaining = 1530; // TODO: Figure out the actual value; this value is just a fudge factor for now
 	int spriteLayers = GBAVideoSoftwareRendererPreprocessSpriteLayer(softwareRenderer, y);
 	memset(softwareRenderer->alphaA, softwareRenderer->blda, sizeof(softwareRenderer->alphaA));
 	memset(softwareRenderer->alphaB, softwareRenderer->bldb, sizeof(softwareRenderer->alphaB));
