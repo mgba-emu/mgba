@@ -104,8 +104,8 @@ union GBAOAM {
 };
 
 struct GBAVideoWindowRegion {
-	uint8_t end;
-	uint8_t start;
+	uint16_t end;
+	uint16_t start;
 };
 
 #define GBA_TEXT_MAP_TILE(MAP) ((MAP) & 0x03FF)
