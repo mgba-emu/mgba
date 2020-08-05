@@ -139,6 +139,7 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 	} else if (savedata->vf) {
 		off_t read = 0;
 		uint8_t buffer[2048];
+		savedata->vf->seek(savedata->vf, 0, SEEK_SET);
 		do {
 			read = savedata->vf->read(savedata->vf, buffer, sizeof(buffer));
 			out->write(out, buffer, read);
@@ -598,7 +599,6 @@ void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerial
 
 void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
 	mLOG(GBA_SAVE, DEBUG, "Performing flash bank switch to bank %i", bank);
-	savedata->currentBank = &savedata->data[bank << 16];
 	if (bank > 0 && savedata->type == SAVEDATA_FLASH512) {
 		mLOG(GBA_SAVE, INFO, "Updating flash chip from 512kb to 1Mb");
 		savedata->type = SAVEDATA_FLASH1M;
@@ -613,6 +613,7 @@ void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
 			}
 		}
 	}
+	savedata->currentBank = &savedata->data[bank << 16];
 }
 
 void _flashErase(struct GBASavedata* savedata) {

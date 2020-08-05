@@ -75,10 +75,11 @@ Supported Platforms
 -------------------
 
 - Windows Vista or newer
-- OS X 10.7 (Lion)[<sup>[3]</sup>](#osxver) or newer
+- OS X 10.8 (Mountain Lion)[<sup>[3]</sup>](#osxver) or newer
 - Linux
 - FreeBSD
 - Nintendo 3DS
+- Nintendo Switch
 - Wii
 - PlayStation Vita
 
@@ -205,9 +206,8 @@ mGBA has no hard dependencies, however, the following optional dependencies are 
 - SDL: for a more basic frontend and gamepad support in the Qt frontend. SDL 2 is recommended, but 1.2 is supported.
 - zlib and libpng: for screenshot support and savestate-in-PNG support.
 - libedit: for command-line debugger support.
-- ffmpeg or libav: for video recording.
+- ffmpeg or libav: for video and GIF recording.
 - libzip or zlib: for loading ROMs stored in zip files.
-- ImageMagick: for GIF recording.
 - SQLite3: for game databases.
 - libelf: for ELF loading.
 
@@ -222,7 +222,7 @@ Footnotes
 
 <a name="flashdetect">[2]</a> Flash memory size detection does not work in some cases. These can be configured at runtime, but filing a bug is recommended if such a case is encountered.
 
-<a name="osxver">[3]</a> 10.7 is only needed for the Qt port. The SDL port is known to work on 10.5, and may work on older.
+<a name="osxver">[3]</a> 10.8 is only needed for the Qt port. It may be possible to build or running the Qt port on 10.7 or older, but this is not officially supported. The SDL port is known to work on 10.5, and may work on older.
 
 [downloads]: http://mgba.io/downloads.html
 [source]: https://github.com/mgba-emu/mgba/

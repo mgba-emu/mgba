@@ -484,8 +484,6 @@ void PainterGL::performDraw() {
 	m_backend->resized(m_backend, m_size.width() * r, m_size.height() * r);
 	if (m_buffer) {
 		m_backend->postFrame(m_backend, m_buffer);
-		m_free.append(m_buffer);
-		m_buffer = nullptr;
 	}
 	m_backend->drawFrame(m_backend);
 	m_painter.endNativePainting();
@@ -495,7 +493,7 @@ void PainterGL::performDraw() {
 }
 
 void PainterGL::enqueue(const uint32_t* backing) {
-	m_mutex.lock();
+	QMutexLocker locker(&m_mutex);
 	uint32_t* buffer = nullptr;
 	if (backing) {
 		if (m_free.isEmpty()) {
@@ -503,17 +501,17 @@ void PainterGL::enqueue(const uint32_t* backing) {
 		} else {
 			buffer = m_free.takeLast();
 		}
-		QSize size = m_context->screenDimensions();
-		memcpy(buffer, backing, size.width() * size.height() * BYTES_PER_PIXEL);
+		if (buffer) {
+			QSize size = m_context->screenDimensions();
+			memcpy(buffer, backing, size.width() * size.height() * BYTES_PER_PIXEL);
+		}
 	}
 	m_queue.enqueue(buffer);
-	m_mutex.unlock();
 }
 
 void PainterGL::dequeue() {
-	m_mutex.lock();
+	QMutexLocker locker(&m_mutex);
 	if (m_queue.isEmpty()) {
-		m_mutex.unlock();
 		return;
 	}
 	uint32_t* buffer = m_queue.dequeue();
@@ -521,10 +519,7 @@ void PainterGL::dequeue() {
 		m_free.append(m_buffer);
 		m_buffer = nullptr;
 	}
-	if (buffer) {
-		m_buffer = buffer;
-	}
-	m_mutex.unlock();
+	m_buffer = buffer;
 }
 
 void PainterGL::dequeueAll() {

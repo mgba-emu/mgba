@@ -93,6 +93,10 @@ MemoryModel::MemoryModel(QWidget* parent)
 			++m_top;
 		} else if (action == QSlider::SliderSingleStepSub) {
 			--m_top;
+		} else if (action == QSlider::SliderPageStepAdd) {
+			m_top += (viewport()->size().height() - m_cellHeight) / m_cellHeight;
+		} else if (action == QSlider::SliderPageStepSub) {
+			m_top -= (viewport()->size().height() - m_cellHeight) / m_cellHeight;
 		} else {
 			return;
 		}
@@ -589,6 +593,12 @@ void MemoryModel::keyPressEvent(QKeyEvent* event) {
 		return;
 	case Qt::Key_Down:
 		adjustCursor(16, event->modifiers() & Qt::ShiftModifier);
+		return;
+	case Qt::Key_PageUp:
+		adjustCursor(-16 * ((viewport()->size().height() - m_cellHeight) / m_cellHeight), event->modifiers() & Qt::ShiftModifier);
+		return;
+	case Qt::Key_PageDown:
+		adjustCursor(16 * ((viewport()->size().height() - m_cellHeight) / m_cellHeight), event->modifiers() & Qt::ShiftModifier);
 		return;
 	default:
 		return;

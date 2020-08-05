@@ -47,19 +47,16 @@ static png_infop _pngWriteHeader(png_structp png, unsigned width, unsigned heigh
 		return 0;
 	}
 	png_set_IHDR(png, info, width, height, 8, type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+	png_write_info(png, info);
 	return info;
 }
 
 png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height) {
-	png_infop info = _pngWriteHeader(png, width, height, PNG_COLOR_TYPE_RGB);
-	png_write_info(png, info);
-	return info;
+	return _pngWriteHeader(png, width, height, PNG_COLOR_TYPE_RGB);
 }
 
 png_infop PNGWriteHeaderA(png_structp png, unsigned width, unsigned height) {
-	png_infop info = _pngWriteHeader(png, width, height, PNG_COLOR_TYPE_RGB_ALPHA);
-	png_write_info(png, info);
-	return info;
+	return _pngWriteHeader(png, width, height, PNG_COLOR_TYPE_RGB_ALPHA);
 }
 
 png_infop PNGWriteHeader8(png_structp png, unsigned width, unsigned height) {

@@ -62,7 +62,7 @@ struct mCore* mCoreFindVF(struct VFile* vf) {
 
 enum mPlatform mCoreIsCompatible(struct VFile* vf) {
 	if (!vf) {
-		return false;
+		return PLATFORM_NONE;
 	}
 	const struct mCoreFilter* filter;
 	for (filter = &_filters[0]; filter->filter; ++filter) {

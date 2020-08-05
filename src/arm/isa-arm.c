@@ -426,11 +426,26 @@ ATTRIBUTE_NOINLINE static void _neutralS(struct ARMCore* cpu, int32_t d) {
 	DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME ## I, ADDR_MODE_2_RN, ADDR_MODE_2_WRITEBACK(ADDR_MODE_2_INDEX(-, ADDR_MODE_2_IMMEDIATE)), LS, BODY) \
 	DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME ## IU, ADDR_MODE_2_RN, ADDR_MODE_2_WRITEBACK(ADDR_MODE_2_INDEX(+, ADDR_MODE_2_IMMEDIATE)), LS, BODY) \
 
-#define ARM_MS_PRE \
+#define ARM_MS_PRE_store \
 	enum PrivilegeMode privilegeMode = cpu->privilegeMode; \
 	ARMSetPrivilegeMode(cpu, MODE_SYSTEM);
 
-#define ARM_MS_POST ARMSetPrivilegeMode(cpu, privilegeMode);
+#define ARM_MS_PRE_load \
+	enum PrivilegeMode privilegeMode; \
+	if (!(rs & 0x8000)) { \
+		privilegeMode = cpu->privilegeMode; \
+		ARMSetPrivilegeMode(cpu, MODE_SYSTEM); \
+	}
+
+#define ARM_MS_POST_store ARMSetPrivilegeMode(cpu, privilegeMode);
+
+#define ARM_MS_POST_load \
+	if (!(rs & 0x8000)) { \
+		ARMSetPrivilegeMode(cpu, privilegeMode); \
+	} else if (_ARMModeHasSPSR(cpu->cpsr.priv)) { \
+		cpu->cpsr = cpu->spsr; \
+		_ARMReadCPSR(cpu); \
+	}
 
 #define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME, LS, WRITEBACK, S_PRE, S_POST, DIRECTION, POST_BODY) \
 	DEFINE_INSTRUCTION_ARM(NAME, \
@@ -439,28 +454,28 @@ ATTRIBUTE_NOINLINE static void _neutralS(struct ARMCore* cpu, int32_t d) {
 		uint32_t address = cpu->gprs[rn]; \
 		S_PRE; \
 		address = cpu->memory. LS ## Multiple(cpu, address, rs, LSM_ ## DIRECTION, &currentCycles); \
+		WRITEBACK; \
 		S_POST; \
-		POST_BODY; \
-		WRITEBACK;)
+		POST_BODY;)
 
 
 #define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(NAME, LS, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DA,   LS,                               ,           ,            , DA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DAW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , DA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DB,   LS,                               ,           ,            , DB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DBW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , DB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IA,   LS,                               ,           ,            , IA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IAW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , IA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IB,   LS,                               ,           ,            , IB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IBW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , IB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDA,  LS,                               , ARM_MS_PRE, ARM_MS_POST, DA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDAW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, DA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDB,  LS,                               , ARM_MS_PRE, ARM_MS_POST, DB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDBW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, DB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIA,  LS,                               , ARM_MS_PRE, ARM_MS_POST, IA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIAW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, IA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIB,  LS,                               , ARM_MS_PRE, ARM_MS_POST, IB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIBW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, IB, POST_BODY)
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DA,   LS,                               ,                  ,                   , DA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DAW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,                  ,                   , DA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DB,   LS,                               ,                  ,                   , DB, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DBW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,                  ,                   , DB, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IA,   LS,                               ,                  ,                   , IA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IAW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,                  ,                   , IA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IB,   LS,                               ,                  ,                   , IB, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IBW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,                  ,                   , IB, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDA,  LS,                               , ARM_MS_PRE_ ## LS, ARM_MS_POST_ ## LS, DA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDAW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE_ ## LS, ARM_MS_POST_ ## LS, DA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDB,  LS,                               , ARM_MS_PRE_ ## LS, ARM_MS_POST_ ## LS, DB, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDBW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE_ ## LS, ARM_MS_POST_ ## LS, DB, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIA,  LS,                               , ARM_MS_PRE_ ## LS, ARM_MS_POST_ ## LS, IA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIAW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE_ ## LS, ARM_MS_POST_ ## LS, IA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIB,  LS,                               , ARM_MS_PRE_ ## LS, ARM_MS_POST_ ## LS, IB, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIBW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE_ ## LS, ARM_MS_POST_ ## LS, IB, POST_BODY)
 
 // Begin ALU definitions
 
@@ -602,7 +617,11 @@ DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,
 	load,
 	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32;
 	if ((rs & 0x8000) || !rs) {
-		currentCycles += ARMWritePC(cpu);
+		if (cpu->executionMode == MODE_THUMB) {
+			currentCycles += ThumbWritePC(cpu);
+		} else {
+			currentCycles += ARMWritePC(cpu);
+		}
 	})
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM,

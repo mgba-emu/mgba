@@ -213,6 +213,8 @@ static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum G
 		softwareRenderer->lookup[i] = i;
 		softwareRenderer->lookup[i] = i;
 	}
+
+	memset(softwareRenderer->palette, 0, sizeof(softwareRenderer->palette));
 }
 
 static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer) {
