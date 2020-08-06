@@ -1,3 +1,7 @@
+0.8.4: (Future)
+Other fixes:
+ - VFS: Fix directory node listing on some filesystems
+
 0.8.3: (2020-08-03)
 Emulation fixes:
  - ARM: Fix LDM^ writeback to user-mode register
