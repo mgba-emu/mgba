@@ -14,6 +14,10 @@
 #define CXX_GUARD_END
 #endif
 
+#ifdef __MINGW32__
+#define __USE_MINGW_ANSI_STDIO 1
+#endif
+
 CXX_GUARD_START
 
 #include <ctype.h>
@@ -122,10 +126,8 @@ typedef intptr_t ssize_t;
 #if defined(_3DS) || defined(GEKKO) || defined(PSP2)
 // newlib does not support %z properly by default
 #define PRIz ""
-#elif defined(_WIN64)
-#define PRIz "I64"
-#elif defined(_WIN32)
-#define PRIz ""
+#elif defined(_MSC_VER)
+#define PRIz "I"
 #else
 #define PRIz "z"
 #endif

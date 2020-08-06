@@ -178,7 +178,7 @@ static void _wake(struct mVideoLogger* logger, int y) {
 
 static THREAD_ENTRY _proxyThread(void* logger) {
 	struct mVideoThreadProxy* proxyRenderer = logger;
-	ThreadSetName("Proxy Renderer Thread");
+	ThreadSetName("Proxy Rendering");
 
 	MutexLock(&proxyRenderer->mutex);
 	ConditionWake(&proxyRenderer->fromThreadCond);
