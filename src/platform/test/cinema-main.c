@@ -884,9 +884,9 @@ static void _replayBaseline(struct CInemaTest* test, struct FFmpegEncoder* encod
 		test->status = CI_ERROR;
 		return;
 	}
+	encoder->d.videoDimensionsChanged(&encoder->d, image->width, image->height);
 
 	snprintf(baselineName, sizeof(baselineName), "%s" PATH_SEP "baseline.avi", test->directory);
-
 
 	struct CInemaImage buffer = {
 		.data = NULL,

@@ -151,9 +151,10 @@ static enum VFSType _vdeType(struct VDirEntry* vde) {
 #if !defined(WIN32) && !defined(__HAIKU__)
 	if (vdede->ent->d_type == DT_DIR) {
 		return VFS_DIRECTORY;
+	} else if (vdede->ent->d_type == DT_REG) {
+		return VFS_FILE;
 	}
-	return VFS_FILE;
-#else
+#endif
 	const char* dir = vdede->p->path;
 	char* combined = malloc(sizeof(char) * (strlen(vdede->ent->d_name) + strlen(dir) + 2));
 	sprintf(combined, "%s%s%s", dir, PATH_SEP, vdede->ent->d_name);
@@ -165,7 +166,6 @@ static enum VFSType _vdeType(struct VDirEntry* vde) {
 		return VFS_DIRECTORY;
 	}
 	return VFS_FILE;
-#endif
 }
 
 bool VDirCreate(const char* path) {
