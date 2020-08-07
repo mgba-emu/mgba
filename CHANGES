@@ -32,6 +32,7 @@ Other fixes:
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
  - Qt: Fix a race condition in the frame inspector
+ - Qt: Add dummy English translation file (fixes mgba.io/i/1469)
  - SM83: Simplify register pair access on big endian
  - VFS: Fix directory node listing on some filesystems
 Misc:
