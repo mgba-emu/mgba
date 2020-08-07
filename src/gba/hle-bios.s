@@ -25,25 +25,26 @@ bx r0
 .word 0
 .word 0xE129F000
 
+.word 0 @ Padding for back-compat
+
 swiBase:
 cmp    sp, #0
 moveq  sp, #0x04000000
 subeq  sp, #0x20
-stmfd  sp!, {r11-r12, lr}
+stmfd  sp!, {r4, r11-r12, lr}
 ldrb   r11, [lr, #-2]
 mov    r12, #swiTable
 ldr    r11, [r12, r11, lsl #2]
-cmp    r11, #0
+mov    r12, #StallCall
+cmp    r12, r11
+swieq  0xF00000  @ Special mGBA-internal call to load the stall count into r4
 mrs    r12, spsr
 stmfd  sp!, {r12}
 and    r12, #0x80
 orr    r12, #0x1F
-msr    cpsr, r12
+msr    cpsr_c, r12
 stmfd  sp!, {lr}
-nop
-nop
-nop
-nop
+cmp    r11, #0
 nop
 nop
 nop
@@ -55,15 +56,16 @@ bxne   r11
 nop
 nop
 nop
-nop
 ldmfd  sp!, {lr}
 msr    cpsr, #0x93
 ldmfd  sp!, {r12}
 msr    spsr, r12
-ldmfd  sp!, {r11-r12, lr}
+ldmfd  sp!, {r4, r11-r12, lr}
 movs   pc, lr
 .word 0
 .word 0xE3A02004
+
+.word 0 @ Padding for back-compat
 
 swiTable:
 .word SoftReset               @ 0x00
@@ -131,11 +133,6 @@ subs   pc, lr, #4
 SoftReset:
 RegisterRamReset:
 Stop:
-Div:
-DivArm:
-Sqrt:
-ArcTan:
-ArcTan2:
 GetBiosChecksum:
 BgAffineSet:
 ObjAffineSet:
@@ -305,3 +302,14 @@ ldmfd  sp!, {r4-r10}
 bx     lr
 
 .ltorg
+
+Div:
+DivArm:
+Sqrt:
+ArcTan:
+ArcTan2:
+
+StallCall:
+subs r4, #4
+bhi StallCall
+bx lr

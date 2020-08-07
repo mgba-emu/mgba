@@ -109,6 +109,8 @@ struct GBA {
 	bool cpuBlocked;
 	bool earlyExit;
 	uint32_t dmaPC;
+	uint32_t biosStall;
+
 	int idleDetectionStep;
 	int idleDetectionFailures;
 	int32_t cachedRegisters[16];

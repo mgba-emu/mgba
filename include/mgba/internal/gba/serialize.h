@@ -201,7 +201,8 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *  | bit 1: POSTFLG
  *  | bit 2: Is IRQ pending?
  * 0x00320 - 0x00323: Next IRQ event
- * 0x00324 - 0x003FF: Reserved (leave zero)
+ * 0x00324 - 0x00327: Interruptable BIOS stall cycles
+ * 0x00328 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -334,8 +335,9 @@ struct GBASerializedState {
 	uint32_t lastPrefetchedPc;
 	GBASerializedMiscFlags miscFlags;
 	uint32_t nextIrq;
+	int32_t biosStall;
 
-	uint32_t reserved[55];
+	uint32_t reserved[54];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];
