@@ -26,6 +26,7 @@ Emulation fixes:
  - SM83: Emulate HALT bug
 Other fixes:
  - 3DS: Redo video sync to be more precise
+ - 3DS: Fix crash with libctru 2.0 when exiting
  - All: Improve export headers (fixes mgba.io/i/1738)
  - Core: Ensure ELF regions can be written before trying
  - Debugger: Don't skip undefined instructions when debugger attached

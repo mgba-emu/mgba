@@ -107,7 +107,6 @@ static C3D_Tex upscaleBufferTex;
 static bool interframeBlending = false;
 static bool sgbCrop = false;
 
-static aptHookCookie cookie;
 static bool core2;
 
 static bool _initGpu(void) {
@@ -188,18 +187,6 @@ static void _cleanup(void) {
 	camExit();
 	ndspExit();
 	ptmuExit();
-}
-
-static void _aptHook(APT_HookType hook, void* user) {
-	UNUSED(user);
-	switch (hook) {
-	case APTHOOK_ONEXIT:
-		_cleanup();
-		exit(0);
-		break;
-	default:
-		break;
-	}
 }
 
 static void _map3DSKey(struct mInputMap* map, int ctrKey, enum GBAKey key) {
@@ -825,8 +812,6 @@ int main() {
 	camera.buffer = NULL;
 	camera.bufferSize = 0;
 	camera.cam = SELECT_IN1;
-
-	aptHook(&cookie, _aptHook, 0);
 
 	ptmuInit();
 	camInit();
