@@ -2,6 +2,7 @@
 Other fixes:
  - 3DS: Redo video sync to be more precise
  - Qt: Add dummy English translation file (fixes mgba.io/i/1469)
+ - mGUI: Fix closing down a game if an exit is signalled
  - VFS: Fix directory node listing on some filesystems
 
 0.8.3: (2020-08-03)
