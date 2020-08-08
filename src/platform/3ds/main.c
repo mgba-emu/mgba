@@ -94,7 +94,7 @@ static int activeOutputTexture = 0;
 static ndspWaveBuf dspBuffer[DSP_BUFFERS];
 static int bufferId = 0;
 static bool frameLimiter = true;
-static u64 tickCounter;
+static u32 frameCounter;
 
 static C3D_RenderTarget* topScreen[2];
 static C3D_RenderTarget* bottomScreen[2];
@@ -207,11 +207,17 @@ static void _drawStart(void) {
 		return;
 	}
 	frameStarted = true;
+
+	int screen = screenMode >= SM_PA_TOP ? GSP_SCREEN_TOP : GSP_SCREEN_BOTTOM;
 	if (frameLimiter) {
-		if (tickCounter + 4481000 > svcGetSystemTick()) {
-			C3D_FrameSync();
+		u32 oldFrame = frameCounter;
+		frameCounter = C3D_FrameCounter(screen);
+		while (oldFrame == frameCounter) {
+			gspWaitForAnyEvent();
+			frameCounter = C3D_FrameCounter(screen);
 		}
-		tickCounter = svcGetSystemTick();
+	} else {
+		frameCounter = C3D_FrameCounter(screen);
 	}
 	C3D_FrameBegin(0);
 	ctrStartFrame();
@@ -344,7 +350,7 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	}
 	osSetSpeedupEnable(true);
 
-	double ratio = GBAAudioCalculateRatio(1, 59.8260982880808, 1);
+	double ratio = GBAAudioCalculateRatio(1, 268111856.f / 4481136.f, 1);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 32768 * ratio);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 32768 * ratio);
 	if (hasSound != NO_SOUND) {
@@ -658,7 +664,6 @@ static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 		return;
 	}
 	frameLimiter = limit;
-	tickCounter = svcGetSystemTick();
 }
 
 static bool _running(struct mGUIRunner* runner) {

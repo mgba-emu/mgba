@@ -1,5 +1,6 @@
 0.8.4: (Future)
 Other fixes:
+ - 3DS: Redo video sync to be more precise
  - Qt: Add dummy English translation file (fixes mgba.io/i/1469)
  - VFS: Fix directory node listing on some filesystems
 
