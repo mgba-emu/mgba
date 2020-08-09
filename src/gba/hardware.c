@@ -296,6 +296,9 @@ unsigned _rtcOutput(struct GBACartridgeHardware* hw) {
 		break;
 	}
 	unsigned output = (outputByte >> hw->rtc.bitsRead) & 1;
+	if (hw->rtc.bitsRead == 0) {
+		mLOG(GBA_HW, DEBUG, "RTC output byte %02X", outputByte);
+	}
 	return output;
 }
 
