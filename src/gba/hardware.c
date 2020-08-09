@@ -238,6 +238,7 @@ void _rtcProcessByte(struct GBACartridgeHardware* hw) {
 
 			hw->rtc.bytesRemaining = RTC_BYTES[RTCCommandDataGetCommand(command)];
 			hw->rtc.commandActive = hw->rtc.bytesRemaining > 0;
+			mLOG(GBA_HW, DEBUG, "Got RTC command %x", RTCCommandDataGetCommand(command));
 			switch (RTCCommandDataGetCommand(command)) {
 			case RTC_RESET:
 				hw->rtc.control = 0;
