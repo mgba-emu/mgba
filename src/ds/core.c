@@ -95,6 +95,8 @@ static bool _DSCoreInit(struct mCore* core) {
 	ARMSetComponents(arm9, &ds->d, CPU_COMPONENT_MAX, dscore->components);
 	ARMInit(arm7);
 	ARMInit(arm9);
+	mRTCGenericSourceInit(&core->rtc, core);
+	ds->rtcSource = &core->rtc.d;
 
 	DSVideoSoftwareRendererCreate(&dscore->renderer);
 	DSGXSoftwareRendererCreate(&dscore->gxRenderer);
