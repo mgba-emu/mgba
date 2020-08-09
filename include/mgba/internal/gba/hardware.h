@@ -53,12 +53,6 @@ enum GPIODirection {
 	GPIO_READ_WRITE = 1
 };
 
-DECL_BITFIELD(RTCControl, uint8_t);
-DECL_BIT(RTCControl, Reset, 0);
-DECL_BIT(RTCControl, Hour24, 1);
-DECL_BIT(RTCControl, IRQ1, 4);
-DECL_BIT(RTCControl, IRQ2, 5);
-
 enum RTCCommand {
 	RTC_STATUS1 = 0,
 	RTC_ALARM1 = 1,
@@ -69,6 +63,17 @@ enum RTCCommand {
 	RTC_TIME = 6,
 	RTC_FREE_REG = 7
 };
+
+DECL_BITFIELD(RTCStatus1, uint8_t);
+DECL_BIT(RTCStatus1, Reset, 0);
+DECL_BIT(RTCStatus1, Hour24, 1);
+DECL_BIT(RTCStatus1, IRQ1, 4);
+DECL_BIT(RTCStatus1, IRQ2, 5);
+
+DECL_BITFIELD(RTCControl, uint8_t);
+DECL_BIT(RTCControl, MinIRQ, 3);
+DECL_BIT(RTCControl, Hour24, 6);
+DECL_BIT(RTCControl, Poweroff, 7);
 
 DECL_BITFIELD(RTCCommandData, uint8_t);
 DECL_BITS(RTCCommandData, Magic, 0, 4);
@@ -89,9 +94,9 @@ struct GBARTC {
 	uint8_t commandActive;
 	uint8_t alarm1[3];
 	RTCCommandData command;
-	RTCStatus2 status2;
+	uint8_t status1;
 	uint8_t freeReg;
-	RTCControl control;
+	uint8_t control; // Used for status2 on DS
 	uint8_t alarm2[3];
 	uint8_t time[7];
 };

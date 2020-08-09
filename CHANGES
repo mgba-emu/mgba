@@ -12,6 +12,7 @@ Bugfixes:
  - DS Video: Fix 2D/3D blending alpha values
  - DS I/O: Enable POWCNT1 bit 1 at boot (fixes mgba.io/i/616)
  - DS Slot-1: Reply to IR 0x08 command properly (fixes mgba.io/i/666)
+ - GBA Hardware: Fix RTC
  - GBA Video: Fix mode 2 out-of-bounds VRAM crash
  - GBA Video: Fix regression adjusting brightness of backdrop
  - DS GX: Properly reject invalid commands

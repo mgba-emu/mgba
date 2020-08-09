@@ -131,7 +131,7 @@ void GBAHardwareInitRTC(struct GBACartridgeHardware* hw) {
 	hw->rtc.command = 0;
 	hw->rtc.control = 0x40;
 	hw->rtc.freeReg = 0;
-	hw->rtc.status2 = 0;
+	hw->rtc.status1 = 0;
 	memset(hw->rtc.time, 0, sizeof(hw->rtc.time));
 }
 
@@ -245,7 +245,7 @@ void GBARTCProcessByte(struct GBARTC* rtc, struct mRTCSource* source) {
 			case RTC_FORCE_IRQ:
 				break;
 			case RTC_ALARM1:
-				if (RTCStatus2GetINT1(rtc->status2) == 4) {
+				if (RTCStatus2GetINT1(rtc->control) == 4) {
 					rtc->bytesRemaining = 3;
 				}
 			}
@@ -254,14 +254,14 @@ void GBARTCProcessByte(struct GBARTC* rtc, struct mRTCSource* source) {
 		}
 	} else {
 		switch (RTCCommandDataGetCommand(rtc->command)) {
-		case RTC_STATUS1:
-			rtc->control = rtc->bits & 0xFE;
+		case RTC_STATUS2:
+			rtc->control = rtc->bits;
 			break;
 		case RTC_FORCE_IRQ:
 			mLOG(GBA_HW, STUB, "Unimplemented RTC command %u", RTCCommandDataGetCommand(rtc->command));
 			break;
-		case RTC_STATUS2:
-			rtc->status2 = rtc->bits;
+		case RTC_STATUS1:
+			rtc->status1 = rtc->bits & 0xFE;
 			break;
 		case RTC_FREE_REG:
 			rtc->freeReg = rtc->bits;
@@ -292,10 +292,10 @@ unsigned GBARTCOutput(struct GBARTC* rtc) {
 	}
 	switch (RTCCommandDataGetCommand(rtc->command)) {
 	case RTC_STATUS1:
-		outputByte = rtc->control;
+		outputByte = rtc->status1;
 		break;
 	case RTC_STATUS2:
-		outputByte = rtc->status2;
+		outputByte = rtc->control;
 		break;
 	case RTC_DATETIME:
 	case RTC_TIME:
@@ -332,7 +332,7 @@ void _rtcUpdateClock(struct GBARTC* rtc, struct mRTCSource* source) {
 	rtc->time[1] = _rtcBCD(date.tm_mon + 1);
 	rtc->time[2] = _rtcBCD(date.tm_mday);
 	rtc->time[3] = _rtcBCD(date.tm_wday);
-	if (RTCControlIsHour24(rtc->control)) {
+	if (RTCControlIsHour24(rtc->control) || RTCStatus1IsHour24(rtc->status1)) {
 		rtc->time[4] = _rtcBCD(date.tm_hour);
 	} else {
 		rtc->time[4] = _rtcBCD(date.tm_hour % 12);
