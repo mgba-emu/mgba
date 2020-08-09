@@ -310,6 +310,9 @@ unsigned GBARTCOutput(struct GBARTC* rtc) {
 		break;
 	}
 	unsigned output = (outputByte >> rtc->bitsRead) & 1;
+	if (rtc->bitsRead == 0) {
+		mLOG(GBA_HW, DEBUG, "RTC output byte %02X", outputByte);
+	}
 	return output;
 }
 
