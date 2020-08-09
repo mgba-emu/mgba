@@ -298,10 +298,10 @@ static void _Div(struct GBA* gba, int32_t num, int32_t denom) {
 	if (loops < 1) {
 		loops = 1;
 	}
-	cpu->cycles += 4 /* prologue */ + 13 * loops + 7 /* epilogue */;
+	gba->biosStall = 4 /* prologue */ + 13 * loops + 7 /* epilogue */;
 }
 
-static int16_t _ArcTan(int32_t i, int32_t* r1, int32_t* r3, int32_t* cycles) {
+static int16_t _ArcTan(int32_t i, int32_t* r1, int32_t* r3, uint32_t* cycles) {
 	int currentCycles = 37;
 	currentCycles += _mulWait(i * i);
 	int32_t a = -((i * i) >> 14);
@@ -325,11 +325,11 @@ static int16_t _ArcTan(int32_t i, int32_t* r1, int32_t* r3, int32_t* cycles) {
 	if (r3) {
 		*r3 = b;
 	}
-	*cycles += currentCycles;
+	*cycles = currentCycles;
 	return (i * b) >> 16;
 }
 
-static int16_t _ArcTan2(int32_t x, int32_t y, int32_t* r1, int32_t* cycles) {
+static int16_t _ArcTan2(int32_t x, int32_t y, int32_t* r1, uint32_t* cycles) {
 	if (!y) {
 		if (x >= 0) {
 			return 0;
@@ -363,9 +363,9 @@ static int16_t _ArcTan2(int32_t x, int32_t y, int32_t* r1, int32_t* cycles) {
 	}
 }
 
-static int32_t _Sqrt(uint32_t x, int32_t* cycles) {
+static int32_t _Sqrt(uint32_t x, uint32_t* cycles) {
 	if (!x) {
-		*cycles += 53;
+		*cycles = 53;
 		return 0;
 	}
 	int32_t currentCycles = 15;
@@ -412,7 +412,7 @@ static int32_t _Sqrt(uint32_t x, int32_t* cycles) {
 			break;
 		}
 	}
-	*cycles += currentCycles;
+	*cycles = currentCycles;
 	return bound;
 }
 
@@ -422,6 +422,9 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	    immediate, cpu->gprs[0], cpu->gprs[1], cpu->gprs[2], cpu->gprs[3]);
 
 	switch (immediate) {
+	case 0xF0: // Used for internal stall counting
+		cpu->gprs[4] = gba->biosStall;
+		return;
 	case 0xFA:
 		GBAPrintFlush(gba);
 		return;
@@ -431,6 +434,8 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		ARMRaiseSWI(cpu);
 		return;
 	}
+
+	bool useStall = false;
 	switch (immediate) {
 	case GBA_SWI_SOFT_RESET:
 		_SoftReset(gba);
@@ -452,19 +457,24 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		ARMRaiseSWI(cpu);
 		return;
 	case GBA_SWI_DIV:
+		useStall = true;
 		_Div(gba, cpu->gprs[0], cpu->gprs[1]);
 		break;
 	case GBA_SWI_DIV_ARM:
+		useStall = true;
 		_Div(gba, cpu->gprs[1], cpu->gprs[0]);
 		break;
 	case GBA_SWI_SQRT:
-		cpu->gprs[0] = _Sqrt(cpu->gprs[0], &cpu->cycles);
+		useStall = true;
+		cpu->gprs[0] = _Sqrt(cpu->gprs[0], &gba->biosStall);
 		break;
 	case GBA_SWI_ARCTAN:
-		cpu->gprs[0] = _ArcTan(cpu->gprs[0], &cpu->gprs[1], &cpu->gprs[3], &cpu->cycles);
+		useStall = true;
+		cpu->gprs[0] = _ArcTan(cpu->gprs[0], &cpu->gprs[1], &cpu->gprs[3], &gba->biosStall);
 		break;
 	case GBA_SWI_ARCTAN2:
-		cpu->gprs[0] = (uint16_t) _ArcTan2(cpu->gprs[0], cpu->gprs[1], &cpu->gprs[1], &cpu->cycles);
+		useStall = true;
+		cpu->gprs[0] = (uint16_t) _ArcTan2(cpu->gprs[0], cpu->gprs[1], &cpu->gprs[1], &gba->biosStall);
 		cpu->gprs[3] = 0x170;
 		break;
 	case GBA_SWI_CPU_SET:
@@ -589,12 +599,25 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	default:
 		mLOG(GBA_BIOS, STUB, "Stub software interrupt: %02X", immediate);
 	}
-	gba->cpu->cycles += 45 + cpu->memory.activeNonseqCycles16 /* 8 bit load for SWI # */;
-	// Return cycles
-	if (gba->cpu->executionMode == MODE_ARM) {
-		gba->cpu->cycles += cpu->memory.activeNonseqCycles32 + cpu->memory.activeSeqCycles32;
-	} else {
-		gba->cpu->cycles += cpu->memory.activeNonseqCycles16 + cpu->memory.activeSeqCycles16;
+	if (useStall) {
+		if (gba->biosStall >= 18) {
+			gba->biosStall -= 18;
+			gba->cpu->cycles += gba->biosStall & 3;
+			gba->biosStall &= ~3;
+			ARMRaiseSWI(cpu);
+		} else {
+			gba->cpu->cycles += gba->biosStall;
+			useStall = false;
+		}
+	}
+	if (!useStall) {
+		gba->cpu->cycles += 45 + cpu->memory.activeNonseqCycles16 /* 8 bit load for SWI # */;
+		// Return cycles
+		if (gba->cpu->executionMode == MODE_ARM) {
+			gba->cpu->cycles += cpu->memory.activeNonseqCycles32 + cpu->memory.activeSeqCycles32;
+		} else {
+			gba->cpu->cycles += cpu->memory.activeNonseqCycles16 + cpu->memory.activeSeqCycles16;
+		}
 	}
 	gba->memory.biosPrefetch = 0xE3A02004;
 }

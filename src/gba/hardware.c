@@ -236,6 +236,7 @@ void GBARTCProcessByte(struct GBARTC* rtc, struct mRTCSource* source) {
 
 			rtc->bytesRemaining = RTC_BYTES[RTCCommandDataGetCommand(command)];
 			rtc->commandActive = rtc->bytesRemaining > 0;
+			mLOG(GBA_HW, DEBUG, "Got RTC command %x", RTCCommandDataGetCommand(command));
 			switch (RTCCommandDataGetCommand(command)) {
 			case RTC_DATETIME:
 			case RTC_TIME:

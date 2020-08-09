@@ -300,6 +300,9 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 			continue;
 		}
 		QLocale locale(name.remove(QString("%0-").arg(binaryName)).remove(".qm"));
+		if (locale.language() == QLocale::English) {
+			continue;
+		}
 		m_ui.languages->addItem(locale.nativeLanguageName(), locale);
 		if (locale.bcp47Name() == QLocale().bcp47Name()) {
 			m_ui.languages->setCurrentIndex(m_ui.languages->count() - 1);

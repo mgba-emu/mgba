@@ -49,6 +49,7 @@ Emulation fixes:
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing
  - GBA BIOS: Fix reloading video registers after reset (fixes mgba.io/i/1808)
+ - GBA BIOS: Make HLE BIOS calls interruptable (fixes mgba.io/i/1711 and mgba.io/i/1823)
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA Memory: Improve gamepak prefetch timing
  - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
@@ -56,8 +57,11 @@ Emulation fixes:
  - GBA SIO: Fix Normal mode being totally broken (fixes mgba.io/i/1800)
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
+ - GBA Video: Invalidate map cache when modifying BGCNT (fixes mgba.io/i/1846)
  - SM83: Emulate HALT bug
 Other fixes:
+ - 3DS: Redo video sync to be more precise
+ - 3DS: Fix crash with libctru 2.0 when exiting
  - All: Improve export headers (fixes mgba.io/i/1738)
  - Core: Ensure ELF regions can be written before trying
  - Debugger: Don't skip undefined instructions when debugger attached
@@ -66,6 +70,9 @@ Other fixes:
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
  - Qt: Fix a race condition in the frame inspector
+ - Qt: Add dummy English translation file (fixes mgba.io/i/1469)
+ - mGUI: Fix closing down a game if an exit is signalled
+ - mVL: Fix injecting accidentally draining non-injection buffer
  - SM83: Simplify register pair access on big endian
  - VFS: Fix directory node listing on some filesystems
 Misc:
