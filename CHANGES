@@ -37,6 +37,7 @@ Other fixes:
  - Qt: Fix a race condition in the frame inspector
  - Qt: Add dummy English translation file (fixes mgba.io/i/1469)
  - mGUI: Fix closing down a game if an exit is signalled
+ - mVL: Fix injecting accidentally draining non-injection buffer
  - SM83: Simplify register pair access on big endian
  - VFS: Fix directory node listing on some filesystems
 Misc:
