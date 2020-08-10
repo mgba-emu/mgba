@@ -35,6 +35,7 @@ void mTimingInit(struct mTiming* timing, int32_t* relativeCycles, int32_t* nextE
 void mTimingDeinit(struct mTiming* timing);
 void mTimingClear(struct mTiming* timing);
 void mTimingSchedule(struct mTiming* timing, struct mTimingEvent*, int32_t when);
+void mTimingScheduleAbsolute(struct mTiming* timing, struct mTimingEvent*, int32_t when);
 void mTimingDeschedule(struct mTiming* timing, struct mTimingEvent*);
 bool mTimingIsScheduled(const struct mTiming* timing, const struct mTimingEvent*);
 int32_t mTimingTick(struct mTiming* timing, int32_t cycles);

@@ -109,9 +109,8 @@ void GBATimerUpdateRegister(struct GBA* gba, int timer, int32_t cyclesLate) {
 	tickIncrement = (0x10000 - tickIncrement) << prescaleBits;
 	currentTime += tickIncrement;
 	currentTime &= ~tickMask;
-	currentTime -= mTimingCurrentTime(&gba->timing);
 	mTimingDeschedule(&gba->timing, &currentTimer->event);
-	mTimingSchedule(&gba->timing, &currentTimer->event, currentTime);
+	mTimingScheduleAbsolute(&gba->timing, &currentTimer->event, currentTime);
 }
 
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t reload) {
