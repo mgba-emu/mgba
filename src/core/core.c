@@ -145,7 +145,10 @@ bool mCorePreloadVFCB(struct mCore* core, struct VFile* vf, void (cb)(size_t, si
 #ifdef FIXED_ROM_BUFFER
 	extern uint32_t* romBuffer;
 	extern size_t romBufferSize;
-	vfm = VFileFromMemory(romBuffer, romBufferSize);
+	if (size > romBufferSize) {
+		size = romBufferSize;
+	}
+	vfm = VFileFromMemory(romBuffer, size);
 #else
 	vfm = VFileMemChunk(NULL, size);
 #endif

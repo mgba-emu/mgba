@@ -30,6 +30,7 @@ Other fixes:
  - 3DS: Fix crash with libctru 2.0 when exiting
  - All: Improve export headers (fixes mgba.io/i/1738)
  - Core: Ensure ELF regions can be written before trying
+ - Core: Fix reported ROM size when a fixed buffer size is used
  - Debugger: Don't skip undefined instructions when debugger attached
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
