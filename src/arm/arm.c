@@ -9,16 +9,14 @@
 #include <mgba/internal/arm/isa-inlines.h>
 #include <mgba/internal/arm/isa-thumb.h>
 
-static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode);
-
 void ARMSetPrivilegeMode(struct ARMCore* cpu, enum PrivilegeMode mode) {
 	if (mode == cpu->privilegeMode) {
 		// Not switching modes after all
 		return;
 	}
 
-	enum RegisterBank newBank = _ARMSelectBank(mode);
-	enum RegisterBank oldBank = _ARMSelectBank(cpu->privilegeMode);
+	enum RegisterBank newBank = ARMSelectBank(mode);
+	enum RegisterBank oldBank = ARMSelectBank(cpu->privilegeMode);
 	if (newBank != oldBank) {
 		// Switch banked registers
 		if (mode == MODE_FIQ || cpu->privilegeMode == MODE_FIQ) {
@@ -44,28 +42,6 @@ void ARMSetPrivilegeMode(struct ARMCore* cpu, enum PrivilegeMode mode) {
 		cpu->spsr.packed = cpu->bankedSPSRs[newBank];
 	}
 	cpu->privilegeMode = mode;
-}
-
-static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode mode) {
-	switch (mode) {
-	case MODE_USER:
-	case MODE_SYSTEM:
-		// No banked registers
-		return BANK_NONE;
-	case MODE_FIQ:
-		return BANK_FIQ;
-	case MODE_IRQ:
-		return BANK_IRQ;
-	case MODE_SUPERVISOR:
-		return BANK_SUPERVISOR;
-	case MODE_ABORT:
-		return BANK_ABORT;
-	case MODE_UNDEFINED:
-		return BANK_UNDEFINED;
-	default:
-		// This should be unreached
-		return BANK_NONE;
-	}
 }
 
 void ARMInit(struct ARMCore* cpu) {
