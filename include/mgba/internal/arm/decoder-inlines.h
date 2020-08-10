@@ -27,7 +27,7 @@ static inline bool ARMInstructionIsBranch(enum ARMMnemonic mnemonic) {
 		case ARM_MN_B:
 		case ARM_MN_BL:
 		case ARM_MN_BX:
-			// TODO: case: ARM_MN_BLX:
+		case ARM_MN_BLX:
 			return true;
 		default:
 			return false;

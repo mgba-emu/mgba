@@ -61,7 +61,7 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 
 	bool interrupt = false;
 	bool isWideInstruction = ARMDecodeCombined(cpu, &info);
-	if (!isWideInstruction && info.mnemonic == ARM_MN_BL) {
+	if (!isWideInstruction && (info.mnemonic == ARM_MN_BL || info.mnemonic == ARM_MN_BLX)) {
 		return false;
 	}
 	if (!ARMTestCondition(cpu, info.condition)) {
