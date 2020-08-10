@@ -15,6 +15,8 @@
 #include <mgba/internal/debugger/stack-trace.h>
 #include <mgba-util/math.h>
 
+#define FRAME_PRIV(FRAME) ((struct ARMRegisterFile*) FRAME->regs)->cpsr.priv
+
 DEFINE_VECTOR(ARMDebugBreakpointList, struct ARMDebugBreakpoint);
 
 static bool ARMDecodeCombined(struct ARMCore* cpu, struct ARMInstructionInfo* info) {
@@ -29,16 +31,6 @@ static bool ARMDecodeCombined(struct ARMCore* cpu, struct ARMInstructionInfo* in
 	}
 }
 
-static inline int ARMGetStack(struct ARMRegisterFile* regs) {
-	if (!regs) {
-		return MODE_USER;
-	}
-	if (regs->cpsr.priv == MODE_SYSTEM) {
-		return MODE_USER;
-	}
-	return regs->cpsr.priv;
-}
-
 static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uint32_t pc) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	struct ARMCore* cpu = debugger->cpu;
@@ -46,8 +38,8 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 	struct mStackTrace* stack = &d->p->stackTrace;
 
 	struct mStackFrame* frame = mStackTraceGetFrame(stack, 0);
-	int currentStack = ARMGetStack(&cpu->regs);
-	if (frame && frame->frameBaseAddress < (uint32_t) cpu->gprs[ARM_SP] && currentStack == ARMGetStack(frame->regs)) {
+	enum RegisterBank currentStack = ARMSelectBank(cpu->cpsr.priv);
+	if (frame && frame->frameBaseAddress < (uint32_t) cpu->gprs[ARM_SP] && currentStack == ARMSelectBank(FRAME_PRIV(frame))) {
 		// The stack frame has been popped off the stack. This means the function
 		// has been returned from, or that the stack pointer has been otherwise
 		// manipulated. Either way, the function is done executing.
@@ -56,7 +48,7 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 			shouldBreak = shouldBreak || frame->breakWhenFinished;
 			mStackTracePop(stack);
 			frame = mStackTraceGetFrame(stack, 0);
-		} while (frame && frame->frameBaseAddress < (uint32_t) cpu->gprs[ARM_SP] && currentStack == ARMGetStack(frame->regs));
+		} while (frame && frame->frameBaseAddress < (uint32_t) cpu->gprs[ARM_SP] && currentStack == ARMSelectBank(FRAME_PRIV(frame)));
 		if (shouldBreak) {
 			struct mDebuggerEntryInfo debuggerInfo = {
 				.address = pc,
@@ -95,7 +87,7 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 		return false;
 	}
 
-	bool isCall = (info.branchType & ARM_BRANCH_LINKED);
+	bool isCall = info.branchType & ARM_BRANCH_LINKED;
 	uint32_t destAddress;
 
 	if (interrupt && !isCall) {
@@ -126,8 +118,9 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 			bool isBranch = ARMInstructionIsBranch(info.mnemonic);
 			int reg = (isBranch ? info.op1.reg : info.op2.reg);
 			destAddress = cpu->gprs[reg];
-			if ((info.operandFormat & ARM_OPERAND_MEMORY_2) && (info.branchType & ARM_BRANCH_INDIRECT)) {
-				destAddress = cpu->memory.load32(cpu, destAddress, NULL);
+			if (!isBranch && (info.branchType & ARM_BRANCH_INDIRECT) && info.op1.reg == ARM_PC && info.operandFormat & ARM_OPERAND_MEMORY_2) {
+				uint32_t ptrAddress = ARMResolveMemoryAccess(&info, &cpu->regs, pc);
+				destAddress = cpu->memory.load32(cpu, ptrAddress, NULL);
 			}
 			if (isBranch || (info.op1.reg == ARM_PC && !isMovPcLr)) {
 				// ARMv4 doesn't have the BLX opcode, so it uses an assignment to LR before a BX for that purpose.
@@ -166,7 +159,7 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 			return false;
 		}
 	} else if (!interrupt) {
-		if (frame && currentStack == ARMGetStack(frame->regs)) {
+		if (frame && currentStack == ARMSelectBank(FRAME_PRIV(frame))) {
 			mStackTracePop(stack);
 		}
 		if (!(debugger->stackTraceMode & STACK_TRACE_BREAK_ON_RETURN)) {

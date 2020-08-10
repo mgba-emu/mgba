@@ -217,6 +217,7 @@ void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info);
 bool ARMDecodeThumbCombine(struct ARMInstructionInfo* info1, struct ARMInstructionInfo* info2,
                            struct ARMInstructionInfo* out);
 int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, int blen);
+uint32_t ARMResolveMemoryAccess(struct ARMInstructionInfo* info, struct ARMRegisterFile* regs, uint32_t pc);
 
 CXX_GUARD_END
 
