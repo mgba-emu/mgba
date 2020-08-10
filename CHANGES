@@ -1,7 +1,10 @@
 0.8.4: (Future)
+Emulation fixes:
+ - GBA Video: Invalidate map cache when modifying BGCNT (fixes mgba.io/i/1846)
+Other fixes:
  - 3DS: Redo video sync to be more precise
  - 3DS: Fix crash with libctru 2.0 when exiting
- - GBA Video: Invalidate map cache when modifying BGCNT (fixes mgba.io/i/1846)
+ - Core: Fix reported ROM size when a fixed buffer size is used
  - Qt: Add dummy English translation file (fixes mgba.io/i/1469)
  - mGUI: Fix closing down a game if an exit is signalled
  - mVL: Fix injecting accidentally draining non-injection buffer
