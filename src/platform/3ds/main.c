@@ -187,6 +187,7 @@ static void _cleanup(void) {
 	camExit();
 	ndspExit();
 	ptmuExit();
+	mcuHwcExit();
 }
 
 static void _map3DSKey(struct mInputMap* map, int ctrKey, enum GBAKey key) {
@@ -237,14 +238,19 @@ static void _drawEnd(void) {
 static int _batteryState(void) {
 	u8 charge;
 	u8 adapter;
-	PTMU_GetBatteryLevel(&charge);
 	PTMU_GetBatteryChargeState(&adapter);
+
 	int state = 0;
+	if (R_SUCCEEDED(MCUHWC_GetBatteryLevel(&charge))) {
+		charge |= BATTERY_PERCENTAGE_VALID;
+	} else {
+		PTMU_GetBatteryLevel(&charge);
+		if (charge > 0) {
+			--charge;
+		}
+	}
 	if (adapter) {
 		state |= BATTERY_CHARGING;
-	}
-	if (charge > 0) {
-		--charge;
 	}
 	return state | charge;
 }
@@ -814,6 +820,7 @@ int main() {
 	camera.cam = SELECT_IN1;
 
 	ptmuInit();
+	mcuHwcInit();
 	camInit();
 
 	hasSound = NO_SOUND;

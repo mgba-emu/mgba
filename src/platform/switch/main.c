@@ -607,7 +607,7 @@ static int _batteryState(void) {
 	u32 charge;
 	int state = 0;
 	if (R_SUCCEEDED(psmGetBatteryChargePercentage(&charge))) {
-		state = (charge + 12) / 25;
+		state = charge | BATTERY_PERCENTAGE_VALID;
 	} else {
 		return BATTERY_NOT_PRESENT;
 	}
