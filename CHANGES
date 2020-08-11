@@ -1,5 +1,6 @@
 0.8.4: (Future)
 Emulation fixes:
+ - GB Audio: Fix initial sweep state
  - GBA Video: Invalidate map cache when modifying BGCNT (fixes mgba.io/i/1846)
 Other fixes:
  - 3DS: Redo video sync to be more precise
