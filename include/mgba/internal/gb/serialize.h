@@ -59,7 +59,9 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  *   | bits 21 - 31: Reserved
  * | 0x0004C - 0x0004F: Next frame
  * | 0x00050 - 0x00053: Next channel 3 fade
- * | 0x00054 - 0x00057: Reserved
+ * | 0x00054 - 0x00057: Sweep state
+ *   | bits 0 - 2: Timesteps
+ *   | bits 3 - 31: Reserved
  * | 0x00058 - 0x0005B: Next event
  * 0x0005C - 0x0006B: Audio channel 2 state
  * | 0x0005C - 0x0005F: Envelepe timing
@@ -87,22 +89,23 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  *   | bits 0 - 3: Current volume
  *   | bits 4 - 5: Is dead?
  *   | bit 6: Is high?
+*    | bit 7: Reserved
  * | 0x000A5: Channel 2 envelope state
  *   | bits 0 - 3: Current volume
  *   | bits 4 - 5: Is dead?
  *   | bit 6: Is high?
-*    | bits 7: Reserved
+*    | bit 7: Reserved
  * | 0x000A6: Channel 4 envelope state
  *   | bits 0 - 3: Current volume
  *   | bits 4 - 5: Is dead?
- *   | bit 6: Is high?
-*    | bits 7: Reserved
+ *   | bits 6 - 7: Current frame (continued)
  * | 0x000A7: Miscellaneous audio flags
- *   | bits 0 - 3: Current frame
- *   | bit 4: Is channel 1 sweep enabled?
- *   | bit 5: Has channel 1 sweep occurred?
- *   | bit 6: Is channel 3's memory readable?
- *   | bit 7: Reserved
+ *   | bit 0: Current frame (continuation)
+ *   | bit 1: Is channel 1 sweep enabled?
+ *   | bit 2: Has channel 1 sweep occurred?
+ *   | bit 3: Is channel 3's memory readable?
+ *   | bit 4: Skip frame
+ *   | bits 5 - 7: Reserved
  * | 0x000A8 - 0x000AB: Left capacitor charge
  * | 0x000AC - 0x000AF: Right capacitor charge
  * | 0x000B0 - 0x000B3: Next sample
@@ -203,12 +206,16 @@ DECL_BITS(GBSerializedAudioEnvelope, Length, 0, 7);
 DECL_BITS(GBSerializedAudioEnvelope, NextStep, 7, 3);
 DECL_BITS(GBSerializedAudioEnvelope, Frequency, 10, 11);
 
+
+DECL_BITFIELD(GBSerializedAudioSweep, uint32_t);
+DECL_BITS(GBSerializedAudioSweep, Time, 0, 3);
+
 struct GBSerializedPSGState {
 	struct {
 		GBSerializedAudioEnvelope envelope;
 		int32_t nextFrame;
 		int32_t nextCh3Fade;
-		int32_t reserved;
+		GBSerializedAudioSweep sweep;
 		uint32_t nextEvent;
 	} ch1;
 	struct {

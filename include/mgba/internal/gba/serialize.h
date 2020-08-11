@@ -41,7 +41,10 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 10 - 20: Shadow frequency register
  *   | bits 21 - 31: Reserved
  * | 0x00134 - 0x00137: Next frame
- * | 0x00138 - 0x0013F: Reserved
+ * | 0x00138 - 0x0013B: Next channel 3 fade
+ * | 0x0013C - 0x0013F: Sweep state
+ *   | bits 0 - 2: Timesteps
+ *   | bits 3 - 7: Reserved
  * | 0x00140 - 0x00143: Next event
  * 0x00144 - 0x00153: Audio channel 2 state
  * | 0x00144 - 0x00147: Envelepe timing
@@ -75,21 +78,23 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 0 - 3: Current volume
  *   | bits 4 - 5: Is dead?
  *   | bit 6: Is high?
+*    | bit 7: Reserved
  * | 0x001DD - 0x001DD: Channel 2 envelope state
  *   | bits 0 - 3: Current volume
  *   | bits 4 - 5: Is dead?
  *   | bit 6: Is high?
-*    | bits 7: Reserved
+*    | bit 7: Reserved
  * | 0x001DE - 0x001DE: Channel 4 envelope state
  *   | bits 0 - 3: Current volume
  *   | bits 4 - 5: Is dead?
- *   | bit 6: Is high?
-*    | bits 7: Reserved
+ *   | bits 6 - 7: Current frame (continued)
  * | 0x001DF - 0x001DF: Miscellaneous audio flags
- *   | bits 0 - 3: Current frame
- *   | bit 4: Is channel 1 sweep enabled?
- *   | bit 5: Has channel 1 sweep occurred?
- *   | bits 6 - 7: Reserved
+ *   | bit 0: Current frame (continuation)
+ *   | bit 1: Is channel 1 sweep enabled?
+ *   | bit 2: Has channel 1 sweep occurred?
+ *   | bit 3: Is channel 3's memory readable?
+ *   | bit 4: Skip frame
+ *   | bits 5 - 7: Reserved
  * 0x001E0 - 0x001FF: Video miscellaneous state
  * | 0x001E0 - 0x001E3: Next event
  * | 0x001E4 - 0x001F7: Reserved
