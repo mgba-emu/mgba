@@ -9,6 +9,7 @@ Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
  - GB: Partially fix timing for skipped BIOS
+ - GB Audio: Fix initial sweep state
  - GB MBC: Fix MBC1 mode changing behavior
  - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
  - GBA: Fix timing advancing too quickly in rare cases
