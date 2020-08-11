@@ -11,6 +11,7 @@ Emulation fixes:
  - GB: Partially fix timing for skipped BIOS
  - GB Audio: Fix initial sweep state
  - GB Audio: Fix serializing sweep time
+ - GB Audio: Fix deserializing audio channels 2 and 3
  - GB MBC: Fix MBC1 mode changing behavior
  - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
  - GBA: Fix timing advancing too quickly in rare cases
