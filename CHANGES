@@ -1,6 +1,7 @@
 0.8.4: (Future)
 Emulation fixes:
  - GB Audio: Fix initial sweep state
+ - GB Audio: Fix deserializing audio channels 2 and 3
  - GBA Audio: Fix deserializing SOUNDCNT_L
  - GBA Video: Invalidate map cache when modifying BGCNT (fixes mgba.io/i/1846)
 Other fixes:
