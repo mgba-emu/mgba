@@ -226,6 +226,7 @@ void CIflush(struct StringBuilder* builder, FILE* out) {
 	builder->repeat = 0;
 	fputs(string, out);
 	free(string);
+	fflush(out);
 }
 
 static bool parseCInemaArgs(int argc, char* const* argv) {
