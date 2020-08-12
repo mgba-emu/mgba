@@ -137,6 +137,7 @@ static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
 
 static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
 	UNUSED(vf);
+	msync(memory, size, MS_SYNC);
 	munmap(memory, size);
 }
 #else
@@ -167,6 +168,7 @@ static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
 static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
 	UNUSED(size);
 	struct VFileFD* vfd = (struct VFileFD*) vf;
+	FlushViewOfFile(buffer, size);
 	size_t i;
 	for (i = 0; i < HandleMappingListSize(&vfd->handles); ++i) {
 		if (HandleMappingListGetPointer(&vfd->handles, i)->mapping == memory) {
@@ -214,6 +216,9 @@ static bool _vfdSync(struct VFile* vf, const void* buffer, size_t size) {
 	GetSystemTime(&st);
 	SystemTimeToFileTime(&st, &ft);
 	SetFileTime(h, NULL, &ft, &ft);
+	if (buffer && size) {
+		FlushViewOfFile(buffer, size);
+	}
 	return FlushFileBuffers(h);
 #endif
 }
