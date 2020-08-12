@@ -103,27 +103,32 @@ static u32 hidSixAxisHandles[4];
 #define CC_TARGET_GAMMA   2.2f
 #define CC_RGB_MAX        31.0f
 
-#define GBC_CC_R          0.87f
-#define GBC_CC_G          0.66f
-#define GBC_CC_B          0.79f
-#define GBC_CC_RG         0.115f
-#define GBC_CC_RB         0.14f
-#define GBC_CC_GR         0.18f
-#define GBC_CC_GB         0.07f
-#define GBC_CC_BR        -0.05f
-#define GBC_CC_BG         0.225f
+/* > Note: GBC and GBA share almost identical
+ *   colour space, but we maintain independent
+ *   values in case of future adjustments */
+#define GBC_CC_LUM        0.94f
+#define GBC_CC_R          0.82f
+#define GBC_CC_G          0.665f
+#define GBC_CC_B          0.73f
+#define GBC_CC_RG         0.125f
+#define GBC_CC_RB         0.195f
+#define GBC_CC_GR         0.24f
+#define GBC_CC_GB         0.075f
+#define GBC_CC_BR        -0.06f
+#define GBC_CC_BG         0.21f
 #define GBC_CC_GAMMA_ADJ -0.5f
 
-#define GBA_CC_R          0.86f
-#define GBA_CC_G          0.66f
-#define GBA_CC_B          0.81f
-#define GBA_CC_RG         0.11f
-#define GBA_CC_RB         0.1325f
-#define GBA_CC_GR         0.19f
-#define GBA_CC_GB         0.0575f
-#define GBA_CC_BR        -0.05f
-#define GBA_CC_BG         0.23f
-#define GBA_CC_GAMMA_ADJ  0.45f
+#define GBA_CC_LUM        0.94f
+#define GBA_CC_R          0.82f
+#define GBA_CC_G          0.665f
+#define GBA_CC_B          0.73f
+#define GBA_CC_RG         0.125f
+#define GBA_CC_RB         0.195f
+#define GBA_CC_GR         0.24f
+#define GBA_CC_GB         0.075f
+#define GBA_CC_BR        -0.06f
+#define GBA_CC_BG         0.21f
+#define GBA_CC_GAMMA_ADJ  1.0f
 
 static color_t* ccLUT              = NULL;
 static unsigned ccType             = 0;
@@ -137,6 +142,7 @@ static void _initColorCorrection(void) {
 
 	/* Variables */
 	enum GBModel model = GB_MODEL_AUTODETECT;
+	float ccLum;
 	float ccR;
 	float ccG;
 	float ccB;
@@ -196,27 +202,29 @@ static void _initColorCorrection(void) {
 
 	switch (model) {
 		case GB_MODEL_AGB:
-			ccR  = GBA_CC_R;
-			ccG  = GBA_CC_G;
-			ccB  = GBA_CC_B;
-			ccRG = GBA_CC_RG;
-			ccRB = GBA_CC_RB;
-			ccGR = GBA_CC_GR;
-			ccGB = GBA_CC_GB;
-			ccBR = GBA_CC_BR;
-			ccBG = GBA_CC_BG;
+			ccLum = GBA_CC_LUM;
+			ccR   = GBA_CC_R;
+			ccG   = GBA_CC_G;
+			ccB   = GBA_CC_B;
+			ccRG  = GBA_CC_RG;
+			ccRB  = GBA_CC_RB;
+			ccGR  = GBA_CC_GR;
+			ccGB  = GBA_CC_GB;
+			ccBR  = GBA_CC_BR;
+			ccBG  = GBA_CC_BG;
 			adjustedGamma = CC_TARGET_GAMMA + GBA_CC_GAMMA_ADJ;
 			break;
 		case GB_MODEL_CGB:
-			ccR  = GBC_CC_R;
-			ccG  = GBC_CC_G;
-			ccB  = GBC_CC_B;
-			ccRG = GBC_CC_RG;
-			ccRB = GBC_CC_RB;
-			ccGR = GBC_CC_GR;
-			ccGB = GBC_CC_GB;
-			ccBR = GBC_CC_BR;
-			ccBG = GBC_CC_BG;
+			ccLum = GBC_CC_LUM;
+			ccR   = GBC_CC_R;
+			ccG   = GBC_CC_G;
+			ccB   = GBC_CC_B;
+			ccRG  = GBC_CC_RG;
+			ccRB  = GBC_CC_RB;
+			ccGR  = GBC_CC_GR;
+			ccGB  = GBC_CC_GB;
+			ccBR  = GBC_CC_BR;
+			ccBG  = GBC_CC_BG;
 			adjustedGamma = CC_TARGET_GAMMA + GBC_CC_GAMMA_ADJ;
 			break;
 		default:
@@ -254,9 +262,9 @@ static void _initColorCorrection(void) {
 		float gFloat = pow((float)g * rgbMaxInv, adjustedGamma);
 		float bFloat = pow((float)b * rgbMaxInv, adjustedGamma);
 		/* Perform colour mangling */
-		float rCorrect = (ccR  * rFloat) + (ccGR * gFloat) + (ccBR * bFloat);
-		float gCorrect = (ccRG * rFloat) + (ccG  * gFloat) + (ccBG * bFloat);
-		float bCorrect = (ccRB * rFloat) + (ccGB * gFloat) + (ccB  * bFloat);
+		float rCorrect = ccLum * ((ccR  * rFloat) + (ccGR * gFloat) + (ccBR * bFloat));
+		float gCorrect = ccLum * ((ccRG * rFloat) + (ccG  * gFloat) + (ccBG * bFloat));
+		float bCorrect = ccLum * ((ccRB * rFloat) + (ccGB * gFloat) + (ccB  * bFloat));
 		/* Range check... */
 		rCorrect = rCorrect > 0.0f ? rCorrect : 0.0f;
 		gCorrect = gCorrect > 0.0f ? gCorrect : 0.0f;
