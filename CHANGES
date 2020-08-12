@@ -39,6 +39,7 @@ Other fixes:
  - Debugger: Don't skip undefined instructions when debugger attached
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
+ - GBA: Disable more checks when loading GS save with checks disabled (fixes mgba.io/i/1851)
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
  - Qt: Fix a race condition in the frame inspector

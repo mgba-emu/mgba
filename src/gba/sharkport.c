@@ -69,7 +69,7 @@ bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChec
 		return false;
 	}
 	LOAD_32(size, 0, &buffer.i);
-	if (size < 0x1C || size > SIZE_CART_FLASH1M + 0x1C) {
+	if (size < 0x1C || size >= SIZE_CART_FLASH1M + 0x1C) {
 		return false;
 	}
 	char* payload = malloc(size);
@@ -91,7 +91,7 @@ bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChec
 	buffer.c[0x19] = 0;
 	buffer.c[0x1A] = 0;
 	buffer.c[0x1B] = 0;
-	if (memcmp(buffer.c, payload, 0x1C) != 0) {
+	if (memcmp(buffer.c, payload, testChecksum ? 0x1C : 0xF) != 0) {
 		goto cleanup;
 	}
 
