@@ -1085,6 +1085,14 @@ void CInemaTestRun(struct CInemaTest* test) {
 					if (!FFmpegDecoderRead(&decoder)) {
 						CIlog(1, "Failed to read more frames. EOF?\n");
 						test->status = CI_FAIL;
+						if (rebaseline && !FFmpegEncoderIsOpen(&encoder)) {
+							_replayBaseline(test, &encoder, &image, frame);
+							if (test->status == CI_ERROR) {
+								break;
+							}
+							encoder.d.postVideoFrame(&encoder.d, image.data, image.stride);
+							core->setAVStream(core, &encoder.d);
+						}
 						break;
 					}
 				}
