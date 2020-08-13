@@ -4780,7 +4780,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../SettingsView.ui" line="544"/>
         <source>Allow opposing input directions</source>
-        <translation>允许相对的输入方向</translation>
+        <translation>允许相对方向输入</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="551"/>
