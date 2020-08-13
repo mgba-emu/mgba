@@ -79,7 +79,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation>瓷贴 #</translation>
+        <translation>图块 #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="48"/>
@@ -228,7 +228,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../CheatsView.ui" line="48"/>
         <source>Add New Set</source>
-        <translation>添加新集</translation>
+        <translation>添加新代码集</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="55"/>
@@ -251,7 +251,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../DebuggerConsole.ui" line="25"/>
         <source>Enter command (try `help` for more info)</source>
-        <translation>输入命令（尝试输入 `help` 获取更多信息）</translation>
+        <translation>输入命令 (尝试输入 `help` 获取更多信息)</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="32"/>
@@ -1067,7 +1067,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../ObjView.ui" line="682"/>
         <source>Tile</source>
-        <translation>瓷贴</translation>
+        <translation>图块</translation>
     </message>
 </context>
 <context>
@@ -1103,7 +1103,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../OverrideView.ui" line="75"/>
         <source>Tilt</source>
-        <translation>瓷贴</translation>
+        <translation>图块</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="85"/>
@@ -1259,12 +1259,12 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../OverrideView.ui" line="354"/>
         <source>Wisdom Tree (Unlicensed)</source>
-        <translation>Wisdom Tree（未授权）</translation>
+        <translation>Wisdom Tree (未授权)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="364"/>
         <source>Pokémon Jade/Diamond (Unlicensed)</source>
-        <translation>Pokémon Jade/Diamond（未授权）</translation>
+        <translation>Pokémon Jade/Diamond (未授权)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="372"/>
@@ -1482,7 +1482,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../BattleChipView.cpp" line="115"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation>BattleChip 数据已丢失。BattleChip Gate 仍然能够工作，但部分图形会丢失。您想立即下载数据吗？</translation>
+        <translation>BattleChip 数据已丢失。BattleChip Gate 仍然能够工作，但会丢失部分图形。您想立即下载数据吗？</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="181"/>
@@ -1730,27 +1730,27 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../IOViewer.cpp" line="31"/>
         <source>Mode 0: 4 tile layers</source>
-        <translation>模式0: 4 个瓷贴层</translation>
+        <translation>模式 0: 4 个图块层</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="32"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
-        <translation>模式 1: 2 个瓷贴层 + 1 个已旋转/缩放瓷贴层</translation>
+        <translation>模式 1: 2 个图块层 + 1 个旋转/缩放图块层</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="33"/>
         <source>Mode 2: 2 rotated/scaled tile layers</source>
-        <translation>模式 2: 2 个已旋转或缩放瓷贴层</translation>
+        <translation>模式 2: 2 个旋转/缩放图块层</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="34"/>
         <source>Mode 3: Full 15-bit bitmap</source>
-        <translation>模式 3: 完整 15 位位图</translation>
+        <translation>模式 3: 15 位完整位图</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="35"/>
         <source>Mode 4: Full 8-bit bitmap</source>
-        <translation>模式 4: 完整 8 位位图</translation>
+        <translation>模式 4: 8 位完整位图</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="36"/>
@@ -1770,12 +1770,12 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../IOViewer.cpp" line="42"/>
         <source>Unlocked HBlank</source>
-        <translation>已解锁 HBlank</translation>
+        <translation>已解锁的 HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="43"/>
         <source>Linear OBJ tile mapping</source>
-        <translation>线性 OBJ 瓷贴映射</translation>
+        <translation>线性 OBJ 图块映射</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="44"/>
@@ -1876,7 +1876,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../IOViewer.cpp" line="91"/>
         <location filename="../IOViewer.cpp" line="101"/>
         <source>Tile data base (* 16kB)</source>
-        <translation>瓷贴数据基 (* 16kB)</translation>
+        <translation>图块数据基 (* 16kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="74"/>
@@ -1900,7 +1900,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../IOViewer.cpp" line="94"/>
         <location filename="../IOViewer.cpp" line="104"/>
         <source>Tile map base (* 2kB)</source>
-        <translation>瓷贴映射基 (* 2kB)</translation>
+        <translation>图块映射基 (* 2kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="77"/>
@@ -3249,7 +3249,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../MapView.cpp" line="50"/>
         <location filename="../MapView.cpp" line="62"/>
         <source>Tile base</source>
-        <translation>瓷贴基</translation>
+        <translation>图块基</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="51"/>
@@ -3806,7 +3806,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../Window.cpp" line="886"/>
         <source>This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience.</source>
-        <translation>此游戏使用了尚未实现的 BIOS 调用。请使用官方 BIOS 以获得最佳体验。</translation>
+        <translation>此游戏使用尚未实现的 BIOS 调用。请使用官方 BIOS 以获得最佳体验。</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="986"/>
@@ -3826,7 +3826,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../Window.cpp" line="1000"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
-        <translation>更改将在模拟器下次启动时生效。</translation>
+        <translation>更改将在模拟器下次重新启动时生效。</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1055"/>
@@ -3976,13 +3976,13 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     </message>
     <message>
         <location filename="../Window.cpp" line="1211"/>
-        <source>Import GameShark Save</source>
-        <translation>导入 GameShark 存档</translation>
+        <source>Import GameShark Save...</source>
+        <translation>导入 GameShark 存档...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1214"/>
-        <source>Export GameShark Save</source>
-        <translation>导出 GameShark 存档</translation>
+        <source>Export GameShark Save...</source>
+        <translation>导出 GameShark 存档...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1219"/>
@@ -4127,7 +4127,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../Window.cpp" line="1341"/>
         <source>Frame size</source>
-        <translation>帧大小</translation>
+        <translation>画面大小</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1343"/>
@@ -4267,7 +4267,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../Window.cpp" line="1517"/>
         <source>View &amp;tiles...</source>
-        <translation>查看瓷贴(&amp;T)...</translation>
+        <translation>查看图块(&amp;T)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1518"/>
@@ -4277,7 +4277,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../Window.cpp" line="1521"/>
         <source>&amp;Frame inspector...</source>
-        <translation>框架检查(&amp;F)...</translation>
+        <translation>框架检查器(&amp;F)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1539"/>
@@ -4780,7 +4780,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../SettingsView.ui" line="544"/>
         <source>Allow opposing input directions</source>
-        <translation>允许逆向输入</translation>
+        <translation>允许相对方向输入</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="551"/>
@@ -4805,7 +4805,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../SettingsView.ui" line="592"/>
         <source>Enable Discord Rich Presence</source>
-        <translation>启用 Enable Discord Rich Presence</translation>
+        <translation>启用 Discord Rich Presence</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="606"/>
@@ -4961,7 +4961,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../SettingsView.ui" line="1038"/>
         <source>XQ GBA audio (experimental)</source>
-        <translation>XQ GBA 音频 (实验)</translation>
+        <translation>XQ GBA 音频 (实验性)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1049"/>
@@ -5207,7 +5207,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../TileView.ui" line="14"/>
         <source>Tiles</source>
-        <translation>瓷贴</translation>
+        <translation>图块</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="20"/>
@@ -5237,7 +5237,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../TileView.ui" line="92"/>
         <source>Tiles per row</source>
-        <translation>每行瓷贴</translation>
+        <translation>每行图块</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="99"/>
