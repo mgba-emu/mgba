@@ -4805,7 +4805,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../SettingsView.ui" line="592"/>
         <source>Enable Discord Rich Presence</source>
-        <translation>启用 Enable Discord Rich Presence</translation>
+        <translation>启用 Discord Rich Presence</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="606"/>
