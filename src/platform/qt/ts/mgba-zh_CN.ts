@@ -3976,13 +3976,13 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     </message>
     <message>
         <location filename="../Window.cpp" line="1211"/>
-        <source>Import GameShark Save</source>
-        <translation>导入 GameShark 存档</translation>
+        <source>Import GameShark Save...</source>
+        <translation>导入 GameShark 存档...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1214"/>
-        <source>Export GameShark Save</source>
-        <translation>导出 GameShark 存档</translation>
+        <source>Export GameShark Save...</source>
+        <translation>导出 GameShark 存档...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1219"/>
@@ -4127,7 +4127,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../Window.cpp" line="1341"/>
         <source>Frame size</source>
-        <translation>帧大小</translation>
+        <translation>画面大小</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1343"/>
