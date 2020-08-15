@@ -736,7 +736,7 @@ static void _writeDiff(const char* testName, const struct CInemaImage* image, si
 		return;
 	}
 	char name[32];
-	snprintf(name, sizeof(name), "%s_%04" PRIz "u.png", type, frame);
+	snprintf(name, sizeof(name), "%s_%05" PRIz "u.png", type, frame);
 	struct VFile* vf = dir->openFile(dir, name, O_CREAT | O_TRUNC | O_WRONLY);
 	if (!vf) {
 		CIerr(0, "Could not open output file %s\n", name);
@@ -977,7 +977,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 	core->setVideoBuffer(core, image.data, image.stride);
 	mCoreConfigInit(&core->config, "cinema");
 
-	unsigned limit = 9999;
+	unsigned limit = 3600;
 	unsigned skip = 0;
 	unsigned fail = 0;
 	unsigned video = 0;
