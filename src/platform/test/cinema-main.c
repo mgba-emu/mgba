@@ -871,6 +871,8 @@ void _writeDiffSet(struct CInemaImage* expected, const char* name, uint8_t* diff
 	}
 	if (xfail) {
 		_writeDiff(name, &outdiff, frame, "xnormalized");
+	} else {
+		_writeDiff(name, &outdiff, frame, "normalized");
 	}
 }
 
