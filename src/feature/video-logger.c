@@ -296,11 +296,16 @@ bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block) {
 		mVideoLoggerRendererRunInjected(logger);
 		ignorePackets = channel->ignorePackets;
 	}
+	struct mVideoLoggerDirtyInfo buffer = {0};
 	struct mVideoLoggerDirtyInfo item = {0};
-	while (logger->readData(logger, &item, sizeof(item), block)) {
+	while (logger->readData(logger, &buffer, sizeof(buffer), block)) {
+		LOAD_32LE(item.type, 0, &buffer.type);
 		if (ignorePackets & (1 << item.type)) {
 			continue;
 		}
+		LOAD_32LE(item.address, 0, &buffer.address);
+		LOAD_32LE(item.value, 0, &buffer.value);
+		LOAD_32LE(item.value2, 0, &buffer.value2);
 		switch (item.type) {
 		case DIRTY_SCANLINE:
 			if (channel && channel->injectionPoint == LOGGER_INJECTION_FIRST_SCANLINE && !channel->injecting && item.address == 0) {
