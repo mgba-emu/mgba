@@ -142,7 +142,7 @@ void FrameView::disableLayer(const QPointF& coord) {
 }
 
 #ifdef M_CORE_GBA
-void FrameView::updateTilesGBA(bool force) {
+void FrameView::updateTilesGBA(bool) {
 	if (m_ui.freeze->checkState() == Qt::Checked) {
 		return;
 	}
@@ -285,7 +285,7 @@ void FrameView::injectGBA() {
 #endif
 
 #ifdef M_CORE_GB
-void FrameView::updateTilesGB(bool force) {
+void FrameView::updateTilesGB(bool) {
 	if (m_ui.freeze->checkState() == Qt::Checked) {
 		return;
 	}
@@ -314,10 +314,12 @@ void FrameView::invalidateQueue(const QSize& dims) {
 #ifdef M_CORE_GBA
 		case PLATFORM_GBA:
 			injectGBA();
+			break;
 #endif
 #ifdef M_CORE_GB
 		case PLATFORM_GB:
 			injectGB();
+			break;
 #endif
 		}
 		m_vl->runFrame(m_vl);
@@ -376,6 +378,8 @@ bool FrameView::eventFilter(QObject* obj, QEvent* event) {
 		pos /= m_ui.magnification->value();
 		disableLayer(pos);
 		return true;
+	default:
+		break;
 	}
 	return false;
 }
