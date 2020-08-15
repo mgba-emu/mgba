@@ -792,12 +792,21 @@ static bool _compareImages(struct CInemaTest* restrict test, const struct CInema
 		for (x = 0; x < image->width; ++x) {
 			size_t pix = expected->stride * y + x;
 			size_t tpix = image->stride * y + x;
+#ifndef __BIG_ENDIAN__
 			int testR = testPixels[tpix * 4 + 0];
 			int testG = testPixels[tpix * 4 + 1];
 			int testB = testPixels[tpix * 4 + 2];
 			int expectR = expectPixels[pix * 4 + 0];
 			int expectG = expectPixels[pix * 4 + 1];
 			int expectB = expectPixels[pix * 4 + 2];
+#else
+			int testB = testPixels[tpix * 4 + 1];
+			int testG = testPixels[tpix * 4 + 2];
+			int testR = testPixels[tpix * 4 + 3];
+			int expectB = expectPixels[pix * 4 + 1];
+			int expectG = expectPixels[pix * 4 + 2];
+			int expectR = expectPixels[pix * 4 + 3];
+#endif
 			int r = expectR - testR;
 			int g = expectG - testG;
 			int b = expectB - testB;
@@ -828,9 +837,15 @@ static bool _compareImages(struct CInemaTest* restrict test, const struct CInema
 					if (b > *max) {
 						*max = b;
 					}
+#ifndef __BIG_ENDIAN__
 					diff[pix * 4 + 0] = r;
 					diff[pix * 4 + 1] = g;
 					diff[pix * 4 + 2] = b;
+#else
+					diff[pix * 4 + 1] = b;
+					diff[pix * 4 + 2] = g;
+					diff[pix * 4 + 3] = r;
+#endif
 				}
 
 				if (test) {
@@ -864,9 +879,15 @@ void _writeDiffSet(struct CInemaImage* expected, const char* name, uint8_t* diff
 	for (y = 0; y < outdiff.height; ++y) {
 		for (x = 0; x < outdiff.width; ++x) {
 			size_t pix = outdiff.stride * y + x;
+#ifndef __BIG_ENDIAN__
 			diff[pix * 4 + 0] = diff[pix * 4 + 0] * 255 / max;
 			diff[pix * 4 + 1] = diff[pix * 4 + 1] * 255 / max;
 			diff[pix * 4 + 2] = diff[pix * 4 + 2] * 255 / max;
+#else
+			diff[pix * 4 + 1] = diff[pix * 4 + 1] * 255 / max;
+			diff[pix * 4 + 2] = diff[pix * 4 + 2] * 255 / max;
+			diff[pix * 4 + 3] = diff[pix * 4 + 3] * 255 / max;
+#endif
 		}
 	}
 	if (xfail) {
