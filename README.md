@@ -52,21 +52,23 @@ The following mappers are fully supported:
 - MBC7
 - Wisdom Tree (unlicensed)
 - Pokémon Jade/Diamond (unlicensed)
+- BBD (unlicensed MBC5-like)
+- Hitek (unlicensed MBC5-like)
 
 The following mappers are partially supported:
 
-- MBC6
+- MBC6 (missing flash memory support)
 - MMM01
 - Pocket Cam
-- TAMA5
-- HuC-1
-- HuC-3
+- TAMA5 (missing RTC support)
+- HuC-1 (missing IR support)
+- HuC-3 (missing RTC and IR support)
 
 ### Planned features
 
 - Networked multiplayer link cable support.
 - Dolphin/JOY bus link cable support.
-- M4A audio mixing, for higher quality sound than hardware.
+- MP2k audio mixing, for higher quality sound than hardware.
 - Re-recording support for tool-assist runs.
 - Lua support for scripting.
 - A comprehensive debug suite.
