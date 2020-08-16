@@ -3,6 +3,8 @@ Features:
  - e-Reader card scanning
  - Add WebP and APNG recording
  - Support for unlicensed Pokemon Jade/Diamond Game Boy mapper
+ - Support for unlicensed BBD Game Boy mapper
+ - Support for unlicensed Hitek Game Boy mapper
  - Stack tracing tools in ARM debugger (by ahigerd)
  - Command scripts for CLI debugger (by ahigerd)
 Emulation fixes:

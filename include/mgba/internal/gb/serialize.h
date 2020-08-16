@@ -392,6 +392,10 @@ struct GBSerializedState {
 				uint8_t bank0;
 			} mmm01;
 			struct {
+				uint8_t dataSwapMode;
+				uint8_t bankSwapMode;
+			} bbd;
+			struct {
 				uint8_t reserved[16];
 			} padding;
 		};
