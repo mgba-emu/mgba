@@ -21,6 +21,7 @@ Emulation fixes:
  - GBA BIOS: Fix reloading video registers after reset (fixes mgba.io/i/1808)
  - GBA BIOS: Make HLE BIOS calls interruptable (fixes mgba.io/i/1711 and mgba.io/i/1823)
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
+ - GBA Hardware: Fix GB Player detection on big endian platforms
  - GBA Memory: Improve gamepak prefetch timing
  - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
  - GBA SIO: Fix copying Normal mode transfer values
