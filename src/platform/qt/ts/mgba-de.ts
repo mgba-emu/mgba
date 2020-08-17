@@ -307,12 +307,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../GIFView.ui" line="14"/>
         <source>Record GIF/APNG</source>
-        <translation type="unfinished"></translation>
+        <translation>GIF/APNG aufzeichnen</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="30"/>
         <source>Loop</source>
-        <translation type="unfinished"></translation>
+        <translation>Wiederholen</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="51"/>
@@ -332,17 +332,17 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../GIFView.ui" line="112"/>
         <source>APNG</source>
-        <translation type="unfinished"></translation>
+        <translation>APNG</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="122"/>
         <source>GIF</source>
-        <translation type="unfinished"></translation>
+        <translation>GIF</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="135"/>
         <source>WebP</source>
-        <translation type="unfinished"></translation>
+        <translation>WebP</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="145"/>
@@ -961,18 +961,18 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../ObjView.ui" line="284"/>
         <location filename="../ObjView.ui" line="325"/>
         <source>+0.00</source>
-        <translation type="unfinished"></translation>
+        <translation>+0.00</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="291"/>
         <location filename="../ObjView.ui" line="305"/>
         <source>+1.00</source>
-        <translation type="unfinished"></translation>
+        <translation>+1.00</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="298"/>
         <source>Matrix</source>
-        <translation type="unfinished"></translation>
+        <translation>Matrix</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="451"/>
@@ -1050,7 +1050,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../ObjView.ui" line="218"/>
         <source>Dimensions</source>
-        <translation>Abmessungen</translation>
+        <translation>Größe</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="244"/>
@@ -1258,12 +1258,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../OverrideView.ui" line="359"/>
         <source>Wisdom Tree (Unlicensed)</source>
-        <translation type="unfinished"></translation>
+        <translation>Wisdom Tree (nicht lizenziert)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="364"/>
         <source>Pokémon Jade/Diamond (Unlicensed)</source>
-        <translation type="unfinished"></translation>
+        <translation>Pokémon Jade/Diamond (nicht lizenziert)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="372"/>
@@ -1353,7 +1353,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../PaletteView.ui" line="292"/>
         <source>0x000 (000)</source>
-        <translation type="unfinished">0x000 (000) {0x?}</translation>
+        <translation>0x000 (000)</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="322"/>
@@ -1513,12 +1513,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../CoreManager.cpp" line="87"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
-        <translation type="unfinished">Konnte das Spiel nicht laden. Sind Sie sicher, dass es im korrekten Format vorliegt?</translation>
+        <translation>Konnte das Spiel nicht laden. Bist Du sicher, dass es im korrekten Format vorliegt?</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="114"/>
         <source>Failed to open save file. Is the save directory writable?</source>
-        <translation type="unfinished"></translation>
+        <translation>Fehler beim Öffnen der Speicherdatei. Ist das Zielverzeichnis beschreibbar?</translation>
     </message>
 </context>
 <context>
@@ -1643,7 +1643,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../GIFView.cpp" line="61"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished">Fehler beim Öffnen der Ausgabedatei: %1</translation>
+        <translation>Fehler beim Öffnen der Ausgabedatei: %1</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
@@ -1653,7 +1653,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../GIFView.cpp" line="88"/>
         <source>Graphics Interchange Format (*.gif);;Animated Portable Network Graphics (*.png *.webp *.apng)</source>
-        <translation type="unfinished"></translation>
+        <translation>Graphics Interchange Format (*.gif);;Animated Portable Network Graphics (*.png *.webp *.apng)</translation>
     </message>
 </context>
 <context>
@@ -3035,17 +3035,17 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../KeyEditor.cpp" line="53"/>
         <source>Super (L)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super (L)</translation>
     </message>
     <message>
         <location filename="../KeyEditor.cpp" line="56"/>
         <source>Super (R)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super (R)</translation>
     </message>
     <message>
         <location filename="../KeyEditor.cpp" line="59"/>
         <source>Menu</source>
-        <translation type="unfinished"></translation>
+        <translation>Menü</translation>
     </message>
 </context>
 <context>
@@ -3373,7 +3373,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../ObjView.cpp" line="253"/>
         <location filename="../ObjView.cpp" line="254"/>
         <source>---</source>
-        <translation type="unfinished">---</translation>
+        <translation>---</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="185"/>
@@ -4145,22 +4145,22 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../Window.cpp" line="427"/>
         <source>Select e-Reader dotcode</source>
-        <translation type="unfinished"></translation>
+        <translation>e-Reader-Code auswählen</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="427"/>
         <source>e-Reader card (*.raw *.bin *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>e-Reader-Karte (*.raw *.bin *.bmp)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="870"/>
         <source>Couldn&apos;t Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Konnte nicht gestartet werden</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="871"/>
         <source>Could not start game.</source>
-        <translation type="unfinished"></translation>
+        <translation>Spiel konnte nicht gestartet werden.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1116"/>
@@ -4170,17 +4170,17 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../Window.cpp" line="1136"/>
         <source>Scan e-Reader dotcodes...</source>
-        <translation type="unfinished"></translation>
+        <translation>e-Reader-Code einlesen...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1214"/>
         <source>Import GameShark Save...</source>
-        <translation type="unfinished"></translation>
+        <translation>GameShare-Speicherstand importieren...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1217"/>
         <source>Export GameShark Save...</source>
-        <translation type="unfinished"></translation>
+        <translation>GameShark-Speicherstand exportieren...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1230"/>
@@ -4210,7 +4210,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../Window.cpp" line="1478"/>
         <source>Record GIF/WebP/APNG...</source>
-        <translation type="unfinished"></translation>
+        <translation>GIF/WebP/APNG aufzeichnen...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1502"/>
@@ -4356,22 +4356,22 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../KeyEditor.cpp" line="40"/>
         <source>Shift</source>
-        <translation type="unfinished"></translation>
+        <translation>Shift</translation>
     </message>
     <message>
         <location filename="../KeyEditor.cpp" line="43"/>
         <source>Control</source>
-        <translation type="unfinished"></translation>
+        <translation>Strg</translation>
     </message>
     <message>
         <location filename="../KeyEditor.cpp" line="46"/>
         <source>Alt</source>
-        <translation type="unfinished"></translation>
+        <translation>Alt</translation>
     </message>
     <message>
         <location filename="../KeyEditor.cpp" line="49"/>
         <source>Meta</source>
-        <translation type="unfinished"></translation>
+        <translation>AltGr</translation>
     </message>
 </context>
 <context>
@@ -4777,7 +4777,8 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../SettingsView.ui" line="663"/>
         <source>Show filename instead of ROM name in title bar</source>
-        <translation type="unfinished"></translation>
+        <translation>Dateinamen statt ROM-Namen in der
+Titelleiste anzeigen</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="723"/>
@@ -5311,7 +5312,7 @@ wenn vorhanden</translation>
     <message>
         <location filename="../VideoView.ui" line="163"/>
         <source>4K</source>
-        <translation type="unfinished">4K</translation>
+        <translation>4K</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="170"/>
@@ -5372,7 +5373,7 @@ wenn vorhanden</translation>
         <location filename="../VideoView.ui" line="308"/>
         <location filename="../VideoView.ui" line="350"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Leer</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="320"/>
