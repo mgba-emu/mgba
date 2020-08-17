@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2020 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,8 +9,9 @@
 #include <mgba-util/math.h>
 #include <mgba-util/string.h>
 
-#define LIST_INITIAL_SIZE 8
+#define LIST_INITIAL_SIZE 4
 #define TABLE_INITIAL_SIZE 8
+#define REBALANCE_THRESHOLD 4
 
 #define TABLE_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == key
 #define HASH_TABLE_STRNCMP_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == hash && strncmp(LIST->list[(INDEX)].stringKey, key, LIST->list[(INDEX)].keylen) == 0
@@ -40,6 +41,8 @@ struct TableList {
 	size_t nEntries;
 	size_t listSize;
 };
+
+void HashTableInsertBinaryMoveKey(struct Table* table, void* key, size_t keylen, void* value);
 
 static inline const struct TableList* _getConstList(const struct Table* table, uint32_t key) {
 	uint32_t entry = key & (table->tableSize - 1);
@@ -72,6 +75,25 @@ static void _removeItemFromList(struct Table* table, struct TableList* list, siz
 	if (item != list->nEntries) {
 		list->list[item] = list->list[list->nEntries];
 	}
+}
+
+static void _rebalance(struct Table* table) {
+	struct Table newTable;
+	TableInit(&newTable, table->tableSize * REBALANCE_THRESHOLD, NULL);
+	newTable.seed = table->seed * 134775813 + 1;
+	size_t i;
+	for (i = 0; i < table->tableSize; ++i) {
+		const struct TableList* list = &table->table[i];
+		size_t j;
+		for (j = 0; j < list->nEntries; ++j) {
+			HashTableInsertBinaryMoveKey(&newTable, list->list[j].stringKey, list->list[j].keylen, list->list[j].value);
+		}
+		free(list->list);
+	}
+	free(table->table);
+	table->tableSize = newTable.tableSize;
+	table->table = newTable.table;
+	table->seed = newTable.seed;
 }
 
 void TableInit(struct Table* table, size_t initialSize, void (*deinitializer)(void*)) {
@@ -180,6 +202,7 @@ size_t TableSize(const struct Table* table) {
 
 void HashTableInit(struct Table* table, size_t initialSize, void (*deinitializer)(void*)) {
 	TableInit(table, initialSize, deinitializer);
+	table->seed = 1;
 }
 
 void HashTableDeinit(struct Table* table) {
@@ -207,6 +230,11 @@ void* HashTableLookupBinary(const struct Table* table, const void* key, size_t k
 void HashTableInsert(struct Table* table, const char* key, void* value) {
 	uint32_t hash = hash32(key, strlen(key), table->seed);
 	struct TableList* list = _getList(table, hash);
+	if (table->size >= table->tableSize * REBALANCE_THRESHOLD) {
+		_rebalance(table);
+		hash = hash32(key, strlen(key), table->seed);
+		list = _getList(table, hash);
+	}
 	TABLE_LOOKUP_START(HASH_TABLE_STRNCMP_COMPARATOR, list) {
 		if (value != lookupResult->value) {
 			if (table->deinitializer) {
@@ -228,6 +256,11 @@ void HashTableInsert(struct Table* table, const char* key, void* value) {
 void HashTableInsertBinary(struct Table* table, const void* key, size_t keylen, void* value) {
 	uint32_t hash = hash32(key, keylen, table->seed);
 	struct TableList* list = _getList(table, hash);
+	if (table->size >= table->tableSize * REBALANCE_THRESHOLD) {
+		_rebalance(table);
+		hash = hash32(key, keylen, table->seed);
+		list = _getList(table, hash);
+	}
 	TABLE_LOOKUP_START(HASH_TABLE_MEMCMP_COMPARATOR, list) {
 		if (value != lookupResult->value) {
 			if (table->deinitializer) {
@@ -241,6 +274,32 @@ void HashTableInsertBinary(struct Table* table, const void* key, size_t keylen, 
 	list->list[list->nEntries].key = hash;
 	list->list[list->nEntries].stringKey = malloc(keylen);
 	memcpy(list->list[list->nEntries].stringKey, key, keylen);
+	list->list[list->nEntries].keylen = keylen;
+	list->list[list->nEntries].value = value;
+	++list->nEntries;
+	++table->size;
+}
+
+void HashTableInsertBinaryMoveKey(struct Table* table, void* key, size_t keylen, void* value) {
+	uint32_t hash = hash32(key, keylen, table->seed);
+	struct TableList* list = _getList(table, hash);
+	if (table->size >= table->tableSize * REBALANCE_THRESHOLD) {
+		_rebalance(table);
+		hash = hash32(key, keylen, table->seed);
+		list = _getList(table, hash);
+	}
+	TABLE_LOOKUP_START(HASH_TABLE_MEMCMP_COMPARATOR, list) {
+		if (value != lookupResult->value) {
+			if (table->deinitializer) {
+				table->deinitializer(lookupResult->value);
+			}
+			lookupResult->value = value;
+		}
+		return;
+	} TABLE_LOOKUP_END;
+	list = _resizeAsNeeded(table, list, hash);
+	list->list[list->nEntries].key = hash;
+	list->list[list->nEntries].stringKey = key;
 	list->list[list->nEntries].keylen = keylen;
 	list->list[list->nEntries].value = value;
 	++list->nEntries;
