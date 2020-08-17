@@ -62,6 +62,7 @@ Misc:
  - Qt: Renderer can be changed while a game is running
  - Qt: Add hex index to palette view
  - Qt: Add transformation matrix info to sprite view
+ - Qt: Memory viewer now supports editing decimal values directly (closes mgba.io/i/1705)
  - Util: Reset vector size on deinit
 
 0.8.3: (2020-08-03)
