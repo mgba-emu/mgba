@@ -376,9 +376,11 @@ bool mCoreLoadELF(struct mCore* core, struct ELF* elf) {
 		if (block && bsize >= phdr->p_filesz && esize > phdr->p_offset && esize >= phdr->p_filesz + phdr->p_offset) {
 			memcpy(block, &bytes[phdr->p_offset], phdr->p_filesz);
 		} else {
+			ELFProgramHeadersDeinit(&ph);
 			return false;
 		}
 	}
+	ELFProgramHeadersDeinit(&ph);
 	return true;
 }
 
