@@ -10,6 +10,7 @@ Other fixes:
  - 3DS: Fix crash with libctru 2.0 when exiting
  - Core: Fix reported ROM size when a fixed buffer size is used
  - GBA: Disable more checks when loading GS save with checks disabled (fixes mgba.io/i/1851)
+ - GBA Core: Fix memory leak when loading symbols
  - Qt: Add dummy English translation file (fixes mgba.io/i/1469)
  - mGUI: Fix closing down a game if an exit is signalled
  - mVL: Fix injecting accidentally draining non-injection buffer
