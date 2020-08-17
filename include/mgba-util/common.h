@@ -129,32 +129,32 @@ typedef intptr_t ssize_t;
 #define LOAD_32BE(DEST, ADDR, ARR) DEST = *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR))
 #if defined(__PPC__) || defined(__POWERPC__)
 #define LOAD_32LE(DEST, ADDR, ARR) { \
-	off_t _addr = (ADDR); \
+	size_t _addr = (ADDR); \
 	const void* _ptr = (ARR); \
 	__asm__("lwbrx %0, %1, %2" : "=r"(DEST) : "b"(_ptr), "r"(_addr)); \
 }
 
 #define LOAD_16LE(DEST, ADDR, ARR) { \
-	off_t _addr = (ADDR); \
+	size_t _addr = (ADDR); \
 	const void* _ptr = (ARR); \
 	__asm__("lhbrx %0, %1, %2" : "=r"(DEST) : "b"(_ptr), "r"(_addr)); \
 }
 
 #define STORE_32LE(SRC, ADDR, ARR) { \
-	off_t _addr = (ADDR); \
+	size_t _addr = (ADDR); \
 	void* _ptr = (ARR); \
 	__asm__("stwbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr) : "memory"); \
 }
 
 #define STORE_16LE(SRC, ADDR, ARR) { \
-	off_t _addr = (ADDR); \
+	size_t _addr = (ADDR); \
 	void* _ptr = (ARR); \
 	__asm__("sthbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr) : "memory"); \
 }
 
 #ifndef _ARCH_PWR7
 #define LOAD_64LE(DEST, ADDR, ARR) { \
-	off_t _addr = (ADDR); \
+	size_t _addr = (ADDR); \
 	union { \
 		struct { \
 			uint32_t hi; \
@@ -171,7 +171,7 @@ typedef intptr_t ssize_t;
 }
 
 #define STORE_64LE(SRC, ADDR, ARR) { \
-	off_t _addr = (ADDR); \
+	size_t _addr = (ADDR); \
 	union { \
 		struct { \
 			uint32_t hi; \
@@ -187,13 +187,13 @@ typedef intptr_t ssize_t;
 }
 #else
 #define LOAD_64LE(DEST, ADDR, ARR) { \
-	off_t _addr = (ADDR); \
+	size_t _addr = (ADDR); \
 	const void* _ptr = (ARR); \
 	__asm__("ldbrx %0, %1, %2" : "=r"(DEST) : "b"(_ptr), "r"(_addr)); \
 }
 
 #define STORE_64LE(SRC, ADDR, ARR) { \
-	off_t _addr = (ADDR); \
+	size_t _addr = (ADDR); \
 	void* _ptr = (ARR); \
 	__asm__("stdbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr) : "memory"); \
 }
