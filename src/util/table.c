@@ -14,7 +14,7 @@
 
 #define TABLE_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == key
 #define HASH_TABLE_STRNCMP_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == hash && strncmp(LIST->list[(INDEX)].stringKey, key, LIST->list[(INDEX)].keylen) == 0
-#define HASH_TABLE_MEMCMP_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == hash && memcmp(LIST->list[(INDEX)].stringKey, key, LIST->list[(INDEX)].keylen) == 0
+#define HASH_TABLE_MEMCMP_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == hash && LIST->list[(INDEX)].keylen == keylen && memcmp(LIST->list[(INDEX)].stringKey, key, LIST->list[(INDEX)].keylen) == 0
 
 #define TABLE_LOOKUP_START(COMPARATOR, LIST) \
 	size_t i; \
