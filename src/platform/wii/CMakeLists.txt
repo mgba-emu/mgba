@@ -23,14 +23,24 @@ add_executable(${BINARY_NAME}.elf ${GUI_SRC} main.c)
 set_target_properties(${BINARY_NAME}.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${OS_LIB})
 
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/font.tpl
+                   COMMAND ${GXTEXCONV} -i ${CMAKE_SOURCE_DIR}/res/font2x.png -o font.tpl colfmt=5 mipmap=no
+                   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/res/font2x.png
+                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/font.c
-                   COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/wii/font.tpl
-                   MAIN_DEPENDENCY  ${CMAKE_SOURCE_DIR}/src/platform/wii/font.tpl
+                   COMMAND ${RAW2C} ${CMAKE_CURRENT_BINARY_DIR}/font.tpl
+                   MAIN_DEPENDENCY  ${CMAKE_CURRENT_BINARY_DIR}/font.tpl
+                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.tpl
+                   COMMAND ${GXTEXCONV} -i ${CMAKE_SOURCE_DIR}/res/icons2x.png -o icons.tpl colfmt=5 mipmap=no
+                   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/res/icons2x.png
                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.c
-                   COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/wii/icons.tpl
-                   MAIN_DEPENDENCY  ${CMAKE_SOURCE_DIR}/src/platform/wii/icons.tpl
+                   COMMAND ${RAW2C} ${CMAKE_CURRENT_BINARY_DIR}/icons.tpl
+                   MAIN_DEPENDENCY  ${CMAKE_CURRENT_BINARY_DIR}/icons.tpl
                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_target(${BINARY_NAME}.dol ALL
