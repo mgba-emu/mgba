@@ -220,6 +220,11 @@ static void _GBACoreDeinit(struct mCore* core) {
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetDeinit(&core->dirs);
 #endif
+#ifdef USE_DEBUGGERS
+	if (core->symbolTable) {
+		mDebuggerSymbolTableDestroy(core->symbolTable);
+	}
+#endif
 
 	struct GBACore* gbacore = (struct GBACore*) core;
 	free(gbacore->debuggerPlatform);
