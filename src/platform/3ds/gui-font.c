@@ -9,6 +9,7 @@
 #include <mgba-util/vfs.h>
 #include "icons.h"
 
+#include <tex3ds.h>
 #include "ctr-gpu.h"
 
 #define FONT_SIZE 15.6f
@@ -44,12 +45,8 @@ struct GUIFont* GUIFontCreate(void) {
 		tex->param = GPU_TEXTURE_MAG_FILTER(GPU_LINEAR) | GPU_TEXTURE_MIN_FILTER(GPU_LINEAR) | GPU_TEXTURE_WRAP_S(GPU_CLAMP_TO_EDGE) | GPU_TEXTURE_WRAP_T(GPU_CLAMP_TO_EDGE);
 	}
 
-	tex = &guiFont->icons;
-	C3D_TexInitVRAM(tex, 256, 64, GPU_RGBA5551);
-
-	GSPGPU_FlushDataCache(icons, icons_size);
-	GX_RequestDma((u32*) icons, tex->data, icons_size);
-	gspWaitForDMA();
+	Tex3DS_Texture t3x = Tex3DS_TextureImport(icons, icons_size, &guiFont->icons, NULL, true);
+	Tex3DS_TextureFree(t3x);
 
 	return guiFont;
 }
@@ -136,23 +133,28 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 		y -= metric.height;
 		break;
 	}
+	s16 origin = font->icons.height - metric.y - metric.height;
+
 	switch (orient) {
 	case GUI_ORIENT_HMIRROR:
-		ctrAddRectEx(color, x + metric.width, y,
-		             -metric.width, metric.height,
-		             metric.x, metric.y,
+		ctrAddRectEx(color, x + metric.width, y + metric.height,
+		             -metric.width, -metric.height,
+		             metric.x, origin,
 		             metric.width, metric.height, 0);
 		break;
 	case GUI_ORIENT_VMIRROR:
-		ctrAddRectEx(color, x, y + metric.height,
-		             metric.width, -metric.height,
-		             metric.x, metric.y,
+		ctrAddRectEx(color, x, y,
+		             metric.width, metric.height,
+		             metric.x, origin,
 		             metric.width, metric.height, 0);
 		break;
 	case GUI_ORIENT_0:
 	default:
 		// TODO: Rotation
-		ctrAddRect(color, x, y, metric.x, metric.y, metric.width, metric.height);
+		ctrAddRectEx(color, x, y + metric.height,
+		             metric.width, -metric.height,
+		             metric.x, origin,
+		             metric.width, metric.height, 0);
 		break;
 	}
 }
@@ -163,11 +165,10 @@ void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h,
 	if (icon >= GUI_ICON_MAX) {
 		return;
 	}
-
 	struct GUIIconMetric metric = defaultIconMetrics[icon];
-	ctrAddRectEx(color, x, y,
+	ctrAddRectEx(color, x, y + (h ? h : metric.height),
 	             w ? w : metric.width,
-	             h ? h : metric.height,
-	             metric.x, metric.y,
+	             h ? -h : -metric.height,
+	             metric.x, font->icons.height - metric.y - metric.height,
 	             metric.width, metric.height, 0);
 }

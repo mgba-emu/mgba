@@ -7,6 +7,7 @@ find_program(BANNERTOOL bannertool)
 find_program(MAKEROM makerom)
 find_program(PICASSO picasso)
 find_program(RAW2C raw2c)
+find_program(TEX3DS tex3ds)
 set(STRIP "${cross_prefix_path}strip" CACHE INTERNAL "symbol stripper")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format" PARENT_SCOPE)
@@ -65,9 +66,15 @@ add_custom_command(OUTPUT ${BINARY_NAME}.bnr
                    COMMAND ${BANNERTOOL} makebanner -ci ${CMAKE_CURRENT_SOURCE_DIR}/banner.cgfx -a ${CMAKE_CURRENT_SOURCE_DIR}/bios.wav -o ${BINARY_NAME}.bnr
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/banner.cgfx ${CMAKE_CURRENT_SOURCE_DIR}/bios.wav)
 
+# tex3ds binaries as of 2.0.1-3 crash if you try to do this
+#add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.t3x
+#                   COMMAND ${TEX3DS} -f rgb5551 -o icons.t3x ${CMAKE_SOURCE_DIR}/res/icons.png
+#                   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/res/icons.png
+#                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.c
-                   COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/3ds/icons.raw
-                   DEPENDS ${CMAKE_SOURCE_DIR}/src/platform/3ds/icons.raw)
+                   COMMAND ${RAW2C} ${CMAKE_CURRENT_SOURCE_DIR}/icons.t3x
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/icons.t3x)
 
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/uishader.shbin ${CMAKE_CURRENT_BINARY_DIR}/uishader.shbin.h
