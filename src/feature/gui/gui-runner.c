@@ -56,6 +56,7 @@ static const struct mInputPlatformInfo _mGUIKeyInfo = {
 		[mGUI_INPUT_SCREENSHOT] = "Take screenshot",
 		[mGUI_INPUT_FAST_FORWARD_HELD] = "Fast forward (held)",
 		[mGUI_INPUT_FAST_FORWARD_TOGGLE] = "Fast forward (toggle)",
+		[mGUI_INPUT_MUTE_TOGGLE] = "Mute (toggle)",
 	},
 	.nKeys = GUI_INPUT_MAX
 };
@@ -489,6 +490,11 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				} else {
 					runner->setFrameLimiter(runner, true);
 				}
+			}
+			if (guiKeys & (1 << mGUI_INPUT_MUTE_TOGGLE)) {
+				int mute = !runner->core->opts.mute;
+				mCoreConfigSetUIntValue(&runner->config, "mute", mute);
+				runner->core->reloadConfigOption(runner->core, "mute", &runner->config);
 			}
 			uint16_t keys = runner->pollGameInput(runner);
 			if (runner->prepareForFrame) {
