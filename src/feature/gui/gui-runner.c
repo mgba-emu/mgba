@@ -202,6 +202,7 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 #else
 	mCoreConfigSetDefaultIntValue(&runner->config, "autosave", true);
 #endif
+	mCoreConfigSetDefaultIntValue(&runner->config, "showOSD", true);
 	mCoreConfigLoad(&runner->config);
 	mCoreConfigGetIntValue(&runner->config, "logLevel", &logger.logLevel);
 
@@ -430,6 +431,12 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		mCoreLoadState(runner->core, 0, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
 	}
 
+	int showOSD = true;
+	mCoreConfigGetIntValue(&runner->config, "showOSD", &showOSD);
+
+	int drawFps = false;
+	mCoreConfigGetIntValue(&runner->config, "fpsCounter", &drawFps);
+
 	bool running = true;
 
 #ifndef DISABLE_THREADING
@@ -503,16 +510,29 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			runner->core->setKeys(runner->core, keys);
 			runner->core->runFrame(runner->core);
 			if (runner->drawFrame) {
-				int drawFps = false;
-				mCoreConfigGetIntValue(&runner->config, "fpsCounter", &drawFps);
-
 				runner->params.drawStart();
 				runner->drawFrame(runner, false);
-				if (drawFps) {
+				if (showOSD || drawFps) {
 					if (runner->params.guiPrepare) {
 						runner->params.guiPrepare();
 					}
-					GUIFontPrintf(runner->params.font, 0, GUIFontHeight(runner->params.font), GUI_ALIGN_LEFT, 0x7FFFFFFF, "%.2f fps", runner->fps);
+					if (drawFps) {
+						GUIFontPrintf(runner->params.font, 0, GUIFontHeight(runner->params.font), GUI_ALIGN_LEFT, 0x7FFFFFFF, "%.2f fps", runner->fps);
+					}
+					if (showOSD) {
+						unsigned origin = runner->params.width - GUIFontHeight(runner->params.font) / 2;
+						unsigned w;
+						if (fastForward || (heldKeys & (1 << mGUI_INPUT_FAST_FORWARD_HELD))) {
+							GUIFontDrawIcon(runner->params.font, origin, GUIFontHeight(runner->params.font) / 2, GUI_ALIGN_RIGHT, 0, 0x7FFFFFFF, GUI_ICON_STATUS_FAST_FORWARD);
+							GUIFontIconMetrics(runner->params.font, GUI_ICON_STATUS_FAST_FORWARD, &w, NULL);
+							origin -= w + GUIFontHeight(runner->params.font) / 2;
+						}
+						if (runner->core->opts.mute) {
+							GUIFontDrawIcon(runner->params.font, origin, GUIFontHeight(runner->params.font) / 2, GUI_ALIGN_RIGHT, 0, 0x7FFFFFFF, GUI_ICON_STATUS_MUTE);
+							GUIFontIconMetrics(runner->params.font, GUI_ICON_STATUS_MUTE, &w, NULL);
+							origin -= w + GUIFontHeight(runner->params.font) / 2;
+						}
+					}
 					if (runner->params.guiFinish) {
 						runner->params.guiFinish();
 					}
@@ -603,6 +623,8 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		if (runner->unpaused) {
 			runner->unpaused(runner);
 		}
+		mCoreConfigGetIntValue(&runner->config, "fpsCounter", &drawFps);
+		mCoreConfigGetIntValue(&runner->config, "showOSD", &showOSD);
 	}
 	mLOG(GUI_RUNNER, DEBUG, "Shutting down...");
 	if (runner->gameUnloaded) {

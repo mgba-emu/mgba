@@ -152,4 +152,6 @@ const struct GUIIconMetric defaultIconMetrics[] = {
 	[GUI_ICON_BUTTON_TRIANGLE] = { 34, 34, 12, 11 },
 	[GUI_ICON_BUTTON_SQUARE] = { 50, 34, 12, 11 },
 	[GUI_ICON_BUTTON_HOME] = { 66, 34, 12, 11 },
+	[GUI_ICON_STATUS_FAST_FORWARD] = { 2, 50, 12, 12 },
+	[GUI_ICON_STATUS_MUTE] = { 17, 50, 14, 12 },
 };

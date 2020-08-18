@@ -3,6 +3,7 @@ Features:
  - e-Reader card scanning
  - Add WebP and APNG recording
  - Add mute option in homebrew ports
+ - Add status indicators for fast-forward and mute in homebrew ports
  - Support for unlicensed Pokemon Jade/Diamond Game Boy mapper
  - Support for unlicensed BBD Game Boy mapper
  - Support for unlicensed Hitek Game Boy mapper
