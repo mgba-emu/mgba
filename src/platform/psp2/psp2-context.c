@@ -50,7 +50,6 @@ static enum ScreenMode {
 	SM_MAX
 } screenMode;
 
-static void* outputBuffer;
 static int currentTex;
 static vita2d_texture* tex[2];
 static vita2d_texture* screenshot;
@@ -493,7 +492,6 @@ void mPSP2Teardown(struct mGUIRunner* runner) {
 	vita2d_free_texture(tex[0]);
 	vita2d_free_texture(tex[1]);
 	vita2d_free_texture(screenshot);
-	mappedMemoryFree(outputBuffer, 256 * 256 * 4);
 	frameLimiter = true;
 }
 
