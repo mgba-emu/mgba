@@ -4,6 +4,7 @@ Emulation fixes:
  - GB Audio: Fix deserializing audio channels 2 and 3
  - GBA Audio: Fix deserializing SOUNDCNT_L
  - GBA Audio: Fix stereo in XQ audio
+ - GBA Audio: Fix volume/mute in XQ audio (fixes mgba.io/i/1864)
  - GBA Hardware: Fix GB Player detection on big endian platforms
  - GBA Video: Invalidate map cache when modifying BGCNT (fixes mgba.io/i/1846)
 Other fixes:
