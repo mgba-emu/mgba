@@ -291,7 +291,7 @@ void _mp2kStep(struct GBAAudioMixer* mixer) {
 		}
 		if (mixer->p->externalMixing) {
 			blip_add_delta(mixer->p->psg.left, mixer->p->clock + i * interval, sample.left - mixer->last.left);
-			blip_add_delta(mixer->p->psg.right, mixer->p->clock + i * interval, sample.left - mixer->last.left);
+			blip_add_delta(mixer->p->psg.right, mixer->p->clock + i * interval, sample.right - mixer->last.right);
 		}
 		mixer->last = sample;
 	}
