@@ -289,6 +289,8 @@ void _mp2kStep(struct GBAAudioMixer* mixer) {
 			CircleBufferRead16(&mixer->activeTracks[track].buffer, &value);
 			sample.right += value;
 		}
+		sample.left = (sample.left * mixer->p->masterVolume) >> 8;
+		sample.right = (sample.right * mixer->p->masterVolume) >> 8;
 		if (mixer->p->externalMixing) {
 			blip_add_delta(mixer->p->psg.left, mixer->p->clock + i * interval, sample.left - mixer->last.left);
 			blip_add_delta(mixer->p->psg.right, mixer->p->clock + i * interval, sample.right - mixer->last.right);
