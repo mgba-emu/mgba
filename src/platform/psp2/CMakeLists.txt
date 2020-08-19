@@ -78,6 +78,7 @@ if(BUILD_PERF)
 	                FILE ${CMAKE_CURRENT_SOURCE_DIR}/bg.png sce_sys/livearea/contents/bg.png
 	                FILE ${CMAKE_CURRENT_SOURCE_DIR}/startup.png sce_sys/livearea/contents/startup.png
 	                FILE ${CMAKE_CURRENT_BINARY_DIR}/template.xml sce_sys/livearea/contents/template.xml)
+	add_dependencies(${BINARY_NAME}-perf.vpk perf.bin)
 
 	install(FILES
 	        ${CMAKE_CURRENT_BINARY_DIR}/perf.bin
