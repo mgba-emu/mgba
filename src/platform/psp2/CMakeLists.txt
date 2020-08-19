@@ -28,6 +28,7 @@ set(OS_LIB -lvita2d -l${M_LIBRARY}
     -lScePower_stub
     -lSceSysmodule_stub
     -lSceTouch_stub)
+set(OS_LIB ${OS_LIB} PARENT_SCOPE)
 set(OBJCOPY_CMD ${OBJCOPY} -I binary -O elf32-littlearm -B arm)
 
 list(APPEND GUI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/gui-font.c)
@@ -60,6 +61,30 @@ vita_create_vpk(${BINARY_NAME}.vpk MGBA00001 ${BINARY_NAME}.self
                 FILE ${CMAKE_CURRENT_SOURCE_DIR}/bg.png sce_sys/livearea/contents/bg.png
                 FILE ${CMAKE_CURRENT_SOURCE_DIR}/startup.png sce_sys/livearea/contents/startup.png
                 FILE ${CMAKE_CURRENT_BINARY_DIR}/template.xml sce_sys/livearea/contents/template.xml)
+
+if(BUILD_PERF)
+	add_executable(perf-main.elf perf.c)
+	set_target_properties(perf-main.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
+	target_link_libraries(perf-main.elf ${OS_LIB})
+
+	vita_create_self(perf.bin ../${BINARY_NAME}-perf)
+	vita_create_self(perf-main.self perf-main.elf)
+
+	vita_create_vpk(${BINARY_NAME}-perf.vpk MGBA00002 perf-main.self
+	                NAME "${PROJECT_NAME} Perf Tester"
+	                FILE ${CMAKE_CURRENT_BINARY_DIR}/perf.bin perf.bin
+	                FILE ${CMAKE_CURRENT_SOURCE_DIR}/icon0.png sce_sys/icon0.png
+	                FILE ${CMAKE_CURRENT_SOURCE_DIR}/pic0.png sce_sys/pic0.png
+	                FILE ${CMAKE_CURRENT_SOURCE_DIR}/bg.png sce_sys/livearea/contents/bg.png
+	                FILE ${CMAKE_CURRENT_SOURCE_DIR}/startup.png sce_sys/livearea/contents/startup.png
+	                FILE ${CMAKE_CURRENT_BINARY_DIR}/template.xml sce_sys/livearea/contents/template.xml)
+
+	install(FILES
+	        ${CMAKE_CURRENT_BINARY_DIR}/perf.bin
+	        ${CMAKE_CURRENT_SOURCE_DIR}/perf-start.sh
+	        ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}-perf.vpk
+	        DESTINATION . COMPONENT ${BINARY_NAME}-perf)
+endif()
 
 install(TARGETS ${BINARY_NAME}.elf DESTINATION . COMPONENT ${BINARY_NAME}-dbg)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.vpk DESTINATION . COMPONENT ${BINARY_NAME}-psp2)
