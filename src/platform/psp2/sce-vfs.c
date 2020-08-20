@@ -40,7 +40,7 @@ static void* _vfsceMap(struct VFile* vf, size_t size, int flags);
 static void _vfsceUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfsceTruncate(struct VFile* vf, size_t size);
 static ssize_t _vfsceSize(struct VFile* vf);
-static bool _vfsceSync(struct VFile* vf, const void* memory, size_t size);
+static bool _vfsceSync(struct VFile* vf, void* memory, size_t size);
 
 static bool _vdsceClose(struct VDir* vd);
 static void _vdsceRewind(struct VDir* vd);
@@ -146,13 +146,14 @@ ssize_t _vfsceSize(struct VFile* vf) {
 	return end;
 }
 
-bool _vfsceSync(struct VFile* vf, const void* buffer, size_t size) {
+bool _vfsceSync(struct VFile* vf, void* buffer, size_t size) {
 	struct VFileSce* vfsce = (struct VFileSce*) vf;
 	if (buffer && size) {
 		SceOff cur = sceIoLseek(vfsce->fd, 0, SEEK_CUR);
 		sceIoLseek(vfsce->fd, 0, SEEK_SET);
-		sceIoWrite(vfsce->fd, buffer, size);
+		int res = sceIoWrite(vfsce->fd, buffer, size);
 		sceIoLseek(vfsce->fd, cur, SEEK_SET);
+		return res == size;
 	}
 	return sceIoSyncByFd(vfsce->fd) >= 0;
 }

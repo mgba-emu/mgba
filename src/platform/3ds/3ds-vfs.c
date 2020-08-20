@@ -38,7 +38,7 @@ static void* _vf3dMap(struct VFile* vf, size_t size, int flags);
 static void _vf3dUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vf3dTruncate(struct VFile* vf, size_t size);
 static ssize_t _vf3dSize(struct VFile* vf);
-static bool _vf3dSync(struct VFile* vf, const void* buffer, size_t size);
+static bool _vf3dSync(struct VFile* vf, void* buffer, size_t size);
 
 static bool _vd3dClose(struct VDir* vd);
 static void _vd3dRewind(struct VDir* vd);
@@ -160,14 +160,12 @@ ssize_t _vf3dSize(struct VFile* vf) {
 	return size;
 }
 
-static bool _vf3dSync(struct VFile* vf, const void* buffer, size_t size) {
+static bool _vf3dSync(struct VFile* vf, void* buffer, size_t size) {
 	struct VFile3DS* vf3d = (struct VFile3DS*) vf;
 	if (buffer) {
 		u32 sizeWritten;
 		Result res = FSFILE_Write(vf3d->handle, &sizeWritten, 0, buffer, size, FS_WRITE_FLUSH);
-		if (res) {
-			return false;
-		}
+		return R_SUCCEEDED(res);
 	}
 	FSFILE_Flush(vf3d->handle);
 	return true;

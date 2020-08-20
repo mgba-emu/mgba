@@ -70,6 +70,7 @@ Misc:
  - Qt: Add transformation matrix info to sprite view
  - Qt: Memory viewer now supports editing decimal values directly (closes mgba.io/i/1705)
  - Util: Reset vector size on deinit
+ - VFS: Change semantics of VFile.sync on mapped files (fixes mgba.io/i/1730)
 
 0.8.3: (2020-08-03)
 Emulation fixes:

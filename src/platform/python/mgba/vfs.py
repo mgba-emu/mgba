@@ -73,8 +73,9 @@ def _vfpSync(vf, buffer, size):
     if buffer and size:
         pos = f.tell()
         f.seek(0, os.SEEK_SET)
-        _vfpWrite(vf, buffer, size)
+        res = _vfpWrite(vf, buffer, size)
         f.seek(pos, os.SEEK_SET)
+        return res == size
     f.flush()
     os.fsync()
     return True
