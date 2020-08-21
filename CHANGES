@@ -22,6 +22,7 @@ Emulation fixes:
  - GBA Audio: Fix deserializing SOUNDCNT_L
  - GBA Audio: Fix stereo in XQ audio
  - GBA Audio: Fix volume/mute in XQ audio (fixes mgba.io/i/1864)
+ - GBA Audio: Revamp FIFO emulation (fixes mgba.io/i/356, mgba.io/i/875, mgba.io/i/1847)
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing
  - GBA BIOS: Fix reloading video registers after reset (fixes mgba.io/i/1808)

@@ -15,7 +15,7 @@
 #include <fcntl.h>
 
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
-const uint32_t GBA_SAVESTATE_VERSION = 0x00000003;
+const uint32_t GBA_SAVESTATE_VERSION = 0x00000004;
 
 mLOG_DEFINE_CATEGORY(GBA_STATE, "GBA Savestate", "gba.serialize");
 
