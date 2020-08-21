@@ -134,29 +134,37 @@ void GBADMASchedule(struct GBA* gba, int number, struct GBADMA* info) {
 void GBADMARunHblank(struct GBA* gba, int32_t cycles) {
 	struct GBAMemory* memory = &gba->memory;
 	struct GBADMA* dma;
+	bool found = false;
 	int i;
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
 		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_HBLANK && !dma->nextCount) {
 			dma->when = mTimingCurrentTime(&gba->timing) + 3 + cycles;
 			dma->nextCount = dma->count;
+			found = true;
 		}
 	}
-	GBADMAUpdate(gba);
+	if (found) {
+		GBADMAUpdate(gba);
+	}
 }
 
 void GBADMARunVblank(struct GBA* gba, int32_t cycles) {
 	struct GBAMemory* memory = &gba->memory;
 	struct GBADMA* dma;
+	bool found = false;
 	int i;
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
 		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_VBLANK && !dma->nextCount) {
 			dma->when = mTimingCurrentTime(&gba->timing) + 3 + cycles;
 			dma->nextCount = dma->count;
+			found = true;
 		}
 	}
-	GBADMAUpdate(gba);
+	if (found) {
+		GBADMAUpdate(gba);
+	}
 }
 
 void GBADMARunDisplayStart(struct GBA* gba, int32_t cycles) {
