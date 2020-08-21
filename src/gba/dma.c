@@ -219,7 +219,7 @@ void GBADMAUpdate(struct GBA* gba) {
 		struct GBADMA* dma = &memory->dma[i];
 		if (GBADMARegisterIsEnable(dma->reg) && dma->nextCount) {
 			int32_t time = dma->when - currentTime;
-			if (memory->activeDMA == -1 || (dma->count == dma->nextCount && time < leastTime)) {
+			if (memory->activeDMA == -1 || time < leastTime) {
 				leastTime = time;
 				memory->activeDMA = i;
 			}
@@ -303,6 +303,16 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	info->nextCount = wordsRemaining;
 	info->nextSource = source;
 	info->nextDest = dest;
+
+	int i;
+	for (i = 0; i < 4; ++i) {
+		struct GBADMA* dma = &memory->dma[i];
+		int32_t time = dma->when - info->when;
+		if (time < 0 && GBADMARegisterIsEnable(dma->reg) && dma->nextCount) {
+			dma->when = info->when;
+		}
+	}
+
 	if (!wordsRemaining) {
 		info->nextCount |= 0x80000000;
 		if (sourceRegion < REGION_CART0 || destRegion < REGION_CART0) {
