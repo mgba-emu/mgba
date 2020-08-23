@@ -7,6 +7,7 @@ Emulation fixes:
  - GBA Audio: Fix volume/mute in XQ audio (fixes mgba.io/i/1864)
  - GBA Hardware: Fix GB Player detection on big endian platforms
  - GBA Video: Invalidate map cache when modifying BGCNT (fixes mgba.io/i/1846)
+ - GBA Video: Don't draw sprites using unmapped VRAM in GL renderer (fixes mgba.io/i/1865)
 Other fixes:
  - 3DS: Redo video sync to be more precise
  - 3DS: Fix crash with libctru 2.0 when exiting
