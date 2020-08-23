@@ -38,6 +38,7 @@ Emulation fixes:
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
  - GBA Video: Invalidate map cache when modifying BGCNT (fixes mgba.io/i/1846)
+ - GBA Video: Don't draw sprites using unmapped VRAM in GL renderer (fixes mgba.io/i/1865)
  - SM83: Emulate HALT bug
 Other fixes:
  - 3DS: Redo video sync to be more precise
