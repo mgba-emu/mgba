@@ -115,6 +115,10 @@ class VFile:
         self._no_gc = _no_gc
         self._claimed = False
 
+    @staticmethod
+    def fromEmpty():
+        return VFile(lib.VFileMemChunk(ffi.NULL, 0))
+
     def __del__(self):
         if not self._claimed:
             self.close()
