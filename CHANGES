@@ -2,6 +2,7 @@
 Emulation fixes:
  - GB Audio: Fix initial sweep state
  - GB Audio: Fix deserializing audio channels 2 and 3
+ - GB Audio: Fix deserializing while audio was disabled (fixes mgba.io/i/1305)
  - GBA Audio: Fix deserializing SOUNDCNT_L
  - GBA Audio: Fix stereo in XQ audio
  - GBA Audio: Fix volume/mute in XQ audio (fixes mgba.io/i/1864)
