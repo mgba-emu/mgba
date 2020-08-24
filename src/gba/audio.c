@@ -405,7 +405,7 @@ void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* 
 	flags = GBASerializedAudioFlagsSetFIFOSamplesB(flags, fifoSizeB);
 	flags = GBASerializedAudioFlagsSetFIFOInternalSamplesA(flags, audio->chA.internalRemaining);
 	flags = GBASerializedAudioFlagsSetFIFOInternalSamplesB(flags, audio->chB.internalRemaining);
-	STORE_32(flags, 0, &state->audio.gbaFlags);
+	STORE_16(flags, 0, &state->audio.gbaFlags);
 	STORE_32(audio->sampleEvent.when - mTimingCurrentTime(&audio->p->timing), 0, &state->audio.nextSample);
 }
 
@@ -430,7 +430,7 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 	audio->chB.fifoRead = 0;
 
 	GBASerializedAudioFlags flags;
-	LOAD_32(flags, 0, &state->audio.gbaFlags);
+	LOAD_16(flags, 0, &state->audio.gbaFlags);
 	audio->chA.fifoWrite = GBASerializedAudioFlagsGetFIFOSamplesA(flags);
 	audio->chB.fifoWrite = GBASerializedAudioFlagsGetFIFOSamplesB(flags);
 	audio->chA.internalRemaining = GBASerializedAudioFlagsGetFIFOInternalSamplesA(flags);
