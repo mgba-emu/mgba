@@ -94,7 +94,7 @@
 		\
 		uint32_t current = *pixel; \
 		MOSAIC(COORD) \
-		if (pixelData) { \
+		if (pixelData && IS_WRITABLE(current)) { \
 			COMPOSITE_256_ ## OBJWIN (BLEND, 0); \
 		} \
 	}
