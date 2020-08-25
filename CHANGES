@@ -44,6 +44,7 @@ Emulation fixes:
 Other fixes:
  - 3DS: Redo video sync to be more precise
  - 3DS: Fix crash with libctru 2.0 when exiting
+ - 3DS: Fix thread cleanup
  - All: Improve export headers (fixes mgba.io/i/1738)
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix reported ROM size when a fixed buffer size is used
