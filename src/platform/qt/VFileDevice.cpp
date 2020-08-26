@@ -19,6 +19,23 @@ VFileDevice::VFileDevice(VFile* vf, QObject* parent)
 	}
 }
 
+VFileDevice::VFileDevice(const QString& filename, QIODevice::OpenMode mode, QObject* parent)
+	: QIODevice(parent)
+{
+	int posixMode = 0;
+	if ((mode & QIODevice::ReadWrite) == QIODevice::ReadWrite) {
+		posixMode = O_RDWR;
+	} else if (mode & QIODevice::ReadOnly) {
+		posixMode = O_RDONLY;
+	} else if (mode & QIODevice::WriteOnly) {
+		posixMode = O_WRONLY;
+	}
+	m_vf = open(filename, posixMode);
+	if (m_vf) {
+		setOpenMode(mode);
+	}
+}
+
 void VFileDevice::close() {
 	if (!m_vf) {
 		return;
