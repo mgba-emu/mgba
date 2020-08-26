@@ -31,9 +31,8 @@ struct mStateExtdataHeader {
 	int64_t offset;
 };
 
-bool mStateExtdataInit(struct mStateExtdata* extdata) {
+void mStateExtdataInit(struct mStateExtdata* extdata) {
 	memset(extdata->data, 0, sizeof(extdata->data));
-	return true;
 }
 
 void mStateExtdataDeinit(struct mStateExtdata* extdata) {
@@ -43,6 +42,7 @@ void mStateExtdataDeinit(struct mStateExtdata* extdata) {
 			extdata->data[i].clean(extdata->data[i].data);
 		}
 	}
+	memset(extdata->data, 0, sizeof(extdata->data));
 }
 
 void mStateExtdataPut(struct mStateExtdata* extdata, enum mStateExtdataTag tag, struct mStateExtdataItem* item) {
@@ -216,7 +216,7 @@ static int _loadPNGChunkHandler(png_structp png, png_unknown_chunkp chunk) {
 	if (!strcmp((const char*) chunk->name, "gbAs")) {
 		void* state = bundle->state;
 		if (!state) {
-			return 0;
+			return 1;
 		}
 		uLongf len = bundle->stateSize;
 		uncompress((Bytef*) state, &len, chunk->data, chunk->size);
@@ -296,6 +296,54 @@ static void* _loadPNGState(struct mCore* core, struct VFile* vf, struct mStateEx
 		return 0;
 	}
 	return state;
+}
+
+static bool _loadPNGExtadata(struct VFile* vf, struct mStateExtdata* extdata) {
+	png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
+	png_infop info = png_create_info_struct(png);
+	png_infop end = png_create_info_struct(png);
+	if (!png || !info || !end) {
+		PNGReadClose(png, info, end);
+		return false;
+	}
+	struct mBundledState bundle = {
+		.stateSize = 0,
+		.state = NULL,
+		.extdata = extdata
+	};
+
+	PNGInstallChunkHandler(png, &bundle, _loadPNGChunkHandler, "gbAs gbAx");
+	bool success = PNGReadHeader(png, info);
+	if (!success) {
+		PNGReadClose(png, info, end);
+		return false;
+	}
+
+	unsigned width = png_get_image_width(png, info);
+	unsigned height = png_get_image_height(png, info);
+	uint32_t* pixels = NULL;
+	pixels = malloc(width * height * 4);
+	if (!pixels) {
+		PNGReadClose(png, info, end);
+		return false;
+	}
+
+	success = PNGReadPixels(png, info, pixels, width, height, width);
+	success = success && PNGReadFooter(png, end);
+	PNGReadClose(png, info, end);
+
+	if (success) {
+		struct mStateExtdataItem item = {
+			.size = width * height * 4,
+			.data = pixels,
+			.clean = free
+		};
+		mStateExtdataPut(extdata, EXTDATA_SCREENSHOT, &item);
+	} else {
+		free(pixels);
+		return false;
+	}
+	return true;
 }
 #endif
 
@@ -423,6 +471,20 @@ void* mCoreExtractState(struct mCore* core, struct VFile* vf, struct mStateExtda
 		mStateExtdataDeserialize(extdata, vf);
 	}
 	return state;
+}
+
+bool mCoreExtractExtdata(struct mCore* core, struct VFile* vf, struct mStateExtdata* extdata) {
+#ifdef USE_PNG
+	if (isPNG(vf)) {
+		return _loadPNGExtadata(vf, extdata);
+	}
+#endif
+	if (!core) {
+		return false;
+	}
+	ssize_t stateSize = core->stateSize(core);
+	vf->seek(vf, stateSize, SEEK_SET);
+	return mStateExtdataDeserialize(extdata, vf);
 }
 
 bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
