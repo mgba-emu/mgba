@@ -331,7 +331,12 @@ struct GBASerializedState {
 	uint32_t dmaTransferRegister;
 	uint32_t dmaBlockPC;
 
-	uint32_t reservedHardware[4];
+	struct {
+		uint32_t cmd;
+		uint32_t paddr;
+		uint32_t vaddr;
+		uint32_t size;
+	} matrix;
 
 	struct {
 		uint8_t type;
@@ -356,7 +361,9 @@ struct GBASerializedState {
 	uint32_t nextIrq;
 	int32_t biosStall;
 
-	uint32_t reserved[54];
+	uint32_t matrixMappings[16];
+
+	uint32_t reserved[38];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];

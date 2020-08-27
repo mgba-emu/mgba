@@ -10,18 +10,25 @@
 
 CXX_GUARD_START
 
+#define GBA_MATRIX_MAPPINGS_MAX 16
+
 struct GBAMatrix {
 	uint32_t cmd;
 	uint32_t paddr;
 	uint32_t vaddr;
 	uint32_t size;
+
+	uint32_t mappings[GBA_MATRIX_MAPPINGS_MAX];
 };
 
 struct GBA;
-struct GBAMemory;
 void GBAMatrixReset(struct GBA*);
 void GBAMatrixWrite(struct GBA*, uint32_t address, uint32_t value);
 void GBAMatrixWrite16(struct GBA*, uint32_t address, uint16_t value);
+
+struct GBASerializedState;
+void GBAMatrixSerialize(const struct GBA* memory, struct GBASerializedState* state);
+void GBAMatrixDeserialize(struct GBA* memory, const struct GBASerializedState* state);
 
 CXX_GUARD_END
 

@@ -33,6 +33,7 @@ Emulation fixes:
  - GBA Hardware: Fix GB Player detection on big endian platforms
  - GBA Memory: Improve gamepak prefetch timing
  - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
+ - GBA Memory: Improve robustness of Matrix memory support
  - GBA SIO: Fix copying Normal mode transfer values
  - GBA SIO: Fix Normal mode being totally broken (fixes mgba.io/i/1800)
  - GBA SIO: Fix deseralizing SIO registers
