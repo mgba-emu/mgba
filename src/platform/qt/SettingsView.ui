@@ -1476,26 +1476,6 @@
            <string>Autodetect</string>
           </property>
          </item>
-         <item>
-          <property name="text">
-           <string>Game Boy (DMG)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Super Game Boy (SGB)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Game Boy Color (CGB)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Game Boy Advance (AGB)</string>
-          </property>
-         </item>
         </widget>
        </item>
        <item row="1" column="0">
@@ -1512,26 +1492,6 @@
            <string>Autodetect</string>
           </property>
          </item>
-         <item>
-          <property name="text">
-           <string>Game Boy (DMG)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Super Game Boy (SGB)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Game Boy Color (CGB)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Game Boy Advance (AGB)</string>
-          </property>
-         </item>
         </widget>
        </item>
        <item row="2" column="0">
@@ -1546,26 +1506,6 @@
          <item>
           <property name="text">
            <string>Autodetect</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Game Boy (DMG)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Super Game Boy (SGB)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Game Boy Color (CGB)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Game Boy Advance (AGB)</string>
           </property>
          </item>
         </widget>

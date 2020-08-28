@@ -6,6 +6,7 @@
 #include "OverrideView.h"
 
 #include <QPushButton>
+#include <QStandardItemModel>
 
 #include "ConfigController.h"
 #include "CoreController.h"
@@ -16,53 +17,17 @@
 #endif
 
 #ifdef M_CORE_GB
+#include "GameBoy.h"
 #include "GBOverride.h"
 #include <mgba/internal/gb/gb.h>
 #endif
 
 using namespace QGBA;
 
-#ifdef M_CORE_GB
-QList<enum GBModel> OverrideView::s_gbModelList;
-QList<enum GBMemoryBankControllerType> OverrideView::s_mbcList;
-#endif
-
 OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_config(config)
 {
-#ifdef M_CORE_GB
-	if (s_mbcList.isEmpty()) {
-		// NB: Keep in sync with OverrideView.ui
-		s_mbcList.append(GB_MBC_AUTODETECT);
-		s_mbcList.append(GB_MBC_NONE);
-		s_mbcList.append(GB_MBC1);
-		s_mbcList.append(GB_MBC2);
-		s_mbcList.append(GB_MBC3);
-		s_mbcList.append(GB_MBC3_RTC);
-		s_mbcList.append(GB_MBC5);
-		s_mbcList.append(GB_MBC5_RUMBLE);
-		s_mbcList.append(GB_MBC6);
-		s_mbcList.append(GB_MBC7);
-		s_mbcList.append(GB_MMM01);
-		s_mbcList.append(GB_POCKETCAM);
-		s_mbcList.append(GB_TAMA5);
-		s_mbcList.append(GB_HuC1);
-		s_mbcList.append(GB_HuC3);
-		s_mbcList.append(GB_UNL_WISDOM_TREE);
-		s_mbcList.append(GB_UNL_BBD);
-		s_mbcList.append(GB_UNL_HITEK);
-		s_mbcList.append(GB_UNL_PKJD);
-	}
-	if (s_gbModelList.isEmpty()) {
-		// NB: Keep in sync with OverrideView.ui
-		s_gbModelList.append(GB_MODEL_AUTODETECT);
-		s_gbModelList.append(GB_MODEL_DMG);
-		s_gbModelList.append(GB_MODEL_SGB);
-		s_gbModelList.append(GB_MODEL_CGB);
-		s_gbModelList.append(GB_MODEL_AGB);
-	}
-#endif
 	m_ui.setupUi(this);
 
 	connect(m_ui.hwAutodetect, &QAbstractButton::toggled, [this] (bool enabled) {
@@ -74,6 +39,33 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 	});
 
 #ifdef M_CORE_GB
+	m_ui.gbModel->setItemData(0, GB_MODEL_AUTODETECT);
+	m_ui.mbc->setItemData(0, GB_MBC_AUTODETECT);
+
+	for (auto model : GameBoy::modelList()) {
+		m_ui.gbModel->addItem(GameBoy::modelName(model), model);
+	}
+
+	QStandardItemModel* model = static_cast<QStandardItemModel*>(m_ui.mbc->model());
+	int bitsSeen = 0;
+	for (auto mbc : GameBoy::mbcList()) {
+		int mbcValue = static_cast<int>(mbc);
+		if ((mbcValue & ~bitsSeen) & 0x001) {
+			m_ui.mbc->addItem(tr("Official MBCs"), -2);
+			model->item(m_ui.mbc->count() - 1)->setFlags(Qt::NoItemFlags);
+		}
+		if ((mbcValue & ~bitsSeen) & 0x010) {
+			m_ui.mbc->addItem(tr("Licensed MBCs"), -3);
+			model->item(m_ui.mbc->count() - 1)->setFlags(Qt::NoItemFlags);
+		}
+		if ((mbcValue & ~bitsSeen) & 0x200) {
+			m_ui.mbc->addItem(tr("Unlicensed MBCs"), -4);
+			model->item(m_ui.mbc->count() - 1)->setFlags(Qt::NoItemFlags);
+		}
+		bitsSeen |= mbcValue;
+		m_ui.mbc->addItem(GameBoy::mbcName(mbc), mbc);
+	}
+
 	m_colorPickers[0] = ColorPicker(m_ui.color0, QColor(0xF8, 0xF8, 0xF8));
 	m_colorPickers[1] = ColorPicker(m_ui.color1, QColor(0xA8, 0xA8, 0xA8));
 	m_colorPickers[2] = ColorPicker(m_ui.color2, QColor(0x50, 0x50, 0x50));
@@ -190,8 +182,8 @@ void OverrideView::updateOverrides() {
 #ifdef M_CORE_GB
 	if (m_ui.tabWidget->currentWidget() == m_ui.tabGB) {
 		std::unique_ptr<GBOverride> gb(new GBOverride);
-		gb->override.mbc = s_mbcList[m_ui.mbc->currentIndex()];
-		gb->override.model = s_gbModelList[m_ui.gbModel->currentIndex()];
+		gb->override.mbc = static_cast<GBMemoryBankControllerType>(m_ui.mbc->currentData().toInt());
+		gb->override.model = static_cast<GBModel>(m_ui.gbModel->currentData().toInt());
 		bool hasColor = false;
 		for (int i = 0; i < 12; ++i) {
 			gb->override.gbColors[i] = m_gbColors[i];
@@ -240,13 +232,13 @@ void OverrideView::gameStarted() {
 	case PLATFORM_GB: {
 		m_ui.tabWidget->setCurrentWidget(m_ui.tabGB);
 		GB* gb = static_cast<GB*>(thread->core->board);
-		int mbc = s_mbcList.indexOf(gb->memory.mbcType);
-		if (mbc >= 0) {
-			m_ui.mbc->setCurrentIndex(mbc);
+		int index = m_ui.mbc->findData(gb->memory.mbcType);
+		if (index >= 0) {
+			m_ui.mbc->setCurrentIndex(index);
 		} else {
 			m_ui.mbc->setCurrentIndex(0);
 		}
-		int model = s_gbModelList.indexOf(gb->model);
+		int model = m_ui.gbModel->findData(gb->model);
 		if (model >= 0) {
 			m_ui.gbModel->setCurrentIndex(model);
 		} else {

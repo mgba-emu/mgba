@@ -15,15 +15,15 @@
 #include "ShaderSelector.h"
 #include "ShortcutView.h"
 
+#ifdef M_CORE_GB
+#include "GameBoy.h"
+#endif
+
 #include <mgba/core/serialize.h>
 #include <mgba/core/version.h>
 #include <mgba/internal/gba/gba.h>
 
 using namespace QGBA;
-
-#ifdef M_CORE_GB
-QList<enum GBModel> SettingsView::s_gbModelList;
-#endif
 
 SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, LogController* logController, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
@@ -33,13 +33,14 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	m_ui.setupUi(this);
 
 #ifdef M_CORE_GB
-	if (s_gbModelList.isEmpty()) {
-		// NB: Keep in sync with SettingsView.ui
-		s_gbModelList.append(GB_MODEL_AUTODETECT);
-		s_gbModelList.append(GB_MODEL_DMG);
-		s_gbModelList.append(GB_MODEL_SGB);
-		s_gbModelList.append(GB_MODEL_CGB);
-		s_gbModelList.append(GB_MODEL_AGB);
+	m_ui.gbModel->setItemData(0, GB_MODEL_AUTODETECT);
+	m_ui.sgbModel->setItemData(0, GB_MODEL_AUTODETECT);
+	m_ui.cgbModel->setItemData(0, GB_MODEL_AUTODETECT);
+
+	for (auto model : GameBoy::modelList()) {
+		m_ui.gbModel->addItem(GameBoy::modelName(model), model);
+		m_ui.sgbModel->addItem(GameBoy::modelName(model), model);
+		m_ui.cgbModel->addItem(GameBoy::modelName(model), model);
 	}
 #endif
 
@@ -511,14 +512,20 @@ void SettingsView::updateConfig() {
 	m_logModel.logger()->logToStdout(m_ui.logToStdout->isChecked());
 
 #ifdef M_CORE_GB
-	GBModel modelGB = s_gbModelList[m_ui.gbModel->currentIndex()];
-	m_controller->setOption("gb.model", GBModelToName(modelGB));
+	QVariant modelGB = m_ui.gbModel->currentData();
+	if (modelGB.isValid()) {
+		m_controller->setOption("gb.model", GBModelToName(static_cast<GBModel>(modelGB.toInt())));
+	}
 
-	GBModel modelSGB = s_gbModelList[m_ui.sgbModel->currentIndex()];
-	m_controller->setOption("sgb.model", GBModelToName(modelSGB));
+	QVariant modelSGB = m_ui.sgbModel->currentData();
+	if (modelSGB.isValid()) {
+		m_controller->setOption("sgb.model", GBModelToName(static_cast<GBModel>(modelSGB.toInt())));
+	}
 
-	GBModel modelCGB = s_gbModelList[m_ui.cgbModel->currentIndex()];
-	m_controller->setOption("cgb.model", GBModelToName(modelCGB));
+	QVariant modelCGB = m_ui.cgbModel->currentData();
+	if (modelCGB.isValid()) {
+		m_controller->setOption("cgb.model", GBModelToName(static_cast<GBModel>(modelCGB.toInt())));
+	}
 
 	for (int colorId = 0; colorId < 12; ++colorId) {
 		if (!(m_gbColors[colorId] & 0xFF000000)) {
@@ -641,21 +648,21 @@ void SettingsView::reloadConfig() {
 	QString modelGB = m_controller->getOption("gb.model");
 	if (!modelGB.isNull()) {
 		GBModel model = GBNameToModel(modelGB.toUtf8().constData());
-		int index = s_gbModelList.indexOf(model);
+		int index = m_ui.gbModel->findData(model);
 		m_ui.gbModel->setCurrentIndex(index >= 0 ? index : 0);
 	}
 
 	QString modelSGB = m_controller->getOption("sgb.model");
 	if (!modelSGB.isNull()) {
 		GBModel model = GBNameToModel(modelSGB.toUtf8().constData());
-		int index = s_gbModelList.indexOf(model);
+		int index = m_ui.sgbModel->findData(model);
 		m_ui.sgbModel->setCurrentIndex(index >= 0 ? index : 0);
 	}
 
 	QString modelCGB = m_controller->getOption("cgb.model");
 	if (!modelCGB.isNull()) {
 		GBModel model = GBNameToModel(modelCGB.toUtf8().constData());
-		int index = s_gbModelList.indexOf(model);
+		int index = m_ui.cgbModel->findData(model);
 		m_ui.cgbModel->setCurrentIndex(index >= 0 ? index : 0);
 	}
 #endif

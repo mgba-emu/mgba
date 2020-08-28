@@ -248,26 +248,6 @@
            <string>Autodetect</string>
           </property>
          </item>
-         <item>
-          <property name="text">
-           <string>Game Boy (DMG)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Super Game Boy (SGB)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Game Boy Color (CGB)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Game Boy Advance (AGB)</string>
-          </property>
-         </item>
         </widget>
        </item>
        <item row="1" column="0">
@@ -282,96 +262,6 @@
          <item>
           <property name="text">
            <string>Autodetect</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>None</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>MBC1</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>MBC2</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>MBC3</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>MBC3 + RTC</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>MBC5</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>MBC5 + Rumble</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>MBC6</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>MBC7</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>MMM01</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Pocket Cam</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>TAMA5</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>HuC-1</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>HuC-3</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Wisdom Tree (Unlicensed)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>BBD (Unlicensed)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Hitek (Unlicensed)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Pokémon Jade/Diamond (Unlicensed)</string>
           </property>
          </item>
         </widget>

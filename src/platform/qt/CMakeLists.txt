@@ -16,7 +16,7 @@ if(BUILD_SDL)
 endif()
 
 if(POLICY CMP0071)
-	cmake_policy(SET CMP0071 OLD)
+	cmake_policy(SET CMP0071 NEW)
 endif()
 
 set(CMAKE_AUTOMOC ON)
@@ -154,6 +154,7 @@ set(GBA_SRC
 	GBAOverride.cpp)
 
 set(GB_SRC
+	GameBoy.cpp
 	GBOverride.cpp
 	PrinterView.cpp)
 
