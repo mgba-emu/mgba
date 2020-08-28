@@ -816,6 +816,7 @@ void GBAFrameStarted(struct GBA* gba) {
 }
 
 void GBAFrameEnded(struct GBA* gba) {
+	int wasDirty = gba->memory.savedata.dirty;
 	GBASavedataClean(&gba->memory.savedata, gba->video.frameCounter);
 
 	if (gba->cpu->components && gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
@@ -845,6 +846,9 @@ void GBAFrameEnded(struct GBA* gba) {
 		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
 		if (callbacks->videoFrameEnded) {
 			callbacks->videoFrameEnded(callbacks->context);
+		}
+		if (callbacks->savedataUpdated && wasDirty && !gba->memory.savedata.dirty) {
+			callbacks->savedataUpdated(callbacks->context);
 		}
 	}
 }

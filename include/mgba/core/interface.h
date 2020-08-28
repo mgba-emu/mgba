@@ -91,6 +91,7 @@ struct mCoreCallbacks {
 	void (*coreCrashed)(void* context);
 	void (*sleep)(void* context);
 	void (*keysRead)(void* context);
+	void (*savedataUpdated)(void* context);
 };
 
 DECLARE_VECTOR(mCoreCallbacksList, struct mCoreCallbacks);

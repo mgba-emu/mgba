@@ -247,6 +247,14 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 		} else {
 			mLOG(GB_MEM, INFO, "Savedata failed to sync!");
 		}
+
+		size_t c;
+		for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
+			struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
+			if (callbacks->savedataUpdated) {
+				callbacks->savedataUpdated(callbacks->context);
+			}
+		}
 	}
 }
 
