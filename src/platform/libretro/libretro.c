@@ -78,6 +78,7 @@ static void _reloadSettings(void) {
 	};
 
 	struct retro_variable var;
+#ifdef M_CORE_GB
 	enum GBModel model;
 	const char* modelName;
 
@@ -101,6 +102,7 @@ static void _reloadSettings(void) {
 		mCoreConfigSetDefaultValue(&core->config, "sgb.model", modelName);
 		mCoreConfigSetDefaultValue(&core->config, "cgb.model", modelName);
 	}
+#endif
 
 	var.key = "mgba_use_bios";
 	var.value = 0;
@@ -114,21 +116,18 @@ static void _reloadSettings(void) {
 		opts.skipBios = strcmp(var.value, "ON") == 0;
 	}
 
+#ifdef M_CORE_GB
 	var.key = "mgba_sgb_borders";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-		if (strcmp(var.value, "ON") == 0) {
-			mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", true);
-		} else {
-			mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", false);
-		}
+		mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", strcmp(var.value, "ON") == 0);
 	}
+#endif
 
 	var.key = "mgba_frameskip";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		opts.frameskip = strtol(var.value, NULL, 10);
-
 	}
 
 	var.key = "mgba_idle_optimization";
@@ -179,7 +178,11 @@ void retro_set_input_state(retro_input_state_t input) {
 
 void retro_get_system_info(struct retro_system_info* info) {
 	info->need_fullpath = false;
-	info->valid_extensions = "gba|gb|gbc";
+#ifdef M_CORE_GB
+	info->valid_extensions = "gba|gb|gbc|sgb";
+#else
+	info->valid_extensions = "gba";
+#endif
 	info->library_version = projectVersion;
 	info->library_name = projectName;
 	info->block_extract = false;
@@ -287,25 +290,15 @@ void retro_run(void) {
 			.value = 0
 		};
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-			struct GBA* gba = core->board;
-			struct GB* gb = core->board;
-			switch (core->platform(core)) {
-			case PLATFORM_GBA:
-				gba->allowOpposingDirections = strcmp(var.value, "yes") == 0;
-				break;
-			case PLATFORM_GB:
-				gb->allowOpposingDirections = strcmp(var.value, "yes") == 0;
-				break;
-			default:
-				break;
-			}
+			mCoreConfigSetIntValue(&core->config, "allowOpposingDirections", strcmp(var.value, "yes") == 0);
+			core->reloadConfigOption(core, "allowOpposingDirections", NULL);
 		}
 
 		var.key = "mgba_frameskip";
 		var.value = 0;
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-			mCoreConfigSetUIntValue(&core->config, "frameskip", strtol(var.value, NULL, 10));
-			mCoreLoadConfig(core);
+			mCoreConfigSetIntValue(&core->config, "frameskip", strtol(var.value, NULL, 10));
+			core->reloadConfigOption(core, "frameskip", NULL);
 		}
 	}
 
