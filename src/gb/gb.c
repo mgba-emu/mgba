@@ -656,6 +656,22 @@ void GBDetectModel(struct GB* gb) {
 	}
 }
 
+int GBValidModels(const uint8_t* bank0) {
+	const struct GBCartridge* cart = (const struct GBCartridge*) &bank0[0x100];
+	int models;
+	if (cart->cgb == 0x80) {
+		models = GB_MODEL_CGB | GB_MODEL_MGB;
+	} else if (cart->cgb == 0xC0) {
+		models = GB_MODEL_CGB;
+	} else {
+		models = GB_MODEL_MGB;		
+	}
+	if (cart->sgb == 0x03 && cart->oldLicensee == 0x33) {
+		models |= GB_MODEL_SGB;
+	}
+	return models;
+}
+
 void GBUpdateIRQs(struct GB* gb) {
 	int irqs = gb->memory.ie & gb->memory.io[REG_IF] & 0x1F;
 	if (!irqs) {

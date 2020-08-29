@@ -33,15 +33,19 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	m_ui.setupUi(this);
 
 #ifdef M_CORE_GB
-	m_ui.gbModel->setItemData(0, GB_MODEL_AUTODETECT);
-	m_ui.sgbModel->setItemData(0, GB_MODEL_AUTODETECT);
-	m_ui.cgbModel->setItemData(0, GB_MODEL_AUTODETECT);
-
 	for (auto model : GameBoy::modelList()) {
 		m_ui.gbModel->addItem(GameBoy::modelName(model), model);
 		m_ui.sgbModel->addItem(GameBoy::modelName(model), model);
 		m_ui.cgbModel->addItem(GameBoy::modelName(model), model);
+		m_ui.cgbHybridModel->addItem(GameBoy::modelName(model), model);
+		m_ui.cgbSgbModel->addItem(GameBoy::modelName(model), model);
 	}
+
+	m_ui.gbModel->setCurrentIndex(m_ui.gbModel->findData(GB_MODEL_DMG));
+	m_ui.sgbModel->setCurrentIndex(m_ui.gbModel->findData(GB_MODEL_SGB));
+	m_ui.cgbModel->setCurrentIndex(m_ui.gbModel->findData(GB_MODEL_CGB));
+	m_ui.cgbHybridModel->setCurrentIndex(m_ui.gbModel->findData(GB_MODEL_CGB));
+	m_ui.cgbSgbModel->setCurrentIndex(m_ui.gbModel->findData(GB_MODEL_CGB));
 #endif
 
 	reloadConfig();
@@ -527,6 +531,16 @@ void SettingsView::updateConfig() {
 		m_controller->setOption("cgb.model", GBModelToName(static_cast<GBModel>(modelCGB.toInt())));
 	}
 
+	QVariant modelCGBHybrid = m_ui.cgbHybridModel->currentData();
+	if (modelCGBHybrid.isValid()) {
+		m_controller->setOption("cgb.hybridModel", GBModelToName(static_cast<GBModel>(modelCGBHybrid.toInt())));
+	}
+
+	QVariant modelCGBSGB = m_ui.cgbSgbModel->currentData();
+	if (modelCGBSGB.isValid()) {
+		m_controller->setOption("cgb.sgbModel", GBModelToName(static_cast<GBModel>(modelCGBSGB.toInt())));
+	}
+
 	for (int colorId = 0; colorId < 12; ++colorId) {
 		if (!(m_gbColors[colorId] & 0xFF000000)) {
 			continue;
@@ -664,6 +678,20 @@ void SettingsView::reloadConfig() {
 		GBModel model = GBNameToModel(modelCGB.toUtf8().constData());
 		int index = m_ui.cgbModel->findData(model);
 		m_ui.cgbModel->setCurrentIndex(index >= 0 ? index : 0);
+	}
+
+	QString modelCGBHybrid = m_controller->getOption("cgb.hybridModel");
+	if (!modelCGBHybrid.isNull()) {
+		GBModel model = GBNameToModel(modelCGBHybrid.toUtf8().constData());
+		int index = m_ui.cgbHybridModel->findData(model);
+		m_ui.cgbHybridModel->setCurrentIndex(index >= 0 ? index : 0);
+	}
+
+	QString modelCGBSGB = m_controller->getOption("cgb.sgbModel");
+	if (!modelCGBSGB.isNull()) {
+		GBModel model = GBNameToModel(modelCGBSGB.toUtf8().constData());
+		int index = m_ui.cgbSgbModel->findData(model);
+		m_ui.cgbSgbModel->setCurrentIndex(index >= 0 ? index : 0);
 	}
 #endif
 
