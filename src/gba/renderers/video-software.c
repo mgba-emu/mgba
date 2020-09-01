@@ -122,6 +122,7 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->oamMax = 0;
 
 	softwareRenderer->mosaic = 0;
+	softwareRenderer->greenswap = false;
 	softwareRenderer->nextY = 0;
 
 	softwareRenderer->objOffsetX = 0;
@@ -178,6 +179,9 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		value &= 0xFFF7;
 		softwareRenderer->dispcnt = value;
 		GBAVideoSoftwareRendererUpdateDISPCNT(softwareRenderer);
+		break;
+	case REG_GREENSWP:
+		softwareRenderer->greenswap = value & 1;
 		break;
 	case REG_BG0CNT:
 		value &= 0xDFFF;
@@ -388,9 +392,6 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		break;
 	case REG_MOSAIC:
 		softwareRenderer->mosaic = value;
-		break;
-	case REG_GREENSWP:
-		mLOG(GBA_VIDEO, STUB, "Stub video register write: 0x%03X", address);
 		break;
 	default:
 		mLOG(GBA_VIDEO, GAME_ERROR, "Invalid video register: 0x%03X", address);
@@ -675,16 +676,30 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		}
 	}
 
+	if (softwareRenderer->greenswap) {
+		for (x = 0; x < GBA_VIDEO_HORIZONTAL_PIXELS; x += 4) {
+			row[x] = softwareRenderer->row[x] & (M_COLOR_RED | M_COLOR_BLUE);
+			row[x] |= softwareRenderer->row[x + 1] & M_COLOR_GREEN;
+			row[x + 1] = softwareRenderer->row[x + 1] & (M_COLOR_RED | M_COLOR_BLUE);
+			row[x + 1] |= softwareRenderer->row[x] & M_COLOR_GREEN;
+			row[x + 2] = softwareRenderer->row[x + 2] & (M_COLOR_RED | M_COLOR_BLUE);
+			row[x + 2] |= softwareRenderer->row[x + 3] & M_COLOR_GREEN;
+			row[x + 3] = softwareRenderer->row[x + 3] & (M_COLOR_RED | M_COLOR_BLUE);
+			row[x + 3] |= softwareRenderer->row[x + 2] & M_COLOR_GREEN;
+
+		}
+	} else {
 #ifdef COLOR_16_BIT
-	for (x = 0; x < GBA_VIDEO_HORIZONTAL_PIXELS; x += 4) {
-		row[x] = softwareRenderer->row[x];
-		row[x + 1] = softwareRenderer->row[x + 1];
-		row[x + 2] = softwareRenderer->row[x + 2];
-		row[x + 3] = softwareRenderer->row[x + 3];
-	}
+		for (x = 0; x < GBA_VIDEO_HORIZONTAL_PIXELS; x += 4) {
+			row[x] = softwareRenderer->row[x];
+			row[x + 1] = softwareRenderer->row[x + 1];
+			row[x + 2] = softwareRenderer->row[x + 2];
+			row[x + 3] = softwareRenderer->row[x + 3];
+		}
 #else
-	memcpy(row, softwareRenderer->row, GBA_VIDEO_HORIZONTAL_PIXELS * sizeof(*row));
+		memcpy(row, softwareRenderer->row, GBA_VIDEO_HORIZONTAL_PIXELS * sizeof(*row));
 #endif
+	}
 }
 
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer) {

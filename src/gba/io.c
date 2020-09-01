@@ -341,7 +341,7 @@ void GBAIOInit(struct GBA* gba) {
 }
 
 void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
-	if (address < REG_SOUND1CNT_LO && (address > REG_VCOUNT || address == REG_DISPCNT)) {
+	if (address < REG_SOUND1CNT_LO && (address > REG_VCOUNT || address < REG_DISPSTAT)) {
 		value = gba->video.renderer->writeVideoRegister(gba->video.renderer, address, value);
 	} else {
 		switch (address) {

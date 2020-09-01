@@ -114,6 +114,7 @@ struct GBAVideoSoftwareRenderer {
 	uint16_t bldy;
 
 	GBAMosaicControl mosaic;
+	bool greenswap;
 
 	struct WindowN {
 		struct GBAVideoWindowRegion h;
