@@ -57,7 +57,7 @@ Die folgenden Mapper werden vollständig unterstützt:
 
 Die folgenden Mapper werden teilweise unterstützt:
 
-- MBC6 (fehlende Flash-Unterstützung)
+- MBC6 (fehlende Unterstützung für Schreibzugriffe auf den Flash-Speicher)
 - MMM01
 - Pocket Cam
 - TAMA5 (fehlende RTC-Unterstützung)
