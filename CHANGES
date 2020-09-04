@@ -5,9 +5,8 @@ Features:
  - Separate overrides for GBC games that can also run on SGB or regular GB
  - Mute option in homebrew ports
  - Status indicators for fast-forward and mute in homebrew ports
- - Support for unlicensed Pokemon Jade/Diamond Game Boy mapper
- - Support for unlicensed BBD Game Boy mapper
- - Support for unlicensed Hitek Game Boy mapper
+ - Read-only support for MBC6 flash memory
+ - New unlicensed GB mappers: Pokémon Jade/Diamond, BBD, and Hitek
  - Stack tracing tools in ARM debugger (by ahigerd)
  - Command scripts for CLI debugger (by ahigerd)
 Emulation fixes:

@@ -61,6 +61,8 @@ enum {
 	GB_SIZE_OAM = 0xA0,
 	GB_SIZE_IO = 0x80,
 	GB_SIZE_HRAM = 0x7F,
+
+	GB_SIZE_MBC6_FLASH = 0x100000,
 };
 
 enum {
@@ -118,6 +120,8 @@ struct GBMBC6State {
 	bool sramAccess;
 	int currentSramBank1;
 	uint8_t* sramBank1;
+	bool flashBank0;
+	bool flashBank1;
 };
 
 struct GBMBC7State {

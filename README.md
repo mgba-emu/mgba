@@ -57,7 +57,7 @@ The following mappers are fully supported:
 
 The following mappers are partially supported:
 
-- MBC6 (missing flash memory support)
+- MBC6 (missing flash memory write support)
 - MMM01
 - Pocket Cam
 - TAMA5 (missing RTC support)
