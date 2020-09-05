@@ -850,6 +850,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		}
 		// Fall through
 	case REG_DISPCNT:
+	case REG_GREENSWP:
 	case REG_DISPSTAT:
 	case REG_VCOUNT:
 	case REG_BG0CNT:
