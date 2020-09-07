@@ -43,6 +43,7 @@ Emulation fixes:
  - GBA Video: Invalidate map cache when modifying BGCNT (fixes mgba.io/i/1846)
  - GBA Video: Don't draw sprites using unmapped VRAM in GL renderer (fixes mgba.io/i/1865)
  - GBA Video: Implement green swap (fixes mgba.io/i/1609)
+ - GBA Video: Fix rare regression blending semitransparent sprites (fixes mgba.io/i/1876)
  - SM83: Emulate HALT bug
 Other fixes:
  - 3DS: Redo video sync to be more precise
