@@ -783,29 +783,23 @@ void GBHalt(struct SM83Core* cpu) {
 
 void GBStop(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-	if (cpu->bus) {
-		mLOG(GB, GAME_ERROR, "Hit illegal stop at address %04X:%02X", cpu->pc, cpu->bus);
-	}
-	if (gb->memory.io[REG_KEY1] & 1) {
+	if (gb->model >= GB_MODEL_CGB && gb->memory.io[REG_KEY1] & 1) {
 		gb->doubleSpeed ^= 1;
 		gb->audio.timingFactor = gb->doubleSpeed + 1;
 		gb->memory.io[REG_KEY1] = 0;
 		gb->memory.io[REG_KEY1] |= gb->doubleSpeed << 7;
-	} else if (cpu->bus) {
-#ifdef USE_DEBUGGERS
-		if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
-			struct mDebuggerEntryInfo info = {
-				.address = cpu->pc - 1,
-				.type.bp.opcode = 0x1000 | cpu->bus,
-			};
-			mDebuggerEnter((struct mDebugger*) cpu->components[CPU_COMPONENT_DEBUGGER], DEBUGGER_ENTER_ILLEGAL_OP, &info);
+	} else {
+		int sleep = ~(gb->memory.io[REG_JOYP] & 0x30);
+		size_t c;
+		for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
+			struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
+			if (sleep && callbacks->sleep) {
+				callbacks->sleep(callbacks->context);
+			} else if (callbacks->shutdown) {
+				callbacks->shutdown(callbacks->context);
+			}
 		}
-#endif
-		// Hang forever
-		gb->memory.ime = 0;
-		cpu->pc -= 2;
 	}
-	// TODO: Actually stop
 }
 
 void GBIllegal(struct SM83Core* cpu) {
