@@ -365,7 +365,7 @@ DEFINE_DECODER_SM83(DI, info->mnemonic = SM83_MN_DI)
 DEFINE_DECODER_SM83(EI, info->mnemonic = SM83_MN_EI)
 DEFINE_DECODER_SM83(HALT, info->mnemonic = SM83_MN_HALT)
 DEFINE_DECODER_SM83(ILL, info->mnemonic = SM83_MN_ILL)
-DEFINE_DECODER_SM83(STOP, info->mnemonic = SM83_MN_STOP; return 1)
+DEFINE_DECODER_SM83(STOP, info->mnemonic = SM83_MN_STOP)
 
 #define DEFINE_RST_DECODER_SM83(VEC) \
 	DEFINE_DECODER_SM83(RST ## VEC, info->op1.immediate = 0x ## VEC;)

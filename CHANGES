@@ -68,6 +68,7 @@ Other fixes:
  - mGUI: Fix closing down a game if an exit is signalled
  - mVL: Fix injecting accidentally draining non-injection buffer
  - SM83: Simplify register pair access on big endian
+ - SM83: Disassemble STOP as one byte
  - VFS: Fix directory node listing on some filesystems
 Misc:
  - 3DS: Use "wide mode" where applicable for slightly better filtering
