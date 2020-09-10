@@ -71,6 +71,8 @@ Other fixes:
  - VFS: Fix directory node listing on some filesystems
 Misc:
  - 3DS: Use "wide mode" where applicable for slightly better filtering
+ - Core: Add savedataUpdated callback
+ - Core: Add shutdown callback
  - GB: Allow pausing event loop while CPU is blocked
  - GBA: Allow pausing event loop while CPU is blocked
  - Debugger: Keep track of global cycle count

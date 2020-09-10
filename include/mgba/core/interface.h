@@ -107,6 +107,7 @@ struct mCoreCallbacks {
 	void (*videoFrameEnded)(void* context);
 	void (*coreCrashed)(void* context);
 	void (*sleep)(void* context);
+	void (*shutdown)(void* context);
 	void (*keysRead)(void* context);
 	void (*savedataUpdated)(void* context);
 };

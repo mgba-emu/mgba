@@ -525,11 +525,15 @@ void GBAHalt(struct GBA* gba) {
 }
 
 void GBAStop(struct GBA* gba) {
+	int validIrqs = (1 << IRQ_GAMEPAK) | (1 << IRQ_KEYPAD) | (1 << IRQ_SIO);
+	int sleep = gba->memory.io[REG_IE >> 1] & validIrqs;
 	size_t c;
 	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
 		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
-		if (callbacks->sleep) {
+		if (sleep && callbacks->sleep) {
 			callbacks->sleep(callbacks->context);
+		} else if (callbacks->shutdown) {
+			callbacks->shutdown(callbacks->context);
 		}
 	}
 	gba->cpu->nextEvent = gba->cpu->cycles;
