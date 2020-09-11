@@ -276,23 +276,24 @@ static void _MidiKey2Freq(struct GBA* gba) {
 
 static void _Div(struct GBA* gba, int32_t num, int32_t denom) {
 	struct ARMCore* cpu = gba->cpu;
-	if (denom != 0 && (denom != -1 || num != INT32_MIN)) {
-		div_t result = div(num, denom);
-		cpu->gprs[0] = result.quot;
-		cpu->gprs[1] = result.rem;
-		cpu->gprs[3] = abs(result.quot);
-	} else if (denom == 0) {
-		mLOG(GBA_BIOS, GAME_ERROR, "Attempting to divide %i by zero!", num);
+	if (denom == 0) {
+		mLOG(GBA_BIOS, FATAL, "Attempting to divide %i by zero!", num);
 		// If abs(num) > 1, this should hang, but that would be painful to
-		// emulate in HLE, and no game will get into a state where it hangs...
+		// emulate in HLE, and no game will get into a state under normal
+		// operation where it hangs...
 		cpu->gprs[0] = (num < 0) ? -1 : 1;
 		cpu->gprs[1] = num;
 		cpu->gprs[3] = 1;
-	} else {
+	} else if (denom == -1 && num == INT32_MIN) {
 		mLOG(GBA_BIOS, GAME_ERROR, "Attempting to divide INT_MIN by -1!");
 		cpu->gprs[0] = INT32_MIN;
 		cpu->gprs[1] = 0;
 		cpu->gprs[3] = INT32_MIN;
+	} else {
+		div_t result = div(num, denom);
+		cpu->gprs[0] = result.quot;
+		cpu->gprs[1] = result.rem;
+		cpu->gprs[3] = abs(result.quot);
 	}
 	int loops = clz32(denom) - clz32(num);
 	if (loops < 1) {
