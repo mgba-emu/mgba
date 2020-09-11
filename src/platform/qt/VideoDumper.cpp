@@ -6,6 +6,7 @@
 #include "VideoDumper.h"
 
 #include <QImage>
+#include <QVideoSurfaceFormat>
 
 using namespace QGBA;
 
@@ -40,13 +41,11 @@ bool VideoDumper::present(const QVideoFrame& frame) {
 	QImage image(bits, mappedFrame.width(), mappedFrame.height(), mappedFrame.bytesPerLine(), format);
 	if (swap) {
 		image = image.rgbSwapped();
-	} else {
-#ifdef Q_OS_WIN
-		// Qt's DirectShow plug-in is pretty dang buggy
-		image = image.mirrored();
-#else
+	} else if (surfaceFormat().scanLineDirection() != QVideoSurfaceFormat::BottomToTop) {
 		image = image.copy(); // Create a deep copy of the bits
-#endif
+	}
+	if (surfaceFormat().scanLineDirection() == QVideoSurfaceFormat::BottomToTop) {
+		image = image.mirrored();
 	}
 	mappedFrame.unmap();
 	emit imageAvailable(image);
