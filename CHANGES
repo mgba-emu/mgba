@@ -85,6 +85,7 @@ Misc:
  - Qt: Add hex index to palette view
  - Qt: Add transformation matrix info to sprite view
  - Qt: Memory viewer now supports editing decimal values directly (closes mgba.io/i/1705)
+ - Qt: Add copy button to GB printer dialog
  - Util: Reset vector size on deinit
  - VFS: Change semantics of VFile.sync on mapped files (fixes mgba.io/i/1730)
 

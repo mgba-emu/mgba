@@ -9,6 +9,7 @@
 #include "GBAApp.h"
 
 #include <QAction>
+#include <QClipboard>
 #include <QPainter>
 
 using namespace QGBA;
@@ -23,6 +24,7 @@ PrinterView::PrinterView(std::shared_ptr<CoreController> controller, QWidget* pa
 	connect(&m_timer, &QTimer::timeout, this, &PrinterView::printLine);
 	connect(m_ui.hurry, &QAbstractButton::clicked, this, &PrinterView::printAll);
 	connect(m_ui.tear, &QAbstractButton::clicked, this, &PrinterView::clear);
+	connect(m_ui.copyButton, &QAbstractButton::clicked, this, &PrinterView::copy);
 	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &PrinterView::save);
 	m_timer.setInterval(80);
 
@@ -41,6 +43,11 @@ PrinterView::PrinterView(std::shared_ptr<CoreController> controller, QWidget* pa
 	connect(save, &QAction::triggered, this, &PrinterView::save);
 	addAction(save);
 
+	QAction* copyAction = new QAction(this);
+	copyAction->setShortcut(QKeySequence::Copy);
+	connect(copyAction, &QAction::triggered, this, &PrinterView::copy);
+	addAction(copyAction);
+
 	clear();
 }
 
@@ -56,11 +63,16 @@ void PrinterView::save() {
 	m_image.save(filename);
 }
 
+void PrinterView::copy() {
+	GBAApp::app()->clipboard()->setImage(m_image.toImage());
+}
+
 void PrinterView::clear() {
 	m_ui.image->setFixedHeight(0);
 	m_image = QPixmap();
 	m_ui.image->clear();
 	m_ui.buttonBox->button(QDialogButtonBox::Save)->setEnabled(false);
+	m_ui.copyButton->setEnabled(false);
 }
 
 void PrinterView::printImage(const QImage& image) {
@@ -87,5 +99,6 @@ void PrinterView::printAll() {
 	m_ui.image->setFixedHeight(m_image.height() * m_ui.magnification->value());
 	m_controller->endPrint();
 	m_ui.buttonBox->button(QDialogButtonBox::Save)->setEnabled(true);
+	m_ui.copyButton->setEnabled(true);
 	m_ui.hurry->setEnabled(false);
 }
