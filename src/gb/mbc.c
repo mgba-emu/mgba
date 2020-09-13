@@ -601,7 +601,7 @@ void _GBMBC3(struct GB* gb, uint16_t address, uint8_t value) {
 	int bank = value;
 	switch (address >> 13) {
 	case 0x0:
-		switch (value) {
+		switch (value & 0xF) {
 		case 0:
 			memory->sramAccess = false;
 			break;
@@ -625,11 +625,12 @@ void _GBMBC3(struct GB* gb, uint16_t address, uint8_t value) {
 		GBMBCSwitchBank(gb, bank);
 		break;
 	case 0x2:
-		if (value < 8) {
+		bank &= 0xF;
+		if (bank < 8) {
 			GBMBCSwitchSramBank(gb, value);
 			memory->rtcAccess = false;
-		} else if (value <= 0xC) {
-			memory->activeRtcReg = value - 8;
+		} else if (bank <= 0xC) {
+			memory->activeRtcReg = bank - 8;
 			memory->rtcAccess = true;
 		}
 		break;
