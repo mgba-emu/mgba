@@ -384,6 +384,7 @@ int InputController::pollEvents() {
 		SDL_JoystickUpdate();
 		int numButtons = SDL_JoystickNumButtons(joystick);
 		int i;
+		QReadLocker l(&m_eventsLock);
 		for (i = 0; i < numButtons; ++i) {
 			GBAKey key = static_cast<GBAKey>(mInputMapKey(&m_inputMap, SDL_BINDING_BUTTON, i));
 			if (key == GBA_KEY_NONE) {
@@ -396,6 +397,7 @@ int InputController::pollEvents() {
 				activeButtons |= 1 << key;
 			}
 		}
+		l.unlock();
 		int numHats = SDL_JoystickNumHats(joystick);
 		for (i = 0; i < numHats; ++i) {
 			int hat = SDL_JoystickGetHat(joystick, i);
@@ -561,6 +563,7 @@ void InputController::bindHat(uint32_t type, int hat, GamepadHatEvent::Direction
 }
 
 void InputController::testGamepad(int type) {
+	QWriteLocker l(&m_eventsLock);
 	auto activeAxes = activeGamepadAxes(type);
 	auto oldAxes = m_activeAxes;
 	m_activeAxes = activeAxes;

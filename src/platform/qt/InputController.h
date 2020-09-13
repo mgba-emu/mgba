@@ -10,6 +10,7 @@
 
 #include <QImage>
 #include <QMutex>
+#include <QReadWriteLock>
 #include <QObject>
 #include <QSet>
 #include <QTimer>
@@ -181,6 +182,7 @@ private:
 	QTimer m_gamepadTimer{nullptr};
 
 	QSet<GBAKey> m_pendingEvents;
+	QReadWriteLock m_eventsLock;
 };
 
 }
