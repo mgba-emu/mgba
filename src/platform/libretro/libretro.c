@@ -59,6 +59,8 @@ static retro_set_rumble_state_t rumbleCallback;
 static retro_sensor_get_input_t sensorGetCallback;
 static retro_set_sensor_state_t sensorStateCallback;
 
+static bool libretro_supports_bitmasks = false;
+
 static void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
 
 static void _postAudioBuffer(struct mAVStream*, blip_t* left, blip_t* right);
@@ -1244,6 +1246,9 @@ void retro_init(void) {
 	imageSource.startRequestImage = _startImage;
 	imageSource.stopRequestImage = _stopImage;
 	imageSource.requestImage = _requestImage;
+
+	if (environCallback(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL))
+		libretro_supports_bitmasks = true;
 }
 
 void retro_deinit(void) {
@@ -1267,9 +1272,10 @@ void retro_deinit(void) {
 
 	rotationEnabled = false;
 	luxSensorEnabled = false;
+	libretro_supports_bitmasks = false;
 }
 
-#define RDKEYP1(key) inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_##key)
+#define RDKEYP1(key) (joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_##key))
 static int turboclock = 0;
 static bool indownstate = true;
 
@@ -1342,17 +1348,28 @@ void retro_run(void) {
 #endif
 	}
 
+	unsigned i;
+	int16_t joypad_bits;
+	if (libretro_supports_bitmasks)
+		joypad_bits = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+	else
+	{
+		joypad_bits = 0;
+		for (i = 0; i < (RETRO_DEVICE_ID_JOYPAD_R3+1); i++)
+			joypad_bits |= inputCallback(0, RETRO_DEVICE_JOYPAD, 0, i) ? (1 << i) : 0;
+	}
+
 	keys = 0;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)) << 0;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)) << 1;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT)) << 2;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START)) << 3;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT)) << 4;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)) << 5;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)) << 6;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)) << 7;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)) << 8;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)) << 9;
+	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_A))) << 0;
+	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_B))) << 1;
+	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT))) << 2;
+	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_START))) << 3;
+	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT))) << 4;
+	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT))) << 5;
+	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_UP))) << 6;
+	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN))) << 7;
+	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_R))) << 8;
+	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_L))) << 9;
 
 	//turbo keys
 	keys |= cycleturbo(RDKEYP1(X),RDKEYP1(Y),RDKEYP1(L2),RDKEYP1(R2));
