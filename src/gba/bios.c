@@ -277,7 +277,11 @@ static void _MidiKey2Freq(struct GBA* gba) {
 static void _Div(struct GBA* gba, int32_t num, int32_t denom) {
 	struct ARMCore* cpu = gba->cpu;
 	if (denom == 0) {
-		mLOG(GBA_BIOS, FATAL, "Attempting to divide %i by zero!", num);
+		if (num == 0 || num == -1 || num == 1) {
+			mLOG(GBA_BIOS, GAME_ERROR, "Attempting to divide %i by zero!", num);
+		} else {
+			mLOG(GBA_BIOS, FATAL, "Attempting to divide %i by zero!", num);
+		}
 		// If abs(num) > 1, this should hang, but that would be painful to
 		// emulate in HLE, and no game will get into a state under normal
 		// operation where it hangs...
