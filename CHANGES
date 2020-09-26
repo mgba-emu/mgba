@@ -81,6 +81,7 @@ Misc:
  - GB: Add support for sleep and shutdown callbacks
  - GBA: Allow pausing event loop while CPU is blocked
  - GBA BIOS: Division by zero should emit a FATAL error
+ - GBA Video: Convert OpenGL VRAM texture to integer
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
  - mGUI: Show battery percentage
