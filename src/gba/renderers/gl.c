@@ -413,6 +413,7 @@ static const struct GBAVideoGLUniform _uniformsObj[] = {
 	{ "dims", GBA_GL_OBJ_DIMS, },
 	{ "objwin", GBA_GL_OBJ_OBJWIN, },
 	{ "mosaic", GBA_GL_OBJ_MOSAIC, },
+	{ "cyclesRemaining", GBA_GL_OBJ_CYCLES, },
 	{ 0 }
 };
 
@@ -428,6 +429,7 @@ static const char* const _renderObj =
 	"uniform ivec4 dims;\n"
 	"uniform ivec4 objwin;\n"
 	"uniform ivec4 mosaic;\n"
+	"uniform int cyclesRemaining[160];\n"
 	"OUT(0) out vec4 color;\n"
 	"OUT(1) out ivec4 flags;\n"
 	"OUT(2) out ivec4 window;\n"
@@ -442,6 +444,9 @@ static const char* const _renderObj =
 	"	} else if (mosaic.x < -1) {\n"
 	"		int x = dims.z - int(incoord.x) - 1;\n"
 	"		incoord.x = float(clamp(dims.z - x + (mosaic.z + x) % -mosaic.x - 1, 0, dims.z - 1));\n"
+	"	}\n"
+	"	if (cyclesRemaining[int(incoord.y) + mosaic.w] <= 0) {\n"
+	"		discard;\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
 	"		int y = int(incoord.y);\n"
@@ -1383,6 +1388,11 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 			glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 			glClear(GL_COLOR_BUFFER_BIT);
 		}
+
+		int spriteCyclesRemaining = GBARegisterDISPCNTIsHblankIntervalFree(glRenderer->dispcnt) ? OBJ_HBLANK_FREE_LENGTH : OBJ_LENGTH;
+		for (i = 0; i < GBA_VIDEO_VERTICAL_PIXELS; ++i) {
+			glRenderer->spriteCycles[i] = spriteCyclesRemaining;
+		}
 	}
 
 	if (GBARegisterDISPCNTGetMode(glRenderer->dispcnt) != 0) {
@@ -1428,6 +1438,24 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 			}
 
 			GBAVideoGLRendererDrawSprite(glRenderer, &sprite->obj, y, sprite->y);
+
+			int startY = sprite->y;
+			int endY = sprite->endY;
+
+			if (endY >= 256) {
+				startY -= 256;
+				endY -= 256;
+			}
+			if (startY < glRenderer->firstY) {
+				startY = glRenderer->firstY;
+			}
+			if (endY > y) {
+				endY = y;
+			}
+			int j;
+			for (j = startY; j <= endY; ++j) {
+				glRenderer->spriteCycles[j] -= sprite->cycles;
+			}
 		}
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_STENCIL_TEST);
@@ -1668,6 +1696,7 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c),
 	                                          (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2) | (renderer->blendEffect * 4),
 	                                          renderer->blda, GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
+	glUniform1iv(uniforms[GBA_GL_OBJ_CYCLES], GBA_VIDEO_VERTICAL_PIXELS, renderer->spriteCycles);
 	if (GBAObjAttributesAIsTransformed(sprite->a)) {
 		struct GBAOAMMatrix mat;
 		LOAD_16(mat.a, 0, &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)].a);
@@ -1705,7 +1734,7 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		}
 		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], mosaicH, GBAMosaicControlGetObjV(renderer->mosaic) + 1, x, spriteY);
 	} else {
-		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], 0, 0, 0, 0);
+		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], 0, 0, x, spriteY);
 	}
 	glStencilFunc(GL_ALWAYS, 1, 1);
 	if (GBAObjAttributesAGetMode(sprite->a) != OBJ_MODE_OBJWIN || GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt)) {
