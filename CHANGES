@@ -47,6 +47,7 @@ Emulation fixes:
  - GBA Video: Implement green swap (fixes mgba.io/i/1609)
  - GBA Video: Fix rare regression blending semitransparent sprites (fixes mgba.io/i/1876)
  - GBA Video: Emulate sprite cycle limits in OpenGL renderer (fixes mgba.io/i/1635)
+ - GBA Video: Do not affect OBJ pixel priority when writing OBJWIN (fixes mgba.io/i/1890)
  - SM83: Emulate HALT bug
 Other fixes:
  - 3DS: Redo video sync to be more precise

@@ -898,6 +898,7 @@ void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 	_deleteShader(&glRenderer->bgShader[3]);
 	_deleteShader(&glRenderer->objShader[0]);
 	_deleteShader(&glRenderer->objShader[1]);
+	_deleteShader(&glRenderer->objShader[2]);
 	_deleteShader(&glRenderer->finalizeShader);
 
 	int i;
@@ -1712,12 +1713,18 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	}
 	glUniform4i(uniforms[GBA_GL_OBJ_DIMS], width, height, totalWidth, totalHeight);
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_OBJWIN) {
+		// OBJWIN writes do not affect pixel priority
 		glDisable(GL_DEPTH_TEST);
+		glDepthMask(GL_FALSE);
+		glStencilMask(GL_FALSE);
 		int window = renderer->objwin & 0x3F;
 		glUniform4i(uniforms[GBA_GL_OBJ_OBJWIN], 1, window, renderer->bldb, renderer->bldy);
 		glDrawBuffers(3, (GLenum[]) { GL_NONE, GL_NONE, GL_COLOR_ATTACHMENT2 });
 	} else {
 		glEnable(GL_DEPTH_TEST);
+		glDepthMask(GL_TRUE);
+		glStencilMask(GL_TRUE);
+		glStencilFunc(GL_ALWAYS, 1, 1);
 		glUniform4i(uniforms[GBA_GL_OBJ_OBJWIN], 0, 0, 0, 0);
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
 	}
@@ -1730,23 +1737,25 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	} else {
 		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], 0, 0, x, spriteY);
 	}
-	glStencilFunc(GL_ALWAYS, 1, 1);
 	if (GBAObjAttributesAGetMode(sprite->a) != OBJ_MODE_OBJWIN || GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt)) {
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
 
-	shader = &renderer->objShader[2];
-	uniforms = shader->uniforms;
-	glStencilFunc(GL_EQUAL, 1, 1);
-	glUseProgram(shader->program);
-	glDrawBuffers(2, (GLenum[]) { GL_NONE, GL_COLOR_ATTACHMENT1 });
-	glBindVertexArray(shader->vao);
-	glUniform2i(uniforms[GBA_GL_VS_LOC], totalHeight, 0);
-	glUniform2i(uniforms[GBA_GL_VS_MAXPOS], totalWidth, totalHeight);
-	glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c),
-	                                          (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2) | (renderer->blendEffect * 4),
-	                                          renderer->blda, GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	if (GBAObjAttributesAGetMode(sprite->a) != OBJ_MODE_OBJWIN) {
+		// Update the pixel priority for already-written pixels
+		shader = &renderer->objShader[2];
+		uniforms = shader->uniforms;
+		glStencilFunc(GL_EQUAL, 1, 1);
+		glUseProgram(shader->program);
+		glDrawBuffers(2, (GLenum[]) { GL_NONE, GL_COLOR_ATTACHMENT1 });
+		glBindVertexArray(shader->vao);
+		glUniform2i(uniforms[GBA_GL_VS_LOC], totalHeight, 0);
+		glUniform2i(uniforms[GBA_GL_VS_MAXPOS], totalWidth, totalHeight);
+		glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c),
+		                                          (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2) | (renderer->blendEffect * 4),
+		                                          renderer->blda, GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	}
 
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
