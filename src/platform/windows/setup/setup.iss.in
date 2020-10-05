@@ -89,7 +89,7 @@ Source: "{#ResDir}\shaders\*"; DestDir: "{app}\shaders\"; Flags: ignoreversion r
 Source: "{#ResDir}\licenses\*"; DestDir: "{app}\licenses\"; Flags: ignoreversion recursesubdirs
 
 [Icons]
-Name: "{commonstartmenu}\{#AppName}"; Filename: "{app}\{#AppName}.exe"
+Name: "{commonstartmenu}\{#AppName}"; Filename: "{app}\{#AppName}.exe"; Check: not WizardNoIcons
 Name: "{commondesktop}\{#AppName}"; Filename: "{app}\{#AppName}.exe"; Tasks: desktopicon
 
 [Run]
