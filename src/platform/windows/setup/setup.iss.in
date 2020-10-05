@@ -64,11 +64,17 @@ ArchitecturesInstallIn64BitMode=x64
 ArchitecturesAllowed=x86 x64
 
 [Languages]
-Name: "english"; MessagesFile: "compiler:Default.isl"
-Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"
-Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
+Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
+Name: "french"; MessagesFile: "compiler:Languages\French.isl"
+Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
+Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
+Name: "korean"; MessagesFile: "compiler:Languages\Korean.isl"
+Name: "dutch"; MessagesFile: "compiler:Languages\Dutch.isl"
+Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
+Name: "turkish"; MessagesFile: "compiler:Languages\Turkish.isl"
+Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
@@ -83,7 +89,7 @@ Source: "{#BinDir}\{#AppName2}-sdl.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BinDir}\CHANGES.txt"; DestDir: "{app}\"; Flags: ignoreversion isreadme
 Source: "{#BinDir}\LICENSE.txt"; DestDir: "{app}\"; Flags: ignoreversion
 Source: "{#ResDir}\nointro.dat"; DestDir: "{app}\"; Flags: ignoreversion
-Source: "{#BinDir}\README.html"; DestDir: "{app}\"; Flags: ignoreversion isreadme; Languages: english italian spanish
+Source: "{#BinDir}\README.html"; DestDir: "{app}\"; Flags: ignoreversion isreadme; Languages: not german
 Source: "{#BinDir}\README_DE.html"; DestDir: "{app}\"; DestName: "LIESMICH.html"; Flags: ignoreversion isreadme; Languages: german
 Source: "{#ResDir}\shaders\*"; DestDir: "{app}\shaders\"; Flags: ignoreversion recursesubdirs
 Source: "{#ResDir}\licenses\*"; DestDir: "{app}\licenses\"; Flags: ignoreversion recursesubdirs
@@ -129,9 +135,15 @@ procedure InitializeWizard();
         begin
         if ExpandConstant('{language}') = 'english' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
         if ExpandConstant('{language}') = 'french' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
-        if ExpandConstant('{language}') = 'italian' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'german' then noReleaseWarning := 'Sie möchten eine Entwicklerversion von {#AppName} installieren.' + #13#10#13#10 + 'Entwicklerversionen können bislang noch nicht endeckte Fehler beinhalten. Bitte melden Sie alle Fehler, die Sie finden können, auf der GitHub-Projektseite.';        if ExpandConstant('{language}') = 'spanish' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
         if ExpandConstant('{language}') = 'spanish' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
-        if ExpandConstant('{language}') = 'german' then noReleaseWarning := 'Sie möchten eine Entwicklerversion von {#AppName} installieren.' + #13#10#13#10 + 'Entwicklerversionen können bislang noch nicht endeckte Fehler beinhalten. Bitte melden Sie alle Fehler, die Sie finden können, auf der GitHub-Projektseite.';
+        if ExpandConstant('{language}') = 'italian' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'japanese' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'korean' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'dutch' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'russian' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'turkish' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
+        if ExpandConstant('{language}') = 'chinesesimplified' then noReleaseWarning := 'You are about to install a development build of {#AppName}.' + #13#10#13#10 + 'Development builds may contain bugs that are not yet discovered. Please report any issues you can find to the GitHub project page.';
         MsgBox(noReleaseWarning, mbInformation, MB_OK);
       end;
   end;
