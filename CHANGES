@@ -70,6 +70,7 @@ Other fixes:
  - Qt: Fix Battle Chip view not displaying chips on some DPI settings
  - Qt: Fix camera image being upside-down sometimes (fixes mgba.io/i/829 again)
  - Qt: Fix drawing on macOS break when using OpenGL (fixes mgba.io/i/1899)
+ - Qt: Load/save bytes from memory viewer in the order visible (fixes mgba.io/i/1900)
  - mGUI: Fix closing down a game if an exit is signalled
  - mVL: Fix injecting accidentally draining non-injection buffer
  - SM83: Simplify register pair access on big endian
