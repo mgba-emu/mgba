@@ -12,6 +12,7 @@ Emulation fixes:
  - GBA Video: Fix rare regression blending semitransparent sprites (fixes mgba.io/i/1876)
  - GBA Video: Do not affect OBJ pixel priority when writing OBJWIN (fixes mgba.io/i/1890)
  - GBA Video: Fix deferred blending when OBJWIN matches window (fixes mgba.io/i/1905)
+ - GBA Video: Fix mode 4 transparency in OpenGL (fixes mgba.io/i/1907)
 Other fixes:
  - 3DS: Redo video sync to be more precise
  - 3DS: Fix crash with libctru 2.0 when exiting
