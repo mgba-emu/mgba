@@ -469,7 +469,7 @@ void GBReset(struct SM83Core* cpu) {
 	GBVideoReset(&gb->video);
 	GBTimerReset(&gb->timer);
 	GBIOReset(gb);
-	if (!gb->biosVf) {
+	if (!gb->biosVf && gb->memory.rom) {
 		GBSkipBIOS(gb);
 	} else {
 		mTimingSchedule(&gb->timing, &gb->timer.event, 0);
