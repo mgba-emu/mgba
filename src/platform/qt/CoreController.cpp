@@ -263,10 +263,22 @@ void CoreController::loadConfig(ConfigController* config) {
 	m_fastForwardMute = config->getOption("fastForwardMute", -1).toInt();
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "volume");
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "mute");
+
+	QSize sizeBefore = screenDimensions();
 	mCoreLoadForeignConfig(m_threadContext.core, config->config());
+	QSize sizeAfter = screenDimensions();
 	if (hasStarted()) {
 		updateFastForward();
 		mCoreThreadRewindParamsChanged(&m_threadContext);
+	}
+	if (sizeBefore != sizeAfter) {
+		m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), sizeAfter.width());
+#ifdef M_CORE_GB
+		mCoreConfigSetIntValue(&m_threadContext.core->config, "sgb.borders", 0);
+		m_threadContext.core->reloadConfigOption(m_threadContext.core, "sgb.borders", nullptr);
+		mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "sgb.borders");
+		m_threadContext.core->reloadConfigOption(m_threadContext.core, "sgb.borders", nullptr);
+#endif
 	}
 }
 
