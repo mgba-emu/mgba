@@ -186,7 +186,7 @@ void FrameView::updateTilesGBA(bool) {
 					{ LayerId::SPRITE, sprite },
 					!m_disabled.contains({ LayerId::SPRITE, sprite }),
 					QPixmap::fromImage(obj),
-					{}, offset, false
+					{}, offset, false, false
 				});
 				if (m_queue.back().image.hasAlpha()) {
 					m_queue.back().mask = QRegion(m_queue.back().image.mask());
@@ -212,7 +212,7 @@ void FrameView::updateTilesGBA(bool) {
 					{ LayerId::BACKGROUND, bg },
 					!m_disabled.contains({ LayerId::BACKGROUND, bg }),
 					QPixmap::fromImage(compositeMap(bg, m_mapStatus[bg])),
-					{}, offset, true
+					{}, offset, true, false
 				});
 				if (m_queue.back().image.hasAlpha()) {
 					m_queue.back().mask = QRegion(m_queue.back().image.mask());
@@ -228,7 +228,7 @@ void FrameView::updateTilesGBA(bool) {
 			{ LayerId::BACKDROP },
 			!m_disabled.contains({ LayerId::BACKDROP }),
 			QPixmap::fromImage(backdropImage),
-			{}, {0, 0}, false
+			{}, {0, 0}, false, true
 		});
 		updateRendered();
 	}
@@ -237,7 +237,6 @@ void FrameView::updateTilesGBA(bool) {
 
 void FrameView::injectGBA() {
 	mVideoLogger* logger = m_vl->videoLogger;
-	mVideoLoggerInjectionPoint(logger, LOGGER_INJECTION_FIRST_SCANLINE);
 	GBA* gba = static_cast<GBA*>(m_vl->board);
 	gba->video.renderer->highlightBG[0] = false;
 	gba->video.renderer->highlightBG[1] = false;
@@ -276,11 +275,6 @@ void FrameView::injectGBA() {
 	if (m_overrideBackdrop.isValid()) {
 		mVideoLoggerInjectPalette(logger, 0, M_RGB8_TO_RGB5(m_overrideBackdrop.rgb()));
 	}
-	if (m_ui.disableScanline->checkState() == Qt::Checked) {
-		mVideoLoggerIgnoreAfterInjection(logger, (1 << DIRTY_PALETTE) | (1 << DIRTY_OAM) | (1 << DIRTY_REGISTER));
-	} else {
-		mVideoLoggerIgnoreAfterInjection(logger, 0);
-	}
 }
 #endif
 
@@ -292,13 +286,49 @@ void FrameView::updateTilesGB(bool) {
 	m_queue.clear();
 	{
 		CoreController::Interrupter interrupter(m_controller);
+		for (int sprite = 0; sprite < 40; ++sprite) {
+			ObjInfo info;
+			lookupObj(sprite, &info);
+
+			if (!info.enabled) {
+				continue;
+			}
+
+			QPointF offset(info.x, info.y);
+			QImage obj(compositeObj(info));
+			if (info.hflip || info.vflip) {
+				obj = obj.mirrored(info.hflip, info.vflip);
+			}
+			m_queue.append({
+				{ LayerId::SPRITE, sprite },
+				!m_disabled.contains({ LayerId::SPRITE, sprite }),
+				QPixmap::fromImage(obj),
+				{}, offset, false, false
+			});
+			if (m_queue.back().image.hasAlpha()) {
+				m_queue.back().mask = QRegion(m_queue.back().image.mask());
+			} else {
+				m_queue.back().mask = QRegion(0, 0, m_queue.back().image.width(), m_queue.back().image.height());
+			}
+		}
+
 		updateRendered();
 	}
 	invalidateQueue(m_controller->screenDimensions());
 }
 
 void FrameView::injectGB() {
+	mVideoLogger* logger = m_vl->videoLogger;
+
+	m_vl->reset(m_vl);
 	for (const Layer& layer : m_queue) {
+		switch (layer.id.type) {
+		case LayerId::SPRITE:
+			if (!layer.enabled) {
+				mVideoLoggerInjectOAM(logger, layer.id.index << 2, 0);
+			}
+			break;
+		}
 	}
 }
 #endif
@@ -310,6 +340,8 @@ void FrameView::invalidateQueue(const QSize& dims) {
 	bool blockSignals = m_ui.queue->blockSignals(true);
 	QMutexLocker locker(&m_mutex);
 	if (m_vl) {
+		mVideoLogger* logger = m_vl->videoLogger;
+		mVideoLoggerInjectionPoint(logger, LOGGER_INJECTION_FIRST_SCANLINE);
 		switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
 		case PLATFORM_GBA:
@@ -321,6 +353,11 @@ void FrameView::invalidateQueue(const QSize& dims) {
 			injectGB();
 			break;
 #endif
+		}
+		if (m_ui.disableScanline->checkState() == Qt::Checked) {
+			mVideoLoggerIgnoreAfterInjection(logger, (1 << DIRTY_PALETTE) | (1 << DIRTY_OAM) | (1 << DIRTY_REGISTER));
+		} else {
+			mVideoLoggerIgnoreAfterInjection(logger, 0);
 		}
 		m_vl->runFrame(m_vl);
 	}
@@ -335,7 +372,7 @@ void FrameView::invalidateQueue(const QSize& dims) {
 			item = m_ui.queue->item(i);
 		}
 		item->setText(layer.id.readable());
-		item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+		item->setFlags(Qt::ItemIsSelectable | (layer.fixed ? Qt::NoItemFlags : Qt::ItemIsUserCheckable) | Qt::ItemIsEnabled);
 		item->setCheckState(layer.enabled ? Qt::Checked : Qt::Unchecked);
 		item->setData(Qt::UserRole, i);
 		item->setSelected(layer.id == m_active);
@@ -351,8 +388,12 @@ void FrameView::invalidateQueue(const QSize& dims) {
 		updateRendered();
 		composited = m_rendered;
 	} else {
+		QImage framebuffer(m_framebuffer);
 		m_ui.exportButton->setEnabled(true);
-		composited.convertFromImage(m_framebuffer);
+		if (framebuffer.size() != m_dims) {
+			framebuffer = framebuffer.copy({QPoint(), m_dims});
+		}
+		composited.convertFromImage(framebuffer);
 	}
 	m_composited = composited.scaled(m_dims * m_ui.magnification->value());
 	m_ui.compositedView->setPixmap(m_composited);
@@ -460,6 +501,9 @@ QString FrameView::LayerId::readable() const {
 		break;
 	case BACKDROP:
 		typeStr = tr("Backdrop");
+		break;
+	case FRAME:
+		typeStr = tr("Frame");
 		break;
 	}
 	if (index < 0) {
