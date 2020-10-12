@@ -19,7 +19,7 @@ static void GBVideoProxyRendererWriteSGBPacket(struct GBVideoRenderer* renderer,
 static void GBVideoProxyRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address);
 static void GBVideoProxyRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam);
 static void GBVideoProxyRendererWritePalette(struct GBVideoRenderer* renderer, int address, uint16_t value);
-static void GBVideoProxyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
+static void GBVideoProxyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y);
 static void GBVideoProxyRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoProxyRendererFinishFrame(struct GBVideoRenderer* renderer);
 static void GBVideoProxyRendererEnableSGBBorder(struct GBVideoRenderer* renderer, bool enable);
@@ -68,8 +68,6 @@ static void _reset(struct GBVideoProxyRenderer* proxyRenderer) {
 	memcpy(proxyRenderer->logger->oam, &proxyRenderer->d.oam->raw, GB_SIZE_OAM);
 	memcpy(proxyRenderer->logger->vram, proxyRenderer->d.vram, GB_SIZE_VRAM);
 
-	proxyRenderer->oamMax = 0;
-
 	mVideoLoggerRendererReset(proxyRenderer->logger);
 }
 
@@ -117,6 +115,7 @@ void GBVideoProxyRendererDeinit(struct GBVideoRenderer* renderer) {
 static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerDirtyInfo* item) {
 	struct GBVideoProxyRenderer* proxyRenderer = logger->context;
 	uint8_t sgbPacket[16];
+	struct GBObj legacyBuffer[40];
 	switch (item->type) {
 	case DIRTY_REGISTER:
 		proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, item->address, item->value);
@@ -145,7 +144,7 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		break;
 	case DIRTY_RANGE:
 		if (item->value < item->value2 && item->value2 <= GB_VIDEO_HORIZONTAL_PIXELS && item->address < GB_VIDEO_VERTICAL_PIXELS) {
-			proxyRenderer->backend->drawRange(proxyRenderer->backend, item->value, item->value2, item->address, proxyRenderer->objThisLine, proxyRenderer->oamMax);
+			proxyRenderer->backend->drawRange(proxyRenderer->backend, item->value, item->value2, item->address);
 		}
 		break;
 	case DIRTY_FRAME:
@@ -154,12 +153,10 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 	case DIRTY_BUFFER:
 		switch (item->address) {
 		case BUFFER_OAM:
-			proxyRenderer->oamMax = item->value2 / sizeof(struct GBObj);
-			if (proxyRenderer->oamMax > 40) {
-				proxyRenderer->oamMax = 0;
+			if (item->value2 / sizeof(struct GBObj) > 40) {
 				return false;
 			}
-			logger->readData(logger, &proxyRenderer->objThisLine, item->value2, true);
+			logger->readData(logger, legacyBuffer, item->value2, true);
 			break;
 		case BUFFER_SGB:
 			logger->readData(logger, sgbPacket, 16, true);
@@ -228,12 +225,11 @@ void GBVideoProxyRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam
 	mVideoLoggerRendererWriteOAM(proxyRenderer->logger, oam, ((uint8_t*) proxyRenderer->d.oam->raw)[oam]);
 }
 
-void GBVideoProxyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax) {
+void GBVideoProxyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y) {
 	struct GBVideoProxyRenderer* proxyRenderer = (struct GBVideoProxyRenderer*) renderer;
 	if (!proxyRenderer->logger->block) {
-		proxyRenderer->backend->drawRange(proxyRenderer->backend, startX, endX, y, obj, oamMax);
+		proxyRenderer->backend->drawRange(proxyRenderer->backend, startX, endX, y);
 	}
-	mVideoLoggerWriteBuffer(proxyRenderer->logger, BUFFER_OAM, 0, oamMax * sizeof(*obj), obj);	
 	mVideoLoggerRendererDrawRange(proxyRenderer->logger, startX, endX, y);	
 }
 

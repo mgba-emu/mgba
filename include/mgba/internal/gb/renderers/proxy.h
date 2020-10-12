@@ -17,9 +17,6 @@ struct GBVideoProxyRenderer {
 	struct GBVideoRenderer d;
 	struct GBVideoRenderer* backend;
 	struct mVideoLogger* logger;
-
-	struct GBObj objThisLine[40];
-	size_t oamMax;
 };
 
 void GBVideoProxyRendererCreate(struct GBVideoProxyRenderer* renderer, struct GBVideoRenderer* backend);

@@ -403,26 +403,18 @@ void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLat
 }
 
 static void _cleanOAM(struct GBVideo* video, int y) {
-	// TODO: GBC differences
-	// TODO: Optimize
-	video->objMax = 0;
 	int spriteHeight = 8;
 	if (GBRegisterLCDCIsObjSize(video->p->memory.io[REG_LCDC])) {
 		spriteHeight = 16;
 	}
 	int o = 0;
 	int i;
-	for (i = 0; i < 40; ++i) {
+	for (i = 0; i < 40 && o < 10; ++i) {
 		uint8_t oy = video->oam.obj[i].y;
 		if (y < oy - 16 || y >= oy - 16 + spriteHeight) {
 			continue;
 		}
-		// TODO: Sort
-		video->objThisLine[o] = video->oam.obj[i];
 		++o;
-		if (o == 10) {
-			break;
-		}
 	}
 	video->objMax = o;
 }
@@ -442,7 +434,7 @@ void GBVideoProcessDots(struct GBVideo* video, uint32_t cyclesLate) {
 		oldX = 0;
 	}
 	if (video->frameskipCounter <= 0) {
-		video->renderer->drawRange(video->renderer, oldX, video->x, video->ly, video->objThisLine, video->objMax);
+		video->renderer->drawRange(video->renderer, oldX, video->x, video->ly);
 	}
 }
 

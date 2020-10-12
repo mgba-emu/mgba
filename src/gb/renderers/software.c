@@ -18,7 +18,7 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value);
 static void GBVideoSoftwareRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address);
 static void GBVideoSoftwareRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam);
-static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
+static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y);
 static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer);
 static void GBVideoSoftwareRendererEnableSGBBorder(struct GBVideoRenderer* renderer, bool enable);
@@ -499,7 +499,31 @@ static void GBVideoSoftwareRendererWriteOAM(struct GBVideoRenderer* renderer, ui
 	// Nothing to do
 }
 
-static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax) {
+static void _cleanOAM(struct GBVideoSoftwareRenderer* renderer, int y) {
+	// TODO: GBC differences
+	// TODO: Optimize
+	int spriteHeight = 8;
+	if (GBRegisterLCDCIsObjSize(renderer->lcdc)) {
+		spriteHeight = 16;
+	}
+	int o = 0;
+	int i;
+	for (i = 0; i < 40 && o < 10; ++i) {
+		uint8_t oy = renderer->d.oam->obj[i].y;
+		if (y < oy - 16 || y >= oy - 16 + spriteHeight) {
+			continue;
+		}
+		// TODO: Sort
+		renderer->obj[o] = renderer->d.oam->obj[i];
+		++o;
+		if (o == 10) {
+			break;
+		}
+	}
+	renderer->objMax = o;
+}
+
+static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	softwareRenderer->lastY = y;
 	softwareRenderer->lastX = endX;
@@ -536,9 +560,12 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	}
 
 	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc) && !softwareRenderer->d.disableOBJ) {
-		size_t i;
-		for (i = 0; i < oamMax; ++i) {
-			GBVideoSoftwareRendererDrawObj(softwareRenderer, &obj[i], startX, endX, y);
+		if (startX == 0) {
+			_cleanOAM(softwareRenderer, y);
+		}
+		int i;
+		for (i = 0; i < softwareRenderer->objMax; ++i) {
+			GBVideoSoftwareRendererDrawObj(softwareRenderer, &softwareRenderer->obj[i], startX, endX, y);
 		}
 	}
 
