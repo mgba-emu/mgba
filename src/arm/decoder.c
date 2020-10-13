@@ -164,17 +164,20 @@ static int _decodeMemory(struct ARMMemoryAccess memory, struct ARMCore* cpu, con
 	}
 	int total = 0;
 	bool elideClose = false;
+	char comment[64];
 	int written;
+	comment[0] = '\0';
 	if (memory.format & ARM_MEMORY_REGISTER_BASE) {
 		if (memory.baseReg == ARM_PC && memory.format & ARM_MEMORY_IMMEDIATE_OFFSET) {
 			uint32_t addrBase = memory.format & ARM_MEMORY_OFFSET_SUBTRACT ? -memory.offset.immediate : memory.offset.immediate;
-			if (!cpu) {
+			if (!cpu || memory.format & ARM_MEMORY_STORE) {
 				strlcpy(buffer, "[", blen);
 				ADVANCE(1);
 				written = _decodePCRelative(addrBase, symbols, pc & 0xFFFFFFFC, false, buffer, blen);
 				ADVANCE(written);
 			} else {
 				uint32_t value;
+				_decodePCRelative(addrBase, symbols, pc & 0xFFFFFFFC, false, comment, sizeof(comment));
 				addrBase += pc & 0xFFFFFFFC; // Thumb does not have PC-relative LDRH/LDRB
 				switch (memory.width & 7) {
 				case 1:
@@ -246,6 +249,10 @@ static int _decodeMemory(struct ARMMemoryAccess memory, struct ARMCore* cpu, con
 	if ((memory.format & (ARM_MEMORY_PRE_INCREMENT | ARM_MEMORY_WRITEBACK)) == (ARM_MEMORY_PRE_INCREMENT | ARM_MEMORY_WRITEBACK)) {
 		strlcpy(buffer, "!", blen);
 		ADVANCE(1);
+	}
+	if (comment[0]) {
+		written = snprintf(buffer, blen, "  @ %s", comment);
+		ADVANCE(written);
 	}
 	return total;
 }
