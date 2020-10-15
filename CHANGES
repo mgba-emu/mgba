@@ -26,6 +26,7 @@ Other fixes:
  - Qt: Fix camera image being upside-down sometimes (fixes mgba.io/i/829 again)
  - Qt: Fix drawing on macOS break when using OpenGL (fixes mgba.io/i/1899)
  - Qt: Fix stride changing when toggling SGB borders (fixes mgba.io/i/1898)
+ - Qt: Fix aliasing on background logo (fixes mgba.io/i/1886)
  - mGUI: Fix closing down a game if an exit is signalled
  - mVL: Fix injecting accidentally draining non-injection buffer
  - VFS: Fix directory node listing on some filesystems
