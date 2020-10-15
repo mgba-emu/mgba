@@ -252,11 +252,6 @@ void Window::reloadConfig() {
 		}
 		m_display->resizeContext();
 	}
-	if (m_display) {
-		m_display->lockAspectRatio(opts->lockAspectRatio);
-		m_display->filter(opts->resampleVideo);
-	}
-	m_screenWidget->filter(opts->resampleVideo);
 
 	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);
 }
@@ -908,7 +903,6 @@ void Window::reloadDisplayDriver() {
 	m_display->lockIntegerScaling(opts->lockIntegerScaling);
 	m_display->interframeBlending(opts->interframeBlending);
 	m_display->filter(opts->resampleVideo);
-	m_screenWidget->filter(opts->resampleVideo);
 	m_config->updateOption("showOSD");
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (opts->shader) {
