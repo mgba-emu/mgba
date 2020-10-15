@@ -1,6 +1,6 @@
 .core-defs:
   variables:
-    JNI_PATH: .
+    JNI_PATH: libretro-build
     CORENAME: mgba
 
 include:
