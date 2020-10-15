@@ -368,8 +368,14 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		}
 #endif
 		if (item->validStates) {
-			++item->state;
-			if (item->state >= item->nStates) {
+			if (item->state < item->nStates - 1) {
+				do {
+					++item->state;
+				} while (!item->validStates[item->state] && item->state < item->nStates - 1);
+				if (!item->validStates[item->state]) {
+					item->state = 0;
+				}
+			} else {
 				item->state = 0;
 			}
 		}
