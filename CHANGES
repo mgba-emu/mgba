@@ -28,6 +28,7 @@ Other fixes:
  - Qt: Fix stride changing when toggling SGB borders (fixes mgba.io/i/1898)
  - Qt: Fix aliasing on background logo (fixes mgba.io/i/1886)
  - mGUI: Fix closing down a game if an exit is signalled
+ - mGUI: Fix cycling through config setting states with accept button
  - mVL: Fix injecting accidentally draining non-injection buffer
  - VFS: Fix directory node listing on some filesystems
 Misc:
