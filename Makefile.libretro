@@ -386,7 +386,7 @@ else ifeq ($(platform), emscripten)
 # Windows
 else
    TARGET := $(TARGET_NAME)_libretro.dll
-   CC = gcc
+   CC ?= gcc
    SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T
    DEFINES += -std=c99
 
