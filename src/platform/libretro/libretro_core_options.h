@@ -189,6 +189,17 @@ struct retro_core_option_definition option_defs_us[] = {
       "OFF"
    },
 #endif
+   {
+      "mgba_force_gbp",
+      "Enable Game Boy Player Rumble (requires restart)",
+      "Enabling this will allow compatible games with the Game Boy Player boot logo to make the controller rumble. Due to how Nintendo decided this feature should work, it may cause glitches such as flickering or lag in some of these games.",
+      {
+         { "OFF", NULL },
+         { "ON",  NULL },
+         { NULL, NULL },
+      },
+      "OFF"
+   },
    { NULL, NULL, NULL, {{0}}, NULL },
 };
 
