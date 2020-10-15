@@ -22,6 +22,7 @@ Emulation fixes:
  - GB MBC: Fix some MBC3 bit masking
  - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
  - GBA: Fix timing advancing too quickly in rare cases
+ - GBA: Clear GBP connection on reset
  - GBA Audio: Fix deserializing SOUNDCNT_L
  - GBA Audio: Fix stereo in XQ audio
  - GBA Audio: Fix volume/mute in XQ audio (fixes mgba.io/i/1864)

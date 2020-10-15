@@ -216,6 +216,12 @@ void GBAReset(struct ARMCore* cpu) {
 
 	GBASIOReset(&gba->sio);
 
+	// GB Player SIO control should not be engaged before detection, even if we already know it's GBP
+	gba->memory.hw.devices &= ~HW_GB_PLAYER;
+	if (gba->sio.drivers.normal == &gba->memory.hw.gbpDriver.d) {
+		GBASIOSetDriver(&gba->sio, NULL, SIO_NORMAL_32);
+	}
+
 	bool isELF = false;
 #ifdef USE_ELF
 	struct ELF* elf = ELFOpen(gba->romVf);
