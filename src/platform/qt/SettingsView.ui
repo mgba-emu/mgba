@@ -577,70 +577,9 @@
         </widget>
        </item>
        <item row="11" column="1">
-        <widget class="QCheckBox" name="showFps">
+        <widget class="QCheckBox" name="dynamicTitle">
          <property name="text">
-          <string>Show FPS in title bar</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="1">
-        <widget class="QCheckBox" name="useDiscordPresence">
-         <property name="text">
-          <string>Enable Discord Rich Presence</string>
-         </property>
-        </widget>
-       </item>
-       <item row="15" column="0" colspan="2">
-        <widget class="Line" name="line_13">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="1">
-        <widget class="QCheckBox" name="autosave">
-         <property name="text">
-          <string>Automatically save state</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="17" column="1">
-        <widget class="QCheckBox" name="autoload">
-         <property name="text">
-          <string>Automatically load state</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="18" column="0" colspan="2">
-        <widget class="Line" name="line_16">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="19" column="1">
-        <widget class="QCheckBox" name="cheatAutosave">
-         <property name="text">
-          <string>Automatically save cheats</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="20" column="1">
-        <widget class="QCheckBox" name="cheatAutoload">
-         <property name="text">
-          <string>Automatically load cheats</string>
+          <string>Dynamically update window title</string>
          </property>
          <property name="checked">
           <bool>true</bool>
@@ -648,6 +587,16 @@
         </widget>
        </item>
        <item row="13" column="1">
+        <widget class="QCheckBox" name="showFilename">
+         <property name="text">
+          <string>Show filename instead of ROM name in title bar</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="1">
         <widget class="QCheckBox" name="showOSD">
          <property name="text">
           <string>Show OSD messages</string>
@@ -657,13 +606,81 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="1">
-        <widget class="QCheckBox" name="showFilename">
+       <item row="16" column="1">
+        <widget class="QCheckBox" name="useDiscordPresence">
          <property name="text">
-          <string>Show filename instead of ROM name in title bar</string>
+          <string>Enable Discord Rich Presence</string>
+         </property>
+        </widget>
+       </item>
+       <item row="17" column="0" colspan="2">
+        <widget class="Line" name="line_13">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="18" column="1">
+        <widget class="QCheckBox" name="autosave">
+         <property name="text">
+          <string>Automatically save state</string>
          </property>
          <property name="checked">
           <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="19" column="1">
+        <widget class="QCheckBox" name="autoload">
+         <property name="text">
+          <string>Automatically load state</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="20" column="0" colspan="2">
+        <widget class="Line" name="line_16">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="21" column="1">
+        <widget class="QCheckBox" name="cheatAutosave">
+         <property name="text">
+          <string>Automatically save cheats</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="22" column="1">
+        <widget class="QCheckBox" name="cheatAutoload">
+         <property name="text">
+          <string>Automatically load cheats</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="1">
+        <widget class="QCheckBox" name="showFps">
+         <property name="text">
+          <string>Show FPS in title bar</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="0" colspan="2">
+        <widget class="Line" name="line_18">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
@@ -2003,6 +2020,38 @@
     <hint type="destinationlabel">
      <x>20</x>
      <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dynamicTitle</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>showFps</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>366</x>
+     <y>381</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>332</x>
+     <y>415</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dynamicTitle</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>showFilename</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>366</x>
+     <y>381</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>409</x>
+     <y>449</y>
     </hint>
    </hints>
   </connection>
