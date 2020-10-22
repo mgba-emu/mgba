@@ -23,6 +23,7 @@ Emulation fixes:
  - GB MBC: Fix some MBC3 bit masking
  - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
  - GB Video: Fix drawing background when window is force-disabled by frontend
+ - GB, GBA Video: Copy disable flags when drawing scanlines in proxy when not blocking
  - GBA: Fix timing advancing too quickly in rare cases
  - GBA: Clear GBP connection on reset
  - GBA Audio: Fix deserializing SOUNDCNT_L
