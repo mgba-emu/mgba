@@ -72,7 +72,7 @@ private:
 		int index = -1;
 
 		bool operator!=(const LayerId& other) const { return other.type != type || other.index != index; }
-		operator uint() const { return (type << 8) | index; }
+		operator uint() const { return (type << 12) | (index & 0xFFF); }
 		QString readable() const;
 	};
 

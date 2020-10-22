@@ -24,6 +24,7 @@
 #endif
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/memory.h>
 #endif
 
@@ -286,6 +287,9 @@ void FrameView::updateTilesGB(bool) {
 	m_queue.clear();
 	{
 		CoreController::Interrupter interrupter(m_controller);
+		uint8_t* io = static_cast<GB*>(m_controller->thread()->core->board)->memory.io;
+		GBRegisterLCDC lcdc = io[GB_REG_LCDC];
+
 		for (int sprite = 0; sprite < 40; ++sprite) {
 			ObjInfo info;
 			lookupObj(sprite, &info);
@@ -312,6 +316,22 @@ void FrameView::updateTilesGB(bool) {
 			}
 		}
 
+		if (GBRegisterLCDCIsWindow(lcdc)) {
+			m_queue.append({
+				{ LayerId::WINDOW },
+				!m_disabled.contains({ LayerId::WINDOW }),
+				{},
+				{}, {0, 0}, false, false
+			});
+		}
+
+		m_queue.append({
+			{ LayerId::BACKGROUND },
+			!m_disabled.contains({ LayerId::BACKGROUND }),
+			{},
+			{}, {0, 0}, false, false
+		});
+
 		updateRendered();
 	}
 	invalidateQueue(m_controller->screenDimensions());
@@ -327,6 +347,12 @@ void FrameView::injectGB() {
 			if (!layer.enabled) {
 				mVideoLoggerInjectOAM(logger, layer.id.index << 2, 0);
 			}
+			break;
+		case LayerId::BACKGROUND:
+			m_vl->enableVideoLayer(m_vl, GB_LAYER_BACKGROUND, layer.enabled);
+			break;
+		case LayerId::WINDOW:
+			m_vl->enableVideoLayer(m_vl, GB_LAYER_WINDOW, layer.enabled);
 			break;
 		}
 	}
