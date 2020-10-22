@@ -117,11 +117,10 @@ static bool updateAudioLatency;
 
 /* Frame skipping functions */
 
-static void _retroAudioBuffStatusCallback(
-		bool active, unsigned occupancy, bool underrun_likely) {
+static void _retroAudioBuffStatusCallback(bool active, unsigned occupancy, bool underrunLikely) {
 	retroAudioBuffActive    = active;
 	retroAudioBuffOccupancy = occupancy;
-	retroAudioBuffUnderrun  = underrun_likely;
+	retroAudioBuffUnderrun  = underrunLikely;
 }
 
 static void _initFrameskip(void) {

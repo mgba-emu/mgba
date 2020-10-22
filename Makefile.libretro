@@ -392,11 +392,7 @@ else ifeq ($(platform), gcw0)
    AR = /opt/gcw0-toolchain/usr/bin/mipsel-linux-ar
    PLATFORM_DEFINES += -D_GNU_SOURCE
    CFLAGS += -fomit-frame-pointer -ffast-math -march=mips32 -mtune=mips32r2 -mhard-float
-   # The core is very slow on GCW0 platforms
-   # Use all possible optimisations...
-   CFLAGS += -finline-limit=42 -fno-unroll-loops -fno-ipa-cp
-   CFLAGS += -fno-common -fno-stack-protector -fno-guess-branch-probability
-   CFLAGS += -fno-caller-saves -fno-tree-loop-if-convert -fno-regmove
+   CFLAGS += -fno-common -ftree-vectorize -funswitch-loops
    DEFINES += -std=c99
 
 # Windows
