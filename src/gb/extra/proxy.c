@@ -44,6 +44,10 @@ void GBVideoProxyRendererCreate(struct GBVideoProxyRenderer* renderer, struct GB
 	renderer->d.getPixels = GBVideoProxyRendererGetPixels;
 	renderer->d.putPixels = GBVideoProxyRendererPutPixels;
 
+	renderer->d.disableBG = false;
+	renderer->d.disableWIN = false;
+	renderer->d.disableOBJ = false;
+
 	renderer->logger->context = renderer;
 	renderer->logger->parsePacket = _parsePacket;
 	renderer->logger->vramBlock = _vramBlock;
