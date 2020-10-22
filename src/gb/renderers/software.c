@@ -257,37 +257,37 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 	bool wasWindow = _inWindow(softwareRenderer);
 	uint8_t wy = softwareRenderer->wy;
 	switch (address) {
-	case REG_LCDC:
+	case GB_REG_LCDC:
 		softwareRenderer->lcdc = value;
 		GBVideoSoftwareRendererUpdateWindow(softwareRenderer, wasWindow, _inWindow(softwareRenderer), wy);
 		break;
-	case REG_SCY:
+	case GB_REG_SCY:
 		softwareRenderer->scy = value;
 		break;
-	case REG_SCX:
+	case GB_REG_SCX:
 		softwareRenderer->scx = value;
 		break;
-	case REG_WY:
+	case GB_REG_WY:
 		softwareRenderer->wy = value;
 		GBVideoSoftwareRendererUpdateWindow(softwareRenderer, wasWindow, _inWindow(softwareRenderer), wy);
 		break;
-	case REG_WX:
+	case GB_REG_WX:
 		softwareRenderer->wx = value;
 		GBVideoSoftwareRendererUpdateWindow(softwareRenderer, wasWindow, _inWindow(softwareRenderer), wy);
 		break;
-	case REG_BGP:
+	case GB_REG_BGP:
 		softwareRenderer->lookup[0] = value & 3;
 		softwareRenderer->lookup[1] = (value >> 2) & 3;
 		softwareRenderer->lookup[2] = (value >> 4) & 3;
 		softwareRenderer->lookup[3] = (value >> 6) & 3;
 		break;
-	case REG_OBP0:
+	case GB_REG_OBP0:
 		softwareRenderer->lookup[0x20 + 0] = value & 3;
 		softwareRenderer->lookup[0x20 + 1] = (value >> 2) & 3;
 		softwareRenderer->lookup[0x20 + 2] = (value >> 4) & 3;
 		softwareRenderer->lookup[0x20 + 3] = (value >> 6) & 3;
 		break;
-	case REG_OBP1:
+	case GB_REG_OBP1:
 		softwareRenderer->lookup[0x24 + 0] = value & 3;
 		softwareRenderer->lookup[0x24 + 1] = (value >> 2) & 3;
 		softwareRenderer->lookup[0x24 + 2] = (value >> 4) & 3;

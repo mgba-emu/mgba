@@ -838,7 +838,7 @@ static bool _GBCoreLookupIdentifier(struct mCore* core, const char* name, int32_
 	UNUSED(core);
 	*segment = -1;
 	int i;
-	for (i = 0; i < REG_MAX; ++i) {
+	for (i = 0; i < GB_REG_MAX; ++i) {
 		const char* reg = GBIORegisterNames[i];
 		if (reg && strcasecmp(reg, name) == 0) {
 			*value = GB_BASE_IO | i;

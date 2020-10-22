@@ -90,7 +90,7 @@ static void _finishTransfer(struct GBSIOLockstepNode* node) {
 	}
 	struct GBSIO* sio = node->d.p;
 	sio->pendingSB = node->p->pendingSB[!node->id];
-	if (GBRegisterSCIsEnable(sio->p->memory.io[REG_SC])) {
+	if (GBRegisterSCIsEnable(sio->p->memory.io[GB_REG_SC])) {
 		sio->remainingBits = 8;
 		mTimingDeschedule(&sio->p->timing, &sio->event);
 		mTimingSchedule(&sio->p->timing, &sio->event, 0);

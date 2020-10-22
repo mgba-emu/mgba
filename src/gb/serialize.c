@@ -139,7 +139,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: OCPS is out of range");
 	}
 	bool differentBios = !gb->biosVf || gb->model != state->model;
-	if (state->io[REG_BANK] == 0xFF) {
+	if (state->io[GB_REG_BANK] == 0xFF) {
 		if (differentBios) {
 			mLOG(GB_STATE, WARN, "Incompatible savestate, please restart with correct BIOS in %s mode", GBModelToName(state->model));
 			error = true;
@@ -206,7 +206,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	GBTimerDeserialize(&gb->timer, state);
 	GBAudioDeserialize(&gb->audio, state);
 
-	if (gb->memory.io[REG_BANK] == 0xFF) {
+	if (gb->memory.io[GB_REG_BANK] == 0xFF) {
 		GBMapBIOS(gb);
 	} else {
 		GBUnmapBIOS(gb);
