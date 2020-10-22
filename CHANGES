@@ -4,6 +4,7 @@ Emulation fixes:
  - GB Audio: Fix deserializing audio channels 2 and 3
  - GB Audio: Fix deserializing while audio was disabled (fixes mgba.io/i/1305)
  - GB Video: Fix drawing background when window is force-disabled by frontend
+ - GB, GBA Video: Copy disable flags when drawing scanlines in proxy when not blocking
  - GBA Audio: Fix deserializing SOUNDCNT_L
  - GBA Audio: Fix stereo in XQ audio
  - GBA Audio: Fix volume/mute in XQ audio (fixes mgba.io/i/1864)

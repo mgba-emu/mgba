@@ -238,6 +238,9 @@ void GBVideoProxyRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam
 void GBVideoProxyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax) {
 	struct GBVideoProxyRenderer* proxyRenderer = (struct GBVideoProxyRenderer*) renderer;
 	if (!proxyRenderer->logger->block) {
+		proxyRenderer->backend->disableBG = proxyRenderer->d.disableBG;
+		proxyRenderer->backend->disableWIN = proxyRenderer->d.disableWIN;
+		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
 		proxyRenderer->backend->drawRange(proxyRenderer->backend, startX, endX, y, obj, oamMax);
 	}
 	mVideoLoggerWriteBuffer(proxyRenderer->logger, BUFFER_OAM, 0, oamMax * sizeof(*obj), obj);	
