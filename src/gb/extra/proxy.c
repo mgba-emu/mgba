@@ -132,15 +132,15 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		}
 		break;
 	case DIRTY_VRAM:
-		proxyRenderer->backend->disableBG = proxyRenderer->d.disableBG;
-		proxyRenderer->backend->disableWIN = proxyRenderer->d.disableWIN;
-		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
 		if (item->address <= GB_SIZE_VRAM - 0x1000) {
 			logger->readData(logger, &logger->vram[item->address >> 1], 0x1000, true);
 			proxyRenderer->backend->writeVRAM(proxyRenderer->backend, item->address);
 		}
 		break;
 	case DIRTY_SCANLINE:
+		proxyRenderer->backend->disableBG = proxyRenderer->d.disableBG;
+		proxyRenderer->backend->disableWIN = proxyRenderer->d.disableWIN;
+		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
 		if (item->address < GB_VIDEO_VERTICAL_PIXELS) {
 			proxyRenderer->backend->finishScanline(proxyRenderer->backend, item->address);
 		}
