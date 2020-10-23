@@ -120,6 +120,8 @@ struct GBAVideoSoftwareRenderer {
 		struct GBAVideoWindowRegion h;
 		struct GBAVideoWindowRegion v;
 		struct WindowControl control;
+		int16_t offsetX;
+		int16_t offsetY;
 	} winN[2];
 
 	struct WindowControl winout;

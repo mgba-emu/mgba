@@ -1099,6 +1099,10 @@ static void _GBACoreAdjustVideoLayer(struct mCore* core, size_t id, int32_t x, i
 		gbacore->renderer.objOffsetY = y;
 		gbacore->renderer.oamDirty = 1;
 		break;
+	case GBA_LAYER_WIN0:
+		gbacore->renderer.winN[id - GBA_LAYER_WIN0].offsetX = x;
+		gbacore->renderer.winN[id - GBA_LAYER_WIN0].offsetY = y;
+		break;
 	default:
 		return;
 	}

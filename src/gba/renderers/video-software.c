@@ -443,13 +443,13 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 
 static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win, int y) {
 	if (win->v.end >= win->v.start) {
-		if (y >= win->v.end) {
+		if (y >= win->v.end + win->offsetY) {
 			return;
 		}
-		if (y < win->v.start) {
+		if (y < win->v.start + win->offsetY) {
 			return;
 		}
-	} else if (y >= win->v.end && y < win->v.start) {
+	} else if (y >= win->v.end + win->offsetY && y < win->v.start + win->offsetY) {
 		return;
 	}
 	if (win->h.end > GBA_VIDEO_HORIZONTAL_PIXELS || win->h.end < win->h.start) {
