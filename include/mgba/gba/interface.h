@@ -34,6 +34,17 @@ enum GBASIOJOYCommand {
 	JOY_RECV = 0x15
 };
 
+enum GBAVideoLayer {
+	GBA_LAYER_BG0 = 0,
+	GBA_LAYER_BG1,
+	GBA_LAYER_BG2,
+	GBA_LAYER_BG3,
+	GBA_LAYER_OBJ,
+	GBA_LAYER_WIN0,
+	GBA_LAYER_WIN1,
+	GBA_LAYER_OBJWIN,
+};
+
 struct GBA;
 struct GBAAudio;
 struct GBASIO;

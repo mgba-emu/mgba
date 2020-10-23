@@ -112,10 +112,6 @@ private:
 	ColorPicker m_backdropPicker;
 	QColor m_overrideBackdrop;
 
-#ifdef M_CORE_GBA
-	uint16_t m_gbaDispcnt;
-#endif
-
 	std::shared_ptr<bool> m_callbackLocker{std::make_shared<bool>(true)};
 };
 

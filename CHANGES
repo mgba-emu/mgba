@@ -11,6 +11,7 @@ Features:
  - Command scripts for CLI debugger (by ahigerd)
  - ARM disassembler now resolves addresses to symbol names
  - Add Game Boy Player feature support to ports
+ - Individual window types can now be toggled in GBA debugging views
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation

@@ -194,6 +194,8 @@ struct GBAVideoRenderer {
 
 	bool disableBG[4];
 	bool disableOBJ;
+	bool disableWIN[2];
+	bool disableOBJWIN;
 
 	bool highlightBG[4];
 	bool highlightOBJ[128];

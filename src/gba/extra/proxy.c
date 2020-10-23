@@ -43,6 +43,9 @@ void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct 
 	renderer->d.disableBG[2] = false;
 	renderer->d.disableBG[3] = false;
 	renderer->d.disableOBJ = false;
+	renderer->d.disableWIN[0] = false;
+	renderer->d.disableWIN[1] = false;
+	renderer->d.disableOBJWIN = false;
 
 	renderer->d.highlightBG[0] = false;
 	renderer->d.highlightBG[1] = false;
@@ -202,6 +205,9 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		proxyRenderer->backend->disableBG[2] = proxyRenderer->d.disableBG[2];
 		proxyRenderer->backend->disableBG[3] = proxyRenderer->d.disableBG[3];
 		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
+		proxyRenderer->backend->disableWIN[0] = proxyRenderer->d.disableWIN[0];
+		proxyRenderer->backend->disableWIN[1] = proxyRenderer->d.disableWIN[1];
+		proxyRenderer->backend->disableOBJWIN = proxyRenderer->d.disableOBJWIN;
 		proxyRenderer->backend->highlightBG[0] = proxyRenderer->d.highlightBG[0];
 		proxyRenderer->backend->highlightBG[1] = proxyRenderer->d.highlightBG[1];
 		proxyRenderer->backend->highlightBG[2] = proxyRenderer->d.highlightBG[2];
@@ -302,6 +308,9 @@ void GBAVideoProxyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y)
 		proxyRenderer->backend->disableBG[2] = proxyRenderer->d.disableBG[2];
 		proxyRenderer->backend->disableBG[3] = proxyRenderer->d.disableBG[3];
 		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
+		proxyRenderer->backend->disableWIN[0] = proxyRenderer->d.disableWIN[0];
+		proxyRenderer->backend->disableWIN[1] = proxyRenderer->d.disableWIN[1];
+		proxyRenderer->backend->disableOBJWIN = proxyRenderer->d.disableOBJWIN;
 		proxyRenderer->backend->highlightBG[0] = proxyRenderer->d.highlightBG[0];
 		proxyRenderer->backend->highlightBG[1] = proxyRenderer->d.highlightBG[1];
 		proxyRenderer->backend->highlightBG[2] = proxyRenderer->d.highlightBG[2];
