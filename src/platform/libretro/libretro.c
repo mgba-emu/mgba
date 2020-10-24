@@ -102,6 +102,129 @@ static unsigned imcapWidth;
 static unsigned imcapHeight;
 static size_t camStride;
 static bool envVarsUpdated;
+static unsigned frameskipType;
+static unsigned frameskipThreshold;
+static uint16_t frameskipCounter;
+static bool retroAudioBuffActive;
+static unsigned retroAudioBuffOccupancy;
+static bool retroAudioBuffUnderrun;
+static unsigned retroAudioLatency;
+static bool updateAudioLatency;
+
+/* Maximum number of consecutive frames that
+ * can be skipped */
+#define RETRO_FRAMESKIP_MAX 30
+
+/* Frame skipping functions */
+
+static void _retroAudioBuffStatusCallback(bool active, unsigned occupancy, bool underrunLikely) {
+	retroAudioBuffActive    = active;
+	retroAudioBuffOccupancy = occupancy;
+	retroAudioBuffUnderrun  = underrunLikely;
+}
+
+static void _initFrameskip(void) {
+
+	if (frameskipType > 0) {
+
+		bool calculateAudioLatency = true;
+
+		if (frameskipType == 3) { /* Fixed Interval */
+			environCallback(RETRO_ENVIRONMENT_SET_AUDIO_BUFFER_STATUS_CALLBACK, NULL);
+		} else {
+
+			struct retro_audio_buffer_status_callback BuffStatusCb;
+			BuffStatusCb.callback = _retroAudioBuffStatusCallback;
+
+			if (!environCallback(RETRO_ENVIRONMENT_SET_AUDIO_BUFFER_STATUS_CALLBACK, &BuffStatusCb)) {
+
+				if (logCallback)
+					logCallback(RETRO_LOG_WARN, "Frameskip disabled - frontend does not support audio buffer status monitoring.\n");
+
+				retroAudioBuffActive    = false;
+				retroAudioBuffOccupancy = 0;
+				retroAudioBuffUnderrun  = false;
+				retroAudioLatency       = 0;
+				calculateAudioLatency   = false;
+			}
+		}
+
+		if (calculateAudioLatency) {
+
+			/* Frameskip is enabled - increase frontend
+			 * audio latency to minimise potential
+			 * buffer underruns */
+			float frameTimeMsec = 1000.0f * (float)core->frameCycles(core) /
+					(float)core->frequency(core);
+
+			/* Set latency to 6x current frame time... */
+			retroAudioLatency = (unsigned)((6.0f * frameTimeMsec) + 0.5f);
+
+			/* ...then round up to nearest multiple of 32 */
+			retroAudioLatency = (retroAudioLatency + 0x1F) & ~0x1F;
+		}
+
+	} else {
+		environCallback(RETRO_ENVIRONMENT_SET_AUDIO_BUFFER_STATUS_CALLBACK, NULL);
+		retroAudioLatency = 0;
+	}
+
+	updateAudioLatency = true;
+}
+
+static void _loadFrameskipSettings(struct mCoreOptions *opts) {
+
+	struct retro_variable var;
+	unsigned oldFrameskipType;
+	unsigned frameskipInterval;
+
+	var.key   = "mgba_frameskip";
+	var.value = 0;
+
+	oldFrameskipType = frameskipType;
+	frameskipType    = 0;
+
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		if (strcmp(var.value, "auto") == 0) {
+			frameskipType = 1;
+		} else if (strcmp(var.value, "auto_threshold") == 0) {
+			frameskipType = 2;
+		} else if (strcmp(var.value, "fixed_interval") == 0) {
+			frameskipType = 3;
+		}
+	}
+
+	var.key   = "mgba_frameskip_threshold";
+	var.value = 0;
+
+	frameskipThreshold = 33;
+
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+		frameskipThreshold = strtol(var.value, NULL, 10);
+
+	var.key   = "mgba_frameskip_interval";
+	var.value = 0;
+
+	frameskipInterval = 0;
+
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+		frameskipInterval = strtol(var.value, NULL, 10);
+
+	/* Update internal (mGBA config) frameskip value */
+	if (opts) {
+		opts->frameskip = (frameskipType == 3) ?
+				frameskipInterval : 0;
+	} else {
+		mCoreConfigSetUIntValue(&core->config, "frameskip",
+				(frameskipType == 3) ? frameskipInterval : 0);
+		mCoreLoadConfig(core);
+	}
+
+	/* (Re)initialise frameskipping, if required */
+	if (opts || (frameskipType != oldFrameskipType)) {
+		_initFrameskip();
+	}
+}
 
 /* Video post processing */
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
@@ -970,11 +1093,7 @@ static void _reloadSettings(void) {
 		}
 	}
 
-	var.key = "mgba_frameskip";
-	var.value = 0;
-	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-		opts.frameskip = strtol(var.value, NULL, 10);
-	}
+	_loadFrameskipSettings(&opts);
 
 	var.key = "mgba_idle_optimization";
 	var.value = 0;
@@ -1151,6 +1270,15 @@ void retro_init(void) {
 
 	if (environCallback(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL))
 		libretro_supports_bitmasks = true;
+
+	frameskipType           = 0;
+	frameskipThreshold      = 0;
+	frameskipCounter        = 0;
+	retroAudioBuffActive    = false;
+	retroAudioBuffOccupancy = 0;
+	retroAudioBuffUnderrun  = false;
+	retroAudioLatency       = 0;
+	updateAudioLatency      = false;
 }
 
 void retro_deinit(void) {
@@ -1211,6 +1339,7 @@ int16_t cycleturbo(bool x/*turbo A*/, bool y/*turbo B*/, bool l2/*turbo L*/, boo
 
 void retro_run(void) {
 	uint16_t keys;
+	bool skipFrame = false;
 
 	_initSensors();
 	inputPollCallback();
@@ -1238,12 +1367,7 @@ void retro_run(void) {
 			}
 		}
 
-		var.key = "mgba_frameskip";
-		var.value = 0;
-		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-			mCoreConfigSetUIntValue(&core->config, "frameskip", strtol(var.value, NULL, 10));
-			mCoreLoadConfig(core);
-		}
+		_loadFrameskipSettings(NULL);
 
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
 		_loadPostProcessingSettings();
@@ -1300,17 +1424,95 @@ void retro_run(void) {
 		}
 	}
 
+	/* Check whether current frame should
+	 * be skipped */
+	if ((frameskipType > 0)  &&
+		 (frameskipType != 3) && /* Ignore 'Fixed Interval' - handled internally */
+		 retroAudioBuffActive) {
+
+		switch (frameskipType) {
+			case 1: /* Auto */
+				skipFrame = retroAudioBuffUnderrun;
+				break;
+			case 2: /* Auto (Threshold) */
+				skipFrame = (retroAudioBuffOccupancy < frameskipThreshold);
+				break;
+			default:
+				skipFrame = false;
+				break;
+		}
+
+		if (skipFrame) {
+			if(frameskipCounter < RETRO_FRAMESKIP_MAX) {
+
+				switch (core->platform(core)) {
+#ifdef M_CORE_GBA
+				case PLATFORM_GBA:
+					((struct GBA*) core->board)->video.frameskipCounter = 1;
+					break;
+#endif
+#ifdef M_CORE_GB
+				case PLATFORM_GB:
+					((struct GB*) core->board)->video.frameskipCounter = 1;
+					break;
+#endif
+				default:
+					break;
+				}
+				frameskipCounter++;
+
+			} else {
+				frameskipCounter = 0;
+				skipFrame        = false;
+			}
+		} else {
+			frameskipCounter = 0;
+		}
+	}
+
+   /* If frameskip settings have changed, update
+    * frontend audio latency */
+   if (updateAudioLatency)
+   {
+      environCallback(RETRO_ENVIRONMENT_SET_MINIMUM_AUDIO_LATENCY,
+            &retroAudioLatency);
+      updateAudioLatency = false;
+   }
+
 	core->runFrame(core);
 	unsigned width, height;
 	core->desiredVideoDimensions(core, &width, &height);
 
+	/* If using 'Fixed Interval' frameskipping, check
+	 * whether a frame is currently available  */
+	if (frameskipType == 3) {
+		switch (core->platform(core)) {
+	#ifdef M_CORE_GBA
+		case PLATFORM_GBA:
+			skipFrame = ((struct GBA*) core->board)->video.frameskipCounter > 0;
+			break;
+	#endif
+	#ifdef M_CORE_GB
+		case PLATFORM_GB:
+			skipFrame = ((struct GB*) core->board)->video.frameskipCounter > 0;
+			break;
+	#endif
+		default:
+			break;
+		}
+	}
+
+	if (!skipFrame) {
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
-	if (videoPostProcess) {
-		videoPostProcess(width, height);
-		videoCallback(ppOutputBuffer, width, height, VIDEO_WIDTH_MAX * sizeof(color_t));
-	} else
+		if (videoPostProcess) {
+			videoPostProcess(width, height);
+			videoCallback(ppOutputBuffer, width, height, VIDEO_WIDTH_MAX * sizeof(color_t));
+		} else
 #endif
-		videoCallback(outputBuffer, width, height, VIDEO_WIDTH_MAX * sizeof(color_t));
+			videoCallback(outputBuffer, width, height, VIDEO_WIDTH_MAX * sizeof(color_t));
+	} else {
+		videoCallback(NULL, width, height, VIDEO_WIDTH_MAX * sizeof(color_t));
+	}
 
 	// This was from aliaspider patch (4539a0e), game boy audio is buggy with it (adapted for this refactored core)
 /*
