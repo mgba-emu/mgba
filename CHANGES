@@ -18,6 +18,7 @@ Emulation fixes:
 Other fixes:
  - 3DS: Redo video sync to be more precise
  - 3DS: Fix crash with libctru 2.0 when exiting
+ - ARM Decoder: Fix decoding pre-indexed writeback instructions (fixes mgba.io/i/1915)
  - Core: Fix reported ROM size when a fixed buffer size is used
  - Core: Fix memory leak loading ELF files
  - GBA: Disable more checks when loading GS save with checks disabled (fixes mgba.io/i/1851)
