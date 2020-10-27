@@ -24,6 +24,7 @@ Other fixes:
  - GBA: Disable more checks when loading GS save with checks disabled (fixes mgba.io/i/1851)
  - GBA: Fix endianness issues in renderer proxy
  - GBA Core: Fix memory leak when loading symbols
+ - GBA Serialize: Ensure program counter is aligned when loading
  - Qt: Add dummy English translation file (fixes mgba.io/i/1469)
  - Qt: Fix Battle Chip view not displaying chips on some DPI settings
  - Qt: Fix camera image being upside-down sometimes (fixes mgba.io/i/829 again)
