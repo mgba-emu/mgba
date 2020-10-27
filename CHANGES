@@ -37,6 +37,7 @@ Other fixes:
  - VFS: Fix directory node listing on some filesystems
 Misc:
  - GBA Video: Improve speed of window texture generation on AMD
+ - Vita: Clear both buffers when loading a game
 
 0.8.3: (2020-08-03)
 Emulation fixes:
