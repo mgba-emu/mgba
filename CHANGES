@@ -109,6 +109,7 @@ Misc:
  - Qt: Window title updates can be disabled (closes mgba.io/i/1912)
  - Util: Reset vector size on deinit
  - VFS: Change semantics of VFile.sync on mapped files (fixes mgba.io/i/1730)
+ - Vita: Clear both buffers when loading a game
 
 0.8.3: (2020-08-03)
 Emulation fixes:

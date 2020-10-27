@@ -328,6 +328,9 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	currentTex = 0;
 	screenshot = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 
+	memset(vita2d_texture_get_datap(tex[0]), 0xFF, 256 * toPow2(height) * 4);
+	memset(vita2d_texture_get_datap(tex[1]), 0xFF, 256 * toPow2(height) * 4);
+
 	runner->core->setVideoBuffer(runner->core, vita2d_texture_get_datap(tex[currentTex]), 256);
 	runner->core->setAudioBufferSize(runner->core, PSP2_SAMPLES);
 
