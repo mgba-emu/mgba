@@ -263,8 +263,8 @@ int DisplayGL::framebufferHandle() {
 }
 
 PainterGL::PainterGL(QWindow* surface, QOpenGLContext* parent, int forceVersion)
-	: m_gl(parent)
-	, m_surface(surface)
+	: m_surface(surface)
+	, m_gl(parent)
 {
 #ifdef BUILD_GL
 	mGLContext* glBackend;
