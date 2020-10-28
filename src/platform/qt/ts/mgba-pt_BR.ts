@@ -985,7 +985,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
       <location filename="../ObjView.ui" line="534"/>
       <location filename="../ObjView.ui" line="602"/>
       <source>Return, Ctrl+R</source>
-      <translation>Retornar, Ctrl+R</translation>
+      <translation>Return, Ctrl+R</translation>
     </message>
     <message>
       <location filename="../ObjView.ui" line="495"/>
@@ -2029,32 +2029,32 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
       <location filename="../IOViewer.cpp" line="259"/>
       <source>OBJ window enable BG 0</source>
-      <translation>Janela OBJ habilitae BG 0</translation>
+      <translation>Janela OBJ habilitar BG 0</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="260"/>
       <source>OBJ window enable BG 1</source>
-      <translation>Janela OBJ habilitae BG 1</translation>
+      <translation>Janela OBJ habilitar BG 1</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="261"/>
       <source>OBJ window enable BG 2</source>
-      <translation>Janela OBJ habilitae BG 2</translation>
+      <translation>Janela OBJ habilitar BG 2</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="262"/>
       <source>OBJ window enable BG 3</source>
-      <translation>Janela OBJ habilitae BG 3</translation>
+      <translation>Janela OBJ habilitar BG 3</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="263"/>
       <source>OBJ window enable OBJ</source>
-      <translation>Janela OBJ habilitae OBJ</translation>
+      <translation>Janela OBJ habilitar OBJ</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="264"/>
       <source>OBJ window enable blend</source>
-      <translation>Janela OBJ habilitae blend</translation>
+      <translation>Janela OBJ habilitar blend</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="268"/>
@@ -2079,32 +2079,32 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
       <location filename="../IOViewer.cpp" line="277"/>
       <source>BG 0 target 1</source>
-      <translation>BG 0 target 1</translation>
+      <translation>BG 0 alvo 1</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="278"/>
       <source>BG 1 target 1</source>
-      <translation>BG 1 target 1</translation>
+      <translation>BG 1 alvo 1</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="279"/>
       <source>BG 2 target 1</source>
-      <translation>BG 2 target 1</translation>
+      <translation>BG 2 alvo 1</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="280"/>
       <source>BG 3 target 1</source>
-      <translation>BG 3 target 1</translation>
+      <translation>BG 3 alvo 1</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="281"/>
       <source>OBJ target 1</source>
-      <translation>OBJ target 1</translation>
+      <translation>OBJ alvo 1</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="282"/>
       <source>Backdrop target 1</source>
-      <translation>Backdrop target 1</translation>
+      <translation>Backdrop alvo 1</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="283"/>
@@ -2134,32 +2134,32 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
       <location filename="../IOViewer.cpp" line="289"/>
       <source>BG 0 target 2</source>
-      <translation>BG 0 target 2</translation>
+      <translation>BG 0 alvo 2</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="290"/>
       <source>BG 1 target 2</source>
-      <translation>BG 1 target 2</translation>
+      <translation>BG 1 alvo 2</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="291"/>
       <source>BG 2 target 2</source>
-      <translation>BG 2 target 2</translation>
+      <translation>BG 2 alvo 2</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="292"/>
       <source>BG 3 target 2</source>
-      <translation>BG 3 target 2</translation>
+      <translation>BG 3 alvo 2</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="293"/>
       <source>OBJ target 2</source>
-      <translation>OBJ target 2</translation>
+      <translation>OBJ alvo 2</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="294"/>
       <source>Backdrop target 2</source>
-      <translation>Backdrop target 2</translation>
+      <translation>Backdrop alvo 2</translation>
     </message>
     <message>
       <location filename="../IOViewer.cpp" line="298"/>
@@ -3404,7 +3404,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
       <location filename="../ObjView.cpp" line="280"/>
       <source>Export sprite</source>
-      <translation>Exportar imagem</translation>
+      <translation>Exportar sprite</translation>
     </message>
     <message>
       <location filename="../ObjView.cpp" line="281"/>
@@ -3546,12 +3546,12 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
       <location filename="../ShaderSelector.cpp" line="65"/>
       <source>Load shader</source>
-      <translation>Carregar shader</translation>
+      <translation>Carregar sombreamento</translation>
     </message>
     <message>
       <location filename="../ShaderSelector.cpp" line="105"/>
       <source>No shader loaded</source>
-      <translation>Nenhum shader carregado</translation>
+      <translation>Nenhum sombreamento carregado</translation>
     </message>
     <message>
       <location filename="../ShaderSelector.cpp" line="113"/>
@@ -4080,7 +4080,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
       <location filename="../Window.cpp" line="1417"/>
       <source>Bilinear filtering</source>
-      <translation>Filtragem de bilinear</translation>
+      <translation>Filtragem bilinear</translation>
     </message>
     <message>
       <location filename="../Window.cpp" line="1426"/>
@@ -4947,7 +4947,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
       <location filename="../SettingsView.ui" line="855"/>
       <source>Preload entire ROM into memory</source>
-      <translation>Precarregar toda a ROM na memória</translation>
+      <translation>Pré-carregar toda a ROM na memória</translation>
     </message>
     <message>
       <location filename="../SettingsView.ui" line="766"/>
