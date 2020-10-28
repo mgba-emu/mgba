@@ -206,7 +206,7 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 void MemoryView::setIndex(int index) {
 	mCore* core = m_controller->thread()->core;
 	const mCoreMemoryBlock* blocks;
-	size_t nBlocks = core->listMemoryBlocks(core, &blocks);
+	core->listMemoryBlocks(core, &blocks);
 	const mCoreMemoryBlock& info = blocks[index];
 
 	m_region = qMakePair(info.start, info.end);
@@ -220,7 +220,7 @@ void MemoryView::setIndex(int index) {
 void MemoryView::setSegment(int segment) {
 	mCore* core = m_controller->thread()->core;
 	const mCoreMemoryBlock* blocks;
-	size_t nBlocks = core->listMemoryBlocks(core, &blocks);
+	core->listMemoryBlocks(core, &blocks);
 	const mCoreMemoryBlock& info = blocks[m_ui.regions->currentIndex()];
 
 	m_ui.hexfield->setSegment(info.maxSegment < segment ? info.maxSegment : segment);
