@@ -141,6 +141,8 @@ void GBAKeyEditor::setAll() {
 }
 
 void GBAKeyEditor::resizeEvent(QResizeEvent* event) {
+	Q_UNUSED(event)
+
 	setLocation(m_buttons, 0.5, 0.2);
 	setLocation(m_keyDU, DPAD_CENTER_X, DPAD_CENTER_Y - DPAD_HEIGHT);
 	setLocation(m_keyDD, DPAD_CENTER_X, DPAD_CENTER_Y + DPAD_HEIGHT);
@@ -163,6 +165,8 @@ void GBAKeyEditor::resizeEvent(QResizeEvent* event) {
 }
 
 void GBAKeyEditor::paintEvent(QPaintEvent* event) {
+	Q_UNUSED(event)
+
 	QPainter painter(this);
 	painter.scale(width() / 480.0, height() / 480.0);
 	painter.drawPicture(0, 0, m_background);

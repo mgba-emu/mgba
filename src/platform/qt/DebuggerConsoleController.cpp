@@ -63,8 +63,7 @@ void DebuggerConsoleController::printf(struct CLIDebuggerBackend* be, const char
 }
 
 void DebuggerConsoleController::init(struct CLIDebuggerBackend* be) {
-	Backend* consoleBe = reinterpret_cast<Backend*>(be);
-	DebuggerConsoleController* self = consoleBe->self;
+	Q_UNUSED(be)
 }
 
 void DebuggerConsoleController::deinit(struct CLIDebuggerBackend* be) {
@@ -101,6 +100,8 @@ void DebuggerConsoleController::lineAppend(struct CLIDebuggerBackend* be, const 
 }
 
 const char* DebuggerConsoleController::historyLast(struct CLIDebuggerBackend* be, size_t* len) {
+	Q_UNUSED(len)
+
 	Backend* consoleBe = reinterpret_cast<Backend*>(be);
 	DebuggerConsoleController* self = consoleBe->self;
 	CoreController::Interrupter interrupter(self->m_gameController, true);

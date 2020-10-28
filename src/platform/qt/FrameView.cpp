@@ -464,6 +464,8 @@ void FrameView::updateRendered() {
 }
 
 bool FrameView::eventFilter(QObject* obj, QEvent* event) {
+	Q_UNUSED(obj)
+
 	QPointF pos;
 	switch (event->type()) {
 	case QEvent::MouseButtonPress:

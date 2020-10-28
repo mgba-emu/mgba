@@ -41,6 +41,8 @@ QVariant LogConfigModel::data(const QModelIndex& index, int role) const {
 }
 
 bool LogConfigModel::setData(const QModelIndex& index, const QVariant& value, int role) {
+	Q_UNUSED(value)
+
 	if (role != Qt::CheckStateRole) {
 		return false;
 	}
@@ -102,18 +104,22 @@ QVariant LogConfigModel::headerData(int section, Qt::Orientation orientation, in
 }
 
 QModelIndex LogConfigModel::index(int row, int column, const QModelIndex& parent) const {
+	Q_UNUSED(parent)
 	return createIndex(row, column, nullptr);
 }
 
 QModelIndex LogConfigModel::parent(const QModelIndex& index) const {
+	Q_UNUSED(index)
 	return QModelIndex();
 }
 
 int LogConfigModel::columnCount(const QModelIndex& parent) const {
+	Q_UNUSED(parent)
 	return 8;
 }
 
 int LogConfigModel::rowCount(const QModelIndex& parent) const {
+	Q_UNUSED(parent)
 	return m_cache.size() + 1;
 }
 

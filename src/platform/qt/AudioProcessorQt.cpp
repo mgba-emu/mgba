@@ -75,6 +75,7 @@ void AudioProcessorQt::pause() {
 }
 
 void AudioProcessorQt::setBufferSamples(int samples) {
+	Q_UNUSED(samples)
 }
 
 void AudioProcessorQt::inputParametersChanged() {

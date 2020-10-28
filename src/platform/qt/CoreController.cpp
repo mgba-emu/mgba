@@ -853,6 +853,8 @@ void CoreController::clearOverride() {
 }
 
 void CoreController::startVideoLog(const QString& path, bool compression) {
+	Q_UNUSED(compression)
+
 	if (m_vl) {
 		return;
 	}

@@ -43,6 +43,7 @@ QVariant BattleChipModel::data(const QModelIndex& index, int role) const {
 }
 
 Qt::ItemFlags BattleChipModel::flags(const QModelIndex& index) const {
+	Q_UNUSED(index)
 	return Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren;
 }
 

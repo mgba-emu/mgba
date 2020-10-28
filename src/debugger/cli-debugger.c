@@ -1133,6 +1133,8 @@ void CLIDebuggerAttachBackend(struct CLIDebugger* debugger, struct CLIDebuggerBa
 }
 
 bool CLIDebuggerTabComplete(struct CLIDebugger* debugger, const char* token, bool initial, size_t tokenLen) {
+	(void)initial;
+
 	size_t cmd = 0;
 	size_t len;
 	const char* name = 0;
