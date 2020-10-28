@@ -36,7 +36,6 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	setWindowFlags(windowFlags() & ~Qt::WindowFullscreenButtonHint);
 	setMinimumSize(300, 300);
 
-	const mInputMap* map = controller->map();
 	controller->stealFocus(this);
 
 	m_keyDU = new KeyEditor(this);

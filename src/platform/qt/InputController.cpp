@@ -771,7 +771,6 @@ void InputController::prepareCamSettings(QCamera::Status status) {
 		return;
 	}
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
-	QVideoFrame::PixelFormat format(QVideoFrame::Format_RGB32);
 	QCameraViewfinderSettings settings;
 	QSize size(1280, 720);
 	auto cameraRes = m_camera->supportedViewfinderResolutions(settings);
@@ -791,7 +790,6 @@ void InputController::prepareCamSettings(QCamera::Status status) {
 	for (const auto& goodFormat : goodFormats) {
 		if (cameraFormats.contains(goodFormat)) {
 			settings.setPixelFormat(goodFormat);
-			format = goodFormat;
 			goodFormatFound = true;
 			break;
 		}
