@@ -502,7 +502,6 @@ void SettingsView::updateConfig() {
 		emit languageChanged();
 	}
 
-	int videoScale = m_controller->getOption("videoScale", 1).toInt();
 	saveSetting("videoScale", m_ui.videoScale);
 
 	int hwaccelVideo = m_controller->getOption("hwaccelVideo").toInt();
