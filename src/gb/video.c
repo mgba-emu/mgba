@@ -25,7 +25,7 @@ static void GBVideoDummyRendererWriteSGBPacket(struct GBVideoRenderer* renderer,
 static void GBVideoDummyRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value);
 static void GBVideoDummyRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address);
 static void GBVideoDummyRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam);
-static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
+static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y);
 static void GBVideoDummyRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoDummyRendererFinishFrame(struct GBVideoRenderer* renderer);
 static void GBVideoDummyRendererEnableSGBBorder(struct GBVideoRenderer* renderer, bool enable);
@@ -794,13 +794,11 @@ static void GBVideoDummyRendererWritePalette(struct GBVideoRenderer* renderer, i
 	}
 }
 
-static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax) {
+static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y) {
 	UNUSED(renderer);
 	UNUSED(endX);
 	UNUSED(startX);
 	UNUSED(y);
-	UNUSED(obj);
-	UNUSED(oamMax);
 	// Nothing to do
 }
 
