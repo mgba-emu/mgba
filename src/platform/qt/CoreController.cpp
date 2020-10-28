@@ -34,8 +34,8 @@ using namespace QGBA;
 
 CoreController::CoreController(mCore* core, QObject* parent)
 	: QObject(parent)
-	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC)
 	, m_loadStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_RTC)
+	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC)
 {
 	m_threadContext.core = core;
 	m_threadContext.userData = this;
