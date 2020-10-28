@@ -406,6 +406,7 @@ size_t SM83Decode(uint8_t opcode, struct SM83InstructionInfo* info) {
 		}
 	// Fall through
 	case 2:
+	default:
 		++info->opcodeSize;
 		if (info->op1.reg) {
 			info->op2.immediate |= opcode << ((info->opcodeSize - 2) * 8);
