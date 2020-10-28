@@ -1080,7 +1080,7 @@ void IOViewer::updateRegister() {
 	}
 
 	for (int i = 0; i < 16; ++i) {
-		m_b[i]->setChecked(value & (1 << i) ? Qt::Checked : Qt::Unchecked);
+		m_b[i]->setChecked(value & (1 << i));
 	}
 	m_value = value;
 	emit valueChanged();
