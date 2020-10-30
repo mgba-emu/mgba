@@ -16,20 +16,12 @@ Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
  - GB: Partially fix timing for skipped BIOS
- - GB Audio: Fix initial sweep state
  - GB Audio: Fix serializing sweep time
- - GB Audio: Fix deserializing audio channels 2 and 3
- - GB Audio: Fix deserializing while audio was disabled (fixes mgba.io/i/1305)
  - GB MBC: Fix MBC1 mode changing behavior
  - GB MBC: Fix some MBC3 bit masking
  - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
- - GB Video: Fix drawing background when window is force-disabled by frontend
- - GB, GBA Video: Copy disable flags when drawing scanlines in proxy when not blocking
  - GBA: Fix timing advancing too quickly in rare cases
  - GBA: Clear GBP connection on reset
- - GBA Audio: Fix deserializing SOUNDCNT_L
- - GBA Audio: Fix stereo in XQ audio
- - GBA Audio: Fix volume/mute in XQ audio (fixes mgba.io/i/1864)
  - GBA Audio: Revamp FIFO emulation (fixes mgba.io/i/356, mgba.io/i/875, mgba.io/i/1847)
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing
@@ -37,7 +29,6 @@ Emulation fixes:
  - GBA BIOS: Make HLE BIOS calls interruptable (fixes mgba.io/i/1711 and mgba.io/i/1823)
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA DMA: Fix ordering and timing of overlapping DMAs
- - GBA Hardware: Fix GB Player detection on big endian platforms
  - GBA I/O: Green swap register should be readable
  - GBA Memory: Improve gamepak prefetch timing
  - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
@@ -47,47 +38,22 @@ Emulation fixes:
  - GBA SIO: Fix deseralizing SIO registers
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
- - GBA Video: Invalidate map cache when modifying BGCNT (fixes mgba.io/i/1846)
- - GBA Video: Don't draw sprites using unmapped VRAM in GL renderer (fixes mgba.io/i/1865)
  - GBA Video: Implement green swap (fixes mgba.io/i/1609)
- - GBA Video: Fix rare regression blending semitransparent sprites (fixes mgba.io/i/1876)
  - GBA Video: Emulate sprite cycle limits in OpenGL renderer (fixes mgba.io/i/1635)
- - GBA Video: Do not affect OBJ pixel priority when writing OBJWIN (fixes mgba.io/i/1890)
- - GBA Video: Fix deferred blending when OBJWIN matches window (fixes mgba.io/i/1905)
- - GBA Video: Fix mode 4 transparency in OpenGL (fixes mgba.io/i/1907)
  - SM83: Emulate HALT bug
 Other fixes:
- - 3DS: Redo video sync to be more precise
- - 3DS: Fix crash with libctru 2.0 when exiting
  - 3DS: Fix thread cleanup
  - All: Improve export headers (fixes mgba.io/i/1738)
- - ARM Decoder: Fix decoding pre-indexed writeback instructions (fixes mgba.io/i/1915)
  - Core: Ensure ELF regions can be written before trying
- - Core: Fix reported ROM size when a fixed buffer size is used
- - Core: Fix memory leak loading ELF files
  - Debugger: Don't skip undefined instructions when debugger attached
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
- - GBA: Disable more checks when loading GS save with checks disabled (fixes mgba.io/i/1851)
- - GBA: Fix endianness issues in renderer proxy
- - GBA Core: Fix memory leak when loading symbols
- - GBA Serialize: Ensure program counter is aligned when loading
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
  - Qt: Fix a race condition in the frame inspector
- - Qt: Add dummy English translation file (fixes mgba.io/i/1469)
- - Qt: Fix Battle Chip view not displaying chips on some DPI settings
- - Qt: Fix camera image being upside-down sometimes (fixes mgba.io/i/829 again)
- - Qt: Fix drawing on macOS break when using OpenGL (fixes mgba.io/i/1899)
  - Qt: Load/save bytes from memory viewer in the order visible (fixes mgba.io/i/1900)
- - Qt: Fix stride changing when toggling SGB borders (fixes mgba.io/i/1898)
- - Qt: Fix aliasing on background logo (fixes mgba.io/i/1886)
- - mGUI: Fix closing down a game if an exit is signalled
- - mGUI: Fix cycling through config setting states with accept button
- - mVL: Fix injecting accidentally draining non-injection buffer
  - SM83: Simplify register pair access on big endian
  - SM83: Disassemble STOP as one byte
- - VFS: Fix directory node listing on some filesystems
 Misc:
  - 3DS: Use "wide mode" where applicable for slightly better filtering
  - Core: Add savedataUpdated callback
@@ -97,7 +63,6 @@ Misc:
  - GBA: Allow pausing event loop while CPU is blocked
  - GBA BIOS: Division by zero should emit a FATAL error
  - GBA Video: Convert OpenGL VRAM texture to integer
- - GBA Video: Improve speed of window texture generation on AMD
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
  - mGUI: Show battery percentage
@@ -109,6 +74,46 @@ Misc:
  - Qt: Window title updates can be disabled (closes mgba.io/i/1912)
  - Util: Reset vector size on deinit
  - VFS: Change semantics of VFile.sync on mapped files (fixes mgba.io/i/1730)
+
+0.8.4: (2020-10-29)
+Emulation fixes:
+ - GB Audio: Fix initial sweep state
+ - GB Audio: Fix deserializing audio channels 2 and 3
+ - GB Audio: Fix deserializing while audio was disabled (fixes mgba.io/i/1305)
+ - GB Video: Fix drawing background when window is force-disabled by frontend
+ - GB, GBA Video: Copy disable flags when drawing scanlines in proxy when not blocking
+ - GBA Audio: Fix deserializing SOUNDCNT_L
+ - GBA Audio: Fix stereo in XQ audio
+ - GBA Audio: Fix volume/mute in XQ audio (fixes mgba.io/i/1864)
+ - GBA Hardware: Fix GB Player detection on big endian platforms
+ - GBA Video: Invalidate map cache when modifying BGCNT (fixes mgba.io/i/1846)
+ - GBA Video: Don't draw sprites using unmapped VRAM in GL renderer (fixes mgba.io/i/1865)
+ - GBA Video: Fix rare regression blending semitransparent sprites (fixes mgba.io/i/1876)
+ - GBA Video: Do not affect OBJ pixel priority when writing OBJWIN (fixes mgba.io/i/1890)
+ - GBA Video: Fix deferred blending when OBJWIN matches window (fixes mgba.io/i/1905)
+ - GBA Video: Fix mode 4 transparency in OpenGL (fixes mgba.io/i/1907)
+Other fixes:
+ - 3DS: Redo video sync to be more precise
+ - 3DS: Fix crash with libctru 2.0 when exiting
+ - ARM Decoder: Fix decoding pre-indexed writeback instructions (fixes mgba.io/i/1915)
+ - Core: Fix reported ROM size when a fixed buffer size is used
+ - Core: Fix memory leak loading ELF files
+ - GBA: Disable more checks when loading GS save with checks disabled (fixes mgba.io/i/1851)
+ - GBA: Fix endianness issues in renderer proxy
+ - GBA Core: Fix memory leak when loading symbols
+ - GBA Serialize: Ensure program counter is aligned when loading
+ - Qt: Add dummy English translation file (fixes mgba.io/i/1469)
+ - Qt: Fix Battle Chip view not displaying chips on some DPI settings
+ - Qt: Fix camera image being upside-down sometimes (fixes mgba.io/i/829 again)
+ - Qt: Fix drawing on macOS break when using OpenGL (fixes mgba.io/i/1899)
+ - Qt: Fix stride changing when toggling SGB borders (fixes mgba.io/i/1898)
+ - Qt: Fix aliasing on background logo (fixes mgba.io/i/1886)
+ - mGUI: Fix closing down a game if an exit is signalled
+ - mGUI: Fix cycling through config setting states with accept button
+ - mVL: Fix injecting accidentally draining non-injection buffer
+ - VFS: Fix directory node listing on some filesystems
+Misc:
+ - GBA Video: Improve speed of window texture generation on AMD
  - Vita: Clear both buffers when loading a game
 
 0.8.3: (2020-08-03)
