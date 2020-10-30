@@ -1,4 +1,4 @@
-0.8.4: (Future)
+0.8.4: (2020-10-29)
 Emulation fixes:
  - GB Audio: Fix initial sweep state
  - GB Audio: Fix deserializing audio channels 2 and 3
