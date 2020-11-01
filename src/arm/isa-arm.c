@@ -293,7 +293,7 @@ ATTRIBUTE_NOINLINE static void _neutralS(struct ARMCore* cpu, int32_t d) {
 		} \
 		BODY; \
 		S_BODY; \
-		if (rd == ARM_PC) { \
+		if (UNLIKELY(rd == ARM_PC)) { \
 			if (cpu->executionMode == MODE_ARM) { \
 				currentCycles += ARMWritePC(cpu); \
 			} else { \
