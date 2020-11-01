@@ -15,6 +15,7 @@ Features:
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
+ - ARM: Fix Addressing mode 1 shifter on rs == pc (fixes mgba.io/i/1926)
  - GB: Partially fix timing for skipped BIOS
  - GB Audio: Fix serializing sweep time
  - GB MBC: Fix MBC1 mode changing behavior
