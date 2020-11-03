@@ -94,7 +94,7 @@ static int activeOutputTexture = 0;
 static ndspWaveBuf dspBuffer[DSP_BUFFERS];
 static int bufferId = 0;
 static bool frameLimiter = true;
-static u64 tickCounter;
+static u32 frameCounter;
 
 static C3D_RenderTarget* topScreen[2];
 static C3D_RenderTarget* bottomScreen[2];
@@ -106,7 +106,6 @@ static C3D_Tex upscaleBufferTex;
 static bool interframeBlending = false;
 static bool sgbCrop = false;
 
-static aptHookCookie cookie;
 static bool core2;
 
 static bool _initGpu(void) {
@@ -184,18 +183,6 @@ static void _cleanup(void) {
 	ptmuExit();
 }
 
-static void _aptHook(APT_HookType hook, void* user) {
-	UNUSED(user);
-	switch (hook) {
-	case APTHOOK_ONEXIT:
-		_cleanup();
-		exit(0);
-		break;
-	default:
-		break;
-	}
-}
-
 static void _map3DSKey(struct mInputMap* map, int ctrKey, enum GBAKey key) {
 	mInputBindKey(map, _3DS_INPUT, __builtin_ctz(ctrKey), key);
 }
@@ -207,11 +194,17 @@ static void _drawStart(void) {
 		return;
 	}
 	frameStarted = true;
+
+	int screen = screenMode >= SM_PA_TOP ? GSP_SCREEN_TOP : GSP_SCREEN_BOTTOM;
 	if (frameLimiter) {
-		if (tickCounter + 4481000 > svcGetSystemTick()) {
-			C3D_FrameSync();
+		u32 oldFrame = frameCounter;
+		frameCounter = C3D_FrameCounter(screen);
+		while (oldFrame == frameCounter) {
+			gspWaitForAnyEvent();
+			frameCounter = C3D_FrameCounter(screen);
 		}
-		tickCounter = svcGetSystemTick();
+	} else {
+		frameCounter = C3D_FrameCounter(screen);
 	}
 	C3D_FrameBegin(0);
 	ctrStartFrame();
@@ -344,7 +337,7 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	}
 	osSetSpeedupEnable(true);
 
-	double ratio = GBAAudioCalculateRatio(1, 59.8260982880808, 1);
+	double ratio = GBAAudioCalculateRatio(1, 268111856.f / 4481136.f, 1);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 32768 * ratio);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 32768 * ratio);
 	if (hasSound != NO_SOUND) {
@@ -658,7 +651,6 @@ static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 		return;
 	}
 	frameLimiter = limit;
-	tickCounter = svcGetSystemTick();
 }
 
 static bool _running(struct mGUIRunner* runner) {
@@ -819,8 +811,6 @@ int main() {
 	camera.buffer = NULL;
 	camera.bufferSize = 0;
 	camera.cam = SELECT_IN1;
-
-	aptHook(&cookie, _aptHook, 0);
 
 	ptmuInit();
 	camInit();

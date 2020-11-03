@@ -116,8 +116,10 @@ static void _GBCoreDeinit(struct mCore* core) {
 	GBDestroy(core->board);
 	mappedMemoryFree(core->cpu, sizeof(struct SM83Core));
 	mappedMemoryFree(core->board, sizeof(struct GB));
-#if defined USE_DEBUGGERS && (!defined(MINIMAL_CORE) || MINIMAL_CORE < 2)
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetDeinit(&core->dirs);
+#endif
+#ifdef USE_DEBUGGERS
 	if (core->symbolTable) {
 		mDebuggerSymbolTableDestroy(core->symbolTable);
 	}
@@ -274,6 +276,12 @@ static void _GBCoreReloadConfigOption(struct mCore* core, const char* option, co
 			gb->allowOpposingDirections = fakeBool;
 		}
 		return;
+	}
+	if (strcmp("sgb.borders", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "sgb.borders", &fakeBool)) {
+			gb->video.sgbBorders = fakeBool;
+			gb->video.renderer->enableSGBBorder(gb->video.renderer, fakeBool);
+		}
 	}
 }
 

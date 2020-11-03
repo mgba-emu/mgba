@@ -410,8 +410,11 @@ static const char* const _renderMode4 =
 	"	}\n"
 	"	int address = charBase + (coord.x >> 8) + (coord.y >> 8) * size.x;\n"
 	"	vec4 twoEntries = texelFetch(vram, ivec2((address >> 1) & 255, address >> 9), 0);\n"
-	"	ivec2 entry = ivec2(twoEntries[3 - 2 * (address & 1)] * 15.9, twoEntries[2 - 2 * (address & 1)] * 15.9);\n"
-	"	int paletteEntry = palette[entry.y * 16 + entry.x];\n"
+	"	int entry = int(twoEntries[2 - 2 * (address & 1)] * 15.9) * 16 + int(twoEntries[3 - 2 * (address & 1)] * 15.9);\n"
+	"	if (entry == 0) {\n"
+	"		discard;\n"
+	"	}\n"
+	"	int paletteEntry = palette[entry];\n"
 	"	color = vec4(PALETTE_ENTRY(paletteEntry), 1.);\n"
 	"	flags = inflags;\n"
 	"}";
@@ -513,7 +516,7 @@ static const char* const _renderWindow =
 	"uniform ivec4 win1[160];\n"
 	"OUT(0) out ivec4 window;\n"
 
-	"void crop(vec4 windowParams, int flags, inout ivec3 windowFlags) {\n"
+	"bool crop(vec4 windowParams) {\n"
 	"	bvec4 compare = lessThan(texCoord.xxyy, windowParams);\n"
 	"	compare = equal(compare, bvec4(true, false, true, false));\n"
 	"	if (any(compare)) {\n"
@@ -521,25 +524,23 @@ static const char* const _renderWindow =
 	"		vec2 v = windowParams.zw;\n"
 	"		if (v.x > v.y) {\n"
 	"			if (compare.z && compare.w) {\n"
-	"				return;\n"
+	"				return false;\n"
 	"			}\n"
 	"		} else if (compare.z || compare.w) {\n"
-	"			return;\n"
+	"			return false;\n"
 	"		}\n"
 	"		if (h.x > h.y) {\n"
 	"			if (compare.x && compare.y) {\n"
-	"				return;\n"
+	"				return false;\n"
 	"			}\n"
 	"		} else if (compare.x || compare.y) {\n"
-	"			return;\n"
+	"			return false;\n"
 	"		}\n"
 	"	}\n"
-	"	windowFlags.x = flags;\n"
+	"	return true;\n"
 	"}\n"
 
-	"vec4 interpolate(ivec4 win[160]) {\n"
-	"	vec4 bottom = vec4(win[int(texCoord.y) - 1]);\n"
-	"	vec4 top = vec4(win[int(texCoord.y)]);\n"
+	"vec4 interpolate(vec4 top, vec4 bottom) {\n"
 	"	if (distance(top, bottom) > 40.) {\n"
 	"		return top;\n"
 	"	}\n"
@@ -551,14 +552,15 @@ static const char* const _renderWindow =
 	"	if ((dispcnt & 0xE0) == 0) {\n"
 	"		window = ivec4(dispflags, blend, 0);\n"
 	"	} else {\n"
-	"		ivec3 windowFlags = ivec3(flags.z, blend);\n"
-	"		if ((dispcnt & 0x40) != 0) { \n"
-	"			crop(interpolate(win1), flags.y, windowFlags);\n"
+	"		ivec4 windowFlags = ivec4(flags.z, blend, 0);\n"
+	"		int top = int(texCoord.y);\n"
+	"		int bottom = max(top - 1, 0);\n"
+	"		if ((dispcnt & 0x20) != 0 && crop(interpolate(vec4(win0[top]), vec4(win0[bottom])))) { \n"
+	"			windowFlags.x = flags.x;\n"
+	"		} else if ((dispcnt & 0x40) != 0 && crop(interpolate(vec4(win1[top]), vec4(win1[bottom])))) {\n"
+	"			windowFlags.x = flags.y;\n"
 	"		}\n"
-	"		if ((dispcnt & 0x20) != 0) { \n"
-	"			crop(interpolate(win0), flags.x, windowFlags);\n"
-	"		}\n"
-	"		window = ivec4(windowFlags, 0);\n"
+	"		window = windowFlags;\n"
 	"	}\n"
 	"}\n";
 
@@ -917,6 +919,7 @@ void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 	_deleteShader(&glRenderer->bgShader[3]);
 	_deleteShader(&glRenderer->objShader[0]);
 	_deleteShader(&glRenderer->objShader[1]);
+	_deleteShader(&glRenderer->objShader[2]);
 	_deleteShader(&glRenderer->finalizeShader);
 
 	int i;
@@ -1647,6 +1650,10 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	int32_t x = (uint32_t) GBAObjAttributesBGetX(sprite->b) << 23;
 	x >>= 23;
 
+	if (GBARegisterDISPCNTGetMode(renderer->dispcnt) >= 3 && GBAObjAttributesCGetTile(sprite->c) < 512) {
+		return;
+	}
+
 	int align = GBAObjAttributesAIs256Color(sprite->a) && !GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt);
 	unsigned charBase = (BASE_TILE >> 1) + (GBAObjAttributesCGetTile(sprite->c) & ~align) * 0x10;
 	int stride = GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? (width >> 3) : (0x20 >> GBAObjAttributesAGet256Color(sprite->a));
@@ -1702,12 +1709,18 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	}
 	glUniform4i(uniforms[GBA_GL_OBJ_DIMS], width, height, totalWidth, totalHeight);
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_OBJWIN) {
+		// OBJWIN writes do not affect pixel priority
 		glDisable(GL_DEPTH_TEST);
+		glDepthMask(GL_FALSE);
+		glStencilMask(GL_FALSE);
 		int window = renderer->objwin & 0x3F;
 		glUniform4i(uniforms[GBA_GL_OBJ_OBJWIN], 1, window, renderer->bldb, renderer->bldy);
 		glDrawBuffers(3, (GLenum[]) { GL_NONE, GL_NONE, GL_COLOR_ATTACHMENT2 });
 	} else {
 		glEnable(GL_DEPTH_TEST);
+		glDepthMask(GL_TRUE);
+		glStencilMask(GL_TRUE);
+		glStencilFunc(GL_ALWAYS, 1, 1);
 		glUniform4i(uniforms[GBA_GL_OBJ_OBJWIN], 0, 0, 0, 0);
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
 	}
@@ -1720,23 +1733,25 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	} else {
 		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], 0, 0, 0, 0);
 	}
-	glStencilFunc(GL_ALWAYS, 1, 1);
 	if (GBAObjAttributesAGetMode(sprite->a) != OBJ_MODE_OBJWIN || GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt)) {
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
 
-	shader = &renderer->objShader[2];
-	uniforms = shader->uniforms;
-	glStencilFunc(GL_EQUAL, 1, 1);
-	glUseProgram(shader->program);
-	glDrawBuffers(2, (GLenum[]) { GL_NONE, GL_COLOR_ATTACHMENT1 });
-	glBindVertexArray(shader->vao);
-	glUniform2i(uniforms[GBA_GL_VS_LOC], totalHeight, 0);
-	glUniform2i(uniforms[GBA_GL_VS_MAXPOS], totalWidth, totalHeight);
-	glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c),
-	                                          (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2) | (renderer->blendEffect * 4),
-	                                          renderer->blda, GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	if (GBAObjAttributesAGetMode(sprite->a) != OBJ_MODE_OBJWIN) {
+		// Update the pixel priority for already-written pixels
+		shader = &renderer->objShader[2];
+		uniforms = shader->uniforms;
+		glStencilFunc(GL_EQUAL, 1, 1);
+		glUseProgram(shader->program);
+		glDrawBuffers(2, (GLenum[]) { GL_NONE, GL_COLOR_ATTACHMENT1 });
+		glBindVertexArray(shader->vao);
+		glUniform2i(uniforms[GBA_GL_VS_LOC], totalHeight, 0);
+		glUniform2i(uniforms[GBA_GL_VS_MAXPOS], totalWidth, totalHeight);
+		glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c),
+		                                          (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2) | (renderer->blendEffect * 4),
+		                                          renderer->blda, GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	}
 
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }

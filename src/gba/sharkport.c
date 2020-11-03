@@ -91,7 +91,7 @@ bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChec
 	buffer.c[0x19] = 0;
 	buffer.c[0x1A] = 0;
 	buffer.c[0x1B] = 0;
-	if (memcmp(buffer.c, payload, 0x1C) != 0) {
+	if (memcmp(buffer.c, payload, testChecksum ? 0x1C : 0xF) != 0) {
 		goto cleanup;
 	}
 

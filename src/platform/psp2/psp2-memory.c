@@ -18,6 +18,7 @@ static bool listInit = false;
 void* anonymousMemoryMap(size_t size) {
 	if (!listInit) {
 		SceUIDListInit(&uids, 8);
+		listInit = true;
 	}
 	if (size & 0xFFF) {
 		// Align to 4kB pages
