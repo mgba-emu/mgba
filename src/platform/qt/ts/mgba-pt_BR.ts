@@ -3523,7 +3523,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
       <location filename="../SettingsView.cpp" line="340"/>
       <location filename="../SettingsView.cpp" line="350"/>
       <source>Shaders</source>
-      <translation>Sombreados</translation>
+      <translation>Shaders</translation>
     </message>
     <message>
       <location filename="../SettingsView.cpp" line="357"/>
@@ -3541,17 +3541,17 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
       <location filename="../ShaderSelector.cpp" line="52"/>
       <source>No shader active</source>
-      <translation>Nenhum sombreamento ativo</translation>
+      <translation>Nenhum shader ativo</translation>
     </message>
     <message>
       <location filename="../ShaderSelector.cpp" line="65"/>
       <source>Load shader</source>
-      <translation>Carregar sombreamento</translation>
+      <translation>Carregar shader</translation>
     </message>
     <message>
       <location filename="../ShaderSelector.cpp" line="105"/>
       <source>No shader loaded</source>
-      <translation>Nenhum sombreamento carregado</translation>
+      <translation>Nenhum shader carregado</translation>
     </message>
     <message>
       <location filename="../ShaderSelector.cpp" line="113"/>
@@ -5127,12 +5127,12 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
       <location filename="../ShaderSelector.ui" line="14"/>
       <source>Shaders</source>
-      <translation>Sombreados</translation>
+      <translation>Shaders</translation>
     </message>
     <message>
       <location filename="../ShaderSelector.ui" line="28"/>
       <source>Active Shader:</source>
-      <translation>Sombra Ativa:</translation>
+      <translation>Shader Ativo:</translation>
     </message>
     <message>
       <location filename="../ShaderSelector.ui" line="35"/>
@@ -5152,12 +5152,12 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
       <location filename="../ShaderSelector.ui" line="88"/>
       <source>Unload Shader</source>
-      <translation>Remover Sombreamento</translation>
+      <translation>Remover Shader</translation>
     </message>
     <message>
       <location filename="../ShaderSelector.ui" line="95"/>
       <source>Load New Shader</source>
-      <translation>Carregar Novo Sombreamento</translation>
+      <translation>Carregar Novo Shader</translation>
     </message>
   </context>
   <context>
