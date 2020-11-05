@@ -664,6 +664,12 @@ elseif(USE_MINIZIP)
 	list(APPEND FEATURES MINIZIP)
 	list(APPEND VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-zip.c)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libminizip1")
+	set(CMAKE_REQUIRED_LIBRARIES ${MINIZIP_LIBRARIES})
+	check_function_exists(unztell64 HAVE_UNZTELL64)
+	unset(CMAKE_REQUIRED_LIBRARIES)
+	if(NOT HAVE_UNZTELL64)
+		add_definitions(-Dunztell64=unzTell64)  # Bug in downstream minizip that some distros use
+	endif()
 elseif(USE_ZLIB)
 	list(APPEND VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-zip.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c
