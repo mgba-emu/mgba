@@ -1,6 +1,8 @@
 0.8.5: (Future)
 Emulation fixes:
  - ARM: Fix Addressing mode 1 shifter on rs == pc (fixes mgba.io/i/1926)
+Other fixes:
+ - CMake: Fix build with downstream minizip that exports incompatible symbols
 
 0.8.4: (2020-10-29)
 Emulation fixes:
