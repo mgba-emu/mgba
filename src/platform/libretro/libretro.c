@@ -614,9 +614,10 @@ bool retro_load_game(const struct retro_game_info* game) {
 		cam.width = GBCAM_WIDTH;
 		cam.caps = 1 << RETRO_CAMERA_BUFFER_RAW_FRAMEBUFFER;
 		cam.frame_raw_framebuffer = _updateCamera;
-		core->setPeripheral(core, mPERIPH_IMAGE_SOURCE, &imageSource);
+		if (environCallback(RETRO_ENVIRONMENT_GET_CAMERA_INTERFACE, &cam)) {
+			core->setPeripheral(core, mPERIPH_IMAGE_SOURCE, &imageSource);
+		}
 
-		environCallback(RETRO_ENVIRONMENT_GET_CAMERA_INTERFACE, &cam);
 		const char* modelName = mCoreConfigGetValue(&core->config, "gb.model");
 		struct GB* gb = core->board;
 
