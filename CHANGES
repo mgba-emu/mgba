@@ -48,6 +48,7 @@ Other fixes:
  - CMake: Fix build with downstream minizip that exports incompatible symbols
  - Core: Ensure ELF regions can be written before trying
  - Debugger: Don't skip undefined instructions when debugger attached
+ - Debugger: Close trace log when done tracing
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
