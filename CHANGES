@@ -4,6 +4,7 @@ Emulation fixes:
 Other fixes:
  - CMake: Fix build with downstream minizip that exports incompatible symbols
  - Debugger: Close trace log when done tracing
+ - Qt: Fix running proxied video if it gets pushed to the main thread
 
 0.8.4: (2020-10-29)
 Emulation fixes:
