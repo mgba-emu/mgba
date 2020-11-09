@@ -54,6 +54,7 @@ Other fixes:
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
  - Qt: Fix a race condition in the frame inspector
  - Qt: Load/save bytes from memory viewer in the order visible (fixes mgba.io/i/1900)
+ - Qt: Fix running proxied video if it gets pushed to the main thread
  - SM83: Simplify register pair access on big endian
  - SM83: Disassemble STOP as one byte
 Misc:
