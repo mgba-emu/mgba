@@ -667,26 +667,16 @@ static void videoPostProcessMix(unsigned width, unsigned height) {
 			color_t rgbPrev = *(srcPrev + x);
 
 			/* Store colours for next frame */
-			*(srcPrev + x) = rgbCurr;
+			*(srcPrev + x)  = rgbCurr;
 
-			/* Unpack colours */
-			color_t rCurr = rgbCurr >> 11 & 0x1F;
-			color_t gCurr = rgbCurr >>  6 & 0x1F;
-			color_t bCurr = rgbCurr       & 0x1F;
+			/* Mix colours
+			 * > "Mixing Packed RGB Pixels Efficiently"
+			 *   http://blargg.8bitalley.com/info/rgb_mixing.html */
+			color_t rgbMix  = (rgbCurr + rgbPrev + ((rgbCurr ^ rgbPrev) & 0x821)) >> 1;
 
-			color_t rPrev = rgbPrev >> 11 & 0x1F;
-			color_t gPrev = rgbPrev >>  6 & 0x1F;
-			color_t bPrev = rgbPrev       & 0x1F;
-
-			/* Mix colours */
-			color_t rMix  = (rCurr >> 1) + (rPrev >> 1) + (((rCurr & 0x1) + (rPrev & 0x1)) >> 1);
-			color_t gMix  = (gCurr >> 1) + (gPrev >> 1) + (((gCurr & 0x1) + (gPrev & 0x1)) >> 1);
-			color_t bMix  = (bCurr >> 1) + (bPrev >> 1) + (((bCurr & 0x1) + (bPrev & 0x1)) >> 1);
-
-			/* Repack colours for current frame */
-			*(dst + x) = colorCorrectionEnabled ?
-					*(ccLUT + (rMix << 11 | gMix << 6 | bMix)) :
-							rMix << 11 | gMix << 6 | bMix;
+			/* Assign colours for current frame */
+			*(dst + x)      = colorCorrectionEnabled ?
+					*(ccLUT + rgbMix) : rgbMix;
 		}
 		srcCurr += VIDEO_WIDTH_MAX;
 		srcPrev += VIDEO_WIDTH_MAX;
@@ -722,27 +712,17 @@ static void videoPostProcessMixSmart(unsigned width, unsigned height) {
 			 * but adjacent frames do not */
 			if (((rgbCurr == rgbPrev2) || (rgbPrev1 == rgbPrev3)) &&
 				 (rgbCurr != rgbPrev1) &&
-			    (rgbCurr != rgbPrev3) &&
-			    (rgbPrev1 != rgbPrev2)) {
+				 (rgbCurr != rgbPrev3) &&
+				 (rgbPrev1 != rgbPrev2)) {
 
-				/* Unpack colours */
-				color_t rCurr  = rgbCurr >> 11 & 0x1F;
-				color_t gCurr  = rgbCurr >>  6 & 0x1F;
-				color_t bCurr  = rgbCurr       & 0x1F;
+				/* Mix colours
+				 * > "Mixing Packed RGB Pixels Efficiently"
+				 *   http://blargg.8bitalley.com/info/rgb_mixing.html */
+				color_t rgbMix = (rgbCurr + rgbPrev1 + ((rgbCurr ^ rgbPrev1) & 0x821)) >> 1;
 
-				color_t rPrev1 = rgbPrev1 >> 11 & 0x1F;
-				color_t gPrev1 = rgbPrev1 >>  6 & 0x1F;
-				color_t bPrev1 = rgbPrev1       & 0x1F;
-
-				/* Mix colours */
-				color_t rMix   = (rCurr >> 1) + (rPrev1 >> 1) + (((rCurr & 0x1) + (rPrev1 & 0x1)) >> 1);
-				color_t gMix   = (gCurr >> 1) + (gPrev1 >> 1) + (((gCurr & 0x1) + (gPrev1 & 0x1)) >> 1);
-				color_t bMix   = (bCurr >> 1) + (bPrev1 >> 1) + (((bCurr & 0x1) + (bPrev1 & 0x1)) >> 1);
-
-				/* Repack colours for current frame */
+				/* Assign colours for current frame */
 				*(dst + x) = colorCorrectionEnabled ?
-						*(ccLUT + (rMix << 11 | gMix << 6 | bMix)) :
-								rMix << 11 | gMix << 6 | bMix;
+						*(ccLUT + rgbMix) : rgbMix;
 
 			} else {
 				/* Just use colours for current frame */
