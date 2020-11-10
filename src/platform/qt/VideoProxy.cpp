@@ -36,6 +36,13 @@ void VideoProxy::attach(CoreController* controller) {
 	controller->thread()->core->videoLogger = &m_logger.d;
 }
 
+void VideoProxy::detach(CoreController* controller) {
+	CoreController::Interrupter interrupter(controller);
+	if (controller->thread()->core->videoLogger == &m_logger.d) {
+		controller->thread()->core->videoLogger = nullptr;
+	}
+}
+
 void VideoProxy::processData() {
 	mVideoLoggerRendererRun(&m_logger.d, false);
 	m_fromThreadCond.wakeAll();

@@ -81,7 +81,9 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 		controller->m_resetActions.clear();
 
-		context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer.data()), controller->screenDimensions().width());
+		if (!controller->m_hwaccel) {
+			context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer.data()), controller->screenDimensions().width());
+		}
 
 		QMetaObject::invokeMethod(controller, "didReset");
 		controller->finishFrame();
@@ -265,14 +267,20 @@ void CoreController::loadConfig(ConfigController* config) {
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "mute");
 
 	QSize sizeBefore = screenDimensions();
+	m_activeBuffer.resize(256 * 224 * sizeof(color_t));
+	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), sizeBefore.width());
+
 	mCoreLoadForeignConfig(m_threadContext.core, config->config());
+
 	QSize sizeAfter = screenDimensions();
+	m_activeBuffer.resize(sizeAfter.width() * sizeAfter.height() * sizeof(color_t));
+	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), sizeAfter.width());
+
 	if (hasStarted()) {
 		updateFastForward();
 		mCoreThreadRewindParamsChanged(&m_threadContext);
 	}
 	if (sizeBefore != sizeAfter) {
-		m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), sizeAfter.width());
 #ifdef M_CORE_GB
 		mCoreConfigSetIntValue(&m_threadContext.core->config, "sgb.borders", 0);
 		m_threadContext.core->reloadConfigOption(m_threadContext.core, "sgb.borders", nullptr);
@@ -368,7 +376,7 @@ void CoreController::setLogger(LogController* logger) {
 }
 
 void CoreController::start() {
-	QSize size(256, 224);
+	QSize size(screenDimensions());
 	m_activeBuffer.resize(size.width() * size.height() * sizeof(color_t));
 	m_activeBuffer.fill(0xFF);
 	m_completeBuffer = m_activeBuffer;
@@ -909,6 +917,9 @@ void CoreController::setFramebufferHandle(int fb) {
 	}
 	if (hasStarted()) {
 		m_threadContext.core->reloadConfigOption(m_threadContext.core, "hwaccelVideo", NULL);
+		if (!m_hwaccel) {
+			m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), screenDimensions().width());
+		}
 	}
 }
 
@@ -939,7 +950,7 @@ void CoreController::finishFrame() {
 		m_threadContext.core->desiredVideoDimensions(m_threadContext.core, &width, &height);
 
 		QMutexLocker locker(&m_bufferMutex);
-		memcpy(m_completeBuffer.data(), m_activeBuffer.constData(), 256 * height * BYTES_PER_PIXEL);
+		memcpy(m_completeBuffer.data(), m_activeBuffer.constData(), width * height * BYTES_PER_PIXEL);
 	}
 
 	QMutexLocker locker(&m_actionMutex);

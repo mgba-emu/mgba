@@ -341,6 +341,15 @@ PainterGL::~PainterGL() {
 #if defined(_WIN32) && defined(USE_EPOXY)
 	epoxy_handle_external_wglMakeCurrent();
 #endif
+	if (m_context) {
+		if (m_videoProxy) {
+			m_videoProxy->detach(m_context.get());
+		}
+		m_context->setFramebufferHandle(-1);
+		if (m_videoProxy) {
+			m_videoProxy->processData();
+		}
+	}
 #ifdef BUILD_GLES2
 	if (m_shader.passes) {
 		mGLES2ShaderFree(&m_shader);

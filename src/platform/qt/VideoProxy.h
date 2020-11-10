@@ -23,6 +23,7 @@ public:
 	VideoProxy();
 
 	void attach(CoreController*);
+	void detach(CoreController*);
 
 signals:
 	void dataAvailable();
