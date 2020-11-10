@@ -74,8 +74,7 @@ private:
 	void resizePainter();
 
 	bool m_isDrawing = false;
-	QOpenGLContext* m_gl;
-	PainterGL* m_painter;
+	std::unique_ptr<PainterGL> m_painter;
 	QThread* m_drawThread = nullptr;
 	std::shared_ptr<CoreController> m_context;
 };
@@ -84,7 +83,7 @@ class PainterGL : public QObject {
 Q_OBJECT
 
 public:
-	PainterGL(QWindow* surface, QOpenGLContext* parent, int forceVersion = 0);
+	PainterGL(QWindow* surface, const QSurfaceFormat& format);
 	~PainterGL();
 
 	void setContext(std::shared_ptr<CoreController>);
@@ -120,6 +119,8 @@ private:
 	void performDraw();
 	void dequeue();
 	void dequeueAll();
+	void create();
+	void destroy();
 
 	std::array<std::array<uint32_t, 0x100000>, 3> m_buffers;
 	QList<uint32_t*> m_free;
@@ -128,8 +129,9 @@ private:
 	QPainter m_painter;
 	QMutex m_mutex;
 	QWindow* m_surface;
-	QOpenGLPaintDevice* m_window;
-	QOpenGLContext* m_gl;
+	QSurfaceFormat m_format;
+	std::unique_ptr<QOpenGLPaintDevice> m_window;
+	std::unique_ptr<QOpenGLContext> m_gl;
 	bool m_active = false;
 	bool m_started = false;
 	std::shared_ptr<CoreController> m_context = nullptr;
