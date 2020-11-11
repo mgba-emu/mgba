@@ -74,6 +74,7 @@ private:
 	void resizePainter();
 
 	bool m_isDrawing = false;
+	bool m_hasStarted = false;
 	std::unique_ptr<PainterGL> m_painter;
 	QThread* m_drawThread = nullptr;
 	std::shared_ptr<CoreController> m_context;
@@ -115,7 +116,11 @@ public slots:
 
 	int glTex();
 
+signals:
+	void started();
+
 private:
+	void makeCurrent();
 	void performDraw();
 	void dequeue();
 	void dequeueAll();

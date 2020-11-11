@@ -131,6 +131,7 @@ private slots:
 
 	void reloadAudioDriver();
 	void reloadDisplayDriver();
+	void attachDisplay();
 	void changeRenderer();
 
 	void tryMakePortable();
@@ -159,7 +160,6 @@ private:
 	void updateMRU();
 
 	void openView(QWidget* widget);
-	void attachDisplay();
 
 	template <typename T, typename... A> std::function<void()> openTView(A... arg);
 	template <typename T, typename... A> std::function<void()> openControllerTView(A... arg);

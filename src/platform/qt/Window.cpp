@@ -831,7 +831,6 @@ void Window::gameStopped() {
 	m_controller.reset();
 	updateTitle();
 
-	m_display->setVideoProxy({});
 	if (m_pendingClose) {
 		m_display.reset();
 		close();
@@ -919,7 +918,6 @@ void Window::reloadDisplayDriver() {
 		attachDisplay();
 
 		attachWidget(m_display.get());
-		m_display->startDrawing(m_controller);
 	}
 #ifdef M_CORE_GB
 	m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
@@ -964,6 +962,7 @@ void Window::changeRenderer() {
 		int fb = m_display->framebufferHandle();
 		if (fb >= 0) {
 			m_controller->setFramebufferHandle(fb);
+			m_config->updateOption("videoScale");
 		}
 	} else {
 		m_controller->setFramebufferHandle(-1);
@@ -1828,7 +1827,6 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	m_inputController.recalibrateAxes();
 	m_controller->setInputController(&m_inputController);
 	m_controller->setLogger(&m_log);
-	m_display->startDrawing(m_controller);
 
 	connect(this, &Window::shutdown, [this]() {
 		if (!m_controller) {
@@ -1862,9 +1860,6 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	connect(m_controller.get(), &CoreController::unpaused, [this]() {
 		emit paused(false);
 	});
-
-	attachDisplay();
-
 	connect(m_controller.get(), &CoreController::unpaused, &m_inputController, &InputController::suspendScreensaver);
 	connect(m_controller.get(), &CoreController::frameAvailable, this, &Window::recordFrame);
 	connect(m_controller.get(), &CoreController::crashed, this, &Window::gameCrashed);
@@ -1906,6 +1901,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		m_pendingPatch = QString();
 	}
 
+	attachDisplay();
 	m_controller->loadConfig(m_config);
 	m_controller->start();
 
@@ -1929,7 +1925,8 @@ void Window::attachDisplay() {
 	connect(m_controller.get(), &CoreController::frameAvailable, m_display.get(), &Display::framePosted);
 	connect(m_controller.get(), &CoreController::statusPosted, m_display.get(), &Display::showMessage);
 	connect(m_controller.get(), &CoreController::didReset, m_display.get(), &Display::resizeContext);
-	changeRenderer();
+	connect(m_display.get(), &Display::drawingStarted, this, &Window::changeRenderer);
+	m_display->startDrawing(m_controller);
 }
 
 void Window::setLogo() {
