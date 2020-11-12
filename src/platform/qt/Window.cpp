@@ -882,7 +882,7 @@ void Window::reloadDisplayDriver() {
 		m_display->stopDrawing();
 		detachWidget(m_display.get());
 	}
-	m_display = std::move(std::unique_ptr<Display>(Display::create(this)));
+	m_display = std::unique_ptr<Display>(Display::create(this));
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	m_shaderView.reset();
 	m_shaderView = std::make_unique<ShaderSelector>(m_display.get(), m_config);
@@ -936,7 +936,7 @@ void Window::reloadAudioDriver() {
 	}
 
 	const mCoreOptions* opts = m_config->options();
-	m_audioProcessor = std::move(std::unique_ptr<AudioProcessor>(AudioProcessor::create()));
+	m_audioProcessor = std::unique_ptr<AudioProcessor>(AudioProcessor::create());
 	m_audioProcessor->setInput(m_controller);
 	m_audioProcessor->setBufferSamples(opts->audioBuffers);
 	m_audioProcessor->requestSampleRate(opts->sampleRate);
@@ -1462,7 +1462,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addAction(tr("Game &overrides..."), "overrideWindow", [this]() {
 		if (!m_overrideView) {
-			m_overrideView = std::move(std::make_unique<OverrideView>(m_config));
+			m_overrideView = std::make_unique<OverrideView>(m_config);
 			if (m_controller) {
 				m_overrideView->setController(m_controller);
 			}
@@ -1474,7 +1474,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow", [this]() {
 		if (!m_sensorView) {
-			m_sensorView = std::move(std::make_unique<SensorView>(&m_inputController));
+			m_sensorView = std::make_unique<SensorView>(&m_inputController);
 			if (m_controller) {
 				m_sensorView->setController(m_controller);
 			}
