@@ -190,6 +190,16 @@ static const struct GBACartridgeOverride _overrides[] = {
 	// Aging cartridge
 	{ "TCHK", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
 
+	// Famicom Mini series 3 (FDS), some aren't mirrored (22 - 28)
+	// See https://forum.no-intro.org/viewtopic.php?f=2&t=4221 for discussion
+	{ "FNMJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "FMRJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "FPTJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "FLBJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "FFMJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "FTKJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "FTUJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+
 	{ { 0, 0, 0, 0 }, 0, 0, IDLE_LOOP_NONE, false }
 };
 
@@ -200,20 +210,19 @@ bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOver
 	override->mirroring = false;
 	bool found = false;
 
-	if (override->id[0] == 'F') {
+	int i;
+	for (i = 0; _overrides[i].id[0]; ++i) {
+		if (memcmp(override->id, _overrides[i].id, sizeof(override->id)) == 0) {
+			*override = _overrides[i];
+			found = true;
+			break;
+		}
+	}
+	if (!found && override->id[0] == 'F') {
 		// Classic NES Series
 		override->savetype = SAVEDATA_EEPROM;
 		override->mirroring = true;
 		found = true;
-	} else {
-		int i;
-		for (i = 0; _overrides[i].id[0]; ++i) {
-			if (memcmp(override->id, _overrides[i].id, sizeof(override->id)) == 0) {
-				*override = _overrides[i];
-				found = true;
-				break;
-			}
-		}
 	}
 
 	if (config) {

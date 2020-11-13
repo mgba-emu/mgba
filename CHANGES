@@ -1,6 +1,7 @@
 0.8.5: (Future)
 Emulation fixes:
  - ARM: Fix Addressing mode 1 shifter on rs == pc (fixes mgba.io/i/1926)
+ - GBA Memory: Mark Famicom Mini games 22 through 28 as non-mirroring
 Other fixes:
  - CMake: Fix build with downstream minizip that exports incompatible symbols
  - Debugger: Close trace log when done tracing
