@@ -34,6 +34,7 @@ Emulation fixes:
  - GBA Memory: Improve gamepak prefetch timing
  - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
  - GBA Memory: Improve robustness of Matrix memory support
+ - GBA Memory: Mark Famicom Mini games 22 through 28 as non-mirroring
  - GBA SIO: Fix copying Normal mode transfer values
  - GBA SIO: Fix Normal mode being totally broken (fixes mgba.io/i/1800)
  - GBA SIO: Fix deseralizing SIO registers
