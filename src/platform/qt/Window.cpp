@@ -766,7 +766,7 @@ void Window::gameStarted() {
 		m_screenWidget->setCursor(Qt::BlankCursor);
 	}
 
-	CoreController::Interrupter interrupter(m_controller, true);
+	CoreController::Interrupter interrupter(m_controller);
 	mCore* core = m_controller->thread()->core;
 	m_actions.clearMenu("videoLayers");
 	m_actions.clearMenu("audioChannels");

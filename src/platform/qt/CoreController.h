@@ -53,8 +53,8 @@ public:
 
 	class Interrupter {
 	public:
-		Interrupter(CoreController*, bool fromThread = false);
-		Interrupter(std::shared_ptr<CoreController>, bool fromThread = false);
+		Interrupter(CoreController*);
+		Interrupter(std::shared_ptr<CoreController>);
 		Interrupter(const Interrupter&);
 		~Interrupter();
 

@@ -1008,26 +1008,26 @@ void CoreController::updateFastForward() {
 	m_threadContext.core->reloadConfigOption(m_threadContext.core, NULL, NULL);
 }
 
-CoreController::Interrupter::Interrupter(CoreController* parent, bool fromThread)
+CoreController::Interrupter::Interrupter(CoreController* parent)
 	: m_parent(parent)
 {
 	if (!m_parent->thread()->impl) {
 		return;
 	}
-	if (!fromThread) {
+	if (mCoreThreadGet() != m_parent->thread()) {
 		mCoreThreadInterrupt(m_parent->thread());
 	} else {
 		mCoreThreadInterruptFromThread(m_parent->thread());
 	}
 }
 
-CoreController::Interrupter::Interrupter(std::shared_ptr<CoreController> parent, bool fromThread)
+CoreController::Interrupter::Interrupter(std::shared_ptr<CoreController> parent)
 	: m_parent(parent.get())
 {
 	if (!m_parent->thread()->impl) {
 		return;
 	}
-	if (!fromThread) {
+	if (mCoreThreadGet() != m_parent->thread()) {
 		mCoreThreadInterrupt(m_parent->thread());
 	} else {
 		mCoreThreadInterruptFromThread(m_parent->thread());
