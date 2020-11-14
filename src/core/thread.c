@@ -568,7 +568,10 @@ void mCoreThreadTogglePause(struct mCoreThread* threadContext) {
 void mCoreThreadPauseFromThread(struct mCoreThread* threadContext) {
 	bool frameOn = true;
 	MutexLock(&threadContext->impl->stateMutex);
-	if (threadContext->impl->state == THREAD_RUNNING || (threadContext->impl->interruptDepth && threadContext->impl->savedState == THREAD_RUNNING)) {
+	if (threadContext->impl->interruptDepth && threadContext->impl->savedState == THREAD_RUNNING) {
+		threadContext->impl->savedState = THREAD_PAUSING;
+		frameOn = false;
+	} else if (threadContext->impl->state == THREAD_RUNNING) {
 		threadContext->impl->state = THREAD_PAUSING;
 		frameOn = false;
 	}

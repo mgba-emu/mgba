@@ -48,6 +48,7 @@ Other fixes:
  - All: Improve export headers (fixes mgba.io/i/1738)
  - CMake: Fix build with downstream minizip that exports incompatible symbols
  - Core: Ensure ELF regions can be written before trying
+ - Core: Fix threading improperly setting paused state while interrupted
  - Debugger: Don't skip undefined instructions when debugger attached
  - Debugger: Close trace log when done tracing
  - FFmpeg: Fix some small memory leaks
