@@ -49,7 +49,6 @@ Other fixes:
  - CMake: Fix build with downstream minizip that exports incompatible symbols
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix threading improperly setting paused state while interrupted
- - Core: Fix thread unsafety issue when dispatching code to a thread
  - Debugger: Don't skip undefined instructions when debugger attached
  - Debugger: Close trace log when done tracing
  - FFmpeg: Fix some small memory leaks
@@ -66,6 +65,7 @@ Misc:
  - 3DS: Use "wide mode" where applicable for slightly better filtering
  - Core: Add savedataUpdated callback
  - Core: Add shutdown callback
+ - Core: Rework thread state synchronization
  - GB: Allow pausing event loop while CPU is blocked
  - GB: Add support for sleep and shutdown callbacks
  - GBA: Allow pausing event loop while CPU is blocked

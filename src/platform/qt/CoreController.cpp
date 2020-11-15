@@ -402,13 +402,7 @@ void CoreController::stop() {
 }
 
 void CoreController::reset() {
-	bool wasPaused = isPaused();
-	setPaused(false);
-	Interrupter interrupter(this);
 	mCoreThreadReset(&m_threadContext);
-	if (wasPaused) {
-		setPaused(true);
-	}
 }
 
 void CoreController::setPaused(bool paused) {
