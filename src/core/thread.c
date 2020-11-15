@@ -267,7 +267,10 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 			if (threadContext->run) {
 				threadContext->run(threadContext);
 			}
+			MutexLock(&threadContext->impl->stateMutex);
 			threadContext->impl->state = threadContext->impl->savedState;
+			ConditionWake(&threadContext->impl->stateCond);
+			MutexUnlock(&threadContext->impl->stateMutex);
 			break;
 		case THREAD_RESETING:
 			core->reset(core);
