@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Record GIF/APNG</string>
+   <string>Record GIF/WebP/APNG</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
    <property name="sizeConstraint">
