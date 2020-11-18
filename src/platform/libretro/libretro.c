@@ -1093,15 +1093,13 @@ static void _reloadSettings(void) {
 	}
 #endif
 
-<<<<<<< HEAD
-	_loadFrameskipSettings(&opts);
-=======
-	var.key = "mgba_frameskip";
-	var.value = 0;
-	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-		opts.frameskip = strtol(var.value, NULL, 10);
-	}
->>>>>>> 17f0edd7862b2f02dac4f323e3afee6853dbd891
+    _loadFrameskipSettings(&opts);
+//	var.key = "mgba_frameskip";
+//	var.value = 0;
+//	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+//		opts.frameskip = strtol(var.value, NULL, 10);
+//
+//	}
 
 	var.key = "mgba_idle_optimization";
 	var.value = 0;
@@ -1368,8 +1366,13 @@ void retro_run(void) {
 			core->reloadConfigOption(core, "allowOpposingDirections", NULL);
 		}
 
-<<<<<<< HEAD
-		_loadFrameskipSettings(NULL);
+    _loadFrameskipSettings(NULL);
+//		var.key = "mgba_frameskip";
+//		var.value = 0;
+//		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+//			mCoreConfigSetIntValue(&core->config, "frameskip", strtol(var.value, NULL, 10));
+//			core->reloadConfigOption(core, "frameskip", NULL);
+//		}
 
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
 		_loadPostProcessingSettings();
@@ -1385,14 +1388,6 @@ void retro_run(void) {
 		joypad_bits = 0;
 		for (i = 0; i < (RETRO_DEVICE_ID_JOYPAD_R3+1); i++)
 			joypad_bits |= inputCallback(0, RETRO_DEVICE_JOYPAD, 0, i) ? (1 << i) : 0;
-=======
-		var.key = "mgba_frameskip";
-		var.value = 0;
-		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-			mCoreConfigSetIntValue(&core->config, "frameskip", strtol(var.value, NULL, 10));
-			core->reloadConfigOption(core, "frameskip", NULL);
-		}
->>>>>>> 17f0edd7862b2f02dac4f323e3afee6853dbd891
 	}
 
 	keys = 0;
