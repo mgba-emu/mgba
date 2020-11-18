@@ -406,23 +406,25 @@ void CoreController::reset() {
 }
 
 void CoreController::setPaused(bool paused) {
-	if (paused == isPaused()) {
-		return;
-	}
+	QMutexLocker locker(&m_actionMutex);
 	if (paused) {
-		addFrameAction([this]() {
-			mCoreThreadPauseFromThread(&m_threadContext);
-		});
+		if (m_moreFrames < 0) {
+			m_moreFrames = 1;
+		}
 	} else {
-		mCoreThreadUnpause(&m_threadContext);
+		m_moreFrames = -1;
+		if (isPaused()) {
+			mCoreThreadUnpause(&m_threadContext);
+		}
 	}
 }
 
 void CoreController::frameAdvance() {
-	addFrameAction([this]() {
-		mCoreThreadPauseFromThread(&m_threadContext);
-	});
-	setPaused(false);
+	QMutexLocker locker(&m_actionMutex);
+	m_moreFrames = 1;
+	if (isPaused()) {
+		mCoreThreadUnpause(&m_threadContext);
+	}
 }
 
 void CoreController::addFrameAction(std::function<void ()> action) {
@@ -947,11 +949,19 @@ void CoreController::finishFrame() {
 		memcpy(m_completeBuffer.data(), m_activeBuffer.constData(), width * height * BYTES_PER_PIXEL);
 	}
 
-	QMutexLocker locker(&m_actionMutex);
-	QList<std::function<void ()>> frameActions(m_frameActions);
-	m_frameActions.clear();
-	for (auto& action : frameActions) {
-		action();
+	{
+		QMutexLocker locker(&m_actionMutex);
+		QList<std::function<void ()>> frameActions(m_frameActions);
+		m_frameActions.clear();
+		for (auto& action : frameActions) {
+			action();
+		}
+		if (m_moreFrames > 0) {
+			--m_moreFrames;
+			if (!m_moreFrames) {
+				mCoreThreadPauseFromThread(&m_threadContext);
+			}
+		}
 	}
 	updateKeys();
 
