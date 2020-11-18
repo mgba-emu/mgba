@@ -1058,6 +1058,7 @@ void Window::openStateWindow(LoadSave ls) {
 	connect(this, &Window::shutdown, m_stateWindow, &QWidget::close);
 	connect(m_stateWindow, &LoadSaveState::closed, [this]() {
 		detachWidget(m_stateWindow);
+		static_cast<QStackedLayout*>(m_screenWidget->layout())->setCurrentWidget(m_display.get());
 		m_stateWindow = nullptr;
 		QMetaObject::invokeMethod(this, "setFocus", Qt::QueuedConnection);
 	});
