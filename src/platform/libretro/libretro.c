@@ -1161,6 +1161,7 @@ void retro_get_system_info(struct retro_system_info* info) {
 	info->need_fullpath = true;
 #else
 	info->need_fullpath = false;
+#endif
 #ifdef M_CORE_GB
 	info->valid_extensions = "gba|gb|gbc|sgb";
 #else
