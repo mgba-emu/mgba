@@ -8,6 +8,7 @@ Other fixes:
  - Core: Fix thread unsafety issue when dispatching code to a thread
  - Debugger: Close trace log when done tracing
  - Qt: Fix running proxied video if it gets pushed to the main thread
+ - Wii: Fix crash on unloading irregularly sized GBA ROMs
 
 0.8.4: (2020-10-29)
 Emulation fixes:
