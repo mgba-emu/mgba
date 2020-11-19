@@ -62,6 +62,7 @@ Other fixes:
  - Qt: Fix cancelling pausing before the frame ends
  - SM83: Simplify register pair access on big endian
  - SM83: Disassemble STOP as one byte
+ - Wii: Fix crash on unloading irregularly sized GBA ROMs
 Misc:
  - 3DS: Use "wide mode" where applicable for slightly better filtering
  - Core: Add savedataUpdated callback
