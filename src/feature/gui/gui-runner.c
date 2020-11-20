@@ -387,8 +387,19 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		mCoreInitConfig(runner->core, runner->port);
 		mInputMapInit(&runner->core->inputMap, &GBAInputInfo);
 
-		found = mCorePreloadFileCB(runner->core, path, _updateLoading, runner);
+		struct VFile* rom = mDirectorySetOpenPath(&runner->core->dirs, path, runner->core->isROM);
+		found = mCorePreloadVFCB(runner->core, rom, _updateLoading, runner);
+
+#ifdef FIXED_ROM_BUFFER
+		extern size_t romBufferSize;
+		if (!found && rom && (size_t) rom->size(rom) > romBufferSize) {
+			found = runner->core->loadROM(runner->core, rom);
+		}
+#endif
 		if (!found) {
+			if (rom) {
+				rom->close(rom);
+			}
 			mLOG(GUI_RUNNER, WARN, "Failed to load %s!", path);
 			mCoreConfigDeinit(&runner->core->config);
 			runner->core->deinit(runner->core);

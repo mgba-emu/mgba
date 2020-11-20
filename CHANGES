@@ -53,6 +53,7 @@ Other fixes:
  - Debugger: Close trace log when done tracing
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
+ - mGUI: Don't attempt to preload files larger than can fit in RAM
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
  - Qt: Fix a race condition in the frame inspector
