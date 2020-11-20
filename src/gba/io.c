@@ -556,7 +556,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			GBATestIRQ(gba, 1);
 			return;
 		case REG_IME:
-			gba->memory.io[REG_IME >> 1] = value;
+			gba->memory.io[REG_IME >> 1] = value & 1;
 			GBATestIRQ(gba, 1);
 			return;
 		case REG_MAX:
