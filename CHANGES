@@ -17,6 +17,7 @@ Emulation fixes:
  - ARM: Fix STR storing PC after address calculation
  - ARM: Fix Addressing mode 1 shifter on rs == pc (fixes mgba.io/i/1926)
  - GB: Partially fix timing for skipped BIOS
+ - GB: Downgrade DMG-only ROMs from CGB mode even without boot ROM
  - GB Audio: Fix serializing sweep time
  - GB MBC: Fix MBC1 mode changing behavior
  - GB MBC: Fix some MBC3 bit masking
