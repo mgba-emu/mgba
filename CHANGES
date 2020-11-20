@@ -9,6 +9,7 @@ Other fixes:
  - Debugger: Close trace log when done tracing
  - Qt: Fix running proxied video if it gets pushed to the main thread
  - Qt: Fix game display sometimes disappearing after closing load/save state screen
+ - Qt: Fix gamepad event dispatching (fixes mgba.io/i/1922)
  - Wii: Fix crash on unloading irregularly sized GBA ROMs
 
 0.8.4: (2020-10-29)

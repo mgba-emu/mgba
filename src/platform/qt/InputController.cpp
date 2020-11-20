@@ -649,7 +649,7 @@ void InputController::sendGamepadEvent(QEvent* event) {
 	} else {
 		focusWidget = QApplication::focusWidget();
 	}
-	QApplication::sendEvent(focusWidget, event);
+	QApplication::postEvent(focusWidget, event, Qt::HighEventPriority);
 }
 
 void InputController::postPendingEvent(GBAKey key) {
