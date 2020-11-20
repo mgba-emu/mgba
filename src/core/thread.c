@@ -53,7 +53,13 @@ static void _waitOnInterrupt(struct mCoreThreadInternal* threadContext) {
 	}
 }
 
-void _waitPrologue(struct mCoreThreadInternal* threadContext, bool* videoFrameWait, bool* audioWait) {
+static void _pokeRequest(struct mCoreThreadInternal* threadContext) {
+	if (threadContext->state == mTHREAD_RUNNING || threadContext->state == mTHREAD_PAUSED) {
+		threadContext->state = mTHREAD_REQUEST;
+	}
+}
+
+static void _waitPrologue(struct mCoreThreadInternal* threadContext, bool* videoFrameWait, bool* audioWait) {
 	MutexLock(&threadContext->sync.videoFrameMutex);
 	*videoFrameWait = threadContext->sync.videoFrameWait;
 	threadContext->sync.videoFrameWait = false;
@@ -64,7 +70,7 @@ void _waitPrologue(struct mCoreThreadInternal* threadContext, bool* videoFrameWa
 	MutexUnlock(&threadContext->sync.audioBufferMutex);
 }
 
-void _waitEpilogue(struct mCoreThreadInternal* threadContext, bool videoFrameWait, bool audioWait) {
+static void _waitEpilogue(struct mCoreThreadInternal* threadContext, bool videoFrameWait, bool audioWait) {
 	MutexLock(&threadContext->sync.audioBufferMutex);
 	threadContext->sync.audioWait = audioWait;
 	MutexUnlock(&threadContext->sync.audioBufferMutex);
@@ -94,6 +100,7 @@ static void _waitOnRequest(struct mCoreThreadInternal* threadContext, enum mCore
 	bool videoFrameWait, audioWait;
 	_waitPrologue(threadContext, &videoFrameWait, &audioWait);
 	while (threadContext->requested & request) {
+		_pokeRequest(threadContext);
 		_wait(threadContext);
 	}
 	_waitEpilogue(threadContext, videoFrameWait, audioWait);
@@ -110,16 +117,12 @@ static void _waitUntilNotState(struct mCoreThreadInternal* threadContext, enum m
 
 static void _sendRequest(struct mCoreThreadInternal* threadContext, enum mCoreThreadRequest request) {
 	threadContext->requested |= request;
-	if (threadContext->state == mTHREAD_RUNNING) {
-		threadContext->state = mTHREAD_REQUEST;
-	}
+	_pokeRequest(threadContext);
 }
 
 static void _cancelRequest(struct mCoreThreadInternal* threadContext, enum mCoreThreadRequest request) {
 	threadContext->requested &= ~request;
-	if (threadContext->state == mTHREAD_RUNNING || threadContext->state == mTHREAD_PAUSED) {
-		threadContext->state = mTHREAD_REQUEST;
-	}
+	_pokeRequest(threadContext);
 	ConditionWake(&threadContext->stateCond);
 }
 
@@ -240,23 +243,6 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		}
 
 		MutexLock(&impl->stateMutex);
-		impl->requested &= ~pendingRequests | mTHREAD_REQ_PAUSE | mTHREAD_REQ_WAIT;
-		pendingRequests = impl->requested;
-
-		if (impl->state == mTHREAD_REQUEST) {
-			if (pendingRequests) {
-				if (pendingRequests & mTHREAD_REQ_PAUSE) {
-					impl->state = mTHREAD_PAUSED;
-				}
-				if (pendingRequests & mTHREAD_REQ_WAIT) {
-					impl->state = mTHREAD_PAUSED;
-				}
-			} else {
-				impl->state = mTHREAD_RUNNING;
-				ConditionWake(&threadContext->impl->stateCond);
-			}
-		}
-
 		while (impl->state >= mTHREAD_MIN_WAITING && impl->state < mTHREAD_EXITING) {
 			if (impl->state == mTHREAD_INTERRUPTING) {
 				impl->state = mTHREAD_INTERRUPTED;
@@ -275,6 +261,23 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 			}
 			if (wasPaused && !(impl->requested & mTHREAD_REQ_PAUSE)) {
 				break;
+			}
+		}
+
+		impl->requested &= ~pendingRequests | mTHREAD_REQ_PAUSE | mTHREAD_REQ_WAIT;
+		pendingRequests = impl->requested;
+
+		if (impl->state == mTHREAD_REQUEST) {
+			if (pendingRequests) {
+				if (pendingRequests & mTHREAD_REQ_PAUSE) {
+					impl->state = mTHREAD_PAUSED;
+				}
+				if (pendingRequests & mTHREAD_REQ_WAIT) {
+					impl->state = mTHREAD_PAUSED;
+				}
+			} else {
+				impl->state = mTHREAD_RUNNING;
+				ConditionWake(&threadContext->impl->stateCond);
 			}
 		}
 		MutexUnlock(&impl->stateMutex);
