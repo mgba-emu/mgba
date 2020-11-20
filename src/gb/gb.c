@@ -489,11 +489,6 @@ void GBSkipBIOS(struct GB* gb) {
 	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	int nextDiv = 0;
 
-	if (gb->model >= GB_MODEL_CGB && !(cart->cgb & 0x80)) {
-		gb->model = GB_MODEL_DMG;
-		GBVideoDisableCGB(&gb->video);
-	}
-
 	switch (gb->model) {
 	case GB_MODEL_AUTODETECT: // Silence warnings
 		gb->model = GB_MODEL_DMG;
@@ -559,6 +554,12 @@ void GBSkipBIOS(struct GB* gb) {
 			cpu->e = 0x08;
 			cpu->l = 0x7C;
 			gb->timer.internalDiv = 0x260;
+			gb->model = GB_MODEL_DMG;
+			gb->memory.io[GB_REG_KEY1] = 0xFF;
+			gb->memory.io[GB_REG_BCPS] = 0x88; // Faked writing 4 BG palette entries
+			gb->memory.io[GB_REG_OCPS] = 0x90; // Faked writing 8 OBJ palette entries
+			gb->memory.io[GB_REG_SVBK] = 0xFF;
+			GBVideoDisableCGB(&gb->video);
 		}
 		nextDiv = 0xC;
 		break;

@@ -214,7 +214,11 @@ void GBIOReset(struct GB* gb) {
 		GBIOWrite(gb, GB_REG_HDMA3, 0xFF);
 		GBIOWrite(gb, GB_REG_HDMA4, 0xFF);
 		gb->memory.io[GB_REG_HDMA5] = 0xFF;
-	} else if (gb->model & GB_MODEL_SGB) {
+	} else {
+		memset(&gb->memory.io[GB_REG_KEY0], 0xFF, GB_REG_PCM34 - GB_REG_KEY0);
+	}
+
+	if (gb->model & GB_MODEL_SGB) {
 		GBIOWrite(gb, GB_REG_JOYP, 0xFF);
 	}
 	GBIOWrite(gb, GB_REG_IE, 0x00);
