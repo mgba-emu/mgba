@@ -32,6 +32,7 @@ Emulation fixes:
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA DMA: Fix ordering and timing of overlapping DMAs
  - GBA I/O: Green swap register should be readable
+ - GBA I/O: Ignore high bits on IME
  - GBA Memory: Improve gamepak prefetch timing
  - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
  - GBA Memory: Improve robustness of Matrix memory support
