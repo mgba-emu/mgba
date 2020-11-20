@@ -61,6 +61,7 @@ Other fixes:
  - Qt: Fix running proxied video if it gets pushed to the main thread
  - Qt: Fix game display sometimes disappearing after closing load/save state screen
  - Qt: Fix cancelling pausing before the frame ends
+ - Qt: Fix gamepad event dispatching (fixes mgba.io/i/1922)
  - SM83: Simplify register pair access on big endian
  - SM83: Disassemble STOP as one byte
  - Wii: Fix crash on unloading irregularly sized GBA ROMs
