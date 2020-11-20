@@ -99,11 +99,12 @@ static const uint8_t _registerMask[] = {
 	[GB_REG_NR52] = 0x70,
 	[GB_REG_STAT] = 0x80,
 	[GB_REG_KEY1] = 0x7E,
-	[GB_REG_VBK] = 0xFE,
+	[GB_REG_VBK]  = 0xFE,
 	[GB_REG_OCPS] = 0x40,
 	[GB_REG_BCPS] = 0x40,
 	[GB_REG_OPRI] = 0xFE,
 	[GB_REG_SVBK] = 0xF8,
+	[GB_REG_UNK75] = 0x8F,
 	[GB_REG_IE]   = 0xE0,
 };
 
@@ -531,11 +532,8 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			goto success;
 		}
 		failed:
-		mLOG(GB_IO, STUB, "Writing to unknown register FF%02X:%02X", address, value);
-		if (address >= GB_SIZE_IO) {
-			return;
-		}
-		break;
+		mLOG(GB_IO, GAME_ERROR, "Writing to unknown register FF%02X:%02X", address, value);
+		return;
 	}
 	success:
 	gb->memory.io[address] = value;
@@ -662,31 +660,32 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	case GB_REG_WX:
 		// Handled transparently by the registers
 		break;
-	default:
-		if (gb->model >= GB_MODEL_CGB) {
-			switch (address) {
-			case GB_REG_KEY1:
-			case GB_REG_VBK:
-			case GB_REG_HDMA1:
-			case GB_REG_HDMA2:
-			case GB_REG_HDMA3:
-			case GB_REG_HDMA4:
-			case GB_REG_HDMA5:
-			case GB_REG_BCPS:
-			case GB_REG_BCPD:
-			case GB_REG_OCPS:
-			case GB_REG_OCPD:
-			case GB_REG_SVBK:
-				// Handled transparently by the registers
-				goto success;
-			default:
-				break;
-			}
+	case GB_REG_KEY1:
+	case GB_REG_VBK:
+	case GB_REG_HDMA1:
+	case GB_REG_HDMA2:
+	case GB_REG_HDMA3:
+	case GB_REG_HDMA4:
+	case GB_REG_HDMA5:
+	case GB_REG_BCPS:
+	case GB_REG_BCPD:
+	case GB_REG_OCPS:
+	case GB_REG_OCPD:
+	case GB_REG_SVBK:
+	case GB_REG_UNK72:
+	case GB_REG_UNK73:
+	case GB_REG_UNK75:
+		// Handled transparently by the registers
+		if (gb->model < GB_MODEL_CGB) {
+			// In DMG mode, these all get initialized to 0xFF during reset
+			// But in DMG-on-CGB mode, they get initialized by the CGB reset so they can be non-zero
+			mLOG(GB_IO, GAME_ERROR, "Reading from CGB register FF%02X in DMG mode", address);
 		}
+		break;
+	default:
 		mLOG(GB_IO, STUB, "Reading from unknown register FF%02X", address);
 		return 0xFF;
 	}
-	success:
 	return gb->memory.io[address] | _registerMask[address];
 }
 
