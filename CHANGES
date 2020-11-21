@@ -3,6 +3,7 @@ Emulation fixes:
  - ARM: Fix Addressing mode 1 shifter on rs == pc (fixes mgba.io/i/1926)
  - GBA I/O: Ignore high bits on IME
  - GBA Memory: Mark Famicom Mini games 22 through 28 as non-mirroring
+ - GBA Memory: Return correct byte for odd ROM open bus addresses
 Other fixes:
  - CMake: Fix build with downstream minizip that exports incompatible symbols
  - Core: Fix threading improperly setting paused state while interrupted

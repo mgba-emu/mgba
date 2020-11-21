@@ -670,7 +670,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = GBAVFameGetPatternValue(address, 8);
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load8: 0x%08X", address);
-			value = (address >> 1) & 0xFF;
+			value = ((address >> 1) >> ((address & 1) * 8)) & 0xFF;
 		}
 		break;
 	case REGION_CART_SRAM:
