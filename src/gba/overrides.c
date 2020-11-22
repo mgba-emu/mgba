@@ -86,12 +86,6 @@ static const struct GBACartridgeOverride _overrides[] = {
 	// Metal Slug Advance
 	{ "BSME", SAVEDATA_EEPROM, HW_NONE, 0x8000290, false },
 
-	// Pokemon Pinball: Ruby & Sapphire
-	{ "BPPJ", SAVEDATA_SRAM, HW_GB_PLAYER_DETECTION, IDLE_LOOP_NONE, false },
-	{ "BPPE", SAVEDATA_SRAM, HW_GB_PLAYER_DETECTION, IDLE_LOOP_NONE, false },
-	{ "BPPP", SAVEDATA_SRAM, HW_GB_PLAYER_DETECTION, IDLE_LOOP_NONE, false },
-	{ "BPPU", SAVEDATA_SRAM, HW_GB_PLAYER_DETECTION, IDLE_LOOP_NONE, false },
-
 	// Pokemon Ruby
 	{ "AXVJ", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
 	{ "AXVE", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
