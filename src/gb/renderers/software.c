@@ -508,7 +508,7 @@ static void _cleanOAM(struct GBVideoSoftwareRenderer* renderer, int y) {
 	}
 	int o = 0;
 	int i;
-	for (i = 0; i < 40 && o < 10; ++i) {
+	for (i = 0; i < GB_VIDEO_MAX_OBJ && o < GB_VIDEO_MAX_LINE_OBJ; ++i) {
 		uint8_t oy = renderer->d.oam->obj[i].y;
 		if (y < oy - 16 || y >= oy - 16 + spriteHeight) {
 			continue;

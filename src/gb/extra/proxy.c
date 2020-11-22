@@ -119,7 +119,7 @@ void GBVideoProxyRendererDeinit(struct GBVideoRenderer* renderer) {
 static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerDirtyInfo* item) {
 	struct GBVideoProxyRenderer* proxyRenderer = logger->context;
 	uint8_t sgbPacket[16];
-	struct GBObj legacyBuffer[40];
+	struct GBObj legacyBuffer[GB_VIDEO_MAX_OBJ];
 	switch (item->type) {
 	case DIRTY_REGISTER:
 		proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, item->address, item->value);
@@ -160,7 +160,7 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 	case DIRTY_BUFFER:
 		switch (item->address) {
 		case BUFFER_OAM:
-			if (item->value2 / sizeof(struct GBObj) > 40) {
+			if (item->value2 / sizeof(struct GBObj) > GB_VIDEO_MAX_OBJ) {
 				return false;
 			}
 			logger->readData(logger, legacyBuffer, item->value2, true);
