@@ -481,11 +481,6 @@ void GBSkipBIOS(struct GB* gb) {
 	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	int nextDiv = 0;
 
-	if (gb->model >= GB_MODEL_CGB && !(cart->cgb & 0x80)) {
-		gb->model = GB_MODEL_DMG;
-		GBVideoDisableCGB(&gb->video);
-	}
-
 	switch (gb->model) {
 	case GB_MODEL_AUTODETECT: // Silence warnings
 		gb->model = GB_MODEL_DMG;
