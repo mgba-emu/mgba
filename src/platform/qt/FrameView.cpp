@@ -275,7 +275,7 @@ void FrameView::injectGBA() {
 		gba->video.renderer->highlightOBJ[i] = false;
 	}
 	QPalette palette;
-	gba->video.renderer->highlightColor = palette.color(QPalette::HighlightedText).rgb();
+	gba->video.renderer->highlightColor = M_RGB8_TO_NATIVE(palette.color(QPalette::Highlight).rgb());
 	gba->video.renderer->highlightAmount = sin(m_glowFrame * M_PI / 30) * 48 + 64;
 	if (!m_overrideBackdrop.isValid()) {
 		QRgb backdrop = M_RGB5_TO_RGB8(gba->video.palette[0]) | 0xFF000000;
