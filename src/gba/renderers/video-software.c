@@ -73,7 +73,7 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	for (i = 0; i < 128; ++i) {
 		renderer->d.highlightOBJ[i] = false;
 	}
-	renderer->d.highlightColor = GBA_COLOR_WHITE;
+	renderer->d.highlightColor = M_COLOR_WHITE;
 	renderer->d.highlightAmount = 0;
 
 	renderer->temporaryBuffer = 0;
@@ -89,7 +89,7 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 		color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 		int x;
 		for (x = 0; x < GBA_VIDEO_HORIZONTAL_PIXELS; ++x) {
-			row[x] = GBA_COLOR_WHITE;
+			row[x] = M_COLOR_WHITE;
 		}
 	}
 }
@@ -558,7 +558,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	if (GBARegisterDISPCNTIsForcedBlank(softwareRenderer->dispcnt)) {
 		int x;
 		for (x = 0; x < GBA_VIDEO_HORIZONTAL_PIXELS; ++x) {
-			row[x] = GBA_COLOR_WHITE;
+			row[x] = M_COLOR_WHITE;
 		}
 		return;
 	}

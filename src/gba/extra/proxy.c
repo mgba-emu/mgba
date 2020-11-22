@@ -55,7 +55,7 @@ void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct 
 	for (i = 0; i < 128; ++i) {
 		renderer->d.highlightOBJ[i] = false;
 	}
-	renderer->d.highlightColor = 0xFFFFFF;
+	renderer->d.highlightColor = M_COLOR_WHITE;
 	renderer->d.highlightAmount = 0;
 
 	renderer->logger->context = renderer;
