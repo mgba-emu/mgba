@@ -437,6 +437,9 @@ struct GBSerializedState {
 bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state);
 void GBSerialize(struct GB* gb, struct GBSerializedState* state);
 
+void GBSGBSerialize(struct GB* gb, struct GBSerializedState* state);
+void GBSGBDeserialize(struct GB* gb, const struct GBSerializedState* state);
+
 CXX_GUARD_END
 
 #endif

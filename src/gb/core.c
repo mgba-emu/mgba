@@ -1163,6 +1163,9 @@ static bool _GBVLPLoadState(struct mCore* core, const void* buffer) {
 	GBVideoDeserialize(&gb->video, state);
 	GBIODeserialize(gb, state);
 	GBAudioReset(&gb->audio);
+	if (gb->model & GB_MODEL_SGB) {
+		GBSGBDeserialize(gb, state);
+	}
 
 	// Make sure CPU loop never spins
 	gb->memory.ie = 0;

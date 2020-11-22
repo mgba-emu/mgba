@@ -16,9 +16,6 @@ mLOG_DEFINE_CATEGORY(GB_STATE, "GB Savestate", "gb.serialize");
 const uint32_t GB_SAVESTATE_MAGIC = 0x00400000;
 const uint32_t GB_SAVESTATE_VERSION = 0x00000002;
 
-static void GBSGBSerialize(struct GB* gb, struct GBSerializedState* state);
-static void GBSGBDeserialize(struct GB* gb, const struct GBSerializedState* state);
-
 void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	STORE_32LE(GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, 0, &state->versionMagic);
 	STORE_32LE(gb->romCrc32, 0, &state->romCrc32);

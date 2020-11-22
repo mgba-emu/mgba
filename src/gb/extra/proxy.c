@@ -102,6 +102,12 @@ void GBVideoProxyRendererShim(struct GBVideo* video, struct GBVideoProxyRenderer
 	renderer->backend = video->renderer;
 	video->renderer = &renderer->d;
 	renderer->d.cache = renderer->backend->cache;
+	renderer->d.sgbRenderMode = renderer->backend->sgbRenderMode;
+	renderer->d.sgbCharRam = renderer->backend->sgbCharRam;
+	renderer->d.sgbMapRam = renderer->backend->sgbMapRam;
+	renderer->d.sgbPalRam = renderer->backend->sgbPalRam;
+	renderer->d.sgbAttributeFiles = renderer->backend->sgbAttributeFiles;
+	renderer->d.sgbAttributes = renderer->backend->sgbAttributes;
 	renderer->d.vram = video->vram;
 	renderer->d.oam = &video->oam;
 	_init(renderer);
