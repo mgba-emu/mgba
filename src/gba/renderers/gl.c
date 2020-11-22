@@ -677,7 +677,7 @@ void GBAVideoGLRendererCreate(struct GBAVideoGLRenderer* renderer) {
 	for (i = 0; i < 128; ++i) {
 		renderer->d.highlightOBJ[i] = false;
 	}
-	renderer->d.highlightColor = 0xFFFFFF;
+	renderer->d.highlightColor = M_COLOR_WHITE;
 	renderer->d.highlightAmount = 0;
 
 	renderer->scale = 1;
@@ -735,7 +735,7 @@ static void _initFramebufferTextureEx(GLuint tex, GLenum internalFormat, GLenum 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, scale > 0 ? GBA_VIDEO_HORIZONTAL_PIXELS * scale : 8, GBA_VIDEO_VERTICAL_PIXELS * (scale > 0 ? scale : 1), 0, format, type, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, tex, 0);	
+	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, tex, 0);
 }
 
 static void _initFramebufferTexture(GLuint tex, GLenum format, GLenum attachment, int scale) {
@@ -754,7 +754,7 @@ static void _initFramebuffers(struct GBAVideoGLRenderer* glRenderer) {
 	_initFramebufferTextureEx(glRenderer->layers[GBA_GL_TEX_BACKDROP_FLAGS], GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE, GL_COLOR_ATTACHMENT1, 0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_WINDOW]);
-	_initFramebufferTextureEx(glRenderer->layers[GBA_GL_TEX_WINDOW], GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE, GL_COLOR_ATTACHMENT0, glRenderer->scale);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glRenderer->layers[GBA_GL_TEX_WINDOW], 0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OUTPUT]);
 	_initFramebufferTexture(glRenderer->outputTex, GL_RGB, GL_COLOR_ATTACHMENT0, glRenderer->scale);
@@ -1416,12 +1416,11 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 	glDrawBuffers(2, (GLenum[]) { GL_NONE, GL_COLOR_ATTACHMENT1 });
 	int i;
 	for (i = 0; i < 4; ++i) {
-		glScissor(i + 1, glRenderer->firstY, i + 2, y - glRenderer->firstY + 1);
+		glScissor(i + 1, glRenderer->firstY, 1, y - glRenderer->firstY + 1);
 		glClearBufferiv(GL_COLOR, 1, (GLint[]) { glRenderer->bg[i].priority,
 		                                         glRenderer->bg[i].target1 | (glRenderer->bg[i].target2 << 1) | (glRenderer->blendEffect << 2),
 		                                         glRenderer->blda, 0 });
 	}
-
 
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 
@@ -1720,14 +1719,14 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		// OBJWIN writes do not affect pixel priority
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
-		glStencilMask(GL_FALSE);
+		glStencilMask(0);
 		int window = renderer->objwin & 0x3F;
 		glUniform3i(uniforms[GBA_GL_OBJ_OBJWIN], window, renderer->bldb, renderer->bldy);
 		glDrawBuffers(3, (GLenum[]) { GL_NONE, GL_NONE, GL_COLOR_ATTACHMENT2 });
 	} else {
 		glEnable(GL_DEPTH_TEST);
 		glDepthMask(GL_TRUE);
-		glStencilMask(GL_TRUE);
+		glStencilMask(1);
 		glStencilFunc(GL_ALWAYS, 1, 1);
 		glUniform3i(uniforms[GBA_GL_OBJ_OBJWIN], 0, 0, 0);
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
