@@ -300,30 +300,30 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 		softwareRenderer->lookup[1] = (value >> 2) & 3;
 		softwareRenderer->lookup[2] = (value >> 4) & 3;
 		softwareRenderer->lookup[3] = (value >> 6) & 3;
-		softwareRenderer->lookup[PAL_HIGHLIGHT_BG + 0] = value & 3;
-		softwareRenderer->lookup[PAL_HIGHLIGHT_BG + 1] = (value >> 2) & 3;
-		softwareRenderer->lookup[PAL_HIGHLIGHT_BG + 2] = (value >> 4) & 3;
-		softwareRenderer->lookup[PAL_HIGHLIGHT_BG + 3] = (value >> 6) & 3;
+		softwareRenderer->lookup[PAL_HIGHLIGHT_BG + 0] = PAL_HIGHLIGHT + (value & 3);
+		softwareRenderer->lookup[PAL_HIGHLIGHT_BG + 1] = PAL_HIGHLIGHT + ((value >> 2) & 3);
+		softwareRenderer->lookup[PAL_HIGHLIGHT_BG + 2] = PAL_HIGHLIGHT + ((value >> 4) & 3);
+		softwareRenderer->lookup[PAL_HIGHLIGHT_BG + 3] = PAL_HIGHLIGHT + ((value >> 6) & 3);
 		break;
 	case GB_REG_OBP0:
 		softwareRenderer->lookup[PAL_OBJ + 0] = value & 3;
 		softwareRenderer->lookup[PAL_OBJ + 1] = (value >> 2) & 3;
 		softwareRenderer->lookup[PAL_OBJ + 2] = (value >> 4) & 3;
 		softwareRenderer->lookup[PAL_OBJ + 3] = (value >> 6) & 3;
-		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 0] = value & 3;
-		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 1] = (value >> 2) & 3;
-		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 2] = (value >> 4) & 3;
-		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 3] = (value >> 6) & 3;
+		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 0] = PAL_HIGHLIGHT + (value & 3);
+		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 1] = PAL_HIGHLIGHT + ((value >> 2) & 3);
+		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 2] = PAL_HIGHLIGHT + ((value >> 4) & 3);
+		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 3] = PAL_HIGHLIGHT + ((value >> 6) & 3);
 		break;
 	case GB_REG_OBP1:
 		softwareRenderer->lookup[PAL_OBJ + 4] = value & 3;
 		softwareRenderer->lookup[PAL_OBJ + 5] = (value >> 2) & 3;
 		softwareRenderer->lookup[PAL_OBJ + 6] = (value >> 4) & 3;
 		softwareRenderer->lookup[PAL_OBJ + 7] = (value >> 6) & 3;
-		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 4] = value & 3;
-		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 5] = (value >> 2) & 3;
-		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 6] = (value >> 4) & 3;
-		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 7] = (value >> 6) & 3;
+		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 4] = PAL_HIGHLIGHT + (value & 3);
+		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 5] = PAL_HIGHLIGHT + ((value >> 2) & 3);
+		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 6] = PAL_HIGHLIGHT + ((value >> 4) & 3);
+		softwareRenderer->lookup[PAL_HIGHLIGHT_OBJ + 7] = PAL_HIGHLIGHT + ((value >> 6) & 3);
 		break;
 	}
 	return value;
