@@ -328,7 +328,7 @@ void MemoryModel::resizeEvent(QResizeEvent*) {
 	boundsCheck();
 }
 
-void MemoryModel::paintEvent(QPaintEvent* event) {
+void MemoryModel::paintEvent(QPaintEvent*) {
 	QPainter painter(viewport());
 	QPalette palette;
 	painter.setFont(m_font);
