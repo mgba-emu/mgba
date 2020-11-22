@@ -463,7 +463,7 @@ void FrameView::updateRendered() {
 	m_rendered.convertFromImage(m_controller->getPixels());
 }
 
-bool FrameView::eventFilter(QObject* obj, QEvent* event) {
+bool FrameView::eventFilter(QObject*, QEvent* event) {
 	QPointF pos;
 	switch (event->type()) {
 	case QEvent::MouseButtonPress:

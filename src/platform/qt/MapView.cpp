@@ -147,7 +147,7 @@ void MapView::selectTile(int x, int y) {
 		.arg(location, m_addressWidth, 16, QChar('0')));
 }
 
-bool MapView::eventFilter(QObject* obj, QEvent* event) {
+bool MapView::eventFilter(QObject*, QEvent* event) {
 	if (event->type() != QEvent::MouseButtonPress) {
 		return false;
 	}
