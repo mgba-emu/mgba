@@ -318,7 +318,12 @@ void FrameView::updateTilesGB(bool) {
 	m_queue.clear();
 	{
 		CoreController::Interrupter interrupter(m_controller);
-		uint8_t* io = static_cast<GB*>(m_controller->thread()->core->board)->memory.io;
+		QPointF origin;
+		GB* gb = static_cast<GB*>(m_controller->thread()->core->board);
+		if (gb->video.sgbBorders && (gb->model & GB_MODEL_SGB)) {
+			origin = QPointF(48, 40);
+		}
+		uint8_t* io = gb->memory.io;
 		GBRegisterLCDC lcdc = io[GB_REG_LCDC];
 
 		for (int sprite = 0; sprite < 40; ++sprite) {
@@ -338,7 +343,7 @@ void FrameView::updateTilesGB(bool) {
 				{ LayerId::SPRITE, sprite },
 				!m_disabled.contains({ LayerId::SPRITE, sprite }),
 				QPixmap::fromImage(obj),
-				{}, offset, false, false
+				{}, offset + origin, false, false
 			});
 			if (m_queue.back().image.hasAlpha()) {
 				m_queue.back().mask = QRegion(m_queue.back().image.mask());
@@ -352,7 +357,7 @@ void FrameView::updateTilesGB(bool) {
 				{ LayerId::WINDOW },
 				!m_disabled.contains({ LayerId::WINDOW }),
 				{},
-				{}, {0, 0}, false, false
+				{}, origin, false, false
 			});
 		}
 
@@ -360,7 +365,7 @@ void FrameView::updateTilesGB(bool) {
 			{ LayerId::BACKGROUND },
 			!m_disabled.contains({ LayerId::BACKGROUND }),
 			{},
-			{}, {0, 0}, false, false
+			{}, origin, false, false
 		});
 
 		updateRendered();
@@ -528,6 +533,12 @@ void FrameView::newVl() {
 	m_vl->loadROM(m_vl, m_currentFrame);
 	m_currentFrame = nullptr;
 	mCoreInitConfig(m_vl, nullptr);
+#ifdef M_CORE_GB
+	if (m_controller->platform() == PLATFORM_GB) {
+		mCoreConfigSetIntValue(&m_vl->config, "sgb.borders", static_cast<GB*>(m_controller->thread()->core->board)->video.sgbBorders);
+		m_vl->reloadConfigOption(m_vl, "sgb.borders", nullptr);
+	}
+#endif
 	unsigned width, height;
 	m_vl->desiredVideoDimensions(m_vl, &width, &height);
 	m_framebuffer = QImage(width, height, QImage::Format_RGBX8888);
