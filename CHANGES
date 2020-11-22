@@ -45,6 +45,7 @@ Emulation fixes:
  - GBA Video: Fix Hblank timing
  - GBA Video: Implement green swap (fixes mgba.io/i/1609)
  - GBA Video: Emulate sprite cycle limits in OpenGL renderer (fixes mgba.io/i/1635)
+ - GBA Video: Fix OBJWIN erratic rendering in OpenGL renderer
  - SM83: Emulate HALT bug
 Other fixes:
  - 3DS: Fix thread cleanup
