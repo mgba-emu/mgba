@@ -4,6 +4,7 @@ Features:
  - WebP and APNG recording
  - Separate overrides for GBC games that can also run on SGB or regular GB
  - Game Boy Player features can be enabled by default for all compatible games
+ - Frame viewer support for Game Boy
  - Mute option in homebrew ports
  - Status indicators for fast-forward and mute in homebrew ports
  - Read-only support for MBC6 flash memory
@@ -12,7 +13,7 @@ Features:
  - Command scripts for CLI debugger (by ahigerd)
  - ARM disassembler now resolves addresses to symbol names
  - Add Game Boy Player feature support to ports
- - Individual window types can now be toggled in GBA debugging views
+ - Individual window types can now be toggled in debugging views
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
