@@ -48,6 +48,15 @@ void GBVideoProxyRendererCreate(struct GBVideoProxyRenderer* renderer, struct GB
 	renderer->d.disableWIN = false;
 	renderer->d.disableOBJ = false;
 
+	renderer->d.highlightBG = false;
+	renderer->d.highlightWIN = false;
+	int i;
+	for (i = 0; i < GB_VIDEO_MAX_OBJ; ++i) {
+		renderer->d.highlightOBJ[i] = false;
+	}
+	renderer->d.highlightColor = M_COLOR_WHITE;
+	renderer->d.highlightAmount = 0;
+
 	renderer->logger->context = renderer;
 	renderer->logger->parsePacket = _parsePacket;
 	renderer->logger->vramBlock = _vramBlock;
@@ -73,6 +82,17 @@ static void _reset(struct GBVideoProxyRenderer* proxyRenderer) {
 	memcpy(proxyRenderer->logger->vram, proxyRenderer->d.vram, GB_SIZE_VRAM);
 
 	mVideoLoggerRendererReset(proxyRenderer->logger);
+}
+
+static void _copyExtraState(struct GBVideoProxyRenderer* proxyRenderer) {
+	proxyRenderer->backend->disableBG = proxyRenderer->d.disableBG;
+	proxyRenderer->backend->disableWIN = proxyRenderer->d.disableWIN;
+	proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
+	proxyRenderer->backend->highlightBG = proxyRenderer->d.highlightBG;
+	proxyRenderer->backend->highlightWIN = proxyRenderer->d.highlightWIN;
+	memcpy(proxyRenderer->backend->highlightOBJ, proxyRenderer->d.highlightOBJ, sizeof(proxyRenderer->backend->highlightOBJ));
+	proxyRenderer->backend->highlightAmount = proxyRenderer->d.highlightAmount;
+	proxyRenderer->backend->highlightColor = proxyRenderer->d.highlightColor;
 }
 
 void GBVideoProxyRendererShim(struct GBVideo* video, struct GBVideoProxyRenderer* renderer) {
@@ -142,9 +162,7 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		}
 		break;
 	case DIRTY_SCANLINE:
-		proxyRenderer->backend->disableBG = proxyRenderer->d.disableBG;
-		proxyRenderer->backend->disableWIN = proxyRenderer->d.disableWIN;
-		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
+		_copyExtraState(proxyRenderer);
 		if (item->address < GB_VIDEO_VERTICAL_PIXELS) {
 			proxyRenderer->backend->finishScanline(proxyRenderer->backend, item->address);
 		}
@@ -235,9 +253,7 @@ void GBVideoProxyRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam
 void GBVideoProxyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y) {
 	struct GBVideoProxyRenderer* proxyRenderer = (struct GBVideoProxyRenderer*) renderer;
 	if (!proxyRenderer->logger->block) {
-		proxyRenderer->backend->disableBG = proxyRenderer->d.disableBG;
-		proxyRenderer->backend->disableWIN = proxyRenderer->d.disableWIN;
-		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
+		_copyExtraState(proxyRenderer);
 		proxyRenderer->backend->drawRange(proxyRenderer->backend, startX, endX, y);
 	}
 	mVideoLoggerRendererDrawRange(proxyRenderer->logger, startX, endX, y);	

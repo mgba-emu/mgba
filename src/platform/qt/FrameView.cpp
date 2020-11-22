@@ -370,6 +370,15 @@ void FrameView::updateTilesGB(bool) {
 
 void FrameView::injectGB() {
 	mVideoLogger* logger = m_vl->videoLogger;
+	GB* gb = static_cast<GB*>(m_vl->board);
+	gb->video.renderer->highlightBG = false;
+	gb->video.renderer->highlightWIN = false;
+	for (int i = 0; i < 40; ++i) {
+		gb->video.renderer->highlightOBJ[i] = false;
+	}
+	QPalette palette;
+	gb->video.renderer->highlightColor = M_RGB8_TO_NATIVE(palette.color(QPalette::Highlight).rgb());
+	gb->video.renderer->highlightAmount = sin(m_glowFrame * M_PI / 30) * 48 + 64;
 
 	m_vl->reset(m_vl);
 	for (const Layer& layer : m_queue) {
@@ -378,12 +387,21 @@ void FrameView::injectGB() {
 			if (!layer.enabled) {
 				mVideoLoggerInjectOAM(logger, layer.id.index << 2, 0);
 			}
+			if (layer.id == m_active) {
+				gb->video.renderer->highlightOBJ[layer.id.index] = true;
+			}
 			break;
 		case LayerId::BACKGROUND:
 			m_vl->enableVideoLayer(m_vl, GB_LAYER_BACKGROUND, layer.enabled);
+			if (layer.id == m_active) {
+				gb->video.renderer->highlightBG = true;
+			}
 			break;
 		case LayerId::WINDOW:
 			m_vl->enableVideoLayer(m_vl, GB_LAYER_WINDOW, layer.enabled);
+			if (layer.id == m_active) {
+				gb->video.renderer->highlightWIN = true;
+			}
 			break;
 		}
 	}

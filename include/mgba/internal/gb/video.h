@@ -102,6 +102,12 @@ struct GBVideoRenderer {
 	bool disableBG;
 	bool disableOBJ;
 	bool disableWIN;
+
+	bool highlightBG;
+	bool highlightOBJ[GB_VIDEO_MAX_OBJ];
+	bool highlightWIN;
+	color_t highlightColor;
+	uint8_t highlightAmount;
 };
 
 DECL_BITFIELD(GBRegisterLCDC, uint8_t);
