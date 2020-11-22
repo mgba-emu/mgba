@@ -640,7 +640,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			for (; x < end; ++x) {
 				uint32_t color = softwareRenderer->row[x];
 				if (color & FLAG_TARGET_1) {
-					softwareRenderer->row[x] = _mix(softwareRenderer->bldb, backdrop, softwareRenderer->blda, color);
+					softwareRenderer->row[x] = mColorMix5Bit(softwareRenderer->bldb, backdrop, softwareRenderer->blda, color);
 				}
 			}
 		}
@@ -975,8 +975,8 @@ static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer) {
 
 	if (highlightAmount) {
 		for (i = 0; i < 512; ++i) {
-			renderer->highlightPalette[i] = _mix(0x10 - highlightAmount, renderer->normalPalette[i], highlightAmount, renderer->d.highlightColor);
-			renderer->highlightVariantPalette[i] = _mix(0x10 - highlightAmount, renderer->variantPalette[i], highlightAmount, renderer->d.highlightColor);
+			renderer->highlightPalette[i] = mColorMix5Bit(0x10 - highlightAmount, renderer->normalPalette[i], highlightAmount, renderer->d.highlightColor);
+			renderer->highlightVariantPalette[i] = mColorMix5Bit(0x10 - highlightAmount, renderer->variantPalette[i], highlightAmount, renderer->d.highlightColor);
 		}
 	}
 }

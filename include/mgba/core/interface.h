@@ -73,6 +73,68 @@ static inline color_t mColorFrom555(uint16_t value) {
 #endif
 	return color;
 }
+
+ATTRIBUTE_UNUSED static unsigned mColorMix5Bit(int weightA, unsigned colorA, int weightB, unsigned colorB) {
+	unsigned c = 0;
+	unsigned a, b;
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	a = colorA & 0xF81F;
+	b = colorB & 0xF81F;
+	a |= (colorA & 0x7C0) << 16;
+	b |= (colorB & 0x7C0) << 16;
+	c = ((a * weightA + b * weightB) / 16);
+	if (c & 0x08000000) {
+		c = (c & ~0x0FC00000) | 0x07C00000;
+	}
+	if (c & 0x0020) {
+		c = (c & ~0x003F) | 0x001F;
+	}
+	if (c & 0x10000) {
+		c = (c & ~0x1F800) | 0xF800;
+	}
+	c = (c & 0xF81F) | ((c >> 16) & 0x07C0);
+#else
+	a = colorA & 0x7C1F;
+	b = colorB & 0x7C1F;
+	a |= (colorA & 0x3E0) << 16;
+	b |= (colorB & 0x3E0) << 16;
+	c = ((a * weightA + b * weightB) / 16);
+	if (c & 0x04000000) {
+		c = (c & ~0x07E00000) | 0x03E00000;
+	}
+	if (c & 0x0020) {
+		c = (c & ~0x003F) | 0x001F;
+	}
+	if (c & 0x8000) {
+		c = (c & ~0xF800) | 0x7C00;
+	}
+	c = (c & 0x7C1F) | ((c >> 16) & 0x03E0);
+#endif
+#else
+	a = colorA & 0xFF;
+	b = colorB & 0xFF;
+	c |= ((a * weightA + b * weightB) / 16) & 0x1FF;
+	if (c & 0x00000100) {
+		c = 0x000000FF;
+	}
+
+	a = colorA & 0xFF00;
+	b = colorB & 0xFF00;
+	c |= ((a * weightA + b * weightB) / 16) & 0x1FF00;
+	if (c & 0x00010000) {
+		c = (c & 0x000000FF) | 0x0000FF00;
+	}
+
+	a = colorA & 0xFF0000;
+	b = colorB & 0xFF0000;
+	c |= ((a * weightA + b * weightB) / 16) & 0x1FF0000;
+	if (c & 0x01000000) {
+		c = (c & 0x0000FFFF) | 0x00FF0000;
+	}
+#endif
+	return c;
+}
 #endif
 
 struct blip_t;
