@@ -1263,7 +1263,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
       <location filename="../OverrideView.ui" line="364"/>
       <source>Pokémon Jade/Diamond (Unlicensed)</source>
-      <translation>Pokémon Jade/Diamond (Sem licença)</translation>
+      <translation>Pokémon Jade/Diamond (Não licenciado)</translation>
     </message>
     <message>
       <location filename="../OverrideView.ui" line="372"/>
