@@ -10,6 +10,7 @@ Other fixes:
  - CMake: Link with correct OpenGL library (fixes mgba.io/i/1872)
  - Core: Fix threading improperly setting paused state while interrupted
  - Core: Fix thread unsafety issue when dispatching code to a thread
+ - Core: Fix loading ELF files that have unexpected empty program headers
  - Debugger: Close trace log when done tracing
  - Qt: Fix running proxied video if it gets pushed to the main thread
  - Qt: Fix game display sometimes disappearing after closing load/save state screen
