@@ -56,6 +56,7 @@ Other fixes:
  - CMake: Link with correct OpenGL library (fixes mgba.io/i/1872)
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix threading improperly setting paused state while interrupted
+ - Core: Fix loading ELF files that have unexpected empty program headers
  - Debugger: Don't skip undefined instructions when debugger attached
  - Debugger: Close trace log when done tracing
  - Debugger: Fix change watchpoints (fixes mgba.io/i/1947)
