@@ -12,6 +12,7 @@ Other fixes:
  - Core: Fix thread unsafety issue when dispatching code to a thread
  - Core: Fix loading ELF files that have unexpected empty program headers
  - Debugger: Close trace log when done tracing
+ - GBA: Fix loading multiboot ELF files (fixes mgba.io/i/1949)
  - Qt: Fix running proxied video if it gets pushed to the main thread
  - Qt: Fix game display sometimes disappearing after closing load/save state screen
  - Qt: Fix gamepad event dispatching (fixes mgba.io/i/1922)
