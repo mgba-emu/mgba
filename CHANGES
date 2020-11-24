@@ -63,6 +63,7 @@ Other fixes:
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
  - GB Video: Fix SGB video logs
+ - GBA: Fix loading multiboot ELF files (fixes mgba.io/i/1949)
  - mGUI: Don't attempt to preload files larger than can fit in RAM
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
