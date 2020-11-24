@@ -7,6 +7,7 @@ Emulation fixes:
  - GBA Video: Fix OBJWIN erratic rendering in OpenGL renderer
 Other fixes:
  - CMake: Fix build with downstream minizip that exports incompatible symbols
+ - CMake: Link with correct OpenGL library (fixes mgba.io/i/1872)
  - Core: Fix threading improperly setting paused state while interrupted
  - Core: Fix thread unsafety issue when dispatching code to a thread
  - Debugger: Close trace log when done tracing
