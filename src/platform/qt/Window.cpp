@@ -181,10 +181,6 @@ void Window::argumentsPassed(mArguments* args) {
 		m_pendingState = args->savestate;
 	}
 
-	if (args->fname) {
-		setController(m_manager->loadGame(args->fname), args->fname);
-	}
-
 #ifdef USE_GDB_STUB
 	if (args->debuggerType == DEBUGGER_GDB) {
 		if (!m_gdbController) {
@@ -192,10 +188,15 @@ void Window::argumentsPassed(mArguments* args) {
 			if (m_controller) {
 				m_gdbController->setController(m_controller);
 			}
+			m_gdbController->attach();
 			m_gdbController->listen();
 		}
 	}
 #endif
+
+	if (args->fname) {
+		setController(m_manager->loadGame(args->fname), args->fname);
+	}
 }
 
 void Window::resizeFrame(const QSize& size) {
