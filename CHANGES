@@ -84,6 +84,7 @@ Misc:
  - Core: Rework thread state synchronization
  - GB: Allow pausing event loop while CPU is blocked
  - GB: Add support for sleep and shutdown callbacks
+ - GB I/O: Implement preliminary support for PCM12/PCM34 (closes mgba.io/i/1468)
  - GBA: Allow pausing event loop while CPU is blocked
  - GBA BIOS: Division by zero should emit a FATAL error
  - GBA Video: Convert OpenGL VRAM texture to integer

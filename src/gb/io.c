@@ -216,7 +216,7 @@ void GBIOReset(struct GB* gb) {
 		GBIOWrite(gb, GB_REG_HDMA4, 0xFF);
 		gb->memory.io[GB_REG_HDMA5] = 0xFF;
 	} else {
-		memset(&gb->memory.io[GB_REG_KEY0], 0xFF, GB_REG_PCM34 - GB_REG_KEY0);
+		memset(&gb->memory.io[GB_REG_KEY0], 0xFF, GB_REG_PCM34 - GB_REG_KEY0 + 1);
 	}
 
 	if (gb->model & GB_MODEL_SGB) {
@@ -620,6 +620,20 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 			}
 		} else {
 			return gb->audio.ch3.wavedata8[address - GB_REG_WAVE_0];
+		}
+		break;
+	case GB_REG_PCM12:
+		if (gb->model < GB_MODEL_CGB) {
+			mLOG(GB_IO, GAME_ERROR, "Reading from CGB register FF%02X in DMG mode", address);
+		} else if (gb->audio.enable) {
+			return (gb->audio.ch1.sample) | (gb->audio.ch2.sample << 4);
+		}
+		break;
+	case GB_REG_PCM34:
+		if (gb->model < GB_MODEL_CGB) {
+			mLOG(GB_IO, GAME_ERROR, "Reading from CGB register FF%02X in DMG mode", address);
+		} else if (gb->audio.enable) {
+			return (gb->audio.ch3.sample) | (gb->audio.ch4.sample << 4);
 		}
 		break;
 	case GB_REG_SB:
