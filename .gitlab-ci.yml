@@ -18,6 +18,8 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/windows-x64-mingw.yml'
   - project: 'libretro-infrastructure/ci-templates'
+    file: '/dingux-i386.yml'
+  - project: 'libretro-infrastructure/ci-templates'
     file: '/android-jni.yml'
 
 stages:
@@ -40,7 +42,14 @@ libretro-build-windows-x64:
     - .libretro-windows-x64-mingw-make-default
   variables:
     MAKEFILE: Makefile.libretro
-    
+
+libretro-build-dingux-i386:
+  extends:
+    - .core-defs
+    - .libretro-dingux-i386-make-default
+  variables:
+    MAKEFILE: Makefile.libretro
+
 # Android
 android-armeabi-v7a:
   extends:
