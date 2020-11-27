@@ -14,6 +14,7 @@ Features:
  - ARM disassembler now resolves addresses to symbol names
  - Add Game Boy Player feature support to ports
  - Individual window types can now be toggled in debugging views
+ - Support for the Wii U GamePad when running as an injected VC title
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
