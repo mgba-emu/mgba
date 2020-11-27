@@ -80,6 +80,7 @@ Other fixes:
  - Wii: Fix crash on unloading irregularly sized GBA ROMs
 Misc:
  - 3DS: Use "wide mode" where applicable for slightly better filtering
+ - 3DS: Batch directory reads
  - Core: Add savedataUpdated callback
  - Core: Add shutdown callback
  - Core: Rework thread state synchronization

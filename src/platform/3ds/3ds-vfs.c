@@ -9,6 +9,8 @@
 #include <mgba-util/memory.h>
 #include <mgba-util/string.h>
 
+#define MAX_ENT 4
+
 struct VFile3DS {
 	struct VFile d;
 
@@ -18,7 +20,9 @@ struct VFile3DS {
 
 struct VDirEntry3DS {
 	struct VDirEntry d;
-	FS_DirectoryEntry ent;
+	FS_DirectoryEntry ent[MAX_ENT];
+	u32 entCount;
+	u32 currentEnt;
 	char utf8Name[256];
 };
 
@@ -198,6 +202,7 @@ struct VDir* VDirOpen(const char* path) {
 
 	vd3d->vde.d.name = _vd3deName;
 	vd3d->vde.d.type = _vd3deType;
+	vd3d->vde.entCount = 0;
 
 	return &vd3d->d;
 }
@@ -222,12 +227,16 @@ static void _vd3dRewind(struct VDir* vd) {
 
 static struct VDirEntry* _vd3dListNext(struct VDir* vd) {
 	struct VDir3DS* vd3d = (struct VDir3DS*) vd;
-	u32 n = 0;
-	memset(&vd3d->vde.ent, 0, sizeof(vd3d->vde.ent));
 	memset(vd3d->vde.utf8Name, 0, sizeof(vd3d->vde.utf8Name));
-	FSDIR_Read(vd3d->handle, &n, 1, &vd3d->vde.ent);
-	if (!n) {
-		return 0;
+	if (!vd3d->vde.entCount || vd3d->vde.currentEnt + 1 >= vd3d->vde.entCount) {
+		memset(&vd3d->vde.ent, 0, sizeof(vd3d->vde.ent));
+		FSDIR_Read(vd3d->handle, &vd3d->vde.entCount, MAX_ENT, vd3d->vde.ent);
+		vd3d->vde.currentEnt = 0;
+	} else {
+		++vd3d->vde.currentEnt;
+	}
+	if (!vd3d->vde.entCount) {
+		return NULL;
 	}
 	return &vd3d->vde.d;
 }
@@ -296,14 +305,14 @@ static bool _vd3dDeleteFile(struct VDir* vd, const char* path) {
 static const char* _vd3deName(struct VDirEntry* vde) {
 	struct VDirEntry3DS* vd3de = (struct VDirEntry3DS*) vde;
 	if (!vd3de->utf8Name[0]) {
-		utf16_to_utf8((uint8_t*) vd3de->utf8Name, vd3de->ent.name, sizeof(vd3de->utf8Name));
+		utf16_to_utf8((uint8_t*) vd3de->utf8Name, vd3de->ent[vd3de->currentEnt].name, sizeof(vd3de->utf8Name));
 	}
 	return vd3de->utf8Name;
 }
 
 static enum VFSType _vd3deType(struct VDirEntry* vde) {
 	struct VDirEntry3DS* vd3de = (struct VDirEntry3DS*) vde;
-	if (vd3de->ent.attributes & FS_ATTRIBUTE_DIRECTORY) {
+	if (vd3de->ent[vd3de->currentEnt].attributes & FS_ATTRIBUTE_DIRECTORY) {
 		return VFS_DIRECTORY;
 	}
 	return VFS_FILE;
