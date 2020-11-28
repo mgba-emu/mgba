@@ -16,7 +16,7 @@ GunDelSol1
 GunDelSol2
 GunDelSol3
 GunDelSolEX
-Yo-Yo
+YoYo
 FireBurner1
 FireBurner2
 FireBurner3
@@ -77,7 +77,7 @@ FireSword
 AquaSword
 ElecSword
 BambooSword
-WindRacket
+WindRack
 StepSword
 VariableSword
 NeoVariable
@@ -95,9 +95,9 @@ WaveArm3
 AuraHead1
 AuraHead2
 AuraHead3
-LittleBoiler1
-LittleBoiler2
-LittleBoiler3
+LilBoiler1
+LilBoiler2
+LilBoiler3
 SandWorm1
 SandWorm2
 SandWorm3
@@ -280,7 +280,7 @@ Django2
 Django3
 PunchArm
 NeedleArm
-PuzzleArm
+PulseArm
 BoomerArm
 SynchroTrigger
 DarkSword
