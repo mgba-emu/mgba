@@ -435,6 +435,10 @@ void PainterGL::draw() {
 	mCoreSync* sync = &m_context->thread()->impl->sync;
 	mCoreSyncWaitFrameStart(sync);
 	dequeue();
+	if (m_videoProxy) {
+		// Only block on the next frame if we're trying to run at roughly 60fps via audio
+		m_videoProxy->setBlocking(sync->audioWait && std::abs(60.f - sync->fpsTarget) < 0.1f);
+	}
 	if (!m_delayTimer.isValid()) {
 		m_delayTimer.start();
 	} else if (sync->audioWait || sync->videoFrameWait) {

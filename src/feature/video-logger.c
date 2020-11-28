@@ -119,7 +119,6 @@ static inline size_t _roundUp(size_t value, int shift) {
 void mVideoLoggerRendererCreate(struct mVideoLogger* logger, bool readonly) {
 	if (readonly) {
 		logger->writeData = _writeNull;
-		logger->block = true;
 	} else {
 		logger->writeData = _writeData;
 	}
@@ -134,6 +133,9 @@ void mVideoLoggerRendererCreate(struct mVideoLogger* logger, bool readonly) {
 	logger->unlock = NULL;
 	logger->wait = NULL;
 	logger->wake = NULL;
+
+	logger->block = readonly;
+	logger->waitOnFlush = !readonly;
 }
 
 void mVideoLoggerRendererInit(struct mVideoLogger* logger) {
@@ -263,7 +265,7 @@ void mVideoLoggerRendererFlush(struct mVideoLogger* logger) {
 		0xDEADBEEF,
 	};
 	logger->writeData(logger, &dirty, sizeof(dirty));
-	if (logger->wait) {
+	if (logger->waitOnFlush && logger->wait) {
 		logger->wait(logger);
 	}
 }
