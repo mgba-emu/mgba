@@ -16,6 +16,7 @@
 #endif
 #endif
 
+#include <QAtomicInt>
 #include <QElapsedTimer>
 #include <QOpenGLContext>
 #include <QList>
@@ -130,6 +131,7 @@ private:
 	std::array<std::array<uint32_t, 0x100000>, 3> m_buffers;
 	QList<uint32_t*> m_free;
 	QQueue<uint32_t*> m_queue;
+	QAtomicInt m_lagging = 0;
 	uint32_t* m_buffer;
 	QPainter m_painter;
 	QMutex m_mutex;

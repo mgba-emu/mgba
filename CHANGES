@@ -102,6 +102,7 @@ Misc:
  - Qt: Add copy button to GB printer dialog
  - Qt: Window title updates can be disabled (closes mgba.io/i/1912)
  - Qt: Redo OpenGL context thread handling (fixes mgba.io/i/1724)
+ - Qt: Discard additional frame draws if waiting fails
  - Util: Reset vector size on deinit
  - VFS: Change semantics of VFile.sync on mapped files (fixes mgba.io/i/1730)
 

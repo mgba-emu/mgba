@@ -432,8 +432,18 @@ void PainterGL::draw() {
 	if (!m_active || m_queue.isEmpty()) {
 		return;
 	}
+	if (m_lagging >= 1) {
+		return;
+	}
 	mCoreSync* sync = &m_context->thread()->impl->sync;
-	mCoreSyncWaitFrameStart(sync);
+	if (!mCoreSyncWaitFrameStart(sync)) {
+		mCoreSyncWaitFrameEnd(sync);
+		++m_lagging;
+		if (m_delayTimer.elapsed() < 1000 / m_surface->screen()->refreshRate()) {
+			QTimer::singleShot(1, this, &PainterGL::draw);
+		}
+		return;
+	}
 	dequeue();
 	if (m_videoProxy) {
 		// Only block on the next frame if we're trying to run at roughly 60fps via audio
@@ -445,17 +455,16 @@ void PainterGL::draw() {
 		while (m_delayTimer.nsecsElapsed() + 2000000 < 1000000000 / sync->fpsTarget) {
 			QThread::usleep(500);
 		}
-		m_delayTimer.restart();
 	}
 	mCoreSyncWaitFrameEnd(sync);
 
-	forceDraw();
+	performDraw();
+	m_backend->swap(m_backend);
+	m_delayTimer.restart();
 }
 
 void PainterGL::forceDraw() {
-	m_painter.begin(m_window.get());
 	performDraw();
-	m_painter.end();
 	if (!m_context->thread()->impl->sync.audioWait && !m_context->thread()->impl->sync.videoFrameWait) {
 		if (m_delayTimer.elapsed() < 1000 / m_surface->screen()->refreshRate()) {
 			return;
@@ -486,10 +495,12 @@ void PainterGL::pause() {
 }
 
 void PainterGL::unpause() {
+	m_lagging = 0;
 	m_active = true;
 }
 
 void PainterGL::performDraw() {
+	m_painter.begin(m_window.get());
 	m_painter.beginNativePainting();
 	float r = m_surface->devicePixelRatio();
 	m_backend->resized(m_backend, m_size.width() * r, m_size.height() * r);
@@ -501,6 +512,7 @@ void PainterGL::performDraw() {
 	if (m_showOSD && m_messagePainter) {
 		m_messagePainter->paint(&m_painter);
 	}
+	m_painter.end();
 }
 
 void PainterGL::enqueue(const uint32_t* backing) {
@@ -517,6 +529,7 @@ void PainterGL::enqueue(const uint32_t* backing) {
 			memcpy(buffer, backing, size.width() * size.height() * BYTES_PER_PIXEL);
 		}
 	}
+	m_lagging = 0;
 	m_queue.enqueue(buffer);
 }
 
@@ -531,6 +544,7 @@ void PainterGL::dequeue() {
 		m_buffer = nullptr;
 	}
 	m_buffer = buffer;
+	return;
 }
 
 void PainterGL::dequeueAll() {
