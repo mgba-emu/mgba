@@ -18,6 +18,8 @@
 #include <QTimer>
 #include <QWindow>
 
+#include <cmath>
+
 #include <mgba/core/core.h>
 #include <mgba-util/math.h>
 #ifdef BUILD_GL
