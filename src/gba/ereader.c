@@ -612,6 +612,9 @@ void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value) {
 	hw->eReaderRegisterControl0 = control;
 	if (!EReaderControl0IsScan(oldControl) && EReaderControl0IsScan(control)) {
 		if (hw->eReaderX > 1000) {
+			if (hw->eReaderDots) {
+				memset(hw->eReaderDots, 0, EREADER_DOTCODE_SIZE);
+			}
 			int i;
 			for (i = 0; i < EREADER_CARDS_MAX; ++i) {
 				if (!hw->eReaderCards[i].data) {
