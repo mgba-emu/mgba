@@ -623,14 +623,14 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	STORE_16(hw->direction, 0, &state->hw.pinDirection);
 	state->hw.devices = hw->devices;
 
-	STORE_32(hw->rtc.bytesRemaining, 0, &state->hw.rtc.bytesRemaining);
-	STORE_32(hw->rtc.transferStep, 0, &state->hw.rtc.transferStep);
-	STORE_32(hw->rtc.bitsRead, 0, &state->hw.rtc.bitsRead);
-	STORE_32(hw->rtc.bits, 0, &state->hw.rtc.bits);
-	STORE_32(hw->rtc.commandActive, 0, &state->hw.rtc.commandActive);
-	STORE_32(hw->rtc.command, 0, &state->hw.rtc.command);
-	STORE_32(hw->rtc.control, 0, &state->hw.rtc.control);
-	memcpy(state->hw.rtc.time, hw->rtc.time, sizeof(state->hw.rtc.time));
+	STORE_32(hw->rtc.bytesRemaining, 0, &state->hw.rtcBytesRemaining);
+	STORE_32(hw->rtc.transferStep, 0, &state->hw.rtcTransferStep);
+	STORE_32(hw->rtc.bitsRead, 0, &state->hw.rtcBitsRead);
+	STORE_32(hw->rtc.bits, 0, &state->hw.rtcBits);
+	STORE_32(hw->rtc.commandActive, 0, &state->hw.rtcCommandActive);
+	STORE_32(hw->rtc.command, 0, &state->hw.rtcCommand);
+	STORE_32(hw->rtc.control, 0, &state->hw.rtcControl);
+	memcpy(state->hw.time, hw->rtc.time, sizeof(state->hw.time));
 
 	STORE_16(hw->gyroSample, 0, &state->hw.gyroSample);
 	flags1 = GBASerializedHWFlags1SetGyroEdge(flags1, hw->gyroEdge);
@@ -655,14 +655,14 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	LOAD_16(hw->direction, 0, &state->hw.pinDirection);
 	hw->devices = state->hw.devices;
 
-	LOAD_32(hw->rtc.bytesRemaining, 0, &state->hw.rtc.bytesRemaining);
-	LOAD_32(hw->rtc.transferStep, 0, &state->hw.rtc.transferStep);
-	LOAD_32(hw->rtc.bitsRead, 0, &state->hw.rtc.bitsRead);
-	LOAD_32(hw->rtc.bits, 0, &state->hw.rtc.bits);
-	LOAD_32(hw->rtc.commandActive, 0, &state->hw.rtc.commandActive);
-	LOAD_32(hw->rtc.command, 0, &state->hw.rtc.command);
-	LOAD_32(hw->rtc.control, 0, &state->hw.rtc.control);
-	memcpy(hw->rtc.time, state->hw.rtc.time, sizeof(hw->rtc.time));
+	LOAD_32(hw->rtc.bytesRemaining, 0, &state->hw.rtcBytesRemaining);
+	LOAD_32(hw->rtc.transferStep, 0, &state->hw.rtcTransferStep);
+	LOAD_32(hw->rtc.bitsRead, 0, &state->hw.rtcBitsRead);
+	LOAD_32(hw->rtc.bits, 0, &state->hw.rtcBits);
+	LOAD_32(hw->rtc.commandActive, 0, &state->hw.rtcCommandActive);
+	LOAD_32(hw->rtc.command, 0, &state->hw.rtcCommand);
+	LOAD_32(hw->rtc.control, 0, &state->hw.rtcControl);
+	memcpy(hw->rtc.time, state->hw.time, sizeof(hw->rtc.time));
 
 	LOAD_16(hw->gyroSample, 0, &state->hw.gyroSample);
 	hw->gyroEdge = GBASerializedHWFlags1GetGyroEdge(flags1);

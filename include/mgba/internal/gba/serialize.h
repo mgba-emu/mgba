@@ -316,7 +316,14 @@ struct GBASerializedState {
 	struct {
 		uint16_t pinState;
 		uint16_t pinDirection;
-		struct GBARTC rtc;
+		int32_t rtcBytesRemaining;
+		int32_t rtcTransferStep;
+		int32_t rtcBitsRead;
+		int32_t rtcBits;
+		int32_t rtcCommandActive;
+		RTCCommandData rtcCommand;
+		RTCControl rtcControl;
+		uint8_t time[7];
 		uint8_t devices;
 		uint16_t gyroSample;
 		uint16_t tiltSampleX;
