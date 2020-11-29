@@ -753,8 +753,10 @@ static bool _doTrace(struct CLIDebugger* debugger) {
 		--debugger->traceRemaining;
 	}
 	if (!debugger->traceRemaining) {
-		debugger->traceVf->close(debugger->traceVf);
-		debugger->traceVf = NULL;
+		if (debugger->traceVf) {
+			debugger->traceVf->close(debugger->traceVf);
+			debugger->traceVf = NULL;
+		}
 		return false;
 	}
 	return true;
