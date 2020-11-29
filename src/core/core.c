@@ -153,12 +153,23 @@ bool mCorePreloadVFCB(struct mCore* core, struct VFile* vf, void (cb)(size_t, si
 	vfm = VFileMemChunk(NULL, size);
 #endif
 
-	uint8_t buffer[2048];
+	size_t chunkSize;
+#ifdef FIXED_ROM_BUFFER
+	uint8_t* buffer = (uint8_t*) romBuffer;
+	chunkSize = 0x10000;
+#else
+	uint8_t buffer[0x4000];
+	chunkSize = sizeof(buffer);
+#endif
 	ssize_t read;
 	size_t total = 0;
 	vf->seek(vf, 0, SEEK_SET);
-	while ((read = vf->read(vf, buffer, sizeof(buffer))) > 0) {
+	while ((read = vf->read(vf, buffer, chunkSize)) > 0) {
+#ifdef FIXED_ROM_BUFFER
+		buffer += read;
+#else
 		vfm->write(vfm, buffer, read);
+#endif
 		total += read;
 		if (cb) {
 			cb(total, size, context);

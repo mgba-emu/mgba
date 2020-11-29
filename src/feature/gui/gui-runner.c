@@ -296,10 +296,6 @@ static void _log(struct mLogger* logger, int category, enum mLogLevel level, con
 
 static void _updateLoading(size_t read, size_t size, void* context) {
 	struct mGUIRunner* runner = context;
-	if (read & 0x3FFFF) {
-		return;
-	}
-
 	runner->params.drawStart();
 	if (runner->params.guiPrepare) {
 		runner->params.guiPrepare();
@@ -388,7 +384,13 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		mInputMapInit(&runner->core->inputMap, &GBAInputInfo);
 
 		struct VFile* rom = mDirectorySetOpenPath(&runner->core->dirs, path, runner->core->isROM);
+		if (runner->setFrameLimiter) {
+			runner->setFrameLimiter(runner, false);
+		}
 		found = mCorePreloadVFCB(runner->core, rom, _updateLoading, runner);
+		if (runner->setFrameLimiter) {
+			runner->setFrameLimiter(runner, true);
+		}
 
 #ifdef FIXED_ROM_BUFFER
 		extern size_t romBufferSize;

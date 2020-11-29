@@ -97,6 +97,7 @@ Misc:
  - FFmpeg: Add looping option for GIF/APNG
  - mGUI: Show battery percentage
  - mGUI: Skip second scan loop when possible
+ - mGUI: Improve loading speed (fixes mgba.io/i/1957)
  - Qt: Renderer can be changed while a game is running
  - Qt: Add hex index to palette view
  - Qt: Add transformation matrix info to sprite view
