@@ -207,6 +207,7 @@ bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOver
 	override->hardware = HW_NONE;
 	override->idleLoop = IDLE_LOOP_NONE;
 	override->mirroring = false;
+	override->vbaBugCompat = false;
 	bool found = false;
 
 	int i;
@@ -320,6 +321,8 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 		GBASavedataForceType(&gba->memory.savedata, override->savetype);
 	}
 
+	gba->vbaBugCompat = override->vbaBugCompat;
+
 	if (override->hardware != HW_NO_OVERRIDE) {
 		GBAHardwareClear(&gba->memory.hw);
 
@@ -376,6 +379,7 @@ void GBAOverrideApplyDefaults(struct GBA* gba, const struct Configuration* overr
 			// Enable FLASH1M and RTC on Pokémon FireRed ROM hacks
 			override.savetype = SAVEDATA_FLASH1M;
 			override.hardware = HW_RTC;
+			override.vbaBugCompat = true;
 			GBAOverrideApply(gba, &override);
 		} else if (GBAOverrideFind(overrides, &override)) {
 			GBAOverrideApply(gba, &override);

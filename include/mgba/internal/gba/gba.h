@@ -116,6 +116,7 @@ struct GBA {
 	int32_t cachedRegisters[16];
 	bool taintedRegisters[16];
 
+	bool vbaBugCompat;
 	bool hardCrash;
 	bool allowOpposingDirections;
 

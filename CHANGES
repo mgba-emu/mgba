@@ -7,6 +7,7 @@ Features:
  - Frame viewer support for Game Boy
  - Mute option in homebrew ports
  - Status indicators for fast-forward and mute in homebrew ports
+ - VBA bug compatibility mode for ROM hacks that don't work on real hardware
  - Read-only support for MBC6 flash memory
  - New unlicensed GB mappers: Pokémon Jade/Diamond, BBD, and Hitek
  - Stack tracing tools in ARM debugger (by ahigerd)

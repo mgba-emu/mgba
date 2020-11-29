@@ -20,6 +20,7 @@ struct GBACartridgeOverride {
 	int hardware;
 	uint32_t idleLoop;
 	bool mirroring;
+	bool vbaBugCompat;
 };
 
 struct Configuration;

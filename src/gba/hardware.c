@@ -99,8 +99,12 @@ void GBAHardwareGPIOWrite(struct GBACartridgeHardware* hw, uint32_t address, uin
 	}
 	switch (address) {
 	case GPIO_REG_DATA:
-		hw->pinState &= ~hw->direction;
-		hw->pinState |= value & hw->direction;
+		if (!hw->p->vbaBugCompat) {
+			hw->pinState &= ~hw->direction;
+			hw->pinState |= value & hw->direction;
+		} else {
+			hw->pinState = value;
+		}
 		_readPins(hw);
 		break;
 	case GPIO_REG_DIRECTION:
