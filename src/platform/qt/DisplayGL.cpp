@@ -441,7 +441,7 @@ void PainterGL::draw() {
 	if (!mCoreSyncWaitFrameStart(sync)) {
 		mCoreSyncWaitFrameEnd(sync);
 		++m_lagging;
-		if (m_delayTimer.elapsed() < 1000 / m_surface->screen()->refreshRate()) {
+		if ((sync->audioWait || sync->videoFrameWait) && m_delayTimer.elapsed() < 1000 / m_surface->screen()->refreshRate()) {
 			QTimer::singleShot(1, this, &PainterGL::draw);
 		}
 		return;
@@ -453,16 +453,18 @@ void PainterGL::draw() {
 	}
 	if (!m_delayTimer.isValid()) {
 		m_delayTimer.start();
-	} else if (sync->audioWait || sync->videoFrameWait) {
-		while (m_delayTimer.nsecsElapsed() + 2000000 < 1000000000 / sync->fpsTarget) {
-			QThread::usleep(500);
+	} else {
+		if (sync->audioWait || sync->videoFrameWait) {
+			while (m_delayTimer.nsecsElapsed() + 2000000 < 1000000000 / sync->fpsTarget) {
+				QThread::usleep(500);
+			}
 		}
+		m_delayTimer.restart();
 	}
 	mCoreSyncWaitFrameEnd(sync);
 
 	performDraw();
 	m_backend->swap(m_backend);
-	m_delayTimer.restart();
 }
 
 void PainterGL::forceDraw() {
@@ -546,7 +548,6 @@ void PainterGL::dequeue() {
 		m_buffer = nullptr;
 	}
 	m_buffer = buffer;
-	return;
 }
 
 void PainterGL::dequeueAll() {
