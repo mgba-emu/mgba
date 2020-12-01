@@ -1394,6 +1394,8 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		glClearDepth(1);
 #endif
 		glClearStencil(0);
+		glDepthMask(GL_TRUE);
+		glStencilMask(1);
 		glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OBJ]);
 		glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
