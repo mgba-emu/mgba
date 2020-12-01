@@ -93,6 +93,7 @@ Misc:
  - GBA BIOS: Division by zero should emit a FATAL error
  - GBA Video: Convert OpenGL VRAM texture to integer
  - GBA Video: Skip attempting to render offscreen sprites in OpenGL
+ - GBA Video: New GL palette approach, no more batch splitting on palette edits
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
  - mGUI: Show battery percentage
