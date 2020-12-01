@@ -53,6 +53,9 @@ struct GBAVideoGLUniform {
 };
 
 #define PALETTE_ENTRY "#define PALETTE_ENTRY(x) (vec3((ivec3(0x1F, 0x3E0, 0x7C00) & (x)) >> ivec3(0, 5, 10)) / 31.)\n"
+#define MOSAIC \
+	"#define MOSAIC(LHS, RHS) (((int(LHS) * mosaicTable[RHS]) >> 12) * RHS)\n" \
+	"const int mosaicTable[17] = int[17](0, 4096, 2048, 1366, 1024, 820, 683, 586, 512, 456, 410, 373, 342, 316, 293, 274, 256);\n"
 
 static const GLchar* const _gles3Header =
 	"#version 300 es\n"
@@ -117,6 +120,7 @@ static const struct GBAVideoGLUniform _uniformsMode0[] = {
 };
 
 static const char* const _renderMode0 =
+	MOSAIC
 	"in vec2 texCoord;\n"
 	"uniform isampler2D vram;\n"
 	"uniform sampler2D palette;\n"
@@ -132,10 +136,10 @@ static const char* const _renderMode0 =
 	"void main() {\n"
 	"	ivec2 coord = ivec2(texCoord);\n"
 	"	if (mosaic.x > 1) {\n"
-	"		coord.x -= coord.x % mosaic.x;\n"
+	"		coord.x = MOSAIC(coord.x, mosaic.x);\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
-	"		coord.y -= coord.y % mosaic.y;\n"
+	"		coord.y = MOSAIC(coord.y, mosaic.y);\n"
 	"	}\n"
 	"	coord += (ivec2(0x1FF, 0x1FF000) & offset[int(texCoord.y)]) >> ivec2(0, 12);\n"
 	"	ivec2 wrap = ivec2(255, 255);\n"
@@ -219,6 +223,7 @@ static const char* const _interpolate =
 	"}\n";
 
 static const char* const _renderMode2 =
+	MOSAIC
 	"in vec2 texCoord;\n"
 	"uniform isampler2D vram;\n"
 	"uniform sampler2D palette;\n"
@@ -253,10 +258,10 @@ static const char* const _renderMode2 =
 	"	ivec2 offset[4];\n"
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
-	"		incoord.x = floor(incoord.x - float(int(incoord.x) % mosaic.x));\n"
+	"		incoord.x = float(MOSAIC(incoord.x, mosaic.x));\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
-	"		incoord.y = floor(incoord.y - float(int(incoord.y) % mosaic.y));\n"
+	"		incoord.y = float(MOSAIC(incoord.y, mosaic.y));\n"
 	"	}\n"
 	"	loadAffine(int(incoord.y), mat, offset);\n"
 	"	float y = fract(incoord.y);\n"
@@ -286,6 +291,7 @@ static const struct GBAVideoGLUniform _uniformsMode35[] = {
 };
 
 static const char* const _renderMode35 =
+	MOSAIC
 	"in vec2 texCoord;\n"
 	"uniform isampler2D vram;\n"
 	"uniform int charBase;\n"
@@ -303,10 +309,10 @@ static const char* const _renderMode35 =
 	"	ivec2 offset[4];\n"
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
-	"		incoord.x = floor(incoord.x - float(int(incoord.x) % mosaic.x));\n"
+	"		incoord.x = floor(MOSAIC(incoord.x, mosaic.x));\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
-	"		incoord.y = floor(incoord.y - float(int(incoord.y) % mosaic.y));\n"
+	"		incoord.y = floor(MOSAIC(incoord.y, mosaic.y));\n"
 	"	}\n"
 	"	loadAffine(int(incoord.y), mat, offset);\n"
 	"	float y = fract(incoord.y);\n"
@@ -345,6 +351,7 @@ static const struct GBAVideoGLUniform _uniformsMode4[] = {
 };
 
 static const char* const _renderMode4 =
+	MOSAIC
 	"in vec2 texCoord;\n"
 	"uniform isampler2D vram;\n"
 	"uniform sampler2D palette;\n"
@@ -363,10 +370,10 @@ static const char* const _renderMode4 =
 	"	ivec2 offset[4];\n"
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
-	"		incoord.x = floor(incoord.x - float(int(incoord.x) % mosaic.x));\n"
+	"		incoord.x = floor(MOSAIC(incoord.x, mosaic.x));\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
-	"		incoord.y = floor(incoord.y - float(int(incoord.y) % mosaic.y));\n"
+	"		incoord.y = floor(MOSAIC(incoord.y, mosaic.y));\n"
 	"	}\n"
 	"	loadAffine(int(incoord.y), mat, offset);\n"
 	"	float y = fract(incoord.y);\n"
@@ -412,6 +419,7 @@ static const struct GBAVideoGLUniform _uniformsObj[] = {
 };
 
 static const char* const _renderObj =
+	MOSAIC
 	"in vec2 texCoord;\n"
 	"uniform isampler2D vram;\n"
 	"uniform sampler2D palette;\n"
@@ -434,17 +442,20 @@ static const char* const _renderObj =
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
 	"		int x = int(incoord.x);\n"
-	"		incoord.x = float(clamp(x - (mosaic.z + x) % mosaic.x, 0, dims.z - 1));\n"
+	"		x = MOSAIC(mosaic.z + x, mosaic.x) - mosaic.z;\n"
+	"		incoord.x = float(clamp(x, 0, dims.z - 1));\n"
 	"	} else if (mosaic.x < -1) {\n"
 	"		int x = dims.z - int(incoord.x) - 1;\n"
-	"		incoord.x = float(clamp(dims.z - x + (mosaic.z + x) % -mosaic.x - 1, 0, dims.z - 1));\n"
+	"		x = dims.z - MOSAIC(mosaic.z + x, -mosaic.x) + mosaic.z - 1;\n"
+	"		incoord.x = float(clamp(x, 0, dims.z - 1));\n"
 	"	}\n"
 	"	if (cyclesRemaining[int(incoord.y) + mosaic.w] <= 0) {\n"
 	"		discard;\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
 	"		int y = int(incoord.y);\n"
-	"		incoord.y = float(clamp(y - (mosaic.w + y) % mosaic.y, 0, dims.w - 1));\n"
+	"		y = MOSAIC(mosaic.w + y, mosaic.y) - mosaic.w;"
+	"		incoord.y = float(clamp(y, 0, dims.w - 1));\n"
 	"	}\n"
 	"	ivec2 coord = ivec2(transform * (incoord - vec2(dims.zw) / 2.) + vec2(dims.xy) / 2.);\n"
 	"	if ((coord & ~(dims.xy - 1)) != ivec2(0, 0)) {\n"
