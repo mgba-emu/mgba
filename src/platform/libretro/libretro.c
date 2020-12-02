@@ -70,6 +70,7 @@ static unsigned camHeight;
 static unsigned imcapWidth;
 static unsigned imcapHeight;
 static size_t camStride;
+static bool deferredSetup = false;
 
 static void _reloadSettings(void) {
 	struct mCoreOptions opts = {
@@ -152,6 +153,18 @@ static void _reloadSettings(void) {
 
 	mCoreConfigLoadDefaults(&core->config, &opts);
 	mCoreLoadConfig(core);
+}
+
+static void _doDeferredSetup(void) {
+	// Libretro API doesn't let you know when it's done copying data into the save buffers.
+	// On the off-hand chance that a core actually expects its buffers to be populated when
+	// you actually first get them, you're out of luck without workarounds. Yup, seriously.
+	// Here's that workaround, but really the API needs to be thrown out and rewritten.
+	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
+	if (!core->loadSave(core, save)) {
+		save->close(save);
+	}
+	deferredSetup = false;
 }
 
 unsigned retro_api_version(void) {
@@ -288,6 +301,9 @@ void retro_deinit(void) {
 }
 
 void retro_run(void) {
+	if (deferredSetup) {
+		_doDeferredSetup();
+	}
 	uint16_t keys;
 	inputPollCallback();
 
@@ -588,11 +604,10 @@ bool retro_load_game(const struct retro_game_info* game) {
 
 	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	memset(savedata, 0xFF, SIZE_CART_FLASH1M);
-	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
 
 	_reloadSettings();
 	core->loadROM(core, rom);
-	core->loadSave(core, save);
+	deferredSetup = true;
 
 	const char* sysDir = 0;
 	const char* biosName = 0;
@@ -670,6 +685,9 @@ void retro_unload_game(void) {
 }
 
 size_t retro_serialize_size(void) {
+	if (deferredSetup) {
+		_doDeferredSetup();
+	}
 	struct VFile* vfm = VFileMemChunk(NULL, 0);
 	mCoreSaveStateNamed(core, vfm, SAVESTATE_SAVEDATA | SAVESTATE_RTC);
 	size_t size = vfm->size(vfm);
@@ -678,6 +696,9 @@ size_t retro_serialize_size(void) {
 }
 
 bool retro_serialize(void* data, size_t size) {
+	if (deferredSetup) {
+		_doDeferredSetup();
+	}
 	struct VFile* vfm = VFileMemChunk(NULL, 0);
 	mCoreSaveStateNamed(core, vfm, SAVESTATE_SAVEDATA | SAVESTATE_RTC);
 	if ((ssize_t) size > vfm->size(vfm)) {
@@ -693,6 +714,9 @@ bool retro_serialize(void* data, size_t size) {
 }
 
 bool retro_unserialize(const void* data, size_t size) {
+	if (deferredSetup) {
+		_doDeferredSetup();
+	}
 	struct VFile* vfm = VFileFromConstMemory(data, size);
 	bool success = mCoreLoadStateNamed(core, vfm, SAVESTATE_RTC);
 	vfm->close(vfm);
@@ -777,31 +801,68 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info* i
 }
 
 void* retro_get_memory_data(unsigned id) {
-	if (id != RETRO_MEMORY_SAVE_RAM) {
-		return 0;
+	switch (id) {
+	case RETRO_MEMORY_SAVE_RAM:
+		return savedata;
+	case RETRO_MEMORY_RTC:
+		switch (core->platform(core)) {
+#ifdef M_CORE_GB
+		case PLATFORM_GB:
+			switch (((struct GB*) core->board)->memory.mbcType) {
+			case GB_MBC3_RTC:
+				return &((uint8_t*) savedata)[((struct GB*) core->board)->sramSize];
+			default:
+				return NULL;
+			}
+#endif
+		default:
+			return NULL;
+		}
+	default:
+		break;
 	}
-	return savedata;
+	return NULL;
 }
 
 size_t retro_get_memory_size(unsigned id) {
-	if (id != RETRO_MEMORY_SAVE_RAM) {
-		return 0;
-	}
+	switch (id) {
+	case RETRO_MEMORY_SAVE_RAM:
+		switch (core->platform(core)) {
 #ifdef M_CORE_GBA
-	if (core->platform(core) == PLATFORM_GBA) {
-		switch (((struct GBA*) core->board)->memory.savedata.type) {
-		case SAVEDATA_AUTODETECT:
-			return SIZE_CART_FLASH1M;
-		default:
-			return GBASavedataSize(&((struct GBA*) core->board)->memory.savedata);
-		}
-	}
+		case PLATFORM_GBA:
+			switch (((struct GBA*) core->board)->memory.savedata.type) {
+			case SAVEDATA_AUTODETECT:
+				return SIZE_CART_FLASH1M;
+			default:
+				return GBASavedataSize(&((struct GBA*) core->board)->memory.savedata);
+			}
 #endif
 #ifdef M_CORE_GB
-	if (core->platform(core) == PLATFORM_GB) {
-		return ((struct GB*) core->board)->sramSize;
-	}
+		case PLATFORM_GB:
+			return ((struct GB*) core->board)->sramSize;
 #endif
+		default:
+			break;
+		}
+		break;
+	case RETRO_MEMORY_RTC:
+		switch (core->platform(core)) {
+#ifdef M_CORE_GB
+		case PLATFORM_GB:
+			switch (((struct GB*) core->board)->memory.mbcType) {
+			case GB_MBC3_RTC:
+				return sizeof(struct GBMBCRTCSaveBuffer);
+			default:
+				return 0;
+			}
+#endif
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
 	return 0;
 }
 
