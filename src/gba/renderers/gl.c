@@ -931,9 +931,18 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	glRenderer->dispcnt = 0x0080;
 	glRenderer->mosaic = 0;
 	glRenderer->nextPalette = 0;
-	glRenderer->lastPalette = 1;
+	glRenderer->lastPalette = GBA_VIDEO_VERTICAL_PIXELS - 1;
 	memset(glRenderer->shadowRegs, 0, sizeof(glRenderer->shadowRegs));
 	glRenderer->regsDirty = 0xFFFFFFFFFFFEULL;
+
+	int i;
+	for (i = 0; i < 512; ++i) {
+		int r = M_R5(glRenderer->d.palette[i]);
+		int g = M_G5(glRenderer->d.palette[i]) << 1;
+		g |= g >> 5;
+		int b = M_B5(glRenderer->d.palette[i]);
+		glRenderer->shadowPalette[0][i] = (r << 11) | (g << 5) | b;
+	}
 }
 
 void GBAVideoGLRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
