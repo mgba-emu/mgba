@@ -70,8 +70,8 @@ private:
 	void saveSetting(const char* key, const QSlider*);
 	void saveSetting(const char* key, const QSpinBox*);
 	void saveSetting(const char* key, const QVariant&);
-
-	void loadSetting(const char* key, QAbstractButton*, bool defaultVal = false);
+	void loadSetting(const char* key, QAbstractButton*);
+	void loadSetting(const char* key, QAbstractButton*, bool defaultVal);
 	void loadSetting(const char* key, QComboBox*);
 	void loadSetting(const char* key, QDoubleSpinBox*);
 	void loadSetting(const char* key, QLineEdit*);
