@@ -329,10 +329,8 @@ void GBAVideoProxyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 static void GBAVideoProxyRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels) {
 	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
 	if (proxyRenderer->logger->block && proxyRenderer->logger->wait) {
-		// Insert an extra item into the queue to make sure it gets flushed
-		mVideoLoggerRendererFlush(proxyRenderer->logger);
+		proxyRenderer->logger->wait(proxyRenderer->logger);
 		proxyRenderer->logger->postEvent(proxyRenderer->logger, LOGGER_EVENT_GET_PIXELS);
-		mVideoLoggerRendererFlush(proxyRenderer->logger);
 		*pixels = proxyRenderer->logger->pixelBuffer;
 		*stride = proxyRenderer->logger->pixelStride;
 	} else {
