@@ -1,6 +1,7 @@
 .core-defs:
   variables:
     JNI_PATH: libretro-build
+    MAKEFILE: Makefile.libretro
     CORENAME: mgba
 
 include:
@@ -31,71 +32,57 @@ stages:
 #Desktop
 libretro-build-linux-x64:
   extends:
-    - .core-defs
     - .libretro-linux-x64-make-default
-  variables:
-    MAKEFILE: Makefile.libretro
+    - .core-defs
 
 libretro-build-windows-x64:
   extends:
-    - .core-defs
     - .libretro-windows-x64-mingw-make-default
-  variables:
-    MAKEFILE: Makefile.libretro
+    - .core-defs
 
 libretro-build-dingux-i386:
   extends:
-    - .core-defs
     - .libretro-dingux-i386-make-default
-  variables:
-    MAKEFILE: Makefile.libretro
+    - .core-defs
 
 # Android
 android-armeabi-v7a:
   extends:
-    - .core-defs
     - .libretro-android-jni-armeabi-v7a
+    - .core-defs
 
 android-arm64-v8a:
   extends:
-    - .core-defs
     - .libretro-android-jni-arm64-v8a
+    - .core-defs
 
 android-x86_64:
   extends:
-    - .core-defs
     - .libretro-android-jni-x86_64
+    - .core-defs
     
 android-x86:
   extends:
-    - .core-defs
     - .libretro-android-jni-x86
+    - .core-defs
 
 # Static
 libretro-build-libnx-aarch64:
   extends:
-    - .core-defs
     - .libretro-libnx-static-retroarch-master
-  variables:
-    MAKEFILE: Makefile.libretro
+    - .core-defs
 
 libretro-build-vita:
   extends:
-    - .core-defs
     - .libretro-vita-static-retroarch-master
-  variables:
-    MAKEFILE: Makefile.libretro
+    - .core-defs
     
 libretro-build-psp:
   extends:
-    - .core-defs
     - .libretro-psp-static-retroarch-master
-  variables:
-    MAKEFILE: Makefile.libretro
+    - .core-defs
 
 libretro-build-ps2:
   extends:
-    - .core-defs
     - .libretro-ps2-static-retroarch-master
-  variables:
-    MAKEFILE: Makefile.libretro
+    - .core-defs
