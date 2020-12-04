@@ -18,9 +18,10 @@
 
 #include <QAtomicInt>
 #include <QElapsedTimer>
-#include <QOpenGLContext>
+#include <QHash>
 #include <QList>
 #include <QMouseEvent>
+#include <QOpenGLContext>
 #include <QPainter>
 #include <QQueue>
 #include <QThread>
@@ -33,6 +34,8 @@
 #include "platform/video-backend.h"
 
 class QOpenGLPaintDevice;
+
+uint qHash(const QSurfaceFormat&, uint seed = 0);
 
 namespace QGBA {
 
@@ -50,6 +53,8 @@ public:
 	VideoShader* shaders() override;
 	void setVideoProxy(std::shared_ptr<VideoProxy>) override;
 	int framebufferHandle() override;
+
+	static bool supportsFormat(const QSurfaceFormat&);
 
 public slots:
 	void stopDrawing() override;
@@ -73,6 +78,8 @@ protected:
 
 private:
 	void resizePainter();
+
+	static QHash<QSurfaceFormat, bool> s_supports;
 
 	bool m_isDrawing = false;
 	bool m_hasStarted = false;

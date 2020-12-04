@@ -884,6 +884,12 @@ void Window::reloadDisplayDriver() {
 		detachWidget(m_display.get());
 	}
 	m_display = std::unique_ptr<Display>(Display::create(this));
+	if (!m_display) {
+		LOG(QT, ERROR) << tr("Failed to create an appropriate display device, falling back to software display. "
+		                     "Games may run slowly, especially with larger windows.");
+		Display::setDriver(Display::Driver::QT);
+		m_display = std::unique_ptr<Display>(Display::create(this));
+	}
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	m_shaderView.reset();
 	m_shaderView = std::make_unique<ShaderSelector>(m_display.get(), m_config);

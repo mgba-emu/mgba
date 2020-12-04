@@ -10,9 +10,10 @@
 #include "CoreController.h"
 
 #include <QApplication>
+#include <QMutexLocker>
+#include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QOpenGLPaintDevice>
-#include <QMutexLocker>
 #include <QResizeEvent>
 #include <QScreen>
 #include <QTimer>
@@ -33,6 +34,15 @@
 #endif
 
 using namespace QGBA;
+
+QHash<QSurfaceFormat, bool> DisplayGL::s_supports;
+
+uint qHash(const QSurfaceFormat& format, uint seed) {
+	QByteArray representation;
+	QDataStream stream(&representation, QIODevice::WriteOnly);
+	stream << format.version() << format.renderableType() << format.profile();
+	return qHash(representation, seed);
+}
 
 DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 	: Display(parent)
@@ -96,6 +106,44 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatio());
 #endif
 	setUpdatesEnabled(false);
+}
+
+bool DisplayGL::supportsFormat(const QSurfaceFormat& format) {
+	if (!s_supports.contains(format)) {
+		QOpenGLContext context;
+		context.setFormat(format);
+		if (!context.create()) {
+			s_supports[format] = false;
+			return false;
+		}
+		auto foundVersion = context.format().version();
+		if (foundVersion == format.version()) {
+			// Match!
+			s_supports[format] = true;
+		} else if (format.version() >= qMakePair(3, 2) && foundVersion > format.version()) {
+			// At least as good
+			s_supports[format] = true;
+		} else if (format.majorVersion() == 1 && (foundVersion < qMakePair(3, 0) ||
+		           context.format().profile() == QSurfaceFormat::CompatibilityProfile ||
+		           context.format().testOption(QSurfaceFormat::DeprecatedFunctions))) {
+			// Supports the old stuff
+			s_supports[format] = true;
+		} else if (!context.isOpenGLES() && format.version() >= qMakePair(2, 1) && foundVersion < qMakePair(3, 0) && foundVersion >= qMakePair(2, 1)) {
+			// Weird edge case we support if ARB_framebuffer_object is present
+			QOffscreenSurface surface;
+			surface.create();
+			if (!context.makeCurrent(&surface)) {
+				s_supports[format] = false;
+				return false;
+			}
+			s_supports[format] = context.hasExtension("GL_ARB_framebuffer_object");
+			context.doneCurrent();
+		} else {
+			// No match
+			s_supports[format] = false;
+		}
+	}
+	return s_supports[format];
 }
 
 void DisplayGL::stopDrawing() {
@@ -236,6 +284,7 @@ PainterGL::PainterGL(QWindow* surface, const QSurfaceFormat& format)
 	: m_surface(surface)
 	, m_format(format)
 {
+	m_supportsShaders = m_format.version() >= qMakePair(2, 0);
 	for (auto& buf : m_buffers) {
 		m_free.append(&buf.front());
 	}
@@ -260,24 +309,6 @@ void PainterGL::create() {
 	m_gl->create();
 	makeCurrent();
 
-	auto version = m_gl->format().version();
-	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
-
-	int forceVersion = 0;
-	if (m_format.majorVersion() < 2) {
-		forceVersion = 1;
-	}
-
-	if ((version == qMakePair(2, 1) && !extensions.contains("GL_ARB_framebuffer_object")) || version == qMakePair(2, 0)) {
-		QSurfaceFormat newFormat(m_format);
-		newFormat.setVersion(1, 4);
-		forceVersion = 1;
-		m_gl->doneCurrent();
-		m_gl->setFormat(newFormat);
-		m_gl->create();
-		makeCurrent();
-	}
-
 #ifdef BUILD_GL
 	mGLContext* glBackend;
 #endif
@@ -288,13 +319,11 @@ void PainterGL::create() {
 	m_window = std::make_unique<QOpenGLPaintDevice>();
 
 #ifdef BUILD_GLES2
-	version = m_gl->format().version();
-	extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
-	if (forceVersion != 1 && ((version == qMakePair(2, 1) && extensions.contains("GL_ARB_framebuffer_object")) || version.first > 2)) {
+	auto version = m_format.version();
+	if (version >= qMakePair(2, 0)) {
 		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
 		mGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
-		m_supportsShaders = true;
 	}
 #endif
 
@@ -303,7 +332,6 @@ void PainterGL::create() {
 		glBackend = static_cast<mGLContext*>(malloc(sizeof(mGLContext)));
 		mGLContextCreate(glBackend);
 		m_backend = &glBackend->d;
-		m_supportsShaders = false;
 	}
 #endif
 	m_backend->swap = [](VideoBackend* v) {
