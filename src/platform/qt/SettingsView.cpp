@@ -563,8 +563,8 @@ void SettingsView::reloadConfig() {
 	loadSetting("gb.bios", m_ui.gbBios);
 	loadSetting("gbc.bios", m_ui.gbcBios);
 	loadSetting("sgb.bios", m_ui.sgbBios);
-	loadSetting("sgb.borders", m_ui.sgbBorders);
-	loadSetting("useCgbColors", m_ui.useCgbColors);
+	loadSetting("sgb.borders", m_ui.sgbBorders, true);
+	loadSetting("useCgbColors", m_ui.useCgbColors, true);
 	loadSetting("useBios", m_ui.useBios);
 	loadSetting("skipBios", m_ui.skipBios);
 	loadSetting("audioBuffers", m_ui.audioBufferSize);
@@ -577,9 +577,9 @@ void SettingsView::reloadConfig() {
 	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	loadSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
 	loadSetting("interframeBlending", m_ui.interframeBlending);
-	loadSetting("showOSD", m_ui.showOSD);
+	loadSetting("showOSD", m_ui.showOSD, true);
 	loadSetting("volume", m_ui.volume, 0x100);
-	loadSetting("mute", m_ui.mute);
+	loadSetting("mute", m_ui.mute, false);
 	loadSetting("fastForwardVolume", m_ui.volumeFf, m_ui.volume->value());
 	loadSetting("fastForwardMute", m_ui.muteFf, m_ui.mute->isChecked());
 	loadSetting("rewindEnable", m_ui.rewind);
@@ -596,12 +596,12 @@ void SettingsView::reloadConfig() {
 	loadSetting("cheatsPath", m_ui.cheatsPath);
 	loadSetting("showLibrary", m_ui.showLibrary);
 	loadSetting("preload", m_ui.preload);
-	loadSetting("showFps", m_ui.showFps);
-	loadSetting("cheatAutoload", m_ui.cheatAutoload);
-	loadSetting("cheatAutosave", m_ui.cheatAutosave);
-	loadSetting("showFilename", m_ui.showFilename);
-	loadSetting("autoload", m_ui.autoload);
-	loadSetting("autosave", m_ui.autosave);
+	loadSetting("showFps", m_ui.showFps, true);
+	loadSetting("cheatAutoload", m_ui.cheatAutoload, true);
+	loadSetting("cheatAutosave", m_ui.cheatAutosave, true);
+	loadSetting("showFilename", m_ui.showFilename, false);
+	loadSetting("autoload", m_ui.autoload, true);
+	loadSetting("autosave", m_ui.autosave, false);
 	loadSetting("logToFile", m_ui.logToFile);
 	loadSetting("logToStdout", m_ui.logToStdout);
 	loadSetting("logFile", m_ui.logFile);
@@ -735,9 +735,10 @@ void SettingsView::saveSetting(const char* key, const QVariant& field) {
 	m_controller->setOption(key, field);
 	m_controller->updateOption(key);
 }
+
 void SettingsView::loadSetting(const char* key, QAbstractButton* field) {
 	QString option = loadSetting(key);
-	if(option.isNull()){
+	if (option.isNull()) {
 		return;
 	}
 	field->setChecked(option != "0");
