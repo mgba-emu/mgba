@@ -1,3 +1,44 @@
+0.8.4: (2020-10-29)
+Emulation fixes:
+ - GB Audio: Fix initial sweep state
+ - GB Audio: Fix deserializing audio channels 2 and 3
+ - GB Audio: Fix deserializing while audio was disabled (fixes mgba.io/i/1305)
+ - GB Video: Fix drawing background when window is force-disabled by frontend
+ - GB, GBA Video: Copy disable flags when drawing scanlines in proxy when not blocking
+ - GBA Audio: Fix deserializing SOUNDCNT_L
+ - GBA Audio: Fix stereo in XQ audio
+ - GBA Audio: Fix volume/mute in XQ audio (fixes mgba.io/i/1864)
+ - GBA Hardware: Fix GB Player detection on big endian platforms
+ - GBA Video: Invalidate map cache when modifying BGCNT (fixes mgba.io/i/1846)
+ - GBA Video: Don't draw sprites using unmapped VRAM in GL renderer (fixes mgba.io/i/1865)
+ - GBA Video: Fix rare regression blending semitransparent sprites (fixes mgba.io/i/1876)
+ - GBA Video: Do not affect OBJ pixel priority when writing OBJWIN (fixes mgba.io/i/1890)
+ - GBA Video: Fix deferred blending when OBJWIN matches window (fixes mgba.io/i/1905)
+ - GBA Video: Fix mode 4 transparency in OpenGL (fixes mgba.io/i/1907)
+Other fixes:
+ - 3DS: Redo video sync to be more precise
+ - 3DS: Fix crash with libctru 2.0 when exiting
+ - ARM Decoder: Fix decoding pre-indexed writeback instructions (fixes mgba.io/i/1915)
+ - Core: Fix reported ROM size when a fixed buffer size is used
+ - Core: Fix memory leak loading ELF files
+ - GBA: Disable more checks when loading GS save with checks disabled (fixes mgba.io/i/1851)
+ - GBA: Fix endianness issues in renderer proxy
+ - GBA Core: Fix memory leak when loading symbols
+ - GBA Serialize: Ensure program counter is aligned when loading
+ - Qt: Add dummy English translation file (fixes mgba.io/i/1469)
+ - Qt: Fix Battle Chip view not displaying chips on some DPI settings
+ - Qt: Fix camera image being upside-down sometimes (fixes mgba.io/i/829 again)
+ - Qt: Fix drawing on macOS break when using OpenGL (fixes mgba.io/i/1899)
+ - Qt: Fix stride changing when toggling SGB borders (fixes mgba.io/i/1898)
+ - Qt: Fix aliasing on background logo (fixes mgba.io/i/1886)
+ - mGUI: Fix closing down a game if an exit is signalled
+ - mGUI: Fix cycling through config setting states with accept button
+ - mVL: Fix injecting accidentally draining non-injection buffer
+ - VFS: Fix directory node listing on some filesystems
+Misc:
+ - GBA Video: Improve speed of window texture generation on AMD
+ - Vita: Clear both buffers when loading a game
+
 0.8.3: (2020-08-03)
 Emulation fixes:
  - ARM: Fix LDM^ writeback to user-mode register

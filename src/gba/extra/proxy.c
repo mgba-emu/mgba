@@ -178,13 +178,13 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		break;
 	case DIRTY_PALETTE:
 		if (item->address < SIZE_PALETTE_RAM) {
-			logger->palette[item->address >> 1] = item->value;
+			STORE_16LE(item->value, item->address, logger->palette);
 			proxyRenderer->backend->writePalette(proxyRenderer->backend, item->address, item->value);
 		}
 		break;
 	case DIRTY_OAM:
 		if (item->address < SIZE_OAM) {
-			logger->oam[item->address] = item->value;
+			STORE_16LE(item->value, item->address << 1, logger->oam);
 			proxyRenderer->backend->writeOAM(proxyRenderer->backend, item->address);
 		}
 		break;
@@ -297,6 +297,15 @@ void GBAVideoProxyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t o
 void GBAVideoProxyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
 	if (!proxyRenderer->logger->block) {
+		proxyRenderer->backend->disableBG[0] = proxyRenderer->d.disableBG[0];
+		proxyRenderer->backend->disableBG[1] = proxyRenderer->d.disableBG[1];
+		proxyRenderer->backend->disableBG[2] = proxyRenderer->d.disableBG[2];
+		proxyRenderer->backend->disableBG[3] = proxyRenderer->d.disableBG[3];
+		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
+		proxyRenderer->backend->highlightBG[0] = proxyRenderer->d.highlightBG[0];
+		proxyRenderer->backend->highlightBG[1] = proxyRenderer->d.highlightBG[1];
+		proxyRenderer->backend->highlightBG[2] = proxyRenderer->d.highlightBG[2];
+		proxyRenderer->backend->highlightBG[3] = proxyRenderer->d.highlightBG[3];
 		proxyRenderer->backend->drawScanline(proxyRenderer->backend, y);
 	}
 	mVideoLoggerRendererDrawScanline(proxyRenderer->logger, y);

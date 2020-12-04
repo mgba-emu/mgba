@@ -697,7 +697,8 @@ void GBIODeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	memcpy(gb->memory.io, state->io, GB_SIZE_IO);
 	gb->memory.ie = state->ie;
 
-	if (GBAudioEnableGetEnable(*gb->audio.nr52)) {
+	gb->audio.enable = GBAudioEnableGetEnable(*gb->audio.nr52);
+	if (gb->audio.enable) {
 		GBIOWrite(gb, REG_NR10, gb->memory.io[REG_NR10]);
 		GBIOWrite(gb, REG_NR11, gb->memory.io[REG_NR11]);
 		GBIOWrite(gb, REG_NR12, gb->memory.io[REG_NR12]);
@@ -707,14 +708,14 @@ void GBIODeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		gb->audio.ch1.control.stop = GBAudioRegisterControlGetStop(gb->memory.io[REG_NR14] << 8);
 		GBIOWrite(gb, REG_NR21, gb->memory.io[REG_NR21]);
 		GBIOWrite(gb, REG_NR22, gb->memory.io[REG_NR22]);
-		GBIOWrite(gb, REG_NR22, gb->memory.io[REG_NR23]);
+		GBIOWrite(gb, REG_NR23, gb->memory.io[REG_NR23]);
 		gb->audio.ch2.control.frequency &= 0xFF;
 		gb->audio.ch2.control.frequency |= GBAudioRegisterControlGetFrequency(gb->memory.io[REG_NR24] << 8);
 		gb->audio.ch2.control.stop = GBAudioRegisterControlGetStop(gb->memory.io[REG_NR24] << 8);
 		GBIOWrite(gb, REG_NR30, gb->memory.io[REG_NR30]);
 		GBIOWrite(gb, REG_NR31, gb->memory.io[REG_NR31]);
 		GBIOWrite(gb, REG_NR32, gb->memory.io[REG_NR32]);
-		GBIOWrite(gb, REG_NR32, gb->memory.io[REG_NR33]);
+		GBIOWrite(gb, REG_NR33, gb->memory.io[REG_NR33]);
 		gb->audio.ch3.rate &= 0xFF;
 		gb->audio.ch3.rate |= GBAudioRegisterControlGetRate(gb->memory.io[REG_NR34] << 8);
 		gb->audio.ch3.stop = GBAudioRegisterControlGetStop(gb->memory.io[REG_NR34] << 8);

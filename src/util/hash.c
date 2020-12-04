@@ -28,7 +28,9 @@ static inline uint32_t rotl32 ( uint32_t x, int8_t r ) {
 // handle aligned reads, do the conversion here
 
 static FORCE_INLINE uint32_t getblock32 ( const uint32_t * p, int i ) {
-  return p[i];
+  uint32_t ret;
+  LOAD_32LE(ret, i << 2, p);
+  return ret;
 }
 
 //-----------------------------------------------------------------------------

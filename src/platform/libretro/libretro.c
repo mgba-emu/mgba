@@ -1027,6 +1027,7 @@ static void _reloadSettings(void) {
 	};
 
 	struct retro_variable var;
+#ifdef M_CORE_GB
 	enum GBModel model;
 	const char* modelName;
 
@@ -1050,6 +1051,7 @@ static void _reloadSettings(void) {
 		mCoreConfigSetDefaultValue(&core->config, "sgb.model", modelName);
 		mCoreConfigSetDefaultValue(&core->config, "cgb.model", modelName);
 	}
+#endif
 
 	var.key = "mgba_use_bios";
 	var.value = 0;
@@ -1063,17 +1065,21 @@ static void _reloadSettings(void) {
 		opts.skipBios = strcmp(var.value, "ON") == 0;
 	}
 
+#ifdef M_CORE_GB
 	var.key = "mgba_sgb_borders";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-		if (strcmp(var.value, "ON") == 0) {
-			mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", true);
-		} else {
-			mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", false);
-		}
+		mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", strcmp(var.value, "ON") == 0);
 	}
+#endif
 
-	_loadFrameskipSettings(&opts);
+    _loadFrameskipSettings(&opts);
+//	var.key = "mgba_frameskip";
+//	var.value = 0;
+//	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+//		opts.frameskip = strtol(var.value, NULL, 10);
+//
+//	}
 
 	var.key = "mgba_idle_optimization";
 	var.value = 0;
@@ -1136,11 +1142,15 @@ void retro_get_system_info(struct retro_system_info* info) {
 #else
 	info->need_fullpath = false;
 #endif
-	info->valid_extensions = "gba|gb|gbc";
+#ifdef M_CORE_GB
+	info->valid_extensions = "gba|gb|gbc|sgb";
+#else
+	info->valid_extensions = "gba";
+#endif
 #ifndef GIT_VERSION
 #define GIT_VERSION ""
 #endif
-	info->library_version = "0.8.3" GIT_VERSION;
+	info->library_version = "0.8.4" GIT_VERSION;
 	info->library_name = "mGBA";
 	info->block_extract = false;
 }
@@ -1333,21 +1343,17 @@ void retro_run(void) {
 			.value = 0
 		};
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-			struct GBA* gba = core->board;
-			struct GB* gb = core->board;
-			switch (core->platform(core)) {
-			case PLATFORM_GBA:
-				gba->allowOpposingDirections = strcmp(var.value, "yes") == 0;
-				break;
-			case PLATFORM_GB:
-				gb->allowOpposingDirections = strcmp(var.value, "yes") == 0;
-				break;
-			default:
-				break;
-			}
+			mCoreConfigSetIntValue(&core->config, "allowOpposingDirections", strcmp(var.value, "yes") == 0);
+			core->reloadConfigOption(core, "allowOpposingDirections", NULL);
 		}
 
-		_loadFrameskipSettings(NULL);
+    _loadFrameskipSettings(NULL);
+//		var.key = "mgba_frameskip";
+//		var.value = 0;
+//		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+//			mCoreConfigSetIntValue(&core->config, "frameskip", strtol(var.value, NULL, 10));
+//			core->reloadConfigOption(core, "frameskip", NULL);
+//		}
 
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
 		_loadPostProcessingSettings();

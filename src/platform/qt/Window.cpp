@@ -137,10 +137,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 #elif defined(M_CORE_GB)
 	resizeFrame(QSize(GB_VIDEO_HORIZONTAL_PIXELS * i, GB_VIDEO_VERTICAL_PIXELS * i));
 #endif
-	m_screenWidget->setPixmap(m_logo);
-	m_screenWidget->setDimensions(m_logo.width(), m_logo.height());
-	m_screenWidget->setLockIntegerScaling(false);
-	m_screenWidget->setLockAspectRatio(true);
+	setLogo();
 	setCentralWidget(m_screenWidget);
 
 	connect(this, &Window::shutdown, m_logView, &QWidget::hide);
@@ -259,7 +256,6 @@ void Window::reloadConfig() {
 		m_display->lockAspectRatio(opts->lockAspectRatio);
 		m_display->filter(opts->resampleVideo);
 	}
-	m_screenWidget->filter(opts->resampleVideo);
 
 	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);
 }
@@ -739,6 +735,7 @@ void Window::gameStarted() {
 	m_config->updateOption("lockIntegerScaling");
 	m_config->updateOption("lockAspectRatio");
 	m_config->updateOption("interframeBlending");
+	m_config->updateOption("resampleVideo");
 	m_config->updateOption("showOSD");
 	if (m_savedScale > 0) {
 		resizeFrame(size * m_savedScale);
@@ -807,11 +804,7 @@ void Window::gameStopped() {
 	}
 	setWindowFilePath(QString());
 	detachWidget(m_display.get());
-	m_screenWidget->setDimensions(m_logo.width(), m_logo.height());
-	m_screenWidget->setLockIntegerScaling(false);
-	m_screenWidget->setLockAspectRatio(true);
-	m_screenWidget->setPixmap(m_logo);
-	m_screenWidget->unsetCursor();
+	setLogo();
 	if (m_display) {
 #ifdef M_CORE_GB
 		m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
@@ -910,7 +903,6 @@ void Window::reloadDisplayDriver() {
 	m_display->lockIntegerScaling(opts->lockIntegerScaling);
 	m_display->interframeBlending(opts->interframeBlending);
 	m_display->filter(opts->resampleVideo);
-	m_screenWidget->filter(opts->resampleVideo);
 	m_config->updateOption("showOSD");
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (opts->shader) {
@@ -1398,7 +1390,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 		if (m_display) {
 			m_display->filter(value.toBool());
 		}
-		m_screenWidget->filter(value.toBool());
+		if (m_controller) {
+			m_screenWidget->filter(value.toBool());
+		}
 	}, this);
 	m_config->updateOption("resampleVideo");
 
@@ -1931,6 +1925,15 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		m_controller->setPaused(true);
 		m_pendingPause = false;
 	}
+}
+
+void Window::setLogo() {
+	m_screenWidget->setPixmap(m_logo);
+	m_screenWidget->setDimensions(m_logo.width(), m_logo.height());
+	m_screenWidget->setLockIntegerScaling(false);
+	m_screenWidget->setLockAspectRatio(true);
+	m_screenWidget->filter(true);
+	m_screenWidget->unsetCursor();
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

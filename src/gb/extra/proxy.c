@@ -44,6 +44,10 @@ void GBVideoProxyRendererCreate(struct GBVideoProxyRenderer* renderer, struct GB
 	renderer->d.getPixels = GBVideoProxyRendererGetPixels;
 	renderer->d.putPixels = GBVideoProxyRendererPutPixels;
 
+	renderer->d.disableBG = false;
+	renderer->d.disableWIN = false;
+	renderer->d.disableOBJ = false;
+
 	renderer->logger->context = renderer;
 	renderer->logger->parsePacket = _parsePacket;
 	renderer->logger->vramBlock = _vramBlock;
@@ -139,6 +143,9 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		}
 		break;
 	case DIRTY_SCANLINE:
+		proxyRenderer->backend->disableBG = proxyRenderer->d.disableBG;
+		proxyRenderer->backend->disableWIN = proxyRenderer->d.disableWIN;
+		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
 		if (item->address < GB_VIDEO_VERTICAL_PIXELS) {
 			proxyRenderer->backend->finishScanline(proxyRenderer->backend, item->address);
 		}
@@ -231,6 +238,9 @@ void GBVideoProxyRendererWriteOAM(struct GBVideoRenderer* renderer, uint16_t oam
 void GBVideoProxyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax) {
 	struct GBVideoProxyRenderer* proxyRenderer = (struct GBVideoProxyRenderer*) renderer;
 	if (!proxyRenderer->logger->block) {
+		proxyRenderer->backend->disableBG = proxyRenderer->d.disableBG;
+		proxyRenderer->backend->disableWIN = proxyRenderer->d.disableWIN;
+		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
 		proxyRenderer->backend->drawRange(proxyRenderer->backend, startX, endX, y, obj, oamMax);
 	}
 	mVideoLoggerWriteBuffer(proxyRenderer->logger, BUFFER_OAM, 0, oamMax * sizeof(*obj), obj);	

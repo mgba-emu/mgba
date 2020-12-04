@@ -138,6 +138,26 @@ struct retro_core_option_definition option_defs_it[] = {
       },
       "Remove Known"
    },
+   {
+      "mgba_frameskip",
+      "Salta Frame",
+      "Salta dei frame per migliorare le prestazioni a costo della fluidità dell'immagine. Il valore impostato qui è il numero dei frame rimosso dopo che un frame sia stato renderizzato - ovvero '0' = 60fps, '1' = 30fps, '2' = 15fps, ecc.",
+      {
+         { "0",  NULL },
+         { "1",  NULL },
+         { "2",  NULL },
+         { "3",  NULL },
+         { "4",  NULL },
+         { "5",  NULL },
+         { "6",  NULL },
+         { "7",  NULL },
+         { "8",  NULL },
+         { "9",  NULL },
+         { "10", NULL },
+         { NULL, NULL },
+      },
+      "0"
+   },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
       "mgba_color_correction",

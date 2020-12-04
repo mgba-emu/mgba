@@ -117,7 +117,7 @@ void GBAudioReset(struct GBAudio* audio) {
 	if (audio->style == GB_AUDIO_GBA) {
 		mTimingSchedule(audio->timing, &audio->frameEvent, 0);
 	}
-	audio->ch1 = (struct GBAudioSquareChannel) { .envelope = { .dead = 2 } };
+	audio->ch1 = (struct GBAudioSquareChannel) { .sweep = { .time = 8 }, .envelope = { .dead = 2 } };
 	audio->ch2 = (struct GBAudioSquareChannel) { .envelope = { .dead = 2 } };
 	audio->ch3 = (struct GBAudioWaveChannel) { .bank = 0 };
 	audio->ch4 = (struct GBAudioNoiseChannel) { .nSamples = 0 };
