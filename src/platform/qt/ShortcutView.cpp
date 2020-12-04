@@ -87,7 +87,7 @@ void ShortcutView::clear() {
 	QModelIndex index = m_ui.shortcutTable->selectionModel()->currentIndex();
 	QString name = m_model->name(index);
 	const Shortcut* item = m_controller->shortcut(name);
-	if (!item->action()) {
+	if (!item || !item->action()) {
 		return;
 	}
 	if (m_ui.gamepadButton->isChecked()) {
@@ -106,7 +106,7 @@ void ShortcutView::updateButton(int button) {
 	}
 	QString name = m_model->name(m_ui.shortcutTable->selectionModel()->currentIndex());
 	const Shortcut* item = m_controller->shortcut(name);
-	if (!item->action()) {
+	if (!item || !item->action()) {
 		return;
 	}
 	if (m_ui.gamepadButton->isChecked()) {
@@ -122,7 +122,7 @@ void ShortcutView::updateAxis(int axis, int direction) {
 	}
 	QString name = m_model->name(m_ui.shortcutTable->selectionModel()->currentIndex());
 	const Shortcut* item = m_controller->shortcut(name);
-	if (!item->action()) {
+	if (!item || !item->action()) {
 		return;
 	}
 	m_controller->updateAxis(name, axis, static_cast<GamepadAxisEvent::Direction>(direction));
