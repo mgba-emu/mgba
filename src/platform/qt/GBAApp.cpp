@@ -184,12 +184,12 @@ QString GBAApp::getSaveFileName(QWidget* owner, const QString& title, const QStr
 	return filename;
 }
 
-QString GBAApp::getOpenDirectoryName(QWidget* owner, const QString& title) {
+QString GBAApp::getOpenDirectoryName(QWidget* owner, const QString& title, const QString& path) {
 	QList<Window*> paused;
 	pauseAll(&paused);
-	QString filename = QFileDialog::getExistingDirectory(owner, title, m_configController->getOption("lastDirectory"));
+	QString filename = QFileDialog::getExistingDirectory(owner, title, !path.isNull() ? path : m_configController->getOption("lastDirectory"));
 	continueAll(paused);
-	if (!filename.isEmpty()) {
+	if (path.isNull() && !filename.isEmpty()) {
 		m_configController->setOption("lastDirectory", QFileInfo(filename).dir().canonicalPath());
 	}
 	return filename;

@@ -58,10 +58,10 @@ public:
 
 	Window* newWindow();
 
-	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = QString());
-	QStringList getOpenFileNames(QWidget* owner, const QString& title, const QString& filter = QString());
-	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = QString());
-	QString getOpenDirectoryName(QWidget* owner, const QString& title);
+	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = {});
+	QStringList getOpenFileNames(QWidget* owner, const QString& title, const QString& filter = {});
+	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = {});
+	QString getOpenDirectoryName(QWidget* owner, const QString& title, const QString& path = {});
 
 	const NoIntroDB* gameDB() const { return m_db; }
 	bool reloadGameDB();
