@@ -607,7 +607,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("logFile", m_ui.logFile);
 	loadSetting("useDiscordPresence", m_ui.useDiscordPresence);
 	loadSetting("gba.audioHle", m_ui.audioHle);
-	loadSetting("dynamicTitle", m_ui.dynamicTitle);
+	loadSetting("dynamicTitle", m_ui.dynamicTitle, true);
 	loadSetting("gba.forceGbp", m_ui.forceGbp);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
