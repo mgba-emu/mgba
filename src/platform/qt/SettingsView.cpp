@@ -737,10 +737,12 @@ void SettingsView::saveSetting(const char* key, const QVariant& field) {
 }
 void SettingsView::loadSetting(const char* key, QAbstractButton* field) {
 	QString option = loadSetting(key);
-	if(option.isNull())
+	if(option.isNull()){
 		return;
+	}
 	field->setChecked(option != "0");
 }
+
 void SettingsView::loadSetting(const char* key, QAbstractButton* field, bool defaultVal) {
 	QString option = loadSetting(key);
 	field->setChecked(option.isNull() ? defaultVal : option != "0");
