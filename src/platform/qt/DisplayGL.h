@@ -84,7 +84,7 @@ private:
 	bool m_isDrawing = false;
 	bool m_hasStarted = false;
 	std::unique_ptr<PainterGL> m_painter;
-	QThread* m_drawThread = nullptr;
+	QThread m_drawThread;
 	std::shared_ptr<CoreController> m_context;
 };
 
@@ -104,6 +104,9 @@ public:
 	void setVideoProxy(std::shared_ptr<VideoProxy>);
 
 public slots:
+	void create();
+	void destroy();
+
 	void forceDraw();
 	void draw();
 	void start();
@@ -132,8 +135,6 @@ private:
 	void performDraw();
 	void dequeue();
 	void dequeueAll();
-	void create();
-	void destroy();
 
 	std::array<std::array<uint32_t, 0x100000>, 3> m_buffers;
 	QList<uint32_t*> m_free;
