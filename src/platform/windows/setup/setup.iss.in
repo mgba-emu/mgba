@@ -92,6 +92,7 @@ Source: "{#BinDir}\LICENSE.txt"; DestDir: "{app}\"; Flags: ignoreversion
 Source: "{#ResDir}\nointro.dat"; DestDir: "{app}\"; Flags: ignoreversion
 Source: "{#BinDir}\README.html"; DestDir: "{app}\"; Flags: ignoreversion isreadme; Languages: not german
 Source: "{#BinDir}\README_DE.html"; DestDir: "{app}\"; DestName: "LIESMICH.html"; Flags: ignoreversion isreadme; Languages: german
+Source: "{#BinDir}\README_ES.html"; DestDir: "{app}\"; DestName: "LEEME.html"; Flags: ignoreversion isreadme; Languages: spanish
 Source: "{#ResDir}\shaders\*"; DestDir: "{app}\shaders\"; Flags: ignoreversion recursesubdirs
 Source: "{#ResDir}\licenses\*"; DestDir: "{app}\licenses\"; Flags: ignoreversion recursesubdirs
 
@@ -106,11 +107,18 @@ Filename: "{app}\{#AppName}.exe"; Description: "{cm:LaunchProgram,{#AppName}}"; 
 Name: "{app}"
 
 [CustomMessages]
+german.FileAssoc=Dateierweiterungen registrieren
 english.FileAssoc=Register file associations
+spanish.FileAssoc=Register file associations
 french.FileAssoc=Register file associations
 italian.FileAssoc=Register file associations
-spanish.FileAssoc=Register file associations
-german.FileAssoc=Dateierweiterungen registrieren
+japanese.FileAssoc=Register file associations
+korean.FileAssoc=Register file associations
+dutch.FileAssoc=Register file associations
+brazilianportuguese.FileAssoc=Register file associations
+russian.FileAssoc=Register file associations
+turkish.FileAssoc=Register file associations
+chinesesimplified.FileAssoc=Register file associations
 
 [Registry]
 Root: HKCR; Subkey: ".gb"; ValueType: string; ValueName: ""; ValueData: "Game Boy ROM"; Flags: uninsdeletevalue; Tasks: gbfileassoc
