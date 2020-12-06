@@ -931,7 +931,7 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	glRenderer->dispcnt = 0x0080;
 	glRenderer->mosaic = 0;
 	glRenderer->nextPalette = 0;
-	glRenderer->lastPalette = GBA_VIDEO_VERTICAL_PIXELS - 1;
+	glRenderer->paletteDirtyScanlines = GBA_VIDEO_VERTICAL_PIXELS;
 	memset(glRenderer->shadowRegs, 0, sizeof(glRenderer->shadowRegs));
 	glRenderer->regsDirty = 0xFFFFFFFFFFFEULL;
 
@@ -965,11 +965,7 @@ void GBAVideoGLRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t 
 	int g = M_G5(value) << 1;
 	g |= g >> 5;
 	int b = M_B5(value);
-	if (glRenderer->nextPalette) {
-		glRenderer->lastPalette = glRenderer->nextPalette - 1;
-	} else {
-		glRenderer->lastPalette = GBA_VIDEO_VERTICAL_PIXELS - 1;
-	}
+	glRenderer->paletteDirtyScanlines = GBA_VIDEO_VERTICAL_PIXELS;
 	glRenderer->shadowPalette[glRenderer->nextPalette][address >> 1] = (r << 11) | (g << 5) | b;
 }
 
@@ -1376,7 +1372,10 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	}
 	if (glRenderer->paletteDirty) {
 		memcpy(glRenderer->shadowPalette[glRenderer->nextPalette], glRenderer->shadowPalette[oldPalette], sizeof(glRenderer->shadowPalette[0]));
-		if (glRenderer->nextPalette == glRenderer->lastPalette) {
+		if (glRenderer->paletteDirtyScanlines > 0) {
+			--glRenderer->paletteDirtyScanlines;
+		}
+		if (!glRenderer->paletteDirtyScanlines) {
 			glRenderer->paletteDirty = false;
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, glRenderer->paletteTex);

@@ -152,7 +152,7 @@ struct GBAVideoGLRenderer {
 	GLuint paletteTex;
 	uint16_t shadowPalette[GBA_VIDEO_VERTICAL_PIXELS][512];
 	int nextPalette;
-	int lastPalette;
+	int paletteDirtyScanlines;
 	bool paletteDirty;
 
 	GLuint vramTex;
