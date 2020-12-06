@@ -302,6 +302,10 @@ void FrameView::injectGBA() {
 		case LayerId::WINDOW:
 			m_vl->enableVideoLayer(m_vl, GBA_LAYER_WIN0 + layer.id.index, layer.enabled);
 			break;
+		case LayerId::BACKDROP:
+		case LayerId::FRAME:
+		case LayerId::NONE:
+			break;
 		}
 	}
 	if (m_overrideBackdrop.isValid()) {
@@ -408,6 +412,10 @@ void FrameView::injectGB() {
 				gb->video.renderer->highlightWIN = true;
 			}
 			break;
+		case LayerId::FRAME: // TODO for SGB
+		case LayerId::BACKDROP:
+		case LayerId::NONE:
+			break;
 		}
 	}
 }
@@ -433,6 +441,8 @@ void FrameView::invalidateQueue(const QSize& dims) {
 			injectGB();
 			break;
 #endif
+		case PLATFORM_NONE:
+			break;
 		}
 		if (m_ui.disableScanline->checkState() == Qt::Checked) {
 			mVideoLoggerIgnoreAfterInjection(logger, (1 << DIRTY_PALETTE) | (1 << DIRTY_OAM) | (1 << DIRTY_REGISTER));

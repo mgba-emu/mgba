@@ -654,6 +654,9 @@ void CoreController::yankPak() {
 		GBYankROM(static_cast<GB*>(m_threadContext.core->board));
 		break;
 #endif
+	case PLATFORM_NONE:
+		LOG(QT, ERROR) << tr("Can't yank pack in unexpected platform!");
+		break;
 	}
 }
 
