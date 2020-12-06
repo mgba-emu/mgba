@@ -868,7 +868,7 @@ void CoreController::startVideoLog(const QString& path, bool compression) {
 	if (!vf) {
 		return;
 	}
-	startVideoLog(vf);
+	startVideoLog(vf, compression);
 }
 
 void CoreController::startVideoLog(VFile* vf, bool compression) {

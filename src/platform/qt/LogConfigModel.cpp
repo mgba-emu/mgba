@@ -56,7 +56,12 @@ bool LogConfigModel::setData(const QModelIndex& index, const QVariant& value, in
 		if (levels < 0) {
 			levels = m_levels;
 		}
-		levels ^= 1 << (index.column() - 1);
+		int bit = 1 << (index.column() - 1);
+		if (value.value<Qt::CheckState>() == Qt::Unchecked) {
+			levels &= ~bit;
+		} else {
+			levels |= bit;			
+		}
 	}
 	if (index.row() == 0) {
 		beginResetModel();
@@ -102,18 +107,27 @@ QVariant LogConfigModel::headerData(int section, Qt::Orientation orientation, in
 }
 
 QModelIndex LogConfigModel::index(int row, int column, const QModelIndex& parent) const {
+	if (parent.isValid()) {
+		return QModelIndex();
+	}
 	return createIndex(row, column, nullptr);
 }
 
-QModelIndex LogConfigModel::parent(const QModelIndex& index) const {
+QModelIndex LogConfigModel::parent(const QModelIndex&) const {
 	return QModelIndex();
 }
 
 int LogConfigModel::columnCount(const QModelIndex& parent) const {
+	if (parent.isValid()) {
+		return 0;
+	}
 	return 8;
 }
 
 int LogConfigModel::rowCount(const QModelIndex& parent) const {
+	if (parent.isValid()) {
+		return 0;
+	}
 	return m_cache.size() + 1;
 }
 
