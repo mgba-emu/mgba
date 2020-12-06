@@ -16,7 +16,7 @@ Vulcan1
 Vulcan2
 Vulcan3
 Spreader
-ThunderBall
+Thunder
 IceSeed
 Pulsar1
 Pulsar2
@@ -79,12 +79,12 @@ Voltz1
 Voltz2
 Voltz3
 Lance
-Yo-Yo
+YoYo
 Wind
 Fan
-Boy'sBomb1
-Boy'sBomb2
-Boy'sBomb3
+BoyBomb1
+BoyBomb2
+BoyBomb3
 Guard1
 Guard2
 Guard3
@@ -175,9 +175,9 @@ MudWave
 CactusBall1
 CactusBall2
 CactusBall3
-WoodyNose1
-WoodyNose2
-WoodyNose3
+WoodNose1
+WoodNose2
+WoodNose3
 
 
 
@@ -215,7 +215,7 @@ BlackWing
 Otenko
 JusticeOne
 NeoVariable
-ZSaber
+Z-Saber
 GunDelSolEX
 SuperVulcan
 Roll
@@ -279,9 +279,9 @@ Django
 DjangoSP
 DjangoDS
 CannonMode
-CannonBall
+BallMode
 SwordMode
-Yo-YoMode
+YoYoMode
 DrillMode
 LCurseShield
 LStepSword
@@ -327,25 +327,25 @@ BugCharge
 
 
 
-MegaManNavi
+MegaMan Navi
 
 
 
-SearchManNavi
+SearchMan Navi
 
 
-ProtoManNavi
-NumberManNavi
+ProtoMan Navi
+NumberMan Navi
 
 
 
 
-ShadowManNavi
-NapalmManNavi
-KnightManNavi
-ToadManNavi
-MagnetManNavi
-GyroManNavi
-ColonelNavi
-MeddyNavi
-TomahawkManNavi
+ShadowMan Navi
+NapalmMan Navi
+KnightMan Navi
+ToadMan Navi
+MagnetMan Navi
+GyroMan Navi
+Colonel Navi
+Meddy Navi
+TomahawkMan Navi
