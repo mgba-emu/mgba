@@ -153,7 +153,7 @@ private:
 		QImage resizedImage;
 		bool outOfDate;
 		QMutex mutex;
-		unsigned w, h;
+		int w, h;
 	} m_image;
 
 #ifdef BUILD_QT_MULTIMEDIA

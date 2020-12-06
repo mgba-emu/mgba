@@ -51,7 +51,7 @@ bool BattleChipModel::removeRows(int row, int count, const QModelIndex& parent) 
 		return false;
 	}
 	beginRemoveRows(QModelIndex(), row, row + count - 1);
-	for (size_t i = 0; i < count; ++i) {
+	for (int i = 0; i < count; ++i) {
 		m_deck.removeAt(row);
 	}
 	endRemoveRows();
