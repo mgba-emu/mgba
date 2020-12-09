@@ -39,7 +39,7 @@ public:
 	VFileWrapper(QFileDevice*);
 
 protected:
-	constexpr QFileDevice* iodev() { return static_cast<QFileDevice*>(m_iodev); }
+	QFileDevice* iodev() { return static_cast<QFileDevice*>(m_iodev); }
 
 private:
 	static bool close(struct VFile* vf);
@@ -54,7 +54,7 @@ public:
 	VFileBufferWrapper(QBuffer*);
 
 protected:
-	constexpr QBuffer* iodev() { return static_cast<QBuffer*>(m_iodev); }
+	QBuffer* iodev() { return static_cast<QBuffer*>(m_iodev); }
 
 private:
 	static bool close(struct VFile* vf);
