@@ -499,7 +499,7 @@ void CoreController::loadState(int slot) {
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
 		if (!controller->m_backupLoadState.isOpen()) {
-			controller->m_backupLoadState = VFileMemChunk(nullptr, 0);
+			controller->m_backupLoadState = VFileDevice::openMemory();
 		}
 		mCoreSaveStateNamed(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
 		if (mCoreLoadState(context->core, controller->m_stateSlot, controller->m_loadStateFlags)) {
@@ -518,7 +518,7 @@ void CoreController::loadState(const QString& path) {
 			return;
 		}
 		if (!controller->m_backupLoadState.isOpen()) {
-			controller->m_backupLoadState = VFileMemChunk(nullptr, 0);
+			controller->m_backupLoadState = VFileDevice::openMemory();
 		}
 		mCoreSaveStateNamed(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
 		if (mCoreLoadStateNamed(context->core, vf, controller->m_loadStateFlags)) {

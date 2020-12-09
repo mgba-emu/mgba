@@ -29,6 +29,7 @@ public:
 	operator VFile*() { return m_vf; }
 
 	static VFile* open(const QString& path, int mode);
+	static VFile* openMemory();
 	static VDir* openDir(const QString& path);
 	static VDir* openArchive(const QString& path);
 

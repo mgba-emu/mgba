@@ -518,7 +518,7 @@ bool FrameView::eventFilter(QObject*, QEvent* event) {
 void FrameView::refreshVl() {
 	QMutexLocker locker(&m_mutex);
 	m_currentFrame = m_nextFrame;
-	m_nextFrame = VFileMemChunk(nullptr, 0);
+	m_nextFrame = VFileDevice::openMemory();
 	if (m_currentFrame) {
 		m_controller->endVideoLog(false);
 		QMetaObject::invokeMethod(this, "newVl");
