@@ -5,9 +5,64 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "VFileDevice.h"
 
+#include <QBuffer>
+
 #include <mgba-util/vfs.h>
 
 using namespace QGBA;
+
+namespace QGBA {
+
+class VFileAbstractWrapper : public VFile {
+public:
+	VFileAbstractWrapper(QIODevice*);
+
+protected:
+	QIODevice* m_iodev;
+
+private:
+	static bool close(struct VFile* vf);
+	static off_t seek(struct VFile* vf, off_t offset, int whence);
+	static ssize_t read(struct VFile* vf, void* buffer, size_t size);
+	static ssize_t readline(struct VFile* vf, char* buffer, size_t size);
+	static ssize_t write(struct VFile* vf, const void* buffer, size_t size);
+	static void* map(struct VFile* vf, size_t size, int flags);
+	static void unmap(struct VFile* vf, void* memory, size_t size);
+	static void truncate(struct VFile* vf, size_t size);
+	static ssize_t size(struct VFile* vf);
+	static bool sync(struct VFile* vf, void* buffer, size_t size);
+
+};
+
+class VFileWrapper : public VFileAbstractWrapper {
+public:
+	VFileWrapper(QFileDevice*);
+
+protected:
+	constexpr QFileDevice* iodev() { return static_cast<QFileDevice*>(m_iodev); }
+
+private:
+	static bool close(struct VFile* vf);
+	static void* map(struct VFile* vf, size_t size, int flags);
+	static void unmap(struct VFile* vf, void* memory, size_t size);
+	static void truncate(struct VFile* vf, size_t size);
+	static bool sync(struct VFile* vf, void* buffer, size_t size);
+};
+
+class VFileBufferWrapper : public VFileAbstractWrapper {
+public:
+	VFileBufferWrapper(QBuffer*);
+
+protected:
+	constexpr QBuffer* iodev() { return static_cast<QBuffer*>(m_iodev); }
+
+private:
+	static bool close(struct VFile* vf);
+	static void* map(struct VFile* vf, size_t size, int flags);
+	static void unmap(struct VFile* vf, void* memory, size_t size);
+};
+
+}
 
 VFileDevice::VFileDevice(VFile* vf, QObject* parent)
 	: QIODevice(parent)
@@ -74,6 +129,27 @@ qint64 VFileDevice::size() const {
 	return m_vf->size(m_vf);
 }
 
+VFile* VFileDevice::wrap(QIODevice* iodev, QIODevice::OpenMode mode) {
+	if (!iodev->open(mode)) {
+		return nullptr;
+	}
+	return new VFileAbstractWrapper(iodev);
+}
+
+VFile* VFileDevice::wrap(QFileDevice* iodev, QIODevice::OpenMode mode) {
+	if (!iodev->open(mode)) {
+		return nullptr;
+	}
+	return new VFileWrapper(iodev);
+}
+
+VFile* VFileDevice::wrap(QBuffer* iodev, QIODevice::OpenMode mode) {
+	if (!iodev->open(mode)) {
+		return nullptr;
+	}
+	return new VFileBufferWrapper(iodev);
+}
+
 VFile* VFileDevice::open(const QString& path, int mode) {
 	return VFileOpen(path.toUtf8().constData(), mode);
 }
@@ -88,4 +164,143 @@ VDir* VFileDevice::openDir(const QString& path) {
 
 VDir* VFileDevice::openArchive(const QString& path) {
 	return VDirOpenArchive(path.toUtf8().constData());
+}
+
+VFileAbstractWrapper::VFileAbstractWrapper(QIODevice* iodev)
+	: m_iodev(iodev)
+{
+	VFile::close = &VFileAbstractWrapper::close;
+	VFile::seek = &VFileAbstractWrapper::seek;
+	VFile::read = &VFileAbstractWrapper::read;
+	VFile::readline = &VFileAbstractWrapper::readline;
+	VFile::write = &VFileAbstractWrapper::write;
+	VFile::map = &VFileAbstractWrapper::map;
+	VFile::unmap = &VFileAbstractWrapper::unmap;
+	VFile::truncate = &VFileAbstractWrapper::truncate;
+	VFile::size = &VFileAbstractWrapper::size;
+	VFile::sync = &VFileAbstractWrapper::sync;
+}
+
+bool VFileAbstractWrapper::close(VFile* vf) {
+	QIODevice* iodev = static_cast<VFileAbstractWrapper*>(vf)->m_iodev;
+	iodev->close();
+	delete static_cast<VFileAbstractWrapper*>(vf);
+	return true;
+}
+
+off_t VFileAbstractWrapper::seek(VFile* vf, off_t offset, int whence) {
+	QIODevice* iodev = static_cast<VFileAbstractWrapper*>(vf)->m_iodev;
+	switch (whence) {
+	case SEEK_SET:
+		if (!iodev->seek(offset)) {
+			return -1;
+		}
+		break;
+	case SEEK_CUR:
+		if (!iodev->seek(iodev->pos() + offset)) {
+			return -1;
+		}
+		break;
+	case SEEK_END:
+		if (!iodev->seek(iodev->size() + offset)) {
+			return -1;
+		}
+		break;
+	}
+	return iodev->pos();
+}
+
+ssize_t VFileAbstractWrapper::read(VFile* vf, void* buffer, size_t size) {
+	QIODevice* iodev = static_cast<VFileAbstractWrapper*>(vf)->m_iodev;
+	return iodev->read(static_cast<char*>(buffer), size);
+}
+
+ssize_t VFileAbstractWrapper::readline(VFile* vf, char* buffer, size_t size) {
+	QIODevice* iodev = static_cast<VFileAbstractWrapper*>(vf)->m_iodev;
+	return iodev->readLine(static_cast<char*>(buffer), size);
+}
+
+ssize_t VFileAbstractWrapper::write(VFile* vf, const void* buffer, size_t size) {
+	QIODevice* iodev = static_cast<VFileAbstractWrapper*>(vf)->m_iodev;
+	return iodev->write(static_cast<const char*>(buffer), size);
+}
+
+void* VFileAbstractWrapper::map(VFile*, size_t, int) {
+	// Doesn't work on QIODevice base class
+	return nullptr;
+}
+
+void VFileAbstractWrapper::unmap(VFile*, void*, size_t) {
+	// Doesn't work on QIODevice base class
+}
+
+void VFileAbstractWrapper::truncate(VFile*, size_t) {
+	// Doesn't work on QIODevice base class
+}
+
+ssize_t VFileAbstractWrapper::size(VFile* vf) {
+	QIODevice* iodev = static_cast<VFileAbstractWrapper*>(vf)->m_iodev;
+	return iodev->size();
+}
+
+bool VFileAbstractWrapper::sync(VFile*, void*, size_t) {
+	// Doesn't work on QIODevice base class
+	return false;
+}
+
+VFileWrapper::VFileWrapper(QFileDevice* iodev)
+	: VFileAbstractWrapper(iodev)
+{
+	VFile::close = &VFileWrapper::close;
+	VFile::map = &VFileWrapper::map;
+	VFile::unmap = &VFileWrapper::unmap;
+	VFile::truncate = &VFileWrapper::truncate;
+	VFile::sync = &VFileWrapper::sync;
+}
+
+bool VFileWrapper::close(VFile* vf) {
+	QIODevice* iodev = static_cast<VFileWrapper*>(vf)->m_iodev;
+	iodev->close();
+	delete static_cast<VFileWrapper*>(vf);
+	return true;
+}
+
+void* VFileWrapper::map(VFile* vf, size_t size, int mode) {
+	QFileDevice* iodev = static_cast<VFileWrapper*>(vf)->iodev();
+	return iodev->map(0, size, mode == MAP_READ ? QFileDevice::MapPrivateOption : QFileDevice::NoOptions);
+}
+
+void VFileWrapper::unmap(VFile* vf, void* buffer, size_t) {
+	QFileDevice* iodev = static_cast<VFileWrapper*>(vf)->iodev();
+	iodev->unmap(static_cast<uchar*>(buffer));
+}
+
+void VFileWrapper::truncate(VFile* vf, size_t size) {
+	QFileDevice* iodev = static_cast<VFileWrapper*>(vf)->iodev();
+	iodev->resize(size);
+}
+
+bool VFileWrapper::sync(VFile* vf, void*, size_t) {
+	QFileDevice* iodev = static_cast<VFileWrapper*>(vf)->iodev();
+	return iodev->flush();
+}
+
+VFileBufferWrapper::VFileBufferWrapper(QBuffer* iodev)
+	: VFileAbstractWrapper(iodev)
+{
+	VFile::close = &VFileBufferWrapper::close;
+	VFile::map = &VFileBufferWrapper::map;
+}
+
+bool VFileBufferWrapper::close(VFile* vf) {
+	QIODevice* iodev = static_cast<VFileBufferWrapper*>(vf)->m_iodev;
+	iodev->close();
+	delete static_cast<VFileBufferWrapper*>(vf);
+	return true;
+}
+
+void* VFileBufferWrapper::map(VFile* vf, size_t, int) {
+	QBuffer* iodev = static_cast<VFileBufferWrapper*>(vf)->iodev();
+	QByteArray& buffer = iodev->buffer();
+	return static_cast<void*>(buffer.data());
 }
