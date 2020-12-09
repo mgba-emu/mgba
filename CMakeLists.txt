@@ -680,11 +680,13 @@ elseif(USE_MINIZIP)
 elseif(USE_ZLIB)
 	list(APPEND VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-zip.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/unzip.c)
+		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/unzip.c
+		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/zip.c)
 	if(NOT MSVC)
 		set_source_files_properties(
 			${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c
 			${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/unzip.c
+			${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/zip.c
 			PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter -Wno-implicit-function-declaration")
 	endif()
 endif()
