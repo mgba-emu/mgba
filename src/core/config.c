@@ -213,7 +213,9 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 	}
 #ifdef _WIN32
 	wchar_t wpath[MAX_PATH];
+	wchar_t wprojectName[MAX_PATH];
 	wchar_t* home;
+	MultiByteToWideChar(CP_UTF8, 0, projectName, -1, wprojectName, MAX_PATH);
 	SHGetKnownFolderPath(&FOLDERID_RoamingAppData, 0, NULL, &home);
 	StringCchPrintfW(wpath, MAX_PATH, L"%ws\\%ws", home, wprojectName);
 	CoTaskMemFree(home);
@@ -250,8 +252,6 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 void mCoreConfigPortablePath(char* out, size_t outLength) {
 #ifdef _WIN32
 	wchar_t wpath[MAX_PATH];
-	wchar_t wprojectName[MAX_PATH];
-	MultiByteToWideChar(CP_UTF8, 0, projectName, -1, wprojectName, MAX_PATH);
 	HMODULE hModule = GetModuleHandleW(NULL);
 	GetModuleFileNameW(hModule, wpath, MAX_PATH);
 	PathRemoveFileSpecW(wpath);
