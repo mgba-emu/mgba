@@ -36,6 +36,7 @@ bool ConfigurationRead(struct Configuration*, const char* path);
 bool ConfigurationReadVFile(struct Configuration*, struct VFile* vf);
 bool ConfigurationWrite(const struct Configuration*, const char* path);
 bool ConfigurationWriteSection(const struct Configuration*, const char* path, const char* section);
+bool ConfigurationWriteVFile(const struct Configuration*, struct VFile* vf);
 
 void ConfigurationEnumerateSections(const struct Configuration* configuration, void (*handler)(const char* sectionName, void* user), void* user);
 void ConfigurationEnumerate(const struct Configuration* configuration, const char* section, void (*handler)(const char* key, const char* value, void* user), void* user);
