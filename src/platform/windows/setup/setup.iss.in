@@ -43,7 +43,7 @@ AlwaysShowGroupOnReadyPage=True
 LicenseFile={#BinDir}\LICENSE.txt
 #if Release
   #define IsRelease = 'yes'
-  AppVerName={#AppName} {#AppVer}
+  AppVerName={#AppName} {#VersionString}
 #else
   #define IsRelease = 'no'
   AppVerName={#AppName} {#VersionString} (Development build)
@@ -57,9 +57,9 @@ VersionInfoProductName={#AppName}
 VersionInfoVersion={#AppVer}
 Compression=lzma2/ultra64
 SolidCompression=True
-VersionInfoTextVersion={#AppVer}
+VersionInfoTextVersion={#VersionString}
 VersionInfoProductVersion={#AppVer}
-VersionInfoProductTextVersion={#AppVer}
+VersionInfoProductTextVersion={#VersionString}
 ArchitecturesInstallIn64BitMode=x64
 ArchitecturesAllowed=x86 x64
 
