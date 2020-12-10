@@ -10,6 +10,7 @@
 #include <QOffscreenSurface>
 #include <QScreen>
 #include <QSysInfo>
+#include <QWindow>
 
 #include <mgba/core/version.h>
 #include <mgba-util/vfs.h>
