@@ -220,6 +220,7 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 	StringCchPrintfW(wpath, MAX_PATH, L"%ws\\%ws", home, wprojectName);
 	CoTaskMemFree(home);
 	CreateDirectoryW(wpath, NULL);
+	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
 #elif defined(PSP2)
 	snprintf(out, outLength, "ux0:data/%s", projectName);
 	sceIoMkdir(out, 0777);
