@@ -54,6 +54,8 @@ public:
 	std::shared_ptr<CoreController> controller() { return m_controller; }
 
 	void setConfig(ConfigController*);
+	ConfigController* config() { return m_config; }
+
 	void argumentsPassed(mArguments*);
 
 	void resizeFrame(const QSize& size);

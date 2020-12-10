@@ -5,6 +5,7 @@ Features:
  - Separate overrides for GBC games that can also run on SGB or regular GB
  - Game Boy Player features can be enabled by default for all compatible games
  - Frame viewer support for Game Boy
+ - Bug report tool for gathering information helpful for reporting bugs
  - Mute option in homebrew ports
  - Status indicators for fast-forward and mute in homebrew ports
  - VBA bug compatibility mode for ROM hacks that don't work on real hardware

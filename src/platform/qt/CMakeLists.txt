@@ -100,6 +100,7 @@ set(SOURCE_FILES
 	PaletteView.cpp
 	PlacementControl.cpp
 	RegisterView.cpp
+	ReportView.cpp
 	ROMInfo.cpp
 	RotatedHeaderView.cpp
 	SavestateButton.cpp
@@ -139,6 +140,7 @@ set(UI_FILES
 	PaletteView.ui
 	PlacementControl.ui
 	PrinterView.ui
+	ReportView.ui
 	ROMInfo.ui
 	SensorView.ui
 	SettingsView.ui

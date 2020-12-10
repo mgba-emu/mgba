@@ -47,6 +47,7 @@
 #include "PaletteView.h"
 #include "PlacementControl.h"
 #include "PrinterView.h"
+#include "ReportView.h"
 #include "ROMInfo.h"
 #include "SensorView.h"
 #include "SettingsView.h"
@@ -1219,6 +1220,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addSeparator("file");
 #endif
 
+	m_actions.addAction(tr("Report bug..."), "bugReport", openTView<ReportView>(), "file");
 	m_actions.addAction(tr("About..."), "about", openTView<AboutScreen>(), "file");
 
 #ifndef Q_OS_MAC
