@@ -1176,7 +1176,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <source>Memory bank controller</source>
         <translation>内存 bank 控制器</translation>
     </message>
-    message>
+    <message>
         <location filename="../OverrideView.ui" line="249"/>
         <source>Background Colors</source>
         <translation>背景颜色</translation>
