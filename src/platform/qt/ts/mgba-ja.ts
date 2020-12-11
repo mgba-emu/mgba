@@ -3241,7 +3241,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <name>QGBA::ReportView</name>
     <message>
         <location filename="../ReportView.cpp" line="212"/>
-        <source>	</source>
+        <source>Bug report archive</source>
         <translation>バグレポートアーカイブ</translation>
     </message>
     <message>
