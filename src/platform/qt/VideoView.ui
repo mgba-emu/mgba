@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>351</width>
-    <height>510</height>
+    <height>584</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -431,7 +431,7 @@
          <item row="1" column="2">
           <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>:</string>
+            <string notr="true">:</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -441,7 +441,7 @@
          <item row="0" column="2">
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>×</string>
+            <string notr="true">×</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>

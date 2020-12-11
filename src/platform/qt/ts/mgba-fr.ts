@@ -5242,16 +5242,6 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <translation>Dimensions</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="434"/>
-        <source>:</source>
-        <translation>:</translation>
-    </message>
-    <message>
-        <location filename="../VideoView.ui" line="444"/>
-        <source>×</source>
-        <translation>×</translation>
-    </message>
-    <message>
         <location filename="../VideoView.ui" line="494"/>
         <source>Lock aspect ratio</source>
         <translation>Bloquer les proportions</translation>

@@ -5222,16 +5222,6 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation>크기</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="434"/>
-        <source>:</source>
-        <translation>:</translation>
-    </message>
-    <message>
-        <location filename="../VideoView.ui" line="444"/>
-        <source>×</source>
-        <translation>×</translation>
-    </message>
-    <message>
         <location filename="../VideoView.ui" line="494"/>
         <source>Lock aspect ratio</source>
         <translation>화면비 잠금</translation>

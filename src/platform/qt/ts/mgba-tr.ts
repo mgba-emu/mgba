@@ -5222,16 +5222,6 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
         <translation>Boyutlar</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="434"/>
-        <source>:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../VideoView.ui" line="444"/>
-        <source>×</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../VideoView.ui" line="494"/>
         <source>Lock aspect ratio</source>
         <translation>En boy oranını kilitle</translation>
