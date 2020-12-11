@@ -82,12 +82,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>图块 #</translation>
     </message>
     <message>
-        <location filename="../AssetTile.ui" line="48"/>
-        <location filename="../AssetTile.ui" line="72"/>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    <message>
         <location filename="../AssetTile.ui" line="65"/>
         <source>Palette #</source>
         <translation>调色板 #</translation>
@@ -96,11 +90,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../AssetTile.ui" line="86"/>
         <source>Address</source>
         <translation>地址</translation>
-    </message>
-    <message>
-        <location filename="../AssetTile.ui" line="93"/>
-        <source>0x06000000</source>
-        <translation>0x06000000</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="135"/>
@@ -116,13 +105,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../AssetTile.ui" line="149"/>
         <source>Blue</source>
         <translation>蓝</translation>
-    </message>
-    <message>
-        <location filename="../AssetTile.ui" line="163"/>
-        <location filename="../AssetTile.ui" line="170"/>
-        <location filename="../AssetTile.ui" line="177"/>
-        <source>0x00 (00)</source>
-        <translation>0x00 (00)</translation>
     </message>
 </context>
 <context>
@@ -267,11 +249,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>检查框架</translation>
     </message>
     <message>
-        <location filename="../FrameView.ui" line="28"/>
-        <source>×</source>
-        <translation>×</translation>
-    </message>
-    <message>
         <location filename="../FrameView.ui" line="41"/>
         <source>Magnification</source>
         <translation>缩放率</translation>
@@ -361,81 +338,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../IOViewer.ui" line="26"/>
         <source>0x0000</source>
         <translation>0x0000</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="58"/>
-        <source>2</source>
-        <translation>2</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="82"/>
-        <source>5</source>
-        <translation>5</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="100"/>
-        <source>4</source>
-        <translation>4</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="118"/>
-        <source>7</source>
-        <translation>7</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="136"/>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="157"/>
-        <source>9</source>
-        <translation>9</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="178"/>
-        <source>1</source>
-        <translation>1</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="196"/>
-        <source>3</source>
-        <translation>3</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="217"/>
-        <source>8</source>
-        <translation>8</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="241"/>
-        <source>C</source>
-        <translation>C</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="259"/>
-        <source>E</source>
-        <translation>E</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="283"/>
-        <source>6</source>
-        <translation>6</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="310"/>
-        <source>D</source>
-        <translation>D</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="328"/>
-        <source>F</source>
-        <translation>F</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.ui" line="346"/>
-        <source>A</source>
-        <translation>A</translation>
     </message>
     <message>
         <location filename="../IOViewer.ui" line="364"/>
@@ -609,12 +511,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>贴图</translation>
     </message>
     <message>
-        <location filename="../MapView.ui" line="30"/>
-        <location filename="../MapView.ui" line="61"/>
-        <source>×</source>
-        <translation>×</translation>
-    </message>
-    <message>
         <location filename="../MapView.ui" line="43"/>
         <source>Magnification</source>
         <translation>缩放率</translation>
@@ -641,17 +537,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../MemoryDump.ui" line="20"/>
         <source>Start Address:</source>
         <translation>起始地址:</translation>
-    </message>
-    <message>
-        <location filename="../MemoryDump.ui" line="42"/>
-        <source>:</source>
-        <translation>:</translation>
-    </message>
-    <message>
-        <location filename="../MemoryDump.ui" line="58"/>
-        <location filename="../MemoryDump.ui" line="89"/>
-        <source>0x</source>
-        <translation>0x</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="76"/>
@@ -745,8 +630,8 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="216"/>
-        <source>Compare</source>
-        <translation>比较</translation>
+        <source>Search type</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="223"/>
@@ -827,16 +712,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>检查地址:</translation>
     </message>
     <message>
-        <location filename="../MemoryView.ui" line="58"/>
-        <source>:</source>
-        <translation>:</translation>
-    </message>
-    <message>
-        <location filename="../MemoryView.ui" line="68"/>
-        <source>0x</source>
-        <translation>0</translation>
-    </message>
-    <message>
         <location filename="../MemoryView.ui" line="88"/>
         <source>Set Alignment:</source>
         <translation>设定对齐单位:</translation>
@@ -892,12 +767,12 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>保存所选</translation>
     </message>
     <message>
-        <location filename="../MemoryView.ui" line="290"/>
+        <location filename="../MemoryView.ui" line="297"/>
         <source>Load</source>
         <translation>载入</translation>
     </message>
     <message>
-        <location filename="../MemoryView.ui" line="297"/>
+        <location filename="../MemoryView.ui" line="290"/>
         <source>Save Range</source>
         <translation>保存范围</translation>
     </message>
@@ -915,17 +790,11 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>地址</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="79"/>
-        <source>0x07000000</source>
-        <translation>0x07000000</translation>
-    </message>
-    <message>
         <location filename="../ObjView.ui" line="94"/>
         <source>Copy</source>
         <translation>复制</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="109"/>
         <location filename="../ObjView.ui" line="254"/>
         <source>×</source>
         <translation>×</translation>
@@ -946,14 +815,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>位置</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="171"/>
-        <location filename="../ObjView.ui" line="197"/>
-        <location filename="../ObjView.ui" line="437"/>
-        <location filename="../ObjView.ui" line="667"/>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    <message>
         <location filename="../ObjView.ui" line="181"/>
         <source>, </source>
         <translation>, </translation>
@@ -962,24 +823,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../ObjView.ui" line="218"/>
         <source>Dimensions</source>
         <translation>维度</translation>
-    </message>
-    <message>
-        <location filename="../ObjView.ui" line="244"/>
-        <location filename="../ObjView.ui" line="270"/>
-        <source>8</source>
-        <translation>8</translation>
-    </message>
-    <message>
-        <location filename="../ObjView.ui" line="284"/>
-        <location filename="../ObjView.ui" line="325"/>
-        <source>+0.00</source>
-        <translation>+0.00</translation>
-    </message>
-    <message>
-        <location filename="../ObjView.ui" line="291"/>
-        <location filename="../ObjView.ui" line="305"/>
-        <source>+1.00</source>
-        <translation>+1.00</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="298"/>
@@ -1032,11 +875,13 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../ObjView.ui" line="518"/>
         <source>H</source>
+        <extracomment>Short for horizontal</extracomment>
         <translation>H</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="531"/>
         <source>V</source>
+        <extracomment>Short for vertical</extracomment>
         <translation>V</translation>
     </message>
     <message>
@@ -1122,7 +967,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     </message>
     <message>
         <location filename="../OverrideView.ui" line="126"/>
-        <location filename="../OverrideView.ui" line="289"/>
         <source>None</source>
         <translation>无</translation>
     </message>
@@ -1230,13 +1074,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>蓝</translation>
     </message>
     <message>
-        <location filename="../PaletteView.ui" line="212"/>
-        <location filename="../PaletteView.ui" line="219"/>
-        <location filename="../PaletteView.ui" line="226"/>
-        <source>0x00 (00)</source>
-        <translation>0x00 (00)</translation>
-    </message>
-    <message>
         <location filename="../PaletteView.ui" line="244"/>
         <source>16-bit value</source>
         <translation>16 位值</translation>
@@ -1250,21 +1087,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../PaletteView.ui" line="258"/>
         <source>Palette index</source>
         <translation>调色板索引</translation>
-    </message>
-    <message>
-        <location filename="../PaletteView.ui" line="272"/>
-        <source>0x0000</source>
-        <translation>0x0000</translation>
-    </message>
-    <message>
-        <location filename="../PaletteView.ui" line="282"/>
-        <source>#000000</source>
-        <translation>#000000</translation>
-    </message>
-    <message>
-        <location filename="../PaletteView.ui" line="292"/>
-        <source>0x000 (000)</source>
-        <translation>0x000 (000)</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="322"/>
@@ -1323,11 +1145,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>Tear off</translation>
     </message>
     <message>
-        <location filename="../PrinterView.ui" line="167"/>
-        <source>×</source>
-        <translation>×</translation>
-    </message>
-    <message>
         <location filename="../PrinterView.ui" line="180"/>
         <source>Magnification</source>
         <translation>缩放率</translation>
@@ -1339,44 +1156,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     </message>
 </context>
 <context>
-    <name>ReportView</name>
-    <message>
-        <location filename="../ReportView.ui" line="14"/>
-        <source>Generate Bug Report</source>
-        <translation>生成错误报告</translation>
-    </message>
-    <message>
-        <location filename="../ReportView.ui" line="72"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;要提交错误报告，请首先生成报告文件并将其附加到要提交的错误报告当中。推荐您包含存档文件，因为这些存档通常会有助于调试问题。报告文件会收集一些信息，包括正在运行的 {projectName} 版本、配置、计算机以及当前已打开的游戏（若存在）。一旦收集完成，您可以查看下方收集的所有信息，并将其保存为 ZIP 文件。信息收集会自动尝试汇整所有的个人信息，例如您的用户名（如果它位于所收集的任意路径中），但以防万一，您之后可以对其进行编辑。生成并保存报告文件后，请单击下方按钮或转到 &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; 在 GitHub 上提交错误报告。请确保您附加所生成的报告！&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
-        <location filename="../ReportView.ui" line="90"/>
-        <source>Generate report</source>
-        <translation>生成报告</translation>
-    </message>
-    <message>
-        <location filename="../ReportView.ui" line="104"/>
-        <source>Save</source>
-        <translation>保存</translation>
-    </message>
-    <message>
-        <location filename="../ReportView.ui" line="118"/>
-        <source>Open issue list in browser</source>
-        <translation>在浏览器中打开问题列表</translation>
-    </message>
-    <message>
-        <location filename="../ReportView.ui" line="139"/>
-        <source>Include save file</source>
-        <translation>包含存档文件</translation>
-    </message>
-    <message>
-        <location filename="../ReportView.ui" line="155"/>
-        <source>Create and include savestate</source>
-        <translation>创建并包含即时存档</translation>
-    </message>
-</context>
-<context>
     <name>QGBA::AssetTile</name>
     <message>
         <location filename="../AssetTile.cpp" line="104"/>
@@ -1384,74 +1163,11 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>%0%1%2</translation>
     </message>
     <message>
+        <location filename="../AssetTile.cpp" line="141"/>
+        <location filename="../AssetTile.cpp" line="142"/>
         <location filename="../AssetTile.cpp" line="143"/>
-        <location filename="../AssetTile.cpp" line="144"/>
-        <location filename="../AssetTile.cpp" line="145"/>
         <source>0x%0 (%1)</source>
         <translation>0x%0 (%1)</translation>
-    </message>
-</context>
-<context>
-    <name>QGBA::AudioDevice</name>
-    <message>
-        <location filename="../AudioDevice.cpp" line="26"/>
-        <source>Can&apos;t set format of context-less audio device</source>
-        <translation>无法设置无上下文音频设备的格式</translation>
-    </message>
-    <message>
-        <location filename="../AudioDevice.cpp" line="48"/>
-        <source>Audio device is missing its core</source>
-        <translation>音频设备缺少核心</translation>
-    </message>
-    <message>
-        <location filename="../AudioDevice.cpp" line="64"/>
-        <source>Writing data to read-only audio device</source>
-        <translation>正在将数据写入只读音频设备</translation>
-    </message>
-</context>
-<context>
-    <name>QGBA::AudioProcessorQt</name>
-    <message>
-        <location filename="../AudioProcessorQt.cpp" line="43"/>
-        <source>Can&apos;t start an audio processor without input</source>
-        <translation>无法在无输入的情况下启动音频处理器</translation>
-    </message>
-</context>
-<context>
-    <name>QGBA::AudioProcessorSDL</name>
-    <message>
-        <location filename="../AudioProcessorSDL.cpp" line="34"/>
-        <source>Can&apos;t start an audio processor without input</source>
-        <translation>无法在无输入的情况下启动音频处理器</translation>
-    </message>
-</context>
-<context>
-    <name>QGBA::BattleChipView</name>
-    <message>
-        <location filename="../BattleChipView.cpp" line="117"/>
-        <source>BattleChip data missing</source>
-        <translation>BattleChip 数据已丢失</translation>
-    </message>
-    <message>
-        <location filename="../BattleChipView.cpp" line="118"/>
-        <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation>BattleChip 数据已丢失。BattleChip Gate 仍然能够工作，但会丢失部分图形。您想立即下载数据吗？</translation>
-    </message>
-    <message>
-        <location filename="../BattleChipView.cpp" line="184"/>
-        <location filename="../BattleChipView.cpp" line="203"/>
-        <source>Select deck file</source>
-        <translation>选择卡组文件</translation>
-    </message>
-    <message>
-        <location filename="../BattleChipView.cpp" line="215"/>
-        <source>Incompatible deck</source>
-        <translation>卡组不兼容</translation>
-    </message>
-    <message>
-        <location filename="../BattleChipView.cpp" line="216"/>
-        <source>The selected deck is not compatible with this Chip Gate</source>
-        <translation>所选卡组与此 Chip Gate 不兼容</translation>
     </message>
 </context>
 <context>
@@ -1528,17 +1244,17 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
 <context>
     <name>QGBA::CoreManager</name>
     <message>
-        <location filename="../CoreManager.cpp" line="54"/>
+        <location filename="../CoreManager.cpp" line="109"/>
         <source>Failed to open game file: %1</source>
         <translation>打开游戏文件失败: %1</translation>
     </message>
     <message>
-        <location filename="../CoreManager.cpp" line="87"/>
+        <location filename="../CoreManager.cpp" line="142"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
         <translation>无法载入游戏。请确认游戏格式是否正确？</translation>
     </message>
     <message>
-        <location filename="../CoreManager.cpp" line="114"/>
+        <location filename="../CoreManager.cpp" line="169"/>
         <source>Failed to open save file. Is the save directory writable?</source>
         <translation>无法打开存档文件。存档目录是否可写入？</translation>
     </message>
@@ -3227,8 +2943,8 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../MapView.cpp" line="52"/>
         <location filename="../MapView.cpp" line="63"/>
-        <source>offset</source>
-        <translation>偏移</translation>
+        <source>Offset</source>
+        <translation type="unfinished">偏移</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="53"/>
@@ -3281,6 +2997,19 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../MapView.cpp" line="261"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>便携式网络图形 (*.png)</translation>
+    </message>
+</context>
+<context>
+    <name>QGBA::MemoryDump</name>
+    <message>
+        <location filename="../MemoryDump.cpp" line="24"/>
+        <source>Save memory region</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryDump.cpp" line="30"/>
+        <source>Failed to open output file: %1</source>
+        <translation type="unfinished">打开输出文件失败: %1</translation>
     </message>
 </context>
 <context>
@@ -3432,6 +3161,24 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     </message>
 </context>
 <context>
+    <name>QGBA::OverrideView</name>
+    <message>
+        <location filename="../OverrideView.cpp" line="54"/>
+        <source>Official MBCs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.cpp" line="58"/>
+        <source>Licensed MBCs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.cpp" line="62"/>
+        <source>Unlicensed MBCs</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QGBA::PaletteView</name>
     <message>
         <location filename="../PaletteView.cpp" line="121"/>
@@ -3465,19 +3212,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../PaletteView.cpp" line="142"/>
         <source>Failed to open output palette file: %1</source>
         <translation>打开输出调色板文件失败: %1</translation>
-    </message>
-</context>
-<context>
-    <name>QGBA::PrinterView</name>
-    <message>
-        <location filename="../PrinterView.cpp" line="59"/>
-        <source>Save Printout</source>
-        <translation>保存输出</translation>
-    </message>
-    <message>
-        <location filename="../PrinterView.cpp" line="59"/>
-        <source>Portable Network Graphics (*.png)</source>
-        <translation>便携式网络图形 (*.png)</translation>
     </message>
 </context>
 <context>
@@ -3615,10 +3349,27 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     </message>
 </context>
 <context>
+    <name>QGBA::ShortcutModel</name>
+    <message>
+        <location filename="../ShortcutModel.cpp" line="66"/>
+        <source>Action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutModel.cpp" line="68"/>
+        <source>Keyboard</source>
+        <translation type="unfinished">键盘</translation>
+    </message>
+    <message>
+        <location filename="../ShortcutModel.cpp" line="70"/>
+        <source>Gamepad</source>
+        <translation type="unfinished">游戏手柄</translation>
+    </message>
+</context>
+<context>
     <name>QGBA::TileView</name>
     <message>
         <location filename="../TileView.cpp" line="178"/>
-        <location filename="../TileView.cpp" line="190"/>
         <source>Export tiles</source>
         <translation>导出文件</translation>
     </message>
@@ -3627,6 +3378,11 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../TileView.cpp" line="191"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>便携式网络图形 (*.png)</translation>
+    </message>
+    <message>
+        <location filename="../TileView.cpp" line="190"/>
+        <source>Export tile</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3986,7 +3742,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>关于...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1228"/>
+        <location filename="../Window.cpp" line="1227"/>
         <source>E&amp;xit</source>
         <translation>退出(&amp;X)</translation>
     </message>
@@ -4091,7 +3847,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>太阳光等级为最亮</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1310"/>
+        <location filename="../Window.cpp" line="1312"/>
         <source>Darkest solar level</source>
         <translation>太阳光等级为最暗</translation>
     </message>
@@ -4385,6 +4141,29 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     </message>
 </context>
 <context>
+    <name>QShortcut</name>
+    <message>
+        <location filename="../KeyEditor.cpp" line="40"/>
+        <source>Shift</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../KeyEditor.cpp" line="43"/>
+        <source>Control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../KeyEditor.cpp" line="46"/>
+        <source>Alt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../KeyEditor.cpp" line="49"/>
+        <source>Meta</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ROMInfo</name>
     <message>
         <location filename="../ROMInfo.ui" line="14"/>
@@ -4440,6 +4219,44 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../ROMInfo.ui" line="104"/>
         <source>{CRC}</source>
         <translation>{CRC}</translation>
+    </message>
+</context>
+<context>
+    <name>ReportView</name>
+    <message>
+        <location filename="../ReportView.ui" line="14"/>
+        <source>Generate Bug Report</source>
+        <translation>生成错误报告</translation>
+    </message>
+    <message>
+        <location filename="../ReportView.ui" line="72"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;要提交错误报告，请首先生成报告文件并将其附加到要提交的错误报告当中。推荐您包含存档文件，因为这些存档通常会有助于调试问题。报告文件会收集一些信息，包括正在运行的 {projectName} 版本、配置、计算机以及当前已打开的游戏（若存在）。一旦收集完成，您可以查看下方收集的所有信息，并将其保存为 ZIP 文件。信息收集会自动尝试汇整所有的个人信息，例如您的用户名（如果它位于所收集的任意路径中），但以防万一，您之后可以对其进行编辑。生成并保存报告文件后，请单击下方按钮或转到 &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; 在 GitHub 上提交错误报告。请确保您附加所生成的报告！&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="../ReportView.ui" line="90"/>
+        <source>Generate report</source>
+        <translation>生成报告</translation>
+    </message>
+    <message>
+        <location filename="../ReportView.ui" line="104"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../ReportView.ui" line="118"/>
+        <source>Open issue list in browser</source>
+        <translation>在浏览器中打开问题列表</translation>
+    </message>
+    <message>
+        <location filename="../ReportView.ui" line="139"/>
+        <source>Include save file</source>
+        <translation>包含存档文件</translation>
+    </message>
+    <message>
+        <location filename="../ReportView.ui" line="155"/>
+        <source>Create and include savestate</source>
+        <translation>创建并包含即时存档</translation>
     </message>
 </context>
 <context>
@@ -4793,7 +4610,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <source>Dynamically update window title</source>
         <translation>动态更新窗口标题</translation>
     </message>
-<message>
+    <message>
         <location filename="../SettingsView.ui" line="592"/>
         <source>Show filename instead of ROM name in title bar</source>
         <translation>标题栏显示文件名而不显示 ROM 名称</translation>
@@ -4837,13 +4654,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../SettingsView.ui" line="697"/>
         <source>Fast forward speed:</source>
         <translation>快进速度:</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="709"/>
-        <location filename="../SettingsView.ui" line="752"/>
-        <location filename="../SettingsView.ui" line="1008"/>
-        <source>×</source>
-        <translation>×</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="728"/>
@@ -5201,11 +5011,6 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>256 色</translation>
     </message>
     <message>
-        <location filename="../TileView.ui" line="56"/>
-        <source>×</source>
-        <translation>×</translation>
-    </message>
-    <message>
         <location filename="../TileView.ui" line="69"/>
         <source>Magnification</source>
         <translation>缩放率</translation>
@@ -5270,12 +5075,13 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     </message>
     <message>
         <location filename="../VideoView.ui" line="129"/>
-        <location filename="../VideoView.ui" line="237"/>
+        <location filename="../VideoView.ui" line="251"/>
         <source>WebM</source>
         <translation>WebM</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="139"/>
+        <location filename="../VideoView.ui" line="261"/>
         <source>MP4</source>
         <translation>MP4</translation>
     </message>
@@ -5402,8 +5208,8 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     </message>
     <message>
         <location filename="../VideoView.ui" line="367"/>
-        <source>VBR</source>
-        <translation>VBR</translation>
+        <source>VBR </source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="412"/>
