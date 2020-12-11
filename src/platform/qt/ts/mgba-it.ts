@@ -450,12 +450,12 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../LogView.ui" line="14"/>
         <source>Logs</source>
-        <translation>Logs</translation>
+        <translation>Log</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="22"/>
         <source>Enabled Levels</source>
-        <translation>Abilita Livelli</translation>
+        <translation>Abilita livelli</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="28"/>
@@ -2749,17 +2749,17 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1011"/>
         <source>4.19MHz</source>
-        <translation>4.19MHz</translation>
+        <translation>4,19 MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1012"/>
         <source>8.38MHz</source>
-        <translation>8.38MHz</translation>
+        <translation>8,38 MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1013"/>
         <source>16.78MHz</source>
-        <translation>16.78MHz</translation>
+        <translation>16,78 MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1015"/>
@@ -3949,7 +3949,7 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../Window.cpp" line="1224"/>
         <source>About...</source>
-        <translation>Info</translation>
+        <translation>Informazioni…</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1380"/>
@@ -4810,12 +4810,12 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../SettingsView.ui" line="484"/>
         <source>English</source>
-        <translation></translation>
+        <translation>inglese</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="507"/>
         <source>List view</source>
-        <translation>Inglese</translation>
+        <translation>Visualizzazione elenco</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="512"/>
