@@ -32,8 +32,8 @@
         <location filename="../AboutScreen.ui" line="86"/>
         <source>© 2013 – 2020 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation>© 2013 – 2020 Jeffrey Pfau。Mozilla Public License バージョン2.0の下でライセンス供与
-「ゲームボーイアドバンス（Game Boy Advance）」は任天堂株式会社の登録商標です。</translation>
+        <translation>© 2013 – 2020 Jeffrey Pfau。Mozilla Public License(バージョン2.0)の下でライセンスされています。
+「ゲームボーイアドバンス」、GAME BOY ADVANCEは任天堂株式会社の登録商標です。</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="106"/>
@@ -127,12 +127,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../BattleChipView.ui" line="87"/>
         <source>Save</source>
-        <translation>保存</translation>
+        <translation>セーブ</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="94"/>
         <source>Load</source>
-        <translation>読込</translation>
+        <translation>ロード</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="114"/>
@@ -177,7 +177,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
         <source>Update Chip data</source>
-        <translation>チップデータ更新</translation>
+        <translation>チップデータを更新</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
@@ -200,17 +200,17 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../CheatsView.ui" line="34"/>
         <source>Save</source>
-        <translation>保存</translation>
+        <translation>セーブ</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="41"/>
         <source>Load</source>
-        <translation>読込</translation>
+        <translation>ロード</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="48"/>
         <source>Add New Set</source>
-        <translation>新規セット追加</translation>
+        <translation>新規セットを追加</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="55"/>
@@ -294,7 +294,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../GIFView.ui" line="93"/>
         <source>Select File</source>
-        <translation>ファイル選択</translation>
+        <translation>ファイルを選択</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="30"/>
@@ -332,7 +332,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../IOViewer.ui" line="14"/>
         <source>I/O Viewer</source>
-        <translation>IOビューアー</translation>
+        <translation>I/Oビューアー</translation>
     </message>
     <message>
         <location filename="../IOViewer.ui" line="26"/>
@@ -392,7 +392,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../LoadSaveState.ui" line="217"/>
         <location filename="../LoadSaveState.ui" line="239"/>
         <source>No Save</source>
-        <translation>保存しない</translation>
+        <translation>セーブしない</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="160"/>
@@ -531,7 +531,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemoryDump.ui" line="14"/>
         <source>Save Memory Range</source>
-        <translation>メモリ範囲を保存</translation>
+        <translation>メモリ範囲をセーブ</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="20"/>
@@ -590,7 +590,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemorySearch.ui" line="118"/>
         <source>Width</source>
-        <translation>データサイズ</translation>
+        <translation>値幅</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="138"/>
@@ -620,7 +620,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemorySearch.ui" line="216"/>
         <source>Search type</source>
-        <translation>サーチタイプ</translation>
+        <translation>検索タイプ</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="223"/>
@@ -665,12 +665,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemorySearch.ui" line="318"/>
         <source>Search ROM</source>
-        <translation>ROMサーチ</translation>
+        <translation>ROM検索</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="336"/>
         <source>New Search</source>
-        <translation>新規サーチ</translation>
+        <translation>新規検索</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="195"/>
@@ -686,7 +686,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemorySearch.ui" line="343"/>
         <source>Search Within</source>
-        <translation>サーチ</translation>
+        <translation>検索範囲</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="350"/>
@@ -764,17 +764,17 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemoryView.ui" line="283"/>
         <source>Save Selection</source>
-        <translation>選択値を保存</translation>
+        <translation>選択値をセーブ</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="290"/>
         <source>Save Range</source>
-        <translation>範囲で保存...</translation>
+        <translation>範囲でセーブ...</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="297"/>
         <source>Load</source>
-        <translation>読込</translation>
+        <translation>ロード</translation>
     </message>
 </context>
 <context>
@@ -963,12 +963,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../OverrideView.ui" line="113"/>
         <source>Save type</source>
-        <translation>セーブ形式</translation>
+        <translation>セーブタイプ</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="126"/>
         <source>None</source>
-        <translation>None</translation>
+        <translation>なし</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="131"/>
@@ -1041,7 +1041,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../PaletteView.ui" line="14"/>
         <source>Palette</source>
-        <translation>パレットビュアー</translation>
+        <translation>パレットビューアー</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="44"/>
@@ -1218,7 +1218,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../CoreController.cpp" line="664"/>
         <source>Failed to open save file: %1</source>
-        <translation>保存ファイルを開けませんでした: %1</translation>
+        <translation>セーブファイルを開けませんでした: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="693"/>
@@ -1256,7 +1256,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../CoreManager.cpp" line="169"/>
         <source>Failed to open save file. Is the save directory writable?</source>
-        <translation>保存ファイルを開けませんでした。保存ディレクトリが書き込み可能であることを確認してください。</translation>
+        <translation>セーブファイルを開けませんでした。セーブディレクトリが書き込み可能であることを確認してください。</translation>
     </message>
 </context>
 <context>
@@ -1274,7 +1274,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../FrameView.cpp" line="588"/>
         <source>None</source>
-        <translation>None</translation>
+        <translation>なし</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="590"/>
@@ -1348,7 +1348,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../GDBWindow.cpp" line="28"/>
         <source>Server settings</source>
-        <translation>サーバ設定</translation>
+        <translation>サーバー設定</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="34"/>
@@ -1363,7 +1363,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../GDBWindow.cpp" line="55"/>
         <source>Break</source>
-        <translation>Break</translation>
+        <translation>中断</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="104"/>
@@ -2764,7 +2764,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../IOViewer.cpp" line="1015"/>
         <source>Gamepak prefetch</source>
-        <translation>Gamepakプリフェッチ</translation>
+        <translation>ゲームパックプリフェッチ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1021"/>
@@ -2964,7 +2964,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MapView.cpp" line="136"/>
         <source>None</source>
-        <translation>None</translation>
+        <translation>なし</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="138"/>
@@ -3004,7 +3004,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemoryDump.cpp" line="24"/>
         <source>Save memory region</source>
-        <translation>メモリ領域を保存</translation>
+        <translation>メモリ領域をセーブ</translation>
     </message>
     <message>
         <location filename="../MemoryDump.cpp" line="30"/>
@@ -3022,7 +3022,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemoryModel.cpp" line="49"/>
         <source>Save selection</source>
-        <translation>選択値を保存</translation>
+        <translation>選択値をセーブ</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="54"/>
@@ -3032,7 +3032,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemoryModel.cpp" line="59"/>
         <source>Load</source>
-        <translation>読込</translation>
+        <translation>ロード</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="108"/>
@@ -3047,7 +3047,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemoryModel.cpp" line="207"/>
         <source>Save selected memory</source>
-        <translation>選択したメモリを保存する</translation>
+        <translation>選択したメモリをセーブ</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="213"/>
@@ -3141,7 +3141,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ObjView.cpp" line="194"/>
         <source>Invalid</source>
-        <translation>Invalid</translation>
+        <translation>無効</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="250"/>
@@ -3234,7 +3234,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ROMInfo.cpp" line="79"/>
         <source>(no database present)</source>
-        <translation>(データベースがありません)</translation>
+        <translation>(データベースなし)</translation>
     </message>
 </context>
 <context>
@@ -3266,7 +3266,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../SettingsView.cpp" line="168"/>
         <source>Software (Qt)</source>
-        <translation>Software (Qt)</translation>
+        <translation>ソフト(Qt)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="174"/>
@@ -3276,12 +3276,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../SettingsView.cpp" line="181"/>
         <source>OpenGL (force version 1.x)</source>
-        <translation>OpenGL (強制バージョン1.x)</translation>
+        <translation>OpenGL(強制バージョン1.x)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="189"/>
         <source>None (Still Image)</source>
-        <translation>None(静止画)</translation>
+        <translation>なし(静止画)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="280"/>
@@ -3307,7 +3307,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../SettingsView.cpp" line="365"/>
         <source>Select BIOS</source>
-        <translation>BIOS選択</translation>
+        <translation>BIOSを選択</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="704"/>
@@ -3340,7 +3340,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ShaderSelector.cpp" line="122"/>
         <source>Preprocessing</source>
-        <translation>前処理</translation>
+        <translation>前処理中</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="129"/>
@@ -3548,7 +3548,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../Window.cpp" line="889"/>
         <source>Failed to create an appropriate display device, falling back to software display. Games may run slowly, especially with larger windows.</source>
-        <translation>適切なディスプレイデバイスの作成に失敗し、ソフトウェアディスプレイにフォールバックしました。特に大きなウィンドウでは、ゲームの実行が遅い場合があります。</translation>
+        <translation>適切なディスプレイデバイスの作成に失敗し、ソフトディスプレイにフォールバックしました。特に大きなウィンドウでは、ゲームの実行が遅い場合があります。</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="981"/>
@@ -3794,7 +3794,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../Window.cpp" line="1250"/>
         <source>Fast forward (held)</source>
-        <translation>早送り(固定)</translation>
+        <translation>早送り(押し)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1256"/>
@@ -3819,7 +3819,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../Window.cpp" line="1273"/>
         <source>Rewind (held)</source>
-        <translation>巻戻し(固定)</translation>
+        <translation>巻戻し(押し)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1280"/>
@@ -4039,7 +4039,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../Window.cpp" line="1533"/>
         <source>Search memory...</source>
-        <translation>メモリーサーチ...</translation>
+        <translation>メモリ検索...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1536"/>
@@ -4049,7 +4049,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../Window.cpp" line="1541"/>
         <source>Record debug video log...</source>
-        <translation>デバッグビデオログ録画...</translation>
+        <translation>デバッグビデオログ...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1542"/>
@@ -4064,7 +4064,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../Window.cpp" line="1644"/>
         <source>GameShark Button (held)</source>
-        <translation>GameSharkボタン(固定)</translation>
+        <translation>GameSharkボタン(押し)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1650"/>
@@ -4231,7 +4231,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ReportView.ui" line="72"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;バグレポートを提出するには、最初にレポートファイルを生成して、送信しようとしているバグレポートに添付してください。セーブファイルはデバッグの問題に役立つことが多いため、セーブファイルを含めることをお勧めします。実行している{projectName}のバージョン、構成、コンピューター、および現在起動しているゲーム(存在する場合)に関する情報が収集されます。収集が完了すると、以下で収集されたすべての情報を確認して、ZIPファイルに保存できます。収集されたパスのいずれかにある場合、ユーザー名などの個人情報を自動的に墨消しを試みます。ただし、後で必要に応じて編集できます。レポートファイルを生成して保存したら、下のボタンをクリックするか、&lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt;に移動してGitHubでバグレポートを送信してください。生成したレポートを必ず添付してください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;バグレポートを提出するには、最初にレポートファイルを生成して、送信しようとしているバグレポートに添付してください。セーブファイルはデバッグの問題に役立つことが多いため、セーブファイルを含めることをお勧めします。実行している{projectName}のバージョン、構成、コンピューター、および現在起動しているゲーム(存在する場合)に関する情報が収集されます。収集が完了すると、以下で収集されたすべての情報を確認して、ZIPファイルにセーブできます。収集されたパスのいずれかにある場合、ユーザー名などの個人情報を自動的に墨消しを試みます。ただし、後で必要に応じて編集できます。レポートファイルを生成してセーブしたら、下のボタンをクリックするか、&lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt;に移動してGitHubでバグレポートを送信してください。生成したレポートを必ず添付してください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="90"/>
@@ -4369,7 +4369,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../SettingsView.ui" line="77"/>
         <source>Paths</source>
-        <translation>ディレクトリ</translation>
+        <translation>パス</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="82"/>
@@ -4558,12 +4558,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../SettingsView.ui" line="602"/>
         <source>Show OSD messages</source>
-        <translation>OSDメッセージ表示</translation>
+        <translation>OSDメッセージを表示</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="740"/>
         <source>Fast forward (held) speed:</source>
-        <translation>早送り(固定)速度:</translation>
+        <translation>早送り(押し)速度:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="961"/>
@@ -4588,7 +4588,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../SettingsView.ui" line="1479"/>
         <source>Select Log File</source>
-        <translation>ファイル選択</translation>
+        <translation>ログファイルを選択</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1858"/>
@@ -4744,7 +4744,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../SettingsView.ui" line="886"/>
         <source>Savestate extra data:</source>
-        <translation>ステートセーブ追加データ:</translation>
+        <translation>ステートセーブの追加データ:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="893"/>
@@ -4767,7 +4767,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../SettingsView.ui" line="930"/>
         <source>Load extra data:</source>
-        <translation>ロード追加データ:</translation>
+        <translation>追加データをロード:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="872"/>
@@ -4797,7 +4797,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../SettingsView.ui" line="993"/>
         <source>OpenGL enhancements</source>
-        <translation>OpenGL追加機能</translation>
+        <translation>OpenGL機能強化</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="999"/>
@@ -4942,12 +4942,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ShaderSelector.ui" line="35"/>
         <source>Name</source>
-        <translation>名称</translation>
+        <translation>シェーダー名</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="45"/>
         <source>Author</source>
-        <translation>製作者</translation>
+        <translation>作成者</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="62"/>
@@ -4970,7 +4970,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ShortcutView.ui" line="14"/>
         <source>Edit Shortcuts</source>
-        <translation>ショートカットキー編集</translation>
+        <translation>ショートカットキーを編集</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="29"/>
@@ -5018,7 +5018,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../TileView.ui" line="92"/>
         <source>Tiles per row</source>
-        <translation>Tiles per row</translation>
+        <translation>行あたりのタイル</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="99"/>
@@ -5148,7 +5148,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../VideoView.ui" line="288"/>
         <source>HEVC (NVENC)</source>
-        <translation>HEVC (NVENC)</translation>
+        <translation>HEVC(NVENC)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="293"/>
@@ -5169,7 +5169,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../VideoView.ui" line="308"/>
         <location filename="../VideoView.ui" line="350"/>
         <source>None</source>
-        <translation>None</translation>
+        <translation>なし</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="320"/>
