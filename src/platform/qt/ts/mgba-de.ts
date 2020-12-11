@@ -450,12 +450,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../LogView.ui" line="14"/>
         <source>Logs</source>
-        <translation>Logs</translation>
+        <translation>Protokolle</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="22"/>
         <source>Enabled Levels</source>
-        <translation>Aktivierte Log-Level</translation>
+        <translation>Aktivierte Levels</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="28"/>
@@ -470,7 +470,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../LogView.ui" line="48"/>
         <source>Info</source>
-        <translation>Info</translation>
+        <translation>Infos</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="58"/>
@@ -1368,7 +1368,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../GDBWindow.cpp" line="104"/>
         <source>Stop</source>
-        <translation>Stop</translation>
+        <translation>Stopp</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="114"/>
@@ -2749,17 +2749,17 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../IOViewer.cpp" line="1011"/>
         <source>4.19MHz</source>
-        <translation>4.19MHz</translation>
+        <translation>4,19 MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1012"/>
         <source>8.38MHz</source>
-        <translation>8.38MHz</translation>
+        <translation>8,38 MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1013"/>
         <source>16.78MHz</source>
-        <translation>16.78MHz</translation>
+        <translation>16,78 MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1015"/>
@@ -2986,7 +2986,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../MapView.cpp" line="169"/>
         <location filename="../MapView.cpp" line="217"/>
         <source>N/A</source>
-        <translation>N/A</translation>
+        <translation>entf.</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="260"/>
@@ -4173,7 +4173,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../ROMInfo.ui" line="26"/>
         <source>Game name:</source>
-        <translation>Spiel-Name:</translation>
+        <translation>Spielname:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="33"/>
@@ -4294,7 +4294,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../SensorView.ui" line="97"/>
         <source>MM/dd/yy hh:mm:ss AP</source>
-        <translation>dd/mm/yy hh:mm:ss</translation>
+        <translation>dd.MM.yy HH:mm:ss</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="107"/>
