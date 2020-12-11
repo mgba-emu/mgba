@@ -706,7 +706,7 @@
             <bool>false</bool>
            </property>
            <property name="suffix">
-            <string>×</string>
+            <string notr="true">×</string>
            </property>
            <property name="minimum">
             <double>0.010000000000000</double>
@@ -749,7 +749,7 @@
             <bool>false</bool>
            </property>
            <property name="suffix">
-            <string>×</string>
+            <string notr="true">×</string>
            </property>
            <property name="minimum">
             <double>0.010000000000000</double>
@@ -1005,7 +1005,7 @@
             <item>
              <widget class="QSpinBox" name="videoScale">
               <property name="suffix">
-               <string>×</string>
+               <string notr="true">×</string>
               </property>
               <property name="minimum">
                <number>1</number>
