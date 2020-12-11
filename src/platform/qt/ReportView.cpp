@@ -258,20 +258,26 @@ void ReportView::openBugReportPage() {
 void ReportView::addCpuInfo(QStringList& report) {
 #ifdef USE_CPUID
 	std::array<unsigned, 4> regs;
-	if (!cpuid(0, regs)) {
+	if (!cpuid(0, regs.data())) {
 		return;
 	}
 	unsigned vendor[4] = { regs[1], regs[3], regs[2], 0 };
+	std::array<unsigned, 13> cpu{};
+	cpuid(0x80000002, &cpu[0]);
+	cpuid(0x80000003, &cpu[4]);
+	cpuid(0x80000004, &cpu[8]);
+
 	auto testBit = [](unsigned bit, unsigned reg) {
 		return yesNo[bool(reg & (1 << bit))];
 	};
 	QStringList features;
+	report << QString("CPU: %1").arg(QLatin1String(reinterpret_cast<char*>(cpu.data())));
 	report << QString("CPU manufacturer: %1").arg(QLatin1String(reinterpret_cast<char*>(vendor)));
-	cpuid(1, regs);
+	cpuid(1, regs.data());
 	unsigned family = ((regs[0] >> 8) & 0xF) | ((regs[0] >> 16) & 0xFF0);
 	unsigned model = ((regs[0] >> 4) & 0xF) | ((regs[0] >> 12) & 0xF0);
-	report << QString("CPU family: %1h").arg(family, 2, 16, QChar('0'));
-	report << QString("CPU model: %1h").arg(model, 2, 16, QChar('0'));
+	report << QString("CPU family ID: %1h").arg(family, 2, 16, QChar('0'));
+	report << QString("CPU model ID: %1h").arg(model, 2, 16, QChar('0'));
 	features << QString("Supports SSE: %1").arg(testBit(25, regs[3]));
 	features << QString("Supports SSE2: %1").arg(testBit(26, regs[3]));
 	features << QString("Supports SSE3: %1").arg(testBit(0, regs[2]));
@@ -282,11 +288,13 @@ void ReportView::addCpuInfo(QStringList& report) {
 	features << QString("Supports POPCNT: %1").arg(testBit(23, regs[2]));
 	features << QString("Supports RDRAND: %1").arg(testBit(30, regs[2]));
 	features << QString("Supports AVX: %1").arg(testBit(28, regs[2]));
-	cpuid(7, 0, regs);
+	features << QString("Supports CMPXCHG8: %1").arg(testBit(8, regs[3]));
+	features << QString("Supports CMPXCHG16: %1").arg(testBit(13, regs[2]));
+	cpuid(7, 0, regs.data());
 	features << QString("Supports AVX2: %1").arg(testBit(5, regs[1]));
 	features << QString("Supports BMI1: %1").arg(testBit(3, regs[1]));
 	features << QString("Supports BMI2: %1").arg(testBit(8, regs[1]));
-	cpuid(0x80000001, regs);
+	cpuid(0x80000001, regs.data());
 	features << QString("Supports ABM: %1").arg(testBit(5, regs[2]));
 	features << QString("Supports SSE4a: %1").arg(testBit(6, regs[2]));
 	features.sort();
@@ -400,11 +408,11 @@ bool ReportView::eventFilter(QObject*, QEvent* event) {
 }
 
 #ifdef USE_CPUID
-bool ReportView::cpuid(unsigned id, std::array<unsigned, 4>& regs) {
+bool ReportView::cpuid(unsigned id, unsigned* regs) {
 	return cpuid(id, 0, regs);
 }
 
-bool ReportView::cpuid(unsigned id, unsigned sub, std::array<unsigned, 4>& regs) {
+bool ReportView::cpuid(unsigned id, unsigned sub, unsigned* regs) {
 	if (s_cpuidMax == 0xFFFFFFFF) {
 #ifdef _MSC_VER
 		__cpuid(reinterpret_cast<int*>(regs.data()), 0);
@@ -428,7 +436,7 @@ bool ReportView::cpuid(unsigned id, unsigned sub, std::array<unsigned, 4>& regs)
 	}
 
 #ifdef _MSC_VER
-	__cpuidex(reinterpret_cast<int*>(regs.data()), id, sub);
+	__cpuidex(reinterpret_cast<int*>(regs), id, sub);
 #else
 	__cpuid_count(id, sub, regs[0], regs[1], regs[2], regs[3]);
 #endif

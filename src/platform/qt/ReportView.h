@@ -49,8 +49,8 @@ private:
 	QString redact(const QString& text);
 
 #if (defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))) || (defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64)))
-	static bool cpuid(unsigned id, std::array<unsigned, 4>& regs);
-	static bool cpuid(unsigned id, unsigned sub, std::array<unsigned, 4>& regs);
+	static bool cpuid(unsigned id, unsigned* regs);
+	static bool cpuid(unsigned id, unsigned sub, unsigned* regs);
 
 	static unsigned s_cpuidMax;
 	static unsigned s_cpuidExtMax;
