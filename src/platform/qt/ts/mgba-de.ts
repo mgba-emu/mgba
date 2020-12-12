@@ -1228,7 +1228,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../CoreController.cpp" line="717"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
-        <translation type="unfinished"></translation>
+        <translation>Das GamePak kann nur auf unterstützten Plattformen herausgezogen werden!</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="794"/>
@@ -3242,12 +3242,12 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../ReportView.cpp" line="212"/>
         <source>Bug report archive</source>
-        <translation type="unfinished"></translation>
+        <translation>Fehlerbericht speichern</translation>
     </message>
     <message>
         <location filename="../ReportView.cpp" line="212"/>
         <source>ZIP archive (*.zip)</source>
-        <translation type="unfinished"></translation>
+        <translation>ZIP-Archiv (*.zip)</translation>
     </message>
 </context>
 <context>
@@ -3689,7 +3689,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../Window.cpp" line="1223"/>
         <source>Report bug...</source>
-        <translation type="unfinished"></translation>
+        <translation>Fehler melden...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1227"/>
@@ -4226,37 +4226,37 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../ReportView.ui" line="14"/>
         <source>Generate Bug Report</source>
-        <translation type="unfinished"></translation>
+        <translation>Fehlerbericht erstellen</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="72"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Um einen Fehler zu melden, erstelle bitte zuerst eine berichtsdatei, welche Du an deinen Fehlerbericht anhängen kannst. Es wird empfohlen, dass du in dem Archiv auch eine Spielstand-Datei beilegst, da diese häufig bei der Fehlersuche behilflich ist. Der Fehlerbericht wird einige Informationen über die verwendete Version von {projectName}, dein System, deinen Computer und das derzeit geöffnete Spiel. Sobald die Sammlung vollständig ist, kannst du alle gesammelten Informationen einsehen und in eine ZIP-Datei speichern. Wir versuchen automatisch, so viele persönlichen Daten wie möglich zu entfernen. Nachdem du den Bericht erstellt und abgespeichert hast, klicke bitte auf den untenstehenden Button oder besuche &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; um einen Fehlerbericht auf GitHub zu erzeugen. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="90"/>
         <source>Generate report</source>
-        <translation type="unfinished"></translation>
+        <translation>Fehlerbericht erzeugen</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="104"/>
         <source>Save</source>
-        <translation type="unfinished">Speichern</translation>
+        <translation>Speichern</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="118"/>
         <source>Open issue list in browser</source>
-        <translation type="unfinished"></translation>
+        <translation>Offene Fehler im Browser öffnen</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="139"/>
         <source>Include save file</source>
-        <translation type="unfinished"></translation>
+        <translation>Spielstand-Datei anhängen</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="155"/>
         <source>Create and include savestate</source>
-        <translation type="unfinished"></translation>
+        <translation>Savestate erzeugen und anhängen</translation>
     </message>
 </context>
 <context>
