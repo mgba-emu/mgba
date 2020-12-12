@@ -195,7 +195,7 @@ mGBA mit Visual Studio zu bauen erfordert ein ähnlich kompliziertes Setup. Zuer
 
 Bitte beachte, dass diese Installation keine hardwarebeschleunigtes Video-Encoding auf Nvidia-Hardware unterstützen wird. Wenn Du darauf Wert legst, musst Du zuerst CUDA installieren und anschließend den vorherigen Befehl um `ffmpeg[vpx,x264,nvcodec]` ergänzen.
 
-Zusätzlich wirst Du auch Qt installieren müssen. Unglücklicherweise es seit Version 5.15 kein Offline-Installationsprogramm mehr. Sie haben also drei Möglichkeiten:
+Zusätzlich wirst Du auch Qt installieren müssen. Unglücklicherweise es seit Version 5.15 kein Offline-Installationsprogramm mehr. Sie haben also drei Optionen:
 
 - Verwenden Sie ein altes Installationsprogramm ([Hier herunterladen](https://download.qt.io/official_releases/qt/5.12/5.12.9/qt-opensource-windows-x86-5.12.9.exe)). Sie benötigen ein ansonsten nutzloses Benutzerkonto, aber Du kannst das umgehen, indem Du temporär einen ungültigen Netzwerk-Proxy hinterlegst oder über andere Methoden deine Netzwerkverbindung deaktivierst.
 - Verwenden Sie das Online-Installationsprogramm, für den ohnehin ein Benutzeraccount erfortderlich ist.
