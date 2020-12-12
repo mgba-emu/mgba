@@ -417,7 +417,7 @@ bool ReportView::cpuid(unsigned id, unsigned sub, unsigned* regs) {
 #ifdef _MSC_VER
 		__cpuid(reinterpret_cast<int*>(regs), 0);
 		s_cpuidMax = regs[0];
-		__cpuid(reinterpret_cast<int*>(regs, 0x80000000);
+		__cpuid(reinterpret_cast<int*>(regs), 0x80000000);
 		s_cpuidExtMax = regs[0];
 #else
 		s_cpuidMax = __get_cpuid_max(0, nullptr);
