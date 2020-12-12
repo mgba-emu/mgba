@@ -1,9 +1,11 @@
 mGBA
 ====
 
+### English | [Deutsch](./README_DE.md) | [Español](./README_ES.md) | [日本語](./README_JA.md) | [中文（简体）](./README_ZH_CN.md)
+
 mGBA is an emulator for running Game Boy Advance games. It aims to be faster and more accurate than many existing Game Boy Advance emulators, as well as adding features that other emulators lack. It also supports Game Boy and Game Boy Color games.
 
-Up-to-date news and downloads can be found at [mgba.io](https://mgba.io/).
+Up-to-date news and downloads can be found at [mgba.io](https://mgba.io).
 
 [![Build status](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)](https://travis-ci.org/mgba-emu/mgba)
 
@@ -193,7 +195,13 @@ To build using Visual Studio is a similarly complicated setup. To begin you will
 
 Note that this installation won't support hardware accelerated video encoding on Nvidia hardware. If you care about this, you'll need to install CUDA beforehand, and then substitute `ffmpeg[vpx,x264,nvcodec]` into the previous command.
 
-You will also need to install Qt. Unfortunately due to Qt being owned and run by an ailing company as opposed to a reasonable organization there is no longer an offline open source edition installer for the latest version, so you'll need to either fall back to an [old version installer](https://download.qt.io/official_releases/qt/5.12/5.12.9/qt-opensource-windows-x86-5.12.9.exe) (which wants you to create an otherwise-useless account, but you can bypass temporarily setting an invalid proxy or otherwise disabling networking), use the online installer (which requires an account regardless), or use vcpkg to build it (slowly). None of these are great options. For the installer you'll want to install the applicable MSVC versions. Note that the offline installers do not support MSVC 2019. For vcpkg you'll want to install it as such, which will take quite a while, especially on quad core or less computers:
+You will also need to install Qt. Unfortunately since v5.15, there is no longer an offline and open-source installer for Qt due to "offering changes", so you have three options:
+
+- Fall back to an old version installer prior to v5.15, such as v5.12.9 (download [here](https://download.qt.io/official_releases/qt/5.12/5.12.9/qt-opensource-windows-x86-5.12.9.exe)). The installer will ask you to create an otherwise-useless account, but you can bypass temporarily setting an invalid proxy or otherwise disabling networking.
+- Use the online installer, which requires an account regardless.
+- Use vcpkg to build it (but slowly).
+
+None of these are great options. For the installer you'll want to install the applicable MSVC versions. Note that the offline installers do not support MSVC 2019. For vcpkg you'll want to install it as such, which will take quite a while, especially on quad core or less computers:
 
     vcpkg install qt5-base qt5-multimedia
 
@@ -235,27 +243,27 @@ Footnotes
 
 <a name="missing">[1]</a> Currently missing features are
 
-- OBJ window for modes 3, 4 and 5 ([Bug #5](http://mgba.io/b/5))
+- OBJ window for modes 3, 4 and 5 ([Bug #5](https://mgba.io/b/5))
 
 <a name="flashdetect">[2]</a> Flash memory size detection does not work in some cases. These can be configured at runtime, but filing a bug is recommended if such a case is encountered.
 
 <a name="osxver">[3]</a> 10.8 is only needed for the Qt port. It may be possible to build or running the Qt port on 10.7 or older, but this is not officially supported. The SDL port is known to work on 10.5, and may work on older.
 
-[downloads]: http://mgba.io/downloads.html
-[source]: https://github.com/mgba-emu/mgba/
+[downloads]: https://mgba.io/downloads.html
+[source]: https://github.com/mgba-emu/mgba
 
 Copyright
 ---------
 
-mGBA is Copyright © 2013 – 2020 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
+mGBA is Copyright © 2013 – 2020 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/en-US/MPL/2.0). A copy of the license is available in the distributed LICENSE file.
 
 mGBA contains the following third-party libraries:
 
 - [inih](https://github.com/benhoyt/inih), which is copyright © 2009 – 2020 Ben Hoyt and used under a BSD 3-clause license.
 - [blip-buf](https://code.google.com/archive/p/blip-buf), which is copyright © 2003 – 2009 Shay Green and used under a Lesser GNU Public License.
-- [LZMA SDK](http://www.7-zip.org/sdk.html), which is public domain.
+- [LZMA SDK](https://7-zip.org/sdk.html), which is public domain.
 - [MurmurHash3](https://github.com/aappleby/smhasher) implementation by Austin Appleby, which is public domain.
-- [getopt for MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio/), which is public domain.
-- [SQLite3](https://www.sqlite.org), which is public domain.
+- [getopt for MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio), which is public domain.
+- [SQLite3](https://sqlite.org), which is public domain.
 
 If you are a game publisher and wish to license mGBA for commercial usage, please email [licensing@mgba.io](mailto:licensing@mgba.io) for more information.

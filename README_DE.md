@@ -1,6 +1,8 @@
 mGBA
 ====
 
+### [English](./README.md) | Deutsch | [Español](./README_ES.md) | [日本語](./README_JA.md) | [中文（简体）](./README_ZH_CN.md)
+
 mGBA ist ein Emulator für Game Boy Advance-Spiele. Das Ziel von mGBA ist, schneller und genauer als viele existierende Game Boy Advance-Emulatoren zu sein. Außerdem verfügt mGBA über Funktionen, die anderen Emulatoren fehlen. Zusätzlich werden auch Game Boy- und Game Boy Color-Spiele unterstützt.
 
 Aktuelle Neuigkeiten und Downloads findest Du auf [mgba.io](https://mgba.io).
@@ -193,7 +195,13 @@ mGBA mit Visual Studio zu bauen erfordert ein ähnlich kompliziertes Setup. Zuer
 
 Bitte beachte, dass diese Installation keine hardwarebeschleunigtes Video-Encoding auf Nvidia-Hardware unterstützen wird. Wenn Du darauf Wert legst, musst Du zuerst CUDA installieren und anschließend den vorherigen Befehl um `ffmpeg[vpx,x264,nvcodec]` ergänzen.
 
-Zusätzlich wirst Du auch Qt installieren müssen. Unglücklicherweise steht für Qt kein Offline-Installationsprogramm für die jeweils aktuelle Version bereit. Daher musst Du entweder auf eine [ältere Version](https://download.qt.io/official_releases/qt/5.12/5.12.9/qt-opensource-windows-x86-5.12.9.exe) zurückgreifen (hierfür benötigst Du ein ansonsten nutzloses Benutzerkonto, aber Du kannst das umgehen, indem Du temporär einen ungültigen Netzwerk-Proxy hinterlegst oder über andere Methoden deine Netzwerkverbindung deaktivierst). Alternativ kannst Du auch den Online-Installer nutzen (für den ohnehin ein Benutzeraccount erfortderlich ist) oder Qt selbst mithilfe von vcpkg bauen (was verhältnismäßig lange dauert). Keine dieser Optionen ist besonders elegant. Bitte achte bei der Verwendung eines Installers darauf, die passende MSVC-Version zu wählen. Der Offline-Installer unterstützt aktuell noch nicht MSVC 2019. Die Installation mit vcpkg dauert ein wenig länger, besonders, wenn Du einen Computer mit vier oder weniger CPU-Cores nutzt:
+Zusätzlich wirst Du auch Qt installieren müssen. Unglücklicherweise es seit Version 5.15 kein Offline-Installationsprogramm mehr. Sie haben also drei Möglichkeiten:
+
+- Verwenden Sie ein altes Installationsprogramm ([Hier herunterladen](https://download.qt.io/official_releases/qt/5.12/5.12.9/qt-opensource-windows-x86-5.12.9.exe)). Sie benötigen ein ansonsten nutzloses Benutzerkonto, aber Du kannst das umgehen, indem Du temporär einen ungültigen Netzwerk-Proxy hinterlegst oder über andere Methoden deine Netzwerkverbindung deaktivierst.
+- Verwenden Sie das Online-Installationsprogramm, für den ohnehin ein Benutzeraccount erfortderlich ist.
+- Qt selbst mithilfe von vcpkg bauen (was verhältnismäßig lange dauert).
+
+Keine dieser Optionen ist besonders elegant. Bitte achte bei der Verwendung eines Installers darauf, die passende MSVC-Version zu wählen. Der Offline-Installer unterstützt aktuell noch nicht MSVC 2019. Die Installation mit vcpkg dauert ein wenig länger, besonders, wenn Du einen Computer mit vier oder weniger CPU-Cores nutzt:
 
     vcpkg install qt5-base qt5-multimedia
 

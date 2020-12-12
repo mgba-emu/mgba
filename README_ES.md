@@ -1,9 +1,11 @@
 mGBA
 ====
 
+### [English](./README.md) | [Deutsch](./README_DE.md) | Español | [日本語](./README_JA.md) | [中文（简体）](./README_ZH_CN.md)
+
 mGBA es un emulador para juegos de Game Boy Advance. Su objetivo es ser más rápido y más preciso que muchos emuladores de Game Boy Advance existentes, además de añadir funciones que otros emuladores no tienen. También es compatible con juegos de Game Boy y Game Boy Color.
 
-Las noticias actualizadas y las descargas se encuentran en [mgba.io](https://mgba.io/).
+Las noticias actualizadas y las descargas se encuentran en [mgba.io](https://mgba.io).
 
 [![Estado de compilación](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)](https://travis-ci.org/mgba-emu/mgba)
 
@@ -193,7 +195,13 @@ Construir usando Visual Studio requiere una configuración igualmente complicada
 
 Toma nota de que esta instalación no soportará la codificación de video acelerada por hardware en Nvidia. Si te preocupa esto, necesitarás instalar CUDA, y luego sustituir `ffmpeg[vpx,x264,nvcodec]` en el comando anterior.
 
-También necesitarás instalar Qt. Desafortunadamente, debido a que Qt pertenece y es administrado por una empresa en problemas en lugar de una organización razonable, ya no existe un instalador de la edición de código abierto sin conexión para la última versión, por lo que deberás recurrir a un [instalador de una versión anterior](https://download.qt.io/official_releases/qt/5.12/5.12.9/qt-opensource-windows-x86-5.12.9.exe) (que quiere que crees una cuenta que de otro modo sería inútil, pero puedes omitir esto al configurar temporalmente un proxy inválido o deshabilitar la red), usa el instalador en línea (que requiere una cuenta de todos modos) o usa vcpkg para construirlo (lentamente). Ninguna de estas son buenas opciones. Si usas el instalador, querrás instalar las versiones de MSVC correspondientes. Ten en cuenta que los instaladores sin conexión no son compatibles con MSVC 2019. Para vcpkg, querrás instalarlo así, lo que llevará bastante tiempo, especialmente en computadoras de cuatro núcleos o menos:
+También necesitarás instalar Qt. Desafortunadamente, desde la v5.15, ya no existe un instalador fuera de línea y de código abierto debido a los "cambios de oferta", por lo que tiene tres opciones:
+
+- Recurrir a un instalador de una versión anterior anterior a la v5.15, como la v5.12.9 (descarga [aquí](https://download.qt.io/official_releases/qt/5.12/5.12.9/qt-opensource-windows-x86-5.12.9.exe)). El instalador le pedirá que cree una cuenta que de otro modo sería inútil, pero puedes omitir esto al configurar temporalmente un proxy inválido o deshabilitar la red.
+- Usa el instalador en línea, que requiere una cuenta de todos modos.
+- Usa vcpkg para construirlo (lentamente).
+
+Ninguna de estas son buenas opciones. Si usas el instalador, querrás instalar las versiones de MSVC correspondientes. Ten en cuenta que los instaladores sin conexión no son compatibles con MSVC 2019. Para vcpkg, querrás instalarlo así, lo que llevará bastante tiempo, especialmente en computadoras de cuatro núcleos o menos:
 
     vcpkg install qt5-base qt5-multimedia
 
@@ -235,14 +243,14 @@ Notas a pie
 
 <a name="missing">[1]</a> Las características faltantes actualmente son
 
-- OBJ window para los modos 3, 4 y 5 ([Bug #5](http://mgba.io/b/5))
+- OBJ window para los modos 3, 4 y 5 ([Bug #5](https://mgba.io/b/5))
 
 <a name="flashdetect">[2]</a> La detección del tamaño de la memoria flash no funciona en algunos casos. Se pueden configurar en tiempo de ejecución, pero se recomienda ingresar un bug si se encuentra un caso así.
 
 <a name="osxver">[3]</a> 10.8 sólo se necesita para la versión con Qt. Puede ser posible compilar o hacer funcionar la versión Qt en 10.7 o versiones más antigas, pero esto no está oficialmente soportado. La versión SDL funciona en 10.5, y puede funcionar en versiones anteriores.
 
-[downloads]: http://mgba.io/downloads.html
-[source]: https://github.com/mgba-emu/mgba/
+[downloads]: https://mgba.io/downloads.html
+[source]: https://github.com/mgba-emu/mgba
 
 Copyright
 ---------
@@ -253,9 +261,9 @@ mGBA contiene las siguientes bibliotecas de terceros:
 
 - [inih](https://github.com/benhoyt/inih), que es copyright © 2009 - 2020 Ben Hoyt y se utiliza bajo licencia de la cláusula 3 de BSD.
 - [blip-buf](https://code.google.com/archive/p/blip-buf), que es  copyright © 2003 - 2009 Shay Green y se usa bajo LGPL.
-- [LZMA SDK](http://www.7-zip.org/sdk.html), la cual está en el dominio público.
+- [LZMA SDK](https://www.7-zip.org/sdk.html), la cual está en el dominio público.
 - [MurmurHash3](https://github.com/aappleby/smhasher), implementación por Austin Appleby, la cual está en el dominio público.
-- [getopt for MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio/), la cual está en el dominio público.
-- [SQLite3](https://www.sqlite.org), la cual está en el dominio público.
+- [getopt for MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio), la cual está en el dominio público.
+- [SQLite3](https://sqlite.org), la cual está en el dominio público.
 
 Si usted es un editor de juegos y desea obtener una licencia de mGBA para uso comercial, por favor envíe un correo electrónico a [licensing@mgba.io](mailto:licensing@mgba.io) para obtener más información.
