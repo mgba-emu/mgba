@@ -140,7 +140,7 @@ mGBAには、次のサードパーティライブラリが含まれています:
 - [inih](https://github.com/benhoyt/inih) Copyright © 2009 – 2020 Ben Hoyt、BSD3節ライセンス(BSD 3-clause license)で配布
 - [blip-buf](https://code.google.com/archive/p/blip-buf) Copyright © 2003 – 2009 Shay Green、Lesser GNU一般公衆ライセンス(Lesser GNU Public License)で配布
 - [LZMA SDK](https://7-zip.org/sdk.html)(パブリックドメイン)
-- [MurmurHash3](https://github.com/aappleby/smhasher)、実装者はオースティンアップルビー(パブリックドメイン)
+- [MurmurHash3](https://github.com/aappleby/smhasher)、実装者:Austin Appleby(パブリックドメイン)
 - [getopt for MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio)(パブリックドメイン)
 - [SQLite3](https://sqlite.org)(パブリックドメイン)
 
