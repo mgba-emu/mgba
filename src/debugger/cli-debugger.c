@@ -126,6 +126,7 @@ static struct CLIDebuggerCommandAlias _debuggerCommandAliases[] = {
 	{ "d", "delete" },
 	{ "dis", "disassemble" },
 	{ "disasm", "disassemble" },
+	{ "fin", "finish" },
 	{ "h", "help" },
 	{ "i", "status" },
 	{ "info", "status" },
