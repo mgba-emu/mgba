@@ -44,6 +44,11 @@ static void mSDLDeinit(struct mSDLRenderer* renderer);
 
 static int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args);
 
+#ifdef USE_PLEDGE
+static bool mPledgeBroad(struct mArguments* args);
+static bool mPledgeNarrow(struct mArguments* args);
+#endif
+
 static struct VFile* _state = NULL;
 
 static void _loadState(struct mCoreThread* thread) {
@@ -149,6 +154,20 @@ int main(int argc, char** argv) {
 	renderer.player.bindings = &renderer.core->inputMap;
 	mSDLInitBindingsGBA(&renderer.core->inputMap);
 	mSDLInitEvents(&renderer.events);
+
+#ifdef USE_PLEDGE
+	if (!mPledgeBroad(&args)) {
+		freeArguments(&args);
+		mCoreConfigDeinit(&renderer.core->config);
+		mInputMapDeinit(&renderer.core->inputMap);
+		renderer.core->deinit(renderer.core);
+		mSDLDeinitEvents(&renderer.events);
+		mSDLDeinit(&renderer);
+		fputs("Broad pledge() failed\n", stderr);
+		return 1;
+	}
+#endif
+
 	mSDLEventsLoadConfig(&renderer.events, mCoreConfigGetInput(&renderer.core->config));
 	mSDLAttachPlayer(&renderer.events, &renderer.player);
 	mSDLPlayerLoadConfig(&renderer.player, mCoreConfigGetInput(&renderer.core->config));
@@ -267,6 +286,12 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 					state->close(state);
 				}
 			}
+#ifdef USE_PLEDGE
+			if (!mPledgeNarrow(args)) {
+				didFail = true;
+				fputs("Narrow pledge() failed\n", stderr);
+			}
+#endif
 			renderer->runloop(renderer, &thread);
 			mSDLPauseAudio(&renderer->audio);
 			if (mCoreThreadHasCrashed(&thread)) {
@@ -315,3 +340,43 @@ static void mSDLDeinit(struct mSDLRenderer* renderer) {
 
 	SDL_Quit();
 }
+
+#ifdef USE_PLEDGE
+static bool mPledgeBroad(struct mArguments *args) {
+	if (args->debuggerType == DEBUGGER_CLI) {
+		if (pledge("stdio rpath wpath cpath inet fattr unix dns sendfd prot_exec tty drm audio", NULL) == -1) {
+			return false;
+		}
+#ifdef USE_GDB_STUB
+	} else if (args->debuggerType == DEBUGGER_GDB) {
+		if (pledge("stdio rpath wpath cpath inet fattr unix dns sendfd prot_exec drm audio", NULL) == -1) {
+			return false;
+		}
+#endif
+	} else {
+		if (pledge("stdio rpath wpath cpath inet fattr unix dns sendfd prot_exec drm audio", NULL) == -1) {
+			return false;
+		}
+	}
+	return true;
+}
+
+static bool mPledgeNarrow(struct mArguments *args) {
+	if (args->debuggerType == DEBUGGER_CLI) {
+		if (pledge("stdio rpath wpath cpath fattr sendfd tty prot_exec drm audio", NULL) == -1) {
+			return false;
+		}
+#ifdef USE_GDB_STUB
+	} else if (args->debuggerType == DEBUGGER_GDB) {
+		if (pledge("stdio rpath wpath cpath inet fattr sendfd prot_exec drm audio", NULL) == -1) {
+			return false;
+		}
+#endif
+	} else {
+		if (pledge("stdio rpath wpath cpath fattr sendfd prot_exec drm audio", NULL) == -1) {
+			return false;
+		}
+	}
+	return true;
+}
+#endif
