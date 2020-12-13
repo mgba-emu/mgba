@@ -152,13 +152,15 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 		return false;
 	}
 
-	if (isCall) {
-		int instructionLength = isWideInstruction ? WORD_SIZE_ARM : WORD_SIZE_THUMB;
-		frame = mStackTracePush(stack, pc, destAddress + instructionLength, cpu->gprs[ARM_SP], &cpu->regs);
+	if (interrupt || isCall) {
+		if (isCall) {
+			int instructionLength = isWideInstruction ? WORD_SIZE_ARM : WORD_SIZE_THUMB;
+			frame = mStackTracePush(stack, pc, destAddress + instructionLength, cpu->gprs[ARM_SP], &cpu->regs);
+		}
 		if (!(debugger->stackTraceMode & STACK_TRACE_BREAK_ON_CALL)) {
 			return false;
 		}
-	} else if (!interrupt) {
+	} else {
 		if (frame && currentStack == ARMSelectBank(FRAME_PRIV(frame))) {
 			mStackTracePop(stack);
 		}
