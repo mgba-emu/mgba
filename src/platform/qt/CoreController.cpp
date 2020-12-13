@@ -1096,25 +1096,57 @@ void CoreController::updateROMInfo() {
 #endif
 }
 
+CoreController::Interrupter::Interrupter()
+	: m_parent(nullptr)
+{
+}
+
 CoreController::Interrupter::Interrupter(CoreController* parent)
 	: m_parent(parent)
 {
-	if (!m_parent->thread()->impl) {
-		return;
-	}
-	if (mCoreThreadGet() != m_parent->thread()) {
-		mCoreThreadInterrupt(m_parent->thread());
-	} else {
-		mCoreThreadInterruptFromThread(m_parent->thread());
-	}
+	interrupt();
 }
 
 CoreController::Interrupter::Interrupter(std::shared_ptr<CoreController> parent)
 	: m_parent(parent.get())
 {
-	if (!m_parent->thread()->impl) {
+	interrupt();
+}
+
+CoreController::Interrupter::Interrupter(const Interrupter& other)
+	: m_parent(other.m_parent)
+{
+	interrupt();
+}
+
+CoreController::Interrupter::~Interrupter() {
+	resume();
+}
+
+CoreController::Interrupter& CoreController::Interrupter::operator=(const Interrupter& other)
+{
+	interrupt(other.m_parent);
+	return *this;
+}
+
+void CoreController::Interrupter::interrupt(CoreController* controller) {
+	if (m_parent != controller) {
+		CoreController* old = m_parent;
+		m_parent = controller;
+		interrupt();
+		resume(old);
+	}
+}
+
+void CoreController::Interrupter::interrupt(std::shared_ptr<CoreController> controller) {
+	interrupt(controller.get());
+}
+
+void CoreController::Interrupter::interrupt() {
+	if (!m_parent || !m_parent->thread()->impl) {
 		return;
 	}
+
 	if (mCoreThreadGet() != m_parent->thread()) {
 		mCoreThreadInterrupt(m_parent->thread());
 	} else {
@@ -1122,18 +1154,15 @@ CoreController::Interrupter::Interrupter(std::shared_ptr<CoreController> parent)
 	}
 }
 
-CoreController::Interrupter::Interrupter(const Interrupter& other)
-	: m_parent(other.m_parent)
-{
-	if (!m_parent->thread()->impl) {
-		return;
-	}
-	mCoreThreadInterrupt(m_parent->thread());
+void CoreController::Interrupter::resume() {
+	resume(m_parent);
+	m_parent = nullptr;
 }
 
-CoreController::Interrupter::~Interrupter() {
-	if (!m_parent->thread()->impl) {
+void CoreController::Interrupter::resume(CoreController* controller) {
+	if (!controller || !controller->thread()->impl) {
 		return;
 	}
-	mCoreThreadContinue(m_parent->thread());
+
+	mCoreThreadContinue(controller->thread());
 }

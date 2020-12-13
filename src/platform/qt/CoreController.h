@@ -53,12 +53,22 @@ public:
 
 	class Interrupter {
 	public:
+		Interrupter();
 		Interrupter(CoreController*);
 		Interrupter(std::shared_ptr<CoreController>);
 		Interrupter(const Interrupter&);
 		~Interrupter();
 
+		Interrupter& operator=(const Interrupter&);
+
+		void interrupt(CoreController*);
+		void interrupt(std::shared_ptr<CoreController>);
+		void resume();
+
 	private:
+		void interrupt();
+		void resume(CoreController*);
+
 		CoreController* m_parent;
 	};
 
