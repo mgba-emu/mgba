@@ -152,7 +152,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		LOAD_32(gba->cpu->bankedSPSRs[i], i * sizeof(gba->cpu->bankedSPSRs[0]), state->cpu.bankedSPSRs);
 	}
 	gba->cpu->privilegeMode = gba->cpu->cpsr.priv;
-	uint32_t pcMask = (gba->cpu->executionMode == MODE_THUMB ? WORD_SIZE_THUMB : WORD_SIZE_ARM) - 1;
+	uint32_t pcMask = (gba->cpu->cpsr.t ? WORD_SIZE_THUMB : WORD_SIZE_ARM) - 1;
 	if (gba->cpu->gprs[ARM_PC] & pcMask) {
 		mLOG(GBA_STATE, WARN, "Savestate has unaligned PC and is probably corrupted");
 		gba->cpu->gprs[ARM_PC] &= ~pcMask;
