@@ -1072,17 +1072,16 @@ IOViewer::IOViewer(std::shared_ptr<CoreController> controller, QWidget* parent)
 }
 
 void IOViewer::updateRegister() {
-	m_value = 0;
-	uint16_t value = 0;
 	{
 		CoreController::Interrupter interrupter(m_controller);
-		value = GBAView16(static_cast<ARMCore*>(m_controller->thread()->core->cpu), BASE_IO | m_register);
+		m_value = GBAView16(static_cast<ARMCore*>(m_controller->thread()->core->cpu), BASE_IO | m_register);
 	}
 
 	for (int i = 0; i < 16; ++i) {
-		m_b[i]->setChecked(value & (1 << i));
+		QSignalBlocker blocker(m_b[i]);
+		m_b[i]->setChecked(m_value & (1 << i));
 	}
-	m_value = value;
+	m_ui.regValue->setText("0x" + QString("%1").arg(m_value, 4, 16, QChar('0')).toUpper());
 	emit valueChanged();
 }
 
@@ -1103,7 +1102,7 @@ void IOViewer::writeback() {
 	updateRegister();
 }
 
-void IOViewer::selectRegister(unsigned address) {
+void IOViewer::selectRegister(int address) {
 	m_register = address;
 	QGridLayout* box = static_cast<QGridLayout*>(m_ui.regDescription->layout());
 	if (box) {
@@ -1130,7 +1129,10 @@ void IOViewer::selectRegister(unsigned address) {
 				check->setEnabled(!ri.readonly);
 				box->addWidget(check, i, 1, Qt::AlignRight);
 				connect(check, &QAbstractButton::toggled, m_b[ri.start], &QAbstractButton::setChecked);
-				connect(m_b[ri.start], &QAbstractButton::toggled, check, &QAbstractButton::setChecked);
+				connect(this, &IOViewer::valueChanged, check, [check, this, &ri] {
+					QSignalBlocker blocker(check);
+					check->setChecked(bool(m_value & (1 << ri.start)));
+				});
 			} else if (ri.items.empty()) {
 				QSpinBox* sbox = new QSpinBox;
 				sbox->setEnabled(!ri.readonly);
@@ -1140,20 +1142,16 @@ void IOViewer::selectRegister(unsigned address) {
 
 				connect(sbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [sbox, this, &ri](int v) {
 					for (int o = 0; o < ri.size; ++o) {
-						bool signalsBlocked = m_b[o + ri.start]->blockSignals(true);
+						QSignalBlocker blocker(m_b[o + ri.start]);
 						m_b[o + ri.start]->setChecked(v & (1 << o));
-						m_b[o + ri.start]->blockSignals(signalsBlocked);
 					}
+					bitFlipped();
 				});
 
-				auto connection = connect(this, &IOViewer::valueChanged, [sbox, &ri, this]() {
+				connect(this, &IOViewer::valueChanged, sbox, [sbox, this, &ri]() {
+					QSignalBlocker blocker(sbox);
 					int v = (m_value >> ri.start) & ((1 << ri.size) - 1);
-					bool signalsBlocked = sbox->blockSignals(true);
 					sbox->setValue(v);
-					sbox->blockSignals(signalsBlocked);
-				});
-				connect(sbox, &QObject::destroyed, [connection, this]() {
-					this->disconnect(connection);
 				});
 			} else {
 				QComboBox* cbox = new QComboBox;
@@ -1170,24 +1168,22 @@ void IOViewer::selectRegister(unsigned address) {
 				connect(cbox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [cbox, this, &ri](int index) {
 					unsigned v = cbox->itemData(index).toUInt();
 					for (int o = 0; o < ri.size; ++o) {
-						bool signalsBlocked = m_b[o + ri.start]->blockSignals(true);
+						QSignalBlocker blocker(m_b[o + ri.start]);
 						m_b[o + ri.start]->setChecked(v & (1 << o));
-						m_b[o + ri.start]->blockSignals(signalsBlocked);
 					}
+					bitFlipped();
 				});
 
-				auto connection = connect(this, &IOViewer::valueChanged, [cbox, this, &ri]() {
+				connect(this, &IOViewer::valueChanged, cbox, [cbox, this, &ri]() {
+					QSignalBlocker blocker(cbox);
 					unsigned v = (m_value >> ri.start) & ((1 << ri.size) - 1);
 					for (int i = 0; i < 1 << ri.size; ++i) {
 						if (cbox->itemData(i) == v) {
 							cbox->setCurrentIndex(i);
+							break;
 						}
 					}
 				});
-				connect(cbox, &QObject::destroyed, [connection, this]() {
-					this->disconnect(connection);
-				});
-
 			}
 			++i;
 		}
