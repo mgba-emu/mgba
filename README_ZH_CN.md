@@ -163,13 +163,7 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 
 如果要在 Windows 上进行构建，建议使用 MSYS2。请按照 MSYS2 [网站](https://msys2.github.io)上的安装步骤操作。请确保您运行的是 32 位版本的 MSYS2（“MSYS2 MinGW 32-bit”）。如果想要构建 x86_64 版本，则运行 64 位版本的 MSYS2（“MSYS2 MinGW 64-bit”） ，并执行以下额外命令（包括花括号）来安装所需的依赖项（请注意，此命令涉及下载超过 1100MiB 的包，因此会需要很长一段时间）：
 
-对于 x86（32 位）构建：
-
-	pacman -Sy --needed base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
-
-对于 x86_64（64 位）构建：
-
-	pacman -Sy --needed base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git ${MINGW_PACKAGE_PREFIX}-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkgconf,qt5,SDL2,ntldd-git}
 
 运行以下命令检查源代码：
 
@@ -177,11 +171,10 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 
 最后运行以下命令进行构建：
 
-	cd mgba
-	mkdir build
-	cd build
+	mkdir -p mgba/build
+	cd mgba/build
 	cmake .. -G "MSYS Makefiles"
-	make
+	make -j$(nproc --ignore=1)
 
 请注意，此版本的 mGBA for Windows 不适合分发，因为运行此版本所需的 DLL 非常分散，但非常适合开发。但是，如果需要分发此类版本（例如用于在未安装 MSYS2 环境的计算机上进行测试），请运行 `cpack-G ZIP`，准备一个包含所有必要 DLL 的压缩文件。
 

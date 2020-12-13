@@ -161,15 +161,9 @@ Toma nota de que no debes usar `make install` en macOS, ya que no funcionará co
 
 ##### MSYS2
 
-Para desarrollar en Windows, recomendamos MSYS2. Sigue las instrucciones en su [sitio web](https://msys2.github.io). Asegúrate de que estés ejecutando la versión de 32 bits ("MSYS2 MinGW 32-bit") (o la versión de 64 bits "MSYS2 MinGW 64-bit" si quieres compilar para x86_64) y ejecuta estos comandos adicionales para instalar las dependencias necesarias (toma nota de que esto descargará más de 1100 MB en paquetes, así que puede demorarse un poco)
+Para desarrollar en Windows, recomendamos MSYS2. Sigue las instrucciones en su [sitio web](https://msys2.github.io). Asegúrate de que estés ejecutando la versión de 32 bits ("MSYS2 MinGW 32-bit") (o la versión de 64 bits "MSYS2 MinGW 64-bit" si quieres compilar para x86_64) y ejecuta estos comandos adicionales para instalar las dependencias necesarias (toma nota de que esto descargará más de 1100 MB en paquetes, así que puede demorarse un poco):
 
-Para compilar en x86 (32 bits):
-
-	pacman -Sy --needed base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
-
-Para compilar en x86_64 (64 bits):
-
-	pacman -Sy --needed base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git ${MINGW_PACKAGE_PREFIX}-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkgconf,qt5,SDL2,ntldd-git}
 
 Despliega (haz check out en) el código fuente ejecutando este comando:
 
@@ -177,11 +171,10 @@ Despliega (haz check out en) el código fuente ejecutando este comando:
 
 Luego, compílalo usando estos comandos:
 
-	cd mgba
-	mkdir build
-	cd build
+	mkdir -p mgba/build
+	cd mgba/build
 	cmake .. -G "MSYS Makefiles"
-	make
+	make -j$(nproc --ignore=1)
 
 Ten en cuenta de que esta versión de mGBA para Windows no es adecuada para distribuirse, debido a la dispersión de las DLL que necesita para funcionar, pero es perfecta para el desarrollo. Sin embargo, si quieres distribuir tal compilación (por ejemplo, para pruebas en máquinas que no tienen el entorno MSYS2 instalado), al ejecutar `cpack -G ZIP` se preparará un archivo zip con todas las DLLs necesarias.
 
