@@ -1,6 +1,8 @@
 mGBA
 ====
 
+### [English](./README_DE.md) | [Deutsch](./README_DE.md) | [Español](./README_ES.md) | 中文（简体）
+
 mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比众多现有的 Game Boy Advance 模拟器更快、更准确，并增加其他模拟器所缺少的功能。mGBA 还支持 Game Boy 和 Game Boy Color 游戏。
 
 可在以下网址找到最新新闻和下载：[mgba.io](https://mgba.io/)。
