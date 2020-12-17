@@ -7,6 +7,7 @@
 
 #include <QApplication>
 #include <QFileDialog>
+#include <QFont>
 #include <QList>
 #include <QMap>
 #include <QMultiMap>
@@ -55,6 +56,8 @@ public:
 	static GBAApp* app();
 
 	static QString dataDir();
+
+	static QFont monospaceFont() { return s_monospace; }
 
 	QList<Window*> windows() { return m_windows; }
 	Window* newWindow();
@@ -110,6 +113,8 @@ private:
 	QMultiMap<qint64, QMetaObject::Connection> m_workerJobCallbacks;
 	QThreadPool m_workerThreads;
 	qint64 m_nextJob = 1;
+
+	static QFont s_monospace;
 
 	NoIntroDB* m_db = nullptr;
 };

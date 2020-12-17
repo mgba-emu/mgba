@@ -6,9 +6,9 @@
 #include "IOViewer.h"
 
 #include "CoreController.h"
+#include "GBAApp.h"
 
 #include <QComboBox>
-#include <QFontDatabase>
 #include <QGridLayout>
 #include <QSpinBox>
 
@@ -1037,7 +1037,7 @@ IOViewer::IOViewer(std::shared_ptr<CoreController> controller, QWidget* parent)
 		m_ui.regSelect->addItem("0x0400" + QString("%1: %2").arg(i << 1, 4, 16, QChar('0')).toUpper().arg(reg), i << 1);
 	}
 
-	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+	const QFont font = GBAApp::monospaceFont();
 	m_ui.regValue->setFont(font);
 
 	connect(m_ui.buttonBox, &QDialogButtonBox::clicked, this, &IOViewer::buttonPressed);

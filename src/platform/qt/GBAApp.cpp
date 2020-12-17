@@ -16,6 +16,7 @@
 
 #include <QFileInfo>
 #include <QFileOpenEvent>
+#include <QFontDatabase>
 #include <QIcon>
 
 #include <mgba-util/socket.h>
@@ -35,11 +36,14 @@ static GBAApp* g_app = nullptr;
 
 mLOG_DEFINE_CATEGORY(QT, "Qt", "platform.qt");
 
+QFont GBAApp::s_monospace;
+
 GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	: QApplication(argc, argv)
 	, m_configController(config)
 {
 	g_app = this;
+	s_monospace = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 
 #ifdef BUILD_SDL
 	SDL_Init(SDL_INIT_NOPARACHUTE);
