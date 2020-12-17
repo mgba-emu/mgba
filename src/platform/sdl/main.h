@@ -14,6 +14,7 @@ CXX_GUARD_START
 #include "sdl-events.h"
 
 #ifdef BUILD_GL
+#include "gl-common.h"
 #include "platform/opengl/gl.h"
 #endif
 
@@ -29,6 +30,7 @@ CXX_GUARD_START
 #endif
 
 #if defined(BUILD_GLES2) || defined(USE_EPOXY)
+#include "gl-common.h"
 #include "platform/opengl/gles2.h"
 #endif
 

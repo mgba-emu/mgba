@@ -28,12 +28,6 @@ void mSDLGLES2Create(struct mSDLRenderer* renderer) {
 }
 
 bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
-#ifdef BUILD_RASPI
-	mRPIGLCommonInit(renderer);
-#else
-	mSDLGLCommonInit(renderer);
-#endif
-
 	size_t size = renderer->width * renderer->height * BYTES_PER_PIXEL;
 #ifdef _WIN32
 	renderer->outputBuffer = _aligned_malloc(size, 16);
