@@ -997,6 +997,7 @@ static void _deinitPostProcessing(void) {
 
 #endif
 
+#ifndef __CELLOS_LV2__
 static void _initSensors(void) {
 	if(sensorsInitDone) {
 		return;
@@ -1019,6 +1020,7 @@ static void _initSensors(void) {
 
 	sensorsInitDone = true;
 }
+#endif
 
 static void _reloadSettings(void) {
 	struct mCoreOptions opts = {
@@ -1331,7 +1333,9 @@ void retro_run(void) {
 	uint16_t keys;
 	bool skipFrame = false;
 
+#ifndef __CELLOS_LV2__
 	_initSensors();
+#endif
 	inputPollCallback();
 
 	bool updated = false;
