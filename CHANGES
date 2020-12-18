@@ -96,6 +96,7 @@ Misc:
  - GB I/O: Implement preliminary support for PCM12/PCM34 (closes mgba.io/i/1468)
  - GBA: Allow pausing event loop while CPU is blocked
  - GBA BIOS: Division by zero should emit a FATAL error
+ - GBA Cheats: Allow unlimited ROM patch-type codes per set
  - GBA Video: Convert OpenGL VRAM texture to integer
  - GBA Video: Skip attempting to render offscreen sprites in OpenGL
  - GBA Video: New GL palette approach, no more batch splitting on palette edits

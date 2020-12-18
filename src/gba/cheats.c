@@ -13,6 +13,8 @@
 
 #define MAX_LINE_LENGTH 128
 
+DEFINE_VECTOR(GBACheatPatchList, struct GBACheatPatch);
+
 static void _addBreakpoint(struct mCheatDevice* device, struct GBACheatSet* cheats) {
 	if (!device->p || !cheats->hook) {
 		return;
@@ -39,13 +41,14 @@ static void _patchROM(struct mCheatDevice* device, struct GBACheatSet* cheats) {
 	if (!device->p) {
 		return;
 	}
-	int i;
-	for (i = 0; i < MAX_ROM_PATCHES; ++i) {
-		if (!cheats->romPatches[i].exists || cheats->romPatches[i].applied) {
+	size_t i;
+	for (i = 0; i < GBACheatPatchListSize(&cheats->romPatches); ++i) {
+		struct GBACheatPatch* patch = GBACheatPatchListGetPointer(&cheats->romPatches, i);
+		if (patch->applied) {
 			continue;
 		}
-		GBAPatch16(device->p->cpu, cheats->romPatches[i].address, cheats->romPatches[i].newValue, &cheats->romPatches[i].oldValue);
-		cheats->romPatches[i].applied = true;
+		GBAPatch16(device->p->cpu, patch->address, patch->newValue, &patch->oldValue);
+		patch->applied = true;
 	}
 }
 
@@ -53,13 +56,14 @@ static void _unpatchROM(struct mCheatDevice* device, struct GBACheatSet* cheats)
 	if (!device->p) {
 		return;
 	}
-	int i;
-	for (i = 0; i < MAX_ROM_PATCHES; ++i) {
-		if (!cheats->romPatches[i].exists || !cheats->romPatches[i].applied) {
+	size_t i;
+	for (i = 0; i < GBACheatPatchListSize(&cheats->romPatches); ++i) {
+		struct GBACheatPatch* patch = GBACheatPatchListGetPointer(&cheats->romPatches, i);
+		if (!patch->applied) {
 			continue;
 		}
-		GBAPatch16(device->p->cpu, cheats->romPatches[i].address, cheats->romPatches[i].oldValue, 0);
-		cheats->romPatches[i].applied = false;
+		GBAPatch16(device->p->cpu, patch->address, patch->oldValue, NULL);
+		patch->applied = false;
 	}
 }
 
@@ -97,10 +101,7 @@ static struct mCheatSet* GBACheatSetCreate(struct mCheatDevice* device, const ch
 
 	set->d.refresh = GBACheatRefresh;
 
-	int i;
-	for (i = 0; i < MAX_ROM_PATCHES; ++i) {
-		set->romPatches[i].exists = false;
-	}
+	GBACheatPatchListInit(&set->romPatches, 4);
 	return &set->d;
 }
 
@@ -119,6 +120,7 @@ static void GBACheatSetDeinit(struct mCheatSet* set) {
 			free(gbaset->hook);
 		}
 	}
+	GBACheatPatchListDeinit(&gbaset->romPatches);
 }
 
 static void GBACheatAddSet(struct mCheatSet* cheats, struct mCheatDevice* device) {
