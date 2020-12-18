@@ -2806,7 +2806,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../LoadSaveState.cpp" line="74"/>
         <source>Save State</source>
-        <translation>セーブステート</translation>
+        <translation>ステートをセーブ</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="183"/>
