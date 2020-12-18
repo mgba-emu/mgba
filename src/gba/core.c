@@ -234,7 +234,6 @@ static void _GBACoreDeinit(struct mCore* core) {
 	if (gbacore->cheatDevice) {
 		mCheatDeviceDestroy(gbacore->cheatDevice);
 	}
-	free(gbacore->cheatDevice);
 	free(gbacore->audioMixer);
 	mCoreConfigFreeOpts(&core->opts);
 	free(core);

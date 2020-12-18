@@ -60,6 +60,7 @@ void mCheatDeviceCreate(struct mCheatDevice* device) {
 void mCheatDeviceDestroy(struct mCheatDevice* device) {
 	mCheatDeviceClear(device);
 	mCheatSetsDeinit(&device->cheats);
+	free(device);
 }
 
 void mCheatDeviceClear(struct mCheatDevice* device) {
