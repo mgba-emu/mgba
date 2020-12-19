@@ -71,6 +71,7 @@ static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned heigh
 static void _startImage(struct mImageSource*, unsigned w, unsigned h, int colorFormats);
 static void _stopImage(struct mImageSource*);
 static void _requestImage(struct mImageSource*, const void** buffer, size_t* stride, enum mColorFormat* colorFormat);
+static void _updateRotation(struct mRotationSource* source);
 static int32_t _readTiltX(struct mRotationSource* source);
 static int32_t _readTiltY(struct mRotationSource* source);
 static int32_t _readGyroZ(struct mRotationSource* source);
@@ -110,6 +111,9 @@ static unsigned retroAudioBuffOccupancy;
 static bool retroAudioBuffUnderrun;
 static unsigned retroAudioLatency;
 static bool updateAudioLatency;
+static int32_t tiltX = 0;
+static int32_t tiltY = 0;
+static int32_t gyroZ = 0;
 
 /* Maximum number of consecutive frames that
  * can be skipped */
@@ -998,7 +1002,7 @@ static void _deinitPostProcessing(void) {
 #endif
 
 static void _initSensors(void) {
-	if(sensorsInitDone) {
+	if (sensorsInitDone) {
 		return;
 	}
 
@@ -1007,13 +1011,15 @@ static void _initSensors(void) {
 		sensorGetCallback = sensorInterface.get_sensor_input;
 		sensorStateCallback = sensorInterface.set_sensor_state;
 
-		if(sensorStateCallback(0, RETRO_SENSOR_ACCELEROMETER_ENABLE, EVENT_RATE)
-			&& sensorStateCallback(0, RETRO_SENSOR_GYROSCOPE_ENABLE, EVENT_RATE)) {
-			rotationEnabled = true;
-		}
+		if (sensorStateCallback && sensorGetCallback) {
+			if (sensorStateCallback(0, RETRO_SENSOR_ACCELEROMETER_ENABLE, EVENT_RATE)
+				&& sensorStateCallback(0, RETRO_SENSOR_GYROSCOPE_ENABLE, EVENT_RATE)) {
+				rotationEnabled = true;
+			}
 
-		if(sensorStateCallback(0, RETRO_SENSOR_ILLUMINANCE_ENABLE, EVENT_RATE)) {
-			luxSensorEnabled = true;
+			if (sensorStateCallback(0, RETRO_SENSOR_ILLUMINANCE_ENABLE, EVENT_RATE)) {
+				luxSensorEnabled = true;
+			}
 		}
 	}
 
@@ -1227,6 +1233,7 @@ void retro_init(void) {
 	sensorStateCallback = 0;
 
 	rotationEnabled = false;
+	rotation.sample = _updateRotation;
 	rotation.readTiltX = _readTiltX;
 	rotation.readTiltY = _readTiltY;
 	rotation.readGyroZ = _readGyroZ;
@@ -1284,14 +1291,17 @@ void retro_deinit(void) {
 	_deinitPostProcessing();
 #endif
 
-	if(sensorStateCallback) {
+	if (sensorStateCallback) {
 		sensorStateCallback(0, RETRO_SENSOR_ACCELEROMETER_DISABLE, EVENT_RATE);
 		sensorStateCallback(0, RETRO_SENSOR_GYROSCOPE_DISABLE, EVENT_RATE);
 		sensorStateCallback(0, RETRO_SENSOR_ILLUMINANCE_DISABLE, EVENT_RATE);
+		sensorGetCallback = NULL;
+		sensorStateCallback = NULL;
 	}
 
 	rotationEnabled = false;
 	luxSensorEnabled = false;
+	sensorsInitDone = false;
 	libretro_supports_bitmasks = false;
 }
 
@@ -1388,7 +1398,7 @@ void retro_run(void) {
 
 	core->setKeys(core, keys);
 
-	if(!luxSensorUsed) {
+	if (!luxSensorUsed) {
 		static bool wasAdjustingLux = false;
 		if (wasAdjustingLux) {
 			wasAdjustingLux = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3) ||
@@ -2117,15 +2127,15 @@ static void _updateLux(struct GBALuminanceSource* lux) {
 		luxVarUpdated = false;
 	}
 
-	if(luxVarUpdated) {
+	if (luxVarUpdated) {
 		luxSensorUsed = strcmp(var.value, "sensor") == 0;
 	}
 
-	if(luxSensorUsed) {
+	if (luxSensorUsed) {
 		float fLux = luxSensorEnabled ? sensorGetCallback(0, RETRO_SENSOR_ILLUMINANCE) : 0.0f;
 		luxLevel = cbrtf(fLux) * 8;
 	} else {
-		if(luxVarUpdated) {
+		if (luxVarUpdated) {
 			char* end;
 			int newLuxLevelIndex = strtol(var.value, &end, 10);
 
@@ -2218,35 +2228,29 @@ static void _requestImage(struct mImageSource* image, const void** buffer, size_
 	*colorFormat = mCOLOR_XRGB8;
 }
 
+static void _updateRotation(struct mRotationSource* source) {
+	UNUSED(source);
+	tiltX = 0;
+	tiltY = 0;
+	gyroZ = 0;
+	if (rotationEnabled) {
+		tiltX = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_X) * 3e8f;
+		tiltY = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_Y) * -3e8f;
+		gyroZ = sensorGetCallback(0, RETRO_SENSOR_GYROSCOPE_Z) * -1.1e9f;
+	}
+}
+
 static int32_t _readTiltX(struct mRotationSource* source) {
 	UNUSED(source);
-	int32_t tiltX = 0;
-
-	if(rotationEnabled) {
-		tiltX = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_X) * 3e8f;
-	}
-
 	return tiltX;
 }
 
 static int32_t _readTiltY(struct mRotationSource* source) {
 	UNUSED(source);
-	int32_t tiltY = 0;
-
-	if(rotationEnabled) {
-		tiltY = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_Y) * -3e8f;
-	}
-
 	return tiltY;
 }
 
 static int32_t _readGyroZ(struct mRotationSource* source) {
 	UNUSED(source);
-	int32_t gyroZ = 0;
-
-	if(rotationEnabled) {
-		gyroZ = sensorGetCallback(0, RETRO_SENSOR_GYROSCOPE_Z) * -1.1e9f;
-	}
-
 	return gyroZ;
 }
