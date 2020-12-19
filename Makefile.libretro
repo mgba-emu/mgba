@@ -249,18 +249,13 @@ else ifeq ($(platform), qnx)
 
 # PS3
 else ifneq (,$(filter $(platform), psl1ght))
-   TARGET := $(TARGET_NAME)_libretro_ps3.a
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
+   CC = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
+   AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
    PLATFORM_DEFINES := -D__PPC__ -D__BIG_ENDIAN__
    STATIC_LINKING = 1
    DEFINES += -std=gnu99 -fms-extensions
    HAVE_VFS_FD = 0
-
-   # Lightweight PS3 Homebrew SDK
-   else ifneq (,$(findstring psl1ght,$(platform)))
-      TARGET := $(TARGET_NAME)_libretro_$(platform).a
-      CC = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
-      AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
-   endif
 
 # PS2
 else ifeq ($(platform), ps2)
