@@ -8,7 +8,6 @@
 #include <mgba/core/core.h>
 #include <mgba/core/thread.h>
 #include <mgba/core/version.h>
-#include <mgba-util/arm-algo.h>
 
 static bool mSDLSWInit(struct mSDLRenderer* renderer);
 static void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user);

@@ -10,7 +10,6 @@
 #include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/renderers/cache-set.h>
 
-#include <mgba-util/arm-algo.h>
 #include <mgba-util/memory.h>
 
 #define DIRTY_SCANLINE(R, Y) R->scanlineDirty[Y >> 5] |= (1U << (Y & 0x1F))
