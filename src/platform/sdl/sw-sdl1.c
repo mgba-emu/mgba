@@ -8,7 +8,6 @@
 #include <mgba/core/core.h>
 #include <mgba/core/thread.h>
 #include <mgba/core/version.h>
-#include <mgba-util/arm-algo.h>
 
 static bool mSDLSWInit(struct mSDLRenderer* renderer);
 static void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user);
@@ -83,18 +82,7 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 				    renderer->viewportWidth, renderer->viewportHeight);
 			}
 #else
-			switch (renderer->ratio) {
-#if defined(__ARM_NEON) && COLOR_16_BIT
-			case 2:
-				_neon2x(surface->pixels, renderer->outputBuffer, width, height);
-				break;
-			case 4:
-				_neon4x(surface->pixels, renderer->outputBuffer, width, height);
-				break;
-#endif
-			case 1:
-				break;
-			default:
+			if (renderer->ratio != 1) {
 				abort();
 			}
 #endif
