@@ -59,13 +59,8 @@ typedef intptr_t ssize_t;
 #include <sys/time.h>
 typedef intptr_t ssize_t;
 #else
-#if !defined(__CELLOS_LV2__) && !defined(PS2)
+#if !defined(PS2)
 #include <strings.h>
-#endif
-#ifdef __CELLOS_LV2__
-//to avoid implicit declaration of function 'gettimeofday'
-#include <sys/time.h>
-int gettimeofday(struct timeval* tv, void* unused);
 #endif
 #include <unistd.h>
 #include <sys/time.h>

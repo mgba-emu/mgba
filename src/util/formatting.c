@@ -78,24 +78,9 @@ struct tm* localtime_r(const time_t* t, struct tm* date) {
 	return date;
 #elif defined(PSP2)
 	return sceKernelLibcLocaltime_r(t, date);
-#elif defined(__CELLOS_LV2__)
-	*date = *localtime(t);
-	return date;
 #else
 #warning localtime_r not emulated on this platform
 	return 0;
 #endif
 }
 #endif
-
-#ifdef __CELLOS_LV2__
-#include <sys/sys_time.h>
-int gettimeofday(struct timeval* tv, void* unused) {
-	int64_t time = sys_time_get_system_time();
-
-	tv->tv_sec = time / 1000000;
-	tv->tv_usec = time - (tv->tv_sec * 1000000); // implicit rounding will take care of this for us
-	return 0;
-}
-#endif
-

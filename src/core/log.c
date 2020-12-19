@@ -10,11 +10,6 @@
 
 #define MAX_CATEGORY 64
 
-//log is defined in ppu math.h
-#ifdef __CELLOS_LV2__
-#undef log
-#endif
-
 static struct mLogger* _defaultLogger = NULL;
 
 struct mLogger* mLogGetContext(void) {
