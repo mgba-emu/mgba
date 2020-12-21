@@ -82,6 +82,7 @@ Other fixes:
  - Qt: Fix crash when editing shortcuts with none selected (fixes mgba.io/i/1964)
  - Qt: Fix crashing when no OpenGL context can be obtained
  - Qt: Fix issues with I/O viewer not properly synchronizing state
+ - Qt: Fix loading a new game crashing on Wayland (fixes mgba.io/i/1992)
  - SM83: Simplify register pair access on big endian
  - SM83: Disassemble STOP as one byte
  - Wii: Fix crash on unloading irregularly sized GBA ROMs
