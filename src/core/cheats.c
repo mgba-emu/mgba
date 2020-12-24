@@ -18,6 +18,33 @@ mLOG_DEFINE_CATEGORY(CHEATS, "Cheats", "core.cheats");
 
 DEFINE_VECTOR(mCheatList, struct mCheat);
 DEFINE_VECTOR(mCheatSets, struct mCheatSet*);
+DEFINE_VECTOR(mCheatPatchList, struct mCheatPatch);
+
+struct mCheatPatchedMem {
+	uint32_t originalValue;
+	int refs;
+	bool dirty;
+};
+
+static uint32_t _patchMakeKey(struct mCheatPatch* patch) {
+	// NB: This assumes patches have only one valid size per platform
+	uint32_t patchKey = patch->address;
+	switch (patch->width) {
+	case 2:
+		patchKey >>= 1;
+		break;
+	case 4:
+		patchKey >>= 2;
+		break;
+	default:
+		break;	
+	}
+	// TODO: More than one segment
+	if (patch->segment > 0) {
+		patchKey |= patch->segment << 16;
+	}
+	return patchKey;
+}
 
 static int32_t _readMem(struct mCore* core, uint32_t address, int width) {
 	switch (width) {
@@ -27,6 +54,18 @@ static int32_t _readMem(struct mCore* core, uint32_t address, int width) {
 		return core->busRead16(core, address);
 	case 4:
 		return core->busRead32(core, address);
+	}
+	return 0;
+}
+
+static int32_t _readMemSegment(struct mCore* core, uint32_t address, int segment, int width) {
+	switch (width) {
+	case 1:
+		return core->rawRead8(core, address, segment);
+	case 2:
+		return core->rawRead16(core, address, segment);
+	case 4:
+		return core->rawRead32(core, address, segment);
 	}
 	return 0;
 }
@@ -45,6 +84,83 @@ static void _writeMem(struct mCore* core, uint32_t address, int width, int32_t v
 	}
 }
 
+static void _patchMem(struct mCore* core, uint32_t address, int segment, int width, int32_t value) {
+	switch (width) {
+	case 1:
+		core->rawWrite8(core, address, segment, value);
+		break;
+	case 2:
+		core->rawWrite16(core, address, segment, value);
+		break;
+	case 4:
+		core->rawWrite32(core, address, segment, value);
+		break;
+	}
+}
+
+static void _patchROM(struct mCheatDevice* device, struct mCheatSet* cheats) {
+	if (!device->p) {
+		return;
+	}
+	size_t i;
+	for (i = 0; i < mCheatPatchListSize(&cheats->romPatches); ++i) {
+		struct mCheatPatch* patch = mCheatPatchListGetPointer(&cheats->romPatches, i);
+		int segment = -1;
+		if (patch->check && patch->segment < 0) {
+			int maxSegment = 0;
+			for (segment = 0; segment < maxSegment; ++segment) {
+				uint32_t value = _readMemSegment(device->p, patch->address, segment, patch->width);
+				if (value == patch->checkValue) {
+					break;
+				}
+			}
+			if (segment == maxSegment) {
+				continue;
+			}
+		}
+		patch->segment = segment;
+
+		uint32_t patchKey = _patchMakeKey(patch);
+		struct mCheatPatchedMem* patchData = TableLookup(&device->unpatchedMemory, patchKey);
+		if (!patchData) {
+			patchData = malloc(sizeof(*patchData));
+			patchData->originalValue = _readMemSegment(device->p, patch->address, segment, patch->width);
+			patchData->refs = 1;
+			patchData->dirty = false;
+			TableInsert(&device->unpatchedMemory, patchKey, patchData);
+		} else if (!patch->applied) {
+			++patchData->refs;
+			patchData->dirty = true;
+		} else if (!patchData->dirty) {
+			continue;
+		}
+		_patchMem(device->p, patch->address, segment, patch->width, patch->value);
+		patch->applied = true;
+	}
+}
+
+static void _unpatchROM(struct mCheatDevice* device, struct mCheatSet* cheats) {
+	if (!device->p) {
+		return;
+	}
+	size_t i;
+	for (i = 0; i < mCheatPatchListSize(&cheats->romPatches); ++i) {
+		struct mCheatPatch* patch = mCheatPatchListGetPointer(&cheats->romPatches, i);
+		if (!patch->applied) {
+			continue;
+		}
+		uint32_t patchKey = _patchMakeKey(patch);
+		struct mCheatPatchedMem* patchData = TableLookup(&device->unpatchedMemory, patchKey);
+		--patchData->refs;
+		patchData->dirty = true;
+		if (patchData->refs <= 0) {
+			_patchMem(device->p, patch->address, patch->segment, patch->width, patchData->originalValue);
+			TableRemove(&device->unpatchedMemory, patchKey);
+		}
+		patch->applied = false;
+	}
+}
+
 static void mCheatDeviceInit(void*, struct mCPUComponent*);
 static void mCheatDeviceDeinit(struct mCPUComponent*);
 
@@ -55,11 +171,13 @@ void mCheatDeviceCreate(struct mCheatDevice* device) {
 	device->autosave = false;
 	device->buttonDown = false;
 	mCheatSetsInit(&device->cheats, 4);
+	TableInit(&device->unpatchedMemory, 4, free);
 }
 
 void mCheatDeviceDestroy(struct mCheatDevice* device) {
 	mCheatDeviceClear(device);
 	mCheatSetsDeinit(&device->cheats);
+	TableDeinit(&device->unpatchedMemory);
 	free(device);
 }
 
@@ -75,6 +193,7 @@ void mCheatDeviceClear(struct mCheatDevice* device) {
 void mCheatSetInit(struct mCheatSet* set, const char* name) {
 	mCheatListInit(&set->list, 4);
 	StringListInit(&set->lines, 4);
+	mCheatPatchListInit(&set->romPatches, 4);
 	if (name) {
 		set->name = strdup(name);
 	} else {
@@ -93,7 +212,10 @@ void mCheatSetDeinit(struct mCheatSet* set) {
 		free(set->name);
 	}
 	StringListDeinit(&set->lines);
-	set->deinit(set);
+	mCheatPatchListDeinit(&set->romPatches);
+	if (set->deinit) {
+		set->deinit(set);
+	}
 	free(set);
 }
 
@@ -117,7 +239,9 @@ bool mCheatAddLine(struct mCheatSet* set, const char* line, int type) {
 
 void mCheatAddSet(struct mCheatDevice* device, struct mCheatSet* cheats) {
 	*mCheatSetsAppend(&device->cheats) = cheats;
-	cheats->add(cheats, device);
+	if (cheats->add) {
+		cheats->add(cheats, device);
+	}
 }
 
 void mCheatRemoveSet(struct mCheatDevice* device, struct mCheatSet* cheats) {
@@ -131,7 +255,9 @@ void mCheatRemoveSet(struct mCheatDevice* device, struct mCheatSet* cheats) {
 		return;
 	}
 	mCheatSetsShift(&device->cheats, i, 1);
-	cheats->remove(cheats, device);
+	if (cheats->remove) {
+		cheats->remove(cheats, device);
+	}
 }
 
 bool mCheatParseFile(struct mCheatDevice* device, struct VFile* vf) {
@@ -503,8 +629,14 @@ void mCheatAutosave(struct mCheatDevice* device) {
 #endif
 
 void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {
-	cheats->refresh(cheats, device);
+	if (cheats->enabled) {
+		_patchROM(device, cheats);
+	}
+	if (cheats->refresh) {
+		cheats->refresh(cheats, device);
+	}
 	if (!cheats->enabled) {
+		_unpatchROM(device, cheats);
 		return;
 	}
 

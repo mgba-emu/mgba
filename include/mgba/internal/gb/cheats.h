@@ -11,29 +11,12 @@
 CXX_GUARD_START
 
 #include <mgba/core/cheats.h>
-#include <mgba-util/vector.h>
 
 enum GBCheatType {
 	GB_CHEAT_AUTODETECT,
 	GB_CHEAT_GAMESHARK,
 	GB_CHEAT_GAME_GENIE,
 	GB_CHEAT_VBA
-};
-
-struct GBCheatPatch {
-	uint16_t address;
-	int8_t newValue;
-	int8_t oldValue;
-	int segment;
-	bool applied;
-	bool checkByte;
-};
-
-DECLARE_VECTOR(GBCheatPatchList, struct GBCheatPatch);
-
-struct GBCheatSet {
-	struct mCheatSet d;
-	struct GBCheatPatchList romPatches;
 };
 
 struct mCheatDevice* GBCheatDeviceCreate(void);

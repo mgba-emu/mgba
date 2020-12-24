@@ -134,23 +134,14 @@ struct GBACheatHook {
 	size_t reentries;
 };
 
-struct GBACheatPatch {
-	uint32_t address;
-	int16_t newValue;
-	int16_t oldValue;
-	bool applied;
-};
-
 DECLARE_VECTOR(GBACheatPatchList, struct GBACheatPatch);
 
 struct GBACheatSet {
 	struct mCheatSet d;
 	struct GBACheatHook* hook;
 
-	struct GBACheatPatchList romPatches;
-
 	size_t incompleteCheat;
-	struct GBACheatPatch* incompletePatch;
+	struct mCheatPatch* incompletePatch;
 	size_t currentBlock;
 
 	int gsaVersion;

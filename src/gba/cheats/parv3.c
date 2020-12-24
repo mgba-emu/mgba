@@ -230,9 +230,11 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		break;
 	}
 	if (romPatch >= 0) {
-		struct GBACheatPatch* patch = GBACheatPatchListAppend(&cheats->romPatches);
+		struct mCheatPatch* patch = mCheatPatchListAppend(&cheats->d.romPatches);
 		patch->address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
 		patch->applied = false;
+		patch->check = false;
+		patch->width = 2;
 		cheats->incompletePatch = patch;
 	}
 	return true;
@@ -240,8 +242,8 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 
 bool GBACheatAddProActionReplayRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 	if (cheats->incompletePatch) {
-		cheats->incompletePatch->newValue = op1;
-		cheats->incompletePatch = 0;
+		cheats->incompletePatch->value = op1;
+		cheats->incompletePatch = NULL;
 		return true;
 	}
 	if (cheats->incompleteCheat != COMPLETE) {
