@@ -19,11 +19,6 @@
         <translation>Branche : &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Révision : &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
     </message>
     <message>
-        <location filename="../AboutScreen.ui" line="58"/>
-        <source>{projectName}</source>
-        <translation>{projectName}</translation>
-    </message>
-    <message>
         <location filename="../AboutScreen.ui" line="68"/>
         <source>{projectName} would like to thank the following patrons from Patreon:</source>
         <translation>{projectName} aimerait remercier les donateurs suivant venant de Patreon :</translation>
@@ -36,24 +31,9 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
 Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</translation>
     </message>
     <message>
-        <location filename="../AboutScreen.ui" line="106"/>
-        <source>{projectVersion}</source>
-        <translation>{projectVersion}</translation>
-    </message>
-    <message>
-        <location filename="../AboutScreen.ui" line="155"/>
-        <source>{logo}</source>
-        <translation>{logo}</translation>
-    </message>
-    <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
         <translation>{projectName} est un émulateur open-source Game Boy Advance</translation>
-    </message>
-    <message>
-        <location filename="../AboutScreen.ui" line="190"/>
-        <source>{patrons}</source>
-        <translation>{patrons}</translation>
     </message>
 </context>
 <context>
@@ -71,11 +51,6 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 </context>
 <context>
     <name>AssetTile</name>
-    <message>
-        <location filename="../AssetTile.ui" line="20"/>
-        <source>AssetTile</source>
-        <translation>AssetTile</translation>
-    </message>
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
@@ -1029,12 +1004,12 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../OverrideView.ui" line="336"/>
         <source>Sprite Colors 1</source>
-        <translation>Couleurs du Sprite nº 1</translation>
+        <translation>Couleurs du Sprite nº&#xa0;1</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="343"/>
         <source>Sprite Colors 2</source>
-        <translation>Couleurs du Sprite nº 2</translation>
+        <translation>Couleurs du Sprite nº&#xa0;2</translation>
     </message>
 </context>
 <context>
@@ -1159,14 +1134,14 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 <context>
     <name>QGBA::AssetTile</name>
     <message>
-        <location filename="../AssetTile.cpp" line="104"/>
+        <location filename="../AssetTile.cpp" line="103"/>
         <source>%0%1%2</source>
         <translation>%0%1%2</translation>
     </message>
     <message>
+        <location filename="../AssetTile.cpp" line="140"/>
         <location filename="../AssetTile.cpp" line="141"/>
         <location filename="../AssetTile.cpp" line="142"/>
-        <location filename="../AssetTile.cpp" line="143"/>
         <source>0x%0 (%1)</source>
         <translation>0x%0 (%1)</translation>
     </message>
@@ -1316,7 +1291,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 <context>
     <name>QGBA::GBAApp</name>
     <message>
-        <location filename="../GBAApp.cpp" line="69"/>
+        <location filename="../GBAApp.cpp" line="73"/>
         <source>Enable Discord Rich Presence</source>
         <translation>Activer intégration avec Discord</translation>
     </message>
@@ -1415,17 +1390,17 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../IOViewer.cpp" line="31"/>
         <source>Mode 0: 4 tile layers</source>
-        <translation>Mode 0 : 4 couches de tuile</translation>
+        <translation>Mode 0&#xa0;: 4 couches de tuile</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="32"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
-        <translation>Mode 1 : 2 couches de tuiles + 1 couche de tuiles pivotée / mise à l&apos;échelle</translation>
+        <translation>Mode 1&#xa0;: 2 couches de tuiles + 1 couche de tuiles pivotée / mise à l&apos;échelle</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="33"/>
         <source>Mode 2: 2 rotated/scaled tile layers</source>
-        <translation>Mode 2 : 2 couches de tuiles pivotées / mises à l&apos;échelle</translation>
+        <translation>Mode 2&#xa0;: 2 couches de tuiles pivotées / mises à l&apos;échelle</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="34"/>
@@ -1470,22 +1445,22 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../IOViewer.cpp" line="45"/>
         <source>Enable background 0</source>
-        <translation>Activer l&apos;arrière-plan nº 0</translation>
+        <translation>Activer l&apos;arrière-plan nº&#xa0;0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="46"/>
         <source>Enable background 1</source>
-        <translation>Activer l&apos;arrière-plan nº 1</translation>
+        <translation>Activer l&apos;arrière-plan nº&#xa0;1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="47"/>
         <source>Enable background 2</source>
-        <translation>Activer l&apos;arrière-plan nº 2</translation>
+        <translation>Activer l&apos;arrière-plan nº&#xa0;2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="48"/>
         <source>Enable background 3</source>
-        <translation>Activer l&apos;arrière-plan nº 3</translation>
+        <translation>Activer l&apos;arrière-plan nº&#xa0;3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="49"/>
@@ -1495,12 +1470,12 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../IOViewer.cpp" line="50"/>
         <source>Enable Window 0</source>
-        <translation>Activer la fenêtre nº 0</translation>
+        <translation>Activer la fenêtre nº&#xa0;0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="51"/>
         <source>Enable Window 1</source>
-        <translation>Actvier la fenêtre nº 1</translation>
+        <translation>Actvier la fenêtre nº&#xa0;1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="52"/>
@@ -1688,82 +1663,82 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../IOViewer.cpp" line="238"/>
         <source>Window 0 enable BG 0</source>
-        <translation>La fenêtre nº 0 active l&apos;arrière plan nº 0</translation>
+        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière plan nº&#xa0;0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="239"/>
         <source>Window 0 enable BG 1</source>
-        <translation>La fenêtre nº 0 active l&apos;arrière plan nº 1</translation>
+        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière plan nº&#xa0;1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="240"/>
         <source>Window 0 enable BG 2</source>
-        <translation>La fenêtre nº 0 active l&apos;arrière plan nº 2</translation>
+        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière plan nº&#xa0;2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="241"/>
         <source>Window 0 enable BG 3</source>
-        <translation>La fenêtre nº 0 active l&apos;arrière plan nº 3</translation>
+        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière plan nº&#xa0;3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="242"/>
         <source>Window 0 enable OBJ</source>
-        <translation>La fenêtre nº 0 active l&apos;OBJ</translation>
+        <translation>La fenêtre nº&#xa0;0 active l&apos;OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="243"/>
         <source>Window 0 enable blend</source>
-        <translation>La fenêtre nº 0 active le mixage</translation>
+        <translation>La fenêtre nº&#xa0;0 active le mixage</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="244"/>
         <source>Window 1 enable BG 0</source>
-        <translation>La fenêtre nº 1 active l&apos;arrière plan nº 0</translation>
+        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière plan nº&#xa0;0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="245"/>
         <source>Window 1 enable BG 1</source>
-        <translation>La fenêtre nº 1 active l&apos;arrière plan nº 1</translation>
+        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière plan nº&#xa0;1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="246"/>
         <source>Window 1 enable BG 2</source>
-        <translation>La fenêtre nº 1 active l&apos;arrière plan nº 2</translation>
+        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière plan nº&#xa0;2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="247"/>
         <source>Window 1 enable BG 3</source>
-        <translation>La fenêtre nº 1 active l&apos;arrière plan nº 3</translation>
+        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière plan nº&#xa0;3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="248"/>
         <source>Window 1 enable OBJ</source>
-        <translation>La fenêtre nº 1 active l&apos;OBJ</translation>
+        <translation>La fenêtre nº&#xa0;1 active l&apos;OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="249"/>
         <source>Window 1 enable blend</source>
-        <translation>La fenêtre nº 1 active le mixage</translation>
+        <translation>La fenêtre nº&#xa0;1 active le mixage</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="253"/>
         <source>Outside window enable BG 0</source>
-        <translation>La fenêtre extérieure active l&apos;arrière plan nº 0</translation>
+        <translation>La fenêtre extérieure active l&apos;arrière plan nº&#xa0;0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="254"/>
         <source>Outside window enable BG 1</source>
-        <translation>La fenêtre extérieure active l&apos;arrière plan nº 1</translation>
+        <translation>La fenêtre extérieure active l&apos;arrière plan nº&#xa0;1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="255"/>
         <source>Outside window enable BG 2</source>
-        <translation>La fenêtre extérieure active l&apos;arrière plan nº 2</translation>
+        <translation>La fenêtre extérieure active l&apos;arrière plan nº&#xa0;2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="256"/>
         <source>Outside window enable BG 3</source>
-        <translation>La fenêtre extérieure active l&apos;arrière plan nº 3</translation>
+        <translation>La fenêtre extérieure active l&apos;arrière plan nº&#xa0;3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="257"/>
@@ -1938,7 +1913,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../IOViewer.cpp" line="319"/>
         <source>Sweep time (in 1/128s)</source>
-        <translation>Durée de balayage (en 1/128 s)</translation>
+        <translation>Durée de balayage (en 1/128&#xa0;s)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="323"/>
@@ -2021,25 +1996,25 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../IOViewer.cpp" line="365"/>
         <source>0%</source>
-        <translation>0 %</translation>
+        <translation>0&#xa0;%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="366"/>
         <location filename="../IOViewer.cpp" line="423"/>
         <source>100%</source>
-        <translation>100 %</translation>
+        <translation>100&#xa0;%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="367"/>
         <location filename="../IOViewer.cpp" line="422"/>
         <source>50%</source>
-        <translation>50 %</translation>
+        <translation>50&#xa0;%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="368"/>
         <location filename="../IOViewer.cpp" line="421"/>
         <source>25%</source>
-        <translation>25 %</translation>
+        <translation>25&#xa0;%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="369"/>
@@ -2047,7 +2022,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="371"/>
         <location filename="../IOViewer.cpp" line="372"/>
         <source>75%</source>
-        <translation>75 %</translation>
+        <translation>75&#xa0;%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="394"/>
@@ -2761,17 +2736,17 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../IOViewer.cpp" line="1011"/>
         <source>4.19MHz</source>
-        <translation>4,19 MHz</translation>
+        <translation>4,19&#xa0;MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1012"/>
         <source>8.38MHz</source>
-        <translation>8,38 MHz</translation>
+        <translation>8,38&#xa0;MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1013"/>
         <source>16.78MHz</source>
-        <translation>16,78 MHz</translation>
+        <translation>16,78&#xa0;MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1015"/>
@@ -2885,7 +2860,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../LogController.cpp" line="68"/>
         <source>[%1] %2: %3</source>
-        <translation>[%1] %2 : %3</translation>
+        <translation>[%1] %2&#xa0;: %3</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="79"/>
@@ -2938,82 +2913,82 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 <context>
     <name>QGBA::MapView</name>
     <message>
-        <location filename="../MapView.cpp" line="48"/>
+        <location filename="../MapView.cpp" line="47"/>
         <source>Priority</source>
         <translation>Priorité</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="49"/>
-        <location filename="../MapView.cpp" line="61"/>
+        <location filename="../MapView.cpp" line="48"/>
+        <location filename="../MapView.cpp" line="60"/>
         <source>Map base</source>
         <translation type="unfinished">Fond de carte</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="50"/>
-        <location filename="../MapView.cpp" line="62"/>
+        <location filename="../MapView.cpp" line="49"/>
+        <location filename="../MapView.cpp" line="61"/>
         <source>Tile base</source>
         <translation type="unfinished">Fond de tuile</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="51"/>
+        <location filename="../MapView.cpp" line="50"/>
         <source>Size</source>
         <translation>Taille</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="52"/>
-        <location filename="../MapView.cpp" line="63"/>
+        <location filename="../MapView.cpp" line="51"/>
+        <location filename="../MapView.cpp" line="62"/>
         <source>Offset</source>
         <translation type="unfinished">Compensation</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="53"/>
+        <location filename="../MapView.cpp" line="52"/>
         <source>Xform</source>
         <translation>Xform</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="107"/>
+        <location filename="../MapView.cpp" line="106"/>
         <source>Map Addr.</source>
         <translation>Adresse de la map.</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="108"/>
+        <location filename="../MapView.cpp" line="107"/>
         <source>Mirror</source>
         <translation>Miroir</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="136"/>
+        <location filename="../MapView.cpp" line="135"/>
         <source>None</source>
         <translation>Aucun</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="138"/>
+        <location filename="../MapView.cpp" line="137"/>
         <source>Both</source>
         <translation>Les deux</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="140"/>
+        <location filename="../MapView.cpp" line="139"/>
         <source>Horizontal</source>
         <translation>Horizontal</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="142"/>
+        <location filename="../MapView.cpp" line="141"/>
         <source>Vertical</source>
         <translation>Vertical</translation>
     </message>
     <message>
+        <location filename="../MapView.cpp" line="167"/>
         <location filename="../MapView.cpp" line="168"/>
-        <location filename="../MapView.cpp" line="169"/>
-        <location filename="../MapView.cpp" line="217"/>
+        <location filename="../MapView.cpp" line="216"/>
         <source>N/A</source>
         <translation>s.o.</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="260"/>
+        <location filename="../MapView.cpp" line="259"/>
         <source>Export map</source>
         <translation>Exporter la map</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="261"/>
+        <location filename="../MapView.cpp" line="260"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
@@ -3034,62 +3009,62 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 <context>
     <name>QGBA::MemoryModel</name>
     <message>
-        <location filename="../MemoryModel.cpp" line="44"/>
+        <location filename="../MemoryModel.cpp" line="43"/>
         <source>Copy selection</source>
         <translation>Copier la sélection</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="49"/>
+        <location filename="../MemoryModel.cpp" line="48"/>
         <source>Save selection</source>
         <translation>Sauvegarder la sélection</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="54"/>
+        <location filename="../MemoryModel.cpp" line="53"/>
         <source>Paste</source>
         <translation>Coller</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="59"/>
+        <location filename="../MemoryModel.cpp" line="58"/>
         <source>Load</source>
         <translation>Charger</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="108"/>
+        <location filename="../MemoryModel.cpp" line="107"/>
         <source>All</source>
         <translation>Tout</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="153"/>
+        <location filename="../MemoryModel.cpp" line="152"/>
         <source>Load TBL</source>
         <translation>Charger le TBL</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="207"/>
+        <location filename="../MemoryModel.cpp" line="206"/>
         <source>Save selected memory</source>
         <translation>Sauvegarder la mémoire sélectionné</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="213"/>
+        <location filename="../MemoryModel.cpp" line="212"/>
         <source>Failed to open output file: %1</source>
         <translation>Impossible d&apos;ouvrir le fichier de sortie : %1</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="221"/>
+        <location filename="../MemoryModel.cpp" line="220"/>
         <source>Load memory</source>
         <translation>Charger la mémoire</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="227"/>
+        <location filename="../MemoryModel.cpp" line="226"/>
         <source>Failed to open input file: %1</source>
         <translation>Impossible d&apos;ouvrir le fichier d&apos;entrée : %1</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="342"/>
+        <location filename="../MemoryModel.cpp" line="341"/>
         <source>TBL</source>
         <translation>TBL</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="342"/>
+        <location filename="../MemoryModel.cpp" line="341"/>
         <source>ISO-8859-1</source>
         <translation>ISO-8859-1</translation>
     </message>
@@ -3120,61 +3095,61 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 <context>
     <name>QGBA::ObjView</name>
     <message>
-        <location filename="../ObjView.cpp" line="155"/>
-        <location filename="../ObjView.cpp" line="243"/>
+        <location filename="../ObjView.cpp" line="154"/>
+        <location filename="../ObjView.cpp" line="242"/>
         <source>0x%0</source>
         <translation>0x%0</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="176"/>
+        <location filename="../ObjView.cpp" line="175"/>
         <source>Off</source>
         <translation>Désactivé</translation>
     </message>
     <message>
+        <location filename="../ObjView.cpp" line="176"/>
         <location filename="../ObjView.cpp" line="177"/>
         <location filename="../ObjView.cpp" line="178"/>
         <location filename="../ObjView.cpp" line="179"/>
-        <location filename="../ObjView.cpp" line="180"/>
+        <location filename="../ObjView.cpp" line="250"/>
         <location filename="../ObjView.cpp" line="251"/>
         <location filename="../ObjView.cpp" line="252"/>
         <location filename="../ObjView.cpp" line="253"/>
-        <location filename="../ObjView.cpp" line="254"/>
         <source>---</source>
         <translation>---</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="185"/>
+        <location filename="../ObjView.cpp" line="184"/>
         <source>Normal</source>
         <translation>Normal</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="188"/>
+        <location filename="../ObjView.cpp" line="187"/>
         <source>Trans</source>
         <translation>Trans</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="191"/>
+        <location filename="../ObjView.cpp" line="190"/>
         <source>OBJWIN</source>
         <translation>OBJWIN</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="194"/>
+        <location filename="../ObjView.cpp" line="193"/>
         <source>Invalid</source>
         <translation>Invalide</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="250"/>
-        <location filename="../ObjView.cpp" line="255"/>
+        <location filename="../ObjView.cpp" line="249"/>
+        <location filename="../ObjView.cpp" line="254"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="280"/>
+        <location filename="../ObjView.cpp" line="279"/>
         <source>Export sprite</source>
         <translation>Exporter le Sprite</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="281"/>
+        <location filename="../ObjView.cpp" line="280"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
@@ -3200,35 +3175,35 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 <context>
     <name>QGBA::PaletteView</name>
     <message>
-        <location filename="../PaletteView.cpp" line="121"/>
+        <location filename="../PaletteView.cpp" line="120"/>
         <source>#%0</source>
         <translation>#%0</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="122"/>
+        <location filename="../PaletteView.cpp" line="121"/>
         <source>0x%0</source>
         <translation>0x%0</translation>
     </message>
     <message>
+        <location filename="../PaletteView.cpp" line="122"/>
         <location filename="../PaletteView.cpp" line="123"/>
         <location filename="../PaletteView.cpp" line="124"/>
         <location filename="../PaletteView.cpp" line="125"/>
-        <location filename="../PaletteView.cpp" line="126"/>
         <source>0x%0 (%1)</source>
         <translation>0x%0 (%1)</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="138"/>
+        <location filename="../PaletteView.cpp" line="137"/>
         <source>Export palette</source>
         <translation>Exporter la palette</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="139"/>
+        <location filename="../PaletteView.cpp" line="138"/>
         <source>Windows PAL (*.pal);;Adobe Color Table (*.act)</source>
         <translation>Windows PAL (*.pal);;Adobe Color Table (*.act)</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="142"/>
+        <location filename="../PaletteView.cpp" line="141"/>
         <source>Failed to open output palette file: %1</source>
         <translation>Impossible d&apos;ouvrir le fichier de la palette de sortie : %1</translation>
     </message>
@@ -3388,18 +3363,18 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 <context>
     <name>QGBA::TileView</name>
     <message>
-        <location filename="../TileView.cpp" line="178"/>
+        <location filename="../TileView.cpp" line="177"/>
         <source>Export tiles</source>
         <translation>Exporter les tuiles</translation>
     </message>
     <message>
-        <location filename="../TileView.cpp" line="179"/>
-        <location filename="../TileView.cpp" line="191"/>
+        <location filename="../TileView.cpp" line="178"/>
+        <location filename="../TileView.cpp" line="190"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
-        <location filename="../TileView.cpp" line="190"/>
+        <location filename="../TileView.cpp" line="189"/>
         <source>Export tile</source>
         <translation>Exporter une tuile</translation>
     </message>
@@ -4192,7 +4167,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../ROMInfo.ui" line="26"/>
         <source>Game name:</source>
-        <translation>Nom du jeu :</translation>
+        <translation>Nom du jeu&#xa0;:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="33"/>
@@ -4523,7 +4498,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../SettingsView.ui" line="371"/>
         <source>FPS target:</source>
-        <translation>IPS ciblée :</translation>
+        <translation>IPS ciblée&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="396"/>
@@ -4924,22 +4899,22 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../SettingsView.ui" line="1623"/>
         <source>Default sprite colors 1:</source>
-        <translation>Couleurs par défaut de la sprite nº 1 :</translation>
+        <translation>Couleurs par défaut de la sprite nº&#xa0;1 :</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1492"/>
         <source>Game Boy-only model:</source>
-        <translation>Modèle Game Boy uniquement :</translation>
+        <translation>Modèle Game Boy uniquement&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1512"/>
         <source>Game Boy Color-only model:</source>
-        <translation>Modèle Game Boy uniquement :</translation>
+        <translation>Modèle Game Boy uniquement&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1522"/>
         <source>Game Boy/Game Boy Color model:</source>
-        <translation>Modèle Game Boy / Game Boy Color :</translation>
+        <translation>Modèle Game Boy / Game Boy Color&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1710"/>
