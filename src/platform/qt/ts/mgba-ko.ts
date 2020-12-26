@@ -1382,1367 +1382,1372 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
 <context>
     <name>QGBA::IOViewer</name>
     <message>
-        <location filename="../IOViewer.cpp" line="30"/>
+        <location filename="../IOViewer.cpp" line="39"/>
         <source>Background mode</source>
         <translation>배경 모드</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="31"/>
+        <location filename="../IOViewer.cpp" line="40"/>
         <source>Mode 0: 4 tile layers</source>
         <translation>Modalità 0: 4 타일 레이어</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="32"/>
+        <location filename="../IOViewer.cpp" line="41"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
         <translation>Modalità 1: 2 타일 레이어 + 1 회전/축소 타일 레이어</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="33"/>
+        <location filename="../IOViewer.cpp" line="42"/>
         <source>Mode 2: 2 rotated/scaled tile layers</source>
         <translation>Modalità 2: 2 회전/축소 타일 레이어</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="34"/>
+        <location filename="../IOViewer.cpp" line="43"/>
         <source>Mode 3: Full 15-bit bitmap</source>
         <translation>모드 3: 완전한 15 비트 비트맵</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="35"/>
+        <location filename="../IOViewer.cpp" line="44"/>
         <source>Mode 4: Full 8-bit bitmap</source>
         <translation>모드 4: 완전한 8 비트 비트맵</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="36"/>
+        <location filename="../IOViewer.cpp" line="45"/>
         <source>Mode 5: Small 15-bit bitmap</source>
         <translation>모드 5: 낮은 15 비트 비트맵</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="40"/>
+        <location filename="../IOViewer.cpp" line="49"/>
         <source>CGB Mode</source>
         <translation>CGB 모드</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="41"/>
+        <location filename="../IOViewer.cpp" line="50"/>
         <source>Frame select</source>
         <translation>프레임 선택</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="42"/>
+        <location filename="../IOViewer.cpp" line="51"/>
         <source>Unlocked HBlank</source>
         <translation>HBlank 잠금 해제</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="43"/>
+        <location filename="../IOViewer.cpp" line="52"/>
         <source>Linear OBJ tile mapping</source>
         <translation>선형 OBJ 타일 맵핑</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="44"/>
+        <location filename="../IOViewer.cpp" line="53"/>
         <source>Force blank screen</source>
         <translation>빈 화면 강제 설정</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="45"/>
+        <location filename="../IOViewer.cpp" line="54"/>
         <source>Enable background 0</source>
         <translation>배경 0 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="46"/>
+        <location filename="../IOViewer.cpp" line="55"/>
         <source>Enable background 1</source>
         <translation>배경 1 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="47"/>
+        <location filename="../IOViewer.cpp" line="56"/>
         <source>Enable background 2</source>
         <translation>배경 2 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="48"/>
+        <location filename="../IOViewer.cpp" line="57"/>
         <source>Enable background 3</source>
         <translation>배경 3 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="49"/>
+        <location filename="../IOViewer.cpp" line="58"/>
         <source>Enable OBJ</source>
         <translation>OBJ 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="50"/>
+        <location filename="../IOViewer.cpp" line="59"/>
         <source>Enable Window 0</source>
         <translation>창 0 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="51"/>
+        <location filename="../IOViewer.cpp" line="60"/>
         <source>Enable Window 1</source>
         <translation>창 1 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="52"/>
+        <location filename="../IOViewer.cpp" line="61"/>
         <source>Enable OBJ Window</source>
         <translation>OBJ 창 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="58"/>
+        <location filename="../IOViewer.cpp" line="65"/>
+        <source>Swap green components</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="69"/>
         <source>Currently in VBlank</source>
         <translation>현재 VBlank에 있음</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="59"/>
+        <location filename="../IOViewer.cpp" line="70"/>
         <source>Currently in HBlank</source>
         <translation>현재 HBlank에 있음</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="60"/>
+        <location filename="../IOViewer.cpp" line="71"/>
         <source>Currently in VCounter</source>
         <translation>현재 VCounter에 있음</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="61"/>
+        <location filename="../IOViewer.cpp" line="72"/>
         <source>Enable VBlank IRQ generation</source>
         <translation>VBlank IRQ 생성 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="62"/>
+        <location filename="../IOViewer.cpp" line="73"/>
         <source>Enable HBlank IRQ generation</source>
         <translation>HBlank IRQ 생성 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="63"/>
+        <location filename="../IOViewer.cpp" line="74"/>
         <source>Enable VCounter IRQ generation</source>
         <translation>VCounter IRQ 생성 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="64"/>
+        <location filename="../IOViewer.cpp" line="75"/>
         <source>VCounter scanline</source>
         <translation>VCounter 스캔라인</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="68"/>
+        <location filename="../IOViewer.cpp" line="79"/>
         <source>Current scanline</source>
         <translation>현재 스캔라인</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="72"/>
-        <location filename="../IOViewer.cpp" line="81"/>
-        <location filename="../IOViewer.cpp" line="90"/>
-        <location filename="../IOViewer.cpp" line="100"/>
+        <location filename="../IOViewer.cpp" line="83"/>
+        <location filename="../IOViewer.cpp" line="92"/>
+        <location filename="../IOViewer.cpp" line="101"/>
+        <location filename="../IOViewer.cpp" line="111"/>
         <source>Priority</source>
         <translation>우선 순위</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="73"/>
-        <location filename="../IOViewer.cpp" line="82"/>
-        <location filename="../IOViewer.cpp" line="91"/>
-        <location filename="../IOViewer.cpp" line="101"/>
+        <location filename="../IOViewer.cpp" line="84"/>
+        <location filename="../IOViewer.cpp" line="93"/>
+        <location filename="../IOViewer.cpp" line="102"/>
+        <location filename="../IOViewer.cpp" line="112"/>
         <source>Tile data base (* 16kB)</source>
         <translation>타일 데이터 베이스 (* 16kB)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="74"/>
-        <location filename="../IOViewer.cpp" line="83"/>
-        <location filename="../IOViewer.cpp" line="92"/>
-        <location filename="../IOViewer.cpp" line="102"/>
+        <location filename="../IOViewer.cpp" line="85"/>
+        <location filename="../IOViewer.cpp" line="94"/>
+        <location filename="../IOViewer.cpp" line="103"/>
+        <location filename="../IOViewer.cpp" line="113"/>
         <source>Enable mosaic</source>
         <translation>모자이크 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="75"/>
-        <location filename="../IOViewer.cpp" line="84"/>
-        <location filename="../IOViewer.cpp" line="93"/>
-        <location filename="../IOViewer.cpp" line="103"/>
+        <location filename="../IOViewer.cpp" line="86"/>
+        <location filename="../IOViewer.cpp" line="95"/>
+        <location filename="../IOViewer.cpp" line="104"/>
+        <location filename="../IOViewer.cpp" line="114"/>
         <source>Enable 256-color</source>
         <translation>256 컬러 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="76"/>
-        <location filename="../IOViewer.cpp" line="85"/>
-        <location filename="../IOViewer.cpp" line="94"/>
-        <location filename="../IOViewer.cpp" line="104"/>
+        <location filename="../IOViewer.cpp" line="87"/>
+        <location filename="../IOViewer.cpp" line="96"/>
+        <location filename="../IOViewer.cpp" line="105"/>
+        <location filename="../IOViewer.cpp" line="115"/>
         <source>Tile map base (* 2kB)</source>
         <translation>타일 맵 베이스 (* 2kB)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="77"/>
-        <location filename="../IOViewer.cpp" line="86"/>
-        <location filename="../IOViewer.cpp" line="96"/>
-        <location filename="../IOViewer.cpp" line="106"/>
+        <location filename="../IOViewer.cpp" line="88"/>
+        <location filename="../IOViewer.cpp" line="97"/>
+        <location filename="../IOViewer.cpp" line="107"/>
+        <location filename="../IOViewer.cpp" line="117"/>
         <source>Background dimensions</source>
         <translation>배경 크기</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="95"/>
-        <location filename="../IOViewer.cpp" line="105"/>
+        <location filename="../IOViewer.cpp" line="106"/>
+        <location filename="../IOViewer.cpp" line="116"/>
         <source>Overflow wraps</source>
         <translation>오버플로우 랩</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="110"/>
-        <location filename="../IOViewer.cpp" line="118"/>
-        <location filename="../IOViewer.cpp" line="126"/>
-        <location filename="../IOViewer.cpp" line="134"/>
+        <location filename="../IOViewer.cpp" line="121"/>
+        <location filename="../IOViewer.cpp" line="129"/>
+        <location filename="../IOViewer.cpp" line="137"/>
+        <location filename="../IOViewer.cpp" line="145"/>
         <source>Horizontal offset</source>
         <translation>수평 오프셋</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="114"/>
-        <location filename="../IOViewer.cpp" line="122"/>
-        <location filename="../IOViewer.cpp" line="130"/>
-        <location filename="../IOViewer.cpp" line="138"/>
+        <location filename="../IOViewer.cpp" line="125"/>
+        <location filename="../IOViewer.cpp" line="133"/>
+        <location filename="../IOViewer.cpp" line="141"/>
+        <location filename="../IOViewer.cpp" line="149"/>
         <source>Vertical offset</source>
         <translation>수직 오프셋</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="142"/>
-        <location filename="../IOViewer.cpp" line="147"/>
-        <location filename="../IOViewer.cpp" line="152"/>
-        <location filename="../IOViewer.cpp" line="157"/>
-        <location filename="../IOViewer.cpp" line="162"/>
-        <location filename="../IOViewer.cpp" line="171"/>
-        <location filename="../IOViewer.cpp" line="180"/>
-        <location filename="../IOViewer.cpp" line="185"/>
-        <location filename="../IOViewer.cpp" line="190"/>
-        <location filename="../IOViewer.cpp" line="195"/>
-        <location filename="../IOViewer.cpp" line="200"/>
-        <location filename="../IOViewer.cpp" line="209"/>
+        <location filename="../IOViewer.cpp" line="153"/>
+        <location filename="../IOViewer.cpp" line="158"/>
+        <location filename="../IOViewer.cpp" line="163"/>
+        <location filename="../IOViewer.cpp" line="168"/>
+        <location filename="../IOViewer.cpp" line="173"/>
+        <location filename="../IOViewer.cpp" line="182"/>
+        <location filename="../IOViewer.cpp" line="191"/>
+        <location filename="../IOViewer.cpp" line="196"/>
+        <location filename="../IOViewer.cpp" line="201"/>
+        <location filename="../IOViewer.cpp" line="206"/>
+        <location filename="../IOViewer.cpp" line="211"/>
+        <location filename="../IOViewer.cpp" line="220"/>
         <source>Fractional part</source>
         <translation>분수부</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="143"/>
-        <location filename="../IOViewer.cpp" line="148"/>
-        <location filename="../IOViewer.cpp" line="153"/>
-        <location filename="../IOViewer.cpp" line="158"/>
-        <location filename="../IOViewer.cpp" line="181"/>
-        <location filename="../IOViewer.cpp" line="186"/>
-        <location filename="../IOViewer.cpp" line="191"/>
-        <location filename="../IOViewer.cpp" line="196"/>
+        <location filename="../IOViewer.cpp" line="154"/>
+        <location filename="../IOViewer.cpp" line="159"/>
+        <location filename="../IOViewer.cpp" line="164"/>
+        <location filename="../IOViewer.cpp" line="169"/>
+        <location filename="../IOViewer.cpp" line="192"/>
+        <location filename="../IOViewer.cpp" line="197"/>
+        <location filename="../IOViewer.cpp" line="202"/>
+        <location filename="../IOViewer.cpp" line="207"/>
         <source>Integer part</source>
         <translation>정수부</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="163"/>
-        <location filename="../IOViewer.cpp" line="172"/>
-        <location filename="../IOViewer.cpp" line="201"/>
-        <location filename="../IOViewer.cpp" line="210"/>
+        <location filename="../IOViewer.cpp" line="174"/>
+        <location filename="../IOViewer.cpp" line="183"/>
+        <location filename="../IOViewer.cpp" line="212"/>
+        <location filename="../IOViewer.cpp" line="221"/>
         <source>Integer part (bottom)</source>
         <translation>정수부 (하단)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="167"/>
-        <location filename="../IOViewer.cpp" line="176"/>
-        <location filename="../IOViewer.cpp" line="205"/>
-        <location filename="../IOViewer.cpp" line="214"/>
+        <location filename="../IOViewer.cpp" line="178"/>
+        <location filename="../IOViewer.cpp" line="187"/>
+        <location filename="../IOViewer.cpp" line="216"/>
+        <location filename="../IOViewer.cpp" line="225"/>
         <source>Integer part (top)</source>
         <translation>정수부 (상단)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="218"/>
-        <location filename="../IOViewer.cpp" line="223"/>
+        <location filename="../IOViewer.cpp" line="229"/>
+        <location filename="../IOViewer.cpp" line="234"/>
         <source>End x</source>
         <translation>x 끝</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="219"/>
-        <location filename="../IOViewer.cpp" line="224"/>
+        <location filename="../IOViewer.cpp" line="230"/>
+        <location filename="../IOViewer.cpp" line="235"/>
         <source>Start x</source>
         <translation>x 시작</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="228"/>
-        <location filename="../IOViewer.cpp" line="233"/>
+        <location filename="../IOViewer.cpp" line="239"/>
+        <location filename="../IOViewer.cpp" line="244"/>
         <source>End y</source>
         <translation>y 끝</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="229"/>
-        <location filename="../IOViewer.cpp" line="234"/>
+        <location filename="../IOViewer.cpp" line="240"/>
+        <location filename="../IOViewer.cpp" line="245"/>
         <source>Start y</source>
         <translation>y 시작</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="238"/>
+        <location filename="../IOViewer.cpp" line="249"/>
         <source>Window 0 enable BG 0</source>
         <translation>창 0 배경 0</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="239"/>
+        <location filename="../IOViewer.cpp" line="250"/>
         <source>Window 0 enable BG 1</source>
         <translation>창 0 배경 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="240"/>
+        <location filename="../IOViewer.cpp" line="251"/>
         <source>Window 0 enable BG 2</source>
         <translation>Window 0 BG 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="241"/>
+        <location filename="../IOViewer.cpp" line="252"/>
         <source>Window 0 enable BG 3</source>
         <translation>창 0 배경 3</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="242"/>
+        <location filename="../IOViewer.cpp" line="253"/>
         <source>Window 0 enable OBJ</source>
         <translation>창 0 보트 타기</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="243"/>
+        <location filename="../IOViewer.cpp" line="254"/>
         <source>Window 0 enable blend</source>
         <translation>창 0 혼합</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="244"/>
+        <location filename="../IOViewer.cpp" line="255"/>
         <source>Window 1 enable BG 0</source>
         <translation>창 1 배경 0</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="245"/>
+        <location filename="../IOViewer.cpp" line="256"/>
         <source>Window 1 enable BG 1</source>
         <translation>창 1 배경 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="246"/>
+        <location filename="../IOViewer.cpp" line="257"/>
         <source>Window 1 enable BG 2</source>
         <translation>창 1 배경 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="247"/>
+        <location filename="../IOViewer.cpp" line="258"/>
         <source>Window 1 enable BG 3</source>
         <translation>창 1 배경 3</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="248"/>
+        <location filename="../IOViewer.cpp" line="259"/>
         <source>Window 1 enable OBJ</source>
         <translation>창 1 보트 타기</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="249"/>
+        <location filename="../IOViewer.cpp" line="260"/>
         <source>Window 1 enable blend</source>
         <translation>창 1 혼합</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="253"/>
+        <location filename="../IOViewer.cpp" line="264"/>
         <source>Outside window enable BG 0</source>
         <translation>외부 창 배경 0</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="254"/>
+        <location filename="../IOViewer.cpp" line="265"/>
         <source>Outside window enable BG 1</source>
         <translation>외부 창 배경 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="255"/>
+        <location filename="../IOViewer.cpp" line="266"/>
         <source>Outside window enable BG 2</source>
         <translation>외부 창 배경 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="256"/>
+        <location filename="../IOViewer.cpp" line="267"/>
         <source>Outside window enable BG 3</source>
         <translation>외부 창 배경 3</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="257"/>
+        <location filename="../IOViewer.cpp" line="268"/>
         <source>Outside window enable OBJ</source>
         <translation>외부 창 보트 타기</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="258"/>
+        <location filename="../IOViewer.cpp" line="269"/>
         <source>Outside window enable blend</source>
         <translation>외부 창 혼합</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="259"/>
+        <location filename="../IOViewer.cpp" line="270"/>
         <source>OBJ window enable BG 0</source>
         <translation>보트 타기 창 배경 0</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="260"/>
+        <location filename="../IOViewer.cpp" line="271"/>
         <source>OBJ window enable BG 1</source>
         <translation>보트 타기 창 배경 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="261"/>
+        <location filename="../IOViewer.cpp" line="272"/>
         <source>OBJ window enable BG 2</source>
         <translation>보트 타기 창 배경 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="262"/>
+        <location filename="../IOViewer.cpp" line="273"/>
         <source>OBJ window enable BG 3</source>
         <translation>보트 타기 창 배경 3</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="263"/>
+        <location filename="../IOViewer.cpp" line="274"/>
         <source>OBJ window enable OBJ</source>
         <translation>보트 타기 창 보트 타기</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="264"/>
+        <location filename="../IOViewer.cpp" line="275"/>
         <source>OBJ window enable blend</source>
         <translation>보트 타기 창 혼합</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="268"/>
+        <location filename="../IOViewer.cpp" line="279"/>
         <source>Background mosaic size vertical</source>
         <translation>세로 모자이크 배경</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="269"/>
+        <location filename="../IOViewer.cpp" line="280"/>
         <source>Background mosaic size horizontal</source>
         <translation>가로 모자이크 배경</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="270"/>
+        <location filename="../IOViewer.cpp" line="281"/>
         <source>Object mosaic size vertical</source>
         <translation>세로 보트 타기 모자이크 배경</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="271"/>
+        <location filename="../IOViewer.cpp" line="282"/>
         <source>Object mosaic size horizontal</source>
         <translation>가로 보트 타기 모자이크 배경</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="277"/>
+        <location filename="../IOViewer.cpp" line="288"/>
         <source>BG 0 target 1</source>
         <translation>배경 0 타겟 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="278"/>
+        <location filename="../IOViewer.cpp" line="289"/>
         <source>BG 1 target 1</source>
         <translation>배경 1 타겟 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="279"/>
+        <location filename="../IOViewer.cpp" line="290"/>
         <source>BG 2 target 1</source>
         <translation>배경 2 타겟 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="280"/>
+        <location filename="../IOViewer.cpp" line="291"/>
         <source>BG 3 target 1</source>
         <translation>배경 3 타겟 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="281"/>
+        <location filename="../IOViewer.cpp" line="292"/>
         <source>OBJ target 1</source>
         <translation>객체 타겟 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="282"/>
+        <location filename="../IOViewer.cpp" line="293"/>
         <source>Backdrop target 1</source>
         <translation>배경 타켓 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="283"/>
+        <location filename="../IOViewer.cpp" line="294"/>
         <source>Blend mode</source>
         <translation>혼합 모드</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="284"/>
+        <location filename="../IOViewer.cpp" line="295"/>
         <source>Disabled</source>
         <translation>비활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="285"/>
+        <location filename="../IOViewer.cpp" line="296"/>
         <source>Additive blending</source>
         <translation>첨가 혼합</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="286"/>
+        <location filename="../IOViewer.cpp" line="297"/>
         <source>Brighten</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="287"/>
+        <location filename="../IOViewer.cpp" line="298"/>
         <source>Darken</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="289"/>
+        <location filename="../IOViewer.cpp" line="300"/>
         <source>BG 0 target 2</source>
         <translation>배경 0 타켓 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="290"/>
+        <location filename="../IOViewer.cpp" line="301"/>
         <source>BG 1 target 2</source>
         <translation>배경 1 타겟 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="291"/>
+        <location filename="../IOViewer.cpp" line="302"/>
         <source>BG 2 target 2</source>
         <translation>배경 2 타켓 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="292"/>
+        <location filename="../IOViewer.cpp" line="303"/>
         <source>BG 3 target 2</source>
         <translation>배경 3 타켓 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="293"/>
+        <location filename="../IOViewer.cpp" line="304"/>
         <source>OBJ target 2</source>
         <translation>객체 타켓 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="294"/>
+        <location filename="../IOViewer.cpp" line="305"/>
         <source>Backdrop target 2</source>
         <translation>배경 타겟 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="298"/>
+        <location filename="../IOViewer.cpp" line="309"/>
         <source>Blend A (target 1)</source>
         <translation>혼합 A (타겟 1)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="299"/>
+        <location filename="../IOViewer.cpp" line="310"/>
         <source>Blend B (target 2)</source>
         <translation>혼합 B (타켓 2)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="303"/>
+        <location filename="../IOViewer.cpp" line="314"/>
         <source>Blend Y</source>
         <translation>혼합 Y</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="317"/>
+        <location filename="../IOViewer.cpp" line="328"/>
         <source>Sweep shifts</source>
         <translation>스윕 시프트</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="318"/>
+        <location filename="../IOViewer.cpp" line="329"/>
         <source>Sweep subtract</source>
         <translation>스윕 서브트랙</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="319"/>
+        <location filename="../IOViewer.cpp" line="330"/>
         <source>Sweep time (in 1/128s)</source>
         <translation>스윕 시간 (1/128초)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="323"/>
-        <location filename="../IOViewer.cpp" line="339"/>
-        <location filename="../IOViewer.cpp" line="363"/>
-        <location filename="../IOViewer.cpp" line="385"/>
+        <location filename="../IOViewer.cpp" line="334"/>
+        <location filename="../IOViewer.cpp" line="350"/>
+        <location filename="../IOViewer.cpp" line="374"/>
+        <location filename="../IOViewer.cpp" line="396"/>
         <source>Sound length</source>
         <translation>소리 길이</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="324"/>
-        <location filename="../IOViewer.cpp" line="340"/>
+        <location filename="../IOViewer.cpp" line="335"/>
+        <location filename="../IOViewer.cpp" line="351"/>
         <source>Duty cycle</source>
         <translation>작동 주기</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="325"/>
-        <location filename="../IOViewer.cpp" line="341"/>
-        <location filename="../IOViewer.cpp" line="386"/>
+        <location filename="../IOViewer.cpp" line="336"/>
+        <location filename="../IOViewer.cpp" line="352"/>
+        <location filename="../IOViewer.cpp" line="397"/>
         <source>Envelope step time</source>
         <translation>엔빌로프 단계 시간</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="326"/>
-        <location filename="../IOViewer.cpp" line="342"/>
-        <location filename="../IOViewer.cpp" line="387"/>
+        <location filename="../IOViewer.cpp" line="337"/>
+        <location filename="../IOViewer.cpp" line="353"/>
+        <location filename="../IOViewer.cpp" line="398"/>
         <source>Envelope increase</source>
         <translation>엔빌로프 증가</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="327"/>
-        <location filename="../IOViewer.cpp" line="343"/>
-        <location filename="../IOViewer.cpp" line="388"/>
+        <location filename="../IOViewer.cpp" line="338"/>
+        <location filename="../IOViewer.cpp" line="354"/>
+        <location filename="../IOViewer.cpp" line="399"/>
         <source>Initial volume</source>
         <translation>초기 볼륨</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="331"/>
-        <location filename="../IOViewer.cpp" line="349"/>
-        <location filename="../IOViewer.cpp" line="377"/>
+        <location filename="../IOViewer.cpp" line="342"/>
+        <location filename="../IOViewer.cpp" line="360"/>
+        <location filename="../IOViewer.cpp" line="388"/>
         <source>Sound frequency</source>
         <translation>소리 빈도</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="332"/>
-        <location filename="../IOViewer.cpp" line="350"/>
-        <location filename="../IOViewer.cpp" line="378"/>
-        <location filename="../IOViewer.cpp" line="400"/>
+        <location filename="../IOViewer.cpp" line="343"/>
+        <location filename="../IOViewer.cpp" line="361"/>
+        <location filename="../IOViewer.cpp" line="389"/>
+        <location filename="../IOViewer.cpp" line="411"/>
         <source>Timed</source>
         <translation>시한</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="333"/>
-        <location filename="../IOViewer.cpp" line="351"/>
-        <location filename="../IOViewer.cpp" line="379"/>
-        <location filename="../IOViewer.cpp" line="401"/>
+        <location filename="../IOViewer.cpp" line="344"/>
+        <location filename="../IOViewer.cpp" line="362"/>
+        <location filename="../IOViewer.cpp" line="390"/>
+        <location filename="../IOViewer.cpp" line="412"/>
         <source>Reset</source>
         <translation>재설정</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="357"/>
+        <location filename="../IOViewer.cpp" line="368"/>
         <source>Double-size wave table</source>
         <translation>2배 음파 테이블</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="358"/>
+        <location filename="../IOViewer.cpp" line="369"/>
         <source>Active wave table</source>
         <translation>음파 테이블 활성</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="359"/>
+        <location filename="../IOViewer.cpp" line="370"/>
         <source>Enable channel 3</source>
         <translation>채널 3 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="364"/>
+        <location filename="../IOViewer.cpp" line="375"/>
         <source>Volume</source>
         <translation>볼륨</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="365"/>
+        <location filename="../IOViewer.cpp" line="376"/>
         <source>0%</source>
         <translation>0%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="366"/>
-        <location filename="../IOViewer.cpp" line="423"/>
+        <location filename="../IOViewer.cpp" line="377"/>
+        <location filename="../IOViewer.cpp" line="434"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="367"/>
-        <location filename="../IOViewer.cpp" line="422"/>
+        <location filename="../IOViewer.cpp" line="378"/>
+        <location filename="../IOViewer.cpp" line="433"/>
         <source>50%</source>
         <translation>50%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="368"/>
-        <location filename="../IOViewer.cpp" line="421"/>
+        <location filename="../IOViewer.cpp" line="379"/>
+        <location filename="../IOViewer.cpp" line="432"/>
         <source>25%</source>
         <translation>25%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="369"/>
-        <location filename="../IOViewer.cpp" line="370"/>
-        <location filename="../IOViewer.cpp" line="371"/>
-        <location filename="../IOViewer.cpp" line="372"/>
+        <location filename="../IOViewer.cpp" line="380"/>
+        <location filename="../IOViewer.cpp" line="381"/>
+        <location filename="../IOViewer.cpp" line="382"/>
+        <location filename="../IOViewer.cpp" line="383"/>
         <source>75%</source>
         <translation>75%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="394"/>
+        <location filename="../IOViewer.cpp" line="405"/>
         <source>Clock divider</source>
         <translation>클럭 분배기</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="395"/>
+        <location filename="../IOViewer.cpp" line="406"/>
         <source>Register stages</source>
         <translation>녹음 단계</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="396"/>
+        <location filename="../IOViewer.cpp" line="407"/>
         <source>15</source>
         <translation>15</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="397"/>
+        <location filename="../IOViewer.cpp" line="408"/>
         <source>7</source>
         <translation>7</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="399"/>
+        <location filename="../IOViewer.cpp" line="410"/>
         <source>Shifter frequency</source>
         <translation>빈도 변화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="407"/>
+        <location filename="../IOViewer.cpp" line="418"/>
         <source>PSG volume right</source>
         <translation>PSG 오른쪽 볼륨</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="408"/>
+        <location filename="../IOViewer.cpp" line="419"/>
         <source>PSG volume left</source>
         <translation>PSG 왼쪽 볼륨</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="409"/>
+        <location filename="../IOViewer.cpp" line="420"/>
         <source>Enable channel 1 right</source>
         <translation>채널 1 오른쪽 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="410"/>
+        <location filename="../IOViewer.cpp" line="421"/>
         <source>Enable channel 2 right</source>
         <translation>채널 2 오른쪽 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="411"/>
+        <location filename="../IOViewer.cpp" line="422"/>
         <source>Enable channel 3 right</source>
         <translation>채널 3 오른쪽 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="412"/>
+        <location filename="../IOViewer.cpp" line="423"/>
         <source>Enable channel 4 right</source>
         <translation>채널 4 오른쪽 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="413"/>
+        <location filename="../IOViewer.cpp" line="424"/>
         <source>Enable channel 1 left</source>
         <translation>채널 1 왼쪽 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="414"/>
+        <location filename="../IOViewer.cpp" line="425"/>
         <source>Enable channel 2 left</source>
         <translation>채널 2 왼쪽 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="415"/>
+        <location filename="../IOViewer.cpp" line="426"/>
         <source>Enable channel 3 left</source>
         <translation>채널 3 왼쪽 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="416"/>
+        <location filename="../IOViewer.cpp" line="427"/>
         <source>Enable channel 4 left</source>
         <translation>채널 4 왼쪽 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="420"/>
+        <location filename="../IOViewer.cpp" line="431"/>
         <source>PSG master volume</source>
         <translation>PSG 마스터 볼륨</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="426"/>
+        <location filename="../IOViewer.cpp" line="437"/>
         <source>Loud channel A</source>
         <translation>큰 소리 채널 A</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="427"/>
+        <location filename="../IOViewer.cpp" line="438"/>
         <source>Loud channel B</source>
         <translation>큰 소리 채널 B</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="428"/>
+        <location filename="../IOViewer.cpp" line="439"/>
         <source>Enable channel A right</source>
         <translation>채널 A 오른쪽 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="429"/>
+        <location filename="../IOViewer.cpp" line="440"/>
         <source>Enable channel A left</source>
         <translation>채널 A 왼쪽 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="430"/>
+        <location filename="../IOViewer.cpp" line="441"/>
         <source>Channel A timer</source>
         <translation>채널 A 타이머</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="431"/>
-        <location filename="../IOViewer.cpp" line="438"/>
+        <location filename="../IOViewer.cpp" line="442"/>
+        <location filename="../IOViewer.cpp" line="449"/>
         <source>0</source>
         <translation>0</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="432"/>
-        <location filename="../IOViewer.cpp" line="439"/>
-        <location filename="../IOViewer.cpp" line="768"/>
-        <location filename="../IOViewer.cpp" line="783"/>
-        <location filename="../IOViewer.cpp" line="799"/>
-        <location filename="../IOViewer.cpp" line="815"/>
-        <location filename="../IOViewer.cpp" line="987"/>
-        <location filename="../IOViewer.cpp" line="997"/>
-        <location filename="../IOViewer.cpp" line="1007"/>
+        <location filename="../IOViewer.cpp" line="443"/>
+        <location filename="../IOViewer.cpp" line="450"/>
+        <location filename="../IOViewer.cpp" line="779"/>
+        <location filename="../IOViewer.cpp" line="794"/>
+        <location filename="../IOViewer.cpp" line="810"/>
+        <location filename="../IOViewer.cpp" line="826"/>
+        <location filename="../IOViewer.cpp" line="992"/>
+        <location filename="../IOViewer.cpp" line="1002"/>
+        <location filename="../IOViewer.cpp" line="1012"/>
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="434"/>
+        <location filename="../IOViewer.cpp" line="445"/>
         <source>Channel A reset</source>
         <translation>채널 A 재설정</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="435"/>
+        <location filename="../IOViewer.cpp" line="446"/>
         <source>Enable channel B right</source>
         <translation>채널 B 오른쪽 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="436"/>
+        <location filename="../IOViewer.cpp" line="447"/>
         <source>Enable channel B left</source>
         <translation>채널 B 왼쪽 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="437"/>
+        <location filename="../IOViewer.cpp" line="448"/>
         <source>Channel B timer</source>
         <translation>채널 B 타이머</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="441"/>
+        <location filename="../IOViewer.cpp" line="452"/>
         <source>Channel B reset</source>
         <translation>채널 B 재설정</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="445"/>
+        <location filename="../IOViewer.cpp" line="456"/>
         <source>Active channel 1</source>
         <translation>채널 1 활성</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="446"/>
+        <location filename="../IOViewer.cpp" line="457"/>
         <source>Active channel 2</source>
         <translation>채널 2 활성</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="447"/>
+        <location filename="../IOViewer.cpp" line="458"/>
         <source>Active channel 3</source>
         <translation>채널 3 활성</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="448"/>
+        <location filename="../IOViewer.cpp" line="459"/>
         <source>Active channel 4</source>
         <translation>채널 4 활성</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="449"/>
+        <location filename="../IOViewer.cpp" line="460"/>
         <source>Enable audio</source>
         <translation>오디오 활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="455"/>
+        <location filename="../IOViewer.cpp" line="466"/>
         <source>Bias</source>
         <translation>편광</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="456"/>
+        <location filename="../IOViewer.cpp" line="467"/>
         <source>Resolution</source>
         <translation>해상도</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="466"/>
-        <location filename="../IOViewer.cpp" line="467"/>
-        <location filename="../IOViewer.cpp" line="468"/>
-        <location filename="../IOViewer.cpp" line="469"/>
-        <location filename="../IOViewer.cpp" line="473"/>
-        <location filename="../IOViewer.cpp" line="474"/>
-        <location filename="../IOViewer.cpp" line="475"/>
-        <location filename="../IOViewer.cpp" line="476"/>
+        <location filename="../IOViewer.cpp" line="477"/>
+        <location filename="../IOViewer.cpp" line="478"/>
+        <location filename="../IOViewer.cpp" line="479"/>
         <location filename="../IOViewer.cpp" line="480"/>
-        <location filename="../IOViewer.cpp" line="481"/>
-        <location filename="../IOViewer.cpp" line="482"/>
-        <location filename="../IOViewer.cpp" line="483"/>
+        <location filename="../IOViewer.cpp" line="484"/>
+        <location filename="../IOViewer.cpp" line="485"/>
+        <location filename="../IOViewer.cpp" line="486"/>
         <location filename="../IOViewer.cpp" line="487"/>
-        <location filename="../IOViewer.cpp" line="488"/>
-        <location filename="../IOViewer.cpp" line="489"/>
-        <location filename="../IOViewer.cpp" line="490"/>
+        <location filename="../IOViewer.cpp" line="491"/>
+        <location filename="../IOViewer.cpp" line="492"/>
+        <location filename="../IOViewer.cpp" line="493"/>
         <location filename="../IOViewer.cpp" line="494"/>
-        <location filename="../IOViewer.cpp" line="495"/>
-        <location filename="../IOViewer.cpp" line="496"/>
-        <location filename="../IOViewer.cpp" line="497"/>
+        <location filename="../IOViewer.cpp" line="498"/>
+        <location filename="../IOViewer.cpp" line="499"/>
+        <location filename="../IOViewer.cpp" line="500"/>
         <location filename="../IOViewer.cpp" line="501"/>
-        <location filename="../IOViewer.cpp" line="502"/>
-        <location filename="../IOViewer.cpp" line="503"/>
-        <location filename="../IOViewer.cpp" line="504"/>
+        <location filename="../IOViewer.cpp" line="505"/>
+        <location filename="../IOViewer.cpp" line="506"/>
+        <location filename="../IOViewer.cpp" line="507"/>
         <location filename="../IOViewer.cpp" line="508"/>
-        <location filename="../IOViewer.cpp" line="509"/>
-        <location filename="../IOViewer.cpp" line="510"/>
-        <location filename="../IOViewer.cpp" line="511"/>
+        <location filename="../IOViewer.cpp" line="512"/>
+        <location filename="../IOViewer.cpp" line="513"/>
+        <location filename="../IOViewer.cpp" line="514"/>
         <location filename="../IOViewer.cpp" line="515"/>
-        <location filename="../IOViewer.cpp" line="516"/>
-        <location filename="../IOViewer.cpp" line="517"/>
-        <location filename="../IOViewer.cpp" line="518"/>
+        <location filename="../IOViewer.cpp" line="519"/>
+        <location filename="../IOViewer.cpp" line="520"/>
+        <location filename="../IOViewer.cpp" line="521"/>
         <location filename="../IOViewer.cpp" line="522"/>
-        <location filename="../IOViewer.cpp" line="523"/>
+        <location filename="../IOViewer.cpp" line="526"/>
         <location filename="../IOViewer.cpp" line="527"/>
         <location filename="../IOViewer.cpp" line="528"/>
-        <location filename="../IOViewer.cpp" line="532"/>
+        <location filename="../IOViewer.cpp" line="529"/>
         <location filename="../IOViewer.cpp" line="533"/>
-        <location filename="../IOViewer.cpp" line="537"/>
+        <location filename="../IOViewer.cpp" line="534"/>
         <location filename="../IOViewer.cpp" line="538"/>
+        <location filename="../IOViewer.cpp" line="539"/>
+        <location filename="../IOViewer.cpp" line="543"/>
+        <location filename="../IOViewer.cpp" line="544"/>
+        <location filename="../IOViewer.cpp" line="548"/>
+        <location filename="../IOViewer.cpp" line="549"/>
         <source>Sample</source>
         <translation>샘플</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="550"/>
-        <location filename="../IOViewer.cpp" line="558"/>
-        <location filename="../IOViewer.cpp" line="595"/>
-        <location filename="../IOViewer.cpp" line="603"/>
-        <location filename="../IOViewer.cpp" line="640"/>
-        <location filename="../IOViewer.cpp" line="648"/>
-        <location filename="../IOViewer.cpp" line="685"/>
-        <location filename="../IOViewer.cpp" line="693"/>
+        <location filename="../IOViewer.cpp" line="561"/>
+        <location filename="../IOViewer.cpp" line="569"/>
+        <location filename="../IOViewer.cpp" line="606"/>
+        <location filename="../IOViewer.cpp" line="614"/>
+        <location filename="../IOViewer.cpp" line="651"/>
+        <location filename="../IOViewer.cpp" line="659"/>
+        <location filename="../IOViewer.cpp" line="696"/>
+        <location filename="../IOViewer.cpp" line="704"/>
         <source>Address (bottom)</source>
         <translation>주소 (하단)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="554"/>
-        <location filename="../IOViewer.cpp" line="562"/>
-        <location filename="../IOViewer.cpp" line="599"/>
-        <location filename="../IOViewer.cpp" line="607"/>
-        <location filename="../IOViewer.cpp" line="644"/>
-        <location filename="../IOViewer.cpp" line="652"/>
-        <location filename="../IOViewer.cpp" line="689"/>
-        <location filename="../IOViewer.cpp" line="697"/>
+        <location filename="../IOViewer.cpp" line="565"/>
+        <location filename="../IOViewer.cpp" line="573"/>
+        <location filename="../IOViewer.cpp" line="610"/>
+        <location filename="../IOViewer.cpp" line="618"/>
+        <location filename="../IOViewer.cpp" line="655"/>
+        <location filename="../IOViewer.cpp" line="663"/>
+        <location filename="../IOViewer.cpp" line="700"/>
+        <location filename="../IOViewer.cpp" line="708"/>
         <source>Address (top)</source>
         <translation>주소 (상단)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="566"/>
-        <location filename="../IOViewer.cpp" line="611"/>
-        <location filename="../IOViewer.cpp" line="656"/>
-        <location filename="../IOViewer.cpp" line="701"/>
+        <location filename="../IOViewer.cpp" line="577"/>
+        <location filename="../IOViewer.cpp" line="622"/>
+        <location filename="../IOViewer.cpp" line="667"/>
+        <location filename="../IOViewer.cpp" line="712"/>
         <source>Word count</source>
         <translation>단어 수</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="570"/>
-        <location filename="../IOViewer.cpp" line="615"/>
-        <location filename="../IOViewer.cpp" line="660"/>
-        <location filename="../IOViewer.cpp" line="705"/>
+        <location filename="../IOViewer.cpp" line="581"/>
+        <location filename="../IOViewer.cpp" line="626"/>
+        <location filename="../IOViewer.cpp" line="671"/>
+        <location filename="../IOViewer.cpp" line="716"/>
         <source>Destination offset</source>
         <translation>도착 오프셋</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="571"/>
-        <location filename="../IOViewer.cpp" line="577"/>
-        <location filename="../IOViewer.cpp" line="616"/>
-        <location filename="../IOViewer.cpp" line="622"/>
-        <location filename="../IOViewer.cpp" line="661"/>
-        <location filename="../IOViewer.cpp" line="667"/>
-        <location filename="../IOViewer.cpp" line="706"/>
-        <location filename="../IOViewer.cpp" line="712"/>
+        <location filename="../IOViewer.cpp" line="582"/>
+        <location filename="../IOViewer.cpp" line="588"/>
+        <location filename="../IOViewer.cpp" line="627"/>
+        <location filename="../IOViewer.cpp" line="633"/>
+        <location filename="../IOViewer.cpp" line="672"/>
+        <location filename="../IOViewer.cpp" line="678"/>
+        <location filename="../IOViewer.cpp" line="717"/>
+        <location filename="../IOViewer.cpp" line="723"/>
         <source>Increment</source>
         <translation>증가</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="572"/>
-        <location filename="../IOViewer.cpp" line="578"/>
-        <location filename="../IOViewer.cpp" line="617"/>
-        <location filename="../IOViewer.cpp" line="623"/>
-        <location filename="../IOViewer.cpp" line="662"/>
-        <location filename="../IOViewer.cpp" line="668"/>
-        <location filename="../IOViewer.cpp" line="707"/>
-        <location filename="../IOViewer.cpp" line="713"/>
+        <location filename="../IOViewer.cpp" line="583"/>
+        <location filename="../IOViewer.cpp" line="589"/>
+        <location filename="../IOViewer.cpp" line="628"/>
+        <location filename="../IOViewer.cpp" line="634"/>
+        <location filename="../IOViewer.cpp" line="673"/>
+        <location filename="../IOViewer.cpp" line="679"/>
+        <location filename="../IOViewer.cpp" line="718"/>
+        <location filename="../IOViewer.cpp" line="724"/>
         <source>Decrement</source>
         <translation>감소</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="573"/>
-        <location filename="../IOViewer.cpp" line="579"/>
-        <location filename="../IOViewer.cpp" line="618"/>
-        <location filename="../IOViewer.cpp" line="624"/>
-        <location filename="../IOViewer.cpp" line="663"/>
-        <location filename="../IOViewer.cpp" line="669"/>
-        <location filename="../IOViewer.cpp" line="708"/>
-        <location filename="../IOViewer.cpp" line="714"/>
+        <location filename="../IOViewer.cpp" line="584"/>
+        <location filename="../IOViewer.cpp" line="590"/>
+        <location filename="../IOViewer.cpp" line="629"/>
+        <location filename="../IOViewer.cpp" line="635"/>
+        <location filename="../IOViewer.cpp" line="674"/>
+        <location filename="../IOViewer.cpp" line="680"/>
+        <location filename="../IOViewer.cpp" line="719"/>
+        <location filename="../IOViewer.cpp" line="725"/>
         <source>Fixed</source>
         <translation>수정</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="574"/>
-        <location filename="../IOViewer.cpp" line="619"/>
-        <location filename="../IOViewer.cpp" line="664"/>
-        <location filename="../IOViewer.cpp" line="709"/>
-        <source>Increment and reload</source>
-        <translation>증가 및 다시 로드</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="576"/>
-        <location filename="../IOViewer.cpp" line="621"/>
-        <location filename="../IOViewer.cpp" line="666"/>
-        <location filename="../IOViewer.cpp" line="711"/>
-        <source>Source offset</source>
-        <translation>소스 오프셋</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="582"/>
-        <location filename="../IOViewer.cpp" line="627"/>
-        <location filename="../IOViewer.cpp" line="672"/>
-        <location filename="../IOViewer.cpp" line="718"/>
-        <source>Repeat</source>
-        <translation>반복</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="583"/>
-        <location filename="../IOViewer.cpp" line="628"/>
-        <location filename="../IOViewer.cpp" line="673"/>
-        <location filename="../IOViewer.cpp" line="719"/>
-        <source>32-bit</source>
-        <translation>32 비트</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="584"/>
-        <location filename="../IOViewer.cpp" line="629"/>
-        <location filename="../IOViewer.cpp" line="674"/>
-        <location filename="../IOViewer.cpp" line="720"/>
-        <source>Start timing</source>
-        <translation>시작 타이밍</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="585"/>
         <location filename="../IOViewer.cpp" line="630"/>
         <location filename="../IOViewer.cpp" line="675"/>
-        <location filename="../IOViewer.cpp" line="721"/>
-        <source>Immediate</source>
-        <translation>즉시</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="586"/>
-        <location filename="../IOViewer.cpp" line="631"/>
-        <location filename="../IOViewer.cpp" line="676"/>
-        <location filename="../IOViewer.cpp" line="722"/>
-        <location filename="../IOViewer.cpp" line="939"/>
-        <location filename="../IOViewer.cpp" line="956"/>
-        <source>VBlank</source>
-        <translation>VBlank</translation>
+        <location filename="../IOViewer.cpp" line="720"/>
+        <source>Increment and reload</source>
+        <translation>증가 및 다시 로드</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="587"/>
         <location filename="../IOViewer.cpp" line="632"/>
         <location filename="../IOViewer.cpp" line="677"/>
-        <location filename="../IOViewer.cpp" line="723"/>
-        <location filename="../IOViewer.cpp" line="940"/>
-        <location filename="../IOViewer.cpp" line="957"/>
+        <location filename="../IOViewer.cpp" line="722"/>
+        <source>Source offset</source>
+        <translation>소스 오프셋</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="593"/>
+        <location filename="../IOViewer.cpp" line="638"/>
+        <location filename="../IOViewer.cpp" line="683"/>
+        <location filename="../IOViewer.cpp" line="729"/>
+        <source>Repeat</source>
+        <translation>반복</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="594"/>
+        <location filename="../IOViewer.cpp" line="639"/>
+        <location filename="../IOViewer.cpp" line="684"/>
+        <location filename="../IOViewer.cpp" line="730"/>
+        <source>32-bit</source>
+        <translation>32 비트</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="595"/>
+        <location filename="../IOViewer.cpp" line="640"/>
+        <location filename="../IOViewer.cpp" line="685"/>
+        <location filename="../IOViewer.cpp" line="731"/>
+        <source>Start timing</source>
+        <translation>시작 타이밍</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="596"/>
+        <location filename="../IOViewer.cpp" line="641"/>
+        <location filename="../IOViewer.cpp" line="686"/>
+        <location filename="../IOViewer.cpp" line="732"/>
+        <source>Immediate</source>
+        <translation>즉시</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="597"/>
+        <location filename="../IOViewer.cpp" line="642"/>
+        <location filename="../IOViewer.cpp" line="687"/>
+        <location filename="../IOViewer.cpp" line="733"/>
+        <location filename="../IOViewer.cpp" line="944"/>
+        <location filename="../IOViewer.cpp" line="961"/>
+        <source>VBlank</source>
+        <translation>VBlank</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="598"/>
+        <location filename="../IOViewer.cpp" line="643"/>
+        <location filename="../IOViewer.cpp" line="688"/>
+        <location filename="../IOViewer.cpp" line="734"/>
+        <location filename="../IOViewer.cpp" line="945"/>
+        <location filename="../IOViewer.cpp" line="962"/>
         <source>HBlank</source>
         <translation>HBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="590"/>
-        <location filename="../IOViewer.cpp" line="635"/>
-        <location filename="../IOViewer.cpp" line="680"/>
-        <location filename="../IOViewer.cpp" line="726"/>
-        <location filename="../IOViewer.cpp" line="773"/>
-        <location filename="../IOViewer.cpp" line="789"/>
-        <location filename="../IOViewer.cpp" line="805"/>
-        <location filename="../IOViewer.cpp" line="821"/>
-        <location filename="../IOViewer.cpp" line="881"/>
+        <location filename="../IOViewer.cpp" line="601"/>
+        <location filename="../IOViewer.cpp" line="646"/>
+        <location filename="../IOViewer.cpp" line="691"/>
+        <location filename="../IOViewer.cpp" line="737"/>
+        <location filename="../IOViewer.cpp" line="784"/>
+        <location filename="../IOViewer.cpp" line="800"/>
+        <location filename="../IOViewer.cpp" line="816"/>
+        <location filename="../IOViewer.cpp" line="832"/>
+        <location filename="../IOViewer.cpp" line="892"/>
         <source>IRQ</source>
         <translation>IRQ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="591"/>
-        <location filename="../IOViewer.cpp" line="636"/>
-        <location filename="../IOViewer.cpp" line="681"/>
-        <location filename="../IOViewer.cpp" line="727"/>
-        <location filename="../IOViewer.cpp" line="774"/>
-        <location filename="../IOViewer.cpp" line="790"/>
-        <location filename="../IOViewer.cpp" line="806"/>
-        <location filename="../IOViewer.cpp" line="822"/>
+        <location filename="../IOViewer.cpp" line="602"/>
+        <location filename="../IOViewer.cpp" line="647"/>
+        <location filename="../IOViewer.cpp" line="692"/>
+        <location filename="../IOViewer.cpp" line="738"/>
+        <location filename="../IOViewer.cpp" line="785"/>
+        <location filename="../IOViewer.cpp" line="801"/>
+        <location filename="../IOViewer.cpp" line="817"/>
+        <location filename="../IOViewer.cpp" line="833"/>
         <source>Enable</source>
         <translation>활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="633"/>
-        <location filename="../IOViewer.cpp" line="678"/>
-        <location filename="../IOViewer.cpp" line="724"/>
+        <location filename="../IOViewer.cpp" line="644"/>
+        <location filename="../IOViewer.cpp" line="689"/>
+        <location filename="../IOViewer.cpp" line="735"/>
         <source>Audio FIFO</source>
         <translation>오디오 FIFO</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="715"/>
+        <location filename="../IOViewer.cpp" line="726"/>
         <source>Video Capture</source>
         <translation>비디오 캡쳐</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="717"/>
+        <location filename="../IOViewer.cpp" line="728"/>
         <source>DRQ</source>
         <translation>DRQ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="763"/>
-        <location filename="../IOViewer.cpp" line="778"/>
-        <location filename="../IOViewer.cpp" line="794"/>
-        <location filename="../IOViewer.cpp" line="810"/>
+        <location filename="../IOViewer.cpp" line="774"/>
+        <location filename="../IOViewer.cpp" line="789"/>
+        <location filename="../IOViewer.cpp" line="805"/>
+        <location filename="../IOViewer.cpp" line="821"/>
         <source>Value</source>
         <translation>값</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="767"/>
-        <location filename="../IOViewer.cpp" line="782"/>
-        <location filename="../IOViewer.cpp" line="798"/>
-        <location filename="../IOViewer.cpp" line="814"/>
+        <location filename="../IOViewer.cpp" line="778"/>
+        <location filename="../IOViewer.cpp" line="793"/>
+        <location filename="../IOViewer.cpp" line="809"/>
+        <location filename="../IOViewer.cpp" line="825"/>
         <source>Scale</source>
         <translation>스케일</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="769"/>
-        <location filename="../IOViewer.cpp" line="784"/>
-        <location filename="../IOViewer.cpp" line="800"/>
-        <location filename="../IOViewer.cpp" line="816"/>
+        <location filename="../IOViewer.cpp" line="780"/>
+        <location filename="../IOViewer.cpp" line="795"/>
+        <location filename="../IOViewer.cpp" line="811"/>
+        <location filename="../IOViewer.cpp" line="827"/>
         <source>1/64</source>
         <translation>1/64</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="770"/>
-        <location filename="../IOViewer.cpp" line="785"/>
-        <location filename="../IOViewer.cpp" line="801"/>
-        <location filename="../IOViewer.cpp" line="817"/>
+        <location filename="../IOViewer.cpp" line="781"/>
+        <location filename="../IOViewer.cpp" line="796"/>
+        <location filename="../IOViewer.cpp" line="812"/>
+        <location filename="../IOViewer.cpp" line="828"/>
         <source>1/256</source>
         <translation>1/256</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="771"/>
-        <location filename="../IOViewer.cpp" line="786"/>
-        <location filename="../IOViewer.cpp" line="802"/>
-        <location filename="../IOViewer.cpp" line="818"/>
+        <location filename="../IOViewer.cpp" line="782"/>
+        <location filename="../IOViewer.cpp" line="797"/>
+        <location filename="../IOViewer.cpp" line="813"/>
+        <location filename="../IOViewer.cpp" line="829"/>
         <source>1/1024</source>
         <translation>1/1024</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="788"/>
-        <location filename="../IOViewer.cpp" line="804"/>
-        <location filename="../IOViewer.cpp" line="820"/>
+        <location filename="../IOViewer.cpp" line="799"/>
+        <location filename="../IOViewer.cpp" line="815"/>
+        <location filename="../IOViewer.cpp" line="831"/>
         <source>Cascade</source>
         <translation>연속</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="858"/>
-        <location filename="../IOViewer.cpp" line="871"/>
+        <location filename="../IOViewer.cpp" line="869"/>
+        <location filename="../IOViewer.cpp" line="882"/>
         <source>A</source>
         <translation>A</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="859"/>
-        <location filename="../IOViewer.cpp" line="872"/>
+        <location filename="../IOViewer.cpp" line="870"/>
+        <location filename="../IOViewer.cpp" line="883"/>
         <source>B</source>
         <translation>B</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="860"/>
-        <location filename="../IOViewer.cpp" line="873"/>
+        <location filename="../IOViewer.cpp" line="871"/>
+        <location filename="../IOViewer.cpp" line="884"/>
         <source>Select</source>
         <translation>선택</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="861"/>
-        <location filename="../IOViewer.cpp" line="874"/>
+        <location filename="../IOViewer.cpp" line="872"/>
+        <location filename="../IOViewer.cpp" line="885"/>
         <source>Start</source>
         <translation>시작</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="862"/>
-        <location filename="../IOViewer.cpp" line="875"/>
+        <location filename="../IOViewer.cpp" line="873"/>
+        <location filename="../IOViewer.cpp" line="886"/>
         <source>Right</source>
         <translation>오른쪽</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="863"/>
-        <location filename="../IOViewer.cpp" line="876"/>
+        <location filename="../IOViewer.cpp" line="874"/>
+        <location filename="../IOViewer.cpp" line="887"/>
         <source>Left</source>
         <translation>왼쪽</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="864"/>
-        <location filename="../IOViewer.cpp" line="877"/>
+        <location filename="../IOViewer.cpp" line="875"/>
+        <location filename="../IOViewer.cpp" line="888"/>
         <source>Up</source>
         <translation>위</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="865"/>
-        <location filename="../IOViewer.cpp" line="878"/>
+        <location filename="../IOViewer.cpp" line="876"/>
+        <location filename="../IOViewer.cpp" line="889"/>
         <source>Down</source>
         <translation>아래</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="866"/>
-        <location filename="../IOViewer.cpp" line="879"/>
+        <location filename="../IOViewer.cpp" line="877"/>
+        <location filename="../IOViewer.cpp" line="890"/>
         <source>R</source>
         <translation>R</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="867"/>
-        <location filename="../IOViewer.cpp" line="880"/>
+        <location filename="../IOViewer.cpp" line="878"/>
+        <location filename="../IOViewer.cpp" line="891"/>
         <source>L</source>
         <translation>L</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="882"/>
+        <location filename="../IOViewer.cpp" line="893"/>
         <source>Condition</source>
         <translation>조건</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="886"/>
+        <location filename="../IOViewer.cpp" line="897"/>
         <source>SC</source>
         <translation>SC</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="887"/>
+        <location filename="../IOViewer.cpp" line="898"/>
         <source>SD</source>
         <translation>SD</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="888"/>
+        <location filename="../IOViewer.cpp" line="899"/>
         <source>SI</source>
         <translation>SI</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="889"/>
+        <location filename="../IOViewer.cpp" line="900"/>
         <source>SO</source>
         <translation>SO</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="941"/>
-        <location filename="../IOViewer.cpp" line="958"/>
+        <location filename="../IOViewer.cpp" line="946"/>
+        <location filename="../IOViewer.cpp" line="963"/>
         <source>VCounter</source>
         <translation>VCounter</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="942"/>
-        <location filename="../IOViewer.cpp" line="959"/>
+        <location filename="../IOViewer.cpp" line="947"/>
+        <location filename="../IOViewer.cpp" line="964"/>
         <source>Timer 0</source>
         <translation>타이머 0</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="943"/>
-        <location filename="../IOViewer.cpp" line="960"/>
+        <location filename="../IOViewer.cpp" line="948"/>
+        <location filename="../IOViewer.cpp" line="965"/>
         <source>Timer 1</source>
         <translation>타이머 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="944"/>
-        <location filename="../IOViewer.cpp" line="961"/>
+        <location filename="../IOViewer.cpp" line="949"/>
+        <location filename="../IOViewer.cpp" line="966"/>
         <source>Timer 2</source>
         <translation>타이머 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="945"/>
-        <location filename="../IOViewer.cpp" line="962"/>
+        <location filename="../IOViewer.cpp" line="950"/>
+        <location filename="../IOViewer.cpp" line="967"/>
         <source>Timer 3</source>
         <translation>타이머 3</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="946"/>
-        <location filename="../IOViewer.cpp" line="963"/>
+        <location filename="../IOViewer.cpp" line="951"/>
+        <location filename="../IOViewer.cpp" line="968"/>
         <source>SIO</source>
         <translation>SIO</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="947"/>
-        <location filename="../IOViewer.cpp" line="964"/>
+        <location filename="../IOViewer.cpp" line="952"/>
+        <location filename="../IOViewer.cpp" line="969"/>
         <source>DMA 0</source>
         <translation>DMA 0</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="948"/>
-        <location filename="../IOViewer.cpp" line="965"/>
+        <location filename="../IOViewer.cpp" line="953"/>
+        <location filename="../IOViewer.cpp" line="970"/>
         <source>DMA 1</source>
         <translation>DMA 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="949"/>
-        <location filename="../IOViewer.cpp" line="966"/>
+        <location filename="../IOViewer.cpp" line="954"/>
+        <location filename="../IOViewer.cpp" line="971"/>
         <source>DMA 2</source>
         <translation>DMA 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="950"/>
-        <location filename="../IOViewer.cpp" line="967"/>
+        <location filename="../IOViewer.cpp" line="955"/>
+        <location filename="../IOViewer.cpp" line="972"/>
         <source>DMA 3</source>
         <translation>DMA 3</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="951"/>
-        <location filename="../IOViewer.cpp" line="968"/>
+        <location filename="../IOViewer.cpp" line="956"/>
+        <location filename="../IOViewer.cpp" line="973"/>
         <source>Keypad</source>
         <translation>키패드</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="952"/>
-        <location filename="../IOViewer.cpp" line="969"/>
+        <location filename="../IOViewer.cpp" line="957"/>
+        <location filename="../IOViewer.cpp" line="974"/>
         <source>Gamepak</source>
         <translation>게임팩</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="973"/>
+        <location filename="../IOViewer.cpp" line="978"/>
         <source>SRAM wait</source>
         <translation>대기중인 SRAM</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="974"/>
-        <location filename="../IOViewer.cpp" line="980"/>
-        <location filename="../IOViewer.cpp" line="990"/>
-        <location filename="../IOViewer.cpp" line="996"/>
-        <location filename="../IOViewer.cpp" line="1000"/>
+        <location filename="../IOViewer.cpp" line="979"/>
+        <location filename="../IOViewer.cpp" line="985"/>
+        <location filename="../IOViewer.cpp" line="995"/>
+        <location filename="../IOViewer.cpp" line="1001"/>
+        <location filename="../IOViewer.cpp" line="1005"/>
         <source>4</source>
         <translation>4</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="975"/>
-        <location filename="../IOViewer.cpp" line="981"/>
-        <location filename="../IOViewer.cpp" line="991"/>
-        <location filename="../IOViewer.cpp" line="1001"/>
+        <location filename="../IOViewer.cpp" line="980"/>
+        <location filename="../IOViewer.cpp" line="986"/>
+        <location filename="../IOViewer.cpp" line="996"/>
+        <location filename="../IOViewer.cpp" line="1006"/>
         <source>3</source>
         <translation>3</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="976"/>
-        <location filename="../IOViewer.cpp" line="982"/>
-        <location filename="../IOViewer.cpp" line="986"/>
-        <location filename="../IOViewer.cpp" line="992"/>
-        <location filename="../IOViewer.cpp" line="1002"/>
+        <location filename="../IOViewer.cpp" line="981"/>
+        <location filename="../IOViewer.cpp" line="987"/>
+        <location filename="../IOViewer.cpp" line="991"/>
+        <location filename="../IOViewer.cpp" line="997"/>
+        <location filename="../IOViewer.cpp" line="1007"/>
         <source>2</source>
         <translation>2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="977"/>
-        <location filename="../IOViewer.cpp" line="983"/>
-        <location filename="../IOViewer.cpp" line="993"/>
-        <location filename="../IOViewer.cpp" line="1003"/>
-        <location filename="../IOViewer.cpp" line="1006"/>
+        <location filename="../IOViewer.cpp" line="982"/>
+        <location filename="../IOViewer.cpp" line="988"/>
+        <location filename="../IOViewer.cpp" line="998"/>
+        <location filename="../IOViewer.cpp" line="1008"/>
+        <location filename="../IOViewer.cpp" line="1011"/>
         <source>8</source>
         <translation>8</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="979"/>
+        <location filename="../IOViewer.cpp" line="984"/>
         <source>Cart 0 non-sequential</source>
         <translation>카트 0 미순차</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="985"/>
+        <location filename="../IOViewer.cpp" line="990"/>
         <source>Cart 0 sequential</source>
         <translation>카트 0 순차</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="989"/>
+        <location filename="../IOViewer.cpp" line="994"/>
         <source>Cart 1 non-sequential</source>
         <translation>카트 1 미순차</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="995"/>
+        <location filename="../IOViewer.cpp" line="1000"/>
         <source>Cart 1 sequential</source>
         <translation>카트 1 순차</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="999"/>
+        <location filename="../IOViewer.cpp" line="1004"/>
         <source>Cart 2 non-sequential</source>
         <translation>카트 2 미순차</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1005"/>
+        <location filename="../IOViewer.cpp" line="1010"/>
         <source>Cart 2 sequential</source>
         <translation>카트 2 순차</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1009"/>
+        <location filename="../IOViewer.cpp" line="1014"/>
         <source>PHI terminal</source>
         <translation>PHI 단말기</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1010"/>
+        <location filename="../IOViewer.cpp" line="1015"/>
         <source>Disable</source>
         <translation>비활성화</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1011"/>
+        <location filename="../IOViewer.cpp" line="1016"/>
         <source>4.19MHz</source>
         <translation>4.19MHz</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1012"/>
+        <location filename="../IOViewer.cpp" line="1017"/>
         <source>8.38MHz</source>
         <translation>8.38MHz</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1013"/>
+        <location filename="../IOViewer.cpp" line="1018"/>
         <source>16.78MHz</source>
         <translation>16.78MHz</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1015"/>
+        <location filename="../IOViewer.cpp" line="1020"/>
         <source>Gamepak prefetch</source>
         <translation>게임팩 사전 추출</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1021"/>
+        <location filename="../IOViewer.cpp" line="1026"/>
         <source>Enable IRQs</source>
         <translation>IRQ 활성화</translation>
     </message>
@@ -4012,87 +4017,87 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation>메모리 검색...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1536"/>
+        <location filename="../Window.cpp" line="1534"/>
         <source>View &amp;I/O registers...</source>
         <translation>I/O 레지스터 &amp;보기...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1541"/>
+        <location filename="../Window.cpp" line="1537"/>
         <source>Record debug video log...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1542"/>
+        <location filename="../Window.cpp" line="1538"/>
         <source>Stop debug video log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1642"/>
+        <location filename="../Window.cpp" line="1638"/>
         <source>Exit fullscreen</source>
         <translation>전체화면 종료</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1644"/>
+        <location filename="../Window.cpp" line="1640"/>
         <source>GameShark Button (held)</source>
         <translation>게임샤크 버튼 (누름)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1650"/>
+        <location filename="../Window.cpp" line="1646"/>
         <source>Autofire</source>
         <translation>연사</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1651"/>
+        <location filename="../Window.cpp" line="1647"/>
         <source>Autofire A</source>
         <translation>연사 A</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1656"/>
+        <location filename="../Window.cpp" line="1652"/>
         <source>Autofire B</source>
         <translation>연사 B</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1661"/>
+        <location filename="../Window.cpp" line="1657"/>
         <source>Autofire L</source>
         <translation>연사 L</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1666"/>
+        <location filename="../Window.cpp" line="1662"/>
         <source>Autofire R</source>
         <translation>연사 R</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1671"/>
+        <location filename="../Window.cpp" line="1667"/>
         <source>Autofire Start</source>
         <translation>연사 시작</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1676"/>
+        <location filename="../Window.cpp" line="1672"/>
         <source>Autofire Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1750"/>
+        <location filename="../Window.cpp" line="1746"/>
         <source>Clear</source>
         <translation type="unfinished">정리</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1681"/>
+        <location filename="../Window.cpp" line="1677"/>
         <source>Autofire Up</source>
         <translation>연사 위쪽</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1686"/>
+        <location filename="../Window.cpp" line="1682"/>
         <source>Autofire Right</source>
         <translation>연사 오른쪽</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1691"/>
+        <location filename="../Window.cpp" line="1687"/>
         <source>Autofire Down</source>
         <translation>연사 아래쪽</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1696"/>
+        <location filename="../Window.cpp" line="1692"/>
         <source>Autofire Left</source>
         <translation>연사 왼쪽</translation>
     </message>

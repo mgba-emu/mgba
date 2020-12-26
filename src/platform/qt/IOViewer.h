@@ -8,6 +8,8 @@
 #include <QDialog>
 #include <QList>
 
+#include <mgba/core/core.h>
+
 #include <memory>
 
 #include "ui_IOViewer.h"
@@ -42,7 +44,7 @@ public:
 
 	IOViewer(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
-	static const QList<RegisterDescription>& registerDescriptions();
+	static const QList<RegisterDescription>& registerDescriptions(mPlatform);
 
 signals:
 	void valueChanged();
@@ -58,8 +60,10 @@ private slots:
 	void selectRegister();
 
 private:
-	static QList<RegisterDescription> s_registers;
+	static QHash<mPlatform, QList<RegisterDescription>> s_registers;
 	Ui::IOViewer m_ui;
+	uint32_t m_base;
+	int m_width;
 
 	int m_register;
 	uint16_t m_value;
