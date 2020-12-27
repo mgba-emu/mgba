@@ -23,17 +23,13 @@ CXX_GUARD_START
 #endif
 
 enum mPlatform {
-	PLATFORM_NONE = -1,
-#ifdef M_CORE_GBA
-	PLATFORM_GBA = 0,
-#endif
-#ifdef M_CORE_GB
-	PLATFORM_GB = 1,
-#endif
+	mPLATFORM_NONE = -1,
+	mPLATFORM_GBA = 0,
+	mPLATFORM_GB = 1,
 };
 
 enum mCoreChecksumType {
-	CHECKSUM_CRC32,
+	mCHECKSUM_CRC32,
 };
 
 struct mCoreConfig;

@@ -41,7 +41,7 @@ CheatsView::CheatsView(std::shared_ptr<CoreController> controller, QWidget* pare
 	QPushButton* add;
 	switch (controller->platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		connect(m_ui.add, &QPushButton::clicked, [this]() {
 			enterCheat(GBA_CHEAT_AUTODETECT);
 		});
@@ -66,7 +66,7 @@ CheatsView::CheatsView(std::shared_ptr<CoreController> controller, QWidget* pare
 		break;
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		connect(m_ui.add, &QPushButton::clicked, [this]() {
 			enterCheat(GB_CHEAT_AUTODETECT);
 		});

@@ -33,12 +33,12 @@ static const struct mCoreFilter {
 	enum mPlatform platform;
 } _filters[] = {
 #ifdef M_CORE_GBA
-	{ GBAIsROM, GBACoreCreate, PLATFORM_GBA },
+	{ GBAIsROM, GBACoreCreate, mPLATFORM_GBA },
 #endif
 #ifdef M_CORE_GB
-	{ GBIsROM, GBCoreCreate, PLATFORM_GB },
+	{ GBIsROM, GBCoreCreate, mPLATFORM_GB },
 #endif
-	{ 0, 0, PLATFORM_NONE }
+	{ 0, 0, mPLATFORM_NONE }
 };
 
 struct mCore* mCoreFindVF(struct VFile* vf) {
@@ -62,7 +62,7 @@ struct mCore* mCoreFindVF(struct VFile* vf) {
 
 enum mPlatform mCoreIsCompatible(struct VFile* vf) {
 	if (!vf) {
-		return PLATFORM_NONE;
+		return mPLATFORM_NONE;
 	}
 	const struct mCoreFilter* filter;
 	for (filter = &_filters[0]; filter->filter; ++filter) {
@@ -70,7 +70,7 @@ enum mPlatform mCoreIsCompatible(struct VFile* vf) {
 			return filter->platform;
 		}
 	}
-	return PLATFORM_NONE;
+	return mPLATFORM_NONE;
 }
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

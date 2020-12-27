@@ -273,7 +273,7 @@ static void _setup(struct mGUIRunner* runner) {
 	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation);
 	runner->core->setAVStream(runner->core, &stream);
 
-	if (runner->core->platform(runner->core) == PLATFORM_GBA && useLightSensor) {
+	if (runner->core->platform(runner->core) == mPLATFORM_GBA && useLightSensor) {
 		runner->core->setPeripheral(runner->core, mPERIPH_GBA_LUMINANCE, &lightSensor.d);
 	}
 
@@ -310,7 +310,7 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 		if (useLightSensor != fakeBool) {
 			useLightSensor = fakeBool;
 
-			if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+			if (runner->core->platform(runner->core) == mPLATFORM_GBA) {
 				if (useLightSensor) {
 					runner->core->setPeripheral(runner->core, mPERIPH_GBA_LUMINANCE, &lightSensor.d);
 				} else {

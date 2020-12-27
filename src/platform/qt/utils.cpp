@@ -25,11 +25,11 @@ QString niceSizeFormat(size_t filesize) {
 QString nicePlatformFormat(mPlatform platform) {
 	switch (platform) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		return QObject::tr("GBA");
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		return QObject::tr("GB");
 #endif
 	default:

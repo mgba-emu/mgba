@@ -85,7 +85,7 @@ static void _bindConstraints(sqlite3_stmt* statement, const struct mLibraryEntry
 		sqlite3_bind_text(statement, index, constraints->internalCode, -1, SQLITE_TRANSIENT);
 	}
 
-	if (constraints->platform != PLATFORM_NONE) {
+	if (constraints->platform != mPLATFORM_NONE) {
 		useIndex = sqlite3_bind_parameter_index(statement, ":usePlatform");
 		index = sqlite3_bind_parameter_index(statement, ":platform");
 		sqlite3_bind_int(statement, useIndex, 1);
@@ -274,7 +274,7 @@ void _mLibraryAddEntry(struct mLibrary* library, const char* filename, const cha
 
 		core->getGameTitle(core, entry.internalTitle);
 		core->getGameCode(core, entry.internalCode);
-		core->checksum(core, &entry.crc32, CHECKSUM_CRC32);
+		core->checksum(core, &entry.crc32, mCHECKSUM_CRC32);
 		entry.platform = core->platform(core);
 		entry.title = NULL;
 		entry.base = base;

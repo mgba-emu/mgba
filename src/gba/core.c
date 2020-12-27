@@ -241,7 +241,7 @@ static void _GBACoreDeinit(struct mCore* core) {
 
 static enum mPlatform _GBACorePlatform(const struct mCore* core) {
 	UNUSED(core);
-	return PLATFORM_GBA;
+	return mPLATFORM_GBA;
 }
 
 static bool _GBACoreSupportsFeature(const struct mCore* core, enum mCoreFeature feature) {
@@ -549,7 +549,7 @@ static void _GBACoreUnloadROM(struct mCore* core) {
 static void _GBACoreChecksum(const struct mCore* core, void* data, enum mCoreChecksumType type) {
 	struct GBA* gba = (struct GBA*) core->board;
 	switch (type) {
-	case CHECKSUM_CRC32:
+	case mCHECKSUM_CRC32:
 		memcpy(data, &gba->romCrc32, sizeof(gba->romCrc32));
 		break;
 	}

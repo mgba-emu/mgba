@@ -149,7 +149,7 @@ static void _GBCoreDeinit(struct mCore* core) {
 
 static enum mPlatform _GBCorePlatform(const struct mCore* core) {
 	UNUSED(core);
-	return PLATFORM_GB;
+	return mPLATFORM_GB;
 }
 
 static bool _GBCoreSupportsFeature(const struct mCore* core, enum mCoreFeature feature) {
@@ -420,7 +420,7 @@ static void _GBCoreUnloadROM(struct mCore* core) {
 static void _GBCoreChecksum(const struct mCore* core, void* data, enum mCoreChecksumType type) {
 	struct GB* gb = (struct GB*) core->board;
 	switch (type) {
-	case CHECKSUM_CRC32:
+	case mCHECKSUM_CRC32:
 		memcpy(data, &gb->romCrc32, sizeof(gb->romCrc32));
 		break;
 	}

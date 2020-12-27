@@ -30,12 +30,12 @@ static const struct mVLDescriptor {
 	struct mCore* (*open)(void);
 } _descriptors[] = {
 #ifdef M_CORE_GBA
-	{ PLATFORM_GBA, GBAVideoLogPlayerCreate },
+	{ mPLATFORM_GBA, GBAVideoLogPlayerCreate },
 #endif
 #ifdef M_CORE_GB
-	{ PLATFORM_GB, GBVideoLogPlayerCreate },
+	{ mPLATFORM_GB, GBVideoLogPlayerCreate },
 #endif
-	{ PLATFORM_NONE, 0 }
+	{ mPLATFORM_NONE, 0 }
 };
 
 enum mVLBlockType {
@@ -1060,12 +1060,12 @@ static const struct mVLDescriptor* _mVideoLogDescriptor(struct VFile* vf) {
 	LOAD_32LE(platform, 0, &header.platform);
 
 	const struct mVLDescriptor* descriptor;
-	for (descriptor = &_descriptors[0]; descriptor->platform != PLATFORM_NONE; ++descriptor) {
+	for (descriptor = &_descriptors[0]; descriptor->platform != mPLATFORM_NONE; ++descriptor) {
 		if (platform == descriptor->platform) {
 			break;
 		}
 	}
-	if (descriptor->platform == PLATFORM_NONE) {
+	if (descriptor->platform == mPLATFORM_NONE) {
 		return NULL;
 	}
 	return descriptor;
@@ -1076,7 +1076,7 @@ enum mPlatform mVideoLogIsCompatible(struct VFile* vf) {
 	if (descriptor) {
 		return descriptor->platform;
 	}
-	return PLATFORM_NONE;
+	return mPLATFORM_NONE;
 }
 
 struct mCore* mVideoLogCoreFind(struct VFile* vf) {

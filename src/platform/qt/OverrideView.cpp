@@ -213,7 +213,7 @@ void OverrideView::gameStarted() {
 
 	switch (thread->core->platform(thread->core)) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA: {
+	case mPLATFORM_GBA: {
 		m_ui.tabWidget->setCurrentWidget(m_ui.tabGBA);
 		GBA* gba = static_cast<GBA*>(thread->core->board);
 		m_ui.savetype->setCurrentIndex(gba->memory.savedata.type + 1);
@@ -234,7 +234,7 @@ void OverrideView::gameStarted() {
 	}
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB: {
+	case mPLATFORM_GB: {
 		m_ui.tabWidget->setCurrentWidget(m_ui.tabGB);
 		GB* gb = static_cast<GB*>(thread->core->board);
 		int index = m_ui.mbc->findData(gb->memory.mbcType);
@@ -252,7 +252,7 @@ void OverrideView::gameStarted() {
 		break;
 	}
 #endif
-	case PLATFORM_NONE:
+	case mPLATFORM_NONE:
 		break;
 	}
 

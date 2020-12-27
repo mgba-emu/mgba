@@ -1027,7 +1027,7 @@ void Window::updateTitle(float fps) {
 		NoIntroGame game{};
 		uint32_t crc32 = 0;
 		mCore* core = m_controller->thread()->core;
-		core->checksum(m_controller->thread()->core, &crc32, CHECKSUM_CRC32);
+		core->checksum(m_controller->thread()->core, &crc32, mCHECKSUM_CRC32);
 		QString filePath = windowFilePath();
 
 		if (m_config->getOption("showFilename").toInt() && !filePath.isNull()) {
@@ -1124,14 +1124,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef M_CORE_GBA
 	m_actions.addAction(tr("Boot BIOS"), "bootBIOS", [this]() {
-		setController(m_manager->loadBIOS(PLATFORM_GBA, m_config->getOption("gba.bios")), QString());
+		setController(m_manager->loadBIOS(mPLATFORM_GBA, m_config->getOption("gba.bios")), QString());
 	}, "file");
 #endif
 
 	addGameAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "file");
 #ifdef M_CORE_GBA
 	Action* scanCard = addGameAction(tr("Scan e-Reader dotcodes..."), "scanCard", this, &Window::scanCard, "file");
-	m_platformActions.insert(PLATFORM_GBA, scanCard);
+	m_platformActions.insert(mPLATFORM_GBA, scanCard);
 #endif
 
 	addGameAction(tr("ROM &info..."), "romInfo", openControllerTView<ROMInfo>(), "file");
@@ -1205,10 +1205,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 #ifdef M_CORE_GBA
 	m_actions.addSeparator("file");
 	Action* importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "file");
-	m_platformActions.insert(PLATFORM_GBA, importShark);
+	m_platformActions.insert(mPLATFORM_GBA, importShark);
 
 	Action* exportShark = addGameAction(tr("Export GameShark Save..."), "exportShark", this, &Window::exportSharkport, "file");
-	m_platformActions.insert(PLATFORM_GBA, exportShark);
+	m_platformActions.insert(mPLATFORM_GBA, exportShark);
 #endif
 
 	m_actions.addSeparator("file");
@@ -1326,12 +1326,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 		openView(view);
 		m_controller->attachPrinter();
 	}, "emu");
-	m_platformActions.insert(PLATFORM_GB, gbPrint);
+	m_platformActions.insert(mPLATFORM_GB, gbPrint);
 #endif
 
 #ifdef M_CORE_GBA
 	Action* bcGate = addGameAction(tr("BattleChip Gate..."), "bcGate", openControllerTView<BattleChipView>(this), "emu");
-	m_platformActions.insert(PLATFORM_GBA, bcGate);
+	m_platformActions.insert(mPLATFORM_GBA, bcGate);
 #endif
 
 	m_actions.addMenu(tr("Audio/&Video"), "av");
@@ -1503,7 +1503,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Open debugger console..."), "debuggerWindow", this, &Window::consoleOpen, "tools");
 #ifdef USE_GDB_STUB
 	Action* gdbWindow = addGameAction(tr("Start &GDB server..."), "gdbWindow", this, &Window::gdbOpen, "tools");
-	m_platformActions.insert(PLATFORM_GBA, gdbWindow);
+	m_platformActions.insert(mPLATFORM_GBA, gdbWindow);
 #endif
 #endif
 	m_actions.addSeparator("tools");

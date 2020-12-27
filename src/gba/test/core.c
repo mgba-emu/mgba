@@ -18,7 +18,7 @@ M_TEST_DEFINE(create) {
 M_TEST_DEFINE(platform) {
 	struct mCore* core = GBACoreCreate();
 	assert_non_null(core);
-	assert_true(core->platform(core) == PLATFORM_GBA);
+	assert_true(core->platform(core) == mPLATFORM_GBA);
 	assert_true(core->init(core));
 	core->deinit(core);
 }

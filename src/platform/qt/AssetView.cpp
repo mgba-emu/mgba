@@ -43,12 +43,12 @@ void AssetView::updateTiles() {
 void AssetView::updateTiles(bool force) {
 	switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		updateTilesGBA(force);
 		break;
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		updateTilesGB(force);
 		break;
 #endif
@@ -156,11 +156,11 @@ QImage AssetView::compositeObj(const ObjInfo& objInfo) {
 bool AssetView::lookupObj(int id, struct ObjInfo* info) {
 	switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		return lookupObjGBA(id, info);
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		return lookupObjGB(id, info);
 #endif
 	default:
