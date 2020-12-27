@@ -470,7 +470,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     <message>
         <location filename="../LogView.ui" line="108"/>
         <source>Advanced settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Erweiterte Einstellungen</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="128"/>
@@ -3457,7 +3457,7 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
         <location filename="../MapView.cpp" line="168"/>
         <location filename="../MapView.cpp" line="216"/>
         <source>N/A</source>
-        <translation>entf.</translation>
+        <translation>Nicht verfügbar</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="259"/>
