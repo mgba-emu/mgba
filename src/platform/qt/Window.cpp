@@ -50,7 +50,6 @@
 #include "ReportView.h"
 #include "ROMInfo.h"
 #include "SensorView.h"
-#include "SettingsView.h"
 #include "ShaderSelector.h"
 #include "ShortcutController.h"
 #include "TileView.h"
@@ -80,7 +79,7 @@ using namespace QGBA;
 Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWidget* parent)
 	: QMainWindow(parent)
 	, m_manager(manager)
-	, m_logView(new LogView(&m_log))
+	, m_logView(new LogView(&m_log, this))
 	, m_screenWidget(new WindowBackground())
 	, m_config(config)
 	, m_inputController(playerId, this)
@@ -452,6 +451,10 @@ void Window::exportSharkport() {
 }
 
 void Window::openSettingsWindow() {
+	openSettingsWindow(SettingsView::Page::AV);
+}
+
+void Window::openSettingsWindow(SettingsView::Page page) {
 	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController, &m_log);
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (m_display->supportsShaders()) {
@@ -469,6 +472,7 @@ void Window::openSettingsWindow() {
 	connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
 #endif
 	openView(settingsWindow);
+	settingsWindow->selectPage(page);
 }
 
 void Window::startVideoLog() {

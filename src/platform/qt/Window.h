@@ -22,6 +22,8 @@
 #include "InputController.h"
 #include "LoadSaveState.h"
 #include "LogController.h"
+#include "SettingsView.h"
+
 struct mArguments;
 
 namespace QGBA {
@@ -95,6 +97,7 @@ public slots:
 	void exportSharkport();
 
 	void openSettingsWindow();
+	void openSettingsWindow(SettingsView::Page);
 
 	void startVideoLog();
 

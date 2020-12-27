@@ -32,7 +32,17 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 {
 	m_ui.setupUi(this);
 
+	m_pageIndex[Page::AV] = 0;
+	m_pageIndex[Page::INTERFACE] = 1;
+	m_pageIndex[Page::EMULATION] = 2;
+	m_pageIndex[Page::ENHANCEMENTS] = 3;
+	m_pageIndex[Page::BIOS] = 4;
+	m_pageIndex[Page::PATHS] = 5;
+	m_pageIndex[Page::LOGGING] = 6;
+
 #ifdef M_CORE_GB
+	m_pageIndex[Page::GB] = 7;
+
 	for (auto model : GameBoy::modelList()) {
 		m_ui.gbModel->addItem(GameBoy::modelName(model), model);
 		m_ui.sgbModel->addItem(GameBoy::modelName(model), model);
@@ -276,8 +286,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 #endif
 
 	GBAKeyEditor* editor = new GBAKeyEditor(inputController, InputController::KEYBOARD, QString(), this);
-	m_ui.stackedWidget->addWidget(editor);
-	m_ui.tabs->addItem(tr("Keyboard"));
+	addPage(tr("Keyboard"), editor, Page::KEYBOARD);
 	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, editor, &GBAKeyEditor::save);
 
 	GBAKeyEditor* buttonEditor = nullptr;
@@ -285,8 +294,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	inputController->recalibrateAxes();
 	const char* profile = inputController->profileForType(SDL_BINDING_BUTTON);
 	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
-	m_ui.stackedWidget->addWidget(buttonEditor);
-	m_ui.tabs->addItem(tr("Controllers"));
+	addPage(tr("Controllers"), buttonEditor, Page::CONTROLLERS);
 	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, buttonEditor, &GBAKeyEditor::save);
 #endif
 
@@ -332,8 +340,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setController(shortcutController);
 	shortcutView->setInputController(inputController);
-	m_ui.stackedWidget->addWidget(shortcutView);
-	m_ui.tabs->addItem(tr("Shortcuts"));
+	addPage(tr("Shortcuts"), shortcutView, Page::SHORTCUTS);
 }
 
 SettingsView::~SettingsView() {
@@ -359,6 +366,10 @@ void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
 		connect(m_ui.buttonBox, &QDialogButtonBox::accepted, m_shader, &ShaderSelector::saved);
 	}
 #endif
+}
+
+void SettingsView::selectPage(SettingsView::Page page) {
+	m_ui.tabs->setCurrentRow(m_pageIndex[page]);
 }
 
 void SettingsView::selectBios(QLineEdit* bios) {
@@ -704,6 +715,12 @@ void SettingsView::reloadConfig() {
 		m_ui.videoScaleSize->setText(tr("(%1×%2)").arg(GBA_VIDEO_HORIZONTAL_PIXELS * value).arg(GBA_VIDEO_VERTICAL_PIXELS * value));
 	});
 	loadSetting("videoScale", m_ui.videoScale, 1);
+}
+
+void SettingsView::addPage(const QString& name, QWidget* view, Page index) {
+	m_pageIndex[index] = m_ui.tabs->count();
+	m_ui.tabs->addItem(name);
+	m_ui.stackedWidget->addWidget(view);
 }
 
 void SettingsView::saveSetting(const char* key, const QAbstractButton* field) {
