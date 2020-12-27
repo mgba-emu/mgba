@@ -171,20 +171,20 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 	// 0x04000028: BG2X_LO
 	regGBA.append({
 		{ tr("Fractional part"), 0, 8 },
-		{ tr("Integer part (bottom)"), 8, 8 },
+		{ tr("Integer part (low)"), 8, 8 },
 	});
 	// 0x0400002A: BG2X_HI
 	regGBA.append({
-		{ tr("Integer part (top)"), 0, 12 },
+		{ tr("Integer part (high)"), 0, 12 },
 	});
 	// 0x0400002C: BG2Y_LO
 	regGBA.append({
 		{ tr("Fractional part"), 0, 8 },
-		{ tr("Integer part (bottom)"), 8, 8 },
+		{ tr("Integer part (low)"), 8, 8 },
 	});
 	// 0x0400002E: BG2Y_HI
 	regGBA.append({
-		{ tr("Integer part (top)"), 0, 12 },
+		{ tr("Integer part (high)"), 0, 12 },
 	});
 	// 0x04000030: BG3PA
 	regGBA.append({
@@ -209,20 +209,20 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 	// 0x04000038: BG3X_LO
 	regGBA.append({
 		{ tr("Fractional part"), 0, 8 },
-		{ tr("Integer part (bottom)"), 8, 8 },
+		{ tr("Integer part (low)"), 8, 8 },
 	});
 	// 0x0400003A: BG3X_HI
 	regGBA.append({
-		{ tr("Integer part (top)"), 0, 12 },
+		{ tr("Integer part (high)"), 0, 12 },
 	});
 	// 0x0400003C: BG3Y_LO
 	regGBA.append({
 		{ tr("Fractional part"), 0, 8 },
-		{ tr("Integer part (bottom)"), 8, 8 },
+		{ tr("Integer part (low)"), 8, 8 },
 	});
 	// 0x0400003E: BG3Y_HI
 	regGBA.append({
-		{ tr("Integer part (top)"), 0, 12 },
+		{ tr("Integer part (high)"), 0, 12 },
 	});
 	// 0x04000040: WIN0H
 	regGBA.append({
@@ -558,19 +558,19 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 	regGBA.append(RegisterDescription());
 	// 0x040000B0: DMA0SAD_LO
 	regGBA.append({
-		{ tr("Address (bottom)"), 0, 16 },
+		{ tr("Address (low)"), 0, 16 },
 	});
 	// 0x040000B2: DMA0SAD_HI
 	regGBA.append({
-		{ tr("Address (top)"), 0, 16 },
+		{ tr("Address (high)"), 0, 16 },
 	});
 	// 0x040000B4: DMA0DAD_LO
 	regGBA.append({
-		{ tr("Address (bottom)"), 0, 16 },
+		{ tr("Address (low)"), 0, 16 },
 	});
 	// 0x040000B6: DMA0DAD_HI
 	regGBA.append({
-		{ tr("Address (top)"), 0, 16 },
+		{ tr("Address (high)"), 0, 16 },
 	});
 	// 0x040000B8: DMA0CNT_LO
 	regGBA.append({
@@ -603,19 +603,19 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 	});
 	// 0x040000BC: DMA1SAD_LO
 	regGBA.append({
-		{ tr("Address (bottom)"), 0, 16 },
+		{ tr("Address (low)"), 0, 16 },
 	});
 	// 0x040000BE: DMA1SAD_HI
 	regGBA.append({
-		{ tr("Address (top)"), 0, 16 },
+		{ tr("Address (high)"), 0, 16 },
 	});
 	// 0x040000C0: DMA1DAD_LO
 	regGBA.append({
-		{ tr("Address (bottom)"), 0, 16 },
+		{ tr("Address (low)"), 0, 16 },
 	});
 	// 0x040000C2: DMA1DAD_HI
 	regGBA.append({
-		{ tr("Address (top)"), 0, 16 },
+		{ tr("Address (high)"), 0, 16 },
 	});
 	// 0x040000C4: DMA1CNT_LO
 	regGBA.append({
@@ -648,19 +648,19 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 	});
 	// 0x040000C8: DMA2SAD_LO
 	regGBA.append({
-		{ tr("Address (bottom)"), 0, 16 },
+		{ tr("Address (low)"), 0, 16 },
 	});
 	// 0x040000CA: DMA2SAD_HI
 	regGBA.append({
-		{ tr("Address (top)"), 0, 16 },
+		{ tr("Address (high)"), 0, 16 },
 	});
 	// 0x040000CC: DMA2DAD_LO
 	regGBA.append({
-		{ tr("Address (bottom)"), 0, 16 },
+		{ tr("Address (low)"), 0, 16 },
 	});
 	// 0x040000CE: DMA2DAD_HI
 	regGBA.append({
-		{ tr("Address (top)"), 0, 16 },
+		{ tr("Address (high)"), 0, 16 },
 	});
 	// 0x040000D0: DMA2CNT_LO
 	regGBA.append({
@@ -693,19 +693,19 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 	});
 	// 0x040000D4: DMA3SAD_LO
 	regGBA.append({
-		{ tr("Address (bottom)"), 0, 16 },
+		{ tr("Address (low)"), 0, 16 },
 	});
 	// 0x040000D6: DMA3SAD_HI
 	regGBA.append({
-		{ tr("Address (top)"), 0, 16 },
+		{ tr("Address (high)"), 0, 16 },
 	});
 	// 0x040000D8: DMA3DAD_LO
 	regGBA.append({
-		{ tr("Address (bottom)"), 0, 16 },
+		{ tr("Address (low)"), 0, 16 },
 	});
 	// 0x040000DA: DMA3DAD_HI
 	regGBA.append({
-		{ tr("Address (top)"), 0, 16 },
+		{ tr("Address (high)"), 0, 16 },
 	});
 	// 0x040000DC: DMA3CNT_LO
 	regGBA.append({
@@ -1026,6 +1026,536 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 		{ tr("Enable IRQs"), 0 },
 	});
 	s_registers[PLATFORM_GBA] = regGBA;
+#endif
+#ifdef M_CORE_GB
+	QList<IOViewer::RegisterDescription> regGB;
+	// 0xFF00: JOYP
+	regGB.append({
+		{ tr("Right/A"), 0, 1, true },
+		{ tr("Left/B"), 1, 1, true },
+		{ tr("Up/Select"), 2, 1, true },
+		{ tr("Down/Start"), 3, 1, true },
+		{ tr("Active D-pad"), 4 },
+		{ tr("Active face buttons"), 5 },
+	});
+	// 0xFF01: SB
+	regGB.append({
+		{ tr("Value"), 0, 8 },
+	});
+	// 0xFF02: SC
+	regGB.append({
+		{ tr("Internal clock"), 0 },
+		{ tr("32× clocking (CGB only)"), 1 },
+		{ tr("Transfer active"), 7 },
+	});
+	// 0xFF03: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF04: DIV
+	regGB.append({
+		{ tr("Value"), 0, 8 },
+	});
+	// 0xFF05: TIMA
+	regGB.append({
+		{ tr("Value"), 0, 8 },
+	});
+	// 0xFF06: TMA
+	regGB.append({
+		{ tr("Value"), 0, 8 },
+	});
+	// 0xFF07: TAC
+	regGB.append({
+		{ tr("Divider"), 0, 2, {
+			tr("1/1024"),
+			tr("1/16"),
+			tr("1/64"),
+			tr("1/256"),
+		} },
+		{ tr("Enable"), 2 },
+	});
+	// 0xFF08: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF09: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF0A: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF0B: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF0C: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF0D: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF0E: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF0F: IF
+	regGB.append({
+		{ tr("VBlank"), 0 },
+		{ tr("LCD STAT"), 1 },
+		{ tr("Timer"), 2 },
+		{ tr("Serial"), 3 },
+		{ tr("Joypad"), 4 },
+	});
+	// 0xFF10: NR10
+	regGB.append({
+		{ tr("Sweep shifts"), 0, 3 },
+		{ tr("Sweep subtract"), 3 },
+		{ tr("Sweep time (in 1/128s)"), 4, 3 },
+	});
+	// 0xFF11: NR11
+	regGB.append({
+		{ tr("Sound length"), 0, 6 },
+		{ tr("Duty cycle"),  6, 2 },
+	});
+	// 0xFF12: NR12
+	regGB.append({
+		{ tr("Envelope step time"), 0, 3 },
+		{ tr("Envelope increase"), 3 },
+		{ tr("Initial volume"), 4, 4 },
+	});
+	// 0xFF13: NR13
+	regGB.append({
+		{ tr("Sound frequency (low)"), 0, 8 },
+	});
+	// 0xFF14: NR14
+	regGB.append({
+		{ tr("Sound frequency (high)"), 0, 3 },
+		{ tr("Timed"), 6 },
+		{ tr("Reset"), 7 },
+	});
+	// 0xFF15: Unused (NR20)
+	regGB.append(RegisterDescription());
+	// 0xFF16: NR21
+	regGB.append({
+		{ tr("Sound length"), 0, 6 },
+		{ tr("Duty cycle"),  6, 2 },
+	});
+	// 0xFF17: NR22
+	regGB.append({
+		{ tr("Envelope step time"), 0, 3 },
+		{ tr("Envelope increase"), 3 },
+		{ tr("Initial volume"), 4, 4 },
+	});
+	// 0xFF18: NR23
+	regGB.append({
+		{ tr("Sound frequency (low)"), 0, 8 },
+	});
+	// 0xFF19: NR24
+	regGB.append({
+		{ tr("Sound frequency (high)"), 0, 3 },
+		{ tr("Timed"), 6 },
+		{ tr("Reset"), 7 },
+	});
+	// 0xFF1A: NR30
+	regGB.append({
+		{ tr("Enable channel 3"), 7 },
+	});
+	// 0xFF1B: NR31
+	regGB.append({
+		{ tr("Sound length"), 0, 8 },
+	});
+	// 0xFF1C: NR32
+	regGB.append({
+		{ tr("Volume"),  5, 2, {
+			tr("0%"),
+			tr("100%"),
+			tr("50%"),
+			tr("25%"),
+		} },
+	});
+	// 0xFF1D: NR33
+	regGB.append({
+		{ tr("Sound frequency (low)"), 0, 8 },
+	});
+	// 0xFF1E: NR34
+	regGB.append({
+		{ tr("Sound frequency (high)"), 0, 3 },
+		{ tr("Timed"), 6 },
+		{ tr("Reset"), 7 },
+	});
+	// 0xFF1F: Unusued (NR40)
+	regGB.append(RegisterDescription());
+	// 0xFF20: NR41
+	regGB.append({
+		{ tr("Sound length"), 0, 6 },
+	});
+	// 0xFF21: NR42
+	regGB.append({
+		{ tr("Envelope step time"), 0, 3 },
+		{ tr("Envelope increase"), 3 },
+		{ tr("Initial volume"), 4, 4 },
+	});
+	// 0xFF22: NR43
+	regGB.append({
+		{ tr("Clock divider"), 0, 3 },
+		{ tr("Register stages"), 3, 1, {
+			tr("15"),
+			tr("7"),
+		} },
+		{ tr("Shifter frequency"), 4, 4 },
+	});
+	// 0xFF23: NR44
+	regGB.append({
+		{ tr("Timed"), 6 },
+		{ tr("Reset"), 7 },
+	});
+	// 0xFF24: NR50
+	regGB.append({
+		{ tr("Volume right"), 0, 3 },
+		{ tr("Output right"), 3 },
+		{ tr("Volume left"), 4, 3 },
+		{ tr("Output left"), 7 },
+	});
+	// 0xFF25: NR51
+	regGB.append({
+		{ tr("Enable channel 1 right"), 0 },
+		{ tr("Enable channel 2 right"), 1 },
+		{ tr("Enable channel 3 right"), 2 },
+		{ tr("Enable channel 4 right"), 3 },
+		{ tr("Enable channel 1 left"), 4 },
+		{ tr("Enable channel 2 left"), 5 },
+		{ tr("Enable channel 3 left"), 6 },
+		{ tr("Enable channel 4 left"), 7 },
+	});
+	// 0xFF26: NR52
+	regGB.append({
+		{ tr("Active channel 1"), 0, 1, true },
+		{ tr("Active channel 2"), 1, 1, true },
+		{ tr("Active channel 3"), 2, 1, true },
+		{ tr("Active channel 4"), 3, 1, true },
+		{ tr("Enable audio"), 7 },
+	});
+	// 0xFF27: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF28: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF29: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF2A: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF2B: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF2C: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF2D: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF2E: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF2F: Unused
+	regGB.append(RegisterDescription());
+	// 0xFF30: WAVE_0
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF31: WAVE_1
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF32: WAVE_2
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF33: WAVE_3
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF34: WAVE_4
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF35: WAVE_5
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF36: WAVE_6
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF37: WAVE_7
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF38: WAVE_8
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF39: WAVE_9
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF3A: WAVE_A
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF3B: WAVE_B
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF3C: WAVE_C
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF3D: WAVE_D
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF3E: WAVE_E
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF3F: WAVE_F
+	regGB.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+	});
+	// 0xFF40: LCDC
+	regGB.append({
+		{ tr("Background enable/priority"), 1 },
+		{ tr("Enable sprites"), 1 },
+		{ tr("Double-height sprites"), 2 },
+		{ tr("Background tile map"), 3, 1, {
+			tr("0x9800 – 0x9BFF"),
+			tr("0x9C00 – 0x9FFF"),
+		} },
+		{ tr("Background tile data"), 4, 1, {
+			tr("0x8800 – 0x87FF"),
+			tr("0x8000 – 0x8FFF"),
+		} },
+		{ tr("Enable window"), 5 },
+		{ tr("Window tile map"), 6, 1, {
+			tr("0x9800 – 0x9BFF"),
+			tr("0x9C00 – 0x9FFF"),
+		} },
+		{ tr("Enable LCD"), 7 },
+	});
+	// 0xFF41: STAT
+	regGB.append({
+		{ tr("Mode"), 0, 2, {
+			tr("0: HBlank"),
+			tr("1: VBlank"),
+			tr("2: OAM scan"),
+			tr("3: HDraw"),
+		}, true },
+		{ tr("In LYC"), 2, 1, true },
+		{ tr("Enable HBlank (mode 0) IRQ"), 3 },
+		{ tr("Enable VBlank (mode 1) IRQ"), 4 },
+		{ tr("Enable OAM (mode 2) IRQ"), 4 },
+		{ tr("Enable LYC IRQ"), 4 },
+	});
+	// 0xFF42: SCY
+	regGB.append({
+		{ tr("Vertical offset"), 0, 8 },
+	});
+	// 0xFF43: SCX
+	regGB.append({
+		{ tr("Horizontal offset"), 0, 8 },
+	});
+	// 0xFF44: LY
+	regGB.append({
+		{ tr("Current Y coordinate"), 0, 8, true },
+	});
+	// 0xFF45: LYC
+	regGB.append({
+		{ tr("Comparison Y coordinate"), 0, 8 },
+	});
+	// 0xFF46: DMA
+	regGB.append({
+		{ tr("Start upper byte"), 0, 8 },
+	});
+	// 0xFF47: BGP
+	regGB.append({
+		{ tr("Color 0 shade"), 0, 2 },
+		{ tr("Color 1 shade"), 2, 2 },
+		{ tr("Color 2 shade"), 4, 2 },
+		{ tr("Color 3 shade"), 6, 2 },
+	});
+	// 0xFF48: OBP0
+	regGB.append({
+		{ tr("Color 0 shade"), 0, 2 },
+		{ tr("Color 1 shade"), 2, 2 },
+		{ tr("Color 2 shade"), 4, 2 },
+		{ tr("Color 3 shade"), 6, 2 },
+	});
+	// 0xFF49: OBP1
+	regGB.append({
+		{ tr("Color 0 shade"), 0, 2 },
+		{ tr("Color 1 shade"), 2, 2 },
+		{ tr("Color 2 shade"), 4, 2 },
+		{ tr("Color 3 shade"), 6, 2 },
+	});
+	// 0xFF4A: WY
+	regGB.append({
+		{ tr("Vertical offset"), 0, 8 },
+	});
+	// 0xFF4B: WX
+	regGB.append({
+		{ tr("Horizontal offset"), 0, 8 },
+	});
+	// 0xFF4C: KEY0
+	regGB.append(RegisterDescription());
+	// 0xFF4D: KEY1
+	regGB.append({
+		{ tr("Prepare to switch speed"), 0 },
+		{ tr("Double speed"), 7, 1, true },
+	});
+	// 0xFF4E: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF4F: VBK
+	regGB.append({
+		{ tr("VRAM bank"), 0 },
+	});
+	// 0xFF50: BANK
+	regGB.append(RegisterDescription());
+	// 0xFF51: HDMA1
+	regGB.append({
+		{ tr("Source (high)"), 0, 8 },
+	});
+	// 0xFF52: HDMA2
+	regGB.append({
+		{ tr("Source (low)"), 0, 8 },
+	});
+	// 0xFF53: HDMA3
+	regGB.append({
+		{ tr("Destination (high)"), 0, 8 },
+	});
+	// 0xFF54: HDMA4
+	regGB.append({
+		{ tr("Destination (low)"), 0, 8 },
+	});
+	// 0xFF55: HDMA5
+	regGB.append({
+		{ tr("Length"), 0, 7 },
+		{ tr("Timing"), 7, 1, {
+			tr("Immediate"),
+			tr("HBlank"),
+		} },
+	});
+	// 0xFF56: RP
+	regGB.append({
+		{ tr("Write bit"), 0 },
+		{ tr("Read bit"), 1, 1, true },
+		{ tr("Enable"), 6, 2, {
+			tr("Disable"),
+			tr("Unknown"),
+			tr("Unknown"),
+			tr("Enable"),
+		} },
+	});
+	// 0xFF57: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF58: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF59: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF5A: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF5B: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF5C: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF5D: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF5E: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF5F: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF60: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF61: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF62: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF63: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF64: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF65: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF66: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF67: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF68: BCPS
+	regGB.append({
+		{ tr("Current index"), 0, 6 },
+		{ tr("Auto-increment"), 7 },
+	});
+	// 0xFF69: BCPD
+	regGB.append({
+		{ tr("Red"), 0, 5 },
+		{ tr("Green (low)"), 5, 3 },
+		{ tr("Green (high)"), 0, 2 },
+		{ tr("Blue"), 2, 5 },
+	});
+	// 0xFF6A: OCPS
+	regGB.append({
+		{ tr("Current index"), 0, 6 },
+		{ tr("Auto-increment"), 7 },
+	});
+	// 0xFF6B: OCPD
+	regGB.append({
+		{ tr("Red"), 0, 5 },
+		{ tr("Green (low)"), 5, 3 },
+		{ tr("Green (high)"), 0, 2 },
+		{ tr("Blue"), 2, 5 },
+	});
+	// 0xFF6C: OPRI
+	regGB.append({
+		{ tr("Sprite ordering"), 0, 1, {
+			tr("OAM order"),
+			tr("x coordinate sorting"),
+		} },
+	});
+	// 0xFF6D: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF6E: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF6F: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF70: SVBK
+	regGB.append({
+		{ tr("WRAM bank"), 0, 3 },
+	});
+	// 0xFF71: Unknown/unused
+	regGB.append(RegisterDescription());
+	// 0xFF72: Unknown
+	regGB.append(RegisterDescription());
+	// 0xFF73: Unknown
+	regGB.append(RegisterDescription());
+	// 0xFF74: Unknown
+	regGB.append(RegisterDescription());
+	// 0xFF75: Unknown
+	regGB.append(RegisterDescription());
+	// 0xFF76: PCM12
+	regGB.append(RegisterDescription());
+	// 0xFF77: PCM34
+	regGB.append(RegisterDescription());
+	for (int i = 0x78; i < 0xFF; ++i) {
+		// Unused
+		regGB.append(RegisterDescription());
+	}
+	// 0xFFFF: IE
+	regGB.append({
+		{ tr("VBlank"), 0 },
+		{ tr("LCD STAT"), 1 },
+		{ tr("Timer"), 2 },
+		{ tr("Serial"), 3 },
+		{ tr("Joypad"), 4 },
+	});
+	s_registers[PLATFORM_GB] = regGB;
 #endif
 	return s_registers[platform];
 }

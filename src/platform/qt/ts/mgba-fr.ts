@@ -1586,6 +1586,8 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="129"/>
         <location filename="../IOViewer.cpp" line="137"/>
         <location filename="../IOViewer.cpp" line="145"/>
+        <location filename="../IOViewer.cpp" line="1364"/>
+        <location filename="../IOViewer.cpp" line="1405"/>
         <source>Horizontal offset</source>
         <translation>Décalage horizontal</translation>
     </message>
@@ -1594,6 +1596,8 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="133"/>
         <location filename="../IOViewer.cpp" line="141"/>
         <location filename="../IOViewer.cpp" line="149"/>
+        <location filename="../IOViewer.cpp" line="1360"/>
+        <location filename="../IOViewer.cpp" line="1401"/>
         <source>Vertical offset</source>
         <translation>Décalage vertical</translation>
     </message>
@@ -1907,16 +1911,19 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="328"/>
+        <location filename="../IOViewer.cpp" line="1099"/>
         <source>Sweep shifts</source>
         <translation>Déplacement du balayage</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="329"/>
+        <location filename="../IOViewer.cpp" line="1100"/>
         <source>Sweep subtract</source>
         <translation>Soustraction du balayage</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="330"/>
+        <location filename="../IOViewer.cpp" line="1101"/>
         <source>Sweep time (in 1/128s)</source>
         <translation>Durée de balayage (en 1/128&#xa0;s)</translation>
     </message>
@@ -1925,12 +1932,18 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="350"/>
         <location filename="../IOViewer.cpp" line="374"/>
         <location filename="../IOViewer.cpp" line="396"/>
+        <location filename="../IOViewer.cpp" line="1105"/>
+        <location filename="../IOViewer.cpp" line="1128"/>
+        <location filename="../IOViewer.cpp" line="1153"/>
+        <location filename="../IOViewer.cpp" line="1178"/>
         <source>Sound length</source>
         <translation>Longueur du son</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="335"/>
         <location filename="../IOViewer.cpp" line="351"/>
+        <location filename="../IOViewer.cpp" line="1106"/>
+        <location filename="../IOViewer.cpp" line="1129"/>
         <source>Duty cycle</source>
         <translation>Cycle d&apos;utilisation</translation>
     </message>
@@ -1938,6 +1951,9 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="336"/>
         <location filename="../IOViewer.cpp" line="352"/>
         <location filename="../IOViewer.cpp" line="397"/>
+        <location filename="../IOViewer.cpp" line="1110"/>
+        <location filename="../IOViewer.cpp" line="1133"/>
+        <location filename="../IOViewer.cpp" line="1182"/>
         <source>Envelope step time</source>
         <translation>Temps de passage des enveloppes</translation>
     </message>
@@ -1945,6 +1961,9 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="337"/>
         <location filename="../IOViewer.cpp" line="353"/>
         <location filename="../IOViewer.cpp" line="398"/>
+        <location filename="../IOViewer.cpp" line="1111"/>
+        <location filename="../IOViewer.cpp" line="1134"/>
+        <location filename="../IOViewer.cpp" line="1183"/>
         <source>Envelope increase</source>
         <translation>Augmenter l&apos;enveloppe</translation>
     </message>
@@ -1952,6 +1971,9 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="338"/>
         <location filename="../IOViewer.cpp" line="354"/>
         <location filename="../IOViewer.cpp" line="399"/>
+        <location filename="../IOViewer.cpp" line="1112"/>
+        <location filename="../IOViewer.cpp" line="1135"/>
+        <location filename="../IOViewer.cpp" line="1184"/>
         <source>Initial volume</source>
         <translation>Volume initial</translation>
     </message>
@@ -1967,6 +1989,10 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="361"/>
         <location filename="../IOViewer.cpp" line="389"/>
         <location filename="../IOViewer.cpp" line="411"/>
+        <location filename="../IOViewer.cpp" line="1121"/>
+        <location filename="../IOViewer.cpp" line="1144"/>
+        <location filename="../IOViewer.cpp" line="1171"/>
+        <location filename="../IOViewer.cpp" line="1197"/>
         <source>Timed</source>
         <translation>Chronométré</translation>
     </message>
@@ -1975,6 +2001,10 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="362"/>
         <location filename="../IOViewer.cpp" line="390"/>
         <location filename="../IOViewer.cpp" line="412"/>
+        <location filename="../IOViewer.cpp" line="1122"/>
+        <location filename="../IOViewer.cpp" line="1145"/>
+        <location filename="../IOViewer.cpp" line="1172"/>
+        <location filename="../IOViewer.cpp" line="1198"/>
         <source>Reset</source>
         <translation>Réinitialiser</translation>
     </message>
@@ -1990,34 +2020,40 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="370"/>
+        <location filename="../IOViewer.cpp" line="1149"/>
         <source>Enable channel 3</source>
         <translation>Activer le canal 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="375"/>
+        <location filename="../IOViewer.cpp" line="1157"/>
         <source>Volume</source>
         <translation>Volume</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="376"/>
+        <location filename="../IOViewer.cpp" line="1158"/>
         <source>0%</source>
         <translation>0&#xa0;%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="377"/>
         <location filename="../IOViewer.cpp" line="434"/>
+        <location filename="../IOViewer.cpp" line="1159"/>
         <source>100%</source>
         <translation>100&#xa0;%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="378"/>
         <location filename="../IOViewer.cpp" line="433"/>
+        <location filename="../IOViewer.cpp" line="1160"/>
         <source>50%</source>
         <translation>50&#xa0;%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="379"/>
         <location filename="../IOViewer.cpp" line="432"/>
+        <location filename="../IOViewer.cpp" line="1161"/>
         <source>25%</source>
         <translation>25&#xa0;%</translation>
     </message>
@@ -2031,26 +2067,31 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="405"/>
+        <location filename="../IOViewer.cpp" line="1188"/>
         <source>Clock divider</source>
         <translation>Diviseur d&apos;horloge</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="406"/>
+        <location filename="../IOViewer.cpp" line="1189"/>
         <source>Register stages</source>
         <translation>Étapes du registre</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="407"/>
+        <location filename="../IOViewer.cpp" line="1190"/>
         <source>15</source>
         <translation>15</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="408"/>
+        <location filename="../IOViewer.cpp" line="1191"/>
         <source>7</source>
         <translation>7</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="410"/>
+        <location filename="../IOViewer.cpp" line="1193"/>
         <source>Shifter frequency</source>
         <translation>Fréquence de changement</translation>
     </message>
@@ -2066,41 +2107,49 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="420"/>
+        <location filename="../IOViewer.cpp" line="1209"/>
         <source>Enable channel 1 right</source>
         <translation>Activer le canal droit nº 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="421"/>
+        <location filename="../IOViewer.cpp" line="1210"/>
         <source>Enable channel 2 right</source>
         <translation>Activer le canal droit nº 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="422"/>
+        <location filename="../IOViewer.cpp" line="1211"/>
         <source>Enable channel 3 right</source>
         <translation>Activer le canal droit nº 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="423"/>
+        <location filename="../IOViewer.cpp" line="1212"/>
         <source>Enable channel 4 right</source>
         <translation>Activer le canal droit nº 4</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="424"/>
+        <location filename="../IOViewer.cpp" line="1213"/>
         <source>Enable channel 1 left</source>
         <translation>Activer le canal gauche nº 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="425"/>
+        <location filename="../IOViewer.cpp" line="1214"/>
         <source>Enable channel 2 left</source>
         <translation>Activer le canal gauche nº 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="426"/>
+        <location filename="../IOViewer.cpp" line="1215"/>
         <source>Enable channel 3 left</source>
         <translation>Activer le canal gauche nº 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="427"/>
+        <location filename="../IOViewer.cpp" line="1216"/>
         <source>Enable channel 4 left</source>
         <translation>Activer le canal gauche nº 4</translation>
     </message>
@@ -2180,26 +2229,31 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="456"/>
+        <location filename="../IOViewer.cpp" line="1220"/>
         <source>Active channel 1</source>
         <translation>Activer le canal nº 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="457"/>
+        <location filename="../IOViewer.cpp" line="1221"/>
         <source>Active channel 2</source>
         <translation>Activer le canal nº 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="458"/>
+        <location filename="../IOViewer.cpp" line="1222"/>
         <source>Active channel 3</source>
         <translation>Activer le canal nº 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="459"/>
+        <location filename="../IOViewer.cpp" line="1223"/>
         <source>Active channel 4</source>
         <translation>Activer le canal nº 4</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="460"/>
+        <location filename="../IOViewer.cpp" line="1224"/>
         <source>Enable audio</source>
         <translation>Activer l&apos;audio</translation>
     </message>
@@ -2254,6 +2308,38 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="544"/>
         <location filename="../IOViewer.cpp" line="548"/>
         <location filename="../IOViewer.cpp" line="549"/>
+        <location filename="../IOViewer.cpp" line="1246"/>
+        <location filename="../IOViewer.cpp" line="1247"/>
+        <location filename="../IOViewer.cpp" line="1251"/>
+        <location filename="../IOViewer.cpp" line="1252"/>
+        <location filename="../IOViewer.cpp" line="1256"/>
+        <location filename="../IOViewer.cpp" line="1257"/>
+        <location filename="../IOViewer.cpp" line="1261"/>
+        <location filename="../IOViewer.cpp" line="1262"/>
+        <location filename="../IOViewer.cpp" line="1266"/>
+        <location filename="../IOViewer.cpp" line="1267"/>
+        <location filename="../IOViewer.cpp" line="1271"/>
+        <location filename="../IOViewer.cpp" line="1272"/>
+        <location filename="../IOViewer.cpp" line="1276"/>
+        <location filename="../IOViewer.cpp" line="1277"/>
+        <location filename="../IOViewer.cpp" line="1281"/>
+        <location filename="../IOViewer.cpp" line="1282"/>
+        <location filename="../IOViewer.cpp" line="1286"/>
+        <location filename="../IOViewer.cpp" line="1287"/>
+        <location filename="../IOViewer.cpp" line="1291"/>
+        <location filename="../IOViewer.cpp" line="1292"/>
+        <location filename="../IOViewer.cpp" line="1296"/>
+        <location filename="../IOViewer.cpp" line="1297"/>
+        <location filename="../IOViewer.cpp" line="1301"/>
+        <location filename="../IOViewer.cpp" line="1302"/>
+        <location filename="../IOViewer.cpp" line="1306"/>
+        <location filename="../IOViewer.cpp" line="1307"/>
+        <location filename="../IOViewer.cpp" line="1311"/>
+        <location filename="../IOViewer.cpp" line="1312"/>
+        <location filename="../IOViewer.cpp" line="1316"/>
+        <location filename="../IOViewer.cpp" line="1317"/>
+        <location filename="../IOViewer.cpp" line="1321"/>
+        <location filename="../IOViewer.cpp" line="1322"/>
         <source>Sample</source>
         <translation>Échantillon</translation>
     </message>
@@ -2378,6 +2464,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="641"/>
         <location filename="../IOViewer.cpp" line="686"/>
         <location filename="../IOViewer.cpp" line="732"/>
+        <location filename="../IOViewer.cpp" line="1442"/>
         <source>Immediate</source>
         <translation>Immédiat</translation>
     </message>
@@ -2388,6 +2475,8 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="733"/>
         <location filename="../IOViewer.cpp" line="944"/>
         <location filename="../IOViewer.cpp" line="961"/>
+        <location filename="../IOViewer.cpp" line="1091"/>
+        <location filename="../IOViewer.cpp" line="1552"/>
         <source>VBlank</source>
         <translation>VBlank</translation>
     </message>
@@ -2398,6 +2487,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="734"/>
         <location filename="../IOViewer.cpp" line="945"/>
         <location filename="../IOViewer.cpp" line="962"/>
+        <location filename="../IOViewer.cpp" line="1443"/>
         <source>HBlank</source>
         <translation>HBlank</translation>
     </message>
@@ -2423,6 +2513,9 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="801"/>
         <location filename="../IOViewer.cpp" line="817"/>
         <location filename="../IOViewer.cpp" line="833"/>
+        <location filename="../IOViewer.cpp" line="1073"/>
+        <location filename="../IOViewer.cpp" line="1450"/>
+        <location filename="../IOViewer.cpp" line="1454"/>
         <source>Enable</source>
         <translation>Activer</translation>
     </message>
@@ -2448,6 +2541,10 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="789"/>
         <location filename="../IOViewer.cpp" line="805"/>
         <location filename="../IOViewer.cpp" line="821"/>
+        <location filename="../IOViewer.cpp" line="1043"/>
+        <location filename="../IOViewer.cpp" line="1055"/>
+        <location filename="../IOViewer.cpp" line="1059"/>
+        <location filename="../IOViewer.cpp" line="1063"/>
         <source>Value</source>
         <translation>Valeur</translation>
     </message>
@@ -2464,6 +2561,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="795"/>
         <location filename="../IOViewer.cpp" line="811"/>
         <location filename="../IOViewer.cpp" line="827"/>
+        <location filename="../IOViewer.cpp" line="1070"/>
         <source>1/64</source>
         <translation>1/64</translation>
     </message>
@@ -2472,6 +2570,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="796"/>
         <location filename="../IOViewer.cpp" line="812"/>
         <location filename="../IOViewer.cpp" line="828"/>
+        <location filename="../IOViewer.cpp" line="1071"/>
         <source>1/256</source>
         <translation>1/256</translation>
     </message>
@@ -2480,6 +2579,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="797"/>
         <location filename="../IOViewer.cpp" line="813"/>
         <location filename="../IOViewer.cpp" line="829"/>
+        <location filename="../IOViewer.cpp" line="1068"/>
         <source>1/1024</source>
         <translation>1/1024</translation>
     </message>
@@ -2735,6 +2835,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1015"/>
+        <location filename="../IOViewer.cpp" line="1451"/>
         <source>Disable</source>
         <translation>Désactiver</translation>
     </message>
@@ -2762,6 +2863,391 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <location filename="../IOViewer.cpp" line="1026"/>
         <source>Enable IRQs</source>
         <translation>Activer les IRQs</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1034"/>
+        <source>Right/A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1035"/>
+        <source>Left/B</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1036"/>
+        <source>Up/Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1037"/>
+        <source>Down/Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1038"/>
+        <source>Active D-pad</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1039"/>
+        <source>Active face buttons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1047"/>
+        <source>Internal clock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1048"/>
+        <source>32× clocking (CGB only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1049"/>
+        <source>Transfer active</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1067"/>
+        <source>Divider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1069"/>
+        <source>1/16</source>
+        <translation type="unfinished">4K {1/16?}</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1092"/>
+        <location filename="../IOViewer.cpp" line="1553"/>
+        <source>LCD STAT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1093"/>
+        <location filename="../IOViewer.cpp" line="1554"/>
+        <source>Timer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1094"/>
+        <location filename="../IOViewer.cpp" line="1555"/>
+        <source>Serial</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1095"/>
+        <location filename="../IOViewer.cpp" line="1556"/>
+        <source>Joypad</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1116"/>
+        <location filename="../IOViewer.cpp" line="1139"/>
+        <location filename="../IOViewer.cpp" line="1166"/>
+        <source>Sound frequency (bottom)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1120"/>
+        <location filename="../IOViewer.cpp" line="1143"/>
+        <location filename="../IOViewer.cpp" line="1170"/>
+        <source>Sound frequency (top)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1202"/>
+        <source>Volume right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1203"/>
+        <source>Output right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1204"/>
+        <source>Volume left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1205"/>
+        <source>Output left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1326"/>
+        <source>Background enable/priority</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1327"/>
+        <source>Enable sprites</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1328"/>
+        <source>Double-height sprites</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1329"/>
+        <source>Background tile map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1330"/>
+        <location filename="../IOViewer.cpp" line="1339"/>
+        <source>0x9800 – 0x9BFF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1331"/>
+        <location filename="../IOViewer.cpp" line="1340"/>
+        <source>0x9C00 – 0x9FFF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1333"/>
+        <source>Background tile data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1334"/>
+        <source>0x8800 – 0x87FF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1335"/>
+        <source>0x8000 – 0x8FFF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1337"/>
+        <source>Enable window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1338"/>
+        <source>Window tile map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1342"/>
+        <source>Enable LCD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1346"/>
+        <source>Mode</source>
+        <translation type="unfinished">Mode</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1347"/>
+        <source>0: HBlank</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1348"/>
+        <source>1: VBlank</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1349"/>
+        <source>2: OAM scan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1350"/>
+        <source>3: HDraw</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1352"/>
+        <source>In LYC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1353"/>
+        <source>Enable HBlank (mode 0) IRQ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1354"/>
+        <source>Enable VBlank (mode 1) IRQ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1355"/>
+        <source>Enable OAM (mode 2) IRQ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1356"/>
+        <source>Enable LYC IRQ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1368"/>
+        <source>Current Y coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1372"/>
+        <source>Comparison Y coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1376"/>
+        <source>Start upper byte</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1380"/>
+        <location filename="../IOViewer.cpp" line="1387"/>
+        <location filename="../IOViewer.cpp" line="1394"/>
+        <source>Color 0 shade</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1381"/>
+        <location filename="../IOViewer.cpp" line="1388"/>
+        <location filename="../IOViewer.cpp" line="1395"/>
+        <source>Color 1 shade</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1382"/>
+        <location filename="../IOViewer.cpp" line="1389"/>
+        <location filename="../IOViewer.cpp" line="1396"/>
+        <source>Color 2 shade</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1383"/>
+        <location filename="../IOViewer.cpp" line="1390"/>
+        <location filename="../IOViewer.cpp" line="1397"/>
+        <source>Color 3 shade</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1411"/>
+        <source>Prepare to switch speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1412"/>
+        <source>Double speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1418"/>
+        <source>VRAM bank</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1424"/>
+        <source>Source (top)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1428"/>
+        <source>Source (bottom)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1432"/>
+        <source>Destination (top)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1436"/>
+        <source>Destination (bottom)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1440"/>
+        <source>Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1441"/>
+        <source>Timing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1448"/>
+        <source>Write bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1449"/>
+        <source>Read bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1452"/>
+        <location filename="../IOViewer.cpp" line="1453"/>
+        <source>Unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1493"/>
+        <location filename="../IOViewer.cpp" line="1505"/>
+        <source>Current index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1494"/>
+        <location filename="../IOViewer.cpp" line="1506"/>
+        <source>Auto-increment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1498"/>
+        <location filename="../IOViewer.cpp" line="1510"/>
+        <source>Red</source>
+        <translation type="unfinished">Rouge</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1499"/>
+        <location filename="../IOViewer.cpp" line="1511"/>
+        <source>Green (bottom)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1500"/>
+        <location filename="../IOViewer.cpp" line="1512"/>
+        <source>Green (top)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1501"/>
+        <location filename="../IOViewer.cpp" line="1513"/>
+        <source>Blue</source>
+        <translation type="unfinished">Bleu</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1517"/>
+        <source>Sprite ordering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1518"/>
+        <source>OAM order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1519"/>
+        <source>x coordinate sorting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1530"/>
+        <source>WRAM bank</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

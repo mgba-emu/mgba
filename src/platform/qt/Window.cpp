@@ -1531,11 +1531,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	addGameAction(tr("View memory..."), "memoryView", openControllerTView<MemoryView>(), "tools");
 	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "tools");
-
-#ifdef M_CORE_GBA
-	Action* ioViewer = addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "tools");
-	m_platformActions.insert(PLATFORM_GBA, ioViewer);
-#endif
+	addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "tools");
 
 	m_actions.addSeparator("tools");
 	addGameAction(tr("Record debug video log..."), "recordVL", this, &Window::startVideoLog, "tools");
