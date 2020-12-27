@@ -1632,7 +1632,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../IOViewer.cpp" line="183"/>
         <location filename="../IOViewer.cpp" line="212"/>
         <location filename="../IOViewer.cpp" line="221"/>
-        <source>Integer part (bottom)</source>
+        <source>Integer part (low)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1640,7 +1640,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../IOViewer.cpp" line="187"/>
         <location filename="../IOViewer.cpp" line="216"/>
         <location filename="../IOViewer.cpp" line="225"/>
-        <source>Integer part (top)</source>
+        <source>Integer part (high)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2350,7 +2350,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../IOViewer.cpp" line="659"/>
         <location filename="../IOViewer.cpp" line="696"/>
         <location filename="../IOViewer.cpp" line="704"/>
-        <source>Address (bottom)</source>
+        <source>Address (low)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2362,7 +2362,53 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../IOViewer.cpp" line="663"/>
         <location filename="../IOViewer.cpp" line="700"/>
         <location filename="../IOViewer.cpp" line="708"/>
-        <source>Address (top)</source>
+        <source>Address (high)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1116"/>
+        <location filename="../IOViewer.cpp" line="1139"/>
+        <location filename="../IOViewer.cpp" line="1166"/>
+        <source>Sound frequency (low)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1120"/>
+        <location filename="../IOViewer.cpp" line="1143"/>
+        <location filename="../IOViewer.cpp" line="1170"/>
+        <source>Sound frequency (high)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1424"/>
+        <source>Source (high)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1428"/>
+        <source>Source (low)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1432"/>
+        <source>Destination (high)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1436"/>
+        <source>Destination (low)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1499"/>
+        <location filename="../IOViewer.cpp" line="1511"/>
+        <source>Green (low)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1500"/>
+        <location filename="../IOViewer.cpp" line="1512"/>
+        <source>Green (high)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2931,20 +2977,6 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1116"/>
-        <location filename="../IOViewer.cpp" line="1139"/>
-        <location filename="../IOViewer.cpp" line="1166"/>
-        <source>Sound frequency (bottom)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="1120"/>
-        <location filename="../IOViewer.cpp" line="1143"/>
-        <location filename="../IOViewer.cpp" line="1170"/>
-        <source>Sound frequency (top)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../IOViewer.cpp" line="1202"/>
         <source>Volume right</source>
         <translation type="unfinished"></translation>
@@ -3135,26 +3167,6 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1424"/>
-        <source>Source (top)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="1428"/>
-        <source>Source (bottom)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="1432"/>
-        <source>Destination (top)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="1436"/>
-        <source>Destination (bottom)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../IOViewer.cpp" line="1440"/>
         <source>Length</source>
         <translation type="unfinished"></translation>
@@ -3196,18 +3208,6 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../IOViewer.cpp" line="1498"/>
         <location filename="../IOViewer.cpp" line="1510"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="1499"/>
-        <location filename="../IOViewer.cpp" line="1511"/>
-        <source>Green (bottom)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="1500"/>
-        <location filename="../IOViewer.cpp" line="1512"/>
-        <source>Green (top)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
