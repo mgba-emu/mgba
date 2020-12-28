@@ -175,8 +175,6 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->cpu->halted = GBSerializedCpuFlagsGetHalted(flags);
 	gb->cpuBlocked = GBSerializedCpuFlagsGetBlocked(flags);
 
-	gb->audio.timingFactor = gb->doubleSpeed + 1;
-
 	LOAD_32LE(gb->cpu->cycles, 0, &state->cpu.cycles);
 	LOAD_32LE(gb->cpu->nextEvent, 0, &state->cpu.nextEvent);
 	gb->timing.root = NULL;

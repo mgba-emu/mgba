@@ -531,10 +531,7 @@ void GBMemoryDMA(struct GB* gb, uint16_t base) {
 		base &= 0xDFFF;
 	}
 	mTimingDeschedule(&gb->timing, &gb->memory.dmaEvent);
-	mTimingSchedule(&gb->timing, &gb->memory.dmaEvent, 8);
-	if (gb->cpu->cycles + 8 < gb->cpu->nextEvent) {
-		gb->cpu->nextEvent = gb->cpu->cycles + 8;
-	}
+	mTimingSchedule(&gb->timing, &gb->memory.dmaEvent, 8 * (2 - gb->doubleSpeed));
 	gb->memory.dmaSource = base;
 	gb->memory.dmaDest = 0;
 	gb->memory.dmaRemaining = 0xA0;
@@ -580,7 +577,7 @@ void _GBMemoryDMAService(struct mTiming* timing, void* context, uint32_t cyclesL
 	++gb->memory.dmaDest;
 	gb->memory.dmaRemaining = dmaRemaining - 1;
 	if (gb->memory.dmaRemaining) {
-		mTimingSchedule(timing, &gb->memory.dmaEvent, 4 - cyclesLate);
+		mTimingSchedule(timing, &gb->memory.dmaEvent, 4 * (2 - gb->doubleSpeed) - cyclesLate);
 	}
 }
 
@@ -594,7 +591,7 @@ void _GBMemoryHDMAService(struct mTiming* timing, void* context, uint32_t cycles
 	--gb->memory.hdmaRemaining;
 	if (gb->memory.hdmaRemaining) {
 		mTimingDeschedule(timing, &gb->memory.hdmaEvent);
-		mTimingSchedule(timing, &gb->memory.hdmaEvent, 2 - cyclesLate);
+		mTimingSchedule(timing, &gb->memory.hdmaEvent, 4 - cyclesLate);
 	} else {
 		gb->cpuBlocked = false;
 		gb->memory.io[GB_REG_HDMA1] = gb->memory.hdmaSource >> 8;

@@ -96,6 +96,7 @@ Misc:
  - Core: Improve support for ROM patch cheats, supporting disabling overlapping patches
  - GB: Allow pausing event loop while CPU is blocked
  - GB: Add support for sleep and shutdown callbacks
+ - GB: Redo double speed emulation (closes mgba.io/i/1515)
  - GB Core: Return the current number of banks for ROM/SRAM, not theoretical max
  - GB I/O: Implement preliminary support for PCM12/PCM34 (closes mgba.io/i/1468)
  - GBA: Allow pausing event loop while CPU is blocked

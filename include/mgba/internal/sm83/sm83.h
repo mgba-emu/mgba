@@ -133,6 +133,7 @@ struct SM83Core {
 
 	uint16_t index;
 
+	int tMultiplier;
 	int32_t cycles;
 	int32_t nextEvent;
 	enum SM83ExecutionState executionState;

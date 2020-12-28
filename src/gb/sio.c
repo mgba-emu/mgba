@@ -77,7 +77,7 @@ void _GBSIOProcessEvents(struct mTiming* timing, void* context, uint32_t cyclesL
 			sio->pendingSB = 0xFF;
 		}
 	} else {
-		mTimingSchedule(timing, &sio->event, sio->period);
+		mTimingSchedule(timing, &sio->event, sio->period * (2 - sio->p->doubleSpeed));
 	}
 }
 
@@ -93,7 +93,7 @@ void GBSIOWriteSC(struct GBSIO* sio, uint8_t sc) {
 	if (GBRegisterSCIsEnable(sc)) {
 		mTimingDeschedule(&sio->p->timing, &sio->event);
 		if (GBRegisterSCIsShiftClock(sc)) {
-			mTimingSchedule(&sio->p->timing, &sio->event, sio->period);
+			mTimingSchedule(&sio->p->timing, &sio->event, sio->period * (2 - sio->p->doubleSpeed));
 			sio->remainingBits = 8;
 		}
 	}

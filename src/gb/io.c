@@ -417,15 +417,15 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		}
 		return;
 	case GB_REG_TIMA:
-		if (value && mTimingUntil(&gb->timing, &gb->timer.irq) > 1) {
+		if (value && mTimingUntil(&gb->timing, &gb->timer.irq) > 2 - (int) gb->doubleSpeed) {
 			mTimingDeschedule(&gb->timing, &gb->timer.irq);
 		}
-		if (mTimingUntil(&gb->timing, &gb->timer.irq) == -1) {
+		if (mTimingUntil(&gb->timing, &gb->timer.irq) == (int) gb->doubleSpeed - 2) {
 			return;
 		}
 		break;
 	case GB_REG_TMA:
-		if (mTimingUntil(&gb->timing, &gb->timer.irq) == -1) {
+		if (mTimingUntil(&gb->timing, &gb->timer.irq) == (int) gb->doubleSpeed - 2) {
 			gb->memory.io[GB_REG_TIMA] = value;
 		}
 		break;

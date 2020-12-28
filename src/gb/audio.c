@@ -65,7 +65,7 @@ void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52, enum GBAu
 	if (style == GB_AUDIO_GBA) {
 		audio->timingFactor = 4;
 	} else {
-		audio->timingFactor = 1;
+		audio->timingFactor = 2;
 	}
 
 	audio->frameEvent.context = audio;
@@ -339,7 +339,7 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 	if (audio->playingCh3) {
 		audio->ch3.readable = audio->style != GB_AUDIO_DMG;
 		// TODO: Where does this cycle delay come from?
-		mTimingSchedule(audio->timing, &audio->ch3Event, audio->timingFactor * 4 + 2 * (2048 - audio->ch3.rate));
+		mTimingSchedule(audio->timing, &audio->ch3Event, audio->timingFactor * (4 + 2 * (2048 - audio->ch3.rate)));
 	}
 	*audio->nr52 &= ~0x0004;
 	*audio->nr52 |= audio->playingCh3 << 2;
@@ -477,11 +477,8 @@ void GBAudioWriteNR52(struct GBAudio* audio, uint8_t value) {
 		audio->skipFrame = false;
 		audio->frame = 7;
 
-		if (audio->p) {
-			unsigned timingFactor = 0x400 >> !audio->p->doubleSpeed;
-			if (audio->p->timer.internalDiv & timingFactor) {
-				audio->skipFrame = true;
-			}
+		if (audio->p && audio->p->timer.internalDiv & 0x400) {
+			audio->skipFrame = true;
 		}
 	}
 }
@@ -914,7 +911,7 @@ static void _updateChannel3(struct mTiming* timing, void* user, uint32_t cyclesL
 	audio->ch3.readable = true;
 	if (audio->style == GB_AUDIO_DMG) {
 		mTimingDeschedule(audio->timing, &audio->ch3Fade);
-		mTimingSchedule(timing, &audio->ch3Fade, 2 - cyclesLate);
+		mTimingSchedule(timing, &audio->ch3Fade, 4 - cyclesLate);
 	}
 	int cycles = 2 * (2048 - ch->rate);
 	mTimingSchedule(timing, &audio->ch3Event, audio->timingFactor * cycles - cyclesLate);
