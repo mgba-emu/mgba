@@ -13,6 +13,7 @@ Features:
  - New unlicensed GB mappers: Pokémon Jade/Diamond, BBD, and Hitek
  - Stack tracing tools in ARM debugger (by ahigerd)
  - Command scripts for CLI debugger (by ahigerd)
+ - Scheduled event dumping in CLI debugger
  - ARM disassembler now resolves addresses to symbol names
  - Add Game Boy Player feature support to ports
  - Individual window types can now be toggled in debugging views
