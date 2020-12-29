@@ -288,7 +288,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 			int32_t cycles = cpu->cycles;
 			cpu->cycles = 0;
 #ifdef USE_DEBUGGERS
-			gba->timing.globalCycles += cycles;
+			gba->timing.globalCycles += cycles < nextEvent ? nextEvent : cycles;
 #endif
 #ifndef NDEBUG
 			if (cycles < 0) {
