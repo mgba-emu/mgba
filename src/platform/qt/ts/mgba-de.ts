@@ -3724,64 +3724,69 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
 <context>
     <name>QGBA::SettingsView</name>
     <message>
-        <location filename="../SettingsView.cpp" line="163"/>
-        <location filename="../SettingsView.cpp" line="206"/>
+        <location filename="../SettingsView.cpp" line="143"/>
+        <location filename="../SettingsView.cpp" line="186"/>
         <source>Qt Multimedia</source>
         <translation>Qt Multimedia</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="170"/>
+        <location filename="../SettingsView.cpp" line="150"/>
         <source>SDL</source>
         <translation>SDL</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="178"/>
+        <location filename="../SettingsView.cpp" line="158"/>
         <source>Software (Qt)</source>
         <translation>Software (Qt)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="184"/>
+        <location filename="../SettingsView.cpp" line="164"/>
         <source>OpenGL</source>
         <translation>OpenGL</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="191"/>
+        <location filename="../SettingsView.cpp" line="171"/>
         <source>OpenGL (force version 1.x)</source>
         <translation>OpenGL (erzwinge Version 1.x)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="199"/>
+        <location filename="../SettingsView.cpp" line="179"/>
         <source>None (Still Image)</source>
         <translation>Keiner (Standbild)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="289"/>
+        <location filename="../SettingsView.cpp" line="269"/>
         <source>Keyboard</source>
         <translation>Tastatur</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="297"/>
+        <location filename="../SettingsView.cpp" line="277"/>
         <source>Controllers</source>
         <translation>Gamepads</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="343"/>
+        <location filename="../SettingsView.cpp" line="323"/>
         <source>Shortcuts</source>
         <translation>Tastenkürzel</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="355"/>
-        <location filename="../SettingsView.cpp" line="365"/>
+        <location filename="../SettingsView.cpp" line="335"/>
+        <location filename="../SettingsView.cpp" line="345"/>
         <source>Shaders</source>
         <translation>Shader</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="376"/>
+        <location filename="../SettingsView.cpp" line="367"/>
         <source>Select BIOS</source>
         <translation>BIOS auswählen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="715"/>
+        <location filename="../SettingsView.cpp" line="374"/>
+        <source>Select directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.cpp" line="714"/>
         <source>(%1×%2)</source>
         <translation>(%1×%2)</translation>
     </message>

@@ -66,6 +66,7 @@ public slots:
 
 private slots:
 	void selectBios(QLineEdit*);
+	void selectPath(QLineEdit*, QCheckBox*);
 	void updateConfig();
 	void reloadConfig();
 
@@ -83,6 +84,8 @@ private:
 #endif
 
 	QMap<Page, int> m_pageIndex;
+
+	QString makePortablePath(const QString& path);
 
 	void addPage(const QString& name, QWidget* view, Page index);
 
