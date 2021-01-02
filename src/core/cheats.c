@@ -107,14 +107,17 @@ static void _patchROM(struct mCheatDevice* device, struct mCheatSet* cheats) {
 		struct mCheatPatch* patch = mCheatPatchListGetPointer(&cheats->romPatches, i);
 		int segment = -1;
 		if (patch->check && patch->segment < 0) {
-			int maxSegment = 0;
-			for (segment = 0; segment < maxSegment; ++segment) {
+			const struct mCoreMemoryBlock* block = mCoreGetMemoryBlockInfo(device->p, patch->address);
+			if (!block) {
+				continue;
+			}
+			for (segment = 0; segment < block->maxSegment; ++segment) {
 				uint32_t value = _readMemSegment(device->p, patch->address, segment, patch->width);
 				if (value == patch->checkValue) {
 					break;
 				}
 			}
-			if (segment == maxSegment) {
+			if (segment == block->maxSegment) {
 				continue;
 			}
 		}
