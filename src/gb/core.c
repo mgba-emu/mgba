@@ -75,6 +75,7 @@ struct GBCore {
 	const struct Configuration* overrides;
 	struct mDebuggerPlatform* debuggerPlatform;
 	struct mCheatDevice* cheatDevice;
+	struct mCoreMemoryBlock memoryBlocks[8];
 };
 
 static bool _GBCoreInit(struct mCore* core) {
@@ -96,6 +97,7 @@ static bool _GBCoreInit(struct mCore* core) {
 #ifndef MINIMAL_CORE
 	gbcore->logContext = NULL;
 #endif
+	memcpy(gbcore->memoryBlocks, _GBMemoryBlocks, sizeof(_GBMemoryBlocks));
 
 	GBCreate(gb);
 	memset(gbcore->components, 0, sizeof(gbcore->components));
@@ -559,6 +561,26 @@ static void _GBCoreReset(struct mCore* core) {
 	}
 #endif
 
+	if (gb->model < GB_MODEL_CGB) {
+		memcpy(gbcore->memoryBlocks, _GBMemoryBlocks, sizeof(_GBMemoryBlocks));
+	} else {
+		memcpy(gbcore->memoryBlocks, _GBCMemoryBlocks, sizeof(_GBCMemoryBlocks));
+	}
+
+	size_t i;
+	for (i = 0; i < sizeof(gbcore->memoryBlocks) / sizeof(*gbcore->memoryBlocks); ++i) {
+		if (gbcore->memoryBlocks[i].id == GB_REGION_CART_BANK0) {
+			gbcore->memoryBlocks[i].maxSegment = gb->memory.romSize / GB_SIZE_CART_BANK0;
+		} else if (gbcore->memoryBlocks[i].id == GB_REGION_EXTERNAL_RAM) {
+			gbcore->memoryBlocks[i].maxSegment = gb->sramSize / GB_SIZE_EXTERNAL_RAM;
+		} else {
+			continue;
+		}
+		if (gbcore->memoryBlocks[i].maxSegment) {
+			--gbcore->memoryBlocks[i].maxSegment;
+		}
+	}
+
 	SM83Reset(core->cpu);
 
 	if (core->opts.skipBios) {
@@ -732,20 +754,9 @@ static void _GBCoreRawWrite32(struct mCore* core, uint32_t address, int segment,
 }
 
 size_t _GBListMemoryBlocks(const struct mCore* core, const struct mCoreMemoryBlock** blocks) {
-	const struct GB* gb = core->board;
-	switch (gb->model) {
-	case GB_MODEL_DMG:
-	case GB_MODEL_MGB:
-	case GB_MODEL_SGB:
-	case GB_MODEL_SGB2:
-	default:
-		*blocks = _GBMemoryBlocks;
-		return sizeof(_GBMemoryBlocks) / sizeof(*_GBMemoryBlocks);
-	case GB_MODEL_CGB:
-	case GB_MODEL_AGB:
-		*blocks = _GBCMemoryBlocks;
-		return sizeof(_GBCMemoryBlocks) / sizeof(*_GBCMemoryBlocks);
-	}
+	struct GBCore* gbcore = (struct GBCore*) core;
+	*blocks = gbcore->memoryBlocks;
+	return sizeof(gbcore->memoryBlocks) / sizeof(*gbcore->memoryBlocks);
 }
 
 void* _GBGetMemoryBlock(struct mCore* core, size_t id, size_t* sizeOut) {
