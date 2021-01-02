@@ -55,6 +55,7 @@
 #include "TileView.h"
 #include "VideoProxy.h"
 #include "VideoView.h"
+#include "utils.h"
 
 #ifdef USE_DISCORD_RPC
 #include "DiscordCoordinator.h"
@@ -1988,24 +1989,6 @@ void WindowBackground::paintEvent(QPaintEvent* event) {
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::SmoothPixmapTransform, m_filter);
 	painter.fillRect(QRect(QPoint(), size()), Qt::black);
-	QSize s = size();
-	QSize ds = s;
-	if (m_lockAspectRatio) {
-		if (ds.width() * m_aspectHeight > ds.height() * m_aspectWidth) {
-			ds.setWidth(ds.height() * m_aspectWidth / m_aspectHeight);
-		} else if (ds.width() * m_aspectHeight < ds.height() * m_aspectWidth) {
-			ds.setHeight(ds.width() * m_aspectHeight / m_aspectWidth);
-		}
-	}
-	if (m_lockIntegerScaling) {
-		if (ds.width() >= m_aspectWidth) {
-			ds.setWidth(ds.width() - ds.width() % m_aspectWidth);
-		}
-		if (ds.height() >= m_aspectHeight) {
-			ds.setHeight(ds.height() - ds.height() % m_aspectHeight);
-		}
-	}
-	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
-	QRect full(origin, ds);
+	QRect full(clampSize(QSize(m_aspectWidth, m_aspectHeight), size(), m_lockAspectRatio, m_lockIntegerScaling));
 	painter.drawPixmap(full, logo);
 }

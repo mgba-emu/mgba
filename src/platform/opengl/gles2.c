@@ -221,19 +221,11 @@ static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h)
 	unsigned drawW = w;
 	unsigned drawH = h;
 	if (v->lockAspectRatio) {
-		if (w * v->height > h * v->width) {
-			drawW = h * v->width / v->height;
-		} else if (w * v->height < h * v->width) {
-			drawH = w * v->height / v->width;
-		}
+		lockAspectRatioUInt(v->width, v->height, &drawW, &drawH);
 	}
 	if (v->lockIntegerScaling) {
-		if (drawW >= v->width) {
-			drawW -= drawW % v->width;
-		}
-		if (drawH >= v->height) {
-			drawH -= drawH % v->height;
-		}
+		lockIntegerRatioUInt(v->width, &drawW);
+		lockIntegerRatioUInt(v->height, &drawH);
 	}
 	size_t n;
 	for (n = 0; n < context->nShaders; ++n) {
