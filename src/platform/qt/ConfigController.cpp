@@ -272,6 +272,9 @@ void ConfigController::setMRU(const QList<QString>& mru) {
 			break;
 		}
 	}
+	for (; i < MRU_LIST_SIZE; ++i) {
+		m_settings->remove(QString::number(i));
+	}
 	m_settings->endGroup();
 }
 
