@@ -4601,17 +4601,17 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../utils.cpp" line="30"/>
+        <location filename="../utils.cpp" line="29"/>
         <source>GBA</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="34"/>
+        <location filename="../utils.cpp" line="33"/>
         <source>GB</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="37"/>
+        <location filename="../utils.cpp" line="36"/>
         <source>?</source>
         <translation></translation>
     </message>

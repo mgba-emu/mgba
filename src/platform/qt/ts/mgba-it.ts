@@ -4601,17 +4601,17 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../utils.cpp" line="30"/>
+        <location filename="../utils.cpp" line="29"/>
         <source>GBA</source>
         <translation>GBA</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="34"/>
+        <location filename="../utils.cpp" line="33"/>
         <source>GB</source>
         <translation>GB</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="37"/>
+        <location filename="../utils.cpp" line="36"/>
         <source>?</source>
         <translation>?</translation>
     </message>
