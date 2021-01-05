@@ -3919,27 +3919,10 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>选择文件夹</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="372"/>
-        <source>Game Boy Advance save files (%1)</source>
-        <translation>Game Boy Advance 存档文件 (%1)</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="373"/>
         <location filename="../Window.cpp" line="441"/>
         <location filename="../Window.cpp" line="448"/>
         <source>Select save</source>
         <translation>选择存档</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="381"/>
-        <source>mGBA savestate files (%1)</source>
-        <translation>mGBA 即时存档文件 (%1)</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="383"/>
-        <location filename="../Window.cpp" line="388"/>
-        <source>Select savestate</source>
-        <translation>选择即时存档</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="410"/>
@@ -4087,14 +4070,35 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>将文件夹添加到库中...</translation>
     </message>
     <message>
+        <location filename="../Window.cpp" line="372"/>
+        <source>Save games (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="373"/>
+        <source>Select save game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="381"/>
+        <source>mGBA save state files (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="383"/>
+        <location filename="../Window.cpp" line="388"/>
+        <source>Select save state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../Window.cpp" line="1121"/>
-        <source>Load alternate save...</source>
-        <translation>载入其他存档...</translation>
+        <source>Load alternate save game...</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1124"/>
-        <source>Load temporary save...</source>
-        <translation>载入临时存档...</translation>
+        <source>Load temporary save game...</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1128"/>
@@ -5184,8 +5188,19 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     </message>
     <message>
         <location filename="../SettingsView.ui" line="886"/>
-        <source>Savestate extra data:</source>
-        <translation>即时存档额外数据:</translation>
+        <source>Save state extra data:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="903"/>
+        <location filename="../SettingsView.ui" line="947"/>
+        <source>Save game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="930"/>
+        <source>Load state extra data:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="893"/>
@@ -5194,21 +5209,10 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>截图</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="903"/>
-        <location filename="../SettingsView.ui" line="947"/>
-        <source>Save data</source>
-        <translation>保存数据</translation>
-    </message>
-    <message>
         <location filename="../SettingsView.ui" line="913"/>
         <location filename="../SettingsView.ui" line="954"/>
         <source>Cheat codes</source>
         <translation>作弊码</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="930"/>
-        <source>Load extra data:</source>
-        <translation>载入额外数据:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="961"/>

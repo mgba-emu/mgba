@@ -3927,27 +3927,10 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
         <translation>Seleccionar carpeta</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="372"/>
-        <source>Game Boy Advance save files (%1)</source>
-        <translation>Archivos de guardado de Game Boy Advance (%1)</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="373"/>
         <location filename="../Window.cpp" line="441"/>
         <location filename="../Window.cpp" line="448"/>
         <source>Select save</source>
         <translation>Seleccionar guardado</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="381"/>
-        <source>mGBA savestate files (%1)</source>
-        <translation>Archivos de estado de guardado de mGBA (%1)</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="383"/>
-        <location filename="../Window.cpp" line="388"/>
-        <source>Select savestate</source>
-        <translation>Elegir estado de guardado</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="410"/>
@@ -4085,16 +4068,6 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
         <translation>Agregar carpeta a la biblioteca...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1121"/>
-        <source>Load alternate save...</source>
-        <translation>Cargar guardado alternativo...</translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="1124"/>
-        <source>Load temporary save...</source>
-        <translation>Cargar guardado temporal...</translation>
-    </message>
-    <message>
         <location filename="../Window.cpp" line="1128"/>
         <source>Load &amp;patch...</source>
         <translation>Cargar &amp;parche...</translation>
@@ -4153,6 +4126,37 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
         <location filename="../Window.cpp" line="1155"/>
         <source>Load state file...</source>
         <translation>Cargar archivo de estado...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="372"/>
+        <source>Save games (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="373"/>
+        <source>Select save game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="381"/>
+        <source>mGBA save state files (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="383"/>
+        <location filename="../Window.cpp" line="388"/>
+        <source>Select save state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1121"/>
+        <source>Load alternate save game...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1124"/>
+        <source>Load temporary save game...</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1160"/>
@@ -5045,6 +5049,22 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
         <translation>Mostrar mensajes en el OSD</translation>
     </message>
     <message>
+        <location filename="../SettingsView.ui" line="886"/>
+        <source>Save state extra data:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="903"/>
+        <location filename="../SettingsView.ui" line="947"/>
+        <source>Save game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="930"/>
+        <source>Load state extra data:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../SettingsView.ui" line="1858"/>
         <source>Super Game Boy/Game Boy Color model:</source>
         <translation type="unfinished"></translation>
@@ -5221,32 +5241,16 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
         <translation>Detectar y eliminar</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="886"/>
-        <source>Savestate extra data:</source>
-        <translation>Guardar datos extra:</translation>
-    </message>
-    <message>
         <location filename="../SettingsView.ui" line="893"/>
         <location filename="../SettingsView.ui" line="937"/>
         <source>Screenshot</source>
         <translation>Pantallazo</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="903"/>
-        <location filename="../SettingsView.ui" line="947"/>
-        <source>Save data</source>
-        <translation>Datos de guardado</translation>
-    </message>
-    <message>
         <location filename="../SettingsView.ui" line="913"/>
         <location filename="../SettingsView.ui" line="954"/>
         <source>Cheat codes</source>
         <translation>Trucos</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="930"/>
-        <source>Load extra data:</source>
-        <translation>Cargar datos extra:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="872"/>

@@ -3926,26 +3926,9 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="372"/>
-        <source>Game Boy Advance save files (%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="373"/>
         <location filename="../Window.cpp" line="441"/>
         <location filename="../Window.cpp" line="448"/>
         <source>Select save</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="381"/>
-        <source>mGBA savestate files (%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Window.cpp" line="383"/>
-        <location filename="../Window.cpp" line="388"/>
-        <source>Select savestate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4092,13 +4075,34 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../Window.cpp" line="372"/>
+        <source>Save games (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="373"/>
+        <source>Select save game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="381"/>
+        <source>mGBA save state files (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="383"/>
+        <location filename="../Window.cpp" line="388"/>
+        <source>Select save state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../Window.cpp" line="1121"/>
-        <source>Load alternate save...</source>
+        <source>Load alternate save game...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1124"/>
-        <source>Load temporary save...</source>
+        <source>Load temporary save game...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5097,6 +5101,22 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../SettingsView.ui" line="886"/>
+        <source>Save state extra data:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="903"/>
+        <location filename="../SettingsView.ui" line="947"/>
+        <source>Save game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="930"/>
+        <source>Load state extra data:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../SettingsView.ui" line="1858"/>
         <source>Super Game Boy/Game Boy Color model:</source>
         <translation type="unfinished"></translation>
@@ -5193,31 +5213,15 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="886"/>
-        <source>Savestate extra data:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../SettingsView.ui" line="893"/>
         <location filename="../SettingsView.ui" line="937"/>
         <source>Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="903"/>
-        <location filename="../SettingsView.ui" line="947"/>
-        <source>Save data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../SettingsView.ui" line="913"/>
         <location filename="../SettingsView.ui" line="954"/>
         <source>Cheat codes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="930"/>
-        <source>Load extra data:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

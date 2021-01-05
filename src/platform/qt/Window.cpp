@@ -369,8 +369,8 @@ void Window::replaceROM() {
 
 void Window::selectSave(bool temporary) {
 	QStringList formats{"*.sav"};
-	QString filter = tr("Game Boy Advance save files (%1)").arg(formats.join(QChar(' ')));
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save"), filter);
+	QString filter = tr("Save games (%1)").arg(formats.join(QChar(' ')));
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save game"), filter);
 	if (!filename.isEmpty()) {
 		m_controller->loadSave(filename, temporary);
 	}
@@ -378,14 +378,14 @@ void Window::selectSave(bool temporary) {
 
 void Window::selectState(bool load) {
 	QStringList formats{"*.ss0", "*.ss1", "*.ss2", "*.ss3", "*.ss4", "*.ss5", "*.ss6", "*.ss7", "*.ss8", "*.ss9"};
-	QString filter = tr("mGBA savestate files (%1)").arg(formats.join(QChar(' ')));
+	QString filter = tr("mGBA save state files (%1)").arg(formats.join(QChar(' ')));
 	if (load) {
-		QString filename = GBAApp::app()->getOpenFileName(this, tr("Select savestate"), filter);
+		QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save state"), filter);
 		if (!filename.isEmpty()) {
 			m_controller->loadState(filename);
 		}
 	} else {
-		QString filename = GBAApp::app()->getSaveFileName(this, tr("Select savestate"), filter);
+		QString filename = GBAApp::app()->getSaveFileName(this, tr("Select save state"), filter);
 		if (!filename.isEmpty()) {
 			m_controller->saveState(filename);
 		}
@@ -1118,10 +1118,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Add folder to library..."), "addDirToLibrary", this, &Window::addDirToLibrary, "file");
 #endif
 
-	addGameAction(tr("Load alternate save..."), "loadAlternateSave", [this]() {
+	addGameAction(tr("Load alternate save game..."), "loadAlternateSave", [this]() {
 		this->selectSave(false);
 	}, "file");
-	addGameAction(tr("Load temporary save..."), "loadTemporarySave", [this]() {
+	addGameAction(tr("Load temporary save game..."), "loadTemporarySave", [this]() {
 		this->selectSave(true);
 	}, "file");
 
