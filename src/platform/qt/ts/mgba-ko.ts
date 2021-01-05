@@ -1136,6 +1136,14 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
     </message>
 </context>
 <context>
+    <name>QGBA::AboutScreen</name>
+    <message>
+        <location filename="../AboutScreen.cpp" line="77"/>
+        <source>2021</source>
+        <translation type="unfinished">2021</translation>
+    </message>
+</context>
+<context>
     <name>QGBA::AssetTile</name>
     <message>
         <location filename="../AssetTile.cpp" line="103"/>
