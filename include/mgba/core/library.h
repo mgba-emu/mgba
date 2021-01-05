@@ -35,7 +35,7 @@ void mLibraryDestroy(struct mLibrary*);
 
 struct VDir;
 struct VFile;
-void mLibraryLoadDirectory(struct mLibrary* library, const char* base);
+void mLibraryLoadDirectory(struct mLibrary* library, const char* base, bool recursive);
 void mLibraryClear(struct mLibrary* library);
 
 size_t mLibraryCount(struct mLibrary* library, const struct mLibraryEntry* constraints);

@@ -94,6 +94,7 @@ Misc:
  - Core: Add shutdown callback
  - Core: Rework thread state synchronization
  - Core: Improve support for ROM patch cheats, supporting disabling overlapping patches
+ - Core: Adding to library is now recursive
  - GB: Allow pausing event loop while CPU is blocked
  - GB: Add support for sleep and shutdown callbacks
  - GB: Redo double speed emulation (closes mgba.io/i/1515)

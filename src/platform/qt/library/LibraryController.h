@@ -84,7 +84,7 @@ public:
 
 	void selectLastBootedGame();
 
-	void addDirectory(const QString& dir);
+	void addDirectory(const QString& dir, bool recursive = true);
 
 public slots:
 	void clear();
@@ -97,7 +97,7 @@ private slots:
 	void refresh();
 
 private:
-	void loadDirectory(const QString&); // Called on separate thread
+	void loadDirectory(const QString&, bool recursive = true); // Called on separate thread
 	void freeLibrary();
 
 	ConfigController* m_config = nullptr;
