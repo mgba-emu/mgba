@@ -5,7 +5,8 @@ mGBA es un emulador para juegos de Game Boy Advance. Su objetivo es ser más rá
 
 Las noticias actualizadas y las descargas se encuentran en [mgba.io](https://mgba.io/).
 
-[![Estado de compilación](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)](https://travis-ci.org/mgba-emu/mgba)
+[![Estado de la compilación](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)](https://travis-ci.org/mgba-emu/mgba)
+[![Estado de la traducción](https://hosted.weblate.org/widgets/mgba/-/svg-badge.svg)](https://hosted.weblate.org/engage/mgba)
 
 Características
 --------
@@ -36,6 +37,7 @@ Características
 - Retroceso configurable.
 - Soporte para cargar y exportar instantáneas de GameShark y Action Replay.
 - Núcleos disponibles para RetroArch/Libretro y OpenEmu.
+- Traducciones de la comunidad a través de [Weblate](https://hosted.weblate.org/engage/mgba).
 - Otras cosas más pequeñas.
 
 #### Mappers (controladores de memoria) soportados
@@ -240,7 +242,7 @@ Notas a pie
 Copyright
 ---------
 
-mGBA es Copyright © 2013 – 2020 Jeffrey Pfau. Es distribuído bajo la [licencia pública de Mozilla (Mozilla Public License) version 2.0](https://www.mozilla.org/MPL/2.0/). Una copia de la licencia está disponible en el archivo LICENSE.
+mGBA es Copyright © 2013 – 2021 Jeffrey Pfau. Es distribuído bajo la [licencia pública de Mozilla (Mozilla Public License) version 2.0](https://www.mozilla.org/MPL/2.0/). Una copia de la licencia está disponible en el archivo LICENSE.
 
 mGBA contiene las siguientes bibliotecas de terceros:
 
