@@ -260,10 +260,10 @@ else ifneq (,$(filter $(platform), psl1ght))
 # PS2
 else ifeq ($(platform), ps2)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
-   CC = ee-gcc$(EXE_EXT)
-   AR = ee-ar$(EXE_EXT)
+   CC = mips64r5900el-ps2-elf-gcc$(EXE_EXT)
+   AR = mips64r5900el-ps2-elf-ar$(EXE_EXT)
    PLATFORM_DEFINES := -DPS2 -DCC_RESAMPLER
-   CFLAGS += -G0 -DHAVE_NO_LANGEXTRA
+   CFLAGS += -G0 -DHAVE_NO_LANGEXTRA -DHAVE_STRTOF_L
    STATIC_LINKING = 1
    DEFINES += -std=c99
 	HAVE_VFS_FD = 0
