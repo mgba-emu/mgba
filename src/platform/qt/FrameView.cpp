@@ -83,7 +83,12 @@ FrameView::FrameView(std::shared_ptr<CoreController> controller, QWidget* parent
 FrameView::~FrameView() {
 	QMutexLocker locker(&m_mutex);
 	*m_callbackLocker = false;
+
+	if (m_nextFrame) {
+		m_controller->endVideoLog(true);
+	}
 	if (m_vl) {
+		mCoreConfigDeinit(&m_vl->config);
 		m_vl->deinit(m_vl);
 	}
 }
@@ -517,6 +522,9 @@ bool FrameView::eventFilter(QObject*, QEvent* event) {
 
 void FrameView::refreshVl() {
 	QMutexLocker locker(&m_mutex);
+	if (m_currentFrame) {
+		m_currentFrame->close(m_currentFrame);
+	}
 	m_currentFrame = m_nextFrame;
 	m_nextFrame = VFileDevice::openMemory();
 	if (m_currentFrame) {
@@ -536,6 +544,7 @@ void FrameView::newVl() {
 		return;
 	}
 	if (m_vl) {
+		mCoreConfigDeinit(&m_vl->config);
 		m_vl->deinit(m_vl);
 	}
 	m_vl = mCoreFindVF(m_currentFrame);
