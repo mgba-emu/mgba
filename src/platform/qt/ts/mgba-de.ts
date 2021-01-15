@@ -20,10 +20,10 @@
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="86"/>
-        <source>© 2013 – 2020 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
+        <source>© 2013 – {year} Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation>© 2013 – 2020 Jeffrey Pfau, lizenziert unter der Mozilla Public License, Version 2.0
-Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</translation>
+        <translation type="unfinished">© 2013 – {year} Jeffrey Pfau, lizenziert unter der Mozilla Public License, Version 2.0
+Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
@@ -1136,6 +1136,14 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
     </message>
 </context>
 <context>
+    <name>QGBA::AboutScreen</name>
+    <message>
+        <location filename="../AboutScreen.cpp" line="77"/>
+        <source>2021</source>
+        <translation>2021</translation>
+    </message>
+</context>
+<context>
     <name>QGBA::AssetTile</name>
     <message>
         <location filename="../AssetTile.cpp" line="103"/>
@@ -1242,52 +1250,52 @@ Game Boy Advance ist ein eingetragenes Warenzeichen von Nintendo Co., Ltd.</tran
 <context>
     <name>QGBA::FrameView</name>
     <message>
-        <location filename="../FrameView.cpp" line="569"/>
+        <location filename="../FrameView.cpp" line="578"/>
         <source>Export frame</source>
         <translation>Bild exportieren</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="570"/>
+        <location filename="../FrameView.cpp" line="579"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="588"/>
+        <location filename="../FrameView.cpp" line="597"/>
         <source>None</source>
         <translation>Keine</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="590"/>
+        <location filename="../FrameView.cpp" line="599"/>
         <source>Background</source>
         <translation>Hintergrund</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="593"/>
+        <location filename="../FrameView.cpp" line="602"/>
         <source>Window</source>
         <translation>Fenster</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="596"/>
+        <location filename="../FrameView.cpp" line="605"/>
         <source>Objwin</source>
         <translation>Objwin</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="601"/>
+        <location filename="../FrameView.cpp" line="610"/>
         <source>Sprite</source>
         <translation>Sprite</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="604"/>
+        <location filename="../FrameView.cpp" line="613"/>
         <source>Backdrop</source>
         <translation>Hintergrund</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="607"/>
+        <location filename="../FrameView.cpp" line="616"/>
         <source>Frame</source>
         <translation>Frame</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="613"/>
+        <location filename="../FrameView.cpp" line="622"/>
         <source>%1 %2</source>
         <translation>%1 %2</translation>
     </message>
