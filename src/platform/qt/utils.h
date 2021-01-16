@@ -11,6 +11,8 @@
 #include <QSize>
 #include <QString>
 
+#include <algorithm>
+
 namespace QGBA {
 
 QString niceSizeFormat(size_t filesize);
@@ -44,5 +46,14 @@ inline QRect clampSize(const QSize& ref, const QSize& size, bool aspectRatio, bo
 	QPoint origin = QPoint((size.width() - ds.width()) / 2, (size.height() - ds.height()) / 2);
 	return QRect(origin, ds);
 }
+
+#if __cplusplus >= 201703L
+using std::clamp;
+#else
+template<class T>
+constexpr const T& clamp(const T& v, const T& lo, const T& hi) {
+	return std::max(lo, std::min(hi, v));
+}
+#endif
 
 }

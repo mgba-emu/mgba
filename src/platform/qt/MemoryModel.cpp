@@ -9,6 +9,7 @@
 #include "CoreController.h"
 #include "LogController.h"
 #include "VFileDevice.h"
+#include "utils.h"
 
 #include <QAction>
 #include <QApplication>
@@ -628,11 +629,7 @@ void MemoryModel::keyPressEvent(QKeyEvent* event) {
 }
 
 void MemoryModel::boundsCheck() {
-	if (m_top < 0) {
-		m_top = 0;
-	} else if (m_top > (m_size >> 4) + 1 - viewport()->size().height() / m_cellHeight) {
-		m_top = (m_size >> 4) + 1 - viewport()->size().height() / m_cellHeight;
-	}
+	m_top = clamp(m_top, 0, static_cast<int32_t>(m_size >> 4) + 1 - viewport()->size().height() / m_cellHeight);
 }
 
 bool MemoryModel::isInSelection(uint32_t address) {
