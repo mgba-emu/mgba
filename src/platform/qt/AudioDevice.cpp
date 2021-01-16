@@ -40,20 +40,18 @@ void AudioDevice::setInput(mCoreThread* input) {
 }
 
 qint64 AudioDevice::readData(char* data, qint64 maxSize) {
-	if (maxSize > 0xFFFFFFFFLL) {
-		maxSize = 0xFFFFFFFFLL;
-	}
-
 	if (!m_context->core) {
 		LOG(QT, WARN) << tr("Audio device is missing its core");
 		return 0;
 	}
 
+	maxSize /= sizeof(GBAStereoSample);
 	mCoreSyncLockAudio(&m_context->impl->sync);
-	int available = blip_samples_avail(m_context->core->getAudioChannel(m_context->core, 0));
-	if (available > maxSize / sizeof(GBAStereoSample)) {
-		available = maxSize / sizeof(GBAStereoSample);
-	}
+	int available = std::min<qint64>({
+		blip_samples_avail(m_context->core->getAudioChannel(m_context->core, 0)),
+		maxSize,
+		std::numeric_limits<int>::max()
+	});
 	blip_read_samples(m_context->core->getAudioChannel(m_context->core, 0), &reinterpret_cast<GBAStereoSample*>(data)->left, available, true);
 	blip_read_samples(m_context->core->getAudioChannel(m_context->core, 1), &reinterpret_cast<GBAStereoSample*>(data)->right, available, true);
 	mCoreSyncConsumeAudio(&m_context->impl->sync);

@@ -52,7 +52,7 @@ void AudioProcessorSDL::pause() {
 
 void AudioProcessorSDL::setBufferSamples(int samples) {
 	AudioProcessor::setBufferSamples(samples);
-	if (m_audio.samples != samples) {
+	if (m_audio.samples != static_cast<size_t>(samples)) {
 		m_audio.samples = samples;
 		if (m_audio.core) {
 			mSDLDeinitAudio(&m_audio);

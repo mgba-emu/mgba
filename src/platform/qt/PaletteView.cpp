@@ -69,7 +69,7 @@ void PaletteView::updatePalette() {
 		return;
 	}
 	const uint16_t* palette;
-	size_t count;
+	int count;
 	switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:

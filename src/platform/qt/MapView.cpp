@@ -109,10 +109,10 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 }
 
 void MapView::selectMap(int map) {
-	if (map >= mMapCacheSetSize(&m_cacheSet->maps)) {
+	if (map == m_map || map < 0) {
 		return;
 	}
-	if (map == m_map) {
+	if (static_cast<unsigned>(map) >= mMapCacheSetSize(&m_cacheSet->maps)) {
 		return;
 	}
 	m_map = map;

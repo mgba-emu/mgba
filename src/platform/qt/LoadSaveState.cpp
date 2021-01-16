@@ -200,7 +200,7 @@ void LoadSaveState::loadState(int slot) {
 	unsigned width, height;
 	thread->core->desiredVideoDimensions(thread->core, &width, &height);
 	mStateExtdataItem item;
-	if (mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item) && item.size >= width * height * 4) {
+	if (mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item) && item.size >= static_cast<int32_t>(width * height * 4)) {
 		stateImage = QImage((uchar*) item.data, width, height, QImage::Format_ARGB32).rgbSwapped();
 	}
 
