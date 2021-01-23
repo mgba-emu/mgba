@@ -212,14 +212,20 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 		}
 	}
 #ifdef _WIN32
-	wchar_t wpath[MAX_PATH];
-	wchar_t wprojectName[MAX_PATH];
-	wchar_t* home;
+	WCHAR wpath[MAX_PATH];
+	WCHAR wprojectName[MAX_PATH];
+	WCHAR* home;
 	MultiByteToWideChar(CP_UTF8, 0, projectName, -1, wprojectName, MAX_PATH);
 	SHGetKnownFolderPath(&FOLDERID_RoamingAppData, 0, NULL, &home);
 	StringCchPrintfW(wpath, MAX_PATH, L"%ws\\%ws", home, wprojectName);
 	CoTaskMemFree(home);
 	CreateDirectoryW(wpath, NULL);
+	if (PATH_SEP[0] != '\\') {
+		WCHAR* pathSep;
+		for (pathSep = wpath; pathSep = wcschr(pathSep, L'\\');) {
+			pathSep[0] = PATH_SEP[0];
+		}
+	}
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
 #elif defined(PSP2)
 	snprintf(out, outLength, "ux0:data/%s", projectName);
@@ -256,8 +262,14 @@ void mCoreConfigPortablePath(char* out, size_t outLength) {
 	HMODULE hModule = GetModuleHandleW(NULL);
 	GetModuleFileNameW(hModule, wpath, MAX_PATH);
 	PathRemoveFileSpecW(wpath);
+	if (PATH_SEP[0] != '\\') {
+		WCHAR* pathSep;
+		for (pathSep = wpath; pathSep = wcschr(pathSep, L'\\');) {
+			pathSep[0] = PATH_SEP[0];
+		}
+	}
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
-	StringCchCatA(out, outLength, "\\portable.ini");
+	StringCchCatA(out, outLength, PATH_SEP "portable.ini");
 #elif defined(PSP2) || defined(GEKKO) || defined(__SWITCH__) || defined(_3DS)
 	out[0] = '\0';
 #else
