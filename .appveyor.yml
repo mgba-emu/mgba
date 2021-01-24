@@ -1,20 +1,39 @@
-image:
-- Visual Studio 2019
-platform:
-- x64
-configuration:
-- Release
-cache:
-- C:\Tools\vcpkg
+skip_commits:
+  files:
+    - '*travis*'
+    - '*.md'
+    - '.github/**'
+    - '.clang-format'
+    - 'CHANGES'
+    - 'LICENSE'
+
+skip_branch_with_pr: true
+
+image: Visual Studio 2019
+
+environment:
+  QTDIR: C:\Qt\5.15\msvc2019_64
+
+cache: C:\Tools\vcpkg
+
 install:
-- git -C C:\Tools\vcpkg clean -dfq ports toolsrc
-- git -C C:\Tools\vcpkg pull --force --quiet
-- C:\Tools\vcpkg\bootstrap-vcpkg
-- vcpkg --triplet x64-windows --recurse install ffmpeg libepoxy libpng libzip sdl2 sqlite3
-- vcpkg --no-dry-run upgrade
-- rd /Q /S C:\Tools\vcpkg\buildtrees
+  - |
+    git -C C:\Tools\vcpkg clean -dfq ports toolsrc
+    git -C C:\Tools\vcpkg pull -fq
+    C:\Tools\vcpkg\bootstrap-vcpkg
+    vcpkg --triplet x64-windows --recurse install ffmpeg libepoxy libpng libzip sdl2 sqlite3
+    vcpkg --no-dry-run upgrade
+    rd /Q/S C:\Tools\vcpkg\buildtrees
+
 before_build:
-- cmake . -DCMAKE_PREFIX_PATH=C:\Qt\5.12\msvc2017_64 -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake
+  - cmake . -DCMAKE_PREFIX_PATH=%QTDIR% -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake
+
+platform: x64
+
+configuration: Release
+
 build:
   parallel: true
   project: mGBA.sln
+
+test: off
