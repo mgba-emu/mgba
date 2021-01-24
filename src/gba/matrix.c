@@ -11,6 +11,8 @@
 #include <mgba/internal/gba/serialize.h>
 #include <mgba-util/vfs.h>
 
+#define MAPPING_MASK (GBA_MATRIX_MAPPINGS_MAX - 1)
+
 static void _remapMatrix(struct GBA* gba) {
 	if (gba->memory.matrix.vaddr & 0xFFFFE1FF) {
 		mLOG(GBA_MEM, ERROR, "Invalid Matrix mapping: %08X", gba->memory.matrix.vaddr);
@@ -24,11 +26,11 @@ static void _remapMatrix(struct GBA* gba) {
 		mLOG(GBA_MEM, ERROR, "Invalid Matrix mapping end: %08X", gba->memory.matrix.vaddr + gba->memory.matrix.size);
 		return;
 	}
-	int start = (gba->memory.matrix.vaddr >> 9) & 0x1F;
-	int size = (gba->memory.matrix.size >> 9) & 0x1F;
+	int start = gba->memory.matrix.vaddr >> 9;
+	int size = (gba->memory.matrix.size >> 9) & MAPPING_MASK;
 	int i;
 	for (i = 0; i < size; ++i) {
-		gba->memory.matrix.mappings[start + i] = gba->memory.matrix.paddr + (i << 9);
+		gba->memory.matrix.mappings[(start + i) & MAPPING_MASK] = gba->memory.matrix.paddr + (i << 9);
 	}
 
 	gba->romVf->seek(gba->romVf, gba->memory.matrix.paddr, SEEK_SET);
