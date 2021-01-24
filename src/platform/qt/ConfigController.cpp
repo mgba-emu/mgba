@@ -23,7 +23,7 @@ ConfigOption::ConfigOption(const QString& name, QObject* parent)
 
 void ConfigOption::connect(std::function<void(const QVariant&)> slot, QObject* parent) {
 	m_slots[parent] = slot;
-	QObject::connect(parent, &QObject::destroyed, [this, slot, parent]() {
+	QObject::connect(parent, &QObject::destroyed, this, [this, parent]() {
 		m_slots.remove(parent);
 	});
 }
@@ -37,10 +37,10 @@ Action* ConfigOption::addValue(const QString& text, const QVariant& value, Actio
 	if (actions) {
 		action = actions->addAction(text, name, function, menu);
 	} else {
-		action = new Action(function, name, text);
+		action = new Action(function, name, text, this);
 	}
 	action->setExclusive();
-	QObject::connect(action, &QObject::destroyed, [this, action, value]() {
+	QObject::connect(action, &QObject::destroyed, this, [this, action, value]() {
 		m_actions.removeAll(std::make_pair(action, value));
 	});
 	m_actions.append(std::make_pair(action, value));
@@ -59,10 +59,10 @@ Action* ConfigOption::addBoolean(const QString& text, ActionMapper* actions, con
 	if (actions) {
 		action = actions->addBooleanAction(text, m_name, function, menu);
 	} else {
-		action = new Action(function, m_name, text);
+		action = new Action(function, m_name, text, this);
 	}
 
-	QObject::connect(action, &QObject::destroyed, [this, action]() {
+	QObject::connect(action, &QObject::destroyed, this, [this, action]() {
 		m_actions.removeAll(std::make_pair(action, 1));
 	});
 	m_actions.append(std::make_pair(action, 1));
@@ -103,7 +103,7 @@ ConfigController::ConfigController(QObject* parent)
 	QString fileName = configDir();
 	fileName.append(QDir::separator());
 	fileName.append("qt.ini");
-	m_settings = new QSettings(fileName, QSettings::IniFormat, this);
+	m_settings = std::make_unique<QSettings>(fileName, QSettings::IniFormat);
 
 	mCoreConfigInit(&m_config, PORT);
 
@@ -150,7 +150,7 @@ ConfigOption* ConfigController::addOption(const char* key) {
 	}
 	ConfigOption* newOption = new ConfigOption(optionName, this);
 	m_optionSet[optionName] = newOption;
-	connect(newOption, &ConfigOption::valueChanged, [this, key](const QVariant& value) {
+	connect(newOption, &ConfigOption::valueChanged, this, [this, key](const QVariant& value) {
 		setOption(key, value);
 	});
 	return newOption;
@@ -292,12 +292,11 @@ void ConfigController::makePortable() {
 	QString fileName(configDir());
 	fileName.append(QDir::separator());
 	fileName.append("qt.ini");
-	QSettings* settings2 = new QSettings(fileName, QSettings::IniFormat, this);
+	auto settings2 = std::make_unique<QSettings>(fileName, QSettings::IniFormat);
 	for (const auto& key : m_settings->allKeys()) {
 		settings2->setValue(key, m_settings->value(key));
 	}
-	delete m_settings;
-	m_settings = settings2;
+	m_settings = std::move(settings2);
 }
 
 bool ConfigController::isPortable() {
