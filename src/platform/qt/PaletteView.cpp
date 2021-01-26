@@ -47,7 +47,7 @@ PaletteView::PaletteView(std::shared_ptr<CoreController> controller, QWidget* pa
 	m_ui.selected->setDimensions(QSize(1, 1));
 	updatePalette();
 
-	const QFont font = GBAApp::monospaceFont();
+	const QFont font = GBAApp::app()->monospaceFont();
 
 	m_ui.hexcode->setFont(font);
 	m_ui.value->setFont(font);

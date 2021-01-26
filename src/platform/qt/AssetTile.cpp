@@ -31,7 +31,7 @@ AssetTile::AssetTile(QWidget* parent)
 
 	connect(m_ui.preview, &Swatch::indexPressed, this, &AssetTile::selectColor);
 
-	const QFont font = GBAApp::monospaceFont();
+	const QFont font = GBAApp::app()->monospaceFont();
 
 	m_ui.tileId->setFont(font);
 	m_ui.paletteId->setFont(font);

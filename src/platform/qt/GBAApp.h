@@ -57,7 +57,7 @@ public:
 
 	static QString dataDir();
 
-	static QFont monospaceFont() { return s_monospace; }
+	QFont monospaceFont() { return m_monospace; }
 
 	QList<Window*> windows() { return m_windows; }
 	Window* newWindow();
@@ -114,7 +114,7 @@ private:
 	QThreadPool m_workerThreads;
 	qint64 m_nextJob = 1;
 
-	static QFont s_monospace;
+	QFont m_monospace;
 
 	NoIntroDB* m_db = nullptr;
 };

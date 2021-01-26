@@ -20,7 +20,7 @@ CheatsModel::CheatsModel(mCheatDevice* device, QObject* parent)
 	: QAbstractItemModel(parent)
 	, m_device(device)
 {
-	m_font = GBAApp::monospaceFont();
+	m_font = GBAApp::app()->monospaceFont();
 }
 
 QVariant CheatsModel::data(const QModelIndex& index, int role) const {

@@ -74,7 +74,7 @@ RegisterView::RegisterView(std::shared_ptr<CoreController> controller, QWidget* 
 
 void RegisterView::addRegisters(const QStringList& names) {
 	QFormLayout* form = static_cast<QFormLayout*>(layout());
-	const QFont font = GBAApp::monospaceFont();
+	const QFont font = GBAApp::app()->monospaceFont();
 	for (const auto& reg : names) {
 		QLabel* value = new QLabel;
 		value->setTextInteractionFlags(Qt::TextSelectableByMouse);

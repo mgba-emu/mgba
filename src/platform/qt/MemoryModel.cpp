@@ -28,7 +28,7 @@ using namespace QGBA;
 MemoryModel::MemoryModel(QWidget* parent)
 	: QAbstractScrollArea(parent)
 {
-	m_font = GBAApp::monospaceFont();
+	m_font = GBAApp::app()->monospaceFont();
 #ifdef Q_OS_MAC
 	m_font.setPointSize(12);
 #else

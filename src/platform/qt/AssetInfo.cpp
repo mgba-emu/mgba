@@ -20,7 +20,7 @@ void AssetInfo::addCustomProperty(const QString& id, const QString& visibleName)
 	QHBoxLayout* newLayout = new QHBoxLayout;
 	newLayout->addWidget(new QLabel(visibleName));
 	QLabel* value = new QLabel;
-	value->setFont(GBAApp::monospaceFont());
+	value->setFont(GBAApp::app()->monospaceFont());
 	value->setAlignment(Qt::AlignRight);
 	newLayout->addWidget(value);
 	m_customProperties[id] = value;

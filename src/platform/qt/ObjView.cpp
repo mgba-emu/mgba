@@ -33,7 +33,7 @@ ObjView::ObjView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	m_ui.setupUi(this);
 	m_ui.tile->setController(controller);
 
-	const QFont font = GBAApp::monospaceFont();
+	const QFont font = GBAApp::app()->monospaceFont();
 
 	m_ui.x->setFont(font);
 	m_ui.y->setFont(font);
