@@ -666,7 +666,7 @@ void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {
 				break;
 			case CHEAT_ASSIGN_INDIRECT:
 				value = operand;
-				address = _readMem(device->p, address + cheat->addressOffset, 4);
+				address = _readMem(device->p, address, 4) + cheat->addressOffset;
 				performAssignment = true;
 				break;
 			case CHEAT_AND:

@@ -58,6 +58,7 @@ Emulation fixes:
 Other fixes:
  - 3DS: Fix thread cleanup
  - All: Improve export headers (fixes mgba.io/i/1738)
+ - Cheats: Fix indirect write cheats (fixes mgba.io/i/2026)
  - CMake: Fix build with downstream minizip that exports incompatible symbols
  - CMake: Link with correct OpenGL library (fixes mgba.io/i/1872)
  - Core: Ensure ELF regions can be written before trying
