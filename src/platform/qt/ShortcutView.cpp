@@ -10,6 +10,7 @@
 #include "ShortcutController.h"
 #include "ShortcutModel.h"
 
+#include <QFontMetrics>
 #include <QKeyEvent>
 
 using namespace QGBA;
@@ -132,6 +133,15 @@ void ShortcutView::closeEvent(QCloseEvent*) {
 	if (m_input) {
 		m_input->releaseFocus(this);
 	}
+}
+
+void ShortcutView::showEvent(QShowEvent*) {
+	QString longString("Ctrl+Alt+Shift+Tab");
+	int width = QFontMetrics(QFont()).width(longString);
+	QHeaderView* header = m_ui.shortcutTable->header();
+	header->resizeSection(0, header->length() - width * 2);
+	header->resizeSection(1, width);
+	header->resizeSection(2, width);
 }
 
 bool ShortcutView::event(QEvent* event) {
