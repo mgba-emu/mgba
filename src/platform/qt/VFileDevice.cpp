@@ -91,6 +91,10 @@ VFileDevice::VFileDevice(const QString& filename, QIODevice::OpenMode mode, QObj
 	}
 }
 
+VFileDevice::~VFileDevice() {
+	close();
+}
+
 void VFileDevice::close() {
 	if (!m_vf) {
 		return;
@@ -115,6 +119,13 @@ VFileDevice& VFileDevice::operator=(VFile* vf) {
 	m_vf = vf;
 	setOpenMode(QIODevice::ReadWrite);
 	return *this;
+}
+
+VFile* VFileDevice::take() {
+	VFile* vf = m_vf;
+	m_vf = nullptr;
+	QIODevice::close();
+	return vf;
 }
 
 qint64 VFileDevice::readData(char* data, qint64 maxSize) {

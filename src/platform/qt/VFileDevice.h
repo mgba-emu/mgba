@@ -20,6 +20,7 @@ Q_OBJECT
 public:
 	VFileDevice(VFile* vf = nullptr, QObject* parent = nullptr);
 	VFileDevice(const QString&, QIODevice::OpenMode, QObject* parent = nullptr);
+	virtual ~VFileDevice();
 
 	virtual void close() override;
 	virtual bool seek(qint64 pos) override;
@@ -29,6 +30,7 @@ public:
 
 	VFileDevice& operator=(VFile*);
 	operator VFile*() { return m_vf; }
+	VFile* take();
 
 	static VFile* wrap(QIODevice*, QIODevice::OpenMode);
 	static VFile* wrap(QFileDevice*, QIODevice::OpenMode);
