@@ -19,6 +19,7 @@ Q_OBJECT
 
 public:
 	VFileDevice(VFile* vf = nullptr, QObject* parent = nullptr);
+	VFileDevice(const QByteArray& mem, QObject* parent = nullptr);
 	VFileDevice(const QString&, QIODevice::OpenMode, QObject* parent = nullptr);
 	virtual ~VFileDevice();
 

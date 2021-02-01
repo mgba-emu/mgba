@@ -91,6 +91,13 @@ VFileDevice::VFileDevice(const QString& filename, QIODevice::OpenMode mode, QObj
 	}
 }
 
+VFileDevice::VFileDevice(const QByteArray& mem, QObject* parent)
+	: QIODevice(parent)
+	, m_vf(VFileMemChunk(mem.constData(), mem.size()))
+{
+	setOpenMode(QIODevice::ReadWrite);
+}
+
 VFileDevice::~VFileDevice() {
 	close();
 }
