@@ -49,6 +49,7 @@
 #include "PrinterView.h"
 #include "ReportView.h"
 #include "ROMInfo.h"
+#include "SaveConverter.h"
 #include "SensorView.h"
 #include "ShaderSelector.h"
 #include "ShortcutController.h"
@@ -1209,6 +1210,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef M_CORE_GBA
 	m_actions.addSeparator("file");
+	m_actions.addAction(tr("Convert save game..."), "convertSave", openControllerTView<SaveConverter>(), "file");
+
 	Action* importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "file");
 	m_platformActions.insert(mPLATFORM_GBA, importShark);
 

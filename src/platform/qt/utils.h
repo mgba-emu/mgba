@@ -15,6 +15,13 @@
 
 namespace QGBA {
 
+enum class Endian {
+	NONE    = 0b00,
+	BIG     = 0b01,
+	LITTLE  = 0b10,
+	UNKNOWN = 0b11
+};
+
 QString niceSizeFormat(size_t filesize);
 QString nicePlatformFormat(mPlatform platform);
 

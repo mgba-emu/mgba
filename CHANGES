@@ -1,6 +1,7 @@
 0.9.0: (Future)
 Features:
  - e-Reader card scanning
+ - New tool for converting between different save game formats
  - WebP and APNG recording
  - Separate overrides for GBC games that can also run on SGB or regular GB
  - Game Boy Player features can be enabled by default for all compatible games

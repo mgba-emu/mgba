@@ -103,6 +103,7 @@ set(SOURCE_FILES
 	ReportView.cpp
 	ROMInfo.cpp
 	RotatedHeaderView.cpp
+	SaveConverter.cpp
 	SavestateButton.cpp
 	SensorView.cpp
 	SettingsView.cpp
@@ -142,6 +143,7 @@ set(UI_FILES
 	PrinterView.ui
 	ReportView.ui
 	ROMInfo.ui
+	SaveConverter.ui
 	SensorView.ui
 	SettingsView.ui
 	ShaderSelector.ui
