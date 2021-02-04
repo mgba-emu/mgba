@@ -641,7 +641,7 @@ QByteArray SaveConverter::AnnotatedSave::convertTo(const SaveConverter::Annotate
 			if (size == target.size + GB_SIZE_MBC6_FLASH) {
 				converted = backing->read(target.size);
 			} else if (target.size == GB_SIZE_MBC6_FLASH) {
-				backing->skip(size - GB_SIZE_MBC6_FLASH);
+				backing->seek(size - GB_SIZE_MBC6_FLASH);
 				converted = backing->read(GB_SIZE_MBC6_FLASH);
 			}
 			break;
