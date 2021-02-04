@@ -20,9 +20,9 @@
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="86"/>
-        <source>© 2013 – 2020 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
+        <source>© 2013 – {year} Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation>© 2013 - 2020 Jeffrey Pfau, 모질라 공식 라이센스 버전 2.0에 따라 사용 허가되었습니다.
+        <translation>© 2013 - {year} Jeffrey Pfau, 모질라 공식 라이센스 버전 2.0에 따라 사용 허가되었습니다.
 Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
     </message>
     <message>

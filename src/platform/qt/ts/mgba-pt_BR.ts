@@ -25,9 +25,9 @@
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="86"/>
-        <source>© 2013 – 2020 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
+        <source>© 2013 – {year} Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation>© 2013 – 2020 Jeffrey Pfau, licenciado sob a Licença Pública Mozilla, versão 2.0
+        <translation>© 2013 – {year} Jeffrey Pfau, licenciado sob a Licença Pública Mozilla, versão 2.0
 Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     </message>
     <message>
@@ -1133,6 +1133,14 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
         <location filename="../PrinterView.ui" line="180"/>
         <source>Magnification</source>
         <translation>Ampliação</translation>
+    </message>
+</context>
+<context>
+    <name>QGBA::AboutScreen</name>
+    <message>
+        <location filename="../AboutScreen.cpp" line="77"/>
+        <source>2021</source>
+        <translation type="unfinished">2021</translation>
     </message>
 </context>
 <context>
