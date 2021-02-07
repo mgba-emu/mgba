@@ -444,6 +444,7 @@ static void _GBASIOLockstepNodeProcessEvents(struct mTiming* timing, void* user,
 	struct GBASIOLockstepNode* node = user;
 	mLockstepLock(&node->p->d);
 	if (node->p->d.attached < 2) {
+		mTimingSchedule(timing, &node->event, GBASIOCyclesPerTransfer[GBASIOMultiplayerGetBaud(node->d.p->siocnt)][0]);
 		mLockstepUnlock(&node->p->d);
 		return;
 	}
