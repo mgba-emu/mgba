@@ -51,6 +51,7 @@ Emulation fixes:
  - GBA SIO: Fix Normal mode being totally broken (fixes mgba.io/i/1800)
  - GBA SIO: Fix deseralizing SIO registers
  - GBA SIO: Fix hanging on starting a second multiplayer window (fixes mgba.io/i/854)
+ - GBA Timers: Fix toggling timer cascading while timer is active (fixes mgba.io/i/2043)
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
  - GBA Video: Implement green swap (fixes mgba.io/i/1609)
