@@ -266,7 +266,7 @@ mPlatform SaveConverter::getStatePlatform(VFile* vf) {
 		core->deinit(core);
 		if (state) {
 			LOAD_32LE(magic, 0, state);
-			if (magic - GBA_SAVESTATE_MAGIC <= GBA_SAVESTATE_VERSION) {
+			if (magic - GBASavestateMagic <= GBASavestateVersion) {
 				platform = mPLATFORM_GBA;
 			}
 			mappedMemoryFree(state, core->stateSize(core));
@@ -281,7 +281,7 @@ mPlatform SaveConverter::getStatePlatform(VFile* vf) {
 		core->deinit(core);
 		if (state) {
 			LOAD_32LE(magic, 0, state);
-			if (magic - GB_SAVESTATE_MAGIC <= GB_SAVESTATE_VERSION) {
+			if (magic - GBSavestateMagic <= GBSavestateVersion) {
 				platform = mPLATFORM_GB;
 			}
 			mappedMemoryFree(state, core->stateSize(core));
