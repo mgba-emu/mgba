@@ -470,7 +470,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../LogView.ui" line="108"/>
         <source>Advanced settings</source>
-        <translation type="unfinished"></translation>
+        <translation>高级设置</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="128"/>
@@ -1140,7 +1140,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../AboutScreen.cpp" line="77"/>
         <source>2021</source>
-        <translation type="unfinished">2021</translation>
+        <translation>2021</translation>
     </message>
 </context>
 <context>
@@ -1497,7 +1497,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../IOViewer.cpp" line="65"/>
         <source>Swap green components</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">交换绿色组件</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="69"/>
@@ -1647,7 +1647,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../IOViewer.cpp" line="212"/>
         <location filename="../IOViewer.cpp" line="221"/>
         <source>Integer part (low)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">整数部分（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="178"/>
@@ -1655,7 +1655,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../IOViewer.cpp" line="216"/>
         <location filename="../IOViewer.cpp" line="225"/>
         <source>Integer part (high)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">整数部分（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="229"/>
@@ -2365,7 +2365,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../IOViewer.cpp" line="696"/>
         <location filename="../IOViewer.cpp" line="704"/>
         <source>Address (low)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">地址（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="565"/>
@@ -2377,53 +2377,53 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../IOViewer.cpp" line="700"/>
         <location filename="../IOViewer.cpp" line="708"/>
         <source>Address (high)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">地址（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1116"/>
         <location filename="../IOViewer.cpp" line="1139"/>
         <location filename="../IOViewer.cpp" line="1166"/>
         <source>Sound frequency (low)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">声音频率（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1120"/>
         <location filename="../IOViewer.cpp" line="1143"/>
         <location filename="../IOViewer.cpp" line="1170"/>
         <source>Sound frequency (high)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">声音频率（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1424"/>
         <source>Source (high)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">源（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1428"/>
         <source>Source (low)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">源（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1432"/>
         <source>Destination (high)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">目的地（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1436"/>
         <source>Destination (low)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">目的地（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1499"/>
         <location filename="../IOViewer.cpp" line="1511"/>
         <source>Green (low)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">绿色（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1500"/>
         <location filename="../IOViewer.cpp" line="1512"/>
         <source>Green (high)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">绿色（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="577"/>
@@ -2944,17 +2944,17 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../IOViewer.cpp" line="1047"/>
         <source>Internal clock</source>
-        <translation type="unfinished"></translation>
+        <translation>内部时钟</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1048"/>
         <source>32× clocking (CGB only)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">32×时钟（仅 CGB）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1049"/>
         <source>Transfer active</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">传输处于活动状态</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1067"/>
@@ -2964,41 +2964,41 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../IOViewer.cpp" line="1069"/>
         <source>1/16</source>
-        <translation type="unfinished">4K {1/16?}</translation>
+        <translation>1/16</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1092"/>
         <location filename="../IOViewer.cpp" line="1553"/>
         <source>LCD STAT</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">LCD 统计</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1093"/>
         <location filename="../IOViewer.cpp" line="1554"/>
         <source>Timer</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">定时器</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1094"/>
         <location filename="../IOViewer.cpp" line="1555"/>
         <source>Serial</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">串口</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1095"/>
         <location filename="../IOViewer.cpp" line="1556"/>
         <source>Joypad</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">游戏手柄</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1202"/>
         <source>Volume right</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">右音量</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1203"/>
         <source>Output right</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">输出右侧</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1204"/>
@@ -3013,12 +3013,12 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../IOViewer.cpp" line="1326"/>
         <source>Background enable/priority</source>
-        <translation type="unfinished"></translation>
+        <translation>后台启用/优先级</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1327"/>
         <source>Enable sprites</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">启用精灵图</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1328"/>
@@ -3028,7 +3028,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
     <message>
         <location filename="../IOViewer.cpp" line="1329"/>
         <source>Background tile map</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">背景瓦片地图</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1330"/>
