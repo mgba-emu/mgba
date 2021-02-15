@@ -108,8 +108,9 @@ public:
 	void clearMultiplayerController();
 	MultiplayerController* multiplayerController() { return m_multiplayer; }
 
-	bool connectDolphin(uint32_t ipv4);
-	void detachDolphin();
+#ifdef M_CORE_GBA
+	bool isDolphinConnected() const { return !SOCKET_FAILED(m_dolphin.data); }
+#endif
 
 	mCacheSet* graphicCaches();
 	int stateSlot() const { return m_stateSlot; }
@@ -180,6 +181,9 @@ public slots:
 	void detachBattleChipGate();
 	void setBattleChipId(uint16_t id);
 	void setBattleChipFlavor(int flavor);
+
+	bool attachDolphin(const Address& address);
+	void detachDolphin();
 #endif
 
 	void setAVStream(mAVStream*);

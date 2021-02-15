@@ -72,6 +72,7 @@ signals:
 public slots:
 	void setController(CoreController* controller, const QString& fname);
 	void selectROM();
+	void bootBIOS();
 #ifdef USE_SQLITE3
 	void selectROMInArchive();
 	void addDirToLibrary();

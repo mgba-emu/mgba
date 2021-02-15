@@ -29,6 +29,7 @@
 #include "DebuggerConsole.h"
 #include "DebuggerConsoleController.h"
 #include "Display.h"
+#include "DolphinConnector.h"
 #include "CoreController.h"
 #include "FrameView.h"
 #include "GBAApp.h"
@@ -325,6 +326,10 @@ void Window::selectROM() {
 	if (!filename.isEmpty()) {
 		setController(m_manager->loadGame(filename), filename);
 	}
+}
+
+void Window::bootBIOS() {
+	setController(m_manager->loadBIOS(mPLATFORM_GBA, m_config->getOption("gba.bios")), QString());
 }
 
 #ifdef USE_SQLITE3
@@ -1097,9 +1102,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Load &patch..."), "loadPatch", this, &Window::selectPatch, "file");
 
 #ifdef M_CORE_GBA
-	m_actions.addAction(tr("Boot BIOS"), "bootBIOS", [this]() {
-		setController(m_manager->loadBIOS(mPLATFORM_GBA, m_config->getOption("gba.bios")), QString());
-	}, "file");
+	m_actions.addAction(tr("Boot BIOS"), "bootBIOS", this, &Window::bootBIOS, "file");
 #endif
 
 	addGameAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "file");
@@ -1192,16 +1195,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 		GBAApp::app()->newWindow();
 	}, "file");
 
-	Action* dolphin = m_actions.addAction(tr("Connect to Dolphin"), "connectDolphin", [this]() {
-		CoreController::Interrupter interrupter;
-		if (m_controller) {
-			interrupter.interrupt(m_controller);
-		} else {
-			setController(m_manager->loadBIOS(mPLATFORM_GBA, m_config->getOption("gba.bios")), QString());
-		}
-		m_controller->connectDolphin(0x0100007F);
-	}, "file");
+#ifdef M_CORE_GBA
+	Action* dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", openTView<DolphinConnector>(this), "file");
 	m_platformActions.insert(mPLATFORM_GBA, dolphin);
+#endif
 
 #ifndef Q_OS_MAC
 	m_actions.addSeparator("file");

@@ -117,7 +117,9 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		}
 
 		controller->clearMultiplayerController();
+#ifdef M_CORE_GBA
 		controller->detachDolphin();
+#endif
 		QMetaObject::invokeMethod(controller, "stopping");
 	};
 
@@ -362,14 +364,12 @@ mCacheSet* CoreController::graphicCaches() {
 	return m_cacheSet.get();
 }
 
-bool CoreController::connectDolphin(uint32_t ipv4) {
+#ifdef M_CORE_GBA
+bool CoreController::attachDolphin(const Address& address) {
 	if (platform() != mPLATFORM_GBA) {
 		return false;
 	}
-	Address ipaddr;
-	ipaddr.version = IPV4;
-	ipaddr.ipv4 = htonl(ipv4);
-	if (GBASIODolphinConnect(&m_dolphin, &ipaddr, 0, 0)) {
+	if (GBASIODolphinConnect(&m_dolphin, &address, 0, 0)) {
 		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
 		GBASIOSetDriver(&gba->sio, &m_dolphin.d, SIO_JOYBUS);
 		return true;
@@ -384,6 +384,7 @@ void CoreController::detachDolphin() {
 	}
 	GBASIODolphinDestroy(&m_dolphin);
 }
+#endif
 
 void CoreController::setOverride(std::unique_ptr<Override> override) {
 	Interrupter interrupter(this);
