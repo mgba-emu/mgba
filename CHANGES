@@ -24,6 +24,7 @@ Emulation fixes:
  - ARM: Fix STR storing PC after address calculation
  - ARM: Fix Addressing mode 1 shifter on rs == pc (fixes mgba.io/i/1926)
  - ARM: Fix long multiply-and-accumulate register write order (fixes mgba.io/1/1956)
+ - ARM: Fix long and accumulate multiply timing
  - GB: Partially fix timing for skipped BIOS
  - GB: Downgrade DMG-only ROMs from CGB mode even without boot ROM
  - GB Audio: Fix serializing sweep time
