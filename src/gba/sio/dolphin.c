@@ -17,15 +17,6 @@ const uint16_t DOLPHIN_CLOCK_PORT = 49420;
 const uint16_t DOLPHIN_DATA_PORT = 54970;
 
 enum {
-	CMD_RESET = 0xFF,
-	CMD_POLL = 0x00,
-	CMD_TRANS = 0x14,
-	CMD_RECV = 0x15,
-
-	CMD_NONE = 0x80
-};
-
-enum {
 	WAIT_FOR_FIRST_CLOCK = 0,
 	WAIT_FOR_CLOCK,
 	WAIT_FOR_COMMAND,
@@ -147,40 +138,30 @@ int32_t _processCommand(struct GBASIODolphin* dol, uint32_t cyclesLate) {
 	// This does not include the stop bits due to compatibility reasons
 	int bitsOnLine = 8;
 	uint8_t buffer[6];
-	int gotten = SocketRecv(dol->data, &buffer, 5);
+	int gotten = SocketRecv(dol->data, buffer, 1);
 	if (gotten < 1) {
 		return 0;
 	}
 
 	switch (buffer[0]) {
-	case CMD_RESET:
-	case CMD_POLL:
+	case JOY_RESET:
+	case JOY_POLL:
 		bitsOnLine += 24;
 		break;
-	case CMD_RECV:
-		mLOG(GBA_SIO, DEBUG, "JOY <: %02X%02X%02X%02X", buffer[1], buffer[2], buffer[3], buffer[4]);
+	case JOY_RECV:
+		gotten = SocketRecv(dol->data, &buffer[1], 4);
+		if (gotten < 4) {
+			return 0;
+		}
+		mLOG(GBA_SIO, DEBUG, "DOL recv: %02X%02X%02X%02X", buffer[1], buffer[2], buffer[3], buffer[4]);
 		// Fall through
-	case CMD_TRANS:
+	case JOY_TRANS:
 		bitsOnLine += 40;
 		break;
 	}
 
 	int sent = GBASIOJOYSendCommand(&dol->d, buffer[0], &buffer[1]);
 	SocketSend(dol->data, &buffer[1], sent);
-	switch (buffer[0]) {
-	case CMD_TRANS:
-		mLOG(GBA_SIO, DEBUG, "JOY >: %02X%02X%02X%02X:%02X", buffer[1], buffer[2], buffer[3], buffer[4], buffer[5]);
-		break;
-	case CMD_RECV:
-		mLOG(GBA_SIO, DEBUG, "JOY <: %02X", buffer[1]);
-		break;
-	case CMD_RESET:
-		mLOG(GBA_SIO, DEBUG, "JOY !: %02X", buffer[3]);
-		break;
-	case CMD_POLL:
-		mLOG(GBA_SIO, DEBUG, "JOY ?: %02X", buffer[3]);
-		break;
-	}
 
 	return bitsOnLine * CYCLES_PER_BIT - cyclesLate;
 }

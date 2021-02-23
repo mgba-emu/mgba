@@ -182,5 +182,19 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 	if (sio->activeDriver && sio->activeDriver->writeRegister) {
 		return sio->activeDriver->writeRegister(sio->activeDriver, address, value);
 	}
+	// Dummy drivers
+	switch (sio->mode) {
+	case SIO_JOYBUS:
+		switch (address) {
+		case REG_JOYCNT:
+			return (value & 0x0040) | (sio->p->memory.io[REG_JOYCNT >> 1] & ~(value & 0x7) & ~0x0040);
+		case REG_JOYSTAT:
+			return (value & 0x0030) | (sio->p->memory.io[REG_JOYSTAT >> 1] & ~0x30);
+		}
+		break;
+	default:
+		// TODO
+		break;
+	}
 	return value;
 }
