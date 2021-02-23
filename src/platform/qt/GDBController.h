@@ -27,7 +27,7 @@ public:
 
 public slots:
 	void setPort(ushort port);
-	void setBindAddress(uint32_t bindAddress);
+	void setBindAddress(const Address&);
 	void listen();
 
 signals:

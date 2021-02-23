@@ -6,7 +6,9 @@
 #pragma once
 
 #include <mgba/core/core.h>
+#include <mgba-util/socket.h>
 
+#include <QHostAddress>
 #include <QRect>
 #include <QSize>
 #include <QString>
@@ -24,6 +26,8 @@ enum class Endian {
 
 QString niceSizeFormat(size_t filesize);
 QString nicePlatformFormat(mPlatform platform);
+
+bool convertAddress(const QHostAddress* input, Address* output);
 
 inline void lockAspectRatio(const QSize& ref, QSize& size) {
 	if (size.width() * ref.height() > size.height() * ref.width()) {
