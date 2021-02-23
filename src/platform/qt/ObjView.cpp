@@ -271,7 +271,7 @@ void ObjView::updateObjList(int maxObj) {
 		QListWidgetItem* item = m_objs[i];
 		ObjInfo info;
 		lookupObj(i, &info);
-		item->setIcon(QPixmap::fromImage(std::move(compositeObj(info))));
+		item->setIcon(QPixmap::fromImage(compositeObj(info)));
 	}
 }
 

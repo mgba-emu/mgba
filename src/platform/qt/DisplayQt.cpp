@@ -25,8 +25,8 @@ void DisplayQt::startDrawing(std::shared_ptr<CoreController> controller) {
 	QSize size = controller->screenDimensions();
 	m_width = size.width();
 	m_height = size.height();
-	m_backing = std::move(QImage());
-	m_oldBacking = std::move(QImage());
+	m_backing = QImage();
+	m_oldBacking = QImage();
 	m_isDrawing = true;
 	m_context = controller;
 	emit drawingStarted();
