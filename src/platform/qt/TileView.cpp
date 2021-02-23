@@ -200,7 +200,6 @@ void TileView::exportTile() {
 void TileView::copyTiles() {
 	CoreController::Interrupter interrupter(m_controller);
 	updateTiles(false);
-	QPixmap pixmap();
 	GBAApp::app()->clipboard()->setPixmap(m_ui.tiles->backing());
 }
 
