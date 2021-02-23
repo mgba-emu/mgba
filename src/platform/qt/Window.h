@@ -34,6 +34,7 @@ class CoreController;
 class CoreManager;
 class DebuggerConsoleController;
 class Display;
+class DolphinConnector;
 class FrameView;
 class GDBController;
 class GIFView;
@@ -164,6 +165,7 @@ private:
 
 	template <typename T, typename... A> std::function<void()> openTView(A... arg);
 	template <typename T, typename... A> std::function<void()> openControllerTView(A... arg);
+	template <typename T, typename... A> std::function<void()> openNamedTView(std::unique_ptr<T>*, A... arg);
 	template <typename T, typename... A> std::function<void()> openNamedControllerTView(std::unique_ptr<T>*, A... arg);
 
 	Action* addGameAction(const QString& visibleName, const QString& name, Action::Function action, const QString& menu = {}, const QKeySequence& = {});
@@ -225,6 +227,7 @@ private:
 
 	std::unique_ptr<OverrideView> m_overrideView;
 	std::unique_ptr<SensorView> m_sensorView;
+	std::unique_ptr<DolphinConnector> m_dolphinView;
 	FrameView* m_frameView = nullptr;
 
 #ifdef USE_FFMPEG

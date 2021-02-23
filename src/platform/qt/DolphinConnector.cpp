@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "DolphinConnector.h"
 
+#include <QMessageBox>
+
 #include "CoreController.h"
 #include "Window.h"
 #include "utils.h"
@@ -43,15 +45,26 @@ void DolphinConnector::attach() {
 	}
 
 	convertAddress(&qaddress, &address);
-	CoreController::Interrupter interrupter(m_window->controller());
-	m_window->controller()->attachDolphin(address);
+	m_controller = m_window->controller();
+	CoreController::Interrupter interrupter(m_controller);
+	m_controller->attachDolphin(address);
+	connect(m_controller.get(), &CoreController::stopping, this, &DolphinConnector::detach);
+
+	if (!m_controller->isDolphinConnected()) {
+		QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Couldn't Connect"),
+		                                    tr("Could not connect to Dolphin."),
+		                                    QMessageBox::Ok);
+		fail->setAttribute(Qt::WA_DeleteOnClose);
+		fail->show();
+	}
 
 	updateAttached();
 }
 
 void DolphinConnector::detach() {
-	if (m_window->controller()) {
-		m_window->controller()->detachDolphin();
+	if (m_controller) {
+		m_controller->detachDolphin();
+		m_controller.reset();
 	}
 	updateAttached();
 }

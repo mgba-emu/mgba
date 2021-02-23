@@ -7,8 +7,11 @@
 
 #include "ui_DolphinConnector.h"
 
+#include <memory>
+
 namespace QGBA {
 
+class CoreController;
 class Window;
 
 class DolphinConnector : public QDialog {
@@ -27,6 +30,7 @@ private slots:
 private:
 	Ui::DolphinConnector m_ui;
 
+	std::shared_ptr<CoreController> m_controller;
 	Window* m_window;
 };
 

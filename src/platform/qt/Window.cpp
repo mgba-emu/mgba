@@ -500,6 +500,18 @@ std::function<void()> Window::openControllerTView(A... arg) {
 }
 
 template <typename T, typename... A>
+std::function<void()> Window::openNamedTView(std::unique_ptr<T>* name, A... arg) {
+	return [=]() {
+		if (!*name) {
+			*name = std::make_unique<T>(arg...);
+			connect(this, &Window::shutdown, name->get(), &QWidget::close);
+		}
+		(*name)->show();
+		(*name)->setFocus(Qt::PopupFocusReason);
+	};
+}
+
+template <typename T, typename... A>
 std::function<void()> Window::openNamedControllerTView(std::unique_ptr<T>* name, A... arg) {
 	return [=]() {
 		if (!*name) {
@@ -1196,7 +1208,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, "file");
 
 #ifdef M_CORE_GBA
-	Action* dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", openTView<DolphinConnector>(this), "file");
+	Action* dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", openNamedTView<DolphinConnector>(&m_dolphinView, this), "file");
 	m_platformActions.insert(mPLATFORM_GBA, dolphin);
 #endif
 
