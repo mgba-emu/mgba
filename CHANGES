@@ -75,6 +75,7 @@ Other fixes:
  - Debugger: Fix change watchpoints (fixes mgba.io/i/1947)
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
+ - GB: Fix crash when changing ROM while in banked address space
  - GB Video: Fix SGB video logs
  - GBA: Fix loading multiboot ELF files (fixes mgba.io/i/1949)
  - mGUI: Don't attempt to preload files larger than can fit in RAM
