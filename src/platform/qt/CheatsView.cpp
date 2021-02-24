@@ -165,6 +165,8 @@ void CheatsView::enterCheat(int codeType) {
 		mCheatAddLine(set, string.toUtf8().constData(), codeType);
 		m_model.endAppendRow();
 	}
-	set->refresh(set, m_controller->cheatDevice());
+	if (set->refresh) {
+		set->refresh(set, m_controller->cheatDevice());
+	}
 	m_ui.codeEntry->clear();
 }
