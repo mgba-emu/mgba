@@ -25,7 +25,7 @@ static void _pristineCow(struct GBA* gba);
 static void _agbPrintStore(struct GBA* gba, uint32_t address, int16_t value);
 static int16_t  _agbPrintLoad(struct GBA* gba, uint32_t address);
 static uint8_t _deadbeef[4] = { 0x10, 0xB7, 0x10, 0xE7 }; // Illegal instruction on both ARM and Thumb
-static uint8_t _agbPrintFunc[4] = { 0xFA, 0xDF /* swi 0xFF */, 0x70, 0x47 /* bx lr */ };
+static const uint32_t _agbPrintFunc = 0x4770DFFA; // swi 0xFA; bx lr
 
 static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait);
@@ -84,9 +84,10 @@ void GBAMemoryInit(struct GBA* gba) {
 	gba->memory.biosPrefetch = 0;
 	gba->memory.mirroring = false;
 
-	gba->memory.agbPrint = 0;
+	gba->memory.agbPrintProtect = 0;
 	memset(&gba->memory.agbPrintCtx, 0, sizeof(gba->memory.agbPrintCtx));
 	gba->memory.agbPrintBuffer = NULL;
+	gba->memory.agbPrintBufferBackup = NULL;
 
 	gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM + SIZE_WORKING_IRAM);
 	gba->memory.iwram = &gba->memory.wram[SIZE_WORKING_RAM >> 2];
@@ -103,6 +104,9 @@ void GBAMemoryDeinit(struct GBA* gba) {
 	if (gba->memory.agbPrintBuffer) {
 		mappedMemoryFree(gba->memory.agbPrintBuffer, SIZE_AGB_PRINT);
 	}
+	if (gba->memory.agbPrintBufferBackup) {
+		mappedMemoryFree(gba->memory.agbPrintBufferBackup, SIZE_AGB_PRINT);
+	}
 }
 
 void GBAMemoryReset(struct GBA* gba) {
@@ -117,10 +121,16 @@ void GBAMemoryReset(struct GBA* gba) {
 	memset(gba->memory.io, 0, sizeof(gba->memory.io));
 	GBAAdjustWaitstates(gba, 0);
 
-	gba->memory.agbPrint = 0;
+	gba->memory.agbPrintProtect = 0;
+	gba->memory.agbPrintBase = 0;
 	memset(&gba->memory.agbPrintCtx, 0, sizeof(gba->memory.agbPrintCtx));
 	if (gba->memory.agbPrintBuffer) {
+		mappedMemoryFree(gba->memory.agbPrintBuffer, SIZE_AGB_PRINT);
 		gba->memory.agbPrintBuffer = NULL;
+	}
+	if (gba->memory.agbPrintBufferBackup) {
+		mappedMemoryFree(gba->memory.agbPrintBufferBackup, SIZE_AGB_PRINT);
+		gba->memory.agbPrintBufferBackup = NULL;
 	}
 
 	gba->memory.prefetch = false;
@@ -303,8 +313,8 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			break;
 		}
-		if ((address & (SIZE_CART0 - 1)) == AGB_PRINT_FLUSH_ADDR && memory->agbPrint == 0x20) {
-			cpu->memory.activeRegion = (uint32_t*) _agbPrintFunc;
+		if ((address & (SIZE_CART0 - 1)) == AGB_PRINT_FLUSH_ADDR && memory->agbPrintProtect == 0x20) {
+			cpu->memory.activeRegion = &_agbPrintFunc;
 			cpu->memory.activeMask = sizeof(_agbPrintFunc) - 1;
 			break;
 		}
@@ -560,8 +570,8 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		} else if ((address & (SIZE_CART0 - 1)) >= AGB_PRINT_BASE) {
 			uint32_t agbPrintAddr = address & 0x00FFFFFF;
 			if (agbPrintAddr == AGB_PRINT_PROTECT) {
-				value = memory->agbPrint;
-			} else if (agbPrintAddr < AGB_PRINT_TOP || (agbPrintAddr & 0x00FFFFF8) == (AGB_PRINT_STRUCT & 0x00FFFFF8)) {
+				value = memory->agbPrintProtect;
+			} else if (agbPrintAddr < AGB_PRINT_TOP || (agbPrintAddr & 0x00FFFFF8) == AGB_PRINT_STRUCT) {
 				value = _agbPrintLoad(gba, address);
 			} else {
 				mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load16: 0x%08X", address);
@@ -915,11 +925,34 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		if ((address & 0x00FFFFFF) >= AGB_PRINT_BASE) {
 			uint32_t agbPrintAddr = address & 0x00FFFFFF;
 			if (agbPrintAddr == AGB_PRINT_PROTECT) {
-				memory->agbPrint = value;
-				_agbPrintStore(gba, address, value);
+				bool wasProtected = memory->agbPrintProtect != 0x20;
+				memory->agbPrintProtect = value;
+
+				if (!memory->agbPrintBuffer) {
+					memory->agbPrintBuffer = anonymousMemoryMap(SIZE_AGB_PRINT);
+					if (memory->romSize >= SIZE_CART0 / 2) {
+						int base = 0;
+						if (memory->romSize == SIZE_CART0) {
+							base = address & 0x01000000;
+						}
+						memory->agbPrintBase = base;
+						memory->agbPrintBufferBackup = anonymousMemoryMap(SIZE_AGB_PRINT);
+						memcpy(memory->agbPrintBufferBackup, &memory->rom[(AGB_PRINT_TOP | base) >> 2], SIZE_AGB_PRINT);
+						LOAD_16(memory->agbPrintProtectBackup, AGB_PRINT_PROTECT | base, memory->rom);
+						LOAD_16(memory->agbPrintCtxBackup.request, AGB_PRINT_STRUCT | base, memory->rom);
+						LOAD_16(memory->agbPrintCtxBackup.bank, (AGB_PRINT_STRUCT | base) + 2, memory->rom);
+						LOAD_16(memory->agbPrintCtxBackup.get, (AGB_PRINT_STRUCT | base) + 4, memory->rom);
+						LOAD_16(memory->agbPrintCtxBackup.put, (AGB_PRINT_STRUCT | base) + 6, memory->rom);
+						LOAD_32(memory->agbPrintFuncBackup, AGB_PRINT_FLUSH_ADDR | base, memory->rom);
+					}
+				}
+
+				if (value == 0x20) {
+					_agbPrintStore(gba, address, value);
+				}
 				break;
 			}
-			if (memory->agbPrint == 0x20 && (agbPrintAddr < AGB_PRINT_TOP || (agbPrintAddr & 0x00FFFFF8) == (AGB_PRINT_STRUCT & 0x00FFFFF8))) {
+			if (memory->agbPrintProtect == 0x20 && (agbPrintAddr < AGB_PRINT_TOP || (agbPrintAddr & 0x00FFFFF8) == AGB_PRINT_STRUCT)) {
 				_agbPrintStore(gba, address, value);
 				break;
 			}
@@ -1629,6 +1662,28 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 
 	cpu->memory.activeNonseqCycles32 = memory->waitstatesNonseq32[memory->activeRegion];
 	cpu->memory.activeNonseqCycles16 = memory->waitstatesNonseq16[memory->activeRegion];
+
+	if (memory->agbPrintBufferBackup) {
+		int phi = (parameters >> 11) & 3;
+		uint32_t base = memory->agbPrintBase;
+		if (phi == 3) {
+			memcpy(&memory->rom[(AGB_PRINT_TOP | base) >> 2], memory->agbPrintBuffer, SIZE_AGB_PRINT);
+			STORE_16(memory->agbPrintProtect, AGB_PRINT_PROTECT | base, memory->rom);
+			STORE_16(memory->agbPrintCtx.request, AGB_PRINT_STRUCT | base, memory->rom);
+			STORE_16(memory->agbPrintCtx.bank, (AGB_PRINT_STRUCT | base) + 2, memory->rom);
+			STORE_16(memory->agbPrintCtx.get, (AGB_PRINT_STRUCT | base) + 4, memory->rom);
+			STORE_16(memory->agbPrintCtx.put, (AGB_PRINT_STRUCT | base) + 6, memory->rom);
+			STORE_32(_agbPrintFunc, AGB_PRINT_FLUSH_ADDR | base, memory->rom);
+		} else {
+			memcpy(&memory->rom[(AGB_PRINT_TOP | base) >> 2], memory->agbPrintBufferBackup, SIZE_AGB_PRINT);
+			STORE_16(memory->agbPrintProtectBackup, AGB_PRINT_PROTECT | base, memory->rom);
+			STORE_16(memory->agbPrintCtxBackup.request, AGB_PRINT_STRUCT | base, memory->rom);
+			STORE_16(memory->agbPrintCtxBackup.bank, (AGB_PRINT_STRUCT | base) + 2, memory->rom);
+			STORE_16(memory->agbPrintCtxBackup.get, (AGB_PRINT_STRUCT | base) + 4, memory->rom);
+			STORE_16(memory->agbPrintCtxBackup.put, (AGB_PRINT_STRUCT | base) + 6, memory->rom);
+			STORE_32(memory->agbPrintFuncBackup, AGB_PRINT_FLUSH_ADDR | base, memory->rom);
+		}
+	}
 }
 
 int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
@@ -1750,7 +1805,7 @@ void GBAPrintFlush(struct GBA* gba) {
 		oolBuf[i + 1] = 0;
 		++gba->memory.agbPrintCtx.get;
 	}
-	_agbPrintStore(gba, AGB_PRINT_STRUCT + 4, gba->memory.agbPrintCtx.get);
+	_agbPrintStore(gba, (AGB_PRINT_STRUCT + 4) | gba->memory.agbPrintBase, gba->memory.agbPrintCtx.get);
 
 	mLOG(GBA_DEBUG, INFO, "%s", oolBuf);
 }
@@ -1758,16 +1813,12 @@ void GBAPrintFlush(struct GBA* gba) {
 static void _agbPrintStore(struct GBA* gba, uint32_t address, int16_t value) {
 	struct GBAMemory* memory = &gba->memory;
 	if ((address & 0x00FFFFFF) < AGB_PRINT_TOP) {
-		if (!memory->agbPrintBuffer) {
-			memory->agbPrintBuffer = anonymousMemoryMap(SIZE_AGB_PRINT);
-		}
 		STORE_16(value, address & (SIZE_AGB_PRINT - 2), memory->agbPrintBuffer);
-	} else if ((address & 0x00FFFFF8) == (AGB_PRINT_STRUCT & 0x00FFFFF8)) {
+	} else if ((address & 0x00FFFFF8) == AGB_PRINT_STRUCT) {
 		(&memory->agbPrintCtx.request)[(address & 7) >> 1] = value;
 	}
 	if (memory->romSize == SIZE_CART0) {
 		_pristineCow(gba);
-		memcpy(&memory->rom[AGB_PRINT_FLUSH_ADDR >> 2], _agbPrintFunc, sizeof(_agbPrintFunc));
 		STORE_16(value, address & (SIZE_CART0 - 2), memory->rom);
 	} else if (memory->agbPrintCtx.bank == 0xFD && memory->romSize >= SIZE_CART0 / 2) {
 		_pristineCow(gba);
@@ -1780,7 +1831,7 @@ static int16_t _agbPrintLoad(struct GBA* gba, uint32_t address) {
 	int16_t value = address >> 1;
 	if (address < AGB_PRINT_TOP && memory->agbPrintBuffer) {
 		LOAD_16(value, address & (SIZE_AGB_PRINT - 1), memory->agbPrintBuffer);
-	} else if ((address & 0x00FFFFF8) == (AGB_PRINT_STRUCT & 0x00FFFFF8)) {
+	} else if ((address & 0x00FFFFF8) == AGB_PRINT_STRUCT) {
 		value = (&memory->agbPrintCtx.request)[(address & 7) >> 1];
 	}
 	return value;
