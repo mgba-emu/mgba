@@ -116,10 +116,10 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	gb->memory.romBase = gb->memory.rom;
 	gb->memory.romSize = gb->pristineRomSize;
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
-	GBMBCInit(gb);
+	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
+	GBMBCReset(gb);
 
 	if (gb->cpu) {
-		GBMBCSwitchBank(gb, 0);
 		struct SM83Core* cpu = gb->cpu;
 		cpu->memory.setActiveRegion(cpu, cpu->pc);
 	}
@@ -133,7 +133,7 @@ void GBYankROM(struct GB* gb) {
 	gb->yankedMbc = gb->memory.mbcType;
 	gb->memory.romSize = 0;
 	gb->memory.mbcType = GB_MBC_NONE;
-	gb->memory.sramAccess = false;
+	GBMBCReset(gb);
 
 	if (gb->cpu) {
 		struct SM83Core* cpu = gb->cpu;
