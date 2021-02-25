@@ -1334,42 +1334,42 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
 <context>
     <name>QGBA::GDBWindow</name>
     <message>
-        <location filename="../GDBWindow.cpp" line="28"/>
+        <location filename="../GDBWindow.cpp" line="29"/>
         <source>Server settings</source>
         <translation>서버 설정</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="34"/>
+        <location filename="../GDBWindow.cpp" line="35"/>
         <source>Local port</source>
         <translation>로컬 포트</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="36"/>
+        <location filename="../GDBWindow.cpp" line="37"/>
         <source>Bind address</source>
         <translation>주소 바인딩</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="55"/>
+        <location filename="../GDBWindow.cpp" line="56"/>
         <source>Break</source>
         <translation>중단</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="104"/>
+        <location filename="../GDBWindow.cpp" line="95"/>
         <source>Stop</source>
         <translation>정지</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="114"/>
+        <location filename="../GDBWindow.cpp" line="105"/>
         <source>Start</source>
         <translation>시작</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="122"/>
+        <location filename="../GDBWindow.cpp" line="113"/>
         <source>Crash</source>
         <translation>오류</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="122"/>
+        <location filename="../GDBWindow.cpp" line="113"/>
         <source>Could not start GDB server</source>
         <translation>GDB 서버를 시작할 수 없습니다.</translation>
     </message>
@@ -3953,96 +3953,96 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
 <context>
     <name>QGBA::Window</name>
     <message>
-        <location filename="../Window.cpp" line="288"/>
+        <location filename="../Window.cpp" line="283"/>
         <source>Game Boy Advance ROMs (%1)</source>
         <translation>게임 보이 어드밴스 롬 (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="305"/>
+        <location filename="../Window.cpp" line="300"/>
         <source>Game Boy ROMs (%1)</source>
         <translation>게임 보이 (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="309"/>
+        <location filename="../Window.cpp" line="304"/>
         <source>All ROMs (%1)</source>
         <translation>모든 롬 (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="310"/>
+        <location filename="../Window.cpp" line="305"/>
         <source>%1 Video Logs (*.mvl)</source>
         <translation>%1 비디오 로그 (*.mvl)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="325"/>
+        <location filename="../Window.cpp" line="320"/>
         <source>Archives (%1)</source>
         <translation>아카이브 (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="330"/>
-        <location filename="../Window.cpp" line="338"/>
-        <location filename="../Window.cpp" line="365"/>
+        <location filename="../Window.cpp" line="325"/>
+        <location filename="../Window.cpp" line="333"/>
+        <location filename="../Window.cpp" line="360"/>
         <source>Select ROM</source>
         <translation>롬 선택</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="442"/>
-        <location filename="../Window.cpp" line="449"/>
+        <location filename="../Window.cpp" line="437"/>
+        <location filename="../Window.cpp" line="444"/>
         <source>Select save</source>
         <translation>저장 파일 선택</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="411"/>
+        <location filename="../Window.cpp" line="406"/>
         <source>Select patch</source>
         <translation>패치 선택</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="411"/>
+        <location filename="../Window.cpp" line="406"/>
         <source>Patches (*.ips *.ups *.bps)</source>
         <translation>패치 (*.ips *.ups *.bps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="422"/>
+        <location filename="../Window.cpp" line="417"/>
         <source>Select e-Reader dotcode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="422"/>
+        <location filename="../Window.cpp" line="417"/>
         <source>e-Reader card (*.raw *.bin *.bmp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="435"/>
+        <location filename="../Window.cpp" line="430"/>
         <source>Select image</source>
         <translation>이미지 선택</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="435"/>
+        <location filename="../Window.cpp" line="430"/>
         <source>Image file (*.png *.gif *.jpg *.jpeg);;All files (*)</source>
         <translation>이미지 파일 (*.png *.gif *.jpg *.jpeg);;모든 파일 (*)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="442"/>
-        <location filename="../Window.cpp" line="449"/>
+        <location filename="../Window.cpp" line="437"/>
+        <location filename="../Window.cpp" line="444"/>
         <source>GameShark saves (*.sps *.xps)</source>
         <translation>게임샤크 저장 파일 (*.sps *.xps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="481"/>
+        <location filename="../Window.cpp" line="476"/>
         <source>Select video log</source>
         <translation>비디오 로그 선택</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="481"/>
+        <location filename="../Window.cpp" line="476"/>
         <source>Video logs (*.mvl)</source>
         <translation>비디오 로그 (*.mvl)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="858"/>
+        <location filename="../Window.cpp" line="843"/>
         <source>Crash</source>
         <translation>치명적인 오류</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="859"/>
+        <location filename="../Window.cpp" line="844"/>
         <source>The game has crashed with the following error:
 
 %1</source>
@@ -4051,629 +4051,629 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
 %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="881"/>
+        <location filename="../Window.cpp" line="866"/>
         <source>Unimplemented BIOS call</source>
         <translation>구현되지 않은 바이오스 호출</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="882"/>
+        <location filename="../Window.cpp" line="867"/>
         <source>This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience.</source>
         <translation>이 게임은 구현되지 않은 바이오스 호출을 사용합니다. 최상의 성능을 얻으려면 공식 바이오스를 사용하십시오.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="895"/>
+        <location filename="../Window.cpp" line="880"/>
         <source>Failed to create an appropriate display device, falling back to software display. Games may run slowly, especially with larger windows.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="987"/>
+        <location filename="../Window.cpp" line="972"/>
         <source>Really make portable?</source>
         <translation>정말로 휴대용을 만듭니까?</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="988"/>
+        <location filename="../Window.cpp" line="973"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
         <translation>이렇게하면 에뮬레이터가 실행 파일과 동일한 디렉토리에서 구성을 로드하게됩니다. 계속 하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1000"/>
+        <location filename="../Window.cpp" line="985"/>
         <source>Restart needed</source>
         <translation>재시작 필요</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1001"/>
+        <location filename="../Window.cpp" line="986"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
         <translation>일부 변경 사항은 에뮬레이터가 다시 시작될 때까지 적용되지 않습니다.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1056"/>
+        <location filename="../Window.cpp" line="1041"/>
         <source> -  Player %1 of %2</source>
         <translation> -  플레이어 %1 의 %2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1067"/>
+        <location filename="../Window.cpp" line="1052"/>
         <source>%1 - %2</source>
         <translation>%1 - %2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1069"/>
+        <location filename="../Window.cpp" line="1054"/>
         <source>%1 - %2 - %3</source>
         <translation>%1 - %2 - %3</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1071"/>
+        <location filename="../Window.cpp" line="1056"/>
         <source>%1 - %2 (%3 fps) - %4</source>
         <translation>%1 - %2 (%3 fps) - %4</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1113"/>
+        <location filename="../Window.cpp" line="1098"/>
         <source>&amp;File</source>
         <translation>&amp;파일</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1115"/>
+        <location filename="../Window.cpp" line="1100"/>
         <source>Load &amp;ROM...</source>
         <translation>로드 &amp;롬...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1118"/>
+        <location filename="../Window.cpp" line="1103"/>
         <source>Load ROM in archive...</source>
         <translation>롬을 아카이브에 로드...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1129"/>
+        <location filename="../Window.cpp" line="1114"/>
         <source>Load &amp;patch...</source>
         <translation>로드 &amp;패치...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1132"/>
+        <location filename="../Window.cpp" line="1117"/>
         <source>Boot BIOS</source>
         <translation>BIOS 부팅</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1137"/>
+        <location filename="../Window.cpp" line="1122"/>
         <source>Replace ROM...</source>
         <translation>롬 교체...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1139"/>
+        <location filename="../Window.cpp" line="1124"/>
         <source>Scan e-Reader dotcodes...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1143"/>
+        <location filename="../Window.cpp" line="1128"/>
         <source>ROM &amp;info...</source>
         <translation>롬 &amp;정보...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1145"/>
+        <location filename="../Window.cpp" line="1130"/>
         <source>Recent</source>
         <translation>최근 실행</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1148"/>
+        <location filename="../Window.cpp" line="1133"/>
         <source>Make portable</source>
         <translation>휴대용 만들기</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1151"/>
+        <location filename="../Window.cpp" line="1136"/>
         <source>&amp;Load state</source>
         <translation>&amp;로드 파일 상태</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1161"/>
+        <location filename="../Window.cpp" line="1146"/>
         <source>&amp;Save state</source>
         <translation>&amp;저장 파일 상태</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1171"/>
+        <location filename="../Window.cpp" line="1156"/>
         <source>Quick load</source>
         <translation>빠른 로드</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1172"/>
+        <location filename="../Window.cpp" line="1157"/>
         <source>Quick save</source>
         <translation>빠른 저장</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1174"/>
+        <location filename="../Window.cpp" line="1159"/>
         <source>Load recent</source>
         <translation>최근 실행 로드</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1179"/>
+        <location filename="../Window.cpp" line="1164"/>
         <source>Save recent</source>
         <translation>최근 실행 저장</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1187"/>
+        <location filename="../Window.cpp" line="1172"/>
         <source>Undo load state</source>
         <translation>로드 파일 상태 복원</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1190"/>
+        <location filename="../Window.cpp" line="1175"/>
         <source>Undo save state</source>
         <translation>저장 파일 상태 복원</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1197"/>
-        <location filename="../Window.cpp" line="1202"/>
+        <location filename="../Window.cpp" line="1182"/>
+        <location filename="../Window.cpp" line="1187"/>
         <source>State &amp;%1</source>
         <translation>상태 &amp;%1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1209"/>
+        <location filename="../Window.cpp" line="1194"/>
         <source>Load camera image...</source>
         <translation>카메라 이미지 로드...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1213"/>
+        <location filename="../Window.cpp" line="1198"/>
         <source>Convert save game...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1223"/>
+        <location filename="../Window.cpp" line="1208"/>
         <source>New multiplayer window</source>
         <translation>새로운 멀티 플레이어 창</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1235"/>
+        <location filename="../Window.cpp" line="1220"/>
         <source>E&amp;xit</source>
         <translation>종&amp;료</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1238"/>
+        <location filename="../Window.cpp" line="1223"/>
         <source>&amp;Emulation</source>
         <translation>&amp;에뮬레이션</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1239"/>
+        <location filename="../Window.cpp" line="1224"/>
         <source>&amp;Reset</source>
         <translation>&amp;재설정</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1240"/>
+        <location filename="../Window.cpp" line="1225"/>
         <source>Sh&amp;utdown</source>
         <translation>종&amp;료</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1241"/>
+        <location filename="../Window.cpp" line="1226"/>
         <source>Yank game pak</source>
         <translation>양키 게임 팩</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1245"/>
+        <location filename="../Window.cpp" line="1230"/>
         <source>&amp;Pause</source>
         <translation>&amp;정지</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1254"/>
+        <location filename="../Window.cpp" line="1239"/>
         <source>&amp;Next frame</source>
         <translation>&amp;다음 프레임</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1258"/>
+        <location filename="../Window.cpp" line="1243"/>
         <source>Fast forward (held)</source>
         <translation>빨리 감기 (누름)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1264"/>
+        <location filename="../Window.cpp" line="1249"/>
         <source>&amp;Fast forward</source>
         <translation>&amp;빨리 감기</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1268"/>
+        <location filename="../Window.cpp" line="1253"/>
         <source>Fast forward speed</source>
         <translation>빨리 감기 속도</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1273"/>
+        <location filename="../Window.cpp" line="1258"/>
         <source>Unbounded</source>
         <translation>무제한</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1277"/>
+        <location filename="../Window.cpp" line="1262"/>
         <source>%0x</source>
         <translation>%0x</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1281"/>
+        <location filename="../Window.cpp" line="1266"/>
         <source>Rewind (held)</source>
         <translation>되김기 (누름)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1288"/>
+        <location filename="../Window.cpp" line="1273"/>
         <source>Re&amp;wind</source>
         <translation>리&amp;와인드</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1293"/>
+        <location filename="../Window.cpp" line="1278"/>
         <source>Step backwards</source>
         <translation>돌아가기</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1299"/>
+        <location filename="../Window.cpp" line="1284"/>
         <source>Sync to &amp;video</source>
         <translation>비디오 &amp;동기화</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1306"/>
+        <location filename="../Window.cpp" line="1291"/>
         <source>Sync to &amp;audio</source>
         <translation>오디오 &amp;동기화</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1317"/>
+        <location filename="../Window.cpp" line="1302"/>
         <source>Brightest solar level</source>
         <translation>가장 밝은 태양 수준</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1320"/>
+        <location filename="../Window.cpp" line="1305"/>
         <source>Darkest solar level</source>
         <translation>가장 어두운 태양 수준</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1326"/>
+        <location filename="../Window.cpp" line="1311"/>
         <source>Brightness %1</source>
         <translation>밝기 %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1345"/>
+        <location filename="../Window.cpp" line="1330"/>
         <source>Audio/&amp;Video</source>
         <translation>오디오/&amp;비디오</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1346"/>
+        <location filename="../Window.cpp" line="1331"/>
         <source>Frame size</source>
         <translation>프레임 크기</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1373"/>
+        <location filename="../Window.cpp" line="1358"/>
         <source>Toggle fullscreen</source>
         <translation>전체화면 전환</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1376"/>
+        <location filename="../Window.cpp" line="1361"/>
         <source>Lock aspect ratio</source>
         <translation>화면비 잠금</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1420"/>
+        <location filename="../Window.cpp" line="1405"/>
         <source>Frame&amp;skip</source>
         <translation>프레임&amp;건너뛰기</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1433"/>
+        <location filename="../Window.cpp" line="1418"/>
         <source>Mute</source>
         <translation>무음</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1439"/>
+        <location filename="../Window.cpp" line="1424"/>
         <source>FPS target</source>
         <translation>FPS 대상</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1462"/>
+        <location filename="../Window.cpp" line="1447"/>
         <source>Take &amp;screenshot</source>
         <translation>스크린샷 &amp;찍기</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1464"/>
+        <location filename="../Window.cpp" line="1449"/>
         <source>F12</source>
         <translation>F12</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1473"/>
+        <location filename="../Window.cpp" line="1458"/>
         <source>Video layers</source>
         <translation>비디오 레이어</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1474"/>
+        <location filename="../Window.cpp" line="1459"/>
         <source>Audio channels</source>
         <translation>오디오 채널</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1478"/>
+        <location filename="../Window.cpp" line="1463"/>
         <source>&amp;Tools</source>
         <translation>&amp;도구</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1479"/>
+        <location filename="../Window.cpp" line="1464"/>
         <source>View &amp;logs...</source>
         <translation>로그 &amp;보기...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1481"/>
+        <location filename="../Window.cpp" line="1466"/>
         <source>Game &amp;overrides...</source>
         <translation>게임 &amp;오버라이드...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1504"/>
+        <location filename="../Window.cpp" line="1480"/>
         <source>&amp;Cheats...</source>
         <translation>&amp;치트..</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1511"/>
+        <location filename="../Window.cpp" line="1487"/>
         <source>Open debugger console...</source>
         <translation>디버거 콘솔 열기...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1513"/>
+        <location filename="../Window.cpp" line="1489"/>
         <source>Start &amp;GDB server...</source>
         <translation>GDB 서버 &amp;시작...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1507"/>
+        <location filename="../Window.cpp" line="1483"/>
         <source>Settings...</source>
         <translation>설정...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="356"/>
+        <location filename="../Window.cpp" line="351"/>
         <source>Select folder</source>
         <translation>폴더 선택</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="866"/>
+        <location filename="../Window.cpp" line="851"/>
         <source>Couldn&apos;t Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="867"/>
+        <location filename="../Window.cpp" line="852"/>
         <source>Could not start game.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1119"/>
+        <location filename="../Window.cpp" line="1104"/>
         <source>Add folder to library...</source>
         <translation>라이브러리에 폴더 추가...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1156"/>
+        <location filename="../Window.cpp" line="1141"/>
         <source>Load state file...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1166"/>
+        <location filename="../Window.cpp" line="1151"/>
         <source>Save state file...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1215"/>
+        <location filename="../Window.cpp" line="1200"/>
         <source>Import GameShark Save...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1218"/>
+        <location filename="../Window.cpp" line="1203"/>
         <source>Export GameShark Save...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1231"/>
+        <location filename="../Window.cpp" line="1216"/>
         <source>Report bug...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1232"/>
+        <location filename="../Window.cpp" line="1217"/>
         <source>About...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1314"/>
+        <location filename="../Window.cpp" line="1299"/>
         <source>Solar sensor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1315"/>
+        <location filename="../Window.cpp" line="1300"/>
         <source>Increase solar level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1316"/>
+        <location filename="../Window.cpp" line="1301"/>
         <source>Decrease solar level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1388"/>
+        <location filename="../Window.cpp" line="1373"/>
         <source>Force integer scaling</source>
         <translation>정수 스케일링 강제 수행</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1409"/>
+        <location filename="../Window.cpp" line="1394"/>
         <source>Bilinear filtering</source>
         <translation>이중선형 필터링</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1332"/>
+        <location filename="../Window.cpp" line="1317"/>
         <source>Game Boy Printer...</source>
         <translation>게임 보이 프린터...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="373"/>
+        <location filename="../Window.cpp" line="368"/>
         <source>Save games (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="374"/>
+        <location filename="../Window.cpp" line="369"/>
         <source>Select save game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="382"/>
+        <location filename="../Window.cpp" line="377"/>
         <source>mGBA save state files (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../Window.cpp" line="379"/>
         <location filename="../Window.cpp" line="384"/>
-        <location filename="../Window.cpp" line="389"/>
         <source>Select save state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1122"/>
+        <location filename="../Window.cpp" line="1107"/>
         <source>Load alternate save game...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1125"/>
+        <location filename="../Window.cpp" line="1110"/>
         <source>Load temporary save game...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1341"/>
+        <location filename="../Window.cpp" line="1326"/>
         <source>BattleChip Gate...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1348"/>
+        <location filename="../Window.cpp" line="1333"/>
         <source>%1×</source>
         <translation type="unfinished">%1x {1×?}</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1400"/>
+        <location filename="../Window.cpp" line="1385"/>
         <source>Interframe blending</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1447"/>
+        <location filename="../Window.cpp" line="1432"/>
         <source>Native (59.7275)</source>
         <translation type="unfinished">Nativo (59.7) {59.7275)?}</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1468"/>
+        <location filename="../Window.cpp" line="1453"/>
         <source>Record A/V...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1469"/>
+        <location filename="../Window.cpp" line="1454"/>
         <source>Record GIF/WebP/APNG...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1476"/>
+        <location filename="../Window.cpp" line="1461"/>
         <source>Adjust layer placement...</source>
         <translation>레이어 배치 조정...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1493"/>
+        <location filename="../Window.cpp" line="1478"/>
         <source>Game Pak sensors...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1519"/>
+        <location filename="../Window.cpp" line="1495"/>
         <source>View &amp;palette...</source>
         <translation>팔레트 &amp;보기...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1520"/>
+        <location filename="../Window.cpp" line="1496"/>
         <source>View &amp;sprites...</source>
         <translation>스프라이트 &amp;보기...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1521"/>
+        <location filename="../Window.cpp" line="1497"/>
         <source>View &amp;tiles...</source>
         <translation>타일 &amp;보기...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1522"/>
+        <location filename="../Window.cpp" line="1498"/>
         <source>View &amp;map...</source>
         <translation>지도 &amp;보기...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1524"/>
+        <location filename="../Window.cpp" line="1500"/>
         <source>&amp;Frame inspector...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1540"/>
+        <location filename="../Window.cpp" line="1516"/>
         <source>View memory...</source>
         <translation>메모리 보기...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1541"/>
+        <location filename="../Window.cpp" line="1517"/>
         <source>Search memory...</source>
         <translation>메모리 검색...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1542"/>
+        <location filename="../Window.cpp" line="1518"/>
         <source>View &amp;I/O registers...</source>
         <translation>I/O 레지스터 &amp;보기...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1545"/>
+        <location filename="../Window.cpp" line="1521"/>
         <source>Record debug video log...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1546"/>
+        <location filename="../Window.cpp" line="1522"/>
         <source>Stop debug video log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1646"/>
+        <location filename="../Window.cpp" line="1622"/>
         <source>Exit fullscreen</source>
         <translation>전체화면 종료</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1648"/>
+        <location filename="../Window.cpp" line="1624"/>
         <source>GameShark Button (held)</source>
         <translation>게임샤크 버튼 (누름)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1654"/>
+        <location filename="../Window.cpp" line="1630"/>
         <source>Autofire</source>
         <translation>연사</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1655"/>
+        <location filename="../Window.cpp" line="1631"/>
         <source>Autofire A</source>
         <translation>연사 A</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1660"/>
+        <location filename="../Window.cpp" line="1636"/>
         <source>Autofire B</source>
         <translation>연사 B</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1665"/>
+        <location filename="../Window.cpp" line="1641"/>
         <source>Autofire L</source>
         <translation>연사 L</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1670"/>
+        <location filename="../Window.cpp" line="1646"/>
         <source>Autofire R</source>
         <translation>연사 R</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1675"/>
+        <location filename="../Window.cpp" line="1651"/>
         <source>Autofire Start</source>
         <translation>연사 시작</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1680"/>
+        <location filename="../Window.cpp" line="1656"/>
         <source>Autofire Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1754"/>
+        <location filename="../Window.cpp" line="1730"/>
         <source>Clear</source>
         <translation type="unfinished">정리</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1685"/>
+        <location filename="../Window.cpp" line="1661"/>
         <source>Autofire Up</source>
         <translation>연사 위쪽</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1690"/>
+        <location filename="../Window.cpp" line="1666"/>
         <source>Autofire Right</source>
         <translation>연사 오른쪽</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1695"/>
+        <location filename="../Window.cpp" line="1671"/>
         <source>Autofire Down</source>
         <translation>연사 아래쪽</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1700"/>
+        <location filename="../Window.cpp" line="1676"/>
         <source>Autofire Left</source>
         <translation>연사 왼쪽</translation>
     </message>
@@ -4696,17 +4696,17 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="29"/>
+        <location filename="../utils.cpp" line="30"/>
         <source>GBA</source>
         <translation>GBA</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="33"/>
+        <location filename="../utils.cpp" line="34"/>
         <source>GB</source>
         <translation>GB</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="36"/>
+        <location filename="../utils.cpp" line="37"/>
         <source>?</source>
         <translation>?</translation>
     </message>
