@@ -313,7 +313,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			break;
 		}
-		if ((address & (SIZE_CART0 - 1)) == AGB_PRINT_FLUSH_ADDR && memory->agbPrintProtect == 0x20) {
+		if ((address & 0x00FFFFFE) == AGB_PRINT_FLUSH_ADDR && memory->agbPrintProtect == 0x20) {
 			cpu->memory.activeRegion = &_agbPrintFunc;
 			cpu->memory.activeMask = sizeof(_agbPrintFunc) - 1;
 			break;
