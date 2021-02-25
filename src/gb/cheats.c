@@ -98,7 +98,7 @@ static bool GBCheatAddGameGenieLine(struct mCheatSet* cheats, const char* line) 
 		value = ROR(value, 2);
 		value |= value >> 24;
 		value ^= 0xBA;
-		patch->checkValue = value;
+		patch->checkValue = value & 0xFF;
 		patch->check = true;
 	} else {
 		patch->check = false;
