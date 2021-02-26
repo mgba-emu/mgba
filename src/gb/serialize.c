@@ -195,6 +195,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		gb->audio.style = GB_AUDIO_CGB;
 	}
 
+	GBUnmapBIOS(gb);
 	GBMemoryDeserialize(gb, state);
 	GBVideoDeserialize(&gb->video, state);
 	GBIODeserialize(gb, state);
@@ -203,8 +204,6 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 
 	if (gb->memory.io[GB_REG_BANK] == 0xFF) {
 		GBMapBIOS(gb);
-	} else {
-		GBUnmapBIOS(gb);
 	}
 
 	if (gb->model & GB_MODEL_SGB && canSgb) {

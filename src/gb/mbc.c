@@ -76,6 +76,7 @@ void GBMBCSwitchBank0(struct GB* gb, int bank) {
 		bankStart &= (gb->memory.romSize - 1);
 	}
 	gb->memory.romBase = &gb->memory.rom[bankStart];
+	gb->memory.currentBank0 = bank;
 	if (gb->cpu->pc < GB_SIZE_CART_BANK0) {
 		gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
 	}
@@ -436,6 +437,7 @@ void GBMBCInit(struct GB* gb) {
 }
 
 void GBMBCReset(struct GB* gb) {
+	gb->memory.currentBank0 = 0;
 	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
 
 	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
