@@ -185,7 +185,7 @@ struct VDir* VDirOpenZip(const char* path, int flags) {
 	if ((flags & O_ACCMODE) == O_RDWR) {
 		return 0; // Read/write not supported
 	}
-	if (flags & O_WRONLY) {
+	if ((flags & O_ACCMODE) == O_WRONLY) {
 		z = zipOpen2(path, 0, NULL, &ops);
 		if (!z) {
 			return 0;
@@ -455,7 +455,7 @@ struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode) {
 
 	struct zip_file* zf = NULL;
 	struct zip_stat s = {0};
-	if (mode & O_WRONLY) {
+	if ((mode & O_ACCMODE) == O_WRONLY) {
 		if (!vdz->write) {
 			return 0;
 		}
@@ -474,7 +474,7 @@ struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode) {
 	vfz->zf = zf;
 	vfz->z = vdz->z;
 	vfz->fileSize = s.size;
-	if (mode & O_WRONLY) {
+	if ((mode & O_ACCMODE) == O_WRONLY) {
 		vfz->name = strdup(path);
 		vfz->write = true;
 	}
@@ -696,7 +696,7 @@ struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode) {
 	}
 
 	unz_file_info64 info = {0};
-	if (mode & O_RDONLY) {
+	if ((mode & O_ACCMODE) == O_RDONLY) {
 		if (unzLocateFile(vdz->uz, path, 0) != UNZ_OK) {
 			return 0;
 		}
@@ -709,8 +709,7 @@ struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode) {
 		if (status < 0) {
 			return 0;
 		}
-	}
-	if (mode & O_WRONLY) {
+	} else {
 		if (zipOpenNewFileInZip(vdz->z, path, NULL, NULL, 0, NULL, 0, NULL, Z_DEFLATED, 3) < 0) {
 			return 0;
 		}

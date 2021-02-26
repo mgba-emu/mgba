@@ -266,7 +266,7 @@ QString Window::getFilters() const {
 #ifdef M_CORE_GBA
 	QStringList gbaFormats{
 		"*.gba",
-#if defined(USE_LIBZIP) || defined(USE_ZLIB)
+#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
 		"*.zip",
 #endif
 #ifdef USE_LZMA
@@ -288,7 +288,7 @@ QString Window::getFilters() const {
 		"*.gb",
 		"*.gbc",
 		"*.sgb",
-#if defined(USE_LIBZIP) || defined(USE_ZLIB)
+#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
 		"*.zip",
 #endif
 #ifdef USE_LZMA
@@ -310,7 +310,7 @@ QString Window::getFiltersArchive() const {
 	QStringList filters;
 
 	QStringList formats{
-#if defined(USE_LIBZIP) || defined(USE_ZLIB)
+#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
 		"*.zip",
 #endif
 #ifdef USE_LZMA

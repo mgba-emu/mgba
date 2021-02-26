@@ -671,6 +671,7 @@ elseif(USE_MINIZIP)
 		add_definitions(-Dunztell64=unzTell64)  # Bug in downstream minizip that some distros use
 	endif()
 elseif(USE_ZLIB)
+	list(APPEND FEATURES MINIZIP)
 	list(APPEND VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-zip.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/unzip.c
