@@ -42,13 +42,8 @@ enum {
 	BLOCK_SIZE = 1024
 };
 #else
-#ifdef USE_MINIZIP
 #include <minizip/zip.h>
 #include <minizip/unzip.h>
-#else
-#include "third-party/zlib/contrib/minizip/zip.h"
-#include "third-party/zlib/contrib/minizip/unzip.h"
-#endif
 #include <mgba-util/memory.h>
 
 struct VDirEntryZip {

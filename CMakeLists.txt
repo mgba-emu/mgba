@@ -676,6 +676,7 @@ elseif(USE_ZLIB)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/unzip.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/zip.c)
+	include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib)
 	if(NOT MSVC)
 		set_source_files_properties(
 			${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c

@@ -77,6 +77,7 @@ struct tm* localtime_r(const time_t* t, struct tm* date) {
 	localtime_s(date, t);
 	return date;
 #elif defined(PSP2)
+	extern struct tm* sceKernelLibcLocaltime_r(const time_t* t, struct tm* date);
 	return sceKernelLibcLocaltime_r(t, date);
 #else
 #warning localtime_r not emulated on this platform
