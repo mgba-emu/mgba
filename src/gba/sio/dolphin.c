@@ -97,6 +97,10 @@ static bool GBASIODolphinLoad(struct GBASIODriver* driver) {
 
 void GBASIODolphinProcessEvents(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBASIODolphin* dol = context;
+	if (SOCKET_FAILED(dol->data)) {
+		return;
+	}
+
 	dol->clockSlice -= cyclesLate;
 
 	int32_t clockSlice;
