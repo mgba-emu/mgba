@@ -37,8 +37,10 @@ void DolphinConnector::attach() {
 		}
 
 	}
+	bool reset = m_ui.doReset->isChecked();
 	if (!m_window->controller()) {
 		m_window->bootBIOS();
+		reset = false;
 		if (!m_window->controller() || m_window->controller()->platform() != mPLATFORM_GBA) {
 			return;
 		}
@@ -49,6 +51,7 @@ void DolphinConnector::attach() {
 	CoreController::Interrupter interrupter(m_controller);
 	m_controller->attachDolphin(address);
 	connect(m_controller.get(), &CoreController::stopping, this, &DolphinConnector::detach);
+	interrupter.resume();
 
 	if (!m_controller->isDolphinConnected()) {
 		QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Couldn't Connect"),
@@ -56,6 +59,8 @@ void DolphinConnector::attach() {
 		                                    QMessageBox::Ok);
 		fail->setAttribute(Qt::WA_DeleteOnClose);
 		fail->show();
+	} else if (reset) {
+		m_controller->reset();
 	}
 
 	updateAttached();
