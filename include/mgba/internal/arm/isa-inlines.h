@@ -56,7 +56,7 @@
 #define ARM_ILL cpu->irqh.hitIllegal(cpu, opcode)
 
 static inline int32_t ARMWritePC(struct ARMCore* cpu) {
-	uint32_t pc = cpu->gprs[ARM_PC] & -WORD_SIZE_ARM;
+	uint32_t pc = cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB;
 	cpu->memory.setActiveRegion(cpu, pc);
 	LOAD_32(cpu->prefetch[0], pc & cpu->memory.activeMask, cpu->memory.activeRegion);
 	pc += WORD_SIZE_ARM;
@@ -88,9 +88,11 @@ static inline void _ARMSetMode(struct ARMCore* cpu, enum ExecutionMode execution
 	switch (executionMode) {
 	case MODE_ARM:
 		cpu->cpsr.t = 0;
+		cpu->memory.activeMask &= ~2;
 		break;
 	case MODE_THUMB:
 		cpu->cpsr.t = 1;
+		cpu->memory.activeMask |= 2;
 	}
 	cpu->nextEvent = cpu->cycles;
 }
