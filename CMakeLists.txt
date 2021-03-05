@@ -716,7 +716,7 @@ endif()
 
 if(USE_EPOXY)
 	list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/opengl/gl.c ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/opengl/gles2.c)
-	add_definitions(-DBUILD_GL -DBUILD_GLES2)
+	list(APPEND FEATURE_DEFINES BUILD_GL BUILD_GLES2)
 	list(APPEND FEATURES EPOXY)
 	include_directories(AFTER ${EPOXY_INCLUDE_DIRS})
 	link_directories(${EPOXY_LIBRARY_DIRS})
