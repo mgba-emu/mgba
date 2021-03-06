@@ -152,7 +152,7 @@ endif()
 include(FindFeature)
 
 # Version information
-add_custom_target(version-info ALL
+add_custom_target(${BINARY_NAME}-version-info ALL
 	COMMAND ${CMAKE_COMMAND}
 	-DBINARY_NAME=${BINARY_NAME}
 	-DCONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/src/core/version.c.in
@@ -886,7 +886,7 @@ if(NOT SKIP_LIBRARY)
 			target_include_directories(${BINARY_NAME}-static BEFORE PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include)
 			set_target_properties(${BINARY_NAME}-static PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES};BUILD_STATIC" COMPILE_OPTIONS "${FEATURE_FLAGS}")
 			install(TARGETS ${BINARY_NAME}-static DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME})
-			add_dependencies(${BINARY_NAME}-static version-info)
+			add_dependencies(${BINARY_NAME}-static ${BINARY_NAME}-version-info)
 		endif()
 	else()
 		add_library(${BINARY_NAME} STATIC ${SRC})
@@ -895,7 +895,7 @@ if(NOT SKIP_LIBRARY)
 
 	target_include_directories(${BINARY_NAME} BEFORE PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include)
 	set_target_properties(${BINARY_NAME} PROPERTIES VERSION ${LIB_VERSION_STRING} SOVERSION ${LIB_VERSION_ABI} COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES};${EXPORT_DEFINES}" COMPILE_OPTIONS "${FEATURE_FLAGS}")
-	add_dependencies(${BINARY_NAME} version-info)
+	add_dependencies(${BINARY_NAME} ${BINARY_NAME}-version-info)
 
 	file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/mgba-util)
 
@@ -940,7 +940,7 @@ endif()
 if(BUILD_LIBRETRO)
 	file(GLOB RETRO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/libretro/*.c)
 	add_library(${BINARY_NAME}_libretro SHARED ${CORE_SRC} ${RETRO_SRC})
-	add_dependencies(${BINARY_NAME}_libretro version-info)
+	add_dependencies(${BINARY_NAME}_libretro ${BINARY_NAME}-version-info)
 	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" COMPILE_DEFINITIONS "__LIBRETRO__;COLOR_16_BIT;COLOR_5_6_5;DISABLE_THREADING;MGBA_STANDALONE;${OS_DEFINES};${FUNCTION_DEFINES};MINIMAL_CORE=2")
 	target_link_libraries(${BINARY_NAME}_libretro ${OS_LIB})
 	if(MSVC)
