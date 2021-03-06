@@ -145,7 +145,7 @@ add_custom_target(version-info ALL
 	-DCONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/src/core/version.c.in
 	-DOUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/version.c
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/version.cmake
-	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/version.cmake)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/core/version.c.in ${CMAKE_CURRENT_BINARY_DIR}/version.c)
