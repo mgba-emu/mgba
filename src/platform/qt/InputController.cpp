@@ -178,6 +178,9 @@ void InputController::loadConfiguration(uint32_t type) {
 }
 
 void InputController::loadProfile(uint32_t type, const QString& profile) {
+	if (profile.isEmpty()) {
+		return;
+	}
 	bool loaded = mInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	recalibrateAxes();
 	if (!loaded) {
@@ -207,6 +210,9 @@ void InputController::saveConfiguration(uint32_t type) {
 }
 
 void InputController::saveProfile(uint32_t type, const QString& profile) {
+	if (profile.isEmpty()) {
+		return;
+	}
 	mInputProfileSave(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	m_config->write();
 }
