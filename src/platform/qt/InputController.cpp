@@ -569,6 +569,10 @@ void InputController::bindHat(uint32_t type, int hat, GamepadHatEvent::Direction
 	mInputBindHat(&m_inputMap, type, hat, &bindings);
 }
 
+void InputController::unbindAllHats(uint32_t type) {
+	mInputUnbindAllHats(&m_inputMap, type);
+}
+
 void InputController::testGamepad(int type) {
 	QWriteLocker l(&m_eventsLock);
 	auto activeAxes = activeGamepadAxes(type);

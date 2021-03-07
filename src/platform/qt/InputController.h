@@ -80,6 +80,7 @@ public:
 	void unbindAllAxes(uint32_t type);
 
 	void bindHat(uint32_t type, int hat, GamepadHatEvent::Direction, GBAKey);
+	void unbindAllHats(uint32_t type);
 
 	QStringList connectedGamepads(uint32_t type) const;
 	int gamepad(uint32_t type) const;
