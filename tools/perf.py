@@ -101,7 +101,7 @@ class PerfServer(object):
         elif test.renderer == 'threaded-software':
             server_command.append('-T')
         subprocess.check_call(server_command)
-        time.sleep(1)
+        time.sleep(3)
         for backoff in range(self.RETRIES):
             try:
                 self.socket = socket.create_connection(self.address, timeout=1000)
@@ -180,7 +180,7 @@ class Suite(object):
                     results.append(test.results)
                     last_result = results[-1]
             if last_result:
-                print('{:.2f} fps'.format(int(last_result['frames']) * 1000000 / float(last_result['duration'])))
+                print('{:.2f} fps'.format(int(last_result['frames']) * 1000000 / float(last_result['duration'])), file=sys.stderr)
         if self.server:
             self.server.finish()
             results.extend(self.server.results)
