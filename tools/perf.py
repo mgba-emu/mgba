@@ -107,7 +107,7 @@ class PerfServer(object):
                 self.socket = socket.create_connection(self.address, timeout=1000)
                 break
             except OSError as e:
-                print("Failed to connect:", e)
+                print("Failed to connect:", e, file=sys.stderr)
                 if backoff < self.RETRIES - 1:
                     time.sleep(2 ** backoff)
                 else:
@@ -166,9 +166,10 @@ class Suite(object):
         sock = None
         for test in self.tests:
             print('Running test {}'.format(test.name), file=sys.stderr)
+            last_result = None
             if self.server:
                 self.server.run(test)
-                print(self.server.results[-1])
+                last_result = self.server.results[-1]
             else:
                 try:
                     test.run(self.cwd)
@@ -177,6 +178,9 @@ class Suite(object):
                     return results
                 if test.results:
                     results.append(test.results)
+                    last_result = results[-1]
+            if last_result:
+                print('{:.2f} fps'.format(int(last_result['frames']) * 1000000 / float(last_result['duration'])))
         if self.server:
             self.server.finish()
             results.extend(self.server.results)
