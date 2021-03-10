@@ -71,6 +71,7 @@ class GameClockTest(PerfTest):
 
 class PerfServer(object):
     ITERATIONS_PER_INSTANCE = 50
+    RETRIES = 5
 
     def __init__(self, address, root='/', command=None):
         s = address.rsplit(':', 1)
@@ -100,8 +101,17 @@ class PerfServer(object):
         elif test.renderer == 'threaded-software':
             server_command.append('-T')
         subprocess.check_call(server_command)
-        time.sleep(4)
-        self.socket = socket.create_connection(self.address, timeout=1000)
+        time.sleep(1)
+        for backoff in range(self.RETRIES):
+            try:
+                self.socket = socket.create_connection(self.address, timeout=1000)
+                break
+            except OSError as e:
+                print("Failed to connect:", e)
+                if backoff < self.RETRIES - 1:
+                    time.sleep(2 ** backoff)
+                else:
+                    raise
         kwargs = {}
         if sys.version_info[0] >= 3:
             kwargs["encoding"] = "utf-8"
@@ -158,6 +168,7 @@ class Suite(object):
             print('Running test {}'.format(test.name), file=sys.stderr)
             if self.server:
                 self.server.run(test)
+                print(self.server.results[-1])
             else:
                 try:
                     test.run(self.cwd)
