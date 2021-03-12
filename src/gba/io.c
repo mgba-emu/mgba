@@ -532,7 +532,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		break;
 	case REG_JOY_TRANS_LO:
 	case REG_JOY_TRANS_HI:
-		gba->memory.io[REG_JOYSTAT >> 1] |= JOYSTAT_TRANS_BIT;
+		gba->memory.io[REG_JOYSTAT >> 1] |= JOYSTAT_TRANS;
 		// Fall through
 	case REG_SIODATA32_LO:
 	case REG_SIODATA32_HI:
@@ -576,6 +576,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 	case REG_DEBUG_FLAGS:
 		if (gba->debug) {
 			GBADebug(gba, value);
+
 			return;
 		}
 		// Fall through
@@ -835,7 +836,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 
 	case REG_JOY_RECV_LO:
 	case REG_JOY_RECV_HI:
-		gba->memory.io[REG_JOYSTAT >> 1] &= ~JOYSTAT_RECV_BIT;
+		gba->memory.io[REG_JOYSTAT >> 1] &= ~JOYSTAT_RECV;
 		break;
 
 	case REG_SOUNDBIAS:
