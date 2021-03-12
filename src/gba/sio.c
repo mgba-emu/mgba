@@ -31,6 +31,23 @@ static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mo
 	}
 }
 
+static const char* _modeName(enum GBASIOMode mode) {
+	switch (mode) {
+	case SIO_NORMAL_8:
+		return "NORMAL8";
+	case SIO_NORMAL_32:
+		return "NORMAL32";
+	case SIO_MULTI:
+		return "MULTI";
+	case SIO_JOYBUS:
+		return "JOYBUS";
+	case SIO_GPIO:
+		return "GPIO";
+	default:
+		return "(unknown)";
+	}
+}
+
 static void _switchMode(struct GBASIO* sio) {
 	unsigned mode = ((sio->rcnt & 0xC000) | (sio->siocnt & 0x3000)) >> 12;
 	enum GBASIOMode newMode;
@@ -43,6 +60,7 @@ static void _switchMode(struct GBASIO* sio) {
 		if (sio->activeDriver && sio->activeDriver->unload) {
 			sio->activeDriver->unload(sio->activeDriver);
 		}
+		mLOG(GBA_SIO, DEBUG, "Switching mode from %s to %s", _modeName(sio->mode), _modeName(newMode));
 		sio->mode = newMode;
 		sio->activeDriver = _lookupDriver(sio, sio->mode);
 		if (sio->activeDriver && sio->activeDriver->load) {

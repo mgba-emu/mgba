@@ -21,9 +21,22 @@ void GBASIOJOYCreate(struct GBASIODriver* sio) {
 uint16_t GBASIOJOYWriteRegister(struct GBASIODriver* sio, uint32_t address, uint16_t value) {
 	switch (address) {
 	case REG_JOYCNT:
+		mLOG(GBA_SIO, DEBUG, "JOY write: CNT <- %04X", value);
 		return (value & 0x0040) | (sio->p->p->memory.io[REG_JOYCNT >> 1] & ~(value & 0x7) & ~0x0040);
 	case REG_JOYSTAT:
+		mLOG(GBA_SIO, DEBUG, "JOY write: STAT <- %04X", value);
 		return (value & 0x0030) | (sio->p->p->memory.io[REG_JOYSTAT >> 1] & ~0x30);
+	case REG_JOY_TRANS_LO:
+		mLOG(GBA_SIO, DEBUG, "JOY write: TRANS_LO <- %04X", value);
+		break;
+	case REG_JOY_TRANS_HI:
+		mLOG(GBA_SIO, DEBUG, "JOY write: TRANS_HI <- %04X", value);
+		break;
+	default:
+		mLOG(GBA_SIO, DEBUG, "JOY write: Unknown reg %03X <- %04X", address, value);
+		// Fall through
+	case REG_RCNT:
+		break;
 	}
 	return value;
 }
