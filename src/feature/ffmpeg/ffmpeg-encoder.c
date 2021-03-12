@@ -164,7 +164,7 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, un
 	return true;
 }
 
-bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, unsigned vbr, int frameskip) {
+bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, int vbr, int frameskip) {
 	static const struct {
 		enum AVPixelFormat format;
 		int priority;
@@ -212,6 +212,9 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, un
 		}
 	}
 	if (encoder->pixFormat == AV_PIX_FMT_NONE) {
+		return false;
+	}
+	if (vbr < 0 && !av_opt_find(&codec->priv_class, "crf", NULL, 0, 0)) {
 		return false;
 	}
 	encoder->videoCodec = vcodec;
@@ -408,7 +411,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			encoder->video->pix_fmt = AV_PIX_FMT_BGR0;
 		}
 #endif
-		if (strcmp(vcodec->name, "libx264") == 0) {
+		if (strcmp(vcodec->name, "libx264") == 0 || strcmp(vcodec->name, "libx264rgb") == 0) {
 			// Try to adaptively figure out when you can use a slower encoder
 			if (encoder->width * encoder->height > 1000000) {
 				av_opt_set(encoder->video->priv_data, "preset", "superfast", 0);
@@ -417,10 +420,26 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			} else {
 				av_opt_set(encoder->video->priv_data, "preset", "faster", 0);
 			}
+			av_opt_set(encoder->video->priv_data, "tune", "zerolatency", 0);
 			if (encoder->videoBitrate == 0) {
 				av_opt_set(encoder->video->priv_data, "qp", "0", 0);
-				encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
+				if (strcmp(vcodec->name, "libx264") == 0) {
+					encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
+				}
+			} else if (encoder->videoBitrate < 0) {
+				av_opt_set_int(encoder->video->priv_data, "crf", -encoder->videoBitrate, 0);
 			}
+		} else if (encoder->videoBitrate < 0) {
+			if (strcmp(vcodec->name, "libvpx") == 0 || strcmp(vcodec->name, "libvpx-vp9") == 0 || strcmp(vcodec->name, "libx265") == 0) {
+				av_opt_set_int(encoder->video->priv_data, "crf", -encoder->videoBitrate, 0);
+			} else {
+				FFmpegEncoderClose(encoder);
+				return false;
+			}
+		}
+		if (strncmp(vcodec->name, "libvpx", 6) == 0) {
+			av_opt_set_int(encoder->video->priv_data, "cpu-used", 2, 0);
+			av_opt_set(encoder->video->priv_data, "deadline", "realtime", 0);
 		}
 		if (strcmp(vcodec->name, "libvpx-vp9") == 0 && encoder->videoBitrate == 0) {
 			av_opt_set_int(encoder->video->priv_data, "lossless", 1, 0);

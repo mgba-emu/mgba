@@ -120,6 +120,7 @@ Misc:
  - GBA Video: Avoid integer division using reciprocal tricks
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
+ - FFmpeg: Add CRF support for applicable codecs
  - mGUI: Show battery percentage
  - mGUI: Skip second scan loop when possible
  - mGUI: Improve loading speed (fixes mgba.io/i/1957)
