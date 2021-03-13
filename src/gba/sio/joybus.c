@@ -72,14 +72,14 @@ int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command
 		}
 		return 1;
 	case JOY_TRANS:
-		sio->p->p->memory.io[REG_JOYCNT >> 1] |= JOYCNT_TRANS;
-		sio->p->p->memory.io[REG_JOYSTAT >> 1] &= ~JOYSTAT_TRANS;
-
 		data[0] = sio->p->p->memory.io[REG_JOY_TRANS_LO >> 1];
 		data[1] = sio->p->p->memory.io[REG_JOY_TRANS_LO >> 1] >> 8;
 		data[2] = sio->p->p->memory.io[REG_JOY_TRANS_HI >> 1];
 		data[3] = sio->p->p->memory.io[REG_JOY_TRANS_HI >> 1] >> 8;
 		data[4] = sio->p->p->memory.io[REG_JOYSTAT >> 1];
+
+		sio->p->p->memory.io[REG_JOYCNT >> 1] |= JOYCNT_TRANS;
+		sio->p->p->memory.io[REG_JOYSTAT >> 1] &= ~JOYSTAT_TRANS;
 
 		mLOG(GBA_SIO, DEBUG, "JOY trans: %02X%02X%02X%02X:%02X (%02X)", data[0], data[1], data[2], data[3], data[4], sio->p->p->memory.io[REG_JOYCNT >> 1]);
 
