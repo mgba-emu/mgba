@@ -1,0 +1,13 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=@libdir_for_pc_file@
+includedir=@includedir_for_pc_file@
+
+Name: @PKGCFG_NAME@
+Description: @PKGCFG_DESC@
+Version: @PKGCFG_VERSION@
+Requires: @PKGCFG_PKGS_PUB@
+Requires.private: @PKGCFG_PKGS_PRIV@
+Cflags: -I${includedir} @PKGCFG_CFLAGS@
+Libs: -L${libdir} @PKGCFG_LDFLAGS_PUB@
+Libs.private: @PKGCFG_LDFLAGS_PRIV@
