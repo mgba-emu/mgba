@@ -76,6 +76,7 @@ Other fixes:
  - Debugger: Don't skip undefined instructions when debugger attached
  - Debugger: Close trace log when done tracing
  - Debugger: Fix change watchpoints (fixes mgba.io/i/1947)
+ - Debugger: Call CLI debugger system init
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
  - GB: Fix crash when changing ROM while in banked address space
