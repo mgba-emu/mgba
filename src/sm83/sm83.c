@@ -178,10 +178,11 @@ void SM83Tick(struct SM83Core* cpu) {
 void SM83Run(struct SM83Core* cpu) {
 	bool running = true;
 	while (running || cpu->executionState != SM83_CORE_FETCH) {
-		if (cpu->cycles >= cpu->nextEvent) {
+		if (cpu->cycles < cpu->nextEvent) {
+			running = _SM83TickInternal(cpu) && running;
+		} else {
 			cpu->irqh.processEvents(cpu);
-			break;
+			running = false;
 		}
-		running = _SM83TickInternal(cpu) && running;
 	}
 }
