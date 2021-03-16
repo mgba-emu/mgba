@@ -33,7 +33,7 @@ static void _GBTimerDivIncrement(struct GBTimer* timer, uint32_t cyclesLate) {
 		}
 		unsigned timingFactor = 0x1FF;
 		if ((timer->internalDiv & timingFactor) == timingFactor) {
-			GBAudioUpdateFrame(&timer->p->audio, &timer->p->timing);
+			GBAudioUpdateFrame(&timer->p->audio);
 		}
 		++timer->internalDiv;
 		timer->p->memory.io[GB_REG_DIV] = timer->internalDiv >> 4;
@@ -83,7 +83,7 @@ void GBTimerDivReset(struct GBTimer* timer) {
 		}
 	}
 	if (timer->internalDiv & 0x200) {
-		GBAudioUpdateFrame(&timer->p->audio, &timer->p->timing);
+		GBAudioUpdateFrame(&timer->p->audio);
 	}
 	timer->p->memory.io[GB_REG_DIV] = 0;
 	timer->internalDiv = 0;
