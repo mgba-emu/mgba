@@ -390,6 +390,7 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 			}
 		}
 		if (audio->playingCh4 && audio->ch4.envelope.dead != 2) {
+			audio->ch4.lastEvent = mTimingCurrentTime(audio->timing);
 			mTimingDeschedule(audio->timing, &audio->ch4Event);
 			mTimingSchedule(audio->timing, &audio->ch4Event, 0);
 		}
@@ -581,14 +582,16 @@ void GBAudioUpdateFrame(struct GBAudio* audio, struct mTiming* timing) {
 		if (audio->playingCh4 && !audio->ch4.envelope.dead) {
 			--audio->ch4.envelope.nextStep;
 			if (audio->ch4.envelope.nextStep == 0) {
-				int8_t sample = audio->ch4.sample > 0;
-				audio->ch4.samples -= audio->ch4.sample;
+				int8_t sample = audio->ch4.sample;
 				_updateEnvelope(&audio->ch4.envelope);
 				if (audio->ch4.envelope.dead == 2) {
 					mTimingDeschedule(timing, &audio->ch4Event);
 				}
-				audio->ch4.sample = sample * audio->ch4.envelope.currentVolume;
-				audio->ch4.samples += audio->ch4.sample;
+				audio->ch4.sample = (sample > 0) * audio->ch4.envelope.currentVolume;
+				if (audio->ch4.nSamples) {
+					audio->ch4.samples -= sample;
+					audio->ch4.samples += audio->ch4.sample;
+				}
 			}
 		}
 		break;

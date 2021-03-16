@@ -29,6 +29,7 @@ Emulation fixes:
  - GB: Downgrade DMG-only ROMs from CGB mode even without boot ROM
  - GB: Fix marking BIOS as unmapped when skipping BIOS (fixes mgba.io/i/2061)
  - GB Audio: Fix serializing sweep time
+ - GB Audio: Fix some channel 4 timing edge cases
  - GB MBC: Fix MBC1 mode changing behavior
  - GB MBC: Fix some MBC3 bit masking
  - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
