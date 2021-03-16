@@ -240,6 +240,7 @@ void GBAudioWriteNR51(struct GBAudio* audio, uint8_t);
 void GBAudioWriteNR52(struct GBAudio* audio, uint8_t);
 
 void GBAudioUpdateFrame(struct GBAudio* audio);
+void GBAudioUpdateChannel4(struct GBAudio* audio);
 
 void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right);
 
