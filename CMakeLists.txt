@@ -1007,8 +1007,8 @@ include(MgbaPkgConfig)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/mgba)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/core/flags.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/mgba/flags.h)
 pkgcfg_configure("${CMAKE_CURRENT_SOURCE_DIR}/res/mgba.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/mgba.pc"
-	NAME "MGBA"
-	DESC "MGBA as a library"
+	NAME "${PROJECT_NAME}"
+	DESC "${PROJECT_NAME} library"
 	VERSION "${LIB_VERSION_STRING}"
 	LDFLAGS_PRIV "${PKGCONF_LDFLAGS}"
 	LDFLAGS_PUB "-l${BINARY_NAME}"
