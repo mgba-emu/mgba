@@ -6,11 +6,12 @@
 #ifndef THREADING_H
 #define THREADING_H
 
+#include <mgba/flags.h>
 #include <mgba-util/common.h>
 
 CXX_GUARD_START
 
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 #if __STDC_VERSION__ >= 201112L
 #define ThreadLocal _Thread_local void*
 #define ThreadLocalInitKey(X)
@@ -28,10 +29,11 @@ CXX_GUARD_START
 #elif defined(__SWITCH__)
 #include <mgba-util/platform/switch/threading.h>
 #else
-#define DISABLE_THREADING
+#undef MGBA_ENABLE_THREADING
+#define MGBA_ENABLE_THREADING 0
 #endif
 #endif
-#ifdef DISABLE_THREADING
+#if !MGBA_ENABLE_THREADING
 #ifdef _3DS
 // ctrulib already has a type called Thread
 #include <3ds/thread.h>

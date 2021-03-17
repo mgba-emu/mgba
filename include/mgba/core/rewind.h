@@ -12,7 +12,7 @@
 CXX_GUARD_START
 
 #include <mgba-util/vector.h>
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 #include <mgba-util/threading.h>
 #endif
 
