@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include <mgba/flags.h>
 #include <mgba/internal/gba/video.h>
 
 #include <mgba/core/sync.h>
@@ -246,9 +247,11 @@ static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer) {
 }
 
 static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
+#if MGBA_ENABLE_RENDERER_SOFTWARE
 	if (renderer->cache) {
 		GBAVideoCacheWriteVideoRegister(renderer->cache, address, value);
 	}
+#endif
 	switch (address) {
 	case REG_DISPCNT:
 		value &= 0xFFF7;
@@ -288,15 +291,19 @@ static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer*
 }
 
 static void GBAVideoDummyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
+#if MGBA_ENABLE_RENDERER_SOFTWARE
 	if (renderer->cache) {
 		mCacheSetWriteVRAM(renderer->cache, address);
 	}
+#endif
 }
 
 static void GBAVideoDummyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
+#if MGBA_ENABLE_RENDERER_SOFTWARE
 	if (renderer->cache) {
 		mCacheSetWritePalette(renderer->cache, address >> 1, mColorFrom555(value));
 	}
+#endif
 }
 
 static void GBAVideoDummyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {

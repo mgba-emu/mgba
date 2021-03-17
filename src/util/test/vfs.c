@@ -5,9 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/test/suite.h"
 
+#include <mgba/flags.h>
 #include <mgba-util/vfs.h>
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 M_TEST_DEFINE(openNullPathR) {
 	struct VFile* vf = VFileOpen(NULL, O_RDONLY);
 	assert_null(vf);
@@ -146,7 +147,7 @@ M_TEST_DEFINE(mapMemChunk) {
 }
 
 M_TEST_SUITE_DEFINE(VFS,
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 	cmocka_unit_test(openNullPathR),
 	cmocka_unit_test(openNullPathW),
 	cmocka_unit_test(openNullPathCreate),

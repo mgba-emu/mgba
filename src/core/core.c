@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include <mgba/flags.h>
 #include <mgba/core/core.h>
 
 #include <mgba/core/cheats.h>
@@ -23,7 +24,7 @@
 #include <mgba/gba/core.h>
 #include <mgba/gba/interface.h>
 #endif
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 #include <mgba/feature/video-logger.h>
 #endif
 
@@ -54,7 +55,7 @@ struct mCore* mCoreFindVF(struct VFile* vf) {
 	if (filter->open) {
 		return filter->open();
 	}
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 	return mVideoLogCoreFind(vf);
 #endif
 	return NULL;
@@ -86,7 +87,7 @@ struct mCore* mCoreCreate(enum mPlatform platform) {
 	return NULL;
 }
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 #include <mgba-util/png-io.h>
 
 #ifdef PSP2
@@ -342,7 +343,7 @@ void mCoreInitConfig(struct mCore* core, const char* port) {
 }
 
 void mCoreLoadConfig(struct mCore* core) {
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 	mCoreConfigLoad(&core->config);
 #endif
 	mCoreLoadForeignConfig(core, &core->config);
@@ -350,7 +351,7 @@ void mCoreLoadConfig(struct mCore* core) {
 
 void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config) {
 	mCoreConfigMap(config, &core->opts);
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 	mDirectorySetMapOptions(&core->dirs, &core->opts);
 #endif
 	if (core->opts.audioBuffers) {

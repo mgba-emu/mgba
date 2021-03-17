@@ -6,6 +6,7 @@
 #ifndef CHEATS_H
 #define CHEATS_H
 
+#include <mgba/flags.h>
 #include <mgba-util/common.h>
 
 CXX_GUARD_START
@@ -117,7 +118,7 @@ bool mCheatSaveFile(struct mCheatDevice*, struct VFile*);
 bool mCheatParseLibretroFile(struct mCheatDevice*, struct VFile*);
 bool mCheatParseEZFChtFile(struct mCheatDevice*, struct VFile*);
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 void mCheatAutosave(struct mCheatDevice*);
 #endif
 

@@ -617,7 +617,7 @@ bool mCheatSaveFile(struct mCheatDevice* device, struct VFile* vf) {
 	return true;
 }
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 void mCheatAutosave(struct mCheatDevice* device) {
 	if (!device->autosave) {
 		return;

@@ -1,9 +1,28 @@
 #ifndef FLAGS_H
 #define FLAGS_H
 
-#ifndef MINIMAL_CORE
-#cmakedefine MINIMAL_CORE @MINIMAL_CORE@
+#define MGBA_EXTERNAL_NAME @CMAKE_PROJECT_NAME@
+
+#ifndef MGBA_ENABLE_VIDEO_LOGGER
+#cmakedefine01 MGBA_ENABLE_VIDEO_LOGGER
 #endif
+
+#ifndef MGBA_ENABLE_FILESYSTEM
+#cmakedefine01 MGBA_ENABLE_FILESYSTEM
+#endif
+
+#ifndef MGBA_ENABLE_INPUTMAP
+#cmakedefine01 MGBA_ENABLE_INPUTMAP
+#endif
+
+#ifndef MGBA_ENABLE_THREADING
+#cmakedefine01 MGBA_ENABLE_THREADING
+#endif
+
+#ifndef MGBA_ENABLE_RENDERER_SOFTWARE
+#cmakedefine01 MGBA_ENABLE_RENDERER_SOFTWARE
+#endif
+
 
 // BUILD flags
 
@@ -27,10 +46,6 @@
 
 #ifndef COLOR_5_6_5
 #cmakedefine COLOR_5_6_5
-#endif
-
-#ifndef DISABLE_THREADING
-#cmakedefine DISABLE_THREADING
 #endif
 
 #ifndef FIXED_ROM_BUFFER
@@ -117,6 +132,27 @@
 
 #ifndef USE_ZLIB
 #cmakedefine USE_ZLIB
+#endif
+
+/* functions to query flags at runtime instead of compile time */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int
+@CMAKE_PROJECT_NAME@_flag_video_logger(void);
+
+int
+@CMAKE_PROJECT_NAME@_flag_filesystem(void);
+
+int
+@CMAKE_PROJECT_NAME@_flag_inputmap(void);
+
+int
+@CMAKE_PROJECT_NAME@_flag_threading(void);
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

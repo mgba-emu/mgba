@@ -1,0 +1,21 @@
+#include <mgba/flags.h>
+
+int
+@CMAKE_PROJECT_NAME@_flag_video_logger(void) {
+    return MGBA_ENABLE_VIDEO_LOGGER;
+}
+
+int
+@CMAKE_PROJECT_NAME@_flag_filesystem(void) {
+    return MGBA_ENABLE_FILESYSTEM;
+}
+
+int
+@CMAKE_PROJECT_NAME@_flag_inputmap(void) {
+    return MGBA_ENABLE_INPUTMAP;
+}
+
+int
+@CMAKE_PROJECT_NAME@_flag_threading(void) {
+    return MGBA_ENABLE_THREADING;
+}

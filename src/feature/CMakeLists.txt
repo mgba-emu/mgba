@@ -1,8 +1,11 @@
 include(ExportDirectory)
 set(SOURCE_FILES
 	commandline.c
-	thread-proxy.c
-	video-logger.c)
+	thread-proxy.c)
+
+if(MGBA_ENABLE_VIDEO_LOGGER)
+	list(APPEND SOURCE_FILES video-logger.c)
+endif(MGBA_ENABLE_VIDEO_LOGGER)
 
 set(GUI_FILES
 	gui/gui-config.c

@@ -6,13 +6,14 @@
 #ifndef GB_CORE_H
 #define GB_CORE_H
 
+#include <mgba/flags.h>
 #include <mgba-util/common.h>
 
 CXX_GUARD_START
 
 struct mCore;
 struct mCore* GBCoreCreate(void);
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 struct mCore* GBVideoLogPlayerCreate(void);
 #endif
 

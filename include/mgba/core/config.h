@@ -6,6 +6,7 @@
 #ifndef M_CORE_CONFIG_H
 #define M_CORE_CONFIG_H
 
+#include <mgba/flags.h>
 #include <mgba-util/common.h>
 
 CXX_GUARD_START
@@ -63,7 +64,7 @@ struct mCoreOptions {
 void mCoreConfigInit(struct mCoreConfig*, const char* port);
 void mCoreConfigDeinit(struct mCoreConfig*);
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 bool mCoreConfigLoad(struct mCoreConfig*);
 bool mCoreConfigSave(const struct mCoreConfig*);
 bool mCoreConfigLoadPath(struct mCoreConfig*, const char* path);

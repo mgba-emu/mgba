@@ -6,15 +6,16 @@
 #ifndef M_CORE_H
 #define M_CORE_H
 
+#include <mgba/flags.h>
 #include <mgba-util/common.h>
 
 CXX_GUARD_START
 
 #include <mgba/core/config.h>
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 #include <mgba/core/directories.h>
 #endif
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_INPUTMAP
 #include <mgba/core/input.h>
 #endif
 #include <mgba/core/interface.h>
@@ -36,7 +37,9 @@ struct mCoreConfig;
 struct mCoreSync;
 struct mDebuggerSymbols;
 struct mStateExtdata;
+#if MGBA_ENABLE_VIDEO_LOGGER
 struct mVideoLogContext;
+#endif
 struct mCore {
 	void* cpu;
 	void* board;
@@ -45,10 +48,10 @@ struct mCore {
 	struct mDebuggerSymbols* symbolTable;
 	struct mVideoLogger* videoLogger;
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 	struct mDirectorySet dirs;
 #endif
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_INPUTMAP
 	struct mInputMap inputMap;
 #endif
 	struct mCoreConfig config;
@@ -156,13 +159,13 @@ struct mCore {
 	void (*enableAudioChannel)(struct mCore*, size_t id, bool enable);
 	void (*adjustVideoLayer)(struct mCore*, size_t id, int32_t x, int32_t y);
 
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 	void (*startVideoLog)(struct mCore*, struct mVideoLogContext*);
 	void (*endVideoLog)(struct mCore*);
 #endif
 };
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 struct mCore* mCoreFind(const char* path);
 bool mCoreLoadFile(struct mCore* core, const char* path);
 

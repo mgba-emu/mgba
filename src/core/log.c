@@ -3,10 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include <mgba/flags.h>
 #include <mgba/core/log.h>
 
 #include <mgba/core/config.h>
+#if MGBA_ENABLE_THREADING
 #include <mgba/core/thread.h>
+#endif
 
 #define MAX_CATEGORY 64
 
@@ -14,7 +17,7 @@ static struct mLogger* _defaultLogger = NULL;
 
 struct mLogger* mLogGetContext(void) {
 	struct mLogger* logger = NULL;
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 	logger = mCoreThreadLogger();
 #endif
 	if (logger) {

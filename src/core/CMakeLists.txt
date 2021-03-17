@@ -5,8 +5,7 @@ set(SOURCE_FILES
 	cheats.c
 	config.c
 	core.c
-	directories.c
-	input.c
+	flags.c
 	interface.c
 	library.c
 	lockstep.c
@@ -20,6 +19,14 @@ set(SOURCE_FILES
 	thread.c
 	tile-cache.c
 	timing.c)
+
+if(MGBA_ENABLE_INPUTMAP)
+	list(APPEND SOURCE_FILES input.c)
+endif()
+
+if(MGBA_ENABLE_FILESYSTEM)
+	list(APPEND SOURCE_FILES directories.c)
+endif()
 
 set(TEST_FILES
 	test/core.c)

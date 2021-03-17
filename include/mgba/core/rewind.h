@@ -6,6 +6,7 @@
 #ifndef M_CORE_REWIND_H
 #define M_CORE_REWIND_H
 
+#include <mgba/flags.h>
 #include <mgba-util/common.h>
 
 CXX_GUARD_START
@@ -25,7 +26,7 @@ struct mCoreRewindContext {
 	struct VFile* previousState;
 	struct VFile* currentState;
 
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 	bool onThread;
 	Thread thread;
 	Condition cond;

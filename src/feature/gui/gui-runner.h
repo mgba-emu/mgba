@@ -6,6 +6,7 @@
 #ifndef GUI_RUNNER_H
 #define GUI_RUNNER_H
 
+#include <mgba/flags.h>
 #include <mgba-util/common.h>
 
 CXX_GUARD_START
@@ -41,7 +42,7 @@ struct mGUIRunnerLux {
 	int luxLevel;
 };
 
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 struct VFile;
 struct mGUIAutosaveContext {
 	struct VFile* buffer;
@@ -59,7 +60,7 @@ struct mGUIRunner {
 
 	struct mGUIBackground background;
 	struct mGUIRunnerLux luminanceSource;
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 	struct mGUIAutosaveContext autosave;
 #endif
 
@@ -96,7 +97,7 @@ void mGUIDeinit(struct mGUIRunner*);
 void mGUIRun(struct mGUIRunner*, const char* path);
 void mGUIRunloop(struct mGUIRunner*);
 
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 THREAD_ENTRY mGUIAutosaveThread(void* context);
 #endif
 

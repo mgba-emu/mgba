@@ -6,11 +6,12 @@
 #ifndef DIRECTORIES_H
 #define DIRECTORIES_H
 
+#include <mgba/flags.h>
 #include <mgba-util/common.h>
 
 CXX_GUARD_START
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 struct VDir;
 
 struct mDirectorySet {

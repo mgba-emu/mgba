@@ -3,12 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include <mgba/flags.h>
 #include <mgba/feature/thread-proxy.h>
 
 #include <mgba/core/tile-cache.h>
 #include <mgba/internal/gba/gba.h>
 
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 
 static void mVideoThreadProxyInit(struct mVideoLogger* logger);
 static void mVideoThreadProxyReset(struct mVideoLogger* logger);

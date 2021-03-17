@@ -3,12 +3,15 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include <mgba/flags.h>
 #include <mgba/core/config.h>
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
 #include <mgba/core/version.h>
 #include <mgba/feature/commandline.h>
+#if MGBA_ENABLE_VIDEO_LOGGER
 #include <mgba/feature/video-logger.h>
+#endif
 
 #include <mgba-util/png-io.h>
 #include <mgba-util/string.h>

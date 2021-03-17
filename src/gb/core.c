@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include <mgba/flags.h>
 #include <mgba/gb/core.h>
 
 #include <mgba/core/core.h>
@@ -65,7 +66,7 @@ struct GBCore {
 	struct mCore d;
 	struct GBVideoRenderer dummyRenderer;
 	struct GBVideoSoftwareRenderer renderer;
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 	struct GBVideoProxyRenderer proxyRenderer;
 	struct mVideoLogContext* logContext;
 #endif
@@ -94,7 +95,7 @@ static bool _GBCoreInit(struct mCore* core) {
 	gbcore->overrides = NULL;
 	gbcore->debuggerPlatform = NULL;
 	gbcore->cheatDevice = NULL;
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 	gbcore->logContext = NULL;
 #endif
 	memcpy(gbcore->memoryBlocks, _GBMemoryBlocks, sizeof(_GBMemoryBlocks));
@@ -112,14 +113,14 @@ static bool _GBCoreInit(struct mCore* core) {
 	GBVideoSoftwareRendererCreate(&gbcore->renderer);
 	gbcore->renderer.outputBuffer = NULL;
 
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 	gbcore->proxyRenderer.logger = NULL;
 #endif
 
 	gbcore->keys = 0;
 	gb->keySource = &gbcore->keys;
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 	mDirectorySetInit(&core->dirs);
 #endif
 	
@@ -131,7 +132,7 @@ static void _GBCoreDeinit(struct mCore* core) {
 	GBDestroy(core->board);
 	mappedMemoryFree(core->cpu, sizeof(struct SM83Core));
 	mappedMemoryFree(core->board, sizeof(struct GB));
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 	mDirectorySetDeinit(&core->dirs);
 #endif
 #ifdef USE_DEBUGGERS
@@ -236,7 +237,7 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 		gb->video.renderer->enableSGBBorder(gb->video.renderer, fakeBool);
 	}
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 	struct GBCore* gbcore = (struct GBCore*) core;
 	gbcore->overrides = mCoreConfigGetOverridesConst(config);
 #endif
@@ -485,7 +486,7 @@ static void _GBCoreReset(struct mCore* core) {
 		}
 	}
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 	if (!gb->biosVf && core->opts.useBios) {
 		struct VFile* bios = NULL;
 		bool found = false;
@@ -833,7 +834,7 @@ static void _GBCoreDetachDebugger(struct mCore* core) {
 
 static void _GBCoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	core->symbolTable = mDebuggerSymbolTableCreate();
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 	if (!vf) {
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".sym", O_RDONLY);
 	}
@@ -974,7 +975,7 @@ static void _GBCoreAdjustVideoLayer(struct mCore* core, size_t id, int32_t x, in
 	}
 }
 
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 static void _GBCoreStartVideoLog(struct mCore* core, struct mVideoLogContext* context) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	struct GB* gb = core->board;
@@ -1082,14 +1083,14 @@ struct mCore* GBCoreCreate(void) {
 	core->enableVideoLayer = _GBCoreEnableVideoLayer;
 	core->enableAudioChannel = _GBCoreEnableAudioChannel;
 	core->adjustVideoLayer = _GBCoreAdjustVideoLayer;
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 	core->startVideoLog = _GBCoreStartVideoLog;
 	core->endVideoLog = _GBCoreEndVideoLog;
 #endif
 	return core;
 }
 
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 static void _GBVLPStartFrameCallback(void *context) {
 	struct mCore* core = context;
 	struct GBCore* gbcore = (struct GBCore*) core;

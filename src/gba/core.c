@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include <mgba/flags.h>
 #include <mgba/gba/core.h>
 
 #include <mgba/core/core.h>
@@ -15,14 +16,16 @@
 #include <mgba/internal/gba/extra/audio-mixer.h>
 #include <mgba/internal/gba/extra/cli.h>
 #include <mgba/internal/gba/overrides.h>
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 #include <mgba/feature/thread-proxy.h>
 #endif
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 #include <mgba/internal/gba/renderers/gl.h>
 #endif
 #include <mgba/internal/gba/renderers/proxy.h>
+#if MGBA_ENABLE_RENDERER_SOFTWARE
 #include <mgba/internal/gba/renderers/video-software.h>
+#endif
 #include <mgba/internal/gba/savedata.h>
 #include <mgba/internal/gba/serialize.h>
 #ifdef USE_ELF
@@ -133,17 +136,19 @@ struct mVideoLogContext;
 struct GBACore {
 	struct mCore d;
 	struct GBAVideoRenderer dummyRenderer;
+#if MGBA_ENABLE_RENDERER_SOFTWARE
 	struct GBAVideoSoftwareRenderer renderer;
+#endif
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	struct GBAVideoGLRenderer glRenderer;
 #endif
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 	struct GBAVideoProxyRenderer vlProxy;
 	struct GBAVideoProxyRenderer proxyRenderer;
 	struct mVideoLogContext* logContext;
 #endif
 	struct mCoreCallbacks logCallbacks;
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 	struct mVideoThreadProxy threadProxy;
 #endif
 	int keys;
@@ -173,7 +178,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->overrides = NULL;
 	gbacore->debuggerPlatform = NULL;
 	gbacore->cheatDevice = NULL;
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 	gbacore->logContext = NULL;
 #endif
 	gbacore->audioMixer = NULL;
@@ -189,18 +194,20 @@ static bool _GBACoreInit(struct mCore* core) {
 	GBAVideoDummyRendererCreate(&gbacore->dummyRenderer);
 	GBAVideoAssociateRenderer(&gba->video, &gbacore->dummyRenderer);
 
+#if MGBA_ENABLE_RENDERER_SOFTWARE
 	GBAVideoSoftwareRendererCreate(&gbacore->renderer);
 	gbacore->renderer.outputBuffer = NULL;
+#endif
 
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	GBAVideoGLRendererCreate(&gbacore->glRenderer);
 	gbacore->glRenderer.outputTex = -1;
 #endif
 
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 	mVideoThreadProxyCreate(&gbacore->threadProxy);
 #endif
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 	gbacore->vlProxy.logger = NULL;
 	gbacore->proxyRenderer.logger = NULL;
 #endif
@@ -208,7 +215,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->keys = 0;
 	gba->keySource = &gbacore->keys;
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 	mDirectorySetInit(&core->dirs);
 #endif
 	
@@ -220,7 +227,7 @@ static void _GBACoreDeinit(struct mCore* core) {
 	GBADestroy(core->board);
 	mappedMemoryFree(core->cpu, sizeof(struct ARMCore));
 	mappedMemoryFree(core->board, sizeof(struct GBA));
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 	mDirectorySetDeinit(&core->dirs);
 #endif
 #ifdef USE_DEBUGGERS
@@ -272,7 +279,7 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 	}
 	gba->video.frameskip = core->opts.frameskip;
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->overrides = mCoreConfigGetOverridesConst(config);
 #endif
@@ -301,7 +308,7 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 	mCoreConfigCopyValue(&core->config, config, "gba.forceGbp");
 	mCoreConfigCopyValue(&core->config, config, "gba.audioHle");
 
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 	mCoreConfigCopyValue(&core->config, config, "threadedVideo");
 #endif
 	mCoreConfigCopyValue(&core->config, config, "hwaccelVideo");
@@ -376,9 +383,11 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 #endif
 	if (strcmp("hwaccelVideo", option) == 0) {
 		struct GBAVideoRenderer* renderer = NULL;
+#if MGBA_ENABLE_RENDERER_SOFTWARE
 		if (gbacore->renderer.outputBuffer) {
 			renderer = &gbacore->renderer.d;
 		}
+#endif
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
 			mCoreConfigGetIntValue(&core->config, "videoScale", &gbacore->glRenderer.scale);
@@ -387,7 +396,7 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 			gbacore->glRenderer.scale = 1;
 		}
 #endif
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 		if (renderer && core->videoLogger) {
 			gbacore->proxyRenderer.logger = core->videoLogger;
 			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
@@ -414,10 +423,16 @@ static void _GBACoreDesiredVideoDimensions(const struct mCore* core, unsigned* w
 }
 
 static void _GBACoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t stride) {
+#if MGBA_ENABLE_RENDERER_SOFTWARE
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->renderer.outputBuffer = buffer;
 	gbacore->renderer.outputBufferStride = stride;
 	memset(gbacore->renderer.scanlineDirty, 0xFFFFFFFF, sizeof(gbacore->renderer.scanlineDirty));
+#else
+    UNUSED(core);
+    UNUSED(buffer);
+    UNUSED(stride);
+#endif
 }
 
 static void _GBACoreSetVideoGLTex(struct mCore* core, unsigned texid) {
@@ -566,9 +581,11 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 	) {
 		struct GBAVideoRenderer* renderer = NULL;
+#if MGBA_ENABLE_RENDERER_SOFTWARE
 		if (gbacore->renderer.outputBuffer) {
 			renderer = &gbacore->renderer.d;
 		}
+#endif
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
 			mCoreConfigGetIntValue(&core->config, "videoScale", &gbacore->glRenderer.scale);
@@ -577,14 +594,14 @@ static void _GBACoreReset(struct mCore* core) {
 			gbacore->glRenderer.scale = 1;
 		}
 #endif
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 		if (mCoreConfigGetIntValue(&core->config, "threadedVideo", &fakeBool) && fakeBool) {
 			if (!core->videoLogger) {
 				core->videoLogger = &gbacore->threadProxy.d;
 			}
 		}
 #endif
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 		if (renderer && core->videoLogger) {
 			gbacore->proxyRenderer.logger = core->videoLogger;
 			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
@@ -596,7 +613,7 @@ static void _GBACoreReset(struct mCore* core) {
 		}
 	}
 
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_FILESYSTEM
 	int useAudioMixer;
 	if (!gbacore->audioMixer && mCoreConfigGetIntValue(&core->config, "gba.audioHle", &useAudioMixer) && useAudioMixer) {
 		gbacore->audioMixer = malloc(sizeof(*gbacore->audioMixer));
@@ -618,7 +635,7 @@ static void _GBACoreReset(struct mCore* core) {
 		gba->memory.hw.devices |= HW_GB_PLAYER_DETECTION;
 	}
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 	if (!gba->biosVf && core->opts.useBios) {
 		struct VFile* bios = NULL;
 		bool found = false;
@@ -928,7 +945,7 @@ static void _GBACoreDetachDebugger(struct mCore* core) {
 static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	bool closeAfter = false;
 	core->symbolTable = mDebuggerSymbolTableCreate();
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 #ifdef USE_ELF
 	if (!vf) {
 		closeAfter = true;
@@ -1113,7 +1130,7 @@ static void _GBACoreAdjustVideoLayer(struct mCore* core, size_t id, int32_t x, i
 	memset(gbacore->renderer.scanlineDirty, 0xFFFFFFFF, sizeof(gbacore->renderer.scanlineDirty));
 }
 
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 static void _GBACoreStartVideoLog(struct mCore* core, struct mVideoLogContext* context) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = core->board;
@@ -1224,14 +1241,14 @@ struct mCore* GBACoreCreate(void) {
 	core->enableVideoLayer = _GBACoreEnableVideoLayer;
 	core->enableAudioChannel = _GBACoreEnableAudioChannel;
 	core->adjustVideoLayer = _GBACoreAdjustVideoLayer;
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 	core->startVideoLog = _GBACoreStartVideoLog;
 	core->endVideoLog = _GBACoreEndVideoLog;
 #endif
 	return core;
 }
 
-#ifndef MINIMAL_CORE
+#if MGBA_ENABLE_VIDEO_LOGGER
 static void _GBAVLPStartFrameCallback(void *context) {
 	struct mCore* core = context;
 	struct GBACore* gbacore = (struct GBACore*) core;

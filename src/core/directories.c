@@ -3,12 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include <mgba/flags.h>
 #include <mgba/core/directories.h>
 
 #include <mgba/core/config.h>
 #include <mgba-util/vfs.h>
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 void mDirectorySetInit(struct mDirectorySet* dirs) {
 	dirs->base = 0;
 	dirs->archive = 0;

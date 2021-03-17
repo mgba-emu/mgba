@@ -5,10 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/test/suite.h"
 
+#include <mgba/flags.h>
 #include <mgba/core/core.h>
 #include <mgba-util/vfs.h>
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 M_TEST_DEFINE(findNullPath) {
 	struct mCore* core = mCoreFind(NULL);
 	assert_null(core);
@@ -29,7 +30,7 @@ M_TEST_DEFINE(findEmpty) {
 }
 
 M_TEST_SUITE_DEFINE(mCore,
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#if MGBA_ENABLE_FILESYSTEM
 	cmocka_unit_test(findNullPath),
 #endif
 	cmocka_unit_test(findNullVF),

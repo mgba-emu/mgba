@@ -163,7 +163,7 @@ static void _tryAutosave(struct mGUIRunner* runner) {
 		return;
 	}
 
-#ifdef DISABLE_THREADING
+#if !MGBA_ENABLE_THREADING
 	mCoreSaveState(runner->core, 0, SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
 #else
 	if (!runner->autosave.buffer) {
@@ -197,7 +197,7 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 	mCoreConfigSetDefaultIntValue(&runner->config, "volume", 0x100);
 	mCoreConfigSetDefaultValue(&runner->config, "idleOptimization", "detect");
 	mCoreConfigSetDefaultIntValue(&runner->config, "autoload", true);
-#ifdef DISABLE_THREADING
+#if !MGBA_ENABLE_THREADING
 	mCoreConfigSetDefaultIntValue(&runner->config, "autosave", false);
 #else
 	mCoreConfigSetDefaultIntValue(&runner->config, "autosave", true);
@@ -222,7 +222,7 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 		}
 	}
 
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 	if (!runner->autosave.running) {
 		runner->autosave.running = true;
 		runner->autosave.core = NULL;
@@ -234,7 +234,7 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 }
 
 void mGUIDeinit(struct mGUIRunner* runner) {
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 	MutexLock(&runner->autosave.mutex);
 	runner->autosave.running = false;
 	ConditionWake(&runner->autosave.cond);
@@ -452,7 +452,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 
 	bool running = true;
 
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 	MutexLock(&runner->autosave.mutex);
 	runner->autosave.core = runner->core;
 	MutexUnlock(&runner->autosave.mutex);
@@ -643,7 +643,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	if (runner->gameUnloaded) {
 		runner->gameUnloaded(runner);
 	}
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 	MutexLock(&runner->autosave.mutex);
 	runner->autosave.core = NULL;
 	MutexUnlock(&runner->autosave.mutex);
@@ -714,7 +714,7 @@ void mGUIRunloop(struct mGUIRunner* runner) {
 	}
 }
 
-#ifndef DISABLE_THREADING
+#if MGBA_ENABLE_THREADING
 THREAD_ENTRY mGUIAutosaveThread(void* context) {
 	struct mGUIAutosaveContext* autosave = context;
 	MutexLock(&autosave->mutex);
