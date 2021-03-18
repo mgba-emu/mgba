@@ -153,11 +153,19 @@ static inline bool _SM83TickInternal(struct SM83Core* cpu) {
 	_SM83Step(cpu);
 	int t = cpu->tMultiplier;
 	if (cpu->cycles + t * 2 >= cpu->nextEvent) {
-		int32_t diff = cpu->nextEvent - cpu->cycles;
-		cpu->cycles = cpu->nextEvent;
-		cpu->executionState += diff >> (t - 1); // NB: This assumes tMultiplier is either 1 or 2
-		cpu->irqh.processEvents(cpu);
-		cpu->cycles += (SM83_CORE_EXECUTE - cpu->executionState) * t;
+		if (cpu->cycles >= cpu->nextEvent) {
+			cpu->irqh.processEvents(cpu);
+		}
+		cpu->cycles += t;
+		++cpu->executionState;
+		if (cpu->cycles >= cpu->nextEvent) {
+			cpu->irqh.processEvents(cpu);
+		}
+		cpu->cycles += t;
+		++cpu->executionState;
+		if (cpu->cycles >= cpu->nextEvent) {
+			cpu->irqh.processEvents(cpu);
+		}
 		running = false;
 	} else {
 		cpu->cycles += t * 2;
