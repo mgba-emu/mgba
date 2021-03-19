@@ -761,7 +761,10 @@ DEFINE_INSTRUCTION_SM83(RRCA_,
 
 DEFINE_INSTRUCTION_SM83(DI, cpu->irqh.setInterrupts(cpu, false));
 DEFINE_INSTRUCTION_SM83(EI, cpu->irqh.setInterrupts(cpu, true));
-DEFINE_INSTRUCTION_SM83(HALT, cpu->irqh.halt(cpu));
+DEFINE_INSTRUCTION_SM83(HALT,
+	cpu->irqh.halt(cpu);
+	// XXX: Subtract the cycles that will be added later in the tick function
+	cpu->cycles -= cpu->tMultiplier;);
 
 #define DEFINE_RST_INSTRUCTION_SM83(VEC) \
 	DEFINE_INSTRUCTION_SM83(RST ## VEC ## UpdateSPL, \

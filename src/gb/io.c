@@ -166,6 +166,10 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, GB_REG_TMA, 0);
 	GBIOWrite(gb, GB_REG_TAC, 0);
 	GBIOWrite(gb, GB_REG_IF, 1);
+	gb->audio.playingCh1 = false;
+	gb->audio.playingCh2 = false;
+	gb->audio.playingCh3 = false;
+	gb->audio.playingCh4 = false;
 	GBIOWrite(gb, GB_REG_NR52, 0xF1);
 	GBIOWrite(gb, GB_REG_NR14, 0x3F);
 	GBIOWrite(gb, GB_REG_NR10, 0x80);
@@ -633,6 +637,7 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 		if (gb->model < GB_MODEL_CGB) {
 			mLOG(GB_IO, GAME_ERROR, "Reading from CGB register FF%02X in DMG mode", address);
 		} else if (gb->audio.enable) {
+			GBAudioUpdateChannel4(&gb->audio);
 			return (gb->audio.ch3.sample) | (gb->audio.ch4.sample << 4);
 		}
 		break;
