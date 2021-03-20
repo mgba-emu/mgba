@@ -25,6 +25,7 @@
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/renderers/cache-set.h>
 #endif
+#include "feature/sqlite3/no-intro.h"
 #include <mgba-util/math.h>
 #include <mgba-util/vfs.h>
 
@@ -39,6 +40,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 {
 	m_threadContext.core = core;
 	m_threadContext.userData = this;
+	updateROMInfo();
 
 	m_resetActions.append([this]() {
 		if (m_autoload) {
@@ -681,6 +683,7 @@ void CoreController::loadPatch(const QString& patchPath) {
 		m_threadContext.core->loadPatch(m_threadContext.core, patch);
 		m_patched = true;
 		patch->close(patch);
+		updateROMInfo();
 	}
 	if (mCoreThreadHasStarted(&m_threadContext)) {
 		reset();
@@ -697,6 +700,7 @@ void CoreController::replaceGame(const QString& path) {
 	Interrupter interrupter(this);
 	mDirectorySetDetachBase(&m_threadContext.core->dirs);
 	mCoreLoadFile(m_threadContext.core, fname.toUtf8().constData());
+	updateROMInfo();
 }
 
 void CoreController::yankPak() {
@@ -1072,6 +1076,24 @@ void CoreController::updateFastForward() {
 	}
 
 	m_threadContext.core->reloadConfigOption(m_threadContext.core, NULL, NULL);
+}
+
+void CoreController::updateROMInfo() {
+	const NoIntroDB* db = GBAApp::app()->gameDB();
+	NoIntroGame game{};
+	m_crc32 = 0;
+	mCore* core = m_threadContext.core;
+	core->checksum(core, &m_crc32, mCHECKSUM_CRC32);
+
+	char gameTitle[17] = { '\0' };
+	core->getGameTitle(core, gameTitle);
+	m_internalTitle = QLatin1String(gameTitle);
+
+#ifdef USE_SQLITE3
+	if (db && m_crc32 && NoIntroDBLookupGameByCRC(db, m_crc32, &game)) {
+		m_dbTitle = QString::fromUtf8(game.name);
+	}
+#endif
 }
 
 CoreController::Interrupter::Interrupter(CoreController* parent)

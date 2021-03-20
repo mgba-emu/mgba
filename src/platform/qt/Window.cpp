@@ -73,7 +73,6 @@
 #include <mgba/internal/gba/gba.h>
 #endif
 #include <mgba/feature/commandline.h>
-#include "feature/sqlite3/no-intro.h"
 #include <mgba-util/vfs.h>
 
 using namespace QGBA;
@@ -1011,31 +1010,15 @@ void Window::showFPS() {
 
 void Window::updateTitle(float fps) {
 	QString title;
-
 	if (m_config->getOption("dynamicTitle", 1).toInt() && m_controller) {
-		CoreController::Interrupter interrupter(m_controller);
-		const NoIntroDB* db = GBAApp::app()->gameDB();
-		NoIntroGame game{};
-		uint32_t crc32 = 0;
-		mCore* core = m_controller->thread()->core;
-		core->checksum(m_controller->thread()->core, &crc32, mCHECKSUM_CRC32);
 		QString filePath = windowFilePath();
-
 		if (m_config->getOption("showFilename").toInt() && !filePath.isNull()) {
 			QFileInfo fileInfo(filePath);
 			title = fileInfo.fileName();
 		} else {
-			char gameTitle[17] = { '\0' };
-			core->getGameTitle(core, gameTitle);
-			title = gameTitle;
-
-#ifdef USE_SQLITE3
-			if (db && crc32 && NoIntroDBLookupGameByCRC(db, crc32, &game)) {
-				title = QLatin1String(game.name);
-			}
-#endif
+			title = m_controller->title();
 		}
-		
+
 		MultiplayerController* multiplayer = m_controller->multiplayerController();
 		if (multiplayer && multiplayer->attached() > 1) {
 			title += tr(" -  Player %1 of %2").arg(multiplayer->playerId(m_controller.get()) + 1).arg(multiplayer->attached());
