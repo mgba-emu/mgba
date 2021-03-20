@@ -1802,22 +1802,22 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <translation>OBJ 窗口启用叠加</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="279"/>
+        <location filename="../IOViewer.cpp" line="280"/>
         <source>Background mosaic size vertical</source>
         <translation>背景马赛克垂直大小</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="280"/>
+        <location filename="../IOViewer.cpp" line="279"/>
         <source>Background mosaic size horizontal</source>
         <translation>背景马赛克水平大小</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="281"/>
+        <location filename="../IOViewer.cpp" line="282"/>
         <source>Object mosaic size vertical</source>
         <translation>对象马赛克垂直大小</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="282"/>
+        <location filename="../IOViewer.cpp" line="281"/>
         <source>Object mosaic size horizontal</source>
         <translation>对象马赛克水平大小</translation>
     </message>

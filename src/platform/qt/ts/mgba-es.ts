@@ -1802,22 +1802,22 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
         <translation>OBJ window habilitar mezcla</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="279"/>
+        <location filename="../IOViewer.cpp" line="280"/>
         <source>Background mosaic size vertical</source>
         <translation>Tamaño vertical mosaico BG</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="280"/>
+        <location filename="../IOViewer.cpp" line="279"/>
         <source>Background mosaic size horizontal</source>
         <translation>Tamaño horizontal mosaico BG</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="281"/>
+        <location filename="../IOViewer.cpp" line="282"/>
         <source>Object mosaic size vertical</source>
         <translation>Tamaño vertical mosaico OBJ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="282"/>
+        <location filename="../IOViewer.cpp" line="281"/>
         <source>Object mosaic size horizontal</source>
         <translation>Tamaño horizontal mosaico OBJ</translation>
     </message>
