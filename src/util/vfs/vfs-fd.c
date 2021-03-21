@@ -198,7 +198,7 @@ static bool _vfdSync(struct VFile* vf, const void* buffer, size_t size) {
 	UNUSED(size);
 	struct VFileFD* vfd = (struct VFileFD*) vf;
 #ifndef _WIN32
-#if defined(__HAIKU__) || defined(ANDROID)
+#if defined(__HAIKU__) || defined(ANDROID) || defined(EMSCRIPTEN)
 	futimens(vfd->fd, NULL);
 #else
 	futimes(vfd->fd, NULL);

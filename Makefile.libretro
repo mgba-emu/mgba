@@ -387,7 +387,8 @@ else ifeq ($(platform), genode)
 # emscripten
 else ifeq ($(platform), emscripten)
    TARGET := $(TARGET_NAME)_libretro_$(platform).bc
-   DEFINES += -std=gnu99 -DHAVE_LOCALE
+   DEFINES += -std=gnu99 -DHAVE_LOCALE -D_GNU_SOURCE -DHAVE_STRTOF_L
+   STATIC_LINKING = 1
 
 # GCW0
 else ifeq ($(platform), gcw0)
@@ -412,8 +413,6 @@ endif
 
 ifeq ($(DEBUG), 1)
    CFLAGS += -O0 -g
-else ifeq ($(platform), emscripten)
-   CFLAGS += -O2
 else
    CFLAGS += -O3
 endif
