@@ -27,6 +27,7 @@ Display* Display::create(QWidget* parent) {
 	switch (s_driver) {
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 	case Driver::OPENGL:
+#if defined(BUILD_GLES2) || defined(USE_EPOXY)
 		if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) {
 			format.setVersion(2, 0);
 		} else {
@@ -46,6 +47,7 @@ Display* Display::create(QWidget* parent) {
 #endif
 		}
 		return new DisplayGL(format, parent);
+#endif
 #endif
 #ifdef BUILD_GL
 	case Driver::OPENGL1:
