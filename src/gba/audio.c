@@ -221,7 +221,27 @@ void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteWaveRAM(struct GBAAudio* audio, int address, uint32_t value) {
-	audio->psg.ch3.wavedata32[address | (!audio->psg.ch3.bank * 4)] = value;
+	int bank = !audio->psg.ch3.bank;
+
+	// When the audio hardware is turned off, it acts like bank 0 has been
+	// selected in SOUND3CNT_L, so any read comes from bank 1.
+	if (!audio->enable) {
+		bank = 1;
+	}
+
+	audio->psg.ch3.wavedata32[address | (bank * 4)] = value;
+}
+
+uint32_t GBAAudioReadWaveRAM(struct GBAAudio* audio, int address) {
+	int bank = !audio->psg.ch3.bank;
+
+	// When the audio hardware is turned off, it acts like bank 0 has been
+	// selected in SOUND3CNT_L, so any read comes from bank 1.
+	if (!audio->enable) {
+		bank = 1;
+	}
+
+	return audio->psg.ch3.wavedata32[address | (bank * 4)];
 }
 
 uint32_t GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value) {

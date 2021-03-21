@@ -616,6 +616,9 @@ void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
 
 void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 	switch (address) {
+	// Wave RAM can be written and read even if the audio hardware is disabled.
+	// However, it is not possible to switch between the two banks because it
+	// isn't possible to write to register SOUND3CNT_LO.
 	case REG_WAVE_RAM0_LO:
 		GBAAudioWriteWaveRAM(&gba->audio, 0, value);
 		break;
@@ -833,6 +836,27 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_POSTFLG:
 		mLOG(GBA_IO, STUB, "Stub I/O register read: %03x", address);
 		break;
+
+	// Wave RAM can be written and read even if the audio hardware is disabled.
+	// However, it is not possible to switch between the two banks because it
+	// isn't possible to write to register SOUND3CNT_LO.
+	case REG_WAVE_RAM0_LO:
+		return GBAAudioReadWaveRAM(&gba->audio, 0) & 0xFFFF;
+	case REG_WAVE_RAM0_HI:
+		return GBAAudioReadWaveRAM(&gba->audio, 0) >> 16;
+	case REG_WAVE_RAM1_LO:
+		return GBAAudioReadWaveRAM(&gba->audio, 1) & 0xFFFF;
+	case REG_WAVE_RAM1_HI:
+		return GBAAudioReadWaveRAM(&gba->audio, 1) >> 16;
+	case REG_WAVE_RAM2_LO:
+		return GBAAudioReadWaveRAM(&gba->audio, 2) & 0xFFFF;
+	case REG_WAVE_RAM2_HI:
+		return GBAAudioReadWaveRAM(&gba->audio, 2) >> 16;
+	case REG_WAVE_RAM3_LO:
+		return GBAAudioReadWaveRAM(&gba->audio, 3) & 0xFFFF;
+	case REG_WAVE_RAM3_HI:
+		return GBAAudioReadWaveRAM(&gba->audio, 3) >> 16;
+
 	case REG_SOUND1CNT_LO:
 	case REG_SOUND1CNT_HI:
 	case REG_SOUND1CNT_X:
@@ -863,14 +887,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_BLDALPHA:
 	case REG_SOUNDCNT_HI:
 	case REG_SOUNDCNT_X:
-	case REG_WAVE_RAM0_LO:
-	case REG_WAVE_RAM0_HI:
-	case REG_WAVE_RAM1_LO:
-	case REG_WAVE_RAM1_HI:
-	case REG_WAVE_RAM2_LO:
-	case REG_WAVE_RAM2_HI:
-	case REG_WAVE_RAM3_LO:
-	case REG_WAVE_RAM3_HI:
 	case REG_DMA0CNT_HI:
 	case REG_DMA1CNT_HI:
 	case REG_DMA2CNT_HI:
