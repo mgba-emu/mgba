@@ -88,7 +88,8 @@ static int rumbleDown;
 static struct mRumble rumble;
 static struct GBALuminanceSource lux;
 static struct mRotationSource rotation;
-static bool rotationEnabled;
+static bool tiltEnabled;
+static bool gyroEnabled;
 static int luxLevelIndex;
 static uint8_t luxLevel;
 static bool luxSensorEnabled;
@@ -1012,9 +1013,12 @@ static void _initSensors(void) {
 		sensorStateCallback = sensorInterface.set_sensor_state;
 
 		if (sensorStateCallback && sensorGetCallback) {
-			if (sensorStateCallback(0, RETRO_SENSOR_ACCELEROMETER_ENABLE, EVENT_RATE)
-				&& sensorStateCallback(0, RETRO_SENSOR_GYROSCOPE_ENABLE, EVENT_RATE)) {
-				rotationEnabled = true;
+			if (sensorStateCallback(0, RETRO_SENSOR_ACCELEROMETER_ENABLE, EVENT_RATE)) {
+				tiltEnabled = true;
+			}
+
+			if (sensorStateCallback(0, RETRO_SENSOR_GYROSCOPE_ENABLE, EVENT_RATE)) {
+				gyroEnabled = true;
 			}
 
 			if (sensorStateCallback(0, RETRO_SENSOR_ILLUMINANCE_ENABLE, EVENT_RATE)) {
@@ -1232,7 +1236,8 @@ void retro_init(void) {
 	sensorGetCallback = 0;
 	sensorStateCallback = 0;
 
-	rotationEnabled = false;
+	tiltEnabled = false;
+	gyroEnabled = false;
 	rotation.sample = _updateRotation;
 	rotation.readTiltX = _readTiltX;
 	rotation.readTiltY = _readTiltY;
@@ -1299,7 +1304,8 @@ void retro_deinit(void) {
 		sensorStateCallback = NULL;
 	}
 
-	rotationEnabled = false;
+	tiltEnabled = false;
+	gyroEnabled = false;
 	luxSensorEnabled = false;
 	sensorsInitDone = false;
 	libretro_supports_bitmasks = false;
@@ -1341,7 +1347,6 @@ void retro_run(void) {
 	uint16_t keys;
 	bool skipFrame = false;
 
-	_initSensors();
 	inputPollCallback();
 
 	bool updated = false;
@@ -2132,6 +2137,7 @@ static void _updateLux(struct GBALuminanceSource* lux) {
 	}
 
 	if (luxSensorUsed) {
+		_initSensors();
 		float fLux = luxSensorEnabled ? sensorGetCallback(0, RETRO_SENSOR_ILLUMINANCE) : 0.0f;
 		luxLevel = cbrtf(fLux) * 8;
 	} else {
@@ -2233,9 +2239,12 @@ static void _updateRotation(struct mRotationSource* source) {
 	tiltX = 0;
 	tiltY = 0;
 	gyroZ = 0;
-	if (rotationEnabled) {
+	_initSensors();
+	if (tiltEnabled) {
 		tiltX = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_X) * 3e8f;
 		tiltY = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_Y) * -3e8f;
+	}
+	if (gyroEnabled) {
 		gyroZ = sensorGetCallback(0, RETRO_SENSOR_GYROSCOPE_Z) * -1.1e9f;
 	}
 }
