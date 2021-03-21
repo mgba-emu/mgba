@@ -638,6 +638,8 @@ void GBOverrideSave(struct Configuration* config, const struct GBCartridgeOverri
 void GBOverrideApply(struct GB* gb, const struct GBCartridgeOverride* override) {
 	if (override->model != GB_MODEL_AUTODETECT) {
 		gb->model = override->model;
+		gb->video.renderer->deinit(gb->video.renderer);
+		gb->video.renderer->init(gb->video.renderer, gb->model, gb->video.sgbBorders);
 	}
 
 	if (override->mbc != GB_MBC_AUTODETECT) {

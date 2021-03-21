@@ -443,44 +443,45 @@ static void _GBCoreReset(struct mCore* core) {
 		struct GBCartridgeOverride override;
 		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 		override.headerCrc32 = doCrc32(cart, sizeof(*cart));
-		if (GBOverrideFind(gbcore->overrides, &override) || (doColorOverride && GBOverrideColorFind(&override))) {
+		bool modelOverride = GBOverrideFind(gbcore->overrides, &override) || (doColorOverride && GBOverrideColorFind(&override));
+		if (modelOverride) {
 			GBOverrideApply(gb, &override);
-		}
-
-		const char* modelGB = mCoreConfigGetValue(&core->config, "gb.model");
-		const char* modelSGB = mCoreConfigGetValue(&core->config, "sgb.model");
-		const char* modelCGB = mCoreConfigGetValue(&core->config, "cgb.model");
-		const char* modelCGBHybrid = mCoreConfigGetValue(&core->config, "cgb.hybridModel");
-		const char* modelCGBSGB = mCoreConfigGetValue(&core->config, "cgb.sgbModel");
-		if (modelGB || modelCGB || modelSGB || modelCGBHybrid || modelCGBSGB) {
-			int models = GBValidModels(gb->memory.rom);
-			switch (models) {
-			case GB_MODEL_SGB | GB_MODEL_MGB:
-				if (modelSGB) {
-					gb->model = GBNameToModel(modelSGB);
+		} else {
+			const char* modelGB = mCoreConfigGetValue(&core->config, "gb.model");
+			const char* modelSGB = mCoreConfigGetValue(&core->config, "sgb.model");
+			const char* modelCGB = mCoreConfigGetValue(&core->config, "cgb.model");
+			const char* modelCGBHybrid = mCoreConfigGetValue(&core->config, "cgb.hybridModel");
+			const char* modelCGBSGB = mCoreConfigGetValue(&core->config, "cgb.sgbModel");
+			if (modelGB || modelCGB || modelSGB || modelCGBHybrid || modelCGBSGB) {
+				int models = GBValidModels(gb->memory.rom);
+				switch (models) {
+				case GB_MODEL_SGB | GB_MODEL_MGB:
+					if (modelSGB) {
+						gb->model = GBNameToModel(modelSGB);
+					}
+					break;
+				case GB_MODEL_MGB:
+					if (modelGB) {
+						gb->model = GBNameToModel(modelGB);
+					}
+					break;
+				case GB_MODEL_MGB | GB_MODEL_CGB:
+					if (modelCGBHybrid) {
+						gb->model = GBNameToModel(modelCGBHybrid);
+					}
+					break;
+				case GB_MODEL_SGB | GB_MODEL_CGB: // TODO: Do these even exist?
+				case GB_MODEL_MGB | GB_MODEL_SGB | GB_MODEL_CGB:
+					if (modelCGBSGB) {
+						gb->model = GBNameToModel(modelCGBSGB);
+					}
+					break;
+				case GB_MODEL_CGB:
+					if (modelCGB) {
+						gb->model = GBNameToModel(modelCGB);
+					}
+					break;
 				}
-				break;
-			case GB_MODEL_MGB:
-				if (modelGB) {
-					gb->model = GBNameToModel(modelGB);
-				}
-				break;
-			case GB_MODEL_MGB | GB_MODEL_CGB:
-				if (modelCGBHybrid) {
-					gb->model = GBNameToModel(modelCGBHybrid);
-				}
-				break;
-			case GB_MODEL_SGB | GB_MODEL_CGB: // TODO: Do these even exist?
-			case GB_MODEL_MGB | GB_MODEL_SGB | GB_MODEL_CGB:
-				if (modelCGBSGB) {
-					gb->model = GBNameToModel(modelCGBSGB);
-				}
-				break;
-			case GB_MODEL_CGB:
-				if (modelCGB) {
-					gb->model = GBNameToModel(modelCGB);
-				}
-				break;
 			}
 		}
 	}
