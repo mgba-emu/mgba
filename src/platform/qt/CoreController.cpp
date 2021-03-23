@@ -686,6 +686,7 @@ void CoreController::loadPatch(const QString& patchPath) {
 		updateROMInfo();
 	}
 	if (mCoreThreadHasStarted(&m_threadContext)) {
+		interrupter.resume();
 		reset();
 	}
 }
