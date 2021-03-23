@@ -1818,7 +1818,7 @@ void _prepareBackground(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBa
 	glUniform1i(uniforms[GBA_GL_BG_VRAM], 0);
 	glUniform1i(uniforms[GBA_GL_OBJ_PALETTE], 1);
 	if (background->mosaic) {
-		glUniform2i(uniforms[GBA_GL_BG_MOSAIC], GBAMosaicControlGetBgV(renderer->mosaic) + 1, GBAMosaicControlGetBgH(renderer->mosaic) + 1);
+		glUniform2i(uniforms[GBA_GL_BG_MOSAIC], GBAMosaicControlGetBgH(renderer->mosaic) + 1, GBAMosaicControlGetBgV(renderer->mosaic) + 1);
 	} else {
 		glUniform2i(uniforms[GBA_GL_BG_MOSAIC], 0, 0);
 	}
