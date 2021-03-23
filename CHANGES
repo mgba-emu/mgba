@@ -83,6 +83,7 @@ Other fixes:
  - FFmpeg: Fix encoding of time base
  - GB: Fix crash when changing ROM while in banked address space
  - GB: Fix loading model overrides
+ - GB Serialize: Fix crash when loading pre-0.7 SGB savestates
  - GB Video: Fix SGB video logs
  - GBA: Fix loading multiboot ELF files (fixes mgba.io/i/1949)
  - GBA: Fix loading subsequent save files (fixes mgba.io/i/2067)
