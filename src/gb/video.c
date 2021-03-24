@@ -867,6 +867,8 @@ void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* s
 	LOAD_16LE(video->ly, 0, &state->video.ly);
 	LOAD_32LE(video->frameCounter, 0, &state->video.frameCounter);
 	LOAD_32LE(video->dotClock, 0, &state->video.dotCounter);
+	video->x = (int16_t) video->x; // Ensure proper sign extension--the LOAD_16 is unsigned
+
 	video->vramCurrentBank = state->video.vramCurrentBank;
 
 	GBSerializedVideoFlags flags = state->video.flags;
