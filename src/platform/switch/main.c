@@ -505,7 +505,7 @@ static void _incrementScreenMode(struct mGUIRunner* runner) {
 static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 	UNUSED(runner);
 	if (!frameLimiter && limit) {
-		while (enqueuedBuffers > 1) {
+		while (enqueuedBuffers > 2) {
 			AudioOutBuffer* releasedBuffers;
 			u32 audoutNReleasedBuffers;
 			audoutWaitPlayFinish(&releasedBuffers, &audoutNReleasedBuffers, 100000000);
