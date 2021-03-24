@@ -210,22 +210,22 @@ static uint32_t _pollInput(const struct mInputMap* map) {
 
 	HidAnalogStickState jspos = padGetStickPos(&pad, 0);
 
-	int l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_LEFT));
-	int r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_RIGHT));
-	int u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_UP));
-	int d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_DOWN));
+	int l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_StickLLeft));
+	int r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_StickLRight));
+	int u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_StickLUp));
+	int d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_StickLDown));
 
 	if (l == -1) {
-		l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DLEFT));
+		l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_Left));
 	}
 	if (r == -1) {
-		r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DRIGHT));
+		r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_Right));
 	}
 	if (u == -1) {
-		u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DUP));
+		u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_Up));
 	}
 	if (d == -1) {
-		d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DDOWN));
+		d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_Down));
 	}
 
 	if (jspos.x < -ANALOG_DEADZONE && l != -1) {
@@ -980,13 +980,13 @@ int main(int argc, char* argv[]) {
 	};
 	mGUIInit(&runner, "switch");
 
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_A, GUI_INPUT_SELECT);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_B, GUI_INPUT_BACK);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_X, GUI_INPUT_CANCEL);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DUP, GUI_INPUT_UP);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DDOWN, GUI_INPUT_DOWN);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DLEFT, GUI_INPUT_LEFT);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DRIGHT, GUI_INPUT_RIGHT);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_A, GUI_INPUT_SELECT);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_B, GUI_INPUT_BACK);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_X, GUI_INPUT_CANCEL);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_Up, GUI_INPUT_UP);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_Down, GUI_INPUT_DOWN);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_Left, GUI_INPUT_LEFT);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_Right, GUI_INPUT_RIGHT);
 
 	audoutStartAudioOut();
 
