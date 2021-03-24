@@ -125,6 +125,7 @@ Misc:
  - GB: Allow pausing event loop while CPU is blocked
  - GB: Add support for sleep and shutdown callbacks
  - GB: Redo double speed emulation (closes mgba.io/i/1515)
+ - GB: Support loading CGB-on-AGB boot ROM
  - GB Audio: Add channel 4 batching back (fixes mgba.io/i/1313)
  - GB Core: Return the current number of banks for ROM/SRAM, not theoretical max
  - GB I/O: Implement preliminary support for PCM12/PCM34 (closes mgba.io/i/1468)

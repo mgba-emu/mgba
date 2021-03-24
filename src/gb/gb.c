@@ -26,12 +26,13 @@ const uint32_t GB_COMPONENT_MAGIC = 0x400000;
 
 static const uint8_t _knownHeader[4] = { 0xCE, 0xED, 0x66, 0x66};
 
-#define DMG_BIOS_CHECKSUM 0xC2F5CC97
-#define DMG_2_BIOS_CHECKSUM 0x59C8598E
+#define DMG0_BIOS_CHECKSUM 0xC2F5CC97
+#define DMG_BIOS_CHECKSUM 0x59C8598E
 #define MGB_BIOS_CHECKSUM 0xE6920754
 #define SGB_BIOS_CHECKSUM 0xEC8A83B9
 #define SGB2_BIOS_CHECKSUM 0X53D0DD63
 #define CGB_BIOS_CHECKSUM 0x41884E46
+#define AGB_BIOS_CHECKSUM 0xFFD6B0F1
 
 mLOG_DEFINE_CATEGORY(GB, "GB", "gb");
 
@@ -414,11 +415,12 @@ static uint32_t _GBBiosCRC32(struct VFile* vf) {
 bool GBIsBIOS(struct VFile* vf) {
 	switch (_GBBiosCRC32(vf)) {
 	case DMG_BIOS_CHECKSUM:
-	case DMG_2_BIOS_CHECKSUM:
+	case DMG0_BIOS_CHECKSUM:
 	case MGB_BIOS_CHECKSUM:
 	case SGB_BIOS_CHECKSUM:
 	case SGB2_BIOS_CHECKSUM:
 	case CGB_BIOS_CHECKSUM:
+	case AGB_BIOS_CHECKSUM:
 		return true;
 	default:
 		return false;
@@ -623,7 +625,7 @@ void GBDetectModel(struct GB* gb) {
 	if (gb->biosVf) {
 		switch (_GBBiosCRC32(gb->biosVf)) {
 		case DMG_BIOS_CHECKSUM:
-		case DMG_2_BIOS_CHECKSUM:
+		case DMG0_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_DMG;
 			break;
 		case MGB_BIOS_CHECKSUM:
@@ -637,6 +639,9 @@ void GBDetectModel(struct GB* gb) {
 			break;
 		case CGB_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_CGB;
+			break;
+		case AGB_BIOS_CHECKSUM:
+			gb->model = GB_MODEL_AGB;
 			break;
 		default:
 			gb->biosVf->close(gb->biosVf);
