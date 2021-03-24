@@ -359,24 +359,24 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 	switch (screenMode) {
 	case SM_PA:
 		if (aspectX > aspectY) {
-			max = floor(1.0 / aspectX);
+			max = floor(1.f / aspectX);
 		} else {
-			max = floor(1.0 / aspectY);
+			max = floor(1.f / aspectY);
 		}
-		if (max >= 1.0) {
+		if (max >= 1.f) {
 			break;
 		}
 		// Fall through
 	case SM_AF:
 		if (aspectX > aspectY) {
-			max = 1.0 / aspectX;
+			max = 1.f / aspectX;
 		} else {
-			max = 1.0 / aspectY;
+			max = 1.f / aspectY;
 		}
 		break;
 	case SM_SF:
-		aspectX = 1.0;
-		aspectY = 1.0;
+		aspectX = 1.f;
+		aspectY = 1.f;
 		break;
 	}
 
