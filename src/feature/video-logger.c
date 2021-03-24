@@ -613,6 +613,7 @@ bool _readHeader(struct mVideoLogContext* context) {
 
 	LOAD_32LE(context->nChannels, 0, &header.nChannels);
 	if (context->nChannels > mVL_MAX_CHANNELS) {
+		context->nChannels = 0;
 		return false;
 	}
 
