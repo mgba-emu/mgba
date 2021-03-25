@@ -221,37 +221,37 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
     <message>
         <location filename="../DolphinConnector.ui" line="14"/>
         <source>Connect to Dolphin</source>
-        <translation type="unfinished"></translation>
+        <translation>Mit Dolphin verbinden</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="23"/>
         <source>Local computer</source>
-        <translation type="unfinished"></translation>
+        <translation>Lokaler Computer</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="36"/>
         <source>IP address</source>
-        <translation type="unfinished"></translation>
+        <translation>IP-Adresse</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="55"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Verbinden</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="68"/>
         <source>Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>Verbindung trennen</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="78"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Schließen</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="90"/>
         <source>Reset on connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Bei Verbindung zurücksetzen</translation>
     </message>
 </context>
 <context>
@@ -2835,7 +2835,7 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
         <location filename="../IOViewer.cpp" line="956"/>
         <location filename="../IOViewer.cpp" line="973"/>
         <source>Keypad</source>
-        <translation>Kepad</translation>
+        <translation>Keypad</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="957"/>
@@ -4252,7 +4252,7 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
     <message>
         <location filename="../Window.cpp" line="1211"/>
         <source>Connect to Dolphin...</source>
-        <translation type="unfinished"></translation>
+        <translation>Mit Dolphin verbinden...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1219"/>
