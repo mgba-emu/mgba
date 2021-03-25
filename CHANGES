@@ -85,6 +85,7 @@ Other fixes:
  - FFmpeg: Fix encoding of time base
  - GB: Fix crash when changing ROM while in banked address space
  - GB: Fix loading model overrides
+ - GB MBC: Force minimum SRAM size on rare MBCs that always have SRAM
  - GB Serialize: Fix crash when loading pre-0.7 SGB savestates
  - GB Video: Fix SGB video logs
  - GB Video: Discard SGB packets in non-SGB mVLs
