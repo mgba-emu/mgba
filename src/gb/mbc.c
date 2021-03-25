@@ -236,9 +236,6 @@ void GBMBCInit(struct GB* gb) {
 		case 0:
 			gb->sramSize = 0;
 			break;
-		case 1:
-			gb->sramSize = 0x800;
-			break;
 		default:
 		case 2:
 			gb->sramSize = 0x2000;
