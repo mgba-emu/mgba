@@ -153,6 +153,7 @@ Misc:
  - Qt: Use relative paths in portable mode when applicable (fixes mgba.io/i/838)
  - Qt: Better initial shortcut editor column sizes
  - SDL: Fall back to sw blit if OpenGL init fails
+ - Switch: Optimize font rendering (fixes mgba.io/i/2078)
  - Util: Reset vector size on deinit
  - VFS: Change semantics of VFile.sync on mapped files (fixes mgba.io/i/1730)
 

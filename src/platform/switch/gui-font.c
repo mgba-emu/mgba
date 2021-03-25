@@ -14,6 +14,7 @@
 #define GLYPH_HEIGHT 24
 #define CELL_HEIGHT 32
 #define CELL_WIDTH 32
+#define MAX_GLYPHS 1024
 
 static const GLfloat _offsets[] = {
 	0.f, 0.f,
@@ -22,50 +23,70 @@ static const GLfloat _offsets[] = {
 	0.f, 1.f,
 };
 
-static const GLchar* const _gles2Header =
-	"#version 100\n"
+static const GLchar* const _gles3Header =
+	"#version 300 es\n"
 	"precision mediump float;\n";
 
 static const char* const _vertexShader =
-	"attribute vec2 offset;\n"
-	"uniform vec3 origin;\n"
-	"uniform vec2 glyph;\n"
-	"uniform vec2 dims;\n"
-	"uniform mat2 transform;\n"
-	"varying vec2 texCoord;\n"
+	"in vec2 offset;\n"
+	"in vec3 origin;\n"
+	"in vec2 glyph;\n"
+	"in vec2 dims;\n"
+	"in mat2 transform;\n"
+	"in vec4 color;\n"
+	"out vec4 fragColor;\n"
+	"out vec2 texCoord;\n"
 
 	"void main() {\n"
 	"	texCoord = (glyph + offset * dims) / 512.0;\n"
 	"	vec2 scaledOffset = (transform * (offset * 2.0 - vec2(1.0)) + vec2(1.0)) / 2.0 * dims;\n"
+	"	fragColor = color;\n"
 	"	gl_Position = vec4((origin.x + scaledOffset.x) / 640.0 - 1.0, -(origin.y + scaledOffset.y) / 360.0 + 1.0, origin.z, 1.0);\n"
 	"}";
 
 static const char* const _fragmentShader =
-	"varying vec2 texCoord;\n"
+	"in vec2 texCoord;\n"
+	"in vec4 fragColor;\n"
+	"out vec4 outColor;\n"
 	"uniform sampler2D tex;\n"
-	"uniform vec4 color;\n"
 	"uniform float cutoff;\n"
+	"uniform vec3 colorModulus;\n"
 
 	"void main() {\n"
 	"	vec4 texColor = texture2D(tex, texCoord);\n"
 	"	texColor.a = clamp((texColor.a - cutoff) / (1.0 - cutoff), 0.0, 1.0);\n"
-	"	texColor.rgb = color.rgb;\n"
-	"	texColor.a *= color.a;\n"
-	"	gl_FragColor = texColor;\n"
+	"	texColor.rgb = fragColor.rgb * colorModulus;\n"
+	"	texColor.a *= fragColor.a;\n"
+	"	outColor = texColor;\n"
 	"}";
 
 struct GUIFont {
 	GLuint font;
+	int currentGlyph;
 	GLuint program;
 	GLuint vbo;
 	GLuint vao;
 	GLuint texLocation;
-	GLuint dimsLocation;
-	GLuint transformLocation;
-	GLuint colorLocation;
+	GLuint cutoffLocation;
+	GLuint colorModulusLocation;
+
 	GLuint originLocation;
 	GLuint glyphLocation;
-	GLuint cutoffLocation;
+	GLuint dimsLocation;
+	GLuint transformLocation[2];
+	GLuint colorLocation;
+
+	GLuint originVbo;
+	GLuint glyphVbo;
+	GLuint dimsVbo;
+	GLuint transformVbo[2];
+	GLuint colorVbo;
+
+	GLfloat originData[MAX_GLYPHS][3];
+	GLfloat glyphData[MAX_GLYPHS][2];
+	GLfloat dimsData[MAX_GLYPHS][2];
+	GLfloat transformData[2][MAX_GLYPHS][2];
+	GLfloat colorData[MAX_GLYPHS][4];
 };
 
 static bool _loadTexture(const char* path) {
@@ -120,12 +141,13 @@ struct GUIFont* GUIFontCreate(void) {
 		return NULL;
 	}
 
+	font->currentGlyph = 0;
 	font->program = glCreateProgram();
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	const GLchar* shaderBuffer[2];
 
-	shaderBuffer[0] = _gles2Header;
+	shaderBuffer[0] = _gles3Header;
 
 	shaderBuffer[1] = _vertexShader;
 	glShaderSource(vertexShader, 2, shaderBuffer, NULL);
@@ -154,27 +176,82 @@ struct GUIFont* GUIFontCreate(void) {
 		glGetShaderInfoLog(vertexShader, sizeof(msg), NULL, msg);
 		puts(msg);
 	}
+
 	glLinkProgram(font->program);
+
+	glGetProgramiv(font->program, GL_LINK_STATUS, &success);
+	if (!success) {
+		GLchar msg[512];
+		glGetProgramInfoLog(font->program, sizeof(msg), NULL, msg);
+		puts(msg);
+	}
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 
 	font->texLocation = glGetUniformLocation(font->program, "tex");
-	font->colorLocation = glGetUniformLocation(font->program, "color");
-	font->dimsLocation = glGetUniformLocation(font->program, "dims");
-	font->transformLocation = glGetUniformLocation(font->program, "transform");
-	font->originLocation = glGetUniformLocation(font->program, "origin");
-	font->glyphLocation = glGetUniformLocation(font->program, "glyph");
 	font->cutoffLocation = glGetUniformLocation(font->program, "cutoff");
+	font->colorModulusLocation = glGetUniformLocation(font->program, "colorModulus");
+
+	font->originLocation = glGetAttribLocation(font->program, "origin");
+	font->glyphLocation = glGetAttribLocation(font->program, "glyph");
+	font->dimsLocation = glGetAttribLocation(font->program, "dims");
+	font->transformLocation[0] = glGetAttribLocation(font->program, "transform");
+	font->transformLocation[1] = font->transformLocation[0] + 1;
+	font->colorLocation = glGetAttribLocation(font->program, "color");
+
 	GLuint offsetLocation = glGetAttribLocation(font->program, "offset");
 
-	glGenBuffers(1, &font->vbo);
 	glGenVertexArrays(1, &font->vao);
 	glBindVertexArray(font->vao);
+
+	glGenBuffers(1, &font->vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, font->vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(_offsets), _offsets, GL_STATIC_DRAW);
 	glVertexAttribPointer(offsetLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexAttribDivisor(offsetLocation, 0);
 	glEnableVertexAttribArray(offsetLocation);
+
+	glGenBuffers(1, &font->originVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, font->originVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * MAX_GLYPHS, NULL, GL_STREAM_DRAW);
+	glVertexAttribPointer(font->originLocation, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexAttribDivisor(font->originLocation, 1);
+	glEnableVertexAttribArray(font->originLocation);
+
+	glGenBuffers(1, &font->glyphVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, font->glyphVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * MAX_GLYPHS, NULL, GL_STREAM_DRAW);
+	glVertexAttribPointer(font->glyphLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexAttribDivisor(font->glyphLocation, 1);
+	glEnableVertexAttribArray(font->glyphLocation);
+
+	glGenBuffers(1, &font->dimsVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, font->dimsVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * MAX_GLYPHS, NULL, GL_STREAM_DRAW);
+	glVertexAttribPointer(font->dimsLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexAttribDivisor(font->dimsLocation, 1);
+	glEnableVertexAttribArray(font->dimsLocation);
+
+	glGenBuffers(2, font->transformVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, font->transformVbo[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * MAX_GLYPHS, NULL, GL_STREAM_DRAW);
+	glVertexAttribPointer(font->transformLocation[0], 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexAttribDivisor(font->transformLocation[0], 1);
+	glEnableVertexAttribArray(font->transformLocation[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, font->transformVbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * MAX_GLYPHS, NULL, GL_STREAM_DRAW);
+	glVertexAttribPointer(font->transformLocation[1], 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexAttribDivisor(font->transformLocation[1], 1);
+	glEnableVertexAttribArray(font->transformLocation[1]);
+
+	glGenBuffers(1, &font->colorVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, font->colorVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * MAX_GLYPHS, NULL, GL_STREAM_DRAW);
+	glVertexAttribPointer(font->colorLocation, 4, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexAttribDivisor(font->colorLocation, 1);
+	glEnableVertexAttribArray(font->colorLocation);
+
 	glBindVertexArray(0);
 
 	return font;
@@ -182,6 +259,11 @@ struct GUIFont* GUIFontCreate(void) {
 
 void GUIFontDestroy(struct GUIFont* font) {
 	glDeleteBuffers(1, &font->vbo);
+	glDeleteBuffers(1, &font->originVbo);
+	glDeleteBuffers(1, &font->glyphVbo);
+	glDeleteBuffers(1, &font->dimsVbo);
+	glDeleteBuffers(2, font->transformVbo);
+	glDeleteBuffers(1, &font->colorVbo);
 	glDeleteProgram(font->program);
 	glDeleteTextures(1, &font->font);
 	glDeleteVertexArrays(1, &font->vao);
@@ -226,30 +308,30 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, 
 	}
 	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
 
-	glUseProgram(font->program);
-	glBindVertexArray(font->vao);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, font->font);
+	struct GUIFont* mutfont = (struct GUIFont*) font;
+	if (font->currentGlyph >= MAX_GLYPHS) {
+		GUIFontDrawSubmit(mutfont);
+	}
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	int offset = font->currentGlyph;
 
-	glUniform1i(font->texLocation, 0);
-	glUniform2f(font->glyphLocation, (glyph & 15) * CELL_WIDTH + metric.padding.left * 2, (glyph >> 4) * CELL_HEIGHT + metric.padding.top * 2);
-	glUniform2f(font->dimsLocation, CELL_WIDTH - (metric.padding.left + metric.padding.right) * 2, CELL_HEIGHT - (metric.padding.top + metric.padding.bottom) * 2);
-	glUniform3f(font->originLocation, x, y - GLYPH_HEIGHT + metric.padding.top * 2, 0);
-	glUniformMatrix2fv(font->transformLocation, 1, GL_FALSE, (float[4]) {1.0, 0.0, 0.0, 1.0});
+	mutfont->originData[offset][0] = x;
+	mutfont->originData[offset][1] = y - GLYPH_HEIGHT + metric.padding.top * 2;
+	mutfont->originData[offset][2] = 0;
+	mutfont->glyphData[offset][0] = (glyph & 15) * CELL_WIDTH + metric.padding.left * 2;
+	mutfont->glyphData[offset][1] = (glyph >> 4) * CELL_HEIGHT + metric.padding.top * 2;
+	mutfont->dimsData[offset][0] = CELL_WIDTH - (metric.padding.left + metric.padding.right) * 2;
+	mutfont->dimsData[offset][1] = CELL_HEIGHT - (metric.padding.top + metric.padding.bottom) * 2;
+	mutfont->transformData[0][offset][0] = 1.0f;
+	mutfont->transformData[0][offset][1] = 0.0f;
+	mutfont->transformData[1][offset][0] = 0.0f;
+	mutfont->transformData[1][offset][1] = 1.0f;
+	mutfont->colorData[offset][0] = (color & 0xFF) / 255.0f;
+	mutfont->colorData[offset][1] = ((color >> 8) & 0xFF) / 255.0f;
+	mutfont->colorData[offset][2] = ((color >> 16) & 0xFF) / 255.0f;
+	mutfont->colorData[offset][3] = ((color >> 24) & 0xFF) / 255.0f;
 
-	glUniform1f(font->cutoffLocation, 0.1f);
-	glUniform4f(font->colorLocation, 0.0, 0.0, 0.0, ((color >> 24) & 0xFF) / 128.0f);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	glUniform1f(font->cutoffLocation, 0.7f);
-	glUniform4f(font->colorLocation, (color & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, ((color >> 16) & 0xFF) / 255.0f, ((color >> 24) & 0xFF) / 255.0f);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	glBindVertexArray(0);
-	glUseProgram(0);
+	++mutfont->currentGlyph;
 }
 
 void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment align, enum GUIOrientation orient, uint32_t color, enum GUIIcon icon) {
@@ -277,7 +359,6 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 		break;
 	}
 
-	glUseProgram(font->program);
 	switch (orient) {
 	case GUI_ORIENT_HMIRROR:
 		hFlip = -1.0;
@@ -291,30 +372,30 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 		break;
 	}
 
-	glUseProgram(font->program);
-	glBindVertexArray(font->vao);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, font->font);
+	struct GUIFont* mutfont = (struct GUIFont*) font;
+	if (font->currentGlyph >= MAX_GLYPHS) {
+		GUIFontDrawSubmit(mutfont);
+	}
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	int offset = font->currentGlyph;
 
-	glUniform1i(font->texLocation, 0);
-	glUniform2f(font->glyphLocation, metric.x * 2, metric.y * 2 + 256);
-	glUniform2f(font->dimsLocation, metric.width * 2, metric.height * 2);
-	glUniform3f(font->originLocation, x, y, 0);
-	glUniformMatrix2fv(font->transformLocation, 1, GL_FALSE, (float[4]) {hFlip, 0.0, 0.0, vFlip});
+	mutfont->originData[offset][0] = x;
+	mutfont->originData[offset][1] = y;
+	mutfont->originData[offset][2] = 0;
+	mutfont->glyphData[offset][0] = metric.x * 2;
+	mutfont->glyphData[offset][1] = metric.y * 2 + 256;
+	mutfont->dimsData[offset][0] = metric.width * 2;
+	mutfont->dimsData[offset][1] = metric.height * 2;
+	mutfont->transformData[0][offset][0] = hFlip;
+	mutfont->transformData[0][offset][1] = 0.0f;
+	mutfont->transformData[1][offset][0] = 0.0f;
+	mutfont->transformData[1][offset][1] = vFlip;
+	mutfont->colorData[offset][0] = (color & 0xFF) / 255.0f;
+	mutfont->colorData[offset][1] = ((color >> 8) & 0xFF) / 255.0f;
+	mutfont->colorData[offset][2] = ((color >> 16) & 0xFF) / 255.0f;
+	mutfont->colorData[offset][3] = ((color >> 24) & 0xFF) / 255.0f;
 
-	glUniform1f(font->cutoffLocation, 0.1f);
-	glUniform4f(font->colorLocation, 0.0, 0.0, 0.0, ((color >> 24) & 0xFF) / 128.0f);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	glUniform1f(font->cutoffLocation, 0.7f);
-	glUniform4f(font->colorLocation, (color & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, ((color >> 16) & 0xFF) / 255.0f, ((color >> 24) & 0xFF) / 255.0f);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	glBindVertexArray(0);
-	glUseProgram(0);
+	++mutfont->currentGlyph;
 }
 
 void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h, uint32_t color, enum GUIIcon icon) {
@@ -330,6 +411,33 @@ void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h,
 		h = metric.height * 2;
 	}
 
+	struct GUIFont* mutfont = (struct GUIFont*) font;
+	if (font->currentGlyph >= MAX_GLYPHS) {
+		GUIFontDrawSubmit(mutfont);
+	}
+
+	int offset = font->currentGlyph;
+
+	mutfont->originData[offset][0] = x + w / 2 - metric.width;
+	mutfont->originData[offset][1] = y + h / 2 - metric.height;
+	mutfont->originData[offset][2] = 0;
+	mutfont->glyphData[offset][0] = metric.x * 2;
+	mutfont->glyphData[offset][1] = metric.y * 2 + 256;
+	mutfont->dimsData[offset][0] = metric.width * 2;
+	mutfont->dimsData[offset][1] = metric.height * 2;
+	mutfont->transformData[0][offset][0] = w * 0.5f / metric.width;
+	mutfont->transformData[0][offset][1] = 0.0f;
+	mutfont->transformData[1][offset][0] = 0.0f;
+	mutfont->transformData[1][offset][1] = h * 0.5f / metric.height;
+	mutfont->colorData[offset][0] = (color & 0xFF) / 255.0f;
+	mutfont->colorData[offset][1] = ((color >> 8) & 0xFF) / 255.0f;
+	mutfont->colorData[offset][2] = ((color >> 16) & 0xFF) / 255.0f;
+	mutfont->colorData[offset][3] = ((color >> 24) & 0xFF) / 255.0f;
+
+	++mutfont->currentGlyph;
+}
+
+void GUIFontDrawSubmit(struct GUIFont* font) {
 	glUseProgram(font->program);
 	glBindVertexArray(font->vao);
 	glActiveTexture(GL_TEXTURE0);
@@ -339,18 +447,40 @@ void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h,
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUniform1i(font->texLocation, 0);
-	glUniform2f(font->glyphLocation, metric.x * 2, metric.y * 2 + 256);
-	glUniform2f(font->dimsLocation, metric.width * 2, metric.height * 2);
-	glUniform3f(font->originLocation, x + w / 2 - metric.width, y + h / 2 - metric.height, 0);
-	glUniformMatrix2fv(font->transformLocation, 1, GL_FALSE, (float[4]) {w * 0.5f / metric.width, 0.0, 0.0, h * 0.5f / metric.height});
+
+	glBindBuffer(GL_ARRAY_BUFFER, font->originVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * MAX_GLYPHS, NULL, GL_STREAM_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * 3 * font->currentGlyph, font->originData);
+
+	glBindBuffer(GL_ARRAY_BUFFER, font->glyphVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * MAX_GLYPHS, NULL, GL_STREAM_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * 2 * font->currentGlyph, font->glyphData);
+
+	glBindBuffer(GL_ARRAY_BUFFER, font->dimsVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * MAX_GLYPHS, NULL, GL_STREAM_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * 2 * font->currentGlyph, font->dimsData);
+
+	glBindBuffer(GL_ARRAY_BUFFER, font->transformVbo[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * MAX_GLYPHS, NULL, GL_STREAM_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * 2 * font->currentGlyph, font->transformData[0]);
+
+	glBindBuffer(GL_ARRAY_BUFFER, font->transformVbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * MAX_GLYPHS, NULL, GL_STREAM_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * 2 * font->currentGlyph, font->transformData[1]);
+
+	glBindBuffer(GL_ARRAY_BUFFER, font->colorVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * MAX_GLYPHS, NULL, GL_STREAM_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * 4 * font->currentGlyph, font->colorData);
 
 	glUniform1f(font->cutoffLocation, 0.1f);
-	glUniform4f(font->colorLocation, 0.0, 0.0, 0.0, ((color >> 24) & 0xFF) / 128.0f);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	glUniform3f(font->colorModulusLocation, 0.f, 0.f, 0.f);
+	glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, font->currentGlyph);
 
 	glUniform1f(font->cutoffLocation, 0.7f);
-	glUniform4f(font->colorLocation, ((color >> 16) & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, (color & 0xFF) / 255.0f, ((color >> 24) & 0xFF) / 255.0f);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	glUniform3f(font->colorModulusLocation, 1.f, 1.f, 1.f);
+	glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, font->currentGlyph);
+
+	font->currentGlyph = 0;
 
 	glBindVertexArray(0);
 	glUseProgram(0);

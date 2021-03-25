@@ -78,6 +78,7 @@ static GLuint colorLocation;
 static GLuint tex;
 static GLuint oldTex;
 
+static struct GUIFont* font;
 static color_t* frameBuffer;
 static struct mAVStream stream;
 static struct mSwitchRumble {
@@ -640,6 +641,10 @@ static void _guiPrepare(void) {
 	glViewport(0, 1080 - vheight, vwidth, vheight);
 }
 
+static void _guiFinish(void) {
+	GUIFontDrawSubmit(font);
+}
+
 int main(int argc, char* argv[]) {
 	NWindow* window = nwindowGetDefault();
 	nwindowSetDimensions(window, 1920, 1080);
@@ -651,7 +656,7 @@ int main(int argc, char* argv[]) {
 	audoutInitialize();
 	psmInitialize();
 
-	struct GUIFont* font = GUIFontCreate();
+	font = GUIFontCreate();
 
 	vmode = appletGetOperationMode();
 	if (vmode == AppletOperationMode_Console) {
@@ -802,7 +807,7 @@ int main(int argc, char* argv[]) {
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
 			_batteryState,
-			_guiPrepare, NULL,
+			_guiPrepare, _guiFinish,
 		},
 		.keySources = (struct GUIInputKeys[]) {
 			{
