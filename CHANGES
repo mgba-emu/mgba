@@ -89,6 +89,7 @@ Other fixes:
  - GB Video: Fix SGB video logs
  - GB Video: Discard SGB packets in non-SGB mVLs
  - GB Video: Fix deserializing negative LX state
+ - GB Video: Don't rendering negative batches
  - GBA: Fix loading multiboot ELF files (fixes mgba.io/i/1949)
  - GBA: Fix loading subsequent save files (fixes mgba.io/i/2067)
  - mGUI: Don't attempt to preload files larger than can fit in RAM
