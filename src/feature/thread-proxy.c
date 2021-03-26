@@ -60,6 +60,7 @@ void mVideoThreadProxyReset(struct mVideoLogger* logger) {
 		ConditionWake(&proxyRenderer->toThreadCond);
 		ConditionWait(&proxyRenderer->fromThreadCond, &proxyRenderer->mutex);
 	}
+	RingFIFOClear(&proxyRenderer->dirtyQueue);
 	MutexUnlock(&proxyRenderer->mutex);
 }
 
