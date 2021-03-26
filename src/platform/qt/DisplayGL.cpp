@@ -7,8 +7,6 @@
 
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 
-#include "CoreController.h"
-
 #include <QApplication>
 #include <QMutexLocker>
 #include <QOffscreenSurface>
@@ -103,6 +101,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 #else
 	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatio());
 #endif
+	CoreController::Interrupter interrupter(controller);
 	QMetaObject::invokeMethod(m_painter.get(), "start");
 	setUpdatesEnabled(false);
 }
@@ -223,12 +222,13 @@ void DisplayGL::clearShaders() {
 }
 
 void DisplayGL::resizeContext() {
+	m_painter->interrupt();
 	QMetaObject::invokeMethod(m_painter.get(), "resizeContext");
 }
 
 void DisplayGL::setVideoScale(int scale) {
 	if (m_context) {
-		CoreController::Interrupter interrupter(m_context);
+		m_painter->interrupt();
 		mCoreConfigSetIntValue(&m_context->thread()->core->config, "videoScale", scale);
 	}
 	QMetaObject::invokeMethod(m_painter.get(), "resizeContext");
@@ -362,10 +362,10 @@ void PainterGL::resizeContext() {
 	}
 
 	if (m_started) {
-		CoreController::Interrupter interrupter(m_context);
 		mCore* core = m_context->thread()->core;
 		core->reloadConfigOption(core, "videoScale", NULL);
 	}
+	m_interrupter.resume();
 
 	QSize size = m_context->screenDimensions();
 	m_backend->setDimensions(m_backend, size.width(), size.height());
@@ -572,6 +572,10 @@ void PainterGL::dequeueAll() {
 
 void PainterGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
 	m_videoProxy = proxy;
+}
+
+void PainterGL::interrupt() {
+	m_interrupter.interrupt(m_context);
 }
 
 void PainterGL::setShaders(struct VDir* dir) {
