@@ -22,14 +22,19 @@ enum {
 	WAIT_FOR_COMMAND,
 };
 
+static bool GBASIODolphinInit(struct GBASIODriver* driver);
 static bool GBASIODolphinLoad(struct GBASIODriver* driver);
+static bool GBASIODolphinUnload(struct GBASIODriver* driver);
 static void GBASIODolphinProcessEvents(struct mTiming* timing, void* context, uint32_t cyclesLate);
 
 static int32_t _processCommand(struct GBASIODolphin* dol, uint32_t cyclesLate);
+static void _flush(struct GBASIODolphin* dol);
 
 void GBASIODolphinCreate(struct GBASIODolphin* dol) {
 	GBASIOJOYCreate(&dol->d);
+	dol->d.init = GBASIODolphinInit;
 	dol->d.load = GBASIODolphinLoad;
+	dol->d.unload = GBASIODolphinUnload;
 	dol->event.context = dol;
 	dol->event.name = "GB SIO Lockstep";
 	dol->event.callback = GBASIODolphinProcessEvents;
@@ -37,6 +42,7 @@ void GBASIODolphinCreate(struct GBASIODolphin* dol) {
 
 	dol->data = INVALID_SOCKET;
 	dol->clock = INVALID_SOCKET;
+	dol->active = false;
 }
 
 void GBASIODolphinDestroy(struct GBASIODolphin* dol) {
@@ -86,12 +92,27 @@ bool GBASIODolphinConnect(struct GBASIODolphin* dol, const struct Address* addre
 	return true;
 }
 
-static bool GBASIODolphinLoad(struct GBASIODriver* driver) {
+static bool GBASIODolphinInit(struct GBASIODriver* driver) {
 	struct GBASIODolphin* dol = (struct GBASIODolphin*) driver;
+	dol->active = false;
 	dol->clockSlice = 0;
 	dol->state = WAIT_FOR_FIRST_CLOCK;
+	_flush(dol);
+	return true;
+}
+
+static bool GBASIODolphinLoad(struct GBASIODriver* driver) {
+	struct GBASIODolphin* dol = (struct GBASIODolphin*) driver;
+	dol->active = true;
+	_flush(dol);
 	mTimingDeschedule(&dol->d.p->p->timing, &dol->event);
 	mTimingSchedule(&dol->d.p->p->timing, &dol->event, 0);
+	return true;
+}
+
+static bool GBASIODolphinUnload(struct GBASIODriver* driver) {
+	struct GBASIODolphin* dol = (struct GBASIODolphin*) driver;
+	dol->active = false;
 	return true;
 }
 
@@ -127,7 +148,7 @@ void GBASIODolphinProcessEvents(struct mTiming* timing, void* context, uint32_t 
 			Socket r = dol->data;
 			SocketPoll(1, &r, 0, 0, CLOCK_WAIT);
 		}
-		if (_processCommand(dol, cyclesLate)) {
+		if (_processCommand(dol, cyclesLate) >= 0) {
 			dol->state = WAIT_FOR_CLOCK;
 			nextEvent = CLOCK_GRAIN;
 		}
@@ -138,13 +159,19 @@ void GBASIODolphinProcessEvents(struct mTiming* timing, void* context, uint32_t 
 	mTimingSchedule(timing, &dol->event, nextEvent);
 }
 
+void _flush(struct GBASIODolphin* dol) {
+	uint8_t buffer[32];
+	while (SocketRecv(dol->clock, buffer, sizeof(buffer)) == sizeof(buffer));
+	while (SocketRecv(dol->data, buffer, sizeof(buffer)) == sizeof(buffer));
+}
+
 int32_t _processCommand(struct GBASIODolphin* dol, uint32_t cyclesLate) {
 	// This does not include the stop bits due to compatibility reasons
 	int bitsOnLine = 8;
 	uint8_t buffer[6];
 	int gotten = SocketRecv(dol->data, buffer, 1);
 	if (gotten < 1) {
-		return 0;
+		return -1;
 	}
 
 	switch (buffer[0]) {
@@ -155,13 +182,17 @@ int32_t _processCommand(struct GBASIODolphin* dol, uint32_t cyclesLate) {
 	case JOY_RECV:
 		gotten = SocketRecv(dol->data, &buffer[1], 4);
 		if (gotten < 4) {
-			return 0;
+			return -1;
 		}
 		mLOG(GBA_SIO, DEBUG, "DOL recv: %02X%02X%02X%02X", buffer[1], buffer[2], buffer[3], buffer[4]);
 		// Fall through
 	case JOY_TRANS:
 		bitsOnLine += 40;
 		break;
+	}
+
+	if (!dol->active) {
+		return 0;
 	}
 
 	int sent = GBASIOJOYSendCommand(&dol->d, buffer[0], &buffer[1]);

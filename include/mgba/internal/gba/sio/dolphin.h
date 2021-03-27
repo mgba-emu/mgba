@@ -27,6 +27,7 @@ struct GBASIODolphin {
 
 	int32_t clockSlice;
 	int state;
+	bool active;
 };
 
 void GBASIODolphinCreate(struct GBASIODolphin*);
