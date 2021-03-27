@@ -248,6 +248,19 @@ static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 	return GUI_CURSOR_DOWN;
 }
 
+static void _updateRenderer(struct mGUIRunner* runner, bool gl) {
+	if (gl) {
+		runner->core->setVideoGLTex(runner->core, tex);
+		usePbo = false;
+	} else {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+		usePbo = true;
+	}
+}
+
 static void _setup(struct mGUIRunner* runner) {
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_A, GBA_KEY_A);
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_B, GBA_KEY_B);
@@ -260,17 +273,11 @@ static void _setup(struct mGUIRunner* runner) {
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_L, GBA_KEY_L);
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_R, GBA_KEY_R);
 
-	int fakeBool;
-	if (mCoreConfigGetIntValue(&runner->config, "hwaccelVideo", &fakeBool) && fakeBool && runner->core->supportsFeature(runner->core, mCORE_FEATURE_OPENGL)) {
-		runner->core->setVideoGLTex(runner->core, tex);
-		usePbo = false;
-	} else {
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, tex);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
-		usePbo = true;
+	int fakeBool = false;
+	if (runner->core->supportsFeature(runner->core, mCORE_FEATURE_OPENGL)) {
+		mCoreConfigGetIntValue(&runner->config, "hwaccelVideo", &fakeBool);
 	}
+	_updateRenderer(runner, fakeBool);
 
 	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d);
 	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation);
@@ -323,9 +330,16 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 		}
 	}
 
-	int scale;
-	if (mCoreConfigGetUIntValue(&runner->config, "videoScale", &scale)) {
-		runner->core->reloadConfigOption(runner->core, "videoScale", &runner->config);
+	if (runner->core->supportsFeature(runner->core, mCORE_FEATURE_OPENGL)) {
+		if (mCoreConfigGetIntValue(&runner->config, "hwaccelVideo", &fakeBool) && fakeBool == usePbo) {
+			_updateRenderer(runner, fakeBool);
+			runner->core->reloadConfigOption(runner->core, "hwaccelVideo", &runner->config);
+		}
+
+		unsigned scale;
+		if (mCoreConfigGetUIntValue(&runner->config, "videoScale", &scale)) {
+			runner->core->reloadConfigOption(runner->core, "videoScale", &runner->config);
+		}
 	}
 
 	rumble.up = 0;
@@ -889,7 +903,7 @@ int main(int argc, char* argv[]) {
 				.nStates = 16
 			},
 			{
-				.title = "GPU-accelerated renderer (requires game reload)",
+				.title = "GPU-accelerated renderer",
 				.data = "hwaccelVideo",
 				.submenu = 0,
 				.state = 0,

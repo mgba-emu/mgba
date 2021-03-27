@@ -155,6 +155,7 @@ Misc:
  - Qt: Better initial shortcut editor column sizes
  - SDL: Fall back to sw blit if OpenGL init fails
  - Switch: Optimize font rendering (fixes mgba.io/i/2078)
+ - Switch: Allow switching between CPU and GPU renderers without reloading
  - Util: Reset vector size on deinit
  - VFS: Change semantics of VFile.sync on mapped files (fixes mgba.io/i/1730)
 
