@@ -40,6 +40,7 @@ Emulation fixes:
  - GBA BIOS: Improve HLE BIOS timing
  - GBA BIOS: Fix reloading video registers after reset (fixes mgba.io/i/1808)
  - GBA BIOS: Make HLE BIOS calls interruptable (fixes mgba.io/i/1711 and mgba.io/i/1823)
+ - GBA BIOS: Fix invalid decompression bounds checking
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA DMA: Fix ordering and timing of overlapping DMAs
  - GBA I/O: Green swap register should be readable

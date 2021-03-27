@@ -525,7 +525,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		break;
 	case GBA_SWI_LZ77_UNCOMP_WRAM:
 	case GBA_SWI_LZ77_UNCOMP_VRAM:
-		if (cpu->gprs[0] < BASE_WORKING_RAM) {
+		if (!(cpu->gprs[0] & 0x0E000000)) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Bad LZ77 source");
 			break;
 		}
@@ -541,7 +541,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		}
 		break;
 	case GBA_SWI_HUFFMAN_UNCOMP:
-		if (cpu->gprs[0] < BASE_WORKING_RAM) {
+		if (!(cpu->gprs[0] & 0x0E000000)) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Bad Huffman source");
 			break;
 		}
@@ -558,7 +558,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		break;
 	case GBA_SWI_RL_UNCOMP_WRAM:
 	case GBA_SWI_RL_UNCOMP_VRAM:
-		if (cpu->gprs[0] < BASE_WORKING_RAM) {
+		if (!(cpu->gprs[0] & 0x0E000000)) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Bad RL source");
 			break;
 		}
@@ -576,7 +576,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case GBA_SWI_DIFF_8BIT_UNFILTER_WRAM:
 	case GBA_SWI_DIFF_8BIT_UNFILTER_VRAM:
 	case GBA_SWI_DIFF_16BIT_UNFILTER:
-		if (cpu->gprs[0] < BASE_WORKING_RAM) {
+		if (!(cpu->gprs[0] & 0x0E000000)) {
 			mLOG(GBA_BIOS, GAME_ERROR, "Bad UnFilter source");
 			break;
 		}
