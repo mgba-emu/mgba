@@ -1,7 +1,7 @@
 clrmamepro (
 	name "Nintendo - Game Boy Advance"
 	description "Nintendo - Game Boy Advance"
-	version 20201205-110418
+	version 20210326-211504
 	author "aci68, Aringon, Bent, BigFred, C. V. Reynolds, chillerecke, DeadSkullzJr, Densetsu, DeriLoko3, einstein95, ElBarto, Enker, fuzzball, Gefflon, Hiccup, hking0036, hydr0x, InternalLoss, Jack, jimmsu, kazumi213, Money_114, niemand, omonim2007, Powerpuff, PPLToast, relax, RetroGamer, Rifu, SonGoku, Tauwasser, Vallaine01, Whovian9369, xuom2, zg"
 	homepage No-Intro
 	url "http://www.no-intro.org"
@@ -218,6 +218,12 @@ game (
 )
 
 game (
+	name "2 Games in 1 - Finding Nemo - The Continuing Adventures + The Incredibles (USA)"
+	description "2 Games in 1 - Finding Nemo - The Continuing Adventures + The Incredibles (USA)"
+	rom ( name "2 Games in 1 - Finding Nemo - The Continuing Adventures + The Incredibles (USA).gba" size 16777216 crc d5a37aa8 sha1 118CD86F64151C67BAF590B1030DA2FC6C6ACE16 )
+)
+
+game (
 	name "2 Games in 1 - Finding Nemo + Finding Nemo - The Continuing Adventures (Europe) (En+En,Es,It,Sv,Da)"
 	description "2 Games in 1 - Finding Nemo + Finding Nemo - The Continuing Adventures (Europe) (En+En,Es,It,Sv,Da)"
 	rom ( name "2 Games in 1 - Finding Nemo + Finding Nemo - The Continuing Adventures (Europe) (En+En,Es,It,Sv,Da).gba" size 16777216 crc 72d5f428 sha1 5D7D2F148D7A35906E9ECB3408A5658A8C8040E8 )
@@ -245,12 +251,6 @@ game (
 	name "2 Games in 1 - Finding Nemo + The Incredibles (Europe) (Fr,Nl)"
 	description "2 Games in 1 - Finding Nemo + The Incredibles (Europe) (Fr,Nl)"
 	rom ( name "2 Games in 1 - Finding Nemo + The Incredibles (Europe) (Fr,Nl).gba" size 16777216 crc 2d4d69fa sha1 2A02888C0F14FE35881EC175A8BC7220E78F2559 )
-)
-
-game (
-	name "2 Games in 1 - Finding Nemo - The Continuing Adventures + The Incredibles (USA)"
-	description "2 Games in 1 - Finding Nemo - The Continuing Adventures + The Incredibles (USA)"
-	rom ( name "2 Games in 1 - Finding Nemo - The Continuing Adventures + The Incredibles (USA).gba" size 16777216 crc d5a37aa8 sha1 118CD86F64151C67BAF590B1030DA2FC6C6ACE16 )
 )
 
 game (
@@ -572,6 +572,12 @@ game (
 )
 
 game (
+	name "2 in 1 Game Pack - Spider-Man - Mysterio's Menace + X2 - Wolverine's Revenge (USA, Europe)"
+	description "2 in 1 Game Pack - Spider-Man - Mysterio's Menace + X2 - Wolverine's Revenge (USA, Europe)"
+	rom ( name "2 in 1 Game Pack - Spider-Man - Mysterio's Menace + X2 - Wolverine's Revenge (USA, Europe).gba" size 16777216 crc e7baa5b9 sha1 50C0F0531C0EEF9109FBD8424B1067534582316A )
+)
+
+game (
 	name "2 in 1 Game Pack - Spider-Man & Spider-Man 2 (Europe) (En,Fr,De+En,Fr,De,Es,It)"
 	description "2 in 1 Game Pack - Spider-Man & Spider-Man 2 (Europe) (En,Fr,De+En,Fr,De,Es,It)"
 	rom ( name "2 in 1 Game Pack - Spider-Man & Spider-Man 2 (Europe) (En,Fr,De+En,Fr,De,Es,It).gba" size 33554432 crc d732e52d sha1 5BF33C1F0FD50F268ED5941D3246CFAD1893EF89 )
@@ -581,12 +587,6 @@ game (
 	name "2 in 1 Game Pack - Spider-Man + Spider-Man 2 (USA) (En,Fr,De+En,Fr,De,Es)"
 	description "2 in 1 Game Pack - Spider-Man + Spider-Man 2 (USA) (En,Fr,De+En,Fr,De,Es)"
 	rom ( name "2 in 1 Game Pack - Spider-Man + Spider-Man 2 (USA) (En,Fr,De+En,Fr,De,Es).gba" size 33554432 crc 0ae3637f sha1 8BC2B600A043B776BC61FE8C0F4007B4360545F9 )
-)
-
-game (
-	name "2 in 1 Game Pack - Spider-Man - Mysterio's Menace + X2 - Wolverine's Revenge (USA, Europe)"
-	description "2 in 1 Game Pack - Spider-Man - Mysterio's Menace + X2 - Wolverine's Revenge (USA, Europe)"
-	rom ( name "2 in 1 Game Pack - Spider-Man - Mysterio's Menace + X2 - Wolverine's Revenge (USA, Europe).gba" size 16777216 crc e7baa5b9 sha1 50C0F0531C0EEF9109FBD8424B1067534582316A )
 )
 
 game (
@@ -635,6 +635,12 @@ game (
 	name "2K Sports - Major League Baseball 2K7 (USA)"
 	description "2K Sports - Major League Baseball 2K7 (USA)"
 	rom ( name "2K Sports - Major League Baseball 2K7 (USA).gba" size 8388608 crc 8f3ff0e4 sha1 07390BC2BD53CD9EE5C6D2805AD374C59C195D9F )
+)
+
+game (
+	name "2K Sports - Major League Baseball 2K7 (USA) (Beta)"
+	description "2K Sports - Major League Baseball 2K7 (USA) (Beta)"
+	rom ( name "2K Sports - Major League Baseball 2K7 (USA) (Beta).gba" size 8388608 crc ea51532d sha1 776E084AC31336114F23230BDE4ADFC1F231934B )
 )
 
 game (
@@ -1088,9 +1094,9 @@ game (
 )
 
 game (
-	name "Alienators - Evolution Continues (USA, Europe) [b]"
-	description "Alienators - Evolution Continues (USA, Europe) [b]"
-	rom ( name "Alienators - Evolution Continues (USA, Europe) [b].gba" size 4194304 crc 0d694ca4 sha1 FB691C5E21FA388D75497E9090DB82DEC881E422 flags baddump )
+	name "Alienators - Evolution Continues (USA, Europe)"
+	description "Alienators - Evolution Continues (USA, Europe)"
+	rom ( name "Alienators - Evolution Continues (USA, Europe).gba" size 4194304 crc 0d694ca4 sha1 FB691C5E21FA388D75497E9090DB82DEC881E422 )
 )
 
 game (
@@ -1118,9 +1124,9 @@ game (
 )
 
 game (
-	name "All-Star Baseball 2004 featuring Derek Jeter (USA)"
-	description "All-Star Baseball 2004 featuring Derek Jeter (USA)"
-	rom ( name "All-Star Baseball 2004 featuring Derek Jeter (USA).gba" size 8388608 crc 60e2db03 sha1 29E168A84E51C3B765E345BAEE6910433F298993 )
+	name "All-Star Baseball 2004 Featuring Derek Jeter (USA)"
+	description "All-Star Baseball 2004 Featuring Derek Jeter (USA)"
+	rom ( name "All-Star Baseball 2004 Featuring Derek Jeter (USA).gba" size 8388608 crc 60e2db03 sha1 29E168A84E51C3B765E345BAEE6910433F298993 )
 )
 
 game (
@@ -2516,9 +2522,9 @@ game (
 )
 
 game (
-	name "Broken Circle (Europe) (En,It) (Aftermarket) (Unl)"
-	description "Broken Circle (Europe) (En,It) (Aftermarket) (Unl)"
-	rom ( name "Broken Circle (Europe) (En,It) (Aftermarket) (Unl).gba" size 16777216 crc 3212c09b sha1 E04A71DBE7B640CC53E81F447856E60666E64AA3 )
+	name "Broken Circle (World) (En,It) (Aftermarket) (Unl)"
+	description "Broken Circle (World) (En,It) (Aftermarket) (Unl)"
+	rom ( name "Broken Circle (World) (En,It) (Aftermarket) (Unl).gba" size 16777216 crc 3212c09b sha1 E04A71DBE7B640CC53E81F447856E60666E64AA3 )
 )
 
 game (
@@ -2722,7 +2728,7 @@ game (
 game (
 	name "Cardcaptor Sakura - Sakura Card Hen - Sakura to Card to Otomodachi (Japan) (Rev 1)"
 	description "Cardcaptor Sakura - Sakura Card Hen - Sakura to Card to Otomodachi (Japan) (Rev 1)"
-	rom ( name "Cardcaptor Sakura - Sakura Card Hen - Sakura to Card to Otomodachi (Japan) (Rev 1).gba" size 16777216 crc 2c8488b2 sha1 06F8CEF944241AB73A062972CC7EB4A744DC1B6B )
+	rom ( name "Cardcaptor Sakura - Sakura Card Hen - Sakura to Card to Otomodachi (Japan) (Rev 1).gba" size 16777216 crc 2c8488b2 sha1 06F8CEF944241AB73A062972CC7EB4A744DC1B6B flags verified )
 )
 
 game (
@@ -2878,7 +2884,7 @@ game (
 game (
 	name "Castlevania - Circle of the Moon (USA)"
 	description "Castlevania - Circle of the Moon (USA)"
-	rom ( name "Castlevania - Circle of the Moon (USA).gba" size 8388608 crc 1cc059a4 sha1 D661B01EB94186435723AC03344792C11C20C522 )
+	rom ( name "Castlevania - Circle of the Moon (USA).gba" size 8388608 crc 1cc059a4 sha1 D661B01EB94186435723AC03344792C11C20C522 flags verified )
 )
 
 game (
@@ -3196,7 +3202,7 @@ game (
 game (
 	name "Classic NES Series - Dr. Mario (USA, Europe)"
 	description "Classic NES Series - Dr. Mario (USA, Europe)"
-	rom ( name "Classic NES Series - Dr. Mario (USA, Europe).gba" size 1048576 crc 934e1f1d sha1 FC396F0EAE55CF19E573AA322F525427E03D3854 flags verified )
+	rom ( name "Classic NES Series - Dr. Mario (USA, Europe).gba" size 1048576 crc 934e1f1d sha1 FC396F0EAE55CF19E573AA322F525427E03D3854 )
 )
 
 game (
@@ -3214,37 +3220,37 @@ game (
 game (
 	name "Classic NES Series - Metroid (USA, Europe)"
 	description "Classic NES Series - Metroid (USA, Europe)"
-	rom ( name "Classic NES Series - Metroid (USA, Europe).gba" size 1048576 crc 9a243b9b sha1 838DA11F879E2FA3FFDEF95E1C6D5A54246C1846 flags verified )
+	rom ( name "Classic NES Series - Metroid (USA, Europe).gba" size 1048576 crc 9a243b9b sha1 838DA11F879E2FA3FFDEF95E1C6D5A54246C1846 )
 )
 
 game (
 	name "Classic NES Series - Pac-Man (USA, Europe)"
 	description "Classic NES Series - Pac-Man (USA, Europe)"
-	rom ( name "Classic NES Series - Pac-Man (USA, Europe).gba" size 1048576 crc c28df82f sha1 843D853ED28A116C85A5357F9A94E9179F36A6D0 flags verified )
+	rom ( name "Classic NES Series - Pac-Man (USA, Europe).gba" size 1048576 crc c28df82f sha1 843D853ED28A116C85A5357F9A94E9179F36A6D0 )
 )
 
 game (
 	name "Classic NES Series - Super Mario Bros. (USA, Europe)"
 	description "Classic NES Series - Super Mario Bros. (USA, Europe)"
-	rom ( name "Classic NES Series - Super Mario Bros. (USA, Europe).gba" size 1048576 crc f7129225 sha1 8CA35864AE33C9462DD66CEFF1FAC5A79E2E0A6F flags verified )
+	rom ( name "Classic NES Series - Super Mario Bros. (USA, Europe).gba" size 1048576 crc f7129225 sha1 8CA35864AE33C9462DD66CEFF1FAC5A79E2E0A6F )
 )
 
 game (
 	name "Classic NES Series - The Legend of Zelda (USA, Europe)"
 	description "Classic NES Series - The Legend of Zelda (USA, Europe)"
-	rom ( name "Classic NES Series - The Legend of Zelda (USA, Europe).gba" size 1048576 crc 6d49cabf sha1 28AAC26365BF41BA84E67F97E98D15C4678CB99D flags verified )
+	rom ( name "Classic NES Series - The Legend of Zelda (USA, Europe).gba" size 1048576 crc 6d49cabf sha1 28AAC26365BF41BA84E67F97E98D15C4678CB99D )
 )
 
 game (
 	name "Classic NES Series - Xevious (USA, Europe)"
 	description "Classic NES Series - Xevious (USA, Europe)"
-	rom ( name "Classic NES Series - Xevious (USA, Europe).gba" size 1048576 crc 9cd2d5dd sha1 B2088582808480E0D70C63A777B046409D4E15C4 flags verified )
+	rom ( name "Classic NES Series - Xevious (USA, Europe).gba" size 1048576 crc 9cd2d5dd sha1 B2088582808480E0D70C63A777B046409D4E15C4 )
 )
 
 game (
 	name "Classic NES Series - Zelda II - The Adventure of Link (USA, Europe)"
 	description "Classic NES Series - Zelda II - The Adventure of Link (USA, Europe)"
-	rom ( name "Classic NES Series - Zelda II - The Adventure of Link (USA, Europe).gba" size 1048576 crc 0b6ca48a sha1 22EA42AD9A99A6BC0FCBA8721CF8F484F68C3BF7 flags verified )
+	rom ( name "Classic NES Series - Zelda II - The Adventure of Link (USA, Europe).gba" size 1048576 crc 0b6ca48a sha1 22EA42AD9A99A6BC0FCBA8721CF8F484F68C3BF7 )
 )
 
 game (
@@ -3320,9 +3326,9 @@ game (
 )
 
 game (
-	name "Commandos 2 (Japan) (Proto)"
-	description "Commandos 2 (Japan) (Proto)"
-	rom ( name "Commandos 2 (Japan) (Proto).gba" size 2644724 crc dd58aecd sha1 3750E5704AE5EE240C273A68D36001F36348BB48 )
+	name "Commandos 2 (Japan) (Proto) (2002-11-28)"
+	description "Commandos 2 (Japan) (Proto) (2002-11-28)"
+	rom ( name "Commandos 2 (Japan) (Proto) (2002-11-28).gba" size 2644724 crc dd58aecd sha1 3750E5704AE5EE240C273A68D36001F36348BB48 )
 )
 
 game (
@@ -3424,7 +3430,7 @@ game (
 game (
 	name "Crash Bandicoot 2 - N-Tranced (Europe) (En,Fr,De,Es,It,Nl)"
 	description "Crash Bandicoot 2 - N-Tranced (Europe) (En,Fr,De,Es,It,Nl)"
-	rom ( name "Crash Bandicoot 2 - N-Tranced (Europe) (En,Fr,De,Es,It,Nl).gba" size 8388608 crc 0f1d06a0 sha1 EE9234CA15BA2CAA71FAD7D6AF71E27B2030AE0B )
+	rom ( name "Crash Bandicoot 2 - N-Tranced (Europe) (En,Fr,De,Es,It,Nl).gba" size 8388608 crc 0f1d06a0 sha1 EE9234CA15BA2CAA71FAD7D6AF71E27B2030AE0B flags verified )
 )
 
 game (
@@ -5470,115 +5476,115 @@ game (
 game (
 	name "Famicom Mini 03 - Ice Climber (Japan) (En)"
 	description "Famicom Mini 03 - Ice Climber (Japan) (En)"
-	rom ( name "Famicom Mini 03 - Ice Climber (Japan) (En).gba" size 4194304 crc 5646f9d1 sha1 B82C00D059D9C38C3EA493032FA1D36D5185EF80 )
+	rom ( name "Famicom Mini 03 - Ice Climber (Japan) (En).gba" size 1048576 crc d0aef472 sha1 C64A586144DD33D4E30D02801519CBF0B93A0F09 )
 )
 
 game (
 	name "Famicom Mini 04 - Excitebike (Japan) (En)"
 	description "Famicom Mini 04 - Excitebike (Japan) (En)"
-	rom ( name "Famicom Mini 04 - Excitebike (Japan) (En).gba" size 4194304 crc 319cdf36 sha1 D7DE5A18A950C7DBC5174AE0C293FB365F0B98CB )
+	rom ( name "Famicom Mini 04 - Excitebike (Japan) (En).gba" size 1048576 crc 32604c95 sha1 AD9A633C793FDA6A0EC71AB7DFCD0D89B7440AFC )
 )
 
 game (
 	name "Famicom Mini 05 - Zelda no Densetsu 1 - The Hyrule Fantasy (Japan)"
 	description "Famicom Mini 05 - Zelda no Densetsu 1 - The Hyrule Fantasy (Japan)"
-	rom ( name "Famicom Mini 05 - Zelda no Densetsu 1 - The Hyrule Fantasy (Japan).gba" size 4194304 crc 114e37a1 sha1 F7A425F77A26A26B8E3F6ADDE2BB89AE1F63377E flags verified )
+	rom ( name "Famicom Mini 05 - Zelda no Densetsu 1 - The Hyrule Fantasy (Japan).gba" size 1048576 crc 712d76e8 sha1 8E398563478B079F5E6F34366C5D3FA5DFB5C594 )
 )
 
 game (
 	name "Famicom Mini 06 - Pac-Man (Japan) (En)"
 	description "Famicom Mini 06 - Pac-Man (Japan) (En)"
-	rom ( name "Famicom Mini 06 - Pac-Man (Japan) (En).gba" size 4194304 crc 3fec1606 sha1 91458BC32C78FE412F725C0D3B777DD5AF8AC10B )
+	rom ( name "Famicom Mini 06 - Pac-Man (Japan) (En).gba" size 1048576 crc 91acf642 sha1 9316699ED1943CEE6EE5CD5F0B40F76B3FCEF159 )
 )
 
 game (
 	name "Famicom Mini 07 - Xevious (Japan) (En)"
 	description "Famicom Mini 07 - Xevious (Japan) (En)"
-	rom ( name "Famicom Mini 07 - Xevious (Japan) (En).gba" size 4194304 crc 1cd1f78c sha1 5CD976A599BC717136BE6D34D5ED05CACCDAC459 )
+	rom ( name "Famicom Mini 07 - Xevious (Japan) (En).gba" size 1048576 crc f54eeb0e sha1 718E25B35B60341442C5098E03071A63CD332A97 )
 )
 
 game (
 	name "Famicom Mini 08 - Mappy (Japan) (En)"
 	description "Famicom Mini 08 - Mappy (Japan) (En)"
-	rom ( name "Famicom Mini 08 - Mappy (Japan) (En).gba" size 4194304 crc d4b0779a sha1 504AC987F866E52434633725D2425C12F4829E8B )
+	rom ( name "Famicom Mini 08 - Mappy (Japan) (En).gba" size 1048576 crc c29e4a08 sha1 72AE0EF34E40210CA8CDEAD5D9E145E28190DED5 )
 )
 
 game (
 	name "Famicom Mini 09 - Bomberman (Japan) (En)"
 	description "Famicom Mini 09 - Bomberman (Japan) (En)"
-	rom ( name "Famicom Mini 09 - Bomberman (Japan) (En).gba" size 4194304 crc 3b92ee60 sha1 55FAF165142357F671DC3CC2841379012A281836 )
+	rom ( name "Famicom Mini 09 - Bomberman (Japan) (En).gba" size 1048576 crc c1116e40 sha1 3EE5EB19AC00660E1C83C449C6A5B2A22C9F73EB )
 )
 
 game (
 	name "Famicom Mini 10 - Star Soldier (Japan) (En)"
 	description "Famicom Mini 10 - Star Soldier (Japan) (En)"
-	rom ( name "Famicom Mini 10 - Star Soldier (Japan) (En).gba" size 4194304 crc 0958ee09 sha1 072A4AAB0E817CF9F6F7E8E9ECA01CE9129A69F7 )
+	rom ( name "Famicom Mini 10 - Star Soldier (Japan) (En).gba" size 1048576 crc 1e23bad4 sha1 F740CB1C5E66886AAB560BFDD958D4EC447085C8 )
 )
 
 game (
 	name "Famicom Mini 11 - Mario Bros. (Japan)"
 	description "Famicom Mini 11 - Mario Bros. (Japan)"
-	rom ( name "Famicom Mini 11 - Mario Bros. (Japan).gba" size 4194304 crc 9cd4d6cf sha1 E2A48D19AE151C9AF3FA8199D608FB8CFA417031 )
+	rom ( name "Famicom Mini 11 - Mario Bros. (Japan).gba" size 1048576 crc 42a027ab sha1 32A336383B2DE86E4023C338E5D082F8BE462B4D )
 )
 
 game (
 	name "Famicom Mini 12 - Clu Clu Land (Japan)"
 	description "Famicom Mini 12 - Clu Clu Land (Japan)"
-	rom ( name "Famicom Mini 12 - Clu Clu Land (Japan).gba" size 4194304 crc c4c03aa8 sha1 132B71A3E51421F1C2DA6C12C72408CA7DB262C2 )
+	rom ( name "Famicom Mini 12 - Clu Clu Land (Japan).gba" size 1048576 crc 8b3219fe sha1 2F47308EF84F0D4A895A2E02616268D9A43DB348 )
 )
 
 game (
 	name "Famicom Mini 13 - Balloon Fight (Japan)"
 	description "Famicom Mini 13 - Balloon Fight (Japan)"
-	rom ( name "Famicom Mini 13 - Balloon Fight (Japan).gba" size 4194304 crc 45d299d7 sha1 B3E9710536C5E7CC13FDB2169CA31C5FEDA8AC8B )
+	rom ( name "Famicom Mini 13 - Balloon Fight (Japan).gba" size 1048576 crc a01f014a sha1 BB663B7570CBB4071B17884C5589E074A7DB7617 )
 )
 
 game (
 	name "Famicom Mini 14 - Wrecking Crew (Japan)"
 	description "Famicom Mini 14 - Wrecking Crew (Japan)"
-	rom ( name "Famicom Mini 14 - Wrecking Crew (Japan).gba" size 4194304 crc 6c0611f0 sha1 2CF08CA3B76E6D1F5705457C6296826C71A38A34 )
+	rom ( name "Famicom Mini 14 - Wrecking Crew (Japan).gba" size 1048576 crc adac99bd sha1 5606F9EFFD2D39EFACA739BD2B8F736D529191A6 )
 )
 
 game (
 	name "Famicom Mini 15 - Dr. Mario (Japan)"
 	description "Famicom Mini 15 - Dr. Mario (Japan)"
-	rom ( name "Famicom Mini 15 - Dr. Mario (Japan).gba" size 4194304 crc e23a7ed0 sha1 35633B66CC920AC45E061CF40EB7761405881CEF )
+	rom ( name "Famicom Mini 15 - Dr. Mario (Japan).gba" size 1048576 crc c836f2e2 sha1 4FB22FF059833D5206421277409ECE0CDD5D5B46 )
 )
 
 game (
 	name "Famicom Mini 16 - Dig Dug (Japan)"
 	description "Famicom Mini 16 - Dig Dug (Japan)"
-	rom ( name "Famicom Mini 16 - Dig Dug (Japan).gba" size 4194304 crc 57513b63 sha1 7D870C79A7576630A16471D91BD23C1681B7DDC3 )
+	rom ( name "Famicom Mini 16 - Dig Dug (Japan).gba" size 1048576 crc ee4c3504 sha1 0B46E4CABD1F5F624D8391658D9C888DBD29A6FF )
 )
 
 game (
 	name "Famicom Mini 17 - Takahashi Meijin no Bouken-jima (Japan)"
 	description "Famicom Mini 17 - Takahashi Meijin no Bouken-jima (Japan)"
-	rom ( name "Famicom Mini 17 - Takahashi Meijin no Bouken-jima (Japan).gba" size 4194304 crc 3bef3b74 sha1 DBD9EED25971EF42DCE3852FAA778571C4BB3FAA )
+	rom ( name "Famicom Mini 17 - Takahashi Meijin no Bouken-jima (Japan).gba" size 1048576 crc 53286f51 sha1 E61F8AC1490163C49668EFBC42B3549CB9AA881C )
 )
 
 game (
 	name "Famicom Mini 18 - Makaimura (Japan)"
 	description "Famicom Mini 18 - Makaimura (Japan)"
-	rom ( name "Famicom Mini 18 - Makaimura (Japan).gba" size 4194304 crc 85261ec6 sha1 D52329277B87FFBFE87E3E7F5CA8153170FE177E )
+	rom ( name "Famicom Mini 18 - Makaimura (Japan).gba" size 1048576 crc 8a7964ca sha1 4283B0A9DAFC29C80A2E1C1120B4AAB00DFED1DC )
 )
 
 game (
 	name "Famicom Mini 19 - Twin Bee (Japan)"
 	description "Famicom Mini 19 - Twin Bee (Japan)"
-	rom ( name "Famicom Mini 19 - Twin Bee (Japan).gba" size 4194304 crc 26a17681 sha1 B3FA545FFDBCCB612B56C817C64AB16580B1A1AD )
+	rom ( name "Famicom Mini 19 - Twin Bee (Japan).gba" size 1048576 crc 2f390212 sha1 E07A403BD9587E018F2213847F68B57794BD8B13 )
 )
 
 game (
 	name "Famicom Mini 20 - Ganbare Goemon! - Karakuri Douchuu (Japan)"
 	description "Famicom Mini 20 - Ganbare Goemon! - Karakuri Douchuu (Japan)"
-	rom ( name "Famicom Mini 20 - Ganbare Goemon! - Karakuri Douchuu (Japan).gba" size 4194304 crc 10b48dba sha1 B681C2D7979B008D98EDA75AE12BC071CC21DA6F )
+	rom ( name "Famicom Mini 20 - Ganbare Goemon! - Karakuri Douchuu (Japan).gba" size 1048576 crc 33196b58 sha1 2EC7D875ED0C8CE94CA3FE13495DAD2538DBD820 )
 )
 
 game (
 	name "Famicom Mini 21 - Super Mario Bros. 2 (Japan)"
 	description "Famicom Mini 21 - Super Mario Bros. 2 (Japan)"
-	rom ( name "Famicom Mini 21 - Super Mario Bros. 2 (Japan).gba" size 4194304 crc f55674a3 sha1 3455D771F2E974E1AC55543AF741AE7FDED0312A )
+	rom ( name "Famicom Mini 21 - Super Mario Bros. 2 (Japan).gba" size 1048576 crc ef18f7b2 sha1 017C7E0CB41A8D323D9D81F363A7CF51606808E7 )
 )
 
 game (
@@ -5626,13 +5632,13 @@ game (
 game (
 	name "Famicom Mini 29 - Akumajou Dracula (Japan)"
 	description "Famicom Mini 29 - Akumajou Dracula (Japan)"
-	rom ( name "Famicom Mini 29 - Akumajou Dracula (Japan).gba" size 4194304 crc 012fa057 sha1 DCFB0F7CB4EDB67F2D449C43BA33DEF09DB38BF9 )
+	rom ( name "Famicom Mini 29 - Akumajou Dracula (Japan).gba" size 1048576 crc 11419d8b sha1 1684686077712875BA9D785642BBA21E8CB8F5BA )
 )
 
 game (
 	name "Famicom Mini 30 - SD Gundam World - Gachapon Senshi Scramble Wars (Japan)"
 	description "Famicom Mini 30 - SD Gundam World - Gachapon Senshi Scramble Wars (Japan)"
-	rom ( name "Famicom Mini 30 - SD Gundam World - Gachapon Senshi Scramble Wars (Japan).gba" size 4194304 crc 9ed2daeb sha1 D3E54CFC3E0B08F54BD8B4520E0B661FBF0A75D8 )
+	rom ( name "Famicom Mini 30 - SD Gundam World - Gachapon Senshi Scramble Wars (Japan).gba" size 1048576 crc ba78d1ee sha1 69E3FD59A0B4A02A3052D3428648C81E8D50A94D )
 )
 
 game (
@@ -6116,12 +6122,6 @@ game (
 )
 
 game (
-	name "Fire Emblem - Seima no Kousek (Japan) (Virtual Console)"
-	description "Fire Emblem - Seima no Kousek (Japan) (Virtual Console)"
-	rom ( name "Fire Emblem - Seima no Kousek (Japan) (Virtual Console).gba" size 16777216 crc d2b431f8 sha1 4DBBEDB8A4BB8AEE52294D0F7C6150EF2697ABF9 )
-)
-
-game (
 	name "Fire Emblem - Seima no Kouseki (Japan)"
 	description "Fire Emblem - Seima no Kouseki (Japan)"
 	rom ( name "Fire Emblem - Seima no Kouseki (Japan).gba" size 16777216 crc 9d76826f sha1 7DA0456035366AA18414FAA79D8FE7649F03C1ED )
@@ -6131,6 +6131,12 @@ game (
 	name "Fire Emblem - Seima no Kouseki (Japan) (Beta)"
 	description "Fire Emblem - Seima no Kouseki (Japan) (Beta)"
 	rom ( name "Fire Emblem - Seima no Kouseki (Japan) (Beta).gba" size 16777216 crc cd9d8972 sha1 81C48809C9B8C3A099B7F9B1E08AB3DD8ADDE368 )
+)
+
+game (
+	name "Fire Emblem - Seima no Kouseki (Japan) (Virtual Console)"
+	description "Fire Emblem - Seima no Kouseki (Japan) (Virtual Console)"
+	rom ( name "Fire Emblem - Seima no Kouseki (Japan) (Virtual Console).gba" size 16777216 crc d2b431f8 sha1 4DBBEDB8A4BB8AEE52294D0F7C6150EF2697ABF9 )
 )
 
 game (
@@ -7373,6 +7379,12 @@ game (
 	name "Gyakuten Saiban 3 (Japan) (Virtual Console)"
 	description "Gyakuten Saiban 3 (Japan) (Virtual Console)"
 	rom ( name "Gyakuten Saiban 3 (Japan) (Virtual Console).gba" size 8388608 crc 2c88386a sha1 88B38CFAA1CD83A8CA2361B3E6AAB84B4856ACB5 )
+)
+
+game (
+	name "Gyakuten Saiban 3 (Japan) (Demo) (Kiosk, GameCube)"
+	description "Gyakuten Saiban 3 (Japan) (Demo) (Kiosk, GameCube)"
+	rom ( name "Gyakuten Saiban 3 (Japan) (Demo) (Kiosk, GameCube).gba" size 8388608 crc 299a054b sha1 EE41EFF12E944CC73FB2A2C4706D0C2B8639668C )
 )
 
 game (
@@ -8918,30 +8930,6 @@ game (
 )
 
 game (
-	name "Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It)"
-	description "Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It)"
-	rom ( name "Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It).gba" size 16777216 crc 4f07c618 sha1 6F478A455383A2A12378F292581DFD7300300700 flags verified )
-)
-
-game (
-	name "Kirby & The Amazing Mirror (USA)"
-	description "Kirby & The Amazing Mirror (USA)"
-	rom ( name "Kirby & The Amazing Mirror (USA).gba" size 16777216 crc 9f2a3048 sha1 274B102B6D940F46861A92B4E65F89A51815C12C flags verified )
-)
-
-game (
-	name "Kirby & The Amazing Mirror (USA) (Virtual Console)"
-	description "Kirby & The Amazing Mirror (USA) (Virtual Console)"
-	rom ( name "Kirby & The Amazing Mirror (USA) (Virtual Console).gba" size 16777216 crc f70ebb99 sha1 A7B758C2ABF4F0EF722922EAB4D394A1579B52E8 )
-)
-
-game (
-	name "Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It) (Virtual Console)"
-	description "Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It) (Virtual Console)"
-	rom ( name "Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It) (Virtual Console).gba" size 16777216 crc 7c74487c sha1 D740B50E4B363B902F7CF3831B08C306E12EA9C7 )
-)
-
-game (
 	name "Kirby - Nightmare in Dream Land (USA)"
 	description "Kirby - Nightmare in Dream Land (USA)"
 	rom ( name "Kirby - Nightmare in Dream Land (USA).gba" size 8388608 crc 20ef3f64 sha1 37A476567D133C146FEE6B5E2EB0B07A215DA6B0 flags verified )
@@ -8963,6 +8951,30 @@ game (
 	name "Kirby - Nightmare in Dream Land (Europe) (En,Fr,De,Es,It) (Virtual Console)"
 	description "Kirby - Nightmare in Dream Land (Europe) (En,Fr,De,Es,It) (Virtual Console)"
 	rom ( name "Kirby - Nightmare in Dream Land (Europe) (En,Fr,De,Es,It) (Virtual Console).gba" size 16777216 crc 7336b1fa sha1 DFA3D9C8402F3EB2EA3E12E8F195187709634F92 )
+)
+
+game (
+	name "Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It)"
+	description "Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It)"
+	rom ( name "Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It).gba" size 16777216 crc 4f07c618 sha1 6F478A455383A2A12378F292581DFD7300300700 flags verified )
+)
+
+game (
+	name "Kirby & The Amazing Mirror (USA)"
+	description "Kirby & The Amazing Mirror (USA)"
+	rom ( name "Kirby & The Amazing Mirror (USA).gba" size 16777216 crc 9f2a3048 sha1 274B102B6D940F46861A92B4E65F89A51815C12C flags verified )
+)
+
+game (
+	name "Kirby & The Amazing Mirror (USA) (Virtual Console)"
+	description "Kirby & The Amazing Mirror (USA) (Virtual Console)"
+	rom ( name "Kirby & The Amazing Mirror (USA) (Virtual Console).gba" size 16777216 crc f70ebb99 sha1 A7B758C2ABF4F0EF722922EAB4D394A1579B52E8 )
+)
+
+game (
+	name "Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It) (Virtual Console)"
+	description "Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It) (Virtual Console)"
+	rom ( name "Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It) (Virtual Console).gba" size 16777216 crc 7c74487c sha1 D740B50E4B363B902F7CF3831B08C306E12EA9C7 )
 )
 
 game (
@@ -10379,6 +10391,12 @@ game (
 	name "Mario vs. Donkey Kong (USA) (Demo) (Kiosk, GameCube)"
 	description "Mario vs. Donkey Kong (USA) (Demo) (Kiosk, GameCube)"
 	rom ( name "Mario vs. Donkey Kong (USA) (Demo) (Kiosk, GameCube).gba" size 16777216 crc 25505164 sha1 68EEBE6DBCF8973ED7426A793185DB202A01288F flags verified )
+)
+
+game (
+	name "Mario vs. Donkey Kong (Japan) (Demo) (Kiosk, GameCube)"
+	description "Mario vs. Donkey Kong (Japan) (Demo) (Kiosk, GameCube)"
+	rom ( name "Mario vs. Donkey Kong (Japan) (Demo) (Kiosk, GameCube).gba" size 16777216 crc b3642431 sha1 E7389B36573F7E32D53AE9ACFDBA744389C2F6C2 flags verified )
 )
 
 game (
@@ -12008,9 +12026,9 @@ game (
 )
 
 game (
-	name "MX 2002 featuring Ricky Carmichael (USA, Europe)"
-	description "MX 2002 featuring Ricky Carmichael (USA, Europe)"
-	rom ( name "MX 2002 featuring Ricky Carmichael (USA, Europe).gba" size 4194304 crc 0bf1dc56 sha1 87914981EE89219A0FA28833FB9D9F6E9B606D57 )
+	name "MX 2002 Featuring Ricky Carmichael (USA, Europe)"
+	description "MX 2002 Featuring Ricky Carmichael (USA, Europe)"
+	rom ( name "MX 2002 Featuring Ricky Carmichael (USA, Europe).gba" size 4194304 crc 0bf1dc56 sha1 87914981EE89219A0FA28833FB9D9F6E9B606D57 )
 )
 
 game (
@@ -12170,6 +12188,12 @@ game (
 )
 
 game (
+	name "Naruto - Saikyou Ninja Daikesshuu 2 (Japan) (Demo) (Kiosk, GameCube)"
+	description "Naruto - Saikyou Ninja Daikesshuu 2 (Japan) (Demo) (Kiosk, GameCube)"
+	rom ( name "Naruto - Saikyou Ninja Daikesshuu 2 (Japan) (Demo) (Kiosk, GameCube).gba" size 8388608 crc ba1f514a sha1 4F1047F13764C827CFCA12B9025FA62BB7F374A4 flags verified )
+)
+
+game (
 	name "Naruto RPG - Uketsugareshi Hi no Ishi (Japan)"
 	description "Naruto RPG - Uketsugareshi Hi no Ishi (Japan)"
 	rom ( name "Naruto RPG - Uketsugareshi Hi no Ishi (Japan).gba" size 8388608 crc c036d0f0 sha1 17B43AB5EB95F0169827FFD739899F8A1827E798 )
@@ -12179,6 +12203,12 @@ game (
 	name "Naruto RPG - Uketsugareshi Hi no Ishi (Japan) (Rev 1)"
 	description "Naruto RPG - Uketsugareshi Hi no Ishi (Japan) (Rev 1)"
 	rom ( name "Naruto RPG - Uketsugareshi Hi no Ishi (Japan) (Rev 1).gba" size 8388608 crc 2bf6555a sha1 DF43AB9AC90A8A6500AC85DAEE1A15EB0F00AFDF )
+)
+
+game (
+	name "Naruto RPG - Uketsugareshi Hi no Ishi (Japan) (Demo) (Kiosk, GameCube)"
+	description "Naruto RPG - Uketsugareshi Hi no Ishi (Japan) (Demo) (Kiosk, GameCube)"
+	rom ( name "Naruto RPG - Uketsugareshi Hi no Ishi (Japan) (Demo) (Kiosk, GameCube).gba" size 8388608 crc 502e4a7d sha1 1B6462A54A3D993FB01910237EEC9C9DD9DFF5F6 flags verified )
 )
 
 game (
@@ -12968,15 +12998,15 @@ game (
 )
 
 game (
-	name "Pinobee & Phoebee (Japan)"
-	description "Pinobee & Phoebee (Japan)"
-	rom ( name "Pinobee & Phoebee (Japan).gba" size 8388608 crc e989a4ae sha1 E5CB92C2ADB0B1715CE80D7562B562E527EE2E1F )
-)
-
-game (
 	name "Pinobee - Wings of Adventure (USA, Europe)"
 	description "Pinobee - Wings of Adventure (USA, Europe)"
 	rom ( name "Pinobee - Wings of Adventure (USA, Europe).gba" size 8388608 crc d9385207 sha1 CB1549B6DD8070770B1A00928EEB7D458309E200 flags verified )
+)
+
+game (
+	name "Pinobee & Phoebee (Japan)"
+	description "Pinobee & Phoebee (Japan)"
+	rom ( name "Pinobee & Phoebee (Japan).gba" size 8388608 crc e989a4ae sha1 E5CB92C2ADB0B1715CE80D7562B562E527EE2E1F )
 )
 
 game (
@@ -13172,45 +13202,69 @@ game (
 )
 
 game (
-	name "Pokemon - 10th Anniversary Distribution (Europe)"
-	description "Pokemon - 10th Anniversary Distribution (Europe)"
-	rom ( name "Pokemon - 10th Anniversary Distribution (Europe).gba" size 4194304 crc 7e3ba6a2 sha1 3830C68BBE20406F56E1F4DF54B827D0DBD77714 )
+	name "Pokemon - 10th Anniversary Distribution (Europe) (Kiosk)"
+	description "Pokemon - 10th Anniversary Distribution (Europe) (Kiosk)"
+	rom ( name "Pokemon - 10th Anniversary Distribution (Europe) (Kiosk).gba" size 4194304 crc 7e3ba6a2 sha1 3830C68BBE20406F56E1F4DF54B827D0DBD77714 )
 )
 
 game (
-	name "Pokemon - Aura Mew Distribution (Europe)"
-	description "Pokemon - Aura Mew Distribution (Europe)"
-	rom ( name "Pokemon - Aura Mew Distribution (Europe).gba" size 4194304 crc 2912e76e sha1 DE5637F89AEB5D2D5F82B863F48BB0AB23E51715 )
+	name "Pokemon - 10th Anniversary Distribution (Germany) (Kiosk)"
+	description "Pokemon - 10th Anniversary Distribution (Germany) (Kiosk)"
+	rom ( name "Pokemon - 10th Anniversary Distribution (Germany) (Kiosk).gba" size 4194304 crc dbf39320 sha1 1CD12C2BF0BED851939A618167A780CA6CEC4F76 )
 )
 
 game (
-	name "Pokemon - Aura Mew Distribution (France)"
-	description "Pokemon - Aura Mew Distribution (France)"
-	rom ( name "Pokemon - Aura Mew Distribution (France).gba" size 4194304 crc 2ad292a4 sha1 5A27193B69815626C7FFC1DC27C14E000B348193 )
+	name "Pokemon - 10th Anniversary Distribution (Italy) (Kiosk)"
+	description "Pokemon - 10th Anniversary Distribution (Italy) (Kiosk)"
+	rom ( name "Pokemon - 10th Anniversary Distribution (Italy) (Kiosk).gba" size 4194304 crc 82658753 sha1 9B7A0E8FB01A687B0A0DD44AAA5BDBF8417A007D )
 )
 
 game (
-	name "Pokemon - Aura Mew Distribution (Germany)"
-	description "Pokemon - Aura Mew Distribution (Germany)"
-	rom ( name "Pokemon - Aura Mew Distribution (Germany).gba" size 4194304 crc 9a704af8 sha1 C0E8DD88BA17BD55873B36D2E04515596C7C57CB )
+	name "Pokemon - 10th Anniversary Distribution (Spain) (Kiosk)"
+	description "Pokemon - 10th Anniversary Distribution (Spain) (Kiosk)"
+	rom ( name "Pokemon - 10th Anniversary Distribution (Spain) (Kiosk).gba" size 4194304 crc cd08f2b2 sha1 95BF71DDE9CED277F5CA07CCE4369B1D278F3DDD )
 )
 
 game (
-	name "Pokemon - Aura Mew Distribution (Italy)"
-	description "Pokemon - Aura Mew Distribution (Italy)"
-	rom ( name "Pokemon - Aura Mew Distribution (Italy).gba" size 4194304 crc d111cc19 sha1 7BC8D22780F4BF767DE30441CAFA304CCE5D83D4 )
+	name "Pokemon - 10th Anniversary Distribution (France) (Kiosk)"
+	description "Pokemon - 10th Anniversary Distribution (France) (Kiosk)"
+	rom ( name "Pokemon - 10th Anniversary Distribution (France) (Kiosk).gba" size 4194304 crc 6aa7aa37 sha1 B96CBF9B856984982890169515FB72A887CDE3BA )
 )
 
 game (
-	name "Pokemon - Aura Mew Distribution (Spain)"
-	description "Pokemon - Aura Mew Distribution (Spain)"
-	rom ( name "Pokemon - Aura Mew Distribution (Spain).gba" size 4194304 crc ae57b39e sha1 BB20EF87DA0874E199E87E1979AA1490D3ECDCD7 )
+	name "Pokemon - Aura Mew Distribution (Europe) (Kiosk)"
+	description "Pokemon - Aura Mew Distribution (Europe) (Kiosk)"
+	rom ( name "Pokemon - Aura Mew Distribution (Europe) (Kiosk).gba" size 4194304 crc 2912e76e sha1 DE5637F89AEB5D2D5F82B863F48BB0AB23E51715 )
 )
 
 game (
-	name "Pokemon - Aurora Ticket Distribution (USA)"
-	description "Pokemon - Aurora Ticket Distribution (USA)"
-	rom ( name "Pokemon - Aurora Ticket Distribution (USA).gba" size 4194304 crc 24c80fa6 sha1 94A21D133E3F1B1A2129F450A9BC753D12C13B09 )
+	name "Pokemon - Aura Mew Distribution (France) (Kiosk)"
+	description "Pokemon - Aura Mew Distribution (France) (Kiosk)"
+	rom ( name "Pokemon - Aura Mew Distribution (France) (Kiosk).gba" size 4194304 crc 2ad292a4 sha1 5A27193B69815626C7FFC1DC27C14E000B348193 )
+)
+
+game (
+	name "Pokemon - Aura Mew Distribution (Germany) (Kiosk)"
+	description "Pokemon - Aura Mew Distribution (Germany) (Kiosk)"
+	rom ( name "Pokemon - Aura Mew Distribution (Germany) (Kiosk).gba" size 4194304 crc 9a704af8 sha1 C0E8DD88BA17BD55873B36D2E04515596C7C57CB )
+)
+
+game (
+	name "Pokemon - Aura Mew Distribution (Italy) (Kiosk)"
+	description "Pokemon - Aura Mew Distribution (Italy) (Kiosk)"
+	rom ( name "Pokemon - Aura Mew Distribution (Italy) (Kiosk).gba" size 4194304 crc d111cc19 sha1 7BC8D22780F4BF767DE30441CAFA304CCE5D83D4 )
+)
+
+game (
+	name "Pokemon - Aura Mew Distribution (Spain) (Kiosk)"
+	description "Pokemon - Aura Mew Distribution (Spain) (Kiosk)"
+	rom ( name "Pokemon - Aura Mew Distribution (Spain) (Kiosk).gba" size 4194304 crc ae57b39e sha1 BB20EF87DA0874E199E87E1979AA1490D3ECDCD7 )
+)
+
+game (
+	name "Pokemon - Aurora Ticket Distribution (USA) (Kiosk)"
+	description "Pokemon - Aurora Ticket Distribution (USA) (Kiosk)"
+	rom ( name "Pokemon - Aurora Ticket Distribution (USA) (Kiosk).gba" size 4194304 crc 24c80fa6 sha1 94A21D133E3F1B1A2129F450A9BC753D12C13B09 )
 )
 
 game (
@@ -13220,9 +13274,9 @@ game (
 )
 
 game (
-	name "Pokemon - Doel Deoxys Distribution (Netherlands)"
-	description "Pokemon - Doel Deoxys Distribution (Netherlands)"
-	rom ( name "Pokemon - Doel Deoxys Distribution (Netherlands).gba" size 4194304 crc 6346fd59 sha1 C09EB395BDB9B3981B8EC2F73179379E2BCFD0CC )
+	name "Pokemon - Doel Deoxys Distribution (Netherlands) (Kiosk)"
+	description "Pokemon - Doel Deoxys Distribution (Netherlands) (Kiosk)"
+	rom ( name "Pokemon - Doel Deoxys Distribution (Netherlands) (Kiosk).gba" size 4194304 crc 6346fd59 sha1 C09EB395BDB9B3981B8EC2F73179379E2BCFD0CC )
 )
 
 game (
@@ -13304,9 +13358,9 @@ game (
 )
 
 game (
-	name "Pokemon - Liechi Berry Glitch Fix & Shiny Zigzagoon Distribution (Europe)"
-	description "Pokemon - Liechi Berry Glitch Fix & Shiny Zigzagoon Distribution (Europe)"
-	rom ( name "Pokemon - Liechi Berry Glitch Fix & Shiny Zigzagoon Distribution (Europe).gba" size 4194304 crc d78b5a1f sha1 383D0E8D0DCB1E76F36939B359B753D6E1E8A11F )
+	name "Pokemon - Liechi Berry Glitch Fix & Shiny Zigzagoon Distribution (Europe) (Kiosk)"
+	description "Pokemon - Liechi Berry Glitch Fix & Shiny Zigzagoon Distribution (Europe) (Kiosk)"
+	rom ( name "Pokemon - Liechi Berry Glitch Fix & Shiny Zigzagoon Distribution (Europe) (Kiosk).gba" size 4194304 crc d78b5a1f sha1 383D0E8D0DCB1E76F36939B359B753D6E1E8A11F )
 )
 
 game (
@@ -14452,7 +14506,7 @@ game (
 game (
 	name "Rockman EXE 4 - Tournament Red Sun (Japan)"
 	description "Rockman EXE 4 - Tournament Red Sun (Japan)"
-	rom ( name "Rockman EXE 4 - Tournament Red Sun (Japan).gba" size 8388608 crc 6a51907d sha1 7EFE1B77C39B58E1400AF5392BEC313003FA7861 )
+	rom ( name "Rockman EXE 4 - Tournament Red Sun (Japan).gba" size 8388608 crc 6a51907d sha1 7EFE1B77C39B58E1400AF5392BEC313003FA7861 flags verified )
 )
 
 game (
@@ -15362,6 +15416,12 @@ game (
 )
 
 game (
+	name "Shiren Monsters - Netsal (Japan) (Demo) (Kiosk, GameCube)"
+	description "Shiren Monsters - Netsal (Japan) (Demo) (Kiosk, GameCube)"
+	rom ( name "Shiren Monsters - Netsal (Japan) (Demo) (Kiosk, GameCube).gba" size 16777216 crc 25b0b122 sha1 2EBD243709A9B0AF16C6C0B0404FB02999EEFFFD flags verified )
+)
+
+game (
 	name "Shrek - Hassle at the Castle (USA) (En,Fr,De,Es,It,Nl)"
 	description "Shrek - Hassle at the Castle (USA) (En,Fr,De,Es,It,Nl)"
 	rom ( name "Shrek - Hassle at the Castle (USA) (En,Fr,De,Es,It,Nl).gba" size 4194304 crc 09e7472c sha1 AFEB14671FAD093FEC0B3AB0E95E01A01DE9F4D8 )
@@ -15809,6 +15869,12 @@ game (
 	name "Sonic Advance 3 (Japan) (En,Ja,Fr,De,Es,It) (Virtual Console)"
 	description "Sonic Advance 3 (Japan) (En,Ja,Fr,De,Es,It) (Virtual Console)"
 	rom ( name "Sonic Advance 3 (Japan) (En,Ja,Fr,De,Es,It) (Virtual Console).gba" size 16777216 crc 1f36892f sha1 9FC8E926FC5472A1E34E3251C5D316526DC7A7A9 )
+)
+
+game (
+	name "Sonic Advance 3 (Japan) (Demo) (Kiosk, GameCube)"
+	description "Sonic Advance 3 (Japan) (Demo) (Kiosk, GameCube)"
+	rom ( name "Sonic Advance 3 (Japan) (Demo) (Kiosk, GameCube).gba" size 16777216 crc 0594d496 sha1 9C3F18112C126CA08403408A844A3A83967EB4DC flags verified )
 )
 
 game (
@@ -18470,6 +18536,12 @@ game (
 )
 
 game (
+	name "Viewpoint (Unknown) (Techo Demo)"
+	description "Viewpoint (Unknown) (Techo Demo)"
+	rom ( name "Viewpoint (Unknown) (Techo Demo).gba" size 2097152 crc 7ad65e4b sha1 8FDCC5C207593CB196CEA8416BB14BB45DB37434 )
+)
+
+game (
 	name "Virtua Tennis (USA)"
 	description "Virtua Tennis (USA)"
 	rom ( name "Virtua Tennis (USA).gba" size 8388608 crc e0bd3b75 sha1 2BF5363D24C4EC6DE8AAFAE1BFFC84113EAED0A2 )
@@ -18542,15 +18614,15 @@ game (
 )
 
 game (
-	name "Wakeboarding Unleashed featuring Shaun Murray (Europe)"
-	description "Wakeboarding Unleashed featuring Shaun Murray (Europe)"
-	rom ( name "Wakeboarding Unleashed featuring Shaun Murray (Europe).gba" size 8388608 crc a3ccf1ec sha1 9EB979282FB2084BD205282EA71F18409D5558E2 )
+	name "Wakeboarding Unleashed Featuring Shaun Murray (Europe)"
+	description "Wakeboarding Unleashed Featuring Shaun Murray (Europe)"
+	rom ( name "Wakeboarding Unleashed Featuring Shaun Murray (Europe).gba" size 8388608 crc a3ccf1ec sha1 9EB979282FB2084BD205282EA71F18409D5558E2 )
 )
 
 game (
-	name "Wakeboarding Unleashed featuring Shaun Murray (USA)"
-	description "Wakeboarding Unleashed featuring Shaun Murray (USA)"
-	rom ( name "Wakeboarding Unleashed featuring Shaun Murray (USA).gba" size 8388608 crc cad6376c sha1 AB24E4968672379EB2B22CB1B2730EADF5989130 )
+	name "Wakeboarding Unleashed Featuring Shaun Murray (USA)"
+	description "Wakeboarding Unleashed Featuring Shaun Murray (USA)"
+	rom ( name "Wakeboarding Unleashed Featuring Shaun Murray (USA).gba" size 8388608 crc cad6376c sha1 AB24E4968672379EB2B22CB1B2730EADF5989130 )
 )
 
 game (
@@ -18908,9 +18980,9 @@ game (
 )
 
 game (
-	name "World Reborn (USA) (Aftermarket) (Unl)"
-	description "World Reborn (USA) (Aftermarket) (Unl)"
-	rom ( name "World Reborn (USA) (Aftermarket) (Unl).gba" size 4194304 crc eefb32ff sha1 C7EC2F8D7D3DEC40A893CDFE2A41A8ED43ED71C4 )
+	name "World Reborn (World) (Aftermarket) (Unl)"
+	description "World Reborn (World) (Aftermarket) (Unl)"
+	rom ( name "World Reborn (World) (Aftermarket) (Unl).gba" size 4194304 crc eefb32ff sha1 C7EC2F8D7D3DEC40A893CDFE2A41A8ED43ED71C4 )
 )
 
 game (
@@ -19564,7 +19636,7 @@ game (
 clrmamepro (
 	name "Nintendo - Game Boy Advance (Multiboot)"
 	description "Nintendo - Game Boy Advance (Multiboot)"
-	version 20201010-045229
+	version 20210321-122109
 	author "C. V. Reynolds, chillerecke, DeriLoko3, Hiccup, hking0036, niemand, omonim2007, relax"
 	homepage No-Intro
 	url "http://www.no-intro.org"
@@ -19811,6 +19883,12 @@ game (
 )
 
 game (
+	name "Made in Wario - Trial Version (Japan)"
+	description "Made in Wario - Trial Version (Japan)"
+	rom ( name "Made in Wario - Trial Version (Japan).gba" size 248108 crc 57da69a6 sha1 E3E66739303AAE3ABAB7DBD54F5645E7D484A5F6 flags verified )
+)
+
+game (
 	name "Mario Kart - Double Dash!! (USA) (Fire Emblem GBA - Bonus Items)"
 	description "Mario Kart - Double Dash!! (USA) (Fire Emblem GBA - Bonus Items)"
 	rom ( name "Mario Kart - Double Dash!! (USA) (Fire Emblem GBA - Bonus Items).gba" size 59396 crc a4cb79e1 sha1 1248770A6798E99DE68B9D08D0E27E3F893C3047 )
@@ -19853,15 +19931,27 @@ game (
 )
 
 game (
-	name "WarioWare, Inc. Mega Microgame$! - Trial Version (USA)"
-	description "WarioWare, Inc. Mega Microgame$! - Trial Version (USA)"
-	rom ( name "WarioWare, Inc. Mega Microgame$! - Trial Version (USA).gba" size 249848 crc cc86e7c2 sha1 CA4AE225F2F758ED84CEF9A3C8490EFD4B5A0A7C flags verified )
+	name "WarioWare, Inc. - Trial ver. 1 (World)"
+	description "WarioWare, Inc. - Trial ver. 1 (World)"
+	rom ( name "WarioWare, Inc. - Trial ver. 1 (World).gba" size 244928 crc 7508c0c0 sha1 8BFCF10A8F57B16580A228ADDAE867A00E832151 flags verified )
+)
+
+game (
+	name "WarioWare, Inc. - Trial ver. 4 (World)"
+	description "WarioWare, Inc. - Trial ver. 4 (World)"
+	rom ( name "WarioWare, Inc. - Trial ver. 4 (World).gba" size 234240 crc 00a15ebd sha1 01AF5F68897441F378EE417ACD800C152FF5350F flags verified )
+)
+
+game (
+	name "WarioWare, Inc. - Trial version (USA)"
+	description "WarioWare, Inc. - Trial version (USA)"
+	rom ( name "WarioWare, Inc. - Trial version (USA).gba" size 249848 crc cc86e7c2 sha1 CA4AE225F2F758ED84CEF9A3C8490EFD4B5A0A7C flags verified )
 )
 
 clrmamepro (
 	name "Nintendo - Game Boy"
 	description "Nintendo - Game Boy"
-	version 20201120-021052
+	version 20210311-081758
 	author "aci68, akubi, Aringon, Bent, BigFred, BitLooter, C. V. Reynolds, chillerecke, darthcloud, DeadSkullzJr, Densetsu, DeriLoko3, ElBarto, foxe, fuzzball, Gefflon, Hiccup, hking0036, jimmsu, kazumi213, leekindo, Money_114, NGEfreak, omonim2007, Powerpuff, PPLToast, relax, RetroUprising, rpg2813, SonGoku, Tauwasser, xNo, xuom2"
 	homepage No-Intro
 	url "http://www.no-intro.org"
@@ -20333,6 +20423,12 @@ game (
 	name "Asterix & Obelix (Europe) (Fr,De) (SGB Enhanced)"
 	description "Asterix & Obelix (Europe) (Fr,De) (SGB Enhanced)"
 	rom ( name "Asterix & Obelix (Europe) (Fr,De) (SGB Enhanced).gb" size 262144 crc 5143e227 sha1 EBC68B180680C7037B151B9A1B511B681499BA30 flags verified )
+)
+
+game (
+	name "Asterix & Obelix (Europe) (Fr,De) (Beta) (SGB Enhanced)"
+	description "Asterix & Obelix (Europe) (Fr,De) (Beta) (SGB Enhanced)"
+	rom ( name "Asterix & Obelix (Europe) (Fr,De) (Beta) (SGB Enhanced).gb" size 262144 crc bfa1d7be sha1 70472CBE59CFD426B0969150085CC97D31BD6470 )
 )
 
 game (
@@ -20810,9 +20906,9 @@ game (
 )
 
 game (
-	name "Bokujou Monogatari GB (Japan) (CGB+SGB Enhanced) (NP)"
-	description "Bokujou Monogatari GB (Japan) (CGB+SGB Enhanced) (NP)"
-	rom ( name "Bokujou Monogatari GB (Japan) (CGB+SGB Enhanced) (NP).gb" size 524288 crc 0424df85 sha1 551DF2021D0E433E7F07CF881C7B1D534F54F6AD )
+	name "Bokujou Monogatari GB (Japan) (SGB Enhanced) (NP)"
+	description "Bokujou Monogatari GB (Japan) (SGB Enhanced) (NP)"
+	rom ( name "Bokujou Monogatari GB (Japan) (SGB Enhanced) (NP).gb" size 524288 crc 0424df85 sha1 551DF2021D0E433E7F07CF881C7B1D534F54F6AD )
 )
 
 game (
@@ -23918,9 +24014,9 @@ game (
 )
 
 game (
-	name "Kaseki Sousei Reborn (Japan) (Rev 1) (Possible Proto) (SGB Enhanced)"
-	description "Kaseki Sousei Reborn (Japan) (Rev 1) (Possible Proto) (SGB Enhanced)"
-	rom ( name "Kaseki Sousei Reborn (Japan) (Rev 1) (Possible Proto) (SGB Enhanced).gb" size 524288 crc 7c94197c sha1 5759394E2E8BFD68CCF5519362572DAABA003573 )
+	name "Kaseki Sousei Reborn (Japan) (Rev 1) (SGB Enhanced)"
+	description "Kaseki Sousei Reborn (Japan) (Rev 1) (SGB Enhanced)"
+	rom ( name "Kaseki Sousei Reborn (Japan) (Rev 1) (SGB Enhanced).gb" size 524288 crc 7c94197c sha1 5759394E2E8BFD68CCF5519362572DAABA003573 )
 )
 
 game (
@@ -25244,6 +25340,12 @@ game (
 )
 
 game (
+	name "Mortal Kombat - Shinken Kourin Densetsu (Japan)"
+	description "Mortal Kombat - Shinken Kourin Densetsu (Japan)"
+	rom ( name "Mortal Kombat - Shinken Kourin Densetsu (Japan).gb" size 262144 crc 160fa9ef sha1 5C24D595401CE3D1BB4027D0BC12312DCA275470 )
+)
+
+game (
 	name "Mortal Kombat & Mortal Kombat II (Japan)"
 	description "Mortal Kombat & Mortal Kombat II (Japan)"
 	rom ( name "Mortal Kombat & Mortal Kombat II (Japan).gb" size 1048576 crc b1a8dfd0 sha1 CF6CA53E1DF526C73BAB62743085257119865107 )
@@ -25253,12 +25355,6 @@ game (
 	name "Mortal Kombat & Mortal Kombat II (USA, Europe)"
 	description "Mortal Kombat & Mortal Kombat II (USA, Europe)"
 	rom ( name "Mortal Kombat & Mortal Kombat II (USA, Europe).gb" size 1048576 crc 55300d0a sha1 E337489255B33367CE26194FC4038346D3388BD9 )
-)
-
-game (
-	name "Mortal Kombat - Shinken Kourin Densetsu (Japan)"
-	description "Mortal Kombat - Shinken Kourin Densetsu (Japan)"
-	rom ( name "Mortal Kombat - Shinken Kourin Densetsu (Japan).gb" size 262144 crc 160fa9ef sha1 5C24D595401CE3D1BB4027D0BC12312DCA275470 )
 )
 
 game (
@@ -25684,13 +25780,13 @@ game (
 game (
 	name "Nettou World Heroes 2 Jet (Japan) (SGB Enhanced)"
 	description "Nettou World Heroes 2 Jet (Japan) (SGB Enhanced)"
-	rom ( name "Nettou World Heroes 2 Jet (Japan) (SGB Enhanced).gb" size 524288 crc 0a12f53c sha1 0DD04CA0AC61B449D3040587918B63D649FBBCC2 )
+	rom ( name "Nettou World Heroes 2 Jet (Japan) (SGB Enhanced).gb" size 524288 crc 0a12f53c sha1 0DD04CA0AC61B449D3040587918B63D649FBBCC2 flags verified )
 )
 
 game (
 	name "Nettou World Heroes 2 Jet (Japan) (Rev 1) (SGB Enhanced)"
 	description "Nettou World Heroes 2 Jet (Japan) (Rev 1) (SGB Enhanced)"
-	rom ( name "Nettou World Heroes 2 Jet (Japan) (Rev 1) (SGB Enhanced).gb" size 524288 crc 7c5ffe52 sha1 14BC507F479E814B0131FEBFAB19F2EF30EB23A5 )
+	rom ( name "Nettou World Heroes 2 Jet (Japan) (Rev 1) (SGB Enhanced).gb" size 524288 crc 7c5ffe52 sha1 14BC507F479E814B0131FEBFAB19F2EF30EB23A5 flags verified )
 )
 
 game (
@@ -25988,6 +26084,12 @@ game (
 )
 
 game (
+	name "Out of Gas (USA) (Beta)"
+	description "Out of Gas (USA) (Beta)"
+	rom ( name "Out of Gas (USA) (Beta).gb" size 131072 crc c3e365b4 sha1 FF90B89B413437B5E3360E28B6A62573619B4558 )
+)
+
+game (
 	name "Outburst (Japan)"
 	description "Outburst (Japan)"
 	rom ( name "Outburst (Japan).gb" size 262144 crc 8afcc4b0 sha1 2D5A27B675A1F3C0BE43E6F662F0159A3B3BF92B )
@@ -26207,6 +26309,12 @@ game (
 	name "Pang (Europe)"
 	description "Pang (Europe)"
 	rom ( name "Pang (Europe).gb" size 131072 crc ea9615b4 sha1 7CA64A45EA6A68770658AE39EF21C41F806988C5 )
+)
+
+game (
+	name "Pang (Europe) (Beta)"
+	description "Pang (Europe) (Beta)"
+	rom ( name "Pang (Europe) (Beta).gb" size 131072 crc 54d2754a sha1 B57D436D8A83F2FB1E42BAD3150893EF8FFAB0D4 )
 )
 
 game (
@@ -26488,19 +26596,19 @@ game (
 game (
 	name "Pocket Monsters - Aka (Japan) (SGB Enhanced)"
 	description "Pocket Monsters - Aka (Japan) (SGB Enhanced)"
-	rom ( name "Pocket Monsters - Aka (Japan) (SGB Enhanced).gb" size 524288 crc 13652705 sha1 0623AD12F48C259447980D68BD85DDBF8204B2CD )
+	rom ( name "Pocket Monsters - Aka (Japan) (SGB Enhanced).gb" size 524288 crc 13652705 sha1 0623AD12F48C259447980D68BD85DDBF8204B2CD flags verified )
 )
 
 game (
 	name "Pocket Monsters - Aka (Japan) (Rev 1) (SGB Enhanced)"
 	description "Pocket Monsters - Aka (Japan) (Rev 1) (SGB Enhanced)"
-	rom ( name "Pocket Monsters - Aka (Japan) (Rev 1) (SGB Enhanced).gb" size 524288 crc b77be1e0 sha1 EF74C79CDED14204AC79E77F4964D9CB25003120 )
+	rom ( name "Pocket Monsters - Aka (Japan) (Rev 1) (SGB Enhanced).gb" size 524288 crc b77be1e0 sha1 EF74C79CDED14204AC79E77F4964D9CB25003120 flags verified )
 )
 
 game (
 	name "Pocket Monsters - Ao (Japan) (SGB Enhanced)"
 	description "Pocket Monsters - Ao (Japan) (SGB Enhanced)"
-	rom ( name "Pocket Monsters - Ao (Japan) (SGB Enhanced).gb" size 524288 crc e4468d14 sha1 0DA501E3E5C51AB8FEF55B092DCDD7E6B050E424 )
+	rom ( name "Pocket Monsters - Ao (Japan) (SGB Enhanced).gb" size 524288 crc e4468d14 sha1 0DA501E3E5C51AB8FEF55B092DCDD7E6B050E424 flags verified )
 )
 
 game (
@@ -26530,7 +26638,7 @@ game (
 game (
 	name "Pocket Monsters - Pikachu (Japan) (Rev 2) (SGB Enhanced)"
 	description "Pocket Monsters - Pikachu (Japan) (Rev 2) (SGB Enhanced)"
-	rom ( name "Pocket Monsters - Pikachu (Japan) (Rev 2) (SGB Enhanced).gb" size 1048576 crc fd3da7ff sha1 91864ECDF26D1C593BDE4D9ED615520EB57D5E41 )
+	rom ( name "Pocket Monsters - Pikachu (Japan) (Rev 2) (SGB Enhanced).gb" size 1048576 crc fd3da7ff sha1 91864ECDF26D1C593BDE4D9ED615520EB57D5E41 flags verified )
 )
 
 game (
@@ -26741,6 +26849,12 @@ game (
 	name "Populous (Europe)"
 	description "Populous (Europe)"
 	rom ( name "Populous (Europe).gb" size 131072 crc 453057ac sha1 4E3976FE32F4DB8F2E56EAE539D7CAE04D1B64CB flags verified )
+)
+
+game (
+	name "Populous (Europe) (Beta)"
+	description "Populous (Europe) (Beta)"
+	rom ( name "Populous (Europe) (Beta).gb" size 131072 crc ecf2dd6f sha1 76A08B4A0448641A263CE4DC65A2181192A0A621 )
 )
 
 game (
@@ -28676,6 +28790,12 @@ game (
 )
 
 game (
+	name "Taz-Mania (Europe) (Beta)"
+	description "Taz-Mania (Europe) (Beta)"
+	rom ( name "Taz-Mania (Europe) (Beta).gb" size 131072 crc c3d85ef6 sha1 B31F8EC2A330D57EC7736E405833508CA8A98700 )
+)
+
+game (
 	name "Taz-Mania 2 (USA)"
 	description "Taz-Mania 2 (USA)"
 	rom ( name "Taz-Mania 2 (USA).gb" size 131072 crc 4ccb65e0 sha1 60116A304E85F04209DC7EB64D9649DC41C963F6 )
@@ -29414,9 +29534,9 @@ game (
 )
 
 game (
-	name "Wario Blast featuring Bomberman! (USA, Europe) (SGB Enhanced)"
-	description "Wario Blast featuring Bomberman! (USA, Europe) (SGB Enhanced)"
-	rom ( name "Wario Blast featuring Bomberman! (USA, Europe) (SGB Enhanced).gb" size 262144 crc 927b57a1 sha1 279FB0223E362DB553B739B1B8F9C18B81D92413 flags verified )
+	name "Wario Blast Featuring Bomberman! (USA, Europe) (SGB Enhanced)"
+	description "Wario Blast Featuring Bomberman! (USA, Europe) (SGB Enhanced)"
+	rom ( name "Wario Blast Featuring Bomberman! (USA, Europe) (SGB Enhanced).gb" size 262144 crc 927b57a1 sha1 279FB0223E362DB553B739B1B8F9C18B81D92413 flags verified )
 )
 
 game (
@@ -29884,7 +30004,7 @@ game (
 clrmamepro (
 	name "Nintendo - Game Boy Color"
 	description "Nintendo - Game Boy Color"
-	version 20201205-111422
+	version 20210303-092238
 	author "akubi, Aringon, Bent, BigFred, BitLooter, C. V. Reynolds, chillerecke, coraz, darthcloud, DeadSkullzJr, Densetsu, DeriLoko3, foxe, fuzzball, Hiccup, hking0036, kazumi213, Money_114, NGEfreak, omonim2007, PPLToast, relax, Rifu, SonGoku, Tauwasser, Whovian9369, xuom2, zg"
 	homepage No-Intro
 	url "http://www.no-intro.org"
@@ -30227,6 +30347,12 @@ game (
 )
 
 game (
+	name "Asterix - Sur la Trace D'Idefix (Europe) (En,Fr,De,Es,It,Nl)"
+	description "Asterix - Sur la Trace D'Idefix (Europe) (En,Fr,De,Es,It,Nl)"
+	rom ( name "Asterix - Sur la Trace D'Idefix (Europe) (En,Fr,De,Es,It,Nl).gbc" size 1048576 crc 408dc5c6 sha1 5C7207137AB422D3326D183D3433DB161D8ECBC5 )
+)
+
+game (
 	name "Asterix & Obelix (Europe) (En,Fr,De,Es)"
 	description "Asterix & Obelix (Europe) (En,Fr,De,Es)"
 	rom ( name "Asterix & Obelix (Europe) (En,Fr,De,Es).gbc" size 1048576 crc 6628cdee sha1 5F36071DF7BE289C169768B1683947E972D26996 )
@@ -30236,12 +30362,6 @@ game (
 	name "Asterix & Obelix Contre Cesar (Europe) (En,Fr,De,Es,Nl) (GB Compatible)"
 	description "Asterix & Obelix Contre Cesar (Europe) (En,Fr,De,Es,Nl) (GB Compatible)"
 	rom ( name "Asterix & Obelix Contre Cesar (Europe) (En,Fr,De,Es,Nl) (GB Compatible).gbc" size 1048576 crc 71043d76 sha1 A4B892D269957D84570C07856C81F48F037B5A03 )
-)
-
-game (
-	name "Asterix - Sur la Trace D'Idefix (Europe) (En,Fr,De,Es,It,Nl)"
-	description "Asterix - Sur la Trace D'Idefix (Europe) (En,Fr,De,Es,It,Nl)"
-	rom ( name "Asterix - Sur la Trace D'Idefix (Europe) (En,Fr,De,Es,It,Nl).gbc" size 1048576 crc 408dc5c6 sha1 5C7207137AB422D3326D183D3433DB161D8ECBC5 )
 )
 
 game (
@@ -30833,12 +30953,6 @@ game (
 )
 
 game (
-	name "Bugs Bunny & Lola Bunny - Operation Carrot Patch (Europe) (En,Fr,De,Es,It,Nl) (GB Compatible)"
-	description "Bugs Bunny & Lola Bunny - Operation Carrot Patch (Europe) (En,Fr,De,Es,It,Nl) (GB Compatible)"
-	rom ( name "Bugs Bunny & Lola Bunny - Operation Carrot Patch (Europe) (En,Fr,De,Es,It,Nl) (GB Compatible).gbc" size 1048576 crc f0cc407f sha1 BA004FAC4524B82FD74A9037A37734D0ABA07E50 flags verified )
-)
-
-game (
 	name "Bugs Bunny - Crazy Castle 3 (Japan) (GB Compatible)"
 	description "Bugs Bunny - Crazy Castle 3 (Japan) (GB Compatible)"
 	rom ( name "Bugs Bunny - Crazy Castle 3 (Japan) (GB Compatible).gbc" size 1048576 crc ae839cae sha1 403356D76A267D79FA5B72158DE4E280B970160B )
@@ -30854,6 +30968,12 @@ game (
 	name "Bugs Bunny - Crazy Castle 4 (Japan)"
 	description "Bugs Bunny - Crazy Castle 4 (Japan)"
 	rom ( name "Bugs Bunny - Crazy Castle 4 (Japan).gbc" size 1048576 crc d6387eaa sha1 E4A198D4ACF5AC987071A1D2B91501CACA62269B )
+)
+
+game (
+	name "Bugs Bunny & Lola Bunny - Operation Carrot Patch (Europe) (En,Fr,De,Es,It,Nl) (GB Compatible)"
+	description "Bugs Bunny & Lola Bunny - Operation Carrot Patch (Europe) (En,Fr,De,Es,It,Nl) (GB Compatible)"
+	rom ( name "Bugs Bunny & Lola Bunny - Operation Carrot Patch (Europe) (En,Fr,De,Es,It,Nl) (GB Compatible).gbc" size 1048576 crc f0cc407f sha1 BA004FAC4524B82FD74A9037A37734D0ABA07E50 flags verified )
 )
 
 game (
@@ -30998,6 +31118,12 @@ game (
 	name "Carmageddon - Carpocalypse Now (USA, Europe) (En,Fr,Es,It)"
 	description "Carmageddon - Carpocalypse Now (USA, Europe) (En,Fr,Es,It)"
 	rom ( name "Carmageddon - Carpocalypse Now (USA, Europe) (En,Fr,Es,It).gbc" size 2097152 crc bb482ed7 sha1 DF37636BBD57A426E23D21581376D7E3A87C7933 flags verified )
+)
+
+game (
+	name "Carnivale (USA) (Proto)"
+	description "Carnivale (USA) (Proto)"
+	rom ( name "Carnivale (USA) (Proto).gbc" size 1048576 crc e9503c71 sha1 07D41E21BC82F64D788E720583169FB0E588DA89 )
 )
 
 game (
@@ -32287,7 +32413,7 @@ game (
 game (
 	name "Fushigi no Dungeon - Fuurai no Shiren GB 2 - Sabaku no Majou (Japan) (BFWJ)"
 	description "Fushigi no Dungeon - Fuurai no Shiren GB 2 - Sabaku no Majou (Japan) (BFWJ)"
-	rom ( name "Fushigi no Dungeon - Fuurai no Shiren GB 2 - Sabaku no Majou (Japan) (BFWJ).gbc" size 4194304 crc f3c20fbe sha1 D9C490AF97C08AC7053BBB9F7AE06D3501035127 )
+	rom ( name "Fushigi no Dungeon - Fuurai no Shiren GB 2 - Sabaku no Majou (Japan) (BFWJ).gbc" size 4194304 crc f3c20fbe sha1 D9C490AF97C08AC7053BBB9F7AE06D3501035127 flags verified )
 )
 
 game (
@@ -32323,7 +32449,7 @@ game (
 game (
 	name "Gambler Densetsu Tetsuya - Shinjuku Tenun Hen (Japan) (Rev 1)"
 	description "Gambler Densetsu Tetsuya - Shinjuku Tenun Hen (Japan) (Rev 1)"
-	rom ( name "Gambler Densetsu Tetsuya - Shinjuku Tenun Hen (Japan) (Rev 1).gbc" size 1048576 crc 91739def sha1 B62F8E56B995874C0E1A2533DF5A37F6996DF12E )
+	rom ( name "Gambler Densetsu Tetsuya - Shinjuku Tenun Hen (Japan) (Rev 1).gbc" size 1048576 crc 91739def sha1 B62F8E56B995874C0E1A2533DF5A37F6996DF12E flags verified )
 )
 
 game (
@@ -32335,7 +32461,7 @@ game (
 game (
 	name "Game & Watch Gallery 3 (USA, Europe) (SGB Enhanced) (GB Compatible)"
 	description "Game & Watch Gallery 3 (USA, Europe) (SGB Enhanced) (GB Compatible)"
-	rom ( name "Game & Watch Gallery 3 (USA, Europe) (SGB Enhanced) (GB Compatible).gbc" size 1048576 crc 1ac625da sha1 64CCB3B41715080A9AA13970678AA9047FC7A9FD )
+	rom ( name "Game & Watch Gallery 3 (USA, Europe) (SGB Enhanced) (GB Compatible).gbc" size 1048576 crc 1ac625da sha1 64CCB3B41715080A9AA13970678AA9047FC7A9FD flags verified )
 )
 
 game (
@@ -32510,6 +32636,12 @@ game (
 	name "Gifty (Germany) (En)"
 	description "Gifty (Germany) (En)"
 	rom ( name "Gifty (Germany) (En).gbc" size 1048576 crc b97a8cb8 sha1 F92997128F6BCE74F5E5C0787F98FA3D2B6C3133 )
+)
+
+game (
+	name "Gimmick Land (Japan) (Proto)"
+	description "Gimmick Land (Japan) (Proto)"
+	rom ( name "Gimmick Land (Japan) (Proto).gbc" size 2097152 crc 228d0b0c sha1 F63ADFF202D7351C61411766C5B57EFEFAC58BCD )
 )
 
 game (
@@ -32702,6 +32834,12 @@ game (
 	name "Gyouten Ningen Batseelor - Doctor Guy no Yabou (Japan)"
 	description "Gyouten Ningen Batseelor - Doctor Guy no Yabou (Japan)"
 	rom ( name "Gyouten Ningen Batseelor - Doctor Guy no Yabou (Japan).gbc" size 4194304 crc b17dc263 sha1 B72E885BAEEB27CB32DE5B5DCEDB632537898C33 flags verified )
+)
+
+game (
+	name "Hajimari no Mori (Japan) (Proto)"
+	description "Hajimari no Mori (Japan) (Proto)"
+	rom ( name "Hajimari no Mori (Japan) (Proto).gbc" size 2097152 crc fecc8ee8 sha1 75A3E1794FD6BD6D35F0A357A82612C016DFBA24 )
 )
 
 game (
@@ -32912,6 +33050,12 @@ game (
 	name "Hello Kitty's Cube Frenzy (USA) (GB Compatible)"
 	description "Hello Kitty's Cube Frenzy (USA) (GB Compatible)"
 	rom ( name "Hello Kitty's Cube Frenzy (USA) (GB Compatible).gbc" size 1048576 crc 937729f6 sha1 6F15379553A0EC8A8174B85A35EAA4085DEC6B43 )
+)
+
+game (
+	name "Hello Kitty's Cube Frenzy (Europe) (Proto)"
+	description "Hello Kitty's Cube Frenzy (Europe) (Proto)"
+	rom ( name "Hello Kitty's Cube Frenzy (Europe) (Proto).gbc" size 1048576 crc 9606a07f sha1 2225DA8A68E489C0F562AFCB8E90FC9387321AF0 )
 )
 
 game (
@@ -33236,6 +33380,12 @@ game (
 	name "Jet de Go! - Let's Go by Airliner (Japan)"
 	description "Jet de Go! - Let's Go by Airliner (Japan)"
 	rom ( name "Jet de Go! - Let's Go by Airliner (Japan).gbc" size 2097152 crc 20c4ccf6 sha1 97BF75AFA0089DDB342EA7046B7CD113BA2C6FEC )
+)
+
+game (
+	name "Jibaku-kun - Rei no Itsuki no Kajitsu (Japan) (Proto)"
+	description "Jibaku-kun - Rei no Itsuki no Kajitsu (Japan) (Proto)"
+	rom ( name "Jibaku-kun - Rei no Itsuki no Kajitsu (Japan) (Proto).gbc" size 2097152 crc 1900bcc8 sha1 FEC43A82916E8504DE685B928A0AF73C2252B55D )
 )
 
 game (
@@ -33599,6 +33749,12 @@ game (
 )
 
 game (
+	name "Klustar (Japan) (Proto)"
+	description "Klustar (Japan) (Proto)"
+	rom ( name "Klustar (Japan) (Proto).gbc" size 262144 crc 65da9075 sha1 9C60C858F647B42007FC27C5D21F3F57923C4CDA )
+)
+
+game (
 	name "Knockout Kings (USA, Europe)"
 	description "Knockout Kings (USA, Europe)"
 	rom ( name "Knockout Kings (USA, Europe).gbc" size 1048576 crc a0d64934 sha1 A04D86A384C5C417BF9F1219EB14829D0459F469 flags verified )
@@ -33716,6 +33872,12 @@ game (
 	name "Laura (USA)"
 	description "Laura (USA)"
 	rom ( name "Laura (USA).gbc" size 1048576 crc e2bff286 sha1 3FE3EB99EE818C94E9A07E19640AF6A2AAD33903 )
+)
+
+game (
+	name "Laura (Europe) (En,Fr,De,Es,It,Nl,Sv,Da) (Beta)"
+	description "Laura (Europe) (En,Fr,De,Es,It,Nl,Sv,Da) (Beta)"
+	rom ( name "Laura (Europe) (En,Fr,De,Es,It,Nl,Sv,Da) (Beta).gbc" size 1048576 crc f90a3dae sha1 772539821E4B703259B2E2AD535D74A03FA22760 )
 )
 
 game (
@@ -34367,15 +34529,21 @@ game (
 )
 
 game (
-	name "Maya the Bee & Her Friends (Europe) (En,Fr,De) (GB Compatible)"
-	description "Maya the Bee & Her Friends (Europe) (En,Fr,De) (GB Compatible)"
-	rom ( name "Maya the Bee & Her Friends (Europe) (En,Fr,De) (GB Compatible).gbc" size 1048576 crc 983b1d26 sha1 522D7F33FD39BD00F48208743FB2246EF0BD3FF1 )
+	name "Max Steel - Covert Missions (USA) (En,Fr,De,Es) (Proto)"
+	description "Max Steel - Covert Missions (USA) (En,Fr,De,Es) (Proto)"
+	rom ( name "Max Steel - Covert Missions (USA) (En,Fr,De,Es) (Proto).gbc" size 1048576 crc 57b1e978 sha1 050A3F041328016C433D923B213674014546DB6E )
 )
 
 game (
 	name "Maya the Bee - Garden Adventures (Europe) (En,Fr,De,Es)"
 	description "Maya the Bee - Garden Adventures (Europe) (En,Fr,De,Es)"
 	rom ( name "Maya the Bee - Garden Adventures (Europe) (En,Fr,De,Es).gbc" size 1048576 crc 142b6efb sha1 E46EA15B4C780A49E29E86516CB1EC5A03BDDDCE )
+)
+
+game (
+	name "Maya the Bee & Her Friends (Europe) (En,Fr,De) (GB Compatible)"
+	description "Maya the Bee & Her Friends (Europe) (En,Fr,De) (GB Compatible)"
+	rom ( name "Maya the Bee & Her Friends (Europe) (En,Fr,De) (GB Compatible).gbc" size 1048576 crc 983b1d26 sha1 522D7F33FD39BD00F48208743FB2246EF0BD3FF1 )
 )
 
 game (
@@ -34913,9 +35081,9 @@ game (
 )
 
 game (
-	name "MTV Sports - Skateboarding featuring Andy MacDonald (USA, Europe)"
-	description "MTV Sports - Skateboarding featuring Andy MacDonald (USA, Europe)"
-	rom ( name "MTV Sports - Skateboarding featuring Andy MacDonald (USA, Europe).gbc" size 1048576 crc 744561f3 sha1 91B6E99A68293D72DF74528E8077FAE58D9C33C3 )
+	name "MTV Sports - Skateboarding Featuring Andy MacDonald (USA, Europe)"
+	description "MTV Sports - Skateboarding Featuring Andy MacDonald (USA, Europe)"
+	rom ( name "MTV Sports - Skateboarding Featuring Andy MacDonald (USA, Europe).gbc" size 1048576 crc 744561f3 sha1 91B6E99A68293D72DF74528E8077FAE58D9C33C3 )
 )
 
 game (
@@ -35057,9 +35225,9 @@ game (
 )
 
 game (
-	name "NBA 3 on 3 featuring Kobe Bryant (USA) (SGB Enhanced) (GB Compatible)"
-	description "NBA 3 on 3 featuring Kobe Bryant (USA) (SGB Enhanced) (GB Compatible)"
-	rom ( name "NBA 3 on 3 featuring Kobe Bryant (USA) (SGB Enhanced) (GB Compatible).gbc" size 1048576 crc 001f4754 sha1 8F8D1A33A71B22C9359DDC1AAE0BD9CAD4CC7456 )
+	name "NBA 3 on 3 Featuring Kobe Bryant (USA) (SGB Enhanced) (GB Compatible)"
+	description "NBA 3 on 3 Featuring Kobe Bryant (USA) (SGB Enhanced) (GB Compatible)"
+	rom ( name "NBA 3 on 3 Featuring Kobe Bryant (USA) (SGB Enhanced) (GB Compatible).gbc" size 1048576 crc 001f4754 sha1 8F8D1A33A71B22C9359DDC1AAE0BD9CAD4CC7456 )
 )
 
 game (
@@ -35288,6 +35456,12 @@ game (
 	name "Ojarumaru - Tsukiyo ga Ike no Takaramono (Japan) (GB Compatible)"
 	description "Ojarumaru - Tsukiyo ga Ike no Takaramono (Japan) (GB Compatible)"
 	rom ( name "Ojarumaru - Tsukiyo ga Ike no Takaramono (Japan) (GB Compatible).gbc" size 2097152 crc ed7461d2 sha1 66D87A06D4D951E7695DF73F53793A462509E4D0 )
+)
+
+game (
+	name "Orbital Diagnostic System (Unknown) (Unl)"
+	description "Orbital Diagnostic System (Unknown) (Unl)"
+	rom ( name "Orbital Diagnostic System (Unknown) (Unl).gbc" size 32768 crc 731c6ff4 sha1 2D4F9DC954D9485FBD7D402E07EDF42BEEBBEB8C )
 )
 
 game (
@@ -35774,6 +35948,12 @@ game (
 	name "Pokemon de Panepon (Japan)"
 	description "Pokemon de Panepon (Japan)"
 	rom ( name "Pokemon de Panepon (Japan).gbc" size 2097152 crc 6bf7e4a6 sha1 110AE6649B4264F88D82760AD6AE4EE7F07DB9B2 )
+)
+
+game (
+	name "Pokemon Picross (Japan) (Proto)"
+	description "Pokemon Picross (Japan) (Proto)"
+	rom ( name "Pokemon Picross (Japan) (Proto).gbc" size 2097152 crc cf647f4b sha1 8204064B7149357939B57342820E7955749183B6 )
 )
 
 game (
@@ -37508,6 +37688,12 @@ game (
 	name "Suske en Wiske - De Tijdtemmers ~ Bob et Bobette - Les Dompteurs du Temps (Europe) (Fr,Nl)"
 	description "Suske en Wiske - De Tijdtemmers ~ Bob et Bobette - Les Dompteurs du Temps (Europe) (Fr,Nl)"
 	rom ( name "Suske en Wiske - De Tijdtemmers ~ Bob et Bobette - Les Dompteurs du Temps (Europe) (Fr,Nl).gbc" size 524288 crc a4c6523d sha1 2B4B8C3A4A74FDF7ACC4138125FEA5D8F5A9A093 )
+)
+
+game (
+	name "Sutte Hakkun GB (Japan) (Proto)"
+	description "Sutte Hakkun GB (Japan) (Proto)"
+	rom ( name "Sutte Hakkun GB (Japan) (Proto).gbc" size 524288 crc e0386f84 sha1 6EFD637F039D4F3A2240640921724A69A2844CC7 )
 )
 
 game (
