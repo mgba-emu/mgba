@@ -1212,11 +1212,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_platformActions.insert(mPLATFORM_GBA, dolphin);
 #endif
 
+	m_actions.addSeparator("file");
+
+	m_actions.addAction(tr("Report bug..."), "bugReport", openTView<ReportView>(), "file");
+
 #ifndef Q_OS_MAC
 	m_actions.addSeparator("file");
 #endif
 
-	m_actions.addAction(tr("Report bug..."), "bugReport", openTView<ReportView>(), "file");
 	m_actions.addAction(tr("About..."), "about", openTView<AboutScreen>(), "file");
 
 #ifndef Q_OS_MAC
