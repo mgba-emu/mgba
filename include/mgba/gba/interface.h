@@ -78,6 +78,8 @@ struct GBASIODriver {
 	uint16_t (*writeRegister)(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 };
 
+void GBASIOJOYCreate(struct GBASIODriver* sio);
+
 enum GBASIOBattleChipGateFlavor {
 	GBA_FLAVOR_BATTLECHIP_GATE = 4,
 	GBA_FLAVOR_PROGRESS_GATE = 5,
