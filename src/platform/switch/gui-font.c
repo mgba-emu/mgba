@@ -302,39 +302,38 @@ void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned*
 	}
 }
 
-void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
+void GUIFontDrawGlyph(struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
 	if (glyph > 0x7F) {
 		glyph = '?';
 	}
 	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
 
-	struct GUIFont* mutfont = (struct GUIFont*) font;
 	if (font->currentGlyph >= MAX_GLYPHS) {
-		GUIFontDrawSubmit(mutfont);
+		GUIFontDrawSubmit(font);
 	}
 
 	int offset = font->currentGlyph;
 
-	mutfont->originData[offset][0] = x;
-	mutfont->originData[offset][1] = y - GLYPH_HEIGHT + metric.padding.top * 2;
-	mutfont->originData[offset][2] = 0;
-	mutfont->glyphData[offset][0] = (glyph & 15) * CELL_WIDTH + metric.padding.left * 2;
-	mutfont->glyphData[offset][1] = (glyph >> 4) * CELL_HEIGHT + metric.padding.top * 2;
-	mutfont->dimsData[offset][0] = CELL_WIDTH - (metric.padding.left + metric.padding.right) * 2;
-	mutfont->dimsData[offset][1] = CELL_HEIGHT - (metric.padding.top + metric.padding.bottom) * 2;
-	mutfont->transformData[0][offset][0] = 1.0f;
-	mutfont->transformData[0][offset][1] = 0.0f;
-	mutfont->transformData[1][offset][0] = 0.0f;
-	mutfont->transformData[1][offset][1] = 1.0f;
-	mutfont->colorData[offset][0] = (color & 0xFF) / 255.0f;
-	mutfont->colorData[offset][1] = ((color >> 8) & 0xFF) / 255.0f;
-	mutfont->colorData[offset][2] = ((color >> 16) & 0xFF) / 255.0f;
-	mutfont->colorData[offset][3] = ((color >> 24) & 0xFF) / 255.0f;
+	font->originData[offset][0] = x;
+	font->originData[offset][1] = y - GLYPH_HEIGHT + metric.padding.top * 2;
+	font->originData[offset][2] = 0;
+	font->glyphData[offset][0] = (glyph & 15) * CELL_WIDTH + metric.padding.left * 2;
+	font->glyphData[offset][1] = (glyph >> 4) * CELL_HEIGHT + metric.padding.top * 2;
+	font->dimsData[offset][0] = CELL_WIDTH - (metric.padding.left + metric.padding.right) * 2;
+	font->dimsData[offset][1] = CELL_HEIGHT - (metric.padding.top + metric.padding.bottom) * 2;
+	font->transformData[0][offset][0] = 1.0f;
+	font->transformData[0][offset][1] = 0.0f;
+	font->transformData[1][offset][0] = 0.0f;
+	font->transformData[1][offset][1] = 1.0f;
+	font->colorData[offset][0] = (color & 0xFF) / 255.0f;
+	font->colorData[offset][1] = ((color >> 8) & 0xFF) / 255.0f;
+	font->colorData[offset][2] = ((color >> 16) & 0xFF) / 255.0f;
+	font->colorData[offset][3] = ((color >> 24) & 0xFF) / 255.0f;
 
-	++mutfont->currentGlyph;
+	++font->currentGlyph;
 }
 
-void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment align, enum GUIOrientation orient, uint32_t color, enum GUIIcon icon) {
+void GUIFontDrawIcon(struct GUIFont* font, int x, int y, enum GUIAlignment align, enum GUIOrientation orient, uint32_t color, enum GUIIcon icon) {
 	if (icon >= GUI_ICON_MAX) {
 		return;
 	}
@@ -371,34 +370,32 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 		// TODO: Rotate
 		break;
 	}
-
-	struct GUIFont* mutfont = (struct GUIFont*) font;
 	if (font->currentGlyph >= MAX_GLYPHS) {
-		GUIFontDrawSubmit(mutfont);
+		GUIFontDrawSubmit(font);
 	}
 
 	int offset = font->currentGlyph;
 
-	mutfont->originData[offset][0] = x;
-	mutfont->originData[offset][1] = y;
-	mutfont->originData[offset][2] = 0;
-	mutfont->glyphData[offset][0] = metric.x * 2;
-	mutfont->glyphData[offset][1] = metric.y * 2 + 256;
-	mutfont->dimsData[offset][0] = metric.width * 2;
-	mutfont->dimsData[offset][1] = metric.height * 2;
-	mutfont->transformData[0][offset][0] = hFlip;
-	mutfont->transformData[0][offset][1] = 0.0f;
-	mutfont->transformData[1][offset][0] = 0.0f;
-	mutfont->transformData[1][offset][1] = vFlip;
-	mutfont->colorData[offset][0] = (color & 0xFF) / 255.0f;
-	mutfont->colorData[offset][1] = ((color >> 8) & 0xFF) / 255.0f;
-	mutfont->colorData[offset][2] = ((color >> 16) & 0xFF) / 255.0f;
-	mutfont->colorData[offset][3] = ((color >> 24) & 0xFF) / 255.0f;
+	font->originData[offset][0] = x;
+	font->originData[offset][1] = y;
+	font->originData[offset][2] = 0;
+	font->glyphData[offset][0] = metric.x * 2;
+	font->glyphData[offset][1] = metric.y * 2 + 256;
+	font->dimsData[offset][0] = metric.width * 2;
+	font->dimsData[offset][1] = metric.height * 2;
+	font->transformData[0][offset][0] = hFlip;
+	font->transformData[0][offset][1] = 0.0f;
+	font->transformData[1][offset][0] = 0.0f;
+	font->transformData[1][offset][1] = vFlip;
+	font->colorData[offset][0] = (color & 0xFF) / 255.0f;
+	font->colorData[offset][1] = ((color >> 8) & 0xFF) / 255.0f;
+	font->colorData[offset][2] = ((color >> 16) & 0xFF) / 255.0f;
+	font->colorData[offset][3] = ((color >> 24) & 0xFF) / 255.0f;
 
-	++mutfont->currentGlyph;
+	++font->currentGlyph;
 }
 
-void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h, uint32_t color, enum GUIIcon icon) {
+void GUIFontDrawIconSize(struct GUIFont* font, int x, int y, int w, int h, uint32_t color, enum GUIIcon icon) {
 	if (icon >= GUI_ICON_MAX) {
 		return;
 	}
@@ -411,30 +408,29 @@ void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h,
 		h = metric.height * 2;
 	}
 
-	struct GUIFont* mutfont = (struct GUIFont*) font;
 	if (font->currentGlyph >= MAX_GLYPHS) {
-		GUIFontDrawSubmit(mutfont);
+		GUIFontDrawSubmit(font);
 	}
 
 	int offset = font->currentGlyph;
 
-	mutfont->originData[offset][0] = x + w / 2 - metric.width;
-	mutfont->originData[offset][1] = y + h / 2 - metric.height;
-	mutfont->originData[offset][2] = 0;
-	mutfont->glyphData[offset][0] = metric.x * 2;
-	mutfont->glyphData[offset][1] = metric.y * 2 + 256;
-	mutfont->dimsData[offset][0] = metric.width * 2;
-	mutfont->dimsData[offset][1] = metric.height * 2;
-	mutfont->transformData[0][offset][0] = w * 0.5f / metric.width;
-	mutfont->transformData[0][offset][1] = 0.0f;
-	mutfont->transformData[1][offset][0] = 0.0f;
-	mutfont->transformData[1][offset][1] = h * 0.5f / metric.height;
-	mutfont->colorData[offset][0] = (color & 0xFF) / 255.0f;
-	mutfont->colorData[offset][1] = ((color >> 8) & 0xFF) / 255.0f;
-	mutfont->colorData[offset][2] = ((color >> 16) & 0xFF) / 255.0f;
-	mutfont->colorData[offset][3] = ((color >> 24) & 0xFF) / 255.0f;
+	font->originData[offset][0] = x + w / 2 - metric.width;
+	font->originData[offset][1] = y + h / 2 - metric.height;
+	font->originData[offset][2] = 0;
+	font->glyphData[offset][0] = metric.x * 2;
+	font->glyphData[offset][1] = metric.y * 2 + 256;
+	font->dimsData[offset][0] = metric.width * 2;
+	font->dimsData[offset][1] = metric.height * 2;
+	font->transformData[0][offset][0] = w * 0.5f / metric.width;
+	font->transformData[0][offset][1] = 0.0f;
+	font->transformData[1][offset][0] = 0.0f;
+	font->transformData[1][offset][1] = h * 0.5f / metric.height;
+	font->colorData[offset][0] = (color & 0xFF) / 255.0f;
+	font->colorData[offset][1] = ((color >> 8) & 0xFF) / 255.0f;
+	font->colorData[offset][2] = ((color >> 16) & 0xFF) / 255.0f;
+	font->colorData[offset][3] = ((color >> 24) & 0xFF) / 255.0f;
 
-	++mutfont->currentGlyph;
+	++font->currentGlyph;
 }
 
 void GUIFontDrawSubmit(struct GUIFont* font) {
