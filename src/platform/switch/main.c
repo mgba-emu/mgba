@@ -21,9 +21,14 @@
 
 #define AUTO_INPUT 0x4E585031
 #define SAMPLES 0x200
-#define BUFFER_SIZE 0x1000
 #define N_BUFFERS 4
 #define ANALOG_DEADZONE 0x4000
+
+#if (SAMPLES * 4) < 0x1000
+#define BUFFER_SIZE 0x1000
+#else
+#define BUFFER_SIZE (SAMPLES * 4)
+#endif
 
 TimeType __nx_time_type = TimeType_UserSystemClock;
 
@@ -89,7 +94,6 @@ static struct mSwitchRumble {
 } rumble;
 static struct mRotationSource rotation = {0};
 static int audioBufferActive;
-static struct GBAStereoSample audioBuffer[N_BUFFERS][SAMPLES] __attribute__((__aligned__(0x1000)));
 static AudioOutBuffer audoutBuffer[N_BUFFERS];
 static int enqueuedBuffers;
 static bool frameLimiter = true;
@@ -110,6 +114,8 @@ static struct mGUIRunnerLux lightSensor;
 static float gyroZ = 0;
 static float tiltX = 0;
 static float tiltY = 0;
+
+static struct GBAStereoSample audioBuffer[N_BUFFERS][BUFFER_SIZE / 4] __attribute__((__aligned__(0x1000)));
 
 static enum ScreenMode {
 	SM_PA,
@@ -259,6 +265,22 @@ static void _updateRenderer(struct mGUIRunner* runner, bool gl) {
 		runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
 		usePbo = true;
 	}
+}
+
+static int _audioWait(u64 timeout) {
+	AudioOutBuffer* releasedBuffers;
+	u32 nReleasedBuffers = 0;
+	Result rc;
+	if (timeout) {
+		rc = audoutWaitPlayFinish(&releasedBuffers, &nReleasedBuffers, timeout);
+	} else {
+		rc = audoutGetReleasedAudioOutBuffer(&releasedBuffers, &nReleasedBuffers);
+	}
+	if (R_FAILED(rc)) {
+		return 0;
+	}
+	enqueuedBuffers -= nReleasedBuffers;
+	return nReleasedBuffers;
 }
 
 static void _setup(struct mGUIRunner* runner) {
@@ -521,10 +543,7 @@ static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 	UNUSED(runner);
 	if (!frameLimiter && limit) {
 		while (enqueuedBuffers > 2) {
-			AudioOutBuffer* releasedBuffers;
-			u32 audoutNReleasedBuffers;
-			audoutWaitPlayFinish(&releasedBuffers, &audoutNReleasedBuffers, 100000000);
-			enqueuedBuffers -= audoutNReleasedBuffers;
+			_audioWait(100000000);
 		}
 	}
 	frameLimiter = limit;
@@ -551,29 +570,25 @@ static bool _running(struct mGUIRunner* runner) {
 
 static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
 	UNUSED(stream);
-	AudioOutBuffer* releasedBuffers;
-	u32 audoutNReleasedBuffers;
-	audoutGetReleasedAudioOutBuffer(&releasedBuffers, &audoutNReleasedBuffers);
-	enqueuedBuffers -= audoutNReleasedBuffers;
-	if (!frameLimiter && enqueuedBuffers >= N_BUFFERS) {
-		blip_clear(left);
-		blip_clear(right);
-		return;
-	}
-	if (enqueuedBuffers >= N_BUFFERS - 1 && R_SUCCEEDED(audoutWaitPlayFinish(&releasedBuffers, &audoutNReleasedBuffers, 10000000))) {
-		enqueuedBuffers -= audoutNReleasedBuffers;
+	_audioWait(0);
+	while (enqueuedBuffers >= N_BUFFERS - 1) {
+		if (!frameLimiter) {
+			blip_clear(left);
+			blip_clear(right);
+			return;
+		}
+		_audioWait(10000000);
 	}
 	if (enqueuedBuffers >= N_BUFFERS) {
 		blip_clear(left);
 		blip_clear(right);
 		return;
 	}
-
 	struct GBAStereoSample* samples = audioBuffer[audioBufferActive];
 	blip_read_samples(left, &samples[0].left, SAMPLES, true);
 	blip_read_samples(right, &samples[0].right, SAMPLES, true);
 	audoutAppendAudioOutBuffer(&audoutBuffer[audioBufferActive]);
-	audioBufferActive += 1;
+	++audioBufferActive;
 	audioBufferActive %= N_BUFFERS;
 	++enqueuedBuffers;
 }
