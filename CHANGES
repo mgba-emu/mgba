@@ -1,3 +1,7 @@
+0.10.0: (Future)
+Emulation fixes:
+ - GBA Memory: Fix loading Thumb savestates when in ARM mode
+
 0.9.0: (2021-03-28)
 Features:
  - e-Reader card scanning
