@@ -245,6 +245,11 @@ void ReportView::generateReport() {
 
 			{
 				CoreController::Interrupter interrupter(controller);
+				QFileInfo rom(window->windowFilePath());
+				if (rom.exists()) {
+					windowReport << QString("Filename: %1").arg(redact(rom.filePath()));
+					windowReport << QString("Size: %1").arg(rom.size());
+				}
 				addROMInfo(windowReport, controller.get());
 
 				if (m_ui.includeSave->isChecked() && !m_ui.includeState->isChecked()) {
