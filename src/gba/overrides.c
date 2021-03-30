@@ -375,7 +375,8 @@ void GBAOverrideApplyDefaults(struct GBA* gba, const struct Configuration* overr
 	if (cart) {
 		memcpy(override.id, &cart->id, sizeof(override.id));
 
-		if (!strncmp("pokemon red version", &((const char*) gba->memory.rom)[0x108], 20) && gba->romCrc32 != 0xDD88761C) {
+		if (!strncmp("pokemon red version", &((const char*) gba->memory.rom)[0x108], 20) &&
+		    gba->romCrc32 != 0xDD88761C && gba->romCrc32 != 0x84EE4776) {
 			// Enable FLASH1M and RTC on Pokémon FireRed ROM hacks
 			override.savetype = SAVEDATA_FLASH1M;
 			override.hardware = HW_RTC;
