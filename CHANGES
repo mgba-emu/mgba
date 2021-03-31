@@ -7,6 +7,7 @@ Other fixes:
  - GBA: Fix non-USA 1.0 FireRed misdetecting as a ROM hack (fixes mgba.io/i/2100)
  - GBA: Fix crash when ROM loading fails
 Misc:
+ - GBA: Default-enable VBA bug compat for Ruby and Emerald ROM hacks
  - Qt: Add ROM filename and size to bug reporter
 
 0.9.0: (2021-03-28)
