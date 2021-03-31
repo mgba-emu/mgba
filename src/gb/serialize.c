@@ -172,6 +172,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->cpu->condition = GBSerializedCpuFlagsGetCondition(flags);
 	gb->cpu->irqPending = GBSerializedCpuFlagsGetIrqPending(flags);
 	gb->doubleSpeed = GBSerializedCpuFlagsGetDoubleSpeed(flags);
+	gb->cpu->tMultiplier = 2 - gb->doubleSpeed;
 	gb->cpu->halted = GBSerializedCpuFlagsGetHalted(flags);
 	gb->cpuBlocked = GBSerializedCpuFlagsGetBlocked(flags);
 
