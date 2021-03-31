@@ -376,6 +376,14 @@ void GBAOverrideApplyDefaults(struct GBA* gba, const struct Configuration* overr
 		memcpy(override.id, &cart->id, sizeof(override.id));
 
 		static const uint32_t pokemonTable[] = {
+			// Emerald
+			0x4881F3F8, // BPEJ
+			0x8C4D3108, // BPES
+			0x1F1C08FB, // BPEE
+			0x34C9DF89, // BPED
+			0xA3FDCCB1, // BPEF
+			0xA0AEC80A, // BPEI
+
 			// FireRed
 			0x1A81EEDF, // BPRD
 			0x3B2056E9, // BPRJ
@@ -385,10 +393,17 @@ void GBAOverrideApplyDefaults(struct GBA* gba, const struct Configuration* overr
 			0x9F08064E, // BPRS
 			0xBB640DF7, // BPRJ rev 1
 			0xDD88761C, // BPRE
+
+			// Ruby
+			0x61641576, // AXVE rev 1
+			0xAEAC73E6, // AXVE rev 2
+			0xF0815EE7, // AXVE
 		};
 
 		bool isPokemon = false;
 		isPokemon = isPokemon || !strncmp("pokemon red version", &((const char*) gba->memory.rom)[0x108], 20);
+		isPokemon = isPokemon || !strncmp("pokemon emerald version", &((const char*) gba->memory.rom)[0x108], 24);
+		isPokemon = isPokemon || !strncmp("AXVE", &((const char*) gba->memory.rom)[0xAC], 4);
 		bool isKnownPokemon = false;
 		if (isPokemon) {
 			size_t i;
