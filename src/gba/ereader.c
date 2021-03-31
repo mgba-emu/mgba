@@ -370,6 +370,11 @@ void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, s
 	// Bitmap sizes
 	case 5456:
 		bitmap = true;
+		blocks = 124;
+		break;
+	case 3520:
+		bitmap = true;
+		blocks = 80;
 		break;
 	default:
 		return;
@@ -380,9 +385,9 @@ void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, s
 	if (bitmap) {
 		size_t x;
 		for (i = 0; i < 40; ++i) {
-			const uint8_t* line = &cdata[(i + 2) * 124];
+			const uint8_t* line = &cdata[(i + 2) * blocks];
 			uint8_t* origin = &hw->eReaderDots[EREADER_DOTCODE_STRIDE * i + 200];
-			for (x = 0; x < 124; ++x) {
+			for (x = 0; x < blocks; ++x) {
 				uint8_t byte = line[x];
 				if (x == 123) {
 					byte &= 0xE0;
