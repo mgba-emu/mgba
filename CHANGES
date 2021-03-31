@@ -6,6 +6,7 @@ Emulation fixes:
 Other fixes:
  - GBA: Fix non-USA 1.0 FireRed misdetecting as a ROM hack (fixes mgba.io/i/2100)
  - GBA: Fix crash when ROM loading fails
+ - GBA Video: Fix mode 5 frame 1 caching (fixes mgba.io/i/2075)
 Misc:
  - GBA: Default-enable VBA bug compat for Ruby and Emerald ROM hacks
  - Qt: Add ROM filename and size to bug reporter

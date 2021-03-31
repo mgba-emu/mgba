@@ -139,18 +139,18 @@ void mBitmapCacheCleanRow(struct mBitmapCache* cache, struct mBitmapCacheEntry* 
 		return;
 	}
 
-	size_t offset = cache->bitsStart[cache->buffer] + y * mBitmapCacheSystemInfoGetWidth(cache->sysConfig);
+	size_t offset = y * mBitmapCacheSystemInfoGetWidth(cache->sysConfig);
 	void* vram;
 	int bpe = mBitmapCacheSystemInfoGetEntryBPP(cache->sysConfig);
 	uint32_t (*lookupEntry)(void*, uint32_t);
 	switch (bpe) {
 	case 3:
 		lookupEntry = _lookupEntry8;
-		vram = &cache->vram[offset];
+		vram = &cache->vram[offset + cache->bitsStart[cache->buffer]];
 		break;
 	case 4:
 		lookupEntry = _lookupEntry15;
-		vram = &cache->vram[offset << 1];
+		vram = &cache->vram[offset * 2 + cache->bitsStart[cache->buffer]];
 		break;
 	default:
 		abort();
