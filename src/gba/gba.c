@@ -411,6 +411,7 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 		gba->memory.romSize = gba->pristineRomSize;
 	}
 	if (!gba->memory.rom) {
+		gba->romVf = NULL;
 		mLOG(GBA, WARN, "Couldn't map ROM");
 		return false;
 	}
