@@ -159,7 +159,13 @@ bool mCorePreloadVFCB(struct mCore* core, struct VFile* vf, void (cb)(size_t, si
 	extern uint32_t* romBuffer;
 	extern size_t romBufferSize;
 	if (size > romBufferSize) {
-		return false;
+		if (size - romBufferSize < romBufferSize / 2) {
+			// Some ROM hacks accidentally overflow the size a bit, but since those are broken
+			// on hardware anyway we can just silently truncate them without issue.
+			size = romBufferSize;
+		} else {
+			return false;
+		}
 	}
 	vfm = VFileFromMemory(romBuffer, size);
 #else
