@@ -9,6 +9,7 @@ Other fixes:
  - GBA e-Reader: Fix bitmap short strip scanning
  - GBA Video: Fix mode 5 frame 1 caching (fixes mgba.io/i/2075)
 Misc:
+ - Core: Truncate preloading ROMs that slightly exceed max size (fixes mgba.io/i/2093)
  - GBA: Default-enable VBA bug compat for Ruby and Emerald ROM hacks
  - Qt: Add ROM filename and size to bug reporter
 
