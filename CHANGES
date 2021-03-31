@@ -4,7 +4,7 @@ Emulation fixes:
  - GB Serialize: Fix switching speed modes when loading a state (fixes mgba.io/i/2097)
  - GBA Memory: Fix loading Thumb savestates when in ARM mode
 Other fixes:
- - GBA: Fix FireRed revision misdetecting as a ROM hack
+ - GBA: Fix non-USA 1.0 FireRed misdetecting as a ROM hack (fixes mgba.io/i/2100)
  - GBA: Fix crash when ROM loading fails
 Misc:
  - Qt: Add ROM filename and size to bug reporter

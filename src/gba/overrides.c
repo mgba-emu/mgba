@@ -375,9 +375,30 @@ void GBAOverrideApplyDefaults(struct GBA* gba, const struct Configuration* overr
 	if (cart) {
 		memcpy(override.id, &cart->id, sizeof(override.id));
 
-		if (!strncmp("pokemon red version", &((const char*) gba->memory.rom)[0x108], 20) &&
-		    gba->romCrc32 != 0xDD88761C && gba->romCrc32 != 0x84EE4776) {
-			// Enable FLASH1M and RTC on Pokémon FireRed ROM hacks
+		static const uint32_t pokemonTable[] = {
+			// FireRed
+			0x1A81EEDF, // BPRD
+			0x3B2056E9, // BPRJ
+			0x5DC668F6, // BPRF
+			0x73A72167, // BPRI
+			0x84EE4776, // BPRE rev 1
+			0x9F08064E, // BPRS
+			0xBB640DF7, // BPRJ rev 1
+			0xDD88761C, // BPRE
+		};
+
+		bool isPokemon = false;
+		isPokemon = isPokemon || !strncmp("pokemon red version", &((const char*) gba->memory.rom)[0x108], 20);
+		bool isKnownPokemon = false;
+		if (isPokemon) {
+			size_t i;
+			for (i = 0; !isKnownPokemon && i < sizeof(pokemonTable) / sizeof(*pokemonTable); ++i) {
+				isKnownPokemon = gba->romCrc32 == pokemonTable[i];
+			}
+		}
+
+		if (isPokemon && !isKnownPokemon) {
+			// Enable FLASH1M and RTC on Pokémon ROM hacks
 			override.savetype = SAVEDATA_FLASH1M;
 			override.hardware = HW_RTC;
 			override.vbaBugCompat = true;
