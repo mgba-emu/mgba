@@ -4,6 +4,7 @@ Emulation fixes:
  - GBA Memory: Fix loading Thumb savestates when in ARM mode
 Other fixes:
  - GBA: Fix FireRed revision misdetecting as a ROM hack
+ - GBA: Fix crash when ROM loading fails
 Misc:
  - Qt: Add ROM filename and size to bug reporter
 
