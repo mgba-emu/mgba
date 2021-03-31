@@ -799,7 +799,7 @@ void CoreController::scanCard(const QString& path) {
 		QFile file(path);
 		file.open(QIODevice::ReadOnly);
 		m_eReaderData = file.read(2912);
-	} else if (image.size() == QSize(989, 44)) {
+	} else if (image.size() == QSize(989, 44) || image.size() == QSize(639, 44)) {
 		const uchar* bits = image.constBits();
 		size_t size;
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
