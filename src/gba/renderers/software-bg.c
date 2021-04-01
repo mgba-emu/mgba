@@ -55,15 +55,14 @@
 	UNUSED(palette);                                                                                                  \
 	PREPARE_OBJWIN;
 
-#define BACKGROUND_BITMAP_ITERATE(W, H)                     \
-	x += background->dx;                                    \
-	y += background->dy;                                    \
-                                                            \
-	if (x < 0 || y < 0 || (x >> 8) >= W || (y >> 8) >= H) { \
-		continue;                                           \
-	}                                                       \
-	localX = x;                                             \
-	localY = y;                                             \
+#define BACKGROUND_BITMAP_ITERATE(W, H) \
+	x += background->dx; \
+	y += background->dy; \
+	if ((x < 0 || y < 0 || (x >> 8) >= W || (y >> 8) >= H) && !mosaicWait) { \
+		continue; \
+	} \
+	localX = x; \
+	localY = y;
 
 #define MODE_2_COORD_OVERFLOW \
 	localX = x & (sizeAdjusted - 1); \
