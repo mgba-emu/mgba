@@ -14,6 +14,7 @@ Other fixes:
 Misc:
  - Core: Truncate preloading ROMs that slightly exceed max size (fixes mgba.io/i/2093)
  - GBA: Default-enable VBA bug compat for Ruby and Emerald ROM hacks
+ - GBA Memory: Log GPIO writes on non-GPIO carts as Pak Hardware instead of Memory
  - Qt: Add ROM filename and size to bug reporter
 
 0.9.0: (2021-03-28)
