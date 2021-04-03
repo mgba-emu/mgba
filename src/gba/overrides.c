@@ -6,7 +6,7 @@
 #include <mgba/internal/gba/overrides.h>
 
 #include <mgba/internal/gba/gba.h>
-#include <mgba/internal/gba/hardware.h>
+#include <mgba/internal/gba/cart/gpio.h>
 
 #include <mgba-util/configuration.h>
 

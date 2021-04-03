@@ -14,10 +14,10 @@ CXX_GUARD_START
 
 #include <mgba/internal/arm/arm.h>
 #include <mgba/internal/gba/dma.h>
-#include <mgba/internal/gba/hardware.h>
 #include <mgba/internal/gba/savedata.h>
-#include <mgba/internal/gba/vfame.h>
-#include <mgba/internal/gba/matrix.h>
+#include <mgba/internal/gba/cart/gpio.h>
+#include <mgba/internal/gba/cart/matrix.h>
+#include <mgba/internal/gba/cart/vfame.h>
 
 enum GBAMemoryRegion {
 	REGION_BIOS = 0x0,
