@@ -13,7 +13,6 @@ CXX_GUARD_START
 #include <mgba/core/log.h>
 #include <mgba/core/timing.h>
 #include <mgba/gba/interface.h>
-#include <mgba/internal/gba/cart/ereader.h>
 
 mLOG_DECLARE_CATEGORY(GBA_HW);
 
@@ -102,24 +101,6 @@ struct GBACartridgeHardware {
 	uint16_t tiltX;
 	uint16_t tiltY;
 	int tiltState;
-
-	uint16_t eReaderData[44];
-	uint8_t eReaderSerial[92];
-	uint16_t eReaderRegisterUnk;
-	uint16_t eReaderRegisterReset;
-	EReaderControl0 eReaderRegisterControl0;
-	EReaderControl1 eReaderRegisterControl1;
-	uint16_t eReaderRegisterLed;
-
-	// TODO: Serialize these
-	enum EReaderStateMachine eReaderState;
-	enum EReaderCommand eReaderCommand;
-	uint8_t eReaderActiveRegister;
-	uint8_t eReaderByte;
-	int eReaderX;
-	int eReaderY;
-	uint8_t* eReaderDots;
-	struct EReaderCard eReaderCards[EREADER_CARDS_MAX];
 };
 
 void GBAHardwareInit(struct GBACartridgeHardware* gpio, uint16_t* gpioBase);

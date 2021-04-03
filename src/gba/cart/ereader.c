@@ -12,11 +12,12 @@
 
 #define EREADER_BLOCK_SIZE 40
 
-static void _eReaderReset(struct GBACartridgeHardware* hw);
-static void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value);
-static void _eReaderWriteControl1(struct GBACartridgeHardware* hw, uint8_t value);
-static void _eReaderReadData(struct GBACartridgeHardware* hw);
+static void _eReaderReset(struct GBACartEReader* ereader);
+static void _eReaderWriteControl0(struct GBACartEReader* ereader, uint8_t value);
+static void _eReaderWriteControl1(struct GBACartEReader* ereader, uint8_t value);
+static void _eReaderReadData(struct GBACartEReader* ereader);
 static void _eReaderReedSolomon(const uint8_t* input, uint8_t* output);
+static void _eReaderScanCard(struct GBACartEReader* ereader);
 
 const int EREADER_NYBBLE_5BIT[16][5] = {
 	{ 0, 0, 0, 0, 0 },
@@ -161,30 +162,46 @@ static const uint8_t RS_GG[] = {
 };
 
 
-void GBAHardwareInitEReader(struct GBACartridgeHardware* hw) {
-	hw->devices |= HW_EREADER;
-	_eReaderReset(hw);
+void GBACartEReaderInit(struct GBACartEReader* ereader) {
+	ereader->p->memory.hw.devices |= HW_EREADER;
+	_eReaderReset(ereader);
 
-	if (hw->p->memory.savedata.data[0xD000] == 0xFF) {
-		memset(&hw->p->memory.savedata.data[0xD000], 0, 0x1000);
-		memcpy(&hw->p->memory.savedata.data[0xD000], EREADER_CALIBRATION_TEMPLATE, sizeof(EREADER_CALIBRATION_TEMPLATE));
+	if (ereader->p->memory.savedata.data[0xD000] == 0xFF) {
+		memset(&ereader->p->memory.savedata.data[0xD000], 0, 0x1000);
+		memcpy(&ereader->p->memory.savedata.data[0xD000], EREADER_CALIBRATION_TEMPLATE, sizeof(EREADER_CALIBRATION_TEMPLATE));
 	}
-	if (hw->p->memory.savedata.data[0xE000] == 0xFF) {
-		memset(&hw->p->memory.savedata.data[0xE000], 0, 0x1000);
-		memcpy(&hw->p->memory.savedata.data[0xE000], EREADER_CALIBRATION_TEMPLATE, sizeof(EREADER_CALIBRATION_TEMPLATE));
+	if (ereader->p->memory.savedata.data[0xE000] == 0xFF) {
+		memset(&ereader->p->memory.savedata.data[0xE000], 0, 0x1000);
+		memcpy(&ereader->p->memory.savedata.data[0xE000], EREADER_CALIBRATION_TEMPLATE, sizeof(EREADER_CALIBRATION_TEMPLATE));
 	}
 }
 
-void GBAHardwareEReaderWrite(struct GBACartridgeHardware* hw, uint32_t address, uint16_t value) {
+void GBACartEReaderDeinit(struct GBACartEReader* ereader) {
+	if (ereader->dots) {
+		mappedMemoryFree(ereader->dots, EREADER_DOTCODE_SIZE);
+		ereader->dots = NULL;
+	}
+	int i;
+	for (i = 0; i < EREADER_CARDS_MAX; ++i) {
+		if (!ereader->cards[i].data) {
+			continue;
+		}
+		free(ereader->cards[i].data);
+		ereader->cards[i].data = NULL;
+		ereader->cards[i].size = 0;
+	}
+}
+
+void GBACartEReaderWrite(struct GBACartEReader* ereader, uint32_t address, uint16_t value) {
 	address &= 0x700FF;
 	switch (address >> 17) {
 	case 0:
-		hw->eReaderRegisterUnk = value & 0xF;
+		ereader->registerUnk = value & 0xF;
 		break;
 	case 1:
-		hw->eReaderRegisterReset = (value & 0x8A) | 4;
+		ereader->registerReset = (value & 0x8A) | 4;
 		if (value & 2) {
-			_eReaderReset(hw);
+			_eReaderReset(ereader);
 		}
 		break;
 	case 2:
@@ -195,54 +212,54 @@ void GBAHardwareEReaderWrite(struct GBACartridgeHardware* hw, uint32_t address, 
 	}
 }
 
-void GBAHardwareEReaderWriteFlash(struct GBACartridgeHardware* hw, uint32_t address, uint8_t value) {
+void GBACartEReaderWriteFlash(struct GBACartEReader* ereader, uint32_t address, uint8_t value) {
 	address &= 0xFFFF;
 	switch (address) {
 	case 0xFFB0:
-		_eReaderWriteControl0(hw, value);
+		_eReaderWriteControl0(ereader, value);
 		break;
 	case 0xFFB1:
-		_eReaderWriteControl1(hw, value);
+		_eReaderWriteControl1(ereader, value);
 		break;
 	case 0xFFB2:
-		hw->eReaderRegisterLed &= 0xFF00;
-		hw->eReaderRegisterLed |= value;
+		ereader->registerLed &= 0xFF00;
+		ereader->registerLed |= value;
 		break;
 	case 0xFFB3:
-		hw->eReaderRegisterLed &= 0x00FF;
-		hw->eReaderRegisterLed |= value << 8;
+		ereader->registerLed &= 0x00FF;
+		ereader->registerLed |= value << 8;
 		break;
 	default:
 		mLOG(GBA_HW, STUB, "Unimplemented e-Reader write to flash: %04X:%02X", address, value);
 	}
 }
 
-uint16_t GBAHardwareEReaderRead(struct GBACartridgeHardware* hw, uint32_t address) {
+uint16_t GBACartEReaderRead(struct GBACartEReader* ereader, uint32_t address) {
 	address &= 0x700FF;
 	uint16_t value;
 	switch (address >> 17) {
 	case 0:
-		return hw->eReaderRegisterUnk;
+		return ereader->registerUnk;
 	case 1:
-		return hw->eReaderRegisterReset;
+		return ereader->registerReset;
 	case 2:
 		if (address > 0x40088) {
 			return 0;
 		}
-		LOAD_16(value, address & 0xFE, hw->eReaderData);
+		LOAD_16(value, address & 0xFE, ereader->data);
 		return value;
 	}
 	mLOG(GBA_HW, STUB, "Unimplemented e-Reader read: %05X", address);
 	return 0;
 }
 
-uint8_t GBAHardwareEReaderReadFlash(struct GBACartridgeHardware* hw, uint32_t address) {
+uint8_t GBACartEReaderReadFlash(struct GBACartEReader* ereader, uint32_t address) {
 	address &= 0xFFFF;
 	switch (address) {
 	case 0xFFB0:
-		return hw->eReaderRegisterControl0;
+		return ereader->registerControl0;
 	case 0xFFB1:
-		return hw->eReaderRegisterControl1;
+		return ereader->registerControl1;
 	default:
 		mLOG(GBA_HW, STUB, "Unimplemented e-Reader read from flash: %04X", address);
 		return 0;
@@ -329,12 +346,12 @@ static void _eReaderReedSolomon(const uint8_t* input, uint8_t* output) {
 	}
 }
 
-void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, size_t size) {
-	if (!hw->eReaderDots) {
-		hw->eReaderDots = anonymousMemoryMap(EREADER_DOTCODE_SIZE);
+void GBACartEReaderScan(struct GBACartEReader* ereader, const void* data, size_t size) {
+	if (!ereader->dots) {
+		ereader->dots = anonymousMemoryMap(EREADER_DOTCODE_SIZE);
 	}
-	hw->eReaderX = -24;
-	memset(hw->eReaderDots, 0, EREADER_DOTCODE_SIZE);
+	ereader->scanX = -24;
+	memset(ereader->dots, 0, EREADER_DOTCODE_SIZE);
 
 	uint8_t blockRS[44][0x10];
 	uint8_t block0[0x30];
@@ -386,7 +403,7 @@ void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, s
 		size_t x;
 		for (i = 0; i < 40; ++i) {
 			const uint8_t* line = &cdata[(i + 2) * blocks];
-			uint8_t* origin = &hw->eReaderDots[EREADER_DOTCODE_STRIDE * i + 200];
+			uint8_t* origin = &ereader->dots[EREADER_DOTCODE_STRIDE * i + 200];
 			for (x = 0; x < blocks; ++x) {
 				uint8_t byte = line[x];
 				if (x == 123) {
@@ -406,7 +423,7 @@ void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, s
 	}
 
 	for (i = 0; i < blocks + 1; ++i) {
-		uint8_t* origin = &hw->eReaderDots[35 * i + 200];
+		uint8_t* origin = &ereader->dots[35 * i + 200];
 		_eReaderAnchor(&origin[EREADER_DOTCODE_STRIDE * 0]);
 		_eReaderAnchor(&origin[EREADER_DOTCODE_STRIDE * 35]);
 		_eReaderAddress(origin, base + i);
@@ -461,7 +478,7 @@ void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, s
 	size_t byteOffset = 0;
 	for (i = 0; i < blocks; ++i) {
 		uint8_t block[1040];
-		uint8_t* origin = &hw->eReaderDots[35 * i + 200];
+		uint8_t* origin = &ereader->dots[35 * i + 200];
 		_eReaderAlignment(&origin[EREADER_DOTCODE_STRIDE * 2]);
 		_eReaderAlignment(&origin[EREADER_DOTCODE_STRIDE * 37]);
 
@@ -532,155 +549,132 @@ void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, s
 	}
 }
 
-void _eReaderReset(struct GBACartridgeHardware* hw) {
-	memset(hw->eReaderData, 0, sizeof(hw->eReaderData));
-	hw->eReaderRegisterUnk = 0;
-	hw->eReaderRegisterReset = 4;
-	hw->eReaderRegisterControl0 = 0;
-	hw->eReaderRegisterControl1 = 0x80;
-	hw->eReaderRegisterLed = 0;
-	hw->eReaderState = 0;
-	hw->eReaderActiveRegister = 0;
+void _eReaderReset(struct GBACartEReader* ereader) {
+	memset(ereader->data, 0, sizeof(ereader->data));
+	ereader->registerUnk = 0;
+	ereader->registerReset = 4;
+	ereader->registerControl0 = 0;
+	ereader->registerControl1 = 0x80;
+	ereader->registerLed = 0;
+	ereader->state = 0;
+	ereader->activeRegister = 0;
 }
 
-void _eReaderWriteControl0(struct GBACartridgeHardware* hw, uint8_t value) {
+void _eReaderWriteControl0(struct GBACartEReader* ereader, uint8_t value) {
 	EReaderControl0 control = value & 0x7F;
-	EReaderControl0 oldControl = hw->eReaderRegisterControl0;
-	if (hw->eReaderState == EREADER_SERIAL_INACTIVE) {
+	EReaderControl0 oldControl = ereader->registerControl0;
+	if (ereader->state == EREADER_SERIAL_INACTIVE) {
 		if (EReaderControl0IsClock(oldControl) && EReaderControl0IsData(oldControl) && !EReaderControl0IsData(control)) {
-			hw->eReaderState = EREADER_SERIAL_STARTING;
+			ereader->state = EREADER_SERIAL_STARTING;
 		}
 	} else if (EReaderControl0IsClock(oldControl) && !EReaderControl0IsData(oldControl) && EReaderControl0IsData(control)) {
-		hw->eReaderState = EREADER_SERIAL_INACTIVE;
+		ereader->state = EREADER_SERIAL_INACTIVE;
 
-	} else if (hw->eReaderState == EREADER_SERIAL_STARTING) {
+	} else if (ereader->state == EREADER_SERIAL_STARTING) {
 		if (EReaderControl0IsClock(oldControl) && !EReaderControl0IsData(oldControl) && !EReaderControl0IsClock(control)) {
-			hw->eReaderState = EREADER_SERIAL_BIT_0;
-			hw->eReaderCommand = EREADER_COMMAND_IDLE;
+			ereader->state = EREADER_SERIAL_BIT_0;
+			ereader->command = EREADER_COMMAND_IDLE;
 		}
 	} else if (EReaderControl0IsClock(oldControl) && !EReaderControl0IsClock(control)) {
 		mLOG(GBA_HW, DEBUG, "[e-Reader] Serial falling edge: %c %i", EReaderControl0IsDirection(control) ? '>' : '<', EReaderControl0GetData(control));
 		// TODO: Improve direction control
 		if (EReaderControl0IsDirection(control)) {
-			hw->eReaderByte |= EReaderControl0GetData(control) << (7 - (hw->eReaderState - EREADER_SERIAL_BIT_0));
-			++hw->eReaderState;
-			if (hw->eReaderState == EREADER_SERIAL_END_BIT) {
-				mLOG(GBA_HW, DEBUG, "[e-Reader] Wrote serial byte: %02x", hw->eReaderByte);
-				switch (hw->eReaderCommand) {
+			ereader->byte |= EReaderControl0GetData(control) << (7 - (ereader->state - EREADER_SERIAL_BIT_0));
+			++ereader->state;
+			if (ereader->state == EREADER_SERIAL_END_BIT) {
+				mLOG(GBA_HW, DEBUG, "[e-Reader] Wrote serial byte: %02x", ereader->byte);
+				switch (ereader->command) {
 				case EREADER_COMMAND_IDLE:
-					hw->eReaderCommand = hw->eReaderByte;
+					ereader->command = ereader->byte;
 					break;
 				case EREADER_COMMAND_SET_INDEX:
-					hw->eReaderActiveRegister = hw->eReaderByte;
-					hw->eReaderCommand = EREADER_COMMAND_WRITE_DATA;
+					ereader->activeRegister = ereader->byte;
+					ereader->command = EREADER_COMMAND_WRITE_DATA;
 					break;
 				case EREADER_COMMAND_WRITE_DATA:
-					switch (hw->eReaderActiveRegister & 0x7F) {
+					switch (ereader->activeRegister & 0x7F) {
 					case 0:
 					case 0x57:
 					case 0x58:
 					case 0x59:
 					case 0x5A:
 						// Read-only
-						mLOG(GBA_HW, GAME_ERROR, "Writing to read-only e-Reader serial register: %02X", hw->eReaderActiveRegister);
+						mLOG(GBA_HW, GAME_ERROR, "Writing to read-only e-Reader serial register: %02X", ereader->activeRegister);
 						break;
 					default:
-						if ((hw->eReaderActiveRegister & 0x7F) > 0x5A) {
-							mLOG(GBA_HW, GAME_ERROR, "Writing to non-existent e-Reader serial register: %02X", hw->eReaderActiveRegister);
+						if ((ereader->activeRegister & 0x7F) > 0x5A) {
+							mLOG(GBA_HW, GAME_ERROR, "Writing to non-existent e-Reader serial register: %02X", ereader->activeRegister);
 							break;
 						}
-						hw->eReaderSerial[hw->eReaderActiveRegister & 0x7F] = hw->eReaderByte;
+						ereader->serial[ereader->activeRegister & 0x7F] = ereader->byte;
 						break;
 					}
-					++hw->eReaderActiveRegister;
+					++ereader->activeRegister;
 					break;
 				default:
-					mLOG(GBA_HW, ERROR, "Hit undefined state %02X in e-Reader state machine", hw->eReaderCommand);
+					mLOG(GBA_HW, ERROR, "Hit undefined state %02X in e-Reader state machine", ereader->command);
 					break;
 				}
-				hw->eReaderState = EREADER_SERIAL_BIT_0;
-				hw->eReaderByte = 0;
+				ereader->state = EREADER_SERIAL_BIT_0;
+				ereader->byte = 0;
 			}
-		} else if (hw->eReaderCommand == EREADER_COMMAND_READ_DATA) {
-			int bit = hw->eReaderSerial[hw->eReaderActiveRegister & 0x7F] >> (7 - (hw->eReaderState - EREADER_SERIAL_BIT_0));
+		} else if (ereader->command == EREADER_COMMAND_READ_DATA) {
+			int bit = ereader->serial[ereader->activeRegister & 0x7F] >> (7 - (ereader->state - EREADER_SERIAL_BIT_0));
 			control = EReaderControl0SetData(control, bit);
-			++hw->eReaderState;
-			if (hw->eReaderState == EREADER_SERIAL_END_BIT) {
-				++hw->eReaderActiveRegister;
-				mLOG(GBA_HW, DEBUG, "[e-Reader] Read serial byte: %02x", hw->eReaderSerial[hw->eReaderActiveRegister & 0x7F]);
+			++ereader->state;
+			if (ereader->state == EREADER_SERIAL_END_BIT) {
+				++ereader->activeRegister;
+				mLOG(GBA_HW, DEBUG, "[e-Reader] Read serial byte: %02x", ereader->serial[ereader->activeRegister & 0x7F]);
 			}
 		}
 	} else if (!EReaderControl0IsDirection(control)) {
 		// Clear the error bit
 		control = EReaderControl0ClearData(control);
 	}
-	hw->eReaderRegisterControl0 = control;
+	ereader->registerControl0 = control;
 	if (!EReaderControl0IsScan(oldControl) && EReaderControl0IsScan(control)) {
-		if (hw->eReaderX > 1000) {
-			if (hw->eReaderDots) {
-				memset(hw->eReaderDots, 0, EREADER_DOTCODE_SIZE);
-			}
-			int i;
-			for (i = 0; i < EREADER_CARDS_MAX; ++i) {
-				if (!hw->eReaderCards[i].data) {
-					continue;
-				}
-				GBAHardwareEReaderScan(hw, hw->eReaderCards[i].data, hw->eReaderCards[i].size);
-				free(hw->eReaderCards[i].data);
-				hw->eReaderCards[i].data = NULL;
-				hw->eReaderCards[i].size = 0;
-				break;
-			}
+		if (ereader->scanX > 1000) {
+			_eReaderScanCard(ereader);
 		}
-		hw->eReaderX = 0;
-		hw->eReaderY = 0;
-	} else if (EReaderControl0IsLedEnable(control) && EReaderControl0IsScan(control) && !EReaderControl1IsScanline(hw->eReaderRegisterControl1)) {
-		_eReaderReadData(hw);
+		ereader->scanX = 0;
+		ereader->scanY = 0;
+	} else if (EReaderControl0IsLedEnable(control) && EReaderControl0IsScan(control) && !EReaderControl1IsScanline(ereader->registerControl1)) {
+		_eReaderReadData(ereader);
 	}
 	mLOG(GBA_HW, STUB, "Unimplemented e-Reader Control0 write: %02X", value);
 }
 
-void _eReaderWriteControl1(struct GBACartridgeHardware* hw, uint8_t value) {
+void _eReaderWriteControl1(struct GBACartEReader* ereader, uint8_t value) {
 	EReaderControl1 control = (value & 0x32) | 0x80;
-	hw->eReaderRegisterControl1 = control;
-	if (EReaderControl0IsScan(hw->eReaderRegisterControl0) && !EReaderControl1IsScanline(control)) {
-		++hw->eReaderY;
-		if (hw->eReaderY == (hw->eReaderSerial[0x15] | (hw->eReaderSerial[0x14] << 8))) {
-			hw->eReaderY = 0;
-			if (hw->eReaderX < 3400) {
-				hw->eReaderX += 210;
+	ereader->registerControl1 = control;
+	if (EReaderControl0IsScan(ereader->registerControl0) && !EReaderControl1IsScanline(control)) {
+		++ereader->scanY;
+		if (ereader->scanY == (ereader->serial[0x15] | (ereader->serial[0x14] << 8))) {
+			ereader->scanY = 0;
+			if (ereader->scanX < 3400) {
+				ereader->scanX += 210;
 			}
 		}
-		_eReaderReadData(hw);
+		_eReaderReadData(ereader);
 	}
 	mLOG(GBA_HW, STUB, "Unimplemented e-Reader Control1 write: %02X", value);
 }
 
-void _eReaderReadData(struct GBACartridgeHardware* hw) {
-	memset(hw->eReaderData, 0, EREADER_BLOCK_SIZE);
-	if (!hw->eReaderDots) {
-		int i;
-		for (i = 0; i < EREADER_CARDS_MAX; ++i) {
-			if (!hw->eReaderCards[i].data) {
-				continue;
-			}
-			GBAHardwareEReaderScan(hw, hw->eReaderCards[i].data, hw->eReaderCards[i].size);
-			free(hw->eReaderCards[i].data);
-			hw->eReaderCards[i].data = NULL;
-			hw->eReaderCards[i].size = 0;
-			break;
-		}
+void _eReaderReadData(struct GBACartEReader* ereader) {
+	memset(ereader->data, 0, EREADER_BLOCK_SIZE);
+	if (!ereader->dots) {
+		_eReaderScanCard(ereader);
 	}
-	if (hw->eReaderDots) {
-		int y = hw->eReaderY - 10;
+	if (ereader->dots) {
+		int y = ereader->scanY - 10;
 		if (y < 0 || y >= 120) {
-			memset(hw->eReaderData, 0, EREADER_BLOCK_SIZE);
+			memset(ereader->data, 0, EREADER_BLOCK_SIZE);
 		} else {
 			int i;
-			uint8_t* origin = &hw->eReaderDots[EREADER_DOTCODE_STRIDE * (y / 3) + 16];
+			uint8_t* origin = &ereader->dots[EREADER_DOTCODE_STRIDE * (y / 3) + 16];
 			for (i = 0; i < 20; ++i) {
 				uint16_t word = 0;
-				int x = hw->eReaderX + i * 16;
+				int x = ereader->scanX + i * 16;
 				word |= origin[(x +  0) / 3] << 8;
 				word |= origin[(x +  1) / 3] << 9;
 				word |= origin[(x +  2) / 3] << 10;
@@ -697,29 +691,48 @@ void _eReaderReadData(struct GBACartridgeHardware* hw) {
 				word |= origin[(x + 13) / 3] << 5;
 				word |= origin[(x + 14) / 3] << 6;
 				word |= origin[(x + 15) / 3] << 7;
-				STORE_16(word, (19 - i) << 1, hw->eReaderData);
+				STORE_16(word, (19 - i) << 1, ereader->data);
 			}
 		}
 	}
-	hw->eReaderRegisterControl1 = EReaderControl1FillScanline(hw->eReaderRegisterControl1);
-	if (EReaderControl0IsLedEnable(hw->eReaderRegisterControl0)) {
-		uint16_t led = hw->eReaderRegisterLed * 2;
+	ereader->registerControl1 = EReaderControl1FillScanline(ereader->registerControl1);
+	if (EReaderControl0IsLedEnable(ereader->registerControl0)) {
+		uint16_t led = ereader->registerLed * 2;
 		if (led > 0x4000) {
 			led = 0x4000;
 		}
-		GBARaiseIRQ(hw->p, IRQ_GAMEPAK, -led);
+		GBARaiseIRQ(ereader->p, IRQ_GAMEPAK, -led);
 	}
 }
 
-void GBAEReaderQueueCard(struct GBA* gba, const void* data, size_t size) {	
+
+void _eReaderScanCard(struct GBACartEReader* ereader) {
+	if (ereader->dots) {
+		memset(ereader->dots, 0, EREADER_DOTCODE_SIZE);
+	}
 	int i;
 	for (i = 0; i < EREADER_CARDS_MAX; ++i) {
-		if (gba->memory.hw.eReaderCards[i].data) {
+		if (!ereader->cards[i].data) {
 			continue;
 		}
-		gba->memory.hw.eReaderCards[i].data = malloc(size);
-		memcpy(gba->memory.hw.eReaderCards[i].data, data, size);
-		gba->memory.hw.eReaderCards[i].size = size;
+		GBACartEReaderScan(ereader, ereader->cards[i].data, ereader->cards[i].size);
+		free(ereader->cards[i].data);
+		ereader->cards[i].data = NULL;
+		ereader->cards[i].size = 0;
+		break;
+	}
+}
+
+void GBACartEReaderQueueCard(struct GBA* gba, const void* data, size_t size) {
+	struct GBACartEReader* ereader = &gba->memory.ereader;
+	int i;
+	for (i = 0; i < EREADER_CARDS_MAX; ++i) {
+		if (ereader->cards[i].data) {
+			continue;
+		}
+		ereader->cards[i].data = malloc(size);
+		memcpy(ereader->cards[i].data, data, size);
+		ereader->cards[i].size = size;
 		return;
 	}
 }

@@ -46,8 +46,6 @@ static const int RTC_BYTES[8] = {
 
 void GBAHardwareInit(struct GBACartridgeHardware* hw, uint16_t* base) {
 	hw->gpioBase = base;
-	hw->eReaderDots = NULL;
-	memset(hw->eReaderCards, 0, sizeof(hw->eReaderCards));
 	GBAHardwareClear(hw);
 }
 
@@ -56,20 +54,6 @@ void GBAHardwareClear(struct GBACartridgeHardware* hw) {
 	hw->readWrite = GPIO_WRITE_ONLY;
 	hw->pinState = 0;
 	hw->direction = 0;
-
-	if (hw->eReaderDots) {
-		mappedMemoryFree(hw->eReaderDots, EREADER_DOTCODE_SIZE);
-		hw->eReaderDots = NULL;
-	}
-	int i;
-	for (i = 0; i < EREADER_CARDS_MAX; ++i) {
-		if (!hw->eReaderCards[i].data) {
-			continue;
-		}
-		free(hw->eReaderCards[i].data);
-		hw->eReaderCards[i].data = NULL;
-		hw->eReaderCards[i].size = 0;
-	}
 }
 
 void GBAHardwareGPIOWrite(struct GBACartridgeHardware* hw, uint32_t address, uint16_t value) {

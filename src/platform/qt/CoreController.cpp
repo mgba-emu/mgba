@@ -812,7 +812,7 @@ void CoreController::scanCard(const QString& path) {
 
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* thread) {
 		CoreController* controller = static_cast<CoreController*>(thread->userData);
-		GBAEReaderQueueCard(static_cast<GBA*>(thread->core->board), controller->m_eReaderData.constData(), controller->m_eReaderData.size());
+		GBACartEReaderQueueCard(static_cast<GBA*>(thread->core->board), controller->m_eReaderData.constData(), controller->m_eReaderData.size());
 	});
 #endif
 }
