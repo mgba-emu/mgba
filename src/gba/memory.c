@@ -930,7 +930,6 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		if ((address & 0x00FFFFFF) >= AGB_PRINT_BASE) {
 			uint32_t agbPrintAddr = address & 0x00FFFFFF;
 			if (agbPrintAddr == AGB_PRINT_PROTECT) {
-				bool wasProtected = memory->agbPrintProtect != 0x20;
 				memory->agbPrintProtect = value;
 
 				if (!memory->agbPrintBuffer) {
