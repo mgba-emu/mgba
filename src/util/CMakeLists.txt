@@ -2,6 +2,7 @@ include(ExportDirectory)
 set(SOURCE_FILES
 	circle-buffer.c
 	configuration.c
+	convolve.c
 	crc32.c
 	elf-read.c
 	export.c
