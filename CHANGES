@@ -1,4 +1,6 @@
 0.10.0: (Future)
+Features:
+ - Tool for converting scanned pictures of e-Reader cards to raw dotcode data
 Emulation fixes:
  - Core: Fix first event scheduling after loading savestate
  - GB Serialize: Fix switching speed modes when loading a state (fixes mgba.io/i/2097)
