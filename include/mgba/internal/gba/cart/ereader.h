@@ -10,6 +10,8 @@
 
 CXX_GUARD_START
 
+#include <mgba-util/vector.h>
+
 struct GBACartridgeHardware;
 
 #define EREADER_DOTCODE_STRIDE 1420
@@ -77,6 +79,31 @@ struct GBACartEReader {
 	struct EReaderCard cards[EREADER_CARDS_MAX];
 };
 
+struct EReaderAnchor;
+struct EReaderBlock;
+DECLARE_VECTOR(EReaderAnchorList, struct EReaderAnchor);
+DECLARE_VECTOR(EReaderBlockList, struct EReaderBlock);
+
+struct EReaderScan {
+	uint8_t* buffer;
+	unsigned width;
+	unsigned height;
+
+	uint8_t* srcBuffer;
+	size_t srcWidth;
+	size_t srcHeight;
+
+	unsigned scale;
+
+	uint8_t min;
+	uint8_t max;
+	uint8_t mean;
+	uint8_t anchorThreshold;
+
+	struct EReaderAnchorList anchors;
+	struct EReaderBlockList blocks;
+};
+
 void GBACartEReaderInit(struct GBACartEReader* ereader);
 void GBACartEReaderDeinit(struct GBACartEReader* ereader);
 void GBACartEReaderWrite(struct GBACartEReader* ereader, uint32_t address, uint16_t value);
@@ -84,6 +111,15 @@ void GBACartEReaderWriteFlash(struct GBACartEReader* ereader, uint32_t address, 
 uint16_t GBACartEReaderRead(struct GBACartEReader* ereader, uint32_t address);
 uint8_t GBACartEReaderReadFlash(struct GBACartEReader* ereader, uint32_t address);
 void GBACartEReaderScan(struct GBACartEReader* ereader, const void* data, size_t size);
+
+struct EReaderScan* EReaderScanCreate(unsigned width, unsigned height);
+void EReaderScanDetectParams(struct EReaderScan*);
+void EReaderScanDetectAnchors(struct EReaderScan*);
+void EReaderScanFilterAnchors(struct EReaderScan*);
+void EReaderScanConnectAnchors(struct EReaderScan*);
+void EReaderScanCreateBlocks(struct EReaderScan*);
+void EReaderScanDetectBlockThreshold(struct EReaderScan*, int block);
+bool EReaderScanScanBlock(struct EReaderScan*, int block);
 
 CXX_GUARD_END
 
