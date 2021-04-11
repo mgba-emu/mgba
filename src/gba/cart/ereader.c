@@ -1237,15 +1237,14 @@ void EReaderScanDetectBlockThreshold(struct EReaderScan* scan, int blockId) {
 		return;
 	}
 	struct EReaderBlock* block = EReaderBlockListGetPointer(&scan->blocks, blockId);
-	unsigned histograms[0xFC] = {0};
+	unsigned histograms[0xF8] = {0};
 	unsigned* histogram[] = {
 		block->histogram,
 		&histograms[0x00],
 		&histograms[0x80],
 		&histograms[0xC0],
 		&histograms[0xE0],
-		&histograms[0xF0],
-		&histograms[0xF8]
+		&histograms[0xF0]
 	};
 
 	size_t i;
@@ -1256,11 +1255,21 @@ void EReaderScanDetectBlockThreshold(struct EReaderScan* scan, int blockId) {
 		histogram[3][i >> 3] += baseline;
 		histogram[4][i >> 4] += baseline;
 		histogram[5][i >> 5] += baseline;
-		histogram[6][i >> 6] += baseline;
 	}
 
-	int offset = 1;
-	for (i = 7; i--; offset *= 2) {
+	int offset;
+	for (offset = 0; offset < 7; ++offset) {
+		if (histogram[5][offset] > histogram[5][offset + 1]) {
+			break;
+		}
+	}
+	for (; offset < 7; ++offset) {
+		if (histogram[5][offset] < histogram[5][offset + 1]) {
+			break;
+		}
+	}
+
+	for (i = 6; i--; offset *= 2) {
 		if (histogram[i][offset] > histogram[i][offset + 1]) {
 			++offset;
 		}
