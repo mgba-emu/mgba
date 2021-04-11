@@ -778,6 +778,12 @@ struct EReaderBlock {
 	uint8_t min;
 	uint8_t max;
 
+	unsigned errors;
+	unsigned missing;
+	unsigned extra;
+
+	bool hFlip;
+	bool vFlip;
 	bool dots[36 * 36];
 
 	uint16_t id;
@@ -1277,11 +1283,40 @@ void EReaderScanDetectBlockThreshold(struct EReaderScan* scan, int blockId) {
 	block->threshold = offset / 2;
 }
 
-bool EReaderScanScanBlock(struct EReaderScan* scan, int blockId) {
+bool EReaderScanRecalibrateBlock(struct EReaderScan* scan, int blockId) {
 	if (blockId < 0 || (unsigned) blockId >= EReaderBlockListSize(&scan->blocks)) {
 		return false;
 	}
 	struct EReaderBlock* block = EReaderBlockListGetPointer(&scan->blocks, blockId);
+	if (block->missing && block->extra) {
+		return false;
+	}
+	int errors = block->errors;
+	if (block->missing) {
+		while (errors > 0) {
+			errors -= block->histogram[block->threshold];
+			while (!block->histogram[block->threshold] && block->threshold < 254) {
+				++block->threshold;
+			}
+			++block->threshold;
+			if (block->threshold >= 255) {
+				return false;
+			}
+		}
+	} else {
+		return false;
+	}
+	return true;
+}
+
+bool EReaderScanScanBlock(struct EReaderScan* scan, int blockId, bool strict) {
+	if (blockId < 0 || (unsigned) blockId >= EReaderBlockListSize(&scan->blocks)) {
+		return false;
+	}
+	struct EReaderBlock* block = EReaderBlockListGetPointer(&scan->blocks, blockId);
+	block->errors = 0;
+	block->missing = 0;
+	block->extra = 0;
 
 	bool dots[36 * 36] = {0};
 	size_t y;
@@ -1301,26 +1336,65 @@ bool EReaderScanScanBlock(struct EReaderScan* scan, int blockId) {
 	}
 	int horizontal = 0;
 	int vertical = 0;
+	int hMissing = 0;
+	int hExtra = 0;
+	int vMissing = 0;
+	int vExtra = 0;
 	static const bool alignment[36] = { 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0 };
 	int i;
 	for (i = 3; i < 33; ++i) {
-		if (horizontal && dots[i] != alignment[i]) {
+		if (dots[i] != alignment[i]) {
 			++horizontal;
+			if (alignment[i]) {
+				++hMissing;
+			} else {
+				++hExtra;
+			}
 		}
 		if (dots[i + 36 * 35] != alignment[i]) {
 			++horizontal;
+			if (alignment[i]) {
+				++hMissing;
+			} else {
+				++hExtra;
+			}
 		}
-		if (horizontal && dots[i * 36] != alignment[i]) {
+		if (dots[i * 36] != alignment[i]) {
 			++vertical;
+			if (alignment[i]) {
+				++vMissing;
+			} else {
+				++vExtra;
+			}
 		}
 		if (dots[i * 36 + 35] != alignment[i]) {
 			++vertical;
+			if (alignment[i]) {
+				++vMissing;
+			} else {
+				++vExtra;
+			}
 		}
 	}
 
-	if (!!horizontal == !!vertical) {
+	int errors;
+	if (horizontal < vertical) {
+		errors = horizontal;
+		block->errors += horizontal;
+		block->extra += hExtra;
+		block->missing += hMissing;
+		horizontal = 0;
+	} else {
+		errors = vertical;
+		block->errors += vertical;
+		block->extra += vExtra;
+		block->missing += vMissing;
+		vertical = 0;
+	}
+	if (strict && errors) {
 		return false;
 	}
+
 	int sector[2] = {0};
 	if (!vertical) {
 		for (i = 5; i < 30; ++i) {
@@ -1338,9 +1412,12 @@ bool EReaderScanScanBlock(struct EReaderScan* scan, int blockId) {
 	int yFlip = 1;
 	int xBias = 0;
 	int yBias = 0;
+	block->hFlip = false;
+	block->vFlip = false;
 	if ((sector[0] & 0x1FF) == 1) {
 		yFlip = -1;
 		yBias = 35;
+		block->vFlip = true;
 		int s0 = 0;
 		int s1 = 0;
 		for (i = 0; i < 16; ++i) {
@@ -1355,6 +1432,7 @@ bool EReaderScanScanBlock(struct EReaderScan* scan, int blockId) {
 	if (sector[1] < sector[0]) {
 		xFlip = -1;
 		xBias = 35;
+		block->hFlip = true;
 		int sector0 = sector[0];
 		sector[0] = sector[1];
 		sector[1] = sector0;
@@ -1402,8 +1480,15 @@ bool EReaderScanCard(struct EReaderScan* scan) {
 	size_t i;
 	for (i = 0; i < blocks; ++i) {
 		EReaderScanDetectBlockThreshold(scan, i);
-		if (!EReaderScanScanBlock(scan, i)) {
-			return false;
+		int errors = 36 * 36;
+		while (!EReaderScanScanBlock(scan, i, true)) {
+			if (errors < EReaderBlockListGetPointer(&scan->blocks, i)->errors) {
+				return false;
+			}
+			errors = EReaderBlockListGetPointer(&scan->blocks, i)->errors;
+			if (!EReaderScanRecalibrateBlock(scan, i)) {
+				return false;
+			}
 		}
 	}
 	qsort(EReaderBlockListGetPointer(&scan->blocks, 0), EReaderBlockListSize(&scan->blocks), sizeof(struct EReaderBlock), _compareBlocks);

@@ -119,7 +119,8 @@ void EReaderScanFilterAnchors(struct EReaderScan*);
 void EReaderScanConnectAnchors(struct EReaderScan*);
 void EReaderScanCreateBlocks(struct EReaderScan*);
 void EReaderScanDetectBlockThreshold(struct EReaderScan*, int block);
-bool EReaderScanScanBlock(struct EReaderScan*, int block);
+bool EReaderScanRecalibrateBlock(struct EReaderScan*, int block);
+bool EReaderScanScanBlock(struct EReaderScan*, int block, bool strict);
 
 CXX_GUARD_END
 
