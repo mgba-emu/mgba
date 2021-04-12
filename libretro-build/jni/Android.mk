@@ -4,7 +4,7 @@ CORE_DIR := $(LOCAL_PATH)/../..
 
 include $(CORE_DIR)/libretro-build/Makefile.common
 
-COREFLAGS := -DHAVE_XLOCALE -DHAVE_STRTOF_L $(RETRODEFS) $(INCLUDES)
+COREFLAGS := -DHAVE_XLOCALE -DHAVE_STRTOF_L -DUSE_PTHREADS $(RETRODEFS) $(INCLUDES)
 
 GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
 ifneq ($(GIT_VERSION)," unknown")
