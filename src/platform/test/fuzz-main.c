@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
 	}
 
 #ifdef M_CORE_GBA
-	if (core->platform(core) == PLATFORM_GBA) {
+	if (core->platform(core) == mPLATFORM_GBA) {
 		((struct GBA*) core->board)->hardCrash = false;
 	}
 #endif

@@ -2,6 +2,7 @@ include(ExportDirectory)
 set(SOURCE_FILES
 	circle-buffer.c
 	configuration.c
+	convolve.c
 	crc32.c
 	elf-read.c
 	export.c
@@ -29,6 +30,11 @@ set(GUI_FILES
 set(TEST_FILES
 	test/text-codec.c
 	test/vfs.c)
+
+if(NOT DEFINED OS_SRC)
+	set(OS_FILES memory.c)
+	export_directory(OS OS_FILES)
+endif()
 
 source_group("Utilities" FILES ${SOURCE_FILES})
 source_group("GUI source" FILES ${GUI_FILES})

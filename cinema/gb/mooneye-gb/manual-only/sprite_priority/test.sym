@@ -12,13 +12,13 @@
 01:47f0 reset_screen
 01:4000 font
 00:0150 main
-00:017d main@wait_ly_5
-00:0183 main@wait_ly_6
-00:0189 main@wait_ly_7
-00:018f main@wait_ly_8
-00:0196 main@halt_execution_1
-00:0199 data
-00:022d data_end
+00:017f main@wait_ly_5
+00:0185 main@wait_ly_6
+00:018b main@wait_ly_7
+00:0191 main@wait_ly_8
+00:0198 main@halt_execution_1
+00:019b data
+00:022f data_end
 
 [definitions]
 0000000a _sizeof_clear_oam
@@ -29,5 +29,5 @@
 0000000c _sizeof_print_load_font
 00000014 _sizeof_reset_screen
 000007f0 _sizeof_font
-00000049 _sizeof_main
+0000004b _sizeof_main
 00000094 _sizeof_data

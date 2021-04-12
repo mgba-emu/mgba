@@ -264,20 +264,20 @@ void GUIDrawBattery(struct GUIParams* params) {
 		return;
 	}
 	uint32_t color = 0xFF000000;
-	if (state == (BATTERY_CHARGING | BATTERY_FULL)) {
+	if ((state & (BATTERY_CHARGING | BATTERY_FULL)) == (BATTERY_CHARGING | BATTERY_FULL)) {
 		color |= 0xFFC060;
 	} else if (state & BATTERY_CHARGING) {
 		color |= 0x60FF60;
-	} else if (state >= BATTERY_HALF) {
+	} else if ((state & BATTERY_VALUE) >= BATTERY_HALF) {
 		color |= 0xFFFFFF;
-	} else if (state == BATTERY_LOW) {
+	} else if ((state & BATTERY_VALUE) >= BATTERY_LOW) {
 		color |= 0x30FFFF;
 	} else {
 		color |= 0x3030FF;
 	}
 
 	enum GUIIcon batteryIcon;
-	switch (state & ~BATTERY_CHARGING) {
+	switch ((state & BATTERY_VALUE) - (state & BATTERY_VALUE) % 25) {
 	case BATTERY_EMPTY:
 		batteryIcon = GUI_ICON_BATTERY_EMPTY;
 		break;
@@ -298,7 +298,12 @@ void GUIDrawBattery(struct GUIParams* params) {
 		break;
 	}
 
-	GUIFontDrawIcon(params->font, params->width, 0, GUI_ALIGN_RIGHT, GUI_ORIENT_0, color, batteryIcon);
+	GUIFontDrawIcon(params->font, params->width, GUIFontHeight(params->font) + 2, GUI_ALIGN_RIGHT | GUI_ALIGN_BOTTOM, GUI_ORIENT_0, color, batteryIcon);
+	if (state & BATTERY_PERCENTAGE_VALID) {
+		unsigned width;
+		GUIFontIconMetrics(params->font, batteryIcon, &width, NULL);
+		GUIFontPrintf(params->font, params->width - width, GUIFontHeight(params->font), GUI_ALIGN_RIGHT, color, "%u%%", state & BATTERY_VALUE);
+	}
 }
 
 void GUIDrawClock(struct GUIParams* params) {

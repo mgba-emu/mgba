@@ -44,17 +44,18 @@ signals:
 private slots:
 	void selectFile();
 	void setFilename(const QString&);
-	void setAudioCodec(const QString&, bool manual = true);
-	void setVideoCodec(const QString&, bool manual = true);
-	void setContainer(const QString&, bool manual = true);
+	void setAudioCodec(const QString&);
+	void setVideoCodec(const QString&);
+	void setContainer(const QString&);
 
-	void setAudioBitrate(int, bool manual = true);
-	void setVideoBitrate(int, bool manual = true);
+	void setAudioBitrate(int);
+	void setVideoBitrate(int);
+	void setVideoRateFactor(int);
 
-	void setWidth(int, bool manual = true);
-	void setHeight(int, bool manual = true);
-	void setAspectWidth(int, bool manual = true);
-	void setAspectHeight(int, bool manual = true);
+	void setWidth(int);
+	void setHeight(int);
+	void setAspectWidth(int);
+	void setAspectHeight(int);
 
 	void showAdvanced(bool);
 
@@ -66,8 +67,8 @@ private:
 		QString container;
 		QString vcodec;
 		QString acodec;
-		int vbr;
-		int abr;
+		int vbr = 0;
+		int abr = 0;
 		QSize dims;
 
 		Preset() {}
@@ -105,6 +106,8 @@ private:
 	char* m_audioCodecCstr = nullptr;
 	char* m_videoCodecCstr = nullptr;
 	char* m_containerCstr = nullptr;
+
+	bool m_updatesBlocked = false;
 
 	int m_abr;
 	int m_vbr;

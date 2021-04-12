@@ -534,16 +534,14 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
 	if (savedata->dirty & SAVEDATA_DIRT_NEW) {
 		savedata->dirtAge = frameCount;
 		savedata->dirty &= ~SAVEDATA_DIRT_NEW;
-		if (!(savedata->dirty & SAVEDATA_DIRT_SEEN)) {
-			savedata->dirty |= SAVEDATA_DIRT_SEEN;
-		}
+		savedata->dirty |= SAVEDATA_DIRT_SEEN;
 	} else if ((savedata->dirty & SAVEDATA_DIRT_SEEN) && frameCount - savedata->dirtAge > CLEANUP_THRESHOLD) {
 		if (savedata->maskWriteback) {
 			GBASavedataUnmask(savedata);
 		}
+		savedata->dirty = 0;
 		if (savedata->mapMode & MAP_WRITE) {
 			size_t size = GBASavedataSize(savedata);
-			savedata->dirty = 0;
 			if (savedata->data && savedata->vf->sync(savedata->vf, savedata->data, size)) {
 				mLOG(GBA_SAVE, INFO, "Savedata synced");
 			} else {

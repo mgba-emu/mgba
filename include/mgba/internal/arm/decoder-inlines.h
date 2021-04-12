@@ -22,4 +22,16 @@
 	info->nInstructionCycles = 1; \
 	info->nDataCycles = 1;
 
+static inline bool ARMInstructionIsBranch(enum ARMMnemonic mnemonic) {
+	switch (mnemonic) {
+		case ARM_MN_B:
+		case ARM_MN_BL:
+		case ARM_MN_BX:
+			// TODO: case: ARM_MN_BLX:
+			return true;
+		default:
+			return false;
+	}
+}
+
 #endif

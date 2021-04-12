@@ -43,12 +43,12 @@ void AssetView::updateTiles() {
 void AssetView::updateTiles(bool force) {
 	switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		updateTilesGBA(force);
 		break;
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		updateTilesGB(force);
 		break;
 #endif
@@ -144,8 +144,8 @@ QImage AssetView::compositeObj(const ObjInfo& objInfo) {
 	image.setColorTable(palette);
 	uchar* bits = image.bits();
 	unsigned t = objInfo.tile;
-	for (int y = 0; y < objInfo.height; ++y) {
-		for (int x = 0; x < objInfo.width; ++x, ++t) {
+	for (unsigned y = 0; y < objInfo.height; ++y) {
+		for (unsigned x = 0; x < objInfo.width; ++x, ++t) {
 			compositeTile(static_cast<const void*>(mTileCacheGetVRAM(tileCache, t)), bits, objInfo.width * 8, x * 8, y * 8, objInfo.bits);
 		}
 		t += objInfo.stride - objInfo.width;
@@ -156,11 +156,11 @@ QImage AssetView::compositeObj(const ObjInfo& objInfo) {
 bool AssetView::lookupObj(int id, struct ObjInfo* info) {
 	switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		return lookupObjGBA(id, info);
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		return lookupObjGB(id, info);
 #endif
 	default:
@@ -183,7 +183,6 @@ bool AssetView::lookupObjGBA(int id, struct ObjInfo* info) {
 	unsigned height = GBAVideoObjSizes[shape * 4 + size][1];
 	unsigned tile = GBAObjAttributesCGetTile(obj->c);
 	unsigned palette = GBAObjAttributesCGetPalette(obj->c);
-	unsigned tileBase = tile;
 	unsigned paletteSet;
 	unsigned bits;
 	if (GBAObjAttributesAIs256Color(obj->a)) {
@@ -237,9 +236,8 @@ bool AssetView::lookupObjGB(int id, struct ObjInfo* info) {
 	const GB* gb = static_cast<const GB*>(m_controller->thread()->core->board);
 	const GBObj* obj = &gb->video.oam.obj[id];
 
-	unsigned width = 8;
 	unsigned height = 8;
-	GBRegisterLCDC lcdc = gb->memory.io[REG_LCDC];
+	GBRegisterLCDC lcdc = gb->memory.io[GB_REG_LCDC];
 	if (GBRegisterLCDCIsObjSize(lcdc)) {
 		height = 16;
 	}

@@ -5,9 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "MessagePainter.h"
 
-#include <QPainter>
+#include "GBAApp.h"
 
-#include <QDebug>
+#include <QPainter>
 
 #include <mgba/gba/interface.h>
 
@@ -16,8 +16,7 @@ using namespace QGBA;
 MessagePainter::MessagePainter(QObject* parent)
 	: QObject(parent)
 {
-	m_messageFont.setFamily("Source Code Pro");
-	m_messageFont.setStyleHint(QFont::Monospace);
+	m_messageFont = GBAApp::app()->monospaceFont();
 	m_messageFont.setPixelSize(13);
 	connect(&m_messageTimer, &QTimer::timeout, this, &MessagePainter::clearMessage);
 	m_messageTimer.setSingleShot(true);

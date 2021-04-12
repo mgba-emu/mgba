@@ -109,9 +109,8 @@ void GBATimerUpdateRegister(struct GBA* gba, int timer, int32_t cyclesLate) {
 	tickIncrement = (0x10000 - tickIncrement) << prescaleBits;
 	currentTime += tickIncrement;
 	currentTime &= ~tickMask;
-	currentTime -= mTimingCurrentTime(&gba->timing);
 	mTimingDeschedule(&gba->timing, &currentTimer->event);
-	mTimingSchedule(&gba->timing, &currentTimer->event, currentTime);
+	mTimingScheduleAbsolute(&gba->timing, &currentTimer->event, currentTime);
 }
 
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t reload) {
@@ -122,39 +121,33 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	GBATimerUpdateRegister(gba, timer, 0);
 
-	unsigned oldPrescale = GBATimerFlagsGetPrescaleBits(currentTimer->flags);
-	unsigned prescaleBits;
-	switch (control & 0x0003) {
-	case 0x0000:
-		prescaleBits = 0;
-		break;
-	case 0x0001:
-		prescaleBits = 6;
-		break;
-	case 0x0002:
-		prescaleBits = 8;
-		break;
-	case 0x0003:
-		prescaleBits = 10;
-		break;
-	}
+	const unsigned prescaleTable[4] = { 0, 6, 8, 10 };
+	unsigned prescaleBits = prescaleTable[control & 0x0003];
+
+	GBATimerFlags oldFlags = currentTimer->flags;
 	currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, prescaleBits);
 	currentTimer->flags = GBATimerFlagsTestFillCountUp(currentTimer->flags, timer > 0 && (control & 0x0004));
 	currentTimer->flags = GBATimerFlagsTestFillDoIrq(currentTimer->flags, control & 0x0040);
-	bool wasEnabled = GBATimerFlagsIsEnable(currentTimer->flags);
 	currentTimer->flags = GBATimerFlagsTestFillEnable(currentTimer->flags, control & 0x0080);
-	if (!wasEnabled && GBATimerFlagsIsEnable(currentTimer->flags)) {
+
+	bool reschedule = false;
+	if (GBATimerFlagsIsEnable(oldFlags) != GBATimerFlagsIsEnable(currentTimer->flags)) {
+		reschedule = true;
+		if (GBATimerFlagsIsEnable(currentTimer->flags)) {
+			gba->memory.io[REG_TMCNT_LO(timer) >> 1] = currentTimer->reload;
+		}
+	} else if (GBATimerFlagsIsCountUp(oldFlags) != GBATimerFlagsIsCountUp(currentTimer->flags)) {
+		reschedule = true;
+	} else if (GBATimerFlagsGetPrescaleBits(currentTimer->flags) != GBATimerFlagsGetPrescaleBits(oldFlags)) {
+		reschedule = true;
+	}
+
+	if (reschedule) {
 		mTimingDeschedule(&gba->timing, &currentTimer->event);
-		gba->memory.io[REG_TMCNT_LO(timer) >> 1] = currentTimer->reload;
-		int32_t tickMask = (1 << prescaleBits) - 1;
-		currentTimer->lastEvent = mTimingCurrentTime(&gba->timing) & ~tickMask;
-		GBATimerUpdateRegister(gba, timer, 0);
-	} else if (wasEnabled && !GBATimerFlagsIsEnable(currentTimer->flags)) {
-		mTimingDeschedule(&gba->timing, &currentTimer->event);
-	} else if (GBATimerFlagsIsEnable(currentTimer->flags) && GBATimerFlagsGetPrescaleBits(currentTimer->flags) != oldPrescale && !GBATimerFlagsIsCountUp(currentTimer->flags)) {
-		mTimingDeschedule(&gba->timing, &currentTimer->event);
-		int32_t tickMask = (1 << prescaleBits) - 1;
-		currentTimer->lastEvent = mTimingCurrentTime(&gba->timing) & ~tickMask;
-		GBATimerUpdateRegister(gba, timer, 0);
+		if (GBATimerFlagsIsEnable(currentTimer->flags) && !GBATimerFlagsIsCountUp(currentTimer->flags)) {
+			int32_t tickMask = (1 << prescaleBits) - 1;
+			currentTimer->lastEvent = mTimingCurrentTime(&gba->timing) & ~tickMask;
+			GBATimerUpdateRegister(gba, timer, 0);
+		}
 	}
 }

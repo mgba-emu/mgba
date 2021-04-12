@@ -19,7 +19,7 @@ static void* _vffMap(struct VFile* vf, size_t size, int flags);
 static void _vffUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vffTruncate(struct VFile* vf, size_t size);
 static ssize_t _vffSize(struct VFile* vf);
-static bool _vffSync(struct VFile* vf, const void* buffer, size_t size);
+static bool _vffSync(struct VFile* vf, void* buffer, size_t size);
 
 struct VFile* VFileFIFO(struct CircleBuffer* backing) {
 	if (!backing) {
@@ -94,7 +94,7 @@ static ssize_t _vffSize(struct VFile* vf) {
 	return CircleBufferSize(vff->backing);
 }
 
-static bool _vffSync(struct VFile* vf, const void* buffer, size_t size) {
+static bool _vffSync(struct VFile* vf, void* buffer, size_t size) {
 	UNUSED(vf);
 	UNUSED(buffer);
 	UNUSED(size);

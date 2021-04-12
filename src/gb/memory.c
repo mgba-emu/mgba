@@ -84,6 +84,10 @@ static void GBSetActiveRegion(struct SM83Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK1 + 1:
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
+		if ((gb->memory.mbcType & GB_UNL_BBD) == GB_UNL_BBD) {
+			cpu->memory.cpuLoad8 = GBLoad8;
+			break;
+		}
 		cpu->memory.cpuLoad8 = GBFastLoad8;
 		if (gb->memory.mbcType != GB_MBC6) {
 			cpu->memory.activeRegion = memory->romBank;
@@ -179,10 +183,6 @@ void GBMemoryReset(struct GB* gb) {
 		}
 	}
 	GBMemorySwitchWramBank(&gb->memory, 1);
-	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
-	gb->memory.currentBank = 1;
-	gb->memory.sramCurrentBank = 0;
-
 	gb->memory.ime = false;
 	gb->memory.ie = 0;
 
@@ -206,31 +206,7 @@ void GBMemoryReset(struct GB* gb) {
 
 	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
 
-	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
-	GBMBCInit(gb);
-	switch (gb->memory.mbcType) {
-	case GB_MBC1:
-		gb->memory.mbcState.mbc1.mode = 0;
-		break;
-	case GB_MBC6:
-		GBMBCSwitchHalfBank(gb, 0, 2);
-		GBMBCSwitchHalfBank(gb, 1, 3);
-		gb->memory.mbcState.mbc6.sramAccess = false;
-		GBMBCSwitchSramHalfBank(gb, 0, 0);
-		GBMBCSwitchSramHalfBank(gb, 0, 1);
-		break;
-	case GB_MMM01:
-		GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);
-		GBMBCSwitchBank(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 1);
-		break;
-	default:
-		break;
-	}
-	gb->memory.sramBank = gb->memory.sram;
-
-	if (!gb->memory.wram) {
-		GBMemoryDeinit(gb);
-	}
+	GBMBCReset(gb);
 }
 
 void GBMemorySwitchWramBank(struct GBMemory* memory, int bank) {
@@ -276,6 +252,9 @@ uint8_t GBLoad8(struct SM83Core* cpu, uint16_t address) {
 		if (address >= memory->romSize) {
 			return 0xFF;
 		}
+		if ((memory->mbcType & GB_UNL_BBD) == GB_UNL_BBD) {
+			return memory->mbcRead(memory, address);
+		}
 		return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
 	case GB_REGION_VRAM:
 	case GB_REGION_VRAM + 1:
@@ -320,7 +299,7 @@ uint8_t GBLoad8(struct SM83Core* cpu, uint16_t address) {
 		if (address < GB_BASE_IE) {
 			return memory->hram[address & GB_SIZE_HRAM];
 		}
-		return GBIORead(gb, REG_IE);
+		return GBIORead(gb, GB_REG_IE);
 	}
 }
 
@@ -361,7 +340,7 @@ void GBStore8(struct SM83Core* cpu, uint16_t address, int8_t value) {
 	case GB_REGION_EXTERNAL_RAM + 1:
 		if (memory->rtcAccess) {
 			memory->rtcRegs[memory->activeRtcReg] = value;
-		} else if (memory->sramAccess && memory->sram && memory->mbcType != GB_MBC2) {
+		} else if (memory->sramAccess && memory->sram && memory->directSramAccess) {
 			memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
 		} else {
 			memory->mbcWrite(gb, address, value);
@@ -390,7 +369,7 @@ void GBStore8(struct SM83Core* cpu, uint16_t address, int8_t value) {
 		} else if (address < GB_BASE_IE) {
 			memory->hram[address & GB_SIZE_HRAM] = value;
 		} else {
-			GBIOWrite(gb, REG_IE, value);
+			GBIOWrite(gb, GB_REG_IE, value);
 		}
 	}
 }
@@ -514,7 +493,7 @@ uint8_t GBView8(struct SM83Core* cpu, uint16_t address, int segment) {
 		if (address < GB_BASE_IE) {
 			return memory->hram[address & GB_SIZE_HRAM];
 		}
-		return GBIORead(gb, REG_IE);
+		return GBIORead(gb, GB_REG_IE);
 	}
 }
 
@@ -523,20 +502,17 @@ void GBMemoryDMA(struct GB* gb, uint16_t base) {
 		base &= 0xDFFF;
 	}
 	mTimingDeschedule(&gb->timing, &gb->memory.dmaEvent);
-	mTimingSchedule(&gb->timing, &gb->memory.dmaEvent, 8);
-	if (gb->cpu->cycles + 8 < gb->cpu->nextEvent) {
-		gb->cpu->nextEvent = gb->cpu->cycles + 8;
-	}
+	mTimingSchedule(&gb->timing, &gb->memory.dmaEvent, 8 * (2 - gb->doubleSpeed));
 	gb->memory.dmaSource = base;
 	gb->memory.dmaDest = 0;
 	gb->memory.dmaRemaining = 0xA0;
 }
 
 uint8_t GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
-	gb->memory.hdmaSource = gb->memory.io[REG_HDMA1] << 8;
-	gb->memory.hdmaSource |= gb->memory.io[REG_HDMA2];
-	gb->memory.hdmaDest = gb->memory.io[REG_HDMA3] << 8;
-	gb->memory.hdmaDest |= gb->memory.io[REG_HDMA4];
+	gb->memory.hdmaSource = gb->memory.io[GB_REG_HDMA1] << 8;
+	gb->memory.hdmaSource |= gb->memory.io[GB_REG_HDMA2];
+	gb->memory.hdmaDest = gb->memory.io[GB_REG_HDMA3] << 8;
+	gb->memory.hdmaDest |= gb->memory.io[GB_REG_HDMA4];
 	gb->memory.hdmaSource &= 0xFFF0;
 	if (gb->memory.hdmaSource >= 0x8000 && gb->memory.hdmaSource < 0xA000) {
 		mLOG(GB_MEM, GAME_ERROR, "Invalid HDMA source: %04X", gb->memory.hdmaSource);
@@ -546,7 +522,7 @@ uint8_t GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
 	gb->memory.hdmaDest |= 0x8000;
 	bool wasHdma = gb->memory.isHdma;
 	gb->memory.isHdma = value & 0x80;
-	if ((!wasHdma && !gb->memory.isHdma) || (GBRegisterLCDCIsEnable(gb->memory.io[REG_LCDC]) && gb->video.mode == 0)) {
+	if ((!wasHdma && !gb->memory.isHdma) || (GBRegisterLCDCIsEnable(gb->memory.io[GB_REG_LCDC]) && gb->video.mode == 0)) {
 		if (gb->memory.isHdma) {
 			gb->memory.hdmaRemaining = 0x10;
 		} else {
@@ -554,7 +530,7 @@ uint8_t GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
 		}
 		gb->cpuBlocked = true;
 		mTimingSchedule(&gb->timing, &gb->memory.hdmaEvent, 0);
-	} else if (gb->memory.isHdma && !GBRegisterLCDCIsEnable(gb->memory.io[REG_LCDC])) {
+	} else if (gb->memory.isHdma && !GBRegisterLCDCIsEnable(gb->memory.io[GB_REG_LCDC])) {
 		return 0x80 | ((value + 1) & 0x7F);
 	}
 	return value & 0x7F;
@@ -572,7 +548,7 @@ void _GBMemoryDMAService(struct mTiming* timing, void* context, uint32_t cyclesL
 	++gb->memory.dmaDest;
 	gb->memory.dmaRemaining = dmaRemaining - 1;
 	if (gb->memory.dmaRemaining) {
-		mTimingSchedule(timing, &gb->memory.dmaEvent, 4 - cyclesLate);
+		mTimingSchedule(timing, &gb->memory.dmaEvent, 4 * (2 - gb->doubleSpeed) - cyclesLate);
 	}
 }
 
@@ -586,20 +562,20 @@ void _GBMemoryHDMAService(struct mTiming* timing, void* context, uint32_t cycles
 	--gb->memory.hdmaRemaining;
 	if (gb->memory.hdmaRemaining) {
 		mTimingDeschedule(timing, &gb->memory.hdmaEvent);
-		mTimingSchedule(timing, &gb->memory.hdmaEvent, 2 - cyclesLate);
+		mTimingSchedule(timing, &gb->memory.hdmaEvent, 4 - cyclesLate);
 	} else {
 		gb->cpuBlocked = false;
-		gb->memory.io[REG_HDMA1] = gb->memory.hdmaSource >> 8;
-		gb->memory.io[REG_HDMA2] = gb->memory.hdmaSource;
-		gb->memory.io[REG_HDMA3] = gb->memory.hdmaDest >> 8;
-		gb->memory.io[REG_HDMA4] = gb->memory.hdmaDest;
+		gb->memory.io[GB_REG_HDMA1] = gb->memory.hdmaSource >> 8;
+		gb->memory.io[GB_REG_HDMA2] = gb->memory.hdmaSource;
+		gb->memory.io[GB_REG_HDMA3] = gb->memory.hdmaDest >> 8;
+		gb->memory.io[GB_REG_HDMA4] = gb->memory.hdmaDest;
 		if (gb->memory.isHdma) {
-			--gb->memory.io[REG_HDMA5];
-			if (gb->memory.io[REG_HDMA5] == 0xFF) {
+			--gb->memory.io[GB_REG_HDMA5];
+			if (gb->memory.io[GB_REG_HDMA5] == 0xFF) {
 				gb->memory.isHdma = false;
 			}
 		} else {
-			gb->memory.io[REG_HDMA5] = 0xFF;
+			gb->memory.io[GB_REG_HDMA5] = 0xFF;
 		}
 	}
 }
@@ -733,6 +709,8 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 	case GB_MBC1:
 		state->memory.mbc1.mode = memory->mbcState.mbc1.mode;
 		state->memory.mbc1.multicartStride = memory->mbcState.mbc1.multicartStride;
+		state->memory.mbc1.bankLo = memory->mbcState.mbc1.bankLo;
+		state->memory.mbc1.bankHi = memory->mbcState.mbc1.bankHi;
 		break;
 	case GB_MBC3_RTC:
 		STORE_64LE(gb->memory.rtcLastLatch, 0, &state->memory.rtc.lastLatch);
@@ -750,6 +728,11 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 	case GB_MMM01:
 		state->memory.mmm01.locked = memory->mbcState.mmm01.locked;
 		state->memory.mmm01.bank0 = memory->mbcState.mmm01.currentBank0;
+		break;
+	case GB_UNL_BBD:
+	case GB_UNL_HITEK:
+		state->memory.bbd.dataSwapMode = memory->mbcState.bbd.dataSwapMode;
+		state->memory.bbd.bankSwapMode = memory->mbcState.bbd.bankSwapMode;
 		break;
 	default:
 		break;
@@ -782,10 +765,14 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	LOAD_32LE(when, 0, &state->memory.dmaNext);
 	if (memory->dmaRemaining) {
 		mTimingSchedule(&gb->timing, &memory->dmaEvent, when);
+	} else {
+		memory->dmaEvent.when = when + mTimingCurrentTime(&gb->timing);
 	}
 	LOAD_32LE(when, 0, &state->memory.hdmaNext);
 	if (memory->hdmaRemaining) {
 		mTimingSchedule(&gb->timing, &memory->hdmaEvent, when);
+	} else {
+		memory->hdmaEvent.when = when + mTimingCurrentTime(&gb->timing);
 	}
 
 	GBSerializedMemoryFlags flags;
@@ -801,8 +788,15 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	case GB_MBC1:
 		memory->mbcState.mbc1.mode = state->memory.mbc1.mode;
 		memory->mbcState.mbc1.multicartStride = state->memory.mbc1.multicartStride;
+		memory->mbcState.mbc1.bankLo = state->memory.mbc1.bankLo;
+		memory->mbcState.mbc1.bankHi = state->memory.mbc1.bankHi;
+		if (!(memory->mbcState.mbc1.bankLo || memory->mbcState.mbc1.bankHi)) {
+			// Backwards compat
+			memory->mbcState.mbc1.bankLo = memory->currentBank & ((1 << memory->mbcState.mbc1.multicartStride) - 1);
+			memory->mbcState.mbc1.bankHi = memory->currentBank >> memory->mbcState.mbc1.multicartStride;
+		}
 		if (memory->mbcState.mbc1.mode) {
-			GBMBCSwitchBank0(gb, memory->currentBank >> memory->mbcState.mbc1.multicartStride);
+			GBMBCSwitchBank0(gb, memory->mbcState.mbc1.bankHi);
 		}
 		break;
 	case GB_MBC3_RTC:
@@ -826,6 +820,11 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		} else {
 			GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);
 		}
+		break;
+	case GB_UNL_BBD:
+	case GB_UNL_HITEK:
+		memory->mbcState.bbd.dataSwapMode = state->memory.bbd.dataSwapMode & 0x7;
+		memory->mbcState.bbd.bankSwapMode = state->memory.bbd.bankSwapMode & 0x7;
 		break;
 	default:
 		break;

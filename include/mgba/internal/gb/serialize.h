@@ -13,8 +13,8 @@ CXX_GUARD_START
 #include <mgba/core/core.h>
 #include <mgba/internal/gb/gb.h>
 
-extern const uint32_t GB_SAVESTATE_MAGIC;
-extern const uint32_t GB_SAVESTATE_VERSION;
+extern MGBA_EXPORT const uint32_t GBSavestateMagic;
+extern MGBA_EXPORT const uint32_t GBSavestateVersion;
 
 mLOG_DECLARE_CATEGORY(GB_STATE);
 
@@ -59,7 +59,9 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  *   | bits 21 - 31: Reserved
  * | 0x0004C - 0x0004F: Next frame
  * | 0x00050 - 0x00053: Next channel 3 fade
- * | 0x00054 - 0x00057: Reserved
+ * | 0x00054 - 0x00057: Sweep state
+ *   | bits 0 - 2: Timesteps
+ *   | bits 3 - 31: Reserved
  * | 0x00058 - 0x0005B: Next event
  * 0x0005C - 0x0006B: Audio channel 2 state
  * | 0x0005C - 0x0005F: Envelepe timing
@@ -87,22 +89,23 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  *   | bits 0 - 3: Current volume
  *   | bits 4 - 5: Is dead?
  *   | bit 6: Is high?
+*    | bit 7: Reserved
  * | 0x000A5: Channel 2 envelope state
  *   | bits 0 - 3: Current volume
  *   | bits 4 - 5: Is dead?
  *   | bit 6: Is high?
-*    | bits 7: Reserved
+*    | bit 7: Reserved
  * | 0x000A6: Channel 4 envelope state
  *   | bits 0 - 3: Current volume
  *   | bits 4 - 5: Is dead?
- *   | bit 6: Is high?
-*    | bits 7: Reserved
+ *   | bits 6 - 7: Current frame (continued)
  * | 0x000A7: Miscellaneous audio flags
- *   | bits 0 - 3: Current frame
- *   | bit 4: Is channel 1 sweep enabled?
- *   | bit 5: Has channel 1 sweep occurred?
- *   | bit 6: Is channel 3's memory readable?
- *   | bit 7: Reserved
+ *   | bit 0: Current frame (continuation)
+ *   | bit 1: Is channel 1 sweep enabled?
+ *   | bit 2: Has channel 1 sweep occurred?
+ *   | bit 3: Is channel 3's memory readable?
+ *   | bit 4: Skip frame
+ *   | bits 5 - 7: Reserved
  * | 0x000A8 - 0x000AB: Left capacitor charge
  * | 0x000AC - 0x000AF: Right capacitor charge
  * | 0x000B0 - 0x000B3: Next sample
@@ -155,7 +158,8 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  *   | bit 4: Is HDMA active?
  *   | bits 5 - 7:  Active RTC register
  * | 0x00196 - 0x00197: Reserved (leave zero)
- * 0x00198 - 0x0025F: Reserved (leave zero)
+ * 0x00198 - 0x0019F: Global cycle counter
+ * 0x001A0 - 0x0025F: Reserved (leave zero)
  * 0x00260 - 0x002FF: OAM
  * 0x00300 - 0x0037F: I/O memory
  * 0x00380 - 0x003FE: HRAM
@@ -202,12 +206,16 @@ DECL_BITS(GBSerializedAudioEnvelope, Length, 0, 7);
 DECL_BITS(GBSerializedAudioEnvelope, NextStep, 7, 3);
 DECL_BITS(GBSerializedAudioEnvelope, Frequency, 10, 11);
 
+
+DECL_BITFIELD(GBSerializedAudioSweep, uint32_t);
+DECL_BITS(GBSerializedAudioSweep, Time, 0, 3);
+
 struct GBSerializedPSGState {
 	struct {
 		GBSerializedAudioEnvelope envelope;
 		int32_t nextFrame;
 		int32_t nextCh3Fade;
-		int32_t reserved;
+		GBSerializedAudioSweep sweep;
 		uint32_t nextEvent;
 	} ch1;
 	struct {
@@ -234,6 +242,8 @@ DECL_BIT(GBSerializedCpuFlags, Condition, 0);
 DECL_BIT(GBSerializedCpuFlags, IrqPending, 1);
 DECL_BIT(GBSerializedCpuFlags, DoubleSpeed, 2);
 DECL_BIT(GBSerializedCpuFlags, EiPending, 3);
+DECL_BIT(GBSerializedCpuFlags, Halted, 4);
+DECL_BIT(GBSerializedCpuFlags, Blocked, 5);
 
 DECL_BITFIELD(GBSerializedTimerFlags, uint8_t);
 DECL_BIT(GBSerializedTimerFlags, IrqPending, 0);
@@ -361,6 +371,8 @@ struct GBSerializedState {
 			struct {
 				uint8_t mode;
 				uint8_t multicartStride;
+				uint8_t bankLo;
+				uint8_t bankHi;
 			} mbc1;
 			struct {
 				uint64_t lastLatch;
@@ -380,6 +392,10 @@ struct GBSerializedState {
 				uint8_t bank0;
 			} mmm01;
 			struct {
+				uint8_t dataSwapMode;
+				uint8_t bankSwapMode;
+			} bbd;
+			struct {
 				uint8_t reserved[16];
 			} padding;
 		};
@@ -388,7 +404,9 @@ struct GBSerializedState {
 		uint16_t reserved;
 	} memory;
 
-	uint32_t reserved[50];
+	uint64_t globalCycles;
+
+	uint32_t reserved[48];
 
 	uint8_t oam[GB_SIZE_OAM];
 
@@ -418,6 +436,9 @@ struct GBSerializedState {
 
 bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state);
 void GBSerialize(struct GB* gb, struct GBSerializedState* state);
+
+void GBSGBSerialize(struct GB* gb, struct GBSerializedState* state);
+void GBSGBDeserialize(struct GB* gb, const struct GBSerializedState* state);
 
 CXX_GUARD_END
 

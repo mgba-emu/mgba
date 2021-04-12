@@ -36,7 +36,6 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	setWindowFlags(windowFlags() & ~Qt::WindowFullscreenButtonHint);
 	setMinimumSize(300, 300);
 
-	const mInputMap* map = controller->map();
 	controller->stealFocus(this);
 
 	m_keyDU = new KeyEditor(this);
@@ -140,7 +139,7 @@ void GBAKeyEditor::setAll() {
 	(*m_currentKey)->setFocus();
 }
 
-void GBAKeyEditor::resizeEvent(QResizeEvent* event) {
+void GBAKeyEditor::resizeEvent(QResizeEvent*) {
 	setLocation(m_buttons, 0.5, 0.2);
 	setLocation(m_keyDU, DPAD_CENTER_X, DPAD_CENTER_Y - DPAD_HEIGHT);
 	setLocation(m_keyDD, DPAD_CENTER_X, DPAD_CENTER_Y + DPAD_HEIGHT);
@@ -162,7 +161,7 @@ void GBAKeyEditor::resizeEvent(QResizeEvent* event) {
 	}
 }
 
-void GBAKeyEditor::paintEvent(QPaintEvent* event) {
+void GBAKeyEditor::paintEvent(QPaintEvent*) {
 	QPainter painter(this);
 	painter.scale(width() / 480.0, height() / 480.0);
 	painter.drawPicture(0, 0, m_background);
@@ -216,6 +215,7 @@ void GBAKeyEditor::setNext() {
 void GBAKeyEditor::save() {
 #ifdef BUILD_SDL
 	m_controller->unbindAllAxes(m_type);
+	m_controller->unbindAllHats(m_type);
 #endif
 
 	bindKey(m_keyDU, GBA_KEY_UP);

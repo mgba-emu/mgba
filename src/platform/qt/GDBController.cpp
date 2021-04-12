@@ -11,7 +11,7 @@ using namespace QGBA;
 
 GDBController::GDBController(QObject* parent)
 	: DebuggerController(&m_gdbStub.d, parent)
-	, m_bindAddress({ IPV4, 0 })
+	, m_bindAddress({ IPV4, {0} })
 {
 	GDBStubCreate(&m_gdbStub);
 }
@@ -28,9 +28,8 @@ void GDBController::setPort(ushort port) {
 	m_port = port;
 }
 
-void GDBController::setBindAddress(uint32_t bindAddress) {
-	m_bindAddress.version = IPV4;
-	m_bindAddress.ipv4 = htonl(bindAddress);
+void GDBController::setBindAddress(const Address& address) {
+	m_bindAddress = address;
 }
 
 void GDBController::listen() {

@@ -387,7 +387,7 @@
 		} \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 		tileData = carryData; \
-		for (x = 0; x < 8 && length; ++x, --length) { \
+		for (; x < 8 && length; ++x, --length) { \
 			if (!mosaicWait) { \
 				if (UNLIKELY(charBase >= 0x10000)) { \
 					carryData = 0; \
@@ -419,6 +419,7 @@
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			++pixel; \
 		} \
+		x = 0; \
 	}
 
 #define DRAW_BACKGROUND_MODE_0(BPP, BLEND, OBJWIN) \

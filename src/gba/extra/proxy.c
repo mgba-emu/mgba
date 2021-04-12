@@ -43,6 +43,9 @@ void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct 
 	renderer->d.disableBG[2] = false;
 	renderer->d.disableBG[3] = false;
 	renderer->d.disableOBJ = false;
+	renderer->d.disableWIN[0] = false;
+	renderer->d.disableWIN[1] = false;
+	renderer->d.disableOBJWIN = false;
 
 	renderer->d.highlightBG[0] = false;
 	renderer->d.highlightBG[1] = false;
@@ -52,7 +55,7 @@ void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct 
 	for (i = 0; i < 128; ++i) {
 		renderer->d.highlightOBJ[i] = false;
 	}
-	renderer->d.highlightColor = 0xFFFFFF;
+	renderer->d.highlightColor = M_COLOR_WHITE;
 	renderer->d.highlightAmount = 0;
 
 	renderer->logger->context = renderer;
@@ -83,6 +86,24 @@ static void _reset(struct GBAVideoProxyRenderer* proxyRenderer) {
 	memcpy(proxyRenderer->logger->vram, proxyRenderer->d.vram, SIZE_VRAM);
 
 	mVideoLoggerRendererReset(proxyRenderer->logger);
+}
+
+static void _copyExtraState(struct GBAVideoProxyRenderer* proxyRenderer) {
+	proxyRenderer->backend->disableBG[0] = proxyRenderer->d.disableBG[0];
+	proxyRenderer->backend->disableBG[1] = proxyRenderer->d.disableBG[1];
+	proxyRenderer->backend->disableBG[2] = proxyRenderer->d.disableBG[2];
+	proxyRenderer->backend->disableBG[3] = proxyRenderer->d.disableBG[3];
+	proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
+	proxyRenderer->backend->disableWIN[0] = proxyRenderer->d.disableWIN[0];
+	proxyRenderer->backend->disableWIN[1] = proxyRenderer->d.disableWIN[1];
+	proxyRenderer->backend->disableOBJWIN = proxyRenderer->d.disableOBJWIN;
+	proxyRenderer->backend->highlightBG[0] = proxyRenderer->d.highlightBG[0];
+	proxyRenderer->backend->highlightBG[1] = proxyRenderer->d.highlightBG[1];
+	proxyRenderer->backend->highlightBG[2] = proxyRenderer->d.highlightBG[2];
+	proxyRenderer->backend->highlightBG[3] = proxyRenderer->d.highlightBG[3];
+	memcpy(proxyRenderer->backend->highlightOBJ, proxyRenderer->d.highlightOBJ, sizeof(proxyRenderer->backend->highlightOBJ));
+	proxyRenderer->backend->highlightAmount = proxyRenderer->d.highlightAmount;
+	proxyRenderer->backend->highlightColor = proxyRenderer->d.highlightColor;
 }
 
 void GBAVideoProxyRendererShim(struct GBAVideo* video, struct GBAVideoProxyRenderer* renderer) {
@@ -143,8 +164,8 @@ void GBAVideoProxyRendererDeinit(struct GBAVideoRenderer* renderer) {
 	if (!proxyRenderer->logger->block) {
 		proxyRenderer->backend->deinit(proxyRenderer->backend);
 	} else {
-		proxyRenderer->logger->postEvent(proxyRenderer->logger, LOGGER_EVENT_DEINIT);
 		mVideoLoggerRendererFlush(proxyRenderer->logger);
+		proxyRenderer->logger->postEvent(proxyRenderer->logger, LOGGER_EVENT_DEINIT);
 	}
 
 	mVideoLoggerRendererDeinit(proxyRenderer->logger);
@@ -197,17 +218,7 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		}
 		break;
 	case DIRTY_SCANLINE:
-		proxyRenderer->backend->disableBG[0] = proxyRenderer->d.disableBG[0];
-		proxyRenderer->backend->disableBG[1] = proxyRenderer->d.disableBG[1];
-		proxyRenderer->backend->disableBG[2] = proxyRenderer->d.disableBG[2];
-		proxyRenderer->backend->disableBG[3] = proxyRenderer->d.disableBG[3];
-		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
-		proxyRenderer->backend->highlightBG[0] = proxyRenderer->d.highlightBG[0];
-		proxyRenderer->backend->highlightBG[1] = proxyRenderer->d.highlightBG[1];
-		proxyRenderer->backend->highlightBG[2] = proxyRenderer->d.highlightBG[2];
-		proxyRenderer->backend->highlightBG[3] = proxyRenderer->d.highlightBG[3];
-		memcpy(proxyRenderer->backend->highlightOBJ, proxyRenderer->d.highlightOBJ, sizeof(proxyRenderer->backend->highlightOBJ));
-		proxyRenderer->backend->highlightAmount = proxyRenderer->d.highlightAmount;
+		_copyExtraState(proxyRenderer);
 		if (item->address < GBA_VIDEO_VERTICAL_PIXELS) {
 			proxyRenderer->backend->drawScanline(proxyRenderer->backend, item->address);
 		}
@@ -297,15 +308,7 @@ void GBAVideoProxyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t o
 void GBAVideoProxyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
 	if (!proxyRenderer->logger->block) {
-		proxyRenderer->backend->disableBG[0] = proxyRenderer->d.disableBG[0];
-		proxyRenderer->backend->disableBG[1] = proxyRenderer->d.disableBG[1];
-		proxyRenderer->backend->disableBG[2] = proxyRenderer->d.disableBG[2];
-		proxyRenderer->backend->disableBG[3] = proxyRenderer->d.disableBG[3];
-		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
-		proxyRenderer->backend->highlightBG[0] = proxyRenderer->d.highlightBG[0];
-		proxyRenderer->backend->highlightBG[1] = proxyRenderer->d.highlightBG[1];
-		proxyRenderer->backend->highlightBG[2] = proxyRenderer->d.highlightBG[2];
-		proxyRenderer->backend->highlightBG[3] = proxyRenderer->d.highlightBG[3];
+		_copyExtraState(proxyRenderer);
 		proxyRenderer->backend->drawScanline(proxyRenderer->backend, y);
 	}
 	mVideoLoggerRendererDrawScanline(proxyRenderer->logger, y);
@@ -326,10 +329,8 @@ void GBAVideoProxyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 static void GBAVideoProxyRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels) {
 	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
 	if (proxyRenderer->logger->block && proxyRenderer->logger->wait) {
-		// Insert an extra item into the queue to make sure it gets flushed
-		mVideoLoggerRendererFlush(proxyRenderer->logger);
+		proxyRenderer->logger->wait(proxyRenderer->logger);
 		proxyRenderer->logger->postEvent(proxyRenderer->logger, LOGGER_EVENT_GET_PIXELS);
-		mVideoLoggerRendererFlush(proxyRenderer->logger);
 		*pixels = proxyRenderer->logger->pixelBuffer;
 		*stride = proxyRenderer->logger->pixelStride;
 	} else {

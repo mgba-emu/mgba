@@ -221,19 +221,11 @@ static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h)
 	unsigned drawW = w;
 	unsigned drawH = h;
 	if (v->lockAspectRatio) {
-		if (w * v->height > h * v->width) {
-			drawW = h * v->width / v->height;
-		} else if (w * v->height < h * v->width) {
-			drawH = w * v->height / v->width;
-		}
+		lockAspectRatioUInt(v->width, v->height, &drawW, &drawH);
 	}
 	if (v->lockIntegerScaling) {
-		if (drawW >= v->width) {
-			drawW -= drawW % v->width;
-		}
-		if (drawH >= v->height) {
-			drawH -= drawH % v->height;
-		}
+		lockIntegerRatioUInt(v->width, &drawW);
+		lockIntegerRatioUInt(v->height, &drawH);
 	}
 	size_t n;
 	for (n = 0; n < context->nShaders; ++n) {
@@ -921,7 +913,7 @@ bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 			success = false;
 		}
 		if (success) {
-			struct mGLES2Shader* shaderBlock = malloc(sizeof(struct mGLES2Shader) * inShaders);
+			struct mGLES2Shader* shaderBlock = calloc(inShaders, sizeof(struct mGLES2Shader));
 			int n;
 			for (n = 0; n < inShaders; ++n) {
 				char passName[12];
@@ -980,7 +972,7 @@ bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 					}
 				}
 				u = mGLES2UniformListSize(&uniformVector);
-				struct mGLES2Uniform* uniformBlock = malloc(sizeof(*uniformBlock) * u);
+				struct mGLES2Uniform* uniformBlock = calloc(u, sizeof(*uniformBlock));
 				memcpy(uniformBlock, mGLES2UniformListGetPointer(&uniformVector, 0), sizeof(*uniformBlock) * u);
 				mGLES2UniformListDeinit(&uniformVector);
 

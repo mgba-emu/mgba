@@ -8,7 +8,6 @@
 #include "CoreController.h"
 #include "GBAApp.h"
 
-#include <QFontDatabase>
 #include <QHBoxLayout>
 
 #include <mgba/core/interface.h>
@@ -32,7 +31,7 @@ AssetTile::AssetTile(QWidget* parent)
 
 	connect(m_ui.preview, &Swatch::indexPressed, this, &AssetTile::selectColor);
 
-	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+	const QFont font = GBAApp::app()->monospaceFont();
 
 	m_ui.tileId->setFont(font);
 	m_ui.paletteId->setFont(font);
@@ -50,14 +49,14 @@ void AssetTile::setController(std::shared_ptr<CoreController> controller) {
 	m_cacheSet = controller->graphicCaches();
 	switch (controller->platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		m_addressWidth = 8;
 		m_addressBase = BASE_VRAM;
 		m_boundaryBase = BASE_VRAM | 0x10000;
 		break;
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		m_addressWidth = 4;
 		m_addressBase = GB_BASE_VRAM;
 		m_boundaryBase = GB_BASE_VRAM;
@@ -130,8 +129,6 @@ void AssetTile::setFlip(bool h, bool v) {
 void AssetTile::selectColor(int index) {
 	const color_t* data;
 	mTileCache* tileCache = m_tileCaches[m_index >= m_boundary];
-	unsigned bpp = 8 << tileCache->bpp;
-	int paletteId = m_paletteId;
 	data = mTileCacheGetTile(tileCache, m_index >= m_boundary ? m_index - m_boundary : m_index, m_paletteId);
 	color_t color = data[index];
 	m_ui.color->setColor(0, color);

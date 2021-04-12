@@ -25,7 +25,7 @@
         </sizepolicy>
        </property>
        <property name="suffix">
-        <string>×</string>
+        <string notr="true">×</string>
        </property>
        <property name="minimum">
         <number>1</number>

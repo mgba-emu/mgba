@@ -113,6 +113,8 @@ static unsigned retroAudioBuffOccupancy;
 static bool retroAudioBuffUnderrun;
 static unsigned retroAudioLatency;
 static bool updateAudioLatency;
+static bool deferredSetup = false;
+static bool envVarsUpdated;
 static int32_t tiltX = 0;
 static int32_t tiltY = 0;
 static int32_t gyroZ = 0;
@@ -306,14 +308,14 @@ static void _initColorCorrection(void) {
 				 * (Note: This is somewhat clumsy due to the
 				 *  M_CORE_GBA & M_CORE_GB defines... */
 #ifdef M_CORE_GBA
-				if (core->platform(core) == PLATFORM_GBA) {
+				if (core->platform(core) == mPLATFORM_GBA) {
 					model = GB_MODEL_AGB;
 				}
 #endif
 
 #ifdef M_CORE_GB
 				if (model != GB_MODEL_AGB) {
-					if (core->platform(core) == PLATFORM_GB) {
+					if (core->platform(core) == mPLATFORM_GB) {
 
 						const char* modelName = mCoreConfigGetValue(&core->config, "gb.model");
 						struct GB* gb = core->board;
@@ -1129,6 +1131,18 @@ static void _reloadSettings(void) {
 	mCoreLoadConfig(core);
 }
 
+static void _doDeferredSetup(void) {
+	// Libretro API doesn't let you know when it's done copying data into the save buffers.
+	// On the off-hand chance that a core actually expects its buffers to be populated when
+	// you actually first get them, you're out of luck without workarounds. Yup, seriously.
+	// Here's that workaround, but really the API needs to be thrown out and rewritten.
+	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
+	if (!core->loadSave(core, save)) {
+		save->close(save);
+	}
+	deferredSetup = false;
+}
+
 unsigned retro_api_version(void) {
 	return RETRO_API_VERSION;
 }
@@ -1174,7 +1188,7 @@ void retro_get_system_info(struct retro_system_info* info) {
 #ifndef GIT_VERSION
 #define GIT_VERSION ""
 #endif
-	info->library_version = "0.8.4" GIT_VERSION;
+	info->library_version = GIT_VERSION;
 	info->library_name = "mGBA";
 	info->block_extract = false;
 }
@@ -1185,7 +1199,7 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
 	info->geometry.base_width = width;
 	info->geometry.base_height = height;
 #ifdef M_CORE_GB
-	if (core->platform(core) == PLATFORM_GB) {
+	if (core->platform(core) == mPLATFORM_GB) {
 		info->geometry.max_width = VIDEO_WIDTH_MAX;
 		info->geometry.max_height = VIDEO_HEIGHT_MAX;
 	} else
@@ -1354,6 +1368,9 @@ int16_t cycleturbo(bool x/*turbo A*/, bool y/*turbo B*/, bool l2/*turbo L*/, boo
 
 
 void retro_run(void) {
+	if (deferredSetup) {
+		_doDeferredSetup();
+	}
 	uint16_t keys;
 	bool skipFrame = false;
 
@@ -1458,12 +1475,12 @@ void retro_run(void) {
 
 				switch (core->platform(core)) {
 #ifdef M_CORE_GBA
-				case PLATFORM_GBA:
+				case mPLATFORM_GBA:
 					((struct GBA*) core->board)->video.frameskipCounter = 1;
 					break;
 #endif
 #ifdef M_CORE_GB
-				case PLATFORM_GB:
+				case mPLATFORM_GB:
 					((struct GB*) core->board)->video.frameskipCounter = 1;
 					break;
 #endif
@@ -1499,12 +1516,12 @@ void retro_run(void) {
 	if (frameskipType == 3) {
 		switch (core->platform(core)) {
 	#ifdef M_CORE_GBA
-		case PLATFORM_GBA:
+		case mPLATFORM_GBA:
 			skipFrame = ((struct GBA*) core->board)->video.frameskipCounter > 0;
 			break;
 	#endif
 	#ifdef M_CORE_GB
-		case PLATFORM_GB:
+		case mPLATFORM_GB:
 			skipFrame = ((struct GB*) core->board)->video.frameskipCounter > 0;
 			break;
 	#endif
@@ -1548,7 +1565,7 @@ void retro_run(void) {
 
 static void _setupMaps(struct mCore* core) {
 #ifdef M_CORE_GBA
-	if (core->platform(core) == PLATFORM_GBA) {
+	if (core->platform(core) == mPLATFORM_GBA) {
 		struct GBA* gba = core->board;
 		struct retro_memory_descriptor descs[11];
 		struct retro_memory_map mmaps;
@@ -1629,7 +1646,7 @@ static void _setupMaps(struct mCore* core) {
 	}
 #endif
 #ifdef M_CORE_GB
-	if (core->platform(core) == PLATFORM_GB) {
+	if (core->platform(core) == mPLATFORM_GB) {
 		struct GB* gb = core->board;
 		struct retro_memory_descriptor descs[11];
 		struct retro_memory_map mmaps;
@@ -1824,11 +1841,10 @@ bool retro_load_game(const struct retro_game_info* game) {
 
 	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	memset(savedata, 0xFF, SIZE_CART_FLASH1M);
-	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
 
 	_reloadSettings();
 	core->loadROM(core, rom);
-	core->loadSave(core, save);
+	deferredSetup = true;
 
 	const char* sysDir = 0;
 	const char* biosName = 0;
@@ -1836,22 +1852,23 @@ bool retro_load_game(const struct retro_game_info* game) {
 	environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir);
 
 #ifdef M_CORE_GBA
-	if (core->platform(core) == PLATFORM_GBA) {
+	if (core->platform(core) == mPLATFORM_GBA) {
 		core->setPeripheral(core, mPERIPH_GBA_LUMINANCE, &lux);
 		biosName = "gba_bios.bin";
 	}
 #endif
 
 #ifdef M_CORE_GB
-	if (core->platform(core) == PLATFORM_GB) {
+	if (core->platform(core) == mPLATFORM_GB) {
 		memset(&cam, 0, sizeof(cam));
 		cam.height = GBCAM_HEIGHT;
 		cam.width = GBCAM_WIDTH;
 		cam.caps = 1 << RETRO_CAMERA_BUFFER_RAW_FRAMEBUFFER;
 		cam.frame_raw_framebuffer = _updateCamera;
-		core->setPeripheral(core, mPERIPH_IMAGE_SOURCE, &imageSource);
+		if (environCallback(RETRO_ENVIRONMENT_GET_CAMERA_INTERFACE, &cam)) {
+			core->setPeripheral(core, mPERIPH_IMAGE_SOURCE, &imageSource);
+		}
 
-		environCallback(RETRO_ENVIRONMENT_GET_CAMERA_INTERFACE, &cam);
 		const char* modelName = mCoreConfigGetValue(&core->config, "gb.model");
 		struct GB* gb = core->board;
 
@@ -1908,6 +1925,9 @@ void retro_unload_game(void) {
 }
 
 size_t retro_serialize_size(void) {
+	if (deferredSetup) {
+		_doDeferredSetup();
+	}
 	struct VFile* vfm = VFileMemChunk(NULL, 0);
 	mCoreSaveStateNamed(core, vfm, SAVESTATE_SAVEDATA | SAVESTATE_RTC);
 	size_t size = vfm->size(vfm);
@@ -1916,6 +1936,9 @@ size_t retro_serialize_size(void) {
 }
 
 bool retro_serialize(void* data, size_t size) {
+	if (deferredSetup) {
+		_doDeferredSetup();
+	}
 	struct VFile* vfm = VFileMemChunk(NULL, 0);
 	mCoreSaveStateNamed(core, vfm, SAVESTATE_SAVEDATA | SAVESTATE_RTC);
 	if ((ssize_t) size > vfm->size(vfm)) {
@@ -1931,6 +1954,9 @@ bool retro_serialize(void* data, size_t size) {
 }
 
 bool retro_unserialize(const void* data, size_t size) {
+	if (deferredSetup) {
+		_doDeferredSetup();
+	}
 	struct VFile* vfm = VFileFromConstMemory(data, size);
 	bool success = mCoreLoadStateNamed(core, vfm, SAVESTATE_RTC);
 	vfm->close(vfm);
@@ -1954,7 +1980,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code) {
 	}
 // Convert the super wonky unportable libretro format to something normal
 #ifdef M_CORE_GBA
-	if (core->platform(core) == PLATFORM_GBA) {
+	if (core->platform(core) == mPLATFORM_GBA) {
 		char realCode[] = "XXXXXXXX XXXXXXXX";
 		size_t len = strlen(code) + 1; // Include null terminator
 		size_t i, pos;
@@ -1975,7 +2001,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code) {
 	}
 #endif
 #ifdef M_CORE_GB
-	if (core->platform(core) == PLATFORM_GB) {
+	if (core->platform(core) == mPLATFORM_GB) {
 		char realCode[] = "XXX-XXX-XXX";
 		size_t len = strlen(code) + 1; // Include null terminator
 		size_t i, pos;
@@ -1985,6 +2011,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code) {
 			} else {
 				realCode[pos] = code[i];
 			}
+
 			if (pos == 11 || !realCode[pos]) {
 				realCode[pos] = '\0';
 				mCheatAddLine(cheatSet, realCode, 0);
@@ -2015,51 +2042,99 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info* i
 }
 
 void* retro_get_memory_data(unsigned id) {
-	struct GBA* gba = core->board;
-	struct GB* gb = core->board;
-
-	if (id == RETRO_MEMORY_SAVE_RAM) {
+	switch (id) {
+	case RETRO_MEMORY_SAVE_RAM:
 		return savedata;
+	case RETRO_MEMORY_RTC:
+		switch (core->platform(core)) {
+#ifdef M_CORE_GB
+		case mPLATFORM_GB:
+			switch (((struct GB*) core->board)->memory.mbcType) {
+			case GB_MBC3_RTC:
+				return &((uint8_t*) savedata)[((struct GB*) core->board)->sramSize];
+			default:
+				break;
+			}
+#endif
+		default:
+			break;
+		}
+	case RETRO_MEMORY_SYSTEM_RAM:
+		switch (core->platform(core)) {
+#ifdef M_CORE_GB
+		case mPLATFORM_GB:
+			return ((struct GB*)core->board)->memory.wram;
+#endif
+#ifdef M_CORE_GBA
+		case mPLATFORM_GBA:
+			return ((struct GBA*)core->board)->memory.wram;
+#endif
+		default:
+			break;
+		}
+		break;
+	case RETRO_MEMORY_VIDEO_RAM:
+		switch (core->platform(core)) {
+#ifdef M_CORE_GB
+		case mPLATFORM_GB:
+			return ((struct GB*)core->board)->video.renderer->vram;
+#endif
+#ifdef M_CORE_GBA
+		case mPLATFORM_GBA:
+			return ((struct GBA*)core->board)->video.renderer->vram;
+#endif
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
 	}
-	if (id == RETRO_MEMORY_SYSTEM_RAM) {
-		if (core->platform(core) == PLATFORM_GBA)
-			return gba->memory.wram;
-		if (core->platform(core) == PLATFORM_GB)
-			return gb->memory.wram;
-	}
-	if (id == RETRO_MEMORY_VIDEO_RAM) {
-		if (core->platform(core) == PLATFORM_GBA)
-			return gba->video.renderer->vram;
-		if (core->platform(core) == PLATFORM_GB)
-			return gb->video.renderer->vram;
-	}
-
-	return 0;
+	return NULL;
 }
 
 size_t retro_get_memory_size(unsigned id) {
-	if (id == RETRO_MEMORY_SAVE_RAM) {
+	switch (id) {
+	case RETRO_MEMORY_SAVE_RAM:
+		switch (core->platform(core)) {
 #ifdef M_CORE_GBA
-		if (core->platform(core) == PLATFORM_GBA) {
+		case mPLATFORM_GBA:
 			switch (((struct GBA*) core->board)->memory.savedata.type) {
 			case SAVEDATA_AUTODETECT:
 				return SIZE_CART_FLASH1M;
 			default:
 				return GBASavedataSize(&((struct GBA*) core->board)->memory.savedata);
 			}
-		}
 #endif
 #ifdef M_CORE_GB
-		if (core->platform(core) == PLATFORM_GB) {
+		case mPLATFORM_GB:
 			return ((struct GB*) core->board)->sramSize;
-		}
 #endif
-	}
-	if (id == RETRO_MEMORY_SYSTEM_RAM) {
+		default:
+			break;
+		}
+		break;
+	case RETRO_MEMORY_RTC:
+		switch (core->platform(core)) {
+#ifdef M_CORE_GB
+		case mPLATFORM_GB:
+			switch (((struct GB*) core->board)->memory.mbcType) {
+			case GB_MBC3_RTC:
+				return sizeof(struct GBMBCRTCSaveBuffer);
+			default:
+				break;
+			}
+#endif
+		default:
+			break;
+		}
+		break;
+	case RETRO_MEMORY_SYSTEM_RAM:
 		return SIZE_WORKING_RAM;
-	}
-	if (id == RETRO_MEMORY_VIDEO_RAM) {
+	case RETRO_MEMORY_VIDEO_RAM:
 		return SIZE_VRAM;
+	default:
+		break;
 	}
 	return 0;
 }

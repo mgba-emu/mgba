@@ -58,7 +58,7 @@ static void* _vf7zMap(struct VFile* vf, size_t size, int flags);
 static void _vf7zUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vf7zTruncate(struct VFile* vf, size_t size);
 static ssize_t _vf7zSize(struct VFile* vf);
-static bool _vf7zSync(struct VFile* vf, const void* buffer, size_t size);
+static bool _vf7zSync(struct VFile* vf, void* buffer, size_t size);
 
 static bool _vd7zClose(struct VDir* vd);
 static void _vd7zRewind(struct VDir* vd);
@@ -327,7 +327,7 @@ bool _vd7zDeleteFile(struct VDir* vd, const char* path) {
 	return false;
 }
 
-bool _vf7zSync(struct VFile* vf, const void* memory, size_t size) {
+bool _vf7zSync(struct VFile* vf, void* memory, size_t size) {
 	UNUSED(vf);
 	UNUSED(memory);
 	UNUSED(size);

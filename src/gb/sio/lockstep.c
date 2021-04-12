@@ -90,7 +90,7 @@ static void _finishTransfer(struct GBSIOLockstepNode* node) {
 	}
 	struct GBSIO* sio = node->d.p;
 	sio->pendingSB = node->p->pendingSB[!node->id];
-	if (GBRegisterSCIsEnable(sio->p->memory.io[REG_SC])) {
+	if (GBRegisterSCIsEnable(sio->p->memory.io[GB_REG_SC])) {
 		sio->remainingBits = 8;
 		mTimingDeschedule(&sio->p->timing, &sio->event);
 		mTimingSchedule(&sio->p->timing, &sio->event, 0);
@@ -128,7 +128,7 @@ static int32_t _masterUpdate(struct GBSIOLockstepNode* node) {
 	case TRANSFER_FINISHING:
 		// Finish the transfer
 		// We need to make sure the other GBs catch up so they don't get behind
-		node->nextEvent += node->d.p->period - 8; // Split the cycles to avoid waiting too long
+		node->nextEvent += node->d.p->period * (2 - node->d.p->p->doubleSpeed) - 8; // Split the cycles to avoid waiting too long
 #ifndef NDEBUG
 		ATOMIC_ADD(node->p->d.transferId, 1);
 #endif
@@ -208,7 +208,7 @@ static void _GBSIOLockstepNodeProcessEvents(struct mTiming* timing, void* user, 
 	struct GBSIOLockstepNode* node = user;
 	mLockstepLock(&node->p->d);
 	if (node->p->d.attached < 2) {
-		mTimingSchedule(timing, &node->event, (GBSIOCyclesPerTransfer[0] >> 1) - cyclesLate);
+		mTimingSchedule(timing, &node->event, (GBSIOCyclesPerTransfer[0] >> 1) * (2 - node->d.p->p->doubleSpeed) - cyclesLate);
 		mLockstepUnlock(&node->p->d);
 		return;
 	}

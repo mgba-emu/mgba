@@ -13,6 +13,97 @@
 
 using namespace QGBA;
 
+IntValidator::IntValidator(bool isSigned, QObject* parent)
+	: QValidator(parent)
+	, m_signed(isSigned)
+{
+}
+
+QValidator::State IntValidator::validate(QString& input, int&) const {
+	if (input.isEmpty()) {
+		return QValidator::Intermediate;
+	}
+	if (input.size() == 1 && input[0] == '-') {
+		if (m_signed) {
+			return QValidator::Intermediate;
+		} else {
+			return QValidator::Invalid;
+		}
+	}
+	if (input[0].isSpace()) {
+		return QValidator::Invalid;
+	}
+	if (input[input.size() - 1].isSpace()) {
+		return QValidator::Invalid;
+	}
+	if (input.size() > 1 && input[0] == '0') {
+		return QValidator::Invalid;
+	}
+
+	bool ok = false;
+	qlonglong val = locale().toLongLong(input, &ok);
+	if (!ok) {
+		return QValidator::Invalid;
+	}
+
+	qlonglong hardmax;
+	qlonglong hardmin;
+	qlonglong max;
+	qlonglong min;
+
+	if (m_signed) {
+		switch (m_width) {
+		case 1:
+			hardmax = 999LL;
+			hardmin = -999LL;
+			max = 0x7FLL;
+			min = -0x80LL;
+			break;
+		case 2:
+			hardmax = 99999LL;
+			hardmin = -99999LL;
+			max = 0x7FFFLL;
+			min = -0x8000LL;
+			break;
+		case 4:
+			hardmax = 9999999999LL;
+			hardmin = -9999999999LL;
+			max = 0x7FFFFFFFLL;
+			min = -0x80000000LL;
+			break;
+		default:
+			return QValidator::Invalid;
+		}
+	} else {
+		hardmin = 0;
+		min = 0;
+
+		switch (m_width) {
+		case 1:
+			hardmax = 999LL;
+			max = 0xFFLL;
+			break;
+		case 2:
+			hardmax = 99999LL;
+			max = 0xFFFFLL;
+			break;
+		case 4:
+			hardmax = 9999999999LL;
+			max = 0xFFFFFFFFLL;
+			break;
+		default:
+			return QValidator::Invalid;
+		}
+	}
+	if (val < hardmin || val > hardmax) {
+		return QValidator::Invalid;
+	}
+	if (val < min || val > max) {
+		return QValidator::Intermediate;
+	}
+	return QValidator::Acceptable;
+}
+
 MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
@@ -20,6 +111,9 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 	m_ui.setupUi(this);
 
 	m_ui.hexfield->setController(controller);
+
+	m_ui.sintVal->setValidator(&m_sintValidator);
+	m_ui.uintVal->setValidator(&m_uintValidator);
 
 	mCore* core = m_controller->thread()->core;
 	const mCoreMemoryBlock* info;
@@ -39,9 +133,21 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 		}
 	}
 
-	connect(m_ui.width8, &QAbstractButton::clicked, [this]() { m_ui.hexfield->setAlignment(1); });
-	connect(m_ui.width16, &QAbstractButton::clicked, [this]() { m_ui.hexfield->setAlignment(2); });
-	connect(m_ui.width32, &QAbstractButton::clicked, [this]() { m_ui.hexfield->setAlignment(4); });
+	connect(m_ui.width8, &QAbstractButton::clicked, [this]() {
+		m_ui.hexfield->setAlignment(1);
+		m_sintValidator.setWidth(1);
+		m_uintValidator.setWidth(1);
+	});
+	connect(m_ui.width16, &QAbstractButton::clicked, [this]() {
+		m_ui.hexfield->setAlignment(2);
+		m_sintValidator.setWidth(2);
+		m_uintValidator.setWidth(2);
+	});
+	connect(m_ui.width32, &QAbstractButton::clicked, [this]() {
+		m_ui.hexfield->setAlignment(4);
+		m_sintValidator.setWidth(4);
+		m_uintValidator.setWidth(4);
+	});
 	connect(m_ui.setAddress, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
 	        this, static_cast<void (MemoryView::*)(uint32_t)>(&MemoryView::jumpToAddress));
 	connect(m_ui.hexfield, &MemoryModel::selectionChanged, this, &MemoryView::updateSelection);
@@ -60,12 +166,50 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 	connect(m_ui.load, &QAbstractButton::clicked, m_ui.hexfield, &MemoryModel::load);
 
 	connect(m_ui.loadTBL, &QAbstractButton::clicked, m_ui.hexfield, &MemoryModel::loadTBL);
+
+	connect(m_ui.sintVal, &QLineEdit::returnPressed, this, [this]() {
+		int align = m_ui.hexfield->alignment();
+		mCore* core = m_controller->thread()->core;
+		int32_t value = m_ui.sintVal->text().toInt();
+		switch (align) {
+		case 1:
+			core->rawWrite8(core, m_selection.first, m_ui.segments->value(), value);
+			break;
+		case 2:
+			core->rawWrite16(core, m_selection.first, m_ui.segments->value(), value);
+			break;
+		case 4:
+			core->rawWrite32(core, m_selection.first, m_ui.segments->value(), value);
+			break;
+		}
+		update();
+	});
+	connect(m_ui.uintVal, &QLineEdit::returnPressed, this, [this]() {
+		int align = m_ui.hexfield->alignment();
+		mCore* core = m_controller->thread()->core;
+		uint32_t value = m_ui.uintVal->text().toUInt();
+		switch (align) {
+		case 1:
+			core->rawWrite8(core, m_selection.first, m_ui.segments->value(), value);
+			break;
+		case 2:
+			core->rawWrite16(core, m_selection.first, m_ui.segments->value(), value);
+			break;
+		case 4:
+			core->rawWrite32(core, m_selection.first, m_ui.segments->value(), value);
+			break;
+		}
+		update();
+	});
 }
 
 void MemoryView::setIndex(int index) {
 	mCore* core = m_controller->thread()->core;
 	const mCoreMemoryBlock* blocks;
 	size_t nBlocks = core->listMemoryBlocks(core, &blocks);
+	if (index < 0 || static_cast<size_t>(index) >= nBlocks) {
+		return;
+	}
 	const mCoreMemoryBlock& info = blocks[index];
 
 	m_region = qMakePair(info.start, info.end);
@@ -80,7 +224,11 @@ void MemoryView::setSegment(int segment) {
 	mCore* core = m_controller->thread()->core;
 	const mCoreMemoryBlock* blocks;
 	size_t nBlocks = core->listMemoryBlocks(core, &blocks);
-	const mCoreMemoryBlock& info = blocks[m_ui.regions->currentIndex()];
+	int index = m_ui.regions->currentIndex();
+	if (index < 0 || static_cast<size_t>(index) >= nBlocks) {
+		return;
+	}
+	const mCoreMemoryBlock& info = blocks[index];
 
 	m_ui.hexfield->setSegment(info.maxSegment < segment ? info.maxSegment : segment);
 }
@@ -108,7 +256,7 @@ void MemoryView::updateSelection(uint32_t start, uint32_t end) {
 }
 
 void MemoryView::updateStatus() {
-	int align = m_ui.hexfield->alignment();
+	unsigned align = m_ui.hexfield->alignment();
 	mCore* core = m_controller->thread()->core;
 	QByteArray selection(m_ui.hexfield->serialize());
 	QString text(m_ui.hexfield->decodeText(selection));
@@ -116,7 +264,9 @@ void MemoryView::updateStatus() {
 
 	if (m_selection.first & (align - 1) || m_selection.second - m_selection.first != align) {
 		m_ui.sintVal->clear();
+		m_ui.sintVal->setReadOnly(true);
 		m_ui.uintVal->clear();
+		m_ui.uintVal->setReadOnly(true);
 		return;
 	}
 	union {
@@ -144,6 +294,8 @@ void MemoryView::updateStatus() {
 		m_ui.uintVal->setText(QString::number(value.u32));
 		break;
 	}
+	m_ui.sintVal->setReadOnly(false);
+	m_ui.uintVal->setReadOnly(false);
 }
 
 void MemoryView::saveRange() {

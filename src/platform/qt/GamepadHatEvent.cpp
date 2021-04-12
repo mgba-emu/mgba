@@ -16,7 +16,6 @@ GamepadHatEvent::GamepadHatEvent(QEvent::Type pressType, int hatId, Direction di
 	: QEvent(pressType)
 	, m_hatId(hatId)
 	, m_direction(direction)
-	, m_controller(controller)
 	, m_key(GBA_KEY_NONE)
 {
 	ignore();

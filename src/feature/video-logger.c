@@ -5,7 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/feature/video-logger.h>
 
-#include <mgba/core/core.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
 #include <mgba-util/math.h>
@@ -31,12 +30,12 @@ static const struct mVLDescriptor {
 	struct mCore* (*open)(void);
 } _descriptors[] = {
 #ifdef M_CORE_GBA
-	{ PLATFORM_GBA, GBAVideoLogPlayerCreate },
+	{ mPLATFORM_GBA, GBAVideoLogPlayerCreate },
 #endif
 #ifdef M_CORE_GB
-	{ PLATFORM_GB, GBVideoLogPlayerCreate },
+	{ mPLATFORM_GB, GBVideoLogPlayerCreate },
 #endif
-	{ PLATFORM_NONE, 0 }
+	{ mPLATFORM_NONE, 0 }
 };
 
 enum mVLBlockType {
@@ -120,7 +119,6 @@ static inline size_t _roundUp(size_t value, int shift) {
 void mVideoLoggerRendererCreate(struct mVideoLogger* logger, bool readonly) {
 	if (readonly) {
 		logger->writeData = _writeNull;
-		logger->block = true;
 	} else {
 		logger->writeData = _writeData;
 	}
@@ -135,6 +133,9 @@ void mVideoLoggerRendererCreate(struct mVideoLogger* logger, bool readonly) {
 	logger->unlock = NULL;
 	logger->wait = NULL;
 	logger->wake = NULL;
+
+	logger->block = readonly;
+	logger->waitOnFlush = !readonly;
 }
 
 void mVideoLoggerRendererInit(struct mVideoLogger* logger) {
@@ -183,7 +184,7 @@ void mVideoLoggerRendererWriteVideoRegister(struct mVideoLogger* logger, uint32_
 }
 
 void mVideoLoggerRendererWriteVRAM(struct mVideoLogger* logger, uint32_t address) {
-	int bit = 1 << (address >> 12);
+	int bit = 1U << (address >> 12);
 	if (logger->vramDirtyBitmap[address >> 17] & bit) {
 		return;
 	}
@@ -264,7 +265,7 @@ void mVideoLoggerRendererFlush(struct mVideoLogger* logger) {
 		0xDEADBEEF,
 	};
 	logger->writeData(logger, &dirty, sizeof(dirty));
-	if (logger->wait) {
+	if (logger->waitOnFlush && logger->wait) {
 		logger->wait(logger);
 	}
 }
@@ -297,11 +298,16 @@ bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block) {
 		mVideoLoggerRendererRunInjected(logger);
 		ignorePackets = channel->ignorePackets;
 	}
+	struct mVideoLoggerDirtyInfo buffer = {0};
 	struct mVideoLoggerDirtyInfo item = {0};
-	while (logger->readData(logger, &item, sizeof(item), block)) {
+	while (logger->readData(logger, &buffer, sizeof(buffer), block)) {
+		LOAD_32LE(item.type, 0, &buffer.type);
 		if (ignorePackets & (1 << item.type)) {
 			continue;
 		}
+		LOAD_32LE(item.address, 0, &buffer.address);
+		LOAD_32LE(item.value, 0, &buffer.value);
+		LOAD_32LE(item.value2, 0, &buffer.value2);
 		switch (item.type) {
 		case DIRTY_SCANLINE:
 			if (channel && channel->injectionPoint == LOGGER_INJECTION_FIRST_SCANLINE && !channel->injecting && item.address == 0) {
@@ -607,6 +613,7 @@ bool _readHeader(struct mVideoLogContext* context) {
 
 	LOAD_32LE(context->nChannels, 0, &header.nChannels);
 	if (context->nChannels > mVL_MAX_CHANNELS) {
+		context->nChannels = 0;
 		return false;
 	}
 
@@ -724,7 +731,7 @@ static void _flushBuffer(struct mVideoLogContext* context) {
 	}
 }
 
-void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* context) {
+void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* context, bool closeVF) {
 	if (context->write) {
 		_flushBuffer(context);
 
@@ -750,6 +757,10 @@ void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* contex
 			context->channels[i].inflating = false;
 		}
 #endif
+	}
+
+	if (closeVF && context->backing) {
+		context->backing->close(context->backing);
 	}
 
 	free(context);
@@ -1033,7 +1044,7 @@ static ssize_t mVideoLoggerWriteChannel(struct mVideoLogChannel* channel, const 
 	return read;
 }
 
-struct mCore* mVideoLogCoreFind(struct VFile* vf) {
+static const struct mVLDescriptor* _mVideoLogDescriptor(struct VFile* vf) {
 	if (!vf) {
 		return NULL;
 	}
@@ -1050,10 +1061,29 @@ struct mCore* mVideoLogCoreFind(struct VFile* vf) {
 	LOAD_32LE(platform, 0, &header.platform);
 
 	const struct mVLDescriptor* descriptor;
-	for (descriptor = &_descriptors[0]; descriptor->platform != PLATFORM_NONE; ++descriptor) {
+	for (descriptor = &_descriptors[0]; descriptor->platform != mPLATFORM_NONE; ++descriptor) {
 		if (platform == descriptor->platform) {
 			break;
 		}
+	}
+	if (descriptor->platform == mPLATFORM_NONE) {
+		return NULL;
+	}
+	return descriptor;
+}
+
+enum mPlatform mVideoLogIsCompatible(struct VFile* vf) {
+	const struct mVLDescriptor* descriptor = _mVideoLogDescriptor(vf);
+	if (descriptor) {
+		return descriptor->platform;
+	}
+	return mPLATFORM_NONE;
+}
+
+struct mCore* mVideoLogCoreFind(struct VFile* vf) {
+	const struct mVLDescriptor* descriptor = _mVideoLogDescriptor(vf);
+	if (!descriptor) {
+		return NULL;
 	}
 	struct mCore* core = NULL;
 	if (descriptor->open) {

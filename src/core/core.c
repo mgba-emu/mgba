@@ -33,12 +33,12 @@ static const struct mCoreFilter {
 	enum mPlatform platform;
 } _filters[] = {
 #ifdef M_CORE_GBA
-	{ GBAIsROM, GBACoreCreate, PLATFORM_GBA },
+	{ GBAIsROM, GBACoreCreate, mPLATFORM_GBA },
 #endif
 #ifdef M_CORE_GB
-	{ GBIsROM, GBCoreCreate, PLATFORM_GB },
+	{ GBIsROM, GBCoreCreate, mPLATFORM_GB },
 #endif
-	{ 0, 0, PLATFORM_NONE }
+	{ 0, 0, mPLATFORM_NONE }
 };
 
 struct mCore* mCoreFindVF(struct VFile* vf) {
@@ -62,7 +62,7 @@ struct mCore* mCoreFindVF(struct VFile* vf) {
 
 enum mPlatform mCoreIsCompatible(struct VFile* vf) {
 	if (!vf) {
-		return PLATFORM_NONE;
+		return mPLATFORM_NONE;
 	}
 	const struct mCoreFilter* filter;
 	for (filter = &_filters[0]; filter->filter; ++filter) {
@@ -70,7 +70,20 @@ enum mPlatform mCoreIsCompatible(struct VFile* vf) {
 			return filter->platform;
 		}
 	}
-	return PLATFORM_NONE;
+	return mPLATFORM_NONE;
+}
+
+struct mCore* mCoreCreate(enum mPlatform platform) {
+	const struct mCoreFilter* filter;
+	for (filter = &_filters[0]; filter->filter; ++filter) {
+		if (filter->platform == platform) {
+			break;
+		}
+	}
+	if (filter->open) {
+		return filter->open();
+	}
+	return NULL;
 }
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
@@ -146,25 +159,46 @@ bool mCorePreloadVFCB(struct mCore* core, struct VFile* vf, void (cb)(size_t, si
 	extern uint32_t* romBuffer;
 	extern size_t romBufferSize;
 	if (size > romBufferSize) {
-		size = romBufferSize;
+		if (size - romBufferSize < romBufferSize / 2) {
+			// Some ROM hacks accidentally overflow the size a bit, but since those are broken
+			// on hardware anyway we can just silently truncate them without issue.
+			size = romBufferSize;
+		} else {
+			return false;
+		}
 	}
 	vfm = VFileFromMemory(romBuffer, size);
 #else
 	vfm = VFileMemChunk(NULL, size);
 #endif
 
-	uint8_t buffer[2048];
+	size_t chunkSize;
+#ifdef FIXED_ROM_BUFFER
+	uint8_t* buffer = (uint8_t*) romBuffer;
+	chunkSize = 0x10000;
+#else
+	uint8_t buffer[0x4000];
+	chunkSize = sizeof(buffer);
+#endif
 	ssize_t read;
 	size_t total = 0;
 	vf->seek(vf, 0, SEEK_SET);
-	while ((read = vf->read(vf, buffer, sizeof(buffer))) > 0) {
+	while ((read = vf->read(vf, buffer, chunkSize)) > 0) {
+#ifdef FIXED_ROM_BUFFER
+		buffer += read;
+#else
 		vfm->write(vfm, buffer, read);
+#endif
 		total += read;
 		if (cb) {
 			cb(total, size, context);
 		}
 	}
 	vf->close(vf);
+	if (read < 0) {
+		vfm->close(vfm);
+		return false;
+	}
 	bool ret = core->loadROM(core, vfm);
 	if (!ret) {
 		vfm->close(vfm);
@@ -341,6 +375,21 @@ void mCoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
 }
 
 void* mCoreGetMemoryBlock(struct mCore* core, uint32_t start, size_t* size) {
+	return mCoreGetMemoryBlockMasked(core, start, size, mCORE_MEMORY_MAPPED);
+}
+
+void* mCoreGetMemoryBlockMasked(struct mCore* core, uint32_t start, size_t* size, uint32_t mask) {
+	const struct mCoreMemoryBlock* block = mCoreGetMemoryBlockInfo(core, start);
+	if (!block || !(block->flags & mask)) {
+		return NULL;
+	}
+	uint8_t* out = core->getMemoryBlock(core, block->id, size);
+	out += start - block->start;
+	*size -= start - block->start;
+	return out;
+}
+
+const struct mCoreMemoryBlock* mCoreGetMemoryBlockInfo(struct mCore* core, uint32_t address) {
 	const struct mCoreMemoryBlock* blocks;
 	size_t nBlocks = core->listMemoryBlocks(core, &blocks);
 	size_t i;
@@ -348,16 +397,13 @@ void* mCoreGetMemoryBlock(struct mCore* core, uint32_t start, size_t* size) {
 		if (!(blocks[i].flags & mCORE_MEMORY_MAPPED)) {
 			continue;
 		}
-		if (start < blocks[i].start) {
+		if (address < blocks[i].start) {
 			continue;
 		}
-		if (start >= blocks[i].start + blocks[i].size) {
+		if (address >= blocks[i].start + blocks[i].size) {
 			continue;
 		}
-		uint8_t* out = core->getMemoryBlock(core, blocks[i].id, size);
-		out += start - blocks[i].start;
-		*size -= start - blocks[i].start;
-		return out;
+		return &blocks[i];
 	}
 	return NULL;
 }
@@ -371,7 +417,10 @@ bool mCoreLoadELF(struct mCore* core, struct ELF* elf) {
 	for (i = 0; i < ELFProgramHeadersSize(&ph); ++i) {
 		size_t bsize, esize;
 		Elf32_Phdr* phdr = ELFProgramHeadersGetPointer(&ph, i);
-		void* block = mCoreGetMemoryBlock(core, phdr->p_paddr, &bsize);
+		if (!phdr->p_filesz) {
+			continue;
+		}
+		void* block = mCoreGetMemoryBlockMasked(core, phdr->p_paddr, &bsize, mCORE_MEMORY_WRITE | mCORE_MEMORY_WORM);
 		char* bytes = ELFBytes(elf, &esize);
 		if (block && bsize >= phdr->p_filesz && esize > phdr->p_offset && esize >= phdr->p_filesz + phdr->p_offset) {
 			memcpy(block, &bytes[phdr->p_offset], phdr->p_filesz);

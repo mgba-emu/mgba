@@ -84,12 +84,10 @@ void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned*
 	}
 }
 
-void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
+void GUIFontDrawGlyph(struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
 	color = (color >> 24) | (color << 8);
 	GXTexObj tex;
-	// Grumble grumble, libogc is bad about const-correctness
-	struct GUIFont* ncfont = font;
-	TPL_GetTexture(&ncfont->tdf, 0, &tex);
+	TPL_GetTexture(&font->tdf, 0, &tex);
 	GX_LoadTexObj(&tex, GX_TEXMAP0);
 
 	GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
@@ -120,7 +118,7 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, 
 	GX_End();
 }
 
-void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment align, enum GUIOrientation orient, uint32_t color, enum GUIIcon icon) {
+void GUIFontDrawIcon(struct GUIFont* font, int x, int y, enum GUIAlignment align, enum GUIOrientation orient, uint32_t color, enum GUIIcon icon) {
 	if (icon >= GUI_ICON_MAX) {
 		return;
 	}
@@ -128,8 +126,7 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 	color = (color >> 24) | (color << 8);
 	GXTexObj tex;
 
-	struct GUIFont* ncfont = font;
-	TPL_GetTexture(&ncfont->iconsTdf, 0, &tex);
+	TPL_GetTexture(&font->iconsTdf, 0, &tex);
 	GX_LoadTexObj(&tex, GX_TEXMAP0);
 
 	GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
@@ -198,7 +195,7 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 	GX_End();
 }
 
-void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h, uint32_t color, enum GUIIcon icon) {
+void GUIFontDrawIconSize(struct GUIFont* font, int x, int y, int w, int h, uint32_t color, enum GUIIcon icon) {
 	if (icon >= GUI_ICON_MAX) {
 		return;
 	}
@@ -206,8 +203,7 @@ void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h,
 	color = (color >> 24) | (color << 8);
 	GXTexObj tex;
 
-	struct GUIFont* ncfont = font;
-	TPL_GetTexture(&ncfont->iconsTdf, 0, &tex);
+	TPL_GetTexture(&font->iconsTdf, 0, &tex);
 	GX_LoadTexObj(&tex, GX_TEXMAP0);
 
 	GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);

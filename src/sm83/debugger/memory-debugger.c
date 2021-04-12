@@ -55,7 +55,11 @@ static bool _checkWatchpoints(struct SM83Debugger* debugger, uint16_t address, s
 					return false;
 				}
 			}
-			info->type.wp.oldValue = debugger->originalMemory.load8(debugger->cpu, address);
+			uint8_t oldValue = debugger->originalMemory.load8(debugger->cpu, address);
+			if ((watchpoint->type & WATCHPOINT_CHANGE) && newValue == oldValue) {
+				continue;
+			}
+			info->type.wp.oldValue = oldValue;
 			info->type.wp.newValue = newValue;
 			info->address = address;
 			info->type.wp.watchType = watchpoint->type;

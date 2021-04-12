@@ -82,6 +82,7 @@ static void _gdbStubEntered(struct mDebugger* debugger, enum mDebuggerEntryReaso
 		snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGILL);
 		break;
 	case DEBUGGER_ENTER_ATTACHED:
+	case DEBUGGER_ENTER_STACK:
 		return;
 	}
 	_sendMessage(stub);
@@ -361,11 +362,7 @@ static void _writeRegister(struct GDBStub* stub, const char* message) {
 
 	uint32_t value = _readHex(readAddress, &i);
 
-#ifdef _MSC_VER
-	value = _byteswap_ulong(value);
-#else
 	LOAD_32BE(value, 0, &value);
-#endif
 
 	if (reg <= ARM_PC) {
 		cpu->gprs[reg] = value;

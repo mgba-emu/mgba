@@ -11,30 +11,52 @@ namespace QGBA {
 
 QString niceSizeFormat(size_t filesize) {
 	double size = filesize;
-	QString unit = "B";
+	QString unit = QObject::tr("%1 byte");
 	if (size >= 1024.0) {
 		size /= 1024.0;
-		unit = "kiB";
+		unit = QObject::tr("%1 kiB");
 	}
 	if (size >= 1024.0) {
 		size /= 1024.0;
-		unit = "MiB";
+		unit = QObject::tr("%1 MiB");
 	}
-	return QString("%0 %1").arg(size, 0, 'f', 1).arg(unit);
+	return unit.arg(size, 0, 'f', int(size * 10) % 10 ? 1 : 0);
 }
+
 QString nicePlatformFormat(mPlatform platform) {
 	switch (platform) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		return QObject::tr("GBA");
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		return QObject::tr("GB");
 #endif
 	default:
 		return QObject::tr("?");
 	}
+}
+
+bool convertAddress(const QHostAddress* input, Address* output) {
+	if (input->isNull()) {
+		return false;
+	}
+	Q_IPV6ADDR ipv6;
+	switch (input->protocol()) {
+	case QAbstractSocket::IPv4Protocol:
+		output->version = IPV4;
+		output->ipv4 = input->toIPv4Address();
+		break;
+	case QAbstractSocket::IPv6Protocol:
+		output->version = IPV6;
+		ipv6 = input->toIPv6Address();
+		memcpy(output->ipv6, &ipv6, 16);
+		break;
+	default:
+		return false;
+	}
+	return true;
 }
 
 }

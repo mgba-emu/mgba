@@ -23,17 +23,13 @@ CXX_GUARD_START
 #endif
 
 enum mPlatform {
-	PLATFORM_NONE = -1,
-#ifdef M_CORE_GBA
-	PLATFORM_GBA = 0,
-#endif
-#ifdef M_CORE_GB
-	PLATFORM_GB = 1,
-#endif
+	mPLATFORM_NONE = -1,
+	mPLATFORM_GBA = 0,
+	mPLATFORM_GB = 1,
 };
 
 enum mCoreChecksumType {
-	CHECKSUM_CRC32,
+	mCHECKSUM_CRC32,
 };
 
 struct mCoreConfig;
@@ -70,7 +66,7 @@ struct mCore {
 	void (*loadConfig)(struct mCore*, const struct mCoreConfig*);
 	void (*reloadConfigOption)(struct mCore*, const char* option, const struct mCoreConfig*);
 
-	void (*desiredVideoDimensions)(struct mCore*, unsigned* width, unsigned* height);
+	void (*desiredVideoDimensions)(const struct mCore*, unsigned* width, unsigned* height);
 	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);
 	void (*setVideoGLTex)(struct mCore*, unsigned texid);
 
@@ -190,6 +186,7 @@ void mCoreTakeScreenshot(struct mCore* core);
 
 struct mCore* mCoreFindVF(struct VFile* vf);
 enum mPlatform mCoreIsCompatible(struct VFile* vf);
+struct mCore* mCoreCreate(enum mPlatform);
 
 bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags);
 bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags);
@@ -201,6 +198,8 @@ void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config
 void mCoreSetRTC(struct mCore* core, struct mRTCSource* rtc);
 
 void* mCoreGetMemoryBlock(struct mCore* core, uint32_t start, size_t* size);
+void* mCoreGetMemoryBlockMasked(struct mCore* core, uint32_t start, size_t* size, uint32_t mask);
+const struct mCoreMemoryBlock* mCoreGetMemoryBlockInfo(struct mCore* core, uint32_t address);
 
 #ifdef USE_ELF
 struct ELF;

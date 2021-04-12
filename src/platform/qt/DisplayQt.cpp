@@ -6,6 +6,7 @@
 #include "DisplayQt.h"
 
 #include "CoreController.h"
+#include "utils.h"
 
 #include <QPainter>
 
@@ -24,10 +25,11 @@ void DisplayQt::startDrawing(std::shared_ptr<CoreController> controller) {
 	QSize size = controller->screenDimensions();
 	m_width = size.width();
 	m_height = size.height();
-	m_backing = std::move(QImage());
-	m_oldBacking = std::move(QImage());
+	m_backing = QImage();
+	m_oldBacking = QImage();
 	m_isDrawing = true;
 	m_context = controller;
+	emit drawingStarted();
 }
 
 void DisplayQt::stopDrawing() {
@@ -96,25 +98,7 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 	if (isFiltered()) {
 		painter.setRenderHint(QPainter::SmoothPixmapTransform);
 	}
-	QSize s = size();
-	QSize ds = s;
-	if (isAspectRatioLocked()) {
-		if (s.width() * m_height > s.height() * m_width) {
-			ds.setWidth(s.height() * m_width / m_height);
-		} else if (s.width() * m_height < s.height() * m_width) {
-			ds.setHeight(s.width() * m_height / m_width);
-		}
-	}
-	if (isIntegerScalingLocked()) {
-		if (ds.width() >= m_width) {
-			ds.setWidth(ds.width() - ds.width() % m_width);
-		}
-		if (ds.height() >= m_height) {
-			ds.setHeight(ds.height() - ds.height() % m_height);
-		}
-	}
-	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
-	QRect full(origin, ds);
+	QRect full(clampSize(QSize(m_width, m_height), size(), isAspectRatioLocked(), isIntegerScalingLocked()));
 
 	if (hasInterframeBlending()) {
 		painter.drawImage(full, m_oldBacking, QRect(0, 0, m_width, m_height));

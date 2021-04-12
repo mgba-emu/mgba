@@ -5,6 +5,7 @@
 
 /build
 /build-*
+/.vs
 
 *.a
 *.dylib
@@ -14,5 +15,6 @@
 *.so
 CMakeCache.txt
 CMakeFiles
+CMakeSettings.json
 version.c
 *.d

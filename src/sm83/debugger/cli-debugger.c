@@ -6,6 +6,7 @@
 #include <mgba/internal/sm83/debugger/cli-debugger.h>
 
 #include <mgba/core/core.h>
+#include <mgba/core/timing.h>
 #include <mgba/internal/debugger/cli-debugger.h>
 #include <mgba/internal/sm83/decoder.h>
 #include <mgba/internal/sm83/debugger/debugger.h>
@@ -88,6 +89,7 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	be->printf(be, "H: %02X  L: %02X  (HL: %04X)\n", cpu->h, cpu->l, cpu->hl);
 	be->printf(be, "PC: %04X  SP: %04X\n", cpu->pc, cpu->sp);
 	_printFlags(be, cpu->f);
+	be->printf(be, "T-cycle: %" PRIu64 "\n", mTimingGlobalTime(debugger->p->d.core->timing));
 
 	struct SM83Debugger* platDebugger = (struct SM83Debugger*) debugger->p->d.platform;
 	size_t i;

@@ -99,14 +99,14 @@ struct VFile* VFileOpen(const char* path, int flags) {
 struct VDir* VDirOpenArchive(const char* path) {
 	struct VDir* dir = 0;
 	UNUSED(path);
-#if defined(USE_LIBZIP) || defined(USE_ZLIB)
+#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
 	if (!dir) {
-		dir = VDirOpenZip(path, 0);
+		dir = VDirOpenZip(path, O_RDONLY);
 	}
 #endif
 #ifdef USE_LZMA
 	if (!dir) {
-		dir = VDirOpen7z(path, 0);
+		dir = VDirOpen7z(path, O_RDONLY);
 	}
 #endif
 	return dir;

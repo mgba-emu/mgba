@@ -2,15 +2,15 @@
 ; wla symbolic information for "/home/vicki/Scratch/mooneye-gb/tests/build/acceptance/ret_timing.gb".
 
 [labels]
-01:48af clear_vram
-01:487a disable_lcd_safe
-01:4880 disable_lcd_safe@wait_ly_0
-01:48b9 memcpy
-01:48c2 memset
-01:48d2 print_inline_string
-01:4898 print_load_font
-01:48a4 print_newline
-01:48cb print_string
+01:48b9 clear_vram
+01:4884 disable_lcd_safe
+01:488a disable_lcd_safe@wait_ly_0
+01:48c3 memcpy
+01:48cc memset
+01:48dc print_inline_string
+01:48a2 print_load_font
+01:48ae print_newline
+01:48d5 print_string
 01:47f0 quit
 01:4805 quit@cb_return
 01:480a quit@wait_ly_1
@@ -19,10 +19,10 @@
 01:481c quit@wait_ly_4
 01:4826 quit@success
 01:484d quit@failure
-01:4862 quit@halt
-01:4863 quit@halt_execution_0
-01:4866 reset_screen
-01:4889 serial_send_byte
+01:486c quit@halt
+01:486d quit@halt_execution_0
+01:4870 reset_screen
+01:4893 serial_send_byte
 01:4000 font
 00:0150 main
 00:015c test_round1
@@ -52,7 +52,7 @@
 0000000c _sizeof_print_load_font
 0000000b _sizeof_print_newline
 00000007 _sizeof_print_string
-00000076 _sizeof_quit
+00000080 _sizeof_quit
 00000014 _sizeof_reset_screen
 0000000f _sizeof_serial_send_byte
 000007f0 _sizeof_font

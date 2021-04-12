@@ -137,11 +137,11 @@ const struct GUIFontGlyphMetric defaultFontMetrics[128] = {
 };
 
 const struct GUIIconMetric defaultIconMetrics[] = {
-	[GUI_ICON_BATTERY_FULL] = { 0, 0, 32, 16 },
-	[GUI_ICON_BATTERY_HIGH] = { 32, 0, 32, 16 },
-	[GUI_ICON_BATTERY_HALF] = { 64, 0, 32, 16 },
-	[GUI_ICON_BATTERY_LOW] = { 96, 0, 32, 16 },
-	[GUI_ICON_BATTERY_EMPTY] = { 128, 0, 32, 16 },
+	[GUI_ICON_BATTERY_FULL] = { 0, 2, 32, 12 },
+	[GUI_ICON_BATTERY_HIGH] = { 32, 2, 32, 12 },
+	[GUI_ICON_BATTERY_HALF] = { 64, 2, 32, 12 },
+	[GUI_ICON_BATTERY_LOW] = { 96, 2, 32, 12 },
+	[GUI_ICON_BATTERY_EMPTY] = { 128, 2, 32, 12 },
 	[GUI_ICON_SCROLLBAR_BUTTON] = { 6, 16, 4, 5 },
 	[GUI_ICON_SCROLLBAR_TRACK] = { 23, 16, 2, 16 },
 	[GUI_ICON_SCROLLBAR_THUMB] = { 38, 16, 4, 16 },
@@ -152,4 +152,6 @@ const struct GUIIconMetric defaultIconMetrics[] = {
 	[GUI_ICON_BUTTON_TRIANGLE] = { 34, 34, 12, 11 },
 	[GUI_ICON_BUTTON_SQUARE] = { 50, 34, 12, 11 },
 	[GUI_ICON_BUTTON_HOME] = { 66, 34, 12, 11 },
+	[GUI_ICON_STATUS_FAST_FORWARD] = { 2, 50, 12, 12 },
+	[GUI_ICON_STATUS_MUTE] = { 17, 50, 14, 12 },
 };

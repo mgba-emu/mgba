@@ -27,6 +27,10 @@
 #include <mgba-util/platform/3ds/3ds-vfs.h>
 #endif
 
+#ifdef __HAIKU__
+#include <FindDirectory.h>
+#endif
+
 #define SECTION_NAME_MAX 128
 
 struct mCoreConfigEnumerateData {
@@ -166,27 +170,23 @@ bool mCoreConfigSavePath(const struct mCoreConfig* config, const char* path) {
 	return ConfigurationWrite(&config->configTable, path);
 }
 
+bool mCoreConfigLoadVFile(struct mCoreConfig* config, struct VFile* vf) {
+	return ConfigurationReadVFile(&config->configTable, vf);
+}
+
+bool mCoreConfigSaveVFile(const struct mCoreConfig* config, struct VFile* vf) {
+	return ConfigurationWriteVFile(&config->configTable, vf);
+}
+
 void mCoreConfigMakePortable(const struct mCoreConfig* config) {
-	struct VFile* portable = 0;
-#ifdef _WIN32
-	char out[MAX_PATH];
-	wchar_t wpath[MAX_PATH];
-	wchar_t wprojectName[MAX_PATH];
-	MultiByteToWideChar(CP_UTF8, 0, projectName, -1, wprojectName, MAX_PATH);
-	HMODULE hModule = GetModuleHandleW(NULL);
-	GetModuleFileNameW(hModule, wpath, MAX_PATH);
-	PathRemoveFileSpecW(wpath);
-	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, MAX_PATH, 0, 0);
-	StringCchCatA(out, MAX_PATH, "\\portable.ini");
-	portable = VFileOpen(out, O_WRONLY | O_CREAT);
-#elif defined(PSP2) || defined(_3DS) || defined(__SWITCH__) || defined(GEKKO)
-	// Already portable
-#else
+	struct VFile* portable = NULL;
 	char out[PATH_MAX];
-	getcwd(out, PATH_MAX);
-	strncat(out, PATH_SEP "portable.ini", PATH_MAX - strlen(out));
+	mCoreConfigPortablePath(out, sizeof(out));
+	if (!out[0]) {
+		// Cannot be made portable
+		return;
+	}
 	portable = VFileOpen(out, O_WRONLY | O_CREAT);
-#endif
 	if (portable) {
 		portable->close(portable);
 		mCoreConfigSave(config);
@@ -195,48 +195,53 @@ void mCoreConfigMakePortable(const struct mCoreConfig* config) {
 
 void mCoreConfigDirectory(char* out, size_t outLength) {
 	struct VFile* portable;
+	char portableDir[PATH_MAX];
+	mCoreConfigPortablePath(portableDir, sizeof(portableDir));
+	if (portableDir[0]) {
+		portable = VFileOpen(portableDir, O_RDONLY);
+		if (portable) {
+			portable->close(portable);
+			if (outLength < PATH_MAX) {
+				char outTmp[PATH_MAX];
+				separatePath(portableDir, outTmp, NULL, NULL);
+				strlcpy(out, outTmp, outLength);
+			} else {
+				separatePath(portableDir, out, NULL, NULL);
+			}
+			return;
+		}
+	}
 #ifdef _WIN32
-	wchar_t wpath[MAX_PATH];
-	wchar_t wprojectName[MAX_PATH];
+	WCHAR wpath[MAX_PATH];
+	WCHAR wprojectName[MAX_PATH];
+	WCHAR* home;
 	MultiByteToWideChar(CP_UTF8, 0, projectName, -1, wprojectName, MAX_PATH);
-	HMODULE hModule = GetModuleHandleW(NULL);
-	GetModuleFileNameW(hModule, wpath, MAX_PATH);
-	PathRemoveFileSpecW(wpath);
-	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
-	StringCchCatA(out, outLength, "\\portable.ini");
-	portable = VFileOpen(out, O_RDONLY);
-	if (portable) {
-		portable->close(portable);
-	} else {
-		wchar_t* home;
-		SHGetKnownFolderPath(&FOLDERID_RoamingAppData, 0, NULL, &home);
-		StringCchPrintfW(wpath, MAX_PATH, L"%ws\\%ws", home, wprojectName);
-		CoTaskMemFree(home);
-		CreateDirectoryW(wpath, NULL);
+	SHGetKnownFolderPath(&FOLDERID_RoamingAppData, 0, NULL, &home);
+	StringCchPrintfW(wpath, MAX_PATH, L"%ws\\%ws", home, wprojectName);
+	CoTaskMemFree(home);
+	CreateDirectoryW(wpath, NULL);
+	if (PATH_SEP[0] != '\\') {
+		WCHAR* pathSep;
+		for (pathSep = wpath; pathSep = wcschr(pathSep, L'\\');) {
+			pathSep[0] = PATH_SEP[0];
+		}
 	}
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
 #elif defined(PSP2)
-	UNUSED(portable);
 	snprintf(out, outLength, "ux0:data/%s", projectName);
 	sceIoMkdir(out, 0777);
 #elif defined(GEKKO) || defined(__SWITCH__)
-	UNUSED(portable);
 	snprintf(out, outLength, "/%s", projectName);
 	mkdir(out, 0777);
 #elif defined(_3DS)
-	UNUSED(portable);
 	snprintf(out, outLength, "/%s", projectName);
 	FSUSER_CreateDirectory(sdmcArchive, fsMakePath(PATH_ASCII, out), 0);
+#elif defined(__HAIKU__)
+	char path[B_PATH_NAME_LENGTH];
+	find_directory(B_USER_SETTINGS_DIRECTORY, 0, false, path, B_PATH_NAME_LENGTH);
+	snprintf(out, outLength, "%s/%s", path, binaryName);
+	mkdir(out, 0755);
 #else
-	getcwd(out, outLength);
-	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out));
-	portable = VFileOpen(out, O_RDONLY);
-	if (portable) {
-		getcwd(out, outLength);
-		portable->close(portable);
-		return;
-	}
-
 	char* xdgConfigHome = getenv("XDG_CONFIG_HOME");
 	if (xdgConfigHome && xdgConfigHome[0] == '/') {
 		snprintf(out, outLength, "%s/%s", xdgConfigHome, binaryName);
@@ -250,6 +255,43 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 	mkdir(out, 0755);
 #endif
 }
+
+void mCoreConfigPortablePath(char* out, size_t outLength) {
+#ifdef _WIN32
+	wchar_t wpath[MAX_PATH];
+	HMODULE hModule = GetModuleHandleW(NULL);
+	GetModuleFileNameW(hModule, wpath, MAX_PATH);
+	PathRemoveFileSpecW(wpath);
+	if (PATH_SEP[0] != '\\') {
+		WCHAR* pathSep;
+		for (pathSep = wpath; pathSep = wcschr(pathSep, L'\\');) {
+			pathSep[0] = PATH_SEP[0];
+		}
+	}
+	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
+	StringCchCatA(out, outLength, PATH_SEP "portable.ini");
+#elif defined(PSP2) || defined(GEKKO) || defined(__SWITCH__) || defined(_3DS)
+	out[0] = '\0';
+#else
+	getcwd(out, outLength);
+	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out));
+#endif
+}
+
+bool mCoreConfigIsPortable(void) {
+	struct VFile* portable;
+	char portableDir[PATH_MAX];
+	mCoreConfigPortablePath(portableDir, sizeof(portableDir));
+	if (portableDir[0]) {
+		portable = VFileOpen(portableDir, O_RDONLY);
+		if (portable) {
+			portable->close(portable);
+			return true;
+		}
+	}
+	return false;
+}
+
 #endif
 
 const char* mCoreConfigGetValue(const struct mCoreConfig* config, const char* key) {

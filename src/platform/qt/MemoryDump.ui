@@ -39,7 +39,7 @@
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>:</string>
+        <string notr="true">:</string>
        </property>
       </widget>
      </item>
@@ -55,7 +55,7 @@
         <bool>true</bool>
        </property>
        <property name="prefix">
-        <string>0x</string>
+        <string notr="true">0x</string>
        </property>
        <property name="maximum">
         <number>268435455</number>
@@ -86,7 +86,7 @@
       </sizepolicy>
      </property>
      <property name="prefix">
-      <string>0x</string>
+      <string notr="true">0x</string>
      </property>
      <property name="minimum">
       <number>1</number>

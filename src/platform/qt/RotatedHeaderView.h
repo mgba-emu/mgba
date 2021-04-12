@@ -16,8 +16,8 @@ public:
 	RotatedHeaderView(Qt::Orientation orientation, QWidget* parent = nullptr);
 
 protected:
-	void paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const;
-	virtual QSize sectionSizeFromContents(int logicalIndex) const override;
+	void paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const override;
+	QSize sectionSizeFromContents(int logicalIndex) const override;
 };
 
 }

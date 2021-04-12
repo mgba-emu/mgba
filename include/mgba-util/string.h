@@ -19,6 +19,10 @@ char* strndup(const char* start, size_t len);
 char* strdup(const char* str);
 #endif
 
+#ifndef HAVE_STRLCPY
+size_t strlcpy(char* restrict dst, const char* restrict src, size_t dstsize);
+#endif
+
 char* strnrstr(const char* restrict s1, const char* restrict s2, size_t len);
 bool endswith(const char* restrict s1, const char* restrict end);
 bool startswith(const char* restrict s1, const char* restrict start);
@@ -41,6 +45,7 @@ const char* hex4(const char* line, uint8_t* out);
 void rtrim(char* string);
 
 ssize_t parseQuotedString(const char* unparsed, ssize_t unparsedLen, char* parsed, ssize_t parsedLen);
+bool wildcard(const char* search, const char* string);
 
 CXX_GUARD_END
 

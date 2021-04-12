@@ -21,9 +21,14 @@
 
 #define AUTO_INPUT 0x4E585031
 #define SAMPLES 0x200
-#define BUFFER_SIZE 0x1000
 #define N_BUFFERS 4
 #define ANALOG_DEADZONE 0x4000
+
+#if (SAMPLES * 4) < 0x1000
+#define BUFFER_SIZE 0x1000
+#else
+#define BUFFER_SIZE (SAMPLES * 4)
+#endif
 
 TimeType __nx_time_type = TimeType_UserSystemClock;
 
@@ -78,6 +83,7 @@ static GLuint colorLocation;
 static GLuint tex;
 static GLuint oldTex;
 
+static struct GUIFont* font;
 static color_t* frameBuffer;
 static struct mAVStream stream;
 static struct mSwitchRumble {
@@ -88,13 +94,14 @@ static struct mSwitchRumble {
 } rumble;
 static struct mRotationSource rotation = {0};
 static int audioBufferActive;
-static struct GBAStereoSample audioBuffer[N_BUFFERS][SAMPLES] __attribute__((__aligned__(0x1000)));
 static AudioOutBuffer audoutBuffer[N_BUFFERS];
 static int enqueuedBuffers;
 static bool frameLimiter = true;
 static unsigned framecount = 0;
 static unsigned framecap = 10;
-static u32 vibrationDeviceHandles[4];
+static PadState pad;
+static HidSixAxisSensorHandle sixaxisHandles[4];
+static HidVibrationDeviceHandle vibrationDeviceHandles[4];
 static HidVibrationValue vibrationStop = { .freq_low = 160.f, .freq_high = 320.f };
 static bool usePbo = true;
 static u8 vmode;
@@ -104,6 +111,11 @@ static bool interframeBlending = false;
 static bool sgbCrop = false;
 static bool useLightSensor = true;
 static struct mGUIRunnerLux lightSensor;
+static float gyroZ = 0;
+static float tiltX = 0;
+static float tiltY = 0;
+
+static struct GBAStereoSample audioBuffer[N_BUFFERS][BUFFER_SIZE / 4] __attribute__((__aligned__(0x1000)));
 
 static enum ScreenMode {
 	SM_PA,
@@ -192,73 +204,58 @@ static void _drawEnd(void) {
 
 static uint32_t _pollInput(const struct mInputMap* map) {
 	int keys = 0;
-	hidScanInput();
-	u32 padkeys = hidKeysHeld(CONTROLLER_P1_AUTO);
+	padUpdate(&pad);
+	u32 padkeys = padGetButtons(&pad);
 	keys |= mInputMapKeyBits(map, AUTO_INPUT, padkeys, 0);
 
-	JoystickPosition jspos;
-	hidJoystickRead(&jspos, CONTROLLER_P1_AUTO, JOYSTICK_LEFT);
+	HidAnalogStickState jspos = padGetStickPos(&pad, 0);
 
-	int l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_LEFT));
-	int r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_RIGHT));
-	int u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_UP));
-	int d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_DOWN));
+	int l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_StickLLeft));
+	int r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_StickLRight));
+	int u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_StickLUp));
+	int d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_StickLDown));
 
 	if (l == -1) {
-		l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DLEFT));
+		l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_Left));
 	}
 	if (r == -1) {
-		r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DRIGHT));
+		r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_Right));
 	}
 	if (u == -1) {
-		u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DUP));
+		u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_Up));
 	}
 	if (d == -1) {
-		d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DDOWN));
+		d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_Down));
 	}
 
-	if (jspos.dx < -ANALOG_DEADZONE && l != -1) {
+	if (jspos.x < -ANALOG_DEADZONE && l != -1) {
 		keys |= 1 << l;
 	}
-	if (jspos.dx > ANALOG_DEADZONE && r != -1) {
+	if (jspos.x > ANALOG_DEADZONE && r != -1) {
 		keys |= 1 << r;
 	}
-	if (jspos.dy < -ANALOG_DEADZONE && d != -1) {
+	if (jspos.y < -ANALOG_DEADZONE && d != -1) {
 		keys |= 1 << d;
 	}
-	if (jspos.dy > ANALOG_DEADZONE && u != -1) {
+	if (jspos.y > ANALOG_DEADZONE && u != -1) {
 		keys |= 1 << u;
 	}
 	return keys;
 }
 
 static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
-	hidScanInput();
-	if (hidTouchCount() < 1) {
+	HidTouchScreenState state = {0};
+	hidGetTouchScreenStates(&state, 1);
+	if (state.count < 1) {
 		return GUI_CURSOR_NOT_PRESENT;
 	}
-	touchPosition touch;
-	hidTouchRead(&touch, 0);
-	*x = touch.px;
-	*y = touch.py;
+	*x = state.touches[0].x;
+	*y = state.touches[0].y;
 	return GUI_CURSOR_DOWN;
 }
 
-
-static void _setup(struct mGUIRunner* runner) {
-	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_A, GBA_KEY_A);
-	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_B, GBA_KEY_B);
-	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_PLUS, GBA_KEY_START);
-	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_MINUS, GBA_KEY_SELECT);
-	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_DUP, GBA_KEY_UP);
-	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_DDOWN, GBA_KEY_DOWN);
-	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_DLEFT, GBA_KEY_LEFT);
-	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_DRIGHT, GBA_KEY_RIGHT);
-	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_L, GBA_KEY_L);
-	_mapKey(&runner->core->inputMap, AUTO_INPUT, KEY_R, GBA_KEY_R);
-
-	int fakeBool;
-	if (mCoreConfigGetIntValue(&runner->config, "hwaccelVideo", &fakeBool) && fakeBool && runner->core->supportsFeature(runner->core, mCORE_FEATURE_OPENGL)) {
+static void _updateRenderer(struct mGUIRunner* runner, bool gl) {
+	if (gl) {
 		runner->core->setVideoGLTex(runner->core, tex);
 		usePbo = false;
 	} else {
@@ -268,12 +265,47 @@ static void _setup(struct mGUIRunner* runner) {
 		runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
 		usePbo = true;
 	}
+}
+
+static int _audioWait(u64 timeout) {
+	AudioOutBuffer* releasedBuffers;
+	u32 nReleasedBuffers = 0;
+	Result rc;
+	if (timeout) {
+		rc = audoutWaitPlayFinish(&releasedBuffers, &nReleasedBuffers, timeout);
+	} else {
+		rc = audoutGetReleasedAudioOutBuffer(&releasedBuffers, &nReleasedBuffers);
+	}
+	if (R_FAILED(rc)) {
+		return 0;
+	}
+	enqueuedBuffers -= nReleasedBuffers;
+	return nReleasedBuffers;
+}
+
+static void _setup(struct mGUIRunner* runner) {
+	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_A, GBA_KEY_A);
+	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_B, GBA_KEY_B);
+	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_Plus, GBA_KEY_START);
+	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_Minus, GBA_KEY_SELECT);
+	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_Up, GBA_KEY_UP);
+	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_Down, GBA_KEY_DOWN);
+	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_Left, GBA_KEY_LEFT);
+	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_Right, GBA_KEY_RIGHT);
+	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_L, GBA_KEY_L);
+	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_R, GBA_KEY_R);
+
+	int fakeBool = false;
+	if (runner->core->supportsFeature(runner->core, mCORE_FEATURE_OPENGL)) {
+		mCoreConfigGetIntValue(&runner->config, "hwaccelVideo", &fakeBool);
+	}
+	_updateRenderer(runner, fakeBool);
 
 	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d);
 	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation);
 	runner->core->setAVStream(runner->core, &stream);
 
-	if (runner->core->platform(runner->core) == PLATFORM_GBA && useLightSensor) {
+	if (runner->core->platform(runner->core) == mPLATFORM_GBA && useLightSensor) {
 		runner->core->setPeripheral(runner->core, mPERIPH_GBA_LUMINANCE, &lightSensor.d);
 	}
 
@@ -310,7 +342,7 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 		if (useLightSensor != fakeBool) {
 			useLightSensor = fakeBool;
 
-			if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+			if (runner->core->platform(runner->core) == mPLATFORM_GBA) {
 				if (useLightSensor) {
 					runner->core->setPeripheral(runner->core, mPERIPH_GBA_LUMINANCE, &lightSensor.d);
 				} else {
@@ -320,9 +352,16 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 		}
 	}
 
-	int scale;
-	if (mCoreConfigGetUIntValue(&runner->config, "videoScale", &scale)) {
-		runner->core->reloadConfigOption(runner->core, "videoScale", &runner->config);
+	if (runner->core->supportsFeature(runner->core, mCORE_FEATURE_OPENGL)) {
+		if (mCoreConfigGetIntValue(&runner->config, "hwaccelVideo", &fakeBool) && fakeBool == usePbo) {
+			_updateRenderer(runner, fakeBool);
+			runner->core->reloadConfigOption(runner->core, "hwaccelVideo", &runner->config);
+		}
+
+		unsigned scale;
+		if (mCoreConfigGetUIntValue(&runner->config, "videoScale", &scale)) {
+			runner->core->reloadConfigOption(runner->core, "videoScale", &runner->config);
+		}
 	}
 
 	rumble.up = 0;
@@ -357,24 +396,24 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 	switch (screenMode) {
 	case SM_PA:
 		if (aspectX > aspectY) {
-			max = floor(1.0 / aspectX);
+			max = floor(1.f / aspectX);
 		} else {
-			max = floor(1.0 / aspectY);
+			max = floor(1.f / aspectY);
 		}
-		if (max >= 1.0) {
+		if (max >= 1.f) {
 			break;
 		}
 		// Fall through
 	case SM_AF:
 		if (aspectX > aspectY) {
-			max = 1.0 / aspectX;
+			max = 1.f / aspectX;
 		} else {
-			max = 1.0 / aspectY;
+			max = 1.f / aspectY;
 		}
 		break;
 	case SM_SF:
-		aspectX = 1.0;
-		aspectY = 1.0;
+		aspectX = 1.f;
+		aspectY = 1.f;
 		break;
 	}
 
@@ -503,11 +542,8 @@ static void _incrementScreenMode(struct mGUIRunner* runner) {
 static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 	UNUSED(runner);
 	if (!frameLimiter && limit) {
-		while (enqueuedBuffers > 1) {
-			AudioOutBuffer* releasedBuffers;
-			u32 audoutNReleasedBuffers;
-			audoutWaitPlayFinish(&releasedBuffers, &audoutNReleasedBuffers, 100000000);
-			enqueuedBuffers -= audoutNReleasedBuffers;
+		while (enqueuedBuffers > 2) {
+			_audioWait(100000000);
 		}
 	}
 	frameLimiter = limit;
@@ -518,7 +554,7 @@ static bool _running(struct mGUIRunner* runner) {
 	UNUSED(runner);
 	u8 newMode = appletGetOperationMode();
 	if (newMode != vmode) {
-		if (newMode == AppletOperationMode_Docked) {
+		if (newMode == AppletOperationMode_Console) {
 			vwidth = 1920;
 			vheight = 1080;
 		} else {
@@ -534,29 +570,25 @@ static bool _running(struct mGUIRunner* runner) {
 
 static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
 	UNUSED(stream);
-	AudioOutBuffer* releasedBuffers;
-	u32 audoutNReleasedBuffers;
-	audoutGetReleasedAudioOutBuffer(&releasedBuffers, &audoutNReleasedBuffers);
-	enqueuedBuffers -= audoutNReleasedBuffers;
-	if (!frameLimiter && enqueuedBuffers >= N_BUFFERS) {
-		blip_clear(left);
-		blip_clear(right);
-		return;
-	}
-	if (enqueuedBuffers >= N_BUFFERS - 1 && R_SUCCEEDED(audoutWaitPlayFinish(&releasedBuffers, &audoutNReleasedBuffers, 10000000))) {
-		enqueuedBuffers -= audoutNReleasedBuffers;
+	_audioWait(0);
+	while (enqueuedBuffers >= N_BUFFERS - 1) {
+		if (!frameLimiter) {
+			blip_clear(left);
+			blip_clear(right);
+			return;
+		}
+		_audioWait(10000000);
 	}
 	if (enqueuedBuffers >= N_BUFFERS) {
 		blip_clear(left);
 		blip_clear(right);
 		return;
 	}
-
 	struct GBAStereoSample* samples = audioBuffer[audioBufferActive];
 	blip_read_samples(left, &samples[0].left, SAMPLES, true);
 	blip_read_samples(right, &samples[0].right, SAMPLES, true);
 	audoutAppendAudioOutBuffer(&audoutBuffer[audioBufferActive]);
-	audioBufferActive += 1;
+	++audioBufferActive;
 	audioBufferActive %= N_BUFFERS;
 	++enqueuedBuffers;
 }
@@ -570,25 +602,41 @@ void _setRumble(struct mRumble* rumble, int enable) {
 	}
 }
 
+void _sampleRotation(struct mRotationSource* source) {
+	HidSixAxisSensorState sixaxis = {0};
+	u64 styles = padGetStyleSet(&pad);
+	if (styles & HidNpadStyleTag_NpadHandheld) {
+		hidGetSixAxisSensorStates(sixaxisHandles[3], &sixaxis, 1);
+	} else if (styles & HidNpadStyleTag_NpadFullKey) {
+		hidGetSixAxisSensorStates(sixaxisHandles[2], &sixaxis, 1);
+	} else if (styles & HidNpadStyleTag_NpadJoyDual) {
+		u64 attrib = padGetAttributes(&pad);
+		if (attrib & HidNpadAttribute_IsLeftConnected) {
+			hidGetSixAxisSensorStates(sixaxisHandles[0], &sixaxis, 1);
+		} else if (attrib & HidNpadAttribute_IsRightConnected) {
+			hidGetSixAxisSensorStates(sixaxisHandles[1], &sixaxis, 1);
+		} else {
+			return;
+		}
+	}
+	tiltX = sixaxis.acceleration.x * 3e8f;
+	tiltY = sixaxis.acceleration.y * -3e8f;
+	gyroZ = sixaxis.angular_velocity.z * -1.1e9f;
+}
+
 int32_t _readTiltX(struct mRotationSource* source) {
 	UNUSED(source);
-	SixAxisSensorValues sixaxis;
-	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
-	return sixaxis.accelerometer.x * 3e8f;
+	return tiltX;
 }
 
 int32_t _readTiltY(struct mRotationSource* source) {
 	UNUSED(source);
-	SixAxisSensorValues sixaxis;
-	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
-	return sixaxis.accelerometer.y * -3e8f;
+	return tiltY;
 }
 
 int32_t _readGyroZ(struct mRotationSource* source) {
 	UNUSED(source);
-	SixAxisSensorValues sixaxis;
-	hidSixAxisSensorValuesRead(&sixaxis, CONTROLLER_P1_AUTO, 1);
-	return sixaxis.gyroscope.z * -1.1e9f;
+	return gyroZ;
 }
 
 static void _lightSensorSample(struct GBALuminanceSource* lux) {
@@ -607,7 +655,7 @@ static int _batteryState(void) {
 	u32 charge;
 	int state = 0;
 	if (R_SUCCEEDED(psmGetBatteryChargePercentage(&charge))) {
-		state = (charge + 12) / 25;
+		state = charge | BATTERY_PERCENTAGE_VALID;
 	} else {
 		return BATTERY_NOT_PRESENT;
 	}
@@ -622,6 +670,10 @@ static void _guiPrepare(void) {
 	glViewport(0, 1080 - vheight, vwidth, vheight);
 }
 
+static void _guiFinish(void) {
+	GUIFontDrawSubmit(font);
+}
+
 int main(int argc, char* argv[]) {
 	NWindow* window = nwindowGetDefault();
 	nwindowSetDimensions(window, 1920, 1080);
@@ -633,10 +685,10 @@ int main(int argc, char* argv[]) {
 	audoutInitialize();
 	psmInitialize();
 
-	struct GUIFont* font = GUIFontCreate();
+	font = GUIFontCreate();
 
 	vmode = appletGetOperationMode();
-	if (vmode == AppletOperationMode_Docked) {
+	if (vmode == AppletOperationMode_Console) {
 		vwidth = 1920;
 		vheight = 1080;
 	} else {
@@ -732,23 +784,27 @@ int main(int argc, char* argv[]) {
 	glEnableVertexAttribArray(offsetLocation);
 	glBindVertexArray(0);
 
+	hidInitializeTouchScreen();
+	padConfigureInput(1, HidNpadStyleSet_NpadStandard);
+	padInitializeDefault(&pad);
+
 	rumble.d.setRumble = _setRumble;
 	rumble.value.freq_low = 120.0;
 	rumble.value.freq_high = 180.0;
-	hidInitializeVibrationDevices(&vibrationDeviceHandles[0], 2, CONTROLLER_HANDHELD, TYPE_HANDHELD | TYPE_JOYCON_PAIR);
-	hidInitializeVibrationDevices(&vibrationDeviceHandles[2], 2, CONTROLLER_PLAYER_1, TYPE_HANDHELD | TYPE_JOYCON_PAIR);
+	hidInitializeVibrationDevices(&vibrationDeviceHandles[0], 2, HidNpadIdType_Handheld, HidNpadStyleTag_NpadHandheld);
+	hidInitializeVibrationDevices(&vibrationDeviceHandles[2], 2, HidNpadIdType_No1, HidNpadStyleTag_NpadJoyDual);
 
-	u32 handles[4];
-	hidGetSixAxisSensorHandles(&handles[0], 2, CONTROLLER_PLAYER_1, TYPE_JOYCON_PAIR);
-	hidGetSixAxisSensorHandles(&handles[2], 1, CONTROLLER_PLAYER_1, TYPE_PROCONTROLLER);
-	hidGetSixAxisSensorHandles(&handles[3], 1, CONTROLLER_HANDHELD, TYPE_HANDHELD);
-	hidStartSixAxisSensor(handles[0]);
-	hidStartSixAxisSensor(handles[1]);
-	hidStartSixAxisSensor(handles[2]);
-	hidStartSixAxisSensor(handles[3]);
+	hidGetSixAxisSensorHandles(&sixaxisHandles[0], 2, HidNpadIdType_No1, HidNpadStyleTag_NpadJoyDual);
+	hidGetSixAxisSensorHandles(&sixaxisHandles[2], 1, HidNpadIdType_No1, HidNpadStyleTag_NpadFullKey);
+	hidGetSixAxisSensorHandles(&sixaxisHandles[3], 1, HidNpadIdType_Handheld, HidNpadStyleTag_NpadHandheld);
+	hidStartSixAxisSensor(sixaxisHandles[0]);
+	hidStartSixAxisSensor(sixaxisHandles[1]);
+	hidStartSixAxisSensor(sixaxisHandles[2]);
+	hidStartSixAxisSensor(sixaxisHandles[3]);
 	rotation.readTiltX = _readTiltX;
 	rotation.readTiltY = _readTiltY;
 	rotation.readGyroZ = _readGyroZ;
+	rotation.sample = _sampleRotation;
 
 	lightSensor.d.readLuminance = _lightSensorRead;
 	lightSensor.d.sample = _lightSensorSample;
@@ -780,7 +836,7 @@ int main(int argc, char* argv[]) {
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
 			_batteryState,
-			_guiPrepare, NULL,
+			_guiPrepare, _guiFinish,
 		},
 		.keySources = (struct GUIInputKeys[]) {
 			{
@@ -862,7 +918,7 @@ int main(int argc, char* argv[]) {
 				.nStates = 16
 			},
 			{
-				.title = "GPU-accelerated renderer (requires game reload)",
+				.title = "GPU-accelerated renderer",
 				.data = "hwaccelVideo",
 				.submenu = 0,
 				.state = 0,
@@ -924,13 +980,13 @@ int main(int argc, char* argv[]) {
 	};
 	mGUIInit(&runner, "switch");
 
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_A, GUI_INPUT_SELECT);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_B, GUI_INPUT_BACK);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_X, GUI_INPUT_CANCEL);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DUP, GUI_INPUT_UP);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DDOWN, GUI_INPUT_DOWN);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DLEFT, GUI_INPUT_LEFT);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DRIGHT, GUI_INPUT_RIGHT);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_A, GUI_INPUT_SELECT);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_B, GUI_INPUT_BACK);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_X, GUI_INPUT_CANCEL);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_Up, GUI_INPUT_UP);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_Down, GUI_INPUT_DOWN);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_Left, GUI_INPUT_LEFT);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_Right, GUI_INPUT_RIGHT);
 
 	audoutStartAudioOut();
 
@@ -984,10 +1040,10 @@ int main(int argc, char* argv[]) {
 	glDeleteProgram(program);
 	glDeleteVertexArrays(1, &vao);
 
-	hidStopSixAxisSensor(handles[0]);
-	hidStopSixAxisSensor(handles[1]);
-	hidStopSixAxisSensor(handles[2]);
-	hidStopSixAxisSensor(handles[3]);
+	hidStopSixAxisSensor(sixaxisHandles[0]);
+	hidStopSixAxisSensor(sixaxisHandles[1]);
+	hidStopSixAxisSensor(sixaxisHandles[2]);
+	hidStopSixAxisSensor(sixaxisHandles[3]);
 
 	psmExit();
 	audoutExit();

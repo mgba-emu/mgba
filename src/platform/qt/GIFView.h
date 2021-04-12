@@ -41,6 +41,7 @@ signals:
 private slots:
 	void selectFile();
 	void setFilename(const QString&);
+	void changeExtension();
 
 private:
 	Ui::GIFView m_ui;

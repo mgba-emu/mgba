@@ -4,6 +4,7 @@ set(SOURCE_FILES
 	cheats.c
 	core.c
 	gb.c
+	input.c
 	io.c
 	mbc.c
 	memory.c

@@ -210,6 +210,7 @@ void PNGWriteClose(png_structp png, png_infop info) {
 
 bool isPNG(struct VFile* source) {
 	png_byte header[PNG_HEADER_BYTES];
+	source->seek(source, 0, SEEK_SET);
 	if (source->read(source, header, PNG_HEADER_BYTES) < PNG_HEADER_BYTES) {
 		return false;
 	}
@@ -270,6 +271,10 @@ bool PNGIgnorePixels(png_structp png, png_infop info) {
 }
 
 bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width, unsigned height, unsigned stride) {
+	if (png_get_channels(png, info) != 3) {
+		return false;
+	}
+
 	if (setjmp(png_jmpbuf(png))) {
 		return false;
 	}
@@ -321,6 +326,10 @@ bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width
 }
 
 bool PNGReadPixelsA(png_structp png, png_infop info, void* pixels, unsigned width, unsigned height, unsigned stride) {
+	if (png_get_channels(png, info) != 4) {
+		return false;
+	}
+
 	if (setjmp(png_jmpbuf(png))) {
 		return false;
 	}
@@ -372,6 +381,10 @@ bool PNGReadPixelsA(png_structp png, png_infop info, void* pixels, unsigned widt
 }
 
 bool PNGReadPixels8(png_structp png, png_infop info, void* pixels, unsigned width, unsigned height, unsigned stride) {
+	if (png_get_channels(png, info) != 1) {
+		return false;
+	}
+
 	if (setjmp(png_jmpbuf(png))) {
 		return false;
 	}

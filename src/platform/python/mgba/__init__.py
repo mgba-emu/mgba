@@ -5,7 +5,23 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from ._pylib import ffi, lib  # pylint: disable=no-name-in-module
 
-from collections import namedtuple
+
+class Git:
+    commit = None
+    if lib.gitCommit and lib.gitCommit != "(unknown)":
+        commit = ffi.string(lib.gitCommit).decode('utf-8')
+
+    commitShort = None
+    if lib.gitCommitShort and lib.gitCommitShort != "(unknown)":
+        commitShort = ffi.string(lib.gitCommitShort).decode('utf-8')
+
+    branch = None
+    if lib.gitBranch and lib.gitBranch != "(unknown)":
+        branch = ffi.string(lib.gitBranch).decode('utf-8')
+
+    revision = None
+    if lib.gitRevision > 0:
+        revision = lib.gitRevision
 
 
 def create_callback(struct_name, cb_name, func_name=None):
@@ -20,17 +36,3 @@ def create_callback(struct_name, cb_name, func_name=None):
 
 
 __version__ = ffi.string(lib.projectVersion).decode('utf-8')
-
-GitInfo = namedtuple("GitInfo", "commit commitShort branch revision")
-
-GIT = {}
-if lib.gitCommit and lib.gitCommit != "(unknown)":
-    GIT['commit'] = ffi.string(lib.gitCommit).decode('utf-8')
-if lib.gitCommitShort and lib.gitCommitShort != "(unknown)":
-    GIT['commitShort'] = ffi.string(lib.gitCommitShort).decode('utf-8')
-if lib.gitBranch and lib.gitBranch != "(unknown)":
-    GIT['branch'] = ffi.string(lib.gitBranch).decode('utf-8')
-if lib.gitRevision > 0:
-    GIT['revision'] = lib.gitRevision
-
-GIT = GitInfo(**GIT)

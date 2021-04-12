@@ -10,7 +10,6 @@
 
 #include <QAction>
 #include <QClipboard>
-#include <QFontDatabase>
 #include <QTimer>
 
 #ifdef M_CORE_GB
@@ -34,12 +33,12 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 
 	switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		m_ui.tile->setBoundary(2048, 0, 2);
 		break;
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		m_ui.palette256->setEnabled(false);
 		m_ui.tile->setBoundary(1024, 0, 0);
 		break;
@@ -54,12 +53,12 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 		}
 		switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
-		case PLATFORM_GBA:
+		case mPLATFORM_GBA:
 			m_ui.tile->setBoundary(2048 >> selected, selected, selected + 2);
 			break;
 #endif
 #ifdef M_CORE_GB
-		case PLATFORM_GB:
+		case mPLATFORM_GB:
 			return;
 #endif
 		default:
@@ -201,7 +200,6 @@ void TileView::exportTile() {
 void TileView::copyTiles() {
 	CoreController::Interrupter interrupter(m_controller);
 	updateTiles(false);
-	QPixmap pixmap();
 	GBAApp::app()->clipboard()->setPixmap(m_ui.tiles->backing());
 }
 

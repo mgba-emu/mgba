@@ -90,6 +90,9 @@ struct mDebuggerPlatform* SM83DebuggerPlatformCreate(void) {
 	platform->d.trace = SM83DebuggerTrace;
 	platform->d.getRegister = SM83DebuggerGetRegister;
 	platform->d.setRegister = SM83DebuggerSetRegister;
+	platform->d.getStackTraceMode = NULL;
+	platform->d.setStackTraceMode = NULL;
+	platform->d.updateStackTrace = NULL;
 	platform->printStatus = NULL;
 	return &platform->d;
 }

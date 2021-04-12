@@ -8,6 +8,8 @@
 #include <QDialog>
 #include <QList>
 
+#include <mgba/core/core.h>
+
 #include <memory>
 
 #include "ui_IOViewer.h"
@@ -21,19 +23,19 @@ Q_OBJECT
 
 public:
 	struct RegisterItem {
-		RegisterItem(const QString& description, uint start, uint size = 1, bool readonly = false)
+		RegisterItem(const QString& description, uint start, int size = 1, bool readonly = false)
 			: start(start)
 			, size(size)
 			, readonly(readonly)
 			, description(description) {}
-		RegisterItem(const QString& description, uint start, uint size, QStringList items, bool readonly = false)
+		RegisterItem(const QString& description, uint start, int size, QStringList items, bool readonly = false)
 			: start(start)
 			, size(size)
 			, readonly(readonly)
 			, description(description)
 			, items(items) {}
 		uint start;
-		uint size;
+		int size;
 		bool readonly;
 		QString description;
 		QStringList items;
@@ -42,14 +44,14 @@ public:
 
 	IOViewer(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 
-	static const QList<RegisterDescription>& registerDescriptions();
+	static const QList<RegisterDescription>& registerDescriptions(mPlatform);
 
 signals:
 	void valueChanged();
 
 public slots:
 	void updateRegister();
-	void selectRegister(unsigned address);
+	void selectRegister(int address);
 
 private slots:
 	void buttonPressed(QAbstractButton* button);
@@ -58,10 +60,12 @@ private slots:
 	void selectRegister();
 
 private:
-	static QList<RegisterDescription> s_registers;
+	static QHash<mPlatform, QList<RegisterDescription>> s_registers;
 	Ui::IOViewer m_ui;
+	uint32_t m_base;
+	int m_width;
 
-	unsigned m_register;
+	int m_register;
 	uint16_t m_value;
 
 	QCheckBox* m_b[16];

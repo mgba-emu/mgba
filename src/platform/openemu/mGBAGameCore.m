@@ -67,6 +67,10 @@
 		core->init(core);
 		outputBuffer = nil;
 
+		unsigned width, height;
+		core->desiredVideoDimensions(core, &width, &height);
+		outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
+		core->setVideoBuffer(core, outputBuffer, width);
 		core->setAudioBufferSize(core, SAMPLES);
 		cheatSets = [[NSMutableDictionary alloc] init];
 	}
@@ -78,10 +82,7 @@
 {
 	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
-	[cheatSets release];
 	free(outputBuffer);
-
-	[super dealloc];
 }
 
 #pragma mark - Execution
@@ -96,23 +97,15 @@
 	if (core->dirs.save) {
 		core->dirs.save->close(core->dirs.save);
 	}
-	core->dirs.save = VDirOpen([batterySavesDirectory UTF8String]);
+	core->dirs.save = VDirOpen([batterySavesDirectory fileSystemRepresentation]);
 
-	if (!mCoreLoadFile(core, [path UTF8String])) {
+	if (!mCoreLoadFile(core, [path fileSystemRepresentation])) {
 		*error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadROMError userInfo:nil];
 		return NO;
 	}
 	mCoreAutoloadSave(core);
 
 	core->reset(core);
-
-	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
-	if (outputBuffer) {
-		free(outputBuffer);
-	}
-	outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
-	core->setVideoBuffer(core, outputBuffer, width);
 
 	return YES;
 }
@@ -161,9 +154,18 @@
     return OEIntSizeMake(width, height);
 }
 
-- (const void *)videoBuffer
+- (const void *)getVideoBufferWithHint:(void *)hint
 {
-	return outputBuffer;
+	OEIntSize bufferSize = [self bufferSize];
+
+	if (!hint) {
+		hint = outputBuffer;
+	}
+
+	outputBuffer = hint;
+	core->setVideoBuffer(core, hint, bufferSize.width);
+
+	return hint;
 }
 
 - (GLenum)pixelFormat
@@ -174,11 +176,6 @@
 - (GLenum)pixelType
 {
     return GL_UNSIGNED_INT_8_8_8_8_REV;
-}
-
-- (GLenum)internalPixelFormat
-{
-    return GL_RGB8;
 }
 
 - (NSTimeInterval)frameInterval
@@ -230,14 +227,14 @@
 
 - (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
-	struct VFile* vf = VFileOpen([fileName UTF8String], O_CREAT | O_TRUNC | O_RDWR);
+	struct VFile* vf = VFileOpen([fileName fileSystemRepresentation], O_CREAT | O_TRUNC | O_RDWR);
 	block(mCoreSaveStateNamed(core, vf, 0), nil);
 	vf->close(vf);
 }
 
 - (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
-	struct VFile* vf = VFileOpen([fileName UTF8String], O_RDONLY);
+	struct VFile* vf = VFileOpen([fileName fileSystemRepresentation], O_RDONLY);
 	block(mCoreLoadStateNamed(core, vf, 0), nil);
 	vf->close(vf);
 }
@@ -284,12 +281,11 @@ const int GBAMap[] = {
 	}
 	struct mCheatDevice* cheats = core->cheatDevice(core);
 	cheatSet = cheats->createSet(cheats, [codeId UTF8String]);
-	int codeType = GBA_CHEAT_AUTODETECT;
-	if ([type isEqual:@"GameShark"]) {
-		codeType = GBA_CHEAT_GAMESHARK;
-	} else if ([type isEqual:@"Action Replay"]) {
-		codeType = GBA_CHEAT_PRO_ACTION_REPLAY;
+	size_t size = mCheatSetsSize(&cheats->cheats);
+	if (size) {
+		cheatSet->copyProperties(cheatSet, *mCheatSetsGetPointer(&cheats->cheats, size - 1));
 	}
+	int codeType = GBA_CHEAT_AUTODETECT;
 	NSArray *codeSet = [code componentsSeparatedByString:@"+"];
 	for (id c in codeSet) {
 		mCheatAddLine(cheatSet, [c UTF8String], codeType);

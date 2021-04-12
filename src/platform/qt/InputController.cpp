@@ -10,6 +10,7 @@
 #include "GamepadButtonEvent.h"
 #include "InputProfile.h"
 #include "LogController.h"
+#include "utils.h"
 
 #include <QApplication>
 #include <QTimer>
@@ -177,6 +178,9 @@ void InputController::loadConfiguration(uint32_t type) {
 }
 
 void InputController::loadProfile(uint32_t type, const QString& profile) {
+	if (profile.isEmpty()) {
+		return;
+	}
 	bool loaded = mInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	recalibrateAxes();
 	if (!loaded) {
@@ -206,6 +210,9 @@ void InputController::saveConfiguration(uint32_t type) {
 }
 
 void InputController::saveProfile(uint32_t type, const QString& profile) {
+	if (profile.isEmpty()) {
+		return;
+	}
 	mInputProfileSave(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	m_config->write();
 }
@@ -272,8 +279,8 @@ void InputController::setPreferredGamepad(uint32_t type, int index) {
 		return;
 	}
 #ifdef BUILD_SDL
-	char name[34] = {0};
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+	char name[34] = {0};
 	SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, index)->joystick), name, sizeof(name));
 #else
 	const char* name = SDL_JoystickName(SDL_JoystickIndex(SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, index)->joystick));
@@ -562,6 +569,10 @@ void InputController::bindHat(uint32_t type, int hat, GamepadHatEvent::Direction
 	mInputBindHat(&m_inputMap, type, hat, &bindings);
 }
 
+void InputController::unbindAllHats(uint32_t type) {
+	mInputUnbindAllHats(&m_inputMap, type);
+}
+
 void InputController::testGamepad(int type) {
 	QWriteLocker l(&m_eventsLock);
 	auto activeAxes = activeGamepadAxes(type);
@@ -649,7 +660,7 @@ void InputController::sendGamepadEvent(QEvent* event) {
 	} else {
 		focusWidget = QApplication::focusWidget();
 	}
-	QApplication::sendEvent(focusWidget, event);
+	QApplication::postEvent(focusWidget, event, Qt::HighEventPriority);
 }
 
 void InputController::postPendingEvent(GBAKey key) {
@@ -733,7 +744,7 @@ void InputController::decreaseLuminanceLevel() {
 
 void InputController::setLuminanceLevel(int level) {
 	int value = 0x16;
-	level = std::max(0, std::min(10, level));
+	level = clamp(level, 0, 10);
 	if (level > 0) {
 		value += GBA_LUX_LEVELS[level - 1];
 	}
@@ -771,7 +782,6 @@ void InputController::prepareCamSettings(QCamera::Status status) {
 		return;
 	}
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
-	QVideoFrame::PixelFormat format(QVideoFrame::Format_RGB32);
 	QCameraViewfinderSettings settings;
 	QSize size(1280, 720);
 	auto cameraRes = m_camera->supportedViewfinderResolutions(settings);
@@ -791,7 +801,6 @@ void InputController::prepareCamSettings(QCamera::Status status) {
 	for (const auto& goodFormat : goodFormats) {
 		if (cameraFormats.contains(goodFormat)) {
 			settings.setPixelFormat(goodFormat);
-			format = goodFormat;
 			goodFormatFound = true;
 			break;
 		}

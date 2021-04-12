@@ -177,9 +177,14 @@ bool ConfigurationWrite(const struct Configuration* configuration, const char* p
 	if (!vf) {
 		return false;
 	}
+	bool res = ConfigurationWriteVFile(configuration, vf);
+	vf->close(vf);
+	return true;
+}
+
+bool ConfigurationWriteVFile(const struct Configuration* configuration, struct VFile* vf) {
 	HashTableEnumerate(&configuration->root, _keyHandler, vf);
 	HashTableEnumerate(&configuration->sections, _sectionHandler, vf);
-	vf->close(vf);
 	return true;
 }
 

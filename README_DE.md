@@ -6,6 +6,7 @@ mGBA ist ein Emulator für Game Boy Advance-Spiele. Das Ziel von mGBA ist, schne
 Aktuelle Neuigkeiten und Downloads findest Du auf [mgba.io](https://mgba.io).
 
 [![Build-Status](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)](https://travis-ci.org/mgba-emu/mgba)
+[![Status der Übersetzungen](https://hosted.weblate.org/widgets/mgba/-/svg-badge.svg)](https://hosted.weblate.org/engage/mgba)
 
 Features
 --------
@@ -27,7 +28,8 @@ Features
 - Unterstützung für Screenshots.
 - Unterstützung für Cheat-Codes.
 - 9 Speicherstände für Savestates/Spielzustände. Savestates können auch als Screenshots dargestellt werden.
-- Video- und GIF-Aufzeichnung.
+- Video-, GIF-, WebP- und APNG-Aufzeichnung.
+- e-Reader-Unterstützung.
 - Frei wählbare Tastenbelegungen für Tastaturen und Controller.
 - Unterstützung für ZIP- und 7z-Archive.
 - Unterstützung für Patches im IPS-, UPS- und BPS-Format.
@@ -35,6 +37,7 @@ Features
 - Einstellbare Rücklauf-Funktion.
 - Unterstützung für das Laden und Exportieren von GameShark- und Action Replay-Abbildern.
 - Verfügbare Cores für RetroArch/Libretro und OpenEmu.
+- Übersetzungen für mehrere Sprachen über [Weblate](https://hosted.weblate.org/engage/mgba).
 - Viele, viele kleinere Dinge.
 
 ### Game Boy-Mapper
@@ -50,35 +53,38 @@ Die folgenden Mapper werden vollständig unterstützt:
 - MBC5+Rumble (MBC5+Rüttel-Modul)
 - MBC7
 - Wisdom Tree (nicht lizenziert)
+- Pokémon Jade/Diamond (nicht lizenziert)
+- BBD (nicht lizenziert, ählich MBC5)
+- Hitek (nicht lizenziert, ähnlich MBC5)
 
 Die folgenden Mapper werden teilweise unterstützt:
 
-- MBC6
+- MBC6 (fehlende Unterstützung für Schreibzugriffe auf den Flash-Speicher)
 - MMM01
 - Pocket Cam
-- TAMA5
-- HuC-1
-- HuC-3
+- TAMA5 (fehlende RTC-Unterstützung)
+- HuC-1 (fehlende Infrarot-Unterstützung)
+- HuC-3 (fehlende RTC- und Infrarot-Unterstützung)
 
 ### Geplante Features
 
 - Unterstützung für Link-Kabel-Multiplayer über ein Netzwerk.
 - Unterstützung für Link-Kabel über Dolphin/JOY-Bus.
-- M4A-Audio-Abmischung für höhere Audio-Qualität als echte Hardware.
+- MP2k-Audio-Abmischung für höhere Audio-Qualität als echte Hardware.
 - Unterstützung für Tool-Assisted Speedruns.
 - Lua-Unterstützung für Scripting.
 - Eine umfangreiche Debugging-Suite.
-- e-Reader-Unterstützung.
 - Unterstützung für Drahtlosadapter.
 
 Unterstützte Plattformen
 ------------------------
 
 - Windows Vista oder neuer
-- OS X 10.7 (Lion)[<sup>[3]</sup>](#osxver) oder neuer
+- OS X 10.8 (Mountain Lion)[<sup>[3]</sup>](#osxver) oder neuer
 - Linux
 - FreeBSD
 - Nintendo 3DS
+- Nintendo Switch
 - Wii
 - PlayStation Vita
 
@@ -112,7 +118,7 @@ Um mGBA kompilieren zu können, wird CMake 3.1 oder neuer benötigt. GCC und Cla
 
 #### Kompilieren mit Docker
 
-Der empfohlene Weg, um mGBA für die meisten Plattformen zu kompilieren, ist Docker. Mehrere Docker-Images sind verfügbar, welche die benötigte Compiler-Umgebung und alle benötigten Abhängigkeiten beinhaltet, um mGBA für verschiedene Plattformen zu bauen.
+Der empfohlene Weg, um mGBA für die meisten Plattformen zu kompilieren, ist die Verwendung von Docker. Mehrere Docker-Images sind verfügbar, welche die benötigte Compiler-Umgebung und alle benötigten Abhängigkeiten beinhaltet, um mGBA für verschiedene Plattformen zu bauen.
 
 Um ein Docker-Image zum Bau von mGBA zu verwenden, führe einfach folgenden Befehl in dem Verzeichnis aus, in welches Du den mGBA-Quellcode ausgecheckt hast:
 
@@ -124,10 +130,8 @@ Dieser Befehl erzeugt ein Verzeichnis `build-win32` mit den erzeugten Programmda
 - mgba/switch
 - mgba/ubuntu:xenial
 - mgba/ubuntu:bionic
-- mgba/ubuntu:cosmic
-- mgba/ubuntu:disco
-- mgba/ubuntu:eoan
 - mgba/ubuntu:focal
+- mgba/ubuntu:groovy
 - mgba/vita
 - mgba/wii
 - mgba/windows:w32
@@ -150,22 +154,18 @@ Wenn Du macOS verwendest, sind die einzelnen Schritte etwas anders. Angenommen, 
 	brew install cmake ffmpeg libzip qt5 sdl2 libedit pkg-config
 	mkdir build
 	cd build
-	cmake -DCMAKE_PREFIX_PATH='brew --prefix qt5' ..
+	cmake -DCMAKE_PREFIX_PATH=`brew --prefix qt5` ..
 	make
 
-Bitte beachte, dass Du unter macOS nicht 'make install' verwenden solltest, da dies nicht korrekt funktionieren wird.
+Bitte beachte, dass Du unter macOS nicht `make install` verwenden solltest, da dies nicht korrekt funktionieren wird.
 
-### Für Entwickler: Kompilieren unter Windows
+#### Für Entwickler: Kompilieren unter Windows
+
+##### MSYS2
 
 Um mGBA auf Windows zu kompilieren, wird MSYS2 empfohlen. Befolge die Installationsschritte auf der [MSYS2-Website](https://msys2.github.io). Stelle sicher, dass Du die 32-Bit-Version ("MSYS2 MinGW 32-bit") (oder die 64-Bit-Version "MSYS2 MinGW 64-bit", wenn Du mGBA für x86_64 kompilieren willst) verwendest und führe folgendes Kommando (einschließlich der Klammern) aus, um alle benötigten Abhängigkeiten zu installieren. Bitte beachte, dass dafür über 1100MiB an Paketen heruntergeladen werden, was eine Weile dauern kann:
 
-Für x86 (32 Bit):
-
-	pacman -Sy --needed base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
-
-Für x86_64 (64 Bit):
-
-	pacman -Sy --needed base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git ${MINGW_PACKAGE_PREFIX}-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkgconf,qt5,SDL2,ntldd-git}
 
 Lade den aktuellen mGBA-Quellcode mithilfe des folgenden Kommandos herunter:
 
@@ -173,13 +173,26 @@ Lade den aktuellen mGBA-Quellcode mithilfe des folgenden Kommandos herunter:
 
 Abschließend wird mGBA über folgende Kommandos kompiliert:
 
-	cd mgba
-	mkdir build
-	cd build
+	mkdir -p mgba/build
+	cd mgba/build
 	cmake .. -G "MSYS Makefiles"
-	make
+	make -j$(nproc --ignore=1)
 
 Bitte beachte, dass mGBA für Windows aufgrund der Vielzahl an benötigten DLLs nicht für die weitere Verteilung geeignet ist, wenn es auf diese Weise gebaut wurde. Es ist jedoch perfekt für Entwickler geeignet. Soll mGBA dennoch weiter verteilt werden (beispielsweise zu Testzwecken auf Systemen, auf denen keine MSYS2-Umgebung installiert ist), kann mithilfe des Befehls `cpack -G ZIP` ein ZIP-Archiv mit allen benötigten DLLs erstellt werden.
+
+##### Visual Studio
+
+mGBA mit Visual Studio zu bauen erfordert ein ähnlich kompliziertes Setup. Zuerst musst Du [vcpkg](https://github.com/Microsoft/vcpkg) installieren. Nachdem vcpkg installiert ist, musst Du noch folgende zusätzlichen Pakete installieren:
+
+	vcpkg install ffmpeg[vpx,x264] libepoxy libpng libzip sdl2 sqlite3
+
+Bitte beachte, dass diese Installation keine hardwarebeschleunigtes Video-Encoding auf Nvidia-Hardware unterstützen wird. Wenn Du darauf Wert legst, musst Du zuerst CUDA installieren und anschließend den vorherigen Befehl um `ffmpeg[vpx,x264,nvcodec]` ergänzen.
+
+Zusätzlich wirst Du auch Qt installieren müssen. Unglücklicherweise steht für Qt kein Offline-Installationsprogramm für die jeweils aktuelle Version bereit. Daher musst Du entweder auf eine [ältere Version](https://download.qt.io/official_releases/qt/5.12/5.12.9/qt-opensource-windows-x86-5.12.9.exe) zurückgreifen (hierfür benötigst Du ein ansonsten nutzloses Benutzerkonto, aber Du kannst das umgehen, indem Du temporär einen ungültigen Netzwerk-Proxy hinterlegst oder über andere Methoden deine Netzwerkverbindung deaktivierst). Alternativ kannst Du auch den Online-Installer nutzen (für den ohnehin ein Benutzeraccount erfortderlich ist) oder Qt selbst mithilfe von vcpkg bauen (was verhältnismäßig lange dauert). Keine dieser Optionen ist besonders elegant. Bitte achte bei der Verwendung eines Installers darauf, die passende MSVC-Version zu wählen. Der Offline-Installer unterstützt aktuell noch nicht MSVC 2019. Die Installation mit vcpkg dauert ein wenig länger, besonders, wenn Du einen Computer mit vier oder weniger CPU-Cores nutzt:
+
+    vcpkg install qt5-base qt5-multimedia
+
+Öffne anschließend Visual Studio, wähle "Clone Repository" und gib dort `https://github.com/mgba-emu/mgba.git` ein. Wenn Visual Studio das Repository geklont hat, gehe zu "Datei > CMake" und öffne die Datei CMakeLists.txt im Stammverzeichnis des ausgecheckten Repos. Anschließend kann mGBA in Visual Studio entwickelt werden, ähnlich wie andere Visual Studio CMake-Projekte.
 
 #### Kompilieren mithilfe einer Toolchain
 
@@ -207,7 +220,6 @@ mGBA hat keine "harten" Abhängigkeiten. Dennoch werden die folgenden optionalen
 - libedit: Für die Unterstützung des Kommandozeilen-Debuggers.
 - ffmpeg oder libav: Für Videoaufzeichnungen.
 - libzip oder zlib: Um ROMs aus ZIP-Dateien zu laden.
-- ImageMagick: Für GIF-Aufzeichnungen.
 - SQLite3: Für Spiele-Datenbanken.
 - libelf: Für das Laden von ELF-Dateien.
 
@@ -222,7 +234,7 @@ Fußnoten
 
 <a name="flashdetect">[2]</a> In manchen Fällen ist es nicht möglich, die Größe des Flash-Speichers automatisch zu ermitteln. Diese kann dann zur Laufzeit konfiguriert werden, es wird jedoch empfohlen, den Fehler zu melden.
 
-<a name="osxver">[3]</a> 10.7 wird nur für die Qt-Portierung benötigt. Die SDL-Portierung ist dafür bekannt, mit 10.5 und möglicherweise auf älteren Versionen zu funktionieren.
+<a name="osxver">[3]</a> 10.8 wird nur für die Qt-Portierung benötigt. Es ist wahrscheinlich möglich, die Qt-Portierung unter macOS 10.7 und älter zu bauen und zu nutzen, aber das wird nicht offiziell unterstützt. Die SDL-Portierung ist dafür bekannt, mit 10.7 und möglicherweise auf älteren Versionen zu funktionieren.
 
 [downloads]: http://mgba.io/downloads.html
 [source]: https://github.com/mgba-emu/mgba/
@@ -230,11 +242,11 @@ Fußnoten
 Copyright
 ---------
 
-Copyright für mGBA © 2013 – 2020 Jeffrey Pfau. mGBA wird unter der [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/) veröffentlicht. Eine Kopie der Lizenz ist in der mitgelieferten Datei LICENSE verfügbar.
+Copyright für mGBA © 2013 – 2021 Jeffrey Pfau. mGBA wird unter der [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/) veröffentlicht. Eine Kopie der Lizenz ist in der mitgelieferten Datei LICENSE verfügbar.
 
 mGBA beinhaltet die folgenden Bibliotheken von Drittanbietern:
 
-- [inih](https://github.com/benhoyt/inih), Copyright © 2009 Ben Hoyt, verwendet unter einer BSD 3-clause-Lizenz.
+- [inih](https://github.com/benhoyt/inih), Copyright © 2009 - 2020 Ben Hoyt, verwendet unter einer BSD 3-clause-Lizenz.
 - [blip-buf](https://code.google.com/archive/b/blip-buf), Copyright © 2003 - 2009 Shay Green, verwendet unter einer Lesser GNU Public License.
 - [LZMA SDK](http://www.7-zip.org/sdk.html), Public Domain.
 - [MurmurHash3](https://github.com/aappleby/smhasher), Implementierung von Austin Appleby, Public Domain.

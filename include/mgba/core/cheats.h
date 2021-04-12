@@ -12,6 +12,7 @@ CXX_GUARD_START
 
 #include <mgba/core/cpu.h>
 #include <mgba/core/log.h>
+#include <mgba-util/table.h>
 #include <mgba-util/vector.h>
 
 enum mCheatType {
@@ -44,9 +45,20 @@ struct mCheat {
 	int32_t operandOffset;
 };
 
+struct mCheatPatch {
+	uint32_t address;
+	int segment;
+	uint32_t value;
+	int width;
+	bool applied;
+	uint32_t checkValue;
+	bool check;
+};
+
 mLOG_DECLARE_CATEGORY(CHEATS);
 
 DECLARE_VECTOR(mCheatList, struct mCheat);
+DECLARE_VECTOR(mCheatPatchList, struct mCheatPatch);
 
 struct mCheatDevice;
 struct mCheatSet {
@@ -66,6 +78,7 @@ struct mCheatSet {
 
 	char* name;
 	bool enabled;
+	struct mCheatPatchList romPatches;
 	struct StringList lines;
 };
 
@@ -78,6 +91,7 @@ struct mCheatDevice {
 	struct mCheatSet* (*createSet)(struct mCheatDevice*, const char* name);
 
 	struct mCheatSets cheats;
+	struct Table unpatchedMemory;
 	bool autosave;
 	bool buttonDown;
 };

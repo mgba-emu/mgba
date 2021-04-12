@@ -10,8 +10,9 @@
 
 CXX_GUARD_START
 
-#include <mgba/gba/interface.h>
 #include <mgba/core/log.h>
+#include <mgba/gba/interface.h>
+#include <mgba/internal/gba/sio/gbp.h>
 
 #define MAX_GBAS 4
 
@@ -29,8 +30,12 @@ enum {
 	JOY_CMD_TRANS = 0x14,
 	JOY_CMD_RECV = 0x15,
 
-	JOYSTAT_TRANS_BIT = 8,
-	JOYSTAT_RECV_BIT = 2,
+	JOYSTAT_TRANS = 8,
+	JOYSTAT_RECV = 2,
+
+	JOYCNT_RESET = 1,
+	JOYCNT_RECV = 2,
+	JOYCNT_TRANS = 4,
 };
 
 DECL_BITFIELD(GBASIONormal, uint16_t);
@@ -65,6 +70,8 @@ struct GBASIO {
 
 	uint16_t rcnt;
 	uint16_t siocnt;
+
+	struct GBASIOPlayer gbp;
 };
 
 void GBASIOInit(struct GBASIO* sio);
@@ -77,6 +84,8 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value);
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value);
 uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value);
+
+int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command, uint8_t* data);
 
 CXX_GUARD_END
 

@@ -34,6 +34,17 @@ enum GBASIOJOYCommand {
 	JOY_RECV = 0x15
 };
 
+enum GBAVideoLayer {
+	GBA_LAYER_BG0 = 0,
+	GBA_LAYER_BG1,
+	GBA_LAYER_BG2,
+	GBA_LAYER_BG3,
+	GBA_LAYER_OBJ,
+	GBA_LAYER_WIN0,
+	GBA_LAYER_WIN1,
+	GBA_LAYER_OBJWIN,
+};
+
 struct GBA;
 struct GBAAudio;
 struct GBASIO;
@@ -68,7 +79,6 @@ struct GBASIODriver {
 };
 
 void GBASIOJOYCreate(struct GBASIODriver* sio);
-int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command, uint8_t* data);
 
 enum GBASIOBattleChipGateFlavor {
 	GBA_FLAVOR_BATTLECHIP_GATE = 4,
@@ -87,6 +97,21 @@ struct GBASIOBattlechipGate {
 };
 
 void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate*);
+
+void GBACartEReaderQueueCard(struct GBA* gba, const void* data, size_t size);
+
+struct EReaderScan;
+#ifdef USE_PNG
+MGBA_EXPORT struct EReaderScan* EReaderScanLoadImagePNG(const char* filename);
+#endif
+MGBA_EXPORT struct EReaderScan* EReaderScanLoadImage(const void* pixels, unsigned width, unsigned height, unsigned stride);
+MGBA_EXPORT struct EReaderScan* EReaderScanLoadImageA(const void* pixels, unsigned width, unsigned height, unsigned stride);
+MGBA_EXPORT struct EReaderScan* EReaderScanLoadImage8(const void* pixels, unsigned width, unsigned height, unsigned stride);
+MGBA_EXPORT void EReaderScanDestroy(struct EReaderScan*);
+
+MGBA_EXPORT bool EReaderScanCard(struct EReaderScan*);
+MGBA_EXPORT void EReaderScanOutputBitmap(const struct EReaderScan*, void* output, size_t stride);
+MGBA_EXPORT bool EReaderScanSaveRaw(const struct EReaderScan*, const char* filename, bool strict);
 
 CXX_GUARD_END
 

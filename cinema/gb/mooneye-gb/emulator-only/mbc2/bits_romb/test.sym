@@ -1,0 +1,68 @@
+; this file was created with wlalink by ville helin <vhelin@iki.fi>.
+; wla symbolic information for "/home/vicki/Scratch/mooneye-gb/tests/build/emulator-only/mbc2/bits_romb.gb".
+
+[labels]
+01:48d3 clear_vram
+01:4884 disable_lcd_safe
+01:488a disable_lcd_safe@wait_ly_0
+01:48a2 memcmp
+01:48e7 memcpy
+01:48f0 memset
+01:48b0 print_hex4
+01:48dd print_hex8
+01:4900 print_inline_string
+01:48bc print_load_font
+01:48c8 print_newline
+01:48f9 print_string
+01:47f0 quit
+01:4805 quit@cb_return
+01:480a quit@wait_ly_1
+01:4810 quit@wait_ly_2
+01:4816 quit@wait_ly_3
+01:481c quit@wait_ly_4
+01:4826 quit@success
+01:484d quit@failure
+01:486c quit@halt
+01:486d quit@halt_execution_0
+01:4870 reset_screen
+01:4893 serial_send_byte
+01:4000 font
+00:0150 main
+00:015f test_round1
+00:0174 test_round1@quit_inline_1
+00:018e test_round2
+00:01c0 test_round2@quit_inline_2
+00:01d1 bank1_pattern
+00:01e1 bank3_pattern
+00:01f1 fail_round2
+00:01f8 fail_round2@quit_inline_3
+00:ff80 hram.test_address
+00:ff80 hram.test_address_l
+00:ff81 hram.test_address_h
+00:ff82 hram.memcmp
+
+[definitions]
+0000000a _sizeof_clear_vram
+0000000f _sizeof_disable_lcd_safe
+0000000e _sizeof_memcmp
+00000009 _sizeof_memcpy
+00000009 _sizeof_memset
+0000000c _sizeof_print_hex4
+0000000a _sizeof_print_hex8
+00000006 _sizeof_print_inline_string
+0000000c _sizeof_print_load_font
+0000000b _sizeof_print_newline
+00000007 _sizeof_print_string
+00000080 _sizeof_quit
+00000014 _sizeof_reset_screen
+0000000f _sizeof_serial_send_byte
+000007f0 _sizeof_font
+00000002 _sizeof_hram.test_address
+00000001 _sizeof_hram.test_address_l
+00000001 _sizeof_hram.test_address_h
+00000020 _sizeof_hram.memcmp
+0000000f _sizeof_main
+0000002f _sizeof_test_round1
+00000043 _sizeof_test_round2
+00000010 _sizeof_bank1_pattern
+00000010 _sizeof_bank3_pattern

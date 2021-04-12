@@ -7,11 +7,11 @@
 
 #include <mgba/core/blip_buf.h>
 
-static void _changeVideoSync(struct mCoreSync* sync, bool frameOn) {
+static void _changeVideoSync(struct mCoreSync* sync, bool wait) {
 	// Make sure the video thread can process events while the GBA thread is paused
 	MutexLock(&sync->videoFrameMutex);
-	if (frameOn != sync->videoFrameOn) {
-		sync->videoFrameOn = frameOn;
+	if (wait != sync->videoFrameWait) {
+		sync->videoFrameWait = wait;
 		ConditionWake(&sync->videoFrameAvailableCond);
 	}
 	MutexUnlock(&sync->videoFrameMutex);
@@ -49,11 +49,11 @@ bool mCoreSyncWaitFrameStart(struct mCoreSync* sync) {
 	}
 
 	MutexLock(&sync->videoFrameMutex);
-	ConditionWake(&sync->videoFrameRequiredCond);
-	if (!sync->videoFrameOn && !sync->videoFramePending) {
+	if (!sync->videoFrameWait && !sync->videoFramePending) {
 		return false;
 	}
-	if (sync->videoFrameOn) {
+	if (sync->videoFrameWait) {
+		ConditionWake(&sync->videoFrameRequiredCond);
 		if (ConditionWaitTimed(&sync->videoFrameAvailableCond, &sync->videoFrameMutex, 50)) {
 			return false;
 		}
@@ -67,6 +67,7 @@ void mCoreSyncWaitFrameEnd(struct mCoreSync* sync) {
 		return;
 	}
 
+	ConditionWake(&sync->videoFrameRequiredCond);
 	MutexUnlock(&sync->videoFrameMutex);
 }
 

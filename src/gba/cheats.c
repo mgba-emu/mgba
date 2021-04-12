@@ -35,34 +35,6 @@ static void _removeBreakpoint(struct mCheatDevice* device, struct GBACheatSet* c
 	GBAClearBreakpoint(device->p->board, cheats->hook->address, cheats->hook->mode, cheats->hook->patchedOpcode);
 }
 
-static void _patchROM(struct mCheatDevice* device, struct GBACheatSet* cheats) {
-	if (!device->p) {
-		return;
-	}
-	int i;
-	for (i = 0; i < MAX_ROM_PATCHES; ++i) {
-		if (!cheats->romPatches[i].exists || cheats->romPatches[i].applied) {
-			continue;
-		}
-		GBAPatch16(device->p->cpu, cheats->romPatches[i].address, cheats->romPatches[i].newValue, &cheats->romPatches[i].oldValue);
-		cheats->romPatches[i].applied = true;
-	}
-}
-
-static void _unpatchROM(struct mCheatDevice* device, struct GBACheatSet* cheats) {
-	if (!device->p) {
-		return;
-	}
-	int i;
-	for (i = 0; i < MAX_ROM_PATCHES; ++i) {
-		if (!cheats->romPatches[i].exists || !cheats->romPatches[i].applied) {
-			continue;
-		}
-		GBAPatch16(device->p->cpu, cheats->romPatches[i].address, cheats->romPatches[i].oldValue, 0);
-		cheats->romPatches[i].applied = false;
-	}
-}
-
 static void GBACheatSetDeinit(struct mCheatSet* set);
 static void GBACheatAddSet(struct mCheatSet* cheats, struct mCheatDevice* device);
 static void GBACheatRemoveSet(struct mCheatSet* cheats, struct mCheatDevice* device);
@@ -97,10 +69,6 @@ static struct mCheatSet* GBACheatSetCreate(struct mCheatDevice* device, const ch
 
 	set->d.refresh = GBACheatRefresh;
 
-	int i;
-	for (i = 0; i < MAX_ROM_PATCHES; ++i) {
-		set->romPatches[i].exists = false;
-	}
 	return &set->d;
 }
 
@@ -124,12 +92,10 @@ static void GBACheatSetDeinit(struct mCheatSet* set) {
 static void GBACheatAddSet(struct mCheatSet* cheats, struct mCheatDevice* device) {
 	struct GBACheatSet* gbaset = (struct GBACheatSet*) cheats;
 	_addBreakpoint(device, gbaset);
-	_patchROM(device, gbaset);
 }
 
 static void GBACheatRemoveSet(struct mCheatSet* cheats, struct mCheatDevice* device) {
 	struct GBACheatSet* gbaset = (struct GBACheatSet*) cheats;
-	_unpatchROM(device, gbaset);
 	_removeBreakpoint(device, gbaset);
 }
 
@@ -274,13 +240,8 @@ bool GBACheatAddLine(struct mCheatSet* set, const char* line, int type) {
 
 static void GBACheatRefresh(struct mCheatSet* cheats, struct mCheatDevice* device) {
 	struct GBACheatSet* gbaset = (struct GBACheatSet*) cheats;
-	if (cheats->enabled) {
-		_patchROM(device, gbaset);
-		if (gbaset->hook && !gbaset->hook->reentries) {
-			_addBreakpoint(device, gbaset);
-		}
-	} else {
-		_unpatchROM(device, gbaset);
+	if (cheats->enabled && gbaset->hook && !gbaset->hook->reentries) {
+		_addBreakpoint(device, gbaset);
 	}
 }
 

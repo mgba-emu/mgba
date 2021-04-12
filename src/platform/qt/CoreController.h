@@ -6,6 +6,7 @@
 #pragma once
 
 #include <QByteArray>
+#include <QFile>
 #include <QList>
 #include <QMutex>
 #include <QObject>
@@ -23,6 +24,9 @@
 
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/sio/printer.h>
+#endif
+#ifdef M_CORE_GBA
+#include <mgba/internal/gba/sio/dolphin.h>
 #endif
 
 #ifdef M_CORE_GBA
@@ -52,12 +56,22 @@ public:
 
 	class Interrupter {
 	public:
-		Interrupter(CoreController*, bool fromThread = false);
-		Interrupter(std::shared_ptr<CoreController>, bool fromThread = false);
+		Interrupter();
+		Interrupter(CoreController*);
+		Interrupter(std::shared_ptr<CoreController>);
 		Interrupter(const Interrupter&);
 		~Interrupter();
 
+		Interrupter& operator=(const Interrupter&);
+
+		void interrupt(CoreController*);
+		void interrupt(std::shared_ptr<CoreController>);
+		void resume();
+
 	private:
+		void interrupt();
+		void resume(CoreController*);
+
 		CoreController* m_parent;
 	};
 
@@ -71,6 +85,10 @@ public:
 
 	bool isPaused();
 	bool hasStarted();
+
+	QString title() { return m_dbTitle.isNull() ? m_internalTitle : m_dbTitle; }
+	QString intenralTitle() { return m_internalTitle; }
+	QString dbTitle() { return m_dbTitle; }
 
 	mPlatform platform() const;
 	QSize screenDimensions() const;
@@ -89,6 +107,10 @@ public:
 	void setMultiplayerController(MultiplayerController*);
 	void clearMultiplayerController();
 	MultiplayerController* multiplayerController() { return m_multiplayer; }
+
+#ifdef M_CORE_GBA
+	bool isDolphinConnected() const { return !SOCKET_FAILED(m_dolphin.data); }
+#endif
 
 	mCacheSet* graphicCaches();
 	int stateSlot() const { return m_stateSlot; }
@@ -119,14 +141,17 @@ public slots:
 	void forceFastForward(bool);
 
 	void loadState(int slot = 0);
-	void loadState(const QString& path);
+	void loadState(const QString& path, int flags = -1);
+	void loadState(QIODevice* iodev, int flags = -1);
 	void saveState(int slot = 0);
-	void saveState(const QString& path);
+	void saveState(const QString& path, int flags = -1);
+	void saveState(QIODevice* iodev, int flags = -1);
 	void loadBackupState();
 	void saveBackupState();
 
 	void loadSave(const QString&, bool temporary);
 	void loadPatch(const QString&);
+	void scanCard(const QString&);
 	void replaceGame(const QString&);
 	void yankPak();
 
@@ -156,6 +181,9 @@ public slots:
 	void detachBattleChipGate();
 	void setBattleChipId(uint16_t id);
 	void setBattleChipFlavor(int flavor);
+
+	bool attachDolphin(const Address& address);
+	void detachDolphin();
 #endif
 
 	void setAVStream(mAVStream*);
@@ -197,9 +225,15 @@ private:
 
 	void updateFastForward();
 
+	void updateROMInfo();
+
 	mCoreThread m_threadContext{};
 
 	bool m_patched = false;
+
+	uint32_t m_crc32;
+	QString m_internalTitle;
+	QString m_dbTitle;
 
 	QByteArray m_activeBuffer;
 	QByteArray m_completeBuffer;
@@ -211,6 +245,7 @@ private:
 	QList<std::function<void()>> m_resetActions;
 	QList<std::function<void()>> m_frameActions;
 	QMutex m_actionMutex{QMutex::Recursive};
+	int m_moreFrames = -1;
 	QMutex m_bufferMutex;
 
 	int m_activeKeys = 0;
@@ -222,6 +257,7 @@ private:
 	QByteArray m_backupSaveState{nullptr};
 	int m_stateSlot = 1;
 	QString m_statePath;
+	VFile* m_stateVf;
 	int m_loadStateFlags;
 	int m_saveStateFlags;
 
@@ -243,6 +279,9 @@ private:
 	InputController* m_inputController = nullptr;
 	LogController* m_log = nullptr;
 	MultiplayerController* m_multiplayer = nullptr;
+#ifdef M_CORE_GBA
+	GBASIODolphin m_dolphin;
+#endif
 
 	mVideoLogContext* m_vl = nullptr;
 	VFile* m_vlVf = nullptr;
@@ -256,6 +295,7 @@ private:
 
 #ifdef M_CORE_GBA
 	GBASIOBattlechipGate m_battlechip;
+	QByteArray m_eReaderData;
 #endif
 };
 

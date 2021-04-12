@@ -7,6 +7,8 @@
 
 #include <mgba/core/core.h>
 #include <mgba/gba/interface.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba-util/math.h>
 
 #include <libavcodec/version.h>
 #include <libavcodec/avcodec.h>
@@ -61,6 +63,7 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->iheight = GBA_VIDEO_VERTICAL_PIXELS;
 	encoder->frameskip = 1;
 	encoder->skipResidue = 0;
+	encoder->loop = false;
 	encoder->ipixFormat =
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
@@ -91,6 +94,7 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->source = NULL;
 	encoder->sink = NULL;
 	encoder->sinkFrame = NULL;
+	FFmpegEncoderSetInputFrameRate(encoder, VIDEO_TOTAL_LENGTH, GBA_ARM7TDMI_FREQUENCY);
 
 	int i;
 	for (i = 0; i < FFMPEG_FILTERS_MAX; ++i) {
@@ -160,7 +164,7 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, un
 	return true;
 }
 
-bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, unsigned vbr, int frameskip) {
+bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, int vbr, int frameskip) {
 	static const struct {
 		enum AVPixelFormat format;
 		int priority;
@@ -177,10 +181,12 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, un
 		{ AV_PIX_FMT_0BGR, 3 },
 		{ AV_PIX_FMT_0RGB, 3 },
 #endif
-		{ AV_PIX_FMT_YUV422P, 4 },
+		{ AV_PIX_FMT_RGB32, 4},
+		{ AV_PIX_FMT_BGR32, 4},
 		{ AV_PIX_FMT_YUV444P, 5 },
-		{ AV_PIX_FMT_YUV420P, 6 },
-		{ AV_PIX_FMT_PAL8, 7 },
+		{ AV_PIX_FMT_YUV422P, 6 },
+		{ AV_PIX_FMT_YUV420P, 7 },
+		{ AV_PIX_FMT_PAL8, 8 },
 	};
 
 	if (!vcodec) {
@@ -208,6 +214,9 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, un
 	if (encoder->pixFormat == AV_PIX_FMT_NONE) {
 		return false;
 	}
+	if (vbr < 0 && !av_opt_find(&codec->priv_class, "crf", NULL, 0, 0)) {
+		return false;
+	}
 	encoder->videoCodec = vcodec;
 	encoder->videoBitrate = vbr;
 	encoder->frameskip = frameskip + 1;
@@ -226,6 +235,10 @@ bool FFmpegEncoderSetContainer(struct FFmpegEncoder* encoder, const char* contai
 void FFmpegEncoderSetDimensions(struct FFmpegEncoder* encoder, int width, int height) {
 	encoder->width = width > 0 ? width : GBA_VIDEO_HORIZONTAL_PIXELS;
 	encoder->height = height > 0 ? height : GBA_VIDEO_VERTICAL_PIXELS;
+}
+
+void FFmpegEncoderSetLooping(struct FFmpegEncoder* encoder, bool loop) {
+	encoder->loop = loop;
 }
 
 bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder* encoder) {
@@ -358,8 +371,10 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		encoder->video->bit_rate = encoder->videoBitrate;
 		encoder->video->width = encoder->width;
 		encoder->video->height = encoder->height;
-		encoder->video->time_base = (AVRational) { VIDEO_TOTAL_LENGTH * encoder->frameskip, GBA_ARM7TDMI_FREQUENCY };
-		encoder->video->framerate = (AVRational) { GBA_ARM7TDMI_FREQUENCY, VIDEO_TOTAL_LENGTH * encoder->frameskip };
+		encoder->video->time_base = (AVRational) { encoder->frameCycles * encoder->frameskip, encoder->cycles };
+		encoder->video->framerate = (AVRational) { encoder->cycles, encoder->frameCycles * encoder->frameskip };
+		encoder->videoStream->time_base = encoder->video->time_base;
+		encoder->videoStream->avg_frame_rate = encoder->video->framerate;
 		encoder->video->pix_fmt = encoder->pixFormat;
 		encoder->video->gop_size = 60;
 		encoder->video->max_b_frames = 3;
@@ -390,7 +405,13 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		if (encoder->video->codec->id == AV_CODEC_ID_PNG) {
 			encoder->video->compression_level = 8;
 		}
-		if (strcmp(vcodec->name, "libx264") == 0) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(58, 48, 100)
+		if (encoder->video->codec->id == AV_CODEC_ID_ZMBV) {
+			encoder->video->compression_level = 5;
+			encoder->video->pix_fmt = AV_PIX_FMT_BGR0;
+		}
+#endif
+		if (strcmp(vcodec->name, "libx264") == 0 || strcmp(vcodec->name, "libx264rgb") == 0) {
 			// Try to adaptively figure out when you can use a slower encoder
 			if (encoder->width * encoder->height > 1000000) {
 				av_opt_set(encoder->video->priv_data, "preset", "superfast", 0);
@@ -399,16 +420,36 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			} else {
 				av_opt_set(encoder->video->priv_data, "preset", "faster", 0);
 			}
+			av_opt_set(encoder->video->priv_data, "tune", "zerolatency", 0);
 			if (encoder->videoBitrate == 0) {
 				av_opt_set(encoder->video->priv_data, "qp", "0", 0);
-				encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
+				if (strcmp(vcodec->name, "libx264") == 0) {
+					encoder->video->pix_fmt = AV_PIX_FMT_YUV444P;
+				}
+			} else if (encoder->videoBitrate < 0) {
+				av_opt_set_int(encoder->video->priv_data, "crf", -encoder->videoBitrate, 0);
 			}
+		} else if (encoder->videoBitrate < 0) {
+			if (strcmp(vcodec->name, "libvpx") == 0 || strcmp(vcodec->name, "libvpx-vp9") == 0 || strcmp(vcodec->name, "libx265") == 0) {
+				av_opt_set_int(encoder->video->priv_data, "crf", -encoder->videoBitrate, 0);
+			} else {
+				FFmpegEncoderClose(encoder);
+				return false;
+			}
+		}
+		if (strncmp(vcodec->name, "libvpx", 6) == 0) {
+			av_opt_set_int(encoder->video->priv_data, "cpu-used", 2, 0);
+			av_opt_set(encoder->video->priv_data, "deadline", "realtime", 0);
 		}
 		if (strcmp(vcodec->name, "libvpx-vp9") == 0 && encoder->videoBitrate == 0) {
 			av_opt_set_int(encoder->video->priv_data, "lossless", 1, 0);
 			av_opt_set_int(encoder->video->priv_data, "crf", 0, 0);
 			encoder->video->gop_size = 120;
 			encoder->video->pix_fmt = AV_PIX_FMT_GBRP;
+		}
+		if (strcmp(vcodec->name, "libwebp_anim") == 0 && encoder->videoBitrate == 0) {
+			av_opt_set(encoder->video->priv_data, "lossless", "1", 0);
+			encoder->video->pix_fmt = AV_PIX_FMT_RGB32;
 		}
 
 		if (encoder->pixFormat == AV_PIX_FMT_PAL8) {
@@ -482,6 +523,14 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 #endif
 	}
 
+	if (strcmp(encoder->containerFormat, "gif") == 0) {
+		av_opt_set(encoder->context->priv_data, "loop", encoder->loop ? "0" : "-1", 0);
+	} else if (strcmp(encoder->containerFormat, "apng") == 0) {
+		av_opt_set(encoder->context->priv_data, "plays", encoder->loop ? "0" : "1", 0);
+	} else if (strcmp(encoder->containerFormat, "webp") == 0) {
+		av_opt_set(encoder->context->priv_data, "loop", encoder->loop ? "0" : "1", 0);
+	}
+
 	AVDictionary* opts = 0;
 	av_dict_set(&opts, "strict", "-2", 0);
 	bool res = avio_open(&encoder->context->pb, outfile, AVIO_FLAG_WRITE) < 0 || avformat_write_header(encoder->context, &opts) < 0;
@@ -543,8 +592,12 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 #endif
 	}
 	if (encoder->audio) {
+#ifdef FFMPEG_USE_CODECPAR
+		avcodec_free_context(&encoder->audio);
+#else
 		avcodec_close(encoder->audio);
 		encoder->audio = NULL;
+#endif
 	}
 
 	if (encoder->resampleContext) {
@@ -566,6 +619,7 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 	}
 
 	if (encoder->videoFrame) {
+		av_freep(encoder->videoFrame->data);
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 		av_frame_free(&encoder->videoFrame);
 #else
@@ -583,8 +637,12 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 	}
 
 	if (encoder->video) {
+#ifdef FFMPEG_USE_CODECPAR
+		avcodec_free_context(&encoder->video);
+#else
 		avcodec_close(encoder->video);
 		encoder->video = NULL;
+#endif
 	}
 
 	if (encoder->scaleContext) {
@@ -739,7 +797,12 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_make_writable(encoder->videoFrame);
 #endif
-	encoder->videoFrame->pts = av_rescale_q(encoder->currentVideoFrame, encoder->video->time_base, encoder->videoStream->time_base);
+	if (encoder->video->codec->id == AV_CODEC_ID_WEBP) {
+		// TODO: Figure out why WebP is rescaling internally (should video frames not be rescaled externally?)
+		encoder->videoFrame->pts = encoder->currentVideoFrame;
+	} else {
+		encoder->videoFrame->pts = av_rescale_q(encoder->currentVideoFrame, encoder->video->time_base, encoder->videoStream->time_base);
+	}
 	++encoder->currentVideoFrame;
 
 	sws_scale(encoder->scaleContext, (const uint8_t* const*) &pixels, (const int*) &stride, 0, encoder->iheight, encoder->videoFrame->data, encoder->videoFrame->linesize);
@@ -806,4 +869,13 @@ static void _ffmpegSetVideoDimensions(struct mAVStream* stream, unsigned width, 
 	encoder->scaleContext = sws_getContext(encoder->iwidth, encoder->iheight, encoder->ipixFormat,
 	    encoder->videoFrame->width, encoder->videoFrame->height, encoder->videoFrame->format,
 	    SWS_POINT, 0, 0, 0);
+}
+
+void FFmpegEncoderSetInputFrameRate(struct FFmpegEncoder* encoder, int numerator, int denominator) {
+	reduceFraction(&numerator, &denominator);
+	encoder->frameCycles = numerator;
+	encoder->cycles = denominator;
+	if (encoder->video) {
+		encoder->video->framerate = (AVRational) { denominator, numerator * encoder->frameskip };
+	}
 }

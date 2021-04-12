@@ -11,6 +11,12 @@
 CXX_GUARD_START
 
 #ifndef DISABLE_THREADING
+#if __STDC_VERSION__ >= 201112L
+#define ThreadLocal _Thread_local void*
+#define ThreadLocalInitKey(X)
+#define ThreadLocalSetKey(K, V) K = V
+#define ThreadLocalGetValue(K) K
+#endif
 #ifdef USE_PTHREADS
 #include <mgba-util/platform/posix/threading.h>
 #elif defined(_WIN32)
@@ -40,6 +46,7 @@ typedef void* Thread;
 typedef void* Mutex;
 #endif
 typedef void* Condition;
+typedef int ThreadLocal;
 
 static inline int MutexInit(Mutex* mutex) {
 	UNUSED(mutex);
@@ -92,6 +99,20 @@ static inline int ConditionWaitTimed(Condition* cond, Mutex* mutex, int32_t time
 static inline int ConditionWake(Condition* cond) {
 	UNUSED(cond);
 	return 0;
+}
+
+static inline void ThreadLocalInitKey(ThreadLocal* key) {
+	UNUSED(key);
+}
+
+static inline void ThreadLocalSetKey(ThreadLocal key, void* value) {
+	UNUSED(key);
+	UNUSED(value);
+}
+
+static inline void* ThreadLocalGetValue(ThreadLocal key) {
+	UNUSED(key);
+	return NULL;
 }
 #endif
 

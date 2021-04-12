@@ -50,7 +50,7 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 	m_model.setScale(size);
 
 	connect(m_ui.chipId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), m_ui.inserted, [this]() {
-		m_ui.inserted->setChecked(Qt::Unchecked);
+		m_ui.inserted->setChecked(false);
 	});
 	connect(m_ui.chipName, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), m_ui.chipId, [this](int id) {
 		if (id < 0) {
@@ -103,11 +103,11 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 	m_controller->attachBattleChipGate();
 	setFlavor(4);
 	if (qtitle.startsWith("AGB-B4B") || qtitle.startsWith("AGB-B4W") || qtitle.startsWith("AGB-BR4") || qtitle.startsWith("AGB-BZ3")) {
-		m_ui.gateBattleChip->setChecked(Qt::Checked);
+		m_ui.gateBattleChip->setChecked(true);
 	} else if (qtitle.startsWith("AGB-BRB") || qtitle.startsWith("AGB-BRK")) {
-		m_ui.gateProgress->setChecked(Qt::Checked);
+		m_ui.gateProgress->setChecked(true);
 	} else if (qtitle.startsWith("AGB-BR5") || qtitle.startsWith("AGB-BR6")) {
-		m_ui.gateBeastLink->setChecked(Qt::Checked);
+		m_ui.gateBeastLink->setChecked(true);
 	}
 
 	if (!QFileInfo(GBAApp::dataDir() + "/chips.rcc").exists() && !QFileInfo(ConfigController::configDir() + "/chips.rcc").exists()) {

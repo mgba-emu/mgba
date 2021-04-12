@@ -14,7 +14,7 @@
 #include <mgba/internal/debugger/gdb-stub.h>
 #endif
 
-#if ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING
 #include <mgba/core/scripting.h>
 #endif
 

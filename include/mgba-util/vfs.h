@@ -47,7 +47,7 @@ struct VFile {
 	void (*unmap)(struct VFile* vf, void* memory, size_t size);
 	void (*truncate)(struct VFile* vf, size_t size);
 	ssize_t (*size)(struct VFile* vf);
-	bool (*sync)(struct VFile* vf, const void* buffer, size_t size);
+	bool (*sync)(struct VFile* vf, void* buffer, size_t size);
 };
 
 struct VDirEntry {
@@ -79,7 +79,7 @@ struct VFile* VFileFIFO(struct CircleBuffer* backing);
 struct VDir* VDirOpen(const char* path);
 struct VDir* VDirOpenArchive(const char* path);
 
-#if defined(USE_LIBZIP) || defined(USE_ZLIB)
+#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
 struct VDir* VDirOpenZip(const char* path, int flags);
 #endif
 

@@ -47,7 +47,8 @@ enum SM83ExecutionState {
 	SM83_CORE_MEMORY_STORE = 11,
 	SM83_CORE_READ_PC = 15,
 	SM83_CORE_STALL = 19,
-	SM83_CORE_OP2 = 23
+	SM83_CORE_OP2 = 23,
+	SM83_CORE_HALT_BUG = 27,
 };
 struct SM83Memory {
 	uint8_t (*cpuLoad8)(struct SM83Core*, uint16_t address);
@@ -73,42 +74,66 @@ struct SM83InterruptHandler {
 	void (*hitIllegal)(struct SM83Core* cpu);
 };
 
+#ifdef __BIG_ENDIAN__
+#define SM83_REGISTER_PAIR(HIGH, LOW) union { \
+		struct { \
+			uint8_t HIGH; \
+			uint8_t LOW; \
+		}; \
+		uint16_t HIGH ## LOW; \
+	}
+
+#define SM83_AF_REGISTER union { \
+		struct { \
+			uint8_t a; \
+			union FlagRegister f; \
+		}; \
+		uint16_t af; \
+	}
+#else
+#define SM83_REGISTER_PAIR(HIGH, LOW) union { \
+		struct { \
+			uint8_t LOW; \
+			uint8_t HIGH; \
+		}; \
+		uint16_t HIGH ## LOW; \
+	}
+
+#define SM83_AF_REGISTER union { \
+		struct { \
+			union FlagRegister f; \
+			uint8_t a; \
+		}; \
+		uint16_t af; \
+	}
+#endif
+
+#define SM83_REGISTER_FILE struct { \
+	SM83_AF_REGISTER; \
+	SM83_REGISTER_PAIR(b, c); \
+	SM83_REGISTER_PAIR(d, e); \
+	SM83_REGISTER_PAIR(h, l); \
+	uint16_t sp; \
+	uint16_t pc; \
+}
+
+struct SM83RegisterFile {
+#pragma pack(push, 1)
+	SM83_REGISTER_FILE;
+#pragma pack(pop)
+};
+
 struct SM83Core {
 #pragma pack(push, 1)
 	union {
-		struct {
-			union FlagRegister f;
-			uint8_t a;
-		};
-		uint16_t af;
+		struct SM83RegisterFile regs;
+		SM83_REGISTER_FILE;
 	};
 #pragma pack(pop)
-	union {
-		struct {
-			uint8_t c;
-			uint8_t b;
-		};
-		uint16_t bc;
-	};
-	union {
-		struct {
-			uint8_t e;
-			uint8_t d;
-		};
-		uint16_t de;
-	};
-	union {
-		struct {
-			uint8_t l;
-			uint8_t h;
-		};
-		uint16_t hl;
-	};
-	uint16_t sp;
-	uint16_t pc;
 
 	uint16_t index;
 
+	int tMultiplier;
 	int32_t cycles;
 	int32_t nextEvent;
 	enum SM83ExecutionState executionState;
@@ -128,6 +153,7 @@ struct SM83Core {
 	size_t numComponents;
 	struct mCPUComponent** components;
 };
+#undef SM83_REGISTER_FILE
 
 void SM83Init(struct SM83Core* cpu);
 void SM83Deinit(struct SM83Core* cpu);

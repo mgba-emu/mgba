@@ -31,6 +31,23 @@ char* strdup(const char* str) {
 }
 #endif
 
+#ifndef HAVE_STRLCPY
+size_t strlcpy(char* restrict dst, const char* restrict src, size_t dstsize) {
+	size_t i = 0;
+	for (; src[i] && dstsize > 1; ++i) {
+		dst[i] = src[i];
+		--dstsize;
+	}
+	if (dstsize) {
+		dst[i] = '\0';
+	}
+	while (src[i]) {
+		++i;
+	}
+	return i;
+}
+#endif
+
 char* strnrstr(const char* restrict haystack, const char* restrict needle, size_t len) {
 	char* last = 0;
 	const char* next = haystack;
@@ -501,4 +518,34 @@ ssize_t parseQuotedString(const char* unparsed, ssize_t unparsedLen, char* parse
 		}
 	}
 	return -1;
+}
+
+bool wildcard(const char* search, const char* string) {
+	while (true) {
+		if (search[0] == '*') {
+			while (search[0] == '*') {
+				++search;
+			}
+			if (!search[0]) {
+				return true;
+			}
+			while (string[0]) {
+				if (string[0] == search[0] && wildcard(search, string)) {
+					return true;
+				}
+				++string;
+			}
+			return false;
+		} else if (!search[0]) {
+			return !string[0];
+		} else if (!string[0]) {
+			return false;
+		} else if (string[0] != search[0]) {
+			return false;
+		} else {
+			++search;
+			++string;
+		}
+	}
+	return false;
 }
