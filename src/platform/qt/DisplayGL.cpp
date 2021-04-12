@@ -432,23 +432,16 @@ void PainterGL::draw() {
 	if (!m_active || m_queue.isEmpty()) {
 		return;
 	}
-	if (m_lagging >= 1) {
-		return;
-	}
 	mCoreSync* sync = &m_context->thread()->impl->sync;
 	if (!mCoreSyncWaitFrameStart(sync)) {
 		mCoreSyncWaitFrameEnd(sync);
-		++m_lagging;
 		if ((sync->audioWait || sync->videoFrameWait) && m_delayTimer.elapsed() < 1000 / m_surface->screen()->refreshRate()) {
 			QTimer::singleShot(1, this, &PainterGL::draw);
 		}
 		return;
 	}
 	dequeue();
-	if (m_videoProxy) {
-		// Only block on the next frame if we're trying to run at roughly 60fps via audio
-		m_videoProxy->setBlocking(sync->audioWait && std::abs(60.f - sync->fpsTarget) < 0.1f);
-	}
+	bool forceRedraw = !m_videoProxy;
 	if (!m_delayTimer.isValid()) {
 		m_delayTimer.start();
 	} else {
@@ -456,13 +449,18 @@ void PainterGL::draw() {
 			while (m_delayTimer.nsecsElapsed() + 2000000 < 1000000000 / sync->fpsTarget) {
 				QThread::usleep(500);
 			}
+			forceRedraw = true;
+		} else if (!forceRedraw) {
+			forceRedraw = m_delayTimer.nsecsElapsed() + 2000000 >= 1000000000 / m_surface->screen()->refreshRate();
 		}
-		m_delayTimer.restart();
 	}
 	mCoreSyncWaitFrameEnd(sync);
 
-	performDraw();
-	m_backend->swap(m_backend);
+	if (forceRedraw) {
+		m_delayTimer.restart();
+		performDraw();
+		m_backend->swap(m_backend);
+	}
 }
 
 void PainterGL::forceDraw() {
@@ -504,7 +502,6 @@ void PainterGL::pause() {
 }
 
 void PainterGL::unpause() {
-	m_lagging = 0;
 	m_active = true;
 }
 
@@ -538,7 +535,6 @@ void PainterGL::enqueue(const uint32_t* backing) {
 			memcpy(buffer, backing, size.width() * size.height() * BYTES_PER_PIXEL);
 		}
 	}
-	m_lagging = 0;
 	m_queue.enqueue(buffer);
 }
 
