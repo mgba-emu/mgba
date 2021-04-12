@@ -12,6 +12,7 @@ Other fixes:
  - GBA Video: Fix mode 5 frame 1 caching (fixes mgba.io/i/2075)
  - GBA Video: Don't attempt to copy invalid registers when switching renderer
  - Qt: Fix crash when switching from high-resolution OpenGL renderer to software
+ - Qt: Fix OpenGL renderer lagging behind when fast-forwarding (fixes mgba.io/i/2094)
 Misc:
  - Core: Truncate preloading ROMs that slightly exceed max size (fixes mgba.io/i/2093)
  - GBA: Default-enable VBA bug compat for Ruby and Emerald ROM hacks

@@ -14,7 +14,7 @@ using namespace QGBA;
 VideoProxy::VideoProxy() {
 	mVideoLoggerRendererCreate(&m_logger.d, false);
 	m_logger.d.block = true;
-	m_logger.d.waitOnFlush = false;
+	m_logger.d.waitOnFlush = true;
 
 	m_logger.d.init = &cbind<&VideoProxy::init>;
 	m_logger.d.reset = &cbind<&VideoProxy::reset>;
