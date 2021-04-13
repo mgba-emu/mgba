@@ -15,6 +15,7 @@ Other fixes:
  - GBA Video: Don't attempt to copy invalid registers when switching renderer
  - Qt: Fix crash when switching from high-resolution OpenGL renderer to software
  - Qt: Fix OpenGL renderer lagging behind when fast-forwarding (fixes mgba.io/i/2094)
+ - Qt: Fix smudged window icon on Windows
 Misc:
  - Core: Truncate preloading ROMs that slightly exceed max size (fixes mgba.io/i/2093)
  - GBA: Default-enable VBA bug compat for Ruby and Emerald ROM hacks
