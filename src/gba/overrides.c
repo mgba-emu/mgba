@@ -50,10 +50,6 @@ static const struct GBACartridgeOverride _overrides[] = {
 	// Drill Dozer
 	{ "V49J", SAVEDATA_SRAM, HW_RUMBLE, IDLE_LOOP_NONE, false },
 	{ "V49E", SAVEDATA_SRAM, HW_RUMBLE, IDLE_LOOP_NONE, false },
-    
-    // e-Reader
-	{ "PSAJ", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "PSAE", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
 
 	// e-Reader
 	{ "PEAJ", SAVEDATA_FLASH1M, HW_EREADER, IDLE_LOOP_NONE },
