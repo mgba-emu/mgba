@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
 	GBAApp application(argc, argv, &configController);
 
 #ifndef Q_OS_MAC
-	QApplication::setWindowIcon(QIcon(":/res/mgba-1024.png"));
+	QApplication::setWindowIcon(QIcon(":/res/mgba-256.png"));
 #endif
 
 	QTranslator qtTranslator;
