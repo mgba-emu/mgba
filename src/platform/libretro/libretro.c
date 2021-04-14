@@ -1715,8 +1715,8 @@ static void _setupMaps(struct mCore* core) {
 		i++;
 
 		/* Map External RAM */
-		if (gb->memory.sram) {
-			descs[i].ptr    = gb->memory.sram;
+		if (savedataSize) {
+			descs[i].ptr    = savedata;
 			descs[i].start  = GB_BASE_EXTERNAL_RAM;
 			descs[i].len    = savedataSize;
 			i++;
