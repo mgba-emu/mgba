@@ -2,6 +2,7 @@
 Emulation fixes:
  - Core: Fix first event scheduling after loading savestate
  - GB Serialize: Fix switching speed modes when loading a state (fixes mgba.io/i/2097)
+ - GB: Fix skipping BIOS
  - GBA Memory: Fix loading Thumb savestates when in ARM mode
  - GBA Video: Fix window start on modes 3-5 with mosaic (fixes mgba.io/i/1690)
  - GBA Video: Fix mode 3-5 overflow with mosaic (fixes mgba.io/i/1691)
