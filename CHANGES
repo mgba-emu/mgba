@@ -4,6 +4,7 @@ Features:
 Emulation fixes:
  - Core: Fix first event scheduling after loading savestate
  - GB Serialize: Fix switching speed modes when loading a state (fixes mgba.io/i/2097)
+ - GB: Fix skipping BIOS
  - GBA Memory: Fix loading Thumb savestates when in ARM mode
  - GBA Video: Fix window start on modes 3-5 with mosaic (fixes mgba.io/i/1690)
  - GBA Video: Fix mode 3-5 overflow with mosaic (fixes mgba.io/i/1691)
@@ -15,6 +16,7 @@ Other fixes:
  - GBA Video: Don't attempt to copy invalid registers when switching renderer
  - Qt: Fix crash when switching from high-resolution OpenGL renderer to software
  - Qt: Fix OpenGL renderer lagging behind when fast-forwarding (fixes mgba.io/i/2094)
+ - Qt: Fix smudged window icon on Windows
 Misc:
  - Core: Truncate preloading ROMs that slightly exceed max size (fixes mgba.io/i/2093)
  - GBA: Default-enable VBA bug compat for Ruby and Emerald ROM hacks
