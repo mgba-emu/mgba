@@ -158,6 +158,8 @@ private:
 	} m_image;
 
 #ifdef BUILD_QT_MULTIMEDIA
+	bool m_cameraActive = false;
+	QByteArray m_cameraDevice;
 	std::unique_ptr<QCamera> m_camera;
 	VideoDumper m_videoDumper;
 #endif
