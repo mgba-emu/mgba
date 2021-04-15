@@ -7,6 +7,7 @@
 
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/sio/gbp.h>
 
 mLOG_DEFINE_CATEGORY(GBA_SIO, "GBA Serial I/O", "gba.sio");
 
@@ -31,6 +32,23 @@ static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mo
 	}
 }
 
+static const char* _modeName(enum GBASIOMode mode) {
+	switch (mode) {
+	case SIO_NORMAL_8:
+		return "NORMAL8";
+	case SIO_NORMAL_32:
+		return "NORMAL32";
+	case SIO_MULTI:
+		return "MULTI";
+	case SIO_JOYBUS:
+		return "JOYBUS";
+	case SIO_GPIO:
+		return "GPIO";
+	default:
+		return "(unknown)";
+	}
+}
+
 static void _switchMode(struct GBASIO* sio) {
 	unsigned mode = ((sio->rcnt & 0xC000) | (sio->siocnt & 0x3000)) >> 12;
 	enum GBASIOMode newMode;
@@ -42,6 +60,9 @@ static void _switchMode(struct GBASIO* sio) {
 	if (newMode != sio->mode) {
 		if (sio->activeDriver && sio->activeDriver->unload) {
 			sio->activeDriver->unload(sio->activeDriver);
+		}
+		if (sio->mode != (enum GBASIOMode) -1) {
+			mLOG(GBA_SIO, DEBUG, "Switching mode from %s to %s", _modeName(sio->mode), _modeName(newMode));
 		}
 		sio->mode = newMode;
 		sio->activeDriver = _lookupDriver(sio, sio->mode);
@@ -60,6 +81,10 @@ void GBASIOInit(struct GBASIO* sio) {
 	sio->drivers.multiplayer = 0;
 	sio->drivers.joybus = 0;
 	sio->activeDriver = 0;
+
+	sio->gbp.p = sio->p;
+	GBASIOPlayerInit(&sio->gbp);
+
 	GBASIOReset(sio);
 }
 
@@ -87,6 +112,8 @@ void GBASIOReset(struct GBASIO* sio) {
 	sio->mode = -1;
 	sio->activeDriver = NULL;
 	_switchMode(sio);
+
+	GBASIOPlayerReset(&sio->gbp);
 }
 
 void GBASIOSetDriverSet(struct GBASIO* sio, struct GBASIODriverSet* drivers) {
@@ -185,6 +212,20 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value) {
 	if (sio->activeDriver && sio->activeDriver->writeRegister) {
 		return sio->activeDriver->writeRegister(sio->activeDriver, address, value);
+	}
+	// Dummy drivers
+	switch (sio->mode) {
+	case SIO_JOYBUS:
+		switch (address) {
+		case REG_JOYCNT:
+			return (value & 0x0040) | (sio->p->memory.io[REG_JOYCNT >> 1] & ~(value & 0x7) & ~0x0040);
+		case REG_JOYSTAT:
+			return (value & 0x0030) | (sio->p->memory.io[REG_JOYSTAT >> 1] & ~0x30);
+		}
+		break;
+	default:
+		// TODO
+		break;
 	}
 	return value;
 }

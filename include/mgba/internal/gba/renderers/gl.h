@@ -44,7 +44,6 @@ struct GBAVideoGLAffine {
 struct GBAVideoGLBackground {
 	GLuint fbo;
 	GLuint tex;
-	GLuint flags;
 
 	unsigned index;
 	int enabled;
@@ -80,8 +79,7 @@ enum {
 	GBA_GL_TEX_OBJ_COLOR = 0,
 	GBA_GL_TEX_OBJ_FLAGS,
 	GBA_GL_TEX_OBJ_DEPTH,
-	GBA_GL_TEX_BACKDROP_COLOR,
-	GBA_GL_TEX_BACKDROP_FLAGS,
+	GBA_GL_TEX_BACKDROP,
 	GBA_GL_TEX_WINDOW,
 	GBA_GL_TEX_MAX
 };
@@ -96,7 +94,6 @@ enum {
 	GBA_GL_BG_CHARBASE,
 	GBA_GL_BG_SIZE,
 	GBA_GL_BG_OFFSET,
-	GBA_GL_BG_INFLAGS,
 	GBA_GL_BG_TRANSFORM,
 	GBA_GL_BG_RANGE,
 	GBA_GL_BG_MOSAIC,
@@ -111,6 +108,7 @@ enum {
 	GBA_GL_OBJ_DIMS,
 	GBA_GL_OBJ_OBJWIN,
 	GBA_GL_OBJ_MOSAIC,
+	GBA_GL_OBJ_CYCLES,
 
 	GBA_GL_WIN_DISPCNT = 2,
 	GBA_GL_WIN_BLEND,
@@ -122,10 +120,10 @@ enum {
 	GBA_GL_FINALIZE_LAYERS,
 	GBA_GL_FINALIZE_FLAGS,
 	GBA_GL_FINALIZE_WINDOW,
+	GBA_GL_FINALIZE_PALETTE,
 	GBA_GL_FINALIZE_BACKDROP,
-	GBA_GL_FINALIZE_BACKDROPFLAGS,
 
-	GBA_GL_UNIFORM_MAX = 12
+	GBA_GL_UNIFORM_MAX = 14
 };
 
 struct GBAVideoGLShader {
@@ -151,7 +149,10 @@ struct GBAVideoGLRenderer {
 
 	GLuint outputTex;
 
-	GLint shadowPalette[512];
+	GLuint paletteTex;
+	uint16_t shadowPalette[GBA_VIDEO_VERTICAL_PIXELS][512];
+	int nextPalette;
+	int paletteDirtyScanlines;
 	bool paletteDirty;
 
 	GLuint vramTex;
@@ -185,6 +186,7 @@ struct GBAVideoGLRenderer {
 	} winN[2];
 
 	GLint winNHistory[2][GBA_VIDEO_VERTICAL_PIXELS * 4];
+	GLint spriteCycles[GBA_VIDEO_VERTICAL_PIXELS];
 
 	GBAWindowControl winout;
 	GBAWindowControl objwin;

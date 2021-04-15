@@ -11,6 +11,7 @@
 #include "VFileDevice.h"
 
 #include <QCheckBox>
+#include <QDir>
 #include <QDoubleSpinBox>
 #include <QFileDialog>
 #include <QFormLayout>
@@ -60,14 +61,11 @@ void ShaderSelector::clear() {
 }
 
 void ShaderSelector::selectShader() {
-	QString path(GBAApp::dataDir());
-	path += QLatin1String("/shaders");
-	QFileDialog dialog(nullptr, tr("Load shader"), path);
-	dialog.setFileMode(QFileDialog::Directory);
-	dialog.exec();
-	QStringList names = dialog.selectedFiles();
-	if (names.count() == 1) {
-		loadShader(names[0]);
+	QDir path(GBAApp::dataDir());
+	path.cd(QLatin1String("shaders"));
+	QString name = GBAApp::app()->getOpenDirectoryName(this, tr("Load shader"), path.absolutePath());
+	if (!name.isNull()) {
+		loadShader(name);
 		refreshShaders();
 	}
 }

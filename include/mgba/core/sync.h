@@ -15,7 +15,6 @@ CXX_GUARD_START
 struct mCoreSync {
 	int videoFramePending;
 	bool videoFrameWait;
-	bool videoFrameOn;
 	Mutex videoFrameMutex;
 	Condition videoFrameAvailableCond;
 	Condition videoFrameRequiredCond;

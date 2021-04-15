@@ -154,14 +154,13 @@ AccessControlInfo:
    - cam:u
    - cecd:u
    - cfg:u
-   - dlp:FKCL
-   - dlp:SRVR
    - dsp::DSP
    - frd:u
    - fs:USER
    - gsp::Gpu
    - hid:USER
    - http:C
+   - mcu::HWC
    - mic:u
    - ndm:u
    - news:u

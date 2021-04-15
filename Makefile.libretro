@@ -195,6 +195,7 @@ else ifeq ($(platform), osx)
       DEFINES += -D__POWERPC__ -D__PPC__ -DMSB_FIRST
    endif
    DEFINES += -std=gnu99
+	DEFINES += -DHAVE_STRLCPY
    ifeq ($(CROSS_COMPILE),1)
 	TARGET_RULE  = -target $(LIBRETRO_APPLE_PLATFORM) -isysroot $(LIBRETRO_APPLE_ISYSROOT)
 	CFLAGS      += $(TARGET_RULE)
@@ -222,6 +223,7 @@ else ifneq (,$(findstring ios,$(platform)))
       PLATFORM_DEFINES := -miphoneos-version-min=5.0
    endif
    DEFINES += -std=c99
+   DEFINES += -DHAVE_STRLCPY
 
 # tvOS
 else ifeq ($(platform), tvos-arm64)
@@ -230,6 +232,7 @@ else ifeq ($(platform), tvos-arm64)
    SHARED := -dynamiclib
    CFLAGS := -DIOS
    DEFINES += -std=c99
+   DEFINES += -DHAVE_STRLCPY
 
 ifeq ($(IOSSDK),)
    IOSSDK := $(shell xcodebuild -version -sdk appletvos Path)
@@ -417,7 +420,7 @@ else
    CFLAGS += -O3
 endif
 
-DEFINES += -DHAVE_STRNDUP -DHAVE_STRDUP -DDISABLE_THREADING
+DEFINES += -DHAVE_STRNDUP -DHAVE_STRDUP -DDISABLE_THREADING -DMINIMAL_CORE=2
 
 include $(BUILD_DIR)/Makefile.common
 

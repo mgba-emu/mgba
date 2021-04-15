@@ -22,8 +22,36 @@ class _ARMRegisters:
 
 
 class ARMCore:
+    SP = 13
+    LR = 14
+    PC = 15
+
     def __init__(self, native):
         self._native = ffi.cast("struct ARMCore*", native)
         self.gprs = _ARMRegisters(self)
         self.cpsr = self._native.cpsr
         self.spsr = self._native.spsr
+
+    @property
+    def sp(self):
+        return self.gprs[self.SP]
+
+    @sp.setter
+    def sp(self, value):
+        self.gprs[self.SP] = value
+
+    @property
+    def lr(self):
+        return self.gprs[self.LR]
+
+    @lr.setter
+    def lr(self, value):
+        self.gprs[self.LR] = value
+
+    @property
+    def pc(self):
+        return self.gprs[self.PC]
+
+    @pc.setter
+    def pc(self, value):
+        self.gprs[self.PC] = value

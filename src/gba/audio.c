@@ -23,7 +23,6 @@
 mLOG_DEFINE_CATEGORY(GBA_AUDIO, "GBA Audio", "gba.audio");
 
 const unsigned GBA_AUDIO_SAMPLES = 2048;
-const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
 const int GBA_AUDIO_VOLUME_MAX = 0x100;
 
 static const int CLOCKS_PER_FRAME = 0x800;
@@ -48,8 +47,6 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 	// Guess too large; we hang producing extra samples if we guess too low
 	blip_set_rates(audio->psg.left, GBA_ARM7TDMI_FREQUENCY, 96000);
 	blip_set_rates(audio->psg.right, GBA_ARM7TDMI_FREQUENCY, 96000);
-	CircleBufferInit(&audio->chA.fifo, GBA_AUDIO_FIFO_SIZE);
-	CircleBufferInit(&audio->chB.fifo, GBA_AUDIO_FIFO_SIZE);
 
 	audio->externalMixing = false;
 	audio->forceDisableChA = false;
@@ -64,7 +61,17 @@ void GBAAudioReset(struct GBAAudio* audio) {
 	mTimingSchedule(&audio->p->timing, &audio->sampleEvent, 0);
 	audio->chA.dmaSource = 1;
 	audio->chB.dmaSource = 2;
+	audio->chA.fifoWrite = 0;
+	audio->chA.fifoRead = 0;
+	audio->chA.internalSample = 0;
+	audio->chA.internalRemaining = 0;
+	memset(audio->chA.fifo, 0, sizeof(audio->chA.fifo));
 	audio->chA.sample = 0;
+	audio->chB.fifoWrite = 0;
+	audio->chB.fifoRead = 0;
+	audio->chB.internalSample = 0;
+	audio->chB.internalRemaining = 0;
+	memset(audio->chB.fifo, 0, sizeof(audio->chB.fifo));
 	audio->chB.sample = 0;
 	audio->sampleRate = 0x8000;
 	audio->soundbias = 0x200;
@@ -84,14 +91,10 @@ void GBAAudioReset(struct GBAAudio* audio) {
 	blip_clear(audio->psg.left);
 	blip_clear(audio->psg.right);
 	audio->clock = 0;
-	CircleBufferClear(&audio->chA.fifo);
-	CircleBufferClear(&audio->chB.fifo);
 }
 
 void GBAAudioDeinit(struct GBAAudio* audio) {
 	GBAudioDeinit(&audio->psg);
-	CircleBufferDeinit(&audio->chA.fifo);
-	CircleBufferDeinit(&audio->chB.fifo);
 }
 
 void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
@@ -199,10 +202,12 @@ void GBAAudioWriteSOUNDCNT_HI(struct GBAAudio* audio, uint16_t value) {
 	audio->chBLeft = GBARegisterSOUNDCNT_HIGetChBLeft(value);
 	audio->chBTimer = GBARegisterSOUNDCNT_HIGetChBTimer(value);
 	if (GBARegisterSOUNDCNT_HIIsChAReset(value)) {
-		CircleBufferClear(&audio->chA.fifo);
+		audio->chA.fifoWrite = 0;
+		audio->chA.fifoRead = 0;
 	}
 	if (GBARegisterSOUNDCNT_HIIsChBReset(value)) {
-		CircleBufferClear(&audio->chB.fifo);
+		audio->chB.fifoWrite = 0;
+		audio->chB.fifoRead = 0;
 	}
 }
 
@@ -216,29 +221,48 @@ void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteWaveRAM(struct GBAAudio* audio, int address, uint32_t value) {
-	audio->psg.ch3.wavedata32[address | (!audio->psg.ch3.bank * 4)] = value;
+	int bank = !audio->psg.ch3.bank;
+
+	// When the audio hardware is turned off, it acts like bank 0 has been
+	// selected in SOUND3CNT_L, so any read comes from bank 1.
+	if (!audio->enable) {
+		bank = 1;
+	}
+
+	audio->psg.ch3.wavedata32[address | (bank * 4)] = value;
 }
 
-void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value) {
-	struct CircleBuffer* fifo;
+uint32_t GBAAudioReadWaveRAM(struct GBAAudio* audio, int address) {
+	int bank = !audio->psg.ch3.bank;
+
+	// When the audio hardware is turned off, it acts like bank 0 has been
+	// selected in SOUND3CNT_L, so any read comes from bank 1.
+	if (!audio->enable) {
+		bank = 1;
+	}
+
+	return audio->psg.ch3.wavedata32[address | (bank * 4)];
+}
+
+uint32_t GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value) {
+	struct GBAAudioFIFO* channel;
 	switch (address) {
 	case REG_FIFO_A_LO:
-		fifo = &audio->chA.fifo;
+		channel = &audio->chA;
 		break;
 	case REG_FIFO_B_LO:
-		fifo = &audio->chB.fifo;
+		channel = &audio->chB;
 		break;
 	default:
 		mLOG(GBA_AUDIO, ERROR, "Bad FIFO write to address 0x%03x", address);
-		return;
+		return value;
 	}
-	int i;
-	for (i = 0; i < 4; ++i) {
-		while (!CircleBufferWrite8(fifo, value >> (8 * i))) {
-			int8_t dummy;
-			CircleBufferRead8(fifo, &dummy);
-		}
+	channel->fifo[channel->fifoWrite] = value;
+	++channel->fifoWrite;
+	if (channel->fifoWrite == GBA_AUDIO_FIFO_SIZE) {
+		channel->fifoWrite = 0;
 	}
+	return channel->fifo[channel->fifoWrite];
 }
 
 void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
@@ -251,17 +275,33 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 		mLOG(GBA_AUDIO, ERROR, "Bad FIFO write to address 0x%03x", fifoId);
 		return;
 	}
-	if (CircleBufferSize(&channel->fifo) <= 4 * sizeof(int32_t) && channel->dmaSource > 0) {
+	int fifoSize;
+	if (channel->fifoWrite >= channel->fifoRead) {
+		fifoSize = channel->fifoWrite - channel->fifoRead;
+	} else {
+		fifoSize = GBA_AUDIO_FIFO_SIZE - channel->fifoRead + channel->fifoWrite;
+	}
+	if (GBA_AUDIO_FIFO_SIZE - fifoSize > 4 && channel->dmaSource > 0) {
 		struct GBADMA* dma = &audio->p->memory.dma[channel->dmaSource];
 		if (GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_CUSTOM) {
 			dma->when = mTimingCurrentTime(&audio->p->timing) - cycles;
 			dma->nextCount = 4;
 			GBADMASchedule(audio->p, channel->dmaSource, dma);
-		} else {
-			channel->dmaSource = 0;
 		}
 	}
-	CircleBufferRead8(&channel->fifo, (int8_t*) &channel->sample);
+	if (!channel->internalRemaining && fifoSize) {
+		channel->internalSample = channel->fifo[channel->fifoRead];
+		channel->internalRemaining = 4;
+		++channel->fifoRead;
+		if (channel->fifoRead == GBA_AUDIO_FIFO_SIZE) {
+			channel->fifoRead = 0;
+		}
+	}
+	channel->sample = channel->internalSample;
+	if (channel->internalRemaining) {
+		channel->internalSample >>= 8;
+		--channel->internalRemaining;
+	}
 }
 
 static int _applyBias(struct GBAAudio* audio, int sample) {
@@ -345,28 +385,76 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* state) {
 	GBAudioPSGSerialize(&audio->psg, &state->audio.psg, &state->audio.flags);
 
-	CircleBufferDump(&audio->chA.fifo, state->audio.fifoA, sizeof(state->audio.fifoA));
-	CircleBufferDump(&audio->chB.fifo, state->audio.fifoB, sizeof(state->audio.fifoB));
-	uint32_t fifoSize = CircleBufferSize(&audio->chA.fifo);
-	STORE_32(fifoSize, 0, &state->audio.fifoSize);
+	STORE_32(audio->chA.internalSample, 0, &state->audio.internalA);
+	STORE_32(audio->chB.internalSample, 0, &state->audio.internalB);
+	state->audio.sampleA = audio->chA.sample;
+	state->audio.sampleB = audio->chB.sample;
+
+	int readA = audio->chA.fifoRead;
+	int readB = audio->chB.fifoRead;
+	size_t i;
+	for (i = 0; i < GBA_AUDIO_FIFO_SIZE; ++i) {
+		STORE_32(audio->chA.fifo[readA], i << 2, state->audio.fifoA);
+		STORE_32(audio->chB.fifo[readB], i << 2, state->audio.fifoB);
+		++readA;
+		if (readA == GBA_AUDIO_FIFO_SIZE) {
+			readA = 0;
+		}
+		++readB;
+		if (readB == GBA_AUDIO_FIFO_SIZE) {
+			readB = 0;
+		}
+	}
+
+	int fifoSizeA;
+	if (audio->chA.fifoWrite >= audio->chA.fifoRead) {
+		fifoSizeA = audio->chA.fifoWrite - audio->chA.fifoRead;
+	} else {
+		fifoSizeA = GBA_AUDIO_FIFO_SIZE - audio->chA.fifoRead + audio->chA.fifoWrite;
+	}
+
+	int fifoSizeB;
+	if (audio->chB.fifoWrite >= audio->chB.fifoRead) {
+		fifoSizeB = audio->chB.fifoWrite - audio->chB.fifoRead;
+	} else {
+		fifoSizeB = GBA_AUDIO_FIFO_SIZE - audio->chB.fifoRead + audio->chB.fifoWrite;
+	}
+
+	GBASerializedAudioFlags flags = 0;
+	flags = GBASerializedAudioFlagsSetFIFOSamplesA(flags, fifoSizeA);
+	flags = GBASerializedAudioFlagsSetFIFOSamplesB(flags, fifoSizeB);
+	flags = GBASerializedAudioFlagsSetFIFOInternalSamplesA(flags, audio->chA.internalRemaining);
+	flags = GBASerializedAudioFlagsSetFIFOInternalSamplesB(flags, audio->chB.internalRemaining);
+	STORE_16(flags, 0, &state->audio.gbaFlags);
 	STORE_32(audio->sampleEvent.when - mTimingCurrentTime(&audio->p->timing), 0, &state->audio.nextSample);
 }
 
 void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState* state) {
 	GBAudioPSGDeserialize(&audio->psg, &state->audio.psg, &state->audio.flags);
 
-	CircleBufferClear(&audio->chA.fifo);
-	CircleBufferClear(&audio->chB.fifo);
-	uint32_t fifoSize;
-	LOAD_32(fifoSize, 0, &state->audio.fifoSize);
-	if (state->audio.fifoSize > CircleBufferCapacity(&audio->chA.fifo)) {
-		fifoSize = CircleBufferCapacity(&audio->chA.fifo);
-	}
+	LOAD_32(audio->chA.internalSample, 0, &state->audio.internalA);
+	LOAD_32(audio->chB.internalSample, 0, &state->audio.internalB);
+	audio->chA.sample = state->audio.sampleA;
+	audio->chB.sample = state->audio.sampleB;
+
+	int readA = 0;
+	int readB = 0;
 	size_t i;
-	for (i = 0; i < fifoSize; ++i) {
-		CircleBufferWrite8(&audio->chA.fifo, state->audio.fifoA[i]);
-		CircleBufferWrite8(&audio->chB.fifo, state->audio.fifoB[i]);
+	for (i = 0; i < GBA_AUDIO_FIFO_SIZE; ++i) {
+		LOAD_32(audio->chA.fifo[readA], i << 2, state->audio.fifoA);
+		LOAD_32(audio->chB.fifo[readB], i << 2, state->audio.fifoB);
+		++readA;
+		++readB;
 	}
+	audio->chA.fifoRead = 0;
+	audio->chB.fifoRead = 0;
+
+	GBASerializedAudioFlags flags;
+	LOAD_16(flags, 0, &state->audio.gbaFlags);
+	audio->chA.fifoWrite = GBASerializedAudioFlagsGetFIFOSamplesA(flags);
+	audio->chB.fifoWrite = GBASerializedAudioFlagsGetFIFOSamplesB(flags);
+	audio->chA.internalRemaining = GBASerializedAudioFlagsGetFIFOInternalSamplesA(flags);
+	audio->chB.internalRemaining = GBASerializedAudioFlagsGetFIFOInternalSamplesB(flags);
 
 	uint32_t when;
 	LOAD_32(when, 0, &state->audio.nextSample);

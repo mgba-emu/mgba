@@ -24,7 +24,7 @@ void mSDLGLCommonSwap(struct VideoBackend* context) {
 #endif
 }
 
-void mSDLGLCommonInit(struct mSDLRenderer* renderer) {
+bool mSDLGLCommonInit(struct mSDLRenderer* renderer) {
 #ifndef COLOR_16_BIT
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -42,6 +42,10 @@ void mSDLGLCommonInit(struct mSDLRenderer* renderer) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	renderer->window = SDL_CreateWindow(projectName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer->player.fullscreen));
 	renderer->glCtx = SDL_GL_CreateContext(renderer->window);
+	if (!renderer->glCtx) {
+		SDL_DestroyWindow(renderer->window);
+		return false;
+	}
 	SDL_GL_SetSwapInterval(1);
 	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
 	renderer->player.window = renderer->window;
@@ -51,10 +55,14 @@ void mSDLGLCommonInit(struct mSDLRenderer* renderer) {
 #else
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
 #ifdef COLOR_16_BIT
-	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_OPENGL | SDL_RESIZABLE | (SDL_FULLSCREEN * renderer->player.fullscreen));
+	SDL_Surface* surface = SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_OPENGL | SDL_RESIZABLE | (SDL_FULLSCREEN * renderer->player.fullscreen));
 #else
-	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 32, SDL_OPENGL | SDL_RESIZABLE | (SDL_FULLSCREEN * renderer->player.fullscreen));
+	SDL_Surface* surface = SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 32, SDL_OPENGL | SDL_RESIZABLE | (SDL_FULLSCREEN * renderer->player.fullscreen));
 #endif
+	if (!surface) {
+		return false;
+	}
 	SDL_WM_SetCaption(projectName, "");
 #endif
+	return true;
 }

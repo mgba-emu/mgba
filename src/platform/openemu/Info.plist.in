@@ -27,7 +27,7 @@
 		<key>openemu.system.gba</key>
 		<dict>
 			<key>OEGameCoreRewindBufferSeconds</key>
-			<integer>1200</integer>
+			<integer>60</integer>
 			<key>OEGameCoreRewindInterval</key>
 			<integer>0</integer>
 			<key>OEGameCoreSupportsRewinding</key>

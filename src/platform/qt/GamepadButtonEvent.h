@@ -28,7 +28,6 @@ private:
 	static Type s_upType;
 
 	int m_button;
-	InputController* m_controller;
 	GBAKey m_key;
 };
 

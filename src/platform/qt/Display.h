@@ -27,12 +27,8 @@ Q_OBJECT
 public:
 	enum class Driver {
 		QT = 0,
-#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 		OPENGL = 1,
-#endif
-#ifdef BUILD_GL
 		OPENGL1 = 2,
-#endif
 	};
 
 	Display(QWidget* parent = nullptr);
@@ -51,12 +47,13 @@ public:
 	virtual bool supportsShaders() const = 0;
 	virtual VideoShader* shaders() = 0;
 	virtual int framebufferHandle() { return -1; }
-	virtual void setVideoScale(int scale) {}
+	virtual void setVideoScale(int) {}
 
 	virtual void setVideoProxy(std::shared_ptr<VideoProxy> proxy) { m_videoProxy = proxy; }
 	std::shared_ptr<VideoProxy> videoProxy() { return m_videoProxy; }
 	
 signals:
+	void drawingStarted();
 	void showCursor();
 	void hideCursor();
 

@@ -38,7 +38,6 @@ private:
 
 	int m_hatId;
 	Direction m_direction;
-	InputController* m_controller;
 	GBAKey m_key;
 };
 

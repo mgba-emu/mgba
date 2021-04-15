@@ -9,6 +9,7 @@
 #include "CoreController.h"
 #include "LogController.h"
 #include "VFileDevice.h"
+#include "utils.h"
 
 #include <QAction>
 #include <QApplication>
@@ -27,8 +28,7 @@ using namespace QGBA;
 MemoryModel::MemoryModel(QWidget* parent)
 	: QAbstractScrollArea(parent)
 {
-	m_font.setFamily("Source Code Pro");
-	m_font.setStyleHint(QFont::Monospace);
+	m_font = GBAApp::app()->monospaceFont();
 #ifdef Q_OS_MAC
 	m_font.setPointSize(12);
 #else
@@ -246,7 +246,7 @@ QByteArray MemoryModel::serialize() {
 		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
 			quint16 datum = m_core->rawRead16(m_core, i, m_currentBank);
 			char leDatum[2];
-			STORE_16LE(datum, 0, (uint16_t*) leDatum);
+			STORE_16BE(datum, 0, (uint16_t*) leDatum);
 			bytes.append(leDatum, 2);
 		}
 		break;
@@ -254,7 +254,7 @@ QByteArray MemoryModel::serialize() {
 		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
 			quint32 datum = m_core->rawRead32(m_core, i, m_currentBank);
 			char leDatum[4];
-			STORE_32LE(datum, 0, (uint16_t*) leDatum);
+			STORE_32BE(datum, 0, (uint32_t*) leDatum);
 			bytes.append(leDatum, 4);
 		}
 		break;
@@ -275,7 +275,7 @@ void MemoryModel::deserialize(const QByteArray& bytes) {
 		for (int i = 0; i < bytes.size(); i += m_align, addr += m_align) {
 			char leDatum[2]{ bytes[i], bytes[i + 1] };
 			uint16_t datum;
-			LOAD_16LE(datum, 0, leDatum);
+			LOAD_16BE(datum, 0, leDatum);
 			m_core->rawWrite16(m_core, addr, m_currentBank, datum);
 		}
 		break;
@@ -283,7 +283,7 @@ void MemoryModel::deserialize(const QByteArray& bytes) {
 		for (int i = 0; i < bytes.size(); i += m_align, addr += m_align) {
 			char leDatum[4]{ bytes[i], bytes[i + 1], bytes[i + 2], bytes[i + 3] };
 			uint32_t datum;
-			LOAD_32LE(datum, 0, leDatum);
+			LOAD_32BE(datum, 0, leDatum);
 			m_core->rawWrite32(m_core, addr, m_currentBank, datum);
 		}
 		break;
@@ -328,7 +328,7 @@ void MemoryModel::resizeEvent(QResizeEvent*) {
 	boundsCheck();
 }
 
-void MemoryModel::paintEvent(QPaintEvent* event) {
+void MemoryModel::paintEvent(QPaintEvent*) {
 	QPainter painter(viewport());
 	QPalette palette;
 	painter.setFont(m_font);
@@ -336,7 +336,6 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	static QChar c0('0');
 	static QString arg("%0");
 	static QString arg2("%0:%1");
-	QSizeF letterSize = QSizeF(m_letterWidth, m_cellHeight);
 	painter.drawStaticText(QPointF((m_margins.left() - m_regionName.size().width() - 1) / 2.0, 0), m_regionName);
 	painter.drawText(
 	    QRect(QPoint(viewport()->size().width() - m_margins.right(), 0), QSize(m_margins.right(), m_margins.top())),
@@ -348,7 +347,7 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	int height = (viewport()->size().height() - m_cellHeight) / m_cellHeight;
 	for (int y = 0; y < height; ++y) {
 		int yp = m_cellHeight * y + m_margins.top();
-		if ((y + m_top) * 16 >= m_size) {
+		if ((y + m_top) * 16U >= m_size) {
 			break;
 		}
 		QString data;
@@ -630,11 +629,7 @@ void MemoryModel::keyPressEvent(QKeyEvent* event) {
 }
 
 void MemoryModel::boundsCheck() {
-	if (m_top < 0) {
-		m_top = 0;
-	} else if (m_top > (m_size >> 4) + 1 - viewport()->size().height() / m_cellHeight) {
-		m_top = (m_size >> 4) + 1 - viewport()->size().height() / m_cellHeight;
-	}
+	m_top = clamp(m_top, 0, static_cast<int32_t>(m_size >> 4) + 1 - viewport()->size().height() / m_cellHeight);
 }
 
 bool MemoryModel::isInSelection(uint32_t address) {
@@ -678,34 +673,35 @@ void MemoryModel::adjustCursor(int adjust, bool shift) {
 	}
 	int cursorPosition = m_top;
 	if (shift) {
+		uint32_t absolute;
 		if (m_selectionAnchor == m_selection.first) {
 			if (adjust < 0 && m_base - adjust > m_selection.second) {
-				adjust = m_base - m_selection.second + m_align;
+				absolute = m_base - m_selection.second + m_align;
 			} else if (adjust > 0 && m_selection.second + adjust >= m_base + m_size) {
-				adjust = m_base + m_size - m_selection.second;
+				absolute = m_base + m_size - m_selection.second;
 			}
-			adjust += m_selection.second;
-			if (adjust <= m_selection.first) {
+			absolute += m_selection.second;
+			if (absolute <= m_selection.first) {
 				m_selection.second = m_selection.first + m_align;
-				m_selection.first = adjust - m_align;
+				m_selection.first = absolute - m_align;
 				cursorPosition = m_selection.first;
 			} else {
-				m_selection.second = adjust;
+				m_selection.second = absolute;
 				cursorPosition = m_selection.second - m_align;
 			}
 		} else {
 			if (adjust < 0 && m_base - adjust > m_selection.first) {
-				adjust = m_base - m_selection.first;
+				absolute = m_base - m_selection.first;
 			} else if (adjust > 0 && m_selection.first + adjust >= m_base + m_size) {
-				adjust = m_base + m_size - m_selection.first - m_align;
+				absolute = m_base + m_size - m_selection.first - m_align;
 			}
-			adjust += m_selection.first;
-			if (adjust >= m_selection.second) {
+			absolute += m_selection.first;
+			if (absolute >= m_selection.second) {
 				m_selection.first = m_selection.second - m_align;
-				m_selection.second = adjust + m_align;
-				cursorPosition = adjust;
+				m_selection.second = absolute + m_align;
+				cursorPosition = absolute;
 			} else {
-				m_selection.first = adjust;
+				m_selection.first = absolute;
 				cursorPosition = m_selection.first;
 			}
 		}

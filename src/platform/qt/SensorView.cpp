@@ -8,6 +8,7 @@
 #include "CoreController.h"
 #include "GamepadAxisEvent.h"
 #include "InputController.h"
+#include "utils.h"
 
 #include <mgba/core/core.h>
 #include <mgba/internal/gba/gba.h>
@@ -129,7 +130,7 @@ void SensorView::updateSensors() {
 }
 
 void SensorView::setLuminanceValue(int value) {
-	value = std::max(0, std::min(value, 255));
+	value = clamp(value, 0, 255);
 	if (m_input) {
 		m_input->setLuminanceValue(value);
 	}

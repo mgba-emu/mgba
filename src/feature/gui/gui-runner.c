@@ -56,6 +56,7 @@ static const struct mInputPlatformInfo _mGUIKeyInfo = {
 		[mGUI_INPUT_SCREENSHOT] = "Take screenshot",
 		[mGUI_INPUT_FAST_FORWARD_HELD] = "Fast forward (held)",
 		[mGUI_INPUT_FAST_FORWARD_TOGGLE] = "Fast forward (toggle)",
+		[mGUI_INPUT_MUTE_TOGGLE] = "Mute (toggle)",
 	},
 	.nKeys = GUI_INPUT_MAX
 };
@@ -201,6 +202,7 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 #else
 	mCoreConfigSetDefaultIntValue(&runner->config, "autosave", true);
 #endif
+	mCoreConfigSetDefaultIntValue(&runner->config, "showOSD", true);
 	mCoreConfigLoad(&runner->config);
 	mCoreConfigGetIntValue(&runner->config, "logLevel", &logger.logLevel);
 
@@ -287,14 +289,13 @@ static void _log(struct mLogger* logger, int category, enum mLogLevel level, con
 			guiLogger->vf = NULL;
 		}
 	}
+#ifdef GEKKO
+	puts(log2);
+#endif
 }
 
 static void _updateLoading(size_t read, size_t size, void* context) {
 	struct mGUIRunner* runner = context;
-	if (read & 0x3FFFF) {
-		return;
-	}
-
 	runner->params.drawStart();
 	if (runner->params.guiPrepare) {
 		runner->params.guiPrepare();
@@ -382,8 +383,25 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		mCoreInitConfig(runner->core, runner->port);
 		mInputMapInit(&runner->core->inputMap, &GBAInputInfo);
 
-		found = mCorePreloadFileCB(runner->core, path, _updateLoading, runner);
+		struct VFile* rom = mDirectorySetOpenPath(&runner->core->dirs, path, runner->core->isROM);
+		if (runner->setFrameLimiter) {
+			runner->setFrameLimiter(runner, false);
+		}
+		found = mCorePreloadVFCB(runner->core, rom, _updateLoading, runner);
+		if (runner->setFrameLimiter) {
+			runner->setFrameLimiter(runner, true);
+		}
+
+#ifdef FIXED_ROM_BUFFER
+		extern size_t romBufferSize;
+		if (!found && rom && (size_t) rom->size(rom) > romBufferSize) {
+			found = runner->core->loadROM(runner->core, rom);
+		}
+#endif
 		if (!found) {
+			if (rom) {
+				rom->close(rom);
+			}
 			mLOG(GUI_RUNNER, WARN, "Failed to load %s!", path);
 			mCoreConfigDeinit(&runner->core->config);
 			runner->core->deinit(runner->core);
@@ -395,7 +413,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		GUIShowMessageBox(&runner->params, GUI_MESSAGE_BOX_OK, 240, "Load failed!");
 		return;
 	}
-	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+	if (runner->core->platform(runner->core) == mPLATFORM_GBA) {
 		runner->core->setPeripheral(runner->core, mPERIPH_GBA_LUMINANCE, &runner->luminanceSource.d);
 	}
 	mLOG(GUI_RUNNER, DEBUG, "Loading config...");
@@ -425,6 +443,12 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	if (autoload) {
 		mCoreLoadState(runner->core, 0, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
 	}
+
+	int showOSD = true;
+	mCoreConfigGetIntValue(&runner->config, "showOSD", &showOSD);
+
+	int drawFps = false;
+	mCoreConfigGetIntValue(&runner->config, "fpsCounter", &drawFps);
 
 	bool running = true;
 
@@ -487,6 +511,11 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 					runner->setFrameLimiter(runner, true);
 				}
 			}
+			if (guiKeys & (1 << mGUI_INPUT_MUTE_TOGGLE)) {
+				int mute = !runner->core->opts.mute;
+				mCoreConfigSetUIntValue(&runner->config, "mute", mute);
+				runner->core->reloadConfigOption(runner->core, "mute", &runner->config);
+			}
 			uint16_t keys = runner->pollGameInput(runner);
 			if (runner->prepareForFrame) {
 				runner->prepareForFrame(runner);
@@ -494,16 +523,29 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			runner->core->setKeys(runner->core, keys);
 			runner->core->runFrame(runner->core);
 			if (runner->drawFrame) {
-				int drawFps = false;
-				mCoreConfigGetIntValue(&runner->config, "fpsCounter", &drawFps);
-
 				runner->params.drawStart();
 				runner->drawFrame(runner, false);
-				if (drawFps) {
+				if (showOSD || drawFps) {
 					if (runner->params.guiPrepare) {
 						runner->params.guiPrepare();
 					}
-					GUIFontPrintf(runner->params.font, 0, GUIFontHeight(runner->params.font), GUI_ALIGN_LEFT, 0x7FFFFFFF, "%.2f fps", runner->fps);
+					if (drawFps) {
+						GUIFontPrintf(runner->params.font, 0, GUIFontHeight(runner->params.font), GUI_ALIGN_LEFT, 0x7FFFFFFF, "%.2f fps", runner->fps);
+					}
+					if (showOSD) {
+						unsigned origin = runner->params.width - GUIFontHeight(runner->params.font) / 2;
+						unsigned w;
+						if (fastForward || (heldKeys & (1 << mGUI_INPUT_FAST_FORWARD_HELD))) {
+							GUIFontDrawIcon(runner->params.font, origin, GUIFontHeight(runner->params.font) / 2, GUI_ALIGN_RIGHT, 0, 0x7FFFFFFF, GUI_ICON_STATUS_FAST_FORWARD);
+							GUIFontIconMetrics(runner->params.font, GUI_ICON_STATUS_FAST_FORWARD, &w, NULL);
+							origin -= w + GUIFontHeight(runner->params.font) / 2;
+						}
+						if (runner->core->opts.mute) {
+							GUIFontDrawIcon(runner->params.font, origin, GUIFontHeight(runner->params.font) / 2, GUI_ALIGN_RIGHT, 0, 0x7FFFFFFF, GUI_ICON_STATUS_MUTE);
+							GUIFontIconMetrics(runner->params.font, GUI_ICON_STATUS_MUTE, &w, NULL);
+							origin -= w + GUIFontHeight(runner->params.font) / 2;
+						}
+					}
 					if (runner->params.guiFinish) {
 						runner->params.guiFinish();
 					}
@@ -581,19 +623,26 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		int frames = 0;
 		GUIPollInput(&runner->params, 0, &keys);
 		while (keys && frames < 30) {
-			++frames;
-			runner->params.drawStart();
-			runner->drawFrame(runner, true);
-			runner->params.drawEnd();
 #ifdef _3DS
-			// XXX: Why does this fix #1294?
-			usleep(1000);
+			if (!frames) {
 #endif
+				runner->params.drawStart();
+				runner->drawFrame(runner, true);
+				runner->params.drawEnd();
+#ifdef _3DS
+			} else {
+				// XXX: Why does this fix #1294?
+				usleep(15000);
+			}
+#endif
+			++frames;
 			GUIPollInput(&runner->params, 0, &keys);
 		}
 		if (runner->unpaused) {
 			runner->unpaused(runner);
 		}
+		mCoreConfigGetIntValue(&runner->config, "fpsCounter", &drawFps);
+		mCoreConfigGetIntValue(&runner->config, "showOSD", &showOSD);
 	}
 	mLOG(GUI_RUNNER, DEBUG, "Shutting down...");
 	if (runner->gameUnloaded) {

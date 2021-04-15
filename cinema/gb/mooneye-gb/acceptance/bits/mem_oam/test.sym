@@ -2,15 +2,15 @@
 ; wla symbolic information for "/home/vicki/Scratch/mooneye-gb/tests/build/acceptance/bits/mem_oam.gb".
 
 [labels]
-01:48af clear_vram
-01:487a disable_lcd_safe
-01:4880 disable_lcd_safe@wait_ly_0
-01:48b9 memcpy
-01:48c2 memset
-01:48d2 print_inline_string
-01:4898 print_load_font
-01:48a4 print_newline
-01:48cb print_string
+01:48b9 clear_vram
+01:4884 disable_lcd_safe
+01:488a disable_lcd_safe@wait_ly_0
+01:48c3 memcpy
+01:48cc memset
+01:48dc print_inline_string
+01:48a2 print_load_font
+01:48ae print_newline
+01:48d5 print_string
 01:47f0 quit
 01:4805 quit@cb_return
 01:480a quit@wait_ly_1
@@ -19,18 +19,18 @@
 01:481c quit@wait_ly_4
 01:4826 quit@success
 01:484d quit@failure
-01:4862 quit@halt
-01:4863 quit@halt_execution_0
-01:4866 reset_screen
-01:4889 serial_send_byte
+01:486c quit@halt
+01:486d quit@halt_execution_0
+01:4870 reset_screen
+01:4893 serial_send_byte
 01:4000 font
 00:0150 main
-00:016f test_finish
-00:0176 test_finish@quit_inline_1
-00:0187 fail_1
-00:018e fail_1@quit_inline_2
-00:01a4 fail_0
-00:01ab fail_0@quit_inline_3
+00:0171 test_finish
+00:0178 test_finish@quit_inline_1
+00:0189 fail_1
+00:0190 fail_1@quit_inline_2
+00:01a6 fail_0
+00:01ad fail_0@quit_inline_3
 
 [definitions]
 0000000a _sizeof_clear_vram
@@ -41,10 +41,10 @@
 0000000c _sizeof_print_load_font
 0000000b _sizeof_print_newline
 00000007 _sizeof_print_string
-00000076 _sizeof_quit
+00000080 _sizeof_quit
 00000014 _sizeof_reset_screen
 0000000f _sizeof_serial_send_byte
 000007f0 _sizeof_font
-0000001f _sizeof_main
+00000021 _sizeof_main
 00000018 _sizeof_test_finish
 0000001d _sizeof_fail_1

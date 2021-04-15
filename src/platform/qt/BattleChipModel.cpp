@@ -42,7 +42,7 @@ QVariant BattleChipModel::data(const QModelIndex& index, int role) const {
 	return QVariant();
 }
 
-Qt::ItemFlags BattleChipModel::flags(const QModelIndex& index) const {
+Qt::ItemFlags BattleChipModel::flags(const QModelIndex&) const {
 	return Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren;
 }
 
@@ -51,7 +51,7 @@ bool BattleChipModel::removeRows(int row, int count, const QModelIndex& parent) 
 		return false;
 	}
 	beginRemoveRows(QModelIndex(), row, row + count - 1);
-	for (size_t i = 0; i < count; ++i) {
+	for (int i = 0; i < count; ++i) {
 		m_deck.removeAt(row);
 	}
 	endRemoveRows();

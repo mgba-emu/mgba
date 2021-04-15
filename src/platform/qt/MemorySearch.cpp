@@ -40,7 +40,6 @@ bool MemorySearch::createParams(mCoreMemorySearchParams* params) {
 	if (m_ui.searchROM->isChecked()) {
 		params->memoryFlags |= mCORE_MEMORY_READ;
 	}
-	mCore* core = m_controller->thread()->core;
 
 	QByteArray string;
 	bool ok = false;

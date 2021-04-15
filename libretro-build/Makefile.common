@@ -83,11 +83,12 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/gba/core.c \
 					$(CORE_DIR)/src/gba/dma.c \
 					$(CORE_DIR)/src/gba/gba.c \
-					$(CORE_DIR)/src/gba/hardware.c \
+					$(CORE_DIR)/src/gba/cart/gpio.c \
+					$(CORE_DIR)/src/gba/cart/ereader.c \
 					$(CORE_DIR)/src/gba/hle-bios.c \
 					$(CORE_DIR)/src/gba/input.c \
 					$(CORE_DIR)/src/gba/io.c \
-					$(CORE_DIR)/src/gba/matrix.c \
+					$(CORE_DIR)/src/gba/cart/matrix.c \
 					$(CORE_DIR)/src/gba/memory.c \
 					$(CORE_DIR)/src/gba/overrides.c \
 					$(CORE_DIR)/src/gba/renderers/cache-set.c \
@@ -99,8 +100,9 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/gba/savedata.c \
 					$(CORE_DIR)/src/gba/serialize.c \
 					$(CORE_DIR)/src/gba/sio.c \
+					$(CORE_DIR)/src/gba/sio/gbp.c \
 					$(CORE_DIR)/src/gba/timer.c \
-					$(CORE_DIR)/src/gba/vfame.c \
+					$(CORE_DIR)/src/gba/cart/vfame.c \
 					$(CORE_DIR)/src/gba/video.c \
 					$(CORE_DIR)/src/platform/libretro/memory.c \
 					$(CORE_DIR)/src/platform/libretro/libretro.c \

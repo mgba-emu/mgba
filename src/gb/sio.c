@@ -66,18 +66,18 @@ void _GBSIOProcessEvents(struct mTiming* timing, void* context, uint32_t cyclesL
 	if (sio->remainingBits) {
 		doIRQ = true;
 		--sio->remainingBits;
-		sio->p->memory.io[REG_SB] &= ~(128 >> sio->remainingBits);
-		sio->p->memory.io[REG_SB] |= sio->pendingSB & (128 >> sio->remainingBits);
+		sio->p->memory.io[GB_REG_SB] &= ~(128 >> sio->remainingBits);
+		sio->p->memory.io[GB_REG_SB] |= sio->pendingSB & (128 >> sio->remainingBits);
 	}
 	if (!sio->remainingBits) {
-		sio->p->memory.io[REG_SC] = GBRegisterSCClearEnable(sio->p->memory.io[REG_SC]);
+		sio->p->memory.io[GB_REG_SC] = GBRegisterSCClearEnable(sio->p->memory.io[GB_REG_SC]);
 		if (doIRQ) {
-			sio->p->memory.io[REG_IF] |= (1 << GB_IRQ_SIO);
+			sio->p->memory.io[GB_REG_IF] |= (1 << GB_IRQ_SIO);
 			GBUpdateIRQs(sio->p);
 			sio->pendingSB = 0xFF;
 		}
 	} else {
-		mTimingSchedule(timing, &sio->event, sio->period);
+		mTimingSchedule(timing, &sio->event, sio->period * (2 - sio->p->doubleSpeed));
 	}
 }
 
@@ -93,7 +93,7 @@ void GBSIOWriteSC(struct GBSIO* sio, uint8_t sc) {
 	if (GBRegisterSCIsEnable(sc)) {
 		mTimingDeschedule(&sio->p->timing, &sio->event);
 		if (GBRegisterSCIsShiftClock(sc)) {
-			mTimingSchedule(&sio->p->timing, &sio->event, sio->period);
+			mTimingSchedule(&sio->p->timing, &sio->event, sio->period * (2 - sio->p->doubleSpeed));
 			sio->remainingBits = 8;
 		}
 	}

@@ -3,6 +3,10 @@ set(SOURCE_FILES
 	../gb/audio.c
 	audio.c
 	bios.c
+	cart/ereader.c
+	cart/gpio.c
+	cart/matrix.c
+	cart/vfame.c
 	cheats.c
 	cheats/codebreaker.c
 	cheats/gameshark.c
@@ -10,11 +14,9 @@ set(SOURCE_FILES
 	core.c
 	dma.c
 	gba.c
-	hardware.c
 	hle-bios.c
 	input.c
 	io.c
-	matrix.c
 	memory.c
 	overrides.c
 	renderers/cache-set.c
@@ -28,21 +30,19 @@ set(SOURCE_FILES
 	serialize.c
 	sharkport.c
 	sio.c
+	sio/gbp.c
+	sio/joybus.c
 	timer.c
-	vfame.c
 	video.c)
 
 set(SIO_FILES
-	sio/joybus.c
+	sio/dolphin.c
 	sio/lockstep.c)
 
 set(EXTRA_FILES
 	extra/audio-mixer.c
 	extra/battlechip.c
-	extra/proxy.c
-	rr/mgm.c
-	rr/rr.c
-	rr/vbm.c)
+	extra/proxy.c)
 
 set(DEBUGGER_FILES
 	debugger/cli.c)

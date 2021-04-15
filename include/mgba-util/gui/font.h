@@ -53,6 +53,8 @@ enum GUIIcon {
 	GUI_ICON_BUTTON_TRIANGLE,
 	GUI_ICON_BUTTON_SQUARE,
 	GUI_ICON_BUTTON_HOME,
+	GUI_ICON_STATUS_FAST_FORWARD,
+	GUI_ICON_STATUS_MUTE,
 	GUI_ICON_MAX,
 };
 
@@ -80,11 +82,15 @@ unsigned GUIFontSpanWidth(const struct GUIFont*, const char* text);
 void GUIFontIconMetrics(const struct GUIFont*, enum GUIIcon icon, unsigned* w, unsigned* h);
 
 ATTRIBUTE_FORMAT(printf, 6, 7)
-void GUIFontPrintf(const struct GUIFont*, int x, int y, enum GUIAlignment, uint32_t color, const char* text, ...);
-void GUIFontPrint(const struct GUIFont*, int x, int y, enum GUIAlignment, uint32_t color, const char* text);
-void GUIFontDrawGlyph(const struct GUIFont*, int x, int y, uint32_t color, uint32_t glyph);
-void GUIFontDrawIcon(const struct GUIFont*, int x, int y, enum GUIAlignment, enum GUIOrientation, uint32_t color, enum GUIIcon);
-void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h, uint32_t color, enum GUIIcon icon);
+void GUIFontPrintf(struct GUIFont*, int x, int y, enum GUIAlignment, uint32_t color, const char* text, ...);
+void GUIFontPrint(struct GUIFont*, int x, int y, enum GUIAlignment, uint32_t color, const char* text);
+void GUIFontDrawGlyph(struct GUIFont*, int x, int y, uint32_t color, uint32_t glyph);
+void GUIFontDrawIcon(struct GUIFont*, int x, int y, enum GUIAlignment, enum GUIOrientation, uint32_t color, enum GUIIcon);
+void GUIFontDrawIconSize(struct GUIFont* font, int x, int y, int w, int h, uint32_t color, enum GUIIcon icon);
+
+#ifdef __SWITCH__
+void GUIFontDrawSubmit(struct GUIFont* font);
+#endif
 
 CXX_GUARD_END
 

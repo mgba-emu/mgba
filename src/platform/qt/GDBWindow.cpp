@@ -15,6 +15,7 @@
 #include <QVBoxLayout>
 
 #include "GDBController.h"
+#include "utils.h"
 
 using namespace QGBA;
 
@@ -77,24 +78,14 @@ void GDBWindow::portChanged(const QString& portString) {
 }
 
 void GDBWindow::bindAddressChanged(const QString& bindAddressString) {
-	bool ok = false;
-	QStringList parts = bindAddressString.split('.');
-	if (parts.length() != 4) {
+	QHostAddress qaddress;
+	Address address;
+
+	if (!qaddress.setAddress(bindAddressString)) {
 		return;
 	}
-	int i;
-	uint32_t address = 0;
-	for (i = 0; i < 4; ++i) {
-		ushort octet = parts[i].toUShort(&ok);
-		if (!ok) {
-			return;
-		}
-		if (octet > 0xFF) {
-			return;
-		}
-		address <<= 8;
-		address += octet;
-	}
+
+	convertAddress(&qaddress, &address);
 	m_gdbController->setBindAddress(address);
 }
 

@@ -42,7 +42,7 @@ static void _redoCacheSize(struct mBitmapCache* cache) {
 	cache->cache = anonymousMemoryMap(mBitmapCacheSystemInfoGetWidth(cache->sysConfig) * size * sizeof(color_t));
 	cache->status = anonymousMemoryMap(size * sizeof(*cache->status));
 	if (mBitmapCacheSystemInfoIsUsesPalette(cache->sysConfig)) {
-		cache->palette = malloc((1 << (1 << mBitmapCacheSystemInfoGetEntryBPP(cache->sysConfig))) * sizeof(color_t));
+		cache->palette = calloc((1 << (1 << mBitmapCacheSystemInfoGetEntryBPP(cache->sysConfig))), sizeof(color_t));
 	} else {
 		cache->palette = NULL;
 	}
@@ -139,18 +139,18 @@ void mBitmapCacheCleanRow(struct mBitmapCache* cache, struct mBitmapCacheEntry* 
 		return;
 	}
 
-	size_t offset = cache->bitsStart[cache->buffer] + y * mBitmapCacheSystemInfoGetWidth(cache->sysConfig);
+	size_t offset = y * mBitmapCacheSystemInfoGetWidth(cache->sysConfig);
 	void* vram;
 	int bpe = mBitmapCacheSystemInfoGetEntryBPP(cache->sysConfig);
 	uint32_t (*lookupEntry)(void*, uint32_t);
 	switch (bpe) {
 	case 3:
 		lookupEntry = _lookupEntry8;
-		vram = &cache->vram[offset];
+		vram = &cache->vram[offset + cache->bitsStart[cache->buffer]];
 		break;
 	case 4:
 		lookupEntry = _lookupEntry15;
-		vram = &cache->vram[offset << 1];
+		vram = &cache->vram[offset * 2 + cache->bitsStart[cache->buffer]];
 		break;
 	default:
 		abort();

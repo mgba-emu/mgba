@@ -24,6 +24,7 @@ typedef THREAD_ENTRY (*ThreadEntry)(void*);
 typedef pthread_t Thread;
 typedef pthread_mutex_t Mutex;
 typedef pthread_cond_t Condition;
+typedef pthread_key_t ThreadLocal;
 
 static inline int MutexInit(Mutex* mutex) {
 	return pthread_mutex_init(mutex, 0);
@@ -99,6 +100,18 @@ static inline int ThreadSetName(const char* name) {
 	UNUSED(name);
 	return 0;
 #endif
+}
+
+static inline void ThreadLocalInitKey(ThreadLocal* key) {
+	pthread_key_create(key, 0);
+}
+
+static inline void ThreadLocalSetKey(ThreadLocal key, void* value) {
+	pthread_setspecific(key, value);
+}
+
+static inline void* ThreadLocalGetValue(ThreadLocal key) {
+	return pthread_getspecific(key);
 }
 
 CXX_GUARD_END

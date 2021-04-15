@@ -26,12 +26,13 @@ const uint32_t GB_COMPONENT_MAGIC = 0x400000;
 
 static const uint8_t _knownHeader[4] = { 0xCE, 0xED, 0x66, 0x66};
 
-#define DMG_BIOS_CHECKSUM 0xC2F5CC97
-#define DMG_2_BIOS_CHECKSUM 0x59C8598E
+#define DMG0_BIOS_CHECKSUM 0xC2F5CC97
+#define DMG_BIOS_CHECKSUM 0x59C8598E
 #define MGB_BIOS_CHECKSUM 0xE6920754
 #define SGB_BIOS_CHECKSUM 0xEC8A83B9
 #define SGB2_BIOS_CHECKSUM 0X53D0DD63
 #define CGB_BIOS_CHECKSUM 0x41884E46
+#define AGB_BIOS_CHECKSUM 0xFFD6B0F1
 
 mLOG_DEFINE_CATEGORY(GB, "GB", "gb");
 
@@ -64,7 +65,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	GBVideoInit(&gb->video);
 
 	gb->audio.p = gb;
-	GBAudioInit(&gb->audio, 2048, &gb->memory.io[REG_NR52], GB_AUDIO_DMG); // TODO: Remove magic constant
+	GBAudioInit(&gb->audio, 2048, &gb->memory.io[GB_REG_NR52], GB_AUDIO_DMG); // TODO: Remove magic constant
 
 	gb->sio.p = gb;
 	GBSIOInit(&gb->sio);
@@ -113,10 +114,10 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 		return false;
 	}
 	gb->yankedRomSize = 0;
-	gb->memory.romBase = gb->memory.rom;
 	gb->memory.romSize = gb->pristineRomSize;
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
-	GBMBCInit(gb);
+	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
+	GBMBCReset(gb);
 
 	if (gb->cpu) {
 		struct SM83Core* cpu = gb->cpu;
@@ -132,7 +133,7 @@ void GBYankROM(struct GB* gb) {
 	gb->yankedMbc = gb->memory.mbcType;
 	gb->memory.romSize = 0;
 	gb->memory.mbcType = GB_MBC_NONE;
-	gb->memory.sramAccess = false;
+	GBMBCReset(gb);
 
 	if (gb->cpu) {
 		struct SM83Core* cpu = gb->cpu;
@@ -160,6 +161,10 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 	if (gb->sramSize) {
 		GBResizeSram(gb, gb->sramSize);
 		GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
+
+		if (gb->memory.mbcType == GB_MBC3_RTC) {
+			GBMBCRTCRead(gb);
+		}
 	}
 	return vf;
 }
@@ -247,6 +252,14 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 		} else {
 			mLOG(GB_MEM, INFO, "Savedata failed to sync!");
 		}
+
+		size_t c;
+		for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
+			struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
+			if (callbacks->savedataUpdated) {
+				callbacks->savedataUpdated(callbacks->context);
+			}
+		}
 	}
 }
 
@@ -281,8 +294,9 @@ void GBSavedataUnmask(struct GB* gb) {
 
 void GBUnloadROM(struct GB* gb) {
 	// TODO: Share with GBAUnloadROM
-	if (gb->memory.rom && gb->memory.romBase != gb->memory.rom && !gb->isPristine) {
-		free(gb->memory.romBase);
+	off_t romBase = gb->memory.romBase - gb->memory.rom;
+	if (romBase >= 0 && ((size_t) romBase < gb->memory.romSize || (size_t) romBase < gb->yankedRomSize)) {
+		gb->memory.romBase = NULL;
 	}
 	if (gb->memory.rom && !gb->isPristine) {
 		if (gb->yankedRomSize) {
@@ -303,6 +317,7 @@ void GBUnloadROM(struct GB* gb) {
 	gb->isPristine = false;
 
 	gb->sramMaskWriteback = false;
+	GBSavedataUnmask(gb);
 	GBSramDeinit(gb);
 	if (gb->sramRealVf) {
 		gb->sramRealVf->close(gb->sramRealVf);
@@ -361,6 +376,7 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 }
 
 void GBDestroy(struct GB* gb) {
+	GBUnmapBIOS(gb);
 	GBUnloadROM(gb);
 
 	if (gb->biosVf) {
@@ -399,11 +415,12 @@ static uint32_t _GBBiosCRC32(struct VFile* vf) {
 bool GBIsBIOS(struct VFile* vf) {
 	switch (_GBBiosCRC32(vf)) {
 	case DMG_BIOS_CHECKSUM:
-	case DMG_2_BIOS_CHECKSUM:
+	case DMG0_BIOS_CHECKSUM:
 	case MGB_BIOS_CHECKSUM:
 	case SGB_BIOS_CHECKSUM:
 	case SGB2_BIOS_CHECKSUM:
 	case CGB_BIOS_CHECKSUM:
+	case AGB_BIOS_CHECKSUM:
 		return true;
 	default:
 		return false;
@@ -460,13 +477,13 @@ void GBReset(struct SM83Core* cpu) {
 
 	GBVideoReset(&gb->video);
 	GBTimerReset(&gb->timer);
-	if (!gb->biosVf) {
+	GBIOReset(gb);
+	if (!gb->biosVf && gb->memory.rom) {
 		GBSkipBIOS(gb);
 	} else {
 		mTimingSchedule(&gb->timing, &gb->timer.event, 0);
 	}
 
-	GBIOReset(gb);
 	GBAudioReset(&gb->audio);
 	GBSIOReset(&gb->sio);
 
@@ -502,8 +519,8 @@ void GBSkipBIOS(struct GB* gb) {
 		cpu->e = 0x00;
 		cpu->h = 0xC0;
 		cpu->l = 0x60;
-		gb->timer.internalDiv = 0xABC;
-		nextDiv = 4;
+		gb->timer.internalDiv = 0xD85;
+		nextDiv = 8;
 		break;
 	case GB_MODEL_MGB:
 		cpu->a = 0xFF;
@@ -522,34 +539,37 @@ void GBSkipBIOS(struct GB* gb) {
 		cpu->e = 0x00;
 		cpu->h = 0xC0;
 		cpu->l = 0x60;
-		gb->timer.internalDiv = 0xABC;
-		nextDiv = 4;
+		gb->timer.internalDiv = 0xD84;
+		nextDiv = 8;
 		break;
 	case GB_MODEL_AGB:
-		cpu->a = 0x11;
 		cpu->b = 1;
-		cpu->f.packed = 0x00;
-		cpu->c = 0;
-		cpu->e = 0x08;
-		cpu->h = 0;
-		cpu->l = 0x7C;
-		gb->timer.internalDiv = 0x1EA;
-		nextDiv = 0xC;
-		break;
+		// Fall through
 	case GB_MODEL_CGB:
 		cpu->a = 0x11;
-		cpu->f.packed = 0x80;
+		if (gb->model == GB_MODEL_AGB) {
+			cpu->f.packed = 0x00;
+		} else {
+			cpu->f.packed = 0x80;
+		}
 		cpu->c = 0;
 		cpu->h = 0;
 		if (cart->cgb & 0x80) {
 			cpu->d = 0xFF;
 			cpu->e = 0x56;
 			cpu->l = 0x0D;
+			gb->timer.internalDiv = 0x2F0;
 		} else {
 			cpu->e = 0x08;
 			cpu->l = 0x7C;
+			gb->timer.internalDiv = 0x260;
+			gb->model = GB_MODEL_DMG;
+			gb->memory.io[GB_REG_KEY1] = 0xFF;
+			gb->memory.io[GB_REG_BCPS] = 0x88; // Faked writing 4 BG palette entries
+			gb->memory.io[GB_REG_OCPS] = 0x90; // Faked writing 8 OBJ palette entries
+			gb->memory.io[GB_REG_SVBK] = 0xFF;
+			GBVideoDisableCGB(&gb->video);
 		}
-		gb->timer.internalDiv = 0x1EA;
 		nextDiv = 0xC;
 		break;
 	}
@@ -557,29 +577,34 @@ void GBSkipBIOS(struct GB* gb) {
 	cpu->sp = 0xFFFE;
 	cpu->pc = 0x100;
 
-	mTimingDeschedule(&gb->timing, &gb->timer.event);
-	mTimingSchedule(&gb->timing, &gb->timer.event, 0);
+	gb->timer.nextDiv = GB_DMG_DIV_PERIOD * (16 - nextDiv);
 
-	GBIOWrite(gb, REG_LCDC, 0x91);
+	mTimingDeschedule(&gb->timing, &gb->timer.event);
+	mTimingSchedule(&gb->timing, &gb->timer.event, gb->timer.nextDiv);
 
 	if (gb->biosVf) {
 		GBUnmapBIOS(gb);
 	}
+
+	GBIOWrite(gb, GB_REG_LCDC, 0x91);
+	gb->memory.io[GB_REG_BANK] = 0x1;
+	GBVideoSkipBIOS(&gb->video);
 }
 
 void GBMapBIOS(struct GB* gb) {
 	gb->biosVf->seek(gb->biosVf, 0, SEEK_SET);
-	uint8_t* oldRomBase = gb->memory.romBase;
 	gb->memory.romBase = malloc(GB_SIZE_CART_BANK0);
 	ssize_t size = gb->biosVf->read(gb->biosVf, gb->memory.romBase, GB_SIZE_CART_BANK0);
-	memcpy(&gb->memory.romBase[size], &oldRomBase[size], GB_SIZE_CART_BANK0 - size);
-	if (size > 0x100) {
-		memcpy(&gb->memory.romBase[0x100], &oldRomBase[0x100], sizeof(struct GBCartridge));
+	if (gb->memory.rom) {
+		memcpy(&gb->memory.romBase[size], &gb->memory.rom[size], GB_SIZE_CART_BANK0 - size);
+		if (size > 0x100) {
+			memcpy(&gb->memory.romBase[0x100], &gb->memory.rom[0x100], sizeof(struct GBCartridge));
+		}
 	}
 }
 
 void GBUnmapBIOS(struct GB* gb) {
-	if (gb->memory.romBase < gb->memory.rom || gb->memory.romBase > &gb->memory.rom[gb->memory.romSize - 1]) {
+	if (gb->memory.io[GB_REG_BANK] == 0xFF && gb->memory.romBase != gb->memory.rom) {
 		free(gb->memory.romBase);
 		if (gb->memory.mbcType == GB_MMM01) {
 			GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);
@@ -600,7 +625,7 @@ void GBDetectModel(struct GB* gb) {
 	if (gb->biosVf) {
 		switch (_GBBiosCRC32(gb->biosVf)) {
 		case DMG_BIOS_CHECKSUM:
-		case DMG_2_BIOS_CHECKSUM:
+		case DMG0_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_DMG;
 			break;
 		case MGB_BIOS_CHECKSUM:
@@ -614,6 +639,9 @@ void GBDetectModel(struct GB* gb) {
 			break;
 		case CGB_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_CGB;
+			break;
+		case AGB_BIOS_CHECKSUM:
+			gb->model = GB_MODEL_AGB;
 			break;
 		default:
 			gb->biosVf->close(gb->biosVf);
@@ -648,8 +676,24 @@ void GBDetectModel(struct GB* gb) {
 	}
 }
 
+int GBValidModels(const uint8_t* bank0) {
+	const struct GBCartridge* cart = (const struct GBCartridge*) &bank0[0x100];
+	int models;
+	if (cart->cgb == 0x80) {
+		models = GB_MODEL_CGB | GB_MODEL_MGB;
+	} else if (cart->cgb == 0xC0) {
+		models = GB_MODEL_CGB;
+	} else {
+		models = GB_MODEL_MGB;		
+	}
+	if (cart->sgb == 0x03 && cart->oldLicensee == 0x33) {
+		models |= GB_MODEL_SGB;
+	}
+	return models;
+}
+
 void GBUpdateIRQs(struct GB* gb) {
-	int irqs = gb->memory.ie & gb->memory.io[REG_IF] & 0x1F;
+	int irqs = gb->memory.ie & gb->memory.io[GB_REG_IF] & 0x1F;
 	if (!irqs) {
 		gb->cpu->irqPending = false;
 		return;
@@ -677,8 +721,12 @@ void GBProcessEvents(struct SM83Core* cpu) {
 
 		nextEvent = cycles;
 		do {
+#ifdef USE_DEBUGGERS
+			gb->timing.globalCycles += nextEvent;
+#endif
 			nextEvent = mTimingTick(&gb->timing, nextEvent);
 		} while (gb->cpuBlocked);
+		// This loop cannot early exit until the SM83 run loop properly handles mid-M-cycle-exits
 		cpu->nextEvent = nextEvent;
 
 		if (cpu->halted) {
@@ -692,6 +740,9 @@ void GBProcessEvents(struct SM83Core* cpu) {
 		}
 	} while (cpu->cycles >= cpu->nextEvent);
 	gb->earlyExit = false;
+	if (gb->cpuBlocked) {
+		cpu->cycles = cpu->nextEvent;
+	}
 }
 
 void GBSetInterrupts(struct SM83Core* cpu, bool enable) {
@@ -701,32 +752,32 @@ void GBSetInterrupts(struct SM83Core* cpu, bool enable) {
 		gb->memory.ime = false;
 		GBUpdateIRQs(gb);
 	} else {
-		mTimingSchedule(&gb->timing, &gb->eiPending, 4);
+		mTimingSchedule(&gb->timing, &gb->eiPending, 4 * cpu->tMultiplier);
 	}
 }
 
 uint16_t GBIRQVector(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-	int irqs = gb->memory.ie & gb->memory.io[REG_IF];
+	int irqs = gb->memory.ie & gb->memory.io[GB_REG_IF];
 
 	if (irqs & (1 << GB_IRQ_VBLANK)) {
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_VBLANK);
+		gb->memory.io[GB_REG_IF] &= ~(1 << GB_IRQ_VBLANK);
 		return GB_VECTOR_VBLANK;
 	}
 	if (irqs & (1 << GB_IRQ_LCDSTAT)) {
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_LCDSTAT);
+		gb->memory.io[GB_REG_IF] &= ~(1 << GB_IRQ_LCDSTAT);
 		return GB_VECTOR_LCDSTAT;
 	}
 	if (irqs & (1 << GB_IRQ_TIMER)) {
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_TIMER);
+		gb->memory.io[GB_REG_IF] &= ~(1 << GB_IRQ_TIMER);
 		return GB_VECTOR_TIMER;
 	}
 	if (irqs & (1 << GB_IRQ_SIO)) {
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_SIO);
+		gb->memory.io[GB_REG_IF] &= ~(1 << GB_IRQ_SIO);
 		return GB_VECTOR_SIO;
 	}
 	if (irqs & (1 << GB_IRQ_KEYPAD)) {
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_KEYPAD);
+		gb->memory.io[GB_REG_IF] &= ~(1 << GB_IRQ_KEYPAD);
 		return GB_VECTOR_KEYPAD;
 	}
 	return 0;
@@ -742,39 +793,34 @@ static void _enableInterrupts(struct mTiming* timing, void* user, uint32_t cycle
 
 void GBHalt(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-	if (!(gb->memory.ie & gb->memory.io[REG_IF] & 0x1F)) {
+	if (!(gb->memory.ie & gb->memory.io[GB_REG_IF] & 0x1F)) {
 		cpu->cycles = cpu->nextEvent;
 		cpu->halted = true;
-	} else if (gb->model < GB_MODEL_CGB) {
-		mLOG(GB, STUB, "Unimplemented HALT bug");
+	} else if (!gb->memory.ime) {
+		mLOG(GB, GAME_ERROR, "HALT bug");
+		cpu->executionState = SM83_CORE_HALT_BUG;
 	}
 }
 
 void GBStop(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-	if (cpu->bus) {
-		mLOG(GB, GAME_ERROR, "Hit illegal stop at address %04X:%02X", cpu->pc, cpu->bus);
-	}
-	if (gb->memory.io[REG_KEY1] & 1) {
+	if (gb->model >= GB_MODEL_CGB && gb->memory.io[GB_REG_KEY1] & 1) {
 		gb->doubleSpeed ^= 1;
-		gb->audio.timingFactor = gb->doubleSpeed + 1;
-		gb->memory.io[REG_KEY1] = 0;
-		gb->memory.io[REG_KEY1] |= gb->doubleSpeed << 7;
-	} else if (cpu->bus) {
-#ifdef USE_DEBUGGERS
-		if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
-			struct mDebuggerEntryInfo info = {
-				.address = cpu->pc - 1,
-				.type.bp.opcode = 0x1000 | cpu->bus,
-			};
-			mDebuggerEnter((struct mDebugger*) cpu->components[CPU_COMPONENT_DEBUGGER], DEBUGGER_ENTER_ILLEGAL_OP, &info);
+		gb->cpu->tMultiplier = 2 - gb->doubleSpeed;
+		gb->memory.io[GB_REG_KEY1] = 0;
+		gb->memory.io[GB_REG_KEY1] |= gb->doubleSpeed << 7;
+	} else {
+		int sleep = ~(gb->memory.io[GB_REG_JOYP] & 0x30);
+		size_t c;
+		for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
+			struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
+			if (sleep && callbacks->sleep) {
+				callbacks->sleep(callbacks->context);
+			} else if (callbacks->shutdown) {
+				callbacks->shutdown(callbacks->context);
+			}
 		}
-#endif
-		// Hang forever
-		gb->memory.ime = 0;
-		cpu->pc -= 2;
 	}
-	// TODO: Actually stop
 }
 
 void GBIllegal(struct SM83Core* cpu) {

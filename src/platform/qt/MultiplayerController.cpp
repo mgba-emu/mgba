@@ -76,7 +76,7 @@ MultiplayerController::MultiplayerController() {
 			for (int i = 1; i < controller->m_players.count(); ++i) {
 				Player* player = &controller->m_players[i];
 #ifdef M_CORE_GBA
-				if (player->controller->platform() == PLATFORM_GBA && player->gbaNode->d.p->mode != controller->m_players[0].gbaNode->d.p->mode) {
+				if (player->controller->platform() == mPLATFORM_GBA && player->gbaNode->d.p->mode != controller->m_players[0].gbaNode->d.p->mode) {
 					player->controller->setSync(true);
 					continue;
 				}
@@ -86,12 +86,12 @@ MultiplayerController::MultiplayerController() {
 				if (player->awake < 1) {
 					switch (player->controller->platform()) {
 #ifdef M_CORE_GBA
-					case PLATFORM_GBA:
+					case mPLATFORM_GBA:
 						player->gbaNode->nextEvent += player->cyclesPosted;
 						break;
 #endif
 #ifdef M_CORE_GB
-					case PLATFORM_GB:
+					case mPLATFORM_GB:
 						player->gbNode->nextEvent += player->cyclesPosted;
 						break;
 #endif
@@ -144,12 +144,12 @@ MultiplayerController::MultiplayerController() {
 				player->controller->setSync(true);
 				switch (player->controller->platform()) {
 #ifdef M_CORE_GBA
-				case PLATFORM_GBA:
+				case mPLATFORM_GBA:
 					player->cyclesPosted += reinterpret_cast<GBASIOLockstep*>(lockstep)->players[0]->eventDiff;
 					break;
 #endif
 #ifdef M_CORE_GB
-				case PLATFORM_GB:
+				case mPLATFORM_GB:
 					player->cyclesPosted += reinterpret_cast<GBSIOLockstep*>(lockstep)->players[0]->eventDiff;
 					break;
 #endif
@@ -159,12 +159,12 @@ MultiplayerController::MultiplayerController() {
 				if (player->awake < 1) {
 					switch (player->controller->platform()) {
 #ifdef M_CORE_GBA
-					case PLATFORM_GBA:
+					case mPLATFORM_GBA:
 						player->gbaNode->nextEvent += player->cyclesPosted;
 						break;
 #endif
 #ifdef M_CORE_GB
-					case PLATFORM_GB:
+					case mPLATFORM_GB:
 						player->gbNode->nextEvent += player->cyclesPosted;
 						break;
 #endif
@@ -191,12 +191,12 @@ bool MultiplayerController::attachGame(CoreController* controller) {
 	if (m_lockstep.attached == 0) {
 		switch (controller->platform()) {
 #ifdef M_CORE_GBA
-		case PLATFORM_GBA:
+		case mPLATFORM_GBA:
 			GBASIOLockstepInit(&m_gbaLockstep);
 			break;
 #endif
 #ifdef M_CORE_GB
-		case PLATFORM_GB:
+		case mPLATFORM_GB:
 			GBSIOLockstepInit(&m_gbLockstep);
 			break;
 #endif
@@ -212,7 +212,7 @@ bool MultiplayerController::attachGame(CoreController* controller) {
 
 	switch (controller->platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA: {
+	case mPLATFORM_GBA: {
 		GBA* gba = static_cast<GBA*>(thread->core->board);
 
 		GBASIOLockstepNode* node = new GBASIOLockstepNode;
@@ -221,13 +221,14 @@ bool MultiplayerController::attachGame(CoreController* controller) {
 		m_players.append({controller, node});
 
 		GBASIOSetDriver(&gba->sio, &node->d, SIO_MULTI);
+		GBASIOSetDriver(&gba->sio, &node->d, SIO_NORMAL_32);
 
 		emit gameAttached();
 		return true;
 	}
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB: {
+	case mPLATFORM_GB: {
 		GB* gb = static_cast<GB*>(thread->core->board);
 
 		GBSIOLockstepNode* node = new GBSIOLockstepNode;
@@ -263,10 +264,11 @@ void MultiplayerController::detachGame(CoreController* controller) {
 	}
 	switch (controller->platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA: {
+	case mPLATFORM_GBA: {
 		GBA* gba = static_cast<GBA*>(thread->core->board);
 		GBASIOLockstepNode* node = reinterpret_cast<GBASIOLockstepNode*>(gba->sio.drivers.multiplayer);
 		GBASIOSetDriver(&gba->sio, nullptr, SIO_MULTI);
+		GBASIOSetDriver(&gba->sio, nullptr, SIO_NORMAL_32);
 		if (node) {
 			GBASIOLockstepDetachNode(&m_gbaLockstep, node);
 			delete node;
@@ -275,7 +277,7 @@ void MultiplayerController::detachGame(CoreController* controller) {
 	}
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB: {
+	case mPLATFORM_GB: {
 		GB* gb = static_cast<GB*>(thread->core->board);
 		GBSIOLockstepNode* node = reinterpret_cast<GBSIOLockstepNode*>(gb->sio.driver);
 		GBSIOSetDriver(&gb->sio, nullptr);

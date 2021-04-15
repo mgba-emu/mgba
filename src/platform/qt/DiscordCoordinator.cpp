@@ -64,20 +64,11 @@ void gameStarted(std::shared_ptr<CoreController> controller) {
 	s_gameRunning = true;
 
 	CoreController::Interrupter interrupter(controller);
-	mCore *core = controller->thread()->core;
-	s_title = core->dirs.baseName;
-
-#ifdef USE_SQLITE3
-	const NoIntroDB* db = GBAApp::app()->gameDB();
-	NoIntroGame game{};
-	uint32_t crc32 = 0;
-	core->checksum(core, &crc32, CHECKSUM_CRC32);
-
-	if (db && crc32 && NoIntroDBLookupGameByCRC(db, crc32, &game)) {
-		s_title = QLatin1String(game.name);
+	s_title = controller->thread()->core->dirs.baseName;
+	QString dbTitle = controller->dbTitle();
+	if (!dbTitle.isNull()) {
+		s_title = dbTitle;
 	}
-#endif
-
 	updatePresence();
 }
 

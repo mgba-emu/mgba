@@ -14,10 +14,11 @@ CXX_GUARD_START
 
 #include <mgba/internal/arm/arm.h>
 #include <mgba/internal/gba/dma.h>
-#include <mgba/internal/gba/hardware.h>
 #include <mgba/internal/gba/savedata.h>
-#include <mgba/internal/gba/vfame.h>
-#include <mgba/internal/gba/matrix.h>
+#include <mgba/internal/gba/cart/ereader.h>
+#include <mgba/internal/gba/cart/gpio.h>
+#include <mgba/internal/gba/cart/matrix.h>
+#include <mgba/internal/gba/cart/vfame.h>
 
 enum GBAMemoryRegion {
 	REGION_BIOS = 0x0,
@@ -84,8 +85,8 @@ enum {
 	AGB_PRINT_BASE = 0x00FD0000,
 	AGB_PRINT_TOP = 0x00FE0000,
 	AGB_PRINT_PROTECT = 0x00FE2FFE,
-	AGB_PRINT_STRUCT = 0x01FE20F8,
-	AGB_PRINT_FLUSH_ADDR = 0x01FE209C,
+	AGB_PRINT_STRUCT = 0x00FE20F8,
+	AGB_PRINT_FLUSH_ADDR = 0x00FE209C,
 };
 
 mLOG_DECLARE_CATEGORY(GBA_MEM);
@@ -108,6 +109,7 @@ struct GBAMemory {
 	struct GBASavedata savedata;
 	struct GBAVFameCart vfame;
 	struct GBAMatrix matrix;
+	struct GBACartEReader ereader;
 	size_t romSize;
 	uint32_t romMask;
 	uint16_t romID;
@@ -127,9 +129,14 @@ struct GBAMemory {
 	int activeDMA;
 	uint32_t dmaTransferRegister;
 
-	uint16_t agbPrint;
+	uint32_t agbPrintBase;
+	uint16_t agbPrintProtect;
 	struct GBAPrintContext agbPrintCtx;
 	uint16_t* agbPrintBuffer;
+	uint16_t agbPrintProtectBackup;
+	struct GBAPrintContext agbPrintCtxBackup;
+	uint32_t agbPrintFuncBackup;
+	uint16_t* agbPrintBufferBackup;
 
 	bool mirroring;
 };

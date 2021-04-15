@@ -495,6 +495,7 @@ static const struct GBCartridgeOverride _overrides[] = {
 	{ 0x630ed957, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Gold (non-debug)
 	{ 0x5aff0038, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Silver (debug)
 	{ 0xa61856bd, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Silver (non-debug)
+	{ 0x30f8f86c, GB_MODEL_AUTODETECT, GB_UNL_PKJD, { 0 } }, // Pokemon Jade Version (Telefang Speed bootleg)
 
 	{ 0, 0, 0, { 0 } }
 };
@@ -637,6 +638,8 @@ void GBOverrideSave(struct Configuration* config, const struct GBCartridgeOverri
 void GBOverrideApply(struct GB* gb, const struct GBCartridgeOverride* override) {
 	if (override->model != GB_MODEL_AUTODETECT) {
 		gb->model = override->model;
+		gb->video.renderer->deinit(gb->video.renderer);
+		gb->video.renderer->init(gb->video.renderer, gb->model, gb->video.sgbBorders);
 	}
 
 	if (override->mbc != GB_MBC_AUTODETECT) {

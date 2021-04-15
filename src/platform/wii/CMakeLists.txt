@@ -3,14 +3,17 @@ find_program(GXTEXCONV gxtexconv)
 find_program(RAW2C raw2c)
 find_program(WIILOAD wiiload)
 
-set(OS_DEFINES COLOR_16_BIT COLOR_5_6_5 USE_VFS_FILE IOAPI_NO_64 FIXED_ROM_BUFFER)
+find_library(WIIDRC_LIBRARY wiidrc)
+if(WIIDRC_LIBRARY)
+    add_definitions(-DWIIDRC)
+endif()
+
+set(OS_DEFINES _GNU_SOURCE COLOR_16_BIT COLOR_5_6_5 USE_VFS_FILE IOAPI_NO_64 FIXED_ROM_BUFFER)
 list(APPEND CORE_VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-file.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-devlist.c)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/wii/wii-*.c)
 list(APPEND OS_LIB wiiuse bte fat ogc)
-set(OS_SRC ${OS_SRC} PARENT_SCOPE)
 set(OS_LIB ${OS_LIB} PARENT_SCOPE)
 source_group("Wii-specific code" FILES ${OS_SRC})
 set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)
@@ -22,15 +25,28 @@ set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/font.c PROPERTIES GENERA
 add_executable(${BINARY_NAME}.elf ${GUI_SRC} main.c)
 set_target_properties(${BINARY_NAME}.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${OS_LIB})
+if(WIIDRC_LIBRARY)
+    target_link_libraries(${BINARY_NAME}.elf ${WIIDRC_LIBRARY})
+endif()
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/font.tpl
+                   COMMAND ${GXTEXCONV} -i ${CMAKE_SOURCE_DIR}/res/font2x.png -o font.tpl colfmt=5 mipmap=no
+                   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/res/font2x.png
+                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/font.c
-                   COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/wii/font.tpl
-                   MAIN_DEPENDENCY  ${CMAKE_SOURCE_DIR}/src/platform/wii/font.tpl
+                   COMMAND ${RAW2C} ${CMAKE_CURRENT_BINARY_DIR}/font.tpl
+                   MAIN_DEPENDENCY  ${CMAKE_CURRENT_BINARY_DIR}/font.tpl
+                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.tpl
+                   COMMAND ${GXTEXCONV} -i ${CMAKE_SOURCE_DIR}/res/icons2x.png -o icons.tpl colfmt=5 mipmap=no
+                   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/res/icons2x.png
                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.c
-                   COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/wii/icons.tpl
-                   MAIN_DEPENDENCY  ${CMAKE_SOURCE_DIR}/src/platform/wii/icons.tpl
+                   COMMAND ${RAW2C} ${CMAKE_CURRENT_BINARY_DIR}/icons.tpl
+                   MAIN_DEPENDENCY  ${CMAKE_CURRENT_BINARY_DIR}/icons.tpl
                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_target(${BINARY_NAME}.dol ALL

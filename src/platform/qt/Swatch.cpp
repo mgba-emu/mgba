@@ -50,7 +50,7 @@ void Swatch::setColor(int index, uint32_t color) {
 	updateFill(index);
 }
 
-void Swatch::paintEvent(QPaintEvent* event) {
+void Swatch::paintEvent(QPaintEvent*) {
 	QPainter painter(this);
 	painter.drawPixmap(QPoint(), m_backing);
 }

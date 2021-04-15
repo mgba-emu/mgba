@@ -18,8 +18,9 @@ mLOG_DECLARE_CATEGORY(GBA_VIDEO);
 
 enum {
 	VIDEO_HBLANK_PIXELS = 68,
-	VIDEO_HDRAW_LENGTH = 1006,
-	VIDEO_HBLANK_LENGTH = 226,
+	VIDEO_HDRAW_LENGTH = 960,
+	VIDEO_HBLANK_LENGTH = 272,
+	VIDEO_HBLANK_FLIP = 46,
 	VIDEO_HORIZONTAL_LENGTH = 1232,
 
 	VIDEO_VBLANK_PIXELS = 68,
@@ -193,6 +194,8 @@ struct GBAVideoRenderer {
 
 	bool disableBG[4];
 	bool disableOBJ;
+	bool disableWIN[2];
+	bool disableOBJWIN;
 
 	bool highlightBG[4];
 	bool highlightOBJ[128];
@@ -205,8 +208,8 @@ struct GBAVideo {
 	struct GBAVideoRenderer* renderer;
 	struct mTimingEvent event;
 
-	// VCOUNT
 	int vcount;
+	int shouldStall;
 
 	uint16_t palette[512];
 	uint16_t* vram;
@@ -220,6 +223,8 @@ struct GBAVideo {
 void GBAVideoInit(struct GBAVideo* video);
 void GBAVideoReset(struct GBAVideo* video);
 void GBAVideoDeinit(struct GBAVideo* video);
+
+void GBAVideoDummyRendererCreate(struct GBAVideoRenderer*);
 void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* renderer);
 
 void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value);

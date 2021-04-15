@@ -7,6 +7,7 @@
 
 #include <QApplication>
 #include <QFileDialog>
+#include <QFont>
 #include <QList>
 #include <QMap>
 #include <QMultiMap>
@@ -56,11 +57,15 @@ public:
 
 	static QString dataDir();
 
+	QFont monospaceFont() { return m_monospace; }
+
+	QList<Window*> windows() { return m_windows; }
 	Window* newWindow();
 
-	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = QString());
-	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = QString());
-	QString getOpenDirectoryName(QWidget* owner, const QString& title);
+	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = {});
+	QStringList getOpenFileNames(QWidget* owner, const QString& title, const QString& filter = {});
+	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = {});
+	QString getOpenDirectoryName(QWidget* owner, const QString& title, const QString& path = {});
 
 	const NoIntroDB* gameDB() const { return m_db; }
 	bool reloadGameDB();
@@ -108,6 +113,8 @@ private:
 	QMultiMap<qint64, QMetaObject::Connection> m_workerJobCallbacks;
 	QThreadPool m_workerThreads;
 	qint64 m_nextJob = 1;
+
+	QFont m_monospace;
 
 	NoIntroDB* m_db = nullptr;
 };

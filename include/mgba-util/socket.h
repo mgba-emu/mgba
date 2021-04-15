@@ -64,6 +64,10 @@ extern u32* SOCUBuffer;
 #ifdef __SWITCH__
 #include <switch.h>
 #endif
+#ifdef PSP2
+#include <psp2/net/net.h>
+#include <psp2/sysmodule.h>
+#endif
 
 static inline void SocketSubsystemInit() {
 #ifdef _WIN32
@@ -78,6 +82,10 @@ static inline void SocketSubsystemInit() {
 	socketInitializeDefault();
 #elif defined(GEKKO)
 	net_init();
+#elif defined(PSP2)
+	static uint8_t netMem[1024*1024];
+	sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
+	sceNetInit(&(SceNetInitParam) { netMem, sizeof(netMem) });
 #endif
 }
 
@@ -92,6 +100,9 @@ static inline void SocketSubsystemDeinit() {
 	socketExit();
 #elif defined(GEKKO)
 	net_deinit();
+#elif defined(PSP2)
+	sceNetTerm();
+	sceSysmoduleUnloadModule(SCE_SYSMODULE_NET);
 #endif
 }
 
@@ -249,6 +260,11 @@ static inline Socket SocketListen(Socket socket, int queueLength) {
 #ifdef GEKKO
 	return net_listen(socket, queueLength);
 #else
+#ifdef PSP2
+	if (queueLength <= 0) {
+		queueLength = 1;
+	}
+#endif
 	return listen(socket, queueLength);
 #endif
 }

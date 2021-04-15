@@ -108,10 +108,10 @@ QPair<QString, QString> LibraryController::selectedPath() {
 	return e ? qMakePair(e->base(), e->filename()) : qMakePair<QString, QString>("", "");
 }
 
-void LibraryController::addDirectory(const QString& dir) {
+void LibraryController::addDirectory(const QString& dir, bool recursive) {
 	// The worker thread temporarily owns the library
 	std::shared_ptr<mLibrary> library = m_library;
-	m_libraryJob = GBAApp::app()->submitWorkerJob(std::bind(&LibraryController::loadDirectory, this, dir), this, [this, library]() {
+	m_libraryJob = GBAApp::app()->submitWorkerJob(std::bind(&LibraryController::loadDirectory, this, dir, recursive), this, [this, library]() {
 		m_libraryJob = -1;
 		refresh();
 	});
@@ -181,10 +181,10 @@ void LibraryController::selectLastBootedGame() {
 	}
 }
 
-void LibraryController::loadDirectory(const QString& dir) {
-	// This class can get delted during this function (sigh) so we need to hold onto this
+void LibraryController::loadDirectory(const QString& dir, bool recursive) {
+	// This class can get deleted during this function (sigh) so we need to hold onto this
 	std::shared_ptr<mLibrary> library = m_library;
-	mLibraryLoadDirectory(library.get(), dir.toUtf8().constData());
+	mLibraryLoadDirectory(library.get(), dir.toUtf8().constData(), recursive);
 }
 
 void LibraryController::freeLibrary() {

@@ -16,6 +16,7 @@ typedef THREAD_ENTRY ThreadEntry(LPVOID);
 typedef HANDLE Thread;
 typedef CRITICAL_SECTION Mutex;
 typedef CONDITION_VARIABLE Condition;
+typedef DWORD ThreadLocal;
 
 static inline int MutexInit(Mutex* mutex) {
 	InitializeCriticalSection(mutex);
@@ -86,6 +87,18 @@ static inline int ThreadJoin(Thread* thread) {
 static inline int ThreadSetName(const char* name) {
 	UNUSED(name);
 	return -1;
+}
+
+static inline void ThreadLocalInitKey(ThreadLocal* key) {
+	*key = TlsAlloc();
+}
+
+static inline void ThreadLocalSetKey(ThreadLocal key, void* value) {
+	TlsSetValue(key, value);
+}
+
+static inline void* ThreadLocalGetValue(ThreadLocal key) {
+	return TlsGetValue(key);
 }
 
 #endif

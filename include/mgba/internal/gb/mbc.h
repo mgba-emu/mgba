@@ -17,6 +17,7 @@ mLOG_DECLARE_CATEGORY(GB_MBC);
 struct GB;
 struct GBMemory;
 void GBMBCInit(struct GB* gb);
+void GBMBCReset(struct GB* gb);
 void GBMBCSwitchBank(struct GB* gb, int bank);
 void GBMBCSwitchBank0(struct GB* gb, int bank);
 void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank);

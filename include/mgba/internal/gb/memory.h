@@ -61,6 +61,8 @@ enum {
 	GB_SIZE_OAM = 0xA0,
 	GB_SIZE_IO = 0x80,
 	GB_SIZE_HRAM = 0x7F,
+
+	GB_SIZE_MBC6_FLASH = 0x100000,
 };
 
 enum {
@@ -108,6 +110,8 @@ enum GBTAMA5Register {
 struct GBMBC1State {
 	int mode;
 	int multicartStride;
+	uint8_t bankLo;
+	uint8_t bankHi;
 };
 
 struct GBMBC6State {
@@ -116,6 +120,8 @@ struct GBMBC6State {
 	bool sramAccess;
 	int currentSramBank1;
 	uint8_t* sramBank1;
+	bool flashBank0;
+	bool flashBank1;
 };
 
 struct GBMBC7State {
@@ -144,6 +150,15 @@ struct GBTAMA5State {
 	uint8_t registers[GBTAMA5_MAX];
 };
 
+struct GBPKJDState {
+	uint8_t reg[2];
+};
+
+struct GBBBDState {
+	int dataSwapMode;
+	int bankSwapMode;
+};
+
 union GBMBCState {
 	struct GBMBC1State mbc1;
 	struct GBMBC6State mbc6;
@@ -151,6 +166,8 @@ union GBMBCState {
 	struct GBMMM01State mmm01;
 	struct GBPocketCamState pocketCam;
 	struct GBTAMA5State tama5;
+	struct GBPKJDState pkjd;
+	struct GBBBDState bbd;
 };
 
 struct mRotationSource;
@@ -163,12 +180,14 @@ struct GBMemory {
 	GBMemoryBankControllerRead mbcRead;
 	union GBMBCState mbcState;
 	int currentBank;
+	int currentBank0;
 
 	uint8_t* wram;
 	uint8_t* wramBank;
 	int wramCurrentBank;
 
 	bool sramAccess;
+	bool directSramAccess;
 	uint8_t* sram;
 	uint8_t* sramBank;
 	int sramCurrentBank;

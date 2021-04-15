@@ -55,9 +55,6 @@ typedef intptr_t ssize_t;
 #define strdup _strdup
 #define lseek _lseek
 #define O_ACCMODE (O_RDONLY|O_WRONLY|O_RDWR)
-#elif defined(__wii__)
-#include <sys/time.h>
-typedef intptr_t ssize_t;
 #else
 #if !defined(PS2)
 #include <strings.h>
@@ -65,18 +62,16 @@ typedef intptr_t ssize_t;
 #include <unistd.h>
 #include <sys/time.h>
 #endif
+#ifdef GEKKO
+typedef intptr_t ssize_t;
+#endif
 
 #ifdef PSP2
 // For PATH_MAX on modern toolchains
 #include <sys/syslimits.h>
 #endif
 
-#ifndef MGBA_STANDALONE
 #include <mgba-util/dllexports.h>
-#else
-#define MGBA_EXPORT
-#define MGBA_NO_EXPORT
-#endif
 
 #ifndef SSIZE_MAX
 #define SSIZE_MAX ((ssize_t) (SIZE_MAX >> 1))
@@ -124,7 +119,7 @@ typedef intptr_t ssize_t;
 #endif
 
 #if defined(_3DS) || defined(GEKKO) || defined(PSP2)
-// newlib does not support %z properly by default
+// newlib doesn't support %z properly by default
 #define PRIz ""
 #elif defined(_MSC_VER)
 #define PRIz "I"
@@ -133,8 +128,20 @@ typedef intptr_t ssize_t;
 #endif
 
 #if defined __BIG_ENDIAN__
+#define LOAD_64BE(DEST, ADDR, ARR) DEST = *(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR))
 #define LOAD_32BE(DEST, ADDR, ARR) DEST = *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR))
-#if defined(__PPC__) || defined(__POWERPC__)
+#define LOAD_16BE(DEST, ADDR, ARR) DEST = *(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR))
+#define STORE_64BE(SRC, ADDR, ARR) *(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
+#define STORE_32BE(SRC, ADDR, ARR) *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
+#define STORE_16BE(SRC, ADDR, ARR) *(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
+#if defined(__llvm__) || (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+#define LOAD_64LE(DEST, ADDR, ARR) DEST = __builtin_bswap64(*(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)))
+#define LOAD_32LE(DEST, ADDR, ARR) DEST = __builtin_bswap32(*(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)))
+#define LOAD_16LE(DEST, ADDR, ARR) DEST = __builtin_bswap16(*(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)))
+#define STORE_64LE(SRC, ADDR, ARR) *(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = __builtin_bswap64(SRC)
+#define STORE_32LE(SRC, ADDR, ARR) *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = __builtin_bswap32(SRC)
+#define STORE_16LE(SRC, ADDR, ARR) *(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = __builtin_bswap16(SRC)
+#elif defined(__PPC__) || defined(__POWERPC__)
 #define LOAD_32LE(DEST, ADDR, ARR) { \
 	size_t _addr = (ADDR); \
 	const void* _ptr = (ARR); \
@@ -205,14 +212,6 @@ typedef intptr_t ssize_t;
 	__asm__("stdbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr) : "memory"); \
 }
 #endif
-
-#elif defined(__llvm__) || (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
-#define LOAD_64LE(DEST, ADDR, ARR) DEST = __builtin_bswap64(((uint64_t*) ARR)[(ADDR) >> 3])
-#define LOAD_32LE(DEST, ADDR, ARR) DEST = __builtin_bswap32(((uint32_t*) ARR)[(ADDR) >> 2])
-#define LOAD_16LE(DEST, ADDR, ARR) DEST = __builtin_bswap16(((uint16_t*) ARR)[(ADDR) >> 1])
-#define STORE_64LE(SRC, ADDR, ARR) ((uint64_t*) ARR)[(ADDR) >> 3] = __builtin_bswap64(SRC)
-#define STORE_32LE(SRC, ADDR, ARR) ((uint32_t*) ARR)[(ADDR) >> 2] = __builtin_bswap32(SRC)
-#define STORE_16LE(SRC, ADDR, ARR) ((uint16_t*) ARR)[(ADDR) >> 1] = __builtin_bswap16(SRC)
 #else
 #error Big endian build not supported on this platform.
 #endif
@@ -224,9 +223,19 @@ typedef intptr_t ssize_t;
 #define STORE_32LE(SRC, ADDR, ARR) *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
 #define STORE_16LE(SRC, ADDR, ARR) *(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
 #ifdef _MSC_VER
-#define LOAD_32BE(DEST, ADDR, ARR) DEST = _byteswap_ulong(((uint32_t*) ARR)[(ADDR) >> 2])
+#define LOAD_64BE(DEST, ADDR, ARR) DEST = _byteswap_uint64(*(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)))
+#define LOAD_32BE(DEST, ADDR, ARR) DEST = _byteswap_ulong(*(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)))
+#define LOAD_16BE(DEST, ADDR, ARR) DEST = _byteswap_ushort(*(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)))
+#define STORE_64BE(SRC, ADDR, ARR) *(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = _byteswap_uint64(SRC)
+#define STORE_32BE(SRC, ADDR, ARR) *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = _byteswap_ulong(SRC)
+#define STORE_16BE(SRC, ADDR, ARR) *(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = _byteswap_ushort(SRC)
 #else
-#define LOAD_32BE(DEST, ADDR, ARR) DEST = __builtin_bswap32(((uint32_t*) ARR)[(ADDR) >> 2])
+#define LOAD_64BE(DEST, ADDR, ARR) DEST = __builtin_bswap64(*(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)))
+#define LOAD_32BE(DEST, ADDR, ARR) DEST = __builtin_bswap32(*(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)))
+#define LOAD_16BE(DEST, ADDR, ARR) DEST = __builtin_bswap16(*(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)))
+#define STORE_64BE(SRC, ADDR, ARR) *(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = __builtin_bswap64(SRC)
+#define STORE_32BE(SRC, ADDR, ARR) *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = __builtin_bswap32(SRC)
+#define STORE_16BE(SRC, ADDR, ARR) *(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = __builtin_bswap16(SRC)
 #endif
 #endif
 

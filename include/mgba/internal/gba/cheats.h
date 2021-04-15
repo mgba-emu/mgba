@@ -12,8 +12,8 @@ CXX_GUARD_START
 
 #include <mgba/internal/arm/arm.h>
 #include <mgba/core/cheats.h>
+#include <mgba-util/vector.h>
 
-#define MAX_ROM_PATCHES 10
 #define COMPLETE ((size_t) -1)
 
 enum GBACheatType {
@@ -134,20 +134,14 @@ struct GBACheatHook {
 	size_t reentries;
 };
 
+DECLARE_VECTOR(GBACheatPatchList, struct GBACheatPatch);
+
 struct GBACheatSet {
 	struct mCheatSet d;
 	struct GBACheatHook* hook;
 
-	struct GBACheatPatch {
-		uint32_t address;
-		int16_t newValue;
-		int16_t oldValue;
-		bool applied;
-		bool exists;
-	} romPatches[MAX_ROM_PATCHES];
-
 	size_t incompleteCheat;
-	struct GBACheatPatch* incompletePatch;
+	struct mCheatPatch* incompletePatch;
 	size_t currentBlock;
 
 	int gsaVersion;

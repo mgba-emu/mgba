@@ -13,16 +13,14 @@
 
 mLOG_DEFINE_CATEGORY(GB_STATE, "GB Savestate", "gb.serialize");
 
-const uint32_t GB_SAVESTATE_MAGIC = 0x00400000;
-const uint32_t GB_SAVESTATE_VERSION = 0x00000002;
-
-static void GBSGBSerialize(struct GB* gb, struct GBSerializedState* state);
-static void GBSGBDeserialize(struct GB* gb, const struct GBSerializedState* state);
+MGBA_EXPORT const uint32_t GBSavestateMagic = 0x00400000;
+MGBA_EXPORT const uint32_t GBSavestateVersion = 0x00000002;
 
 void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
-	STORE_32LE(GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, 0, &state->versionMagic);
+	STORE_32LE(GBSavestateMagic + GBSavestateVersion, 0, &state->versionMagic);
 	STORE_32LE(gb->romCrc32, 0, &state->romCrc32);
 	STORE_32LE(gb->timing.masterCycles, 0, &state->masterCycles);
+	STORE_64LE(gb->timing.globalCycles, 0, &state->globalCycles);
 
 	if (gb->memory.rom) {
 		memcpy(state->title, ((struct GBCartridge*) &gb->memory.rom[0x100])->titleLong, sizeof(state->title));
@@ -55,6 +53,8 @@ void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	flags = GBSerializedCpuFlagsSetIrqPending(flags, gb->cpu->irqPending);
 	flags = GBSerializedCpuFlagsSetDoubleSpeed(flags, gb->doubleSpeed);
 	flags = GBSerializedCpuFlagsSetEiPending(flags, mTimingIsScheduled(&gb->timing, &gb->eiPending));
+	flags = GBSerializedCpuFlagsSetHalted(flags, gb->cpu->halted);
+	flags = GBSerializedCpuFlagsSetBlocked(flags, gb->cpuBlocked);
 	STORE_32LE(flags, 0, &state->cpu.flags);
 	STORE_32LE(gb->eiPending.when - mTimingCurrentTime(&gb->timing), 0, &state->cpu.eiPending);
 
@@ -76,20 +76,20 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	int16_t check16;
 	uint16_t ucheck16;
 	LOAD_32LE(ucheck, 0, &state->versionMagic);
-	if (ucheck > GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION) {
-		mLOG(GB_STATE, WARN, "Invalid or too new savestate: expected %08X, got %08X", GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, ucheck);
+	if (ucheck > GBSavestateMagic + GBSavestateVersion) {
+		mLOG(GB_STATE, WARN, "Invalid or too new savestate: expected %08X, got %08X", GBSavestateMagic + GBSavestateVersion, ucheck);
 		error = true;
-	} else if (ucheck < GB_SAVESTATE_MAGIC) {
-		mLOG(GB_STATE, WARN, "Invalid savestate: expected %08X, got %08X", GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, ucheck);
+	} else if (ucheck < GBSavestateMagic) {
+		mLOG(GB_STATE, WARN, "Invalid savestate: expected %08X, got %08X", GBSavestateMagic + GBSavestateVersion, ucheck);
 		error = true;
-	} else if (ucheck < GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION) {
-		mLOG(GB_STATE, WARN, "Old savestate: expected %08X, got %08X, continuing anyway", GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, ucheck);
+	} else if (ucheck < GBSavestateMagic + GBSavestateVersion) {
+		mLOG(GB_STATE, WARN, "Old savestate: expected %08X, got %08X, continuing anyway", GBSavestateMagic + GBSavestateVersion, ucheck);
 	}
-	bool canSgb = ucheck >= GB_SAVESTATE_MAGIC + 2;
+	bool canSgb = ucheck >= GBSavestateMagic + 2;
 
 	if (gb->memory.rom && memcmp(state->title, ((struct GBCartridge*) &gb->memory.rom[0x100])->titleLong, sizeof(state->title))) {
 		LOAD_32LE(ucheck, 0, &state->versionMagic);
-		if (ucheck > GB_SAVESTATE_MAGIC + 2 || memcmp(state->title, ((struct GBCartridge*) gb->memory.rom)->titleLong, sizeof(state->title))) {
+		if (ucheck > GBSavestateMagic + 2 || memcmp(state->title, ((struct GBCartridge*) gb->memory.rom)->titleLong, sizeof(state->title))) {
 			// There was a bug in previous versions where the memory address being compared was wrong
 			mLOG(GB_STATE, WARN, "Savestate is for a different game");
 			error = true;
@@ -136,7 +136,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: OCPS is out of range");
 	}
 	bool differentBios = !gb->biosVf || gb->model != state->model;
-	if (state->io[0x50] == 0xFF) {
+	if (state->io[GB_REG_BANK] == 0xFF) {
 		if (differentBios) {
 			mLOG(GB_STATE, WARN, "Incompatible savestate, please restart with correct BIOS in %s mode", GBModelToName(state->model));
 			error = true;
@@ -150,6 +150,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	}
 	mTimingClear(&gb->timing);
 	LOAD_32LE(gb->timing.masterCycles, 0, &state->masterCycles);
+	LOAD_64LE(gb->timing.globalCycles, 0, &state->globalCycles);
 
 	gb->cpu->a = state->cpu.a;
 	gb->cpu->f.packed = state->cpu.f;
@@ -171,7 +172,9 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->cpu->condition = GBSerializedCpuFlagsGetCondition(flags);
 	gb->cpu->irqPending = GBSerializedCpuFlagsGetIrqPending(flags);
 	gb->doubleSpeed = GBSerializedCpuFlagsGetDoubleSpeed(flags);
-	gb->audio.timingFactor = gb->doubleSpeed + 1;
+	gb->cpu->tMultiplier = 2 - gb->doubleSpeed;
+	gb->cpu->halted = GBSerializedCpuFlagsGetHalted(flags);
+	gb->cpuBlocked = GBSerializedCpuFlagsGetBlocked(flags);
 
 	LOAD_32LE(gb->cpu->cycles, 0, &state->cpu.cycles);
 	LOAD_32LE(gb->cpu->nextEvent, 0, &state->cpu.nextEvent);
@@ -181,6 +184,8 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	LOAD_32LE(when, 0, &state->cpu.eiPending);
 	if (GBSerializedCpuFlagsIsEiPending(flags)) {
 		mTimingSchedule(&gb->timing, &gb->eiPending, when);
+	} else {
+		gb->eiPending.when = when + mTimingCurrentTime(&gb->timing);
 	}
 
 	gb->model = state->model;
@@ -191,16 +196,19 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		gb->audio.style = GB_AUDIO_CGB;
 	}
 
+	if (!canSgb) {
+		gb->model &= ~GB_MODEL_SGB;
+	}
+
+	GBUnmapBIOS(gb);
 	GBMemoryDeserialize(gb, state);
 	GBVideoDeserialize(&gb->video, state);
 	GBIODeserialize(gb, state);
 	GBTimerDeserialize(&gb->timer, state);
 	GBAudioDeserialize(&gb->audio, state);
 
-	if (gb->memory.io[0x50] == 0xFF) {
+	if (gb->memory.io[GB_REG_BANK] == 0xFF) {
 		GBMapBIOS(gb);
-	} else {
-		GBUnmapBIOS(gb);
 	}
 
 	if (gb->model & GB_MODEL_SGB && canSgb) {

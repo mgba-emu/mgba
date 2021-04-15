@@ -7,12 +7,13 @@
 
 #include "Override.h"
 
-#include <QMap>
+#include <QHash>
 #include <QObject>
 #include <QSettings>
 #include <QVariant>
 
 #include <functional>
+#include <memory>
 
 #include <mgba/core/config.h>
 #include <mgba-util/configuration.h>
@@ -53,7 +54,7 @@ signals:
 	void valueChanged(const QVariant& value);
 
 private:
-	QMap<QObject*, std::function<void(const QVariant&)>> m_slots;
+	QHash<QObject*, std::function<void(const QVariant&)>> m_slots;
 	QList<std::pair<Action*, QVariant>> m_actions;
 	QString m_name;
 };
@@ -91,6 +92,7 @@ public:
 	mCoreConfig* config() { return &m_config; }
 
 	static const QString& configDir();
+	static bool isPortable();
 
 public slots:
 	void setOption(const char* key, bool value);
@@ -109,8 +111,8 @@ private:
 	mCoreConfig m_config;
 	mCoreOptions m_opts{};
 
-	QMap<QString, ConfigOption*> m_optionSet;
-	QSettings* m_settings;
+	QHash<QString, ConfigOption*> m_optionSet;
+	std::unique_ptr<QSettings> m_settings;
 	static QString s_configDir;
 };
 

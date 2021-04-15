@@ -16,7 +16,6 @@ GamepadAxisEvent::GamepadAxisEvent(int axis, Direction direction, bool isNew, in
 	, m_axis(axis)
 	, m_direction(direction)
 	, m_isNew(isNew)
-	, m_controller(controller)
 	, m_key(GBA_KEY_NONE)
 {
 	ignore();

@@ -134,29 +134,37 @@ void GBADMASchedule(struct GBA* gba, int number, struct GBADMA* info) {
 void GBADMARunHblank(struct GBA* gba, int32_t cycles) {
 	struct GBAMemory* memory = &gba->memory;
 	struct GBADMA* dma;
+	bool found = false;
 	int i;
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
 		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_HBLANK && !dma->nextCount) {
 			dma->when = mTimingCurrentTime(&gba->timing) + 3 + cycles;
 			dma->nextCount = dma->count;
+			found = true;
 		}
 	}
-	GBADMAUpdate(gba);
+	if (found) {
+		GBADMAUpdate(gba);
+	}
 }
 
 void GBADMARunVblank(struct GBA* gba, int32_t cycles) {
 	struct GBAMemory* memory = &gba->memory;
 	struct GBADMA* dma;
+	bool found = false;
 	int i;
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
 		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == GBA_DMA_TIMING_VBLANK && !dma->nextCount) {
 			dma->when = mTimingCurrentTime(&gba->timing) + 3 + cycles;
 			dma->nextCount = dma->count;
+			found = true;
 		}
 	}
-	GBADMAUpdate(gba);
+	if (found) {
+		GBADMAUpdate(gba);
+	}
 }
 
 void GBADMARunDisplayStart(struct GBA* gba, int32_t cycles) {
@@ -211,7 +219,7 @@ void GBADMAUpdate(struct GBA* gba) {
 		struct GBADMA* dma = &memory->dma[i];
 		if (GBADMARegisterIsEnable(dma->reg) && dma->nextCount) {
 			int32_t time = dma->when - currentTime;
-			if (memory->activeDMA == -1 || (dma->count == dma->nextCount && time < leastTime)) {
+			if (memory->activeDMA == -1 || time < leastTime) {
 				leastTime = time;
 				memory->activeDMA = i;
 			}
@@ -219,6 +227,7 @@ void GBADMAUpdate(struct GBA* gba) {
 	}
 
 	if (memory->activeDMA >= 0) {
+		gba->dmaPC = gba->cpu->gprs[ARM_PC];
 		mTimingDeschedule(&gba->timing, &memory->dmaEvent);
 		mTimingSchedule(&gba->timing, &memory->dmaEvent, memory->dma[memory->activeDMA].when - currentTime);
 	} else {
@@ -294,6 +303,16 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	info->nextCount = wordsRemaining;
 	info->nextSource = source;
 	info->nextDest = dest;
+
+	int i;
+	for (i = 0; i < 4; ++i) {
+		struct GBADMA* dma = &memory->dma[i];
+		int32_t time = dma->when - info->when;
+		if (time < 0 && GBADMARegisterIsEnable(dma->reg) && dma->nextCount) {
+			dma->when = info->when;
+		}
+	}
+
 	if (!wordsRemaining) {
 		info->nextCount |= 0x80000000;
 		if (sourceRegion < REGION_CART0 || destRegion < REGION_CART0) {

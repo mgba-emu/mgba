@@ -15,6 +15,10 @@
 #cmakedefine BUILD_GLES2
 #endif
 
+#ifndef BUILD_GLES3
+#cmakedefine BUILD_GLES3
+#endif
+
 // Miscellaneous flags
 
 #ifndef COLOR_16_BIT

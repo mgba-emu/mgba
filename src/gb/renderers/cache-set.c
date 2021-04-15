@@ -38,7 +38,7 @@ void GBVideoCacheAssociate(struct mCacheSet* cache, struct GBVideo* video) {
 	mMapCacheConfigureSystem(mMapCacheSetGetPointer(&cache->maps, 0), sysconfig);
 	mMapCacheConfigureSystem(mMapCacheSetGetPointer(&cache->maps, 1), sysconfig);
 
-	GBVideoCacheWriteVideoRegister(cache, REG_LCDC, video->p->memory.io[REG_LCDC]);
+	GBVideoCacheWriteVideoRegister(cache, GB_REG_LCDC, video->p->memory.io[GB_REG_LCDC]);
 }
 
 static void mapParserDMG0(struct mMapCache* cache, struct mMapCacheEntry* entry, void* vram) {
@@ -80,7 +80,7 @@ static void mapParserCGB1(struct mMapCache* cache, struct mMapCacheEntry* entry,
 }
 
 void GBVideoCacheWriteVideoRegister(struct mCacheSet* cache, uint16_t address, uint8_t value) {
-	if (address != REG_LCDC) {
+	if (address != GB_REG_LCDC) {
 		return;
 	}
 	struct mMapCache* map = mMapCacheSetGetPointer(&cache->maps, 0);

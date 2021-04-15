@@ -73,8 +73,9 @@ def _vfpSync(vf, buffer, size):
     if buffer and size:
         pos = f.tell()
         f.seek(0, os.SEEK_SET)
-        _vfpWrite(vf, buffer, size)
+        res = _vfpWrite(vf, buffer, size)
         f.seek(pos, os.SEEK_SET)
+        return res == size
     f.flush()
     os.fsync()
     return True
@@ -113,6 +114,10 @@ class VFile:
         self.handle = vf
         self._no_gc = _no_gc
         self._claimed = False
+
+    @staticmethod
+    def fromEmpty():
+        return VFile(lib.VFileMemChunk(ffi.NULL, 0))
 
     def __del__(self):
         if not self._claimed:

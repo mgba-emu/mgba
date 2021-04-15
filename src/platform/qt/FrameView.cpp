@@ -24,6 +24,7 @@
 #endif
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/memory.h>
 #endif
 
@@ -82,7 +83,12 @@ FrameView::FrameView(std::shared_ptr<CoreController> controller, QWidget* parent
 FrameView::~FrameView() {
 	QMutexLocker locker(&m_mutex);
 	*m_callbackLocker = false;
+
+	if (m_nextFrame) {
+		m_controller->endVideoLog(true);
+	}
 	if (m_vl) {
+		mCoreConfigDeinit(&m_vl->config);
 		m_vl->deinit(m_vl);
 	}
 }
@@ -142,7 +148,7 @@ void FrameView::disableLayer(const QPointF& coord) {
 }
 
 #ifdef M_CORE_GBA
-void FrameView::updateTilesGBA(bool force) {
+void FrameView::updateTilesGBA(bool) {
 	if (m_ui.freeze->checkState() == Qt::Checked) {
 		return;
 	}
@@ -153,15 +159,43 @@ void FrameView::updateTilesGBA(bool force) {
 
 		uint16_t* io = static_cast<GBA*>(m_controller->thread()->core->board)->memory.io;
 		QRgb backdrop = M_RGB5_TO_RGB8(static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[0]);
-		m_gbaDispcnt = io[REG_DISPCNT >> 1];
-		int mode = GBARegisterDISPCNTGetMode(m_gbaDispcnt);
+		GBARegisterDISPCNT gbaDispcnt = io[REG_DISPCNT >> 1];
+		int mode = GBARegisterDISPCNTGetMode(gbaDispcnt);
 
 		std::array<bool, 4> enabled{
-			bool(GBARegisterDISPCNTIsBg0Enable(m_gbaDispcnt)),
-			bool(GBARegisterDISPCNTIsBg1Enable(m_gbaDispcnt)),
-			bool(GBARegisterDISPCNTIsBg2Enable(m_gbaDispcnt)),
-			bool(GBARegisterDISPCNTIsBg3Enable(m_gbaDispcnt)),
+			bool(GBARegisterDISPCNTIsBg0Enable(gbaDispcnt)),
+			bool(GBARegisterDISPCNTIsBg1Enable(gbaDispcnt)),
+			bool(GBARegisterDISPCNTIsBg2Enable(gbaDispcnt)),
+			bool(GBARegisterDISPCNTIsBg3Enable(gbaDispcnt)),
 		};
+
+		if (GBARegisterDISPCNTIsWin0Enable(gbaDispcnt)) {
+			m_queue.append({
+				{ LayerId::WINDOW, 0 },
+				!m_disabled.contains({ LayerId::WINDOW, 0 }),
+				{},
+				{}, {0, 0}, true, false
+			});
+		}
+
+		if (GBARegisterDISPCNTIsWin1Enable(gbaDispcnt)) {
+			m_queue.append({
+				{ LayerId::WINDOW, 1 },
+				!m_disabled.contains({ LayerId::WINDOW, 1 }),
+				{},
+				{}, {0, 0}, true, false
+			});
+		}
+
+		if (GBARegisterDISPCNTIsObjwinEnable(gbaDispcnt)) {
+			m_queue.append({
+				{ LayerId::WINDOW, 2 },
+				!m_disabled.contains({ LayerId::WINDOW, 2 }),
+				{},
+				{}, {0, 0}, true, false
+			});
+
+		}
 
 		for (int priority = 0; priority < 4; ++priority) {
 			for (int sprite = 0; sprite < 128; ++sprite) {
@@ -186,7 +220,7 @@ void FrameView::updateTilesGBA(bool force) {
 					{ LayerId::SPRITE, sprite },
 					!m_disabled.contains({ LayerId::SPRITE, sprite }),
 					QPixmap::fromImage(obj),
-					{}, offset, false
+					{}, offset, false, false
 				});
 				if (m_queue.back().image.hasAlpha()) {
 					m_queue.back().mask = QRegion(m_queue.back().image.mask());
@@ -212,7 +246,7 @@ void FrameView::updateTilesGBA(bool force) {
 					{ LayerId::BACKGROUND, bg },
 					!m_disabled.contains({ LayerId::BACKGROUND, bg }),
 					QPixmap::fromImage(compositeMap(bg, m_mapStatus[bg])),
-					{}, offset, true
+					{}, offset, true, false
 				});
 				if (m_queue.back().image.hasAlpha()) {
 					m_queue.back().mask = QRegion(m_queue.back().image.mask());
@@ -228,7 +262,7 @@ void FrameView::updateTilesGBA(bool force) {
 			{ LayerId::BACKDROP },
 			!m_disabled.contains({ LayerId::BACKDROP }),
 			QPixmap::fromImage(backdropImage),
-			{}, {0, 0}, false
+			{}, {0, 0}, false, true
 		});
 		updateRendered();
 	}
@@ -237,7 +271,6 @@ void FrameView::updateTilesGBA(bool force) {
 
 void FrameView::injectGBA() {
 	mVideoLogger* logger = m_vl->videoLogger;
-	mVideoLoggerInjectionPoint(logger, LOGGER_INJECTION_FIRST_SCANLINE);
 	GBA* gba = static_cast<GBA*>(m_vl->board);
 	gba->video.renderer->highlightBG[0] = false;
 	gba->video.renderer->highlightBG[1] = false;
@@ -247,7 +280,7 @@ void FrameView::injectGBA() {
 		gba->video.renderer->highlightOBJ[i] = false;
 	}
 	QPalette palette;
-	gba->video.renderer->highlightColor = palette.color(QPalette::HighlightedText).rgb();
+	gba->video.renderer->highlightColor = M_RGB8_TO_NATIVE(palette.color(QPalette::Highlight).rgb());
 	gba->video.renderer->highlightAmount = sin(m_glowFrame * M_PI / 30) * 48 + 64;
 	if (!m_overrideBackdrop.isValid()) {
 		QRgb backdrop = M_RGB5_TO_RGB8(gba->video.palette[0]) | 0xFF000000;
@@ -271,34 +304,124 @@ void FrameView::injectGBA() {
 				gba->video.renderer->highlightBG[layer.id.index] = true;
 			}
 			break;
+		case LayerId::WINDOW:
+			m_vl->enableVideoLayer(m_vl, GBA_LAYER_WIN0 + layer.id.index, layer.enabled);
+			break;
+		case LayerId::BACKDROP:
+		case LayerId::FRAME:
+		case LayerId::NONE:
+			break;
 		}
 	}
 	if (m_overrideBackdrop.isValid()) {
 		mVideoLoggerInjectPalette(logger, 0, M_RGB8_TO_RGB5(m_overrideBackdrop.rgb()));
 	}
-	if (m_ui.disableScanline->checkState() == Qt::Checked) {
-		mVideoLoggerIgnoreAfterInjection(logger, (1 << DIRTY_PALETTE) | (1 << DIRTY_OAM) | (1 << DIRTY_REGISTER));
-	} else {
-		mVideoLoggerIgnoreAfterInjection(logger, 0);
-	}
 }
 #endif
 
 #ifdef M_CORE_GB
-void FrameView::updateTilesGB(bool force) {
+void FrameView::updateTilesGB(bool) {
 	if (m_ui.freeze->checkState() == Qt::Checked) {
 		return;
 	}
 	m_queue.clear();
 	{
 		CoreController::Interrupter interrupter(m_controller);
+		QPointF origin;
+		GB* gb = static_cast<GB*>(m_controller->thread()->core->board);
+		if (gb->video.sgbBorders && (gb->model & GB_MODEL_SGB)) {
+			origin = QPointF(48, 40);
+		}
+		uint8_t* io = gb->memory.io;
+		GBRegisterLCDC lcdc = io[GB_REG_LCDC];
+
+		for (int sprite = 0; sprite < 40; ++sprite) {
+			ObjInfo info;
+			lookupObj(sprite, &info);
+
+			if (!info.enabled) {
+				continue;
+			}
+
+			QPointF offset(info.x, info.y);
+			QImage obj(compositeObj(info));
+			if (info.hflip || info.vflip) {
+				obj = obj.mirrored(info.hflip, info.vflip);
+			}
+			m_queue.append({
+				{ LayerId::SPRITE, sprite },
+				!m_disabled.contains({ LayerId::SPRITE, sprite }),
+				QPixmap::fromImage(obj),
+				{}, offset + origin, false, false
+			});
+			if (m_queue.back().image.hasAlpha()) {
+				m_queue.back().mask = QRegion(m_queue.back().image.mask());
+			} else {
+				m_queue.back().mask = QRegion(0, 0, m_queue.back().image.width(), m_queue.back().image.height());
+			}
+		}
+
+		if (GBRegisterLCDCIsWindow(lcdc)) {
+			m_queue.append({
+				{ LayerId::WINDOW },
+				!m_disabled.contains({ LayerId::WINDOW }),
+				{},
+				{}, origin, false, false
+			});
+		}
+
+		m_queue.append({
+			{ LayerId::BACKGROUND },
+			!m_disabled.contains({ LayerId::BACKGROUND }),
+			{},
+			{}, origin, false, false
+		});
+
 		updateRendered();
 	}
 	invalidateQueue(m_controller->screenDimensions());
 }
 
 void FrameView::injectGB() {
+	mVideoLogger* logger = m_vl->videoLogger;
+	GB* gb = static_cast<GB*>(m_vl->board);
+	gb->video.renderer->highlightBG = false;
+	gb->video.renderer->highlightWIN = false;
+	for (int i = 0; i < 40; ++i) {
+		gb->video.renderer->highlightOBJ[i] = false;
+	}
+	QPalette palette;
+	gb->video.renderer->highlightColor = M_RGB8_TO_NATIVE(palette.color(QPalette::Highlight).rgb());
+	gb->video.renderer->highlightAmount = sin(m_glowFrame * M_PI / 30) * 48 + 64;
+
+	m_vl->reset(m_vl);
 	for (const Layer& layer : m_queue) {
+		switch (layer.id.type) {
+		case LayerId::SPRITE:
+			if (!layer.enabled) {
+				mVideoLoggerInjectOAM(logger, layer.id.index << 2, 0);
+			}
+			if (layer.id == m_active) {
+				gb->video.renderer->highlightOBJ[layer.id.index] = true;
+			}
+			break;
+		case LayerId::BACKGROUND:
+			m_vl->enableVideoLayer(m_vl, GB_LAYER_BACKGROUND, layer.enabled);
+			if (layer.id == m_active) {
+				gb->video.renderer->highlightBG = true;
+			}
+			break;
+		case LayerId::WINDOW:
+			m_vl->enableVideoLayer(m_vl, GB_LAYER_WINDOW, layer.enabled);
+			if (layer.id == m_active) {
+				gb->video.renderer->highlightWIN = true;
+			}
+			break;
+		case LayerId::FRAME: // TODO for SGB
+		case LayerId::BACKDROP:
+		case LayerId::NONE:
+			break;
+		}
 	}
 }
 #endif
@@ -310,15 +433,26 @@ void FrameView::invalidateQueue(const QSize& dims) {
 	bool blockSignals = m_ui.queue->blockSignals(true);
 	QMutexLocker locker(&m_mutex);
 	if (m_vl) {
+		mVideoLogger* logger = m_vl->videoLogger;
+		mVideoLoggerInjectionPoint(logger, LOGGER_INJECTION_FIRST_SCANLINE);
 		switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
-		case PLATFORM_GBA:
+		case mPLATFORM_GBA:
 			injectGBA();
+			break;
 #endif
 #ifdef M_CORE_GB
-		case PLATFORM_GB:
+		case mPLATFORM_GB:
 			injectGB();
+			break;
 #endif
+		case mPLATFORM_NONE:
+			break;
+		}
+		if (m_ui.disableScanline->checkState() == Qt::Checked) {
+			mVideoLoggerIgnoreAfterInjection(logger, (1 << DIRTY_PALETTE) | (1 << DIRTY_OAM) | (1 << DIRTY_REGISTER));
+		} else {
+			mVideoLoggerIgnoreAfterInjection(logger, 0);
 		}
 		m_vl->runFrame(m_vl);
 	}
@@ -333,7 +467,7 @@ void FrameView::invalidateQueue(const QSize& dims) {
 			item = m_ui.queue->item(i);
 		}
 		item->setText(layer.id.readable());
-		item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+		item->setFlags(Qt::ItemIsSelectable | (layer.fixed ? Qt::NoItemFlags : Qt::ItemIsUserCheckable) | Qt::ItemIsEnabled);
 		item->setCheckState(layer.enabled ? Qt::Checked : Qt::Unchecked);
 		item->setData(Qt::UserRole, i);
 		item->setSelected(layer.id == m_active);
@@ -349,8 +483,12 @@ void FrameView::invalidateQueue(const QSize& dims) {
 		updateRendered();
 		composited = m_rendered;
 	} else {
+		QImage framebuffer(m_framebuffer);
 		m_ui.exportButton->setEnabled(true);
-		composited.convertFromImage(m_framebuffer);
+		if (framebuffer.size() != m_dims) {
+			framebuffer = framebuffer.copy({QPoint(), m_dims});
+		}
+		composited.convertFromImage(framebuffer);
 	}
 	m_composited = composited.scaled(m_dims * m_ui.magnification->value());
 	m_ui.compositedView->setPixmap(m_composited);
@@ -363,7 +501,7 @@ void FrameView::updateRendered() {
 	m_rendered.convertFromImage(m_controller->getPixels());
 }
 
-bool FrameView::eventFilter(QObject* obj, QEvent* event) {
+bool FrameView::eventFilter(QObject*, QEvent* event) {
 	QPointF pos;
 	switch (event->type()) {
 	case QEvent::MouseButtonPress:
@@ -376,22 +514,21 @@ bool FrameView::eventFilter(QObject* obj, QEvent* event) {
 		pos /= m_ui.magnification->value();
 		disableLayer(pos);
 		return true;
+	default:
+		break;
 	}
 	return false;
 }
 
 void FrameView::refreshVl() {
 	QMutexLocker locker(&m_mutex);
+	if (m_currentFrame) {
+		m_currentFrame->close(m_currentFrame);
+	}
 	m_currentFrame = m_nextFrame;
-	m_nextFrame = VFileMemChunk(nullptr, 0);
+	m_nextFrame = VFileDevice::openMemory();
 	if (m_currentFrame) {
 		m_controller->endVideoLog(false);
-		VFile* currentFrame = VFileMemChunk(nullptr, m_currentFrame->size(m_currentFrame));
-		void* buffer = currentFrame->map(currentFrame, m_currentFrame->size(m_currentFrame), MAP_WRITE);
-		m_currentFrame->seek(m_currentFrame, 0, SEEK_SET);
-		m_currentFrame->read(m_currentFrame, buffer, m_currentFrame->size(m_currentFrame));
-		currentFrame->unmap(currentFrame, buffer, m_currentFrame->size(m_currentFrame));
-		m_currentFrame = currentFrame;
 		QMetaObject::invokeMethod(this, "newVl");
 	}
 	m_controller->endVideoLog();
@@ -403,13 +540,24 @@ void FrameView::newVl() {
 		m_glowTimer.start();
 	}
 	QMutexLocker locker(&m_mutex);
+	if (!m_currentFrame) {
+		return;
+	}
 	if (m_vl) {
+		mCoreConfigDeinit(&m_vl->config);
 		m_vl->deinit(m_vl);
 	}
 	m_vl = mCoreFindVF(m_currentFrame);
 	m_vl->init(m_vl);
 	m_vl->loadROM(m_vl, m_currentFrame);
+	m_currentFrame = nullptr;
 	mCoreInitConfig(m_vl, nullptr);
+#ifdef M_CORE_GB
+	if (m_controller->platform() == mPLATFORM_GB) {
+		mCoreConfigSetIntValue(&m_vl->config, "sgb.borders", static_cast<GB*>(m_controller->thread()->core->board)->video.sgbBorders);
+		m_vl->reloadConfigOption(m_vl, "sgb.borders", nullptr);
+	}
+#endif
 	unsigned width, height;
 	m_vl->desiredVideoDimensions(m_vl, &width, &height);
 	m_framebuffer = QImage(width, height, QImage::Format_RGBX8888);
@@ -421,7 +569,7 @@ void FrameView::frameCallback(FrameView* viewer, std::shared_ptr<bool> lock) {
 	if (!*lock) {
 		return;
 	}
-	CoreController::Interrupter interrupter(viewer->m_controller, true);
+	CoreController::Interrupter interrupter(viewer->m_controller);
 	viewer->refreshVl();
 	viewer->m_controller->addFrameAction(std::bind(&FrameView::frameCallback, viewer, lock));
 }
@@ -452,12 +600,20 @@ QString FrameView::LayerId::readable() const {
 		break;
 	case WINDOW:
 		typeStr = tr("Window");
+#ifdef M_CORE_GBA
+		if (index == 2) {
+			return tr("Objwin");
+		}
+#endif
 		break;
 	case SPRITE:
 		typeStr = tr("Sprite");
 		break;
 	case BACKDROP:
 		typeStr = tr("Backdrop");
+		break;
+	case FRAME:
+		typeStr = tr("Frame");
 		break;
 	}
 	if (index < 0) {
