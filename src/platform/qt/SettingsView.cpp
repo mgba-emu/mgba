@@ -503,9 +503,12 @@ void SettingsView::updateConfig() {
 	}
 
 	QVariant camera = m_ui.camera->itemData(m_ui.camera->currentIndex());
-	if (camera != m_controller->getQtOption("camera")) {
+	QVariant oldCamera = m_controller->getQtOption("camera");
+	if (camera != oldCamera) {
 		m_controller->setQtOption("camera", camera);
-		emit cameraChanged(camera.toByteArray());
+		if (!oldCamera.isNull()) {
+			emit cameraChanged(camera.toByteArray());
+		}
 	}
 
 	QLocale language = m_ui.languages->itemData(m_ui.languages->currentIndex()).toLocale();
