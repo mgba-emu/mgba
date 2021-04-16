@@ -23,6 +23,7 @@ Misc:
  - GBA: Default-enable VBA bug compat for Ruby and Emerald ROM hacks
  - GBA Memory: Log GPIO writes on non-GPIO carts as Pak Hardware instead of Memory
  - Qt: Add ROM filename and size to bug reporter
+ - Qt: Improve handling of disabling VBA bug compat mode (fixes mgba.io/i/2129)
 
 0.9.0: (2021-03-28)
 Features:

@@ -144,6 +144,7 @@ void OverrideView::updateOverrides() {
 		gba->override.idleLoop = IDLE_LOOP_NONE;
 		gba->override.mirroring = false;
 		gba->override.vbaBugCompat = false;
+		gba->vbaBugCompatSet = false;
 
 		if (!m_ui.hwAutodetect->isChecked()) {
 			hasOverride = true;
@@ -168,9 +169,10 @@ void OverrideView::updateOverrides() {
 			hasOverride = true;
 			gba->override.hardware |= HW_GB_PLAYER_DETECTION;
 		}
-		if (m_ui.vbaBugCompat->isChecked()) {
+		if (m_ui.vbaBugCompat->checkState() != Qt::PartiallyChecked) {
 			hasOverride = true;
-			gba->override.vbaBugCompat = true;
+			gba->vbaBugCompatSet = true;
+			gba->override.vbaBugCompat = m_ui.vbaBugCompat->isChecked();
 		}
 
 		bool ok;
@@ -270,7 +272,7 @@ void OverrideView::gameStopped() {
 	m_ui.tabWidget->setEnabled(true);
 	m_ui.savetype->setCurrentIndex(0);
 	m_ui.idleLoop->clear();
-	m_ui.vbaBugCompat->setChecked(false);
+	m_ui.vbaBugCompat->setCheckState(Qt::PartiallyChecked);
 
 	m_ui.mbc->setCurrentIndex(0);
 	m_ui.gbModel->setCurrentIndex(0);
