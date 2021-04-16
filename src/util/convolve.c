@@ -136,3 +136,47 @@ void Convolve2DClampPacked8(const uint8_t* restrict src, uint8_t* restrict dst, 
 		}
 	}
 }
+
+void Convolve2DClampChannels8(const uint8_t* restrict src, uint8_t* restrict dst, size_t width, size_t height, size_t stride, size_t channels, const struct ConvolutionKernel* restrict kernel) {
+	if (kernel->rank != 2) {
+		return;
+	}
+	size_t kx2 = kernel->dims[0] / 2;
+	size_t ky2 = kernel->dims[1] / 2;
+	size_t y;
+	for (y = 0; y < height; ++y) {
+		uint8_t* orow = &dst[y * stride];
+		size_t x;
+		for (x = 0; x < width; ++x) {
+			size_t c;
+			for (c = 0; c < channels; ++c) {
+				float sum = 0.f;
+				size_t ky;
+				for (ky = 0; ky < kernel->dims[1]; ++ky) {
+					size_t cy = 0;
+					if (y + ky > ky2) {
+						cy = y + ky - ky2;
+					}
+					if (cy >= height) {
+						cy = height - 1;
+					}
+					const uint8_t* irow = &src[cy * stride];
+					size_t kx;
+					for (kx = 0; kx < kernel->dims[0]; ++kx) {
+						size_t cx = 0;
+						if (x + kx > kx2) {
+							cx = x + kx - kx2;
+						}
+						if (cx >= width) {
+							cx = width - 1;
+						}
+						cx *= channels;
+						sum += irow[cx + c] * kernel->kernel[ky * kernel->dims[0] + kx];
+					}
+				}
+				*orow = sum;
+				++orow;
+			}
+		}
+	}
+}
