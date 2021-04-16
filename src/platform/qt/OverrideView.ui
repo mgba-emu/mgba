@@ -186,6 +186,12 @@
             <property name="text">
              <string>VBA bug compatibility mode</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
+            <property name="checkState">
+             <enum>Qt::PartiallyChecked</enum>
+            </property>
            </widget>
           </item>
          </layout>

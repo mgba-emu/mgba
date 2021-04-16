@@ -429,6 +429,7 @@ void SettingsView::updateConfig() {
 	saveSetting("dynamicTitle", m_ui.dynamicTitle);
 	saveSetting("videoScale", m_ui.videoScale);
 	saveSetting("gba.forceGbp", m_ui.forceGbp);
+	saveSetting("vbaBugCompat", m_ui.vbaBugCompat);
 
 	if (m_ui.audioBufferSize->currentText().toInt() > 8192) {
 		m_ui.audioBufferSize->setCurrentText("8192");
@@ -622,6 +623,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("gba.audioHle", m_ui.audioHle);
 	loadSetting("dynamicTitle", m_ui.dynamicTitle, true);
 	loadSetting("gba.forceGbp", m_ui.forceGbp);
+	loadSetting("vbaBugCompat", m_ui.vbaBugCompat, true);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 
