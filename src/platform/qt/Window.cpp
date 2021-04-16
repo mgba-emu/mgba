@@ -247,8 +247,7 @@ void Window::reloadConfig() {
 	if (m_controller) {
 		m_controller->loadConfig(m_config);
 		if (m_audioProcessor) {
-			m_audioProcessor->setBufferSamples(opts->audioBuffers);
-			m_audioProcessor->requestSampleRate(opts->sampleRate);
+			m_audioProcessor->configure(m_config);
 		}
 		m_display->resizeContext();
 	}
@@ -989,16 +988,10 @@ void Window::reloadAudioDriver() {
 		m_audioProcessor.reset();
 	}
 
-	const mCoreOptions* opts = m_config->options();
 	m_audioProcessor = std::unique_ptr<AudioProcessor>(AudioProcessor::create());
 	m_audioProcessor->setInput(m_controller);
-	m_audioProcessor->setBufferSamples(opts->audioBuffers);
-	m_audioProcessor->requestSampleRate(opts->sampleRate);
+	m_audioProcessor->configure(m_config);
 	m_audioProcessor->start();
-	connect(m_controller.get(), &CoreController::stopping, m_audioProcessor.get(), &AudioProcessor::stop);
-	connect(m_controller.get(), &CoreController::fastForwardChanged, m_audioProcessor.get(), &AudioProcessor::inputParametersChanged);
-	connect(m_controller.get(), &CoreController::paused, m_audioProcessor.get(), &AudioProcessor::pause);
-	connect(m_controller.get(), &CoreController::unpaused, m_audioProcessor.get(), &AudioProcessor::start);
 }
 
 void Window::changeRenderer() {
