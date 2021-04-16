@@ -961,20 +961,10 @@ void Window::reloadDisplayDriver() {
 		m_screenWidget->unsetCursor();
 	});
 
-	const mCoreOptions* opts = m_config->options();
-	m_display->lockAspectRatio(opts->lockAspectRatio);
-	m_display->lockIntegerScaling(opts->lockIntegerScaling);
-	m_display->interframeBlending(opts->interframeBlending);
-	m_display->filter(opts->resampleVideo);
-	m_config->updateOption("showOSD");
+	m_display->configure(m_config);
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
-	if (opts->shader) {
-		struct VDir* shader = VDirOpen(opts->shader);
-		if (shader && m_display->supportsShaders()) {
-			m_display->setShaders(shader);
-			m_shaderView->refreshShaders();
-			shader->close(shader);
-		}
+	if (m_shaderView) {
+		m_shaderView->refreshShaders();
 	}
 #endif
 

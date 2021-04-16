@@ -5,9 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "Display.h"
 
+#include "ConfigController.h"
 #include "DisplayGL.h"
 #include "DisplayQt.h"
 #include "LogController.h"
+
+#include <mgba-util/vfs.h>
 
 using namespace QGBA;
 
@@ -89,6 +92,24 @@ void Display::attach(std::shared_ptr<CoreController> controller) {
 	connect(controller.get(), &CoreController::frameAvailable, this, &Display::framePosted);
 	connect(controller.get(), &CoreController::statusPosted, this, &Display::showMessage);
 	connect(controller.get(), &CoreController::didReset, this, &Display::resizeContext);
+}
+
+void Display::configure(ConfigController* config) {
+	const mCoreOptions* opts = config->options();
+	lockAspectRatio(opts->lockAspectRatio);
+	lockIntegerScaling(opts->lockIntegerScaling);
+	interframeBlending(opts->interframeBlending);
+	filter(opts->resampleVideo);
+	config->updateOption("showOSD");
+#if defined(BUILD_GL) || defined(BUILD_GLES2)
+	if (opts->shader) {
+		struct VDir* shader = VDirOpen(opts->shader);
+		if (shader && supportsShaders()) {
+			setShaders(shader);
+			shader->close(shader);
+		}
+	}
+#endif
 }
 
 void Display::resizeEvent(QResizeEvent*) {

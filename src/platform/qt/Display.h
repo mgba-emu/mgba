@@ -18,6 +18,7 @@ struct VideoShader;
 
 namespace QGBA {
 
+class ConfigController;
 class CoreController;
 class VideoProxy;
 
@@ -42,7 +43,8 @@ public:
 	bool isFiltered() const { return m_filter; }
 	bool isShowOSD() const { return m_showOSD; }
 
-	void attach(std::shared_ptr<CoreController>);
+	virtual void attach(std::shared_ptr<CoreController>);
+	virtual void configure(ConfigController*);
 	virtual void startDrawing(std::shared_ptr<CoreController>) = 0;
 	virtual bool isDrawing() const = 0;
 	virtual bool supportsShaders() const = 0;
