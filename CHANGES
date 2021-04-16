@@ -2,6 +2,7 @@
 Features:
  - Tool for converting scanned pictures of e-Reader cards to raw dotcode data
 Emulation fixes:
+ - ARM: Fix LDM^ with empty rlist (fixes mgba.io/i/2127)
  - Core: Fix first event scheduling after loading savestate
  - GB Serialize: Fix switching speed modes when loading a state (fixes mgba.io/i/2097)
  - GB: Fix skipping BIOS
