@@ -80,6 +80,17 @@ Display::Display(QWidget* parent)
 	setMouseTracking(true);
 }
 
+void Display::attach(std::shared_ptr<CoreController> controller) {
+	connect(controller.get(), &CoreController::stateLoaded, this, &Display::resizeContext);
+	connect(controller.get(), &CoreController::stateLoaded, this, &Display::forceDraw);
+	connect(controller.get(), &CoreController::rewound, this, &Display::forceDraw);
+	connect(controller.get(), &CoreController::paused, this, &Display::pauseDrawing);
+	connect(controller.get(), &CoreController::unpaused, this, &Display::unpauseDrawing);
+	connect(controller.get(), &CoreController::frameAvailable, this, &Display::framePosted);
+	connect(controller.get(), &CoreController::statusPosted, this, &Display::showMessage);
+	connect(controller.get(), &CoreController::didReset, this, &Display::resizeContext);
+}
+
 void Display::resizeEvent(QResizeEvent*) {
 	m_messagePainter.resize(size(), m_lockAspectRatio, devicePixelRatio());
 }
