@@ -136,7 +136,7 @@ private:
 	void makeCurrent();
 	void performDraw();
 	void dequeue();
-	void dequeueAll();
+	void dequeueAll(bool keep = false);
 
 	std::array<std::array<uint32_t, 0x100000>, 3> m_buffers;
 	QList<uint32_t*> m_free;
