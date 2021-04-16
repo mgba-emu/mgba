@@ -1109,6 +1109,7 @@ void Window::openStateWindow(LoadSave ls) {
 	if (!wasPaused) {
 		m_controller->setPaused(true);
 		connect(m_stateWindow, &LoadSaveState::closed, [this]() {
+			m_screenWidget->filter(m_config->getOption("resampleVideo").toInt());
 			if (m_controller) {
 				m_controller->setPaused(false);
 			}
@@ -1116,7 +1117,27 @@ void Window::openStateWindow(LoadSave ls) {
 	}
 	m_stateWindow->setAttribute(Qt::WA_DeleteOnClose);
 	m_stateWindow->setMode(ls);
-	updateFrame();
+
+	QImage still(m_controller->getPixels());
+	if (still.format() != QImage::Format_RGB888) {
+		still = still.convertToFormat(QImage::Format_RGB888);
+	}
+	if (still.height() > 512 || still.width() > 512) {
+		still = still.scaled(384, 256, Qt::KeepAspectRatio, Qt::SmoothTransformation).convertToFormat(QImage::Format_RGB888);
+	}
+	QImage output(still.size(), QImage::Format_RGB888);
+	size_t dims[] = {7, 7};
+	struct ConvolutionKernel kern;
+	ConvolutionKernelCreate(&kern, 2, dims);
+	ConvolutionKernelFillRadial(&kern, true);
+	Convolve2DClampChannels8(still.constBits(), output.bits(), still.width(), still.height(), still.bytesPerLine(), 3, &kern);
+	ConvolutionKernelDestroy(&kern);
+
+	QPixmap pixmap;
+	pixmap.convertFromImage(output);
+	m_screenWidget->setPixmap(pixmap);
+	m_screenWidget->filter(true);
+
 #ifndef Q_OS_MAC
 	menuBar()->show();
 #endif
@@ -1819,10 +1840,12 @@ void Window::focusCheck() {
 }
 
 void Window::updateFrame() {
+	if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() != m_display.get()) {
+		return;
+	}
 	QPixmap pixmap;
 	pixmap.convertFromImage(m_controller->getPixels());
 	m_screenWidget->setPixmap(pixmap);
-	emit paused(true);
 }
 
 void Window::setController(CoreController* controller, const QString& fname) {
@@ -1883,6 +1906,9 @@ void Window::setController(CoreController* controller, const QString& fname) {
 #endif
 
 	connect(m_controller.get(), &CoreController::paused, &m_inputController, &InputController::resumeScreensaver);
+	connect(m_controller.get(), &CoreController::paused, [this]() {
+		emit paused(true);
+	});
 	connect(m_controller.get(), &CoreController::unpaused, [this]() {
 		emit paused(false);
 	});
