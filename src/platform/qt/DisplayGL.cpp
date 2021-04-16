@@ -371,7 +371,7 @@ void PainterGL::resizeContext() {
 	if (m_dims == size) {
 		return;
 	}
-	dequeueAll();
+	dequeueAll(false);
 	m_backend->setDimensions(m_backend, size.width(), size.height());
 }
 
@@ -429,7 +429,7 @@ void PainterGL::start() {
 }
 
 void PainterGL::draw() {
-	if (!m_active || m_queue.isEmpty()) {
+	if (!m_started || m_queue.isEmpty()) {
 		return;
 	}
 	mCoreSync* sync = &m_context->thread()->impl->sync;
@@ -461,6 +461,11 @@ void PainterGL::draw() {
 		performDraw();
 		m_backend->swap(m_backend);
 	}
+
+	QMutexLocker locker(&m_mutex);
+	if (!m_queue.isEmpty()) {
+		QTimer::singleShot(1, this, &PainterGL::draw);
+	}
 }
 
 void PainterGL::forceDraw() {
@@ -477,7 +482,7 @@ void PainterGL::forceDraw() {
 void PainterGL::stop() {
 	m_active = false;
 	m_started = false;
-	dequeueAll();
+	dequeueAll(false);
 	if (m_context) {
 		if (m_videoProxy) {
 			m_videoProxy->detach(m_context.get());
@@ -499,6 +504,7 @@ void PainterGL::stop() {
 
 void PainterGL::pause() {
 	m_active = false;
+	dequeueAll(true);
 }
 
 void PainterGL::unpause() {
@@ -551,20 +557,24 @@ void PainterGL::dequeue() {
 	m_buffer = buffer;
 }
 
-void PainterGL::dequeueAll() {
+void PainterGL::dequeueAll(bool keep) {
+	QMutexLocker locker(&m_mutex);
 	uint32_t* buffer = 0;
-	m_mutex.lock();
 	while (!m_queue.isEmpty()) {
 		buffer = m_queue.dequeue();
-		if (buffer) {
+		if (keep) {
+			if (m_buffer && buffer) {
+				m_free.append(m_buffer);
+				m_buffer = buffer;
+			}
+		} else if (buffer) {
 			m_free.append(buffer);
 		}
 	}
-	if (m_buffer) {
+	if (m_buffer && !keep) {
 		m_free.append(m_buffer);
 		m_buffer = nullptr;
 	}
-	m_mutex.unlock();
 }
 
 void PainterGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
