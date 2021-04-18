@@ -20,6 +20,7 @@ Other fixes:
  - Qt: Fix smudged window icon on Windows
  - Qt: Fix saving settings enabling camera when camera name changes (fixes mgba.io/i/2125)
  - Qt: Fix frames getting backlogged (fixes mgba.io/i/2122)
+ - Qt: Restore maximized state when starting (fixes mgba.io/i/487)
 Misc:
  - Core: Truncate preloading ROMs that slightly exceed max size (fixes mgba.io/i/2093)
  - GBA: Default-enable VBA bug compat for Ruby and Emerald ROM hacks
