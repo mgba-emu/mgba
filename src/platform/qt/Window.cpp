@@ -620,6 +620,7 @@ void Window::showEvent(QShowEvent* event) {
 	m_wasOpened = true;
 	resizeFrame(m_screenWidget->sizeHint());
 	QVariant windowPos = m_config->getQtOption("windowPos");
+	bool maximized = m_config->getQtOption("maximized").toBool();
 	QRect geom = windowHandle()->screen()->availableGeometry();
 	if (!windowPos.isNull() && geom.contains(windowPos.toPoint())) {
 		move(windowPos.toPoint());
@@ -627,6 +628,9 @@ void Window::showEvent(QShowEvent* event) {
 		QRect rect = frameGeometry();
 		rect.moveCenter(geom.center());
 		move(rect.topLeft());
+	}
+	if (maximized) {
+		showMaximized();
 	}
 	if (m_fullscreenOnStart) {
 		enterFullScreen();
@@ -652,6 +656,7 @@ void Window::hideEvent(QHideEvent* event) {
 void Window::closeEvent(QCloseEvent* event) {
 	emit shutdown();
 	m_config->setQtOption("windowPos", pos());
+	m_config->setQtOption("maximized", isMaximized());
 
 	if (m_savedScale > 0) {
 		m_config->setOption("height", GBA_VIDEO_VERTICAL_PIXELS * m_savedScale);
