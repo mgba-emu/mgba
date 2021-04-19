@@ -1,4 +1,4 @@
-0.9.1: (Future)
+0.9.1: (2021-04-18)
 Emulation fixes:
  - ARM: Fix LDM^ with empty rlist (fixes mgba.io/i/2127)
  - Core: Fix first event scheduling after loading savestate
