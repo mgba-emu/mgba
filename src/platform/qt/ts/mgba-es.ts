@@ -4252,22 +4252,22 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../Window.cpp" line="431"/>
         <source>Select e-Reader card images</source>
-        <translation type="unfinished"></translation>
+        <translation>Elegir imágenes de tarjeta e-Reader</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="431"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Archivo de imagen (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="432"/>
         <source>Conversion finished</source>
-        <translation type="unfinished"></translation>
+        <translation>Conversión terminada</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="470"/>
         <source>%1 of %2 e-Reader cards converted successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 de %2 tarjetas e-Reader convertidas con éxito.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1156"/>
@@ -4282,7 +4282,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../Window.cpp" line="1175"/>
         <source>Convert e-Reader card image to raw...</source>
-        <translation type="unfinished"></translation>
+        <translation>Convertir imagen de tarjeta e-Reader a raw...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1197"/>
