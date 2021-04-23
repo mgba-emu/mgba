@@ -16,6 +16,34 @@
 
 DEFINE_VECTOR(GUIMenuItemList, struct GUIMenuItem);
 
+void _itemNext(struct GUIMenuItem* item, bool wrap) {
+	if (item->state < item->nStates - 1) {
+		unsigned oldState = item->state;
+		do {
+			++item->state;
+		} while (!item->validStates[item->state] && item->state < item->nStates - 1);
+		if (!item->validStates[item->state]) {
+			item->state = oldState;
+		}
+	} else if (wrap) {
+		item->state = 0;
+	}
+}
+
+void _itemPrev(struct GUIMenuItem* item, bool wrap) {
+	if (item->state > 0) {
+		unsigned oldState = item->state;
+		do {
+			--item->state;
+		} while (!item->validStates[item->state] && item->state > 0);
+		if (!item->validStates[item->state]) {
+			item->state = oldState;
+		}
+	} else if (wrap) {
+		item->state = item->nStates - 1;
+	}
+}
+
 enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* menu, struct GUIMenuItem** item) {
 	size_t start = 0;
 	size_t lineHeight = GUIFontHeight(params->font);
@@ -52,15 +80,7 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 		if (newInput & (1 << GUI_INPUT_LEFT)) {
 			struct GUIMenuItem* item = GUIMenuItemListGetPointer(&menu->items, menu->index);
 			if (item->validStates) {
-				if (item->state > 0) {
-					unsigned oldState = item->state;
-					do {
-						--item->state;
-					} while (!item->validStates[item->state] && item->state > 0);
-					if (!item->validStates[item->state]) {
-						item->state = oldState;
-					}
-				}
+				_itemPrev(item, false);
 			} else if (menu->index >= pageSize) {
 				menu->index -= pageSize;
 			} else {
@@ -70,15 +90,7 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 		if (newInput & (1 << GUI_INPUT_RIGHT)) {
 			struct GUIMenuItem* item = GUIMenuItemListGetPointer(&menu->items, menu->index);
 			if (item->validStates) {
-				if (item->state < item->nStates - 1) {
-					unsigned oldState = item->state;
-					do {
-						++item->state;
-					} while (!item->validStates[item->state] && item->state < item->nStates - 1);
-					if (!item->validStates[item->state]) {
-						item->state = oldState;
-					}
-				}
+				_itemNext(item, false);
 			} else if (menu->index + pageSize < GUIMenuItemListSize(&menu->items)) {
 				menu->index += pageSize;
 			} else {
@@ -125,6 +137,8 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 				if (reason != GUI_MENU_EXIT_BACK) {
 					return reason;
 				}
+			} else if ((*item)->validStates && !(*item)->data) {
+				_itemNext(*item, true);
 			} else {
 				return GUI_MENU_EXIT_ACCEPT;
 			}
