@@ -124,7 +124,7 @@ static enum ScreenMode {
 	SM_MAX
 } screenMode = SM_PA;
 
-static bool initEgl() {
+static bool eglInit() {
 	s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (!s_display) {
 		goto _fail0;
@@ -173,7 +173,7 @@ _fail0:
 	return false;
 }
 
-static void deinitEgl() {
+static void eglDeinit() {
 	if (s_display) {
 		eglMakeCurrent(s_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 		if (s_context) {
@@ -186,7 +186,7 @@ static void deinitEgl() {
 	}
 }
 
-static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, enum GBAKey key) {
+static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, int key) {
 	mInputBindKey(map, binding, __builtin_ctz(nativeKey), key);
 }
 
@@ -674,29 +674,7 @@ static void _guiFinish(void) {
 	GUIFontDrawSubmit(font);
 }
 
-int main(int argc, char* argv[]) {
-	NWindow* window = nwindowGetDefault();
-	nwindowSetDimensions(window, 1920, 1080);
-
-	socketInitializeDefault();
-	nxlinkStdio();
-	initEgl();
-	romfsInit();
-	audoutInitialize();
-	psmInitialize();
-
-	font = GUIFontCreate();
-
-	vmode = appletGetOperationMode();
-	if (vmode == AppletOperationMode_Console) {
-		vwidth = 1920;
-		vheight = 1080;
-	} else {
-		vwidth = 1280;
-		vheight = 720;
-	}
-	nwindowSetCrop(window, 0, 0, vwidth, vheight);
-
+static void glInit(void) {
 	glViewport(0, 1080 - vheight, vwidth, vheight);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 
@@ -783,7 +761,23 @@ int main(int argc, char* argv[]) {
 	glVertexAttribPointer(offsetLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(offsetLocation);
 	glBindVertexArray(0);
+}
 
+static void glDeinit(void) {
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	glDeleteBuffers(1, &pbo);
+
+	glDeleteFramebuffers(1, &copyFbo);
+	glDeleteTextures(1, &tex);
+	glDeleteTextures(1, &oldTex);
+	glDeleteBuffers(1, &vbo);
+	glDeleteProgram(program);
+	glDeleteVertexArrays(1, &vao);
+}
+
+static void hidSetup(void) {
 	hidInitializeTouchScreen();
 	padConfigureInput(1, HidNpadStyleSet_NpadStandard);
 	padInitializeDefault(&pad);
@@ -808,6 +802,40 @@ int main(int argc, char* argv[]) {
 
 	lightSensor.d.readLuminance = _lightSensorRead;
 	lightSensor.d.sample = _lightSensorSample;
+}
+
+static void hidTeardown(void) {
+	hidStopSixAxisSensor(sixaxisHandles[0]);
+	hidStopSixAxisSensor(sixaxisHandles[1]);
+	hidStopSixAxisSensor(sixaxisHandles[2]);
+	hidStopSixAxisSensor(sixaxisHandles[3]);
+}
+
+int main(int argc, char* argv[]) {
+	NWindow* window = nwindowGetDefault();
+	nwindowSetDimensions(window, 1920, 1080);
+
+	socketInitializeDefault();
+	nxlinkStdio();
+	eglInit();
+	romfsInit();
+	audoutInitialize();
+	psmInitialize();
+
+	font = GUIFontCreate();
+
+	vmode = appletGetOperationMode();
+	if (vmode == AppletOperationMode_Console) {
+		vwidth = 1920;
+		vheight = 1080;
+	} else {
+		vwidth = 1280;
+		vheight = 720;
+	}
+	nwindowSetCrop(window, 0, 0, vwidth, vheight);
+
+	glInit();
+	hidSetup();
 
 	stream.videoDimensionsChanged = NULL;
 	stream.postVideoFrame = NULL;
@@ -1028,27 +1056,13 @@ int main(int argc, char* argv[]) {
 	audoutStopAudioOut();
 	GUIFontDestroy(font);
 
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-	glDeleteBuffers(1, &pbo);
-
-	glDeleteFramebuffers(1, &copyFbo);
-	glDeleteTextures(1, &tex);
-	glDeleteTextures(1, &oldTex);
-	glDeleteBuffers(1, &vbo);
-	glDeleteProgram(program);
-	glDeleteVertexArrays(1, &vao);
-
-	hidStopSixAxisSensor(sixaxisHandles[0]);
-	hidStopSixAxisSensor(sixaxisHandles[1]);
-	hidStopSixAxisSensor(sixaxisHandles[2]);
-	hidStopSixAxisSensor(sixaxisHandles[3]);
+	glDeinit();
+	hidTeardown();
 
 	psmExit();
 	audoutExit();
 	romfsExit();
-	deinitEgl();
+	eglDeinit();
 	socketExit();
 	return 0;
 }
