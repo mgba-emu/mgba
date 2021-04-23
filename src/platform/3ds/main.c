@@ -797,6 +797,22 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 	}
 }
 
+static enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
+	SwkbdState swkbd;
+	swkbdInit(&swkbd, SWKBD_TYPE_NORMAL, 2, keyboard->maxLen);
+	swkbdSetInitialText(&swkbd, keyboard->result);
+	if (keyboard->multiline) {
+		swkbdSetFeatures(&swkbd, SWKBD_MULTILINE);
+	}
+
+	SwkbdButton button = swkbdInputText(&swkbd,  keyboard->result, sizeof( keyboard->result));
+	if (button == SWKBD_BUTTON_CONFIRM) {
+		return GUI_KEYBOARD_DONE;
+	} else {
+		return GUI_KEYBOARD_CANCEL;
+	}
+}
+
 THREAD_ENTRY _core2Test(void* context) {
 	UNUSED(context);
 }
@@ -892,6 +908,7 @@ int main() {
 			_pollInput, _pollCursor,
 			_batteryState,
 			_guiPrepare, _guiFinish,
+			_keyboardRun,
 		},
 		.keySources = (struct GUIInputKeys[]) {
 			{

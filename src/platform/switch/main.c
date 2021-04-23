@@ -674,6 +674,24 @@ static void _guiFinish(void) {
 	GUIFontDrawSubmit(font);
 }
 
+static enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
+	SwkbdConfig swkbd;
+	swkbdCreate(&swkbd, 0);
+	swkbdConfigMakePresetDefault(&swkbd);
+	swkbdConfigSetStringLenMax(&swkbd, keyboard->maxLen);
+	swkbdConfigSetInitialText(&swkbd, keyboard->result);
+	swkbdConfigSetHeaderText(&swkbd, keyboard->title);
+	swkbdConfigSetReturnButtonFlag(&swkbd, keyboard->multiline);
+
+	Result rc = swkbdShow(&swkbd, keyboard->result, sizeof(keyboard->result));
+	swkbdClose(&swkbd);
+	if (R_SUCCEEDED(rc)) {
+		return GUI_KEYBOARD_DONE;
+	} else {
+		return GUI_KEYBOARD_CANCEL;
+	}
+}
+
 static void glInit(void) {
 	glViewport(0, 1080 - vheight, vwidth, vheight);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
@@ -865,6 +883,7 @@ int main(int argc, char* argv[]) {
 			_pollInput, _pollCursor,
 			_batteryState,
 			_guiPrepare, _guiFinish,
+			_keyboardRun,
 		},
 		.keySources = (struct GUIInputKeys[]) {
 			{

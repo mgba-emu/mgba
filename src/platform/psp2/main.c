@@ -11,10 +11,12 @@
 #include <mgba-util/gui/font.h>
 #include <mgba-util/gui/file-select.h>
 #include <mgba-util/gui/menu.h>
+#include <mgba-util/string.h>
 
 #include <psp2/apputil.h>
 #include <psp2/ctrl.h>
 #include <psp2/display.h>
+#include <psp2/ime_dialog.h>
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/power.h>
@@ -36,6 +38,7 @@ static void _drawStart(void) {
 
 static void _drawEnd(void) {
 	vita2d_end_drawing();
+	vita2d_common_dialog_update();
 	vita2d_swap_buffers();
 }
 
@@ -81,6 +84,66 @@ static int _batteryState(void) {
 	return state | charge;
 }
 
+static enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
+	SceImeDialogParam params;
+	sceImeDialogParamInit(&params);
+	params.supportedLanguages = 0x0001FFFF;
+	params.languagesForced = SCE_TRUE;
+	params.type = SCE_IME_TYPE_DEFAULT;
+	params.option = 0;
+	if (keyboard->multiline) {
+		params.option = SCE_IME_OPTION_MULTILINE;
+	}
+	params.dialogMode = SCE_IME_DIALOG_DIALOG_MODE_WITH_CANCEL;
+	params.maxTextLength = keyboard->maxLen;
+	params.title = calloc(sizeof(SceWChar16), MAX_KEYBOARD_TITLE_LEN + 1);
+	params.inputTextBuffer = calloc(sizeof(SceWChar16), keyboard->maxLen + 1);
+	params.initialText = calloc(sizeof(SceWChar16), keyboard->maxLen + 1);
+
+	uint16_t* utf16Buffer = params.initialText;
+	char* utf8Buffer = keyboard->result;
+	size_t i = keyboard->maxLen;
+	while (i > 0 && *utf8Buffer) {
+		uint32_t unichar = utf8Char((const char**) &utf8Buffer, &i);
+		utf16Buffer += toUtf16(unichar, utf16Buffer);
+	}
+
+	utf16Buffer = params.title;
+	utf8Buffer = keyboard->title;
+	i = MAX_KEYBOARD_TITLE_LEN;
+	while (i > 0 && *utf8Buffer) {
+		uint32_t unichar = utf8Char((const char**) &utf8Buffer, &i);
+		utf16Buffer += toUtf16(unichar, utf16Buffer);
+	}
+
+	sceImeDialogInit(&params);
+	SceCommonDialogStatus status = SCE_COMMON_DIALOG_STATUS_RUNNING;
+	while (status == SCE_COMMON_DIALOG_STATUS_RUNNING) {
+		_drawStart();
+		status = sceImeDialogGetStatus();
+		_drawEnd();
+	}
+
+	SceImeDialogResult result;
+	memset(&result, 0, sizeof(SceImeDialogResult));
+	sceImeDialogGetResult(&result);
+	sceImeDialogTerm();
+
+	utf16Buffer = params.inputTextBuffer;
+	utf8Buffer = keyboard->result;
+	i = keyboard->maxLen;
+	while (i > 0 && *utf16Buffer) {
+		uint32_t unichar = utf16Char((const uint16_t**) &utf16Buffer, &i);
+		utf8Buffer += toUtf8(unichar, utf8Buffer);
+	}
+	utf8Buffer[0] = 0;
+
+	free(params.initialText);
+	free(params.inputTextBuffer);
+
+	return result.button == SCE_IME_DIALOG_BUTTON_ENTER ? GUI_KEYBOARD_DONE : GUI_KEYBOARD_CANCEL;
+}
+
 int main() {
 	vita2d_init();
 	struct GUIFont* font = GUIFontCreate();
@@ -92,6 +155,7 @@ int main() {
 			_pollInput, _pollCursor,
 			_batteryState,
 			0, 0,
+			_keyboardRun,
 		},
 		.configExtra = (struct GUIMenuItem[]) {
 			{
@@ -167,6 +231,7 @@ int main() {
 	sceCtrlSetSamplingModeExt(SCE_CTRL_MODE_ANALOG_WIDE);
 	sceSysmoduleLoadModule(SCE_SYSMODULE_PHOTO_EXPORT);
 	sceSysmoduleLoadModule(SCE_SYSMODULE_APPUTIL);
+	sceSysmoduleLoadModule(SCE_SYSMODULE_IME);
 
 	mGUIInit(&runner, "psvita");
 
