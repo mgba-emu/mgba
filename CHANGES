@@ -1,6 +1,7 @@
 0.10.0: (Future)
 Features:
  - Tool for converting scanned pictures of e-Reader cards to raw dotcode data
+ - Cheat code support in homebrew ports
 Misc:
  - Qt: Rearrange menus some
 
