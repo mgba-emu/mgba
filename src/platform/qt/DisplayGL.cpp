@@ -158,7 +158,6 @@ void DisplayGL::stopDrawing() {
 void DisplayGL::pauseDrawing() {
 	if (m_hasStarted) {
 		m_isDrawing = false;
-		CoreController::Interrupter interrupter(m_context);
 		QMetaObject::invokeMethod(m_painter.get(), "pause", Qt::BlockingQueuedConnection);
 #ifndef Q_OS_MAC
 		setUpdatesEnabled(true);
@@ -169,7 +168,6 @@ void DisplayGL::pauseDrawing() {
 void DisplayGL::unpauseDrawing() {
 	if (m_hasStarted) {
 		m_isDrawing = true;
-		CoreController::Interrupter interrupter(m_context);
 		QMetaObject::invokeMethod(m_painter.get(), "unpause", Qt::BlockingQueuedConnection);
 #ifndef Q_OS_MAC
 		setUpdatesEnabled(false);

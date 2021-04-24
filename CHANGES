@@ -2,6 +2,8 @@
 Features:
  - Tool for converting scanned pictures of e-Reader cards to raw dotcode data
  - Cheat code support in homebrew ports
+Other fixes:
+ - Qt: Fix infrequent deadlock when using sync to video
 Misc:
  - Qt: Rearrange menus some
 
