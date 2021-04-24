@@ -1,3 +1,7 @@
+0.9.2: (Future)
+Other fixes:
+ - Qt: Fix infrequent deadlock when using sync to video
+
 0.9.1: (2021-04-18)
 Emulation fixes:
  - ARM: Fix LDM^ with empty rlist (fixes mgba.io/i/2127)
