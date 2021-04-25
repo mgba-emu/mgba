@@ -11,6 +11,8 @@
 
 namespace QGBA {
 
+class LibraryTreeItem;
+
 class LibraryTree final : public AbstractGameList {
 
 public:
@@ -25,17 +27,21 @@ public:
 	explicit LibraryTree(LibraryController* parent = nullptr);
 	~LibraryTree();
 
-	// AbstractGameList stuff
-	virtual mLibraryEntry* selectedEntry() override;
-	virtual void selectEntry(mLibraryEntry* game) override;
+	QString selectedEntry() override;
+	void selectEntry(const QString& fullpath) override;
 
-	virtual void setViewStyle(LibraryStyle newStyle) override;
+	void setViewStyle(LibraryStyle newStyle) override;
 
-	virtual void addEntries(QList<mLibraryEntry*> items) override;
-	virtual void addEntry(mLibraryEntry* item) override;
-	virtual void removeEntry(mLibraryEntry* item) override;
+	void resetEntries(const QList<LibraryEntry>& items) override;
+	void addEntries(const QList<LibraryEntry>& items) override;
+	void updateEntries(const QList<LibraryEntry>& items) override;
+	void removeEntries(const QList<QString>& items) override;
 
-	virtual QWidget* widget() override { return m_widget; }
+	void addEntry(const LibraryEntry& items) override;
+	void updateEntry(const LibraryEntry& items) override;
+	void removeEntry(const QString& items) override;
+
+	QWidget* widget() override { return m_widget; }
 
 private:
 	QTreeWidget* m_widget;
@@ -44,8 +50,9 @@ private:
 	LibraryController* m_controller;
 
 	bool m_deferredTreeRebuild = false;
-	QHash<mLibraryEntry*, QTreeWidgetItem*> m_items;
-	QHash<QString, QTreeWidgetItem*> m_pathNodes;
+	QHash<QString, LibraryEntry> m_entries;
+	QHash<QString, QTreeWidgetItem*> m_items;
+	QHash<QString, int> m_pathNodes;
 
 	void rebuildTree();
 	void resizeAllCols();

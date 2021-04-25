@@ -1,5 +1,5 @@
 /* Copyright (c) 2014-2017 waddlesplash
- * Copyright (c) 2014-2021 Jeffrey Pfau
+ * Copyright (c) 2013-2021 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,18 +29,42 @@ enum class LibraryStyle {
 	STYLE_ICON
 };
 
+struct LibraryEntry {
+	LibraryEntry() {}
+	LibraryEntry(const mLibraryEntry* entry);
+
+	bool isNull() const { return fullpath.isNull(); }
+
+	QString displayTitle() const { return title.isNull() ? filename : title; }
+
+	QString base;
+	QString filename;
+	QString fullpath;
+	QString title;
+	QByteArray internalTitle;
+	QByteArray internalCode;
+	mPlatform platform;
+	size_t filesize;
+	uint32_t crc32;
+
+	bool operator==(const LibraryEntry& other) const { return other.fullpath == fullpath; }
+};
+
 class AbstractGameList {
 public:
-	virtual mLibraryEntry* selectedEntry() = 0;
-	virtual void selectEntry(mLibraryEntry* game) = 0;
+	virtual QString selectedEntry() = 0;
+	virtual void selectEntry(const QString& fullpath) = 0;
 
 	virtual void setViewStyle(LibraryStyle newStyle) = 0;
 
-	virtual void addEntry(mLibraryEntry* item) = 0;
-	virtual void addEntries(QList<mLibraryEntry*> items);
+	virtual void resetEntries(const QList<LibraryEntry>&) = 0;
+	virtual void addEntries(const QList<LibraryEntry>&) = 0;
+	virtual void updateEntries(const QList<LibraryEntry>&) = 0;
+	virtual void removeEntries(const QList<QString>&) = 0;
 
-	virtual void removeEntry(mLibraryEntry* item) = 0;
-	virtual void removeEntries(QList<mLibraryEntry*> items);
+	virtual void addEntry(const LibraryEntry&);
+	virtual void updateEntry(const LibraryEntry&);
+	virtual void removeEntry(const QString&);
 
 	virtual QWidget* widget() = 0;
 };
@@ -56,8 +80,8 @@ public:
 	LibraryStyle viewStyle() const { return m_currentStyle; }
 	void setViewStyle(LibraryStyle newStyle);
 
-	void selectEntry(mLibraryEntry* entry);
-	mLibraryEntry* selectedEntry();
+	void selectEntry(const QString& fullpath);
+	LibraryEntry selectedEntry();
 	VFile* selectedVFile();
 	QPair<QString, QString> selectedPath();
 
@@ -77,13 +101,11 @@ private slots:
 
 private:
 	void loadDirectory(const QString&, bool recursive = true); // Called on separate thread
-	void freeLibrary();
 
 	ConfigController* m_config = nullptr;
 	std::shared_ptr<mLibrary> m_library;
 	QAtomicInteger<qint64> m_libraryJob = -1;
-	mLibraryListing m_listing;
-	QHash<QString, mLibraryEntry*> m_entries;
+	QHash<QString, LibraryEntry> m_entries;
 
 	LibraryStyle m_currentStyle;
 	AbstractGameList* m_currentList = nullptr;
