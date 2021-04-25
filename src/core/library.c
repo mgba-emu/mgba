@@ -456,6 +456,11 @@ struct VFile* mLibraryOpenVFile(struct mLibrary* library, const struct mLibraryE
 			break;
 		}
 	}
+	for (i = 0; i < mLibraryListingSize(&entries); ++i) {
+		struct mLibraryEntry* e = mLibraryListingGetPointer(&entries, i);
+		mLibraryEntryFree(e);
+	}
+	mLibraryListingDeinit(&entries);
 	return vf;
 }
 

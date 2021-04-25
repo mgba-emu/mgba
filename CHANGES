@@ -3,6 +3,7 @@ Features:
  - Tool for converting scanned pictures of e-Reader cards to raw dotcode data
  - Cheat code support in homebrew ports
 Other fixes:
+ - Core: Fix memory leak in opening games from the library
  - Qt: Fix infrequent deadlock when using sync to video
 Misc:
  - Qt: Rearrange menus some
