@@ -23,15 +23,15 @@ LibraryGrid::~LibraryGrid() {
 	delete m_widget;
 }
 
-LibraryEntryRef LibraryGrid::selectedEntry() {
+mLibraryEntry* LibraryGrid::selectedEntry() {
 	if (!m_widget->selectedItems().empty()) {
 		return m_items.key(m_widget->selectedItems().at(0));
 	} else {
-		return LibraryEntryRef();
+		return nullptr;
 	}
 }
 
-void LibraryGrid::selectEntry(LibraryEntryRef game) {
+void LibraryGrid::selectEntry(mLibraryEntry* game) {
 	if (!game) {
 		return;
 	}
@@ -56,19 +56,19 @@ void LibraryGrid::setViewStyle(LibraryStyle newStyle) {
 	m_widget->setDragEnabled(false);
 }
 
-void LibraryGrid::addEntry(LibraryEntryRef item) {
+void LibraryGrid::addEntry(mLibraryEntry* item) {
 	if (m_items.contains(item)) {
 		return;
 	}
 
 	QListWidgetItem* i = new QListWidgetItem;
-	i->setText(item->displayTitle());
+	i->setText(item->title ? item->title : item->filename);
 
 	m_widget->addItem(i);
 	m_items.insert(item, i);
 }
 
-void LibraryGrid::removeEntry(LibraryEntryRef entry) {
+void LibraryGrid::removeEntry(mLibraryEntry* entry) {
 	if (!m_items.contains(entry)) {
 		return;
 	}

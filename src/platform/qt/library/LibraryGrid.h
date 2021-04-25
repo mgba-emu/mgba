@@ -17,13 +17,13 @@ public:
 	~LibraryGrid();
 
 	// AbstractGameList stuff
-	virtual LibraryEntryRef selectedEntry() override;
-	virtual void selectEntry(LibraryEntryRef game) override;
+	virtual mLibraryEntry* selectedEntry() override;
+	virtual void selectEntry(mLibraryEntry* game) override;
 
 	virtual void setViewStyle(LibraryStyle newStyle) override;
 
-	virtual void addEntry(LibraryEntryRef item) override;
-	virtual void removeEntry(LibraryEntryRef entry) override;
+	virtual void addEntry(mLibraryEntry* item) override;
+	virtual void removeEntry(mLibraryEntry* entry) override;
 
 	virtual QWidget* widget() override { return m_widget; }
 
@@ -40,7 +40,7 @@ private:
 	const quint32 ICON_BANNER_WIDTH = 64;
 	const quint32 ICON_BANNER_HEIGHT = 64;
 
-	QMap<LibraryEntryRef, QListWidgetItem*> m_items;
+	QHash<mLibraryEntry*, QListWidgetItem*> m_items;
 	LibraryStyle m_currentStyle;
 };
 

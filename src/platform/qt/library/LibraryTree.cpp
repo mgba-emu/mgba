@@ -74,15 +74,15 @@ void LibraryTree::resizeAllCols() {
 	}
 }
 
-LibraryEntryRef LibraryTree::selectedEntry() {
+mLibraryEntry* LibraryTree::selectedEntry() {
 	if (!m_widget->selectedItems().empty()) {
 		return m_items.key(m_widget->selectedItems().at(0));
 	} else {
-		return LibraryEntryRef();
+		return nullptr;
 	}
 }
 
-void LibraryTree::selectEntry(LibraryEntryRef game) {
+void LibraryTree::selectEntry(mLibraryEntry* game) {
 	if (!game) {
 		return;
 	}
@@ -104,19 +104,19 @@ void LibraryTree::setViewStyle(LibraryStyle newStyle) {
 	}
 }
 
-void LibraryTree::addEntries(QList<LibraryEntryRef> items) {
+void LibraryTree::addEntries(QList<mLibraryEntry*> items) {
 	m_deferredTreeRebuild = true;
 	AbstractGameList::addEntries(items);
 	m_deferredTreeRebuild = false;
 	rebuildTree();
 }
 
-void LibraryTree::addEntry(LibraryEntryRef item) {
+void LibraryTree::addEntry(mLibraryEntry* item) {
 	if (m_items.contains(item)) {
 		return;
 	}
 
-	QString folder = item->base();
+	QString folder = item->base;
 	if (!m_pathNodes.contains(folder)) {
 		QTreeWidgetItem* i = new TreeWidgetItem;
 		i->setText(0, folder.section("/", -1));
@@ -127,18 +127,18 @@ void LibraryTree::addEntry(LibraryEntryRef item) {
 	}
 
 	TreeWidgetItem* i = new TreeWidgetItem;
-	i->setText(COL_NAME, item->displayTitle());
-	i->setText(COL_LOCATION, QDir::toNativeSeparators(item->base()));
-	i->setText(COL_PLATFORM, nicePlatformFormat(item->platform()));
-	i->setFilesize(item->filesize());
+	i->setText(COL_NAME, item->title ? item->title : item->filename);
+	i->setText(COL_LOCATION, QDir::toNativeSeparators(item->base));
+	i->setText(COL_PLATFORM, nicePlatformFormat(item->platform));
+	i->setFilesize(item->filesize);
 	i->setTextAlignment(COL_SIZE, Qt::AlignRight);
-	i->setText(COL_CRC32, QString("%0").arg(item->crc32(), 8, 16, QChar('0')));
+	i->setText(COL_CRC32, QString("%0").arg(item->crc32, 8, 16, QChar('0')));
 	m_items.insert(item, i);
 
 	rebuildTree();
 }
 
-void LibraryTree::removeEntry(LibraryEntryRef item) {
+void LibraryTree::removeEntry(mLibraryEntry* item) {
 	if (!m_items.contains(item)) {
 		return;
 	}
@@ -150,7 +150,7 @@ void LibraryTree::rebuildTree() {
 		return;
 	}
 
-	LibraryEntryRef currentGame = selectedEntry();
+	mLibraryEntry* currentGame = selectedEntry();
 
 	int count = m_widget->topLevelItemCount();
 	for (int a = count - 1; a >= 0; --a) {
@@ -166,7 +166,7 @@ void LibraryTree::rebuildTree() {
 			m_widget->addTopLevelItem(i);
 		}
 		for (QTreeWidgetItem* i : m_items.values()) {
-			m_pathNodes.value(m_items.key(i)->base())->addChild(i);
+			m_pathNodes.value(m_items.key(i)->base)->addChild(i);
 		}
 	} else {
 		for (QTreeWidgetItem* i : m_items.values()) {

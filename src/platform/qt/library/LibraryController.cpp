@@ -13,20 +13,14 @@
 
 using namespace QGBA;
 
-LibraryEntry::LibraryEntry(mLibraryEntry* entry)
-	: entry(entry)
-	, m_fullpath(QString("%1/%2").arg(entry->base, entry->filename))
-{
-}
-
-void AbstractGameList::addEntries(QList<LibraryEntryRef> items) {
-	for (LibraryEntryRef o : items) {
-		addEntry(o);
+void AbstractGameList::addEntries(QList<mLibraryEntry*> items) {
+	for (auto item : items) {
+		addEntry(item);
 	}
 }
-void AbstractGameList::removeEntries(QList<LibraryEntryRef> items) {
-	for (LibraryEntryRef o : items) {
-		removeEntry(o);
+void AbstractGameList::removeEntries(QList<mLibraryEntry*> items) {
+	for (auto item : items) {
+		removeEntry(item);
 	}
 }
 
@@ -80,39 +74,42 @@ void LibraryController::setViewStyle(LibraryStyle newStyle) {
 	m_currentList = newCurrentList;
 }
 
-void LibraryController::selectEntry(LibraryEntryRef entry) {
+void LibraryController::selectEntry(mLibraryEntry* entry) {
 	if (!m_currentList) {
 		return;
 	}
 	m_currentList->selectEntry(entry);
 }
 
-LibraryEntryRef LibraryController::selectedEntry() {
+mLibraryEntry* LibraryController::selectedEntry() {
 	if (!m_currentList) {
-		return LibraryEntryRef();
+		return nullptr;
 	}
 	return m_currentList->selectedEntry();
 }
 
 VFile* LibraryController::selectedVFile() {
-	LibraryEntryRef entry = selectedEntry();
+	mLibraryEntry* entry = selectedEntry();
 	if (entry) {
-		return mLibraryOpenVFile(m_library.get(), entry->entry);
+		return mLibraryOpenVFile(m_library.get(), entry);
 	} else {
 		return nullptr;
 	}
 }
 
 QPair<QString, QString> LibraryController::selectedPath() {
-	LibraryEntryRef e = selectedEntry();
-	return e ? qMakePair(e->base(), e->filename()) : qMakePair<QString, QString>("", "");
+	mLibraryEntry* entry = selectedEntry();
+	if (entry) {
+		return qMakePair(QString(entry->base), QString(entry->filename));
+	} else {
+		return qMakePair(QString(), QString());
+	}
 }
 
 void LibraryController::addDirectory(const QString& dir, bool recursive) {
 	// The worker thread temporarily owns the library
 	std::shared_ptr<mLibrary> library = m_library;
 	m_libraryJob = GBAApp::app()->submitWorkerJob(std::bind(&LibraryController::loadDirectory, this, dir, recursive), this, [this, library]() {
-		m_libraryJob = -1;
 		refresh();
 	});
 }
@@ -133,26 +130,23 @@ void LibraryController::refresh() {
 
 	setDisabled(true);
 
-	QStringList allEntries;
-	QList<LibraryEntryRef> newEntries;
+	QSet<QString> allEntries;
+	QList<mLibraryEntry*> newEntries;
 
 	freeLibrary();
 	mLibraryGetEntries(m_library.get(), &m_listing, 0, 0, nullptr);
 	for (size_t i = 0; i < mLibraryListingSize(&m_listing); i++) {
 		mLibraryEntry* entry = mLibraryListingGetPointer(&m_listing, i);
 		QString fullpath = QString("%1/%2").arg(entry->base, entry->filename);
-		if (m_entries.contains(fullpath)) {
-			m_entries.value(fullpath)->entry = entry;
-		} else {
-			LibraryEntryRef libentry = std::make_shared<LibraryEntry>(entry);
-			m_entries.insert(fullpath, libentry);
-			newEntries.append(libentry);
+		if (!m_entries.contains(fullpath)) {
+			newEntries.append(entry);
 		}
-		allEntries.append(fullpath);
+		m_entries[fullpath] = entry;
+		allEntries.insert(fullpath);
 	}
 
 	// Check for entries that were removed
-	QList<LibraryEntryRef> removedEntries;
+	QList<mLibraryEntry*> removedEntries;
 	for (QString& path : m_entries.keys()) {
 		if (!allEntries.contains(path)) {
 			removedEntries.append(m_entries.value(path));
@@ -184,7 +178,9 @@ void LibraryController::selectLastBootedGame() {
 void LibraryController::loadDirectory(const QString& dir, bool recursive) {
 	// This class can get deleted during this function (sigh) so we need to hold onto this
 	std::shared_ptr<mLibrary> library = m_library;
+	qint64 libraryJob = m_libraryJob;
 	mLibraryLoadDirectory(library.get(), dir.toUtf8().constData(), recursive);
+	m_libraryJob.testAndSetOrdered(libraryJob, -1);
 }
 
 void LibraryController::freeLibrary() {

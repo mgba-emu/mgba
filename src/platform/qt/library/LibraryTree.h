@@ -26,14 +26,14 @@ public:
 	~LibraryTree();
 
 	// AbstractGameList stuff
-	virtual LibraryEntryRef selectedEntry() override;
-	virtual void selectEntry(LibraryEntryRef game) override;
+	virtual mLibraryEntry* selectedEntry() override;
+	virtual void selectEntry(mLibraryEntry* game) override;
 
 	virtual void setViewStyle(LibraryStyle newStyle) override;
 
-	virtual void addEntries(QList<LibraryEntryRef> items) override;
-	virtual void addEntry(LibraryEntryRef item) override;
-	virtual void removeEntry(LibraryEntryRef item) override;
+	virtual void addEntries(QList<mLibraryEntry*> items) override;
+	virtual void addEntry(mLibraryEntry* item) override;
+	virtual void removeEntry(mLibraryEntry* item) override;
 
 	virtual QWidget* widget() override { return m_widget; }
 
@@ -44,8 +44,8 @@ private:
 	LibraryController* m_controller;
 
 	bool m_deferredTreeRebuild = false;
-	QMap<LibraryEntryRef, QTreeWidgetItem*> m_items;
-	QMap<QString, QTreeWidgetItem*> m_pathNodes;
+	QHash<mLibraryEntry*, QTreeWidgetItem*> m_items;
+	QHash<QString, QTreeWidgetItem*> m_pathNodes;
 
 	void rebuildTree();
 	void resizeAllCols();
