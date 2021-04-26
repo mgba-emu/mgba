@@ -34,6 +34,9 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "AC8E", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
 	{ "AC8P", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
 
+	// DigiCommunication Nyo - Datou! Black Gemagema Dan
+	{ "BDKJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+
 	// Dragon Ball Z - The Legacy of Goku
 	{ "ALGP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
 
