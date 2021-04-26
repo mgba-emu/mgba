@@ -459,11 +459,6 @@ void PainterGL::draw() {
 		performDraw();
 		m_backend->swap(m_backend);
 	}
-
-	QMutexLocker locker(&m_mutex);
-	if (!m_queue.isEmpty()) {
-		QTimer::singleShot(1, this, &PainterGL::draw);
-	}
 }
 
 void PainterGL::forceDraw() {
