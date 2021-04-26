@@ -5,6 +5,7 @@ Features:
 Other fixes:
  - Core: Fix memory leak in opening games from the library
  - Qt: Fix infrequent deadlock when using sync to video
+ - Qt: Fix applying savetype-only overrides
 Misc:
  - Qt: Rearrange menus some
 
