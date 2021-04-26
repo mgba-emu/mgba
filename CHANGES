@@ -2,6 +2,7 @@
 Other fixes:
  - Core: Fix memory leak in opening games from the library
  - Qt: Fix infrequent deadlock when using sync to video
+ - Qt: Fix applying savetype-only overrides
 
 0.9.1: (2021-04-18)
 Emulation fixes:

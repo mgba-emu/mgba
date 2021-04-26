@@ -146,6 +146,9 @@ void OverrideView::updateOverrides() {
 		gba->override.vbaBugCompat = false;
 		gba->vbaBugCompatSet = false;
 
+		if (gba->override.savetype != SAVEDATA_AUTODETECT) {
+			hasOverride = true;
+		}
 		if (!m_ui.hwAutodetect->isChecked()) {
 			hasOverride = true;
 			gba->override.hardware = HW_NONE;
