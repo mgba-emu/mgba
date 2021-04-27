@@ -128,10 +128,6 @@ ifeq ($(STATIC_LINKING), 1)
 RETRODEFS += -DHAVE_CRC32
 endif
 
-ifeq ($(HAVE_NEON),1)
-SOURCES_ASM += $(CORE_DIR)/src/util/arm-algo.S
-endif
-
 ifeq ($(HAVE_VFS_FD),1)
 ifeq ($(platform), vita)
 SOURCES_C += $(CORE_DIR)/src/platform/psp2/sce-vfs.c
