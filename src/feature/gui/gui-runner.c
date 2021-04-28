@@ -455,6 +455,12 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	int drawFps = false;
 	mCoreConfigGetIntValue(&runner->config, "fpsCounter", &drawFps);
 
+	int mute = false;
+	mCoreConfigGetIntValue(&runner->config, "mute", &mute);
+
+	int fastForwardMute = false;
+	mCoreConfigGetIntValue(&runner->config, "fastForwardMute", &fastForwardMute);
+
 	bool running = true;
 
 #ifndef DISABLE_THREADING
@@ -506,20 +512,32 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			if (guiKeys & (1 << mGUI_INPUT_SCREENSHOT)) {
 				mCoreTakeScreenshot(runner->core);
 			}
+			bool muteTogglePressed = guiKeys & (1 << mGUI_INPUT_MUTE_TOGGLE);
+			if (muteTogglePressed) {
+				mute = !mute;
+				mCoreConfigSetUIntValue(&runner->config, "mute", mute);
+				runner->core->reloadConfigOption(runner->core, "mute", &runner->config);
+			}
 			if (runner->setFrameLimiter) {
 				if (guiKeys & (1 << mGUI_INPUT_FAST_FORWARD_TOGGLE)) {
 					fastForward = !fastForward;
 				}
-				if (fastForward || (heldKeys & (1 << mGUI_INPUT_FAST_FORWARD_HELD))) {
+				bool fastForwarding = fastForward || (heldKeys & (1 << mGUI_INPUT_FAST_FORWARD_HELD));
+				if (fastForwarding) {
+					if (fastForwardMute && !mute && !muteTogglePressed) {
+						mCoreConfigSetUIntValue(&runner->core->config, "mute", fastForwardMute);
+						runner->core->reloadConfigOption(runner->core, "mute", NULL);
+					}
+
 					runner->setFrameLimiter(runner, false);
 				} else {
 					runner->setFrameLimiter(runner, true);
+
+					if (fastForwardMute && !mute && !muteTogglePressed) {
+						mCoreConfigSetUIntValue(&runner->core->config, "mute", !fastForwardMute);
+						runner->core->reloadConfigOption(runner->core, "mute", NULL);
+					}
 				}
-			}
-			if (guiKeys & (1 << mGUI_INPUT_MUTE_TOGGLE)) {
-				int mute = !runner->core->opts.mute;
-				mCoreConfigSetUIntValue(&runner->config, "mute", mute);
-				runner->core->reloadConfigOption(runner->core, "mute", &runner->config);
 			}
 			uint16_t keys = runner->pollGameInput(runner);
 			if (runner->prepareForFrame) {
@@ -651,6 +669,8 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		}
 		mCoreConfigGetIntValue(&runner->config, "fpsCounter", &drawFps);
 		mCoreConfigGetIntValue(&runner->config, "showOSD", &showOSD);
+		mCoreConfigGetIntValue(&runner->config, "mute", &mute);
+		mCoreConfigGetIntValue(&runner->config, "fastForwardMute", &fastForwardMute);
 #ifdef M_CORE_GB
 		if (runner->core->platform(runner->core) == mPLATFORM_GB) {
 			runner->core->reloadConfigOption(runner->core, "gb.pal", &runner->config);

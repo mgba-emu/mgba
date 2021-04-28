@@ -104,6 +104,16 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		.nStates = 2
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Fast forward mute",
+		.data = "fastForwardMute",
+		.submenu = 0,
+		.state = false,
+		.validStates = (const char*[]) {
+			"Off", "On"
+		},
+		.nStates = 2
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Use BIOS if found",
 		.data = "useBios",
 		.submenu = 0,
