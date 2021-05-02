@@ -17,6 +17,7 @@
 
 #ifdef M_CORE_GB
 #include "GameBoy.h"
+#include <mgba/internal/gb/overrides.h>
 #endif
 
 #include <mgba/core/serialize.h>
@@ -258,6 +259,20 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 			m_gbColors[colorId] = color.rgb();
 		});
 	}
+
+	const GBColorPreset* colorPresets;
+	size_t nPresets = GBColorPresetList(&colorPresets);
+	for (size_t i = 0; i < nPresets; ++i) {
+		m_ui.colorPreset->addItem(QString(colorPresets[i].name));
+	}
+	connect(m_ui.colorPreset, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this, colorPresets](int n) {
+		const GBColorPreset* preset = &colorPresets[n];
+		for (int colorId = 0; colorId < 12; ++colorId) {
+			uint32_t color = preset->colors[colorId] | 0xFF000000;
+			m_colorPickers[colorId].setColor(color);
+			m_gbColors[colorId] = color;
+		}
+	});
 #else
 	m_ui.gbBiosBrowse->hide();
 	m_ui.gbcBiosBrowse->hide();

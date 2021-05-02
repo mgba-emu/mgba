@@ -500,6 +500,37 @@ static const struct GBCartridgeOverride _overrides[] = {
 	{ 0, 0, 0, { 0 } }
 };
 
+static const struct GBColorPreset _colorPresets[] = {
+	{
+		"Grayscale",
+		{
+			PAL_ENTRY(0x7FFF, 0x56B5, 0x294A, 0x0000),
+			PAL_ENTRY(0x7FFF, 0x56B5, 0x294A, 0x0000),
+			PAL_ENTRY(0x7FFF, 0x56B5, 0x294A, 0x0000)
+		}
+	},
+	{
+		"DMG Green",
+		{
+			PAL_ENTRY(0x2691, 0x19A9, 0x1105, 0x04A3),
+			PAL_ENTRY(0x2691, 0x19A9, 0x1105, 0x04A3),
+			PAL_ENTRY(0x2691, 0x19A9, 0x1105, 0x04A3)
+		}
+	},
+	{ "GBC Right", PALETTE(18, 18, 18), },
+	{ "GBC Left", PALETTE(4, 3, 28), },
+	{ "GBC Up", PALETTE(0, 0, 0), },
+	{ "GBC Down", PALETTE(12, 12, 12), },
+	{ "GBC Right + A", PALETTE(4, 4, 29), },
+	{ "GBC Left + A", PALETTE(4, 0, 2), },
+	{ "GBC Up + A", PALETTE(3, 28, 4), },
+	{ "GBC Down + A", PALETTE(24, 24, 24), },
+	{ "GBC Right + B", PALETTE(27, 27, 27), },
+	{ "GBC Left + B", PALETTE(5, 5, 5), },
+	{ "GBC Up + B", PALETTE(0, 0, 1), },
+	{ "GBC Down + B", PALETTE(28, 3, 6), },
+};
+
 bool GBOverrideColorFind(struct GBCartridgeOverride* override) {
 	int i;
 	for (i = 0; _colorOverrides[i].headerCrc32; ++i) {
@@ -633,6 +664,11 @@ void GBOverrideSave(struct Configuration* config, const struct GBCartridgeOverri
 	} else {
 		ConfigurationClearValue(config, sectionName, "mbc");
 	}
+}
+
+size_t GBColorPresetList(const struct GBColorPreset** presets) {
+	*presets = _colorPresets;
+	return sizeof(_colorPresets) / sizeof(*_colorPresets);
 }
 
 void GBOverrideApply(struct GB* gb, const struct GBCartridgeOverride* override) {

@@ -1,5 +1,6 @@
 0.10.0: (Future)
 Features:
+ - Presets for Game Boy palettes
  - Tool for converting scanned pictures of e-Reader cards to raw dotcode data
  - Cheat code support in homebrew ports
 Emulation fixes:
