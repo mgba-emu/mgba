@@ -399,6 +399,13 @@
          </item>
         </layout>
        </item>
+       <item row="9" column="1">
+        <widget class="QPushButton" name="nativeGB">
+         <property name="text">
+          <string>Native (59.7275)</string>
+         </property>
+        </widget>
+       </item>
        <item row="10" column="0" colspan="2">
         <widget class="Line" name="line_5">
          <property name="orientation">
@@ -445,24 +452,17 @@
          </property>
         </widget>
        </item>
-       <item row="15" column="1">
-        <widget class="QCheckBox" name="resampleVideo">
-         <property name="text">
-          <string>Bilinear filtering</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
-        <widget class="QPushButton" name="nativeGB">
-         <property name="text">
-          <string>Native (59.7275)</string>
-         </property>
-        </widget>
-       </item>
        <item row="14" column="1">
         <widget class="QCheckBox" name="interframeBlending">
          <property name="text">
           <string>Interframe blending</string>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="1">
+        <widget class="QCheckBox" name="resampleVideo">
+         <property name="text">
+          <string>Bilinear filtering</string>
          </property>
         </widget>
        </item>
@@ -586,6 +586,16 @@
          </property>
         </widget>
        </item>
+       <item row="12" column="1">
+        <widget class="QCheckBox" name="showFps">
+         <property name="text">
+          <string>Show FPS in title bar</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
        <item row="13" column="1">
         <widget class="QCheckBox" name="showFilename">
          <property name="text">
@@ -593,6 +603,13 @@
          </property>
          <property name="checked">
           <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="0" colspan="2">
+        <widget class="Line" name="line_18">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
@@ -664,23 +681,6 @@
          </property>
          <property name="checked">
           <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="1">
-        <widget class="QCheckBox" name="showFps">
-         <property name="text">
-          <string>Show FPS in title bar</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="0" colspan="2">
-        <widget class="Line" name="line_18">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
@@ -880,6 +880,16 @@
          </property>
         </widget>
        </item>
+       <item row="10" column="1">
+        <widget class="QCheckBox" name="vbaBugCompat">
+         <property name="text">
+          <string>Enable VBA bug compatibility in ROM hacks</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
        <item row="11" column="0" colspan="2">
         <widget class="Line" name="line_2">
          <property name="orientation">
@@ -962,16 +972,6 @@
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
-        <widget class="QCheckBox" name="vbaBugCompat">
-         <property name="text">
-          <string>Enable VBA bug compatibility in ROM hacks</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="enhancements">
@@ -995,6 +995,13 @@
            <string>OpenGL</string>
           </property>
          </item>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="audioHle">
+         <property name="text">
+          <string>XQ GBA audio (experimental)</string>
+         </property>
         </widget>
        </item>
        <item row="2" column="0" colspan="2">
@@ -1066,13 +1073,6 @@
          </layout>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QCheckBox" name="audioHle">
-         <property name="text">
-          <string>XQ GBA audio (experimental)</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="bios">
@@ -1098,79 +1098,6 @@
          </item>
          <item>
           <widget class="QPushButton" name="gbBiosBrowse">
-           <property name="text">
-            <string>Browse</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="4" column="1">
-        <widget class="QCheckBox" name="useBios">
-         <property name="text">
-          <string>Use BIOS file if found</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <widget class="QCheckBox" name="skipBios">
-         <property name="text">
-          <string>Skip BIOS intro</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_8">
-         <item>
-          <widget class="QLineEdit" name="gbaBios">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="gbaBiosBrowse">
-           <property name="text">
-            <string>Browse</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>GBA BIOS file:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>GBC BIOS file:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_30">
-         <item>
-          <widget class="QLineEdit" name="gbcBios">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="gbcBiosBrowse">
            <property name="text">
             <string>Browse</string>
            </property>
@@ -1205,6 +1132,79 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>GBC BIOS file:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_30">
+         <item>
+          <widget class="QLineEdit" name="gbcBios">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="gbcBiosBrowse">
+           <property name="text">
+            <string>Browse</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>GBA BIOS file:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <item>
+          <widget class="QLineEdit" name="gbaBios">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="gbaBiosBrowse">
+           <property name="text">
+            <string>Browse</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="4" column="1">
+        <widget class="QCheckBox" name="useBios">
+         <property name="text">
+          <string>Use BIOS file if found</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QCheckBox" name="skipBios">
+         <property name="text">
+          <string>Skip BIOS intro</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -1533,6 +1533,19 @@
          </property>
         </widget>
        </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="cgbHybridModel"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_39">
+         <property name="text">
+          <string>Super Game Boy/Game Boy Color model:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="cgbSgbModel"/>
+       </item>
        <item row="5" column="0" colspan="2">
         <widget class="Line" name="line_12">
          <property name="orientation">
@@ -1858,19 +1871,6 @@
           </sizepolicy>
          </property>
         </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QComboBox" name="cgbHybridModel"/>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_39">
-         <property name="text">
-          <string>Super Game Boy/Game Boy Color model:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QComboBox" name="cgbSgbModel"/>
        </item>
       </layout>
      </widget>
