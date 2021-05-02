@@ -1053,6 +1053,11 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <source>Sprite Colors 2</source>
         <translation>스프라이트 색상 2</translation>
     </message>
+    <message>
+        <location filename="../OverrideView.ui" line="519"/>
+        <source>Palette preset</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PaletteView</name>
@@ -3833,69 +3838,69 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
 <context>
     <name>QGBA::SettingsView</name>
     <message>
-        <location filename="../SettingsView.cpp" line="143"/>
-        <location filename="../SettingsView.cpp" line="186"/>
+        <location filename="../SettingsView.cpp" line="144"/>
+        <location filename="../SettingsView.cpp" line="187"/>
         <source>Qt Multimedia</source>
         <translation>Qt 멀티미디어</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="150"/>
+        <location filename="../SettingsView.cpp" line="151"/>
         <source>SDL</source>
         <translation>SDL</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="158"/>
+        <location filename="../SettingsView.cpp" line="159"/>
         <source>Software (Qt)</source>
         <translation>소프트웨어 (Qt)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="164"/>
+        <location filename="../SettingsView.cpp" line="165"/>
         <source>OpenGL</source>
         <translation>오픈GL</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="171"/>
+        <location filename="../SettingsView.cpp" line="172"/>
         <source>OpenGL (force version 1.x)</source>
         <translation>오픈GL (버전 1.x 강제)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="179"/>
+        <location filename="../SettingsView.cpp" line="180"/>
         <source>None (Still Image)</source>
         <translation>없음 (정지 이미지)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="269"/>
+        <location filename="../SettingsView.cpp" line="284"/>
         <source>Keyboard</source>
         <translation>키보드</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="277"/>
+        <location filename="../SettingsView.cpp" line="292"/>
         <source>Controllers</source>
         <translation>컨트롤러</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="323"/>
+        <location filename="../SettingsView.cpp" line="338"/>
         <source>Shortcuts</source>
         <translation>단축키</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="335"/>
-        <location filename="../SettingsView.cpp" line="345"/>
+        <location filename="../SettingsView.cpp" line="350"/>
+        <location filename="../SettingsView.cpp" line="360"/>
         <source>Shaders</source>
         <translation>쉐이더</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="367"/>
+        <location filename="../SettingsView.cpp" line="382"/>
         <source>Select BIOS</source>
         <translation>바이오스 선택</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="374"/>
+        <location filename="../SettingsView.cpp" line="389"/>
         <source>Select directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="719"/>
+        <location filename="../SettingsView.cpp" line="734"/>
         <source>(%1×%2)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5249,32 +5254,32 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation>frame al secondo</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="412"/>
+        <location filename="../SettingsView.ui" line="419"/>
         <source>Sync:</source>
         <translation>동기화:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="421"/>
+        <location filename="../SettingsView.ui" line="428"/>
         <source>Video</source>
         <translation>비디오</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="428"/>
+        <location filename="../SettingsView.ui" line="435"/>
         <source>Audio</source>
         <translation>오디오</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="437"/>
+        <location filename="../SettingsView.ui" line="444"/>
         <source>Lock aspect ratio</source>
         <translation>화면비 잠금</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="458"/>
+        <location filename="../SettingsView.ui" line="405"/>
         <source>Native (59.7275)</source>
         <translation type="unfinished">Nativo (59.7) {59.7275)?}</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="465"/>
+        <location filename="../SettingsView.ui" line="458"/>
         <source>Interframe blending</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5289,17 +5294,17 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="592"/>
+        <location filename="../SettingsView.ui" line="602"/>
         <source>Show filename instead of ROM name in title bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="602"/>
+        <location filename="../SettingsView.ui" line="619"/>
         <source>Show OSD messages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="612"/>
+        <location filename="../SettingsView.ui" line="629"/>
         <source>Enable Discord Rich Presence</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5309,19 +5314,24 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="893"/>
+        <location filename="../SettingsView.ui" line="903"/>
         <source>Save state extra data:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="910"/>
-        <location filename="../SettingsView.ui" line="954"/>
+        <location filename="../SettingsView.ui" line="920"/>
+        <location filename="../SettingsView.ui" line="964"/>
         <source>Save game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="937"/>
+        <location filename="../SettingsView.ui" line="947"/>
         <source>Load state extra data:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1559"/>
+        <source>Preset:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5330,7 +5340,7 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="968"/>
+        <location filename="../SettingsView.ui" line="886"/>
         <source>Enable VBA bug compatibility in ROM hacks</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5350,22 +5360,22 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation type="unfinished">오픈GL</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1003"/>
+        <location filename="../SettingsView.ui" line="1010"/>
         <source>OpenGL enhancements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1009"/>
+        <location filename="../SettingsView.ui" line="1016"/>
         <source>High-resolution scale:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1047"/>
+        <location filename="../SettingsView.ui" line="1054"/>
         <source>(240×160)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1072"/>
+        <location filename="../SettingsView.ui" line="1003"/>
         <source>XQ GBA audio (experimental)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5375,37 +5385,37 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation>치트</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1845"/>
+        <location filename="../SettingsView.ui" line="1868"/>
         <source>Camera:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1868"/>
+        <location filename="../SettingsView.ui" line="1542"/>
         <source>Super Game Boy/Game Boy Color model:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1546"/>
+        <location filename="../SettingsView.ui" line="1569"/>
         <source>Default BG colors:</source>
         <translation>기본 배경 색상:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1807"/>
+        <location filename="../SettingsView.ui" line="1830"/>
         <source>Use GBC colors in GB games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1814"/>
+        <location filename="../SettingsView.ui" line="1837"/>
         <source>Super Game Boy borders</source>
         <translation>슈퍼 게임 보이 테두리</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1828"/>
+        <location filename="../SettingsView.ui" line="1851"/>
         <source>Camera driver:</source>
         <translation>카메라 드라이버:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1633"/>
+        <location filename="../SettingsView.ui" line="1656"/>
         <source>Default sprite colors 1:</source>
         <translation>기본 스프라이트 색상 1:</translation>
     </message>
@@ -5445,7 +5455,7 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1720"/>
+        <location filename="../SettingsView.ui" line="1743"/>
         <source>Default sprite colors 2:</source>
         <translation>기본 스프라이트 색상 2:</translation>
     </message>
@@ -5471,9 +5481,9 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1102"/>
-        <location filename="../SettingsView.ui" line="1140"/>
-        <location filename="../SettingsView.ui" line="1175"/>
-        <location filename="../SettingsView.ui" line="1203"/>
+        <location filename="../SettingsView.ui" line="1130"/>
+        <location filename="../SettingsView.ui" line="1158"/>
+        <location filename="../SettingsView.ui" line="1186"/>
         <location filename="../SettingsView.ui" line="1244"/>
         <location filename="../SettingsView.ui" line="1292"/>
         <location filename="../SettingsView.ui" line="1340"/>
@@ -5483,12 +5493,12 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation>브라우저</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1111"/>
+        <location filename="../SettingsView.ui" line="1195"/>
         <source>Use BIOS file if found</source>
         <translation>발견되면 바이오스 파일 사용</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1121"/>
+        <location filename="../SettingsView.ui" line="1205"/>
         <source>Skip BIOS intro</source>
         <translation>바이오스 소개 건너 뛰기</translation>
     </message>
@@ -5534,14 +5544,14 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation>반대 방향 입력 허용</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="900"/>
-        <location filename="../SettingsView.ui" line="944"/>
+        <location filename="../SettingsView.ui" line="910"/>
+        <location filename="../SettingsView.ui" line="954"/>
         <source>Screenshot</source>
         <translation>스크린샷</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="920"/>
-        <location filename="../SettingsView.ui" line="961"/>
+        <location filename="../SettingsView.ui" line="930"/>
+        <location filename="../SettingsView.ui" line="971"/>
         <source>Cheat codes</source>
         <translation>치트 코드</translation>
     </message>
@@ -5551,12 +5561,12 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation>Abilita riavvolgimento</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="451"/>
+        <location filename="../SettingsView.ui" line="465"/>
         <source>Bilinear filtering</source>
         <translation>이중선형 필터링</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="444"/>
+        <location filename="../SettingsView.ui" line="451"/>
         <source>Force integer scaling</source>
         <translation>정수 스케일링 강제 수행</translation>
     </message>
@@ -5581,27 +5591,27 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation>트리 보기</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="673"/>
+        <location filename="../SettingsView.ui" line="592"/>
         <source>Show FPS in title bar</source>
         <translation>제목 표시 줄에 FPS 표시</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="653"/>
+        <location filename="../SettingsView.ui" line="670"/>
         <source>Automatically save cheats</source>
         <translation>자동 치트 저장</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="663"/>
+        <location filename="../SettingsView.ui" line="680"/>
         <source>Automatically load cheats</source>
         <translation>자동 치트 로드</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="626"/>
+        <location filename="../SettingsView.ui" line="643"/>
         <source>Automatically save state</source>
         <translation>자동 상태 저장</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="636"/>
+        <location filename="../SettingsView.ui" line="653"/>
         <source>Automatically load state</source>
         <translation>자동 상태 로드</translation>
     </message>
@@ -5631,17 +5641,17 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
         <translation>GB 바이오스 파일:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1149"/>
+        <location filename="../SettingsView.ui" line="1167"/>
         <source>GBA BIOS file:</source>
         <translation>GBA 바이오스 파일:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1156"/>
+        <location filename="../SettingsView.ui" line="1139"/>
         <source>GBC BIOS file:</source>
         <translation>GBC 바이오스 파일:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1184"/>
+        <location filename="../SettingsView.ui" line="1111"/>
         <source>SGB BIOS file:</source>
         <translation>SGB 바이오스 파일:</translation>
     </message>

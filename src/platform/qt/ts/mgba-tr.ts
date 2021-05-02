@@ -1053,6 +1053,11 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
         <source>Sprite Colors 2</source>
         <translation>Sprite Renkleri 2</translation>
     </message>
+    <message>
+        <location filename="../OverrideView.ui" line="519"/>
+        <source>Palette preset</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PaletteView</name>
@@ -3833,69 +3838,69 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
 <context>
     <name>QGBA::SettingsView</name>
     <message>
-        <location filename="../SettingsView.cpp" line="143"/>
-        <location filename="../SettingsView.cpp" line="186"/>
+        <location filename="../SettingsView.cpp" line="144"/>
+        <location filename="../SettingsView.cpp" line="187"/>
         <source>Qt Multimedia</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="150"/>
+        <location filename="../SettingsView.cpp" line="151"/>
         <source>SDL</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="158"/>
+        <location filename="../SettingsView.cpp" line="159"/>
         <source>Software (Qt)</source>
         <translation>Yazılım</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="164"/>
+        <location filename="../SettingsView.cpp" line="165"/>
         <source>OpenGL</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="171"/>
+        <location filename="../SettingsView.cpp" line="172"/>
         <source>OpenGL (force version 1.x)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="179"/>
+        <location filename="../SettingsView.cpp" line="180"/>
         <source>None (Still Image)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="269"/>
+        <location filename="../SettingsView.cpp" line="284"/>
         <source>Keyboard</source>
         <translation>Klavye</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="277"/>
+        <location filename="../SettingsView.cpp" line="292"/>
         <source>Controllers</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="323"/>
+        <location filename="../SettingsView.cpp" line="338"/>
         <source>Shortcuts</source>
         <translation>Kısayollar</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="335"/>
-        <location filename="../SettingsView.cpp" line="345"/>
+        <location filename="../SettingsView.cpp" line="350"/>
+        <location filename="../SettingsView.cpp" line="360"/>
         <source>Shaders</source>
         <translation>Gölgelendiricler</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="367"/>
+        <location filename="../SettingsView.cpp" line="382"/>
         <source>Select BIOS</source>
         <translation>BIOS seç</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="374"/>
+        <location filename="../SettingsView.cpp" line="389"/>
         <source>Select directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="719"/>
+        <location filename="../SettingsView.cpp" line="734"/>
         <source>(%1×%2)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5254,42 +5259,42 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
         <translation>Saniye başına kare</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="412"/>
+        <location filename="../SettingsView.ui" line="419"/>
         <source>Sync:</source>
         <translation>Eşitle</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="421"/>
+        <location filename="../SettingsView.ui" line="428"/>
         <source>Video</source>
         <translation>Video</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="428"/>
+        <location filename="../SettingsView.ui" line="435"/>
         <source>Audio</source>
         <translation>Ses</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="437"/>
+        <location filename="../SettingsView.ui" line="444"/>
         <source>Lock aspect ratio</source>
         <translation>En boy oranını kilitle</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="444"/>
+        <location filename="../SettingsView.ui" line="451"/>
         <source>Force integer scaling</source>
         <translation>Tamsayılı ölçeklendirmeyi zorla</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="451"/>
+        <location filename="../SettingsView.ui" line="465"/>
         <source>Bilinear filtering</source>
         <translation>Bilinear filtreleme</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="458"/>
+        <location filename="../SettingsView.ui" line="405"/>
         <source>Native (59.7275)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="465"/>
+        <location filename="../SettingsView.ui" line="458"/>
         <source>Interframe blending</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5354,68 +5359,73 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="673"/>
+        <location filename="../SettingsView.ui" line="592"/>
         <source>Show FPS in title bar</source>
         <translation>FPS&apos;i başlık çubuğunda göster</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="893"/>
+        <location filename="../SettingsView.ui" line="903"/>
         <source>Save state extra data:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="910"/>
-        <location filename="../SettingsView.ui" line="954"/>
+        <location filename="../SettingsView.ui" line="920"/>
+        <location filename="../SettingsView.ui" line="964"/>
         <source>Save game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="937"/>
+        <location filename="../SettingsView.ui" line="947"/>
         <source>Load state extra data:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="968"/>
+        <location filename="../SettingsView.ui" line="886"/>
         <source>Enable VBA bug compatibility in ROM hacks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1868"/>
+        <location filename="../SettingsView.ui" line="1542"/>
         <source>Super Game Boy/Game Boy Color model:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="653"/>
+        <location filename="../SettingsView.ui" line="1559"/>
+        <source>Preset:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="670"/>
         <source>Automatically save cheats</source>
         <translation>Otomatik hile kaydedici</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="663"/>
+        <location filename="../SettingsView.ui" line="680"/>
         <source>Automatically load cheats</source>
         <translation>Otomatik hile yükleyici</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="626"/>
+        <location filename="../SettingsView.ui" line="643"/>
         <source>Automatically save state</source>
         <translation>Otomatik konum kaydedici</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="636"/>
+        <location filename="../SettingsView.ui" line="653"/>
         <source>Automatically load state</source>
         <translation>Otomatik konum yükleyici</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="612"/>
+        <location filename="../SettingsView.ui" line="629"/>
         <source>Enable Discord Rich Presence</source>
         <translation>Discord etkinliğini etkinleştir</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="602"/>
+        <location filename="../SettingsView.ui" line="619"/>
         <source>Show OSD messages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="592"/>
+        <location filename="../SettingsView.ui" line="602"/>
         <source>Show filename instead of ROM name in title bar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5476,14 +5486,14 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
         <translation>Tüm ROM&apos;u belleğe önceden yükle</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="900"/>
-        <location filename="../SettingsView.ui" line="944"/>
+        <location filename="../SettingsView.ui" line="910"/>
+        <location filename="../SettingsView.ui" line="954"/>
         <source>Screenshot</source>
         <translation>Ekran görüntüsü</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="920"/>
-        <location filename="../SettingsView.ui" line="961"/>
+        <location filename="../SettingsView.ui" line="930"/>
+        <location filename="../SettingsView.ui" line="971"/>
         <source>Cheat codes</source>
         <translation>Hile kodları</translation>
     </message>
@@ -5508,22 +5518,22 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1003"/>
+        <location filename="../SettingsView.ui" line="1010"/>
         <source>OpenGL enhancements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1009"/>
+        <location filename="../SettingsView.ui" line="1016"/>
         <source>High-resolution scale:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1047"/>
+        <location filename="../SettingsView.ui" line="1054"/>
         <source>(240×160)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1072"/>
+        <location filename="../SettingsView.ui" line="1003"/>
         <source>XQ GBA audio (experimental)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5534,9 +5544,9 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1102"/>
-        <location filename="../SettingsView.ui" line="1140"/>
-        <location filename="../SettingsView.ui" line="1175"/>
-        <location filename="../SettingsView.ui" line="1203"/>
+        <location filename="../SettingsView.ui" line="1130"/>
+        <location filename="../SettingsView.ui" line="1158"/>
+        <location filename="../SettingsView.ui" line="1186"/>
         <location filename="../SettingsView.ui" line="1244"/>
         <location filename="../SettingsView.ui" line="1292"/>
         <location filename="../SettingsView.ui" line="1340"/>
@@ -5546,27 +5556,27 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
         <translation>Gözat</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1111"/>
+        <location filename="../SettingsView.ui" line="1195"/>
         <source>Use BIOS file if found</source>
         <translation>Varsa BIOS dosyasını kullan</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1121"/>
+        <location filename="../SettingsView.ui" line="1205"/>
         <source>Skip BIOS intro</source>
         <translation>BIOS girişini atla</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1149"/>
+        <location filename="../SettingsView.ui" line="1167"/>
         <source>GBA BIOS file:</source>
         <translation>GBA BIOS dosyası:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1156"/>
+        <location filename="../SettingsView.ui" line="1139"/>
         <source>GBC BIOS file:</source>
         <translation>GBC BIOS dosyası:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1184"/>
+        <location filename="../SettingsView.ui" line="1111"/>
         <source>SGB BIOS file:</source>
         <translation>SGB BIOS dosyası:</translation>
     </message>
@@ -5625,22 +5635,22 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
         <translation>Super Game Boy modeli:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1546"/>
+        <location filename="../SettingsView.ui" line="1569"/>
         <source>Default BG colors:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1814"/>
+        <location filename="../SettingsView.ui" line="1837"/>
         <source>Super Game Boy borders</source>
         <translation>Super Game Boy sınırları</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1828"/>
+        <location filename="../SettingsView.ui" line="1851"/>
         <source>Camera driver:</source>
         <translation>Kamera sürücüsü:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1633"/>
+        <location filename="../SettingsView.ui" line="1656"/>
         <source>Default sprite colors 1:</source>
         <translation>Varsayılan sprite renkleri 1:</translation>
     </message>
@@ -5660,17 +5670,17 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1720"/>
+        <location filename="../SettingsView.ui" line="1743"/>
         <source>Default sprite colors 2:</source>
         <translation>Varsayılan sprite renkleri 2:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1807"/>
+        <location filename="../SettingsView.ui" line="1830"/>
         <source>Use GBC colors in GB games</source>
         <translation>GB oyunlarında GBC renklerini kullan</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1845"/>
+        <location filename="../SettingsView.ui" line="1868"/>
         <source>Camera:</source>
         <translation>Kamera</translation>
     </message>
