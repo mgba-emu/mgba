@@ -517,18 +517,18 @@ static const struct GBColorPreset _colorPresets[] = {
 			PAL_ENTRY(0x2691, 0x19A9, 0x1105, 0x04A3)
 		}
 	},
-	{ "GBC Right", PALETTE(18, 18, 18), },
-	{ "GBC Left", PALETTE(4, 3, 28), },
-	{ "GBC Up", PALETTE(0, 0, 0), },
-	{ "GBC Down", PALETTE(12, 12, 12), },
-	{ "GBC Right + A", PALETTE(4, 4, 29), },
-	{ "GBC Left + A", PALETTE(4, 0, 2), },
-	{ "GBC Up + A", PALETTE(3, 28, 4), },
-	{ "GBC Down + A", PALETTE(24, 24, 24), },
-	{ "GBC Right + B", PALETTE(27, 27, 27), },
-	{ "GBC Left + B", PALETTE(5, 5, 5), },
-	{ "GBC Up + B", PALETTE(0, 0, 1), },
-	{ "GBC Down + B", PALETTE(28, 3, 6), },
+	{ "GBC Brown ↑", PALETTE(0, 0, 0), },
+	{ "GBC Red ↑A", PALETTE(4, 3, 28), },
+	{ "GBC Dark Brown ↑B", PALETTE(1, 0, 0), },
+	{ "GBC Pale Yellow ↓", PALETTE(12, 12, 12), },
+	{ "GBC Orange ↓A", PALETTE(24, 24, 24), },
+	{ "GBC Yellow ↓B", PALETTE(6, 28, 3), },
+	{ "GBC Blue ←", PALETTE(28, 4, 3), },
+	{ "GBC Dark Blue ←A", PALETTE(2, 4, 0), },
+	{ "GBC Gray ←B", PALETTE(5, 5, 5), },
+	{ "GBC Green →", PALETTE(18, 18, 18), },
+	{ "GBC Dark Green →A", PALETTE(29, 4, 4), },
+	{ "GBC Reverse →B", PALETTE(27, 27, 27), },
 };
 
 bool GBOverrideColorFind(struct GBCartridgeOverride* override) {
