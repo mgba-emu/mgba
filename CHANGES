@@ -6,6 +6,8 @@ Other fixes:
  - Qt: Fix infrequent deadlock when using sync to video
  - Qt: Fix applying savetype-only overrides
  - Util: Fix loading UPS patches that affect the last byte of the file
+Misc:
+ - Util: Improve speed of UPS patch loading
 
 0.9.1: (2021-04-18)
 Emulation fixes:
