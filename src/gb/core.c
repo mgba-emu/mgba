@@ -299,6 +299,51 @@ static void _GBCoreReloadConfigOption(struct mCore* core, const char* option, co
 			gb->video.renderer->enableSGBBorder(gb->video.renderer, fakeBool);
 		}
 	}
+
+	if (strcmp("gb.pal", option) == 0) {
+		int color;
+		if (mCoreConfigGetIntValue(config, "gb.pal[0]", &color)) {
+			GBVideoSetPalette(&gb->video, 0, color);
+		}
+		if (mCoreConfigGetIntValue(config, "gb.pal[1]", &color)) {
+			GBVideoSetPalette(&gb->video, 1, color);
+		}
+		if (mCoreConfigGetIntValue(config, "gb.pal[2]", &color)) {
+			GBVideoSetPalette(&gb->video, 2, color);
+		}
+		if (mCoreConfigGetIntValue(config, "gb.pal[3]", &color)) {
+			GBVideoSetPalette(&gb->video, 3, color);
+		}
+		if (mCoreConfigGetIntValue(config, "gb.pal[4]", &color)) {
+			GBVideoSetPalette(&gb->video, 4, color);
+		}
+		if (mCoreConfigGetIntValue(config, "gb.pal[5]", &color)) {
+			GBVideoSetPalette(&gb->video, 5, color);
+		}
+		if (mCoreConfigGetIntValue(config, "gb.pal[6]", &color)) {
+			GBVideoSetPalette(&gb->video, 6, color);
+		}
+		if (mCoreConfigGetIntValue(config, "gb.pal[7]", &color)) {
+			GBVideoSetPalette(&gb->video, 7, color);
+		}
+		if (mCoreConfigGetIntValue(config, "gb.pal[8]", &color)) {
+			GBVideoSetPalette(&gb->video, 8, color);
+		}
+		if (mCoreConfigGetIntValue(config, "gb.pal[9]", &color)) {
+			GBVideoSetPalette(&gb->video, 9, color);
+		}
+		if (mCoreConfigGetIntValue(config, "gb.pal[10]", &color)) {
+			GBVideoSetPalette(&gb->video, 10, color);
+		}
+		if (mCoreConfigGetIntValue(config, "gb.pal[11]", &color)) {
+			GBVideoSetPalette(&gb->video, 11, color);
+		}
+		if (gb->model < GB_MODEL_SGB) {
+			GBVideoWritePalette(&gb->video, GB_REG_BGP, gb->memory.io[GB_REG_BGP]);
+			GBVideoWritePalette(&gb->video, GB_REG_OBP0, gb->memory.io[GB_REG_OBP0]);
+			GBVideoWritePalette(&gb->video, GB_REG_OBP1, gb->memory.io[GB_REG_OBP1]);
+		}
+	}
 }
 
 static void _GBCoreDesiredVideoDimensions(const struct mCore* core, unsigned* width, unsigned* height) {
