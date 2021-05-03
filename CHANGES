@@ -13,6 +13,7 @@ Other fixes:
  - Util: Fix loading UPS patches that affect the last byte of the file
 Misc:
  - Qt: Rearrange menus some
+ - Util: Improve speed of UPS patch loading
 
 0.9.1: (2021-04-18)
 Emulation fixes:
