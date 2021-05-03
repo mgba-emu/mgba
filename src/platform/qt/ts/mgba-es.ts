@@ -1056,7 +1056,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../OverrideView.ui" line="519"/>
         <source>Palette preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Preajuste de paleta</translation>
     </message>
 </context>
 <context>
@@ -1069,7 +1069,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../PaletteView.ui" line="44"/>
         <source>Background</source>
-        <translation>Fondo (BG)</translation>
+        <translation>Fondo</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="94"/>
@@ -1104,7 +1104,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../PaletteView.ui" line="251"/>
         <source>Hex code</source>
-        <translation>Código hex</translation>
+        <translation>Código hexadecimal</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="258"/>
@@ -1409,7 +1409,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../GDBWindow.cpp" line="113"/>
         <source>Crash</source>
-        <translation>Error fatal</translation>
+        <translation>Cierre inesperado</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="113"/>
@@ -4087,7 +4087,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../Window.cpp" line="912"/>
         <source>Crash</source>
-        <translation>Error fatal</translation>
+        <translation>Cierre inesperado</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="913"/>
@@ -4648,7 +4648,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../Window.cpp" line="1562"/>
         <source>View &amp;tiles...</source>
-        <translation>Ver &amp;tiles...</translation>
+        <translation>Ver m&amp;osaicos...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1563"/>
@@ -4837,7 +4837,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../ROMInfo.ui" line="63"/>
         <source>Game ID:</source>
-        <translation>ID de juego:</translation>
+        <translation>Id. de juego:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="70"/>
@@ -4870,7 +4870,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../ReportView.ui" line="14"/>
         <source>Generate Bug Report</source>
-        <translation>Generar reporte de bugs</translation>
+        <translation>Generar informe de defecto</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="72"/>
@@ -4880,7 +4880,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../ReportView.ui" line="90"/>
         <source>Generate report</source>
-        <translation>Generar reporte</translation>
+        <translation>Generar informe</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="104"/>
@@ -4890,7 +4890,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../ReportView.ui" line="118"/>
         <source>Open issue list in browser</source>
-        <translation>Abrir lista de reportes en navegador</translation>
+        <translation>Abrir lista de informes en navegador</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="139"/>
@@ -5352,7 +5352,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
         <location filename="../SettingsView.ui" line="920"/>
         <location filename="../SettingsView.ui" line="964"/>
         <source>Save game</source>
-        <translation>Guardar juego</translation>
+        <translation>Guardar partida</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="947"/>
