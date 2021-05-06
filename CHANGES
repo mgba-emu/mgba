@@ -7,6 +7,7 @@ Emulation fixes:
  - GBA Video: Revert scanline latching changes (fixes mgba.io/i/2153, mgba.io/i/2149)
 Other fixes:
  - Core: Fix memory leak in opening games from the library
+ - GB Core: Fix GBC colors setting breaking default model overrides (fixes mgba.io/i/2161)
  - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
  - Qt: Fix infrequent deadlock when using sync to video
  - Qt: Fix applying savetype-only overrides
