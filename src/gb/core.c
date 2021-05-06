@@ -446,7 +446,8 @@ static void _GBCoreReset(struct mCore* core) {
 		bool modelOverride = GBOverrideFind(gbcore->overrides, &override) || (doColorOverride && GBOverrideColorFind(&override));
 		if (modelOverride) {
 			GBOverrideApply(gb, &override);
-		} else {
+		}
+		if (!modelOverride || override.model == GB_MODEL_AUTODETECT) {
 			const char* modelGB = mCoreConfigGetValue(&core->config, "gb.model");
 			const char* modelSGB = mCoreConfigGetValue(&core->config, "sgb.model");
 			const char* modelCGB = mCoreConfigGetValue(&core->config, "cgb.model");
