@@ -12,6 +12,7 @@ Other fixes:
  - Qt: Fix applying savetype-only overrides
  - Util: Fix loading UPS patches that affect the last byte of the file
 Misc:
+ - Core: Suspend runloop when a core crashes
  - Qt: Rearrange menus some
  - Util: Improve speed of UPS patch loading
 
