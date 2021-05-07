@@ -560,6 +560,7 @@ static void _GBCoreReset(struct mCore* core) {
 				break;
 			case GB_MODEL_CGB:
 			case GB_MODEL_AGB:
+			case GB_MODEL_SCGB:
 				configPath = mCoreConfigGetValue(&core->config, "gbc.bios");
 				break;
 			default:
@@ -589,6 +590,7 @@ static void _GBCoreReset(struct mCore* core) {
 				break;
 			case GB_MODEL_CGB:
 			case GB_MODEL_AGB:
+			case GB_MODEL_SCGB:
 				strncat(path, PATH_SEP "gbc_bios.bin", PATH_MAX - strlen(path));
 				break;
 			default:

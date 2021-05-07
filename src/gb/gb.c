@@ -546,6 +546,7 @@ void GBSkipBIOS(struct GB* gb) {
 		cpu->b = 1;
 		// Fall through
 	case GB_MODEL_CGB:
+	case GB_MODEL_SCGB:
 		cpu->a = 0x11;
 		if (gb->model == GB_MODEL_AGB) {
 			cpu->f.packed = 0x00;
@@ -671,6 +672,7 @@ void GBDetectModel(struct GB* gb) {
 		break;
 	case GB_MODEL_AGB:
 	case GB_MODEL_CGB:
+	case GB_MODEL_SCGB:
 		gb->audio.style = GB_AUDIO_CGB;
 		break;
 	}
@@ -932,11 +934,11 @@ void GBFrameEnded(struct GB* gb) {
 }
 
 enum GBModel GBNameToModel(const char* model) {
-	if (strcasecmp(model, "DMG") == 0) {
+	if (strcasecmp(model, "DMG") == 0 || strcasecmp(model, "GB") == 0) {
 		return GB_MODEL_DMG;
-	} else if (strcasecmp(model, "CGB") == 0) {
+	} else if (strcasecmp(model, "CGB") == 0 || strcasecmp(model, "GBC") == 0) {
 		return GB_MODEL_CGB;
-	} else if (strcasecmp(model, "AGB") == 0) {
+	} else if (strcasecmp(model, "AGB") == 0 || strcasecmp(model, "GBA") == 0) {
 		return GB_MODEL_AGB;
 	} else if (strcasecmp(model, "SGB") == 0) {
 		return GB_MODEL_SGB;
@@ -944,6 +946,8 @@ enum GBModel GBNameToModel(const char* model) {
 		return GB_MODEL_MGB;
 	} else if (strcasecmp(model, "SGB2") == 0) {
 		return GB_MODEL_SGB2;
+	} else if (strcasecmp(model, "SCGB") == 0 || strcasecmp(model, "SGBC") == 0) {
+		return GB_MODEL_SCGB;
 	}
 	return GB_MODEL_AUTODETECT;
 }
@@ -962,6 +966,8 @@ const char* GBModelToName(enum GBModel model) {
 		return "CGB";
 	case GB_MODEL_AGB:
 		return "AGB";
+	case GB_MODEL_SCGB:
+		return "SCGB";
 	default:
 	case GB_MODEL_AUTODETECT:
 		return NULL;
