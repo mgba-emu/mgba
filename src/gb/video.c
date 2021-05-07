@@ -80,6 +80,7 @@ void GBVideoReset(struct GBVideo* video) {
 	video->frameskipCounter = 0;
 
 	GBVideoSwitchBank(video, 0);
+	memset(video->vram, 0, GB_SIZE_VRAM);
 	video->renderer->vram = video->vram;
 	memset(&video->oam, 0, sizeof(video->oam));
 	video->renderer->oam = &video->oam;
