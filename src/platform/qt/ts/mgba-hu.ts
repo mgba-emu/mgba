@@ -6,33 +6,34 @@
     <message>
         <location filename="../AboutScreen.ui" line="14"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>Névjegy</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;Weboldal&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Fórumok / Támogatás&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Adományozás&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Forráskód&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="41"/>
         <source>Branch: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Revision: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Git-ág: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Revízió: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="68"/>
         <source>{projectName} would like to thank the following patrons from Patreon:</source>
-        <translation type="unfinished"></translation>
+        <translation>Az {projectName} szeretne köszönetet nyilvánítani a következő Patreon-támogatóknak:</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="86"/>
         <source>© 2013 – {year} Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">© 2013 – {year} Jeffrey Pfau, a Mozilla Public License 2.0 alatt licencelve
+A Game Boy Advance a Nintendo Co., Ltd. bejegyzett védjegye</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
-        <translation type="unfinished"></translation>
+        <translation>A {projectName} egy nyílt forráskódú Game Boy Advance emulátor</translation>
     </message>
 </context>
 <context>
@@ -40,12 +41,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ArchiveInspector.ui" line="14"/>
         <source>Open in archive...</source>
-        <translation type="unfinished"></translation>
+        <translation>Archívum megnyitása...</translation>
     </message>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation type="unfinished"></translation>
+        <translation>Betöltés...</translation>
     </message>
 </context>
 <context>
@@ -58,27 +59,27 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
         <source>Palette #</source>
-        <translation type="unfinished"></translation>
+        <translation>Paletta #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="86"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Cím</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="135"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>Piros</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="142"/>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>Zöld</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="149"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>Kék</translation>
     </message>
 </context>
 <context>
@@ -164,37 +165,37 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../CheatsView.ui" line="14"/>
         <source>Cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>Csalások</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="20"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Eltávolítás</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="34"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Mentés</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="41"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>Betöltés</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="48"/>
         <source>Add New Set</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Új kollekció hozzáadása</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="55"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>Hozzáadás</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="95"/>
         <source>Enter codes here...</source>
-        <translation type="unfinished"></translation>
+        <translation>Írd ide a kódokat...</translation>
     </message>
 </context>
 <context>
@@ -202,17 +203,17 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../DebuggerConsole.ui" line="14"/>
         <source>Debugger</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Hibakereső</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="25"/>
         <source>Enter command (try `help` for more info)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Parancsbevitel (több információ: `help`)</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="32"/>
         <source>Break</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Törés</translation>
     </message>
 </context>
 <context>
@@ -220,37 +221,37 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../DolphinConnector.ui" line="14"/>
         <source>Connect to Dolphin</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Csatlakozás Dolphin emulátorhoz</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="23"/>
         <source>Local computer</source>
-        <translation type="unfinished"></translation>
+        <translation>Helyi számítógép</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="36"/>
         <source>IP address</source>
-        <translation type="unfinished"></translation>
+        <translation>IP-cím</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="55"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Csatlakozás</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="68"/>
         <source>Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>Kapcsolat bontása</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="78"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Bezárás</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="90"/>
         <source>Reset on connect</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Emuláció újraindítása csatlakozáskor</translation>
     </message>
 </context>
 <context>
@@ -258,37 +259,37 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../FrameView.ui" line="14"/>
         <source>Inspect frame</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Képkocka vizsgáló</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="41"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>Nagyítás</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="50"/>
         <source>Freeze frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Képkocka befagyasztása</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="84"/>
         <source>Backdrop color</source>
-        <translation type="unfinished"></translation>
+        <translation>Háttérszín</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="132"/>
         <source>Disable scanline effects</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Pásztázó/Scanline-effektusok letiltása</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="145"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>Exportálás</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="152"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Visszaállítás</translation>
     </message>
 </context>
 <context>
@@ -296,47 +297,47 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../GIFView.ui" line="14"/>
         <source>Record GIF/WebP/APNG</source>
-        <translation type="unfinished"></translation>
+        <translation>GIF/WebP/APNG felvétel készítése</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="30"/>
         <source>Loop</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Újrajátszás</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="51"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Indít</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="67"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>Leállít</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="93"/>
         <source>Select File</source>
-        <translation type="unfinished"></translation>
+        <translation>Fájl kiválasztása</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="112"/>
         <source>APNG</source>
-        <translation type="unfinished"></translation>
+        <translation>APNG</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="122"/>
         <source>GIF</source>
-        <translation type="unfinished"></translation>
+        <translation>GIF</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="135"/>
         <source>WebP</source>
-        <translation type="unfinished"></translation>
+        <translation>WebP</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="145"/>
         <source>Frameskip</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Képkockák kihagyása</translation>
     </message>
 </context>
 <context>
@@ -344,7 +345,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../IOViewer.ui" line="14"/>
         <source>I/O Viewer</source>
-        <translation type="unfinished"></translation>
+        <translation>I/O-vizsgáló</translation>
     </message>
     <message>
         <location filename="../IOViewer.ui" line="26"/>
@@ -462,62 +463,62 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../LogView.ui" line="14"/>
         <source>Logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Naplók</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="22"/>
         <source>Enabled Levels</source>
-        <translation type="unfinished"></translation>
+        <translation>Engedélyezett szintek</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="28"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>Debug</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="38"/>
         <source>Stub</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Csonk (Stub)</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="48"/>
         <source>Info</source>
-        <translation type="unfinished"></translation>
+        <translation>Infó</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="58"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Figyelmeztetés (Warning)</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="68"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Hiba</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="78"/>
         <source>Fatal</source>
-        <translation type="unfinished"></translation>
+        <translation>Végzetes hiba</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="95"/>
         <source>Game Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Játékbeli hiba</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="108"/>
         <source>Advanced settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Haladó beállítások</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="128"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Napló törlése</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="137"/>
         <source>Max Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Sorok maximális száma</translation>
     </message>
 </context>
 <context>
@@ -530,17 +531,17 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MapView.ui" line="43"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>Nagyítás</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="124"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>Exportálás</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="139"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Másolás</translation>
     </message>
 </context>
 <context>
@@ -548,17 +549,17 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemoryDump.ui" line="14"/>
         <source>Save Memory Range</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Memóriarégió mentése</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="20"/>
         <source>Start Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Kezdőcím:</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="76"/>
         <source>Byte Count:</source>
-        <translation type="unfinished"></translation>
+        <translation>Bájtok száma:</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="108"/>
@@ -571,149 +572,149 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemorySearch.ui" line="26"/>
         <source>Memory Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Keresés memóriában</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="51"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Cím</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="56"/>
         <source>Current Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Jelenlegi érték</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="61"/>
         <location filename="../MemorySearch.ui" line="81"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Típus</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="71"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Érték</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="88"/>
         <source>Numeric</source>
-        <translation type="unfinished"></translation>
+        <translation>Numerikus</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="101"/>
         <source>Text</source>
-        <translation type="unfinished"></translation>
+        <translation>Szöveg</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="118"/>
         <source>Width</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Szélesség</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="125"/>
         <location filename="../MemorySearch.ui" line="185"/>
         <source>Guess</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sejtés alapján</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="138"/>
         <source>1 Byte (8-bit)</source>
-        <translation type="unfinished"></translation>
+        <translation>1 Bájt (8-bites)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="148"/>
         <source>2 Bytes (16-bit)</source>
-        <translation type="unfinished"></translation>
+        <translation>2 Bájt (16-bites)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="158"/>
         <source>4 Bytes (32-bit)</source>
-        <translation type="unfinished"></translation>
+        <translation>4 Bájt (32-bites)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="178"/>
         <source>Number type</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Számérték típusa</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="195"/>
         <source>Decimal</source>
-        <translation type="unfinished"></translation>
+        <translation>Decimális</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="202"/>
         <source>Hexadecimal</source>
-        <translation type="unfinished"></translation>
+        <translation>Hexadecimális</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="216"/>
         <source>Search type</source>
-        <translation type="unfinished"></translation>
+        <translation>Keresés típusa</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="223"/>
         <source>Equal to value</source>
-        <translation type="unfinished"></translation>
+        <translation>Értékkel megegyező</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="236"/>
         <source>Greater than value</source>
-        <translation type="unfinished"></translation>
+        <translation>Értéknél nagyobb</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="246"/>
         <source>Less than value</source>
-        <translation type="unfinished"></translation>
+        <translation>Értéknél kisebb</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="256"/>
         <source>Unknown/changed</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ismeretlen/megváltozott</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="269"/>
         <source>Changed by value</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Értéknyivel megváltozott</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="282"/>
         <source>Unchanged</source>
-        <translation type="unfinished"></translation>
+        <translation>Változatlan</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="295"/>
         <source>Increased</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Növekedett</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="308"/>
         <source>Decreased</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Lecsökkent</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="318"/>
         <source>Search ROM</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Keresés ROM-ban</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="336"/>
         <source>New Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Új keresés</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="343"/>
         <source>Search Within</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Keresés a jelenlegi listában</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="350"/>
         <source>Open in Memory Viewer</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Megnyitás a memórianézegetőben</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="357"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>Frissítés</translation>
     </message>
 </context>
 <context>
@@ -721,77 +722,77 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemoryView.ui" line="14"/>
         <source>Memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Memória</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="38"/>
         <source>Inspect Address:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cím vizsgálata:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="88"/>
         <source>Set Alignment:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Igazítás beállítása:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="108"/>
         <source>&amp;1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;1 bájt</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="131"/>
         <source>&amp;2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;2 bájt</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="151"/>
         <source>&amp;4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;4 bájt</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="187"/>
         <source>Unsigned Integer:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Előjel nélküli egészként:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="208"/>
         <source>Signed Integer:</source>
-        <translation type="unfinished"></translation>
+        <translation>Előjeles egészként:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="229"/>
         <source>String:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Szövegként:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="243"/>
         <source>Load TBL</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">TBL betöltése</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="256"/>
         <source>Copy Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Kiválasztott régió másolása</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="263"/>
         <source>Paste</source>
-        <translation type="unfinished"></translation>
+        <translation>Beillesztés</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="283"/>
         <source>Save Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Kiválasztott régió mentése</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="290"/>
         <source>Save Range</source>
-        <translation type="unfinished"></translation>
+        <translation>Régió mentése</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="297"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>Betöltés</translation>
     </message>
 </context>
 <context>
@@ -799,82 +800,82 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ObjView.ui" line="14"/>
         <source>Sprites</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sprite-ok</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="72"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Cím</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="94"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Másolás</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="122"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>Nagyítás</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="137"/>
         <source>Geometry</source>
-        <translation type="unfinished"></translation>
+        <translation>Geometria</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="145"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Pozíció</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="181"/>
         <source>, </source>
-        <translation type="unfinished"></translation>
+        <translation>, </translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="218"/>
         <source>Dimensions</source>
-        <translation type="unfinished"></translation>
+        <translation>Méretek</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="254"/>
         <source>×</source>
-        <translation type="unfinished"></translation>
+        <translation>×</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="298"/>
         <source>Matrix</source>
-        <translation type="unfinished"></translation>
+        <translation>Mátrix</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="365"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>Exportálás</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="378"/>
         <source>Attributes</source>
-        <translation type="unfinished"></translation>
+        <translation>Attribútumok</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="386"/>
         <source>Transform</source>
-        <translation type="unfinished"></translation>
+        <translation>Transzformáció</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="406"/>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Ki</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="417"/>
         <source>Palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Paletta</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="451"/>
         <source>Double Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Kétszeres méret</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="477"/>
@@ -887,49 +888,49 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ObjView.ui" line="495"/>
         <source>Flipped</source>
-        <translation type="unfinished"></translation>
+        <translation>Megfordítás</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="518"/>
         <source>H</source>
         <extracomment>Short for horizontal</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>V</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="531"/>
         <source>V</source>
         <extracomment>Short for vertical</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>F</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="545"/>
         <source>Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Mód</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="565"/>
         <source>Normal</source>
-        <translation type="unfinished"></translation>
+        <translation>Normál</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="576"/>
         <source>Mosaic</source>
-        <translation type="unfinished"></translation>
+        <translation>Mozaik</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="613"/>
         <source>Enabled</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Engedélyezve</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="647"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>Prioritás</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="682"/>
         <source>Tile</source>
-        <translation type="unfinished"></translation>
+        <translation>Mező</translation>
     </message>
 </context>
 <context>
@@ -937,12 +938,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../OverrideView.ui" line="20"/>
         <source>Game Overrides</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Játékbeli felülbírálások</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="30"/>
         <source>Game Boy Advance</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="42"/>
@@ -950,112 +951,112 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../OverrideView.ui" line="231"/>
         <location filename="../OverrideView.ui" line="247"/>
         <source>Autodetect</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatikus észlelés</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="55"/>
         <source>Realtime clock</source>
-        <translation type="unfinished"></translation>
+        <translation>Valósidejű óra</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="65"/>
         <source>Gyroscope</source>
-        <translation type="unfinished"></translation>
+        <translation>Giroszkóp</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="75"/>
         <source>Tilt</source>
-        <translation type="unfinished"></translation>
+        <translation>Dőlésérzékelő</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="85"/>
         <source>Light sensor</source>
-        <translation type="unfinished"></translation>
+        <translation>Fényérzékelő</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="95"/>
         <source>Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>Rezgés</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="113"/>
         <source>Save type</source>
-        <translation type="unfinished"></translation>
+        <translation>Mentés típusa</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="126"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nincs</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="131"/>
         <source>SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation>SRAM</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="136"/>
         <source>Flash 512kb</source>
-        <translation type="unfinished"></translation>
+        <translation>Flash 512kb</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="141"/>
         <source>Flash 1Mb</source>
-        <translation type="unfinished"></translation>
+        <translation>Flash 1Mb</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="146"/>
         <source>EEPROM</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="154"/>
         <source>Idle loop</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Üresjárati ciklus</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="180"/>
         <source>Game Boy Player features</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Player funkciók</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="187"/>
         <source>VBA bug compatibility mode</source>
-        <translation type="unfinished"></translation>
+        <translation>VBA bug kompatibilitási mód</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="217"/>
         <source>Game Boy</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="223"/>
         <source>Game Boy model</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy modell</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="239"/>
         <source>Memory bank controller</source>
-        <translation type="unfinished"></translation>
+        <translation>Memória bank vezérlő (MBC)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="255"/>
         <source>Background Colors</source>
-        <translation type="unfinished"></translation>
+        <translation>Háttérszínek</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="342"/>
         <source>Sprite Colors 1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sprite-színek 1</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="349"/>
         <source>Sprite Colors 2</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sprite-színek 2</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="519"/>
         <source>Palette preset</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Paletta preset</translation>
     </message>
 </context>
 <context>
@@ -1063,62 +1064,62 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../PaletteView.ui" line="14"/>
         <source>Palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Paletta</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="44"/>
         <source>Background</source>
-        <translation type="unfinished"></translation>
+        <translation>Háttér</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="94"/>
         <source>Objects</source>
-        <translation type="unfinished"></translation>
+        <translation>Objektumok</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="153"/>
         <source>Selection</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Kiválasztás</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="184"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>Piros</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="191"/>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>Zöld</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="198"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>Kék</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="244"/>
         <source>16-bit value</source>
-        <translation type="unfinished"></translation>
+        <translation>16-bites érték</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="251"/>
         <source>Hex code</source>
-        <translation type="unfinished"></translation>
+        <translation>Hex kód</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="258"/>
         <source>Palette index</source>
-        <translation type="unfinished"></translation>
+        <translation>Paletta index</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="322"/>
         <source>Export BG</source>
-        <translation type="unfinished"></translation>
+        <translation>Háttérpaletta exportálása</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="342"/>
         <source>Export OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>Objektumpaletta exportálása</translation>
     </message>
 </context>
 <context>
@@ -1126,27 +1127,27 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../PlacementControl.ui" line="20"/>
         <source>Adjust placement</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Elhelyezés igazítása</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="26"/>
         <source>All</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mind</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="65"/>
         <source>Offset</source>
-        <translation type="unfinished"></translation>
+        <translation>Eltolás</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="72"/>
         <source>X</source>
-        <translation type="unfinished"></translation>
+        <translation>X</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="79"/>
         <source>Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Y</translation>
     </message>
 </context>
 <context>
@@ -1154,27 +1155,27 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../PrinterView.ui" line="14"/>
         <source>Game Boy Printer</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Printer</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="130"/>
         <source>Hurry up!</source>
-        <translation type="unfinished"></translation>
+        <translation>Siess!</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="137"/>
         <source>Tear off</source>
-        <translation type="unfinished"></translation>
+        <translation>Leszakítás</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="180"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>Nagyítás</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="223"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Másolás</translation>
     </message>
 </context>
 <context>
@@ -1182,7 +1183,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../AboutScreen.cpp" line="77"/>
         <source>2021</source>
-        <translation type="unfinished"></translation>
+        <translation>2021</translation>
     </message>
 </context>
 <context>
@@ -1190,14 +1191,14 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../AssetTile.cpp" line="103"/>
         <source>%0%1%2</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">%0%1%2</translation>
     </message>
     <message>
         <location filename="../AssetTile.cpp" line="140"/>
         <location filename="../AssetTile.cpp" line="141"/>
         <location filename="../AssetTile.cpp" line="142"/>
         <source>0x%0 (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">0x%0 (%1)</translation>
     </message>
 </context>
 <context>
@@ -1205,12 +1206,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../CheatsModel.cpp" line="53"/>
         <source>(untitled)</source>
-        <translation type="unfinished"></translation>
+        <translation>(névtelen)</translation>
     </message>
     <message>
         <location filename="../CheatsModel.cpp" line="211"/>
         <source>Failed to open cheats file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nem sikerült a csalásfájl megnyitása: %1</translation>
     </message>
 </context>
 <context>
@@ -1219,28 +1220,28 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../CheatsView.cpp" line="49"/>
         <location filename="../CheatsView.cpp" line="74"/>
         <source>Add GameShark</source>
-        <translation type="unfinished"></translation>
+        <translation>GameShark kód hozzáadása</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="55"/>
         <source>Add Pro Action Replay</source>
-        <translation type="unfinished"></translation>
+        <translation>Pro Action Replay kód hozzáadása</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="61"/>
         <source>Add CodeBreaker</source>
-        <translation type="unfinished"></translation>
+        <translation>CodeBreaker kód hozzáadása</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="80"/>
         <source>Add GameGenie</source>
-        <translation type="unfinished"></translation>
+        <translation>GameGenie kód hozzáadása</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="112"/>
         <location filename="../CheatsView.cpp" line="119"/>
         <source>Select cheats file</source>
-        <translation type="unfinished"></translation>
+        <translation>Csalásfájl kiválasztása</translation>
     </message>
 </context>
 <context>
@@ -1248,27 +1249,27 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../CoreController.cpp" line="695"/>
         <source>Failed to open save file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem sikerült a mentésfájl megnyitása: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="726"/>
         <source>Failed to open game file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem sikerült a játékfájl megnyitása: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="751"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">A játékkazettát nem lehet kirántani ismeretlen platformon!</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="828"/>
         <source>Failed to open snapshot file for reading: %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">A pillanatkép fájljának olvasásra való megnyitása sikertelen: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="844"/>
         <source>Failed to open snapshot file for writing: %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">A pillanatkép fájljának írásra való megnyitása sikertelen: %1</translation>
     </message>
 </context>
 <context>
@@ -1276,17 +1277,17 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../CoreManager.cpp" line="55"/>
         <source>Failed to open game file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem sikerült a játékfájl megnyitása: %1</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="88"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
-        <translation type="unfinished"></translation>
+        <translation>A játék betöltése nem sikerült. Biztos vagy benne, hogy a megfelelő formátumú?</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="115"/>
         <source>Failed to open save file. Is the save directory writable?</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem sikerült a mentésfájl megnyitása. Írható a mentést tartalmazó könyvtár?</translation>
     </message>
 </context>
 <context>
@@ -1294,52 +1295,52 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../FrameView.cpp" line="578"/>
         <source>Export frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Képkocka exportálása</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="579"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="597"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nincs</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="599"/>
         <source>Background</source>
-        <translation type="unfinished"></translation>
+        <translation>Háttér</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="602"/>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation>Ablak</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="605"/>
         <source>Objwin</source>
-        <translation type="unfinished"></translation>
+        <translation>Objektumablak</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="610"/>
         <source>Sprite</source>
-        <translation type="unfinished"></translation>
+        <translation>Sprite</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="613"/>
         <source>Backdrop</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Háttérréteg</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="616"/>
         <source>Frame</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Képkocka</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="622"/>
         <source>%1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
@@ -1347,7 +1348,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../GBAApp.cpp" line="71"/>
         <source>Enable Discord Rich Presence</source>
-        <translation type="unfinished"></translation>
+        <translation>Discord Rich Presence engedélyezése</translation>
     </message>
 </context>
 <context>
@@ -1355,22 +1356,22 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="67"/>
         <source>Clear Button</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Gombhozzárendelés törlése</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="79"/>
         <source>Clear Analog</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Analóg hozzárendelések törlése</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="90"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>Frissítés</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="100"/>
         <source>Set all</source>
-        <translation type="unfinished"></translation>
+        <translation>Mind beállítása</translation>
     </message>
 </context>
 <context>
@@ -1378,32 +1379,32 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../GDBWindow.cpp" line="29"/>
         <source>Server settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Szerverbeállítások</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="35"/>
         <source>Local port</source>
-        <translation type="unfinished"></translation>
+        <translation>Helyi port</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="37"/>
         <source>Bind address</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cím hozzárendelése</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="56"/>
         <source>Break</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Törés</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="95"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>Leállítás</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="105"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Indítás</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="113"/>
@@ -1413,7 +1414,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../GDBWindow.cpp" line="113"/>
         <source>Could not start GDB server</source>
-        <translation type="unfinished"></translation>
+        <translation>A GDB szerver elindítása nem sikerült</translation>
     </message>
 </context>
 <context>
@@ -1421,17 +1422,17 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../GIFView.cpp" line="61"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem sikerült a kimeneti fájl megnyitása: %1</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
         <source>Select output file</source>
-        <translation type="unfinished"></translation>
+        <translation>Kimeneti fájl kiválasztása</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
         <source>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</source>
-        <translation type="unfinished"></translation>
+        <translation>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</translation>
     </message>
 </context>
 <context>
@@ -1439,42 +1440,42 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../IOViewer.cpp" line="39"/>
         <source>Background mode</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Háttérrajzolási mód</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="40"/>
         <source>Mode 0: 4 tile layers</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mód 0: 4 db mezőréteg</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="41"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mód 1: 2 db mezőréteg + 1 db forgatott/skálázott mezőréteg</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="42"/>
         <source>Mode 2: 2 rotated/scaled tile layers</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mód 2: 2 db forgatott/skálázott mezőréteg</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="43"/>
         <source>Mode 3: Full 15-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mód 3: Teljes 15-bites bitmap</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="44"/>
         <source>Mode 4: Full 8-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mód 4: Teljes 8-bites bitmap</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="45"/>
         <source>Mode 5: Small 15-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mód 5: Kis 15-bites bitmap</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="49"/>
         <source>CGB Mode</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">CGB mód</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="50"/>
