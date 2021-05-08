@@ -51,7 +51,42 @@
 #define PAL31 PAL_ENTRY(0x7FFF, 0x7FFF, 0x7E8C, 0x7C00)
 #define PAL32 PAL_ENTRY(0x0000, 0x7FFF, 0x421F, 0x1CF2)
 
+#define PAL1A PAL_ENTRY(0x67BF, 0x265B, 0x10B5, 0x2866)
+#define PAL1B PAL_ENTRY(0x637B, 0x3AD9, 0x0956, 0x0000)
+#define PAL1C PAL_ENTRY(0x7F1F, 0x2A7D, 0x30F3, 0x4CE7)
+#define PAL1D PAL_ENTRY(0x57FF, 0x2618, 0x001F, 0x006A)
+#define PAL1E PAL_ENTRY(0x5B7F, 0x3F0F, 0x222D, 0x10EB)
+#define PAL1F PAL_ENTRY(0x7FBB, 0x2A3C, 0x0015, 0x0900)
+#define PAL1G PAL_ENTRY(0x2800, 0x7680, 0x01EF, 0x2FFF)
+#define PAL1H PAL_ENTRY(0x73BF, 0x46FF, 0x0110, 0x0066)
+#define PAL2A PAL_ENTRY(0x533E, 0x2638, 0x01E5, 0x0000)
+#define PAL2B PAL_ENTRY(0x7FFF, 0x2BBF, 0x00DF, 0x2C0A)
+#define PAL2C PAL_ENTRY(0x7F1F, 0x463D, 0x74CF, 0x4CA5)
+#define PAL2D PAL_ENTRY(0x53FF, 0x03E0, 0x00DF, 0x2800)
+#define PAL2E PAL_ENTRY(0x433F, 0x72D2, 0x3045, 0x0822)
+#define PAL2F PAL_ENTRY(0x7FFA, 0x2A5F, 0x0014, 0x0003)
+#define PAL2G PAL_ENTRY(0x1EED, 0x215C, 0x42FC, 0x0060)
+#define PAL2H PAL_ENTRY(0x7FFF, 0x5EF7, 0x39CE, 0x0000)
+#define PAL3A PAL_ENTRY(0x4F5F, 0x630E, 0x159F, 0x3126)
+#define PAL3B PAL_ENTRY(0x637B, 0x121C, 0x0140, 0x0840)
+#define PAL3C PAL_ENTRY(0x66BC, 0x3FFF, 0x7EE0, 0x2C84)
+#define PAL3D PAL_ENTRY(0x5FFE, 0x3EBC, 0x0321, 0x0000)
+#define PAL3E PAL_ENTRY(0x63FF, 0x36DC, 0x11F6, 0x392A)
+#define PAL3F PAL_ENTRY(0x65EF, 0x7DBF, 0x035F, 0x2108)
+#define PAL3G PAL_ENTRY(0x2B6C, 0x7FFF, 0x1CD9, 0x0007)
+#define PAL3H PAL_ENTRY(0x53FC, 0x1F2F, 0x0E29, 0x0061)
+#define PAL4A PAL_ENTRY(0x36BE, 0x7EAF, 0x681A, 0x3C00)
+#define PAL4B PAL_ENTRY(0x7BBE, 0x329D, 0x1DE8, 0x0423)
+#define PAL4C PAL_ENTRY(0x739F, 0x6A9B, 0x7293, 0x0001)
+#define PAL4D PAL_ENTRY(0x5FFF, 0x6732, 0x3DA9, 0x2481)
+#define PAL4E PAL_ENTRY(0x577F, 0x3EBC, 0x456F, 0x1880)
+#define PAL4F PAL_ENTRY(0x6B57, 0x6E1B, 0x5010, 0x0007)
+#define PAL4G PAL_ENTRY(0x0F96, 0x2C97, 0x0045, 0x3200)
+#define PAL4H PAL_ENTRY(0x67FF, 0x2F17, 0x2230, 0x1548)
+
 #define PALETTE(X, Y, Z) { PAL ## X, PAL ## Y, PAL ## Z }
+#define UNIFORM_PAL(A, B, C, D) { PAL_ENTRY(A, B, C, D), PAL_ENTRY(A, B, C, D), PAL_ENTRY(A, B, C, D) }
+#define SGB_PAL(A) { PAL ## A, PAL ## A, PAL ## A }
 
 static const struct GBCartridgeOverride _colorOverrides[] = {
 	// Adventures of Lolo (Europe)
@@ -501,22 +536,9 @@ static const struct GBCartridgeOverride _overrides[] = {
 };
 
 static const struct GBColorPreset _colorPresets[] = {
-	{
-		"Grayscale",
-		{
-			PAL_ENTRY(0x7FFF, 0x56B5, 0x294A, 0x0000),
-			PAL_ENTRY(0x7FFF, 0x56B5, 0x294A, 0x0000),
-			PAL_ENTRY(0x7FFF, 0x56B5, 0x294A, 0x0000)
-		}
-	},
-	{
-		"DMG Green",
-		{
-			PAL_ENTRY(0x2691, 0x19A9, 0x1105, 0x04A3),
-			PAL_ENTRY(0x2691, 0x19A9, 0x1105, 0x04A3),
-			PAL_ENTRY(0x2691, 0x19A9, 0x1105, 0x04A3)
-		}
-	},
+	{ "Grayscale", UNIFORM_PAL(0x7FFF, 0x56B5, 0x294A, 0x0000), },
+	{ "DMG Green", UNIFORM_PAL(0x2691, 0x19A9, 0x1105, 0x04A3), },
+	{ "GB Pocket", UNIFORM_PAL(0x52D4, 0x4270, 0x2989, 0x10A3), },
 	{ "GBC Brown ↑", PALETTE(0, 0, 0), },
 	{ "GBC Red ↑A", PALETTE(4, 3, 28), },
 	{ "GBC Dark Brown ↑B", PALETTE(1, 0, 0), },
@@ -529,6 +551,38 @@ static const struct GBColorPreset _colorPresets[] = {
 	{ "GBC Green →", PALETTE(18, 18, 18), },
 	{ "GBC Dark Green →A", PALETTE(29, 4, 4), },
 	{ "GBC Reverse →B", PALETTE(27, 27, 27), },
+	{ "SGB 1-A", SGB_PAL(1A), },
+	{ "SGB 1-B", SGB_PAL(1B), },
+	{ "SGB 1-C", SGB_PAL(1C), },
+	{ "SGB 1-D", SGB_PAL(1D), },
+	{ "SGB 1-E", SGB_PAL(1E), },
+	{ "SGB 1-F", SGB_PAL(1F), },
+	{ "SGB 1-G", SGB_PAL(1G), },
+	{ "SGB 1-H", SGB_PAL(1H), },
+	{ "SGB 2-A", SGB_PAL(2A), },
+	{ "SGB 2-B", SGB_PAL(2B), },
+	{ "SGB 2-C", SGB_PAL(2C), },
+	{ "SGB 2-D", SGB_PAL(2D), },
+	{ "SGB 2-E", SGB_PAL(2E), },
+	{ "SGB 2-F", SGB_PAL(2F), },
+	{ "SGB 2-G", SGB_PAL(2G), },
+	{ "SGB 2-H", SGB_PAL(2H), },
+	{ "SGB 3-A", SGB_PAL(3A), },
+	{ "SGB 3-B", SGB_PAL(3B), },
+	{ "SGB 3-C", SGB_PAL(3C), },
+	{ "SGB 3-D", SGB_PAL(3D), },
+	{ "SGB 3-E", SGB_PAL(3E), },
+	{ "SGB 3-F", SGB_PAL(3F), },
+	{ "SGB 3-G", SGB_PAL(3G), },
+	{ "SGB 3-H", SGB_PAL(3H), },
+	{ "SGB 4-A", SGB_PAL(4A), },
+	{ "SGB 4-B", SGB_PAL(4B), },
+	{ "SGB 4-C", SGB_PAL(4C), },
+	{ "SGB 4-D", SGB_PAL(4D), },
+	{ "SGB 4-E", SGB_PAL(4E), },
+	{ "SGB 4-F", SGB_PAL(4F), },
+	{ "SGB 4-G", SGB_PAL(4G), },
+	{ "SGB 4-H", SGB_PAL(4H), },
 };
 
 bool GBOverrideColorFind(struct GBCartridgeOverride* override) {
