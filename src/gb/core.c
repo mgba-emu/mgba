@@ -224,6 +224,7 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	mCoreConfigCopyValue(&core->config, config, "cgb.model");
 	mCoreConfigCopyValue(&core->config, config, "cgb.hybridModel");
 	mCoreConfigCopyValue(&core->config, config, "cgb.sgbModel");
+	mCoreConfigCopyValue(&core->config, config, "gb.colors");
 	mCoreConfigCopyValue(&core->config, config, "useCgbColors");
 	mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
 
@@ -482,13 +483,18 @@ static void _GBCoreReset(struct mCore* core) {
 	}
 
 	if (gb->memory.rom) {
-		int doColorOverride = 0;
-		mCoreConfigGetIntValue(&core->config, "useCgbColors", &doColorOverride);
+		int doColorOverride = GB_COLORS_NONE;
+		mCoreConfigGetIntValue(&core->config, "gb.colors", &doColorOverride);
+
+		if (doColorOverride == GB_COLORS_NONE) {
+			// Backwards compat for renamed setting
+			mCoreConfigGetIntValue(&core->config, "useCgbColors", &doColorOverride);
+		}
 
 		struct GBCartridgeOverride override;
 		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 		override.headerCrc32 = doCrc32(cart, sizeof(*cart));
-		bool modelOverride = GBOverrideFind(gbcore->overrides, &override) || (doColorOverride && GBOverrideColorFind(&override));
+		bool modelOverride = GBOverrideFind(gbcore->overrides, &override) || (doColorOverride && GBOverrideColorFind(&override, doColorOverride));
 		if (modelOverride) {
 			GBOverrideApply(gb, &override);
 		}

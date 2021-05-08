@@ -1,6 +1,7 @@
 0.10.0: (Future)
 Features:
  - Presets for Game Boy palettes
+ - Add Super Game Boy palettes for original Game Boy games
  - Tool for converting scanned pictures of e-Reader cards to raw dotcode data
  - Cheat code support in homebrew ports
  - Support for combo "Super Game Boy Color" SGB + GBC ROM hacks
