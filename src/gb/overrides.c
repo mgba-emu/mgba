@@ -539,6 +539,7 @@ static const struct GBColorPreset _colorPresets[] = {
 	{ "Grayscale", UNIFORM_PAL(0x7FFF, 0x56B5, 0x294A, 0x0000), },
 	{ "DMG Green", UNIFORM_PAL(0x2691, 0x19A9, 0x1105, 0x04A3), },
 	{ "GB Pocket", UNIFORM_PAL(0x52D4, 0x4270, 0x2989, 0x10A3), },
+	{ "GB Light", UNIFORM_PAL(0x7FCF, 0x738B, 0x56C3, 0x39E0), },
 	{ "GBC Brown ↑", PALETTE(0, 0, 0), },
 	{ "GBC Red ↑A", PALETTE(4, 3, 28), },
 	{ "GBC Dark Brown ↑B", PALETTE(1, 0, 0), },
