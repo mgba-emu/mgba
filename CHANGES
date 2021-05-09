@@ -14,6 +14,7 @@ Other fixes:
  - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
  - Qt: Fix infrequent deadlock when using sync to video
  - Qt: Fix applying savetype-only overrides
+ - Qt: Fix crash in sprite view for partially out-of-bounds sprites (fixes mgba.io/i/2165)
  - Util: Fix loading UPS patches that affect the last byte of the file
 Misc:
  - Core: Suspend runloop when a core crashes
