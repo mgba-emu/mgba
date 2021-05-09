@@ -588,6 +588,9 @@ static const struct GBCartridgeOverride _sgbOverrides[] = {
 	// Legend of Zelda, The - Link's Awakening (USA, Europe)
 	{ 0x9A193109, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1E) },
 
+	// Mario & Yoshi (Europe)
+	{ 0xEC14B007, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(2D) },
+
 	// Metroid II - Return of Samus (World)
 	{ 0xBDCCC648, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(4G) },
 
