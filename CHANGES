@@ -7,6 +7,7 @@ Other fixes:
  - GB Core: Fix GBC colors setting breaking default model overrides (fixes mgba.io/i/2161)
  - Qt: Fix infrequent deadlock when using sync to video
  - Qt: Fix applying savetype-only overrides
+ - Qt: Fix crash in sprite view for partially out-of-bounds sprites (fixes mgba.io/i/2165)
  - Util: Fix loading UPS patches that affect the last byte of the file
 Misc:
  - Util: Improve speed of UPS patch loading

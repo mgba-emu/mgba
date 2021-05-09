@@ -131,15 +131,19 @@ void ObjView::updateTilesGBA(bool force) {
 	m_objInfo = newInfo;
 	m_tileOffset = newInfo.tile;
 	mTileCache* tileCache = mTileCacheSetGetPointer(&m_cacheSet->tiles, newInfo.paletteSet);
-
+	unsigned maxTiles = mTileCacheSystemInfoGetMaxTiles(tileCache->sysConfig);
 	int i = 0;
 	for (unsigned y = 0; y < newInfo.height; ++y) {
 		for (unsigned x = 0; x < newInfo.width; ++x, ++i, ++tile, ++tileBase) {
-			const color_t* data = mTileCacheGetTileIfDirty(tileCache, &m_tileStatus[16 * tileBase], tile, newInfo.paletteId);
-			if (data) {
-				m_ui.tiles->setTile(i, data);
-			} else if (force) {
-				m_ui.tiles->setTile(i, mTileCacheGetTile(tileCache, tile, newInfo.paletteId));
+			if (tile < maxTiles) {
+				const color_t* data = mTileCacheGetTileIfDirty(tileCache, &m_tileStatus[16 * tileBase], tile, newInfo.paletteId);
+				if (data) {
+					m_ui.tiles->setTile(i, data);
+				} else if (force) {
+					m_ui.tiles->setTile(i, mTileCacheGetTile(tileCache, tile, newInfo.paletteId));
+				}
+			} else {
+				m_ui.tiles->clearTile(i);
 			}
 		}
 		tile += newInfo.stride - newInfo.width;
