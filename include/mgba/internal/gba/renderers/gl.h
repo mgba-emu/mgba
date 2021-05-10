@@ -16,7 +16,9 @@ CXX_GUARD_START
 #include <mgba/internal/gba/renderers/common.h>
 #include <mgba/internal/gba/video.h>
 
-#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
+#if defined(BUILD_EPOXY) || defined(BUILD_GL) || defined(BUILD_GLES3)
+
+#define BUILD_GL_RENDERER
 
 #ifdef USE_EPOXY
 #include <epoxy/gl.h>

@@ -17,6 +17,10 @@ mLOG_DEFINE_CATEGORY(OPENGL, "OpenGL", "video.ogl");
 
 #define MAX_PASSES 8
 
+#if defined(USE_EPOXY) || defined(BUILD_GL) || defined(USE_GLES3)
+#define BUILD_GL_VAO
+#endif
+
 static const GLchar* const _gles2Header =
 	"#version 100\n"
 	"precision mediump float;\n";
@@ -159,6 +163,7 @@ static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	mGLES2ShaderInit(&context->finalShader, 0, 0, 0, 0, false, 0, 0);
 	mGLES2ShaderInit(&context->interframeShader, 0, _interframeFragmentShader, -1, -1, false, 0, 0);
 
+#ifdef BUILD_GL_VAO
 	if (context->initialShader.vao != (GLuint) -1) {
 		glBindVertexArray(context->initialShader.vao);
 		glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
@@ -168,6 +173,7 @@ static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 		glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
 		glBindVertexArray(0);
 	}
+#endif
 
 	glDeleteFramebuffers(1, &context->finalShader.fbo);
 	glDeleteTextures(1, &context->finalShader.tex);
@@ -297,9 +303,12 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 	glUseProgram(shader->program);
 	glUniform1i(shader->texLocation, 0);
 	glUniform2f(shader->texSizeLocation, context->d.width - padW, context->d.height - padH);
+#ifdef BUILD_GL_VAO
 	if (shader->vao != (GLuint) -1) {
 		glBindVertexArray(shader->vao);
-	} else {
+	} else
+#endif
+	{
 		glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
 		glEnableVertexAttribArray(shader->positionLocation);
 		glVertexAttribPointer(shader->positionLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
@@ -391,9 +400,11 @@ void mGLES2ContextDrawFrame(struct VideoBackend* v) {
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glUseProgram(0);
+#ifdef BUILD_GL_VAO
 	if (context->finalShader.vao != (GLuint) -1) {
 		glBindVertexArray(0);
 	}
+#endif
 }
 
 void mGLES2ContextPostFrame(struct VideoBackend* v, const void* frame) {
@@ -508,6 +519,7 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 		shader->uniforms[i].location = glGetUniformLocation(shader->program, shader->uniforms[i].name);
 	}
 
+#ifdef BUILD_GL_VAO
 	const GLubyte* extensions = glGetString(GL_EXTENSIONS);
 	if (shaderBuffer[0] == _gles2Header || version[0] >= '3' || (extensions && strstr((const char*) extensions, "_vertex_array_object") != NULL)) {
 		glGenVertexArrays(1, &shader->vao);
@@ -515,7 +527,9 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 		glEnableVertexAttribArray(shader->positionLocation);
 		glVertexAttribPointer(shader->positionLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 		glBindVertexArray(0);
-	} else {
+	} else
+#endif
+	{
 		shader->vao = -1;
 	}
 
@@ -527,9 +541,11 @@ void mGLES2ShaderDeinit(struct mGLES2Shader* shader) {
 	glDeleteShader(shader->fragmentShader);
 	glDeleteProgram(shader->program);
 	glDeleteFramebuffers(1, &shader->fbo);
+#ifdef BUILD_GL_VAO
 	if (shader->vao != (GLuint) -1) {
 		glDeleteVertexArrays(1, &shader->vao);
 	}
+#endif
 }
 
 void mGLES2ShaderAttach(struct mGLES2Context* context, struct mGLES2Shader* shaders, size_t nShaders) {
@@ -547,16 +563,20 @@ void mGLES2ShaderAttach(struct mGLES2Context* context, struct mGLES2Shader* shad
 		glClearColor(0.f, 0.f, 0.f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+#ifdef BUILD_GL_VAO
 		if (context->shaders[i].vao != (GLuint) -1) {
 			glBindVertexArray(context->shaders[i].vao);
 			glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
 			glEnableVertexAttribArray(context->shaders[i].positionLocation);
 			glVertexAttribPointer(context->shaders[i].positionLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 		}
+#endif
 	}
+#ifdef BUILD_GL_VAO
 	if (context->initialShader.vao != (GLuint) -1) {
 		glBindVertexArray(0);
 	}
+#endif
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
