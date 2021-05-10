@@ -12,7 +12,7 @@ void mRPIGLCommonSwap(struct VideoBackend* context) {
 	eglSwapBuffers(renderer->eglDisplay, renderer->eglSurface);
 }
 
-void mRPIGLCommonInit(struct mSDLRenderer* renderer) {
+bool mRPIGLCommonInit(struct mSDLRenderer* renderer) {
 	bcm_host_init();
 	renderer->eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	int major, minor;
@@ -48,7 +48,7 @@ void mRPIGLCommonInit(struct mSDLRenderer* renderer) {
 		EGL_NONE
 	};
 
-	int dispWidth = 240, dispHeight = 160, adjWidth;
+	uint32_t dispWidth = renderer->viewportWidth, dispHeight = renderer->viewportHeight, adjWidth;
 	renderer->eglContext = eglCreateContext(renderer->eglDisplay, config, EGL_NO_CONTEXT, contextAttributes);
 	graphics_get_display_size(0, &dispWidth, &dispHeight);
 	adjWidth = dispHeight / 2 * 3;
@@ -66,8 +66,8 @@ void mRPIGLCommonInit(struct mSDLRenderer* renderer) {
 	VC_RECT_T srcRect = {
 		.x = 0,
 		.y = 0,
-		.width = 240 << 16,
-		.height = 160 << 16
+		.width = renderer->viewportWidth << 16,
+		.height = renderer->viewportHeight << 16
 	};
 
 	DISPMANX_ELEMENT_HANDLE_T element = vc_dispmanx_element_add(update, display, 0, &destRect, 0, &srcRect, DISPMANX_PROTECTION_NONE, 0, 0, 0);
@@ -81,4 +81,12 @@ void mRPIGLCommonInit(struct mSDLRenderer* renderer) {
 	if (EGL_FALSE == eglMakeCurrent(renderer->eglDisplay, renderer->eglSurface, renderer->eglSurface, renderer->eglContext)) {
 		return false;
 	}
+
+	SDL_Surface* surface = SDL_SetVideoMode(dispWidth, dispHeight, 0, SDL_FULLSCREEN);
+	if (!surface) {
+		return false;
+	}
+	SDL_ShowCursor(0);
+
+	return true;
 }

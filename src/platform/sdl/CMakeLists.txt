@@ -68,18 +68,10 @@ set(SDLMAIN_LIBRARY "${SDLMAIN_LIBRARY}" PARENT_SCOPE)
 
 set(MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/main.c)
 
-if(BUILD_RASPI)
+if(BUILD_RASPI AND BUILD_GLES2 AND SDL_VERSION EQUAL "1.2")
 	add_definitions(-DBUILD_RASPI)
-	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c ${CMAKE_SOURCE_DIR}/src/platform/sdl/gl-common.c ${CMAKE_SOURCE_DIR}/src/platform/sdl/rpi-common.c)
-	list(APPEND MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/gles2-sdl.c)
-	set(OPENGLES2_LIBRARY "-lEGL -lGLESv2 -lbcm_host")
-	set(BUILD_GLES2 ON CACHE BOOL "Using OpenGL|ES 2" FORCE)
+	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/rpi-common.c)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fgnu89-inline")
-	add_executable(${BINARY_NAME}-rpi ${PLATFORM_SRC} ${MAIN_SRC})
-	set_target_properties(${BINARY_NAME}-rpi PROPERTIES COMPILE_DEFINITIONS "${FEATURE_DEFINES};${FUNCTION_DEFINES}")
-	target_link_libraries(${BINARY_NAME}-rpi ${BINARY_NAME} ${PLATFORM_LIBRARY} ${OPENGLES2_LIBRARY})
-	install(TARGETS ${BINARY_NAME}-rpi DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${BINARY_NAME}-rpi)
-	unset(OPENGLES2_INCLUDE_DIR CACHE) # Clear NOTFOUND
 endif()
 
 if(BUILD_PANDORA)
