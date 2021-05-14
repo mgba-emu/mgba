@@ -35,6 +35,7 @@ void GBVideoCacheAssociate(struct mCacheSet* cache, struct GBVideo* video) {
 	if (video->p->model >= GB_MODEL_CGB) {
 		sysconfig = mMapCacheSystemInfoSetPaletteCount(0, 2);
 	}
+	sysconfig = mMapCacheSystemInfoSetTilesPerWrite(sysconfig, 0);
 	mMapCacheConfigureSystem(mMapCacheSetGetPointer(&cache->maps, 0), sysconfig);
 	mMapCacheConfigureSystem(mMapCacheSetGetPointer(&cache->maps, 1), sysconfig);
 

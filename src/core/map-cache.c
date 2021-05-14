@@ -75,6 +75,12 @@ void mMapCacheWriteVRAM(struct mMapCache* cache, uint32_t address) {
 		++status->vramVersion;
 		status->flags = mMapCacheEntryFlagsClearVramClean(status->flags);
 		status->tileStatus[mMapCacheEntryFlagsGetPaletteId(status->flags)].vramClean = 0;
+		if (mMapCacheSystemInfoGetTilesPerWrite(cache->sysConfig) == 1) {
+			status = &cache->status[(address >> mMapCacheSystemInfoGetMapAlign(cache->sysConfig)) + 1];
+			++status->vramVersion;
+			status->flags = mMapCacheEntryFlagsClearVramClean(status->flags);
+			status->tileStatus[mMapCacheEntryFlagsGetPaletteId(status->flags)].vramClean = 0;
+		}
 	}
 }
 
