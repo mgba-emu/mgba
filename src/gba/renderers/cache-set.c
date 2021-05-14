@@ -167,6 +167,7 @@ static void GBAVideoCacheWriteBGCNT(struct mCacheSet* cache, size_t bg, uint16_t
 		sysconfig = mMapCacheSystemInfoSetPaletteCount(sysconfig, 4 * !p);
 		sysconfig = mMapCacheSystemInfoSetMacroTileSize(sysconfig, 5);
 		sysconfig = mMapCacheSystemInfoSetMapAlign(sysconfig, 1);
+		sysconfig = mMapCacheSystemInfoSetTilesPerWrite(sysconfig, 0);
 		tilesWide = 5;
 		tilesHigh = 5;
 		if (size & 1) {
@@ -182,6 +183,7 @@ static void GBAVideoCacheWriteBGCNT(struct mCacheSet* cache, size_t bg, uint16_t
 		sysconfig = mMapCacheSystemInfoSetPaletteCount(sysconfig, 0);
 		sysconfig = mMapCacheSystemInfoSetMacroTileSize(sysconfig, 4 + size);
 		sysconfig = mMapCacheSystemInfoSetMapAlign(sysconfig, 0);
+		sysconfig = mMapCacheSystemInfoSetTilesPerWrite(sysconfig, 1);
 
 		tilesHigh = 4 + size;
 		tilesWide = 4 + size;
