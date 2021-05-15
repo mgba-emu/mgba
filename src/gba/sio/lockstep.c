@@ -113,6 +113,7 @@ bool GBASIOLockstepNodeLoad(struct GBASIODriver* driver) {
 			node->d.p->siocnt = GBASIOMultiplayerFillSlave(node->d.p->siocnt);
 		}
 		break;
+	case SIO_NORMAL_8:
 	case SIO_NORMAL_32:
 		ATOMIC_ADD(node->p->attachedNormal, 1);
 		node->d.writeRegister = GBASIOLockstepNodeNormalWriteRegister;
@@ -519,6 +520,8 @@ static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* drive
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA32_LO <- %04X", node->id, value);
 	} else if (address == REG_SIODATA32_HI) {
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA32_HI <- %04X", node->id, value);
+	} else if (address == REG_SIODATA8) {
+		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA8 <- %02X", node->id, value);
 	}
 
 	mLockstepUnlock(&node->p->d);
