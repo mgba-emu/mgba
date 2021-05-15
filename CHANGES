@@ -10,6 +10,7 @@ Emulation fixes:
  - GBA SIO: Add missing NORMAL8 implementation bits (fixes mgba.io/i/2172)
  - GBA Video: Revert scanline latching changes (fixes mgba.io/i/2153, mgba.io/i/2149)
 Other fixes:
+ - 3DS: Fix disabling "wide" mode on 2DS (fixes mgba.io/i/2167)
  - Core: Fix memory leak in opening games from the library
  - GB Core: Fix GBC colors setting breaking default model overrides (fixes mgba.io/i/2161)
  - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
