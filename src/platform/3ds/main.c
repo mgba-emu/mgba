@@ -845,10 +845,12 @@ int main() {
 	gfxInit(GSP_BGR8_OES, GSP_BGR8_OES, true);
 
 	u8 model = 0;
+	cfguInit();
 	CFGU_GetSystemModel(&model);
 	if (model != 3 /* o2DS */) {
 		gfxSetWide(true);
 	}
+	cfguExit();
 
 	if (!_initGpu()) {
 		outputTexture[0].data = 0;
