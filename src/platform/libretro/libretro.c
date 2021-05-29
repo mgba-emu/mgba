@@ -17,6 +17,7 @@
 #include <mgba/gb/core.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/mbc.h>
+#include <mgba/internal/gb/overrides.h>
 #endif
 #ifdef M_CORE_GBA
 #include <mgba/gba/core.h>
@@ -146,6 +147,38 @@ static void _initRumble(void) {
 	rumbleInitDone = true;
 }
 
+#ifdef M_CORE_GB
+static void _updateGbPal(void) {
+	struct retro_variable var;
+	var.key = "mgba_gb_colors";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		const struct GBColorPreset* presets;
+		size_t listSize = GBColorPresetList(&presets);
+		size_t i;
+		for (i = 0; i < listSize; ++i) {
+			if (strcmp(presets[i].name, var.value) != 0) {
+				continue;
+			}
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[0]", presets[i].colors[0] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[1]", presets[i].colors[1] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[2]", presets[i].colors[2] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[3]", presets[i].colors[3] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[4]", presets[i].colors[4] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[5]", presets[i].colors[5] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[6]", presets[i].colors[6] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[7]", presets[i].colors[7] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[8]", presets[i].colors[8] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[9]", presets[i].colors[9] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[10]", presets[i].colors[10] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[11]", presets[i].colors[11] & 0xFFFFFF);
+			core->reloadConfigOption(core, "gb.pal", NULL);
+			break;
+		}
+	}
+}
+#endif
+
 static void _reloadSettings(void) {
 	struct mCoreOptions opts = {
 		.useBios = true,
@@ -177,6 +210,14 @@ static void _reloadSettings(void) {
 		mCoreConfigSetDefaultValue(&core->config, "sgb.model", modelName);
 		mCoreConfigSetDefaultValue(&core->config, "cgb.model", modelName);
 	}
+
+	var.key = "mgba_sgb_borders";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", strcmp(var.value, "ON") == 0);
+	}
+
+	_updateGbPal();
 #endif
 
 	var.key = "mgba_use_bios";
@@ -190,14 +231,6 @@ static void _reloadSettings(void) {
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		opts.skipBios = strcmp(var.value, "ON") == 0;
 	}
-
-#ifdef M_CORE_GB
-	var.key = "mgba_sgb_borders";
-	var.value = 0;
-	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-		mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", strcmp(var.value, "ON") == 0);
-	}
-#endif
 
 	var.key = "mgba_frameskip";
 	var.value = 0;
@@ -247,6 +280,22 @@ unsigned retro_api_version(void) {
 
 void retro_set_environment(retro_environment_t env) {
 	environCallback = env;
+
+#ifdef M_CORE_GB
+	const struct GBColorPreset* presets;
+	size_t listSize = GBColorPresetList(&presets);
+
+	size_t colorOpt;
+	for (colorOpt = 0; option_defs_us[colorOpt].key; ++colorOpt) {
+		if (strcmp(option_defs_us[colorOpt].key, "mgba_gb_colors") == 0) {
+			break;
+		}
+	}
+	size_t i;
+	for (i = 0; i < listSize && i < RETRO_NUM_CORE_OPTION_VALUES_MAX; ++i) {
+		option_defs_us[colorOpt].values[i].value = presets[i].name;
+	}
+#endif
 
 	libretro_set_core_options(environCallback);
 }
@@ -428,6 +477,10 @@ void retro_run(void) {
 			mCoreConfigSetIntValue(&core->config, "frameskip", strtol(var.value, NULL, 10));
 			core->reloadConfigOption(core, "frameskip", NULL);
 		}
+
+#ifdef M_CORE_GB
+		_updateGbPal();
+#endif
 	}
 
 	keys = 0;
