@@ -1432,7 +1432,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
         <source>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</source>
-        <translation>Formato da Intermudança dos Gráficos (*.gif);;WebP ( *.webp);;Gráficos Portáteis da Rede Animada (*.png *.apng)</translation>
+        <translation>Formato da Inter-mudança dos Gráficos (*.gif);;WebP ( *.webp);;Gráficos da Rede Portátil Animada (*.png *.apng)</translation>
     </message>
 </context>
 <context>
@@ -2707,7 +2707,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
         <location filename="../IOViewer.cpp" line="871"/>
         <location filename="../IOViewer.cpp" line="884"/>
         <source>Select</source>
-        <translation>Select</translation>
+        <translation>Selecionar</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="872"/>
