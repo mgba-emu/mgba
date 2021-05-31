@@ -79,6 +79,7 @@ struct GBACartEReader {
 	struct EReaderCard cards[EREADER_CARDS_MAX];
 };
 
+#ifdef USE_FFMPEG
 struct EReaderAnchor;
 struct EReaderBlock;
 DECLARE_VECTOR(EReaderAnchorList, struct EReaderAnchor);
@@ -103,6 +104,7 @@ struct EReaderScan {
 	struct EReaderAnchorList anchors;
 	struct EReaderBlockList blocks;
 };
+#endif
 
 void GBACartEReaderInit(struct GBACartEReader* ereader);
 void GBACartEReaderDeinit(struct GBACartEReader* ereader);
@@ -112,6 +114,7 @@ uint16_t GBACartEReaderRead(struct GBACartEReader* ereader, uint32_t address);
 uint8_t GBACartEReaderReadFlash(struct GBACartEReader* ereader, uint32_t address);
 void GBACartEReaderScan(struct GBACartEReader* ereader, const void* data, size_t size);
 
+#ifdef USE_FFMPEG
 struct EReaderScan* EReaderScanCreate(unsigned width, unsigned height);
 void EReaderScanDetectParams(struct EReaderScan*);
 void EReaderScanDetectAnchors(struct EReaderScan*);
@@ -121,6 +124,7 @@ void EReaderScanCreateBlocks(struct EReaderScan*);
 void EReaderScanDetectBlockThreshold(struct EReaderScan*, int block);
 bool EReaderScanRecalibrateBlock(struct EReaderScan*, int block);
 bool EReaderScanScanBlock(struct EReaderScan*, int block, bool strict);
+#endif
 
 CXX_GUARD_END
 
