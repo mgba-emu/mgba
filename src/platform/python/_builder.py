@@ -14,6 +14,7 @@ libdir = os.environ.get("LIBDIR")
 cpp = shlex.split(os.environ.get("CPP", "cc -E"))
 cppflags = shlex.split(os.environ.get("CPPFLAGS", ""))
 cppflags.extend(["-I" + incdir, "-I" + srcdir, "-I" + bindir])
+cpplibs = shlex.split(os.environ.get("CPPLIBS", "mgba"))
 
 ffi.set_source("mgba._pylib", """
 #define static
@@ -51,7 +52,7 @@ ffi.set_source("mgba._pylib", """
 #undef PYEXPORT
 """, include_dirs=[incdir, srcdir],
      extra_compile_args=cppflags,
-     libraries=["mgba"],
+     libraries=cpplibs,
      library_dirs=[bindir],
      runtime_library_dirs=[libdir],
      sources=[os.path.join(pydir, path) for path in ["vfs-py.c", "core.c", "log.c", "sio.c"]])

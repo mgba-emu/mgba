@@ -7,6 +7,12 @@
 #define _TIME_H_
 #define MGBA_EXPORT
 
+#ifdef __MINGW32__
+#define _INC_CRTDEFS
+#define _IO_H_
+#define _WINDOWS_
+#endif
+
 #define ATTRIBUTE_FORMAT(X, Y, Z)
 #define DECL_BITFIELD(newtype, oldtype) typedef oldtype newtype
 #define DECL_BIT(type, field, bit) DECL_BITS(type, field, bit, 1)
