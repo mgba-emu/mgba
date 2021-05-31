@@ -54,7 +54,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation>Mosaico #</translation>
+        <translation>Ladrilho #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
@@ -1432,7 +1432,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
         <source>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</source>
-        <translation>Formato da Inter-mudança dos Gráficos (*.gif);;WebP ( *.webp);;Gráficos da Rede Portátil Animada (*.png *.apng)</translation>
+        <translation>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</translation>
     </message>
 </context>
 <context>
@@ -1445,17 +1445,17 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="40"/>
         <source>Mode 0: 4 tile layers</source>
-        <translation>Modo 0: 4 camadas dos mosaicos</translation>
+        <translation>Modo 0: 4 camadas de ladrilhos</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="41"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
-        <translation>Modo 1: 2 camadas dos mosaicos + 1 camada dos mosaicos rotacionada/dimensionada</translation>
+        <translation>Modo 1: 2 camadas de ladrilhos + 1 camada de ladrilhos rotacionada/redimensionada</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="42"/>
         <source>Mode 2: 2 rotated/scaled tile layers</source>
-        <translation>Modo 2: 2 camadas dos mosaicos rotacionada/dimensionada</translation>
+        <translation>Modo 2: 2 camadas de ladrilhos rotacionadas/redimensionadas</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="43"/>
@@ -1596,7 +1596,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
         <location filename="../IOViewer.cpp" line="102"/>
         <location filename="../IOViewer.cpp" line="112"/>
         <source>Tile data base (* 16kB)</source>
-        <translation>Base dos dados do mosaicos (* 16 kBs)</translation>
+        <translation>Base dos dados de ladrilhos (* 16 kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="85"/>
@@ -1604,7 +1604,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
         <location filename="../IOViewer.cpp" line="103"/>
         <location filename="../IOViewer.cpp" line="113"/>
         <source>Enable mosaic</source>
-        <translation>Ativar mosaico</translation>
+        <translation>Ativar efeito mosaico</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="86"/>
@@ -1620,7 +1620,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
         <location filename="../IOViewer.cpp" line="105"/>
         <location filename="../IOViewer.cpp" line="115"/>
         <source>Tile map base (* 2kB)</source>
-        <translation>Base do mapa dos mosaicos (* 2 kBs)</translation>
+        <translation>Base do mapa de ladrilhos (* 2 kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="88"/>
@@ -1847,22 +1847,22 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="280"/>
         <source>Background mosaic size vertical</source>
-        <translation>Tamanho vertical do mosaico do 2º plano</translation>
+        <translation>Tamanho vertical do mosaico do plano de fundo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="279"/>
         <source>Background mosaic size horizontal</source>
-        <translation>Tamanho horizontal do mosaico do 2º plano</translation>
+        <translation>Tamanho horizontal do mosaico do plano de fundo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="282"/>
         <source>Object mosaic size vertical</source>
-        <translation>Tamanho vertical do mosaico do objeto</translation>
+        <translation>Tamanho vertical do mosaico de objetos</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="281"/>
         <source>Object mosaic size horizontal</source>
-        <translation>Tamanho horizontal do mosaico do objeto</translation>
+        <translation>Tamanho horizontal do mosaico de objetos</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="288"/>
@@ -2947,7 +2947,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1020"/>
         <source>Gamepak prefetch</source>
-        <translation>Pré-busca do Gamepak</translation>
+        <translation>Pré-carga do Gamepak</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1026"/>
@@ -3071,7 +3071,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1329"/>
         <source>Background tile map</source>
-        <translation>Mapa dos mosaicos do 2º plano</translation>
+        <translation>Mapa de ladrilhos do plano de fundo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1330"/>
@@ -3088,7 +3088,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1333"/>
         <source>Background tile data</source>
-        <translation>Dados do mosaicos do 2º plano</translation>
+        <translation>Dados de ladrilhos do plano de fundo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1334"/>
@@ -3108,7 +3108,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1338"/>
         <source>Window tile map</source>
-        <translation>Mapa dos mosaicos da janela</translation>
+        <translation>Mapa de ladrilhos da janela</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1342"/>
@@ -3455,7 +3455,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
         <location filename="../MapView.cpp" line="49"/>
         <location filename="../MapView.cpp" line="61"/>
         <source>Tile base</source>
-        <translation>Base do mosaico</translation>
+        <translation>Base dos ladrilhos</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="50"/>
@@ -3961,7 +3961,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../TileView.cpp" line="177"/>
         <source>Export tiles</source>
-        <translation>Exportar mosaico</translation>
+        <translation>Exportar ladrilhos</translation>
     </message>
     <message>
         <location filename="../TileView.cpp" line="178"/>
@@ -3972,7 +3972,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../TileView.cpp" line="189"/>
         <source>Export tile</source>
-        <translation>Exportar mosaico</translation>
+        <translation>Exportar ladrilho</translation>
     </message>
 </context>
 <context>
@@ -4648,7 +4648,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../Window.cpp" line="1562"/>
         <source>View &amp;tiles...</source>
-        <translation>Visualizar &amp;mosaicos...</translation>
+        <translation>Visualizar &amp;ladrilhos...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1563"/>
@@ -5781,7 +5781,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../TileView.ui" line="14"/>
         <source>Tiles</source>
-        <translation>Mosaicos</translation>
+        <translation>Ladrilhos</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="20"/>
@@ -5806,7 +5806,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../TileView.ui" line="92"/>
         <source>Tiles per row</source>
-        <translation>Mosaicos por linha</translation>
+        <translation>Ladrilhos por linha</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="99"/>
