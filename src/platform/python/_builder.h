@@ -7,10 +7,17 @@
 #define _TIME_H_
 #define MGBA_EXPORT
 
-#ifdef __MINGW32__
+#ifdef _WIN32
+#define _VCRUNTIME_H
+#define _CRT_BEGIN_C_HEADER
+#define _CRT_END_C_HEADER
 #define _INC_CRTDEFS
 #define _IO_H_
+#define _INC_IO
 #define _WINDOWS_
+#ifdef _MSC_VER
+#define PATH_MAX 260
+#endif
 #endif
 
 #define ATTRIBUTE_FORMAT(X, Y, Z)

@@ -6,6 +6,7 @@
 #ifndef MGBA_EXPORT_H
 #define MGBA_EXPORT_H
 
+#ifndef MGBA_EXPORT
 #if defined(BUILD_STATIC) || !defined(_MSC_VER) || defined(MGBA_STANDALONE)
 #define MGBA_EXPORT
 #else
@@ -13,6 +14,7 @@
 #define MGBA_EXPORT __declspec(dllexport)
 #else
 #define MGBA_EXPORT __declspec(dllimport)
+#endif
 #endif
 #endif
 

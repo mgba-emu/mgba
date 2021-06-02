@@ -1,20 +1,48 @@
 import cffi
+import distutils.ccompiler
+import json
 import os, os.path
+import re
 import shlex
 import subprocess
 import sys
 
+
+def split_cmake_list(value):
+    return list(filter(None,value.split(";")))
+
+
+with open(os.environ.get("JSON_CONFIG"), "r") as f:
+    config = json.load(f)
+
+default_compiler = distutils.ccompiler.new_compiler()
+
 ffi = cffi.FFI()
 pydir = os.path.dirname(os.path.abspath(__file__))
-srcdir = os.path.join(pydir, "..", "..")
-incdir = os.path.join(pydir, "..", "..", "..", "include")
-bindir = os.environ.get("BINDIR", os.path.join(os.getcwd(), ".."))
-libdir = os.environ.get("LIBDIR")
+bindir = config["BINDIR"]
+libdirs = [config["LIBDIR"]]
+incdirs = split_cmake_list(config["INCDIRS"])
 
-cpp = shlex.split(os.environ.get("CPP", "cc -E"))
-cppflags = shlex.split(os.environ.get("CPPFLAGS", ""))
-cppflags.extend(["-I" + incdir, "-I" + srcdir, "-I" + bindir])
-cpplibs = shlex.split(os.environ.get("CPPLIBS", "mgba"))
+cppflags = shlex.split(config["C_FLAGS"])
+cppflags += ["-I" + dir for dir in incdirs]
+cppflags += ["-D" + definition + "" for definition in split_cmake_list(config["COMPILE_DEFINITIONS"])]
+
+cpplibs = ["mgba"]
+for lib in split_cmake_list(config["LINK_LIBRARIES"]):
+    dir, name = os.path.split(lib)
+    if dir:
+        match = re.match(default_compiler.static_lib_format % ('(.+)', default_compiler.static_lib_extension), name)
+        if not match:
+            match = re.match(default_compiler.shared_lib_format % ('(.+)', default_compiler.shared_lib_extension), name)
+        if match:
+            name = os.path.join(dir, match[1])
+    cpplibs.append(name)
+if config["MSVC"]:
+    cpplibs += ["ole32", "shell32"]
+if config["MINGW"]:
+    cpplibs += ["ole32", "uuid"]
+
+features = split_cmake_list(config["FEATURES"])
 
 ffi.set_source("mgba._pylib", """
 #define static
@@ -50,34 +78,31 @@ ffi.set_source("mgba._pylib", """
 #include "platform/python/sio.h"
 #include "platform/python/vfs-py.h"
 #undef PYEXPORT
-""", include_dirs=[incdir, srcdir],
+""", include_dirs=incdirs,
      extra_compile_args=cppflags,
      libraries=cpplibs,
-     library_dirs=[bindir],
-     runtime_library_dirs=[libdir],
+     library_dirs=libdirs,
+     runtime_library_dirs=[bindir] if not config["MSVC"] else None,
      sources=[os.path.join(pydir, path) for path in ["vfs-py.c", "core.c", "log.c", "sio.c"]])
 
-preprocessed = subprocess.check_output(cpp + ["-fno-inline", "-P"] + cppflags + [os.path.join(pydir, "_builder.h")], universal_newlines=True)
 
-lines = []
-for line in preprocessed.splitlines():
-    line = line.strip()
-    if line.startswith('#'):
-        continue
-    lines.append(line)
-ffi.cdef('\n'.join(lines))
+def preprocess_header(header):
+    preprocess_flags = ["-E", "-P", "-fno-inline"] if config["C_COMPILER_ID"] != "MSVC" else ["-EP", "-Ob0"]
+    preprocessed = subprocess.check_output(
+        [config["C_COMPILER"]] + preprocess_flags + cppflags + [os.path.join(pydir, header)], universal_newlines=True)
+    res = ""
+    for line in preprocessed.splitlines():
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        res += line + "\n"
+    return res
 
-preprocessed = subprocess.check_output(cpp + ["-fno-inline", "-P"] + cppflags + [os.path.join(pydir, "lib.h")], universal_newlines=True)
 
-lines = []
-for line in preprocessed.splitlines():
-    line = line.strip()
-    if line.startswith('#'):
-        continue
-    lines.append(line)
-ffi.embedding_api('\n'.join(lines))
+ffi.cdef(preprocess_header("_builder.h"))
+ffi.embedding_api(preprocess_header("lib.h"))
 
-ffi.embedding_init_code("""
+embedding_init_code = """
     import os, os.path
     from mgba._pylib import ffi, lib
     symbols = {}
@@ -85,21 +110,6 @@ ffi.embedding_init_code("""
         'symbols': symbols
     }
     pendingCode = []
-
-    @ffi.def_extern()
-    def mPythonSetDebugger(debugger):
-        from mgba.debugger import NativeDebugger, CLIDebugger
-        oldDebugger = globalSyms.get('debugger')
-        if oldDebugger and oldDebugger._native == debugger:
-            return
-        if oldDebugger and not debugger:
-            del globalSyms['debugger']
-            return
-        if debugger.type == lib.DEBUGGER_CLI:
-            debugger = CLIDebugger(debugger)
-        else:
-            debugger = NativeDebugger(debugger)
-        globalSyms['debugger'] = debugger
 
     @ffi.def_extern()
     def mPythonLoadScript(name, vf):
@@ -122,16 +132,6 @@ ffi.embedding_init_code("""
         pendingCode = []
 
     @ffi.def_extern()
-    def mPythonDebuggerEntered(reason, info):
-        debugger = globalSyms['debugger']
-        if not debugger:
-            return
-        if info == ffi.NULL:
-            info = None
-        for cb in debugger._cbs:
-            cb(reason, info)
-
-    @ffi.def_extern()
     def mPythonLookupSymbol(name, outptr):
         name = ffi.string(name).decode('utf-8')
         if name not in symbols:
@@ -152,7 +152,35 @@ ffi.embedding_init_code("""
             return True
         except:
             return False
-""")
+"""
+if "DEBUGGERS" in features:
+    embedding_init_code += """
+    @ffi.def_extern()
+    def mPythonSetDebugger(debugger):
+        from mgba.debugger import NativeDebugger, CLIDebugger
+        oldDebugger = globalSyms.get('debugger')
+        if oldDebugger and oldDebugger._native == debugger:
+            return
+        if oldDebugger and not debugger:
+            del globalSyms['debugger']
+            return
+        if debugger.type == lib.DEBUGGER_CLI:
+            debugger = CLIDebugger(debugger)
+        else:
+            debugger = NativeDebugger(debugger)
+        globalSyms['debugger'] = debugger
+
+    @ffi.def_extern()
+    def mPythonDebuggerEntered(reason, info):
+        debugger = globalSyms['debugger']
+        if not debugger:
+            return
+        if info == ffi.NULL:
+            info = None
+        for cb in debugger._cbs:
+            cb(reason, info)
+"""
+ffi.embedding_init_code(embedding_init_code)
 
 if __name__ == "__main__":
     ffi.emit_c_code("lib.c")

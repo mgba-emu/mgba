@@ -7,27 +7,35 @@ list(APPEND DEPENDENCY_LIB ${PYTHON_LIBRARIES})
 include_directories(AFTER ${PYTHON_INCLUDE_DIRS})
 
 get_property(INCLUDE_DIRECTORIES DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
-set(INCLUDE_FLAGS)
-set(INCLUDE_FLAGS_STR "")
-foreach(DIR IN LISTS INCLUDE_DIRECTORIES)
-      list(APPEND INCLUDE_FLAGS "-I${DIR}")
-      set(INCLUDE_FLAGS_STR "${INCLUDE_FLAGS_STR} \"-I${DIR}\"")
+get_target_property(COMPILE_DEFINITIONS_BIN ${BINARY_NAME} COMPILE_DEFINITIONS)
+get_directory_property(COMPILE_DEFINITIONS_DIR DIRECTORY . COMPILE_DEFINITIONS)
+set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS_BIN} ${COMPILE_DEFINITIONS_DIR})
+get_target_property(LIBRARIES ${BINARY_NAME} LINK_LIBRARIES)
+set(LINK_LIBRARIES)
+foreach(LIB IN LISTS LIBRARIES)
+    if(TARGET ${LIB})
+        list(APPEND LINK_LIBRARIES "$<TARGET_LINKER_FILE:${LIB}>")
+    else()
+        list(APPEND LINK_LIBRARIES ${LIB})
+    endif()
 endforeach()
+
+set(CONFIG_IN "${CMAKE_CURRENT_SOURCE_DIR}/config.json.in")
+set(CONFIG_OUT_I "${CMAKE_CURRENT_BINARY_DIR}/config.json.i")
+set(CONFIG_OUT "${CMAKE_CURRENT_BINARY_DIR}/config.json")
+
+configure_file("${CONFIG_IN}" "${CONFIG_OUT_I}")
+file(GENERATE OUTPUT "${CONFIG_OUT}" INPUT "${CONFIG_OUT_I}")
 
 file(GLOB PYTHON_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 
-set(CPPLIBS mgba)
-if(MINGW)
-      set(CPPLIBS ${CPPLIBS} ole32 uuid)
-endif()
-set(COMMAND_ENV ${CMAKE_COMMAND} -E env BINDIR="${CMAKE_CURRENT_BINARY_DIR}/.." LIBDIR="${CMAKE_CURRENT_BINARY_DIR}/.." CPPFLAGS="${INCLUDE_FLAGS}" CPPLIBS="${CPPLIBS}")
-
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib.c
-                  COMMAND ${COMMAND_ENV} ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/_builder.py
-                  COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/lib.c
-                  DEPENDS ${PYTHON_HEADERS}
-                  DEPENDS ${BINARY_NAME}
-                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/_builder.py)
+                   COMMAND ${CMAKE_COMMAND} -E env "JSON_CONFIG=${CONFIG_OUT}" ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/_builder.py
+                   COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/lib.c
+                   DEPENDS ${PYTHON_HEADERS}
+                   DEPENDS ${CONFIG_OUT}
+                   DEPENDS ${BINARY_NAME}
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/_builder.py)
 
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/lib.c PROPERTIES GENERATED ON)
 
@@ -37,7 +45,7 @@ set_target_properties(${BINARY_NAME}-pylib PROPERTIES INCLUDE_DIRECTORIES "${CMA
 set_target_properties(${BINARY_NAME}-pylib PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 
 add_custom_target(${BINARY_NAME}-py ALL
-                  COMMAND ${COMMAND_ENV} ${PYTHON_EXECUTABLE} setup.py build -b ${CMAKE_CURRENT_BINARY_DIR}
+                  COMMAND ${CMAKE_COMMAND} -E env "JSON_CONFIG=${CONFIG_OUT}" ${PYTHON_EXECUTABLE} setup.py build -b ${CMAKE_CURRENT_BINARY_DIR}
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                   DEPENDS ${BINARY_NAME}
                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/setup.py
@@ -46,17 +54,17 @@ add_custom_target(${BINARY_NAME}-py ALL
                   DEPENDS ${BINARY_NAME}-pylib)
 
 add_custom_target(${BINARY_NAME}-py-install
-                  COMMAND ${COMMAND_ENV} ${PYTHON_EXECUTABLE} setup.py install -b ${CMAKE_CURRENT_BINARY_DIR}
+                  COMMAND ${CMAKE_COMMAND} -E env "JSON_CONFIG=${CONFIG_OUT}" ${PYTHON_EXECUTABLE} setup.py install -b ${CMAKE_CURRENT_BINARY_DIR}
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                   DEPENDS ${BINARY_NAME}-py)
 
 add_custom_target(${BINARY_NAME}-py-develop
-                  COMMAND ${COMMAND_ENV} ${PYTHON_EXECUTABLE} setup.py develop -b ${CMAKE_CURRENT_BINARY_DIR}
+                  COMMAND ${CMAKE_COMMAND} -E env "JSON_CONFIG=${CONFIG_OUT}" ${PYTHON_EXECUTABLE} setup.py develop -b ${CMAKE_CURRENT_BINARY_DIR}
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                   DEPENDS ${BINARY_NAME}-py)
 
 add_custom_target(${BINARY_NAME}-py-bdist
-                  COMMAND ${COMMAND_ENV} ${PYTHON_EXECUTABLE} setup.py bdist_wheel -b ${CMAKE_CURRENT_BINARY_DIR}
+                  COMMAND ${CMAKE_COMMAND} -E env "JSON_CONFIG=${CONFIG_OUT}" ${PYTHON_EXECUTABLE} setup.py bdist_wheel -b ${CMAKE_CURRENT_BINARY_DIR}
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                   DEPENDS ${BINARY_NAME}-py)
 
@@ -72,7 +80,7 @@ foreach(TEST IN LISTS TESTS)
 	string(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/tests/(.*/)?test_" "" TEST_NAME "${TEST}")
 	string(REPLACE ".py" "" TEST_NAME "${TEST_NAME}")
 	add_test(NAME python-${TEST_NAME}
-               COMMAND ${PYTHON_EXECUTABLE} setup.py build -b ${CMAKE_CURRENT_BINARY_DIR} pytest --extras --addopts ${TEST}
-               WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-	set_tests_properties(python-${TEST_NAME} PROPERTIES ENVIRONMENT "${PATH}=${CMAKE_CURRENT_BINARY_DIR}/..;BINDIR=${CMAKE_CURRENT_BINARY_DIR}/..;LIBDIR=${CMAKE_CURRENT_BINARY_DIR}/..;CPPFLAGS=${INCLUDE_FLAGS_STR}")
+             COMMAND ${CMAKE_COMMAND} -E env "JSON_CONFIG=${CONFIG_OUT}" "${PATH}=${CMAKE_CURRENT_BINARY_DIR}/.."
+                     ${PYTHON_EXECUTABLE} setup.py build -b ${CMAKE_CURRENT_BINARY_DIR} pytest --extras --addopts ${TEST}
+             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endforeach()
