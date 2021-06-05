@@ -5,6 +5,7 @@ Emulation fixes:
  - GBA Video: Revert scanline latching changes (fixes mgba.io/i/2153, mgba.io/i/2149)
 Other fixes:
  - 3DS: Fix disabling "wide" mode on 2DS (fixes mgba.io/i/2167)
+ - ARM Debugger: Fix disassembly alignment (fixes mgba.io/i/2204)
  - Core: Fix memory leak in opening games from the library
  - Core: Fix memory searches for relative values (fixes mgba.io/i/2135)
  - GB Core: Fix GBC colors setting breaking default model overrides (fixes mgba.io/i/2161)
