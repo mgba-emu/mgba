@@ -50,11 +50,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="font">
-      <font>
-       <family>Monospace</family>
-      </font>
-     </property>
      <property name="textInteractionFlags">
       <set>Qt::TextEditorInteraction</set>
      </property>
