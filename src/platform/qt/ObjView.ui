@@ -473,9 +473,6 @@
           <property name="text">
            <string/>
           </property>
-          <property name="shortcut">
-           <string>Return, Ctrl+R</string>
-          </property>
          </widget>
         </item>
        </layout>
