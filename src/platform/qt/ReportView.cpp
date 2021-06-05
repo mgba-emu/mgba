@@ -98,6 +98,7 @@ ReportView::ReportView(QWidget* parent)
 	QString description = m_ui.description->text();
 	description.replace("{projectName}", QLatin1String(projectName));
 	m_ui.description->setText(description);
+	m_ui.fileView->setFont(GBAApp::app()->monospaceFont());
 
 	connect(m_ui.fileList, &QListWidget::currentTextChanged, this, &ReportView::setShownReport);
 }

@@ -22,6 +22,7 @@ void AssetInfo::addCustomProperty(const QString& id, const QString& visibleName)
 	QLabel* value = new QLabel;
 	value->setFont(GBAApp::app()->monospaceFont());
 	value->setAlignment(Qt::AlignRight);
+	value->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
 	newLayout->addWidget(value);
 	m_customProperties[id] = value;
 	int index = customLocation();
