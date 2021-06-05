@@ -33,13 +33,17 @@ private slots:
 	void save();
 	void addSet();
 	void removeSet();
+	void enterCheat();
 
 private:
-	void enterCheat(int codeType);
+	void registerCodeType(const QString& label, int type);
 
 	Ui::CheatsView m_ui;
 	std::shared_ptr<CoreController> m_controller;
 	CheatsModel m_model;
+	QButtonGroup* m_typeGroup = nullptr;
+
+	int m_codeType = 0;
 };
 
 }

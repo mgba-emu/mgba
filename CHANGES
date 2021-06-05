@@ -22,6 +22,7 @@ Other fixes:
 Misc:
  - Core: Suspend runloop when a core crashes
  - Qt: Rearrange menus some
+ - Qt: Clean up cheats dialog
  - Util: Improve speed of UPS patch loading
 
 0.9.1: (2021-04-18)
