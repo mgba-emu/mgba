@@ -36,9 +36,9 @@
 
 #define PYCPARSE
 
+typedef struct { ...; } va_list;
 typedef int... time_t;
 typedef int... off_t;
-typedef ... va_list;
 typedef ...* png_structp;
 typedef ...* png_infop;
 typedef ...* png_unknown_chunkp;
