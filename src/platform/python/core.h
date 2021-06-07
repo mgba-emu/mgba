@@ -13,4 +13,6 @@ PYEXPORT void _mCorePythonCallbacksVideoFrameStarted(void* user);
 PYEXPORT void _mCorePythonCallbacksVideoFrameEnded(void* user);
 PYEXPORT void _mCorePythonCallbacksCoreCrashed(void* user);
 PYEXPORT void _mCorePythonCallbacksSleep(void* user);
+PYEXPORT void _mCorePythonCallbacksShutdown(void* user);
 PYEXPORT void _mCorePythonCallbacksKeysRead(void* user);
+PYEXPORT void _mCorePythonCallbacksSavedataUpdated(void* user);

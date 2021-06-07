@@ -9,12 +9,15 @@
 
 struct mCoreCallbacks* mCorePythonCallbackCreate(void* pyobj) {
 	struct mCoreCallbacks* callbacks = malloc(sizeof(*callbacks));
-	callbacks->videoFrameStarted = _mCorePythonCallbacksVideoFrameStarted;
-	callbacks->videoFrameEnded = _mCorePythonCallbacksVideoFrameEnded;
-	callbacks->coreCrashed = _mCorePythonCallbacksCoreCrashed;
-	callbacks->sleep = _mCorePythonCallbacksSleep;
-	callbacks->keysRead = _mCorePythonCallbacksKeysRead;
-
-	callbacks->context = pyobj;
+	*callbacks = (struct mCoreCallbacks){
+		.videoFrameStarted = _mCorePythonCallbacksVideoFrameStarted,
+		.videoFrameEnded = _mCorePythonCallbacksVideoFrameEnded,
+		.coreCrashed = _mCorePythonCallbacksCoreCrashed,
+		.sleep = _mCorePythonCallbacksSleep,
+		.shutdown = _mCorePythonCallbacksShutdown,
+		.keysRead = _mCorePythonCallbacksKeysRead,
+		.savedataUpdated = _mCorePythonCallbacksSavedataUpdated,
+		.context = pyobj
+	};
 	return callbacks;
 }
