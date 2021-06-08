@@ -5,6 +5,7 @@ Features:
  - Tool for converting scanned pictures of e-Reader cards to raw dotcode data
  - Cheat code support in homebrew ports
  - Support for combo "Super Game Boy Color" SGB + GBC ROM hacks
+ - Support for 64 kiB SRAM saves used in some bootlegs
 Emulation fixes:
  - GB Video: Clear VRAM on reset (fixes mgba.io/i/2152)
  - GBA SIO: Add missing NORMAL8 implementation bits (fixes mgba.io/i/2172)

@@ -68,6 +68,9 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 		case SAVEDATA_SRAM:
 			mappedMemoryFree(savedata->data, SIZE_CART_SRAM);
 			break;
+		case SAVEDATA_SRAM512:
+			mappedMemoryFree(savedata->data, SIZE_CART_SRAM512);
+			break;
 		case SAVEDATA_FLASH512:
 			mappedMemoryFree(savedata->data, SIZE_CART_FLASH512);
 			break;
@@ -124,6 +127,8 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 		switch (savedata->type) {
 		case SAVEDATA_SRAM:
 			return out->write(out, savedata->data, SIZE_CART_SRAM) == SIZE_CART_SRAM;
+		case SAVEDATA_SRAM512:
+			return out->write(out, savedata->data, SIZE_CART_SRAM512) == SIZE_CART_SRAM512;
 		case SAVEDATA_FLASH512:
 			return out->write(out, savedata->data, SIZE_CART_FLASH512) == SIZE_CART_FLASH512;
 		case SAVEDATA_FLASH1M:
@@ -153,6 +158,8 @@ size_t GBASavedataSize(const struct GBASavedata* savedata) {
 	switch (savedata->type) {
 	case SAVEDATA_SRAM:
 		return SIZE_CART_SRAM;
+	case SAVEDATA_SRAM512:
+		return SIZE_CART_SRAM512;
 	case SAVEDATA_FLASH512:
 		return SIZE_CART_FLASH512;
 	case SAVEDATA_FLASH1M:
@@ -232,6 +239,9 @@ void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) 
 		break;
 	case SAVEDATA_SRAM:
 		GBASavedataInitSRAM(savedata);
+		break;
+	case SAVEDATA_SRAM512:
+		GBASavedataInitSRAM512(savedata);
 		break;
 	case SAVEDATA_FORCE_NONE:
 		savedata->type = SAVEDATA_FORCE_NONE;
@@ -319,6 +329,30 @@ void GBASavedataInitSRAM(struct GBASavedata* savedata) {
 
 	if (end < SIZE_CART_SRAM) {
 		memset(&savedata->data[end], 0xFF, SIZE_CART_SRAM - end);
+	}
+}
+
+void GBASavedataInitSRAM512(struct GBASavedata* savedata) {
+	if (savedata->type == SAVEDATA_AUTODETECT) {
+		savedata->type = SAVEDATA_SRAM512;
+	} else {
+		mLOG(GBA_SAVE, WARN, "Can't re-initialize savedata");
+		return;
+	}
+	off_t end;
+	if (!savedata->vf) {
+		end = 0;
+		savedata->data = anonymousMemoryMap(SIZE_CART_SRAM512);
+	} else {
+		end = savedata->vf->size(savedata->vf);
+		if (end < SIZE_CART_SRAM512) {
+			savedata->vf->truncate(savedata->vf, SIZE_CART_SRAM512);
+		}
+		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_SRAM512, savedata->mapMode);
+	}
+
+	if (end < SIZE_CART_SRAM512) {
+		memset(&savedata->data[end], 0xFF, SIZE_CART_SRAM512 - end);
 	}
 }
 
