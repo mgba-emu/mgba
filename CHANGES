@@ -15,6 +15,7 @@ Other fixes:
  - ARM Debugger: Fix disassembly alignment (fixes mgba.io/i/2204)
  - Core: Fix memory leak in opening games from the library
  - Core: Fix memory searches for relative values (fixes mgba.io/i/2135)
+ - Core: Fix portable mode on macOS
  - GB Core: Fix GBC colors setting breaking default model overrides (fixes mgba.io/i/2161)
  - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
  - Qt: Fix infrequent deadlock when using sync to video
