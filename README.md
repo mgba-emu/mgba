@@ -58,7 +58,7 @@ The following mappers are fully supported:
 
 The following mappers are partially supported:
 
-- MBC6 (missing flash memory support)
+- MBC6 (missing flash memory write support)
 - MMM01
 - Pocket Cam
 - TAMA5 (missing RTC support)
@@ -146,10 +146,8 @@ This will produce a `build-win32` directory with the build products. Replace `mg
 - mgba/switch
 - mgba/ubuntu:xenial
 - mgba/ubuntu:bionic
-- mgba/ubuntu:cosmic
-- mgba/ubuntu:disco
-- mgba/ubuntu:eoan
 - mgba/ubuntu:focal
+- mgba/ubuntu:groovy
 - mgba/vita
 - mgba/wii
 - mgba/windows:w32

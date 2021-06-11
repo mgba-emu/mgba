@@ -87,6 +87,7 @@ enum GBIORegisters {
 	REG_KEY0 = 0x4C,
 	REG_KEY1 = 0x4D,
 	REG_VBK = 0x4F,
+	REG_BANK = 0x50,
 	REG_HDMA1 = 0x51,
 	REG_HDMA2 = 0x52,
 	REG_HDMA3 = 0x53,

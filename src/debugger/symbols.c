@@ -97,6 +97,13 @@ void mDebuggerLoadARMIPSSymbols(struct mDebuggerSymbols* st, struct VFile* vf) {
 			continue;
 		}
 
+		char* buf2 = strchr(buf, ',');
+
+		if (buf2 != NULL) {
+			// Commas separate names from function sizes
+			*buf2 = '\0';
+		}
+
 		mDebuggerSymbolAdd(st, buf, address, -1);
 	}
 }

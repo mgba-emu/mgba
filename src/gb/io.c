@@ -56,6 +56,7 @@ MGBA_EXPORT const char* const GBIORegisterNames[] = {
 	[REG_KEY0] = "KEY0",
 	[REG_KEY1] = "KEY1",
 	[REG_VBK] = "VBK",
+	[REG_BANK] = "BANK",
 	[REG_HDMA1] = "HDMA1",
 	[REG_HDMA2] = "HDMA2",
 	[REG_HDMA3] = "HDMA3",
@@ -185,10 +186,10 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, REG_NR51, 0xF3);
 	if (!gb->biosVf) {
 		GBIOWrite(gb, REG_LCDC, 0x91);
-		gb->memory.io[0x50] = 1;
+		gb->memory.io[REG_BANK] = 1;
 	} else {
 		GBIOWrite(gb, REG_LCDC, 0x00);
-		gb->memory.io[0x50] = 0xFF;
+		gb->memory.io[REG_BANK] = 0xFF;
 	}
 	GBIOWrite(gb, REG_SCY, 0x00);
 	GBIOWrite(gb, REG_SCX, 0x00);
@@ -459,8 +460,8 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		GBVideoWriteSTAT(&gb->video, value);
 		value = gb->video.stat;
 		break;
-	case 0x50:
-		if (gb->memory.io[0x50] != 0xFF) {
+	case REG_BANK:
+		if (gb->memory.io[REG_BANK] != 0xFF) {
 			break;
 		}
 		GBUnmapBIOS(gb);

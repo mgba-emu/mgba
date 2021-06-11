@@ -53,6 +53,8 @@ static uint8_t _GBHitekRead(struct GBMemory*, uint16_t address);
 static uint8_t _GBPocketCamRead(struct GBMemory*, uint16_t address);
 static void _GBPocketCamCapture(struct GBMemory*);
 
+static void _GBMBC6MapChip(struct GB*, int half, uint8_t value);
+
 void GBMBCSwitchBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_BANK0;
 	if (bankStart + GB_SIZE_CART_BANK0 > gb->memory.romSize) {
@@ -81,19 +83,37 @@ void GBMBCSwitchBank0(struct GB* gb, int bank) {
 
 void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_HALFBANK;
-	if (bankStart + GB_SIZE_CART_HALFBANK > gb->memory.romSize) {
-		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
-		bankStart &= (gb->memory.romSize - 1);
-		bank = bankStart / GB_SIZE_CART_HALFBANK;
-		if (!bank) {
-			++bank;
+	bool isFlash = half ? gb->memory.mbcState.mbc6.flashBank1 : gb->memory.mbcState.mbc6.flashBank0;
+	if (isFlash) {
+		if (bankStart + GB_SIZE_CART_HALFBANK > GB_SIZE_MBC6_FLASH) {
+			mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid Flash bank: %0X", bank);
+			bankStart &= GB_SIZE_MBC6_FLASH - 1;
+			bank = bankStart / GB_SIZE_CART_HALFBANK;
+		}
+		bankStart += gb->sramSize - GB_SIZE_MBC6_FLASH;
+	} else {
+		if (bankStart + GB_SIZE_CART_HALFBANK > gb->memory.romSize) {
+			mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
+			bankStart &= gb->memory.romSize - 1;
+			bank = bankStart / GB_SIZE_CART_HALFBANK;
+			if (!bank) {
+				++bank;
+			}
 		}
 	}
 	if (!half) {
-		gb->memory.romBank = &gb->memory.rom[bankStart];
+		if (isFlash) {
+			gb->memory.romBank = &gb->memory.sram[bankStart];
+		} else {
+			gb->memory.romBank = &gb->memory.rom[bankStart];
+		}
 		gb->memory.currentBank = bank;
 	} else {
-		gb->memory.mbcState.mbc6.romBank1 = &gb->memory.rom[bankStart];
+		if (isFlash) {
+			gb->memory.mbcState.mbc6.romBank1 = &gb->memory.sram[bankStart];
+		} else {
+			gb->memory.mbcState.mbc6.romBank1 = &gb->memory.rom[bankStart];
+		}
 		gb->memory.mbcState.mbc6.currentBank1 = bank;
 	}
 	if (gb->cpu->pc < GB_BASE_VRAM) {
@@ -187,9 +207,10 @@ void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 
 void GBMBCSwitchSramHalfBank(struct GB* gb, int half, int bank) {
 	size_t bankStart = bank * GB_SIZE_EXTERNAL_RAM_HALFBANK;
-	if (bankStart + GB_SIZE_EXTERNAL_RAM_HALFBANK > gb->sramSize) {
+	size_t sramSize = gb->sramSize - GB_SIZE_MBC6_FLASH;
+	if (bankStart + GB_SIZE_EXTERNAL_RAM_HALFBANK > sramSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid RAM bank: %0X", bank);
-		bankStart &= (gb->sramSize - 1);
+		bankStart &= (sramSize - 1);
 		bank = bankStart / GB_SIZE_EXTERNAL_RAM_HALFBANK;
 	}
 	if (!half) {
@@ -334,6 +355,7 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcWrite = _GBMBC6;
 		gb->memory.mbcRead = _GBMBC6Read;
 		gb->memory.directSramAccess = false;
+		gb->sramSize += GB_SIZE_MBC6_FLASH; // Flash is concatenated at the end
 		break;
 	case GB_MBC7:
 		gb->memory.mbcWrite = _GBMBC7;
@@ -689,13 +711,27 @@ void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 	case 0x2:
 		GBMBCSwitchSramHalfBank(gb, 1, bank);
 		break;
+	case 0x3:
+		mLOG(GB_MBC, STUB, "MBC6 unimplemented flash OE write: %04X:%02X", address, value);
+		break;
+	case 0x4:
+		mLOG(GB_MBC, STUB, "MBC6 unimplemented flash WE write: %04X:%02X", address, value);
+		break;
 	case 0x8:
 	case 0x9:
 		GBMBCSwitchHalfBank(gb, 0, bank);
 		break;
+	case 0xA:
+	case 0xB:
+		_GBMBC6MapChip(gb, 0, value);
+		break;
 	case 0xC:
 	case 0xD:
 		GBMBCSwitchHalfBank(gb, 1, bank);
+		break;
+	case 0xE:
+	case 0xF:
+		_GBMBC6MapChip(gb, 1, value);
 		break;
 	case 0x28:
 	case 0x29:
@@ -730,6 +766,16 @@ uint8_t _GBMBC6Read(struct GBMemory* memory, uint16_t address) {
 		return memory->mbcState.mbc6.sramBank1[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)];
 	}
 	return 0xFF;
+}
+
+static void _GBMBC6MapChip(struct GB* gb, int half, uint8_t value) {
+	if (!half) {
+		gb->memory.mbcState.mbc6.flashBank0 = !!(value & 0x08);
+		GBMBCSwitchHalfBank(gb, half, gb->memory.currentBank);
+	} else {
+		gb->memory.mbcState.mbc6.flashBank1 = !!(value & 0x08);
+		GBMBCSwitchHalfBank(gb, half, gb->memory.mbcState.mbc6.currentBank1);
+	}
 }
 
 void _GBMBC7(struct GB* gb, uint16_t address, uint8_t value) {

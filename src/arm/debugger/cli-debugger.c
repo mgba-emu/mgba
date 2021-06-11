@@ -98,28 +98,29 @@ static void _disassembleMode(struct CLIDebugger* debugger, struct CLIDebugVector
 
 static inline uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
 	struct CLIDebuggerBackend* be = debugger->backend;
+	struct mCore* core = debugger->d.core;
 	char disassembly[64];
 	struct ARMInstructionInfo info;
 	be->printf(be, "%08X:  ", address);
 	if (mode == MODE_ARM) {
-		uint32_t instruction = debugger->d.core->busRead32(debugger->d.core, address);
+		uint32_t instruction = core->busRead32(core, address);
 		ARMDecodeARM(instruction, &info);
-		ARMDisassemble(&info, address + WORD_SIZE_ARM * 2, disassembly, sizeof(disassembly));
+		ARMDisassemble(&info, core->cpu, core->symbolTable, address + WORD_SIZE_ARM * 2, disassembly, sizeof(disassembly));
 		be->printf(be, "%08X\t%s\n", instruction, disassembly);
 		return WORD_SIZE_ARM;
 	} else {
 		struct ARMInstructionInfo info2;
 		struct ARMInstructionInfo combined;
-		uint16_t instruction = debugger->d.core->busRead16(debugger->d.core, address);
-		uint16_t instruction2 = debugger->d.core->busRead16(debugger->d.core, address + WORD_SIZE_THUMB);
+		uint16_t instruction = core->busRead16(core, address);
+		uint16_t instruction2 = core->busRead16(core, address + WORD_SIZE_THUMB);
 		ARMDecodeThumb(instruction, &info);
 		ARMDecodeThumb(instruction2, &info2);
 		if (ARMDecodeThumbCombine(&info, &info2, &combined)) {
-			ARMDisassemble(&combined, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
+			ARMDisassemble(&combined, core->cpu, core->symbolTable, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
 			be->printf(be, "%04X %04X\t%s\n", instruction, instruction2, disassembly);
 			return WORD_SIZE_THUMB * 2;
 		} else {
-			ARMDisassemble(&info, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
+			ARMDisassemble(&info, core->cpu, core->symbolTable, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
 			be->printf(be, "%04X     \t%s\n", instruction, disassembly);
 			return WORD_SIZE_THUMB;
 		}

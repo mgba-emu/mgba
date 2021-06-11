@@ -171,6 +171,10 @@ mark_as_advanced(BUILD_LTO BUILD_PGO PGO_STAGE_2 PGO_DIR)
 set(PGO_PRE_FLAGS "-fprofile-generate=${PGO_DIR} -fprofile-arcs")
 set(PGO_POST_FLAGS "-fprofile-use=${PGO_DIR} -fbranch-probabilities")
 
+if(BUILD_PGO AND CMAKE_SYSTEM_NAME STREQUAL "Generic")
+	add_definitions(-DTARGET_POSIX_IO)
+endif()
+
 if(BUILD_PGO AND NOT PGO_STAGE_2)
 	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${PGO_PRE_FLAGS}")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${PGO_PRE_FLAGS}")

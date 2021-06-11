@@ -251,7 +251,7 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	}
 
 	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt) && GBAWindowControlGetBlendEnable(renderer->objwin.packed) != GBAWindowControlIsBlendEnable(renderer->currentWindow.packed);
-	int variant = (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) &&
+	int variant = renderer->target1Obj &&
 	              GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) &&
 	              (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT || (renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || objwinSlowPath) {

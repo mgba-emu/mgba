@@ -362,11 +362,7 @@ static void _writeRegister(struct GDBStub* stub, const char* message) {
 
 	uint32_t value = _readHex(readAddress, &i);
 
-#ifdef _MSC_VER
-	value = _byteswap_ulong(value);
-#else
 	LOAD_32BE(value, 0, &value);
-#endif
 
 	if (reg <= ARM_PC) {
 		cpu->gprs[reg] = value;

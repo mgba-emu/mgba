@@ -7,7 +7,8 @@ configuration:
 cache:
 - C:\Tools\vcpkg
 install:
-- git -C C:\Tools\vcpkg pull --quiet
+- git -C C:\Tools\vcpkg clean -dfq ports toolsrc
+- git -C C:\Tools\vcpkg pull --force --quiet
 - C:\Tools\vcpkg\bootstrap-vcpkg
 - vcpkg --triplet x64-windows --recurse install ffmpeg libepoxy libpng libzip sdl2 sqlite3
 - vcpkg --no-dry-run upgrade

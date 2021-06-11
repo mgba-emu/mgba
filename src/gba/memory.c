@@ -484,7 +484,7 @@ uint32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 
 	if (cycleCounter) {
 		wait += 2;
-		if (address >> BASE_OFFSET < REGION_CART0) {
+		if (address < BASE_CART0) {
 			wait = GBAMemoryStall(cpu, wait);
 		}
 		*cycleCounter += wait;
@@ -603,7 +603,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 
 	if (cycleCounter) {
 		wait += 2;
-		if (address >> BASE_OFFSET < REGION_CART0) {
+		if (address < BASE_CART0) {
 			wait = GBAMemoryStall(cpu, wait);
 		}
 		*cycleCounter += wait;
@@ -714,7 +714,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 
 	if (cycleCounter) {
 		wait += 2;
-		if (address >> BASE_OFFSET < REGION_CART0) {
+		if (address < BASE_CART0) {
 			wait = GBAMemoryStall(cpu, wait);
 		}
 		*cycleCounter += wait;
@@ -840,7 +840,7 @@ void GBAStore32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 
 	if (cycleCounter) {
 		++wait;
-		if (address >> BASE_OFFSET < REGION_CART0) {
+		if (address < BASE_CART0) {
 			wait = GBAMemoryStall(cpu, wait);
 		}
 		*cycleCounter += wait;
@@ -956,7 +956,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 
 	if (cycleCounter) {
 		++wait;
-		if (address >> BASE_OFFSET < REGION_CART0) {
+		if (address < BASE_CART0) {
 			wait = GBAMemoryStall(cpu, wait);
 		}
 		*cycleCounter += wait;
@@ -1039,7 +1039,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 
 	if (cycleCounter) {
 		++wait;
-		if (address >> BASE_OFFSET < REGION_CART0) {
+		if (address < BASE_CART0) {
 			wait = GBAMemoryStall(cpu, wait);
 		}
 		*cycleCounter += wait;
@@ -1454,7 +1454,7 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 
 	if (cycleCounter) {
 		++wait;
-		if (address >> BASE_OFFSET < REGION_CART0) {
+		if (address < BASE_CART0) {
 			wait = GBAMemoryStall(cpu, wait);
 		}
 		*cycleCounter += wait;
@@ -1572,7 +1572,7 @@ uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 	}
 
 	if (cycleCounter) {
-		if (address >> BASE_OFFSET < REGION_CART0) {
+		if (address < BASE_CART0) {
 			wait = GBAMemoryStall(cpu, wait);
 		}
 		*cycleCounter += wait;

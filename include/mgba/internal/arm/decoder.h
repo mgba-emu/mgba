@@ -245,11 +245,12 @@ struct ARMInstructionInfo {
 	struct ARMCoprocessor cp;
 };
 
+struct mDebuggerSymbols;
 void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info);
 void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info);
 bool ARMDecodeThumbCombine(struct ARMInstructionInfo* info1, struct ARMInstructionInfo* info2,
                            struct ARMInstructionInfo* out);
-int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, int blen);
+int ARMDisassemble(struct ARMInstructionInfo* info, struct ARMCore* core, const struct mDebuggerSymbols* symbols, uint32_t pc, char* buffer, int blen);
 uint32_t ARMResolveMemoryAccess(struct ARMInstructionInfo* info, struct ARMRegisterFile* regs, uint32_t pc);
 
 CXX_GUARD_END
