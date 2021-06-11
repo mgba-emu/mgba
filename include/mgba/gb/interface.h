@@ -59,6 +59,8 @@ bool GBIsBIOS(struct VFile* vf);
 enum GBModel GBNameToModel(const char*);
 const char* GBModelToName(enum GBModel);
 
+int GBValidModels(const uint8_t* bank0);
+
 CXX_GUARD_END
 
 #endif

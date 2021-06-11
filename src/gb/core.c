@@ -230,6 +230,8 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	mCoreConfigCopyValue(&core->config, config, "gb.model");
 	mCoreConfigCopyValue(&core->config, config, "sgb.model");
 	mCoreConfigCopyValue(&core->config, config, "cgb.model");
+	mCoreConfigCopyValue(&core->config, config, "cgb.hybridModel");
+	mCoreConfigCopyValue(&core->config, config, "cgb.sgbModel");
 	mCoreConfigCopyValue(&core->config, config, "useCgbColors");
 	mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
 
@@ -449,19 +451,42 @@ static void _GBCoreReset(struct mCore* core) {
 		if (GBOverrideFind(gbcore->overrides, &override) || (doColorOverride && GBOverrideColorFind(&override))) {
 			GBOverrideApply(gb, &override);
 		}
-	}
 
-	const char* modelGB = mCoreConfigGetValue(&core->config, "gb.model");
-	const char* modelCGB = mCoreConfigGetValue(&core->config, "cgb.model");
-	const char* modelSGB = mCoreConfigGetValue(&core->config, "sgb.model");
-	if (modelGB || modelCGB || modelSGB) {
-		GBDetectModel(gb);
-		if (gb->model == GB_MODEL_DMG && modelGB) {
-			gb->model = GBNameToModel(modelGB);
-		} else if ((gb->model & GB_MODEL_CGB) && modelCGB) {
-			gb->model = GBNameToModel(modelCGB);
-		} else if ((gb->model & GB_MODEL_SGB) && modelSGB) {
-			gb->model = GBNameToModel(modelSGB);
+		const char* modelGB = mCoreConfigGetValue(&core->config, "gb.model");
+		const char* modelSGB = mCoreConfigGetValue(&core->config, "sgb.model");
+		const char* modelCGB = mCoreConfigGetValue(&core->config, "cgb.model");
+		const char* modelCGBHybrid = mCoreConfigGetValue(&core->config, "cgb.hybridModel");
+		const char* modelCGBSGB = mCoreConfigGetValue(&core->config, "cgb.sgbModel");
+		if (modelGB || modelCGB || modelSGB || modelCGBHybrid || modelCGBSGB) {
+			int models = GBValidModels(gb->memory.rom);
+			switch (models) {
+			case GB_MODEL_SGB | GB_MODEL_MGB:
+				if (modelSGB) {
+					gb->model = GBNameToModel(modelSGB);
+				}
+				break;
+			case GB_MODEL_MGB:
+				if (modelGB) {
+					gb->model = GBNameToModel(modelGB);
+				}
+				break;
+			case GB_MODEL_MGB | GB_MODEL_CGB:
+				if (modelCGBHybrid) {
+					gb->model = GBNameToModel(modelCGBHybrid);
+				}
+				break;
+			case GB_MODEL_SGB | GB_MODEL_CGB: // TODO: Do these even exist?
+			case GB_MODEL_MGB | GB_MODEL_SGB | GB_MODEL_CGB:
+				if (modelCGBSGB) {
+					gb->model = GBNameToModel(modelCGBSGB);
+				}
+				break;
+			case GB_MODEL_CGB:
+				if (modelCGB) {
+					gb->model = GBNameToModel(modelCGB);
+				}
+				break;
+			}
 		}
 	}
 

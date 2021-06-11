@@ -61,7 +61,6 @@ private:
 #ifdef M_CORE_GB
 	uint32_t m_gbColors[12]{};
 	ColorPicker m_colorPickers[12];
-	static QList<enum GBModel> s_gbModelList;
 #endif
 
 	void saveSetting(const char* key, const QAbstractButton*);

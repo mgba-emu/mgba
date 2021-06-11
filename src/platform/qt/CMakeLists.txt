@@ -16,7 +16,7 @@ if(BUILD_SDL)
 endif()
 
 if(POLICY CMP0071)
-	cmake_policy(SET CMP0071 OLD)
+	cmake_policy(SET CMP0071 NEW)
 endif()
 
 set(CMAKE_AUTOMOC ON)
@@ -157,6 +157,7 @@ set(GBA_SRC
 	GBAOverride.cpp)
 
 set(GB_SRC
+	GameBoy.cpp
 	GBOverride.cpp
 	PrinterView.cpp)
 
@@ -303,7 +304,7 @@ if(QT_STATIC)
 		if(CMAKE_CROSSCOMPILING)
 			set(QWINDOWS_DEPS Qt5EventDispatcherSupport Qt5FontDatabaseSupport Qt5ThemeSupport Qt5WindowsUIAutomationSupport)
 		endif()
-		list(APPEND QT_LIBRARIES Qt5::QWindowsIntegrationPlugin ${QWINDOWS_DEPS} dwmapi uxtheme imm32 -static-libgcc -static-libstdc++)
+		list(APPEND QT_LIBRARIES Qt5::QWindowsIntegrationPlugin ${QWINDOWS_DEPS} amstrmid dwmapi uxtheme imm32 -static-libgcc -static-libstdc++)
 		set_target_properties(Qt5::Core PROPERTIES INTERFACE_LINK_LIBRARIES "${QTPCRE};version;winmm;ssl;crypto;ws2_32;iphlpapi;crypt32;userenv;netapi32;wtsapi32")
 		set_target_properties(Qt5::Gui PROPERTIES INTERFACE_LINK_LIBRARIES ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 	elseif(APPLE)

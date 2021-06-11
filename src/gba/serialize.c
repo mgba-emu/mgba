@@ -76,6 +76,10 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAVideoSerialize(&gba->video, state);
 	GBAAudioSerialize(&gba->audio, state);
 	GBASavedataSerialize(&gba->memory.savedata, state);
+
+	if (gba->memory.matrix.size) {
+		GBAMatrixSerialize(gba, state);
+	}
 }
 
 bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
@@ -195,6 +199,10 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	GBAIODeserialize(gba, state);
 	GBAAudioDeserialize(&gba->audio, state);
 	GBASavedataDeserialize(&gba->memory.savedata, state);
+
+	if (gba->memory.matrix.size) {
+		GBAMatrixDeserialize(gba, state);
+	}
 
 	gba->timing.reroot = gba->timing.root;
 	gba->timing.root = NULL;

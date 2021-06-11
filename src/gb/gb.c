@@ -247,6 +247,14 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 		} else {
 			mLOG(GB_MEM, INFO, "Savedata failed to sync!");
 		}
+
+		size_t c;
+		for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
+			struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
+			if (callbacks->savedataUpdated) {
+				callbacks->savedataUpdated(callbacks->context);
+			}
+		}
 	}
 }
 
@@ -646,6 +654,22 @@ void GBDetectModel(struct GB* gb) {
 		gb->audio.style = GB_AUDIO_CGB;
 		break;
 	}
+}
+
+int GBValidModels(const uint8_t* bank0) {
+	const struct GBCartridge* cart = (const struct GBCartridge*) &bank0[0x100];
+	int models;
+	if (cart->cgb == 0x80) {
+		models = GB_MODEL_CGB | GB_MODEL_MGB;
+	} else if (cart->cgb == 0xC0) {
+		models = GB_MODEL_CGB;
+	} else {
+		models = GB_MODEL_MGB;		
+	}
+	if (cart->sgb == 0x03 && cart->oldLicensee == 0x33) {
+		models |= GB_MODEL_SGB;
+	}
+	return models;
 }
 
 void GBUpdateIRQs(struct GB* gb) {
