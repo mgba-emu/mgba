@@ -904,13 +904,17 @@ void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* s
 	}
 
 	uint32_t when;
+	LOAD_32LE(when, 0, &state->video.nextMode);
 	if (!GBSerializedVideoFlagsIsNotModeEventScheduled(flags)) {
-		LOAD_32LE(when, 0, &state->video.nextMode);
 		mTimingSchedule(&video->p->timing, &video->modeEvent, when);
+	} else {
+		video->modeEvent.when = when + mTimingCurrentTime(&video->p->timing);
 	}
+	LOAD_32LE(when, 0, &state->video.nextFrame);
 	if (!GBSerializedVideoFlagsIsNotFrameEventScheduled(flags)) {
-		LOAD_32LE(when, 0, &state->video.nextFrame);
 		mTimingSchedule(&video->p->timing, &video->frameEvent, when);
+	} else {
+		video->frameEvent.when = when + mTimingCurrentTime(&video->p->timing);
 	}
 
 	video->renderer->deinit(video->renderer);

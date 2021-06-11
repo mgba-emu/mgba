@@ -50,6 +50,10 @@ void mTimingSchedule(struct mTiming* timing, struct mTimingEvent* event, int32_t
 	*previous = event;
 }
 
+void mTimingScheduleAbsolute(struct mTiming* timing, struct mTimingEvent* event, int32_t when) {
+	mTimingSchedule(timing, event, when - mTimingCurrentTime(timing));
+}
+
 void mTimingDeschedule(struct mTiming* timing, struct mTimingEvent* event) {
 	if (timing->reroot) {
 		timing->root = timing->reroot;

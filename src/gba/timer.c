@@ -134,9 +134,8 @@ void GBATimerUpdateRegisterInternal(struct GBATimer* timer, struct mTiming* timi
 	tickIncrement = (0x10000 - tickIncrement) << prescaleBits;
 	currentTime += tickIncrement;
 	currentTime &= ~tickMask;
-	currentTime -= mTimingCurrentTime(timing);
 	mTimingDeschedule(timing, &timer->event);
-	mTimingSchedule(timing, &timer->event, currentTime);
+	mTimingScheduleAbsolute(timing, &timer->event, currentTime);
 }
 
 void GBATimerWriteTMCNT_LO(struct GBATimer* timer, uint16_t reload) {

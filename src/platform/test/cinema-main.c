@@ -226,6 +226,7 @@ void CIflush(struct StringBuilder* builder, FILE* out) {
 	builder->repeat = 0;
 	fputs(string, out);
 	free(string);
+	fflush(out);
 }
 
 static bool parseCInemaArgs(int argc, char* const* argv) {
@@ -736,7 +737,7 @@ static void _writeDiff(const char* testName, const struct CInemaImage* image, si
 		return;
 	}
 	char name[32];
-	snprintf(name, sizeof(name), "%s_%04" PRIz "u.png", type, frame);
+	snprintf(name, sizeof(name), "%s_%05" PRIz "u.png", type, frame);
 	struct VFile* vf = dir->openFile(dir, name, O_CREAT | O_TRUNC | O_WRONLY);
 	if (!vf) {
 		CIerr(0, "Could not open output file %s\n", name);
@@ -792,12 +793,21 @@ static bool _compareImages(struct CInemaTest* restrict test, const struct CInema
 		for (x = 0; x < image->width; ++x) {
 			size_t pix = expected->stride * y + x;
 			size_t tpix = image->stride * y + x;
+#ifndef __BIG_ENDIAN__
 			int testR = testPixels[tpix * 4 + 0];
 			int testG = testPixels[tpix * 4 + 1];
 			int testB = testPixels[tpix * 4 + 2];
 			int expectR = expectPixels[pix * 4 + 0];
 			int expectG = expectPixels[pix * 4 + 1];
 			int expectB = expectPixels[pix * 4 + 2];
+#else
+			int testB = testPixels[tpix * 4 + 1];
+			int testG = testPixels[tpix * 4 + 2];
+			int testR = testPixels[tpix * 4 + 3];
+			int expectB = expectPixels[pix * 4 + 1];
+			int expectG = expectPixels[pix * 4 + 2];
+			int expectR = expectPixels[pix * 4 + 3];
+#endif
 			int r = expectR - testR;
 			int g = expectG - testG;
 			int b = expectB - testB;
@@ -828,9 +838,15 @@ static bool _compareImages(struct CInemaTest* restrict test, const struct CInema
 					if (b > *max) {
 						*max = b;
 					}
+#ifndef __BIG_ENDIAN__
 					diff[pix * 4 + 0] = r;
 					diff[pix * 4 + 1] = g;
 					diff[pix * 4 + 2] = b;
+#else
+					diff[pix * 4 + 1] = b;
+					diff[pix * 4 + 2] = g;
+					diff[pix * 4 + 3] = r;
+#endif
 				}
 
 				if (test) {
@@ -864,13 +880,21 @@ void _writeDiffSet(struct CInemaImage* expected, const char* name, uint8_t* diff
 	for (y = 0; y < outdiff.height; ++y) {
 		for (x = 0; x < outdiff.width; ++x) {
 			size_t pix = outdiff.stride * y + x;
+#ifndef __BIG_ENDIAN__
 			diff[pix * 4 + 0] = diff[pix * 4 + 0] * 255 / max;
 			diff[pix * 4 + 1] = diff[pix * 4 + 1] * 255 / max;
 			diff[pix * 4 + 2] = diff[pix * 4 + 2] * 255 / max;
+#else
+			diff[pix * 4 + 1] = diff[pix * 4 + 1] * 255 / max;
+			diff[pix * 4 + 2] = diff[pix * 4 + 2] * 255 / max;
+			diff[pix * 4 + 3] = diff[pix * 4 + 3] * 255 / max;
+#endif
 		}
 	}
 	if (xfail) {
 		_writeDiff(name, &outdiff, frame, "xnormalized");
+	} else {
+		_writeDiff(name, &outdiff, frame, "normalized");
 	}
 }
 
@@ -975,7 +999,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 	core->setVideoBuffer(core, image.data, image.stride);
 	mCoreConfigInit(&core->config, "cinema");
 
-	unsigned limit = 9999;
+	unsigned limit = 3600;
 	unsigned skip = 0;
 	unsigned fail = 0;
 	unsigned video = 0;
@@ -1086,6 +1110,14 @@ void CInemaTestRun(struct CInemaTest* test) {
 					if (!FFmpegDecoderRead(&decoder)) {
 						CIlog(1, "Failed to read more frames. EOF?\n");
 						test->status = CI_FAIL;
+						if (rebaseline && !FFmpegEncoderIsOpen(&encoder)) {
+							_replayBaseline(test, &encoder, &image, frame);
+							if (test->status == CI_ERROR) {
+								break;
+							}
+							encoder.d.postVideoFrame(&encoder.d, image.data, image.stride);
+							core->setAVStream(core, &encoder.d);
+						}
 						break;
 					}
 				}

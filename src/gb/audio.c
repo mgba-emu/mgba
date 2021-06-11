@@ -117,7 +117,7 @@ void GBAudioReset(struct GBAudio* audio) {
 	if (audio->style == GB_AUDIO_GBA) {
 		mTimingSchedule(audio->timing, &audio->frameEvent, 0);
 	}
-	audio->ch1 = (struct GBAudioSquareChannel) { .envelope = { .dead = 2 } };
+	audio->ch1 = (struct GBAudioSquareChannel) { .sweep = { .time = 8 }, .envelope = { .dead = 2 } };
 	audio->ch2 = (struct GBAudioSquareChannel) { .envelope = { .dead = 2 } };
 	audio->ch3 = (struct GBAudioWaveChannel) { .bank = 0 };
 	audio->ch4 = (struct GBAudioNoiseChannel) { .nSamples = 0 };
@@ -964,6 +964,7 @@ static void _updateChannel4(struct mTiming* timing, void* user, uint32_t cyclesL
 
 void GBAudioPSGSerialize(const struct GBAudio* audio, struct GBSerializedPSGState* state, uint32_t* flagsOut) {
 	uint32_t flags = 0;
+	uint32_t sweep = 0;
 	uint32_t ch1Flags = 0;
 	uint32_t ch2Flags = 0;
 	uint32_t ch4Flags = 0;
@@ -980,7 +981,9 @@ void GBAudioPSGSerialize(const struct GBAudio* audio, struct GBSerializedPSGStat
 	ch1Flags = GBSerializedAudioEnvelopeSetLength(ch1Flags, audio->ch1.control.length);
 	ch1Flags = GBSerializedAudioEnvelopeSetNextStep(ch1Flags, audio->ch1.envelope.nextStep);
 	ch1Flags = GBSerializedAudioEnvelopeSetFrequency(ch1Flags, audio->ch1.sweep.realFrequency);
+	sweep = GBSerializedAudioSweepSetTime(sweep, audio->ch1.sweep.time & 7);
 	STORE_32LE(ch1Flags, 0, &state->ch1.envelope);
+	STORE_32LE(sweep, 0, &state->ch1.sweep);
 	STORE_32LE(audio->ch1Event.when - mTimingCurrentTime(audio->timing), 0, &state->ch1.nextEvent);
 
 	flags = GBSerializedAudioFlagsSetCh2Volume(flags, audio->ch2.envelope.currentVolume);
@@ -1011,6 +1014,7 @@ void GBAudioPSGSerialize(const struct GBAudio* audio, struct GBSerializedPSGStat
 
 void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGState* state, const uint32_t* flagsIn) {
 	uint32_t flags;
+	uint32_t sweep;
 	uint32_t ch1Flags = 0;
 	uint32_t ch2Flags = 0;
 	uint32_t ch4Flags = 0;
@@ -1032,11 +1036,16 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	audio->skipFrame = GBSerializedAudioFlagsGetSkipFrame(flags);
 
 	LOAD_32LE(ch1Flags, 0, &state->ch1.envelope);
+	LOAD_32LE(sweep, 0, &state->ch1.sweep);
 	audio->ch1.envelope.currentVolume = GBSerializedAudioFlagsGetCh1Volume(flags);
 	audio->ch1.envelope.dead = GBSerializedAudioFlagsGetCh1Dead(flags);
 	audio->ch1.control.hi = GBSerializedAudioFlagsGetCh1Hi(flags);
 	audio->ch1.sweep.enable = GBSerializedAudioFlagsGetCh1SweepEnabled(flags);
 	audio->ch1.sweep.occurred = GBSerializedAudioFlagsGetCh1SweepOccurred(flags);
+	audio->ch1.sweep.time = GBSerializedAudioSweepGetTime(sweep);
+	if (!audio->ch1.sweep.time) {
+		audio->ch1.sweep.time = 8;
+	}
 	audio->ch1.control.length = GBSerializedAudioEnvelopeGetLength(ch1Flags);
 	audio->ch1.envelope.nextStep = GBSerializedAudioEnvelopeGetNextStep(ch1Flags);
 	audio->ch1.sweep.realFrequency = GBSerializedAudioEnvelopeGetFrequency(ch1Flags);

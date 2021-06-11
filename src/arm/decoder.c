@@ -534,3 +534,46 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 	buffer[blen - 1] = '\0';
 	return total;
 }
+
+uint32_t ARMResolveMemoryAccess(struct ARMInstructionInfo* info, struct ARMRegisterFile* regs, uint32_t pc) {
+	uint32_t address = 0;
+	int32_t offset = 0;
+	if (info->memory.format & ARM_MEMORY_REGISTER_BASE) {
+		if (info->memory.baseReg == ARM_PC && info->memory.format & ARM_MEMORY_IMMEDIATE_OFFSET) {
+			address = pc;
+		} else {
+			address = regs->gprs[info->memory.baseReg];
+		}
+	}
+	if (info->memory.format & ARM_MEMORY_POST_INCREMENT) {
+		return address;
+	}
+	if (info->memory.format & ARM_MEMORY_IMMEDIATE_OFFSET) {
+		offset = info->memory.offset.immediate;
+	} else if (info->memory.format & ARM_MEMORY_REGISTER_OFFSET) {
+		offset = info->memory.offset.reg == ARM_PC ? pc : regs->gprs[info->memory.offset.reg];
+	}
+	if (info->memory.format & ARM_MEMORY_SHIFTED_OFFSET) {
+		uint8_t shiftSize = info->memory.offset.shifterImm;
+		switch (info->memory.offset.shifterOp) {
+			case ARM_SHIFT_LSL:
+				offset <<= shiftSize;
+				break;
+			case ARM_SHIFT_LSR:
+				offset = ((uint32_t) offset) >> shiftSize;
+				break;
+			case ARM_SHIFT_ASR:
+				offset >>= shiftSize;
+				break;
+			case ARM_SHIFT_ROR:
+				offset = ROR(offset, shiftSize);
+				break;
+			case ARM_SHIFT_RRX:
+				offset = (regs->cpsr.c << 31) | ((uint32_t) offset >> 1);
+				break;
+			default:
+				break;
+		};
+	}
+	return address + (info->memory.format & ARM_MEMORY_OFFSET_SUBTRACT ? -offset : offset);
+}

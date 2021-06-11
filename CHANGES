@@ -44,9 +44,13 @@ Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
  - GB: Partially fix timing for skipped BIOS
+ - GB Audio: Fix initial sweep state
+ - GB Audio: Fix serializing sweep time
+ - GB Audio: Fix deserializing audio channels 2 and 3
  - GB MBC: Fix MBC1 mode changing behavior
  - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
  - GBA: Fix timing advancing too quickly in rare cases
+ - GBA Audio: Fix deserializing SOUNDCNT_L
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing
  - GBA BIOS: Fix reloading video registers after reset (fixes mgba.io/i/1808)
@@ -56,6 +60,7 @@ Emulation fixes:
  - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
  - GBA SIO: Fix copying Normal mode transfer values
  - GBA SIO: Fix Normal mode being totally broken (fixes mgba.io/i/1800)
+ - GBA SIO: Fix deseralizing SIO registers
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
  - GBA Video: Invalidate map cache when modifying BGCNT (fixes mgba.io/i/1846)
@@ -65,9 +70,11 @@ Other fixes:
  - 3DS: Fix crash with libctru 2.0 when exiting
  - All: Improve export headers (fixes mgba.io/i/1738)
  - Core: Ensure ELF regions can be written before trying
+ - Core: Fix reported ROM size when a fixed buffer size is used
  - Debugger: Don't skip undefined instructions when debugger attached
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
+ - GBA: Disable more checks when loading GS save with checks disabled (fixes mgba.io/i/1851)
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
  - Qt: Fix a race condition in the frame inspector
@@ -82,6 +89,7 @@ Misc:
  - GBA: Allow pausing event loop while CPU is blocked
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
+ - mGUI: Show battery percentage
  - Qt: Renderer can be changed while a game is running
  - Qt: Add hex index to palette view
  - Qt: Add transformation matrix info to sprite view

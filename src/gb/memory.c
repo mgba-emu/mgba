@@ -211,6 +211,7 @@ void GBMemoryReset(struct GB* gb) {
 	switch (gb->memory.mbcType) {
 	case GB_MBC1:
 		gb->memory.mbcState.mbc1.mode = 0;
+		gb->memory.mbcState.mbc1.bankLo = 1;
 		break;
 	case GB_MBC6:
 		GBMBCSwitchHalfBank(gb, 0, 2);
@@ -784,10 +785,14 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	LOAD_32LE(when, 0, &state->memory.dmaNext);
 	if (memory->dmaRemaining) {
 		mTimingSchedule(&gb->timing, &memory->dmaEvent, when);
+	} else {
+		memory->dmaEvent.when = when + mTimingCurrentTime(&gb->timing);
 	}
 	LOAD_32LE(when, 0, &state->memory.hdmaNext);
 	if (memory->hdmaRemaining) {
 		mTimingSchedule(&gb->timing, &memory->hdmaEvent, when);
+	} else {
+		memory->hdmaEvent.when = when + mTimingCurrentTime(&gb->timing);
 	}
 
 	GBSerializedMemoryFlags flags;

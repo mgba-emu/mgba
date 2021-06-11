@@ -72,13 +72,12 @@ static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 }
 
 static int _batteryState(void) {
-	int charge = scePowerGetBatteryLifePercent();
+	int charge = scePowerGetBatteryLifePercent() | BATTERY_PERCENTAGE_VALID;
 	int adapter = scePowerIsPowerOnline();
 	int state = 0;
 	if (adapter) {
 		state |= BATTERY_CHARGING;
 	}
-	charge /= 25;
 	return state | charge;
 }
 

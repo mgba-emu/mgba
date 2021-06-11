@@ -1035,7 +1035,13 @@ static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason r
 	case DEBUGGER_ENTER_STACK:
 		if (info) {
 			if (info->type.st.traceType == STACK_TRACE_BREAK_ON_CALL) {
-				cliDebugger->backend->printf(cliDebugger->backend, "Hit function call at at 0x%08X\n", info->address);
+				struct mStackTrace* stack = &cliDebugger->d.stackTrace;
+				struct mStackFrame* frame = mStackTraceGetFrame(stack, 0);
+				if (frame->interrupt) {
+					cliDebugger->backend->printf(cliDebugger->backend, "Hit interrupt at at 0x%08X\n", info->address);
+				} else {
+					cliDebugger->backend->printf(cliDebugger->backend, "Hit function call at at 0x%08X\n", info->address);
+				}
 			} else {
 				cliDebugger->backend->printf(cliDebugger->backend, "Hit function return at at 0x%08X\n", info->address);
 			}

@@ -159,7 +159,7 @@ bool MapView::eventFilter(QObject* obj, QEvent* event) {
 	return true;
 }
 
-void MapView::updateTilesGBA(bool force) {
+void MapView::updateTilesGBA(bool) {
 	{
 		CoreController::Interrupter interrupter(m_controller);
 		int bitmap = -1;

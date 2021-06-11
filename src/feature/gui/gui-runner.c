@@ -654,7 +654,7 @@ void mGUIRunloop(struct mGUIRunner* runner) {
 			mInputMapLoad(&runner->params.keyMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
 		}
 	}
-	while (runner->running(runner)) {
+	while (!runner->running || runner->running(runner)) {
 		char path[PATH_MAX];
 		const char* preselect = mCoreConfigGetValue(&runner->config, "lastGame");
 		if (preselect) {

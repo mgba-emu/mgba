@@ -423,7 +423,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 
 	switch (immediate) {
 	case 0xF0: // Used for internal stall counting
-		cpu->gprs[4] = gba->biosStall;
+		cpu->gprs[12] = gba->biosStall;
 		return;
 	case 0xFA:
 		GBAPrintFlush(gba);

@@ -142,4 +142,26 @@ static inline bool ARMTestCondition(struct ARMCore* cpu, unsigned condition) {
 	}
 }
 
+static inline enum RegisterBank ARMSelectBank(enum PrivilegeMode mode) {
+	switch (mode) {
+	case MODE_USER:
+	case MODE_SYSTEM:
+		// No banked registers
+		return BANK_NONE;
+	case MODE_FIQ:
+		return BANK_FIQ;
+	case MODE_IRQ:
+		return BANK_IRQ;
+	case MODE_SUPERVISOR:
+		return BANK_SUPERVISOR;
+	case MODE_ABORT:
+		return BANK_ABORT;
+	case MODE_UNDEFINED:
+		return BANK_UNDEFINED;
+	default:
+		// This should be unreached
+		return BANK_NONE;
+	}
+}
+
 #endif

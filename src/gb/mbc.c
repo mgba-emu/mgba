@@ -440,6 +440,7 @@ static void _GBMBC1Update(struct GB* gb) {
 		GBMBCSwitchSramBank(gb, 0);
 	}
 	if (!(state->bankLo & 0x1F)) {
+		++state->bankLo;
 		++bank;
 	}
 	GBMBCSwitchBank(gb, bank);

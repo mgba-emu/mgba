@@ -293,7 +293,7 @@ static const int _isWSpecialRegister[REG_MAX >> 1] = {
 	// Audio
 	1, 1, 1, 0, 1, 0, 1, 0,
 	1, 0, 1, 0, 1, 0, 1, 0,
-	1, 0, 1, 0, 0, 0, 0, 0,
+	0, 0, 1, 0, 0, 0, 0, 0,
 	1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 0, 0, 0, 0,
 	// DMA
@@ -980,6 +980,8 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		LOAD_32(gba->memory.dma[i].when, 0, &state->dma[i].when);
 	}
 	GBAAudioWriteSOUNDCNT_X(&gba->audio, gba->memory.io[REG_SOUNDCNT_X >> 1]);
+	gba->sio.siocnt = gba->memory.io[REG_SIOCNT >> 1];
+	GBASIOWriteRCNT(&gba->sio, gba->memory.io[REG_RCNT >> 1]);
 
 	LOAD_32(gba->memory.dmaTransferRegister, 0, &state->dmaTransferRegister);
 	LOAD_32(gba->dmaPC, 0, &state->dmaBlockPC);

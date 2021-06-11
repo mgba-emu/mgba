@@ -43,7 +43,7 @@ void GUIFontPrint(const struct GUIFont* font, int x, int y, enum GUIAlignment al
 		if (c == '\1') {
 			c = utf8Char(&text, &len);
 			if (c < GUI_ICON_MAX) {
-				GUIFontDrawIcon(font, x, y, GUI_ALIGN_BOTTOM, GUI_ORIENT_0, color, c);
+				GUIFontDrawIcon(font, x, y, (align & GUI_ALIGN_HCENTER) | GUI_ALIGN_BOTTOM, GUI_ORIENT_0, color, c);
 				unsigned w;
 				GUIFontIconMetrics(font, c, &w, 0);
 				x += w;

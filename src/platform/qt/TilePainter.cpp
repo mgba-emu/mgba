@@ -19,12 +19,12 @@ TilePainter::TilePainter(QWidget* parent)
 	setTileCount(3072);
 }
 
-void TilePainter::paintEvent(QPaintEvent* event) {
+void TilePainter::paintEvent(QPaintEvent*) {
 	QPainter painter(this);
 	painter.drawPixmap(QPoint(), m_backing);
 }
 
-void TilePainter::resizeEvent(QResizeEvent* event) {
+void TilePainter::resizeEvent(QResizeEvent*) {
 	int w = width() / m_size;
 	if (!w) {
 		w = 1;
