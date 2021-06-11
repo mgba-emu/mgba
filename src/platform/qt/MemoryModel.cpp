@@ -246,7 +246,7 @@ QByteArray MemoryModel::serialize() {
 		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
 			quint16 datum = m_core->rawRead16(m_core, i, m_currentBank);
 			char leDatum[2];
-			STORE_16LE(datum, 0, (uint16_t*) leDatum);
+			STORE_16BE(datum, 0, (uint16_t*) leDatum);
 			bytes.append(leDatum, 2);
 		}
 		break;
@@ -254,7 +254,7 @@ QByteArray MemoryModel::serialize() {
 		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
 			quint32 datum = m_core->rawRead32(m_core, i, m_currentBank);
 			char leDatum[4];
-			STORE_32LE(datum, 0, (uint16_t*) leDatum);
+			STORE_32BE(datum, 0, (uint32_t*) leDatum);
 			bytes.append(leDatum, 4);
 		}
 		break;
@@ -275,7 +275,7 @@ void MemoryModel::deserialize(const QByteArray& bytes) {
 		for (int i = 0; i < bytes.size(); i += m_align, addr += m_align) {
 			char leDatum[2]{ bytes[i], bytes[i + 1] };
 			uint16_t datum;
-			LOAD_16LE(datum, 0, leDatum);
+			LOAD_16BE(datum, 0, leDatum);
 			m_core->rawWrite16(m_core, addr, m_currentBank, datum);
 		}
 		break;
@@ -283,7 +283,7 @@ void MemoryModel::deserialize(const QByteArray& bytes) {
 		for (int i = 0; i < bytes.size(); i += m_align, addr += m_align) {
 			char leDatum[4]{ bytes[i], bytes[i + 1], bytes[i + 2], bytes[i + 3] };
 			uint32_t datum;
-			LOAD_32LE(datum, 0, leDatum);
+			LOAD_32BE(datum, 0, leDatum);
 			m_core->rawWrite32(m_core, addr, m_currentBank, datum);
 		}
 		break;

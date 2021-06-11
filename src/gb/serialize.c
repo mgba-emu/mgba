@@ -256,7 +256,6 @@ void GBSGBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	if (gb->video.renderer->sgbAttributes) {
 		memcpy(state->sgb.attributes, gb->video.renderer->sgbAttributes, sizeof(state->sgb.attributes));
 	}
-	gb->video.renderer->enableSGBBorder(gb->video.renderer, gb->video.sgbBorders);
 }
 
 void GBSGBDeserialize(struct GB* gb, const struct GBSerializedState* state) {

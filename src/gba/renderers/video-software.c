@@ -654,18 +654,19 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		}
 	}
 	if (softwareRenderer->forceTarget1 && (softwareRenderer->blendEffect == BLEND_DARKEN || softwareRenderer->blendEffect == BLEND_BRIGHTEN)) {
-		uint32_t mask = FLAG_REBLEND | FLAG_IS_BACKGROUND;
-		uint32_t match = FLAG_REBLEND;
-		if (GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt)) {
-			mask |= FLAG_OBJWIN;
-			if (GBAWindowControlIsBlendEnable(softwareRenderer->objwin.packed)) {
-				match |= FLAG_OBJWIN;
-			}
-		}
 		int x = 0;
 		for (w = 0; w < softwareRenderer->nWindows; ++w) {
 			int end = softwareRenderer->windows[w].endX;
-			if (!GBAWindowControlIsBlendEnable(softwareRenderer->windows[w].control.packed)) {
+			uint32_t mask = FLAG_REBLEND | FLAG_IS_BACKGROUND;
+			uint32_t match = FLAG_REBLEND;
+			bool objBlend = GBAWindowControlIsBlendEnable(softwareRenderer->objwin.packed);
+			bool winBlend = GBAWindowControlIsBlendEnable(softwareRenderer->windows[w].control.packed);
+			if (GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt) && objBlend != winBlend) {
+				mask |= FLAG_OBJWIN;
+				if (objBlend) {
+					match |= FLAG_OBJWIN;
+				}
+			} else if (!winBlend) {
 				x = end;
 				continue;
 			}

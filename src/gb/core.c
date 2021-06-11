@@ -301,6 +301,12 @@ static void _GBCoreReloadConfigOption(struct mCore* core, const char* option, co
 		}
 		return;
 	}
+	if (strcmp("sgb.borders", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "sgb.borders", &fakeBool)) {
+			gb->video.sgbBorders = fakeBool;
+			gb->video.renderer->enableSGBBorder(gb->video.renderer, fakeBool);
+		}
+	}
 }
 
 static void _GBCoreDesiredVideoDimensions(const struct mCore* core, unsigned* width, unsigned* height) {

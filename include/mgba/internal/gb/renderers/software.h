@@ -40,6 +40,9 @@ struct GBVideoSoftwareRenderer {
 	GBRegisterLCDC lcdc;
 	enum GBModel model;
 
+	struct GBObj obj[10];
+	int objMax;
+
 	int16_t objOffsetX;
 	int16_t objOffsetY;
 	int16_t offsetScx;

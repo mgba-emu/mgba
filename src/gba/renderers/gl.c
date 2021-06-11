@@ -391,7 +391,11 @@ static const char* const _renderMode4 =
 	"	}\n"
 	"	int address = charBase + (coord.x >> 8) + (coord.y >> 8) * size.x;\n"
 	"	int twoEntries = texelFetch(vram, ivec2((address >> 1) & 255, address >> 9), 0).r;\n"
-	"	int paletteEntry = palette[(twoEntries >> (8 * (address & 1)) & 255)];\n"
+	"	int entry = (twoEntries >> (8 * (address & 1))) & 255;\n"
+	"	if (entry == 0) {\n"
+	"		discard;\n"
+	"	}\n"
+	"	int paletteEntry = palette[entry];\n"
 	"	color = vec4(PALETTE_ENTRY(paletteEntry), 1.);\n"
 	"}";
 
